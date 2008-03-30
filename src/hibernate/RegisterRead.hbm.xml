@@ -1,0 +1,73 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC
+      "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+          "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<!-- 
+	
+	Copyright 2005-2008 Meniscus Systems Ltd
+	
+	This file is part of Chellow.
+	
+	Chellow is free software; you can redistribute it and/or modify
+	it under the terms of the GNU General Public License as published by
+	the Free Software Foundation; either version 2 of the License, or
+	(at your option) any later version.
+	
+	Chellow is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU General Public License for more details.
+	
+	You should have received a copy of the GNU General Public License
+	along with Chellow; if not, write to the Free Software
+	Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+	
+-->
+
+<hibernate-mapping package="net.sf.chellow.physical">
+	<class name="RegisterRead" table="register_read">
+		<id name="id">
+			<generator class="sequence">
+				<param name="sequence">register_read_id_sequence</param>
+			</generator>
+		</id>
+		<many-to-one name="mpan" class="Mpan"
+			column="mpan_id" not-null="true"
+			foreign-key="fkey_mpan__register_read" />
+		<many-to-one name="invoice"
+			class="net.sf.chellow.billing.Invoice" column="invoice_id"
+			not-null="true" foreign-key="fkey_invoice__register_read" />
+		<many-to-one name="tpr" class="Tpr" column="tpr_id"
+			not-null="true" foreign-key="fkey_tpr__register_read" />
+		<property type="boolean" name="isImport"
+			column="is_import" not-null="true" />
+		<component name="presentDate"
+			class="net.sf.chellow.billing.DayFinishDate">
+			<property name="date" type="timestamp" not-null="true">
+				<column name="present_date"
+					sql-type="timestamp with time zone" />
+			</property>
+		</component>
+		<property type="float" name="presentValue"
+			column="present_value" not-null="true" />
+		<component name="presentType" class="ReadType">
+			<property name="int" column="present_type" />
+		</component>
+		<component name="previousDate"
+			class="net.sf.chellow.billing.DayFinishDate">
+			<property name="date" type="timestamp" not-null="true">
+				<column name="previous_date"
+					sql-type="timestamp with time zone" />
+			</property>
+		</component>
+		<property type="float" name="previousValue"
+			column="previous_value" not-null="true" />
+		<component name="previousType" class="ReadType">
+			<property name="int" column="previous_type" />
+		</component>
+		<component name="units" class="Units">
+			<property name="int" column="units" />
+		</component>
+	</class>
+</hibernate-mapping>
+

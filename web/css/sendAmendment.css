@@ -1,0 +1,45 @@
+@import url("/css/main.css");
+
+div[class=form] {
+    float: left;
+    //border-style: solid;
+    border-width: thin;
+    padding: 0.5em;
+    padding-right: 0.25em;
+    width: 60%;
+    margin-left: 2em;
+}
+
+div[class=form] div[class=labels] {
+    float: left;
+    width: 30%;
+    text-align: left;
+}
+
+div[class=form] div[class=inputs] {
+    float: right;
+    width: 65%;
+    text-align: right;
+}
+
+textarea {
+    float: left;
+    width: 100%;
+    clear: both;
+    margin-bottom: 0.5em;
+}
+
+input[type=text] {
+    width: 100%;
+    margin-bottom: 0.5em;
+}
+
+input[type=submit] {
+    float: left;
+}
+
+label {
+    width: 100%;
+    float: left;
+    margin-bottom: 1em;
+}

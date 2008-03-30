@@ -1,0 +1,50 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC
+      "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+          "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<!-- 
+	
+	Copyright 2008 Meniscus Systems Ltd
+	
+	This file is part of Chellow.
+	
+	Chellow is free software; you can redistribute it and/or modify
+	it under the terms of the GNU General Public License as published by
+	the Free Software Foundation; either version 2 of the License, or
+	(at your option) any later version.
+	
+	Chellow is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU General Public License for more details.
+	
+	You should have received a copy of the GNU General Public License
+	along with Chellow; if not, write to the Free Software
+	Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+	
+-->
+
+<hibernate-mapping package="net.sf.chellow.physical">
+	<class name="Ssc" table="ssc" lazy="true">
+		<id name="id">
+			<generator class="sequence">
+				<param name="sequence">ssc_id_sequence</param>
+			</generator>
+		</id>
+		<component name="code" class="SscCode">
+			<property type="integer" name="integer" column="code"
+				unique="true" not-null="true" />
+		</component>
+		<set name="mpanTops" cascade="all,delete-orphan"
+			table="mpan_top_ssc">
+			<key column="ssc_id" foreign-key="fkey_mpan_top_ssc__ssc" />
+			<many-to-many column="mpan_top_id" class="MpanTop" />
+		</set>
+		<set name="tprs" inverse="true" cascade="all,delete-orphan"
+			order-by="code">
+			<key column="ssc_id" />
+			<one-to-many class="Tpr" />
+		</set>
+	</class>
+</hibernate-mapping>
+

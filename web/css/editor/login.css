@@ -1,0 +1,31 @@
+@import url("/css/main.css");
+
+form {
+    float: left;
+    padding: 0.5em;
+    margin-bottom: 0.5em;
+    margin-left: 1em;
+    width: 50%;
+}
+
+label {
+    float: left;
+    clear: right;
+    margin-bottom: 0.5em;
+}
+
+input[type="text"], input[type="password"] {
+    float: right;
+    margin-bottom: 0.5em;
+    width: 70%;
+}
+
+form div {
+    float: right;
+    width: 70%;
+}
+
+input[type="submit"] {
+    float: left;
+    margin-top: 0.5em;
+}

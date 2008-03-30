@@ -1,0 +1,32 @@
+@import url("main.css");
+
+[class=accountsBlock] {
+	width: 65%;
+    float: left;
+    padding: 0.5em;
+    padding-right: 0.25em;
+    margin-bottom: 0.5em;
+}
+
+div.accountsBlock table {
+	font-size: small;
+	border-collapse: collapse;
+	font-size: small;
+	margin-top: 0.5em;
+}
+
+div.accountsBlock table td {
+	border: thin solid;
+	text-align: right;
+	padding-right: 0.2em;
+}
+
+div.accountsBlock table th {
+	border: thin solid;
+	padding: 0.2em;
+}
+
+caption {
+	margin-top: 2em;
+}
+

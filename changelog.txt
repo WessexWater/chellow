@@ -1,0 +1,8 @@
+For bug fixes please see:
+
+http://sourceforge.net/tracker/?group_id=149672&atid=775513
+
+
+For new features please see:
+
+http://sourceforge.net/tracker/?group_id=149672&atid=775516

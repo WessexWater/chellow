@@ -1,0 +1,79 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC
+      "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+          "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<!-- 
+	
+	Copyright 2005-2007 Meniscus Systems Ltd
+	
+	This file is part of Chellow.
+	
+	Chellow is free software; you can redistribute it and/or modify
+	it under the terms of the GNU General Public License as published by
+	the Free Software Foundation; either version 2 of the License, or
+	(at your option) any later version.
+	
+	Chellow is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU General Public License for more details.
+	
+	You should have received a copy of the GNU General Public License
+	along with Chellow; if not, write to the Free Software
+	Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+	
+-->
+
+<hibernate-mapping package="net.sf.chellow.physical">
+	<class name="Mpan" table="mpan">
+		<id name="id">
+			<generator class="sequence">
+				<param name="sequence">mpan_id_sequence</param>
+			</generator>
+		</id>
+		<many-to-one name="supplyGeneration" class="SupplyGeneration"
+			column="supply_generation_id" not-null="true"
+			foreign-key="fkey_mpan_supply_generation" />
+		<many-to-one name="mpanTop" class="MpanTop"
+			column="mpan_top_id" not-null="true"
+			foreign-key="fkey_mpan__mpan_top" />
+		<many-to-one name="mpanCore" class="MpanCore"
+			column="mpan_core_id" not-null="true"
+			foreign-key="fkey_mpan_mpan_core" />
+		<many-to-one name="mopAccount"
+			class="net.sf.chellow.billing.Account" column="mop_account_id"
+			foreign-key="fkey_mpan_mop_account" />
+		<many-to-one name="mopService"
+			class="net.sf.chellow.billing.MopService" column="mop_service_id"
+			foreign-key="fkey_mpan_mop_service" />
+		<many-to-one name="dcsAccount"
+			class="net.sf.chellow.billing.Account" column="dcs_account_id"
+			foreign-key="fkey_mpan_dcs_account" />
+		<many-to-one name="dcsService"
+			class="net.sf.chellow.billing.DcsService" column="dcs_service_id"
+			foreign-key="fkey_mpan_dcs_service" />
+		<many-to-one name="dceAccount"
+			class="net.sf.chellow.billing.Account" column="dce_account_id"
+			foreign-key="fkey_mpan_dce_account" />
+		<many-to-one name="dceService"
+			class="net.sf.chellow.billing.DceService" column="dce_service_id"
+			foreign-key="fkey_mpan_dce_service" />
+		<many-to-one name="supplierAccount"
+			class="net.sf.chellow.billing.Account" column="supplier_account_id"
+			foreign-key="fkey_mpan_supplier_account" />
+		<many-to-one name="supplierService"
+			class="net.sf.chellow.billing.SupplierService"
+			column="supplier_service_id"
+			foreign-key="fkey_mpan_supplier_service" />
+		<property type="boolean" name="hasImportKwh"
+			column="has_import_kwh" not-null="true" />
+		<property type="boolean" name="hasImportKvarh"
+			column="has_import_kvarh" not-null="true" />
+		<property type="boolean" name="hasExportKwh"
+			column="has_export_kwh" not-null="true" />
+		<property type="boolean" name="hasExportKvarh"
+			column="has_export_kvarh" not-null="true" />
+		<property name="agreedSupplyCapacity"
+			column="agreed_supply_capacity" not-null="true" />
+	</class>
+</hibernate-mapping>

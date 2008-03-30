@@ -1,0 +1,19 @@
+li.error {
+	color: red
+}
+
+table {
+	border-collapse: collapse
+}
+
+th {
+	border: thin solid grey
+}
+
+td {
+	border: thin solid grey
+}
+
+span.logo {
+	color: green;
+}

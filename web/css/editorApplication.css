@@ -1,0 +1,54 @@
+@import url("/css/main.css");
+
+form {
+    float: left;
+    padding-right: 0.25em;
+    margin-bottom: 0.5em;
+    margin-left: 0.5em;
+    width: 60%;
+}
+
+label {
+    float: left;
+    clear: both;
+    margin-bottom: 0.5em;
+    width: 30%;
+}
+
+input[type=text] {
+    float: right;
+    margin-bottom: 0.5em;
+    width: 60%;
+}
+
+textarea {
+    float: left;
+    width: 100%;
+    margin-bottom: 0.5em;
+}
+
+input[type=submit] {
+    float: left;
+}
+div[class=officesAndInstitutionsBlock] h4, div[class=areasBlock] h4 {
+    margin-top: 0em;
+    margin-bottom: 0.5em;
+}
+
+div[class=officesAndInstitutionsBlock] ul {
+    padding: 0em;
+    margin-left: 1em;
+    margin-top: 0em;
+    margin-bottom: 0.5em;
+    list-style-type: disc;
+}
+
+div[class=officesAndInstitutionsBlock] div {
+    width: 100%;
+    border-style: solid;
+    border-width: thin;
+    float: left;
+    padding: 0.5em;
+    padding-right: 0em;
+}
+

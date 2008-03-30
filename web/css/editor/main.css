@@ -1,0 +1,28 @@
+@import url("../global.css");
+
+#editorNav {
+	width: 100%;
+	height: 3.5em;
+	background: yellow;
+	border: thin solid;
+}
+
+#editorNav>* {
+	float: left;
+}
+
+/*
+form {
+	clear: right;
+}
+*/
+#editorNav>div {
+	border: thin solid;
+	margin: 0.5em;
+	padding: 0.5em;
+}
+
+#logOutButton {
+	margin-left: 0.5em;
+	margin-top: 0.5em;
+}

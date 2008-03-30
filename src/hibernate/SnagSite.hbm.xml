@@ -1,0 +1,50 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC
+      "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+          "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<!-- 
+	
+	Copyright 2005-2007 Meniscus Systems Ltd
+	
+	This file is part of Chellow.
+	
+	Chellow is free software; you can redistribute it and/or modify
+	it under the terms of the GNU General Public License as published by
+	the Free Software Foundation; either version 2 of the License, or
+	(at your option) any later version.
+	
+	Chellow is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU General Public License for more details.
+	
+	You should have received a copy of the GNU General Public License
+	along with Chellow; if not, write to the Free Software
+	Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+	
+-->
+
+
+<hibernate-mapping
+	package="net.sf.chellow.physical">
+	<joined-subclass extends="Snag" name="SnagSite" table="snag_site"
+		lazy="true">
+		<key column="snag_id" foreign-key="fkey_snag_site_snag"/>
+		<many-to-one name="site" class="Site" column="site_id" foreign-key="fkey_snag_site_site"/>
+		<component name="startDate" class="HhEndDate">
+			<property name="date" type="timestamp" not-null="true" index="start_date_idx">
+				<column name="start_date"
+					sql-type="timestamp with time zone" />
+			</property>
+		</component>
+		<component name="finishDate" class="HhEndDate">
+			<property name="date" type="timestamp" not-null="true" index="finish_date_idx">
+				<column name="finish_date"
+					sql-type="timestamp with time zone" />
+			</property>
+		</component>
+		<many-to-one name="service"
+			class="net.sf.chellow.billing.DceService" column="dce_service_id"
+			not-null="true" foreign-key="fkey_snag_site_service"/>
+	</joined-subclass>
+</hibernate-mapping>
