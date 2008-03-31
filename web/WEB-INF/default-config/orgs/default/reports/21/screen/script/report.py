@@ -1,7 +1,4 @@
-from net.sf.chellow.monad import Hiber
-from net.sf.chellow.physical import Dso
+from net.sf.chellow.monad.data import Hiber
 
-dso_id = inv.getLong('dso-id')
-dso = Dso.getDso(dso_id)
-source.appendChild(dso.toXML(doc));
-source.appendChild(organization.toXML(doc))
+for site in Hiber.session().createQuery("select distinct site from Site site join site.siteSupplyGenerations siteSupplyGeneration where site.organization = :organization").setEntity("organization", organization).list():
+    source.appendChild(site.toXML(doc))
