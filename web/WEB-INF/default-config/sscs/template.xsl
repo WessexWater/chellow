@@ -11,7 +11,7 @@
 				<link rel="stylesheet" type="text/css"
 					href="{/source/request/@context-path}/orgs/1/reports/9/stream/output/" />
 
-				<title>Chellow &gt; Meter Timeswitches</title>
+				<title>Chellow &gt; Sscs</title>
 			</head>
 
 			<body>
@@ -37,67 +37,35 @@
 				<table>
 					<thead>
 						<tr>
+							<th>Id</th>
 							<th>Code</th>
-							<th>Description</th>
-							<th>Dso</th>
-							<th>Is Unmetered?</th>
 							<th>Tprs</th>
 						</tr>
 					</thead>
 					<tbody>
 
-						<xsl:for-each
-							select="/source/meter-timeswitch">
+						<xsl:for-each select="/source/sscs/ssc">
 							<tr>
 								<td>
 									<a
-										href="{/source/request/@context-path}/meter-timeswitches/{@id}/">
-										<xsl:value-of select="@code" />
+										href="{/source/request/@context-path}/sscs/{@id}/">
+										<xsl:value-of select="@id" />
 									</a>
 								</td>
 								<td>
-									<xsl:value-of select="@description" />
-								</td>
-								<td>
-									<xsl:choose>
-										<xsl:when test="dso">
-											<a
-												href="{/source/request/@context-path}/dsos/{@id}/">
-												<xsl:value-of
-													select="dso/@code" />
-											</a>
-										</xsl:when>
-										<xsl:otherwise>
-											None
-										</xsl:otherwise>
-									</xsl:choose>
-								</td>
-								<td>
-									<xsl:choose>
-										<xsl:when
-											test="@is-unmetered = 'true'">
-											Unmetered
-										</xsl:when>
-										<xsl:otherwise>
-											Metered
-										</xsl:otherwise>
-									</xsl:choose>
+									<xsl:value-of select="@code" />
 								</td>
 								<td>
 									<ul>
-										<xsl:for-each
-											select="register">
+										<xsl:for-each select="tpr">
 											<li>
-												<xsl:for-each
-													select="tpr">
+												<xsl:value-of
+													select="@code" />
+												<xsl:if
+													test="position() != last()">
 													<xsl:value-of
-														select="@code" />
-													<xsl:if
-														test="position() != last()">
-														<xsl:value-of
-															select="', '" />
-													</xsl:if>
-												</xsl:for-each>
+														select="', '" />
+												</xsl:if>
 											</li>
 										</xsl:for-each>
 									</ul>
