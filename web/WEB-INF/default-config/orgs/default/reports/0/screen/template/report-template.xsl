@@ -74,6 +74,30 @@
 							</xsl:for-each>
 						</ul>
 					</li>
+					<li>
+						<a
+							href="{/source/request/@context-path}/orgs/1/reports/22/screen/output/">
+							DNOs
+						</a>					
+					</li>
+					<li>
+						<a
+							href="{/source/request/@context-path}/orgs/1/reports/23/screen/output/">
+							Profile Classes
+						</a>					
+					</li>
+									<li>
+						<a
+							href="{/source/request/@context-path}/orgs/1/reports/24/screen/output/">
+							Meter Timeswitches
+						</a>					
+					</li>
+					<li>
+						<a
+							href="{/source/request/@context-path}/orgs/1/reports/25/screen/output/">
+							MPAN top lines
+						</a>					
+					</li>	
 				</ul>
 			</body>
 		</html>

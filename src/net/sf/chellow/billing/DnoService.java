@@ -45,10 +45,10 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 @SuppressWarnings("serial")
-public class DsoService extends Service {
-	public static DsoService getDsoService(Long id) throws UserException,
+public class DnoService extends Service {
+	public static DnoService getDsoService(Long id) throws UserException,
 			ProgrammerException {
-		DsoService service = findDsoService(id);
+		DnoService service = findDsoService(id);
 		if (service == null) {
 			throw UserException
 					.newOk("There isn't a DSO service with that id.");
@@ -56,18 +56,18 @@ public class DsoService extends Service {
 		return service;
 	}
 
-	public static DsoService findDsoService(Long id) throws UserException,
+	public static DnoService findDsoService(Long id) throws UserException,
 			ProgrammerException {
-		return (DsoService) Hiber.session().get(DsoService.class, id);
+		return (DnoService) Hiber.session().get(DnoService.class, id);
 	}
 
 	private Dso provider;
 
-	public DsoService() {
+	public DnoService() {
 		setTypeName("dso-service");
 	}
 
-	public DsoService(String name, HhEndDate startDate, String chargeScript,
+	public DnoService(String name, HhEndDate startDate, String chargeScript,
 			Dso provider) throws UserException, ProgrammerException,
 			DesignerException {
 		super(Service.TYPE_PASS_THROUGH, name, startDate, chargeScript);
@@ -109,8 +109,8 @@ public class DsoService extends Service {
 
 	public boolean equals(Object obj) {
 		boolean isEqual = false;
-		if (obj instanceof DsoService) {
-			DsoService contract = (DsoService) obj;
+		if (obj instanceof DnoService) {
+			DnoService contract = (DnoService) obj;
 			isEqual = contract.getId().equals(getId());
 		}
 		return isEqual;

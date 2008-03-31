@@ -25,8 +25,8 @@ package net.sf.chellow.physical;
 import java.util.List;
 
 import net.sf.chellow.billing.Account;
-import net.sf.chellow.billing.DsoService;
-import net.sf.chellow.billing.DsoServices;
+import net.sf.chellow.billing.DnoService;
+import net.sf.chellow.billing.DnoServices;
 import net.sf.chellow.billing.Provider;
 import net.sf.chellow.data08.Data;
 import net.sf.chellow.monad.DeployerException;
@@ -37,14 +37,11 @@ import net.sf.chellow.monad.MonadUtils;
 import net.sf.chellow.monad.ProgrammerException;
 import net.sf.chellow.monad.Urlable;
 import net.sf.chellow.monad.UserException;
-import net.sf.chellow.monad.types.MonadLong;
-import net.sf.chellow.monad.types.MonadString;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
 import net.sf.chellow.ui.Chellow;
 
 import org.hibernate.HibernateException;
-import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -66,15 +63,9 @@ public class Dso extends Provider {
 				.setString("code", code).uniqueResult();
 	}
 
-	@SuppressWarnings("unchecked")
-	static public List<Dso> getDsos() throws ProgrammerException, UserException {
-		return (List<Dso>) Hiber.session().createQuery(
-				"from Dso dso order by dso.code.string").list();
-	}
-
-	static public Dso getDso(MonadLong id) throws ProgrammerException,
+	static public Dso getDso(Long id) throws ProgrammerException,
 			UserException {
-		Dso dso = (Dso) Hiber.session().get(Dso.class, id.getLong());
+		Dso dso = (Dso) Hiber.session().get(Dso.class, id);
 		if (dso == null) {
 			throw UserException.newOk("There isn't a DSO with that id.");
 		}
@@ -105,7 +96,6 @@ public class Dso extends Provider {
 	private DsoCode code;
 
 	public Dso() {
-		setTypeName("dso");
 	}
 
 	public Dso(String name, DsoCode code) throws UserException,
@@ -150,8 +140,8 @@ public class Dso extends Provider {
 		LineLossFactor lineLossFactor = (LineLossFactor) Hiber
 				.session()
 				.createQuery(
-						"from LineLossFactor llf where llf.dso = :dso and llf.code = :code")
-				.setEntity("dso", this).setInteger("code", code).uniqueResult();
+						"from LineLossFactor llf where llf.dno = :dno and llf.code = :code")
+				.setEntity("dno", this).setInteger("code", code).uniqueResult();
 		if (lineLossFactor == null) {
 			throw UserException
 					.newInvalidParameter("There is no line loss factor with the code "
@@ -166,10 +156,10 @@ public class Dso extends Provider {
 
 	public Element toXML(Document doc) throws ProgrammerException,
 			UserException {
+		setTypeName("dso");
 		Element element = (Element) super.toXML(doc);
 
-		element.setAttributeNode((Attr) MonadString.toXml(doc, "code", code
-				.toString()));
+		element.setAttribute("code", code.toString());
 		return element;
 	}
 
@@ -193,8 +183,8 @@ public class Dso extends Provider {
 
 	public Urlable getChild(UriPathElement uriId) throws ProgrammerException,
 			UserException {
-		if (DsoServices.URI_ID.equals(uriId)) {
-			return new DsoServices(this);
+		if (DnoServices.URI_ID.equals(uriId)) {
+			return new DnoServices(this);
 		} else if (LineLossFactors.URI_ID.equals(uriId)) {
 			return new LineLossFactors(this);
 		} else if (MpanTops.URI_ID.equals(uriId)) {
@@ -216,12 +206,12 @@ public class Dso extends Provider {
 		return null;
 	}
 
-	public DsoService insertService(String name, HhEndDate startDate,
+	public DnoService insertService(String name, HhEndDate startDate,
 			String chargeScript) throws UserException, ProgrammerException,
 			DesignerException {
-		DsoService service = findService(name);
+		DnoService service = findService(name);
 		if (service == null) {
-			service = new DsoService(name, startDate, chargeScript, this);
+			service = new DnoService(name, startDate, chargeScript, this);
 		} else {
 			throw UserException
 					.newInvalidParameter("There is already a DSO service with this name.");
@@ -231,14 +221,14 @@ public class Dso extends Provider {
 		return service;
 	}
 
-	public DsoServices servicesInstance() {
-		return new DsoServices(this);
+	public DnoServices servicesInstance() {
+		return new DnoServices(this);
 	}
 
 	@Override
-	public DsoService getService(String name) throws UserException,
+	public DnoService getService(String name) throws UserException,
 			ProgrammerException {
-		DsoService dsoService = findService(name);
+		DnoService dsoService = findService(name);
 		if (dsoService == null) {
 			throw UserException.newInvalidParameter("The DSO service " + name
 					+ " doesn't exist.");
@@ -246,9 +236,9 @@ public class Dso extends Provider {
 		return dsoService;
 	}
 
-	public DsoService findService(String name) throws UserException,
+	public DnoService findService(String name) throws UserException,
 			ProgrammerException {
-		return (DsoService) Hiber
+		return (DnoService) Hiber
 				.session()
 				.createQuery(
 						"from DsoService service where service.provider = :provider and service.name = :serviceName")

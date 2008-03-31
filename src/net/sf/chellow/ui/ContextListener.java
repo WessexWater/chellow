@@ -18,7 +18,7 @@ import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 import javax.sql.DataSource;
 
-import net.sf.chellow.billing.DsoService;
+import net.sf.chellow.billing.DnoService;
 import net.sf.chellow.billing.Government;
 import net.sf.chellow.billing.RateScript;
 import net.sf.chellow.hhimport.stark.StarkAutomaticHhDataImporters;
@@ -4050,7 +4050,7 @@ public class ContextListener implements ServletContextListener {
 			throws ProgrammerException, UserException, DesignerException {
 		Dso dso = Dso.insertDso(name, new DsoCode(code));
 		ClassLoader classLoader = Dso.class.getClassLoader();
-		DsoService dsoService;
+		DnoService dsoService;
 		try {
 			InputStreamReader isr = new InputStreamReader(classLoader
 					.getResource(

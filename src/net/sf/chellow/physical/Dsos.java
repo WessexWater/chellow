@@ -1,5 +1,7 @@
 package net.sf.chellow.physical;
 
+import java.util.List;
+
 import net.sf.chellow.monad.DeployerException;
 import net.sf.chellow.monad.DesignerException;
 import net.sf.chellow.monad.Hiber;
@@ -25,7 +27,8 @@ public class Dsos implements Urlable {
 		} catch (UserException e) {
 			throw new RuntimeException(e);
 		} catch (ProgrammerException e) {
-			throw new RuntimeException(e);		}
+			throw new RuntimeException(e);
+		}
 	}
 
 	public Dsos() {
@@ -36,15 +39,18 @@ public class Dsos implements Urlable {
 	}
 
 	public MonadUri getUri() throws ProgrammerException, UserException {
-		return Chellow.getUrlableRoot().getUri().resolve(getUrlId()).append("/");
+		return Chellow.getUrlableRoot().getUri().resolve(getUrlId())
+				.append("/");
 	}
 
+	@SuppressWarnings("unchecked")
 	public void httpGet(Invocation inv) throws DesignerException,
 			ProgrammerException, UserException, DeployerException {
 		Document doc = MonadUtils.newSourceDocument();
 		Element source = (Element) doc.getFirstChild();
 
-		for (Dso dso : Dso.getDsos()) {
+		for (Dso dso : (List<Dso>) Hiber.session().createQuery(
+				"from Dso dso order by dso.code.string").list()) {
 			source.appendChild(dso.toXML(doc));
 		}
 		inv.sendOk(doc);

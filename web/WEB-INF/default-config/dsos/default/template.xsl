@@ -95,13 +95,13 @@
 					</tbody>
 				</table>
 				<ul>
-									<li>
+					<li>
 						<a href="llfs/">Line Loss Factors</a>
 					</li>
-									<li>
+					<li>
 						<a href="mpan-tops/">MPAN top lines</a>
 					</li>
-				
+
 					<li>
 						<a href="services/">Services</a>
 					</li>

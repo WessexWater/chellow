@@ -30,6 +30,7 @@ import net.sf.chellow.physical.ProfileClasses;
 import net.sf.chellow.physical.Role;
 import net.sf.chellow.physical.Roles;
 import net.sf.chellow.physical.Sources;
+import net.sf.chellow.physical.Sscs;
 import net.sf.chellow.physical.Tprs;
 import net.sf.chellow.physical.User;
 import net.sf.chellow.physical.Users;
@@ -56,6 +57,7 @@ public class Chellow extends Monad implements Urlable {
 
 	static public final MeterTimeswitches METER_TIMESWITCHES_INSTANCE = new MeterTimeswitches();
 	static public final Tprs TPRS_INSTANCE = new Tprs();
+	static public final Sscs SSCS_INSTANCE = new Sscs();
 
 	public static final Organizations ORGANIZATIONS_INSTANCE = new Organizations();
 
@@ -945,6 +947,8 @@ public class Chellow extends Monad implements Urlable {
 			return METER_TIMESWITCHES_INSTANCE;
 		} else if (Tprs.URI_ID.equals(uriId)) {
 			return TPRS_INSTANCE;
+		} else if (Sscs.URI_ID.equals(uriId)) {
+			return SSCS_INSTANCE;
 		} else {
 			return null;
 		}

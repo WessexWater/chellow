@@ -7,11 +7,16 @@ import net.sf.chellow.monad.DeployerException;
 import net.sf.chellow.monad.DesignerException;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.Invocation;
+import net.sf.chellow.monad.MonadUtils;
 import net.sf.chellow.monad.ProgrammerException;
 import net.sf.chellow.monad.Urlable;
 import net.sf.chellow.monad.UserException;
+import net.sf.chellow.monad.XmlTree;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
+
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 
 public class Ssc extends PersistentEntity {
 	public static Ssc insertSsc(int code, String tprs)
@@ -62,7 +67,6 @@ public class Ssc extends PersistentEntity {
 	private Set<Tpr> tprs;
 
 	public Ssc() {
-		setTypeName("ssc");
 	}
 
 	public Ssc(int code, String tprString) throws ProgrammerException,
@@ -119,8 +123,10 @@ public class Ssc extends PersistentEntity {
 
 	public void httpGet(Invocation inv) throws DesignerException,
 			ProgrammerException, UserException, DeployerException {
-		// TODO Auto-generated method stub
-
+		Document doc = MonadUtils.newSourceDocument();
+		Element source = doc.getDocumentElement();
+		source.appendChild(getXML(new XmlTree("tprs"), doc));
+		inv.sendOk(doc);
 	}
 
 	public void httpPost(Invocation inv) throws ProgrammerException,
@@ -129,4 +135,12 @@ public class Ssc extends PersistentEntity {
 
 	}
 
+	public Element toXML(Document doc) throws ProgrammerException,
+			UserException {
+		setTypeName("ssc");
+		Element element = (Element) super.toXML(doc);
+
+		element.setAttribute("code", code.toString());
+		return element;
+	}
 }

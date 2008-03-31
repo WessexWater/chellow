@@ -10,6 +10,7 @@ import net.sf.chellow.monad.MonadUtils;
 import net.sf.chellow.monad.ProgrammerException;
 import net.sf.chellow.monad.Urlable;
 import net.sf.chellow.monad.UserException;
+import net.sf.chellow.monad.XmlTree;
 
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
@@ -48,13 +49,11 @@ public class Sscs implements Urlable {
 			ProgrammerException, UserException, DeployerException {
 		Document doc = MonadUtils.newSourceDocument();
 		Element source = doc.getDocumentElement();
-
-		for (Ssc ssc : (List<Ssc>) Hiber
-				.session()
-				.createQuery(
-						"from Ssc ssc order by ssc.code")
-				.list()) {
-			source.appendChild(ssc.toXML(doc));
+		Element sscsElement = doc.createElement("sscs");
+		source.appendChild(sscsElement);
+		for (Ssc ssc : (List<Ssc>) Hiber.session().createQuery(
+				"from Ssc ssc order by ssc.code").list()) {
+			sscsElement.appendChild(ssc.getXML(new XmlTree("tprs"), doc));
 		}
 		inv.sendOk(doc);
 	}

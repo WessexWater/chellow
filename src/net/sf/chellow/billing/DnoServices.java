@@ -46,7 +46,7 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
 @SuppressWarnings("serial")
-public class DsoServices implements Urlable, XmlDescriber {
+public class DnoServices implements Urlable, XmlDescriber {
 	public static final UriPathElement URI_ID;
 
 	static {
@@ -61,7 +61,7 @@ public class DsoServices implements Urlable, XmlDescriber {
 
 	private Dso dso;
 
-	public DsoServices(Dso dso) {
+	public DnoServices(Dso dso) {
 		this.dso = dso;
 	}
 
@@ -81,7 +81,7 @@ public class DsoServices implements Urlable, XmlDescriber {
 		if (!inv.isValid()) {
 			throw UserException.newInvalidParameter(document());
 		}
-		DsoService service = dso.insertService(name, HhEndDate
+		DnoService service = dso.insertService(name, HhEndDate
 				.roundDown(startDate), chargeScript);
 		Hiber.commit();
 		inv.sendCreated(document(), service.getUri());
@@ -95,7 +95,7 @@ public class DsoServices implements Urlable, XmlDescriber {
 		Element servicesElement = (Element) toXML(doc);
 		source.appendChild(servicesElement);
 		servicesElement.appendChild(dso.toXML(doc));
-		for (DsoService service : (List<DsoService>) Hiber
+		for (DnoService service : (List<DnoService>) Hiber
 				.session()
 				.createQuery(
 						"from DsoService service where service.provider = :dso order by service.finishRateScript.finishDate.date desc")
@@ -113,9 +113,9 @@ public class DsoServices implements Urlable, XmlDescriber {
 		inv.sendOk(document());
 	}
 
-	public DsoService getChild(UriPathElement uriId) throws UserException,
+	public DnoService getChild(UriPathElement uriId) throws UserException,
 			ProgrammerException {
-		DsoService service = (DsoService) Hiber
+		DnoService service = (DnoService) Hiber
 				.session()
 				.createQuery(
 						"from DsoService service where service.provider = :dso and service.id = :serviceId")
