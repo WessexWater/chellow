@@ -36,7 +36,7 @@
 				unique="true" not-null="true" />
 		</component>
 		<set name="mpanTops" cascade="all,delete-orphan"
-			table="mpan_top_ssc">
+			table="mpan_top_ssc" lazy="true">
 			<key column="ssc_id" foreign-key="fkey_mpan_top_ssc__ssc" />
 			<many-to-many column="mpan_top_id" class="MpanTop" />
 		</set>
