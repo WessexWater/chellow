@@ -13,7 +13,8 @@
 
 				<title>
 					Chellow &gt; DSOs &gt;
-					<xsl:value-of select="/source/dso/@code" />
+					<xsl:value-of select="/source/llfs/dso/@code" />
+					&gt; Line Loss Factors
 				</title>
 			</head>
 			<body>
@@ -30,7 +31,11 @@
 						DSOs
 					</a>
 					&gt;
-					<xsl:value-of select="/source/dso/@code" />
+					<a
+						href="{/source/request/@context-path}/orgs/1/reports/23/screen/output/?dso-id={/source/llfs/dso/@id}">
+						<xsl:value-of select="/source/llfs/dso/@code" />
+					</a>
+					&gt; Line Loss Factors
 				</p>
 				<br />
 				<xsl:if test="//message">
@@ -42,36 +47,47 @@
 						</xsl:for-each>
 					</ul>
 				</xsl:if>
-				<ul>
-					<li>
-						Code:
-						<xsl:value-of select="/source/dso/@code" />
-					</li>
-					<li>
-						Name:
-						<xsl:value-of select="/source/dso/@name" />
-					</li>
-				</ul>
-				<ul>
-					<li>
-						<a
-							href="{/source/request/@context-path}/orgs/{/source/organization/@id}/reports/24/screen/output/?dso-id={/source/dso/@id}">
-							Line Loss Factors
-						</a>
-					</li>
-					<li>
-						<a
-							href="{/source/request/@context-path}/orgs/{/source/organization/@id}/reports/25/screen/output/dso-id={/source/dso/@id}">
-							MPAN top lines
-						</a>
-					</li>
-					<li>
-						<a
-							href="{/source/request/@context-path}/orgs/{/source/organization/@id}/reports/26/screen/output/dso-id={/source/dso/@id}">
-							Services
-						</a>
-					</li>
-				</ul>
+				<table>
+					<thead>
+						<tr>
+							<th>Id</th>
+							<th>Code</th>
+							<th>Description</th>
+							<th>Voltage Level</th>
+							<th>Is Substation?</th>
+							<th>Is Import?</th>
+						</tr>
+					</thead>
+					<tbody>
+						<xsl:for-each
+							select="/source/llfs/line-loss-factor">
+							<tr>
+								<td>
+									<a href="{/source/request/@context-path}/orgs/1/reports/25/screen/output/?llf-id={@id}/">
+										<xsl:value-of select="@id" />
+									</a>
+								</td>
+								<td>
+									<xsl:value-of select="@code" />
+								</td>
+								<td>
+									<xsl:value-of select="@description" />
+								</td>
+								<td>
+									<xsl:value-of
+										select="concat(voltage-level/@code, ' - ', voltage-level/@name)" />
+								</td>
+								<td>
+									<xsl:value-of
+										select="@is-substation" />
+								</td>
+								<td>
+									<xsl:value-of select="@is-import" />
+								</td>
+							</tr>
+						</xsl:for-each>
+					</tbody>
+				</table>
 			</body>
 		</html>
 	</xsl:template>
