@@ -11,11 +11,7 @@
 				<link rel="stylesheet" type="text/css"
 					href="{/source/request/@context-path}/orgs/1/reports/9/stream/output/" />
 
-				<title>
-					Chellow &gt; DSOs &gt;
-					<xsl:value-of select="/source/llfs/dso/@code" />
-					&gt; Line Loss Factors
-				</title>
+				<title>Chellow &gt; DSOs</title>
 			</head>
 			<body>
 				<p>
@@ -25,17 +21,7 @@
 							src="{/source/request/@context-path}/logo/" />
 						<span class="logo">Chellow</span>
 					</a>
-					&gt;
-					<a
-						href="{/source/request/@context-path}/orgs/1/reports/22/screen/output/">
-						DSOs
-					</a>
-					&gt;
-					<a
-						href="{/source/request/@context-path}/orgs/1/reports/23/screen/output/?dso-id={/source/llfs/dso/@id}">
-						<xsl:value-of select="/source/llfs/dso/@code" />
-					</a>
-					&gt; Line Loss Factors
+					&gt; DSOs
 				</p>
 				<br />
 				<xsl:if test="//message">
@@ -48,22 +34,18 @@
 					</ul>
 				</xsl:if>
 				<table>
+					<caption>DSOs</caption>
 					<thead>
-						<tr>
-							<th>Id</th>
-							<th>Code</th>
-							<th>Description</th>
-							<th>Voltage Level</th>
-							<th>Is Substation?</th>
-							<th>Is Import?</th>
-						</tr>
+						<th>Id</th>
+						<th>Code</th>
+						<th>Name</th>
 					</thead>
 					<tbody>
-						<xsl:for-each
-							select="/source/llfs/line-loss-factor">
+						<xsl:for-each select="/source/dso">
 							<tr>
 								<td>
-									<a href="{@id}/">
+									<a
+										href="{/source/request/@context-path}/orgs/{/source/organization/@id}/reports/23/screen/output/?dso-id={@id}">
 										<xsl:value-of select="@id" />
 									</a>
 								</td>
@@ -71,18 +53,7 @@
 									<xsl:value-of select="@code" />
 								</td>
 								<td>
-									<xsl:value-of select="@description" />
-								</td>
-								<td>
-									<xsl:value-of
-										select="concat(voltage-level/@code, ' - ', voltage-level/@name)" />
-								</td>
-								<td>
-									<xsl:value-of
-										select="@is-substation" />
-								</td>
-								<td>
-									<xsl:value-of select="@is-import" />
+									<xsl:value-of select="@name" />
 								</td>
 							</tr>
 						</xsl:for-each>
