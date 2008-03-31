@@ -5,7 +5,7 @@
 	<classpathentry kind="var" path="JAVA_LIB_HOME/javamail-1.4.1/mail.jar"/>
 	<classpathentry kind="var" path="JAVA_LIB_HOME/ostermillerutils_1_07_00.jar"/>
 	<classpathentry kind="var" path="JAVA_LIB_HOME/hibernate-3.2/hibernate3.jar"/>
-	<classpathentry kind="var" path="TOMCAT_COMMON/lib/servlet-api.jar"/>
+	<classpathentry kind="var" path="TOMCAT_COMMON/servlet-api.jar"/>
 	<classpathentry kind="var" path="JAVA_LIB_HOME/commons-fileupload-1.2.1/lib/commons-fileupload-1.2.1.jar"/>
 	<classpathentry kind="var" path="JAVA_LIB_HOME/jython2.2.1/jython.jar"/>
 	<classpathentry kind="var" path="JAVA_LIB_HOME/commons-net-1.4.1/commons-net-1.4.1.jar"/>
