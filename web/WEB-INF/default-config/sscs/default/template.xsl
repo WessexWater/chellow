@@ -27,11 +27,12 @@
 					</a>
 					<xsl:value-of select="' &gt; '" />
 					<a
-						href="{/source/request/@context-path}/meter-timeswitches/">
-						<xsl:value-of select="'Meter Timeswitches'" />
+						href="{/source/request/@context-path}/sscs/">
+						<xsl:value-of
+							select="'Standard Settlement Configurations'" />
 					</a>
 					<xsl:value-of
-						select="concat(' &gt; ', /source/meter-timeswitch/@code)" />
+						select="concat(' &gt; ', /source/ssc/@code)" />
 				</p>
 
 				<xsl:if test="//message">
@@ -46,39 +47,18 @@
 				<ul>
 					<li>
 						Code:
-						<xsl:value-of
-							select="/source/meter-timeswitch/@code" />
+						<xsl:value-of select="/source/ssc/@code" />
 					</li>
 					<li>
-						DSO:
-						<xsl:choose>
-							<xsl:when
-								test="/source/meter-timeswitch/dso">
-								<a
-									href="{/source/request/@context-path}/dsos/{/source/meter-timeswitch/dso/@id}">
-									<xsl:value-of
-										select="/source/meter-timeswitch/dso/@code" />
-								</a>
-							</xsl:when>
-							<xsl:otherwise>None</xsl:otherwise>
-						</xsl:choose>
-					</li>
-					<li>
-						Is Unmetered?:
-						<xsl:value-of
-							select="/source/meter-timeswitch/@is-unmetered" />
-					</li>
-					<li>TPRs
+						TPRs
 						<ul>
-							<xsl:for-each select="/source/meter-timeswitch/register">
+							<xsl:for-each select="tpr">
 								<li>
-									<xsl:for-each select="tpr">
-										<xsl:value-of select="@code" />
-										<xsl:if
-											test="position() != last()">
-											<xsl:value-of select="', '" />
-										</xsl:if>
-									</xsl:for-each>
+									<xsl:value-of select="@code" />
+									<xsl:if
+										test="position() != last()">
+										<xsl:value-of select="', '" />
+									</xsl:if>
 								</li>
 							</xsl:for-each>
 						</ul>
