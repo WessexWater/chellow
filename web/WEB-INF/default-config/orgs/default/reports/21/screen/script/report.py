@@ -9,3 +9,4 @@ for llf in Hiber.session().createQuery("from LineLossFactor llf where llf.dso = 
     llfs_element.appendChild(llf.getXML(XmlTree("voltageLevel"), doc))
 llfs_element.appendChild(dso.toXML(doc));
 source.appendChild(organization.toXML(doc))
+
