@@ -63,7 +63,7 @@
 							select="/source/llfs/line-loss-factor">
 							<tr>
 								<td>
-									<a href="{/source/request/@context-path}/orgs/1/reports/25/screen/output/?llf-id={@id}/">
+									<a href="{@id}/">
 										<xsl:value-of select="@id" />
 									</a>
 								</td>
