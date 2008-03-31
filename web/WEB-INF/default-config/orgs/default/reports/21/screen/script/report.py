@@ -1,7 +1,11 @@
-from net.sf.chellow.monad import Hiber
+from net.sf.chellow.monad import Hiber, XmlTree
 from net.sf.chellow.physical import Dso
 
 dso_id = inv.getLong('dso-id')
 dso = Dso.getDso(dso_id)
-source.appendChild(dso.toXML(doc));
+llfs_element = doc.createElement('llfs')
+source.appendChild(llfs_element)
+for llf in Hiber.session().createQuery("from LineLossFactor llf where llf.dso = :dso order by llf.code").setEntity("dso", dso).list():
+    llfs_element.appendChild(llf.getXML(XmlTree("voltageLevel"), doc))
+llfs_element.appendChild(dso.toXML(doc));
 source.appendChild(organization.toXML(doc))
