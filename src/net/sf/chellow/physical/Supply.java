@@ -689,7 +689,7 @@ public class Supply extends PersistentEntity implements Urlable {
 					SupplyGeneration targetGeneration = getGeneration(read
 							.getPresentDate());
 					Mpan targetMpan = read.getMpan().getMpanTop()
-							.getLineLossFactor().getIsImport() ? targetGeneration
+							.getLlf().getIsImport() ? targetGeneration
 							.getImportMpan()
 							: targetGeneration.getExportMpan();
 					if (targetMpan == null) {
@@ -766,7 +766,7 @@ public class Supply extends PersistentEntity implements Urlable {
 		Element source = doc.getDocumentElement();
 		Element supplyElement = (Element) getXML(new XmlTree("generations",
 				new XmlTree("mpans", new XmlTree("mpanCore").put("mpanTop",
-						new XmlTree("lineLossFactor", new XmlTree(
+						new XmlTree("llf", new XmlTree(
 								"voltageLevel"))))).put("mpanCores"), doc);
 		source.appendChild(supplyElement);
 		supplyElement.appendChild(getOrganization().toXML(doc));

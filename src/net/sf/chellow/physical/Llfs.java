@@ -1,6 +1,6 @@
 /*
  
- Copyright 2005 Meniscus Systems Ltd
+ Copyright 2008 Meniscus Systems Ltd
  
  This file is part of Chellow.
 
@@ -20,9 +20,8 @@
 
  */
 
-package net.sf.chellow.billing;
+package net.sf.chellow.physical;
 
-import java.util.Date;
 import java.util.List;
 
 import net.sf.chellow.monad.DeployerException;
@@ -38,20 +37,18 @@ import net.sf.chellow.monad.XmlTree;
 import net.sf.chellow.monad.types.MonadDate;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
-import net.sf.chellow.physical.Dso;
-import net.sf.chellow.physical.HhEndDate;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
 @SuppressWarnings("serial")
-public class DnoServices implements Urlable, XmlDescriber {
+public class Llfs implements Urlable, XmlDescriber {
 	public static final UriPathElement URI_ID;
 
 	static {
 		try {
-			URI_ID = new UriPathElement("services");
+			URI_ID = new UriPathElement("llfs");
 		} catch (UserException e) {
 			throw new RuntimeException(e);
 		} catch (ProgrammerException e) {
@@ -61,7 +58,7 @@ public class DnoServices implements Urlable, XmlDescriber {
 
 	private Dso dso;
 
-	public DnoServices(Dso dso) {
+	public Llfs(Dso dso) {
 		this.dso = dso;
 	}
 
@@ -75,56 +72,42 @@ public class DnoServices implements Urlable, XmlDescriber {
 
 	public void httpPost(Invocation inv) throws ProgrammerException,
 			UserException, DesignerException, DeployerException {
-		String name = inv.getString("name");
-		Date startDate = inv.getDate("start-date");
-		String chargeScript = inv.getString("charge-script");
-		if (!inv.isValid()) {
-			throw UserException.newInvalidParameter(document());
-		}
-		DnoService service = dso.insertService(name, HhEndDate
-				.roundDown(startDate), chargeScript);
-		Hiber.commit();
-		inv.sendCreated(document(), service.getUri());
+		throw UserException.newMethodNotAllowed();
 	}
 
 	@SuppressWarnings("unchecked")
-	private Document document() throws ProgrammerException, UserException,
-			DesignerException {
+	public void httpGet(Invocation inv) throws DesignerException,
+			ProgrammerException, UserException, DeployerException {
 		Document doc = MonadUtils.newSourceDocument();
 		Element source = doc.getDocumentElement();
-		Element servicesElement = (Element) toXML(doc);
-		source.appendChild(servicesElement);
-		servicesElement.appendChild(dso.toXML(doc));
-		for (DnoService service : (List<DnoService>) Hiber
+		Element llfsElement = (Element) toXML(doc);
+		source.appendChild(llfsElement);
+		llfsElement.appendChild(dso.toXML(doc));
+		for (Llf llf : (List<Llf>) Hiber
 				.session()
 				.createQuery(
-						"from DsoService service where service.provider = :dso order by service.finishRateScript.finishDate.date desc")
+						"from Llf llf where llf.dso = :dso order by llf.code")
 				.setEntity("dso", dso).list()) {
-			servicesElement.appendChild(service.toXML(doc));
+			llfsElement.appendChild(llf.getXML(new XmlTree("voltageLevel"), doc));
 		}
 		source.appendChild(MonadDate.getMonthsXml(doc));
 		source.appendChild(MonadDate.getDaysXml(doc));
 		source.appendChild(new MonadDate().toXML(doc));
-		return doc;
+		inv.sendOk(doc);
 	}
 
-	public void httpGet(Invocation inv) throws DesignerException,
-			ProgrammerException, UserException, DeployerException {
-		inv.sendOk(document());
-	}
-
-	public DnoService getChild(UriPathElement uriId) throws UserException,
+	public Llf getChild(UriPathElement uriId) throws UserException,
 			ProgrammerException {
-		DnoService service = (DnoService) Hiber
+		Llf llf = (Llf) Hiber
 				.session()
 				.createQuery(
-						"from DsoService service where service.provider = :dso and service.id = :serviceId")
-				.setEntity("dso", dso).setLong("serviceId",
+						"from Llf llf where llf.dso = :dso and llf.id = :llfId")
+				.setEntity("dso", dso).setLong("llfId",
 						Long.parseLong(uriId.getString())).uniqueResult();
-		if (service == null) {
+		if (llf == null) {
 			throw UserException.newNotFound();
 		}
-		return service;
+		return llf;
 	}
 
 	public void httpDelete(Invocation inv) throws ProgrammerException,
@@ -134,8 +117,8 @@ public class DnoServices implements Urlable, XmlDescriber {
 	}
 
 	public Node toXML(Document doc) throws ProgrammerException, UserException {
-		Element contractsElement = doc.createElement("dso-services");
-		return contractsElement;
+		Element llfsElement = doc.createElement("llfs");
+		return llfsElement;
 	}
 
 	public Node getXML(XmlTree tree, Document doc) throws ProgrammerException,

@@ -188,7 +188,7 @@ public class Account extends PersistentEntity implements Urlable {
 					"supplyGeneration", new XmlTree("supply")).put(
 					"mpanTop",
 					new XmlTree("profileClass").put("meterTimeswitch").put(
-							"lineLossFactor")).put("mpanCore"), doc));
+							"llf")).put("mpanCore"), doc));
 		}
 		for (Bill bill : (List<Bill>) Hiber
 				.session()

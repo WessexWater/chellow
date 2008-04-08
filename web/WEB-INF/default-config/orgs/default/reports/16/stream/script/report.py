@@ -12,7 +12,7 @@ for mpan in Hiber.session().createQuery("from Mpan mpan where mpan.supplyGenerat
     supply_generation = mpan.getSupplyGeneration()
     supply = supply_generation.getSupply()
     mpan_top = mpan.getMpanTop()
-    line_loss_factor = mpan_top.getLineLossFactor()
+    line_loss_factor = mpan_top.getLlf()
     if line_loss_factor.getIsImport().getBoolean():
         imp_exp = "import"
     else:

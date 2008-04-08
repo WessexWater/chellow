@@ -238,10 +238,10 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 				throw UserException
 						.newInvalidParameter("This import MPAN core is not attached to this supply.");
 			}
-			if (!importMpanTop.getLineLossFactor().getIsImport()) {
+			if (!importMpanTop.getLlf().getIsImport()) {
 				throw UserException.newInvalidParameter(document(),
 						"The import line loss factor '"
-								+ importMpanTop.getLineLossFactor()
+								+ importMpanTop.getLlf()
 								+ "' says that the MPAN is actually export.");
 			}
 			if (importMpan == null) {
@@ -267,11 +267,11 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 				throw UserException
 						.newInvalidParameter("This export MPAN core is not attached to this supply.");
 			}
-			if (exportMpanTop.getLineLossFactor().getIsImport()) {
+			if (exportMpanTop.getLlf().getIsImport()) {
 				throw UserException
 						.newOk("Problem with the export MPAN with core '"
 								+ exportMpanCore + "'. The Line Loss Factor '"
-								+ exportMpanTop.getLineLossFactor()
+								+ exportMpanTop.getLlf()
 								+ "' says that the MPAN is actually import.");
 			}
 			if (exportMpan == null) {
@@ -300,8 +300,8 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 				throw UserException
 						.newOk("Two settlement MPAN generations on the same supply must have the same DSO.");
 			}
-			if (!importMpanTop.getLineLossFactor().getVoltageLevel().equals(
-					exportMpanTop.getLineLossFactor().getVoltageLevel())) {
+			if (!importMpanTop.getLlf().getVoltageLevel().equals(
+					exportMpanTop.getLlf().getVoltageLevel())) {
 				throw UserException
 						.newOk("The voltage level indicated by the Line Loss Factor must be the same for both the MPANs.");
 			}
@@ -318,9 +318,11 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 			 * says that there should be an export MPAN, but there isn't one."); } }
 			 */
 			if (getExportMpan() != null && getImportMpan() != null) {
-				int code = getImportMpan().getMpanTop().getLineLossFactor()
+				LlfCode code = getImportMpan().getMpanTop().getLlf()
 						.getCode();
-				if (code != 520 && code != 550 && code != 580) {
+				if (!code.equals(new LlfCode(520))
+						&& !code.equals(new LlfCode(550))
+						&& !code.equals(new LlfCode(580))) {
 					throw UserException
 							.newOk("The DSO is 22, there's an export MPAN and the Line Loss Factor of the import MPAN "
 									+ getImportMpan()
@@ -508,7 +510,7 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 						new XmlTree("mpanCore").put(
 								"mpanTop",
 								new XmlTree("meterTimeswitch")
-										.put("lineLossFactor")).put(
+										.put("llf")).put(
 								"dceService").put("supplierAccount",
 								new XmlTree("provider")).put("supplierService",
 								new XmlTree("provider"))), doc));
@@ -602,10 +604,10 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 							.getLong("import-profile-class-id");
 					ProfileClass importProfileClass = ProfileClass
 							.getProfileClass(importProfileClassId);
-					int importLlfCode = inv
-							.getInteger("import-line-loss-factor-code");
-					LineLossFactor importLineLossFactor = importMpanCore
-							.getDso().getLineLossFactor(importLlfCode);
+					LlfCode importLlfCode = new LlfCode(inv
+							.getInteger("import-llf-code"));
+					Llf importLlf = importMpanCore
+							.getDso().getLlf(importLlfCode);
 					MeterTimeswitchCode importMeterTimeswitchCode = inv
 							.getValidatable(MeterTimeswitchCode.class,
 									"import-meter-timeswitch-code");
@@ -613,7 +615,7 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 							.getMeterTimeswitch(importMpanCore.getDso(),
 									importMeterTimeswitchCode);
 					importMpanTop = MpanTop.getMpanTop(importProfileClass,
-							importMeterTimeswitch, importLineLossFactor);
+							importMeterTimeswitch, importLlf);
 					importAgreedSupplyCapacity = inv
 							.getInteger("import-agreed-supply-capacity");
 					importHasImportKwh = inv
@@ -669,11 +671,10 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 							.getLong("export-profile-class-id");
 					ProfileClass exportProfileClass = ProfileClass
 							.getProfileClass(exportProfileClassId);
-					int exportLineLossFactorCode = inv
-							.getInteger("export-line-loss-factor-code");
-					LineLossFactor exportLineLossFactor = exportMpanCore
-							.getDso().getLineLossFactor(
-									exportLineLossFactorCode);
+					LlfCode exportLlfCode = new LlfCode(inv
+							.getInteger("export-llf-code"));
+					Llf exportLlf = exportMpanCore
+							.getDso().getLlf(exportLlfCode);
 					MeterTimeswitchCode exportMeterTimeswitchCode = inv
 							.getValidatable(MeterTimeswitchCode.class,
 									"export-meter-timeswitch-code");
@@ -681,7 +682,7 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 							.getMeterTimeswitch(exportMpanCore.getDso(),
 									exportMeterTimeswitchCode);
 					exportMpanTop = MpanTop.getMpanTop(exportProfileClass,
-							exportMeterTimeswitch, exportLineLossFactor);
+							exportMeterTimeswitch, exportLlf);
 					exportAgreedSupplyCapacity = inv
 							.getInteger("export-agreed-supply-capacity");
 					exportHasImportKwh = inv

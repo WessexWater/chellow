@@ -25,8 +25,8 @@ package net.sf.chellow.physical;
 import java.util.List;
 
 import net.sf.chellow.billing.Account;
-import net.sf.chellow.billing.DnoService;
-import net.sf.chellow.billing.DnoServices;
+import net.sf.chellow.billing.DsoService;
+import net.sf.chellow.billing.DsoServices;
 import net.sf.chellow.billing.Provider;
 import net.sf.chellow.data08.Data;
 import net.sf.chellow.monad.DeployerException;
@@ -121,33 +121,19 @@ public class Dso extends Provider {
 		return Integer.parseInt(code.toString()) < 24;
 	}
 
-	/*
-	 * @SuppressWarnings("unchecked") public List<LineLossFactor>
-	 * getLineLossFactors(ProfileClass profileClass) { return (List<LineLossFactor>)
-	 * Hiber .session() .createQuery( "from LineLossFactor lineLossFactor where
-	 * lineLossFactor.dso = :dso and lineLossFactor.profileClass =
-	 * :profileClass") .setEntity("dso", this).setEntity("profileClass",
-	 * profileClass) .list(); }
-	 * 
-	 * @SuppressWarnings("unchecked") public List<LineLossFactor>
-	 * getLineLossFactors() { return (List<LineLossFactor>) Hiber .session()
-	 * .createQuery( "from LineLossFactor lineLossFactor where
-	 * lineLossFactor.dso = :dso order by lineLossFactor.code.string")
-	 * .setEntity("dso", this).list(); }
-	 */
-	public LineLossFactor getLineLossFactor(int code) throws UserException,
+	public Llf getLlf(LlfCode code) throws UserException,
 			ProgrammerException {
-		LineLossFactor lineLossFactor = (LineLossFactor) Hiber
+		Llf llf = (Llf) Hiber
 				.session()
 				.createQuery(
-						"from LineLossFactor llf where llf.dno = :dno and llf.code = :code")
-				.setEntity("dno", this).setInteger("code", code).uniqueResult();
-		if (lineLossFactor == null) {
+						"from Llf llf where llf.dso = :dso and llf.code = :code")
+				.setEntity("dso", this).setInteger("code", code.getInteger()).uniqueResult();
+		if (llf == null) {
 			throw UserException
 					.newInvalidParameter("There is no line loss factor with the code "
 							+ code + " associated with this DNO.");
 		}
-		return lineLossFactor;
+		return llf;
 	}
 
 	public String toString() {
@@ -183,10 +169,10 @@ public class Dso extends Provider {
 
 	public Urlable getChild(UriPathElement uriId) throws ProgrammerException,
 			UserException {
-		if (DnoServices.URI_ID.equals(uriId)) {
-			return new DnoServices(this);
-		} else if (LineLossFactors.URI_ID.equals(uriId)) {
-			return new LineLossFactors(this);
+		if (DsoServices.URI_ID.equals(uriId)) {
+			return new DsoServices(this);
+		} else if (Llfs.URI_ID.equals(uriId)) {
+			return new Llfs(this);
 		} else if (MpanTops.URI_ID.equals(uriId)) {
 			return new MpanTops(this);
 		} else {
@@ -206,12 +192,12 @@ public class Dso extends Provider {
 		return null;
 	}
 
-	public DnoService insertService(String name, HhEndDate startDate,
+	public DsoService insertService(String name, HhEndDate startDate,
 			String chargeScript) throws UserException, ProgrammerException,
 			DesignerException {
-		DnoService service = findService(name);
+		DsoService service = findService(name);
 		if (service == null) {
-			service = new DnoService(name, startDate, chargeScript, this);
+			service = new DsoService(name, startDate, chargeScript, this);
 		} else {
 			throw UserException
 					.newInvalidParameter("There is already a DSO service with this name.");
@@ -221,14 +207,14 @@ public class Dso extends Provider {
 		return service;
 	}
 
-	public DnoServices servicesInstance() {
-		return new DnoServices(this);
+	public DsoServices servicesInstance() {
+		return new DsoServices(this);
 	}
 
 	@Override
-	public DnoService getService(String name) throws UserException,
+	public DsoService getService(String name) throws UserException,
 			ProgrammerException {
-		DnoService dsoService = findService(name);
+		DsoService dsoService = findService(name);
 		if (dsoService == null) {
 			throw UserException.newInvalidParameter("The DSO service " + name
 					+ " doesn't exist.");
@@ -236,9 +222,9 @@ public class Dso extends Provider {
 		return dsoService;
 	}
 
-	public DnoService findService(String name) throws UserException,
+	public DsoService findService(String name) throws UserException,
 			ProgrammerException {
-		return (DnoService) Hiber
+		return (DsoService) Hiber
 				.session()
 				.createQuery(
 						"from DsoService service where service.provider = :provider and service.name = :serviceName")
@@ -246,10 +232,10 @@ public class Dso extends Provider {
 				.uniqueResult();
 	}
 
-	public LineLossFactor insertLineLossFactor(int code, String description,
+	public Llf insertLlf(int code, String description,
 			String voltageLevel, boolean isSubstation, boolean isImport)
 			throws ProgrammerException, UserException {
-		return LineLossFactor.insertLineLossFactor(this, code, description,
+		return Llf.insertLlf(this, code, description,
 				voltageLevel, isSubstation, isImport);
 	}
 }

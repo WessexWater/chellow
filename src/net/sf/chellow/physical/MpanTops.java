@@ -85,10 +85,10 @@ public class MpanTops implements Urlable, XmlDescriber {
 		for (MpanTop mpanTop : (List<MpanTop>) Hiber
 				.session()
 				.createQuery(
-						"from MpanTop mpanTop where mpanTop.lineLossFactor.dso = :dso order by mpanTop.lineLossFactor.code, mpanTop.profileClass.code")
+						"from MpanTop mpanTop where mpanTop.llf.dso = :dso order by mpanTop.llf.code, mpanTop.profileClass.code")
 				.setEntity("dso", dso).list()) {
 			mpanTopsElement.appendChild(mpanTop.getXML(new XmlTree(
-					"lineLossFactor", new XmlTree("dso")).put("profileClass")
+					"llf", new XmlTree("dso")).put("profileClass")
 					.put("meterTimeswitch"), doc));
 		}
 		inv.sendOk(doc);
@@ -99,7 +99,7 @@ public class MpanTops implements Urlable, XmlDescriber {
 		MpanTop mpanTop = (MpanTop) Hiber
 				.session()
 				.createQuery(
-						"from MpanTop mpanTop where mpanTop.lineLossFactor.dso = :dso and mpanTop.id = :mpanTopId")
+						"from MpanTop mpanTop where mpanTop.llf.dso = :dso and mpanTop.id = :mpanTopId")
 				.setEntity("dso", dso).setLong("mpanTopId",
 						Long.parseLong(uriId.getString())).uniqueResult();
 		if (mpanTop == null) {

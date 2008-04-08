@@ -13,10 +13,10 @@
 				<title>
 					Chellow &gt; DNOs &gt;
 					<xsl:value-of
-						select="/source/line-loss-factor/dso/@code" />
+						select="/source/llf/dso/@code" />
 					&gt; Line Loss Factors &gt;
 					<xsl:value-of
-						select="/source/line-loss-factor/@code" />
+						select="/source/llf/@code" />
 				</title>
 			</head>
 
@@ -33,17 +33,17 @@
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/dsos/{/source/line-loss-factor/dso/@id}/">
+						href="{/source/request/@context-path}/dsos/{/source/llf/dso/@id}/">
 						<xsl:value-of
-							select="/source/line-loss-factor/dso/@code" />
+							select="/source/llf/dso/@code" />
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/dsos/{/source/line-loss-factor/dso/@id}/llfs/">
+						href="{/source/request/@context-path}/dsos/{/source/llf/dso/@id}/llfs/">
 						<xsl:value-of select="'Line Loss Factors'" />
 					</a>
 					&gt;
-					<xsl:value-of select="/source/line-loss-factor/@code" />
+					<xsl:value-of select="/source/llf/@code" />
 				</p>
 				<xsl:if test="//message">
 					<ul>
@@ -68,35 +68,35 @@
 							<td>Code</td>
 							<td>
 								<xsl:value-of
-									select="/source/line-loss-factor/@code" />
+									select="/source/llf/@code" />
 							</td>
 						</tr>
 						<tr>
 							<td>Description</td>
 							<td>
 								<xsl:value-of
-									select="/source/line-loss-factor/@description" />
+									select="/source/llf/@description" />
 							</td>
 						</tr>
 						<tr>
 							<td>Voltage Level</td>
 							<td>
 								<xsl:value-of
-									select="concat(/source/line-loss-factor/voltage-level/@code, ' - ', /source/line-loss-factor/voltage-level/@name)" />
+									select="concat(/source/llf/voltage-level/@code, ' - ', /source/llf/voltage-level/@name)" />
 							</td>
 						</tr>
 						<tr>
 							<td>Is substation?</td>
 							<td>
 								<xsl:value-of
-									select="/source/line-loss-factor/@is-substation" />
+									select="/source/llf/@is-substation" />
 							</td>
 						</tr>
 						<tr>
 							<td>Is import?</td>
 							<td>
 								<xsl:value-of
-									select="/source/line-loss-factor/@is-import" />
+									select="/source/llf/@is-import" />
 							</td>
 						</tr>
 					</tbody>

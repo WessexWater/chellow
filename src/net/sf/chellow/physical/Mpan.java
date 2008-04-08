@@ -247,8 +247,8 @@ public class Mpan extends PersistentEntity {
 					.newInvalidParameter("The MPAN top line DSO doesn't match the MPAN core DSO.");
 		}
 		if (getMpanTop() != null
-				&& !getMpanTop().getLineLossFactor().getIsImport() ==
-						mpanTop.getLineLossFactor().getIsImport()) {
+				&& !getMpanTop().getLlf().getIsImport() ==
+						mpanTop.getLlf().getIsImport()) {
 			throw UserException
 					.newOk("You can't change an import mpan into an export one, and vice versa.");
 		}
@@ -384,6 +384,6 @@ public class Mpan extends PersistentEntity {
 
 	public MpanRaw getMpanRaw() throws ProgrammerException, UserException {
 		return new MpanRaw(getMpanTop().getProfileClass().getCode(), getMpanTop().getMeterTimeswitch()
-				.getCode(), getMpanTop().getLineLossFactor().getCode(), getMpanCore().getCore());
+				.getCode(), getMpanTop().getLlf().getCode(), getMpanCore().getCore());
 	}
 }

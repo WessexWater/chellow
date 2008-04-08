@@ -26,7 +26,8 @@ import net.sf.chellow.monad.ProgrammerException;
 import net.sf.chellow.monad.UserException;
 import net.sf.chellow.monad.VFMessage;
 import net.sf.chellow.monad.types.MonadObject;
-import net.sf.chellow.physical.LineLossFactor;
+import net.sf.chellow.physical.Llf;
+import net.sf.chellow.physical.LlfCode;
 import net.sf.chellow.physical.MeterTimeswitch;
 import net.sf.chellow.physical.MeterTimeswitchCode;
 import net.sf.chellow.physical.MpanCore;
@@ -43,7 +44,7 @@ public class MpanRaw extends MonadObject {
 
 	private MeterTimeswitchCode meterTimeswitchCode;
 
-	private int lineLossFactorCode;
+	private LlfCode llfCode;
 
 	private MpanCoreRaw mpanCoreRaw;
 
@@ -60,13 +61,12 @@ public class MpanRaw extends MonadObject {
 					"The MPAN must contain exactly 21 digits."));
 		}
 		init(new ProfileClassCode(Integer.parseInt(mpan.substring(0, 2))),
-				new MeterTimeswitchCode(mpan.substring(2, 5)), Integer
-						.parseInt(mpan.substring(5, 8)), new MpanCoreRaw(mpan
-						.substring(8)));
+				new MeterTimeswitchCode(mpan.substring(2, 5)), new LlfCode(mpan
+						.substring(5, 8)), new MpanCoreRaw(mpan.substring(8)));
 	}
 
 	private void init(ProfileClassCode profileClassCode,
-			MeterTimeswitchCode meterTimeswitchCode, int lineLossFactorCode,
+			MeterTimeswitchCode meterTimeswitchCode, LlfCode llfCode,
 			MpanCoreRaw mpanCoreRaw) throws ProgrammerException {
 		if (profileClassCode == null || meterTimeswitchCode == null
 				|| mpanCoreRaw == null) {
@@ -74,15 +74,14 @@ public class MpanRaw extends MonadObject {
 		}
 		this.profileClassCode = profileClassCode;
 		this.meterTimeswitchCode = meterTimeswitchCode;
-		this.lineLossFactorCode = lineLossFactorCode;
+		this.llfCode = llfCode;
 		this.mpanCoreRaw = mpanCoreRaw;
 	}
 
 	public MpanRaw(ProfileClassCode profileClassCode,
-			MeterTimeswitchCode meterTimeswitchCode, int lineLossFactorCode,
+			MeterTimeswitchCode meterTimeswitchCode, LlfCode llfCode,
 			MpanCoreRaw mpanCoreRaw) throws ProgrammerException {
-		init(profileClassCode, meterTimeswitchCode, lineLossFactorCode,
-				mpanCoreRaw);
+		init(profileClassCode, meterTimeswitchCode, llfCode, mpanCoreRaw);
 	}
 
 	public ProfileClassCode getProfileClassCode() {
@@ -93,8 +92,8 @@ public class MpanRaw extends MonadObject {
 		return meterTimeswitchCode;
 	}
 
-	public int getLineLossFactorCode() {
-		return lineLossFactorCode;
+	public LlfCode getLlfCode() {
+		return llfCode;
 	}
 
 	public MpanCoreRaw getMpanCoreRaw() {
@@ -112,14 +111,13 @@ public class MpanRaw extends MonadObject {
 				meterTimeswitchCode);
 	}
 
-	public LineLossFactor getLineLossFactor() throws ProgrammerException,
-			UserException {
-		return mpanCoreRaw.getDso().getLineLossFactor(lineLossFactorCode);
+	public Llf getLlf() throws ProgrammerException, UserException {
+		return mpanCoreRaw.getDso().getLlf(llfCode);
 	}
 
 	public MpanTop getMpanTop() throws ProgrammerException, UserException {
 		return MpanTop.getMpanTop(getProfileClass(), getMeterTimeswitch(),
-				getLineLossFactor());
+				getLlf());
 	}
 
 	public MpanCore getMpanCore(Organization organization)
@@ -129,9 +127,8 @@ public class MpanRaw extends MonadObject {
 
 	public String toString() {
 		return profileClassCode.toString() + " "
-				+ meterTimeswitchCode.toString() + " "
-				+ LineLossFactor.codeAsString(lineLossFactorCode) + " "
-				+ mpanCoreRaw.toString();
+				+ meterTimeswitchCode.toString() + " " + llfCode.toString()
+				+ " " + mpanCoreRaw.toString();
 	}
 
 	public String toStringNoSpaces() {
@@ -152,18 +149,15 @@ public class MpanRaw extends MonadObject {
 			isEqual = getProfileClassCode().equals(mpan.getProfileClassCode())
 					&& getMeterTimeswitchCode().equals(
 							mpan.getMeterTimeswitchCode())
-					&& getLineLossFactorCode() == mpan.getLineLossFactorCode()
+					&& getLlfCode().equals(mpan.getLlfCode())
 					&& getMpanCoreRaw().equals(mpan.getMpanCoreRaw());
 		}
-		// Debug.print("Is equal: " + isEqual + " this: " + toString() + " that:
-		// " + obj);
 		return isEqual;
 	}
 
 	public int hashCode() {
 		return getProfileClassCode().hashCode()
-				+ getMeterTimeswitchCode().hashCode()
-				+ new Integer(getLineLossFactorCode()).hashCode()
+				+ getMeterTimeswitchCode().hashCode() + getLlfCode().hashCode()
 				+ getMpanCoreRaw().hashCode();
 	}
 }

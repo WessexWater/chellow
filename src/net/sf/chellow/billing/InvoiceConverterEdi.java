@@ -45,6 +45,7 @@ import net.sf.chellow.monad.ProgrammerException;
 import net.sf.chellow.monad.UserException;
 import net.sf.chellow.monad.types.MonadDate;
 import net.sf.chellow.physical.HhEndDate;
+import net.sf.chellow.physical.LlfCode;
 import net.sf.chellow.physical.MeterTimeswitchCode;
 import net.sf.chellow.physical.ProfileClassCode;
 import net.sf.chellow.physical.ReadType;
@@ -224,13 +225,13 @@ public class InvoiceConverterEdi implements InvoiceConverter {
 							madn.getInt(3));
 					MeterTimeswitchCode meterTimeswitchCode = new MeterTimeswitchCode(
 							madn.getComponents().get(4));
-					int lineLossFactorCode = madn.getInt(5);
+					LlfCode llfCode = new LlfCode(madn.getInt(5));
 					MpanCoreRaw mpanCoreRaw = new MpanCoreRaw(madn
 							.getComponents().get(0)
 							+ madn.getComponents().get(1)
 							+ madn.getComponents().get(2));
 					mpanRaw = new MpanRaw(profileClassCode,
-							meterTimeswitchCode, lineLossFactorCode,
+							meterTimeswitchCode, llfCode,
 							mpanCoreRaw);
 				}
 				if (code.equals("VAT")) {

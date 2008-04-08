@@ -38,9 +38,9 @@
 			column="meter_timeswitch_id" not-null="true"
 			foreign-key="fkey_mpan_meter_timeswitch"
 			unique-key="mpan_top_unique" />
-		<many-to-one name="lineLossFactor" class="LineLossFactor"
-			column="line_loss_factor_id" not-null="true"
-			foreign-key="fkey_mpan_line_loss_factor"
+		<many-to-one name="llf" class="Llf"
+			column="llf_id" not-null="true"
+			foreign-key="fkey_mpan_llf"
 			unique-key="mpan_top_unique" />
 		<set name="sscs" lazy="true" cascade="delete-orphan"
 			table="mpan_top_ssc">

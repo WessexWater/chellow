@@ -58,7 +58,7 @@
 		<mapping resource="hibernate/DatabaseVersion.hbm.xml" />
 		<mapping resource="hibernate/Channel.hbm.xml" />
 		<mapping resource="hibernate/SiteSupplyGeneration.hbm.xml" />
-		<mapping resource="hibernate/LineLossFactor.hbm.xml" />
+		<mapping resource="hibernate/Llf.hbm.xml" />
 		<mapping resource="hibernate/ProfileClass.hbm.xml" />
 		<mapping resource="hibernate/MeterTimeswitch.hbm.xml" />
 		<mapping resource="hibernate/Organization.hbm.xml" />

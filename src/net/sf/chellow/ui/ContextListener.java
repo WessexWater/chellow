@@ -18,7 +18,7 @@ import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 import javax.sql.DataSource;
 
-import net.sf.chellow.billing.DnoService;
+import net.sf.chellow.billing.DsoService;
 import net.sf.chellow.billing.Government;
 import net.sf.chellow.billing.RateScript;
 import net.sf.chellow.hhimport.stark.StarkAutomaticHhDataImporters;
@@ -1272,128 +1272,93 @@ public class ContextListener implements ServletContextListener {
 		MeterTimeswitch.insertMeterTimeswitch(dso14, "560", "", false);
 		MeterTimeswitch.insertMeterTimeswitch(dso14, "570", "", false);
 
+		dso14.insertLlf(1, "Domestic Single Rate", "LV", false, true);
+		dso14.insertLlf(2, "Domestic Prepayment Unrestricted", "LV", false,
+				true);
+		dso14.insertLlf(3, "Domestic Prepayment Unrestricted", "LV", false,
+				true);
+		dso14.insertLlf(4, "Domestic 2 Rate", "LV", false, true);
+		dso14.insertLlf(5, "Domestic Prepayment 2 Rate", "LV", false, true);
+		dso14.insertLlf(6, "Domestic Prepayment 2 Rate", "LV", false, true);
+		dso14.insertLlf(7, "Small Non Domestic Single Rate", "LV", false, true);
+		dso14.insertLlf(8, "Small Non Domestic Single Rate", "LV", false, true);
+		dso14.insertLlf(9, "Small Non Domestic Single Rate", "LV", false, true);
+		dso14.insertLlf(10, "Small Non Domestic 2 Rate", "LV", false, true);
+		dso14.insertLlf(11, "Small Non Domestic 2 Rate", "LV", false, true);
+		dso14.insertLlf(12, "Small Non Domestic 2 Rate", "LV", false, true);
 		dso14
-				.insertLineLossFactor(1, "Domestic Single Rate", "LV", false,
+				.insertLlf(13, "Eve/Wkd Supply Tariff (1Ph WC)", "LV", false,
 						true);
-		dso14.insertLineLossFactor(2, "Domestic Prepayment Unrestricted", "LV",
-				false, true);
-		dso14.insertLineLossFactor(3, "Domestic Prepayment Unrestricted", "LV",
-				false, true);
-		dso14.insertLineLossFactor(4, "Domestic 2 Rate", "LV", false, true);
-		dso14.insertLineLossFactor(5, "Domestic Prepayment 2 Rate", "LV",
-				false, true);
-		dso14.insertLineLossFactor(6, "Domestic Prepayment 2 Rate", "LV",
-				false, true);
-		dso14.insertLineLossFactor(7, "Small Non Domestic Single Rate", "LV",
-				false, true);
-		dso14.insertLineLossFactor(8, "Small Non Domestic Single Rate", "LV",
-				false, true);
-		dso14.insertLineLossFactor(9, "Small Non Domestic Single Rate", "LV",
-				false, true);
-		dso14.insertLineLossFactor(10, "Small Non Domestic 2 Rate", "LV",
-				false, true);
-		dso14.insertLineLossFactor(11, "Small Non Domestic 2 Rate", "LV",
-				false, true);
-		dso14.insertLineLossFactor(12, "Small Non Domestic 2 Rate", "LV",
-				false, true);
-		dso14.insertLineLossFactor(13, "Eve/Wkd Supply Tariff (1Ph WC)", "LV",
-				false, true);
-		dso14.insertLineLossFactor(14, "Eve/Wkd Supply Tariff (3Ph WC)", "LV",
-				false, true);
-		dso14.insertLineLossFactor(15, "Eve/Wkd Supply Tariff (3Ph CT)", "LV",
-				false, true);
-		dso14.insertLineLossFactor(20, "Medium Non Domestic LV 2 Rate", "LV",
-				false, true);
-		dso14.insertLineLossFactor(21, "Medium Non Domestic LV 2 Rate", "LV",
-				false, true);
-		dso14.insertLineLossFactor(22, "Medium Non Domestic LV 2 Rate", "LV",
-				false, true);
-		dso14.insertLineLossFactor(23,
+		dso14
+				.insertLlf(14, "Eve/Wkd Supply Tariff (3Ph WC)", "LV", false,
+						true);
+		dso14
+				.insertLlf(15, "Eve/Wkd Supply Tariff (3Ph CT)", "LV", false,
+						true);
+		dso14.insertLlf(20, "Medium Non Domestic LV 2 Rate", "LV", false, true);
+		dso14.insertLlf(21, "Medium Non Domestic LV 2 Rate", "LV", false, true);
+		dso14.insertLlf(22, "Medium Non Domestic LV 2 Rate", "LV", false, true);
+		dso14.insertLlf(23,
 				"MD Two Rate – HV (3Ph CT HV Exit Point, LV Meter)", "LV",
 				false, true);
-		dso14.insertLineLossFactor(25, "Medium Non Domestic LV 2 Rate", "LV",
-				false, true);
-		dso14.insertLineLossFactor(26, "Medium Non Domestic LV 2 Rate", "LV",
-				false, true);
-		dso14.insertLineLossFactor(27, "Medium Non Domestic LV 2 Rate", "LV",
-				false, true);
-		dso14.insertLineLossFactor(30, "Domestic 2 Rate", "LV", false, true);
-		dso14.insertLineLossFactor(34, "Domestic Restricted (1Ph WC)", "LV",
-				false, true);
-		dso14.insertLineLossFactor(35, "Domestic Restricted (3Ph WC)", "LV",
-				false, true);
-		dso14.insertLineLossFactor(36, "Domestic Restricted (3Ph CT)", "LV",
-				false, true);
-		dso14.insertLineLossFactor(40, "Non Domestic Restricted (1Ph WC)",
+		dso14.insertLlf(25, "Medium Non Domestic LV 2 Rate", "LV", false, true);
+		dso14.insertLlf(26, "Medium Non Domestic LV 2 Rate", "LV", false, true);
+		dso14.insertLlf(27, "Medium Non Domestic LV 2 Rate", "LV", false, true);
+		dso14.insertLlf(30, "Domestic 2 Rate", "LV", false, true);
+		dso14.insertLlf(34, "Domestic Restricted (1Ph WC)", "LV", false, true);
+		dso14.insertLlf(35, "Domestic Restricted (3Ph WC)", "LV", false, true);
+		dso14.insertLlf(36, "Domestic Restricted (3Ph CT)", "LV", false, true);
+		dso14.insertLlf(40, "Non Domestic Restricted (1Ph WC)", "LV", false,
+				true);
+		dso14.insertLlf(41, "Non Domestic Restricted (3Ph WC)", "LV", false,
+				true);
+		dso14.insertLlf(42, "Non Domestic Restricted (3Ph CT)", "LV", false,
+				true);
+		dso14.insertLlf(46, "Non Domestic Prepayment Unrestricted (1Ph WC)",
 				"LV", false, true);
-		dso14.insertLineLossFactor(41, "Non Domestic Restricted (3Ph WC)",
+		dso14.insertLlf(47, "Non Domestic Prepayment Unrestricted (3Ph WC)",
 				"LV", false, true);
-		dso14.insertLineLossFactor(42, "Non Domestic Restricted (3Ph CT)",
-				"LV", false, true);
-		dso14.insertLineLossFactor(46,
-				"Non Domestic Prepayment Unrestricted (1Ph WC)", "LV", false,
-				true);
-		dso14.insertLineLossFactor(47,
-				"Non Domestic Prepayment Unrestricted (3Ph WC)", "LV", false,
-				true);
-		dso14.insertLineLossFactor(49, "Non Domestic Prepayment Unrestricted",
-				"LV", false, true);
-		dso14.insertLineLossFactor(85, "NHH Unmetered Supplies", "LV", false,
-				true);
-		dso14.insertLineLossFactor(86, "NHH Unmetered Supplies", "LV", false,
-				true);
-		dso14.insertLineLossFactor(87, "NHH Unmetered Supplies", "LV", false,
-				true);
-		dso14.insertLineLossFactor(88, "NHH Unmetered Supplies", "LV", false,
-				true);
-		dso14.insertLineLossFactor(95, "NHH Unmetered Supplies", "LV", false,
-				true);
-		dso14.insertLineLossFactor(96, "NHH Unmetered Supplies", "LV", false,
-				true);
-		dso14.insertLineLossFactor(97, "NHH Unmetered Supplies", "LV", false,
-				true);
-		dso14.insertLineLossFactor(98, "NHH Unmetered Supplies", "LV", false,
-				true);
-		dso14.insertLineLossFactor(107, "Small Non Domestic Single Rate", "LV",
+		dso14.insertLlf(49, "Non Domestic Prepayment Unrestricted", "LV",
 				false, true);
-		dso14.insertLineLossFactor(108, "Small Non Domestic Single Rate", "LV",
-				false, true);
-		dso14.insertLineLossFactor(109, "Small Non Domestic Single Rate", "LV",
-				false, true);
-		dso14.insertLineLossFactor(110, "Small Non Domestic 2 Rate", "LV",
-				false, true);
-		dso14.insertLineLossFactor(111, "Small Non Domestic 2 Rate", "LV",
-				false, true);
-		dso14.insertLineLossFactor(112, "Small Non Domestic 2 Rate", "LV",
-				false, true);
-		dso14.insertLineLossFactor(322, "Medium Non Domestic HV 2 Rate", "LV",
-				false, true);
-		dso14.insertLineLossFactor(323, "Medium Non Domestic HV 2 Rate", "LV",
-				false, true);
-		dso14.insertLineLossFactor(326, "MD Two Rate - LV (HV Meter)", "LV",
-				false, true);
-		dso14.insertLineLossFactor(620, "Export (LV 1Phase WC)", "LV", false,
-				false);
-		dso14.insertLineLossFactor(621, "Export (LV 3Phase WC)", "LV", false,
-				false);
-		dso14.insertLineLossFactor(622, "Export (LV 3Phase CT)", "LV", false,
-				false);
-		dso14.insertLineLossFactor(623, "Export (HV)", "HV", false, false);
-		dso14.insertLineLossFactor(624, "Export (33kV)", "EHV", false, false);
-		dso14.insertLineLossFactor(121, "LV Half Hourly", "LV", false, true);
-		dso14.insertLineLossFactor(124, "LV Half Hourly", "LV", false, true);
-		dso14.insertLineLossFactor(127, "LV Half Hourly", "LV", false, true);
-		dso14.insertLineLossFactor(130,
-				"MD HH HV (3Ph CT HV Exit Point, LV Meter)", "HV", false, true);
-		dso14.insertLineLossFactor(132, "LV Half Hourly", "LV", false, true);
-		dso14.insertLineLossFactor(365, "HV Half Hourly", "HV", false, true);
-		dso14.insertLineLossFactor(522, "33kV EHV Import", "EHV", false, true);
+		dso14.insertLlf(85, "NHH Unmetered Supplies", "LV", false, true);
+		dso14.insertLlf(86, "NHH Unmetered Supplies", "LV", false, true);
+		dso14.insertLlf(87, "NHH Unmetered Supplies", "LV", false, true);
+		dso14.insertLlf(88, "NHH Unmetered Supplies", "LV", false, true);
+		dso14.insertLlf(95, "NHH Unmetered Supplies", "LV", false, true);
+		dso14.insertLlf(96, "NHH Unmetered Supplies", "LV", false, true);
+		dso14.insertLlf(97, "NHH Unmetered Supplies", "LV", false, true);
+		dso14.insertLlf(98, "NHH Unmetered Supplies", "LV", false, true);
+		dso14.insertLlf(107, "Small Non Domestic Single Rate", "LV", false,
+				true);
+		dso14.insertLlf(108, "Small Non Domestic Single Rate", "LV", false,
+				true);
+		dso14.insertLlf(109, "Small Non Domestic Single Rate", "LV", false,
+				true);
+		dso14.insertLlf(110, "Small Non Domestic 2 Rate", "LV", false, true);
+		dso14.insertLlf(111, "Small Non Domestic 2 Rate", "LV", false, true);
+		dso14.insertLlf(112, "Small Non Domestic 2 Rate", "LV", false, true);
 		dso14
-				.insertLineLossFactor(627, "LV HH Export 2005", "LV", false,
-						false);
+				.insertLlf(322, "Medium Non Domestic HV 2 Rate", "LV", false,
+						true);
 		dso14
-				.insertLineLossFactor(628, "HV HH Export 2005", "HV", false,
-						false);
+				.insertLlf(323, "Medium Non Domestic HV 2 Rate", "LV", false,
+						true);
+		dso14.insertLlf(326, "MD Two Rate - LV (HV Meter)", "LV", false, true);
+		dso14.insertLlf(620, "Export (LV 1Phase WC)", "LV", false, false);
+		dso14.insertLlf(621, "Export (LV 3Phase WC)", "LV", false, false);
+		dso14.insertLlf(622, "Export (LV 3Phase CT)", "LV", false, false);
+		dso14.insertLlf(623, "Export (HV)", "HV", false, false);
+		dso14.insertLlf(624, "Export (33kV)", "EHV", false, false);
+		dso14.insertLlf(121, "LV Half Hourly", "LV", false, true);
+		dso14.insertLlf(124, "LV Half Hourly", "LV", false, true);
+		dso14.insertLlf(127, "LV Half Hourly", "LV", false, true);
+		dso14.insertLlf(130, "MD HH HV (3Ph CT HV Exit Point, LV Meter)", "HV",
+				false, true);
+		dso14.insertLlf(132, "LV Half Hourly", "LV", false, true);
+		dso14.insertLlf(365, "HV Half Hourly", "HV", false, true);
+		dso14.insertLlf(522, "33kV EHV Import", "EHV", false, true);
+		dso14.insertLlf(627, "LV HH Export 2005", "LV", false, false);
+		dso14.insertLlf(628, "HV HH Export 2005", "HV", false, false);
 
 		Dso dso20 = Dso.findDso("20");
 		MeterTimeswitch.insertMeterTimeswitch(dso20, "001", "", false);
@@ -1606,398 +1571,374 @@ public class ContextListener implements ServletContextListener {
 		MeterTimeswitch.insertMeterTimeswitch(dso20, "638", "", false);
 		MeterTimeswitch.insertMeterTimeswitch(dso20, "656", "", false);
 
-		dso20.insertLineLossFactor(450, "Non-domestic Unrestricted LV HH",
-				"LV", false, true);
-		dso20.insertLineLossFactor(453, "Non-domestic Day/Night LV HH", "LV",
-				false, true);
-		dso20.insertLineLossFactor(520, "Unmetered Supplies LV HH", "LV",
-				false, true);
-		dso20.insertLineLossFactor(655, "Non-domestic Unrestricted HV HH",
-				"HV", false, true);
-		dso20.insertLineLossFactor(658, "Non-domestic Day/Night HV HH", "HV",
-				false, true);
-		dso20.insertLineLossFactor(909, "Embedded Generation - LV export",
-				"LV", false, false);
-		dso20.insertLineLossFactor(910, "Embedded Generation - HV export",
-				"HV", false, false);
-		dso20.insertLineLossFactor(930, "Embedded Generation - EHV export",
-				"EHV", false, false);
-
-		dso20.insertLineLossFactor(100, "Single Phase Domestic Unrestricted",
-				"LV", false, true);
-		dso20.insertLineLossFactor(101, "Three Phase Domestic Unrestricted",
-				"LV", false, true);
-		dso20.insertLineLossFactor(102,
-				"Single Phase Domestic Unrestricted Key Meter", "LV", false,
+		dso20.insertLlf(450, "Non-domestic Unrestricted LV HH", "LV", false,
 				true);
-		dso20.insertLineLossFactor(104, "Single Phase Domestic Economy 7",
+		dso20.insertLlf(453, "Non-domestic Day/Night LV HH", "LV", false, true);
+		dso20.insertLlf(520, "Unmetered Supplies LV HH", "LV", false, true);
+		dso20.insertLlf(655, "Non-domestic Unrestricted HV HH", "HV", false,
+				true);
+		dso20.insertLlf(658, "Non-domestic Day/Night HV HH", "HV", false, true);
+		dso20.insertLlf(909, "Embedded Generation - LV export", "LV", false,
+				false);
+		dso20.insertLlf(910, "Embedded Generation - HV export", "HV", false,
+				false);
+		dso20.insertLlf(930, "Embedded Generation - EHV export", "EHV", false,
+				false);
+
+		dso20.insertLlf(100, "Single Phase Domestic Unrestricted", "LV", false,
+				true);
+		dso20.insertLlf(101, "Three Phase Domestic Unrestricted", "LV", false,
+				true);
+		dso20.insertLlf(102, "Single Phase Domestic Unrestricted Key Meter",
 				"LV", false, true);
-		dso20.insertLineLossFactor(105, "Three Phase Domestic Economy 7", "LV",
+		dso20.insertLlf(104, "Single Phase Domestic Economy 7", "LV", false,
+				true);
+		dso20.insertLlf(105, "Three Phase Domestic Economy 7", "LV", false,
+				true);
+		dso20.insertLlf(106, "Single Phase Domestic Economy 7 Key Meter", "LV",
 				false, true);
-		dso20.insertLineLossFactor(106,
-				"Single Phase Domestic Economy 7 Key Meter", "LV", false, true);
-		dso20.insertLineLossFactor(108, "Single Phase Domestic Flexiheat",
-				"LV", false, true);
-		dso20.insertLineLossFactor(109, "Three Phase Domestic Flexiheat", "LV",
+		dso20.insertLlf(108, "Single Phase Domestic Flexiheat", "LV", false,
+				true);
+		dso20.insertLlf(109, "Three Phase Domestic Flexiheat", "LV", false,
+				true);
+		dso20.insertLlf(110, "Single Phase Domestic Superdeal", "LV", false,
+				true);
+		dso20.insertLlf(111, "Three Phase Domestic Superdeal", "LV", false,
+				true);
+		dso20.insertLlf(112, "Single Phase Domestic Off-Peak 'A'", "LV", false,
+				true);
+		dso20.insertLlf(113, "Single Phase Domestic Off-Peak 'B", "LV", false,
+				true);
+		dso20.insertLlf(114, "Single Phase Domestic Off-Peak 'Bx'", "LV",
 				false, true);
-		dso20.insertLineLossFactor(110, "Single Phase Domestic Superdeal",
-				"LV", false, true);
-		dso20.insertLineLossFactor(111, "Three Phase Domestic Superdeal", "LV",
+		dso20.insertLlf(115, "Single Phase Domestic Off-Peak 'E'", "LV", false,
+				true);
+		dso20.insertLlf(116, "Single Phase Domestic Off-Peak 'F'", "LV", false,
+				true);
+		dso20.insertLlf(117, "Single Phase Domestic Off-Peak 'Fx'", "LV",
 				false, true);
-		dso20.insertLineLossFactor(112, "Single Phase Domestic Off-Peak 'A'",
-				"LV", false, true);
-		dso20.insertLineLossFactor(113, "Single Phase Domestic Off-Peak 'B",
-				"LV", false, true);
-		dso20.insertLineLossFactor(114, "Single Phase Domestic Off-Peak 'Bx'",
-				"LV", false, true);
-		dso20.insertLineLossFactor(115, "Single Phase Domestic Off-Peak 'E'",
-				"LV", false, true);
-		dso20.insertLineLossFactor(116, "Single Phase Domestic Off-Peak 'F'",
-				"LV", false, true);
-		dso20.insertLineLossFactor(117, "Single Phase Domestic Off-Peak 'Fx'",
-				"LV", false, true);
-		dso20.insertLineLossFactor(118, "Three Phase Domestic Off-Peak 'A'",
-				"LV", false, true);
-		dso20.insertLineLossFactor(119, "Three Phase Domestic Off-Peak 'B'",
-				"LV", false, true);
-		dso20.insertLineLossFactor(120, "Three Phase Domestic Off-Peak 'Bx'",
-				"LV", false, true);
-		dso20.insertLineLossFactor(121, "Three Phase Domestic Off-Peak 'E'",
-				"LV", false, true);
-		dso20.insertLineLossFactor(122, "Three Phase Domestic Off-Peak 'F'",
-				"LV", false, true);
-		dso20.insertLineLossFactor(123, "Three Phase Domestic Off-Peak 'Fx'",
-				"LV", false, true);
-		dso20.insertLineLossFactor(124, "Single Phase Domestic White Meter",
-				"LV", false, true);
-		dso20.insertLineLossFactor(125, "Three Phase Domestic Whit e Meter",
-				"LV", false, true);
-		dso20.insertLineLossFactor(126,
-				"Single Phase Non-domestic Unrestricted", "LV", false, true);
-		dso20.insertLineLossFactor(127,
-				"Three Phase Non-domestic Unrestricted", "LV", false, true);
-		dso20.insertLineLossFactor(128,
+		dso20.insertLlf(118, "Three Phase Domestic Off-Peak 'A'", "LV", false,
+				true);
+		dso20.insertLlf(119, "Three Phase Domestic Off-Peak 'B'", "LV", false,
+				true);
+		dso20.insertLlf(120, "Three Phase Domestic Off-Peak 'Bx'", "LV", false,
+				true);
+		dso20.insertLlf(121, "Three Phase Domestic Off-Peak 'E'", "LV", false,
+				true);
+		dso20.insertLlf(122, "Three Phase Domestic Off-Peak 'F'", "LV", false,
+				true);
+		dso20.insertLlf(123, "Three Phase Domestic Off-Peak 'Fx'", "LV", false,
+				true);
+		dso20.insertLlf(124, "Single Phase Domestic White Meter", "LV", false,
+				true);
+		dso20.insertLlf(125, "Three Phase Domestic Whit e Meter", "LV", false,
+				true);
+		dso20.insertLlf(126, "Single Phase Non-domestic Unrestricted", "LV",
+				false, true);
+		dso20.insertLlf(127, "Three Phase Non-domestic Unrestricted", "LV",
+				false, true);
+		dso20.insertLlf(128,
 				"Single Phase Non-domestic Unrestricted Key Meter", "LV",
 				false, true);
-		dso20.insertLineLossFactor(129, "Single Phase Non-domestic Day/Night",
-				"LV", false, true);
-		dso20.insertLineLossFactor(130, "Three Phase Non-domestic Day/Night",
-				"LV", false, true);
-		dso20.insertLineLossFactor(131,
-				"Single Phase Non-domestic Day/Night Key Meter", "LV", false,
+		dso20.insertLlf(129, "Single Phase Non-domestic Day/Night", "LV",
+				false, true);
+		dso20.insertLlf(130, "Three Phase Non-domestic Day/Night", "LV", false,
 				true);
-		dso20.insertLineLossFactor(133,
-				"Single Phase Non-domestic Evening & Weekend", "LV", false,
-				true);
-		dso20
-				.insertLineLossFactor(134,
-						"Three Phase Non-domestic Evening & Weekend", "LV",
-						false, true);
-		dso20.insertLineLossFactor(135,
+		dso20.insertLlf(131, "Single Phase Non-domestic Day/Night Key Meter",
+				"LV", false, true);
+		dso20.insertLlf(133, "Single Phase Non-domestic Evening & Weekend",
+				"LV", false, true);
+		dso20.insertLlf(134, "Three Phase Non-domestic Evening & Weekend",
+				"LV", false, true);
+		dso20.insertLlf(135,
 				"Single Phase Non-domestic Night/Evening & Weekend", "LV",
 				false, true);
-		dso20.insertLineLossFactor(136,
+		dso20.insertLlf(136,
 				"Three Phase Non-domestic Night/Evening & Weekend", "LV",
 				false, true);
-		dso20.insertLineLossFactor(138,
-				"Single Phase Non-domestic Off Peak 'Ac'", "LV", false, true);
-		dso20.insertLineLossFactor(139,
-				"Single Phase Non-domestic Off Peak 'Bc'", "LV", false, true);
-		dso20.insertLineLossFactor(140,
-				"Single Phase Non-domestic Off Peak 'Ec'", "LV", false, true);
-		dso20.insertLineLossFactor(141,
-				"Single Phase Non-domestic Off Peak 'Fc'", "LV", false, true);
-		dso20.insertLineLossFactor(142,
-				"Three Phase Non-domestic Off Peak 'Ac'", "LV", false, true);
-		dso20.insertLineLossFactor(143,
-				"Three Phase Non-domestic Off Peak 'Bc'", "LV", false, true);
-		dso20.insertLineLossFactor(144,
-				"Three Phase Non-domestic Off Peak 'Ec'", "LV", false, true);
-		dso20.insertLineLossFactor(145,
-				"Three Phase Non-domestic Off Peak 'Fc'", "LV", false, true);
-		dso20.insertLineLossFactor(150,
+		dso20.insertLlf(138, "Single Phase Non-domestic Off Peak 'Ac'", "LV",
+				false, true);
+		dso20.insertLlf(139, "Single Phase Non-domestic Off Peak 'Bc'", "LV",
+				false, true);
+		dso20.insertLlf(140, "Single Phase Non-domestic Off Peak 'Ec'", "LV",
+				false, true);
+		dso20.insertLlf(141, "Single Phase Non-domestic Off Peak 'Fc'", "LV",
+				false, true);
+		dso20.insertLlf(142, "Three Phase Non-domestic Off Peak 'Ac'", "LV",
+				false, true);
+		dso20.insertLlf(143, "Three Phase Non-domestic Off Peak 'Bc'", "LV",
+				false, true);
+		dso20.insertLlf(144, "Three Phase Non-domestic Off Peak 'Ec'", "LV",
+				false, true);
+		dso20.insertLlf(145, "Three Phase Non-domestic Off Peak 'Fc'", "LV",
+				false, true);
+		dso20.insertLlf(150,
 				"Single Phase Domestic Flexiheat (stored heat only)", "LV",
 				false, true);
-		dso20.insertLineLossFactor(151,
+		dso20.insertLlf(151,
 				"Three Phase Domestic Flexiheat (stored heat only)", "LV",
 				false, true);
-		dso20.insertLineLossFactor(152,
+		dso20.insertLlf(152,
 				"Single Phase Domestic Superdeal (stored heat only)", "LV",
 				false, true);
-		dso20.insertLineLossFactor(153,
+		dso20.insertLlf(153,
 				"Three Phase Domestic Superdeal (stored heat only)", "LV",
 				false, true);
-		dso20.insertLineLossFactor(154,
-				"Single Phase Domestic Evening & Weekend", "LV", false, true);
-		dso20.insertLineLossFactor(155,
-				"Three Phase Domestic Evening & Weekend", "LV", false, true);
-		dso20.insertLineLossFactor(156,
-				"Single Phase Domestic Night/Evening & Weekend", "LV", false,
-				true);
-		dso20.insertLineLossFactor(157,
-				"Three Phase Domestic Night/Evening & Weekend", "LV", false,
-				true);
-		dso20.insertLineLossFactor(400, "Non-domestic Unrestricted LV", "LV",
+		dso20.insertLlf(154, "Single Phase Domestic Evening & Weekend", "LV",
 				false, true);
-		dso20.insertLineLossFactor(401, "Non-domestic Day/Night LV", "LV",
+		dso20.insertLlf(155, "Three Phase Domestic Evening & Weekend", "LV",
 				false, true);
-		dso20.insertLineLossFactor(500, "Unmetered Supplies A CONT", "LV",
-				false, true);
-		dso20.insertLineLossFactor(501, "Unmetered Supplies B DU DA", "LV",
-				false, true);
-		dso20.insertLineLossFactor(502, "Unmetered Supplies C HN PD", "LV",
-				false, true);
-		dso20.insertLineLossFactor(503, "Unmetered Supplies D DA DU", "LV",
-				false, true);
-		dso20.insertLineLossFactor(504, "Unmetered Supplies BUD WARM", "LV",
-				false, true);
-		dso20.insertLineLossFactor(510, "Unmetered Supplies A CONT 2", "LV",
-				false, true);
-		dso20.insertLineLossFactor(511, "Unmetered Supplies B DU DA 2", "LV",
-				false, true);
-		dso20.insertLineLossFactor(512, "Unmetered Supplies C HN PD 2", "LV",
-				false, true);
-		dso20.insertLineLossFactor(513, "Unmetered Supplies D DA DU_2", "LV",
-				false, true);
-		dso20.insertLineLossFactor(605, "Non-domestic Unrestricted HV", "HV",
-				false, true);
-		dso20.insertLineLossFactor(606, "Non-domestic Day/Night HV", "HV",
-				false, true);
-		dso20.insertLineLossFactor(700, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(701, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(702, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(703, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(704, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(705, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(706, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(707, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(708, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(709, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(710, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(711, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(712, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(713, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(714, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(715, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(716, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(717, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(718, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(719, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(720, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(721, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(722, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(723, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(724, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(725, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(726, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(727, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(728, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(729, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(730, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(731, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(732, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(733, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(734, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(735, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(736, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(737, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(738, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(739, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(740, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(741, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(742, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(743, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(744, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(745, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(746, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(747, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(748, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(749, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(750, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(751, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(752, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(753, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(754, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(755, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(756, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(757, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(758, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(759, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(760, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(761, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(762, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(763, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(764, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(765, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(766, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(767, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(768, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(769, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(770, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(771, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(772, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(773, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(774, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(775, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(776, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(777, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(778, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(779, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(780, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(781, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(782, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(783, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(784, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(785, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(786, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(787, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(788, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(789, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(790, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(791, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(792, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(793, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(794, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(795, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(796, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(797, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(798, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(799, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(800, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(801, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(802, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(803, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(804, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(805, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(806, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(807, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(808, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(809, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(810, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(811, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(812, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(813, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(814, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(815, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(816, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(817, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(818, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(819, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(820, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(821, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(822, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(823, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(824, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(825, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(826, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(827, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(828, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(829, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(830, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(831, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(832, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(833, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(834, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(835, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(836, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(837, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(838, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(839, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(840, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(841, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(842, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(843, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(844, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(845, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(846, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(847, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(848, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(849, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(850, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(851, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(852, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(853, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(854, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(855, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(856, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(857, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(858, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(859, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(860, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(861, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(862, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(863, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(864, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(865, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(866, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(867, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(868, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(869, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(870, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(871, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(872, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(873, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(874, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(875, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(876, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(877, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(878, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(879, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(880, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(881, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(882, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(883, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(884, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(885, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(886, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(887, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(888, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(889, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(890, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(891, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(892, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(893, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(894, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(895, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(896, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(897, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(898, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(899, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(900, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(901, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(902, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(903, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(904, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(905, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(906, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(907, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(908, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(911, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(912, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(913, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(914, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(915, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(916, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(917, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(918, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(919, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(920, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(921, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(922, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(923, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(924, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(925, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(926, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(927, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(928, "Site specific", "HV", false, true);
-		dso20.insertLineLossFactor(929, "Site specific", "HV", false, true);
+		dso20.insertLlf(156, "Single Phase Domestic Night/Evening & Weekend",
+				"LV", false, true);
+		dso20.insertLlf(157, "Three Phase Domestic Night/Evening & Weekend",
+				"LV", false, true);
+		dso20.insertLlf(400, "Non-domestic Unrestricted LV", "LV", false, true);
+		dso20.insertLlf(401, "Non-domestic Day/Night LV", "LV", false, true);
+		dso20.insertLlf(500, "Unmetered Supplies A CONT", "LV", false, true);
+		dso20.insertLlf(501, "Unmetered Supplies B DU DA", "LV", false, true);
+		dso20.insertLlf(502, "Unmetered Supplies C HN PD", "LV", false, true);
+		dso20.insertLlf(503, "Unmetered Supplies D DA DU", "LV", false, true);
+		dso20.insertLlf(504, "Unmetered Supplies BUD WARM", "LV", false, true);
+		dso20.insertLlf(510, "Unmetered Supplies A CONT 2", "LV", false, true);
+		dso20.insertLlf(511, "Unmetered Supplies B DU DA 2", "LV", false, true);
+		dso20.insertLlf(512, "Unmetered Supplies C HN PD 2", "LV", false, true);
+		dso20.insertLlf(513, "Unmetered Supplies D DA DU_2", "LV", false, true);
+		dso20.insertLlf(605, "Non-domestic Unrestricted HV", "HV", false, true);
+		dso20.insertLlf(606, "Non-domestic Day/Night HV", "HV", false, true);
+		dso20.insertLlf(700, "Site specific", "HV", false, true);
+		dso20.insertLlf(701, "Site specific", "HV", false, true);
+		dso20.insertLlf(702, "Site specific", "HV", false, true);
+		dso20.insertLlf(703, "Site specific", "HV", false, true);
+		dso20.insertLlf(704, "Site specific", "HV", false, true);
+		dso20.insertLlf(705, "Site specific", "HV", false, true);
+		dso20.insertLlf(706, "Site specific", "HV", false, true);
+		dso20.insertLlf(707, "Site specific", "HV", false, true);
+		dso20.insertLlf(708, "Site specific", "HV", false, true);
+		dso20.insertLlf(709, "Site specific", "HV", false, true);
+		dso20.insertLlf(710, "Site specific", "HV", false, true);
+		dso20.insertLlf(711, "Site specific", "HV", false, true);
+		dso20.insertLlf(712, "Site specific", "HV", false, true);
+		dso20.insertLlf(713, "Site specific", "HV", false, true);
+		dso20.insertLlf(714, "Site specific", "HV", false, true);
+		dso20.insertLlf(715, "Site specific", "HV", false, true);
+		dso20.insertLlf(716, "Site specific", "HV", false, true);
+		dso20.insertLlf(717, "Site specific", "HV", false, true);
+		dso20.insertLlf(718, "Site specific", "HV", false, true);
+		dso20.insertLlf(719, "Site specific", "HV", false, true);
+		dso20.insertLlf(720, "Site specific", "HV", false, true);
+		dso20.insertLlf(721, "Site specific", "HV", false, true);
+		dso20.insertLlf(722, "Site specific", "HV", false, true);
+		dso20.insertLlf(723, "Site specific", "HV", false, true);
+		dso20.insertLlf(724, "Site specific", "HV", false, true);
+		dso20.insertLlf(725, "Site specific", "HV", false, true);
+		dso20.insertLlf(726, "Site specific", "HV", false, true);
+		dso20.insertLlf(727, "Site specific", "HV", false, true);
+		dso20.insertLlf(728, "Site specific", "HV", false, true);
+		dso20.insertLlf(729, "Site specific", "HV", false, true);
+		dso20.insertLlf(730, "Site specific", "HV", false, true);
+		dso20.insertLlf(731, "Site specific", "HV", false, true);
+		dso20.insertLlf(732, "Site specific", "HV", false, true);
+		dso20.insertLlf(733, "Site specific", "HV", false, true);
+		dso20.insertLlf(734, "Site specific", "HV", false, true);
+		dso20.insertLlf(735, "Site specific", "HV", false, true);
+		dso20.insertLlf(736, "Site specific", "HV", false, true);
+		dso20.insertLlf(737, "Site specific", "HV", false, true);
+		dso20.insertLlf(738, "Site specific", "HV", false, true);
+		dso20.insertLlf(739, "Site specific", "HV", false, true);
+		dso20.insertLlf(740, "Site specific", "HV", false, true);
+		dso20.insertLlf(741, "Site specific", "HV", false, true);
+		dso20.insertLlf(742, "Site specific", "HV", false, true);
+		dso20.insertLlf(743, "Site specific", "HV", false, true);
+		dso20.insertLlf(744, "Site specific", "HV", false, true);
+		dso20.insertLlf(745, "Site specific", "HV", false, true);
+		dso20.insertLlf(746, "Site specific", "HV", false, true);
+		dso20.insertLlf(747, "Site specific", "HV", false, true);
+		dso20.insertLlf(748, "Site specific", "HV", false, true);
+		dso20.insertLlf(749, "Site specific", "HV", false, true);
+		dso20.insertLlf(750, "Site specific", "HV", false, true);
+		dso20.insertLlf(751, "Site specific", "HV", false, true);
+		dso20.insertLlf(752, "Site specific", "HV", false, true);
+		dso20.insertLlf(753, "Site specific", "HV", false, true);
+		dso20.insertLlf(754, "Site specific", "HV", false, true);
+		dso20.insertLlf(755, "Site specific", "HV", false, true);
+		dso20.insertLlf(756, "Site specific", "HV", false, true);
+		dso20.insertLlf(757, "Site specific", "HV", false, true);
+		dso20.insertLlf(758, "Site specific", "HV", false, true);
+		dso20.insertLlf(759, "Site specific", "HV", false, true);
+		dso20.insertLlf(760, "Site specific", "HV", false, true);
+		dso20.insertLlf(761, "Site specific", "HV", false, true);
+		dso20.insertLlf(762, "Site specific", "HV", false, true);
+		dso20.insertLlf(763, "Site specific", "HV", false, true);
+		dso20.insertLlf(764, "Site specific", "HV", false, true);
+		dso20.insertLlf(765, "Site specific", "HV", false, true);
+		dso20.insertLlf(766, "Site specific", "HV", false, true);
+		dso20.insertLlf(767, "Site specific", "HV", false, true);
+		dso20.insertLlf(768, "Site specific", "HV", false, true);
+		dso20.insertLlf(769, "Site specific", "HV", false, true);
+		dso20.insertLlf(770, "Site specific", "HV", false, true);
+		dso20.insertLlf(771, "Site specific", "HV", false, true);
+		dso20.insertLlf(772, "Site specific", "HV", false, true);
+		dso20.insertLlf(773, "Site specific", "HV", false, true);
+		dso20.insertLlf(774, "Site specific", "HV", false, true);
+		dso20.insertLlf(775, "Site specific", "HV", false, true);
+		dso20.insertLlf(776, "Site specific", "HV", false, true);
+		dso20.insertLlf(777, "Site specific", "HV", false, true);
+		dso20.insertLlf(778, "Site specific", "HV", false, true);
+		dso20.insertLlf(779, "Site specific", "HV", false, true);
+		dso20.insertLlf(780, "Site specific", "HV", false, true);
+		dso20.insertLlf(781, "Site specific", "HV", false, true);
+		dso20.insertLlf(782, "Site specific", "HV", false, true);
+		dso20.insertLlf(783, "Site specific", "HV", false, true);
+		dso20.insertLlf(784, "Site specific", "HV", false, true);
+		dso20.insertLlf(785, "Site specific", "HV", false, true);
+		dso20.insertLlf(786, "Site specific", "HV", false, true);
+		dso20.insertLlf(787, "Site specific", "HV", false, true);
+		dso20.insertLlf(788, "Site specific", "HV", false, true);
+		dso20.insertLlf(789, "Site specific", "HV", false, true);
+		dso20.insertLlf(790, "Site specific", "HV", false, true);
+		dso20.insertLlf(791, "Site specific", "HV", false, true);
+		dso20.insertLlf(792, "Site specific", "HV", false, true);
+		dso20.insertLlf(793, "Site specific", "HV", false, true);
+		dso20.insertLlf(794, "Site specific", "HV", false, true);
+		dso20.insertLlf(795, "Site specific", "HV", false, true);
+		dso20.insertLlf(796, "Site specific", "HV", false, true);
+		dso20.insertLlf(797, "Site specific", "HV", false, true);
+		dso20.insertLlf(798, "Site specific", "HV", false, true);
+		dso20.insertLlf(799, "Site specific", "HV", false, true);
+		dso20.insertLlf(800, "Site specific", "HV", false, true);
+		dso20.insertLlf(801, "Site specific", "HV", false, true);
+		dso20.insertLlf(802, "Site specific", "HV", false, true);
+		dso20.insertLlf(803, "Site specific", "HV", false, true);
+		dso20.insertLlf(804, "Site specific", "HV", false, true);
+		dso20.insertLlf(805, "Site specific", "HV", false, true);
+		dso20.insertLlf(806, "Site specific", "HV", false, true);
+		dso20.insertLlf(807, "Site specific", "HV", false, true);
+		dso20.insertLlf(808, "Site specific", "HV", false, true);
+		dso20.insertLlf(809, "Site specific", "HV", false, true);
+		dso20.insertLlf(810, "Site specific", "HV", false, true);
+		dso20.insertLlf(811, "Site specific", "HV", false, true);
+		dso20.insertLlf(812, "Site specific", "HV", false, true);
+		dso20.insertLlf(813, "Site specific", "HV", false, true);
+		dso20.insertLlf(814, "Site specific", "HV", false, true);
+		dso20.insertLlf(815, "Site specific", "HV", false, true);
+		dso20.insertLlf(816, "Site specific", "HV", false, true);
+		dso20.insertLlf(817, "Site specific", "HV", false, true);
+		dso20.insertLlf(818, "Site specific", "HV", false, true);
+		dso20.insertLlf(819, "Site specific", "HV", false, true);
+		dso20.insertLlf(820, "Site specific", "HV", false, true);
+		dso20.insertLlf(821, "Site specific", "HV", false, true);
+		dso20.insertLlf(822, "Site specific", "HV", false, true);
+		dso20.insertLlf(823, "Site specific", "HV", false, true);
+		dso20.insertLlf(824, "Site specific", "HV", false, true);
+		dso20.insertLlf(825, "Site specific", "HV", false, true);
+		dso20.insertLlf(826, "Site specific", "HV", false, true);
+		dso20.insertLlf(827, "Site specific", "HV", false, true);
+		dso20.insertLlf(828, "Site specific", "HV", false, true);
+		dso20.insertLlf(829, "Site specific", "HV", false, true);
+		dso20.insertLlf(830, "Site specific", "HV", false, true);
+		dso20.insertLlf(831, "Site specific", "HV", false, true);
+		dso20.insertLlf(832, "Site specific", "HV", false, true);
+		dso20.insertLlf(833, "Site specific", "HV", false, true);
+		dso20.insertLlf(834, "Site specific", "HV", false, true);
+		dso20.insertLlf(835, "Site specific", "HV", false, true);
+		dso20.insertLlf(836, "Site specific", "HV", false, true);
+		dso20.insertLlf(837, "Site specific", "HV", false, true);
+		dso20.insertLlf(838, "Site specific", "HV", false, true);
+		dso20.insertLlf(839, "Site specific", "HV", false, true);
+		dso20.insertLlf(840, "Site specific", "HV", false, true);
+		dso20.insertLlf(841, "Site specific", "HV", false, true);
+		dso20.insertLlf(842, "Site specific", "HV", false, true);
+		dso20.insertLlf(843, "Site specific", "HV", false, true);
+		dso20.insertLlf(844, "Site specific", "HV", false, true);
+		dso20.insertLlf(845, "Site specific", "HV", false, true);
+		dso20.insertLlf(846, "Site specific", "HV", false, true);
+		dso20.insertLlf(847, "Site specific", "HV", false, true);
+		dso20.insertLlf(848, "Site specific", "HV", false, true);
+		dso20.insertLlf(849, "Site specific", "HV", false, true);
+		dso20.insertLlf(850, "Site specific", "HV", false, true);
+		dso20.insertLlf(851, "Site specific", "HV", false, true);
+		dso20.insertLlf(852, "Site specific", "HV", false, true);
+		dso20.insertLlf(853, "Site specific", "HV", false, true);
+		dso20.insertLlf(854, "Site specific", "HV", false, true);
+		dso20.insertLlf(855, "Site specific", "HV", false, true);
+		dso20.insertLlf(856, "Site specific", "HV", false, true);
+		dso20.insertLlf(857, "Site specific", "HV", false, true);
+		dso20.insertLlf(858, "Site specific", "HV", false, true);
+		dso20.insertLlf(859, "Site specific", "HV", false, true);
+		dso20.insertLlf(860, "Site specific", "HV", false, true);
+		dso20.insertLlf(861, "Site specific", "HV", false, true);
+		dso20.insertLlf(862, "Site specific", "HV", false, true);
+		dso20.insertLlf(863, "Site specific", "HV", false, true);
+		dso20.insertLlf(864, "Site specific", "HV", false, true);
+		dso20.insertLlf(865, "Site specific", "HV", false, true);
+		dso20.insertLlf(866, "Site specific", "HV", false, true);
+		dso20.insertLlf(867, "Site specific", "HV", false, true);
+		dso20.insertLlf(868, "Site specific", "HV", false, true);
+		dso20.insertLlf(869, "Site specific", "HV", false, true);
+		dso20.insertLlf(870, "Site specific", "HV", false, true);
+		dso20.insertLlf(871, "Site specific", "HV", false, true);
+		dso20.insertLlf(872, "Site specific", "HV", false, true);
+		dso20.insertLlf(873, "Site specific", "HV", false, true);
+		dso20.insertLlf(874, "Site specific", "HV", false, true);
+		dso20.insertLlf(875, "Site specific", "HV", false, true);
+		dso20.insertLlf(876, "Site specific", "HV", false, true);
+		dso20.insertLlf(877, "Site specific", "HV", false, true);
+		dso20.insertLlf(878, "Site specific", "HV", false, true);
+		dso20.insertLlf(879, "Site specific", "HV", false, true);
+		dso20.insertLlf(880, "Site specific", "HV", false, true);
+		dso20.insertLlf(881, "Site specific", "HV", false, true);
+		dso20.insertLlf(882, "Site specific", "HV", false, true);
+		dso20.insertLlf(883, "Site specific", "HV", false, true);
+		dso20.insertLlf(884, "Site specific", "HV", false, true);
+		dso20.insertLlf(885, "Site specific", "HV", false, true);
+		dso20.insertLlf(886, "Site specific", "HV", false, true);
+		dso20.insertLlf(887, "Site specific", "HV", false, true);
+		dso20.insertLlf(888, "Site specific", "HV", false, true);
+		dso20.insertLlf(889, "Site specific", "HV", false, true);
+		dso20.insertLlf(890, "Site specific", "HV", false, true);
+		dso20.insertLlf(891, "Site specific", "HV", false, true);
+		dso20.insertLlf(892, "Site specific", "HV", false, true);
+		dso20.insertLlf(893, "Site specific", "HV", false, true);
+		dso20.insertLlf(894, "Site specific", "HV", false, true);
+		dso20.insertLlf(895, "Site specific", "HV", false, true);
+		dso20.insertLlf(896, "Site specific", "HV", false, true);
+		dso20.insertLlf(897, "Site specific", "HV", false, true);
+		dso20.insertLlf(898, "Site specific", "HV", false, true);
+		dso20.insertLlf(899, "Site specific", "HV", false, true);
+		dso20.insertLlf(900, "Site specific", "HV", false, true);
+		dso20.insertLlf(901, "Site specific", "HV", false, true);
+		dso20.insertLlf(902, "Site specific", "HV", false, true);
+		dso20.insertLlf(903, "Site specific", "HV", false, true);
+		dso20.insertLlf(904, "Site specific", "HV", false, true);
+		dso20.insertLlf(905, "Site specific", "HV", false, true);
+		dso20.insertLlf(906, "Site specific", "HV", false, true);
+		dso20.insertLlf(907, "Site specific", "HV", false, true);
+		dso20.insertLlf(908, "Site specific", "HV", false, true);
+		dso20.insertLlf(911, "Site specific", "HV", false, true);
+		dso20.insertLlf(912, "Site specific", "HV", false, true);
+		dso20.insertLlf(913, "Site specific", "HV", false, true);
+		dso20.insertLlf(914, "Site specific", "HV", false, true);
+		dso20.insertLlf(915, "Site specific", "HV", false, true);
+		dso20.insertLlf(916, "Site specific", "HV", false, true);
+		dso20.insertLlf(917, "Site specific", "HV", false, true);
+		dso20.insertLlf(918, "Site specific", "HV", false, true);
+		dso20.insertLlf(919, "Site specific", "HV", false, true);
+		dso20.insertLlf(920, "Site specific", "HV", false, true);
+		dso20.insertLlf(921, "Site specific", "HV", false, true);
+		dso20.insertLlf(922, "Site specific", "HV", false, true);
+		dso20.insertLlf(923, "Site specific", "HV", false, true);
+		dso20.insertLlf(924, "Site specific", "HV", false, true);
+		dso20.insertLlf(925, "Site specific", "HV", false, true);
+		dso20.insertLlf(926, "Site specific", "HV", false, true);
+		dso20.insertLlf(927, "Site specific", "HV", false, true);
+		dso20.insertLlf(928, "Site specific", "HV", false, true);
+		dso20.insertLlf(929, "Site specific", "HV", false, true);
 
-		dso20.insertLineLossFactor(931,
+		dso20.insertLlf(931,
 				"LV export - Non Small Scaled Embedded Generation", "LV",
 				false, true);
-		dso20.insertLineLossFactor(932,
-				"LV export - Small Scaled Embedded Generation", "LV", false,
-				true);
+		dso20.insertLlf(932, "LV export - Small Scaled Embedded Generation",
+				"LV", false, true);
 		Dso dso22 = Dso.findDso("22");
 		MeterTimeswitch.insertMeterTimeswitch(dso22, "0", "", false);
 		MeterTimeswitch.insertMeterTimeswitch(dso22, "1", "", false);
@@ -2158,206 +2099,131 @@ public class ContextListener implements ServletContextListener {
 		MeterTimeswitch.insertMeterTimeswitch(dso22, "597", "", false);
 		MeterTimeswitch.insertMeterTimeswitch(dso22, "599", "", false);
 
-		dso22.insertLineLossFactor(10, "Profile 1 Unrestricted", "LV", false,
-				true);
+		dso22.insertLlf(10, "Profile 1 Unrestricted", "LV", false, true);
+		dso22.insertLlf(11, "Profile 1 Export LV", "LV", false, true);
 		dso22
-				.insertLineLossFactor(11, "Profile 1 Export LV", "LV", false,
+				.insertLlf(20, "Profile 1 Key Mtr Unrestricted", "LV", false,
 						true);
-		dso22.insertLineLossFactor(20, "Profile 1 Key Mtr Unrestricted", "LV",
-				false, true);
+		dso22.insertLlf(30, "Profile 2 Economy 7", "LV", false, true);
+		dso22.insertLlf(31, "Profile 2 Export LV", "LV", false, true);
+		dso22.insertLlf(40, "Profile 2 Key Meter Economy 7", "LV", false, true);
+		dso22.insertLlf(50, "Profile 2 Economy 7", "LV", false, true);
+		dso22.insertLlf(51, "Profile 2 Economy 7", "LV", false, true);
+		dso22.insertLlf(60, "Profile 2 Economy 7", "LV", false, true);
+		dso22.insertLlf(61, "Profile 2 Economy 7", "LV", false, true);
+		dso22.insertLlf(70, "Profile 2 Economy 7", "LV", false, true);
+		dso22.insertLlf(110, "Profile 3 Unrestricted", "LV", false, true);
+		dso22.insertLlf(111, "Profile 3 Export LV", "LV", false, false);
+		dso22.insertLlf(120, "Profile 3 Key Mtr Unrestricted", "LV", false,
+				true);
+		dso22.insertLlf(130, "Profile 3 Unrestricted", "LV", false, true);
+		dso22.insertLlf(140, "Kry Mtr Unrestricted", "LV", false, true);
+		dso22.insertLlf(210, "Profile 4 Economy 7", "LV", false, true);
+		dso22.insertLlf(211, "Profile 4 Export LV", "LV", false, false);
 		dso22
-				.insertLineLossFactor(30, "Profile 2 Economy 7", "LV", false,
+				.insertLlf(220, "Profile 4 Key Meter Economy 7", "LV", false,
 						true);
+		dso22.insertLlf(230, "Profile 4 Economy 7", "LV", false, true);
 		dso22
-				.insertLineLossFactor(31, "Profile 2 Export LV", "LV", false,
+				.insertLlf(240, "Profile 4 Key Meter Economy 7", "LV", false,
 						true);
-		dso22.insertLineLossFactor(40, "Profile 2 Key Meter Economy 7", "LV",
-				false, true);
-		dso22
-				.insertLineLossFactor(50, "Profile 2 Economy 7", "LV", false,
-						true);
-		dso22
-				.insertLineLossFactor(51, "Profile 2 Economy 7", "LV", false,
-						true);
-		dso22
-				.insertLineLossFactor(60, "Profile 2 Economy 7", "LV", false,
-						true);
-		dso22
-				.insertLineLossFactor(61, "Profile 2 Economy 7", "LV", false,
-						true);
-		dso22
-				.insertLineLossFactor(70, "Profile 2 Economy 7", "LV", false,
-						true);
-		dso22.insertLineLossFactor(110, "Profile 3 Unrestricted", "LV", false,
+		dso22.insertLlf(250, "Profile 4 Economy 7", "LV", false, true);
+		dso22.insertLlf(251, "Profile 4 Economy 7", "LV", false, true);
+		dso22.insertLlf(260, "Profile 4 Economy 7", "LV", false, true);
+		dso22.insertLlf(261, "Profile 4 Economy 7", "LV", false, true);
+		dso22.insertLlf(270, "Profile 3 Unrestricted", "LV", false, true);
+		dso22.insertLlf(280, "Profile 4 Economy 7", "LV", false, true);
+		dso22.insertLlf(281, "Profile 4 Economy 7", "LV", false, true);
+		dso22.insertLlf(310, "Profile 3 Unrestricted", "LV", false, true);
+		dso22.insertLlf(320, "Profile 3 Unrestricted", "LV", false, true);
+		dso22.insertLlf(330, "Profile 4 Economy 7", "LV", false, true);
+		dso22.insertLlf(340, "Profile 4 Economy 7", "LV", false, true);
+		dso22.insertLlf(350, "Profile 4 Economy 7", "LV", false, true);
+		dso22.insertLlf(410, "Profile 2 Economy 7", "LV", false, true);
+		dso22.insertLlf(415, "Profile 2 Economy 7", "LV", false, true);
+		dso22.insertLlf(420, "Profile 2 Economy 7", "LV", false, true);
+		dso22.insertLlf(425, "Profile 2 Economy 7", "LV", false, true);
+		dso22.insertLlf(430, "Profile 2 Economy 7", "LV", false, true);
+		dso22.insertLlf(435, "Profile 2 Economy 7", "LV", false, true);
+		dso22.insertLlf(440, "Profile 2 Economy 7", "LV", false, true);
+		dso22.insertLlf(445, "Profile 2 Economy 7", "LV", false, true);
+		dso22.insertLlf(450, "Profile 2 Economy 7", "LV", false, true);
+		dso22.insertLlf(455, "Profile 2 Economy 7", "LV", false, true);
+		dso22.insertLlf(460, "Profile 3 Unrestricted", "LV", false, true);
+		dso22.insertLlf(470, "Profile 3 Unrestricted", "LV", false, true);
+		dso22.insertLlf(480, "Profile 3 Unrestricted", "LV", false, true);
+		dso22.insertLlf(510, "PC 05-Aug & HH HV", "HV", false, true);
+		dso22.insertLlf(520, "PC 05-Aug & HH HV (Parallel Gen)", "HV", false,
 				true);
-		dso22.insertLineLossFactor(111, "Profile 3 Export LV", "LV", false,
-				false);
-		dso22.insertLineLossFactor(120, "Profile 3 Key Mtr Unrestricted", "LV",
-				false, true);
-		dso22.insertLineLossFactor(130, "Profile 3 Unrestricted", "LV", false,
+		dso22.insertLlf(521, "Export (HV)", "HV", false, false);
+		dso22.insertLlf(540, "PC 05-Aug & HH S/S", "LV", true, true);
+		dso22.insertLlf(550, "PC 05-Aug & HH S/S (Parallel Gen)", "LV", true,
 				true);
-		dso22.insertLineLossFactor(140, "Kry Mtr Unrestricted", "LV", false,
+		dso22.insertLlf(551, "Export (S/S)", "LV", true, false);
+		dso22.insertLlf(570, "PC 05-Aug & HH LV", "LV", false, true);
+		dso22.insertLlf(580, "PC 05-Aug & HH LV (Parallel Gen)", "LV", false,
 				true);
-		dso22.insertLineLossFactor(210, "Profile 4 Economy 7", "LV", false,
-				true);
-		dso22.insertLineLossFactor(211, "Profile 4 Export LV", "LV", false,
-				false);
-		dso22.insertLineLossFactor(220, "Profile 4 Key Meter Economy 7", "LV",
-				false, true);
-		dso22.insertLineLossFactor(230, "Profile 4 Economy 7", "LV", false,
-				true);
-		dso22.insertLineLossFactor(240, "Profile 4 Key Meter Economy 7", "LV",
-				false, true);
-		dso22.insertLineLossFactor(250, "Profile 4 Economy 7", "LV", false,
-				true);
-		dso22.insertLineLossFactor(251, "Profile 4 Economy 7", "LV", false,
-				true);
-		dso22.insertLineLossFactor(260, "Profile 4 Economy 7", "LV", false,
-				true);
-		dso22.insertLineLossFactor(261, "Profile 4 Economy 7", "LV", false,
-				true);
-		dso22.insertLineLossFactor(270, "Profile 3 Unrestricted", "LV", false,
-				true);
-		dso22.insertLineLossFactor(280, "Profile 4 Economy 7", "LV", false,
-				true);
-		dso22.insertLineLossFactor(281, "Profile 4 Economy 7", "LV", false,
-				true);
-		dso22.insertLineLossFactor(310, "Profile 3 Unrestricted", "LV", false,
-				true);
-		dso22.insertLineLossFactor(320, "Profile 3 Unrestricted", "LV", false,
-				true);
-		dso22.insertLineLossFactor(330, "Profile 4 Economy 7", "LV", false,
-				true);
-		dso22.insertLineLossFactor(340, "Profile 4 Economy 7", "LV", false,
-				true);
-		dso22.insertLineLossFactor(350, "Profile 4 Economy 7", "LV", false,
-				true);
-		dso22.insertLineLossFactor(410, "Profile 2 Economy 7", "LV", false,
-				true);
-		dso22.insertLineLossFactor(415, "Profile 2 Economy 7", "LV", false,
-				true);
-		dso22.insertLineLossFactor(420, "Profile 2 Economy 7", "LV", false,
-				true);
-		dso22.insertLineLossFactor(425, "Profile 2 Economy 7", "LV", false,
-				true);
-		dso22.insertLineLossFactor(430, "Profile 2 Economy 7", "LV", false,
-				true);
-		dso22.insertLineLossFactor(435, "Profile 2 Economy 7", "LV", false,
-				true);
-		dso22.insertLineLossFactor(440, "Profile 2 Economy 7", "LV", false,
-				true);
-		dso22.insertLineLossFactor(445, "Profile 2 Economy 7", "LV", false,
-				true);
-		dso22.insertLineLossFactor(450, "Profile 2 Economy 7", "LV", false,
-				true);
-		dso22.insertLineLossFactor(455, "Profile 2 Economy 7", "LV", false,
-				true);
-		dso22.insertLineLossFactor(460, "Profile 3 Unrestricted", "LV", false,
-				true);
-		dso22.insertLineLossFactor(470, "Profile 3 Unrestricted", "LV", false,
-				true);
-		dso22.insertLineLossFactor(480, "Profile 3 Unrestricted", "LV", false,
-				true);
-		dso22.insertLineLossFactor(510, "PC 05-Aug & HH HV", "HV", false, true);
-		dso22.insertLineLossFactor(520, "PC 05-Aug & HH HV (Parallel Gen)",
-				"HV", false, true);
-		dso22.insertLineLossFactor(521, "Export (HV)", "HV", false, false);
-		dso22.insertLineLossFactor(540, "PC 05-Aug & HH S/S", "LV", true, true);
-		dso22.insertLineLossFactor(550, "PC 05-Aug & HH S/S (Parallel Gen)",
-				"LV", true, true);
-		dso22.insertLineLossFactor(551, "Export (S/S)", "LV", true, false);
-		dso22.insertLineLossFactor(570, "PC 05-Aug & HH LV", "LV", false, true);
-		dso22.insertLineLossFactor(580, "PC 05-Aug & HH LV (Parallel Gen)",
-				"LV", false, true);
-		dso22.insertLineLossFactor(581, "Export (LV)", "LV", false, false);
+		dso22.insertLlf(581, "Export (LV)", "LV", false, false);
 
 		// LineLossFactor llf22_510 = dso22.getLineLossFactor("510");
-		// LineLossFactor llf22_520 = dso22.insertLineLossFactor(520",
+		// LineLossFactor llf22_520 = dso22.insertLlf(520",
 		// "PC 5-8 & HH HV (Parallel Gen)", "HV", false,
 		// false);
 		// LineLossFactor llf22_520 = dso22.getLineLossFactor("520");
-		// LineLossFactor llf22_521 = dso22.insertLineLossFactor(521",
+		// LineLossFactor llf22_521 = dso22.insertLlf(521",
 		// "Export (HV)", "HV", false, false);
 		// LineLossFactor llf22_521 = dso22.getLineLossFactor("521");
-		// LineLossFactor llf22_540 = dso22.insertLineLossFactor(540",
+		// LineLossFactor llf22_540 = dso22.insertLlf(540",
 		// "PC 5-8 & HH S/S", "LV", true, true);
 		// LineLossFactor llf22_540 = dso22.getLineLossFactor("540");
-		// LineLossFactor llf22_550 = dso22.insertLineLossFactor(550",
+		// LineLossFactor llf22_550 = dso22.insertLlf(550",
 		// "PC 5-8 & HH S/S (Parallel Gen)", "LV", true,
 		// true);
 		// LineLossFactor llf22_550 = dso22.getLineLossFactor("550");
-		// LineLossFactor llf22_551 = dso22.insertLineLossFactor(551",
+		// LineLossFactor llf22_551 = dso22.insertLlf(551",
 		// "Export (S/S)", "LV", true, false);
 		// LineLossFactor llf22_551 = dso22.getLineLossFactor("551");
-		// LineLossFactor llf22_570 = dso22.insertLineLossFactor(570",
+		// LineLossFactor llf22_570 = dso22.insertLlf(570",
 		// "PC 5-8 & HH LV", "LV", false, true);
 		// LineLossFactor llf22_570 = dso22.getLineLossFactor("570");
-		// LineLossFactor llf22_580 = dso22.insertLineLossFactor(580",
+		// LineLossFactor llf22_580 = dso22.insertLlf(580",
 		// "PC 5-8 & HH LV (Parallel Gen)", "LV", false,
 		// true);
 		// LineLossFactor llf22_580 = dso22.getLineLossFactor("580");
-		// LineLossFactor llf22_581 = dso22.insertLineLossFactor(581",
+		// LineLossFactor llf22_581 = dso22.insertLlf(581",
 		// "Export (LV)", "LV", false, false);
 		// LineLossFactor llf22_581 = dso22.getLineLossFactor("581");
-		dso22.insertLineLossFactor(840, "Profile 2 Economy 7", "LV", false,
-				true);
-		dso22.insertLineLossFactor(850, "Profile 2 Economy 7", "LV", false,
-				true);
-		dso22.insertLineLossFactor(860, "Profile 3 Unrestricted", "LV", false,
-				true);
-		dso22.insertLineLossFactor(870, "Profile 1 Unrestricted", "LV", false,
-				true);
-		dso22.insertLineLossFactor(890, "Profile 3 Unrestricted", "LV", false,
-				true);
-		dso22.insertLineLossFactor(900, "Profile 3 Unrestricted", "LV", false,
-				true);
-		dso22.insertLineLossFactor(910, "Profile 3 Unrestricted", "LV", false,
-				true);
-		dso22.insertLineLossFactor(920, "Profile 3 Unrestricted", "LV", false,
-				true);
-		dso22.insertLineLossFactor(930, "Profile 3 Unrestricted", "LV", false,
-				true);
-		dso22.insertLineLossFactor(950, "Profile 3 Unrestricted", "LV", false,
-				true);
-		dso22.insertLineLossFactor(970, "Unmetered Pseudo Metered", "LV",
-				false, true);
-		dso22.insertLineLossFactor(980, "PC 1&8 Unmetered Profiled", "LV",
-				false, true);
+		dso22.insertLlf(840, "Profile 2 Economy 7", "LV", false, true);
+		dso22.insertLlf(850, "Profile 2 Economy 7", "LV", false, true);
+		dso22.insertLlf(860, "Profile 3 Unrestricted", "LV", false, true);
+		dso22.insertLlf(870, "Profile 1 Unrestricted", "LV", false, true);
+		dso22.insertLlf(890, "Profile 3 Unrestricted", "LV", false, true);
+		dso22.insertLlf(900, "Profile 3 Unrestricted", "LV", false, true);
+		dso22.insertLlf(910, "Profile 3 Unrestricted", "LV", false, true);
+		dso22.insertLlf(920, "Profile 3 Unrestricted", "LV", false, true);
+		dso22.insertLlf(930, "Profile 3 Unrestricted", "LV", false, true);
+		dso22.insertLlf(950, "Profile 3 Unrestricted", "LV", false, true);
+		dso22.insertLlf(970, "Unmetered Pseudo Metered", "LV", false, true);
+		dso22.insertLlf(980, "PC 1&8 Unmetered Profiled", "LV", false, true);
 		Hiber.flush();
 		Dso dso98 = Dso.findDso("98");
-		dso98.insertLineLossFactor(000, "LV Substation Import", "LV", true,
-				true);
-		dso98.insertLineLossFactor(001, "LV Substation Export", "LV", true,
-				false);
-		dso98.insertLineLossFactor(002, "LV Network Import", "LV", false, true);
-		dso98
-				.insertLineLossFactor(003, "LV Network Export", "LV", false,
-						false);
-		dso98.insertLineLossFactor(004, "HV Substation Import", "HV", true,
-				true);
-		dso98.insertLineLossFactor(005, "HV Substation Export", "HV", true,
-				false);
-		dso98.insertLineLossFactor(006, "HV Network Import", "HV", false, true);
-		dso98
-				.insertLineLossFactor(007, "HV Network Export", "HV", false,
-						false);
+		dso98.insertLlf(000, "LV Substation Import", "LV", true, true);
+		dso98.insertLlf(001, "LV Substation Export", "LV", true, false);
+		dso98.insertLlf(002, "LV Network Import", "LV", false, true);
+		dso98.insertLlf(003, "LV Network Export", "LV", false, false);
+		dso98.insertLlf(004, "HV Substation Import", "HV", true, true);
+		dso98.insertLlf(005, "HV Substation Export", "HV", true, false);
+		dso98.insertLlf(006, "HV Network Import", "HV", false, true);
+		dso98.insertLlf(007, "HV Network Export", "HV", false, false);
 		Dso dso99 = Dso.findDso("99");
-		dso99.insertLineLossFactor(000, "LV Substation Import", "LV", true,
-				true);
-		dso99.insertLineLossFactor(001, "LV Substation Export", "LV", true,
-				false);
-		dso99.insertLineLossFactor(002, "LV Network Import", "LV", false, true);
-		dso99
-				.insertLineLossFactor(003, "LV Network Export", "LV", false,
-						false);
-		dso99.insertLineLossFactor(004, "HV Substation Import", "HV", true,
-				true);
-		dso99.insertLineLossFactor(005, "HV Substation Export", "HV", true,
-				false);
-		dso99.insertLineLossFactor(006, "HV Network Import", "HV", false, true);
-		dso99
-				.insertLineLossFactor(007, "HV Network Export", "HV", false,
-						false);
+		dso99.insertLlf(000, "LV Substation Import", "LV", true, true);
+		dso99.insertLlf(001, "LV Substation Export", "LV", true, false);
+		dso99.insertLlf(002, "LV Network Import", "LV", false, true);
+		dso99.insertLlf(003, "LV Network Export", "LV", false, false);
+		dso99.insertLlf(004, "HV Substation Import", "HV", true, true);
+		dso99.insertLlf(005, "HV Substation Export", "HV", true, false);
+		dso99.insertLlf(006, "HV Network Import", "HV", false, true);
+		dso99.insertLlf(007, "HV Network Export", "HV", false, false);
 		Hiber.flush();
 		/*
 		 * llf14_620.attachProfileClass(profileClass00);
@@ -4050,7 +3916,7 @@ public class ContextListener implements ServletContextListener {
 			throws ProgrammerException, UserException, DesignerException {
 		Dso dso = Dso.insertDso(name, new DsoCode(code));
 		ClassLoader classLoader = Dso.class.getClassLoader();
-		DnoService dsoService;
+		DsoService dsoService;
 		try {
 			InputStreamReader isr = new InputStreamReader(classLoader
 					.getResource(

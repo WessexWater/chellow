@@ -11,7 +11,7 @@ if inv.hasParameter("supply-id"):
 				net.sf.chellow.monad.vf.bo.XMLTree("site")).put("organization").put("source").put(
 				"generations",
 				net.sf.chellow.monad.vf.bo.XMLTree("mpans", net.sf.chellow.monad.vf.bo.XMLTree("mpanCore").put("meterTimeswitch").put("hhdceChannels", net.sf.chellow.monad.vf.bo.XMLTree("contract", net.sf.chellow.monad.vf.bo.XMLTree("supplier"))).put(
-						"lineLossFactor", net.sf.chellow.monad.vf.bo.XMLTree("voltageLevel").put("profileClass")))).put(
+						"llf", net.sf.chellow.monad.vf.bo.XMLTree("voltageLevel").put("profileClass")))).put(
 				"mpanCores"), doc))
 else:
 	raise UserException.newInvalidParameter()

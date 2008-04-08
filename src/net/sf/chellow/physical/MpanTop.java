@@ -42,7 +42,7 @@ import net.sf.chellow.monad.types.UriPathElement;
 
 public class MpanTop extends PersistentEntity {
 	static public MpanTop insertMpanTop(ProfileClass pc, MeterTimeswitch mt,
-			LineLossFactor llf, Set<Ssc> sscs) throws ProgrammerException,
+			Llf llf, Set<Ssc> sscs) throws ProgrammerException,
 			UserException {
 		MpanTop mpanTop = new MpanTop(pc, mt, llf, sscs);
 		Hiber.session().save(mpanTop);
@@ -62,7 +62,7 @@ public class MpanTop extends PersistentEntity {
 			for (String mt : mts.split(",")) {
 				tops.add(insertMpanTop(pc, MeterTimeswitch.getMeterTimeswitch(
 						dso, new MeterTimeswitchCode(mt)), dso
-						.getLineLossFactor(llf), sscs));
+						.getLlf(new LlfCode(llf)), sscs));
 			}
 		}
 		return tops;
@@ -86,17 +86,17 @@ public class MpanTop extends PersistentEntity {
 	 * LineLossFactorCode( llf))); }
 	 */
 	static public MpanTop findMpanTop(ProfileClass pc, MeterTimeswitch mt,
-			LineLossFactor llf) throws ProgrammerException, UserException {
+			Llf llf) throws ProgrammerException, UserException {
 		return (MpanTop) Hiber
 				.session()
 				.createQuery(
-						"from MpanTop top where top.profileClass = :pc and top.meterTimeswitch = :mt and top.lineLossFactor = :llf")
+						"from MpanTop top where top.profileClass = :pc and top.meterTimeswitch = :mt and top.llf = :llf")
 				.setEntity("pc", pc).setEntity("mt", mt).setEntity("llf", llf)
 				.uniqueResult();
 	}
 
 	static public MpanTop getMpanTop(ProfileClass pc, MeterTimeswitch mt,
-			LineLossFactor llf) throws ProgrammerException, UserException {
+			Llf llf) throws ProgrammerException, UserException {
 		MpanTop mpanTop = findMpanTop(pc, mt, llf);
 		if (mpanTop == null) {
 			throw UserException
@@ -113,7 +113,7 @@ public class MpanTop extends PersistentEntity {
 
 	private MeterTimeswitch meterTimeswitch;
 
-	private LineLossFactor lineLossFactor;
+	private Llf llf;
 
 	private Set<Ssc> sscs;
 
@@ -121,16 +121,16 @@ public class MpanTop extends PersistentEntity {
 	}
 
 	MpanTop(ProfileClass profileClass, MeterTimeswitch meterTimeswitch,
-			LineLossFactor lineLossFactor, Set<Ssc> sscs)
+			Llf llf, Set<Ssc> sscs)
 			throws ProgrammerException, UserException {
 		this();
 		if (meterTimeswitch.getDso() != null
-				&& !lineLossFactor.getDso().equals(meterTimeswitch.getDso())) {
+				&& !llf.getDso().equals(meterTimeswitch.getDso())) {
 			throw UserException
 					.newInvalidParameter("The Meter Timeswitch DSO doesn't match the Line Loss Factor DSO.");
 		}
 		setMeterTimeswitch(meterTimeswitch);
-		setLineLossFactor(lineLossFactor);
+		setLlf(llf);
 		setProfileClass(profileClass);
 		setSscs(sscs);
 	}
@@ -151,12 +151,12 @@ public class MpanTop extends PersistentEntity {
 		this.meterTimeswitch = meterTimeswitch;
 	}
 
-	public LineLossFactor getLineLossFactor() {
-		return lineLossFactor;
+	public Llf getLlf() {
+		return llf;
 	}
 
-	void setLineLossFactor(LineLossFactor lineLossFactor) {
-		this.lineLossFactor = lineLossFactor;
+	void setLlf(Llf llf) {
+		this.llf = llf;
 	}
 
 	public Set<Ssc> getSscs() {
@@ -169,7 +169,7 @@ public class MpanTop extends PersistentEntity {
 
 	public String toString() {
 		return getProfileClass() + " " + getMeterTimeswitch() + " "
-				+ getLineLossFactor();
+				+ getLlf();
 	}
 
 	public MonadUri getUri() {
@@ -188,7 +188,7 @@ public class MpanTop extends PersistentEntity {
 		Document doc = MonadUtils.newSourceDocument();
 		Element source = doc.getDocumentElement();
 		source.appendChild(getXML(new XmlTree(
-				"lineLossFactor", new XmlTree("dso")).put("profileClass")
+				"llf", new XmlTree("dso")).put("profileClass")
 				.put("meterTimeswitch"), doc));
 		inv.sendOk(doc);
 	}
@@ -205,7 +205,7 @@ public class MpanTop extends PersistentEntity {
 	}
 
 	public Dso getDso() {
-		return lineLossFactor.getDso();
+		return llf.getDso();
 	}
 
 	/*

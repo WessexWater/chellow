@@ -22,9 +22,7 @@
 
 package net.sf.chellow.physical;
 
-import java.text.NumberFormat;
 import java.util.List;
-import java.util.Locale;
 
 import net.sf.chellow.monad.DeployerException;
 import net.sf.chellow.monad.DesignerException;
@@ -35,7 +33,6 @@ import net.sf.chellow.monad.ProgrammerException;
 import net.sf.chellow.monad.Urlable;
 import net.sf.chellow.monad.UserException;
 import net.sf.chellow.monad.XmlTree;
-import net.sf.chellow.monad.types.MonadLong;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
 
@@ -44,62 +41,38 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
-public class LineLossFactor extends PersistentEntity {
-	static public LineLossFactor insertLineLossFactor(Dso dso, int code,
+public class Llf extends PersistentEntity {
+	static public Llf insertLlf(Dso dso, int code,
 			String description, String voltageLevel, boolean isSubstation,
 			boolean isImport) throws ProgrammerException, UserException {
-		LineLossFactor lineLossFactor = new LineLossFactor(dso, code,
+		Llf llf = new Llf(dso, code,
 				description, VoltageLevel.getVoltageLevel(new VoltageLevelCode(
 						voltageLevel)), isSubstation, isImport);
-		Hiber.session().save(lineLossFactor);
-		return lineLossFactor;
+		Hiber.session().save(llf);
+		Hiber.flush();
+		return llf;
 	}
 
-	static public LineLossFactor getLineLossFactor(MonadLong id)
+	static public Llf getLlf(Long id)
 			throws ProgrammerException, UserException {
-		try {
-			LineLossFactor lineLossFactor = (LineLossFactor) Hiber.session()
-					.get(LineLossFactor.class, id.getLong());
-			if (lineLossFactor == null) {
-				throw UserException
-						.newOk("There is no mpan generation with that id.");
-			}
-			return lineLossFactor;
-		} catch (HibernateException e) {
-			throw new ProgrammerException(e);
+		Llf llf = (Llf) Hiber.session().get(
+				Llf.class, id);
+		if (llf == null) {
+			throw UserException
+					.newInvalidParameter("There is no mpan generation with that id.");
 		}
-	}
-
-	/*
-	 * static public LineLossFactor getLineLossFactor(Dso dso, int
-	 * lineLossFactorCode) throws ProgrammerException, UserException { if
-	 * (lineLossFactorCode == null) { throw new
-	 * ProgrammerException("lineLossFactorCode can't be null."); } try {
-	 * LineLossFactor lineLossFactor = (LineLossFactor) Hiber .session()
-	 * .createQuery( "from LineLossFactor llf where llf.dso = :dso and
-	 * llf.code.integer = :lineLossFactorCode") .setEntity("dso",
-	 * dso).setInteger("lineLossFactorCode",
-	 * lineLossFactorCode.getInteger()).uniqueResult(); if (lineLossFactor ==
-	 * null) { throw UserException .newInvalidParameter("There is no Line Loss
-	 * Factor with DSO: " + dso + " and Line Loss Factor Code: " +
-	 * lineLossFactorCode + "."); } return lineLossFactor; } catch
-	 * (HibernateException e) { throw new ProgrammerException(e); } }
-	 */
-	public static String codeAsString(int code) {
-		NumberFormat format = NumberFormat.getIntegerInstance(Locale.UK);
-		format.setMinimumIntegerDigits(3);
-		return format.format(code);
+		return llf;
 	}
 
 	@SuppressWarnings("unchecked")
-	static public List<LineLossFactor> find(Dso dso, ProfileClass profileClass,
+	static public List<Llf> find(Dso dso, ProfileClass profileClass,
 			boolean isSubstation, boolean isImport, VoltageLevel voltageLevel)
 			throws ProgrammerException, UserException {
 		try {
-			return (List<LineLossFactor>) Hiber
+			return (List<Llf>) Hiber
 					.session()
 					.createQuery(
-							"from LineLossFactor llf where llf.dso = :dso and llf.profileClass = :profileClass and llf.isSubstation.boolean = :isSubstation and llf.isImport.boolean = :isImport and llf.voltageLevel = :voltageLevel")
+							"from Llf llf where llf.dso = :dso and llf.profileClass = :profileClass and llf.isSubstation.boolean = :isSubstation and llf.isImport.boolean = :isImport and llf.voltageLevel = :voltageLevel")
 					.setEntity("dso", dso).setEntity("profileClass",
 							profileClass).setBoolean("isSubstation",
 							isSubstation).setBoolean("isImport", isImport)
@@ -110,13 +83,13 @@ public class LineLossFactor extends PersistentEntity {
 	}
 
 	@SuppressWarnings("unchecked")
-	static public List<LineLossFactor> find(Dso dso, ProfileClass profileClass)
+	static public List<Llf> find(Dso dso, ProfileClass profileClass)
 			throws ProgrammerException, UserException {
 		try {
-			return (List<LineLossFactor>) Hiber
+			return (List<Llf>) Hiber
 					.session()
 					.createQuery(
-							"from LineLossFactor llf where llf.dso = :dso and llf.profileClass = :profileClass order by llf.code.string")
+							"from Llf llf where llf.dso = :dso and llf.profileClass = :profileClass order by llf.code.string")
 					.setEntity("dso", dso).setEntity("profileClass",
 							profileClass).list();
 		} catch (HibernateException e) {
@@ -126,7 +99,7 @@ public class LineLossFactor extends PersistentEntity {
 
 	private Dso dso;
 
-	private int code;
+	private LlfCode code;
 
 	private String description;
 
@@ -136,16 +109,15 @@ public class LineLossFactor extends PersistentEntity {
 
 	private boolean isImport;
 
-	LineLossFactor() {
-		setTypeName("line-loss-factor");
+	Llf() {
 	}
 
-	public LineLossFactor(Dso dso, int code, String description,
+	public Llf(Dso dso, int code, String description,
 			VoltageLevel voltageLevel, boolean isSubstation, boolean isImport)
 			throws ProgrammerException, UserException {
 		this();
 		this.dso = dso;
-		setCode(code);
+		setCode(new LlfCode(code));
 		if (description == null) {
 			throw new ProgrammerException("The description can't be null.");
 		}
@@ -162,11 +134,11 @@ public class LineLossFactor extends PersistentEntity {
 		this.dso = dso;
 	}
 
-	public int getCode() {
+	public LlfCode getCode() {
 		return code;
 	}
 
-	void setCode(int code) {
+	void setCode(LlfCode code) {
 		this.code = code;
 	}
 
@@ -219,18 +191,15 @@ public class LineLossFactor extends PersistentEntity {
 		setIsImport(isImport);
 	}
 
-	private String codeAsString() {
-		return codeAsString(code);
-	}
-
 	public String toString() {
-		return codeAsString() + " - " + description + " (DSO " + dso.getCode()
+		return code.toString() + " - " + description + " (DSO " + dso.getCode()
 				+ ")";
 	}
 
 	public Node toXML(Document doc) throws ProgrammerException, UserException {
+		setTypeName("llf");
 		Element element = (Element) super.toXML(doc);
-		element.setAttribute("code", codeAsString());
+		element.setAttribute("code", code.toString());
 		element.setAttribute("description", description);
 		element.setAttribute("is-substation", Boolean.toString(isSubstation));
 		element.setAttribute("is-import", Boolean.toString(isImport));
