@@ -14,7 +14,7 @@
 				<title>
 					Chellow &gt; DNOs &gt;
 					<xsl:value-of
-						select="/source/mpan-top/line-loss-factor/dso/@code" />
+						select="/source/mpan-top/llf/dso/@code" />
 					&gt; MPAN Top Lines &gt;
 					<xsl:value-of select="/source/mpan-top/@id" />
 				</title>
@@ -34,13 +34,13 @@
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/dsos/{/source/mpan-top/line-loss-factor/dso/@id}/">
+						href="{/source/request/@context-path}/dsos/{/source/mpan-top/llf/dso/@id}/">
 						<xsl:value-of
 							select="/source/mpan-top/line-loss-factor/dso/@code" />
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/dsos/{/source/mpan-top/line-loss-factor/dso/@id}/mpan-tops/">
+						href="{/source/request/@context-path}/dsos/{/source/mpan-top/llf/dso/@id}/mpan-tops/">
 						<xsl:value-of select="'MPAN tops'" />
 					</a>
 					&gt;
@@ -89,9 +89,9 @@
 							<td>Line Loss Factor</td>
 							<td>
 								<a
-									href="{/source/request/@context-path}/dsos/{/source/mpan-top/line-loss-factor/dso/@id}/llfs/{/source/mpan-top/line-loss-factor/@id}/">
+									href="{/source/request/@context-path}/dsos/{/source/mpan-top/llf/dso/@id}/llfs/{/source/mpan-top/llf/@id}/">
 									<xsl:value-of
-										select="concat(/source/mpan-top/line-loss-factor/@code, ' - ', /source/mpan-top/line-loss-factor/@description)" />
+										select="concat(/source/mpan-top/llf/@code, ' - ', /source/mpan-top/llf/@description)" />
 								</a>
 							</td>
 						</tr>

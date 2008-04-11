@@ -23,18 +23,16 @@
 package net.sf.chellow.physical;
 
 import java.text.DecimalFormat;
-import java.text.NumberFormat;
-import java.util.Locale;
 
 import net.sf.chellow.monad.ProgrammerException;
 import net.sf.chellow.monad.UserException;
 import net.sf.chellow.monad.types.MonadInteger;
 
+import org.w3c.dom.Attr;
+import org.w3c.dom.Document;
+
 public class MeterTimeswitchCode extends MonadInteger {
 	public MeterTimeswitchCode() {
-		setTypeName("code");
-		setMinimum(0);
-		setMaximum(999);
 	}
 
 	public MeterTimeswitchCode(String code) throws UserException,
@@ -50,15 +48,9 @@ public class MeterTimeswitchCode extends MonadInteger {
 	}
 
 	public void update(String code) throws UserException, ProgrammerException {
-		NumberFormat profileClassCodeFormat = NumberFormat
-				.getIntegerInstance(Locale.UK);
-		int mtc = Integer.parseInt(code.trim());
-		if (mtc < 0) {
-			throw UserException
-					.newInvalidParameter("The MTC can't be negative.");
-		}
-		profileClassCodeFormat.setMinimumIntegerDigits(3);
-		super.update(profileClassCodeFormat.format(mtc));
+		setMinimum(0);
+		setMaximum(999);
+		super.update(Integer.parseInt(code.trim()));
 	}
 
 	public boolean hasDso() {
@@ -68,5 +60,11 @@ public class MeterTimeswitchCode extends MonadInteger {
 	public String toString() {
 		DecimalFormat mtcFormat = new DecimalFormat("000");
 		return mtcFormat.format(getInteger());
+	}
+	
+	public Attr toXML(Document doc) {
+		Attr attr = doc.createAttribute("code");
+		attr.setValue(toString());
+		return attr;
 	}
 }

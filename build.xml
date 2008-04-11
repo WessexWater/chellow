@@ -39,7 +39,7 @@
   Each of the following properties are used in the build script.
   Values for these properties are set by the first place they are
   defined, from the following list:
-
+  
   * Definitions on the "ant" command line (ant -Dfoo=bar compile).
 
   * Definitions from a "build.properties" file in the top level

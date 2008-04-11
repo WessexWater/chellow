@@ -40,7 +40,6 @@ import net.sf.chellow.monad.Invocation;
 import net.sf.chellow.monad.ProgrammerException;
 import net.sf.chellow.monad.Urlable;
 import net.sf.chellow.monad.UserException;
-import net.sf.chellow.monad.types.MonadString;
 import net.sf.chellow.monad.types.UriPathElement;
 import net.sf.chellow.physical.HhEndDate;
 import net.sf.chellow.physical.Mpan;
@@ -242,17 +241,16 @@ public abstract class Service extends PersistentEntity implements
 			UserException {
 		Element element = (Element) super.toXML(doc);
 
-		element.setAttributeNode(MonadString.toXml(doc, "name", name));
-		/*
-		 * startDate.setLabel("start");
-		 * element.appendChild(MonadDate.toXML(startDate, doc)); if (finishDate !=
-		 * null) { finishDate.setLabel("finish");
-		 * element.appendChild(MonadDate.toXML(finishDate, doc)); }
-		 */
+		element.setAttribute("name", name);
+		startRateScript.setLabel("start");
+		element.appendChild(startRateScript.toXML(doc));
+		finishRateScript.setLabel("finish");
+		element.appendChild(finishRateScript.toXML(doc));
 		if (chargeScript != null) {
-			element.setAttributeNode(MonadString.toXml(doc, "charge-script",
-					chargeScript.replace("\r", "").replace("\t", "    ")));
+			element.setAttribute("charge-script",
+					chargeScript.replace("\r", "").replace("\t", "    "));
 		}
+		
 		return element;
 	}
 

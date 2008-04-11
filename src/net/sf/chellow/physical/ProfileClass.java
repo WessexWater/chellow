@@ -1,6 +1,6 @@
 /*
  
- Copyright 2005 Meniscus Systems Ltd
+ Copyright 2005, 2008 Meniscus Systems Ltd
  
  This file is part of Chellow.
 
@@ -31,13 +31,10 @@ import net.sf.chellow.monad.MonadUtils;
 import net.sf.chellow.monad.ProgrammerException;
 import net.sf.chellow.monad.Urlable;
 import net.sf.chellow.monad.UserException;
-
-import net.sf.chellow.monad.types.MonadString;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
 
 import org.hibernate.HibernateException;
-import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -53,8 +50,9 @@ public class ProfileClass extends PersistentEntity {
 		}
 		return profileClass;
 	}
-	
-	static public ProfileClass getProfileClass(int code) throws ProgrammerException, UserException {
+
+	static public ProfileClass getProfileClass(int code)
+			throws ProgrammerException, UserException {
 		return getProfileClass(new ProfileClassCode(code));
 	}
 
@@ -79,18 +77,15 @@ public class ProfileClass extends PersistentEntity {
 						"from ProfileClass as profileClass where profileClass.code.integer = :code")
 				.setInteger("code", code).uniqueResult();
 	}
-/*
-	@SuppressWarnings("unchecked")
-	static public List<ProfileClass> findAll() throws ProgrammerException {
-		return (List<ProfileClass>) Hiber
-				.session()
-				.createQuery(
-						"from ProfileClass profileClass order by profileClass.code.integer")
-				.list();
-	}
-*/
-	public static ProfileClass insertProfileClass(int code,
-			String description) throws ProgrammerException, UserException {
+
+	/*
+	 * @SuppressWarnings("unchecked") static public List<ProfileClass>
+	 * findAll() throws ProgrammerException { return (List<ProfileClass>) Hiber
+	 * .session() .createQuery( "from ProfileClass profileClass order by
+	 * profileClass.code.integer") .list(); }
+	 */
+	public static ProfileClass insertProfileClass(int code, String description)
+			throws ProgrammerException, UserException {
 
 		ProfileClass profileClass = null;
 		try {
@@ -116,7 +111,6 @@ public class ProfileClass extends PersistentEntity {
 	private String description;
 
 	public ProfileClass() {
-		setTypeName("profile-class");
 	}
 
 	public ProfileClass(ProfileClassCode code, String description) {
@@ -157,11 +151,11 @@ public class ProfileClass extends PersistentEntity {
 	}
 
 	public Node toXML(Document doc) throws ProgrammerException, UserException {
+		setTypeName("profile-class");
 		Element element = (Element) super.toXML(doc);
 
-		element.setAttributeNode((Attr) code.toXML(doc));
-		element.setAttributeNode(MonadString.toXml(doc, "description",
-				description));
+		element.setAttributeNode(code.toXML(doc));
+		element.setAttribute("description",	description);
 		return element;
 	}
 

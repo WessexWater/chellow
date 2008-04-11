@@ -16,8 +16,7 @@
 			</head>
 			<body>
 				<p>
-					<img src="{/source/request/@context-path}/logo/" />
-					<span class="logo">Chellow</span>
+					<xsl:value-of select="/source/organization/@name" />
 				</p>
 				<br />
 				<xsl:if test="//message">
@@ -74,30 +73,27 @@
 							</xsl:for-each>
 						</ul>
 					</li>
+				</ul>
+				<h2>Industry Info</h2>
+				<ul>
 					<li>
 						<a
 							href="{/source/request/@context-path}/orgs/1/reports/22/screen/output/">
 							DNOs
-						</a>					
+						</a>
 					</li>
 					<li>
 						<a
-							href="{/source/request/@context-path}/orgs/1/reports/23/screen/output/">
+							href="{/source/request/@context-path}/orgs/1/reports/26/screen/output/">
 							Profile Classes
-						</a>					
-					</li>
-									<li>
-						<a
-							href="{/source/request/@context-path}/orgs/1/reports/24/screen/output/">
-							Meter Timeswitches
-						</a>					
+						</a>
 					</li>
 					<li>
 						<a
-							href="{/source/request/@context-path}/orgs/1/reports/25/screen/output/">
-							MPAN top lines
-						</a>					
-					</li>	
+							href="{/source/request/@context-path}/orgs/{/source/organization/@id}/reports/30/screen/output/">
+							Meter Timeswitches
+						</a>
+					</li>
 				</ul>
 			</body>
 		</html>

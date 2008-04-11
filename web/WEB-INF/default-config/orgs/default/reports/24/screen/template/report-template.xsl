@@ -12,7 +12,7 @@
 					href="{/source/request/@context-path}/orgs/1/reports/9/stream/output/" />
 
 				<title>
-					Chellow &gt; DSOs &gt;
+					<xsl:value-of select="/source/organization/@name" /> &gt; DSOs &gt;
 					<xsl:value-of select="/source/llfs/dso/@code" />
 					&gt; Line Loss Factors
 				</title>
@@ -21,9 +21,7 @@
 				<p>
 					<a
 						href="{/source/request/@context-path}/orgs/1/reports/0/screen/output/">
-						<img
-							src="{/source/request/@context-path}/logo/" />
-						<span class="logo">Chellow</span>
+						<xsl:value-of select="/source/organization/@name" />
 					</a>
 					&gt;
 					<a

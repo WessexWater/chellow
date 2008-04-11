@@ -74,7 +74,7 @@
 								</td>
 								<td>
 									<xsl:value-of
-										select="concat(line-loss-factor/@code, ' - ', line-loss-factor/@description)" />
+										select="concat(llf/@code, ' - ', llf/@description)" />
 								</td>
 							</tr>
 						</xsl:for-each>
