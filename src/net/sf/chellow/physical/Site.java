@@ -138,7 +138,7 @@ public class Site extends PersistentEntity implements Urlable {
 		return element;
 	}
 
-	public Supply insertSupply(SupplyName supplyName, String meterSerialNumber,
+	public Supply insertSupply(String supplyName, String meterSerialNumber,
 			MpanRaw importMpanRaw, DceService importContractDce,
 			Account importAccountSupplier,
 			SupplierService importContractSupplier,

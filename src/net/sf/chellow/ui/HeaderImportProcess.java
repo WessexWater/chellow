@@ -38,7 +38,6 @@ import net.sf.chellow.physical.SourceCode;
 import net.sf.chellow.physical.Sources;
 import net.sf.chellow.physical.Supply;
 import net.sf.chellow.physical.SupplyGeneration;
-import net.sf.chellow.physical.SupplyName;
 
 import org.apache.commons.fileupload.FileItem;
 import org.w3c.dom.Document;
@@ -201,9 +200,9 @@ public class HeaderImportProcess extends Thread implements Urlable,
 					String sourceCodeStr = values[3];
 					csvElement.appendChild(getField("Source Code",
 							sourceCodeStr));
-					String supplyNameStr = values[4];
+					String supplyName = values[4];
 					csvElement.appendChild(getField("Supply Name",
-							supplyNameStr));
+							supplyName));
 					String startDateStr = values[5];
 					csvElement
 							.appendChild(getField("Start date", startDateStr));
@@ -301,7 +300,7 @@ public class HeaderImportProcess extends Thread implements Urlable,
 								.getService(exportContractSupplierName);
 					}
 					Site site = organization.getSite(new SiteCode(siteCodeStr));
-					site.insertSupply(new SupplyName(supplyNameStr),
+					site.insertSupply(supplyName,
 							meterSerialNumber, importMpanRaw,
 							importContractDce, importAccountSupplier,
 							importContractSupplier, true, true, false, true,
@@ -322,13 +321,13 @@ public class HeaderImportProcess extends Thread implements Urlable,
 					String sourceCodeStr = values[3];
 					csvElement.appendChild(getField("Source Code",
 							sourceCodeStr));
-					String supplyNameStr = values[4];
+					String supplyName = values[4];
 					csvElement.appendChild(getField("Supply Name",
-							supplyNameStr));
+							supplyName));
 					Supply supply = organization.getMpanCore(
 							new MpanCoreRaw(mpanCoreStr)).getSupply();
-					supply.update(supplyNameStr.equals(NO_CHANGE) ? supply
-							.getName() : new SupplyName(supplyNameStr),
+					supply.update(supplyName.equals(NO_CHANGE) ? supply
+							.getName() : supplyName,
 							sourceCodeStr.equals(NO_CHANGE) ? supply
 									.getSource() : Sources
 									.getSource(new SourceCode(sourceCodeStr)));

@@ -56,7 +56,6 @@ import org.hibernate.HibernateException;
 import org.hibernate.Query;
 import org.hibernate.criterion.Restrictions;
 import org.hibernate.exception.ConstraintViolationException;
-import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -97,7 +96,7 @@ public class Supply extends PersistentEntity implements Urlable {
 		return supply;
 	}
 
-	private SupplyName name;
+	private String name;
 
 	private Source source;
 
@@ -110,10 +109,9 @@ public class Supply extends PersistentEntity implements Urlable {
 	private Set<Meter> meters;
 
 	public Supply() throws ProgrammerException {
-		setTypeName("supply");
 	}
 
-	Supply(SupplyName name, Source source) throws ProgrammerException,
+	Supply(String name, Source source) throws ProgrammerException,
 			UserException {
 		this();
 		setChannels(new HashSet<Channel>());
@@ -131,7 +129,7 @@ public class Supply extends PersistentEntity implements Urlable {
 		this.channels = channels;
 	}
 
-	public void update(SupplyName name, Source source)
+	public void update(String name, Source source)
 			throws ProgrammerException {
 		if (name == null) {
 			throw new ProgrammerException("The supply name "
@@ -141,11 +139,11 @@ public class Supply extends PersistentEntity implements Urlable {
 		setSource(source);
 	}
 
-	public SupplyName getName() {
+	public String getName() {
 		return name;
 	}
 
-	protected void setName(SupplyName name) throws ProgrammerException {
+	protected void setName(String name) throws ProgrammerException {
 		this.name = name;
 	}
 
@@ -474,9 +472,10 @@ public class Supply extends PersistentEntity implements Urlable {
 
 	public Element toXML(Document doc) throws ProgrammerException,
 			UserException {
+		setTypeName("supply");
 		Element element = (Element) super.toXML(doc);
 
-		element.setAttributeNode((Attr) name.toXML(doc));
+		element.setAttribute("name", name);
 		for (Channel channel : channels) {
 			element.appendChild(channel.toXML(doc));
 		}
@@ -793,7 +792,7 @@ public class Supply extends PersistentEntity implements Urlable {
 								"Supply deleted successfully.").toXML(doc));
 				inv.sendSeeOther(organization.getUri());
 			} else {
-				SupplyName name = inv.getValidatable(SupplyName.class, "name");
+				String name = inv.getString("name");
 				Long sourceId = inv.getLong("source-id");
 				if (!inv.isValid()) {
 					throw UserException.newInvalidParameter(document());

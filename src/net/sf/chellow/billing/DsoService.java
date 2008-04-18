@@ -1,6 +1,6 @@
 /*
  
- Copyright 2005-2007 Meniscus Systems Ltd
+ Copyright 2005-2008 Meniscus Systems Ltd
  
  This file is part of Chellow.
 
@@ -64,7 +64,6 @@ public class DsoService extends Service {
 	private Dso provider;
 
 	public DsoService() {
-		setTypeName("dso-service");
 	}
 
 	public DsoService(String name, HhEndDate startDate, String chargeScript,
@@ -188,6 +187,12 @@ public class DsoService extends Service {
 	public String toString() {
 		return "Service id " + getId() + " " + getProvider() + " name "
 				+ getName();
+	}
+
+	public Element toXML(Document doc) throws ProgrammerException,
+			UserException {
+		setTypeName("dso-service");
+		return super.toXML(doc);
 	}
 
 	@Override

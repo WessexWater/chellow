@@ -66,7 +66,7 @@
 					</li>
 					<li>
 						<a
-							href="{/source/request/@context-path}/orgs/{/source/organization/@id}/reports/26/screen/output/?dso-id={/source/dso/@id}">
+							href="{/source/request/@context-path}/orgs/{/source/organization/@id}/reports/32/screen/output/?dso-id={/source/dso/@id}">
 							Services
 						</a>
 					</li>

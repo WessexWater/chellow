@@ -68,16 +68,23 @@
 									</a>
 								</td>
 								<td>
-									<xsl:value-of
-										select="@name" />
+									<xsl:value-of select="@name" />
 								</td>
 								<td>
 									<xsl:value-of
-										select="concat(meter-timeswitch/@code, ' - ', meter-timeswitch/@description)" />
+										select="concat(rate-script[@label='start']/hh-end-date[@label='start']/@year, '-', rate-script[@label='start']/hh-end-date[@label='start']/@month, '-', rate-script[@label='start']/hh-end-date[@label='start']/@day)" />
 								</td>
 								<td>
-									<xsl:value-of
-										select="concat(llf/@code, ' - ', llf/@description)" />
+									<xsl:choose>
+										<xsl:when
+											test="rate-script[@label='finish']/hh-end-date[@label='finish']">
+											<xsl:value-of
+												select="concat(rate-script[@label='finish']/hh-end-date[@label='finish']/@year, '-', rate-script[@label='finish']/hh-end-date[@label='finish']/@month, '-', rate-script[@label='finish']/hh-end-date[@label='finish']/@day)" />
+										</xsl:when>
+										<xsl:otherwise>
+											Ongoing
+										</xsl:otherwise>
+									</xsl:choose>
 								</td>
 							</tr>
 						</xsl:for-each>
@@ -87,4 +94,3 @@
 		</html>
 	</xsl:template>
 </xsl:stylesheet>
-

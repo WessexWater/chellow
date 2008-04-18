@@ -35,7 +35,6 @@ import net.sf.chellow.monad.Urlable;
 import net.sf.chellow.monad.UserException;
 
 
-import net.sf.chellow.monad.types.MonadLong;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
 
@@ -52,11 +51,11 @@ public class MpanCore extends PersistentEntity {
 			throw new ProgrammerException(e);
 		}
 	}
-
+/*
 	static public MpanCore getMpanCore(MonadLong id) throws ProgrammerException {
 		return getMpanCore(id.getLong());
 	}
-
+*/
 	private Supply supply;
 
 	private Dso dso;

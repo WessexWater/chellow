@@ -664,8 +664,8 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 				boolean exportHasExportKvarh = false;
 				boolean hasExportMpan = inv.getBoolean("has-export-mpan");
 				if (hasExportMpan) {
-					MonadLong exportMpanCoreId = inv
-							.getMonadLong("export-mpan-core-id");
+					Long exportMpanCoreId = inv
+							.getLong("export-mpan-core-id");
 					exportMpanCore = MpanCore.getMpanCore(exportMpanCoreId);
 					Long exportProfileClassId = inv
 							.getLong("export-profile-class-id");
