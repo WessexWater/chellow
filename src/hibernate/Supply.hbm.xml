@@ -31,11 +31,9 @@
 				<param name="sequence">supply_id_sequence</param>
 			</generator>
 		</id>
-		<component name="name" class="SupplyName">
-			<property name="string" column="name" />
-		</component>
+		<property name="name" column="name" />
 		<many-to-one name="source" class="Source" column="source_id"
-			not-null="true" foreign-key="fkey_supply_source"/>
+			not-null="true" foreign-key="fkey_supply_source" />
 		<set name="generations" inverse="true"
 			cascade="all,delete-orphan" order-by="start_date desc">
 			<key column="supply_id" />
@@ -51,7 +49,7 @@
 			<key column="supply_id" />
 			<one-to-many class="MpanCore" />
 		</set>
-			<set name="meters" inverse="true" lazy="true"
+		<set name="meters" inverse="true" lazy="true"
 			cascade="all,delete-orphan">
 			<key column="supply_id" />
 			<one-to-many class="Meter" />

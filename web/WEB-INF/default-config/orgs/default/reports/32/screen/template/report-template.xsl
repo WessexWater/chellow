@@ -32,7 +32,7 @@
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/orgs/1/reports/23/screen/output/?dso-id={/source/mpan-tops/dso/@id}">
+						href="{/source/request/@context-path}/orgs/1/reports/23/screen/output/?dso-id={/source/services/dso/@id}">
 						<xsl:value-of
 							select="/source/services/dso/@code" />
 					</a>
@@ -63,7 +63,7 @@
 							<tr>
 								<td>
 									<a
-										href="{/source/request/@context-path}/orgs/1/reports/33/screen/output/?service-id={@id}">
+										href="{/source/request/@context-path}/orgs/1/reports/33/screen/output/?dso-service-id={@id}">
 										<xsl:value-of select="@id" />
 									</a>
 								</td>

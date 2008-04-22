@@ -242,10 +242,10 @@ public abstract class Service extends PersistentEntity implements
 		Element element = (Element) super.toXML(doc);
 
 		element.setAttribute("name", name);
-		startRateScript.setLabel("start");
-		element.appendChild(startRateScript.toXML(doc));
-		finishRateScript.setLabel("finish");
-		element.appendChild(finishRateScript.toXML(doc));
+		//startRateScript.setLabel("start");
+		//element.appendChild(startRateScript.toXML(doc));
+		//finishRateScript.setLabel("finish");
+		//element.appendChild(finishRateScript.toXML(doc));
 		if (chargeScript != null) {
 			element.setAttribute("charge-script",
 					chargeScript.replace("\r", "").replace("\t", "    "));

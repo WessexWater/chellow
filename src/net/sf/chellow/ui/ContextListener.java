@@ -915,11 +915,11 @@ public class ContextListener implements ServletContextListener {
 		Ssc.insertSsc(9999, null);
 
 		MeterTimeswitch.insertMeterTimeswitch(null, "500",
-				"Credit single rate", true);
+				"Credit single rate", false);
 		// mtc_null_500.insertRegister(Ssc.Units.KWH, "1");
 		Hiber.commit();
 		MeterTimeswitch.insertMeterTimeswitch(null, "501",
-				"Credit single rate", true);
+				"Credit single rate", false);
 		// mtc_null_501.insertRegister(Ssc.Units.KWH, "1");
 		MeterTimeswitch.insertMeterTimeswitch(null, "502", "Continuous", true);
 		// mtc_null_502.insertRegister(Ssc.Units.KWH, "258");
