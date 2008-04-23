@@ -14,7 +14,7 @@
 				<title>
 					Chellow &gt; Organizations &gt;
 					<xsl:value-of
-						select="/source/rate-script/supplier-service/supplier/organization/@name" />
+						select="/source/rate-script/supplier-service/supplier/org/@name" />
 					&gt; Suppliers &gt;
 					<xsl:value-of
 						select="/source/rate-script/supplier-service/supplier/@name" />
@@ -40,35 +40,35 @@
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/orgs/{/source/rate-script/supplier-service/supplier/organization/@id}/">
+						href="{/source/request/@context-path}/orgs/{/source/rate-script/supplier-service/supplier/org/@id}/">
 						<xsl:value-of
-							select="/source/rate-script/supplier-service/supplier/organization/@name" />
+							select="/source/rate-script/supplier-service/supplier/org/@name" />
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/orgs/{/source/rate-script/supplier-service/supplier/organization/@id}/suppliers/">
+						href="{/source/request/@context-path}/orgs/{/source/rate-script/supplier-service/supplier/org/@id}/suppliers/">
 						<xsl:value-of select="'Suppliers'" />
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/orgs/{/source/rate-script/supplier-service/supplier/organization/@id}/suppliers/{/source/rate-script/supplier-service/supplier/@id}">
+						href="{/source/request/@context-path}/orgs/{/source/rate-script/supplier-service/supplier/org/@id}/suppliers/{/source/rate-script/supplier-service/supplier/@id}">
 						<xsl:value-of
 							select="/source/rate-script/supplier-service/supplier/@name" />
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/orgs/{/source/rate-script/supplier-service/supplier/organization/@id}/suppliers/{/source/rate-script/supplier-service/supplier/@id}/services/">
+						href="{/source/request/@context-path}/orgs/{/source/rate-script/supplier-service/supplier/org/@id}/suppliers/{/source/rate-script/supplier-service/supplier/@id}/services/">
 						<xsl:value-of select="'Services'" />
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/orgs/{/source/rate-script/supplier-service/supplier/organization/@id}/suppliers/{/source/rate-script/supplier-service/supplier/@id}/services/{/source/rate-script/supplier-service/@id}/">
+						href="{/source/request/@context-path}/orgs/{/source/rate-script/supplier-service/supplier/org/@id}/suppliers/{/source/rate-script/supplier-service/supplier/@id}/services/{/source/rate-script/supplier-service/@id}/">
 						<xsl:value-of
 							select="/source/rate-script/supplier-service/@name" />
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/orgs/{/source/rate-script/supplier-service/supplier/organization/@id}/suppliers/{/source/rate-script/supplier-service/supplier/@id}/services/{/source/rate-script/supplier-service/@id}/rate-scripts/">
+						href="{/source/request/@context-path}/orgs/{/source/rate-script/supplier-service/supplier/org/@id}/suppliers/{/source/rate-script/supplier-service/supplier/@id}/services/{/source/rate-script/supplier-service/@id}/rate-scripts/">
 						<xsl:value-of select="'Rate Scripts'" />
 					</a>
 					&gt;

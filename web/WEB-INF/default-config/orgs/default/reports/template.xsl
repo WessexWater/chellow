@@ -14,7 +14,7 @@
 				<title>
 					Chellow &gt; Organizations &gt;
 					<xsl:value-of
-						select="/source/reports/organization/@name" />
+						select="/source/reports/org/@name" />
 					&gt; Reports
 				</title>
 
@@ -33,9 +33,9 @@
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/orgs/{/source/reports/organization/@id}/">
+						href="{/source/request/@context-path}/orgs/{/source/reports/org/@id}/">
 						<xsl:value-of
-							select="/source/reports/organization/@name" />
+							select="/source/reports/org/@name" />
 					</a>
 					&gt; Reports
 				</p>

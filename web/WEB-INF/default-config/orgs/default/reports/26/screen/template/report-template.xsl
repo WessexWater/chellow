@@ -11,13 +11,13 @@
 				<link rel="stylesheet" type="text/css"
 					href="{/source/request/@context-path}/orgs/1/reports/9/stream/output/" />
 
-				<title><xsl:value-of select="/source/organization/@name" /> &gt; Profile Classes</title>
+				<title><xsl:value-of select="/source/org/@name" /> &gt; Profile Classes</title>
 			</head>
 			<body>
 				<p>
 					<a
 						href="{/source/request/@context-path}/orgs/1/reports/0/screen/output/">
-						<xsl:value-of select="/source/organization/@name" />
+						<xsl:value-of select="/source/org/@name" />
 					</a>
 					&gt; Profile Classes
 				</p>

@@ -89,7 +89,6 @@ public class Organization extends PersistentEntity {
 	private Set<Dce> suppliers;
 
 	public Organization() {
-		setTypeName("organization");
 	}
 
 	public Organization(String name) {
@@ -136,6 +135,7 @@ public class Organization extends PersistentEntity {
 	}
 
 	public Node toXML(Document doc) throws ProgrammerException, UserException {
+		setTypeName("org");
 		Element element = (Element) super.toXML(doc);
 
 		element.setAttributeNode(MonadString.toXml(doc, "name", name));

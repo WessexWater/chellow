@@ -13,7 +13,7 @@
 
 				<title>
 					Chellow &gt; Organizations &gt;
-					<xsl:value-of select="/source/header-import-processes/organization/@name" />
+					<xsl:value-of select="/source/header-import-processes/org/@name" />
 					&gt; Header Data Imports
 				</title>
 
@@ -32,9 +32,9 @@
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/orgs/{/source/header-import-processes/organization/@id}/">
+						href="{/source/request/@context-path}/orgs/{/source/header-import-processes/org/@id}/">
 						<xsl:value-of
-							select="/source/header-import-processes/organization/@name" />
+							select="/source/header-import-processes/org/@name" />
 					</a>
 					&gt; Header Data Imports
 				</p>

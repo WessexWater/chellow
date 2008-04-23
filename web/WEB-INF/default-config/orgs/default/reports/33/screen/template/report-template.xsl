@@ -12,7 +12,7 @@
 					href="{/source/request/@context-path}/orgs/1/reports/9/stream/output/" />
 
 				<title>
-					<xsl:value-of select="/source/organization/@name" />
+					<xsl:value-of select="/source/org/@name" />
 					&gt; DSOs &gt;
 					<xsl:value-of
 						select="/source/dso-service/dso/@code" />
@@ -24,23 +24,22 @@
 				<p>
 					<a
 						href="{/source/request/@context-path}/orgs/1/reports/0/screen/output/">
-						<xsl:value-of
-							select="/source/organization/@name" />
+						<xsl:value-of select="/source/org/@name" />
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/orgs/1/reports/22/screen/output/">
+						href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/22/screen/output/">
 						<xsl:value-of select="'DSOs'" />
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/orgs/1/reports/23/screen/output/?dso-id={/source/dso-service/dso/@id}">
+						href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/23/screen/output/?dso-id={/source/dso-service/dso/@id}">
 						<xsl:value-of
 							select="/source/dso-service/dso/@code" />
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/orgs/1/reports/32/screen/output/?dso-id={/source/dso-service/dso/@id}">
+						href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/32/screen/output/?dso-id={/source/dso-service/dso/@id}">
 						<xsl:value-of select="'Services'" />
 					</a>
 					&gt;
@@ -105,9 +104,9 @@
 				</table>
 
 				<h2>Script</h2>
-
 				<pre>
-					<xsl:value-of select="/source/dso-service/@charge-script" />
+					<xsl:value-of
+						select="/source/dso-service/rate-script/@script" />
 				</pre>
 
 				<h2>Rate Scripts</h2>
@@ -116,8 +115,8 @@
 					<thead>
 						<tr>
 							<th>Id</th>
-							<th>Start Date</th>
-							<th>Finish Date</th>
+							<th>From</th>
+							<th>To</th>
 						</tr>
 					</thead>
 					<tbody>
@@ -126,7 +125,7 @@
 							<tr>
 								<td>
 									<a
-										href="{/source/request/@context-path}/orgs/{/source/organization/@id}/reports/34/screen/output/?rate-script-id={@id}">
+										href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/34/screen/output/?dso-rate-script-id={@id}">
 										<xsl:value-of select="@id" />
 									</a>
 								</td>
@@ -154,4 +153,3 @@
 		</html>
 	</xsl:template>
 </xsl:stylesheet>
-

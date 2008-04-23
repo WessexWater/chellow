@@ -55,16 +55,10 @@ public class Supplier extends ProviderOrganization {
 	}
 
 	Supplier() {
-		init();
 	}
 
 	public Supplier(Organization organization, String name) {
 		super(name, organization);
-		init();
-	}
-
-	private void init() {
-		setTypeName("supplier");
 	}
 
 	public SupplierService getService(String name) throws UserException,
@@ -135,9 +129,10 @@ public class Supplier extends ProviderOrganization {
 	}
 
 	public SupplierService insertService(String name, HhEndDate startDate,
-			 String chargeScript) throws UserException,
-			ProgrammerException, DesignerException {
-		SupplierService service = new SupplierService(name, startDate, chargeScript, this);
+			String chargeScript) throws UserException, ProgrammerException,
+			DesignerException {
+		SupplierService service = new SupplierService(name, startDate,
+				chargeScript, this);
 		Hiber.session().save(service);
 		Hiber.flush();
 		return service;
@@ -166,9 +161,15 @@ public class Supplier extends ProviderOrganization {
 	@Override
 	public List<SupplyGeneration> supplyGenerations(Account account) {
 		return Hiber
-		.session()
-		.createQuery(
-				"select mpan.supplyGeneration from Mpan mpan where mpan.supplierAccount = :account order by mpan.supplyGeneration.startDate.date")
-		.setEntity("account", account).list();
+				.session()
+				.createQuery(
+						"select mpan.supplyGeneration from Mpan mpan where mpan.supplierAccount = :account order by mpan.supplyGeneration.startDate.date")
+				.setEntity("account", account).list();
+	}
+
+	public Element toXML(Document doc) throws ProgrammerException,
+			UserException {
+		setTypeName("supplier");
+		return super.toXML(doc);
 	}
 }

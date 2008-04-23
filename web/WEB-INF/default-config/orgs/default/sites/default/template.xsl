@@ -11,7 +11,7 @@
 				<title>
 					Chellow &gt; Organizations &gt;
 					<xsl:value-of
-						select="/source/site/organization/@name" />
+						select="/source/site/org/@name" />
 					&gt; Sites &gt;
 					<xsl:value-of
 						select="concat(/source/site/@code, ' ', /source/site/@name)" />
@@ -33,13 +33,13 @@
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/orgs/{/source/site/organization/@id}/">
+						href="{/source/request/@context-path}/orgs/{/source/site/org/@id}/">
 						<xsl:value-of
-							select="/source/site/organization/@name" />
+							select="/source/site/org/@name" />
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/orgs/{/source/site/organization/@id}/sites/">
+						href="{/source/request/@context-path}/orgs/{/source/site/org/@id}/sites/">
 						<xsl:value-of select="'Sites'" />
 					</a>
 					&gt;
@@ -123,13 +123,13 @@
 								<tr>
 									<td>
 										<a
-											href="{/source/request/@context-path}/orgs/{/source/site/organization/@id}/supplies/{supply/@id}/generations/{@id}/">
+											href="{/source/request/@context-path}/orgs/{/source/site/org/@id}/supplies/{supply/@id}/generations/{@id}/">
 											<xsl:value-of select="@id" />
 										</a>
 									</td>
 									<td>
 										<a
-											href="{/source/request/@context-path}/orgs/{/source/site/organization/@id}/supplies/{supply/@id}/">
+											href="{/source/request/@context-path}/orgs/{/source/site/org/@id}/supplies/{supply/@id}/">
 											<xsl:value-of
 												select="supply/@id" />
 										</a>

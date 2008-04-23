@@ -14,7 +14,7 @@
 				<title>
 					Chellow &gt; Organizations &gt;
 					<xsl:value-of
-						select="/source/stream-report/report/reports/organization/@name" />
+						select="/source/stream-report/report/reports/org/@name" />
 					&gt; Reports &gt;
 					<xsl:value-of select="/source/stream-report/report/@name" />
 					&gt; Stream
@@ -35,18 +35,18 @@
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/orgs/{/source/stream-report/report/reports/organization/@id}/">
+						href="{/source/request/@context-path}/orgs/{/source/stream-report/report/reports/org/@id}/">
 						<xsl:value-of
-							select="/source/stream-report/report/reports/organization/@name" />
+							select="/source/stream-report/report/reports/org/@name" />
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/orgs/{/source/stream-report/report/reports/organization/@id}/reports/">
+						href="{/source/request/@context-path}/orgs/{/source/stream-report/report/reports/org/@id}/reports/">
 						<xsl:value-of select="'Reports'" />
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/orgs/{/source/stream-report/report/reports/organization/@id}/reports/{/source/stream-report/report/@id}/">
+						href="{/source/request/@context-path}/orgs/{/source/stream-report/report/reports/org/@id}/reports/{/source/stream-report/report/@id}/">
 						<xsl:value-of
 							select="/source/stream-report/report/@name" />
 					</a>

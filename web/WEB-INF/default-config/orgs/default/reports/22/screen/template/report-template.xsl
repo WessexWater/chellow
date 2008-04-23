@@ -18,7 +18,7 @@
 					<a
 						href="{/source/request/@context-path}/orgs/1/reports/0/screen/output/">
 						<xsl:value-of
-							select="/source/organization/@name" />
+							select="/source/org/@name" />
 					</a>
 					&gt; DSOs
 				</p>
@@ -44,7 +44,7 @@
 							<tr>
 								<td>
 									<a
-										href="{/source/request/@context-path}/orgs/{/source/organization/@id}/reports/23/screen/output/?dso-id={@id}">
+										href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/23/screen/output/?dso-id={@id}">
 										<xsl:value-of select="@id" />
 									</a>
 								</td>

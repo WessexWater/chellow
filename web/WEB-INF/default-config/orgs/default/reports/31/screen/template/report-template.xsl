@@ -9,10 +9,10 @@
 		<html>
 			<head>
 				<link rel="stylesheet" type="text/css"
-					href="{/source/request/@context-path}/orgs/{/source/organization/@id}/reports/9/stream/output/" />
+					href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/9/stream/output/" />
 
 				<title>
-					<xsl:value-of select="/source/organization/@name"/> &gt; Meter Timeswitches &gt;
+					<xsl:value-of select="/source/org/@name"/> &gt; Meter Timeswitches &gt;
 					<xsl:value-of
 						select="/source/meter-timeswitch/@code" />
 				</title>
@@ -20,12 +20,12 @@
 			<body>
 				<p>
 					<a
-						href="{/source/request/@context-path}/orgs/{/source/organization/@id}/reports/0/screen/output/">
-						<xsl:value-of select="/source/organization/@name"/>
+						href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/0/screen/output/">
+						<xsl:value-of select="/source/org/@name"/>
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/orgs/{/source/organization/@id}/reports/30/screen/output/">
+						href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/30/screen/output/">
 						<xsl:value-of select="'Meter Timeswitches'" />
 					</a>
 					&gt;

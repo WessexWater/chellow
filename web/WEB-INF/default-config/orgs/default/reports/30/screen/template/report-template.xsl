@@ -16,8 +16,8 @@
 			<body>
 				<p>
 					<a
-						href="{/source/request/@context-path}/orgs/{/source/organization/@id}/reports/0/screen/output/">
-						<xsl:value-of select="/source/organization/@name"/>
+						href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/0/screen/output/">
+						<xsl:value-of select="/source/org/@name"/>
 					</a>
 					&gt; Meter Timeswitches
 				</p>
@@ -48,7 +48,7 @@
 							<tr>
 								<td>
 									<a
-										href="{/source/request/@context-path}/orgs/{/source/organization/@id}/reports/31/screen/output/?mt-id={@id}">
+										href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/31/screen/output/?mt-id={@id}">
 										<xsl:value-of select="@id" />
 									</a>
 								</td>
@@ -59,7 +59,7 @@
 									<xsl:choose>
 										<xsl:when test="dso">
 											<a
-												href="{/source/request/@context-path}/orgs/{/source/organization/@id}/reports/23/screen/output/?dso-id={dso/@id}">
+												href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/23/screen/output/?dso-id={dso/@id}">
 												<xsl:value-of
 													select="dso/@code" />
 											</a>

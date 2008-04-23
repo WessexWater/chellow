@@ -12,7 +12,7 @@
 					href="{/source/request/@context-path}/orgs/1/reports/9/stream/output/" />
 
 				<title>
-					<xsl:value-of select="/source/organization/@name" />
+					<xsl:value-of select="/source/org/@name" />
 					&gt; DSOs &gt;
 					<xsl:value-of select="/source/dso/@code" />
 				</title>
@@ -21,7 +21,7 @@
 				<p>
 					<a
 						href="{/source/request/@context-path}/orgs/1/reports/0/screen/output/">
-						<xsl:value-of select="/source/organization/@name" />
+						<xsl:value-of select="/source/org/@name" />
 					</a>
 					&gt;
 					<a
@@ -54,19 +54,19 @@
 				<ul>
 					<li>
 						<a
-							href="{/source/request/@context-path}/orgs/{/source/organization/@id}/reports/24/screen/output/?dso-id={/source/dso/@id}">
+							href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/24/screen/output/?dso-id={/source/dso/@id}">
 							Line Loss Factors
 						</a>
 					</li>
 					<li>
 						<a
-							href="{/source/request/@context-path}/orgs/{/source/organization/@id}/reports/28/screen/output/?dso-id={/source/dso/@id}">
+							href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/28/screen/output/?dso-id={/source/dso/@id}">
 							MPAN top lines
 						</a>
 					</li>
 					<li>
 						<a
-							href="{/source/request/@context-path}/orgs/{/source/organization/@id}/reports/32/screen/output/?dso-id={/source/dso/@id}">
+							href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/32/screen/output/?dso-id={/source/dso/@id}">
 							Services
 						</a>
 					</li>

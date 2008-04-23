@@ -12,11 +12,10 @@
 					href="{/source/request/@context-path}/orgs/1/reports/9/stream/output/" />
 
 				<title>Chellow</title>
-
 			</head>
 			<body>
 				<p>
-					<xsl:value-of select="/source/organization/@name" />
+					<xsl:value-of select="/source/org/@name" />
 				</p>
 				<br />
 				<xsl:if test="//message">
@@ -45,8 +44,7 @@
 					<li>
 						DCEs
 						<ul>
-							<xsl:for-each
-								select="/source/organization/dce">
+							<xsl:for-each select="/source/org/dce">
 								<li>
 									<xsl:value-of select="@name" />
 									<ul>
@@ -73,13 +71,19 @@
 							</xsl:for-each>
 						</ul>
 					</li>
+					<li>
+						<a
+							href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/35/screen/output/">
+							Suppliers
+						</a>
+					</li>
 				</ul>
 				<h2>Industry Info</h2>
 				<ul>
 					<li>
 						<a
 							href="{/source/request/@context-path}/orgs/1/reports/22/screen/output/">
-							DNOs
+							DSOs
 						</a>
 					</li>
 					<li>
@@ -90,7 +94,7 @@
 					</li>
 					<li>
 						<a
-							href="{/source/request/@context-path}/orgs/{/source/organization/@id}/reports/30/screen/output/">
+							href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/30/screen/output/">
 							Meter Timeswitches
 						</a>
 					</li>

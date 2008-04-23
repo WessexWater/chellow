@@ -12,7 +12,7 @@
 					href="{/source/request/@context-path}/orgs/1/reports/9/stream/output/" />
 
 				<title>
-					<xsl:value-of select="/source/organization/@name" /> &gt; DSOs &gt;
+					<xsl:value-of select="/source/org/@name" /> &gt; DSOs &gt;
 					<xsl:value-of select="/source/llf/dso/@code" />
 					&gt; Line Loss Factors &gt;
 					<xsl:value-of select="/source/llf/@code" />
@@ -22,7 +22,7 @@
 				<p>
 					<a
 						href="{/source/request/@context-path}/orgs/1/reports/0/screen/output/">
-						<xsl:value-of select="/source/organization/@name" />
+						<xsl:value-of select="/source/org/@name" />
 					</a>
 					&gt;
 					<a

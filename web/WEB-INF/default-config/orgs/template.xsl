@@ -39,7 +39,7 @@
 							<a
 								href="{/source/response/header[@name = 'Location']/@value}">
 								<xsl:value-of
-									select="'new organization'" />
+									select="'new org'" />
 							</a>
 							has been successfully created.
 						</p>
@@ -47,7 +47,7 @@
 					<xsl:otherwise>
 						<ul>
 							<xsl:for-each
-								select="/source/organization">
+								select="/source/org">
 								<li>
 									<a
 										href="{/source/request/@context-path}/orgs/{@id}">

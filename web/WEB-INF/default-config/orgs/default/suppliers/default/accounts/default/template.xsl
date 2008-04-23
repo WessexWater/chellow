@@ -14,7 +14,7 @@
 				<title>
 					Chellow &gt; Organizations &gt;
 					<xsl:value-of
-						select="/source/account/organization/@name" />
+						select="/source/account/org/@name" />
 					&gt; Suppliers &gt;
 					<xsl:value-of
 						select="/source/account/supplier/@name" />
@@ -35,18 +35,18 @@
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/orgs/{/source/account/organization/@id}/">
+						href="{/source/request/@context-path}/orgs/{/source/account/org/@id}/">
 						<xsl:value-of
-							select="/source/account/organization/@name" />
+							select="/source/account/org/@name" />
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/orgs/{/source/account/organization/@id}/suppliers/">
+						href="{/source/request/@context-path}/orgs/{/source/account/org/@id}/suppliers/">
 						<xsl:value-of select="'Suppliers'" />
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/orgs/{/source/account/organization/@id}/suppliers/{/source/account/supplier/@id}">
+						href="{/source/request/@context-path}/orgs/{/source/account/org/@id}/suppliers/{/source/account/supplier/@id}">
 						<xsl:value-of
 							select="/source/account/supplier/@name" />
 					</a>
@@ -132,7 +132,7 @@
 									<xsl:value-of
 										select="concat(profile-class/@code, ' ', meter-timeswitch/@code, ' ', line-loss-factor/@code, ' ', mpan-core/@core, ' ')" />
 									<a
-										href="{/source/request/@context-path}/orgs/{/source/account/organization/@id}/supplies/{supply-generation/supply/@id}/generations/{supply-generation/@id}/">
+										href="{/source/request/@context-path}/orgs/{/source/account/org/@id}/supplies/{supply-generation/supply/@id}/generations/{supply-generation/@id}/">
 										Supply Generation
 									</a>
 								</li>

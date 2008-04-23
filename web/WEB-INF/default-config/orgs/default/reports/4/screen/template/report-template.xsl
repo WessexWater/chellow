@@ -32,7 +32,7 @@
                     </a>
                     &gt;
                     <a
-                        href="{/source/request/@context-path}/orgs/{/source/site/organization/@id}/reports/2/screen/output/?site-id={/source/site/@id}">
+                        href="{/source/request/@context-path}/orgs/{/source/site/org/@id}/reports/2/screen/output/?site-id={/source/site/@id}">
                     <xsl:value-of select="/source/site/@name" />
                     </a>
                     &gt;
@@ -51,7 +51,7 @@
                     </ul>
                 </xsl:if>
 
-                <p><img src="{/source/request/@context-path}/orgs/{/source/site/organization/@id}/reports/10/stream/output/?site-id={/source/site/@id}&amp;finish-date-year={/source/@finish-date-year}&amp;finish-date-month={/source/@finish-date-month}&amp;months={/source/@months}"/></p>
+                <p><img src="{/source/request/@context-path}/orgs/{/source/site/org/@id}/reports/10/stream/output/?site-id={/source/site/@id}&amp;finish-date-year={/source/@finish-date-year}&amp;finish-date-month={/source/@finish-date-month}&amp;months={/source/@months}"/></p>
                 <form action=".">
                   <fieldset><legend>Show graph</legend>
                     <input type="hidden" name="site-id" value="{/source/request/parameter[@name='site-id']/value}"/>

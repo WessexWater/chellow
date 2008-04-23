@@ -14,7 +14,7 @@
 				<title>
 					Chellow &gt; Organizations &gt;
 					<xsl:value-of
-						select="/source/mpan-cores/organization/@name" />
+						select="/source/mpan-cores/org/@name" />
 					&gt; MPAN Cores
 				</title>
 
@@ -43,9 +43,9 @@
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/orgs/{/source/mpan-cores/organization/@id}/">
+						href="{/source/request/@context-path}/orgs/{/source/mpan-cores/org/@id}/">
 						<xsl:value-of
-							select="/source/mpan-cores/organization/@name" />
+							select="/source/mpan-cores/org/@name" />
 					</a>
 					&gt; MPAN Cores
 				</p>
@@ -79,7 +79,7 @@
 							</td>
 							<td>
 								<a
-									href="{/source/request/@context-path}/orgs/{/source/mpan-cores/organization/@id}/supplies/{supply/@id}/">
+									href="{/source/request/@context-path}/orgs/{/source/mpan-cores/org/@id}/supplies/{supply/@id}/">
 									<xsl:value-of select="supply/@id"/>
 								</a>
 							</td>

@@ -11,7 +11,7 @@
 				<title>
 					Chellow &gt; Organizations &gt;
 					<xsl:value-of
-						select="/source/header-import-process/organization/@name" />
+						select="/source/header-import-process/org/@name" />
 					&gt; Header Data Imports &gt;
 					<xsl:value-of
 						select="/source/header-import-process/@id" />
@@ -33,13 +33,13 @@
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/orgs/{/source/header-import-process/organization/@id}/">
+						href="{/source/request/@context-path}/orgs/{/source/header-import-process/org/@id}/">
 						<xsl:value-of
-							select="/source/header-import-process/organization/@name" />
+							select="/source/header-import-process/org/@name" />
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/orgs/{/source/header-import-process/organization/@id}/header-data-imports/">
+						href="{/source/request/@context-path}/orgs/{/source/header-import-process/org/@id}/header-data-imports/">
 						<xsl:value-of select="'Header Data Imports'" />
 					</a>
 					&gt;

@@ -22,7 +22,7 @@
 			</head>
 			<body>
 				<p>
-					<a href="{/source/request/@context-path}/orgs/{/source/supply-generation/supply/organization/@id}/reports/0/screen/output/">
+					<a href="{/source/request/@context-path}/orgs/{/source/supply-generation/supply/org/@id}/reports/0/screen/output/">
 						<img src="{/source/request/@context-path}/logo/"
 							alt="Chellow logo" />
 						<span class="logo">Chellow</span>

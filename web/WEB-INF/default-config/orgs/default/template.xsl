@@ -13,7 +13,7 @@
 
 				<title>
 					Chellow &gt; Organizations &gt;
-					<xsl:value-of select="/source/organization/@name" />
+					<xsl:value-of select="/source/org/@name" />
 				</title>
 
 			</head>
@@ -30,7 +30,7 @@
 						<xsl:value-of select="'Organizations'" />
 					</a>
 					&gt;
-					<xsl:value-of select="/source/organization/@name" />
+					<xsl:value-of select="/source/org/@name" />
 				</p>
 				<xsl:if test="//message">
 					<ul>
@@ -75,7 +75,7 @@
 												</xsl:when>
 												<xsl:otherwise>
 													<xsl:value-of
-														select="/source/organization/@name" />
+														select="/source/org/@name" />
 												</xsl:otherwise>
 											</xsl:choose>
 										</xsl:attribute>
@@ -92,7 +92,7 @@
 								<input type="hidden" name="view"
 									value="confirm-delete" />
 								<legend>
-									Delete this organization
+									Delete this org
 								</legend>
 								<input type="submit" value="Delete" />
 							</fieldset>

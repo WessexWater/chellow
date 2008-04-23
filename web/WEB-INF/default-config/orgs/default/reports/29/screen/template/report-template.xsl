@@ -12,7 +12,7 @@
 					href="{/source/request/@context-path}/orgs/1/reports/9/stream/output/" />
 
 				<title>
-					<xsl:value-of select="/source/organization/@name" />
+					<xsl:value-of select="/source/org/@name" />
 					&gt; DSOs &gt;
 					<xsl:value-of
 						select="/source/mpan-top/llf/dso/@code" />
@@ -25,7 +25,7 @@
 					<a
 						href="{/source/request/@context-path}/orgs/1/reports/0/screen/output/">
 						<xsl:value-of
-							select="/source/organization/@name" />
+							select="/source/org/@name" />
 					</a>
 					&gt;
 					<a
@@ -69,7 +69,7 @@
 							<td>Profile Class</td>
 							<td>
 								<a
-									href="{/source/request/@context-path}/orgs/{/source/organization/@id}/reports/27/screen/output/?pc-id={/source/mpan-top/profile-class/@id}">
+									href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/27/screen/output/?pc-id={/source/mpan-top/profile-class/@id}">
 									<xsl:value-of
 										select="concat(/source/mpan-top/profile-class/@code, ' - ', /source/mpan-top/profile-class/@description)" />
 								</a>
@@ -79,7 +79,7 @@
 							<td>Meter Timeswitch</td>
 							<td>
 								<a
-									href="{/source/request/@context-path}/orgs/{/source/organization/@id}/reports/31/screen/output/?mt-id={/source/mpan-top/meter-timeswitch/@id}">
+									href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/31/screen/output/?mt-id={/source/mpan-top/meter-timeswitch/@id}">
 									<xsl:value-of
 										select="concat(/source/mpan-top/meter-timeswitch/@code, ' - ', /source/mpan-top/meter-timeswitch/@description)" />
 								</a>
@@ -89,7 +89,7 @@
 							<td>Line Loss Factor</td>
 							<td>
 								<a
-									href="{/source/request/@context-path}/orgs/{/source/organization/@id}/reports/25/screen/output/?llf-id={/source/mpan-top/llf/@id}">
+									href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/25/screen/output/?llf-id={/source/mpan-top/llf/@id}">
 									<xsl:value-of
 										select="concat(/source/mpan-top/llf/@code, ' - ', /source/mpan-top/llf/@description)" />
 								</a>

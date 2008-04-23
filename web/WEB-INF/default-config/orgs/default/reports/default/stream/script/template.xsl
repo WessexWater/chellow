@@ -14,7 +14,7 @@
 				<title>
 					Chellow &gt; Organizations &gt;
 					<xsl:value-of
-						select="/source/report-script/stream-report/report/reports/organization/@name" />
+						select="/source/report-script/stream-report/report/reports/org/@name" />
 					&gt; Reports &gt;
 					<xsl:value-of
 						select="/source/report-script/stream-report/report/@name" />
@@ -37,24 +37,24 @@
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/orgs/{/source/report-script/stream-report/report/reports/organization/@id}/">
+						href="{/source/request/@context-path}/orgs/{/source/report-script/stream-report/report/reports/org/@id}/">
 						<xsl:value-of
-							select="/source/report-script/stream-report/report/reports/organization/@name" />
+							select="/source/report-script/stream-report/report/reports/org/@name" />
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/orgs/{/source/report-script/stream-report/report/reports/organization/@id}/reports/">
+						href="{/source/request/@context-path}/orgs/{/source/report-script/stream-report/report/reports/org/@id}/reports/">
 						<xsl:value-of select="'Reports'" />
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/orgs/{/source/report-script/stream-report/report/reports/organization/@id}/reports/{/source/report-script/stream-report/report/@id}/">
+						href="{/source/request/@context-path}/orgs/{/source/report-script/stream-report/report/reports/org/@id}/reports/{/source/report-script/stream-report/report/@id}/">
 						<xsl:value-of
 							select="/source/report-script/stream-report/report/@name" />
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/orgs/{/source/report-script/stream-report/report/reports/organization/@id}/reports/{/source/report-script/stream-report/report/@id}/stream/">
+						href="{/source/request/@context-path}/orgs/{/source/report-script/stream-report/report/reports/org/@id}/reports/{/source/report-script/stream-report/report/@id}/stream/">
 						<xsl:value-of
 							select="'Stream'" />
 					</a>
