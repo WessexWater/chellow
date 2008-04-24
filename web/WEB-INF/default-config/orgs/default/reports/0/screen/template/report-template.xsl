@@ -11,7 +11,7 @@
 				<link rel="stylesheet" type="text/css"
 					href="{/source/request/@context-path}/orgs/1/reports/9/stream/output/" />
 
-				<title>Chellow</title>
+				<title><xsl:value-of select="/source/org/@name" /></title>
 			</head>
 			<body>
 				<p>

@@ -14,7 +14,9 @@
 				<title>
 					<xsl:value-of select="/source/org/@name" />
 					&gt; Suppliers &gt;
-					<xsl:value-of select="/source/supplier/@name" />
+					<xsl:value-of
+						select="/source/accounts/supplier/@name" />
+					&gt; Accounts
 				</title>
 			</head>
 			<body>
@@ -29,7 +31,12 @@
 						<xsl:value-of select="'Suppliers'" />
 					</a>
 					&gt;
-					<xsl:value-of select="/source/supplier/@name" />
+					<a
+						href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/36/screen/output/?supplier-id={/source/accounts/supplier/@id}">
+						<xsl:value-of
+							select="/source/accounts/supplier/@name" />
+					</a>
+					&gt; Accounts
 				</p>
 				<br />
 				<xsl:if test="//message">
@@ -42,44 +49,29 @@
 					</ul>
 				</xsl:if>
 				<table>
-					<caption>Properties</caption>
 					<thead>
 						<tr>
+							<th>Id</th>
 							<th>Name</th>
-							<th>Value</th>
 						</tr>
 					</thead>
 					<tbody>
-						<tr>
-							<td>Id</td>
-							<td>
-								<xsl:value-of
-									select="/source/supplier/@id" />
-							</td>
-						</tr>
-						<tr>
-							<td>Name</td>
-							<td>
-								<xsl:value-of
-									select="/source/supplier/@name" />
-							</td>
-						</tr>
+						<xsl:for-each
+							select="/source/accounts/account">
+							<tr>
+								<td>
+									<a
+										href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/41/screen/output/?account-id={@id}">
+										<xsl:value-of select="@id" />
+									</a>
+								</td>
+								<td>
+									<xsl:value-of select="@reference" />
+								</td>
+							</tr>
+						</xsl:for-each>
 					</tbody>
 				</table>
-				<ul>
-					<li>
-						<a
-							href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/37/screen/output/?supplier-id={/source/supplier/@id}">
-							Services
-						</a>
-					</li>
-					<li>
-						<a
-							href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/40/screen/output/?supplier-id={/source/supplier/@id}">
-							Accounts
-						</a>
-					</li>
-				</ul>
 			</body>
 		</html>
 	</xsl:template>
