@@ -15,9 +15,9 @@
 					<xsl:value-of select="/source/org/@name" />
 					&gt; Suppliers &gt;
 					<xsl:value-of
-						select="/source/supplier-service/supplier/@name" />
-					&gt; Services &gt;
-					<xsl:value-of select="/source/supplier-service/@name" />
+						select="/source/account/supplier/@name" />
+					&gt; Accounts &gt;
+					<xsl:value-of select="/source/account/@reference" />
 				</title>
 			</head>
 			<body>
@@ -33,17 +33,17 @@
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/36/screen/output/?supplier-id={/source/supplier-service/supplier/@id}">
+						href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/36/screen/output/?supplier-id={/source/account/supplier/@id}">
 						<xsl:value-of
-							select="/source/supplier-service/supplier/@name" />
+							select="/source/account/supplier/@name" />
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/37/screen/output/?supplier-id={/source/supplier-service/supplier/@id}">
-						<xsl:value-of select="'Services'" />
+						href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/37/screen/output/?supplier-id={/source/account/supplier/@id}">
+						<xsl:value-of select="'Accounts'" />
 					</a>
 					&gt;
-					<xsl:value-of select="/source/supplier-service/@name" />
+					<xsl:value-of select="/source/account/@reference" />
 				</p>
 				<br />
 				<xsl:if test="//message">
@@ -68,82 +68,51 @@
 							<td>Id</td>
 							<td>
 								<xsl:value-of
-									select="/source/supplier-service/@id" />
+									select="/source/account/@id" />
 							</td>
 						</tr>
 						<tr>
-							<td>Name</td>
+							<td>Reference</td>
 							<td>
 								<xsl:value-of
-									select="/source/supplier-service/@name" />
-							</td>
-						</tr>
-						<tr>
-							<td>Start Date</td>
-							<td>
-								<xsl:value-of
-									select="concat(/source/supplier-service/rate-script[position()=1]/hh-end-date[@label='start']/@year, '-', /source/supplier-service/rate-script[position()=1]/hh-end-date[@label='start']/@month, '-', /source/supplier-service/rate-script[position()=1]/hh-end-date[@label='start']/@day)" />
-							</td>
-						</tr>
-						<tr>
-							<td>Finish Date</td>
-							<td>
-								<xsl:choose>
-									<xsl:when
-										test="/source/supplier-service/rate-script[position()=last()]/hh-end-date[@label='finish']">
-										<xsl:value-of
-											select="concat(/source/supplier-service/rate-script[position()=last()]/hh-end-date[@label='finish']/@year, '-', /source/supplier-service/rate-script[position()=last()]/hh-end-date[@label='finish']/@month, '-', /source/supplier-service/rate-script[position()=last()]/hh-end-date[@label='finish']/@day)" />
-									</xsl:when>
-									<xsl:otherwise>
-										Ongoing
-									</xsl:otherwise>
-								</xsl:choose>
+									select="/source/account/@reference" />
 							</td>
 						</tr>
 					</tbody>
 				</table>
 
-				<h2>Script</h2>
-				<pre>
-					<xsl:value-of
-						select="/source/supplier-service/rate-script/@script" />
-				</pre>
-
-				<h2>Rate Scripts</h2>
-
 				<table>
+					<caption>MPANs</caption>
 					<thead>
 						<tr>
-							<th>Id</th>
+							<th rowspan="2">MPAN Core</th>
+							<th colspan="2">Supply Generations</th>
+						</tr>
+						<tr>
 							<th>From</th>
 							<th>To</th>
 						</tr>
 					</thead>
 					<tbody>
-						<xsl:for-each
-							select="/source/supplier-service/rate-script">
+						<xsl:for-each select="/source/account/item">
 							<tr>
 								<td>
+									<xsl:value-of
+										select="mpan-core/@core" />
+								</td>
+								<td>
 									<a
-										href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/39/screen/output/?supplier-rate-script-id={@id}">
-										<xsl:value-of select="@id" />
+										href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/15/screen/output/?supply-generation-id={supply-generation[@label='start']/@id}">
+										<xsl:value-of
+											select="'Supply Generation'" />
 									</a>
 								</td>
 								<td>
-									<xsl:value-of
-										select="concat(hh-end-date[@label='start']/@year, '-', hh-end-date[@label='start']/@month, '-', hh-end-date[@label='start']/@day)" />
-								</td>
-								<td>
-									<xsl:choose>
-										<xsl:when
-											test="hh-end-date[@label='finish']">
-											<xsl:value-of
-												select="concat(hh-end-date[@label='finish']/@year, '-', hh-end-date[@label='finish']/@month, '-', hh-end-date[@label='finish']/@day)" />
-										</xsl:when>
-										<xsl:otherwise>
-											Ongoing
-										</xsl:otherwise>
-									</xsl:choose>
+									<a
+										href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/15/screen/output/?supply-generation-id={supply-generation[@label='finish']/@id}">
+										<xsl:value-of
+											select="'Supply Generation'" />
+									</a>
 								</td>
 							</tr>
 						</xsl:for-each>

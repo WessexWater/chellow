@@ -12,17 +12,17 @@
 					href="{/source/request/@context-path}/orgs/1/reports/9/stream/output/" />
 
 				<title>
-					Chellow &gt; Sites &gt; Supply:
+					<xsl:value-of select="/source/org/@name" />
+					&gt; Sites &gt; Supply:
 					<xsl:value-of select="/source/supply/@name" />
 				</title>
 
 			</head>
 			<body>
 				<p>
-					<a href="{/source/request/@context-path}/">
-						<img src="{/source/request/@context-path}/logo/"
-							alt="Chellow logo" />
-						<span class="logo">Chellow</span>
+					<a
+						href="{/source/request/@context-path}/orgs/1/reports/0/screen/output/">
+						<xsl:value-of select="/source/org/@name" />
 					</a>
 					&gt;
 					<a
