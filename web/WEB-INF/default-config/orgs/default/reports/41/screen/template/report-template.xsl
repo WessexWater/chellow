@@ -39,7 +39,7 @@
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/37/screen/output/?supplier-id={/source/account/supplier/@id}">
+						href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/40/screen/output/?supplier-id={/source/account/supplier/@id}">
 						<xsl:value-of select="'Accounts'" />
 					</a>
 					&gt;
@@ -80,6 +80,15 @@
 						</tr>
 					</tbody>
 				</table>
+
+				<ul>
+					<li>
+						<a
+							href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/42/screen/output/?account-id={/source/account/@id}">
+							Bills
+						</a>
+					</li>
+				</ul>
 
 				<table>
 					<caption>MPANs</caption>

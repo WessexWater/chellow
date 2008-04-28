@@ -268,23 +268,55 @@
 						<tr>
 							<th>Supplier</th>
 							<td>
-								<xsl:value-of
-									select="/source/supply-generation/mpan[@label='import']/supplier-service/supplier/@name" />
+								<a
+									href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/36/screen/output/?supplier-id={/source/supply-generation/mpan[@label='import']/supplier-service/supplier/@id}">
+
+									<xsl:value-of
+										select="/source/supply-generation/mpan[@label='import']/supplier-service/supplier/@name" />
+								</a>
 							</td>
 							<td>
-								<xsl:value-of
-									select="/source/supply-generation/mpan[@label='export']/supplier-service/supplier/@name" />
+								<a
+									href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/36/screen/output/?supplier-id={/source/supply-generation/mpan[@label='export']/supplier-service/supplier/@id}">
+
+									<xsl:value-of
+										select="/source/supply-generation/mpan[@label='export']/supplier-service/supplier/@name" />
+								</a>
 							</td>
 						</tr>
 						<tr>
 							<th>Supplier Service</th>
 							<td>
-								<xsl:value-of
-									select="/source/supply-generation/mpan[@label='import']/supplier-service/@name" />
+								<a
+									href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/38/screen/output/?supplier-service-id={/source/supply-generation/mpan[@label='import']/supplier-service/@id}">
+
+									<xsl:value-of
+										select="/source/supply-generation/mpan[@label='import']/supplier-service/@name" />
+								</a>
 							</td>
 							<td>
-								<xsl:value-of
-									select="/source/supply-generation/mpan[@label='export']/supplier-service/@name" />
+								<a
+									href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/38/screen/output/?supplier-service-id={/source/supply-generation/mpan[@label='export']/supplier-service/@id}">
+									<xsl:value-of
+										select="/source/supply-generation/mpan[@label='export']/supplier-service/@name" />
+								</a>
+							</td>
+						</tr>
+						<tr>
+							<th>Supplier Account</th>
+							<td>
+								<a
+									href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/41/screen/output/?account-id={/source/supply-generation/mpan[@label='import']/account[@label='supplier']/@id}">
+									<xsl:value-of
+										select="/source/supply-generation/mpan[@label='import']/account[@label='supplier']/@reference" />
+								</a>
+							</td>
+							<td>
+								<a
+									href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/41/screen/output/?account-id={/source/supply-generation/mpan[@label='export']/account[@label='supplier']/@id}">
+									<xsl:value-of
+										select="/source/supply-generation/mpan[@label='export']/account[@label='supplier']/@reference" />
+								</a>
 							</td>
 						</tr>
 					</tbody>

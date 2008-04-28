@@ -39,7 +39,6 @@ import net.sf.chellow.monad.ProgrammerException;
 import net.sf.chellow.monad.Urlable;
 import net.sf.chellow.monad.UserException;
 import net.sf.chellow.monad.XmlTree;
-import net.sf.chellow.monad.types.MonadString;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
 import net.sf.chellow.physical.HhEndDate;
@@ -52,10 +51,8 @@ import net.sf.chellow.physical.SnagDateBounded;
 import net.sf.chellow.physical.Supply;
 import net.sf.chellow.physical.SupplyGeneration;
 
-import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import org.w3c.dom.Node;
 
 public class Account extends PersistentEntity implements Urlable {
 	public static Account getAccount(Long id) throws UserException,
@@ -97,7 +94,6 @@ public class Account extends PersistentEntity implements Urlable {
 	private String reference;
 
 	public Account() {
-		setTypeName("account");
 	}
 
 	public Account(Provider provider, Organization organization,
@@ -143,11 +139,16 @@ public class Account extends PersistentEntity implements Urlable {
 		setReference(reference);
 	}
 
-	public Node toXML(Document doc) throws ProgrammerException, UserException {
+	public Element toXML(Document doc) throws ProgrammerException, UserException {
+		setTypeName("account");
 		Element element = (Element) super.toXML(doc);
 
-		element.setAttributeNode((Attr) MonadString.toXml(doc, "reference",
-				reference));
+		element.setAttribute("reference", reference);
+		if (Supplier.findSupplier(provider.getId()) != null) {
+			element.setAttribute("label", "supplier");
+		} else {
+			element.setAttribute("label", provider.getClass().getName());
+		}
 		return element;
 	}
 

@@ -44,6 +44,11 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 public class Supplier extends ProviderOrganization {
+	public static Supplier findSupplier(Long id) throws UserException,
+			ProgrammerException {
+		return (Supplier) Hiber.session().get(Supplier.class, id);
+	}
+
 	public static void deleteSupplier(Supplier supplier)
 			throws ProgrammerException {
 		try {
