@@ -117,7 +117,7 @@
 								</td>
 								<td>
 									<a
-										href="{/source/request/@context-path}/orgs/{/source/bill/account/supplier/org/@id}/suppliers/{/source/bill/account/supplier/@id}/services/{batch/supplier-service/@id}/batches/{batch/@id}/">
+										href="{/source/request/@context-path}/orgs/{/source/bill/account/supplier/org/@id}/reports/45/screen/output/?batch-id={batch/@id}">
 										<xsl:value-of
 											select="batch/@reference" />
 									</a>

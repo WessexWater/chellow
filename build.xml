@@ -682,6 +682,9 @@
 		<copy todir="${build.home}/WEB-INF/lib" file="${javalib.home}/batik-1.6/lib/batik-awt-util.jar" />
 		<copy todir="${build.home}/WEB-INF/lib" file="${javalib.home}/batik-1.6/lib/batik-parser.jar" />
 		-->
+		<copy todir="${build.home}/WEB-INF/lib" file="/usr/share/java/xalan2.jar"/>
+		<copy todir="${build.home}/WEB-INF/lib" file="/usr/share/java/serializer.jar"/>
+
 	</target>
 
 	<!-- ==================== Reload Target =================================== -->

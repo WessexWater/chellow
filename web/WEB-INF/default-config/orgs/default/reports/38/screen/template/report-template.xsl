@@ -109,9 +109,7 @@
 						select="/source/supplier-service/rate-script/@script" />
 				</pre>
 
-				<h2>Rate Scripts</h2>
-
-				<table>
+				<table><caption>Rate Scripts</caption>
 					<thead>
 						<tr>
 							<th>Id</th>
@@ -149,6 +147,12 @@
 						</xsl:for-each>
 					</tbody>
 				</table>
+				
+				<ul>
+				<li><a href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/44/screen/output/?supplier-service-id={/source/supplier-service/@id}">Batches</a></li>
+				<li><a href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/44/screen/output/?supplier-service-id={@id}">Account Snags</a></li>
+				<li><a href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/44/screen/output/?supplier-service-id={@id}"></a>Bill Snags</li>
+				</ul>
 			</body>
 		</html>
 	</xsl:template>
