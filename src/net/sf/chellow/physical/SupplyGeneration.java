@@ -318,8 +318,7 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 			 * says that there should be an export MPAN, but there isn't one."); } }
 			 */
 			if (getExportMpan() != null && getImportMpan() != null) {
-				LlfCode code = getImportMpan().getMpanTop().getLlf()
-						.getCode();
+				LlfCode code = getImportMpan().getMpanTop().getLlf().getCode();
 				if (!code.equals(new LlfCode(520))
 						&& !code.equals(new LlfCode(550))
 						&& !code.equals(new LlfCode(580))) {
@@ -507,10 +506,8 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 				new XmlTree("site", new XmlTree("organization"))).put("meter")
 				.put("supply", new XmlTree("source").put("mpanCores")).put(
 						"mpans",
-						new XmlTree("mpanCore").put(
-								"mpanTop",
-								new XmlTree("meterTimeswitch")
-										.put("llf")).put(
+						new XmlTree("mpanCore").put("mpanTop",
+								new XmlTree("meterTimeswitch").put("llf")).put(
 								"dceService").put("supplierAccount",
 								new XmlTree("provider")).put("supplierService",
 								new XmlTree("provider"))), doc));
@@ -545,7 +542,12 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 	public void httpPost(Invocation inv) throws ProgrammerException,
 			UserException, DesignerException, DeployerException {
 		if (inv.hasParameter("delete")) {
-			supply.deleteGeneration(this);
+			try {
+				supply.deleteGeneration(this);
+			} catch (UserException e) {
+				e.setDocument(document());
+				throw e;
+			}
 			Hiber.close();
 			inv.sendSeeOther(supply.getUri());
 		} else if (inv.hasParameter("attach")) {
@@ -606,8 +608,8 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 							.getProfileClass(importProfileClassId);
 					LlfCode importLlfCode = new LlfCode(inv
 							.getInteger("import-llf-code"));
-					Llf importLlf = importMpanCore
-							.getDso().getLlf(importLlfCode);
+					Llf importLlf = importMpanCore.getDso().getLlf(
+							importLlfCode);
 					MeterTimeswitchCode importMeterTimeswitchCode = inv
 							.getValidatable(MeterTimeswitchCode.class,
 									"import-meter-timeswitch-code");
@@ -664,8 +666,7 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 				boolean exportHasExportKvarh = false;
 				boolean hasExportMpan = inv.getBoolean("has-export-mpan");
 				if (hasExportMpan) {
-					Long exportMpanCoreId = inv
-							.getLong("export-mpan-core-id");
+					Long exportMpanCoreId = inv.getLong("export-mpan-core-id");
 					exportMpanCore = MpanCore.getMpanCore(exportMpanCoreId);
 					Long exportProfileClassId = inv
 							.getLong("export-profile-class-id");
@@ -673,8 +674,8 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 							.getProfileClass(exportProfileClassId);
 					LlfCode exportLlfCode = new LlfCode(inv
 							.getInteger("export-llf-code"));
-					Llf exportLlf = exportMpanCore
-							.getDso().getLlf(exportLlfCode);
+					Llf exportLlf = exportMpanCore.getDso().getLlf(
+							exportLlfCode);
 					MeterTimeswitchCode exportMeterTimeswitchCode = inv
 							.getValidatable(MeterTimeswitchCode.class,
 									"export-meter-timeswitch-code");

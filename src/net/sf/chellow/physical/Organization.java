@@ -369,13 +369,12 @@ public class Organization extends PersistentEntity {
 		return site;
 	}
 
-	public void deleteSite(Site site) throws ProgrammerException {
-		try {
-			Hiber.session().delete(site);
-			Hiber.flush();
-		} catch (HibernateException e) {
-			throw new ProgrammerException(e);
+	public void deleteSite(Site site) throws ProgrammerException, UserException {
+		if (Hiber.session().createQuery("from SiteSupplyGeneration ssg where ssg.site = :site").setEntity("site", this).list().size() > 0) {
+			throw UserException.newInvalidParameter("This site can't be deleted while there are still supply generations attached to it.");
 		}
+		Hiber.session().delete(site);
+		Hiber.flush();
 	}
 
 	@SuppressWarnings("unchecked")
@@ -384,7 +383,7 @@ public class Organization extends PersistentEntity {
 		long reads = (Long) Hiber
 				.session()
 				.createQuery(
-						"select count(*) from RegisterRead read where read.supplyGeneration.supply = :supply")
+						"select count(*) from RegisterRead read where read.mpan.supplyGeneration.supply = :supply")
 				.setEntity("supply", supply).uniqueResult();
 		if (reads > 0) {
 			throw UserException

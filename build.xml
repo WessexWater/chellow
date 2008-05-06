@@ -39,7 +39,7 @@
   Each of the following properties are used in the build script.
   Values for these properties are set by the first place they are
   defined, from the following list:
-  
+ 
   * Definitions on the "ant" command line (ant -Dfoo=bar compile).
 
   * Definitions from a "build.properties" file in the top level
@@ -682,9 +682,11 @@
 		<copy todir="${build.home}/WEB-INF/lib" file="${javalib.home}/batik-1.6/lib/batik-awt-util.jar" />
 		<copy todir="${build.home}/WEB-INF/lib" file="${javalib.home}/batik-1.6/lib/batik-parser.jar" />
 		-->
-		<copy todir="${build.home}/WEB-INF/lib" file="/usr/share/java/xalan2.jar"/>
-		<copy todir="${build.home}/WEB-INF/lib" file="/usr/share/java/serializer.jar"/>
 
+		<!--
+		<copy todir="${build.home}/WEB-INF/lib" file="/usr/share/java/xalan2.jar" />
+		<copy todir="${build.home}/WEB-INF/lib" file="/usr/share/java/serializer.jar" />
+		-->
 	</target>
 
 	<!-- ==================== Reload Target =================================== -->

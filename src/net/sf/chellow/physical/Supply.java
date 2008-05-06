@@ -508,7 +508,7 @@ public class Supply extends PersistentEntity implements Urlable {
 			throws ProgrammerException, UserException {
 		if (getGenerations().size() == 1) {
 			throw UserException
-					.newInvalidParameter("You can't delete the last generation dude.");
+					.newInvalidParameter("The only way to delete the last generation is to delete the entire supply.");
 		}
 		SupplyGeneration previousGeneration = getGenerationPrevious(generation);
 		SupplyGeneration nextGeneration = getGenerationNext(generation);

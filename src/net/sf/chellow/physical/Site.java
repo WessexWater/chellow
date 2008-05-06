@@ -193,16 +193,16 @@ public class Site extends PersistentEntity implements Urlable {
 			}
 		}
 		SupplyGeneration supplyGeneration = supply.addGeneration(siteMap,
-				meter, importMpanRaw, importContractDce,
-				importAccountSupplier, importContractSupplier,
-				importHasDceImportKwh, importHasDceImportKvarh,
-				importHasDceExportKwh, importHasDceExportKvarh,
-				importAgreedSupplyCapacity, exportMpanRaw, exportContractDce,
-				exportAccountSupplier, exportContractSupplier,
-				exportHasDceImportKwh, exportHasDceImportKvarh,
-				exportHasDceExportKwh, exportHasDceExportKvarh,
-				exportAgreedSupplyCapacity, null);
-		supplyGeneration.update(startDate, supplyGeneration.getFinishDate(), meter);
+				meter, importMpanRaw, importContractDce, importAccountSupplier,
+				importContractSupplier, importHasDceImportKwh,
+				importHasDceImportKvarh, importHasDceExportKwh,
+				importHasDceExportKvarh, importAgreedSupplyCapacity,
+				exportMpanRaw, exportContractDce, exportAccountSupplier,
+				exportContractSupplier, exportHasDceImportKwh,
+				exportHasDceImportKvarh, exportHasDceExportKwh,
+				exportHasDceExportKvarh, exportAgreedSupplyCapacity, null);
+		supplyGeneration.update(startDate, supplyGeneration.getFinishDate(),
+				meter);
 		Hiber.flush();
 		return supply;
 	}
@@ -484,7 +484,7 @@ public class Site extends PersistentEntity implements Urlable {
 				.setEntity("site", this).setTimestamp("date", date.getDate())
 				.list();
 		Collections.sort(services);
-		return services.get(0);
+		return services.size() > 0 ? services.get(0) : null;
 		/*
 		 * 
 		 * 
@@ -637,7 +637,12 @@ public class Site extends PersistentEntity implements Urlable {
 			Element source = doc.getDocumentElement();
 
 			source.appendChild(toXML(doc));
-			organization.deleteSite(this);
+			try {
+				organization.deleteSite(this);
+			} catch (UserException e) {
+				e.setDocument(doc);
+				throw e;
+			}
 			source.appendChild(new VFMessage("Site deleted successfully.")
 					.toXML(doc));
 			Hiber.commit();
