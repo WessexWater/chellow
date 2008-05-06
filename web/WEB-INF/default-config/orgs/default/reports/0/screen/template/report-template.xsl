@@ -98,6 +98,12 @@
 							Meter Timeswitches
 						</a>
 					</li>
+										<li>
+						<a
+							href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/47/screen/output/">
+							TPRs
+						</a>
+					</li>
 				</ul>
 			</body>
 		</html>

@@ -111,7 +111,7 @@
 							<tr>
 								<td>
 									<a
-										href="{/source/request/@context-path}/orgs/{/source/bill/account/supplier/org/@id}/suppliers/{/source/bill/account/supplier/@id}/services/{batch/supplier-service/@id}/batches/{batch/@id}/invoices/{@id}/">
+										href="{/source/request/@context-path}/orgs/{/source/bill/account/supplier/org/@id}/reports/46/screen/output/?invoice-id={@id}">
 										<xsl:value-of select="@id" />
 									</a>
 								</td>
