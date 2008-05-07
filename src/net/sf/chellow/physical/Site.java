@@ -62,10 +62,6 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 public class Site extends PersistentEntity implements Urlable {
-	public static final String EXPORT_NET_GT_IMPORT_GEN = "Export to net > import from generators.";
-
-	public static final String EXPORT_GEN_GT_IMPORT = "Export to generators > import.";
-
 	private Organization organization;
 
 	private SiteCode code;
@@ -75,7 +71,6 @@ public class Site extends PersistentEntity implements Urlable {
 	private Set<SiteSupplyGeneration> siteSupplyGenerations;
 
 	public Site() {
-		setTypeName("site");
 	}
 
 	public Site(Organization organization, SiteCode code, String name)
@@ -131,6 +126,7 @@ public class Site extends PersistentEntity implements Urlable {
 
 	public Element toXML(Document doc) throws ProgrammerException,
 			UserException {
+		setTypeName("site");
 		Element element = (Element) super.toXML(doc);
 
 		element.setAttributeNode(MonadString.toXml(doc, "name", getName()));
@@ -475,16 +471,6 @@ public class Site extends PersistentEntity implements Urlable {
 		}
 	}
 
-	@SuppressWarnings("unchecked")
-	private DceService getDceService(HhEndDate date) {
-		List<DceService> services = (List<DceService>) Hiber
-				.session()
-				.createQuery(
-						"select distinct mpan.dceService from Mpan mpan join mpan.supplyGeneration.siteSupplyGenerations siteSupplyGeneration where siteSupplyGeneration.site = :site and mpan.supplyGeneration.startDate.date <= :date and (mpan.supplyGeneration.finishDate.date is null or mpan.supplyGeneration.finishDate >= :date)")
-				.setEntity("site", this).setTimestamp("date", date.getDate())
-				.list();
-		Collections.sort(services);
-		return services.size() > 0 ? services.get(0) : null;
 		/*
 		 * 
 		 * 
@@ -523,12 +509,6 @@ public class Site extends PersistentEntity implements Urlable {
 		Hiber.flush();
 	}
 
-	private void addDceSnagSite(DceService contractDce, String description,
-			HhEndDate startDate, HhEndDate finishDate, boolean isResolved)
-			throws ProgrammerException, UserException {
-		SnagDateBounded.addSnagSite(contractDce, this, description, startDate,
-				finishDate, isResolved);
-	}
 
 	/*
 	 * @SuppressWarnings("unchecked") private void addSnagSite(Contract

@@ -1,14 +1,22 @@
 package net.sf.chellow.physical;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import net.sf.chellow.billing.DceService;
+import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.ProgrammerException;
 import net.sf.chellow.monad.UserException;
 
 public class SiteGroup {
+	public static final String EXPORT_NET_GT_IMPORT_GEN = "Export to net > import from generators.";
+
+	public static final String EXPORT_GEN_GT_IMPORT = "Export to generators > import.";
+
 	private HhEndDate from;
 
 	private HhEndDate to;
@@ -103,5 +111,34 @@ public class SiteGroup {
 			}
 		}
 		return map;
+	}
+	
+	public void addDceSnag(String description,
+			HhEndDate startDate, HhEndDate finishDate, boolean isResolved)
+			throws ProgrammerException, UserException {
+		// which sevice?
+		Site site = sites.get(0);
+		DceService service = getDceService(startDate);
+		HhEndDate serviceEndDate = service.getFinishRateScript().getFinishDate();
+		SnagDateBounded.addSnagSite(service, site, description, startDate,
+				serviceEndDate == null || serviceEndDate.getDate().after(finishDate.getDate()) ? finishDate : serviceEndDate, isResolved);
+		while (!(serviceEndDate == null || !serviceEndDate.getDate().before(finishDate.getDate()))) {
+			service = getDceService(serviceEndDate.getNext());
+			serviceEndDate = service.getFinishRateScript().getFinishDate();
+			SnagDateBounded.addSnagSite(service, site, description, service.getStartRateScript().getStartDate(),
+					serviceEndDate == null || serviceEndDate.getDate().after(finishDate.getDate()) ? finishDate : serviceEndDate, isResolved);			
+		}
+	}
+	
+	@SuppressWarnings("unchecked")
+	private DceService getDceService(HhEndDate date) {
+		List<DceService> services = (List<DceService>) Hiber
+				.session()
+				.createQuery(
+						"select distinct mpan.dceService from Mpan mpan join mpan.supplyGeneration.siteSupplyGenerations siteSupplyGeneration where siteSupplyGeneration.site = :site and mpan.supplyGeneration.startDate.date <= :date and (mpan.supplyGeneration.finishDate.date is null or mpan.supplyGeneration.finishDate >= :date)")
+				.setEntity("site", this).setTimestamp("date", date.getDate())
+				.list();
+		Collections.sort(services);
+		return services.size() > 0 ? services.get(0) : null;
 	}
 }
