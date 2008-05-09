@@ -132,7 +132,7 @@ public class Batch extends PersistentEntity implements Urlable {
 		for (Invoice invoice : (List<Invoice>) Hiber.session().createQuery(
 				"from Invoice invoice where invoice.batch = :batch").setEntity(
 				"batch", this).list()) {
-			invoice.getBill().getAccount().delete(invoice);
+			invoice.delete();
 		}
 		Hiber.session().delete(this);
 	}

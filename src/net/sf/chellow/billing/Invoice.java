@@ -237,10 +237,8 @@ public class Invoice extends PersistentEntity implements Urlable {
 	public void update(Account account, DayStartDate issueDate,
 			DayStartDate startDate, DayFinishDate finishDate, double net,
 			double vat, int status) throws UserException, ProgrammerException {
-		Account oldAccount = getBill().getAccount();
-
 		internalUpdate(issueDate, startDate, finishDate, net, vat, status);
-		oldAccount.detach(this);
+		bill.detach(this);
 		account.attach(this);
 	}
 
@@ -348,7 +346,7 @@ public class Invoice extends PersistentEntity implements Urlable {
 
 	@SuppressWarnings("unchecked")
 	public void delete() throws ProgrammerException, UserException {
-		bill.removeInvoice(this);
+		bill.detach(this);
 		reads.clear();
 		Hiber.flush();
 		Hiber.session().delete(this);

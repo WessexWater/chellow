@@ -22,6 +22,7 @@
 
 package net.sf.chellow.billing;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -101,11 +102,11 @@ public class Bill extends PersistentEntity implements Urlable {
 					"The batch must be of the same service as the bill.");
 		}
 		Invoice invoice = new Invoice(batch, this, invoiceRaw);
-		addInvoice(invoice);
+		attach(invoice);
 		return invoice;
 	}
 
-	public void addInvoice(Invoice invoice) throws ProgrammerException,
+	public void attach(Invoice invoice) throws ProgrammerException,
 			UserException {
 		invoice.setBill(this);
 		if (invoices == null) {
@@ -116,8 +117,13 @@ public class Bill extends PersistentEntity implements Urlable {
 	}
 
 	@SuppressWarnings("unchecked")
-	public void removeInvoice(Invoice invoice) throws ProgrammerException,
+	public void detach(Invoice invoice) throws ProgrammerException,
 			UserException {
+		HhEndDate billStart = getStartDate();
+		HhEndDate billFinish = getFinishDate();
+		Service service = getService();
+		Account account = getAccount();
+
 		invoices.remove(invoice);
 		invoice.setBill(null);
 		Hiber.flush();
@@ -130,9 +136,19 @@ public class Bill extends PersistentEntity implements Urlable {
 			}
 			Hiber.session().delete(this);
 			Hiber.flush();
+		} else if (getInvoices().size() > 1) {
+			List<Invoice> invoices = new ArrayList<Invoice>(getInvoices());
+			invoices.remove(0);
+			for (Invoice invoiceToRemove : invoices) {
+				getInvoices().remove(invoiceToRemove);
+			}
+			for (Invoice invoiceToAttach : invoices) {
+				getAccount().attach(invoiceToAttach);
+			}
 		} else {
 			setSummary();
 		}
+		account.checkMissing(service, billStart, billFinish);
 	}
 
 	private void setSummary() throws ProgrammerException, UserException {

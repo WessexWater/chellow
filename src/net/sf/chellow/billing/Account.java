@@ -22,7 +22,6 @@
 
 package net.sf.chellow.billing;
 
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.List;
@@ -338,31 +337,6 @@ public class Account extends PersistentEntity implements Urlable {
 	}
 
 	@SuppressWarnings("unchecked")
-	void detach(Invoice invoice) throws ProgrammerException, UserException {
-		Bill bill = invoice.getBill();
-		HhEndDate billStart = bill.getStartDate();
-		HhEndDate billFinish = bill.getFinishDate();
-		Service service = bill.getService();
-		bill.removeInvoice(invoice);
-		if (bill.getInvoices().size() > 1) {
-			List<Invoice> invoices = new ArrayList<Invoice>(bill.getInvoices());
-			for (int i = 1; i < invoices.size(); i++) {
-				bill.getInvoices().remove(invoices.get(i));
-			}
-			invoices.remove(0);
-			for (Invoice invoiceToAttach : invoices) {
-				attach(invoiceToAttach);
-			}
-		}
-		checkMissing(service, billStart, billFinish);
-	}
-
-	void delete(Invoice invoice) throws ProgrammerException, UserException {
-		detach(invoice);
-		invoice.delete();
-	}
-
-	@SuppressWarnings("unchecked")
 	Invoice insertInvoice(Batch batch, InvoiceRaw invoiceRaw)
 			throws UserException, ProgrammerException {
 		Bill bill = combineBills(invoiceRaw.getStartDate(), invoiceRaw
@@ -378,7 +352,7 @@ public class Account extends PersistentEntity implements Urlable {
 		Invoice invoice = new Invoice(batch, bill, invoiceRaw);
 		Hiber.session().save(invoice);
 		Hiber.flush();
-		bill.addInvoice(invoice);
+		bill.attach(invoice);
 		checkMissing(service, bill.getStartDate(), bill.getFinishDate());
 		for (RegisterReadRaw rawRead : invoiceRaw.getRegisterReads()) {
 			MpanCoreRaw mpanCoreRaw = rawRead.getMpanRaw().getMpanCoreRaw();
@@ -397,7 +371,7 @@ public class Account extends PersistentEntity implements Urlable {
 			bill = new Bill(service, this);
 			Hiber.session().save(bill);
 		}
-		bill.addInvoice(invoice);
+		bill.attach(invoice);
 		checkMissing(service, bill.getStartDate(), bill.getFinishDate());
 	}
 
@@ -418,8 +392,8 @@ public class Account extends PersistentEntity implements Urlable {
 			for (int i = 1; i < bills.size(); i++) {
 				Bill bill = bills.get(i);
 				for (Invoice invoice : bill.getInvoices()) {
-					firstBill.addInvoice(invoice);
-					bill.removeInvoice(invoice);
+					firstBill.attach(invoice);
+					bill.detach(invoice);
 				}
 				delete(bill);
 			}
