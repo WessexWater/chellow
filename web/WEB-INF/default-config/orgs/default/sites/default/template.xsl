@@ -62,7 +62,7 @@
 							<fieldset>
 								<legend>
 									Are you sure you want to delete this
-									site?
+									site and any associated snags?
 								</legend>
 								<input type="submit" name="delete"
 									value="Delete" />
