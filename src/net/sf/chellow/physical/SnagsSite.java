@@ -130,5 +130,4 @@ public class SnagsSite implements Urlable, XmlDescriber {
 		// TODO Auto-generated method stub
 		return null;
 	}
-
 }

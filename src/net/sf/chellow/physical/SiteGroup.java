@@ -1,8 +1,6 @@
 package net.sf.chellow.physical;
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -112,33 +110,65 @@ public class SiteGroup {
 		}
 		return map;
 	}
-	
-	public void addDceSnag(String description,
-			HhEndDate startDate, HhEndDate finishDate, boolean isResolved)
+
+	public void addDceSnag(String description, HhEndDate startDate,
+			HhEndDate finishDate, boolean isResolved)
 			throws ProgrammerException, UserException {
 		// which sevice?
 		Site site = sites.get(0);
 		DceService service = getDceService(startDate);
-		HhEndDate serviceEndDate = service.getFinishRateScript().getFinishDate();
-		SnagDateBounded.addSnagSite(service, site, description, startDate,
-				serviceEndDate == null || serviceEndDate.getDate().after(finishDate.getDate()) ? finishDate : serviceEndDate, isResolved);
-		while (!(serviceEndDate == null || !serviceEndDate.getDate().before(finishDate.getDate()))) {
+		HhEndDate serviceEndDate = service.getFinishRateScript()
+				.getFinishDate();
+		SnagDateBounded
+				.addSnagSite(service, site, description, startDate,
+						serviceEndDate == null
+								|| serviceEndDate.getDate().after(
+										finishDate.getDate()) ? finishDate
+								: serviceEndDate, isResolved);
+		while (!(serviceEndDate == null || !serviceEndDate.getDate().before(
+				finishDate.getDate()))) {
 			service = getDceService(serviceEndDate.getNext());
 			serviceEndDate = service.getFinishRateScript().getFinishDate();
-			SnagDateBounded.addSnagSite(service, site, description, service.getStartRateScript().getStartDate(),
-					serviceEndDate == null || serviceEndDate.getDate().after(finishDate.getDate()) ? finishDate : serviceEndDate, isResolved);			
+			SnagDateBounded.addSnagSite(service, site, description, service
+					.getStartRateScript().getStartDate(),
+					serviceEndDate == null
+							|| serviceEndDate.getDate().after(
+									finishDate.getDate()) ? finishDate
+							: serviceEndDate, isResolved);
 		}
 	}
-	
+
 	@SuppressWarnings("unchecked")
-	private DceService getDceService(HhEndDate date) {
-		List<DceService> services = (List<DceService>) Hiber
+	private DceService getDceService(HhEndDate date) throws UserException,
+			ProgrammerException {
+		List<Long> serviceIds = (List<Long>) Hiber
 				.session()
 				.createQuery(
-						"select distinct mpan.dceService from Mpan mpan join mpan.supplyGeneration.siteSupplyGenerations siteSupplyGeneration where siteSupplyGeneration.site = :site and mpan.supplyGeneration.startDate.date <= :date and (mpan.supplyGeneration.finishDate.date is null or mpan.supplyGeneration.finishDate >= :date)")
-				.setEntity("site", this).setTimestamp("date", date.getDate())
-				.list();
-		Collections.sort(services);
-		return services.size() > 0 ? services.get(0) : null;
+						"select distinct mpan.dceService.id from Mpan mpan where mpan.supplyGeneration.supply in (:supplies) and mpan.supplyGeneration.startDate.date <= :date and (mpan.supplyGeneration.finishDate.date is null or mpan.supplyGeneration.finishDate >= :date) order by mpan.dceService.id")
+				.setParameterList("supplies", supplies).setTimestamp("date",
+						date.getDate()).list();
+		return serviceIds.size() > 0 ? DceService.getDceService(serviceIds
+				.get(0)) : null;
+	}
+
+	@SuppressWarnings("unchecked")
+	public void resolveDceSnag(String description, HhEndDate startDate,
+			HhEndDate finishDate) throws ProgrammerException, UserException {
+		if (!startDate.getDate().after(finishDate.getDate())) {
+			for (SnagSite snag : (List<SnagSite>) Hiber
+					.session()
+					.createQuery(
+							"from SnagSite snag where snag.site = :site and snag.description = :description and snag.startDate.date <= :finishDate and snag.finishDate.date >= :startDate and snag.dateResolved is null")
+					.setEntity("site", sites.get(0)).setString("description",
+							description.toString()).setTimestamp("startDate",
+							startDate.getDate()).setTimestamp("finishDate",
+							finishDate.getDate()).list()) {
+				addDceSnag(description, snag.getStartDate().getDate().before(
+						startDate.getDate()) ? startDate : snag.getStartDate(),
+						snag.getFinishDate().getDate().after(
+								finishDate.getDate()) ? finishDate : snag
+								.getFinishDate(), true);
+			}
+		}
 	}
 }

@@ -24,17 +24,13 @@ package net.sf.chellow.physical;
 
 import java.sql.BatchUpdateException;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
-import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
-import java.util.TimeZone;
 
 import net.sf.chellow.billing.Account;
 import net.sf.chellow.billing.DceService;
@@ -51,7 +47,6 @@ import net.sf.chellow.monad.Urlable;
 import net.sf.chellow.monad.UserException;
 import net.sf.chellow.monad.VFMessage;
 import net.sf.chellow.monad.XmlTree;
-
 import net.sf.chellow.monad.types.MonadString;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
@@ -205,9 +200,9 @@ public class Site extends PersistentEntity implements Urlable {
 
 	public void hhCheck(HhEndDate from, HhEndDate to)
 			throws ProgrammerException, UserException {
-		Calendar cal = GregorianCalendar.getInstance(TimeZone
-				.getTimeZone("GMT"), Locale.UK);
-		for (SiteGroup group : groups(from, to)) {
+		//Calendar cal = GregorianCalendar.getInstance(TimeZone
+		//		.getTimeZone("GMT"), Locale.UK);
+		for (SiteGroup group : groups(from, to, false)) {
 			// long now = System.currentTimeMillis();
 			// Debug.print("About to go checking: "
 			// + (System.currentTimeMillis() - now));
@@ -227,30 +222,28 @@ public class Site extends PersistentEntity implements Urlable {
 			HhEndDate resolve2To = null;
 			HhEndDate snag2From = null;
 			HhEndDate snag2To = null;
-			// HhEndDate ok1Start = checkFrom;
-			// HhEndDate ok2Start = checkFrom;
 			int i = 0;
 			HhEndDate hhEndDate = group.getFrom();
 			HhEndDate previousEndDate = null;
-			cal.clear();
-			cal.setTime(hhEndDate.getDate());
-			cal.set(Calendar.DAY_OF_MONTH, 1);
-			cal.set(Calendar.HOUR_OF_DAY, 0);
-			cal.set(Calendar.MINUTE, 0);
-			cal.set(Calendar.SECOND, 0);
-			cal.set(Calendar.MILLISECOND, 0);
-			DceService previousDceService = getDceService(new HhEndDate(cal
-					.getTime()));
-			DceService dceService = previousDceService;
-			int month = cal.get(Calendar.MONTH);
+			//cal.clear();
+			//cal.setTime(hhEndDate.getDate());
+			//cal.set(Calendar.DAY_OF_MONTH, 1);
+			//cal.set(Calendar.HOUR_OF_DAY, 0);
+			//cal.set(Calendar.MINUTE, 0);
+			//cal.set(Calendar.SECOND, 0);
+			//cal.set(Calendar.MILLISECOND, 0);
+			//DceService previousDceService = getDceService(new HhEndDate(cal
+			//		.getTime()));
+			//DceService dceService = previousDceService;
+			//int month = cal.get(Calendar.MONTH);
 			while (!hhEndDate.getDate().after(group.getTo().getDate())) {
-				cal.clear();
-				cal.setTime(hhEndDate.getDate());
-				if (month != cal.get(Calendar.MONTH)) {
-					month = cal.get(Calendar.MONTH);
-					previousDceService = dceService;
-					dceService = getDceService(new HhEndDate(cal.getTime()));
-				}
+				//cal.clear();
+				//cal.setTime(hhEndDate.getDate());
+				//if (month != cal.get(Calendar.MONTH)) {
+				//	month = cal.get(Calendar.MONTH);
+				//	previousDceService = dceService;
+				//	dceService = getDceService(new HhEndDate(cal.getTime()));
+				//}
 				if (exportToNet.get(i) > importFromGen.get(i)) {
 					if (snag1From == null) {
 						snag1From = hhEndDate;
@@ -263,15 +256,14 @@ public class Site extends PersistentEntity implements Urlable {
 					resolve1To = hhEndDate;
 				}
 				if (snag1To != null
-						&& (snag1To.equals(previousEndDate) || !dceService
-								.equals(previousDceService))) {
-					addDceSnagSite(previousDceService,
-							EXPORT_NET_GT_IMPORT_GEN, snag1From, snag1To, false);
+						&& (snag1To.equals(previousEndDate))) {
+					group.addDceSnag(
+							SiteGroup.EXPORT_NET_GT_IMPORT_GEN, snag1From, snag1To, false);
 					snag1From = null;
 					snag1To = null;
 				}
 				if (resolve1To != null && resolve1To.equals(previousEndDate)) {
-					resolveDceSnag(EXPORT_NET_GT_IMPORT_GEN, resolve1From,
+					group.resolveDceSnag(SiteGroup.EXPORT_NET_GT_IMPORT_GEN, resolve1From,
 							resolve1To);
 					resolve1From = null;
 					resolve1To = null;
@@ -289,15 +281,14 @@ public class Site extends PersistentEntity implements Urlable {
 					resolve2To = hhEndDate;
 				}
 				if (snag2To != null
-						&& (snag2To.equals(previousEndDate) || !dceService
-								.equals(previousDceService))) {
-					addDceSnagSite(previousDceService, EXPORT_GEN_GT_IMPORT,
+						&& snag2To.equals(previousEndDate)) {
+					group.addDceSnag(SiteGroup.EXPORT_GEN_GT_IMPORT,
 							snag2From, snag2To, false);
 					snag2From = null;
 					snag2To = null;
 				}
 				if (resolve2To != null && resolve2To.equals(previousEndDate)) {
-					resolveDceSnag(EXPORT_GEN_GT_IMPORT, resolve2From,
+					group.resolveDceSnag(SiteGroup.EXPORT_GEN_GT_IMPORT, resolve2From,
 							resolve2To);
 					resolve2From = null;
 					resolve2To = null;
@@ -307,41 +298,24 @@ public class Site extends PersistentEntity implements Urlable {
 				hhEndDate = hhEndDate.getNext();
 			}
 			if (snag1To != null && snag1To.equals(previousEndDate)) {
-				addDceSnagSite(previousDceService, EXPORT_NET_GT_IMPORT_GEN,
+				group.addDceSnag(SiteGroup.EXPORT_NET_GT_IMPORT_GEN,
 						snag1From, snag1To, false);
 			}
 			if (resolve1To != null && resolve1To.equals(previousEndDate)) {
-				resolveDceSnag(EXPORT_NET_GT_IMPORT_GEN, resolve1From,
+				group.resolveDceSnag(SiteGroup.EXPORT_NET_GT_IMPORT_GEN, resolve1From,
 						resolve1To);
 			}
 			if (snag2To != null && snag2To.equals(previousEndDate)) {
-				addDceSnagSite(previousDceService, EXPORT_GEN_GT_IMPORT,
+				group.addDceSnag(SiteGroup.EXPORT_GEN_GT_IMPORT,
 						snag2From, snag2To, false);
 			}
 			if (resolve2To != null && resolve2To.equals(previousEndDate)) {
-				resolveDceSnag(EXPORT_GEN_GT_IMPORT, resolve2From, resolve2To);
+				group.resolveDceSnag(SiteGroup.EXPORT_GEN_GT_IMPORT, resolve2From, resolve2To);
 			}
 		}
 	}
 
-	/*
-	 * private void addDceSnagSite(String type, HhEndDate from, HhEndDate to) {
-	 * List<DceService> dceServices = new ArrayList<DceService>(); for
-	 * (SupplyGeneration supplyGeneration : Hiber.session().createQuery("from
-	 * SupplyGeneration generation join generation.siteSupplyGenerations
-	 * siteSupplyGeneration where siteSupplyGeneration.site = :site and
-	 * supplyGeneration.startDate <= :")) for (SiteSupplyGeneration
-	 * siteSupplyGeneration : siteSupplyGenerations) { SupplyGeneration
-	 * generation = siteSupplyGeneration
-	 * .getSupplyGeneration().getSupply().getGeneration(date); if (generation !=
-	 * null) { for (Mpan mpan : generation.getMpans()) {
-	 * dceServices.add(mpan.getDceService()); } } }
-	 * Collections.sort(dceServices); DceService dceService =
-	 * dceServices.get(0); addDceSnagSite(dceService, EXPORT_NET_GT_IMPORT_GEN,
-	 * hhEndDate, hhEndDate, false); }
-	 */
-
-	public List<SiteGroup> groups(HhEndDate from, HhEndDate to)
+	public List<SiteGroup> groups(HhEndDate from, HhEndDate to, boolean primaryOnly)
 			throws ProgrammerException, UserException {
 		List<SiteGroup> groups = new ArrayList<SiteGroup>();
 		HhEndDate checkFrom = from;
@@ -361,7 +335,7 @@ public class Site extends PersistentEntity implements Urlable {
 								: physicalSupplies2 - physicalSupplies1;
 					}
 				});
-				if (sites.get(0).equals(this)) {
+				if (!primaryOnly || sites.get(0).equals(this)) {
 					groups.add(new SiteGroup(checkFrom, checkTo, sites,
 							supplies));
 				}
@@ -428,60 +402,7 @@ public class Site extends PersistentEntity implements Urlable {
 				}
 			}
 		}
-		/*
-		 * for (SiteSupplyGeneration siteSupplyGenerationSupply :
-		 * groupSites.get( groupSites.size() - 1).getSiteSupplyGenerations()) {
-		 * Supply supply = siteSupplyGenerationSupply.getSupplyGeneration()
-		 * .getSupply(); if (!groupSupplies.contains(supply)) { for
-		 * (SupplyGeneration generation : supply.getGenerations(from, to)) {
-		 * SiteSupplyGeneration prevSiteSupplyGeneration = null; for
-		 * (SiteSupplyGeneration siteSupplyGeneration : generation
-		 * .getSiteSupplyGenerations()) { if (prevSiteSupplyGeneration != null &&
-		 * !siteSupplyGeneration .equals(prevSiteSupplyGeneration)) { return
-		 * false; } prevSiteSupplyGeneration = siteSupplyGeneration; } }
-		 * groupSupplies.add(supply); for (SiteSupplyGeneration
-		 * siteSupplyGenerationSite : siteSupplyGenerationSupply
-		 * .getSupplyGeneration().getSiteSupplyGenerations()) { if (!groupSites
-		 * .contains(siteSupplyGenerationSite.getSite())) {
-		 * groupSites.add(siteSupplyGenerationSite.getSite()); if
-		 * (!walkGroup(groupSites, groupSupplies, from, to)) { return false; } } } } }
-		 */
 		return true;
-	}
-
-	@SuppressWarnings("unchecked")
-	private void resolveDceSnag(String description, HhEndDate startDate,
-			HhEndDate finishDate) throws ProgrammerException, UserException {
-		if (!startDate.getDate().after(finishDate.getDate())) {
-			for (SnagSite snag : (List<SnagSite>) Hiber
-					.session()
-					.createQuery(
-							"from SnagSite snag where snag.site = :site and snag.description = :description and snag.startDate.date <= :finishDate and snag.finishDate.date >= :startDate and snag.dateResolved is null")
-					.setEntity("site", this).setString("description",
-							description.toString()).setTimestamp("startDate",
-							startDate.getDate()).setTimestamp("finishDate",
-							finishDate.getDate()).list()) {
-				addDceSnagSite(snag.getService(), description,
-						snag.getStartDate().getDate().before(
-								startDate.getDate()) ? startDate : snag
-								.getStartDate(), snag.getFinishDate().getDate()
-								.after(finishDate.getDate()) ? finishDate
-								: snag.getFinishDate(), true);
-			}
-		}
-	}
-
-		/*
-		 * 
-		 * 
-		 * List<DceService> dceServices = new ArrayList<DceService>(); for
-		 * (SiteSupplyGeneration siteSupplyGeneration : siteSupplyGenerations) {
-		 * SupplyGeneration generation = siteSupplyGeneration
-		 * .getSupplyGeneration().getSupply().getGeneration(date); if
-		 * (generation != null) { for (Mpan mpan : generation.getMpans()) {
-		 * dceServices.add(mpan.getDceService()); } } }
-		 * Collections.sort(dceServices); return dceServices.get(0);
-		 */
 	}
 
 	public int physicalSupplies() {
@@ -494,83 +415,12 @@ public class Site extends PersistentEntity implements Urlable {
 		return physicalSupplies;
 	}
 
-	/*
-	 * @SuppressWarnings("unchecked") public List<Supply> supplysByFinishDate()
-	 * throws ProgrammerException { try { return (List<Supply>) Hiber
-	 * .session() .createQuery( "select distinct siteSupplyGesupply from Supply
-	 * supply join supply.siteSupplyGenerations siteSupplyGeneration where
-	 * siteSupply.site = :site order by supply.name.string") .setEntity("site",
-	 * this).list(); } catch (HibernateException e) { throw new
-	 * ProgrammerException(e); } }
-	 */
 	public void attachSiteSupplyGeneration(
 			SiteSupplyGeneration siteSupplyGeneration) {
 		siteSupplyGenerations.add(siteSupplyGeneration);
 		Hiber.flush();
 	}
 
-
-	/*
-	 * @SuppressWarnings("unchecked") private void addSnagSite(Contract
-	 * contract, MonadString description, HhEndDate startDate, HhEndDate
-	 * finishDate, boolean isResolved) throws ProgrammerException, UserException {
-	 * Query query = Hiber .session() .createQuery( "from SnagSite snag where
-	 * snag.site = :site and snag.startDate.date <= :finishDate and
-	 * snag.finishDate.date >= :startDate and snag.description.string =
-	 * :description order by snag.startDate.date") .setEntity("site",
-	 * this).setTimestamp("finishDate",
-	 * finishDate.getDate()).setTimestamp("startDate",
-	 * startDate.getDate()).setString("description", description.toString());
-	 * SnagSite unresolved = new SnagSite(description, contract, this,
-	 * startDate, finishDate); for (SnagSite snag : (List<SnagSite>)
-	 * query.list()) { if
-	 * (snag.getFinishDate().getDate().after(finishDate.getDate())) { SnagSite
-	 * outerSnag = snag.copy();
-	 * outerSnag.setStartDate(HhEndDate.getNext(finishDate));
-	 * snag.setFinishDate(finishDate); SnagSite.insertSnagSite(outerSnag);
-	 * Hiber.flush(); } if
-	 * (snag.getStartDate().getDate().before(startDate.getDate())) { SnagSite
-	 * outerSnag = snag.copy();
-	 * outerSnag.setFinishDate(HhEndDate.getPrevious(startDate));
-	 * snag.setStartDate(startDate); SnagSite.insertSnagSite(outerSnag);
-	 * Hiber.flush(); unresolved.setFinishDate(HhEndDate
-	 * .getNext(snag.getFinishDate())); unresolved
-	 * .setStartDate(HhEndDate.getNext(snag.getFinishDate())); } if
-	 * (unresolved.getStartDate().getDate().before(
-	 * snag.getStartDate().getDate())) {
-	 * unresolved.setFinishDate(HhEndDate.getPrevious(snag .getStartDate()));
-	 * SnagSite.insertSnagSite(unresolved); unresolved = new
-	 * SnagSite(description, contract, this,
-	 * HhEndDate.getNext(snag.getFinishDate()), HhEndDate
-	 * .getNext(snag.getFinishDate())); } else {
-	 * unresolved.setFinishDate(HhEndDate .getNext(snag.getFinishDate()));
-	 * unresolved .setStartDate(HhEndDate.getNext(snag.getFinishDate())); } } if
-	 * (!unresolved.getStartDate().getDate().after(finishDate.getDate())) {
-	 * unresolved.setFinishDate(finishDate);
-	 * SnagSite.insertSnagSite(unresolved); } for (SnagSite snag : (List<SnagSite>)
-	 * query.list()) { if (isResolved) { if (snag.getDateResolved() == null) {
-	 * snag.resolve(false); } else if (snag.getIsIgnored().getBoolean() == true) {
-	 * snag.setIsIgnored(new MonadBoolean(false)); } } else if
-	 * (snag.getDateResolved() != null && !snag.getIsIgnored().getBoolean()) {
-	 * snag.deResolve(); } } SnagSite previousSnag = null; for (SnagSite snag :
-	 * (List<SnagSite>) query.setTimestamp("startDate",
-	 * startDate.getPrevious().getDate()).setTimestamp("finishDate",
-	 * finishDate.getNext().getDate()).list()) { boolean combinable = false; if
-	 * (previousSnag != null) { combinable =
-	 * previousSnag.getFinishDate().getDate().getTime() == snag
-	 * .getStartDate().getPrevious().getDate().getTime() &&
-	 * previousSnag.getContract() .equals(snag.getContract()); if (combinable) {
-	 * combinable = snag.getProgress().equals( previousSnag.getProgress()); } if
-	 * (combinable) { if (previousSnag.getDateResolved() == null &&
-	 * snag.getDateResolved() == null) { combinable = true; } else if
-	 * ((previousSnag.getDateResolved() != null && snag .getDateResolved() !=
-	 * null) && previousSnag.getDateResolved().equals( snag.getDateResolved()) &&
-	 * previousSnag.getIsIgnored().equals( snag.getIsIgnored())) { combinable =
-	 * true; } else { combinable = false; } } if (combinable) {
-	 * previousSnag.updateFinishDate(snag.getFinishDate());
-	 * SnagSite.deleteSnagSite(snag); } } if (!combinable) { previousSnag =
-	 * snag; } } }
-	 */
 	public MonadUri getUri() throws ProgrammerException, UserException {
 		return organization.getSitesInstance().getUri().resolve(getUriId())
 				.append("/");

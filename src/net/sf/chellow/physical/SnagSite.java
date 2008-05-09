@@ -37,26 +37,25 @@ import net.sf.chellow.monad.types.MonadUri;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-
 public class SnagSite extends SnagDateBounded {
 	public static void insertSnagSite(SnagSite snag) {
 		Hiber.session().save(snag);
 	}
 
-	public static void deleteSnagSite(SnagSite snag) {
-		Hiber.session().delete(snag);
-	}
-
+	/*
+	 * public static void deleteSnagSite(SnagSite snag) {
+	 * Hiber.session().delete(snag); }
+	 */
 	private Site site;
-	
+
 	private DceService dceService;
 
 	public SnagSite() {
 		setTypeName("snag-site");
 	}
 
-	public SnagSite(String description, DceService dceService,
-			Site site, HhEndDate startDate, HhEndDate finishDate)
+	public SnagSite(String description, DceService dceService, Site site,
+			HhEndDate startDate, HhEndDate finishDate)
 			throws ProgrammerException, UserException {
 		super(description, startDate, finishDate);
 		this.site = site;
@@ -70,7 +69,7 @@ public class SnagSite extends SnagDateBounded {
 	void setSite(Site site) {
 		this.site = site;
 	}
-	
+
 	public DceService getService() {
 		return dceService;
 	}
@@ -78,19 +77,19 @@ public class SnagSite extends SnagDateBounded {
 	public void setService(DceService dceService) {
 		this.dceService = dceService;
 	}
-	
+
 	@Override
 	public void setService(Service service) {
 		setService((DceService) service);
 	}
 
-	
-	public Element toXML(Document doc) throws ProgrammerException, UserException {
+	public Element toXML(Document doc) throws ProgrammerException,
+			UserException {
 		Element element = (Element) super.toXML(doc);
 
 		return element;
 	}
-	
+
 	public SnagSite copy() throws ProgrammerException {
 		SnagSite cloned;
 		try {
@@ -101,15 +100,18 @@ public class SnagSite extends SnagDateBounded {
 		cloned.setId(null);
 		return cloned;
 	}
+
 	public String toString() {
 		return super.toString() + " Contract: " + getService();
 	}
 
-	public void httpGet(Invocation inv) throws DesignerException, ProgrammerException, UserException, DeployerException {
+	public void httpGet(Invocation inv) throws DesignerException,
+			ProgrammerException, UserException, DeployerException {
 		inv.sendOk(document());
 	}
-	
-	private Document document() throws ProgrammerException, UserException, DesignerException {
+
+	private Document document() throws ProgrammerException, UserException,
+			DesignerException {
 		Document doc = MonadUtils.newSourceDocument();
 		Element sourceElement = doc.getDocumentElement();
 		sourceElement.appendChild(getXML(new XmlTree("service", new XmlTree(
@@ -117,11 +119,18 @@ public class SnagSite extends SnagDateBounded {
 		return doc;
 	}
 
-	public void httpDelete(Invocation inv) throws ProgrammerException, DesignerException, UserException, DeployerException {
+	public void httpDelete(Invocation inv) throws ProgrammerException,
+			DesignerException, UserException, DeployerException {
 		// TODO Auto-generated method stub
-		
+
 	}
+
 	public MonadUri getUri() throws ProgrammerException, UserException {
-		return getService().getSnagsSiteInstance().getUri().resolve(getUriId()).append("/");
+		return getService().getSnagsSiteInstance().getUri().resolve(getUriId())
+				.append("/");
+	}
+
+	public void delete() {
+		Hiber.session().delete(this);
 	}
 }

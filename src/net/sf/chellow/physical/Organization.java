@@ -369,9 +369,18 @@ public class Organization extends PersistentEntity {
 		return site;
 	}
 
+	@SuppressWarnings("unchecked")
 	public void deleteSite(Site site) throws ProgrammerException, UserException {
-		if (Hiber.session().createQuery("from SiteSupplyGeneration ssg where ssg.site = :site").setEntity("site", this).list().size() > 0) {
-			throw UserException.newInvalidParameter("This site can't be deleted while there are still supply generations attached to it.");
+		if (Hiber.session().createQuery(
+				"from SiteSupplyGeneration ssg where ssg.site = :site")
+				.setEntity("site", site).list().size() > 0) {
+			throw UserException
+					.newInvalidParameter("This site can't be deleted while there are still supply generations attached to it.");
+		}
+		for (SnagSite snag : (List<SnagSite>) Hiber.session().createQuery(
+				"from SnagSite snag where site = :site")
+				.setEntity("site", site).list()) {
+			snag.delete();
 		}
 		Hiber.session().delete(site);
 		Hiber.flush();

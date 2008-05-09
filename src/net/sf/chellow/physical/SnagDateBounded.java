@@ -404,7 +404,7 @@ public abstract class SnagDateBounded extends Snag {
 
 		public void deleteSnag(SnagDateBounded snag) {
 			SnagSite snagSite = (SnagSite) snag;
-			SnagSite.deleteSnagSite(snagSite);
+			snagSite.delete();
 		}
 
 		@SuppressWarnings("unchecked")

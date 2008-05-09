@@ -75,11 +75,7 @@ public class Invoice extends PersistentEntity implements Urlable {
 
 	private DayStartDate startDate;
 
-	// private boolean isStartFuzzy;
-
 	private DayFinishDate finishDate;
-
-	// private boolean isFinishFuzzy;
 
 	private double net;
 
@@ -101,13 +97,6 @@ public class Invoice extends PersistentEntity implements Urlable {
 		setTypeName("invoice");
 	}
 
-	/*
-	 * public Bill(Batch batch, Account account, HhEndDate startDate, HhEndDate
-	 * finishDate, double net, double vat, String invoiceText, String
-	 * accountText, String mpanText) throws UserException, ProgrammerException {
-	 * this(); setBatch(batch); update(account, startDate, finishDate, net, vat,
-	 * invoiceText, accountText, mpanText, PENDING); }
-	 */
 	@SuppressWarnings("unchecked")
 	public Invoice(Batch batch, Bill bill, InvoiceRaw invoiceRaw)
 			throws UserException, ProgrammerException {
@@ -120,27 +109,6 @@ public class Invoice extends PersistentEntity implements Urlable {
 		setInvoiceText(invoiceRaw.getInvoiceText());
 		setAccountText(invoiceRaw.getAccountText());
 		setMpanText(invoiceRaw.getMpanText());
-		/*
-		 * Query query = null; SupplierService supplierService = SupplierService
-		 * .findSupplierService(service.getId()); DceService dceService =
-		 * DceService.findDceService(service.getId()); if (supplierService !=
-		 * null) { // organization =
-		 * supplierService.getProvider().getOrganization(); query = Hiber
-		 * .session() .createQuery( "select distinct mpan from Mpan mpan where
-		 * mpan.supplierAccount = :account and (mpan.supplyGeneration.finishDate
-		 * is null or mpan.supplyGeneration.finishDate >= :billStartDate) and
-		 * mpan.supplyGeneration.startDate <= :billFinishDate"); } else if
-		 * (dceService != null) { // organization =
-		 * dceService.getProvider().getOrganization(); query = Hiber .session()
-		 * .createQuery( "select distinct mpan from Mpan mpan where
-		 * mpan.dceAccount = :account and (mpan.supplyGeneration.finishDate is
-		 * null or mpan.supplyGeneration.finishDate >= :billStartDate) and
-		 * mpan.supplyGeneration.startDate <= :billFinishDate"); } else { throw
-		 * new ProgrammerException("Unknown service type."); } if
-		 * (mpanText.length() == 0) { throw UserException
-		 * .newInvalidParameter("The MPAN text must contain at least one MPAN
-		 * core."); }
-		 */
 	}
 
 	public Batch getBatch() {
@@ -175,14 +143,6 @@ public class Invoice extends PersistentEntity implements Urlable {
 		this.startDate = startDate;
 	}
 
-	// public boolean getIsStartFuzzy() {
-	// return isStartFuzzy;
-	// }
-
-	// protected void setIsStartFuzzy(boolean isStartFuzzy) {
-	// this.isStartFuzzy = isStartFuzzy;
-	// }
-
 	public DayFinishDate getFinishDate() {
 		return finishDate;
 	}
@@ -190,14 +150,6 @@ public class Invoice extends PersistentEntity implements Urlable {
 	protected void setFinishDate(DayFinishDate finishDate) {
 		this.finishDate = finishDate;
 	}
-
-	// public boolean getIsFinishFuzzy() {
-	// return isFinishFuzzy;
-	// }
-
-	// protected void setIsFinishFuzzy(boolean isFinishFuzzy) {
-	// this.isFinishFuzzy = isFinishFuzzy;
-	// }
 
 	public double getNet() {
 		return net;
@@ -272,10 +224,7 @@ public class Invoice extends PersistentEntity implements Urlable {
 					.newInvalidParameter("The bill start date can't be after the finish date.");
 		}
 		setStartDate(startDate);
-		// setIsStartFuzzy(isStartFuzzy);
 		setFinishDate(finishDate);
-		// setIsFinishFuzzy(isFinishFuzzy);
-
 		setNet(net);
 		setVat(vat);
 		if (status != PENDING && status != PAID && status != REJECTED) {
@@ -316,24 +265,28 @@ public class Invoice extends PersistentEntity implements Urlable {
 
 	public void httpPost(Invocation inv) throws ProgrammerException,
 			UserException, DesignerException, DeployerException {
-		String accountReference = inv.getString("account-reference");
-		Date issueDate = inv.getDate("issue-date");
-		Date startDate = inv.getDate("start-date");
-		// boolean isStartFuzzy = inv.getBoolean("is-start-fuzzy");
-		Date finishDate = inv.getDate("finish-date");
-		// boolean isFinishFuzzy = inv.getBoolean("is-finish-fuzzy");
-		Double net = inv.getDouble("net");
-		Double vat = inv.getDouble("vat");
-		Integer status = inv.getInteger("status");
-		if (!inv.isValid()) {
-			throw UserException.newInvalidParameter(document());
+		if (inv.hasParameter("delete")) {
+			delete();
+			Hiber.commit();
+			inv.sendSeeOther(batch.invoicesInstance().getUri());
+		} else {
+			String accountReference = inv.getString("account-reference");
+			Date issueDate = inv.getDate("issue-date");
+			Date startDate = inv.getDate("start-date");
+			Date finishDate = inv.getDate("finish-date");
+			Double net = inv.getDouble("net");
+			Double vat = inv.getDouble("vat");
+			Integer status = inv.getInteger("status");
+			if (!inv.isValid()) {
+				throw UserException.newInvalidParameter(document());
+			}
+			update(batch.getService().getProvider()
+					.getAccount(accountReference), new DayStartDate(issueDate),
+					new DayStartDate(startDate).getNext(), new DayFinishDate(
+							finishDate), net, vat, status);
+			Hiber.commit();
+			inv.sendOk(document());
 		}
-		update(batch.getService().getProvider().getAccount(accountReference),
-				new DayStartDate(issueDate), new DayStartDate(startDate)
-						.getNext(), new DayFinishDate(finishDate), net, vat,
-				status);
-		Hiber.commit();
-		inv.sendOk(document());
 	}
 
 	private Document document() throws ProgrammerException, UserException,
@@ -348,8 +301,8 @@ public class Invoice extends PersistentEntity implements Urlable {
 		source.appendChild(MonadDate.getMonthsXml(doc));
 		source.appendChild(MonadDate.getDaysXml(doc));
 		for (RegisterRead read : reads) {
-			invoiceElement.appendChild(read.getXML(new XmlTree(
-					"mpan", new XmlTree("mpanCore").put("supplyGeneration",
+			invoiceElement.appendChild(read.getXML(new XmlTree("mpan",
+					new XmlTree("mpanCore").put("supplyGeneration",
 							new XmlTree("supply"))), doc));
 		}
 		return doc;
@@ -373,16 +326,13 @@ public class Invoice extends PersistentEntity implements Urlable {
 			throw UserException.newNotFound();
 		}
 	}
-	
+
 	public RegisterReads registerReadsInstance() {
 		return new RegisterReads(this);
 	}
 
 	public void httpDelete(Invocation inv) throws ProgrammerException,
 			DesignerException, UserException, DeployerException {
-		/*
-		 * deleteBill(this); inv.sendOk();
-		 */
 	}
 
 	public RegisterRead insertRead(Mpan mpan, RegisterReadRaw rawRead)
@@ -398,11 +348,7 @@ public class Invoice extends PersistentEntity implements Urlable {
 
 	@SuppressWarnings("unchecked")
 	public void delete() throws ProgrammerException, UserException {
-		/*
-		 * for (RegisterRead read : (List<RegisterRead>) Hiber.session()
-		 * .createQuery( "from RegisterRead read where read.invoice = :invoice")
-		 * .setEntity("invoice", this).list()) { read.delete(); }
-		 */
+		bill.removeInvoice(this);
 		reads.clear();
 		Hiber.flush();
 		Hiber.session().delete(this);

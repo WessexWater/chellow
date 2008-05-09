@@ -548,7 +548,7 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 				e.setDocument(document());
 				throw e;
 			}
-			Hiber.close();
+			Hiber.commit();
 			inv.sendSeeOther(supply.getUri());
 		} else if (inv.hasParameter("attach")) {
 			SiteCode siteCode = inv.getValidatable(SiteCode.class, "site-code");

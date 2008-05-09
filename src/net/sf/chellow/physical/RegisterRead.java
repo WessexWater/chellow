@@ -10,6 +10,7 @@ import net.sf.chellow.monad.MonadUtils;
 import net.sf.chellow.monad.ProgrammerException;
 import net.sf.chellow.monad.Urlable;
 import net.sf.chellow.monad.UserException;
+import net.sf.chellow.monad.VFMessage;
 import net.sf.chellow.monad.XmlTree;
 import net.sf.chellow.monad.types.MonadDate;
 import net.sf.chellow.monad.types.MonadUri;
@@ -202,8 +203,16 @@ public class RegisterRead extends PersistentEntity {
 
 	public void httpPost(Invocation inv) throws ProgrammerException,
 			UserException, DesignerException, DeployerException {
-		// TODO Auto-generated method stub
-
+		if (inv.hasParameter("delete")) {
+			delete();
+			Hiber.commit();
+			Document doc = document();
+			Element source = doc.getDocumentElement();
+			source.appendChild(new VFMessage(
+					"This register read has been successfully deleted.")
+					.toXML(doc));
+			inv.sendOk(doc);
+		}
 	}
 
 	public void delete() {

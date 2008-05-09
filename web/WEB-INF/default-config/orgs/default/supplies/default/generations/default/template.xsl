@@ -771,7 +771,7 @@
 									</label>
 									<xsl:value-of select="' '" />
 									<a
-										href="{/source/request/@context-path}/orgs/{/source/supply-generation/supply/org/@id}/suppliers/{/source/supply-generation/mpan[@label='import']/account/supplier/@id}/accounts/{/source/supply-generation/mpan[@label='import']/account[supplier]/@id}/">
+										href="{/source/request/@context-path}/orgs/{/source/supply-generation/site-supply-generation/site/org/@id}/suppliers/{/source/supply-generation/mpan[@label='import']/account/supplier/@id}/accounts/{/source/supply-generation/mpan[@label='import']/account[supplier]/@id}/">
 										<xsl:value-of
 											select="/source/supply-generation/mpan[@label='import']/account[supplier]/@reference" />
 									</a>
@@ -1159,7 +1159,7 @@
 									</label>
 									<xsl:value-of select="' '" />
 									<a
-										href="{/source/request/@context-path}/orgs/{/source/supply-generation/supply/org/@id}/suppliers/{/source/supply-generation/mpan[@label='export']/account/supplier/@id}/accounts/{/source/supply-generation/mpan[@label='export']/account[supplier]/@id}">
+										href="{/source/request/@context-path}/orgs/{/source/supply-generation/site-supply-generation/site/org/@id}/suppliers/{/source/supply-generation/mpan[@label='export']/account/supplier/@id}/accounts/{/source/supply-generation/mpan[@label='export']/account[supplier]/@id}">
 										<xsl:value-of
 											select="/source/supply-generation/mpan[@label='export']/account[supplier]/@reference" />
 									</a>

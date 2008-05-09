@@ -63,17 +63,13 @@ public class Account extends PersistentEntity implements Urlable {
 		}
 		return account;
 	}
-/*
-	public static void deleteAccount(Account account)
-			throws ProgrammerException {
-		try {
-			Hiber.session().delete(account);
-			Hiber.flush();
-		} catch (HibernateException e) {
-			throw new ProgrammerException(e);
-		}
-	}
-*/
+
+	/*
+	 * public static void deleteAccount(Account account) throws
+	 * ProgrammerException { try { Hiber.session().delete(account);
+	 * Hiber.flush(); } catch (HibernateException e) { throw new
+	 * ProgrammerException(e); } }
+	 */
 	@SuppressWarnings("unchecked")
 	public static void checkAllMissingFromLatest(Organization organization)
 			throws ProgrammerException, UserException {
@@ -139,7 +135,8 @@ public class Account extends PersistentEntity implements Urlable {
 		setReference(reference);
 	}
 
-	public Element toXML(Document doc) throws ProgrammerException, UserException {
+	public Element toXML(Document doc) throws ProgrammerException,
+			UserException {
 		setTypeName("account");
 		Element element = (Element) super.toXML(doc);
 
@@ -156,13 +153,16 @@ public class Account extends PersistentEntity implements Urlable {
 			UserException, DesignerException, DeployerException {
 		if (inv.hasParameter("delete")) {
 			try {
-			getProvider().deleteAccount(this);
+				provider.deleteAccount(this);
 			} catch (UserException e) {
 				e.setDocument(document());
 				throw e;
 			}
 			Hiber.commit();
-			inv.sendSeeOther(provider.getUri());
+			Supplier supplier = Supplier.findSupplier(provider.getId());
+			if (supplier != null) {
+				inv.sendSeeOther(supplier.accountsInstance().getUri());
+			}
 		} else {
 			String reference = inv.getString("reference");
 			if (!inv.isValid()) {
@@ -229,8 +229,8 @@ public class Account extends PersistentEntity implements Urlable {
 
 	public void httpDelete(Invocation inv) throws ProgrammerException,
 			DesignerException, UserException, DeployerException {
-//		deleteAccount(this);
-//		inv.sendOk();
+		// deleteAccount(this);
+		// inv.sendOk();
 	}
 
 	public void checkMissingFromLatest(Service service)
