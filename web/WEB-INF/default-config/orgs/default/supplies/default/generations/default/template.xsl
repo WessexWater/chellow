@@ -518,14 +518,14 @@
 													</xsl:when>
 													<xsl:otherwise>
 														<xsl:value-of
-															select="/source/supply-generation/mpan[@label='import']/mpan-top/line-loss-factor/@code" />
+															select="/source/supply-generation/mpan[@label='import']/mpan-top/llf/@code" />
 													</xsl:otherwise>
 												</xsl:choose>
 											</xsl:attribute>
 										</input>
 									</label>
 									<xsl:value-of
-										select="concat(' ', /source/supply-generation/mpan[@label='import']/mpan-top/line-loss-factor/@description)" />
+										select="concat(' ', /source/supply-generation/mpan[@label='import']/mpan-top/llf/@description)" />
 									<br />
 									<label>
 										<xsl:value-of
@@ -803,6 +803,77 @@
 											select="/source/supply-generation/mpan[@label='import']/supplier-service/@name" />
 									</a>
 									<br />
+				<h2>Register Reads</h2>
+				<table>
+					<thead>
+						<tr>
+							<th>Id</th>
+							<th>MPAN</th>
+							<th>Coefficient</th>
+							<th>Units</th>
+							<th>TPR</th>
+							<th>Is Import?</th>
+							<th>Previous Date</th>
+							<th>Previous Value</th>
+							<th>Previous Type</th>
+							<th>Present Date</th>
+							<th>Present Value</th>
+							<th>Present Type</th>
+						</tr>
+					</thead>
+					<xsl:for-each
+						select="/source/supply-generation/mpan[@label='import']/register-read">
+						<tr>
+							<td>
+								<a href="{@id}/">
+									<xsl:value-of select="@id" />
+								</a>
+							</td>
+							<td>
+								<a
+									href="{/source/request/@context-path}/orgs/{/source/register-reads/invoice/batch/supplier-service/supplier/org/@id}/supplies/{mpan/supply-generation/supply/@id}/generations/{mpan/supply-generation/@id}/">
+									<xsl:value-of
+										select="@id" />
+								</a>
+							</td>
+							<td>
+								<xsl:value-of select="@coefficient" />
+							</td>
+							<td>
+								<xsl:value-of select="@units" />
+							</td>
+							<td>
+								<a
+									href="{/source/request/@context-path}/tprs/{tpr/@id}/">
+									<xsl:value-of select="tpr/@code" />
+								</a>
+							</td>
+							<td>
+								<xsl:value-of select="@is-import" />
+							</td>
+							<td>
+								<xsl:value-of
+									select="concat(day-finish-date[@label='previous']/@year, '-', day-finish-date[@label='previous']/@month, '-', day-finish-date[@label='previous']/@day)" />
+							</td>
+							<td>
+								<xsl:value-of select="@previous-value" />
+							</td>
+							<td>
+								<xsl:value-of select="@previous-type" />
+							</td>
+							<td>
+								<xsl:value-of
+									select="concat(day-finish-date[@label='present']/@year, '-', day-finish-date[@label='present']/@month, '-', day-finish-date[@label='present']/@day)" />
+							</td>
+							<td>
+								<xsl:value-of select="@present-value" />
+							</td>
+							<td>
+								<xsl:value-of select="@present-type" />
+							</td>
+						</tr>
+					</xsl:for-each>
+				</table>
 								</fieldset>
 								<br />
 								<fieldset>
@@ -906,14 +977,14 @@
 													</xsl:when>
 													<xsl:otherwise>
 														<xsl:value-of
-															select="/source/supply-generation/mpan[@label='export']/mpan-top/line-loss-factor/@code" />
+															select="/source/supply-generation/mpan[@label='export']/mpan-top/llf/@code" />
 													</xsl:otherwise>
 												</xsl:choose>
 											</xsl:attribute>
 										</input>
 									</label>
 									<xsl:value-of
-										select="concat(' ', /source/supply-generation/mpan[@label='export']/mpan-top/line-loss-factor/@description)" />
+										select="concat(' ', /source/supply-generation/mpan[@label='export']/mpan-top/llf/@description)" />
 									<br />
 									<label>
 										<xsl:value-of
