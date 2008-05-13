@@ -145,9 +145,6 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 
 	void setImportMpan(Mpan importMpan) {
 		this.importMpan = importMpan;
-		if (importMpan != null) {
-			importMpan.setLabel("import");
-		}
 	}
 
 	public Mpan getMpan(IsImport isImport) {
@@ -342,9 +339,6 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 
 	public void setExportMpan(Mpan exportMpan) {
 		this.exportMpan = exportMpan;
-		if (exportMpan != null) {
-			exportMpan.setLabel("export");
-		}
 	}
 
 	public Set<Mpan> getMpans() {
@@ -502,15 +496,27 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 			DesignerException {
 		Document doc = MonadUtils.newSourceDocument();
 		Element source = doc.getDocumentElement();
-		source.appendChild(getXML(new XmlTree("siteSupplyGenerations",
-				new XmlTree("site", new XmlTree("organization"))).put("meter")
-				.put("supply", new XmlTree("source").put("mpanCores")).put(
-						"mpans",
-						new XmlTree("mpanCore").put("mpanTop",
-								new XmlTree("meterTimeswitch").put("llf")).put(
-								"dceService").put("supplierAccount",
-								new XmlTree("provider")).put("supplierService",
-								new XmlTree("provider"))), doc));
+		Element generationElement = (Element) getXML(new XmlTree(
+				"siteSupplyGenerations", new XmlTree("site", new XmlTree(
+						"organization"))).put("meter").put("supply",
+				new XmlTree("source").put("mpanCores")), doc);
+		source.appendChild(generationElement);
+		for (Mpan mpan : mpans) {
+			Element mpanElement = (Element) mpan.getXML(new XmlTree("mpanCore")
+					.put("mpanTop", new XmlTree("meterTimeswitch").put("llf"))
+					.put("dceService").put("supplierAccount",
+							new XmlTree("provider")).put("supplierService",
+							new XmlTree("provider")), doc);
+			generationElement.appendChild(mpanElement);
+			for (RegisterRead read : (List<RegisterRead>) Hiber.session()
+					.createQuery(
+							"from RegisterRead read where read.mpan = :mpan")
+					.setEntity("mpan", mpan).list()) {
+				mpanElement.appendChild(read.getXML(new XmlTree("invoice",
+						new XmlTree("batch", new XmlTree("service",
+								new XmlTree("provider")))), doc));
+			}
+		}
 		// addVoltageLevelsXML(source);
 		Organization organization = organization();
 		for (Dce dce : (List<Dce>) Hiber.session().createQuery(

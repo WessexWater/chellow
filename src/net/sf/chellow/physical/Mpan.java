@@ -91,7 +91,6 @@ public class Mpan extends PersistentEntity {
 	private int agreedSupplyCapacity;
 
 	Mpan() {
-		setTypeName("mpan");
 	}
 
 	Mpan(SupplyGeneration supplyGeneration, MpanTop mpanTop,
@@ -252,6 +251,12 @@ public class Mpan extends PersistentEntity {
 			throw UserException
 					.newOk("You can't change an import mpan into an export one, and vice versa.");
 		}
+		if (dceService == null) {
+			hasImportKwh = false;
+			hasImportKvarh = false;
+			hasExportKwh = false;
+			hasExportKvarh = false;
+		}
 		/*
 		Ssc kwRegister = (Ssc) Hiber
 				.session()
@@ -312,6 +317,7 @@ public class Mpan extends PersistentEntity {
 	}
 
 	public Node toXML(Document doc) throws ProgrammerException, UserException {
+		setTypeName("mpan");
 		Element element = (Element) super.toXML(doc);
 		element.setAttributeNode(MonadBoolean.toXml(doc, "has-import-kwh",
 				hasImportKwh));

@@ -137,16 +137,16 @@
 
 									<td>
 										<xsl:if
-											test="mpan[@label='import']">
+											test="mpan[mpan-top/llf/@is-import='true']">
 											<xsl:value-of
-												select="mpan[@label='import']/mpan-core/@core" />
+												select="mpan[mpan-top/llf/@is-import='true']/mpan-core/@core" />
 										</xsl:if>
 									</td>
 									<td>
 										<xsl:if
-											test="mpan[@label='export']">
+											test="mpan[mpan-top/llf/@is-import='false']">
 											<xsl:value-of
-												select="mpan[@label='export']/mpan-core/@core" />
+												select="mpan[mpan-top/llf/@is-import='false']/mpan-core/@core" />
 										</xsl:if>
 									</td>
 									<td>

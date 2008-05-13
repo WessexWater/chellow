@@ -38,17 +38,37 @@
 						</xsl:for-each>
 					</ul>
 				</xsl:if>
-				<ul>
-					<xsl:for-each select="/source/site">
-						<li>
-							<a
-								href="{/source/request/@context-path}/orgs/1/reports/2/screen/output/?site-id={@id}">
-								<xsl:value-of
-									select="concat(@code, ' ', @name)" />
-							</a>
-						</li>
-					</xsl:for-each>
-				</ul>
+				<form action=".">
+					<fieldset>
+						<input name="search-pattern"
+							value="{/source/request/parameter[@name='search-pattern']/value}" />
+						<xsl:value-of select="' '" />
+						<input type="submit" value="Search" />
+					</fieldset>
+				</form>
+				<xsl:choose>
+					<xsl:when test="/source/site">
+						<p>
+							Only the first 50 sites of the search
+							results are shown.
+						</p>
+						<ul>
+							<xsl:for-each select="/source/site">
+								<li>
+									<a
+										href="{/source/request/@context-path}/orgs/1/reports/2/screen/output/?site-id={@id}">
+										<xsl:value-of
+											select="concat(@code, ' ', @name)" />
+									</a>
+								</li>
+							</xsl:for-each>
+						</ul>
+					</xsl:when>
+					<xsl:when
+						test="/source/request/parameter[@name='search-pattern']">
+						<p>No sites matched your search</p>
+					</xsl:when>
+				</xsl:choose>
 			</body>
 		</html>
 	</xsl:template>

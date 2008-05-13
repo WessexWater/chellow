@@ -453,9 +453,8 @@ public class Site extends PersistentEntity implements Urlable {
 						"select supplyGeneration from SupplyGeneration supplyGeneration join supplyGeneration.siteSupplyGenerations siteSupplyGeneration where siteSupplyGeneration.site = :site order by supplyGeneration.finishDate.date")
 				.setEntity("site", this).list()) {
 			siteElement.appendChild(generation.getXML(new XmlTree("mpans",
-					new XmlTree("mpanCore")).put("supply",
+					new XmlTree("mpanCore").put("mpanTop", new XmlTree("llf"))).put("supply",
 					new XmlTree("source")), doc));
-
 		}
 		return doc;
 	}
