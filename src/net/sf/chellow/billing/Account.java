@@ -349,23 +349,29 @@ public class Account extends PersistentEntity implements Urlable {
 			Hiber.session().save(bill);
 			Hiber.flush();
 		}
-		Invoice invoice = new Invoice(batch, bill, invoiceRaw);
+		Invoice invoice = new Invoice(batch, invoiceRaw);
 		Hiber.session().save(invoice);
 		Hiber.flush();
 		bill.attach(invoice);
 		checkMissing(service, bill.getStartDate(), bill.getFinishDate());
-		for (RegisterReadRaw rawRead : invoiceRaw.getRegisterReads()) {
-			MpanCoreRaw mpanCoreRaw = rawRead.getMpanRaw().getMpanCoreRaw();
-			MpanCore mpanCore = getOrganization().getMpanCore(mpanCoreRaw);
-			Supply supply = mpanCore.getSupply();
-			supply.insertRegisterRead(rawRead, invoice, service);
-		}
 		return invoice;
 	}
 
 	void attach(Invoice invoice) throws UserException, ProgrammerException {
 		Bill bill = combineBills(invoice.getStartDate(), invoice
 				.getFinishDate());
+		List<Mpan> accountMpans = getMpans(account, getStartDate(), getFinishDate());
+		if (!accountMpans.equals()) {
+			throw UserException.newInvalidParameter("Problem with account '"
+					+ invoiceRaw.getAccountText() + "' invoice '"
+					+ invoiceRaw.getInvoiceText()
+					+ "' from the half-hour ending " + getStartDate()
+					+ " to the half-hour ending " + getFinishDate()
+					+ ". This bill has MPANs " + textMpans
+					+ " but the account in Chellow has MPANs '" + accountMpans
+					+ "'.");
+		}
+
 		Service service = invoice.getBatch().getService();
 		if (bill == null) {
 			bill = new Bill(service, this);

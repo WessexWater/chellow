@@ -183,6 +183,11 @@ public class Batch extends PersistentEntity implements Urlable {
 
 	Invoice insertInvoice(InvoiceRaw rawInvoice) throws UserException,
 			ProgrammerException {
-		return getService().insertInvoice(this, rawInvoice);
+		Invoice invoice = new Invoice(this, rawInvoice);
+		Hiber.session().save(invoice);
+		Hiber.flush();
+		Account account = getService().getProvider().getAccount(rawInvoice.getAccountText());
+		account.attach(invoice);
+		return invoice;
 	}
 }

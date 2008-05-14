@@ -94,7 +94,7 @@ public class Bill extends PersistentEntity implements Urlable {
 	Set<Invoice> getInvoices() {
 		return invoices;
 	}
-
+/*
 	public Invoice insertInvoice(Batch batch, InvoiceRaw invoiceRaw)
 			throws UserException, ProgrammerException {
 		if (batch.getService().equals(getService())) {
@@ -105,7 +105,7 @@ public class Bill extends PersistentEntity implements Urlable {
 		attach(invoice);
 		return invoice;
 	}
-
+*/
 	public void attach(Invoice invoice) throws ProgrammerException,
 			UserException {
 		invoice.setBill(this);

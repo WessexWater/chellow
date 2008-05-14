@@ -32,7 +32,6 @@ import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 
-import net.sf.chellow.data08.MpanRaw;
 import net.sf.chellow.hhimport.HhDataImportProcesses;
 import net.sf.chellow.monad.DesignerException;
 import net.sf.chellow.monad.Hiber;
@@ -364,31 +363,6 @@ public abstract class Service extends PersistentEntity implements
 
 	abstract public List<Mpan> getMpans(Account account, HhEndDate from,
 			HhEndDate to);
-
-	Invoice insertInvoice(Batch batch, InvoiceRaw invoiceRaw)
-			throws ProgrammerException, UserException {
-		if (!batch.getService().equals(this)) {
-			throw new ProgrammerException(
-					"The batch doesn't belong to this service.");
-		}
-		Account account = getProvider().getAccount(invoiceRaw.getAccountText());
-		Set<MpanRaw> accountMpans = new HashSet<MpanRaw>();
-		for (Mpan mpan : getMpans(account, getStartDate(), getFinishDate())) {
-			accountMpans.add(mpan.getMpanRaw());
-		}
-		Set<MpanRaw> textMpans = invoiceRaw.getMpans();
-		if (!accountMpans.equals(textMpans)) {
-			throw UserException.newInvalidParameter("Problem with account '"
-					+ invoiceRaw.getAccountText() + "' invoice '"
-					+ invoiceRaw.getInvoiceText()
-					+ "' from the half-hour ending " + getStartDate()
-					+ " to the half-hour ending " + getFinishDate()
-					+ ". This bill has MPANs " + textMpans
-					+ " but the account in Chellow has MPANs '" + accountMpans
-					+ "'.");
-		}
-		return account.insertInvoice(batch, invoiceRaw);
-	}
 	
 	public RateScript getPreviousRateScript(RateScript script)
 			throws ProgrammerException, UserException {

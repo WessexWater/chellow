@@ -24,8 +24,11 @@ package net.sf.chellow.billing;
 
 import java.util.Date;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
+import net.sf.chellow.data08.MpanCoreRaw;
+import net.sf.chellow.data08.MpanRaw;
 import net.sf.chellow.monad.DeployerException;
 import net.sf.chellow.monad.DesignerException;
 import net.sf.chellow.monad.Hiber;
@@ -42,10 +45,13 @@ import net.sf.chellow.monad.types.MonadString;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
 import net.sf.chellow.physical.Mpan;
+import net.sf.chellow.physical.MpanCore;
+import net.sf.chellow.physical.Organization;
 import net.sf.chellow.physical.PersistentEntity;
 import net.sf.chellow.physical.RegisterRead;
 import net.sf.chellow.physical.RegisterReadRaw;
 import net.sf.chellow.physical.RegisterReads;
+import net.sf.chellow.physical.Supply;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -85,30 +91,63 @@ public class Invoice extends PersistentEntity implements Urlable {
 
 	private String accountText;
 
-	private String mpanText;
-
 	private int status;
 
 	private InvoiceType type;
 
 	private Set<RegisterRead> reads;
 
+	private Set<Mpan> mpans;
+
 	public Invoice() {
 		setTypeName("invoice");
 	}
 
 	@SuppressWarnings("unchecked")
-	public Invoice(Batch batch, Bill bill, InvoiceRaw invoiceRaw)
+	public Invoice(Batch batch, InvoiceRaw invoiceRaw)
 			throws UserException, ProgrammerException {
 		this();
 		setBatch(batch);
-		setBill(bill);
+		setBill(null);
 		internalUpdate(invoiceRaw.getIssueDate(), invoiceRaw.getStartDate(),
 				invoiceRaw.getFinishDate(), invoiceRaw.getNet(), invoiceRaw
 						.getVat(), PENDING);
 		setInvoiceText(invoiceRaw.getInvoiceText());
 		setAccountText(invoiceRaw.getAccountText());
-		setMpanText(invoiceRaw.getMpanText());
+		mpans = new HashSet<Mpan>();
+		Organization organization = ((Supplier) batch.getService()
+				.getProvider()).getOrganization();
+		for (MpanRaw rawMpan : invoiceRaw.getMpans()) {
+			MpanCore mpanCore = organization.getMpanCore(rawMpan
+					.getMpanCoreRaw());
+			List<Mpan> candidateMpans = (List<Mpan>) Hiber
+					.session()
+					.createQuery(
+							"from Mpan mpan where mpan.mpanCore = :mpanCore and mpan.mpanTop = :mpanTop and mpan.supplyGeneration.startDate.date <= :finishDate and (mpan.supplyGeneration.finishDate.date is null or mpan.supplyGeneration.finishDate.date >= :startDate) order by mpan.supplyGeneration.startDate.date desc")
+					.setEntity("mpanCore", mpanCore).setEntity("mpanTop",
+							rawMpan.getMpanTop()).setTimestamp("finishDate",
+							invoiceRaw.getFinishDate().getDate()).setTimestamp(
+							"startDate", invoiceRaw.getStartDate().getDate())
+					.list();
+			if (candidateMpans.isEmpty()) {
+				throw UserException
+						.newInvalidParameter("Problem with invoice '"
+								+ invoiceRaw.getInvoiceText()
+								+ ". The invoice needs to be attached to the MPANs "
+								+ invoiceRaw.getMpanText() + " but the MPAN "
+								+ rawMpan + " cannot be found between "
+								+ " the half-hour ending " + getStartDate()
+								+ " and the half-hour ending "
+								+ getFinishDate() + ".");
+			}
+			mpans.add(candidateMpans.get(0));
+		}
+		for (RegisterReadRaw rawRead : invoiceRaw.getRegisterReads()) {
+			MpanCoreRaw mpanCoreRaw = rawRead.getMpanRaw().getMpanCoreRaw();
+			MpanCore mpanCore = organization.getMpanCore(mpanCoreRaw);
+			Supply supply = mpanCore.getSupply();
+			supply.insertRegisterRead(rawRead, this, batch.getService());
+		}
 	}
 
 	public Batch getBatch() {
@@ -183,12 +222,12 @@ public class Invoice extends PersistentEntity implements Urlable {
 		this.accountText = accountText;
 	}
 
-	public String getMpanText() {
-		return mpanText;
+	public Set<Mpan> getMpans() {
+		return mpans;
 	}
 
-	public void setMpanText(String mpanText) {
-		this.mpanText = mpanText;
+	public void setMpans(Set<Mpan> mpans) {
+		this.mpans = mpans;
 	}
 
 	public int getStatus() {
@@ -256,7 +295,6 @@ public class Invoice extends PersistentEntity implements Urlable {
 				invoiceText));
 		element.setAttributeNode(MonadString.toXml(doc, "account-text",
 				accountText));
-		element.setAttributeNode(MonadString.toXml(doc, "mpan-text", mpanText));
 		element.setAttributeNode(MonadInteger.toXml(doc, "status", status));
 		return element;
 	}
