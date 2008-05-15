@@ -28,7 +28,6 @@ import java.util.Set;
 import net.sf.chellow.data08.MpanRaw;
 import net.sf.chellow.monad.ProgrammerException;
 import net.sf.chellow.monad.UserException;
-import net.sf.chellow.monad.types.MonadDouble;
 import net.sf.chellow.monad.types.MonadObject;
 import net.sf.chellow.monad.types.MonadString;
 import net.sf.chellow.physical.RegisterReadRaw;
@@ -51,7 +50,7 @@ public class InvoiceRaw extends MonadObject {
 
 	private String accountText;
 
-	private String invoiceText;
+	private String reference;
 
 	private String mpanText;
 
@@ -60,7 +59,7 @@ public class InvoiceRaw extends MonadObject {
 	private Set<RegisterReadRaw> reads = new HashSet<RegisterReadRaw>();
 
 	public InvoiceRaw(InvoiceType type, String accountText, String mpanText,
-			String invoiceText, DayStartDate issueDate, DayStartDate startDate,
+			String reference, DayStartDate issueDate, DayStartDate startDate,
 			DayFinishDate finishDate, double net, double vat,
 			Set<RegisterReadRaw> registerReads) throws UserException,
 			ProgrammerException {
@@ -79,11 +78,11 @@ public class InvoiceRaw extends MonadObject {
 		this.finishDate = finishDate;
 		this.net = net;
 		this.vat = vat;
-		if (invoiceText == null) {
+		if (reference == null) {
 			throw UserException
 					.newInvalidParameter("The invoiceText parameter is required.");
 		}
-		this.invoiceText = invoiceText;
+		this.reference = reference;
 		if (accountText == null) {
 			throw UserException
 					.newInvalidParameter("The accountText parameter is required.");
@@ -138,8 +137,8 @@ public class InvoiceRaw extends MonadObject {
 		return vat;
 	}
 
-	public String getInvoiceText() {
-		return invoiceText;
+	public String getReference() {
+		return reference;
 	}
 
 	public String getAccountText() {
@@ -161,12 +160,10 @@ public class InvoiceRaw extends MonadObject {
 		element.appendChild(startDate.toXML(doc));
 		finishDate.setLabel("finish");
 		element.appendChild(finishDate.toXML(doc));
-		element.setAttributeNode(MonadDouble.toXml(doc, "net", net));
-		element.setAttributeNode(MonadDouble.toXml(doc, "vat", vat));
-		element.setAttributeNode(MonadString.toXml(doc, "invoice-text",
-				invoiceText));
-		element.setAttributeNode(MonadString.toXml(doc, "account-text",
-				accountText));
+		element.setAttribute("net", Double.toString(net));
+		element.setAttribute("vat", Double.toString(vat));
+		element.setAttribute("reference", reference);
+		element.setAttribute("account-reference", accountText);
 		element.setAttributeNode(MonadString.toXml(doc, "mpan-text", mpanText));
 		return element;
 	}

@@ -22,13 +22,13 @@
 
 package net.sf.chellow.billing;
 
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.Locale;
 import java.util.TimeZone;
 
-import net.sf.chellow.data08.MpanCoreRaw;
 import net.sf.chellow.monad.DeployerException;
 import net.sf.chellow.monad.DesignerException;
 import net.sf.chellow.monad.Hiber;
@@ -42,12 +42,9 @@ import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
 import net.sf.chellow.physical.HhEndDate;
 import net.sf.chellow.physical.Mpan;
-import net.sf.chellow.physical.MpanCore;
 import net.sf.chellow.physical.Organization;
 import net.sf.chellow.physical.PersistentEntity;
-import net.sf.chellow.physical.RegisterReadRaw;
 import net.sf.chellow.physical.SnagDateBounded;
-import net.sf.chellow.physical.Supply;
 import net.sf.chellow.physical.SupplyGeneration;
 
 import org.w3c.dom.Document;
@@ -336,42 +333,67 @@ public class Account extends PersistentEntity implements Urlable {
 		return new Bills(this);
 	}
 
+	/*
+	 * @SuppressWarnings("unchecked") Invoice insertInvoice(Batch batch,
+	 * InvoiceRaw invoiceRaw) throws UserException, ProgrammerException { Bill
+	 * bill = combineBills(invoiceRaw.getStartDate(), invoiceRaw
+	 * .getFinishDate()); Service service = batch.getService(); if (bill ==
+	 * null) { checkMissingFromLatest(service, invoiceRaw.getStartDate()
+	 * .getPrevious()); bill = new Bill(service, this);
+	 * Hiber.session().save(bill); Hiber.flush(); } Invoice invoice = new
+	 * Invoice(batch, invoiceRaw); Hiber.session().save(invoice); Hiber.flush();
+	 * bill.attach(invoice); checkMissing(service, bill.getStartDate(),
+	 * bill.getFinishDate()); return invoice; }
+	 */
 	@SuppressWarnings("unchecked")
-	Invoice insertInvoice(Batch batch, InvoiceRaw invoiceRaw)
+	private List<Mpan> getMpans(HhEndDate from, HhEndDate to)
 			throws UserException, ProgrammerException {
-		Bill bill = combineBills(invoiceRaw.getStartDate(), invoiceRaw
-				.getFinishDate());
-		Service service = batch.getService();
-		if (bill == null) {
-			checkMissingFromLatest(service, invoiceRaw.getStartDate()
-					.getPrevious());
-			bill = new Bill(service, this);
-			Hiber.session().save(bill);
-			Hiber.flush();
+		Long providerId = getProvider().getId();
+		if (Supplier.findSupplier(providerId) != null) {
+			if (to == null) {
+				return Hiber
+						.session()
+						.createQuery(
+								"select distinct mpan from Mpan mpan where mpan.supplierAccount = :account and (mpan.supplyGeneration.finishDate is null or mpan.supplyGeneration.finishDate >= :from)")
+						.setEntity("account", this).setTimestamp("from",
+								from.getDate()).list();
+			} else {
+				return Hiber
+						.session()
+						.createQuery(
+								"select distinct mpan from Mpan mpan where mpan.supplierAccount = :account and (mpan.supplyGeneration.finishDate is null or mpan.supplyGeneration.finishDate >= :from) and mpan.supplyGeneration.startDate <= :to")
+						.setEntity("account", this).setTimestamp("from",
+								from.getDate())
+						.setTimestamp("to", to.getDate()).list();
+			}
+		} else if (Dce.findDce(providerId) != null) {
+			return Hiber
+					.session()
+					.createQuery(
+							"select distinct mpan from Mpan mpan where mpan.dceAccount = :account and (mpan.supplyGeneration.finishDate is null or mpan.supplyGeneration.finishDate.date >= :from) and mpan.supplyGeneration.startDate.date <= :to")
+					.setEntity("account", this).setTimestamp("from",
+							from.getDate()).setTimestamp("to", to.getDate())
+					.list();
+		} else {
+			throw UserException.newInvalidParameter("Not of type Supplier!");
 		}
-		Invoice invoice = new Invoice(batch, invoiceRaw);
-		Hiber.session().save(invoice);
-		Hiber.flush();
-		bill.attach(invoice);
-		checkMissing(service, bill.getStartDate(), bill.getFinishDate());
-		return invoice;
 	}
 
 	void attach(Invoice invoice) throws UserException, ProgrammerException {
 		Bill bill = combineBills(invoice.getStartDate(), invoice
 				.getFinishDate());
-		List<Mpan> accountMpans = getMpans(account, getStartDate(), getFinishDate());
-		if (!accountMpans.equals()) {
+		List<Mpan> accountMpans = getMpans(invoice.getStartDate(), invoice
+				.getFinishDate());
+		if (!accountMpans.equals(new ArrayList<Mpan>(invoice.getMpans()))) {
 			throw UserException.newInvalidParameter("Problem with account '"
-					+ invoiceRaw.getAccountText() + "' invoice '"
-					+ invoiceRaw.getInvoiceText()
-					+ "' from the half-hour ending " + getStartDate()
-					+ " to the half-hour ending " + getFinishDate()
-					+ ". This bill has MPANs " + textMpans
+					+ reference + "' invoice '"
+					+ invoice.getReference()
+					+ "' from the half-hour ending " + invoice.getStartDate()
+					+ " to the half-hour ending " + invoice.getFinishDate()
+					+ ". This bill has MPANs " + invoice.getMpans().toString()
 					+ " but the account in Chellow has MPANs '" + accountMpans
 					+ "'.");
 		}
-
 		Service service = invoice.getBatch().getService();
 		if (bill == null) {
 			bill = new Bill(service, this);

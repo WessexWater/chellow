@@ -22,8 +22,6 @@
 
 package net.sf.chellow.billing;
 
-import java.util.List;
-
 import net.sf.chellow.monad.DeployerException;
 import net.sf.chellow.monad.DesignerException;
 import net.sf.chellow.monad.Hiber;
@@ -36,7 +34,6 @@ import net.sf.chellow.monad.XmlTree;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
 import net.sf.chellow.physical.HhEndDate;
-import net.sf.chellow.physical.Mpan;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -129,12 +126,6 @@ public class MopService extends Service {
 
 	public Urlable getChild(UriPathElement uriId) throws ProgrammerException,
 			UserException {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public List<Mpan> getMpans(Account account, HhEndDate from, HhEndDate to) {
 		// TODO Auto-generated method stub
 		return null;
 	}

@@ -257,14 +257,4 @@ public class DceService extends Service {
 						.findImporter(this) == null ? "false" : "true");
 		return element;
 	}
-
-	@SuppressWarnings("unchecked")
-	@Override
-	public
-	List<Mpan> getMpans(Account account, HhEndDate from, HhEndDate to) {
-		return Hiber
-		.session()
-		.createQuery(
-				"select distinct mpan from Mpan mpan where mpan.dceAccount = :account and (mpan.supplyGeneration.finishDate is null or mpan.supplyGeneration.finishDate >= :from) and mpan.supplyGeneration.startDate <= :to").setEntity("account", account).setEntity("from", from).setEntity("to", to).list();
-	}
 }

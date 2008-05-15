@@ -34,9 +34,8 @@
 		<many-to-one name="supplyGeneration" class="SupplyGeneration"
 			column="supply_generation_id" not-null="true"
 			foreign-key="fkey_mpan_supply_generation" />
-		<many-to-one name="mpanTop" class="MpanTop"
-			column="mpan_top_id" not-null="true"
-			foreign-key="fkey_mpan__mpan_top" />
+		<many-to-one name="mpanTop" class="MpanTop" column="mpan_top_id"
+			not-null="true" foreign-key="fkey_mpan__mpan_top" />
 		<many-to-one name="mpanCore" class="MpanCore"
 			column="mpan_core_id" not-null="true"
 			foreign-key="fkey_mpan_mpan_core" />
@@ -75,5 +74,11 @@
 			column="has_export_kvarh" not-null="true" />
 		<property name="agreedSupplyCapacity"
 			column="agreed_supply_capacity" not-null="true" />
+		<set name="invoiceMpans" inverse="true"
+			cascade="all,delete-orphan" order-by="invoice_id">
+			<key column="mpan_id" />
+			<one-to-many class="InvoiceMpan" />
+		</set>
+
 	</class>
 </hibernate-mapping>

@@ -513,7 +513,7 @@ public class Supply extends PersistentEntity implements Urlable {
 		SupplyGeneration previousGeneration = getGenerationPrevious(generation);
 		SupplyGeneration nextGeneration = getGenerationNext(generation);
 		getGenerations().remove(generation);
-		generation.getMpans().clear();
+		generation.deleteMpans();
 		Hiber.session().delete(generation);
 		if (previousGeneration == null) {
 			nextGeneration.update(generation.getStartDate(), nextGeneration

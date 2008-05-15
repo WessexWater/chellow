@@ -41,7 +41,6 @@ import net.sf.chellow.monad.XmlTree;
 import net.sf.chellow.monad.types.MonadDate;
 import net.sf.chellow.monad.types.MonadDouble;
 import net.sf.chellow.monad.types.MonadInteger;
-import net.sf.chellow.monad.types.MonadString;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
 import net.sf.chellow.physical.Mpan;
@@ -87,9 +86,9 @@ public class Invoice extends PersistentEntity implements Urlable {
 
 	private double vat;
 
-	private String invoiceText;
+	private String reference;
 
-	private String accountText;
+	//private String accountReference;
 
 	private int status;
 
@@ -97,10 +96,9 @@ public class Invoice extends PersistentEntity implements Urlable {
 
 	private Set<RegisterRead> reads;
 
-	private Set<Mpan> mpans;
+	private Set<InvoiceMpan> invoiceMpans;
 
 	public Invoice() {
-		setTypeName("invoice");
 	}
 
 	@SuppressWarnings("unchecked")
@@ -112,9 +110,9 @@ public class Invoice extends PersistentEntity implements Urlable {
 		internalUpdate(invoiceRaw.getIssueDate(), invoiceRaw.getStartDate(),
 				invoiceRaw.getFinishDate(), invoiceRaw.getNet(), invoiceRaw
 						.getVat(), PENDING);
-		setInvoiceText(invoiceRaw.getInvoiceText());
-		setAccountText(invoiceRaw.getAccountText());
-		mpans = new HashSet<Mpan>();
+		setReference(invoiceRaw.getReference());
+		//setAccountText(invoiceRaw.getAccountText());
+		invoiceMpans = new HashSet<InvoiceMpan>();
 		Organization organization = ((Supplier) batch.getService()
 				.getProvider()).getOrganization();
 		for (MpanRaw rawMpan : invoiceRaw.getMpans()) {
@@ -132,7 +130,7 @@ public class Invoice extends PersistentEntity implements Urlable {
 			if (candidateMpans.isEmpty()) {
 				throw UserException
 						.newInvalidParameter("Problem with invoice '"
-								+ invoiceRaw.getInvoiceText()
+								+ invoiceRaw.getReference()
 								+ ". The invoice needs to be attached to the MPANs "
 								+ invoiceRaw.getMpanText() + " but the MPAN "
 								+ rawMpan + " cannot be found between "
@@ -206,14 +204,14 @@ public class Invoice extends PersistentEntity implements Urlable {
 		this.vat = vat;
 	}
 
-	public String getInvoiceText() {
-		return invoiceText;
+	public String getReference() {
+		return reference;
 	}
 
-	public void setInvoiceText(String invoiceText) {
-		this.invoiceText = invoiceText;
+	public void setReference(String reference) {
+		this.reference = reference;
 	}
-
+/*
 	public String getAccountText() {
 		return accountText;
 	}
@@ -221,7 +219,7 @@ public class Invoice extends PersistentEntity implements Urlable {
 	public void setAccountText(String accountText) {
 		this.accountText = accountText;
 	}
-
+*/
 	public Set<Mpan> getMpans() {
 		return mpans;
 	}
@@ -282,6 +280,7 @@ public class Invoice extends PersistentEntity implements Urlable {
 	}
 
 	public Node toXML(Document doc) throws ProgrammerException, UserException {
+		setTypeName("invoice");
 		Element element = (Element) super.toXML(doc);
 		issueDate.setLabel("issue");
 		element.appendChild(issueDate.toXML(doc));
@@ -291,10 +290,8 @@ public class Invoice extends PersistentEntity implements Urlable {
 		element.appendChild(finishDate.toXML(doc));
 		element.setAttributeNode(MonadDouble.toXml(doc, "net", net));
 		element.setAttributeNode(MonadDouble.toXml(doc, "vat", vat));
-		element.setAttributeNode(MonadString.toXml(doc, "invoice-text",
-				invoiceText));
-		element.setAttributeNode(MonadString.toXml(doc, "account-text",
-				accountText));
+		element.setAttribute("reference", reference);
+		//element.setAttribute("account-reference", accountReference);
 		element.setAttributeNode(MonadInteger.toXml(doc, "status", status));
 		return element;
 	}

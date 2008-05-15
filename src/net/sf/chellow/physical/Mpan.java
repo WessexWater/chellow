@@ -361,6 +361,13 @@ public class Mpan extends PersistentEntity {
 		// TODO Auto-generated method stub
 
 	}
+	
+	void delete() throws UserException, ProgrammerException {
+		//check no invoices
+		if (((Long) Hiber.session().createQuery("from InvoiceMpan invoiceMpan where invoiceMpan.mpan = :mpan").setEntity("mpan", this).uniqueResult()) > 0) {
+			throw UserException.newInvalidParameter("An MPAN can't be deleted if still has invoices attached.");
+		}
+	}
 
 	public DceService getDceService(boolean isImport, boolean isKwh) {
 		DceService dceService = null;

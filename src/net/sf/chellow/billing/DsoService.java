@@ -22,8 +22,6 @@
 
 package net.sf.chellow.billing;
 
-import java.util.List;
-
 import net.sf.chellow.hhimport.HhDataImportProcesses;
 import net.sf.chellow.monad.DeployerException;
 import net.sf.chellow.monad.DesignerException;
@@ -39,7 +37,6 @@ import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
 import net.sf.chellow.physical.Dso;
 import net.sf.chellow.physical.HhEndDate;
-import net.sf.chellow.physical.Mpan;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -193,11 +190,5 @@ public class DsoService extends Service {
 			UserException {
 		setTypeName("dso-service");
 		return super.toXML(doc);
-	}
-
-	@Override
-	public List<Mpan> getMpans(Account account, HhEndDate from, HhEndDate to) {
-		// TODO Auto-generated method stub
-		return null;
 	}
 }

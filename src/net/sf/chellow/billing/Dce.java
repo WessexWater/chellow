@@ -46,11 +46,15 @@ import org.w3c.dom.Element;
 
 public class Dce extends ProviderOrganization {
 	public static Dce getDce(Long id) throws UserException, ProgrammerException {
-		Dce dce = (Dce) Hiber.session().get(Dce.class, id);
+		Dce dce = findDce(id);
 		if (dce == null) {
 			throw UserException.newOk("There isn't a DCE with that id.");
 		}
 		return dce;
+	}
+	
+	public static Dce findDce(Long id) {
+		return (Dce) Hiber.session().get(Dce.class, id);
 	}
 
 	public static Dce getDce(String name) throws UserException,

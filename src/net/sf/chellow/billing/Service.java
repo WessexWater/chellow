@@ -41,7 +41,6 @@ import net.sf.chellow.monad.Urlable;
 import net.sf.chellow.monad.UserException;
 import net.sf.chellow.monad.types.UriPathElement;
 import net.sf.chellow.physical.HhEndDate;
-import net.sf.chellow.physical.Mpan;
 import net.sf.chellow.physical.PersistentEntity;
 import net.sf.chellow.physical.Snag;
 
@@ -360,9 +359,6 @@ public abstract class Service extends PersistentEntity implements
 			HhEndDate to) throws UserException, ProgrammerException {
 		return billElement(name, getChargeScript(), account, from, to);
 	}
-
-	abstract public List<Mpan> getMpans(Account account, HhEndDate from,
-			HhEndDate to);
 	
 	public RateScript getPreviousRateScript(RateScript script)
 			throws ProgrammerException, UserException {

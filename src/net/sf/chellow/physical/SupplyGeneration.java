@@ -516,6 +516,7 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 						new XmlTree("batch", new XmlTree("service",
 								new XmlTree("provider")))), doc));
 			}
+			for (InvoiceMpan invoice : (List<InvoiceMpan>) Hiber.session().createQuery("from Invoice"))
 		}
 		// addVoltageLevelsXML(source);
 		Organization organization = organization();
@@ -543,6 +544,13 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 			source.appendChild(profileClass.toXML(doc));
 		}
 		return doc;
+	}
+	
+	void deleteMpans() throws UserException, ProgrammerException {
+		for (Mpan mpan : mpans) {
+			mpan.delete();
+		}
+		mpans.clear();
 	}
 
 	public void httpPost(Invocation inv) throws ProgrammerException,

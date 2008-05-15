@@ -219,25 +219,4 @@ public class SupplierService extends Service {
 		return "Contract id " + getId() + " " + getProvider() + " name "
 				+ getName();
 	}
-
-	@SuppressWarnings("unchecked")
-	@Override
-	public List<Mpan> getMpans(Account account, HhEndDate from, HhEndDate to) {
-		if (to == null) {
-			return Hiber
-					.session()
-					.createQuery(
-							"select distinct mpan from Mpan mpan where mpan.supplierAccount = :account and (mpan.supplyGeneration.finishDate is null or mpan.supplyGeneration.finishDate >= :from)")
-					.setEntity("account", account).setTimestamp("from",
-							from.getDate()).list();
-		} else {
-			return Hiber
-					.session()
-					.createQuery(
-							"select distinct mpan from Mpan mpan where mpan.supplierAccount = :account and (mpan.supplyGeneration.finishDate is null or mpan.supplyGeneration.finishDate >= :from) and mpan.supplyGeneration.startDate <= :to")
-					.setEntity("account", account).setTimestamp("from",
-							from.getDate()).setTimestamp("to", to.getDate())
-					.list();
-		}
-	}
 }
