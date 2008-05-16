@@ -74,11 +74,12 @@
 			column="has_export_kvarh" not-null="true" />
 		<property name="agreedSupplyCapacity"
 			column="agreed_supply_capacity" not-null="true" />
+		<!-- 
 		<set name="invoiceMpans" inverse="true"
 			cascade="all,delete-orphan" order-by="invoice_id">
 			<key column="mpan_id" />
 			<one-to-many class="InvoiceMpan" />
 		</set>
-
+-->
 	</class>
 </hibernate-mapping>

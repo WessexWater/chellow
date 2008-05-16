@@ -32,6 +32,7 @@ import net.sf.chellow.billing.Account;
 import net.sf.chellow.billing.Dce;
 import net.sf.chellow.billing.DceService;
 import net.sf.chellow.billing.Invoice;
+import net.sf.chellow.billing.InvoiceMpan;
 import net.sf.chellow.billing.Supplier;
 import net.sf.chellow.billing.SupplierService;
 import net.sf.chellow.monad.DeployerException;
@@ -497,10 +498,12 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 		Document doc = MonadUtils.newSourceDocument();
 		Element source = doc.getDocumentElement();
 		Element generationElement = (Element) getXML(new XmlTree(
-				"siteSupplyGenerations", new XmlTree("site", new XmlTree(
-						"organization"))).put("meter").put("supply",
-				new XmlTree("source").put("mpanCores")), doc);
+				"siteSupplyGenerations", new XmlTree("site")).put("meter").put(
+				"supply",
+				new XmlTree("source").put("mpanCores")),
+				doc);
 		source.appendChild(generationElement);
+		source.appendChild(getSiteSupplyGenerations().iterator().next().getSite().getOrganization().toXML(doc));
 		for (Mpan mpan : mpans) {
 			Element mpanElement = (Element) mpan.getXML(new XmlTree("mpanCore")
 					.put("mpanTop", new XmlTree("meterTimeswitch").put("llf"))
@@ -516,7 +519,15 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 						new XmlTree("batch", new XmlTree("service",
 								new XmlTree("provider")))), doc));
 			}
-			for (InvoiceMpan invoice : (List<InvoiceMpan>) Hiber.session().createQuery("from Invoice"))
+			for (InvoiceMpan invoiceMpan : (List<InvoiceMpan>) Hiber
+					.session()
+					.createQuery(
+							"from InvoiceMpan invoiceMpan where invoiceMpan.mpan = :mpan")
+					.setEntity("mpan", mpan).list()) {
+				mpanElement.appendChild(invoiceMpan.getXML(new XmlTree(
+						"invoice", new XmlTree("batch", new XmlTree("service",
+								new XmlTree("provider")))), doc));
+			}
 		}
 		// addVoltageLevelsXML(source);
 		Organization organization = organization();
@@ -545,7 +556,7 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 		}
 		return doc;
 	}
-	
+
 	void deleteMpans() throws UserException, ProgrammerException {
 		for (Mpan mpan : mpans) {
 			mpan.delete();

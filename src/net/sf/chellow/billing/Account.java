@@ -384,13 +384,16 @@ public class Account extends PersistentEntity implements Urlable {
 				.getFinishDate());
 		List<Mpan> accountMpans = getMpans(invoice.getStartDate(), invoice
 				.getFinishDate());
-		if (!accountMpans.equals(new ArrayList<Mpan>(invoice.getMpans()))) {
+		List<Mpan> invoiceMpans = new ArrayList<Mpan>();
+		for (InvoiceMpan invoiceMpan : invoice.getInvoiceMpans()) {
+			invoiceMpans.add(invoiceMpan.getMpan());
+		}
+		if (!accountMpans.equals(new ArrayList<Mpan>(invoiceMpans))) {
 			throw UserException.newInvalidParameter("Problem with account '"
-					+ reference + "' invoice '"
-					+ invoice.getReference()
+					+ reference + "' invoice '" + invoice.getReference()
 					+ "' from the half-hour ending " + invoice.getStartDate()
 					+ " to the half-hour ending " + invoice.getFinishDate()
-					+ ". This bill has MPANs " + invoice.getMpans().toString()
+					+ ". This bill has MPANs " + invoiceMpans
 					+ " but the account in Chellow has MPANs '" + accountMpans
 					+ "'.");
 		}

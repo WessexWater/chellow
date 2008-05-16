@@ -120,6 +120,25 @@
 								<legend>Update this invoice</legend>
 								<br />
 								<label>
+									<xsl:value-of select="'Reference '" />
+									<input name="reference">
+										<xsl:attribute name="value">
+									<xsl:choose>
+										<xsl:when
+													test="/source/request/parameters[@name='reference']">
+											<xsl:value-of
+														select="/source/request/parameters[@name='reference']/value" />
+										</xsl:when>
+										<xsl:otherwise>
+											<xsl:value-of
+														select="/source/invoice/@reference" />
+										</xsl:otherwise>
+									</xsl:choose>
+								</xsl:attribute>
+									</input>
+								</label>
+								<br />
+								<label>
 									<xsl:value-of
 										select="'Account Reference '" />
 									<input name="account-reference">
@@ -149,7 +168,6 @@
 											select="'Account'" />
 									</a>
 								</label>
-								<br />
 								<br />
 								<br />
 								<fieldset>
@@ -449,64 +467,6 @@
 									</input>
 								</label>
 								<br />
-								<label>
-									<xsl:value-of
-										select="'Invoice Number '" />
-									<input name="invoice-text">
-										<xsl:attribute name="value">
-									<xsl:choose>
-										<xsl:when
-													test="/source/request/parameters[@name='invoice-text']">
-											<xsl:value-of
-														select="/source/request/parameters[@name='invoice-text']/value" />
-										</xsl:when>
-										<xsl:otherwise>
-											<xsl:value-of
-														select="/source/invoice/@invoice-text" />
-										</xsl:otherwise>
-									</xsl:choose>
-								</xsl:attribute>
-									</input>
-								</label>
-								<br />
-								<label>
-									<xsl:value-of
-										select="'Account Text '" />
-									<input name="account-text">
-										<xsl:attribute name="value">
-									<xsl:choose>
-										<xsl:when
-													test="/source/request/parameters[@name='account-text']">
-											<xsl:value-of
-														select="/source/request/parameters[@name='account-text']/value" />
-										</xsl:when>
-										<xsl:otherwise>
-											<xsl:value-of
-														select="/source/invoice/@account-text" />
-										</xsl:otherwise>
-									</xsl:choose>
-								</xsl:attribute>
-									</input>
-								</label>
-								<br />
-								<label>
-									<xsl:value-of select="'MPAN text '" />
-									<input name="mpan-text">
-										<xsl:attribute name="value">
-									<xsl:choose>
-										<xsl:when
-													test="/source/request/parameters[@name='mpan-text']">
-											<xsl:value-of
-														select="/source/request/parameters[@name='mpan-text']/value" />
-										</xsl:when>
-										<xsl:otherwise>
-											<xsl:value-of
-														select="/source/invoice/@mpan-text" />
-										</xsl:otherwise>
-									</xsl:choose>
-								</xsl:attribute>
-									</input>
-								</label>
 								<br />
 								<label>
 									<xsl:value-of select="'Status '" />
@@ -595,6 +555,21 @@
 						<h4>
 							<a href="reads/">Register Reads</a>
 						</h4>
+						<h4>MPANs</h4>
+						<xsl:if test="/source/invoice/invoice-mpan">
+							<ul>
+								<xsl:for-each
+									select="/source/invoice/invoice-mpan">
+									<li>
+										<a
+											href="{/source/request/@context-path}/orgs/{/source/invoice/batch/supplier-service/supplier/org/@id}/supplies/{mpan/supply-generation/supply/@id}/generations/{mpan/supply-generation/@id}/">
+											<xsl:value-of
+												select="mpan/@mpan" />
+										</a>
+									</li>
+								</xsl:for-each>
+							</ul>
+						</xsl:if>
 					</xsl:otherwise>
 				</xsl:choose>
 			</body>

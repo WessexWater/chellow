@@ -11,7 +11,7 @@
 				<title>
 					Chellow &gt; Organizations &gt;
 					<xsl:value-of
-						select="/source/supply-generation/site-supply-generation/site/org/@name" />
+						select="/source/org/@name" />
 					&gt; Supplies &gt;
 					<xsl:value-of
 						select="/source/supply-generation/supply/@id" />
@@ -36,24 +36,24 @@
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/orgs/{/source/supply-generation/site-supply-generation/site/org/@id}/">
+						href="{/source/request/@context-path}/orgs/{/source/org/@id}/">
 						<xsl:value-of
-							select="/source/supply-generation/site-supply-generation/site/org/@name" />
+							select="/source/org/@name" />
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/orgs/{/source/supply-generation/site-supply-generation/site/org/@id}/supplies/">
+						href="{/source/request/@context-path}/orgs/{/source/org/@id}/supplies/">
 						<xsl:value-of select="'Supplies'" />
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/orgs/{/source/supply-generation/site-supply-generation/site/org/@id}/supplies/{/source/supply-generation/supply/@id}/">
+						href="{/source/request/@context-path}/orgs/{/source/org/@id}/supplies/{/source/supply-generation/supply/@id}/">
 						<xsl:value-of
 							select="/source/supply-generation/supply/@name" />
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/orgs/{/source/supply-generation/site-supply-generation/site/org/@id}/supplies/{/source/supply-generation/supply/@id}/generations/">
+						href="{/source/request/@context-path}/orgs/{/source/org/@id}/supplies/{/source/supply-generation/supply/@id}/generations/">
 						<xsl:value-of select="'Generations'" />
 					</a>
 					&gt;
@@ -770,7 +770,7 @@
 									</label>
 									<xsl:value-of select="' '" />
 									<a
-										href="{/source/request/@context-path}/orgs/{/source/supply-generation/site-supply-generation/site/org/@id}/suppliers/{/source/supply-generation/mpan[mpan-top/llf/@is-import='true']/account/supplier/@id}/accounts/{/source/supply-generation/mpan[mpan-top/llf/@is-import='true']/account[supplier]/@id}/">
+										href="{/source/request/@context-path}/orgs/{/source/org/@id}/suppliers/{/source/supply-generation/mpan[mpan-top/llf/@is-import='true']/account/supplier/@id}/accounts/{/source/supply-generation/mpan[mpan-top/llf/@is-import='true']/account[supplier]/@id}/">
 										<xsl:value-of
 											select="/source/supply-generation/mpan[mpan-top/llf/@is-import='import']/account[supplier]/@reference" />
 									</a>
@@ -797,7 +797,7 @@
 									</label>
 									<xsl:value-of select="' '" />
 									<a
-										href="{/source/request/@context-path}/orgs/{/source/supply-generation/supply/org/@id}/suppliers/{/source/supply-generation/mpan[mpan-top/llf/@is-import='true']/account/supplier/@id}/services/{/source/supply-generation/mpan[mpan-top/llf/@is-import='true']/supplier-service/@id}/">
+										href="{/source/request/@context-path}/orgs/{/source/org/@id}/suppliers/{/source/supply-generation/mpan[mpan-top/llf/@is-import='true']/account/supplier/@id}/services/{/source/supply-generation/mpan[mpan-top/llf/@is-import='true']/supplier-service/@id}/">
 										<xsl:value-of
 											select="/source/supply-generation/mpan[mpan-top/llf/@is-import='true']/supplier-service/@name" />
 									</a>
@@ -820,11 +820,11 @@
 										</thead>
 										<tbody>
 											<xsl:for-each
-												select="/source/mpan[mpan-top/llf/@is-import='true']/invoice">
+												select="/source/supply-generation/mpan[mpan-top/llf/@is-import='true']/invoice-mpan/invoice">
 												<tr>
 													<td>
 														<a
-															href="{/source/request/@context-path}/orgs/{/source/supply-generation/supply/org/@id}/suppliers/{batch/supplier-service/supplier/@id}/services/{batch/supplier-service/@id}/batches/{batch/@id}/invoices/{@id}/">
+															href="{/source/request/@context-path}/orgs/{/source/org/@id}/suppliers/{batch/supplier-service/supplier/@id}/services/{batch/supplier-service/@id}/batches/{batch/@id}/invoices/{@id}/">
 															<xsl:value-of
 																select="@id" />
 														</a>
@@ -835,7 +835,7 @@
 													</td>
 													<td>
 														<a
-															href="{/source/request/@context-path}/orgs/{/source/supply-generation/supply/org/@id}/suppliers/{bill/account/supplier/@id}/accounts/{bill/account/@id}/bills/{bill/@id}/">
+															href="{/source/request/@context-path}/orgs/{/source/org/@id}/suppliers/{bill/account/supplier/@id}/accounts/{bill/account/@id}/bills/{bill/@id}/">
 															<xsl:value-of
 																select="bill/@id" />
 														</a>
@@ -860,7 +860,7 @@
 														<xsl:for-each
 															select="mpan">
 															<a
-																href="{/source/request/@context-path}/orgs/{/source/supply-generation/supply/org/@id}/supplies/{mpan/supply-generation/supplier/@id}/generations/{mpan/supply-generation/@id}/">
+																href="{/source/request/@context-path}/orgs/{/source/org/@id}/supplies/{mpan/supply-generation/supplier/@id}/generations/{mpan/supply-generation/@id}/">
 																<xsl:value-of
 																	select="@core" />
 															</a>
@@ -888,6 +888,7 @@
 											</xsl:for-each>
 										</tbody>
 									</table>
+									<br/>
 									<table>
 										<caption>
 											Register Reads
@@ -912,7 +913,7 @@
 											<tr>
 												<td>
 													<a
-														href="{/source/request/@context-path}/orgs/{/source/supply-generation/site-supply-generation/site/org/@id}/suppliers/{invoice/batch/supplier-service/supplier/@id}/services/{invoice/batch/supplier-service/@id}/batches/{invoice/batch/@id}/invoices/{invoice/@id}/reads/{@id}/">
+														href="{/source/request/@context-path}/orgs/{/source/org/@id}/suppliers/{invoice/batch/supplier-service/supplier/@id}/services/{invoice/batch/supplier-service/@id}/batches/{invoice/batch/@id}/invoices/{invoice/@id}/reads/{@id}/">
 														<xsl:value-of
 															select="@id" />
 													</a>
@@ -1319,7 +1320,7 @@
 									</label>
 									<xsl:value-of select="' '" />
 									<a
-										href="{/source/request/@context-path}/orgs/{/source/supply-generation/site-supply-generation/site/org/@id}/suppliers/{/source/supply-generation/mpan[mpan-top/llf/@is-import='false']/account/supplier/@id}/accounts/{/source/supply-generation/mpan[mpan-top/llf/@is-import='false']/account[supplier]/@id}">
+										href="{/source/request/@context-path}/orgs/{/source/org/@id}/suppliers/{/source/supply-generation/mpan[mpan-top/llf/@is-import='false']/account/supplier/@id}/accounts/{/source/supply-generation/mpan[mpan-top/llf/@is-import='false']/account[supplier]/@id}">
 										<xsl:value-of
 											select="/source/supply-generation/mpan[mpan-top/llf/@is-import='false']/account[supplier]/@reference" />
 									</a>
@@ -1346,12 +1347,98 @@
 									</label>
 									<xsl:value-of select="' '" />
 									<a
-										href="{/source/request/@context-path}/orgs/{/source/supply-generation/supply/org/@id}/suppliers/{/source/supply-generation/mpan[mpan-top/llf/@is-import='false']/account/supplier/@id}/services/{/source/supply-generation/mpan[mpan-top/llf/@is-import='true']/supplier-service/@id}/">
+										href="{/source/request/@context-path}/orgs/{/source/org/@id}/suppliers/{/source/supply-generation/mpan[mpan-top/llf/@is-import='false']/account/supplier/@id}/services/{/source/supply-generation/mpan[mpan-top/llf/@is-import='true']/supplier-service/@id}/">
 										<xsl:value-of
 											select="/source/supply-generation/mpan[mpan-top/llf/@is-import='false']/supplier-service/@name" />
 									</a>
 									<br />
 									<br />
+									<table>
+										<caption>Invoices</caption>
+										<thead>
+											<tr>
+												<th>Id</th>
+												<th>Reference</th>
+												<th>Bill</th>
+												<th>From</th>
+												<th>To</th>
+												<th>Net</th>
+												<th>VAT</th>
+												<th>MPANs</th>
+												<th>Status</th>
+											</tr>
+										</thead>
+										<tbody>
+											<xsl:for-each
+												select="/source/supply-generation/mpan[mpan-top/llf/@is-import='false']/invoice-mpan/invoice">
+												<tr>
+													<td>
+														<a
+															href="{/source/request/@context-path}/orgs/{/source/org/@id}/suppliers/{batch/supplier-service/supplier/@id}/services/{batch/supplier-service/@id}/batches/{batch/@id}/invoices/{@id}/">
+															<xsl:value-of
+																select="@id" />
+														</a>
+													</td>
+													<td>
+														<xsl:value-of
+															select="@reference" />
+													</td>
+													<td>
+														<a
+															href="{/source/request/@context-path}/orgs/{/source/org/@id}/suppliers/{bill/account/supplier/@id}/accounts/{bill/account/@id}/bills/{bill/@id}/">
+															<xsl:value-of
+																select="bill/@id" />
+														</a>
+													</td>
+													<td>
+														<xsl:value-of
+															select="concat(day-start-date/@year, '-', day-start-date/@month, '-', day-start-date/@day)" />
+													</td>
+													<td>
+														<xsl:value-of
+															select="concat(day-finish-date/@year, '-', day-finish-date/@month, '-', day-finish-date/@day)" />
+													</td>
+													<td>
+														<xsl:value-of
+															select="@net" />
+													</td>
+													<td>
+														<xsl:value-of
+															select="@vat" />
+													</td>
+													<td>
+														<xsl:for-each
+															select="mpan">
+															<a
+																href="{/source/request/@context-path}/orgs/{/source/org/@id}/supplies/{mpan/supply-generation/supplier/@id}/generations/{mpan/supply-generation/@id}/">
+																<xsl:value-of
+																	select="@core" />
+															</a>
+															<xsl:value-of
+																select="' '" />
+														</xsl:for-each>
+													</td>
+													<td>
+														<xsl:choose>
+															<xsl:when
+																test="@status='0'">
+																Pending
+															</xsl:when>
+															<xsl:when
+																test="@status='1'">
+																Paid
+															</xsl:when>
+															<xsl:when
+																test="@status='2'">
+																Rejected
+															</xsl:when>
+														</xsl:choose>
+													</td>
+												</tr>
+											</xsl:for-each>
+										</tbody>
+									</table>
+									<br/>
 									<table>
 										<caption>
 											Register Reads
@@ -1376,7 +1463,7 @@
 											<tr>
 												<td>
 													<a
-														href="{/source/request/@context-path}/orgs/{/source/supply-generation/site-supply-generation/site/org/@id}/suppliers/{invoice/batch/supplier-service/supplier/@id}/services/{invoice/batch/supplier-service/@id}/batches/{invoice/batch/@id}/invoices/{invoice/@id}/reads/{@id}/">
+														href="{/source/request/@context-path}/orgs/{/source/org/@id}/suppliers/{invoice/batch/supplier-service/supplier/@id}/services/{invoice/batch/supplier-service/@id}/batches/{invoice/batch/@id}/invoices/{invoice/@id}/reads/{@id}/">
 														<xsl:value-of
 															select="@id" />
 													</a>

@@ -38,6 +38,6 @@
 			column="mpan_id" not-null="true"
 			foreign-key="fkey_invoice_mpan__mpan" />
 		<many-to-one name="invoice" class="Invoice" column="invoice_id"
-			not-null="true" foreign-key="fkey_invoice_mpan__site" />
+			not-null="true" foreign-key="fkey_invoice_mpan__invoice" />
 	</class>
 </hibernate-mapping>

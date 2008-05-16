@@ -386,44 +386,6 @@ public class Organization extends PersistentEntity {
 		Hiber.flush();
 	}
 
-	@SuppressWarnings("unchecked")
-	public void deleteSupply(Supply supply) throws ProgrammerException,
-			UserException {
-		long reads = (Long) Hiber
-				.session()
-				.createQuery(
-						"select count(*) from RegisterRead read where read.mpan.supplyGeneration.supply = :supply")
-				.setEntity("supply", supply).uniqueResult();
-		if (reads > 0) {
-			throw UserException
-					.newInvalidParameter("One can't delete a supply if there are still register reads attached to it.");
-		}
-		if ((Long) Hiber
-				.session()
-				.createQuery(
-						"select count(*) from HhDatum datum where datum.channel.supply = :supply")
-				.setEntity("supply", supply).uniqueResult() > 0) {
-			throw UserException
-					.newInvalidParameter("One can't delete a supply if there are still HH data attached to it.");
-		}
-		for (SupplyGeneration generation : supply.getGenerations()) {
-			generation.delete();
-		}
-		// delete all the snags
-		for (SnagChannel snag : (List<SnagChannel>) Hiber
-				.session()
-				.createQuery(
-						"from SnagChannel snag where snag.channel.supply = :supply")
-				.setEntity("supply", supply).list()) {
-			Hiber.session().delete(snag);
-			Hiber.flush();
-		}
-		// Hiber.session().createQuery("delete from SnagChannel snag where
-		// snag.channel.supply = :supply").setEntity("supply",
-		// supply).executeUpdate();
-		Hiber.session().delete(supply);
-	}
-
 	public void deleteSupplier(Supplier supplier) throws ProgrammerException,
 			UserException {
 		if (supplier.getOrganization().equals(this)) {

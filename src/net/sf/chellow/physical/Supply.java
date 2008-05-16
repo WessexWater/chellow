@@ -129,8 +129,7 @@ public class Supply extends PersistentEntity implements Urlable {
 		this.channels = channels;
 	}
 
-	public void update(String name, Source source)
-			throws ProgrammerException {
+	public void update(String name, Source source) throws ProgrammerException {
 		if (name == null) {
 			throw new ProgrammerException("The supply name "
 					+ "cannot be null.");
@@ -687,9 +686,8 @@ public class Supply extends PersistentEntity implements Urlable {
 										generation.getFinishDate().getDate()))) {
 					SupplyGeneration targetGeneration = getGeneration(read
 							.getPresentDate());
-					Mpan targetMpan = read.getMpan().getMpanTop()
-							.getLlf().getIsImport() ? targetGeneration
-							.getImportMpan()
+					Mpan targetMpan = read.getMpan().getMpanTop().getLlf()
+							.getIsImport() ? targetGeneration.getImportMpan()
 							: targetGeneration.getExportMpan();
 					if (targetMpan == null) {
 						throw UserException
@@ -765,8 +763,8 @@ public class Supply extends PersistentEntity implements Urlable {
 		Element source = doc.getDocumentElement();
 		Element supplyElement = (Element) getXML(new XmlTree("generations",
 				new XmlTree("mpans", new XmlTree("mpanCore").put("mpanTop",
-						new XmlTree("llf", new XmlTree(
-								"voltageLevel"))))).put("mpanCores"), doc);
+						new XmlTree("llf", new XmlTree("voltageLevel")))))
+				.put("mpanCores"), doc);
 		source.appendChild(supplyElement);
 		supplyElement.appendChild(getOrganization().toXML(doc));
 		addSourcesXML(source);
@@ -784,13 +782,12 @@ public class Supply extends PersistentEntity implements Urlable {
 				Element source = doc.getDocumentElement();
 
 				source.appendChild(toXML(doc));
-				Organization organization = getOrganization();
-				organization.deleteSupply(this);
+				delete(this);
 				Hiber.commit();
 				source
 						.appendChild(new VFMessage(
 								"Supply deleted successfully.").toXML(doc));
-				inv.sendSeeOther(organization.getUri());
+				inv.sendSeeOther(getOrganization().getUri());
 			} else {
 				String name = inv.getString("name");
 				Long sourceId = inv.getLong("source-id");
@@ -925,5 +922,54 @@ public class Supply extends PersistentEntity implements Urlable {
 							+ getId() + ".");
 		}
 		return meter;
+	}
+
+	@SuppressWarnings("unchecked")
+	public void delete(Supply supply) throws ProgrammerException, UserException {
+
+		long numInvoiceMpans = (Long) Hiber
+				.session()
+				.createQuery(
+						"select count(*) from InvoiceMpan invoiceMpan where invoiceMpan.mpan.supplyGeneration.supply = :supply")
+				.setEntity("supply", this).uniqueResult();
+		if (numInvoiceMpans > 0) {
+			throw UserException
+					.newInvalidParameter("One can't delete a supply if there are still invoices attached to its MPANs.");
+		}
+		long reads = (Long) Hiber
+				.session()
+				.createQuery(
+						"select count(*) from RegisterRead read where read.mpan.supplyGeneration.supply = :supply")
+				.setEntity("supply", this).uniqueResult();
+		if (reads > 0) {
+			throw UserException
+					.newInvalidParameter("One can't delete a supply if there are still register reads attached to its MPANs.");
+		}
+		if ((Long) Hiber
+				.session()
+				.createQuery(
+						"select count(*) from HhDatum datum where datum.channel.supply = :supply")
+				.setEntity("supply", this).uniqueResult() > 0) {
+			throw UserException
+					.newInvalidParameter("One can't delete a supply if there are still HH data attached to it.");
+		}
+		for (SupplyGeneration generation : getGenerations()) {
+			generation.delete();
+		}
+		// delete all the snags
+		for (SnagChannel snag : (List<SnagChannel>) Hiber
+				.session()
+				.createQuery(
+						"from SnagChannel snag where snag.channel.supply = :supply")
+				.setEntity("supply", this).list()) {
+			Hiber.session().delete(snag);
+			Hiber.flush();
+		}
+		mpanCores.clear();
+		// Hiber.session().createQuery("delete from SnagChannel snag where
+		// snag.channel.supply = :supply").setEntity("supply",
+		// supply).executeUpdate();
+		Hiber.session().delete(this);
+		Hiber.flush();
 	}
 }

@@ -24,11 +24,9 @@ package net.sf.chellow.billing;
 
 import java.util.Date;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 import net.sf.chellow.data08.MpanCoreRaw;
-import net.sf.chellow.data08.MpanRaw;
 import net.sf.chellow.monad.DeployerException;
 import net.sf.chellow.monad.DesignerException;
 import net.sf.chellow.monad.Hiber;
@@ -88,7 +86,7 @@ public class Invoice extends PersistentEntity implements Urlable {
 
 	private String reference;
 
-	//private String accountReference;
+	// private String accountReference;
 
 	private int status;
 
@@ -102,8 +100,8 @@ public class Invoice extends PersistentEntity implements Urlable {
 	}
 
 	@SuppressWarnings("unchecked")
-	public Invoice(Batch batch, InvoiceRaw invoiceRaw)
-			throws UserException, ProgrammerException {
+	public Invoice(Batch batch, InvoiceRaw invoiceRaw) throws UserException,
+			ProgrammerException {
 		this();
 		setBatch(batch);
 		setBill(null);
@@ -111,41 +109,20 @@ public class Invoice extends PersistentEntity implements Urlable {
 				invoiceRaw.getFinishDate(), invoiceRaw.getNet(), invoiceRaw
 						.getVat(), PENDING);
 		setReference(invoiceRaw.getReference());
-		//setAccountText(invoiceRaw.getAccountText());
+		// setAccountText(invoiceRaw.getAccountText());
 		invoiceMpans = new HashSet<InvoiceMpan>();
 		Organization organization = ((Supplier) batch.getService()
 				.getProvider()).getOrganization();
-		for (MpanRaw rawMpan : invoiceRaw.getMpans()) {
-			MpanCore mpanCore = organization.getMpanCore(rawMpan
-					.getMpanCoreRaw());
-			List<Mpan> candidateMpans = (List<Mpan>) Hiber
-					.session()
-					.createQuery(
-							"from Mpan mpan where mpan.mpanCore = :mpanCore and mpan.mpanTop = :mpanTop and mpan.supplyGeneration.startDate.date <= :finishDate and (mpan.supplyGeneration.finishDate.date is null or mpan.supplyGeneration.finishDate.date >= :startDate) order by mpan.supplyGeneration.startDate.date desc")
-					.setEntity("mpanCore", mpanCore).setEntity("mpanTop",
-							rawMpan.getMpanTop()).setTimestamp("finishDate",
-							invoiceRaw.getFinishDate().getDate()).setTimestamp(
-							"startDate", invoiceRaw.getStartDate().getDate())
-					.list();
-			if (candidateMpans.isEmpty()) {
-				throw UserException
-						.newInvalidParameter("Problem with invoice '"
-								+ invoiceRaw.getReference()
-								+ ". The invoice needs to be attached to the MPANs "
-								+ invoiceRaw.getMpanText() + " but the MPAN "
-								+ rawMpan + " cannot be found between "
-								+ " the half-hour ending " + getStartDate()
-								+ " and the half-hour ending "
-								+ getFinishDate() + ".");
-			}
-			mpans.add(candidateMpans.get(0));
-		}
 		for (RegisterReadRaw rawRead : invoiceRaw.getRegisterReads()) {
 			MpanCoreRaw mpanCoreRaw = rawRead.getMpanRaw().getMpanCoreRaw();
 			MpanCore mpanCore = organization.getMpanCore(mpanCoreRaw);
 			Supply supply = mpanCore.getSupply();
 			supply.insertRegisterRead(rawRead, this, batch.getService());
 		}
+	}
+
+	public void insertInvoiceMpan(Mpan mpan) {
+		invoiceMpans.add(new InvoiceMpan(this, mpan));
 	}
 
 	public Batch getBatch() {
@@ -211,21 +188,19 @@ public class Invoice extends PersistentEntity implements Urlable {
 	public void setReference(String reference) {
 		this.reference = reference;
 	}
-/*
-	public String getAccountText() {
-		return accountText;
+
+	/*
+	 * public String getAccountText() { return accountText; }
+	 * 
+	 * public void setAccountText(String accountText) { this.accountText =
+	 * accountText; }
+	 */
+	public Set<InvoiceMpan> getInvoiceMpans() {
+		return invoiceMpans;
 	}
 
-	public void setAccountText(String accountText) {
-		this.accountText = accountText;
-	}
-*/
-	public Set<Mpan> getMpans() {
-		return mpans;
-	}
-
-	public void setMpans(Set<Mpan> mpans) {
-		this.mpans = mpans;
+	public void setInvoiceMpans(Set<InvoiceMpan> invoiceMpans) {
+		this.invoiceMpans = invoiceMpans;
 	}
 
 	public int getStatus() {
@@ -291,7 +266,7 @@ public class Invoice extends PersistentEntity implements Urlable {
 		element.setAttributeNode(MonadDouble.toXml(doc, "net", net));
 		element.setAttributeNode(MonadDouble.toXml(doc, "vat", vat));
 		element.setAttribute("reference", reference);
-		//element.setAttribute("account-reference", accountReference);
+		// element.setAttribute("account-reference", accountReference);
 		element.setAttributeNode(MonadInteger.toXml(doc, "status", status));
 		return element;
 	}
@@ -338,6 +313,11 @@ public class Invoice extends PersistentEntity implements Urlable {
 					new XmlTree("mpanCore").put("supplyGeneration",
 							new XmlTree("supply"))), doc));
 		}
+		for (InvoiceMpan invoiceMpan : invoiceMpans) {
+			invoiceElement.appendChild(invoiceMpan.getXML(new XmlTree("mpan",
+					new XmlTree("supplyGeneration", new XmlTree("supply"))),
+					doc));
+		}
 		return doc;
 	}
 
@@ -383,7 +363,9 @@ public class Invoice extends PersistentEntity implements Urlable {
 	public void delete() throws ProgrammerException, UserException {
 		bill.detach(this);
 		reads.clear();
+		invoiceMpans.clear();
 		Hiber.flush();
 		Hiber.session().delete(this);
+		Hiber.flush();
 	}
 }

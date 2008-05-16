@@ -88,8 +88,7 @@
 							select="/source/invoices/batch/@reference" />
 					</a>
 					&gt;
-					<xsl:value-of select="'invoices'" />
-
+					<xsl:value-of select="'Invoices'" />
 				</p>
 				<br />
 				<xsl:choose>
@@ -110,14 +109,12 @@
 							<thead>
 								<tr>
 									<th>Id</th>
+									<th>Reference</th>
 									<th>Bill</th>
 									<th>From</th>
 									<th>To</th>
 									<th>Net</th>
 									<th>VAT</th>
-									<th>Invoice Number</th>
-									<th>Account Text</th>
-									<th>MPAN text</th>
 									<th>Status</th>
 								</tr>
 							</thead>
@@ -131,6 +128,11 @@
 													select="@id" />
 											</a>
 										</td>
+										<td>
+											<xsl:value-of
+												select="@reference" />
+										</td>
+
 										<td>
 											<a
 												href="{/source/request/@context-path}/orgs/{/source/invoices/batch/supplier-service/supplier/org/@id}/suppliers/{/source/invoices/batch/supplier-service/supplier/@id}/accounts/{bill/account/@id}/bills/{bill/@id}/">
@@ -151,18 +153,6 @@
 										</td>
 										<td>
 											<xsl:value-of select="@vat" />
-										</td>
-										<td>
-											<xsl:value-of
-												select="@invoice-text" />
-										</td>
-										<td>
-											<xsl:value-of
-												select="@account-text" />
-										</td>
-										<td>
-											<xsl:value-of
-												select="@mpan-text" />
 										</td>
 										<td>
 											<xsl:choose>

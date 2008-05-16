@@ -24,6 +24,7 @@ package net.sf.chellow.billing;
 
 import java.util.List;
 
+import net.sf.chellow.data08.MpanRaw;
 import net.sf.chellow.monad.DeployerException;
 import net.sf.chellow.monad.DesignerException;
 import net.sf.chellow.monad.Hiber;
@@ -36,6 +37,9 @@ import net.sf.chellow.monad.XmlTree;
 import net.sf.chellow.monad.types.MonadString;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
+import net.sf.chellow.physical.Mpan;
+import net.sf.chellow.physical.MpanCore;
+import net.sf.chellow.physical.Organization;
 import net.sf.chellow.physical.PersistentEntity;
 
 import org.hibernate.HibernateException;
@@ -68,7 +72,6 @@ public class Batch extends PersistentEntity implements Urlable {
 	private String reference;
 
 	public Batch() {
-		setTypeName("batch");
 	}
 
 	public Batch(Service service, String reference) {
@@ -98,8 +101,8 @@ public class Batch extends PersistentEntity implements Urlable {
 	}
 
 	public Node toXML(Document doc) throws ProgrammerException, UserException {
+		setTypeName("batch");
 		Element element = (Element) super.toXML(doc);
-
 		element.setAttributeNode((Attr) MonadString.toXml(doc, "reference",
 				reference));
 		return element;
@@ -181,12 +184,43 @@ public class Batch extends PersistentEntity implements Urlable {
 		return new InvoiceImports(this);
 	}
 
+	@SuppressWarnings("unchecked")
 	Invoice insertInvoice(InvoiceRaw rawInvoice) throws UserException,
 			ProgrammerException {
 		Invoice invoice = new Invoice(this, rawInvoice);
 		Hiber.session().save(invoice);
 		Hiber.flush();
-		Account account = getService().getProvider().getAccount(rawInvoice.getAccountText());
+		Organization organization = ((Supplier) getService().getProvider())
+				.getOrganization();
+		for (MpanRaw rawMpan : rawInvoice.getMpans()) {
+			MpanCore mpanCore = organization.getMpanCore(rawMpan
+					.getMpanCoreRaw());
+			List<Mpan> candidateMpans = (List<Mpan>) Hiber
+					.session()
+					.createQuery(
+							"from Mpan mpan where mpan.mpanCore = :mpanCore and mpan.mpanTop = :mpanTop and mpan.supplyGeneration.startDate.date <= :finishDate and (mpan.supplyGeneration.finishDate.date is null or mpan.supplyGeneration.finishDate.date >= :startDate) order by mpan.supplyGeneration.startDate.date desc")
+					.setEntity("mpanCore", mpanCore).setEntity("mpanTop",
+							rawMpan.getMpanTop()).setTimestamp("finishDate",
+							rawInvoice.getFinishDate().getDate()).setTimestamp(
+							"startDate", rawInvoice.getStartDate().getDate())
+					.list();
+			if (candidateMpans.isEmpty()) {
+				throw UserException
+						.newInvalidParameter("Problem with invoice '"
+								+ rawInvoice.getReference()
+								+ ". The invoice needs to be attached to the MPANs "
+								+ rawInvoice.getMpanText() + " but the MPAN "
+								+ rawMpan + " cannot be found between "
+								+ " the half-hour ending "
+								+ rawInvoice.getStartDate()
+								+ " and the half-hour ending "
+								+ rawInvoice.getFinishDate() + ".");
+			}
+			invoice.insertInvoiceMpan(candidateMpans.get(0));
+		}
+		Hiber.flush();
+		Account account = getService().getProvider().getAccount(
+				rawInvoice.getAccountText());
 		account.attach(invoice);
 		return invoice;
 	}

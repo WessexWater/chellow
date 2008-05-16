@@ -69,18 +69,20 @@
 			<key column="invoice_id" />
 			<one-to-many class="net.sf.chellow.physical.RegisterRead" />
 		</set>
-		<set name="invoiceMpans" lazy="true">
+		<set name="invoiceMpans" inverse="true" lazy="true"
+			cascade="all-delete-orphan">
 			<key column="invoice_id" />
 			<one-to-many class="InvoiceMpan" />
 		</set>
-
-		<set name="mpans" lazy="true" cascade="delete-orphan"
+		<!-- 
+			<set name="mpans" lazy="true" cascade="delete-orphan"
 			table="invoice_mpan">
 			<key column="invoice_id"
-				foreign-key="fkey_invoice_mpan__invoice" />
+			foreign-key="fkey_invoice_mpan__invoice" />
 			<many-to-many column="mpan_id"
-				class="net.sf.chellow.physical.Mpan" />
-		</set>
+			class="net.sf.chellow.physical.Mpan" />
+			</set>
+		-->
 	</class>
 </hibernate-mapping>
 

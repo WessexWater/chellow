@@ -31,13 +31,15 @@
 			java:comp/env/jdbc/chellow
 		</property>
 		<property name="hibernate.connection.isolation">8</property>
-		<property name="dialect">org.hibernate.dialect.PostgreSQLDialect</property>
-		
+		<property name="dialect">
+			org.hibernate.dialect.PostgreSQLDialect
+		</property>
+
 		<!-- Disable the second-level cache  -->
 		<!-- 
-		<property name="cache.provider_class">
+			<property name="cache.provider_class">
 			org.hibernate.cache.NoCacheProvider
-		</property>
+			</property>
 		-->
 		<property name="hibernate.jdbc.batch_size">20</property>
 		<!-- Mapping files -->
@@ -89,5 +91,6 @@
 		<mapping resource="hibernate/Meter.hbm.xml" />
 		<mapping resource="hibernate/RegisterRead.hbm.xml" />
 		<mapping resource="hibernate/Ssc.hbm.xml" />
+		<mapping resource="hibernate/InvoiceMpan.hbm.xml" />
 	</session-factory>
 </hibernate-configuration>
