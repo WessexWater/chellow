@@ -63,21 +63,7 @@
 						</p>
 					</xsl:when>
 					<xsl:otherwise>
-						<xsl:if
-							test="/source/header-import-processes/header-import-process">
-							<ul>
-								<xsl:for-each
-									select="/source/header-import-processes/header-import-process">
-									<li>
-										<a href="{@id}/">
-											<xsl:value-of select="@id" />
-										</a>
-									</li>
-								</xsl:for-each>
-							</ul>
-						</xsl:if>
-						<hr />
-						<form enctype="multipart/form-data"
+											<form enctype="multipart/form-data"
 							method="post" action=".">
 							<fieldset>
 								<legend>New import</legend>
@@ -95,6 +81,20 @@
 								<input type="submit" value="Import" />
 							</fieldset>
 						</form>
+					<hr />
+						<xsl:if
+							test="/source/header-import-processes/header-import-process">
+							<ul>
+								<xsl:for-each
+									select="/source/header-import-processes/header-import-process">
+									<li>
+										<a href="{@id}/">
+											<xsl:value-of select="@id" />
+										</a>
+									</li>
+								</xsl:for-each>
+							</ul>
+						</xsl:if>
 					</xsl:otherwise>
 				</xsl:choose>
 			</body>

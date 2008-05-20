@@ -782,12 +782,13 @@ public class Supply extends PersistentEntity implements Urlable {
 				Element source = doc.getDocumentElement();
 
 				source.appendChild(toXML(doc));
+				Organization org = getOrganization();
 				delete(this);
 				Hiber.commit();
 				source
 						.appendChild(new VFMessage(
 								"Supply deleted successfully.").toXML(doc));
-				inv.sendSeeOther(getOrganization().getUri());
+				inv.sendSeeOther(org.getUri());
 			} else {
 				String name = inv.getString("name");
 				Long sourceId = inv.getLong("source-id");
@@ -926,7 +927,6 @@ public class Supply extends PersistentEntity implements Urlable {
 
 	@SuppressWarnings("unchecked")
 	public void delete(Supply supply) throws ProgrammerException, UserException {
-
 		long numInvoiceMpans = (Long) Hiber
 				.session()
 				.createQuery(
@@ -936,15 +936,13 @@ public class Supply extends PersistentEntity implements Urlable {
 			throw UserException
 					.newInvalidParameter("One can't delete a supply if there are still invoices attached to its MPANs.");
 		}
-		long reads = (Long) Hiber
-				.session()
-				.createQuery(
-						"select count(*) from RegisterRead read where read.mpan.supplyGeneration.supply = :supply")
-				.setEntity("supply", this).uniqueResult();
-		if (reads > 0) {
-			throw UserException
-					.newInvalidParameter("One can't delete a supply if there are still register reads attached to its MPANs.");
-		}
+		/*
+		 * long reads = (Long) Hiber .session() .createQuery( "select count(*)
+		 * from RegisterRead read where read.mpan.supplyGeneration.supply =
+		 * :supply") .setEntity("supply", this).uniqueResult(); if (reads > 0) {
+		 * throw UserException .newInvalidParameter("One can't delete a supply
+		 * if there are still register reads attached to its MPANs."); }
+		 */
 		if ((Long) Hiber
 				.session()
 				.createQuery(

@@ -46,41 +46,6 @@
 					<xsl:value-of
 						select="/source/header-import-process/@id" />
 				</p>
-				<!--
-					<xsl:if test="/source/message">
-					<ul>
-					<xsl:if
-					test="/source/message/@code = 'import_invalid'">
-					<li>
-					There are errors that need to be
-					corrected before the file can be
-					imported.
-					</li>
-					</xsl:if>
-					
-					<xsl:if
-					test="/source/message/@code = 'import_valid'">
-					<li>The file is valid.</li>
-					</xsl:if>
-					
-					<xsl:if
-					test="/source/message/@code = 'imported'">
-					<li>
-					The file has been imported successfully.
-					</li>
-					</xsl:if>
-					
-					<xsl:for-each
-					select="/source/message[not(@code = 'import_invalid') and not(@code = 'import_valid') and not(@code = 'imported')]">
-					
-					<li>
-					<xsl:value-of select="@description" />
-					
-					</li>
-					</xsl:for-each>
-					</ul>
-					</xsl:if>
-				-->
 				<xsl:if test="//message">
 					<ul>
 						<xsl:for-each select="//message">
@@ -93,7 +58,6 @@
 					</ul>
 				</xsl:if>
 				<br />
-
 				<xsl:if test="/source/csvLine">
 					<table id="import_table">
 						<caption>Failed line</caption>

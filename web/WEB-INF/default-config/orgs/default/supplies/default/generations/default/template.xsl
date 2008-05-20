@@ -10,8 +10,7 @@
 			<head>
 				<title>
 					Chellow &gt; Organizations &gt;
-					<xsl:value-of
-						select="/source/org/@name" />
+					<xsl:value-of select="/source/org/@name" />
 					&gt; Supplies &gt;
 					<xsl:value-of
 						select="/source/supply-generation/supply/@id" />
@@ -37,8 +36,7 @@
 					&gt;
 					<a
 						href="{/source/request/@context-path}/orgs/{/source/org/@id}/">
-						<xsl:value-of
-							select="/source/org/@name" />
+						<xsl:value-of select="/source/org/@name" />
 					</a>
 					&gt;
 					<a
@@ -530,33 +528,24 @@
 									<label>
 										<xsl:value-of
 											select="'MPAN Core '" />
-										<select
-											name="import-mpan-core-id">
-											<xsl:for-each
-												select="/source/supply-generation/supply/mpan-core">
-												<option value="{@id}">
+										<input
+											name="import-mpan-core-id" size="16">
+											<xsl:attribute
+												name="value">
 													<xsl:choose>
 														<xsl:when
-															test="/source/request/parameter[@name='import-mpan-core-id']">
-															<xsl:if
-																test="/source/request/parameter[@name='import-mpan-core-id']/value = @id">
-																<xsl:attribute
-																	name="selected" />
-															</xsl:if>
+														test="/source/request/parameter[@name='import-mpan-core-id']">
+															<xsl:value-of
+															select="/source/request/parameter[@name='import-mpan-core-id']/value">
+															</xsl:value-of>
 														</xsl:when>
 														<xsl:otherwise>
-															<xsl:if
-																test="/source/supply-generation/mpan[mpan-top/llf/@is-import='true']/mpan-core/@id = @id">
-																<xsl:attribute
-																	name="selected" />
-															</xsl:if>
+																<xsl:value-of
+															select="/source/supply-generation/mpan[mpan-top/llf/@is-import='true']/mpan-core/@core" />
 														</xsl:otherwise>
-													</xsl:choose>
-													<xsl:value-of
-														select="@core" />
-												</option>
-											</xsl:for-each>
-										</select>
+														</xsl:choose>
+											</xsl:attribute>
+										</input>
 									</label>
 									<br />
 									<br />
@@ -888,7 +877,7 @@
 											</xsl:for-each>
 										</tbody>
 									</table>
-									<br/>
+									<br />
 									<table>
 										<caption>
 											Register Reads
@@ -1079,33 +1068,24 @@
 									<label>
 										<xsl:value-of
 											select="'MPAN Core '" />
-										<select
-											name="export-mpan-core-id">
-											<xsl:for-each
-												select="/source/supply-generation/supply/mpan-core">
-												<option value="{@id}">
+										<input
+											name="export-mpan-core-id" size="16">
+											<xsl:attribute
+												name="value">
 													<xsl:choose>
 														<xsl:when
-															test="/source/request/parameter[@name='export-mpan-core-id']">
-															<xsl:if
-																test="/source/request/parameter[@name='export-mpan-core-id']/value = @id">
-																<xsl:attribute
-																	name="selected" />
-															</xsl:if>
+														test="/source/request/parameter[@name='export-mpan-core-id']">
+															<xsl:value-of
+															select="/source/request/parameter[@name='export-mpan-core-id']/value">
+															</xsl:value-of>
 														</xsl:when>
 														<xsl:otherwise>
-															<xsl:if
-																test="/source/supply-generation/mpan[mpan-top/llf/@is-import='false']/mpan-core/@id = @id">
-																<xsl:attribute
-																	name="selected" />
-															</xsl:if>
+																<xsl:value-of
+															select="/source/supply-generation/mpan[mpan-top/llf/@is-import='false']/mpan-core/@core" />
 														</xsl:otherwise>
-													</xsl:choose>
-													<xsl:value-of
-														select="@core" />
-												</option>
-											</xsl:for-each>
-										</select>
+														</xsl:choose>
+											</xsl:attribute>
+										</input>
 									</label>
 									<br />
 									<br />
@@ -1438,7 +1418,7 @@
 											</xsl:for-each>
 										</tbody>
 									</table>
-									<br/>
+									<br />
 									<table>
 										<caption>
 											Register Reads

@@ -498,12 +498,12 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 		Document doc = MonadUtils.newSourceDocument();
 		Element source = doc.getDocumentElement();
 		Element generationElement = (Element) getXML(new XmlTree(
-				"siteSupplyGenerations", new XmlTree("site")).put("meter").put(
-				"supply",
-				new XmlTree("source").put("mpanCores")),
-				doc);
+				"siteSupplyGenerations", new XmlTree("site", new XmlTree(
+						"organization"))).put("meter").put("supply",
+				new XmlTree("source")), doc);
 		source.appendChild(generationElement);
-		source.appendChild(getSiteSupplyGenerations().iterator().next().getSite().getOrganization().toXML(doc));
+		source.appendChild(getSiteSupplyGenerations().iterator().next()
+				.getSite().getOrganization().toXML(doc));
 		for (Mpan mpan : mpans) {
 			Element mpanElement = (Element) mpan.getXML(new XmlTree("mpanCore")
 					.put("mpanTop", new XmlTree("meterTimeswitch").put("llf"))
