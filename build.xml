@@ -117,7 +117,7 @@
 	<!-- <property name="manager.url" value="http://localhost:8080/manager" /> -->
 	<property name="src.home" value="${basedir}/src" />
 	<property name="web.home" value="${basedir}/web" />
-	<property name="javalib.home" value="${user.home}/local/java" />
+	<property name="javalib.home" value="${user.home}/java" />
 	<!-- Requires Imprimatur from http://imprimatur.sourceforge.net/ -->
 
 	<property name="imprimatur.jar" value="${javalib.home}\imprimatur-012\imprimatur.jar" />
