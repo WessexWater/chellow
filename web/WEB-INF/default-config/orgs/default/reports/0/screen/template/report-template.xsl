@@ -11,11 +11,18 @@
 				<link rel="stylesheet" type="text/css"
 					href="{/source/request/@context-path}/orgs/1/reports/9/stream/output/" />
 
-				<title><xsl:value-of select="/source/org/@name" /></title>
+				<title>
+					<xsl:value-of select="/source/org/@name" />
+				</title>
 			</head>
 			<body>
 				<p>
-					<xsl:value-of select="/source/org/@name" />
+					<xsl:value-of
+						select="concat(/source/org/@name, ' [')" />
+					<a href="{/source/request/@context-path}/orgs/1/">
+						<xsl:value-of select="'edit'" />
+					</a>
+					<xsl:value-of select="']'" />
 				</p>
 				<br />
 				<xsl:if test="//message">
@@ -30,17 +37,17 @@
 				<ul>
 					<li>
 						<a
-							href="{/source/request/@context-path}/orgs/1/reports/1/screen/output/">
+							href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/1/screen/output/">
 							Sites
 						</a>
 					</li>
-					<li>
+										<li>
 						<a
-							href="{/source/request/@context-path}/orgs/1/reports/16/stream/output/">
-							Electricity Suppy Details
+							href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/49/screen/output/">
+							Supplies
 						</a>
-						(save file, add extension .csv and open)
 					</li>
+					
 					<li>
 						DCEs
 						<ul>
@@ -78,7 +85,18 @@
 						</a>
 					</li>
 				</ul>
-				<h2>Industry Info</h2>
+
+				<h3>Bulk CSV downloads</h3>
+				<ul>
+					<li>
+						<a
+							href="{/source/request/@context-path}/orgs/1/reports/16/stream/output/">
+							Electricity Supply Details
+						</a>
+					</li>
+				</ul>
+				
+				<h3>Industry Info</h3>
 				<ul>
 					<li>
 						<a
@@ -98,7 +116,7 @@
 							Meter Timeswitches
 						</a>
 					</li>
-										<li>
+					<li>
 						<a
 							href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/47/screen/output/">
 							TPRs

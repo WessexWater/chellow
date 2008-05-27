@@ -1,7 +1,8 @@
 from net.sf.chellow.monad import Hiber
 from net.sf.chellow.physical import ReadType
 
-inv.getResponse().setContentType("text/plain")
+inv.getResponse().setContentType('text/csv')
+inv.getResponse().addHeader('Content-Disposition', 'attachment; filename="report.csv"')
 pw = inv.getResponse().getWriter()
 
 pw.println("Site Ids, Site Names, Supply Id, Source, MPAN core, Import / Export, DNO Name, Agreed Supply Capacity (kVA), Line Loss Factor, Line Loss Factor Description, Voltage Level, Last Read")
@@ -13,7 +14,7 @@ for mpan in Hiber.session().createQuery("from Mpan mpan where mpan.supplyGenerat
     supply = supply_generation.getSupply()
     mpan_top = mpan.getMpanTop()
     line_loss_factor = mpan_top.getLlf()
-    if line_loss_factor.getIsImport().getBoolean():
+    if line_loss_factor.getIsImport():
         imp_exp = "import"
     else:
         imp_exp = "export"

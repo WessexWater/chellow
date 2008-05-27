@@ -13,7 +13,7 @@
 
 				<title>
 					<xsl:value-of select="/source/org/@name" />
-					&gt; Sites
+					&gt; Supplies
 				</title>
 			</head>
 
@@ -24,9 +24,9 @@
 						<xsl:value-of select="/source/org/@name" />
 					</a>
 					&gt;
-					<xsl:value-of select="'Sites ['" />
+					<xsl:value-of select="'Supplies ['" />
 					<a
-						href="{/source/request/@context-path}/orgs/1/sites/">
+						href="{/source/request/@context-path}/orgs/1/supplies/">
 						<xsl:value-of select="'edit'" />
 					</a>
 					<xsl:value-of select="']'" />
@@ -45,7 +45,7 @@
 					</ul>
 				</xsl:if>
 				<form action=".">
-					<fieldset>
+					<fieldset><legend>Search by MPAN core</legend>
 						<input name="search-pattern"
 							value="{/source/request/parameter[@name='search-pattern']/value}" />
 						<xsl:value-of select="' '" />
@@ -53,22 +53,38 @@
 					</fieldset>
 				</form>
 				<xsl:choose>
-					<xsl:when test="/source/site">
+					<xsl:when test="/source/mpan-core">
 						<p>
-							Only the first 50 sites of the search
+							Only the first 50 supplies of the search
 							results are shown.
 						</p>
-						<ul>
-							<xsl:for-each select="/source/site">
-								<li>
-									<a
-										href="{/source/request/@context-path}/orgs/1/reports/2/screen/output/?site-id={@id}">
-										<xsl:value-of
-											select="concat(@code, ' ', @name)" />
-									</a>
-								</li>
+						<table>
+							<caption>
+								Supplies
+							</caption>
+							<tr>
+								<th>MPAN Core</th>
+								<th>Supply</th>
+							</tr>
+							<xsl:for-each
+								select="/source/mpan-core">
+								<tr>
+									<td>
+										<code>
+											<xsl:value-of
+												select="@core" />
+										</code>
+									</td>
+									<td>
+										<a
+											href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/3/screen/output/?supply-id={supply/@id}">
+											<xsl:value-of
+												select="supply/@id" />
+										</a>
+									</td>
+								</tr>
 							</xsl:for-each>
-						</ul>
+						</table>
 					</xsl:when>
 					<xsl:when
 						test="/source/request/parameter[@name='search-pattern']">

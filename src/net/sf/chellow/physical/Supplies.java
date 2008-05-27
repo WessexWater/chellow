@@ -78,6 +78,7 @@ public class Supplies implements Urlable, XmlDescriber {
 		return URI_ID;
 	}
 
+	@SuppressWarnings("unchecked")
 	public void httpGet(Invocation inv) throws DesignerException,
 			ProgrammerException, UserException, DeployerException {
 		Document doc = MonadUtils.newSourceDocument();
@@ -89,7 +90,12 @@ public class Supplies implements Urlable, XmlDescriber {
 		if (inv.hasParameter("page")) {
 			page = inv.getInteger("page");
 		}
-		for (Supply supply : findSupplies(page)) {
+		for (Supply supply : (List<Supply>) Hiber
+				.session()
+				.createQuery(
+						"select supply from Supply supply join supply.generations generation join generation.siteSupplyGenerations siteSupplyGeneration where siteSupplyGeneration.site.organization = :organization")
+				.setEntity("organization", organization).setFirstResult(
+						page * PAGE_SIZE).setMaxResults(PAGE_SIZE).list()) {
 			suppliesElement.appendChild(supply.getXML(new XmlTree("source"),
 					doc));
 		}
@@ -101,7 +107,7 @@ public class Supplies implements Urlable, XmlDescriber {
 		// TODO Auto-generated method stub
 
 	}
-
+/*
 	@SuppressWarnings("unchecked")
 	public List<Supply> findSupplies() {
 		return (List<Supply>) Hiber.session().createQuery(
@@ -118,7 +124,7 @@ public class Supplies implements Urlable, XmlDescriber {
 				.setEntity("organization", organization).setFirstResult(
 						page * PAGE_SIZE).setMaxResults(PAGE_SIZE).list();
 	}
-
+*/
 	public Supply getChild(UriPathElement uriId) throws ProgrammerException,
 			UserException {
 		return organization.getSupply(Long.parseLong(uriId.getString()));

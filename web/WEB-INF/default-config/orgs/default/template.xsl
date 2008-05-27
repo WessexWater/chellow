@@ -15,7 +15,6 @@
 					Chellow &gt; Organizations &gt;
 					<xsl:value-of select="/source/org/@name" />
 				</title>
-
 			</head>
 
 			<body>
@@ -30,7 +29,12 @@
 						<xsl:value-of select="'Organizations'" />
 					</a>
 					&gt;
-					<xsl:value-of select="/source/org/@name" />
+					<xsl:value-of
+						select="concat(/source/org/@name, ' [')" />
+					<a
+						href="{/source/request/@context-path}/orgs/1/reports/0/screen/output/">
+						<xsl:value-of select="'view'" />
+					</a><xsl:value-of select="']'" />
 				</p>
 				<xsl:if test="//message">
 					<ul>
@@ -91,9 +95,7 @@
 							<fieldset>
 								<input type="hidden" name="view"
 									value="confirm-delete" />
-								<legend>
-									Delete this org
-								</legend>
+								<legend>Delete this org</legend>
 								<input type="submit" value="Delete" />
 							</fieldset>
 						</form>

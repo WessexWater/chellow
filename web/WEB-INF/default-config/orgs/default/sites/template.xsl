@@ -42,10 +42,15 @@
 					&gt;
 					<a
 						href="{/source/request/@context-path}/orgs/{/source/org/@id}/">
-						<xsl:value-of
-							select="/source/org/@name" />
+						<xsl:value-of select="/source/org/@name" />
 					</a>
-					&gt; Sites
+					&gt;
+					<xsl:value-of select="'Sites ['" />
+					<a
+						href="{/source/request/@context-path}/orgs/1/reports/1/screen/output/">
+						<xsl:value-of select="'view'" />
+					</a>
+					<xsl:value-of select="']'" />
 				</p>
 				<br />
 				<xsl:choose>
@@ -72,8 +77,7 @@
 							The search results are truncated after 50.
 						</p>
 						<ul>
-							<xsl:for-each
-								select="/source/org/site">
+							<xsl:for-each select="/source/org/site">
 								<li>
 									<a href="{@id}/">
 										<xsl:value-of
