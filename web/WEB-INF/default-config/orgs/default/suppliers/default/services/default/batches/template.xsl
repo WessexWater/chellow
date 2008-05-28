@@ -21,7 +21,8 @@
 					&gt; Services &gt;
 					<xsl:value-of
 						select="/source/batches/supplier-service/@name" />
-					&gt; Batches
+					&gt;
+					<xsl:value-of select="'Batches'" />
 				</title>
 			</head>
 
@@ -74,7 +75,13 @@
 						<xsl:value-of
 							select="/source/batches/supplier-service/@name" />
 					</a>
-					&gt; Batches
+					&gt;
+					<xsl:value-of select="'Batches ['" />
+					<a
+						href="{/source/request/@context-path}/orgs/{/source/batches/supplier-service/supplier/org/@id}/reports/44/screen/output/?supplier-service-id={/source/batches/supplier-service/@id}">
+						<xsl:value-of select="'view'" />
+					</a>
+					<xsl:value-of select="']'" />
 				</p>
 				<br />
 				<xsl:choose>

@@ -9,31 +9,34 @@
 		<html>
 			<head>
 				<link rel="stylesheet" type="text/css"
-					href="{/source/request/@context-path}/orgs/1/reports/9/stream/output/" />
+					href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/9/stream/output/" />
 
 				<title>
 					<xsl:value-of select="/source/org/@name" />
-					&gt; Sites &gt; Supply:
-					<xsl:value-of select="/source/supply/@name" />
+					&gt; Supplies &gt;
+					<xsl:value-of select="/source/supply/@id" />
 				</title>
 
 			</head>
 			<body>
 				<p>
 					<a
-						href="{/source/request/@context-path}/orgs/1/reports/0/screen/output/">
+						href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/0/screen/output/">
 						<xsl:value-of select="/source/org/@name" />
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/orgs/1/reports/1/screen/output/">
-						<xsl:value-of select="'Sites'" />
+						href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/49/screen/output/">
+						<xsl:value-of select="'Supplies'" />
 					</a>
 					&gt;
-					<span id="title">
-						Supply:
-						<xsl:value-of select="/source/supply/@name" />
-					</span>
+					<xsl:value-of
+						select="concat(/source/supply/@id, ' [')" />
+					<a
+						href="{/source/request/@context-path}/orgs/{/source/org/@id}/supplies/{/source/supply/@id}/">
+						<xsl:value-of select="'edit'" />
+					</a>
+					<xsl:value-of select="']'" />
 				</p>
 
 				<xsl:if test="//message">
@@ -103,52 +106,34 @@
 									</xsl:choose>
 								</td>
 								<td>
-									<xsl:if
-										test="mpan[@label='import']">
+									<xsl:value-of
+										select="concat(mpan[mpan-top/llf/@is-import='true']/mpan-top/profile-class/@code, ' ', mpan[mpan-top/llf/@is-import='true']/mpan-top/meter-timeswitch/@code, ' ', mpan[mpan-top/llf/@is-import='true']/llf/@code, ' ', mpan[mpan-top/llf/@is-import='true']/mpan-core/@core)" />
+								</td>
+								<td>
+									<xsl:value-of
+										select="mpan[mpan-top/llf/@is-import='true']/@agreed-supply-capacity" />
+								</td>
+								<td>
+									<a
+										href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/41/screen/output/?account-id={mpan[mpan-top/llf/@is-import='true']/account/@id}">
 										<xsl:value-of
-											select="concat(mpan[@label='import']/line-loss-factor/profile-class/@code, ' ', mpan[@label='import']/meter-timeswitch/@code, ' ', mpan[@label='import']/line-loss-factor/@code, ' ', mpan[@label='import']/mpan-core/@core)" />
-									</xsl:if>
+											select="mpan[mpan-top/llf/@is-import='true']/account[@label='supplier']/@reference" />
+									</a>
 								</td>
 								<td>
-									<xsl:if
-										test="mpan[@label='import']">
+									<xsl:value-of
+										select="concat(mpan[mpan-top/llf/@is-import='false']/profile-class/@code, ' ', mpan[mpan-top/llf/@is-import='false']/meter-timeswitch/@code, ' ', mpan[mpan-top/llf/@is-import='false']/llf/@code, ' ', mpan[mpan-top/llf/@is-import='false']/mpan-core/@core)" />
+								</td>
+								<td>
+									<xsl:value-of
+										select="mpan[mpan-top/llf/@is-import='false']/@agreed-supply-capacity" />
+								</td>
+								<td>
+									<a
+										href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/41/screen/output/?account-id={mpan[mpan-top/llf/@is-import='false']/account/@id}">
 										<xsl:value-of
-											select="mpan[@label='import']/@agreed-supply-capacity" />
-									</xsl:if>
-								</td>
-								<td>
-									<xsl:if
-										test="mpan[@label='import']">
-										<a
-											href="{/source/request/@context-path}/orgs/1/reports/21/screen/output/?account-id={mpan[@label='import']/account/@id}">
-											<xsl:value-of
-												select="mpan[@label='import']/account/@reference" />
-										</a>
-									</xsl:if>
-								</td>
-								<td>
-									<xsl:if
-										test="mpan[@label='export']">
-										<xsl:value-of
-											select="concat(mpan[@label='export']/line-loss-factor/profile-class/@code, ' ', mpan[@label='export']/meter-timeswitch/@code, ' ', mpan[@label='export']/line-loss-factor/@code, ' ', mpan[@label='export']/mpan-core/@core)" />
-									</xsl:if>
-								</td>
-								<td>
-									<xsl:if
-										test="mpan[@label='export']">
-										<xsl:value-of
-											select="mpan[@label='export']/@agreed-supply-capacity" />
-									</xsl:if>
-								</td>
-								<td>
-									<xsl:if
-										test="mpan[@label='export']">
-										<a
-											href="{/source/request/@context-path}/orgs/1/reports/21/screen/output/?account-id={mpan[@label='import']/account/@id}">
-											<xsl:value-of
-												select="mpan[@label='export']/account/@reference" />
-										</a>
-									</xsl:if>
+											select="mpan[mpan-top/llf/@is-import='false']/account[@label='supplier']/@reference" />
+									</a>
 								</td>
 							</tr>
 						</xsl:for-each>

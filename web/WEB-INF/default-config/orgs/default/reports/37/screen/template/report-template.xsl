@@ -14,7 +14,8 @@
 				<title>
 					<xsl:value-of select="/source/org/@name" />
 					&gt; Suppliers &gt;
-					<xsl:value-of select="/source/services/supplier/@name" />
+					<xsl:value-of
+						select="/source/services/supplier/@name" />
 					&gt; Services
 				</title>
 			</head>
@@ -22,8 +23,7 @@
 				<p>
 					<a
 						href="{/source/request/@context-path}/orgs/1/reports/0/screen/output/">
-						<xsl:value-of
-							select="/source/org/@name" />
+						<xsl:value-of select="/source/org/@name" />
 					</a>
 					&gt;
 					<a
@@ -36,7 +36,13 @@
 						<xsl:value-of
 							select="/source/services/supplier/@name" />
 					</a>
-					&gt; Services
+					&gt;
+					<xsl:value-of select="'Services ['" />
+					<a
+						href="{/source/request/@context-path}/orgs/{/source/org/@id}/suppliers/{/source/services/supplier/@id}/services/">
+						<xsl:value-of select="'edit'" />
+					</a>
+					<xsl:value-of select="']'" />
 				</p>
 				<br />
 				<xsl:if test="//message">

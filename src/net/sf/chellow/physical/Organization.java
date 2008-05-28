@@ -229,10 +229,6 @@ public class Organization extends PersistentEntity {
 		return new Sites(this);
 	}
 
-	public MpanCores getMpanCoresInstance() {
-		return new MpanCores(this);
-	}
-
 	public Supplies suppliesInstance() {
 		return new Supplies(this);
 	}
@@ -332,8 +328,6 @@ public class Organization extends PersistentEntity {
 			urlable = new Supplies(this);
 		} else if (HeaderImportProcesses.URI_ID.equals(uriId)) {
 			urlable = new HeaderImportProcesses(this);
-		} else if (MpanCores.URI_ID.equals(uriId)) {
-			urlable = new MpanCores(this);
 		} else if (Reports.URI_ID.equals(uriId)) {
 			urlable = new Reports(this);
 		} else if (UseDeltas.URI_ID.equals(uriId)) {

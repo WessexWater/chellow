@@ -24,6 +24,7 @@ package net.sf.chellow.physical;
 
 import java.util.List;
 
+import net.sf.chellow.data08.MpanCoreTerm;
 import net.sf.chellow.monad.DeployerException;
 import net.sf.chellow.monad.DesignerException;
 import net.sf.chellow.monad.Hiber;
@@ -43,7 +44,7 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
 public class Supplies implements Urlable, XmlDescriber {
-	private static final int PAGE_SIZE = 25;
+	// private static final int PAGE_SIZE = 25;
 
 	public static final UriPathElement URI_ID;
 
@@ -53,7 +54,8 @@ public class Supplies implements Urlable, XmlDescriber {
 		} catch (UserException e) {
 			throw new RuntimeException(e);
 		} catch (ProgrammerException e) {
-			throw new RuntimeException(e);		}
+			throw new RuntimeException(e);
+		}
 	}
 
 	private Organization organization;
@@ -83,48 +85,43 @@ public class Supplies implements Urlable, XmlDescriber {
 			ProgrammerException, UserException, DeployerException {
 		Document doc = MonadUtils.newSourceDocument();
 		Element source = doc.getDocumentElement();
-		Element suppliesElement = (Element) toXML(doc);
-		source.appendChild(suppliesElement);
-		suppliesElement.appendChild(organization.toXML(doc));
-		int page = 0;
-		if (inv.hasParameter("page")) {
-			page = inv.getInteger("page");
-		}
-		for (Supply supply : (List<Supply>) Hiber
-				.session()
-				.createQuery(
-						"select supply from Supply supply join supply.generations generation join generation.siteSupplyGenerations siteSupplyGeneration where siteSupplyGeneration.site.organization = :organization")
-				.setEntity("organization", organization).setFirstResult(
-						page * PAGE_SIZE).setMaxResults(PAGE_SIZE).list()) {
-			suppliesElement.appendChild(supply.getXML(new XmlTree("source"),
-					doc));
+		source.appendChild(organization.toXML(doc));
+		if (inv.hasParameter("search-pattern")) {
+			MpanCoreTerm pattern = inv.getValidatable(MpanCoreTerm.class,
+					"search-pattern");
+			for (Object[] array : (List<Object[]>) Hiber
+					.session()
+					.createQuery(
+							"select distinct mpanCore,mpanCore.dso.code.string, mpanCore.uniquePart.string, mpanCore.checkDigit.character from MpanCore mpanCore join mpanCore.supply.generations supplyGeneration join supplyGeneration.siteSupplyGenerations siteSupplyGeneration where siteSupplyGeneration.site.organization = :organization and lower(mpanCore.dso.code.string || mpanCore.uniquePart.string || mpanCore.checkDigit.character) like lower(:term) order by mpanCore.dso.code.string, mpanCore.uniquePart.string, mpanCore.checkDigit.character")
+					.setEntity("organization", organization).setString("term",
+							"%" + pattern.toString() + "%").setMaxResults(50)
+					.list()) {
+				source.appendChild(((MpanCore) array[0]).getXML(new XmlTree(
+						"supply").put("dso"), doc));
+			}
 		}
 		inv.sendOk(doc);
 	}
 
 	public void httpPost(Invocation inv) throws ProgrammerException,
 			UserException {
-		// TODO Auto-generated method stub
-
-	}
-/*
-	@SuppressWarnings("unchecked")
-	public List<Supply> findSupplies() {
-		return (List<Supply>) Hiber.session().createQuery(
-				"from Supply supply where supply.organization = :organization")
-				.setEntity("organization", organization).list();
+		throw UserException.newMethodNotAllowed();
 	}
 
-	@SuppressWarnings("unchecked")
-	public List<Supply> findSupplies(int page) {
-		return (List<Supply>) Hiber
-				.session()
-				.createQuery(
-						"select supply from Supply supply join supply.generations generation join generation.siteSupplyGenerations siteSupplyGeneration where siteSupplyGeneration.site.organization = :organization")
-				.setEntity("organization", organization).setFirstResult(
-						page * PAGE_SIZE).setMaxResults(PAGE_SIZE).list();
-	}
-*/
+	/*
+	 * @SuppressWarnings("unchecked") public List<Supply> findSupplies() {
+	 * return (List<Supply>) Hiber.session().createQuery( "from Supply supply
+	 * where supply.organization = :organization") .setEntity("organization",
+	 * organization).list(); }
+	 * 
+	 * @SuppressWarnings("unchecked") public List<Supply> findSupplies(int
+	 * page) { return (List<Supply>) Hiber .session() .createQuery( "select
+	 * supply from Supply supply join supply.generations generation join
+	 * generation.siteSupplyGenerations siteSupplyGeneration where
+	 * siteSupplyGeneration.site.organization = :organization")
+	 * .setEntity("organization", organization).setFirstResult( page *
+	 * PAGE_SIZE).setMaxResults(PAGE_SIZE).list(); }
+	 */
 	public Supply getChild(UriPathElement uriId) throws ProgrammerException,
 			UserException {
 		return organization.getSupply(Long.parseLong(uriId.getString()));

@@ -88,7 +88,7 @@
 					</xsl:when>
 					<xsl:when
 						test="/source/request/parameter[@name='search-pattern']">
-						<p>No sites matched your search</p>
+						<p>No supplies matched your search</p>
 					</xsl:when>
 				</xsl:choose>
 			</body>

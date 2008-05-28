@@ -43,7 +43,13 @@
 						<xsl:value-of select="'Accounts'" />
 					</a>
 					&gt;
-					<xsl:value-of select="/source/account/@reference" />
+					<xsl:value-of
+						select="concat(/source/account/@reference , ' [')" />
+					<a
+						href="{/source/request/@context-path}/orgs/{/source/org/@id}/suppliers/{/source/account/supplier/@id}/accounts/{/source/account/@id}/">
+						<xsl:value-of select="'edit'" />
+					</a>
+					<xsl:value-of select="']'" />
 				</p>
 				<br />
 				<xsl:if test="//message">
@@ -56,23 +62,16 @@
 					</ul>
 				</xsl:if>
 				<table>
-					<caption>Properties</caption>
-					<thead>
-						<tr>
-							<th>Name</th>
-							<th>Value</th>
-						</tr>
-					</thead>
 					<tbody>
 						<tr>
-							<td>Id</td>
+							<th>Id</th>
 							<td>
 								<xsl:value-of
 									select="/source/account/@id" />
 							</td>
 						</tr>
 						<tr>
-							<td>Reference</td>
+							<th>Reference</th>
 							<td>
 								<xsl:value-of
 									select="/source/account/@reference" />

@@ -13,8 +13,7 @@
 
 				<title>
 					Chellow &gt; Organizations &gt;
-					<xsl:value-of
-						select="/source/supplies/org/@name" />
+					<xsl:value-of select="/source/org/@name" />
 					&gt; Supplies
 				</title>
 
@@ -43,46 +42,64 @@
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/orgs/{/source/supplies/org/@id}/">
-						<xsl:value-of
-							select="/source/supplies/org/@name" />
+						href="{/source/request/@context-path}/orgs/{/source/org/@id}/">
+						<xsl:value-of select="/source/org/@name" />
 					</a>
-					&gt; Supplies
+					&gt;
+					<xsl:value-of select="'Supplies ['" />
+					<a
+						href="{/source/request/@context-path}/orgs/1/reports/49/screen/output/">
+						<xsl:value-of select="'view'" />
+					</a>
+					<xsl:value-of select="']'" />
 				</p>
 				<br />
 
-				<table>
-					<caption>
-						First 50 supplies and their latest generation
-					</caption>
-					<tr>
-						<th>Id</th>
-						<th>Name</th>
-						<th>Source Code</th>
-					</tr>
-					<xsl:for-each select="/source/supplies/supply">
-						<tr>
-							<td>
-								<a
-									href="{/source/request/@context-path}/orgs/{/source/supplies/org/@id}/supplies/{@id}/">
-									<xsl:value-of select="@id" />
-								</a>								
-							</td>
-							<td>
-								<a
-									href="{/source/request/@context-path}/orgs/{/source/supplies/org/@id}/supplies/{@id}/">
-									<xsl:value-of select="@name" />
-								</a>
-							</td>
-							<td>
-								<a
-									href="{/source/request/@context-path}/sources/">
-									<xsl:value-of select="source/@code" />
-								</a>
-							</td>
-						</tr>
-					</xsl:for-each>
-				</table>
+				<form action=".">
+					<fieldset>
+						<legend>Search by MPAN core</legend>
+						<input name="search-pattern"
+							value="{/source/request/parameter[@name='search-pattern']/value}" />
+						<xsl:value-of select="' '" />
+						<input type="submit" value="Search" />
+					</fieldset>
+				</form>
+				<xsl:choose>
+					<xsl:when test="/source/mpan-core">
+						<p>
+							Only the first 50 supplies of the search
+							results are shown.
+						</p>
+						<table>
+							<caption>Supplies</caption>
+							<tr>
+								<th>MPAN Core</th>
+								<th>Supply</th>
+							</tr>
+							<xsl:for-each select="/source/mpan-core">
+								<tr>
+									<td>
+										<code>
+											<xsl:value-of
+												select="@core" />
+										</code>
+									</td>
+									<td>
+										<a
+											href="{/source/request/@context-path}/orgs/{/source/org/@id}/supplies/{supply/@id}/">
+											<xsl:value-of
+												select="supply/@id" />
+										</a>
+									</td>
+								</tr>
+							</xsl:for-each>
+						</table>
+					</xsl:when>
+					<xsl:when
+						test="/source/request/parameter[@name='search-pattern']">
+						<p>No supplies matched your search</p>
+					</xsl:when>
+				</xsl:choose>
 			</body>
 		</html>
 	</xsl:template>

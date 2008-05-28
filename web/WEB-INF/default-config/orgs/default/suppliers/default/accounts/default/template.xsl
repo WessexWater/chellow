@@ -55,7 +55,12 @@
 						<xsl:value-of select="'Accounts'" />
 					</a>
 					&gt;
-					<xsl:value-of select="/source/account/@reference" />
+					<xsl:value-of select="concat(/source/account/@reference, ' [')" />
+					<a
+						href="{/source/request/@context-path}/orgs/1/reports/41/screen/output/?account-id={/source/account/@id}">
+						<xsl:value-of select="'view'" />
+					</a>
+					<xsl:value-of select="']'" />
 				</p>
 				<xsl:if test="//message">
 					<ul>

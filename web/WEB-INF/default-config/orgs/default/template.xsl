@@ -95,7 +95,7 @@
 							<fieldset>
 								<input type="hidden" name="view"
 									value="confirm-delete" />
-								<legend>Delete this org</legend>
+								<legend>Delete this organization</legend>
 								<input type="submit" value="Delete" />
 							</fieldset>
 						</form>
@@ -104,7 +104,7 @@
 								<a href="sites/">Sites</a>
 							</li>
 							<li>
-								<a href="mpan-cores/">MPANs</a>
+								<a href="supplies/">Supplies</a>
 							</li>
 							<li>
 								<a href="header-data-imports/">

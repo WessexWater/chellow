@@ -52,7 +52,12 @@
 							select="/source/batches/supplier-service/@name" />
 					</a>
 					&gt;
-					<xsl:value-of select="'Batches'" />
+					<xsl:value-of select="'Batches ['" />
+					<a
+						href="{/source/request/@context-path}/orgs/{/source/batches/supplier-service/supplier/org/@id}/suppliers/{/source/batches/supplier-service/supplier/@id}/services/{/source/batches/supplier-service/@id}/batches/">
+						<xsl:value-of select="'edit'" />
+					</a>
+					<xsl:value-of select="']'" />
 				</p>
 				<br />
 				<xsl:if test="//message">

@@ -17,7 +17,8 @@
 					<xsl:value-of
 						select="/source/supplier-service/supplier/@name" />
 					&gt; Services &gt;
-					<xsl:value-of select="/source/supplier-service/@name" />
+					<xsl:value-of
+						select="/source/supplier-service/@name" />
 				</title>
 			</head>
 			<body>
@@ -43,7 +44,13 @@
 						<xsl:value-of select="'Services'" />
 					</a>
 					&gt;
-					<xsl:value-of select="/source/supplier-service/@name" />
+					<xsl:value-of
+						select="concat(/source/supplier-service/@name, ' [')" />
+					<a
+						href="{/source/request/@context-path}/orgs/{/source/org/@id}/suppliers/{/source/supplier-service/supplier/@id}/services/{/source/supplier-service/@id}/">
+						<xsl:value-of select="'edit'" />
+					</a>
+					<xsl:value-of select="']'" />
 				</p>
 				<br />
 				<xsl:if test="//message">
@@ -109,7 +116,8 @@
 						select="/source/supplier-service/rate-script/@script" />
 				</pre>
 
-				<table><caption>Rate Scripts</caption>
+				<table>
+					<caption>Rate Scripts</caption>
 					<thead>
 						<tr>
 							<th>Id</th>
@@ -147,11 +155,26 @@
 						</xsl:for-each>
 					</tbody>
 				</table>
-				
+
 				<ul>
-				<li><a href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/44/screen/output/?supplier-service-id={/source/supplier-service/@id}">Batches</a></li>
-				<li><a href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/44/screen/output/?supplier-service-id={@id}">Account Snags</a></li>
-				<li><a href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/44/screen/output/?supplier-service-id={@id}"></a>Bill Snags</li>
+					<li>
+						<a
+							href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/44/screen/output/?supplier-service-id={/source/supplier-service/@id}">
+							Batches
+						</a>
+					</li>
+					<li>
+						<a
+							href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/44/screen/output/?supplier-service-id={@id}">
+							Account Snags
+						</a>
+					</li>
+					<li>
+						<a
+							href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/44/screen/output/?supplier-service-id={@id}">
+						</a>
+						Bill Snags
+					</li>
 				</ul>
 			</body>
 		</html>

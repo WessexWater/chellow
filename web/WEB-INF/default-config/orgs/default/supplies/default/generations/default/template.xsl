@@ -56,7 +56,12 @@
 					</a>
 					&gt;
 					<xsl:value-of
-						select="/source/supply-generation/@id" />
+						select="concat(/source/supply-generation/@id, ' [')" />
+					<a
+						href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/15/screen/output/?supply-generation-id={/source/supply-generation/@id}">
+						<xsl:value-of select="'view'" />
+					</a>
+					<xsl:value-of select="']'" />
 				</p>
 				<xsl:if test="//message">
 					<ul>

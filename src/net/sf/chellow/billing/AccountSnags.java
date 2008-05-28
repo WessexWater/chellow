@@ -72,7 +72,7 @@ public class AccountSnags implements Urlable, XmlDescriber {
 		for (AccountSnag snag : (List<AccountSnag>) Hiber
 				.session()
 				.createQuery(
-						"from AccountSnag snag where snag.dateResolved.date is null and snag.service = :service order by snag.account.reference, snag.description, snag.startDate.date")
+						"from AccountSnag snag where snag.dateResolved is null and snag.service = :service order by snag.account.reference, snag.description, snag.startDate.date")
 				.setEntity("service", service).setMaxResults(PAGE_SIZE).list()) {
 			snagsElement.appendChild(snag.getXML(new XmlTree("account"), doc));
 		}

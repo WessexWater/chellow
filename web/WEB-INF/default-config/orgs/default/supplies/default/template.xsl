@@ -10,8 +10,7 @@
 			<head>
 				<title>
 					Chellow &gt; Organizations &gt;
-					<xsl:value-of
-						select="/source/supply/org/@name" />
+					<xsl:value-of select="/source/supply/org/@name" />
 					&gt; Sites &gt;
 					<xsl:value-of
 						select="concat(/source/supply/@code, ' ', /source/supply/@name)" />
@@ -34,8 +33,7 @@
 					&gt;
 					<a
 						href="{/source/request/@context-path}/orgs/{/source/supply/org/@id}/">
-						<xsl:value-of
-							select="/source/supply/org/@name" />
+						<xsl:value-of select="/source/supply/org/@name" />
 					</a>
 					&gt;
 					<a
@@ -43,7 +41,13 @@
 						<xsl:value-of select="'Supplies'" />
 					</a>
 					&gt;
-					<xsl:value-of select="/source/supply/@name" />
+					<xsl:value-of
+						select="concat(/source/supply/@id, ' [')" />
+					<a
+						href="{/source/request/@context-path}/orgs/1/reports/3/screen/output/?supply-id={/source/supply/@id}">
+						<xsl:value-of select="'view'" />
+					</a>
+					<xsl:value-of select="']'" />
 				</p>
 				<xsl:if test="//message">
 					<ul>
