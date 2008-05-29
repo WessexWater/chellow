@@ -48,23 +48,16 @@
 					</ul>
 				</xsl:if>
 				<table>
-					<caption>Properties</caption>
-					<thead>
-						<tr>
-							<th>Name</th>
-							<th>Value</th>
-						</tr>
-					</thead>
 					<tbody>
 						<tr>
-							<td>Id</td>
+							<th>Id</th>
 							<td>
 								<xsl:value-of
 									select="/source/supplier/@id" />
 							</td>
 						</tr>
 						<tr>
-							<td>Name</td>
+							<th>Name</th>
 							<td>
 								<xsl:value-of
 									select="/source/supplier/@name" />

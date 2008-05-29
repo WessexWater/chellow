@@ -63,37 +63,30 @@
 					</ul>
 				</xsl:if>
 				<table>
-					<caption>Properties</caption>
-					<thead>
-						<tr>
-							<th>Name</th>
-							<th>Value</th>
-						</tr>
-					</thead>
 					<tbody>
 						<tr>
-							<td>Id</td>
+							<th>Id</th>
 							<td>
 								<xsl:value-of
 									select="/source/supplier-service/@id" />
 							</td>
 						</tr>
 						<tr>
-							<td>Name</td>
+							<th>Name</th>
 							<td>
 								<xsl:value-of
 									select="/source/supplier-service/@name" />
 							</td>
 						</tr>
 						<tr>
-							<td>Start Date</td>
+							<th>Start Date</th>
 							<td>
 								<xsl:value-of
 									select="concat(/source/supplier-service/rate-script[position()=1]/hh-end-date[@label='start']/@year, '-', /source/supplier-service/rate-script[position()=1]/hh-end-date[@label='start']/@month, '-', /source/supplier-service/rate-script[position()=1]/hh-end-date[@label='start']/@day)" />
 							</td>
 						</tr>
 						<tr>
-							<td>Finish Date</td>
+							<th>Finish Date</th>
 							<td>
 								<xsl:choose>
 									<xsl:when
@@ -109,13 +102,7 @@
 						</tr>
 					</tbody>
 				</table>
-
-				<h2>Script</h2>
-				<pre>
-					<xsl:value-of
-						select="/source/supplier-service/rate-script/@script" />
-				</pre>
-
+				<br />
 				<table>
 					<caption>Rate Scripts</caption>
 					<thead>
@@ -176,6 +163,12 @@
 						Bill Snags
 					</li>
 				</ul>
+
+				<h2>Script</h2>
+				<pre>
+					<xsl:value-of
+						select="/source/supplier-service/@charge-script" />
+				</pre>
 			</body>
 		</html>
 	</xsl:template>
