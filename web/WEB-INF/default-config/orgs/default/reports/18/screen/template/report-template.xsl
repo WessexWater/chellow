@@ -12,7 +12,7 @@
 				<link rel="stylesheet" type="text/css"
 					href="{/source/request/@context-path}/style/" />
 
-				<title>Chellow &gt; Sites</title>
+				<title>Chellow &gt; Snags</title>
 
 			</head>
 
@@ -54,7 +54,7 @@
 							<tr>
 								<td>
 									<a
-										href="https://chellow.meniscus.co.uk/orgs/1/dces/21/services/21/snags-channel/{@id}/">
+										href="{/source/request/@context-path}/orgs/1/dces/21/services/21/snags-channel/{@id}/">
 										<xsl:value-of select="@id" />
 									</a>
 								</td>
@@ -135,4 +135,3 @@
 	</xsl:template>
 
 </xsl:stylesheet>
-

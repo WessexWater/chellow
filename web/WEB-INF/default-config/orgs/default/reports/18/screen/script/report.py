@@ -24,3 +24,4 @@ totalSites = Hiber.session().createQuery("select count(distinct siteSupplyGenera
 source.setAttribute("snag-count", str(len(snags)))
 source.setAttribute("site-count", str(activeSites))
 source.setAttribute("pending-site-count",str(totalSites-activeSites))
+source.appendChild(organization.toXML(doc))

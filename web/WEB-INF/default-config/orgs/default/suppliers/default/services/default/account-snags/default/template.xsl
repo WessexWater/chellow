@@ -76,111 +76,133 @@
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/orgs/{/source/account-snag/supplier-service/supplier/org/@id}/suppliers/{/source/account-snag/supplier-service/supplier/@id}/services/{/source/account-snag/supplier-service/@id}/batches/">
-						<xsl:value-of select="'Batches'" />
+						href="{/source/request/@context-path}/orgs/{/source/account-snag/supplier-service/supplier/org/@id}/suppliers/{/source/account-snag/supplier-service/supplier/@id}/services/{/source/account-snag/supplier-service/@id}/account-snags/">
+						<xsl:value-of select="'Account Snags'" />
 					</a>
 					&gt;
-					<xsl:value-of
-						select="/source/account-snag/@reference" />
+					<xsl:value-of select="concat(/source/account-snag/@id, ' ['" />
+					<a
+						href="{/source/request/@context-path}/orgs/{/source/account-snags/supplier-service/supplier/org/@id}/reports/51/screen/output/?account-snag-id={/source/account-snags/supplier-service/@id}">
+						<xsl:value-of select="'view'" />
+					</a>
+					<xsl:value-of select="']'" />
 				</p>
 				<br />
 
-				<ul>
-					<li>Id</li>
-					<li>
-						Account:
-						<xsl:value-of select="' '" />
-						<a
-							href="{/source/request/@context-path}/orgs/{/source/account-snag/supplier-service/supplier/org/@id}/suppliers/{/source/account-snag/supplier-service/supplier/@id}/accounts/{@id}/">
-							<xsl:value-of select="account/@reference" />
-						</a>
-					</li>
-					<li>
-						Start Date:
-						<xsl:value-of
-							select="concat(' ', hh-end-date[@label='start']/@year, '-', hh-end-date[@label='start']/@month, '-', hh-end-date[@label='start']/@day)" />
-					</li>
-					<li>
-						Finish Date:
-						<xsl:value-of
-							select="concat(' ', hh-end-date[@label='finish']/@year, '-', hh-end-date[@label='finish']/@month, '-', hh-end-date[@label='finish']/@day)" />
-					</li>
-					<li>
-						Date Created:
-						<xsl:value-of
-							select="concat(' ', date[@label='created']/@year, '-', date[@label='created']/@month, '-', date[@label='created']/@day)" />
-					</li>
-					<li>
-						Date Resolved:
-						<xsl:choose>
-							<xsl:when
-								test="hh-end-date[@label='resolved']">
+				<table>
+					<tr>
+						<th>Chellow Id</th>
+						<td>
+							<xsl:value-of
+								select="/source/account-snag/@id" />
+						</td>
+					</tr>
+					<tr>
+						<th>Account</th>
+						<td>
+							<a
+								href="{/source/request/@context-path}/orgs/{/source/account-snag/supplier-service/supplier/org/@id}/suppliers/{/source/account-snag/supplier-service/supplier/@id}/accounts/{/source/account-snag/account/@id}/">
 								<xsl:value-of
-									select="concat(hh-end-date[@label='resolved']/@year, '-', hh-end-date[@label='resolved']/@month, '-', hh-end-date[@label='resolved']/@day)" />
-							</xsl:when>
-							<xsl:otherwise>Unresolved</xsl:otherwise>
-						</xsl:choose>
-					</li>
-					<li>
-						Is Ignored?:
+									select="/source/account-snag/account/@reference" />
+							</a>
+						</td>
+					</tr>
+					<tr>
+						<th>Start Date</th>
+						<td>
+							<xsl:value-of
+								select="concat(' ', /source/account-snag/hh-end-date[@label='start']/@year, '-', /source/account-snag/hh-end-date[@label='start']/@month, '-', /source/account-snag/hh-end-date[@label='start']/@day)" />
+						</td>
+					</tr>
+					<tr>
+						<th>Finish Date</th>
+						<td>
+							<xsl:value-of
+								select="concat(' ', /source/account-snag/hh-end-date[@label='finish']/@year, '-', /source/account-snag/hh-end-date[@label='finish']/@month, '-', /source/account-snag/hh-end-date[@label='finish']/@day)" />
+						</td>
+					</tr>
+					<tr>
+						<th>Date Created</th>
+						<td>
+							<xsl:value-of
+								select="concat(' ', /source/account-snag/date[@label='created']/@year, '-', /source/account-snag/date[@label='created']/@month, '-', /source/account-snag/date[@label='created']/@day)" />
+						</td>
+					</tr>
+					<tr>
+						<th>Date Resolved</th>
 						<td>
 							<xsl:choose>
-								<xsl:when test="@is-ignored = 'true'">
+								<xsl:when
+									test="/source/account-snag/hh-end-date[@label='resolved']">
+									<xsl:value-of
+										select="concat(/source/account-snag/hh-end-date[@label='resolved']/@year, '-', /source/account-snag/hh-end-date[@label='resolved']/@month, '-', /source/account-snag/hh-end-date[@label='resolved']/@day)" />
+								</xsl:when>
+								<xsl:otherwise>
+									Unresolved
+								</xsl:otherwise>
+							</xsl:choose>
+						</td>
+					</tr>
+					<tr>
+						<th>Is Ignored?</th>
+						<td>
+							<xsl:choose>
+								<xsl:when
+									test="/source/account-snag/@is-ignored = 'true'">
 									Yes
 								</xsl:when>
 								<xsl:otherwise>No</xsl:otherwise>
 							</xsl:choose>
 						</td>
-					</li>
-					<li>
-						Description:
-						<xsl:value-of select="@description" />
-					</li>
-				</ul>
+					</tr>
+					<tr>
+						<th>Description</th>
+						<td>
+							<xsl:value-of
+								select="/source/account-snag/@description" />
+						</td>
+					</tr>
+				</table>
 
-				<form action="." method="post">
-					<fieldset>
-						<legend>Update batch</legend>
-						<br />
-						<label>
-							<xsl:value-of select="'Reference '" />
-							<input name="reference">
+				<br />
+				<xsl:if
+					test="not(/source/account-snag/date[@label='resolved']) or (/source/account-snag/date[@label='resolved'] and /source/account-snag/@is-ignored='true')">
+					<form action="." method="post">
+						<fieldset>
+							<legend>Update snag</legend>
+							<input type="hidden" name="ignore">
 								<xsl:attribute name="value">
 									<xsl:choose>
 										<xsl:when
-											test="/source/request/parameter[@name = 'reference']/value">
+											test="/source/account-snag/@is-ignored='true'">
 											<xsl:value-of
-												select="/source/request/parameter[@name = 'reference']/value" />
+												select="'false'" />
 										</xsl:when>
 										<xsl:otherwise>
 											<xsl:value-of
-												select="/source/account-snag/@reference" />
+												select="'true'" />
 										</xsl:otherwise>
 									</xsl:choose>
 								</xsl:attribute>
 							</input>
-						</label>
-						<br />
-						<br />
-						<input type="submit" value="Update" />
-						<input type="reset" value="Reset" />
-					</fieldset>
-				</form>
-
-				<form action="?view=confirm-delete">
-					<fieldset>
-						<legend>Delete this account snag</legend>
-						<input type="submit" value="Delete" />
-					</fieldset>
-				</form>
-				<ul>
-					<li>
-						<a href="invoice-imports/">Invoice imports</a>
-					</li>
-					<li>
-						<a href="invoices/">Invoices</a>
-					</li>
-				</ul>
+							<input type="submit">
+								<xsl:attribute name="value">
+									<xsl:choose>
+										<xsl:when
+											test="/source/account-snag/@is-ignored='true'">
+											<xsl:value-of
+												select="'Un-ignore'" />
+										</xsl:when>
+										<xsl:otherwise>
+											<xsl:value-of
+												select="'Ignore'" />
+										</xsl:otherwise>
+									</xsl:choose>
+								</xsl:attribute>
+							</input>
+						</fieldset>
+					</form>
+				</xsl:if>
 			</body>
 		</html>
 	</xsl:template>

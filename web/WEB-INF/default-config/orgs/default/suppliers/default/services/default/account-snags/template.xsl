@@ -74,7 +74,13 @@
 						<xsl:value-of
 							select="/source/account-snags/supplier-service/@name" />
 					</a>
-					&gt; Account Snags
+					&gt;
+					<xsl:value-of select="'Account Snags ['" />
+					<a
+						href="{/source/request/@context-path}/orgs/{/source/account-snags/supplier-service/supplier/org/@id}/reports/50/screen/output/?supplier-service-id={/source/account-snags/supplier-service/@id}">
+						<xsl:value-of select="'view'" />
+					</a>
+					<xsl:value-of select="']'" />
 				</p>
 				<br />
 				<xsl:choose>
