@@ -9,10 +9,9 @@
 		<html>
 			<head>
 				<link rel="stylesheet" type="text/css"
-					href="{/source/request/@context-path}/style/" />
+					href="{/source/request/@context-path}/orgs/1/reports/9/stream/output/" />
 
 				<title>
-					Chellow &gt; Organizations &gt;
 					<xsl:value-of
 						select="/source/account-snag/supplier-service/supplier/org/@name" />
 					&gt; Suppliers &gt;
@@ -21,11 +20,54 @@
 					&gt; Services &gt;
 					<xsl:value-of
 						select="/source/account-snag/supplier-service/@name" />
-					&gt; Account Snags &gt;
+					&gt; account-snages &gt;
 					<xsl:value-of select="/source/account-snag/@id" />
 				</title>
 			</head>
 			<body>
+				<p>
+					<a
+						href="{/source/request/@context-path}/orgs/{/source/account-snag/supplier-service/supplier/org/@id}/reports/0/screen/output/">
+						<xsl:value-of
+							select="/source/account-snag/supplier-service/supplier/org/@name" />
+					</a>
+					&gt;
+					<a
+						href="{/source/request/@context-path}/orgs/{/source/account-snag/supplier-service/supplier/org/@id}/reports/35/screen/output/">
+						<xsl:value-of select="'Suppliers'" />
+					</a>
+					&gt;
+					<a
+						href="{/source/request/@context-path}/orgs/{/source/account-snag/supplier-service/supplier/org/@id}/reports/36/screen/output/?supplier-id={/source/account-snag/supplier-service/supplier/@id}">
+						<xsl:value-of
+							select="/source/account-snag/supplier-service/supplier/@name" />
+					</a>
+					&gt;
+					<a
+						href="{/source/request/@context-path}/orgs/{/source/account-snag/supplier-service/supplier/org/@id}/reports/37/screen/output/?supplier-id={/source/account-snag/supplier-service/supplier/@id}">
+						<xsl:value-of select="'Services'" />
+					</a>
+					&gt;
+					<a
+						href="{/source/request/@context-path}/orgs/{/source/account-snag/supplier-service/supplier/org/@id}/reports/38/screen/output/?supplier-service-id={/source/account-snag/supplier-service/@id}">
+						<xsl:value-of
+							select="/source/account-snag/supplier-service/@name" />
+					</a>
+					&gt;
+					<a
+						href="{/source/request/@context-path}/orgs/{/source/account-snag/supplier-service/supplier/org/@id}/reports/44/screen/output/?supplier-service-id={/source/account-snag/supplier-service/@id}">
+						<xsl:value-of select="'Account Snags'" />
+					</a>
+					&gt;
+					<xsl:value-of
+						select="concat(/source/account-snag/@id, ' [')" />
+					<a
+						href="{/source/request/@context-path}/orgs/{/source/account-snag/supplier-service/supplier/org/@id}/suppliers/{/source/account-snag/supplier-service/supplier/@id}/services/{/source/account-snag/supplier-service/@id}/account-snags/{/source/account-snag/@id}/">
+						<xsl:value-of select="'edit'" />
+					</a>
+					<xsl:value-of select="']'" />
+				</p>
+				<br />
 				<xsl:if test="//message">
 					<ul>
 						<xsl:for-each select="//message">
@@ -36,59 +78,6 @@
 					</ul>
 				</xsl:if>
 
-				<p>
-					<a href="{/source/request/@context-path}/">
-						<img
-							src="{/source/request/@context-path}/logo/" />
-						<span class="logo">Chellow</span>
-					</a>
-					&gt;
-					<a href="{/source/request/@context-path}/orgs/">
-						<xsl:value-of select="'Organizations'" />
-					</a>
-					&gt;
-					<a
-						href="{/source/request/@context-path}/orgs/{/source/account-snag/supplier-service/supplier/org/@id}/">
-						<xsl:value-of
-							select="/source/account-snag/supplier-service/supplier/org/@name" />
-					</a>
-					&gt;
-					<a
-						href="{/source/request/@context-path}/orgs/{/source/account-snag/supplier-service/supplier/org/@id}/suppliers/">
-						<xsl:value-of select="'Suppliers'" />
-					</a>
-					&gt;
-					<a
-						href="{/source/request/@context-path}/orgs/{/source/account-snag/supplier-service/supplier/org/@id}/suppliers/{/source/account-snag/supplier-service/supplier/@id}">
-						<xsl:value-of
-							select="/source/account-snag/supplier-service/supplier/@name" />
-					</a>
-					&gt;
-					<a
-						href="{/source/request/@context-path}/orgs/{/source/account-snag/supplier-service/supplier/org/@id}/suppliers/{/source/account-snag/supplier-service/supplier/@id}/services/">
-						<xsl:value-of select="'Services'" />
-					</a>
-					&gt;
-					<a
-						href="{/source/request/@context-path}/orgs/{/source/account-snag/supplier-service/supplier/org/@id}/suppliers/{/source/account-snag/supplier-service/supplier/@id}/services/{/source/account-snag/supplier-service/@id}/">
-						<xsl:value-of
-							select="/source/account-snag/supplier-service/@name" />
-					</a>
-					&gt;
-					<a
-						href="{/source/request/@context-path}/orgs/{/source/account-snag/supplier-service/supplier/org/@id}/suppliers/{/source/account-snag/supplier-service/supplier/@id}/services/{/source/account-snag/supplier-service/@id}/account-snags/">
-						<xsl:value-of select="'Account Snags'" />
-					</a>
-					&gt;
-					<xsl:value-of
-						select="concat(/source/account-snag/@id, ' [')" />
-					<a
-						href="{/source/request/@context-path}/orgs/{/source/account-snag/supplier-service/supplier/org/@id}/reports/51/screen/output/?snag-id={/source/account-snag/@id}">
-						<xsl:value-of select="'view'" />
-					</a>
-					<xsl:value-of select="']'" />
-				</p>
-				<br />
 				<table>
 					<tr>
 						<th>Chellow Id</th>
@@ -101,7 +90,7 @@
 						<th>Account</th>
 						<td>
 							<a
-								href="{/source/request/@context-path}/orgs/{/source/account-snag/supplier-service/supplier/org/@id}/suppliers/{/source/account-snag/supplier-service/supplier/@id}/accounts/{/source/account-snag/account/@id}/">
+								href="{/source/request/@context-path}/orgs/{/source/account-snag/supplier-service/supplier/org/@id}/reports/41/screen/output/?account-id={/source/account-snag/account/@id}">
 								<xsl:value-of
 									select="/source/account-snag/account/@reference" />
 							</a>
@@ -163,45 +152,6 @@
 						</td>
 					</tr>
 				</table>
-				<br />
-				<xsl:if
-					test="not(/source/account-snag/date[@label='resolved']) or (/source/account-snag/date[@label='resolved'] and /source/account-snag/@is-ignored='true')">
-					<form action="." method="post">
-						<fieldset>
-							<legend>Update snag</legend>
-							<input type="hidden" name="ignore">
-								<xsl:attribute name="value">
-									<xsl:choose>
-										<xsl:when
-											test="/source/account-snag/@is-ignored='true'">
-											<xsl:value-of
-												select="'false'" />
-										</xsl:when>
-										<xsl:otherwise>
-											<xsl:value-of
-												select="'true'" />
-										</xsl:otherwise>
-									</xsl:choose>
-								</xsl:attribute>
-							</input>
-							<input type="submit">
-								<xsl:attribute name="value">
-									<xsl:choose>
-										<xsl:when
-											test="/source/account-snag/@is-ignored='true'">
-											<xsl:value-of
-												select="'Un-ignore'" />
-										</xsl:when>
-										<xsl:otherwise>
-											<xsl:value-of
-												select="'Ignore'" />
-										</xsl:otherwise>
-									</xsl:choose>
-								</xsl:attribute>
-							</input>
-						</fieldset>
-					</form>
-				</xsl:if>
 			</body>
 		</html>
 	</xsl:template>

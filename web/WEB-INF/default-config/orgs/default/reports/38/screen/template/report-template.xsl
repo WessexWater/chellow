@@ -65,7 +65,7 @@
 				<table>
 					<tbody>
 						<tr>
-							<th>Id</th>
+							<th>Chellow Id</th>
 							<td>
 								<xsl:value-of
 									select="/source/supplier-service/@id" />
@@ -107,7 +107,7 @@
 					<caption>Rate Scripts</caption>
 					<thead>
 						<tr>
-							<th>Id</th>
+							<th>Chellow Id</th>
 							<th>From</th>
 							<th>To</th>
 						</tr>
@@ -152,7 +152,7 @@
 					</li>
 					<li>
 						<a
-							href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/44/screen/output/?supplier-service-id={@id}">
+							href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/50/screen/output/?supplier-service-id={/source/supplier-service/@id}">
 							Account Snags
 						</a>
 					</li>

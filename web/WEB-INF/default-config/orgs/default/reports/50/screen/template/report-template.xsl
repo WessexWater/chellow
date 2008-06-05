@@ -71,10 +71,9 @@
 				</xsl:if>
 
 				<table>
-					<caption>Account Snags</caption>
 					<thead>
 						<tr>
-							<th>Id</th>
+							<th>Chellow Id</th>
 							<th>Account</th>
 							<th>Start Date</th>
 							<th>Finish Date</th>
@@ -89,13 +88,14 @@
 							select="/source/account-snags/account-snag">
 							<tr>
 								<td>
-									<a href="{@id}/">
+									<a
+										href="{/source/request/@context-path}/orgs/{/source/account-snags/supplier-service/supplier/org/@id}/reports/51/screen/output/?snag-id={@id}">
 										<xsl:value-of select="@id" />
 									</a>
 								</td>
 								<td>
 									<a
-										href="{/source/request/@context-path}/orgs/{/source/account-snags/supplier-service/supplier/org/@id}/suppliers/{/source/account-snags/supplier-service/supplier/@id}/accounts/{account/@id}/">
+										href="{/source/request/@context-path}/orgs/{/source/account-snags/supplier-service/supplier/org/@id}/reports/41/screen/output/?account-id={account/@id}">
 										<xsl:value-of
 											select="account/@reference" />
 									</a>

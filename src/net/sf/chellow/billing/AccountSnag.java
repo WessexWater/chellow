@@ -40,6 +40,16 @@ import org.w3c.dom.Element;
 public class AccountSnag extends SnagDateBounded {
 	public static final String MISSING_BILL = "Missing bill.";
 
+	public static AccountSnag getAccountSnag(Long id) throws UserException,
+			ProgrammerException {
+		AccountSnag snag = (AccountSnag) Hiber.session().get(AccountSnag.class,
+				id);
+		if (snag == null) {
+			throw UserException.newNotFound();
+		}
+		return snag;
+	}
+
 	public static void insertSnagAccount(AccountSnag snag) {
 		Hiber.session().save(snag);
 	}
@@ -88,7 +98,8 @@ public class AccountSnag extends SnagDateBounded {
 	public void update() {
 	}
 
-	public Element toXML(Document doc) throws ProgrammerException, UserException {
+	public Element toXML(Document doc) throws ProgrammerException,
+			UserException {
 		Element element = (Element) super.toXML(doc);
 		return element;
 	}
@@ -132,13 +143,11 @@ public class AccountSnag extends SnagDateBounded {
 		return getService().getSnagsAccountInstance().getUri().resolve(
 				getUriId()).append("/");
 	}
-/*
-	public boolean isCombinable(SnagDateBounded snag)
-			throws ProgrammerException, UserException {
-		Bill incomingBill = ((AccountSnag) snag).getBill();
-		return super.isCombinable(snag)
-				&& ((incomingBill == null && getBill() == null) || (incomingBill != null && incomingBill
-						.equals(getBill())));
-	}
-	*/
+	/*
+	 * public boolean isCombinable(SnagDateBounded snag) throws
+	 * ProgrammerException, UserException { Bill incomingBill = ((AccountSnag)
+	 * snag).getBill(); return super.isCombinable(snag) && ((incomingBill ==
+	 * null && getBill() == null) || (incomingBill != null && incomingBill
+	 * .equals(getBill()))); }
+	 */
 }
