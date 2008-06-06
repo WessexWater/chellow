@@ -22,7 +22,13 @@
 						href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/0/screen/output/">
 						<xsl:value-of select="/source/org/@name" />
 					</a>
-					&gt; Suppliers
+					&gt;
+					<xsl:value-of select="'Suppliers ['" />
+					<a
+						href="{/source/request/@context-path}/orgs/{/source/org/@id}/suppliers/">
+						<xsl:value-of select="'edit'" />
+					</a>
+					<xsl:value-of select="']'" />
 				</p>
 				<br />
 				<xsl:if test="//message">

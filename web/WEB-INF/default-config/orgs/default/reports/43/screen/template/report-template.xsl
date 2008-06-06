@@ -59,7 +59,13 @@
 						<xsl:value-of select="'Bills'" />
 					</a>
 					&gt;
-					<xsl:value-of select="/source/bill/@id" />
+					<xsl:value-of
+						select="concat(/source/bill/@id, ' [')" />
+					<a
+						href="{/source/request/@context-path}/orgs/{/source/bill/account/supplier/org/@id}/suppliers/{/source/bill/account/supplier/@id}/accounts/{/source/bill/account/@id}/bills/{/source/bill/@id}/">
+						<xsl:value-of select="'edit'" />
+					</a>
+					<xsl:value-of select="']'" />
 				</p>
 				<br />
 				<xsl:if test="//message">

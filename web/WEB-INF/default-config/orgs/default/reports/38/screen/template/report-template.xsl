@@ -158,9 +158,9 @@
 					</li>
 					<li>
 						<a
-							href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/44/screen/output/?supplier-service-id={@id}">
+							href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/52/screen/output/?service-id={/source/supplier-service/@id}">
+							Bill Snags
 						</a>
-						Bill Snags
 					</li>
 				</ul>
 

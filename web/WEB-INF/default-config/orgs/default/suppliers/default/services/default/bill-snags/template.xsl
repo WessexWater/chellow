@@ -74,7 +74,12 @@
 						<xsl:value-of
 							select="/source/bill-snags/supplier-service/@name" />
 					</a>
-					&gt; Bill Snags
+					&gt; <xsl:value-of select="'Bill Snags ['" />
+					<a
+						href="{/source/request/@context-path}/orgs/{/source/bill-snags/supplier-service/supplier/org/@id}/reports/52/screen/output/?service-id={/source/bill-snags/supplier-service/@id}">
+						<xsl:value-of select="'view'" />
+					</a>
+					<xsl:value-of select="']'" />
 				</p>
 				<br />
 				<xsl:choose>
@@ -95,7 +100,7 @@
 							<caption>Bill Snags</caption>
 							<thead>
 								<tr>
-									<th>Id</th>
+									<th>Chellow Id</th>
 									<th>Bill</th>
 									<th>Date Created</th>
 									<th>Date Resolved</th>
@@ -155,22 +160,6 @@
 								</xsl:for-each>
 							</tbody>
 						</table>
-						<br />
-						<hr />
-						<form action="." method="post">
-							<fieldset>
-								<legend>Add an bill snag</legend>
-								<label>
-									<xsl:value-of select="'Reference '" />
-									<input name="reference"
-										value="{/source/request/parameter[@name = 'reference']/value}" />
-								</label>
-								<br />
-								<br />
-								<input type="submit" value="Add" />
-								<input type="reset" value="Reset" />
-							</fieldset>
-						</form>
 					</xsl:otherwise>
 				</xsl:choose>
 			</body>

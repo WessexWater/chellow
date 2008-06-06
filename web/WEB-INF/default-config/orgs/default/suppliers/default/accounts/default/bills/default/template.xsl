@@ -72,7 +72,13 @@
 						<xsl:value-of select="'Bills'" />
 					</a>
 					&gt;
-					<xsl:value-of select="/source/bill/@id" />
+					<xsl:value-of
+						select="concat(/source/bill/@id, ' [')" />
+					<a
+						href="{/source/request/@context-path}/orgs/{/source/bill/account/supplier/org/@id}/reports/43/screen/output/?bill-id={/source/bill/@id}">
+						<xsl:value-of select="'view'" />
+					</a>
+					<xsl:value-of select="']'" />
 				</p>
 				<xsl:if test="//message">
 					<ul>
@@ -107,7 +113,7 @@
 					<caption>Invoices</caption>
 					<thead>
 						<tr>
-							<th>Id</th>
+							<th>Chellow Id</th>
 							<th>Batch</th>
 							<th>From</th>
 							<th>To</th>
