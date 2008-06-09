@@ -35,10 +35,10 @@
 			column="organization_id" not-null="true"
 			unique-key="site_code_unique" foreign-key="fkey_site_organization" />
 		<component name="code" class="SiteCode">
-			<property name="string" column="code"
+			<property name="string" column="code" not-null="true"
 				unique-key="site_code_unique" />
 		</component>
-		<property type="string" name="name" column="name" />
+		<property type="string" name="name" column="name" not-null="true"/>
 		<set name="siteSupplyGenerations" lazy="true">
 			<key column="site_id" />
 			<one-to-many class="SiteSupplyGeneration" />

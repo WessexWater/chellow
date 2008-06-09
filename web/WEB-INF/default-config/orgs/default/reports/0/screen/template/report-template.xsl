@@ -41,15 +41,20 @@
 							Sites
 						</a>
 					</li>
-										<li>
+					<li>
 						<a
 							href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/49/screen/output/">
 							Supplies
 						</a>
 					</li>
-					
+
 					<li>
-						DCEs
+						<a
+							href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/54/screen/output/">
+							DCEs
+						</a>
+					</li>
+					<li>
 						<ul>
 							<xsl:for-each select="/source/org/dce">
 								<li>
@@ -95,7 +100,7 @@
 						</a>
 					</li>
 				</ul>
-				
+
 				<h3>Industry Info</h3>
 				<ul>
 					<li>

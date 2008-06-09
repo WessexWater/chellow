@@ -13,8 +13,7 @@
 
 				<title>
 					Chellow &gt; Organizations &gt;
-					<xsl:value-of
-						select="/source/dces/org/@name" />
+					<xsl:value-of select="/source/dces/org/@name" />
 					&gt; DCEs
 				</title>
 
@@ -44,10 +43,15 @@
 					&gt;
 					<a
 						href="{/source/request/@context-path}/orgs/{/source/dces/org/@id}/">
-						<xsl:value-of
-							select="/source/dces/org/@name" />
+						<xsl:value-of select="/source/dces/org/@name" />
 					</a>
-					&gt; DCEs
+					&gt;
+					<xsl:value-of select="'DCEs ['" />
+					<a
+						href="{/source/request/@context-path}/orgs/{/source/dces/org/@id}/reports/54/screen/output/">
+						<xsl:value-of select="'view'" />
+					</a>
+					<xsl:value-of select="']'" />
 				</p>
 				<xsl:choose>
 					<xsl:when
@@ -85,7 +89,7 @@
 									<input name="name" />
 								</label>
 								<br />
-								<br/>
+								<br />
 								<input type="submit" value="Add" />
 								<input type="reset" value="Reset" />
 							</fieldset>

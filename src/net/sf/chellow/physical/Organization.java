@@ -249,14 +249,13 @@ public class Organization extends PersistentEntity {
 		return new GenDeltas(this);
 	}
 
-	public Dce getDce(UriPathElement urlId) throws UserException,
-			ProgrammerException {
+	public Dce getDce(long id) throws UserException, ProgrammerException {
 		Dce supplier = (Dce) Hiber
 				.session()
 				.createQuery(
 						"from Supplier supplier where supplier.organization = :organization and supplier.id = :supplierId")
-				.setEntity("organization", this).setLong("supplierId",
-						Long.parseLong(urlId.getString())).uniqueResult();
+				.setEntity("organization", this).setLong("supplierId", id)
+				.uniqueResult();
 		if (supplier == null) {
 			throw UserException.newNotFound();
 		}
