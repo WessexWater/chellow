@@ -250,16 +250,16 @@ public class Organization extends PersistentEntity {
 	}
 
 	public Dce getDce(long id) throws UserException, ProgrammerException {
-		Dce supplier = (Dce) Hiber
+		Dce dce = (Dce) Hiber
 				.session()
 				.createQuery(
-						"from Supplier supplier where supplier.organization = :organization and supplier.id = :supplierId")
-				.setEntity("organization", this).setLong("supplierId", id)
+						"from Dce dce where dce.organization = :organization and dce.id = :dceId")
+				.setEntity("organization", this).setLong("dceId", id)
 				.uniqueResult();
-		if (supplier == null) {
+		if (dce == null) {
 			throw UserException.newNotFound();
 		}
-		return supplier;
+		return dce;
 	}
 
 	public Supply getSupply(long id) throws UserException, ProgrammerException {

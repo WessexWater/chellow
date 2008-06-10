@@ -65,7 +65,13 @@
 					&gt;
 					<a href="..">Services</a>
 					&gt;
-					<xsl:value-of select="/source/dce-service/@name" />
+					<xsl:value-of
+						select="concat(/source/dce-service/@name, ' [')" />
+					<a
+						href="{/source/request/@context-path}/orgs/{/source/dce-service/dce/org/@id}/reports/57/screen/output/?service-id={/source/dce-service/@id}">
+						<xsl:value-of select="'view'" />
+					</a>
+					<xsl:value-of select="']'" />
 				</p>
 				<br />
 

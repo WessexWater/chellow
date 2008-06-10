@@ -52,7 +52,12 @@
 							select="/source/dce-services/dce/@name" />
 					</a>
 					&gt;
-					<xsl:value-of select="'Services'" />
+					<xsl:value-of select="'Services ['" />
+					<a
+						href="{/source/request/@context-path}/orgs/{/source/dce-services/dce/org/@id}/reports/56/screen/output/?dce-id={/source/dce-services/dce/@id}">
+						<xsl:value-of select="'view'" />
+					</a>
+					<xsl:value-of select="']'" />
 				</p>
 				<xsl:if test="//message">
 					<ul>

@@ -13,7 +13,7 @@
 
 				<title>
 					<xsl:value-of select="/source/org/@name" />
-					&gt; Dces &gt;
+					&gt; DCEs &gt;
 					<xsl:value-of select="/source/dce/@name" />
 				</title>
 			</head>

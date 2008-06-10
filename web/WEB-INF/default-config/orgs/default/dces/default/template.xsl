@@ -10,8 +10,7 @@
 			<head>
 				<title>
 					Chellow &gt; Organizations &gt;
-					<xsl:value-of
-						select="/source/dce/org/@name" />
+					<xsl:value-of select="/source/dce/org/@name" />
 					&gt; DCEs &gt;
 					<xsl:value-of select="/source/dce/@id" />
 				</title>
@@ -33,8 +32,7 @@
 					&gt;
 					<a
 						href="{/source/request/@context-path}/orgs/{/source/dce/org/@id}/">
-						<xsl:value-of
-							select="/source/dce/org/@name" />
+						<xsl:value-of select="/source/dce/org/@name" />
 					</a>
 					&gt;
 					<a
@@ -42,7 +40,13 @@
 						<xsl:value-of select="'DCEs'" />
 					</a>
 					&gt;
-					<xsl:value-of select="/source/dce/@name" />
+					<xsl:value-of
+						select="concat(/source/dce/@name, ' [')" />
+					<a
+						href="{/source/request/@context-path}/orgs/{/source/dce/org/@id}/reports/55/screen/output/?dce-id={/source/dce/@id}">
+						<xsl:value-of select="'view'" />
+					</a>
+					<xsl:value-of select="']'" />
 				</p>
 				<xsl:if test="/source/message">
 					<ul>
@@ -53,7 +57,6 @@
 						</xsl:for-each>
 					</ul>
 				</xsl:if>
-
 				<br />
 				<xsl:choose>
 					<xsl:when
@@ -70,6 +73,7 @@
 						<form action="." method="post">
 							<fieldset>
 								<legend>Update this DCE</legend>
+								<br />
 								<label>
 									Name
 									<xsl:value-of select="' '" />
@@ -84,8 +88,10 @@
 						</form>
 
 						<br />
-						<form action="?view=confirm-delete">
+						<form action=".">
 							<fieldset>
+								<input type="hidden" name="view"
+									value="confirm-delete" />
 								<legend>Delete this DCE</legend>
 								<input type="submit" value="Delete" />
 							</fieldset>
