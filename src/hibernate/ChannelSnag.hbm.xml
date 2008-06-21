@@ -27,9 +27,9 @@
 
 <hibernate-mapping
 	package="net.sf.chellow.physical">
-	<joined-subclass extends="Snag" name="SnagChannel"
-		table="snag_channel" lazy="true">
-		<key column="snag_id" foreign-key="fkey_snag_channel_snag"/>
+	<joined-subclass extends="Snag" name="ChannelSnag"
+		table="channel_snag" lazy="true">
+		<key column="snag_id" foreign-key="fkey_channel_snag_snag"/>
 		<many-to-one name="channel" class="Channel" column="channel_id" foreign-key="fkey_snag_channel_channel"/>
 		<component name="startDate" class="HhEndDate">
 			<property name="date" type="timestamp" not-null="true" index="start_date_idx">
@@ -45,7 +45,6 @@
 		</component>
 		<many-to-one name="service"
 			class="net.sf.chellow.billing.DceService" column="dce_service_id"
-			not-null="true" foreign-key="fkey_snag_channel_service"/>
+			not-null="true" foreign-key="fkey_channel_snag_service"/>
 	</joined-subclass>
 </hibernate-mapping>
-

@@ -54,7 +54,7 @@
 		<mapping resource="hibernate/MpanCore.hbm.xml" />
 		<mapping resource="hibernate/Dso.hbm.xml" />
 		<mapping resource="hibernate/HhDatum.hbm.xml" />
-		<mapping resource="hibernate/SnagChannel.hbm.xml" />
+		<mapping resource="hibernate/ChannelSnag.hbm.xml" />
 		<mapping resource="hibernate/Snag.hbm.xml" />
 		<mapping resource="hibernate/SnagSite.hbm.xml" />
 		<mapping resource="hibernate/DatabaseVersion.hbm.xml" />
