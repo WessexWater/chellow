@@ -97,8 +97,7 @@
 								<input type="submit" value="Delete" />
 							</fieldset>
 						</form>
-
-						<hr />
+						<br/>
 						<ul>
 							<li>
 								<a href="services/">Services</a>

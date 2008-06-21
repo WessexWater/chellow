@@ -24,7 +24,8 @@ package net.sf.chellow.physical;
 
 
 
-import net.sf.chellow.monad.ProgrammerException;
+import net.sf.chellow.monad.InternalException;
+import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.UserException;
 import net.sf.chellow.monad.types.MonadString;
 
@@ -36,18 +37,18 @@ public class MpanUniquePart extends MonadString {
 		onlyDigits = true;
 	}
 
-	public MpanUniquePart(String name) throws UserException, ProgrammerException {
+	public MpanUniquePart(String name) throws HttpException, InternalException {
 		this(null, name);
 	}
 
-	public MpanUniquePart(String label, String name) throws UserException, ProgrammerException
+	public MpanUniquePart(String label, String name) throws HttpException, InternalException
 			{
 		this();
 		setLabel(label);
 			update(name);
 	}
 
-	public void update(String mpanCore) throws UserException, ProgrammerException {
+	public void update(String mpanCore) throws InternalException, UserException {
 		// remove spaces
 		mpanCore = mpanCore.replace(" ", "");
 		super.update(mpanCore);

@@ -1,6 +1,6 @@
 /*
  
- Copyright 2005 Meniscus Systems Ltd
+ Copyright 2005-2008 Meniscus Systems Ltd
  
  This file is part of Chellow.
 
@@ -22,9 +22,9 @@
 
 package net.sf.chellow.data08;
 
-import net.sf.chellow.monad.ProgrammerException;
+import net.sf.chellow.monad.InternalException;
+import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.UserException;
-import net.sf.chellow.monad.VFMessage;
 import net.sf.chellow.monad.types.MonadObject;
 import net.sf.chellow.physical.CheckDigit;
 import net.sf.chellow.physical.Dso;
@@ -41,19 +41,18 @@ public class MpanCoreRaw extends MonadObject {
 
 	private CheckDigit checkDigit;
 
-	public MpanCoreRaw(String mpanCore) throws ProgrammerException,
-			UserException {
+	public MpanCoreRaw(String mpanCore) throws InternalException,
+			HttpException {
 		this(null, mpanCore);
 	}
 
 	public MpanCoreRaw(String label, String mpanCore)
-			throws ProgrammerException, UserException {
+			throws InternalException, HttpException {
 		setLabel(label);
 		mpanCore = mpanCore.replace(" ", "");
 		if (mpanCore.length() != 13) {
-			throw UserException.newInvalidParameter(new VFMessage(
-					"The MPAN core (" + mpanCore
-							+ ") must contain exactly 13 digits."));
+			throw new UserException("The MPAN core (" + mpanCore
+					+ ") must contain exactly 13 digits.");
 		}
 		init(new DsoCode(mpanCore.substring(0, 2)), new MpanUniquePart(mpanCore
 				.substring(2, 12)), new CheckDigit(new Character(mpanCore
@@ -61,17 +60,17 @@ public class MpanCoreRaw extends MonadObject {
 	}
 
 	private void init(DsoCode dsoCode, MpanUniquePart uniquePart,
-			CheckDigit checkDigit) throws ProgrammerException, UserException {
+			CheckDigit checkDigit) throws InternalException, HttpException {
 		setTypeName("mpan-core-raw");
 		if (dsoCode == null || uniquePart == null || checkDigit == null) {
-			throw new ProgrammerException("No nulls allowed.");
+			throw new InternalException("No nulls allowed.");
 		}
 		if (!checkCheckDigit(dsoCode.toString() + uniquePart.toString(),
 				Character
 						.getNumericValue(checkDigit.getCharacter().charValue()))) {
 
-			throw UserException
-					.newInvalidParameter("This is not a valid MPAN core. It fails the checksum test.");
+			throw new UserException(
+					"This is not a valid MPAN core. It fails the checksum test.");
 		}
 
 		this.dsoCode = dsoCode;
@@ -80,7 +79,7 @@ public class MpanCoreRaw extends MonadObject {
 	}
 
 	public MpanCoreRaw(DsoCode dsoCode, MpanUniquePart uniquePart,
-			CheckDigit checkDigit) throws ProgrammerException, UserException {
+			CheckDigit checkDigit) throws InternalException, HttpException {
 		init(dsoCode, uniquePart, checkDigit);
 	}
 
@@ -108,7 +107,7 @@ public class MpanCoreRaw extends MonadObject {
 				+ checkDigit.toString();
 	}
 
-	public Attr toXML(Document doc) {
+	public Attr toXml(Document doc) {
 		Attr attr = doc.createAttribute(getLabel());
 
 		attr.setValue(toString());
@@ -130,7 +129,7 @@ public class MpanCoreRaw extends MonadObject {
 		return Character.getNumericValue(str.charAt(position));
 	}
 
-	public Dso getDso() throws ProgrammerException, UserException {
+	public Dso getDso() throws InternalException, HttpException {
 		return Dso.getDso(dsoCode);
 	}
 

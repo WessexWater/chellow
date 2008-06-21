@@ -22,16 +22,16 @@
 
 package net.sf.chellow.data08;
 
-import net.sf.chellow.monad.ProgrammerException;
-import net.sf.chellow.monad.UserException;
+import net.sf.chellow.monad.InternalException;
+import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.types.MonadString;
 
 public class MpanCoreTerm extends MonadString {
-	public MpanCoreTerm(String mpanCore) throws UserException, ProgrammerException  {
+	public MpanCoreTerm(String mpanCore) throws HttpException, InternalException  {
 		this(null, mpanCore);
 	}
 
-	public MpanCoreTerm(String label, String mpanCore) throws UserException, ProgrammerException {
+	public MpanCoreTerm(String label, String mpanCore) throws HttpException, InternalException {
 		setLabel(label);
 		setMaximumLength(13);
 		onlyDigits = true;

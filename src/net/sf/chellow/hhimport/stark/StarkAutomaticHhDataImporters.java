@@ -11,8 +11,8 @@ import java.util.logging.Logger;
 
 import net.sf.chellow.billing.DceService;
 import net.sf.chellow.monad.Hiber;
-import net.sf.chellow.monad.ProgrammerException;
-import net.sf.chellow.monad.UserException;
+import net.sf.chellow.monad.InternalException;
+import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.types.MonadUri;
 
 public class StarkAutomaticHhDataImporters extends TimerTask {
@@ -21,7 +21,7 @@ public class StarkAutomaticHhDataImporters extends TimerTask {
 	private static Timer timer;
 
 	public synchronized static StarkAutomaticHhDataImporters start()
-			throws ProgrammerException {
+			throws InternalException {
 		if (importersInstance == null) {
 			importersInstance = new StarkAutomaticHhDataImporters();
 			timer = new Timer(true);
@@ -34,18 +34,18 @@ public class StarkAutomaticHhDataImporters extends TimerTask {
 		return importersInstance;
 	}
 
-	private ProgrammerException programmerException;
+	private InternalException programmerException;
 
 	private Logger logger = Logger.getLogger("net.sf.chellow");
 
 	private final Map<Long, StarkAutomaticHhDataImporter> importers = new HashMap<Long, StarkAutomaticHhDataImporter>();
 
-	public ProgrammerException getProgrammerException() {
+	public InternalException getProgrammerException() {
 		return programmerException;
 	}
 
 	public StarkAutomaticHhDataImporter findImporter(DceService service)
-			throws ProgrammerException, UserException {
+			throws InternalException, HttpException {
 		MonadUri importerUri = service.getUri().resolve(
 				StarkAutomaticHhDataImporter.URI_ID);
 		StarkAutomaticHhDataImporter importer = null;
@@ -56,7 +56,7 @@ public class StarkAutomaticHhDataImporters extends TimerTask {
 					importer = new StarkAutomaticHhDataImporter(service
 							.getId());
 					importers.put(service.getId(), importer);
-				} catch (UserException e) {
+				} catch (HttpException e) {
 					logger.logp(Level.SEVERE, "StarkAutomaticHhDataImporter",
 							"run",
 							"Problem creating new Stark Automatic Hh Data Importer. "
@@ -85,9 +85,9 @@ public class StarkAutomaticHhDataImporters extends TimerTask {
 				importer.run();
 			}
 			Hiber.close();
-		} catch (ProgrammerException e) {
+		} catch (InternalException e) {
 			throw new RuntimeException(e);
-		} catch (UserException e) {
+		} catch (HttpException e) {
 			throw new RuntimeException(e);
 		}
 	}

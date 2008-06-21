@@ -25,8 +25,9 @@ package net.sf.chellow.billing;
 import java.util.List;
 
 import net.sf.chellow.monad.Hiber;
-import net.sf.chellow.monad.ProgrammerException;
+import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Urlable;
+import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.UserException;
 import net.sf.chellow.monad.types.MonadString;
 import net.sf.chellow.physical.PersistentEntity;
@@ -38,22 +39,21 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 public abstract class Provider extends PersistentEntity implements Urlable {
-	public static Provider getSupplier(Long id) throws UserException,
-			ProgrammerException {
+	public static Provider getSupplier(Long id) throws HttpException {
 		Provider supplier = (Provider) Hiber.session().get(Provider.class, id);
 		if (supplier == null) {
-			throw UserException.newOk("There isn't a supplier with that id.");
+			throw new UserException("There isn't a supplier with that id.");
 		}
 		return supplier;
 	}
 
 	public static void deleteSupplier(Provider supplier)
-			throws ProgrammerException {
+			throws InternalException {
 		try {
 			Hiber.session().delete(supplier);
 			Hiber.flush();
 		} catch (HibernateException e) {
-			throw new ProgrammerException(e);
+			throw new InternalException(e);
 		}
 	}
 
@@ -78,16 +78,15 @@ public abstract class Provider extends PersistentEntity implements Urlable {
 		setName(name);
 	}
 
-	public Element toXML(Document doc) throws ProgrammerException,
-			UserException {
-		Element element = (Element) super.toXML(doc);
+	public Element toXml(Document doc) throws HttpException {
+		Element element = (Element) super.toXml(doc);
 
 		element.setAttributeNode((Attr) MonadString.toXml(doc, "name", name));
 		return element;
 	}
 
-	public Account getAccount(String accountText) throws UserException,
-			ProgrammerException {
+	public Account getAccount(String accountText) throws HttpException,
+			InternalException {
 		Account account = (Account) Hiber
 				.session()
 				.createQuery(
@@ -95,33 +94,33 @@ public abstract class Provider extends PersistentEntity implements Urlable {
 				.setEntity("provider", this).setString("accountReference",
 						accountText.trim()).uniqueResult();
 		if (account == null) {
-			throw UserException
-					.newInvalidParameter("There isn't an account for '"
-							+ getName() + "' with the reference '"
-							+ accountText + "'.");
+			throw new UserException("There isn't an account for '" + getName()
+					+ "' with the reference '" + accountText + "'.");
 		}
 		return account;
 	}
 
 	@SuppressWarnings("unchecked")
-	public void deleteAccount(Account account) throws UserException,
-			ProgrammerException {
+	public void deleteAccount(Account account) throws HttpException,
+			InternalException {
 		if (!account.getProvider().equals(this)) {
-			throw UserException
-					.newInvalidParameter("The account isn't attached to this provider.");
+			throw new UserException(
+					"The account isn't attached to this provider.");
 		}
 		if ((Long) Hiber.session().createQuery(
 				"select count(*) from Bill bill where bill.account = :account")
 				.setEntity("account", account).uniqueResult() > 0) {
-			throw UserException
-					.newInvalidParameter("Can't delete this account as there are still bills attached to it.");
+			throw new UserException(
+					"Can't delete this account as there are still bills attached to it.");
 		}
-		if ((Long) Hiber.session().createQuery(
-		"select count(*) from Mpan mpan where mpan.supplierAccount.id = :accountId")
-		.setLong("accountId", account.getId()).uniqueResult() > 0) {
-	throw UserException
-			.newInvalidParameter("Can't delete this account as there are still MPANs attached to it.");
-}
+		if ((Long) Hiber
+				.session()
+				.createQuery(
+						"select count(*) from Mpan mpan where mpan.supplierAccount.id = :accountId")
+				.setLong("accountId", account.getId()).uniqueResult() > 0) {
+			throw new UserException(
+					"Can't delete this account as there are still MPANs attached to it.");
+		}
 		for (AccountSnag snag : (List<AccountSnag>) Hiber.session()
 				.createQuery(
 						"from AccountSnag snag where snag.account = :account")
@@ -135,6 +134,6 @@ public abstract class Provider extends PersistentEntity implements Urlable {
 
 	abstract public List<SupplyGeneration> supplyGenerations(Account account);
 
-	public abstract Service getService(String name) throws UserException,
-			ProgrammerException;
+	public abstract Service getService(String name) throws HttpException,
+			InternalException;
 }

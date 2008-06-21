@@ -40,8 +40,10 @@ import net.sf.chellow.monad.DesignerException;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.Invocation;
 import net.sf.chellow.monad.MonadUtils;
-import net.sf.chellow.monad.ProgrammerException;
+import net.sf.chellow.monad.NotFoundException;
+import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Urlable;
+import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.UserException;
 import net.sf.chellow.monad.XmlTree;
 import net.sf.chellow.monad.types.MonadDate;
@@ -55,22 +57,22 @@ import org.w3c.dom.Element;
 
 public class SupplyGeneration extends PersistentEntity implements Urlable {
 	static public SupplyGeneration getSupplyGeneration(MonadLong id)
-			throws ProgrammerException, UserException {
+			throws InternalException, HttpException {
 		return getSupplyGeneration(id.getLong());
 	}
 
 	static public SupplyGeneration getSupplyGeneration(Long id)
-			throws ProgrammerException, UserException {
+			throws InternalException, HttpException {
 		try {
 			SupplyGeneration supplyGeneration = (SupplyGeneration) Hiber
 					.session().get(SupplyGeneration.class, id);
 			if (supplyGeneration == null) {
-				throw UserException
-						.newOk("There is no supply generation with that id.");
+				throw new UserException(
+						"There is no supply generation with that id.");
 			}
 			return supplyGeneration;
 		} catch (HibernateException e) {
-			throw new ProgrammerException(e);
+			throw new InternalException(e);
 		}
 	}
 
@@ -95,7 +97,7 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 	}
 
 	SupplyGeneration(Supply supply, HhEndDate startDate, HhEndDate finishDate,
-			Meter meter) throws ProgrammerException, UserException {
+			Meter meter) throws InternalException, HttpException {
 		this();
 		this.supply = supply;
 		setSiteSupplyGenerations(new HashSet<SiteSupplyGeneration>());
@@ -163,12 +165,13 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 		return dso;
 	}
 
-	public void attachSite(Site site) throws ProgrammerException, UserException {
+	public void attachSite(Site site) throws InternalException,
+			HttpException {
 		attachSite(site, false);
 	}
 
 	public void attachSite(Site site, boolean isLocation)
-			throws ProgrammerException, UserException {
+			throws InternalException, HttpException {
 		boolean alreadyThere = false;
 		for (SiteSupplyGeneration siteSupplyGeneration : siteSupplyGenerations) {
 			if (siteSupplyGeneration.getSite().equals(site)) {
@@ -177,8 +180,8 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 			}
 		}
 		if (alreadyThere) {
-			throw UserException
-					.newInvalidParameter("The site is already attached to this supply.");
+			throw new UserException(
+					"The site is already attached to this supply.");
 		} else {
 			SiteSupplyGeneration siteSupplyGeneration = new SiteSupplyGeneration(
 					site, this, false);
@@ -190,10 +193,11 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 		}
 	}
 
-	public void detachSite(Site site) throws UserException, ProgrammerException {
+	public void detachSite(Site site) throws HttpException,
+			InternalException {
 		if (siteSupplyGenerations.size() < 2) {
-			throw UserException
-					.newInvalidParameter("A supply has to be attached to at least one site.");
+			throw new UserException(
+					"A supply has to be attached to at least one site.");
 		}
 		SiteSupplyGeneration siteSupplyGeneration = (SiteSupplyGeneration) Hiber
 				.session()
@@ -202,8 +206,8 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 				.setEntity("supplyGeneration", this).setEntity("site", site)
 				.uniqueResult();
 		if (siteSupplyGeneration == null) {
-			throw UserException
-					.newInvalidParameter("Can't detach this site, as it wasn't attached in the first place.");
+			throw new UserException(
+					"Can't detach this site, as it wasn't attached in the first place.");
 		}
 		siteSupplyGenerations.remove(siteSupplyGeneration);
 		siteSupplyGenerations.iterator().next().setIsPhysical(true);
@@ -223,9 +227,9 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 			SupplierService exportContractSupplier, boolean exportHasImportKwh,
 			boolean exportHasImportKvarh, boolean exportHasExportKwh,
 			boolean exportHasExportKvarh, Integer exportAgreedSupplyCapacity)
-			throws ProgrammerException, UserException, DesignerException {
+			throws InternalException, HttpException, DesignerException {
 		if (importMpanCore == null && exportMpanCore == null) {
-			throw UserException.newInvalidParameter(document(),
+			throw new UserException(document(),
 					"A supply generation must have at least one MPAN.");
 		}
 		if (importMpanCore == null) {
@@ -233,11 +237,11 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 			setImportMpan(null);
 		} else {
 			if (!importMpanCore.getSupply().equals(getSupply())) {
-				throw UserException
-						.newInvalidParameter("This import MPAN core is not attached to this supply.");
+				throw new UserException(
+						"This import MPAN core is not attached to this supply.");
 			}
 			if (!importMpanTop.getLlf().getIsImport()) {
-				throw UserException.newInvalidParameter(document(),
+				throw new UserException(document(),
 						"The import line loss factor '"
 								+ importMpanTop.getLlf()
 								+ "' says that the MPAN is actually export.");
@@ -262,12 +266,12 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 			setExportMpan(null);
 		} else {
 			if (!exportMpanCore.getSupply().equals(getSupply())) {
-				throw UserException
-						.newInvalidParameter("This export MPAN core is not attached to this supply.");
+				throw new UserException(
+						"This export MPAN core is not attached to this supply.");
 			}
 			if (exportMpanTop.getLlf().getIsImport()) {
-				throw UserException
-						.newOk("Problem with the export MPAN with core '"
+				throw new UserException(
+						"Problem with the export MPAN with core '"
 								+ exportMpanCore + "'. The Line Loss Factor '"
 								+ exportMpanTop.getLlf()
 								+ "' says that the MPAN is actually import.");
@@ -295,13 +299,13 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 			if (importMpanCore.getDso().isSettlement()
 					&& exportMpanCore.getDso().isSettlement()
 					&& !importMpanCore.getDso().equals(exportMpanCore.getDso())) {
-				throw UserException
-						.newOk("Two settlement MPAN generations on the same supply must have the same DSO.");
+				throw new UserException(
+						"Two settlement MPAN generations on the same supply must have the same DSO.");
 			}
 			if (!importMpanTop.getLlf().getVoltageLevel().equals(
 					exportMpanTop.getLlf().getVoltageLevel())) {
-				throw UserException
-						.newOk("The voltage level indicated by the Line Loss Factor must be the same for both the MPANs.");
+				throw new UserException(
+						"The voltage level indicated by the Line Loss Factor must be the same for both the MPANs.");
 			}
 		}
 		Dso dso = getDso();
@@ -320,8 +324,8 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 				if (!code.equals(new LlfCode(520))
 						&& !code.equals(new LlfCode(550))
 						&& !code.equals(new LlfCode(580))) {
-					throw UserException
-							.newOk("The DSO is 22, there's an export MPAN and the Line Loss Factor of the import MPAN "
+					throw new UserException(
+							"The DSO is 22, there's an export MPAN and the Line Loss Factor of the import MPAN "
 									+ getImportMpan()
 									+ " can only be 520, 550 or 580.");
 				}
@@ -383,21 +387,21 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 	}
 
 	void intrinsicUpdate(HhEndDate startDate, HhEndDate finishDate, Meter meter)
-			throws ProgrammerException, UserException {
+			throws InternalException, HttpException {
 		if (finishDate != null
 				&& startDate.getDate().after(finishDate.getDate())) {
-			throw UserException
-					.newOk("The generation start date can't be after the finish date.");
+			throw new UserException(
+					"The generation start date can't be after the finish date.");
 		}
 		if (startDate == null) {
-			throw new ProgrammerException("start date can't be null.");
+			throw new InternalException("start date can't be null.");
 		}
 		setStartDate(startDate);
 		setFinishDate(finishDate);
 		setMeter(meter);
 	}
 
-	void delete() throws UserException, ProgrammerException {
+	void delete() throws HttpException, InternalException {
 		List<SiteSupplyGeneration> ssGens = new ArrayList<SiteSupplyGeneration>();
 		for (SiteSupplyGeneration ssGen : siteSupplyGenerations) {
 			ssGens.add(ssGen);
@@ -411,7 +415,7 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 	}
 
 	public void update(HhEndDate startDate, HhEndDate finishDate, Meter meter)
-			throws ProgrammerException, UserException {
+			throws InternalException, HttpException {
 		HhEndDate originalStartDate = getStartDate();
 		HhEndDate originalFinishDate = getFinishDate();
 		if (startDate.equals(originalStartDate)
@@ -424,8 +428,8 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 		if (previousSupplyGeneration != null) {
 			if (!previousSupplyGeneration.getStartDate().getDate().before(
 					startDate.getDate())) {
-				throw UserException
-						.newInvalidParameter("The start date must be after the start date of the previous generation.");
+				throw new UserException(
+						"The start date must be after the start date of the previous generation.");
 			}
 			previousSupplyGeneration.intrinsicUpdate(previousSupplyGeneration
 					.getStartDate(), startDate.getPrevious(), meter);
@@ -433,14 +437,14 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 		SupplyGeneration nextSupplyGeneration = supply.getGenerationNext(this);
 		if (nextSupplyGeneration != null) {
 			if (finishDate == null) {
-				throw UserException
-						.newInvalidParameter("The finish date must be before the finish date of the next generation.");
+				throw new UserException(
+						"The finish date must be before the finish date of the next generation.");
 			}
 			if (nextSupplyGeneration.getFinishDate() != null
 					&& !finishDate.getDate().before(
 							nextSupplyGeneration.getFinishDate().getDate())) {
-				throw UserException
-						.newInvalidParameter("The finish date must be before the finish date of the next generation.");
+				throw new UserException(
+						"The finish date must be before the finish date of the next generation.");
 			}
 			nextSupplyGeneration.intrinsicUpdate(finishDate.getNext(),
 					nextSupplyGeneration.getFinishDate(), nextSupplyGeneration
@@ -464,26 +468,27 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 				((SupplyGeneration) obj).getFinishDate().getDate());
 	}
 
-	public void deleteMpan(Mpan mpan) throws UserException, ProgrammerException {
+	public void deleteMpan(Mpan mpan) throws HttpException,
+			InternalException {
 		if (mpans.size() < 2) {
-			throw UserException
-					.newOk("There must be at least one MPAN generation in each supply generation.");
+			throw new UserException(
+					"There must be at least one MPAN generation in each supply generation.");
 		}
 		mpans.remove(mpan);
 	}
 
-	public Element toXML(Document doc) throws ProgrammerException,
-			UserException {
-		Element element = (Element) super.toXML(doc);
-		element.appendChild(startDate.toXML(doc));
+	public Element toXml(Document doc) throws InternalException,
+			HttpException {
+		Element element = (Element) super.toXml(doc);
+		element.appendChild(startDate.toXml(doc));
 		if (finishDate != null) {
-			element.appendChild(finishDate.toXML(doc));
+			element.appendChild(finishDate.toXml(doc));
 		}
 		return element;
 	}
 
 	public void httpGet(Invocation inv) throws DesignerException,
-			ProgrammerException, UserException, DeployerException {
+			InternalException, HttpException, DeployerException {
 		inv.sendOk(document());
 	}
 
@@ -493,40 +498,40 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 	}
 
 	@SuppressWarnings("unchecked")
-	private Document document() throws ProgrammerException, UserException,
+	private Document document() throws InternalException, HttpException,
 			DesignerException {
 		Document doc = MonadUtils.newSourceDocument();
 		Element source = doc.getDocumentElement();
-		Element generationElement = (Element) getXML(new XmlTree(
-				"siteSupplyGenerations", new XmlTree("site", new XmlTree(
-						"organization"))).put("meter").put("supply",
-				new XmlTree("source")), doc);
+		Element generationElement = (Element) toXml(doc, new XmlTree(
+						"siteSupplyGenerations", new XmlTree("site", new XmlTree(
+								"organization"))).put("meter").put("supply",
+						new XmlTree("source")));
 		source.appendChild(generationElement);
 		source.appendChild(getSiteSupplyGenerations().iterator().next()
-				.getSite().getOrganization().toXML(doc));
+				.getSite().getOrganization().toXml(doc));
 		for (Mpan mpan : mpans) {
-			Element mpanElement = (Element) mpan.getXML(new XmlTree("mpanCore")
-					.put("mpanTop", new XmlTree("meterTimeswitch").put("llf"))
-					.put("dceService").put("supplierAccount",
-							new XmlTree("provider")).put("supplierService",
-							new XmlTree("provider")), doc);
+			Element mpanElement = (Element) mpan.toXml(doc, new XmlTree("mpanCore")
+									.put("mpanTop", new XmlTree("meterTimeswitch").put("llf"))
+									.put("dceService").put("supplierAccount",
+											new XmlTree("provider")).put("supplierService",
+											new XmlTree("provider")));
 			generationElement.appendChild(mpanElement);
 			for (RegisterRead read : (List<RegisterRead>) Hiber.session()
 					.createQuery(
 							"from RegisterRead read where read.mpan = :mpan")
 					.setEntity("mpan", mpan).list()) {
-				mpanElement.appendChild(read.getXML(new XmlTree("invoice",
-						new XmlTree("batch", new XmlTree("service",
-								new XmlTree("provider")))), doc));
+				mpanElement.appendChild(read.toXml(doc, new XmlTree("invoice",
+										new XmlTree("batch", new XmlTree("service",
+												new XmlTree("provider"))))));
 			}
 			for (InvoiceMpan invoiceMpan : (List<InvoiceMpan>) Hiber
 					.session()
 					.createQuery(
 							"from InvoiceMpan invoiceMpan where invoiceMpan.mpan = :mpan")
 					.setEntity("mpan", mpan).list()) {
-				mpanElement.appendChild(invoiceMpan.getXML(new XmlTree(
-						"invoice", new XmlTree("batch", new XmlTree("service",
-								new XmlTree("provider")))), doc));
+				mpanElement.appendChild(invoiceMpan.toXml(doc, new XmlTree(
+										"invoice", new XmlTree("batch", new XmlTree("service",
+												new XmlTree("provider"))))));
 			}
 		}
 		// addVoltageLevelsXML(source);
@@ -534,42 +539,42 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 		for (Dce dce : (List<Dce>) Hiber.session().createQuery(
 				"from Dce dce where dce.organization = :organization")
 				.setEntity("organization", organization).list()) {
-			Element dceElement = dce.toXML(doc);
+			Element dceElement = dce.toXml(doc);
 			source.appendChild(dceElement);
 			for (DceService dceService : (List<DceService>) Hiber
 					.session()
 					.createQuery(
 							"from DceService service where service.provider = :dce")
 					.setEntity("dce", dce).list()) {
-				dceElement.appendChild(dceService.toXML(doc));
+				dceElement.appendChild(dceService.toXml(doc));
 			}
 		}
 		source.appendChild(MonadDate.getMonthsXml(doc));
 		source.appendChild(MonadDate.getDaysXml(doc));
-		source.appendChild(new MonadDate().toXML(doc));
+		source.appendChild(new MonadDate().toXml(doc));
 		for (ProfileClass profileClass : (List<ProfileClass>) Hiber
 				.session()
 				.createQuery(
 						"from ProfileClass profileClass order by profileClass.code")
 				.list()) {
-			source.appendChild(profileClass.toXML(doc));
+			source.appendChild(profileClass.toXml(doc));
 		}
 		return doc;
 	}
 
-	void deleteMpans() throws UserException, ProgrammerException {
+	void deleteMpans() throws HttpException, InternalException {
 		for (Mpan mpan : mpans) {
 			mpan.delete();
 		}
 		mpans.clear();
 	}
 
-	public void httpPost(Invocation inv) throws ProgrammerException,
-			UserException, DesignerException, DeployerException {
+	public void httpPost(Invocation inv) throws InternalException,
+			HttpException, DesignerException, DeployerException {
 		if (inv.hasParameter("delete")) {
 			try {
 				supply.deleteGeneration(this);
-			} catch (UserException e) {
+			} catch (HttpException e) {
 				e.setDocument(document());
 				throw e;
 			}
@@ -578,7 +583,7 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 		} else if (inv.hasParameter("attach")) {
 			SiteCode siteCode = inv.getValidatable(SiteCode.class, "site-code");
 			if (!inv.isValid()) {
-				throw UserException.newInvalidParameter(document());
+				throw new UserException(document());
 			}
 			Site site = organization().getSite(siteCode);
 			attachSite(site);
@@ -587,7 +592,7 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 		} else if (inv.hasParameter("detach")) {
 			Long siteId = inv.getLong("site-id");
 			if (!inv.isValid()) {
-				throw UserException.newInvalidParameter(document());
+				throw new UserException(document());
 			}
 			Site site = organization().getSite(siteId);
 			detachSite(site);
@@ -596,7 +601,7 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 		} else if (inv.hasParameter("set-location")) {
 			Long siteId = inv.getLong("site-id");
 			if (!inv.isValid()) {
-				throw UserException.newInvalidParameter();
+				throw new UserException();
 			}
 			Site site = organization().getSite(siteId);
 			setPhysicalLocation(site);
@@ -669,8 +674,8 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 					Supplier importSupplier = organization
 							.findSupplier(importSupplierName);
 					if (importSupplier == null) {
-						throw UserException
-								.newInvalidParameter("Can't find an import supplier with that name.");
+						throw new UserException(
+								"Can't find an import supplier with that name.");
 					}
 					importSupplierService = importSupplier
 							.getService(importSupplierServiceName);
@@ -735,8 +740,8 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 					Supplier exportSupplier = organization
 							.findSupplier(exportSupplierName);
 					if (exportSupplier == null) {
-						throw UserException
-								.newInvalidParameter("Can't find an export supplier with that name.");
+						throw new UserException(
+								"Can't find an export supplier with that name.");
 					}
 					exportSupplierService = exportSupplier
 							.getService(exportSupplierServiceName);
@@ -765,7 +770,7 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 				}
 				update(new HhEndDate(startDate), finishDate == null ? null
 						: new HhEndDate(finishDate), meter);
-			} catch (UserException e) {
+			} catch (HttpException e) {
 				e.setDocument(document());
 				throw e;
 			}
@@ -774,18 +779,18 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 		}
 	}
 
-	public MonadUri getUri() throws ProgrammerException, UserException {
+	public MonadUri getUri() throws InternalException, HttpException {
 		return supply.getSupplyGenerationsInstance().getUri().resolve(
 				getUriId()).append("/");
 	}
 
-	public Urlable getChild(UriPathElement uriId) throws ProgrammerException,
-			UserException {
-		throw UserException.newNotFound();
+	public Urlable getChild(UriPathElement uriId) throws InternalException,
+			HttpException {
+		throw new NotFoundException();
 	}
 
-	public void httpDelete(Invocation inv) throws ProgrammerException,
-			DesignerException, UserException, DeployerException {
+	public void httpDelete(Invocation inv) throws InternalException,
+			DesignerException, HttpException, DeployerException {
 		// TODO Auto-generated method stub
 
 	}
@@ -794,8 +799,8 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 		return "SupplyGeneration id " + getId();
 	}
 
-	public void setPhysicalLocation(Site site) throws ProgrammerException,
-			UserException {
+	public void setPhysicalLocation(Site site) throws InternalException,
+			HttpException {
 		SiteSupplyGeneration targetSiteSupply = null;
 		for (SiteSupplyGeneration siteSupply : siteSupplyGenerations) {
 			if (site.equals(siteSupply.getSite())) {
@@ -803,8 +808,7 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 			}
 		}
 		if (targetSiteSupply == null) {
-			throw UserException
-					.newOk("The site isn't attached to this supply.");
+			throw new UserException("The site isn't attached to this supply.");
 		}
 		for (SiteSupplyGeneration siteSupply : siteSupplyGenerations) {
 			siteSupply.setIsPhysical(siteSupply.equals(targetSiteSupply));
@@ -813,7 +817,7 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 	}
 
 	public RegisterRead insertRegisterRead(RegisterReadRaw rawRegisterRead,
-			Invoice invoice) throws UserException, ProgrammerException {
+			Invoice invoice) throws HttpException, InternalException {
 		Mpan importMpan = getImportMpan();
 		Mpan exportMpan = getExportMpan();
 		RegisterRead read = null;
@@ -824,7 +828,7 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 				&& exportMpan.getMpanRaw().equals(rawRegisterRead.getMpanRaw())) {
 			read = invoice.insertRead(exportMpan, rawRegisterRead);
 		} else {
-			throw UserException.newInvalidParameter("For the supply " + getId()
+			throw new UserException("For the supply " + getId()
 					+ " neither the import MPAN " + importMpan
 					+ " or the export MPAN " + exportMpan
 					+ " match the register read MPAN "

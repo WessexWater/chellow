@@ -28,8 +28,9 @@ import net.sf.chellow.monad.DesignerException;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.Invocation;
 import net.sf.chellow.monad.MonadUtils;
-import net.sf.chellow.monad.ProgrammerException;
+import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Urlable;
+import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.UserException;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
@@ -41,27 +42,25 @@ import org.w3c.dom.Node;
 
 public class ProfileClass extends PersistentEntity {
 	static public ProfileClass getProfileClass(Long id)
-			throws ProgrammerException, UserException {
+			throws InternalException, HttpException {
 		ProfileClass profileClass = (ProfileClass) Hiber.session().get(
 				ProfileClass.class, id);
 		if (profileClass == null) {
-			throw UserException
-					.newOk("There is no profile class with that id.");
+			throw new UserException("There is no profile class with that id.");
 		}
 		return profileClass;
 	}
 
 	static public ProfileClass getProfileClass(int code)
-			throws ProgrammerException, UserException {
+			throws InternalException, HttpException {
 		return getProfileClass(new ProfileClassCode(code));
 	}
 
 	static public ProfileClass getProfileClass(ProfileClassCode code)
-			throws ProgrammerException, UserException {
+			throws InternalException, HttpException {
 		ProfileClass profileClass = findProfileClass(code);
 		if (profileClass == null) {
-			throw UserException
-					.newOk("There is no profile class with that code.");
+			throw new UserException("There is no profile class with that code.");
 		}
 		return profileClass;
 	}
@@ -85,7 +84,7 @@ public class ProfileClass extends PersistentEntity {
 	 * profileClass.code.integer") .list(); }
 	 */
 	public static ProfileClass insertProfileClass(int code, String description)
-			throws ProgrammerException, UserException {
+			throws InternalException, HttpException {
 
 		ProfileClass profileClass = null;
 		try {
@@ -97,10 +96,10 @@ public class ProfileClass extends PersistentEntity {
 			if (Data
 					.isSQLException(e,
 							"ERROR: duplicate key violates unique constraint \"site_code_key\"")) {
-				throw UserException
-						.newOk("A profile class with this code already exists.");
+				throw new UserException(
+						"A profile class with this code already exists.");
 			} else {
-				throw new ProgrammerException(e);
+				throw new InternalException(e);
 			}
 		}
 		return profileClass;
@@ -150,12 +149,12 @@ public class ProfileClass extends PersistentEntity {
 		return getCode() + " - " + getDescription();
 	}
 
-	public Node toXML(Document doc) throws ProgrammerException, UserException {
+	public Node toXml(Document doc) throws InternalException, HttpException {
 		setTypeName("profile-class");
-		Element element = (Element) super.toXML(doc);
+		Element element = (Element) super.toXml(doc);
 
-		element.setAttributeNode(code.toXML(doc));
-		element.setAttribute("description",	description);
+		element.setAttributeNode(code.toXml(doc));
+		element.setAttribute("description", description);
 		return element;
 	}
 
@@ -163,29 +162,29 @@ public class ProfileClass extends PersistentEntity {
 		return null;
 	}
 
-	public Urlable getChild(UriPathElement uriId) throws ProgrammerException,
-			UserException {
+	public Urlable getChild(UriPathElement uriId) throws InternalException,
+			HttpException {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	public void httpGet(Invocation inv) throws DesignerException,
-			ProgrammerException, UserException, DeployerException {
+			InternalException, HttpException, DeployerException {
 		Document doc = MonadUtils.newSourceDocument();
 		Element source = doc.getDocumentElement();
 
-		source.appendChild(toXML(doc));
+		source.appendChild(toXml(doc));
 		inv.sendOk(doc);
 	}
 
-	public void httpPost(Invocation inv) throws ProgrammerException,
-			UserException {
+	public void httpPost(Invocation inv) throws InternalException,
+			HttpException {
 		// TODO Auto-generated method stub
 
 	}
 
-	public void httpDelete(Invocation inv) throws ProgrammerException,
-			DesignerException, UserException, DeployerException {
+	public void httpDelete(Invocation inv) throws InternalException,
+			DesignerException, HttpException, DeployerException {
 		// TODO Auto-generated method stub
 
 	}

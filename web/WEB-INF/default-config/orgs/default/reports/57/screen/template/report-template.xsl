@@ -9,7 +9,7 @@
 		<html>
 			<head>
 				<link rel="stylesheet" type="text/css"
-					href="{/source/request/@context-path}/orgs/1/reports/9/stream/output/" />
+					href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/9/stream/output/" />
 
 				<title>
 					<xsl:value-of select="/source/org/@name" />
@@ -17,8 +17,7 @@
 					<xsl:value-of
 						select="/source/dce-service/dce/@name" />
 					&gt; Services &gt;
-					<xsl:value-of
-						select="/source/dce-service/@name" />
+					<xsl:value-of select="/source/dce-service/@name" />
 				</title>
 			</head>
 			<body>
@@ -79,6 +78,34 @@
 							</td>
 						</tr>
 						<tr>
+							<th>
+								Frequency with which the data arrives
+							</th>
+							<td>
+								<xsl:choose>
+									<xsl:when
+										test="/source/dce-service/@frequency = '0'">
+										<xsl:value-of select="'Daily'" />
+									</xsl:when>
+									<xsl:when
+										test="/source/dce-service/@frequency = '1'">
+										<xsl:value-of
+											select="'Monthly'" />
+									</xsl:when>
+								</xsl:choose>
+							</td>
+						</tr>
+						<tr>
+							<th>
+								Lag (number of days behind that the data
+								is delivered)
+							</th>
+							<td>
+								<xsl:value-of
+									select="/source/dce-service/@lag" />
+							</td>
+						</tr>
+						<tr>
 							<th>Start Date</th>
 							<td>
 								<xsl:value-of
@@ -103,72 +130,97 @@
 					</tbody>
 				</table>
 				<br />
-				<table>
+				<!--
+					<table>
 					<caption>Rate Scripts</caption>
 					<thead>
-						<tr>
-							<th>Chellow Id</th>
-							<th>From</th>
-							<th>To</th>
-						</tr>
+					<tr>
+					<th>Chellow Id</th>
+					<th>From</th>
+					<th>To</th>
+					</tr>
 					</thead>
 					<tbody>
-						<xsl:for-each
-							select="/source/dce-service/rate-script">
-							<tr>
-								<td>
-									<a
-										href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/39/screen/output/?dce-rate-script-id={@id}">
-										<xsl:value-of select="@id" />
-									</a>
-								</td>
-								<td>
-									<xsl:value-of
-										select="concat(hh-end-date[@label='start']/@year, '-', hh-end-date[@label='start']/@month, '-', hh-end-date[@label='start']/@day)" />
-								</td>
-								<td>
-									<xsl:choose>
-										<xsl:when
-											test="hh-end-date[@label='finish']">
-											<xsl:value-of
-												select="concat(hh-end-date[@label='finish']/@year, '-', hh-end-date[@label='finish']/@month, '-', hh-end-date[@label='finish']/@day)" />
-										</xsl:when>
-										<xsl:otherwise>
-											Ongoing
-										</xsl:otherwise>
-									</xsl:choose>
-								</td>
-							</tr>
-						</xsl:for-each>
-					</tbody>
-				</table>
-
-				<ul>
-					<li>
-						<a
-							href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/44/screen/output/?dce-service-id={/source/dce-service/@id}">
-							Batches
-						</a>
-					</li>
-					<li>
-						<a
-							href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/50/screen/output/?dce-service-id={/source/dce-service/@id}">
-							Account Snags
-						</a>
-					</li>
-					<li>
-						<a
-							href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/52/screen/output/?service-id={/source/dce-service/@id}">
-							Bill Snags
-						</a>
-					</li>
-				</ul>
-
-				<h2>Script</h2>
-				<pre>
+					<xsl:for-each
+					select="/source/dce-service/rate-script">
+					<tr>
+					<td>
+					<a
+					href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/39/screen/output/?dce-rate-script-id={@id}">
+					<xsl:value-of select="@id" />
+					</a>
+					</td>
+					<td>
 					<xsl:value-of
-						select="/source/dce-service/@charge-script" />
-				</pre>
+					select="concat(hh-end-date[@label='start']/@year, '-', hh-end-date[@label='start']/@month, '-', hh-end-date[@label='start']/@day)" />
+					</td>
+					<td>
+					<xsl:choose>
+					<xsl:when
+					test="hh-end-date[@label='finish']">
+					<xsl:value-of
+					select="concat(hh-end-date[@label='finish']/@year, '-', hh-end-date[@label='finish']/@month, '-', hh-end-date[@label='finish']/@day)" />
+					</xsl:when>
+					<xsl:otherwise>
+					Ongoing
+					</xsl:otherwise>
+					</xsl:choose>
+					</td>
+					</tr>
+					</xsl:for-each>
+					</tbody>
+					</table>
+				-->
+				<ul>
+					<!--
+						<li>
+						<a
+						href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/44/screen/output/?dce-service-id={/source/dce-service/@id}">
+						Batches
+						</a>
+						</li>
+						<li>
+						<a
+						href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/50/screen/output/?dce-service-id={/source/dce-service/@id}">
+						Account Snags
+						</a>
+						</li>
+						<li>
+						<a
+						href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/52/screen/output/?service-id={/source/dce-service/@id}">
+						Bill Snags
+						</a>
+						</li>
+					-->
+					<li>
+						<a
+							href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/18/screen/output/?service-id={/source/dce-service/@id}">
+							Channel Snags
+						</a>
+					</li>
+					<li>
+						<a
+							href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/59/screen/output/?service-id={/source/dce-service/@id}">
+							Site Group Snags
+						</a>
+					</li>
+					<xsl:if
+						test="/source/dce-service/@has-stark-automatic-hh-data-importer='true'">
+						<li>
+							<a
+								href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/61/screen/output/?service-id={/source/dce-service/@id}">
+								Stark Automatic HH Data Importer
+							</a>
+						</li>
+					</xsl:if>
+				</ul>
+				<!--
+					<h2>Script</h2>
+					<pre>
+					<xsl:value-of
+					select="/source/dce-service/@charge-script" />
+					</pre>
+				-->
 			</body>
 		</html>
 	</xsl:template>

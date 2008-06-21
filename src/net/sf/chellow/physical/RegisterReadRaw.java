@@ -2,7 +2,7 @@ package net.sf.chellow.physical;
 
 import net.sf.chellow.billing.DayFinishDate;
 import net.sf.chellow.data08.MpanRaw;
-import net.sf.chellow.monad.ProgrammerException;
+import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.UserException;
 import net.sf.chellow.monad.types.MonadFloat;
 import net.sf.chellow.monad.types.MonadObject;
@@ -40,9 +40,9 @@ public class RegisterReadRaw extends MonadObject {
 			DayFinishDate previousDate, float previousValue,
 			ReadType previousType, DayFinishDate presentDate,
 			float presentValue, ReadType presentType)
-			throws ProgrammerException {
+			throws InternalException {
 		if (mpanRaw == null) {
-			throw new ProgrammerException("mpan raw argument can't be null.");
+			throw new InternalException("mpan raw argument can't be null.");
 		}
 		this.mpanRaw = mpanRaw;
 		this.coefficient = coefficient;
@@ -107,8 +107,7 @@ public class RegisterReadRaw extends MonadObject {
 	}
 
 
-	public Element toXML(Document doc) throws ProgrammerException,
-			UserException {		
+	public Element toXml(Document doc) throws InternalException, UserException {		
 		Element element = doc.createElement("register-read-raw");
 		element.setAttribute("mpan", mpanRaw.toString());
 		element.setAttributeNode(MonadFloat.toXml(doc, "coefficient",
@@ -117,11 +116,11 @@ public class RegisterReadRaw extends MonadObject {
 		element.setAttribute("units", Units.name(units));
 		element.setAttribute("tpr", Integer.toString(tpr));
 		previousDate.setLabel("previous");
-		element.appendChild(previousDate.toXML(doc));
+		element.appendChild(previousDate.toXml(doc));
 		element.setAttributeNode(MonadFloat.toXml(doc, "previous-value", previousValue));
 		element.setAttribute("previous-type", ReadType.name(previousType));
 		presentDate.setLabel("current");
-		element.appendChild(presentDate.toXML(doc));
+		element.appendChild(presentDate.toXml(doc));
 		element.setAttributeNode(MonadFloat.toXml(doc, "current-value", presentValue));
 		element.setAttribute("current-type", ReadType.name(presentType));
 		return element;

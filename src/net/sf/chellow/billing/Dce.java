@@ -29,8 +29,10 @@ import net.sf.chellow.monad.DesignerException;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.Invocation;
 import net.sf.chellow.monad.MonadUtils;
-import net.sf.chellow.monad.ProgrammerException;
+import net.sf.chellow.monad.NotFoundException;
+import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Urlable;
+import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.UserException;
 import net.sf.chellow.monad.XmlTree;
 import net.sf.chellow.monad.types.MonadUri;
@@ -45,10 +47,10 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 public class Dce extends ProviderOrganization {
-	public static Dce getDce(Long id) throws UserException, ProgrammerException {
+	public static Dce getDce(Long id) throws InternalException, UserException {
 		Dce dce = findDce(id);
 		if (dce == null) {
-			throw UserException.newOk("There isn't a DCE with that id.");
+			throw new UserException("There isn't a DCE with that id.");
 		}
 		return dce;
 	}
@@ -57,30 +59,28 @@ public class Dce extends ProviderOrganization {
 		return (Dce) Hiber.session().get(Dce.class, id);
 	}
 
-	public static Dce getDce(String name) throws UserException,
-			ProgrammerException {
+	public static Dce getDce(String name) throws InternalException, UserException {
 		Dce dce = findDce(name);
 		if (dce == null) {
-			throw UserException.newOk("There isn't a DCE called '" + name
+			throw new UserException("There isn't a DCE called '" + name
 					+ "'.");
 		}
 		return dce;
 	}
 
-	public static Dce findDce(String name) throws UserException,
-			ProgrammerException {
+	public static Dce findDce(String name) throws InternalException {
 		Dce dce = (Dce) Hiber.session().createQuery(
 				"from Dce dce where dce.name = :name").setString("name", name)
 				.uniqueResult();
 		return dce;
 	}
 
-	public static void deleteDce(Dce supplier) throws ProgrammerException {
+	public static void deleteDce(Dce supplier) throws InternalException {
 		try {
 			Hiber.session().delete(supplier);
 			Hiber.flush();
 		} catch (HibernateException e) {
-			throw new ProgrammerException(e);
+			throw new InternalException(e);
 		}
 	}
 
@@ -92,51 +92,47 @@ public class Dce extends ProviderOrganization {
 		super(name, organization);
 	}
 
-	public void httpPost(Invocation inv) throws ProgrammerException,
-			UserException {
+	public void httpPost(Invocation inv) throws InternalException {
 	}
 
-	public void httpGet(Invocation inv) throws DesignerException,
-			ProgrammerException, UserException, DeployerException {
+	public void httpGet(Invocation inv) throws HttpException {
 		inv.sendOk(document());
 	}
 
-	private Document document() throws ProgrammerException, UserException,
-			DesignerException {
+	private Document document() throws HttpException {
 		Document doc = MonadUtils.newSourceDocument();
 		Element source = doc.getDocumentElement();
-		source.appendChild(getXML(new XmlTree("organization"), doc));
+		source.appendChild(toXml(doc, new XmlTree("organization")));
 		return doc;
 	}
 
-	public MonadUri getUri() throws ProgrammerException, UserException {
+	public MonadUri getUri() throws InternalException, UserException {
 		return getOrganization().dcesInstance().getUri().resolve(getUriId())
 				.append("/");
 	}
 
-	public Urlable getChild(UriPathElement uriId) throws ProgrammerException,
-			UserException {
+	public Urlable getChild(UriPathElement uriId) throws HttpException {
 		if (DceServices.URI_ID.equals(uriId)) {
 			return new DceServices(this);
 		} else if (Accounts.URI_ID.equals(uriId)) {
 			return new Accounts(this);
 		} else {
-			throw UserException.newNotFound();
+			throw new NotFoundException();
 		}
 	}
 
-	public void httpDelete(Invocation inv) throws ProgrammerException,
-			DesignerException, UserException, DeployerException {
+	public void httpDelete(Invocation inv) throws InternalException,
+			DesignerException, HttpException, DeployerException {
 		deleteDce(this);
 		inv.sendOk();
 	}
 
 	public DceService insertService(int type, String name, HhEndDate startDate,
 			String chargeScript, ContractFrequency frequency, int lag)
-			throws UserException, ProgrammerException, DesignerException {
+			throws HttpException, InternalException, DesignerException {
 		if (findService(name) != null) {
-			throw UserException
-					.newInvalidParameter("There's already a service with that name.");
+			throw new UserException
+					("There's already a service with that name.");
 		}
 		DceService dceService = new DceService(type, name, startDate,
 				chargeScript, this, frequency, lag);
@@ -149,18 +145,18 @@ public class Dce extends ProviderOrganization {
 		return new DceServices(this);
 	}
 
-	public DceService getService(String name) throws UserException,
-			ProgrammerException {
+	public DceService getService(String name) throws HttpException,
+			InternalException {
 		DceService service = findService(name);
 		if (service == null) {
-			throw UserException
-					.newNotFound("There isn't a DCE service with that id.");
+			throw new NotFoundException
+					("There isn't a DCE service with that id.");
 		}
 		return service;
 	}
 
-	public DceService findService(String name) throws UserException,
-			ProgrammerException {
+	public DceService findService(String name) throws HttpException,
+			InternalException {
 		return (DceService) Hiber
 				.session()
 				.createQuery(

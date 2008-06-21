@@ -24,7 +24,8 @@ package net.sf.chellow.physical;
 
 
 
-import net.sf.chellow.monad.ProgrammerException;
+import net.sf.chellow.monad.InternalException;
+import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.UserException;
 import net.sf.chellow.monad.types.MonadString;
 
@@ -34,9 +35,7 @@ static public final SourceCode NETWORK;
 	static {
 			try {
 				NETWORK = new SourceCode("net");
-			} catch (UserException e) {
-				throw new RuntimeException(e);
-			} catch (ProgrammerException e) {
+			} catch (HttpException e) {
 				throw new RuntimeException(e);
 			}
 	}
@@ -46,16 +45,16 @@ static public final SourceCode NETWORK;
 		setMinimumLength(1);
 	}
 	
-	public SourceCode(String code) throws UserException, ProgrammerException  {
+	public SourceCode(String code) throws HttpException, InternalException  {
 		this(null, code);
 	}
 
-	public SourceCode(String label, String code) throws UserException, ProgrammerException {
+	public SourceCode(String label, String code) throws HttpException, InternalException {
 		this();
 		setLabel(label);
 			update(code);
 	}
-	public void update(String code) throws UserException, ProgrammerException {
+	public void update(String code) throws InternalException, UserException {
 		super.update(code.toLowerCase());
 	}
 }

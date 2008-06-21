@@ -29,8 +29,10 @@ import net.sf.chellow.monad.DesignerException;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.Invocation;
 import net.sf.chellow.monad.MonadUtils;
-import net.sf.chellow.monad.ProgrammerException;
+import net.sf.chellow.monad.NotFoundException;
+import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Urlable;
+import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.UserException;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
@@ -44,21 +46,20 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 public class Dcs extends ProviderOrganization {
-	public static Dcs getSupplier(Long id) throws UserException,
-			ProgrammerException {
+	public static Dcs getSupplier(Long id) throws HttpException {
 		Dcs dcs = (Dcs) Hiber.session().get(Dcs.class, id);
 		if (dcs == null) {
-			throw UserException.newOk("There isn't a DCS with that id.");
+			throw new UserException("There isn't a DCS with that id.");
 		}
 		return dcs;
 	}
 
-	public static void deleteDcs(Dcs dcs) throws ProgrammerException {
+	public static void deleteDcs(Dcs dcs) throws InternalException {
 		try {
 			Hiber.session().delete(dcs);
 			Hiber.flush();
 		} catch (HibernateException e) {
-			throw new ProgrammerException(e);
+			throw new InternalException(e);
 		}
 	}
 
@@ -70,11 +71,11 @@ public class Dcs extends ProviderOrganization {
 		super(name, organization);
 	}
 
-	public void httpPost(Invocation inv) throws ProgrammerException,
-			UserException, DesignerException, DeployerException {
+	public void httpPost(Invocation inv) throws InternalException,
+			HttpException, DesignerException, DeployerException {
 		String name = inv.getString("name");
 		if (!inv.isValid()) {
-			throw UserException.newInvalidParameter(document());
+			throw new UserException(document());
 		}
 		update(name);
 		Hiber.commit();
@@ -82,29 +83,29 @@ public class Dcs extends ProviderOrganization {
 	}
 
 	public void httpGet(Invocation inv) throws DesignerException,
-			ProgrammerException, UserException, DeployerException {
+			InternalException, HttpException, DeployerException {
 		inv.sendOk(document());
 	}
 
-	private Document document() throws ProgrammerException, UserException,
+	private Document document() throws InternalException, HttpException,
 			DesignerException {
 		Document doc = MonadUtils.newSourceDocument();
 		Element source = doc.getDocumentElement();
-		source.appendChild(toXML(doc));
+		source.appendChild(toXml(doc));
 		return doc;
 	}
 
-	public MonadUri getUri() throws ProgrammerException, UserException {
+	public MonadUri getUri() throws InternalException, HttpException {
 		return Chellow.DCSS_INSTANCE.getUri().resolve(getUriId()).append("/");
 	}
 
-	public Urlable getChild(UriPathElement uriId) throws ProgrammerException,
-			UserException {
-		throw UserException.newNotFound();
+	public Urlable getChild(UriPathElement uriId) throws InternalException,
+			HttpException {
+		throw new NotFoundException();
 	}
 
-	public void httpDelete(Invocation inv) throws ProgrammerException,
-			DesignerException, UserException, DeployerException {
+	public void httpDelete(Invocation inv) throws InternalException,
+			DesignerException, HttpException, DeployerException {
 		deleteSupplier(this);
 		inv.sendOk();
 	}
@@ -114,7 +115,7 @@ public class Dcs extends ProviderOrganization {
 	}
 
 	public DcsService insertContract(int type, String name, HhEndDate startDate,
-			HhEndDate finishDate, String chargeScript) throws UserException, ProgrammerException, DesignerException {
+			HhEndDate finishDate, String chargeScript) throws HttpException, InternalException, DesignerException {
 		DcsService contract = new DcsService(type, name, startDate, finishDate, chargeScript,
 				this);
 		Hiber.session().save(contract);
@@ -129,7 +130,7 @@ public class Dcs extends ProviderOrganization {
 	}
 
 	@Override
-	public DcsService getService(String name) throws UserException, ProgrammerException {
+	public DcsService getService(String name) throws HttpException, InternalException {
 		return (DcsService) Hiber.session().createQuery("from DcsService service where service.provider = :provider and service.name = :serviceName").setEntity("provider", this).setString("serviceName", name).uniqueResult();
 	}
 }

@@ -7,9 +7,9 @@ import net.sf.chellow.monad.DesignerException;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.Invocation;
 import net.sf.chellow.monad.MonadUtils;
-import net.sf.chellow.monad.ProgrammerException;
+import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Urlable;
-import net.sf.chellow.monad.UserException;
+import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.XmlDescriber;
 import net.sf.chellow.monad.XmlTree;
 import net.sf.chellow.monad.types.MonadDate;
@@ -31,9 +31,7 @@ public class AccountSnags implements Urlable, XmlDescriber {
 	static {
 		try {
 			URI_ID = new UriPathElement("account-snags");
-		} catch (UserException e) {
-			throw new RuntimeException(e);
-		} catch (ProgrammerException e) {
+		} catch (HttpException e) {
 			throw new RuntimeException(e);
 		}
 	}
@@ -48,43 +46,43 @@ public class AccountSnags implements Urlable, XmlDescriber {
 		return URI_ID;
 	}
 
-	public MonadUri getUri() throws ProgrammerException, UserException {
+	public MonadUri getUri() throws InternalException, HttpException {
 		return service.getUri().resolve(getUriId()).append("/");
 	}
 
 	@SuppressWarnings("unchecked")
 	public void httpGet(Invocation inv) throws DesignerException,
-			ProgrammerException, UserException, DeployerException {
+			InternalException, HttpException, DeployerException {
 		inv.sendOk(document());
 	}
 
 	@SuppressWarnings("unchecked")
-	private Document document() throws ProgrammerException, UserException,
+	private Document document() throws InternalException, HttpException,
 			DesignerException {
 		Document doc = MonadUtils.newSourceDocument();
 		Element source = doc.getDocumentElement();
-		Element snagsElement = toXML(doc);
+		Element snagsElement = toXml(doc);
 		source.appendChild(snagsElement);
 		if (service instanceof SupplierService) {
-			snagsElement.appendChild(service.getXML(new XmlTree("provider",
-					new XmlTree("organization")), doc));
+			snagsElement.appendChild(service.toXml(doc, new XmlTree("provider",
+							new XmlTree("organization"))));
 		}
 		for (AccountSnag snag : (List<AccountSnag>) Hiber
 				.session()
 				.createQuery(
 						"from AccountSnag snag where snag.dateResolved is null and snag.service = :service order by snag.account.reference, snag.description, snag.startDate.date")
 				.setEntity("service", service).setMaxResults(PAGE_SIZE).list()) {
-			snagsElement.appendChild(snag.getXML(new XmlTree("account"), doc));
+			snagsElement.appendChild(snag.toXml(doc, new XmlTree("account")));
 		}
 		source.appendChild(MonadDate.getMonthsXml(doc));
 		source.appendChild(MonadDate.getDaysXml(doc));
-		source.appendChild(new MonadDate().toXML(doc));
+		source.appendChild(new MonadDate().toXml(doc));
 		return doc;
 	}
 
 	@SuppressWarnings("unchecked")
-	public void httpPost(Invocation inv) throws ProgrammerException,
-			UserException, DesignerException, DeployerException {
+	public void httpPost(Invocation inv) throws InternalException,
+			HttpException, DesignerException, DeployerException {
 		if (inv.hasParameter("ignore")) {
 			MonadDate ignoreDate = inv.getMonadDate("ignore-date");
 
@@ -106,29 +104,29 @@ public class AccountSnags implements Urlable, XmlDescriber {
 		}
 	}
 
-	public Urlable getChild(UriPathElement urlId) throws ProgrammerException,
-			UserException {
+	public Urlable getChild(UriPathElement urlId) throws InternalException,
+			HttpException {
 		return Snag.getSnag(urlId.getString());
 	}
 
-	public void httpDelete(Invocation inv) throws ProgrammerException,
-			DesignerException, UserException, DeployerException {
+	public void httpDelete(Invocation inv) throws InternalException,
+			DesignerException, HttpException, DeployerException {
 		// TODO Auto-generated method stub
 
 	}
 
-	public MonadUri getMonadUri() throws ProgrammerException {
+	public MonadUri getMonadUri() throws InternalException {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
-	public Element toXML(Document doc) throws ProgrammerException,
-			UserException {
+	public Element toXml(Document doc) throws InternalException,
+			HttpException {
 		return doc.createElement("account-snags");
 	}
 
-	public Node getXML(XmlTree tree, Document doc) throws ProgrammerException,
-			UserException {
+	public Node toXml(Document doc, XmlTree tree) throws InternalException,
+			HttpException {
 		// TODO Auto-generated method stub
 		return null;
 	}

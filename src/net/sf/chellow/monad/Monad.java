@@ -82,9 +82,7 @@ public abstract class Monad extends HttpServlet implements Urlable {
 	static {
 		try {
 			URI = new MonadUri("/");
-		} catch (UserException e) {
-			throw new RuntimeException(e);
-		} catch (ProgrammerException e) {
+		} catch (HttpException e) {
 			throw new RuntimeException(e);
 		}
 	}
@@ -205,7 +203,7 @@ public abstract class Monad extends HttpServlet implements Urlable {
 	 * filterList); }
 	 */
 	protected abstract void checkPermissions(Invocation inv)
-			throws ProgrammerException, UserException;
+			throws InternalException, HttpException;
 
 	@SuppressWarnings("unchecked")
 	public void service(HttpServletRequest req, HttpServletResponse res)
@@ -221,10 +219,10 @@ public abstract class Monad extends HttpServlet implements Urlable {
 				String pathInfo = req.getPathInfo();
 				if (pathInfo != null && !pathInfo.endsWith("/")) {
 					try {
-						throw UserException.newMovedPermanently(new URI(
+						throw new MovedPermanentlyException(new URI(
 								contextPath + req.getPathInfo() + "/"));
 					} catch (URISyntaxException e) {
-						throw UserException.newBadRequest(e.getMessage());
+						throw new BadRequestException(e.getMessage());
 					}
 				}
 				checkPermissions(inv);
@@ -242,39 +240,29 @@ public abstract class Monad extends HttpServlet implements Urlable {
 						urlable.httpDelete(inv);
 					}
 				}
+			} catch (ForbiddenException e) {
+				inv.sendForbidden();
+			} catch (MovedPermanentlyException e) {
+				inv.sendMovedPermanently(e.getLocation());
+			} catch (NotFoundException e) {
+				inv.sendNotFound();
+			} catch (OkException e) {
+				if (e.getMessage() != null) {
+					Element sourceElement = e.getDocument().getDocumentElement();
+					sourceElement.appendChild(e.toXml(e.getDocument()));
+				}
+				inv.sendOk(e.getDocument());
+			} catch (UnauthorizedException e) {
+				inv.sendUnauthorized();
 			} catch (UserException e) {
 				Document doc = e.getDocument();
-				Element sourceElement = doc.getDocumentElement();
-				VFMessage message = e.getVFMessage();
-				switch (e.getStatusCode()) {
-				case HttpServletResponse.SC_FORBIDDEN:
-					inv.sendForbidden();
-					break;
-				case HttpServletResponse.SC_MOVED_PERMANENTLY:
-					inv.sendMovedPermanently(e.getLocationHeader());
-					break;
-				case HttpServletResponse.SC_NOT_FOUND:
-					inv.sendNotFound();
-					break;
-				case HttpServletResponse.SC_OK:
-					if (message != null) {
-						sourceElement.appendChild(e.getVFMessage().toXML(doc));
-					}
-					inv.sendOk(doc);
-					break;
-				case HttpServletResponse.SC_UNAUTHORIZED:
-					inv.sendUnauthorized();
-					break;
-				case 418:
-					if (message != null) {
-						sourceElement.appendChild(message.toXML(doc));
-					}
-					inv.sendInvalidParameter(doc);
-					break;
-				case HttpServletResponse.SC_BAD_REQUEST:
-					inv.sendBadRequest(e.getMessage());
-					break;
+				if (e.getMessage() != null) {
+					Element sourceElement = doc.getDocumentElement();
+					sourceElement.appendChild(e.toXml(doc));
 				}
+				inv.sendUser(doc);
+			} catch (BadRequestException e) {
+				inv.sendBadRequest(e.getMessage());
 			}
 		} catch (Throwable e) {
 			try {
@@ -286,7 +274,7 @@ public abstract class Monad extends HttpServlet implements Urlable {
 			res
 					.sendError(
 							HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
-							(e instanceof UserException) ? e.getMessage()
+							(e instanceof HttpException) ? e.getMessage()
 									: "There has been an error with our software. The "
 											+ "administrator has been informed, and the problem will "
 											+ "be put right as soon as possible.");
@@ -301,7 +289,7 @@ public abstract class Monad extends HttpServlet implements Urlable {
 	}
 
 	static public URL getConfigResource(MonadUri uri)
-			throws ProgrammerException, UserException {
+			throws InternalException, UserException {
 		URL url = getConfigFile(uri);
 		if (url == null) {
 			url = getConfigUrl(uri);
@@ -309,8 +297,7 @@ public abstract class Monad extends HttpServlet implements Urlable {
 		return url;
 	}
 
-	static public URL getConfigFile(MonadUri uri) throws ProgrammerException,
-			UserException {
+	static public URL getConfigFile(MonadUri uri) throws InternalException, UserException {
 		URL url = null;
 		try {
 			MonadUri uriNew = getConfigFile(new MonadUri("/"), uri.toString()
@@ -321,12 +308,11 @@ public abstract class Monad extends HttpServlet implements Urlable {
 			}
 			return url;
 		} catch (MalformedURLException e) {
-			throw new ProgrammerException(e);
+			throw new InternalException(e);
 		}
 	}
 
-	static public URL getConfigUrl(MonadUri uri) throws ProgrammerException,
-			UserException {
+	static public URL getConfigUrl(MonadUri uri) throws InternalException, UserException {
 		URL url = null;
 		try {
 			MonadUri newUri = getConfigUrl(new MonadUri("/"), uri.toString()
@@ -336,13 +322,13 @@ public abstract class Monad extends HttpServlet implements Urlable {
 						CONFIG_PREFIX + newUri.toString());
 			}
 		} catch (MalformedURLException e) {
-			throw new ProgrammerException(e);
+			throw new InternalException(e);
 		}
 		return url;
 	}
 
 	static public MonadUri getConfigUrl(MonadUri uri, String[] elements,
-			int position) throws ProgrammerException, UserException {
+			int position) throws InternalException, UserException {
 		List<String> urlElements = getConfigUrlElements(uri);
 		MonadUri newUri = null;
 		if (urlElements.contains(elements[position]
@@ -365,7 +351,7 @@ public abstract class Monad extends HttpServlet implements Urlable {
 	}
 
 	static public MonadUri getConfigFile(MonadUri uri, String[] elements,
-			int position) throws ProgrammerException, UserException {
+			int position) throws InternalException, UserException {
 		List<String> fileElements = getConfigFileElements(uri);
 		MonadUri newUri = null;
 		if (fileElements.contains(elements[position])) {
@@ -386,7 +372,7 @@ public abstract class Monad extends HttpServlet implements Urlable {
 
 	@SuppressWarnings("unchecked")
 	static public List<String> getConfigFileElements(MonadUri uri)
-			throws ProgrammerException, UserException {
+			throws InternalException {
 		List<String> urlElements = new ArrayList<String>();
 		if (Monad.getConfigDir() != null) {
 			File urlsPath = new File(Monad.getConfigDir().toString()
@@ -417,7 +403,7 @@ public abstract class Monad extends HttpServlet implements Urlable {
 	}
 
 	static public InputStream getConfigIs(String path, String name)
-			throws ProgrammerException, DesignerException, UserException {
+			throws InternalException, DesignerException, UserException {
 		InputStream is = null;
 		try {
 			URL url = getConfigResource(new MonadUri(path).append(name));
@@ -425,7 +411,7 @@ public abstract class Monad extends HttpServlet implements Urlable {
 				is = url.openStream();
 			}
 		} catch (IOException e) {
-			throw new ProgrammerException(e);
+			throw new InternalException(e);
 		}
 		return is;
 	}
@@ -433,7 +419,7 @@ public abstract class Monad extends HttpServlet implements Urlable {
 	@SuppressWarnings("unchecked")
 	static public void returnStream(Document doc, String templatePath,
 			String templateName, Result result) throws DesignerException,
-			ProgrammerException, DeployerException, UserException {
+			InternalException, DeployerException, UserException {
 		TransformerFactory tf = TransformerFactory.newInstance();
 		InputStream templateIs = null;
 		InputStream debugIs = null;
@@ -466,8 +452,7 @@ public abstract class Monad extends HttpServlet implements Urlable {
 			transformer.transform(new DOMSource(doc), result);
 		} catch (TransformerConfigurationException e) {
 			Throwable throwable = e.getCause();
-			throw UserException
-					.newInvalidParameter("Problem transforming template '"
+			throw new UserException("Problem transforming template '"
 							+ templatePath
 							+ " : "
 							+ templateName
@@ -481,8 +466,7 @@ public abstract class Monad extends HttpServlet implements Urlable {
 									+ throwable.getClass().getName()
 									+ " Message: " + throwable.getMessage()));
 		} catch (TransformerException e) {
-			throw UserException
-					.newInvalidParameter("Problem transforming template '"
+			throw new UserException("Problem transforming template '"
 							+ templatePath + " : " + templateName + "'. "
 							+ e.getMessageAndLocation() + " "
 							+ " Problem type : "
@@ -497,19 +481,19 @@ public abstract class Monad extends HttpServlet implements Urlable {
 			Source source = null;
 			try {
 				source = new StreamSource(getConfigIs(base, href));
-			} catch (ProgrammerException e) {
+			} catch (InternalException e) {
 				throw new RuntimeException(e);
 			} catch (DesignerException e) {
 				throw new RuntimeException(e);
-			} catch (UserException e) {
+			} catch (HttpException e) {
 				throw new RuntimeException(e);
 			}
 			return source;
 		}
 	}
 
-	public static Urlable dereferenceUri(URI uri) throws UserException,
-			ProgrammerException {
+	public static Urlable dereferenceUri(URI uri) throws HttpException,
+			InternalException {
 		Urlable urlable = urlableRoot;
 		String pathInfo = uri.getPath();
 		if (pathInfo.length() > 1) {
@@ -524,7 +508,7 @@ public abstract class Monad extends HttpServlet implements Urlable {
 		return urlable;
 	}
 
-	public MonadUri getUri() throws ProgrammerException {
+	public MonadUri getUri() throws InternalException {
 		return URI;
 	}
 }

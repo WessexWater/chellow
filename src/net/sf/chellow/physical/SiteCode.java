@@ -22,8 +22,8 @@
 
 package net.sf.chellow.physical;
 
-import net.sf.chellow.monad.ProgrammerException;
-import net.sf.chellow.monad.UserException;
+import net.sf.chellow.monad.InternalException;
+import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.types.MonadString;
 
 public class SiteCode extends MonadString {
@@ -32,12 +32,12 @@ public class SiteCode extends MonadString {
 		setMaximumLength(250);
 	}
 
-	public SiteCode(String name) throws UserException, ProgrammerException {
+	public SiteCode(String name) throws HttpException, InternalException {
 		this(null, name);
 	}
 
-	public SiteCode(String label, String name) throws UserException,
-			ProgrammerException {
+	public SiteCode(String label, String name) throws HttpException,
+			InternalException {
 		this();
 		setLabel(label);
 		update(name);

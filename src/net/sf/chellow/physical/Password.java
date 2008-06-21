@@ -24,8 +24,8 @@ package net.sf.chellow.physical;
 
 
 
-import net.sf.chellow.monad.ProgrammerException;
-import net.sf.chellow.monad.UserException;
+import net.sf.chellow.monad.InternalException;
+import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.types.MonadString;
 
 public class Password extends MonadString {
@@ -35,11 +35,11 @@ public class Password extends MonadString {
 		setMaximumLength(250);
 	}
 	
-	public Password(String name) throws UserException, ProgrammerException  {
+	public Password(String name) throws HttpException, InternalException  {
 		this(null, name);
 	}
 
-	public Password(String label, String name) throws UserException, ProgrammerException {
+	public Password(String label, String name) throws HttpException, InternalException {
 		this();
 		setLabel(label);
 			update(name);

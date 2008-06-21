@@ -1,6 +1,6 @@
 /*
  
- Copyright 2005 Meniscus Systems Ltd
+ Copyright 2005, 2008 Meniscus Systems Ltd
  
  This file is part of Chellow.
 
@@ -25,15 +25,14 @@ package net.sf.chellow.physical;
 import java.util.List;
 
 import net.sf.chellow.data08.Data;
-import net.sf.chellow.monad.DeployerException;
-import net.sf.chellow.monad.DesignerException;
 import net.sf.chellow.monad.Hiber;
+import net.sf.chellow.monad.HttpException;
+import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Invocation;
 import net.sf.chellow.monad.MonadUtils;
-import net.sf.chellow.monad.ProgrammerException;
+import net.sf.chellow.monad.NotFoundException;
 import net.sf.chellow.monad.Urlable;
 import net.sf.chellow.monad.UserException;
-
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
 
@@ -47,20 +46,18 @@ public class Organizations implements Urlable {
 	static {
 		try {
 			URI_ID = new UriPathElement("orgs");
-		} catch (UserException e) {
-			throw new RuntimeException(e);
-		} catch (ProgrammerException e) {
+		} catch (HttpException e) {
 			throw new RuntimeException(e);
 		}
 	}
 
 	public static Organization insertOrganization(String name)
-			throws ProgrammerException, UserException {
+			throws HttpException {
 		return insertOrganization(name, 0);
 	}
 
 	public static Organization insertOrganization(String name, long id)
-			throws ProgrammerException, UserException {
+			throws InternalException, HttpException {
 
 		Organization organization = null;
 		try {
@@ -72,10 +69,10 @@ public class Organizations implements Urlable {
 			if (Data
 					.isSQLException(e,
 							"ERROR: duplicate key violates unique constraint \"site_code_key\"")) {
-				throw UserException
-						.newOk("A site with this code already exists.");
+				throw new UserException
+						("A site with this code already exists.");
 			} else {
-				throw new ProgrammerException(e);
+				throw new InternalException(e);
 			}
 		}
 		return organization;
@@ -84,65 +81,63 @@ public class Organizations implements Urlable {
 	public Organizations() {
 	}
 
-	public void httpGet(Invocation inv) throws DesignerException,
-			ProgrammerException, UserException, DeployerException {
+	public void httpGet(Invocation inv) throws HttpException {
 		Document doc = MonadUtils.newSourceDocument();
 		Element source = (Element) doc.getFirstChild();
 
 		for (Organization organization : getOrganizations()) {
-			source.appendChild(organization.toXML(doc));
+			source.appendChild(organization.toXml(doc));
 		}
 		inv.sendOk(doc);
 	}
 
-	public void httpPost(Invocation inv) throws ProgrammerException,
-			UserException, DesignerException, DeployerException {
+	public void httpPost(Invocation inv) throws HttpException {
 		Document doc = MonadUtils.newSourceDocument();
 		String name = inv.getString("name");
 		if (!inv.isValid()) {
-			throw UserException.newOk(doc, null);
+			throw new UserException(doc, null);
 		}
 		Organization organization = insertOrganization(name);
 		Hiber.commit();
 		inv.sendCreated(organization.getUri());
 	}
 
-	public MonadUri getUri() throws ProgrammerException, UserException {
+	public MonadUri getUri() throws InternalException, UserException {
 			return new MonadUri("/").resolve(getUriId())
 					.append("/");
 	}
 
 	public Organization getChild(UriPathElement uriId)
-			throws ProgrammerException, UserException {
+			throws HttpException {
 		long organizationId;
 		try {
 			organizationId = Long.parseLong(uriId.toString());
 		} catch (NumberFormatException e) {
-			throw UserException.newNotFound();
+			throw new NotFoundException();
 		}
 		Organization organization = (Organization) Hiber.session().createQuery(
 				"from Organization as organization where "
 						+ "organization.id = :organizationId").setLong(
 				"organizationId", organizationId).uniqueResult();
 		if (organization == null) {
-			throw UserException.newNotFound();
+			throw new NotFoundException();
 		}
 		return organization;
 	}
 
-	public void httpDelete(Invocation inv) throws ProgrammerException,
-			UserException {
+	public void httpDelete(Invocation inv) throws InternalException,
+			HttpException {
 		// TODO Auto-generated method stub
 
 	}
 
-	public UriPathElement getUriId() throws ProgrammerException {
+	public UriPathElement getUriId() throws InternalException {
 		return URI_ID;
 	}
 
 	@SuppressWarnings("unchecked")
-	public List<Organization> getOrganizations() throws ProgrammerException,
-			UserException {
+	public List<Organization> getOrganizations() throws InternalException,
+			HttpException {
 		return (List<Organization>) Hiber.session().createQuery(
 				"from Organization organization order by organization.id")
 				.list();

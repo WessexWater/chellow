@@ -32,8 +32,10 @@ import net.sf.chellow.monad.DesignerException;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.Invocation;
 import net.sf.chellow.monad.MonadUtils;
-import net.sf.chellow.monad.ProgrammerException;
+import net.sf.chellow.monad.NotFoundException;
+import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Urlable;
+import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.UserException;
 import net.sf.chellow.monad.XmlTree;
 import net.sf.chellow.monad.types.MonadDate;
@@ -61,11 +63,11 @@ public class Invoice extends PersistentEntity implements Urlable {
 
 	public static final int REJECTED = 2;
 
-	public static Invoice getInvoice(Long id) throws UserException,
-			ProgrammerException {
+	public static Invoice getInvoice(Long id) throws HttpException,
+			InternalException {
 		Invoice invoice = (Invoice) Hiber.session().get(Invoice.class, id);
 		if (invoice == null) {
-			throw UserException.newOk("There isn't an invoice with that id.");
+			throw new UserException("There isn't an invoice with that id.");
 		}
 		return invoice;
 	}
@@ -100,8 +102,8 @@ public class Invoice extends PersistentEntity implements Urlable {
 	}
 
 	@SuppressWarnings("unchecked")
-	public Invoice(Batch batch, InvoiceRaw invoiceRaw) throws UserException,
-			ProgrammerException {
+	public Invoice(Batch batch, InvoiceRaw invoiceRaw) throws HttpException,
+			InternalException {
 		this();
 		setBatch(batch);
 		setBill(null);
@@ -229,40 +231,40 @@ public class Invoice extends PersistentEntity implements Urlable {
 
 	private void internalUpdate(DayStartDate issueDate, DayStartDate startDate,
 			DayFinishDate finishDate, double net, double vat, int status)
-			throws UserException, ProgrammerException {
+			throws HttpException, InternalException {
 		setIssueDate(issueDate);
 		if (startDate.getDate().after(finishDate.getDate())) {
-			throw UserException
-					.newInvalidParameter("The bill start date can't be after the finish date.");
+			throw new UserException
+					("The bill start date can't be after the finish date.");
 		}
 		setStartDate(startDate);
 		setFinishDate(finishDate);
 		setNet(net);
 		setVat(vat);
 		if (status != PENDING && status != PAID && status != REJECTED) {
-			throw UserException
-					.newInvalidParameter("The status must be 'pending', 'paid' or 'rejected'.");
+			throw new UserException
+					("The status must be 'pending', 'paid' or 'rejected'.");
 		}
 		setStatus(status);
 	}
 
 	public void update(Account account, DayStartDate issueDate,
 			DayStartDate startDate, DayFinishDate finishDate, double net,
-			double vat, int status) throws UserException, ProgrammerException {
+			double vat, int status) throws HttpException, InternalException {
 		internalUpdate(issueDate, startDate, finishDate, net, vat, status);
 		bill.detach(this);
 		account.attach(this);
 	}
 
-	public Node toXML(Document doc) throws ProgrammerException, UserException {
+	public Node toXml(Document doc) throws InternalException, HttpException {
 		setTypeName("invoice");
-		Element element = (Element) super.toXML(doc);
+		Element element = (Element) super.toXml(doc);
 		issueDate.setLabel("issue");
-		element.appendChild(issueDate.toXML(doc));
+		element.appendChild(issueDate.toXml(doc));
 		startDate.setLabel("start");
-		element.appendChild(startDate.toXML(doc));
+		element.appendChild(startDate.toXml(doc));
 		finishDate.setLabel("finish");
-		element.appendChild(finishDate.toXML(doc));
+		element.appendChild(finishDate.toXml(doc));
 		element.setAttributeNode(MonadDouble.toXml(doc, "net", net));
 		element.setAttributeNode(MonadDouble.toXml(doc, "vat", vat));
 		element.setAttribute("reference", reference);
@@ -271,8 +273,8 @@ public class Invoice extends PersistentEntity implements Urlable {
 		return element;
 	}
 
-	public void httpPost(Invocation inv) throws ProgrammerException,
-			UserException, DesignerException, DeployerException {
+	public void httpPost(Invocation inv) throws InternalException,
+			HttpException, DesignerException, DeployerException {
 		if (inv.hasParameter("delete")) {
 			delete();
 			Hiber.commit();
@@ -286,7 +288,7 @@ public class Invoice extends PersistentEntity implements Urlable {
 			Double vat = inv.getDouble("vat");
 			Integer status = inv.getInteger("status");
 			if (!inv.isValid()) {
-				throw UserException.newInvalidParameter(document());
+				throw new UserException(document());
 			}
 			update(batch.getService().getProvider()
 					.getAccount(accountReference), new DayStartDate(issueDate),
@@ -297,46 +299,46 @@ public class Invoice extends PersistentEntity implements Urlable {
 		}
 	}
 
-	private Document document() throws ProgrammerException, UserException,
+	private Document document() throws InternalException, HttpException,
 			DesignerException {
 		Document doc = MonadUtils.newSourceDocument();
 		Element source = doc.getDocumentElement();
-		Element invoiceElement = (Element) getXML(new XmlTree("batch",
-				new XmlTree("service", new XmlTree("provider", new XmlTree(
-						"organization")))).put("bill", new XmlTree("account")),
-				doc);
+		Element invoiceElement = (Element) toXml(doc,
+				new XmlTree("batch",
+						new XmlTree("service", new XmlTree("provider", new XmlTree(
+								"organization")))).put("bill", new XmlTree("account")));
 		source.appendChild(invoiceElement);
 		source.appendChild(MonadDate.getMonthsXml(doc));
 		source.appendChild(MonadDate.getDaysXml(doc));
 		for (RegisterRead read : reads) {
-			invoiceElement.appendChild(read.getXML(new XmlTree("mpan",
-					new XmlTree("mpanCore").put("supplyGeneration",
-							new XmlTree("supply"))), doc));
+			invoiceElement.appendChild(read.toXml(doc, new XmlTree("mpan",
+									new XmlTree("mpanCore").put("supplyGeneration",
+											new XmlTree("supply")))));
 		}
 		for (InvoiceMpan invoiceMpan : invoiceMpans) {
-			invoiceElement.appendChild(invoiceMpan.getXML(new XmlTree("mpan",
-					new XmlTree("supplyGeneration", new XmlTree("supply"))),
-					doc));
+			invoiceElement.appendChild(invoiceMpan.toXml(doc,
+					new XmlTree("mpan",
+							new XmlTree("supplyGeneration", new XmlTree("supply")))));
 		}
 		return doc;
 	}
 
 	public void httpGet(Invocation inv) throws DesignerException,
-			ProgrammerException, UserException, DeployerException {
+			InternalException, HttpException, DeployerException {
 		inv.sendOk(document());
 	}
 
-	public MonadUri getUri() throws ProgrammerException, UserException {
+	public MonadUri getUri() throws InternalException, HttpException {
 		return batch.invoicesInstance().getUri().resolve(getUriId())
 				.append("/");
 	}
 
-	public Urlable getChild(UriPathElement uriId) throws ProgrammerException,
-			UserException {
+	public Urlable getChild(UriPathElement uriId) throws InternalException,
+			HttpException {
 		if (RegisterReads.URI_ID.equals(uriId)) {
 			return registerReadsInstance();
 		} else {
-			throw UserException.newNotFound();
+			throw new NotFoundException();
 		}
 	}
 
@@ -344,12 +346,12 @@ public class Invoice extends PersistentEntity implements Urlable {
 		return new RegisterReads(this);
 	}
 
-	public void httpDelete(Invocation inv) throws ProgrammerException,
-			DesignerException, UserException, DeployerException {
+	public void httpDelete(Invocation inv) throws InternalException,
+			DesignerException, HttpException, DeployerException {
 	}
 
 	public RegisterRead insertRead(Mpan mpan, RegisterReadRaw rawRead)
-			throws UserException, ProgrammerException {
+			throws HttpException, InternalException {
 		RegisterRead read = new RegisterRead(mpan, rawRead, this);
 		if (reads == null) {
 			reads = new HashSet<RegisterRead>();
@@ -360,7 +362,7 @@ public class Invoice extends PersistentEntity implements Urlable {
 	}
 
 	@SuppressWarnings("unchecked")
-	public void delete() throws ProgrammerException, UserException {
+	public void delete() throws InternalException, HttpException {
 		bill.detach(this);
 		reads.clear();
 		invoiceMpans.clear();

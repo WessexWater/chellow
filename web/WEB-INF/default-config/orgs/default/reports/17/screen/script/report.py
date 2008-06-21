@@ -7,4 +7,4 @@ dceServiceId = inv.getLong("dce-service-id")
 if not inv.isValid():
     raise UserException.newInvalidParameter()
 dceService = Hiber.session().createQuery("from DceService service where service.provider.organization = :organization and service.id = :serviceId").setEntity('organization', organization).setLong('serviceId', dceServiceId).uniqueResult()
-source.appendChild(dceService.getXML(XMLTree('provider', XMLTree('organization')), doc))
+source.appendChild(dceService.toXml(XMLTree('provider', XMLTree('organization')), doc))

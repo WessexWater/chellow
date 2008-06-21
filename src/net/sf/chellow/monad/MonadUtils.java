@@ -34,20 +34,20 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 public class MonadUtils {
-	public static Document getEmptyDocument() throws ProgrammerException {
+	private static Document getEmptyDocument() throws InternalException {
 		DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
 		DocumentBuilder db;
 
 		try {
 			db = dbf.newDocumentBuilder();
 		} catch (ParserConfigurationException e) {
-			throw new ProgrammerException("Problem with Parser Configuration: "
+			throw new InternalException("Problem with Parser Configuration: "
 					+ e.getMessage());
 		}
 		return db.newDocument();
 	}
 
-	public static Document newSourceDocument() throws ProgrammerException {
+	public static Document newSourceDocument() throws InternalException {
 		Document doc = getEmptyDocument();
 		Element source = doc.createElement("source");
 
@@ -63,7 +63,7 @@ public class MonadUtils {
 		return parameterElement;
 	}
 
-	public static File checkDirectory(File directory) throws DeployerException {
+	public static File checkDirectory(File directory) throws HttpException {
 		if (!directory.exists()) {
 			throw new DeployerException("The file '" + directory
 					+ "' does not exist.");
@@ -79,7 +79,7 @@ public class MonadUtils {
 		return directory;
 	}
 
-	public static File checkFile(File file) throws DeployerException {
+	public static File checkFile(File file) throws HttpException {
 		if (!file.exists()) {
 			throw new DeployerException("The file '" + file
 					+ "' does not exist.");
@@ -98,7 +98,7 @@ public class MonadUtils {
 	public static String getStackTrace(Throwable e) {
 		StringWriter writer = new StringWriter();
 		PrintWriter printWriter = new PrintWriter(writer);
-		Throwable cause = ((ProgrammerException) e).getCause();
+		Throwable cause = ((InternalException) e).getCause();
 		e.printStackTrace(printWriter);
 		if (cause != null) {
 			printWriter.write("\n------------\nNested exception:\n");

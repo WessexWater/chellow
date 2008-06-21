@@ -29,8 +29,8 @@ import net.sf.chellow.billing.AccountSnag;
 import net.sf.chellow.billing.DceService;
 import net.sf.chellow.billing.Service;
 import net.sf.chellow.monad.Hiber;
-import net.sf.chellow.monad.ProgrammerException;
-import net.sf.chellow.monad.UserException;
+import net.sf.chellow.monad.InternalException;
+import net.sf.chellow.monad.HttpException;
 
 import org.hibernate.Query;
 import org.w3c.dom.Document;
@@ -46,7 +46,7 @@ public abstract class SnagDateBounded extends Snag {
 	}
 
 	public SnagDateBounded(String description, HhEndDate startDate,
-			HhEndDate finishDate) throws ProgrammerException, UserException {
+			HhEndDate finishDate) throws InternalException, HttpException {
 		super(description);
 		update(startDate, finishDate);
 	}
@@ -81,39 +81,39 @@ public abstract class SnagDateBounded extends Snag {
 	public void update() {
 	}
 
-	public void updateStartDate(HhEndDate startDate) throws ProgrammerException {
+	public void updateStartDate(HhEndDate startDate) throws InternalException {
 		update(startDate, finishDate);
 	}
 
 	public void updateFinishDate(HhEndDate finishDate)
-			throws ProgrammerException {
+			throws InternalException {
 		update(startDate, finishDate);
 	}
 
 	public void update(HhEndDate startDate, HhEndDate finishDate)
-			throws ProgrammerException {
+			throws InternalException {
 		if (startDate.getDate().after(finishDate.getDate())) {
-			throw new ProgrammerException(
+			throw new InternalException(
 					"Start date can't be after finish date.");
 		}
 		setStartDate(startDate);
 		setFinishDate(finishDate);
 	}
 
-	public Element toXML(Document doc) throws ProgrammerException, UserException {
-		Element element = (Element) super.toXML(doc);
+	public Element toXml(Document doc) throws InternalException, HttpException {
+		Element element = (Element) super.toXml(doc);
 
-		element.appendChild(startDate.toXML(doc));
-		element.appendChild(finishDate.toXML(doc));
+		element.appendChild(startDate.toXml(doc));
+		element.appendChild(finishDate.toXml(doc));
 		return element;
 	}
 
-	public SnagDateBounded copy() throws ProgrammerException {
+	public SnagDateBounded copy() throws InternalException {
 		SnagDateBounded cloned;
 		try {
 			cloned = (SnagDateBounded) super.clone();
 		} catch (CloneNotSupportedException e) {
-			throw new ProgrammerException(e);
+			throw new InternalException(e);
 		}
 		cloned.setId(null);
 		return cloned;
@@ -125,7 +125,7 @@ public abstract class SnagDateBounded extends Snag {
 
 	@SuppressWarnings("unchecked")
 	private static void addSnagDateBounded(SnagToAdd snagToAdd)
-			throws ProgrammerException, UserException {
+			throws InternalException, HttpException {
 		SnagDateBounded unresolved = snagToAdd.getIsResolved() ? null
 				: snagToAdd.newSnag();
 		for (SnagDateBounded snag : snagToAdd.getCoveredSnags()) {
@@ -203,23 +203,23 @@ public abstract class SnagDateBounded extends Snag {
 		}
 	}
 
-	public static void addSnagChannel(DceService contractDce, Channel channel,
+	public static void addChannelSnag(DceService contractDce, Channel channel,
 			String description, HhEndDate startDate, HhEndDate finishDate,
-			boolean isResolved) throws ProgrammerException, UserException {
+			boolean isResolved) throws InternalException, HttpException {
 		addSnagDateBounded(new ChannelSnagToAdd(contractDce, channel,
 				description, startDate, finishDate, isResolved));
 	}
 
 	public static void addSnagSite(DceService contractDce, Site site,
 			String description, HhEndDate startDate, HhEndDate finishDate,
-			boolean isResolved) throws ProgrammerException, UserException {
+			boolean isResolved) throws InternalException, HttpException {
 		addSnagDateBounded(new SiteSnagToAdd(contractDce, site, description,
 				startDate, finishDate, isResolved));
 	}
 
 	public static void addAccountSnag(Service service, Account account,
 			String description, HhEndDate startDate, HhEndDate finishDate,
-			boolean isResolved) throws ProgrammerException, UserException {
+			boolean isResolved) throws InternalException, HttpException {
 		addSnagDateBounded(new AccountSnagToAdd(service, account, description,
 				startDate, finishDate, isResolved));
 	}
@@ -230,11 +230,11 @@ public abstract class SnagDateBounded extends Snag {
 		public List<? extends SnagDateBounded> getCoveredSnags(
 				HhEndDate startDate, HhEndDate finishDate);
 
-		public SnagDateBounded newSnag() throws ProgrammerException,
-				UserException;
+		public SnagDateBounded newSnag() throws InternalException,
+				HttpException;
 
 		public SnagDateBounded newSnag(HhEndDate startDate, HhEndDate finishDate)
-				throws ProgrammerException, UserException;
+				throws InternalException, HttpException;
 
 		public HhEndDate getStartDate();
 
@@ -281,22 +281,22 @@ public abstract class SnagDateBounded extends Snag {
 			return Hiber
 					.session()
 					.createQuery(
-							"from SnagChannel snag where snag.channel = :channel and snag.startDate.date <= :finishDate and snag.finishDate.date >= :startDate and snag.description = :description order by snag.startDate.date")
+							"from ChannelSnag snag where snag.channel = :channel and snag.startDate.date <= :finishDate and snag.finishDate.date >= :startDate and snag.description = :description order by snag.startDate.date")
 					.setEntity("channel", channel).setTimestamp("finishDate",
 							finishDate.getDate()).setTimestamp("startDate",
 							startDate.getDate()).setString("description",
 							description);
 		}
 
-		public SnagDateBounded newSnag() throws ProgrammerException,
-				UserException {
-			return new SnagChannel(description, dceService, channel, startDate,
+		public SnagDateBounded newSnag() throws InternalException,
+				HttpException {
+			return new ChannelSnag(description, dceService, channel, startDate,
 					finishDate);
 		}
 
 		public void insertSnag(SnagDateBounded snag) {
-			SnagChannel snagChannel = (SnagChannel) snag;
-			SnagChannel.insertSnagChannel(snagChannel);
+			ChannelSnag channelSnag = (ChannelSnag) snag;
+			ChannelSnag.insertChannelSnag(channelSnag);
 		}
 
 		public HhEndDate getStartDate() {
@@ -304,8 +304,8 @@ public abstract class SnagDateBounded extends Snag {
 		}
 
 		public SnagDateBounded newSnag(HhEndDate startDate, HhEndDate finishDate)
-				throws ProgrammerException, UserException {
-			return new SnagChannel(description, dceService, channel, startDate,
+				throws InternalException, HttpException {
+			return new ChannelSnag(description, dceService, channel, startDate,
 					finishDate);
 		}
 
@@ -318,19 +318,19 @@ public abstract class SnagDateBounded extends Snag {
 		}
 
 		public void deleteSnag(SnagDateBounded snag) {
-			SnagChannel snagChannel = (SnagChannel) snag;
-			SnagChannel.deleteSnagChannel(snagChannel);
+			ChannelSnag channelSnag = (ChannelSnag) snag;
+			ChannelSnag.deleteChannelSnag(channelSnag);
 		}
 
 		@SuppressWarnings("unchecked")
-		public List<SnagChannel> getCoveredSnags() {
+		public List<ChannelSnag> getCoveredSnags() {
 			return getCoveredSnags(startDate, finishDate);
 		}
 
 		@SuppressWarnings("unchecked")
-		public List<SnagChannel> getCoveredSnags(HhEndDate startDate,
+		public List<ChannelSnag> getCoveredSnags(HhEndDate startDate,
 				HhEndDate finishDate) {
-			return (List<SnagChannel>) getQuery().setTimestamp("startDate",
+			return (List<ChannelSnag>) getQuery().setTimestamp("startDate",
 					startDate.getDate()).setTimestamp("finishDate",
 					finishDate.getDate()).list();
 		}
@@ -373,8 +373,8 @@ public abstract class SnagDateBounded extends Snag {
 			return finishDate;
 		}
 
-		public SnagDateBounded newSnag() throws ProgrammerException,
-				UserException {
+		public SnagDateBounded newSnag() throws InternalException,
+				HttpException {
 			return new SnagSite(description, dceService, site, startDate,
 					finishDate);
 		}
@@ -389,7 +389,7 @@ public abstract class SnagDateBounded extends Snag {
 		}
 
 		public SnagDateBounded newSnag(HhEndDate startDate, HhEndDate finishDate)
-				throws ProgrammerException, UserException {
+				throws InternalException, HttpException {
 			return new SnagSite(description, dceService, site, startDate,
 					finishDate);
 		}
@@ -457,8 +457,8 @@ public abstract class SnagDateBounded extends Snag {
 			return finishDate;
 		}
 
-		public SnagDateBounded newSnag() throws ProgrammerException,
-				UserException {
+		public SnagDateBounded newSnag() throws InternalException,
+				HttpException {
 			return new AccountSnag(description, service, account, startDate,
 					finishDate);
 		}
@@ -473,7 +473,7 @@ public abstract class SnagDateBounded extends Snag {
 		}
 
 		public SnagDateBounded newSnag(HhEndDate startDate, HhEndDate finishDate)
-				throws ProgrammerException, UserException {
+				throws InternalException, HttpException {
 			return new AccountSnag(description, service, account, startDate,
 					finishDate);
 		}
@@ -505,7 +505,7 @@ public abstract class SnagDateBounded extends Snag {
 	}
 
 	public boolean isCombinable(SnagDateBounded snag)
-			throws ProgrammerException, UserException {
+			throws InternalException, HttpException {
 		boolean combinable = getFinishDate().getDate().getTime() == snag
 				.getStartDate().getPrevious().getDate().getTime()
 				&& getService().equals(snag.getService());

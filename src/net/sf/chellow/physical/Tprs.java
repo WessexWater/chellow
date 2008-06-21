@@ -29,9 +29,9 @@ import net.sf.chellow.monad.DesignerException;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.Invocation;
 import net.sf.chellow.monad.MonadUtils;
-import net.sf.chellow.monad.ProgrammerException;
+import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Urlable;
-import net.sf.chellow.monad.UserException;
+import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
 
@@ -44,9 +44,7 @@ public class Tprs implements Urlable {
 	static {
 		try {
 			URI_ID = new UriPathElement("tprs");
-		} catch (UserException e) {
-			throw new RuntimeException(e);
-		} catch (ProgrammerException e) {
+		} catch (HttpException e) {
 			throw new RuntimeException(e);
 		}
 	}
@@ -56,38 +54,38 @@ public class Tprs implements Urlable {
 
 	@SuppressWarnings("unchecked")
 	public void httpGet(Invocation inv) throws DesignerException,
-			ProgrammerException, UserException, DeployerException {
+			InternalException, HttpException, DeployerException {
 		Document doc = MonadUtils.newSourceDocument();
 		Element source = doc.getDocumentElement();
 		Element tprsElement = doc.createElement("tprs");
 		source.appendChild(tprsElement);
 		for (Tpr tpr : (List<Tpr>) Hiber.session().createQuery(
 				"from Tpr tpr order by tpr.code").list()) {
-			tprsElement.appendChild(tpr.toXML(doc));
+			tprsElement.appendChild(tpr.toXml(doc));
 		}
 		inv.sendOk(doc);
 	}
 
-	public void httpPost(Invocation inv) throws ProgrammerException,
-			UserException, DesignerException, DeployerException {
+	public void httpPost(Invocation inv) throws InternalException,
+			HttpException, DesignerException, DeployerException {
 	}
 
-	public MonadUri getUri() throws ProgrammerException, UserException {
+	public MonadUri getUri() throws InternalException, HttpException {
 		return new MonadUri("/").resolve(getUriId()).append("/");
 	}
 
 	public Tpr getChild(UriPathElement uriId)
-			throws ProgrammerException, UserException {
+			throws InternalException, HttpException {
 		return Tpr.getTpr(Long.parseLong(uriId.toString()));
 	}
 
-	public void httpDelete(Invocation inv) throws ProgrammerException,
-			UserException {
+	public void httpDelete(Invocation inv) throws InternalException,
+			HttpException {
 		// TODO Auto-generated method stub
 
 	}
 
-	public UriPathElement getUriId() throws ProgrammerException {
+	public UriPathElement getUriId() throws InternalException {
 		return URI_ID;
 	}
 }

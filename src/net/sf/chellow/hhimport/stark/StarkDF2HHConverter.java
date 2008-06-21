@@ -33,7 +33,8 @@ import java.util.TimeZone;
 import net.sf.chellow.data08.HhDatumRaw;
 import net.sf.chellow.data08.MpanCoreRaw;
 import net.sf.chellow.hhimport.HhConverter;
-import net.sf.chellow.monad.ProgrammerException;
+import net.sf.chellow.monad.InternalException;
+import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.UserException;
 import net.sf.chellow.physical.HhDatumStatus;
 import net.sf.chellow.physical.HhEndDate;
@@ -58,15 +59,14 @@ public class StarkDF2HHConverter implements HhConverter {
 	private DateFormat dateFormat = DateFormat.getDateTimeInstance(
 			DateFormat.SHORT, DateFormat.SHORT, Locale.UK);
 
-	public StarkDF2HHConverter(Reader reader) throws UserException,
-			ProgrammerException {
+	public StarkDF2HHConverter(Reader reader) throws HttpException,
+			InternalException {
 		dateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
 		this.reader = new LineNumberReader(reader);
 		try {
 			line = this.reader.readLine();
 			if (!line.equals("#F2")) {
-				throw UserException
-						.newInvalidParameter("The first line must be '#F2'.");
+				throw new UserException("The first line must be '#F2'.");
 			}
 			line = this.reader.readLine();
 			try {
@@ -74,17 +74,17 @@ public class StarkDF2HHConverter implements HhConverter {
 			} catch (RuntimeException e) {
 				if (e.getCause() != null) {
 					Throwable t = e.getCause();
-					if (t instanceof UserException) {
-						throw (UserException) t;
+					if (t instanceof HttpException) {
+						throw (HttpException) t;
 					} else {
-						throw new ProgrammerException(t);
+						throw new InternalException(t);
 					}
 				} else {
 					throw e;
 				}
 			}
 		} catch (IOException e) {
-			throw UserException.newOk("Can't read Stark DF2 file.");
+			throw new UserException("Can't read Stark DF2 file.");
 		}
 	}
 
@@ -125,23 +125,21 @@ public class StarkDF2HHConverter implements HhConverter {
 
 					default:
 						throw new RuntimeException(
-								UserException
-										.newOk("The sensor number must be between 1 and 4 inclusive."));
+								new UserException(
+										"The sensor number must be between 1 and 4 inclusive."));
 					}
 				} else if (line.length() > 0 && !line.equals("#F2")) {
 					int datePos = line.indexOf(',');
 					if (datePos < 0) {
-						throw UserException
-								.newInvalidParameter("Problem at line number: "
-										+ lastLineNumber() + ". '" + line
-										+ "'. Can't find the first comma.");
+						throw new UserException("Problem at line number: "
+								+ lastLineNumber() + ". '" + line
+								+ "'. Can't find the first comma.");
 					}
 					datePos = line.indexOf(',', datePos + 1);
 					if (datePos < 0) {
-						throw UserException
-								.newInvalidParameter("Problem at line number: "
-										+ lastLineNumber() + ". '" + line
-										+ "'. Can't find the second comma.");
+						throw new UserException("Problem at line number: "
+								+ lastLineNumber() + ". '" + line
+								+ "'. Can't find the second comma.");
 					}
 					HhEndDate endDate = new HhEndDate(dateFormat.parse(line
 							.substring(0, datePos).replace(",", " ")));
@@ -159,8 +157,8 @@ public class StarkDF2HHConverter implements HhConverter {
 					}
 					if (!core.getDsoCode().getString().equals("99")
 							&& valueKw * 10 % 2 == 1) {
-						throw UserException
-								.newInvalidParameter("Problem at line number: "
+						throw new UserException(
+								"Problem at line number: "
 										+ lastLineNumber()
 										+ ". '"
 										+ line
@@ -177,29 +175,27 @@ public class StarkDF2HHConverter implements HhConverter {
 			RuntimeException rte = new RuntimeException();
 			rte.initCause(e);
 			throw rte;
-		} catch (UserException e) {
+		} catch (InternalException e) {
+			RuntimeException rte = new RuntimeException();
+			rte.initCause(e);
+			throw rte;
+		} catch (HttpException e) {
 			try {
-				throw new RuntimeException(UserException
-						.newInvalidParameter("Problem at line number: "
-								+ lastLineNumber() + ": " + e.getMessage()));
-			} catch (ProgrammerException e1) {
+				throw new RuntimeException(new UserException(
+						"Problem at line number: " + lastLineNumber() + ": "
+								+ e.getMessage()));
+			} catch (InternalException e1) {
 				throw new RuntimeException(e1);
 			}
 		} catch (ParseException e) {
 			RuntimeException rte = new RuntimeException();
 			try {
-				rte.initCause(UserException
-						.newInvalidParameter("Problem at line number: "
-								+ lastLineNumber() + ". '" + line
-								+ "' Can't parse date and time. "
-								+ e.getMessage()));
-			} catch (ProgrammerException e1) {
+				rte.initCause(new UserException("Problem at line number: "
+						+ lastLineNumber() + ". '" + line
+						+ "' Can't parse date and time. " + e.getMessage()));
+			} catch (InternalException e1) {
 				throw new RuntimeException(e1);
 			}
-			throw rte;
-		} catch (ProgrammerException e) {
-			RuntimeException rte = new RuntimeException();
-			rte.initCause(e);
 			throw rte;
 		}
 	}
@@ -208,11 +204,11 @@ public class StarkDF2HHConverter implements HhConverter {
 		return reader.getLineNumber();
 	}
 
-	public void close() throws ProgrammerException {
+	public void close() throws InternalException {
 		try {
 			reader.close();
 		} catch (IOException e) {
-			throw new ProgrammerException(e);
+			throw new InternalException(e);
 		}
 	}
 }

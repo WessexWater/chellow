@@ -92,7 +92,7 @@
 					</thead>
 					<tbody>
 						<xsl:for-each
-							select="/source/snags-channel/snag-channel">
+							select="/source/snags-channel/channel-snag">
 							<tr>
 								<td>
 									<a href="{@id}/">

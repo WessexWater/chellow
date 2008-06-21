@@ -27,4 +27,4 @@ else:
 
 
 source.appendChild(siteID)
-#source.appendChild(date.toXML(doc))
+#source.appendChild(date.toXml(doc))

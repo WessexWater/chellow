@@ -29,16 +29,16 @@ import net.sf.chellow.monad.DesignerException;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.Invocation;
 import net.sf.chellow.monad.MonadUtils;
-import net.sf.chellow.monad.ProgrammerException;
-import net.sf.chellow.monad.UserException;
+import net.sf.chellow.monad.InternalException;
+import net.sf.chellow.monad.HttpException;
+import net.sf.chellow.monad.NotFoundException;
 import net.sf.chellow.monad.XmlTree;
 import net.sf.chellow.monad.types.MonadUri;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-
-public class SnagChannel extends SnagDateBounded {
+public class ChannelSnag extends SnagDateBounded {
 	public static final long SNAG_CHECK_LEAD_TIME = 1000 * 60 * 60 * 24 * 5;
 
 	public static final String SNAG_NEGATIVE = "Negative values.";
@@ -46,28 +46,37 @@ public class SnagChannel extends SnagDateBounded {
 	public static final String SNAG_NOT_ACTUAL = "Not actual reads.";
 
 	public static final String SNAG_MISSING = "Missing.";
-	
+
 	public static final String SNAG_DATA_IGNORED = "Data ignored.";
 
-	public static void insertSnagChannel(SnagChannel snag) {
+	public static void insertChannelSnag(ChannelSnag snag) {
 		Hiber.session().save(snag);
 	}
 
-	public static void deleteSnagChannel(SnagChannel snag) {
+	public static void deleteChannelSnag(ChannelSnag snag) {
 		Hiber.session().delete(snag);
 	}
 
-	private Channel channel;
-	
-	private DceService dceService;
+	public static ChannelSnag getChannelSnag(Long id) throws HttpException {
+		ChannelSnag snag = (ChannelSnag) Hiber.session().get(ChannelSnag.class,
+				id);
 
-	public SnagChannel() {
-		setTypeName("snag-channel");
+		if (snag == null) {
+			throw new NotFoundException();
+		}
+		return snag;
 	}
 
-	public SnagChannel(String description, DceService dceService,
+	private Channel channel;
+
+	private DceService dceService;
+
+	public ChannelSnag() {
+	}
+
+	public ChannelSnag(String description, DceService dceService,
 			Channel channel, HhEndDate startDate, HhEndDate finishDate)
-			throws ProgrammerException, UserException {
+			throws InternalException, HttpException {
 		super(description, startDate, finishDate);
 		this.channel = channel;
 		this.dceService = dceService;
@@ -80,27 +89,27 @@ public class SnagChannel extends SnagDateBounded {
 	void setChannel(Channel channel) {
 		this.channel = channel;
 	}
-/*
-	public void resolve(boolean isIgnored) throws ProgrammerException,
-			UserException {
-		setDateResolved(new MonadDate());
-		setIsIgnored(new MonadBoolean(isIgnored));
-	}
-*/
+
+	/*
+	 * public void resolve(boolean isIgnored) throws ProgrammerException,
+	 * UserException { setDateResolved(new MonadDate()); setIsIgnored(new
+	 * MonadBoolean(isIgnored)); }
+	 */
 	public void update() {
 	}
 
-	public Element toXML(Document doc) throws ProgrammerException, UserException {
-		Element element = (Element) super.toXML(doc);
+	public Element toXml(Document doc) throws InternalException, HttpException {
+		setTypeName("channel-snag");
+		Element element = (Element) super.toXml(doc);
 		return element;
 	}
 
-	public SnagChannel copy() throws ProgrammerException {
-		SnagChannel cloned;
+	public ChannelSnag copy() throws InternalException {
+		ChannelSnag cloned;
 		try {
-			cloned = (SnagChannel) super.clone();
+			cloned = (ChannelSnag) super.clone();
 		} catch (CloneNotSupportedException e) {
-			throw new ProgrammerException(e);
+			throw new InternalException(e);
 		}
 		cloned.setId(null);
 		return cloned;
@@ -109,36 +118,37 @@ public class SnagChannel extends SnagDateBounded {
 	public String toString() {
 		return super.toString() + " Contract: " + getService();
 	}
-	
+
 	public DceService getService() {
 		return dceService;
 	}
-	
+
 	public void setService(DceService dceService) {
 		this.dceService = dceService;
 	}
 
 	public void httpGet(Invocation inv) throws DesignerException,
-			ProgrammerException, UserException, DeployerException {
+			InternalException, HttpException, DeployerException {
 		inv.sendOk(document());
 	}
 
-	private Document document() throws ProgrammerException, UserException, DesignerException {
+	private Document document() throws InternalException, HttpException,
+			DesignerException {
 		Document doc = MonadUtils.newSourceDocument();
 		Element sourceElement = doc.getDocumentElement();
-		sourceElement.appendChild(getXML(new XmlTree("service", new XmlTree(
-				"provider", new XmlTree("organization"))).put("channel",
-				new XmlTree("supply")), doc));
+		sourceElement.appendChild(toXml(doc, new XmlTree("service",
+				new XmlTree("provider", new XmlTree("organization"))).put(
+				"channel", new XmlTree("supply"))));
 		return doc;
 	}
 
-	public void httpDelete(Invocation inv) throws ProgrammerException,
-			DesignerException, UserException, DeployerException {
+	public void httpDelete(Invocation inv) throws InternalException,
+			DesignerException, HttpException, DeployerException {
 		// TODO Auto-generated method stub
 
 	}
 
-	public MonadUri getUri() throws ProgrammerException, UserException {
+	public MonadUri getUri() throws InternalException, HttpException {
 		return getService().getSnagsChannelInstance().getUri().resolve(
 				getUriId()).append("/");
 	}

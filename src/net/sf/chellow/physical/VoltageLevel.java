@@ -29,8 +29,9 @@ import net.sf.chellow.monad.DeployerException;
 import net.sf.chellow.monad.DesignerException;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.Invocation;
-import net.sf.chellow.monad.ProgrammerException;
+import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Urlable;
+import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.UserException;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
@@ -43,17 +44,17 @@ import org.w3c.dom.Node;
 
 public class VoltageLevel extends PersistentEntity {
 	static public VoltageLevel getVoltageLevel(VoltageLevelCode code)
-			throws ProgrammerException, UserException {
+			throws InternalException, HttpException {
 		VoltageLevel voltageLevel = findVoltageLevel(code);
 		if (voltageLevel == null) {
-			throw UserException
-					.newOk("There is no voltage level with that code.");
+			throw new UserException
+					("There is no voltage level with that code.");
 		}
 		return voltageLevel;
 	}
 
 	static public VoltageLevel findVoltageLevel(VoltageLevelCode code)
-			throws ProgrammerException, UserException {
+			throws InternalException, HttpException {
 		return (VoltageLevel) Hiber.session().createQuery(
 				"from VoltageLevel as voltageLevel where "
 						+ "voltageLevel.code.string = :code").setString("code",
@@ -61,7 +62,7 @@ public class VoltageLevel extends PersistentEntity {
 	}
 
 	public static VoltageLevel insertVoltageLevel(String code, String name)
-			throws ProgrammerException, UserException {
+			throws InternalException, HttpException {
 		VoltageLevelCode voltageLevelCode = new VoltageLevelCode(code);
 		VoltageLevel voltageLevel = VoltageLevel
 				.findVoltageLevel(voltageLevelCode);
@@ -73,7 +74,7 @@ public class VoltageLevel extends PersistentEntity {
 	}
 
 	public static VoltageLevel insertVoltageLevel(VoltageLevelCode code,
-			String name) throws ProgrammerException, UserException {
+			String name) throws InternalException, HttpException {
 
 		VoltageLevel voltageLevel = null;
 		try {
@@ -84,10 +85,10 @@ public class VoltageLevel extends PersistentEntity {
 			if (Data
 					.isSQLException(e,
 							"ERROR: duplicate key violates unique constraint \"site_code_key\"")) {
-				throw UserException
-						.newOk("A site with this code already exists.");
+				throw new UserException
+						("A site with this code already exists.");
 			} else {
-				throw new ProgrammerException(e);
+				throw new InternalException(e);
 			}
 		}
 		return voltageLevel;
@@ -95,12 +96,12 @@ public class VoltageLevel extends PersistentEntity {
 
 	@SuppressWarnings("unchecked")
 	public static List<VoltageLevel> getVoltageLevels()
-			throws ProgrammerException {
+			throws InternalException {
 		try {
 			return Hiber.session()
 					.createQuery("from VoltageLevel voltageLevel").list();
 		} catch (HibernateException e) {
-			throw new ProgrammerException(e);
+			throw new InternalException(e);
 		}
 	}
 
@@ -133,10 +134,10 @@ public class VoltageLevel extends PersistentEntity {
 		this.name = name;
 	}
 
-	public Node toXML(Document doc) throws ProgrammerException, UserException {
+	public Node toXml(Document doc) throws InternalException, HttpException {
 		Element element = doc.createElement("voltage-level");
 		code.setLabel("code");
-		element.setAttributeNode((Attr) code.toXML(doc));
+		element.setAttributeNode((Attr) code.toXml(doc));
 		element.setAttribute("name", name);
 		return element;
 	}
@@ -145,26 +146,26 @@ public class VoltageLevel extends PersistentEntity {
 		return null;
 	}
 
-	public Urlable getChild(UriPathElement uriId) throws ProgrammerException,
-			UserException {
+	public Urlable getChild(UriPathElement uriId) throws InternalException,
+			HttpException {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	public void httpGet(Invocation inv) throws DesignerException,
-			ProgrammerException, UserException, DeployerException {
+			InternalException, HttpException, DeployerException {
 		// TODO Auto-generated method stub
 
 	}
 
-	public void httpPost(Invocation inv) throws ProgrammerException,
-			UserException {
+	public void httpPost(Invocation inv) throws InternalException,
+			HttpException {
 		// TODO Auto-generated method stub
 
 	}
 
-	public void httpDelete(Invocation inv) throws ProgrammerException,
-			DesignerException, UserException, DeployerException {
+	public void httpDelete(Invocation inv) throws InternalException,
+			DesignerException, HttpException, DeployerException {
 		// TODO Auto-generated method stub
 
 	}

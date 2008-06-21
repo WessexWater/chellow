@@ -1,8 +1,8 @@
 package net.sf.chellow.ui;
 
 import net.sf.chellow.monad.Invocation;
-import net.sf.chellow.monad.ProgrammerException;
-import net.sf.chellow.monad.UserException;
+import net.sf.chellow.monad.InternalException;
+import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.types.EmailAddress;
 import net.sf.chellow.monad.types.MonadUri;
 
@@ -14,15 +14,13 @@ public class ImplicitUserSource {
 	static {
 		try {
 			BASIC_USER_EMAIL_ADDRESS = new EmailAddress("basic-user@localhost");
-		} catch (UserException e) {
-			throw new RuntimeException(e);
-		} catch (ProgrammerException e) {
+		} catch (HttpException e) {
 			throw new RuntimeException(e);
 		}
 	}
 
-	static public User getUser(Invocation inv) throws UserException,
-			ProgrammerException {
+	static public User getUser(Invocation inv) throws HttpException,
+			InternalException {
 		User user = null;
 		if (ChellowProperties.propertiesExists(new MonadUri("/"),
 				"implicit-user-source.properties")) {
@@ -38,7 +36,7 @@ public class ImplicitUserSource {
 		if (user == null) {
 			user = User.findUserByEmail(BASIC_USER_EMAIL_ADDRESS);
 			if (user == null) {
-				throw new ProgrammerException("The basic user '"
+				throw new InternalException("The basic user '"
 						+ BASIC_USER_EMAIL_ADDRESS + "' can't be found.");
 			}
 		}

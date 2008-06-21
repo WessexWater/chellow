@@ -30,8 +30,10 @@ import net.sf.chellow.monad.DesignerException;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.Invocation;
 import net.sf.chellow.monad.MonadUtils;
-import net.sf.chellow.monad.ProgrammerException;
+import net.sf.chellow.monad.NotFoundException;
+import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Urlable;
+import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.UserException;
 import net.sf.chellow.monad.XmlTree;
 import net.sf.chellow.monad.types.MonadBoolean;
@@ -46,21 +48,21 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 public class Permission extends PersistentEntity {
-	static public Permission getPermission(Long id) throws ProgrammerException {
+	static public Permission getPermission(Long id) throws InternalException {
 		try {
 			return (Permission) Hiber.session().get(Permission.class, id);
 		} catch (HibernateException e) {
-			throw new ProgrammerException(e);
+			throw new InternalException(e);
 		}
 	}
 
 	static void methodsAllowed(User user, MonadUri uriPattern,
-			List<Invocation.HttpMethod> methods) throws ProgrammerException,
-			UserException {
+			List<Invocation.HttpMethod> methods) throws InternalException,
+			HttpException {
 		for (Invocation.HttpMethod method : methods) {
 			if (!Chellow.methodAllowed(user, uriPattern.toUri(), method)) {
-				throw UserException
-						.newInvalidParameter("You can't assign greater permissions that you have.");
+				throw new UserException(
+						"You can't assign greater permissions that you have.");
 			}
 		}
 	}
@@ -90,7 +92,7 @@ public class Permission extends PersistentEntity {
 	public Permission(Role role, MonadUri uriPattern, Boolean isOptionsAllowed,
 			Boolean isGetAllowed, Boolean isHeadAllowed, Boolean isPostAllowed,
 			Boolean isPutAllowed, Boolean isDeleteAllowed,
-			Boolean isTraceAllowed) throws ProgrammerException, UserException {
+			Boolean isTraceAllowed) throws InternalException, HttpException {
 		this();
 		setRole(role);
 		update(uriPattern, isOptionsAllowed, isGetAllowed, isHeadAllowed,
@@ -100,9 +102,9 @@ public class Permission extends PersistentEntity {
 	public void update(MonadUri uriPattern, Boolean isOptionsAllowed,
 			Boolean isGetAllowed, Boolean isHeadAllowed, Boolean isPostAllowed,
 			Boolean isPutAllowed, Boolean isDeleteAllowed,
-			Boolean isTraceAllowed) throws ProgrammerException {
+			Boolean isTraceAllowed) throws InternalException {
 		if (uriPattern == null) {
-			throw new ProgrammerException("uri parameter can't be null.");
+			throw new InternalException("uri parameter can't be null.");
 		}
 		setUriPattern(uriPattern);
 		setIsOptionsAllowed(isOptionsAllowed);
@@ -201,17 +203,17 @@ public class Permission extends PersistentEntity {
 	public String toString() {
 		try {
 			return getUriId().toString();
-		} catch (ProgrammerException e) {
+		} catch (InternalException e) {
 			throw new RuntimeException(e);
-		} catch (UserException e) {
+		} catch (HttpException e) {
 			throw new RuntimeException(e);
 		}
 	}
 
-	public Element toXML(Document doc) throws ProgrammerException,
-			UserException {
-		Element element = (Element) super.toXML(doc);
-		element.setAttributeNode((Attr) uriPattern.toXML(doc));
+	public Element toXml(Document doc) throws InternalException,
+			HttpException {
+		Element element = (Element) super.toXml(doc);
+		element.setAttributeNode((Attr) uriPattern.toXml(doc));
 		element.setAttributeNode(MonadBoolean.toXml(doc, "is-post-allowed",
 				isPostAllowed));
 		element.setAttributeNode(MonadBoolean.toXml(doc, "is-get-allowed",
@@ -219,31 +221,31 @@ public class Permission extends PersistentEntity {
 		return element;
 	}
 
-	public MonadUri getUri() throws ProgrammerException, UserException {
+	public MonadUri getUri() throws InternalException, HttpException {
 		return role.permissionsInstance().getUri().resolve(getUriId()).append(
 				"/");
 	}
 
-	public Urlable getChild(UriPathElement uriId) throws ProgrammerException,
-			UserException {
-		throw UserException.newNotFound();
+	public Urlable getChild(UriPathElement uriId) throws InternalException,
+			HttpException {
+		throw new NotFoundException();
 	}
 
 	public void httpGet(Invocation inv) throws DesignerException,
-			ProgrammerException, UserException, DeployerException {
+			InternalException, HttpException, DeployerException {
 		inv.sendOk(document());
 	}
 
-	private Document document() throws ProgrammerException, UserException,
+	private Document document() throws InternalException, HttpException,
 			DesignerException {
 		Document doc = MonadUtils.newSourceDocument();
 		Element source = doc.getDocumentElement();
-		source.appendChild(getXML(new XmlTree("role"), doc));
+		source.appendChild(toXml(doc, new XmlTree("role")));
 		return doc;
 	}
 
-	public void httpPost(Invocation inv) throws ProgrammerException,
-			UserException, DesignerException {
+	public void httpPost(Invocation inv) throws InternalException,
+			HttpException, DesignerException {
 		if (inv.hasParameter("delete")) {
 			Hiber.session().delete(this);
 			Hiber.close();
@@ -258,7 +260,7 @@ public class Permission extends PersistentEntity {
 			Boolean isDeleteAllowed = inv.getBoolean("is-delete-allowed");
 			Boolean isTraceAllowed = inv.getBoolean("is-trace-allowed");
 			if (!inv.isValid()) {
-				throw UserException.newInvalidParameter(document(), null);
+				throw new UserException(document());
 			}
 			Permission.methodsAllowed(inv.getUser(), uriPattern, getMethods());
 			update(uriPattern, isOptionsAllowed, isGetAllowed, isHeadAllowed,
@@ -295,8 +297,8 @@ public class Permission extends PersistentEntity {
 		return methods;
 	}
 
-	public void httpDelete(Invocation inv) throws ProgrammerException,
-			DesignerException, UserException, DeployerException {
+	public void httpDelete(Invocation inv) throws InternalException,
+			DesignerException, HttpException, DeployerException {
 		// TODO Auto-generated method stub
 
 	}

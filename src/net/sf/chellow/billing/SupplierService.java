@@ -30,8 +30,10 @@ import net.sf.chellow.monad.DesignerException;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.Invocation;
 import net.sf.chellow.monad.MonadUtils;
-import net.sf.chellow.monad.ProgrammerException;
+import net.sf.chellow.monad.NotFoundException;
+import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Urlable;
+import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.UserException;
 import net.sf.chellow.monad.XmlTree;
 import net.sf.chellow.monad.types.MonadDate;
@@ -47,11 +49,10 @@ import org.w3c.dom.Element;
 @SuppressWarnings("serial")
 public class SupplierService extends Service {
 	public static SupplierService getSupplierService(Long id)
-			throws UserException, ProgrammerException {
+			throws HttpException, InternalException {
 		SupplierService service = findSupplierService(id);
 		if (service == null) {
-			throw UserException
-					.newOk("There isn't a supplier service with that id.");
+			throw new UserException("There isn't a supplier service with that id.");
 		}
 		return service;
 	}
@@ -67,8 +68,8 @@ public class SupplierService extends Service {
 	}
 
 	public SupplierService(String name, HhEndDate startDate,
-			String chargeScript, Supplier supplier) throws UserException,
-			ProgrammerException, DesignerException {
+			String chargeScript, Supplier supplier) throws HttpException,
+			InternalException, DesignerException {
 		super(TYPE_CONTRACT, name, startDate, chargeScript);
 		setProvider(supplier);
 	}
@@ -81,8 +82,8 @@ public class SupplierService extends Service {
 		this.provider = provider;
 	}
 
-	public void update(String name, String chargeScript) throws UserException,
-			ProgrammerException, DesignerException {
+	public void update(String name, String chargeScript) throws HttpException,
+			InternalException, DesignerException {
 		super.update(TYPE_CONTRACT, name, chargeScript);
 	}
 
@@ -95,33 +96,33 @@ public class SupplierService extends Service {
 		return isEqual;
 	}
 
-	public MonadUri getUri() throws ProgrammerException, UserException {
+	public MonadUri getUri() throws InternalException, HttpException {
 		return provider.servicesInstance().getUri().resolve(getUriId()).append(
 				"/");
 	}
 
-	public void httpPost(Invocation inv) throws ProgrammerException,
-			UserException, DesignerException, DeployerException {
+	public void httpPost(Invocation inv) throws InternalException,
+			HttpException, DesignerException, DeployerException {
 		String chargeScript = inv.getString("charge-script");
 		if (inv.hasParameter("test")) {
 			Long billId = inv.getLong("bill-id");
 			if (!inv.isValid()) {
-				throw UserException.newInvalidParameter(document());
+				throw new UserException(document());
 			}
 			try {
 				Bill bill = Bill.getBill(billId);
 				Document doc = document();
 				Element source = doc.getDocumentElement();
-				source.appendChild(bill.getElement(chargeScript).toXML(doc));
+				source.appendChild(bill.getElement(chargeScript).toXml(doc));
 				inv.sendOk(doc);
-			} catch (UserException e) {
+			} catch (HttpException e) {
 				e.setDocument(document());
 				throw e;
 			}
 		} else {
 			String name = inv.getString("name");
 			if (!inv.isValid()) {
-				throw UserException.newInvalidParameter(document());
+				throw new UserException(document());
 			}
 			update(name, chargeScript);
 			Hiber.commit();
@@ -131,7 +132,7 @@ public class SupplierService extends Service {
 
 	@SuppressWarnings("unchecked")
 	void updateNotification(HhEndDate startDate, HhEndDate finishDate)
-			throws UserException, ProgrammerException, DesignerException {
+			throws HttpException, InternalException, DesignerException {
 		List<Mpan> mpansOutside = Hiber
 				.session()
 				.createQuery(
@@ -142,7 +143,7 @@ public class SupplierService extends Service {
 						getFinishDate() == null ? null : getFinishDate()
 								.getDate()).list();
 		if (!mpansOutside.isEmpty()) {
-			throw UserException.newInvalidParameter(document(), mpansOutside
+			throw new UserException(document(), mpansOutside
 					.size() > 1 ? "The MPANs with cores "
 					+ mpansOutside.get(0).getMpanCore() + " and "
 					+ mpansOutside.get(mpansOutside.size() - 1).getMpanCore()
@@ -155,20 +156,20 @@ public class SupplierService extends Service {
 		super.updateNotification(startDate, finishDate);
 	}
 
-	private Document document() throws ProgrammerException, UserException,
+	private Document document() throws InternalException, HttpException,
 			DesignerException {
 		Document doc = MonadUtils.newSourceDocument();
 		Element source = doc.getDocumentElement();
-		source.appendChild(getXML(new XmlTree("provider", new XmlTree(
-				"organization")), doc));
-		source.appendChild(new MonadDate().toXML(doc));
+		source.appendChild(toXml(doc, new XmlTree("provider", new XmlTree(
+						"organization"))));
+		source.appendChild(new MonadDate().toXml(doc));
 		source.appendChild(MonadDate.getMonthsXml(doc));
 		source.appendChild(MonadDate.getDaysXml(doc));
 		return doc;
 	}
 
 	public void httpGet(Invocation inv) throws DesignerException,
-			ProgrammerException, UserException, DeployerException {
+			InternalException, HttpException, DeployerException {
 		inv.sendOk(document());
 	}
 
@@ -176,8 +177,8 @@ public class SupplierService extends Service {
 		return 0;
 	}
 
-	public Snag getSnag(UriPathElement uriId) throws UserException,
-			ProgrammerException {
+	public Snag getSnag(UriPathElement uriId) throws HttpException,
+			InternalException {
 		Snag snag = (Snag) Hiber
 				.session()
 				.createQuery(
@@ -185,7 +186,7 @@ public class SupplierService extends Service {
 				.setEntity("contract", this).setLong("snagId",
 						Long.parseLong(uriId.getString())).uniqueResult();
 		if (snag == null) {
-			throw UserException.newNotFound();
+			throw new NotFoundException();
 		}
 		return snag;
 	}
@@ -194,8 +195,8 @@ public class SupplierService extends Service {
 		return new HhDataImportProcesses(this);
 	}
 
-	public Urlable getChild(UriPathElement uriId) throws ProgrammerException,
-			UserException {
+	public Urlable getChild(UriPathElement uriId) throws InternalException,
+			HttpException {
 		if (Batches.URI_ID.equals(uriId)) {
 			return new Batches(this);
 		} else if (RateScripts.URI_ID.equals(uriId)) {
@@ -205,12 +206,12 @@ public class SupplierService extends Service {
 		} else if (BillSnags.URI_ID.equals(uriId)) {
 			return new BillSnags(this);
 		} else {
-			throw UserException.newNotFound();
+			throw new NotFoundException();
 		}
 	}
 
-	public void httpDelete(Invocation inv) throws ProgrammerException,
-			UserException {
+	public void httpDelete(Invocation inv) throws InternalException,
+			HttpException {
 		// TODO Auto-generated method stub
 
 	}

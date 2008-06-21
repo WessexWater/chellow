@@ -30,9 +30,10 @@ import net.sf.chellow.monad.DesignerException;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.Invocation;
 import net.sf.chellow.monad.MonadUtils;
-import net.sf.chellow.monad.ProgrammerException;
+import net.sf.chellow.monad.NotFoundException;
+import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Urlable;
-import net.sf.chellow.monad.UserException;
+import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.XmlDescriber;
 import net.sf.chellow.monad.XmlTree;
 import net.sf.chellow.monad.types.MonadUri;
@@ -49,9 +50,7 @@ public class RegisterReads implements Urlable, XmlDescriber {
 	static {
 		try {
 			URI_ID = new UriPathElement("reads");
-		} catch (UserException e) {
-			throw new RuntimeException(e);
-		} catch (ProgrammerException e) {
+		} catch (HttpException e) {
 			throw new RuntimeException(e);
 		}
 	}
@@ -66,12 +65,12 @@ public class RegisterReads implements Urlable, XmlDescriber {
 		return URI_ID;
 	}
 
-	public MonadUri getUri() throws ProgrammerException, UserException {
+	public MonadUri getUri() throws InternalException, HttpException {
 		return invoice.getUri().resolve(getUrlId()).append("/");
 	}
 
-	public void httpPost(Invocation inv) throws ProgrammerException,
-			UserException, DesignerException, DeployerException {
+	public void httpPost(Invocation inv) throws InternalException,
+			HttpException, DesignerException, DeployerException {
 		/*
 		 * String reference = inv.getString("reference"); if (!inv.isValid()) {
 		 * throw UserException.newInvalidParameter(document()); } Account
@@ -81,12 +80,12 @@ public class RegisterReads implements Urlable, XmlDescriber {
 	}
 
 	public void httpGet(Invocation inv) throws DesignerException,
-			ProgrammerException, UserException, DeployerException {
+			InternalException, HttpException, DeployerException {
 		inv.sendOk(document());
 	}
 
-	public RegisterRead getChild(UriPathElement uriId) throws UserException,
-			ProgrammerException {
+	public RegisterRead getChild(UriPathElement uriId) throws HttpException,
+			InternalException {
 		RegisterRead read = (RegisterRead) Hiber
 				.session()
 				.createQuery(
@@ -94,43 +93,43 @@ public class RegisterReads implements Urlable, XmlDescriber {
 				.setEntity("invoice", invoice).setLong("readId",
 						Long.parseLong(uriId.getString())).uniqueResult();
 		if (read == null) {
-			throw UserException.newNotFound();
+			throw new NotFoundException();
 		}
 		return read;
 	}
 
-	public void httpDelete(Invocation inv) throws ProgrammerException,
-			UserException {
+	public void httpDelete(Invocation inv) throws InternalException,
+			HttpException {
 	}
 
-	public Node toXML(Document doc) throws ProgrammerException, UserException {
+	public Node toXml(Document doc) throws InternalException, HttpException {
 		Element accountsElement = doc.createElement("register-reads");
 		return accountsElement;
 	}
 
-	public Node getXML(XmlTree tree, Document doc) throws ProgrammerException,
-			UserException {
+	public Node toXml(Document doc, XmlTree tree) throws InternalException,
+			HttpException {
 		return null;
 	}
 
 	@SuppressWarnings("unchecked")
-	private Document document() throws ProgrammerException, UserException,
+	private Document document() throws InternalException, HttpException,
 			DesignerException {
 		Document doc = MonadUtils.newSourceDocument();
 		Element source = doc.getDocumentElement();
-		Element readsElement = (Element) toXML(doc);
+		Element readsElement = (Element) toXml(doc);
 		source.appendChild(readsElement);
-		readsElement.appendChild(invoice.getXML(new XmlTree("batch",
-				new XmlTree("service", new XmlTree("provider", new XmlTree(
-						"organization")))), doc));
+		readsElement.appendChild(invoice.toXml(doc, new XmlTree("batch",
+								new XmlTree("service", new XmlTree("provider", new XmlTree(
+										"organization"))))));
 		for (RegisterRead read : (List<RegisterRead>) Hiber
 				.session()
 				.createQuery(
 						"from RegisterRead read where read.invoice = :invoice order by read.presentDate.date, read.id")
 				.setEntity("invoice", invoice).list()) {
-			readsElement.appendChild(read.getXML(new XmlTree("mpan",
-					new XmlTree("mpanCore").put("supplyGeneration",
-							new XmlTree("supply"))).put("tpr"), doc));
+			readsElement.appendChild(read.toXml(doc, new XmlTree("mpan",
+									new XmlTree("mpanCore").put("supplyGeneration",
+											new XmlTree("supply"))).put("tpr")));
 		}
 		return doc;
 	}

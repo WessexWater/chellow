@@ -7,9 +7,9 @@ import org.w3c.dom.Node;
 import net.sf.chellow.monad.DeployerException;
 import net.sf.chellow.monad.DesignerException;
 import net.sf.chellow.monad.Invocation;
-import net.sf.chellow.monad.ProgrammerException;
+import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Urlable;
-import net.sf.chellow.monad.UserException;
+import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
 
@@ -28,7 +28,7 @@ public class GeoPoint extends MonadObject {
 	}
 
 	public GeoPoint(String label, String latitudeString, String longitudeString)
-			throws ProgrammerException, UserException {
+			throws InternalException, HttpException {
 		init();
 		setLabel(label);
 		MonadDouble latitude = new MonadDouble("latitude", latitudeString);
@@ -62,37 +62,37 @@ public class GeoPoint extends MonadObject {
 		this.longitude = longitude;
 	}
 
-	public Urlable getChild(UriPathElement arg0) throws ProgrammerException,
-			UserException {
+	public Urlable getChild(UriPathElement arg0) throws InternalException,
+			HttpException {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
-	public MonadUri getUri() throws ProgrammerException, UserException {
+	public MonadUri getUri() throws InternalException, HttpException {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	public void httpGet(Invocation arg0) throws DesignerException,
-			ProgrammerException, UserException, DeployerException {
+			InternalException, HttpException, DeployerException {
 		// TODO Auto-generated method stub
 
 	}
 
-	public void httpPost(Invocation arg0) throws ProgrammerException,
-			UserException, DesignerException, DeployerException {
+	public void httpPost(Invocation arg0) throws InternalException,
+			HttpException, DesignerException, DeployerException {
 		// TODO Auto-generated method stub
 
 	}
 
-	public void httpDelete(Invocation arg0) throws ProgrammerException,
-			DesignerException, UserException, DeployerException {
+	public void httpDelete(Invocation arg0) throws InternalException,
+			DesignerException, HttpException, DeployerException {
 		// TODO Auto-generated method stub
 
 	}
 
-	public Node toXML(Document doc) throws ProgrammerException, UserException {
-		Element element = (Element) super.toXML(doc);
+	public Node toXml(Document doc) throws HttpException {
+		Element element = (Element) super.toXml(doc);
 		element.setAttribute("latitude", getLatitude().toString());
 		element.setAttribute("longitude", getLongitude().toString());
 		element.setAttribute("string", toString());

@@ -38,7 +38,8 @@ import java.util.TimeZone;
 
 import net.sf.chellow.data08.MpanRaw;
 import net.sf.chellow.monad.Hiber;
-import net.sf.chellow.monad.ProgrammerException;
+import net.sf.chellow.monad.InternalException;
+import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.UserException;
 import net.sf.chellow.physical.ReadType;
 import net.sf.chellow.physical.RegisterReadRaw;
@@ -68,8 +69,8 @@ public class InvoiceConverterCsv implements InvoiceConverter {
 
 	private List<InvoiceRaw> rawBills = new ArrayList<InvoiceRaw>();
 
-	public InvoiceConverterCsv(Reader reader) throws UserException,
-			ProgrammerException {
+	public InvoiceConverterCsv(Reader reader) throws HttpException,
+			InternalException {
 		try {
 			shredder = new CSVParser(reader);
 			shredder.setCommentStart("#;!");
@@ -77,53 +78,53 @@ public class InvoiceConverterCsv implements InvoiceConverter {
 			String[] titles = shredder.getLine();
 
 			if (titles.length < 7) {
-				throw UserException
-						.newOk("The first line of the CSV must contain the 7 titles "
+				throw new UserException
+						("The first line of the CSV must contain the 7 titles "
 								+ "'Account Text, MPAN Text, Invoice Text, Start Date, Finish Date, Net, VAT'.");
 			}
 			if (!titles[0].trim().toLowerCase().equals("account text")) {
-				throw UserException
-						.newOk("The title of the first column should be 'Account Text'.");
+				throw new UserException
+						("The title of the first column should be 'Account Text'.");
 			}
 			if (!titles[1].trim().toLowerCase().equals("mpan text")) {
-				throw UserException
-						.newOk("The title of the second column should be 'MPAN Text'.");
+				throw new UserException
+						("The title of the second column should be 'MPAN Text'.");
 			}
 			if (!titles[2].trim().toLowerCase().equals("invoice text")) {
-				throw UserException
-						.newOk("The title of the third column should be 'Invoice Text'.");
+				throw new UserException
+						("The title of the third column should be 'Invoice Text'.");
 			}
 			if (!titles[3].trim().toLowerCase().equals("start date")) {
-				throw UserException
-						.newOk("The title of the fouth column should be 'Start Date'.");
+				throw new UserException
+						("The title of the fouth column should be 'Start Date'.");
 			}
 			if (!titles[4].trim().toLowerCase().equals("finish date")) {
-				throw UserException
-						.newOk("The title of the fifth column should be 'Finish Date'.");
+				throw new UserException
+						("The title of the fifth column should be 'Finish Date'.");
 			}
 			if (!titles[5].trim().toLowerCase().equals("net")) {
-				throw UserException
-						.newOk("The title of the sixth column should be 'Net'.");
+				throw new UserException
+						("The title of the sixth column should be 'Net'.");
 			}
 			if (!titles[6].trim().toLowerCase().equals("vat")) {
-				throw UserException
-						.newOk("The title of the seventh column should be 'VAT'.");
+				throw new UserException
+						("The title of the seventh column should be 'VAT'.");
 			}
 		} catch (IOException e) {
-			throw new ProgrammerException(e);
+			throw new InternalException(e);
 		}
 		dateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
 	}
 
-	public List<InvoiceRaw> getRawInvoices() throws UserException,
-			ProgrammerException {
+	public List<InvoiceRaw> getRawInvoices() throws HttpException,
+			InternalException {
 		if (rawBills.isEmpty()) {
 			try {
 				for (String[] values = shredder.getLine(); values != null; values = shredder
 						.getLine()) {
 					if (values.length < 7) {
-						throw UserException
-								.newInvalidParameter("Problem at line number "
+						throw new UserException
+								("Problem at line number "
 										+ shredder.getLastLineNumber()
 										+ "; there aren't enough fields, there should be 7");
 					}
@@ -150,15 +151,15 @@ public class InvoiceConverterCsv implements InvoiceConverter {
 				}
 				shredder.close();
 			} catch (NumberFormatException e) {
-				throw UserException.newInvalidParameter("Problem at line "
+				throw new UserException("Problem at line "
 						+ shredder.getLastLineNumber()
 						+ ". Can't parse number. " + e.getMessage());
 			} catch (IOException e) {
-				throw UserException.newInvalidParameter("Problem at line "
+				throw new UserException("Problem at line "
 						+ shredder.getLastLineNumber()
 						+ ". Input / output problem. " + e.getMessage());
-			} catch (UserException e) {
-				throw UserException.newInvalidParameter("Problem at line "
+			} catch (HttpException e) {
+				throw new UserException("Problem at line "
 						+ shredder.getLastLineNumber() + ". " + e.getMessage());
 			}
 		}

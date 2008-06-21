@@ -29,7 +29,8 @@ import java.util.Locale;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 
-import net.sf.chellow.monad.ProgrammerException;
+import net.sf.chellow.monad.InternalException;
+import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.UserException;
 import net.sf.chellow.monad.types.MonadInteger;
 
@@ -38,13 +39,13 @@ public class ProfileClassCode extends MonadInteger {
 		init();
 	}
 
-	public ProfileClassCode(int code) throws UserException,
-			ProgrammerException {
+	public ProfileClassCode(int code) throws HttpException,
+			InternalException {
 		this(null, code);
 	}
 
-	public ProfileClassCode(String label, int code) throws UserException,
-			ProgrammerException {
+	public ProfileClassCode(String label, int code) throws HttpException,
+			InternalException {
 		init();
 		setLabel(label);
 		update(code);
@@ -56,14 +57,14 @@ public class ProfileClassCode extends MonadInteger {
 		setMinimum(0);
 	}
 
-	public void update(String code) throws UserException, ProgrammerException {
+	public void update(String code) throws InternalException, UserException {
 		NumberFormat profileClassCodeFormat = NumberFormat
 				.getIntegerInstance(Locale.UK);
 		profileClassCodeFormat.setMinimumIntegerDigits(2);
 		super.update(profileClassCodeFormat.format(Integer.parseInt(code.trim())));
 	}
 	
-	public Attr toXML(Document doc) {
+	public Attr toXml(Document doc) {
 		Attr attr = doc.createAttribute("code");
 		attr.setValue(toString());
 		return attr;

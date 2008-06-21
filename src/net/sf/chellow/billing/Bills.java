@@ -29,9 +29,10 @@ import net.sf.chellow.monad.DesignerException;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.Invocation;
 import net.sf.chellow.monad.MonadUtils;
-import net.sf.chellow.monad.ProgrammerException;
+import net.sf.chellow.monad.NotFoundException;
+import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Urlable;
-import net.sf.chellow.monad.UserException;
+import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.XmlDescriber;
 import net.sf.chellow.monad.XmlTree;
 import net.sf.chellow.monad.types.MonadUri;
@@ -48,9 +49,7 @@ public class Bills implements Urlable, XmlDescriber {
 	static {
 		try {
 			URI_ID = new UriPathElement("bills");
-		} catch (UserException e) {
-			throw new RuntimeException(e);
-		} catch (ProgrammerException e) {
+		} catch (HttpException e) {
 			throw new RuntimeException(e);
 		}
 	}
@@ -73,40 +72,40 @@ public class Bills implements Urlable, XmlDescriber {
 		return URI_ID;
 	}
 
-	public MonadUri getUri() throws ProgrammerException, UserException {
+	public MonadUri getUri() throws InternalException, HttpException {
 		return account.getUri().resolve(getUrlId()).append("/");
 	}
 
-	public void httpPost(Invocation inv) throws ProgrammerException,
-			UserException, DesignerException, DeployerException {
+	public void httpPost(Invocation inv) throws InternalException,
+			HttpException, DesignerException, DeployerException {
 	}
 
 	public void httpGet(Invocation inv) throws DesignerException,
-			ProgrammerException, UserException, DeployerException {
+			InternalException, HttpException, DeployerException {
 		inv.sendOk(document());
 	}
 
 	@SuppressWarnings("unchecked")
-	private Document document() throws ProgrammerException, UserException,
+	private Document document() throws InternalException, HttpException,
 			DesignerException {
 		Document doc = MonadUtils.newSourceDocument();
 		Element source = doc.getDocumentElement();
-		Element billsElement = toXML(doc);
+		Element billsElement = toXml(doc);
 		source.appendChild(billsElement);
-		billsElement.appendChild(account.getXML(new XmlTree("provider",
-				new XmlTree("organization")), doc));
+		billsElement.appendChild(account.toXml(doc, new XmlTree("provider",
+						new XmlTree("organization"))));
 		for (Bill bill : (List<Bill>) Hiber
 				.session()
 				.createQuery(
 						"from Bill bill where bill.account = :account order by bill.startDate.date")
 				.setEntity("account", account).list()) {
-			billsElement.appendChild(bill.getXML(new XmlTree("account"), doc));
+			billsElement.appendChild(bill.toXml(doc, new XmlTree("account")));
 		}
 		return doc;
 	}
 
-	public Bill getChild(UriPathElement uriId) throws UserException,
-			ProgrammerException {
+	public Bill getChild(UriPathElement uriId) throws HttpException,
+			InternalException {
 		Bill bill = (Bill) Hiber
 				.session()
 				.createQuery(
@@ -114,23 +113,23 @@ public class Bills implements Urlable, XmlDescriber {
 				.setEntity("account", account).setLong("billId",
 						Long.parseLong(uriId.getString())).uniqueResult();
 		if (bill == null) {
-			throw UserException.newNotFound();
+			throw new NotFoundException();
 		}
 		return bill;
 	}
 
-	public void httpDelete(Invocation inv) throws ProgrammerException,
-			UserException {
+	public void httpDelete(Invocation inv) throws InternalException,
+			HttpException {
 	}
 
-	public Element toXML(Document doc) throws ProgrammerException,
-			UserException {
+	public Element toXml(Document doc) throws InternalException,
+			HttpException {
 		Element billsElement = doc.createElement("bills");
 		return billsElement;
 	}
 
-	public Node getXML(XmlTree tree, Document doc) throws ProgrammerException,
-			UserException {
+	public Node toXml(Document doc, XmlTree tree) throws InternalException,
+			HttpException {
 		return null;
 	}
 }

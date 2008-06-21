@@ -27,7 +27,8 @@ import java.text.DecimalFormat;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 
-import net.sf.chellow.monad.ProgrammerException;
+import net.sf.chellow.monad.InternalException;
+import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.UserException;
 import net.sf.chellow.monad.types.MonadInteger;
 
@@ -36,12 +37,12 @@ public class SscCode extends MonadInteger {
 		init();
 	}
 
-	public SscCode(int code) throws UserException, ProgrammerException {
+	public SscCode(int code) throws HttpException, InternalException {
 		this(null, code);
 	}
 
-	public SscCode(String label, int code) throws UserException,
-			ProgrammerException {
+	public SscCode(String label, int code) throws HttpException,
+			InternalException {
 		init();
 		setLabel(label);
 		update(code);
@@ -53,15 +54,15 @@ public class SscCode extends MonadInteger {
 		setMaximum(9999);
 	}
 
-	public void update(int code) throws UserException, ProgrammerException {
+	public void update(int code) throws HttpException, InternalException {
 		if (code < 0) {
-			throw UserException
-					.newInvalidParameter("The SSC can't be negative.");
+			throw new UserException
+					("The SSC can't be negative.");
 		}
 		super.update(code);
 	}
 
-	public Attr toXML(Document doc) {
+	public Attr toXml(Document doc) {
 		Attr attr = doc.createAttribute("code");
 		DecimalFormat sscFormat = new DecimalFormat("0000");
 		attr.setValue(sscFormat.format(getInteger()));

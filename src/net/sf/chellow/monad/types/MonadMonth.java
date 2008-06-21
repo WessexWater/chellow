@@ -1,6 +1,6 @@
 /*
  
- Copyright 2005 Meniscus Systems Ltd
+ Copyright 2005, 2008 Meniscus Systems Ltd
  
  This file is part of Chellow.
 
@@ -22,11 +22,11 @@
 
 package net.sf.chellow.monad.types;
 
-import net.sf.chellow.monad.ProgrammerException;
+import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.UserException;
 
 public class MonadMonth extends MonadInteger {
-	public MonadMonth(String month) throws UserException, ProgrammerException {
+	public MonadMonth(String month) throws InternalException, UserException {
 		setLabel("Month");
 		setMinimum(1);
 		setMaximum(12);

@@ -20,10 +20,12 @@ import net.sf.chellow.monad.DesignerException;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.Invocation;
 import net.sf.chellow.monad.MonadUtils;
-import net.sf.chellow.monad.ProgrammerException;
+import net.sf.chellow.monad.NotFoundException;
+import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Urlable;
+import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.UserException;
-import net.sf.chellow.monad.VFMessage;
+import net.sf.chellow.monad.MonadMessage;
 import net.sf.chellow.monad.XmlDescriber;
 import net.sf.chellow.monad.XmlTree;
 import net.sf.chellow.monad.types.MonadUri;
@@ -42,7 +44,7 @@ public class HhDataImportProcess extends Thread implements Urlable,
 		XmlDescriber {
 	private boolean halt = false;
 
-	private List<VFMessage> messages = new ArrayList<VFMessage>();
+	private List<String> messages = new ArrayList<String>();
 
 	private HhConverter converter;
 
@@ -57,31 +59,29 @@ public class HhDataImportProcess extends Thread implements Urlable,
 	private Long dceServiceId;
 
 	public HhDataImportProcess(Long dceServiceId, Long id, FileItem item)
-			throws ProgrammerException, UserException {
+			throws InternalException, HttpException {
 		try {
 			initialize(dceServiceId, id, item.getInputStream(), item.getName(), item.getSize());
 		} catch (IOException e) {
-			throw new ProgrammerException(e);
+			throw new InternalException(e);
 		}
 	}
 	
 	public HhDataImportProcess(Long contractId, Long id, InputStream is,
-			String fileName, long fileSize) throws ProgrammerException, UserException {
+			String fileName, long fileSize) throws InternalException, HttpException {
 		initialize(contractId, id, is, fileName, fileSize);
 	}
 
 	public void initialize(Long dceServiceId, Long id, InputStream is,
-			String fileName, long size) throws ProgrammerException, UserException {
+			String fileName, long size) throws InternalException, HttpException {
 		this.dceServiceId = dceServiceId;
 		this.id = id;
 		if (size == 0) {
-			throw UserException.newInvalidParameter(null, 
-					"File has zero length");
+			throw new UserException("File has zero length");
 		}
 		fileName = fileName.toLowerCase();
 		if (!fileName.endsWith(".df2") && !fileName.endsWith(".stark.csv") && !fileName.endsWith(".simple.csv") && !fileName.endsWith(".zip")) {
-			throw UserException
-					.newInvalidParameter("The extension of the filename '"
+			throw new UserException("The extension of the filename '"
 							+ fileName
 							+ "' is not one of the recognized extensions; '.zip', '.df2', '.stark.csv', '.simple.csv'.");
 		}
@@ -91,8 +91,7 @@ public class HhDataImportProcess extends Thread implements Urlable,
 				zin = new ZipInputStream(new BufferedInputStream(is));
 				ZipEntry entry = zin.getNextEntry();
 				if (entry == null) {
-					throw UserException
-							.newInvalidParameter(null, "Can't find an entry within the zip file.");
+					throw new UserException(null, "Can't find an entry within the zip file.");
 				} else {
 					is = zin;
 					fileName = entry.getName();
@@ -100,7 +99,7 @@ public class HhDataImportProcess extends Thread implements Urlable,
 				// extract data
 				// open output streams
 			} catch (IOException e) {
-				throw new ProgrammerException(e);
+				throw new InternalException(e);
 			}
 		}
 		String converterName;
@@ -111,8 +110,7 @@ public class HhDataImportProcess extends Thread implements Urlable,
 		} else if (fileName.endsWith(".simple.csv")) {
 			converterName = "net.sf.chellow.hhimport.HhConverterCsvSimple";
 		} else {
-			throw UserException
-					.newInvalidParameter("The extension of the filename '"
+			throw new UserException("The extension of the filename '"
 							+ fileName
 							+ "' is not one of the recognized extensions; '.df2', '.stark.csv', '.simple.csv'.");
 		}
@@ -124,26 +122,26 @@ public class HhDataImportProcess extends Thread implements Urlable,
 					.newInstance(
 							new Object[] { new InputStreamReader(is, "UTF-8") });
 		} catch (IllegalArgumentException e) {
-			throw new ProgrammerException(e);
+			throw new InternalException(e);
 		} catch (SecurityException e) {
-			throw new ProgrammerException(e);
+			throw new InternalException(e);
 		} catch (UnsupportedEncodingException e) {
-			throw new ProgrammerException(e);
+			throw new InternalException(e);
 		} catch (InstantiationException e) {
-			throw new ProgrammerException(e);
+			throw new InternalException(e);
 		} catch (IllegalAccessException e) {
-			throw new ProgrammerException(e);
+			throw new InternalException(e);
 		} catch (InvocationTargetException e) {
 			Throwable cause = e.getCause();
-			if (cause instanceof UserException) {
-				throw (UserException) cause;
+			if (cause instanceof HttpException) {
+				throw (HttpException) cause;
 			} else {
-				throw new ProgrammerException(e);
+				throw new InternalException(e);
 			}
 		} catch (NoSuchMethodException e) {
-			throw new ProgrammerException(e);
+			throw new InternalException(e);
 		} catch (ClassNotFoundException e) {
-			throw new ProgrammerException(e);
+			throw new InternalException(e);
 		}
 	}
 
@@ -195,18 +193,17 @@ public class HhDataImportProcess extends Thread implements Urlable,
 				Hiber.close();
 			}
 		} catch (IOException e) {
-			messages.add(new VFMessage("ProgrammerException : "
-					+ e.getMessage()));
+			messages.add("ProgrammerException : ");
 			throw new RuntimeException(e);
-		} catch (UserException e) {
-			messages.add(e.getVFMessage());
-		} catch (ProgrammerException e) {
-			messages.add(new VFMessage("ProgrammerException : "
-					+ e.getMessage()));
+		} catch (InternalException e) {
+			messages.add("ProgrammerException : "
+					+ e.getMessage());
 			throw new RuntimeException(e);
+		} catch (HttpException e) {
+			messages.add(e.getMessage());
 		} catch (Throwable e) {
-			messages.add(new VFMessage("Problem at line number: "
-					+ converter.lastLineNumber() + " " + e));
+			messages.add("Problem at line number: "
+					+ converter.lastLineNumber() + " " + e);
 			ChellowLogger.getLogger().logp(Level.SEVERE, "HhDataImportProcessor", "run",
 					"Problem in run method " + e.getMessage(), e);
 		} finally {
@@ -214,7 +211,7 @@ public class HhDataImportProcess extends Thread implements Urlable,
 			Hiber.close();
 			try {
 				converter.close();
-			} catch (ProgrammerException e) {
+			} catch (InternalException e) {
 				throw new RuntimeException(e);
 			}
 		}
@@ -228,43 +225,43 @@ public class HhDataImportProcess extends Thread implements Urlable,
 		return halt;
 	}
 
-	public UriPathElement getUriId() throws ProgrammerException, UserException {
+	public UriPathElement getUriId() throws InternalException, HttpException {
 			return new UriPathElement(Long.toString(id));
 	}
 
-	public Urlable getChild(UriPathElement urlId) throws ProgrammerException,
-			UserException {
-		throw UserException.newNotFound();
+	public Urlable getChild(UriPathElement urlId) throws InternalException,
+			NotFoundException {
+		throw new NotFoundException();
 	}
 
-	public MonadUri getUri() throws ProgrammerException, UserException {
+	public MonadUri getUri() throws InternalException, HttpException {
 		return getDceService().getHhDataImportProcessesInstance().getUri().resolve(
 				getUriId()).append("/");
 	}
 	
-	private DceService getDceService() throws UserException, ProgrammerException {
+	private DceService getDceService() throws HttpException, InternalException {
 		return DceService.getDceService(dceServiceId);
 	}
 
 	public void httpGet(Invocation inv) throws DesignerException,
-			ProgrammerException, UserException, DeployerException {
+			InternalException, HttpException, DeployerException {
 		Document doc = MonadUtils.newSourceDocument();
 		Element source = doc.getDocumentElement();
-		Element processElement = (Element) toXML(doc);
+		Element processElement = (Element) toXml(doc);
 		source.appendChild(processElement);
-		processElement.appendChild(getDceService().getXML(new XmlTree("provider",
-				new XmlTree("organization")), doc));
+		processElement.appendChild(getDceService().toXml(doc, new XmlTree("provider",
+						new XmlTree("organization"))));
 		inv.sendOk(doc);
 	}
 
-	public void httpPost(Invocation inv) throws ProgrammerException,
-			UserException {
+	public void httpPost(Invocation inv) throws InternalException,
+			HttpException {
 		// TODO Auto-generated method stub
 
 	}
 
-	public void httpDelete(Invocation inv) throws ProgrammerException,
-			DesignerException, UserException, DeployerException {
+	public void httpDelete(Invocation inv) throws InternalException,
+			DesignerException, HttpException, DeployerException {
 		// TODO Auto-generated method stub
 
 	}
@@ -276,7 +273,7 @@ public class HhDataImportProcess extends Thread implements Urlable,
 					+ " of " + supplies.size() + ".";
 	}
 
-	public Node toXML(Document doc) throws ProgrammerException, UserException {
+	public Node toXml(Document doc) throws InternalException, HttpException {
 		Element importElement = doc.createElement("hh-data-import");
 		importElement.setAttribute("uri-id", getUriId().toString());
 		importElement.setAttribute("progress", status());
@@ -284,19 +281,19 @@ public class HhDataImportProcess extends Thread implements Urlable,
 			importElement.setAttribute("successful",
 					messages.isEmpty() ? "true" : "false");
 		}
-		for (VFMessage message : messages) {
-			importElement.appendChild(message.toXML(doc));
+		for (String message : messages) {
+			importElement.appendChild(new MonadMessage(message).toXml(doc));
 		}
 		return importElement;
 	}
 
-	public Node getXML(XmlTree tree, Document doc) throws ProgrammerException,
-			UserException {
+	public Node toXml(Document doc, XmlTree tree) throws InternalException,
+			HttpException {
 		// TODO Auto-generated method stub
 		return null;
 	}
 	
-	public List<VFMessage> getMessages() {
+	public List<String> getMessages() {
 		return messages;
 	}
 }

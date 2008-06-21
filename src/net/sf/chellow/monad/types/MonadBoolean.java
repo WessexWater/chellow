@@ -71,7 +71,7 @@ public class MonadBoolean extends MonadObject {
 		this.booleanValue = booleanValue;
 	}
 
-	public Attr toXML(Document doc) {
+	public Attr toXml(Document doc) {
 		return toXml(doc, (getLabel() == null) ? getTypeName()
 				: getLabel(), booleanValue);
 	}

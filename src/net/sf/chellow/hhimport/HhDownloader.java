@@ -24,8 +24,8 @@ package net.sf.chellow.hhimport;
 
 import java.util.List;
 
-import net.sf.chellow.monad.VFMessage;
+import net.sf.chellow.monad.MonadMessage;
 
 public interface HhDownloader {
-	public List<VFMessage> getLog();
+	public List<MonadMessage> getLog();
 }

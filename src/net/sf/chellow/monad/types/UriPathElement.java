@@ -25,52 +25,51 @@ package net.sf.chellow.monad.types;
 import java.net.URI;
 import java.net.URISyntaxException;
 
-import net.sf.chellow.monad.ProgrammerException;
+import net.sf.chellow.monad.InternalException;
+import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.UserException;
-import net.sf.chellow.monad.VFMessage;
 
 public class UriPathElement extends MonadUri {
 	public UriPathElement() {
 		setTypeName("UriPathElement");
 	}
 	
-	public UriPathElement(String uri) throws UserException, ProgrammerException {
+	public UriPathElement(String uri) throws InternalException, UserException {
 		this();
 		update(uri);
 	}
 	
-	public UriPathElement(Long uri) throws UserException, ProgrammerException {
+	public UriPathElement(Long uri) throws HttpException, InternalException {
 		this(uri.toString());
 	}
 	
-	public void update(String uriString) throws UserException, ProgrammerException {
+	public void update(String uriString) throws InternalException, UserException {
 		super.update(uriString);
 		URI uri;
 		try {
 			uri = toUri();
-		} catch (ProgrammerException e) {
-			throw UserException.newInvalidParameter(
-					new VFMessage(e.getMessage()));
+		} catch (InternalException e) {
+			throw new UserException(e.getMessage());
 		}
 		if (uri.isAbsolute()) {
-			throw UserException.newInvalidParameter(
-					new VFMessage("The URI path element must be a relative URI."));
+			throw new UserException(
+					"The URI path element must be a relative URI.");
 		}
 		if (uri.getPath().split("/").length > 1) {
-			throw UserException.newInvalidParameter(
-					new VFMessage("The URI path element can only consist of a single element."));
+			throw new UserException(
+					"The URI path element can only consist of a single element.");
 		}
 	}
 	
-	public URI toUri() throws ProgrammerException {
+	public URI toUri() throws InternalException {
 		try {
 			return new URI(toString());
 		} catch (URISyntaxException e) {
-			throw new ProgrammerException(e);
+			throw new InternalException(e);
 		}
 	}
 	
-	public UriPathElement resolve(UriPathElement uri) throws ProgrammerException, UserException {
+	public UriPathElement resolve(UriPathElement uri) throws InternalException, HttpException {
 			return new UriPathElement(toUri().resolve(uri.toUri()).toString());
 	}
 }

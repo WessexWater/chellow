@@ -25,22 +25,24 @@ package net.sf.chellow.monad.types;
 import java.net.MalformedURLException;
 import java.net.URL;
 
-import net.sf.chellow.monad.ProgrammerException;
+import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.UserException;
 
 public class MonadURL extends MonadString {
 	public MonadURL() {
 		setTypeName("url");
 	}
-	public MonadURL(String url) throws UserException, ProgrammerException {
+
+	public MonadURL(String url) throws InternalException, UserException {
 		this();
 		update(url);
 	}
-	public void update(String url) throws UserException, ProgrammerException {
+
+	public void update(String url) throws InternalException, UserException {
 		try {
 			super.update(new URL(url).toString());
 		} catch (MalformedURLException e) {
-			throw UserException.newInvalidParameter("Invalid URL: " + e.getMessage());
+			throw new UserException("Invalid URL: " + e.getMessage());
 		}
 	}
 }

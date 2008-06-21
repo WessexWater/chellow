@@ -1,6 +1,7 @@
 package net.sf.chellow.billing;
 
-import net.sf.chellow.monad.ProgrammerException;
+import net.sf.chellow.monad.InternalException;
+import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.UserException;
 import net.sf.chellow.monad.types.MonadObject;
 
@@ -18,7 +19,7 @@ public class InvoiceType extends MonadObject {
 	public static final InvoiceType PREPAID;
 
 	public static final InvoiceType INFORMATION;
-	
+
 	public static final InvoiceType WITHDRAWAL;
 
 	static {
@@ -31,15 +32,13 @@ public class InvoiceType extends MonadObject {
 			PREPAID = new InvoiceType(5);
 			INFORMATION = new InvoiceType(6);
 			WITHDRAWAL = new InvoiceType(7);
-		} catch (UserException e) {
-			throw new RuntimeException(e.getMessage());
-		} catch (ProgrammerException e) {
+		} catch (HttpException e) {
 			throw new RuntimeException(e.getMessage());
 		}
 	}
 
-	public static InvoiceType getType(int intValue) throws UserException,
-			ProgrammerException {
+	public static InvoiceType getType(int intValue) throws HttpException,
+			InternalException {
 		switch (intValue) {
 		case 0:
 			return AMENDED;
@@ -58,13 +57,13 @@ public class InvoiceType extends MonadObject {
 		case 7:
 			return WITHDRAWAL;
 		default:
-			throw UserException
-					.newInvalidParameter("There isn't a read type with this int value.");
+			throw new UserException(
+					"There isn't a read type with this int value.");
 		}
 	}
 
-	public static String name(InvoiceType type) throws UserException,
-			ProgrammerException {
+	public static String name(InvoiceType type) throws HttpException,
+			InternalException {
 		switch (type.getInt()) {
 		case 0:
 			return "amended";
@@ -83,13 +82,12 @@ public class InvoiceType extends MonadObject {
 		case 7:
 			return "withdrawal";
 		default:
-			throw UserException
-					.newInvalidParameter("There isn't a Units with this int value.");
+			throw new UserException("There isn't a Units with this int value.");
 		}
 	}
 
-	public static InvoiceType getType(String name) throws UserException,
-			ProgrammerException {
+	public static InvoiceType getType(String name) throws HttpException,
+			InternalException {
 		name = name.trim().toLowerCase();
 		if (name.equals("amended")) {
 			return AMENDED;
@@ -108,8 +106,7 @@ public class InvoiceType extends MonadObject {
 		} else if (name.equals("withdrawal")) {
 			return WITHDRAWAL;
 		} else {
-			throw UserException
-					.newInvalidParameter("There isn't a read type with that name.");
+			throw new UserException("There isn't a read type with that name.");
 		}
 	}
 
@@ -119,14 +116,13 @@ public class InvoiceType extends MonadObject {
 		setTypeName("Unit");
 	}
 
-	private InvoiceType(int intValue) throws UserException, ProgrammerException {
+	private InvoiceType(int intValue) throws HttpException,
+			InternalException {
 		if (intValue < 0) {
-			throw UserException
-					.newInvalidParameter("The int value can't be negative.");
+			throw new UserException("The int value can't be negative.");
 		}
 		if (intValue > 7) {
-			throw UserException
-					.newInvalidParameter("The int value can't be greater than 7.");
+			throw new UserException("The int value can't be greater than 7.");
 		}
 		setInt(intValue);
 	}

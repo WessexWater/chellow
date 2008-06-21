@@ -35,15 +35,15 @@ public class ParameterName implements XmlDescriber {
 			this.name = name;
 	}
 	
-	public Node toXML(Document doc) {
+	public Node toXml(Document doc) {
 		Attr attr = doc.createAttribute("name");
 		
 		attr.setValue(name);
 		return attr;
 	}
 
-	public Node getXML(XmlTree tree, Document doc) throws ProgrammerException {
-		return toXML(doc);
+	public Node toXml(Document doc, XmlTree tree) throws InternalException {
+		return toXml(doc);
 	}
 	
 	public String toString() {

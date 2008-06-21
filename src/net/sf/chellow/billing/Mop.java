@@ -29,8 +29,10 @@ import net.sf.chellow.monad.DesignerException;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.Invocation;
 import net.sf.chellow.monad.MonadUtils;
-import net.sf.chellow.monad.ProgrammerException;
+import net.sf.chellow.monad.NotFoundException;
+import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Urlable;
+import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.UserException;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
@@ -44,22 +46,22 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 public class Mop extends ProviderOrganization {
-	public static Mop getMop(Long id) throws UserException,
-			ProgrammerException {
+	public static Mop getMop(Long id) throws HttpException,
+			InternalException {
 		Mop mop = (Mop) Hiber.session().get(Mop.class, id);
 		if (mop == null) {
-			throw UserException.newOk("There isn't a meter operator with that id.");
+			throw new UserException("There isn't a meter operator with that id.");
 		}
 		return mop;
 	}
 
 	public static void deleteMop(Mop mop)
-			throws ProgrammerException {
+			throws InternalException {
 		try {
 			Hiber.session().delete(mop);
 			Hiber.flush();
 		} catch (HibernateException e) {
-			throw new ProgrammerException(e);
+			throw new InternalException(e);
 		}
 	}
 
@@ -71,34 +73,34 @@ public class Mop extends ProviderOrganization {
 		super(name, organization);
 	}
 
-	public void httpPost(Invocation inv) throws ProgrammerException,
-			UserException, DesignerException, DeployerException {
+	public void httpPost(Invocation inv) throws InternalException,
+			HttpException, DesignerException, DeployerException {
 	}
 
 	public void httpGet(Invocation inv) throws DesignerException,
-			ProgrammerException, UserException, DeployerException {
+			InternalException, HttpException, DeployerException {
 		inv.sendOk(document());
 	}
 	
-	private Document document() throws ProgrammerException, UserException, DesignerException {
+	private Document document() throws InternalException, HttpException, DesignerException {
 		Document doc = MonadUtils.newSourceDocument();
 		Element source = doc.getDocumentElement();
-		source.appendChild(toXML(doc));
+		source.appendChild(toXml(doc));
 		return doc;
 	}
 
-	public MonadUri getUri() throws ProgrammerException, UserException {
+	public MonadUri getUri() throws InternalException, HttpException {
 		return Chellow.MOPS_INSTANCE.getUri().resolve(getUriId())
 				.append("/");
 	}
 
-	public Urlable getChild(UriPathElement uriId) throws ProgrammerException,
-			UserException {
-		throw UserException.newNotFound();
+	public Urlable getChild(UriPathElement uriId) throws InternalException,
+			HttpException {
+		throw new NotFoundException();
 	}
 
-	public void httpDelete(Invocation inv) throws ProgrammerException,
-			DesignerException, UserException, DeployerException {
+	public void httpDelete(Invocation inv) throws InternalException,
+			DesignerException, HttpException, DeployerException {
 		deleteMop(this);
 		inv.sendOk();
 	}
@@ -107,7 +109,7 @@ public class Mop extends ProviderOrganization {
 		return new MopServices(this);
 	}
 	
-	public MopService insertService(int type, String name, HhEndDate startDate, String chargeScript) throws UserException, ProgrammerException, DesignerException {
+	public MopService insertService(int type, String name, HhEndDate startDate, String chargeScript) throws HttpException, InternalException, DesignerException {
 		MopService service = new MopService(type, name, startDate, chargeScript, this);
 		Hiber.session().save(service);
 		Hiber.flush();
@@ -121,7 +123,7 @@ public class Mop extends ProviderOrganization {
 	}
 
 	@Override
-	public MopService getService(String name) throws UserException, ProgrammerException {
+	public MopService getService(String name) throws HttpException, InternalException {
 		return (MopService) Hiber.session().createQuery("from MopService service where service.provider = :provider and service.name = :serviceName").setEntity("provider", this).setString("serviceName", name).uniqueResult();
 	}
 }

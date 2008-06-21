@@ -1,6 +1,6 @@
 package net.sf.chellow.physical;
 
-import net.sf.chellow.monad.ProgrammerException;
+import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.UserException;
 import net.sf.chellow.monad.types.MonadObject;
 
@@ -28,15 +28,14 @@ public class ReadType extends MonadObject {
 			CUSTOMER = new ReadType(4);
 			COMPUTER = new ReadType(5);
 			EXCHANGE = new ReadType(6);
-		} catch (UserException e) {
+		} catch (InternalException e) {
 			throw new RuntimeException(e.getMessage());
-		} catch (ProgrammerException e) {
+		} catch (UserException e) {
 			throw new RuntimeException(e.getMessage());
 		}
 	}
 
-	public static ReadType getType(int intValue) throws UserException,
-			ProgrammerException {
+	public static ReadType getType(int intValue) throws InternalException, UserException {
 		switch (intValue) {
 		case 0:
 			return NORMAL;
@@ -53,13 +52,12 @@ public class ReadType extends MonadObject {
 		case 6:
 			return EXCHANGE;
 		default:
-			throw UserException
-					.newInvalidParameter("There isn't a read type with this int value.");
+			throw new UserException(
+					"There isn't a read type with this int value.");
 		}
 	}
 
-	public static String name(ReadType type) throws UserException,
-			ProgrammerException {
+	public static String name(ReadType type) throws InternalException, UserException {
 		switch (type.getInt()) {
 		case 0:
 			return "normal";
@@ -76,13 +74,11 @@ public class ReadType extends MonadObject {
 		case 6:
 			return "exchange";
 		default:
-			throw UserException
-					.newInvalidParameter("There isn't a Units with this int value.");
+			throw new UserException("There isn't a Units with this int value.");
 		}
 	}
 
-	public static ReadType getType(String name) throws UserException,
-			ProgrammerException {
+	public static ReadType getType(String name) throws InternalException, UserException {
 		name = name.trim().toLowerCase();
 		if (name.equals("normal")) {
 			return NORMAL;
@@ -99,8 +95,7 @@ public class ReadType extends MonadObject {
 		} else if (name.equals("exchange")) {
 			return EXCHANGE;
 		} else {
-			throw UserException
-					.newInvalidParameter("There isn't a read type with that name.");
+			throw new UserException("There isn't a read type with that name.");
 		}
 	}
 
@@ -110,14 +105,12 @@ public class ReadType extends MonadObject {
 		setTypeName("Unit");
 	}
 
-	private ReadType(int intValue) throws UserException, ProgrammerException {
+	private ReadType(int intValue) throws InternalException, UserException {
 		if (intValue < 0) {
-			throw UserException
-					.newInvalidParameter("The int value can't be negative.");
+			throw new UserException("The int value can't be negative.");
 		}
 		if (intValue > 6) {
-			throw UserException
-					.newInvalidParameter("The int value can't be greater than 3.");
+			throw new UserException("The int value can't be greater than 3.");
 		}
 		setInt(intValue);
 	}
@@ -140,13 +133,13 @@ public class ReadType extends MonadObject {
 		}
 		return isEqual;
 	}
-	
+
 	public String toString() {
 		try {
 			return name(this);
-		} catch (UserException e) {
+		} catch (InternalException e) {
 			throw new RuntimeException(e);
-		} catch (ProgrammerException e) {
+		} catch (UserException e) {
 			throw new RuntimeException(e);
 		}
 	}

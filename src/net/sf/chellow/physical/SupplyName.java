@@ -23,8 +23,8 @@
 package net.sf.chellow.physical;
 
 
-import net.sf.chellow.monad.ProgrammerException;
-import net.sf.chellow.monad.UserException;
+import net.sf.chellow.monad.InternalException;
+import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.types.MonadString;
 
 public class SupplyName extends MonadString {
@@ -34,12 +34,12 @@ public class SupplyName extends MonadString {
 		setLabel("name");
 	}
 	
-	public SupplyName(String name) throws UserException, ProgrammerException  {
+	public SupplyName(String name) throws HttpException, InternalException  {
 		this();
 		update(name);
 	}
 
-	public SupplyName(String label, String name) throws UserException, ProgrammerException {
+	public SupplyName(String label, String name) throws HttpException, InternalException {
 		this();
 		setLabel(label);
 		update(name);

@@ -1,6 +1,6 @@
 /*
  
- Copyright 2005 Meniscus Systems Ltd
+ Copyright 2005, 2008 Meniscus Systems Ltd
  
  This file is part of Chellow.
 
@@ -28,9 +28,8 @@ import net.sf.chellow.monad.types.MonadObject;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import org.w3c.dom.Node;
 
-public class VFMessage extends MonadObject {
+public class MonadMessage extends MonadObject {
 	static public final String PARAMETER_REQUIRED = "parameter_required";
 
 	// takes one paramter, 'name', which is the name of the parameter.
@@ -68,19 +67,19 @@ public class VFMessage extends MonadObject {
 
 	private List<VFParameter> params;
 
-	public VFMessage(String description) {
+	public MonadMessage(String description) {
 		init(description, null, null);
 	}
 
-	public VFMessage(String description, String code) {
+	public MonadMessage(String description, String code) {
 		init(description, code, null);
 	}
 
-	public VFMessage(String description, VFParameter[] params) {
+	public MonadMessage(String description, VFParameter[] params) {
 		init(description, null, params);
 	}
 
-	public VFMessage(String description, String code, VFParameter[] params) {
+	public MonadMessage(String description, String code, VFParameter[] params) {
 		init(description, code, params);
 	}
 
@@ -98,17 +97,17 @@ public class VFMessage extends MonadObject {
 		}
 	}
 
-	public VFMessage(String description, VFParameter param) {
+	public MonadMessage(String description, VFParameter param) {
 		init(description, null, null);
 		params.add(param);
 	}
 
-	public VFMessage(String description, String code, VFParameter param) {
+	public MonadMessage(String description, String code, VFParameter param) {
 		init(description, code, null);
 		params.add(param);
 	}
 	
-	public VFMessage(String description, String code, String paramName, String paramValue) {
+	public MonadMessage(String description, String code, String paramName, String paramValue) {
 		init(description, code, null);
 		params.add(new VFParameter(paramName, paramValue));
 	}
@@ -132,7 +131,7 @@ public class VFMessage extends MonadObject {
 		return getDescription();
 	}
 
-	public Node toXML(Document doc) {
+	public Element toXml(Document doc) {
 		Element elem = doc.createElement("message");
 
 		if (code != null) {

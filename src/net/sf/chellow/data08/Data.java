@@ -26,7 +26,7 @@ import java.sql.BatchUpdateException;
 import java.sql.SQLException;
 
 import net.sf.chellow.monad.Hiber;
-import net.sf.chellow.monad.ProgrammerException;
+import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.physical.Source;
 
 import org.hibernate.HibernateException;
@@ -54,11 +54,11 @@ public class Data {
 		return isSQLException;
 	}
 
-	protected Session session() throws ProgrammerException {
+	protected Session session() throws InternalException {
 		try {
 			return Hiber.session();
 		} catch (HibernateException e) {
-			throw new ProgrammerException(e);
+			throw new InternalException(e);
 		}
 	}
 /*
@@ -72,12 +72,12 @@ public class Data {
 		return Data.siteNameDataSource;
 	}
 */
-	public void deleteSource(Source source) throws ProgrammerException {
+	public void deleteSource(Source source) throws InternalException {
 		try {
 			session().delete(source);
 			Hiber.flush();
 		} catch (HibernateException e) {
-			throw new ProgrammerException(e);
+			throw new InternalException(e);
 		}
 	}
 /*

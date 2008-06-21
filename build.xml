@@ -120,7 +120,7 @@
 	<property name="javalib.home" value="${user.home}/java" />
 	<!-- Requires Imprimatur from http://imprimatur.sourceforge.net/ -->
 
-	<property name="imprimatur.jar" value="${javalib.home}\imprimatur-012\imprimatur.jar" />
+	<property name="imprimatur.jar" value="${javalib.home}\imprimatur-014\imprimatur.jar" />
 	<property name="test.home" value="${basedir}/test" />
 
 	<!-- ================== Custom Ant Task Definitions ======================= -->
@@ -419,7 +419,7 @@
 		</exec>
 	</target>
 -->
-	<target name="test" depends="compile">
+	<target name="test" depends="compile" description="Tests the application">
 		<antcall target="reset-db" />
 		<antcall target="install" />
 		<copy file="${test.home}/imprimatur.pre.xml" tofile="${test.home}/imprimatur.xml" />
@@ -533,7 +533,7 @@
 			<arg value="${test.home}/${test.id}/imprimatur.xml" />
 		</java>
 	</target>
-
+<!--
 	<target name="oldTest" depends="compile" description="Tests the application">
 		<exec executable="dropdb">
 			<env key="PGPORT" value="30103" />
@@ -556,6 +556,7 @@
 		</java>
 
 	</target>
+	-->
 	<!-- ==================== Javadoc Target ================================== -->
 
 	<!--

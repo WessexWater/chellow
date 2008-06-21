@@ -34,8 +34,9 @@ import net.sf.chellow.monad.DesignerException;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.Invocation;
 import net.sf.chellow.monad.MonadUtils;
-import net.sf.chellow.monad.ProgrammerException;
+import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Urlable;
+import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.UserException;
 import net.sf.chellow.monad.Invocation.HttpMethod;
 import net.sf.chellow.monad.types.MonadBoolean;
@@ -54,7 +55,7 @@ public class Channel extends PersistentEntity implements Urlable {
 	static private HttpMethod[] httpMethods = { HttpMethod.GET };
 
 	public static void addHhData(DceService dceService, List<HhDatumRaw> dataRaw)
-			throws ProgrammerException, UserException {
+			throws InternalException, HttpException {
 		Channel channel;
 		HhDatumRaw firstDatum = dataRaw.get(0);
 		try {
@@ -69,10 +70,10 @@ public class Channel extends PersistentEntity implements Urlable {
 							firstDatum.getMpanCore().toStringNoSpaces())
 					.uniqueResult();
 		} catch (HibernateException e) {
-			throw new ProgrammerException(e);
+			throw new InternalException(e);
 		}
 		if (channel == null) {
-			throw UserException.newInvalidParameter("The MPAN core "
+			throw new UserException("The MPAN core "
 					+ firstDatum.getMpanCore() + " is not set up in Chellow.");
 		}
 		channel.addHhDataBlock(dceService, dataRaw);
@@ -120,7 +121,7 @@ public class Channel extends PersistentEntity implements Urlable {
 
 	@SuppressWarnings("unchecked")
 	private void addHhDataBlock(DceService dceService, List<HhDatumRaw> dataRaw)
-			throws ProgrammerException, UserException {
+			throws InternalException, HttpException {
 		// long now = System.currentTimeMillis();
 		// Debug.print("Starting method: " + (System.currentTimeMillis() -
 		// now));
@@ -132,13 +133,13 @@ public class Channel extends PersistentEntity implements Urlable {
 			DceService actualDceService = generation.getDceService(isImport,
 					isKwh);
 			if (actualDceService == null) {
-				addSnagChannel(dceService, SnagChannel.SNAG_DATA_IGNORED, from,
+				addChannelSnag(dceService, ChannelSnag.SNAG_DATA_IGNORED, from,
 						to, false);
 				return;
 			}
 			if (!dceService.equals(actualDceService)) {
-				throw UserException
-						.newInvalidParameter("Somewhere in the block of hh data between ("
+				throw new UserException
+						("Somewhere in the block of hh data between ("
 								+ dataRaw.get(0)
 								+ ") and ("
 								+ dataRaw.get(dataRaw.size() - 1)
@@ -151,12 +152,12 @@ public class Channel extends PersistentEntity implements Urlable {
 			}
 		}
 		if (supply.getGeneration(from) == null) {
-			addSnagChannel(dceService, SnagChannel.SNAG_DATA_IGNORED, from, to,
+			addChannelSnag(dceService, ChannelSnag.SNAG_DATA_IGNORED, from, to,
 					false);
 			return;
 		}
 		if (supply.getGeneration(to) == null) {
-			addSnagChannel(dceService, SnagChannel.SNAG_DATA_IGNORED, from, to,
+			addChannelSnag(dceService, ChannelSnag.SNAG_DATA_IGNORED, from, to,
 					false);
 			return;
 		}
@@ -227,12 +228,12 @@ public class Channel extends PersistentEntity implements Urlable {
 				}
 				siteCheckTo = datumRaw.getEndDate();
 				if (datumRaw.getValue() < 0) {
-					addSnagChannel(dceService == null ? getDceService(datumRaw
+					addChannelSnag(dceService == null ? getDceService(datumRaw
 							.getEndDate()) : dceService,
-							SnagChannel.SNAG_NEGATIVE, datumRaw.getEndDate(),
+							ChannelSnag.SNAG_NEGATIVE, datumRaw.getEndDate(),
 							datumRaw.getEndDate(), false);
 				} else if (altered && originalDatum.getValue() < 0) {
-					resolveSnag(SnagChannel.SNAG_NEGATIVE, datumRaw
+					resolveSnag(ChannelSnag.SNAG_NEGATIVE, datumRaw
 							.getEndDate());
 				}
 				if (!HhDatumStatus.ACTUAL.equals(datumRaw.getStatus())) {
@@ -243,7 +244,7 @@ public class Channel extends PersistentEntity implements Urlable {
 				} else if (altered
 						&& !originalDatum.getStatus().equals(
 								HhDatumStatus.ACTUAL)) {
-					resolveSnag(SnagChannel.SNAG_NOT_ACTUAL, datumRaw
+					resolveSnag(ChannelSnag.SNAG_NOT_ACTUAL, datumRaw
 							.getEndDate());
 				}
 			}
@@ -269,7 +270,7 @@ public class Channel extends PersistentEntity implements Urlable {
 					&& resolveMissingTo.equals(prevEndDate)) {
 				// Debug.print("Starting resolvedMissing: "
 				// + (System.currentTimeMillis() - now));
-				resolveSnag(SnagChannel.SNAG_MISSING, resolveMissingFrom,
+				resolveSnag(ChannelSnag.SNAG_MISSING, resolveMissingFrom,
 						resolveMissingTo);
 				resolveMissingFrom = null;
 				resolveMissingTo = null;
@@ -295,7 +296,7 @@ public class Channel extends PersistentEntity implements Urlable {
 		if (resolveMissingTo != null && resolveMissingTo.equals(prevEndDate)) {
 			// Debug.print("About to start resolvem: "
 			// + (System.currentTimeMillis() - now));
-			resolveSnag(SnagChannel.SNAG_MISSING, resolveMissingFrom,
+			resolveSnag(ChannelSnag.SNAG_MISSING, resolveMissingFrom,
 					resolveMissingTo);
 			// Debug.print("About to finish resolvem: "
 			// + (System.currentTimeMillis() - now));
@@ -306,7 +307,7 @@ public class Channel extends PersistentEntity implements Urlable {
 
 	private void siteCheck(HhEndDate from, HhEndDate to,
 			List<SupplyGeneration> supplyGenerations)
-			throws ProgrammerException, UserException {
+			throws InternalException, HttpException {
 		// long now = System.currentTimeMillis();
 		if (isKwh) {
 			// Debug.print("Starting site check: " + (System.currentTimeMillis()
@@ -334,7 +335,7 @@ public class Channel extends PersistentEntity implements Urlable {
 
 	private void notActualSnag(HhEndDate from, HhEndDate to,
 			List<SupplyGeneration> supplyGenerations)
-			throws ProgrammerException, UserException {
+			throws InternalException, HttpException {
 		for (SupplyGeneration generation : supplyGenerations) {
 			HhEndDate checkFrom = from.getDate().after(
 					generation.getStartDate().getDate()) ? from : generation
@@ -343,35 +344,35 @@ public class Channel extends PersistentEntity implements Urlable {
 					|| to.getDate()
 							.before(generation.getFinishDate().getDate()) ? to
 					: generation.getFinishDate();
-			addSnagChannel(generation.getDceService(isImport, isKwh),
-					SnagChannel.SNAG_NOT_ACTUAL, checkFrom, checkTo, false);
+			addChannelSnag(generation.getDceService(isImport, isKwh),
+					ChannelSnag.SNAG_NOT_ACTUAL, checkFrom, checkTo, false);
 		}
 	}
 
-	private void addSnagChannel(DceService dceService, String description,
+	private void addChannelSnag(DceService dceService, String description,
 			HhEndDate startDate, HhEndDate finishDate, boolean isResolved)
-			throws ProgrammerException, UserException {
-		SnagDateBounded.addSnagChannel(dceService, this, description,
+			throws InternalException, HttpException {
+		SnagDateBounded.addChannelSnag(dceService, this, description,
 				startDate, finishDate, isResolved);
 	}
 
 	private void resolveSnag(String description, HhEndDate date)
-			throws ProgrammerException, UserException {
+			throws InternalException, HttpException {
 		resolveSnag(description, date, date);
 	}
 
 	@SuppressWarnings("unchecked")
 	private void resolveSnag(String description, HhEndDate startDate,
-			HhEndDate finishDate) throws ProgrammerException, UserException {
-		for (SnagChannel snag : (List<SnagChannel>) Hiber
+			HhEndDate finishDate) throws InternalException, HttpException {
+		for (ChannelSnag snag : (List<ChannelSnag>) Hiber
 				.session()
 				.createQuery(
-						"from SnagChannel snag where snag.channel = :channel and snag.description = :description and snag.startDate.date <= :finishDate and snag.finishDate.date >= :startDate and snag.dateResolved is null")
+						"from ChannelSnag snag where snag.channel = :channel and snag.description = :description and snag.startDate.date <= :finishDate and snag.finishDate.date >= :startDate and snag.dateResolved is null")
 				.setEntity("channel", this).setString("description",
 						description.toString()).setTimestamp("startDate",
 						startDate.getDate()).setTimestamp("finishDate",
 						finishDate.getDate()).list()) {
-			addSnagChannel(snag.getService(), description, snag.getStartDate()
+			addChannelSnag(snag.getService(), description, snag.getStartDate()
 					.getDate().before(startDate.getDate()) ? startDate : snag
 					.getStartDate(), snag.getFinishDate().getDate().after(
 					finishDate.getDate()) ? finishDate : snag.getFinishDate(),
@@ -385,14 +386,14 @@ public class Channel extends PersistentEntity implements Urlable {
 	 * getCheckToDate()); }
 	 */
 
-	private HhEndDate getCheckToDate() throws ProgrammerException,
-			UserException {
+	private HhEndDate getCheckToDate() throws InternalException,
+			HttpException {
 		HhEndDate lastSnagDate = (HhEndDate) Hiber
 				.session()
 				.createQuery(
-						"select snag.finishDate from SnagChannel snag where snag.channel = :channel and snag.description = :snagDescription and snag.dateResolved is null order by snag.finishDate.date desc")
+						"select snag.finishDate from ChannelSnag snag where snag.channel = :channel and snag.description = :snagDescription and snag.dateResolved is null order by snag.finishDate.date desc")
 				.setEntity("channel", this).setString("snagDescription",
-						SnagChannel.SNAG_MISSING).setMaxResults(1)
+						ChannelSnag.SNAG_MISSING).setMaxResults(1)
 				.uniqueResult();
 		HhEndDate finish = null;
 		SupplyGeneration generation = supply.getGenerationLast();
@@ -420,7 +421,7 @@ public class Channel extends PersistentEntity implements Urlable {
 					cal.set(Calendar.DAY_OF_MONTH, 1);
 					finish = new HhEndDate(cal.getTime());
 				} else {
-					throw new ProgrammerException("Frequency not recognized.");
+					throw new InternalException("Frequency not recognized.");
 				}
 			}
 		} else {
@@ -433,8 +434,8 @@ public class Channel extends PersistentEntity implements Urlable {
 		return finish;
 	}
 
-	public void checkForMissingFromLatest() throws ProgrammerException,
-			UserException {
+	public void checkForMissingFromLatest() throws InternalException,
+			HttpException {
 		checkForMissingFromLatest(null);
 	}
 
@@ -443,7 +444,7 @@ public class Channel extends PersistentEntity implements Urlable {
 	 * checkForMissing(null, null); }
 	 */
 	public void checkForMissingFromLatest(HhEndDate to)
-			throws ProgrammerException, UserException {
+			throws InternalException, HttpException {
 		/*
 		 * if (to == null) { to = getCheckToDate(); if (to == null) { return; } }
 		 */
@@ -455,9 +456,9 @@ public class Channel extends PersistentEntity implements Urlable {
 		Date latestMissingDate = (Date) Hiber
 				.session()
 				.createQuery(
-						"select max(snag.finishDate.date) from SnagChannel snag where snag.channel = :channel and snag.description = :description")
+						"select max(snag.finishDate.date) from ChannelSnag snag where snag.channel = :channel and snag.description = :description")
 				.setEntity("channel", this).setString("description",
-						SnagChannel.SNAG_MISSING).uniqueResult();
+						ChannelSnag.SNAG_MISSING).uniqueResult();
 		HhEndDate latestPresentDate;
 		if (latestDatumDate == null) {
 			if (latestMissingDate == null) {
@@ -485,13 +486,13 @@ public class Channel extends PersistentEntity implements Urlable {
 
 	@SuppressWarnings("unchecked")
 	public void checkForMissing(HhEndDate from, HhEndDate to)
-			throws ProgrammerException, UserException {
+			throws InternalException, HttpException {
 		if (from == null) {
 			from = supply.getGenerationFirst().getStartDate();
 		}
 		if (from.getDate().before(
 				supply.getGenerationFirst().getStartDate().getDate())) {
-			resolveSnag(SnagChannel.SNAG_MISSING, from, supply
+			resolveSnag(ChannelSnag.SNAG_MISSING, from, supply
 					.getGenerationFirst().getStartDate().getPrevious());
 			from = supply.getGenerationFirst().getStartDate();
 		}
@@ -503,7 +504,7 @@ public class Channel extends PersistentEntity implements Urlable {
 				.getFinishDate();
 		if (lastGenerationDate != null
 				&& to.getDate().after(lastGenerationDate.getDate())) {
-			resolveSnag(SnagChannel.SNAG_MISSING, lastGenerationDate.getNext(),
+			resolveSnag(ChannelSnag.SNAG_MISSING, lastGenerationDate.getNext(),
 					to);
 			to = lastGenerationDate;
 		}
@@ -524,7 +525,7 @@ public class Channel extends PersistentEntity implements Urlable {
 			HhEndDate generationFinishDate = i == generations.size() - 1 ? to
 					: generations.get(i).getFinishDate();
 			if (contractDce == null) {
-				resolveSnag(SnagChannel.SNAG_MISSING, generationStartDate,
+				resolveSnag(ChannelSnag.SNAG_MISSING, generationStartDate,
 						generationFinishDate);
 			} else {
 				HhEndDate spanStartDate = generationStartDate;
@@ -536,7 +537,7 @@ public class Channel extends PersistentEntity implements Urlable {
 							spanStartDate.getDate()).setTimestamp("finishDate",
 							spanFinishDate.getDate()).uniqueResult();
 					if (present == 0) {
-						addSnagChannel(contractDce, SnagChannel.SNAG_MISSING,
+						addChannelSnag(contractDce, ChannelSnag.SNAG_MISSING,
 								spanStartDate, spanFinishDate, false);
 						spanStartDate = HhEndDate.getNext(spanFinishDate);
 						spanFinishDate = generationFinishDate;
@@ -575,7 +576,7 @@ public class Channel extends PersistentEntity implements Urlable {
 	}
 
 	public void deleteData(HhEndDate from, int days)
-			throws ProgrammerException, UserException {
+			throws InternalException, HttpException {
 		Calendar cal = MonadDate.getCalendar();
 		cal.setTime(from.getDate());
 		cal.add(Calendar.DAY_OF_MONTH, days);
@@ -588,8 +589,8 @@ public class Channel extends PersistentEntity implements Urlable {
 				.setTimestamp("from", from.getDate()).setTimestamp("to",
 						to.getDate()).executeUpdate();
 		if (numDeleted == 0) {
-			throw UserException
-					.newInvalidParameter("There aren't any data to delete for this period.");
+			throw new UserException
+					("There aren't any data to delete for this period.");
 		}
 		checkForMissing(from, to);
 		this.siteCheck(from, to, supply.getGenerations(from, to));
@@ -606,9 +607,9 @@ public class Channel extends PersistentEntity implements Urlable {
 						to.getDate()).list();
 	}
 
-	public Element toXML(Document doc) throws ProgrammerException,
-			UserException {
-		Element element = (Element) super.toXML(doc);
+	public Element toXml(Document doc) throws InternalException,
+			HttpException {
+		Element element = (Element) super.toXml(doc);
 		element.setAttributeNode(MonadBoolean.toXml(doc, "is-import",
 				isImport));
 		element.setAttributeNode(MonadBoolean
@@ -617,15 +618,15 @@ public class Channel extends PersistentEntity implements Urlable {
 	}
 
 	public void httpGet(Invocation inv) throws DesignerException,
-			ProgrammerException, UserException, DeployerException {
+			InternalException, HttpException, DeployerException {
 		Document doc = MonadUtils.newSourceDocument();
 		Element source = doc.getDocumentElement();
-		Element channelElement = toXML(doc);
+		Element channelElement = toXml(doc);
 		source.appendChild(channelElement);
-		Element supplyElement = getSupply().toXML(doc);
-		supplyElement.appendChild(supply.getOrganization().toXML(doc));
+		Element supplyElement = getSupply().toXml(doc);
+		supplyElement.appendChild(supply.getOrganization().toXml(doc));
 		channelElement.appendChild(supplyElement);
-		supplyElement.appendChild(getSupply().getOrganization().toXML(doc));
+		supplyElement.appendChild(getSupply().getOrganization().toXml(doc));
 		inv.sendOk(doc);
 	}
 
@@ -633,13 +634,13 @@ public class Channel extends PersistentEntity implements Urlable {
 		return new HhData(this);
 	}
 
-	public void httpPost(Invocation inv) throws ProgrammerException,
-			UserException {
+	public void httpPost(Invocation inv) throws InternalException,
+			HttpException {
 
 	}
 
-	public Urlable getChild(UriPathElement uriId) throws UserException,
-			ProgrammerException {
+	public Urlable getChild(UriPathElement uriId) throws HttpException,
+			InternalException {
 		Urlable child = null;
 		if (HhData.URI_ID.equals(uriId)) {
 			child = new HhData(this);
@@ -647,12 +648,12 @@ public class Channel extends PersistentEntity implements Urlable {
 		return child;
 	}
 
-	public void httpDelete(Invocation inv) throws ProgrammerException,
-			UserException {
+	public void httpDelete(Invocation inv) throws InternalException,
+			HttpException {
 		inv.sendMethodNotAllowed(httpMethods);
 	}
 
-	public MonadUri getUri() throws ProgrammerException, UserException {
+	public MonadUri getUri() throws InternalException, HttpException {
 		return supply.getChannelsInstance().getUri().resolve(getUriId());
 	}
 

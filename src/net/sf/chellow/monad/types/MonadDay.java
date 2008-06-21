@@ -22,11 +22,11 @@
 
 package net.sf.chellow.monad.types;
 
-import net.sf.chellow.monad.ProgrammerException;
+import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.UserException;
 
 public class MonadDay extends MonadInteger {
-	public MonadDay(String day) throws UserException, ProgrammerException {
+	public MonadDay(String day) throws InternalException, UserException {
 		setLabel("day");
 		setMinimum(1);
 		setMaximum(31);

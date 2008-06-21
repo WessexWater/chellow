@@ -30,8 +30,10 @@ import net.sf.chellow.monad.DesignerException;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.Invocation;
 import net.sf.chellow.monad.MonadUtils;
-import net.sf.chellow.monad.ProgrammerException;
+import net.sf.chellow.monad.NotFoundException;
+import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Urlable;
+import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.UserException;
 import net.sf.chellow.monad.Invocation.HttpMethod;
 import net.sf.chellow.monad.types.MonadUri;
@@ -47,49 +49,49 @@ import org.w3c.dom.Node;
 public class Source extends PersistentEntity implements Urlable {
 	static private HttpMethod[] ALLOWED_METHODS = { HttpMethod.GET };
 
-	static public Source getSource(Long id) throws ProgrammerException,
-			UserException {
+	static public Source getSource(Long id) throws InternalException,
+			HttpException {
 		try {
 			Source source = (Source) Hiber.session().get(Source.class, id);
 			if (source == null) {
-				throw UserException.newOk("There is no source with that id.");
+				throw new UserException("There is no source with that id.");
 			}
 			return source;
 		} catch (HibernateException e) {
-			throw new ProgrammerException(e);
+			throw new InternalException(e);
 		}
 	}
 
 	static public Source getSource(SourceCode sourceCode)
-			throws ProgrammerException, UserException {
+			throws InternalException, HttpException {
 		Source source = findSource(sourceCode.getString());
 		if (source == null) {
-			throw UserException.newNotFound();
+			throw new NotFoundException();
 		}
 		return source;
 	}
 
-	static public Source findSource(String code) throws ProgrammerException,
-			UserException {
+	static public Source findSource(String code) throws InternalException,
+			HttpException {
 		return (Source) Hiber.session().createQuery(
 				"from Source as source where " + "source.code.string = :code")
 				.setString("code", code).uniqueResult();
 	}
 
 	@SuppressWarnings("unchecked")
-	static public List<Source> getSources() throws ProgrammerException,
-			UserException {
+	static public List<Source> getSources() throws InternalException,
+			HttpException {
 		return (List<Source>) Hiber.session().createQuery(
 				"from Source as source").list();
 	}
 
 	static public Source insertSource(String code, String name)
-			throws ProgrammerException, UserException {
+			throws InternalException, HttpException {
 		return insertSource(new SourceCode(code), new SourceName(name));
 	}
 
 	static public Source insertSource(SourceCode code, SourceName name)
-			throws ProgrammerException, UserException {
+			throws InternalException, HttpException {
 
 		Source source = null;
 		try {
@@ -100,10 +102,10 @@ public class Source extends PersistentEntity implements Urlable {
 			if (Data
 					.isSQLException(e,
 							"ERROR: duplicate key violates unique constraint \"site_code_key\"")) {
-				throw UserException
-						.newOk("A site with this code already exists.");
+				throw new UserException
+						("A site with this code already exists.");
 			} else {
-				throw new ProgrammerException(e);
+				throw new InternalException(e);
 			}
 		}
 		return source;
@@ -157,11 +159,11 @@ public class Source extends PersistentEntity implements Urlable {
 		setName(name);
 	}
 
-	public Node toXML(Document doc) throws ProgrammerException, UserException {
-		Element element = (Element) super.toXML(doc);
+	public Node toXml(Document doc) throws InternalException, HttpException {
+		Element element = (Element) super.toXml(doc);
 
-		element.setAttributeNode((Attr) code.toXML(doc));
-		element.setAttributeNode((Attr) getName().toXML(doc));
+		element.setAttributeNode((Attr) code.toXml(doc));
+		element.setAttributeNode((Attr) getName().toXml(doc));
 		return element;
 	}
 
@@ -172,30 +174,30 @@ public class Source extends PersistentEntity implements Urlable {
 	}
 	*/
 
-	public MonadUri getUri() throws ProgrammerException, UserException {
+	public MonadUri getUri() throws InternalException, HttpException {
 		return Chellow.SOURCES_INSTANCE.getUri().resolve(getUriId());
 	}
 
 	public void httpGet(Invocation inv) throws DesignerException,
-			ProgrammerException, UserException, DeployerException {
+			InternalException, HttpException, DeployerException {
 		Document doc = MonadUtils.newSourceDocument();
 		Element sourceElement = doc.getDocumentElement();
-		sourceElement.appendChild(toXML(doc));
+		sourceElement.appendChild(toXml(doc));
 		inv.sendOk(doc);
 	}
 
-	public void httpPost(Invocation inv) throws ProgrammerException,
-			UserException {
+	public void httpPost(Invocation inv) throws InternalException,
+			HttpException {
 		inv.sendMethodNotAllowed(ALLOWED_METHODS);
 	}
 
-	public Urlable getChild(UriPathElement uriId) throws ProgrammerException,
-			UserException {
-		throw UserException.newNotFound();
+	public Urlable getChild(UriPathElement uriId) throws InternalException,
+			HttpException {
+		throw new NotFoundException();
 	}
 
-	public void httpDelete(Invocation inv) throws ProgrammerException,
-			DesignerException, UserException, DeployerException {
+	public void httpDelete(Invocation inv) throws InternalException,
+			DesignerException, HttpException, DeployerException {
 		inv.sendMethodNotAllowed(ALLOWED_METHODS);
 	}
 }

@@ -5,4 +5,4 @@ snag_id = inv.getLong('snag-id')
 snag = AccountSnag.getAccountSnag(snag_id)
 if not snag.getService().getProvider().getOrganization().equals(organization):
     raise UserException.newInvalidParameter("Such a snag doesn't exist in this organization")
-source.appendChild(snag.getXML(XmlTree('service', XmlTree('provider', XmlTree('organization'))).put('account'), doc))
+source.appendChild(snag.toXml(XmlTree('service', XmlTree('provider', XmlTree('organization'))).put('account'), doc))

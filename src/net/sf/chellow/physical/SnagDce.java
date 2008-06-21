@@ -24,22 +24,19 @@ package net.sf.chellow.physical;
 
 import net.sf.chellow.billing.DceService;
 import net.sf.chellow.monad.Hiber;
-import net.sf.chellow.monad.ProgrammerException;
-import net.sf.chellow.monad.UserException;
-
+import net.sf.chellow.monad.NotFoundException;
+import net.sf.chellow.monad.InternalException;
 
 public abstract class SnagDce extends Snag {
-	static public SnagDce getSnag(Long id) throws UserException,
-			ProgrammerException {
+	static public SnagDce getSnag(Long id) throws InternalException, NotFoundException {
 		SnagDce snag = (SnagDce) Hiber.session().get(SnagDce.class, id);
 		if (snag == null) {
-			throw UserException.newNotFound();
+			throw new NotFoundException();
 		}
 		return snag;
 	}
 
-	static public SnagDce getSnag(String id) throws UserException,
-			ProgrammerException {
+	static public SnagDce getSnag(String id) throws InternalException, NotFoundException {
 		return getSnag(Long.parseLong(id));
 	}
 
@@ -49,7 +46,7 @@ public abstract class SnagDce extends Snag {
 	}
 
 	public SnagDce(String description, DceService dceService)
-			throws ProgrammerException, UserException {
+			throws InternalException {
 		super(description);
 		this.dceService = dceService;
 	}
@@ -65,12 +62,12 @@ public abstract class SnagDce extends Snag {
 	public void update() {
 	}
 
-	public SnagDce copy() throws ProgrammerException {
+	public SnagDce copy() throws InternalException {
 		SnagDce cloned;
 		try {
 			cloned = (SnagDce) super.clone();
 		} catch (CloneNotSupportedException e) {
-			throw new ProgrammerException(e);
+			throw new InternalException(e);
 		}
 		cloned.setId(null);
 		return cloned;

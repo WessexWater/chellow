@@ -1,6 +1,6 @@
 /*
  
- Copyright 2005 Meniscus Systems Ltd
+ Copyright 2005, 2008 Meniscus Systems Ltd
  
  This file is part of Chellow.
 
@@ -27,9 +27,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
-import net.sf.chellow.monad.DesignerException;
-import net.sf.chellow.monad.ProgrammerException;
-import net.sf.chellow.monad.UserException;
+import net.sf.chellow.monad.HttpException;
+import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.XmlDescriber;
 import net.sf.chellow.monad.XmlTree;
 
@@ -74,7 +73,7 @@ public abstract class MonadObject implements MonadValidatable, XmlDescriber {
 		this.typeName = typeName;
 	}
 
-	public Node toXML(Document doc) throws ProgrammerException, UserException {
+	public Node toXml(Document doc) throws HttpException {
 		Element element = doc.createElement(getTypeName());
 
 		if (label != null) {
@@ -91,9 +90,8 @@ public abstract class MonadObject implements MonadValidatable, XmlDescriber {
 	}
 
 	@SuppressWarnings("unchecked")
-	public Node getXML(XmlTree tree, Document doc) throws ProgrammerException,
-			UserException, DesignerException {
-		Node node = toXML(doc);
+	public Node toXml(Document doc, XmlTree tree) throws HttpException {
+		Node node = toXml(doc);
 
 		for (Iterator<String> it = tree.keyIterator(); it.hasNext();) {
 			String methodBase = it.next();
@@ -128,24 +126,24 @@ public abstract class MonadObject implements MonadValidatable, XmlDescriber {
 					}
 				}
 			} catch (SecurityException e) {
-				throw new ProgrammerException(e);
+				throw new InternalException(e);
 			} catch (IllegalArgumentException e) {
-				throw new ProgrammerException(e);
+				throw new InternalException(e);
 			} catch (IllegalAccessException e) {
-				throw new ProgrammerException(e);
+				throw new InternalException(e);
 			} catch (InvocationTargetException e) {
-				throw new ProgrammerException(e);
+				throw new InternalException(e);
 			} catch (NoSuchMethodException e) {
-				throw new ProgrammerException(e);
+				throw new InternalException(e);
 			}
 		}
 		return node;
 	}
 
 	private Node describerNode(Document doc, XmlDescriber describer,
-			XmlTree tree) throws ProgrammerException, UserException, DesignerException {
-		return (tree == null) ? describer.toXML(doc) : describer.getXML(tree,
-				doc);
+			XmlTree tree) throws HttpException {
+		return (tree == null) ? describer.toXml(doc) : describer.toXml(doc,
+				tree);
 	}
 
 	public boolean equals(Object obj) {

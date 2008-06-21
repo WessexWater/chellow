@@ -22,26 +22,21 @@
 
 package net.sf.chellow.monad;
 
-public class ProgrammerException extends Exception {
+import javax.servlet.http.HttpServletResponse;
+
+public class InternalException extends HttpException {
 	private static final long serialVersionUID = 1L;
 
-	public ProgrammerException(String message) {
-		super(message);
+	public InternalException(String message) throws InternalException {
+		this(message, null);
 	}
 
-	public ProgrammerException(String message, Throwable cause) {
-		super(message, cause);
-		if (cause == null) {
-			throw new IllegalArgumentException("The 'cause' "
-					+ "argument must not be null.");
-		}
+	public InternalException(Throwable cause) throws InternalException {
+		this(null, cause);
 	}
-
-	public ProgrammerException(Throwable cause) {
-		super(cause);
-		if (cause == null) {
-			throw new IllegalArgumentException("The 'nestedException' "
-					+ "argument must not be null.");
-		}
-	}
+	
+	public InternalException(String message, Throwable cause) throws InternalException {
+	super(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, null, message,
+				null, cause);
+}
 }

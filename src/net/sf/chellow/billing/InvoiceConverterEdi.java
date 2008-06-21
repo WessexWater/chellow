@@ -41,7 +41,8 @@ import net.sf.chellow.data08.MpanCoreRaw;
 import net.sf.chellow.data08.MpanRaw;
 import net.sf.chellow.monad.Debug;
 import net.sf.chellow.monad.Hiber;
-import net.sf.chellow.monad.ProgrammerException;
+import net.sf.chellow.monad.InternalException;
+import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.UserException;
 import net.sf.chellow.monad.types.MonadDate;
 import net.sf.chellow.physical.HhEndDate;
@@ -82,13 +83,13 @@ public class InvoiceConverterEdi implements InvoiceConverter {
 
 	private List<InvoiceRaw> rawInvoices = new ArrayList<InvoiceRaw>();
 
-	public InvoiceConverterEdi(Reader reader) throws UserException,
-			ProgrammerException {
+	public InvoiceConverterEdi(Reader reader) throws HttpException,
+			InternalException {
 		lreader = new LineNumberReader(reader);
 	}
 
-	public List<InvoiceRaw> getRawInvoices() throws UserException,
-			ProgrammerException {
+	public List<InvoiceRaw> getRawInvoices() throws HttpException,
+			InternalException {
 		Hiber.flush();
 		String line;
 		try {
@@ -110,8 +111,8 @@ public class InvoiceConverterEdi implements InvoiceConverter {
 				if (line.endsWith("'")) {
 					segment = new Segment(line.substring(0, line.length() - 1));
 				} else {
-					throw UserException
-							.newInvalidParameter("This parser expects one segment per line.");
+					throw new UserException
+							("This parser expects one segment per line.");
 				}
 				String code = segment.getCode();
 				if (code.equals("CLO")) {
@@ -286,9 +287,9 @@ public class InvoiceConverterEdi implements InvoiceConverter {
 			lreader.close();
 			Hiber.flush();
 		} catch (IOException e) {
-			throw UserException.newOk("Can't read EDF Energy mm file.");
-		} catch (UserException e) {
-			throw UserException.newInvalidParameter("Problem at line "
+			throw new UserException("Can't read EDF Energy mm file.");
+		} catch (HttpException e) {
+			throw new UserException("Problem at line "
 					+ lreader.getLineNumber() + " of the EDI file. "
 					+ e.getMessage());
 		}
@@ -362,14 +363,14 @@ public class InvoiceConverterEdi implements InvoiceConverter {
 			return components;
 		}
 
-		public HhEndDate getDate(int index) throws ProgrammerException,
-				UserException {
+		public HhEndDate getDate(int index) throws InternalException,
+				HttpException {
 			DateFormat dateFormat = new SimpleDateFormat("yyMMdd", Locale.UK);
 			dateFormat.setCalendar(MonadDate.getCalendar());
 			try {
 				return new HhEndDate(dateFormat.parse(components.get(index)));
 			} catch (ParseException e) {
-				throw UserException.newInvalidParameter("Expected component "
+				throw new UserException("Expected component "
 						+ index + " of element " + this.index + " of segment '"
 						+ segment + "' to be a date. " + e.getMessage());
 			}
@@ -384,16 +385,16 @@ public class InvoiceConverterEdi implements InvoiceConverter {
 			return result;
 		}
 
-		public ReadType getReadType(int index) throws UserException,
-				ProgrammerException {
+		public ReadType getReadType(int index) throws HttpException,
+				InternalException {
 			return readTypeMap.get(getInt(index));
 		}
 
-		public int getInt(int index) throws UserException, ProgrammerException {
+		public int getInt(int index) throws HttpException, InternalException {
 			try {
 				return Integer.parseInt(components.get(index));
 			} catch (NumberFormatException e) {
-				throw UserException.newInvalidParameter("Expected component "
+				throw new UserException("Expected component "
 						+ index + " of element " + this.index + " of segment '"
 						+ segment + "' to be an integer. " + e.getMessage());
 			}
@@ -432,7 +433,7 @@ public class InvoiceConverterEdi implements InvoiceConverter {
 				boolean isImport, DayFinishDate previousDate,
 				float previousValue, ReadType previousType,
 				DayFinishDate currentDate, float currentValue,
-				ReadType currentType) throws ProgrammerException {
+				ReadType currentType) throws InternalException {
 			this.coefficient = coefficient;
 			this.meterSerialNumber = meterSerialNumber;
 			this.units = units;

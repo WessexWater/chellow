@@ -23,8 +23,8 @@
 package net.sf.chellow.physical;
 
 
-import net.sf.chellow.monad.ProgrammerException;
-import net.sf.chellow.monad.UserException;
+import net.sf.chellow.monad.InternalException;
+import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.types.MonadInteger;
 
 public class ContractFrequency extends MonadInteger {
@@ -36,9 +36,7 @@ public class ContractFrequency extends MonadInteger {
 		try {
 			DAILY = new ContractFrequency(0);
 			MONTHLY = new ContractFrequency(1);
-		} catch (UserException e) {
-			throw new RuntimeException(e);
-		} catch (ProgrammerException e) {
+		} catch (HttpException e) {
 			throw new RuntimeException(e);
 		}
 	}
@@ -47,13 +45,13 @@ public class ContractFrequency extends MonadInteger {
 		setTypeName("frequency");
 	}
 
-	public ContractFrequency(String label, String integerString) throws UserException, ProgrammerException {
+	public ContractFrequency(String label, String integerString) throws HttpException, InternalException {
 		this();
 		setLabel(label);
 		update(integerString);
 	}
 	
-	public ContractFrequency(int intValue) throws UserException, ProgrammerException {
+	public ContractFrequency(int intValue) throws HttpException, InternalException {
 		this();
 		update(intValue);
 	}

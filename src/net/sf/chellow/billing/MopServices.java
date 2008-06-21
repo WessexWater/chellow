@@ -30,8 +30,10 @@ import net.sf.chellow.monad.DesignerException;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.Invocation;
 import net.sf.chellow.monad.MonadUtils;
-import net.sf.chellow.monad.ProgrammerException;
+import net.sf.chellow.monad.NotFoundException;
+import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Urlable;
+import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.UserException;
 import net.sf.chellow.monad.XmlDescriber;
 import net.sf.chellow.monad.XmlTree;
@@ -51,9 +53,7 @@ public class MopServices implements Urlable, XmlDescriber {
 	static {
 		try {
 			URI_ID = new UriPathElement("services");
-		} catch (UserException e) {
-			throw new RuntimeException(e);
-		} catch (ProgrammerException e) {
+		} catch (HttpException e) {
 			throw new RuntimeException(e);
 		}
 	}
@@ -68,18 +68,18 @@ public class MopServices implements Urlable, XmlDescriber {
 		return URI_ID;
 	}
 
-	public MonadUri getUri() throws ProgrammerException, UserException {
+	public MonadUri getUri() throws InternalException, HttpException {
 		return mop.getUri().resolve(getUrlId()).append("/");
 	}
 
-	public void httpPost(Invocation inv) throws ProgrammerException,
-			UserException, DesignerException, DeployerException {
+	public void httpPost(Invocation inv) throws InternalException,
+			HttpException, DesignerException, DeployerException {
 		int type = inv.getInteger("type");
 		String name = inv.getString("name");
 		Date startDate = inv.getDate("start-date");
 		String chargeScript = inv.getString("charge-script");
 		if (!inv.isValid()) {
-			throw UserException.newInvalidParameter(document());
+			throw new UserException(document());
 		}
 		MopService service = mop.insertService(type, name, HhEndDate.roundDown(startDate), chargeScript);
 		Hiber.commit();
@@ -87,29 +87,29 @@ public class MopServices implements Urlable, XmlDescriber {
 	}
 
 	@SuppressWarnings("unchecked")
-	private Document document() throws ProgrammerException, UserException, DesignerException {
+	private Document document() throws InternalException, HttpException, DesignerException {
 		Document doc = MonadUtils.newSourceDocument();
 		Element source = doc.getDocumentElement();
-		Element contractsElement = (Element) toXML(doc);
+		Element contractsElement = (Element) toXml(doc);
 		source.appendChild(contractsElement);
-		contractsElement.appendChild(mop.toXML(doc));
+		contractsElement.appendChild(mop.toXml(doc));
 		for (DceService contract : (List<DceService>) Hiber
 				.session()
 				.createQuery(
 						"from ContractDce contract where contract.mop = :mop order by contract.name")
 				.setEntity("mop", mop).list()) {
-			contractsElement.appendChild(contract.toXML(doc));
+			contractsElement.appendChild(contract.toXml(doc));
 		}
 		return doc;
 	}
 
 	public void httpGet(Invocation inv) throws DesignerException,
-			ProgrammerException, UserException, DeployerException {
+			InternalException, HttpException, DeployerException {
 		inv.sendOk(document());
 	}
 
-	public Service getChild(UriPathElement uriId) throws UserException,
-			ProgrammerException {
+	public Service getChild(UriPathElement uriId) throws HttpException,
+			InternalException {
 		Service contract = (Service) Hiber
 				.session()
 				.createQuery(
@@ -117,24 +117,24 @@ public class MopServices implements Urlable, XmlDescriber {
 				.setEntity("mop", mop).setLong("serviceId",
 						Long.parseLong(uriId.getString())).uniqueResult();
 		if (contract == null) {
-			throw UserException.newNotFound();
+			throw new NotFoundException();
 		}
 		return contract;
 	}
 
-	public void httpDelete(Invocation inv) throws ProgrammerException,
-			UserException {
+	public void httpDelete(Invocation inv) throws InternalException,
+			HttpException {
 		// TODO Auto-generated method stub
 
 	}
 
-	public Node toXML(Document doc) throws ProgrammerException, UserException {
+	public Node toXml(Document doc) throws InternalException, HttpException {
 		Element contractsElement = doc.createElement("mop-services");
 		return contractsElement;
 	}
 
-	public Node getXML(XmlTree tree, Document doc) throws ProgrammerException,
-			UserException {
+	public Node toXml(Document doc, XmlTree tree) throws InternalException,
+			HttpException {
 		// TODO Auto-generated method stub
 		return null;
 	}

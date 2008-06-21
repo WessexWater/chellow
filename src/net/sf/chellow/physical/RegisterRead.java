@@ -7,10 +7,10 @@ import net.sf.chellow.monad.DesignerException;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.Invocation;
 import net.sf.chellow.monad.MonadUtils;
-import net.sf.chellow.monad.ProgrammerException;
+import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Urlable;
-import net.sf.chellow.monad.UserException;
-import net.sf.chellow.monad.VFMessage;
+import net.sf.chellow.monad.HttpException;
+import net.sf.chellow.monad.MonadMessage;
 import net.sf.chellow.monad.XmlTree;
 import net.sf.chellow.monad.types.MonadDate;
 import net.sf.chellow.monad.types.MonadUri;
@@ -64,11 +64,11 @@ public class RegisterRead extends PersistentEntity {
 	}
 
 	public RegisterRead(Mpan mpan, RegisterReadRaw rawRegisterRead,
-			Invoice invoice) throws UserException, ProgrammerException {
+			Invoice invoice) throws HttpException, InternalException {
 		this();
 		setMpan(mpan);
 		if (invoice == null) {
-			throw new ProgrammerException("The invoice must not be null.");
+			throw new InternalException("The invoice must not be null.");
 		}
 		setInvoice(invoice);
 		setTpr(Tpr.getTpr(rawRegisterRead.getTpr()));
@@ -180,37 +180,37 @@ public class RegisterRead extends PersistentEntity {
 		this.presentType = presentType;
 	}
 
-	public Urlable getChild(UriPathElement uriId) throws ProgrammerException,
-			UserException {
+	public Urlable getChild(UriPathElement uriId) throws InternalException,
+			HttpException {
 		return null;
 	}
 
-	public MonadUri getUri() throws ProgrammerException, UserException {
+	public MonadUri getUri() throws InternalException, HttpException {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
-	public void httpDelete(Invocation inv) throws ProgrammerException,
-			DesignerException, UserException, DeployerException {
+	public void httpDelete(Invocation inv) throws InternalException,
+			DesignerException, HttpException, DeployerException {
 		// TODO Auto-generated method stub
 
 	}
 
 	public void httpGet(Invocation inv) throws DesignerException,
-			ProgrammerException, UserException, DeployerException {
+			InternalException, HttpException, DeployerException {
 		inv.sendOk(document());
 	}
 
-	public void httpPost(Invocation inv) throws ProgrammerException,
-			UserException, DesignerException, DeployerException {
+	public void httpPost(Invocation inv) throws InternalException,
+			HttpException, DesignerException, DeployerException {
 		if (inv.hasParameter("delete")) {
 			delete();
 			Hiber.commit();
 			Document doc = document();
 			Element source = doc.getDocumentElement();
-			source.appendChild(new VFMessage(
+			source.appendChild(new MonadMessage(
 					"This register read has been successfully deleted.")
-					.toXML(doc));
+					.toXml(doc));
 			inv.sendOk(doc);
 		}
 	}
@@ -220,32 +220,32 @@ public class RegisterRead extends PersistentEntity {
 	}
 
 	@SuppressWarnings("unchecked")
-	private Document document() throws ProgrammerException, UserException,
+	private Document document() throws InternalException, HttpException,
 			DesignerException {
 		Document doc = MonadUtils.newSourceDocument();
 		Element source = doc.getDocumentElement();
-		source.appendChild(getXML(new XmlTree("invoice", new XmlTree("batch",
-				new XmlTree("service", new XmlTree("provider", new XmlTree(
-						"organization"))))).put(
-				"mpan",
-				new XmlTree("supplyGeneration", new XmlTree("supply"))
-						.put("mpanRaw")).put("tpr"), doc));
+		source.appendChild(toXml(doc, new XmlTree("invoice", new XmlTree("batch",
+								new XmlTree("service", new XmlTree("provider", new XmlTree(
+										"organization"))))).put(
+								"mpan",
+								new XmlTree("supplyGeneration", new XmlTree("supply"))
+										.put("mpanRaw")).put("tpr")));
 		source.appendChild(MonadDate.getMonthsXml(doc));
 		source.appendChild(MonadDate.getDaysXml(doc));
 		return doc;
 	}
 
-	public Node toXML(Document doc) throws ProgrammerException, UserException {
-		Element element = (Element) super.toXML(doc);
+	public Node toXml(Document doc) throws InternalException, HttpException {
+		Element element = (Element) super.toXml(doc);
 		element.setAttribute("coefficient", Float.toString(coefficient));
 		element.setAttribute("units", units.toString());
 		element.setAttribute("is-import", Boolean.toString(isImport));
 		previousDate.setLabel("previous");
-		element.appendChild(previousDate.toXML(doc));
+		element.appendChild(previousDate.toXml(doc));
 		element.setAttribute("previous-value", Float.toString(previousValue));
 		element.setAttribute("previous-type", previousType.toString());
 		presentDate.setLabel("present");
-		element.appendChild(presentDate.toXML(doc));
+		element.appendChild(presentDate.toXml(doc));
 		element.setAttribute("present-value", Float.toString(presentValue));
 		element.setAttribute("present-type", presentType.toString());
 		return element;

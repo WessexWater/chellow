@@ -4,9 +4,9 @@ import net.sf.chellow.monad.DeployerException;
 import net.sf.chellow.monad.DesignerException;
 import net.sf.chellow.monad.Invocation;
 import net.sf.chellow.monad.MonadUtils;
-import net.sf.chellow.monad.ProgrammerException;
+import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Urlable;
-import net.sf.chellow.monad.UserException;
+import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.XmlDescriber;
 import net.sf.chellow.monad.XmlTree;
 
@@ -31,7 +31,7 @@ public class ReportScriptOutput implements Urlable, XmlDescriber {
 	private ReportScreen reportScreen;
 
 	public ReportScriptOutput(ReportScreen reportScreen)
-			throws ProgrammerException, UserException {
+			throws InternalException, HttpException {
 		this.reportScreen = reportScreen;
 	}
 
@@ -39,66 +39,66 @@ public class ReportScriptOutput implements Urlable, XmlDescriber {
 		return reportScreen;
 	}
 
-	public Urlable getChild(UriPathElement uriId) throws ProgrammerException,
-			UserException {
+	public Urlable getChild(UriPathElement uriId) throws InternalException,
+			HttpException {
 		return null;
 	}
 
-	public MonadUri getUri() throws ProgrammerException, UserException {
+	public MonadUri getUri() throws InternalException, HttpException {
 		return reportScreen.getUri().resolve(URI_ID).append("/");
 	}
 
 	public void httpGet(Invocation inv) throws DesignerException,
-			ProgrammerException, UserException, DeployerException {
+			InternalException, HttpException, DeployerException {
 		Document doc = MonadUtils.newSourceDocument();
 		try {
 			reportScreen.run(inv, doc);
 			inv.sendOk(doc, null,
 					null);
-		} catch (UserException e) {
+		} catch (HttpException e) {
 			e.setDocument(document());
 			throw e;
 		}
 	}
 
-	private Document document() throws ProgrammerException, UserException,
+	private Document document() throws InternalException, HttpException,
 			DesignerException {
 		Document doc = MonadUtils.newSourceDocument();
 		Element source = doc.getDocumentElement();
-		Element scriptOutputElement = (Element) toXML(doc);
+		Element scriptOutputElement = (Element) toXml(doc);
 		source.appendChild(scriptOutputElement);
-		Element screenElement = (Element) getReportScreen().toXML(doc);
+		Element screenElement = (Element) getReportScreen().toXml(doc);
 		scriptOutputElement.appendChild(screenElement);
-		Element reportElement = (Element) getReportScreen().getReport().toXML(
+		Element reportElement = (Element) getReportScreen().getReport().toXml(
 				doc);
 		screenElement.appendChild(reportElement);
 		Element reportsElement = (Element) getReportScreen().getReport()
-				.getReports().toXML(doc);
+				.getReports().toXml(doc);
 		reportElement.appendChild(reportsElement);
 		Element organizationElement = (Element) getReportScreen().getReport()
-				.getReports().getOrganization().toXML(doc);
+				.getReports().getOrganization().toXml(doc);
 		reportsElement.appendChild(organizationElement);
 		return doc;
 	}
 
-	public void httpPost(Invocation inv) throws ProgrammerException,
-			UserException, DesignerException, DeployerException {
+	public void httpPost(Invocation inv) throws InternalException,
+			HttpException, DesignerException, DeployerException {
 	}
 
-	public void httpDelete(Invocation inv) throws ProgrammerException,
-			DesignerException, UserException, DeployerException {
+	public void httpDelete(Invocation inv) throws InternalException,
+			DesignerException, HttpException, DeployerException {
 		// TODO Auto-generated method stub
 
 	}
 
-	public Node toXML(Document doc) throws ProgrammerException, UserException,
+	public Node toXml(Document doc) throws InternalException, HttpException,
 			DesignerException {
 		Element element = doc.createElement("report-script-output");
 		return element;
 	}
 
-	public Node getXML(XmlTree tree, Document doc) throws ProgrammerException,
-			UserException {
+	public Node toXml(Document doc, XmlTree tree) throws InternalException,
+			HttpException {
 		// TODO Auto-generated method stub
 		return null;
 	}

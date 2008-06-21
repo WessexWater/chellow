@@ -27,8 +27,9 @@ import net.sf.chellow.monad.DesignerException;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.Invocation;
 import net.sf.chellow.monad.MonadUtils;
-import net.sf.chellow.monad.ProgrammerException;
-import net.sf.chellow.monad.UserException;
+import net.sf.chellow.monad.NotFoundException;
+import net.sf.chellow.monad.InternalException;
+import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.XmlTree;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.physical.HhEndDate;
@@ -40,12 +41,12 @@ import org.w3c.dom.Element;
 public class AccountSnag extends SnagDateBounded {
 	public static final String MISSING_BILL = "Missing bill.";
 
-	public static AccountSnag getAccountSnag(Long id) throws UserException,
-			ProgrammerException {
+	public static AccountSnag getAccountSnag(Long id) throws HttpException,
+			InternalException {
 		AccountSnag snag = (AccountSnag) Hiber.session().get(AccountSnag.class,
 				id);
 		if (snag == null) {
-			throw UserException.newNotFound();
+			throw new NotFoundException();
 		}
 		return snag;
 	}
@@ -68,7 +69,7 @@ public class AccountSnag extends SnagDateBounded {
 
 	public AccountSnag(String description, Service service, Account account,
 			HhEndDate startDate, HhEndDate finishDate)
-			throws ProgrammerException, UserException {
+			throws InternalException, HttpException {
 		super(description, startDate, finishDate);
 		this.account = account;
 		this.service = service;
@@ -98,18 +99,18 @@ public class AccountSnag extends SnagDateBounded {
 	public void update() {
 	}
 
-	public Element toXML(Document doc) throws ProgrammerException,
-			UserException {
-		Element element = (Element) super.toXML(doc);
+	public Element toXml(Document doc) throws InternalException,
+			HttpException {
+		Element element = (Element) super.toXml(doc);
 		return element;
 	}
 
-	public AccountSnag copy() throws ProgrammerException {
+	public AccountSnag copy() throws InternalException {
 		AccountSnag cloned;
 		try {
 			cloned = (AccountSnag) super.clone();
 		} catch (CloneNotSupportedException e) {
-			throw new ProgrammerException(e);
+			throw new InternalException(e);
 		}
 		cloned.setId(null);
 		return cloned;
@@ -120,26 +121,26 @@ public class AccountSnag extends SnagDateBounded {
 	}
 
 	public void httpGet(Invocation inv) throws DesignerException,
-			ProgrammerException, UserException, DeployerException {
+			InternalException, HttpException, DeployerException {
 		inv.sendOk(document());
 	}
 
-	private Document document() throws ProgrammerException, UserException,
+	private Document document() throws InternalException, HttpException,
 			DesignerException {
 		Document doc = MonadUtils.newSourceDocument();
 		Element sourceElement = doc.getDocumentElement();
-		sourceElement.appendChild(getXML(new XmlTree("service", new XmlTree(
-				"provider", new XmlTree("organization"))).put("account"), doc));
+		sourceElement.appendChild(toXml(doc, new XmlTree("service", new XmlTree(
+						"provider", new XmlTree("organization"))).put("account")));
 		return doc;
 	}
 
-	public void httpDelete(Invocation inv) throws ProgrammerException,
-			DesignerException, UserException, DeployerException {
+	public void httpDelete(Invocation inv) throws InternalException,
+			DesignerException, HttpException, DeployerException {
 		// TODO Auto-generated method stub
 
 	}
 
-	public MonadUri getUri() throws ProgrammerException, UserException {
+	public MonadUri getUri() throws InternalException, HttpException {
 		return getService().getSnagsAccountInstance().getUri().resolve(
 				getUriId()).append("/");
 	}

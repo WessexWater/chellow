@@ -30,8 +30,9 @@ import net.sf.chellow.monad.DesignerException;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.Invocation;
 import net.sf.chellow.monad.MonadUtils;
-import net.sf.chellow.monad.ProgrammerException;
+import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Urlable;
+import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.UserException;
 import net.sf.chellow.monad.XmlDescriber;
 import net.sf.chellow.monad.XmlTree;
@@ -49,10 +50,9 @@ public class Permissions implements Urlable, XmlDescriber {
 	static {
 		try {
 			URI_ID = new UriPathElement("permissions");
-		} catch (UserException e) {
+		} catch (HttpException e) {
 			throw new RuntimeException(e);
-		} catch (ProgrammerException e) {
-			throw new RuntimeException(e);		}
+		}
 	}
 
 	private Role role;
@@ -73,12 +73,12 @@ public class Permissions implements Urlable, XmlDescriber {
 		return URI_ID;
 	}
 
-	public MonadUri getUri() throws ProgrammerException, UserException {
+	public MonadUri getUri() throws InternalException, HttpException {
 		return role.getUri().resolve(getUrlId()).append("/");
 	}
 	
-	public void httpPost(Invocation inv) throws ProgrammerException,
-			UserException, DesignerException, DeployerException {
+	public void httpPost(Invocation inv) throws InternalException,
+			HttpException, DesignerException, DeployerException {
 		MonadUri uriPattern = inv.getMonadUri("uri-pattern");
 		Boolean isOptionsAllowed = inv.getBoolean("is-options-allowed");
 		Boolean isGetAllowed = inv.getBoolean("is-get-allowed");
@@ -88,7 +88,7 @@ public class Permissions implements Urlable, XmlDescriber {
 		Boolean isDeleteAllowed = inv.getBoolean("is-delete-allowed");
 		Boolean isTraceAllowed = inv.getBoolean("is-trace-allowed");
 		if (!inv.isValid()) {
-			throw UserException.newInvalidParameter(getDocument(), null);
+			throw new UserException(getDocument());
 		}
 		List<Invocation.HttpMethod> methods = new ArrayList<Invocation.HttpMethod>();
 		if (isOptionsAllowed) {
@@ -118,26 +118,26 @@ public class Permissions implements Urlable, XmlDescriber {
 		inv.sendCreated(getDocument(), permission.getUri());
 	}
 	
-	private Document getDocument() throws ProgrammerException, UserException {
+	private Document getDocument() throws InternalException, HttpException {
 		Document doc = MonadUtils.newSourceDocument();
 		Element source = doc.getDocumentElement();
-		Element permissionsElement = (Element) toXML(doc);
+		Element permissionsElement = (Element) toXml(doc);
 		
 		source.appendChild(permissionsElement);
-		permissionsElement.appendChild(role.toXML(doc));
+		permissionsElement.appendChild(role.toXml(doc));
 		for (Permission permission : role.getPermissions()) {
-			permissionsElement.appendChild(permission.toXML(doc));
+			permissionsElement.appendChild(permission.toXml(doc));
 		}
 		return doc;
 	}
 
 	public void httpGet(Invocation inv) throws DesignerException,
-			ProgrammerException, UserException, DeployerException {
+			InternalException, HttpException, DeployerException {
 		inv.sendOk(getDocument());
 	}
 
-	public Permission getChild(UriPathElement uriId) throws UserException,
-			ProgrammerException {
+	public Permission getChild(UriPathElement uriId) throws HttpException,
+			InternalException {
 		Permission permission = (Permission) Hiber
 				.session()
 				.createQuery(
@@ -147,16 +147,16 @@ public class Permissions implements Urlable, XmlDescriber {
 		return permission;
 	}
 
-	public void httpDelete(Invocation inv) throws ProgrammerException, UserException {
+	public void httpDelete(Invocation inv) throws InternalException, HttpException {
 		// TODO Auto-generated method stub
 		
 	}
 
-	public Node toXML(Document doc) throws ProgrammerException, UserException {
+	public Node toXml(Document doc) throws InternalException, HttpException {
 		return doc.createElement("permissions");
 	}
 
-	public Node getXML(XmlTree tree, Document doc) throws ProgrammerException, UserException {
+	public Node toXml(Document doc, XmlTree tree) throws InternalException, HttpException {
 		// TODO Auto-generated method stub
 		return null;
 	}

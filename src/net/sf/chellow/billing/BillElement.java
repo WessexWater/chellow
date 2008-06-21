@@ -8,8 +8,8 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
 import net.sf.chellow.monad.DesignerException;
-import net.sf.chellow.monad.ProgrammerException;
-import net.sf.chellow.monad.UserException;
+import net.sf.chellow.monad.InternalException;
+import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.XmlDescriber;
 import net.sf.chellow.monad.XmlTree;
 import net.sf.chellow.monad.types.MonadDouble;
@@ -54,21 +54,21 @@ public class BillElement implements XmlDescriber {
 		subElements.add(new BillElement(name, cost, working));
 	}
 
-	public Node getXML(XmlTree tree, Document doc) throws ProgrammerException,
-			UserException, DesignerException {
+	public Node toXml(Document doc, XmlTree tree) throws InternalException,
+			HttpException, DesignerException {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
-	public Element toXML(Document doc) throws ProgrammerException,
-			UserException, DesignerException {
+	public Element toXml(Document doc) throws InternalException,
+			HttpException, DesignerException {
 		Element element = doc.createElement("bill-element");
 
 		element.setAttributeNode(MonadString.toXml(doc, "name", name));
 		element.setAttributeNode(MonadDouble.toXml(doc, "cost", cost));
 		element.setAttributeNode(MonadString.toXml(doc, "working", working));
 		for (BillElement billElement : getSubElements()) {
-			element.appendChild(billElement.toXML(doc));
+			element.appendChild(billElement.toXml(doc));
 		}
 		return element;
 	}

@@ -22,11 +22,11 @@
 
 package net.sf.chellow.monad.types;
 
-import net.sf.chellow.monad.ProgrammerException;
-import net.sf.chellow.monad.UserException;
+import net.sf.chellow.monad.InternalException;
+import net.sf.chellow.monad.HttpException;
 
 public class MonadYear extends MonadInteger {
-	public MonadYear(String year) throws UserException, ProgrammerException {
+	public MonadYear(String year) throws HttpException, InternalException {
 		super("year", year);
 	}
 }

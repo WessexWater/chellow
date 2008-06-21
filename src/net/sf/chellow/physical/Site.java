@@ -41,11 +41,14 @@ import net.sf.chellow.monad.DeployerException;
 import net.sf.chellow.monad.DesignerException;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.Invocation;
+import net.sf.chellow.monad.MethodNotAllowedException;
 import net.sf.chellow.monad.MonadUtils;
-import net.sf.chellow.monad.ProgrammerException;
+import net.sf.chellow.monad.NotFoundException;
+import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Urlable;
+import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.UserException;
-import net.sf.chellow.monad.VFMessage;
+import net.sf.chellow.monad.MonadMessage;
 import net.sf.chellow.monad.XmlTree;
 import net.sf.chellow.monad.types.MonadString;
 import net.sf.chellow.monad.types.MonadUri;
@@ -69,7 +72,7 @@ public class Site extends PersistentEntity implements Urlable {
 	}
 
 	public Site(Organization organization, SiteCode code, String name)
-			throws ProgrammerException, UserException {
+			throws InternalException, HttpException {
 		this();
 		this.organization = organization;
 		update(code, name);
@@ -111,21 +114,21 @@ public class Site extends PersistentEntity implements Urlable {
 		this.siteSupplyGenerations = siteSupplyGenerations;
 	}
 
-	public void update(SiteCode code, String name) throws ProgrammerException,
-			UserException {
+	public void update(SiteCode code, String name) throws InternalException,
+			HttpException {
 		setCode(code);
 		MonadString.update("name", name, true, 200, 0,
 				Character.UnicodeBlock.BASIC_LATIN, false);
 		setName(name);
 	}
 
-	public Element toXML(Document doc) throws ProgrammerException,
-			UserException {
+	public Element toXml(Document doc) throws InternalException,
+			HttpException {
 		setTypeName("site");
-		Element element = (Element) super.toXML(doc);
+		Element element = (Element) super.toXml(doc);
 
 		element.setAttributeNode(MonadString.toXml(doc, "name", getName()));
-		element.setAttributeNode((Attr) getCode().toXML(doc));
+		element.setAttributeNode((Attr) getCode().toXml(doc));
 		return element;
 	}
 
@@ -141,8 +144,8 @@ public class Site extends PersistentEntity implements Urlable {
 			boolean exportHasDceImportKwh, boolean exportHasDceImportKvarh,
 			boolean exportHasDceExportKwh, boolean exportHasDceExportKvarh,
 			Integer exportAgreedSupplyCapacity, HhEndDate startDate,
-			SourceCode sourceCode, Long id) throws ProgrammerException,
-			UserException, DesignerException {
+			SourceCode sourceCode, Long id) throws InternalException,
+			HttpException, DesignerException {
 		Source source = Source.getSource(sourceCode);
 		Supply supply = new Supply(supplyName, source);
 		try {
@@ -157,11 +160,11 @@ public class Site extends PersistentEntity implements Urlable {
 				BatchUpdateException be = (BatchUpdateException) e.getCause();
 				String message = be.getMessage();
 				boolean isImport = message.charAt(message.lastIndexOf(',') - 1) == '0';
-				throw UserException.newOk("An MPAN with this "
+				throw new UserException("An MPAN with this "
 						+ (isImport ? "import" : "export")
 						+ " MPAN core already exists.");
 			} else {
-				throw new ProgrammerException(e);
+				throw new InternalException(e);
 			}
 		}
 		supply.insertChannel(true, true);
@@ -199,7 +202,7 @@ public class Site extends PersistentEntity implements Urlable {
 	}
 
 	public void hhCheck(HhEndDate from, HhEndDate to)
-			throws ProgrammerException, UserException {
+			throws InternalException, HttpException {
 		//Calendar cal = GregorianCalendar.getInstance(TimeZone
 		//		.getTimeZone("GMT"), Locale.UK);
 		for (SiteGroup group : groups(from, to, false)) {
@@ -316,7 +319,7 @@ public class Site extends PersistentEntity implements Urlable {
 	}
 
 	public List<SiteGroup> groups(HhEndDate from, HhEndDate to, boolean primaryOnly)
-			throws ProgrammerException, UserException {
+			throws InternalException, HttpException {
 		List<SiteGroup> groups = new ArrayList<SiteGroup>();
 		HhEndDate checkFrom = from;
 		HhEndDate checkTo = to;
@@ -421,7 +424,7 @@ public class Site extends PersistentEntity implements Urlable {
 		Hiber.flush();
 	}
 
-	public MonadUri getUri() throws ProgrammerException, UserException {
+	public MonadUri getUri() throws InternalException, HttpException {
 		return organization.getSitesInstance().getUri().resolve(getUriId())
 				.append("/");
 	}
@@ -436,44 +439,44 @@ public class Site extends PersistentEntity implements Urlable {
 	}
 
 	public void httpGet(Invocation inv) throws DesignerException,
-			ProgrammerException, UserException, DeployerException {
+			InternalException, HttpException, DeployerException {
 		inv.sendOk(document());
 	}
 
 	@SuppressWarnings("unchecked")
-	private Document document() throws ProgrammerException, UserException,
+	private Document document() throws InternalException, HttpException,
 			DesignerException {
 		Document doc = MonadUtils.newSourceDocument();
 		Element source = (Element) doc.getFirstChild();
-		Element siteElement = (Element) getXML(new XmlTree("organization"), doc);
+		Element siteElement = (Element) toXml(doc, new XmlTree("organization"));
 		source.appendChild(siteElement);
 		for (SupplyGeneration generation : (List<SupplyGeneration>) Hiber
 				.session()
 				.createQuery(
 						"select supplyGeneration from SupplyGeneration supplyGeneration join supplyGeneration.siteSupplyGenerations siteSupplyGeneration where siteSupplyGeneration.site = :site order by supplyGeneration.finishDate.date")
 				.setEntity("site", this).list()) {
-			siteElement.appendChild(generation.getXML(new XmlTree("mpans",
-					new XmlTree("mpanCore").put("mpanTop", new XmlTree("llf"))).put("supply",
-					new XmlTree("source")), doc));
+			siteElement.appendChild(generation.toXml(doc, new XmlTree("mpans",
+							new XmlTree("mpanCore").put("mpanTop", new XmlTree("llf"))).put("supply",
+							new XmlTree("source"))));
 		}
 		return doc;
 	}
 
-	public void httpPost(Invocation inv) throws ProgrammerException,
-			UserException, DesignerException, DeployerException {
+	public void httpPost(Invocation inv) throws InternalException,
+			HttpException, DesignerException, DeployerException {
 		if (inv.hasParameter("delete")) {
 			Document doc = document();
 			Element source = doc.getDocumentElement();
 
-			source.appendChild(toXML(doc));
+			source.appendChild(toXml(doc));
 			try {
 				organization.deleteSite(this);
-			} catch (UserException e) {
+			} catch (HttpException e) {
 				e.setDocument(doc);
 				throw e;
 			}
-			source.appendChild(new VFMessage("Site deleted successfully.")
-					.toXML(doc));
+			source.appendChild(new MonadMessage("Site deleted successfully.")
+					.toXml(doc));
 			Hiber.commit();
 			inv.sendOk(doc);
 		} else {
@@ -485,19 +488,19 @@ public class Site extends PersistentEntity implements Urlable {
 		}
 	}
 
-	public Urlable getChild(UriPathElement urlId) throws ProgrammerException,
-			UserException {
-		throw UserException.newNotFound();
+	public Urlable getChild(UriPathElement urlId) throws InternalException,
+			HttpException {
+		throw new NotFoundException();
 	}
 
-	public void httpDelete(Invocation inv) throws ProgrammerException,
-			UserException, DesignerException, DeployerException {
-		throw UserException.newMethodNotAllowed();
+	public void httpDelete(Invocation inv) throws InternalException,
+			HttpException, DesignerException, DeployerException {
+		throw new MethodNotAllowedException();
 	}
 
 	public void detachSiteSupplyGeneration(
-			SiteSupplyGeneration siteSupplyGeneration) throws UserException,
-			ProgrammerException {
+			SiteSupplyGeneration siteSupplyGeneration) throws HttpException,
+			InternalException {
 		siteSupplyGenerations.remove(siteSupplyGeneration);
 	}
 }

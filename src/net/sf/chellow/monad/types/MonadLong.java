@@ -22,11 +22,10 @@
 
 package net.sf.chellow.monad.types;
 
-import net.sf.chellow.monad.ProgrammerException;
+import net.sf.chellow.monad.InternalException;
+import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.UserException;
-import net.sf.chellow.monad.VFMessage;
-import net.sf.chellow.monad.VFParameter;
-
+import net.sf.chellow.monad.MonadMessage;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 
@@ -37,21 +36,19 @@ public class MonadLong extends MonadObject {
 
 	private Long max = null;
 
-	public MonadLong(String name, String longValue) throws UserException,
-			ProgrammerException {
+	public MonadLong(String name, String longValue) throws HttpException {
 		super("Long", name);
 
 		try {
 			setLong(new Long(longValue));
 		} catch (NumberFormatException e) {
-			throw UserException.newInvalidParameter(new VFMessage(
-					"malformed_integer",
-					new VFParameter("note", e.getMessage())));
+			throw new UserException(
+					"malformed_integer");
 		}
 	}
 
-	protected MonadLong(String name, long longValue) throws UserException,
-			ProgrammerException {
+	protected MonadLong(String name, long longValue) throws HttpException,
+			InternalException {
 		super("Long", name);
 		setLong(new Long(longValue));
 	}
@@ -64,12 +61,12 @@ public class MonadLong extends MonadObject {
 		this.min = min;
 	}
 
-	public MonadLong(String stringValue) throws UserException,
-			ProgrammerException {
+	public MonadLong(String stringValue) throws HttpException,
+			InternalException {
 		this(null, stringValue);
 	}
 
-	public MonadLong(long longValue) throws UserException, ProgrammerException {
+	public MonadLong(long longValue) throws HttpException, InternalException {
 		this(null, longValue);
 	}
 
@@ -77,25 +74,21 @@ public class MonadLong extends MonadObject {
 		return longValue;
 	}
 
-	public void setLong(Long longValue) throws UserException,
-			ProgrammerException {
+	public void setLong(Long longValue) throws HttpException,
+			InternalException {
 
 		if ((min != null) && (longValue.longValue() < min.longValue())) {
-			throw UserException.newInvalidParameter(new VFMessage(
-					VFMessage.NUMBER_TOO_SMALL, new VFParameter[] {
-							new VFParameter("number", toString()),
-							new VFParameter("min", min.toString()) }));
+			throw new UserException(
+					MonadMessage.NUMBER_TOO_SMALL);
 		}
 		if ((max != null) && (longValue.longValue() < max.longValue())) {
-			throw UserException.newInvalidParameter(new VFMessage(
-					VFMessage.NUMBER_TOO_BIG, new VFParameter[] {
-							new VFParameter("number", toString()),
-							new VFParameter("max", max.toString()) }));
+			throw new UserException(
+					MonadMessage.NUMBER_TOO_BIG);
 		}
 		this.longValue = longValue;
 	}
 
-	public Node toXML(Document doc) {
+	public Node toXml(Document doc) {
 		Node node = doc.createAttribute(getLabel());
 
 		node.setNodeValue(longValue.toString());

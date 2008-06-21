@@ -28,7 +28,7 @@ import org.w3c.dom.Node;
 
 
 public interface XmlDescriber {
-	public Node toXML(Document doc) throws ProgrammerException, UserException, DesignerException;
+	public Node toXml(Document doc) throws HttpException;
 
-	public Node getXML(XmlTree tree, Document doc) throws ProgrammerException, UserException, DesignerException;
+	public Node toXml(Document doc, XmlTree tree) throws HttpException;
 }

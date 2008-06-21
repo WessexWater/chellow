@@ -29,8 +29,8 @@ import net.sf.chellow.monad.DesignerException;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.Invocation;
 import net.sf.chellow.monad.MonadUtils;
-import net.sf.chellow.monad.ProgrammerException;
-import net.sf.chellow.monad.UserException;
+import net.sf.chellow.monad.InternalException;
+import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.XmlTree;
 import net.sf.chellow.monad.types.MonadUri;
 
@@ -56,7 +56,7 @@ public class SnagSite extends SnagDateBounded {
 
 	public SnagSite(String description, DceService dceService, Site site,
 			HhEndDate startDate, HhEndDate finishDate)
-			throws ProgrammerException, UserException {
+			throws InternalException, HttpException {
 		super(description, startDate, finishDate);
 		this.site = site;
 		this.dceService = dceService;
@@ -83,19 +83,19 @@ public class SnagSite extends SnagDateBounded {
 		setService((DceService) service);
 	}
 
-	public Element toXML(Document doc) throws ProgrammerException,
-			UserException {
-		Element element = (Element) super.toXML(doc);
+	public Element toXml(Document doc) throws InternalException,
+			HttpException {
+		Element element = (Element) super.toXml(doc);
 
 		return element;
 	}
 
-	public SnagSite copy() throws ProgrammerException {
+	public SnagSite copy() throws InternalException {
 		SnagSite cloned;
 		try {
 			cloned = (SnagSite) super.clone();
 		} catch (CloneNotSupportedException e) {
-			throw new ProgrammerException(e);
+			throw new InternalException(e);
 		}
 		cloned.setId(null);
 		return cloned;
@@ -106,26 +106,26 @@ public class SnagSite extends SnagDateBounded {
 	}
 
 	public void httpGet(Invocation inv) throws DesignerException,
-			ProgrammerException, UserException, DeployerException {
+			InternalException, HttpException, DeployerException {
 		inv.sendOk(document());
 	}
 
-	private Document document() throws ProgrammerException, UserException,
+	private Document document() throws InternalException, HttpException,
 			DesignerException {
 		Document doc = MonadUtils.newSourceDocument();
 		Element sourceElement = doc.getDocumentElement();
-		sourceElement.appendChild(getXML(new XmlTree("service", new XmlTree(
-				"provider", new XmlTree("organization"))).put("site"), doc));
+		sourceElement.appendChild(toXml(doc, new XmlTree("service", new XmlTree(
+						"provider", new XmlTree("organization"))).put("site")));
 		return doc;
 	}
 
-	public void httpDelete(Invocation inv) throws ProgrammerException,
-			DesignerException, UserException, DeployerException {
+	public void httpDelete(Invocation inv) throws InternalException,
+			DesignerException, HttpException, DeployerException {
 		// TODO Auto-generated method stub
 
 	}
 
-	public MonadUri getUri() throws ProgrammerException, UserException {
+	public MonadUri getUri() throws InternalException, HttpException {
 		return getService().getSnagsSiteInstance().getUri().resolve(getUriId())
 				.append("/");
 	}

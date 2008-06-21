@@ -1,6 +1,6 @@
 /*
  
- Copyright 2005 Meniscus Systems Ltd
+ Copyright 2005-2008 Meniscus Systems Ltd
  
  This file is part of Chellow.
 
@@ -25,10 +25,8 @@ package net.sf.chellow.monad.types;
 import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
 
-import net.sf.chellow.monad.ProgrammerException;
+import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.UserException;
-import net.sf.chellow.monad.VFMessage;
-import net.sf.chellow.monad.VFParameter;
 import net.sf.chellow.monad.XmlDescriber;
 import net.sf.chellow.monad.XmlTree;
 
@@ -45,27 +43,23 @@ public class EmailAddress extends InternetAddress implements XmlDescriber,
 	}
 
 	public EmailAddress(String emailAddress)
-			throws ProgrammerException, UserException {
+			throws InternalException, UserException {
 		this(null, emailAddress);
 	}
 
 	public EmailAddress(String label, String emailAddress)
-			throws ProgrammerException, UserException {
+			throws InternalException, UserException {
 		if (emailAddress == null) {
-			throw new ProgrammerException(
+			throw new InternalException(
 					"Email address argument must not be null.");
 		}
 		super.setAddress(emailAddress);
 		try {
 			validate();
 		} catch (AddressException e) {
-			throw UserException.newInvalidParameter(
-					new VFMessage("The email address '" + label
-							+ "' is not correctly formed. " + e.getMessage() + ".",
-							new VFParameter[] {
-									new VFParameter("code",
-											"email_address_malformed"),
-									new VFParameter("reason", e.getMessage()) }));
+			throw new UserException(
+					"The email address '" + label
+							+ "' is not correctly formed. " + e.getMessage() + ".");
 		}
 		this.label = label;
 	}
@@ -79,15 +73,15 @@ public class EmailAddress extends InternetAddress implements XmlDescriber,
 		}
 	}
 
-	public Node toXML(Document doc) {
+	public Node toXml(Document doc) {
 		Attr attr = doc.createAttribute("email-address");
 
 		attr.setNodeValue(getAddress());
 		return attr;
 	}
 
-	public Node getXML(XmlTree tree, Document doc) throws ProgrammerException {
-		return toXML(doc);
+	public Node toXml(Document doc, XmlTree tree) throws InternalException {
+		return toXml(doc);
 	}
 
 	public String getLabel() {

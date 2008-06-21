@@ -29,8 +29,10 @@ import net.sf.chellow.monad.DesignerException;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.Invocation;
 import net.sf.chellow.monad.MonadUtils;
-import net.sf.chellow.monad.ProgrammerException;
+import net.sf.chellow.monad.NotFoundException;
+import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Urlable;
+import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.UserException;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
@@ -47,9 +49,7 @@ public class Government extends Provider {
 	static {
 		try {
 			URI_ID = new UriPathElement("government");
-		} catch (UserException e) {
-			throw new RuntimeException(e);
-		} catch (ProgrammerException e) {
+		} catch (HttpException e) {
 			throw new RuntimeException(e);
 		}
 	}
@@ -61,11 +61,11 @@ public class Government extends Provider {
 		return government;
 	}
 
-	public static Government getGovernment() throws UserException,
-			ProgrammerException {
+	public static Government getGovernment() throws HttpException,
+			InternalException {
 		Government government = findGovernment();
 		if (government == null) {
-			throw new ProgrammerException("Can't find the government!");
+			throw new InternalException("Can't find the government!");
 		}
 		return government;
 	}
@@ -83,24 +83,24 @@ public class Government extends Provider {
 		super(name);
 	}
 
-	public void httpPost(Invocation inv) throws ProgrammerException,
-			UserException, DesignerException, DeployerException {
+	public void httpPost(Invocation inv) throws InternalException,
+			HttpException, DesignerException, DeployerException {
 	}
 
 	public void httpGet(Invocation inv) throws DesignerException,
-			ProgrammerException, UserException, DeployerException {
+			InternalException, HttpException, DeployerException {
 		inv.sendOk(document());
 	}
 
-	private Document document() throws ProgrammerException, UserException,
+	private Document document() throws InternalException, HttpException,
 			DesignerException {
 		Document doc = MonadUtils.newSourceDocument();
 		Element source = doc.getDocumentElement();
-		source.appendChild(toXML(doc));
+		source.appendChild(toXml(doc));
 		return doc;
 	}
 
-	public MonadUri getUri() throws ProgrammerException, UserException {
+	public MonadUri getUri() throws InternalException, HttpException {
 		return Chellow.getUrlableRoot().getUri().resolve(getUriId())
 				.append("/");
 	}
@@ -109,16 +109,16 @@ public class Government extends Provider {
 		return URI_ID;
 	}
 
-	public Urlable getChild(UriPathElement uriId) throws ProgrammerException,
-			UserException {
+	public Urlable getChild(UriPathElement uriId) throws InternalException,
+			HttpException {
 		if (GovernmentServices.URI_ID.equals(uriId)) {
 			return servicesInstance();
 		}
-		throw UserException.newNotFound();
+		throw new NotFoundException();
 	}
 
-	public void httpDelete(Invocation inv) throws ProgrammerException,
-			DesignerException, UserException, DeployerException {
+	public void httpDelete(Invocation inv) throws InternalException,
+			DesignerException, HttpException, DeployerException {
 	}
 
 	GovernmentServices servicesInstance() {
@@ -132,7 +132,7 @@ public class Government extends Provider {
 	}
 
 	public GovernmentService insertService(String name, HhEndDate startDate,
-			String chargeScript) throws UserException, ProgrammerException,
+			String chargeScript) throws HttpException, InternalException,
 			DesignerException {
 		GovernmentService service = new GovernmentService(name, startDate,
 				chargeScript, this);
@@ -142,8 +142,8 @@ public class Government extends Provider {
 	}
 
 	@Override
-	public GovernmentService getService(String name) throws UserException,
-			ProgrammerException {
+	public GovernmentService getService(String name) throws HttpException,
+			InternalException {
 		GovernmentService service = (GovernmentService) Hiber
 				.session()
 				.createQuery(
@@ -151,7 +151,7 @@ public class Government extends Provider {
 				.setEntity("provider", this).setString("serviceName", name)
 				.uniqueResult();
 		if (service == null) {
-			throw UserException.newInvalidParameter("The government service '"
+			throw new UserException("The government service '"
 					+ name + "' doesn't exist.");
 		}
 		return service;

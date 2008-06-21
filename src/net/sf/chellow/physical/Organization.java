@@ -1,6 +1,6 @@
 /*
  
- Copyright 2005 Meniscus Systems Ltd
+ Copyright 2005, 2008 Meniscus Systems Ltd
  
  This file is part of Chellow.
 
@@ -33,14 +33,13 @@ import net.sf.chellow.billing.Mop;
 import net.sf.chellow.billing.Supplier;
 import net.sf.chellow.billing.Suppliers;
 import net.sf.chellow.billing.UseDeltas;
-import net.sf.chellow.data08.Data;
 import net.sf.chellow.data08.MpanCoreRaw;
-import net.sf.chellow.monad.DeployerException;
-import net.sf.chellow.monad.DesignerException;
 import net.sf.chellow.monad.Hiber;
+import net.sf.chellow.monad.HttpException;
+import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Invocation;
 import net.sf.chellow.monad.MonadUtils;
-import net.sf.chellow.monad.ProgrammerException;
+import net.sf.chellow.monad.NotFoundException;
 import net.sf.chellow.monad.Urlable;
 import net.sf.chellow.monad.UserException;
 import net.sf.chellow.monad.types.MonadLong;
@@ -51,14 +50,14 @@ import net.sf.chellow.ui.Chellow;
 import net.sf.chellow.ui.HeaderImportProcesses;
 import net.sf.chellow.ui.Reports;
 
-import org.hibernate.HibernateException;
+import org.hibernate.exception.ConstraintViolationException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
 public class Organization extends PersistentEntity {
 	static public Organization findOrganization(MonadUri urlId)
-			throws ProgrammerException, UserException {
+			throws InternalException, HttpException {
 		Organization organization = (Organization) Hiber.session().createQuery(
 				"from Organization as organization where "
 						+ "organization.urlId.string = :urlId").setString(
@@ -67,17 +66,16 @@ public class Organization extends PersistentEntity {
 	}
 
 	public static Organization getOrganization(MonadLong id)
-			throws ProgrammerException, UserException {
+			throws InternalException, HttpException {
 		return getOrganization(id.getLong());
 	}
 
 	public static Organization getOrganization(Long id)
-			throws ProgrammerException, UserException {
+			throws InternalException, HttpException {
 		Organization organization = (Organization) Hiber.session().get(
 				Organization.class, id);
 		if (organization == null) {
-			throw UserException
-					.newNotFound("There isn't an organization with that id.");
+			throw new NotFoundException("There isn't an organization with that id.");
 		}
 		return organization;
 	}
@@ -134,31 +132,32 @@ public class Organization extends PersistentEntity {
 		return super.toString() + " Name: " + getName();
 	}
 
-	public Node toXML(Document doc) throws ProgrammerException, UserException {
+	public Node toXml(Document doc) throws HttpException {
 		setTypeName("org");
-		Element element = (Element) super.toXML(doc);
+		Element element = (Element) super.toXml(doc);
 
 		element.setAttributeNode(MonadString.toXml(doc, "name", name));
 		return element;
 	}
 
 	public Site insertSite(SiteCode code, String name)
-			throws ProgrammerException, UserException {
+			throws InternalException, HttpException {
 		Site site = null;
 		try {
 			site = new Site(this, code, name);
 			Hiber.session().save(site);
 			Hiber.flush();
-		} catch (HibernateException e) {
-			if (Data
-					.isSQLException(e,
-							"ERROR: duplicate key violates unique constraint \"site_organization_id_key\"")) {
-				throw UserException
-						.newInvalidParameter("A site with this code already exists.");
-			} else {
-				throw new ProgrammerException(e);
-			}
+		} catch (ConstraintViolationException e) {
+			throw new UserException
+					("A site with this code already exists.");
 		}
+		/*
+		 * } catch (HibernateException e) { if (Data .isSQLException(e, "ERROR:
+		 * duplicate key violates unique constraint
+		 * \"site_organization_id_key\"")) { throw UserException
+		 * .newInvalidParameter("A site with this code already exists."); } else {
+		 * throw new ProgrammerException(e); } }
+		 */
 		return site;
 	}
 
@@ -172,8 +171,8 @@ public class Organization extends PersistentEntity {
 	 * already exists."); } else { throw new ProgrammerException(e); } } return
 	 * site; }
 	 */
-	public Site findSite(SiteCode siteCode) throws UserException,
-			ProgrammerException {
+	public Site findSite(SiteCode siteCode) throws HttpException,
+			InternalException {
 		return (Site) Hiber
 				.session()
 				.createQuery(
@@ -182,7 +181,7 @@ public class Organization extends PersistentEntity {
 						siteCode.toString()).uniqueResult();
 	}
 
-	public Site getSite(Long siteId) throws UserException, ProgrammerException {
+	public Site getSite(Long siteId) throws HttpException, InternalException {
 		return (Site) Hiber
 				.session()
 				.createQuery(
@@ -201,8 +200,8 @@ public class Organization extends PersistentEntity {
 	}
 
 	@SuppressWarnings("unchecked")
-	public List<Site> findSites(String searchTerm) throws ProgrammerException,
-			UserException {
+	public List<Site> findSites(String searchTerm) throws InternalException,
+			HttpException {
 		return (List<Site>) Hiber
 				.session()
 				.createQuery(
@@ -211,16 +210,15 @@ public class Organization extends PersistentEntity {
 						searchTerm).setMaxResults(50).list();
 	}
 
-	public void httpGet(Invocation inv) throws DesignerException,
-			ProgrammerException, UserException, DeployerException {
+	public void httpGet(Invocation inv) throws HttpException {
 		Document doc = MonadUtils.newSourceDocument();
 		Element source = (Element) doc.getFirstChild();
 
-		source.appendChild(toXML(doc));
+		source.appendChild(toXml(doc));
 		inv.sendOk(doc);
 	}
 
-	public MonadUri getUri() throws ProgrammerException, UserException {
+	public MonadUri getUri() throws InternalException, UserException {
 		return Chellow.ORGANIZATIONS_INSTANCE.getUri().resolve(getUriId())
 				.append("/");
 	}
@@ -249,7 +247,7 @@ public class Organization extends PersistentEntity {
 		return new GenDeltas(this);
 	}
 
-	public Dce getDce(long id) throws UserException, ProgrammerException {
+	public Dce getDce(long id) throws HttpException, InternalException {
 		Dce dce = (Dce) Hiber
 				.session()
 				.createQuery(
@@ -257,15 +255,15 @@ public class Organization extends PersistentEntity {
 				.setEntity("organization", this).setLong("dceId", id)
 				.uniqueResult();
 		if (dce == null) {
-			throw UserException.newNotFound();
+			throw new NotFoundException();
 		}
 		return dce;
 	}
 
-	public Supply getSupply(long id) throws UserException, ProgrammerException {
+	public Supply getSupply(long id) throws InternalException, NotFoundException {
 		Supply supply = findSupply(id);
 		if (supply == null) {
-			throw UserException.newNotFound("There is no supply with that id.");
+			throw new NotFoundException("There is no supply with that id.");
 		}
 		return supply;
 	}
@@ -283,19 +281,18 @@ public class Organization extends PersistentEntity {
 	 * public Supply findSupply(UriPathElement uriId) { return
 	 * findSupply(Long.parseLong(uriId.getString())); }
 	 */
-	public Supplier getSupplier(long supplierId) throws UserException,
-			ProgrammerException {
+	public Supplier getSupplier(long supplierId) throws HttpException,
+			InternalException {
 		Supplier supplier = findSupplier(supplierId);
 		if (supplier == null) {
-			throw UserException
-					.newNotFound("There isn't a supplier attached to this organization with the id '"
+			throw new NotFoundException("There isn't a supplier attached to this organization with the id '"
 							+ supplierId + "'.");
 		}
 		return supplier;
 	}
 
-	public Supplier findSupplier(long supplierId) throws UserException,
-			ProgrammerException {
+	public Supplier findSupplier(long supplierId) throws HttpException,
+			InternalException {
 		return (Supplier) Hiber
 				.session()
 				.createQuery(
@@ -304,8 +301,7 @@ public class Organization extends PersistentEntity {
 						supplierId).uniqueResult();
 	}
 
-	public void httpPost(Invocation inv) throws ProgrammerException,
-			UserException {
+	public void httpPost(Invocation inv) throws InternalException, UserException {
 		if (inv.hasParameter("delete")) {
 			Hiber.session().delete(this);
 			Hiber.close();
@@ -318,8 +314,7 @@ public class Organization extends PersistentEntity {
 		}
 	}
 
-	public Urlable getChild(UriPathElement uriId) throws ProgrammerException,
-			UserException {
+	public Urlable getChild(UriPathElement uriId) throws InternalException {
 		Urlable urlable = null;
 		if (Sites.URI_ID.equals(uriId)) {
 			urlable = new Sites(this);
@@ -341,14 +336,13 @@ public class Organization extends PersistentEntity {
 		return urlable;
 	}
 
-	public void httpDelete(Invocation inv) throws ProgrammerException,
-			UserException {
+	public void httpDelete(Invocation inv) throws InternalException {
 		// TODO Auto-generated method stub
 
 	}
 
-	public Site getSite(SiteCode code) throws UserException,
-			ProgrammerException {
+	public Site getSite(SiteCode code) throws HttpException,
+			InternalException {
 		Site site = (Site) Hiber
 				.session()
 				.createQuery(
@@ -356,19 +350,19 @@ public class Organization extends PersistentEntity {
 				.setEntity("organization", this).setString("siteCode",
 						code.getString()).uniqueResult();
 		if (site == null) {
-			throw UserException.newNotFound("The site '" + code
+			throw new NotFoundException("The site '" + code
 					+ "' cannot be found.");
 		}
 		return site;
 	}
 
 	@SuppressWarnings("unchecked")
-	public void deleteSite(Site site) throws ProgrammerException, UserException {
+	public void deleteSite(Site site) throws InternalException, HttpException {
 		if (Hiber.session().createQuery(
 				"from SiteSupplyGeneration ssg where ssg.site = :site")
 				.setEntity("site", site).list().size() > 0) {
-			throw UserException
-					.newInvalidParameter("This site can't be deleted while there are still supply generations attached to it.");
+			throw 
+					new UserException("This site can't be deleted while there are still supply generations attached to it.");
 		}
 		for (SnagSite snag : (List<SnagSite>) Hiber.session().createQuery(
 				"from SnagSite snag where site = :site")
@@ -379,26 +373,25 @@ public class Organization extends PersistentEntity {
 		Hiber.flush();
 	}
 
-	public void deleteSupplier(Supplier supplier) throws ProgrammerException,
-			UserException {
+	public void deleteSupplier(Supplier supplier) throws InternalException,
+			HttpException {
 		if (supplier.getOrganization().equals(this)) {
 			Hiber.session().delete(supplier);
 		} else {
-			throw UserException
-					.newInvalidParameter("This supplier doesn't belong to this organization.");
+			throw new UserException("This supplier doesn't belong to this organization.");
 		}
 	}
 
-	public Supplier insertSupplier(String name) throws UserException,
-			ProgrammerException {
+	public Supplier insertSupplier(String name) throws HttpException,
+			InternalException {
 		if (findSupplier(name) == null) {
 			Supplier supplier = new Supplier(this, name);
 			Hiber.session().save(supplier);
 			Hiber.flush();
 			return supplier;
 		} else {
-			throw UserException
-					.newInvalidParameter("There's already a supplier with this name.");
+			throw new UserException
+					("There's already a supplier with this name.");
 		}
 	}
 
@@ -433,8 +426,8 @@ public class Organization extends PersistentEntity {
 	}
 
 	@SuppressWarnings("unchecked")
-	public MpanCore findMpanCore(MpanCoreRaw core) throws ProgrammerException,
-			UserException {
+	public MpanCore findMpanCore(MpanCoreRaw core) throws InternalException,
+			HttpException {
 		for (MpanCore mpanCore : (List<MpanCore>) Hiber
 				.session()
 				.createQuery(
@@ -459,18 +452,18 @@ public class Organization extends PersistentEntity {
 		return null;
 	}
 
-	public MpanCore getMpanCore(MpanCoreRaw coreRaw) throws UserException,
-			ProgrammerException {
+	public MpanCore getMpanCore(MpanCoreRaw coreRaw) throws HttpException,
+			InternalException {
 		MpanCore core = findMpanCore(coreRaw);
 		if (core == null) {
-			throw UserException.newOk("There isn't an MPAN with the core "
+			throw new UserException("There isn't an MPAN with the core "
 					+ core);
 		}
 		return core;
 	}
 
-	public Supplier getSupplier(String name) throws UserException,
-			ProgrammerException {
+	public Supplier getSupplier(String name) throws HttpException,
+			InternalException {
 		Supplier supplier = (Supplier) Hiber
 				.session()
 				.createQuery(
@@ -478,8 +471,7 @@ public class Organization extends PersistentEntity {
 				.setEntity("organization", this).setString("name", name)
 				.uniqueResult();
 		if (supplier == null) {
-			throw UserException
-					.newNotFound("There isn't a supplier with the name '"
+			throw new NotFoundException("There isn't a supplier with the name '"
 							+ name + "'.");
 		}
 		return supplier;

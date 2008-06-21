@@ -27,8 +27,9 @@ import net.sf.chellow.monad.DesignerException;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.Invocation;
 import net.sf.chellow.monad.MonadUtils;
-import net.sf.chellow.monad.ProgrammerException;
-import net.sf.chellow.monad.UserException;
+import net.sf.chellow.monad.NotFoundException;
+import net.sf.chellow.monad.InternalException;
+import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.XmlTree;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.physical.Snag;
@@ -40,11 +41,11 @@ public class BillSnag extends Snag {
 	public static final String INCORRECT_BILL = "Incorrect";
 	//public static final String CALCULATION_ERROR = "Calculation error";
 
-	static public BillSnag getBillSnag(Long id) throws UserException,
-			ProgrammerException {
+	static public BillSnag getBillSnag(Long id) throws HttpException,
+			InternalException {
 		BillSnag snag = (BillSnag) Hiber.session().get(BillSnag.class, id);
 		if (snag == null) {
-			throw UserException.newNotFound();
+			throw new NotFoundException();
 		}
 		return snag;
 	}
@@ -66,7 +67,7 @@ public class BillSnag extends Snag {
 	}
 
 	public BillSnag(String description, Service service, Bill bill)
-			throws ProgrammerException, UserException {
+			throws InternalException, HttpException {
 		super(description);
 		this.service = service;
 		this.bill = bill;
@@ -88,17 +89,17 @@ public class BillSnag extends Snag {
 		this.bill = bill;
 	}
 
-	public Element toXML(Document doc) throws ProgrammerException, UserException {
-		Element element = (Element) super.toXML(doc);
+	public Element toXml(Document doc) throws HttpException {
+		Element element = (Element) super.toXml(doc);
 		return element;
 	}
 
-	public BillSnag copy() throws ProgrammerException {
+	public BillSnag copy() throws InternalException {
 		BillSnag cloned;
 		try {
 			cloned = (BillSnag) super.clone();
 		} catch (CloneNotSupportedException e) {
-			throw new ProgrammerException(e);
+			throw new InternalException(e);
 		}
 		cloned.setId(null);
 		return cloned;
@@ -109,27 +110,27 @@ public class BillSnag extends Snag {
 	}
 
 	public void httpGet(Invocation inv) throws DesignerException,
-			ProgrammerException, UserException, DeployerException {
+			InternalException, HttpException, DeployerException {
 		inv.sendOk(document());
 	}
 
-	private Document document() throws ProgrammerException, UserException,
+	private Document document() throws InternalException, HttpException,
 			DesignerException {
 		Document doc = MonadUtils.newSourceDocument();
 		Element sourceElement = doc.getDocumentElement();
-		sourceElement.appendChild(getXML(new XmlTree("service", new XmlTree(
-				"provider", new XmlTree("organization"))).put("bill",
-				new XmlTree("account")), doc));
+		sourceElement.appendChild(toXml(doc, new XmlTree("service", new XmlTree(
+						"provider", new XmlTree("organization"))).put("bill",
+						new XmlTree("account"))));
 		return doc;
 	}
 
-	public void httpDelete(Invocation inv) throws ProgrammerException,
-			DesignerException, UserException, DeployerException {
+	public void httpDelete(Invocation inv) throws InternalException,
+			DesignerException, HttpException, DeployerException {
 		// TODO Auto-generated method stub
 
 	}
 
-	public MonadUri getUri() throws ProgrammerException, UserException {
+	public MonadUri getUri() throws InternalException, HttpException {
 		return getService().getSnagsAccountInstance().getUri().resolve(
 				getUriId()).append("/");
 	}

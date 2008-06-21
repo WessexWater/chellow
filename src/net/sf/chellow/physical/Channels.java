@@ -5,9 +5,9 @@ import net.sf.chellow.monad.DesignerException;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.Invocation;
 import net.sf.chellow.monad.MonadUtils;
-import net.sf.chellow.monad.ProgrammerException;
+import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Urlable;
-import net.sf.chellow.monad.UserException;
+import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.XmlDescriber;
 import net.sf.chellow.monad.XmlTree;
 
@@ -24,9 +24,7 @@ public class Channels implements Urlable, XmlDescriber {
 	static {
 		try {
 			URI_ID = new UriPathElement("channels");
-		} catch (UserException e) {
-			throw new RuntimeException(e);
-		} catch (ProgrammerException e) {
+		} catch (HttpException e) {
 			throw new RuntimeException(e);
 		}
 	}
@@ -41,32 +39,32 @@ public class Channels implements Urlable, XmlDescriber {
 		return URI_ID;
 	}
 
-	public MonadUri getUri() throws ProgrammerException, UserException {
+	public MonadUri getUri() throws InternalException, HttpException {
 		return supply.getUri().resolve(getUriId());
 	}
 
 	@SuppressWarnings("unchecked")
 	public void httpGet(Invocation inv) throws DesignerException,
-			ProgrammerException, UserException, DeployerException {
+			InternalException, HttpException, DeployerException {
 		Document doc = MonadUtils.newSourceDocument();
 		Element source = doc.getDocumentElement();
-		Element channelsElement = (Element) toXML(doc);
+		Element channelsElement = (Element) toXml(doc);
 		source.appendChild(channelsElement);
-		channelsElement.appendChild(supply.getXML(new XmlTree("organization"), doc));
+		channelsElement.appendChild(supply.toXml(doc, new XmlTree("organization")));
 		for (Channel channel : supply.getChannels()) {
-			channelsElement.appendChild(channel.toXML(doc));
+			channelsElement.appendChild(channel.toXml(doc));
 		}
 		inv.sendOk(doc);
 	}
 
-	public void httpPost(Invocation inv) throws ProgrammerException,
-			UserException {
+	public void httpPost(Invocation inv) throws InternalException,
+			HttpException {
 		// TODO Auto-generated method stub
 
 	}
 
-	public Urlable getChild(UriPathElement uriId) throws ProgrammerException,
-			UserException {
+	public Urlable getChild(UriPathElement uriId) throws InternalException,
+			HttpException {
 		return (Channel) Hiber
 				.session()
 				.createQuery(
@@ -75,18 +73,18 @@ public class Channels implements Urlable, XmlDescriber {
 						Long.parseLong(uriId.getString())).uniqueResult();
 	}
 
-	public void httpDelete(Invocation inv) throws ProgrammerException,
-			UserException {
+	public void httpDelete(Invocation inv) throws InternalException,
+			HttpException {
 		// TODO Auto-generated method stub
 
 	}
 
-	public Node toXML(Document doc) throws ProgrammerException, UserException {
+	public Node toXml(Document doc) throws InternalException, HttpException {
 		return doc.createElement("channels");
 	}
 
-	public Node getXML(XmlTree tree, Document doc) throws ProgrammerException,
-			UserException {
+	public Node toXml(Document doc, XmlTree tree) throws InternalException,
+			HttpException {
 		// TODO Auto-generated method stub
 		return null;
 	}

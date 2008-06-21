@@ -7,5 +7,5 @@ import java.util
 import net.sf.chellow.data08
 
 for supply in net.sf.chellow.persistant08.Hiber.session().createQuery("from Supply supply").list():
-    #source.appendChild(supply.getXML(doc))
-    source.appendChild(supply.getXML(net.sf.chellow.monad.vf.bo.XMLTree("generationLast", net.sf.chellow.monad.vf.bo.XMLTree("mpans", net.sf.chellow.monad.vf.bo.XMLTree("llf", net.sf.chellow.monad.vf.bo.XMLTree("voltageLevel")))).put("siteSupplies", net.sf.chellow.monad.vf.bo.XMLTree("site")), doc))
+    #source.appendChild(supply.toXml(doc))
+    source.appendChild(supply.toXml(net.sf.chellow.monad.vf.bo.XMLTree("generationLast", net.sf.chellow.monad.vf.bo.XMLTree("mpans", net.sf.chellow.monad.vf.bo.XMLTree("llf", net.sf.chellow.monad.vf.bo.XMLTree("voltageLevel")))).put("siteSupplies", net.sf.chellow.monad.vf.bo.XMLTree("site")), doc))

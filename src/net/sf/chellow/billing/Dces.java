@@ -29,8 +29,9 @@ import net.sf.chellow.monad.DesignerException;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.Invocation;
 import net.sf.chellow.monad.MonadUtils;
-import net.sf.chellow.monad.ProgrammerException;
+import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Urlable;
+import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.UserException;
 import net.sf.chellow.monad.XmlDescriber;
 import net.sf.chellow.monad.XmlTree;
@@ -47,9 +48,7 @@ public class Dces implements Urlable, XmlDescriber {
 	static {
 		try {
 			URI_ID = new UriPathElement("dces");
-		} catch (UserException e) {
-			throw new RuntimeException(e);
-		} catch (ProgrammerException e) {
+		} catch (HttpException e) {
 			throw new RuntimeException(e);
 		}
 	}
@@ -60,7 +59,7 @@ public class Dces implements Urlable, XmlDescriber {
 		this.organization = organization;
 	}
 
-	public MonadUri getUri() throws ProgrammerException, UserException {
+	public MonadUri getUri() throws InternalException, UserException {
 		return organization.getUri().resolve(getUriId()).append("/");
 	}
 
@@ -68,11 +67,11 @@ public class Dces implements Urlable, XmlDescriber {
 		return URI_ID;
 	}
 
-	public void httpPost(Invocation inv) throws ProgrammerException,
-			UserException, DesignerException, DeployerException {
+	public void httpPost(Invocation inv) throws InternalException,
+			HttpException, DesignerException, DeployerException {
 		String name = inv.getString("name");
 		if (!inv.isValid()) {
-			throw UserException.newInvalidParameter();
+			throw new UserException();
 		}
 		Dce dce = organization.insertDce(name);
 		Hiber.commit();
@@ -80,44 +79,44 @@ public class Dces implements Urlable, XmlDescriber {
 	}
 
 	@SuppressWarnings("unchecked")
-	private Document document() throws ProgrammerException, UserException {
+	private Document document() throws InternalException, HttpException {
 		Document doc = MonadUtils.newSourceDocument();
 		Element source = doc.getDocumentElement();
-		Element dcesElement = (Element) toXML(doc);
+		Element dcesElement = (Element) toXml(doc);
 
 		source.appendChild(dcesElement);
-		dcesElement.appendChild(organization.toXML(doc));
+		dcesElement.appendChild(organization.toXml(doc));
 		for (Dce dce : (List<Dce>) Hiber.session().createQuery(
 				"from Dce dce where dce.organization = :organization")
 				.setEntity("organization", organization).list()) {
-			dcesElement.appendChild(dce.toXML(doc));
+			dcesElement.appendChild(dce.toXml(doc));
 		}
 		return doc;
 	}
 
 	public void httpGet(Invocation inv) throws DesignerException,
-			ProgrammerException, UserException, DeployerException {
+			InternalException, HttpException, DeployerException {
 		inv.sendOk(document());
 	}
 
-	public Urlable getChild(UriPathElement uriId) throws ProgrammerException,
-			UserException {
+	public Urlable getChild(UriPathElement uriId) throws InternalException,
+			HttpException {
 		return Dce.getDce(Long.parseLong(uriId.getString()));
 	}
 
-	public void httpDelete(Invocation inv) throws ProgrammerException,
-			DesignerException, UserException, DeployerException {
+	public void httpDelete(Invocation inv) throws InternalException,
+			DesignerException, HttpException, DeployerException {
 		// TODO Auto-generated method stub
 
 	}
 
-	public Node toXML(Document doc) throws ProgrammerException, UserException {
+	public Node toXml(Document doc) throws InternalException, HttpException {
 		Element suppliersElement = doc.createElement("dces");
 		return suppliersElement;
 	}
 
-	public Node getXML(XmlTree tree, Document doc) throws ProgrammerException,
-			UserException {
+	public Node toXml(Document doc, XmlTree tree) throws InternalException,
+			HttpException {
 		// TODO Auto-generated method stub
 		return null;
 	}

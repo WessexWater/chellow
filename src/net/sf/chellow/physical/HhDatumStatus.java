@@ -1,6 +1,6 @@
 /*
  
- Copyright 2005 Meniscus Systems Ltd
+ Copyright 2005, 2008 Meniscus Systems Ltd
  
  This file is part of Chellow.
 
@@ -23,9 +23,9 @@
 package net.sf.chellow.physical;
 
 
-import net.sf.chellow.monad.ProgrammerException;
+import net.sf.chellow.monad.InternalException;
+import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.UserException;
-import net.sf.chellow.monad.VFMessage;
 import net.sf.chellow.monad.types.MonadCharacter;
 
 
@@ -36,33 +36,33 @@ public class HhDatumStatus extends MonadCharacter {
 		setLabel("status");
 	}
 	
-	public HhDatumStatus(char character) throws UserException, ProgrammerException  {
+	public HhDatumStatus(char character) throws HttpException, InternalException  {
 		this(null, new Character(character));
 	}
 	
-	public HhDatumStatus(String statusStr) throws UserException, ProgrammerException  {
+	public HhDatumStatus(String statusStr) throws HttpException {
 		this();
 		String shortStr = statusStr.trim();
 		if (shortStr.length() > 0) {
-			throw UserException.newInvalidParameter(new VFMessage("The status string can only be one character in length"));
+			throw new UserException("The status string can only be one character in length");
 		}
 			update(shortStr.charAt(0));
 	}
 	
-	public HhDatumStatus(Character character) throws UserException, ProgrammerException  {
+	public HhDatumStatus(Character character) throws HttpException, InternalException  {
 		this(null, character);
 	}
 
-	public HhDatumStatus(String label, Character character) throws UserException, ProgrammerException {
+	public HhDatumStatus(String label, Character character) throws HttpException, InternalException {
 		this();
 		setLabel(label);
 			update(character);
 	}
-	public void update(Character character) throws UserException, ProgrammerException {
+	public void update(Character character) throws HttpException, InternalException {
 		if (character.equals(new Character('E')) || character.equals(new Character('A'))) {
 			super.update(character);
 		} else {
-			throw UserException.newInvalidParameter("The status character must be 'E' or 'A'.");
+			throw new UserException("The status character must be 'E' or 'A'.");
 		}
 	}
 }

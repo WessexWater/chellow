@@ -30,8 +30,10 @@ import net.sf.chellow.monad.DesignerException;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.Invocation;
 import net.sf.chellow.monad.MonadUtils;
-import net.sf.chellow.monad.ProgrammerException;
+import net.sf.chellow.monad.NotFoundException;
+import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Urlable;
+import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.UserException;
 import net.sf.chellow.monad.XmlDescriber;
 import net.sf.chellow.monad.XmlTree;
@@ -50,9 +52,7 @@ public class SupplierServices implements Urlable, XmlDescriber {
 	static {
 		try {
 			URI_ID = new UriPathElement("services");
-		} catch (UserException e) {
-			throw new RuntimeException(e);
-		} catch (ProgrammerException e) {
+		} catch (HttpException e) {
 			throw new RuntimeException(e);
 		}
 	}
@@ -67,17 +67,17 @@ public class SupplierServices implements Urlable, XmlDescriber {
 		return URI_ID;
 	}
 
-	public MonadUri getUri() throws ProgrammerException, UserException {
+	public MonadUri getUri() throws InternalException, HttpException {
 		return supplier.getUri().resolve(getUrlId()).append("/");
 	}
 
-	public void httpPost(Invocation inv) throws ProgrammerException,
-			UserException, DesignerException, DeployerException {
+	public void httpPost(Invocation inv) throws InternalException,
+			HttpException, DesignerException, DeployerException {
 		String name = inv.getString("name");
 		Date startDate = inv.getDate("start-date");
 		String chargeScript = inv.getString("charge-script");
 		if (!inv.isValid()) {
-			throw UserException.newInvalidParameter(document());
+			throw new UserException(document());
 		}
 		SupplierService service = supplier.insertService(name, HhEndDate
 				.roundDown(startDate), chargeScript);
@@ -86,34 +86,34 @@ public class SupplierServices implements Urlable, XmlDescriber {
 	}
 
 	@SuppressWarnings("unchecked")
-	private Document document() throws ProgrammerException, UserException,
+	private Document document() throws InternalException, HttpException,
 			DesignerException {
 		Document doc = MonadUtils.newSourceDocument();
 		Element source = doc.getDocumentElement();
-		Element servicesElement = (Element) toXML(doc);
+		Element servicesElement = (Element) toXml(doc);
 		source.appendChild(servicesElement);
-		servicesElement.appendChild(supplier.getXML(
-				new XmlTree("organization"), doc));
+		servicesElement.appendChild(supplier.toXml(
+				doc, new XmlTree("organization")));
 		for (SupplierService service : (List<SupplierService>) Hiber
 				.session()
 				.createQuery(
 						"from SupplierService service where service.provider = :supplier order by service.name")
 				.setEntity("supplier", supplier).list()) {
-			servicesElement.appendChild(service.toXML(doc));
+			servicesElement.appendChild(service.toXml(doc));
 		}
 		source.appendChild(MonadDate.getMonthsXml(doc));
 		source.appendChild(MonadDate.getDaysXml(doc));
-		source.appendChild(new MonadDate().toXML(doc));
+		source.appendChild(new MonadDate().toXml(doc));
 		return doc;
 	}
 
 	public void httpGet(Invocation inv) throws DesignerException,
-			ProgrammerException, UserException, DeployerException {
+			InternalException, HttpException, DeployerException {
 		inv.sendOk(document());
 	}
 
-	public Service getChild(UriPathElement uriId) throws UserException,
-			ProgrammerException {
+	public Service getChild(UriPathElement uriId) throws HttpException,
+			InternalException {
 		SupplierService service = (SupplierService) Hiber
 				.session()
 				.createQuery(
@@ -121,24 +121,24 @@ public class SupplierServices implements Urlable, XmlDescriber {
 				.setEntity("supplier", supplier).setLong("serviceId",
 						Long.parseLong(uriId.getString())).uniqueResult();
 		if (service == null) {
-			throw UserException.newNotFound();
+			throw new NotFoundException();
 		}
 		return service;
 	}
 
-	public void httpDelete(Invocation inv) throws ProgrammerException,
-			UserException {
+	public void httpDelete(Invocation inv) throws InternalException,
+			HttpException {
 		// TODO Auto-generated method stub
 
 	}
 
-	public Node toXML(Document doc) throws ProgrammerException, UserException {
+	public Node toXml(Document doc) throws InternalException, HttpException {
 		Element contractsElement = doc.createElement("supplier-services");
 		return contractsElement;
 	}
 
-	public Node getXML(XmlTree tree, Document doc) throws ProgrammerException,
-			UserException {
+	public Node toXml(Document doc, XmlTree tree) throws InternalException,
+			HttpException {
 		// TODO Auto-generated method stub
 		return null;
 	}

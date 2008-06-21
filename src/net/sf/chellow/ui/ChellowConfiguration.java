@@ -8,7 +8,7 @@ import java.util.Properties;
 
 import javax.servlet.ServletContext;
 
-import net.sf.chellow.monad.ProgrammerException;
+import net.sf.chellow.monad.InternalException;
 
 public class ChellowConfiguration {
 	private static File configurationDirectory = null;
@@ -27,7 +27,7 @@ public class ChellowConfiguration {
 	}
 
 	public static String getChellowProperty(String name)
-			throws ProgrammerException {
+			throws InternalException {
 		Properties chellowProperties = new Properties();
 		String value = null;
 		try {
@@ -36,16 +36,16 @@ public class ChellowConfiguration {
 			chellowProperties.load(is);
 			is.close();
 		} catch (FileNotFoundException e) {
-			throw new ProgrammerException(e);
+			throw new InternalException(e);
 		} catch (IOException e) {
-			throw new ProgrammerException(e);
+			throw new InternalException(e);
 		}
 		value = chellowProperties.getProperty(name);
 		return value;
 	}
 
 	public static String getOverrideProperty(String name, String defaultValue)
-			throws ProgrammerException {
+			throws InternalException {
 		String overrideFileName = getChellowProperty("overrideFile");
 		if (overrideFileName == null) {
 			return defaultValue;
@@ -58,9 +58,9 @@ public class ChellowConfiguration {
 				overrideProperties.load(is);
 				is.close();
 			} catch (FileNotFoundException e) {
-				throw new ProgrammerException(e);
+				throw new InternalException(e);
 			} catch (IOException e) {
-				throw new ProgrammerException(e);
+				throw new InternalException(e);
 			}
 			return overrideProperties.getProperty(name, defaultValue);
 		} else {

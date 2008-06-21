@@ -22,12 +22,12 @@
 
 package net.sf.chellow.billing;
 
-import net.sf.chellow.monad.DeployerException;
 import net.sf.chellow.monad.DesignerException;
 import net.sf.chellow.monad.Hiber;
+import net.sf.chellow.monad.HttpException;
+import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Invocation;
 import net.sf.chellow.monad.MonadUtils;
-import net.sf.chellow.monad.ProgrammerException;
 import net.sf.chellow.monad.Urlable;
 import net.sf.chellow.monad.UserException;
 import net.sf.chellow.monad.XmlTree;
@@ -40,13 +40,12 @@ import org.w3c.dom.Element;
 
 @SuppressWarnings("serial")
 public class DcsService extends Service {
-	public static DcsService getContractDcs(Long id) throws UserException,
-			ProgrammerException {
+	public static DcsService getContractDcs(Long id) throws InternalException, UserException {
 		DcsService contract = (DcsService) Hiber.session().get(
 				DcsService.class, id);
 		if (contract == null) {
-			throw UserException
-					.newOk("There isn't a DCS contract with that id.");
+			throw new UserException
+					("There isn't a DCS contract with that id.");
 		}
 		return contract;
 	}
@@ -58,7 +57,7 @@ public class DcsService extends Service {
 	}
 
 	public DcsService(int type, String name, HhEndDate startDate, HhEndDate finishDate,
-			String chargeScript, Dcs dcs) throws UserException, ProgrammerException, DesignerException {
+			String chargeScript, Dcs dcs) throws HttpException {
 		intrinsicUpdate(type, name, chargeScript, dcs);
 	}
 
@@ -70,8 +69,7 @@ public class DcsService extends Service {
 		this.provider = provider;
 	}
 
-	protected void intrinsicUpdate(int type, String name, String chargeScript, Dcs provider) throws UserException,
-			ProgrammerException, DesignerException {
+	protected void intrinsicUpdate(int type, String name, String chargeScript, Dcs provider) throws HttpException {
 		super.update(type, name, chargeScript);
 		setProvider(provider);
 	}
@@ -79,17 +77,17 @@ public class DcsService extends Service {
 	/*
 	 * public MonadInteger getNumberOfSnags() throws ProgrammerException {
 	 * MonadInteger numberOfSnags = null; int numSnags = (Integer) Hiber
-	 * .session() .createQuery( "select count(*) from SnagChannel snag where
+	 * .session() .createQuery( "select count(*) from ChannelSnag snag where
 	 * snag.contract.id = :contractId and snag.dateResolved.date is null and
 	 * snag.startDate.date < :snagDate") .setLong("contractId",
 	 * getId()).setDate( "snagDate", new Date(System.currentTimeMillis() -
-	 * SnagChannel.SNAG_CHECK_LEAD_TIME)) .uniqueResult();
+	 * ChannelSnag.SNAG_CHECK_LEAD_TIME)) .uniqueResult();
 	 * 
 	 * numSnags += (Integer) Hiber .session() .createQuery( "select count(*)
 	 * from SnagSite snag where snag.contract.id = :contractId and
 	 * snag.dateResolved.date is null and snag.startDate.date < :snagDate")
 	 * .setLong("contractId", getId()).setDate( "snagDate", new
-	 * Date(System.currentTimeMillis() - SnagChannel.SNAG_CHECK_LEAD_TIME))
+	 * Date(System.currentTimeMillis() - ChannelSnag.SNAG_CHECK_LEAD_TIME))
 	 * .uniqueResult(); try { numberOfSnags = new MonadInteger(numSnags); }
 	 * catch (MonadInstantiationException e) { throw new ProgrammerException(e); }
 	 * numberOfSnags.setLabel("numberOfSnags"); return numberOfSnags; }
@@ -103,34 +101,32 @@ public class DcsService extends Service {
 		return isEqual;
 	}
 
-	public MonadUri getUri() throws ProgrammerException, UserException {
+	public MonadUri getUri() throws HttpException {
 		return provider.contractsInstance().getUri().resolve(getUriId())
 				.append("/");
 	}
 
-	public void httpPost(Invocation inv) throws ProgrammerException,
-			UserException, DesignerException, DeployerException {
+	public void httpPost(Invocation inv) throws HttpException {
 		int type = inv.getInteger("type");
 		String name = inv.getString("name");
 		String chargeScript = inv.getString("charge-script");
 		if (!inv.isValid()) {
-			throw UserException.newInvalidParameter(document());
+			throw new UserException(document());
 		}
 		update(type, name, chargeScript);
 		Hiber.commit();
 		inv.sendOk(document());
 	}
 
-	private Document document() throws ProgrammerException, UserException,
+	private Document document() throws InternalException, HttpException,
 			DesignerException {
 		Document doc = MonadUtils.newSourceDocument();
 		Element source = doc.getDocumentElement();
-		source.appendChild(getXML(new XmlTree("dcs").put("organization"), doc));
+		source.appendChild(toXml(doc, new XmlTree("dcs").put("organization")));
 		return doc;
 	}
 
-	public void httpGet(Invocation inv) throws DesignerException,
-			ProgrammerException, UserException, DeployerException {
+	public void httpGet(Invocation inv) throws HttpException {
 		inv.sendOk(document());
 	}
 
@@ -159,8 +155,8 @@ public class DcsService extends Service {
 	 * StarkAutomaticHhDataImporters.getImportersInstance() .findImporter(this); }
 	 * else { return null; } }
 	 */
-	public void httpDelete(Invocation inv) throws ProgrammerException,
-			UserException {
+	public void httpDelete(Invocation inv) throws InternalException,
+			HttpException {
 		// TODO Auto-generated method stub
 
 	}
@@ -170,8 +166,8 @@ public class DcsService extends Service {
 				+ getName();
 	}
 
-	public Urlable getChild(UriPathElement uriId) throws ProgrammerException,
-			UserException {
+	public Urlable getChild(UriPathElement uriId) throws InternalException,
+			HttpException {
 		// TODO Auto-generated method stub
 		return null;
 	}

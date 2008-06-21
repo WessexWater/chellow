@@ -30,7 +30,7 @@ import java.util.GregorianCalendar;
 import java.util.Locale;
 import java.util.TimeZone;
 
-import net.sf.chellow.monad.ProgrammerException;
+import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.UserException;
 
 import org.w3c.dom.Document;
@@ -78,12 +78,12 @@ public class MonadDate extends MonadObject {
 	 * date.getLabel()); } return element; }
 	 */
 	public static Element toXML(Date date, String label, Document doc)
-			throws ProgrammerException, UserException {
+			throws InternalException {
 		return toXML(date, label, doc, "date");
 	}
 
 	public static Element toXML(Date date, String label, Document doc,
-			String typeName) throws ProgrammerException, UserException {
+			String typeName) throws InternalException {
 		Element element = doc.createElement(typeName);
 		Calendar cal = getCalendar();
 		SimpleDateFormat sdYear = new SimpleDateFormat("yyyy", Locale.UK);
@@ -118,41 +118,40 @@ public class MonadDate extends MonadObject {
 	 * private MonadDay monadDay;
 	 */
 	// protected Calendar cal = getCalendar();
-	public MonadDate() throws ProgrammerException, UserException {
+	public MonadDate() throws InternalException, UserException {
 		init(null);
 		update(new Date());
 	}
 
-	public MonadDate(Date date) throws ProgrammerException, UserException {
+	public MonadDate(Date date) throws InternalException, UserException {
 		init(null);
 		update(date);
 	}
 
-	public MonadDate(String label, String dateStr) throws UserException,
-			ProgrammerException {
+	public MonadDate(String label, String dateStr) throws InternalException,
+			UserException {
 		init(label);
 		update(dateStr);
 	}
 
-	public MonadDate(String dateStr) throws UserException, ProgrammerException {
+	public MonadDate(String dateStr) throws InternalException, UserException {
 		init(null);
 		update(dateStr);
 	}
 
-	public MonadDate(String label, Date date) throws ProgrammerException,
-			UserException {
+	public MonadDate(String label, Date date) throws InternalException, UserException {
 		init(label);
 		update(date);
 	}
 
 	public MonadDate(String label, String year, String month, String day)
-			throws ProgrammerException, UserException {
+			throws InternalException, UserException {
 		init(label);
 		update(year, month, day);
 	}
 
 	public MonadDate(int year, MonadMonth month, MonadDay day)
-			throws ProgrammerException, UserException {
+			throws InternalException, UserException {
 		init(null);
 		update(year, month, day);
 	}
@@ -163,18 +162,18 @@ public class MonadDate extends MonadObject {
 	}
 
 	protected void update(String year, String month, String day)
-			throws ProgrammerException, UserException {
+			throws InternalException, UserException {
 		update(new MonadInteger("year", year).getInteger(), new MonadMonth(
 				month), new MonadDay(day));
 	}
 
 	public void initLast(int year, MonadMonth month, MonadDay day)
-			throws ProgrammerException, UserException {
+			throws InternalException, UserException {
 		update(year, month, day);
 	}
 
-	public void update(String dateStr) throws UserException,
-			ProgrammerException {
+	public void update(String dateStr) throws InternalException,
+			UserException {
 		Date date = null;
 		SimpleDateFormat sdFormat = dateStr.trim().length() > 10 ? sdIsoDateTime()
 				: sdIsoDate();
@@ -182,7 +181,7 @@ public class MonadDate extends MonadObject {
 		try {
 			date = sdFormat.parse(dateStr);
 		} catch (ParseException e) {
-			throw UserException.newInvalidParameter("The date '" + dateStr
+			throw new UserException("The date '" + dateStr
 					+ "' must be of the form yyyy-MM-dd or yyyy-MM-ddThh:mmZ.");
 		}
 		setDate(date);
@@ -197,7 +196,7 @@ public class MonadDate extends MonadObject {
 	}
 
 	public void update(int year, MonadMonth month, MonadDay day)
-			throws ProgrammerException, UserException {
+			throws InternalException, UserException {
 		Calendar cal = getCalendar();
 		cal.clear();
 		try {
@@ -205,13 +204,13 @@ public class MonadDate extends MonadObject {
 					.intValue());
 			update(cal.getTime());
 		} catch (IllegalArgumentException e) {
-			throw UserException.newInvalidParameter("Invalid date.");
+			throw new UserException("Invalid date.");
 		}
 	}
 
-	public void update(Date date) throws ProgrammerException, UserException {
+	public void update(Date date) throws InternalException, UserException {
 		if (date == null) {
-			throw new ProgrammerException("The date may not be null");
+			throw new InternalException("The date may not be null");
 		}
 		setDate(date);
 	}
@@ -221,8 +220,7 @@ public class MonadDate extends MonadObject {
 	 * (ex == null) { ex = new MonadInstantiationException(getTypeName(),
 	 * getLabel()); } return ex; }
 	 */
-	public Element toXML(Document doc) throws ProgrammerException,
-			UserException {
+	public Element toXml(Document doc) throws InternalException {
 		return toXML(date, getLabel(), doc);
 	}
 

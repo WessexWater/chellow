@@ -27,9 +27,10 @@ import net.sf.chellow.monad.DesignerException;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.Invocation;
 import net.sf.chellow.monad.MonadUtils;
-import net.sf.chellow.monad.ProgrammerException;
+import net.sf.chellow.monad.NotFoundException;
+import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Urlable;
-import net.sf.chellow.monad.UserException;
+import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.XmlDescriber;
 import net.sf.chellow.monad.XmlTree;
 import net.sf.chellow.monad.types.MonadDate;
@@ -47,10 +48,9 @@ public class SupplyGenerations implements Urlable, XmlDescriber {
 	static {
 		try {
 			URI_ID = new UriPathElement("generations");
-		} catch (UserException e) {
+		} catch (HttpException e) {
 			throw new RuntimeException(e);
-		} catch (ProgrammerException e) {
-			throw new RuntimeException(e);		}
+		}
 	}
 
 	private Supply supply;
@@ -67,7 +67,7 @@ public class SupplyGenerations implements Urlable, XmlDescriber {
 		return supply;
 	}
 
-	public MonadUri getUri() throws ProgrammerException, UserException {
+	public MonadUri getUri() throws InternalException, HttpException {
 		return supply.getUri().resolve(getUriId()).append("/");
 	}
 
@@ -75,8 +75,8 @@ public class SupplyGenerations implements Urlable, XmlDescriber {
 		return URI_ID;
 	}
 
-	public void httpPost(Invocation inv) throws ProgrammerException,
-			UserException, DesignerException, DeployerException {
+	public void httpPost(Invocation inv) throws InternalException,
+			HttpException, DesignerException, DeployerException {
 		MonadDate finishDate = inv.getMonadDate("finish-date");
 		SupplyGeneration supplyGeneration = supply.addGeneration(HhEndDate
 				.roundDown(finishDate.getDate()));
@@ -85,12 +85,12 @@ public class SupplyGenerations implements Urlable, XmlDescriber {
 	}
 
 	public void httpGet(Invocation inv) throws DesignerException,
-			ProgrammerException, UserException, DeployerException {
+			InternalException, HttpException, DeployerException {
 		inv.sendOk(document());
 	}
 
-	public Document document() throws DesignerException, ProgrammerException,
-			UserException, DeployerException {
+	public Document document() throws DesignerException, InternalException,
+			HttpException, DeployerException {
 		Document doc = MonadUtils.newSourceDocument();
 		Element source = doc.getDocumentElement();
 		/*
@@ -98,22 +98,22 @@ public class SupplyGenerations implements Urlable, XmlDescriber {
 		 * XMLTree("siteSupplyGenerations", new XMLTree("site", new XMLTree(
 		 * "organization")).put("supply")), doc);
 		 */
-		Element generationsElement = toXML(doc);
+		Element generationsElement = toXml(doc);
 		source.appendChild(generationsElement);
-		generationsElement.appendChild(supply.getXML(
-				new XmlTree("organization"), doc));
+		generationsElement.appendChild(supply.toXml(
+				doc, new XmlTree("organization")));
 		for (SupplyGeneration supplyGeneration : supply.getGenerations()) {
-			generationsElement.appendChild(supplyGeneration.getXML(new XmlTree(
-					"mpans", new XmlTree("mpanCore")), doc));
+			generationsElement.appendChild(supplyGeneration.toXml(doc, new XmlTree(
+							"mpans", new XmlTree("mpanCore"))));
 		}
-		source.appendChild(new MonadDate().toXML(doc));
+		source.appendChild(new MonadDate().toXml(doc));
 		source.appendChild(MonadDate.getMonthsXml(doc));
 		source.appendChild(MonadDate.getDaysXml(doc));
 		return doc;
 	}
 
 	public SupplyGeneration getChild(UriPathElement uriId)
-			throws ProgrammerException, UserException {
+			throws InternalException, HttpException {
 		SupplyGeneration supplyGeneration = (SupplyGeneration) Hiber
 				.session()
 				.createQuery(
@@ -121,24 +121,24 @@ public class SupplyGenerations implements Urlable, XmlDescriber {
 				.setEntity("supply", supply).setLong("supplyGenerationId",
 						Long.parseLong(uriId.toString())).uniqueResult();
 		if (supplyGeneration == null) {
-			throw UserException.newNotFound();
+			throw new NotFoundException();
 		}
 		return supplyGeneration;
 	}
 
-	public void httpDelete(Invocation inv) throws ProgrammerException,
-			DesignerException, UserException, DeployerException {
+	public void httpDelete(Invocation inv) throws InternalException,
+			DesignerException, HttpException, DeployerException {
 		// TODO Auto-generated method stub
 
 	}
 
-	public Element toXML(Document doc) throws ProgrammerException,
-			UserException {
+	public Element toXml(Document doc) throws InternalException,
+			HttpException {
 		return doc.createElement("supply-generations");
 	}
 
-	public Node getXML(XmlTree tree, Document doc) throws ProgrammerException,
-			UserException {
+	public Node toXml(Document doc, XmlTree tree) throws InternalException,
+			HttpException {
 		// TODO Auto-generated method stub
 		return null;
 	}

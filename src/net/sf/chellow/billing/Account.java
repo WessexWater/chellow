@@ -34,8 +34,10 @@ import net.sf.chellow.monad.DesignerException;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.Invocation;
 import net.sf.chellow.monad.MonadUtils;
-import net.sf.chellow.monad.ProgrammerException;
+import net.sf.chellow.monad.NotFoundException;
+import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Urlable;
+import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.UserException;
 import net.sf.chellow.monad.XmlTree;
 import net.sf.chellow.monad.types.MonadUri;
@@ -51,11 +53,11 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 public class Account extends PersistentEntity implements Urlable {
-	public static Account getAccount(Long id) throws UserException,
-			ProgrammerException {
+	public static Account getAccount(Long id) throws HttpException,
+			InternalException {
 		Account account = (Account) Hiber.session().get(Account.class, id);
 		if (account == null) {
-			throw UserException.newOk("There isn't an account with that id.");
+			throw new UserException("There isn't an account with that id.");
 		}
 		return account;
 	}
@@ -68,7 +70,7 @@ public class Account extends PersistentEntity implements Urlable {
 	 */
 	@SuppressWarnings("unchecked")
 	public static void checkAllMissingFromLatest(Organization organization)
-			throws ProgrammerException, UserException {
+			throws InternalException, HttpException {
 		List<Object[]> results = (List<Object[]>) Hiber
 				.session()
 				.createQuery(
@@ -131,10 +133,9 @@ public class Account extends PersistentEntity implements Urlable {
 		setReference(reference);
 	}
 
-	public Element toXML(Document doc) throws ProgrammerException,
-			UserException {
+	public Element toXml(Document doc) throws HttpException {
 		setTypeName("account");
-		Element element = (Element) super.toXML(doc);
+		Element element = (Element) super.toXml(doc);
 
 		element.setAttribute("reference", reference);
 		if (Supplier.findSupplier(provider.getId()) != null) {
@@ -145,12 +146,11 @@ public class Account extends PersistentEntity implements Urlable {
 		return element;
 	}
 
-	public void httpPost(Invocation inv) throws ProgrammerException,
-			UserException, DesignerException, DeployerException {
+	public void httpPost(Invocation inv) throws HttpException {
 		if (inv.hasParameter("delete")) {
 			try {
 				provider.deleteAccount(this);
-			} catch (UserException e) {
+			} catch (HttpException e) {
 				e.setDocument(document());
 				throw e;
 			}
@@ -162,7 +162,7 @@ public class Account extends PersistentEntity implements Urlable {
 		} else {
 			String reference = inv.getString("reference");
 			if (!inv.isValid()) {
-				throw UserException.newInvalidParameter(document());
+				throw new UserException(document());
 			}
 			update(reference);
 			Hiber.commit();
@@ -171,38 +171,37 @@ public class Account extends PersistentEntity implements Urlable {
 	}
 
 	@SuppressWarnings("unchecked")
-	private Document document() throws ProgrammerException, UserException,
+	private Document document() throws InternalException, HttpException,
 			DesignerException {
 		Document doc = MonadUtils.newSourceDocument();
 		Element source = doc.getDocumentElement();
-		Element accountElement = (Element) getXML(new XmlTree("organization")
-				.put("provider"), doc);
+		Element accountElement = (Element) toXml(doc, new XmlTree("organization")
+						.put("provider"));
 		source.appendChild(accountElement);
 		for (Mpan mpan : (List<Mpan>) Hiber.session().createQuery(
 				"from Mpan mpan where mpan.supplierAccount = :account")
 				.setEntity("account", this).list()) {
-			accountElement.appendChild(mpan.getXML(new XmlTree(
-					"supplyGeneration", new XmlTree("supply")).put(
-					"mpanTop",
-					new XmlTree("profileClass").put("meterTimeswitch").put(
-							"llf")).put("mpanCore"), doc));
+			accountElement.appendChild(mpan.toXml(doc, new XmlTree(
+									"supplyGeneration", new XmlTree("supply")).put(
+									"mpanTop",
+									new XmlTree("profileClass").put("meterTimeswitch").put(
+											"llf")).put("mpanCore")));
 		}
 		for (Bill bill : (List<Bill>) Hiber
 				.session()
 				.createQuery(
 						"from Bill bill where bill.account = :account order by bill.startDate.date")
 				.setEntity("account", this).list()) {
-			accountElement.appendChild(bill.toXML(doc));
+			accountElement.appendChild(bill.toXml(doc));
 		}
 		return doc;
 	}
 
-	public void httpGet(Invocation inv) throws DesignerException,
-			ProgrammerException, UserException, DeployerException {
+	public void httpGet(Invocation inv) throws HttpException {
 		inv.sendOk(document());
 	}
 
-	public MonadUri getUri() throws ProgrammerException, UserException {
+	public MonadUri getUri() throws HttpException {
 		if (provider instanceof ProviderOrganization) {
 			return ((ProviderOrganization) provider).accountsInstance()
 					.getUri().resolve(getUriId()).append("/");
@@ -214,29 +213,29 @@ public class Account extends PersistentEntity implements Urlable {
 		}
 	}
 
-	public Urlable getChild(UriPathElement uriId) throws ProgrammerException,
-			UserException {
+	public Urlable getChild(UriPathElement uriId) throws InternalException,
+			HttpException {
 		if (Bills.URI_ID.equals(uriId)) {
 			return billsInstance();
 		} else {
-			throw UserException.newNotFound();
+			throw new NotFoundException();
 		}
 	}
 
-	public void httpDelete(Invocation inv) throws ProgrammerException,
-			DesignerException, UserException, DeployerException {
+	public void httpDelete(Invocation inv) throws InternalException,
+			DesignerException, HttpException, DeployerException {
 		// deleteAccount(this);
 		// inv.sendOk();
 	}
 
 	public void checkMissingFromLatest(Service service)
-			throws ProgrammerException, UserException {
+			throws InternalException, HttpException {
 		checkMissingFromLatest(service, null);
 	}
 
 	@SuppressWarnings("unchecked")
 	public void checkMissingFromLatest(Service service, HhEndDate to)
-			throws ProgrammerException, UserException {
+			throws InternalException, HttpException {
 		List<Bill> bills = (List<Bill>) Hiber
 				.session()
 				.createQuery(
@@ -263,7 +262,7 @@ public class Account extends PersistentEntity implements Urlable {
 
 	@SuppressWarnings("unchecked")
 	void checkMissing(Service service, HhEndDate from, HhEndDate to)
-			throws ProgrammerException, UserException {
+			throws InternalException, HttpException {
 		List<SupplyGeneration> supplyGenerations = provider
 				.supplyGenerations(this);
 		if (supplyGenerations.isEmpty()) {
@@ -324,7 +323,7 @@ public class Account extends PersistentEntity implements Urlable {
 
 	void addSnag(Service service, String description, HhEndDate startDate,
 			HhEndDate finishDate, boolean isResolved)
-			throws ProgrammerException, UserException {
+			throws InternalException, HttpException {
 		SnagDateBounded.addAccountSnag(service, this, description, startDate,
 				finishDate, isResolved);
 	}
@@ -347,7 +346,7 @@ public class Account extends PersistentEntity implements Urlable {
 	 */
 	@SuppressWarnings("unchecked")
 	private List<Mpan> getMpans(HhEndDate from, HhEndDate to)
-			throws UserException, ProgrammerException {
+			throws HttpException, InternalException {
 		Long providerId = getProvider().getId();
 		if (Supplier.findSupplier(providerId) != null) {
 			if (to == null) {
@@ -375,11 +374,11 @@ public class Account extends PersistentEntity implements Urlable {
 							from.getDate()).setTimestamp("to", to.getDate())
 					.list();
 		} else {
-			throw UserException.newInvalidParameter("Not of type Supplier!");
+			throw new UserException("Not of type Supplier!");
 		}
 	}
 
-	void attach(Invoice invoice) throws UserException, ProgrammerException {
+	void attach(Invoice invoice) throws HttpException, InternalException {
 		Bill bill = combineBills(invoice.getStartDate(), invoice
 				.getFinishDate());
 		List<Mpan> accountMpans = getMpans(invoice.getStartDate(), invoice
@@ -389,7 +388,7 @@ public class Account extends PersistentEntity implements Urlable {
 			invoiceMpans.add(invoiceMpan.getMpan());
 		}
 		if (!accountMpans.equals(new ArrayList<Mpan>(invoiceMpans))) {
-			throw UserException.newInvalidParameter("Problem with account '"
+			throw new UserException("Problem with account '"
 					+ reference + "' invoice '" + invoice.getReference()
 					+ "' from the half-hour ending " + invoice.getStartDate()
 					+ " to the half-hour ending " + invoice.getFinishDate()
@@ -408,7 +407,7 @@ public class Account extends PersistentEntity implements Urlable {
 
 	@SuppressWarnings("unchecked")
 	private Bill combineBills(HhEndDate start, HhEndDate finish)
-			throws UserException, ProgrammerException {
+			throws HttpException, InternalException {
 		List<Bill> bills = (List<Bill>) Hiber
 				.session()
 				.createQuery(
@@ -433,7 +432,7 @@ public class Account extends PersistentEntity implements Urlable {
 		}
 	}
 
-	void delete(Bill bill) throws ProgrammerException, UserException {
+	void delete(Bill bill) throws InternalException, HttpException {
 		Service service = bill.getService();
 		Bill foundBill = (Bill) Hiber
 				.session()
@@ -442,7 +441,7 @@ public class Account extends PersistentEntity implements Urlable {
 				.setEntity("account", this).setLong("billId", bill.getId())
 				.uniqueResult();
 		if (foundBill == null) {
-			throw new ProgrammerException(
+			throw new InternalException(
 					"This bill doesn't belong to this account.");
 		} else {
 			Hiber.session().delete(bill);

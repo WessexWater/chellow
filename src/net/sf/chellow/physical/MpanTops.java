@@ -28,10 +28,12 @@ import net.sf.chellow.monad.DeployerException;
 import net.sf.chellow.monad.DesignerException;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.Invocation;
+import net.sf.chellow.monad.MethodNotAllowedException;
 import net.sf.chellow.monad.MonadUtils;
-import net.sf.chellow.monad.ProgrammerException;
+import net.sf.chellow.monad.NotFoundException;
+import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Urlable;
-import net.sf.chellow.monad.UserException;
+import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.XmlDescriber;
 import net.sf.chellow.monad.XmlTree;
 import net.sf.chellow.monad.types.MonadUri;
@@ -48,9 +50,7 @@ public class MpanTops implements Urlable, XmlDescriber {
 	static {
 		try {
 			URI_ID = new UriPathElement("mpan-tops");
-		} catch (UserException e) {
-			throw new RuntimeException(e);
-		} catch (ProgrammerException e) {
+		} catch (HttpException e) {
 			throw new RuntimeException(e);
 		}
 	}
@@ -65,37 +65,37 @@ public class MpanTops implements Urlable, XmlDescriber {
 		return URI_ID;
 	}
 
-	public MonadUri getUri() throws ProgrammerException, UserException {
+	public MonadUri getUri() throws InternalException, HttpException {
 		return dso.getUri().resolve(getUrlId()).append("/");
 	}
 
-	public void httpPost(Invocation inv) throws ProgrammerException,
-			UserException, DesignerException, DeployerException {
-		throw UserException.newMethodNotAllowed();
+	public void httpPost(Invocation inv) throws InternalException,
+			HttpException, DesignerException, DeployerException {
+		throw new MethodNotAllowedException();
 	}
 
 	@SuppressWarnings("unchecked")
 	public void httpGet(Invocation inv) throws DesignerException,
-			ProgrammerException, UserException, DeployerException {
+			InternalException, HttpException, DeployerException {
 		Document doc = MonadUtils.newSourceDocument();
 		Element source = doc.getDocumentElement();
-		Element mpanTopsElement = (Element) toXML(doc);
+		Element mpanTopsElement = (Element) toXml(doc);
 		source.appendChild(mpanTopsElement);
-		mpanTopsElement.appendChild(dso.toXML(doc));
+		mpanTopsElement.appendChild(dso.toXml(doc));
 		for (MpanTop mpanTop : (List<MpanTop>) Hiber
 				.session()
 				.createQuery(
 						"from MpanTop mpanTop where mpanTop.llf.dso = :dso order by mpanTop.llf.code, mpanTop.profileClass.code")
 				.setEntity("dso", dso).list()) {
-			mpanTopsElement.appendChild(mpanTop.getXML(new XmlTree(
-					"llf", new XmlTree("dso")).put("profileClass")
-					.put("meterTimeswitch"), doc));
+			mpanTopsElement.appendChild(mpanTop.toXml(doc, new XmlTree(
+							"llf", new XmlTree("dso")).put("profileClass")
+							.put("meterTimeswitch")));
 		}
 		inv.sendOk(doc);
 	}
 
-	public MpanTop getChild(UriPathElement uriId) throws UserException,
-			ProgrammerException {
+	public MpanTop getChild(UriPathElement uriId) throws HttpException,
+			InternalException {
 		MpanTop mpanTop = (MpanTop) Hiber
 				.session()
 				.createQuery(
@@ -103,23 +103,23 @@ public class MpanTops implements Urlable, XmlDescriber {
 				.setEntity("dso", dso).setLong("mpanTopId",
 						Long.parseLong(uriId.getString())).uniqueResult();
 		if (mpanTop == null) {
-			throw UserException.newNotFound();
+			throw new NotFoundException();
 		}
 		return mpanTop;
 	}
 
-	public void httpDelete(Invocation inv) throws ProgrammerException,
-			UserException {
-		throw UserException.newMethodNotAllowed();
+	public void httpDelete(Invocation inv) throws InternalException,
+			HttpException {
+		throw new MethodNotAllowedException();
 	}
 
-	public Node toXML(Document doc) throws ProgrammerException, UserException {
+	public Node toXml(Document doc) throws InternalException, HttpException {
 		Element mpanTopsElement = doc.createElement("mpan-tops");
 		return mpanTopsElement;
 	}
 
-	public Node getXML(XmlTree tree, Document doc) throws ProgrammerException,
-			UserException {
+	public Node toXml(Document doc, XmlTree tree) throws InternalException,
+			HttpException {
 		// TODO Auto-generated method stub
 		return null;
 	}

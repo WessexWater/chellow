@@ -26,8 +26,10 @@ import net.sf.chellow.monad.DeployerException;
 import net.sf.chellow.monad.DesignerException;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.Invocation;
-import net.sf.chellow.monad.ProgrammerException;
+import net.sf.chellow.monad.NotFoundException;
+import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Urlable;
+import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.UserException;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
@@ -39,11 +41,11 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
 public class InvoiceMpan extends PersistentEntity {
-	static public InvoiceMpan getInvoiceMpan(Long id) throws ProgrammerException,
-			UserException {
+	static public InvoiceMpan getInvoiceMpan(Long id) throws InternalException,
+			HttpException {
 			InvoiceMpan invoiceMpan = (InvoiceMpan) Hiber.session().get(InvoiceMpan.class, id);
 			if (invoiceMpan == null) {
-				throw UserException.newOk("There is no invoice-mpan with that id.");
+				throw new UserException("There is no invoice-mpan with that id.");
 			}
 			return invoiceMpan;
 	}
@@ -77,9 +79,9 @@ public class InvoiceMpan extends PersistentEntity {
 		this.mpan = mpan;
 	}
 
-	public Node toXML(Document doc) throws ProgrammerException, UserException {
+	public Node toXml(Document doc) throws InternalException, HttpException {
 		setTypeName("invoice-mpan");
-		Element element = (Element) super.toXML(doc);
+		Element element = (Element) super.toXml(doc);
 		return element;
 	}
 	public boolean equals(Object obj) {
@@ -91,18 +93,18 @@ public class InvoiceMpan extends PersistentEntity {
 		return isEqual;
 	}
 
-	public void httpGet(Invocation inv) throws DesignerException, ProgrammerException, UserException, DeployerException {
+	public void httpGet(Invocation inv) throws DesignerException, InternalException, HttpException, DeployerException {
 		// TODO Auto-generated method stub
 		
 	}
 
-	public void httpPost(Invocation inv) throws ProgrammerException, UserException {
+	public void httpPost(Invocation inv) throws InternalException, HttpException {
 		// TODO Auto-generated method stub
 		
 	}
 	
 	public void httpDelete(Invocation inv) throws DesignerException,
-		ProgrammerException, UserException, DeployerException {
+		InternalException, HttpException, DeployerException {
 	/*
 	getSite().detachSiteSupply(this);
 	Hiber.commit();
@@ -110,11 +112,11 @@ public class InvoiceMpan extends PersistentEntity {
 	*/
 	}
 
-	public Urlable getChild(UriPathElement uriId) throws ProgrammerException, UserException {
-		throw UserException.newNotFound();
+	public Urlable getChild(UriPathElement uriId) throws InternalException, HttpException {
+		throw new NotFoundException();
 	}
 
-	public MonadUri getUri() throws ProgrammerException, UserException {
+	public MonadUri getUri() throws InternalException, HttpException {
 		// TODO Auto-generated method stub
 		return null;
 	}

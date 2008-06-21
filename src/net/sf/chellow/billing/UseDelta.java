@@ -29,8 +29,10 @@ import net.sf.chellow.monad.DesignerException;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.Invocation;
 import net.sf.chellow.monad.MonadUtils;
-import net.sf.chellow.monad.ProgrammerException;
+import net.sf.chellow.monad.NotFoundException;
+import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Urlable;
+import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.UserException;
 import net.sf.chellow.monad.XmlTree;
 import net.sf.chellow.monad.types.MonadInteger;
@@ -48,22 +50,22 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
 public class UseDelta extends PersistentEntity implements Urlable {
-	public static UseDelta getUseDelta(Long id) throws UserException,
-			ProgrammerException {
+	public static UseDelta getUseDelta(Long id) throws HttpException,
+			InternalException {
 		UseDelta useDelta = (UseDelta) Hiber.session().get(UseDelta.class, id);
 		if (useDelta == null) {
-			throw UserException.newOk("There isn't an account with that id.");
+			throw new UserException("There isn't an account with that id.");
 		}
 		return useDelta;
 	}
 
 	public static void deleteUseDelta(UseDelta useDelta)
-			throws ProgrammerException {
+			throws InternalException {
 		try {
 			Hiber.session().delete(useDelta);
 			Hiber.flush();
 		} catch (HibernateException e) {
-			throw new ProgrammerException(e);
+			throw new InternalException(e);
 		}
 	}
 
@@ -124,22 +126,22 @@ public class UseDelta extends PersistentEntity implements Urlable {
 		setKwhPerMonth(kwhPerMonth);
 	}
 
-	public Node toXML(Document doc) throws ProgrammerException, UserException {
-		Element element = (Element) super.toXML(doc);
+	public Node toXml(Document doc) throws InternalException, HttpException {
+		Element element = (Element) super.toXml(doc);
 		startDate.setLabel("start");
-		element.appendChild(startDate.toXML(doc));
+		element.appendChild(startDate.toXml(doc));
 		element.setAttributeNode(MonadInteger.toXml(doc, "kwh-per-month",
 				kwhPerMonth));
 		return element;
 	}
 
-	public void httpPost(Invocation inv) throws ProgrammerException,
-			UserException, DesignerException, DeployerException {
+	public void httpPost(Invocation inv) throws InternalException,
+			HttpException, DesignerException, DeployerException {
 		String siteCode = inv.getString("site-code");
 		Date date = inv.getDate("start-date");
 		int kwhPerMonth = inv.getInteger("kwh-per-month");
 		if (!inv.isValid()) {
-			throw UserException.newInvalidParameter(document());
+			throw new UserException(document());
 		}
 		update(organization.getSite(new SiteCode(siteCode)), HhEndDate
 				.roundUp(date), kwhPerMonth);
@@ -147,33 +149,33 @@ public class UseDelta extends PersistentEntity implements Urlable {
 		inv.sendOk(document());
 	}
 
-	private Document document() throws ProgrammerException, UserException,
+	private Document document() throws InternalException, HttpException,
 			DesignerException {
 		Document doc = MonadUtils.newSourceDocument();
 		Element source = doc.getDocumentElement();
 		source
-				.appendChild(getXML(new XmlTree("organization").put("site"),
-						doc));
+				.appendChild(toXml(doc,
+						new XmlTree("organization").put("site")));
 		return doc;
 	}
 
 	public void httpGet(Invocation inv) throws DesignerException,
-			ProgrammerException, UserException, DeployerException {
+			InternalException, HttpException, DeployerException {
 		inv.sendOk(document());
 	}
 
-	public MonadUri getUri() throws ProgrammerException, UserException {
+	public MonadUri getUri() throws InternalException, HttpException {
 		return organization.useDeltasInstance().getUri().resolve(getUriId())
 				.append("/");
 	}
 
-	public Urlable getChild(UriPathElement uriId) throws ProgrammerException,
-			UserException {
-		throw UserException.newNotFound();
+	public Urlable getChild(UriPathElement uriId) throws InternalException,
+			HttpException {
+		throw new NotFoundException();
 	}
 
-	public void httpDelete(Invocation inv) throws ProgrammerException,
-			DesignerException, UserException, DeployerException {
+	public void httpDelete(Invocation inv) throws InternalException,
+			DesignerException, HttpException, DeployerException {
 		deleteUseDelta(this);
 		inv.sendOk();
 	}

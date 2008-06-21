@@ -7,8 +7,9 @@ import net.sf.chellow.monad.DeployerException;
 import net.sf.chellow.monad.DesignerException;
 import net.sf.chellow.monad.Invocation;
 import net.sf.chellow.monad.MonadUtils;
-import net.sf.chellow.monad.ProgrammerException;
+import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Urlable;
+import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.UserException;
 import net.sf.chellow.monad.XmlDescriber;
 import net.sf.chellow.monad.XmlTree;
@@ -32,10 +33,9 @@ public class HeaderImportProcesses implements Urlable, XmlDescriber {
 	static {
 		try {
 			URI_ID = new UriPathElement("header-data-imports");
-		} catch (UserException e) {
+		} catch (HttpException e) {
 			throw new RuntimeException(e);
-		} catch (ProgrammerException e) {
-			throw new RuntimeException(e);		}
+		}
 	}
 
 	private Organization organization;
@@ -48,38 +48,37 @@ public class HeaderImportProcesses implements Urlable, XmlDescriber {
 		return URI_ID;
 	}
 
-	public MonadUri getUri() throws ProgrammerException, UserException {
+	public MonadUri getUri() throws InternalException, HttpException {
 		return organization.getUri().resolve(getUriId()).append("/");
 	}
 
 	public void httpGet(Invocation inv) throws DesignerException,
-			ProgrammerException, UserException, DeployerException {
+			InternalException, HttpException, DeployerException {
 		inv.sendOk(document());
 	}
 
-	private Document document() throws ProgrammerException, UserException {
+	private Document document() throws InternalException, HttpException {
 		Document doc = MonadUtils.newSourceDocument();
 		Element source = (Element) doc.getFirstChild();
-		Element processesElement = (Element) toXML(doc);
+		Element processesElement = (Element) toXml(doc);
 		source.appendChild(processesElement);
 		Map<Long, HeaderImportProcess> orgProcesses = processes
 				.get(organization.getId());
 		if (orgProcesses != null) {
 			for (HeaderImportProcess process : orgProcesses.values()) {
-				processesElement.appendChild(process.toXML(doc));
+				processesElement.appendChild(process.toXml(doc));
 			}
 		}
-		processesElement.appendChild(organization.toXML(doc));
+		processesElement.appendChild(organization.toXml(doc));
 		return doc;
 	}
 
-	public void httpPost(Invocation inv) throws ProgrammerException,
-			UserException, DeployerException, DesignerException {
+	public void httpPost(Invocation inv) throws HttpException {
 		FileItem fileItem = inv.getFileItem("import-file");
 		HeaderImportProcess process;
 
 		if (!inv.isValid()) {
-			throw UserException.newInvalidParameter(document(), null);
+			throw new UserException(document());
 		}
 		try {
 			long processId = processSerial++;
@@ -93,7 +92,7 @@ public class HeaderImportProcesses implements Urlable, XmlDescriber {
 				processes.put(organization.getId(), orgProcesses);
 			}
 			orgProcesses.put(processId, process);
-		} catch (UserException e) {
+		} catch (HttpException e) {
 			e.setDocument(document());
 			throw e;
 		}
@@ -101,8 +100,8 @@ public class HeaderImportProcesses implements Urlable, XmlDescriber {
 		inv.sendCreated(document(), process.getUri());
 	}
 
-	public Urlable getChild(UriPathElement urlId) throws ProgrammerException,
-			UserException {
+	public Urlable getChild(UriPathElement urlId) throws InternalException,
+			HttpException {
 		Map<Long, HeaderImportProcess> processMap = processes.get(organization
 				.getId());
 		if (processMap == null) {
@@ -111,19 +110,19 @@ public class HeaderImportProcesses implements Urlable, XmlDescriber {
 		return processMap.get(Long.parseLong(urlId.toString()));
 	}
 
-	public void httpDelete(Invocation inv) throws ProgrammerException,
-			DesignerException, UserException, DeployerException {
+	public void httpDelete(Invocation inv) throws InternalException,
+			DesignerException, HttpException, DeployerException {
 		// TODO Auto-generated method stub
 
 	}
 
-	public Node toXML(Document doc) throws ProgrammerException, UserException {
+	public Node toXml(Document doc) throws InternalException, HttpException {
 		Element element = doc.createElement("header-import-processes");
 		return element;
 	}
 
-	public Node getXML(XmlTree tree, Document doc) throws ProgrammerException,
-			UserException {
+	public Node toXml(Document doc, XmlTree tree) throws InternalException,
+			HttpException {
 		// TODO Auto-generated method stub
 		return null;
 	}

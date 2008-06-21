@@ -26,8 +26,10 @@ import net.sf.chellow.monad.DeployerException;
 import net.sf.chellow.monad.DesignerException;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.Invocation;
-import net.sf.chellow.monad.ProgrammerException;
+import net.sf.chellow.monad.NotFoundException;
+import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Urlable;
+import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.UserException;
 import net.sf.chellow.monad.types.MonadBoolean;
 import net.sf.chellow.monad.types.MonadLong;
@@ -40,16 +42,15 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
 public class SiteSupplyGeneration extends PersistentEntity {
-	static public SiteSupplyGeneration getSiteSupply(MonadLong id) throws ProgrammerException,
-			UserException {
+	static public SiteSupplyGeneration getSiteSupply(MonadLong id) throws HttpException {
 		try {
 			SiteSupplyGeneration site = (SiteSupplyGeneration) Hiber.session().get(SiteSupplyGeneration.class, id.getLong());
 			if (site == null) {
-				throw UserException.newOk("There is no site_supply with " + "that id.");
+				throw new UserException("There is no site_supply with " + "that id.");
 			}
 			return site;
 		} catch (HibernateException e) {
-			throw new ProgrammerException(e);
+			throw new InternalException(e);
 		}
 	}
 
@@ -94,8 +95,8 @@ public class SiteSupplyGeneration extends PersistentEntity {
 		this.isPhysical = isPhysical;
 	}
 
-	public Node toXML(Document doc) throws ProgrammerException, UserException {
-		Element element = (Element) super.toXML(doc);
+	public Node toXml(Document doc) throws InternalException, HttpException {
+		Element element = (Element) super.toXml(doc);
 
 		element.setAttributeNode(MonadBoolean.toXml(doc, "is-physical", isPhysical));
 		return element;
@@ -109,18 +110,18 @@ public class SiteSupplyGeneration extends PersistentEntity {
 		return isEqual;
 	}
 
-	public void httpGet(Invocation inv) throws DesignerException, ProgrammerException, UserException, DeployerException {
+	public void httpGet(Invocation inv) throws DesignerException, InternalException, HttpException, DeployerException {
 		// TODO Auto-generated method stub
 		
 	}
 
-	public void httpPost(Invocation inv) throws ProgrammerException, UserException {
+	public void httpPost(Invocation inv) throws InternalException, HttpException {
 		// TODO Auto-generated method stub
 		
 	}
 	
 	public void httpDelete(Invocation inv) throws DesignerException,
-		ProgrammerException, UserException, DeployerException {
+		InternalException, HttpException, DeployerException {
 	/*
 	getSite().detachSiteSupply(this);
 	Hiber.commit();
@@ -128,11 +129,11 @@ public class SiteSupplyGeneration extends PersistentEntity {
 	*/
 	}
 
-	public Urlable getChild(UriPathElement uriId) throws ProgrammerException, UserException {
-		throw UserException.newNotFound();
+	public Urlable getChild(UriPathElement uriId) throws InternalException, HttpException {
+		throw new NotFoundException();
 	}
 
-	public MonadUri getUri() throws ProgrammerException, UserException {
+	public MonadUri getUri() throws InternalException, HttpException {
 		// TODO Auto-generated method stub
 		return null;
 	}

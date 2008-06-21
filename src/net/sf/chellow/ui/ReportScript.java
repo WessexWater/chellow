@@ -18,9 +18,9 @@ import net.sf.chellow.monad.DesignerException;
 import net.sf.chellow.monad.Invocation;
 import net.sf.chellow.monad.Monad;
 import net.sf.chellow.monad.MonadUtils;
-import net.sf.chellow.monad.ProgrammerException;
+import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Urlable;
-import net.sf.chellow.monad.UserException;
+import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.XmlDescriber;
 import net.sf.chellow.monad.XmlTree;
 
@@ -47,8 +47,8 @@ public class ReportScript implements Urlable, XmlDescriber {
 
 	private ReportType reportType;
 
-	public ReportScript(ReportType reportType) throws ProgrammerException,
-			UserException {
+	public ReportScript(ReportType reportType) throws InternalException,
+			HttpException {
 		this.reportType = reportType;
 	}
 	
@@ -56,34 +56,34 @@ public class ReportScript implements Urlable, XmlDescriber {
 		return reportType;
 	}
 
-	public Urlable getChild(UriPathElement uriId) throws ProgrammerException,
-			UserException {
+	public Urlable getChild(UriPathElement uriId) throws InternalException,
+			HttpException {
 		return null;
 	}
 
-	public MonadUri getUri() throws ProgrammerException, UserException {
+	public MonadUri getUri() throws InternalException, HttpException {
 		return reportType.getUri().resolve(URI_ID).append("/");
 	}
 
 	public void httpGet(Invocation inv) throws DesignerException,
-			ProgrammerException, UserException, DeployerException {
+			InternalException, HttpException, DeployerException {
 		Document doc = MonadUtils.newSourceDocument();
 		Element source = doc.getDocumentElement();
-		Element scriptElement = (Element) toXML(doc);
+		Element scriptElement = (Element) toXml(doc);
 		source.appendChild(scriptElement);
-		Element typeElement = (Element) getReportType().toXML(doc);
+		Element typeElement = (Element) getReportType().toXml(doc);
 		scriptElement.appendChild(typeElement);
-		Element reportElement = (Element) getReportType().getReport().toXML(doc);
+		Element reportElement = (Element) getReportType().getReport().toXml(doc);
 		typeElement.appendChild(reportElement);
-		Element reportsElement = (Element) getReportType().getReport().getReports().toXML(doc);
+		Element reportsElement = (Element) getReportType().getReport().getReports().toXml(doc);
 		reportElement.appendChild(reportsElement);
-		Element organizationElement = (Element) getReportType().getReport().getReports().getOrganization().toXML(doc);
+		Element organizationElement = (Element) getReportType().getReport().getReports().getOrganization().toXml(doc);
 		reportsElement.appendChild(organizationElement);
 		inv.sendOk(doc);
 	}
 
-	public void httpPost(Invocation inv) throws ProgrammerException,
-			UserException, DesignerException, DeployerException {
+	public void httpPost(Invocation inv) throws InternalException,
+			HttpException, DesignerException, DeployerException {
 		MonadString scriptText = inv.getMonadString("script-text");
 		URL scriptUrl = Monad.getConfigResource(getUri().append(
 				REPORT_FILE_NAME));
@@ -97,11 +97,11 @@ public class ReportScript implements Urlable, XmlDescriber {
 				osr.write(c);
 			}
 		} catch (UnsupportedEncodingException e) {
-			throw new ProgrammerException(e);
+			throw new InternalException(e);
 		} catch (IOException e) {
-			throw new ProgrammerException(e);
+			throw new InternalException(e);
 		} catch (URISyntaxException e) {
-			throw new ProgrammerException(e);
+			throw new InternalException(e);
 		} finally {
 			try {
 				if (isr != null) {
@@ -111,33 +111,33 @@ public class ReportScript implements Urlable, XmlDescriber {
 					osr.close();
 				}
 			} catch (IOException e) {
-				throw new ProgrammerException(e);
+				throw new InternalException(e);
 			}
 		}
 		inv.sendSeeOther(getUri());
 	}
 
-	public void httpDelete(Invocation inv) throws ProgrammerException,
-			DesignerException, UserException, DeployerException {
+	public void httpDelete(Invocation inv) throws InternalException,
+			DesignerException, HttpException, DeployerException {
 		// TODO Auto-generated method stub
 
 	}
 
-	Reader getReader() throws ProgrammerException, DesignerException,
-			UserException {
+	Reader getReader() throws InternalException, DesignerException,
+			HttpException {
 		try {
 			return new InputStreamReader(getInputStream(), "UTF-8");
 		} catch (UnsupportedEncodingException e) {
-			throw new ProgrammerException(e);
+			throw new InternalException(e);
 		}
 	}
 
-	InputStream getInputStream() throws ProgrammerException, DesignerException,
-			UserException {
+	InputStream getInputStream() throws InternalException, DesignerException,
+			HttpException {
 		return Monad.getConfigIs(getUri().toString(), REPORT_FILE_NAME);
 	}
 
-	public Node toXML(Document doc) throws ProgrammerException, UserException,
+	public Node toXml(Document doc) throws InternalException, HttpException,
 			DesignerException {
 		Element element = doc.createElement("report-script");
 		Reader reader = null;
@@ -150,7 +150,7 @@ public class ReportScript implements Urlable, XmlDescriber {
 				stringWriter.write(c);
 			}
 		} catch (IOException e) {
-			throw new ProgrammerException(e);
+			throw new InternalException(e);
 		} finally {
 			try {
 				if (reader != null) {
@@ -160,7 +160,7 @@ public class ReportScript implements Urlable, XmlDescriber {
 					stringWriter.close();
 				}
 			} catch (IOException e) {
-				throw new ProgrammerException(e);
+				throw new InternalException(e);
 			}
 		}
 		element.setTextContent(stringWriter.toString().replace("\r", "")
@@ -168,8 +168,8 @@ public class ReportScript implements Urlable, XmlDescriber {
 		return element;
 	}
 
-	public Node getXML(XmlTree tree, Document doc) throws ProgrammerException,
-			UserException {
+	public Node toXml(Document doc, XmlTree tree) throws InternalException,
+			HttpException {
 		// TODO Auto-generated method stub
 		return null;
 	}

@@ -29,8 +29,10 @@ import net.sf.chellow.monad.DesignerException;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.Invocation;
 import net.sf.chellow.monad.MonadUtils;
-import net.sf.chellow.monad.ProgrammerException;
+import net.sf.chellow.monad.NotFoundException;
+import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Urlable;
+import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.UserException;
 import net.sf.chellow.monad.XmlDescriber;
 import net.sf.chellow.monad.XmlTree;
@@ -48,9 +50,7 @@ public class Accounts implements Urlable, XmlDescriber {
 	static {
 			try {
 				URI_ID = new UriPathElement("accounts");
-			} catch (UserException e) {
-				throw new RuntimeException(e);
-			} catch (ProgrammerException e) {
+			} catch (HttpException e) {
 				throw new RuntimeException(e);
 			}
 	}
@@ -65,15 +65,15 @@ public class Accounts implements Urlable, XmlDescriber {
 		return URI_ID;
 	}
 
-	public MonadUri getUri() throws ProgrammerException, UserException {
+	public MonadUri getUri() throws InternalException, HttpException {
 		return provider.getUri().resolve(getUrlId()).append("/");
 	}
 
-	public void httpPost(Invocation inv) throws ProgrammerException,
-			UserException, DesignerException, DeployerException {
+	public void httpPost(Invocation inv) throws InternalException,
+			HttpException, DesignerException, DeployerException {
 		String reference = inv.getString("reference");
 		if (!inv.isValid()) {
-			throw UserException.newInvalidParameter(document());
+			throw new UserException(document());
 		}
 		Account account = provider.insertAccount(reference);
 		Hiber.commit();
@@ -81,12 +81,12 @@ public class Accounts implements Urlable, XmlDescriber {
 	}
 
 	public void httpGet(Invocation inv) throws DesignerException,
-			ProgrammerException, UserException, DeployerException {
+			InternalException, HttpException, DeployerException {
 		inv.sendOk(document());
 	}
 
-	public Account getChild(UriPathElement uriId) throws UserException,
-			ProgrammerException {
+	public Account getChild(UriPathElement uriId) throws HttpException,
+			InternalException {
 		Account account = (Account) Hiber
 				.session()
 				.createQuery(
@@ -94,40 +94,40 @@ public class Accounts implements Urlable, XmlDescriber {
 				.setEntity("provider", provider).setLong("accountId",
 						Long.parseLong(uriId.getString())).uniqueResult();
 		if (account == null) {
-			throw UserException.newNotFound();
+			throw new NotFoundException();
 		}
 		return account;
 	}
 
-	public void httpDelete(Invocation inv) throws ProgrammerException,
-			UserException {
+	public void httpDelete(Invocation inv) throws InternalException,
+			HttpException {
 	}
 
-	public Node toXML(Document doc) throws ProgrammerException, UserException {
+	public Node toXml(Document doc) throws InternalException, HttpException {
 		Element accountsElement = doc.createElement("accounts");
 		return accountsElement;
 	}
 
-	public Node getXML(XmlTree tree, Document doc) throws ProgrammerException,
-			UserException {
+	public Node toXml(Document doc, XmlTree tree) throws InternalException,
+			HttpException {
 		return null;
 	}
 
 	@SuppressWarnings("unchecked")
-	private Document document() throws ProgrammerException, UserException,
+	private Document document() throws InternalException, HttpException,
 			DesignerException {
 		Document doc = MonadUtils.newSourceDocument();
 		Element source = doc.getDocumentElement();
-		Element accountsElement = (Element) toXML(doc);
+		Element accountsElement = (Element) toXml(doc);
 		source.appendChild(accountsElement);
-		accountsElement.appendChild(provider.getXML(
-				new XmlTree("organization"), doc));
+		accountsElement.appendChild(provider.toXml(
+				doc, new XmlTree("organization")));
 		for (Account account : (List<Account>) Hiber
 				.session()
 				.createQuery(
 						"from Account account where account.provider = :provider order by account.reference")
 				.setEntity("provider", provider).list()) {
-			accountsElement.appendChild(account.toXML(doc));
+			accountsElement.appendChild(account.toXml(doc));
 		}
 		return doc;
 	}

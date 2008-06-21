@@ -8,7 +8,7 @@ import net.sf.chellow.data08
 
 supplyId = inv.getMonadLong("supply-id")
 supply = net.sf.chellow.persistant08.Hiber.session().load(java.lang.Class.forName("net.sf.chellow.persistant08.Supply"), java.lang.Long(supplyId.getLong()))
-source.appendChild(supply.getXML(net.sf.chellow.monad.vf.bo.XMLTree("siteSupplies",
+source.appendChild(supply.toXml(net.sf.chellow.monad.vf.bo.XMLTree("siteSupplies",
                 net.sf.chellow.monad.vf.bo.XMLTree("site")),doc))
 isImport = inv.getMonadBoolean("is-import");
 isImport = isImport.getBoolean()

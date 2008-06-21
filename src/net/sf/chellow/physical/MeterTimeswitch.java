@@ -28,8 +28,9 @@ import net.sf.chellow.monad.DesignerException;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.Invocation;
 import net.sf.chellow.monad.MonadUtils;
-import net.sf.chellow.monad.ProgrammerException;
+import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Urlable;
+import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.UserException;
 import net.sf.chellow.monad.XmlTree;
 import net.sf.chellow.monad.types.MonadBoolean;
@@ -44,13 +45,13 @@ import org.w3c.dom.Node;
 public class MeterTimeswitch extends PersistentEntity {
 	static public MeterTimeswitch getMeterTimeswitch(Dso dso,
 			MeterTimeswitchCode meterTimeswitchCode)
-			throws ProgrammerException, UserException {
+			throws InternalException, HttpException {
 		return findMeterTimeswitch(dso, meterTimeswitchCode, true);
 	}
 
 	static public MeterTimeswitch findMeterTimeswitch(Dso dso,
 			MeterTimeswitchCode meterTimeswitchCode, boolean throwException)
-			throws ProgrammerException, UserException {
+			throws InternalException, HttpException {
 		dso = meterTimeswitchCode.hasDso() ? dso : null;
 		MeterTimeswitch mtc = null;
 		if (dso == null) {
@@ -69,8 +70,8 @@ public class MeterTimeswitch extends PersistentEntity {
 							meterTimeswitchCode.getInteger()).uniqueResult();
 		}
 		if (throwException && mtc == null) {
-			throw UserException
-					.newInvalidParameter("There isn't a meter timeswitch with DSO '"
+			throw new UserException
+					("There isn't a meter timeswitch with DSO '"
 							+ (dso == null ? dso : dso.getCode())
 							+ "' and Meter Timeswitch Code '"
 							+ meterTimeswitchCode + "'");
@@ -79,26 +80,26 @@ public class MeterTimeswitch extends PersistentEntity {
 	}
 
 	static public MeterTimeswitch getMeterTimeswitch(Long id)
-			throws ProgrammerException, UserException {
+			throws InternalException, HttpException {
 		MeterTimeswitch meterTimeswitch = (MeterTimeswitch) Hiber.session()
 				.get(MeterTimeswitch.class, id);
 		if (meterTimeswitch == null) {
-			throw UserException
-					.newOk("There is no meter timeswitch with that id.");
+			throw new UserException
+					("There is no meter timeswitch with that id.");
 		}
 		return meterTimeswitch;
 	}
 
 	static public MeterTimeswitch insertMeterTimeswitch(Dso dso,
 			String mtcCode, String description, boolean isUnmetered)
-			throws ProgrammerException, UserException {
+			throws InternalException, HttpException {
 		return insertMeterTimeswitch(dso, new MeterTimeswitchCode(mtcCode),
 				description, isUnmetered);
 	}
 
 	static public MeterTimeswitch insertMeterTimeswitch(Dso dso,
 			MeterTimeswitchCode meterTimeswitchCode, String description,
-			boolean isUnmetered) throws ProgrammerException, UserException {
+			boolean isUnmetered) throws InternalException, HttpException {
 
 		MeterTimeswitch meterTimeswitch = null;
 		try {
@@ -110,10 +111,10 @@ public class MeterTimeswitch extends PersistentEntity {
 			if (Data
 					.isSQLException(e,
 							"ERROR: duplicate key violates unique constraint \"site_code_key\"")) {
-				throw UserException
-						.newOk("A site with this code already exists.");
+				throw new UserException
+						("A site with this code already exists.");
 			} else {
-				throw new ProgrammerException(e);
+				throw new InternalException(e);
 			}
 		}
 		return meterTimeswitch;
@@ -137,21 +138,21 @@ public class MeterTimeswitch extends PersistentEntity {
 
 	public MeterTimeswitch(Dso dso, MeterTimeswitchCode code,
 			String description, boolean isUnmetered)
-			throws ProgrammerException, UserException {
+			throws InternalException, HttpException {
 		this(null, dso, code, description, isUnmetered);
 	}
 
 	public MeterTimeswitch(String label, Dso dso, MeterTimeswitchCode code,
 			String description, boolean isUnmetered)
-			throws ProgrammerException, UserException {
+			throws InternalException, HttpException {
 		this();
 		boolean hasDso = code.hasDso();
 		if (hasDso && dso == null) {
-			throw UserException.newInvalidParameter("The MTC " + code
+			throw new UserException("The MTC " + code
 					+ " requires a DSO.");
 
 		} else if (!hasDso && dso != null) {
-			throw UserException.newInvalidParameter("The MTC " + code
+			throw new UserException("The MTC " + code
 					+ " does not have a DSO.");
 		}
 		setLabel(label);
@@ -210,10 +211,10 @@ public class MeterTimeswitch extends PersistentEntity {
 				+ (dso == null ? null : dso.getCode()) + ")";
 	}
 
-	public Node toXML(Document doc) throws ProgrammerException, UserException {
-		Element element = (Element) super.toXML(doc);
+	public Node toXml(Document doc) throws InternalException, HttpException {
+		Element element = (Element) super.toXml(doc);
 
-		element.setAttributeNode(code.toXML(doc));
+		element.setAttributeNode(code.toXml(doc));
 		element.setAttribute("description", description);
 		element.setAttributeNode(MonadBoolean.toXml(doc, "is-unmetered",
 				isUnmetered));
@@ -224,29 +225,29 @@ public class MeterTimeswitch extends PersistentEntity {
 		return null;
 	}
 
-	public Urlable getChild(UriPathElement uriId) throws ProgrammerException,
-			UserException {
+	public Urlable getChild(UriPathElement uriId) throws InternalException,
+			HttpException {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	public void httpGet(Invocation inv) throws DesignerException,
-			ProgrammerException, UserException, DeployerException {
+			InternalException, HttpException, DeployerException {
 		Document doc = MonadUtils.newSourceDocument();
 		Element source = doc.getDocumentElement();
 
-		source.appendChild(getXML(new XmlTree("dso"), doc));
+		source.appendChild(toXml(doc, new XmlTree("dso")));
 		inv.sendOk(doc);
 	}
 
-	public void httpPost(Invocation inv) throws ProgrammerException,
-			UserException {
+	public void httpPost(Invocation inv) throws InternalException,
+			HttpException {
 		// TODO Auto-generated method stub
 
 	}
 
-	public void httpDelete(Invocation inv) throws ProgrammerException,
-			DesignerException, UserException, DeployerException {
+	public void httpDelete(Invocation inv) throws InternalException,
+			DesignerException, HttpException, DeployerException {
 		// TODO Auto-generated method stub
 
 	}

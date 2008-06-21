@@ -36,8 +36,10 @@ import net.sf.chellow.hhimport.HhDataImportProcesses;
 import net.sf.chellow.monad.DesignerException;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.Invocation;
-import net.sf.chellow.monad.ProgrammerException;
+import net.sf.chellow.monad.NotFoundException;
+import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Urlable;
+import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.UserException;
 import net.sf.chellow.monad.types.UriPathElement;
 import net.sf.chellow.physical.HhEndDate;
@@ -57,11 +59,10 @@ public abstract class Service extends PersistentEntity implements
 
 	public static final int TYPE_CONTRACT = 2;
 
-	public static Service getContract(Long id) throws UserException,
-			ProgrammerException {
+	public static Service getContract(Long id) throws HttpException {
 		Service contract = (Service) Hiber.session().get(Service.class, id);
 		if (contract == null) {
-			throw UserException.newOk("There isn't a contract with that id.");
+			throw new UserException("There isn't a contract with that id.");
 		}
 		return contract;
 	}
@@ -82,8 +83,8 @@ public abstract class Service extends PersistentEntity implements
 	}
 
 	public Service(int type, String name, HhEndDate startDate,
-			String chargeScript) throws UserException, ProgrammerException,
-			DesignerException {
+			String chargeScript) throws InternalException,
+			DesignerException, UserException {
 		rateScripts = new HashSet<RateScript>();
 		RateScript rateScript = new RateScript(this, startDate, null,
 				chargeScript);
@@ -142,22 +143,21 @@ public abstract class Service extends PersistentEntity implements
 	}
 
 	protected void internalUpdate(int type, String name, String chargeScript)
-			throws UserException, ProgrammerException {
+			throws InternalException, UserException {
 		setName(name);
 		if (type == TYPE_SERVICE_ONLY) {
 			if (chargeScript.length() > 0) {
-				throw UserException
-						.newInvalidParameter("If the type is 'Service Only', there can't be a charge script.");
+				throw new UserException
+						("If the type is 'Service Only', there can't be a charge script.");
 			}
 			chargeScript = null;
 		} else if (type == TYPE_PASS_THROUGH || type == TYPE_CONTRACT) {
 			if (chargeScript == null) {
-				throw new ProgrammerException(
+				throw new InternalException(
 						"The chargeScript can only be null if it's 'service only'");
 			}
 		} else {
-			throw UserException
-					.newInvalidParameter("The service type must be 'service only', 'pass through' or 'contract'");
+			throw new UserException("The service type must be 'service only', 'pass through' or 'contract'");
 		}
 		setType(type);
 		setChargeScript(chargeScript);
@@ -165,34 +165,32 @@ public abstract class Service extends PersistentEntity implements
 
 	@SuppressWarnings("unchecked")
 	public void update(int type, String name, String chargeScript)
-			throws UserException, ProgrammerException, DesignerException {
+			throws HttpException {
 		internalUpdate(type, name, chargeScript);
 		updateNotification();
 	}
 
-	void updateNotification() throws UserException, ProgrammerException,
-			DesignerException {
+	void updateNotification() throws HttpException {
 		updateNotification(null, null);
 	}
 
-	public void delete() throws UserException, ProgrammerException,
-			DesignerException {
+	public void delete() throws HttpException {
 		updateNotification(startRateScript.getStartDate(), finishRateScript
 				.getFinishDate());
 	}
 
-	public void delete(RateScript rateScript) throws UserException,
-			ProgrammerException, DesignerException {
+	public void delete(RateScript rateScript) throws HttpException,
+			InternalException, DesignerException {
 		List<RateScript> rateScriptList = new ArrayList<RateScript>(rateScripts);
 		if (rateScriptList.size() < 2) {
-			throw UserException
-					.newInvalidParameter("You can't delete the last rate script.");
+			throw new UserException
+					("You can't delete the last rate script.");
 		}
 		if (!rateScriptList.get(0).equals(rateScript)
 				&& !rateScriptList.get(rateScriptList.size() - 1).equals(
 						rateScript)) {
-			throw UserException
-					.newInvalidParameter("You can only delete the first and last rate scripts.");
+			throw new UserException
+					("You can only delete the first and last rate scripts.");
 		}
 		getRateScripts().remove(rateScript);
 		Hiber.flush();
@@ -209,8 +207,8 @@ public abstract class Service extends PersistentEntity implements
 	}
 
 	@SuppressWarnings("unchecked")
-	void updateNotification(HhEndDate from, HhEndDate to) throws UserException,
-			ProgrammerException, DesignerException {
+	void updateNotification(HhEndDate from, HhEndDate to) throws
+			HttpException {
 		if (from == null) {
 			from = getStartDate();
 		}
@@ -235,9 +233,8 @@ public abstract class Service extends PersistentEntity implements
 		}
 	}
 
-	public Element toXML(Document doc) throws ProgrammerException,
-			UserException {
-		Element element = (Element) super.toXML(doc);
+	public Element toXml(Document doc) throws HttpException {
+		Element element = (Element) super.toXml(doc);
 
 		element.setAttribute("name", name);
 		//startRateScript.setLabel("start");
@@ -265,8 +262,8 @@ public abstract class Service extends PersistentEntity implements
 		return 0;
 	}
 
-	public Snag getSnag(UriPathElement uriId) throws UserException,
-			ProgrammerException {
+	public Snag getSnag(UriPathElement uriId) throws HttpException,
+			InternalException {
 		Snag snag = (Snag) Hiber
 				.session()
 				.createQuery(
@@ -274,7 +271,7 @@ public abstract class Service extends PersistentEntity implements
 				.setEntity("contract", this).setLong("snagId",
 						Long.parseLong(uriId.getString())).uniqueResult();
 		if (snag == null) {
-			throw UserException.newNotFound();
+			throw new NotFoundException();
 		}
 		return snag;
 	}
@@ -287,10 +284,7 @@ public abstract class Service extends PersistentEntity implements
 		return new HhDataImportProcesses(this);
 	}
 
-	public void httpDelete(Invocation inv) throws ProgrammerException,
-			UserException {
-		// TODO Auto-generated method stub
-
+	public void httpDelete(Invocation inv) throws HttpException {
 	}
 
 	public abstract Provider getProvider();
@@ -310,8 +304,8 @@ public abstract class Service extends PersistentEntity implements
 	}
 
 	public BillElement billElement(String name, String chargeScript, Account account,
-			HhEndDate from, HhEndDate to) throws UserException,
-			ProgrammerException {
+			HhEndDate from, HhEndDate to) throws HttpException,
+			InternalException {
 		BillElement billElement = null;
 
 		try {
@@ -319,24 +313,24 @@ public abstract class Service extends PersistentEntity implements
 			billElement = (BillElement) engine().invokeFunction(
 					name + "Element", args);
 		} catch (ScriptException e) {
-			throw UserException.newInvalidParameter(e.getMessage());
+			throw new UserException(e.getMessage());
 		} catch (NoSuchMethodException e) {
-			throw UserException
-					.newInvalidParameter("For the service " + getUri() + " the script has no such method: "
+			throw new UserException
+					("For the service " + getUri() + " the script has no such method: "
 							+ e.getMessage());
 		} catch (PyException e) {
-			Object obj = e.value.__tojava__(UserException.class);
-			if (obj instanceof UserException) {
-				throw (UserException) obj;
+			Object obj = e.value.__tojava__(HttpException.class);
+			if (obj instanceof HttpException) {
+				throw (HttpException) obj;
 			} else {
-				throw UserException.newInvalidParameter(e.toString());
+				throw new UserException(e.toString());
 			}
 		}
 		return billElement;
 	}
 
-	public Invocable invocableEngine(String chargeScript) throws UserException,
-			ProgrammerException {
+	public Invocable invocableEngine(String chargeScript) throws HttpException,
+			InternalException {
 		ScriptEngineManager engineMgr = new ScriptEngineManager();
 		ScriptEngine scriptEngine = engineMgr.getEngineByName("jython");
 		Invocable invocableEngine = null;
@@ -345,23 +339,23 @@ public abstract class Service extends PersistentEntity implements
 			scriptEngine.put("service", this);
 			invocableEngine = (Invocable) scriptEngine;
 		} catch (ScriptException e) {
-			throw UserException.newInvalidParameter(e.getMessage());
+			throw new UserException(e.getMessage());
 		}
 		return invocableEngine;
 	}
 	
 	public BillElement billElement(Account account, HhEndDate from,
-			HhEndDate to) throws UserException, ProgrammerException {
+			HhEndDate to) throws HttpException, InternalException {
 		return billElement("total", getChargeScript(), account, from, to);
 	}
 
 	public BillElement billElement(String name, Account account, HhEndDate from,
-			HhEndDate to) throws UserException, ProgrammerException {
+			HhEndDate to) throws HttpException, InternalException {
 		return billElement(name, getChargeScript(), account, from, to);
 	}
 	
 	public RateScript getPreviousRateScript(RateScript script)
-			throws ProgrammerException, UserException {
+			throws InternalException, HttpException {
 		return (RateScript) Hiber
 				.session()
 				.createQuery(
@@ -372,7 +366,7 @@ public abstract class Service extends PersistentEntity implements
 	}
 
 	public RateScript getNextRateScript(RateScript rateScript)
-			throws ProgrammerException, UserException {
+			throws InternalException, HttpException {
 		if (rateScript.getFinishDate() == null) {
 			return null;
 		}
@@ -385,13 +379,13 @@ public abstract class Service extends PersistentEntity implements
 				.uniqueResult();
 	}
 	
-	public Invocable engine() throws UserException, ProgrammerException {
+	public Invocable engine() throws HttpException, InternalException {
 		return invocableEngine(getChargeScript());
 	}
 
 	@SuppressWarnings("unchecked")
 	public RateScript insertRateScript(HhEndDate startDate, String script)
-			throws ProgrammerException, UserException, DesignerException {
+			throws InternalException, HttpException, DesignerException {
 		List<RateScript> rateScripts = (List<RateScript>) Hiber
 				.session()
 				.createQuery(
@@ -401,8 +395,8 @@ public abstract class Service extends PersistentEntity implements
 		if (rateScript.getFinishDate() != null
 				&& startDate.getDate().after(
 						rateScript.getFinishDate().getDate())) {
-			throw UserException
-					.newInvalidParameter("The start date is after the last rate script.");
+			throw new UserException
+					("The start date is after the last rate script.");
 		}
 		HhEndDate finishDate = rateScript.getStartDate().getPrevious();
 		for (int i = 0; i < rateScripts.size(); i++) {
@@ -414,12 +408,12 @@ public abstract class Service extends PersistentEntity implements
 									rateScript.getFinishDate().getDate()))) {
 				if (rateScript.getStartDate()
 						.equals(rateScript.getFinishDate())) {
-					throw UserException
-							.newInvalidParameter("The start date falls on a rate script which is only half an hour in length, and so cannot be subdivided further.");
+					throw new UserException
+							("The start date falls on a rate script which is only half an hour in length, and so cannot be subdivided further.");
 				}
 				if (startDate.equals(rateScript.getStartDate())) {
-					throw UserException
-							.newInvalidParameter("The start date is the same as the start date of an existing rate script.");
+					throw new UserException
+							("The start date is the same as the start date of an existing rate script.");
 				}
 				finishDate = rateScript.getFinishDate();
 				rateScript.setFinishDate(startDate.getPrevious());
@@ -436,12 +430,11 @@ public abstract class Service extends PersistentEntity implements
 		return newRateScript;
 	}
 
-	public Urlable getChild(UriPathElement uriId) throws ProgrammerException,
-			UserException {
+	public Urlable getChild(UriPathElement uriId) throws HttpException {
 		if (RateScripts.URI_ID.equals(uriId)) {
 			return rateScriptsInstance();
 		} else {
-			throw UserException.newNotFound();
+			throw new NotFoundException();
 		}
 	}
 
@@ -469,23 +462,23 @@ public abstract class Service extends PersistentEntity implements
 				.setTimestamp("date", date.getDate()).uniqueResult();
 	}
 	
-	public Object callFunction(String functionName, Object[] args) throws UserException, ProgrammerException {
+	public Object callFunction(String functionName, Object[] args) throws HttpException, InternalException {
 		Object result = null;
 		try {
 			result = invocableEngine(getChargeScript()).invokeFunction(
 					functionName, args);
 		} catch (ScriptException e) {
-			throw UserException.newInvalidParameter(e.getMessage());
+			throw new UserException(e.getMessage());
 		} catch (NoSuchMethodException e) {
-			throw UserException
-					.newInvalidParameter("The charge script " + getUri() + " has no such method: "
+			throw new UserException
+					("The charge script " + getUri() + " has no such method: "
 							+ e.getMessage());
 		} catch (PyException e) {
-			Object obj = e.value.__tojava__(UserException.class);
-			if (obj instanceof UserException) {
-				throw (UserException) obj;
+			Object obj = e.value.__tojava__(HttpException.class);
+			if (obj instanceof HttpException) {
+				throw (HttpException) obj;
 			} else {
-				throw UserException.newInvalidParameter(e.toString());
+				throw new UserException(e.toString());
 			}
 		}
 		return result;

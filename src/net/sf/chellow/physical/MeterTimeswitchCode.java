@@ -24,7 +24,8 @@ package net.sf.chellow.physical;
 
 import java.text.DecimalFormat;
 
-import net.sf.chellow.monad.ProgrammerException;
+import net.sf.chellow.monad.InternalException;
+import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.UserException;
 import net.sf.chellow.monad.types.MonadInteger;
 
@@ -35,19 +36,19 @@ public class MeterTimeswitchCode extends MonadInteger {
 	public MeterTimeswitchCode() {
 	}
 
-	public MeterTimeswitchCode(String code) throws UserException,
-			ProgrammerException {
+	public MeterTimeswitchCode(String code) throws HttpException,
+			InternalException {
 		this(null, code);
 	}
 
-	public MeterTimeswitchCode(String label, String code) throws UserException,
-			ProgrammerException {
+	public MeterTimeswitchCode(String label, String code) throws HttpException,
+			InternalException {
 		this();
 		setLabel(label);
 		update(code);
 	}
 
-	public void update(String code) throws UserException, ProgrammerException {
+	public void update(String code) throws InternalException, UserException {
 		setMinimum(0);
 		setMaximum(999);
 		super.update(Integer.parseInt(code.trim()));
@@ -62,7 +63,7 @@ public class MeterTimeswitchCode extends MonadInteger {
 		return mtcFormat.format(getInteger());
 	}
 	
-	public Attr toXML(Document doc) {
+	public Attr toXml(Document doc) {
 		Attr attr = doc.createAttribute("code");
 		attr.setValue(toString());
 		return attr;

@@ -32,8 +32,10 @@ import net.sf.chellow.monad.DesignerException;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.Invocation;
 import net.sf.chellow.monad.MonadUtils;
-import net.sf.chellow.monad.ProgrammerException;
+import net.sf.chellow.monad.NotFoundException;
+import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Urlable;
+import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.UserException;
 import net.sf.chellow.monad.XmlTree;
 import net.sf.chellow.monad.types.MonadDate;
@@ -48,11 +50,11 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
 public class Bill extends PersistentEntity implements Urlable {
-	public static Bill getBill(Long id) throws UserException,
-			ProgrammerException {
+	public static Bill getBill(Long id) throws HttpException,
+			InternalException {
 		Bill bill = (Bill) Hiber.session().get(Bill.class, id);
 		if (bill == null) {
-			throw UserException.newOk("There isn't a bill with that id.");
+			throw new UserException("There isn't a bill with that id.");
 		}
 		return bill;
 	}
@@ -80,8 +82,8 @@ public class Bill extends PersistentEntity implements Urlable {
 	}
 
 	@SuppressWarnings("unchecked")
-	public Bill(Service service, Account account) throws UserException,
-			ProgrammerException {
+	public Bill(Service service, Account account) throws
+			InternalException {
 		this();
 		setAccount(account);
 		setService(service);
@@ -106,8 +108,8 @@ public class Bill extends PersistentEntity implements Urlable {
 		return invoice;
 	}
 */
-	public void attach(Invoice invoice) throws ProgrammerException,
-			UserException {
+	public void attach(Invoice invoice) throws InternalException,
+			HttpException {
 		invoice.setBill(this);
 		if (invoices == null) {
 			invoices = new HashSet<Invoice>();
@@ -117,8 +119,8 @@ public class Bill extends PersistentEntity implements Urlable {
 	}
 
 	@SuppressWarnings("unchecked")
-	public void detach(Invoice invoice) throws ProgrammerException,
-			UserException {
+	public void detach(Invoice invoice) throws InternalException,
+			HttpException {
 		HhEndDate billStart = getStartDate();
 		HhEndDate billFinish = getFinishDate();
 		Service service = getService();
@@ -151,7 +153,7 @@ public class Bill extends PersistentEntity implements Urlable {
 		account.checkMissing(service, billStart, billFinish);
 	}
 
-	private void setSummary() throws ProgrammerException, UserException {
+	private void setSummary() throws InternalException, HttpException {
 		if (getStartDate() != null) {
 			getAccount().addSnag(service, AccountSnag.MISSING_BILL,
 					getStartDate(), getFinishDate(), true);
@@ -196,7 +198,7 @@ public class Bill extends PersistentEntity implements Urlable {
 		}
 	}
 
-	public void check() throws UserException, ProgrammerException {
+	public void check() throws HttpException, InternalException {
 		if (getElement().getCost() != nonRejectedCost()) {
 			addSnag(false);
 		}
@@ -262,32 +264,32 @@ public class Bill extends PersistentEntity implements Urlable {
 		this.vat = vat;
 	}
 
-	public Node toXML(Document doc) throws ProgrammerException, UserException {
-		Element element = (Element) super.toXML(doc);
+	public Node toXml(Document doc) throws HttpException {
+		Element element = (Element) super.toXml(doc);
 		startDate.setLabel("start");
-		element.appendChild(startDate.toXML(doc));
+		element.appendChild(startDate.toXml(doc));
 		finishDate.setLabel("finish");
-		element.appendChild(finishDate.toXML(doc));
+		element.appendChild(finishDate.toXml(doc));
 		element.setAttributeNode(MonadDouble.toXml(doc, "net", net));
 		element.setAttributeNode(MonadDouble.toXml(doc, "vat", vat));
 		return element;
 	}
 
 	@SuppressWarnings("unchecked")
-	private Document document() throws ProgrammerException, UserException,
+	private Document document() throws InternalException, HttpException,
 			DesignerException {
 		Document doc = MonadUtils.newSourceDocument();
 		Element source = doc.getDocumentElement();
-		Element billElement = (Element) getXML(new XmlTree("account",
-				new XmlTree("provider", new XmlTree("organization"))), doc);
+		Element billElement = (Element) toXml(doc, new XmlTree("account",
+						new XmlTree("provider", new XmlTree("organization"))));
 		source.appendChild(billElement);
 		for (Invoice invoice : (List<Invoice>) Hiber
 				.session()
 				.createQuery(
 						"from Invoice invoice where invoice.bill = :bill order by invoice.startDate.date")
 				.setEntity("bill", this).list()) {
-			billElement.appendChild(invoice.getXML(new XmlTree("batch",
-					new XmlTree("service")), doc));
+			billElement.appendChild(invoice.toXml(doc, new XmlTree("batch",
+							new XmlTree("service"))));
 		}
 		source.appendChild(MonadDate.getMonthsXml(doc));
 		source.appendChild(MonadDate.getDaysXml(doc));
@@ -295,27 +297,27 @@ public class Bill extends PersistentEntity implements Urlable {
 	}
 
 	public void httpGet(Invocation inv) throws DesignerException,
-			ProgrammerException, UserException, DeployerException {
+			InternalException, HttpException, DeployerException {
 		inv.sendOk(document());
 	}
 
-	public MonadUri getUri() throws ProgrammerException, UserException {
+	public MonadUri getUri() throws InternalException, HttpException {
 		return account.billsInstance().getUri().resolve(getUriId()).append("/");
 	}
 
-	public Urlable getChild(UriPathElement uriId) throws ProgrammerException,
-			UserException {
-		throw UserException.newNotFound();
+	public Urlable getChild(UriPathElement uriId) throws InternalException,
+			HttpException {
+		throw new NotFoundException();
 	}
 
-	public void httpDelete(Invocation inv) throws ProgrammerException,
-			DesignerException, UserException, DeployerException {
+	public void httpDelete(Invocation inv) throws InternalException,
+			DesignerException, HttpException, DeployerException {
 		// deleteBill(this);
 		// inv.sendOk();
 	}
 
-	public void httpPost(Invocation inv) throws ProgrammerException,
-			UserException, DesignerException, DeployerException {
+	public void httpPost(Invocation inv) throws InternalException,
+			HttpException, DesignerException, DeployerException {
 		// TODO Auto-generated method stub
 
 	}
@@ -326,13 +328,13 @@ public class Bill extends PersistentEntity implements Urlable {
 	 * chargeScript, account, startDate, finishDate); }
 	 */
 
-	BillElement getElement(String chargeScript) throws ProgrammerException,
-			UserException {
+	BillElement getElement(String chargeScript) throws InternalException,
+			HttpException {
 		return service.billElement("total", chargeScript, account, startDate,
 				finishDate);
 	}
 
-	BillElement getElement() throws UserException, ProgrammerException {
+	BillElement getElement() throws HttpException, InternalException {
 		return service.billElement("total", account, startDate, finishDate);
 	}
 
@@ -361,8 +363,8 @@ public class Bill extends PersistentEntity implements Urlable {
 
 	}
 
-	private void addSnag(boolean isResolved) throws ProgrammerException,
-			UserException {
+	private void addSnag(boolean isResolved) throws InternalException,
+			HttpException {
 		BillSnag snag = (BillSnag) Hiber.session().createQuery(
 				"from BillSnag snag where snag.bill = :bill").setEntity("bill",
 				this).uniqueResult();

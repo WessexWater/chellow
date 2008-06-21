@@ -26,7 +26,8 @@ import java.util.HashSet;
 import java.util.Set;
 
 import net.sf.chellow.data08.MpanRaw;
-import net.sf.chellow.monad.ProgrammerException;
+import net.sf.chellow.monad.InternalException;
+import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.UserException;
 import net.sf.chellow.monad.types.MonadObject;
 import net.sf.chellow.monad.types.MonadString;
@@ -61,46 +62,42 @@ public class InvoiceRaw extends MonadObject {
 	public InvoiceRaw(InvoiceType type, String accountText, String mpanText,
 			String reference, DayStartDate issueDate, DayStartDate startDate,
 			DayFinishDate finishDate, double net, double vat,
-			Set<RegisterReadRaw> registerReads) throws UserException,
-			ProgrammerException {
+			Set<RegisterReadRaw> registerReads) throws HttpException,
+			InternalException {
 		this.type = type;
 		if (issueDate == null) {
-			throw new ProgrammerException("The issue date can't be null.");
+			throw new InternalException("The issue date can't be null.");
 		}
 		this.issueDate = issueDate;
 		if (startDate == null) {
-			throw new ProgrammerException("The start date can't be null.");
+			throw new InternalException("The start date can't be null.");
 		}
 		this.startDate = startDate;
 		if (finishDate == null) {
-			throw new ProgrammerException("The finish date can't be null.");
+			throw new InternalException("The finish date can't be null.");
 		}
 		this.finishDate = finishDate;
 		this.net = net;
 		this.vat = vat;
 		if (reference == null) {
-			throw UserException
-					.newInvalidParameter("The invoiceText parameter is required.");
+			throw new UserException("The invoiceText parameter is required.");
 		}
 		this.reference = reference;
 		if (accountText == null) {
-			throw UserException
-					.newInvalidParameter("The accountText parameter is required.");
+			throw new UserException("The accountText parameter is required.");
 		}
 		this.accountText = accountText;
 		if (mpanText == null) {
-			throw UserException
-					.newInvalidParameter("The mpanText parameter is required.");
+			throw new UserException("The mpanText parameter is required.");
 		}
 		for (String mpanStr : mpanText.split(",")) {
 			try {
 				mpans.add(new MpanRaw(mpanStr));
-			} catch (UserException e) {
-				throw UserException
-						.newInvalidParameter("While parsing the MPAN string '"
+			} catch (HttpException e) {
+				throw new UserException("While parsing the MPAN string '"
 								+ mpanText
 								+ "' I encountered difficulties with '"
-								+ mpanStr + "'. " + e.getVFMessage().toString());
+								+ mpanStr + "'. " + e.getMessage());
 			}
 		}
 		this.mpanText = mpanText;
@@ -153,13 +150,12 @@ public class InvoiceRaw extends MonadObject {
 		return reads;
 	}
 
-	public Element toXML(Document doc) throws ProgrammerException,
-			UserException {
+	public Element toXml(Document doc) throws InternalException {
 		Element element = doc.createElement("invoice-raw");
 		startDate.setLabel("start");
-		element.appendChild(startDate.toXML(doc));
+		element.appendChild(startDate.toXml(doc));
 		finishDate.setLabel("finish");
-		element.appendChild(finishDate.toXML(doc));
+		element.appendChild(finishDate.toXml(doc));
 		element.setAttribute("net", Double.toString(net));
 		element.setAttribute("vat", Double.toString(vat));
 		element.setAttribute("reference", reference);

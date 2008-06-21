@@ -32,8 +32,9 @@ import net.sf.chellow.monad.DesignerException;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.Invocation;
 import net.sf.chellow.monad.MonadUtils;
-import net.sf.chellow.monad.ProgrammerException;
+import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Urlable;
+import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.UserException;
 import net.sf.chellow.monad.XmlTree;
 import net.sf.chellow.monad.types.MonadInteger;
@@ -42,7 +43,7 @@ import net.sf.chellow.monad.types.UriPathElement;
 import net.sf.chellow.physical.ContractFrequency;
 import net.sf.chellow.physical.HhEndDate;
 import net.sf.chellow.physical.Mpan;
-import net.sf.chellow.physical.SnagsChannel;
+import net.sf.chellow.physical.ChannelSnags;
 import net.sf.chellow.physical.SnagsSite;
 
 import org.w3c.dom.Document;
@@ -50,18 +51,18 @@ import org.w3c.dom.Element;
 
 @SuppressWarnings("serial")
 public class DceService extends Service {
-	public static DceService getDceService(Long id) throws UserException,
-			ProgrammerException {
+	public static DceService getDceService(Long id) throws HttpException,
+			InternalException {
 		DceService service = findDceService(id);
 		if (service == null) {
-			throw UserException
-					.newInvalidParameter("There isn't a DCE service with that id.");
+			throw new UserException
+					("There isn't a DCE service with that id.");
 		}
 		return service;
 	}
 
-	public static DceService findDceService(Long id) throws UserException,
-			ProgrammerException {
+	public static DceService findDceService(Long id) throws HttpException,
+			InternalException {
 		return (DceService) Hiber.session().get(DceService.class, id);
 	}
 
@@ -77,8 +78,8 @@ public class DceService extends Service {
 
 	public DceService(int type, String name, HhEndDate startDate,
 			String chargeScript, Dce provider,
-			ContractFrequency frequency, int lag) throws UserException,
-			ProgrammerException, DesignerException {
+			ContractFrequency frequency, int lag) throws HttpException,
+			InternalException, DesignerException {
 		super(type, name, startDate, chargeScript);
 		setProvider(provider);
 		intrinsicUpdate(type, name, chargeScript,
@@ -110,8 +111,8 @@ public class DceService extends Service {
 	}
 
 	private void intrinsicUpdate(int type, String name, String chargeScript,
-			ContractFrequency frequency, int lag) throws UserException,
-			ProgrammerException, DesignerException {
+			ContractFrequency frequency, int lag) throws HttpException,
+			InternalException, DesignerException {
 		super.internalUpdate(type, name, chargeScript);
 		setFrequency(frequency);
 		setLag(lag);
@@ -119,8 +120,8 @@ public class DceService extends Service {
 
 	@SuppressWarnings("unchecked")
 	public void update(int type, String name, String chargeScript,
-			ContractFrequency frequency, int lag) throws UserException,
-			ProgrammerException, DesignerException {
+			ContractFrequency frequency, int lag) throws HttpException,
+			InternalException, DesignerException {
 		intrinsicUpdate(type, name, chargeScript,
 				frequency, lag);
 		updateNotification();
@@ -129,7 +130,7 @@ public class DceService extends Service {
 	}
 	
 	@SuppressWarnings("unchecked")
-	void updateNotification() throws UserException, ProgrammerException, DesignerException {
+	void updateNotification() throws HttpException, InternalException, DesignerException {
 		super.updateNotification();
 		for (Mpan mpan : (List<Mpan>) Hiber
 				.session()
@@ -137,8 +138,8 @@ public class DceService extends Service {
 						"from Mpan mpan where mpan.dceService = :dceService and mpan.supplyGeneration.startDate >= :startDate and (mpan.supplyGeneration.finishDate.date <= :finishDate or (mpan.supplyGeneration.finishDate.date is null and :finishDate is null))").setEntity("dceService", this)
 				.setTimestamp("startDate", getStartDate().getDate()).setTimestamp(
 						"finishDate", getFinishDate() == null ? null : getFinishDate().getDate()).list()) {
-			throw UserException
-					.newInvalidParameter("The supply '"
+			throw new UserException
+					("The supply '"
 							+ mpan.getSupplyGeneration().getSupply().getId()
 							+ "' has an MPAN with this contract that covers a time outside this contract.");
 		}
@@ -147,17 +148,17 @@ public class DceService extends Service {
 	/*
 	 * public MonadInteger getNumberOfSnags() throws ProgrammerException {
 	 * MonadInteger numberOfSnags = null; int numSnags = (Integer) Hiber
-	 * .session() .createQuery( "select count(*) from SnagChannel snag where
+	 * .session() .createQuery( "select count(*) from ChannelSnag snag where
 	 * snag.contract.id = :contractId and snag.dateResolved.date is null and
 	 * snag.startDate.date < :snagDate") .setLong("contractId",
 	 * getId()).setDate( "snagDate", new Date(System.currentTimeMillis() -
-	 * SnagChannel.SNAG_CHECK_LEAD_TIME)) .uniqueResult();
+	 * ChannelSnag.SNAG_CHECK_LEAD_TIME)) .uniqueResult();
 	 * 
 	 * numSnags += (Integer) Hiber .session() .createQuery( "select count(*)
 	 * from SnagSite snag where snag.contract.id = :contractId and
 	 * snag.dateResolved.date is null and snag.startDate.date < :snagDate")
 	 * .setLong("contractId", getId()).setDate( "snagDate", new
-	 * Date(System.currentTimeMillis() - SnagChannel.SNAG_CHECK_LEAD_TIME))
+	 * Date(System.currentTimeMillis() - ChannelSnag.SNAG_CHECK_LEAD_TIME))
 	 * .uniqueResult(); try { numberOfSnags = new MonadInteger(numSnags); }
 	 * catch (MonadInstantiationException e) { throw new ProgrammerException(e); }
 	 * numberOfSnags.setLabel("numberOfSnags"); return numberOfSnags; }
@@ -171,13 +172,13 @@ public class DceService extends Service {
 		return isEqual;
 	}
 
-	public MonadUri getUri() throws ProgrammerException, UserException {
+	public MonadUri getUri() throws InternalException, HttpException {
 		return getProvider().servicesInstance().getUri().resolve(getUriId())
 				.append("/");
 	}
 
-	public void httpPost(Invocation inv) throws ProgrammerException,
-			UserException, DesignerException, DeployerException {
+	public void httpPost(Invocation inv) throws InternalException,
+			HttpException, DesignerException, DeployerException {
 		int type = inv.getInteger("type");
 		String name = inv.getString("name");
 		String chargeScript = inv.getString("charge-script");
@@ -185,7 +186,7 @@ public class DceService extends Service {
 				ContractFrequency.class, "frequency");
 		int lag = inv.getInteger("lag");
 		if (!inv.isValid()) {
-			throw UserException.newInvalidParameter(document());
+			throw new UserException(document());
 		}
 		update(type, name, chargeScript, frequency,
 				lag);
@@ -193,17 +194,17 @@ public class DceService extends Service {
 		inv.sendOk(document());
 	}
 
-	protected Document document() throws ProgrammerException, UserException,
+	protected Document document() throws InternalException, HttpException,
 			DesignerException {
 		Document doc = MonadUtils.newSourceDocument();
 		Element source = doc.getDocumentElement();
-		source.appendChild(getXML(new XmlTree("provider", new XmlTree(
-				"organization")), doc));
+		source.appendChild(toXml(doc, new XmlTree("provider", new XmlTree(
+						"organization"))));
 		return doc;
 	}
 
 	public void httpGet(Invocation inv) throws DesignerException,
-			ProgrammerException, UserException, DeployerException {
+			InternalException, HttpException, DeployerException {
 		inv.sendOk(document());
 	}
 
@@ -211,11 +212,11 @@ public class DceService extends Service {
 		return new HhDataImportProcesses(this);
 	}
 	
-	public Urlable getChild(UriPathElement uriId) throws ProgrammerException,
-			UserException {
+	public Urlable getChild(UriPathElement uriId) throws InternalException,
+			HttpException {
 		if (HhDataImportProcesses.URI_ID.equals(uriId)) {
 			return getHhDataImportProcessesInstance();
-		} else if (SnagsChannel.URI_ID.equals(uriId)) {
+		} else if (ChannelSnags.URI_ID.equals(uriId)) {
 			return getSnagsChannelInstance();
 		} else if (SnagsSite.URI_ID.equals(uriId)) {
 			return getSnagsSiteInstance();
@@ -227,14 +228,14 @@ public class DceService extends Service {
 		}
 	}
 
-	public void httpDelete(Invocation inv) throws ProgrammerException,
-			UserException {
+	public void httpDelete(Invocation inv) throws InternalException,
+			HttpException {
 		// TODO Auto-generated method stub
 
 	}
 
-	public SnagsChannel getSnagsChannelInstance() {
-		return new SnagsChannel(this);
+	public ChannelSnags getSnagsChannelInstance() {
+		return new ChannelSnags(this);
 	}
 
 	public String toString() {
@@ -246,11 +247,11 @@ public class DceService extends Service {
 		return new SnagsSite(this);
 	}
 
-	public Element toXML(Document doc) throws ProgrammerException,
-			UserException {
-		Element element = super.toXML(doc);
+	public Element toXml(Document doc) throws InternalException,
+			HttpException {
+		Element element = super.toXml(doc);
 
-		element.setAttributeNode(frequency.toXML(doc));
+		element.setAttributeNode(frequency.toXml(doc));
 		element.setAttributeNode(MonadInteger.toXml(doc, "lag", lag));
 		element.setAttribute("has-stark-automatic-hh-data-importer",
 				StarkAutomaticHhDataImporters.getImportersInstance()

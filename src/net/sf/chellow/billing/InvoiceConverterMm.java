@@ -37,7 +37,8 @@ import java.util.TimeZone;
 
 import net.sf.chellow.data08.MpanRaw;
 import net.sf.chellow.monad.Hiber;
-import net.sf.chellow.monad.ProgrammerException;
+import net.sf.chellow.monad.InternalException;
+import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.UserException;
 import net.sf.chellow.physical.HhEndDate;
 
@@ -48,13 +49,13 @@ public class InvoiceConverterMm implements InvoiceConverter {
 
 	private List<InvoiceRaw> rawBills = new ArrayList<InvoiceRaw>();
 
-	public InvoiceConverterMm(Reader reader) throws UserException,
-			ProgrammerException {
+	public InvoiceConverterMm(Reader reader) throws HttpException,
+			InternalException {
 		lreader = new LineNumberReader(reader);
 	}
 
-	public List<InvoiceRaw> getRawInvoices() throws UserException,
-			ProgrammerException {
+	public List<InvoiceRaw> getRawInvoices() throws HttpException,
+			InternalException {
 		Hiber.flush();
 		if (rawBills.isEmpty()) {
 			String line;
@@ -99,16 +100,16 @@ public class InvoiceConverterMm implements InvoiceConverter {
 									dateFormat.parse(line.substring(66, 74)))
 									.getNext().getDate()).getNext();
 						} catch (ParseException e) {
-							throw UserException
-									.newInvalidParameter("Can't parse the start date: '"
+							throw new UserException
+									("Can't parse the start date: '"
 											+ e.getMessage() + "'.");
 						}
 						try {
 							finishDate = new DayFinishDate(dateFormat
 									.parse(line.substring(74, 82)));
 						} catch (ParseException e) {
-							throw UserException
-									.newInvalidParameter("Can't parse the finish date: '"
+							throw new UserException
+									("Can't parse the finish date: '"
 											+ e.getMessage() + "'.");
 						}
 					}
@@ -148,7 +149,7 @@ public class InvoiceConverterMm implements InvoiceConverter {
 				lreader.close();
 				Hiber.flush();
 			} catch (IOException e) {
-				throw UserException.newOk("Can't read EDF Energy mm file.");
+				throw new UserException("Can't read EDF Energy mm file.");
 			}
 			for (List<Object> fields : billFields) {
 				try {
@@ -158,9 +159,9 @@ public class InvoiceConverterMm implements InvoiceConverter {
 							.get(2), (DayStartDate) fields.get(3), (DayStartDate) fields.get(3),
 							(DayFinishDate) fields.get(4), (Double) fields
 									.get(5), (Double) fields.get(6), null));
-				} catch (UserException e) {
-					throw UserException
-							.newInvalidParameter("I'm having trouble parsing the file. The problem seems to be with the bill with account number '"
+				} catch (HttpException e) {
+					throw new UserException
+						("I'm having trouble parsing the file. The problem seems to be with the bill with account number '"
 									+ (String) fields.get(0)
 									+ "' and invoice number '"
 									+ (String) fields.get(2)

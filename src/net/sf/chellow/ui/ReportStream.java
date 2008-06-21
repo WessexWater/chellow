@@ -4,9 +4,9 @@ import net.sf.chellow.monad.DeployerException;
 import net.sf.chellow.monad.DesignerException;
 import net.sf.chellow.monad.Invocation;
 import net.sf.chellow.monad.MonadUtils;
-import net.sf.chellow.monad.ProgrammerException;
+import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Urlable;
-import net.sf.chellow.monad.UserException;
+import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.XmlTree;
 
 import net.sf.chellow.monad.types.MonadUri;
@@ -31,13 +31,13 @@ public class ReportStream implements ReportType {
 
 	private ReportScript reportScript = new ReportScript(this);
 
-	public ReportStream(Report report) throws ProgrammerException,
-			UserException {
+	public ReportStream(Report report) throws InternalException,
+			HttpException {
 		this.report = report;
 	}
 
-	public Urlable getChild(UriPathElement uriId) throws ProgrammerException,
-			UserException {
+	public Urlable getChild(UriPathElement uriId) throws InternalException,
+			HttpException {
 		if (ReportScript.URI_ID.equals(uriId)) {
 			return reportScript;
 		} else if (ReportStreamOutput.URI_ID.equals(uriId)) {
@@ -47,49 +47,49 @@ public class ReportStream implements ReportType {
 		}
 	}
 
-	public MonadUri getUri() throws ProgrammerException, UserException {
+	public MonadUri getUri() throws InternalException, HttpException {
 		return report.getUri().resolve(URI_ID).append("/");
 	}
 
 	public void httpGet(Invocation inv) throws DesignerException,
-			ProgrammerException, UserException, DeployerException {
+			InternalException, HttpException, DeployerException {
 		inv.sendOk(document());
 	}
 
-	private Document document() throws ProgrammerException, UserException {
+	private Document document() throws InternalException, HttpException {
 		Document doc = MonadUtils.newSourceDocument();
 		Element source = doc.getDocumentElement();
-		Element streamElement = (Element) toXML(doc);
+		Element streamElement = (Element) toXml(doc);
 		source.appendChild(streamElement);
-		Element reportElement = (Element) report.toXML(doc);
+		Element reportElement = (Element) report.toXml(doc);
 		streamElement.appendChild(reportElement);
-		Element reportsElement = (Element) report.getReports().toXML(doc);
+		Element reportsElement = (Element) report.getReports().toXml(doc);
 		reportElement.appendChild(reportsElement);
 		Element organizationElement = (Element) report.getReports()
-				.getOrganization().toXML(doc);
+				.getOrganization().toXml(doc);
 		reportsElement.appendChild(organizationElement);
 		return doc;
 	}
 
-	public void httpPost(Invocation inv) throws ProgrammerException,
-			UserException, DesignerException, DeployerException {
+	public void httpPost(Invocation inv) throws InternalException,
+			HttpException, DesignerException, DeployerException {
 		// TODO Auto-generated method stub
 
 	}
 
-	public void httpDelete(Invocation inv) throws ProgrammerException,
-			DesignerException, UserException, DeployerException {
+	public void httpDelete(Invocation inv) throws InternalException,
+			DesignerException, HttpException, DeployerException {
 		// TODO Auto-generated method stub
 
 	}
 
-	public Node toXML(Document doc) throws ProgrammerException, UserException {
+	public Node toXml(Document doc) throws InternalException, HttpException {
 		Element element = doc.createElement("stream-report");
 		return element;
 	}
 
-	public Node getXML(XmlTree tree, Document doc) throws ProgrammerException,
-			UserException {
+	public Node toXml(Document doc, XmlTree tree) throws InternalException,
+			HttpException {
 		// TODO Auto-generated method stub
 		return null;
 	}

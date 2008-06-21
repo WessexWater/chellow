@@ -95,7 +95,7 @@ public class Invocation {
 
 	@SuppressWarnings("unchecked")
 	public Invocation(HttpServletRequest req, HttpServletResponse res,
-			Monad monad) throws ProgrammerException, UserException {
+			Monad monad) throws InternalException {
 		this.monad = monad;
 		String pathInfo;
 		int start = 1;
@@ -131,7 +131,7 @@ public class Invocation {
 			try {
 				multipartItems = upload.parseRequest(req);
 			} catch (FileUploadException e) {
-				throw new ProgrammerException(e);
+				throw new InternalException(e);
 			}
 		}
 	}
@@ -193,14 +193,14 @@ public class Invocation {
 	protected List<MonadInstantiationException> instantiationExceptions = new ArrayList<MonadInstantiationException>();
 
 	public <T extends MonadValidatable> T getValidatable(Class<T> clazz,
-			String parameterName) throws ProgrammerException {
+			String parameterName) throws InternalException {
 		return getValidatable(clazz, new String[] { parameterName },
 				parameterName);
 	}
 
 	public <T extends MonadValidatable> T getValidatable(Class<T> clazz,
 			String[] parameterNamesString, String label)
-			throws ProgrammerException {
+			throws InternalException {
 		ParameterName[] parameterNames = null;
 
 		if (parameterNamesString != null) {
@@ -213,7 +213,7 @@ public class Invocation {
 	}
 
 	public MonadLong getMonadLongNull(String parameterName)
-			throws ProgrammerException {
+			throws InternalException {
 		MonadLong monadLong = null;
 		HttpParameter parameter = null;
 		try {
@@ -224,7 +224,7 @@ public class Invocation {
 			if (!parameterValue.equals("null")) {
 				monadLong = new MonadLong(parameterValue);
 			}
-		} catch (UserException e) {
+		} catch (HttpException e) {
 			instantiationExceptions.add(new MonadInstantiationException(
 					Long.class.getName(), parameterName, e));
 		}
@@ -232,7 +232,7 @@ public class Invocation {
 	}
 
 	public boolean getBoolean(String parameterName)
-			throws ProgrammerException {
+			throws InternalException {
 		if (hasParameter(parameterName) && getString(parameterName).equals("true")) {
 			return true;
 			
@@ -241,7 +241,7 @@ public class Invocation {
 		}
 	}
 
-	public Date getDate(String baseName) throws ProgrammerException {
+	public Date getDate(String baseName) throws InternalException {
 		MonadDate date = getMonadDate(baseName);
 		if (date == null) {
 			return null;
@@ -250,68 +250,68 @@ public class Invocation {
 		}
 	}
 
-	public MonadDate getMonadDate(String baseName) throws ProgrammerException {
+	public MonadDate getMonadDate(String baseName) throws InternalException {
 		return getValidatable(MonadDate.class, new String[] {
 				baseName + "-year", baseName + "-month", baseName + "-day" },
 				baseName);
 	}
 
-	public GeoPoint getGeoPoint(String baseName) throws ProgrammerException {
+	public GeoPoint getGeoPoint(String baseName) throws InternalException {
 		return getValidatable(GeoPoint.class, new String[] {
 				baseName + "-latitude", baseName + "-longitude" }, baseName);
 	}
 
-	public Long getLong(String parameterNameString) throws ProgrammerException {
+	public Long getLong(String parameterNameString) throws InternalException {
 		MonadLong monadLong = getValidatable(MonadLong.class,
 				parameterNameString);
 		return monadLong == null ? null : monadLong.getLong();
 	}
 
 	public Integer getInteger(String parameterNameString)
-			throws ProgrammerException {
+			throws InternalException {
 		MonadInteger monadInteger = getValidatable(MonadInteger.class,
 				parameterNameString);
 		return monadInteger == null ? null : monadInteger.getInteger();
 	}
 
 	public Double getDouble(String parameterNameString)
-			throws ProgrammerException {
+			throws InternalException {
 		MonadDouble monadDouble = getValidatable(MonadDouble.class,
 				parameterNameString);
 		return monadDouble == null ? null : monadDouble.getDouble();
 	}
 
 	public MonadLong getMonadLong(String parameterNameString)
-			throws ProgrammerException {
+			throws InternalException {
 		return getValidatable(MonadLong.class, parameterNameString);
 	}
 
 	public MonadUri getMonadUri(String parameterNameString)
-			throws ProgrammerException {
+			throws InternalException {
 		return getValidatable(MonadUri.class, parameterNameString);
 	}
 
 	public UriPathElement getUriPathElement(String parameterNameString)
-			throws ProgrammerException {
+			throws InternalException {
 		return getValidatable(UriPathElement.class, parameterNameString);
 	}
 
 	public EmailAddress getEmailAddress(String parameterNameString)
-			throws ProgrammerException {
+			throws InternalException {
 		return getValidatable(EmailAddress.class, parameterNameString);
 	}
 
 	public MonadInteger getMonadInteger(String parameterNameString)
-			throws ProgrammerException {
+			throws InternalException {
 		return getValidatable(MonadInteger.class, parameterNameString);
 	}
 
 	public MonadDouble getMonadDouble(String parameterNameString)
-			throws ProgrammerException {
+			throws InternalException {
 		return getValidatable(MonadDouble.class, parameterNameString);
 	}
 
-	public String getString(String parameterName) throws ProgrammerException {
+	public String getString(String parameterName) throws InternalException {
 		MonadString monadString = getMonadString(parameterName);
 		if (monadString != null) {
 			return monadString.getString();
@@ -321,13 +321,13 @@ public class Invocation {
 	}
 
 	public MonadString getMonadString(String parameterNameString)
-			throws ProgrammerException {
+			throws InternalException {
 		return getValidatable(MonadString.class, parameterNameString);
 	}
 
 	public <T extends MonadValidatable> T getValidatable(Class<T> clazz,
 			ParameterName[] parameterNames, List<? extends Object> list, String label)
-			throws ProgrammerException {
+			throws InternalException {
 		T obj = null;
 		List<HttpParameter> parameters = null;
 
@@ -351,29 +351,29 @@ public class Invocation {
 			obj = clazz.getConstructor(constructorClasses).newInstance(
 					parameterValues);
 		} catch (IllegalArgumentException e) {
-			throw new ProgrammerException(e);
+			throw new InternalException(e);
 		} catch (InstantiationException e) {
-			throw new ProgrammerException(e);
+			throw new InternalException(e);
 		} catch (IllegalAccessException e) {
-			throw new ProgrammerException(e);
+			throw new InternalException(e);
 		} catch (InvocationTargetException e) {
-			if (e.getCause() instanceof UserException) {
+			if (e.getCause() instanceof HttpException) {
 				instantiationExceptions.add(new MonadInstantiationException(
-						clazz.getName(), label, (UserException) e.getCause()));
+						clazz.getName(), label, (HttpException) e.getCause()));
 			} else {
-				throw new ProgrammerException(e);
+				throw new InternalException(e);
 			}
 		} catch (SecurityException e) {
-			throw new ProgrammerException(e);
+			throw new InternalException(e);
 		} catch (NoSuchMethodException e) {
-			throw new ProgrammerException(e);
-		} catch (UserException e) {
+			throw new InternalException(e);
+		} catch (InternalException e) {
+			instantiationExceptions.add(new MonadInstantiationException(clazz
+					.getName(), label, new UserException(e
+					.getMessage())));
+		} catch (HttpException e) {
 			instantiationExceptions.add(new MonadInstantiationException(clazz
 					.getName(), label, e));
-		} catch (ProgrammerException e) {
-			instantiationExceptions.add(new MonadInstantiationException(clazz
-					.getName(), label, UserException.newInvalidParameter(e
-					.getMessage())));
 		}
 		return obj;
 	}
@@ -387,8 +387,7 @@ public class Invocation {
 		res.setStatus(statusCode);
 	}
 
-	public Node responseXml(Document doc) throws ProgrammerException,
-			UserException {
+	public Node responseXml(Document doc) throws InternalException {
 		Element responseElement = doc.createElement("response");
 		for (Map.Entry<String, Object> entry : responseHeaders.entrySet()) {
 			Element headerElement = doc.createElement("header");
@@ -407,8 +406,7 @@ public class Invocation {
 	}
 
 	@SuppressWarnings("unchecked")
-	public Node requestXml(Document doc) throws ProgrammerException,
-			UserException, DesignerException {
+	public Node requestXml(Document doc) throws InternalException, DesignerException {
 		Element requestElement = doc.createElement("request");
 		Map<String, String[]> parameterMap = getRequest().getParameterMap();
 
@@ -421,7 +419,7 @@ public class Invocation {
 				.setAttribute("server-name", getRequest().getServerName());
 		for (Entry<String, String[]> entry : parameterMap.entrySet()) {
 			requestElement.appendChild(new HttpParameter(new ParameterName(
-					entry.getKey()), entry.getValue()).toXML(doc));
+					entry.getKey()), entry.getValue()).toXml(doc));
 		}
 		if (ServletFileUpload
 				.isMultipartContent(new ServletRequestContext(req))) {
@@ -429,16 +427,16 @@ public class Invocation {
 				FileItem item = (FileItem) it.next();
 				requestElement.appendChild(new HttpParameter(new ParameterName(
 						item.getFieldName()), item.isFormField() ? item
-						.getString() : item.getName()).toXML(doc));
+						.getString() : item.getName()).toXml(doc));
 			}
 		}
 		for (MonadInstantiationException e : instantiationExceptions) {
-			requestElement.appendChild(e.toXML(doc));
+			requestElement.appendChild(e.toXml(doc));
 		}
 		return requestElement;
 	}
 
-	public FileItem getFileItem(String name) throws ProgrammerException {
+	public FileItem getFileItem(String name) throws InternalException {
 		FileItem fileItem = null;
 
 		for (FileItem item : multipartItems) {
@@ -448,33 +446,26 @@ public class Invocation {
 		}
 		if (fileItem == null) {
 			instantiationExceptions.add(new MonadInstantiationException(
-					FileItem.class.getName(), name, UserException
-							.newInvalidParameter("File parameter '" + name
+					FileItem.class.getName(), name, new UserException
+							("File parameter '" + name
 									+ "' is required.")));
 		}
 		return fileItem;
 	}
 
 	public List<HttpParameter> getParameters(ParameterName[] parameterNames)
-			throws UserException, ProgrammerException {
+			throws HttpException, InternalException {
 		List<HttpParameter> parameters = new ArrayList<HttpParameter>();
 		if (parameterNames != null) {
 			for (int i = 0; i < parameterNames.length; i++) {
 				String[] parameterValues = getParameterValues(parameterNames[i]);
 
 				if (parameterValues == null || parameterValues.length < 1) {
-					throw UserException.newInvalidParameter(new VFMessage(
+					throw new UserException(
 							"The parameter '" + parameterNames[i]
-									+ "' is required.", new VFParameter[] {
-									new VFParameter("code",
-											VFMessage.PARAMETER_REQUIRED),
-									new VFParameter("name", parameterNames[i]
-											.toString()) }));
+									+ "' is required.");
 				} else if (parameterValues.length > 1) {
-					throw UserException.newInvalidParameter(new VFMessage(
-							"Too many parameter values.",
-							VFMessage.TOO_MANY_PARAMETER_VALUES, "name",
-							parameterNames[i].toString()));
+					throw new UserException("Too many parameter values.");
 				}
 				parameters.add(new HttpParameter(parameterNames[i],
 						parameterValues[0]));
@@ -483,27 +474,27 @@ public class Invocation {
 		return parameters;
 	}
 
-	public void sendCreated(MonadUri uri) throws ProgrammerException,
-			DesignerException, DeployerException, UserException {
+	public void sendCreated(MonadUri uri) throws InternalException,
+			DesignerException, DeployerException, HttpException {
 		sendCreated(null, uri);
 	}
 
-	public void sendBadRequest(String message) throws ProgrammerException,
-			DesignerException, DeployerException, UserException {
+	public void sendBadRequest(String message) throws InternalException,
+			DesignerException, DeployerException, HttpException {
 		try {
 			res.sendError(HttpServletResponse.SC_BAD_REQUEST, message);
 		} catch (IOException e) {
-			throw new ProgrammerException(e);
+			throw new InternalException(e);
 		}
 	}
 
-	public void sendFound(MonadString uri) throws ProgrammerException,
-			DesignerException, DeployerException, UserException {
+	public void sendFound(MonadString uri) throws InternalException,
+			DesignerException, DeployerException {
 		sendFound(uri.toString());
 	}
 
-	public void sendFound(String uri) throws ProgrammerException,
-			DesignerException, DeployerException, UserException {
+	public void sendFound(String uri) throws InternalException,
+			DesignerException, DeployerException {
 		URI locationUri;
 		try {
 			locationUri = new URI(req.getScheme(), null, req.getServerName(),
@@ -511,38 +502,38 @@ public class Invocation {
 			setResponseHeader("Location", locationUri.toString());
 			res.sendError(HttpServletResponse.SC_FOUND);
 		} catch (IOException e) {
-			throw new ProgrammerException(e);
+			throw new InternalException(e);
 		} catch (URISyntaxException e) {
-			throw new ProgrammerException(e);
+			throw new InternalException(e);
 		}
 	}
 
 	public void sendCreated(Document doc, MonadUri uri)
-			throws ProgrammerException, DesignerException, DeployerException,
-			UserException {
+			throws InternalException, DesignerException, DeployerException,
+			HttpException {
 		URI locationUri;
 		try {
 			locationUri = new URI(req.getScheme(), null, req.getServerName(),
 					req.getServerPort(), req.getContextPath() + uri.toString(),
 					null, null);
 		} catch (URISyntaxException e) {
-			throw new ProgrammerException(e);
+			throw new InternalException(e);
 		}
 		setResponseHeader("Location", locationUri.toString());
 		setResponseStatusCode(HttpServletResponse.SC_CREATED);
 		returnPage(doc, req.getPathInfo(), "template.xsl");
 	}
 
-	public void sendMovedPermanently(URI location) throws ProgrammerException {
+	public void sendMovedPermanently(URI location) throws InternalException {
 		res.setHeader("Location", location.toString());
 		try {
 			res.sendError(HttpServletResponse.SC_MOVED_PERMANENTLY);
 		} catch (IOException e) {
-			throw new ProgrammerException(e);
+			throw new InternalException(e);
 		}
 	}
 
-	public HttpMethod getMethod() throws UserException, ProgrammerException {
+	public HttpMethod getMethod() throws HttpException, InternalException {
 		String method = req.getMethod();
 		if (method.equals("GET")) {
 			return HttpMethod.GET;
@@ -551,30 +542,28 @@ public class Invocation {
 		} else if (method.equals("DELETE")) {
 			return HttpMethod.DELETE;
 		} else {
-			throw UserException.newNotImplemented();
+			throw new NotImplementedException();
 		}
 	}
 
-	public void sendInvalidParameter(Document doc) throws UserException,
-			ProgrammerException, DesignerException, DeployerException {
+	public void sendUser(Document doc) throws HttpException {
 		res.setStatus(418);
 		returnPage(doc, req.getPathInfo(), "template.xsl");
 	}
 
-	public void sendOk() throws UserException, ProgrammerException,
-			DesignerException, DeployerException {
+	public void sendOk() throws InternalException,
+			DesignerException, DeployerException, UserException {
 		sendOk(null);
 	}
 
 	public void sendOk(Document doc, String templatePath, String templateName)
-			throws DesignerException, ProgrammerException, DeployerException,
-			UserException {
+			throws DesignerException, InternalException, DeployerException, UserException {
 		res.setStatus(HttpServletResponse.SC_OK);
 		returnPage(doc, templatePath, templateName);
 	}
 
 	public void sendOk(Document doc) throws DesignerException,
-			ProgrammerException, DeployerException, UserException {
+			InternalException, DeployerException, UserException {
 		String templatePath = req.getPathInfo();
 		if (templatePath == null) {
 			templatePath = "/";
@@ -582,34 +571,34 @@ public class Invocation {
 		sendOk(doc, templatePath, "template.xsl");
 	}
 
-	public void sendForbidden() throws ProgrammerException {
+	public void sendForbidden() throws InternalException {
 		try {
 			res.sendError(HttpServletResponse.SC_FORBIDDEN);
 		} catch (IOException e) {
-			throw new ProgrammerException(e);
+			throw new InternalException(e);
 		}
 	}
 
-	public void sendNotFound() throws ProgrammerException {
+	public void sendNotFound() throws InternalException {
 		try {
 			res.sendError(HttpServletResponse.SC_NOT_FOUND);
 		} catch (IOException e) {
-			throw new ProgrammerException(e);
+			throw new InternalException(e);
 		}
 	}
 
-	public void sendUnauthorized() throws ProgrammerException {
+	public void sendUnauthorized() throws InternalException {
 		res.setHeader("WWW-Authenticate", "Basic realm=\""
 				+ monad.getRealmName() + "\"");
 		try {
 			res.sendError(HttpServletResponse.SC_UNAUTHORIZED);
 		} catch (IOException e) {
-			throw new ProgrammerException(e);
+			throw new InternalException(e);
 		}
 	}
 
 	public void sendMethodNotAllowed(HttpMethod[] methods)
-			throws ProgrammerException {
+			throws InternalException {
 		try {
 			StringBuilder methodsString = new StringBuilder();
 			for (int i = 0; i < methodsString.length(); i++) {
@@ -621,11 +610,11 @@ public class Invocation {
 			res.setHeader("Allow", methodsString.toString());
 			res.sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED);
 		} catch (IOException e) {
-			throw new ProgrammerException(e);
+			throw new InternalException(e);
 		}
 	}
 
-	public void sendSeeOther(MonadUri uri) throws ProgrammerException {
+	public void sendSeeOther(MonadUri uri) throws InternalException {
 		try {
 			URI locationUri = new URI(req.getScheme(), null, req
 					.getServerName(), req.getServerPort(), req.getContextPath()
@@ -633,13 +622,13 @@ public class Invocation {
 			res.setHeader("Location", locationUri.toString());
 			res.sendError(HttpServletResponse.SC_SEE_OTHER);
 		} catch (IOException e) {
-			throw new ProgrammerException(e);
+			throw new InternalException(e);
 		} catch (URISyntaxException e) {
-			throw new ProgrammerException(e);
+			throw new InternalException(e);
 		}
 	}
 
-	public User getUser() throws ProgrammerException, UserException {
+	public User getUser() throws InternalException, UserException {
 		String authHeader = req.getHeader("Authorization");
 
 		if (authHeader == null || !authHeader.startsWith("Basic")) {
@@ -663,7 +652,7 @@ public class Invocation {
 	}
 
 	private void returnPage(Document doc, String templatePath,
-			String templateName) throws DesignerException, ProgrammerException,
+			String templateName) throws DesignerException, InternalException,
 			DeployerException, UserException {
 		/*
 		 * if ("image/svg+xml".equals(getResponse().getContentType())) {
@@ -677,7 +666,7 @@ public class Invocation {
 		Element source = doc.getDocumentElement();
 
 		if (source == null) {
-			throw new ProgrammerException(
+			throw new InternalException(
 					"There is no child element for "
 							+ " a document requiring the template 'template'. Request URL: "
 							+ getRequest().getRequestURL().toString() + "?"
@@ -691,7 +680,7 @@ public class Invocation {
 		try {
 			result = new StreamResult(getResponse().getWriter());
 		} catch (IOException e) {
-			throw new ProgrammerException(e);
+			throw new InternalException(e);
 		}
 		Monad.returnStream(doc, templatePath, templateName, result);
 
@@ -757,14 +746,14 @@ public class Invocation {
 
 	@SuppressWarnings("unchecked")
 	public void returnStatic(ServletContext servletContext, String uri)
-			throws UserException, ProgrammerException {
+			throws HttpException, InternalException {
 		InputStream is;
 		try {
 			res.setDateHeader("Expires", System.currentTimeMillis() + 24 * 60
 					* 60 * 1000);
 			OutputStream os = res.getOutputStream();
 			if (uri == null) {
-				throw UserException.newNotFound();
+				throw new NotFoundException();
 			}
 			if (uri.endsWith("/")) {
 				uri = uri.substring(0, uri.length() - 1);
@@ -774,7 +763,7 @@ public class Invocation {
 			URL url;
 			Set<String> paths = servletContext.getResourcePaths(resourcePath);
 			if (paths == null) {
-				throw UserException.newNotFound();
+				throw new NotFoundException();
 			}
 			String potentialPath = null;
 			for (String candidatePath : paths) {
@@ -785,11 +774,11 @@ public class Invocation {
 				}
 			}
 			if (potentialPath == null) {
-				throw UserException.newNotFound();
+				throw new NotFoundException();
 			}
 			url = servletContext.getResource(potentialPath);
 			if (url == null) {
-				throw UserException.newNotFound();
+				throw new NotFoundException();
 			}
 			URLConnection con = url.openConnection();
 			String contentType = servletContext.getMimeType(url.toString());
@@ -806,20 +795,20 @@ public class Invocation {
 			os.close();
 			is.close();
 		} catch (MalformedURLException e) {
-			throw UserException.newBadRequest();
+			throw new BadRequestException();
 		} catch (FileNotFoundException e) {
-			throw UserException.newNotFound();
+			throw new NotFoundException();
 		} catch (IOException e) {
 		}
 	}
 
-	public Urlable dereferenceUrl() throws UserException, ProgrammerException {
+	public Urlable dereferenceUrl() throws HttpException, InternalException {
 		try {
 			String pathInfo = req.getPathInfo();
 			return Monad.dereferenceUri(new URI(pathInfo == null ? "/"
 					: pathInfo));
 		} catch (URISyntaxException e1) {
-			throw UserException.newBadRequest();
+			throw new BadRequestException();
 		}
 	}
 
@@ -827,7 +816,7 @@ public class Invocation {
 			XmlDescriber {
 		private static final long serialVersionUID = 1L;
 
-		private VFMessage message = null;
+		private MonadMessage message = null;
 
 		// private List<MonadInstantiationException>
 		// monadInstantiationExceptions = new
@@ -838,19 +827,19 @@ public class Invocation {
 		private String label;
 
 		public MonadInstantiationException(String typeName, String label,
-				UserException e) {
-			this(typeName, label, e.getVFMessage());
+				HttpException e) {
+			this(typeName, label, e.getMessage());
 		}
 
 		public MonadInstantiationException(String typeName, String label,
-				VFMessage message) {
+				MonadMessage message) {
 			this(typeName, label);
 			this.message = message;
 		}
 
 		public MonadInstantiationException(String typeName, String label,
 				String messageCode, String parameterName, String parameterValue) {
-			this(typeName, label, new VFMessage(messageCode, new VFParameter(
+			this(typeName, label, new MonadMessage(messageCode, new VFParameter(
 					parameterName, parameterValue)));
 		}
 
@@ -861,10 +850,10 @@ public class Invocation {
 
 		public MonadInstantiationException(String typeName, String label,
 				String messageCode) {
-			this(typeName, label, new VFMessage(messageCode));
+			this(typeName, label, new MonadMessage(messageCode));
 		}
 
-		public VFMessage getVFMessage() {
+		public MonadMessage getVFMessage() {
 			return message;
 		}
 
@@ -876,8 +865,7 @@ public class Invocation {
 		 * public void addChild(MonadInstantiationException e) {
 		 * monadInstantiationExceptions.add(e); }
 		 */
-		public Node toXML(Document doc) throws ProgrammerException,
-				UserException, DesignerException {
+		public Node toXml(Document doc) throws InternalException, DesignerException {
 			Element element = doc.createElement(typeName);
 
 			if (label != null) {
@@ -885,7 +873,7 @@ public class Invocation {
 			}
 
 			if (message != null) {
-				element.appendChild(message.toXML(doc));
+				element.appendChild(message.toXml(doc));
 			}
 			return element;
 		}
@@ -898,9 +886,9 @@ public class Invocation {
 			this.label = label;
 		}
 
-		public Node getXML(XmlTree tree, Document doc)
-				throws ProgrammerException, UserException, DesignerException {
-			return toXML(doc);
+		public Node toXml(Document doc, XmlTree tree)
+				throws InternalException, DesignerException {
+			return toXml(doc);
 		}
 	}
 }

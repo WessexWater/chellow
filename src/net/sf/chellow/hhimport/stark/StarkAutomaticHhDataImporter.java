@@ -15,10 +15,12 @@ import net.sf.chellow.monad.DeployerException;
 import net.sf.chellow.monad.DesignerException;
 import net.sf.chellow.monad.Invocation;
 import net.sf.chellow.monad.MonadUtils;
-import net.sf.chellow.monad.ProgrammerException;
+import net.sf.chellow.monad.OkException;
+import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Urlable;
+import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.UserException;
-import net.sf.chellow.monad.VFMessage;
+import net.sf.chellow.monad.MonadMessage;
 import net.sf.chellow.monad.XmlDescriber;
 import net.sf.chellow.monad.XmlTree;
 import net.sf.chellow.monad.types.MonadDate;
@@ -40,34 +42,32 @@ public class StarkAutomaticHhDataImporter implements Urlable, XmlDescriber {
 	static {
 		try {
 			URI_ID = new UriPathElement("stark-automatic-hh-data-importer");
-		} catch (UserException e) {
-			throw new RuntimeException(e);
-		} catch (ProgrammerException e) {
+		} catch (HttpException e) {
 			throw new RuntimeException(e);
 		}
 	}
 
 	static public boolean importerExists(MonadUri importerUri)
-			throws ProgrammerException {
+			throws InternalException {
 		return ChellowProperties
 				.propertiesExists(importerUri, "etc.properties");
 	}
 
 	private HhDataImportProcess hhImporter;
 
-	private List<VFMessage> messages = Collections
-			.synchronizedList(new ArrayList<VFMessage>());
+	private List<MonadMessage> messages = Collections
+			.synchronizedList(new ArrayList<MonadMessage>());
 
 	private Long contractId;
 
-	public StarkAutomaticHhDataImporter(Long contractId) throws UserException,
-			ProgrammerException {
+	public StarkAutomaticHhDataImporter(Long contractId) throws HttpException,
+			InternalException {
 		this.contractId = contractId;
 	}
 
-	private void log(String message) throws ProgrammerException, UserException {
+	private void log(String message) throws InternalException, HttpException {
 		messages
-				.add(new VFMessage(new MonadDate().toString() + ": " + message));
+				.add(new MonadMessage(new MonadDate().toString() + ": " + message));
 		if (messages.size() > 200) {
 			messages.remove(0);
 		}
@@ -88,7 +88,7 @@ public class StarkAutomaticHhDataImporter implements Urlable, XmlDescriber {
 			log("Server replied with '" + ftp.getReplyString() + "'.");
 			reply = ftp.getReplyCode();
 			if (!FTPReply.isPositiveCompletion(reply)) {
-				throw UserException.newOk("FTP server refused connection.");
+				throw new UserException("FTP server refused connection.");
 			}
 			log("Connected to server, now logging in.");
 			ftp.login(etcProperties.getUsername(), etcProperties.getPassword());
@@ -138,8 +138,7 @@ public class StarkAutomaticHhDataImporter implements Urlable, XmlDescriber {
 							InputStream is = ftp.retrieveFileStream(fileName);
 							if (is == null) {
 								reply = ftp.getReplyCode();
-								throw UserException
-										.newOk("Can't download the file '"
+								throw new UserException("Can't download the file '"
 												+ file.getName()
 												+ "', server says: " + reply
 												+ ".");
@@ -150,19 +149,17 @@ public class StarkAutomaticHhDataImporter implements Urlable, XmlDescriber {
 									+ ".df2", file.getSize());
 							hhImporter.run();
 
-							List<VFMessage> messages = hhImporter.getMessages();
+							List<String> messages = hhImporter.getMessages();
 							hhImporter = null;
 							if (messages.size() > 0) {
-								for (VFMessage message : messages) {
-									log(message.getDescription());
+								for (String message : messages) {
+									log(message);
 								}
-								throw UserException
-										.newInvalidParameter("Problem loading file.");
+								throw new UserException("Problem loading file.");
 							}
 						}
 						if (!ftp.completePendingCommand()) {
-							throw UserException
-									.newOk("Couldn't complete ftp transaction: "
+							throw new OkException("Couldn't complete ftp transaction: "
 											+ ftp.getReplyString());
 						}
 						varProperties.setLastImportDate(i, new MonadDate(file
@@ -175,29 +172,29 @@ public class StarkAutomaticHhDataImporter implements Urlable, XmlDescriber {
 					log("No new files found.");
 				}
 			}
-		} catch (UserException e) {
+		} catch (HttpException e) {
 			try {
-				log(e.getVFMessage().getDescription());
-			} catch (ProgrammerException e1) {
+				log(e.getMessage());
+			} catch (InternalException e1) {
 				throw new RuntimeException(e1);
-			} catch (UserException e1) {
+			} catch (HttpException e1) {
 				throw new RuntimeException(e1);
 			}
 		} catch (IOException e) {
 			try {
 				log(e.getMessage());
-			} catch (ProgrammerException e1) {
+			} catch (InternalException e1) {
 				throw new RuntimeException(e1);
-			} catch (UserException e1) {
+			} catch (HttpException e1) {
 				throw new RuntimeException(e1);
 			}
 		} catch (Throwable e) {
 			try {
 				log("Exception: " + e.getClass().getName() + " Message: "
 						+ e.getMessage());
-			} catch (ProgrammerException e1) {
+			} catch (InternalException e1) {
 				throw new RuntimeException(e1);
-			} catch (UserException e1) {
+			} catch (HttpException e1) {
 				throw new RuntimeException(e1);
 			}
 			ChellowLogger.getLogger().logp(Level.SEVERE, "ContextListener",
@@ -210,16 +207,16 @@ public class StarkAutomaticHhDataImporter implements Urlable, XmlDescriber {
 					log("Logged out.");
 				} catch (IOException ioe) {
 					// do nothing
-				} catch (ProgrammerException e) {
+				} catch (InternalException e) {
 					// do nothing
-				} catch (UserException e) {
+				} catch (HttpException e) {
 					// do nothing
 				}
 			}
 		}
 	}
 
-	public List<VFMessage> getLog() {
+	public List<MonadMessage> getLog() {
 		return messages;
 	}
 
@@ -266,18 +263,18 @@ public class StarkAutomaticHhDataImporter implements Urlable, XmlDescriber {
 	 * problem will " + "be put right as soon as possible."); } }
 	 */
 	public void httpGet(Invocation inv) throws DesignerException,
-			ProgrammerException, UserException, DeployerException {
+			InternalException, HttpException, DeployerException {
 		Document doc = MonadUtils.newSourceDocument();
 		Element source = doc.getDocumentElement();
-		Element importerElement = (Element) toXML(doc);
+		Element importerElement = (Element) toXml(doc);
 		source.appendChild(importerElement);
-		importerElement.appendChild(getContract().getXML(
-				new XmlTree("provider", new XmlTree("organization")), doc));
-		for (VFMessage message : getLog()) {
-			importerElement.appendChild(message.toXML(doc));
+		importerElement.appendChild(getContract().toXml(
+				doc, new XmlTree("provider", new XmlTree("organization"))));
+		for (MonadMessage message : getLog()) {
+			importerElement.appendChild(message.toXml(doc));
 		}
 		if (hhImporter != null) {
-			importerElement.appendChild(new VFMessage(hhImporter.status()).toXML(doc));
+			importerElement.appendChild(new MonadMessage(hhImporter.status()).toXml(doc));
 		}
 		inv.sendOk(doc);
 	}
@@ -286,29 +283,29 @@ public class StarkAutomaticHhDataImporter implements Urlable, XmlDescriber {
 		return URI_ID;
 	}
 
-	public void httpPost(Invocation inv) throws ProgrammerException,
-			UserException {
+	public void httpPost(Invocation inv) throws InternalException,
+			HttpException {
 		// TODO Auto-generated method stub
 
 	}
 
-	public void httpDelete(Invocation inv) throws ProgrammerException,
-			UserException {
+	public void httpDelete(Invocation inv) throws InternalException,
+			HttpException {
 		// TODO Auto-generated method stub
 
 	}
 
-	public Urlable getChild(UriPathElement uriId) throws ProgrammerException,
-			UserException {
+	public Urlable getChild(UriPathElement uriId) throws InternalException,
+			HttpException {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
-	private Service getContract() throws UserException, ProgrammerException {
+	private Service getContract() throws HttpException, InternalException {
 		return Service.getContract(contractId);
 	}
 
-	public MonadUri getUri() throws ProgrammerException, UserException {
+	public MonadUri getUri() throws InternalException, HttpException {
 		return getContract().getUri().resolve(getUriId()).append("/");
 	}
 
@@ -331,12 +328,12 @@ public class StarkAutomaticHhDataImporter implements Urlable, XmlDescriber {
 	 * public InputStream createInputStream() throws IOException { return
 	 * inputStream; } }
 	 */
-	public Node toXML(Document doc) throws ProgrammerException, UserException {
+	public Node toXml(Document doc) throws InternalException, HttpException {
 		return doc.createElement("stark-automatic-hh-data-importer");
 	}
 
-	public Node getXML(XmlTree tree, Document doc) throws ProgrammerException,
-			UserException {
+	public Node toXml(Document doc, XmlTree tree) throws InternalException,
+			HttpException {
 		// TODO Auto-generated method stub
 		return null;
 	}

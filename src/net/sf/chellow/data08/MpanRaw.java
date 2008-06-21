@@ -22,9 +22,9 @@
 
 package net.sf.chellow.data08;
 
-import net.sf.chellow.monad.ProgrammerException;
+import net.sf.chellow.monad.HttpException;
+import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.UserException;
-import net.sf.chellow.monad.VFMessage;
 import net.sf.chellow.monad.types.MonadObject;
 import net.sf.chellow.physical.Llf;
 import net.sf.chellow.physical.LlfCode;
@@ -48,17 +48,15 @@ public class MpanRaw extends MonadObject {
 
 	private MpanCoreRaw mpanCoreRaw;
 
-	public MpanRaw(String mpan) throws ProgrammerException, UserException {
+	public MpanRaw(String mpan) throws InternalException, HttpException {
 		this(null, mpan);
 	}
 
-	public MpanRaw(String label, String mpan) throws ProgrammerException,
-			UserException {
+	public MpanRaw(String label, String mpan) throws HttpException {
 		setLabel(label);
 		mpan = mpan.replace(" ", "");
 		if (mpan.length() != 21) {
-			throw UserException.newInvalidParameter(new VFMessage(
-					"The MPAN must contain exactly 21 digits."));
+			throw new UserException("The MPAN must contain exactly 21 digits.");
 		}
 		init(new ProfileClassCode(Integer.parseInt(mpan.substring(0, 2))),
 				new MeterTimeswitchCode(mpan.substring(2, 5)), new LlfCode(mpan
@@ -67,10 +65,10 @@ public class MpanRaw extends MonadObject {
 
 	private void init(ProfileClassCode profileClassCode,
 			MeterTimeswitchCode meterTimeswitchCode, LlfCode llfCode,
-			MpanCoreRaw mpanCoreRaw) throws ProgrammerException {
+			MpanCoreRaw mpanCoreRaw) throws InternalException {
 		if (profileClassCode == null || meterTimeswitchCode == null
 				|| mpanCoreRaw == null) {
-			throw new ProgrammerException("No nulls allowed.");
+			throw new InternalException("No nulls allowed.");
 		}
 		this.profileClassCode = profileClassCode;
 		this.meterTimeswitchCode = meterTimeswitchCode;
@@ -80,7 +78,7 @@ public class MpanRaw extends MonadObject {
 
 	public MpanRaw(ProfileClassCode profileClassCode,
 			MeterTimeswitchCode meterTimeswitchCode, LlfCode llfCode,
-			MpanCoreRaw mpanCoreRaw) throws ProgrammerException {
+			MpanCoreRaw mpanCoreRaw) throws InternalException {
 		init(profileClassCode, meterTimeswitchCode, llfCode, mpanCoreRaw);
 	}
 
@@ -100,28 +98,28 @@ public class MpanRaw extends MonadObject {
 		return mpanCoreRaw;
 	}
 
-	public ProfileClass getProfileClass() throws ProgrammerException,
-			UserException {
+	public ProfileClass getProfileClass() throws InternalException,
+			HttpException {
 		return ProfileClass.getProfileClass(profileClassCode);
 	}
 
-	public MeterTimeswitch getMeterTimeswitch() throws ProgrammerException,
-			UserException {
+	public MeterTimeswitch getMeterTimeswitch() throws InternalException,
+			HttpException {
 		return MeterTimeswitch.getMeterTimeswitch(mpanCoreRaw.getDso(),
 				meterTimeswitchCode);
 	}
 
-	public Llf getLlf() throws ProgrammerException, UserException {
+	public Llf getLlf() throws InternalException, HttpException {
 		return mpanCoreRaw.getDso().getLlf(llfCode);
 	}
 
-	public MpanTop getMpanTop() throws ProgrammerException, UserException {
+	public MpanTop getMpanTop() throws InternalException, HttpException {
 		return MpanTop.getMpanTop(getProfileClass(), getMeterTimeswitch(),
 				getLlf());
 	}
 
 	public MpanCore getMpanCore(Organization organization)
-			throws ProgrammerException, UserException {
+			throws InternalException, HttpException {
 		return organization.getMpanCore(mpanCoreRaw);
 	}
 
@@ -135,7 +133,7 @@ public class MpanRaw extends MonadObject {
 		return toString().replace(" ", "");
 	}
 
-	public Attr toXML(Document doc) {
+	public Attr toXml(Document doc) {
 		Attr attr = doc.createAttribute("mpan");
 
 		attr.setValue(toString());

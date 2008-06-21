@@ -7,8 +7,9 @@ import net.sf.chellow.monad.DeployerException;
 import net.sf.chellow.monad.DesignerException;
 import net.sf.chellow.monad.Invocation;
 import net.sf.chellow.monad.MonadUtils;
-import net.sf.chellow.monad.ProgrammerException;
+import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Urlable;
+import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.UserException;
 import net.sf.chellow.monad.XmlDescriber;
 import net.sf.chellow.monad.XmlTree;
@@ -35,29 +36,29 @@ public class ReportStreamOutput implements Urlable, XmlDescriber {
 
 	private ReportStream reportStream;
 
-	public ReportStreamOutput(ReportStream reportStream) throws ProgrammerException,
-			UserException {
+	public ReportStreamOutput(ReportStream reportStream)
+			throws InternalException, HttpException {
 		this.reportStream = reportStream;
 	}
-	
+
 	public ReportStream getReportStream() {
 		return reportStream;
 	}
 
-	public Urlable getChild(UriPathElement uriId) throws ProgrammerException,
-			UserException {
+	public Urlable getChild(UriPathElement uriId) throws InternalException,
+			HttpException {
 		return null;
 	}
 
-	public MonadUri getUri() throws ProgrammerException, UserException {
+	public MonadUri getUri() throws InternalException, HttpException {
 		return reportStream.getUri().resolve(URI_ID).append("/");
 	}
 
-	public void httpGet(Invocation inv) throws DesignerException,
-			ProgrammerException, UserException, DeployerException {
+	public void httpGet(Invocation inv) throws HttpException {
 		try {
 			PythonInterpreter interp = new PythonInterpreter();
-			interp.set("organization", reportStream.getReport().getReports().getOrganization());
+			interp.set("organization", reportStream.getReport().getReports()
+					.getOrganization());
 			interp.set("inv", inv);
 			try {
 				interp.execfile(reportStream.getScript().getInputStream());
@@ -67,95 +68,85 @@ public class ReportStreamOutput implements Urlable, XmlDescriber {
 					try {
 						pw = inv.getResponse().getWriter();
 					} catch (IOException e1) {
-						throw new ProgrammerException(e1);
+						throw new InternalException(e1);
 					}
 					pw.append(e.toString());
 					pw.close();
 				} else {
 					inv.getResponse().setContentType("text/html");
-					Object obj = e.value.__tojava__(UserException.class);
-					if (obj instanceof UserException) {
-						throw (UserException) obj;
+					Object obj = e.value.__tojava__(HttpException.class);
+					if (obj instanceof HttpException) {
+						throw (HttpException) obj;
 					} else {
-						throw UserException.newInvalidParameter(e.toString());
+						throw new UserException(e.toString());
 					}
 				}
 			}
-		} catch (UserException e) {
+		} catch (HttpException e) {
 			e.setDocument(document());
 			throw e;
 		}
 	}
 
-	private Document document() throws ProgrammerException, UserException {
+	private Document document() throws InternalException, HttpException {
 		Document doc = MonadUtils.newSourceDocument();
 		Element source = doc.getDocumentElement();
-        Element outputElement = (Element) toXML(doc);
-        source.appendChild(outputElement);
-        Element screenElement = (Element) getReportStream().toXML(doc);
-        outputElement.appendChild(screenElement);
-        Element reportElement = (Element) getReportStream().getReport().toXML(doc);
-        screenElement.appendChild(reportElement);
-        Element reportsElement = (Element) getReportStream().getReport().getReports().toXML(doc);
-        reportElement.appendChild(reportsElement);
-        Element organizationElement = (Element) getReportStream().getReport().getReports().getOrganization().toXML(doc);
-        reportsElement.appendChild(organizationElement);
+		Element outputElement = (Element) toXml(doc);
+		source.appendChild(outputElement);
+		Element screenElement = (Element) getReportStream().toXml(doc);
+		outputElement.appendChild(screenElement);
+		Element reportElement = (Element) getReportStream().getReport().toXml(
+				doc);
+		screenElement.appendChild(reportElement);
+		Element reportsElement = (Element) getReportStream().getReport()
+				.getReports().toXml(doc);
+		reportElement.appendChild(reportsElement);
+		Element organizationElement = (Element) getReportStream().getReport()
+				.getReports().getOrganization().toXml(doc);
+		reportsElement.appendChild(organizationElement);
 		return doc;
 	}
 
-	public void httpPost(Invocation inv) throws ProgrammerException,
-			UserException, DesignerException, DeployerException {
+	public void httpPost(Invocation inv) throws InternalException,
+			HttpException, DesignerException, DeployerException {
 		// TODO Auto-generated method stub
 
 	}
 
-	public void httpDelete(Invocation inv) throws ProgrammerException,
-			DesignerException, UserException, DeployerException {
+	public void httpDelete(Invocation inv) throws InternalException,
+			DesignerException, HttpException, DeployerException {
 		// TODO Auto-generated method stub
 
 	}
 
-	public Node toXML(Document doc) throws ProgrammerException, UserException {
+	public Node toXml(Document doc) throws InternalException, HttpException {
 		Element element = doc.createElement("stream-report-output");
 		return element;
 	}
 
-	public Node getXML(XmlTree tree, Document doc) throws ProgrammerException,
-			UserException {
+	public Node toXml(Document doc, XmlTree tree) throws InternalException,
+			HttpException {
 		// TODO Auto-generated method stub
 		return null;
 	}
-	
-	public void run(Invocation inv, Document doc) throws ProgrammerException,
-	DesignerException, UserException {
+
+	public void run(Invocation inv, Document doc) throws InternalException,
+			DesignerException, HttpException {
 		/*
-PythonInterpreter interp = new PythonInterpreter();
-Element source = doc.getDocumentElement();
-interp.set("doc", doc);
-interp.set("source", source);
-interp.set("organization", report.getReports().getOrganization());
-interp.set("inv", inv);
-StringWriter out = new StringWriter();
-interp.setOut(out);
-StringWriter err = new StringWriter();
-interp.setErr(err);
-try {
-	interp.execfile(reportScript.getInputStream());
-} catch (PyException e) {
-	inv.getResponse().setContentType("text/html");
-	Object obj = e.value.__tojava__(UserException.class);
-	if (obj instanceof UserException) {
-		throw (UserException) obj;
-	} else {
-		throw UserException.newInvalidParameter(e.toString());
+		 * PythonInterpreter interp = new PythonInterpreter(); Element source =
+		 * doc.getDocumentElement(); interp.set("doc", doc);
+		 * interp.set("source", source); interp.set("organization",
+		 * report.getReports().getOrganization()); interp.set("inv", inv);
+		 * StringWriter out = new StringWriter(); interp.setOut(out);
+		 * StringWriter err = new StringWriter(); interp.setErr(err); try {
+		 * interp.execfile(reportScript.getInputStream()); } catch (PyException
+		 * e) { inv.getResponse().setContentType("text/html"); Object obj =
+		 * e.value.__tojava__(UserException.class); if (obj instanceof
+		 * UserException) { throw (UserException) obj; } else { throw
+		 * UserException.newInvalidParameter(e.toString()); } } if
+		 * (out.toString().length() > 0) { source.appendChild(new
+		 * VFMessage(out.toString()).toXML(doc)); } if (err.toString().length() >
+		 * 0) { source.appendChild(new VFMessage(err.toString()).toXML(doc)); }
+		 */
 	}
-}
-if (out.toString().length() > 0) {
-	source.appendChild(new VFMessage(out.toString()).toXML(doc));
-}
-if (err.toString().length() > 0) {
-	source.appendChild(new VFMessage(err.toString()).toXML(doc));
-}
-*/
-}
 }

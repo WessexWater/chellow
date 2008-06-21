@@ -22,11 +22,9 @@
 
 package net.sf.chellow.monad.types;
 
-import net.sf.chellow.monad.ProgrammerException;
+import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.UserException;
-import net.sf.chellow.monad.VFMessage;
-import net.sf.chellow.monad.VFParameter;
-
+import net.sf.chellow.monad.MonadMessage;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 
@@ -48,19 +46,17 @@ public class MonadInteger extends MonadObject {
 	public MonadInteger() {
 	}
 
-	public MonadInteger(int intValue) throws UserException, ProgrammerException {
+	public MonadInteger(int intValue) throws InternalException, UserException {
 		update(intValue);
 	}
 
-	public MonadInteger(String label, String integer) throws UserException,
-			ProgrammerException {
+	public MonadInteger(String label, String integer) throws InternalException, UserException {
 		super();
 		setLabel(label);
 		update(integer);
 	}
 
-	public MonadInteger(String integer) throws UserException,
-			ProgrammerException {
+	public MonadInteger(String integer) throws InternalException, UserException {
 		this(null, integer);
 	}
 
@@ -68,32 +64,23 @@ public class MonadInteger extends MonadObject {
 		return integer;
 	}
 
-	public void update(String integer) throws UserException,
-			ProgrammerException {
+	public void update(String integer) throws InternalException, UserException {
 		try {
 			update(new Integer(integer));
 		} catch (NumberFormatException e) {
-			throw UserException.newInvalidParameter(new VFMessage(
+			throw new UserException(
 					"The integer '" + getLabel() + "' is malformed. "
-							+ e.getMessage() + ".", new VFParameter[] {
-							new VFParameter("code", "malformed_integer"),
-							new VFParameter("note", e.getMessage()) }));
+							+ e.getMessage() + ".");
 		}
 	}
 
-	public void update(Integer integer) throws UserException,
-			ProgrammerException {
+	public void update(Integer integer) throws InternalException, UserException {
 		if ((min != null) && (integer.intValue() < min.intValue())) {
-			throw UserException.newInvalidParameter(new VFMessage(
-					VFMessage.NUMBER_TOO_SMALL, new VFParameter[] {
-							new VFParameter("number", integer.toString()),
-							new VFParameter("min", min.toString()) }));
+			throw new UserException(MonadMessage.NUMBER_TOO_SMALL);
 		}
 		if ((max != null) && (integer.intValue() > max.intValue())) {
-			throw UserException.newInvalidParameter(new VFMessage(
-					VFMessage.NUMBER_TOO_BIG, new VFParameter[] {
-							new VFParameter("number", integer.toString()),
-							new VFParameter("max", max.toString()) }));
+			throw new UserException(
+					MonadMessage.NUMBER_TOO_BIG);
 		}
 		setInteger(integer);
 	}
@@ -118,7 +105,7 @@ public class MonadInteger extends MonadObject {
 		this.max = maximum;
 	}
 
-	public Attr toXML(Document doc) {
+	public Attr toXml(Document doc) {
 		return toXml(doc, getLabel() == null ? getTypeName() : getLabel(),
 				integer);
 	}

@@ -26,10 +26,11 @@ import java.util.Date;
 
 import net.sf.chellow.billing.Service;
 import net.sf.chellow.monad.Hiber;
+import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.Invocation;
-import net.sf.chellow.monad.ProgrammerException;
+import net.sf.chellow.monad.NotFoundException;
+import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Urlable;
-import net.sf.chellow.monad.UserException;
 import net.sf.chellow.monad.types.MonadBoolean;
 import net.sf.chellow.monad.types.MonadDate;
 import net.sf.chellow.monad.types.MonadString;
@@ -41,17 +42,15 @@ import org.w3c.dom.Element;
 public abstract class Snag extends PersistentEntity implements Cloneable,
 		Urlable {
 
-	static public Snag getSnag(Long id) throws UserException,
-			ProgrammerException {
+	static public Snag getSnag(Long id) throws InternalException, NotFoundException {
 		Snag snag = (Snag) Hiber.session().get(Snag.class, id);
 		if (snag == null) {
-			throw UserException.newNotFound();
+			throw new NotFoundException();
 		}
 		return snag;
 	}
 
-	static public Snag getSnag(String id) throws UserException,
-			ProgrammerException {
+	static public Snag getSnag(String id) throws InternalException, NotFoundException {
 		return getSnag(Long.parseLong(id));
 	}
 
@@ -68,8 +67,7 @@ public abstract class Snag extends PersistentEntity implements Cloneable,
 	public Snag() {
 	}
 
-	public Snag(String description) throws ProgrammerException,
-			UserException {
+	public Snag(String description) throws InternalException {
 		setDateCreated(new Date());
 		this.description = description;
 		this.isIgnored = false;
@@ -117,8 +115,7 @@ public abstract class Snag extends PersistentEntity implements Cloneable,
 		this.progress = progress;
 	}
 
-	public void resolve(boolean isIgnored) throws ProgrammerException,
-			UserException {
+	public void resolve(boolean isIgnored) throws InternalException {
 		setDateResolved(new Date());
 		setIsIgnored(isIgnored);
 	}
@@ -131,8 +128,8 @@ public abstract class Snag extends PersistentEntity implements Cloneable,
 	public void update() {
 	}
 
-	public Element toXML(Document doc) throws ProgrammerException, UserException {
-		Element element = (Element) super.toXML(doc);
+	public Element toXml(Document doc) throws HttpException {
+		Element element = (Element) super.toXml(doc);
 		element.appendChild(MonadDate.toXML(dateCreated, "created", doc));
 		if (dateResolved != null) {
 			element.appendChild(MonadDate.toXML(dateResolved, "resolved", doc));
@@ -143,24 +140,22 @@ public abstract class Snag extends PersistentEntity implements Cloneable,
 		return element;
 	}
 
-	public Snag copy() throws ProgrammerException {
+	public Snag copy() throws InternalException {
 		Snag cloned;
 		try {
 			cloned = (Snag) super.clone();
 		} catch (CloneNotSupportedException e) {
-			throw new ProgrammerException(e);
+			throw new InternalException(e);
 		}
 		cloned.setId(null);
 		return cloned;
 	}
 
-	public Urlable getChild(UriPathElement uriId) throws ProgrammerException,
-			UserException {
-		throw UserException.newNotFound();
+	public Urlable getChild(UriPathElement uriId) throws InternalException, NotFoundException {
+		throw new NotFoundException();
 	}
 
-	public void httpPost(Invocation inv) throws ProgrammerException,
-			UserException {
+	public void httpPost(Invocation inv) throws HttpException {
 		if (inv.hasParameter("ignore")) {
 			boolean ignore = inv.getBoolean("ignore");
 			boolean ignored = getIsIgnored();

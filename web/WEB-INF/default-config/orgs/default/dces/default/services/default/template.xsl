@@ -181,7 +181,7 @@
 						<a href="hh-data-imports/">HH data imports</a>
 					</li>
 					<li>
-						<a href="snags-channel/">Channel Snags</a>
+						<a href="channel-snags/">Channel Snags</a>
 					</li>
 					<li>
 						<a href="snags-site/">Site Snags</a>

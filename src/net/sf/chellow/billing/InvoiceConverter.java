@@ -24,11 +24,11 @@ package net.sf.chellow.billing;
 
 import java.util.List;
 
-import net.sf.chellow.monad.ProgrammerException;
-import net.sf.chellow.monad.UserException;
+import net.sf.chellow.monad.InternalException;
+import net.sf.chellow.monad.HttpException;
 
 public interface InvoiceConverter {
-	public List<InvoiceRaw> getRawInvoices() throws UserException, ProgrammerException;
+	public List<InvoiceRaw> getRawInvoices() throws HttpException, InternalException;
 
 	public String getProgress();
 }

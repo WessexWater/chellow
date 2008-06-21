@@ -25,7 +25,8 @@ package net.sf.chellow.monad.types;
 import java.net.URI;
 import java.net.URISyntaxException;
 
-import net.sf.chellow.monad.ProgrammerException;
+import net.sf.chellow.monad.InternalException;
+import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.UserException;
 
 public class MonadUri extends MonadString {
@@ -33,50 +34,46 @@ public class MonadUri extends MonadString {
 		setTypeName("URI");
 	}
 
-	public MonadUri(String uri) throws UserException, ProgrammerException {
+	public MonadUri(String uri) throws InternalException, UserException {
 		this(null, uri);
 	}
 
-	public MonadUri(String label, String uri) throws UserException,
-			ProgrammerException {
+	public MonadUri(String label, String uri) throws InternalException, UserException {
 		this();
 		setLabel(label);
 		update(uri);
 	}
 
-	public void update(String uri) throws UserException, ProgrammerException {
+	public void update(String uri) throws UserException, InternalException {
 		try {
 			super.update(new URI(uri).toString());
 		} catch (URISyntaxException e) {
-			throw UserException.newInvalidParameter("Invalid URL: "
+			throw new UserException("Invalid URL: "
 					+ e.getMessage());
 		}
 	}
 
-	public URI toUri() throws ProgrammerException {
+	public URI toUri() throws InternalException {
 		try {
 			return new URI(toString());
 		} catch (URISyntaxException e) {
-			throw new ProgrammerException(e);
+			throw new InternalException(e);
 		}
 	}
 
-	public MonadUri resolve(MonadUri uri) throws ProgrammerException,
-			UserException {
+	public MonadUri resolve(MonadUri uri) throws InternalException, UserException {
 		return new MonadUri(toUri().resolve(uri.toUri()).toString());
 	}
 
-	public MonadUri resolve(String uri) throws ProgrammerException,
-			UserException {
+	public MonadUri resolve(String uri) throws InternalException, UserException {
 		return resolve(new MonadUri(uri));
 	}
 
-	public MonadUri resolve(Long uri) throws ProgrammerException, UserException {
+	public MonadUri resolve(Long uri) throws InternalException, HttpException {
 		return resolve(new MonadUri(uri.toString()));
 	}
 
-	public MonadUri append(String string) throws ProgrammerException,
-			UserException {
+	public MonadUri append(String string) throws InternalException, UserException {
 		return new MonadUri(getString() + string);
 	}
 }

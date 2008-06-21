@@ -27,8 +27,9 @@ import net.sf.chellow.monad.DesignerException;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.Invocation;
 import net.sf.chellow.monad.MonadUtils;
-import net.sf.chellow.monad.ProgrammerException;
+import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Urlable;
+import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.UserException;
 import net.sf.chellow.monad.XmlTree;
 import net.sf.chellow.monad.types.MonadUri;
@@ -40,13 +41,13 @@ import org.w3c.dom.Element;
 
 @SuppressWarnings("serial")
 public class MopService extends Service {
-	public static MopService getMopService(Long id) throws UserException,
-			ProgrammerException {
+	public static MopService getMopService(Long id) throws HttpException,
+			InternalException {
 		MopService contract = (MopService) Hiber.session().get(
 				MopService.class, id);
 		if (contract == null) {
-			throw UserException
-					.newOk("There isn't a meter operator contract with that id.");
+			throw new UserException
+					("There isn't a meter operator contract with that id.");
 		}
 		return contract;
 	}
@@ -58,8 +59,8 @@ public class MopService extends Service {
 	}
 
 	public MopService(int type, String name, HhEndDate startDate,
-			String chargeScript, Mop mop) throws UserException,
-			ProgrammerException, DesignerException {
+			String chargeScript, Mop mop) throws HttpException,
+			InternalException, DesignerException {
 		super(type, name, startDate, chargeScript);
 		setProvider(mop);
 	}
@@ -81,40 +82,40 @@ public class MopService extends Service {
 		return isEqual;
 	}
 
-	public MonadUri getUri() throws ProgrammerException, UserException {
+	public MonadUri getUri() throws InternalException, HttpException {
 		return provider.contractsInstance().getUri().resolve(getUriId())
 				.append("/");
 	}
 
-	public void httpPost(Invocation inv) throws ProgrammerException,
-			UserException, DesignerException, DeployerException {
+	public void httpPost(Invocation inv) throws InternalException,
+			HttpException, DesignerException, DeployerException {
 		int type = inv.getInteger("type");
 		String name = inv.getString("name");
 		String chargeScript = inv.getString("charge-script");
 		if (!inv.isValid()) {
-			throw UserException.newInvalidParameter(document());
+			throw new UserException(document());
 		}
 		update(type, name, chargeScript);
 		Hiber.commit();
 		inv.sendOk(document());
 	}
 
-	private Document document() throws ProgrammerException, UserException,
+	private Document document() throws InternalException, HttpException,
 			DesignerException {
 		Document doc = MonadUtils.newSourceDocument();
 		Element source = doc.getDocumentElement();
-		source.appendChild(getXML(new XmlTree("supplier").put("organization"),
-				doc));
+		source.appendChild(toXml(doc,
+				new XmlTree("supplier").put("organization")));
 		return doc;
 	}
 
 	public void httpGet(Invocation inv) throws DesignerException,
-			ProgrammerException, UserException, DeployerException {
+			InternalException, HttpException, DeployerException {
 		inv.sendOk(document());
 	}
 
-	public void httpDelete(Invocation inv) throws ProgrammerException,
-			UserException {
+	public void httpDelete(Invocation inv) throws InternalException,
+			HttpException {
 		// TODO Auto-generated method stub
 
 	}
@@ -124,8 +125,8 @@ public class MopService extends Service {
 				+ getName();
 	}
 
-	public Urlable getChild(UriPathElement uriId) throws ProgrammerException,
-			UserException {
+	public Urlable getChild(UriPathElement uriId) throws InternalException,
+			HttpException {
 		// TODO Auto-generated method stub
 		return null;
 	}

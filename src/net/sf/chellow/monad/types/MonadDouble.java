@@ -22,11 +22,10 @@
 
 package net.sf.chellow.monad.types;
 
-import net.sf.chellow.monad.ProgrammerException;
+import net.sf.chellow.monad.InternalException;
+import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.UserException;
-import net.sf.chellow.monad.VFMessage;
-import net.sf.chellow.monad.VFParameter;
-
+import net.sf.chellow.monad.MonadMessage;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 
@@ -46,18 +45,18 @@ public class MonadDouble extends MonadObject {
 	protected MonadDouble() {
 	}
 
-	public MonadDouble(String label, String doubleString) throws UserException,
-			ProgrammerException {
+	public MonadDouble(String label, String doubleString) throws HttpException,
+			InternalException {
 		this(null, label, doubleString, null, null);
 	}
 
 	protected MonadDouble(String typeName, String doubleString, double min,
-			double max) throws UserException, ProgrammerException {
+			double max) throws HttpException, InternalException {
 		this(typeName, null, doubleString, new Double(min), new Double(max));
 	}
 
 	protected MonadDouble(String typeName, String name, String doubleString,
-			Double min, Double max) throws UserException, ProgrammerException {
+			Double min, Double max) throws HttpException, InternalException {
 		super(typeName, name);
 		this.min = min;
 		this.max = max;
@@ -65,9 +64,8 @@ public class MonadDouble extends MonadObject {
 		try {
 			setDouble(new Double(doubleString));
 		} catch (NumberFormatException e) {
-			throw UserException
-					.newInvalidParameter(new VFMessage("malformed_double",
-							new VFParameter("note", e.getMessage())));
+			throw new UserException
+					("malformed_double " + e.getMessage());
 		}
 	}
 
@@ -75,8 +73,8 @@ public class MonadDouble extends MonadObject {
 		setDouble(new Double(doubleValue));
 	}
 
-	public MonadDouble(String doubleString) throws UserException,
-			ProgrammerException {
+	public MonadDouble(String doubleString) throws HttpException,
+			InternalException {
 		this(null, doubleString);
 	}
 
@@ -88,25 +86,21 @@ public class MonadDouble extends MonadObject {
 		this.doubleValue = doubleValue;
 	}
 
-	public void update(Double doubleValue) throws UserException,
-			ProgrammerException {
+	public void update(Double doubleValue) throws HttpException,
+			InternalException {
 
 		if ((min != null) && (doubleValue.doubleValue() < min.intValue())) {
-			throw UserException.newInvalidParameter(new VFMessage(
-					VFMessage.NUMBER_TOO_SMALL, new VFParameter[] {
-							new VFParameter("number", doubleValue.toString()),
-							new VFParameter("min", min.toString()) }));
+			throw new UserException(
+					MonadMessage.NUMBER_TOO_SMALL);
 		}
 		if ((max != null) && (doubleValue.doubleValue() > max.intValue())) {
-			throw UserException.newInvalidParameter(new VFMessage(
-					VFMessage.NUMBER_TOO_BIG, new VFParameter[] {
-							new VFParameter("number", doubleValue.toString()),
-							new VFParameter("max", max.toString()) }));
+			throw new UserException(
+					MonadMessage.NUMBER_TOO_BIG);
 		}
 		setDouble(doubleValue);
 	}
 
-	public Attr toXML(Document doc) {
+	public Attr toXml(Document doc) {
 		return toXml(doc, getLabel(), doubleValue);
 	}
 

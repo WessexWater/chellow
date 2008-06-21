@@ -29,8 +29,10 @@ import net.sf.chellow.monad.DesignerException;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.Invocation;
 import net.sf.chellow.monad.MonadUtils;
-import net.sf.chellow.monad.ProgrammerException;
+import net.sf.chellow.monad.NotFoundException;
+import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Urlable;
+import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.UserException;
 import net.sf.chellow.monad.XmlTree;
 import net.sf.chellow.monad.types.MonadUri;
@@ -44,18 +46,17 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 public class Supplier extends ProviderOrganization {
-	public static Supplier findSupplier(Long id) throws UserException,
-			ProgrammerException {
+	public static Supplier findSupplier(Long id) throws InternalException {
 		return (Supplier) Hiber.session().get(Supplier.class, id);
 	}
 
 	public static void deleteSupplier(Supplier supplier)
-			throws ProgrammerException {
+			throws InternalException {
 		try {
 			Hiber.session().delete(supplier);
 			Hiber.flush();
 		} catch (HibernateException e) {
-			throw new ProgrammerException(e);
+			throw new InternalException(e);
 		}
 	}
 
@@ -66,8 +67,8 @@ public class Supplier extends ProviderOrganization {
 		super(name, organization);
 	}
 
-	public SupplierService getService(String name) throws UserException,
-			ProgrammerException {
+	public SupplierService getService(String name) throws HttpException,
+			InternalException {
 		SupplierService service = (SupplierService) Hiber
 				.session()
 				.createQuery(
@@ -75,14 +76,13 @@ public class Supplier extends ProviderOrganization {
 				.setEntity("provider", this).setString("name", name)
 				.uniqueResult();
 		if (service == null) {
-			throw UserException.newOk("The supplier '" + getName()
+			throw new UserException("The supplier '" + getName()
 					+ "' doesn't have " + "the service '" + name + "'.");
 		}
 		return service;
 	}
 
-	public void httpPost(Invocation inv) throws ProgrammerException,
-			UserException, DesignerException, DeployerException {
+	public void httpPost(Invocation inv) throws HttpException {
 		if (inv.hasParameter("delete")) {
 			getOrganization().deleteSupplier(this);
 			Hiber.commit();
@@ -90,7 +90,7 @@ public class Supplier extends ProviderOrganization {
 		} else if (inv.hasParameter("name")) {
 			String name = inv.getString("name");
 			if (!inv.isValid()) {
-				throw UserException.newInvalidParameter(document());
+				throw new UserException(document());
 			}
 			update(name);
 			Hiber.commit();
@@ -99,42 +99,42 @@ public class Supplier extends ProviderOrganization {
 	}
 
 	public void httpGet(Invocation inv) throws DesignerException,
-			ProgrammerException, UserException, DeployerException {
+			InternalException, HttpException, DeployerException {
 		inv.sendOk(document());
 	}
 
-	private Document document() throws ProgrammerException, UserException,
+	private Document document() throws InternalException, HttpException,
 			DesignerException {
 		Document doc = MonadUtils.newSourceDocument();
 		Element source = doc.getDocumentElement();
-		source.appendChild(getXML(new XmlTree("organization"), doc));
+		source.appendChild(toXml(doc, new XmlTree("organization")));
 		return doc;
 	}
 
-	public MonadUri getUri() throws ProgrammerException, UserException {
+	public MonadUri getUri() throws InternalException, HttpException {
 		return getOrganization().suppliersInstance().getUri().resolve(
 				getUriId()).append("/");
 	}
 
-	public Urlable getChild(UriPathElement uriId) throws ProgrammerException,
-			UserException {
+	public Urlable getChild(UriPathElement uriId) throws InternalException,
+			HttpException {
 		if (SupplierServices.URI_ID.equals(uriId)) {
 			return new SupplierServices(this);
 		} else if (Accounts.URI_ID.equals(uriId)) {
 			return new Accounts(this);
 		} else {
-			throw UserException.newNotFound();
+			throw new NotFoundException();
 		}
 	}
 
-	public void httpDelete(Invocation inv) throws ProgrammerException,
-			DesignerException, UserException, DeployerException {
+	public void httpDelete(Invocation inv) throws InternalException,
+			DesignerException, HttpException, DeployerException {
 		deleteSupplier(this);
 		inv.sendOk();
 	}
 
 	public SupplierService insertService(String name, HhEndDate startDate,
-			String chargeScript) throws UserException, ProgrammerException,
+			String chargeScript) throws HttpException, InternalException,
 			DesignerException {
 		SupplierService service = new SupplierService(name, startDate,
 				chargeScript, this);
@@ -147,16 +147,16 @@ public class Supplier extends ProviderOrganization {
 		return new SupplierServices(this);
 	}
 
-	public void deleteAccount(String reference) throws UserException,
-			ProgrammerException {
+	public void deleteAccount(String reference) throws HttpException,
+			InternalException {
 		Account account = getAccount(reference);
 		if (((Long) Hiber
 				.session()
 				.createQuery(
 						"select count(*) from Mpan mpan where mpan.supplierAccount = :supplierAccount")
 				.setEntity("supplierAccount", account).uniqueResult()) > 0) {
-			throw UserException
-					.newInvalidParameter("An account can't be deleted if there are still MPANs attached to it.");
+			throw new UserException
+					("An account can't be deleted if there are still MPANs attached to it.");
 		}
 		Hiber.session().delete(account);
 		Hiber.flush();
@@ -172,9 +172,9 @@ public class Supplier extends ProviderOrganization {
 				.setEntity("account", account).list();
 	}
 
-	public Element toXML(Document doc) throws ProgrammerException,
-			UserException {
+	public Element toXml(Document doc) throws InternalException,
+			HttpException {
 		setTypeName("supplier");
-		return super.toXML(doc);
+		return super.toXml(doc);
 	}
 }

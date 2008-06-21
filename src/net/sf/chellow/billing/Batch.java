@@ -1,6 +1,6 @@
 /*
  
- Copyright 2005 Meniscus Systems Ltd
+ Copyright 2005, 2008 Meniscus Systems Ltd
  
  This file is part of Chellow.
 
@@ -30,8 +30,10 @@ import net.sf.chellow.monad.DesignerException;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.Invocation;
 import net.sf.chellow.monad.MonadUtils;
-import net.sf.chellow.monad.ProgrammerException;
+import net.sf.chellow.monad.NotFoundException;
+import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Urlable;
+import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.UserException;
 import net.sf.chellow.monad.XmlTree;
 import net.sf.chellow.monad.types.MonadString;
@@ -49,21 +51,21 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
 public class Batch extends PersistentEntity implements Urlable {
-	public static Batch getBatch(Long id) throws UserException,
-			ProgrammerException {
+	public static Batch getBatch(Long id) throws HttpException,
+			InternalException {
 		Batch batch = (Batch) Hiber.session().get(Batch.class, id);
 		if (batch == null) {
-			throw UserException.newOk("There isn't a batch with that id.");
+			throw new UserException("There isn't a batch with that id.");
 		}
 		return batch;
 	}
 
-	public static void deleteBatch(Batch batch) throws ProgrammerException {
+	public static void deleteBatch(Batch batch) throws InternalException {
 		try {
 			Hiber.session().delete(batch);
 			Hiber.flush();
 		} catch (HibernateException e) {
-			throw new ProgrammerException(e);
+			throw new InternalException(e);
 		}
 	}
 
@@ -100,20 +102,20 @@ public class Batch extends PersistentEntity implements Urlable {
 		setReference(reference);
 	}
 
-	public Node toXML(Document doc) throws ProgrammerException, UserException {
+	public Node toXml(Document doc) throws HttpException {
 		setTypeName("batch");
-		Element element = (Element) super.toXML(doc);
+		Element element = (Element) super.toXml(doc);
 		element.setAttributeNode((Attr) MonadString.toXml(doc, "reference",
 				reference));
 		return element;
 	}
 
-	public void httpPost(Invocation inv) throws ProgrammerException,
-			UserException, DesignerException, DeployerException {
+	public void httpPost(Invocation inv) throws InternalException,
+			HttpException, DesignerException, DeployerException {
 		if (inv.hasParameter("delete")) {
 			try {
 				delete();
-			} catch (UserException e) {
+			} catch (HttpException e) {
 				e.setDocument(document());
 				throw e;
 			}
@@ -122,7 +124,7 @@ public class Batch extends PersistentEntity implements Urlable {
 		} else {
 			String reference = inv.getString("reference");
 			if (!inv.isValid()) {
-				throw UserException.newInvalidParameter(document());
+				throw new UserException(document());
 			}
 			update(reference);
 			Hiber.commit();
@@ -131,7 +133,7 @@ public class Batch extends PersistentEntity implements Urlable {
 	}
 
 	@SuppressWarnings("unchecked")
-	private void delete() throws ProgrammerException, UserException {
+	private void delete() throws InternalException, HttpException {
 		for (Invoice invoice : (List<Invoice>) Hiber.session().createQuery(
 				"from Invoice invoice where invoice.batch = :batch").setEntity(
 				"batch", this).list()) {
@@ -140,38 +142,38 @@ public class Batch extends PersistentEntity implements Urlable {
 		Hiber.session().delete(this);
 	}
 
-	private Document document() throws ProgrammerException, UserException,
+	private Document document() throws InternalException, HttpException,
 			DesignerException {
 		Document doc = MonadUtils.newSourceDocument();
 		Element source = doc.getDocumentElement();
-		source.appendChild(getXML(new XmlTree("service", new XmlTree(
-				"provider", new XmlTree("organization"))), doc));
+		source.appendChild(toXml(doc, new XmlTree("service", new XmlTree(
+						"provider", new XmlTree("organization")))));
 		return doc;
 	}
 
 	public void httpGet(Invocation inv) throws DesignerException,
-			ProgrammerException, UserException, DeployerException {
+			InternalException, HttpException, DeployerException {
 		inv.sendOk(document());
 	}
 
-	public MonadUri getUri() throws ProgrammerException, UserException {
+	public MonadUri getUri() throws InternalException, HttpException {
 		return service.batchesInstance().getUri().resolve(getUriId()).append(
 				"/");
 	}
 
-	public Urlable getChild(UriPathElement uriId) throws ProgrammerException,
-			UserException {
+	public Urlable getChild(UriPathElement uriId) throws InternalException,
+			HttpException {
 		if (InvoiceImports.URI_ID.equals(uriId)) {
 			return invoiceImportsInstance();
 		} else if (Invoices.URI_ID.equals(uriId)) {
 			return invoicesInstance();
 		} else {
-			throw UserException.newNotFound();
+			throw new NotFoundException();
 		}
 	}
 
-	public void httpDelete(Invocation inv) throws ProgrammerException,
-			DesignerException, UserException, DeployerException {
+	public void httpDelete(Invocation inv) throws InternalException,
+			DesignerException, HttpException, DeployerException {
 		deleteBatch(this);
 		inv.sendOk();
 	}
@@ -185,8 +187,8 @@ public class Batch extends PersistentEntity implements Urlable {
 	}
 
 	@SuppressWarnings("unchecked")
-	Invoice insertInvoice(InvoiceRaw rawInvoice) throws UserException,
-			ProgrammerException {
+	Invoice insertInvoice(InvoiceRaw rawInvoice) throws HttpException,
+			InternalException {
 		Invoice invoice = new Invoice(this, rawInvoice);
 		Hiber.session().save(invoice);
 		Hiber.flush();
@@ -205,8 +207,7 @@ public class Batch extends PersistentEntity implements Urlable {
 							"startDate", rawInvoice.getStartDate().getDate())
 					.list();
 			if (candidateMpans.isEmpty()) {
-				throw UserException
-						.newInvalidParameter("Problem with invoice '"
+				throw new UserException("Problem with invoice '"
 								+ rawInvoice.getReference()
 								+ ". The invoice needs to be attached to the MPANs "
 								+ rawInvoice.getMpanText() + " but the MPAN "

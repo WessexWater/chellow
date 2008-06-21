@@ -5,9 +5,10 @@ import net.sf.chellow.monad.DesignerException;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.Invocation;
 import net.sf.chellow.monad.MonadUtils;
-import net.sf.chellow.monad.ProgrammerException;
+import net.sf.chellow.monad.NotFoundException;
+import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Urlable;
-import net.sf.chellow.monad.UserException;
+import net.sf.chellow.monad.HttpException;
 
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
@@ -22,19 +23,18 @@ public class Sources implements Urlable {
 	static {
 		try {
 			URI_ID = new UriPathElement("sources");
-		} catch (UserException e) {
+		} catch (HttpException e) {
 			throw new RuntimeException(e);
-		} catch (ProgrammerException e) {
-			throw new RuntimeException(e);		}
+		}
 	}
 
-	static public Source getSource(SourceCode code) throws UserException,
-			ProgrammerException {
+	static public Source getSource(SourceCode code) throws HttpException,
+			InternalException {
 		Source source = (Source) Hiber.session().createQuery(
 				"from Source source where source.code.string = :sourceCode")
 				.setString("sourceCode", code.toString()).uniqueResult();
 		if (source == null) {
-			throw UserException.newNotFound();
+			throw new NotFoundException();
 		}
 		return source;
 	}
@@ -46,45 +46,45 @@ public class Sources implements Urlable {
 		return URI_ID;
 	}
 
-	public MonadUri getUrlPath() throws ProgrammerException, UserException {
+	public MonadUri getUrlPath() throws InternalException, HttpException {
 		return Chellow.getUrlableRoot().getUri().resolve(getUriId());
 	}
 
 	public void httpGet(Invocation inv) throws DesignerException,
-			ProgrammerException, UserException, DeployerException {
+			InternalException, HttpException, DeployerException {
 		Document doc = MonadUtils.newSourceDocument();
 		Element sourceElement = (Element) doc.getFirstChild();
 
 		for (Source source : Source.getSources()) {
-			sourceElement.appendChild(source.toXML(doc));
+			sourceElement.appendChild(source.toXml(doc));
 		}
 		inv.sendOk(doc);
 	}
 
-	public void httpPost(Invocation inv) throws ProgrammerException,
-			UserException {
+	public void httpPost(Invocation inv) throws InternalException,
+			HttpException {
 		// TODO Auto-generated method stub
 
 	}
 
-	public Source getChild(UriPathElement urlId) throws UserException,
-			ProgrammerException {
+	public Source getChild(UriPathElement urlId) throws HttpException,
+			InternalException {
 		Source source = (Source) Hiber.session().createQuery(
 				"from Source source where source.id = :sourceId").setLong(
 				"sourceId", Long.parseLong(urlId.toString())).uniqueResult();
 		if (source == null) {
-			throw UserException.newNotFound();
+			throw new NotFoundException();
 		}
 		return source;
 	}
 
-	public void httpDelete(Invocation inv) throws ProgrammerException,
-			DesignerException, UserException, DeployerException {
+	public void httpDelete(Invocation inv) throws InternalException,
+			DesignerException, HttpException, DeployerException {
 		// TODO Auto-generated method stub
 
 	}
 
-	public MonadUri getUri() throws ProgrammerException, UserException {
+	public MonadUri getUri() throws InternalException, HttpException {
 		return Chellow.getUrlableRoot().getUri().resolve(getUri());
 	}
 }

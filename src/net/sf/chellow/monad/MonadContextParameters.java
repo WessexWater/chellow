@@ -40,8 +40,7 @@ public class MonadContextParameters {
 
 	private ServletContext context;
 
-	public MonadContextParameters(ServletContext context)
-			throws DeployerException, ProgrammerException {
+	public MonadContextParameters(ServletContext context) throws HttpException {
 		String mailHostStr;
 
 		if ((this.context = context) == null) {
@@ -55,7 +54,7 @@ public class MonadContextParameters {
 			to = InternetAddress.parse(
 					getRequiredParameter(PARAMETER_LOG_EMAIL_TO), true);
 			mailHost = mailHostStr;
-			
+
 		} catch (AddressException e) {
 			throw new DeployerException("Invalid email address in "
 					+ "context initialization parameter :" + e.getMessage());
@@ -63,7 +62,7 @@ public class MonadContextParameters {
 	}
 
 	private String getRequiredParameter(String parameterName)
-			throws DeployerException {
+			throws HttpException {
 		String value;
 
 		value = context.getInitParameter(parameterName);

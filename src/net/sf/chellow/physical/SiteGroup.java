@@ -7,8 +7,8 @@ import java.util.Map;
 
 import net.sf.chellow.billing.DceService;
 import net.sf.chellow.monad.Hiber;
-import net.sf.chellow.monad.ProgrammerException;
-import net.sf.chellow.monad.UserException;
+import net.sf.chellow.monad.InternalException;
+import net.sf.chellow.monad.HttpException;
 
 public class SiteGroup {
 	public static final String EXPORT_NET_GT_IMPORT_GEN = "Export to net > import from generators.";
@@ -47,8 +47,8 @@ public class SiteGroup {
 		return supplies;
 	}
 
-	public Map<String, List<Float>> hhData() throws ProgrammerException,
-			UserException {
+	public Map<String, List<Float>> hhData() throws InternalException,
+			HttpException {
 		Map<String, List<Float>> map = new HashMap<String, List<Float>>();
 		List<Float> importFromNet = new ArrayList<Float>();
 		map.put("import-from-net", importFromNet);
@@ -113,7 +113,7 @@ public class SiteGroup {
 
 	public void addDceSnag(String description, HhEndDate startDate,
 			HhEndDate finishDate, boolean isResolved)
-			throws ProgrammerException, UserException {
+			throws InternalException, HttpException {
 		// which sevice?
 		Site site = sites.get(0);
 		DceService service = getDceService(startDate);
@@ -139,8 +139,8 @@ public class SiteGroup {
 	}
 
 	@SuppressWarnings("unchecked")
-	private DceService getDceService(HhEndDate date) throws UserException,
-			ProgrammerException {
+	private DceService getDceService(HhEndDate date) throws HttpException,
+			InternalException {
 		List<Long> serviceIds = (List<Long>) Hiber
 				.session()
 				.createQuery(
@@ -153,7 +153,7 @@ public class SiteGroup {
 
 	@SuppressWarnings("unchecked")
 	public void resolveDceSnag(String description, HhEndDate startDate,
-			HhEndDate finishDate) throws ProgrammerException, UserException {
+			HhEndDate finishDate) throws InternalException, HttpException {
 		if (!startDate.getDate().after(finishDate.getDate())) {
 			for (SnagSite snag : (List<SnagSite>) Hiber
 					.session()

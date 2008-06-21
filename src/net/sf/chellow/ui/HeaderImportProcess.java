@@ -16,10 +16,11 @@ import net.sf.chellow.monad.DesignerException;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.Invocation;
 import net.sf.chellow.monad.MonadUtils;
-import net.sf.chellow.monad.ProgrammerException;
+import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Urlable;
+import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.UserException;
-import net.sf.chellow.monad.VFMessage;
+import net.sf.chellow.monad.MonadMessage;
 import net.sf.chellow.monad.XmlDescriber;
 import net.sf.chellow.monad.XmlTree;
 import net.sf.chellow.monad.types.MonadBoolean;
@@ -63,11 +64,11 @@ public class HeaderImportProcess extends Thread implements Urlable,
 	private MonadUri uri;
 
 	public HeaderImportProcess(MonadUri uri, FileItem item)
-			throws ProgrammerException, UserException, DeployerException {
+			throws InternalException, HttpException, DeployerException {
 		super("Import");
 		this.uri = uri;
 		if (item.getSize() == 0) {
-			throw UserException.newOk("File has zero length");
+			throw new UserException("File has zero length");
 		}
 		try {
 			shredder = new CSVParser(new InputStreamReader(item
@@ -79,12 +80,11 @@ public class HeaderImportProcess extends Thread implements Urlable,
 			if (titles.length < 2
 					|| !titles[0].trim().toLowerCase().equals("action")
 					|| !titles[1].trim().toLowerCase().equals("type")) {
-				throw UserException
-						.newOk("The first line of the CSV must contain the titles "
+				throw new UserException("The first line of the CSV must contain the titles "
 								+ "'Action, Type'.");
 			}
 		} catch (IOException e) {
-			throw new ProgrammerException(e);
+			throw new InternalException(e);
 		}
 	}
 
@@ -113,27 +113,26 @@ public class HeaderImportProcess extends Thread implements Urlable,
 					&& !shouldHalt(); values = shredder.getLine()) {
 				setLineNumber(shredder.lastLineNumber());
 				if (values.length < 2) {
-					throw UserException
-							.newOk("There must be an 'Action' field followed "
+					throw new UserException("There must be an 'Action' field followed "
 									+ "by a 'Type' field.");
 				}
 				processItem(organization, values);
 				Hiber.close();
 			}
 			if (shouldHalt()) {
-				source.appendChild(new VFMessage(
-						"The import has been cancelled.").toXML(doc));
+				source.appendChild(new MonadMessage(
+						"The import has been cancelled.").toXml(doc));
 			} else {
-				source.appendChild(new VFMessage(
-						"The file has been imported successfully.").toXML(doc));
+				source.appendChild(new MonadMessage(
+						"The file has been imported successfully.").toXml(doc));
 			}
-		} catch (UserException e) {
-			source.appendChild(new VFMessage(
+		} catch (HttpException e) {
+			source.appendChild(new MonadMessage(
 					"There are errors that need to be corrected before "
-							+ "the file can be imported.").toXML(doc));
+							+ "the file can be imported.").toXml(doc));
 		} catch (Throwable e) {
-			source.appendChild(new VFMessage("Programmer Exception: "
-					+ e.getClass() + " " + e.getMessage()).toXML(doc));
+			source.appendChild(new MonadMessage("Programmer Exception: "
+					+ e.getClass() + " " + e.getMessage()).toXml(doc));
 			ChellowLogger.getLogger().log(Level.SEVERE,
 					"From header import process", e);
 		} finally {
@@ -143,7 +142,7 @@ public class HeaderImportProcess extends Thread implements Urlable,
 	}
 
 	private void processItem(Organization organization, String[] values)
-			throws ProgrammerException, DeployerException, UserException,
+			throws InternalException, DeployerException, HttpException,
 			DesignerException {
 		String action = values[0].trim().toLowerCase();
 		String type = values[1].trim().toLowerCase();
@@ -154,14 +153,12 @@ public class HeaderImportProcess extends Thread implements Urlable,
 			csvElement.appendChild(getField("Type", values[1]));
 			if (!action.equals("insert") && !action.equals("update")
 					&& !action.equals("delete")) {
-				throw UserException
-						.newInvalidParameter("The 'Action' field can "
+				throw new UserException("The 'Action' field can "
 								+ "only be 'insert', 'update', 'delete'.");
 			}
 			if (type.equals("site")) {
 				if (values.length < 3) {
-					throw UserException
-							.newOk("There aren't enough fields in this row");
+					throw new UserException("There aren't enough fields in this row");
 				}
 				Site site = null;
 				String codeStr = values[2];
@@ -174,8 +171,7 @@ public class HeaderImportProcess extends Thread implements Urlable,
 				} else {
 					site = organization.getSitesInstance().getSite(code);
 					if (site == null) {
-						throw UserException
-								.newOk("There is no site with this code.");
+						throw new UserException("There is no site with this code.");
 					}
 					if (action.equals("delete")) {
 						organization.deleteSite(site);
@@ -192,8 +188,7 @@ public class HeaderImportProcess extends Thread implements Urlable,
 			} else if (type.equals("supply")) {
 				if (action.equals("insert")) {
 					if (values.length < 21) {
-						throw UserException
-								.newInvalidParameter("There aren't enough fields in this row");
+						throw new UserException("There aren't enough fields in this row");
 					}
 					String siteCodeStr = values[2];
 					csvElement.appendChild(getField("Site Code", siteCodeStr));
@@ -313,8 +308,7 @@ public class HeaderImportProcess extends Thread implements Urlable,
 									sourceCodeStr), null);
 				} else if (action.equals("update")) {
 					if (values.length < 5) {
-						throw UserException
-								.newOk("There aren't enough fields in this row");
+						throw new UserException("There aren't enough fields in this row");
 					}
 					String mpanCoreStr = values[2];
 					csvElement.appendChild(getField("MPAN Core", mpanCoreStr));
@@ -335,8 +329,7 @@ public class HeaderImportProcess extends Thread implements Urlable,
 			} else if (type.equals("supply-generation")) {
 				if (action.equals("update")) {
 					if (values.length < 28) {
-						throw UserException
-								.newOk("There aren't enough fields in this row");
+						throw new UserException("There aren't enough fields in this row");
 					}
 					String mpanCoreStr = values[2];
 					csvElement.appendChild(getField("MPAN Core", mpanCoreStr));
@@ -354,8 +347,7 @@ public class HeaderImportProcess extends Thread implements Urlable,
 							.getGeneration(dateStr.length() == 0 ? null
 									: new HhEndDate(dateStr));
 					if (supplyGeneration == null) {
-						throw UserException
-								.newInvalidParameter("There isn't a generation at this date.");
+						throw new UserException("There isn't a generation at this date.");
 					}
 					String meterSerialNumber = values[6];
 					Meter meter = null;
@@ -405,8 +397,7 @@ public class HeaderImportProcess extends Thread implements Urlable,
 					if (importMpanTop != null) {
 						if (importAgreedSupplyCapacityStr.equals(NO_CHANGE)) {
 							if (existingImportMpan == null) {
-								throw UserException
-										.newInvalidParameter("There isn't an existing import MPAN.");
+								throw new UserException("There isn't an existing import MPAN.");
 							} else {
 								importAgreedSupplyCapacity = existingImportMpan
 										.getAgreedSupplyCapacity();
@@ -457,8 +448,7 @@ public class HeaderImportProcess extends Thread implements Urlable,
 							Dce importDce = null;
 							if (importDceStr.equals(NO_CHANGE)) {
 								if (existingImportMpan.getDceService() == null) {
-									throw UserException
-											.newInvalidParameter("There isn't an existing DCE contract");
+									throw new UserException("There isn't an existing DCE contract");
 								} else {
 									importDce = existingImportMpan
 											.getDceService().getProvider();
@@ -470,14 +460,12 @@ public class HeaderImportProcess extends Thread implements Urlable,
 							if (importContractDceStr.equals(NO_CHANGE)) {
 								if (existingImportMpan == null
 										|| existingImportMpan.getDceService() == null) {
-									throw UserException
-											.newInvalidParameter("There isn't an existing contract");
+									throw new UserException("There isn't an existing contract");
 								} else if (importDceStr.equals(NO_CHANGE)) {
 									importContractDce = existingImportMpan
 											.getDceService();
 								} else {
-									throw UserException
-											.newInvalidParameter("If there's a change in "
+									throw new UserException("If there's a change in "
 													+ "supplier, there must also be a change in contract.");
 								}
 							} else {
@@ -491,8 +479,7 @@ public class HeaderImportProcess extends Thread implements Urlable,
 						Supplier importSupplier = null;
 						if (importSupplierName.equals(NO_CHANGE)) {
 							if (existingImportMpan == null) {
-								throw UserException
-										.newInvalidParameter("There isn't an existing import supplier.");
+								throw new UserException("There isn't an existing import supplier.");
 							}
 							importSupplier = existingImportMpan
 									.getSupplierService().getProvider();
@@ -506,8 +493,7 @@ public class HeaderImportProcess extends Thread implements Urlable,
 								importSupplierAccountReference));
 						if (importSupplierAccountReference.equals(NO_CHANGE)) {
 							if (existingImportMpan == null) {
-								throw UserException
-										.newInvalidParameter("There isn't an existing import supplier.");
+								throw new UserException("There isn't an existing import supplier.");
 							}
 							importAccountSupplier = existingImportMpan
 									.getSupplierAccount();
@@ -521,8 +507,7 @@ public class HeaderImportProcess extends Thread implements Urlable,
 								importContractSupplierName));
 						if (importContractSupplierName.equals(NO_CHANGE)) {
 							if (existingImportMpan == null) {
-								throw UserException
-										.newInvalidParameter("There isn't an existing import supplier.");
+								throw new UserException("There isn't an existing import supplier.");
 							}
 							importContractSupplier = existingImportMpan
 									.getSupplierService();
@@ -563,8 +548,7 @@ public class HeaderImportProcess extends Thread implements Urlable,
 					if (exportMpanTop != null) {
 						if (exportAgreedSupplyCapacityStr.equals(NO_CHANGE)) {
 							if (existingExportMpan == null) {
-								throw UserException
-										.newInvalidParameter("There isn't an existing export MPAN.");
+								throw new UserException("There isn't an existing export MPAN.");
 							} else {
 
 								exportAgreedSupplyCapacity = existingExportMpan
@@ -617,8 +601,7 @@ public class HeaderImportProcess extends Thread implements Urlable,
 							if (exportDceStr.equals(NO_CHANGE)) {
 								if (existingExportMpan == null
 										|| existingExportMpan.getDceService() == null) {
-									throw UserException
-											.newInvalidParameter("There isn't an existing export supplier.");
+									throw new UserException("There isn't an existing export supplier.");
 								} else {
 									exportDce = existingExportMpan
 											.getDceService().getProvider();
@@ -629,8 +612,7 @@ public class HeaderImportProcess extends Thread implements Urlable,
 							String exportContractDceStr = values[24];
 							if (exportContractDceStr.equals(NO_CHANGE)) {
 								if (existingExportMpan == null) {
-									throw UserException
-											.newInvalidParameter("There isn't an existing export DCE contract.");
+									throw new UserException("There isn't an existing export DCE contract.");
 								} else {
 									exportContractDce = existingExportMpan
 											.getDceService();
@@ -646,8 +628,7 @@ public class HeaderImportProcess extends Thread implements Urlable,
 						Supplier exportSupplier = null;
 						if (exportSupplierName.equals(NO_CHANGE)) {
 							if (existingExportMpan == null) {
-								throw UserException
-										.newInvalidParameter("There isn't an existing export supplier.");
+								throw new UserException("There isn't an existing export supplier.");
 							}
 							exportSupplier = existingExportMpan
 									.getSupplierService().getProvider();
@@ -661,8 +642,7 @@ public class HeaderImportProcess extends Thread implements Urlable,
 								exportSupplierAccountReference));
 						if (exportSupplierAccountReference.equals(NO_CHANGE)) {
 							if (existingExportMpan == null) {
-								throw UserException
-										.newInvalidParameter("There isn't an existing export supplier.");
+								throw new UserException("There isn't an existing export supplier.");
 							}
 							exportAccountSupplier = existingExportMpan
 									.getSupplierAccount();
@@ -676,8 +656,7 @@ public class HeaderImportProcess extends Thread implements Urlable,
 								exportContractSupplierName));
 						if (exportContractSupplierName.equals(NO_CHANGE)) {
 							if (existingExportMpan == null) {
-								throw UserException
-										.newInvalidParameter("There isn't an existing export supplier.");
+								throw new UserException("There isn't an existing export supplier.");
 							}
 							exportContractSupplier = existingExportMpan
 									.getSupplierService();
@@ -700,8 +679,7 @@ public class HeaderImportProcess extends Thread implements Urlable,
 				}
 			} else if (type.equals("supplier-account")) {
 				if (values.length < 4) {
-					throw UserException
-							.newOk("There aren't enough fields in this row");
+					throw new UserException("There aren't enough fields in this row");
 				}
 				String supplierName = values[2];
 				csvElement.appendChild(getField("Supplier", supplierName));
@@ -723,13 +701,13 @@ public class HeaderImportProcess extends Thread implements Urlable,
 					}
 				}
 			} else {
-				throw UserException.newOk("The 'Type' field can only "
+				throw new UserException("The 'Type' field can only "
 						+ "be 'site', 'supply' or 'supplier-account'.");
 			}
-		} catch (UserException e) {
-			VFMessage message = e.getVFMessage();
+		} catch (HttpException e) {
+			String message = e.getMessage();
 			if (message != null) {
-				csvElement.appendChild(e.getVFMessage().toXML(doc));
+				csvElement.appendChild(new MonadMessage(message).toXml(doc));
 				source.appendChild(csvElement);
 			}
 			throw e;
@@ -743,37 +721,37 @@ public class HeaderImportProcess extends Thread implements Urlable,
 		return field;
 	}
 
-	public Urlable getChild(UriPathElement uriId) throws ProgrammerException,
-			UserException {
+	public Urlable getChild(UriPathElement uriId) throws InternalException,
+			HttpException {
 		return null;
 	}
 
-	public MonadUri getUri() throws ProgrammerException {
+	public MonadUri getUri() throws InternalException {
 		return uri;
 	}
 
 	public void httpGet(Invocation inv) throws DesignerException,
-			ProgrammerException, UserException, DeployerException {
+			InternalException, HttpException, DeployerException {
 		Document document = (Document) doc.cloneNode(true);
 		Element source = document.getDocumentElement();
-		Element processElement = (Element) toXML(document);
+		Element processElement = (Element) toXml(document);
 		source.appendChild(processElement);
-		processElement.appendChild(getOrganization().toXML(document));
+		processElement.appendChild(getOrganization().toXml(document));
 		Hiber.close();
 		inv.sendOk(document);
 	}
 
-	public void httpPost(Invocation inv) throws ProgrammerException,
-			UserException, DesignerException, DeployerException {
+	public void httpPost(Invocation inv) throws InternalException,
+			HttpException, DesignerException, DeployerException {
 		halt();
 		inv.sendSeeOther(getUri());
 	}
 
-	public void httpDelete(Invocation inv) throws ProgrammerException,
-			DesignerException, UserException, DeployerException {
+	public void httpDelete(Invocation inv) throws InternalException,
+			DesignerException, HttpException, DeployerException {
 	}
 
-	public Node toXML(Document doc) throws ProgrammerException, UserException {
+	public Node toXml(Document doc) throws InternalException, HttpException {
 		Element element = doc.createElement("header-import-process");
 		element.setAttribute("uri", uri.toString());
 		element.setAttribute("id", getUriId().toString());
@@ -784,20 +762,20 @@ public class HeaderImportProcess extends Thread implements Urlable,
 		return element;
 	}
 
-	public UriPathElement getUriId() throws ProgrammerException, UserException {
+	public UriPathElement getUriId() throws InternalException, HttpException {
 		String uriString = uri.toString();
 		uriString = uriString.substring(0, uriString.length() - 1);
 		return new UriPathElement(uriString.substring(uriString
 				.lastIndexOf("/") + 1));
 	}
 
-	public Node getXML(XmlTree tree, Document doc) throws ProgrammerException,
-			UserException {
+	public Node toXml(Document doc, XmlTree tree) throws InternalException,
+			HttpException {
 		return null;
 	}
 
-	public Organization getOrganization() throws UserException,
-			ProgrammerException {
+	public Organization getOrganization() throws HttpException,
+			InternalException {
 		return (Organization) Chellow.dereferenceUri(uri.toUri().resolve(
 				"../.."));
 	}

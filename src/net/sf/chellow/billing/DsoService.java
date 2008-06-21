@@ -28,8 +28,10 @@ import net.sf.chellow.monad.DesignerException;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.Invocation;
 import net.sf.chellow.monad.MonadUtils;
-import net.sf.chellow.monad.ProgrammerException;
+import net.sf.chellow.monad.NotFoundException;
+import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Urlable;
+import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.UserException;
 import net.sf.chellow.monad.XmlTree;
 import net.sf.chellow.monad.types.MonadDate;
@@ -43,18 +45,18 @@ import org.w3c.dom.Element;
 
 @SuppressWarnings("serial")
 public class DsoService extends Service {
-	public static DsoService getDsoService(Long id) throws UserException,
-			ProgrammerException {
+	public static DsoService getDsoService(Long id) throws HttpException,
+			InternalException {
 		DsoService service = findDsoService(id);
 		if (service == null) {
-			throw UserException
-					.newOk("There isn't a DSO service with that id.");
+			throw new UserException
+					("There isn't a DSO service with that id.");
 		}
 		return service;
 	}
 
-	public static DsoService findDsoService(Long id) throws UserException,
-			ProgrammerException {
+	public static DsoService findDsoService(Long id) throws HttpException,
+			InternalException {
 		return (DsoService) Hiber.session().get(DsoService.class, id);
 	}
 
@@ -64,7 +66,7 @@ public class DsoService extends Service {
 	}
 
 	public DsoService(String name, HhEndDate startDate, String chargeScript,
-			Dso provider) throws UserException, ProgrammerException,
+			Dso provider) throws HttpException, InternalException,
 			DesignerException {
 		super(Service.TYPE_PASS_THROUGH, name, startDate, chargeScript);
 		setProvider(provider);
@@ -79,8 +81,8 @@ public class DsoService extends Service {
 	}
 
 	@SuppressWarnings("unchecked")
-	public void update(String name, String chargeScript) throws UserException,
-			ProgrammerException, DesignerException {
+	public void update(String name, String chargeScript) throws HttpException,
+			InternalException, DesignerException {
 		super.update(Service.TYPE_PASS_THROUGH, name, chargeScript);
 		Hiber.flush();
 		/*
@@ -112,19 +114,18 @@ public class DsoService extends Service {
 		return isEqual;
 	}
 
-	public MonadUri getUri() throws ProgrammerException, UserException {
+	public MonadUri getUri() throws InternalException, HttpException {
 		return getProvider().servicesInstance().getUri().resolve(getUriId())
 				.append("/");
 	}
 
-	public void delete() throws UserException, ProgrammerException,
-			DesignerException {
+	public void delete() throws HttpException {
 		super.delete();
 		Hiber.session().delete(this);
 	}
 
-	public void httpPost(Invocation inv) throws ProgrammerException,
-			UserException, DesignerException, DeployerException {
+	public void httpPost(Invocation inv) throws InternalException,
+			HttpException, DesignerException, DeployerException {
 		if (inv.hasParameter("delete")) {
 			delete();
 			Hiber.commit();
@@ -133,11 +134,11 @@ public class DsoService extends Service {
 			String name = inv.getString("name");
 			String chargeScript = inv.getString("charge-script");
 			if (!inv.isValid()) {
-				throw UserException.newInvalidParameter(document());
+				throw new UserException(document());
 			}
 			try {
 				update(name, chargeScript);
-			} catch (UserException e) {
+			} catch (HttpException e) {
 				e.setDocument(document());
 				throw e;
 			}
@@ -146,19 +147,19 @@ public class DsoService extends Service {
 		}
 	}
 
-	private Document document() throws ProgrammerException, UserException,
+	private Document document() throws InternalException, HttpException,
 			DesignerException {
 		Document doc = MonadUtils.newSourceDocument();
 		Element source = doc.getDocumentElement();
-		source.appendChild(getXML(new XmlTree("provider"), doc));
+		source.appendChild(toXml(doc, new XmlTree("provider")));
 		source.appendChild(MonadDate.getMonthsXml(doc));
 		source.appendChild(MonadDate.getDaysXml(doc));
-		source.appendChild(new MonadDate().toXML(doc));
+		source.appendChild(new MonadDate().toXml(doc));
 		return doc;
 	}
 
 	public void httpGet(Invocation inv) throws DesignerException,
-			ProgrammerException, UserException, DeployerException {
+			InternalException, HttpException, DeployerException {
 		inv.sendOk(document());
 	}
 
@@ -166,17 +167,15 @@ public class DsoService extends Service {
 		return new HhDataImportProcesses(this);
 	}
 
-	public Urlable getChild(UriPathElement uriId) throws ProgrammerException,
-			UserException {
+	public Urlable getChild(UriPathElement uriId) throws HttpException {
 		if (RateScripts.URI_ID.equals(uriId)) {
 			return new RateScripts(this);
 		} else {
-			throw UserException.newNotFound();
+			throw new NotFoundException();
 		}
 	}
 
-	public void httpDelete(Invocation inv) throws ProgrammerException,
-			UserException {
+	public void httpDelete(Invocation inv) throws HttpException {
 		// TODO Auto-generated method stub
 
 	}
@@ -186,9 +185,9 @@ public class DsoService extends Service {
 				+ getName();
 	}
 
-	public Element toXML(Document doc) throws ProgrammerException,
-			UserException {
+	public Element toXml(Document doc) throws InternalException,
+			HttpException {
 		setTypeName("dso-service");
-		return super.toXML(doc);
+		return super.toXml(doc);
 	}
 }

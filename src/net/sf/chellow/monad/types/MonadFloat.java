@@ -1,6 +1,6 @@
 /*
  
- Copyright 2005 Meniscus Systems Ltd
+ Copyright 2005-2008 Meniscus Systems Ltd
  
  This file is part of Chellow.
 
@@ -22,11 +22,10 @@
 
 package net.sf.chellow.monad.types;
 
-import net.sf.chellow.monad.ProgrammerException;
+import net.sf.chellow.monad.InternalException;
+import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.UserException;
-import net.sf.chellow.monad.VFMessage;
-import net.sf.chellow.monad.VFParameter;
-
+import net.sf.chellow.monad.MonadMessage;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
@@ -47,18 +46,18 @@ public class MonadFloat extends MonadObject {
 	protected MonadFloat() {
 	}
 
-	public MonadFloat(String label, String floatString) throws UserException,
-			ProgrammerException {
+	public MonadFloat(String label, String floatString) throws HttpException,
+			InternalException {
 		this(null, label, floatString, null, null);
 	}
 
 	protected MonadFloat(String typeName, String floatString, float min,
-			float max) throws UserException, ProgrammerException {
+			float max) throws HttpException, InternalException {
 		this(typeName, null, floatString, new Float(min), new Float(max));
 	}
 
 	protected MonadFloat(String typeName, String name, String floatString,
-			Float min, Float max) throws UserException, ProgrammerException {
+			Float min, Float max) throws HttpException, InternalException {
 		super(typeName, name);
 		this.min = min;
 		this.max = max;
@@ -66,9 +65,7 @@ public class MonadFloat extends MonadObject {
 		try {
 			setFloat(new Float(floatString));
 		} catch (NumberFormatException e) {
-			throw UserException
-					.newInvalidParameter(new VFMessage("malformed_float",
-							new VFParameter("note", e.getMessage())));
+			throw new UserException("malformed_float" + e.getMessage());
 		}
 	}
 
@@ -76,8 +73,8 @@ public class MonadFloat extends MonadObject {
 		setFloat(new Float(floatValue));
 	}
 
-	public MonadFloat(String floatString) throws UserException,
-			ProgrammerException {
+	public MonadFloat(String floatString) throws HttpException,
+			InternalException {
 		this(null, floatString);
 	}
 
@@ -89,25 +86,19 @@ public class MonadFloat extends MonadObject {
 		this.floatValue = floatValue;
 	}
 
-	public void update(Float floatValue) throws UserException,
-			ProgrammerException {
+	public void update(Float floatValue) throws HttpException,
+			InternalException {
 
 		if ((min != null) && (floatValue.floatValue() < min.intValue())) {
-			throw UserException.newInvalidParameter(new VFMessage(
-					VFMessage.NUMBER_TOO_SMALL, new VFParameter[] {
-							new VFParameter("number", floatValue.toString()),
-							new VFParameter("min", min.toString()) }));
+			throw new UserException(MonadMessage.NUMBER_TOO_SMALL);
 		}
 		if ((max != null) && (floatValue.floatValue() > max.intValue())) {
-			throw UserException.newInvalidParameter(new VFMessage(
-					VFMessage.NUMBER_TOO_BIG, new VFParameter[] {
-							new VFParameter("number", floatValue.toString()),
-							new VFParameter("max", max.toString()) }));
+			throw new UserException(MonadMessage.NUMBER_TOO_BIG);
 		}
 		setFloat(floatValue);
 	}
 
-	public Node toXML(Document doc) {
+	public Node toXml(Document doc) {
 		Node node = doc.createAttribute(getLabel());
 
 		node.setNodeValue(floatValue.toString());

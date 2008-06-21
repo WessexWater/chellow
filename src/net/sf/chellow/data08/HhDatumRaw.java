@@ -1,6 +1,6 @@
 package net.sf.chellow.data08;
 
-import net.sf.chellow.monad.ProgrammerException;
+import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.types.MonadObject;
 import net.sf.chellow.physical.HhDatumStatus;
 import net.sf.chellow.physical.HhEndDate;
@@ -22,12 +22,12 @@ public class HhDatumRaw extends MonadObject {
 
 	public HhDatumRaw(MpanCoreRaw core, IsImport isImport, IsKwh isKwh,
 			HhEndDate endDate, float value, HhDatumStatus status)
-			throws ProgrammerException {
+			throws InternalException {
 		this.core = core;
 		this.isImport = isImport;
 		this.isKwh = isKwh;
 		if (endDate == null) {
-			throw new ProgrammerException(
+			throw new InternalException(
 					"The value 'endDate' must not be null.");
 		}
 		this.endDate = endDate;

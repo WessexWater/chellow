@@ -1,6 +1,6 @@
 /*
  
- Copyright 2005 Meniscus Systems Ltd
+ Copyright 2005, 2008 Meniscus Systems Ltd
  
  This file is part of Chellow.
 
@@ -22,10 +22,10 @@
 
 package net.sf.chellow.monad;
 
-public class DeployerException extends Exception {
+public class DeployerException extends HttpException {
 	private static final long serialVersionUID = 3913627639563426730L;
 
-	public DeployerException(String message) {
-		super(message);
+	public DeployerException(String message) throws InternalException {
+		super(506, null, message, null, null);
 	}
 }

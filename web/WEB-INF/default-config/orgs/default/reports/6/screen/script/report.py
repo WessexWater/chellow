@@ -35,7 +35,7 @@ cal.add(Calendar.MONTH, -11)
 cal.add(Calendar.MINUTE, 30)
 startDate = HhEndDate(cal.getTime()).getDate()
 site = organization.getSite(siteId)
-source.appendChild(site.toXML(doc))
+source.appendChild(site.toXml(doc))
 supplies = Hiber.session().createQuery("select distinct supply from Supply supply join supply.generations supplyGeneration join supplyGeneration.siteSupplyGenerations siteSupplyGeneration where siteSupplyGeneration.site = :site and supply.source.code != 'sub'").setEntity('site', site).list()
 suppliesSQL = ''
 for supply in supplies:
@@ -175,10 +175,10 @@ if rs.next():
                 monthElement.setAttribute("has-site-snags", "true")
             monthStartMonadDate = HhEndDate(monthStartDate)
             monthStartMonadDate.setLabel("start")
-            monthElement.appendChild(monthStartMonadDate.toXML(doc))
+            monthElement.appendChild(monthStartMonadDate.toXml(doc))
             monthFinishMonadDate = HhEndDate(monthFinishDate)
             monthFinishMonadDate.setLabel("finish")
-            monthElement.appendChild(monthFinishMonadDate.toXML(doc))
+            monthElement.appendChild(monthFinishMonadDate.toXml(doc))
             monthElement.setAttribute("max-exported-kw", str(int(round(maxExportedKw))))
             if maxExportedKwDate != None:
                 monthElement.setAttribute("max-exported-kw-date", MonadDate(Date(maxExportedKwDate)).toString())

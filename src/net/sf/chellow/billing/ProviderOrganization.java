@@ -25,7 +25,8 @@ package net.sf.chellow.billing;
 import org.hibernate.exception.ConstraintViolationException;
 
 import net.sf.chellow.monad.Hiber;
-import net.sf.chellow.monad.ProgrammerException;
+import net.sf.chellow.monad.InternalException;
+import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.UserException;
 import net.sf.chellow.physical.Organization;
 
@@ -44,15 +45,15 @@ public abstract class ProviderOrganization extends Provider {
 		return new Accounts(this);
 	}
 
-	public Account insertAccount(String reference) throws UserException,
-			ProgrammerException {
+	public Account insertAccount(String reference) throws HttpException,
+			InternalException {
 		Account account = new Account(this, reference);
 		try {
 			Hiber.session().save(account);
 			Hiber.flush();
 		} catch (ConstraintViolationException e) {
-			throw UserException
-					.newInvalidParameter("There's already an account with the reference, '" + reference + "' attached to this provider.");
+			throw new UserException
+					("There's already an account with the reference, '" + reference + "' attached to this provider.");
 		}
 		return account;
 	}

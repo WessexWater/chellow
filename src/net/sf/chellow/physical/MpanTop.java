@@ -32,9 +32,11 @@ import net.sf.chellow.monad.DeployerException;
 import net.sf.chellow.monad.DesignerException;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.Invocation;
+import net.sf.chellow.monad.MethodNotAllowedException;
 import net.sf.chellow.monad.MonadUtils;
-import net.sf.chellow.monad.ProgrammerException;
+import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Urlable;
+import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.UserException;
 import net.sf.chellow.monad.XmlTree;
 import net.sf.chellow.monad.types.MonadUri;
@@ -42,8 +44,8 @@ import net.sf.chellow.monad.types.UriPathElement;
 
 public class MpanTop extends PersistentEntity {
 	static public MpanTop insertMpanTop(ProfileClass pc, MeterTimeswitch mt,
-			Llf llf, Set<Ssc> sscs) throws ProgrammerException,
-			UserException {
+			Llf llf, Set<Ssc> sscs) throws InternalException,
+			HttpException {
 		MpanTop mpanTop = new MpanTop(pc, mt, llf, sscs);
 		Hiber.session().save(mpanTop);
 		Hiber.flush();
@@ -51,8 +53,8 @@ public class MpanTop extends PersistentEntity {
 	}
 
 	static public Set<MpanTop> insertMpanTops(Dso dso, ProfileClass[] pcs,
-			String mts, int llf, String sscString) throws ProgrammerException,
-			UserException {
+			String mts, int llf, String sscString) throws InternalException,
+			HttpException {
 		Set<Ssc> sscs = new HashSet<Ssc>();
 		for (String ssc : sscString.split(",")) {
 			sscs.add(Ssc.getSsc(ssc));
@@ -68,11 +70,11 @@ public class MpanTop extends PersistentEntity {
 		return tops;
 	}
 
-	static public MpanTop getMpanTop(Long id) throws ProgrammerException,
-			UserException {
+	static public MpanTop getMpanTop(Long id) throws InternalException,
+			HttpException {
 		MpanTop mpanTop = (MpanTop) Hiber.session().get(MpanTop.class, id);
 		if (mpanTop == null) {
-			throw UserException.newOk("There is no mpan with that id.");
+			throw new UserException("There is no mpan with that id.");
 		}
 		return mpanTop;
 	}
@@ -86,7 +88,7 @@ public class MpanTop extends PersistentEntity {
 	 * LineLossFactorCode( llf))); }
 	 */
 	static public MpanTop findMpanTop(ProfileClass pc, MeterTimeswitch mt,
-			Llf llf) throws ProgrammerException, UserException {
+			Llf llf) throws InternalException, HttpException {
 		return (MpanTop) Hiber
 				.session()
 				.createQuery(
@@ -96,11 +98,11 @@ public class MpanTop extends PersistentEntity {
 	}
 
 	static public MpanTop getMpanTop(ProfileClass pc, MeterTimeswitch mt,
-			Llf llf) throws ProgrammerException, UserException {
+			Llf llf) throws InternalException, HttpException {
 		MpanTop mpanTop = findMpanTop(pc, mt, llf);
 		if (mpanTop == null) {
-			throw UserException
-					.newInvalidParameter("There is no MPAN top line with Profile Class: "
+			throw new UserException
+					("There is no MPAN top line with Profile Class: "
 							+ pc
 							+ ", Meter Timeswitch: "
 							+ mt
@@ -122,12 +124,12 @@ public class MpanTop extends PersistentEntity {
 
 	MpanTop(ProfileClass profileClass, MeterTimeswitch meterTimeswitch,
 			Llf llf, Set<Ssc> sscs)
-			throws ProgrammerException, UserException {
+			throws InternalException, HttpException {
 		this();
 		if (meterTimeswitch.getDso() != null
 				&& !llf.getDso().equals(meterTimeswitch.getDso())) {
-			throw UserException
-					.newInvalidParameter("The Meter Timeswitch DSO doesn't match the Line Loss Factor DSO.");
+			throw new UserException
+					("The Meter Timeswitch DSO doesn't match the Line Loss Factor DSO.");
 		}
 		setMeterTimeswitch(meterTimeswitch);
 		setLlf(llf);
@@ -177,29 +179,29 @@ public class MpanTop extends PersistentEntity {
 		return null;
 	}
 
-	public Urlable getChild(UriPathElement uriId) throws ProgrammerException,
-			UserException {
+	public Urlable getChild(UriPathElement uriId) throws InternalException,
+			HttpException {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	public void httpGet(Invocation inv) throws DesignerException,
-			ProgrammerException, UserException, DeployerException {
+			InternalException, HttpException, DeployerException {
 		Document doc = MonadUtils.newSourceDocument();
 		Element source = doc.getDocumentElement();
-		source.appendChild(getXML(new XmlTree(
-				"llf", new XmlTree("dso")).put("profileClass")
-				.put("meterTimeswitch"), doc));
+		source.appendChild(toXml(doc, new XmlTree(
+						"llf", new XmlTree("dso")).put("profileClass")
+						.put("meterTimeswitch")));
 		inv.sendOk(doc);
 	}
 
-	public void httpPost(Invocation inv) throws ProgrammerException,
-			UserException {
-		throw UserException.newMethodNotAllowed();
+	public void httpPost(Invocation inv) throws InternalException,
+			HttpException {
+		throw new MethodNotAllowedException();
 	}
 
-	public void httpDelete(Invocation inv) throws ProgrammerException,
-			DesignerException, UserException, DeployerException {
+	public void httpDelete(Invocation inv) throws InternalException,
+			DesignerException, HttpException, DeployerException {
 		// TODO Auto-generated method stub
 
 	}
@@ -213,9 +215,9 @@ public class MpanTop extends PersistentEntity {
 	 * (!sscs.contains(ssc)) { sscs.add(ssc); Set<MpanTop> mpanTops =
 	 * ssc.getMpanTops(); if (!mpanTops.contains(this)) { mpanTops.add(this); } } } }
 	 */
-	public Element toXML(Document doc) throws ProgrammerException, UserException {
+	public Element toXml(Document doc) throws InternalException, HttpException {
 		setTypeName("mpan-top");
-		Element mpanTopElement = (Element) super.toXML(doc);
+		Element mpanTopElement = (Element) super.toXml(doc);
 		return mpanTopElement;
 	}
 }

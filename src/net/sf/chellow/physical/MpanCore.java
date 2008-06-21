@@ -30,9 +30,9 @@ import net.sf.chellow.monad.DeployerException;
 import net.sf.chellow.monad.DesignerException;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.Invocation;
-import net.sf.chellow.monad.ProgrammerException;
+import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Urlable;
-import net.sf.chellow.monad.UserException;
+import net.sf.chellow.monad.HttpException;
 
 
 import net.sf.chellow.monad.types.MonadUri;
@@ -44,11 +44,11 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
 public class MpanCore extends PersistentEntity {
-	static public MpanCore getMpanCore(Long id) throws ProgrammerException {
+	static public MpanCore getMpanCore(Long id) throws InternalException {
 		try {
 			return (MpanCore) Hiber.session().get(MpanCore.class, id);
 		} catch (HibernateException e) {
-			throw new ProgrammerException(e);
+			throw new InternalException(e);
 		}
 	}
 /*
@@ -71,8 +71,8 @@ public class MpanCore extends PersistentEntity {
 	}
 
 	public MpanCore(Supply supply, MpanCoreRaw core)
-			throws ProgrammerException,
-			UserException {
+			throws InternalException,
+			HttpException {
 		this();
 		setSupply(supply);
 		Dso importDso = Dso.getDso(core.getDsoCode());
@@ -81,20 +81,20 @@ public class MpanCore extends PersistentEntity {
 	}
 
 	public MpanCore(Dso dso, MpanUniquePart uniquePart, CheckDigit checkDigit)
-			throws ProgrammerException,
-			UserException {
+			throws InternalException,
+			HttpException {
 		init(dso, uniquePart, checkDigit);
 	}
 
 	private void init(Dso dso, MpanUniquePart uniquePart, CheckDigit checkDigit)
-			throws ProgrammerException,
-			UserException {
+			throws InternalException,
+			HttpException {
 			update(dso, uniquePart, checkDigit);
 	}
 
 	public void update(Dso dso, MpanUniquePart uniquePart, CheckDigit checkDigit)
 			throws
-			ProgrammerException, UserException {
+			InternalException, HttpException {
 		new MpanCoreRaw(dso.getCode(), uniquePart, checkDigit);
 		this.dso = dso;
 		this.uniquePart = uniquePart;
@@ -135,7 +135,7 @@ public class MpanCore extends PersistentEntity {
 		this.checkDigit = checkDigit;
 	}
 
-	public MpanCoreRaw getCore() throws ProgrammerException, UserException {
+	public MpanCoreRaw getCore() throws InternalException, HttpException {
 			MpanCoreRaw core = new MpanCoreRaw(dso.getCode(), uniquePart,
 					checkDigit);
 			core.setLabel("core");
@@ -162,19 +162,19 @@ public class MpanCore extends PersistentEntity {
 	public String toString() {
 		try {
 			return getCore().toString();
-		} catch (ProgrammerException e) {
+		} catch (InternalException e) {
 			throw new RuntimeException(e);
-		} catch (UserException e) {
+		} catch (HttpException e) {
 			throw new RuntimeException(e);
 		}
 	}
 
-	public Node toXML(Document doc) throws ProgrammerException, UserException {
-		Element element = (Element) super.toXML(doc);
+	public Node toXml(Document doc) throws InternalException, HttpException {
+		Element element = (Element) super.toXml(doc);
 
-		element.setAttributeNode(uniquePart.toXML(doc));
-		element.setAttributeNode(checkDigit.toXML(doc));
-		element.setAttributeNode(getCore().toXML(doc));
+		element.setAttributeNode(uniquePart.toXml(doc));
+		element.setAttributeNode(checkDigit.toXml(doc));
+		element.setAttributeNode(getCore().toXml(doc));
 		return element;
 	}
 
@@ -182,22 +182,22 @@ public class MpanCore extends PersistentEntity {
 		return null;
 	}
 
-	public Urlable getChild(UriPathElement uriId) throws ProgrammerException, UserException {
+	public Urlable getChild(UriPathElement uriId) throws InternalException, HttpException {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
-	public void httpGet(Invocation inv) throws DesignerException, ProgrammerException, UserException, DeployerException {
+	public void httpGet(Invocation inv) throws DesignerException, InternalException, HttpException, DeployerException {
 		// TODO Auto-generated method stub
 		
 	}
 
-	public void httpPost(Invocation inv) throws ProgrammerException, UserException {
+	public void httpPost(Invocation inv) throws InternalException, HttpException {
 		// TODO Auto-generated method stub
 		
 	}
 
-	public void httpDelete(Invocation inv) throws ProgrammerException, DesignerException, UserException, DeployerException {
+	public void httpDelete(Invocation inv) throws InternalException, DesignerException, HttpException, DeployerException {
 		// TODO Auto-generated method stub
 		
 	}

@@ -34,8 +34,9 @@ import net.sf.chellow.monad.DeployerException;
 import net.sf.chellow.monad.DesignerException;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.Invocation;
-import net.sf.chellow.monad.ProgrammerException;
+import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Urlable;
+import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.UserException;
 
 import net.sf.chellow.monad.types.MonadBoolean;
@@ -48,12 +49,12 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
 public class Mpan extends PersistentEntity {
-	static public Mpan getMpan(Long id) throws ProgrammerException,
-			UserException {
+	static public Mpan getMpan(Long id) throws InternalException,
+			HttpException {
 		Mpan mpan = (Mpan) Hiber.session().get(Mpan.class, id);
 		if (mpan == null) {
-			throw UserException
-					.newInvalidParameter("There is no mpan with that id.");
+			throw new UserException
+					("There is no mpan with that id.");
 		}
 		return mpan;
 	}
@@ -98,7 +99,7 @@ public class Mpan extends PersistentEntity {
 			SupplierService supplierService, boolean hasImportKwh,
 			boolean hasImportKvarh, boolean hasExportKwh,
 			boolean hasExportKvarh, int agreedSupplyCapacity)
-			throws ProgrammerException, UserException {
+			throws InternalException, HttpException {
 		this();
 		this.supplyGeneration = supplyGeneration;
 		update(mpanTop, mpanCore,
@@ -240,16 +241,16 @@ public class Mpan extends PersistentEntity {
 			SupplierService supplierService, boolean hasImportKwh,
 			boolean hasImportKvarh, boolean hasExportKwh,
 			boolean hasExportKvarh, int agreedSupplyCapacity)
-			throws ProgrammerException, UserException {
+			throws InternalException, HttpException {
 		if (!mpanTop.getDso().equals(mpanCore.getDso())) {
-			throw UserException
-					.newInvalidParameter("The MPAN top line DSO doesn't match the MPAN core DSO.");
+			throw new UserException
+					("The MPAN top line DSO doesn't match the MPAN core DSO.");
 		}
 		if (getMpanTop() != null
 				&& !getMpanTop().getLlf().getIsImport() ==
 						mpanTop.getLlf().getIsImport()) {
-			throw UserException
-					.newOk("You can't change an import mpan into an export one, and vice versa.");
+			throw new UserException
+					("You can't change an import mpan into an export one, and vice versa.");
 		}
 		if (dceService == null) {
 			hasImportKwh = false;
@@ -280,18 +281,18 @@ public class Mpan extends PersistentEntity {
 		*/
 		setMpanTop(mpanTop);
 		if (mpanCore == null) {
-			throw new ProgrammerException("The mpan core can't be null.");
+			throw new InternalException("The mpan core can't be null.");
 		}
 		setMpanCore(mpanCore);
 		if (dceService != null
 				&& (!hasImportKwh && !hasImportKvarh && !hasExportKwh && !hasExportKvarh)) {
-			throw UserException
-					.newInvalidParameter("If there's a DCE contract, surely there must be some data to collect?");
+			throw new UserException
+					("If there's a DCE contract, surely there must be some data to collect?");
 		}
 		setDceService(dceService);
 		if (supplierAccount == null) {
-			throw UserException
-					.newInvalidParameter("An MPAN must have a supplier account.");
+			throw new UserException
+					("An MPAN must have a supplier account.");
 		}
 		Set<SiteSupplyGeneration> siteSupplyGenerations = getSupplyGeneration()
 				.getSiteSupplyGenerations();
@@ -300,8 +301,8 @@ public class Mpan extends PersistentEntity {
 				&& siteSupplyGenerations.iterator().next().getSite()
 						.getOrganization().findSupplier(
 								supplierAccount.getProvider().getId()) == null) {
-			throw UserException
-					.newInvalidParameter("The supplier account must be attached to the same organization as the MPAN.");
+			throw new UserException
+					("The supplier account must be attached to the same organization as the MPAN.");
 		}
 		setSupplierAccount(supplierAccount);
 		setSupplierService(supplierService);
@@ -316,9 +317,9 @@ public class Mpan extends PersistentEntity {
 		return getMpanTop() + " " + getMpanCore();
 	}
 
-	public Node toXML(Document doc) throws ProgrammerException, UserException {
+	public Node toXml(Document doc) throws InternalException, HttpException {
 		setTypeName("mpan");
-		Element element = (Element) super.toXML(doc);
+		Element element = (Element) super.toXml(doc);
 		element.setAttributeNode(MonadBoolean.toXml(doc, "has-import-kwh",
 				hasImportKwh));
 		element.setAttributeNode(MonadBoolean.toXml(doc, "has-import-kvarh",
@@ -329,7 +330,7 @@ public class Mpan extends PersistentEntity {
 				hasExportKvarh));
 		element.setAttributeNode(MonadInteger.toXml(doc,
 				"agreed-supply-capacity", agreedSupplyCapacity));
-		element.setAttributeNode(getMpanRaw().toXML(doc));
+		element.setAttributeNode(getMpanRaw().toXml(doc));
 		return element;
 	}
 
@@ -338,34 +339,34 @@ public class Mpan extends PersistentEntity {
 		return null;
 	}
 
-	public Urlable getChild(UriPathElement uriId) throws ProgrammerException,
-			UserException {
+	public Urlable getChild(UriPathElement uriId) throws InternalException,
+			HttpException {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	public void httpGet(Invocation inv) throws DesignerException,
-			ProgrammerException, UserException, DeployerException {
+			InternalException, HttpException, DeployerException {
 		// TODO Auto-generated method stub
 
 	}
 
-	public void httpPost(Invocation inv) throws ProgrammerException,
-			UserException {
+	public void httpPost(Invocation inv) throws InternalException,
+			HttpException {
 		// TODO Auto-generated method stub
 
 	}
 
-	public void httpDelete(Invocation inv) throws ProgrammerException,
-			DesignerException, UserException, DeployerException {
+	public void httpDelete(Invocation inv) throws InternalException,
+			DesignerException, HttpException, DeployerException {
 		// TODO Auto-generated method stub
 
 	}
 	
-	void delete() throws UserException, ProgrammerException {
+	void delete() throws HttpException, InternalException {
 		//check no invoices
 		if (((Long) Hiber.session().createQuery("from InvoiceMpan invoiceMpan where invoiceMpan.mpan = :mpan").setEntity("mpan", this).uniqueResult()) > 0) {
-			throw UserException.newInvalidParameter("An MPAN can't be deleted if still has invoices attached.");
+			throw new UserException("An MPAN can't be deleted if still has invoices attached.");
 		}
 	}
 
@@ -395,7 +396,7 @@ public class Mpan extends PersistentEntity {
 		return dceService;
 	}
 
-	public MpanRaw getMpanRaw() throws ProgrammerException, UserException {
+	public MpanRaw getMpanRaw() throws InternalException, HttpException {
 		return new MpanRaw(getMpanTop().getProfileClass().getCode(), getMpanTop().getMeterTimeswitch()
 				.getCode(), getMpanTop().getLlf().getCode(), getMpanCore().getCore());
 	}

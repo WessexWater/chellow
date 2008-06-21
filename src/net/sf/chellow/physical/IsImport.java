@@ -47,8 +47,8 @@ public class IsImport extends MonadBoolean {
 		update(isImport);
 	}
 
-	public Attr toXML(Document doc) {
+	public Attr toXml(Document doc) {
 		setLabel("is-import");
-		return super.toXML(doc);
+		return super.toXml(doc);
 	}
 }

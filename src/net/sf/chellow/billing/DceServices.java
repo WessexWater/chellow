@@ -30,8 +30,10 @@ import net.sf.chellow.monad.DesignerException;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.Invocation;
 import net.sf.chellow.monad.MonadUtils;
-import net.sf.chellow.monad.ProgrammerException;
+import net.sf.chellow.monad.NotFoundException;
+import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Urlable;
+import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.UserException;
 import net.sf.chellow.monad.XmlDescriber;
 import net.sf.chellow.monad.XmlTree;
@@ -51,9 +53,7 @@ public class DceServices implements Urlable, XmlDescriber {
 	static {
 		try {
 			URI_ID = new UriPathElement("services");
-		} catch (UserException e) {
-			throw new RuntimeException(e);
-		} catch (ProgrammerException e) {
+		} catch (HttpException e) {
 			throw new RuntimeException(e);
 		}
 	}
@@ -68,12 +68,11 @@ public class DceServices implements Urlable, XmlDescriber {
 		return URI_ID;
 	}
 
-	public MonadUri getUri() throws ProgrammerException, UserException {
+	public MonadUri getUri() throws InternalException, HttpException {
 		return dce.getUri().resolve(getUrlId()).append("/");
 	}
 
-	public void httpPost(Invocation inv) throws ProgrammerException,
-			UserException, DesignerException, DeployerException {
+	public void httpPost(Invocation inv) throws HttpException {
 		Integer type = inv.getInteger("type");
 		String name = inv.getString("name");
 		ContractFrequency frequency = inv.getValidatable(
@@ -82,7 +81,7 @@ public class DceServices implements Urlable, XmlDescriber {
 		String chargeScript = inv.getString("charge-script");
 		Integer lag = inv.getInteger("lag");
 		if (!inv.isValid()) {
-			throw UserException.newInvalidParameter(document());
+			throw new UserException(document());
 		}
 		DceService service = dce.insertService(type, name, HhEndDate
 				.roundDown(startDate), chargeScript, frequency, lag);
@@ -91,34 +90,34 @@ public class DceServices implements Urlable, XmlDescriber {
 	}
 
 	@SuppressWarnings("unchecked")
-	private Document document() throws ProgrammerException, UserException,
+	private Document document() throws InternalException, HttpException,
 			DesignerException {
 		Document doc = MonadUtils.newSourceDocument();
 		Element source = doc.getDocumentElement();
-		Element contractsElement = (Element) toXML(doc);
+		Element contractsElement = (Element) toXml(doc);
 		source.appendChild(contractsElement);
-		contractsElement.appendChild(dce.getXML(new XmlTree("organization"),
-				doc));
+		contractsElement.appendChild(dce.toXml(doc,
+				new XmlTree("organization")));
 		for (DceService contract : (List<DceService>) Hiber
 				.session()
 				.createQuery(
 						"from DceService service where service.provider = :dce order by service.name")
 				.setEntity("dce", dce).list()) {
-			contractsElement.appendChild(contract.toXML(doc));
+			contractsElement.appendChild(contract.toXml(doc));
 		}
 		source.appendChild(MonadDate.getMonthsXml(doc));
 		source.appendChild(MonadDate.getDaysXml(doc));
-		source.appendChild(new MonadDate().toXML(doc));
+		source.appendChild(new MonadDate().toXml(doc));
 		return doc;
 	}
 
 	public void httpGet(Invocation inv) throws DesignerException,
-			ProgrammerException, UserException, DeployerException {
+			InternalException, HttpException, DeployerException {
 		inv.sendOk(document());
 	}
 
-	public Service getChild(UriPathElement uriId) throws UserException,
-			ProgrammerException {
+	public Service getChild(UriPathElement uriId) throws HttpException,
+			InternalException {
 		Service service = (Service) Hiber
 				.session()
 				.createQuery(
@@ -126,24 +125,24 @@ public class DceServices implements Urlable, XmlDescriber {
 				.setEntity("dce", dce).setLong("serviceId",
 						Long.parseLong(uriId.getString())).uniqueResult();
 		if (service == null) {
-			throw UserException.newNotFound();
+			throw new NotFoundException();
 		}
 		return service;
 	}
 
-	public void httpDelete(Invocation inv) throws ProgrammerException,
-			UserException {
+	public void httpDelete(Invocation inv) throws InternalException,
+			HttpException {
 		// TODO Auto-generated method stub
 
 	}
 
-	public Node toXML(Document doc) throws ProgrammerException, UserException {
+	public Node toXml(Document doc) throws InternalException, HttpException {
 		Element contractsElement = doc.createElement("dce-services");
 		return contractsElement;
 	}
 
-	public Node getXML(XmlTree tree, Document doc) throws ProgrammerException,
-			UserException {
+	public Node toXml(Document doc, XmlTree tree) throws InternalException,
+			HttpException {
 		// TODO Auto-generated method stub
 		return null;
 	}

@@ -6,7 +6,8 @@ import java.util.Date;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-import net.sf.chellow.monad.ProgrammerException;
+import net.sf.chellow.monad.InternalException;
+import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.UserException;
 
 import net.sf.chellow.monad.types.MonadDay;
@@ -14,14 +15,13 @@ import net.sf.chellow.monad.types.MonadMonth;
 import net.sf.chellow.physical.HhEndDate;
 
 public class DayFinishDate extends HhEndDate {
-	public static DayFinishDate getNext(DayFinishDate date) throws ProgrammerException,
-			UserException {
+	public static DayFinishDate getNext(DayFinishDate date) throws InternalException, UserException {
 		return new DayFinishDate(new Date(getNext(getCalendar(), date.getDate()
 				.getTime())));
 	}
 
 	public static DayFinishDate getPrevious(DayFinishDate date)
-			throws ProgrammerException, UserException {
+			throws InternalException, UserException {
 		return new DayFinishDate(new Date(getPrevious(getCalendar(), date.getDate()
 				.getTime())));
 	}
@@ -48,8 +48,7 @@ public class DayFinishDate extends HhEndDate {
 		return cal.getTimeInMillis();
 	}
 
-	public static DayFinishDate roundDown(Date date) throws ProgrammerException,
-			UserException {
+	public static DayFinishDate roundDown(Date date) throws InternalException, UserException {
 		return new DayFinishDate(new Date(roundDown(getCalendar(), date.getTime())));
 	}
 
@@ -63,40 +62,40 @@ public class DayFinishDate extends HhEndDate {
 		return cal.getTimeInMillis();
 	}
 
-	DayFinishDate() throws ProgrammerException, UserException {
+	DayFinishDate() throws InternalException, UserException {
 		super(new Date(0));
 		setTypeName();
 	}
 
-	public DayFinishDate(Date date) throws ProgrammerException, UserException {
+	public DayFinishDate(Date date) throws InternalException, UserException {
 		super(date);
 		setTypeName();
 	}
 	
-	public DayFinishDate(HhEndDate date) throws ProgrammerException, UserException {
+	public DayFinishDate(HhEndDate date) throws InternalException, HttpException {
 		super(date.getDate());
 		setTypeName();
 	}
 
 	public DayFinishDate(String label, String year, String month, String day)
-			throws ProgrammerException, UserException {
+			throws InternalException, HttpException {
 		super(label, year, month, day);
 		setTypeName();
 	}
 
 	public DayFinishDate(int year, MonadMonth month, MonadDay day)
-			throws ProgrammerException, UserException {
+			throws InternalException, HttpException {
 		super(year, month, day);
 		setTypeName();
 	}
 
-	public DayFinishDate(String dateStr) throws ProgrammerException, UserException {
+	public DayFinishDate(String dateStr) throws InternalException, HttpException {
 		super(dateStr);
 		setTypeName();
 	}
 
-	public DayFinishDate(String label, String dateStr) throws ProgrammerException,
-			UserException {
+	public DayFinishDate(String label, String dateStr) throws InternalException,
+			HttpException {
 		super(label, dateStr);
 		setTypeName();
 	}
@@ -105,31 +104,30 @@ public class DayFinishDate extends HhEndDate {
 		setTypeName("day-finish-date");
 	}
 
-	public void update(Date date) throws ProgrammerException, UserException {
+	public void update(Date date) throws InternalException, UserException {
 		super.update(date);
 		Calendar cal = getCalendar();
 		cal.clear();
 		cal.setTime(date);
 		if (cal.get(Calendar.HOUR_OF_DAY) != 0) {
-			throw UserException.newInvalidParameter("For the date " + date
+			throw new UserException("For the date " + date
 					+ ", the hours must be 0.");
 		}
 		if (cal.get(Calendar.MINUTE) == 30) {
-			throw UserException.newInvalidParameter("For the date " + date
+			throw new UserException("For the date " + date
 					+ ", the minutes must be 0.");
 		}
 	}
 
-	public DayFinishDate getPrevious() throws ProgrammerException, UserException {
+	public DayFinishDate getPrevious() throws InternalException, UserException {
 		return getPrevious(this);
 	}
 
-	public DayFinishDate getNext() throws ProgrammerException, UserException {
+	public DayFinishDate getNext() throws InternalException, UserException {
 		return getNext(this);
 	}
 
-	public Element toXML(Document doc) throws ProgrammerException,
-			UserException {
+	public Element toXml(Document doc) throws InternalException {
 		return toXML(getDate(), getLabel(), doc, getTypeName());
 	}
 

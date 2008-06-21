@@ -29,8 +29,10 @@ import net.sf.chellow.monad.DesignerException;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.Invocation;
 import net.sf.chellow.monad.MonadUtils;
-import net.sf.chellow.monad.ProgrammerException;
+import net.sf.chellow.monad.NotFoundException;
+import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Urlable;
+import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.UserException;
 
 import net.sf.chellow.monad.types.MonadLong;
@@ -48,23 +50,22 @@ public class Sites implements Urlable {
 	static {
 		try {
 			URI_ID = new UriPathElement("sites");
-		} catch (UserException e) {
+		} catch (HttpException e) {
 			throw new RuntimeException(e);
-		} catch (ProgrammerException e) {
-			throw new RuntimeException(e);		}
+		}
 	}
 
-	static public Site getSite(MonadLong id) throws ProgrammerException,
-			UserException {
+	static public Site getSite(MonadLong id) throws InternalException,
+			HttpException {
 		try {
 			Site site = (Site) Hiber.session().get(Site.class, id.getLong());
 			if (site == null) {
-				throw UserException
-						.newOk("There is no site with " + "that id.");
+				throw new UserException
+						("There is no site with " + "that id.");
 			}
 			return site;
 		} catch (HibernateException e) {
-			throw new ProgrammerException(e);
+			throw new InternalException(e);
 		}
 	}
 
@@ -82,17 +83,17 @@ public class Sites implements Urlable {
 		this.organization = organization;
 	}
 
-	public MonadUri getUri() throws ProgrammerException, UserException {
+	public MonadUri getUri() throws InternalException, HttpException {
 		return organization.getUri().resolve(getUriId()).append("/");
 	}
 
-	public void httpPost(Invocation inv) throws ProgrammerException,
-			UserException, DesignerException, DeployerException {
+	public void httpPost(Invocation inv) throws InternalException,
+			HttpException, DesignerException, DeployerException {
 		Document doc = MonadUtils.newSourceDocument();
 		SiteCode code = inv.getValidatable(SiteCode.class, "code");
 		String name = inv.getString("name");
 		if (!inv.isValid()) {
-			throw UserException.newOk(doc, null);
+			throw new UserException(doc, null);
 		}
 		Site site = organization.insertSite(code, name);
 		Hiber.commit();
@@ -100,23 +101,23 @@ public class Sites implements Urlable {
 	}
 
 	public void httpGet(Invocation inv) throws DesignerException,
-			ProgrammerException, UserException, DeployerException {
+			InternalException, HttpException, DeployerException {
 		Document doc = MonadUtils.newSourceDocument();
 		Element source = (Element) doc.getFirstChild();
 		Element organizationSource = (Element) source.appendChild(organization
-				.toXML(doc));
+				.toXml(doc));
 		List<Site> sites = null;
 		if (inv.hasParameter("search-pattern")) {
 			String searchTerm = inv.getString("search-pattern");
 			if (!inv.isValid()) {
-				throw UserException.newOk(doc, null);
+				throw new UserException(doc, null);
 			}
 			sites = organization.findSites(searchTerm);
 		} else {
 			sites = organization.findSites();
 		}
 		for (Site site : sites) {
-			organizationSource.appendChild(site.toXML(doc));
+			organizationSource.appendChild(site.toXml(doc));
 		}
 		inv.sendOk(doc);
 	}
@@ -125,8 +126,8 @@ public class Sites implements Urlable {
 		return URI_ID;
 	}
 
-	public Site getChild(UriPathElement uriId) throws UserException,
-			ProgrammerException {
+	public Site getChild(UriPathElement uriId) throws HttpException,
+			InternalException {
 		Site site = (Site) Hiber
 				.session()
 				.createQuery(
@@ -134,19 +135,19 @@ public class Sites implements Urlable {
 				.setEntity("organization", organization).setLong("siteId",
 						Long.parseLong(uriId.getString())).uniqueResult();
 		if (site == null) {
-			throw UserException.newNotFound();
+			throw new NotFoundException();
 		}
 		return site;
 	}
 
-	public void httpDelete(Invocation inv) throws ProgrammerException,
-			UserException {
+	public void httpDelete(Invocation inv) throws InternalException,
+			HttpException {
 		// TODO Auto-generated method stub
 
 	}
 
-	public Site getSite(SiteCode code) throws UserException,
-			ProgrammerException {
+	public Site getSite(SiteCode code) throws HttpException,
+			InternalException {
 		Site site = (Site) Hiber
 				.session()
 				.createQuery(
@@ -154,7 +155,7 @@ public class Sites implements Urlable {
 				.setEntity("organization", organization).setString("siteCode",
 						code.getString()).uniqueResult();
 		if (site == null) {
-			throw UserException.newNotFound();
+			throw new NotFoundException();
 		}
 		return site;
 	}

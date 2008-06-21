@@ -29,9 +29,12 @@ import net.sf.chellow.monad.DeployerException;
 import net.sf.chellow.monad.DesignerException;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.Invocation;
+import net.sf.chellow.monad.MethodNotAllowedException;
 import net.sf.chellow.monad.MonadUtils;
-import net.sf.chellow.monad.ProgrammerException;
+import net.sf.chellow.monad.NotFoundException;
+import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Urlable;
+import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.UserException;
 import net.sf.chellow.monad.XmlDescriber;
 import net.sf.chellow.monad.XmlTree;
@@ -51,9 +54,7 @@ public class Supplies implements Urlable, XmlDescriber {
 	static {
 		try {
 			URI_ID = new UriPathElement("supplies");
-		} catch (UserException e) {
-			throw new RuntimeException(e);
-		} catch (ProgrammerException e) {
+		} catch (HttpException e) {
 			throw new RuntimeException(e);
 		}
 	}
@@ -72,7 +73,7 @@ public class Supplies implements Urlable, XmlDescriber {
 		this.organization = organization;
 	}
 
-	public MonadUri getUrlPath() throws ProgrammerException, UserException {
+	public MonadUri getUrlPath() throws InternalException, HttpException {
 		return organization.getUri().resolve(getUriId()).append("/");
 	}
 
@@ -81,11 +82,10 @@ public class Supplies implements Urlable, XmlDescriber {
 	}
 
 	@SuppressWarnings("unchecked")
-	public void httpGet(Invocation inv) throws DesignerException,
-			ProgrammerException, UserException, DeployerException {
+	public void httpGet(Invocation inv) throws HttpException {
 		Document doc = MonadUtils.newSourceDocument();
 		Element source = doc.getDocumentElement();
-		source.appendChild(organization.toXML(doc));
+		source.appendChild(organization.toXml(doc));
 		if (inv.hasParameter("search-pattern")) {
 			MpanCoreTerm pattern = inv.getValidatable(MpanCoreTerm.class,
 					"search-pattern");
@@ -96,16 +96,16 @@ public class Supplies implements Urlable, XmlDescriber {
 					.setEntity("organization", organization).setString("term",
 							"%" + pattern.toString() + "%").setMaxResults(50)
 					.list()) {
-				source.appendChild(((MpanCore) array[0]).getXML(new XmlTree(
-						"supply").put("dso"), doc));
+				source.appendChild(((MpanCore) array[0]).toXml(doc, new XmlTree(
+								"supply").put("dso")));
 			}
 		}
 		inv.sendOk(doc);
 	}
 
-	public void httpPost(Invocation inv) throws ProgrammerException,
-			UserException {
-		throw UserException.newMethodNotAllowed();
+	public void httpPost(Invocation inv) throws InternalException,
+			MethodNotAllowedException {
+		throw new MethodNotAllowedException();
 	}
 
 	/*
@@ -122,28 +122,26 @@ public class Supplies implements Urlable, XmlDescriber {
 	 * .setEntity("organization", organization).setFirstResult( page *
 	 * PAGE_SIZE).setMaxResults(PAGE_SIZE).list(); }
 	 */
-	public Supply getChild(UriPathElement uriId) throws ProgrammerException,
-			UserException {
+	public Supply getChild(UriPathElement uriId) throws InternalException, NotFoundException {
 		return organization.getSupply(Long.parseLong(uriId.getString()));
 	}
 
-	public void httpDelete(Invocation inv) throws ProgrammerException,
-			DesignerException, UserException, DeployerException {
+	public void httpDelete(Invocation inv) throws InternalException,
+			DesignerException, DeployerException {
 		// TODO Auto-generated method stub
 
 	}
 
-	public MonadUri getUri() throws ProgrammerException, UserException {
+	public MonadUri getUri() throws InternalException, UserException {
 		return organization.getUri().resolve(getUriId());
 	}
 
-	public Node toXML(Document doc) throws ProgrammerException, UserException {
+	public Node toXml(Document doc) throws InternalException {
 		Element element = doc.createElement("supplies");
 		return element;
 	}
 
-	public Node getXML(XmlTree tree, Document doc) throws ProgrammerException,
-			UserException {
+	public Node toXml(Document doc, XmlTree tree) throws InternalException {
 		// TODO Auto-generated method stub
 		return null;
 	}

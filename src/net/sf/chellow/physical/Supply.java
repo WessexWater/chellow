@@ -42,10 +42,12 @@ import net.sf.chellow.monad.DesignerException;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.Invocation;
 import net.sf.chellow.monad.MonadUtils;
-import net.sf.chellow.monad.ProgrammerException;
+import net.sf.chellow.monad.NotFoundException;
+import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Urlable;
+import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.UserException;
-import net.sf.chellow.monad.VFMessage;
+import net.sf.chellow.monad.MonadMessage;
 import net.sf.chellow.monad.XmlTree;
 import net.sf.chellow.monad.types.MonadDate;
 import net.sf.chellow.monad.types.MonadUri;
@@ -64,21 +66,21 @@ public class Supply extends PersistentEntity implements Urlable {
 	 * static public Supply getSupply(MonadLong id) throws ProgrammerException,
 	 * UserException { return getSupply(id.getLong()); }
 	 */
-	static public Supply getSupply(Long id) throws ProgrammerException,
-			UserException {
+	static public Supply getSupply(Long id) throws InternalException,
+			HttpException {
 		try {
 			Supply supply = (Supply) Hiber.session().get(Supply.class, id);
 			if (supply == null) {
-				throw UserException.newOk("There is no supply with that id.");
+				throw new UserException("There is no supply with that id.");
 			}
 			return supply;
 		} catch (HibernateException e) {
-			throw new ProgrammerException(e);
+			throw new InternalException(e);
 		}
 	}
 
 	public static Supply getSupply(MpanCoreRaw core)
-			throws ProgrammerException, UserException {
+			throws InternalException, HttpException {
 		Supply supply;
 		try {
 			supply = (Supply) Hiber
@@ -87,10 +89,10 @@ public class Supply extends PersistentEntity implements Urlable {
 							"select distinct mpan.supplyGeneration.supply from Mpan mpan where mpan.dso.code.string || mpan.uniquePart.string || mpan.checkDigit.character = :core")
 					.setString("core", core.toStringNoSpaces()).uniqueResult();
 		} catch (HibernateException e) {
-			throw new ProgrammerException(e);
+			throw new InternalException(e);
 		}
 		if (supply == null) {
-			throw UserException.newOk("The MPAN core " + core
+			throw new UserException("The MPAN core " + core
 					+ " is not set up in Chellow.");
 		}
 		return supply;
@@ -108,11 +110,11 @@ public class Supply extends PersistentEntity implements Urlable {
 
 	private Set<Meter> meters;
 
-	public Supply() throws ProgrammerException {
+	public Supply() throws InternalException {
 	}
 
-	Supply(String name, Source source) throws ProgrammerException,
-			UserException {
+	Supply(String name, Source source) throws InternalException,
+			HttpException {
 		this();
 		setChannels(new HashSet<Channel>());
 		setGenerations(new HashSet<SupplyGeneration>());
@@ -129,9 +131,9 @@ public class Supply extends PersistentEntity implements Urlable {
 		this.channels = channels;
 	}
 
-	public void update(String name, Source source) throws ProgrammerException {
+	public void update(String name, Source source) throws InternalException {
 		if (name == null) {
-			throw new ProgrammerException("The supply name "
+			throw new InternalException("The supply name "
 					+ "cannot be null.");
 		}
 		setName(name);
@@ -142,7 +144,7 @@ public class Supply extends PersistentEntity implements Urlable {
 		return name;
 	}
 
-	protected void setName(String name) throws ProgrammerException {
+	protected void setName(String name) throws InternalException {
 		this.name = name;
 	}
 
@@ -171,7 +173,7 @@ public class Supply extends PersistentEntity implements Urlable {
 	}
 
 	public boolean hasMpanCoreRaw(MpanCoreRaw mpanCoreRaw)
-			throws ProgrammerException, UserException {
+			throws InternalException, HttpException {
 		boolean hasMpanCoreRaw = false;
 		for (MpanCore mpanCore : mpanCores) {
 			if (mpanCore.getCore().equals(mpanCoreRaw)) {
@@ -182,30 +184,28 @@ public class Supply extends PersistentEntity implements Urlable {
 		return hasMpanCoreRaw;
 	}
 
-	public MpanCore addMpanCore(MpanCoreRaw mpanCoreRaw) throws UserException,
-			ProgrammerException {
+	public MpanCore addMpanCore(MpanCoreRaw mpanCoreRaw) throws HttpException,
+			InternalException {
 		MpanCore mpanCore = new MpanCore(this, mpanCoreRaw);
 		try {
 			Hiber.session().save(mpanCore);
 			mpanCores.add(mpanCore);
 			Hiber.flush();
 		} catch (ConstraintViolationException e) {
-			throw UserException
-					.newInvalidParameter("This MPAN core already exists.");
+			throw new UserException("This MPAN core already exists.");
 		}
 		return mpanCore;
 	}
 
-	public Meter insertMeter(String meterSerialNumber) throws UserException,
-			ProgrammerException {
+	public Meter insertMeter(String meterSerialNumber) throws HttpException,
+			InternalException {
 		Meter meter = new Meter(this, meterSerialNumber);
 		try {
 			Hiber.session().save(meter);
 			meters.add(meter);
 			Hiber.flush();
 		} catch (ConstraintViolationException e) {
-			throw UserException
-					.newInvalidParameter("This meter already exists.");
+			throw new UserException("This meter already exists.");
 		}
 		return meter;
 	}
@@ -270,7 +270,7 @@ public class Supply extends PersistentEntity implements Urlable {
 		return generations;
 	}
 
-	public MpanCore getMpanCore(MpanCoreRaw core) throws ProgrammerException {
+	public MpanCore getMpanCore(MpanCoreRaw core) throws InternalException {
 		MpanCore mpanCore = (MpanCore) Hiber
 				.session()
 				.createQuery(
@@ -278,18 +278,18 @@ public class Supply extends PersistentEntity implements Urlable {
 				.setEntity("supply", this).setString("core",
 						core.toStringNoSpaces()).uniqueResult();
 		if (mpanCore == null) {
-			throw new ProgrammerException("Mpan isn't attached to this supply.");
+			throw new InternalException("Mpan isn't attached to this supply.");
 		}
 		return mpanCore;
 	}
 
 	public SupplyGeneration addGeneration(HhEndDate finishDate)
-			throws UserException, ProgrammerException, DesignerException {
+			throws HttpException, InternalException, DesignerException {
 		if (finishDate != null
 				&& finishDate.getDate().before(
 						getGenerationFirst().getStartDate().getDate())) {
-			throw UserException
-					.newOk("You can't add a generation before the first generation.");
+			throw new UserException(
+					"You can't add a generation before the first generation.");
 		}
 		SupplyGeneration existingGeneration = getGeneration(finishDate);
 		if (existingGeneration == null) {
@@ -364,7 +364,7 @@ public class Supply extends PersistentEntity implements Urlable {
 			SupplierService exportContractSupplier, boolean exportHasImportKwh,
 			boolean exportHasImportKvarh, boolean exportHasExportKwh,
 			boolean exportHasExportKvarh, Integer exportAgreedSupplyCapacity,
-			HhEndDate finishDate) throws ProgrammerException, UserException,
+			HhEndDate finishDate) throws InternalException, HttpException,
 			DesignerException {
 		Organization organization = existingSiteMap.keySet().iterator().next()
 				.getOrganization();
@@ -398,11 +398,11 @@ public class Supply extends PersistentEntity implements Urlable {
 			SupplierService exportContractSupplier, boolean exportHasImportKwh,
 			boolean exportHasImportKvarh, boolean exportHasExportKwh,
 			boolean exportHasExportKvarh, Integer exportAgreedSupplyCapacity,
-			HhEndDate finishDate) throws ProgrammerException, UserException,
+			HhEndDate finishDate) throws InternalException, HttpException,
 			DesignerException {
 		if (getGenerationFinishing(finishDate) != null) {
-			throw UserException
-					.newOk("There's already a supply generation with this finish date.");
+			throw new UserException(
+					"There's already a supply generation with this finish date.");
 		}
 		SupplyGeneration supplyGeneration = null;
 		if (generations.isEmpty()) {
@@ -413,8 +413,8 @@ public class Supply extends PersistentEntity implements Urlable {
 		} else {
 			SupplyGeneration existingGeneration = getGeneration(finishDate);
 			if (existingGeneration == null) {
-				throw UserException
-						.newOk("You can't add a generation before the start of the supply.");
+				throw new UserException(
+						"You can't add a generation before the start of the supply.");
 			}
 			supplyGeneration = new SupplyGeneration(this, existingGeneration
 					.getStartDate(), finishDate, meter);
@@ -423,8 +423,8 @@ public class Supply extends PersistentEntity implements Urlable {
 		}
 		Hiber.flush();
 		if (importMpanCore == null && exportMpanCore == null) {
-			throw UserException
-					.newOk("A supply generation must have at least one MPAN.");
+			throw new UserException(
+					"A supply generation must have at least one MPAN.");
 		}
 		supplyGeneration.addOrUpdateMpans(importMpanTop, importMpanCore,
 				importContractDce, importAccountSupplier,
@@ -442,8 +442,8 @@ public class Supply extends PersistentEntity implements Urlable {
 		return supplyGeneration;
 	}
 
-	public void checkForMissingFromLatest() throws ProgrammerException,
-			UserException {
+	public void checkForMissingFromLatest() throws InternalException,
+			HttpException {
 		for (Channel channel : channels) {
 			channel.checkForMissingFromLatest(null);
 		}
@@ -455,7 +455,7 @@ public class Supply extends PersistentEntity implements Urlable {
 	 */
 
 	public void checkForMissing(HhEndDate from, HhEndDate to)
-			throws ProgrammerException, UserException {
+			throws InternalException, HttpException {
 		for (Channel channel : channels) {
 			channel.checkForMissing(from, to);
 		}
@@ -469,14 +469,14 @@ public class Supply extends PersistentEntity implements Urlable {
 		this.source = source;
 	}
 
-	public Element toXML(Document doc) throws ProgrammerException,
-			UserException {
+	public Element toXml(Document doc) throws InternalException,
+			HttpException {
 		setTypeName("supply");
-		Element element = (Element) super.toXML(doc);
+		Element element = (Element) super.toXml(doc);
 
 		element.setAttribute("name", name);
 		for (Channel channel : channels) {
-			element.appendChild(channel.toXML(doc));
+			element.appendChild(channel.toXml(doc));
 		}
 		return element;
 	}
@@ -504,10 +504,10 @@ public class Supply extends PersistentEntity implements Urlable {
 	}
 
 	public void deleteGeneration(SupplyGeneration generation)
-			throws ProgrammerException, UserException {
+			throws InternalException, HttpException {
 		if (getGenerations().size() == 1) {
-			throw UserException
-					.newInvalidParameter("The only way to delete the last generation is to delete the entire supply.");
+			throw new UserException(
+					"The only way to delete the last generation is to delete the entire supply.");
 		}
 		SupplyGeneration previousGeneration = getGenerationPrevious(generation);
 		SupplyGeneration nextGeneration = getGenerationNext(generation);
@@ -527,7 +527,7 @@ public class Supply extends PersistentEntity implements Urlable {
 
 	@SuppressWarnings("unchecked")
 	public void checkAfterUpdate(boolean checkData, HhEndDate from, HhEndDate to)
-			throws ProgrammerException, UserException {
+			throws InternalException, HttpException {
 		Hiber.flush();
 		Date supplyStartDate = getGenerationFirst().getStartDate().getDate();
 		Date supplyFinishDate = getGenerationLast().getFinishDate() == null ? null
@@ -541,8 +541,8 @@ public class Supply extends PersistentEntity implements Urlable {
 									"select count(*) from HhDatum datum where datum.channel.supply  = :supply and datum.endDate.date < :date")
 							.setEntity("supply", this).setTimestamp("date",
 									supplyStartDate).uniqueResult()) > 0) {
-				throw UserException
-						.newInvalidParameter("There are half-hourly data before the start of the updated supply.");
+				throw new UserException(
+						"There are half-hourly data before the start of the updated supply.");
 			}
 			if (supplyFinishDate != null
 					&& ((Long) Hiber
@@ -551,8 +551,8 @@ public class Supply extends PersistentEntity implements Urlable {
 									"select count(*) from HhDatum datum where datum.channel.supply  = :supply and datum.endDate.date > :date")
 							.setEntity("supply", this).setTimestamp("date",
 									supplyFinishDate).uniqueResult()) > 0) {
-				throw UserException
-						.newInvalidParameter("There are half-hourly data after the end of the updated supply.");
+				throw new UserException(
+						"There are half-hourly data after the end of the updated supply.");
 			}
 			Query query = Hiber
 					.session()
@@ -573,8 +573,8 @@ public class Supply extends PersistentEntity implements Urlable {
 									.setTimestamp("startDate",
 											generation.getStartDate().getDate())
 									.uniqueResult()) > 0) {
-								throw UserException
-										.newInvalidParameter("There are half-hourly data in "
+								throw new UserException(
+										"There are half-hourly data in "
 												+ channel
 												+ " and generation "
 												+ generation
@@ -589,8 +589,8 @@ public class Supply extends PersistentEntity implements Urlable {
 											"finishDate",
 											generation.getFinishDate()
 													.getDate()).uniqueResult()) > 0) {
-								throw UserException
-										.newInvalidParameter("There are half-hourly data without a contract, associated with the channel "
+								throw new UserException(
+										"There are half-hourly data without a contract, associated with the channel "
 												+ channel.getId()
 												+ " and supply generation '"
 												+ generation.getId() + "' .");
@@ -600,10 +600,10 @@ public class Supply extends PersistentEntity implements Urlable {
 				}
 			}
 			if (from.getDate().before(supplyStartDate)) {
-				for (SnagChannel snag : (List<SnagChannel>) Hiber
+				for (ChannelSnag snag : (List<ChannelSnag>) Hiber
 						.session()
 						.createQuery(
-								"from SnagChannel snag where snag.channel.supply  = :supply and snag.finishDate.date >= :startDate and snag.startDate.date <= :finishDate")
+								"from ChannelSnag snag where snag.channel.supply  = :supply and snag.finishDate.date >= :startDate and snag.startDate.date <= :finishDate")
 						.setEntity("supply", this).setTimestamp("startDate",
 								from.getDate()).setTimestamp(
 								"finishDate",
@@ -613,10 +613,10 @@ public class Supply extends PersistentEntity implements Urlable {
 				}
 			}
 			if (supplyFinishDate != null) {
-				for (SnagChannel snag : (List<SnagChannel>) Hiber
+				for (ChannelSnag snag : (List<ChannelSnag>) Hiber
 						.session()
 						.createQuery(
-								"from SnagChannel snag where snag.channel.supply  = :supply and snag.finishDate.date >= :startDate")
+								"from ChannelSnag snag where snag.channel.supply  = :supply and snag.finishDate.date >= :startDate")
 						.setEntity("supply", this).setTimestamp("startDate",
 								from.getDate()).list()) {
 					snag.resolve(false);
@@ -627,17 +627,17 @@ public class Supply extends PersistentEntity implements Urlable {
 					DceService contractDce = generation.getDceService(channel
 							.getIsImport(), channel.getIsKwh());
 					HhEndDate generationFinishDate = generation.getFinishDate();
-					for (SnagChannel snag : (List<SnagChannel>) (generationFinishDate == null ? Hiber
+					for (ChannelSnag snag : (List<ChannelSnag>) (generationFinishDate == null ? Hiber
 							.session()
 							.createQuery(
-									"from SnagChannel snag where snag.channel  = :channel and snag.finishDate.date >= :startDate")
+									"from ChannelSnag snag where snag.channel  = :channel and snag.finishDate.date >= :startDate")
 							.setEntity("channel", channel).setTimestamp(
 									"startDate",
 									generation.getStartDate().getDate()).list()
 							: Hiber
 									.session()
 									.createQuery(
-											"from SnagChannel snag where snag.channel  = :channel and snag.finishDate.date >= :startDate and snag.startDate.date <= :finishDate")
+											"from ChannelSnag snag where snag.channel  = :channel and snag.finishDate.date >= :startDate and snag.startDate.date <= :finishDate")
 									.setEntity("channel", channel)
 									.setTimestamp("startDate",
 											generation.getStartDate().getDate())
@@ -660,8 +660,8 @@ public class Supply extends PersistentEntity implements Urlable {
 								"select count(*) from RegisterRead read where read.mpan.supplyGeneration.supply  = :supply and read.presentDate.date < :date")
 						.setEntity("supply", this).setTimestamp("date",
 								supplyStartDate).uniqueResult()) > 0) {
-			throw UserException
-					.newInvalidParameter("There are register reads before the start of the updated supply.");
+			throw new UserException(
+					"There are register reads before the start of the updated supply.");
 		}
 		if (supplyFinishDate != null
 				&& ((Long) Hiber
@@ -670,8 +670,8 @@ public class Supply extends PersistentEntity implements Urlable {
 								"select count(*) from RegisterRead read where read.mpan.supplyGeneration.supply  = :supply and read.presentDate.date > :date")
 						.setEntity("supply", this).setTimestamp("date",
 								supplyFinishDate).uniqueResult()) > 0) {
-			throw UserException
-					.newInvalidParameter("There are register reads after the end of the updated supply.");
+			throw new UserException(
+					"There are register reads after the end of the updated supply.");
 		}
 		for (SupplyGeneration generation : getGenerations(from, to)) {
 			for (RegisterRead read : (List<RegisterRead>) Hiber
@@ -690,8 +690,8 @@ public class Supply extends PersistentEntity implements Urlable {
 							.getIsImport() ? targetGeneration.getImportMpan()
 							: targetGeneration.getExportMpan();
 					if (targetMpan == null) {
-						throw UserException
-								.newInvalidParameter("There's no MPAN for the meter read to move to.");
+						throw new UserException(
+								"There's no MPAN for the meter read to move to.");
 					}
 					read.setMpan(targetMpan);
 				}
@@ -714,7 +714,7 @@ public class Supply extends PersistentEntity implements Urlable {
 	}
 
 	public SupplyGeneration getGenerationPrevious(SupplyGeneration generation)
-			throws ProgrammerException, UserException {
+			throws InternalException, HttpException {
 		return (SupplyGeneration) Hiber
 				.session()
 				.createQuery(
@@ -725,7 +725,7 @@ public class Supply extends PersistentEntity implements Urlable {
 	}
 
 	public SupplyGeneration getGenerationNext(SupplyGeneration generation)
-			throws ProgrammerException, UserException {
+			throws InternalException, HttpException {
 		if (generation.getFinishDate() == null) {
 			return null;
 		}
@@ -750,67 +750,67 @@ public class Supply extends PersistentEntity implements Urlable {
 		return channel;
 	}
 
-	private void addSourcesXML(Element element) throws ProgrammerException,
-			UserException {
+	private void addSourcesXML(Element element) throws InternalException,
+			HttpException {
 		for (Source source : Source.getSources()) {
-			element.appendChild(source.toXML(element.getOwnerDocument()));
+			element.appendChild(source.toXml(element.getOwnerDocument()));
 		}
 	}
 
-	private Document document() throws ProgrammerException, UserException,
+	private Document document() throws InternalException, HttpException,
 			DesignerException {
 		Document doc = MonadUtils.newSourceDocument();
 		Element source = doc.getDocumentElement();
-		Element supplyElement = (Element) getXML(new XmlTree("generations",
-				new XmlTree("mpans", new XmlTree("mpanCore").put("mpanTop",
-						new XmlTree("llf", new XmlTree("voltageLevel")))))
-				.put("mpanCores"), doc);
+		Element supplyElement = (Element) toXml(doc, new XmlTree("generations",
+						new XmlTree("mpans", new XmlTree("mpanCore").put("mpanTop",
+								new XmlTree("llf", new XmlTree("voltageLevel")))))
+						.put("mpanCores"));
 		source.appendChild(supplyElement);
-		supplyElement.appendChild(getOrganization().toXML(doc));
+		supplyElement.appendChild(getOrganization().toXml(doc));
 		addSourcesXML(source);
 		source.appendChild(MonadDate.getMonthsXml(doc));
 		source.appendChild(MonadDate.getDaysXml(doc));
-		source.appendChild(new MonadDate().toXML(doc));
+		source.appendChild(new MonadDate().toXml(doc));
 		return doc;
 	}
 
-	public void httpPost(Invocation inv) throws ProgrammerException,
-			UserException, DesignerException, DeployerException {
+	public void httpPost(Invocation inv) throws InternalException,
+			HttpException, DesignerException, DeployerException {
 		try {
 			if (inv.hasParameter("delete")) {
 				Document doc = document();
 				Element source = doc.getDocumentElement();
 
-				source.appendChild(toXML(doc));
+				source.appendChild(toXml(doc));
 				Organization org = getOrganization();
 				delete(this);
 				Hiber.commit();
 				source
-						.appendChild(new VFMessage(
-								"Supply deleted successfully.").toXML(doc));
+						.appendChild(new MonadMessage(
+								"Supply deleted successfully.").toXml(doc));
 				inv.sendSeeOther(org.getUri());
 			} else {
 				String name = inv.getString("name");
 				Long sourceId = inv.getLong("source-id");
 				if (!inv.isValid()) {
-					throw UserException.newInvalidParameter(document());
+					throw new UserException(document());
 				}
 				update(name, Source.getSource(sourceId));
 				Hiber.commit();
 				inv.sendOk(document());
 			}
-		} catch (UserException e) {
+		} catch (HttpException e) {
 			e.setDocument(document());
 			throw e;
 		}
 	}
 
-	public void httpGet(Invocation inv) throws ProgrammerException,
-			DesignerException, DeployerException, UserException {
+	public void httpGet(Invocation inv) throws InternalException,
+			DesignerException, DeployerException, HttpException {
 		inv.sendOk(document());
 	}
 
-	public MonadUri getUri() throws ProgrammerException, UserException {
+	public MonadUri getUri() throws InternalException, HttpException {
 		return getOrganization().suppliesInstance().getUrlPath().resolve(
 				getUriId()).append("/");
 	}
@@ -831,7 +831,7 @@ public class Supply extends PersistentEntity implements Urlable {
 	}
 
 	public void httpPostSupplyGeneration(Invocation inv)
-			throws DesignerException, ProgrammerException, UserException,
+			throws DesignerException, InternalException, HttpException,
 			DeployerException {
 		Boolean isOngoing = inv.getBoolean("isOngoing");
 		HhEndDate finishDate = null;
@@ -843,8 +843,8 @@ public class Supply extends PersistentEntity implements Urlable {
 		inv.sendOk(document());
 	}
 
-	public Channel getChannel(UriPathElement urlId) throws UserException,
-			ProgrammerException {
+	public Channel getChannel(UriPathElement urlId) throws HttpException,
+			InternalException {
 		Channel channel = (Channel) Hiber
 				.session()
 				.createQuery(
@@ -852,13 +852,13 @@ public class Supply extends PersistentEntity implements Urlable {
 				.setEntity("supply", this).setLong("channelId",
 						Long.parseLong(urlId.getString())).uniqueResult();
 		if (channel == null) {
-			throw UserException.newNotFound();
+			throw new NotFoundException();
 		}
 		return channel;
 	}
 
-	public Urlable getChild(UriPathElement uriId) throws ProgrammerException,
-			UserException {
+	public Urlable getChild(UriPathElement uriId) throws InternalException,
+			HttpException {
 		Urlable urlable = null;
 		if (SupplyGenerations.URI_ID.equals(uriId)) {
 			urlable = new SupplyGenerations(this);
@@ -889,15 +889,15 @@ public class Supply extends PersistentEntity implements Urlable {
 		return isEqual;
 	}
 
-	public void httpDelete(Invocation inv) throws ProgrammerException,
-			DesignerException, UserException, DeployerException {
+	public void httpDelete(Invocation inv) throws InternalException,
+			DesignerException, HttpException, DeployerException {
 		// TODO Auto-generated method stub
 
 	}
 
 	public RegisterRead insertRegisterRead(RegisterReadRaw rawRegisterRead,
-			Invoice invoice, Service service) throws UserException,
-			ProgrammerException {
+			Invoice invoice, Service service) throws HttpException,
+			InternalException {
 		SupplyGeneration supplyGeneration = this.getGeneration(rawRegisterRead
 				.getPresentDate());
 		return supplyGeneration.insertRegisterRead(rawRegisterRead, invoice);
@@ -912,29 +912,28 @@ public class Supply extends PersistentEntity implements Urlable {
 						meterSerialNumber).uniqueResult();
 	}
 
-	Meter getMeter(String meterSerialNumber) throws UserException,
-			ProgrammerException {
+	Meter getMeter(String meterSerialNumber) throws HttpException,
+			InternalException {
 		Meter meter = findMeter(meterSerialNumber);
 		if (meter == null) {
-			throw UserException
-					.newInvalidParameter("There isn't a meter with serial number "
-							+ meterSerialNumber
-							+ " attached to supply "
-							+ getId() + ".");
+			throw new UserException("There isn't a meter with serial number "
+					+ meterSerialNumber + " attached to supply " + getId()
+					+ ".");
 		}
 		return meter;
 	}
 
 	@SuppressWarnings("unchecked")
-	public void delete(Supply supply) throws ProgrammerException, UserException {
+	public void delete(Supply supply) throws InternalException,
+			HttpException {
 		long numInvoiceMpans = (Long) Hiber
 				.session()
 				.createQuery(
 						"select count(*) from InvoiceMpan invoiceMpan where invoiceMpan.mpan.supplyGeneration.supply = :supply")
 				.setEntity("supply", this).uniqueResult();
 		if (numInvoiceMpans > 0) {
-			throw UserException
-					.newInvalidParameter("One can't delete a supply if there are still invoices attached to its MPANs.");
+			throw new UserException(
+					"One can't delete a supply if there are still invoices attached to its MPANs.");
 		}
 		/*
 		 * long reads = (Long) Hiber .session() .createQuery( "select count(*)
@@ -948,23 +947,23 @@ public class Supply extends PersistentEntity implements Urlable {
 				.createQuery(
 						"select count(*) from HhDatum datum where datum.channel.supply = :supply")
 				.setEntity("supply", this).uniqueResult() > 0) {
-			throw UserException
-					.newInvalidParameter("One can't delete a supply if there are still HH data attached to it.");
+			throw new UserException(
+					"One can't delete a supply if there are still HH data attached to it.");
 		}
 		for (SupplyGeneration generation : getGenerations()) {
 			generation.delete();
 		}
 		// delete all the snags
-		for (SnagChannel snag : (List<SnagChannel>) Hiber
+		for (ChannelSnag snag : (List<ChannelSnag>) Hiber
 				.session()
 				.createQuery(
-						"from SnagChannel snag where snag.channel.supply = :supply")
+						"from ChannelSnag snag where snag.channel.supply = :supply")
 				.setEntity("supply", this).list()) {
 			Hiber.session().delete(snag);
 			Hiber.flush();
 		}
 		mpanCores.clear();
-		// Hiber.session().createQuery("delete from SnagChannel snag where
+		// Hiber.session().createQuery("delete from ChannelSnag snag where
 		// snag.channel.supply = :supply").setEntity("supply",
 		// supply).executeUpdate();
 		Hiber.session().delete(this);

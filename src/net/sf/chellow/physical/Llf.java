@@ -29,8 +29,9 @@ import net.sf.chellow.monad.DesignerException;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.Invocation;
 import net.sf.chellow.monad.MonadUtils;
-import net.sf.chellow.monad.ProgrammerException;
+import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Urlable;
+import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.UserException;
 import net.sf.chellow.monad.XmlTree;
 import net.sf.chellow.monad.types.MonadUri;
@@ -44,7 +45,7 @@ import org.w3c.dom.Node;
 public class Llf extends PersistentEntity {
 	static public Llf insertLlf(Dso dso, int code,
 			String description, String voltageLevel, boolean isSubstation,
-			boolean isImport) throws ProgrammerException, UserException {
+			boolean isImport) throws InternalException, HttpException {
 		Llf llf = new Llf(dso, code,
 				description, VoltageLevel.getVoltageLevel(new VoltageLevelCode(
 						voltageLevel)), isSubstation, isImport);
@@ -54,12 +55,12 @@ public class Llf extends PersistentEntity {
 	}
 
 	static public Llf getLlf(Long id)
-			throws ProgrammerException, UserException {
+			throws InternalException, HttpException {
 		Llf llf = (Llf) Hiber.session().get(
 				Llf.class, id);
 		if (llf == null) {
-			throw UserException
-					.newInvalidParameter("There is no mpan generation with that id.");
+			throw new UserException
+					("There is no mpan generation with that id.");
 		}
 		return llf;
 	}
@@ -67,7 +68,7 @@ public class Llf extends PersistentEntity {
 	@SuppressWarnings("unchecked")
 	static public List<Llf> find(Dso dso, ProfileClass profileClass,
 			boolean isSubstation, boolean isImport, VoltageLevel voltageLevel)
-			throws ProgrammerException, UserException {
+			throws InternalException, HttpException {
 		try {
 			return (List<Llf>) Hiber
 					.session()
@@ -78,13 +79,13 @@ public class Llf extends PersistentEntity {
 							isSubstation).setBoolean("isImport", isImport)
 					.setEntity("voltageLevel", voltageLevel).list();
 		} catch (HibernateException e) {
-			throw new ProgrammerException(e);
+			throw new InternalException(e);
 		}
 	}
 
 	@SuppressWarnings("unchecked")
 	static public List<Llf> find(Dso dso, ProfileClass profileClass)
-			throws ProgrammerException, UserException {
+			throws InternalException, HttpException {
 		try {
 			return (List<Llf>) Hiber
 					.session()
@@ -93,7 +94,7 @@ public class Llf extends PersistentEntity {
 					.setEntity("dso", dso).setEntity("profileClass",
 							profileClass).list();
 		} catch (HibernateException e) {
-			throw new ProgrammerException(e);
+			throw new InternalException(e);
 		}
 	}
 
@@ -114,12 +115,12 @@ public class Llf extends PersistentEntity {
 
 	public Llf(Dso dso, int code, String description,
 			VoltageLevel voltageLevel, boolean isSubstation, boolean isImport)
-			throws ProgrammerException, UserException {
+			throws InternalException, HttpException {
 		this();
 		this.dso = dso;
 		setCode(new LlfCode(code));
 		if (description == null) {
-			throw new ProgrammerException("The description can't be null.");
+			throw new InternalException("The description can't be null.");
 		}
 		setDescription(description);
 		update(voltageLevel, isSubstation, isImport);
@@ -185,7 +186,7 @@ public class Llf extends PersistentEntity {
 	 * meterTimeswitch.getLineLossFactors().add(this); return meterTimeswitch; }
 	 */
 	public void update(VoltageLevel voltageLevel, boolean isSubstation,
-			boolean isImport) throws ProgrammerException, UserException {
+			boolean isImport) throws InternalException, HttpException {
 		setVoltageLevel(voltageLevel);
 		setIsSubstation(isSubstation);
 		setIsImport(isImport);
@@ -196,9 +197,9 @@ public class Llf extends PersistentEntity {
 				+ ")";
 	}
 
-	public Node toXML(Document doc) throws ProgrammerException, UserException {
+	public Node toXml(Document doc) throws InternalException, HttpException {
 		setTypeName("llf");
-		Element element = (Element) super.toXML(doc);
+		Element element = (Element) super.toXml(doc);
 		element.setAttribute("code", code.toString());
 		element.setAttribute("description", description);
 		element.setAttribute("is-substation", Boolean.toString(isSubstation));
@@ -210,29 +211,29 @@ public class Llf extends PersistentEntity {
 		return null;
 	}
 
-	public Urlable getChild(UriPathElement uriId) throws ProgrammerException,
-			UserException {
+	public Urlable getChild(UriPathElement uriId) throws InternalException,
+			HttpException {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	public void httpGet(Invocation inv) throws DesignerException,
-			ProgrammerException, UserException, DeployerException {
+			InternalException, HttpException, DeployerException {
 		Document doc = MonadUtils.newSourceDocument();
 		Element source = doc.getDocumentElement();
 
-		source.appendChild(getXML(new XmlTree("dso").put("voltageLevel"), doc));
+		source.appendChild(toXml(doc, new XmlTree("dso").put("voltageLevel")));
 		inv.sendOk(doc);
 	}
 
-	public void httpPost(Invocation inv) throws ProgrammerException,
-			UserException {
+	public void httpPost(Invocation inv) throws InternalException,
+			HttpException {
 		// TODO Auto-generated method stub
 
 	}
 
-	public void httpDelete(Invocation inv) throws ProgrammerException,
-			DesignerException, UserException, DeployerException {
+	public void httpDelete(Invocation inv) throws InternalException,
+			DesignerException, HttpException, DeployerException {
 		// TODO Auto-generated method stub
 
 	}

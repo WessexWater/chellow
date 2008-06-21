@@ -22,7 +22,8 @@
 
 package net.sf.chellow.physical;
 
-import net.sf.chellow.monad.ProgrammerException;
+import net.sf.chellow.monad.InternalException;
+import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.UserException;
 import net.sf.chellow.monad.types.MonadString;
 
@@ -32,19 +33,19 @@ public class VoltageLevelCode extends MonadString {
 		setMaximumLength(10);
 	}
 
-	public VoltageLevelCode(String code) throws UserException,
-			ProgrammerException {
+	public VoltageLevelCode(String code) throws HttpException,
+			InternalException {
 		this(null, code);
 	}
 
-	public VoltageLevelCode(String label, String code) throws UserException,
-			ProgrammerException {
+	public VoltageLevelCode(String label, String code) throws HttpException,
+			InternalException {
 		this();
 		setLabel(label);
 		update(code);
 	}
 
-	public void update(String code) throws UserException, ProgrammerException {
+	public void update(String code) throws InternalException, UserException {
 		super.update(code.toUpperCase());
 	}
 }

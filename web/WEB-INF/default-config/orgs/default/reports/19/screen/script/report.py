@@ -3,9 +3,9 @@ from net.sf.chellow.monad import Hiber
 activeSnags = Hiber.session().createQuery("select snag,snag.site from SnagSite snag where snag.site.organization = :organization and snag.dateResolved is null order by snag.site.code, snag.startDate.date").setEntity("organization", organization).list()
 
 for snagRow in activeSnags:
-    snagElement = snagRow[0].toXML(doc)
+    snagElement = snagRow[0].toXml(doc)
     source.appendChild(snagElement)
-    siteElement = snagRow[1].toXML(doc)
+    siteElement = snagRow[1].toXml(doc)
     snagElement.appendChild(siteElement)
 
 activeSites = Hiber.session().createQuery("select count(distinct snag.site) from SnagSite snag where snag.site.organization = :organization and snag.dateResolved is null").setEntity("organization", organization).uniqueResult()

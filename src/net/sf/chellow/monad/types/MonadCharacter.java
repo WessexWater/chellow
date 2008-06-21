@@ -22,7 +22,8 @@
 
 package net.sf.chellow.monad.types;
 
-import net.sf.chellow.monad.ProgrammerException;
+import net.sf.chellow.monad.InternalException;
+import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.UserException;
 
 import org.w3c.dom.Attr;
@@ -63,12 +64,12 @@ public class MonadCharacter extends MonadObject {
 		return character;
 	}
 
-	public void update(Character character) throws UserException,
-			ProgrammerException {
+	public void update(Character character) throws HttpException,
+			InternalException {
 
 		if (digitOnly && !Character.isDigit(character.charValue())) {
-			throw UserException
-					.newInvalidParameter("This character must be a digit.");
+			throw new UserException
+					("This character must be a digit.");
 		}
 		setCharacter(character);
 	}
@@ -77,7 +78,7 @@ public class MonadCharacter extends MonadObject {
 		this.character = character;
 	}
 
-	public Attr toXML(Document doc) {
+	public Attr toXml(Document doc) {
 		Attr attr = doc.createAttribute((getLabel() == null) ? getTypeName()
 				: getLabel());
 

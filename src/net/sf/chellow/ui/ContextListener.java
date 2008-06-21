@@ -24,14 +24,14 @@ import net.sf.chellow.billing.RateScript;
 import net.sf.chellow.hhimport.stark.StarkAutomaticHhDataImporters;
 import net.sf.chellow.monad.Debug;
 import net.sf.chellow.monad.DeployerException;
-import net.sf.chellow.monad.DesignerException;
 import net.sf.chellow.monad.Hiber;
+import net.sf.chellow.monad.HttpException;
+import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Invocation;
 import net.sf.chellow.monad.Monad;
 import net.sf.chellow.monad.MonadContextParameters;
 import net.sf.chellow.monad.MonadFormatter;
 import net.sf.chellow.monad.MonadHandler;
-import net.sf.chellow.monad.ProgrammerException;
 import net.sf.chellow.monad.UserException;
 import net.sf.chellow.monad.types.EmailAddress;
 import net.sf.chellow.monad.types.MonadUri;
@@ -105,35 +105,35 @@ public class ContextListener implements ServletContextListener {
 				if (rs.next()) {
 					switch (rs.getInt("version")) {
 					case 0:
-						throw UserException
-								.newInvalidParameter("Database version too old to upgrade with this version.");
+						throw new UserException
+								("Database version too old to upgrade with this version.");
 					case 1:
-						throw UserException
-								.newInvalidParameter("Database version too old to upgrade with this version.");
+						throw new UserException
+								("Database version too old to upgrade with this version.");
 					case 2:
-						throw UserException
-								.newInvalidParameter("Database version too old to upgrade with this version.");
+						throw new UserException
+								("Database version too old to upgrade with this version.");
 					case 3:
-						throw UserException
-								.newInvalidParameter("Database version too old to upgrade with this version.");
+						throw new UserException
+								("Database version too old to upgrade with this version.");
 					case 4:
-						throw UserException
-								.newInvalidParameter("Database version too old to upgrade with this version.");
+						throw new UserException
+								("Database version too old to upgrade with this version.");
 					case 5:
-						throw UserException
-								.newInvalidParameter("Database version too old to upgrade with this version.");
+						throw new UserException
+								("Database version too old to upgrade with this version.");
 					case 6:
-						throw UserException
-								.newInvalidParameter("Database version too old to upgrade with this version.");
+						throw new UserException
+								("Database version too old to upgrade with this version.");
 					case 7:
-						throw UserException
-								.newInvalidParameter("Database version too old to upgrade with this version.");
+						throw new UserException
+								("Database version too old to upgrade with this version.");
 					case 8:
-						throw UserException
-								.newInvalidParameter("Database version too old to upgrade with this version.");
+						throw new UserException
+								("Database version too old to upgrade with this version.");
 					case 9:
-						throw UserException
-								.newInvalidParameter("Database version too old to upgrade with this version.");
+						throw new UserException
+								("Database version too old to upgrade with this version.");
 					case 10:
 						Debug.print("It's version 10");
 						upgrade10to11(con);
@@ -259,7 +259,7 @@ public class ContextListener implements ServletContextListener {
 	}
 
 	@SuppressWarnings("unchecked")
-	private void initializeDatabase(Connection con) throws ProgrammerException {
+	private void initializeDatabase(Connection con) throws InternalException {
 		SchemaUpdate su = new SchemaUpdate(Hiber.getConfiguration());
 		su.execute(false, true);
 		/*
@@ -381,14 +381,13 @@ public class ContextListener implements ServletContextListener {
 			}
 		} catch (Exception e) {
 			Hiber.rollBack();
-			throw new ProgrammerException(e);
+			throw new InternalException(e);
 		} finally {
 			Hiber.close();
 		}
 	}
 
-	private void dataDelta(Connection con) throws ProgrammerException,
-			UserException {
+	private void dataDelta(Connection con) throws HttpException {
 		/*
 		 * try { Statement stmt = con.createStatement(); stmt .execute("CREATE
 		 * UNIQUE INDEX llf_mt_idx on llf_mt (line_loss_factor_id,
@@ -3913,7 +3912,7 @@ public class ContextListener implements ServletContextListener {
 	}
 
 	static private Dso insertDso(String name, String code)
-			throws ProgrammerException, UserException, DesignerException {
+			throws HttpException {
 		Dso dso = Dso.insertDso(name, new DsoCode(code));
 		ClassLoader classLoader = Dso.class.getClassLoader();
 		DsoService dsoService;
@@ -3942,13 +3941,12 @@ public class ContextListener implements ServletContextListener {
 			dsoRateScript.update(dsoRateScript.getStartDate(), dsoRateScript
 					.getFinishDate(), pythonString.toString());
 		} catch (IOException e) {
-			throw new ProgrammerException(e);
+			throw new InternalException(e);
 		}
 		return dso;
 	}
 
-	private void upgrade10to11(Connection con) throws ProgrammerException,
-			UserException {
+	private void upgrade10to11(Connection con) throws HttpException {
 		try {
 			Statement stmt = con.createStatement();
 

@@ -4,9 +4,9 @@ import net.sf.chellow.monad.DeployerException;
 import net.sf.chellow.monad.DesignerException;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.Invocation;
-import net.sf.chellow.monad.ProgrammerException;
+import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Urlable;
-import net.sf.chellow.monad.UserException;
+import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
 
@@ -42,22 +42,22 @@ public class DatabaseVersion extends PersistentEntity {
 		return null;
 	}
 
-	public Urlable getChild(UriPathElement uriId) throws ProgrammerException, UserException {
+	public Urlable getChild(UriPathElement uriId) throws InternalException, HttpException {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
-	public void httpGet(Invocation inv) throws DesignerException, ProgrammerException, UserException, DeployerException {
+	public void httpGet(Invocation inv) throws DesignerException, InternalException, HttpException, DeployerException {
 		// TODO Auto-generated method stub
 		
 	}
 
-	public void httpPost(Invocation inv) throws ProgrammerException, UserException {
+	public void httpPost(Invocation inv) throws InternalException, HttpException {
 		// TODO Auto-generated method stub
 		
 	}
 
-	public void httpDelete(Invocation inv) throws ProgrammerException, DesignerException, UserException, DeployerException {
+	public void httpDelete(Invocation inv) throws InternalException, DesignerException, HttpException, DeployerException {
 		// TODO Auto-generated method stub
 		
 	}

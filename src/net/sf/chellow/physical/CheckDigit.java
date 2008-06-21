@@ -23,8 +23,8 @@
 package net.sf.chellow.physical;
 
 
-import net.sf.chellow.monad.ProgrammerException;
-import net.sf.chellow.monad.UserException;
+import net.sf.chellow.monad.InternalException;
+import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.types.MonadCharacter;
 
 
@@ -36,11 +36,11 @@ public class CheckDigit extends MonadCharacter {
 		setDigitOnly(true);
 	}
 
-	public CheckDigit(Character character) throws UserException, ProgrammerException {
+	public CheckDigit(Character character) throws HttpException, InternalException {
 		this(null, character);
 	}
 
-	public CheckDigit(String label, Character character) throws UserException, ProgrammerException
+	public CheckDigit(String label, Character character) throws HttpException, InternalException
 			{
 		this();
 		setLabel(label);

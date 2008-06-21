@@ -12,14 +12,17 @@ import javax.servlet.ServletException;
 import net.sf.chellow.billing.Dcses;
 import net.sf.chellow.billing.Government;
 import net.sf.chellow.billing.Mops;
+import net.sf.chellow.monad.BadRequestException;
 import net.sf.chellow.monad.DeployerException;
 import net.sf.chellow.monad.DesignerException;
+import net.sf.chellow.monad.ForbiddenException;
 import net.sf.chellow.monad.Invocation;
 import net.sf.chellow.monad.Monad;
 import net.sf.chellow.monad.MonadContextParameters;
-import net.sf.chellow.monad.ProgrammerException;
+import net.sf.chellow.monad.InternalException;
+import net.sf.chellow.monad.UnauthorizedException;
 import net.sf.chellow.monad.Urlable;
-import net.sf.chellow.monad.UserException;
+import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.Invocation.HttpMethod;
 import net.sf.chellow.monad.types.UriPathElement;
 import net.sf.chellow.physical.Dsos;
@@ -66,9 +69,7 @@ public class Chellow extends Monad implements Urlable {
 	static {
 		try {
 			GOVERNMENT_INSTANCE = Government.getGovernment();
-		} catch (UserException e) {
-			throw new RuntimeException(e);
-		} catch (ProgrammerException e) {
+		} catch (HttpException e) {
 			throw new RuntimeException(e);
 		}
 	}
@@ -108,12 +109,12 @@ public class Chellow extends Monad implements Urlable {
 	}
 
 	private boolean requestAllowed(User user, Invocation inv)
-			throws UserException, ProgrammerException {
+			throws HttpException, InternalException {
 		try {
 			return methodAllowed(user, new URI(inv.getRequest().getPathInfo()),
 					inv.getMethod());
 		} catch (URISyntaxException e) {
-			throw UserException.newBadRequest();
+			throw new BadRequestException();
 		}
 	}
 
@@ -138,20 +139,20 @@ public class Chellow extends Monad implements Urlable {
 		return methodAllowed;
 	}
 
-	protected void checkPermissions(Invocation inv) throws UserException,
-			ProgrammerException {
+	protected void checkPermissions(Invocation inv) throws HttpException,
+			InternalException {
 		User user = ImplicitUserSource.getUser(inv);
 		if (requestAllowed(user, inv)) {
 			return;
 		}
 		user = inv.getUser();
 		if (user == null) {
-			throw UserException.newUnauthorized();
+			throw new UnauthorizedException();
 		}
 		if (requestAllowed(user, inv)) {
 			return;
 		}
-		throw UserException.newForbidden();
+		throw new ForbiddenException();
 	}
 
 	/*
@@ -891,7 +892,7 @@ public class Chellow extends Monad implements Urlable {
 	 */
 
 	public void httpGet(Invocation inv) throws DesignerException,
-			ProgrammerException, UserException, DeployerException {
+			InternalException, HttpException, DeployerException {
 		/*
 		 * Configuration conf = new Configuration()
 		 * .configure("hibernate/08/hibernate.cfg.xml"); SessionFactory
@@ -922,13 +923,13 @@ public class Chellow extends Monad implements Urlable {
 		inv.sendOk();
 	}
 
-	public void httpPost(Invocation inv) throws ProgrammerException,
-			UserException {
+	public void httpPost(Invocation inv) throws InternalException,
+			HttpException {
 		inv.sendMethodNotAllowed(ALLOWED_METHODS);
 	}
 
-	public Urlable getChild(UriPathElement uriId) throws ProgrammerException,
-			UserException {
+	public Urlable getChild(UriPathElement uriId) throws InternalException,
+			HttpException {
 		if (Sources.URI_ID.equals(uriId)) {
 			return SOURCES_INSTANCE;
 		} else if (Organizations.URI_ID.equals(uriId)) {
@@ -954,8 +955,8 @@ public class Chellow extends Monad implements Urlable {
 		}
 	}
 
-	public void httpDelete(Invocation inv) throws ProgrammerException,
-			DesignerException, UserException, DeployerException {
+	public void httpDelete(Invocation inv) throws InternalException,
+			DesignerException, HttpException, DeployerException {
 		// TODO Auto-generated method stub
 
 	}

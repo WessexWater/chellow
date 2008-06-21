@@ -3,7 +3,7 @@ package net.sf.chellow.data08;
 import java.sql.Connection;
 
 import net.sf.chellow.monad.DesignerException;
-import net.sf.chellow.monad.UserException;
+import net.sf.chellow.monad.HttpException;
 
 public class Upgrade07to08 {
 	static final int PAGE_SIZE = 1000;
@@ -11,7 +11,7 @@ public class Upgrade07to08 {
 	//static private Organization organization = null;
 
 	@SuppressWarnings("unchecked")
-	static public void upgrade(Connection con) throws UserException, DesignerException {
+	static public void upgrade(Connection con) throws HttpException, DesignerException {
 /*
 		try {
 			Statement stmt = con.createStatement();

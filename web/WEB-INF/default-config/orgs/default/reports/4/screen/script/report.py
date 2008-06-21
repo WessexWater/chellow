@@ -3,7 +3,7 @@ from net.sf.chellow.monad.types import MonadDate
 from java.util import Calendar
 
 siteId = inv.getLong("site-id")
-source.appendChild(organization.getSite(siteId).getXML(XmlTree('organization'), doc))
+source.appendChild(organization.getSite(siteId).toXml(XmlTree('organization'), doc))
 cal = MonadDate.getCalendar()
 if inv.hasParameter("finish-date-year") and inv.hasParameter("finish-date-month"):
     year = inv.getInteger("finish-date-year")

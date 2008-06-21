@@ -25,10 +25,10 @@ package net.sf.chellow.hhimport;
 import java.util.Iterator;
 
 import net.sf.chellow.data08.HhDatumRaw;
-import net.sf.chellow.monad.ProgrammerException;
+import net.sf.chellow.monad.InternalException;
 
 public interface HhConverter extends Iterator<HhDatumRaw> {
 	public int lastLineNumber();
 
-	public void close() throws ProgrammerException;
+	public void close() throws InternalException;
 }

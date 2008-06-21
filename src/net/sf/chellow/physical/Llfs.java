@@ -28,10 +28,12 @@ import net.sf.chellow.monad.DeployerException;
 import net.sf.chellow.monad.DesignerException;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.Invocation;
+import net.sf.chellow.monad.MethodNotAllowedException;
 import net.sf.chellow.monad.MonadUtils;
-import net.sf.chellow.monad.ProgrammerException;
+import net.sf.chellow.monad.NotFoundException;
+import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Urlable;
-import net.sf.chellow.monad.UserException;
+import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.XmlDescriber;
 import net.sf.chellow.monad.XmlTree;
 import net.sf.chellow.monad.types.MonadDate;
@@ -49,9 +51,7 @@ public class Llfs implements Urlable, XmlDescriber {
 	static {
 		try {
 			URI_ID = new UriPathElement("llfs");
-		} catch (UserException e) {
-			throw new RuntimeException(e);
-		} catch (ProgrammerException e) {
+		} catch (HttpException e) {
 			throw new RuntimeException(e);
 		}
 	}
@@ -66,38 +66,38 @@ public class Llfs implements Urlable, XmlDescriber {
 		return URI_ID;
 	}
 
-	public MonadUri getUri() throws ProgrammerException, UserException {
+	public MonadUri getUri() throws InternalException, HttpException {
 		return dso.getUri().resolve(getUrlId()).append("/");
 	}
 
-	public void httpPost(Invocation inv) throws ProgrammerException,
-			UserException, DesignerException, DeployerException {
-		throw UserException.newMethodNotAllowed();
+	public void httpPost(Invocation inv) throws InternalException,
+			HttpException, DesignerException, DeployerException {
+		throw new MethodNotAllowedException();
 	}
 
 	@SuppressWarnings("unchecked")
 	public void httpGet(Invocation inv) throws DesignerException,
-			ProgrammerException, UserException, DeployerException {
+			InternalException, HttpException, DeployerException {
 		Document doc = MonadUtils.newSourceDocument();
 		Element source = doc.getDocumentElement();
-		Element llfsElement = (Element) toXML(doc);
+		Element llfsElement = (Element) toXml(doc);
 		source.appendChild(llfsElement);
-		llfsElement.appendChild(dso.toXML(doc));
+		llfsElement.appendChild(dso.toXml(doc));
 		for (Llf llf : (List<Llf>) Hiber
 				.session()
 				.createQuery(
 						"from Llf llf where llf.dso = :dso order by llf.code")
 				.setEntity("dso", dso).list()) {
-			llfsElement.appendChild(llf.getXML(new XmlTree("voltageLevel"), doc));
+			llfsElement.appendChild(llf.toXml(doc, new XmlTree("voltageLevel")));
 		}
 		source.appendChild(MonadDate.getMonthsXml(doc));
 		source.appendChild(MonadDate.getDaysXml(doc));
-		source.appendChild(new MonadDate().toXML(doc));
+		source.appendChild(new MonadDate().toXml(doc));
 		inv.sendOk(doc);
 	}
 
-	public Llf getChild(UriPathElement uriId) throws UserException,
-			ProgrammerException {
+	public Llf getChild(UriPathElement uriId) throws HttpException,
+			InternalException {
 		Llf llf = (Llf) Hiber
 				.session()
 				.createQuery(
@@ -105,24 +105,24 @@ public class Llfs implements Urlable, XmlDescriber {
 				.setEntity("dso", dso).setLong("llfId",
 						Long.parseLong(uriId.getString())).uniqueResult();
 		if (llf == null) {
-			throw UserException.newNotFound();
+			throw new NotFoundException();
 		}
 		return llf;
 	}
 
-	public void httpDelete(Invocation inv) throws ProgrammerException,
-			UserException {
+	public void httpDelete(Invocation inv) throws InternalException,
+			HttpException {
 		// TODO Auto-generated method stub
 
 	}
 
-	public Node toXML(Document doc) throws ProgrammerException, UserException {
+	public Node toXml(Document doc) throws InternalException, HttpException {
 		Element llfsElement = doc.createElement("llfs");
 		return llfsElement;
 	}
 
-	public Node getXML(XmlTree tree, Document doc) throws ProgrammerException,
-			UserException {
+	public Node toXml(Document doc, XmlTree tree) throws InternalException,
+			HttpException {
 		// TODO Auto-generated method stub
 		return null;
 	}

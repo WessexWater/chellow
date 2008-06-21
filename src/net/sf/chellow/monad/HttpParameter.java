@@ -48,9 +48,9 @@ public class HttpParameter extends MonadObject {
 		this.values = values;
 	}
 
-	public Node toXML(Document doc) {
+	public Node toXml(Document doc) {
 		Element element = doc.createElement("parameter");
-		element.setAttributeNode((Attr) name.toXML(doc));
+		element.setAttributeNode((Attr) name.toXml(doc));
 		for (String value : values) {
 			Element valueElement = doc.createElement("value");
 

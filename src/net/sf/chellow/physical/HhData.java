@@ -12,10 +12,12 @@ import net.sf.chellow.monad.DesignerException;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.Invocation;
 import net.sf.chellow.monad.MonadUtils;
-import net.sf.chellow.monad.ProgrammerException;
+import net.sf.chellow.monad.NotFoundException;
+import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Urlable;
+import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.UserException;
-import net.sf.chellow.monad.VFMessage;
+import net.sf.chellow.monad.MonadMessage;
 import net.sf.chellow.monad.XmlDescriber;
 import net.sf.chellow.monad.XmlTree;
 import net.sf.chellow.monad.types.MonadDate;
@@ -32,9 +34,7 @@ public class HhData implements Urlable, XmlDescriber {
 	static {
 		try {
 			URI_ID = new UriPathElement("hh-data");
-		} catch (UserException e) {
-			throw new RuntimeException(e);
-		} catch (ProgrammerException e) {
+		} catch (HttpException e) {
 			throw new RuntimeException(e);
 		}
 	}
@@ -49,38 +49,38 @@ public class HhData implements Urlable, XmlDescriber {
 		return URI_ID;
 	}
 
-	public MonadUri getUri() throws ProgrammerException, UserException {
+	public MonadUri getUri() throws InternalException, HttpException {
 		return channel.getUri().resolve(getUriId());
 	}
 
 	@SuppressWarnings("unchecked")
 	public void httpGet(Invocation inv) throws DesignerException,
-			ProgrammerException, UserException, DeployerException {
+			InternalException, HttpException, DeployerException {
 		inv.sendOk(doc(inv));
 	}
 
 	@SuppressWarnings("unchecked")
-	private Document doc(Invocation inv) throws ProgrammerException,
-			UserException {
+	private Document doc(Invocation inv) throws InternalException,
+			HttpException {
 		Document doc = MonadUtils.newSourceDocument();
 		Element source = doc.getDocumentElement();
-		Element hhDataElement = toXML(doc);
+		Element hhDataElement = toXml(doc);
 		source.appendChild(hhDataElement);
-		Element channelElement = channel.toXML(doc);
+		Element channelElement = channel.toXml(doc);
 		hhDataElement.appendChild(channelElement);
-		Element supplyElement = channel.getSupply().toXML(doc);
+		Element supplyElement = channel.getSupply().toXml(doc);
 		channelElement.appendChild(supplyElement);
-		supplyElement.appendChild(channel.getSupply().getOrganization().toXML(
+		supplyElement.appendChild(channel.getSupply().getOrganization().toXml(
 				doc));
 		source.appendChild(MonadDate.getMonthsXml(doc));
 		source.appendChild(MonadDate.getDaysXml(doc));
-		source.appendChild(new MonadDate().toXML(doc));
+		source.appendChild(new MonadDate().toXml(doc));
 		Calendar cal = GregorianCalendar.getInstance(TimeZone
 				.getTimeZone("GMT"), Locale.UK);
 		if (inv.hasParameter("hh-finish-date-year")) {
 			Date hhFinishDate = inv.getDate("hh-finish-date");
 			if (!inv.isValid()) {
-				throw UserException.newInvalidParameter(doc);
+				throw new UserException(doc);
 			}
 			cal.setTime(hhFinishDate);
 			cal.add(Calendar.DAY_OF_MONTH, 1);
@@ -96,32 +96,32 @@ public class HhData implements Urlable, XmlDescriber {
 						"from HhDatum datum where datum.channel = :channel and datum.endDate.date <= :to order by datum.endDate.date")
 				.setEntity("channel", channel).setDate("to", cal.getTime())
 				.setMaxResults(48).list()) {
-			hhDataElement.appendChild(hhDatum.toXML(doc));
+			hhDataElement.appendChild(hhDatum.toXml(doc));
 		}
 		return doc;
 	}
 
-	public void httpPost(Invocation inv) throws ProgrammerException,
-			UserException, DesignerException, DeployerException {
+	public void httpPost(Invocation inv) throws InternalException,
+			HttpException, DesignerException, DeployerException {
 		// delete hh data
 		Date deleteFrom = inv.getDate("delete-from");
 		int days = inv.getInteger("days");
 		try {
 			channel.deleteData(new HhEndDate(deleteFrom).getNext(), days);
 			Hiber.commit();
-		} catch (UserException e) {
+		} catch (HttpException e) {
 			e.setDocument(doc(inv));
 			throw e;
 		}
 		Document doc = doc(inv);
 		Element docElement = doc.getDocumentElement();
-		docElement.appendChild(new VFMessage("HH data deleted successfully.")
-				.toXML(doc));
+		docElement.appendChild(new MonadMessage("HH data deleted successfully.")
+				.toXml(doc));
 		inv.sendOk(doc);
 	}
 
-	public HhDatum getChild(UriPathElement uriId) throws ProgrammerException,
-			UserException {
+	public HhDatum getChild(UriPathElement uriId) throws InternalException,
+			HttpException {
 		HhDatum hhDatum = (HhDatum) Hiber
 				.session()
 				.createQuery(
@@ -129,24 +129,24 @@ public class HhData implements Urlable, XmlDescriber {
 				.setEntity("channel", channel).setLong("datumId",
 						Long.parseLong(uriId.getString())).uniqueResult();
 		if (hhDatum == null) {
-			throw UserException.newNotFound();
+			throw new NotFoundException();
 		}
 		return hhDatum;
 	}
 
-	public void httpDelete(Invocation inv) throws ProgrammerException,
-			UserException {
+	public void httpDelete(Invocation inv) throws InternalException,
+			HttpException {
 		// TODO Auto-generated method stub
 
 	}
 
-	public Element toXML(Document doc) throws ProgrammerException,
-			UserException {
+	public Element toXml(Document doc) throws InternalException,
+			HttpException {
 		return doc.createElement("hh-data");
 	}
 
-	public Node getXML(XmlTree tree, Document doc) throws ProgrammerException,
-			UserException {
+	public Node toXml(Document doc, XmlTree tree) throws InternalException,
+			HttpException {
 		// TODO Auto-generated method stub
 		return null;
 	}

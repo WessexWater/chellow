@@ -22,10 +22,12 @@ import net.sf.chellow.monad.DesignerException;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.Invocation;
 import net.sf.chellow.monad.MonadUtils;
-import net.sf.chellow.monad.ProgrammerException;
+import net.sf.chellow.monad.NotFoundException;
+import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Urlable;
+import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.UserException;
-import net.sf.chellow.monad.VFMessage;
+import net.sf.chellow.monad.MonadMessage;
 import net.sf.chellow.monad.XmlDescriber;
 import net.sf.chellow.monad.XmlTree;
 import net.sf.chellow.monad.types.MonadUri;
@@ -51,9 +53,9 @@ public class InvoiceImport extends Thread implements Urlable,
 	}
 	private boolean halt = false;
 
-	private List<VFMessage> messages = new ArrayList<VFMessage>();
+	private List<String> messages = new ArrayList<String>();
 	
-	private List<Map<InvoiceRaw, VFMessage>> failedInvoices = Collections.synchronizedList(new ArrayList<Map<InvoiceRaw, VFMessage>>());
+	private List<Map<InvoiceRaw, String>> failedInvoices = Collections.synchronizedList(new ArrayList<Map<InvoiceRaw, String>>());
 	private List<InvoiceRaw> successfulInvoices = null;
 	
 	private InvoiceConverter converter;
@@ -63,25 +65,25 @@ public class InvoiceImport extends Thread implements Urlable,
 	private Long batchId;
 
 	public InvoiceImport(Long batchId, Long id, FileItem item)
-			throws ProgrammerException, UserException {
+			throws InternalException, HttpException {
 		try {
 			initialize(batchId, id, item.getInputStream(), item.getName(), item.getSize());
 		} catch (IOException e) {
-			throw new ProgrammerException(e);
+			throw new InternalException(e);
 		}
 	}
 	
 	public InvoiceImport(Long batchId, Long id, InputStream is,
-			String fileName, long fileSize) throws ProgrammerException, UserException {
+			String fileName, long fileSize) throws InternalException, HttpException {
 		initialize(batchId, id, is, fileName, fileSize);
 	}
 
 	public void initialize(Long batchId, Long id, InputStream is,
-			String fileName, long size) throws ProgrammerException, UserException {
+			String fileName, long size) throws InternalException, HttpException {
 		this.batchId = batchId;
 		this.id = id;
 		if (size == 0) {
-			throw UserException.newInvalidParameter(null, 
+			throw new UserException(null, 
 					"File has zero length");
 		}
 		fileName = fileName.toLowerCase();
@@ -97,8 +99,7 @@ public class InvoiceImport extends Thread implements Urlable,
 				zin = new ZipInputStream(new BufferedInputStream(is));
 				ZipEntry entry = zin.getNextEntry();
 				if (entry == null) {
-					throw UserException
-							.newInvalidParameter(null, "Can't find an entry within the zip file.");
+					throw new UserException(null, "Can't find an entry within the zip file.");
 				} else {
 					is = zin;
 					fileName = entry.getName();
@@ -106,12 +107,12 @@ public class InvoiceImport extends Thread implements Urlable,
 				// extract data
 				// open output streams
 			} catch (IOException e) {
-				throw new ProgrammerException(e);
+				throw new InternalException(e);
 			}
 		}
 		int locationOfDot = fileName.lastIndexOf("."); 
 		if (locationOfDot == -1 || locationOfDot == fileName.length() - 1) {
-			throw UserException.newInvalidParameter("The file name must have an extension (eg. '.zip')");
+			throw new UserException("The file name must have an extension (eg. '.zip')");
 		}
 		String extension = fileName.substring(locationOfDot + 1);
 		Class<? extends InvoiceConverter> converterClass = CONVERTERS.get(extension);
@@ -120,8 +121,7 @@ public class InvoiceImport extends Thread implements Urlable,
 			for (String allowedExtension : CONVERTERS.keySet()) {
 				recognizedExtensions.append(" " + allowedExtension);
 			}
-			throw UserException
-			.newInvalidParameter("The extension of the filename '"
+			throw new UserException("The extension of the filename '"
 					+ fileName
 					+ "' is not one of the recognized extensions; " + recognizedExtensions + " and it is not a '.zip' file containing a file with one of the recognized extensions.");
 		}
@@ -138,24 +138,24 @@ public class InvoiceImport extends Thread implements Urlable,
 					.newInstance(
 							new Object[] { new InputStreamReader(is, "UTF-8") });
 		} catch (IllegalArgumentException e) {
-			throw new ProgrammerException(e);
+			throw new InternalException(e);
 		} catch (SecurityException e) {
-			throw new ProgrammerException(e);
+			throw new InternalException(e);
 		} catch (UnsupportedEncodingException e) {
-			throw new ProgrammerException(e);
+			throw new InternalException(e);
 		} catch (InstantiationException e) {
-			throw new ProgrammerException(e);
+			throw new InternalException(e);
 		} catch (IllegalAccessException e) {
-			throw new ProgrammerException(e);
+			throw new InternalException(e);
 		} catch (InvocationTargetException e) {
 			Throwable cause = e.getCause();
-			if (cause instanceof UserException) {
-				throw (UserException) cause;
+			if (cause instanceof HttpException) {
+				throw (HttpException) cause;
 			} else {
-				throw new ProgrammerException(e);
+				throw new InternalException(e);
 			}
 		} catch (NoSuchMethodException e) {
-			throw new ProgrammerException(e);
+			throw new InternalException(e);
 		}
 	}
 
@@ -169,7 +169,7 @@ public class InvoiceImport extends Thread implements Urlable,
 			for (InvoiceRaw rawInvoice : rawInvoices) {
 				Hiber.flush();
 				if (shouldHalt()) {
-					throw UserException.newInvalidParameter("The import has been halted by the user, some bills may have been imported though.");
+					throw new UserException("The import has been halted by the user, some bills may have been imported though.");
 				}
 				try {
 					Hiber.flush();
@@ -177,19 +177,19 @@ public class InvoiceImport extends Thread implements Urlable,
 					Hiber.commit();
 					Hiber.flush();
 					successfulInvoices.add(rawInvoice);
-				} catch (UserException e) {
+				} catch (HttpException e) {
 					Hiber.flush();
-					Map<InvoiceRaw, VFMessage> invoiceMap = new HashMap<InvoiceRaw, VFMessage>();
-					invoiceMap.put(rawInvoice, e.getVFMessage());
+					Map<InvoiceRaw, String> invoiceMap = new HashMap<InvoiceRaw, String>();
+					invoiceMap.put(rawInvoice, e.getMessage());
 					failedInvoices.add(invoiceMap);
 					Hiber.rollBack();
 					Hiber.flush();
 				}
 			}
 			if (failedInvoices.isEmpty()) {
-			messages.add(new VFMessage("All the invoices have been successfully loaded and attached to the batch."));
+			messages.add("All the invoices have been successfully loaded and attached to the batch.");
 			} else {
-			messages.add(new VFMessage("The import has finished, but not all invoices were successfully loaded."));	
+			messages.add("The import has finished, but not all invoices were successfully loaded.");	
 			}
 			Organization organization = null;
 			Provider provider = batch.getService().getProvider();
@@ -197,14 +197,13 @@ public class InvoiceImport extends Thread implements Urlable,
 				organization = ((ProviderOrganization) provider).getOrganization();
 			}
 			Account.checkAllMissingFromLatest(organization);
-		} catch (UserException e) {
-			messages.add(e.getVFMessage());
-		} catch (ProgrammerException e) {
-			messages.add(new VFMessage("ProgrammerException : "
-					+ e.getMessage()));
+		} catch (InternalException e) {
+			messages.add("ProgrammerException : " + e.getMessage());
 			throw new RuntimeException(e);
+		} catch (HttpException e) {
+			messages.add(e.getMessage());
 		} catch (Throwable e) {
-			messages.add(new VFMessage("Throwable " + e.getMessage()));
+			messages.add("Throwable " + e.getMessage());
 			ChellowLogger.getLogger().logp(Level.SEVERE, "HhDataImportProcessor", "run",
 					"Problem in run method " + e.getMessage(), e);
 		} finally {
@@ -221,48 +220,48 @@ public class InvoiceImport extends Thread implements Urlable,
 		return halt;
 	}
 
-	public UriPathElement getUriId() throws ProgrammerException, UserException {
+	public UriPathElement getUriId() throws InternalException, HttpException {
 			return new UriPathElement(Long.toString(id));
 	}
 
-	public Urlable getChild(UriPathElement urlId) throws ProgrammerException,
-			UserException {
-		throw UserException.newNotFound();
+	public Urlable getChild(UriPathElement urlId) throws InternalException,
+			NotFoundException {
+		throw new NotFoundException();
 	}
 
-	public MonadUri getUri() throws ProgrammerException, UserException {
+	public MonadUri getUri() throws InternalException, HttpException {
 		return getBatch().invoiceImportsInstance().getUri().resolve(
 				getUriId()).append("/");
 	}
 	
-	private Batch getBatch() throws UserException, ProgrammerException {
+	private Batch getBatch() throws HttpException, InternalException {
 		return Batch.getBatch(batchId);
 	}
 
 	public void httpGet(Invocation inv) throws DesignerException,
-			ProgrammerException, UserException, DeployerException {
+			InternalException, HttpException, DeployerException {
 		Document doc = MonadUtils.newSourceDocument();
 		Element source = doc.getDocumentElement();
-		Element processElement = (Element) toXML(doc);
+		Element processElement = (Element) toXml(doc);
 		source.appendChild(processElement);
-		processElement.appendChild(getBatch().getXML(new XmlTree("service", new XmlTree("provider",
-				new XmlTree("organization"))), doc));
+		processElement.appendChild(getBatch().toXml(doc, new XmlTree("service", new XmlTree("provider",
+						new XmlTree("organization")))));
 		inv.sendOk(doc);
 	}
 
-	public void httpPost(Invocation inv) throws ProgrammerException,
-			UserException {
+	public void httpPost(Invocation inv) throws InternalException,
+			HttpException {
 		// TODO Auto-generated method stub
 
 	}
 
-	public void httpDelete(Invocation inv) throws ProgrammerException,
-			DesignerException, UserException, DeployerException {
+	public void httpDelete(Invocation inv) throws InternalException,
+			DesignerException, HttpException, DeployerException {
 		// TODO Auto-generated method stub
 
 	}
 
-	public Node toXML(Document doc) throws ProgrammerException, UserException, DesignerException {
+	public Node toXml(Document doc) throws InternalException, HttpException, DesignerException {
 		Element importElement = doc.createElement("invoice-import");
 		boolean isAlive = this.isAlive();
 		importElement.setAttribute("id", getUriId().toString());
@@ -272,30 +271,30 @@ public class InvoiceImport extends Thread implements Urlable,
 			importElement.appendChild(failedElement);
 			Element successfulElement = doc.createElement("successful-invoices");
 			importElement.appendChild(successfulElement);
-			for (Map<InvoiceRaw, VFMessage> invoiceMap : failedInvoices) {
-				for (Entry<InvoiceRaw, VFMessage> entry : invoiceMap.entrySet()) {
-					Element invoiceRawElement = (Element) entry.getKey().getXML(new XmlTree("registerReads"), doc);
+			for (Map<InvoiceRaw, String> invoiceMap : failedInvoices) {
+				for (Entry<InvoiceRaw, String> entry : invoiceMap.entrySet()) {
+					Element invoiceRawElement = (Element) entry.getKey().toXml(doc, new XmlTree("registerReads"));
 					failedElement.appendChild(invoiceRawElement);
-					invoiceRawElement.appendChild(entry.getValue().toXML(doc));
+					invoiceRawElement.appendChild(new MonadMessage(entry.getValue()).toXml(doc));
 				}
 			}
 			for (InvoiceRaw invoiceRaw : successfulInvoices) {
-				successfulElement.appendChild(invoiceRaw.getXML(new XmlTree("registerReads"), doc));
+				successfulElement.appendChild(invoiceRaw.toXml(doc, new XmlTree("registerReads")));
 			}
 		}
-		for (VFMessage message : messages) {
-			importElement.appendChild(message.toXML(doc));
+		for (String message : messages) {
+			importElement.appendChild(new MonadMessage(message).toXml(doc));
 		}
 		return importElement;
 	}
 
-	public Node getXML(XmlTree tree, Document doc) throws ProgrammerException,
-			UserException {
+	public Node toXml(Document doc, XmlTree tree) throws InternalException,
+			HttpException {
 		// TODO Auto-generated method stub
 		return null;
 	}
 	
-	public List<VFMessage> getMessages() {
+	public List<String> getMessages() {
 		return messages;
 	}
 }

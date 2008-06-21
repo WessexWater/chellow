@@ -29,7 +29,7 @@ cal.add(Calendar.DAY_OF_MONTH, 1)
 cal.add(Calendar.MINUTE, -30)
 finishDate = HhEndDate(cal.getTime()).getDate()
 site = organization.getSite(SiteCode(siteCode))
-source.appendChild(site.toXML(doc))
+source.appendChild(site.toXml(doc))
 source.appendChild(MonadDate.getMonthsXml(doc))
 source.appendChild(MonadDate.getDaysXml(doc))
 con = Hiber.session().connection()
@@ -88,7 +88,7 @@ if rs.next():
         if siteSnagQuery.setTimestamp("startDate", startDate).setTimestamp("finishDate", monthFinishDate).uniqueResult() > 0:
             monthElement.setAttribute("has-site-snags", "true")
         '''
-        hhElement.appendChild(HhEndDate(Date(hhDate)).toXML(doc))
+        hhElement.appendChild(HhEndDate(Date(hhDate)).toXml(doc))
         hhElement.setAttribute("exported-kwh", str(round(exportedKwh, 1)))
         hhElement.setAttribute("imported-kwh", str(round(importedKwh, 1)))
         hhElement.setAttribute("generated-kwh", str(round(generatedKwh, 1)))

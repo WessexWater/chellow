@@ -26,9 +26,10 @@ import net.sf.chellow.monad.DeployerException;
 import net.sf.chellow.monad.DesignerException;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.Invocation;
-import net.sf.chellow.monad.ProgrammerException;
+import net.sf.chellow.monad.NotFoundException;
+import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Urlable;
-import net.sf.chellow.monad.UserException;
+import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.XmlDescriber;
 import net.sf.chellow.monad.XmlTree;
 import net.sf.chellow.monad.types.MonadUri;
@@ -47,9 +48,7 @@ public class GenDeltas implements Urlable, XmlDescriber {
 	static {
 		try {
 			URI_ID = new UriPathElement("gen-deltas");
-		} catch (UserException e) {
-			throw new RuntimeException(e);
-		} catch (ProgrammerException e) {
+		} catch (HttpException e) {
 			throw new RuntimeException(e);
 		}
 	}
@@ -72,20 +71,20 @@ public class GenDeltas implements Urlable, XmlDescriber {
 		return URI_ID;
 	}
 
-	public MonadUri getUri() throws ProgrammerException, UserException {
+	public MonadUri getUri() throws InternalException, HttpException {
 		return organization.getUri().resolve(getUrlId()).append("/");
 	}
 
-	public void httpPost(Invocation inv) throws ProgrammerException,
-			UserException, DesignerException, DeployerException {
+	public void httpPost(Invocation inv) throws InternalException,
+			HttpException, DesignerException, DeployerException {
 	}
 
 	public void httpGet(Invocation inv) throws DesignerException,
-			ProgrammerException, UserException, DeployerException {
+			InternalException, HttpException, DeployerException {
 	}
 
-	public GenDelta getChild(UriPathElement uriId) throws UserException,
-			ProgrammerException {
+	public GenDelta getChild(UriPathElement uriId) throws HttpException,
+			InternalException {
 		GenDelta genDelta = (GenDelta) Hiber
 				.session()
 				.createQuery(
@@ -93,22 +92,22 @@ public class GenDeltas implements Urlable, XmlDescriber {
 				.setEntity("organization", organization).setLong("deltaId",
 						Long.parseLong(uriId.getString())).uniqueResult();
 		if (genDelta == null) {
-			throw UserException.newNotFound();
+			throw new NotFoundException();
 		}
 		return genDelta;
 	}
 
-	public void httpDelete(Invocation inv) throws ProgrammerException,
-			UserException {
+	public void httpDelete(Invocation inv) throws InternalException,
+			HttpException {
 	}
 
-	public Node toXML(Document doc) throws ProgrammerException, UserException {
+	public Node toXml(Document doc) throws InternalException, HttpException {
 		Element accountsElement = doc.createElement("accounts");
 		return accountsElement;
 	}
 
-	public Node getXML(XmlTree tree, Document doc) throws ProgrammerException,
-			UserException {
+	public Node toXml(Document doc, XmlTree tree) throws InternalException,
+			HttpException {
 		return null;
 	}
 }

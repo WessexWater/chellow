@@ -24,8 +24,8 @@ package net.sf.chellow.physical;
 
 
 
-import net.sf.chellow.monad.ProgrammerException;
-import net.sf.chellow.monad.UserException;
+import net.sf.chellow.monad.InternalException;
+import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.types.MonadString;
 
 public class SourceName extends MonadString {
@@ -34,11 +34,11 @@ public class SourceName extends MonadString {
 		setMaximumLength(250);
 	}
 	
-	public SourceName(String name) throws UserException, ProgrammerException  {
+	public SourceName(String name) throws HttpException, InternalException  {
 		this(null, name);
 	}
 
-	public SourceName(String label, String name) throws UserException, ProgrammerException {
+	public SourceName(String label, String name) throws HttpException, InternalException {
 		this();
 		setLabel(label);
 			update(name);

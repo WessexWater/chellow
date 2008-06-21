@@ -31,8 +31,10 @@ import net.sf.chellow.monad.DesignerException;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.Invocation;
 import net.sf.chellow.monad.MonadUtils;
-import net.sf.chellow.monad.ProgrammerException;
+import net.sf.chellow.monad.NotFoundException;
+import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Urlable;
+import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.UserException;
 import net.sf.chellow.monad.XmlTree;
 import net.sf.chellow.monad.types.EmailAddress;
@@ -55,23 +57,21 @@ public class User extends PersistentEntity {
 	static {
 		try {
 			USERS_URI_ID = new UriPathElement("users");
-		} catch (UserException e) {
-			throw new RuntimeException(e);
-		} catch (ProgrammerException e) {
+		} catch (HttpException e) {
 			throw new RuntimeException(e);
 		}
 	}
 
-	static public User getUser(Long id) throws ProgrammerException {
+	static public User getUser(Long id) throws InternalException {
 		try {
 			return (User) Hiber.session().get(User.class, id);
 		} catch (HibernateException e) {
-			throw new ProgrammerException(e);
+			throw new InternalException(e);
 		}
 	}
 
 	static public User findUserByEmail(EmailAddress emailAddress)
-			throws ProgrammerException {
+			throws InternalException {
 		return (User) Hiber
 				.session()
 				.createQuery(
@@ -81,7 +81,7 @@ public class User extends PersistentEntity {
 	}
 
 	static public User insertUser(EmailAddress emailAddress, Password password)
-			throws ProgrammerException, UserException {
+			throws InternalException, HttpException {
 		User user = null;
 		try {
 			user = new User(emailAddress, password);
@@ -95,8 +95,8 @@ public class User extends PersistentEntity {
 					String message = nextException.getMessage();
 					if (message != null
 							&& message.contains("user_email_address_key")) {
-						throw UserException
-								.newInvalidParameter("There is already a user with this email address.");
+						throw new UserException
+								("There is already a user with this email address.");
 					} else {
 						throw e;
 					}
@@ -121,8 +121,8 @@ public class User extends PersistentEntity {
 	}
 
 	public User(EmailAddress emailAddress, Password password)
-			throws ProgrammerException,
-			UserException {
+			throws InternalException,
+			HttpException {
 		update(emailAddress, password);
 	}
 
@@ -167,51 +167,51 @@ public class User extends PersistentEntity {
 	public String toString() {
 		try {
 			return getUriId().toString();
-		} catch (ProgrammerException e) {
+		} catch (InternalException e) {
 			throw new RuntimeException(e);
-		} catch (UserException e) {
+		} catch (HttpException e) {
 			throw new RuntimeException(e);
 		}
 	}
 
-	public Node toXML(Document doc) throws ProgrammerException, UserException {
-		Element element = (Element) super.toXML(doc);
-		element.setAttributeNode((Attr) emailAddress.toXML(doc));
+	public Node toXml(Document doc) throws InternalException, HttpException {
+		Element element = (Element) super.toXml(doc);
+		element.setAttributeNode((Attr) emailAddress.toXml(doc));
 		return element;
 	}
 
-	public MonadUri getUri() throws ProgrammerException, UserException {
+	public MonadUri getUri() throws InternalException, UserException {
 		return Chellow.USERS_INSTANCE.getUri().resolve(getUriId());
 	}
 
-	public Urlable getChild(UriPathElement uriId) throws ProgrammerException,
-			UserException {
-		throw UserException.newNotFound();
+	public Urlable getChild(UriPathElement uriId) throws InternalException,
+			HttpException {
+		throw new NotFoundException();
 	}
 
 	public void httpGet(Invocation inv) throws DesignerException,
-			ProgrammerException, UserException, DeployerException {
+			InternalException, HttpException, DeployerException {
 		inv.sendOk(document());
 	}
 
-	private Document document() throws ProgrammerException, UserException,
+	private Document document() throws InternalException, HttpException,
 			DesignerException {
 		return document(null);
 	}
 
-	private Document document(String message) throws ProgrammerException,
-			UserException, DesignerException {
+	private Document document(String message) throws InternalException,
+			HttpException, DesignerException {
 		Document doc = MonadUtils.newSourceDocument();
 		Element source = doc.getDocumentElement();
-		source.appendChild(getXML(new XmlTree("roles"), doc));
+		source.appendChild(toXml(doc, new XmlTree("roles")));
 		if (message != null) {
 			//source.appendChild(new VFMessage(message).toXML(doc));
 		}
 		return doc;
 	}
 
-	public void httpPost(Invocation inv) throws ProgrammerException,
-			UserException, DesignerException, DeployerException {
+	public void httpPost(Invocation inv) throws InternalException,
+			HttpException, DesignerException, DeployerException {
 		if (inv.hasParameter("delete")) {
 			Hiber.session().delete(this);
 			Hiber.close();
@@ -231,31 +231,31 @@ public class User extends PersistentEntity {
 					"confirm-new-password");
 			
 			if (!inv.isValid()) {
-				throw UserException.newInvalidParameter(document());
+				throw new UserException(document());
 			}
 			if (!getPassword().equals(currentPassword)) {
-				throw UserException
-						.newInvalidParameter("The current password is incorrect.");
+				throw new UserException
+						("The current password is incorrect.");
 			}
 			if (!newPassword.equals(confirmNewPassword)) {
-				throw UserException
-						.newInvalidParameter("The new passwords aren't the same.");
+				throw new UserException
+						("The new passwords aren't the same.");
 			}
 			setPassword(newPassword);
 			Hiber.commit();
 			inv.sendOk(document("New password set successfully."));
 		} else {
-			throw UserException
-					.newInvalidParameter("I can't really see what you're trying to do.");
+			throw new UserException
+					("I can't really see what you're trying to do.");
 		}
 	}
 
-	public void httpDelete(Invocation inv) throws ProgrammerException,
-			DesignerException, UserException, DeployerException {
+	public void httpDelete(Invocation inv) throws InternalException,
+			DesignerException, HttpException, DeployerException {
 	}
 
-	public void insertRole(User user, Role role) throws ProgrammerException,
-			UserException {
+	public void insertRole(User user, Role role) throws InternalException,
+			HttpException {
 		if (roles == null) {
 			roles = new HashSet<Role>();
 		}
@@ -266,7 +266,7 @@ public class User extends PersistentEntity {
 		roles.add(role);
 	}
 
-	public Role userRole(User user) throws ProgrammerException, UserException {
+	public Role userRole(User user) throws InternalException, HttpException {
 		String userRoleName = "user-" + getId();
 		Role userRole = Role.find(userRoleName);
 		if (userRole == null) {

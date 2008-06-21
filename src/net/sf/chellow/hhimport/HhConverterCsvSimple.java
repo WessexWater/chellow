@@ -1,6 +1,6 @@
 /*
  
- Copyright 2005 Meniscus Systems Ltd
+ Copyright 2005-2008 Meniscus Systems Ltd
  
  This file is part of Chellow.
 
@@ -31,7 +31,8 @@ import java.util.TimeZone;
 
 import net.sf.chellow.data08.HhDatumRaw;
 import net.sf.chellow.data08.MpanCoreRaw;
-import net.sf.chellow.monad.ProgrammerException;
+import net.sf.chellow.monad.InternalException;
+import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.UserException;
 import net.sf.chellow.physical.HhDatumStatus;
 import net.sf.chellow.physical.HhEndDate;
@@ -54,8 +55,8 @@ public class HhConverterCsvSimple implements HhConverter {
 	DateFormat dateFormat = DateFormat.getDateTimeInstance(DateFormat.SHORT,
 			DateFormat.SHORT, Locale.UK);
 
-	public HhConverterCsvSimple(Reader reader) throws UserException,
-			ProgrammerException {
+	public HhConverterCsvSimple(Reader reader) throws HttpException,
+			InternalException {
 		dateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
 		try {
 			shredder = new CSVParser(reader);
@@ -68,7 +69,7 @@ public class HhConverterCsvSimple implements HhConverter {
 					|| !titles[2].equals("Units") || !titles[3].equals("Time")
 					|| !titles[4].equals("Value")
 					|| !titles[5].equals("Status")) {
-				throw UserException.newOk(
+				throw new UserException(
 						"The first line of the CSV must contain the titles "
 								+ "MPAN core, Imp / Exp, Units, Time, Value, Status.");
 			}
@@ -77,17 +78,17 @@ public class HhConverterCsvSimple implements HhConverter {
 			} catch (RuntimeException e) {
 				if (e.getCause() != null) {
 					Throwable t = e.getCause();
-					if (t instanceof UserException) {
-						throw (UserException) t;
+					if (t instanceof HttpException) {
+						throw (HttpException) t;
 					} else {
-						throw new ProgrammerException(t);
+						throw new InternalException(t);
 					}
 				} else {
 					throw e;
 				}
 			}
 		} catch (IOException e) {
-			throw UserException.newOk("Can't read CSV Simple file.");
+			throw new UserException("Can't read CSV Simple file.");
 		}
 	}
 
@@ -105,7 +106,7 @@ public class HhConverterCsvSimple implements HhConverter {
 		try {
 			String[] values = shredder.getLine();
 			if (values.length < 5) {
-				throw UserException.newOk(
+				throw new UserException(
 						"There must be fields for 'MPAN core', 'Imp / Exp', 'Units', 'Time' and 'Value'.");
 			}
 			MpanCoreRaw core = new MpanCoreRaw(values[0]);
@@ -125,19 +126,19 @@ public class HhConverterCsvSimple implements HhConverter {
 			RuntimeException rte = new RuntimeException();
 			rte.initCause(e);
 			throw rte;
-		} catch (UserException e) {
-			try {
-				throw new RuntimeException(UserException.newInvalidParameter(
-						"Problem at line number: "
-								+ shredder.getLastLineNumber() + ". Problem: "
-								+ e.getVFMessage().getDescription()));
-			} catch (ProgrammerException e1) {
-				throw new RuntimeException(e1);
-			}
-		} catch (ProgrammerException e) {
+		} catch (InternalException e) {
 			RuntimeException rte = new RuntimeException();
 			rte.initCause(e);
 			throw rte;
+		} catch (HttpException e) {
+			try {
+				throw new RuntimeException(new UserException(
+						"Problem at line number: "
+								+ shredder.getLastLineNumber() + ". Problem: "
+								+ e.getMessage()));
+			} catch (InternalException e1) {
+				throw new RuntimeException(e1);
+			}
 		}
 	}
 
@@ -145,11 +146,11 @@ public class HhConverterCsvSimple implements HhConverter {
 		return reader.getLineNumber();
 	}
 
-	public void close() throws ProgrammerException {
+	public void close() throws InternalException {
 		try {
 			reader.close();
 		} catch (IOException e) {
-			throw new ProgrammerException(e);
+			throw new InternalException(e);
 		}
 	}
 }

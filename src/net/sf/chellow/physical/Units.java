@@ -1,6 +1,6 @@
 package net.sf.chellow.physical;
 
-import net.sf.chellow.monad.ProgrammerException;
+import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.UserException;
 import net.sf.chellow.monad.types.MonadObject;
 
@@ -19,15 +19,14 @@ public class Units extends MonadObject {
 			KVARH = new Units(1);
 			KW = new Units(2);
 			KVA = new Units(3);
-		} catch (UserException e) {
+		} catch (InternalException e) {
 			throw new RuntimeException(e.getMessage());
-		} catch (ProgrammerException e) {
+		} catch (UserException e) {
 			throw new RuntimeException(e.getMessage());
 		}
 	}
 
-	public static Units getUnits(int intValue) throws UserException,
-			ProgrammerException {
+	public static Units getUnits(int intValue) throws InternalException, UserException {
 		switch (intValue) {
 		case 0:
 			return KWH;
@@ -38,13 +37,11 @@ public class Units extends MonadObject {
 		case 3:
 			return KVA;
 		default:
-			throw UserException
-					.newInvalidParameter("There isn't a Units with this int value.");
+			throw new UserException("There isn't a Units with this int value.");
 		}
 	}
 
-	public static Units getUnits(String name) throws UserException,
-			ProgrammerException {
+	public static Units getUnits(String name) throws InternalException, UserException {
 		if (name.equals("kWh")) {
 			return KWH;
 		} else if (name.equals("kVArh")) {
@@ -54,13 +51,11 @@ public class Units extends MonadObject {
 		} else if (name.equals("kVA")) {
 			return KVA;
 		} else {
-			throw UserException
-					.newInvalidParameter("There isn't a Units with this name.");
+			throw new UserException("There isn't a Units with this name.");
 		}
 	}
 
-	public static String name(Units units) throws UserException,
-			ProgrammerException {
+	public static String name(Units units) throws InternalException, UserException {
 		switch (units.getInt()) {
 		case 0:
 			return "kWh";
@@ -71,8 +66,7 @@ public class Units extends MonadObject {
 		case 3:
 			return "kVA";
 		default:
-			throw UserException
-					.newInvalidParameter("There isn't a Units with this int value.");
+			throw new UserException("There isn't a Units with this int value.");
 		}
 	}
 
@@ -82,14 +76,12 @@ public class Units extends MonadObject {
 		setTypeName("Unit");
 	}
 
-	private Units(int intValue) throws UserException, ProgrammerException {
+	private Units(int intValue) throws InternalException, UserException {
 		if (intValue < 0) {
-			throw UserException
-					.newInvalidParameter("The int value can't be negative.");
+			throw new UserException("The int value can't be negative.");
 		}
 		if (intValue > 3) {
-			throw UserException
-					.newInvalidParameter("The int value can't be greater than 3.");
+			throw new UserException("The int value can't be greater than 3.");
 		}
 		setInt(intValue);
 	}
@@ -116,9 +108,9 @@ public class Units extends MonadObject {
 	public String toString() {
 		try {
 			return name(this);
-		} catch (UserException e) {
+		} catch (InternalException e) {
 			throw new RuntimeException(e);
-		} catch (ProgrammerException e) {
+		} catch (UserException e) {
 			throw new RuntimeException(e);
 		}
 	}

@@ -4,8 +4,9 @@ import net.sf.chellow.monad.DeployerException;
 import net.sf.chellow.monad.DesignerException;
 import net.sf.chellow.monad.Invocation;
 import net.sf.chellow.monad.MonadUtils;
-import net.sf.chellow.monad.ProgrammerException;
+import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Urlable;
+import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.UserException;
 import net.sf.chellow.monad.XmlTree;
 import net.sf.chellow.monad.types.MonadUri;
@@ -40,39 +41,37 @@ public class TprLine extends PersistentEntity {
 
 	public TprLine(Tpr tpr, int monthFrom, int monthTo, int dayOfWeekFrom,
 			int dayOfWeekTo, int hourFrom, int minuteFrom, int hourTo,
-			int minuteTo, boolean isGmt) throws UserException,
-			ProgrammerException {
+			int minuteTo, boolean isGmt) throws HttpException,
+			InternalException {
 		if (monthFrom < 1 || monthFrom > 12) {
-			throw UserException
-					.newInvalidParameter("'Month from' must be between 1 and 12 inclusive.");
+			throw new UserException(
+					"'Month from' must be between 1 and 12 inclusive.");
 		}
 		if (monthTo < 1 || monthTo > 12) {
-			throw UserException
-					.newInvalidParameter("'Month to' must be between 1 and 12 inclusive.");
+			throw new UserException(
+					"'Month to' must be between 1 and 12 inclusive.");
 		}
 		if (dayOfWeekFrom < 1 || dayOfWeekFrom > 7) {
-			throw UserException
-					.newInvalidParameter("The 'day of week from' must be between 1 (Sunday) and 7 (Saturday).");
+			throw new UserException(
+					"The 'day of week from' must be between 1 (Sunday) and 7 (Saturday).");
 		}
 		if (dayOfWeekTo < 1 || dayOfWeekTo > 7) {
-			throw UserException
-					.newInvalidParameter("The 'day of week to' must be between 1 (Sunday) and 7 (Saturday).");
+			throw new UserException(
+					"The 'day of week to' must be between 1 (Sunday) and 7 (Saturday).");
 		}
 		if (hourFrom < 0 || hourFrom > 23) {
-			throw UserException
-					.newInvalidParameter("The 'hour from' must be between 0 and 23 inclusive.");
+			throw new UserException(
+					"The 'hour from' must be between 0 and 23 inclusive.");
 		}
 		if (minuteFrom != 0 && minuteFrom != 30) {
-			throw UserException
-					.newInvalidParameter("The 'minute from' must be either 0 or 30.");
+			throw new UserException("The 'minute from' must be either 0 or 30.");
 		}
 		if (hourTo < 0 || hourTo > 23) {
-			throw UserException
-					.newInvalidParameter("The 'hour to' must be between 0 and 23 inclusive.");
+			throw new UserException(
+					"The 'hour to' must be between 0 and 23 inclusive.");
 		}
 		if (minuteTo != 0 && minuteTo != 30) {
-			throw UserException
-					.newInvalidParameter("The 'minute to' must be either 0 or 30.");
+			throw new UserException("The 'minute to' must be either 0 or 30.");
 		}
 		setTpr(tpr);
 		setMonthFrom(monthFrom);
@@ -166,40 +165,40 @@ public class TprLine extends PersistentEntity {
 		this.isGmt = isGmt;
 	}
 
-	public Urlable getChild(UriPathElement uriId) throws ProgrammerException,
-			UserException {
+	public Urlable getChild(UriPathElement uriId) throws InternalException,
+			HttpException {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
-	public MonadUri getUri() throws ProgrammerException, UserException {
+	public MonadUri getUri() throws InternalException, HttpException {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
-	public void httpDelete(Invocation inv) throws ProgrammerException,
-			DesignerException, UserException, DeployerException {
+	public void httpDelete(Invocation inv) throws InternalException,
+			DesignerException, HttpException, DeployerException {
 		// TODO Auto-generated method stub
 
 	}
 
 	public void httpGet(Invocation inv) throws DesignerException,
-			ProgrammerException, UserException, DeployerException {
+			InternalException, HttpException, DeployerException {
 		Document doc = MonadUtils.newSourceDocument();
 		Element source = doc.getDocumentElement();
 
-		source.appendChild(getXML(new XmlTree("lines"), doc));
+		source.appendChild(toXml(doc, new XmlTree("lines")));
 		inv.sendOk(doc);
 	}
 
-	public void httpPost(Invocation inv) throws ProgrammerException,
-			UserException, DesignerException, DeployerException {
+	public void httpPost(Invocation inv) throws InternalException,
+			HttpException, DesignerException, DeployerException {
 		// TODO Auto-generated method stub
 
 	}
 
-	public Element toXML(Document doc) throws ProgrammerException,
-			UserException {
+	public Element toXml(Document doc) throws InternalException,
+			HttpException {
 		Element element = doc.createElement("tpr-line");
 
 		element.setAttribute("month-from", Integer.toString(monthFrom));

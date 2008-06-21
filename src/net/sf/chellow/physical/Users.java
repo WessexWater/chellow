@@ -29,8 +29,9 @@ import net.sf.chellow.monad.DesignerException;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.Invocation;
 import net.sf.chellow.monad.MonadUtils;
-import net.sf.chellow.monad.ProgrammerException;
+import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Urlable;
+import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.UserException;
 import net.sf.chellow.monad.XmlDescriber;
 import net.sf.chellow.monad.XmlTree;
@@ -52,9 +53,7 @@ public class Users implements Urlable, XmlDescriber {
 	static {
 		try {
 			URI_ID = new UriPathElement("users");
-		} catch (UserException e) {
-			throw new RuntimeException(e);
-		} catch (ProgrammerException e) {
+		} catch (HttpException e) {
 			throw new RuntimeException(e);
 		}
 	}
@@ -62,17 +61,17 @@ public class Users implements Urlable, XmlDescriber {
 	public Users() {
 	}
 
-	public MonadUri getUri() throws ProgrammerException, UserException {
+	public MonadUri getUri() throws InternalException, UserException {
 		return new MonadUri("/").resolve(getUriId()).append("/");
 	}
 
-	public void httpPost(Invocation inv) throws ProgrammerException,
-			UserException, DesignerException, DeployerException {
+	public void httpPost(Invocation inv) throws InternalException,
+			HttpException, DesignerException, DeployerException {
 		EmailAddress emailAddress = inv.getEmailAddress("email-address");
 		Password password = inv.getValidatable(Password.class, "password");
 
 		if (!inv.isValid()) {
-			throw UserException.newInvalidParameter();
+			throw new UserException();
 		}
 		User user = User.insertUser(emailAddress, password);
 		user.userRole(inv.getUser()).insertPermission(
@@ -90,14 +89,14 @@ public class Users implements Urlable, XmlDescriber {
 
 	@SuppressWarnings("unchecked")
 	public void httpGet(Invocation inv) throws DesignerException,
-			ProgrammerException, UserException, DeployerException {
+			InternalException, HttpException, DeployerException {
 		Document doc = MonadUtils.newSourceDocument();
 		Element source = doc.getDocumentElement();
-		Element usersElement = (Element) toXML(doc);
+		Element usersElement = (Element) toXml(doc);
 		source.appendChild(usersElement);
 		for (User user : (List<User>) Hiber.session().createQuery(
 				"from User user").list()) {
-			usersElement.appendChild(user.toXML(doc));
+			usersElement.appendChild(user.toXml(doc));
 		}
 		inv.sendOk(doc);
 	}
@@ -106,8 +105,8 @@ public class Users implements Urlable, XmlDescriber {
 		return URI_ID;
 	}
 
-	public Urlable getChild(UriPathElement uriId) throws ProgrammerException,
-			UserException {
+	public Urlable getChild(UriPathElement uriId) throws InternalException,
+			HttpException {
 		Urlable urlable = null;
 		if (NewUserForm.URI_ID.equals(uriId)) {
 			urlable = new NewUserForm();
@@ -123,8 +122,7 @@ public class Users implements Urlable, XmlDescriber {
 		return urlable;
 	}
 
-	public User findUser(EmailAddress emailAddress) throws ProgrammerException,
-			UserException {
+	public User findUser(EmailAddress emailAddress) throws InternalException {
 		return (User) Hiber
 				.session()
 				.createQuery(
@@ -133,24 +131,24 @@ public class Users implements Urlable, XmlDescriber {
 				.uniqueResult();
 	}
 
-	public void httpDelete(Invocation inv) throws ProgrammerException,
-			UserException {
+	public void httpDelete(Invocation inv) throws InternalException,
+			HttpException {
 		// TODO Auto-generated method stub
 
 	}
 
 	public UriPathElement setUriId(UriPathElement uriId)
-			throws ProgrammerException {
+			throws InternalException {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
-	public Node toXML(Document doc) throws ProgrammerException, UserException {
+	public Node toXml(Document doc) throws InternalException, HttpException {
 		return doc.createElement("users");
 	}
 
-	public Node getXML(XmlTree tree, Document doc) throws ProgrammerException,
-			UserException {
+	public Node toXml(Document doc, XmlTree tree) throws InternalException,
+			HttpException {
 		// TODO Auto-generated method stub
 		return null;
 	}

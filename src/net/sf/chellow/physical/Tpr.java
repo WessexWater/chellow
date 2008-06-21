@@ -8,8 +8,10 @@ import net.sf.chellow.monad.DesignerException;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.Invocation;
 import net.sf.chellow.monad.MonadUtils;
-import net.sf.chellow.monad.ProgrammerException;
+import net.sf.chellow.monad.NotFoundException;
+import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Urlable;
+import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.UserException;
 import net.sf.chellow.monad.XmlTree;
 import net.sf.chellow.monad.types.MonadUri;
@@ -26,22 +28,19 @@ public class Tpr extends PersistentEntity {
 				.uniqueResult();
 	}
 
-	static public Tpr getTpr(String code) throws UserException,
-			ProgrammerException {
+	static public Tpr getTpr(String code) throws InternalException, UserException {
 		try {
 			return getTpr(Integer.parseInt(code));
 		} catch (NumberFormatException e) {
-			throw UserException.newInvalidParameter("Problem parsing code: "
+			throw new UserException("Problem parsing code: "
 					+ e.getMessage());
 		}
 	}
 
-	static public Tpr getTpr(int code) throws UserException,
-			ProgrammerException {
+	static public Tpr getTpr(int code) throws InternalException, UserException {
 		Tpr tpr = findTpr(code);
 		if (tpr == null) {
-			throw UserException
-					.newInvalidParameter("Can't find a TPR with code '" + code
+			throw new UserException("Can't find a TPR with code '" + code
 							+ "'.");
 		}
 		return tpr;
@@ -53,10 +52,10 @@ public class Tpr extends PersistentEntity {
 		return tpr;
 	}
 
-	static public Tpr getTpr(long id) throws UserException, ProgrammerException {
+	static public Tpr getTpr(long id) throws NotFoundException, InternalException {
 		Tpr tpr = (Tpr) Hiber.session().get(Tpr.class, id);
 		if (tpr == null) {
-			throw UserException.newNotFound();
+			throw new NotFoundException();
 		}
 		return tpr;
 	}
@@ -101,50 +100,48 @@ public class Tpr extends PersistentEntity {
 		this.lines = lines;
 	}
 
-	public Urlable getChild(UriPathElement uriId) throws ProgrammerException,
-			UserException {
+	public Urlable getChild(UriPathElement uriId) throws InternalException {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
-	public MonadUri getUri() throws ProgrammerException, UserException {
+	public MonadUri getUri() throws InternalException {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
-	public void httpDelete(Invocation inv) throws ProgrammerException,
-			DesignerException, UserException, DeployerException {
+	public void httpDelete(Invocation inv) throws InternalException,
+			DesignerException, DeployerException {
 		// TODO Auto-generated method stub
 
 	}
 
 	@SuppressWarnings("unchecked")
-	public void httpGet(Invocation inv) throws DesignerException,
-			ProgrammerException, UserException, DeployerException {
+	public void httpGet(Invocation inv) throws HttpException {
 		Document doc = MonadUtils.newSourceDocument();
 		Element source = doc.getDocumentElement();
-		source.appendChild(getXML(new XmlTree("sscs").put("lines"), doc));
+		source.appendChild(toXml(doc, new XmlTree("sscs").put("lines")));
 		inv.sendOk(doc);
 	}
 
-	public void httpPost(Invocation inv) throws ProgrammerException,
-			UserException, DesignerException, DeployerException {
+	public void httpPost(Invocation inv) throws InternalException,
+			HttpException, DesignerException, DeployerException {
 		// TODO Auto-generated method stub
 
 	}
 
 	public TprLine insertLine(int monthFrom, int monthTo, int dayOfWeekFrom,
 			int dayOfWeekTo, int hourFrom, int minuteFrom, int hourTo,
-			int minuteTo, boolean isGmt) throws UserException,
-			ProgrammerException {
+			int minuteTo, boolean isGmt) throws HttpException,
+			InternalException {
 		TprLine line = new TprLine(this, monthFrom, monthTo, dayOfWeekFrom,
 				dayOfWeekTo, hourFrom, minuteFrom, hourTo, minuteTo, isGmt);
 		lines.add(line);
 		return line;
 	}
 
-	public Node toXML(Document doc) throws ProgrammerException, UserException {
-		Element element = (Element) super.toXML(doc);
+	public Node toXml(Document doc) throws HttpException {
+		Element element = (Element) super.toXml(doc);
 
 		element.setAttribute("code", Integer.toString(code));
 		return element;
