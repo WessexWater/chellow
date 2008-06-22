@@ -15,8 +15,8 @@ def create_item_element(doc, mpan, finish_generation):
 account_id = inv.getLong('account-id')
 account = Account.getAccount(account_id)
 if not account.getOrganization().equals(organization):
-    raise UserException.newInvalidParameter("Such an account doesn't exist in this organization")
-account_element = account.toXml(XmlTree('provider'), doc)
+    raise UserException("Such an account doesn't exist in this organization")
+account_element = account.toXml(doc, XmlTree('provider'))
 source.appendChild(account_element)
 
 mpans = Hiber.session().createQuery("from Mpan mpan where mpan.supplierAccount = :account order by mpan.mpanCore, mpan.supplyGeneration.startDate.date").setEntity('account', account).list()

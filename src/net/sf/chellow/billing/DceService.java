@@ -44,7 +44,7 @@ import net.sf.chellow.physical.ContractFrequency;
 import net.sf.chellow.physical.HhEndDate;
 import net.sf.chellow.physical.Mpan;
 import net.sf.chellow.physical.ChannelSnags;
-import net.sf.chellow.physical.SnagsSite;
+import net.sf.chellow.physical.SiteSnags;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -155,7 +155,7 @@ public class DceService extends Service {
 	 * ChannelSnag.SNAG_CHECK_LEAD_TIME)) .uniqueResult();
 	 * 
 	 * numSnags += (Integer) Hiber .session() .createQuery( "select count(*)
-	 * from SnagSite snag where snag.contract.id = :contractId and
+	 * from SiteSnag snag where snag.contract.id = :contractId and
 	 * snag.dateResolved.date is null and snag.startDate.date < :snagDate")
 	 * .setLong("contractId", getId()).setDate( "snagDate", new
 	 * Date(System.currentTimeMillis() - ChannelSnag.SNAG_CHECK_LEAD_TIME))
@@ -218,7 +218,7 @@ public class DceService extends Service {
 			return getHhDataImportProcessesInstance();
 		} else if (ChannelSnags.URI_ID.equals(uriId)) {
 			return getSnagsChannelInstance();
-		} else if (SnagsSite.URI_ID.equals(uriId)) {
+		} else if (SiteSnags.URI_ID.equals(uriId)) {
 			return getSnagsSiteInstance();
 		} else if (StarkAutomaticHhDataImporter.URI_ID.equals(uriId)) {
 			return StarkAutomaticHhDataImporters.getImportersInstance()
@@ -243,8 +243,8 @@ public class DceService extends Service {
 				+ getName();
 	}
 
-	public SnagsSite getSnagsSiteInstance() {
-		return new SnagsSite(this);
+	public SiteSnags getSnagsSiteInstance() {
+		return new SiteSnags(this);
 	}
 
 	public Element toXml(Document doc) throws InternalException,

@@ -364,8 +364,8 @@ public class Organization extends PersistentEntity {
 			throw 
 					new UserException("This site can't be deleted while there are still supply generations attached to it.");
 		}
-		for (SnagSite snag : (List<SnagSite>) Hiber.session().createQuery(
-				"from SnagSite snag where site = :site")
+		for (SiteSnag snag : (List<SiteSnag>) Hiber.session().createQuery(
+				"from SiteSnag snag where site = :site")
 				.setEntity("site", site).list()) {
 			snag.delete();
 		}

@@ -10,7 +10,7 @@
 		<html>
 			<head>
 				<link rel="stylesheet" type="text/css"
-					href="{/source/request/@context-path}/orgs/1/reports/9/stream/output/" />
+					href="{/source/request/@context-path}/orgs/{/source/site/org/@id}/reports/9/stream/output/" />
 
 				<title>
 					Chellow &gt; Sites &gt;
@@ -33,21 +33,18 @@
 
 			<body>
 				<p>
-					<span class="logo">
-						<a href="{/source/request/@context-path}/">
-							<img
-								src="{/source/request/@context-path}/logo/" alt="Chellow logo" />
-							<xsl:value-of select="'Chellow'" />
-						</a>
-					</span>
+					<a
+						href="{/source/request/@context-path}/orgs/{/source/site/org/@id}/reports/0/screen/output/">
+						<xsl:value-of select="/source/site/org/@name" />
+					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/orgs/1/reports/1/screen/output/">
+						href="{/source/request/@context-path}/orgs/{/source/site/org/@id}/reports/1/screen/output/">
 						<xsl:value-of select="'Sites'" />
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/orgs/1/reports/2/screen/output/?site-id={/source/site/@id}">
+						href="{/source/request/@context-path}/orgs/{/source/site/org/@id}/reports/2/screen/output/?site-id={/source/site/@id}">
 						<xsl:value-of
 							select="concat(/source/site/@code, ' ', /source/site/@name)" />
 					</a>

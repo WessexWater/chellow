@@ -23,14 +23,14 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
-public class SnagsSite implements Urlable, XmlDescriber {
+public class SiteSnags implements Urlable, XmlDescriber {
 	static private final int PAGE_SIZE = 20;
 
 	public static final UriPathElement URI_ID;
 
 	static {
 		try {
-			URI_ID = new UriPathElement("snags-site");
+			URI_ID = new UriPathElement("site-snags");
 		} catch (HttpException e) {
 			throw new RuntimeException(e);
 		}
@@ -38,7 +38,7 @@ public class SnagsSite implements Urlable, XmlDescriber {
 
 	DceService dceService;
 
-	public SnagsSite(DceService dceService) {
+	public SiteSnags(DceService dceService) {
 		this.dceService = dceService;
 	}
 
@@ -65,10 +65,10 @@ public class SnagsSite implements Urlable, XmlDescriber {
 		source.appendChild(snagsElement);
 		snagsElement.appendChild(dceService.toXml(doc, new XmlTree("provider",
 						new XmlTree("organization"))));
-		for (SnagSite snag : (List<SnagSite>) Hiber
+		for (SiteSnag snag : (List<SiteSnag>) Hiber
 				.session()
 				.createQuery(
-						"from SnagSite snag where snag.dateResolved is null and snag.service = :service order by snag.site.code.string, snag.description, snag.startDate.date")
+						"from SiteSnag snag where snag.dateResolved is null and snag.service = :service order by snag.site.code.string, snag.description, snag.startDate.date")
 				.setEntity("service", dceService).setMaxResults(PAGE_SIZE)
 				.list()) {
 			snagsElement.appendChild(snag.toXml(doc, new XmlTree("site")));
@@ -88,12 +88,12 @@ public class SnagsSite implements Urlable, XmlDescriber {
 			ScrollableResults snags = Hiber
 					.session()
 					.createQuery(
-							"from SnagSite snag where snag.service = :service and snag.finishDate < :ignoreDate")
+							"from SiteSnag snag where snag.service = :service and snag.finishDate < :ignoreDate")
 					.setEntity("service", dceService).setTimestamp(
 							"ignoreDate", ignoreDate.getDate()).scroll(
 							ScrollMode.FORWARD_ONLY);
 			while (snags.next()) {
-				SnagSite snag = (SnagSite) snags.get(0);
+				SiteSnag snag = (SiteSnag) snags.get(0);
 				snag.resolve(true);
 				Hiber.session().flush();
 				Hiber.session().clear();
@@ -120,7 +120,7 @@ public class SnagsSite implements Urlable, XmlDescriber {
 	}
 
 	public Node toXml(Document doc) throws InternalException, HttpException {
-		return doc.createElement("snags-site");
+		return doc.createElement("site-snags");
 	}
 
 	public Node toXml(Document doc, XmlTree tree) throws InternalException,

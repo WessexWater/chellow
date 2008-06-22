@@ -38,7 +38,7 @@
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/55/screen/output/?dce-id={/source/dce-service/dce/@id}">
+						href="{/source/request/@context-path}/orgs/{/source/channel-snag/dce-service/dce/org/@id}/reports/55/screen/output/?dce-id={/source/channel-snag/dce-service/dce/@id}">
 						<xsl:value-of
 							select="/source/channel-snag/dce-service/dce/@name" />
 					</a>
@@ -83,7 +83,8 @@
 						<tr>
 							<th>Chellow Id</th>
 							<td>
-								<xsl:value-of select="@id" />
+								<xsl:value-of
+									select="/source/channel-snag/@id" />
 							</td>
 						</tr>
 						<tr>
@@ -111,8 +112,15 @@
 						<tr>
 							<th>Ignored?</th>
 							<td>
-								<xsl:value-of
-									select="/source/channel-snag/@is-ignored" />
+								<xsl:choose>
+									<xsl:when
+										test="/source/channel-snag/@is-ignored='true'">
+										Ignored
+									</xsl:when>
+									<xsl:otherwise>
+										Not ignored
+									</xsl:otherwise>
+								</xsl:choose>
 							</td>
 						</tr>
 						<tr>
@@ -133,7 +141,7 @@
 							<th>Channel</th>
 							<td>
 								<a
-									href="{/source/request/@context-path}/orgs/{/source/channel-snag/dce-service/dce/org/@id}/supplies/{/source/channel-snag/channel/supply/@id}/channels/{/source/channel-snag/channel/@id}/">
+									href="{/source/request/@context-path}/orgs/{/source/channel-snag/dce-service/dce/org/@id}/reports/3/screen/output/?supply-id={/source/channel-snag/channel/supply/@id}">
 									<xsl:value-of
 										select="/source/channel-snag/@id" />
 								</a>

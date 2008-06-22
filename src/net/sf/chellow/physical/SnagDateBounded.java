@@ -210,7 +210,7 @@ public abstract class SnagDateBounded extends Snag {
 				description, startDate, finishDate, isResolved));
 	}
 
-	public static void addSnagSite(DceService contractDce, Site site,
+	public static void addSiteSnag(DceService contractDce, Site site,
 			String description, HhEndDate startDate, HhEndDate finishDate,
 			boolean isResolved) throws InternalException, HttpException {
 		addSnagDateBounded(new SiteSnagToAdd(contractDce, site, description,
@@ -364,7 +364,7 @@ public abstract class SnagDateBounded extends Snag {
 			query = Hiber
 					.session()
 					.createQuery(
-							"from SnagSite snag where snag.site = :site and snag.startDate.date <= :finishDate and snag.finishDate.date >= :startDate and snag.description = :description order by snag.startDate.date")
+							"from SiteSnag snag where snag.site = :site and snag.startDate.date <= :finishDate and snag.finishDate.date >= :startDate and snag.description = :description order by snag.startDate.date")
 					.setEntity("site", site).setString("description",
 							description.toString());
 		}
@@ -375,13 +375,13 @@ public abstract class SnagDateBounded extends Snag {
 
 		public SnagDateBounded newSnag() throws InternalException,
 				HttpException {
-			return new SnagSite(description, dceService, site, startDate,
+			return new SiteSnag(description, dceService, site, startDate,
 					finishDate);
 		}
 
 		public void insertSnag(SnagDateBounded snag) {
-			SnagSite snagSite = (SnagSite) snag;
-			SnagSite.insertSnagSite(snagSite);
+			SiteSnag snagSite = (SiteSnag) snag;
+			SiteSnag.insertSiteSnag(snagSite);
 		}
 
 		public HhEndDate getStartDate() {
@@ -390,7 +390,7 @@ public abstract class SnagDateBounded extends Snag {
 
 		public SnagDateBounded newSnag(HhEndDate startDate, HhEndDate finishDate)
 				throws InternalException, HttpException {
-			return new SnagSite(description, dceService, site, startDate,
+			return new SiteSnag(description, dceService, site, startDate,
 					finishDate);
 		}
 
@@ -403,19 +403,19 @@ public abstract class SnagDateBounded extends Snag {
 		}
 
 		public void deleteSnag(SnagDateBounded snag) {
-			SnagSite snagSite = (SnagSite) snag;
+			SiteSnag snagSite = (SiteSnag) snag;
 			snagSite.delete();
 		}
 
 		@SuppressWarnings("unchecked")
-		public List<SnagSite> getCoveredSnags() {
+		public List<SiteSnag> getCoveredSnags() {
 			return getCoveredSnags(startDate, finishDate);
 		}
 
 		@SuppressWarnings("unchecked")
-		public List<SnagSite> getCoveredSnags(HhEndDate startDate,
+		public List<SiteSnag> getCoveredSnags(HhEndDate startDate,
 				HhEndDate finishDate) {
-			return (List<SnagSite>) query.setTimestamp("finishDate",
+			return (List<SiteSnag>) query.setTimestamp("finishDate",
 					finishDate.getDate()).setTimestamp("startDate",
 					startDate.getDate()).list();
 		}

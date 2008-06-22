@@ -200,7 +200,7 @@
 					</li>
 					<li>
 						<a
-							href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/59/screen/output/?service-id={/source/dce-service/@id}">
+							href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/19/screen/output/?service-id={/source/dce-service/@id}">
 							Site Group Snags
 						</a>
 					</li>

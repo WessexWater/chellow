@@ -50,7 +50,7 @@
 				<table>
 					<tbody>
 						<tr>
-							<th>Id</th>
+							<th>Chellow Id</th>
 							<td>
 								<xsl:value-of
 									select="/source/supplier/@id" />

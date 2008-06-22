@@ -84,7 +84,7 @@ public class DcsService extends Service {
 	 * ChannelSnag.SNAG_CHECK_LEAD_TIME)) .uniqueResult();
 	 * 
 	 * numSnags += (Integer) Hiber .session() .createQuery( "select count(*)
-	 * from SnagSite snag where snag.contract.id = :contractId and
+	 * from SiteSnag snag where snag.contract.id = :contractId and
 	 * snag.dateResolved.date is null and snag.startDate.date < :snagDate")
 	 * .setLong("contractId", getId()).setDate( "snagDate", new
 	 * Date(System.currentTimeMillis() - ChannelSnag.SNAG_CHECK_LEAD_TIME))

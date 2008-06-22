@@ -1,4 +1,4 @@
-from net.sf.chellow.monad import Hiber, UserException
+from net.sf.chellow.monad import Hiber, UserException, XmlTree
 from java.lang import System
 from net.sf.chellow.monad.types import MonadDate
 import math
@@ -28,7 +28,7 @@ cal.add(Calendar.DAY_OF_MONTH, 1)
 cal.add(Calendar.MINUTE, -30)
 finishDate = HhEndDate(cal.getTime()).getDate()
 site = organization.getSite(SiteCode(siteCode))
-source.appendChild(site.toXml(doc))
+source.appendChild(site.toXml(doc, XmlTree('organization')))
 source.appendChild(MonadDate.getMonthsXml(doc))
 source.appendChild(MonadDate.getDaysXml(doc))
 con = Hiber.session().connection()
@@ -39,7 +39,7 @@ stmt.setLong(3, site.getId())
 stmt.setFetchSize(100)
 rs = stmt.executeQuery()
 hhDate = startDate.getTime()
-siteSnagQuery = Hiber.session().createQuery("select count(*) from SnagSite snag where snag.site = :site and snag.startDate.date <= :finishDate and snag.finishDate.date >= :startDate and (snag.dateResolved is null or (snag.dateResolved is not null and snag.isIgnored is true))").setEntity("site", site)
+siteSnagQuery = Hiber.session().createQuery("select count(*) from SiteSnag snag where snag.site = :site and snag.startDate.date <= :finishDate and snag.finishDate.date >= :startDate and (snag.dateResolved is null or (snag.dateResolved is not null and snag.isIgnored is true))").setEntity("site", site)
 if rs.next():
     hhChannelKwh = rs.getFloat("value")
     hhChannelEndDate = rs.getTimestamp("end_date")

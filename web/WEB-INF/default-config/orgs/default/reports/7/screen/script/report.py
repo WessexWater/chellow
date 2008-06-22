@@ -6,6 +6,7 @@ from net.sf.chellow.physical import HhEndDate, IsImport
 supplyId = inv.getLong("supply-id")
 supply = Hiber.session().createQuery("select supply from Supply supply join supply.generations generation join generation.siteSupplyGenerations siteSupplyGeneration where siteSupplyGeneration.site.organization = :organization and supply.id = :supplyId").setEntity("organization", organization).setLong("supplyId", supplyId).uniqueResult()
 source.appendChild(supply.toXml(doc))
+source.appendChild(organization.toXml(doc))
 isImport = inv.getBoolean("is-import");
 kwhChannel = supply.getChannel(isImport, True) 
 kvarhChannel = supply.getChannel(isImport, False)

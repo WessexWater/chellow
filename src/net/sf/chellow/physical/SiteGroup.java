@@ -120,7 +120,7 @@ public class SiteGroup {
 		HhEndDate serviceEndDate = service.getFinishRateScript()
 				.getFinishDate();
 		SnagDateBounded
-				.addSnagSite(service, site, description, startDate,
+				.addSiteSnag(service, site, description, startDate,
 						serviceEndDate == null
 								|| serviceEndDate.getDate().after(
 										finishDate.getDate()) ? finishDate
@@ -129,7 +129,7 @@ public class SiteGroup {
 				finishDate.getDate()))) {
 			service = getDceService(serviceEndDate.getNext());
 			serviceEndDate = service.getFinishRateScript().getFinishDate();
-			SnagDateBounded.addSnagSite(service, site, description, service
+			SnagDateBounded.addSiteSnag(service, site, description, service
 					.getStartRateScript().getStartDate(),
 					serviceEndDate == null
 							|| serviceEndDate.getDate().after(
@@ -155,10 +155,10 @@ public class SiteGroup {
 	public void resolveDceSnag(String description, HhEndDate startDate,
 			HhEndDate finishDate) throws InternalException, HttpException {
 		if (!startDate.getDate().after(finishDate.getDate())) {
-			for (SnagSite snag : (List<SnagSite>) Hiber
+			for (SiteSnag snag : (List<SiteSnag>) Hiber
 					.session()
 					.createQuery(
-							"from SnagSite snag where snag.site = :site and snag.description = :description and snag.startDate.date <= :finishDate and snag.finishDate.date >= :startDate and snag.dateResolved is null")
+							"from SiteSnag snag where snag.site = :site and snag.description = :description and snag.startDate.date <= :finishDate and snag.finishDate.date >= :startDate and snag.dateResolved is null")
 					.setEntity("site", sites.get(0)).setString("description",
 							description.toString()).setTimestamp("startDate",
 							startDate.getDate()).setTimestamp("finishDate",

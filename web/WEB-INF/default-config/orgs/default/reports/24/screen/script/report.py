@@ -6,7 +6,7 @@ dso = Dso.getDso(dso_id)
 llfs_element = doc.createElement('llfs')
 source.appendChild(llfs_element)
 for llf in Hiber.session().createQuery("from Llf llf where llf.dso = :dso order by llf.code").setEntity("dso", dso).list():
-    llfs_element.appendChild(llf.toXml(XmlTree("voltageLevel"), doc))
+    llfs_element.appendChild(llf.toXml(doc, XmlTree("voltageLevel")))
 llfs_element.appendChild(dso.toXml(doc));
 source.appendChild(organization.toXml(doc))
 

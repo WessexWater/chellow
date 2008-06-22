@@ -14,15 +14,15 @@
 				<title>
 					Chellow &gt; Organizations &gt;
 					<xsl:value-of
-						select="/source/snag-site/dce-service/dce/org/@name" />
+						select="/source/site-snag/dce-service/dce/org/@name" />
 					&gt; DCEs &gt;
 					<xsl:value-of
-						select="/source/snag-site/dce-service/dce/@name" />
+						select="/source/site-snag/dce-service/dce/@name" />
 					&gt; Contracts
 					<xsl:value-of
-						select="/source/snag-site/dce-service/@name" />
+						select="/source/site-snag/dce-service/@name" />
 					&gt; Snags &gt;
-					<xsl:value-of select="/source/snag-site/@id" />
+					<xsl:value-of select="/source/site-snag/@id" />
 				</title>
 			</head>
 
@@ -49,39 +49,44 @@
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/orgs/{/source/snag-site/dce-service/dce/org/@id}/">
+						href="{/source/request/@context-path}/orgs/{/source/site-snag/dce-service/dce/org/@id}/">
 						<xsl:value-of
-							select="/source/snag-site/dce-service/dce/org/@name" />
+							select="/source/site-snag/dce-service/dce/org/@name" />
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/orgs/{/source/snag-site/dce-service/dce/org/@id}/dces/">
+						href="{/source/request/@context-path}/orgs/{/source/site-snag/dce-service/dce/org/@id}/dces/">
 						<xsl:value-of select="'DCEs'"/>
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/orgs/{/source/snag-site/dce-service/dce/org/@id}/dces/{/source/snag-site/dce-service/dce/@id}/">
+						href="{/source/request/@context-path}/orgs/{/source/site-snag/dce-service/dce/org/@id}/dces/{/source/site-snag/dce-service/dce/@id}/">
 						<xsl:value-of
-							select="/source/snag-site/dce-service/dce/@name" />
+							select="/source/site-snag/dce-service/dce/@name" />
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/orgs/{/source/snag-site/dce-service/dce/org/@id}/dces/{/source/snag-site/dce-service/dce/@id}/services/">
+						href="{/source/request/@context-path}/orgs/{/source/site-snag/dce-service/dce/org/@id}/dces/{/source/site-snag/dce-service/dce/@id}/services/">
 						<xsl:value-of select="'Services'"/>
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/orgs/{/source/snag-site/dce-service/dce/org/@id}/dces/{/source/snag-site/dce-service/dce/@id}/services/{/source/snag-site/dce-service/@id}/">
+						href="{/source/request/@context-path}/orgs/{/source/site-snag/dce-service/dce/org/@id}/dces/{/source/site-snag/dce-service/dce/@id}/services/{/source/site-snag/dce-service/@id}/">
 						<xsl:value-of
-							select="/source/snag-site/dce-service/@name" />
+							select="/source/site-snag/dce-service/@name" />
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/orgs/{/source/snag-site/dce-service/dce/org/@id}/dces/{/source/snag-site/dce-service/dce/@id}/services/{/source/snag-site/dce-service/@id}/snags-site/">
+						href="{/source/request/@context-path}/orgs/{/source/site-snag/dce-service/dce/org/@id}/dces/{/source/site-snag/dce-service/dce/@id}/services/{/source/site-snag/dce-service/@id}/snags-site/">
 						Site Snags
 					</a>
 					&gt;
-					<xsl:value-of select="/source/snag-site/@id" />
+					<xsl:value-of select="concat(/source/site-snag/@id, ' [')" />
+					<a
+						href="{/source/request/@context-path}/orgs/{/source/site-snag/dce-service/dce/org/@id}/reports/59/screen/output/?snag-id={/source/site-snag/@id}">
+						<xsl:value-of select="'view'" />
+					</a>
+					<xsl:value-of select="']'" />
 				</p>
 				<br />
 
@@ -89,15 +94,15 @@
 					<li>
 						Date Created:
 						<xsl:value-of
-							select="concat(/source/snag-site/date[@label='created']/@year, '-', /source/snag-site/date[@label='created']/@month, '-', /source/snag-site/date[@label='created']/@day)" />
+							select="concat(/source/site-snag/date[@label='created']/@year, '-', /source/site-snag/date[@label='created']/@month, '-', /source/site-snag/date[@label='created']/@day)" />
 					</li>
 					<li>
 						Date Resolved:
 						<xsl:choose>
 							<xsl:when
-								test="/source/snag-site/date[@label='resolved']">
+								test="/source/site-snag/date[@label='resolved']">
 								<xsl:value-of
-									select="concat(/source/snag-site/date[@label='resolved']/@year, '-', /source/snag-site/date[@label='resolved']/@month, '-', /source/snag-site/date[@label='resolved']/@day)" />
+									select="concat(/source/site-snag/date[@label='resolved']/@year, '-', /source/site-snag/date[@label='resolved']/@month, '-', /source/site-snag/date[@label='resolved']/@day)" />
 							</xsl:when>
 							<xsl:otherwise>Unresolved</xsl:otherwise>
 						</xsl:choose>
@@ -105,22 +110,22 @@
 					<li>
 						Ignored?:
 						<xsl:value-of
-							select="/source/snag-site/@is-ignored" />
+							select="/source/site-snag/@is-ignored" />
 					</li>
 					<li>
 						Description:
 						<xsl:value-of
-							select="/source/snag-site/@description" />
+							select="/source/site-snag/@description" />
 					</li>
 					<li>
 						Progress:
 						<xsl:value-of
-							select="/source/snag-site/@progress" />
+							select="/source/site-snag/@progress" />
 					</li>
 
 					<li>
 						<a
-							href="{/source/request/@context-path}/orgs/{/source/snag-site/dce-service/dce/org/@id}/sites/{/source/snag-site/site/@id}/">
+							href="{/source/request/@context-path}/orgs/{/source/site-snag/dce-service/dce/org/@id}/sites/{/source/site-snag/site/@id}/">
 							Site
 						</a>
 					</li>
@@ -128,16 +133,16 @@
 					<li>
 						Start Date:
 						<xsl:value-of
-							select="concat(/source/snag-site/hh-end-date[@label='start']/@year, '-', /source/snag-site/hh-end-date[@label='start']/@month, '-', /source/snag-site/hh-end-date[@label='start']/@day)" />
+							select="concat(/source/site-snag/hh-end-date[@label='start']/@year, '-', /source/site-snag/hh-end-date[@label='start']/@month, '-', /source/site-snag/hh-end-date[@label='start']/@day)" />
 					</li>
 					<li>
 						Finish Date:
 						<xsl:value-of
-							select="concat(/source/snag-site/hh-end-date[@label='finish']/@year, '-', /source/snag-site/hh-end-date[@label='finish']/@month, '-', /source/snag-site/hh-end-date[@label='finish']/@day)" />
+							select="concat(/source/site-snag/hh-end-date[@label='finish']/@year, '-', /source/site-snag/hh-end-date[@label='finish']/@month, '-', /source/site-snag/hh-end-date[@label='finish']/@day)" />
 					</li>
 				</ul>
 				<xsl:if
-					test="not(/source/snag-site/date[@label='resolved']) or (/source/snag-site/date[@label='resolved'] and /source/snag-site/@is-ignored='true')">
+					test="not(/source/site-snag/date[@label='resolved']) or (/source/site-snag/date[@label='resolved'] and /source/site-snag/@is-ignored='true')">
 					<form action="." method="post">
 						<fieldset>
 							<legend>Update snag</legend>
@@ -145,7 +150,7 @@
 								<xsl:attribute name="value">
 									<xsl:choose>
 										<xsl:when
-											test="/source/snag-site/@is-ignored='true'">
+											test="/source/site-snag/@is-ignored='true'">
 											<xsl:value-of select="'false'"/>
 										</xsl:when>
 										<xsl:otherwise>
@@ -158,7 +163,7 @@
 								<xsl:attribute name="value">
 									<xsl:choose>
 										<xsl:when
-											test="/source/snag-site/@is-ignored='true'">
+											test="/source/site-snag/@is-ignored='true'">
 											<xsl:value-of
 												select="'Un-ignore'" />
 										</xsl:when>

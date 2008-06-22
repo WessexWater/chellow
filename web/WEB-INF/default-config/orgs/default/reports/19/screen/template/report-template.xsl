@@ -10,55 +10,96 @@
 		<html>
 			<head>
 				<link rel="stylesheet" type="text/css"
-					href="{/source/request/@context-path}/orgs/1/reports/9/stream/output/" />
+					href="{/source/request/@context-path}/orgs/{/source/site-snags/dce-service/dce/org/@id}/reports/9/stream/output/" />
 
-				<title>Chellow &gt; Sites</title>
-
+				<title>
+					<xsl:value-of
+						select="/source/site-snags/dce-service/dce/org/@name" />
+					&gt; DCEs &gt;
+					<xsl:value-of
+						select="/source/site-snags/dce-service/dce/@name" />
+					&gt; Services &gt;
+					<xsl:value-of
+						select="/source/site-snags/dce-service/@name" />
+				</title>
 			</head>
 
 			<body>
 				<p>
 					<a
-						href="{/source/request/@context-path}/orgs/1/reports/0/screen/output/">
-						<img src="{/source/request/@context-path}/logo/"
-							alt="Logo" />
-						<span class="logo">
-							<xsl:value-of select="'Chellow'" />
-						</span>
+						href="{/source/request/@context-path}/orgs/{/source/site-snags/dce-service/dce/org/@id}/reports/0/screen/output/">
+						<xsl:value-of
+							select="/source/site-snags/dce-service/dce/org/@name" />
 					</a>
-					&gt; Snags
-					<br />
-					<br />
-					<xsl:value-of select="source/@snag-count" />
+					&gt;
+					<a
+						href="{/source/request/@context-path}/orgs/{/source/site-snags/dce-service/dce/org/@id}/reports/54/screen/output/">
+						<xsl:value-of select="'DCEs'" />
+					</a>
+					&gt;
+					<a
+						href="{/source/request/@context-path}/orgs/{/source/site-snags/dce-service/dce/org/@id}/reports/55/screen/output/?dce-id={/source/site-snags/dce-service/dce/@id}">
+						<xsl:value-of
+							select="/source/site-snags/dce-service/dce/@name" />
+					</a>
+					&gt;
+					<a
+						href="{/source/request/@context-path}/orgs/{/source/site-snags/dce-service/dce/org/@id}/reports/56/screen/output/?dce-id={/source/site-snags/dce-service/dce/@id}">
+						<xsl:value-of select="'Services'" />
+					</a>
+					&gt;
+					<a
+						href="{/source/request/@context-path}/orgs/{/source/site-snags/dce-service/dce/org/@id}/reports/57/screen/output/?service-id={/source/site-snags/dce-service/@id}">
+						<xsl:value-of
+							select="/source/site-snags/dce-service/@name" />
+					</a>
+					&gt;
+					<xsl:value-of select="'Site Snags ['" />
+					<a
+						href="{/source/request/@context-path}/orgs/{/source/site-snags/dce-service/dce/org/@id}/dces/{/source/site-snags/dce-service/dce/@id}/services/{/source/site-snags/dce-service/@id}/site-snags/">
+						<xsl:value-of select="'edit'" />
+					</a>
+					<xsl:value-of select="']'" />
+				</p>
+				<p>
+					<xsl:value-of
+						select="source/site-snags/@snag-count" />
 					Snag(s) (older then 5 days) Total over
-					<xsl:value-of select="source/@site-count" />
+					<xsl:value-of
+						select="source/site-snags/@site-count" />
 					Site(s)
 					<br />
 				</p>
 
-				<table cellpadding="5" cellspacing="0">
+				<table>
 					<thead>
 						<tr>
-							<th>SnagId</th>
+							<th>Chellow Id</th>
 							<th>Site ID</th>
 							<th>Site Name</th>
 							<th>Snag Description</th>
 							<th>Duration</th>
 						</tr>
 					</thead>
-					<tbody align="center">
-						<xsl:for-each select="/source/snag-site">
+					<tbody>
+						<xsl:for-each
+							select="/source/site-snags/site-snag">
 							<tr>
 								<td>
 									<a
-										href="{/source/request/@context-path}/orgs/1/dces/21/services/21/snags-site/{@id}/">
+										href="{/source/request/@context-path}/orgs/{/source/site-snags/dce-service/dce/org/@id}/reports/59/screen/output/?snag-id={@id}">
 										<xsl:value-of select="@id" />
 									</a>
-								</td>
-
-								<td align="center">
+									<xsl:value-of select="' ['" />
 									<a
-										href="{/source/request/@context-path}/chellow/orgs/1/reports/2/screen/output/?site-id={site/@id}">
+										href="{/source/request/@context-path}/orgs/{/source/site-snags/dce-service/dce/org/@id}/dces/{/source/site-snags/dce-service/dce/@id}/services/{/source/site-snags/dce-service/@id}/site-snags/{@id}/">
+										<xsl:value-of select="'edit'" />
+									</a>
+									<xsl:value-of select="']'" />
+								</td>
+								<td>
+									<a
+										href="{/source/request/@context-path}/orgs/{/source/site-snags/dce-service/dce/org/@id}/reports/2/screen/output/?site-id={site/@id}">
 										<xsl:value-of
 											select="site/@code" />
 									</a>
@@ -71,7 +112,7 @@
 									<xsl:value-of select="@description" />
 								</td>
 
-								<td align="left">
+								<td>
 									Start
 									<xsl:apply-templates
 										select="hh-end-date[@label='start']" />
@@ -80,7 +121,6 @@
 									<xsl:apply-templates
 										select="hh-end-date[@label='finish']" />
 								</td>
-
 							</tr>
 						</xsl:for-each>
 					</tbody>

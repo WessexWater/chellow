@@ -1,4 +1,4 @@
-from net.sf.chellow.monad import Hiber, UserException
+from net.sf.chellow.monad import Hiber, UserException, XmlTree
 from java.lang import System
 from net.sf.chellow.monad.types import MonadDate
 import math
@@ -20,7 +20,7 @@ for i in range(12):
     month_element.setAttribute('value', '%02d' % (i + 1))
 #source.appendChild(inv.requestXml(doc))
 if not inv.isValid():
-    raise UserException.newInvalidParameter()
+    raise UserException()
 
 cal.set(Calendar.DAY_OF_MONTH, 1)
 cal.set(Calendar.HOUR_OF_DAY, 0)
@@ -35,7 +35,7 @@ cal.add(Calendar.MONTH, -11)
 cal.add(Calendar.MINUTE, 30)
 startDate = HhEndDate(cal.getTime()).getDate()
 site = organization.getSite(siteId)
-source.appendChild(site.toXml(doc))
+source.appendChild(site.toXml(doc, XmlTree('organization')))
 supplies = Hiber.session().createQuery("select distinct supply from Supply supply join supply.generations supplyGeneration join supplyGeneration.siteSupplyGenerations siteSupplyGeneration where siteSupplyGeneration.site = :site and supply.source.code != 'sub'").setEntity('site', site).list()
 suppliesSQL = ''
 for supply in supplies:
@@ -90,7 +90,7 @@ usedKwhMonth = 0
 usedKwhYear = 0
 usedKwh = 0
 
-siteSnagQuery = Hiber.session().createQuery("select count(*) from SnagSite snag where snag.site = :site and snag.startDate.date <= :finishDate and snag.finishDate.date >= :startDate and (snag.dateResolved is null or (snag.dateResolved is not null and snag.isIgnored is true))").setEntity("site", site)
+siteSnagQuery = Hiber.session().createQuery("select count(*) from SiteSnag snag where snag.site = :site and snag.startDate.date <= :finishDate and snag.finishDate.date >= :startDate and (snag.dateResolved is null or (snag.dateResolved is not null and snag.isIgnored is true))").setEntity("site", site)
 
 if rs.next():
     #raise net.sf.chellow.monad.ui.UserException.newInvalidParameter("got to rs next")

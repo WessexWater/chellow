@@ -1,6 +1,6 @@
 /*
  
- Copyright 2005-2007 Meniscus Systems Ltd
+ Copyright 2005-2008 Meniscus Systems Ltd
  
  This file is part of Chellow.
 
@@ -24,39 +24,41 @@ package net.sf.chellow.physical;
 
 import net.sf.chellow.billing.DceService;
 import net.sf.chellow.billing.Service;
-import net.sf.chellow.monad.DeployerException;
-import net.sf.chellow.monad.DesignerException;
 import net.sf.chellow.monad.Hiber;
+import net.sf.chellow.monad.HttpException;
+import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Invocation;
 import net.sf.chellow.monad.MonadUtils;
-import net.sf.chellow.monad.InternalException;
-import net.sf.chellow.monad.HttpException;
+import net.sf.chellow.monad.NotFoundException;
 import net.sf.chellow.monad.XmlTree;
 import net.sf.chellow.monad.types.MonadUri;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-public class SnagSite extends SnagDateBounded {
-	public static void insertSnagSite(SnagSite snag) {
+public class SiteSnag extends SnagDateBounded {
+	public static void insertSiteSnag(SiteSnag snag) {
 		Hiber.session().save(snag);
 	}
 
-	/*
-	 * public static void deleteSnagSite(SnagSite snag) {
-	 * Hiber.session().delete(snag); }
-	 */
+	public static SiteSnag getSiteSnag(Long id) throws HttpException {
+		SiteSnag snag = (SiteSnag) Hiber.session().get(SiteSnag.class, id);
+		
+		if (snag == null) {
+			throw new NotFoundException();
+		}
+		return snag;
+	}
+	
 	private Site site;
 
 	private DceService dceService;
 
-	public SnagSite() {
-		setTypeName("snag-site");
+	public SiteSnag() {
 	}
 
-	public SnagSite(String description, DceService dceService, Site site,
-			HhEndDate startDate, HhEndDate finishDate)
-			throws InternalException, HttpException {
+	public SiteSnag(String description, DceService dceService, Site site,
+			HhEndDate startDate, HhEndDate finishDate) throws HttpException {
 		super(description, startDate, finishDate);
 		this.site = site;
 		this.dceService = dceService;
@@ -83,17 +85,17 @@ public class SnagSite extends SnagDateBounded {
 		setService((DceService) service);
 	}
 
-	public Element toXml(Document doc) throws InternalException,
-			HttpException {
+	public Element toXml(Document doc) throws InternalException, HttpException {
+		setTypeName("site-snag");
 		Element element = (Element) super.toXml(doc);
 
 		return element;
 	}
 
-	public SnagSite copy() throws InternalException {
-		SnagSite cloned;
+	public SiteSnag copy() throws InternalException {
+		SiteSnag cloned;
 		try {
-			cloned = (SnagSite) super.clone();
+			cloned = (SiteSnag) super.clone();
 		} catch (CloneNotSupportedException e) {
 			throw new InternalException(e);
 		}
@@ -105,27 +107,24 @@ public class SnagSite extends SnagDateBounded {
 		return super.toString() + " Contract: " + getService();
 	}
 
-	public void httpGet(Invocation inv) throws DesignerException,
-			InternalException, HttpException, DeployerException {
+	public void httpGet(Invocation inv) throws HttpException {
 		inv.sendOk(document());
 	}
 
-	private Document document() throws InternalException, HttpException,
-			DesignerException {
+	private Document document() throws HttpException {
 		Document doc = MonadUtils.newSourceDocument();
 		Element sourceElement = doc.getDocumentElement();
-		sourceElement.appendChild(toXml(doc, new XmlTree("service", new XmlTree(
-						"provider", new XmlTree("organization"))).put("site")));
+		sourceElement.appendChild(toXml(doc, new XmlTree("service",
+				new XmlTree("provider", new XmlTree("organization")))
+				.put("site")));
 		return doc;
 	}
 
-	public void httpDelete(Invocation inv) throws InternalException,
-			DesignerException, HttpException, DeployerException {
+	public void httpDelete(Invocation inv) throws HttpException {
 		// TODO Auto-generated method stub
-
 	}
 
-	public MonadUri getUri() throws InternalException, HttpException {
+	public MonadUri getUri() throws HttpException {
 		return getService().getSnagsSiteInstance().getUri().resolve(getUriId())
 				.append("/");
 	}

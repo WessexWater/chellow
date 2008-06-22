@@ -24,7 +24,6 @@
 					</a>
 					<xsl:value-of select="']'" />
 				</p>
-				<br />
 				<xsl:if test="//message">
 					<ul>
 						<xsl:for-each select="//message">
@@ -53,35 +52,6 @@
 							href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/54/screen/output/">
 							DCEs
 						</a>
-					</li>
-					<li>
-						<ul>
-							<xsl:for-each select="/source/org/dce">
-								<li>
-									<xsl:value-of select="@name" />
-									<ul>
-										<li>
-											<a
-												href="{/source/request/@context-path}/orgs/1/reports/18/screen/output/?dce-id={@id}">
-												Channel Level Snags
-											</a>
-										</li>
-										<li>
-											<a
-												href="{/source/request/@context-path}/orgs/1/reports/19/screen/output/?dce-id={@id}">
-												Site Level Snags
-											</a>
-										</li>
-
-										<!--
-											<xsl:for-each select="dce-service">
-											<li><a href="{/source/request/@context-path}/orgs/1/reports/17/screen/output/?dce-service-id={@id}"><xsl:value-of select="@name"/></a></li>
-											</xsl:for-each>
-										-->
-									</ul>
-								</li>
-							</xsl:for-each>
-						</ul>
 					</li>
 					<li>
 						<a

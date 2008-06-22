@@ -4,7 +4,7 @@
           "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
 <!-- 
 	
-	Copyright 2005-2007 Meniscus Systems Ltd
+	Copyright 2005-2008 Meniscus Systems Ltd
 	
 	This file is part of Chellow.
 	
@@ -27,10 +27,10 @@
 
 <hibernate-mapping
 	package="net.sf.chellow.physical">
-	<joined-subclass extends="Snag" name="SnagSite" table="snag_site"
+	<joined-subclass extends="Snag" name="SiteSnag" table="site_snag"
 		lazy="true">
-		<key column="snag_id" foreign-key="fkey_snag_site_snag"/>
-		<many-to-one name="site" class="Site" column="site_id" foreign-key="fkey_snag_site_site"/>
+		<key column="snag_id" foreign-key="fkey_site_snag_snag"/>
+		<many-to-one name="site" class="Site" column="site_id" foreign-key="fkey_site_snag_site"/>
 		<component name="startDate" class="HhEndDate">
 			<property name="date" type="timestamp" not-null="true" index="start_date_idx">
 				<column name="start_date"
@@ -45,6 +45,6 @@
 		</component>
 		<many-to-one name="service"
 			class="net.sf.chellow.billing.DceService" column="dce_service_id"
-			not-null="true" foreign-key="fkey_snag_site_service"/>
+			not-null="true" foreign-key="fkey_site_snag_service"/>
 	</joined-subclass>
 </hibernate-mapping>

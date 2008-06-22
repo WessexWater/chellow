@@ -6,6 +6,6 @@ dso = Dso.getDso(dso_id)
 mpan_tops_element = doc.createElement('mpan-tops')
 source.appendChild(mpan_tops_element)
 for mpan_top in Hiber.session().createQuery("from MpanTop mpanTop where mpanTop.llf.dso = :dso order by mpanTop.profileClass.code.integer, mpanTop.llf.code.integer, mpanTop.meterTimeswitch.code.integer").setEntity("dso", dso).list():
-    mpan_tops_element.appendChild(mpan_top.toXml(XmlTree("profileClass").put("llf").put("meterTimeswitch"), doc))
+    mpan_tops_element.appendChild(mpan_top.toXml(doc, XmlTree("profileClass").put("llf").put("meterTimeswitch")))
 mpan_tops_element.appendChild(dso.toXml(doc));
 source.appendChild(organization.toXml(doc))

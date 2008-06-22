@@ -37,7 +37,6 @@
 					</a>
 					<xsl:value-of select="']'" />
 				</p>
-				<br />
 				<xsl:if test="//message">
 					<ul>
 						<xsl:for-each select="//message">
@@ -62,7 +61,7 @@
 					<caption>Supplies that power this site</caption>
 					<thead>
 						<tr>
-							<th>Id</th>
+							<th>Chellow Id</th>
 							<th>Name</th>
 							<th>From</th>
 							<th>To</th>
@@ -94,16 +93,16 @@
 								</td>
 								<td>
 									<xsl:if
-										test="supply-generation/mpan[@label='import']">
+										test="supply-generation/mpan[mpan-top/llf/@is-import='true']">
 										<xsl:value-of
-											select="supply-generation/mpan[@label='import']/mpan-core/@core" />
+											select="supply-generation/mpan[mpan-top/llf/@is-import='true']/mpan-core/@core" />
 									</xsl:if>
 								</td>
 								<td>
 									<xsl:if
-										test="supply-generation/mpan[@label='export']">
+										test="supply-generation/mpan[mpan-top/llf/@is-import='false']">
 										<xsl:value-of
-											select="supply-generation/mpan[@label='export']/mpan-core/@core" />
+											select="supply-generation/mpan[mpan-top/llf/@is-import='false']/mpan-core/@core" />
 									</xsl:if>
 								</td>
 							</tr>

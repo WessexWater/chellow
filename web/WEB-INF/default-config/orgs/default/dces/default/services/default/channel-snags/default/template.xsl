@@ -18,14 +18,12 @@
 					&gt; DCEs &gt;
 					<xsl:value-of
 						select="/source/channel-snag/dce-service/dce/@name" />
-					&gt; dce-services
+					&gt; Services
 					<xsl:value-of
 						select="/source/channel-snag/dce-service/@name" />
 					&gt; Snags &gt;
 					<xsl:value-of select="/source/channel-snag/@id" />
 				</title>
-
-
 			</head>
 
 			<body>
@@ -58,7 +56,7 @@
 					&gt;
 					<a
 						href="{/source/request/@context-path}/orgs/{/source/channel-snag/dce-service/dce/org/@id}/dces/">
-						<xsl:value-of select="'DCEs'"/>
+						<xsl:value-of select="'DCEs'" />
 					</a>
 					&gt;
 					<a
@@ -69,7 +67,7 @@
 					&gt;
 					<a
 						href="{/source/request/@context-path}/orgs/{/source/channel-snag/dce-service/dce/org/@id}/dces/{/source/channel-snag/dce-service/dce/@id}/services/">
-						<xsl:value-of select="'Services'"/>
+						<xsl:value-of select="'Services'" />
 					</a>
 					&gt;
 					<a
@@ -80,10 +78,16 @@
 					&gt;
 					<a
 						href="{/source/request/@context-path}/orgs/{/source/channel-snag/dce-service/dce/org/@id}/dces/{/source/channel-snag/dce-service/dce/@id}/services/{/source/channel-snag/dce-service/@id}/snags-channel/">
-						<xsl:value-of select="'Channel Snags'"/>
+						<xsl:value-of select="'Channel Snags'" />
 					</a>
 					&gt;
-					<xsl:value-of select="/source/channel-snag/@id" />
+					<xsl:value-of
+						select="concat(/source/channel-snag/@id, ' [')" />
+					<a
+						href="{/source/request/@context-path}/orgs/{/source/channel-snag/dce-service/dce/org/@id}/reports/58/screen/output/?snag-id={/source/channel-snag/@id}">
+						<xsl:value-of select="'view'" />
+					</a>
+					<xsl:value-of select="']'" />
 				</p>
 				<br />
 
@@ -148,10 +152,12 @@
 									<xsl:choose>
 										<xsl:when
 											test="/source/channel-snag/@is-ignored='true'">
-											<xsl:value-of select="'false'"/>
+											<xsl:value-of
+												select="'false'" />
 										</xsl:when>
 										<xsl:otherwise>
-											<xsl:value-of select="'true'"/>
+											<xsl:value-of
+												select="'true'" />
 										</xsl:otherwise>
 									</xsl:choose>
 								</xsl:attribute>

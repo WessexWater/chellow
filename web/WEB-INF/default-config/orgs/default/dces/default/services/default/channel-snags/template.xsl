@@ -18,8 +18,9 @@
 					&gt; DCEs &gt;
 					<xsl:value-of
 						select="/source/snags-channel/dce-service/dce/@name" />
-					&gt; Contracts
-					<xsl:value-of select="/source/snags-channel/dce-service/@name" />
+					&gt; Services
+					<xsl:value-of
+						select="/source/snags-channel/dce-service/@name" />
 					&gt; Snags
 				</title>
 
@@ -65,16 +66,22 @@
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/orgs/{/source/snags-channel/dce-service/dce/org/@id}/dces/{/source/snags-channel/dce-service/dce/@id}/contracts/">
-						<xsl:value-of select="'Contracts'" />
+						href="{/source/request/@context-path}/orgs/{/source/snags-channel/dce-service/dce/org/@id}/dces/{/source/snags-channel/dce-service/dce/@id}/services/">
+						<xsl:value-of select="'Services'" />
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/orgs/{/source/snags-channel/dce-service/dce/org/@id}/dces/{/source/snags-channel/dce-service/dce/@id}/contracts/{/source/snags-channel/dce-service/@id}/">
+						href="{/source/request/@context-path}/orgs/{/source/snags-channel/dce-service/dce/org/@id}/dces/{/source/snags-channel/dce-service/dce/@id}/services/{/source/snags-channel/dce-service/@id}/">
 						<xsl:value-of
 							select="/source/snags-channel/dce-service/@name" />
 					</a>
-					&gt; Channel Snags
+					&gt;
+					<xsl:value-of select="'Channel Snags ['" />
+					<a
+						href="{/source/request/@context-path}/orgs/{/source/snags-channel/dce-service/dce/org/@id}/reports/57/screen/output/?service-id={/source/snags-channel/dce-service/@id}">
+						<xsl:value-of select="'view'" />
+					</a>
+					<xsl:value-of select="']'" />
 				</p>
 				<br />
 
@@ -225,7 +232,8 @@
 									<xsl:value-of select="@number" />
 								</option>
 							</xsl:for-each>
-						</select><xsl:value-of select="' '"/>
+						</select>
+						<xsl:value-of select="' '" />
 						<input type="submit" name="ignore"
 							value="Ignore" />
 						<input type="reset" value="Reset" />
