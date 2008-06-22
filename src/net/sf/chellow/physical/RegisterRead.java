@@ -2,15 +2,13 @@ package net.sf.chellow.physical;
 
 import net.sf.chellow.billing.DayFinishDate;
 import net.sf.chellow.billing.Invoice;
-import net.sf.chellow.monad.DeployerException;
-import net.sf.chellow.monad.DesignerException;
 import net.sf.chellow.monad.Hiber;
-import net.sf.chellow.monad.Invocation;
-import net.sf.chellow.monad.MonadUtils;
-import net.sf.chellow.monad.InternalException;
-import net.sf.chellow.monad.Urlable;
 import net.sf.chellow.monad.HttpException;
+import net.sf.chellow.monad.InternalException;
+import net.sf.chellow.monad.Invocation;
 import net.sf.chellow.monad.MonadMessage;
+import net.sf.chellow.monad.MonadUtils;
+import net.sf.chellow.monad.Urlable;
 import net.sf.chellow.monad.XmlTree;
 import net.sf.chellow.monad.types.MonadDate;
 import net.sf.chellow.monad.types.MonadUri;
@@ -21,20 +19,6 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
 public class RegisterRead extends PersistentEntity {
-	public static final int TYPE_NORMAL = 0;
-
-	public static final int TYPE_MANUAL_ESTIMATE = 1;
-
-	public static final int TYPE_COMPUTER_ESTIMATE = 2;
-
-	public static final int TYPE_REMOVED = 3;
-
-	public static final int TYPE_CUSTOMER = 4;
-
-	public static final int TYPE_COMPUTER = 5;
-
-	public static final int TYPE_EXCHANGE = 6;
-
 	private Mpan mpan;
 
 	private Invoice invoice;
@@ -60,7 +44,6 @@ public class RegisterRead extends PersistentEntity {
 	private ReadType presentType;
 
 	RegisterRead() {
-		setTypeName("register-read");
 	}
 
 	public RegisterRead(Mpan mpan, RegisterReadRaw rawRegisterRead,
@@ -180,8 +163,7 @@ public class RegisterRead extends PersistentEntity {
 		this.presentType = presentType;
 	}
 
-	public Urlable getChild(UriPathElement uriId) throws InternalException,
-			HttpException {
+	public Urlable getChild(UriPathElement uriId) throws HttpException {
 		return null;
 	}
 
@@ -190,19 +172,16 @@ public class RegisterRead extends PersistentEntity {
 		return null;
 	}
 
-	public void httpDelete(Invocation inv) throws InternalException,
-			DesignerException, HttpException, DeployerException {
+	public void httpDelete(Invocation inv) throws HttpException {
 		// TODO Auto-generated method stub
 
 	}
 
-	public void httpGet(Invocation inv) throws DesignerException,
-			InternalException, HttpException, DeployerException {
+	public void httpGet(Invocation inv) throws HttpException {
 		inv.sendOk(document());
 	}
 
-	public void httpPost(Invocation inv) throws InternalException,
-			HttpException, DesignerException, DeployerException {
+	public void httpPost(Invocation inv) throws HttpException {
 		if (inv.hasParameter("delete")) {
 			delete();
 			Hiber.commit();
@@ -220,8 +199,7 @@ public class RegisterRead extends PersistentEntity {
 	}
 
 	@SuppressWarnings("unchecked")
-	private Document document() throws InternalException, HttpException,
-			DesignerException {
+	private Document document() throws HttpException {
 		Document doc = MonadUtils.newSourceDocument();
 		Element source = doc.getDocumentElement();
 		source.appendChild(toXml(doc, new XmlTree("invoice", new XmlTree("batch",
@@ -236,6 +214,7 @@ public class RegisterRead extends PersistentEntity {
 	}
 
 	public Node toXml(Document doc) throws InternalException, HttpException {
+		setTypeName("register-read");
 		Element element = (Element) super.toXml(doc);
 		element.setAttribute("coefficient", Float.toString(coefficient));
 		element.setAttribute("units", units.toString());

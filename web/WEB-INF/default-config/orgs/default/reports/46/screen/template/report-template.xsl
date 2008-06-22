@@ -9,8 +9,7 @@
 		<html>
 			<head>
 				<link rel="stylesheet" type="text/css"
-					href="{/source/request/@context-path}/orgs/1/reports/9/stream/output/" />
-
+					href="{/source/request/@context-path}/orgs/{/source/invoice/batch/supplier-service/supplier/org/@id}/reports/9/stream/output/" />
 				<title>
 					<xsl:value-of
 						select="/source/invoice/batch/supplier-service/supplier/org/@name" />
@@ -68,7 +67,13 @@
 							select="/source/invoice/batch/@reference" />
 					</a>
 					&gt; Invoice:
-					<xsl:value-of select="/source/invoice/@id" />
+					<xsl:value-of
+						select="concat(/source/invoice/@id, ' [')" />
+					<a
+						href="{/source/request/@context-path}/orgs/{/source/invoice/batch/supplier-service/supplier/org/@id}/suppliers/{/source/invoice/batch/supplier-service/supplier/@id}/services/{/source/invoice/batch/supplier-service/@id}/batches/{/source/invoice/batch/@id}/invoices/{/source/invoice/@id}/">
+						<xsl:value-of select="'edit'" />
+					</a>
+					<xsl:value-of select="']'" />
 				</p>
 				<br />
 				<xsl:if test="//message">
@@ -81,6 +86,19 @@
 					</ul>
 				</xsl:if>
 				<table>
+					<tr>
+						<th>Chellow Id</th>
+						<td>
+							<xsl:value-of select="/source/invoice/@id" />
+						</td>
+					</tr>
+					<tr>
+						<th>Reference</th>
+						<td>
+							<xsl:value-of
+								select="/source/invoice/@reference" />
+						</td>
+					</tr>
 					<tr>
 						<th>Account Reference</th>
 						<td>
@@ -150,27 +168,6 @@
 						<th>VAT</th>
 						<td>
 							<xsl:value-of select="/source/invoice/@vat" />
-						</td>
-					</tr>
-					<tr>
-						<th>Invoice Number</th>
-						<td>
-							<xsl:value-of
-								select="/source/invoice/@invoice-text" />
-						</td>
-					</tr>
-					<tr>
-						<th>Account Text</th>
-						<td>
-							<xsl:value-of
-								select="/source/invoice/@account-text" />
-						</td>
-					</tr>
-					<tr>
-						<th>MPAN text</th>
-						<td>
-							<xsl:value-of
-								select="/source/invoice/@mpan-text" />
 						</td>
 					</tr>
 					<tr>
