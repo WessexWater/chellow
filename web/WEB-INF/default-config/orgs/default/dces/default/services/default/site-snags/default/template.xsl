@@ -18,10 +18,10 @@
 					&gt; DCEs &gt;
 					<xsl:value-of
 						select="/source/site-snag/dce-service/dce/@name" />
-					&gt; Contracts
+					&gt; Services &gt;
 					<xsl:value-of
 						select="/source/site-snag/dce-service/@name" />
-					&gt; Snags &gt;
+					&gt; Site Snags &gt;
 					<xsl:value-of select="/source/site-snag/@id" />
 				</title>
 			</head>
@@ -77,7 +77,7 @@
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/orgs/{/source/site-snag/dce-service/dce/org/@id}/dces/{/source/site-snag/dce-service/dce/@id}/services/{/source/site-snag/dce-service/@id}/snags-site/">
+						href="{/source/request/@context-path}/orgs/{/source/site-snag/dce-service/dce/org/@id}/dces/{/source/site-snag/dce-service/dce/@id}/services/{/source/site-snag/dce-service/@id}/site-snags/">
 						Site Snags
 					</a>
 					&gt;
