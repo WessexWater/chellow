@@ -43,15 +43,15 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 @SuppressWarnings("serial")
-public class GovernmentService extends Service {
+public class NonCoreContract extends Service {
 
 	private Government provider;
 
-	public GovernmentService() {
+	public NonCoreContract() {
 		setTypeName("government-service");
 	}
 
-	public GovernmentService(String name, HhEndDate startDate,
+	public NonCoreContract(String name, HhEndDate startDate,
 			String chargeScript, Government provider) throws HttpException,
 			InternalException, DesignerException {
 		super(TYPE_CONTRACT, name, startDate, chargeScript);
@@ -75,8 +75,8 @@ public class GovernmentService extends Service {
 
 	public boolean equals(Object obj) {
 		boolean isEqual = false;
-		if (obj instanceof GovernmentService) {
-			GovernmentService contract = (GovernmentService) obj;
+		if (obj instanceof NonCoreContract) {
+			NonCoreContract contract = (NonCoreContract) obj;
 			isEqual = contract.getId().equals(getId());
 		}
 		return isEqual;

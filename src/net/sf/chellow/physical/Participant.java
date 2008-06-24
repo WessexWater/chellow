@@ -29,6 +29,14 @@ public class Participant extends PersistentEntity {
 		return participant;
 	}
 	
+	static public Participant getParticipant(String code) throws HttpException {
+		Participant participant = (Participant) Hiber.session().createQuery("from Participant participant where participant.code = :code").setString("code", code).uniqueResult();
+		if (participant == null) {
+			throw new NotFoundException();
+		}
+		return participant;
+	}
+	
 	static public void loadFromCsv() throws InternalException, UserException {
 		try {
 			ClassLoader classLoader = Participant.class.getClassLoader();

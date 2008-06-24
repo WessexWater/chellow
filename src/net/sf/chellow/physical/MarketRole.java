@@ -3,8 +3,6 @@ package net.sf.chellow.physical;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
-import java.util.List;
-
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -25,6 +23,14 @@ import com.Ostermiller.util.CSVParser;
 public class MarketRole extends PersistentEntity {
 	static public MarketRole getMarketRole(Long id) throws HttpException {
 		MarketRole marketRole = (MarketRole) Hiber.session().get(MarketRole.class, id);
+		if (marketRole == null) {
+			throw new NotFoundException();
+		}
+		return marketRole;
+	}
+	
+	static public MarketRole getMarketRole(String code) throws HttpException {
+		MarketRole marketRole = (MarketRole) Hiber.session().createQuery("from MarketRole role where role.code = :code").setString("code", code).uniqueResult();
 		if (marketRole == null) {
 			throw new NotFoundException();
 		}

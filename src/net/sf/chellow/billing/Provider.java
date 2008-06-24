@@ -1,6 +1,6 @@
 /*
  
- Copyright 2005 Meniscus Systems Ltd
+ Copyright 2005, 2008 Meniscus Systems Ltd
  
  This file is part of Chellow.
 
@@ -22,23 +22,36 @@
 
 package net.sf.chellow.billing;
 
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 import net.sf.chellow.monad.Hiber;
-import net.sf.chellow.monad.InternalException;
-import net.sf.chellow.monad.Urlable;
 import net.sf.chellow.monad.HttpException;
+import net.sf.chellow.monad.InternalException;
+import net.sf.chellow.monad.Invocation;
+import net.sf.chellow.monad.NotFoundException;
+import net.sf.chellow.monad.Urlable;
 import net.sf.chellow.monad.UserException;
-import net.sf.chellow.monad.types.MonadString;
+import net.sf.chellow.monad.types.MonadDate;
+import net.sf.chellow.monad.types.MonadUri;
+import net.sf.chellow.monad.types.UriPathElement;
+import net.sf.chellow.physical.MarketRole;
+import net.sf.chellow.physical.Participant;
 import net.sf.chellow.physical.PersistentEntity;
-import net.sf.chellow.physical.SupplyGeneration;
 
-import org.hibernate.HibernateException;
-import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-public abstract class Provider extends PersistentEntity implements Urlable {
+import com.Ostermiller.util.CSVParser;
+
+public class Provider extends PersistentEntity implements Urlable {
+	/*
 	public static Provider getSupplier(Long id) throws HttpException {
 		Provider supplier = (Provider) Hiber.session().get(Provider.class, id);
 		if (supplier == null) {
@@ -56,32 +69,146 @@ public abstract class Provider extends PersistentEntity implements Urlable {
 			throw new InternalException(e);
 		}
 	}
+	*/
+	
+	static public Provider getProvider(String code) throws HttpException {
+		Provider provider = (Provider) Hiber.session().createQuery("from Provider provider where provider.code = :code").setString("code", code).uniqueResult();
+		if (provider == null) {
+			throw new NotFoundException();
+		}
+		return provider;
+	}
+
+	static public void loadFromCsv() throws HttpException {
+		try {
+			ClassLoader classLoader = Provider.class.getClassLoader();
+			CSVParser parser = new CSVParser(
+					new InputStreamReader(
+							classLoader
+									.getResource(
+											"net/sf/chellow/physical/MarketParticipantRole.csv")
+									.openStream(), "UTF-8"));
+			parser.setCommentStart("#;!");
+			parser.setEscapes("nrtf", "\n\r\t\f");
+			String[] titles = parser.getLine();
+
+			if (titles.length < 15
+					|| !titles[0].trim().equals("Market Participant Id")
+					|| !titles[1].trim().equals("Market Participant Role Code")
+					|| !titles[2].trim().equals("Effective From Date {MPR}")
+					|| !titles[3].trim().equals("Effective To Date {MPR}")
+					|| !titles[4].trim().equals("Address Line 1")
+					|| !titles[5].trim().equals("Address Line 2")
+					|| !titles[6].trim().equals("Address Line 3")
+					|| !titles[7].trim().equals("Address Line 4")
+					|| !titles[8].trim().equals("Address Line 5")
+					|| !titles[9].trim().equals("Address Line 6")
+					|| !titles[10].trim().equals("Address Line 7")
+					|| !titles[11].trim().equals("Address Line 8")
+					|| !titles[12].trim().equals("Address Line 9")
+					|| !titles[13].trim().equals("Post Code")
+					|| !titles[14].trim().equals("Distributor Short Code")) {
+				throw new UserException(
+						"The first line of the CSV must contain the titles "
+								+ "'Market Participant Id, Market Participant Role Code, Effective From Date {MPR}, Effective To Date {MPR}, Address Line 1, Address Line 2, Address Line 3, Address Line 4, Address Line 5, Address Line 6, Address Line 7, Address Line 8, Address Line 9, Post Code, Distributor Short Code'.");
+			}
+			DateFormat dateFormat = DateFormat.getDateTimeInstance(
+					DateFormat.SHORT, DateFormat.SHORT, Locale.UK);
+			for (String[] values = parser.getLine(); values != null; values = parser
+					.getLine()) {
+				Participant participant = Participant.getParticipant(values[0]);
+				MarketRole role = MarketRole.getMarketRole(values[1]);
+				Date from = dateFormat.parse(values[2]);
+				Date to = dateFormat.parse(values[3]);
+				Provider provider = new Provider(values[4], participant, role, from, to, values[14]);
+				Hiber.session().save(provider);
+				Hiber.flush();
+			}
+		} catch (UnsupportedEncodingException e) {
+			throw new InternalException(e);
+		} catch (IOException e) {
+			throw new InternalException(e);
+		} catch (ParseException e) {
+			throw new InternalException(e);
+		}
+	}
 
 	private String name;
+	private Participant participant;
+	private MarketRole role;
+	private Date from;
+	private Date to;
+	private String dsoCode;
 
 	public Provider() {
 	}
 
-	public Provider(String name) {
-		update(name);
+	public Provider(String name, Participant participant, MarketRole role,
+			Date from, Date to, String dsoCode) {
+		setName(name);
+		setParticipant(participant);
+		setRole(role);
+		setFrom(from);
+		setTo(to);
+		setDsoCode(dsoCode);
 	}
 
 	public String getName() {
 		return name;
 	}
 
-	public void setName(String name) {
+	void setName(String name) {
 		this.name = name;
 	}
 
-	public void update(String name) {
-		setName(name);
+	public Participant getParticipant() {
+		return participant;
+	}
+
+	void setParticipant(Participant participant) {
+		this.participant = participant;
+	}
+
+	public MarketRole getRole() {
+		return role;
+	}
+
+	void setRole(MarketRole role) {
+		this.role = role;
+	}
+
+	public Date getFrom() {
+		return from;
+	}
+
+	void setFrom(Date from) {
+		this.from = from;
+	}
+
+	public Date getTo() {
+		return to;
+	}
+
+	void setTo(Date to) {
+		this.to = to;
+	}
+
+	public String getDsoCode() {
+		return dsoCode;
+	}
+
+	void setDsoCode(String dsoCode) {
+		this.dsoCode = dsoCode;
 	}
 
 	public Element toXml(Document doc) throws HttpException {
+		setTypeName("provider");
 		Element element = (Element) super.toXml(doc);
 
-		element.setAttributeNode((Attr) MonadString.toXml(doc, "name", name));
+		element.setAttribute("name", name);
+		element.appendChild(MonadDate.toXML(from, "from", doc));
+		element.appendChild(MonadDate.toXML(to, "to", doc));
+		element.setAttribute("dso-code", dsoCode);
 		return element;
 	}
 
@@ -132,8 +259,40 @@ public abstract class Provider extends PersistentEntity implements Urlable {
 		Hiber.flush();
 	}
 
-	abstract public List<SupplyGeneration> supplyGenerations(Account account);
+	/*
+	 * abstract public List<SupplyGeneration> supplyGenerations(Account
+	 * account);
+	 * 
+	 * public abstract Service getService(String name) throws HttpException,
+	 * InternalException;
+	 */
+	@Override
+	public Urlable getChild(UriPathElement uriId) throws HttpException {
+		// TODO Auto-generated method stub
+		return null;
+	}
 
-	public abstract Service getService(String name) throws HttpException,
-			InternalException;
+	@Override
+	public MonadUri getUri() throws HttpException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public void httpDelete(Invocation inv) throws HttpException {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public void httpGet(Invocation inv) throws HttpException {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public void httpPost(Invocation inv) throws HttpException {
+		// TODO Auto-generated method stub
+
+	}
 }

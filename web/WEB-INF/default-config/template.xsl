@@ -123,6 +123,9 @@
 						</a>
 					</li>
 					<li>
+					<a href="{/source/request/@context-path}/providers/">Providers</a>
+					</li>
+					<li>
 						Global Providers
 						<ul>
 							<li>

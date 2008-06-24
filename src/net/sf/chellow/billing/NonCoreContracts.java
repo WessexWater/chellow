@@ -41,27 +41,28 @@ import net.sf.chellow.monad.types.MonadDate;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
 import net.sf.chellow.physical.HhEndDate;
+import net.sf.chellow.physical.Organization;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
 @SuppressWarnings("serial")
-public class GovernmentServices implements Urlable, XmlDescriber {
+public class NonCoreContracts implements Urlable, XmlDescriber {
 	public static final UriPathElement URI_ID;
 
 	static {
 		try {
-			URI_ID = new UriPathElement("services");
+			URI_ID = new UriPathElement("non-core-services");
 		} catch (HttpException e) {
 			throw new RuntimeException(e);
 		}
 	}
+	
+	private Organization organization;
 
-	private Government government;
-
-	public GovernmentServices(Government government) {
-		this.government = government;
+	public NonCoreContracts(Organization organization) {
+		this.organization = organization;
 	}
 
 	public UriPathElement getUrlId() {
@@ -69,18 +70,19 @@ public class GovernmentServices implements Urlable, XmlDescriber {
 	}
 
 	public MonadUri getUri() throws InternalException, HttpException {
-		return government.getUri().resolve(getUrlId()).append("/");
+		return organization.getUri().resolve(getUrlId()).append("/");
 	}
 
-	public void httpPost(Invocation inv) throws InternalException,
-			HttpException, DesignerException, DeployerException {
+	public void httpPost(Invocation inv) throws HttpException {
+		String providerCode = inv.getString("provider-id");
 		String name = inv.getString("name");
 		Date startDate = inv.getDate("start-date");
 		String chargeScript = inv.getString("charge-script");
 		if (!inv.isValid()) {
 			throw new UserException(document());
 		}
-		GovernmentService service = government.insertService(name, HhEndDate
+		Provider provider = Provider.getProvider(providerCode);
+		NonCoreContract service = organization.insertNonCoreService(provider, name, HhEndDate
 				.roundDown(startDate), chargeScript);
 		Hiber.commit();
 		inv.sendCreated(document(), service.getUri());
@@ -94,7 +96,7 @@ public class GovernmentServices implements Urlable, XmlDescriber {
 		Element servicesElement = (Element) toXml(doc);
 		source.appendChild(servicesElement);
 		servicesElement.appendChild(government.toXml(doc));
-		for (GovernmentService service : (List<GovernmentService>) Hiber
+		for (NonCoreContract service : (List<NonCoreContract>) Hiber
 				.session()
 				.createQuery(
 						"from GovernmentService service where service.provider = :government order by service.finishRateScript.finishDate.date desc")
@@ -112,9 +114,9 @@ public class GovernmentServices implements Urlable, XmlDescriber {
 		inv.sendOk(document());
 	}
 
-	public GovernmentService getChild(UriPathElement uriId) throws HttpException,
+	public NonCoreContract getChild(UriPathElement uriId) throws HttpException,
 			InternalException {
-		GovernmentService service = (GovernmentService) Hiber
+		NonCoreContract service = (NonCoreContract) Hiber
 				.session()
 				.createQuery(
 						"from GovernmentService service where service.provider = :government and service.id = :serviceId")

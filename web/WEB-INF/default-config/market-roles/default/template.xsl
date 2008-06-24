@@ -16,7 +16,6 @@
 					<xsl:value-of select="/source/market-role/@code" />
 				</title>
 			</head>
-
 			<body>
 				<p>
 					<a href="{/source/request/@context-path}/">
@@ -46,18 +45,22 @@
 					<tr>
 						<th>Chellow Id</th>
 						<td>
-							<a
-								href="{/source/request/@context-path}/market-roles/{@id}/">
-								<xsl:value-of select="@id" />
-							</a>
+							<xsl:value-of
+								select="/source/market-role/@id" />
 						</td>
+					</tr>
+					<tr>
 						<th>Name</th>
 						<td>
-							<xsl:value-of select="@code" />
+							<xsl:value-of
+								select="/source/market-role/@code" />
 						</td>
+					</tr>
+					<tr>
 						<th>Description</th>
 						<td>
-							<xsl:value-of select="@description" />
+							<xsl:value-of
+								select="/source/market-role/@description" />
 						</td>
 					</tr>
 				</table>
