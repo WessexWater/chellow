@@ -111,6 +111,18 @@
 						</ul>
 					</li>
 					<li>
+						<a
+							href="{/source/request/@context-path}/participants/">
+							Market Participants
+						</a>
+					</li>
+					<li>
+						<a
+							href="{/source/request/@context-path}/market-roles/">
+							Market Roles
+						</a>
+					</li>
+					<li>
 						Global Providers
 						<ul>
 							<li>

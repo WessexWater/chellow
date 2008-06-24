@@ -39,8 +39,10 @@ import net.sf.chellow.physical.DatabaseVersion;
 import net.sf.chellow.physical.Dso;
 import net.sf.chellow.physical.DsoCode;
 import net.sf.chellow.physical.HhEndDate;
+import net.sf.chellow.physical.MarketRole;
 import net.sf.chellow.physical.MeterTimeswitch;
 import net.sf.chellow.physical.MpanTop;
+import net.sf.chellow.physical.Participant;
 import net.sf.chellow.physical.Password;
 import net.sf.chellow.physical.ProfileClass;
 import net.sf.chellow.physical.Role;
@@ -257,9 +259,88 @@ public class ContextListener implements ServletContextListener {
 
 	public void contextDestroyed(ServletContextEvent event) {
 	}
+	
+	private void initializeDatabase(Connection con) throws HttpException {
+		SchemaUpdate su = new SchemaUpdate(Hiber.getConfiguration());
+		su.execute(false, true);
+		/*
+		 * List<Exception> exceptions = su.getExceptions(); if
+		 * (exceptions.size() > 0) { for (Exception exception : exceptions) {
+		 * exception.printStackTrace(); } throw new ProgrammerException("Errors
+		 * in schema generation."); }
+		 */
+		try {
+			Statement stmt = con.createStatement();
+			stmt
+					.execute("ALTER TABLE service ALTER COLUMN charge_script TYPE text;");
+			stmt
+					.execute("ALTER TABLE rate_script ALTER COLUMN script TYPE text;");
+		} catch (SQLException e) {
+		}
+		DatabaseVersion.setDatabaseVersion(11);
+		Hiber.close();
+		Government.insertGovernment();
+		Participant.loadFromCsv();
+		Hiber.close();
+		MarketRole.loadFromCsv();
+		Hiber.close();
+		EmailAddress adminUserEmailAddress = new EmailAddress(
+				"administrator@localhost");
+		User adminUser = User.findUserByEmail(adminUserEmailAddress);
+		if (adminUser == null) {
+			adminUser = User.insertUser(adminUserEmailAddress,
+					new Password("administrator"));
+
+			Role adminRole = Role.insertRole("administrator");
+			adminRole.insertPermission("/", new Invocation.HttpMethod[] {
+					Invocation.HttpMethod.GET, Invocation.HttpMethod.POST,
+					Invocation.HttpMethod.DELETE });
+			adminUser.insertRole(adminUser, adminRole);
+		}
+		EmailAddress basicUserEmailAddress = new EmailAddress(
+				"basic-user@localhost");
+		User basicUser = User.findUserByEmail(basicUserEmailAddress);
+		if (basicUser == null) {
+			basicUser = User.insertUser(basicUserEmailAddress,
+					new Password("basic-user"));
+			Hiber.flush();
+			Role basicUserRole = Role.insertRole("basic-user");
+			Hiber.flush();
+			basicUserRole
+					.insertPermission(
+							basicUserRole.getUri(),
+							new Invocation.HttpMethod[] { Invocation.HttpMethod.GET });
+			basicUserRole
+					.insertPermission(
+							"/",
+							new Invocation.HttpMethod[] { Invocation.HttpMethod.GET });
+			basicUserRole.insertPermission("/orgs/",
+					new Invocation.HttpMethod[] {});
+			basicUserRole.insertPermission("/users/",
+					new Invocation.HttpMethod[] {});
+			basicUserRole
+					.insertPermission(
+							"/users/implicit-me/",
+							new Invocation.HttpMethod[] { Invocation.HttpMethod.GET });
+			basicUserRole
+					.insertPermission(
+							"/users/explicit-me/",
+							new Invocation.HttpMethod[] { Invocation.HttpMethod.GET });
+			basicUserRole
+					.insertPermission(
+							basicUser.getUri(),
+							new Invocation.HttpMethod[] { Invocation.HttpMethod.GET });
+			basicUserRole.insertPermission("/roles/",
+					new Invocation.HttpMethod[] {});
+			//basicUserRole.insertPermission("/participants/",
+			//		new Invocation.HttpMethod[] { Invocation.HttpMethod.GET });
+			basicUser.insertRole(adminUser, basicUserRole);
+			Hiber.commit();
+		}
+	}
 
 	@SuppressWarnings("unchecked")
-	private void initializeDatabase(Connection con) throws InternalException {
+	private void initializeDatabaseOld(Connection con) throws InternalException {
 		SchemaUpdate su = new SchemaUpdate(Hiber.getConfiguration());
 		su.execute(false, true);
 		/*

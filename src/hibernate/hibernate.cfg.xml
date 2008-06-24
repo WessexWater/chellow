@@ -92,5 +92,7 @@
 		<mapping resource="hibernate/RegisterRead.hbm.xml" />
 		<mapping resource="hibernate/Ssc.hbm.xml" />
 		<mapping resource="hibernate/InvoiceMpan.hbm.xml" />
+		<mapping resource="hibernate/Participant.hbm.xml" />
+		<mapping resource="hibernate/MarketRole.hbm.xml" />
 	</session-factory>
 </hibernate-configuration>
