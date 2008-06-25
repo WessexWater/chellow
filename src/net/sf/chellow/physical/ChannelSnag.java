@@ -22,7 +22,7 @@
 
 package net.sf.chellow.physical;
 
-import net.sf.chellow.billing.DceService;
+import net.sf.chellow.billing.HhdcContract;
 import net.sf.chellow.billing.Service;
 import net.sf.chellow.monad.DeployerException;
 import net.sf.chellow.monad.DesignerException;
@@ -69,12 +69,12 @@ public class ChannelSnag extends SnagDateBounded {
 
 	private Channel channel;
 
-	private DceService dceService;
+	private HhdcContract dceService;
 
 	public ChannelSnag() {
 	}
 
-	public ChannelSnag(String description, DceService dceService,
+	public ChannelSnag(String description, HhdcContract dceService,
 			Channel channel, HhEndDate startDate, HhEndDate finishDate)
 			throws InternalException, HttpException {
 		super(description, startDate, finishDate);
@@ -119,11 +119,11 @@ public class ChannelSnag extends SnagDateBounded {
 		return super.toString() + " Contract: " + getService();
 	}
 
-	public DceService getService() {
+	public HhdcContract getService() {
 		return dceService;
 	}
 
-	public void setService(DceService dceService) {
+	public void setService(HhdcContract dceService) {
 		this.dceService = dceService;
 	}
 
@@ -155,6 +155,6 @@ public class ChannelSnag extends SnagDateBounded {
 
 	@Override
 	public void setService(Service service) {
-		setService((DceService) service);
+		setService((HhdcContract) service);
 	}
 }

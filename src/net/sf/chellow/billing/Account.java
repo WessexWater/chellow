@@ -80,28 +80,19 @@ public class Account extends PersistentEntity implements Urlable {
 			((Account) result[0]).checkMissingFromLatest((Service) result[1]);
 		}
 	}
+	
+	private Organization organization;
 
 	private Provider provider;
-
-	private Organization organization;
 
 	private String reference;
 
 	public Account() {
 	}
 
-	public Account(Provider provider, Organization organization,
-			String reference) {
-		this();
+	public Account(Organization organization, Provider provider, String reference) {
 		setProvider(provider);
 		setOrganization(organization);
-		update(reference);
-	}
-
-	public Account(ProviderOrganization provider, String reference) {
-		this();
-		setProvider(provider);
-		setOrganization(provider.getOrganization());
 		update(reference);
 	}
 
@@ -157,7 +148,7 @@ public class Account extends PersistentEntity implements Urlable {
 			Hiber.commit();
 			Supplier supplier = Supplier.findSupplier(provider.getId());
 			if (supplier != null) {
-				inv.sendSeeOther(supplier.accountsInstance().getUri());
+				inv.sendSeeOther(organization.accountsInstance().getUri());
 			}
 		} else {
 			String reference = inv.getString("reference");
@@ -202,15 +193,7 @@ public class Account extends PersistentEntity implements Urlable {
 	}
 
 	public MonadUri getUri() throws HttpException {
-		if (provider instanceof ProviderOrganization) {
-			return ((ProviderOrganization) provider).accountsInstance()
-					.getUri().resolve(getUriId()).append("/");
-		} else {
-			// return
-			// organization.accountsDsoInstance().getUri().resolve(getUriId())
-			// .append("/");
-			return null;
-		}
+		return organization.accountsInstance().getUri().resolve(getUriId()).append("/");
 	}
 
 	public Urlable getChild(UriPathElement uriId) throws InternalException,
@@ -262,9 +245,13 @@ public class Account extends PersistentEntity implements Urlable {
 
 	@SuppressWarnings("unchecked")
 	void checkMissing(Service service, HhEndDate from, HhEndDate to)
-			throws InternalException, HttpException {
-		List<SupplyGeneration> supplyGenerations = provider
-				.supplyGenerations(this);
+			throws HttpException {
+		List<SupplyGeneration> supplyGenerations = Hiber
+		.session()
+		.createQuery(
+				"select mpan.supplyGeneration from Mpan mpan where mpan.supplierAccount = :account order by mpan.supplyGeneration.startDate.date")
+		.setEntity("account", this).list();
+		
 		if (supplyGenerations.isEmpty()) {
 			return;
 		}
@@ -347,8 +334,8 @@ public class Account extends PersistentEntity implements Urlable {
 	@SuppressWarnings("unchecked")
 	private List<Mpan> getMpans(HhEndDate from, HhEndDate to)
 			throws HttpException, InternalException {
-		Long providerId = getProvider().getId();
-		if (Supplier.findSupplier(providerId) != null) {
+		String roleCode = getProvider().getRole().getCode();
+		if (roleCode.equals("X")) {
 			if (to == null) {
 				return Hiber
 						.session()
@@ -365,7 +352,7 @@ public class Account extends PersistentEntity implements Urlable {
 								from.getDate())
 						.setTimestamp("to", to.getDate()).list();
 			}
-		} else if (Dce.findDce(providerId) != null) {
+		} else if (roleCode.equals("C")) {
 			return Hiber
 					.session()
 					.createQuery(
@@ -396,7 +383,7 @@ public class Account extends PersistentEntity implements Urlable {
 					+ " but the account in Chellow has MPANs '" + accountMpans
 					+ "'.");
 		}
-		Service service = invoice.getBatch().getService();
+		Service service = invoice.getBatch().getContract();
 		if (bill == null) {
 			bill = new Bill(service, this);
 			Hiber.session().save(bill);

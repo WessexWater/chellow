@@ -1,6 +1,6 @@
 /*
  
- Copyright 2005 Meniscus Systems Ltd
+ Copyright 2005, 2008 Meniscus Systems Ltd
  
  This file is part of Chellow.
 
@@ -42,26 +42,28 @@ import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
 import net.sf.chellow.physical.ContractFrequency;
 import net.sf.chellow.physical.HhEndDate;
+import net.sf.chellow.physical.Organization;
+
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
 @SuppressWarnings("serial")
-public class DceServices implements Urlable, XmlDescriber {
+public class HhdcContracts implements Urlable, XmlDescriber {
 	public static final UriPathElement URI_ID;
 
 	static {
 		try {
-			URI_ID = new UriPathElement("services");
+			URI_ID = new UriPathElement("hhdc-services");
 		} catch (HttpException e) {
 			throw new RuntimeException(e);
 		}
 	}
 
-	private Dce dce;
+	private Organization organization;
 
-	public DceServices(Dce dce) {
-		this.dce = dce;
+	public HhdcContracts(Organization organization) {
+		this.organization = organization;
 	}
 
 	public UriPathElement getUrlId() {
@@ -69,11 +71,12 @@ public class DceServices implements Urlable, XmlDescriber {
 	}
 
 	public MonadUri getUri() throws InternalException, HttpException {
-		return dce.getUri().resolve(getUrlId()).append("/");
+		return organization.getUri().resolve(getUrlId()).append("/");
 	}
 
 	public void httpPost(Invocation inv) throws HttpException {
-		Integer type = inv.getInteger("type");
+		String participantCode = inv.getString("participant-code");
+		String roleCode = inv.getString("role-code");
 		String name = inv.getString("name");
 		ContractFrequency frequency = inv.getValidatable(
 				ContractFrequency.class, "frequency");
@@ -83,8 +86,9 @@ public class DceServices implements Urlable, XmlDescriber {
 		if (!inv.isValid()) {
 			throw new UserException(document());
 		}
-		DceService service = dce.insertService(type, name, HhEndDate
-				.roundDown(startDate), chargeScript, frequency, lag);
+		Provider provider = Provider.getProvider(participantCode, roleCode);
+		HhdcContract service = organization.insertHhdcContract(provider, name,
+				HhEndDate.roundDown(startDate), chargeScript, frequency, lag);
 		Hiber.commit();
 		inv.sendCreated(document(), service.getUri());
 	}
@@ -96,14 +100,14 @@ public class DceServices implements Urlable, XmlDescriber {
 		Element source = doc.getDocumentElement();
 		Element contractsElement = (Element) toXml(doc);
 		source.appendChild(contractsElement);
-		contractsElement.appendChild(dce.toXml(doc,
-				new XmlTree("organization")));
-		for (DceService contract : (List<DceService>) Hiber
+		contractsElement.appendChild(organization.toXml(doc));
+		for (HhdcContract contract : (List<HhdcContract>) Hiber
 				.session()
 				.createQuery(
-						"from DceService service where service.provider = :dce order by service.name")
-				.setEntity("dce", dce).list()) {
-			contractsElement.appendChild(contract.toXml(doc));
+						"from HhdceContract contract where contract.organization = :organization order by contract.name")
+				.setEntity("organization", organization).list()) {
+			contractsElement.appendChild(contract.toXml(doc, new XmlTree(
+					"provider")));
 		}
 		source.appendChild(MonadDate.getMonthsXml(doc));
 		source.appendChild(MonadDate.getDaysXml(doc));
@@ -116,18 +120,17 @@ public class DceServices implements Urlable, XmlDescriber {
 		inv.sendOk(document());
 	}
 
-	public Service getChild(UriPathElement uriId) throws HttpException,
-			InternalException {
-		Service service = (Service) Hiber
+	public HhdcContract getChild(UriPathElement uriId) throws HttpException {
+		HhdcContract contract = (HhdcContract) Hiber
 				.session()
 				.createQuery(
-						"from DceService service where service.provider = :dce and service.id = :serviceId")
-				.setEntity("dce", dce).setLong("serviceId",
+						"from HhdcContract contract where contract.organization = :organization and contract.id = :contractId")
+				.setEntity("organization", organization).setLong("contractId",
 						Long.parseLong(uriId.getString())).uniqueResult();
-		if (service == null) {
+		if (contract == null) {
 			throw new NotFoundException();
 		}
-		return service;
+		return contract;
 	}
 
 	public void httpDelete(Invocation inv) throws InternalException,

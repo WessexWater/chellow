@@ -52,27 +52,25 @@ import com.Ostermiller.util.CSVParser;
 
 public class Provider extends PersistentEntity implements Urlable {
 	/*
-	public static Provider getSupplier(Long id) throws HttpException {
-		Provider supplier = (Provider) Hiber.session().get(Provider.class, id);
-		if (supplier == null) {
-			throw new UserException("There isn't a supplier with that id.");
-		}
-		return supplier;
-	}
+	 * public static Provider getSupplier(Long id) throws HttpException {
+	 * Provider supplier = (Provider) Hiber.session().get(Provider.class, id);
+	 * if (supplier == null) { throw new UserException("There isn't a supplier
+	 * with that id."); } return supplier; }
+	 * 
+	 * public static void deleteSupplier(Provider supplier) throws
+	 * InternalException { try { Hiber.session().delete(supplier);
+	 * Hiber.flush(); } catch (HibernateException e) { throw new
+	 * InternalException(e); } }
+	 */
 
-	public static void deleteSupplier(Provider supplier)
-			throws InternalException {
-		try {
-			Hiber.session().delete(supplier);
-			Hiber.flush();
-		} catch (HibernateException e) {
-			throw new InternalException(e);
-		}
-	}
-	*/
-	
-	static public Provider getProvider(String code) throws HttpException {
-		Provider provider = (Provider) Hiber.session().createQuery("from Provider provider where provider.code = :code").setString("code", code).uniqueResult();
+	static public Provider getProvider(String participantCode, String roleCode)
+			throws HttpException {
+		Provider provider = (Provider) Hiber
+				.session()
+				.createQuery(
+						"from Provider provider where provider.participant.code = :participantCode and provider.role.code = :roleCode")
+				.setString("participantCode", participantCode).setString(
+						"roleCode", roleCode).uniqueResult();
 		if (provider == null) {
 			throw new NotFoundException();
 		}
@@ -120,7 +118,8 @@ public class Provider extends PersistentEntity implements Urlable {
 				MarketRole role = MarketRole.getMarketRole(values[1]);
 				Date from = dateFormat.parse(values[2]);
 				Date to = dateFormat.parse(values[3]);
-				Provider provider = new Provider(values[4], participant, role, from, to, values[14]);
+				Provider provider = new Provider(values[4], participant, role,
+						from, to, values[14]);
 				Hiber.session().save(provider);
 				Hiber.flush();
 			}

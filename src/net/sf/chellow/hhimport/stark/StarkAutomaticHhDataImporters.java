@@ -9,7 +9,7 @@ import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import net.sf.chellow.billing.DceService;
+import net.sf.chellow.billing.HhdcContract;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.HttpException;
@@ -44,7 +44,7 @@ public class StarkAutomaticHhDataImporters extends TimerTask {
 		return programmerException;
 	}
 
-	public StarkAutomaticHhDataImporter findImporter(DceService service)
+	public StarkAutomaticHhDataImporter findImporter(HhdcContract service)
 			throws InternalException, HttpException {
 		MonadUri importerUri = service.getUri().resolve(
 				StarkAutomaticHhDataImporter.URI_ID);
@@ -77,7 +77,7 @@ public class StarkAutomaticHhDataImporters extends TimerTask {
 					importers.remove(importerEntry.getKey());
 				}
 			}
-			for (DceService dceService : (List<DceService>) Hiber.session()
+			for (HhdcContract dceService : (List<HhdcContract>) Hiber.session()
 					.createQuery("from DceService service").list()) {
 				findImporter(dceService);
 			}

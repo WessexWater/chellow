@@ -13,7 +13,7 @@ import java.util.logging.Level;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
-import net.sf.chellow.billing.DceService;
+import net.sf.chellow.billing.HhdcContract;
 import net.sf.chellow.data08.HhDatumRaw;
 import net.sf.chellow.monad.DeployerException;
 import net.sf.chellow.monad.DesignerException;
@@ -148,7 +148,7 @@ public class HhDataImportProcess extends Thread implements Urlable,
 	@SuppressWarnings("unchecked")
 	public void run() {
 		try {
-			DceService dceService = DceService.getDceService(dceServiceId);
+			HhdcContract dceService = HhdcContract.getDceService(dceServiceId);
 			List<HhDatumRaw> data = new ArrayList<HhDatumRaw>();
 			HhDatumRaw firstDatumRaw = null;
 			while (!shouldHalt() && converter.hasNext()) {
@@ -239,8 +239,8 @@ public class HhDataImportProcess extends Thread implements Urlable,
 				getUriId()).append("/");
 	}
 	
-	private DceService getDceService() throws HttpException, InternalException {
-		return DceService.getDceService(dceServiceId);
+	private HhdcContract getDceService() throws HttpException, InternalException {
+		return HhdcContract.getDceService(dceServiceId);
 	}
 
 	public void httpGet(Invocation inv) throws DesignerException,

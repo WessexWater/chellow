@@ -30,7 +30,7 @@ import java.util.Set;
 
 import net.sf.chellow.billing.Account;
 import net.sf.chellow.billing.Dce;
-import net.sf.chellow.billing.DceService;
+import net.sf.chellow.billing.HhdcContract;
 import net.sf.chellow.billing.Invoice;
 import net.sf.chellow.billing.InvoiceMpan;
 import net.sf.chellow.billing.Supplier;
@@ -217,13 +217,13 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 	}
 
 	public void addOrUpdateMpans(MpanTop importMpanTop,
-			MpanCore importMpanCore, DceService importContractDce,
+			MpanCore importMpanCore, HhdcContract importContractDce,
 			Account importAccountSupplier,
 			SupplierService importContractSupplier, boolean importHasImportKwh,
 			boolean importHasImportKvarh, boolean importHasExportKwh,
 			boolean importHasExportKvarh, Integer importAgreedSupplyCapacity,
 			MpanTop exportMpanTop, MpanCore exportMpanCore,
-			DceService exportContractDce, Account exportAccountSupplier,
+			HhdcContract exportContractDce, Account exportAccountSupplier,
 			SupplierService exportContractSupplier, boolean exportHasImportKwh,
 			boolean exportHasImportKvarh, boolean exportHasExportKwh,
 			boolean exportHasExportKvarh, Integer exportAgreedSupplyCapacity)
@@ -362,8 +362,8 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 		this.meter = meter;
 	}
 
-	public DceService getDceService(boolean isImport, boolean isKwh) {
-		DceService dceService = null;
+	public HhdcContract getDceService(boolean isImport, boolean isKwh) {
+		HhdcContract dceService = null;
 		if (importMpan != null) {
 			dceService = importMpan.getDceService(isImport, isKwh);
 		}
@@ -541,7 +541,7 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 				.setEntity("organization", organization).list()) {
 			Element dceElement = dce.toXml(doc);
 			source.appendChild(dceElement);
-			for (DceService dceService : (List<DceService>) Hiber
+			for (HhdcContract dceService : (List<HhdcContract>) Hiber
 					.session()
 					.createQuery(
 							"from DceService service where service.provider = :dce")
@@ -615,7 +615,7 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 			Date startDate = inv.getDate("start-date");
 			Date finishDate = null;
 			String meterSerialNumber = inv.getString("meter-serial-number");
-			DceService importDceService = null;
+			HhdcContract importDceService = null;
 			Account importSupplierAccount = null;
 			SupplierService importSupplierService = null;
 			boolean importHasImportKwh = false;
@@ -663,7 +663,7 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 						String importDceServiceStr = inv
 								.getString("import-dce-service-id");
 						if (!importDceServiceStr.equals("null")) {
-							importDceService = DceService.getDceService(inv
+							importDceService = HhdcContract.getDceService(inv
 									.getLong("import-dce-service-id"));
 						}
 					}
@@ -687,7 +687,7 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 				MpanTop exportMpanTop = null;
 				MpanCore exportMpanCore = null;
 				Integer exportAgreedSupplyCapacity = null;
-				DceService exportDceService = null;
+				HhdcContract exportDceService = null;
 				Account exportSupplierAccount = null;
 				SupplierService exportSupplierService = null;
 				boolean exportHasImportKwh = false;
@@ -729,7 +729,7 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 						String exportDceServiceStr = inv
 								.getString("export-dce-service-id");
 						if (!exportDceServiceStr.equals("null")) {
-							exportDceService = DceService.getDceService(inv
+							exportDceService = HhdcContract.getDceService(inv
 									.getLong("export-dce-service-id"));
 						}
 					}

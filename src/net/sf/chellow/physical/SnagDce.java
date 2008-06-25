@@ -22,7 +22,7 @@
 
 package net.sf.chellow.physical;
 
-import net.sf.chellow.billing.DceService;
+import net.sf.chellow.billing.HhdcContract;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.NotFoundException;
 import net.sf.chellow.monad.InternalException;
@@ -40,22 +40,22 @@ public abstract class SnagDce extends Snag {
 		return getSnag(Long.parseLong(id));
 	}
 
-	private DceService dceService;
+	private HhdcContract dceService;
 
 	public SnagDce() {
 	}
 
-	public SnagDce(String description, DceService dceService)
+	public SnagDce(String description, HhdcContract dceService)
 			throws InternalException {
 		super(description);
 		this.dceService = dceService;
 	}
 
-	public DceService getDceService() {
+	public HhdcContract getDceService() {
 		return dceService;
 	}
 
-	void setDceService(DceService dceService) {
+	void setDceService(HhdcContract dceService) {
 		this.dceService = dceService;
 	}
 

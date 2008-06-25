@@ -31,7 +31,7 @@ import java.util.Map;
 import java.util.Set;
 
 import net.sf.chellow.billing.Account;
-import net.sf.chellow.billing.DceService;
+import net.sf.chellow.billing.HhdcContract;
 import net.sf.chellow.billing.Invoice;
 import net.sf.chellow.billing.Service;
 import net.sf.chellow.billing.SupplierService;
@@ -354,12 +354,12 @@ public class Supply extends PersistentEntity implements Urlable {
 	}
 
 	public SupplyGeneration addGeneration(Map<Site, Boolean> existingSiteMap,
-			Meter meter, MpanRaw importMpanRaw, DceService importContractDce,
+			Meter meter, MpanRaw importMpanRaw, HhdcContract importContractDce,
 			Account importAccountSupplier,
 			SupplierService importContractSupplier, boolean importHasImportKwh,
 			boolean importHasImportKvarh, boolean importHasExportKwh,
 			boolean importHasExportKvarh, Integer importAgreedSupplyCapacity,
-			MpanRaw exportMpanRaw, DceService exportContractDce,
+			MpanRaw exportMpanRaw, HhdcContract exportContractDce,
 			Account exportAccountSupplier,
 			SupplierService exportContractSupplier, boolean exportHasImportKwh,
 			boolean exportHasImportKvarh, boolean exportHasExportKwh,
@@ -389,12 +389,12 @@ public class Supply extends PersistentEntity implements Urlable {
 
 	public SupplyGeneration addGeneration(Map<Site, Boolean> siteMap,
 			Meter meter, MpanTop importMpanTop, MpanCore importMpanCore,
-			DceService importContractDce, Account importAccountSupplier,
+			HhdcContract importContractDce, Account importAccountSupplier,
 			SupplierService importContractSupplier, boolean importHasImportKwh,
 			boolean importHasImportKvarh, boolean importHasExportKwh,
 			boolean importHasExportKvarh, Integer importAgreedSupplyCapacity,
 			MpanTop exportMpanTop, MpanCore exportMpanCore,
-			DceService exportContractDce, Account exportAccountSupplier,
+			HhdcContract exportContractDce, Account exportAccountSupplier,
 			SupplierService exportContractSupplier, boolean exportHasImportKwh,
 			boolean exportHasImportKvarh, boolean exportHasExportKwh,
 			boolean exportHasExportKvarh, Integer exportAgreedSupplyCapacity,
@@ -624,7 +624,7 @@ public class Supply extends PersistentEntity implements Urlable {
 			}
 			for (SupplyGeneration generation : getGenerations(from, to)) {
 				for (Channel channel : getChannels()) {
-					DceService contractDce = generation.getDceService(channel
+					HhdcContract contractDce = generation.getDceService(channel
 							.getIsImport(), channel.getIsKwh());
 					HhEndDate generationFinishDate = generation.getFinishDate();
 					for (ChannelSnag snag : (List<ChannelSnag>) (generationFinishDate == null ? Hiber

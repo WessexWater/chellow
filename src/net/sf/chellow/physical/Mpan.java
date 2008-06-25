@@ -25,7 +25,7 @@ package net.sf.chellow.physical;
 import java.util.Set;
 
 import net.sf.chellow.billing.Account;
-import net.sf.chellow.billing.DceService;
+import net.sf.chellow.billing.HhdcContract;
 import net.sf.chellow.billing.DcsService;
 import net.sf.chellow.billing.MopService;
 import net.sf.chellow.billing.SupplierService;
@@ -65,7 +65,7 @@ public class Mpan extends PersistentEntity {
 
 	private MpanCore mpanCore;
 
-	private DceService dceService;
+	private HhdcContract dceService;
 
 	private Account dceAccount;
 
@@ -95,7 +95,7 @@ public class Mpan extends PersistentEntity {
 	}
 
 	Mpan(SupplyGeneration supplyGeneration, MpanTop mpanTop,
-			MpanCore mpanCore, DceService dceService, Account supplierAccount,
+			MpanCore mpanCore, HhdcContract dceService, Account supplierAccount,
 			SupplierService supplierService, boolean hasImportKwh,
 			boolean hasImportKvarh, boolean hasExportKwh,
 			boolean hasExportKvarh, int agreedSupplyCapacity)
@@ -148,11 +148,11 @@ public class Mpan extends PersistentEntity {
 		this.mopAccount = mopAccount;
 	}
 
-	public DceService getDceService() {
+	public HhdcContract getDceService() {
 		return dceService;
 	}
 
-	void setDceService(DceService dceService) {
+	void setDceService(HhdcContract dceService) {
 		this.dceService = dceService;
 	}
 
@@ -237,7 +237,7 @@ public class Mpan extends PersistentEntity {
 	}
 
 	void update(MpanTop mpanTop, MpanCore mpanCore,
-			DceService dceService, Account supplierAccount,
+			HhdcContract dceService, Account supplierAccount,
 			SupplierService supplierService, boolean hasImportKwh,
 			boolean hasImportKvarh, boolean hasExportKwh,
 			boolean hasExportKvarh, int agreedSupplyCapacity)
@@ -370,8 +370,8 @@ public class Mpan extends PersistentEntity {
 		}
 	}
 
-	public DceService getDceService(boolean isImport, boolean isKwh) {
-		DceService dceService = null;
+	public HhdcContract getDceService(boolean isImport, boolean isKwh) {
+		HhdcContract dceService = null;
 		if (isImport) {
 			if (isKwh) {
 				if (hasImportKwh) {

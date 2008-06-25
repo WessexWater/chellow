@@ -38,6 +38,7 @@ import net.sf.chellow.monad.XmlDescriber;
 import net.sf.chellow.monad.XmlTree;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
+import net.sf.chellow.physical.Organization;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -48,17 +49,17 @@ public class Accounts implements Urlable, XmlDescriber {
 	public static final UriPathElement URI_ID;
 
 	static {
-			try {
-				URI_ID = new UriPathElement("accounts");
-			} catch (HttpException e) {
-				throw new RuntimeException(e);
-			}
+		try {
+			URI_ID = new UriPathElement("accounts");
+		} catch (HttpException e) {
+			throw new RuntimeException(e);
+		}
 	}
 
-	private ProviderOrganization provider;
+	private Organization organization;
 
-	public Accounts(ProviderOrganization provider) {
-		this.provider = provider;
+	public Accounts(Organization organization) {
+		this.organization = organization;
 	}
 
 	public UriPathElement getUrlId() {
@@ -66,16 +67,19 @@ public class Accounts implements Urlable, XmlDescriber {
 	}
 
 	public MonadUri getUri() throws InternalException, HttpException {
-		return provider.getUri().resolve(getUrlId()).append("/");
+		return organization.getUri().resolve(getUrlId()).append("/");
 	}
 
 	public void httpPost(Invocation inv) throws InternalException,
 			HttpException, DesignerException, DeployerException {
+		String participantCode = inv.getString("participant-code");
+		String roleCode = inv.getString("role-code");
 		String reference = inv.getString("reference");
 		if (!inv.isValid()) {
 			throw new UserException(document());
 		}
-		Account account = provider.insertAccount(reference);
+		Provider provider = Provider.getProvider(participantCode, roleCode);
+		Account account = organization.insertAccount(provider, reference);
 		Hiber.commit();
 		inv.sendCreated(document(), account.getUri());
 	}
@@ -87,12 +91,9 @@ public class Accounts implements Urlable, XmlDescriber {
 
 	public Account getChild(UriPathElement uriId) throws HttpException,
 			InternalException {
-		Account account = (Account) Hiber
-				.session()
-				.createQuery(
-						"from Account account where account.provider = :provider and account.id = :accountId")
-				.setEntity("provider", provider).setLong("accountId",
-						Long.parseLong(uriId.getString())).uniqueResult();
+		Account account = (Account) Hiber.session().createQuery(
+				"from Account account where account.id = :accountId").setLong(
+				"accountId", Long.parseLong(uriId.getString())).uniqueResult();
 		if (account == null) {
 			throw new NotFoundException();
 		}
@@ -120,13 +121,12 @@ public class Accounts implements Urlable, XmlDescriber {
 		Element source = doc.getDocumentElement();
 		Element accountsElement = (Element) toXml(doc);
 		source.appendChild(accountsElement);
-		accountsElement.appendChild(provider.toXml(
-				doc, new XmlTree("organization")));
+		accountsElement.appendChild(organization.toXml(doc));
 		for (Account account : (List<Account>) Hiber
 				.session()
 				.createQuery(
-						"from Account account where account.provider = :provider order by account.reference")
-				.setEntity("provider", provider).list()) {
+						"from Account account order by account.reference")
+				.list()) {
 			accountsElement.appendChild(account.toXml(doc));
 		}
 		return doc;

@@ -25,11 +25,15 @@ package net.sf.chellow.physical;
 import java.util.List;
 import java.util.Set;
 
-import net.sf.chellow.billing.Dce;
+import net.sf.chellow.billing.Account;
+import net.sf.chellow.billing.Accounts;
 import net.sf.chellow.billing.Dces;
 import net.sf.chellow.billing.Dcs;
 import net.sf.chellow.billing.GenDeltas;
+import net.sf.chellow.billing.HhdcContract;
+import net.sf.chellow.billing.HhdcContracts;
 import net.sf.chellow.billing.Mop;
+import net.sf.chellow.billing.Provider;
 import net.sf.chellow.billing.Supplier;
 import net.sf.chellow.billing.Suppliers;
 import net.sf.chellow.billing.UseDeltas;
@@ -75,7 +79,8 @@ public class Organization extends PersistentEntity {
 		Organization organization = (Organization) Hiber.session().get(
 				Organization.class, id);
 		if (organization == null) {
-			throw new NotFoundException("There isn't an organization with that id.");
+			throw new NotFoundException(
+					"There isn't an organization with that id.");
 		}
 		return organization;
 	}
@@ -83,8 +88,6 @@ public class Organization extends PersistentEntity {
 	private String name;
 
 	private Set<User> users;
-
-	private Set<Dce> suppliers;
 
 	public Organization() {
 	}
@@ -115,14 +118,6 @@ public class Organization extends PersistentEntity {
 		return users;
 	}
 
-	void setSuppliers(Set<Dce> suppliers) {
-		this.suppliers = suppliers;
-	}
-
-	public Set<Dce> getSuppliers() {
-		return suppliers;
-	}
-
 	public void update(String name) {
 		setName(name);
 		Hiber.flush();
@@ -148,8 +143,7 @@ public class Organization extends PersistentEntity {
 			Hiber.session().save(site);
 			Hiber.flush();
 		} catch (ConstraintViolationException e) {
-			throw new UserException
-					("A site with this code already exists.");
+			throw new UserException("A site with this code already exists.");
 		}
 		/*
 		 * } catch (HibernateException e) { if (Data .isSQLException(e, "ERROR:
@@ -227,6 +221,10 @@ public class Organization extends PersistentEntity {
 		return new Sites(this);
 	}
 
+	public Accounts accountsInstance() {
+		return new Accounts(this);
+	}
+
 	public Supplies suppliesInstance() {
 		return new Supplies(this);
 	}
@@ -235,8 +233,8 @@ public class Organization extends PersistentEntity {
 		return new Suppliers(this);
 	}
 
-	public Dces dcesInstance() {
-		return new Dces(this);
+	public HhdcContracts hhdcContractsInstance() {
+		return new HhdcContracts(this);
 	}
 
 	public UseDeltas useDeltasInstance() {
@@ -247,20 +245,22 @@ public class Organization extends PersistentEntity {
 		return new GenDeltas(this);
 	}
 
-	public Dce getDce(long id) throws HttpException, InternalException {
-		Dce dce = (Dce) Hiber
+	public HhdcContract getHhdcContract(long id) throws HttpException,
+			InternalException {
+		HhdcContract contract = (HhdcContract) Hiber
 				.session()
 				.createQuery(
-						"from Dce dce where dce.organization = :organization and dce.id = :dceId")
-				.setEntity("organization", this).setLong("dceId", id)
+						"from HhdcContract contract where contract.organization = :organization and contract.id = :contractId")
+				.setEntity("organization", this).setLong("contractId", id)
 				.uniqueResult();
-		if (dce == null) {
+		if (contract == null) {
 			throw new NotFoundException();
 		}
-		return dce;
+		return contract;
 	}
 
-	public Supply getSupply(long id) throws InternalException, NotFoundException {
+	public Supply getSupply(long id) throws InternalException,
+			NotFoundException {
 		Supply supply = findSupply(id);
 		if (supply == null) {
 			throw new NotFoundException("There is no supply with that id.");
@@ -285,7 +285,8 @@ public class Organization extends PersistentEntity {
 			InternalException {
 		Supplier supplier = findSupplier(supplierId);
 		if (supplier == null) {
-			throw new NotFoundException("There isn't a supplier attached to this organization with the id '"
+			throw new NotFoundException(
+					"There isn't a supplier attached to this organization with the id '"
 							+ supplierId + "'.");
 		}
 		return supplier;
@@ -301,7 +302,8 @@ public class Organization extends PersistentEntity {
 						supplierId).uniqueResult();
 	}
 
-	public void httpPost(Invocation inv) throws InternalException, UserException {
+	public void httpPost(Invocation inv) throws InternalException,
+			UserException {
 		if (inv.hasParameter("delete")) {
 			Hiber.session().delete(this);
 			Hiber.close();
@@ -341,8 +343,7 @@ public class Organization extends PersistentEntity {
 
 	}
 
-	public Site getSite(SiteCode code) throws HttpException,
-			InternalException {
+	public Site getSite(SiteCode code) throws HttpException, InternalException {
 		Site site = (Site) Hiber
 				.session()
 				.createQuery(
@@ -361,8 +362,8 @@ public class Organization extends PersistentEntity {
 		if (Hiber.session().createQuery(
 				"from SiteSupplyGeneration ssg where ssg.site = :site")
 				.setEntity("site", site).list().size() > 0) {
-			throw 
-					new UserException("This site can't be deleted while there are still supply generations attached to it.");
+			throw new UserException(
+					"This site can't be deleted while there are still supply generations attached to it.");
 		}
 		for (SiteSnag snag : (List<SiteSnag>) Hiber.session().createQuery(
 				"from SiteSnag snag where site = :site")
@@ -373,15 +374,27 @@ public class Organization extends PersistentEntity {
 		Hiber.flush();
 	}
 
-	public void deleteSupplier(Supplier supplier) throws InternalException,
-			HttpException {
-		if (supplier.getOrganization().equals(this)) {
-			Hiber.session().delete(supplier);
-		} else {
-			throw new UserException("This supplier doesn't belong to this organization.");
+	public Account getAccount(Provider provider, String accountReference)
+			throws HttpException {
+		Account account = (Account) Hiber
+				.session()
+				.createQuery(
+						"from Account account where account.organization = :organization and account.provider = :provider and account.reference = :accountReference")
+				.setEntity("organization", this)
+				.setEntity("provider", provider).setString("accountReference",
+						accountReference).uniqueResult();
+		if (account == null) {
+			throw new NotFoundException();
 		}
+		return account;
 	}
 
+	/*
+	 * public void deleteSupplier(Supplier supplier) throws InternalException,
+	 * HttpException { if (supplier.getOrganization().equals(this)) {
+	 * Hiber.session().delete(supplier); } else { throw new UserException( "This
+	 * supplier doesn't belong to this organization."); } }
+	 */
 	public Supplier insertSupplier(String name) throws HttpException,
 			InternalException {
 		if (findSupplier(name) == null) {
@@ -390,8 +403,8 @@ public class Organization extends PersistentEntity {
 			Hiber.flush();
 			return supplier;
 		} else {
-			throw new UserException
-					("There's already a supplier with this name.");
+			throw new UserException(
+					"There's already a supplier with this name.");
 		}
 	}
 
@@ -404,11 +417,14 @@ public class Organization extends PersistentEntity {
 				.uniqueResult();
 	}
 
-	public Dce insertDce(String name) {
-		Dce dce = new Dce(name, this);
-		Hiber.session().save(dce);
+	public HhdcContract insertHhdcContract(Provider provider, String name,
+			HhEndDate startDate, String chargeScript,
+			ContractFrequency frequency, int lag) throws HttpException {
+		HhdcContract contract = new HhdcContract(provider, this, name,
+				startDate, chargeScript, frequency, lag);
+		Hiber.session().save(contract);
 		Hiber.flush();
-		return dce;
+		return contract;
 	}
 
 	public Dcs insertDcs(String name) {
@@ -456,8 +472,7 @@ public class Organization extends PersistentEntity {
 			InternalException {
 		MpanCore core = findMpanCore(coreRaw);
 		if (core == null) {
-			throw new UserException("There isn't an MPAN with the core "
-					+ core);
+			throw new UserException("There isn't an MPAN with the core " + core);
 		}
 		return core;
 	}
@@ -471,9 +486,23 @@ public class Organization extends PersistentEntity {
 				.setEntity("organization", this).setString("name", name)
 				.uniqueResult();
 		if (supplier == null) {
-			throw new NotFoundException("There isn't a supplier with the name '"
-							+ name + "'.");
+			throw new NotFoundException(
+					"There isn't a supplier with the name '" + name + "'.");
 		}
 		return supplier;
+	}
+
+	public Account insertAccount(Provider provider, String reference)
+			throws HttpException, InternalException {
+		Account account = new Account(this, provider, reference);
+		try {
+			Hiber.session().save(account);
+			Hiber.flush();
+		} catch (ConstraintViolationException e) {
+			throw new UserException(
+					"There's already an account with the reference, '"
+							+ reference + "' attached to this provider.");
+		}
+		return account;
 	}
 }

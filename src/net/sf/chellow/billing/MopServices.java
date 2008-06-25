@@ -93,7 +93,7 @@ public class MopServices implements Urlable, XmlDescriber {
 		Element contractsElement = (Element) toXml(doc);
 		source.appendChild(contractsElement);
 		contractsElement.appendChild(mop.toXml(doc));
-		for (DceService contract : (List<DceService>) Hiber
+		for (HhdcContract contract : (List<HhdcContract>) Hiber
 				.session()
 				.createQuery(
 						"from ContractDce contract where contract.mop = :mop order by contract.name")

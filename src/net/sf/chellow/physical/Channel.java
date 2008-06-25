@@ -26,7 +26,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
-import net.sf.chellow.billing.DceService;
+import net.sf.chellow.billing.HhdcContract;
 import net.sf.chellow.data08.HhDatumRaw;
 // import net.sf.chellow.monad.bo.Debug;
 import net.sf.chellow.monad.DeployerException;
@@ -54,7 +54,7 @@ public class Channel extends PersistentEntity implements Urlable {
 
 	static private HttpMethod[] httpMethods = { HttpMethod.GET };
 
-	public static void addHhData(DceService dceService, List<HhDatumRaw> dataRaw)
+	public static void addHhData(HhdcContract dceService, List<HhDatumRaw> dataRaw)
 			throws InternalException, HttpException {
 		Channel channel;
 		HhDatumRaw firstDatum = dataRaw.get(0);
@@ -120,7 +120,7 @@ public class Channel extends PersistentEntity implements Urlable {
 	}
 
 	@SuppressWarnings("unchecked")
-	private void addHhDataBlock(DceService dceService, List<HhDatumRaw> dataRaw)
+	private void addHhDataBlock(HhdcContract dceService, List<HhDatumRaw> dataRaw)
 			throws InternalException, HttpException {
 		// long now = System.currentTimeMillis();
 		// Debug.print("Starting method: " + (System.currentTimeMillis() -
@@ -130,7 +130,7 @@ public class Channel extends PersistentEntity implements Urlable {
 		List<SupplyGeneration> supplyGenerations = supply.getGenerations(from,
 				to);
 		for (SupplyGeneration generation : supplyGenerations) {
-			DceService actualDceService = generation.getDceService(isImport,
+			HhdcContract actualDceService = generation.getDceService(isImport,
 					isKwh);
 			if (actualDceService == null) {
 				addChannelSnag(dceService, ChannelSnag.SNAG_DATA_IGNORED, from,
@@ -349,7 +349,7 @@ public class Channel extends PersistentEntity implements Urlable {
 		}
 	}
 
-	private void addChannelSnag(DceService dceService, String description,
+	private void addChannelSnag(HhdcContract dceService, String description,
 			HhEndDate startDate, HhEndDate finishDate, boolean isResolved)
 			throws InternalException, HttpException {
 		SnagDateBounded.addChannelSnag(dceService, this, description,
@@ -398,7 +398,7 @@ public class Channel extends PersistentEntity implements Urlable {
 		HhEndDate finish = null;
 		SupplyGeneration generation = supply.getGenerationLast();
 		if (generation.getFinishDate() == null) {
-			DceService latestDceService = generation.getDceService(isImport,
+			HhdcContract latestDceService = generation.getDceService(isImport,
 					isKwh);
 			if (latestDceService == null) {
 				finish = HhEndDate.roundDown(new Date());
@@ -518,7 +518,7 @@ public class Channel extends PersistentEntity implements Urlable {
 				.setEntity("channel", this);
 		List<SupplyGeneration> generations = supply.getGenerations(from, to);
 		for (int i = 0; i < generations.size(); i++) {
-			DceService contractDce = generations.get(i).getDceService(isImport,
+			HhdcContract contractDce = generations.get(i).getDceService(isImport,
 					isKwh);
 			HhEndDate generationStartDate = i == 0 ? from : generations.get(i)
 					.getStartDate();
@@ -571,7 +571,7 @@ public class Channel extends PersistentEntity implements Urlable {
 		}
 	}
 
-	private DceService getDceService(HhEndDate date) {
+	private HhdcContract getDceService(HhEndDate date) {
 		return supply.getGeneration(date).getDceService(isImport, isKwh);
 	}
 

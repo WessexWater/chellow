@@ -10,8 +10,8 @@ import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 
 import net.sf.chellow.billing.Dcses;
-import net.sf.chellow.billing.Government;
 import net.sf.chellow.billing.Mops;
+import net.sf.chellow.billing.NonCoreServices;
 import net.sf.chellow.monad.BadRequestException;
 import net.sf.chellow.monad.DeployerException;
 import net.sf.chellow.monad.DesignerException;
@@ -69,7 +69,7 @@ public class Chellow extends Monad implements Urlable {
 	public static final Participants PARTICIPANTS_INSTANCE = new Participants();
 	public static final MarketRoles MARKET_ROLES_INSTANCE = new MarketRoles();
 
-	public static final Government GOVERNMENT_INSTANCE = null;
+	public static final NonCoreServices NON_CORE_SERVICES_INSTANCE = null;
 
 	static {
 		/*
@@ -184,8 +184,8 @@ public class Chellow extends Monad implements Urlable {
 			return USERS_INSTANCE;
 		} else if (Roles.URI_ID.equals(uriId)) {
 			return ROLES_INSTANCE;
-		} else if (Government.URI_ID.equals(uriId)) {
-			return GOVERNMENT_INSTANCE;
+		} else if (NonCoreServices.URI_ID.equals(uriId)) {
+			return NON_CORE_SERVICES_INSTANCE;
 		} else if (ProfileClasses.URI_ID.equals(uriId)) {
 			return PROFILE_CLASSES_INSTANCE;
 		} else if (MeterTimeswitches.URI_ID.equals(uriId)) {

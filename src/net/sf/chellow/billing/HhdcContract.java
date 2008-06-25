@@ -1,6 +1,6 @@
 /*
  
- Copyright 2005 Meniscus Systems Ltd
+ Copyright 2005, 2008 Meniscus Systems Ltd
  
  This file is part of Chellow.
 
@@ -44,54 +44,41 @@ import net.sf.chellow.physical.ContractFrequency;
 import net.sf.chellow.physical.HhEndDate;
 import net.sf.chellow.physical.Mpan;
 import net.sf.chellow.physical.ChannelSnags;
+import net.sf.chellow.physical.Organization;
 import net.sf.chellow.physical.SiteSnags;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 @SuppressWarnings("serial")
-public class DceService extends Service {
-	public static DceService getDceService(Long id) throws HttpException,
+public class HhdcContract extends Contract {
+	public static HhdcContract getDceService(Long id) throws HttpException,
 			InternalException {
-		DceService service = findDceService(id);
+		HhdcContract service = findDceService(id);
 		if (service == null) {
-			throw new UserException
-					("There isn't a DCE service with that id.");
+			throw new UserException("There isn't a DCE service with that id.");
 		}
 		return service;
 	}
 
-	public static DceService findDceService(Long id) throws HttpException,
+	public static HhdcContract findDceService(Long id) throws HttpException,
 			InternalException {
-		return (DceService) Hiber.session().get(DceService.class, id);
+		return (HhdcContract) Hiber.session().get(HhdcContract.class, id);
 	}
-
-	private Dce provider;
 
 	private ContractFrequency frequency;
 
 	private int lag;
 
-	public DceService() {
-		setTypeName("dce-service");
+	public HhdcContract() {
 	}
 
-	public DceService(int type, String name, HhEndDate startDate,
-			String chargeScript, Dce provider,
+	public HhdcContract(Provider provider, Organization organization,
+			String name, HhEndDate startDate, String chargeScript,
 			ContractFrequency frequency, int lag) throws HttpException,
 			InternalException, DesignerException {
-		super(type, name, startDate, chargeScript);
-		setProvider(provider);
-		intrinsicUpdate(type, name, chargeScript,
-			 frequency, lag);
-	}
-
-	public Dce getProvider() {
-		return provider;
-	}
-
-	void setProvider(Dce provider) {
-		this.provider = provider;
+		super(provider, organization, name, startDate, chargeScript);
+		intrinsicUpdate(name, chargeScript, frequency, lag);
 	}
 
 	public ContractFrequency getFrequency() {
@@ -110,76 +97,59 @@ public class DceService extends Service {
 		this.lag = lag;
 	}
 
-	private void intrinsicUpdate(int type, String name, String chargeScript,
+	private void intrinsicUpdate(String name, String chargeScript,
 			ContractFrequency frequency, int lag) throws HttpException,
 			InternalException, DesignerException {
-		super.internalUpdate(type, name, chargeScript);
+		super.internalUpdate(getProvider(), name, chargeScript);
 		setFrequency(frequency);
 		setLag(lag);
 	}
 
 	@SuppressWarnings("unchecked")
-	public void update(int type, String name, String chargeScript,
+	public void update(String name, String chargeScript,
 			ContractFrequency frequency, int lag) throws HttpException,
 			InternalException, DesignerException {
-		intrinsicUpdate(type, name, chargeScript,
-				frequency, lag);
+		intrinsicUpdate(name, chargeScript, frequency, lag);
 		updateNotification();
 		// test if new dates agree with supply generation dates.
-		
+
 	}
-	
+
 	@SuppressWarnings("unchecked")
-	void updateNotification() throws HttpException, InternalException, DesignerException {
+	void updateNotification() throws HttpException, InternalException,
+			DesignerException {
 		super.updateNotification();
 		for (Mpan mpan : (List<Mpan>) Hiber
 				.session()
 				.createQuery(
-						"from Mpan mpan where mpan.dceService = :dceService and mpan.supplyGeneration.startDate >= :startDate and (mpan.supplyGeneration.finishDate.date <= :finishDate or (mpan.supplyGeneration.finishDate.date is null and :finishDate is null))").setEntity("dceService", this)
-				.setTimestamp("startDate", getStartDate().getDate()).setTimestamp(
-						"finishDate", getFinishDate() == null ? null : getFinishDate().getDate()).list()) {
-			throw new UserException
-					("The supply '"
+						"from Mpan mpan where mpan.dceService = :dceService and mpan.supplyGeneration.startDate >= :startDate and (mpan.supplyGeneration.finishDate.date <= :finishDate or (mpan.supplyGeneration.finishDate.date is null and :finishDate is null))")
+				.setEntity("dceService", this).setTimestamp("startDate",
+						getStartDate().getDate()).setTimestamp(
+						"finishDate",
+						getFinishDate() == null ? null : getFinishDate()
+								.getDate()).list()) {
+			throw new UserException(
+					"The supply '"
 							+ mpan.getSupplyGeneration().getSupply().getId()
 							+ "' has an MPAN with this contract that covers a time outside this contract.");
 		}
 	}
 
-	/*
-	 * public MonadInteger getNumberOfSnags() throws ProgrammerException {
-	 * MonadInteger numberOfSnags = null; int numSnags = (Integer) Hiber
-	 * .session() .createQuery( "select count(*) from ChannelSnag snag where
-	 * snag.contract.id = :contractId and snag.dateResolved.date is null and
-	 * snag.startDate.date < :snagDate") .setLong("contractId",
-	 * getId()).setDate( "snagDate", new Date(System.currentTimeMillis() -
-	 * ChannelSnag.SNAG_CHECK_LEAD_TIME)) .uniqueResult();
-	 * 
-	 * numSnags += (Integer) Hiber .session() .createQuery( "select count(*)
-	 * from SiteSnag snag where snag.contract.id = :contractId and
-	 * snag.dateResolved.date is null and snag.startDate.date < :snagDate")
-	 * .setLong("contractId", getId()).setDate( "snagDate", new
-	 * Date(System.currentTimeMillis() - ChannelSnag.SNAG_CHECK_LEAD_TIME))
-	 * .uniqueResult(); try { numberOfSnags = new MonadInteger(numSnags); }
-	 * catch (MonadInstantiationException e) { throw new ProgrammerException(e); }
-	 * numberOfSnags.setLabel("numberOfSnags"); return numberOfSnags; }
-	 */
 	public boolean equals(Object obj) {
 		boolean isEqual = false;
-		if (obj instanceof DceService) {
-			DceService contract = (DceService) obj;
+		if (obj instanceof HhdcContract) {
+			HhdcContract contract = (HhdcContract) obj;
 			isEqual = contract.getId().equals(getId());
 		}
 		return isEqual;
 	}
 
 	public MonadUri getUri() throws InternalException, HttpException {
-		return getProvider().servicesInstance().getUri().resolve(getUriId())
-				.append("/");
+		return getOrganization().hhdcContractsInstance().getUri().resolve(
+				getUriId()).append("/");
 	}
 
-	public void httpPost(Invocation inv) throws InternalException,
-			HttpException, DesignerException, DeployerException {
-		int type = inv.getInteger("type");
+	public void httpPost(Invocation inv) throws HttpException {
 		String name = inv.getString("name");
 		String chargeScript = inv.getString("charge-script");
 		ContractFrequency frequency = inv.getValidatable(
@@ -188,8 +158,7 @@ public class DceService extends Service {
 		if (!inv.isValid()) {
 			throw new UserException(document());
 		}
-		update(type, name, chargeScript, frequency,
-				lag);
+		update(name, chargeScript, frequency, lag);
 		Hiber.commit();
 		inv.sendOk(document());
 	}
@@ -199,7 +168,7 @@ public class DceService extends Service {
 		Document doc = MonadUtils.newSourceDocument();
 		Element source = doc.getDocumentElement();
 		source.appendChild(toXml(doc, new XmlTree("provider", new XmlTree(
-						"organization"))));
+				"organization"))));
 		return doc;
 	}
 
@@ -211,7 +180,7 @@ public class DceService extends Service {
 	public HhDataImportProcesses getHhDataImportProcessesInstance() {
 		return new HhDataImportProcesses(this);
 	}
-	
+
 	public Urlable getChild(UriPathElement uriId) throws InternalException,
 			HttpException {
 		if (HhDataImportProcesses.URI_ID.equals(uriId)) {
@@ -247,8 +216,8 @@ public class DceService extends Service {
 		return new SiteSnags(this);
 	}
 
-	public Element toXml(Document doc) throws InternalException,
-			HttpException {
+	public Element toXml(Document doc) throws InternalException, HttpException {
+		setTypeName("hhdc-contract");
 		Element element = super.toXml(doc);
 
 		element.setAttributeNode(frequency.toXml(doc));

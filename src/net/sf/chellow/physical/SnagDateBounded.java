@@ -26,7 +26,7 @@ import java.util.List;
 
 import net.sf.chellow.billing.Account;
 import net.sf.chellow.billing.AccountSnag;
-import net.sf.chellow.billing.DceService;
+import net.sf.chellow.billing.HhdcContract;
 import net.sf.chellow.billing.Service;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.InternalException;
@@ -203,14 +203,14 @@ public abstract class SnagDateBounded extends Snag {
 		}
 	}
 
-	public static void addChannelSnag(DceService contractDce, Channel channel,
+	public static void addChannelSnag(HhdcContract contractDce, Channel channel,
 			String description, HhEndDate startDate, HhEndDate finishDate,
 			boolean isResolved) throws InternalException, HttpException {
 		addSnagDateBounded(new ChannelSnagToAdd(contractDce, channel,
 				description, startDate, finishDate, isResolved));
 	}
 
-	public static void addSiteSnag(DceService contractDce, Site site,
+	public static void addSiteSnag(HhdcContract contractDce, Site site,
 			String description, HhEndDate startDate, HhEndDate finishDate,
 			boolean isResolved) throws InternalException, HttpException {
 		addSnagDateBounded(new SiteSnagToAdd(contractDce, site, description,
@@ -250,7 +250,7 @@ public abstract class SnagDateBounded extends Snag {
 	}
 
 	private static class ChannelSnagToAdd implements SnagToAdd {
-		private DceService dceService;
+		private HhdcContract dceService;
 
 		private Channel channel;
 
@@ -262,7 +262,7 @@ public abstract class SnagDateBounded extends Snag {
 
 		private boolean isResolved;
 
-		public ChannelSnagToAdd(DceService dceService, Channel channel,
+		public ChannelSnagToAdd(HhdcContract dceService, Channel channel,
 				String description, HhEndDate startDate, HhEndDate finishDate,
 				boolean isResolved) {
 			this.dceService = dceService;
@@ -313,7 +313,7 @@ public abstract class SnagDateBounded extends Snag {
 			return isResolved;
 		}
 
-		public DceService getService() {
+		public HhdcContract getService() {
 			return dceService;
 		}
 
@@ -338,7 +338,7 @@ public abstract class SnagDateBounded extends Snag {
 	}
 
 	private static class SiteSnagToAdd implements SnagToAdd {
-		private DceService dceService;
+		private HhdcContract dceService;
 
 		private Site site;
 
@@ -352,7 +352,7 @@ public abstract class SnagDateBounded extends Snag {
 
 		private Query query;
 
-		public SiteSnagToAdd(DceService dceService, Site site,
+		public SiteSnagToAdd(HhdcContract dceService, Site site,
 				String description, HhEndDate startDate, HhEndDate finishDate,
 				boolean isResolved) {
 			this.dceService = dceService;
@@ -398,7 +398,7 @@ public abstract class SnagDateBounded extends Snag {
 			return isResolved;
 		}
 
-		public DceService getService() {
+		public HhdcContract getService() {
 			return dceService;
 		}
 

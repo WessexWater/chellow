@@ -101,7 +101,7 @@ public class DcsServices implements Urlable, XmlDescriber {
 		Element contractsElement = (Element) toXml(doc);
 		source.appendChild(contractsElement);
 		contractsElement.appendChild(dcs.toXml(doc));
-		for (DceService contract : (List<DceService>) Hiber
+		for (HhdcContract contract : (List<HhdcContract>) Hiber
 				.session()
 				.createQuery(
 						"from ContractDce contract where contract.dcs = :dcs order by contract.name")

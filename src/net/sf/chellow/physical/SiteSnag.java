@@ -22,7 +22,7 @@
 
 package net.sf.chellow.physical;
 
-import net.sf.chellow.billing.DceService;
+import net.sf.chellow.billing.HhdcContract;
 import net.sf.chellow.billing.Service;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
@@ -52,12 +52,12 @@ public class SiteSnag extends SnagDateBounded {
 	
 	private Site site;
 
-	private DceService dceService;
+	private HhdcContract dceService;
 
 	public SiteSnag() {
 	}
 
-	public SiteSnag(String description, DceService dceService, Site site,
+	public SiteSnag(String description, HhdcContract dceService, Site site,
 			HhEndDate startDate, HhEndDate finishDate) throws HttpException {
 		super(description, startDate, finishDate);
 		this.site = site;
@@ -72,17 +72,17 @@ public class SiteSnag extends SnagDateBounded {
 		this.site = site;
 	}
 
-	public DceService getService() {
+	public HhdcContract getService() {
 		return dceService;
 	}
 
-	public void setService(DceService dceService) {
+	public void setService(HhdcContract dceService) {
 		this.dceService = dceService;
 	}
 
 	@Override
 	public void setService(Service service) {
-		setService((DceService) service);
+		setService((HhdcContract) service);
 	}
 
 	public Element toXml(Document doc) throws InternalException, HttpException {

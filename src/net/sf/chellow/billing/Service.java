@@ -1,6 +1,6 @@
 /*
  
- Copyright 2005 Meniscus Systems Ltd
+ Copyright 2005, 2008 Meniscus Systems Ltd
  
  This file is part of Chellow.
 
@@ -67,6 +67,8 @@ public abstract class Service extends PersistentEntity implements
 		return contract;
 	}
 
+	private Provider provider;
+
 	private int type;
 
 	private String name;
@@ -82,16 +84,15 @@ public abstract class Service extends PersistentEntity implements
 	public Service() {
 	}
 
-	public Service(int type, String name, HhEndDate startDate,
-			String chargeScript) throws InternalException,
-			DesignerException, UserException {
+	public Service(Provider provider, int type, String name,
+			HhEndDate startDate, String chargeScript) throws HttpException {
 		rateScripts = new HashSet<RateScript>();
 		RateScript rateScript = new RateScript(this, startDate, null,
 				chargeScript);
 		rateScripts.add(rateScript);
 		setStartRateScript(rateScript);
 		setFinishRateScript(rateScript);
-		internalUpdate(type, name, chargeScript);
+		internalUpdate(provider, type, name, chargeScript);
 	}
 
 	public int getType() {
@@ -142,13 +143,14 @@ public abstract class Service extends PersistentEntity implements
 		this.rateScripts = rateScripts;
 	}
 
-	protected void internalUpdate(int type, String name, String chargeScript)
-			throws InternalException, UserException {
+	protected void internalUpdate(Provider provider, int type, String name,
+			String chargeScript) throws HttpException {
+		setProvider(provider);
 		setName(name);
 		if (type == TYPE_SERVICE_ONLY) {
 			if (chargeScript.length() > 0) {
-				throw new UserException
-						("If the type is 'Service Only', there can't be a charge script.");
+				throw new UserException(
+						"If the type is 'Service Only', there can't be a charge script.");
 			}
 			chargeScript = null;
 		} else if (type == TYPE_PASS_THROUGH || type == TYPE_CONTRACT) {
@@ -157,7 +159,8 @@ public abstract class Service extends PersistentEntity implements
 						"The chargeScript can only be null if it's 'service only'");
 			}
 		} else {
-			throw new UserException("The service type must be 'service only', 'pass through' or 'contract'");
+			throw new UserException(
+					"The service type must be 'service only', 'pass through' or 'contract'");
 		}
 		setType(type);
 		setChargeScript(chargeScript);
@@ -166,7 +169,7 @@ public abstract class Service extends PersistentEntity implements
 	@SuppressWarnings("unchecked")
 	public void update(int type, String name, String chargeScript)
 			throws HttpException {
-		internalUpdate(type, name, chargeScript);
+		internalUpdate(provider, type, name, chargeScript);
 		updateNotification();
 	}
 
@@ -183,14 +186,13 @@ public abstract class Service extends PersistentEntity implements
 			InternalException, DesignerException {
 		List<RateScript> rateScriptList = new ArrayList<RateScript>(rateScripts);
 		if (rateScriptList.size() < 2) {
-			throw new UserException
-					("You can't delete the last rate script.");
+			throw new UserException("You can't delete the last rate script.");
 		}
 		if (!rateScriptList.get(0).equals(rateScript)
 				&& !rateScriptList.get(rateScriptList.size() - 1).equals(
 						rateScript)) {
-			throw new UserException
-					("You can only delete the first and last rate scripts.");
+			throw new UserException(
+					"You can only delete the first and last rate scripts.");
 		}
 		getRateScripts().remove(rateScript);
 		Hiber.flush();
@@ -207,8 +209,7 @@ public abstract class Service extends PersistentEntity implements
 	}
 
 	@SuppressWarnings("unchecked")
-	void updateNotification(HhEndDate from, HhEndDate to) throws
-			HttpException {
+	void updateNotification(HhEndDate from, HhEndDate to) throws HttpException {
 		if (from == null) {
 			from = getStartDate();
 		}
@@ -237,15 +238,15 @@ public abstract class Service extends PersistentEntity implements
 		Element element = (Element) super.toXml(doc);
 
 		element.setAttribute("name", name);
-		//startRateScript.setLabel("start");
-		//element.appendChild(startRateScript.toXML(doc));
-		//finishRateScript.setLabel("finish");
-		//element.appendChild(finishRateScript.toXML(doc));
+		// startRateScript.setLabel("start");
+		// element.appendChild(startRateScript.toXML(doc));
+		// finishRateScript.setLabel("finish");
+		// element.appendChild(finishRateScript.toXML(doc));
 		if (chargeScript != null) {
-			element.setAttribute("charge-script",
-					chargeScript.replace("\r", "").replace("\t", "    "));
+			element.setAttribute("charge-script", chargeScript
+					.replace("\r", "").replace("\t", "    "));
 		}
-		
+
 		return element;
 	}
 
@@ -287,25 +288,25 @@ public abstract class Service extends PersistentEntity implements
 	public void httpDelete(Invocation inv) throws HttpException {
 	}
 
-	public abstract Provider getProvider();
+	public Provider getProvider() {
+		return provider;
+	}
+
+	void setProvider(Provider provider) {
+		this.provider = provider;
+	}
 
 	public String toString() {
 		return "Contract id " + getId() + " name " + getName();
-	}
-
-	public Batch insertBatch(String reference) {
-		Batch batch = new Batch(this, reference);
-		Hiber.session().save(batch);
-		return batch;
 	}
 
 	public AccountSnags getSnagsAccountInstance() {
 		return new AccountSnags(this);
 	}
 
-	public BillElement billElement(String name, String chargeScript, Account account,
-			HhEndDate from, HhEndDate to) throws HttpException,
-			InternalException {
+	public BillElement billElement(String name, String chargeScript,
+			Account account, HhEndDate from, HhEndDate to)
+			throws HttpException, InternalException {
 		BillElement billElement = null;
 
 		try {
@@ -315,9 +316,8 @@ public abstract class Service extends PersistentEntity implements
 		} catch (ScriptException e) {
 			throw new UserException(e.getMessage());
 		} catch (NoSuchMethodException e) {
-			throw new UserException
-					("For the service " + getUri() + " the script has no such method: "
-							+ e.getMessage());
+			throw new UserException("For the service " + getUri()
+					+ " the script has no such method: " + e.getMessage());
 		} catch (PyException e) {
 			Object obj = e.value.__tojava__(HttpException.class);
 			if (obj instanceof HttpException) {
@@ -343,17 +343,18 @@ public abstract class Service extends PersistentEntity implements
 		}
 		return invocableEngine;
 	}
-	
-	public BillElement billElement(Account account, HhEndDate from,
-			HhEndDate to) throws HttpException, InternalException {
+
+	public BillElement billElement(Account account, HhEndDate from, HhEndDate to)
+			throws HttpException, InternalException {
 		return billElement("total", getChargeScript(), account, from, to);
 	}
 
-	public BillElement billElement(String name, Account account, HhEndDate from,
-			HhEndDate to) throws HttpException, InternalException {
+	public BillElement billElement(String name, Account account,
+			HhEndDate from, HhEndDate to) throws HttpException,
+			InternalException {
 		return billElement(name, getChargeScript(), account, from, to);
 	}
-	
+
 	public RateScript getPreviousRateScript(RateScript script)
 			throws InternalException, HttpException {
 		return (RateScript) Hiber
@@ -378,7 +379,7 @@ public abstract class Service extends PersistentEntity implements
 						rateScript.getFinishDate().getNext().getDate())
 				.uniqueResult();
 	}
-	
+
 	public Invocable engine() throws HttpException, InternalException {
 		return invocableEngine(getChargeScript());
 	}
@@ -395,8 +396,8 @@ public abstract class Service extends PersistentEntity implements
 		if (rateScript.getFinishDate() != null
 				&& startDate.getDate().after(
 						rateScript.getFinishDate().getDate())) {
-			throw new UserException
-					("The start date is after the last rate script.");
+			throw new UserException(
+					"The start date is after the last rate script.");
 		}
 		HhEndDate finishDate = rateScript.getStartDate().getPrevious();
 		for (int i = 0; i < rateScripts.size(); i++) {
@@ -408,12 +409,12 @@ public abstract class Service extends PersistentEntity implements
 									rateScript.getFinishDate().getDate()))) {
 				if (rateScript.getStartDate()
 						.equals(rateScript.getFinishDate())) {
-					throw new UserException
-							("The start date falls on a rate script which is only half an hour in length, and so cannot be subdivided further.");
+					throw new UserException(
+							"The start date falls on a rate script which is only half an hour in length, and so cannot be subdivided further.");
 				}
 				if (startDate.equals(rateScript.getStartDate())) {
-					throw new UserException
-							("The start date is the same as the start date of an existing rate script.");
+					throw new UserException(
+							"The start date is the same as the start date of an existing rate script.");
 				}
 				finishDate = rateScript.getFinishDate();
 				rateScript.setFinishDate(startDate.getPrevious());
@@ -448,10 +449,11 @@ public abstract class Service extends PersistentEntity implements
 				.session()
 				.createQuery(
 						"from RateScript script where script.service = :service and script.startDate.date <= :to and (script.finishDate.date is null or script.finishDate.date >= :from)")
-				.setEntity("service", this).setTimestamp("from", from.getDate())
-				.setTimestamp("to", to.getDate()).list();
+				.setEntity("service", this)
+				.setTimestamp("from", from.getDate()).setTimestamp("to",
+						to.getDate()).list();
 	}
-	
+
 	@SuppressWarnings("unchecked")
 	public RateScript rateScript(HhEndDate date) {
 		return (RateScript) Hiber
@@ -461,8 +463,9 @@ public abstract class Service extends PersistentEntity implements
 				.setEntity("service", this)
 				.setTimestamp("date", date.getDate()).uniqueResult();
 	}
-	
-	public Object callFunction(String functionName, Object[] args) throws HttpException, InternalException {
+
+	public Object callFunction(String functionName, Object[] args)
+			throws HttpException, InternalException {
 		Object result = null;
 		try {
 			result = invocableEngine(getChargeScript()).invokeFunction(
@@ -470,9 +473,8 @@ public abstract class Service extends PersistentEntity implements
 		} catch (ScriptException e) {
 			throw new UserException(e.getMessage());
 		} catch (NoSuchMethodException e) {
-			throw new UserException
-					("The charge script " + getUri() + " has no such method: "
-							+ e.getMessage());
+			throw new UserException("The charge script " + getUri()
+					+ " has no such method: " + e.getMessage());
 		} catch (PyException e) {
 			Object obj = e.value.__tojava__(HttpException.class);
 			if (obj instanceof HttpException) {

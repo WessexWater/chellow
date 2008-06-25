@@ -5,7 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import net.sf.chellow.billing.DceService;
+import net.sf.chellow.billing.HhdcContract;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.HttpException;
@@ -116,7 +116,7 @@ public class SiteGroup {
 			throws InternalException, HttpException {
 		// which sevice?
 		Site site = sites.get(0);
-		DceService service = getDceService(startDate);
+		HhdcContract service = getDceService(startDate);
 		HhEndDate serviceEndDate = service.getFinishRateScript()
 				.getFinishDate();
 		SnagDateBounded
@@ -139,7 +139,7 @@ public class SiteGroup {
 	}
 
 	@SuppressWarnings("unchecked")
-	private DceService getDceService(HhEndDate date) throws HttpException,
+	private HhdcContract getDceService(HhEndDate date) throws HttpException,
 			InternalException {
 		List<Long> serviceIds = (List<Long>) Hiber
 				.session()
@@ -147,7 +147,7 @@ public class SiteGroup {
 						"select distinct mpan.dceService.id from Mpan mpan where mpan.supplyGeneration.supply in (:supplies) and mpan.supplyGeneration.startDate.date <= :date and (mpan.supplyGeneration.finishDate.date is null or mpan.supplyGeneration.finishDate >= :date) order by mpan.dceService.id")
 				.setParameterList("supplies", supplies).setTimestamp("date",
 						date.getDate()).list();
-		return serviceIds.size() > 0 ? DceService.getDceService(serviceIds
+		return serviceIds.size() > 0 ? HhdcContract.getDceService(serviceIds
 				.get(0)) : null;
 	}
 

@@ -1,6 +1,6 @@
 /*
  
- Copyright 2005 Meniscus Systems Ltd
+ Copyright 2005, 2008 Meniscus Systems Ltd
  
  This file is part of Chellow.
 
@@ -41,42 +41,43 @@ import net.sf.chellow.physical.HhEndDate;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.w3c.dom.Node;
 
 @SuppressWarnings("serial")
-public class NonCoreContract extends Service {
-
-	private Government provider;
-
-	public NonCoreContract() {
-		setTypeName("government-service");
+public class NonCoreService extends Service {
+	static public NonCoreService insertNonCoreService(Provider provider, String name, HhEndDate startDate, String chargeScript) throws HttpException {
+		NonCoreService service = new NonCoreService(provider, name, startDate, chargeScript);
+		Hiber.session().save(service);
+		Hiber.session().flush();
+		return service;
 	}
 
-	public NonCoreContract(String name, HhEndDate startDate,
-			String chargeScript, Government provider) throws HttpException,
-			InternalException, DesignerException {
-		super(TYPE_CONTRACT, name, startDate, chargeScript);
-		setProvider(provider);
+	public NonCoreService() {
 	}
 
-	public Government getProvider() {
-		return provider;
-	}
-
-	void setProvider(Government provider) {
-		this.provider = provider;
+	public NonCoreService(Provider provider, String name, HhEndDate startDate,
+			String chargeScript) throws HttpException {
+		super(provider, TYPE_CONTRACT, name, startDate, chargeScript);
 	}
 
 	@SuppressWarnings("unchecked")
-	public void update(String name, String chargeScript) throws HttpException,
-			InternalException, DesignerException {
+	public void update(Provider provider, String name, String chargeScript) throws HttpException {
 		super.update(Service.TYPE_PASS_THROUGH, name, chargeScript);
 		Hiber.flush();
+	}
+	
+	protected void internalUpdate(Provider provider, int type, String name, String chargeScript)
+	throws HttpException {
+		if (!provider.getRole().getCode().equals("Z")) {
+			throw new InternalException("The provider must be of type Z for a non-core service.");
+		}
+		super.internalUpdate(provider, type, name, chargeScript);
 	}
 
 	public boolean equals(Object obj) {
 		boolean isEqual = false;
-		if (obj instanceof NonCoreContract) {
-			NonCoreContract contract = (NonCoreContract) obj;
+		if (obj instanceof NonCoreService) {
+			NonCoreService contract = (NonCoreService) obj;
 			isEqual = contract.getId().equals(getId());
 		}
 		return isEqual;
@@ -154,5 +155,11 @@ public class NonCoreContract extends Service {
 	public String toString() {
 		return "Service id " + getId() + " " + getProvider() + " name "
 				+ getName();
+	}
+	
+	public Element toXml(Document doc) throws InternalException, HttpException {
+		setTypeName("non-core-service");
+		Element element = (Element) super.toXml(doc);
+		return element;
 	}
 }

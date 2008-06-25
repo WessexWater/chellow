@@ -6,7 +6,7 @@ import java.util.logging.Level;
 
 import net.sf.chellow.billing.Account;
 import net.sf.chellow.billing.Dce;
-import net.sf.chellow.billing.DceService;
+import net.sf.chellow.billing.HhdcContract;
 import net.sf.chellow.billing.Supplier;
 import net.sf.chellow.billing.SupplierService;
 import net.sf.chellow.data08.MpanCoreRaw;
@@ -33,6 +33,7 @@ import net.sf.chellow.physical.Mpan;
 import net.sf.chellow.physical.MpanCore;
 import net.sf.chellow.physical.MpanTop;
 import net.sf.chellow.physical.Organization;
+import net.sf.chellow.physical.Participant;
 import net.sf.chellow.physical.Site;
 import net.sf.chellow.physical.SiteCode;
 import net.sf.chellow.physical.SourceCode;
@@ -212,7 +213,7 @@ public class HeaderImportProcess extends Thread implements Urlable,
 						importMpanRaw = new MpanRaw("import", importMpanStr);
 					}
 					Integer importAgreedSupplyCapacity = null;
-					DceService importContractDce = null;
+					HhdcContract importContractDce = null;
 					Account importAccountSupplier = null;
 					SupplierService importContractSupplier = null;
 					if (importMpanRaw != null) {
@@ -222,15 +223,15 @@ public class HeaderImportProcess extends Thread implements Urlable,
 								importAgreedSupplyCapacityStr));
 						importAgreedSupplyCapacity = new Integer(
 								importAgreedSupplyCapacityStr);
-						String importDceStr = values[9];
+						String importDceCode = values[9];
 						csvElement.appendChild(getField("Import DCE",
-								importDceStr));
+								importDceCode));
 						String importContractDceStr = values[10];
 						csvElement.appendChild(getField("Import DCE Contract",
 								importContractDceStr));
-						Dce importDce = Dce.findDce(importDceStr);
+						Participant importDce = Participant.getParticipant(importDceCode);
 						importContractDce = importDce == null ? null
-								: importDce.getService(importContractDceStr);
+								: organization.getHhdcContract(importDce, importContractDceStr);
 						String importSupplierName = values[11];
 						csvElement.appendChild(getField("Import supplier name",
 								importSupplierName));
@@ -249,7 +250,7 @@ public class HeaderImportProcess extends Thread implements Urlable,
 						importContractSupplier = importSupplier
 								.getService(importContractSupplierName);
 					}
-					DceService exportContractDce = null;
+					HhdcContract exportContractDce = null;
 					Account exportAccountSupplier = null;
 					SupplierService exportContractSupplier = null;
 					Integer exportAgreedSupplyCapacity = null;
@@ -380,7 +381,7 @@ public class HeaderImportProcess extends Thread implements Urlable,
 							importAgreedSupplyCapacityStr));
 					Integer importAgreedSupplyCapacity = null;
 					Mpan existingImportMpan = supplyGeneration.getImportMpan();
-					DceService importContractDce = null;
+					HhdcContract importContractDce = null;
 					Account importAccountSupplier = null;
 					SupplierService importContractSupplier = null;
 					if (importMpanStr.equals(NO_CHANGE)) {
@@ -542,7 +543,7 @@ public class HeaderImportProcess extends Thread implements Urlable,
 						exportMpanCore = exportMpanRaw
 								.getMpanCore(organization);
 					}
-					DceService exportContractDce = null;
+					HhdcContract exportContractDce = null;
 					Account exportAccountSupplier = null;
 					SupplierService exportContractSupplier = null;
 					if (exportMpanTop != null) {

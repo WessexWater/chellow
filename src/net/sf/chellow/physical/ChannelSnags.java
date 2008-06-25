@@ -2,7 +2,7 @@ package net.sf.chellow.physical;
 
 import java.util.List;
 
-import net.sf.chellow.billing.DceService;
+import net.sf.chellow.billing.HhdcContract;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.InternalException;
@@ -34,9 +34,9 @@ public class ChannelSnags implements Urlable, XmlDescriber {
 		}
 	}
 
-	DceService dceService;
+	HhdcContract dceService;
 
-	public ChannelSnags(DceService dceService) {
+	public ChannelSnags(HhdcContract dceService) {
 		this.dceService = dceService;
 	}
 

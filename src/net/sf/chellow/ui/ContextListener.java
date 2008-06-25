@@ -19,7 +19,6 @@ import javax.servlet.ServletContextListener;
 import javax.sql.DataSource;
 
 import net.sf.chellow.billing.DsoService;
-import net.sf.chellow.billing.Government;
 import net.sf.chellow.billing.RateScript;
 import net.sf.chellow.hhimport.stark.StarkAutomaticHhDataImporters;
 import net.sf.chellow.monad.Debug;
@@ -279,7 +278,6 @@ public class ContextListener implements ServletContextListener {
 		}
 		DatabaseVersion.setDatabaseVersion(11);
 		Hiber.close();
-		Government.insertGovernment();
 		Participant.loadFromCsv();
 		Hiber.close();
 		MarketRole.loadFromCsv();
@@ -360,7 +358,7 @@ public class ContextListener implements ServletContextListener {
 		DatabaseVersion.setDatabaseVersion(11);
 		Hiber.close();
 		try {
-			Government.insertGovernment();
+			//Government.insertGovernment();
 			insertDso("Eastern", "10");
 			insertDso("Scottish Hydro", "17");
 			insertDso("East Midlands", "11");

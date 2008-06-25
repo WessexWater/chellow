@@ -33,7 +33,7 @@ import java.util.Map;
 import java.util.Set;
 
 import net.sf.chellow.billing.Account;
-import net.sf.chellow.billing.DceService;
+import net.sf.chellow.billing.HhdcContract;
 import net.sf.chellow.billing.SupplierService;
 import net.sf.chellow.data08.Data;
 import net.sf.chellow.data08.MpanRaw;
@@ -133,13 +133,13 @@ public class Site extends PersistentEntity implements Urlable {
 	}
 
 	public Supply insertSupply(String supplyName, String meterSerialNumber,
-			MpanRaw importMpanRaw, DceService importContractDce,
+			MpanRaw importMpanRaw, HhdcContract importContractDce,
 			Account importAccountSupplier,
 			SupplierService importContractSupplier,
 			boolean importHasDceImportKwh, boolean importHasDceImportKvarh,
 			boolean importHasDceExportKwh, boolean importHasDceExportKvarh,
 			Integer importAgreedSupplyCapacity, MpanRaw exportMpanRaw,
-			DceService exportContractDce, Account exportAccountSupplier,
+			HhdcContract exportContractDce, Account exportAccountSupplier,
 			SupplierService exportContractSupplier,
 			boolean exportHasDceImportKwh, boolean exportHasDceImportKvarh,
 			boolean exportHasDceExportKwh, boolean exportHasDceExportKvarh,

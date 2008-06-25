@@ -69,25 +69,24 @@ public class Batch extends PersistentEntity implements Urlable {
 		}
 	}
 
-	private Service service;
+	private Contract contract;
 
 	private String reference;
 
 	public Batch() {
 	}
 
-	public Batch(Service service, String reference) {
-		this();
-		setService(service);
+	public Batch(Contract contract, String reference) {
+		setContract(contract);
 		update(reference);
 	}
 
-	public Service getService() {
-		return service;
+	public Contract getContract() {
+		return contract;
 	}
 
-	public void setService(Service service) {
-		this.service = service;
+	public void setContract(Contract contract) {
+		this.contract = contract;
 	}
 
 	public String getReference() {
@@ -120,7 +119,7 @@ public class Batch extends PersistentEntity implements Urlable {
 				throw e;
 			}
 			Hiber.commit();
-			inv.sendSeeOther(service.batchesInstance().getUri());
+			inv.sendSeeOther(contract.batchesInstance().getUri());
 		} else {
 			String reference = inv.getString("reference");
 			if (!inv.isValid()) {
@@ -157,7 +156,7 @@ public class Batch extends PersistentEntity implements Urlable {
 	}
 
 	public MonadUri getUri() throws InternalException, HttpException {
-		return service.batchesInstance().getUri().resolve(getUriId()).append(
+		return contract.batchesInstance().getUri().resolve(getUriId()).append(
 				"/");
 	}
 
@@ -192,8 +191,7 @@ public class Batch extends PersistentEntity implements Urlable {
 		Invoice invoice = new Invoice(this, rawInvoice);
 		Hiber.session().save(invoice);
 		Hiber.flush();
-		Organization organization = ((Supplier) getService().getProvider())
-				.getOrganization();
+		Organization organization = getContract().getOrganization();
 		for (MpanRaw rawMpan : rawInvoice.getMpans()) {
 			MpanCore mpanCore = organization.getMpanCore(rawMpan
 					.getMpanCoreRaw());
@@ -220,7 +218,7 @@ public class Batch extends PersistentEntity implements Urlable {
 			invoice.insertInvoiceMpan(candidateMpans.get(0));
 		}
 		Hiber.flush();
-		Account account = getService().getProvider().getAccount(
+		Account account = organization.getAccount(getContract().getProvider(),
 				rawInvoice.getAccountText());
 		account.attach(invoice);
 		return invoice;

@@ -1,6 +1,6 @@
 /*
  
- Copyright 2005 Meniscus Systems Ltd
+ Copyright 2005, 2008 Meniscus Systems Ltd
  
  This file is part of Chellow.
 
@@ -41,14 +41,12 @@ import net.sf.chellow.monad.types.MonadDate;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
 import net.sf.chellow.physical.HhEndDate;
-import net.sf.chellow.physical.Organization;
-
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
 @SuppressWarnings("serial")
-public class NonCoreContracts implements Urlable, XmlDescriber {
+public class NonCoreServices implements Urlable, XmlDescriber {
 	public static final UriPathElement URI_ID;
 
 	static {
@@ -58,11 +56,8 @@ public class NonCoreContracts implements Urlable, XmlDescriber {
 			throw new RuntimeException(e);
 		}
 	}
-	
-	private Organization organization;
 
-	public NonCoreContracts(Organization organization) {
-		this.organization = organization;
+	public NonCoreServices() {
 	}
 
 	public UriPathElement getUrlId() {
@@ -70,38 +65,36 @@ public class NonCoreContracts implements Urlable, XmlDescriber {
 	}
 
 	public MonadUri getUri() throws InternalException, HttpException {
-		return organization.getUri().resolve(getUrlId()).append("/");
+		return new MonadUri("/").resolve(getUrlId()).append("/");
 	}
 
 	public void httpPost(Invocation inv) throws HttpException {
-		String providerCode = inv.getString("provider-id");
+		String participantCode = inv.getString("participant-code");
+		String roleCode = inv.getString("role-code");
 		String name = inv.getString("name");
 		Date startDate = inv.getDate("start-date");
 		String chargeScript = inv.getString("charge-script");
 		if (!inv.isValid()) {
 			throw new UserException(document());
 		}
-		Provider provider = Provider.getProvider(providerCode);
-		NonCoreContract service = organization.insertNonCoreService(provider, name, HhEndDate
+		Provider provider = Provider.getProvider(participantCode, roleCode);
+		NonCoreService service = NonCoreService.insertNonCoreService(provider, name, HhEndDate
 				.roundDown(startDate), chargeScript);
 		Hiber.commit();
 		inv.sendCreated(document(), service.getUri());
 	}
 
 	@SuppressWarnings("unchecked")
-	private Document document() throws InternalException, HttpException,
-			DesignerException {
+	private Document document() throws HttpException {
 		Document doc = MonadUtils.newSourceDocument();
 		Element source = doc.getDocumentElement();
 		Element servicesElement = (Element) toXml(doc);
 		source.appendChild(servicesElement);
-		servicesElement.appendChild(government.toXml(doc));
-		for (NonCoreContract service : (List<NonCoreContract>) Hiber
+		for (NonCoreService service : (List<NonCoreService>) Hiber
 				.session()
 				.createQuery(
-						"from GovernmentService service where service.provider = :government order by service.finishRateScript.finishDate.date desc")
-				.setEntity("government", government).list()) {
-			servicesElement.appendChild(service.toXml(doc));
+						"from NonCoreService service where order by service.finishRateScript.finishDate.date desc, service.provider.code").list()) {
+			servicesElement.appendChild(service.toXml(doc, new XmlTree("provider")));
 		}
 		source.appendChild(MonadDate.getMonthsXml(doc));
 		source.appendChild(MonadDate.getDaysXml(doc));
@@ -114,13 +107,12 @@ public class NonCoreContracts implements Urlable, XmlDescriber {
 		inv.sendOk(document());
 	}
 
-	public NonCoreContract getChild(UriPathElement uriId) throws HttpException,
+	public NonCoreService getChild(UriPathElement uriId) throws HttpException,
 			InternalException {
-		NonCoreContract service = (NonCoreContract) Hiber
+		NonCoreService service = (NonCoreService) Hiber
 				.session()
 				.createQuery(
-						"from GovernmentService service where service.provider = :government and service.id = :serviceId")
-				.setEntity("government", government).setLong("serviceId",
+						"from NonCoreService service where service.id = :serviceId").setLong("serviceId",
 						Long.parseLong(uriId.getString())).uniqueResult();
 		if (service == null) {
 			throw new NotFoundException();
