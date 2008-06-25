@@ -34,7 +34,7 @@ import net.sf.chellow.billing.Account;
 import net.sf.chellow.billing.HhdcContract;
 import net.sf.chellow.billing.Invoice;
 import net.sf.chellow.billing.Service;
-import net.sf.chellow.billing.SupplierService;
+import net.sf.chellow.billing.SupplierContract;
 import net.sf.chellow.data08.MpanCoreRaw;
 import net.sf.chellow.data08.MpanRaw;
 import net.sf.chellow.monad.DeployerException;
@@ -309,9 +309,9 @@ public class Supply extends PersistentEntity implements Urlable {
 			newSupplyGeneration = addGeneration(existingSiteMap, existingMeter,
 					null, null, null, null, null, false, false, false, false,
 					null, existingExportMpan.getMpanTop(), existingExportMpan
-							.getMpanCore(), existingExportMpan.getDceService(),
+							.getMpanCore(), existingExportMpan.getHhdceContract(),
 					existingExportMpan.getSupplierAccount(), existingExportMpan
-							.getSupplierService(), existingExportMpan
+							.getSupplierContract(), existingExportMpan
 							.getHasImportKwh(), existingExportMpan
 							.getHasImportKvarh(), existingExportMpan
 							.getHasExportKwh(), existingExportMpan
@@ -320,9 +320,9 @@ public class Supply extends PersistentEntity implements Urlable {
 		} else if (existingExportMpan == null) {
 			newSupplyGeneration = addGeneration(existingSiteMap, existingMeter,
 					existingImportMpan.getMpanTop(), existingImportMpan
-							.getMpanCore(), existingImportMpan.getDceService(),
+							.getMpanCore(), existingImportMpan.getHhdceContract(),
 					existingImportMpan.getSupplierAccount(), existingImportMpan
-							.getSupplierService(), existingImportMpan
+							.getSupplierContract(), existingImportMpan
 							.getHasImportKwh(), existingImportMpan
 							.getHasImportKvarh(), existingImportMpan
 							.getHasExportKwh(), existingImportMpan
@@ -332,18 +332,18 @@ public class Supply extends PersistentEntity implements Urlable {
 		} else {
 			newSupplyGeneration = addGeneration(existingSiteMap, existingMeter,
 					existingImportMpan.getMpanTop(), existingImportMpan
-							.getMpanCore(), existingImportMpan.getDceService(),
+							.getMpanCore(), existingImportMpan.getHhdceContract(),
 					existingImportMpan.getSupplierAccount(), existingImportMpan
-							.getSupplierService(), existingImportMpan
+							.getSupplierContract(), existingImportMpan
 							.getHasImportKwh(), existingImportMpan
 							.getHasImportKvarh(), existingImportMpan
 							.getHasExportKwh(), existingImportMpan
 							.getHasExportKvarh(), existingImportMpan
 							.getAgreedSupplyCapacity(), existingExportMpan
 							.getMpanTop(), existingExportMpan.getMpanCore(),
-					existingExportMpan.getDceService(), existingExportMpan
+					existingExportMpan.getHhdceContract(), existingExportMpan
 							.getSupplierAccount(), existingExportMpan
-							.getSupplierService(), existingExportMpan
+							.getSupplierContract(), existingExportMpan
 							.getHasImportKwh(), existingExportMpan
 							.getHasImportKvarh(), existingExportMpan
 							.getHasExportKwh(), existingExportMpan
@@ -356,12 +356,12 @@ public class Supply extends PersistentEntity implements Urlable {
 	public SupplyGeneration addGeneration(Map<Site, Boolean> existingSiteMap,
 			Meter meter, MpanRaw importMpanRaw, HhdcContract importContractDce,
 			Account importAccountSupplier,
-			SupplierService importContractSupplier, boolean importHasImportKwh,
+			SupplierContract importContractSupplier, boolean importHasImportKwh,
 			boolean importHasImportKvarh, boolean importHasExportKwh,
 			boolean importHasExportKvarh, Integer importAgreedSupplyCapacity,
 			MpanRaw exportMpanRaw, HhdcContract exportContractDce,
 			Account exportAccountSupplier,
-			SupplierService exportContractSupplier, boolean exportHasImportKwh,
+			SupplierContract exportContractSupplier, boolean exportHasImportKwh,
 			boolean exportHasImportKvarh, boolean exportHasExportKwh,
 			boolean exportHasExportKvarh, Integer exportAgreedSupplyCapacity,
 			HhEndDate finishDate) throws InternalException, HttpException,
@@ -390,12 +390,12 @@ public class Supply extends PersistentEntity implements Urlable {
 	public SupplyGeneration addGeneration(Map<Site, Boolean> siteMap,
 			Meter meter, MpanTop importMpanTop, MpanCore importMpanCore,
 			HhdcContract importContractDce, Account importAccountSupplier,
-			SupplierService importContractSupplier, boolean importHasImportKwh,
+			SupplierContract importContractSupplier, boolean importHasImportKwh,
 			boolean importHasImportKvarh, boolean importHasExportKwh,
 			boolean importHasExportKvarh, Integer importAgreedSupplyCapacity,
 			MpanTop exportMpanTop, MpanCore exportMpanCore,
 			HhdcContract exportContractDce, Account exportAccountSupplier,
-			SupplierService exportContractSupplier, boolean exportHasImportKwh,
+			SupplierContract exportContractSupplier, boolean exportHasImportKwh,
 			boolean exportHasImportKvarh, boolean exportHasExportKwh,
 			boolean exportHasExportKvarh, Integer exportAgreedSupplyCapacity,
 			HhEndDate finishDate) throws InternalException, HttpException,

@@ -21,28 +21,34 @@ import net.sf.chellow.monad.types.UriPathElement;
 import com.Ostermiller.util.CSVParser;
 
 public class MarketRole extends PersistentEntity {
+	static public final char SUPPLIER = 'X';
+	static public final char HHDC = 'C';
+	static public final char NON_CORE_ROLE = 'Z';
+
 	static public MarketRole getMarketRole(Long id) throws HttpException {
-		MarketRole marketRole = (MarketRole) Hiber.session().get(MarketRole.class, id);
+		MarketRole marketRole = (MarketRole) Hiber.session().get(
+				MarketRole.class, id);
 		if (marketRole == null) {
 			throw new NotFoundException();
 		}
 		return marketRole;
 	}
-	
-	static public MarketRole getMarketRole(String code) throws HttpException {
-		MarketRole marketRole = (MarketRole) Hiber.session().createQuery("from MarketRole role where role.code = :code").setString("code", code).uniqueResult();
+
+	static public MarketRole getMarketRole(char code) throws HttpException {
+		MarketRole marketRole = (MarketRole) Hiber.session().createQuery(
+				"from MarketRole role where role.code = :code").setCharacter(
+				"code", code).uniqueResult();
 		if (marketRole == null) {
 			throw new NotFoundException();
 		}
 		return marketRole;
 	}
-	
+
 	static public void loadFromCsv() throws InternalException, UserException {
 		try {
 			ClassLoader classLoader = Participant.class.getClassLoader();
 			CSVParser parser = new CSVParser(new InputStreamReader(classLoader
-					.getResource(
-							"net/sf/chellow/physical/MarketRole.csv")
+					.getResource("net/sf/chellow/physical/MarketRole.csv")
 					.openStream(), "UTF-8"));
 			parser.setCommentStart("#;!");
 			parser.setEscapes("nrtf", "\n\r\t\f");
@@ -56,7 +62,7 @@ public class MarketRole extends PersistentEntity {
 			}
 			for (String[] values = parser.getLine(); values != null; values = parser
 					.getLine()) {
-				insertMarketRole(values[0], values[1]);
+				insertMarketRole(values[0].charAt(0), values[1]);
 			}
 		} catch (UnsupportedEncodingException e) {
 			throw new InternalException(e);
@@ -65,30 +71,30 @@ public class MarketRole extends PersistentEntity {
 		}
 	}
 
-	static private MarketRole insertMarketRole(String code, String description) {
+	static private MarketRole insertMarketRole(char code, String description) {
 		MarketRole role = new MarketRole(code, description);
 		Hiber.session().save(role);
 		Hiber.flush();
 		return role;
 	}
-	
-	private String code;
+
+	private char code;
 	private String description;
 
 	public MarketRole() {
 
 	}
 
-	public MarketRole(String code, String description) {
+	public MarketRole(char code, String description) {
 		this.code = code;
 		this.description = description;
 	}
 
-	public String getCode() {
+	public char getCode() {
 		return code;
 	}
 
-	public void setCode(String code) {
+	public void setCode(char code) {
 		this.code = code;
 	}
 
@@ -136,7 +142,7 @@ public class MarketRole extends PersistentEntity {
 		setTypeName("market-role");
 		Element element = (Element) super.toXml(doc);
 
-		element.setAttribute("code", code);
+		element.setAttribute("code", String.valueOf(code));
 		element.setAttribute("description", description);
 		return element;
 	}

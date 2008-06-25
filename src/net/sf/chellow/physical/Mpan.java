@@ -1,6 +1,6 @@
 /*
  
- Copyright 2005 Meniscus Systems Ltd
+ Copyright 2005, 2008 Meniscus Systems Ltd
  
  This file is part of Chellow.
 
@@ -26,9 +26,8 @@ import java.util.Set;
 
 import net.sf.chellow.billing.Account;
 import net.sf.chellow.billing.HhdcContract;
-import net.sf.chellow.billing.DcsService;
 import net.sf.chellow.billing.MopService;
-import net.sf.chellow.billing.SupplierService;
+import net.sf.chellow.billing.SupplierContract;
 import net.sf.chellow.data08.MpanRaw;
 import net.sf.chellow.monad.DeployerException;
 import net.sf.chellow.monad.DesignerException;
@@ -65,11 +64,11 @@ public class Mpan extends PersistentEntity {
 
 	private MpanCore mpanCore;
 
-	private HhdcContract dceService;
+	private HhdcContract hhdceContract;
 
-	private Account dceAccount;
+	private Account hhdceAccount;
 
-	private SupplierService supplierService;
+	private SupplierContract supplierContract;
 
 	private Account supplierAccount;
 
@@ -77,9 +76,9 @@ public class Mpan extends PersistentEntity {
 
 	private Account mopAccount;
 
-	private DcsService dcsService;
+	private HhdcContract hhdcsContract;
 
-	private Account dcsAccount;
+	private Account hhdcsAccount;
 
 	private boolean hasImportKwh;
 
@@ -95,15 +94,14 @@ public class Mpan extends PersistentEntity {
 	}
 
 	Mpan(SupplyGeneration supplyGeneration, MpanTop mpanTop,
-			MpanCore mpanCore, HhdcContract dceService, Account supplierAccount,
-			SupplierService supplierService, boolean hasImportKwh,
+			MpanCore mpanCore, HhdcContract hhdceContract, Account supplierAccount,
+			SupplierContract supplierContract, boolean hasImportKwh,
 			boolean hasImportKvarh, boolean hasExportKwh,
 			boolean hasExportKvarh, int agreedSupplyCapacity)
-			throws InternalException, HttpException {
-		this();
+			throws HttpException {
 		this.supplyGeneration = supplyGeneration;
 		update(mpanTop, mpanCore,
-				dceService, supplierAccount, supplierService, hasImportKwh,
+				hhdceContract, supplierAccount, supplierContract, hasImportKwh,
 				hasImportKvarh, hasExportKwh, hasExportKvarh,
 				agreedSupplyCapacity);
 	}
@@ -148,44 +146,44 @@ public class Mpan extends PersistentEntity {
 		this.mopAccount = mopAccount;
 	}
 
-	public HhdcContract getDceService() {
-		return dceService;
+	public HhdcContract getHhdceContract() {
+		return hhdceContract;
 	}
 
-	void setDceService(HhdcContract dceService) {
-		this.dceService = dceService;
+	void setDceService(HhdcContract hhdceContract) {
+		this.hhdceContract = hhdceContract;
 	}
 
 	public Account getDceAccount() {
-		return dceAccount;
+		return hhdceAccount;
 	}
 
 	void setDceAccount(Account dceAccount) {
-		this.dceAccount = dceAccount;
+		this.hhdceAccount = dceAccount;
 	}
 
-	public DcsService getDcsService() {
-		return dcsService;
+	public HhdcContract getHhdcsContract() {
+		return hhdcsContract;
 	}
 
-	void setDcsService(DcsService dcsService) {
-		this.dcsService = dcsService;
+	void setHhdcsContract(HhdcContract hhdcsContract) {
+		this.hhdcsContract = hhdcsContract;
 	}
 
 	public Account getDcsAccount() {
-		return dcsAccount;
+		return hhdcsAccount;
 	}
 
-	void setDcsAccount(Account dcsAccount) {
-		this.dcsAccount = dcsAccount;
+	void setHhdcsAccount(Account hhdcsAccount) {
+		this.hhdcsAccount = hhdcsAccount;
 	}
 
-	public SupplierService getSupplierService() {
-		return supplierService;
+	public SupplierContract getSupplierContract() {
+		return supplierContract;
 	}
 
-	void setSupplierService(SupplierService supplierService) {
-		this.supplierService = supplierService;
+	void setSupplierContract(SupplierContract supplierContract) {
+		this.supplierContract = supplierContract;
 	}
 
 	public Account getSupplierAccount() {
@@ -237,11 +235,11 @@ public class Mpan extends PersistentEntity {
 	}
 
 	void update(MpanTop mpanTop, MpanCore mpanCore,
-			HhdcContract dceService, Account supplierAccount,
-			SupplierService supplierService, boolean hasImportKwh,
+			HhdcContract hhdceContract, Account supplierAccount,
+			SupplierContract supplierContract, boolean hasImportKwh,
 			boolean hasImportKvarh, boolean hasExportKwh,
 			boolean hasExportKvarh, int agreedSupplyCapacity)
-			throws InternalException, HttpException {
+			throws HttpException {
 		if (!mpanTop.getDso().equals(mpanCore.getDso())) {
 			throw new UserException
 					("The MPAN top line DSO doesn't match the MPAN core DSO.");
@@ -252,7 +250,7 @@ public class Mpan extends PersistentEntity {
 			throw new UserException
 					("You can't change an import mpan into an export one, and vice versa.");
 		}
-		if (dceService == null) {
+		if (hhdceContract == null) {
 			hasImportKwh = false;
 			hasImportKvarh = false;
 			hasExportKwh = false;
@@ -284,12 +282,12 @@ public class Mpan extends PersistentEntity {
 			throw new InternalException("The mpan core can't be null.");
 		}
 		setMpanCore(mpanCore);
-		if (dceService != null
+		if (hhdceContract != null
 				&& (!hasImportKwh && !hasImportKvarh && !hasExportKwh && !hasExportKvarh)) {
 			throw new UserException
 					("If there's a DCE contract, surely there must be some data to collect?");
 		}
-		setDceService(dceService);
+		setDceService(hhdceContract);
 		if (supplierAccount == null) {
 			throw new UserException
 					("An MPAN must have a supplier account.");
@@ -298,14 +296,14 @@ public class Mpan extends PersistentEntity {
 				.getSiteSupplyGenerations();
 		if (siteSupplyGenerations != null
 				&& !siteSupplyGenerations.isEmpty()
-				&& siteSupplyGenerations.iterator().next().getSite()
-						.getOrganization().findSupplier(
-								supplierAccount.getProvider().getId()) == null) {
+				&& !siteSupplyGenerations.iterator().next().getSite()
+						.getOrganization().equals(
+								supplierAccount.getOrganization())) {
 			throw new UserException
 					("The supplier account must be attached to the same organization as the MPAN.");
 		}
 		setSupplierAccount(supplierAccount);
-		setSupplierService(supplierService);
+		setSupplierContract(supplierContract);
 		setHasImportKwh(hasImportKwh);
 		setHasImportKvarh(hasImportKvarh);
 		setHasExportKwh(hasExportKwh);
@@ -370,33 +368,33 @@ public class Mpan extends PersistentEntity {
 		}
 	}
 
-	public HhdcContract getDceService(boolean isImport, boolean isKwh) {
-		HhdcContract dceService = null;
+	public HhdcContract getHhdceContract(boolean isImport, boolean isKwh) {
+		HhdcContract hhdceContract = null;
 		if (isImport) {
 			if (isKwh) {
 				if (hasImportKwh) {
-					dceService = getDceService();
+					hhdceContract = getHhdceContract();
 				}
 			} else {
 				if (hasImportKvarh) {
-					dceService = getDceService();
+					hhdceContract = getHhdceContract();
 				}
 			}
 		} else {
 			if (isKwh) {
 				if (hasExportKwh) {
-					dceService = getDceService();
+					hhdceContract = getHhdceContract();
 				}
 			} else {
 				if (hasExportKvarh) {
-					dceService = getDceService();
+					hhdceContract = getHhdceContract();
 				}
 			}
 		}
-		return dceService;
+		return hhdceContract;
 	}
 
-	public MpanRaw getMpanRaw() throws InternalException, HttpException {
+	public MpanRaw getMpanRaw() throws HttpException {
 		return new MpanRaw(getMpanTop().getProfileClass().getCode(), getMpanTop().getMeterTimeswitch()
 				.getCode(), getMpanTop().getLlf().getCode(), getMpanCore().getCore());
 	}

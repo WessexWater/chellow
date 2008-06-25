@@ -41,46 +41,37 @@ import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
 import net.sf.chellow.physical.HhEndDate;
 import net.sf.chellow.physical.Mpan;
+import net.sf.chellow.physical.Organization;
 import net.sf.chellow.physical.Snag;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 @SuppressWarnings("serial")
-public class SupplierService extends Service {
-	public static SupplierService getSupplierService(Long id)
+public class SupplierContract extends Contract {
+	public static SupplierContract getSupplierService(Long id)
 			throws HttpException, InternalException {
-		SupplierService service = findSupplierService(id);
+		SupplierContract service = findSupplierService(id);
 		if (service == null) {
 			throw new UserException("There isn't a supplier service with that id.");
 		}
 		return service;
 	}
 
-	public static SupplierService findSupplierService(Long id) {
-		return (SupplierService) Hiber.session().get(SupplierService.class, id);
+	public static SupplierContract findSupplierService(Long id) {
+		return (SupplierContract) Hiber.session().get(SupplierContract.class, id);
 	}
 
 	private Supplier provider;
 
-	public SupplierService() {
-		setTypeName("supplier-service");
+	public SupplierContract() {
 	}
 
-	public SupplierService(String name, HhEndDate startDate,
-			String chargeScript, Supplier supplier) throws HttpException,
-			InternalException, DesignerException {
-		super(TYPE_CONTRACT, name, startDate, chargeScript);
-		setProvider(supplier);
+	public SupplierContract(Provider supplier, Organization organization, String name, HhEndDate startDate,
+			String chargeScript) throws HttpException {
+		super(supplier, organization, name, startDate, chargeScript);
 	}
 
-	public Supplier getProvider() {
-		return provider;
-	}
-
-	void setProvider(Supplier provider) {
-		this.provider = provider;
-	}
 
 	public void update(String name, String chargeScript) throws HttpException,
 			InternalException, DesignerException {
@@ -89,8 +80,8 @@ public class SupplierService extends Service {
 
 	public boolean equals(Object obj) {
 		boolean isEqual = false;
-		if (obj instanceof SupplierService) {
-			SupplierService contract = (SupplierService) obj;
+		if (obj instanceof SupplierContract) {
+			SupplierContract contract = (SupplierContract) obj;
 			isEqual = contract.getId().equals(getId());
 		}
 		return isEqual;
@@ -173,7 +164,7 @@ public class SupplierService extends Service {
 		inv.sendOk(document());
 	}
 
-	public int compareTo(SupplierService arg0) {
+	public int compareTo(SupplierContract arg0) {
 		return 0;
 	}
 
@@ -219,5 +210,11 @@ public class SupplierService extends Service {
 	public String toString() {
 		return "Contract id " + getId() + " " + getProvider() + " name "
 				+ getName();
+	}
+	
+	public Element toXml(Document doc) throws HttpException {
+		setTypeName("supplier-contract");
+		Element element = super.toXml(doc);
+		return element;
 	}
 }

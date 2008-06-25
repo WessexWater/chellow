@@ -34,7 +34,7 @@ import net.sf.chellow.billing.HhdcContract;
 import net.sf.chellow.billing.Invoice;
 import net.sf.chellow.billing.InvoiceMpan;
 import net.sf.chellow.billing.Supplier;
-import net.sf.chellow.billing.SupplierService;
+import net.sf.chellow.billing.SupplierContract;
 import net.sf.chellow.monad.DeployerException;
 import net.sf.chellow.monad.DesignerException;
 import net.sf.chellow.monad.Hiber;
@@ -219,12 +219,12 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 	public void addOrUpdateMpans(MpanTop importMpanTop,
 			MpanCore importMpanCore, HhdcContract importContractDce,
 			Account importAccountSupplier,
-			SupplierService importContractSupplier, boolean importHasImportKwh,
+			SupplierContract importContractSupplier, boolean importHasImportKwh,
 			boolean importHasImportKvarh, boolean importHasExportKwh,
 			boolean importHasExportKvarh, Integer importAgreedSupplyCapacity,
 			MpanTop exportMpanTop, MpanCore exportMpanCore,
 			HhdcContract exportContractDce, Account exportAccountSupplier,
-			SupplierService exportContractSupplier, boolean exportHasImportKwh,
+			SupplierContract exportContractSupplier, boolean exportHasImportKwh,
 			boolean exportHasImportKvarh, boolean exportHasExportKwh,
 			boolean exportHasExportKvarh, Integer exportAgreedSupplyCapacity)
 			throws InternalException, HttpException, DesignerException {
@@ -365,10 +365,10 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 	public HhdcContract getDceService(boolean isImport, boolean isKwh) {
 		HhdcContract dceService = null;
 		if (importMpan != null) {
-			dceService = importMpan.getDceService(isImport, isKwh);
+			dceService = importMpan.getHhdceContract(isImport, isKwh);
 		}
 		if (dceService == null && exportMpan != null) {
-			dceService = exportMpan.getDceService(isImport, isKwh);
+			dceService = exportMpan.getHhdceContract(isImport, isKwh);
 		}
 		return dceService;
 	}
@@ -376,11 +376,11 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 	public MpanCore getMpanCore(boolean isImport, boolean isKwh) {
 		MpanCore mpanCore = null;
 		if (importMpan != null
-				&& importMpan.getDceService(isImport, isKwh) != null) {
+				&& importMpan.getHhdceContract(isImport, isKwh) != null) {
 			mpanCore = importMpan.getMpanCore();
 		}
 		if (mpanCore == null && exportMpan != null
-				&& exportMpan.getDceService(isImport, isKwh) != null) {
+				&& exportMpan.getHhdceContract(isImport, isKwh) != null) {
 			mpanCore = exportMpan.getMpanCore();
 		}
 		return mpanCore;
@@ -617,7 +617,7 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 			String meterSerialNumber = inv.getString("meter-serial-number");
 			HhdcContract importDceService = null;
 			Account importSupplierAccount = null;
-			SupplierService importSupplierService = null;
+			SupplierContract importSupplierService = null;
 			boolean importHasImportKwh = false;
 			boolean importHasImportKvarh = false;
 			boolean importHasExportKwh = false;
@@ -689,7 +689,7 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 				Integer exportAgreedSupplyCapacity = null;
 				HhdcContract exportDceService = null;
 				Account exportSupplierAccount = null;
-				SupplierService exportSupplierService = null;
+				SupplierContract exportSupplierService = null;
 				boolean exportHasImportKwh = false;
 				boolean exportHasImportKvarh = false;
 				boolean exportHasExportKwh = false;

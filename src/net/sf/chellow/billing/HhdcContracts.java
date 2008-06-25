@@ -42,6 +42,7 @@ import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
 import net.sf.chellow.physical.ContractFrequency;
 import net.sf.chellow.physical.HhEndDate;
+import net.sf.chellow.physical.MarketRole;
 import net.sf.chellow.physical.Organization;
 
 import org.w3c.dom.Document;
@@ -76,7 +77,6 @@ public class HhdcContracts implements Urlable, XmlDescriber {
 
 	public void httpPost(Invocation inv) throws HttpException {
 		String participantCode = inv.getString("participant-code");
-		String roleCode = inv.getString("role-code");
 		String name = inv.getString("name");
 		ContractFrequency frequency = inv.getValidatable(
 				ContractFrequency.class, "frequency");
@@ -86,7 +86,7 @@ public class HhdcContracts implements Urlable, XmlDescriber {
 		if (!inv.isValid()) {
 			throw new UserException(document());
 		}
-		Provider provider = Provider.getProvider(participantCode, roleCode);
+		Provider provider = Provider.getProvider(participantCode, MarketRole.HHDC);
 		HhdcContract service = organization.insertHhdcContract(provider, name,
 				HhEndDate.roundDown(startDate), chargeScript, frequency, lag);
 		Hiber.commit();

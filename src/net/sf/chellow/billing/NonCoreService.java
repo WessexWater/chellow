@@ -38,10 +38,11 @@ import net.sf.chellow.monad.types.MonadDate;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
 import net.sf.chellow.physical.HhEndDate;
+import net.sf.chellow.physical.MarketRole;
+import net.sf.chellow.ui.Chellow;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import org.w3c.dom.Node;
 
 @SuppressWarnings("serial")
 public class NonCoreService extends Service {
@@ -61,14 +62,14 @@ public class NonCoreService extends Service {
 	}
 
 	@SuppressWarnings("unchecked")
-	public void update(Provider provider, String name, String chargeScript) throws HttpException {
+	public void update(String name, String chargeScript) throws HttpException {
 		super.update(Service.TYPE_PASS_THROUGH, name, chargeScript);
 		Hiber.flush();
 	}
 	
 	protected void internalUpdate(Provider provider, int type, String name, String chargeScript)
 	throws HttpException {
-		if (!provider.getRole().getCode().equals("Z")) {
+		if (provider.getRole().getCode() != MarketRole.NON_CORE_ROLE) {
 			throw new InternalException("The provider must be of type Z for a non-core service.");
 		}
 		super.internalUpdate(provider, type, name, chargeScript);
@@ -84,7 +85,7 @@ public class NonCoreService extends Service {
 	}
 
 	public MonadUri getUri() throws InternalException, HttpException {
-		return getProvider().servicesInstance().getUri().resolve(getUriId())
+		return Chellow.NON_CORE_SERVICES_INSTANCE.getUri().resolve(getUriId())
 				.append("/");
 	}
 
@@ -99,7 +100,7 @@ public class NonCoreService extends Service {
 		if (inv.hasParameter("delete")) {
 			delete();
 			Hiber.commit();
-			inv.sendFound(getProvider().servicesInstance().getUri());
+			inv.sendFound(Chellow.NON_CORE_SERVICES_INSTANCE.getUri());
 		} else {
 			String name = inv.getString("name");
 			String chargeScript = inv.getString("charge-script");

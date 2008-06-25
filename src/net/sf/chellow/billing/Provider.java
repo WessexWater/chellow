@@ -63,13 +63,13 @@ public class Provider extends PersistentEntity implements Urlable {
 	 * InternalException(e); } }
 	 */
 
-	static public Provider getProvider(String participantCode, String roleCode)
+	static public Provider getProvider(String participantCode, char roleCode)
 			throws HttpException {
 		Provider provider = (Provider) Hiber
 				.session()
 				.createQuery(
 						"from Provider provider where provider.participant.code = :participantCode and provider.role.code = :roleCode")
-				.setString("participantCode", participantCode).setString(
+				.setString("participantCode", participantCode).setCharacter(
 						"roleCode", roleCode).uniqueResult();
 		if (provider == null) {
 			throw new NotFoundException();
@@ -115,7 +115,7 @@ public class Provider extends PersistentEntity implements Urlable {
 			for (String[] values = parser.getLine(); values != null; values = parser
 					.getLine()) {
 				Participant participant = Participant.getParticipant(values[0]);
-				MarketRole role = MarketRole.getMarketRole(values[1]);
+				MarketRole role = MarketRole.getMarketRole(values[1].charAt(0));
 				Date from = dateFormat.parse(values[2]);
 				Date to = dateFormat.parse(values[3]);
 				Provider provider = new Provider(values[4], participant, role,

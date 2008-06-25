@@ -63,7 +63,7 @@ public class AccountSnags implements Urlable, XmlDescriber {
 		Element source = doc.getDocumentElement();
 		Element snagsElement = toXml(doc);
 		source.appendChild(snagsElement);
-		if (service instanceof SupplierService) {
+		if (service instanceof SupplierContract) {
 			snagsElement.appendChild(service.toXml(doc, new XmlTree("provider",
 							new XmlTree("organization"))));
 		}

@@ -69,7 +69,7 @@ public class Chellow extends Monad implements Urlable {
 	public static final Participants PARTICIPANTS_INSTANCE = new Participants();
 	public static final MarketRoles MARKET_ROLES_INSTANCE = new MarketRoles();
 
-	public static final NonCoreServices NON_CORE_SERVICES_INSTANCE = null;
+	public static final NonCoreServices NON_CORE_SERVICES_INSTANCE = new NonCoreServices();
 
 	static {
 		/*

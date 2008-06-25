@@ -1,6 +1,6 @@
 /*
  
- Copyright 2005 Meniscus Systems Ltd
+ Copyright 2005, 2008 Meniscus Systems Ltd
  
  This file is part of Chellow.
 
@@ -41,26 +41,30 @@ import net.sf.chellow.monad.types.MonadDate;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
 import net.sf.chellow.physical.HhEndDate;
+import net.sf.chellow.physical.MarketRole;
+import net.sf.chellow.physical.Organization;
+import net.sf.chellow.physical.SupplyGeneration;
+
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
 @SuppressWarnings("serial")
-public class SupplierServices implements Urlable, XmlDescriber {
+public class SupplierContracts implements Urlable, XmlDescriber {
 	public static final UriPathElement URI_ID;
 
 	static {
 		try {
-			URI_ID = new UriPathElement("services");
+			URI_ID = new UriPathElement("supplier-contracts");
 		} catch (HttpException e) {
 			throw new RuntimeException(e);
 		}
 	}
 
-	private Supplier supplier;
+	private Organization organization;
 
-	public SupplierServices(Supplier supplier) {
-		this.supplier = supplier;
+	public SupplierContracts(Organization organization) {
+		this.organization = organization;
 	}
 
 	public UriPathElement getUrlId() {
@@ -68,38 +72,39 @@ public class SupplierServices implements Urlable, XmlDescriber {
 	}
 
 	public MonadUri getUri() throws InternalException, HttpException {
-		return supplier.getUri().resolve(getUrlId()).append("/");
+		return organization.getUri().resolve(getUrlId()).append("/");
 	}
 
 	public void httpPost(Invocation inv) throws InternalException,
 			HttpException, DesignerException, DeployerException {
+		String participantCode = inv.getString("participant-code");
 		String name = inv.getString("name");
 		Date startDate = inv.getDate("start-date");
 		String chargeScript = inv.getString("charge-script");
 		if (!inv.isValid()) {
 			throw new UserException(document());
 		}
-		SupplierService service = supplier.insertService(name, HhEndDate
-				.roundDown(startDate), chargeScript);
+		Provider provider = Provider.getProvider(participantCode,
+				MarketRole.SUPPLIER);
+		SupplierContract contract = organization.insertSupplierContract(
+				provider, name, HhEndDate.roundDown(startDate), chargeScript);
 		Hiber.commit();
-		inv.sendCreated(document(), service.getUri());
+		inv.sendCreated(document(), contract.getUri());
 	}
 
 	@SuppressWarnings("unchecked")
-	private Document document() throws InternalException, HttpException,
-			DesignerException {
+	private Document document() throws HttpException {
 		Document doc = MonadUtils.newSourceDocument();
 		Element source = doc.getDocumentElement();
-		Element servicesElement = (Element) toXml(doc);
-		source.appendChild(servicesElement);
-		servicesElement.appendChild(supplier.toXml(
-				doc, new XmlTree("organization")));
-		for (SupplierService service : (List<SupplierService>) Hiber
+		Element contractsElement = toXml(doc);
+		source.appendChild(contractsElement);
+		contractsElement.appendChild(organization.toXml(doc));
+		for (SupplierContract contract : (List<SupplierContract>) Hiber
 				.session()
 				.createQuery(
-						"from SupplierService service where service.provider = :supplier order by service.name")
-				.setEntity("supplier", supplier).list()) {
-			servicesElement.appendChild(service.toXml(doc));
+						"from SupplierContract contract order by contract.name")
+				.list()) {
+			contractsElement.appendChild(contract.toXml(doc));
 		}
 		source.appendChild(MonadDate.getMonthsXml(doc));
 		source.appendChild(MonadDate.getDaysXml(doc));
@@ -112,18 +117,18 @@ public class SupplierServices implements Urlable, XmlDescriber {
 		inv.sendOk(document());
 	}
 
-	public Service getChild(UriPathElement uriId) throws HttpException,
+	public SupplierContract getChild(UriPathElement uriId) throws HttpException,
 			InternalException {
-		SupplierService service = (SupplierService) Hiber
+		SupplierContract contract = (SupplierContract) Hiber
 				.session()
 				.createQuery(
-						"from SupplierService service where service.provider = :supplier and service.id = :serviceId")
-				.setEntity("supplier", supplier).setLong("serviceId",
+						"from SupplierContract contract where contract.id = :contractId")
+				.setLong("contractId",
 						Long.parseLong(uriId.getString())).uniqueResult();
-		if (service == null) {
+		if (contract == null) {
 			throw new NotFoundException();
 		}
-		return service;
+		return contract;
 	}
 
 	public void httpDelete(Invocation inv) throws InternalException,
@@ -132,8 +137,8 @@ public class SupplierServices implements Urlable, XmlDescriber {
 
 	}
 
-	public Node toXml(Document doc) throws InternalException, HttpException {
-		Element contractsElement = doc.createElement("supplier-services");
+	public Element toXml(Document doc) throws InternalException, HttpException {
+		Element contractsElement = doc.createElement("supplier-contracts");
 		return contractsElement;
 	}
 
@@ -141,5 +146,13 @@ public class SupplierServices implements Urlable, XmlDescriber {
 			HttpException {
 		// TODO Auto-generated method stub
 		return null;
+	}
+	
+	public List<SupplyGeneration> supplyGenerations(Account account) {
+		return Hiber
+				.session()
+				.createQuery(
+						"select mpan.supplyGeneration from Mpan mpan where mpan.supplierAccount = :account order by mpan.supplyGeneration.startDate.date")
+				.setEntity("account", account).list();
 	}
 }
