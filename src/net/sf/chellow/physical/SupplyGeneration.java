@@ -29,21 +29,20 @@ import java.util.List;
 import java.util.Set;
 
 import net.sf.chellow.billing.Account;
-import net.sf.chellow.billing.Dce;
 import net.sf.chellow.billing.HhdcContract;
 import net.sf.chellow.billing.Invoice;
 import net.sf.chellow.billing.InvoiceMpan;
-import net.sf.chellow.billing.Supplier;
+import net.sf.chellow.billing.Provider;
 import net.sf.chellow.billing.SupplierContract;
 import net.sf.chellow.monad.DeployerException;
 import net.sf.chellow.monad.DesignerException;
 import net.sf.chellow.monad.Hiber;
+import net.sf.chellow.monad.HttpException;
+import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Invocation;
 import net.sf.chellow.monad.MonadUtils;
 import net.sf.chellow.monad.NotFoundException;
-import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Urlable;
-import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.UserException;
 import net.sf.chellow.monad.XmlTree;
 import net.sf.chellow.monad.types.MonadDate;
@@ -534,8 +533,8 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 												new XmlTree("provider"))))));
 			}
 		}
-		// addVoltageLevelsXML(source);
-		Organization organization = organization();
+		//Organization organization = organization();
+		/*
 		for (Dce dce : (List<Dce>) Hiber.session().createQuery(
 				"from Dce dce where dce.organization = :organization")
 				.setEntity("organization", organization).list()) {
@@ -549,6 +548,7 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 				dceElement.appendChild(dceService.toXml(doc));
 			}
 		}
+		*/
 		source.appendChild(MonadDate.getMonthsXml(doc));
 		source.appendChild(MonadDate.getDaysXml(doc));
 		source.appendChild(new MonadDate().toXml(doc));
@@ -617,7 +617,7 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 			String meterSerialNumber = inv.getString("meter-serial-number");
 			HhdcContract importDceService = null;
 			Account importSupplierAccount = null;
-			SupplierContract importSupplierService = null;
+			SupplierContract importSupplierContract = null;
 			boolean importHasImportKwh = false;
 			boolean importHasImportKvarh = false;
 			boolean importHasExportKwh = false;
@@ -667,18 +667,13 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 									.getLong("import-dce-service-id"));
 						}
 					}
-					String importSupplierName = inv
-							.getString("import-supplier-name");
+					String importSupplierCode = inv
+							.getString("import-supplier-code");
 					String importSupplierServiceName = inv
-							.getString("import-supplier-service-name");
-					Supplier importSupplier = organization
-							.findSupplier(importSupplierName);
-					if (importSupplier == null) {
-						throw new UserException(
-								"Can't find an import supplier with that name.");
-					}
-					importSupplierService = importSupplier
-							.getService(importSupplierServiceName);
+							.getString("import-supplier-contract-name");
+					Provider importSupplier = Provider.getProvider(importSupplierCode, MarketRole.SUPPLIER);
+					importSupplierContract = organization.getSupplierContract(importSupplier
+							,importSupplierServiceName);
 					String importSupplierAccountReference = inv
 							.getString("import-supplier-account-reference");
 					importSupplierAccount = importSupplier
@@ -689,7 +684,7 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 				Integer exportAgreedSupplyCapacity = null;
 				HhdcContract exportDceService = null;
 				Account exportSupplierAccount = null;
-				SupplierContract exportSupplierService = null;
+				SupplierContract exportSupplierContract = null;
 				boolean exportHasImportKwh = false;
 				boolean exportHasImportKvarh = false;
 				boolean exportHasExportKwh = false;
@@ -733,18 +728,13 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 									.getLong("export-dce-service-id"));
 						}
 					}
-					String exportSupplierName = inv
+					String exportSupplierCode = inv
 							.getString("export-supplier-name");
 					String exportSupplierServiceName = inv
 							.getString("export-supplier-service-name");
-					Supplier exportSupplier = organization
-							.findSupplier(exportSupplierName);
-					if (exportSupplier == null) {
-						throw new UserException(
-								"Can't find an export supplier with that name.");
-					}
-					exportSupplierService = exportSupplier
-							.getService(exportSupplierServiceName);
+					Provider exportSupplier = Provider.getProvider(exportSupplierCode, MarketRole.SUPPLIER);
+					exportSupplierContract = organization.getSupplierContract(exportSupplier
+						,exportSupplierServiceName);
 					String exportSupplierAccountReference = inv
 							.getString("export-supplier-account-reference");
 					exportSupplierAccount = exportSupplier
@@ -752,11 +742,11 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 				}
 				addOrUpdateMpans(importMpanTop, importMpanCore,
 						importDceService, importSupplierAccount,
-						importSupplierService, importHasImportKwh,
+						importSupplierContract, importHasImportKwh,
 						importHasImportKvarh, importHasExportKwh,
 						importHasExportKvarh, importAgreedSupplyCapacity,
 						exportMpanTop, exportMpanCore, exportDceService,
-						exportSupplierAccount, exportSupplierService,
+						exportSupplierAccount, exportSupplierContract,
 						exportHasImportKwh, exportHasImportKvarh,
 						exportHasExportKwh, exportHasExportKvarh,
 						exportAgreedSupplyCapacity);

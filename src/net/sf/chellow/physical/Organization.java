@@ -27,11 +27,11 @@ import java.util.Set;
 
 import net.sf.chellow.billing.Account;
 import net.sf.chellow.billing.Accounts;
-import net.sf.chellow.billing.Dcs;
 import net.sf.chellow.billing.GenDeltas;
 import net.sf.chellow.billing.HhdcContract;
 import net.sf.chellow.billing.HhdcContracts;
-import net.sf.chellow.billing.Mop;
+import net.sf.chellow.billing.MopContract;
+import net.sf.chellow.billing.MopContracts;
 import net.sf.chellow.billing.Provider;
 import net.sf.chellow.billing.SupplierContract;
 import net.sf.chellow.billing.SupplierContracts;
@@ -232,6 +232,14 @@ public class Organization extends PersistentEntity {
 		return new HhdcContracts(this);
 	}
 
+	public SupplierContracts supplierContractsInstance() {
+		return new SupplierContracts(this);
+	}
+
+	public MopContracts mopContractsInstance() {
+		return new MopContracts(this);
+	}
+
 	public UseDeltas useDeltasInstance() {
 		return new UseDeltas(this);
 	}
@@ -428,28 +436,17 @@ public class Organization extends PersistentEntity {
 	 * supplier doesn't belong to this organization."); } }
 	 */
 	/*
-	public Supplier insertSupplier(String name) throws HttpException,
-			InternalException {
-		if (findSupplier(name) == null) {
-			Supplier supplier = new Supplier(this, name);
-			Hiber.session().save(supplier);
-			Hiber.flush();
-			return supplier;
-		} else {
-			throw new UserException(
-					"There's already a supplier with this name.");
-		}
-	}
-
-	public Supplier findSupplier(String name) {
-		return (Supplier) Hiber
-				.session()
-				.createQuery(
-						"from Supplier supplier where supplier.organization = :organization and supplier.name = :name")
-				.setEntity("organization", this).setString("name", name)
-				.uniqueResult();
-	}
-*/
+	 * public Supplier insertSupplier(String name) throws HttpException,
+	 * InternalException { if (findSupplier(name) == null) { Supplier supplier =
+	 * new Supplier(this, name); Hiber.session().save(supplier); Hiber.flush();
+	 * return supplier; } else { throw new UserException( "There's already a
+	 * supplier with this name."); } }
+	 * 
+	 * public Supplier findSupplier(String name) { return (Supplier) Hiber
+	 * .session() .createQuery( "from Supplier supplier where
+	 * supplier.organization = :organization and supplier.name = :name")
+	 * .setEntity("organization", this).setString("name", name) .uniqueResult(); }
+	 */
 	public HhdcContract insertHhdcContract(Provider provider, String name,
 			HhEndDate startDate, String chargeScript,
 			ContractFrequency frequency, int lag) throws HttpException {
@@ -470,18 +467,17 @@ public class Organization extends PersistentEntity {
 		return contract;
 	}
 
-	public Dcs insertDcs(String name) {
-		Dcs dcs = new Dcs(name, this);
-		Hiber.session().save(dcs);
+	/*
+	 * public Dcs insertDcs(String name) { Dcs dcs = new Dcs(name, this);
+	 * Hiber.session().save(dcs); Hiber.flush(); return dcs; }
+	 */
+	public MopContract insertMopContract(Provider provider, String name,
+			HhEndDate startDate, String chargeScript) throws HttpException {
+		MopContract contract = new MopContract(provider, this, name, startDate,
+				chargeScript);
+		Hiber.session().save(contract);
 		Hiber.flush();
-		return dcs;
-	}
-
-	public Mop insertMop(String name) {
-		Mop mop = new Mop(name, this);
-		Hiber.session().save(mop);
-		Hiber.flush();
-		return mop;
+		return contract;
 	}
 
 	@SuppressWarnings("unchecked")
@@ -519,22 +515,16 @@ public class Organization extends PersistentEntity {
 		}
 		return core;
 	}
-/*
-	public Supplier getSupplier(String name) throws HttpException,
-			InternalException {
-		Supplier supplier = (Supplier) Hiber
-				.session()
-				.createQuery(
-						"from Supplier supplier where supplier.organization = :organization and supplier.name = :name")
-				.setEntity("organization", this).setString("name", name)
-				.uniqueResult();
-		if (supplier == null) {
-			throw new NotFoundException(
-					"There isn't a supplier with the name '" + name + "'.");
-		}
-		return supplier;
-	}
-*/
+
+	/*
+	 * public Supplier getSupplier(String name) throws HttpException,
+	 * InternalException { Supplier supplier = (Supplier) Hiber .session()
+	 * .createQuery( "from Supplier supplier where supplier.organization =
+	 * :organization and supplier.name = :name") .setEntity("organization",
+	 * this).setString("name", name) .uniqueResult(); if (supplier == null) {
+	 * throw new NotFoundException( "There isn't a supplier with the name '" +
+	 * name + "'."); } return supplier; }
+	 */
 	public Account insertAccount(Provider provider, String reference)
 			throws HttpException, InternalException {
 		Account account = new Account(this, provider, reference);

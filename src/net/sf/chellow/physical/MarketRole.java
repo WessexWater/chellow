@@ -21,8 +21,10 @@ import net.sf.chellow.monad.types.UriPathElement;
 import com.Ostermiller.util.CSVParser;
 
 public class MarketRole extends PersistentEntity {
-	static public final char SUPPLIER = 'X';
 	static public final char HHDC = 'C';
+	static public final char MOP = 'M';
+	static public final char DISTRIBUTOR = 'R';
+	static public final char SUPPLIER = 'X';
 	static public final char NON_CORE_ROLE = 'Z';
 
 	static public MarketRole getMarketRole(Long id) throws HttpException {

@@ -191,11 +191,7 @@ public class InvoiceImport extends Thread implements Urlable,
 			} else {
 			messages.add("The import has finished, but not all invoices were successfully loaded.");	
 			}
-			Organization organization = null;
-			Provider provider = batch.getService().getProvider();
-			if (provider instanceof ProviderOrganization) {
-				organization = ((ProviderOrganization) provider).getOrganization();
-			}
+			Organization organization = batch.getContract().getOrganization();
 			Account.checkAllMissingFromLatest(organization);
 		} catch (InternalException e) {
 			messages.add("ProgrammerException : " + e.getMessage());

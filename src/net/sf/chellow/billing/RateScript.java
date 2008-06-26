@@ -68,7 +68,8 @@ public class RateScript extends PersistentEntity {
 	}
 
 	public RateScript(Service service, HhEndDate startDate,
-			HhEndDate finishDate, String script) throws InternalException, DesignerException {
+			HhEndDate finishDate, String script) throws InternalException,
+			DesignerException {
 		this();
 		setService(service);
 		internalUpdate(startDate, finishDate, script);
@@ -170,8 +171,7 @@ public class RateScript extends PersistentEntity {
 		service.updateNotification(checkStartDate, checkFinishDate);
 	}
 
-	public Element toXml(Document doc) throws InternalException,
-			HttpException {
+	public Element toXml(Document doc) throws InternalException, HttpException {
 		Element element = (Element) super.toXml(doc);
 
 		startDate.setLabel("start");
@@ -254,25 +254,16 @@ public class RateScript extends PersistentEntity {
 			DesignerException {
 		Document doc = MonadUtils.newSourceDocument();
 		Element sourceElement = doc.getDocumentElement();
-		Provider provider = service.getProvider();
 
-		if (provider instanceof ProviderOrganization) {
-			sourceElement
-					.appendChild(toXml(doc, new XmlTree("service", new XmlTree(
-									"provider", new XmlTree("organization")))));
-		} else {
-			sourceElement.appendChild(toXml(doc, new XmlTree("service",
-							new XmlTree("provider"))));
-
-		}
+		sourceElement.appendChild(toXml(doc, new XmlTree("contract",
+				new XmlTree("provider").put("organization"))));
 		sourceElement.appendChild(MonadDate.getMonthsXml(doc));
 		sourceElement.appendChild(MonadDate.getDaysXml(doc));
 		sourceElement.appendChild(new MonadDate().toXml(doc));
 		return doc;
 	}
 
-	public Invocable invocableEngine() throws HttpException,
-			InternalException {
+	public Invocable invocableEngine() throws HttpException, InternalException {
 		ScriptEngineManager engineMgr = new ScriptEngineManager();
 		ScriptEngine scriptEngine = engineMgr.getEngineByName("jython");
 		Invocable invocableEngine = null;

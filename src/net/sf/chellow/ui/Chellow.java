@@ -9,21 +9,21 @@ import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 
-import net.sf.chellow.billing.Dcses;
-import net.sf.chellow.billing.Mops;
 import net.sf.chellow.billing.NonCoreServices;
+import net.sf.chellow.billing.Providers;
 import net.sf.chellow.monad.BadRequestException;
 import net.sf.chellow.monad.DeployerException;
 import net.sf.chellow.monad.DesignerException;
 import net.sf.chellow.monad.ForbiddenException;
+import net.sf.chellow.monad.HttpException;
+import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Invocation;
 import net.sf.chellow.monad.Monad;
 import net.sf.chellow.monad.MonadContextParameters;
-import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.UnauthorizedException;
 import net.sf.chellow.monad.Urlable;
-import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.Invocation.HttpMethod;
+import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
 import net.sf.chellow.physical.Dsos;
 import net.sf.chellow.physical.MarketRoles;
@@ -45,18 +45,14 @@ public class Chellow extends Monad implements Urlable {
 
 	static private final HttpMethod[] ALLOWED_METHODS = { HttpMethod.GET };
 
-	// static public final Roles REPORTS_INSTANCE = new Reports();
+	static public final MonadUri ROOT_URI;
 	static public final Roles ROLES_INSTANCE = new Roles();
 
 	static public final Sources SOURCES_INSTANCE = new Sources();
 
 	static public final Users USERS_INSTANCE = new Users();
 
-	static public final Dsos DSOS_INSTANCE = new Dsos();
-
-	static public final Mops MOPS_INSTANCE = new Mops();
-
-	static public final Dcses DCSS_INSTANCE = new Dcses();
+	static public final Providers PROVIDERS_INSTANCE = new Providers();
 
 	static public final ProfileClasses PROFILE_CLASSES_INSTANCE = new ProfileClasses();
 
@@ -65,20 +61,23 @@ public class Chellow extends Monad implements Urlable {
 	static public final Sscs SSCS_INSTANCE = new Sscs();
 
 	public static final Organizations ORGANIZATIONS_INSTANCE = new Organizations();
-	
+
 	public static final Participants PARTICIPANTS_INSTANCE = new Participants();
 	public static final MarketRoles MARKET_ROLES_INSTANCE = new MarketRoles();
 
 	public static final NonCoreServices NON_CORE_SERVICES_INSTANCE = new NonCoreServices();
+	public static final Dsos DSOS_INSTANCE = new Dsos();
 
 	static {
-		/*
 		try {
-			GOVERNMENT_INSTANCE = Government.getGovernment();
+			ROOT_URI = new MonadUri("/");
 		} catch (HttpException e) {
 			throw new RuntimeException(e);
 		}
-		*/
+		/*
+		 * try { GOVERNMENT_INSTANCE = Government.getGovernment(); } catch
+		 * (HttpException e) { throw new RuntimeException(e); }
+		 */
 	}
 
 	public Chellow() {

@@ -26,12 +26,12 @@ import net.sf.chellow.hhimport.HhDataImportProcesses;
 import net.sf.chellow.monad.DeployerException;
 import net.sf.chellow.monad.DesignerException;
 import net.sf.chellow.monad.Hiber;
+import net.sf.chellow.monad.HttpException;
+import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Invocation;
 import net.sf.chellow.monad.MonadUtils;
 import net.sf.chellow.monad.NotFoundException;
-import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Urlable;
-import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.UserException;
 import net.sf.chellow.monad.XmlTree;
 import net.sf.chellow.monad.types.MonadDate;
@@ -39,7 +39,7 @@ import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
 import net.sf.chellow.physical.Dso;
 import net.sf.chellow.physical.HhEndDate;
-
+import net.sf.chellow.physical.MarketRole;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -49,8 +49,7 @@ public class DsoService extends Service {
 			InternalException {
 		DsoService service = findDsoService(id);
 		if (service == null) {
-			throw new UserException
-					("There isn't a DSO service with that id.");
+			throw new UserException("There isn't a DSO service with that id.");
 		}
 		return service;
 	}
@@ -60,29 +59,35 @@ public class DsoService extends Service {
 		return (DsoService) Hiber.session().get(DsoService.class, id);
 	}
 
-	private Dso provider;
+	static public DsoService insertDsoService(Provider provider, String name,
+			HhEndDate startDate, String chargeScript) {
+		DsoService service = new DsoService();
+		Hiber.session().save(service);
+		return service;
+	}
+	
+	private Dso dso;
 
 	public DsoService() {
 	}
 
-	public DsoService(String name, HhEndDate startDate, String chargeScript,
-			Dso provider) throws HttpException, InternalException,
-			DesignerException {
-		super(Service.TYPE_PASS_THROUGH, name, startDate, chargeScript);
-		setProvider(provider);
+	public DsoService(Dso provider, String name, HhEndDate startDate,
+			String chargeScript) throws HttpException {
+		super(Service.TYPE_PASS_THROUGH, name, startDate,
+				chargeScript);
+		internalUpdate(provider, name, startDate, chargeScript);
 	}
 
-	public Dso getProvider() {
-		return provider;
-	}
-
-	void setProvider(Dso provider) {
-		this.provider = provider;
+	protected void internalUpdate(Provider provider, String name,
+			HhEndDate startDate, String chargeScript) throws HttpException {
+		if (provider.getRole().getCode() != MarketRole.DISTRIBUTOR) {
+			throw new UserException("The provider must be a distributor.");
+		}
+		super.internalUpdate(Service.TYPE_PASS_THROUGH, name, chargeScript);
 	}
 
 	@SuppressWarnings("unchecked")
-	public void update(String name, String chargeScript) throws HttpException,
-			InternalException, DesignerException {
+	public void update(String name, String chargeScript) throws HttpException {
 		super.update(Service.TYPE_PASS_THROUGH, name, chargeScript);
 		Hiber.flush();
 		/*
@@ -115,7 +120,7 @@ public class DsoService extends Service {
 	}
 
 	public MonadUri getUri() throws InternalException, HttpException {
-		return getProvider().servicesInstance().getUri().resolve(getUriId())
+		return dso.servicesInstance().getUri().resolve(getUriId())
 				.append("/");
 	}
 
@@ -129,7 +134,7 @@ public class DsoService extends Service {
 		if (inv.hasParameter("delete")) {
 			delete();
 			Hiber.commit();
-			inv.sendFound(getProvider().servicesInstance().getUri());
+			inv.sendFound(dso.servicesInstance().getUri());
 		} else {
 			String name = inv.getString("name");
 			String chargeScript = inv.getString("charge-script");
@@ -185,9 +190,17 @@ public class DsoService extends Service {
 				+ getName();
 	}
 
-	public Element toXml(Document doc) throws InternalException,
-			HttpException {
+	public Element toXml(Document doc) throws InternalException, HttpException {
 		setTypeName("dso-service");
 		return super.toXml(doc);
+	}
+
+	@Override
+	public Dso getProvider() {
+		return dso;
+	}
+
+	void setProvider(Dso dso) {
+		this.dso = dso;
 	}
 }

@@ -43,6 +43,7 @@ import net.sf.chellow.monad.XmlTree;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
 import net.sf.chellow.physical.HhEndDate;
+import net.sf.chellow.physical.MarketRole;
 import net.sf.chellow.physical.Mpan;
 import net.sf.chellow.physical.Organization;
 import net.sf.chellow.physical.PersistentEntity;
@@ -129,11 +130,6 @@ public class Account extends PersistentEntity implements Urlable {
 		Element element = (Element) super.toXml(doc);
 
 		element.setAttribute("reference", reference);
-		if (Supplier.findSupplier(provider.getId()) != null) {
-			element.setAttribute("label", "supplier");
-		} else {
-			element.setAttribute("label", provider.getClass().getName());
-		}
 		return element;
 	}
 
@@ -146,10 +142,7 @@ public class Account extends PersistentEntity implements Urlable {
 				throw e;
 			}
 			Hiber.commit();
-			Supplier supplier = Supplier.findSupplier(provider.getId());
-			if (supplier != null) {
 				inv.sendSeeOther(organization.accountsInstance().getUri());
-			}
 		} else {
 			String reference = inv.getString("reference");
 			if (!inv.isValid()) {
@@ -334,8 +327,8 @@ public class Account extends PersistentEntity implements Urlable {
 	@SuppressWarnings("unchecked")
 	private List<Mpan> getMpans(HhEndDate from, HhEndDate to)
 			throws HttpException, InternalException {
-		String roleCode = getProvider().getRole().getCode();
-		if (roleCode.equals("X")) {
+		char roleCode = getProvider().getRole().getCode();
+		if (roleCode == MarketRole.SUPPLIER) {
 			if (to == null) {
 				return Hiber
 						.session()
@@ -352,16 +345,16 @@ public class Account extends PersistentEntity implements Urlable {
 								from.getDate())
 						.setTimestamp("to", to.getDate()).list();
 			}
-		} else if (roleCode.equals("C")) {
+		} else if (roleCode == MarketRole.HHDC) {
 			return Hiber
 					.session()
 					.createQuery(
-							"select distinct mpan from Mpan mpan where mpan.dceAccount = :account and (mpan.supplyGeneration.finishDate is null or mpan.supplyGeneration.finishDate.date >= :from) and mpan.supplyGeneration.startDate.date <= :to")
+							"select distinct mpan from Mpan mpan where mpan.hhdceAccount = :account and (mpan.supplyGeneration.finishDate is null or mpan.supplyGeneration.finishDate.date >= :from) and mpan.supplyGeneration.startDate.date <= :to")
 					.setEntity("account", this).setTimestamp("from",
 							from.getDate()).setTimestamp("to", to.getDate())
 					.list();
 		} else {
-			throw new UserException("Not of type Supplier!");
+			throw new InternalException("Unknown market role type.");
 		}
 	}
 

@@ -1,6 +1,6 @@
 /*
  
- Copyright 2005 Meniscus Systems Ltd
+ Copyright 2005, 2008 Meniscus Systems Ltd
  
  This file is part of Chellow.
 
@@ -42,7 +42,6 @@ import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
 import net.sf.chellow.physical.Dso;
 import net.sf.chellow.physical.HhEndDate;
-
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -53,12 +52,12 @@ public class DsoServices implements Urlable, XmlDescriber {
 
 	static {
 		try {
-			URI_ID = new UriPathElement("services");
+			URI_ID = new UriPathElement("dso-services");
 		} catch (HttpException e) {
 			throw new RuntimeException(e);
 		}
 	}
-
+	
 	private Dso dso;
 
 	public DsoServices(Dso dso) {

@@ -113,13 +113,12 @@ public class Invoice extends PersistentEntity implements Urlable {
 		setReference(invoiceRaw.getReference());
 		// setAccountText(invoiceRaw.getAccountText());
 		invoiceMpans = new HashSet<InvoiceMpan>();
-		Organization organization = ((Supplier) batch.getService()
-				.getProvider()).getOrganization();
+		Organization organization = batch.getContract().getOrganization();
 		for (RegisterReadRaw rawRead : invoiceRaw.getRegisterReads()) {
 			MpanCoreRaw mpanCoreRaw = rawRead.getMpanRaw().getMpanCoreRaw();
 			MpanCore mpanCore = organization.getMpanCore(mpanCoreRaw);
 			Supply supply = mpanCore.getSupply();
-			supply.insertRegisterRead(rawRead, this, batch.getService());
+			supply.insertRegisterRead(rawRead, this, batch.getContract());
 		}
 	}
 
@@ -290,7 +289,7 @@ public class Invoice extends PersistentEntity implements Urlable {
 			if (!inv.isValid()) {
 				throw new UserException(document());
 			}
-			update(batch.getService().getProvider()
+			update(batch.getContract().getProvider()
 					.getAccount(accountReference), new DayStartDate(issueDate),
 					new DayStartDate(startDate).getNext(), new DayFinishDate(
 							finishDate), net, vat, status);

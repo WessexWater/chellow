@@ -41,6 +41,7 @@ import net.sf.chellow.monad.UserException;
 import net.sf.chellow.monad.types.MonadDate;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
+import net.sf.chellow.physical.Dso;
 import net.sf.chellow.physical.MarketRole;
 import net.sf.chellow.physical.Participant;
 import net.sf.chellow.physical.PersistentEntity;
@@ -62,7 +63,6 @@ public class Provider extends PersistentEntity implements Urlable {
 	 * Hiber.flush(); } catch (HibernateException e) { throw new
 	 * InternalException(e); } }
 	 */
-
 	static public Provider getProvider(String participantCode, char roleCode)
 			throws HttpException {
 		Provider provider = (Provider) Hiber
@@ -71,6 +71,14 @@ public class Provider extends PersistentEntity implements Urlable {
 						"from Provider provider where provider.participant.code = :participantCode and provider.role.code = :roleCode")
 				.setString("participantCode", participantCode).setCharacter(
 						"roleCode", roleCode).uniqueResult();
+		if (provider == null) {
+			throw new NotFoundException();
+		}
+		return provider;
+	}
+
+	static public Provider getProvider(long id) throws HttpException {
+		Provider provider = (Provider) Hiber.session().get(Provider.class, id);
 		if (provider == null) {
 			throw new NotFoundException();
 		}
@@ -118,10 +126,18 @@ public class Provider extends PersistentEntity implements Urlable {
 				MarketRole role = MarketRole.getMarketRole(values[1].charAt(0));
 				Date from = dateFormat.parse(values[2]);
 				Date to = dateFormat.parse(values[3]);
-				Provider provider = new Provider(values[4], participant, role,
-						from, to, values[14]);
+				char roleCode = role.getCode();
+				if (roleCode == MarketRole.DISTRIBUTOR) {
+						Dso dso = new Dso(values[4], participant,
+								from, to, values[14]);
+						Hiber.session().save(dso);
+						Hiber.flush();
+				} else {
+				Provider provider = new Provider(values[4], participant, roleCode,
+						from, to);
 				Hiber.session().save(provider);
 				Hiber.flush();
+				}
 			}
 		} catch (UnsupportedEncodingException e) {
 			throw new InternalException(e);
@@ -137,19 +153,17 @@ public class Provider extends PersistentEntity implements Urlable {
 	private MarketRole role;
 	private Date from;
 	private Date to;
-	private String dsoCode;
 
 	public Provider() {
 	}
 
-	public Provider(String name, Participant participant, MarketRole role,
-			Date from, Date to, String dsoCode) {
+	public Provider(String name, Participant participant, char role,
+			Date from, Date to) throws HttpException {
 		setName(name);
 		setParticipant(participant);
-		setRole(role);
+		setRole(MarketRole.getMarketRole(role));
 		setFrom(from);
 		setTo(to);
-		setDsoCode(dsoCode);
 	}
 
 	public String getName() {
@@ -192,14 +206,6 @@ public class Provider extends PersistentEntity implements Urlable {
 		this.to = to;
 	}
 
-	public String getDsoCode() {
-		return dsoCode;
-	}
-
-	void setDsoCode(String dsoCode) {
-		this.dsoCode = dsoCode;
-	}
-
 	public Element toXml(Document doc) throws HttpException {
 		setTypeName("provider");
 		Element element = (Element) super.toXml(doc);
@@ -207,7 +213,6 @@ public class Provider extends PersistentEntity implements Urlable {
 		element.setAttribute("name", name);
 		element.appendChild(MonadDate.toXML(from, "from", doc));
 		element.appendChild(MonadDate.toXML(to, "to", doc));
-		element.setAttribute("dso-code", dsoCode);
 		return element;
 	}
 

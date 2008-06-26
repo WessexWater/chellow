@@ -26,7 +26,7 @@ import java.util.Set;
 
 import net.sf.chellow.billing.Account;
 import net.sf.chellow.billing.HhdcContract;
-import net.sf.chellow.billing.MopService;
+import net.sf.chellow.billing.MopContract;
 import net.sf.chellow.billing.SupplierContract;
 import net.sf.chellow.data08.MpanRaw;
 import net.sf.chellow.monad.DeployerException;
@@ -72,7 +72,7 @@ public class Mpan extends PersistentEntity {
 
 	private Account supplierAccount;
 
-	private MopService mopService;
+	private MopContract mopService;
 
 	private Account mopAccount;
 
@@ -130,11 +130,11 @@ public class Mpan extends PersistentEntity {
 		this.mpanCore = mpanCore;
 	}
 
-	public MopService getMopService() {
+	public MopContract getMopService() {
 		return mopService;
 	}
 
-	void setMopService(MopService mopService) {
+	void setMopService(MopContract mopService) {
 		this.mopService = mopService;
 	}
 

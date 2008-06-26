@@ -61,8 +61,8 @@ public class SupplierContract extends Contract {
 	public static SupplierContract findSupplierService(Long id) {
 		return (SupplierContract) Hiber.session().get(SupplierContract.class, id);
 	}
-
-	private Supplier provider;
+	
+	private Provider supplier;
 
 	public SupplierContract() {
 	}
@@ -73,8 +73,7 @@ public class SupplierContract extends Contract {
 	}
 
 
-	public void update(String name, String chargeScript) throws HttpException,
-			InternalException, DesignerException {
+	public void update(String name, String chargeScript) throws HttpException {
 		super.update(TYPE_CONTRACT, name, chargeScript);
 	}
 
@@ -88,8 +87,7 @@ public class SupplierContract extends Contract {
 	}
 
 	public MonadUri getUri() throws InternalException, HttpException {
-		return provider.servicesInstance().getUri().resolve(getUriId()).append(
-				"/");
+		return getOrganization().getUri().resolve(getUriId()).append("/");
 	}
 
 	public void httpPost(Invocation inv) throws InternalException,
@@ -216,5 +214,10 @@ public class SupplierContract extends Contract {
 		setTypeName("supplier-contract");
 		Element element = super.toXml(doc);
 		return element;
+	}
+
+	@Override
+	public Provider getProvider() {
+		return supplier;
 	}
 }

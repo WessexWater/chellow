@@ -46,17 +46,19 @@ public abstract class Contract extends Service {
 	void setOrganization(Organization organization) {
 		this.organization = organization;
 	}
-	
+
 	public Batch insertBatch(String reference) {
 		Batch batch = new Batch(this, reference);
 		Hiber.session().save(batch);
 		return batch;
 	}
-	
-	public void internalUpdate(Provider provider, String name, String chargeScript) throws HttpException {
-		super.internalUpdate(provider, Service.TYPE_CONTRACT, name, chargeScript);
+
+	public void internalUpdate(Provider provider, String name,
+			String chargeScript) throws HttpException {
+		super.internalUpdate(provider, Service.TYPE_CONTRACT, name,
+				chargeScript);
 	}
-	
+
 	public void update(String name, String chargeScript) throws HttpException {
 		super.update(Service.TYPE_CONTRACT, name, chargeScript);
 	}

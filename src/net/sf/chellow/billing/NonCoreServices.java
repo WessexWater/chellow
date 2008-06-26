@@ -41,6 +41,8 @@ import net.sf.chellow.monad.types.MonadDate;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
 import net.sf.chellow.physical.HhEndDate;
+import net.sf.chellow.physical.MarketRole;
+
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -70,16 +72,16 @@ public class NonCoreServices implements Urlable, XmlDescriber {
 
 	public void httpPost(Invocation inv) throws HttpException {
 		String participantCode = inv.getString("participant-code");
-		String roleCode = inv.getString("role-code");
 		String name = inv.getString("name");
 		Date startDate = inv.getDate("start-date");
 		String chargeScript = inv.getString("charge-script");
 		if (!inv.isValid()) {
 			throw new UserException(document());
 		}
-		Provider provider = Provider.getProvider(participantCode, roleCode);
-		NonCoreService service = NonCoreService.insertNonCoreService(provider, name, HhEndDate
-				.roundDown(startDate), chargeScript);
+		Provider provider = Provider.getProvider(participantCode,
+				MarketRole.NON_CORE_ROLE);
+		NonCoreService service = NonCoreService.insertNonCoreService(provider,
+				name, HhEndDate.roundDown(startDate), chargeScript);
 		Hiber.commit();
 		inv.sendCreated(document(), service.getUri());
 	}
@@ -93,8 +95,10 @@ public class NonCoreServices implements Urlable, XmlDescriber {
 		for (NonCoreService service : (List<NonCoreService>) Hiber
 				.session()
 				.createQuery(
-						"from NonCoreService service where order by service.finishRateScript.finishDate.date desc, service.provider.code").list()) {
-			servicesElement.appendChild(service.toXml(doc, new XmlTree("provider")));
+						"from NonCoreService service where order by service.finishRateScript.finishDate.date desc, service.provider.code")
+				.list()) {
+			servicesElement.appendChild(service.toXml(doc, new XmlTree(
+					"provider")));
 		}
 		source.appendChild(MonadDate.getMonthsXml(doc));
 		source.appendChild(MonadDate.getDaysXml(doc));
@@ -109,11 +113,10 @@ public class NonCoreServices implements Urlable, XmlDescriber {
 
 	public NonCoreService getChild(UriPathElement uriId) throws HttpException,
 			InternalException {
-		NonCoreService service = (NonCoreService) Hiber
-				.session()
-				.createQuery(
-						"from NonCoreService service where service.id = :serviceId").setLong("serviceId",
-						Long.parseLong(uriId.getString())).uniqueResult();
+		NonCoreService service = (NonCoreService) Hiber.session().createQuery(
+				"from NonCoreService service where service.id = :serviceId")
+				.setLong("serviceId", Long.parseLong(uriId.getString()))
+				.uniqueResult();
 		if (service == null) {
 			throw new NotFoundException();
 		}

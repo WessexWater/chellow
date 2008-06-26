@@ -1,6 +1,6 @@
 /*
  
- Copyright 2005 Meniscus Systems Ltd
+ Copyright 2005, 2008 Meniscus Systems Ltd
  
  This file is part of Chellow.
 
@@ -22,28 +22,24 @@
 
 package net.sf.chellow.physical;
 
-import java.util.List;
+import java.util.Date;
 
-import net.sf.chellow.billing.Account;
 import net.sf.chellow.billing.DsoService;
 import net.sf.chellow.billing.DsoServices;
 import net.sf.chellow.billing.Provider;
-import net.sf.chellow.data08.Data;
 import net.sf.chellow.monad.DeployerException;
 import net.sf.chellow.monad.DesignerException;
 import net.sf.chellow.monad.Hiber;
+import net.sf.chellow.monad.HttpException;
+import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Invocation;
 import net.sf.chellow.monad.MonadUtils;
-import net.sf.chellow.monad.NotFoundException;
-import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Urlable;
-import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.UserException;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
 import net.sf.chellow.ui.Chellow;
 
-import org.hibernate.HibernateException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -73,9 +69,9 @@ public class Dso extends Provider {
 		}
 		return dso;
 	}
-
-	public static Dso insertDso(String name, DsoCode code)
-			throws InternalException, HttpException, DesignerException {
+/*
+	public static Dso insertDso()
+			throws HttpException {
 
 		Dso dso = null;
 		try {
@@ -94,15 +90,16 @@ public class Dso extends Provider {
 		}
 		return dso;
 	}
-
+*/
 	private DsoCode code;
 
 	public Dso() {
 	}
 
-	public Dso(String name, DsoCode code) throws HttpException,
-			InternalException {
-		update(name, code);
+	public Dso(String name, Participant participant,
+			Date from, Date to, DsoCode code) throws HttpException {
+		super(name, participant, MarketRole.DISTRIBUTOR, from, to);
+		setCode(code);
 	}
 
 	void setCode(DsoCode code) {
@@ -111,12 +108,6 @@ public class Dso extends Provider {
 
 	public DsoCode getCode() {
 		return code;
-	}
-
-	public void update(String name, DsoCode code) throws HttpException,
-			InternalException {
-		setCode(code);
-		super.update(name);
 	}
 
 	public boolean isSettlement() {
@@ -152,7 +143,7 @@ public class Dso extends Provider {
 	}
 
 	public MonadUri getUri() throws InternalException, HttpException {
-		return Chellow.DSOS_INSTANCE.getUri().resolve(getUriId()).append("/");
+		return Chellow.PROVIDERS_INSTANCE.getUri().resolve(getUriId()).append("/");
 	}
 
 	public void httpGet(Invocation inv) throws DesignerException,
@@ -169,8 +160,8 @@ public class Dso extends Provider {
 
 	}
 
-	public Urlable getChild(UriPathElement uriId) throws InternalException,
-			HttpException {
+	public Urlable getChild(UriPathElement uriId) throws HttpException {
+		/*
 		if (DsoServices.URI_ID.equals(uriId)) {
 			return new DsoServices(this);
 		} else if (Llfs.URI_ID.equals(uriId)) {
@@ -180,6 +171,8 @@ public class Dso extends Provider {
 		} else {
 			throw new NotFoundException();
 		}
+		*/
+		return null;
 	}
 
 	public void httpDelete(Invocation inv) throws InternalException,
@@ -188,18 +181,20 @@ public class Dso extends Provider {
 
 	}
 
+	/*
 	@Override
 	public List<SupplyGeneration> supplyGenerations(Account account) {
 		// TODO Auto-generated method stub
 		return null;
 	}
+	*/
 
 	public DsoService insertService(String name, HhEndDate startDate,
 			String chargeScript) throws HttpException, InternalException,
 			DesignerException {
 		DsoService service = findService(name);
 		if (service == null) {
-			service = new DsoService(name, startDate, chargeScript, this);
+			service = new DsoService(this, name, startDate, chargeScript);
 		} else {
 			throw new UserException
 					("There is already a DSO service with this name.");
@@ -209,13 +204,7 @@ public class Dso extends Provider {
 		return service;
 	}
 
-	public DsoServices servicesInstance() {
-		return new DsoServices(this);
-	}
-
-	@Override
-	public DsoService getService(String name) throws HttpException,
-			InternalException {
+	public DsoService getService(String name) throws HttpException {
 		DsoService dsoService = findService(name);
 		if (dsoService == null) {
 			throw new UserException("The DSO service " + name
@@ -239,5 +228,9 @@ public class Dso extends Provider {
 			throws InternalException, HttpException {
 		return Llf.insertLlf(this, code, description,
 				voltageLevel, isSubstation, isImport);
+	}
+	
+	public DsoServices servicesInstance() {
+		return new DsoServices(this);
 	}
 }

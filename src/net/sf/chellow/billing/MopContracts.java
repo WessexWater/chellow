@@ -1,6 +1,6 @@
 /*
  
- Copyright 2005 Meniscus Systems Ltd
+ Copyright 2005, 2008 Meniscus Systems Ltd
  
  This file is part of Chellow.
 
@@ -40,14 +40,15 @@ import net.sf.chellow.monad.XmlTree;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
 import net.sf.chellow.physical.HhEndDate;
+import net.sf.chellow.physical.MarketRole;
+import net.sf.chellow.physical.Organization;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
-
 @SuppressWarnings("serial")
-public class MopServices implements Urlable, XmlDescriber {
+public class MopContracts implements Urlable, XmlDescriber {
 	public static final UriPathElement URI_ID;
 
 	static {
@@ -58,46 +59,48 @@ public class MopServices implements Urlable, XmlDescriber {
 		}
 	}
 
-	private Mop mop;
+	private Organization organization;
 
-	public MopServices(Mop mop) {
-		this.mop = mop;
+	public MopContracts(Organization organization) {
+		this.organization = organization;
 	}
 
 	public UriPathElement getUrlId() {
 		return URI_ID;
 	}
 
-	public MonadUri getUri() throws InternalException, HttpException {
-		return mop.getUri().resolve(getUrlId()).append("/");
+	public MonadUri getUri() throws HttpException {
+		return organization.getUri().resolve(getUrlId()).append("/");
 	}
 
-	public void httpPost(Invocation inv) throws InternalException,
-			HttpException, DesignerException, DeployerException {
-		int type = inv.getInteger("type");
+	public void httpPost(Invocation inv) throws HttpException {
+		String mopCode = inv.getString("mop-code");
 		String name = inv.getString("name");
 		Date startDate = inv.getDate("start-date");
 		String chargeScript = inv.getString("charge-script");
 		if (!inv.isValid()) {
 			throw new UserException(document());
 		}
-		MopService service = mop.insertService(type, name, HhEndDate.roundDown(startDate), chargeScript);
+		Provider mop = Provider.getProvider(mopCode, MarketRole.MOP);
+		MopContract contract = organization.insertMopContract(mop, name,
+				HhEndDate.roundDown(startDate), chargeScript);
 		Hiber.commit();
-		inv.sendCreated(service.getUri());
+		inv.sendCreated(contract.getUri());
 	}
 
 	@SuppressWarnings("unchecked")
-	private Document document() throws InternalException, HttpException, DesignerException {
+	private Document document() throws InternalException, HttpException,
+			DesignerException {
 		Document doc = MonadUtils.newSourceDocument();
 		Element source = doc.getDocumentElement();
 		Element contractsElement = (Element) toXml(doc);
 		source.appendChild(contractsElement);
-		contractsElement.appendChild(mop.toXml(doc));
+		contractsElement.appendChild(organization.toXml(doc));
 		for (HhdcContract contract : (List<HhdcContract>) Hiber
 				.session()
 				.createQuery(
-						"from ContractDce contract where contract.mop = :mop order by contract.name")
-				.setEntity("mop", mop).list()) {
+						"from MopContract contract where contract order by contract.name")
+				.list()) {
 			contractsElement.appendChild(contract.toXml(doc));
 		}
 		return doc;
@@ -108,14 +111,11 @@ public class MopServices implements Urlable, XmlDescriber {
 		inv.sendOk(document());
 	}
 
-	public Service getChild(UriPathElement uriId) throws HttpException,
-			InternalException {
-		Service contract = (Service) Hiber
-				.session()
-				.createQuery(
-						"from DceService service where service.mop = :mop and service.id = :serviceId")
-				.setEntity("mop", mop).setLong("serviceId",
-						Long.parseLong(uriId.getString())).uniqueResult();
+	public MopContract getChild(UriPathElement uriId) throws HttpException {
+		MopContract contract = (MopContract) Hiber.session().createQuery(
+				"from MopContract contract where contract.id = :contractId")
+				.setLong("contractId", Long.parseLong(uriId.getString()))
+				.uniqueResult();
 		if (contract == null) {
 			throw new NotFoundException();
 		}

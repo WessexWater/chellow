@@ -67,8 +67,6 @@ public abstract class Service extends PersistentEntity implements
 		return contract;
 	}
 
-	private Provider provider;
-
 	private int type;
 
 	private String name;
@@ -84,7 +82,7 @@ public abstract class Service extends PersistentEntity implements
 	public Service() {
 	}
 
-	public Service(Provider provider, int type, String name,
+	public Service(int type, String name,
 			HhEndDate startDate, String chargeScript) throws HttpException {
 		rateScripts = new HashSet<RateScript>();
 		RateScript rateScript = new RateScript(this, startDate, null,
@@ -92,7 +90,7 @@ public abstract class Service extends PersistentEntity implements
 		rateScripts.add(rateScript);
 		setStartRateScript(rateScript);
 		setFinishRateScript(rateScript);
-		internalUpdate(provider, type, name, chargeScript);
+		internalUpdate(type, name, chargeScript);
 	}
 
 	public int getType() {
@@ -143,9 +141,8 @@ public abstract class Service extends PersistentEntity implements
 		this.rateScripts = rateScripts;
 	}
 
-	protected void internalUpdate(Provider provider, int type, String name,
+	protected void internalUpdate(int type, String name,
 			String chargeScript) throws HttpException {
-		setProvider(provider);
 		setName(name);
 		if (type == TYPE_SERVICE_ONLY) {
 			if (chargeScript.length() > 0) {
@@ -169,7 +166,7 @@ public abstract class Service extends PersistentEntity implements
 	@SuppressWarnings("unchecked")
 	public void update(int type, String name, String chargeScript)
 			throws HttpException {
-		internalUpdate(provider, type, name, chargeScript);
+		internalUpdate(type, name, chargeScript);
 		updateNotification();
 	}
 
@@ -288,13 +285,7 @@ public abstract class Service extends PersistentEntity implements
 	public void httpDelete(Invocation inv) throws HttpException {
 	}
 
-	public Provider getProvider() {
-		return provider;
-	}
-
-	void setProvider(Provider provider) {
-		this.provider = provider;
-	}
+	abstract public Provider getProvider();
 
 	public String toString() {
 		return "Contract id " + getId() + " name " + getName();
