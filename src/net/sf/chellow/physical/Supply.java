@@ -34,7 +34,6 @@ import net.sf.chellow.billing.Account;
 import net.sf.chellow.billing.HhdcContract;
 import net.sf.chellow.billing.Invoice;
 import net.sf.chellow.billing.Service;
-import net.sf.chellow.billing.SupplierContract;
 import net.sf.chellow.data08.MpanCoreRaw;
 import net.sf.chellow.data08.MpanRaw;
 import net.sf.chellow.monad.DeployerException;
@@ -307,11 +306,10 @@ public class Supply extends PersistentEntity implements Urlable {
 		}
 		if (existingImportMpan == null) {
 			newSupplyGeneration = addGeneration(existingSiteMap, existingMeter,
-					null, null, null, null, null, false, false, false, false,
+					null, null, null, null, false, false, false, false,
 					null, existingExportMpan.getMpanTop(), existingExportMpan
-							.getMpanCore(), existingExportMpan.getHhdceContract(),
+							.getMpanCore(), existingExportMpan.getHhdceAccount(),
 					existingExportMpan.getSupplierAccount(), existingExportMpan
-							.getSupplierContract(), existingExportMpan
 							.getHasImportKwh(), existingExportMpan
 							.getHasImportKvarh(), existingExportMpan
 							.getHasExportKwh(), existingExportMpan
@@ -320,30 +318,27 @@ public class Supply extends PersistentEntity implements Urlable {
 		} else if (existingExportMpan == null) {
 			newSupplyGeneration = addGeneration(existingSiteMap, existingMeter,
 					existingImportMpan.getMpanTop(), existingImportMpan
-							.getMpanCore(), existingImportMpan.getHhdceContract(),
+							.getMpanCore(), existingImportMpan.getHhdceAccount(),
 					existingImportMpan.getSupplierAccount(), existingImportMpan
-							.getSupplierContract(), existingImportMpan
 							.getHasImportKwh(), existingImportMpan
 							.getHasImportKvarh(), existingImportMpan
 							.getHasExportKwh(), existingImportMpan
 							.getHasExportKvarh(), existingImportMpan
-							.getAgreedSupplyCapacity(), null, null, null, null,
+							.getAgreedSupplyCapacity(), null, null, null,
 					null, false, false, false, false, null, finishDate);
 		} else {
 			newSupplyGeneration = addGeneration(existingSiteMap, existingMeter,
 					existingImportMpan.getMpanTop(), existingImportMpan
-							.getMpanCore(), existingImportMpan.getHhdceContract(),
+							.getMpanCore(), existingImportMpan.getHhdceAccount(),
 					existingImportMpan.getSupplierAccount(), existingImportMpan
-							.getSupplierContract(), existingImportMpan
 							.getHasImportKwh(), existingImportMpan
 							.getHasImportKvarh(), existingImportMpan
 							.getHasExportKwh(), existingImportMpan
 							.getHasExportKvarh(), existingImportMpan
 							.getAgreedSupplyCapacity(), existingExportMpan
 							.getMpanTop(), existingExportMpan.getMpanCore(),
-					existingExportMpan.getHhdceContract(), existingExportMpan
+					existingExportMpan.getHhdceAccount(), existingExportMpan
 							.getSupplierAccount(), existingExportMpan
-							.getSupplierContract(), existingExportMpan
 							.getHasImportKwh(), existingExportMpan
 							.getHasImportKvarh(), existingExportMpan
 							.getHasExportKwh(), existingExportMpan
@@ -354,14 +349,14 @@ public class Supply extends PersistentEntity implements Urlable {
 	}
 
 	public SupplyGeneration addGeneration(Map<Site, Boolean> existingSiteMap,
-			Meter meter, MpanRaw importMpanRaw, HhdcContract importContractDce,
-			Account importAccountSupplier,
-			SupplierContract importContractSupplier, boolean importHasImportKwh,
+			Meter meter, MpanRaw importMpanRaw, Account importHhdceAccount,
+			Account importSupplierAccount,
+			boolean importHasImportKwh,
 			boolean importHasImportKvarh, boolean importHasExportKwh,
 			boolean importHasExportKvarh, Integer importAgreedSupplyCapacity,
-			MpanRaw exportMpanRaw, HhdcContract exportContractDce,
-			Account exportAccountSupplier,
-			SupplierContract exportContractSupplier, boolean exportHasImportKwh,
+			MpanRaw exportMpanRaw, Account exportHhdceAccount,
+			Account exportSupplierAccount,
+			 boolean exportHasImportKwh,
 			boolean exportHasImportKvarh, boolean exportHasExportKwh,
 			boolean exportHasExportKvarh, Integer exportAgreedSupplyCapacity,
 			HhEndDate finishDate) throws InternalException, HttpException,
@@ -377,29 +372,28 @@ public class Supply extends PersistentEntity implements Urlable {
 		MpanCore exportMpanCore = exportMpanRaw == null ? null : exportMpanRaw
 				.getMpanCore(organization);
 		return addGeneration(existingSiteMap, meter, importMpanTop,
-				importMpanCore, importContractDce, importAccountSupplier,
-				importContractSupplier, importHasImportKwh,
+				importMpanCore, importHhdceAccount, importSupplierAccount,
+				 importHasImportKwh,
 				importHasImportKvarh, importHasExportKwh, importHasExportKvarh,
 				importAgreedSupplyCapacity, exportMpanTop, exportMpanCore,
-				exportContractDce, exportAccountSupplier,
-				exportContractSupplier, exportHasImportKwh,
+				exportHhdceAccount, exportSupplierAccount,
+				 exportHasImportKwh,
 				exportHasImportKvarh, exportHasExportKwh, exportHasExportKvarh,
 				exportAgreedSupplyCapacity, finishDate);
 	}
 
 	public SupplyGeneration addGeneration(Map<Site, Boolean> siteMap,
 			Meter meter, MpanTop importMpanTop, MpanCore importMpanCore,
-			HhdcContract importContractDce, Account importAccountSupplier,
-			SupplierContract importContractSupplier, boolean importHasImportKwh,
+			Account importHhdceAccount, Account importAccountSupplier,
+			 boolean importHasImportKwh,
 			boolean importHasImportKvarh, boolean importHasExportKwh,
 			boolean importHasExportKvarh, Integer importAgreedSupplyCapacity,
 			MpanTop exportMpanTop, MpanCore exportMpanCore,
-			HhdcContract exportContractDce, Account exportAccountSupplier,
-			SupplierContract exportContractSupplier, boolean exportHasImportKwh,
+		Account exportHhdceAccount, Account exportSupplierAccount,
+			 boolean exportHasImportKwh,
 			boolean exportHasImportKvarh, boolean exportHasExportKwh,
 			boolean exportHasExportKvarh, Integer exportAgreedSupplyCapacity,
-			HhEndDate finishDate) throws InternalException, HttpException,
-			DesignerException {
+			HhEndDate finishDate) throws HttpException {
 		if (getGenerationFinishing(finishDate) != null) {
 			throw new UserException(
 					"There's already a supply generation with this finish date.");
@@ -427,12 +421,12 @@ public class Supply extends PersistentEntity implements Urlable {
 					"A supply generation must have at least one MPAN.");
 		}
 		supplyGeneration.addOrUpdateMpans(importMpanTop, importMpanCore,
-				importContractDce, importAccountSupplier,
-				importContractSupplier, importHasImportKwh,
+				importHhdceAccount, importAccountSupplier,
+				importHasImportKwh,
 				importHasImportKvarh, importHasExportKwh, importHasExportKvarh,
 				importAgreedSupplyCapacity, exportMpanTop, exportMpanCore,
-				exportContractDce, exportAccountSupplier,
-				exportContractSupplier, exportHasImportKwh,
+				exportHhdceAccount, exportSupplierAccount,
+				 exportHasImportKwh,
 				exportHasImportKvarh, exportHasExportKwh, exportHasExportKvarh,
 				exportAgreedSupplyCapacity);
 		for (Map.Entry<Site, Boolean> entry : siteMap.entrySet()) {
@@ -560,7 +554,7 @@ public class Supply extends PersistentEntity implements Urlable {
 							"select count(*) from HhDatum datum where datum.channel  = :channel and datum.endDate.date >= :startDate and datum.endDate.date <= :finishDate");
 			for (SupplyGeneration generation : getGenerations(from, to)) {
 				for (Channel channel : getChannels()) {
-					if (generation.getDceService(channel.getIsImport(), channel
+					if (generation.getHhdceContract(channel.getIsImport(), channel
 							.getIsKwh()) == null) {
 						HhEndDate generationFinishDate = generation
 								.getFinishDate();
@@ -624,7 +618,7 @@ public class Supply extends PersistentEntity implements Urlable {
 			}
 			for (SupplyGeneration generation : getGenerations(from, to)) {
 				for (Channel channel : getChannels()) {
-					HhdcContract contractDce = generation.getDceService(channel
+					HhdcContract contractDce = generation.getHhdceContract(channel
 							.getIsImport(), channel.getIsKwh());
 					HhEndDate generationFinishDate = generation.getFinishDate();
 					for (ChannelSnag snag : (List<ChannelSnag>) (generationFinishDate == null ? Hiber

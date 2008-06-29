@@ -274,10 +274,6 @@ public abstract class Service extends PersistentEntity implements
 		return snag;
 	}
 
-	public Batches batchesInstance() {
-		return new Batches(this);
-	}
-
 	public HhDataImportProcesses getHhDataImportProcessesInstance() {
 		return new HhDataImportProcesses(this);
 	}

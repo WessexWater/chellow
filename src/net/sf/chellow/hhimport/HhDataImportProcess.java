@@ -148,7 +148,7 @@ public class HhDataImportProcess extends Thread implements Urlable,
 	@SuppressWarnings("unchecked")
 	public void run() {
 		try {
-			HhdcContract dceService = HhdcContract.getDceService(dceServiceId);
+			HhdcContract dceService = HhdcContract.getHhdcContract(dceServiceId);
 			List<HhDatumRaw> data = new ArrayList<HhDatumRaw>();
 			HhDatumRaw firstDatumRaw = null;
 			while (!shouldHalt() && converter.hasNext()) {
@@ -240,7 +240,7 @@ public class HhDataImportProcess extends Thread implements Urlable,
 	}
 	
 	private HhdcContract getDceService() throws HttpException, InternalException {
-		return HhdcContract.getDceService(dceServiceId);
+		return HhdcContract.getHhdcContract(dceServiceId);
 	}
 
 	public void httpGet(Invocation inv) throws DesignerException,

@@ -48,7 +48,7 @@ public class MeterTimeswitches implements Urlable {
 		Document doc = MonadUtils.newSourceDocument();
 		Element source = doc.getDocumentElement();
 
-		for (MeterTimeswitch mtc : (List<MeterTimeswitch>) Hiber.session()
+		for (Mtc mtc : (List<Mtc>) Hiber.session()
 				.createQuery(
 						"select mtc from MeterTimeswitch mtc left outer join mtc.dso dso order by mtc.code, dso.code")
 				.list()) {
@@ -63,9 +63,9 @@ public class MeterTimeswitches implements Urlable {
 
 	}
 
-	public MeterTimeswitch getChild(UriPathElement uriId) throws HttpException,
+	public Mtc getChild(UriPathElement uriId) throws HttpException,
 			InternalException {
-		return MeterTimeswitch.getMeterTimeswitch(Long.parseLong(uriId
+		return Mtc.getMtc(Long.parseLong(uriId
 				.getString()));
 	}
 

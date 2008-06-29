@@ -32,16 +32,16 @@ import net.sf.chellow.monad.types.MonadInteger;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 
-public class MeterTimeswitchCode extends MonadInteger {
-	public MeterTimeswitchCode() {
+public class MtcCode extends MonadInteger {
+	public MtcCode() {
 	}
 
-	public MeterTimeswitchCode(String code) throws HttpException,
+	public MtcCode(String code) throws HttpException,
 			InternalException {
 		this(null, code);
 	}
 
-	public MeterTimeswitchCode(String label, String code) throws HttpException,
+	public MtcCode(String label, String code) throws HttpException,
 			InternalException {
 		this();
 		setLabel(label);

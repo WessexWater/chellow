@@ -83,7 +83,7 @@ public class Llfs implements Urlable, XmlDescriber {
 		Element llfsElement = (Element) toXml(doc);
 		source.appendChild(llfsElement);
 		llfsElement.appendChild(dso.toXml(doc));
-		for (Llf llf : (List<Llf>) Hiber
+		for (Llfc llf : (List<Llfc>) Hiber
 				.session()
 				.createQuery(
 						"from Llf llf where llf.dso = :dso order by llf.code")
@@ -96,9 +96,9 @@ public class Llfs implements Urlable, XmlDescriber {
 		inv.sendOk(doc);
 	}
 
-	public Llf getChild(UriPathElement uriId) throws HttpException,
+	public Llfc getChild(UriPathElement uriId) throws HttpException,
 			InternalException {
-		Llf llf = (Llf) Hiber
+		Llfc llf = (Llfc) Hiber
 				.session()
 				.createQuery(
 						"from Llf llf where llf.dso = :dso and llf.id = :llfId")

@@ -26,7 +26,6 @@ import java.util.List;
 import java.util.Set;
 
 import net.sf.chellow.billing.Account;
-import net.sf.chellow.billing.Accounts;
 import net.sf.chellow.billing.GenDeltas;
 import net.sf.chellow.billing.HhdcContract;
 import net.sf.chellow.billing.HhdcContracts;
@@ -220,10 +219,6 @@ public class Organization extends PersistentEntity {
 		return new Sites(this);
 	}
 
-	public Accounts accountsInstance() {
-		return new Accounts(this);
-	}
-
 	public Supplies suppliesInstance() {
 		return new Supplies(this);
 	}
@@ -262,14 +257,12 @@ public class Organization extends PersistentEntity {
 		return contract;
 	}
 
-	public HhdcContract getHhdcContract(Provider provider, String name)
-			throws HttpException {
+	public HhdcContract getHhdcContract(String name) throws HttpException {
 		HhdcContract contract = (HhdcContract) Hiber
 				.session()
 				.createQuery(
-						"from HhdcContract contract where contract.organization = :organization and contract.provider = :provider and contract.name = :name")
-				.setEntity("organization", this)
-				.setEntity("provider", provider).setString("name", name)
+						"from HhdcContract contract where contract.organization = :organization and contract.name = :name")
+				.setEntity("organization", this).setString("name", name)
 				.uniqueResult();
 		if (contract == null) {
 			throw new NotFoundException();
@@ -277,14 +270,13 @@ public class Organization extends PersistentEntity {
 		return contract;
 	}
 
-	public SupplierContract getSupplierContract(Provider provider, String name)
+	public SupplierContract getSupplierContract(String name)
 			throws HttpException {
 		SupplierContract contract = (SupplierContract) Hiber
 				.session()
 				.createQuery(
-						"from SupplierContract contract where contract.organization = :organization and contract.provider = :provider and contract.name = :name")
-				.setEntity("organization", this)
-				.setEntity("provider", provider).setString("name", name)
+						"from SupplierContract contract where contract.organization = :organization and contract.name = :name")
+				.setEntity("organization", this).setString("name", name)
 				.uniqueResult();
 		if (contract == null) {
 			throw new NotFoundException();
@@ -413,21 +405,6 @@ public class Organization extends PersistentEntity {
 		return account;
 	}
 
-	public void deleteAccount(Provider provider, String reference)
-			throws HttpException {
-		Account account = getAccount(provider, reference);
-		if ((provider.getRole().getCode() == MarketRole.SUPPLIER)
-				&& ((Long) Hiber
-						.session()
-						.createQuery(
-								"select count(*) from Mpan mpan where mpan.supplierAccount = :supplierAccount")
-						.setEntity("supplierAccount", account).uniqueResult()) > 0) {
-			throw new UserException(
-					"An account can't be deleted if there are still MPANs attached to it.");
-		}
-		Hiber.session().delete(account);
-		Hiber.flush();
-	}
 
 	/*
 	 * public void deleteSupplier(Supplier supplier) throws InternalException,
@@ -525,17 +502,4 @@ public class Organization extends PersistentEntity {
 	 * throw new NotFoundException( "There isn't a supplier with the name '" +
 	 * name + "'."); } return supplier; }
 	 */
-	public Account insertAccount(Provider provider, String reference)
-			throws HttpException, InternalException {
-		Account account = new Account(this, provider, reference);
-		try {
-			Hiber.session().save(account);
-			Hiber.flush();
-		} catch (ConstraintViolationException e) {
-			throw new UserException(
-					"There's already an account with the reference, '"
-							+ reference + "' attached to this provider.");
-		}
-		return account;
-	}
 }

@@ -47,7 +47,7 @@ public class ProfileClasses implements Urlable {
 		Document doc = MonadUtils.newSourceDocument();
 		Element source = doc.getDocumentElement();
 
-		for (ProfileClass profileClass : (List<ProfileClass>) Hiber
+		for (Pc profileClass : (List<Pc>) Hiber
 				.session()
 				.createQuery(
 						"from ProfileClass profileClass order by profileClass.code")
@@ -63,9 +63,9 @@ public class ProfileClasses implements Urlable {
 
 	}
 
-	public ProfileClass getChild(UriPathElement uriId) throws HttpException,
+	public Pc getChild(UriPathElement uriId) throws HttpException,
 			InternalException {
-		return ProfileClass.getProfileClass(Long.parseLong(uriId.getString()));
+		return Pc.getProfileClass(Long.parseLong(uriId.getString()));
 	}
 
 	public void httpDelete(Invocation inv) throws InternalException,

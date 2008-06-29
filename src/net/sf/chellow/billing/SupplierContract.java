@@ -40,6 +40,7 @@ import net.sf.chellow.monad.types.MonadDate;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
 import net.sf.chellow.physical.HhEndDate;
+import net.sf.chellow.physical.MarketRole;
 import net.sf.chellow.physical.Mpan;
 import net.sf.chellow.physical.Organization;
 import net.sf.chellow.physical.Snag;
@@ -49,29 +50,31 @@ import org.w3c.dom.Element;
 
 @SuppressWarnings("serial")
 public class SupplierContract extends Contract {
-	public static SupplierContract getSupplierService(Long id)
+	public static SupplierContract getSupplierContract(Long id)
 			throws HttpException, InternalException {
 		SupplierContract service = findSupplierService(id);
 		if (service == null) {
-			throw new UserException("There isn't a supplier service with that id.");
+			throw new UserException(
+					"There isn't a supplier service with that id.");
 		}
 		return service;
 	}
 
 	public static SupplierContract findSupplierService(Long id) {
-		return (SupplierContract) Hiber.session().get(SupplierContract.class, id);
+		return (SupplierContract) Hiber.session().get(SupplierContract.class,
+				id);
 	}
-	
+
 	private Provider supplier;
 
 	public SupplierContract() {
 	}
 
-	public SupplierContract(Provider supplier, Organization organization, String name, HhEndDate startDate,
-			String chargeScript) throws HttpException {
+	public SupplierContract(Provider supplier, Organization organization,
+			String name, HhEndDate startDate, String chargeScript)
+			throws HttpException {
 		super(supplier, organization, name, startDate, chargeScript);
 	}
-
 
 	public void update(String name, String chargeScript) throws HttpException {
 		super.update(TYPE_CONTRACT, name, chargeScript);
@@ -132,15 +135,19 @@ public class SupplierContract extends Contract {
 						getFinishDate() == null ? null : getFinishDate()
 								.getDate()).list();
 		if (!mpansOutside.isEmpty()) {
-			throw new UserException(document(), mpansOutside
-					.size() > 1 ? "The MPANs with cores "
-					+ mpansOutside.get(0).getMpanCore() + " and "
-					+ mpansOutside.get(mpansOutside.size() - 1).getMpanCore()
-					+ " use this service" : "An MPAN with core "
-					+ mpansOutside.get(0).getMpanCore()
-					+ " uses this service and lies outside " + startDate
-					+ " to "
-					+ (finishDate == null ? "ongoing" : finishDate + "."));
+			throw new UserException(document(),
+					mpansOutside.size() > 1 ? "The MPANs with cores "
+							+ mpansOutside.get(0).getMpanCore()
+							+ " and "
+							+ mpansOutside.get(mpansOutside.size() - 1)
+									.getMpanCore() + " use this service"
+							: "An MPAN with core "
+									+ mpansOutside.get(0).getMpanCore()
+									+ " uses this service and lies outside "
+									+ startDate
+									+ " to "
+									+ (finishDate == null ? "ongoing"
+											: finishDate + "."));
 		}
 		super.updateNotification(startDate, finishDate);
 	}
@@ -150,7 +157,7 @@ public class SupplierContract extends Contract {
 		Document doc = MonadUtils.newSourceDocument();
 		Element source = doc.getDocumentElement();
 		source.appendChild(toXml(doc, new XmlTree("provider", new XmlTree(
-						"organization"))));
+				"organization"))));
 		source.appendChild(new MonadDate().toXml(doc));
 		source.appendChild(MonadDate.getMonthsXml(doc));
 		source.appendChild(MonadDate.getDaysXml(doc));
@@ -209,7 +216,7 @@ public class SupplierContract extends Contract {
 		return "Contract id " + getId() + " " + getProvider() + " name "
 				+ getName();
 	}
-	
+
 	public Element toXml(Document doc) throws HttpException {
 		setTypeName("supplier-contract");
 		Element element = super.toXml(doc);
@@ -220,4 +227,22 @@ public class SupplierContract extends Contract {
 	public Provider getProvider() {
 		return supplier;
 	}
+
+	public void deleteAccount(Account account) throws HttpException {
+		if (account.getContract().getProvider().getRole().getCode() != MarketRole.SUPPLIER) {
+			throw new InternalException(
+					"The account isn't attached to this contract.");
+		}
+		if (((Long) Hiber
+				.session()
+				.createQuery(
+						"select count(*) from Mpan mpan where mpan.supplierAccount = :supplierAccount")
+				.setEntity("supplierAccount", account).uniqueResult()) > 0) {
+			throw new UserException(
+					"An account can't be deleted if there are still MPANs attached to it.");
+		}
+		Hiber.session().delete(account);
+		Hiber.flush();
+	}
+
 }

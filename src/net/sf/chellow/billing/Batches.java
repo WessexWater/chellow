@@ -56,18 +56,18 @@ public class Batches implements Urlable, XmlDescriber {
 		}
 	}
 
-	private Service service;
+	private Contract contract;
 
-	public Batches(Service service) {
-		setService(service);
+	public Batches(Contract contract) {
+		setContract(contract);
 	}
 
-	public Service getService() {
-		return service;
+	public Contract getContract() {
+		return contract;
 	}
 
-	void setService(Service service) {
-		this.service = service;
+	void setContract(Contract contract) {
+		this.contract = contract;
 	}
 
 	public UriPathElement getUrlId() {
@@ -75,7 +75,7 @@ public class Batches implements Urlable, XmlDescriber {
 	}
 
 	public MonadUri getUri() throws InternalException, HttpException {
-		return service.getUri().resolve(getUrlId()).append("/");
+		return contract.getUri().resolve(getUrlId()).append("/");
 	}
 
 	public void httpPost(Invocation inv) throws InternalException,
@@ -84,7 +84,7 @@ public class Batches implements Urlable, XmlDescriber {
 		if (!inv.isValid()) {
 			throw new UserException(document());
 		}
-		Batch batch = service.insertBatch(reference);
+		Batch batch = contract.insertBatch(reference);
 		Hiber.commit();
 		inv.sendCreated(document(), batch.getUri());
 	}
@@ -100,7 +100,7 @@ public class Batches implements Urlable, XmlDescriber {
 				.session()
 				.createQuery(
 						"from Batch batch where batch.service = :service and batch.id = :batchId")
-				.setEntity("service", service).setLong("batchId",
+				.setEntity("service", contract).setLong("batchId",
 						Long.parseLong(uriId.getString())).uniqueResult();
 		if (batch == null) {
 			throw new NotFoundException();
@@ -129,13 +129,13 @@ public class Batches implements Urlable, XmlDescriber {
 		Element source = doc.getDocumentElement();
 		Element batchesElement = (Element) toXml(doc);
 		source.appendChild(batchesElement);
-		batchesElement.appendChild(service.toXml(doc, new XmlTree("provider",
+		batchesElement.appendChild(contract.toXml(doc, new XmlTree("provider",
 						new XmlTree("organization"))));
 		for (Batch batch : (List<Batch>) Hiber
 				.session()
 				.createQuery(
 						"from Batch batch where batch.service = :service order by batch.reference")
-				.setEntity("service", service).list()) {
+				.setEntity("service", contract).list()) {
 			batchesElement.appendChild(batch.toXml(doc));
 		}
 		return doc;

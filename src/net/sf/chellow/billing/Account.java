@@ -82,27 +82,24 @@ public class Account extends PersistentEntity implements Urlable {
 		}
 	}
 	
-	private Organization organization;
-
-	private Provider provider;
+	private Contract contract;
 
 	private String reference;
 
 	public Account() {
 	}
 
-	public Account(Organization organization, Provider provider, String reference) {
-		setProvider(provider);
-		setOrganization(organization);
+	public Account(Contract contract, String reference) {
+		setContract(contract);
 		update(reference);
 	}
 
-	public Organization getOrganization() {
-		return organization;
+	public Contract getContract() {
+		return contract;
 	}
 
-	public void setOrganization(Organization organization) {
-		this.organization = organization;
+	public void setContract(Contract contract) {
+		this.contract = contract;
 	}
 
 	public String getReference() {
@@ -111,14 +108,6 @@ public class Account extends PersistentEntity implements Urlable {
 
 	public void setReference(String reference) {
 		this.reference = reference;
-	}
-
-	public Provider getProvider() {
-		return provider;
-	}
-
-	protected void setProvider(Provider provider) {
-		this.provider = provider;
 	}
 
 	public void update(String reference) {
@@ -136,13 +125,13 @@ public class Account extends PersistentEntity implements Urlable {
 	public void httpPost(Invocation inv) throws HttpException {
 		if (inv.hasParameter("delete")) {
 			try {
-				provider.deleteAccount(this);
+				contract.deleteAccount(this);
 			} catch (HttpException e) {
 				e.setDocument(document());
 				throw e;
 			}
 			Hiber.commit();
-				inv.sendSeeOther(organization.accountsInstance().getUri());
+				inv.sendSeeOther(contract.accountsInstance().getUri());
 		} else {
 			String reference = inv.getString("reference");
 			if (!inv.isValid()) {
@@ -186,7 +175,7 @@ public class Account extends PersistentEntity implements Urlable {
 	}
 
 	public MonadUri getUri() throws HttpException {
-		return organization.accountsInstance().getUri().resolve(getUriId()).append("/");
+		return contract.accountsInstance().getUri().resolve(getUriId()).append("/");
 	}
 
 	public Urlable getChild(UriPathElement uriId) throws InternalException,
@@ -327,7 +316,7 @@ public class Account extends PersistentEntity implements Urlable {
 	@SuppressWarnings("unchecked")
 	private List<Mpan> getMpans(HhEndDate from, HhEndDate to)
 			throws HttpException, InternalException {
-		char roleCode = getProvider().getRole().getCode();
+		char roleCode = contract.getProvider().getRole().getCode();
 		if (roleCode == MarketRole.SUPPLIER) {
 			if (to == null) {
 				return Hiber

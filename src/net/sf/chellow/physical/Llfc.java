@@ -22,7 +22,14 @@
 
 package net.sf.chellow.physical;
 
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 import net.sf.chellow.monad.DeployerException;
 import net.sf.chellow.monad.DesignerException;
@@ -34,6 +41,7 @@ import net.sf.chellow.monad.Urlable;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.UserException;
 import net.sf.chellow.monad.XmlTree;
+import net.sf.chellow.monad.types.MonadDate;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
 
@@ -42,35 +50,23 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
-public class Llf extends PersistentEntity {
-	static public Llf insertLlf(Dso dso, int code,
-			String description, String voltageLevel, boolean isSubstation,
-			boolean isImport) throws InternalException, HttpException {
-		Llf llf = new Llf(dso, code,
-				description, VoltageLevel.getVoltageLevel(new VoltageLevelCode(
-						voltageLevel)), isSubstation, isImport);
-		Hiber.session().save(llf);
-		Hiber.flush();
-		return llf;
-	}
+import com.Ostermiller.util.CSVParser;
 
-	static public Llf getLlf(Long id)
-			throws InternalException, HttpException {
-		Llf llf = (Llf) Hiber.session().get(
-				Llf.class, id);
+public class Llfc extends PersistentEntity {
+	static public Llfc getLlf(Long id) throws InternalException, HttpException {
+		Llfc llf = (Llfc) Hiber.session().get(Llfc.class, id);
 		if (llf == null) {
-			throw new UserException
-					("There is no mpan generation with that id.");
+			throw new UserException("There is no mpan generation with that id.");
 		}
 		return llf;
 	}
 
 	@SuppressWarnings("unchecked")
-	static public List<Llf> find(Dso dso, ProfileClass profileClass,
+	static public List<Llfc> find(Dso dso, Pc profileClass,
 			boolean isSubstation, boolean isImport, VoltageLevel voltageLevel)
 			throws InternalException, HttpException {
 		try {
-			return (List<Llf>) Hiber
+			return (List<Llfc>) Hiber
 					.session()
 					.createQuery(
 							"from Llf llf where llf.dso = :dso and llf.profileClass = :profileClass and llf.isSubstation.boolean = :isSubstation and llf.isImport.boolean = :isImport and llf.voltageLevel = :voltageLevel")
@@ -84,10 +80,10 @@ public class Llf extends PersistentEntity {
 	}
 
 	@SuppressWarnings("unchecked")
-	static public List<Llf> find(Dso dso, ProfileClass profileClass)
+	static public List<Llfc> find(Dso dso, Pc profileClass)
 			throws InternalException, HttpException {
 		try {
-			return (List<Llf>) Hiber
+			return (List<Llfc>) Hiber
 					.session()
 					.createQuery(
 							"from Llf llf where llf.dso = :dso and llf.profileClass = :profileClass order by llf.code.string")
@@ -98,9 +94,76 @@ public class Llf extends PersistentEntity {
 		}
 	}
 
+	static public void loadFromCsv() throws HttpException {
+		try {
+			ClassLoader classLoader = Llfc.class.getClassLoader();
+			CSVParser parser = new CSVParser(new InputStreamReader(classLoader
+					.getResource(
+							"net/sf/chellow/physical/LineLossFactorClass.csv")
+					.openStream(), "UTF-8"));
+			parser.setCommentStart("#;!");
+			parser.setEscapes("nrtf", "\n\r\t\f");
+			String[] titles = parser.getLine();
+
+			if (titles.length < 4
+					|| !titles[0].trim().equals("Market Participant Id")
+					|| !titles[1].trim().equals("Market Participant Role Code")
+					|| !titles[2].trim().equals("Effective From Date {MPR}")
+					|| !titles[3].trim().equals("Line Loss Factor Class Id")
+					|| !titles[4].trim().equals(
+							"Effective From Settlement Date {LLFC}")
+					|| !titles[5].trim().equals(
+							"Line Loss Factor Class Description")
+					|| !titles[6].trim().equals(
+							"MS Specific LLF Class Indicator")
+					|| !titles[7].trim().equals(
+							"Effective To Settlement Date {LLFC}")) {
+				throw new UserException(
+						"The first line of the CSV must contain the titles "
+								+ "Market Participant Id, Market Participant Role Code, Effective From Date {MPR}, Line Loss Factor Class Id, Effective From Settlement Date {LLFC}, Line Loss Factor Class Description, MS Specific LLF Class Indicator, Effective To Settlement Date {LLFC}.");
+			}
+			DateFormat dateFormat = DateFormat.getDateTimeInstance(
+					DateFormat.SHORT, DateFormat.SHORT, Locale.UK);
+			for (String[] values = parser.getLine(); values != null; values = parser
+					.getLine()) {
+				String participantCode = values[0];
+				String description = values[5];
+				VoltageLevel vLevel = null;
+				if (description.contains(VoltageLevel.EHV)) {
+					vLevel = VoltageLevel.getVoltageLevel(VoltageLevel.EHV);
+				} else if (description.contains(VoltageLevel.HV)) {
+					vLevel = VoltageLevel.getVoltageLevel(VoltageLevel.HV);
+				} else {
+					vLevel = VoltageLevel.getVoltageLevel(VoltageLevel.LV);
+				}
+				boolean isSubstation = (participantCode.equals("SWEB") && description
+						.contains("S/S"))
+						|| (!participantCode.equals("SWEB") && description
+								.contains("sub"));
+				String indicator = values[6];
+				boolean isImport = indicator.equals("A")
+						|| indicator.equals("B");
+				Hiber.session().save(
+						new Llfc(Dso.getDso(participantCode), Integer
+								.parseInt(values[3]), description, vLevel,
+								isSubstation, isImport, dateFormat
+										.parse(values[2]), dateFormat
+										.parse(values[4])));
+			}
+		} catch (UnsupportedEncodingException e) {
+			throw new InternalException(e);
+		} catch (IOException e) {
+			throw new InternalException(e);
+		} catch (NumberFormatException e) {
+			throw new InternalException(e);
+		} catch (ParseException e) {
+			throw new InternalException(e);
+		}
+	}
+
 	private Dso dso;
 
-	private LlfCode code;
+	private LlfcCode code;
 
 	private String description;
 
@@ -110,21 +173,23 @@ public class Llf extends PersistentEntity {
 
 	private boolean isImport;
 
-	Llf() {
+	private Date from;
+	private Date to;
+
+	Llfc() {
 	}
 
-	public Llf(Dso dso, int code, String description,
-			VoltageLevel voltageLevel, boolean isSubstation, boolean isImport)
-			throws InternalException, HttpException {
-		this();
-		this.dso = dso;
-		setCode(new LlfCode(code));
-		if (description == null) {
-			throw new InternalException("The description can't be null.");
-		}
+	public Llfc(Dso dso, int code, String description,
+			VoltageLevel voltageLevel, boolean isSubstation, boolean isImport,
+			Date from, Date to) throws HttpException {
+		setDso(dso);
+		setCode(new LlfcCode(code));
 		setDescription(description);
-		update(voltageLevel, isSubstation, isImport);
-		// setMeterTimeswitches(new HashSet<MeterTimeswitch>());
+		setVoltageLevel(voltageLevel);
+		setIsSubstation(isSubstation);
+		setIsImport(isImport);
+		setFrom(from);
+		setTo(to);
 	}
 
 	public Dso getDso() {
@@ -135,11 +200,11 @@ public class Llf extends PersistentEntity {
 		this.dso = dso;
 	}
 
-	public LlfCode getCode() {
+	public LlfcCode getCode() {
 		return code;
 	}
 
-	void setCode(LlfCode code) {
+	void setCode(LlfcCode code) {
 		this.code = code;
 	}
 
@@ -175,26 +240,20 @@ public class Llf extends PersistentEntity {
 		this.isImport = isImport;
 	}
 
-	/*
-	 * public MeterTimeswitch addMeterTimeswitch(String code) throws
-	 * ProgrammerException, UserException { MeterTimeswitch meterTimeswitch;
-	 * meterTimeswitch = MeterTimeswitch.getMeterTimeswitch(getDso(), new
-	 * MeterTimeswitchCode(code)); if
-	 * (meterTimeswitches.contains(meterTimeswitch)) { throw UserException
-	 * .newOk("The Line Loss Factor already has this Meter Timeswitch."); }
-	 * meterTimeswitches.add(meterTimeswitch);
-	 * meterTimeswitch.getLineLossFactors().add(this); return meterTimeswitch; }
-	 */
-	public void update(VoltageLevel voltageLevel, boolean isSubstation,
-			boolean isImport) throws InternalException, HttpException {
-		setVoltageLevel(voltageLevel);
-		setIsSubstation(isSubstation);
-		setIsImport(isImport);
+	public Date getFrom() {
+		return from;
 	}
 
-	public String toString() {
-		return code.toString() + " - " + description + " (DSO " + dso.getCode()
-				+ ")";
+	void setFrom(Date from) {
+		this.from = from;
+	}
+
+	public Date getTo() {
+		return to;
+	}
+
+	void setTo(Date to) {
+		this.to = to;
 	}
 
 	public Node toXml(Document doc) throws InternalException, HttpException {
@@ -204,6 +263,10 @@ public class Llf extends PersistentEntity {
 		element.setAttribute("description", description);
 		element.setAttribute("is-substation", Boolean.toString(isSubstation));
 		element.setAttribute("is-import", Boolean.toString(isImport));
+		MonadDate fromDate = new MonadDate(from);
+		fromDate.setLabel("from");
+		MonadDate toDate = new MonadDate(to);
+		toDate.setLabel("to");
 		return element;
 	}
 
@@ -248,4 +311,11 @@ public class Llf extends PersistentEntity {
 	 * ProgrammerException, UserException { for (String code : codes.split(",")) {
 	 * addMeterTimeswitch(code); } }
 	 */
+	
+	public MpanTop insertMpanTop(Pc pc, Mtc mtc, Ssc ssc) throws HttpException {
+		MpanTop top = new MpanTop(pc, mtc, this, ssc);
+		Hiber.session().save(top);
+		Hiber.flush();
+		return top;
+	}
 }

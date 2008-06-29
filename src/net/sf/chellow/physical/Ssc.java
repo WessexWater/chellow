@@ -1,8 +1,12 @@
 package net.sf.chellow.physical;
 
-import java.util.HashSet;
-import java.util.Set;
-
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.util.Date;
+import java.util.Locale;
 import net.sf.chellow.monad.DeployerException;
 import net.sf.chellow.monad.DesignerException;
 import net.sf.chellow.monad.Hiber;
@@ -19,10 +23,12 @@ import net.sf.chellow.monad.types.UriPathElement;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
+import com.Ostermiller.util.CSVParser;
+
 public class Ssc extends PersistentEntity {
-	public static Ssc insertSsc(int code, String tprs)
+	public static Ssc insertSsc(String code, Date from, Date to, String description, boolean isImport)
 			throws InternalException, HttpException {
-		Ssc ssc = new Ssc(code, tprs);
+		Ssc ssc = new Ssc(code, from, to, description, isImport);
 		Hiber.session().save(ssc);
 		Hiber.flush();
 		return ssc;
@@ -60,36 +66,114 @@ public class Ssc extends PersistentEntity {
 		}
 		return ssc;
 	}
+	
+	static public void loadFromCsv() throws HttpException {
+		try {
+			ClassLoader classLoader = Participant.class.getClassLoader();
+			CSVParser parser = new CSVParser(new InputStreamReader(classLoader
+					.getResource(
+							"net/sf/chellow/physical/StandardSettlementConfiguration.csv")
+					.openStream(), "UTF-8"));
+			parser.setCommentStart("#;!");
+			parser.setEscapes("nrtf", "\n\r\t\f");
+			String[] titles = parser.getLine();
+			if (titles.length < 7
+					|| !titles[0].trim().equals("Standard Settlement Configuration Id")
+					|| !titles[1].trim().equals("Effective From Settlement Date {SSC}")
+					|| !titles[2].trim().equals("Effective To Settlement Date {SSC}")
+					|| !titles[3].trim().equals("Standard Settlement Configuration Desc")
+					|| !titles[4].trim().equals("Standard Settlement Configuraton Type")
+					|| !titles[5].trim().equals("Teleswitch User Id")
+					|| !titles[6].trim().equals("Teleswitch Group Id")
+					) {
+				throw new UserException(
+						"The first line of the CSV must contain the titles "
+								+ "Standard Settlement Configuration Id , Effective From Settlement Date {SSC}, Effective To Settlement Date {SSC}, Standard Settlement Configuration Desc, Standard Settlement Configuraton Type, Teleswitch User Id, Teleswitch Group Id");
+			}
+			DateFormat dateFormat = DateFormat.getDateTimeInstance(
+					DateFormat.SHORT, DateFormat.SHORT, Locale.UK);
+			for (String[] values = parser.getLine(); values != null; values = parser
+					.getLine()) {
+				insertSsc(values[0], dateFormat.parse(values[1]), dateFormat.parse(values[2]), values[3], values[4].equals("I"));
+			}
+		} catch (UnsupportedEncodingException e) {
+			throw new InternalException(e);
+		} catch (IOException e) {
+			throw new InternalException(e);
+		} catch (ParseException e) {
+			throw new InternalException(e);
+		}
+	}
 
-	private SscCode code;
+	private String code;
+	
+	private Date from;
+	private Date to;
+	private String description;
+private boolean isImport;
+//	private Set<MpanTop> mpanTops;
 
-	private Set<MpanTop> mpanTops;
-
-	private Set<Tpr> tprs;
+//	private Set<Tpr> tprs;
 
 	public Ssc() {
 	}
 
-	public Ssc(int code, String tprString) throws InternalException,
+	public Ssc(String code, Date from, Date to, String description, boolean isImport) throws InternalException,
 			HttpException {
-		setCode(new SscCode(code));
-		setTprs(new HashSet<Tpr>());
-		if (tprString != null && tprString.trim().length() > 0) {
-			for (String tprCode : tprString.split(",")) {
-				Tpr tpr = Tpr.getTpr(tprCode);
-				tprs.add(tpr);
-			}
-		}
+		setCode(code);
+		setFrom(from);
+		setTo(to);
+		setDescription(description);
+		setIsImport(isImport);
+		//setTprs(new HashSet<Tpr>());
+		//if (tprString != null && tprString.trim().length() > 0) {
+		//	for (String tprCode : tprString.split(",")) {
+		//		Tpr tpr = Tpr.getTpr(tprCode);
+		//		tprs.add(tpr);
+		//	}
+		//}
 	}
 
-	public SscCode getCode() {
+	public String getCode() {
 		return code;
 	}
 
-	void setCode(SscCode code) {
+	void setCode(String code) {
 		this.code = code;
 	}
-
+	
+	public Date getFrom() {
+		return from;
+	}
+	
+	void setFrom(Date from) {
+		this.from = from;
+	}
+	
+	public Date getTo() {
+		return to;
+	}
+	
+	void setTo(Date to) {
+		this.to = to;
+	}
+	
+	public String getDescription() {
+		return description;
+	}
+	
+	void setDescription(String description) {
+		this.description = description;
+	}
+	
+	public boolean getIsImport() {
+		return isImport;
+	}
+	
+	void setIsImport(boolean isImport) {
+		this.isImport = isImport;
+	}
+/*
 	public Set<MpanTop> getMpanTops() {
 		return mpanTops;
 	}
@@ -105,7 +189,7 @@ public class Ssc extends PersistentEntity {
 	void setTprs(Set<Tpr> tprs) {
 		this.tprs = tprs;
 	}
-
+*/
 	public Urlable getChild(UriPathElement uriId) throws InternalException,
 			HttpException {
 		return null;

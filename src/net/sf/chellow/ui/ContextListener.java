@@ -1,8 +1,5 @@
 package net.sf.chellow.ui;
 
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.StringWriter;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -18,8 +15,6 @@ import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 import javax.sql.DataSource;
 
-import net.sf.chellow.billing.DsoService;
-import net.sf.chellow.billing.RateScript;
 import net.sf.chellow.hhimport.stark.StarkAutomaticHhDataImporters;
 import net.sf.chellow.monad.Debug;
 import net.sf.chellow.monad.DeployerException;
@@ -35,19 +30,12 @@ import net.sf.chellow.monad.UserException;
 import net.sf.chellow.monad.types.EmailAddress;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.physical.DatabaseVersion;
-import net.sf.chellow.physical.Dso;
-import net.sf.chellow.physical.DsoCode;
-import net.sf.chellow.physical.HhEndDate;
 import net.sf.chellow.physical.MarketRole;
-import net.sf.chellow.physical.MeterTimeswitch;
-import net.sf.chellow.physical.MpanTop;
 import net.sf.chellow.physical.Participant;
 import net.sf.chellow.physical.Password;
-import net.sf.chellow.physical.ProfileClass;
+import net.sf.chellow.physical.Pc;
 import net.sf.chellow.physical.Role;
 import net.sf.chellow.physical.Source;
-import net.sf.chellow.physical.Ssc;
-import net.sf.chellow.physical.Tpr;
 import net.sf.chellow.physical.User;
 import net.sf.chellow.physical.VoltageLevel;
 
@@ -359,6 +347,7 @@ public class ContextListener implements ServletContextListener {
 		Hiber.close();
 		try {
 			//Government.insertGovernment();
+			/*
 			insertDso("Eastern", "10");
 			insertDso("Scottish Hydro", "17");
 			insertDso("East Midlands", "11");
@@ -375,34 +364,33 @@ public class ContextListener implements ServletContextListener {
 			insertDso("Yorkshire", "23");
 			insertDso("Non-settlement 98", "98");
 			insertDso("Non-settlement 99", "99");
+			*/
 			Source.insertSource("net", "Public distribution system.");
 			Source.insertSource("chp", "Combined heat and power generator");
 			Source.insertSource("lm", "Load management generator");
 			Source.insertSource("turb", "Water turbine");
 			Source.insertSource("sub", "Sub meter");
 
-			VoltageLevel.insertVoltageLevel("LV", "Low voltage");
-			VoltageLevel.insertVoltageLevel("HV", "High voltage");
-			VoltageLevel.insertVoltageLevel("EHV", "Extra high voltage");
+			VoltageLevel.insertVoltageLevels();
 
-			ProfileClass.insertProfileClass(0, "Half-hourly");
-			ProfileClass.insertProfileClass(1, "Domestic Unrestricted");
-			ProfileClass.insertProfileClass(2, "Domestic Economy 7");
-			ProfileClass.insertProfileClass(3, "Non-Domestic Unrestricted");
-			ProfileClass.insertProfileClass(4, "Non-Domestic Economy 7");
-			ProfileClass
+			Pc.insertProfileClass(0, "Half-hourly");
+			Pc.insertProfileClass(1, "Domestic Unrestricted");
+			Pc.insertProfileClass(2, "Domestic Economy 7");
+			Pc.insertProfileClass(3, "Non-Domestic Unrestricted");
+			Pc.insertProfileClass(4, "Non-Domestic Economy 7");
+			Pc
 					.insertProfileClass(
 							5,
 							"Non-domestic, with MD recording capability and with LF less than or equal to 20%");
-			ProfileClass
+			Pc
 					.insertProfileClass(
 							6,
 							"Non-domestic, with MD recording capability and with LF less than or equal to 30% and greater than 20%");
-			ProfileClass
+			Pc
 					.insertProfileClass(
 							7,
 							"Non-domestic, with MD recording capability and with LF less than or equal to 40% and greater than 30%");
-			ProfileClass
+			Pc
 					.insertProfileClass(8,
 							"Non-domestic, with MD recording capability and with LF greater than 40%");
 
@@ -474,6 +462,8 @@ public class ContextListener implements ServletContextListener {
 		 */
 
 		// Ssc.insertSsc(code, tprs)
+		
+		/*
 		Tpr tpr1 = Tpr.insertTpr(1);
 		tpr1.insertLine(1, 12, 1, 7, 0, 30, 0, 0, true);
 		Tpr tpr39 = Tpr.insertTpr(39);
@@ -814,8 +804,11 @@ public class ContextListener implements ServletContextListener {
 		tpr1385.insertLine(1, 12, 1, 7, 1, 0, 7, 30, false);
 		Tpr tpr1386 = Tpr.insertTpr(1386);
 		tpr1386.insertLine(1, 12, 1, 7, 8, 0, 7, 30, false);
+		
+		*/
 		Hiber.commit();
 
+		/*
 		Ssc.insertSsc(0, null);
 		Ssc.insertSsc(6, null);
 		Ssc.insertSsc(7, null);
@@ -2458,6 +2451,7 @@ public class ContextListener implements ServletContextListener {
 		 * llf14_621.addMeterTimeswitch("845");
 		 * llf14_621.addMeterTimeswitch("846");
 		 */
+		/*
 		MpanTop.insertMpanTops(dso14, pc00array, "845", 622, "09999");
 		MpanTop.insertMpanTops(dso14, pc00array, "846", 622, "09999");
 
@@ -2686,7 +2680,7 @@ public class ContextListener implements ServletContextListener {
 		 * llf20_930.attachProfileClass(profileClass00);
 		 * llf20_930.addMeterTimeswitch("845");
 		 */
-
+/*
 		MpanTop.insertMpanTops(dso20, pc01array, "801, 500", 100, "393");
 		MpanTop.insertMpanTops(dso20, pc01array, "802, 501", 100, "393");
 		MpanTop.insertMpanTops(dso20, pc01array, "801, 500", 101, "393");
@@ -3225,6 +3219,8 @@ public class ContextListener implements ServletContextListener {
 		 * llf98_007.attachProfileClass(profileClass00);
 		 * llf98_007.addMeterTimeswitch("845");
 		 */
+		
+	/*
 		MpanTop.insertMpanTops(dso22, pc01array, "500", 10, "393");
 		MpanTop.insertMpanTops(dso22, pc01array, "501", 10, "393");
 		MpanTop.insertMpanTops(dso22, pc01array, "801", 10, "393");
@@ -3769,6 +3765,8 @@ public class ContextListener implements ServletContextListener {
 		 * MpanTop.insertMpanTops(dso22, pc00array, "845", "671", "9999");
 		 * MpanTop.insertMpanTops(dso22, pc00array, "845", "671", "9999");
 		 */
+		
+		/*
 		MpanTop.insertMpanTops(dso22, pc00array, "863", 970, "9999");
 
 		MpanTop.insertMpanTops(dso99, pc00array, "845", 000, "9999");
@@ -3989,7 +3987,7 @@ public class ContextListener implements ServletContextListener {
 		 * 
 		 */
 	}
-
+/*
 	static private Dso insertDso(String name, String code)
 			throws HttpException {
 		Dso dso = Dso.insertDso(name, new DsoCode(code));
@@ -4024,7 +4022,7 @@ public class ContextListener implements ServletContextListener {
 		}
 		return dso;
 	}
-
+*/
 	private void upgrade10to11(Connection con) throws HttpException {
 		try {
 			Statement stmt = con.createStatement();

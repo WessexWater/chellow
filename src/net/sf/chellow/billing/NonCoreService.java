@@ -46,19 +46,33 @@ import org.w3c.dom.Element;
 
 @SuppressWarnings("serial")
 public class NonCoreService extends Service {
-	static public NonCoreService insertNonCoreService(Provider provider, String name, HhEndDate startDate, String chargeScript) throws HttpException {
-		NonCoreService service = new NonCoreService(provider, name, startDate, chargeScript);
+	static public NonCoreService insertNonCoreService(Provider provider,
+			String name, HhEndDate startDate, String chargeScript)
+			throws HttpException {
+		NonCoreService service = new NonCoreService(provider, name, startDate,
+				chargeScript);
 		Hiber.session().save(service);
 		Hiber.session().flush();
 		return service;
 	}
+
+	private Provider provider;
 
 	public NonCoreService() {
 	}
 
 	public NonCoreService(Provider provider, String name, HhEndDate startDate,
 			String chargeScript) throws HttpException {
-		super(provider, TYPE_CONTRACT, name, startDate, chargeScript);
+		super(Service.TYPE_PASS_THROUGH, name, startDate, chargeScript);
+		internalUpdate(provider, Service.TYPE_PASS_THROUGH, name, chargeScript);
+	}
+
+	public Provider getProvider() {
+		return provider;
+	}
+
+	void setProvider(Provider provider) {
+		this.provider = provider;
 	}
 
 	@SuppressWarnings("unchecked")
@@ -66,13 +80,15 @@ public class NonCoreService extends Service {
 		super.update(Service.TYPE_PASS_THROUGH, name, chargeScript);
 		Hiber.flush();
 	}
-	
-	protected void internalUpdate(Provider provider, int type, String name, String chargeScript)
-	throws HttpException {
+
+	protected void internalUpdate(Provider provider, int type, String name,
+			String chargeScript) throws HttpException {
 		if (provider.getRole().getCode() != MarketRole.NON_CORE_ROLE) {
-			throw new InternalException("The provider must be of type Z for a non-core service.");
+			throw new InternalException(
+					"The provider must be of type Z for a non-core service.");
 		}
-		super.internalUpdate(provider, type, name, chargeScript);
+		super.internalUpdate(Service.TYPE_PASS_THROUGH, name, chargeScript);
+		setProvider(provider);
 	}
 
 	public boolean equals(Object obj) {
@@ -157,7 +173,7 @@ public class NonCoreService extends Service {
 		return "Service id " + getId() + " " + getProvider() + " name "
 				+ getName();
 	}
-	
+
 	public Element toXml(Document doc) throws InternalException, HttpException {
 		setTypeName("non-core-service");
 		Element element = (Element) super.toXml(doc);

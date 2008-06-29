@@ -43,8 +43,6 @@ import net.sf.chellow.monad.types.UriPathElement;
 import net.sf.chellow.physical.HhEndDate;
 import net.sf.chellow.physical.MarketRole;
 import net.sf.chellow.physical.Organization;
-import net.sf.chellow.physical.SupplyGeneration;
-
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -147,7 +145,7 @@ public class SupplierContracts implements Urlable, XmlDescriber {
 		// TODO Auto-generated method stub
 		return null;
 	}
-	
+	/*
 	public List<SupplyGeneration> supplyGenerations(Account account) {
 		return Hiber
 				.session()
@@ -155,4 +153,5 @@ public class SupplierContracts implements Urlable, XmlDescriber {
 						"select mpan.supplyGeneration from Mpan mpan where mpan.supplierAccount = :account order by mpan.supplyGeneration.startDate.date")
 				.setEntity("account", account).list();
 	}
+	*/
 }

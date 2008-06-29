@@ -6,7 +6,6 @@ import java.util.logging.Level;
 
 import net.sf.chellow.billing.Account;
 import net.sf.chellow.billing.HhdcContract;
-import net.sf.chellow.billing.Provider;
 import net.sf.chellow.billing.SupplierContract;
 import net.sf.chellow.data08.MpanCoreRaw;
 import net.sf.chellow.data08.MpanRaw;
@@ -27,7 +26,6 @@ import net.sf.chellow.monad.types.MonadDate;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
 import net.sf.chellow.physical.HhEndDate;
-import net.sf.chellow.physical.MarketRole;
 import net.sf.chellow.physical.Meter;
 import net.sf.chellow.physical.Mpan;
 import net.sf.chellow.physical.MpanCore;
@@ -216,9 +214,10 @@ public class HeaderImportProcess extends Thread implements Urlable,
 						importMpanRaw = new MpanRaw("import", importMpanStr);
 					}
 					Integer importAgreedSupplyCapacity = null;
-					HhdcContract importContractDce = null;
-					Account importSupplierAccount = null;
+					HhdcContract importHhdceContract = null;
+					Account importHhdceAccount = null;
 					SupplierContract importSupplierContract = null;
+					Account importSupplierAccount = null;
 					if (importMpanRaw != null) {
 						String importAgreedSupplyCapacityStr = values[8];
 						csvElement.appendChild(getField(
@@ -226,39 +225,32 @@ public class HeaderImportProcess extends Thread implements Urlable,
 								importAgreedSupplyCapacityStr));
 						importAgreedSupplyCapacity = new Integer(
 								importAgreedSupplyCapacityStr);
-						String importHhdcCode = values[9];
-						csvElement.appendChild(getField("Import DCE",
-								importHhdcCode));
-						String importHhdcContractStr = values[10];
+						String importHhdceContractName = values[9];
 						csvElement.appendChild(getField("Import DCE Contract",
-								importHhdcContractStr));
-						Provider importDce = Provider.getProvider(
-								importHhdcCode, MarketRole.HHDC);
-						importContractDce = importDce == null ? null
-								: organization.getHhdcContract(importDce,
-										importHhdcContractStr);
-						String importSupplierCode = values[11];
-						csvElement.appendChild(getField("Import supplier name",
-								importSupplierCode));
-						Provider importSupplier = Provider.getProvider(
-								importSupplierCode, MarketRole.SUPPLIER);
-						String importSupplierAccountReference = values[12];
-						csvElement.appendChild(getField(
-								"Import supplier account reference",
-								importSupplierAccountReference));
-						importSupplierAccount = organization.getAccount(
-								importSupplier, importSupplierAccountReference);
-						String importSupplierContractName = values[13];
+								importHhdceContractName));
+						importHhdceContract = importHhdceContractName == null ? null
+								: organization.getHhdcContract(
+										importHhdceContractName);
+						String importHhdceAccountReference = values[10];
+						csvElement.appendChild(getField("Import DCE Account",
+								importHhdceAccountReference));
+						importHhdceAccount = importHhdceContract.getAccount(importHhdceAccountReference);
+						String importSupplierContractName = values[11];
 						csvElement.appendChild(getField(
 								"Import supplier contract name",
 								importSupplierContractName));
 						importSupplierContract = organization
-								.getSupplierContract(importSupplier,
-										importSupplierContractName);
+								.getSupplierContract(importSupplierContractName);
+						String importSupplierAccountReference = values[12];
+						csvElement.appendChild(getField(
+								"Import supplier account reference",
+								importSupplierAccountReference));
+						importSupplierAccount = importSupplierContract.getAccount(importSupplierAccountReference);
 					}
-					HhdcContract exportContractDce = null;
-					Account exportAccountSupplier = null;
+					HhdcContract exportHhdceContract = null;
+					Account exportHhdceAccount = null;
 					SupplierContract exportSupplierContract = null;
+					Account exportAccountSupplier = null;
 					Integer exportAgreedSupplyCapacity = null;
 					MpanRaw exportMpanRaw = null;
 					String exportMpanStr = values[14];
@@ -274,45 +266,35 @@ public class HeaderImportProcess extends Thread implements Urlable,
 								exportAgreedSupplyCapacityStr));
 						exportAgreedSupplyCapacity = new Integer(
 								exportAgreedSupplyCapacityStr);
-						String exportHhdcStr = values[16];
-						csvElement.appendChild(getField("Export DCE",
-								exportHhdcStr));
-						String exportHhdcContractStr = values[17];
+						String exportHhdcContractName = values[16];
 						csvElement.appendChild(getField("Export DCE contract",
-								exportHhdcContractStr));
-						Provider exportDce = exportHhdcStr == null ? null
-								: Provider.getProvider(exportHhdcStr,
-										MarketRole.HHDC);
-						exportContractDce = exportDce == null ? null
-								: organization.getHhdcContract(exportDce,
-										exportHhdcContractStr);
-						String exportSupplierName = values[18];
-						csvElement.appendChild(getField("Export Supplier",
-								exportSupplierName));
-						Provider exportSupplier = Provider.getProvider(
-								exportSupplierName, MarketRole.SUPPLIER);
-						String exportAccountSupplierReference = values[19];
-						csvElement.appendChild(getField(
-								"Export supplier account reference",
-								exportAccountSupplierReference));
-						exportAccountSupplier = organization.getAccount(
-								exportSupplier, exportAccountSupplierReference);
-						String exportSupplierContractName = values[20];
+								exportHhdcContractName));
+						exportHhdceContract = exportHhdcContractName.length() == 0 ? null
+								: organization.getHhdcContract(exportHhdcContractName);
+						String exportHhdcAccountReference = values[17];
+						csvElement.appendChild(getField("Export DCE account",
+								exportHhdcAccountReference));
+						exportHhdceAccount = exportHhdceContract.getAccount(exportHhdcAccountReference);
+						String exportSupplierContractName = values[18];
 						csvElement.appendChild(getField(
 								"Export supplier contract name",
 								exportSupplierContractName));
 						exportSupplierContract = organization
-								.getSupplierContract(exportSupplier,
-										exportSupplierContractName);
+								.getSupplierContract(exportSupplierContractName);
+						String exportAccountSupplierReference = values[19];
+						csvElement.appendChild(getField(
+								"Export supplier account reference",
+								exportAccountSupplierReference));
+						exportAccountSupplier = exportSupplierContract.getAccount(exportAccountSupplierReference);
 					}
 					Site site = organization.getSite(new SiteCode(siteCodeStr));
 					site.insertSupply(supplyName, meterSerialNumber,
-							importMpanRaw, importContractDce,
-							importSupplierAccount, importSupplierContract,
+							importMpanRaw, importHhdceAccount,
+							importSupplierAccount,
 							true, true, false, true,
 							importAgreedSupplyCapacity, exportMpanRaw,
-							exportContractDce, exportAccountSupplier,
-							exportSupplierContract, false, true, true, true,
+							exportHhdceAccount, exportAccountSupplier,
+							 false, true, true, true,
 							exportAgreedSupplyCapacity, HhEndDate
 									.roundUp(new MonadDate(startDateStr)
 											.getDate()), new SourceCode(
@@ -393,8 +375,9 @@ public class HeaderImportProcess extends Thread implements Urlable,
 					Integer importAgreedSupplyCapacity = null;
 					Mpan existingImportMpan = supplyGeneration.getImportMpan();
 					HhdcContract importHhdceContract = null;
-					Account importSupplierAccount = null;
+					Account importHhdceAccount = null;
 					SupplierContract importSupplierContract = null;
+					Account importSupplierAccount = null;
 					if (importMpanStr.equals(NO_CHANGE)) {
 						importMpanTop = existingImportMpan == null ? null
 								: existingImportMpan.getMpanTop();
@@ -455,10 +438,10 @@ public class HeaderImportProcess extends Thread implements Urlable,
 										.getBoolean();
 						if (importHasImportKwh || importHasImportKvarh
 								|| importHasExportKwh || importHasExportKvarh) {
+							/*
 							String importHhdceStr = values[13];
 							csvElement.appendChild(getField("Import DCE",
 									importHhdceStr));
-							Provider importHhdce = null;
 							if (importHhdceStr.equals(NO_CHANGE)) {
 								if (existingImportMpan.getHhdceContract() == null) {
 									throw new UserException(
@@ -471,59 +454,24 @@ public class HeaderImportProcess extends Thread implements Urlable,
 								importHhdce = Provider.getProvider(
 										importHhdceStr, MarketRole.HHDC);
 							}
-							String importHhdceContractStr = values[14];
-							if (importHhdceContractStr.equals(NO_CHANGE)) {
+							*/
+							String importHhdceContractName = values[13];
+							if (importHhdceContractName.equals(NO_CHANGE)) {
 								if (existingImportMpan == null
 										|| existingImportMpan
 												.getHhdceContract() == null) {
 									throw new UserException(
-											"There isn't an existing contract");
-								} else if (importHhdceStr.equals(NO_CHANGE)) {
-									importHhdceContract = existingImportMpan
-											.getHhdceContract();
+											"There isn't an existing HHDCE contract");
 								} else {
-									throw new UserException(
-											"If there's a change in "
-													+ "supplier, there must also be a change in contract.");
-								}
+importHhdceContract = existingImportMpan.getHhdceContract();								}
 							} else {
 								importHhdceContract = organization
-										.getHhdcContract(importHhdce,
-												importHhdceContractStr);
+										.getHhdcContract(importHhdceContractName);
 							}
+							String importHhdceAccountReference = values[14];
+							importHhdceAccount = importHhdceContract.getAccount(importHhdceAccountReference);
 						}
-						String importSupplierName = values[15];
-						csvElement.appendChild(getField("Import Supplier",
-								importSupplierName));
-						Provider importSupplier = null;
-						if (importSupplierName.equals(NO_CHANGE)) {
-							if (existingImportMpan == null) {
-								throw new UserException(
-										"There isn't an existing import supplier.");
-							}
-							importSupplier = existingImportMpan
-									.getSupplierContract().getProvider();
-						} else {
-							importSupplier = Provider.getProvider(
-									importSupplierName,
-									MarketRole.NON_CORE_ROLE);
-						}
-						String importSupplierAccountReference = values[16];
-						csvElement.appendChild(getField(
-								"Import Supplier Account",
-								importSupplierAccountReference));
-						if (importSupplierAccountReference.equals(NO_CHANGE)) {
-							if (existingImportMpan == null) {
-								throw new UserException(
-										"There isn't an existing import supplier.");
-							}
-							importSupplierAccount = existingImportMpan
-									.getSupplierAccount();
-						} else {
-							importSupplierAccount = importSupplier
-									.getAccount(importSupplierAccountReference);
-						}
-						String importContractSupplierName = values[17];
+						String importContractSupplierName = values[15];
 						csvElement.appendChild(getField(
 								"Import Supplier Contract",
 								importContractSupplierName));
@@ -536,8 +484,23 @@ public class HeaderImportProcess extends Thread implements Urlable,
 									.getSupplierContract();
 						} else {
 							importSupplierContract = organization
-									.getSupplierContract(importSupplier,
-											importContractSupplierName);
+									.getSupplierContract(importContractSupplierName);
+						}
+
+						String importSupplierAccountReference = values[16];
+						csvElement.appendChild(getField(
+								"Import Supplier Account",
+								importSupplierAccountReference));
+						if (importSupplierAccountReference.equals(NO_CHANGE)) {
+							if (existingImportMpan == null) {
+								throw new UserException(
+										"There isn't an existing import supplier.");
+							}
+							importSupplierAccount = existingImportMpan
+									.getSupplierAccount();
+						} else {
+							importSupplierAccount = importSupplierContract
+									.getAccount(importSupplierAccountReference);
 						}
 					}
 					String exportMpanStr = values[18];
@@ -566,9 +529,9 @@ public class HeaderImportProcess extends Thread implements Urlable,
 						exportMpanCore = exportMpanRaw
 								.getMpanCore(organization);
 					}
-					HhdcContract exportHhdceContract = null;
-					Account exportAccountSupplier = null;
+					Account exportHhdceAccount = null;
 					SupplierContract exportSupplierContract = null;
+					Account exportAccountSupplier = null;
 					if (exportMpanTop != null) {
 						if (exportAgreedSupplyCapacityStr.equals(NO_CHANGE)) {
 							if (existingExportMpan == null) {
@@ -617,27 +580,11 @@ public class HeaderImportProcess extends Thread implements Urlable,
 								: existingExportMpan.getHasExportKvarh()
 								: new MonadBoolean(exportHasExportKvarhStr)
 										.getBoolean();
+						HhdcContract exportHhdceContract = null;
 						if (exportHasImportKwh || exportHasImportKvarh
 								|| exportHasExportKwh || exportHasExportKvarh) {
-							String exportHhdceStr = values[23];
-							csvElement.appendChild(getField("Export DCE",
-									exportHhdceStr));
-							Provider exportHhdce = null;
-							if (exportHhdceStr.equals(NO_CHANGE)) {
-								if (existingExportMpan == null
-										|| existingExportMpan
-												.getHhdceContract() == null) {
-									throw new UserException(
-											"There isn't an existing export supplier.");
-								} else {
-									exportHhdce = existingExportMpan
-											.getHhdceContract().getProvider();
-								}
-							} else {
-								exportHhdce = Provider.getProvider(exportHhdceStr, MarketRole.HHDC);
-							}
-							String exportHhdceContractStr = values[24];
-							if (exportHhdceContractStr.equals(NO_CHANGE)) {
+							String exportHhdceContractName = values[24];
+							if (exportHhdceContractName.equals(NO_CHANGE)) {
 								if (existingExportMpan == null) {
 									throw new UserException(
 											"There isn't an existing export DCE contract.");
@@ -646,23 +593,37 @@ public class HeaderImportProcess extends Thread implements Urlable,
 											.getHhdceContract();
 								}
 							} else {
-								exportHhdceContract = organization.getHhdcContract(exportHhdce,
-										exportHhdceContractStr);
+								exportHhdceContract = organization.getHhdcContract(exportHhdceContractName);
+							}
+							String exportHhdceAccountReference = values[23];
+							csvElement.appendChild(getField("Export DCE account",
+									exportHhdceAccountReference));
+							if (exportHhdceAccountReference.equals(NO_CHANGE)) {
+								if (existingExportMpan == null
+										|| existingExportMpan
+												.getHhdceContract() == null) {
+									throw new UserException(
+											"There isn't an existing export supplier.");
+								} else {
+									exportHhdceAccount = existingExportMpan.getHhdceAccount();
+								}
+							} else {
+								exportHhdceAccount = exportHhdceContract.getAccount(exportHhdceAccountReference);
 							}
 						}
-						String exportSupplierName = values[25];
-						csvElement.appendChild(getField("Export Supplier",
-								exportSupplierName));
-						Provider exportSupplier = null;
-						if (exportSupplierName.equals(NO_CHANGE)) {
+						String exportContractSupplierName = values[25];
+						csvElement.appendChild(getField(
+								"Export Supplier Contract",
+								exportContractSupplierName));
+						if (exportContractSupplierName.equals(NO_CHANGE)) {
 							if (existingExportMpan == null) {
 								throw new UserException(
-										"There isn't an existing export supplier.");
+										"There isn't an existing export supplier contract.");
 							}
-							exportSupplier = existingExportMpan
-									.getSupplierContract().getProvider();
+							exportSupplierContract = existingExportMpan
+									.getSupplierContract();
 						} else {
-							exportSupplier = Provider.getProvider(exportSupplierName, MarketRole.SUPPLIER);
+							exportSupplierContract = organization.getSupplierContract(exportContractSupplierName);
 						}
 						String exportSupplierAccountReference = values[26];
 						csvElement.appendChild(getField(
@@ -676,33 +637,18 @@ public class HeaderImportProcess extends Thread implements Urlable,
 							exportAccountSupplier = existingExportMpan
 									.getSupplierAccount();
 						} else {
-							exportAccountSupplier = exportSupplier
+							exportAccountSupplier = exportSupplierContract
 									.getAccount(exportSupplierAccountReference);
-						}
-						String exportContractSupplierName = values[27];
-						csvElement.appendChild(getField(
-								"Export Supplier Contract",
-								exportContractSupplierName));
-						if (exportContractSupplierName.equals(NO_CHANGE)) {
-							if (existingExportMpan == null) {
-								throw new UserException(
-										"There isn't an existing export supplier.");
-							}
-							exportSupplierContract = existingExportMpan
-									.getSupplierContract();
-						} else {
-							exportSupplierContract = organization.getSupplierContract(exportSupplier
-									, exportContractSupplierName);
 						}
 					}
 					supplyGeneration.addOrUpdateMpans(importMpanTop,
-							importMpanCore, importHhdceContract,
-							importSupplierAccount, importSupplierContract,
+							importMpanCore, importHhdceAccount,
+							importSupplierAccount,
 							importHasImportKwh, importHasImportKvarh,
 							importHasExportKwh, importHasExportKvarh,
 							importAgreedSupplyCapacity, exportMpanTop,
-							exportMpanCore, exportHhdceContract,
-							exportAccountSupplier, exportSupplierContract,
+							exportMpanCore, exportHhdceAccount,
+							exportAccountSupplier,
 							exportHasImportKwh, exportHasImportKvarh,
 							exportHasExportKwh, exportHasExportKvarh,
 							exportAgreedSupplyCapacity);
@@ -712,18 +658,18 @@ public class HeaderImportProcess extends Thread implements Urlable,
 					throw new UserException(
 							"There aren't enough fields in this row");
 				}
-				String supplierCode = values[2];
-				csvElement.appendChild(getField("Supplier", supplierCode));
-				Provider supplier = Provider.getProvider(supplierCode, MarketRole.SUPPLIER);
-				String accountReference = values[3];
-				csvElement.appendChild(getField("Reference", accountReference));
+				String supplierContractName = values[2];
+				csvElement.appendChild(getField("Contract", supplierContractName));
+				SupplierContract supplierContract = organization.getSupplierContract(supplierContractName);
+				String supplierAccountReference = values[3];
+				csvElement.appendChild(getField("Reference", supplierAccountReference));
 				if (action.equals("insert")) {
-					organization.insertAccount(supplier, accountReference);
+					supplierContract.insertAccount(supplierAccountReference);
 				} else {
-					Account supplierAccount = supplier
-							.getAccount(accountReference);
+					Account supplierAccount = supplierContract
+							.getAccount(supplierAccountReference);
 					if (action.equals("delete")) {
-						organization.deleteAccount(supplier, accountReference);
+						supplierContract.deleteAccount(supplierAccount);
 					} else if (action.equals("update")) {
 						String newReference = values[4];
 						csvElement.appendChild(getField("New Reference",

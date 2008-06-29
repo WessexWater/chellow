@@ -24,11 +24,11 @@ package net.sf.chellow.billing;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.util.Date;
-import java.util.List;
 import java.util.Locale;
 
 import net.sf.chellow.monad.Hiber;
@@ -42,6 +42,8 @@ import net.sf.chellow.monad.types.MonadDate;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
 import net.sf.chellow.physical.Dso;
+import net.sf.chellow.physical.DsoCode;
+import net.sf.chellow.physical.HhEndDate;
 import net.sf.chellow.physical.MarketRole;
 import net.sf.chellow.physical.Participant;
 import net.sf.chellow.physical.PersistentEntity;
@@ -129,9 +131,38 @@ public class Provider extends PersistentEntity implements Urlable {
 				char roleCode = role.getCode();
 				if (roleCode == MarketRole.DISTRIBUTOR) {
 						Dso dso = new Dso(values[4], participant,
-								from, to, values[14]);
+								from, to, new DsoCode(values[14]));
 						Hiber.session().save(dso);
 						Hiber.flush();
+						ClassLoader dsoClassLoader = Dso.class.getClassLoader();
+						DsoService dsoService;
+						try {
+							InputStreamReader isr = new InputStreamReader(dsoClassLoader
+									.getResource(
+											"net/sf/chellow/billing/dso"
+													+ dso.getCode().getString() + "Service.py")
+									.openStream(), "UTF-8");
+							StringWriter pythonString = new StringWriter();
+							int c;
+							while ((c = isr.read()) != -1) {
+								pythonString.write(c);
+							}
+							dsoService = dso.insertService("main", new HhEndDate(
+									"2000-01-01T00:30Z"), pythonString.toString());
+							RateScript dsoRateScript = dsoService.getRateScripts().iterator()
+									.next();
+							isr = new InputStreamReader(classLoader.getResource(
+									"net/sf/chellow/billing/dso" + dso.getCode().getString()
+											+ "ServiceRateScript.py").openStream(), "UTF-8");
+							pythonString = new StringWriter();
+							while ((c = isr.read()) != -1) {
+								pythonString.write(c);
+							}
+							dsoRateScript.update(dsoRateScript.getStartDate(), dsoRateScript
+									.getFinishDate(), pythonString.toString());
+						} catch (IOException e) {
+							throw new InternalException(e);
+						}
 				} else {
 				Provider provider = new Provider(values[4], participant, roleCode,
 						from, to);
@@ -232,36 +263,6 @@ public class Provider extends PersistentEntity implements Urlable {
 	}
 
 	@SuppressWarnings("unchecked")
-	public void deleteAccount(Account account) throws HttpException,
-			InternalException {
-		if (!account.getProvider().equals(this)) {
-			throw new UserException(
-					"The account isn't attached to this provider.");
-		}
-		if ((Long) Hiber.session().createQuery(
-				"select count(*) from Bill bill where bill.account = :account")
-				.setEntity("account", account).uniqueResult() > 0) {
-			throw new UserException(
-					"Can't delete this account as there are still bills attached to it.");
-		}
-		if ((Long) Hiber
-				.session()
-				.createQuery(
-						"select count(*) from Mpan mpan where mpan.supplierAccount.id = :accountId")
-				.setLong("accountId", account.getId()).uniqueResult() > 0) {
-			throw new UserException(
-					"Can't delete this account as there are still MPANs attached to it.");
-		}
-		for (AccountSnag snag : (List<AccountSnag>) Hiber.session()
-				.createQuery(
-						"from AccountSnag snag where snag.account = :account")
-				.setEntity("account", account).list()) {
-			Hiber.session().delete(snag);
-			Hiber.flush();
-		}
-		Hiber.session().delete(account);
-		Hiber.flush();
-	}
 
 	/*
 	 * abstract public List<SupplyGeneration> supplyGenerations(Account

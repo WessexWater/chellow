@@ -33,22 +33,20 @@ import java.util.Map;
 import java.util.Set;
 
 import net.sf.chellow.billing.Account;
-import net.sf.chellow.billing.HhdcContract;
-import net.sf.chellow.billing.SupplierContract;
 import net.sf.chellow.data08.Data;
 import net.sf.chellow.data08.MpanRaw;
 import net.sf.chellow.monad.DeployerException;
 import net.sf.chellow.monad.DesignerException;
 import net.sf.chellow.monad.Hiber;
+import net.sf.chellow.monad.HttpException;
+import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Invocation;
 import net.sf.chellow.monad.MethodNotAllowedException;
+import net.sf.chellow.monad.MonadMessage;
 import net.sf.chellow.monad.MonadUtils;
 import net.sf.chellow.monad.NotFoundException;
-import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Urlable;
-import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.UserException;
-import net.sf.chellow.monad.MonadMessage;
 import net.sf.chellow.monad.XmlTree;
 import net.sf.chellow.monad.types.MonadString;
 import net.sf.chellow.monad.types.MonadUri;
@@ -133,14 +131,12 @@ public class Site extends PersistentEntity implements Urlable {
 	}
 
 	public Supply insertSupply(String supplyName, String meterSerialNumber,
-			MpanRaw importMpanRaw, HhdcContract importContractDce,
+			MpanRaw importMpanRaw, Account importHhdceAccount,
 			Account importAccountSupplier,
-			SupplierContract importContractSupplier,
 			boolean importHasDceImportKwh, boolean importHasDceImportKvarh,
 			boolean importHasDceExportKwh, boolean importHasDceExportKvarh,
 			Integer importAgreedSupplyCapacity, MpanRaw exportMpanRaw,
-			HhdcContract exportContractDce, Account exportAccountSupplier,
-			SupplierContract exportContractSupplier,
+			Account exportHhdceAccount, Account exportAccountSupplier,
 			boolean exportHasDceImportKwh, boolean exportHasDceImportKvarh,
 			boolean exportHasDceExportKwh, boolean exportHasDceExportKvarh,
 			Integer exportAgreedSupplyCapacity, HhEndDate startDate,
@@ -187,12 +183,12 @@ public class Site extends PersistentEntity implements Urlable {
 			}
 		}
 		SupplyGeneration supplyGeneration = supply.addGeneration(siteMap,
-				meter, importMpanRaw, importContractDce, importAccountSupplier,
-				importContractSupplier, importHasDceImportKwh,
+				meter, importMpanRaw, importHhdceAccount, importAccountSupplier,
+				 importHasDceImportKwh,
 				importHasDceImportKvarh, importHasDceExportKwh,
 				importHasDceExportKvarh, importAgreedSupplyCapacity,
-				exportMpanRaw, exportContractDce, exportAccountSupplier,
-				exportContractSupplier, exportHasDceImportKwh,
+				exportMpanRaw, exportHhdceAccount, exportAccountSupplier,
+				 exportHasDceImportKwh,
 				exportHasDceImportKvarh, exportHasDceExportKwh,
 				exportHasDceExportKvarh, exportAgreedSupplyCapacity, null);
 		supplyGeneration.update(startDate, supplyGeneration.getFinishDate(),

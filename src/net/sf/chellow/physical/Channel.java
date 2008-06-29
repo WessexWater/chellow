@@ -130,7 +130,7 @@ public class Channel extends PersistentEntity implements Urlable {
 		List<SupplyGeneration> supplyGenerations = supply.getGenerations(from,
 				to);
 		for (SupplyGeneration generation : supplyGenerations) {
-			HhdcContract actualDceService = generation.getDceService(isImport,
+			HhdcContract actualDceService = generation.getHhdceContract(isImport,
 					isKwh);
 			if (actualDceService == null) {
 				addChannelSnag(dceService, ChannelSnag.SNAG_DATA_IGNORED, from,
@@ -344,7 +344,7 @@ public class Channel extends PersistentEntity implements Urlable {
 					|| to.getDate()
 							.before(generation.getFinishDate().getDate()) ? to
 					: generation.getFinishDate();
-			addChannelSnag(generation.getDceService(isImport, isKwh),
+			addChannelSnag(generation.getHhdceContract(isImport, isKwh),
 					ChannelSnag.SNAG_NOT_ACTUAL, checkFrom, checkTo, false);
 		}
 	}
@@ -398,7 +398,7 @@ public class Channel extends PersistentEntity implements Urlable {
 		HhEndDate finish = null;
 		SupplyGeneration generation = supply.getGenerationLast();
 		if (generation.getFinishDate() == null) {
-			HhdcContract latestDceService = generation.getDceService(isImport,
+			HhdcContract latestDceService = generation.getHhdceContract(isImport,
 					isKwh);
 			if (latestDceService == null) {
 				finish = HhEndDate.roundDown(new Date());
@@ -518,7 +518,7 @@ public class Channel extends PersistentEntity implements Urlable {
 				.setEntity("channel", this);
 		List<SupplyGeneration> generations = supply.getGenerations(from, to);
 		for (int i = 0; i < generations.size(); i++) {
-			HhdcContract contractDce = generations.get(i).getDceService(isImport,
+			HhdcContract contractDce = generations.get(i).getHhdceContract(isImport,
 					isKwh);
 			HhEndDate generationStartDate = i == 0 ? from : generations.get(i)
 					.getStartDate();
@@ -571,8 +571,8 @@ public class Channel extends PersistentEntity implements Urlable {
 		}
 	}
 
-	private HhdcContract getDceService(HhEndDate date) {
-		return supply.getGeneration(date).getDceService(isImport, isKwh);
+	private HhdcContract getDceService(HhEndDate date) throws HttpException {
+		return supply.getGeneration(date).getHhdceContract(isImport, isKwh);
 	}
 
 	public void deleteData(HhEndDate from, int days)

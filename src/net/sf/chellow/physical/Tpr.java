@@ -1,17 +1,20 @@
 package net.sf.chellow.physical;
 
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
 import java.util.HashSet;
 import java.util.Set;
 
 import net.sf.chellow.monad.DeployerException;
 import net.sf.chellow.monad.DesignerException;
 import net.sf.chellow.monad.Hiber;
+import net.sf.chellow.monad.HttpException;
+import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Invocation;
 import net.sf.chellow.monad.MonadUtils;
 import net.sf.chellow.monad.NotFoundException;
-import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Urlable;
-import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.UserException;
 import net.sf.chellow.monad.XmlTree;
 import net.sf.chellow.monad.types.MonadUri;
@@ -20,6 +23,8 @@ import net.sf.chellow.monad.types.UriPathElement;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
+
+import com.Ostermiller.util.CSVParser;
 
 public class Tpr extends PersistentEntity {
 	static public Tpr findTpr(int code) {
@@ -46,12 +51,6 @@ public class Tpr extends PersistentEntity {
 		return tpr;
 	}
 
-	static public Tpr insertTpr(int code) {
-		Tpr tpr = new Tpr(code);
-		Hiber.session().save(tpr);
-		return tpr;
-	}
-
 	static public Tpr getTpr(long id) throws NotFoundException, InternalException {
 		Tpr tpr = (Tpr) Hiber.session().get(Tpr.class, id);
 		if (tpr == null) {
@@ -59,21 +58,54 @@ public class Tpr extends PersistentEntity {
 		}
 		return tpr;
 	}
+	
+	static public void loadFromCsv() throws HttpException {
+		try {
+			ClassLoader classLoader = Participant.class.getClassLoader();
+			CSVParser parser = new CSVParser(new InputStreamReader(classLoader
+					.getResource(
+							"net/sf/chellow/physical/TimePatternRegime.csv")
+					.openStream(), "UTF-8"));
+			parser.setCommentStart("#;!");
+			parser.setEscapes("nrtf", "\n\r\t\f");
+			String[] titles = parser.getLine();
+			if (titles.length < 3
+					|| !titles[0].trim().equals("Time Pattern Regime Id")
+					|| !titles[1].trim().equals("Tele-switch/Clock Indicator")
+					|| !titles[2].trim().equals("GMT Indicator")) {
+				throw new UserException(
+						"The first line of the CSV must contain the titles "
+								+ "Time Pattern Regime Id, Tele-switch/Clock Indicator, GMT Indicator");
+			}
+			for (String[] values = parser.getLine(); values != null; values = parser
+					.getLine()) {
+				Hiber.session().save(new Tpr(values[0], values[1].equals("S"), values[2].equals("Y")));
+			}
+		} catch (UnsupportedEncodingException e) {
+			throw new InternalException(e);
+		} catch (IOException e) {
+			throw new InternalException(e);
+		}
+	}
 
 	private Set<Ssc> sscs;
 
-	private int code;
+	private String code;
+private boolean isTeleswitch;
+private boolean isGmt;
 
 	private Set<TprLine> lines;
 
 	public Tpr() {
-		setTypeName("tpr");
+
 	}
 
-	public Tpr(int code) {
+	public Tpr(String code, boolean isTeleswitch, boolean isGmt) {
 		setSscs(new HashSet<Ssc>());
 		setCode(code);
 		setLines(new HashSet<TprLine>());
+		setIsTeleswitch(isTeleswitch);
+		setIsGmt(isGmt);
 	}
 
 	public Set<Ssc> getSscs() {
@@ -84,14 +116,29 @@ public class Tpr extends PersistentEntity {
 		this.sscs = sscs;
 	}
 
-	int getCode() {
+	String getCode() {
 		return code;
 	}
 
-	void setCode(int code) {
+	void setCode(String code) {
 		this.code = code;
 	}
+	
+	public boolean getIsTeleswitch() {
+		return isTeleswitch;
+	}
+	
+	void setIsTeleswitch(boolean isTeleswitch) {
+		this.isTeleswitch = isTeleswitch;
+	}
+	
+	public boolean getIsGmt() {
+		return isGmt;
+	}
 
+	void setIsGmt(boolean isGmt) {
+		this.isGmt = isGmt;
+	}
 	public Set<TprLine> getLines() {
 		return lines;
 	}
@@ -141,14 +188,17 @@ public class Tpr extends PersistentEntity {
 	}
 
 	public Node toXml(Document doc) throws HttpException {
+		setTypeName("tpr");
 		Element element = (Element) super.toXml(doc);
 
-		element.setAttribute("code", Integer.toString(code));
+		element.setAttribute("code", code);
+		element.setAttribute("is-teleswitch", String.valueOf(isTeleswitch));
+		element.setAttribute("is-gmt", String.valueOf(isGmt));
 		return element;
 	}
 
 	public String toString() {
-		return Integer.toString(code);
+		return "Code: " + code + " Is Teleswitch?: " + isTeleswitch + " Is GMT?: " + isGmt;
 	}
 
 }

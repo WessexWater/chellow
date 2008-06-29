@@ -52,7 +52,7 @@ import org.w3c.dom.Element;
 
 @SuppressWarnings("serial")
 public class HhdcContract extends Contract {
-	public static HhdcContract getDceService(Long id) throws HttpException,
+	public static HhdcContract getHhdcContract(Long id) throws HttpException,
 			InternalException {
 		HhdcContract service = findDceService(id);
 		if (service == null) {
@@ -65,6 +65,8 @@ public class HhdcContract extends Contract {
 			InternalException {
 		return (HhdcContract) Hiber.session().get(HhdcContract.class, id);
 	}
+	
+	private Provider provider;
 
 	private ContractFrequency frequency;
 
@@ -79,6 +81,14 @@ public class HhdcContract extends Contract {
 			InternalException, DesignerException {
 		super(provider, organization, name, startDate, chargeScript);
 		intrinsicUpdate(name, chargeScript, frequency, lag);
+	}
+	
+	public Provider getProvider() {
+		return provider;
+	}
+	
+	void setProvider(Provider provider) {
+		this.provider = provider;
 	}
 
 	public ContractFrequency getFrequency() {
@@ -100,7 +110,7 @@ public class HhdcContract extends Contract {
 	private void intrinsicUpdate(String name, String chargeScript,
 			ContractFrequency frequency, int lag) throws HttpException,
 			InternalException, DesignerException {
-		super.internalUpdate(getProvider(), name, chargeScript);
+		super.internalUpdate(name, chargeScript);
 		setFrequency(frequency);
 		setLag(lag);
 	}

@@ -34,6 +34,7 @@ import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Invocation;
 import net.sf.chellow.monad.MonadUtils;
+import net.sf.chellow.monad.NotFoundException;
 import net.sf.chellow.monad.Urlable;
 import net.sf.chellow.monad.UserException;
 import net.sf.chellow.monad.types.MonadUri;
@@ -66,6 +67,14 @@ public class Dso extends Provider {
 		Dso dso = (Dso) Hiber.session().get(Dso.class, id);
 		if (dso == null) {
 			throw new UserException("There isn't a DSO with that id.");
+		}
+		return dso;
+	}
+	
+	static public Dso getDso(String participantCode) throws HttpException {
+		Dso dso = (Dso) Hiber.session().createQuery("from Dso dso where dso.participant.code = :participantCode").uniqueResult();
+		if (dso == null) {
+			throw new NotFoundException();
 		}
 		return dso;
 	}
@@ -114,9 +123,9 @@ public class Dso extends Provider {
 		return Integer.parseInt(code.toString()) < 24;
 	}
 
-	public Llf getLlf(LlfCode code) throws HttpException,
+	public Llfc getLlf(LlfcCode code) throws HttpException,
 			InternalException {
-		Llf llf = (Llf) Hiber
+		Llfc llf = (Llfc) Hiber
 				.session()
 				.createQuery(
 						"from Llf llf where llf.dso = :dso and llf.code = :code")
@@ -221,13 +230,6 @@ public class Dso extends Provider {
 						"from DsoService service where service.provider = :provider and service.name = :serviceName")
 				.setEntity("provider", this).setString("serviceName", name)
 				.uniqueResult();
-	}
-
-	public Llf insertLlf(int code, String description,
-			String voltageLevel, boolean isSubstation, boolean isImport)
-			throws InternalException, HttpException {
-		return Llf.insertLlf(this, code, description,
-				voltageLevel, isSubstation, isImport);
 	}
 	
 	public DsoServices servicesInstance() {

@@ -52,6 +52,8 @@ public class MopContract extends Contract {
 		}
 		return contract;
 	}
+	
+	private Provider provider;
 
 	public MopContract() {
 	}
@@ -60,6 +62,14 @@ public class MopContract extends Contract {
 			String name, HhEndDate startDate, String chargeScript)
 			throws HttpException {
 		super(provider, organization, name, startDate, chargeScript);
+	}
+	
+	public Provider getProvider() {
+		return provider;
+	}
+	
+	void setProvider(Provider provider) {
+		this.provider = provider;
 	}
 
 	public boolean equals(Object obj) {

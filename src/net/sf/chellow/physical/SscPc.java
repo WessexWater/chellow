@@ -22,6 +22,14 @@
 
 package net.sf.chellow.physical;
 
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.util.Date;
+import java.util.Locale;
+
 import net.sf.chellow.data08.Data;
 import net.sf.chellow.monad.DeployerException;
 import net.sf.chellow.monad.DesignerException;
@@ -32,6 +40,7 @@ import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Urlable;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.UserException;
+import net.sf.chellow.monad.types.MonadDate;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
 
@@ -40,37 +49,38 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
-public class ProfileClass extends PersistentEntity {
-	static public ProfileClass getProfileClass(Long id)
-			throws InternalException, HttpException {
-		ProfileClass profileClass = (ProfileClass) Hiber.session().get(
-				ProfileClass.class, id);
+import com.Ostermiller.util.CSVParser;
+
+public class SscPc extends PersistentEntity {
+	static public Pc getProfileClass(Long id) throws InternalException,
+			HttpException {
+		Pc profileClass = (Pc) Hiber.session().get(Pc.class, id);
 		if (profileClass == null) {
 			throw new UserException("There is no profile class with that id.");
 		}
 		return profileClass;
 	}
 
-	static public ProfileClass getProfileClass(int code)
-			throws InternalException, HttpException {
-		return getProfileClass(new ProfileClassCode(code));
+	static public Pc getProfileClass(int code) throws InternalException,
+			HttpException {
+		return getProfileClass(new PcCode(code));
 	}
 
-	static public ProfileClass getProfileClass(ProfileClassCode code)
-			throws InternalException, HttpException {
-		ProfileClass profileClass = findProfileClass(code);
+	static public Pc getProfileClass(PcCode code) throws InternalException,
+			HttpException {
+		Pc profileClass = findProfileClass(code);
 		if (profileClass == null) {
 			throw new UserException("There is no profile class with that code.");
 		}
 		return profileClass;
 	}
 
-	static public ProfileClass findProfileClass(ProfileClassCode code) {
+	static public Pc findProfileClass(PcCode code) {
 		return findProfileClass(code.getInteger());
 	}
 
-	static public ProfileClass findProfileClass(int code) {
-		return (ProfileClass) Hiber
+	static public Pc findProfileClass(int code) {
+		return (Pc) Hiber
 				.session()
 				.createQuery(
 						"from ProfileClass as profileClass where profileClass.code.integer = :code")
@@ -83,13 +93,12 @@ public class ProfileClass extends PersistentEntity {
 	 * .session() .createQuery( "from ProfileClass profileClass order by
 	 * profileClass.code.integer") .list(); }
 	 */
-	public static ProfileClass insertProfileClass(int code, String description)
+	public static Pc insertProfileClass(int code, String description)
 			throws InternalException, HttpException {
 
-		ProfileClass profileClass = null;
+		Pc profileClass = null;
 		try {
-			profileClass = new ProfileClass(new ProfileClassCode(code),
-					description);
+			profileClass = new Pc(new PcCode(code), description);
 			Hiber.session().save(profileClass);
 			Hiber.flush();
 		} catch (HibernateException e) {
@@ -105,56 +114,112 @@ public class ProfileClass extends PersistentEntity {
 		return profileClass;
 	}
 
-	private ProfileClassCode code;
-
-	private String description;
-
-	public ProfileClass() {
+	static public void loadFromCsv() throws HttpException {
+		try {
+			ClassLoader classLoader = SscPc.class.getClassLoader();
+			CSVParser parser = new CSVParser(
+					new InputStreamReader(
+							classLoader
+									.getResource(
+											"net/sf/chellow/physical/ValidStandardSettlementConfigurationProfileClass.csv")
+									.openStream(), "UTF-8"));
+			parser.setCommentStart("#;!");
+			parser.setEscapes("nrtf", "\n\r\t\f");
+			String[] titles = parser.getLine();
+			if (titles.length < 4
+					|| !titles[0].trim().equals("Profile Class Id")
+					|| !titles[1].trim().equals(
+							"Standard Settlement Configuration Id")
+					|| !titles[2].trim().equals(
+							"Effective From Settlement Date {VSCPC}")
+					|| !titles[3].trim().equals(
+							"Effective To Settlement Date {VSCPC}")) {
+				throw new UserException(
+						"The first line of the CSV must contain the titles "
+								+ "Profile Class Id, Standard Settlement Configuration Id, Effective From Settlement Date {VSCPC}, Effective To Settlement Date {VSCPC}.");
+			}
+			DateFormat dateFormat = DateFormat.getDateTimeInstance(
+					DateFormat.SHORT, DateFormat.SHORT, Locale.UK);
+			for (String[] values = parser.getLine(); values != null; values = parser
+					.getLine()) {
+				Hiber.session().save(
+						new SscPc(Ssc.getSsc(values[0]), Pc
+								.getProfileClass(Integer.parseInt(values[1])),
+								dateFormat.parse(values[2]), dateFormat
+										.parse(values[3])));
+			}
+		} catch (UnsupportedEncodingException e) {
+			throw new InternalException(e);
+		} catch (IOException e) {
+			throw new InternalException(e);
+		} catch (NumberFormatException e) {
+			throw new InternalException(e);
+		} catch (ParseException e) {
+			throw new InternalException(e);
+		}
 	}
 
-	public ProfileClass(ProfileClassCode code, String description) {
-		this(null, code, description);
+	private Ssc ssc;
+
+	private Pc pc;
+
+	private Date from;
+	private Date to;
+
+	public SscPc() {
 	}
 
-	public ProfileClass(String label, ProfileClassCode code, String description) {
-		this();
-		setLabel(label);
-		this.code = code;
-		this.description = description;
+	public SscPc(Ssc ssc, Pc pc, Date from, Date to) {
+		setSsc(ssc);
+		setPc(pc);
+		setFrom(from);
+		setTo(to);
 	}
 
-	void setCode(ProfileClassCode code) {
-		code.setLabel("code");
-		this.code = code;
+	public Ssc getSsc() {
+		return ssc;
 	}
 
-	public ProfileClassCode getCode() {
-		return code;
+	void setSsc(Ssc ssc) {
+		this.ssc = ssc;
 	}
 
-	void setDescription(String description) {
-		this.description = description;
+	public Pc getPc() {
+		return pc;
 	}
 
-	public String getDescription() {
-		return description;
+	void setPc(Pc pc) {
+		this.pc = pc;
 	}
 
-	public void update(String description) {
-		setDescription(description);
-		Hiber.flush();
+	public Date getFrom() {
+		return from;
 	}
 
-	public String toString() {
-		return getCode() + " - " + getDescription();
+	void setFrom(Date from) {
+		this.from = from;
+	}
+
+	public Date getTo() {
+		return to;
+	}
+
+	void setTo(Date to) {
+		this.to = to;
 	}
 
 	public Node toXml(Document doc) throws InternalException, HttpException {
-		setTypeName("profile-class");
+		setTypeName("ssc-pc");
 		Element element = (Element) super.toXml(doc);
 
-		element.setAttributeNode(code.toXml(doc));
-		element.setAttribute("description", description);
+		MonadDate fromDate = new MonadDate(from);
+		fromDate.setLabel("from");
+		element.appendChild(fromDate.toXml(doc));
+
+		MonadDate toDate = new MonadDate(to);
+		fromDate.setLabel("to");
+
+		element.appendChild(toDate.toXml(doc));
 		return element;
 	}
 

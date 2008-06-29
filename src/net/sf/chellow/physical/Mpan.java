@@ -26,18 +26,16 @@ import java.util.Set;
 
 import net.sf.chellow.billing.Account;
 import net.sf.chellow.billing.HhdcContract;
-import net.sf.chellow.billing.MopContract;
 import net.sf.chellow.billing.SupplierContract;
 import net.sf.chellow.data08.MpanRaw;
 import net.sf.chellow.monad.DeployerException;
 import net.sf.chellow.monad.DesignerException;
 import net.sf.chellow.monad.Hiber;
-import net.sf.chellow.monad.Invocation;
-import net.sf.chellow.monad.InternalException;
-import net.sf.chellow.monad.Urlable;
 import net.sf.chellow.monad.HttpException;
+import net.sf.chellow.monad.InternalException;
+import net.sf.chellow.monad.Invocation;
+import net.sf.chellow.monad.Urlable;
 import net.sf.chellow.monad.UserException;
-
 import net.sf.chellow.monad.types.MonadBoolean;
 import net.sf.chellow.monad.types.MonadInteger;
 import net.sf.chellow.monad.types.MonadUri;
@@ -48,12 +46,10 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
 public class Mpan extends PersistentEntity {
-	static public Mpan getMpan(Long id) throws InternalException,
-			HttpException {
+	static public Mpan getMpan(Long id) throws InternalException, HttpException {
 		Mpan mpan = (Mpan) Hiber.session().get(Mpan.class, id);
 		if (mpan == null) {
-			throw new UserException
-					("There is no mpan with that id.");
+			throw new UserException("There is no mpan with that id.");
 		}
 		return mpan;
 	}
@@ -64,19 +60,19 @@ public class Mpan extends PersistentEntity {
 
 	private MpanCore mpanCore;
 
-	private HhdcContract hhdceContract;
+	// private HhdcContract hhdceContract;
 
 	private Account hhdceAccount;
 
-	private SupplierContract supplierContract;
+	// private SupplierContract supplierContract;
 
 	private Account supplierAccount;
 
-	private MopContract mopService;
+	// private MopContract mopService;
 
 	private Account mopAccount;
 
-	private HhdcContract hhdcsContract;
+	// private HhdcContract hhdcsContract;
 
 	private Account hhdcsAccount;
 
@@ -93,15 +89,13 @@ public class Mpan extends PersistentEntity {
 	Mpan() {
 	}
 
-	Mpan(SupplyGeneration supplyGeneration, MpanTop mpanTop,
-			MpanCore mpanCore, HhdcContract hhdceContract, Account supplierAccount,
-			SupplierContract supplierContract, boolean hasImportKwh,
-			boolean hasImportKvarh, boolean hasExportKwh,
+	Mpan(SupplyGeneration supplyGeneration, MpanTop mpanTop, MpanCore mpanCore,
+			Account hhdceAccount, Account supplierAccount,
+			boolean hasImportKwh, boolean hasImportKvarh, boolean hasExportKwh,
 			boolean hasExportKvarh, int agreedSupplyCapacity)
 			throws HttpException {
 		this.supplyGeneration = supplyGeneration;
-		update(mpanTop, mpanCore,
-				hhdceContract, supplierAccount, supplierContract, hasImportKwh,
+		update(mpanTop, mpanCore, hhdceAccount, supplierAccount, hasImportKwh,
 				hasImportKvarh, hasExportKwh, hasExportKvarh,
 				agreedSupplyCapacity);
 	}
@@ -130,14 +124,6 @@ public class Mpan extends PersistentEntity {
 		this.mpanCore = mpanCore;
 	}
 
-	public MopContract getMopService() {
-		return mopService;
-	}
-
-	void setMopService(MopContract mopService) {
-		this.mopService = mopService;
-	}
-
 	public Account getMopAccount() {
 		return mopAccount;
 	}
@@ -146,28 +132,12 @@ public class Mpan extends PersistentEntity {
 		this.mopAccount = mopAccount;
 	}
 
-	public HhdcContract getHhdceContract() {
-		return hhdceContract;
-	}
-
-	void setDceService(HhdcContract hhdceContract) {
-		this.hhdceContract = hhdceContract;
-	}
-
-	public Account getDceAccount() {
+	public Account getHhdceAccount() {
 		return hhdceAccount;
 	}
 
-	void setDceAccount(Account dceAccount) {
-		this.hhdceAccount = dceAccount;
-	}
-
-	public HhdcContract getHhdcsContract() {
-		return hhdcsContract;
-	}
-
-	void setHhdcsContract(HhdcContract hhdcsContract) {
-		this.hhdcsContract = hhdcsContract;
+	void setHhdceAccount(Account hhdceAccount) {
+		this.hhdceAccount = hhdceAccount;
 	}
 
 	public Account getDcsAccount() {
@@ -176,14 +146,6 @@ public class Mpan extends PersistentEntity {
 
 	void setHhdcsAccount(Account hhdcsAccount) {
 		this.hhdcsAccount = hhdcsAccount;
-	}
-
-	public SupplierContract getSupplierContract() {
-		return supplierContract;
-	}
-
-	void setSupplierContract(SupplierContract supplierContract) {
-		this.supplierContract = supplierContract;
 	}
 
 	public Account getSupplierAccount() {
@@ -234,76 +196,70 @@ public class Mpan extends PersistentEntity {
 		this.agreedSupplyCapacity = agreedSupplyCapacity;
 	}
 
-	void update(MpanTop mpanTop, MpanCore mpanCore,
-			HhdcContract hhdceContract, Account supplierAccount,
-			SupplierContract supplierContract, boolean hasImportKwh,
+	void update(MpanTop mpanTop, MpanCore mpanCore, Account hhdceAccount,
+			Account supplierAccount, boolean hasImportKwh,
 			boolean hasImportKvarh, boolean hasExportKwh,
 			boolean hasExportKvarh, int agreedSupplyCapacity)
 			throws HttpException {
 		if (!mpanTop.getDso().equals(mpanCore.getDso())) {
-			throw new UserException
-					("The MPAN top line DSO doesn't match the MPAN core DSO.");
+			throw new UserException(
+					"The MPAN top line DSO doesn't match the MPAN core DSO.");
 		}
 		if (getMpanTop() != null
-				&& !getMpanTop().getLlf().getIsImport() ==
-						mpanTop.getLlf().getIsImport()) {
-			throw new UserException
-					("You can't change an import mpan into an export one, and vice versa.");
+				&& !getMpanTop().getLlf().getIsImport() == mpanTop.getLlf()
+						.getIsImport()) {
+			throw new UserException(
+					"You can't change an import mpan into an export one, and vice versa.");
 		}
-		if (hhdceContract == null) {
+		if (hhdceAccount == null) {
 			hasImportKwh = false;
 			hasImportKvarh = false;
 			hasExportKwh = false;
 			hasExportKvarh = false;
 		}
 		/*
-		Ssc kwRegister = (Ssc) Hiber
-				.session()
-				.createQuery(
-						"from Register register where register.meterTimeswitch = :mtc and register.units = :units")
-				.setEntity("mtc", meterTimeswitch).setInteger("units",
-						Ssc.Units.KW.ordinal()).uniqueResult();
-		int pc = Integer.parseInt(profileClass.getCode().getString());
-		if (pc > 4 && kwRegister == null) {
-			throw UserException
-					.newInvalidParameter("For a profile class of 05 and above, the meter timeswitch must have a kW register.");
-		}
-		if (pc < 5 && kwRegister != null) {
-			throw UserException
-					.newInvalidParameter("For a profile class of 04 and below, the meter timeswitch cannot have a kW register.");
-		}
-		if (pc == 0 & meterTimeswitch.getRegisters().size() > 0) {
-			throw UserException
-					.newInvalidParameter("For a profile class of 00, the meter timeswitch cannot have any registers.");
-		}
-		*/
+		 * Ssc kwRegister = (Ssc) Hiber .session() .createQuery( "from Register
+		 * register where register.meterTimeswitch = :mtc and register.units =
+		 * :units") .setEntity("mtc", meterTimeswitch).setInteger("units",
+		 * Ssc.Units.KW.ordinal()).uniqueResult(); int pc =
+		 * Integer.parseInt(profileClass.getCode().getString()); if (pc > 4 &&
+		 * kwRegister == null) { throw UserException .newInvalidParameter("For a
+		 * profile class of 05 and above, the meter timeswitch must have a kW
+		 * register."); } if (pc < 5 && kwRegister != null) { throw
+		 * UserException .newInvalidParameter("For a profile class of 04 and
+		 * below, the meter timeswitch cannot have a kW register."); } if (pc ==
+		 * 0 & meterTimeswitch.getRegisters().size() > 0) { throw UserException
+		 * .newInvalidParameter("For a profile class of 00, the meter timeswitch
+		 * cannot have any registers."); }
+		 */
 		setMpanTop(mpanTop);
 		if (mpanCore == null) {
 			throw new InternalException("The mpan core can't be null.");
 		}
 		setMpanCore(mpanCore);
-		if (hhdceContract != null
+		if (hhdceAccount != null
 				&& (!hasImportKwh && !hasImportKvarh && !hasExportKwh && !hasExportKvarh)) {
-			throw new UserException
-					("If there's a DCE contract, surely there must be some data to collect?");
+			throw new UserException(
+					"If there's a DCE account, surely there must be some data to collect?");
 		}
-		setDceService(hhdceContract);
+		setHhdceAccount(hhdceAccount);
 		if (supplierAccount == null) {
-			throw new UserException
-					("An MPAN must have a supplier account.");
+			throw new UserException("An MPAN must have a supplier account.");
 		}
 		Set<SiteSupplyGeneration> siteSupplyGenerations = getSupplyGeneration()
 				.getSiteSupplyGenerations();
 		if (siteSupplyGenerations != null
 				&& !siteSupplyGenerations.isEmpty()
-				&& !siteSupplyGenerations.iterator().next().getSite()
-						.getOrganization().equals(
-								supplierAccount.getOrganization())) {
-			throw new UserException
-					("The supplier account must be attached to the same organization as the MPAN.");
+				&& !siteSupplyGenerations
+						.iterator()
+						.next()
+						.getSite()
+						.getOrganization()
+						.equals(supplierAccount.getContract().getOrganization())) {
+			throw new UserException(
+					"The supplier account must be attached to the same organization as the MPAN.");
 		}
 		setSupplierAccount(supplierAccount);
-		setSupplierContract(supplierContract);
 		setHasImportKwh(hasImportKwh);
 		setHasImportKvarh(hasImportKvarh);
 		setHasExportKwh(hasExportKwh);
@@ -360,15 +316,32 @@ public class Mpan extends PersistentEntity {
 		// TODO Auto-generated method stub
 
 	}
-	
+
 	void delete() throws HttpException, InternalException {
-		//check no invoices
-		if (((Long) Hiber.session().createQuery("from InvoiceMpan invoiceMpan where invoiceMpan.mpan = :mpan").setEntity("mpan", this).uniqueResult()) > 0) {
-			throw new UserException("An MPAN can't be deleted if still has invoices attached.");
+		// check no invoices
+		if (((Long) Hiber.session().createQuery(
+				"from InvoiceMpan invoiceMpan where invoiceMpan.mpan = :mpan")
+				.setEntity("mpan", this).uniqueResult()) > 0) {
+			throw new UserException(
+					"An MPAN can't be deleted if still has invoices attached.");
 		}
 	}
+	
+	public HhdcContract getHhdceContract() throws HttpException {
+		HhdcContract contract = null;
+		if (hhdceAccount != null) {
+			return HhdcContract.getHhdcContract(hhdceAccount
+					.getContract().getId());
+		}
+		return contract;
+	}
+	
+	public SupplierContract getSupplierContract() throws HttpException {
+			return SupplierContract.getSupplierContract(supplierAccount
+					.getContract().getId());
+	}
 
-	public HhdcContract getHhdceContract(boolean isImport, boolean isKwh) {
+	public HhdcContract getHhdceContract(boolean isImport, boolean isKwh) throws HttpException {
 		HhdcContract hhdceContract = null;
 		if (isImport) {
 			if (isKwh) {
@@ -395,7 +368,8 @@ public class Mpan extends PersistentEntity {
 	}
 
 	public MpanRaw getMpanRaw() throws HttpException {
-		return new MpanRaw(getMpanTop().getProfileClass().getCode(), getMpanTop().getMeterTimeswitch()
-				.getCode(), getMpanTop().getLlf().getCode(), getMpanCore().getCore());
+		return new MpanRaw(getMpanTop().getProfileClass().getCode(),
+				getMpanTop().getMeterTimeswitch().getCode(), getMpanTop()
+						.getLlf().getCode(), getMpanCore().getCore());
 	}
 }

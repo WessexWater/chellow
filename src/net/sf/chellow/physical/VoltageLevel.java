@@ -24,27 +24,28 @@ package net.sf.chellow.physical;
 
 import java.util.List;
 
-import net.sf.chellow.data08.Data;
 import net.sf.chellow.monad.DeployerException;
 import net.sf.chellow.monad.DesignerException;
 import net.sf.chellow.monad.Hiber;
-import net.sf.chellow.monad.Invocation;
-import net.sf.chellow.monad.InternalException;
-import net.sf.chellow.monad.Urlable;
 import net.sf.chellow.monad.HttpException;
+import net.sf.chellow.monad.InternalException;
+import net.sf.chellow.monad.Invocation;
+import net.sf.chellow.monad.Urlable;
 import net.sf.chellow.monad.UserException;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
 
 import org.hibernate.HibernateException;
-import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
 public class VoltageLevel extends PersistentEntity {
-	static public VoltageLevel getVoltageLevel(VoltageLevelCode code)
-			throws InternalException, HttpException {
+	static public final String EHV = "EHV";
+	static public final String HV = "HV";
+	static public final String LV = "LV";
+	static public VoltageLevel getVoltageLevel(String code)
+			throws HttpException {
 		VoltageLevel voltageLevel = findVoltageLevel(code);
 		if (voltageLevel == null) {
 			throw new UserException
@@ -53,44 +54,26 @@ public class VoltageLevel extends PersistentEntity {
 		return voltageLevel;
 	}
 
-	static public VoltageLevel findVoltageLevel(VoltageLevelCode code)
-			throws InternalException, HttpException {
+	static public VoltageLevel findVoltageLevel(String code)
+			throws HttpException {
 		return (VoltageLevel) Hiber.session().createQuery(
-				"from VoltageLevel as voltageLevel where "
-						+ "voltageLevel.code.string = :code").setString("code",
+				"from VoltageLevel level where "
+						+ "level.code = :code").setString("code",
 				code.toString()).uniqueResult();
 	}
 
-	public static VoltageLevel insertVoltageLevel(String code, String name)
-			throws InternalException, HttpException {
-		VoltageLevelCode voltageLevelCode = new VoltageLevelCode(code);
-		VoltageLevel voltageLevel = VoltageLevel
-				.findVoltageLevel(voltageLevelCode);
-		if (voltageLevel == null) {
-			voltageLevel = VoltageLevel.insertVoltageLevel(voltageLevelCode,
-					name);
-		}
-		return voltageLevel;
+	public static void insertVoltageLevels()
+			throws HttpException {
+		insertVoltageLevel("LV", "Low voltage");
+	insertVoltageLevel("HV", "High voltage");
+			insertVoltageLevel("EHV", "Extra high voltage");
 	}
 
-	public static VoltageLevel insertVoltageLevel(VoltageLevelCode code,
-			String name) throws InternalException, HttpException {
-
-		VoltageLevel voltageLevel = null;
-		try {
-			voltageLevel = new VoltageLevel(code, name);
-			Hiber.session().save(voltageLevel);
+	private static VoltageLevel insertVoltageLevel(String code,
+			String name) throws HttpException {
+			VoltageLevel voltageLevel = new VoltageLevel(code, name);
+		 	Hiber.session().save(voltageLevel);
 			Hiber.flush();
-		} catch (HibernateException e) {
-			if (Data
-					.isSQLException(e,
-							"ERROR: duplicate key violates unique constraint \"site_code_key\"")) {
-				throw new UserException
-						("A site with this code already exists.");
-			} else {
-				throw new InternalException(e);
-			}
-		}
 		return voltageLevel;
 	}
 
@@ -105,24 +88,23 @@ public class VoltageLevel extends PersistentEntity {
 		}
 	}
 
-	private VoltageLevelCode code;
+	private String code;
 
 	private String name;
 
 	public VoltageLevel() {
 	}
 
-	public VoltageLevel(VoltageLevelCode code, String name) {
-		this();
+	public VoltageLevel(String code, String name) {
 		setCode(code);
 		setName(name);
 	}
 
-	public VoltageLevelCode getCode() {
+	public String getCode() {
 		return code;
 	}
 
-	public void setCode(VoltageLevelCode code) {
+	public void setCode(String code) {
 		this.code = code;
 	}
 
@@ -136,8 +118,8 @@ public class VoltageLevel extends PersistentEntity {
 
 	public Node toXml(Document doc) throws InternalException, HttpException {
 		Element element = doc.createElement("voltage-level");
-		code.setLabel("code");
-		element.setAttributeNode((Attr) code.toXml(doc));
+
+		element.setAttribute("code", code);
 		element.setAttribute("name", name);
 		return element;
 	}

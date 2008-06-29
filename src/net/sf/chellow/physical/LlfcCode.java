@@ -32,19 +32,19 @@ import net.sf.chellow.monad.types.MonadInteger;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 
-public class LlfCode extends MonadInteger {
-	public LlfCode() {
+public class LlfcCode extends MonadInteger {
+	public LlfcCode() {
 	}
 
-	public LlfCode(String code) throws HttpException, InternalException {
+	public LlfcCode(String code) throws HttpException, InternalException {
 		update(code);
 	}
 
-	public LlfCode(int code) throws HttpException, InternalException {
+	public LlfcCode(int code) throws HttpException, InternalException {
 		update(code);
 	}
 	
-	public LlfCode(String label, String code) throws HttpException,
+	public LlfcCode(String label, String code) throws HttpException,
 			InternalException {
 		setLabel(label);
 		update(code);

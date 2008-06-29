@@ -1,6 +1,6 @@
 /*
  
- Copyright 2005-2007 Meniscus Systems Ltd
+ Copyright 2005-2008 Meniscus Systems Ltd
  
  This file is part of Chellow.
 
@@ -38,8 +38,6 @@ import net.sf.chellow.monad.XmlDescriber;
 import net.sf.chellow.monad.XmlTree;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
-import net.sf.chellow.physical.Organization;
-
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -56,10 +54,10 @@ public class Accounts implements Urlable, XmlDescriber {
 		}
 	}
 
-	private Organization organization;
+	private Contract contract;
 
-	public Accounts(Organization organization) {
-		this.organization = organization;
+	public Accounts(Contract contract) {
+		this.contract = contract;
 	}
 
 	public UriPathElement getUrlId() {
@@ -67,19 +65,16 @@ public class Accounts implements Urlable, XmlDescriber {
 	}
 
 	public MonadUri getUri() throws InternalException, HttpException {
-		return organization.getUri().resolve(getUrlId()).append("/");
+		return contract.getUri().resolve(getUrlId()).append("/");
 	}
 
 	public void httpPost(Invocation inv) throws InternalException,
 			HttpException, DesignerException, DeployerException {
-		String participantCode = inv.getString("participant-code");
-		String roleCode = inv.getString("role-code");
 		String reference = inv.getString("reference");
 		if (!inv.isValid()) {
 			throw new UserException(document());
 		}
-		Provider provider = Provider.getProvider(participantCode, roleCode);
-		Account account = organization.insertAccount(provider, reference);
+		Account account = contract.insertAccount(reference);
 		Hiber.commit();
 		inv.sendCreated(document(), account.getUri());
 	}
@@ -121,7 +116,7 @@ public class Accounts implements Urlable, XmlDescriber {
 		Element source = doc.getDocumentElement();
 		Element accountsElement = (Element) toXml(doc);
 		source.appendChild(accountsElement);
-		accountsElement.appendChild(organization.toXml(doc));
+		accountsElement.appendChild(contract.toXml(doc, new XmlTree("organization")));
 		for (Account account : (List<Account>) Hiber
 				.session()
 				.createQuery(

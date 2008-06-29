@@ -1,6 +1,6 @@
 /*
  
- Copyright 2005 Meniscus Systems Ltd
+ Copyright 2005, 2008 Meniscus Systems Ltd
  
  This file is part of Chellow.
 
@@ -34,17 +34,42 @@ import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.UserException;
 import net.sf.chellow.monad.types.MonadInteger;
 
-public class ProfileClassCode extends MonadInteger {
-	public ProfileClassCode() {
+public class PcCode extends MonadInteger {
+	static public final PcCode PC00;
+	static public final PcCode PC01;
+	static public final PcCode PC02;
+	static public final PcCode PC03;
+	static public final PcCode PC04;
+	static public final PcCode PC05;
+	static public final PcCode PC06;
+	static public final PcCode PC07;
+	static public final PcCode PC08;
+	
+	static {
+		try {
+			PC00 = new PcCode(0);
+			PC01 = new PcCode(1);
+			PC02 = new PcCode(2);
+			PC03 = new PcCode(3);
+			PC04 = new PcCode(4);
+			PC05 = new PcCode(5);
+			PC06 = new PcCode(6);
+			PC07 = new PcCode(7);
+			PC08 = new PcCode(8);
+		} catch (HttpException e) {
+			throw new RuntimeException(e);
+		}
+	}
+	public PcCode() {
 		init();
 	}
 
-	public ProfileClassCode(int code) throws HttpException,
+	public PcCode(int code) throws HttpException,
 			InternalException {
 		this(null, code);
 	}
 
-	public ProfileClassCode(String label, int code) throws HttpException,
+	public PcCode(String label, int code) throws HttpException,
 			InternalException {
 		init();
 		setLabel(label);
