@@ -235,10 +235,10 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 				throw new UserException(
 						"This import MPAN core is not attached to this supply.");
 			}
-			if (!importMpanTop.getLlf().getIsImport()) {
+			if (!importMpanTop.getLlfc().getIsImport()) {
 				throw new UserException(document(),
 						"The import line loss factor '"
-								+ importMpanTop.getLlf()
+								+ importMpanTop.getLlfc()
 								+ "' says that the MPAN is actually export.");
 			}
 			if (importMpan == null) {
@@ -264,11 +264,11 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 				throw new UserException(
 						"This export MPAN core is not attached to this supply.");
 			}
-			if (exportMpanTop.getLlf().getIsImport()) {
+			if (exportMpanTop.getLlfc().getIsImport()) {
 				throw new UserException(
 						"Problem with the export MPAN with core '"
 								+ exportMpanCore + "'. The Line Loss Factor '"
-								+ exportMpanTop.getLlf()
+								+ exportMpanTop.getLlfc()
 								+ "' says that the MPAN is actually import.");
 			}
 			if (exportMpan == null) {
@@ -297,8 +297,8 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 				throw new UserException(
 						"Two settlement MPAN generations on the same supply must have the same DSO.");
 			}
-			if (!importMpanTop.getLlf().getVoltageLevel().equals(
-					exportMpanTop.getLlf().getVoltageLevel())) {
+			if (!importMpanTop.getLlfc().getVoltageLevel().equals(
+					exportMpanTop.getLlfc().getVoltageLevel())) {
 				throw new UserException(
 						"The voltage level indicated by the Line Loss Factor must be the same for both the MPANs.");
 			}
@@ -315,7 +315,7 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 			 * says that there should be an export MPAN, but there isn't one."); } }
 			 */
 			if (getExportMpan() != null && getImportMpan() != null) {
-				LlfcCode code = getImportMpan().getMpanTop().getLlf().getCode();
+				LlfcCode code = getImportMpan().getMpanTop().getLlfc().getCode();
 				if (!code.equals(new LlfcCode(520))
 						&& !code.equals(new LlfcCode(550))
 						&& !code.equals(new LlfcCode(580))) {
@@ -639,7 +639,7 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 					Mtc importMeterTimeswitch = Mtc
 							.getMtc(importMpanCore.getDso(),
 									importMeterTimeswitchCode);
-					importMpanTop = MpanTop.getMpanTop(importProfileClass,
+					importMpanTop = MpanTop.getAnMpanTop(importProfileClass,
 							importMeterTimeswitch, importLlf);
 					importAgreedSupplyCapacity = inv
 							.getInteger("import-agreed-supply-capacity");
@@ -698,7 +698,7 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 					Mtc exportMeterTimeswitch = Mtc
 							.getMtc(exportMpanCore.getDso(),
 									exportMeterTimeswitchCode);
-					exportMpanTop = MpanTop.getMpanTop(exportProfileClass,
+					exportMpanTop = MpanTop.getAnMpanTop(exportProfileClass,
 							exportMeterTimeswitch, exportLlf);
 					exportAgreedSupplyCapacity = inv
 							.getInteger("export-agreed-supply-capacity");

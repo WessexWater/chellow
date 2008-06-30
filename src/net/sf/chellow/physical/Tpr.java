@@ -33,12 +33,12 @@ public class Tpr extends PersistentEntity {
 				.uniqueResult();
 	}
 
-	static public Tpr getTpr(String code) throws InternalException, UserException {
+	static public Tpr getTpr(String code) throws InternalException,
+			UserException {
 		try {
 			return getTpr(Integer.parseInt(code));
 		} catch (NumberFormatException e) {
-			throw new UserException("Problem parsing code: "
-					+ e.getMessage());
+			throw new UserException("Problem parsing code: " + e.getMessage());
 		}
 	}
 
@@ -46,19 +46,20 @@ public class Tpr extends PersistentEntity {
 		Tpr tpr = findTpr(code);
 		if (tpr == null) {
 			throw new UserException("Can't find a TPR with code '" + code
-							+ "'.");
+					+ "'.");
 		}
 		return tpr;
 	}
 
-	static public Tpr getTpr(long id) throws NotFoundException, InternalException {
+	static public Tpr getTpr(long id) throws NotFoundException,
+			InternalException {
 		Tpr tpr = (Tpr) Hiber.session().get(Tpr.class, id);
 		if (tpr == null) {
 			throw new NotFoundException();
 		}
 		return tpr;
 	}
-	
+
 	static public void loadFromCsv() throws HttpException {
 		try {
 			ClassLoader classLoader = Participant.class.getClassLoader();
@@ -79,7 +80,9 @@ public class Tpr extends PersistentEntity {
 			}
 			for (String[] values = parser.getLine(); values != null; values = parser
 					.getLine()) {
-				Hiber.session().save(new Tpr(values[0], values[1].equals("S"), values[2].equals("Y")));
+				Hiber.session().save(
+						new Tpr(values[0], values[1].equals("S"), values[2]
+								.equals("Y")));
 			}
 		} catch (UnsupportedEncodingException e) {
 			throw new InternalException(e);
@@ -88,32 +91,30 @@ public class Tpr extends PersistentEntity {
 		}
 	}
 
-	private Set<Ssc> sscs;
+	// private Set<Ssc> sscs;
 
 	private String code;
-private boolean isTeleswitch;
-private boolean isGmt;
+	private boolean isTeleswitch;
+	private boolean isGmt;
 
-	private Set<TprLine> lines;
+	private Set<ClockInterval> clockIntervals;
 
 	public Tpr() {
-
 	}
 
 	public Tpr(String code, boolean isTeleswitch, boolean isGmt) {
-		setSscs(new HashSet<Ssc>());
+		setClockIntervals(new HashSet<ClockInterval>());
 		setCode(code);
-		setLines(new HashSet<TprLine>());
 		setIsTeleswitch(isTeleswitch);
 		setIsGmt(isGmt);
 	}
 
-	public Set<Ssc> getSscs() {
-		return sscs;
+	public Set<ClockInterval> getClockIntervals() {
+		return clockIntervals;
 	}
 
-	void setSscs(Set<Ssc> sscs) {
-		this.sscs = sscs;
+	void setClockIntervals(Set<ClockInterval> clockIntervals) {
+		this.clockIntervals = clockIntervals;
 	}
 
 	String getCode() {
@@ -123,28 +124,21 @@ private boolean isGmt;
 	void setCode(String code) {
 		this.code = code;
 	}
-	
+
 	public boolean getIsTeleswitch() {
 		return isTeleswitch;
 	}
-	
+
 	void setIsTeleswitch(boolean isTeleswitch) {
 		this.isTeleswitch = isTeleswitch;
 	}
-	
+
 	public boolean getIsGmt() {
 		return isGmt;
 	}
 
 	void setIsGmt(boolean isGmt) {
 		this.isGmt = isGmt;
-	}
-	public Set<TprLine> getLines() {
-		return lines;
-	}
-
-	void setLines(Set<TprLine> lines) {
-		this.lines = lines;
 	}
 
 	public Urlable getChild(UriPathElement uriId) throws InternalException {
@@ -177,14 +171,15 @@ private boolean isGmt;
 
 	}
 
-	public TprLine insertLine(int monthFrom, int monthTo, int dayOfWeekFrom,
-			int dayOfWeekTo, int hourFrom, int minuteFrom, int hourTo,
-			int minuteTo, boolean isGmt) throws HttpException,
-			InternalException {
-		TprLine line = new TprLine(this, monthFrom, monthTo, dayOfWeekFrom,
-				dayOfWeekTo, hourFrom, minuteFrom, hourTo, minuteTo, isGmt);
-		lines.add(line);
-		return line;
+	public ClockInterval insertClockInterval(int dayOfWeek, int startDay,
+			int startMonth, int endDay, int endMonth, int startHour,
+			int startMinute, int endHour, int endMinute) {
+		ClockInterval interval = new ClockInterval(this, dayOfWeek, startDay,
+				startMonth, endDay, endMonth, startHour, startMinute, endHour,
+				endMinute);
+		Hiber.session().save(interval);
+		Hiber.session().flush();
+		return interval;
 	}
 
 	public Node toXml(Document doc) throws HttpException {
@@ -198,7 +193,8 @@ private boolean isGmt;
 	}
 
 	public String toString() {
-		return "Code: " + code + " Is Teleswitch?: " + isTeleswitch + " Is GMT?: " + isGmt;
+		return "Code: " + code + " Is Teleswitch?: " + isTeleswitch
+				+ " Is GMT?: " + isGmt;
 	}
 
 }

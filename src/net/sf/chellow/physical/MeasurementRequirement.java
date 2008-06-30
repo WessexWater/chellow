@@ -1,6 +1,6 @@
 /*
  
- Copyright 2005-2008 Meniscus Systems Ltd
+ Copyright 2008 Meniscus Systems Ltd
  
  This file is part of Chellow.
 
@@ -25,10 +25,6 @@ package net.sf.chellow.physical;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.util.Date;
-import java.util.Locale;
 
 import net.sf.chellow.monad.DeployerException;
 import net.sf.chellow.monad.DesignerException;
@@ -37,11 +33,9 @@ import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Invocation;
 import net.sf.chellow.monad.MonadUtils;
-import net.sf.chellow.monad.NotFoundException;
 import net.sf.chellow.monad.Urlable;
 import net.sf.chellow.monad.UserException;
 import net.sf.chellow.monad.XmlTree;
-import net.sf.chellow.monad.types.MonadDate;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
 
@@ -51,142 +45,79 @@ import org.w3c.dom.Node;
 
 import com.Ostermiller.util.CSVParser;
 
-public class MtcMeterType extends PersistentEntity {
-	static public MtcMeterType getMtcMeterType(String code)
-			throws HttpException {
-		MtcMeterType type = findMtcMeterType(code);
-		if (type == null) {
-			throw new NotFoundException();
-		}
-		return type;
-	}
-
-	static public MtcMeterType findMtcMeterType(String code)
-			throws HttpException {
-		return (MtcMeterType) Hiber
-				.session()
-				.createQuery(
-						"from MtcMeterType meterType where meterType.code = :meterTypeCode")
-				.setString("meterTypeCode", code).uniqueResult();
-	}
-
-	static public MtcMeterType getMtcMeterType(Long id) throws HttpException {
-		MtcMeterType type = (MtcMeterType) Hiber.session().get(
-				MtcMeterType.class, id);
-		if (type == null) {
+public class MeasurementRequirement extends PersistentEntity {
+	static public MeasurementRequirement getMeasurementRequirement(Long id) throws HttpException {
+		MeasurementRequirement requirement = (MeasurementRequirement) Hiber.session().get(MeasurementRequirement.class, id);
+		if (requirement == null) {
 			throw new UserException(
-					"There is no meter timeswitch class meter type with that id.");
+					"There is no measurement requirement with that id.");
 		}
-		return type;
+		return requirement;
 	}
 
 	static public void loadFromCsv() throws HttpException {
 		try {
-			ClassLoader classLoader = MtcMeterType.class.getClassLoader();
+			ClassLoader classLoader = MeasurementRequirement.class.getClassLoader();
 			CSVParser parser = new CSVParser(new InputStreamReader(classLoader
-					.getResource("net/sf/chellow/physical/MtcMeterType.csv")
+					.getResource(
+							"net/sf/chellow/physical/MeasurementRequirement.csv")
 					.openStream(), "UTF-8"));
 			parser.setCommentStart("#;!");
 			parser.setEscapes("nrtf", "\n\r\t\f");
 			String[] titles = parser.getLine();
 
 			if (titles.length < 11
-					|| !titles[0].trim().equals("MTC Meter Type Id")
-					|| !titles[1].trim().equals("MTC Meter Type Description")
-					|| !titles[2].trim().equals(
-							"Effective From Settlement Date {MMT}")
-					|| !titles[3].trim().equals(
-							"Effective To Settlement Date {MMT}")) {
+					|| !titles[0].trim().equals("Standard Settlement Configuration Id")
+					|| !titles[1].trim().equals(
+							"Time Pattern Regime Id")) {
 				throw new UserException(
 						"The first line of the CSV must contain the titles "
-								+ "MTC Meter Type Id, MTC Meter Type Description, Effective From Settlement Date {MMT}, Effective To Settlement Date {MMT}.");
+								+ "Standard Settlement Configuration Id, Time Pattern Regime Id.");
 			}
-			DateFormat dateFormat = DateFormat.getDateTimeInstance(
-					DateFormat.SHORT, DateFormat.SHORT, Locale.UK);
 			for (String[] values = parser.getLine(); values != null; values = parser
 					.getLine()) {
-				Hiber.session()
-						.save(
-								new MtcMeterType(values[0], values[1],
-										dateFormat.parse(values[2]), dateFormat
-												.parse(values[3])));
-			}
+				Ssc ssc = Ssc.getSsc(values[0]);
+				ssc.insertMeasurementRequirement(Tpr.getTpr(values[1]));
+				}			
 		} catch (UnsupportedEncodingException e) {
 			throw new InternalException(e);
 		} catch (IOException e) {
 			throw new InternalException(e);
-		} catch (ParseException e) {
-			throw new InternalException(e);
 		}
 	}
 
-	private String code;
+	private Ssc ssc;
 
-	private String description;
+	private Tpr tpr;
 
-	private Date from;
-	private Date to;
-
-	// private Set<LineLossFactor> lineLossFactors;
-
-	// private Set<Ssc> registers;
-
-	public MtcMeterType() {
+	public MeasurementRequirement() {
 	}
 
-	public MtcMeterType(String code, String description, Date from, Date to)
-			throws HttpException {
-
-		setCode(code);
-		setDescription(description);
-		setFrom(from);
-		setTo(to);
+	public MeasurementRequirement(Ssc ssc, Tpr tpr) throws HttpException {
+		setSsc(ssc);
+		setTpr(tpr);
 	}
 
-	public String getCode() {
-		return code;
+	void setSsc(Ssc ssc) {
+		this.ssc = ssc;
 	}
 
-	void setCode(String code) {
-		this.code = code;
+	public Ssc getSsc() {
+		return ssc;
 	}
 
-	public String getDescription() {
-		return description;
+	public Tpr getTpr() {
+		return tpr;
 	}
 
-	void setDescription(String description) {
-		this.description = description;
+	void setTpr(Tpr tpr) {
+		this.tpr = tpr;
 	}
 
-	public Date getFrom() {
-		return from;
-	}
+	public Node toXml(Document doc) throws HttpException {
+		setTypeName("measurement-requirement");
 
-	void setFrom(Date from) {
-		this.from = from;
-	}
-
-	public Date getTo() {
-		return to;
-	}
-
-	void setTo(Date to) {
-		this.to = to;
-	}
-
-	public Node toXml(Document doc) throws InternalException, HttpException {
-		setTypeName("mtc-meter-type");
 		Element element = (Element) super.toXml(doc);
-
-		element.setAttribute("code", code);
-		element.setAttribute("description", description);
-		MonadDate fromDate = new MonadDate(from);
-		fromDate.setLabel("from");
-		element.appendChild(fromDate.toXml(doc));
-		MonadDate toDate = new MonadDate(to);
-		toDate.setLabel("to");
-		element.appendChild(toDate.toXml(doc));
 		return element;
 	}
 

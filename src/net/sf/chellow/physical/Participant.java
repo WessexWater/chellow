@@ -12,6 +12,7 @@ import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Invocation;
+import net.sf.chellow.monad.MonadUtils;
 import net.sf.chellow.monad.NotFoundException;
 import net.sf.chellow.monad.Urlable;
 import net.sf.chellow.monad.UserException;
@@ -121,8 +122,11 @@ public class Participant extends PersistentEntity {
 
 	@Override
 	public void httpGet(Invocation inv) throws HttpException {
-		// TODO Auto-generated method stub
+		Document doc = MonadUtils.newSourceDocument();
+		Element source = (Element) doc.getFirstChild();
 
+		source.appendChild(toXml(doc));
+		inv.sendOk(doc);
 	}
 
 	@Override

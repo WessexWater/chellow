@@ -31,14 +31,11 @@
 				<param name="sequence">account_id_sequence</param>
 			</generator>
 		</id>
-		<many-to-one name="organization"
-			class="net.sf.chellow.physical.Organization" column="organization_id"
-			unique-key="organization-provider-name" foreign-key="fkey_account_organization" />
-		<many-to-one name="provider" class="Provider"
-			column="provider_id" not-null="true"
-			unique-key="organization-provider-name" foreign-key="fkey_account_provider"/>
+		<many-to-one name="contract"
+			class="net.sf.chellow.billing.Contract" column="contract_id"
+			unique-key="contract-reference" foreign-key="fkey_account_contract" />
 		<property type="string" name="reference" column="reference"
-			not-null="true" unique-key="organization-provider-name" />
+			not-null="true" unique-key="contract-reference" />
 	</class>
 </hibernate-mapping>
 

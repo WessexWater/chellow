@@ -312,8 +312,8 @@ public class Llfc extends PersistentEntity {
 	 * addMeterTimeswitch(code); } }
 	 */
 	
-	public MpanTop insertMpanTop(Pc pc, Mtc mtc, Ssc ssc) throws HttpException {
-		MpanTop top = new MpanTop(pc, mtc, this, ssc);
+	public MpanTop insertMpanTop(Pc pc, Mtc mtc, Ssc ssc, Date from, Date to) throws HttpException {
+		MpanTop top = new MpanTop(pc, mtc, this, ssc, from, to);
 		Hiber.session().save(top);
 		Hiber.flush();
 		return top;

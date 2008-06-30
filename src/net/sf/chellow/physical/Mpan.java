@@ -60,19 +60,11 @@ public class Mpan extends PersistentEntity {
 
 	private MpanCore mpanCore;
 
-	// private HhdcContract hhdceContract;
-
 	private Account hhdceAccount;
-
-	// private SupplierContract supplierContract;
 
 	private Account supplierAccount;
 
-	// private MopContract mopService;
-
 	private Account mopAccount;
-
-	// private HhdcContract hhdcsContract;
 
 	private Account hhdcsAccount;
 
@@ -140,7 +132,7 @@ public class Mpan extends PersistentEntity {
 		this.hhdceAccount = hhdceAccount;
 	}
 
-	public Account getDcsAccount() {
+	public Account getHhdcsAccount() {
 		return hhdcsAccount;
 	}
 
@@ -201,12 +193,12 @@ public class Mpan extends PersistentEntity {
 			boolean hasImportKvarh, boolean hasExportKwh,
 			boolean hasExportKvarh, int agreedSupplyCapacity)
 			throws HttpException {
-		if (!mpanTop.getDso().equals(mpanCore.getDso())) {
+		if (!mpanTop.getLlfc().getDso().equals(mpanCore.getDso())) {
 			throw new UserException(
 					"The MPAN top line DSO doesn't match the MPAN core DSO.");
 		}
 		if (getMpanTop() != null
-				&& !getMpanTop().getLlf().getIsImport() == mpanTop.getLlf()
+				&& !getMpanTop().getSsc().getIsImport() == mpanTop.getSsc()
 						.getIsImport()) {
 			throw new UserException(
 					"You can't change an import mpan into an export one, and vice versa.");
@@ -368,8 +360,8 @@ public class Mpan extends PersistentEntity {
 	}
 
 	public MpanRaw getMpanRaw() throws HttpException {
-		return new MpanRaw(getMpanTop().getProfileClass().getCode(),
-				getMpanTop().getMeterTimeswitch().getCode(), getMpanTop()
-						.getLlf().getCode(), getMpanCore().getCore());
+		return new MpanRaw(getMpanTop().getPc().getCode(),
+				getMpanTop().getMtc().getCode(), getMpanTop()
+						.getLlfc().getCode(), getMpanCore().getCore());
 	}
 }

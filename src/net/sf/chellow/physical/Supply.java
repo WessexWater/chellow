@@ -680,7 +680,7 @@ public class Supply extends PersistentEntity implements Urlable {
 										generation.getFinishDate().getDate()))) {
 					SupplyGeneration targetGeneration = getGeneration(read
 							.getPresentDate());
-					Mpan targetMpan = read.getMpan().getMpanTop().getLlf()
+					Mpan targetMpan = read.getMpan().getMpanTop().getLlfc()
 							.getIsImport() ? targetGeneration.getImportMpan()
 							: targetGeneration.getExportMpan();
 					if (targetMpan == null) {

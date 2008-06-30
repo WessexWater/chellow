@@ -4,7 +4,7 @@
           "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
 <!-- 
 	
-	Copyright 2005-2007 Meniscus Systems Ltd
+	Copyright 2005-2008 Meniscus Systems Ltd
 	
 	This file is part of Chellow.
 	
@@ -42,28 +42,15 @@
 		<many-to-one name="mopAccount"
 			class="net.sf.chellow.billing.Account" column="mop_account_id"
 			foreign-key="fkey_mpan_mop_account" />
-		<many-to-one name="mopService"
-			class="net.sf.chellow.billing.MopService" column="mop_service_id"
-			foreign-key="fkey_mpan_mop_service" />
-		<many-to-one name="dcsAccount"
-			class="net.sf.chellow.billing.Account" column="dcs_account_id"
-			foreign-key="fkey_mpan_dcs_account" />
-		<many-to-one name="dcsService"
-			class="net.sf.chellow.billing.DcsService" column="dcs_service_id"
-			foreign-key="fkey_mpan_dcs_service" />
-		<many-to-one name="dceAccount"
-			class="net.sf.chellow.billing.Account" column="dce_account_id"
-			foreign-key="fkey_mpan_dce_account" />
-		<many-to-one name="dceService"
-			class="net.sf.chellow.billing.DceService" column="dce_service_id"
-			foreign-key="fkey_mpan_dce_service" />
+		<many-to-one name="hhdcsAccount"
+			class="net.sf.chellow.billing.Account" column="hhdcs_account_id"
+			foreign-key="fkey_mpan_hhdcs_account" />
+		<many-to-one name="hhdceAccount"
+			class="net.sf.chellow.billing.Account" column="hhdce_account_id"
+			foreign-key="fkey_mpan_hhdce_account" />
 		<many-to-one name="supplierAccount"
 			class="net.sf.chellow.billing.Account" column="supplier_account_id"
 			foreign-key="fkey_mpan_supplier_account" />
-		<many-to-one name="supplierService"
-			class="net.sf.chellow.billing.SupplierService"
-			column="supplier_service_id"
-			foreign-key="fkey_mpan_supplier_service" />
 		<property type="boolean" name="hasImportKwh"
 			column="has_import_kwh" not-null="true" />
 		<property type="boolean" name="hasImportKvarh"

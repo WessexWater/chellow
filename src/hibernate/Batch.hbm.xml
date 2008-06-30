@@ -4,7 +4,7 @@
           "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
 <!-- 
 	
-	Copyright 2005 Meniscus Systems Ltd
+	Copyright 2005, 2008 Meniscus Systems Ltd
 	
 	This file is part of Chellow.
 	
@@ -31,10 +31,10 @@
 				<param name="sequence">batch_id_sequence</param>
 			</generator>
 		</id>
-		<many-to-one name="service" class="Service"
-			column="service_id" unique-key="service-reference" foreign-key="fkey_batch_service"/>
+		<many-to-one name="contract" class="Contract"
+			column="contract_id" unique-key="contract-reference" foreign-key="fkey_batch_contract"/>
 		<property type="string" name="reference" column="reference"
-			not-null="true" unique-key="service-reference" />
+			not-null="true" unique-key="contract-reference" />
 	</class>
 </hibernate-mapping>
 

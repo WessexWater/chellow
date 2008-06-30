@@ -82,17 +82,15 @@ public class ClockInterval extends PersistentEntity {
 			}
 			for (String[] values = parser.getLine(); values != null; values = parser
 					.getLine()) {
-				Hiber.session().save(
-						new ClockInterval(Tpr.getTpr(values[0]), Integer
-								.parseInt(values[1]), Integer
-								.parseInt(values[2]), Integer
-								.parseInt(values[3]), Integer
-								.parseInt(values[4]), Integer
+				Tpr tpr = Tpr.getTpr(values[0]);
+				tpr.insertClockInterval(Integer.parseInt(values[1]), Integer
+						.parseInt(values[2]), Integer.parseInt(values[3]),
+						Integer.parseInt(values[4]), Integer
 								.parseInt(values[5]), Integer
 								.parseInt(values[6].substring(0, 2)), Integer
 								.parseInt(values[6].substring(3)), Integer
 								.parseInt(values[7].substring(0, 2)), Integer
-								.parseInt(values[7].substring(3))));
+								.parseInt(values[7].substring(3)));
 			}
 		} catch (UnsupportedEncodingException e) {
 			throw new InternalException(e);

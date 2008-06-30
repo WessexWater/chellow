@@ -10,12 +10,12 @@
 			<head>
 				<link rel="stylesheet" type="text/css"
 					href="{/source/request/@context-path}/style/" />
-
 				<title>
-					Chellow &gt; Market Roles &gt;
-					<xsl:value-of select="/source/market-role/@code" />
+					Chellow &gt; Market Participants &gt;
+					<xsl:value-of select="/source/participant/@code" />
 				</title>
 			</head>
+
 			<body>
 				<p>
 					<a href="{/source/request/@context-path}/">
@@ -25,11 +25,11 @@
 					</a>
 					<xsl:value-of select="' &gt; '" />
 					<a
-						href="{/source/request/@context-path}/market-roles/">
-						<xsl:value-of select="'Market Roles'" />
+						href="{/source/request/@context-path}/participants/">
+						<xsl:value-of select="'Market Participants'" />
 					</a>
 					<xsl:value-of
-						select="concat(' &gt; ', /source/market-role/@code)" />
+						select="concat(' &gt; ', /source/participant/@code)" />
 				</p>
 
 				<xsl:if test="//message">
@@ -46,21 +46,21 @@
 						<th>Chellow Id</th>
 						<td>
 							<xsl:value-of
-								select="/source/market-role/@id" />
+								select="/source/participant/@id" />
 						</td>
 					</tr>
 					<tr>
 						<th>Code</th>
 						<td>
 							<xsl:value-of
-								select="/source/market-role/@code" />
+								select="/source/participant/@code" />
 						</td>
 					</tr>
 					<tr>
-						<th>Description</th>
+						<th>Name</th>
 						<td>
 							<xsl:value-of
-								select="/source/market-role/@description" />
+								select="/source/participant/@name" />
 						</td>
 					</tr>
 				</table>
@@ -68,4 +68,3 @@
 		</html>
 	</xsl:template>
 </xsl:stylesheet>
-

@@ -25,31 +25,39 @@
 -->
 
 <hibernate-mapping package="net.sf.chellow.physical">
-	<class name="MpanTop" table="mpan_top">
+	<class name="Mtc" table="mtc"
+		lazy="true">
 		<id name="id">
 			<generator class="sequence">
-				<param name="sequence">mpan_top_id_sequence</param>
+				<param name="sequence">
+					mtc_id_sequence
+				</param>
 			</generator>
 		</id>
-		<many-to-one name="pc" class="Pc" column="pc_id" not-null="true"
-			foreign-key="fkey_mpan__pc" unique-key="mpan_top_unique" />
-		<many-to-one name="mtc" class="Mtc" column="mtc_id"
-			not-null="true" foreign-key="fkey_mpan_mtc"
-			unique-key="mpan_top_unique" />
-		<many-to-one name="llfc" class="Llfc" column="llfc_id"
-			not-null="true" foreign-key="fkey_mpan_llfc"
-			unique-key="mpan_top_unique" />
-		<many-to-one name="ssc" class="Ssc" column="ssc_id"
-			not-null="true" foreign-key="fkey_mpan_ssc"
-			unique-key="mpan_top_unique" />
+		<many-to-one name="dso" class="Dso" column="dso_id"
+			unique-key="mtc_unique"
+			foreign-key="fkey_mtc_dso" />
+		<component name="code" class="MtcCode">
+			<property type="integer" name="integer" column="code"
+				unique-key="mtc_unique" />
+		</component>
+		<property type="string" name="description" />
+		<property type="boolean" name="hasRelatedMetering"
+			column="has_related_metering" not-null="true" />
+		<property type="boolean" name="hasComms"
+			column="has_comms" />
+		<property type="boolean" name="isHh"
+			column="is_hh" />
 		
-		<!--
-		<set name="sscs" lazy="true" cascade="delete-orphan"
-			table="mpan_top_ssc">
-			<key column="mpan_top_id"
-				foreign-key="fkey_mpan_top_ssc__mpan_top" />
-			<many-to-many column="ssc_id" class="Ssc" />
-		</set>
-		-->
+		<many-to-one name="meterType" class="MtcMeterType" column="meter_type_id"
+			foreign-key="fkey_mtc_meter_type" />
+		<many-to-one name="paymentType" class="MtcPaymentType" column="payment_type_id"
+			foreign-key="fkey_mtc_payment_type" />
+		<property type="integer" name="tprCount"
+			column="tpr_count" not-null="true"/>
+		<property type="timestamp" name="from"
+			column="from" not-null="true"/>
+		<property type="timestamp" name="to"
+			column="to" />
 	</class>
 </hibernate-mapping>

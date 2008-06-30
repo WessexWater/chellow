@@ -1,6 +1,6 @@
 /*
  
- Copyright 2005-2008 Meniscus Systems Ltd
+ Copyright 2008 Meniscus Systems Ltd
  
  This file is part of Chellow.
 
@@ -51,31 +51,31 @@ import org.w3c.dom.Node;
 
 import com.Ostermiller.util.CSVParser;
 
-public class MtcMeterType extends PersistentEntity {
-	static public MtcMeterType getMtcMeterType(String code)
+public class MtcPaymentType extends PersistentEntity {
+	static public MtcPaymentType getMtcPaymentType(String code)
 			throws HttpException {
-		MtcMeterType type = findMtcMeterType(code);
+		MtcPaymentType type = findMtcPaymentType(code);
 		if (type == null) {
 			throw new NotFoundException();
 		}
 		return type;
 	}
 
-	static public MtcMeterType findMtcMeterType(String code)
+	static public MtcPaymentType findMtcPaymentType(String code)
 			throws HttpException {
-		return (MtcMeterType) Hiber
+		return (MtcPaymentType) Hiber
 				.session()
 				.createQuery(
-						"from MtcMeterType meterType where meterType.code = :meterTypeCode")
-				.setString("meterTypeCode", code).uniqueResult();
+						"from MtcPaymentType meterType where meterType.code = :meterPaymentCode")
+				.setString("meterPaymentCode", code).uniqueResult();
 	}
 
-	static public MtcMeterType getMtcMeterType(Long id) throws HttpException {
-		MtcMeterType type = (MtcMeterType) Hiber.session().get(
-				MtcMeterType.class, id);
+	static public MtcPaymentType getMtcPaymentType(Long id) throws HttpException {
+		MtcPaymentType type = (MtcPaymentType) Hiber.session().get(
+				MtcPaymentType.class, id);
 		if (type == null) {
 			throw new UserException(
-					"There is no meter timeswitch class meter type with that id.");
+					"There is no meter timeswitch class payment type with that id.");
 		}
 		return type;
 	}
@@ -84,22 +84,23 @@ public class MtcMeterType extends PersistentEntity {
 		try {
 			ClassLoader classLoader = MtcMeterType.class.getClassLoader();
 			CSVParser parser = new CSVParser(new InputStreamReader(classLoader
-					.getResource("net/sf/chellow/physical/MtcMeterType.csv")
+					.getResource("net/sf/chellow/physical/MtcPaymentType.csv")
 					.openStream(), "UTF-8"));
 			parser.setCommentStart("#;!");
 			parser.setEscapes("nrtf", "\n\r\t\f");
 			String[] titles = parser.getLine();
+			
 
 			if (titles.length < 11
-					|| !titles[0].trim().equals("MTC Meter Type Id")
-					|| !titles[1].trim().equals("MTC Meter Type Description")
+					|| !titles[0].trim().equals("MTC Payment Type Id")
+					|| !titles[1].trim().equals("MTC Payment Type Description")
 					|| !titles[2].trim().equals(
-							"Effective From Settlement Date {MMT}")
+							"Effective From Settlement Date {MPT}")
 					|| !titles[3].trim().equals(
-							"Effective To Settlement Date {MMT}")) {
+							"Effective To Settlement Date {MPT}")) {
 				throw new UserException(
 						"The first line of the CSV must contain the titles "
-								+ "MTC Meter Type Id, MTC Meter Type Description, Effective From Settlement Date {MMT}, Effective To Settlement Date {MMT}.");
+								+ "MTC Payment Type Id, MTC Payment Type Description, Effective From Settlement Date {MPT}, Effective To Settlement Date {MPT}.");
 			}
 			DateFormat dateFormat = DateFormat.getDateTimeInstance(
 					DateFormat.SHORT, DateFormat.SHORT, Locale.UK);
@@ -107,7 +108,7 @@ public class MtcMeterType extends PersistentEntity {
 					.getLine()) {
 				Hiber.session()
 						.save(
-								new MtcMeterType(values[0], values[1],
+								new MtcPaymentType(values[0], values[1],
 										dateFormat.parse(values[2]), dateFormat
 												.parse(values[3])));
 			}
@@ -127,14 +128,10 @@ public class MtcMeterType extends PersistentEntity {
 	private Date from;
 	private Date to;
 
-	// private Set<LineLossFactor> lineLossFactors;
-
-	// private Set<Ssc> registers;
-
-	public MtcMeterType() {
+	public MtcPaymentType() {
 	}
 
-	public MtcMeterType(String code, String description, Date from, Date to)
+	public MtcPaymentType(String code, String description, Date from, Date to)
 			throws HttpException {
 
 		setCode(code);

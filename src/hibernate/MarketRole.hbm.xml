@@ -31,7 +31,7 @@
 				<param name="sequence">market_role_id_sequence</param>
 			</generator>
 		</id>
-		<property type="string" name="code" column="code"
+		<property type="character" name="code" column="code"
 			not-null="true" unique="true" />
 		<property type="string" name="description" column="description"
 			not-null="true" unique="true" />

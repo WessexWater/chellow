@@ -40,11 +40,11 @@ import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 
 public class MpanRaw extends MonadObject {
-	private PcCode profileClassCode;
+	private PcCode pcCode;
 
-	private MtcCode meterTimeswitchCode;
+	private MtcCode mtcCode;
 
-	private LlfcCode llfCode;
+	private LlfcCode llfcCode;
 
 	private MpanCoreRaw mpanCoreRaw;
 
@@ -63,59 +63,57 @@ public class MpanRaw extends MonadObject {
 						.substring(5, 8)), new MpanCoreRaw(mpan.substring(8)));
 	}
 
-	private void init(PcCode profileClassCode,
-			MtcCode meterTimeswitchCode, LlfcCode llfCode,
+	private void init(PcCode pcCode,
+			MtcCode mtcCode, LlfcCode llfCode,
 			MpanCoreRaw mpanCoreRaw) throws InternalException {
-		if (profileClassCode == null || meterTimeswitchCode == null
+		if (pcCode == null || mtcCode == null
 				|| mpanCoreRaw == null) {
 			throw new InternalException("No nulls allowed.");
 		}
-		this.profileClassCode = profileClassCode;
-		this.meterTimeswitchCode = meterTimeswitchCode;
-		this.llfCode = llfCode;
+		this.pcCode = pcCode;
+		this.mtcCode = mtcCode;
+		this.llfcCode = llfCode;
 		this.mpanCoreRaw = mpanCoreRaw;
 	}
 
-	public MpanRaw(PcCode profileClassCode,
-			MtcCode meterTimeswitchCode, LlfcCode llfCode,
+	public MpanRaw(PcCode pcCode,
+			MtcCode mtcCode, LlfcCode llfcCode,
 			MpanCoreRaw mpanCoreRaw) throws InternalException {
-		init(profileClassCode, meterTimeswitchCode, llfCode, mpanCoreRaw);
+		init(pcCode, mtcCode, llfcCode, mpanCoreRaw);
 	}
 
-	public PcCode getProfileClassCode() {
-		return profileClassCode;
+	public PcCode getPcCode() {
+		return pcCode;
 	}
 
-	public MtcCode getMeterTimeswitchCode() {
-		return meterTimeswitchCode;
+	public MtcCode getMtcCode() {
+		return mtcCode;
 	}
 
-	public LlfcCode getLlfCode() {
-		return llfCode;
+	public LlfcCode getLlfcCode() {
+		return llfcCode;
 	}
 
 	public MpanCoreRaw getMpanCoreRaw() {
 		return mpanCoreRaw;
 	}
 
-	public Pc getProfileClass() throws InternalException,
-			HttpException {
-		return Pc.getProfileClass(profileClassCode);
+	public Pc getPc() throws HttpException {
+		return Pc.getPc(pcCode);
 	}
 
-	public Mtc getMeterTimeswitch() throws InternalException,
-			HttpException {
+	public Mtc getMtc() throws HttpException {
 		return Mtc.getMtc(mpanCoreRaw.getDso(),
-				meterTimeswitchCode);
+				mtcCode);
 	}
 
-	public Llfc getLlf() throws InternalException, HttpException {
-		return mpanCoreRaw.getDso().getLlf(llfCode);
+	public Llfc getLlfc() throws HttpException {
+		return mpanCoreRaw.getDso().getLlf(llfcCode);
 	}
 
-	public MpanTop getMpanTop() throws InternalException, HttpException {
-		return MpanTop.getMpanTop(getProfileClass(), getMeterTimeswitch(),
-				getLlf());
+	public MpanTop getMpanTop() throws HttpException {
+		return MpanTop.getAnMpanTop(getPc(), getMtc(),
+				getLlfc());
 	}
 
 	public MpanCore getMpanCore(Organization organization)
@@ -124,8 +122,8 @@ public class MpanRaw extends MonadObject {
 	}
 
 	public String toString() {
-		return profileClassCode.toString() + " "
-				+ meterTimeswitchCode.toString() + " " + llfCode.toString()
+		return pcCode.toString() + " "
+				+ mtcCode.toString() + " " + llfcCode.toString()
 				+ " " + mpanCoreRaw.toString();
 	}
 
@@ -144,18 +142,18 @@ public class MpanRaw extends MonadObject {
 		boolean isEqual = false;
 		if (obj instanceof MpanRaw) {
 			MpanRaw mpan = (MpanRaw) obj;
-			isEqual = getProfileClassCode().equals(mpan.getProfileClassCode())
-					&& getMeterTimeswitchCode().equals(
-							mpan.getMeterTimeswitchCode())
-					&& getLlfCode().equals(mpan.getLlfCode())
+			isEqual = getPcCode().equals(mpan.getPcCode())
+					&& getMtcCode().equals(
+							mpan.getMtcCode())
+					&& getLlfcCode().equals(mpan.getLlfcCode())
 					&& getMpanCoreRaw().equals(mpan.getMpanCoreRaw());
 		}
 		return isEqual;
 	}
 
 	public int hashCode() {
-		return getProfileClassCode().hashCode()
-				+ getMeterTimeswitchCode().hashCode() + getLlfCode().hashCode()
+		return getPcCode().hashCode()
+				+ getMtcCode().hashCode() + getLlfcCode().hashCode()
 				+ getMpanCoreRaw().hashCode();
 	}
 }

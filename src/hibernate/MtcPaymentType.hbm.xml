@@ -4,7 +4,7 @@
           "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
 <!-- 
 	
-	Copyright 2005-2007 Meniscus Systems Ltd
+	Copyright 2008 Meniscus Systems Ltd
 	
 	This file is part of Chellow.
 	
@@ -25,25 +25,21 @@
 -->
 
 <hibernate-mapping package="net.sf.chellow.physical">
-	<class name="MeterTimeswitch" table="meter_timeswitch"
-		lazy="true">
+	<class name="MtcPaymentType" table="mtc_payment_type" lazy="true">
 		<id name="id">
 			<generator class="sequence">
 				<param name="sequence">
-					meter_timeswitch_id_sequence
+					mtc_payment_type_id_sequence
 				</param>
 			</generator>
 		</id>
-		<many-to-one name="dso" class="Dso" column="dso_id"
-			unique-key="meter_timeswitch_code_unique"
-			foreign-key="fkey_meter_timeswitch_dso" />
-		<component name="code" class="MeterTimeswitchCode">
-			<property type="integer" name="integer" column="code"
-				unique-key="meter_timeswitch_code_unique" />
-		</component>
-		<property type="string" name="description" />
-		<property type="boolean" name="isUnmetered"
-			column="is_unmetered" />
+		<property type="string" name="code" not-null="true" />
+
+		<property type="string" name="description" not-null="true" />
+
+		<property type="timestamp" name="from" column="from"
+			not-null="true" />
+		<property type="timestamp" name="to" column="to" />
 	</class>
 </hibernate-mapping>
 

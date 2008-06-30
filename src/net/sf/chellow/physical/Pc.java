@@ -59,10 +59,10 @@ public class Pc extends PersistentEntity {
 
 	static public Pc getProfileClass(int code)
 			throws InternalException, HttpException {
-		return getProfileClass(new PcCode(code));
+		return getPc(new PcCode(code));
 	}
 
-	static public Pc getProfileClass(PcCode code)
+	static public Pc getPc(PcCode code)
 			throws InternalException, HttpException {
 		Pc profileClass = findProfileClass(code);
 		if (profileClass == null) {

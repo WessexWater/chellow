@@ -24,29 +24,12 @@
 	
 -->
 
-<hibernate-mapping package="net.sf.chellow.physical">
-	<class name="Ssc" table="ssc" lazy="true">
-		<id name="id">
-			<generator class="sequence">
-				<param name="sequence">ssc_id_sequence</param>
-			</generator>
-		</id>
-		<component name="code" class="SscCode">
-			<property type="integer" name="integer" column="code"
-				unique="true" not-null="true" />
-		</component>
-		<!--
-		<set name="mpanTops" cascade="all,delete-orphan"
-			table="mpan_top_ssc" lazy="true">
-			<key column="ssc_id" foreign-key="fkey_mpan_top_ssc__ssc" />
-			<many-to-many column="mpan_top_id" class="MpanTop" />
-		</set>
-		-->
-		<set name="measurementRequirements" inverse="true" cascade="all,delete-orphan"
-			order-by="tpr_id">
-			<key column="ssc_id" />
-			<one-to-many class="MeasurementRequirement" />
-		</set>
-	</class>
-</hibernate-mapping>
 
+<hibernate-mapping
+	package="net.sf.chellow.billing">
+	<joined-subclass extends="Service" name="Contract" table="contract"
+		lazy="true">
+		<key column="service_id" foreign-key="fkey_contract_service"/>
+		<many-to-one name="organization" class="net.sf.chellow.physical.Organization" column="organization_id" foreign-key="fkey_contract_organization"/>
+	</joined-subclass>
+</hibernate-mapping>

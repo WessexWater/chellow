@@ -36,6 +36,7 @@ import net.sf.chellow.physical.Password;
 import net.sf.chellow.physical.Pc;
 import net.sf.chellow.physical.Role;
 import net.sf.chellow.physical.Source;
+import net.sf.chellow.physical.Tpr;
 import net.sf.chellow.physical.User;
 import net.sf.chellow.physical.VoltageLevel;
 
@@ -269,6 +270,8 @@ public class ContextListener implements ServletContextListener {
 		Participant.loadFromCsv();
 		Hiber.close();
 		MarketRole.loadFromCsv();
+		Hiber.close();
+		Tpr.loadFromCsv();
 		Hiber.close();
 		EmailAddress adminUserEmailAddress = new EmailAddress(
 				"administrator@localhost");
