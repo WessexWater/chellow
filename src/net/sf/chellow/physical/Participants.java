@@ -10,9 +10,9 @@ import net.sf.chellow.monad.MethodNotAllowedException;
 import net.sf.chellow.monad.MonadUtils;
 import net.sf.chellow.monad.NotFoundException;
 import net.sf.chellow.monad.Urlable;
-import net.sf.chellow.monad.UserException;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
+import net.sf.chellow.ui.Chellow;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -52,8 +52,8 @@ public class Participants implements Urlable {
 		throw new MethodNotAllowedException();
 	}
 
-	public MonadUri getUri() throws InternalException, UserException {
-		return new MonadUri("/").resolve(getUriId()).append("/");
+	public MonadUri getUri() throws HttpException {
+		return Chellow.ROOT_URI.resolve(getUriId()).append("/");
 	}
 
 	public Participant getChild(UriPathElement uriId) throws HttpException {

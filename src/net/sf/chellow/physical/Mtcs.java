@@ -2,16 +2,13 @@ package net.sf.chellow.physical;
 
 import java.util.List;
 
-import net.sf.chellow.monad.DeployerException;
-import net.sf.chellow.monad.DesignerException;
 import net.sf.chellow.monad.Hiber;
+import net.sf.chellow.monad.HttpException;
+import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Invocation;
 import net.sf.chellow.monad.MonadUtils;
-import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Urlable;
-import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.XmlTree;
-
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
 import net.sf.chellow.ui.Chellow;
@@ -19,18 +16,18 @@ import net.sf.chellow.ui.Chellow;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-public class MeterTimeswitches implements Urlable {
+public class Mtcs implements Urlable {
 	public static final UriPathElement URI_ID;
 
 	static {
 		try {
-			URI_ID = new UriPathElement("meter-timeswitches");
+			URI_ID = new UriPathElement("mtcs");
 		} catch (HttpException e) {
 			throw new RuntimeException(e);
 		}
 	}
 
-	public MeterTimeswitches() {
+	public Mtcs() {
 	}
 
 	public UriPathElement getUrlId() {
@@ -43,34 +40,33 @@ public class MeterTimeswitches implements Urlable {
 	}
 
 	@SuppressWarnings("unchecked")
-	public void httpGet(Invocation inv) throws DesignerException,
-			InternalException, HttpException, DeployerException {
+	public void httpGet(Invocation inv) throws HttpException {
 		Document doc = MonadUtils.newSourceDocument();
 		Element source = doc.getDocumentElement();
+		Element mtcsElement = doc.createElement("mtcs");
+		source.appendChild(mtcsElement);
 
-		for (Mtc mtc : (List<Mtc>) Hiber.session()
+		for (Mtc mtc : (List<Mtc>) Hiber
+				.session()
 				.createQuery(
-						"select mtc from MeterTimeswitch mtc left outer join mtc.dso dso order by mtc.code, dso.code")
+						"select mtc from Mtc mtc left outer join mtc.dso dso order by mtc.code, dso.code")
 				.list()) {
-			source.appendChild(mtc.toXml(doc, new XmlTree("dso")));
+			mtcsElement.appendChild(mtc.toXml(doc, new XmlTree("dso").put(
+					"meterType").put("paymentType")));
 		}
 		inv.sendOk(doc);
 	}
 
-	public void httpPost(Invocation inv) throws InternalException,
-			HttpException {
+	public void httpPost(Invocation inv) throws HttpException {
 		// TODO Auto-generated method stub
 
 	}
 
-	public Mtc getChild(UriPathElement uriId) throws HttpException,
-			InternalException {
-		return Mtc.getMtc(Long.parseLong(uriId
-				.getString()));
+	public Mtc getChild(UriPathElement uriId) throws HttpException {
+		return Mtc.getMtc(Long.parseLong(uriId.getString()));
 	}
 
-	public void httpDelete(Invocation inv) throws InternalException,
-			HttpException {
+	public void httpDelete(Invocation inv) throws HttpException {
 		// TODO Auto-generated method stub
 
 	}

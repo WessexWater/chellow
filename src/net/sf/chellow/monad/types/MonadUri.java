@@ -1,6 +1,6 @@
 /*
  
- Copyright 2005 Meniscus Systems Ltd
+ Copyright 2005, 2008 Meniscus Systems Ltd
  
  This file is part of Chellow.
 
@@ -34,17 +34,17 @@ public class MonadUri extends MonadString {
 		setTypeName("URI");
 	}
 
-	public MonadUri(String uri) throws InternalException, UserException {
+	public MonadUri(String uri) throws HttpException {
 		this(null, uri);
 	}
 
-	public MonadUri(String label, String uri) throws InternalException, UserException {
+	public MonadUri(String label, String uri) throws HttpException {
 		this();
 		setLabel(label);
 		update(uri);
 	}
 
-	public void update(String uri) throws UserException, InternalException {
+	public void update(String uri) throws HttpException {
 		try {
 			super.update(new URI(uri).toString());
 		} catch (URISyntaxException e) {
@@ -61,19 +61,19 @@ public class MonadUri extends MonadString {
 		}
 	}
 
-	public MonadUri resolve(MonadUri uri) throws InternalException, UserException {
+	public MonadUri resolve(MonadUri uri) throws HttpException {
 		return new MonadUri(toUri().resolve(uri.toUri()).toString());
 	}
 
-	public MonadUri resolve(String uri) throws InternalException, UserException {
+	public MonadUri resolve(String uri) throws HttpException {
 		return resolve(new MonadUri(uri));
 	}
 
-	public MonadUri resolve(Long uri) throws InternalException, HttpException {
+	public MonadUri resolve(Long uri) throws HttpException {
 		return resolve(new MonadUri(uri.toString()));
 	}
 
-	public MonadUri append(String string) throws InternalException, UserException {
+	public MonadUri append(String string) throws HttpException {
 		return new MonadUri(getString() + string);
 	}
 }

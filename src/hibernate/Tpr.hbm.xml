@@ -31,18 +31,22 @@
 				<param name="sequence">tpr_id_sequence</param>
 			</generator>
 		</id>
-		<property type="integer" name="code" column="code"
-			not-null="true" unique-key="register_tpr" />
-		<set name="sscs" table="ssc_tpr" cascade="all,delete-orphan">
+		<property type="string" name="code" column="code"
+			not-null="true" unique-key="tpr-unique" />
+		<property type="boolean" name="isTeleswitch"
+			column="is_teleswitch" not-null="true" />
+		<property type="boolean" name="isGmt" column="is_gmt"
+			not-null="true" />
+		<set name="clockIntervals" inverse="true"
+			cascade="all,delete-orphan" order-by="id">
 			<key column="tpr_id" />
-			<many-to-many column="ssc_id" class="Ssc" />
+			<one-to-many class="ClockInterval" />
 		</set>
-		<set name="lines" inverse="true" cascade="all,delete-orphan"
-			order-by="month_from">
+		<set name="measurementRequirements" inverse="true"
+			cascade="all,delete-orphan" order-by="id">
 			<key column="tpr_id" />
-			<one-to-many class="TprLine" />
+			<one-to-many class="MeasurementRequirement" />
 		</set>
-
 	</class>
 </hibernate-mapping>
 

@@ -25,7 +25,7 @@ package net.sf.chellow.monad.types;
 import java.net.MalformedURLException;
 import java.net.URL;
 
-import net.sf.chellow.monad.InternalException;
+import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.UserException;
 
 public class MonadURL extends MonadString {
@@ -33,12 +33,12 @@ public class MonadURL extends MonadString {
 		setTypeName("url");
 	}
 
-	public MonadURL(String url) throws InternalException, UserException {
+	public MonadURL(String url) throws HttpException {
 		this();
 		update(url);
 	}
 
-	public void update(String url) throws InternalException, UserException {
+	public void update(String url) throws HttpException {
 		try {
 			super.update(new URL(url).toString());
 		} catch (MalformedURLException e) {

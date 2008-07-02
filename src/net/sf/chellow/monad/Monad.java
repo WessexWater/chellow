@@ -289,7 +289,7 @@ public abstract class Monad extends HttpServlet implements Urlable {
 	}
 
 	static public URL getConfigResource(MonadUri uri)
-			throws InternalException, UserException {
+			throws HttpException {
 		URL url = getConfigFile(uri);
 		if (url == null) {
 			url = getConfigUrl(uri);
@@ -297,7 +297,7 @@ public abstract class Monad extends HttpServlet implements Urlable {
 		return url;
 	}
 
-	static public URL getConfigFile(MonadUri uri) throws InternalException, UserException {
+	static public URL getConfigFile(MonadUri uri) throws HttpException {
 		URL url = null;
 		try {
 			MonadUri uriNew = getConfigFile(new MonadUri("/"), uri.toString()
@@ -312,7 +312,7 @@ public abstract class Monad extends HttpServlet implements Urlable {
 		}
 	}
 
-	static public URL getConfigUrl(MonadUri uri) throws InternalException, UserException {
+	static public URL getConfigUrl(MonadUri uri) throws HttpException {
 		URL url = null;
 		try {
 			MonadUri newUri = getConfigUrl(new MonadUri("/"), uri.toString()
@@ -328,7 +328,7 @@ public abstract class Monad extends HttpServlet implements Urlable {
 	}
 
 	static public MonadUri getConfigUrl(MonadUri uri, String[] elements,
-			int position) throws InternalException, UserException {
+			int position) throws HttpException {
 		List<String> urlElements = getConfigUrlElements(uri);
 		MonadUri newUri = null;
 		if (urlElements.contains(elements[position]
@@ -351,7 +351,7 @@ public abstract class Monad extends HttpServlet implements Urlable {
 	}
 
 	static public MonadUri getConfigFile(MonadUri uri, String[] elements,
-			int position) throws InternalException, UserException {
+			int position) throws HttpException {
 		List<String> fileElements = getConfigFileElements(uri);
 		MonadUri newUri = null;
 		if (fileElements.contains(elements[position])) {
@@ -403,7 +403,7 @@ public abstract class Monad extends HttpServlet implements Urlable {
 	}
 
 	static public InputStream getConfigIs(String path, String name)
-			throws InternalException, DesignerException, UserException {
+			throws HttpException {
 		InputStream is = null;
 		try {
 			URL url = getConfigResource(new MonadUri(path).append(name));
@@ -418,8 +418,7 @@ public abstract class Monad extends HttpServlet implements Urlable {
 
 	@SuppressWarnings("unchecked")
 	static public void returnStream(Document doc, String templatePath,
-			String templateName, Result result) throws DesignerException,
-			InternalException, DeployerException, UserException {
+			String templateName, Result result) throws HttpException {
 		TransformerFactory tf = TransformerFactory.newInstance();
 		InputStream templateIs = null;
 		InputStream debugIs = null;

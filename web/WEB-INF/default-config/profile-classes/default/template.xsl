@@ -9,7 +9,7 @@
 		<html>
 			<head>
 				<link rel="stylesheet" type="text/css"
-					href="{/source/request/@context-path}/orgs/1/reports/9/stream/output/" />
+					href="{/source/request/@context-path}/style/" />
 				<title>
 					Chellow &gt; Profile Classes &gt;
 					<xsl:value-of select="/source/profile-class/@code" />

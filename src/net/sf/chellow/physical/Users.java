@@ -39,6 +39,7 @@ import net.sf.chellow.monad.types.EmailAddress;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
 
+import net.sf.chellow.ui.Chellow;
 import net.sf.chellow.ui.ExplicitMe;
 import net.sf.chellow.ui.ImplicitMe;
 import net.sf.chellow.ui.NewUserForm;
@@ -61,8 +62,8 @@ public class Users implements Urlable, XmlDescriber {
 	public Users() {
 	}
 
-	public MonadUri getUri() throws InternalException, UserException {
-		return new MonadUri("/").resolve(getUriId()).append("/");
+	public MonadUri getUri() throws HttpException {
+		return Chellow.ROOT_URI.resolve(getUriId()).append("/");
 	}
 
 	public void httpPost(Invocation inv) throws InternalException,

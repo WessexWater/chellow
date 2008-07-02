@@ -1,6 +1,6 @@
 /*
  
- Copyright 2005 Meniscus Systems Ltd
+ Copyright 2005, 2008 Meniscus Systems Ltd
  
  This file is part of Chellow.
 
@@ -40,8 +40,6 @@ import net.sf.chellow.monad.types.MonadBoolean;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
 
-import net.sf.chellow.ui.Chellow;
-
 import org.hibernate.HibernateException;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
@@ -57,10 +55,9 @@ public class Permission extends PersistentEntity {
 	}
 
 	static void methodsAllowed(User user, MonadUri uriPattern,
-			List<Invocation.HttpMethod> methods) throws InternalException,
-			HttpException {
+			List<Invocation.HttpMethod> methods) throws HttpException {
 		for (Invocation.HttpMethod method : methods) {
-			if (!Chellow.methodAllowed(user, uriPattern.toUri(), method)) {
+			if (!user.methodAllowed(uriPattern.toUri(), method)) {
 				throw new UserException(
 						"You can't assign greater permissions that you have.");
 			}

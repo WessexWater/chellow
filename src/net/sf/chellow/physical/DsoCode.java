@@ -27,9 +27,8 @@ package net.sf.chellow.physical;
 import java.text.NumberFormat;
 import java.util.Locale;
 
-import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.HttpException;
-import net.sf.chellow.monad.UserException;
+import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.types.MonadString;
 
 public class DsoCode extends MonadString {
@@ -49,7 +48,7 @@ public class DsoCode extends MonadString {
 			update(code);
 	}
 	
-	public void update(String code) throws InternalException, UserException {
+	public void update(String code) throws HttpException {
 		NumberFormat profileClassCodeFormat = NumberFormat
 				.getIntegerInstance(Locale.UK);
 		profileClassCodeFormat.setMinimumIntegerDigits(2);

@@ -25,7 +25,7 @@
 -->
 
 <hibernate-mapping package="net.sf.chellow.physical">
-	<class name="MtcMeterType" table="mtc_meter_type" lazy="true">
+	<class name="MeterType" table="meter_type" lazy="true">
 		<id name="id">
 			<generator class="sequence">
 				<param name="sequence">
@@ -37,9 +37,9 @@
 
 		<property type="string" name="description" not-null="true" />
 
-		<property type="timestamp" name="from" column="from"
+		<property type="timestamp" name="validFrom" column="valid_from"
 			not-null="true" />
-		<property type="timestamp" name="to" column="to" />
+		<property type="timestamp" name="validTo" column="valid_to" />
 	</class>
 </hibernate-mapping>
 

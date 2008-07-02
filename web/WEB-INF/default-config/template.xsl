@@ -54,8 +54,21 @@
 					</li>
 					<li>
 						<a
-							href="{/source/request/@context-path}/meter-timeswitches/">
-							Meter Timeswitches
+							href="{/source/request/@context-path}/meter-types/">
+							Meter Types
+						</a>
+					</li>
+					<li>
+						<a
+							href="{/source/request/@context-path}/meter-payment-types/">
+							Meter Payment Types
+						</a>
+					</li>
+
+					<li>
+						<a
+							href="{/source/request/@context-path}/mtcs/">
+							MTCs
 						</a>
 					</li>
 					<li>
@@ -69,7 +82,7 @@
 							href="{/source/request/@context-path}/sscs/">
 							SSCs
 						</a>
-					</li>					
+					</li>
 					<li>
 						<a
 							href="{/source/request/@context-path}/users/">
@@ -123,7 +136,10 @@
 						</a>
 					</li>
 					<li>
-					<a href="{/source/request/@context-path}/providers/">Providers</a>
+						<a
+							href="{/source/request/@context-path}/providers/">
+							Providers
+						</a>
 					</li>
 					<li>
 						Global Providers

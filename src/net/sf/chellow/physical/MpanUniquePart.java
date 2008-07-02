@@ -1,6 +1,6 @@
 /*
  
- Copyright 2005 Meniscus Systems Ltd
+ Copyright 2005, 2008 Meniscus Systems Ltd
  
  This file is part of Chellow.
 
@@ -24,9 +24,8 @@ package net.sf.chellow.physical;
 
 
 
-import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.HttpException;
-import net.sf.chellow.monad.UserException;
+import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.types.MonadString;
 
 public class MpanUniquePart extends MonadString {
@@ -48,7 +47,7 @@ public class MpanUniquePart extends MonadString {
 			update(name);
 	}
 
-	public void update(String mpanCore) throws InternalException, UserException {
+	public void update(String mpanCore) throws HttpException {
 		// remove spaces
 		mpanCore = mpanCore.replace(" ", "");
 		super.update(mpanCore);

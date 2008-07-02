@@ -24,7 +24,6 @@ package net.sf.chellow.physical;
 
 import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.HttpException;
-import net.sf.chellow.monad.UserException;
 import net.sf.chellow.monad.types.MonadString;
 
 public class VoltageLevelCode extends MonadString {
@@ -45,7 +44,7 @@ public class VoltageLevelCode extends MonadString {
 		update(code);
 	}
 
-	public void update(String code) throws InternalException, UserException {
+	public void update(String code) throws HttpException {
 		super.update(code.toUpperCase());
 	}
 }

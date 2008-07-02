@@ -3,22 +3,26 @@ package net.sf.chellow.physical;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
-import java.text.DateFormat;
 import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.Locale;
 import java.util.Set;
+import java.util.TimeZone;
 
 import net.sf.chellow.monad.DeployerException;
 import net.sf.chellow.monad.DesignerException;
 import net.sf.chellow.monad.Hiber;
-import net.sf.chellow.monad.Invocation;
-import net.sf.chellow.monad.MonadUtils;
-import net.sf.chellow.monad.InternalException;
-import net.sf.chellow.monad.Urlable;
 import net.sf.chellow.monad.HttpException;
+import net.sf.chellow.monad.InternalException;
+import net.sf.chellow.monad.Invocation;
+import net.sf.chellow.monad.MethodNotAllowedException;
+import net.sf.chellow.monad.MonadUtils;
+import net.sf.chellow.monad.Urlable;
 import net.sf.chellow.monad.UserException;
 import net.sf.chellow.monad.XmlTree;
+import net.sf.chellow.monad.types.MonadDate;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
 
@@ -37,18 +41,10 @@ public class Ssc extends PersistentEntity {
 		return ssc;
 	}
 
-	static public Ssc getSsc(String code) throws HttpException,
+	public static Ssc getSsc(String code) throws HttpException,
 			InternalException {
-		try {
-			return getSsc(Integer.parseInt(code.trim()));
-		} catch (NumberFormatException e) {
-			throw new UserException("Problem parsing code: " + e.getMessage());
-		}
-	}
-
-	public static Ssc getSsc(int code) throws HttpException, InternalException {
 		Ssc ssc = (Ssc) Hiber.session().createQuery(
-				"from Ssc ssc where ssc.code = :code").setInteger("code", code)
+				"from Ssc ssc where ssc.code = :code").setString("code", code)
 				.uniqueResult();
 		if (ssc == null) {
 			throw new UserException("There isn't an SSC with code: " + code
@@ -94,12 +90,16 @@ public class Ssc extends PersistentEntity {
 						"The first line of the CSV must contain the titles "
 								+ "Standard Settlement Configuration Id , Effective From Settlement Date {SSC}, Effective To Settlement Date {SSC}, Standard Settlement Configuration Desc, Standard Settlement Configuraton Type, Teleswitch User Id, Teleswitch Group Id");
 			}
-			DateFormat dateFormat = DateFormat.getDateTimeInstance(
-					DateFormat.SHORT, DateFormat.SHORT, Locale.UK);
+			SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy",
+					Locale.UK);
+			dateFormat.setCalendar(new GregorianCalendar(TimeZone
+					.getTimeZone("GMT"), Locale.UK));
 			for (String[] values = parser.getLine(); values != null; values = parser
 					.getLine()) {
-				insertSsc(values[0], dateFormat.parse(values[1]), dateFormat
-						.parse(values[2]), values[3], values[4].equals("I"));
+				String toStr = values[2];
+				insertSsc(values[0], dateFormat.parse(values[1]), toStr
+						.length() == 0 ? null : dateFormat.parse(toStr),
+						values[3], values[4].equals("I"));
 			}
 		} catch (UnsupportedEncodingException e) {
 			throw new InternalException(e);
@@ -111,9 +111,8 @@ public class Ssc extends PersistentEntity {
 	}
 
 	private String code;
-
-	private Date from;
-	private Date to;
+	private Date validFrom;
+	private Date validTo;
 	private String description;
 	private boolean isImport;
 	private Set<MeasurementRequirement> mrs;
@@ -121,20 +120,13 @@ public class Ssc extends PersistentEntity {
 	public Ssc() {
 	}
 
-	public Ssc(String code, Date from, Date to, String description,
-			boolean isImport) throws InternalException, HttpException {
+	public Ssc(String code, Date validFrom, Date validTo, String description,
+			boolean isImport) throws HttpException {
 		setCode(code);
-		setFrom(from);
-		setTo(to);
+		setValidFrom(validFrom);
+		setValidTo(validTo);
 		setDescription(description);
 		setIsImport(isImport);
-		// setTprs(new HashSet<Tpr>());
-		// if (tprString != null && tprString.trim().length() > 0) {
-		// for (String tprCode : tprString.split(",")) {
-		// Tpr tpr = Tpr.getTpr(tprCode);
-		// tprs.add(tpr);
-		// }
-		// }
 	}
 
 	public String getCode() {
@@ -145,20 +137,20 @@ public class Ssc extends PersistentEntity {
 		this.code = code;
 	}
 
-	public Date getFrom() {
-		return from;
+	public Date getValidFrom() {
+		return validFrom;
 	}
 
-	void setFrom(Date from) {
-		this.from = from;
+	void setValidFrom(Date validFrom) {
+		this.validFrom = validFrom;
 	}
 
-	public Date getTo() {
-		return to;
+	public Date getValidTo() {
+		return validTo;
 	}
 
-	void setTo(Date to) {
-		this.to = to;
+	void setValidTo(Date validTo) {
+		this.validTo = validTo;
 	}
 
 	public String getDescription() {
@@ -185,11 +177,6 @@ public class Ssc extends PersistentEntity {
 		this.mrs = mrs;
 	}
 
-	/*
-	 * public Set<Tpr> getTprs() { return tprs; }
-	 * 
-	 * void setTprs(Set<Tpr> tprs) { this.tprs = tprs; }
-	 */
 	public Urlable getChild(UriPathElement uriId) throws InternalException,
 			HttpException {
 		return null;
@@ -206,25 +193,32 @@ public class Ssc extends PersistentEntity {
 
 	}
 
-	public void httpGet(Invocation inv) throws DesignerException,
-			InternalException, HttpException, DeployerException {
+	public void httpGet(Invocation inv) throws HttpException {
 		Document doc = MonadUtils.newSourceDocument();
 		Element source = doc.getDocumentElement();
-		source.appendChild(toXml(doc, new XmlTree("tprs")));
+		source.appendChild(toXml(doc, new XmlTree("measurementRequirements",
+				new XmlTree("tpr"))));
 		inv.sendOk(doc);
 	}
 
-	public void httpPost(Invocation inv) throws InternalException,
-			HttpException, DesignerException, DeployerException {
-		// TODO Auto-generated method stub
-
+	public void httpPost(Invocation inv) throws HttpException {
+		throw new MethodNotAllowedException();
 	}
 
 	public Element toXml(Document doc) throws InternalException, HttpException {
 		setTypeName("ssc");
 		Element element = (Element) super.toXml(doc);
 
-		element.setAttribute("code", code.toString());
+		element.setAttribute("code", code);
+		element.setAttribute("description", description);
+		MonadDate fromDate = new MonadDate(validFrom);
+		fromDate.setLabel("from");
+		element.appendChild(fromDate.toXml(doc));
+		if (validTo != null) {
+			MonadDate toDate = new MonadDate(validTo);
+			toDate.setLabel("to");
+			element.appendChild(toDate.toXml(doc));
+		}
 		return element;
 	}
 

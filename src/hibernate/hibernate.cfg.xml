@@ -95,7 +95,8 @@
 		<mapping resource="hibernate/MarketRole.hbm.xml" />
 		<mapping resource="hibernate/MeasurementRequirement.hbm.xml" />
 		<mapping resource="hibernate/Contract.hbm.xml" />
-		<mapping resource="hibernate/MtcMeterType.hbm.xml" />
+		<mapping resource="hibernate/MeterType.hbm.xml" />
 		<mapping resource="hibernate/MtcPaymentType.hbm.xml" />
+		<mapping resource="hibernate/ClockInterval.hbm.xml" />
 	</session-factory>
 </hibernate-configuration>

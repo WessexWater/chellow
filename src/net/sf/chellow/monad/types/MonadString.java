@@ -22,6 +22,7 @@
 
 package net.sf.chellow.monad.types;
 
+import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.UserException;
 import org.w3c.dom.Attr;
@@ -33,9 +34,7 @@ public class MonadString extends MonadObject {
 	static {
 		try {
 			EMPTY_STRING = new MonadString("");
-		} catch (UserException e) {
-			throw new RuntimeException(e);
-		} catch (InternalException e) {
+		} catch (HttpException e) {
 			throw new RuntimeException(e);
 		}
 	}
@@ -108,12 +107,12 @@ public class MonadString extends MonadObject {
 		setTypeName("String");
 	}
 
-	public MonadString(String value) throws InternalException, UserException {
+	public MonadString(String value) throws HttpException {
 		this(null, value);
 	}
 
 	public MonadString(String label, String value) throws 
-			InternalException, UserException {
+			HttpException {
 		this();
 		setLabel(label);
 		update(value);
@@ -121,7 +120,7 @@ public class MonadString extends MonadObject {
 
 	protected MonadString(String typeName, String name, int maxLength,
 			int minLength, Character.UnicodeBlock block, String string)
-			throws InternalException, UserException {
+			throws HttpException {
 		super(typeName, name);
 		setMaximumLength(maxLength);
 		setMinimumLength(minLength);
@@ -150,8 +149,7 @@ public class MonadString extends MonadObject {
 		return string;
 	}
 
-	public void update(String string) throws
-			InternalException, UserException {
+	public void update(String string) throws HttpException {
 		if (excludeControlChars) {
 			StringBuffer buffer = new StringBuffer();
 			char[] chars = string.toCharArray();

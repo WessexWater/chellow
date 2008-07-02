@@ -51,7 +51,8 @@ public class Sscs implements Urlable {
 		source.appendChild(sscsElement);
 		for (Ssc ssc : (List<Ssc>) Hiber.session().createQuery(
 				"from Ssc ssc order by ssc.code").list()) {
-			sscsElement.appendChild(ssc.toXml(doc, new XmlTree("tprs")));
+			sscsElement.appendChild(ssc.toXml(doc, new XmlTree(
+					"measurementRequirements", new XmlTree("tpr"))));
 		}
 		inv.sendOk(doc);
 	}

@@ -35,7 +35,6 @@ import net.sf.chellow.monad.NotFoundException;
 import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Urlable;
 import net.sf.chellow.monad.HttpException;
-import net.sf.chellow.monad.UserException;
 import net.sf.chellow.monad.XmlDescriber;
 import net.sf.chellow.monad.XmlTree;
 
@@ -132,7 +131,7 @@ public class Supplies implements Urlable, XmlDescriber {
 
 	}
 
-	public MonadUri getUri() throws InternalException, UserException {
+	public MonadUri getUri() throws HttpException {
 		return organization.getUri().resolve(getUriId());
 	}
 

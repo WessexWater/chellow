@@ -35,6 +35,7 @@ import net.sf.chellow.monad.Urlable;
 import net.sf.chellow.monad.UserException;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
+import net.sf.chellow.ui.Chellow;
 
 import org.hibernate.HibernateException;
 import org.w3c.dom.Document;
@@ -102,8 +103,8 @@ public class Organizations implements Urlable {
 		inv.sendCreated(organization.getUri());
 	}
 
-	public MonadUri getUri() throws InternalException, UserException {
-			return new MonadUri("/").resolve(getUriId())
+	public MonadUri getUri() throws HttpException {
+			return Chellow.ROOT_URI.resolve(getUriId())
 					.append("/");
 	}
 
@@ -131,7 +132,7 @@ public class Organizations implements Urlable {
 
 	}
 
-	public UriPathElement getUriId() throws InternalException {
+	public UriPathElement getUriId() {
 		return URI_ID;
 	}
 

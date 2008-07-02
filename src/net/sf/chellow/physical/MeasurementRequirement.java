@@ -66,7 +66,7 @@ public class MeasurementRequirement extends PersistentEntity {
 			parser.setEscapes("nrtf", "\n\r\t\f");
 			String[] titles = parser.getLine();
 
-			if (titles.length < 11
+			if (titles.length < 2
 					|| !titles[0].trim().equals("Standard Settlement Configuration Id")
 					|| !titles[1].trim().equals(
 							"Time Pattern Regime Id")) {

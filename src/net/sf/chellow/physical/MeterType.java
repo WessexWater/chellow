@@ -25,13 +25,13 @@ package net.sf.chellow.physical;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
-import java.text.DateFormat;
 import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.Locale;
+import java.util.TimeZone;
 
-import net.sf.chellow.monad.DeployerException;
-import net.sf.chellow.monad.DesignerException;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.InternalException;
@@ -40,7 +40,6 @@ import net.sf.chellow.monad.MonadUtils;
 import net.sf.chellow.monad.NotFoundException;
 import net.sf.chellow.monad.Urlable;
 import net.sf.chellow.monad.UserException;
-import net.sf.chellow.monad.XmlTree;
 import net.sf.chellow.monad.types.MonadDate;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
@@ -51,28 +50,25 @@ import org.w3c.dom.Node;
 
 import com.Ostermiller.util.CSVParser;
 
-public class MtcMeterType extends PersistentEntity {
-	static public MtcMeterType getMtcMeterType(String code)
-			throws HttpException {
-		MtcMeterType type = findMtcMeterType(code);
+public class MeterType extends PersistentEntity {
+	static public MeterType getMtcMeterType(String code) throws HttpException {
+		MeterType type = findMeterType(code);
 		if (type == null) {
 			throw new NotFoundException();
 		}
 		return type;
 	}
 
-	static public MtcMeterType findMtcMeterType(String code)
-			throws HttpException {
-		return (MtcMeterType) Hiber
+	static public MeterType findMeterType(String code) throws HttpException {
+		return (MeterType) Hiber
 				.session()
 				.createQuery(
-						"from MtcMeterType meterType where meterType.code = :meterTypeCode")
+						"from MeterType meterType where meterType.code = :meterTypeCode")
 				.setString("meterTypeCode", code).uniqueResult();
 	}
 
-	static public MtcMeterType getMtcMeterType(Long id) throws HttpException {
-		MtcMeterType type = (MtcMeterType) Hiber.session().get(
-				MtcMeterType.class, id);
+	static public MeterType getMeterType(Long id) throws HttpException {
+		MeterType type = (MeterType) Hiber.session().get(MeterType.class, id);
 		if (type == null) {
 			throw new UserException(
 					"There is no meter timeswitch class meter type with that id.");
@@ -82,7 +78,7 @@ public class MtcMeterType extends PersistentEntity {
 
 	static public void loadFromCsv() throws HttpException {
 		try {
-			ClassLoader classLoader = MtcMeterType.class.getClassLoader();
+			ClassLoader classLoader = MeterType.class.getClassLoader();
 			CSVParser parser = new CSVParser(new InputStreamReader(classLoader
 					.getResource("net/sf/chellow/physical/MtcMeterType.csv")
 					.openStream(), "UTF-8"));
@@ -90,7 +86,7 @@ public class MtcMeterType extends PersistentEntity {
 			parser.setEscapes("nrtf", "\n\r\t\f");
 			String[] titles = parser.getLine();
 
-			if (titles.length < 11
+			if (titles.length < 4
 					|| !titles[0].trim().equals("MTC Meter Type Id")
 					|| !titles[1].trim().equals("MTC Meter Type Description")
 					|| !titles[2].trim().equals(
@@ -101,15 +97,18 @@ public class MtcMeterType extends PersistentEntity {
 						"The first line of the CSV must contain the titles "
 								+ "MTC Meter Type Id, MTC Meter Type Description, Effective From Settlement Date {MMT}, Effective To Settlement Date {MMT}.");
 			}
-			DateFormat dateFormat = DateFormat.getDateTimeInstance(
-					DateFormat.SHORT, DateFormat.SHORT, Locale.UK);
+			SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy",
+					Locale.UK);
+			dateFormat.setCalendar(new GregorianCalendar(TimeZone
+					.getTimeZone("GMT"), Locale.UK));
 			for (String[] values = parser.getLine(); values != null; values = parser
 					.getLine()) {
-				Hiber.session()
-						.save(
-								new MtcMeterType(values[0], values[1],
-										dateFormat.parse(values[2]), dateFormat
-												.parse(values[3])));
+				String toDateStr = values[3];
+				Date toDate = toDateStr.length() == 0 ? null : dateFormat
+						.parse(toDateStr);
+				Hiber.session().save(
+						new MeterType(values[0], values[1], dateFormat
+								.parse(values[2]), toDate));
 			}
 		} catch (UnsupportedEncodingException e) {
 			throw new InternalException(e);
@@ -124,23 +123,18 @@ public class MtcMeterType extends PersistentEntity {
 
 	private String description;
 
-	private Date from;
-	private Date to;
+	private Date validFrom;
+	private Date validTo;
 
-	// private Set<LineLossFactor> lineLossFactors;
-
-	// private Set<Ssc> registers;
-
-	public MtcMeterType() {
+	public MeterType() {
 	}
 
-	public MtcMeterType(String code, String description, Date from, Date to)
-			throws HttpException {
-
+	public MeterType(String code, String description, Date validFrom,
+			Date validTo) throws HttpException {
 		setCode(code);
 		setDescription(description);
-		setFrom(from);
-		setTo(to);
+		setValidFrom(validFrom);
+		setValidTo(validTo);
 	}
 
 	public String getCode() {
@@ -159,34 +153,36 @@ public class MtcMeterType extends PersistentEntity {
 		this.description = description;
 	}
 
-	public Date getFrom() {
-		return from;
+	public Date getValidFrom() {
+		return validFrom;
 	}
 
-	void setFrom(Date from) {
-		this.from = from;
+	void setValidFrom(Date from) {
+		this.validFrom = from;
 	}
 
-	public Date getTo() {
-		return to;
+	public Date getValidTo() {
+		return validTo;
 	}
 
-	void setTo(Date to) {
-		this.to = to;
+	void setValidTo(Date to) {
+		this.validTo = to;
 	}
 
 	public Node toXml(Document doc) throws InternalException, HttpException {
-		setTypeName("mtc-meter-type");
+		setTypeName("meter-type");
 		Element element = (Element) super.toXml(doc);
 
 		element.setAttribute("code", code);
 		element.setAttribute("description", description);
-		MonadDate fromDate = new MonadDate(from);
+		MonadDate fromDate = new MonadDate(validFrom);
 		fromDate.setLabel("from");
 		element.appendChild(fromDate.toXml(doc));
-		MonadDate toDate = new MonadDate(to);
-		toDate.setLabel("to");
-		element.appendChild(toDate.toXml(doc));
+		if (validTo != null) {
+			MonadDate toDate = new MonadDate(validTo);
+			toDate.setLabel("to");
+			element.appendChild(toDate.toXml(doc));
+		}
 		return element;
 	}
 
@@ -194,37 +190,25 @@ public class MtcMeterType extends PersistentEntity {
 		return null;
 	}
 
-	public Urlable getChild(UriPathElement uriId) throws InternalException,
-			HttpException {
+	public Urlable getChild(UriPathElement uriId) throws HttpException {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
-	public void httpGet(Invocation inv) throws DesignerException,
-			InternalException, HttpException, DeployerException {
+	public void httpGet(Invocation inv) throws HttpException {
 		Document doc = MonadUtils.newSourceDocument();
 		Element source = doc.getDocumentElement();
-
-		source.appendChild(toXml(doc, new XmlTree("dso")));
+		source.appendChild(toXml(doc));
 		inv.sendOk(doc);
 	}
 
-	public void httpPost(Invocation inv) throws InternalException,
-			HttpException {
+	public void httpPost(Invocation inv) throws HttpException {
 		// TODO Auto-generated method stub
 
 	}
 
-	public void httpDelete(Invocation inv) throws InternalException,
-			DesignerException, HttpException, DeployerException {
+	public void httpDelete(Invocation inv) throws HttpException {
 		// TODO Auto-generated method stub
 
 	}
-	/*
-	 * public void insertRegister(Ssc.Units units, String tprString) throws
-	 * ProgrammerException, UserException { Set<Tpr> tprs = new HashSet<Tpr>();
-	 * for (String tprCode : tprString.split(",")) { Tpr tpr =
-	 * Tpr.getTpr(tprCode); tprs.add(tpr); } registers.add(new Ssc(this, units,
-	 * tprs)); }
-	 */
 }

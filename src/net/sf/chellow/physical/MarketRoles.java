@@ -10,7 +10,6 @@ import net.sf.chellow.monad.MethodNotAllowedException;
 import net.sf.chellow.monad.MonadUtils;
 import net.sf.chellow.monad.NotFoundException;
 import net.sf.chellow.monad.Urlable;
-import net.sf.chellow.monad.UserException;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
 
@@ -52,7 +51,7 @@ public class MarketRoles implements Urlable {
 		throw new MethodNotAllowedException();
 	}
 
-	public MonadUri getUri() throws InternalException, UserException {
+	public MonadUri getUri() throws HttpException {
 		return new MonadUri("/").resolve(getUriId()).append("/");
 	}
 

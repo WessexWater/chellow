@@ -34,7 +34,7 @@ public class UriPathElement extends MonadUri {
 		setTypeName("UriPathElement");
 	}
 	
-	public UriPathElement(String uri) throws InternalException, UserException {
+	public UriPathElement(String uri) throws HttpException {
 		this();
 		update(uri);
 	}
@@ -43,7 +43,7 @@ public class UriPathElement extends MonadUri {
 		this(uri.toString());
 	}
 	
-	public void update(String uriString) throws InternalException, UserException {
+	public void update(String uriString) throws HttpException {
 		super.update(uriString);
 		URI uri;
 		try {

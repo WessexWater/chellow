@@ -6,8 +6,6 @@ import java.io.UnsupportedEncodingException;
 import java.util.HashSet;
 import java.util.Set;
 
-import net.sf.chellow.monad.DeployerException;
-import net.sf.chellow.monad.DesignerException;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.InternalException;
@@ -27,22 +25,13 @@ import org.w3c.dom.Node;
 import com.Ostermiller.util.CSVParser;
 
 public class Tpr extends PersistentEntity {
-	static public Tpr findTpr(int code) {
+	static public Tpr findTpr(String code) {
 		return (Tpr) Hiber.session().createQuery(
-				"from Tpr tpr where tpr.code = :code").setInteger("code", code)
+				"from Tpr tpr where tpr.code = :code").setString("code", code)
 				.uniqueResult();
 	}
 
-	static public Tpr getTpr(String code) throws InternalException,
-			UserException {
-		try {
-			return getTpr(Integer.parseInt(code));
-		} catch (NumberFormatException e) {
-			throw new UserException("Problem parsing code: " + e.getMessage());
-		}
-	}
-
-	static public Tpr getTpr(int code) throws InternalException, UserException {
+	static public Tpr getTpr(String code) throws HttpException {
 		Tpr tpr = findTpr(code);
 		if (tpr == null) {
 			throw new UserException("Can't find a TPR with code '" + code
@@ -91,13 +80,13 @@ public class Tpr extends PersistentEntity {
 		}
 	}
 
-	// private Set<Ssc> sscs;
-
 	private String code;
 	private boolean isTeleswitch;
 	private boolean isGmt;
 
 	private Set<ClockInterval> clockIntervals;
+
+	private Set<MeasurementRequirement> measurementRequirements;
 
 	public Tpr() {
 	}
@@ -115,6 +104,15 @@ public class Tpr extends PersistentEntity {
 
 	void setClockIntervals(Set<ClockInterval> clockIntervals) {
 		this.clockIntervals = clockIntervals;
+	}
+
+	public Set<MeasurementRequirement> getMeasurementRequirements() {
+		return measurementRequirements;
+	}
+
+	void setMeasurementRequirements(
+			Set<MeasurementRequirement> measurementRequirements) {
+		this.measurementRequirements = measurementRequirements;
 	}
 
 	String getCode() {
@@ -141,9 +139,12 @@ public class Tpr extends PersistentEntity {
 		this.isGmt = isGmt;
 	}
 
-	public Urlable getChild(UriPathElement uriId) throws InternalException {
-		// TODO Auto-generated method stub
-		return null;
+	public Urlable getChild(UriPathElement uriId) throws HttpException {
+		if (ClockIntervals.URI_ID.equals(uriId)) {
+			return new ClockIntervals(this);
+		} else {
+			throw new NotFoundException();
+		}
 	}
 
 	public MonadUri getUri() throws InternalException {
@@ -151,24 +152,20 @@ public class Tpr extends PersistentEntity {
 		return null;
 	}
 
-	public void httpDelete(Invocation inv) throws InternalException,
-			DesignerException, DeployerException {
+	public void httpDelete(Invocation inv) throws HttpException {
 		// TODO Auto-generated method stub
-
 	}
 
 	@SuppressWarnings("unchecked")
 	public void httpGet(Invocation inv) throws HttpException {
 		Document doc = MonadUtils.newSourceDocument();
 		Element source = doc.getDocumentElement();
-		source.appendChild(toXml(doc, new XmlTree("sscs").put("lines")));
+		source.appendChild(toXml(doc, new XmlTree("measurementRequirements", new XmlTree("ssc")).put("clockIntervals")));
 		inv.sendOk(doc);
 	}
 
-	public void httpPost(Invocation inv) throws InternalException,
-			HttpException, DesignerException, DeployerException {
+	public void httpPost(Invocation inv) throws HttpException {
 		// TODO Auto-generated method stub
-
 	}
 
 	public ClockInterval insertClockInterval(int dayOfWeek, int startDay,
@@ -196,5 +193,4 @@ public class Tpr extends PersistentEntity {
 		return "Code: " + code + " Is Teleswitch?: " + isTeleswitch
 				+ " Is GMT?: " + isGmt;
 	}
-
 }

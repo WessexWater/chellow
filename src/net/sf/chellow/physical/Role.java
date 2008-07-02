@@ -22,6 +22,7 @@
 
 package net.sf.chellow.physical;
 
+import java.net.URI;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
@@ -37,6 +38,7 @@ import net.sf.chellow.monad.Urlable;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.UserException;
 import net.sf.chellow.monad.XmlTree;
+import net.sf.chellow.monad.Invocation.HttpMethod;
 import net.sf.chellow.monad.types.MonadLong;
 import net.sf.chellow.monad.types.MonadString;
 import net.sf.chellow.monad.types.MonadUri;
@@ -248,5 +250,21 @@ public class Role extends PersistentEntity {
 
 	public Permissions permissionsInstance() {
 		return new Permissions(this);
+	}
+	
+	public boolean methodAllowed(URI uri, HttpMethod method) {
+		String longestUriPattern = null;
+		boolean methodAllowed = false;
+		String uriPath = uri.getPath().toString();
+			for (Permission permission : getPermissions()) {
+				String uriPattern = permission.getUriPattern().toString();
+				if (uriPath.startsWith(uriPattern)
+						&& (longestUriPattern == null ? true : uriPattern
+								.length() > longestUriPattern.length())) {
+					methodAllowed = permission.isMethodAllowed(method);
+					longestUriPattern = uriPattern;
+				}
+			}
+		return methodAllowed;
 	}
 }

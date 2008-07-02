@@ -57,6 +57,7 @@ import net.sf.chellow.monad.types.MonadString;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.MonadValidatable;
 import net.sf.chellow.monad.types.UriPathElement;
+import net.sf.chellow.physical.Password;
 import net.sf.chellow.physical.User;
 import net.sf.chellow.ui.Chellow;
 
@@ -551,19 +552,17 @@ public class Invocation {
 		returnPage(doc, req.getPathInfo(), "template.xsl");
 	}
 
-	public void sendOk() throws InternalException,
-			DesignerException, DeployerException, UserException {
+	public void sendOk() throws HttpException {
 		sendOk(null);
 	}
 
 	public void sendOk(Document doc, String templatePath, String templateName)
-			throws DesignerException, InternalException, DeployerException, UserException {
+			throws HttpException {
 		res.setStatus(HttpServletResponse.SC_OK);
 		returnPage(doc, templatePath, templateName);
 	}
 
-	public void sendOk(Document doc) throws DesignerException,
-			InternalException, DeployerException, UserException {
+	public void sendOk(Document doc) throws HttpException {
 		String templatePath = req.getPathInfo();
 		if (templatePath == null) {
 			templatePath = "/";
@@ -628,7 +627,7 @@ public class Invocation {
 		}
 	}
 
-	public User getUser() throws InternalException, UserException {
+	public User getUser() throws HttpException {
 		String authHeader = req.getHeader("Authorization");
 
 		if (authHeader == null || !authHeader.startsWith("Basic")) {
@@ -644,16 +643,15 @@ public class Invocation {
 
 		if (user == null) {
 			return null;
-		} else if (!user.getPassword().getString().equals(
-				usernameAndPassword[1])) {
+		} else if (!user.getPassword().equals(
+				new Password(usernameAndPassword[1]))) {
 			return null;
 		}
 		return user;
 	}
 
 	private void returnPage(Document doc, String templatePath,
-			String templateName) throws DesignerException, InternalException,
-			DeployerException, UserException {
+			String templateName) throws HttpException {
 		/*
 		 * if ("image/svg+xml".equals(getResponse().getContentType())) {
 		 * returnSvgPage(doc, templatePath, templateName); } else {
@@ -683,7 +681,6 @@ public class Invocation {
 			throw new InternalException(e);
 		}
 		Monad.returnStream(doc, templatePath, templateName, result);
-
 	}
 
 	/*

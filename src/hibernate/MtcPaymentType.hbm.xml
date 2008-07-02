@@ -37,9 +37,9 @@
 
 		<property type="string" name="description" not-null="true" />
 
-		<property type="timestamp" name="from" column="from"
+		<property type="timestamp" name="validFrom" column="valid_from"
 			not-null="true" />
-		<property type="timestamp" name="to" column="to" />
+		<property type="timestamp" name="validTo" column="valid_to" />
 	</class>
 </hibernate-mapping>
 

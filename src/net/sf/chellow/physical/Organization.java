@@ -210,7 +210,7 @@ public class Organization extends PersistentEntity {
 		inv.sendOk(doc);
 	}
 
-	public MonadUri getUri() throws InternalException, UserException {
+	public MonadUri getUri() throws HttpException {
 		return Chellow.ORGANIZATIONS_INSTANCE.getUri().resolve(getUriId())
 				.append("/");
 	}
@@ -319,8 +319,7 @@ public class Organization extends PersistentEntity {
 	 * supplier.id = :supplierId") .setEntity("organization",
 	 * this).setLong("supplierId", supplierId).uniqueResult(); }
 	 */
-	public void httpPost(Invocation inv) throws InternalException,
-			UserException {
+	public void httpPost(Invocation inv) throws HttpException {
 		if (inv.hasParameter("delete")) {
 			Hiber.session().delete(this);
 			Hiber.close();
@@ -333,26 +332,26 @@ public class Organization extends PersistentEntity {
 		}
 	}
 
-	public Urlable getChild(UriPathElement uriId) throws InternalException {
-		Urlable urlable = null;
+	public Urlable getChild(UriPathElement uriId) throws HttpException {
 		if (Sites.URI_ID.equals(uriId)) {
-			urlable = new Sites(this);
+			return new Sites(this);
 		} else if (Supplies.URI_ID.equals(uriId)) {
-			urlable = new Supplies(this);
+			return new Supplies(this);
 		} else if (HeaderImportProcesses.URI_ID.equals(uriId)) {
-			urlable = new HeaderImportProcesses(this);
+			return new HeaderImportProcesses(this);
 		} else if (Reports.URI_ID.equals(uriId)) {
-			urlable = new Reports(this);
+			return new Reports(this);
 		} else if (UseDeltas.URI_ID.equals(uriId)) {
-			urlable = new UseDeltas(this);
+			return new UseDeltas(this);
 		} else if (GenDeltas.URI_ID.equals(uriId)) {
-			urlable = new GenDeltas(this);
+			return new GenDeltas(this);
 		} else if (HhdcContracts.URI_ID.equals(uriId)) {
 			return new HhdcContracts(this);
 		} else if (SupplierContracts.URI_ID.equals(uriId)) {
 			return new SupplierContracts(this);
+		} else {
+			throw new NotFoundException();
 		}
-		return urlable;
 	}
 
 	public void httpDelete(Invocation inv) throws InternalException {

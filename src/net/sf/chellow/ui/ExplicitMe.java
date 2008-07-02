@@ -7,8 +7,6 @@ import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.UnauthorizedException;
 import net.sf.chellow.monad.Urlable;
 import net.sf.chellow.monad.HttpException;
-import net.sf.chellow.monad.UserException;
-
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
 import net.sf.chellow.physical.User;
@@ -35,8 +33,7 @@ public class ExplicitMe implements Urlable {
 		return null;
 	}
 
-	public void httpGet(Invocation inv) throws DesignerException,
-			InternalException, UnauthorizedException, DeployerException, UserException {
+	public void httpGet(Invocation inv) throws HttpException {
 		User user = inv.getUser();
 		if (user == null) {
 			throw new UnauthorizedException();

@@ -22,6 +22,7 @@
 
 package net.sf.chellow.physical;
 
+import java.net.URI;
 import java.sql.SQLException;
 import java.util.HashSet;
 import java.util.Set;
@@ -37,6 +38,7 @@ import net.sf.chellow.monad.Urlable;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.UserException;
 import net.sf.chellow.monad.XmlTree;
+import net.sf.chellow.monad.Invocation.HttpMethod;
 import net.sf.chellow.monad.types.EmailAddress;
 import net.sf.chellow.monad.types.MonadLong;
 import net.sf.chellow.monad.types.MonadUri;
@@ -180,7 +182,7 @@ public class User extends PersistentEntity {
 		return element;
 	}
 
-	public MonadUri getUri() throws InternalException, UserException {
+	public MonadUri getUri() throws HttpException {
 		return Chellow.USERS_INSTANCE.getUri().resolve(getUriId());
 	}
 
@@ -276,5 +278,14 @@ public class User extends PersistentEntity {
 					new Invocation.HttpMethod[] { Invocation.HttpMethod.GET });
 		}
 		return userRole;
+	}
+	
+	public boolean methodAllowed(URI uri, HttpMethod method) {
+		for (Role role : getRoles()) {
+			if (role.methodAllowed(uri, method)) {
+				return true;
+			}
+		}
+		return false;
 	}
 }

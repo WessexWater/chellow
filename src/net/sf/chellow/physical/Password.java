@@ -1,6 +1,6 @@
 /*
  
- Copyright 2005 Meniscus Systems Ltd
+ Copyright 2005, 2008 Meniscus Systems Ltd
  
  This file is part of Chellow.
 
@@ -24,25 +24,38 @@ package net.sf.chellow.physical;
 
 
 
-import net.sf.chellow.monad.InternalException;
+import java.io.UnsupportedEncodingException;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+
 import net.sf.chellow.monad.HttpException;
+import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.types.MonadString;
+
+import org.w3c.dom.Attr;
+import org.w3c.dom.Document;
+
+import com.Ostermiller.util.Base64;
 
 public class Password extends MonadString {
 	public Password() {
-		setTypeName("password");
 		setMinimumLength(6);
 		setMaximumLength(250);
 	}
 	
-	public Password(String name) throws HttpException, InternalException  {
+	public Password(String name) throws HttpException {
 		this(null, name);
 	}
 
-	public Password(String label, String name) throws HttpException, InternalException {
+	public Password(String label, String name) throws HttpException {
 		this();
 		setLabel(label);
-			update(name);
+		update(name);
+	}
+	
+	public Attr toXml(Document doc) {
+		setTypeName("password");
+		return super.toXml(doc);
 	}
 	
 	public boolean equals(Object obj) {
@@ -51,5 +64,17 @@ public class Password extends MonadString {
 			isEqual = getString().equals(((Password) obj).getString());
 		}
 		return isEqual;
+	}
+	
+	public void update(String password) throws HttpException {
+		try {
+			MessageDigest digest = MessageDigest.getInstance("MD5");
+		digest.update(password.getBytes("US-ASCII"));
+		super.update(Base64.encode(new String(digest.digest(), "ISO-8859-1")));
+		} catch (NoSuchAlgorithmException e) {
+			throw new InternalException(e);
+		} catch (UnsupportedEncodingException e) {
+			throw new InternalException(e);
+		}
 	}
 }

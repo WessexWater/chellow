@@ -4,12 +4,11 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 
-import net.sf.chellow.monad.DeployerException;
-import net.sf.chellow.monad.DesignerException;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Invocation;
+import net.sf.chellow.monad.MethodNotAllowedException;
 import net.sf.chellow.monad.MonadUtils;
 import net.sf.chellow.monad.NotFoundException;
 import net.sf.chellow.monad.Urlable;
@@ -25,42 +24,17 @@ import org.w3c.dom.Node;
 import com.Ostermiller.util.CSVParser;
 
 public class ClockInterval extends PersistentEntity {
-	static public Tpr findTpr(int code) {
-		return (Tpr) Hiber.session().createQuery(
-				"from Tpr tpr where tpr.code = :code").setInteger("code", code)
-				.uniqueResult();
-	}
-
-	static public Tpr getTpr(String code) throws InternalException,
-			UserException {
-		try {
-			return getTpr(Integer.parseInt(code));
-		} catch (NumberFormatException e) {
-			throw new UserException("Problem parsing code: " + e.getMessage());
-		}
-	}
-
-	static public Tpr getTpr(int code) throws InternalException, UserException {
-		Tpr tpr = findTpr(code);
-		if (tpr == null) {
-			throw new UserException("Can't find a TPR with code '" + code
-					+ "'.");
-		}
-		return tpr;
-	}
-
-	static public Tpr getTpr(long id) throws NotFoundException,
-			InternalException {
-		Tpr tpr = (Tpr) Hiber.session().get(Tpr.class, id);
-		if (tpr == null) {
+	static public ClockInterval getClockInterval(long id) throws HttpException {
+		ClockInterval interval = (ClockInterval) Hiber.session().get(ClockInterval.class, id);
+		if (interval == null) {
 			throw new NotFoundException();
 		}
-		return tpr;
+		return interval;
 	}
 
 	static public void loadFromCsv() throws HttpException {
 		try {
-			ClassLoader classLoader = Participant.class.getClassLoader();
+			ClassLoader classLoader = ClockInterval.class.getClassLoader();
 			CSVParser parser = new CSVParser(new InputStreamReader(classLoader
 					.getResource("net/sf/chellow/physical/ClockInterval.csv")
 					.openStream(), "UTF-8"));
@@ -218,32 +192,27 @@ public class ClockInterval extends PersistentEntity {
 		return null;
 	}
 
-	public void httpDelete(Invocation inv) throws InternalException,
-			DesignerException, DeployerException {
-		// TODO Auto-generated method stub
-
+	public void httpDelete(Invocation inv) throws HttpException {
+		throw new MethodNotAllowedException();
 	}
 
 	@SuppressWarnings("unchecked")
 	public void httpGet(Invocation inv) throws HttpException {
 		Document doc = MonadUtils.newSourceDocument();
 		Element source = doc.getDocumentElement();
-		source.appendChild(toXml(doc, new XmlTree("sscs").put("lines")));
+		source.appendChild(toXml(doc, new XmlTree("tpr")));
 		inv.sendOk(doc);
 	}
 
-	public void httpPost(Invocation inv) throws InternalException,
-			HttpException, DesignerException, DeployerException {
-		// TODO Auto-generated method stub
-
+	public void httpPost(Invocation inv) throws HttpException {
+		throw new MethodNotAllowedException();
 	}
 
 	public Node toXml(Document doc) throws HttpException {
 		setTypeName("clock-interval");
 		Element element = (Element) super.toXml(doc);
 		element.setAttribute("day-of-week", String.valueOf(dayOfWeek));
-		element.setAttribute("start-date", String.valueOf(startDay));
-		element.setAttribute("start-date", String.valueOf(startDay));
+		element.setAttribute("start-day", String.valueOf(startDay));
 		element.setAttribute("start-month", String.valueOf(startMonth));
 		element.setAttribute("end-day", String.valueOf(endDay));
 		element.setAttribute("end-month", String.valueOf(endMonth));

@@ -18,18 +18,18 @@ import net.sf.chellow.ui.Chellow;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-public class ProfileClasses implements Urlable {
+public class Pcs implements Urlable {
 	public static final UriPathElement URI_ID;
 
 	static {
 		try {
-			URI_ID = new UriPathElement("profile-classes");
+			URI_ID = new UriPathElement("pcs");
 		} catch (HttpException e) {
 			throw new RuntimeException(e);
 		}
 	}
 
-	public ProfileClasses() {
+	public Pcs() {
 	}
 
 	public UriPathElement getUrlId() {

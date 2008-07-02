@@ -25,13 +25,13 @@ package net.sf.chellow.physical;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
-import java.text.DateFormat;
 import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.Locale;
+import java.util.TimeZone;
 
-import net.sf.chellow.monad.DeployerException;
-import net.sf.chellow.monad.DesignerException;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.InternalException;
@@ -51,8 +51,7 @@ import org.w3c.dom.Node;
 import com.Ostermiller.util.CSVParser;
 
 public class Mtc extends PersistentEntity {
-	static public Mtc getMtc(Dso dso, MtcCode mtcCode)
-			throws HttpException {
+	static public Mtc getMtc(Dso dso, MtcCode mtcCode) throws HttpException {
 		return findMtc(dso, mtcCode, true);
 	}
 
@@ -93,7 +92,7 @@ public class Mtc extends PersistentEntity {
 
 	static public Mtc insertMtc(Dso dso, String code, String description,
 			boolean hasRelatedMetering, Boolean hasComms, Boolean isHh,
-			MtcMeterType meterType, MtcPaymentType paymentType, int tprCount,
+			MeterType meterType, MtcPaymentType paymentType, Integer tprCount,
 			Date from, Date to) throws HttpException {
 
 		Mtc mtc = new Mtc(dso, new MtcCode(code), description,
@@ -135,11 +134,15 @@ public class Mtc extends PersistentEntity {
 						"The first line of the CSV must contain the titles "
 								+ "Meter Timeswitch Class Id, Effective From Settlement Date {MTC}, Effective To Settlement Date {MTC}, Meter Timeswitch Class Description, MTC Common Code Indicator, MTC Related Metering System Indicator, MTC Meter Type Id, MTC Payment Type Id, MTC Communication Indicator, MTC Type Indicator, MTC TPR Count.");
 			}
-			DateFormat dateFormat = DateFormat.getDateTimeInstance(
-					DateFormat.SHORT, DateFormat.SHORT, Locale.UK);
+			SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy",
+					Locale.UK);
+			dateFormat.setCalendar(new GregorianCalendar(TimeZone
+					.getTimeZone("GMT"), Locale.UK));
 			for (String[] values = parser.getLine(); values != null; values = parser
 					.getLine()) {
 				if (values[4].equals("T")) {
+					String code = values[0];
+					String description = values[3];
 					Boolean hasComms = null;
 					if (values[8].equals("Y")) {
 						hasComms = Boolean.TRUE;
@@ -147,22 +150,28 @@ public class Mtc extends PersistentEntity {
 						hasComms = Boolean.FALSE;
 					}
 					Boolean isHh = null;
+					Integer tprCount = null;
 					if (values[9].equals("H")) {
 						isHh = Boolean.TRUE;
 					} else if (values[9].equals("N")) {
 						isHh = Boolean.FALSE;
+						tprCount = Integer.parseInt(values[10]);
 					}
-					Mtc mtc = Mtc.insertMtc(null, values[0], values[3],
-							values[5].equals("T"), hasComms, isHh, MtcMeterType
-									.getMtcMeterType(values[6]), MtcPaymentType
-									.getMtcPaymentType(values[7]), Integer
-									.parseInt(values[9]), dateFormat
-									.parse(values[1]), dateFormat
-									.parse(values[2]));
+					String validToStr = values[2];
+					Date validFrom = dateFormat.parse(values[1]);
+					Date validTo = validToStr.length() == 0 ? null : dateFormat
+							.parse(validToStr);
+					MeterType meterType = MeterType.getMtcMeterType(values[6]);
+					MtcPaymentType paymentType = MtcPaymentType
+							.getMtcPaymentType(values[7]);
+					boolean hasRelatedMetering = values[5].equals("T");
+					Mtc mtc = Mtc.insertMtc(null, code, description,
+							hasRelatedMetering, hasComms, isHh, meterType,
+							paymentType, tprCount, validFrom, validTo);
 					Hiber.session().save(mtc);
 					Hiber.flush();
 				}
-			}			
+			}
 		} catch (UnsupportedEncodingException e) {
 			throw new InternalException(e);
 		} catch (IOException e) {
@@ -181,19 +190,19 @@ public class Mtc extends PersistentEntity {
 	private boolean hasRelatedMetering;
 	private Boolean hasComms;
 	private Boolean isHh;
-	private MtcMeterType meterType;
+	private MeterType meterType;
 	private MtcPaymentType paymentType;
-	private int tprCount;
-	private Date from;
-	private Date to;
+	private Integer tprCount;
+	private Date validFrom;
+	private Date validTo;
 
 	public Mtc() {
 	}
 
 	public Mtc(Dso dso, MtcCode code, String description,
 			boolean hasRelatedMetering, Boolean hasComms, Boolean isHh,
-			MtcMeterType meterType, MtcPaymentType paymentType, int tprCount,
-			Date from, Date to) throws HttpException {
+			MeterType meterType, MtcPaymentType paymentType, Integer tprCount,
+			Date validFrom, Date validTo) throws HttpException {
 		setDso(dso);
 		setCode(code);
 		setDescription(description);
@@ -203,8 +212,8 @@ public class Mtc extends PersistentEntity {
 		setMeterType(meterType);
 		setPaymentType(paymentType);
 		setTprCount(tprCount);
-		setFrom(from);
-		setTo(to);
+		setValidFrom(validFrom);
+		setValidTo(validTo);
 	}
 
 	void setDso(Dso dso) {
@@ -255,11 +264,11 @@ public class Mtc extends PersistentEntity {
 		this.isHh = isHh;
 	}
 
-	public MtcMeterType getMeterType() {
+	public MeterType getMeterType() {
 		return meterType;
 	}
 
-	void setMeterType(MtcMeterType meterType) {
+	void setMeterType(MeterType meterType) {
 		this.meterType = meterType;
 	}
 
@@ -271,42 +280,30 @@ public class Mtc extends PersistentEntity {
 		this.paymentType = paymentType;
 	}
 
-	public int getTprCount() {
+	public Integer getTprCount() {
 		return tprCount;
 	}
 
-	void setTprCount(int tprCount) {
+	void setTprCount(Integer tprCount) {
 		this.tprCount = tprCount;
 	}
 
-	public Date getFrom() {
-		return from;
+	public Date getValidFrom() {
+		return validFrom;
 	}
 
-	void setFrom(Date from) {
-		this.from = from;
+	void setValidFrom(Date from) {
+		this.validFrom = from;
 	}
 
-	public Date getTo() {
-		return to;
+	public Date getValidTo() {
+		return validTo;
 	}
 
-	void setTo(Date to) {
-		this.to = to;
+	void setValidTo(Date to) {
+		this.validTo = to;
 	}
 
-	/*
-	 * public Set<LineLossFactor> getLineLossFactors() { return
-	 * lineLossFactors; }
-	 * 
-	 * protected void setLineLossFactors(Set<LineLossFactor> lineLossFactors) {
-	 * this.lineLossFactors = lineLossFactors; }
-	 * 
-	 * public Set<Ssc> getRegisters() { return registers; }
-	 * 
-	 * protected void setRegisters(Set<Ssc> registers) { this.registers =
-	 * registers; }
-	 */
 	public String toString() {
 		return code + " - " + description + " (DSO "
 				+ (dso == null ? null : dso.getCode()) + ")";
@@ -321,14 +318,20 @@ public class Mtc extends PersistentEntity {
 		element.setAttribute("description", description);
 		element.setAttribute("has-related-metering", Boolean
 				.toString(hasRelatedMetering));
-		element.setAttribute("has-comms", hasComms.toString());
-		element.setAttribute("is-hh", isHh.toString());
-		element.setAttribute("tpr-count", String.valueOf(tprCount));
-		MonadDate fromDate = new MonadDate(from);
+		if (hasComms != null) {
+			element.setAttribute("has-comms", hasComms.toString());
+		}
+		if (isHh != null) {
+			element.setAttribute("is-hh", isHh.toString());
+		}
+		if (tprCount != null) {
+			element.setAttribute("tpr-count", String.valueOf(tprCount));
+		}
+		MonadDate fromDate = new MonadDate(validFrom);
 		fromDate.setLabel("from");
 		element.appendChild(fromDate.toXml(doc));
-		if (to != null) {
-			MonadDate toDate = new MonadDate(to);
+		if (validTo != null) {
+			MonadDate toDate = new MonadDate(validTo);
 			toDate.setLabel("to");
 			element.appendChild(toDate.toXml(doc));
 		}
@@ -339,37 +342,25 @@ public class Mtc extends PersistentEntity {
 		return null;
 	}
 
-	public Urlable getChild(UriPathElement uriId) throws InternalException,
-			HttpException {
+	public Urlable getChild(UriPathElement uriId) throws HttpException {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
-	public void httpGet(Invocation inv) throws DesignerException,
-			InternalException, HttpException, DeployerException {
+	public void httpGet(Invocation inv) throws HttpException {
 		Document doc = MonadUtils.newSourceDocument();
 		Element source = doc.getDocumentElement();
 
-		source.appendChild(toXml(doc, new XmlTree("dso")));
+		source.appendChild(toXml(doc, new XmlTree("dso").put("meterType").put(
+				"paymentType")));
 		inv.sendOk(doc);
 	}
 
-	public void httpPost(Invocation inv) throws InternalException,
-			HttpException {
+	public void httpPost(Invocation inv) throws HttpException {
 		// TODO Auto-generated method stub
-
 	}
 
-	public void httpDelete(Invocation inv) throws InternalException,
-			DesignerException, HttpException, DeployerException {
+	public void httpDelete(Invocation inv) throws HttpException {
 		// TODO Auto-generated method stub
-
 	}
-	/*
-	 * public void insertRegister(Ssc.Units units, String tprString) throws
-	 * ProgrammerException, UserException { Set<Tpr> tprs = new HashSet<Tpr>();
-	 * for (String tprCode : tprString.split(",")) { Tpr tpr =
-	 * Tpr.getTpr(tprCode); tprs.add(tpr); } registers.add(new Ssc(this, units,
-	 * tprs)); }
-	 */
 }

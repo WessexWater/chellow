@@ -23,10 +23,7 @@
 package net.sf.chellow.physical;
 
 import net.sf.chellow.monad.HttpException;
-import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Urlable;
-import net.sf.chellow.monad.UserException;
-
 import net.sf.chellow.monad.types.MonadObject;
 import net.sf.chellow.monad.types.UriPathElement;
 
@@ -48,7 +45,7 @@ public abstract class PersistentEntity extends MonadObject implements Urlable {
 		this.id = id;
 	}
 	
-	public UriPathElement getUriId() throws InternalException, UserException {
+	public UriPathElement getUriId() throws HttpException {
 			return new UriPathElement(Long.toString(id));
 	}
 

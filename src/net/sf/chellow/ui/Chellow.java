@@ -27,12 +27,12 @@ import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
 import net.sf.chellow.physical.Dsos;
 import net.sf.chellow.physical.MarketRoles;
-import net.sf.chellow.physical.MeterTimeswitches;
+import net.sf.chellow.physical.MeterTypes;
+import net.sf.chellow.physical.MtcPaymentTypes;
+import net.sf.chellow.physical.Mtcs;
 import net.sf.chellow.physical.Organizations;
 import net.sf.chellow.physical.Participants;
-import net.sf.chellow.physical.Permission;
-import net.sf.chellow.physical.ProfileClasses;
-import net.sf.chellow.physical.Role;
+import net.sf.chellow.physical.Pcs;
 import net.sf.chellow.physical.Roles;
 import net.sf.chellow.physical.Sources;
 import net.sf.chellow.physical.Sscs;
@@ -54,9 +54,9 @@ public class Chellow extends Monad implements Urlable {
 
 	static public final Providers PROVIDERS_INSTANCE = new Providers();
 
-	static public final ProfileClasses PROFILE_CLASSES_INSTANCE = new ProfileClasses();
+	static public final Pcs PROFILE_CLASSES_INSTANCE = new Pcs();
 
-	static public final MeterTimeswitches METER_TIMESWITCHES_INSTANCE = new MeterTimeswitches();
+	static public final Mtcs MTCS_INSTANCE = new Mtcs();
 	static public final Tprs TPRS_INSTANCE = new Tprs();
 	static public final Sscs SSCS_INSTANCE = new Sscs();
 
@@ -67,6 +67,8 @@ public class Chellow extends Monad implements Urlable {
 
 	public static final NonCoreServices NON_CORE_SERVICES_INSTANCE = new NonCoreServices();
 	public static final Dsos DSOS_INSTANCE = new Dsos();
+	static public final MeterTypes METER_TYPES_INSTANCE = new MeterTypes();
+	static public final MtcPaymentTypes MTC_PAYMENT_TYPES_INSTANCE = new MtcPaymentTypes();
 
 	static {
 		try {
@@ -117,32 +119,11 @@ public class Chellow extends Monad implements Urlable {
 	private boolean requestAllowed(User user, Invocation inv)
 			throws HttpException {
 		try {
-			return methodAllowed(user, new URI(inv.getRequest().getPathInfo()),
+			return user.methodAllowed(new URI(inv.getRequest().getPathInfo()),
 					inv.getMethod());
 		} catch (URISyntaxException e) {
 			throw new BadRequestException();
 		}
-	}
-
-	public static boolean methodAllowed(User user, URI uri, HttpMethod method) {
-		if (user.getId().equals(new Long(1))) {
-			return true;
-		}
-		String longestUriPattern = null;
-		boolean methodAllowed = false;
-		String uriPath = uri.getPath().toString();
-		for (Role role : user.getRoles()) {
-			for (Permission permission : role.getPermissions()) {
-				String uriPattern = permission.getUriPattern().toString();
-				if (uriPath.startsWith(uriPattern)
-						&& (longestUriPattern == null ? true : uriPattern
-								.length() > longestUriPattern.length())) {
-					methodAllowed = permission.isMethodAllowed(method);
-					longestUriPattern = uriPattern;
-				}
-			}
-		}
-		return methodAllowed;
 	}
 
 	protected void checkPermissions(Invocation inv) throws HttpException,
@@ -166,13 +147,11 @@ public class Chellow extends Monad implements Urlable {
 		inv.sendOk();
 	}
 
-	public void httpPost(Invocation inv) throws InternalException,
-			HttpException {
+	public void httpPost(Invocation inv) throws HttpException {
 		inv.sendMethodNotAllowed(ALLOWED_METHODS);
 	}
 
-	public Urlable getChild(UriPathElement uriId) throws InternalException,
-			HttpException {
+	public Urlable getChild(UriPathElement uriId) throws HttpException {
 		if (Sources.URI_ID.equals(uriId)) {
 			return SOURCES_INSTANCE;
 		} else if (Organizations.URI_ID.equals(uriId)) {
@@ -185,10 +164,10 @@ public class Chellow extends Monad implements Urlable {
 			return ROLES_INSTANCE;
 		} else if (NonCoreServices.URI_ID.equals(uriId)) {
 			return NON_CORE_SERVICES_INSTANCE;
-		} else if (ProfileClasses.URI_ID.equals(uriId)) {
+		} else if (Pcs.URI_ID.equals(uriId)) {
 			return PROFILE_CLASSES_INSTANCE;
-		} else if (MeterTimeswitches.URI_ID.equals(uriId)) {
-			return METER_TIMESWITCHES_INSTANCE;
+		} else if (Mtcs.URI_ID.equals(uriId)) {
+			return MTCS_INSTANCE;
 		} else if (Tprs.URI_ID.equals(uriId)) {
 			return TPRS_INSTANCE;
 		} else if (Sscs.URI_ID.equals(uriId)) {
@@ -197,6 +176,10 @@ public class Chellow extends Monad implements Urlable {
 			return PARTICIPANTS_INSTANCE;
 		} else if (MarketRoles.URI_ID.equals(uriId)) {
 			return MARKET_ROLES_INSTANCE;
+		} else if (MeterTypes.URI_ID.equals(uriId)) {
+			return METER_TYPES_INSTANCE;
+		} else if (MtcPaymentTypes.URI_ID.equals(uriId)) {
+			return MTC_PAYMENT_TYPES_INSTANCE;
 		} else {
 			return null;
 		}
