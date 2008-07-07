@@ -44,12 +44,13 @@ public class VoltageLevel extends PersistentEntity {
 	static public final String EHV = "EHV";
 	static public final String HV = "HV";
 	static public final String LV = "LV";
+
 	static public VoltageLevel getVoltageLevel(String code)
 			throws HttpException {
 		VoltageLevel voltageLevel = findVoltageLevel(code);
 		if (voltageLevel == null) {
-			throw new UserException
-					("There is no voltage level with that code.");
+			throw new UserException("There is no voltage level with the code '"
+					+ code + "'.");
 		}
 		return voltageLevel;
 	}
@@ -57,23 +58,21 @@ public class VoltageLevel extends PersistentEntity {
 	static public VoltageLevel findVoltageLevel(String code)
 			throws HttpException {
 		return (VoltageLevel) Hiber.session().createQuery(
-				"from VoltageLevel level where "
-						+ "level.code = :code").setString("code",
-				code.toString()).uniqueResult();
+				"from VoltageLevel level where level.code = :code")
+				.setString("code", code).uniqueResult();
 	}
 
-	public static void insertVoltageLevels()
+	public static void insertVoltageLevels() throws HttpException {
+		insertVoltageLevel(LV, "Low voltage");
+		insertVoltageLevel(HV, "High voltage");
+		insertVoltageLevel(EHV, "Extra high voltage");
+	}
+
+	private static VoltageLevel insertVoltageLevel(String code, String name)
 			throws HttpException {
-		insertVoltageLevel("LV", "Low voltage");
-	insertVoltageLevel("HV", "High voltage");
-			insertVoltageLevel("EHV", "Extra high voltage");
-	}
-
-	private static VoltageLevel insertVoltageLevel(String code,
-			String name) throws HttpException {
-			VoltageLevel voltageLevel = new VoltageLevel(code, name);
-		 	Hiber.session().save(voltageLevel);
-			Hiber.flush();
+		VoltageLevel voltageLevel = new VoltageLevel(code, name);
+		Hiber.session().save(voltageLevel);
+		Hiber.flush();
 		return voltageLevel;
 	}
 

@@ -60,12 +60,7 @@ public class Roles implements Urlable, XmlDescriber {
 		if (!inv.isValid()) {
 			throw new UserException(doc);
 		}
-		Role role = Role.insertRole(name);
-		User user = inv.getUser();
-		user.userRole(user).insertPermission(
-				role.getUri().toString(),
-				new Invocation.HttpMethod[] { Invocation.HttpMethod.GET,
-						Invocation.HttpMethod.POST });
+		Role role = Role.insertRole(inv.getUser(), name);
 		Hiber.commit();
 		inv.sendCreated(role.getUri());
 	}

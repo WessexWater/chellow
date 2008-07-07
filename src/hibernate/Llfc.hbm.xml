@@ -32,10 +32,10 @@
 			</generator>
 		</id>
 		<many-to-one name="dso" class="Dso" column="dso_id"
-			not-null="true" unique-key="llfc_unique" foreign-key="fkey_llfc_dso" />
+			not-null="true" foreign-key="fkey_llfc_dso" />
 		<component name="code" class="LlfcCode">
 			<property type="integer" name="integer" column="code"
-				not-null="true" unique-key="llfc_unique" />
+				not-null="true" />
 		</component>
 		<property name="description" column="description"
 			not-null="true" />
@@ -45,5 +45,8 @@
 		<property type="boolean" name="isSubstation"
 			column="is_substation" />
 		<property type="boolean" name="isImport" column="is_import" />
+		<property type="timestamp" name="validFrom" column="valid_from"
+			not-null="true" />
+		<property type="timestamp" name="validTo" column="valid_to" />
 	</class>
 </hibernate-mapping>

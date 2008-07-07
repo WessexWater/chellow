@@ -53,7 +53,7 @@ public class Permission extends PersistentEntity {
 			throw new InternalException(e);
 		}
 	}
-
+/*
 	static void methodsAllowed(User user, MonadUri uriPattern,
 			List<Invocation.HttpMethod> methods) throws HttpException {
 		for (Invocation.HttpMethod method : methods) {
@@ -63,7 +63,7 @@ public class Permission extends PersistentEntity {
 			}
 		}
 	}
-
+*/
 	private Role role;
 
 	private MonadUri uriPattern;
@@ -86,31 +86,24 @@ public class Permission extends PersistentEntity {
 		setTypeName("permission");
 	}
 
-	public Permission(Role role, MonadUri uriPattern, Boolean isOptionsAllowed,
-			Boolean isGetAllowed, Boolean isHeadAllowed, Boolean isPostAllowed,
-			Boolean isPutAllowed, Boolean isDeleteAllowed,
-			Boolean isTraceAllowed) throws InternalException, HttpException {
+	public Permission(Role role, MonadUri uriPattern, List<Invocation.HttpMethod> methods) throws HttpException {
 		this();
 		setRole(role);
-		update(uriPattern, isOptionsAllowed, isGetAllowed, isHeadAllowed,
-				isPostAllowed, isPutAllowed, isDeleteAllowed, isTraceAllowed);
+		update(uriPattern, methods);
 	}
 
-	public void update(MonadUri uriPattern, Boolean isOptionsAllowed,
-			Boolean isGetAllowed, Boolean isHeadAllowed, Boolean isPostAllowed,
-			Boolean isPutAllowed, Boolean isDeleteAllowed,
-			Boolean isTraceAllowed) throws InternalException {
+	public void update(MonadUri uriPattern, List<Invocation.HttpMethod> methods) throws InternalException {
 		if (uriPattern == null) {
 			throw new InternalException("uri parameter can't be null.");
 		}
 		setUriPattern(uriPattern);
-		setIsOptionsAllowed(isOptionsAllowed);
-		setIsGetAllowed(isGetAllowed);
-		setIsHeadAllowed(isHeadAllowed);
-		setIsPostAllowed(isPostAllowed);
-		setIsPutAllowed(isPutAllowed);
-		setIsDeleteAllowed(isDeleteAllowed);
-		setIsTraceAllowed(isTraceAllowed);
+		setIsOptionsAllowed(methods.contains(Invocation.HttpMethod.OPTIONS));
+		setIsGetAllowed(methods.contains(Invocation.HttpMethod.GET));
+		setIsHeadAllowed(methods.contains(Invocation.HttpMethod.HEAD));
+		setIsPostAllowed(methods.contains(Invocation.HttpMethod.POST));
+		setIsPutAllowed(methods.contains(Invocation.HttpMethod.PUT));
+		setIsDeleteAllowed(methods.contains(Invocation.HttpMethod.DELETE));
+		setIsTraceAllowed(methods.contains(Invocation.HttpMethod.TRACE));
 	}
 
 	public Role getRole() {
@@ -259,10 +252,30 @@ public class Permission extends PersistentEntity {
 			if (!inv.isValid()) {
 				throw new UserException(document());
 			}
-			Permission.methodsAllowed(inv.getUser(), uriPattern, getMethods());
-			update(uriPattern, isOptionsAllowed, isGetAllowed, isHeadAllowed,
-					isPostAllowed, isPutAllowed, isDeleteAllowed,
-					isTraceAllowed);
+			List<Invocation.HttpMethod> methods = new ArrayList<Invocation.HttpMethod>();
+			if (isOptionsAllowed) {
+				methods.add(Invocation.HttpMethod.OPTIONS);
+			}
+			if (isGetAllowed) {
+				methods.add(Invocation.HttpMethod.GET);
+			}
+			if (isHeadAllowed) {
+				methods.add(Invocation.HttpMethod.HEAD);
+			}
+			if (isPostAllowed) {
+				methods.add(Invocation.HttpMethod.POST);
+			}
+			if (isPutAllowed) {
+				methods.add(Invocation.HttpMethod.PUT);
+			}
+			if (isDeleteAllowed) {
+				methods.add(Invocation.HttpMethod.DELETE);
+			}
+			if (isTraceAllowed) {
+				methods.add(Invocation.HttpMethod.TRACE);
+			}
+			inv.getUser().methodsAllowed(uriPattern, methods);
+			update(uriPattern, methods);
 			Hiber.close();
 			inv.sendSeeOther(getUri());
 		}

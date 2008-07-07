@@ -628,10 +628,10 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 					Long importProfileClassId = inv
 							.getLong("import-profile-class-id");
 					Pc importProfileClass = Pc
-							.getProfileClass(importProfileClassId);
+							.getPc(importProfileClassId);
 					LlfcCode importLlfCode = new LlfcCode(inv
-							.getInteger("import-llf-code"));
-					Llfc importLlf = importMpanCore.getDso().getLlf(
+							.getInteger("import-llfc-code"));
+					Llfc importLlf = importMpanCore.getDso().getLlfc(
 							importLlfCode);
 					MtcCode importMeterTimeswitchCode = inv
 							.getValidatable(MtcCode.class,
@@ -687,10 +687,10 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 					Long exportProfileClassId = inv
 							.getLong("export-profile-class-id");
 					Pc exportProfileClass = Pc
-							.getProfileClass(exportProfileClassId);
+							.getPc(exportProfileClassId);
 					LlfcCode exportLlfCode = new LlfcCode(inv
-							.getInteger("export-llf-code"));
-					Llfc exportLlf = exportMpanCore.getDso().getLlf(
+							.getInteger("export-llfc-code"));
+					Llfc exportLlf = exportMpanCore.getDso().getLlfc(
 							exportLlfCode);
 					MtcCode exportMeterTimeswitchCode = inv
 							.getValidatable(MtcCode.class,

@@ -9,14 +9,12 @@
 		<html>
 			<head>
 				<link rel="stylesheet" type="text/css"
-					href="{/source/request/@context-path}/orgs/1/reports/9/stream/output/" />
+					href="{/source/request/@context-path}/style/" />
 				<title>
 					Chellow &gt; DNOs &gt;
-					<xsl:value-of
-						select="/source/llf/dso/@code" />
+					<xsl:value-of select="/source/llfc/dso/@code" />
 					&gt; Line Loss Factors &gt;
-					<xsl:value-of
-						select="/source/llf/@code" />
+					<xsl:value-of select="/source/llfc/@code" />
 				</title>
 			</head>
 
@@ -33,17 +31,16 @@
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/dsos/{/source/llf/dso/@id}/">
-						<xsl:value-of
-							select="/source/llf/dso/@code" />
+						href="{/source/request/@context-path}/dsos/{/source/llfc/dso/@id}/">
+						<xsl:value-of select="/source/llfc/dso/@code" />
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/dsos/{/source/llf/dso/@id}/llfs/">
+						href="{/source/request/@context-path}/dsos/{/source/llfc/dso/@id}/llfcs/">
 						<xsl:value-of select="'Line Loss Factors'" />
 					</a>
 					&gt;
-					<xsl:value-of select="/source/llf/@code" />
+					<xsl:value-of select="/source/llfc/@code" />
 				</p>
 				<xsl:if test="//message">
 					<ul>
@@ -56,47 +53,46 @@
 				</xsl:if>
 				<br />
 				<table>
-					<caption>Properties</caption>
-					<thead>
-						<tr>
-							<th>Name</th>
-							<th>Value</th>
-						</tr>
-					</thead>
 					<tbody>
 						<tr>
-							<td>Code</td>
+							<th>Chellow Id</th>
 							<td>
-								<xsl:value-of
-									select="/source/llf/@code" />
+								<xsl:value-of select="/source/llfc/@id" />
 							</td>
 						</tr>
 						<tr>
-							<td>Description</td>
+							<th>Code</th>
 							<td>
 								<xsl:value-of
-									select="/source/llf/@description" />
+									select="/source/llfc/@code" />
 							</td>
 						</tr>
 						<tr>
-							<td>Voltage Level</td>
+							<th>Description</th>
 							<td>
 								<xsl:value-of
-									select="concat(/source/llf/voltage-level/@code, ' - ', /source/llf/voltage-level/@name)" />
+									select="/source/llfc/@description" />
 							</td>
 						</tr>
 						<tr>
-							<td>Is substation?</td>
+							<th>Voltage Level</th>
 							<td>
 								<xsl:value-of
-									select="/source/llf/@is-substation" />
+									select="concat(/source/llfc/voltage-level/@code, ' - ', /source/llfc/voltage-level/@name)" />
 							</td>
 						</tr>
 						<tr>
-							<td>Is import?</td>
+							<th>Is substation?</th>
 							<td>
 								<xsl:value-of
-									select="/source/llf/@is-import" />
+									select="/source/llfc/@is-substation" />
+							</td>
+						</tr>
+						<tr>
+							<th>Is import?</th>
+							<td>
+								<xsl:value-of
+									select="/source/llfc/@is-import" />
 							</td>
 						</tr>
 					</tbody>

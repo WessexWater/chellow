@@ -96,7 +96,7 @@
 				</table>
 				<ul>
 					<li>
-						<a href="llfs/">Line Loss Factors</a>
+						<a href="llfcs/">Line Loss Factor Classes</a>
 					</li>
 					<li>
 						<a href="mpan-tops/">MPAN top lines</a>

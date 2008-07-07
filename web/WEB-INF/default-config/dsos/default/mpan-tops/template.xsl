@@ -9,7 +9,7 @@
 		<html>
 			<head>
 				<link rel="stylesheet" type="text/css"
-					href="{/source/request/@context-path}/orgs/1/reports/9/stream/output/" />
+					href="{/source/request/@context-path}/style/" />
 				<title>
 					Chellow &gt; DSOs &gt;
 					<xsl:value-of
@@ -49,10 +49,10 @@
 				<table>
 					<thead>
 						<tr>
-							<th>Id</th>
-							<th>Profile Class</th>
-							<th>Meter Timeswitch</th>
-							<th>Line Loss Factor</th>
+							<th>Chellow Id</th>
+							<th>PC</th>
+							<th>MTC</th>
+							<th>LLFC</th>
 						</tr>
 					</thead>
 					<tbody>

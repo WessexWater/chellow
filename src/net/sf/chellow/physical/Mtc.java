@@ -90,12 +90,12 @@ public class Mtc extends PersistentEntity {
 		return mtc;
 	}
 
-	static public Mtc insertMtc(Dso dso, String code, String description,
+	static public Mtc insertMtc(Dso dso, MtcCode code, String description,
 			boolean hasRelatedMetering, Boolean hasComms, Boolean isHh,
 			MeterType meterType, MtcPaymentType paymentType, Integer tprCount,
 			Date from, Date to) throws HttpException {
 
-		Mtc mtc = new Mtc(dso, new MtcCode(code), description,
+		Mtc mtc = new Mtc(dso, code, description,
 				hasRelatedMetering, hasComms, isHh, meterType, paymentType,
 				tprCount, from, to);
 		Hiber.session().save(mtc);
@@ -141,7 +141,7 @@ public class Mtc extends PersistentEntity {
 			for (String[] values = parser.getLine(); values != null; values = parser
 					.getLine()) {
 				if (values[4].equals("T")) {
-					String code = values[0];
+					MtcCode code = new MtcCode(values[0]);
 					String description = values[3];
 					Boolean hasComms = null;
 					if (values[8].equals("Y")) {
@@ -168,6 +168,67 @@ public class Mtc extends PersistentEntity {
 					Mtc mtc = Mtc.insertMtc(null, code, description,
 							hasRelatedMetering, hasComms, isHh, meterType,
 							paymentType, tprCount, validFrom, validTo);
+					Hiber.session().save(mtc);
+					Hiber.flush();
+				}
+			}
+
+			parser = new CSVParser(new InputStreamReader(classLoader
+					.getResource("net/sf/chellow/physical/MtcInPesArea.csv")
+					.openStream(), "UTF-8"));
+			parser.setCommentStart("#;!");
+			parser.setEscapes("nrtf", "\n\r\t\f");
+			titles = parser.getLine();
+			if (titles.length < 11
+					|| !titles[0].trim().equals("Meter Timeswitch Class Id")
+					|| !titles[1].trim().equals(
+							"Effective From Settlement Date {MTC}")
+					|| !titles[2].trim().equals("Market Participant Id")
+					|| !titles[3].trim().equals(
+							"Effective From Settlement Date {MTCPA}")
+					|| !titles[4].trim().equals(
+							"Effective To Settlement Date {MTCPA}")
+					|| !titles[5].trim().equals(
+							"Meter Timeswitch Class Description")
+					|| !titles[6].trim().equals("MTC Meter Type Id")
+					|| !titles[7].trim().equals("MTC Payment Type Id")
+					|| !titles[8].trim().equals("MTC Communication Indicator")
+					|| !titles[9].trim().equals("MTC Type Indicator")
+					|| !titles[10].trim().equals("MTC TPR Count")) {
+				throw new UserException(
+						"The first line of the CSV must contain the titles "
+								+ "Meter Timeswitch Class Id, Effective From Settlement Date {MTC}, Market Participant Id, Effective From Settlement Date {MTCPA}, Effective To Settlement Date {MTCPA}, Meter Timeswitch Class Description, MTC Meter Type Id, MTC Payment Type Id, MTC Communication Indicator, MTC Type Indicator, MTC TPR Count.");
+			}
+			for (String[] values = parser.getLine(); values != null; values = parser
+					.getLine()) {
+				MtcCode code = new MtcCode(values[0]);
+				if (code.hasDso()) {
+					Dso dso = Dso.getDso(values[2]);
+					String description = values[5];
+					Boolean hasComms = null;
+					if (values[8].equals("Y")) {
+						hasComms = Boolean.TRUE;
+					} else if (values[8].equals("N")) {
+						hasComms = Boolean.FALSE;
+					}
+					Boolean isHh = null;
+					Integer tprCount = null;
+					if (values[9].equals("H")) {
+						isHh = Boolean.TRUE;
+					} else if (values[9].equals("N")) {
+						isHh = Boolean.FALSE;
+						tprCount = Integer.parseInt(values[10]);
+					}
+					String validToStr = values[4];
+					Date validFrom = dateFormat.parse(values[3]);
+					Date validTo = validToStr.length() == 0 ? null : dateFormat
+							.parse(validToStr);
+					MeterType meterType = MeterType.getMtcMeterType(values[6]);
+					MtcPaymentType paymentType = MtcPaymentType
+							.getMtcPaymentType(values[7]);
+					Mtc mtc = Mtc.insertMtc(dso, code, description, false,
+							hasComms, isHh, meterType, paymentType, tprCount,
+							validFrom, validTo);
 					Hiber.session().save(mtc);
 					Hiber.flush();
 				}

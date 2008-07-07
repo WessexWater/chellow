@@ -25,14 +25,16 @@ package net.sf.chellow.physical;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
-import java.text.DateFormat;
 import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.TimeZone;
 
 import net.sf.chellow.monad.DeployerException;
 import net.sf.chellow.monad.DesignerException;
@@ -54,8 +56,7 @@ import org.w3c.dom.Element;
 import com.Ostermiller.util.CSVParser;
 
 public class MpanTop extends PersistentEntity {
-	static public MpanTop getMpanTop(Long id) throws InternalException,
-			HttpException {
+	static public MpanTop getMpanTop(Long id) throws HttpException {
 		MpanTop mpanTop = (MpanTop) Hiber.session().get(MpanTop.class, id);
 		if (mpanTop == null) {
 			throw new UserException("There is no mpan with that id.");
@@ -129,23 +130,29 @@ public class MpanTop extends PersistentEntity {
 						"The first line of the CSV must contain the titles "
 								+ "Profile Class Id, Standard Settlement Configuration Id, Effective From Settlement Date {VSCPC}, Effective To Settlement Date {VSCPC}.");
 			}
-			DateFormat dateFormat = DateFormat.getDateTimeInstance(
-					DateFormat.SHORT, DateFormat.SHORT, Locale.UK);
+			SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy",
+					Locale.UK);
+			dateFormat.setCalendar(new GregorianCalendar(TimeZone
+					.getTimeZone("GMT"), Locale.UK));
 			Map<String, List<List<Object>>> sscPcMap = new HashMap<String, List<List<Object>>>();
 			for (String[] values = parser.getLine(); values != null; values = parser
 					.getLine()) {
 				String sscCode = values[1];
 				PcCode pcCode = new PcCode(Integer.parseInt(values[0]));
-				Date from = dateFormat.parse(values[2]);
-				Date to = dateFormat.parse(values[3]);
+				Date validFrom = dateFormat.parse(values[2]);
+				Date validTo = null;
+				String validToStr = values[3];
+				if (validToStr.length() != 0) {
+					validTo = dateFormat.parse(values[3]);
+				}
 				if (!sscPcMap.containsKey(sscCode)) {
 					sscPcMap.put(sscCode, new ArrayList<List<Object>>());
 				}
 				List<List<Object>> sscPcs = sscPcMap.get(sscCode);
 				List<Object> sscPc = new ArrayList<Object>();
 				sscPc.add(pcCode);
-				sscPc.add(from);
-				sscPc.add(to);
+				sscPc.add(validFrom);
+				sscPc.add(validTo);
 				sscPcs.add(sscPc);
 			}
 
@@ -179,19 +186,24 @@ public class MpanTop extends PersistentEntity {
 			for (String[] values = parser.getLine(); values != null; values = parser
 					.getLine()) {
 				Dso dso = Dso.getDso(values[2]);
-				Llfc llfc = dso
-						.getLlf(new LlfcCode(Integer.parseInt(values[6])));
+				Date validFrom = dateFormat.parse(values[7]);
+				Date validTo = null;
+				String validToStr = values[8];
+				if (validToStr.length() != 0) {
+					validTo = dateFormat.parse(validToStr);
+				}
+				Llfc llfc = dso.getLlfc(new LlfcCode(Integer
+						.parseInt(values[6])), validFrom);
 				Mtc mtc = Mtc.getMtc(dso, new MtcCode(values[0]));
 				Ssc ssc = Ssc.getSsc(values[4]);
-				Date from = dateFormat.parse(values[7]);
-				Date to = dateFormat.parse(values[8]);
 				for (List<Object> sscPc : sscPcMap.get(ssc.getCode())) {
 					Date mapFrom = (Date) sscPc.get(1);
 					Date mapTo = (Date) sscPc.get(2);
-					Date derivedFrom = from.after(mapFrom) ? from : mapFrom;
+					Date derivedFrom = validFrom.after(mapFrom) ? validFrom
+							: mapFrom;
 					Date derivedTo = null;
-					if (mapTo != null && to != null) {
-						derivedTo = to.before(mapTo) ? to : mapTo;
+					if (mapTo != null && validTo != null) {
+						derivedTo = validTo.before(mapTo) ? validTo : mapTo;
 					}
 					llfc.insertMpanTop(Pc.getPc((PcCode) sscPc.get(0)), mtc,
 							ssc, derivedFrom, derivedTo);

@@ -9,11 +9,11 @@
 		<html>
 			<head>
 				<link rel="stylesheet" type="text/css"
-					href="{/source/request/@context-path}/orgs/1/reports/9/stream/output/" />
+					href="{/source/request/@context-path}/style/" />
 				<title>
 					Chellow &gt; DSOs &gt;
 					<xsl:value-of
-						select="concat(/source/line-loss-factors/dso/@code, ' &gt; Line Loss Factors')" />
+						select="concat(/source/llfcs/dso/@code, ' &gt; LLFCs')" />
 				</title>
 			</head>
 
@@ -30,11 +30,10 @@
 					</a>
 					<xsl:value-of select="' &gt; '" />
 					<a
-						href="{/source/request/@context-path}/dsos/{/source/line-loss-factors/dso/@id}/">
-						<xsl:value-of
-							select="/source/line-loss-factors/dso/@code" />
+						href="{/source/request/@context-path}/dsos/{/source/llfcs/dso/@id}/">
+						<xsl:value-of select="/source/llfcs/dso/@code" />
 					</a>
-					<xsl:value-of select="' &gt; Line Loss Factors '" />
+					<xsl:value-of select="' &gt; LLFCs '" />
 				</p>
 
 				<xsl:if test="//message">
@@ -59,8 +58,7 @@
 						</tr>
 					</thead>
 					<tbody>
-						<xsl:for-each
-							select="/source/line-loss-factors/line-loss-factor">
+						<xsl:for-each select="/source/llfcs/llfc">
 							<tr>
 								<td>
 									<a href="{@id}/">

@@ -1,6 +1,6 @@
 /*
  
- Copyright 2005 Meniscus Systems Ltd
+ Copyright 2005, 2008 Meniscus Systems Ltd
  
  This file is part of Chellow.
 
@@ -24,21 +24,18 @@ package net.sf.chellow.physical;
 
 import java.util.List;
 
-import net.sf.chellow.monad.DeployerException;
-import net.sf.chellow.monad.DesignerException;
 import net.sf.chellow.monad.Hiber;
+import net.sf.chellow.monad.HttpException;
+import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Invocation;
 import net.sf.chellow.monad.MonadUtils;
-import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Urlable;
-import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.UserException;
 import net.sf.chellow.monad.XmlDescriber;
 import net.sf.chellow.monad.XmlTree;
 import net.sf.chellow.monad.types.EmailAddress;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
-
 import net.sf.chellow.ui.Chellow;
 import net.sf.chellow.ui.ExplicitMe;
 import net.sf.chellow.ui.ImplicitMe;
@@ -66,31 +63,19 @@ public class Users implements Urlable, XmlDescriber {
 		return Chellow.ROOT_URI.resolve(getUriId()).append("/");
 	}
 
-	public void httpPost(Invocation inv) throws InternalException,
-			HttpException, DesignerException, DeployerException {
+	public void httpPost(Invocation inv) throws HttpException {
 		EmailAddress emailAddress = inv.getEmailAddress("email-address");
 		Password password = inv.getValidatable(Password.class, "password");
-
 		if (!inv.isValid()) {
 			throw new UserException();
 		}
-		User user = User.insertUser(emailAddress, password);
-		user.userRole(inv.getUser()).insertPermission(
-				user.getUri(),
-				new Invocation.HttpMethod[] { Invocation.HttpMethod.GET,
-						Invocation.HttpMethod.POST });
-		user.insertRole(inv.getUser(), Role.find("basic-user"));
-		inv.getUser().userRole(inv.getUser()).insertPermission(
-				user.getUri(),
-				new Invocation.HttpMethod[] { Invocation.HttpMethod.GET,
-						Invocation.HttpMethod.POST });
+		User user = User.insertUser(inv.getUser(), emailAddress, password);
 		Hiber.commit();
 		inv.sendCreated(user.getUri());
 	}
 
 	@SuppressWarnings("unchecked")
-	public void httpGet(Invocation inv) throws DesignerException,
-			InternalException, HttpException, DeployerException {
+	public void httpGet(Invocation inv) throws HttpException {
 		Document doc = MonadUtils.newSourceDocument();
 		Element source = doc.getDocumentElement();
 		Element usersElement = (Element) toXml(doc);
@@ -106,21 +91,18 @@ public class Users implements Urlable, XmlDescriber {
 		return URI_ID;
 	}
 
-	public Urlable getChild(UriPathElement uriId) throws InternalException,
-			HttpException {
-		Urlable urlable = null;
+	public Urlable getChild(UriPathElement uriId) throws HttpException {
 		if (NewUserForm.URI_ID.equals(uriId)) {
-			urlable = new NewUserForm();
+			return new NewUserForm();
 		} else if (ImplicitMe.URI_ID.equals(uriId)) {
-			urlable = new ImplicitMe();
+			return new ImplicitMe();
 		} else if (ExplicitMe.URI_ID.equals(uriId)) {
-			urlable = new ExplicitMe();
+			return new ExplicitMe();
 		} else {
-			urlable = (User) Hiber.session().createQuery(
+			return (User) Hiber.session().createQuery(
 					"from User user where user.id = :userId").setLong("userId",
 					Long.parseLong(uriId.getString())).uniqueResult();
 		}
-		return urlable;
 	}
 
 	public User findUser(EmailAddress emailAddress) throws InternalException {
@@ -132,8 +114,7 @@ public class Users implements Urlable, XmlDescriber {
 				.uniqueResult();
 	}
 
-	public void httpDelete(Invocation inv) throws InternalException,
-			HttpException {
+	public void httpDelete(Invocation inv) throws HttpException {
 		// TODO Auto-generated method stub
 
 	}
@@ -144,12 +125,11 @@ public class Users implements Urlable, XmlDescriber {
 		return null;
 	}
 
-	public Node toXml(Document doc) throws InternalException, HttpException {
+	public Node toXml(Document doc) throws HttpException {
 		return doc.createElement("users");
 	}
 
-	public Node toXml(Document doc, XmlTree tree) throws InternalException,
-			HttpException {
+	public Node toXml(Document doc, XmlTree tree) throws HttpException {
 		// TODO Auto-generated method stub
 		return null;
 	}

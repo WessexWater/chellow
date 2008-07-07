@@ -31,9 +31,7 @@
 				<param name="sequence">voltage_level_id_sequence</param>
 			</generator>
 		</id>
-		<component name="code" class="VoltageLevelCode">
-			<property name="string" column="code" unique="true" />
-		</component>
+		<property name="code" column="code" unique="true" />
 		<property name="name" column="name" unique="true" />
 	</class>
 </hibernate-mapping>

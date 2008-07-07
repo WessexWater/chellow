@@ -65,7 +65,7 @@ public class Pcs implements Urlable {
 
 	public Pc getChild(UriPathElement uriId) throws HttpException,
 			InternalException {
-		return Pc.getProfileClass(Long.parseLong(uriId.getString()));
+		return Pc.getPc(Long.parseLong(uriId.getString()));
 	}
 
 	public void httpDelete(Invocation inv) throws InternalException,

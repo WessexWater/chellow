@@ -112,8 +112,7 @@ public class Permissions implements Urlable, XmlDescriber {
 		if (isTraceAllowed) {
 			methods.add(Invocation.HttpMethod.TRACE);
 		}
-		Permission.methodsAllowed(inv.getUser(), uriPattern, methods);
-		Permission permission = role.insertPermission(uriPattern, methods);
+		Permission permission = role.insertPermission(inv.getUser(), uriPattern, methods);
 		Hiber.commit();
 		inv.sendCreated(getDocument(), permission.getUri());
 	}

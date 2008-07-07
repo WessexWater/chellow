@@ -31,7 +31,16 @@
 				<param name="sequence">provider_id_sequence</param>
 			</generator>
 		</id>
+		<many-to-one name="role"
+			class="net.sf.chellow.physical.MarketRole" column="role_id"
+			foreign-key="fkey_provider_role" />
+		<many-to-one name="participant"
+			class="net.sf.chellow.physical.Participant" column="participant_id"
+			foreign-key="fkey_provider_participant" />
 		<property name="name" column="name" not-null="true" />
+		<property type="timestamp" name="validFrom" column="valid_from"
+			not-null="true" />
+		<property type="timestamp" name="validTo" column="valid_to" />
 	</class>
 </hibernate-mapping>
 

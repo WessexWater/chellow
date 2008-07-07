@@ -1,6 +1,6 @@
 /*
  
- Copyright 2005 Meniscus Systems Ltd
+ Copyright 2005, 2008 Meniscus Systems Ltd
  
  This file is part of Chellow.
 
@@ -24,7 +24,9 @@ package net.sf.chellow.physical;
 
 import java.net.URI;
 import java.sql.SQLException;
+import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import net.sf.chellow.monad.DeployerException;
@@ -40,7 +42,6 @@ import net.sf.chellow.monad.UserException;
 import net.sf.chellow.monad.XmlTree;
 import net.sf.chellow.monad.Invocation.HttpMethod;
 import net.sf.chellow.monad.types.EmailAddress;
-import net.sf.chellow.monad.types.MonadLong;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
 
@@ -82,13 +83,25 @@ public class User extends PersistentEntity {
 				.uniqueResult();
 	}
 
-	static public User insertUser(EmailAddress emailAddress, Password password)
-			throws InternalException, HttpException {
+	static public User insertUser(User sessionUser, EmailAddress emailAddress,
+			Password password) throws HttpException {
 		User user = null;
 		try {
 			user = new User(emailAddress, password);
 			Hiber.session().save(user);
 			Hiber.flush();
+			Role userRole = Role.insertRole(sessionUser, "user-" + user.getId());
+			userRole.insertPermission(sessionUser, userRole.getUri(), Arrays
+						.asList(Invocation.HttpMethod.GET));
+
+			user.addRole(sessionUser, Role.find("basic-user"));
+			if (sessionUser != null) {
+				sessionUser.userRole().insertPermission(
+						null,
+						user.getUri(),
+						Arrays.asList(Invocation.HttpMethod.GET,
+								Invocation.HttpMethod.POST));
+			}
 		} catch (ConstraintViolationException e) {
 			SQLException sqle = e.getSQLException();
 			if (sqle != null) {
@@ -97,8 +110,8 @@ public class User extends PersistentEntity {
 					String message = nextException.getMessage();
 					if (message != null
 							&& message.contains("user_email_address_key")) {
-						throw new UserException
-								("There is already a user with this email address.");
+						throw new UserException(
+								"There is already a user with this email address.");
 					} else {
 						throw e;
 					}
@@ -123,8 +136,7 @@ public class User extends PersistentEntity {
 	}
 
 	public User(EmailAddress emailAddress, Password password)
-			throws InternalException,
-			HttpException {
+			throws InternalException, HttpException {
 		update(emailAddress, password);
 	}
 
@@ -207,21 +219,20 @@ public class User extends PersistentEntity {
 		Element source = doc.getDocumentElement();
 		source.appendChild(toXml(doc, new XmlTree("roles")));
 		if (message != null) {
-			//source.appendChild(new VFMessage(message).toXML(doc));
+			// source.appendChild(new VFMessage(message).toXML(doc));
 		}
 		return doc;
 	}
 
-	public void httpPost(Invocation inv) throws InternalException,
-			HttpException, DesignerException, DeployerException {
+	public void httpPost(Invocation inv) throws HttpException {
 		if (inv.hasParameter("delete")) {
 			Hiber.session().delete(this);
 			Hiber.close();
 			inv.sendSeeOther(Chellow.USERS_INSTANCE.getUri());
 		} else if (inv.hasParameter("role-id")) {
-			MonadLong roleId = inv.getMonadLong("role-id");
+			Long roleId = inv.getLong("role-id");
 			Role role = Role.getRole(roleId);
-			insertRole(inv.getUser(), role);
+			addRole(inv.getUser(), role);
 			Hiber.close();
 			inv.sendSeeOther(getUri());
 		} else if (inv.hasParameter("current-password")) {
@@ -231,55 +242,46 @@ public class User extends PersistentEntity {
 					"new-password");
 			Password confirmNewPassword = inv.getValidatable(Password.class,
 					"confirm-new-password");
-			
+
 			if (!inv.isValid()) {
 				throw new UserException(document());
 			}
 			if (!getPassword().equals(currentPassword)) {
-				throw new UserException
-						("The current password is incorrect.");
+				throw new UserException("The current password is incorrect.");
 			}
 			if (!newPassword.equals(confirmNewPassword)) {
-				throw new UserException
-						("The new passwords aren't the same.");
+				throw new UserException("The new passwords aren't the same.");
 			}
 			setPassword(newPassword);
 			Hiber.commit();
 			inv.sendOk(document("New password set successfully."));
 		} else {
-			throw new UserException
-					("I can't really see what you're trying to do.");
+			throw new UserException(
+					"I can't really see what you're trying to do.");
 		}
 	}
 
-	public void httpDelete(Invocation inv) throws InternalException,
-			DesignerException, HttpException, DeployerException {
+	public void httpDelete(Invocation inv) throws HttpException {
 	}
 
-	public void insertRole(User user, Role role) throws InternalException,
-			HttpException {
+	public void addRole(User sessionUser, Role role) throws HttpException {
+		if (sessionUser != null) {
+			for (Permission permission : role.getPermissions()) {
+				sessionUser.methodsAllowed(permission.getUriPattern(),
+						permission.getMethods());
+			}
+		}
 		if (roles == null) {
 			roles = new HashSet<Role>();
 		}
-		for (Permission permission : role.getPermissions()) {
-			Permission.methodsAllowed(user, permission.getUriPattern(),
-					permission.getMethods());
-		}
 		roles.add(role);
+		Hiber.flush();
 	}
 
-	public Role userRole(User user) throws InternalException, HttpException {
-		String userRoleName = "user-" + getId();
-		Role userRole = Role.find(userRoleName);
-		if (userRole == null) {
-			userRole = Role.insertRole(userRoleName);
-			insertRole(user, userRole);
-			userRole.insertPermission(userRole.getUri(),
-					new Invocation.HttpMethod[] { Invocation.HttpMethod.GET });
-		}
-		return userRole;
+	public Role userRole() throws HttpException {
+		return Role.find("user-" + getId());
 	}
-	
+
 	public boolean methodAllowed(URI uri, HttpMethod method) {
 		for (Role role : getRoles()) {
 			if (role.methodAllowed(uri, method)) {
@@ -287,5 +289,15 @@ public class User extends PersistentEntity {
 			}
 		}
 		return false;
+	}
+
+	public void methodsAllowed(MonadUri uriPattern,
+			List<Invocation.HttpMethod> methods) throws HttpException {
+		for (Invocation.HttpMethod method : methods) {
+			if (!methodAllowed(uriPattern.toUri(), method)) {
+				throw new UserException(
+						"You can't assign greater permissions that you have.");
+			}
+		}
 	}
 }

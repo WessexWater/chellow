@@ -144,7 +144,7 @@ public class SscPc extends PersistentEntity {
 					.getLine()) {
 				Hiber.session().save(
 						new SscPc(Ssc.getSsc(values[0]), Pc
-								.getProfileClass(Integer.parseInt(values[1])),
+								.getPc(Integer.parseInt(values[1])),
 								dateFormat.parse(values[2]), dateFormat
 										.parse(values[3])));
 			}

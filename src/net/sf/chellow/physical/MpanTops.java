@@ -75,8 +75,7 @@ public class MpanTops implements Urlable, XmlDescriber {
 	}
 
 	@SuppressWarnings("unchecked")
-	public void httpGet(Invocation inv) throws DesignerException,
-			InternalException, HttpException, DeployerException {
+	public void httpGet(Invocation inv) throws HttpException {
 		Document doc = MonadUtils.newSourceDocument();
 		Element source = doc.getDocumentElement();
 		Element mpanTopsElement = (Element) toXml(doc);
@@ -85,11 +84,10 @@ public class MpanTops implements Urlable, XmlDescriber {
 		for (MpanTop mpanTop : (List<MpanTop>) Hiber
 				.session()
 				.createQuery(
-						"from MpanTop mpanTop where mpanTop.llf.dso = :dso order by mpanTop.llf.code, mpanTop.profileClass.code")
+						"from MpanTop mpanTop where mpanTop.llfc.dso = :dso order by mpanTop.llfc.code.integer, mpanTop.pc.code.integer")
 				.setEntity("dso", dso).list()) {
-			mpanTopsElement.appendChild(mpanTop.toXml(doc, new XmlTree(
-							"llf", new XmlTree("dso")).put("profileClass")
-							.put("meterTimeswitch")));
+			mpanTopsElement.appendChild(mpanTop.toXml(doc, new XmlTree("llfc",
+					new XmlTree("dso")).put("pc").put("mtc")));
 		}
 		inv.sendOk(doc);
 	}

@@ -66,7 +66,7 @@
 									<xsl:choose>
 										<xsl:when test="dso">
 											<a
-												href="{/source/request/@context-path}/dsos/{@id}/">
+												href="{/source/request/@context-path}/dsos/{dso/@id}/">
 												<xsl:value-of
 													select="dso/@code" />
 											</a>

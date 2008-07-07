@@ -2,16 +2,13 @@ package net.sf.chellow.physical;
 
 import java.util.List;
 
-import net.sf.chellow.monad.DeployerException;
-import net.sf.chellow.monad.DesignerException;
 import net.sf.chellow.monad.Hiber;
+import net.sf.chellow.monad.HttpException;
+import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Invocation;
 import net.sf.chellow.monad.MonadUtils;
 import net.sf.chellow.monad.NotFoundException;
-import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Urlable;
-import net.sf.chellow.monad.HttpException;
-
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
 import net.sf.chellow.ui.Chellow;
@@ -43,14 +40,15 @@ public class Dsos implements Urlable {
 	}
 
 	@SuppressWarnings("unchecked")
-	public void httpGet(Invocation inv) throws DesignerException,
-			InternalException, HttpException, DeployerException {
+	public void httpGet(Invocation inv) throws HttpException {
 		Document doc = MonadUtils.newSourceDocument();
-		Element source = (Element) doc.getFirstChild();
+		Element source = doc.getDocumentElement();
+		Element dsosElement = doc.createElement("dsos");
+		source.appendChild(dsosElement);
 
 		for (Dso dso : (List<Dso>) Hiber.session().createQuery(
 				"from Dso dso order by dso.code.string").list()) {
-			source.appendChild(dso.toXml(doc));
+			dsosElement.appendChild(dso.toXml(doc));
 		}
 		inv.sendOk(doc);
 	}

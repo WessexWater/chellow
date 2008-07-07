@@ -108,7 +108,7 @@ public class MpanRaw extends MonadObject {
 	}
 
 	public Llfc getLlfc() throws HttpException {
-		return mpanCoreRaw.getDso().getLlf(llfcCode);
+		return mpanCoreRaw.getDso().getLlfc(llfcCode);
 	}
 
 	public MpanTop getMpanTop() throws HttpException {

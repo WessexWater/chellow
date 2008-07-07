@@ -34,22 +34,35 @@
 					<xsl:value-of select="' &gt; DSOs'" />
 				</p>
 
+				<p>
+					This is a list of providers that have the
+					<a
+						href="{/source/request/@context-path}/market-roles/22/">
+						<xsl:value-of select="'distributor'" />
+					</a>
+					role type.
+				</p>
+
 				<table>
 					<thead>
 						<tr>
+							<th>Chellow Id</th>
 							<th>Code</th>
 							<th>Name</th>
 						</tr>
 					</thead>
 					<tbody>
 
-						<xsl:for-each select="/source/dso">
+						<xsl:for-each select="/source/dsos/dso">
 							<tr>
 								<td>
 									<a
 										href="{/source/request/@context-path}/dsos/{@id}/">
-										<xsl:value-of select="@code" />
+										<xsl:value-of select="@id" />
 									</a>
+								</td>
+								<td>
+									<xsl:value-of select="@code" />
 								</td>
 								<td>
 									<xsl:value-of select="@name" />

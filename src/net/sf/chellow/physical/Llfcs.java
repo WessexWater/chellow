@@ -50,7 +50,7 @@ public class Llfcs implements Urlable, XmlDescriber {
 
 	static {
 		try {
-			URI_ID = new UriPathElement("llfs");
+			URI_ID = new UriPathElement("llfcs");
 		} catch (HttpException e) {
 			throw new RuntimeException(e);
 		}
@@ -83,12 +83,12 @@ public class Llfcs implements Urlable, XmlDescriber {
 		Element llfsElement = (Element) toXml(doc);
 		source.appendChild(llfsElement);
 		llfsElement.appendChild(dso.toXml(doc));
-		for (Llfc llf : (List<Llfc>) Hiber
+		for (Llfc llfc : (List<Llfc>) Hiber
 				.session()
 				.createQuery(
-						"from Llf llf where llf.dso = :dso order by llf.code")
+						"from Llfc llfc where llfc.dso = :dso order by llfc.code")
 				.setEntity("dso", dso).list()) {
-			llfsElement.appendChild(llf.toXml(doc, new XmlTree("voltageLevel")));
+			llfsElement.appendChild(llfc.toXml(doc, new XmlTree("voltageLevel")));
 		}
 		source.appendChild(MonadDate.getMonthsXml(doc));
 		source.appendChild(MonadDate.getDaysXml(doc));
@@ -96,18 +96,17 @@ public class Llfcs implements Urlable, XmlDescriber {
 		inv.sendOk(doc);
 	}
 
-	public Llfc getChild(UriPathElement uriId) throws HttpException,
-			InternalException {
-		Llfc llf = (Llfc) Hiber
+	public Llfc getChild(UriPathElement uriId) throws HttpException {
+		Llfc llfc = (Llfc) Hiber
 				.session()
 				.createQuery(
-						"from Llf llf where llf.dso = :dso and llf.id = :llfId")
-				.setEntity("dso", dso).setLong("llfId",
+						"from Llfc llfc where llfc.dso = :dso and llfc.id = :llfcId")
+				.setEntity("dso", dso).setLong("llfcId",
 						Long.parseLong(uriId.getString())).uniqueResult();
-		if (llf == null) {
+		if (llfc == null) {
 			throw new NotFoundException();
 		}
-		return llf;
+		return llfc;
 	}
 
 	public void httpDelete(Invocation inv) throws InternalException,
@@ -117,7 +116,7 @@ public class Llfcs implements Urlable, XmlDescriber {
 	}
 
 	public Node toXml(Document doc) throws InternalException, HttpException {
-		Element llfsElement = doc.createElement("llfs");
+		Element llfsElement = doc.createElement("llfcs");
 		return llfsElement;
 	}
 

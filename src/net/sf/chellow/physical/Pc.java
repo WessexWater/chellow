@@ -26,20 +26,18 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 
-import net.sf.chellow.data08.Data;
 import net.sf.chellow.monad.DeployerException;
 import net.sf.chellow.monad.DesignerException;
 import net.sf.chellow.monad.Hiber;
+import net.sf.chellow.monad.HttpException;
+import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Invocation;
 import net.sf.chellow.monad.MonadUtils;
-import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Urlable;
-import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.UserException;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
 
-import org.hibernate.HibernateException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -47,39 +45,38 @@ import org.w3c.dom.Node;
 import com.Ostermiller.util.CSVParser;
 
 public class Pc extends PersistentEntity {
-	static public Pc getProfileClass(Long id)
-			throws InternalException, HttpException {
-		Pc profileClass = (Pc) Hiber.session().get(
+	static public Pc getPc(Long id)
+			throws HttpException {
+		Pc pc = (Pc) Hiber.session().get(
 				Pc.class, id);
-		if (profileClass == null) {
+		if (pc == null) {
 			throw new UserException("There is no profile class with that id.");
 		}
-		return profileClass;
+		return pc;
 	}
 
-	static public Pc getProfileClass(int code)
-			throws InternalException, HttpException {
+	static public Pc getPc(int code) throws HttpException {
 		return getPc(new PcCode(code));
 	}
 
 	static public Pc getPc(PcCode code)
-			throws InternalException, HttpException {
-		Pc profileClass = findProfileClass(code);
+			throws HttpException {
+		Pc profileClass = findPc(code);
 		if (profileClass == null) {
 			throw new UserException("There is no profile class with that code.");
 		}
 		return profileClass;
 	}
 
-	static public Pc findProfileClass(PcCode code) {
-		return findProfileClass(code.getInteger());
+	static public Pc findPc(PcCode code) {
+		return findPc(code.getInteger());
 	}
 
-	static public Pc findProfileClass(int code) {
+	static public Pc findPc(int code) {
 		return (Pc) Hiber
 				.session()
 				.createQuery(
-						"from ProfileClass as profileClass where profileClass.code.integer = :code")
+						"from Pc pc where pc.code.integer = :code")
 				.setInteger("code", code).uniqueResult();
 	}
 
@@ -89,27 +86,6 @@ public class Pc extends PersistentEntity {
 	 * .session() .createQuery( "from ProfileClass profileClass order by
 	 * profileClass.code.integer") .list(); }
 	 */
-	public static Pc insertProfileClass(int code, String description)
-			throws InternalException, HttpException {
-
-		Pc profileClass = null;
-		try {
-			profileClass = new Pc(new PcCode(code),
-					description);
-			Hiber.session().save(profileClass);
-			Hiber.flush();
-		} catch (HibernateException e) {
-			if (Data
-					.isSQLException(e,
-							"ERROR: duplicate key violates unique constraint \"site_code_key\"")) {
-				throw new UserException(
-						"A profile class with this code already exists.");
-			} else {
-				throw new InternalException(e);
-			}
-		}
-		return profileClass;
-	}
 
 	static public void loadFromCsv() throws HttpException {
 		try {
@@ -120,14 +96,14 @@ public class Pc extends PersistentEntity {
 			parser.setCommentStart("#;!");
 			parser.setEscapes("nrtf", "\n\r\t\f");
 			String[] titles = parser.getLine();
-			if (titles.length < 3
+			if (titles.length < 5
 					|| !titles[0].trim().equals("Profile Class Id")
 					|| !titles[1].trim().equals(
 							"Effective From Settlement Date {PCLA}")
 					|| !titles[2].trim().equals("Profile Class Description")
-					|| !titles[2].trim().equals(
+					|| !titles[3].trim().equals(
 							"Switched Load Profile Class Ind")
-					|| !titles[2].trim().equals(
+					|| !titles[4].trim().equals(
 							"Effective To Settlement Date {PCLA}")) {
 				throw new UserException(
 						"The first line of the CSV must contain the titles "
@@ -137,7 +113,8 @@ public class Pc extends PersistentEntity {
 					.getLine()) {
 				Hiber.session().save(
 						new Pc(new PcCode(Integer
-								.parseInt(values[0])), values[1]));
+								.parseInt(values[0])), values[2]));
+				Hiber.flush();
 			}
 		} catch (UnsupportedEncodingException e) {
 			throw new InternalException(e);

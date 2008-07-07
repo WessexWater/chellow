@@ -4,6 +4,8 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Properties;
 import java.util.logging.FileHandler;
 import java.util.logging.Level;
@@ -15,6 +17,7 @@ import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 import javax.sql.DataSource;
 
+import net.sf.chellow.billing.Provider;
 import net.sf.chellow.hhimport.stark.StarkAutomaticHhDataImporters;
 import net.sf.chellow.monad.Debug;
 import net.sf.chellow.monad.DeployerException;
@@ -31,8 +34,10 @@ import net.sf.chellow.monad.types.EmailAddress;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.physical.ClockInterval;
 import net.sf.chellow.physical.DatabaseVersion;
+import net.sf.chellow.physical.Llfc;
 import net.sf.chellow.physical.MarketRole;
 import net.sf.chellow.physical.MeasurementRequirement;
+import net.sf.chellow.physical.MpanTop;
 import net.sf.chellow.physical.Mtc;
 import net.sf.chellow.physical.MeterType;
 import net.sf.chellow.physical.MtcPaymentType;
@@ -233,13 +238,6 @@ public class ContextListener implements ServletContextListener {
 			ChellowProperties chellowProperties = new ChellowProperties(
 					new MonadUri("/"), "chellow.properties");
 			Properties postProps = new Properties();
-			// postProps.setProperty("python.path", "C:\\Program
-			// Files\\Apache
-			// Software Foundation\\Tomcat
-			// 5.5\\webapps\\chellow\\WEB-INF\\classes;C:\\Program
-			// Files\\Apache
-			// Software Foundation\\Tomcat
-			// 5.5\\webapps\\chellow\\WEB-INF\\lib\\hibernate3.jar");
 			postProps.setProperty("python.path", chellowProperties
 					.getProperty("python.path"));
 			PythonInterpreter.initialize(System.getProperties(), postProps,
@@ -273,15 +271,23 @@ public class ContextListener implements ServletContextListener {
 		}
 		DatabaseVersion.setDatabaseVersion(11);
 		Hiber.close();
+		Pc.loadFromCsv();
+		Hiber.close();
+		MarketRole.loadFromCsv();
+		Hiber.close();
+		Participant.loadFromCsv();
+		Hiber.close();
+		Provider.loadFromCsv();
+		Hiber.close();
+		VoltageLevel.insertVoltageLevels();
+		Hiber.close();
+		Llfc.loadFromCsv();
+		Hiber.close();
 		MeterType.loadFromCsv();
 		Hiber.close();
 		MtcPaymentType.loadFromCsv();
 		Hiber.close();
 		Mtc.loadFromCsv();
-		Hiber.close();
-		Participant.loadFromCsv();
-		Hiber.close();
-		MarketRole.loadFromCsv();
 		Hiber.close();
 		Tpr.loadFromCsv();
 		Hiber.close();
@@ -291,59 +297,57 @@ public class ContextListener implements ServletContextListener {
 		Hiber.close();
 		MeasurementRequirement.loadFromCsv();
 		Hiber.close();
+		MpanTop.loadFromCsv();
+		Hiber.close();
+		Role basicUserRole = Role.insertRole(null, "basic-user");
+		Hiber.flush();
+		basicUserRole
+				.insertPermission(null,
+						basicUserRole.getUri(),
+						Arrays.asList(Invocation.HttpMethod.GET));
+		basicUserRole
+				.insertPermission(null,
+						new MonadUri("/"),
+						Arrays.asList(Invocation.HttpMethod.GET));
+		basicUserRole.insertPermission(null, new MonadUri("/orgs/"),
+				new ArrayList<Invocation.HttpMethod>());
+		basicUserRole.insertPermission(null, new MonadUri("/users/"),
+				new ArrayList<Invocation.HttpMethod>());
+		basicUserRole
+				.insertPermission(null,
+					new MonadUri("/users/implicit-me/"),
+						Arrays.asList(Invocation.HttpMethod.GET));
+		basicUserRole
+				.insertPermission(null,
+						new MonadUri("/users/explicit-me/"),
+						Arrays.asList(Invocation.HttpMethod.GET));
+		basicUserRole.insertPermission(null, new MonadUri("/roles/"),
+				new ArrayList<Invocation.HttpMethod>());
+
 		EmailAddress adminUserEmailAddress = new EmailAddress(
 				"administrator@localhost");
 		User adminUser = User.findUserByEmail(adminUserEmailAddress);
 		if (adminUser == null) {
-			adminUser = User.insertUser(adminUserEmailAddress,
+			adminUser = User.insertUser(null, adminUserEmailAddress,
 					new Password("administrator"));
 
-			Role adminRole = Role.insertRole("administrator");
-			adminRole.insertPermission("/", new Invocation.HttpMethod[] {
+			Role adminRole = Role.insertRole(null, "administrator");
+			adminRole.insertPermission(null, new MonadUri("/"), Arrays.asList(
 					Invocation.HttpMethod.GET, Invocation.HttpMethod.POST,
-					Invocation.HttpMethod.DELETE });
-			adminUser.insertRole(adminUser, adminRole);
+					Invocation.HttpMethod.DELETE ));
+			adminUser.addRole(null, adminRole);
 		}
 		EmailAddress basicUserEmailAddress = new EmailAddress(
 				"basic-user@localhost");
 		User basicUser = User.findUserByEmail(basicUserEmailAddress);
 		if (basicUser == null) {
-			basicUser = User.insertUser(basicUserEmailAddress,
+			basicUser = User.insertUser(null, basicUserEmailAddress,
 					new Password("basic-user"));
 			Hiber.flush();
-			Role basicUserRole = Role.insertRole("basic-user");
-			Hiber.flush();
-			basicUserRole
-					.insertPermission(
-							basicUserRole.getUri(),
-							new Invocation.HttpMethod[] { Invocation.HttpMethod.GET });
-			basicUserRole
-					.insertPermission(
-							"/",
-							new Invocation.HttpMethod[] { Invocation.HttpMethod.GET });
-			basicUserRole.insertPermission("/orgs/",
-					new Invocation.HttpMethod[] {});
-			basicUserRole.insertPermission("/users/",
-					new Invocation.HttpMethod[] {});
-			basicUserRole
-					.insertPermission(
-							"/users/implicit-me/",
-							new Invocation.HttpMethod[] { Invocation.HttpMethod.GET });
-			basicUserRole
-					.insertPermission(
-							"/users/explicit-me/",
-							new Invocation.HttpMethod[] { Invocation.HttpMethod.GET });
-			basicUserRole
-					.insertPermission(
-							basicUser.getUri(),
-							new Invocation.HttpMethod[] { Invocation.HttpMethod.GET });
-			basicUserRole.insertPermission("/roles/",
-					new Invocation.HttpMethod[] {});
-			//basicUserRole.insertPermission("/participants/",
+						//basicUserRole.insertPermission("/participants/",
 			//		new Invocation.HttpMethod[] { Invocation.HttpMethod.GET });
-			basicUser.insertRole(adminUser, basicUserRole);
-			Hiber.commit();
 		}
+		Hiber.commit();
 	}
 
 	@SuppressWarnings("unchecked")
@@ -393,78 +397,79 @@ public class ContextListener implements ServletContextListener {
 			Source.insertSource("sub", "Sub meter");
 
 			VoltageLevel.insertVoltageLevels();
-
-			Pc.insertProfileClass(0, "Half-hourly");
-			Pc.insertProfileClass(1, "Domestic Unrestricted");
-			Pc.insertProfileClass(2, "Domestic Economy 7");
-			Pc.insertProfileClass(3, "Non-Domestic Unrestricted");
-			Pc.insertProfileClass(4, "Non-Domestic Economy 7");
+/*
+			Pc.insertPc(0, "Half-hourly");
+			Pc.insertPc(1, "Domestic Unrestricted");
+			Pc.insertPc(2, "Domestic Economy 7");
+			Pc.insertPc(3, "Non-Domestic Unrestricted");
+			Pc.insertPc(4, "Non-Domestic Economy 7");
 			Pc
-					.insertProfileClass(
+					.insertPc(
 							5,
 							"Non-domestic, with MD recording capability and with LF less than or equal to 20%");
 			Pc
-					.insertProfileClass(
+					.insertPc(
 							6,
 							"Non-domestic, with MD recording capability and with LF less than or equal to 30% and greater than 20%");
 			Pc
-					.insertProfileClass(
+					.insertPc(
 							7,
 							"Non-domestic, with MD recording capability and with LF less than or equal to 40% and greater than 30%");
 			Pc
-					.insertProfileClass(8,
+					.insertPc(8,
 							"Non-domestic, with MD recording capability and with LF greater than 40%");
 
 			Hiber.commit();
+			*/
 			EmailAddress adminUserEmailAddress = new EmailAddress(
 					"administrator@localhost");
 			User adminUser = User.findUserByEmail(adminUserEmailAddress);
 			if (adminUser == null) {
-				adminUser = User.insertUser(adminUserEmailAddress,
+				adminUser = User.insertUser(null, adminUserEmailAddress,
 						new Password("administrator"));
 
-				Role adminRole = Role.insertRole("administrator");
-				adminRole.insertPermission("/", new Invocation.HttpMethod[] {
+				Role adminRole = Role.insertRole(null, "administrator");
+				adminRole.insertPermission(null, new MonadUri("/"), Arrays.asList(
 						Invocation.HttpMethod.GET, Invocation.HttpMethod.POST,
-						Invocation.HttpMethod.DELETE });
-				adminUser.insertRole(adminUser, adminRole);
+						Invocation.HttpMethod.DELETE));
+				adminUser.addRole(adminUser, adminRole);
 			}
 			EmailAddress basicUserEmailAddress = new EmailAddress(
 					"basic-user@localhost");
 			User basicUser = User.findUserByEmail(basicUserEmailAddress);
 			if (basicUser == null) {
-				basicUser = User.insertUser(basicUserEmailAddress,
+				basicUser = User.insertUser(null, basicUserEmailAddress,
 						new Password("basic-user"));
 				Hiber.flush();
-				Role basicUserRole = Role.insertRole("basic-user");
+				Role basicUserRole = Role.insertRole(null, "basic-user");
 				Hiber.flush();
 				basicUserRole
-						.insertPermission(
+						.insertPermission(null,
 								basicUserRole.getUri(),
-								new Invocation.HttpMethod[] { Invocation.HttpMethod.GET });
+								Arrays.asList(Invocation.HttpMethod.GET));
 				basicUserRole
-						.insertPermission(
-								"/",
-								new Invocation.HttpMethod[] { Invocation.HttpMethod.GET });
-				basicUserRole.insertPermission("/orgs/",
-						new Invocation.HttpMethod[] {});
-				basicUserRole.insertPermission("/users/",
-						new Invocation.HttpMethod[] {});
+						.insertPermission(null,
+								new MonadUri("/"),
+								Arrays.asList(Invocation.HttpMethod.GET));
+				basicUserRole.insertPermission(null, new MonadUri("/orgs/"),
+						new ArrayList<Invocation.HttpMethod>());
+				basicUserRole.insertPermission(null, new MonadUri("/users/"),
+						new ArrayList<Invocation.HttpMethod>());
 				basicUserRole
-						.insertPermission(
-								"/users/implicit-me/",
-								new Invocation.HttpMethod[] { Invocation.HttpMethod.GET });
+						.insertPermission(null,
+								new MonadUri("/users/implicit-me/"),
+								Arrays.asList(Invocation.HttpMethod.GET));
 				basicUserRole
-						.insertPermission(
-								"/users/explicit-me/",
-								new Invocation.HttpMethod[] { Invocation.HttpMethod.GET });
+						.insertPermission(null,
+								new MonadUri("/users/explicit-me/"),
+								Arrays.asList(Invocation.HttpMethod.GET));
 				basicUserRole
-						.insertPermission(
+						.insertPermission(null,
 								basicUser.getUri(),
-								new Invocation.HttpMethod[] { Invocation.HttpMethod.GET });
-				basicUserRole.insertPermission("/roles/",
-						new Invocation.HttpMethod[] {});
-				basicUser.insertRole(adminUser, basicUserRole);
+								Arrays.asList(Invocation.HttpMethod.GET));
+				basicUserRole.insertPermission(null, new MonadUri("/roles/"),
+						new ArrayList<Invocation.HttpMethod>());
+				basicUser.addRole(adminUser, basicUserRole);
 				dataDelta(con);
 			}
 		} catch (Exception e) {

@@ -27,7 +27,6 @@ import java.util.Date;
 import net.sf.chellow.billing.DsoService;
 import net.sf.chellow.billing.DsoServices;
 import net.sf.chellow.billing.Provider;
-import net.sf.chellow.monad.DeployerException;
 import net.sf.chellow.monad.DesignerException;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
@@ -58,55 +57,45 @@ public class Dso extends Provider {
 	static public Dso findDso(String code) throws InternalException,
 			HttpException {
 		return (Dso) Hiber.session().createQuery(
-				"from Dso as dso where " + "dso.code.string = :code")
-				.setString("code", code).uniqueResult();
+				"from Dso as dso where dso.code.string = :code").setString(
+				"code", code).uniqueResult();
 	}
 
-	static public Dso getDso(Long id) throws InternalException,
-			HttpException {
+	static public Dso getDso(Long id) throws InternalException, HttpException {
 		Dso dso = (Dso) Hiber.session().get(Dso.class, id);
 		if (dso == null) {
 			throw new UserException("There isn't a DSO with that id.");
 		}
 		return dso;
 	}
-	
+
 	static public Dso getDso(String participantCode) throws HttpException {
-		Dso dso = (Dso) Hiber.session().createQuery("from Dso dso where dso.participant.code = :participantCode").uniqueResult();
+		Dso dso = (Dso) Hiber.session().createQuery(
+				"from Dso dso where dso.participant.code = :participantCode")
+				.setString("participantCode", participantCode).uniqueResult();
 		if (dso == null) {
 			throw new NotFoundException();
 		}
 		return dso;
 	}
-/*
-	public static Dso insertDso()
-			throws HttpException {
 
-		Dso dso = null;
-		try {
-			dso = new Dso(name, code);
-			Hiber.session().save(dso);
-			Hiber.flush();
-		} catch (HibernateException e) {
-			if (Data
-					.isSQLException(e,
-							"ERROR: duplicate key violates unique constraint \"site_code_key\"")) {
-				throw new UserException
-						("A site with this code already exists.");
-			} else {
-				throw new InternalException(e);
-			}
-		}
-		return dso;
-	}
-*/
+	/*
+	 * public static Dso insertDso() throws HttpException {
+	 * 
+	 * Dso dso = null; try { dso = new Dso(name, code);
+	 * Hiber.session().save(dso); Hiber.flush(); } catch (HibernateException e) {
+	 * if (Data .isSQLException(e, "ERROR: duplicate key violates unique
+	 * constraint \"site_code_key\"")) { throw new UserException ("A site with
+	 * this code already exists."); } else { throw new InternalException(e); } }
+	 * return dso; }
+	 */
 	private DsoCode code;
 
 	public Dso() {
 	}
 
-	public Dso(String name, Participant participant,
-			Date from, Date to, DsoCode code) throws HttpException {
+	public Dso(String name, Participant participant, Date from, Date to,
+			DsoCode code) throws HttpException {
 		super(name, participant, MarketRole.DISTRIBUTOR, from, to);
 		setCode(code);
 	}
@@ -123,40 +112,53 @@ public class Dso extends Provider {
 		return Integer.parseInt(code.toString()) < 24;
 	}
 
-	public Llfc getLlf(LlfcCode code) throws HttpException,
-			InternalException {
-		Llfc llf = (Llfc) Hiber
+	public Llfc getLlfc(LlfcCode code) throws HttpException {
+		Llfc llfc = (Llfc) Hiber
 				.session()
 				.createQuery(
-						"from Llf llf where llf.dso = :dso and llf.code = :code")
-				.setEntity("dso", this).setInteger("code", code.getInteger()).uniqueResult();
-		if (llf == null) {
-			throw new UserException
-					("There is no line loss factor with the code "
-							+ code + " associated with this DNO.");
+						"from Llfc llfc where llfc.dso = :dso and llfc.code = :code and llfc.validTo is null")
+				.setEntity("dso", this).setInteger("code", code.getInteger())
+				.uniqueResult();
+		if (llfc == null) {
+			throw new UserException("There is no ongoing LLFC with the code "
+					+ code + " associated with this DNO.");
 		}
-		return llf;
+		return llfc;
+	}
+
+	public Llfc getLlfc(LlfcCode code, Date date) throws HttpException {
+		Llfc llfc = (Llfc) Hiber
+				.session()
+				.createQuery(
+						"from Llfc llfc where llfc.dso = :dso and llfc.code = :code and llfc.validFrom <= :date and (llfc.validTo is null or llfc.validTo >= :date)")
+				.setEntity("dso", this).setInteger("code", code.getInteger())
+				.setTimestamp("date", date).uniqueResult();
+		if (llfc == null) {
+			throw new UserException(
+					"There is no line loss factor with the code " + code
+							+ " associated with the DNO '"
+							+ getCode().toString() + "' for the date "
+							+ date.toString() + ".");
+		}
+		return llfc;
 	}
 
 	public String toString() {
 		return "Code: " + code + " Name: " + getName();
 	}
 
-	public Element toXml(Document doc) throws InternalException,
-			HttpException {
-		setTypeName("dso");
+	public Element toXml(Document doc) throws HttpException {
 		Element element = (Element) super.toXml(doc);
-
 		element.setAttribute("code", code.toString());
 		return element;
 	}
 
 	public MonadUri getUri() throws InternalException, HttpException {
-		return Chellow.PROVIDERS_INSTANCE.getUri().resolve(getUriId()).append("/");
+		return Chellow.PROVIDERS_INSTANCE.getUri().resolve(getUriId()).append(
+				"/");
 	}
 
-	public void httpGet(Invocation inv) throws DesignerException,
-			InternalException, HttpException, DeployerException {
+	public void httpGet(Invocation inv) throws HttpException {
 		Document doc = MonadUtils.newSourceDocument();
 		Element source = doc.getDocumentElement();
 		source.appendChild(toXml(doc));
@@ -170,18 +172,15 @@ public class Dso extends Provider {
 	}
 
 	public Urlable getChild(UriPathElement uriId) throws HttpException {
-		/*
 		if (DsoServices.URI_ID.equals(uriId)) {
 			return new DsoServices(this);
-		} else if (Llfs.URI_ID.equals(uriId)) {
-			return new Llfs(this);
+		} else if (Llfcs.URI_ID.equals(uriId)) {
+			return new Llfcs(this);
 		} else if (MpanTops.URI_ID.equals(uriId)) {
 			return new MpanTops(this);
 		} else {
 			throw new NotFoundException();
 		}
-		*/
-		return null;
 	}
 
 	public void httpDelete(Invocation inv) throws InternalException,
@@ -191,12 +190,9 @@ public class Dso extends Provider {
 	}
 
 	/*
-	@Override
-	public List<SupplyGeneration> supplyGenerations(Account account) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-	*/
+	 * @Override public List<SupplyGeneration> supplyGenerations(Account
+	 * account) { // TODO Auto-generated method stub return null; }
+	 */
 
 	public DsoService insertService(String name, HhEndDate startDate,
 			String chargeScript) throws HttpException, InternalException,
@@ -205,8 +201,8 @@ public class Dso extends Provider {
 		if (service == null) {
 			service = new DsoService(this, name, startDate, chargeScript);
 		} else {
-			throw new UserException
-					("There is already a DSO service with this name.");
+			throw new UserException(
+					"There is already a DSO service with this name.");
 		}
 		Hiber.session().save(service);
 		Hiber.flush();
@@ -231,7 +227,7 @@ public class Dso extends Provider {
 				.setEntity("provider", this).setString("serviceName", name)
 				.uniqueResult();
 	}
-	
+
 	public DsoServices servicesInstance() {
 		return new DsoServices(this);
 	}

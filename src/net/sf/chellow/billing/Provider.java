@@ -26,10 +26,13 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
-import java.text.DateFormat;
+import java.net.URL;
 import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.Locale;
+import java.util.TimeZone;
 
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
@@ -54,17 +57,6 @@ import org.w3c.dom.Element;
 import com.Ostermiller.util.CSVParser;
 
 public class Provider extends PersistentEntity implements Urlable {
-	/*
-	 * public static Provider getSupplier(Long id) throws HttpException {
-	 * Provider supplier = (Provider) Hiber.session().get(Provider.class, id);
-	 * if (supplier == null) { throw new UserException("There isn't a supplier
-	 * with that id."); } return supplier; }
-	 * 
-	 * public static void deleteSupplier(Provider supplier) throws
-	 * InternalException { try { Hiber.session().delete(supplier);
-	 * Hiber.flush(); } catch (HibernateException e) { throw new
-	 * InternalException(e); } }
-	 */
 	static public Provider getProvider(String participantCode, char roleCode)
 			throws HttpException {
 		Provider provider = (Provider) Hiber
@@ -120,54 +112,68 @@ public class Provider extends PersistentEntity implements Urlable {
 						"The first line of the CSV must contain the titles "
 								+ "'Market Participant Id, Market Participant Role Code, Effective From Date {MPR}, Effective To Date {MPR}, Address Line 1, Address Line 2, Address Line 3, Address Line 4, Address Line 5, Address Line 6, Address Line 7, Address Line 8, Address Line 9, Post Code, Distributor Short Code'.");
 			}
-			DateFormat dateFormat = DateFormat.getDateTimeInstance(
-					DateFormat.SHORT, DateFormat.SHORT, Locale.UK);
+			SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy",
+					Locale.UK);
+			dateFormat.setCalendar(new GregorianCalendar(TimeZone
+					.getTimeZone("GMT"), Locale.UK));
 			for (String[] values = parser.getLine(); values != null; values = parser
 					.getLine()) {
 				Participant participant = Participant.getParticipant(values[0]);
 				MarketRole role = MarketRole.getMarketRole(values[1].charAt(0));
-				Date from = dateFormat.parse(values[2]);
-				Date to = dateFormat.parse(values[3]);
+				Date validFrom = dateFormat.parse(values[2]);
+				String validToStr = values[3];
+				Date validTo = null;
+				if (validToStr.length() != 0) {
+					validTo = dateFormat.parse(values[3]);
+				}
 				char roleCode = role.getCode();
 				if (roleCode == MarketRole.DISTRIBUTOR) {
-						Dso dso = new Dso(values[4], participant,
-								from, to, new DsoCode(values[14]));
-						Hiber.session().save(dso);
-						Hiber.flush();
-						ClassLoader dsoClassLoader = Dso.class.getClassLoader();
-						DsoService dsoService;
-						try {
-							InputStreamReader isr = new InputStreamReader(dsoClassLoader
-									.getResource(
-											"net/sf/chellow/billing/dso"
-													+ dso.getCode().getString() + "Service.py")
-									.openStream(), "UTF-8");
+					Dso dso = new Dso(values[4], participant, validFrom,
+							validTo, new DsoCode(values[14]));
+					Hiber.session().save(dso);
+					Hiber.flush();
+					ClassLoader dsoClassLoader = Dso.class.getClassLoader();
+					DsoService dsoService;
+					try {
+						URL resource = dsoClassLoader
+								.getResource("net/sf/chellow/billing/dso"
+										+ dso.getCode().getString()
+										+ "Service.py");
+						if (resource != null) {
+							InputStreamReader isr = new InputStreamReader(
+									resource.openStream(), "UTF-8");
 							StringWriter pythonString = new StringWriter();
 							int c;
 							while ((c = isr.read()) != -1) {
 								pythonString.write(c);
 							}
-							dsoService = dso.insertService("main", new HhEndDate(
-									"2000-01-01T00:30Z"), pythonString.toString());
-							RateScript dsoRateScript = dsoService.getRateScripts().iterator()
-									.next();
-							isr = new InputStreamReader(classLoader.getResource(
-									"net/sf/chellow/billing/dso" + dso.getCode().getString()
-											+ "ServiceRateScript.py").openStream(), "UTF-8");
+							dsoService = dso.insertService("main",
+									new HhEndDate("2000-01-01T00:30Z"),
+									pythonString.toString());
+							RateScript dsoRateScript = dsoService
+									.getRateScripts().iterator().next();
+							isr = new InputStreamReader(classLoader
+									.getResource(
+											"net/sf/chellow/billing/dso"
+													+ dso.getCode().getString()
+													+ "ServiceRateScript.py")
+									.openStream(), "UTF-8");
 							pythonString = new StringWriter();
 							while ((c = isr.read()) != -1) {
 								pythonString.write(c);
 							}
-							dsoRateScript.update(dsoRateScript.getStartDate(), dsoRateScript
-									.getFinishDate(), pythonString.toString());
-						} catch (IOException e) {
-							throw new InternalException(e);
+							dsoRateScript.update(dsoRateScript.getStartDate(),
+									dsoRateScript.getFinishDate(), pythonString
+											.toString());
 						}
+					} catch (IOException e) {
+						throw new InternalException(e);
+					}
 				} else {
-				Provider provider = new Provider(values[4], participant, roleCode,
-						from, to);
-				Hiber.session().save(provider);
-				Hiber.flush();
+					Provider provider = new Provider(values[4], participant,
+							roleCode, validFrom, validTo);
+					Hiber.session().save(provider);
+					Hiber.flush();
 				}
 			}
 		} catch (UnsupportedEncodingException e) {
@@ -182,19 +188,19 @@ public class Provider extends PersistentEntity implements Urlable {
 	private String name;
 	private Participant participant;
 	private MarketRole role;
-	private Date from;
-	private Date to;
+	private Date validFrom;
+	private Date validTo;
 
 	public Provider() {
 	}
 
 	public Provider(String name, Participant participant, char role,
-			Date from, Date to) throws HttpException {
+			Date validFrom, Date validTo) throws HttpException {
 		setName(name);
 		setParticipant(participant);
 		setRole(MarketRole.getMarketRole(role));
-		setFrom(from);
-		setTo(to);
+		setValidFrom(validFrom);
+		setValidTo(validTo);
 	}
 
 	public String getName() {
@@ -221,34 +227,41 @@ public class Provider extends PersistentEntity implements Urlable {
 		this.role = role;
 	}
 
-	public Date getFrom() {
-		return from;
+	public Date getValidFrom() {
+		return validFrom;
 	}
 
-	void setFrom(Date from) {
-		this.from = from;
+	void setValidFrom(Date from) {
+		this.validFrom = from;
 	}
 
-	public Date getTo() {
-		return to;
+	public Date getValidTo() {
+		return validTo;
 	}
 
-	void setTo(Date to) {
-		this.to = to;
+	void setValidTo(Date to) {
+		this.validTo = to;
 	}
 
 	public Element toXml(Document doc) throws HttpException {
-		setTypeName("provider");
+		String typeName = null;
+		if (role.getCode() == MarketRole.DISTRIBUTOR) {
+			typeName = "dso";
+		} else {
+			typeName = "provider";
+		}
+		setTypeName(typeName);
 		Element element = (Element) super.toXml(doc);
 
 		element.setAttribute("name", name);
-		element.appendChild(MonadDate.toXML(from, "from", doc));
-		element.appendChild(MonadDate.toXML(to, "to", doc));
+		element.appendChild(MonadDate.toXML(validFrom, "from", doc));
+		if (validTo != null) {
+			element.appendChild(MonadDate.toXML(validTo, "to", doc));
+		}
 		return element;
 	}
 
-	public Account getAccount(String accountText) throws HttpException,
-			InternalException {
+	public Account getAccount(String accountText) throws HttpException {
 		Account account = (Account) Hiber
 				.session()
 				.createQuery(
@@ -263,7 +276,6 @@ public class Provider extends PersistentEntity implements Urlable {
 	}
 
 	@SuppressWarnings("unchecked")
-
 	/*
 	 * abstract public List<SupplyGeneration> supplyGenerations(Account
 	 * account);

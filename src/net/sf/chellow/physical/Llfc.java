@@ -25,11 +25,13 @@ package net.sf.chellow.physical;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
-import java.text.DateFormat;
 import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.Locale;
+import java.util.TimeZone;
 
 import net.sf.chellow.monad.DeployerException;
 import net.sf.chellow.monad.DesignerException;
@@ -53,10 +55,10 @@ import org.w3c.dom.Node;
 import com.Ostermiller.util.CSVParser;
 
 public class Llfc extends PersistentEntity {
-	static public Llfc getLlf(Long id) throws InternalException, HttpException {
+	static public Llfc getLlf(Long id) throws HttpException {
 		Llfc llf = (Llfc) Hiber.session().get(Llfc.class, id);
 		if (llf == null) {
-			throw new UserException("There is no mpan generation with that id.");
+			throw new UserException("There is no LLFC with that id.");
 		}
 		return llf;
 	}
@@ -122,8 +124,10 @@ public class Llfc extends PersistentEntity {
 						"The first line of the CSV must contain the titles "
 								+ "Market Participant Id, Market Participant Role Code, Effective From Date {MPR}, Line Loss Factor Class Id, Effective From Settlement Date {LLFC}, Line Loss Factor Class Description, MS Specific LLF Class Indicator, Effective To Settlement Date {LLFC}.");
 			}
-			DateFormat dateFormat = DateFormat.getDateTimeInstance(
-					DateFormat.SHORT, DateFormat.SHORT, Locale.UK);
+			SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy",
+					Locale.UK);
+			dateFormat.setCalendar(new GregorianCalendar(TimeZone
+					.getTimeZone("GMT"), Locale.UK));
 			for (String[] values = parser.getLine(); values != null; values = parser
 					.getLine()) {
 				String participantCode = values[0];
@@ -136,19 +140,22 @@ public class Llfc extends PersistentEntity {
 				} else {
 					vLevel = VoltageLevel.getVoltageLevel(VoltageLevel.LV);
 				}
-				boolean isSubstation = (participantCode.equals("SWEB") && description
-						.contains("S/S"))
-						|| (!participantCode.equals("SWEB") && description
-								.contains("sub"));
+				boolean isSubstation = description.contains("S/S")
+						|| description.contains("sub")
+						|| description.contains("Substation");
 				String indicator = values[6];
 				boolean isImport = indicator.equals("A")
 						|| indicator.equals("B");
+				Date validFrom = dateFormat.parse(values[4]);
+				String validToStr = values[7];
+				Date validTo = null;
+				if (validToStr.length() != 0) {
+					validTo = dateFormat.parse(validToStr);
+				}
 				Hiber.session().save(
 						new Llfc(Dso.getDso(participantCode), Integer
 								.parseInt(values[3]), description, vLevel,
-								isSubstation, isImport, dateFormat
-										.parse(values[2]), dateFormat
-										.parse(values[4])));
+								isSubstation, isImport, validFrom, validTo));
 			}
 		} catch (UnsupportedEncodingException e) {
 			throw new InternalException(e);
@@ -173,23 +180,23 @@ public class Llfc extends PersistentEntity {
 
 	private boolean isImport;
 
-	private Date from;
-	private Date to;
+	private Date validFrom;
+	private Date validTo;
 
 	Llfc() {
 	}
 
 	public Llfc(Dso dso, int code, String description,
 			VoltageLevel voltageLevel, boolean isSubstation, boolean isImport,
-			Date from, Date to) throws HttpException {
+			Date validFrom, Date validTo) throws HttpException {
 		setDso(dso);
 		setCode(new LlfcCode(code));
 		setDescription(description);
 		setVoltageLevel(voltageLevel);
 		setIsSubstation(isSubstation);
 		setIsImport(isImport);
-		setFrom(from);
-		setTo(to);
+		setValidFrom(validFrom);
+		setValidTo(validTo);
 	}
 
 	public Dso getDso() {
@@ -240,33 +247,37 @@ public class Llfc extends PersistentEntity {
 		this.isImport = isImport;
 	}
 
-	public Date getFrom() {
-		return from;
+	public Date getValidFrom() {
+		return validFrom;
 	}
 
-	void setFrom(Date from) {
-		this.from = from;
+	void setValidFrom(Date from) {
+		this.validFrom = from;
 	}
 
-	public Date getTo() {
-		return to;
+	public Date getValidTo() {
+		return validTo;
 	}
 
-	void setTo(Date to) {
-		this.to = to;
+	void setValidTo(Date to) {
+		this.validTo = to;
 	}
 
-	public Node toXml(Document doc) throws InternalException, HttpException {
-		setTypeName("llf");
+	public Node toXml(Document doc) throws HttpException {
+		setTypeName("llfc");
 		Element element = (Element) super.toXml(doc);
 		element.setAttribute("code", code.toString());
 		element.setAttribute("description", description);
 		element.setAttribute("is-substation", Boolean.toString(isSubstation));
 		element.setAttribute("is-import", Boolean.toString(isImport));
-		MonadDate fromDate = new MonadDate(from);
+		MonadDate fromDate = new MonadDate(validFrom);
 		fromDate.setLabel("from");
-		MonadDate toDate = new MonadDate(to);
-		toDate.setLabel("to");
+		element.appendChild(fromDate.toXml(doc));
+		if (validTo != null) {
+			MonadDate toDate = new MonadDate(validTo);
+			toDate.setLabel("to");
+			element.appendChild(toDate.toXml(doc));
+		}
 		return element;
 	}
 
@@ -300,6 +311,7 @@ public class Llfc extends PersistentEntity {
 		// TODO Auto-generated method stub
 
 	}
+
 	/*
 	 * public void attachProfileClass(ProfileClass profileClass) throws
 	 * UserException, ProgrammerException { if
@@ -311,8 +323,9 @@ public class Llfc extends PersistentEntity {
 	 * ProgrammerException, UserException { for (String code : codes.split(",")) {
 	 * addMeterTimeswitch(code); } }
 	 */
-	
-	public MpanTop insertMpanTop(Pc pc, Mtc mtc, Ssc ssc, Date from, Date to) throws HttpException {
+
+	public MpanTop insertMpanTop(Pc pc, Mtc mtc, Ssc ssc, Date from, Date to)
+			throws HttpException {
 		MpanTop top = new MpanTop(pc, mtc, this, ssc, from, to);
 		Hiber.session().save(top);
 		Hiber.flush();
