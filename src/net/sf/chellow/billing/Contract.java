@@ -35,6 +35,7 @@ import net.sf.chellow.physical.HhEndDate;
 import net.sf.chellow.physical.Organization;
 
 public abstract class Contract extends Service {
+	private Provider provider;
 	private Organization organization;
 
 	public Contract() {
@@ -52,6 +53,14 @@ public abstract class Contract extends Service {
 
 	void setOrganization(Organization organization) {
 		this.organization = organization;
+	}
+	
+	public Provider getProvider() {
+		return provider;
+	}
+	
+	void setProvider(Provider provider) {
+		this.provider = provider;
 	}
 
 	public Batch insertBatch(String reference) {

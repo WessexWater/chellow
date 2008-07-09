@@ -22,9 +22,7 @@
 
 package net.sf.chellow.physical;
 
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.UnsupportedEncodingException;
+import javax.servlet.ServletContext;
 
 import net.sf.chellow.monad.DeployerException;
 import net.sf.chellow.monad.DesignerException;
@@ -42,13 +40,9 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
-import com.Ostermiller.util.CSVParser;
-
 public class Pc extends PersistentEntity {
-	static public Pc getPc(Long id)
-			throws HttpException {
-		Pc pc = (Pc) Hiber.session().get(
-				Pc.class, id);
+	static public Pc getPc(Long id) throws HttpException {
+		Pc pc = (Pc) Hiber.session().get(Pc.class, id);
 		if (pc == null) {
 			throw new UserException("There is no profile class with that id.");
 		}
@@ -59,8 +53,7 @@ public class Pc extends PersistentEntity {
 		return getPc(new PcCode(code));
 	}
 
-	static public Pc getPc(PcCode code)
-			throws HttpException {
+	static public Pc getPc(PcCode code) throws HttpException {
 		Pc profileClass = findPc(code);
 		if (profileClass == null) {
 			throw new UserException("There is no profile class with that code.");
@@ -73,53 +66,21 @@ public class Pc extends PersistentEntity {
 	}
 
 	static public Pc findPc(int code) {
-		return (Pc) Hiber
-				.session()
-				.createQuery(
-						"from Pc pc where pc.code.integer = :code")
-				.setInteger("code", code).uniqueResult();
+		return (Pc) Hiber.session().createQuery(
+				"from Pc pc where pc.code.integer = :code").setInteger("code",
+				code).uniqueResult();
 	}
 
-	/*
-	 * @SuppressWarnings("unchecked") static public List<ProfileClass>
-	 * findAll() throws ProgrammerException { return (List<ProfileClass>) Hiber
-	 * .session() .createQuery( "from ProfileClass profileClass order by
-	 * profileClass.code.integer") .list(); }
-	 */
-
-	static public void loadFromCsv() throws HttpException {
-		try {
-			ClassLoader classLoader = Participant.class.getClassLoader();
-			CSVParser parser = new CSVParser(new InputStreamReader(classLoader
-					.getResource("net/sf/chellow/physical/ProfileClass.csv")
-					.openStream(), "UTF-8"));
-			parser.setCommentStart("#;!");
-			parser.setEscapes("nrtf", "\n\r\t\f");
-			String[] titles = parser.getLine();
-			if (titles.length < 5
-					|| !titles[0].trim().equals("Profile Class Id")
-					|| !titles[1].trim().equals(
-							"Effective From Settlement Date {PCLA}")
-					|| !titles[2].trim().equals("Profile Class Description")
-					|| !titles[3].trim().equals(
-							"Switched Load Profile Class Ind")
-					|| !titles[4].trim().equals(
-							"Effective To Settlement Date {PCLA}")) {
-				throw new UserException(
-						"The first line of the CSV must contain the titles "
-								+ "Profile Class Id, Effective From Settlement Date {PCLA}, Profile Class Description, Switched Load Profile Class Ind, Effective To Settlement Date {PCLA}.");
-			}
-			for (String[] values = parser.getLine(); values != null; values = parser
-					.getLine()) {
-				Hiber.session().save(
-						new Pc(new PcCode(Integer
-								.parseInt(values[0])), values[2]));
-				Hiber.flush();
-			}
-		} catch (UnsupportedEncodingException e) {
-			throw new InternalException(e);
-		} catch (IOException e) {
-			throw new InternalException(e);
+	static public void loadFromCsv(ServletContext sc) throws HttpException {
+		Mdd mdd = new Mdd(sc, "ProfileClass", new String[] {
+				"Profile Class Id", "Effective From Settlement Date {PCLA}",
+				"Profile Class Description", "Switched Load Profile Class Ind",
+				"Effective To Settlement Date {PCLA}" });
+		for (String[] values = mdd.getLine(); values != null; values = mdd
+				.getLine()) {
+			Hiber.session().save(
+					new Pc(new PcCode(Integer.parseInt(values[0])), values[2]));
+			Hiber.flush();
 		}
 	}
 

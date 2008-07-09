@@ -61,7 +61,7 @@ public class Bill extends PersistentEntity implements Urlable {
 
 	private Account account;
 
-	private Service service;
+	private Contract contract;
 
 	private DayStartDate startDate; // Excluding rejected invoices
 
@@ -82,11 +82,11 @@ public class Bill extends PersistentEntity implements Urlable {
 	}
 
 	@SuppressWarnings("unchecked")
-	public Bill(Service service, Account account) throws
+	public Bill(Contract contract, Account account) throws
 			InternalException {
 		this();
 		setAccount(account);
-		setService(service);
+		setContract(contract);
 	}
 
 	void setInvoices(Set<Invoice> invoices) {
@@ -119,11 +119,10 @@ public class Bill extends PersistentEntity implements Urlable {
 	}
 
 	@SuppressWarnings("unchecked")
-	public void detach(Invoice invoice) throws InternalException,
-			HttpException {
+	public void detach(Invoice invoice) throws HttpException {
 		HhEndDate billStart = getStartDate();
 		HhEndDate billFinish = getFinishDate();
-		Service service = getService();
+		Contract contract = getContract();
 		Account account = getAccount();
 
 		invoices.remove(invoice);
@@ -150,12 +149,12 @@ public class Bill extends PersistentEntity implements Urlable {
 		} else {
 			setSummary();
 		}
-		account.checkMissing(service, billStart, billFinish);
+		account.checkMissing(contract, billStart, billFinish);
 	}
 
 	private void setSummary() throws InternalException, HttpException {
 		if (getStartDate() != null) {
-			getAccount().addSnag(service, AccountSnag.MISSING_BILL,
+			getAccount().addSnag(contract, AccountSnag.MISSING_BILL,
 					getStartDate(), getFinishDate(), true);
 		}
 		HhEndDate oldStartDate = getStartDate();
@@ -194,7 +193,7 @@ public class Bill extends PersistentEntity implements Urlable {
 		setVat(vat);
 		check();
 		if (getStartDate() != null) {
-			getAccount().checkMissing(service, oldStartDate, oldFinishDate);
+			getAccount().checkMissing(contract, oldStartDate, oldFinishDate);
 		}
 	}
 
@@ -212,12 +211,12 @@ public class Bill extends PersistentEntity implements Urlable {
 		this.account = account;
 	}
 
-	public Service getService() {
-		return service;
+	public Contract getContract() {
+		return contract;
 	}
 
-	public void setService(Service service) {
-		this.service = service;
+	public void setContract(Contract contract) {
+		this.contract = contract;
 	}
 
 	public DayStartDate getStartDate() {
@@ -330,12 +329,12 @@ public class Bill extends PersistentEntity implements Urlable {
 
 	BillElement getElement(String chargeScript) throws InternalException,
 			HttpException {
-		return service.billElement("total", chargeScript, account, startDate,
+		return contract.billElement("total", chargeScript, account, startDate,
 				finishDate);
 	}
 
 	BillElement getElement() throws HttpException, InternalException {
-		return service.billElement("total", account, startDate, finishDate);
+		return contract.billElement("total", account, startDate, finishDate);
 	}
 
 	/*
@@ -376,7 +375,7 @@ public class Bill extends PersistentEntity implements Urlable {
 		} else {
 			if (snag == null) {
 				BillSnag.insertBillSnag(new BillSnag(BillSnag.INCORRECT_BILL,
-						service, this));
+						contract, this));
 			} else {
 				snag.deResolve();
 			}

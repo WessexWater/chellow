@@ -24,7 +24,7 @@ package net.sf.chellow.physical;
 
 import java.util.Date;
 
-import net.sf.chellow.billing.Service;
+import net.sf.chellow.billing.Contract;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.Invocation;
@@ -172,7 +172,6 @@ public abstract class Snag extends PersistentEntity implements Cloneable,
 		}
 	}
 
-	public abstract Service getService();
-
-	public abstract void setService(Service service);
+	public abstract Contract getContract();
+	public abstract void setContract(Contract contract);
 }

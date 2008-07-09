@@ -4,7 +4,7 @@
           "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
 <!-- 
 	
-	Copyright 2005-2007 Meniscus Systems Ltd
+	Copyright 2005-2008 Meniscus Systems Ltd
 	
 	This file is part of Chellow.
 	
@@ -26,11 +26,8 @@
 
 <hibernate-mapping
 	package="net.sf.chellow.billing">
-	<joined-subclass extends="Provider" name="Dce"
-		table="dce" lazy="true">
-		<key column="provider_id" foreign-key="fkey_dce_provider"/>
-		<many-to-one name="organization" class="net.sf.chellow.physical.Organization"
-			column="organization_id" foreign-key="fkey_provider_organization"/>
+	<joined-subclass extends="Contract" name="MopContract"
+		table="mop_contract" lazy="true">
+		<key column="contract_id" foreign-key="fkey_mop_contract_contract"/>
 	</joined-subclass>
 </hibernate-mapping>
-

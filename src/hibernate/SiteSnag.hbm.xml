@@ -43,8 +43,8 @@
 					sql-type="timestamp with time zone" />
 			</property>
 		</component>
-		<many-to-one name="service"
-			class="net.sf.chellow.billing.DceService" column="dce_service_id"
-			not-null="true" foreign-key="fkey_site_snag_service"/>
+		<many-to-one name="contract"
+			class="net.sf.chellow.billing.HhdcContract" column="hhdc_contract_id"
+			not-null="true" foreign-key="fkey_site_snag_contract"/>
 	</joined-subclass>
 </hibernate-mapping>

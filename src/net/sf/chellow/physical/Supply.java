@@ -639,7 +639,7 @@ public class Supply extends PersistentEntity implements Urlable {
 											"finishDate",
 											generation.getFinishDate()
 													.getDate()).list())) {
-						if (!snag.getService().equals(contractDce)) {
+						if (!snag.getContract().equals(contractDce)) {
 							snag.resolve(false);
 						}
 					}

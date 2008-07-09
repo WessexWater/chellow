@@ -271,7 +271,7 @@ public class ContextListener implements ServletContextListener {
 		}
 		DatabaseVersion.setDatabaseVersion(11);
 		Hiber.close();
-		Pc.loadFromCsv();
+		Pc.loadFromCsv(context);
 		Hiber.close();
 		MarketRole.loadFromCsv();
 		Hiber.close();
@@ -297,7 +297,7 @@ public class ContextListener implements ServletContextListener {
 		Hiber.close();
 		MeasurementRequirement.loadFromCsv();
 		Hiber.close();
-		MpanTop.loadFromCsv();
+		MpanTop.loadFromCsv(context);
 		Hiber.close();
 		Role basicUserRole = Role.insertRole(null, "basic-user");
 		Hiber.flush();

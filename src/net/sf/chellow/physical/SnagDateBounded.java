@@ -26,8 +26,8 @@ import java.util.List;
 
 import net.sf.chellow.billing.Account;
 import net.sf.chellow.billing.AccountSnag;
+import net.sf.chellow.billing.Contract;
 import net.sf.chellow.billing.HhdcContract;
-import net.sf.chellow.billing.Service;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.HttpException;
@@ -183,7 +183,7 @@ public abstract class SnagDateBounded extends Snag {
 			} else if (snag.getDateResolved() != null && !snag.getIsIgnored()) {
 				snag.deResolve();
 			}
-			snag.setService(snagToAdd.getService());
+			snag.setContract(snagToAdd.getContract());
 		}
 		SnagDateBounded previousSnag = null;
 		for (SnagDateBounded snag : snagToAdd.getCoveredSnags(snagToAdd
@@ -217,7 +217,7 @@ public abstract class SnagDateBounded extends Snag {
 				startDate, finishDate, isResolved));
 	}
 
-	public static void addAccountSnag(Service service, Account account,
+	public static void addAccountSnag(Contract service, Account account,
 			String description, HhEndDate startDate, HhEndDate finishDate,
 			boolean isResolved) throws InternalException, HttpException {
 		addSnagDateBounded(new AccountSnagToAdd(service, account, description,
@@ -244,13 +244,13 @@ public abstract class SnagDateBounded extends Snag {
 
 		public boolean getIsResolved();
 
-		public Service getService();
+		public Contract getContract();
 
 		public void deleteSnag(SnagDateBounded snag);
 	}
 
 	private static class ChannelSnagToAdd implements SnagToAdd {
-		private HhdcContract dceService;
+		private HhdcContract contract;
 
 		private Channel channel;
 
@@ -262,10 +262,10 @@ public abstract class SnagDateBounded extends Snag {
 
 		private boolean isResolved;
 
-		public ChannelSnagToAdd(HhdcContract dceService, Channel channel,
+		public ChannelSnagToAdd(HhdcContract contract, Channel channel,
 				String description, HhEndDate startDate, HhEndDate finishDate,
 				boolean isResolved) {
-			this.dceService = dceService;
+			this.contract = contract;
 			this.channel = channel;
 			this.description = description;
 			this.startDate = startDate;
@@ -290,7 +290,7 @@ public abstract class SnagDateBounded extends Snag {
 
 		public SnagDateBounded newSnag() throws InternalException,
 				HttpException {
-			return new ChannelSnag(description, dceService, channel, startDate,
+			return new ChannelSnag(description, contract, channel, startDate,
 					finishDate);
 		}
 
@@ -305,7 +305,7 @@ public abstract class SnagDateBounded extends Snag {
 
 		public SnagDateBounded newSnag(HhEndDate startDate, HhEndDate finishDate)
 				throws InternalException, HttpException {
-			return new ChannelSnag(description, dceService, channel, startDate,
+			return new ChannelSnag(description, contract, channel, startDate,
 					finishDate);
 		}
 
@@ -313,8 +313,8 @@ public abstract class SnagDateBounded extends Snag {
 			return isResolved;
 		}
 
-		public HhdcContract getService() {
-			return dceService;
+		public HhdcContract getContract() {
+			return contract;
 		}
 
 		public void deleteSnag(SnagDateBounded snag) {
@@ -338,7 +338,7 @@ public abstract class SnagDateBounded extends Snag {
 	}
 
 	private static class SiteSnagToAdd implements SnagToAdd {
-		private HhdcContract dceService;
+		private HhdcContract contract;
 
 		private Site site;
 
@@ -352,10 +352,10 @@ public abstract class SnagDateBounded extends Snag {
 
 		private Query query;
 
-		public SiteSnagToAdd(HhdcContract dceService, Site site,
+		public SiteSnagToAdd(HhdcContract contract, Site site,
 				String description, HhEndDate startDate, HhEndDate finishDate,
 				boolean isResolved) {
-			this.dceService = dceService;
+			this.contract = contract;
 			this.site = site;
 			this.description = description;
 			this.startDate = startDate;
@@ -375,7 +375,7 @@ public abstract class SnagDateBounded extends Snag {
 
 		public SnagDateBounded newSnag() throws InternalException,
 				HttpException {
-			return new SiteSnag(description, dceService, site, startDate,
+			return new SiteSnag(description, contract, site, startDate,
 					finishDate);
 		}
 
@@ -390,7 +390,7 @@ public abstract class SnagDateBounded extends Snag {
 
 		public SnagDateBounded newSnag(HhEndDate startDate, HhEndDate finishDate)
 				throws InternalException, HttpException {
-			return new SiteSnag(description, dceService, site, startDate,
+			return new SiteSnag(description, contract, site, startDate,
 					finishDate);
 		}
 
@@ -398,8 +398,8 @@ public abstract class SnagDateBounded extends Snag {
 			return isResolved;
 		}
 
-		public HhdcContract getService() {
-			return dceService;
+		public HhdcContract getContract() {
+			return contract;
 		}
 
 		public void deleteSnag(SnagDateBounded snag) {
@@ -422,7 +422,7 @@ public abstract class SnagDateBounded extends Snag {
 	}
 
 	private static class AccountSnagToAdd implements SnagToAdd {
-		private Service service;
+		private Contract contract;
 
 		private Account account;
 
@@ -436,10 +436,10 @@ public abstract class SnagDateBounded extends Snag {
 
 		private Query query;
 
-		public AccountSnagToAdd(Service service, Account account,
+		public AccountSnagToAdd(Contract contract, Account account,
 				String description, HhEndDate startDate, HhEndDate finishDate,
 				boolean isResolved) {
-			this.service = service;
+			this.contract = contract;
 			this.account = account;
 			this.description = description;
 			this.startDate = startDate;
@@ -457,9 +457,8 @@ public abstract class SnagDateBounded extends Snag {
 			return finishDate;
 		}
 
-		public SnagDateBounded newSnag() throws InternalException,
-				HttpException {
-			return new AccountSnag(description, service, account, startDate,
+		public SnagDateBounded newSnag() throws HttpException {
+			return new AccountSnag(description, account, startDate,
 					finishDate);
 		}
 
@@ -473,8 +472,8 @@ public abstract class SnagDateBounded extends Snag {
 		}
 
 		public SnagDateBounded newSnag(HhEndDate startDate, HhEndDate finishDate)
-				throws InternalException, HttpException {
-			return new AccountSnag(description, service, account, startDate,
+				throws HttpException {
+			return new AccountSnag(description, account, startDate,
 					finishDate);
 		}
 
@@ -482,8 +481,8 @@ public abstract class SnagDateBounded extends Snag {
 			return isResolved;
 		}
 
-		public Service getService() {
-			return service;
+		public Contract getContract() {
+			return contract;
 		}
 
 		public void deleteSnag(SnagDateBounded snag) {
@@ -508,7 +507,7 @@ public abstract class SnagDateBounded extends Snag {
 			throws InternalException, HttpException {
 		boolean combinable = getFinishDate().getDate().getTime() == snag
 				.getStartDate().getPrevious().getDate().getTime()
-				&& getService().equals(snag.getService());
+				&& getContract().equals(snag.getContract());
 		if (combinable) {
 			combinable = snag.getProgress().equals(getProgress());
 		}

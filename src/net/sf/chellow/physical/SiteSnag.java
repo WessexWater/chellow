@@ -22,8 +22,8 @@
 
 package net.sf.chellow.physical;
 
+import net.sf.chellow.billing.Contract;
 import net.sf.chellow.billing.HhdcContract;
-import net.sf.chellow.billing.Service;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.InternalException;
@@ -52,16 +52,16 @@ public class SiteSnag extends SnagDateBounded {
 	
 	private Site site;
 
-	private HhdcContract dceService;
+	private HhdcContract contract;
 
 	public SiteSnag() {
 	}
 
-	public SiteSnag(String description, HhdcContract dceService, Site site,
+	public SiteSnag(String description, HhdcContract contract, Site site,
 			HhEndDate startDate, HhEndDate finishDate) throws HttpException {
 		super(description, startDate, finishDate);
 		this.site = site;
-		this.dceService = dceService;
+		this.contract = contract;
 	}
 
 	public Site getSite() {
@@ -72,18 +72,14 @@ public class SiteSnag extends SnagDateBounded {
 		this.site = site;
 	}
 
-	public HhdcContract getService() {
-		return dceService;
+	public HhdcContract getContract() {
+		return contract;
 	}
 
-	public void setService(HhdcContract dceService) {
-		this.dceService = dceService;
+	public void setContract(Contract contract) {
+		this.contract = (HhdcContract) contract;
 	}
 
-	@Override
-	public void setService(Service service) {
-		setService((HhdcContract) service);
-	}
 
 	public Element toXml(Document doc) throws InternalException, HttpException {
 		setTypeName("site-snag");
@@ -104,7 +100,7 @@ public class SiteSnag extends SnagDateBounded {
 	}
 
 	public String toString() {
-		return super.toString() + " Contract: " + getService();
+		return super.toString() + " Contract: " + getContract();
 	}
 
 	public void httpGet(Invocation inv) throws HttpException {
@@ -125,7 +121,7 @@ public class SiteSnag extends SnagDateBounded {
 	}
 
 	public MonadUri getUri() throws HttpException {
-		return getService().getSnagsSiteInstance().getUri().resolve(getUriId())
+		return getContract().getSnagsSiteInstance().getUri().resolve(getUriId())
 				.append("/");
 	}
 

@@ -39,7 +39,8 @@ import org.w3c.dom.Element;
 
 public class BillSnag extends Snag {
 	public static final String INCORRECT_BILL = "Incorrect";
-	//public static final String CALCULATION_ERROR = "Calculation error";
+
+	// public static final String CALCULATION_ERROR = "Calculation error";
 
 	static public BillSnag getBillSnag(Long id) throws HttpException,
 			InternalException {
@@ -58,7 +59,7 @@ public class BillSnag extends Snag {
 		Hiber.session().delete(snag);
 	}
 
-	private Service service;
+	private Contract contract;
 
 	private Bill bill;
 
@@ -66,19 +67,19 @@ public class BillSnag extends Snag {
 		setTypeName("bill-snag");
 	}
 
-	public BillSnag(String description, Service service, Bill bill)
+	public BillSnag(String description, Contract contract, Bill bill)
 			throws InternalException, HttpException {
 		super(description);
-		this.service = service;
+		this.contract = contract;
 		this.bill = bill;
 	}
 
-	public Service getService() {
-		return service;
+	public Contract getContract() {
+		return contract;
 	}
 
-	public void setService(Service service) {
-		this.service = service;
+	public void setContract(Contract contract) {
+		this.contract = contract;
 	}
 
 	public Bill getBill() {
@@ -118,9 +119,9 @@ public class BillSnag extends Snag {
 			DesignerException {
 		Document doc = MonadUtils.newSourceDocument();
 		Element sourceElement = doc.getDocumentElement();
-		sourceElement.appendChild(toXml(doc, new XmlTree("service", new XmlTree(
-						"provider", new XmlTree("organization"))).put("bill",
-						new XmlTree("account"))));
+		sourceElement.appendChild(toXml(doc, new XmlTree("service",
+				new XmlTree("provider", new XmlTree("organization"))).put(
+				"bill", new XmlTree("account"))));
 		return doc;
 	}
 
@@ -131,7 +132,7 @@ public class BillSnag extends Snag {
 	}
 
 	public MonadUri getUri() throws InternalException, HttpException {
-		return getService().getSnagsAccountInstance().getUri().resolve(
+		return getContract().getSnagsAccountInstance().getUri().resolve(
 				getUriId()).append("/");
 	}
 }

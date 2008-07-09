@@ -22,8 +22,8 @@
 
 package net.sf.chellow.physical;
 
+import net.sf.chellow.billing.Contract;
 import net.sf.chellow.billing.HhdcContract;
-import net.sf.chellow.billing.Service;
 import net.sf.chellow.monad.DeployerException;
 import net.sf.chellow.monad.DesignerException;
 import net.sf.chellow.monad.Hiber;
@@ -69,17 +69,17 @@ public class ChannelSnag extends SnagDateBounded {
 
 	private Channel channel;
 
-	private HhdcContract dceService;
+	private HhdcContract contract;
 
 	public ChannelSnag() {
 	}
 
-	public ChannelSnag(String description, HhdcContract dceService,
+	public ChannelSnag(String description, HhdcContract contract,
 			Channel channel, HhEndDate startDate, HhEndDate finishDate)
 			throws InternalException, HttpException {
 		super(description, startDate, finishDate);
 		this.channel = channel;
-		this.dceService = dceService;
+		this.contract = contract;
 	}
 
 	public Channel getChannel() {
@@ -116,15 +116,11 @@ public class ChannelSnag extends SnagDateBounded {
 	}
 
 	public String toString() {
-		return super.toString() + " Contract: " + getService();
+		return super.toString() + " Contract: " + getContract();
 	}
 
-	public HhdcContract getService() {
-		return dceService;
-	}
-
-	public void setService(HhdcContract dceService) {
-		this.dceService = dceService;
+	public HhdcContract getContract() {
+		return contract;
 	}
 
 	public void httpGet(Invocation inv) throws DesignerException,
@@ -148,13 +144,13 @@ public class ChannelSnag extends SnagDateBounded {
 
 	}
 
-	public MonadUri getUri() throws InternalException, HttpException {
-		return getService().getSnagsChannelInstance().getUri().resolve(
+	public MonadUri getUri() throws HttpException {
+		return getContract().getSnagsChannelInstance().getUri().resolve(
 				getUriId()).append("/");
 	}
 
 	@Override
-	public void setService(Service service) {
-		setService((HhdcContract) service);
+	public void setContract(Contract contract) {
+		setContract((HhdcContract) contract);
 	}
 }

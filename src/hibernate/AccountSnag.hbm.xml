@@ -4,7 +4,7 @@
           "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
 <!-- 
 	
-	Copyright 2005-2007 Meniscus Systems Ltd
+	Copyright 2005-2008 Meniscus Systems Ltd
 	
 	This file is part of Chellow.
 	
@@ -45,8 +45,8 @@
 					sql-type="timestamp with time zone" />
 			</property>
 		</component>
-		<many-to-one name="service" class="Service" column="service_id"
-			not-null="true" foreign-key="fkey_account_snag_service"/>
+		<many-to-one name="contract" class="Contract" column="contract_id"
+			not-null="true" foreign-key="fkey_account_snag_contract"/>
 	</joined-subclass>
 </hibernate-mapping>
 

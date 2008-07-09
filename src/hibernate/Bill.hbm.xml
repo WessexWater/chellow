@@ -4,7 +4,7 @@
           "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
 <!-- 
 	
-	Copyright 2007 Meniscus Systems Ltd
+	Copyright 2007-2008 Meniscus Systems Ltd
 	
 	This file is part of Chellow.
 	
@@ -33,8 +33,8 @@
 		</id>
 		<many-to-one name="account" class="Account" column="account_id"
 			foreign-key="fkey_bill_account" />
-		<many-to-one name="service" class="Service" column="service_id"
-			foreign-key="fkey_bill_service" />
+		<many-to-one name="contract" class="Contract" column="contract_id"
+			foreign-key="fkey_bill_contract" />
 		<component name="startDate" class="DayStartDate">
 			<property type="timestamp" name="date">
 				<column name="start_date"
@@ -55,4 +55,3 @@
 		</set>
 	</class>
 </hibernate-mapping>
-

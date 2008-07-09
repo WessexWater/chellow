@@ -372,7 +372,7 @@ public class Channel extends PersistentEntity implements Urlable {
 						description.toString()).setTimestamp("startDate",
 						startDate.getDate()).setTimestamp("finishDate",
 						finishDate.getDate()).list()) {
-			addChannelSnag(snag.getService(), description, snag.getStartDate()
+			addChannelSnag(snag.getContract(), description, snag.getStartDate()
 					.getDate().before(startDate.getDate()) ? startDate : snag
 					.getStartDate(), snag.getFinishDate().getDate().after(
 					finishDate.getDate()) ? finishDate : snag.getFinishDate(),

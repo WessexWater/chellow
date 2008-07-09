@@ -60,27 +60,16 @@ public class AccountSnag extends SnagDateBounded {
 	}
 
 	private Account account;
-
-	private Service service;
-
+	
 	public AccountSnag() {
 		setTypeName("account-snag");
 	}
 
-	public AccountSnag(String description, Service service, Account account,
+	public AccountSnag(String description, Account account,
 			HhEndDate startDate, HhEndDate finishDate)
-			throws InternalException, HttpException {
+			throws HttpException {
 		super(description, startDate, finishDate);
 		this.account = account;
-		this.service = service;
-	}
-
-	public Service getService() {
-		return service;
-	}
-
-	public void setService(Service service) {
-		this.service = service;
 	}
 
 	public Account getAccount() {
@@ -91,11 +80,6 @@ public class AccountSnag extends SnagDateBounded {
 		this.account = account;
 	}
 
-	/*
-	 * public void resolve(boolean isIgnored) throws ProgrammerException,
-	 * UserException { setDateResolved(new MonadDate()); setIsIgnored(new
-	 * MonadBoolean(isIgnored)); }
-	 */
 	public void update() {
 	}
 
@@ -141,7 +125,7 @@ public class AccountSnag extends SnagDateBounded {
 	}
 
 	public MonadUri getUri() throws InternalException, HttpException {
-		return getService().getSnagsAccountInstance().getUri().resolve(
+		return getContract().getSnagsAccountInstance().getUri().resolve(
 				getUriId()).append("/");
 	}
 	/*
@@ -151,4 +135,13 @@ public class AccountSnag extends SnagDateBounded {
 	 * null && getBill() == null) || (incomingBill != null && incomingBill
 	 * .equals(getBill()))); }
 	 */
+
+	@Override
+	public Contract getContract() {
+		return account.getContract();
+	}
+
+	@Override
+	public void setContract(Contract contract) {
+	}
 }

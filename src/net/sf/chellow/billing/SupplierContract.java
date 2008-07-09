@@ -65,8 +65,6 @@ public class SupplierContract extends Contract {
 				id);
 	}
 
-	private Provider supplier;
-
 	public SupplierContract() {
 	}
 
@@ -221,11 +219,6 @@ public class SupplierContract extends Contract {
 		setTypeName("supplier-contract");
 		Element element = super.toXml(doc);
 		return element;
-	}
-
-	@Override
-	public Provider getProvider() {
-		return supplier;
 	}
 
 	public void deleteAccount(Account account) throws HttpException {

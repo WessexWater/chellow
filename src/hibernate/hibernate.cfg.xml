@@ -42,7 +42,6 @@
 		-->
 		<property name="hibernate.jdbc.batch_size">20</property>
 		<!-- Mapping files -->
-		<mapping resource="hibernate/Supplier.hbm.xml" />
 		<mapping resource="hibernate/Service.hbm.xml" />
 		<mapping resource="hibernate/VoltageLevel.hbm.xml" />
 		<mapping resource="hibernate/Source.hbm.xml" />
@@ -67,15 +66,11 @@
 		<mapping resource="hibernate/Role.hbm.xml" />
 		<mapping resource="hibernate/Permission.hbm.xml" />
 		<mapping resource="hibernate/Provider.hbm.xml" />
-		<mapping resource="hibernate/SupplierService.hbm.xml" />
+		<mapping resource="hibernate/SupplierContract.hbm.xml" />
 		<mapping resource="hibernate/Account.hbm.xml" />
-		<mapping resource="hibernate/MopService.hbm.xml" />
-		<mapping resource="hibernate/DceService.hbm.xml" />
-		<mapping resource="hibernate/Dce.hbm.xml" />
-		<mapping resource="hibernate/DcsService.hbm.xml" />
-		<mapping resource="hibernate/Dcs.hbm.xml" />
-		<mapping resource="hibernate/Government.hbm.xml" />
-		<mapping resource="hibernate/Mop.hbm.xml" />
+		<mapping resource="hibernate/MopContract.hbm.xml" />
+		<mapping resource="hibernate/HhdcContract.hbm.xml" />
+		<mapping resource="hibernate/NonCoreService.hbm.xml" />
 		<mapping resource="hibernate/Batch.hbm.xml" />
 		<mapping resource="hibernate/Bill.hbm.xml" />
 		<mapping resource="hibernate/Invoice.hbm.xml" />
@@ -83,7 +78,6 @@
 		<mapping resource="hibernate/BillSnag.hbm.xml" />
 		<mapping resource="hibernate/RateScript.hbm.xml" />
 		<mapping resource="hibernate/DsoService.hbm.xml" />
-		<mapping resource="hibernate/GovernmentService.hbm.xml" />
 		<mapping resource="hibernate/MpanTop.hbm.xml" />
 		<mapping resource="hibernate/Tpr.hbm.xml" />
 		<mapping resource="hibernate/TprLine.hbm.xml" />

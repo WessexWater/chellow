@@ -22,19 +22,13 @@
 
 package net.sf.chellow.physical;
 
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.UnsupportedEncodingException;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
-import java.util.TimeZone;
+
+import javax.servlet.ServletContext;
 
 import net.sf.chellow.monad.DeployerException;
 import net.sf.chellow.monad.DesignerException;
@@ -52,8 +46,6 @@ import net.sf.chellow.monad.types.UriPathElement;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-
-import com.Ostermiller.util.CSVParser;
 
 public class MpanTop extends PersistentEntity {
 	static public MpanTop getMpanTop(Long id) throws HttpException {
@@ -105,46 +97,22 @@ public class MpanTop extends PersistentEntity {
 		return mpanTops.get(0);
 	}
 
-	static public void loadFromCsv() throws HttpException {
+	static public void loadFromCsv(ServletContext sc) throws HttpException {
 		try {
-			ClassLoader classLoader = MpanTop.class.getClassLoader();
+			Mdd mdd = new Mdd(sc, "ValidSettlementConfigurationProfileClass",
+					new String[] { "Profile Class Id",
+							"Standard Settlement Configuration Id",
+							"Effective From Settlement Date {VSCPC}",
+							"Effective To Settlement Date {VSCPC}" });
 
-			CSVParser parser = new CSVParser(
-					new InputStreamReader(
-							classLoader
-									.getResource(
-											"net/sf/chellow/physical/ValidSettlementConfigurationProfileClass.csv")
-									.openStream(), "UTF-8"));
-			parser.setCommentStart("#;!");
-			parser.setEscapes("nrtf", "\n\r\t\f");
-			String[] titles = parser.getLine();
-			if (titles.length < 4
-					|| !titles[0].trim().equals("Profile Class Id")
-					|| !titles[1].trim().equals(
-							"Standard Settlement Configuration Id")
-					|| !titles[2].trim().equals(
-							"Effective From Settlement Date {VSCPC}")
-					|| !titles[3].trim().equals(
-							"Effective To Settlement Date {VSCPC}")) {
-				throw new UserException(
-						"The first line of the CSV must contain the titles "
-								+ "Profile Class Id, Standard Settlement Configuration Id, Effective From Settlement Date {VSCPC}, Effective To Settlement Date {VSCPC}.");
-			}
-			SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy",
-					Locale.UK);
-			dateFormat.setCalendar(new GregorianCalendar(TimeZone
-					.getTimeZone("GMT"), Locale.UK));
 			Map<String, List<List<Object>>> sscPcMap = new HashMap<String, List<List<Object>>>();
-			for (String[] values = parser.getLine(); values != null; values = parser
+			for (String[] values = mdd.getLine(); values != null; values = mdd
 					.getLine()) {
 				String sscCode = values[1];
 				PcCode pcCode = new PcCode(Integer.parseInt(values[0]));
-				Date validFrom = dateFormat.parse(values[2]);
-				Date validTo = null;
-				String validToStr = values[3];
-				if (validToStr.length() != 0) {
-					validTo = dateFormat.parse(values[3]);
-				}
+				Date validFrom = mdd.toDate(values[2]);
+				Date validTo = mdd.toDate(values[3]);
+
 				if (!sscPcMap.containsKey(sscCode)) {
 					sscPcMap.put(sscCode, new ArrayList<List<Object>>());
 				}
@@ -155,43 +123,22 @@ public class MpanTop extends PersistentEntity {
 				sscPc.add(validTo);
 				sscPcs.add(sscPc);
 			}
+			mdd = new Mdd(sc, "ValidMtcLlfcSsc", new String[] {
+					"Meter Timeswitch Class Id",
+					"Effective From Settlement Date {MTC}",
+					"Market Participant Id",
+					"Effective From Settlement Date {MTCPA}",
+					"Standard Settlement Configuration Id",
+					"Effective From Settlement Date {VMTCSC}",
+					"Line Loss Factor Class Id",
+					"Effective From Settlement Date {VMTCLSC}",
+					"Effective To Settlement Date {VMTCLSC}" });
 
-			parser = new CSVParser(new InputStreamReader(classLoader
-					.getResource("net/sf/chellow/physical/ValidMtcLlfcSsc.csv")
-					.openStream(), "UTF-8"));
-			parser.setCommentStart("#;!");
-			parser.setEscapes("nrtf", "\n\r\t\f");
-			titles = parser.getLine();
-
-			if (titles.length < 9
-					|| !titles[0].trim().equals("Meter Timeswitch Class Id")
-					|| !titles[1].trim().equals(
-							"Effective From Settlement Date {MTC}")
-					|| !titles[2].trim().equals("Market Participant Id")
-					|| !titles[3].trim().equals(
-							"Effective From Settlement Date {MTCPA}")
-					|| !titles[4].trim().equals(
-							"Standard Settlement Configuration Id")
-					|| !titles[5].trim().equals(
-							"Effective From Settlement Date {VMTCSC}")
-					|| !titles[6].trim().equals("Line Loss Factor Class Id")
-					|| !titles[7].trim().equals(
-							"Effective From Settlement Date {VMTCLSC}")
-					|| !titles[8].trim().equals(
-							"Effective To Settlement Date {VMTCLSC}")) {
-				throw new UserException(
-						"The first line of the CSV must contain the titles "
-								+ "Meter Timeswitch Class Id, Effective From Settlement Date {MTC}, Market Participant Id, Effective From Settlement Date {MTCPA}, Standard Settlement Configuration Id, Effective From Settlement Date {VMTCSC}, Line Loss Factor Class Id, Effective From Settlement Date {VMTCLSC}, Effective To Settlement Date {VMTCLSC}.");
-			}
-			for (String[] values = parser.getLine(); values != null; values = parser
+			for (String[] values = mdd.getLine(); values != null; values = mdd
 					.getLine()) {
 				Dso dso = Dso.getDso(values[2]);
-				Date validFrom = dateFormat.parse(values[7]);
-				Date validTo = null;
-				String validToStr = values[8];
-				if (validToStr.length() != 0) {
-					validTo = dateFormat.parse(validToStr);
-				}
+				Date validFrom = mdd.toDate(values[7]);
+				Date validTo = mdd.toDate(values[8]);
 				Llfc llfc = dso.getLlfc(new LlfcCode(Integer
 						.parseInt(values[6])), validFrom);
 				Mtc mtc = Mtc.getMtc(dso, new MtcCode(values[0]));
@@ -209,13 +156,7 @@ public class MpanTop extends PersistentEntity {
 							ssc, derivedFrom, derivedTo);
 				}
 			}
-		} catch (UnsupportedEncodingException e) {
-			throw new InternalException(e);
-		} catch (IOException e) {
-			throw new InternalException(e);
 		} catch (NumberFormatException e) {
-			throw new InternalException(e);
-		} catch (ParseException e) {
 			throw new InternalException(e);
 		}
 	}
