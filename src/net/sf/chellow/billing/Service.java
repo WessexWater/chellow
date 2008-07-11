@@ -66,8 +66,8 @@ public abstract class Service extends PersistentEntity implements
 		}
 		return contract;
 	}
-
-	private int type;
+	
+	private Provider provider;
 
 	private String name;
 
@@ -82,7 +82,7 @@ public abstract class Service extends PersistentEntity implements
 	public Service() {
 	}
 
-	public Service(int type, String name,
+	public Service(String name,
 			HhEndDate startDate, String chargeScript) throws HttpException {
 		rateScripts = new HashSet<RateScript>();
 		RateScript rateScript = new RateScript(this, startDate, null,
@@ -90,15 +90,15 @@ public abstract class Service extends PersistentEntity implements
 		rateScripts.add(rateScript);
 		setStartRateScript(rateScript);
 		setFinishRateScript(rateScript);
-		internalUpdate(type, name, chargeScript);
+		internalUpdate(name, chargeScript);
 	}
-
-	public int getType() {
-		return type;
+	
+	public Provider getProvider() {
+		return provider;
 	}
-
-	void setType(int type) {
-		this.type = type;
+	
+	void setProvider(Provider provider) {
+		this.provider = provider;
 	}
 
 	public String getName() {
@@ -141,32 +141,16 @@ public abstract class Service extends PersistentEntity implements
 		this.rateScripts = rateScripts;
 	}
 
-	protected void internalUpdate(int type, String name,
+	protected void internalUpdate(String name,
 			String chargeScript) throws HttpException {
 		setName(name);
-		if (type == TYPE_SERVICE_ONLY) {
-			if (chargeScript.length() > 0) {
-				throw new UserException(
-						"If the type is 'Service Only', there can't be a charge script.");
-			}
-			chargeScript = null;
-		} else if (type == TYPE_PASS_THROUGH || type == TYPE_CONTRACT) {
-			if (chargeScript == null) {
-				throw new InternalException(
-						"The chargeScript can only be null if it's 'service only'");
-			}
-		} else {
-			throw new UserException(
-					"The service type must be 'service only', 'pass through' or 'contract'");
-		}
-		setType(type);
 		setChargeScript(chargeScript);
 	}
 
 	@SuppressWarnings("unchecked")
-	public void update(int type, String name, String chargeScript)
+	public void update(String name, String chargeScript)
 			throws HttpException {
-		internalUpdate(type, name, chargeScript);
+		internalUpdate(name, chargeScript);
 		updateNotification();
 	}
 
@@ -280,8 +264,6 @@ public abstract class Service extends PersistentEntity implements
 
 	public void httpDelete(Invocation inv) throws HttpException {
 	}
-
-	abstract public Provider getProvider();
 
 	public String toString() {
 		return "Contract id " + getId() + " name " + getName();

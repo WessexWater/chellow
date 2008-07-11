@@ -10,6 +10,7 @@ import net.sf.chellow.monad.MethodNotAllowedException;
 import net.sf.chellow.monad.MonadUtils;
 import net.sf.chellow.monad.NotFoundException;
 import net.sf.chellow.monad.Urlable;
+import net.sf.chellow.monad.XmlTree;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
 
@@ -34,15 +35,16 @@ public class Providers implements Urlable {
 	public void httpGet(Invocation inv) throws HttpException {
 		Document doc = MonadUtils.newSourceDocument();
 		Element source = doc.getDocumentElement();
-		Element participantsElement = doc.createElement("participants");
+		Element providersElement = doc.createElement("providers");
 
-		source.appendChild(participantsElement);
-		for (Provider participant : (List<Provider>) Hiber
+		source.appendChild(providersElement);
+		for (Provider provider : (List<Provider>) Hiber
 				.session()
 				.createQuery(
-						"from Participant participant order by participant.code")
+						"from Provider provider order by provider.participant.code, provider.role.code")
 				.list()) {
-			participantsElement.appendChild(participant.toXml(doc));
+			providersElement.appendChild(provider.toXml(doc, new XmlTree(
+					"participant").put("role")));
 		}
 		inv.sendOk(doc);
 	}

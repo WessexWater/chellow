@@ -22,12 +22,12 @@
 
 package net.sf.chellow.data08;
 
-import net.sf.chellow.monad.InternalException;
+import net.sf.chellow.billing.Provider;
 import net.sf.chellow.monad.HttpException;
+import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.UserException;
 import net.sf.chellow.monad.types.MonadObject;
 import net.sf.chellow.physical.CheckDigit;
-import net.sf.chellow.physical.Dso;
 import net.sf.chellow.physical.DsoCode;
 import net.sf.chellow.physical.MpanUniquePart;
 
@@ -129,8 +129,8 @@ public class MpanCoreRaw extends MonadObject {
 		return Character.getNumericValue(str.charAt(position));
 	}
 
-	public Dso getDso() throws InternalException, HttpException {
-		return Dso.getDso(dsoCode);
+	public Provider getDso() throws InternalException, HttpException {
+		return Provider.getDso(dsoCode);
 	}
 
 	public boolean equals(Object obj) {

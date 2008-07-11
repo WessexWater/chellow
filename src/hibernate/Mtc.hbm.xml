@@ -31,8 +31,8 @@
 				<param name="sequence">mtc_id_sequence</param>
 			</generator>
 		</id>
-		<many-to-one name="dso" class="Dso" column="dso_id"
-			unique-key="mtc_unique" foreign-key="fkey_mtc_dso" />
+		<many-to-one name="dso" class="net.sf.chellow.billing.Provider"
+			column="dso_id" unique-key="mtc_unique" foreign-key="fkey_mtc_dso" />
 		<component name="code" class="MtcCode">
 			<property type="integer" name="integer" column="code"
 				unique-key="mtc_unique" />

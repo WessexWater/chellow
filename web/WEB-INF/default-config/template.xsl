@@ -48,7 +48,7 @@
 					</li>
 					<li>
 						<a
-							href="{/source/request/@context-path}/profile-classes/">
+							href="{/source/request/@context-path}/pcs/">
 							Profile Classes
 						</a>
 					</li>
@@ -140,31 +140,6 @@
 							href="{/source/request/@context-path}/providers/">
 							Providers
 						</a>
-					</li>
-					<li>
-						Global Providers
-						<ul>
-							<li>
-								<a
-									href="{/source/request/@context-path}/dsos/">
-									DSOs
-								</a>
-							</li>
-							<!-- 
-								<li>
-								<a
-								href="{/source/request/@context-path}/national-grid/">
-								National Grid
-								</a>
-								</li>
-							-->
-							<li>
-								<a
-									href="{/source/request/@context-path}/government/">
-									Government
-								</a>
-							</li>
-						</ul>
 					</li>
 				</ul>
 			</body>

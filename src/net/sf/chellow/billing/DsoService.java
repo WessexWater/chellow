@@ -37,7 +37,6 @@ import net.sf.chellow.monad.XmlTree;
 import net.sf.chellow.monad.types.MonadDate;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
-import net.sf.chellow.physical.Dso;
 import net.sf.chellow.physical.HhEndDate;
 import net.sf.chellow.physical.MarketRole;
 import org.w3c.dom.Document;
@@ -59,21 +58,12 @@ public class DsoService extends Service {
 		return (DsoService) Hiber.session().get(DsoService.class, id);
 	}
 
-	static public DsoService insertDsoService(Provider provider, String name,
-			HhEndDate startDate, String chargeScript) {
-		DsoService service = new DsoService();
-		Hiber.session().save(service);
-		return service;
-	}
-	
-	private Dso dso;
-
 	public DsoService() {
 	}
 
-	public DsoService(Dso provider, String name, HhEndDate startDate,
+	public DsoService(Provider provider, String name, HhEndDate startDate,
 			String chargeScript) throws HttpException {
-		super(Service.TYPE_PASS_THROUGH, name, startDate,
+		super(name, startDate,
 				chargeScript);
 		internalUpdate(provider, name, startDate, chargeScript);
 	}
@@ -83,12 +73,12 @@ public class DsoService extends Service {
 		if (provider.getRole().getCode() != MarketRole.DISTRIBUTOR) {
 			throw new UserException("The provider must be a distributor.");
 		}
-		super.internalUpdate(Service.TYPE_PASS_THROUGH, name, chargeScript);
+		super.internalUpdate(name, chargeScript);
 	}
 
 	@SuppressWarnings("unchecked")
 	public void update(String name, String chargeScript) throws HttpException {
-		super.update(Service.TYPE_PASS_THROUGH, name, chargeScript);
+		super.update(name, chargeScript);
 		Hiber.flush();
 		/*
 		 * Long numInSpace = null; if (finishDate == null) { numInSpace = (Long)
@@ -120,7 +110,7 @@ public class DsoService extends Service {
 	}
 
 	public MonadUri getUri() throws InternalException, HttpException {
-		return dso.servicesInstance().getUri().resolve(getUriId())
+		return getProvider().dsoServicesInstance().getUri().resolve(getUriId())
 				.append("/");
 	}
 
@@ -134,7 +124,7 @@ public class DsoService extends Service {
 		if (inv.hasParameter("delete")) {
 			delete();
 			Hiber.commit();
-			inv.sendFound(dso.servicesInstance().getUri());
+			inv.sendFound(getProvider().dsoServicesInstance().getUri());
 		} else {
 			String name = inv.getString("name");
 			String chargeScript = inv.getString("charge-script");
@@ -193,14 +183,5 @@ public class DsoService extends Service {
 	public Element toXml(Document doc) throws InternalException, HttpException {
 		setTypeName("dso-service");
 		return super.toXml(doc);
-	}
-
-	@Override
-	public Dso getProvider() {
-		return dso;
-	}
-
-	void setProvider(Dso dso) {
-		this.dso = dso;
 	}
 }

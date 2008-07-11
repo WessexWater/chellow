@@ -86,15 +86,13 @@ public class MopContract extends Contract {
 				getUriId()).append("/");
 	}
 
-	public void httpPost(Invocation inv) throws InternalException,
-			HttpException, DesignerException, DeployerException {
-		int type = inv.getInteger("type");
+	public void httpPost(Invocation inv) throws HttpException {
 		String name = inv.getString("name");
 		String chargeScript = inv.getString("charge-script");
 		if (!inv.isValid()) {
 			throw new UserException(document());
 		}
-		update(type, name, chargeScript);
+		update(name, chargeScript);
 		Hiber.commit();
 		inv.sendOk(document());
 	}

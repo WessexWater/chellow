@@ -11,9 +11,9 @@
 				<link rel="stylesheet" type="text/css"
 					href="{/source/request/@context-path}/style/" />
 				<title>
-					Chellow &gt; DSOs &gt;
+					Chellow &gt; Providers &gt;
 					<xsl:value-of
-						select="concat(/source/llfcs/dso/@code, ' &gt; LLFCs')" />
+						select="concat(/source/llfcs/provider/@id, ' &gt; LLFCs')" />
 				</title>
 			</head>
 
@@ -25,13 +25,13 @@
 						<span class="logo">Chellow</span>
 					</a>
 					<xsl:value-of select="' &gt; '" />
-					<a href="{/source/request/@context-path}/dsos/">
-						<xsl:value-of select="'DSOs'" />
+					<a href="{/source/request/@context-path}/providers/">
+						<xsl:value-of select="'Providers'" />
 					</a>
 					<xsl:value-of select="' &gt; '" />
 					<a
-						href="{/source/request/@context-path}/dsos/{/source/llfcs/dso/@id}/">
-						<xsl:value-of select="/source/llfcs/dso/@code" />
+						href="{/source/request/@context-path}/providers/{/source/llfcs/provider/@id}/">
+						<xsl:value-of select="/source/llfcs/provider/@id" />
 					</a>
 					<xsl:value-of select="' &gt; LLFCs '" />
 				</p>

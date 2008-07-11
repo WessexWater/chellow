@@ -35,7 +35,6 @@ import net.sf.chellow.physical.HhEndDate;
 import net.sf.chellow.physical.Organization;
 
 public abstract class Contract extends Service {
-	private Provider provider;
 	private Organization organization;
 
 	public Contract() {
@@ -43,7 +42,7 @@ public abstract class Contract extends Service {
 
 	public Contract(Provider provider, Organization organization, String name,
 			HhEndDate startDate, String chargeScript) throws HttpException {
-		super(Service.TYPE_CONTRACT, name, startDate, chargeScript);
+		super(name, startDate, chargeScript);
 		setOrganization(organization);
 	}
 
@@ -54,14 +53,6 @@ public abstract class Contract extends Service {
 	void setOrganization(Organization organization) {
 		this.organization = organization;
 	}
-	
-	public Provider getProvider() {
-		return provider;
-	}
-	
-	void setProvider(Provider provider) {
-		this.provider = provider;
-	}
 
 	public Batch insertBatch(String reference) {
 		Batch batch = new Batch(this, reference);
@@ -71,11 +62,11 @@ public abstract class Contract extends Service {
 
 	public void internalUpdate(String name, String chargeScript)
 			throws HttpException {
-		super.internalUpdate(Service.TYPE_CONTRACT, name, chargeScript);
+		super.internalUpdate(name, chargeScript);
 	}
 
 	public void update(String name, String chargeScript) throws HttpException {
-		super.update(Service.TYPE_CONTRACT, name, chargeScript);
+		super.update(name, chargeScript);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -126,15 +117,21 @@ public abstract class Contract extends Service {
 		}
 		return account;
 	}
-	
-public Account getAccount(String reference) throws HttpException {
-	Account account = (Account) Hiber.session().createQuery("from Account account where account.contract = :contract and account.reference = :reference").setEntity("contract", this).setString("reference", reference).uniqueResult();
-	if (account == null) {
-		throw new NotFoundException();
+
+	public Account getAccount(String reference) throws HttpException {
+		Account account = (Account) Hiber
+				.session()
+				.createQuery(
+						"from Account account where account.contract = :contract and account.reference = :reference")
+				.setEntity("contract", this).setString("reference", reference)
+				.uniqueResult();
+		if (account == null) {
+			throw new NotFoundException();
+		}
+		return account;
 	}
-	return account;
-}
-public Batches batchesInstance() {
-	return new Batches(this);
-}
+
+	public Batches batchesInstance() {
+		return new Batches(this);
+	}
 }

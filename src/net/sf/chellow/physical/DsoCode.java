@@ -22,8 +22,6 @@
 
 package net.sf.chellow.physical;
 
-
-
 import java.text.NumberFormat;
 import java.util.Locale;
 
@@ -37,17 +35,18 @@ public class DsoCode extends MonadString {
 		setMaximumLength(2);
 		onlyDigits = true;
 	}
-	
-	public DsoCode(String code) throws HttpException, InternalException  {
+
+	public DsoCode(String code) throws HttpException, InternalException {
 		this(null, code);
 	}
 
-	public DsoCode(String label, String code) throws HttpException, InternalException {
+	public DsoCode(String label, String code) throws HttpException,
+			InternalException {
 		this();
 		setLabel(label);
-			update(code);
+		update(code);
 	}
-	
+
 	public void update(String code) throws HttpException {
 		NumberFormat profileClassCodeFormat = NumberFormat
 				.getIntegerInstance(Locale.UK);
@@ -55,4 +54,7 @@ public class DsoCode extends MonadString {
 		super.update(profileClassCodeFormat.format(Integer.parseInt(code)));
 	}
 
+	public boolean isSettlement() {
+		return Integer.parseInt(toString()) < 24;
+	}
 }

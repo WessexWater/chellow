@@ -22,10 +22,9 @@
 
 package net.sf.chellow.physical;
 
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.UnsupportedEncodingException;
+import javax.servlet.ServletContext;
 
+import net.sf.chellow.monad.Debug;
 import net.sf.chellow.monad.DeployerException;
 import net.sf.chellow.monad.DesignerException;
 import net.sf.chellow.monad.Hiber;
@@ -43,11 +42,11 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
-import com.Ostermiller.util.CSVParser;
-
 public class MeasurementRequirement extends PersistentEntity {
-	static public MeasurementRequirement getMeasurementRequirement(Long id) throws HttpException {
-		MeasurementRequirement requirement = (MeasurementRequirement) Hiber.session().get(MeasurementRequirement.class, id);
+	static public MeasurementRequirement getMeasurementRequirement(Long id)
+			throws HttpException {
+		MeasurementRequirement requirement = (MeasurementRequirement) Hiber
+				.session().get(MeasurementRequirement.class, id);
 		if (requirement == null) {
 			throw new UserException(
 					"There is no measurement requirement with that id.");
@@ -55,35 +54,18 @@ public class MeasurementRequirement extends PersistentEntity {
 		return requirement;
 	}
 
-	static public void loadFromCsv() throws HttpException {
-		try {
-			ClassLoader classLoader = MeasurementRequirement.class.getClassLoader();
-			CSVParser parser = new CSVParser(new InputStreamReader(classLoader
-					.getResource(
-							"net/sf/chellow/physical/MeasurementRequirement.csv")
-					.openStream(), "UTF-8"));
-			parser.setCommentStart("#;!");
-			parser.setEscapes("nrtf", "\n\r\t\f");
-			String[] titles = parser.getLine();
-
-			if (titles.length < 2
-					|| !titles[0].trim().equals("Standard Settlement Configuration Id")
-					|| !titles[1].trim().equals(
-							"Time Pattern Regime Id")) {
-				throw new UserException(
-						"The first line of the CSV must contain the titles "
-								+ "Standard Settlement Configuration Id, Time Pattern Regime Id.");
-			}
-			for (String[] values = parser.getLine(); values != null; values = parser
-					.getLine()) {
-				Ssc ssc = Ssc.getSsc(values[0]);
-				ssc.insertMeasurementRequirement(Tpr.getTpr(values[1]));
-				}			
-		} catch (UnsupportedEncodingException e) {
-			throw new InternalException(e);
-		} catch (IOException e) {
-			throw new InternalException(e);
+	static public void loadFromCsv(ServletContext sc) throws HttpException {
+		Debug.print("Starting to add Measurement Requirements.");
+		Mdd mdd = new Mdd(sc, "MeasurementRequirement", new String[] {
+				"Standard Settlement Configuration Id",
+				"Time Pattern Regime Id" });
+		for (String[] values = mdd.getLine(); values != null; values = mdd
+				.getLine()) {
+			Ssc ssc = Ssc.getSsc(values[0]);
+			ssc.insertMeasurementRequirement(Tpr.getTpr(values[1]));
+			Hiber.close();
 		}
+		Debug.print("Finished adding Measurement Requirements.");
 	}
 
 	private Ssc ssc;

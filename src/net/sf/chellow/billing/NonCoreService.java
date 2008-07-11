@@ -63,8 +63,8 @@ public class NonCoreService extends Service {
 
 	public NonCoreService(Provider provider, String name, HhEndDate startDate,
 			String chargeScript) throws HttpException {
-		super(Service.TYPE_PASS_THROUGH, name, startDate, chargeScript);
-		internalUpdate(provider, Service.TYPE_PASS_THROUGH, name, chargeScript);
+		super(name, startDate, chargeScript);
+		internalUpdate(provider, name, chargeScript);
 	}
 
 	public Provider getProvider() {
@@ -77,17 +77,17 @@ public class NonCoreService extends Service {
 
 	@SuppressWarnings("unchecked")
 	public void update(String name, String chargeScript) throws HttpException {
-		super.update(Service.TYPE_PASS_THROUGH, name, chargeScript);
+		super.update(name, chargeScript);
 		Hiber.flush();
 	}
 
-	protected void internalUpdate(Provider provider, int type, String name,
+	protected void internalUpdate(Provider provider, String name,
 			String chargeScript) throws HttpException {
 		if (provider.getRole().getCode() != MarketRole.NON_CORE_ROLE) {
 			throw new InternalException(
 					"The provider must be of type Z for a non-core service.");
 		}
-		super.internalUpdate(Service.TYPE_PASS_THROUGH, name, chargeScript);
+		super.internalUpdate(name, chargeScript);
 		setProvider(provider);
 	}
 

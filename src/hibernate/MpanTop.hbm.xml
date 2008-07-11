@@ -32,24 +32,15 @@
 			</generator>
 		</id>
 		<many-to-one name="pc" class="Pc" column="pc_id" not-null="true"
-			foreign-key="fkey_mpan__pc" unique-key="mpan_top_unique" />
+			foreign-key="fkey_mpan__pc" />
 		<many-to-one name="mtc" class="Mtc" column="mtc_id"
-			not-null="true" foreign-key="fkey_mpan_mtc"
-			unique-key="mpan_top_unique" />
+			not-null="true" foreign-key="fkey_mpan_mtc" />
 		<many-to-one name="llfc" class="Llfc" column="llfc_id"
-			not-null="true" foreign-key="fkey_mpan_llfc"
-			unique-key="mpan_top_unique" />
+			not-null="true" foreign-key="fkey_mpan_llfc" />
 		<many-to-one name="ssc" class="Ssc" column="ssc_id"
-			not-null="true" foreign-key="fkey_mpan_ssc"
-			unique-key="mpan_top_unique" />
-		
-		<!--
-		<set name="sscs" lazy="true" cascade="delete-orphan"
-			table="mpan_top_ssc">
-			<key column="mpan_top_id"
-				foreign-key="fkey_mpan_top_ssc__mpan_top" />
-			<many-to-many column="ssc_id" class="Ssc" />
-		</set>
-		-->
+			foreign-key="fkey_mpan_ssc" />
+		<property type="timestamp" name="validFrom" column="valid_from"
+			not-null="true" />
+		<property type="timestamp" name="validTo" column="valid_to" />
 	</class>
 </hibernate-mapping>

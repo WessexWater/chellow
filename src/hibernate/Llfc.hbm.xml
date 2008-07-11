@@ -31,7 +31,7 @@
 				<param name="sequence">llfc_id_sequence</param>
 			</generator>
 		</id>
-		<many-to-one name="dso" class="Dso" column="dso_id"
+		<many-to-one name="dso" class="net.sf.chellow.billing.Provider" column="dso_id"
 			not-null="true" foreign-key="fkey_llfc_dso" />
 		<component name="code" class="LlfcCode">
 			<property type="integer" name="integer" column="code"

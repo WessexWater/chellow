@@ -32,6 +32,7 @@ import net.sf.chellow.billing.Account;
 import net.sf.chellow.billing.HhdcContract;
 import net.sf.chellow.billing.Invoice;
 import net.sf.chellow.billing.InvoiceMpan;
+import net.sf.chellow.billing.Provider;
 import net.sf.chellow.billing.SupplierContract;
 import net.sf.chellow.monad.DeployerException;
 import net.sf.chellow.monad.DesignerException;
@@ -152,8 +153,8 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 		return isImport.getBoolean() ? getImportMpan() : getExportMpan();
 	}
 
-	public Dso getDso() {
-		Dso dso = null;
+	public Provider getDso() {
+		Provider dso = null;
 		if (getImportMpan() != null) {
 			dso = getImportMpan().getMpanCore().getDso();
 		}
@@ -291,8 +292,8 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 
 		// Check that if settlement MPANs then they're the same DSO.
 		if (importMpanCore != null && exportMpanCore != null) {
-			if (importMpanCore.getDso().isSettlement()
-					&& exportMpanCore.getDso().isSettlement()
+			if (importMpanCore.getDso().getDsoCode().isSettlement()
+					&& exportMpanCore.getDso().getDsoCode().isSettlement()
 					&& !importMpanCore.getDso().equals(exportMpanCore.getDso())) {
 				throw new UserException(
 						"Two settlement MPAN generations on the same supply must have the same DSO.");
@@ -303,8 +304,8 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 						"The voltage level indicated by the Line Loss Factor must be the same for both the MPANs.");
 			}
 		}
-		Dso dso = getDso();
-		if (dso != null && dso.getCode().equals(new DsoCode("22"))) {
+		Provider dso = getDso();
+		if (dso != null && dso.getDsoCode().equals(new DsoCode("22"))) {
 			/*
 			 * if (importMpan != null) { LineLossFactorCode code =
 			 * importLineLossFactor.getCode(); if ((code.equals(new

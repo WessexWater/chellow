@@ -1,11 +1,11 @@
 package net.sf.chellow.physical;
 
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.UnsupportedEncodingException;
 import java.util.HashSet;
 import java.util.Set;
 
+import javax.servlet.ServletContext;
+
+import net.sf.chellow.monad.Debug;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.InternalException;
@@ -21,8 +21,6 @@ import net.sf.chellow.monad.types.UriPathElement;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
-
-import com.Ostermiller.util.CSVParser;
 
 public class Tpr extends PersistentEntity {
 	static public Tpr findTpr(String code) {
@@ -49,35 +47,19 @@ public class Tpr extends PersistentEntity {
 		return tpr;
 	}
 
-	static public void loadFromCsv() throws HttpException {
-		try {
-			ClassLoader classLoader = Participant.class.getClassLoader();
-			CSVParser parser = new CSVParser(new InputStreamReader(classLoader
-					.getResource(
-							"net/sf/chellow/physical/TimePatternRegime.csv")
-					.openStream(), "UTF-8"));
-			parser.setCommentStart("#;!");
-			parser.setEscapes("nrtf", "\n\r\t\f");
-			String[] titles = parser.getLine();
-			if (titles.length < 3
-					|| !titles[0].trim().equals("Time Pattern Regime Id")
-					|| !titles[1].trim().equals("Tele-switch/Clock Indicator")
-					|| !titles[2].trim().equals("GMT Indicator")) {
-				throw new UserException(
-						"The first line of the CSV must contain the titles "
-								+ "Time Pattern Regime Id, Tele-switch/Clock Indicator, GMT Indicator");
-			}
-			for (String[] values = parser.getLine(); values != null; values = parser
-					.getLine()) {
-				Hiber.session().save(
-						new Tpr(values[0], values[1].equals("S"), values[2]
-								.equals("Y")));
-			}
-		} catch (UnsupportedEncodingException e) {
-			throw new InternalException(e);
-		} catch (IOException e) {
-			throw new InternalException(e);
+	static public void loadFromCsv(ServletContext sc) throws HttpException {
+		Debug.print("Starting to add TPRs.");
+		Mdd mdd = new Mdd(sc, "TimePatternRegime", new String[] {
+				"Time Pattern Regime Id", "Tele-switch/Clock Indicator",
+				"GMT Indicator" });
+		for (String[] values = mdd.getLine(); values != null; values = mdd
+				.getLine()) {
+			Hiber.session().save(
+					new Tpr(values[0], values[1].equals("S"), values[2]
+							.equals("Y")));
+			Hiber.close();
 		}
+		Debug.print("Finished adding TPRs.");
 	}
 
 	private String code;
@@ -160,7 +142,8 @@ public class Tpr extends PersistentEntity {
 	public void httpGet(Invocation inv) throws HttpException {
 		Document doc = MonadUtils.newSourceDocument();
 		Element source = doc.getDocumentElement();
-		source.appendChild(toXml(doc, new XmlTree("measurementRequirements", new XmlTree("ssc")).put("clockIntervals")));
+		source.appendChild(toXml(doc, new XmlTree("measurementRequirements",
+				new XmlTree("ssc")).put("clockIntervals")));
 		inv.sendOk(doc);
 	}
 

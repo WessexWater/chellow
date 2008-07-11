@@ -2,15 +2,12 @@ package net.sf.chellow.physical;
 
 import java.util.List;
 
-import net.sf.chellow.monad.DeployerException;
-import net.sf.chellow.monad.DesignerException;
 import net.sf.chellow.monad.Hiber;
+import net.sf.chellow.monad.HttpException;
+import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Invocation;
 import net.sf.chellow.monad.MonadUtils;
-import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Urlable;
-import net.sf.chellow.monad.HttpException;
-
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
 import net.sf.chellow.ui.Chellow;
@@ -42,17 +39,13 @@ public class Pcs implements Urlable {
 	}
 
 	@SuppressWarnings("unchecked")
-	public void httpGet(Invocation inv) throws DesignerException,
-			InternalException, HttpException, DeployerException {
+	public void httpGet(Invocation inv) throws HttpException {
 		Document doc = MonadUtils.newSourceDocument();
 		Element source = doc.getDocumentElement();
 
-		for (Pc profileClass : (List<Pc>) Hiber
-				.session()
-				.createQuery(
-						"from ProfileClass profileClass order by profileClass.code")
-				.list()) {
-			source.appendChild(profileClass.toXml(doc));
+		for (Pc pc : (List<Pc>) Hiber.session().createQuery(
+				"from Pc pc order by pc.code").list()) {
+			source.appendChild(pc.toXml(doc));
 		}
 		inv.sendOk(doc);
 	}

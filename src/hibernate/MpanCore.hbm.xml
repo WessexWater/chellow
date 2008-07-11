@@ -4,7 +4,7 @@
           "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
 <!-- 
 	
-	Copyright 2005-2007 Meniscus Systems Ltd
+	Copyright 2005-2008 Meniscus Systems Ltd
 	
 	This file is part of Chellow.
 	
@@ -33,8 +33,8 @@
 		</id>
 		<many-to-one name="supply" class="Supply" column="supply_id"
 			not-null="true" foreign-key="fkey_mpan_core_supply" />
-		<many-to-one name="dso" class="Dso" column="dso_id"
-			unique-key="mpan_core" not-null="true"
+		<many-to-one name="dso" class="net.sf.chellow.billing.Provider"
+			column="dso_id" unique-key="mpan_core" not-null="true"
 			foreign-key="fkey_mpan_core_dso" />
 		<component name="uniquePart" class="MpanUniquePart">
 			<property type="string" name="string" column="unique_part"

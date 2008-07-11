@@ -31,7 +31,7 @@ public class Mdd {
 					new InputStreamReader(
 							context
 									.getResource(
-											"mdd/" + tableName + ".csv")
+											"/WEB-INF/mdd/" + tableName + ".csv")
 									.openStream(), "UTF-8"));
 
 			parser.setCommentStart("#;!");

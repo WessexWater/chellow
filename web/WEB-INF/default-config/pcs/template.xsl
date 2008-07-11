@@ -42,11 +42,11 @@
 					</thead>
 					<tbody>
 
-						<xsl:for-each select="/source/profile-class">
+						<xsl:for-each select="/source/pc">
 							<tr>
 								<td>
 									<a
-										href="{/source/request/@context-path}/profile-classes/{@id}/">
+										href="{/source/request/@context-path}/pcs/{@id}/">
 										<xsl:value-of select="@code" />
 									</a>
 								</td>

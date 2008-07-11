@@ -40,7 +40,6 @@ import net.sf.chellow.monad.XmlTree;
 import net.sf.chellow.monad.types.MonadDate;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
-import net.sf.chellow.physical.Dso;
 import net.sf.chellow.physical.HhEndDate;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -58,10 +57,10 @@ public class DsoServices implements Urlable, XmlDescriber {
 		}
 	}
 	
-	private Dso dso;
+	private Provider provider;
 
-	public DsoServices(Dso dso) {
-		this.dso = dso;
+	public DsoServices(Provider provider) {
+		this.provider = provider;
 	}
 
 	public UriPathElement getUrlId() {
@@ -69,7 +68,7 @@ public class DsoServices implements Urlable, XmlDescriber {
 	}
 
 	public MonadUri getUri() throws InternalException, HttpException {
-		return dso.getUri().resolve(getUrlId()).append("/");
+		return provider.getUri().resolve(getUrlId()).append("/");
 	}
 
 	public void httpPost(Invocation inv) throws InternalException,
@@ -80,7 +79,7 @@ public class DsoServices implements Urlable, XmlDescriber {
 		if (!inv.isValid()) {
 			throw new UserException(document());
 		}
-		DsoService service = dso.insertService(name, HhEndDate
+		DsoService service = provider.insertDsoService(name, HhEndDate
 				.roundDown(startDate), chargeScript);
 		Hiber.commit();
 		inv.sendCreated(document(), service.getUri());
@@ -93,12 +92,12 @@ public class DsoServices implements Urlable, XmlDescriber {
 		Element source = doc.getDocumentElement();
 		Element servicesElement = (Element) toXml(doc);
 		source.appendChild(servicesElement);
-		servicesElement.appendChild(dso.toXml(doc));
+		servicesElement.appendChild(provider.toXml(doc));
 		for (DsoService service : (List<DsoService>) Hiber
 				.session()
 				.createQuery(
 						"from DsoService service where service.provider = :dso order by service.finishRateScript.finishDate.date desc")
-				.setEntity("dso", dso).list()) {
+				.setEntity("dso", provider).list()) {
 			servicesElement.appendChild(service.toXml(doc));
 		}
 		source.appendChild(MonadDate.getMonthsXml(doc));
@@ -118,7 +117,7 @@ public class DsoServices implements Urlable, XmlDescriber {
 				.session()
 				.createQuery(
 						"from DsoService service where service.provider = :dso and service.id = :serviceId")
-				.setEntity("dso", dso).setLong("serviceId",
+				.setEntity("dso", provider).setLong("serviceId",
 						Long.parseLong(uriId.getString())).uniqueResult();
 		if (service == null) {
 			throw new NotFoundException();

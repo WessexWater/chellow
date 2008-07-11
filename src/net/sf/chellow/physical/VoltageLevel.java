@@ -22,8 +22,6 @@
 
 package net.sf.chellow.physical;
 
-import java.util.List;
-
 import net.sf.chellow.monad.DeployerException;
 import net.sf.chellow.monad.DesignerException;
 import net.sf.chellow.monad.Hiber;
@@ -35,7 +33,6 @@ import net.sf.chellow.monad.UserException;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
 
-import org.hibernate.HibernateException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -66,6 +63,7 @@ public class VoltageLevel extends PersistentEntity {
 		insertVoltageLevel(LV, "Low voltage");
 		insertVoltageLevel(HV, "High voltage");
 		insertVoltageLevel(EHV, "Extra high voltage");
+		Hiber.close();
 	}
 
 	private static VoltageLevel insertVoltageLevel(String code, String name)
@@ -75,18 +73,7 @@ public class VoltageLevel extends PersistentEntity {
 		Hiber.flush();
 		return voltageLevel;
 	}
-
-	@SuppressWarnings("unchecked")
-	public static List<VoltageLevel> getVoltageLevels()
-			throws InternalException {
-		try {
-			return Hiber.session()
-					.createQuery("from VoltageLevel voltageLevel").list();
-		} catch (HibernateException e) {
-			throw new InternalException(e);
-		}
-	}
-
+	
 	private String code;
 
 	private String name;

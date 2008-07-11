@@ -22,16 +22,11 @@
 
 package net.sf.chellow.physical;
 
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.UnsupportedEncodingException;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.GregorianCalendar;
-import java.util.Locale;
-import java.util.TimeZone;
 
+import javax.servlet.ServletContext;
+
+import net.sf.chellow.monad.Debug;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.InternalException;
@@ -47,8 +42,6 @@ import net.sf.chellow.monad.types.UriPathElement;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
-
-import com.Ostermiller.util.CSVParser;
 
 public class MtcPaymentType extends PersistentEntity {
 	static public MtcPaymentType getMtcPaymentType(String code)
@@ -80,47 +73,20 @@ public class MtcPaymentType extends PersistentEntity {
 		return type;
 	}
 
-	static public void loadFromCsv() throws HttpException {
-		try {
-			ClassLoader classLoader = MeterType.class.getClassLoader();
-			CSVParser parser = new CSVParser(new InputStreamReader(classLoader
-					.getResource("net/sf/chellow/physical/MtcPaymentType.csv")
-					.openStream(), "UTF-8"));
-			parser.setCommentStart("#;!");
-			parser.setEscapes("nrtf", "\n\r\t\f");
-			String[] titles = parser.getLine();
-
-			if (titles.length < 4
-					|| !titles[0].trim().equals("MTC Payment Type Id")
-					|| !titles[1].trim().equals("MTC Payment Type Description")
-					|| !titles[2].trim().equals(
-							"Effective From Settlement Date {MPT}")
-					|| !titles[3].trim().equals(
-							"Effective To Settlement Date {MPT}")) {
-				throw new UserException(
-						"The first line of the CSV must contain the titles "
-								+ "MTC Payment Type Id, MTC Payment Type Description, Effective From Settlement Date {MPT}, Effective To Settlement Date {MPT}.");
-			}
-			SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy",
-					Locale.UK);
-			dateFormat.setCalendar(new GregorianCalendar(TimeZone
-					.getTimeZone("GMT"), Locale.UK));
-			for (String[] values = parser.getLine(); values != null; values = parser
-					.getLine()) {
-				String validToStr = values[3];
-				Date validTo = validToStr.length() == 0 ? null : dateFormat
-						.parse(validToStr);
-				Hiber.session().save(
-						new MtcPaymentType(values[0], values[1], dateFormat
-								.parse(values[2]), validTo));
-			}
-		} catch (UnsupportedEncodingException e) {
-			throw new InternalException(e);
-		} catch (IOException e) {
-			throw new InternalException(e);
-		} catch (ParseException e) {
-			throw new InternalException(e);
+	static public void loadFromCsv(ServletContext sc) throws HttpException {
+		Debug.print("Starting to add MTC Payment Types.");
+		Mdd mdd = new Mdd(sc, "MtcPaymentType", new String[] {
+				"MTC Payment Type Id", "MTC Payment Type Description",
+				"Effective From Settlement Date {MPT}",
+				"Effective To Settlement Date {MPT}" });
+		for (String[] values = mdd.getLine(); values != null; values = mdd
+				.getLine()) {
+			Hiber.session().save(
+					new MtcPaymentType(values[0], values[1], mdd
+							.toDate(values[2]), mdd.toDate(values[3])));
+			Hiber.close();
 		}
+		Debug.print("Finished adding MTC Payment Types.");
 	}
 
 	private String code;

@@ -22,16 +22,11 @@
 
 package net.sf.chellow.physical;
 
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.UnsupportedEncodingException;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.GregorianCalendar;
-import java.util.Locale;
-import java.util.TimeZone;
 
+import javax.servlet.ServletContext;
+
+import net.sf.chellow.monad.Debug;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.InternalException;
@@ -47,8 +42,6 @@ import net.sf.chellow.monad.types.UriPathElement;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
-
-import com.Ostermiller.util.CSVParser;
 
 public class MeterType extends PersistentEntity {
 	static public MeterType getMtcMeterType(String code) throws HttpException {
@@ -76,47 +69,20 @@ public class MeterType extends PersistentEntity {
 		return type;
 	}
 
-	static public void loadFromCsv() throws HttpException {
-		try {
-			ClassLoader classLoader = MeterType.class.getClassLoader();
-			CSVParser parser = new CSVParser(new InputStreamReader(classLoader
-					.getResource("net/sf/chellow/physical/MtcMeterType.csv")
-					.openStream(), "UTF-8"));
-			parser.setCommentStart("#;!");
-			parser.setEscapes("nrtf", "\n\r\t\f");
-			String[] titles = parser.getLine();
-
-			if (titles.length < 4
-					|| !titles[0].trim().equals("MTC Meter Type Id")
-					|| !titles[1].trim().equals("MTC Meter Type Description")
-					|| !titles[2].trim().equals(
-							"Effective From Settlement Date {MMT}")
-					|| !titles[3].trim().equals(
-							"Effective To Settlement Date {MMT}")) {
-				throw new UserException(
-						"The first line of the CSV must contain the titles "
-								+ "MTC Meter Type Id, MTC Meter Type Description, Effective From Settlement Date {MMT}, Effective To Settlement Date {MMT}.");
-			}
-			SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy",
-					Locale.UK);
-			dateFormat.setCalendar(new GregorianCalendar(TimeZone
-					.getTimeZone("GMT"), Locale.UK));
-			for (String[] values = parser.getLine(); values != null; values = parser
-					.getLine()) {
-				String toDateStr = values[3];
-				Date toDate = toDateStr.length() == 0 ? null : dateFormat
-						.parse(toDateStr);
-				Hiber.session().save(
-						new MeterType(values[0], values[1], dateFormat
-								.parse(values[2]), toDate));
-			}
-		} catch (UnsupportedEncodingException e) {
-			throw new InternalException(e);
-		} catch (IOException e) {
-			throw new InternalException(e);
-		} catch (ParseException e) {
-			throw new InternalException(e);
+	static public void loadFromCsv(ServletContext sc) throws HttpException {
+		Debug.print("Starting to add Meter Types.");
+		Mdd mdd = new Mdd(sc, "MtcMeterType", new String[] {
+				"MTC Meter Type Id", "MTC Meter Type Description",
+				"Effective From Settlement Date {MMT}",
+				"Effective To Settlement Date {MMT}" });
+		for (String[] values = mdd.getLine(); values != null; values = mdd
+				.getLine()) {
+			Hiber.session().save(
+					new MeterType(values[0], values[1], mdd.toDate(values[2]),
+							mdd.toDate(values[3])));
+			Hiber.close();
 		}
+		Debug.print("Finished adding Meter Types.");
 	}
 
 	private String code;

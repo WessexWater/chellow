@@ -4,7 +4,7 @@
           "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
 <!-- 
 	
-	Copyright 2005-2007 Meniscus Systems Ltd
+	Copyright 2005-2008 Meniscus Systems Ltd
 	
 	This file is part of Chellow.
 	
@@ -41,6 +41,11 @@
 		<property type="timestamp" name="validFrom" column="valid_from"
 			not-null="true" />
 		<property type="timestamp" name="validTo" column="valid_to" />
+		<component name="dsoCode"
+			class="net.sf.chellow.physical.DsoCode">
+			<property name="string" column="dso_code" />
+		</component>
+
 	</class>
 </hibernate-mapping>
 

@@ -22,19 +22,14 @@
 
 package net.sf.chellow.physical;
 
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.UnsupportedEncodingException;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.GregorianCalendar;
-import java.util.Locale;
-import java.util.TimeZone;
 
+import javax.servlet.ServletContext;
+
+import net.sf.chellow.billing.Provider;
+import net.sf.chellow.monad.Debug;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
-import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Invocation;
 import net.sf.chellow.monad.MonadUtils;
 import net.sf.chellow.monad.Urlable;
@@ -48,15 +43,14 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
-import com.Ostermiller.util.CSVParser;
-
 public class Mtc extends PersistentEntity {
-	static public Mtc getMtc(Dso dso, MtcCode mtcCode) throws HttpException {
+	static public Mtc getMtc(Provider dso, MtcCode mtcCode)
+			throws HttpException {
 		return findMtc(dso, mtcCode, true);
 	}
 
-	static public Mtc findMtc(Dso dso, MtcCode mtcCode, boolean throwException)
-			throws HttpException {
+	static public Mtc findMtc(Provider dso, MtcCode mtcCode,
+			boolean throwException) throws HttpException {
 		dso = mtcCode.hasDso() ? dso : null;
 		Mtc mtc = null;
 		if (dso == null) {
@@ -75,7 +69,7 @@ public class Mtc extends PersistentEntity {
 		}
 		if (throwException && mtc == null) {
 			throw new UserException("There isn't a meter timeswitch with DSO '"
-					+ (dso == null ? dso : dso.getCode())
+					+ (dso == null ? dso : dso.getDsoCode())
 					+ "' and Meter Timeswitch Code '" + mtcCode + "'");
 		}
 		return mtc;
@@ -90,159 +84,107 @@ public class Mtc extends PersistentEntity {
 		return mtc;
 	}
 
-	static public Mtc insertMtc(Dso dso, MtcCode code, String description,
+	static public Mtc insertMtc(Provider dso, MtcCode code, String description,
 			boolean hasRelatedMetering, Boolean hasComms, Boolean isHh,
 			MeterType meterType, MtcPaymentType paymentType, Integer tprCount,
 			Date from, Date to) throws HttpException {
 
-		Mtc mtc = new Mtc(dso, code, description,
-				hasRelatedMetering, hasComms, isHh, meterType, paymentType,
-				tprCount, from, to);
+		Mtc mtc = new Mtc(dso, code, description, hasRelatedMetering, hasComms,
+				isHh, meterType, paymentType, tprCount, from, to);
 		Hiber.session().save(mtc);
 		Hiber.flush();
 		return mtc;
 	}
 
-	static public void loadFromCsv() throws HttpException {
-		try {
-			ClassLoader classLoader = Mtc.class.getClassLoader();
-			CSVParser parser = new CSVParser(new InputStreamReader(classLoader
-					.getResource(
-							"net/sf/chellow/physical/MeterTimeswitchClass.csv")
-					.openStream(), "UTF-8"));
-			parser.setCommentStart("#;!");
-			parser.setEscapes("nrtf", "\n\r\t\f");
-			String[] titles = parser.getLine();
-
-			if (titles.length < 11
-					|| !titles[0].trim().equals("Meter Timeswitch Class Id")
-					|| !titles[1].trim().equals(
-							"Effective From Settlement Date {MTC}")
-					|| !titles[2].trim().equals(
-							"Effective To Settlement Date {MTC}")
-					|| !titles[3].trim().equals(
-							"Meter Timeswitch Class Description")
-					|| !titles[4].trim().equals("MTC Common Code Indicator")
-					|| !titles[5].trim().equals(
-							"MTC Related Metering System Indicator")
-					|| !titles[6].trim().equals("MTC Meter Type Id")
-					|| !titles[7].trim().equals("MTC Payment Type Id")
-					|| !titles[8].trim().equals("MTC Communication Indicator")
-					|| !titles[9].trim().equals("MTC Type Indicator")
-					|| !titles[10].trim().equals("MTC TPR Count")) {
-				throw new UserException(
-						"The first line of the CSV must contain the titles "
-								+ "Meter Timeswitch Class Id, Effective From Settlement Date {MTC}, Effective To Settlement Date {MTC}, Meter Timeswitch Class Description, MTC Common Code Indicator, MTC Related Metering System Indicator, MTC Meter Type Id, MTC Payment Type Id, MTC Communication Indicator, MTC Type Indicator, MTC TPR Count.");
-			}
-			SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy",
-					Locale.UK);
-			dateFormat.setCalendar(new GregorianCalendar(TimeZone
-					.getTimeZone("GMT"), Locale.UK));
-			for (String[] values = parser.getLine(); values != null; values = parser
-					.getLine()) {
-				if (values[4].equals("T")) {
-					MtcCode code = new MtcCode(values[0]);
-					String description = values[3];
-					Boolean hasComms = null;
-					if (values[8].equals("Y")) {
-						hasComms = Boolean.TRUE;
-					} else if (values[8].equals("N")) {
-						hasComms = Boolean.FALSE;
-					}
-					Boolean isHh = null;
-					Integer tprCount = null;
-					if (values[9].equals("H")) {
-						isHh = Boolean.TRUE;
-					} else if (values[9].equals("N")) {
-						isHh = Boolean.FALSE;
-						tprCount = Integer.parseInt(values[10]);
-					}
-					String validToStr = values[2];
-					Date validFrom = dateFormat.parse(values[1]);
-					Date validTo = validToStr.length() == 0 ? null : dateFormat
-							.parse(validToStr);
-					MeterType meterType = MeterType.getMtcMeterType(values[6]);
-					MtcPaymentType paymentType = MtcPaymentType
-							.getMtcPaymentType(values[7]);
-					boolean hasRelatedMetering = values[5].equals("T");
-					Mtc mtc = Mtc.insertMtc(null, code, description,
-							hasRelatedMetering, hasComms, isHh, meterType,
-							paymentType, tprCount, validFrom, validTo);
-					Hiber.session().save(mtc);
-					Hiber.flush();
-				}
-			}
-
-			parser = new CSVParser(new InputStreamReader(classLoader
-					.getResource("net/sf/chellow/physical/MtcInPesArea.csv")
-					.openStream(), "UTF-8"));
-			parser.setCommentStart("#;!");
-			parser.setEscapes("nrtf", "\n\r\t\f");
-			titles = parser.getLine();
-			if (titles.length < 11
-					|| !titles[0].trim().equals("Meter Timeswitch Class Id")
-					|| !titles[1].trim().equals(
-							"Effective From Settlement Date {MTC}")
-					|| !titles[2].trim().equals("Market Participant Id")
-					|| !titles[3].trim().equals(
-							"Effective From Settlement Date {MTCPA}")
-					|| !titles[4].trim().equals(
-							"Effective To Settlement Date {MTCPA}")
-					|| !titles[5].trim().equals(
-							"Meter Timeswitch Class Description")
-					|| !titles[6].trim().equals("MTC Meter Type Id")
-					|| !titles[7].trim().equals("MTC Payment Type Id")
-					|| !titles[8].trim().equals("MTC Communication Indicator")
-					|| !titles[9].trim().equals("MTC Type Indicator")
-					|| !titles[10].trim().equals("MTC TPR Count")) {
-				throw new UserException(
-						"The first line of the CSV must contain the titles "
-								+ "Meter Timeswitch Class Id, Effective From Settlement Date {MTC}, Market Participant Id, Effective From Settlement Date {MTCPA}, Effective To Settlement Date {MTCPA}, Meter Timeswitch Class Description, MTC Meter Type Id, MTC Payment Type Id, MTC Communication Indicator, MTC Type Indicator, MTC TPR Count.");
-			}
-			for (String[] values = parser.getLine(); values != null; values = parser
-					.getLine()) {
+	static public void loadFromCsv(ServletContext sc) throws HttpException {
+		Debug.print("Starting to add MTCs.");
+		Mdd mdd = new Mdd(sc, "MeterTimeswitchClass", new String[] {
+				"Meter Timeswitch Class Id",
+				"Effective From Settlement Date {MTC}",
+				"Effective To Settlement Date {MTC}",
+				"Meter Timeswitch Class Description",
+				"MTC Common Code Indicator",
+				"MTC Related Metering System Indicator", "MTC Meter Type Id",
+				"MTC Payment Type Id", "MTC Communication Indicator",
+				"MTC Type Indicator", "MTC TPR Count" });
+		for (String[] values = mdd.getLine(); values != null; values = mdd
+				.getLine()) {
+			if (values[4].equals("T")) {
 				MtcCode code = new MtcCode(values[0]);
-				if (code.hasDso()) {
-					Dso dso = Dso.getDso(values[2]);
-					String description = values[5];
-					Boolean hasComms = null;
-					if (values[8].equals("Y")) {
-						hasComms = Boolean.TRUE;
-					} else if (values[8].equals("N")) {
-						hasComms = Boolean.FALSE;
-					}
-					Boolean isHh = null;
-					Integer tprCount = null;
-					if (values[9].equals("H")) {
-						isHh = Boolean.TRUE;
-					} else if (values[9].equals("N")) {
-						isHh = Boolean.FALSE;
-						tprCount = Integer.parseInt(values[10]);
-					}
-					String validToStr = values[4];
-					Date validFrom = dateFormat.parse(values[3]);
-					Date validTo = validToStr.length() == 0 ? null : dateFormat
-							.parse(validToStr);
-					MeterType meterType = MeterType.getMtcMeterType(values[6]);
-					MtcPaymentType paymentType = MtcPaymentType
-							.getMtcPaymentType(values[7]);
-					Mtc mtc = Mtc.insertMtc(dso, code, description, false,
-							hasComms, isHh, meterType, paymentType, tprCount,
-							validFrom, validTo);
-					Hiber.session().save(mtc);
-					Hiber.flush();
+				String description = values[3];
+				Boolean hasComms = null;
+				if (values[8].equals("Y")) {
+					hasComms = Boolean.TRUE;
+				} else if (values[8].equals("N")) {
+					hasComms = Boolean.FALSE;
 				}
+				Boolean isHh = null;
+				Integer tprCount = null;
+				if (values[9].equals("H")) {
+					isHh = Boolean.TRUE;
+				} else if (values[9].equals("N")) {
+					isHh = Boolean.FALSE;
+					tprCount = Integer.parseInt(values[10]);
+				}
+				Date validFrom = mdd.toDate(values[1]);
+				Date validTo = mdd.toDate(values[2]);
+				MeterType meterType = MeterType.getMtcMeterType(values[6]);
+				MtcPaymentType paymentType = MtcPaymentType
+						.getMtcPaymentType(values[7]);
+				boolean hasRelatedMetering = values[5].equals("T");
+				Mtc mtc = Mtc.insertMtc(null, code, description,
+						hasRelatedMetering, hasComms, isHh, meterType,
+						paymentType, tprCount, validFrom, validTo);
+				Hiber.session().save(mtc);
+				Hiber.close();
 			}
-		} catch (UnsupportedEncodingException e) {
-			throw new InternalException(e);
-		} catch (IOException e) {
-			throw new InternalException(e);
-		} catch (ParseException e) {
-			throw new InternalException(e);
 		}
+		mdd = new Mdd(sc, "MtcInPesArea", new String[] {
+				"Meter Timeswitch Class Id",
+				"Effective From Settlement Date {MTC}",
+				"Market Participant Id",
+				"Effective From Settlement Date {MTCPA}",
+				"Effective To Settlement Date {MTCPA}",
+				"Meter Timeswitch Class Description", "MTC Meter Type Id",
+				"MTC Payment Type Id", "MTC Communication Indicator",
+				"MTC Type Indicator", "MTC TPR Count" });
+		for (String[] values = mdd.getLine(); values != null; values = mdd
+				.getLine()) {
+			MtcCode code = new MtcCode(values[0]);
+			if (code.hasDso()) {
+				Provider dso = Provider.getProvider(values[2],
+						MarketRole.DISTRIBUTOR);
+				String description = values[5];
+				Boolean hasComms = null;
+				if (values[8].equals("Y")) {
+					hasComms = Boolean.TRUE;
+				} else if (values[8].equals("N")) {
+					hasComms = Boolean.FALSE;
+				}
+				Boolean isHh = null;
+				Integer tprCount = null;
+				if (values[9].equals("H")) {
+					isHh = Boolean.TRUE;
+				} else if (values[9].equals("N")) {
+					isHh = Boolean.FALSE;
+					tprCount = Integer.parseInt(values[10]);
+				}
+				Date validFrom = mdd.toDate(values[3]);
+				Date validTo = mdd.toDate(values[4]);
+				MeterType meterType = MeterType.getMtcMeterType(values[6]);
+				MtcPaymentType paymentType = MtcPaymentType
+						.getMtcPaymentType(values[7]);
+				Mtc mtc = Mtc.insertMtc(dso, code, description, false,
+						hasComms, isHh, meterType, paymentType, tprCount,
+						validFrom, validTo);
+				Hiber.session().save(mtc);
+				Hiber.close();
+			}
+		}
+		Debug.print("Starting to add MTCs.");
 	}
 
-	private Dso dso;
+	private Provider dso;
 
 	private MtcCode code;
 
@@ -260,7 +202,7 @@ public class Mtc extends PersistentEntity {
 	public Mtc() {
 	}
 
-	public Mtc(Dso dso, MtcCode code, String description,
+	public Mtc(Provider dso, MtcCode code, String description,
 			boolean hasRelatedMetering, Boolean hasComms, Boolean isHh,
 			MeterType meterType, MtcPaymentType paymentType, Integer tprCount,
 			Date validFrom, Date validTo) throws HttpException {
@@ -277,11 +219,11 @@ public class Mtc extends PersistentEntity {
 		setValidTo(validTo);
 	}
 
-	void setDso(Dso dso) {
+	void setDso(Provider dso) {
 		this.dso = dso;
 	}
 
-	public Dso getDso() {
+	public Provider getDso() {
 		return dso;
 	}
 
@@ -367,7 +309,7 @@ public class Mtc extends PersistentEntity {
 
 	public String toString() {
 		return code + " - " + description + " (DSO "
-				+ (dso == null ? null : dso.getCode()) + ")";
+				+ (dso == null ? null : dso.getDsoCode()) + ")";
 	}
 
 	public Node toXml(Document doc) throws HttpException {

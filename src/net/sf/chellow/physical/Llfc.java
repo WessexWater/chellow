@@ -22,25 +22,19 @@
 
 package net.sf.chellow.physical;
 
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.UnsupportedEncodingException;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.GregorianCalendar;
 import java.util.List;
-import java.util.Locale;
-import java.util.TimeZone;
 
-import net.sf.chellow.monad.DeployerException;
-import net.sf.chellow.monad.DesignerException;
+import javax.servlet.ServletContext;
+
+import net.sf.chellow.billing.Provider;
+import net.sf.chellow.monad.Debug;
 import net.sf.chellow.monad.Hiber;
+import net.sf.chellow.monad.HttpException;
+import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Invocation;
 import net.sf.chellow.monad.MonadUtils;
-import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Urlable;
-import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.UserException;
 import net.sf.chellow.monad.XmlTree;
 import net.sf.chellow.monad.types.MonadDate;
@@ -52,8 +46,6 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
-import com.Ostermiller.util.CSVParser;
-
 public class Llfc extends PersistentEntity {
 	static public Llfc getLlf(Long id) throws HttpException {
 		Llfc llf = (Llfc) Hiber.session().get(Llfc.class, id);
@@ -64,7 +56,7 @@ public class Llfc extends PersistentEntity {
 	}
 
 	@SuppressWarnings("unchecked")
-	static public List<Llfc> find(Dso dso, Pc profileClass,
+	static public List<Llfc> find(Provider dso, Pc profileClass,
 			boolean isSubstation, boolean isImport, VoltageLevel voltageLevel)
 			throws InternalException, HttpException {
 		try {
@@ -82,8 +74,8 @@ public class Llfc extends PersistentEntity {
 	}
 
 	@SuppressWarnings("unchecked")
-	static public List<Llfc> find(Dso dso, Pc profileClass)
-			throws InternalException, HttpException {
+	static public List<Llfc> find(Provider dso, Pc profileClass)
+			throws HttpException {
 		try {
 			return (List<Llfc>) Hiber
 					.session()
@@ -96,39 +88,17 @@ public class Llfc extends PersistentEntity {
 		}
 	}
 
-	static public void loadFromCsv() throws HttpException {
+	static public void loadFromCsv(ServletContext sc) throws HttpException {
+		Debug.print("Starting to add LLFCs.");
 		try {
-			ClassLoader classLoader = Llfc.class.getClassLoader();
-			CSVParser parser = new CSVParser(new InputStreamReader(classLoader
-					.getResource(
-							"net/sf/chellow/physical/LineLossFactorClass.csv")
-					.openStream(), "UTF-8"));
-			parser.setCommentStart("#;!");
-			parser.setEscapes("nrtf", "\n\r\t\f");
-			String[] titles = parser.getLine();
-
-			if (titles.length < 4
-					|| !titles[0].trim().equals("Market Participant Id")
-					|| !titles[1].trim().equals("Market Participant Role Code")
-					|| !titles[2].trim().equals("Effective From Date {MPR}")
-					|| !titles[3].trim().equals("Line Loss Factor Class Id")
-					|| !titles[4].trim().equals(
-							"Effective From Settlement Date {LLFC}")
-					|| !titles[5].trim().equals(
-							"Line Loss Factor Class Description")
-					|| !titles[6].trim().equals(
-							"MS Specific LLF Class Indicator")
-					|| !titles[7].trim().equals(
-							"Effective To Settlement Date {LLFC}")) {
-				throw new UserException(
-						"The first line of the CSV must contain the titles "
-								+ "Market Participant Id, Market Participant Role Code, Effective From Date {MPR}, Line Loss Factor Class Id, Effective From Settlement Date {LLFC}, Line Loss Factor Class Description, MS Specific LLF Class Indicator, Effective To Settlement Date {LLFC}.");
-			}
-			SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy",
-					Locale.UK);
-			dateFormat.setCalendar(new GregorianCalendar(TimeZone
-					.getTimeZone("GMT"), Locale.UK));
-			for (String[] values = parser.getLine(); values != null; values = parser
+			Mdd mdd = new Mdd(sc, "LineLossFactorClass", new String[] {
+					"Market Participant Id", "Market Participant Role Code",
+					"Effective From Date {MPR}", "Line Loss Factor Class Id",
+					"Effective From Settlement Date {LLFC}",
+					"Line Loss Factor Class Description",
+					"MS Specific LLF Class Indicator",
+					"Effective To Settlement Date {LLFC}" });
+			for (String[] values = mdd.getLine(); values != null; values = mdd
 					.getLine()) {
 				String participantCode = values[0];
 				String description = values[5];
@@ -146,29 +116,21 @@ public class Llfc extends PersistentEntity {
 				String indicator = values[6];
 				boolean isImport = indicator.equals("A")
 						|| indicator.equals("B");
-				Date validFrom = dateFormat.parse(values[4]);
-				String validToStr = values[7];
-				Date validTo = null;
-				if (validToStr.length() != 0) {
-					validTo = dateFormat.parse(validToStr);
-				}
+				Date validFrom = mdd.toDate(values[4]);
+				Date validTo = mdd.toDate(values[7]);
 				Hiber.session().save(
-						new Llfc(Dso.getDso(participantCode), Integer
+						new Llfc(Provider.getProvider(participantCode, MarketRole.DISTRIBUTOR), Integer
 								.parseInt(values[3]), description, vLevel,
 								isSubstation, isImport, validFrom, validTo));
+				Hiber.close();
 			}
-		} catch (UnsupportedEncodingException e) {
-			throw new InternalException(e);
-		} catch (IOException e) {
-			throw new InternalException(e);
 		} catch (NumberFormatException e) {
 			throw new InternalException(e);
-		} catch (ParseException e) {
-			throw new InternalException(e);
 		}
+		Debug.print("Finished adding LLFCs.");
 	}
 
-	private Dso dso;
+	private Provider dso;
 
 	private LlfcCode code;
 
@@ -186,7 +148,7 @@ public class Llfc extends PersistentEntity {
 	Llfc() {
 	}
 
-	public Llfc(Dso dso, int code, String description,
+	public Llfc(Provider dso, int code, String description,
 			VoltageLevel voltageLevel, boolean isSubstation, boolean isImport,
 			Date validFrom, Date validTo) throws HttpException {
 		setDso(dso);
@@ -199,11 +161,11 @@ public class Llfc extends PersistentEntity {
 		setValidTo(validTo);
 	}
 
-	public Dso getDso() {
+	public Provider getDso() {
 		return dso;
 	}
 
-	public void setDso(Dso dso) {
+	public void setDso(Provider dso) {
 		this.dso = dso;
 	}
 
@@ -285,14 +247,12 @@ public class Llfc extends PersistentEntity {
 		return null;
 	}
 
-	public Urlable getChild(UriPathElement uriId) throws InternalException,
-			HttpException {
+	public Urlable getChild(UriPathElement uriId) throws HttpException {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
-	public void httpGet(Invocation inv) throws DesignerException,
-			InternalException, HttpException, DeployerException {
+	public void httpGet(Invocation inv) throws HttpException {
 		Document doc = MonadUtils.newSourceDocument();
 		Element source = doc.getDocumentElement();
 
@@ -300,14 +260,12 @@ public class Llfc extends PersistentEntity {
 		inv.sendOk(doc);
 	}
 
-	public void httpPost(Invocation inv) throws InternalException,
-			HttpException {
+	public void httpPost(Invocation inv) throws HttpException {
 		// TODO Auto-generated method stub
 
 	}
 
-	public void httpDelete(Invocation inv) throws InternalException,
-			DesignerException, HttpException, DeployerException {
+	public void httpDelete(Invocation inv) throws HttpException {
 		// TODO Auto-generated method stub
 
 	}

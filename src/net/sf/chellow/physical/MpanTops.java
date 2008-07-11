@@ -24,6 +24,7 @@ package net.sf.chellow.physical;
 
 import java.util.List;
 
+import net.sf.chellow.billing.Provider;
 import net.sf.chellow.monad.DeployerException;
 import net.sf.chellow.monad.DesignerException;
 import net.sf.chellow.monad.Hiber;
@@ -55,9 +56,9 @@ public class MpanTops implements Urlable, XmlDescriber {
 		}
 	}
 
-	private Dso dso;
+	private Provider dso;
 
-	public MpanTops(Dso dso) {
+	public MpanTops(Provider dso) {
 		this.dso = dso;
 	}
 
@@ -87,17 +88,16 @@ public class MpanTops implements Urlable, XmlDescriber {
 						"from MpanTop mpanTop where mpanTop.llfc.dso = :dso order by mpanTop.llfc.code.integer, mpanTop.pc.code.integer")
 				.setEntity("dso", dso).list()) {
 			mpanTopsElement.appendChild(mpanTop.toXml(doc, new XmlTree("llfc",
-					new XmlTree("dso")).put("pc").put("mtc")));
+					new XmlTree("dso")).put("pc").put("mtc").put("ssc")));
 		}
 		inv.sendOk(doc);
 	}
 
-	public MpanTop getChild(UriPathElement uriId) throws HttpException,
-			InternalException {
+	public MpanTop getChild(UriPathElement uriId) throws HttpException {
 		MpanTop mpanTop = (MpanTop) Hiber
 				.session()
 				.createQuery(
-						"from MpanTop mpanTop where mpanTop.llf.dso = :dso and mpanTop.id = :mpanTopId")
+						"from MpanTop mpanTop where mpanTop.llfc.dso = :dso and mpanTop.id = :mpanTopId")
 				.setEntity("dso", dso).setLong("mpanTopId",
 						Long.parseLong(uriId.getString())).uniqueResult();
 		if (mpanTop == null) {

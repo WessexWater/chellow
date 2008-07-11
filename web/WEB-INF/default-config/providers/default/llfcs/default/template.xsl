@@ -11,9 +11,9 @@
 				<link rel="stylesheet" type="text/css"
 					href="{/source/request/@context-path}/style/" />
 				<title>
-					Chellow &gt; DNOs &gt;
+					Chellow &gt; Providers &gt;
 					<xsl:value-of select="/source/llfc/dso/@code" />
-					&gt; Line Loss Factors &gt;
+					&gt; Line Loss Factor Classes &gt;
 					<xsl:value-of select="/source/llfc/@code" />
 				</title>
 			</head>
@@ -26,17 +26,17 @@
 						<span class="logo">Chellow</span>
 					</a>
 					&gt;
-					<a href="{/source/request/@context-path}/dsos/">
-						<xsl:value-of select="'DSOs'" />
+					<a href="{/source/request/@context-path}/providers/">
+						<xsl:value-of select="'Providers'" />
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/dsos/{/source/llfc/dso/@id}/">
-						<xsl:value-of select="/source/llfc/dso/@code" />
+						href="{/source/request/@context-path}/providers/{/source/llfc/provider/@id}/">
+						<xsl:value-of select="/source/llfc/provider/@id" />
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/dsos/{/source/llfc/dso/@id}/llfcs/">
+						href="{/source/request/@context-path}/providers/{/source/llfc/provider/@id}/llfcs/">
 						<xsl:value-of select="'Line Loss Factors'" />
 					</a>
 					&gt;

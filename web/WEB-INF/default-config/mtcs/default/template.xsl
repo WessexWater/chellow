@@ -44,24 +44,24 @@
 					<tr>
 						<th>Chellow Id</th>
 						<td>
-							<xsl:value-of select="@id" />
+							<xsl:value-of select="/source/mtc/@id" />
 						</td>
 					</tr>
 					<tr>
 						<th>Code</th>
 						<td>
-							<xsl:value-of select="@code" />
+							<xsl:value-of select="/source/mtc/@code" />
 						</td>
 					</tr>
 					<tr>
 						<th>Dso</th>
 						<td>
 							<xsl:choose>
-								<xsl:when test="dso">
+								<xsl:when test="/source/mtc/provider">
 									<a
-										href="{/source/request/@context-path}/dsos/{@id}/">
+										href="{/source/request/@context-path}/providers/{/source/mtc/provider/@id}/">
 										<xsl:value-of
-											select="dso/@code" />
+											select="/source/mtc/provider/@dso-code" />
 									</a>
 								</xsl:when>
 								<xsl:otherwise>All</xsl:otherwise>
@@ -71,7 +71,8 @@
 					<tr>
 						<th>Description</th>
 						<td>
-							<xsl:value-of select="@description" />
+							<xsl:value-of
+								select="/source/mtc/@description" />
 						</td>
 					</tr>
 					<tr>
@@ -79,7 +80,7 @@
 						<td>
 							<xsl:choose>
 								<xsl:when
-									test="@has-related-metering = 'true'">
+									test="/source/mtc/@has-related-metering = 'true'">
 									Yes
 								</xsl:when>
 								<xsl:otherwise>No</xsl:otherwise>
@@ -90,10 +91,11 @@
 						<th>Has Comms?</th>
 						<td>
 							<xsl:choose>
-								<xsl:when test="@has-comms">
+								<xsl:when
+									test="/source/mtc/@has-comms">
 									<xsl:choose>
 										<xsl:when
-											test="@has-comms='true'">
+											test="/source/mtc/@has-comms='true'">
 											Yes
 										</xsl:when>
 										<xsl:otherwise>
@@ -109,10 +111,10 @@
 						<th>HH / NHH</th>
 						<td>
 							<xsl:choose>
-								<xsl:when test="@is-hh">
+								<xsl:when test="/source/mtc/@is-hh">
 									<xsl:choose>
 										<xsl:when
-											test="@is-hh='true'">
+											test="/source/mtc/@is-hh='true'">
 											HH
 										</xsl:when>
 										<xsl:otherwise>
@@ -128,9 +130,9 @@
 						<th>Meter Type</th>
 						<td>
 							<a
-								href="{/source/request/@context-path}/meter-types/{meter-type/@id}/">
+								href="{/source/request/@context-path}/meter-types/{/source/mtc/meter-type/@id}/">
 								<xsl:value-of
-									select="meter-type/@description" />
+									select="/source/mtc/meter-type/@description" />
 							</a>
 						</td>
 					</tr>
@@ -138,9 +140,9 @@
 						<th>Payment Type</th>
 						<td>
 							<a
-								href="{/source/request/@context-path}/meter-payment-types/{meter-payment-type/@id}/">
+								href="{/source/request/@context-path}/meter-payment-types/{/source/mtc/meter-payment-type/@id}/">
 								<xsl:value-of
-									select="meter-payment-type/@description" />
+									select="/source/mtc/meter-payment-type/@description" />
 							</a>
 						</td>
 					</tr>
@@ -148,8 +150,10 @@
 						<th>TPR Count</th>
 						<td>
 							<xsl:choose>
-								<xsl:when test="@tpr-count">
-									<xsl:value-of select="@tpr-count" />
+								<xsl:when
+									test="/source/mtc/@tpr-count">
+									<xsl:value-of
+										select="/source/mtc/@tpr-count" />
 								</xsl:when>
 								<xsl:otherwise>N / A</xsl:otherwise>
 							</xsl:choose>
@@ -159,16 +163,17 @@
 						<th>Valid From</th>
 						<td>
 							<xsl:value-of
-								select="concat(date[@label='from']/@year, '-', date[@label='from']/@month, '-', date[@label='from']/@day, ' ', date[@label='from']/@hour, ':', date[@label='from']/@minute, ' Z')" />
+								select="concat(/source/mtc/date[@label='from']/@year, '-', /source/mtc/date[@label='from']/@month, '-', /source/mtc/date[@label='from']/@day, ' ', /source/mtc/date[@label='from']/@hour, ':', /source/mtc/date[@label='from']/@minute, ' Z')" />
 						</td>
 					</tr>
 					<tr>
 						<th>Valid To</th>
 						<td>
 							<xsl:choose>
-								<xsl:when test="date[@label='to']">
+								<xsl:when
+									test="/source/mtc/date[@label='to']">
 									<xsl:value-of
-										select="concat(date[@label='to']/@year, '-', date[@label='to']/@month, '-', date[@label='to']/@day, ' ', date[@label='to']/@hour, ':', date[@label='to']/@minute, ' Z')" />
+										select="concat(/source/mtc/date[@label='to']/@year, '-', /source/mtc/date[@label='to']/@month, '-', /source/mtc/date[@label='to']/@day, ' ', /source/mtc/date[@label='to']/@hour, ':', /source/mtc/date[@label='to']/@minute, ' Z')" />
 								</xsl:when>
 								<xsl:otherwise>Ongoing</xsl:otherwise>
 							</xsl:choose>
@@ -179,4 +184,3 @@
 		</html>
 	</xsl:template>
 </xsl:stylesheet>
-

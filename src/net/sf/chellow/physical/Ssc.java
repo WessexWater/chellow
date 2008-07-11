@@ -1,16 +1,11 @@
 package net.sf.chellow.physical;
 
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.UnsupportedEncodingException;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.GregorianCalendar;
-import java.util.Locale;
 import java.util.Set;
-import java.util.TimeZone;
 
+import javax.servlet.ServletContext;
+
+import net.sf.chellow.monad.Debug;
 import net.sf.chellow.monad.DeployerException;
 import net.sf.chellow.monad.DesignerException;
 import net.sf.chellow.monad.Hiber;
@@ -29,20 +24,8 @@ import net.sf.chellow.monad.types.UriPathElement;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-import com.Ostermiller.util.CSVParser;
-
 public class Ssc extends PersistentEntity {
-	public static Ssc insertSsc(String code, Date from, Date to,
-			String description, boolean isImport) throws InternalException,
-			HttpException {
-		Ssc ssc = new Ssc(code, from, to, description, isImport);
-		Hiber.session().save(ssc);
-		Hiber.flush();
-		return ssc;
-	}
-
-	public static Ssc getSsc(String code) throws HttpException,
-			InternalException {
+	public static Ssc getSsc(String code) throws HttpException {
 		Ssc ssc = (Ssc) Hiber.session().createQuery(
 				"from Ssc ssc where ssc.code = :code").setString("code", code)
 				.uniqueResult();
@@ -61,53 +44,23 @@ public class Ssc extends PersistentEntity {
 		return ssc;
 	}
 
-	static public void loadFromCsv() throws HttpException {
-		try {
-			ClassLoader classLoader = Participant.class.getClassLoader();
-			CSVParser parser = new CSVParser(
-					new InputStreamReader(
-							classLoader
-									.getResource(
-											"net/sf/chellow/physical/StandardSettlementConfiguration.csv")
-									.openStream(), "UTF-8"));
-			parser.setCommentStart("#;!");
-			parser.setEscapes("nrtf", "\n\r\t\f");
-			String[] titles = parser.getLine();
-			if (titles.length < 7
-					|| !titles[0].trim().equals(
-							"Standard Settlement Configuration Id")
-					|| !titles[1].trim().equals(
-							"Effective From Settlement Date {SSC}")
-					|| !titles[2].trim().equals(
-							"Effective To Settlement Date {SSC}")
-					|| !titles[3].trim().equals(
-							"Standard Settlement Configuration Desc")
-					|| !titles[4].trim().equals(
-							"Standard Settlement Configuraton Type")
-					|| !titles[5].trim().equals("Teleswitch User Id")
-					|| !titles[6].trim().equals("Teleswitch Group Id")) {
-				throw new UserException(
-						"The first line of the CSV must contain the titles "
-								+ "Standard Settlement Configuration Id , Effective From Settlement Date {SSC}, Effective To Settlement Date {SSC}, Standard Settlement Configuration Desc, Standard Settlement Configuraton Type, Teleswitch User Id, Teleswitch Group Id");
-			}
-			SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy",
-					Locale.UK);
-			dateFormat.setCalendar(new GregorianCalendar(TimeZone
-					.getTimeZone("GMT"), Locale.UK));
-			for (String[] values = parser.getLine(); values != null; values = parser
-					.getLine()) {
-				String toStr = values[2];
-				insertSsc(values[0], dateFormat.parse(values[1]), toStr
-						.length() == 0 ? null : dateFormat.parse(toStr),
-						values[3], values[4].equals("I"));
-			}
-		} catch (UnsupportedEncodingException e) {
-			throw new InternalException(e);
-		} catch (IOException e) {
-			throw new InternalException(e);
-		} catch (ParseException e) {
-			throw new InternalException(e);
+	static public void loadFromCsv(ServletContext sc) throws HttpException {
+		Debug.print("Starting to add SSCs.");
+		Mdd mdd = new Mdd(sc, "StandardSettlementConfiguration", new String[] {
+				"Standard Settlement Configuration Id",
+				"Effective From Settlement Date {SSC}",
+				"Effective To Settlement Date {SSC}",
+				"Standard Settlement Configuration Desc",
+				"Standard Settlement Configuraton Type", "Teleswitch User Id",
+				"Teleswitch Group Id" });
+		for (String[] values = mdd.getLine(); values != null; values = mdd
+				.getLine()) {
+			Ssc ssc = new Ssc(values[0], mdd.toDate(values[1]), mdd.toDate(values[2]),
+					values[3], values[4].equals("I"));
+			Hiber.session().save(ssc);
+			Hiber.close();
 		}
+		Debug.print("Finished adding SSCs.");
 	}
 
 	private String code;

@@ -1,24 +1,20 @@
 package net.sf.chellow.physical;
 
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.UnsupportedEncodingException;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
+import javax.servlet.ServletContext;
 
+import net.sf.chellow.monad.Debug;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
-import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Invocation;
 import net.sf.chellow.monad.MonadUtils;
 import net.sf.chellow.monad.NotFoundException;
 import net.sf.chellow.monad.Urlable;
-import net.sf.chellow.monad.UserException;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
 
-import com.Ostermiller.util.CSVParser;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
 
 public class MarketRole extends PersistentEntity {
 	static public final char HHDC = 'C';
@@ -46,38 +42,17 @@ public class MarketRole extends PersistentEntity {
 		return marketRole;
 	}
 
-	static public void loadFromCsv() throws InternalException, UserException {
-		try {
-			ClassLoader classLoader = Participant.class.getClassLoader();
-			CSVParser parser = new CSVParser(new InputStreamReader(classLoader
-					.getResource("net/sf/chellow/physical/MarketRole.csv")
-					.openStream(), "UTF-8"));
-			parser.setCommentStart("#;!");
-			parser.setEscapes("nrtf", "\n\r\t\f");
-			String[] titles = parser.getLine();
-			if (titles.length < 2
-					|| !titles[0].trim().equals("Market Participant Role Code")
-					|| !titles[1].trim().equals("Market Role Description")) {
-				throw new UserException(
-						"The first line of the CSV must contain the titles "
-								+ "'Market Participant Role Code, Market Role Description'.");
-			}
-			for (String[] values = parser.getLine(); values != null; values = parser
-					.getLine()) {
-				insertMarketRole(values[0].charAt(0), values[1]);
-			}
-		} catch (UnsupportedEncodingException e) {
-			throw new InternalException(e);
-		} catch (IOException e) {
-			throw new InternalException(e);
+	static public void loadFromCsv(ServletContext sc) throws HttpException {
+		Debug.print("Starting to add Market Roles.");
+		Mdd mdd = new Mdd(sc, "MarketRole", new String[] {
+				"Market Participant Role Code", "Market Role Description" });
+		for (String[] values = mdd.getLine(); values != null; values = mdd
+				.getLine()) {
+			MarketRole role = new MarketRole(values[0].charAt(0), values[1]);
+			Hiber.session().save(role);
+			Hiber.close();
 		}
-	}
-
-	static private MarketRole insertMarketRole(char code, String description) {
-		MarketRole role = new MarketRole(code, description);
-		Hiber.session().save(role);
-		Hiber.flush();
-		return role;
+		Debug.print("Finished adding Market Roles.");
 	}
 
 	private char code;

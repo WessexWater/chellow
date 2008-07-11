@@ -30,8 +30,8 @@ import java.util.Map;
 
 import javax.servlet.ServletContext;
 
-import net.sf.chellow.monad.DeployerException;
-import net.sf.chellow.monad.DesignerException;
+import net.sf.chellow.billing.Provider;
+import net.sf.chellow.monad.Debug;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.InternalException;
@@ -41,6 +41,7 @@ import net.sf.chellow.monad.MonadUtils;
 import net.sf.chellow.monad.Urlable;
 import net.sf.chellow.monad.UserException;
 import net.sf.chellow.monad.XmlTree;
+import net.sf.chellow.monad.types.MonadDate;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
 
@@ -56,19 +57,20 @@ public class MpanTop extends PersistentEntity {
 		return mpanTop;
 	}
 
-	static public MpanTop findMpanTop(Pc pc, Mtc mtc, Llfc llfc, Ssc ssc)
-			throws HttpException {
+	static public MpanTop findMpanTop(Pc pc, Mtc mtc, Llfc llfc, Ssc ssc,
+			Date date) throws HttpException {
 		return (MpanTop) Hiber
 				.session()
 				.createQuery(
-						"from MpanTop top where top.pc = :pc and top.mtc = :mtc and top.llfc = :llfc and top.ssc = :ssc")
+						"from MpanTop top where top.pc = :pc and top.mtc = :mtc and top.llfc = :llfc and top.ssc = :ssc and top.validFrom <= :date and (top.validTo is null or top.validTo <= :date)")
 				.setEntity("pc", pc).setEntity("mtc", mtc).setEntity("llfc",
-						llfc).setEntity("ssc", ssc).uniqueResult();
+						llfc).setEntity("ssc", ssc).setTimestamp("date", date)
+				.uniqueResult();
 	}
 
-	static public MpanTop getMpanTop(Pc pc, Mtc mtc, Llfc llfc, Ssc ssc)
-			throws HttpException {
-		MpanTop mpanTop = findMpanTop(pc, mtc, llfc, ssc);
+	static public MpanTop getMpanTop(Pc pc, Mtc mtc, Llfc llfc, Ssc ssc,
+			Date date) throws HttpException {
+		MpanTop mpanTop = findMpanTop(pc, mtc, llfc, ssc, date);
 		if (mpanTop == null) {
 			throw new UserException(
 					"There is no MPAN top line with Profile Class: " + pc
@@ -98,6 +100,7 @@ public class MpanTop extends PersistentEntity {
 	}
 
 	static public void loadFromCsv(ServletContext sc) throws HttpException {
+		Debug.print("Starting to add MPAN tops.");
 		try {
 			Mdd mdd = new Mdd(sc, "ValidSettlementConfigurationProfileClass",
 					new String[] { "Profile Class Id",
@@ -136,7 +139,8 @@ public class MpanTop extends PersistentEntity {
 
 			for (String[] values = mdd.getLine(); values != null; values = mdd
 					.getLine()) {
-				Dso dso = Dso.getDso(values[2]);
+				Provider dso = Provider.getProvider(values[2],
+						MarketRole.DISTRIBUTOR);
 				Date validFrom = mdd.toDate(values[7]);
 				Date validTo = mdd.toDate(values[8]);
 				Llfc llfc = dso.getLlfc(new LlfcCode(Integer
@@ -155,10 +159,34 @@ public class MpanTop extends PersistentEntity {
 					llfc.insertMpanTop(Pc.getPc((PcCode) sscPc.get(0)), mtc,
 							ssc, derivedFrom, derivedTo);
 				}
+				Hiber.close();
+			}
+			mdd = new Mdd(sc, "ValidMtcLlfc", new String[] {
+					"Meter Timeswitch Class Id",
+					"Effective From Settlement Date {MTC}",
+					"Market Participant Id",
+					"Effective From Settlement Date {MTCPA}",
+					"Line Loss Factor Class Id",
+					"Effective From Settlement Date {VMTCLC}",
+					"Effective To Settlement Date {VMTCLC}" });
+			for (String[] values = mdd.getLine(); values != null; values = mdd
+					.getLine()) {
+				Provider dso = Provider.getProvider(values[2],
+						MarketRole.DISTRIBUTOR);
+				Date validFrom = mdd.toDate(values[5]);
+				Date validTo = mdd.toDate(values[6]);
+				Llfc llfc = dso.getLlfc(new LlfcCode(Integer
+						.parseInt(values[4])), validFrom);
+				Mtc mtc = Mtc.getMtc(dso, new MtcCode(values[0]));
+				llfc.insertMpanTop(Pc.getPc(new PcCode(0)), mtc, null,
+						validFrom, validTo);
+				Hiber.close();
 			}
 		} catch (NumberFormatException e) {
 			throw new InternalException(e);
 		}
+
+		Debug.print("Finished adding MPAN tops.");
 	}
 
 	private Pc pc;
@@ -169,20 +197,20 @@ public class MpanTop extends PersistentEntity {
 
 	private Ssc ssc;
 
-	private Date from;
-	private Date to;
+	private Date validFrom;
+	private Date validTo;
 
 	MpanTop() {
 	}
 
-	MpanTop(Pc pc, Mtc mtc, Llfc llfc, Ssc ssc, Date from, Date to)
+	MpanTop(Pc pc, Mtc mtc, Llfc llfc, Ssc ssc, Date validFrom, Date validTo)
 			throws HttpException {
 		setMtc(mtc);
 		setLlfc(llfc);
 		setPc(pc);
 		setSsc(ssc);
-		setFrom(from);
-		setTo(to);
+		setValidFrom(validFrom);
+		setValidTo(validTo);
 	}
 
 	public Pc getPc() {
@@ -217,20 +245,20 @@ public class MpanTop extends PersistentEntity {
 		this.ssc = ssc;
 	}
 
-	public Date getFrom() {
-		return from;
+	public Date getValidFrom() {
+		return validFrom;
 	}
 
-	void setFrom(Date from) {
-		this.from = from;
+	void setValidFrom(Date from) {
+		this.validFrom = from;
 	}
 
-	public Date getTo() {
-		return to;
+	public Date getValidTo() {
+		return validTo;
 	}
 
-	void setTo(Date to) {
-		this.to = to;
+	void setValidTo(Date to) {
+		this.validTo = to;
 	}
 
 	public MonadUri getUri() {
@@ -238,28 +266,24 @@ public class MpanTop extends PersistentEntity {
 		return null;
 	}
 
-	public Urlable getChild(UriPathElement uriId) throws InternalException,
-			HttpException {
+	public Urlable getChild(UriPathElement uriId) throws HttpException {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
-	public void httpGet(Invocation inv) throws DesignerException,
-			InternalException, HttpException, DeployerException {
+	public void httpGet(Invocation inv) throws HttpException {
 		Document doc = MonadUtils.newSourceDocument();
 		Element source = doc.getDocumentElement();
 		source.appendChild(toXml(doc, new XmlTree("llfc", new XmlTree("dso"))
-				.put("pc").put("mtc")));
+				.put("pc").put("mtc").put("ssc")));
 		inv.sendOk(doc);
 	}
 
-	public void httpPost(Invocation inv) throws InternalException,
-			HttpException {
+	public void httpPost(Invocation inv) throws HttpException {
 		throw new MethodNotAllowedException();
 	}
 
-	public void httpDelete(Invocation inv) throws InternalException,
-			DesignerException, HttpException, DeployerException {
+	public void httpDelete(Invocation inv) throws HttpException {
 		// TODO Auto-generated method stub
 
 	}
@@ -269,9 +293,17 @@ public class MpanTop extends PersistentEntity {
 	 * (!sscs.contains(ssc)) { sscs.add(ssc); Set<MpanTop> mpanTops =
 	 * ssc.getMpanTops(); if (!mpanTops.contains(this)) { mpanTops.add(this); } } } }
 	 */
-	public Element toXml(Document doc) throws InternalException, HttpException {
+	public Element toXml(Document doc) throws HttpException {
 		setTypeName("mpan-top");
 		Element mpanTopElement = (Element) super.toXml(doc);
+		MonadDate from = new MonadDate(validFrom);
+		from.setLabel("from");
+		mpanTopElement.appendChild(from.toXml(doc));
+		if (validTo != null) {
+			MonadDate to = new MonadDate(validTo);
+			to.setLabel("to");
+			mpanTopElement.appendChild(to.toXml(doc));
+		}
 		return mpanTopElement;
 	}
 }

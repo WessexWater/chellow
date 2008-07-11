@@ -64,11 +64,11 @@
 								</td>
 								<td>
 									<xsl:choose>
-										<xsl:when test="dso">
+										<xsl:when test="provider">
 											<a
-												href="{/source/request/@context-path}/dsos/{dso/@id}/">
+												href="{/source/request/@context-path}/providers/{provider/@id}/">
 												<xsl:value-of
-													select="dso/@code" />
+													select="provider/@dso-code" />
 											</a>
 										</xsl:when>
 										<xsl:otherwise>
@@ -167,7 +167,6 @@
 										</xsl:otherwise>
 									</xsl:choose>
 								</td>
-
 							</tr>
 						</xsl:for-each>
 					</tbody>

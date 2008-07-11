@@ -25,7 +25,6 @@ import net.sf.chellow.monad.Urlable;
 import net.sf.chellow.monad.Invocation.HttpMethod;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
-import net.sf.chellow.physical.Dsos;
 import net.sf.chellow.physical.MarketRoles;
 import net.sf.chellow.physical.MeterTypes;
 import net.sf.chellow.physical.MtcPaymentTypes;
@@ -66,7 +65,6 @@ public class Chellow extends Monad implements Urlable {
 	public static final MarketRoles MARKET_ROLES_INSTANCE = new MarketRoles();
 
 	public static final NonCoreServices NON_CORE_SERVICES_INSTANCE = new NonCoreServices();
-	public static final Dsos DSOS_INSTANCE = new Dsos();
 	static public final MeterTypes METER_TYPES_INSTANCE = new MeterTypes();
 	static public final MtcPaymentTypes MTC_PAYMENT_TYPES_INSTANCE = new MtcPaymentTypes();
 
@@ -156,8 +154,6 @@ public class Chellow extends Monad implements Urlable {
 			return SOURCES_INSTANCE;
 		} else if (Organizations.URI_ID.equals(uriId)) {
 			return ORGANIZATIONS_INSTANCE;
-		} else if (Dsos.URI_ID.equals(uriId)) {
-			return DSOS_INSTANCE;
 		} else if (Users.URI_ID.equals(uriId)) {
 			return USERS_INSTANCE;
 		} else if (Roles.URI_ID.equals(uriId)) {
@@ -180,6 +176,8 @@ public class Chellow extends Monad implements Urlable {
 			return METER_TYPES_INSTANCE;
 		} else if (MtcPaymentTypes.URI_ID.equals(uriId)) {
 			return MTC_PAYMENT_TYPES_INSTANCE;
+		} else if (Providers.URI_ID.equals(uriId)) {
+			return PROVIDERS_INSTANCE;
 		} else {
 			return null;
 		}

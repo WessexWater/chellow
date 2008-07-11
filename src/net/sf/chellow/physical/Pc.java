@@ -24,6 +24,7 @@ package net.sf.chellow.physical;
 
 import javax.servlet.ServletContext;
 
+import net.sf.chellow.monad.Debug;
 import net.sf.chellow.monad.DeployerException;
 import net.sf.chellow.monad.DesignerException;
 import net.sf.chellow.monad.Hiber;
@@ -72,6 +73,7 @@ public class Pc extends PersistentEntity {
 	}
 
 	static public void loadFromCsv(ServletContext sc) throws HttpException {
+		Debug.print("Starting to add PCs");
 		Mdd mdd = new Mdd(sc, "ProfileClass", new String[] {
 				"Profile Class Id", "Effective From Settlement Date {PCLA}",
 				"Profile Class Description", "Switched Load Profile Class Ind",
@@ -80,8 +82,9 @@ public class Pc extends PersistentEntity {
 				.getLine()) {
 			Hiber.session().save(
 					new Pc(new PcCode(Integer.parseInt(values[0])), values[2]));
-			Hiber.flush();
+			Hiber.close();
 		}
+		Debug.print("Added PCs.");
 	}
 
 	private PcCode code;
@@ -129,7 +132,7 @@ public class Pc extends PersistentEntity {
 	}
 
 	public Node toXml(Document doc) throws InternalException, HttpException {
-		setTypeName("profile-class");
+		setTypeName("pc");
 		Element element = (Element) super.toXml(doc);
 
 		element.setAttributeNode(code.toXml(doc));

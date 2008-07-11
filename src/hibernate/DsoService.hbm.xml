@@ -4,7 +4,7 @@
           "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
 <!-- 
 	
-	Copyright 2005-2007 Meniscus Systems Ltd
+	Copyright 2005-2008 Meniscus Systems Ltd
 	
 	This file is part of Chellow.
 	
@@ -28,7 +28,7 @@
 	<joined-subclass extends="Service" name="DsoService"
 		table="dso_service" lazy="true">
 		<key column="service_id" foreign-key="fkey_dso_service_service" />
-		<many-to-one name="provider" class="net.sf.chellow.physical.Dso"
+		<many-to-one name="provider" class="Provider"
 			column="provider_id" foreign-key="fkey_dso_service_provider" />
 	</joined-subclass>
 </hibernate-mapping>

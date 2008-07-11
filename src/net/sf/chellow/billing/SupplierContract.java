@@ -75,7 +75,7 @@ public class SupplierContract extends Contract {
 	}
 
 	public void update(String name, String chargeScript) throws HttpException {
-		super.update(TYPE_CONTRACT, name, chargeScript);
+		super.update(name, chargeScript);
 	}
 
 	public boolean equals(Object obj) {

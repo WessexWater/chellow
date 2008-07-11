@@ -24,6 +24,7 @@ package net.sf.chellow.physical;
 
 import java.util.List;
 
+import net.sf.chellow.billing.Provider;
 import net.sf.chellow.monad.DeployerException;
 import net.sf.chellow.monad.DesignerException;
 import net.sf.chellow.monad.Hiber;
@@ -56,9 +57,9 @@ public class Llfcs implements Urlable, XmlDescriber {
 		}
 	}
 
-	private Dso dso;
+	private Provider dso;
 
-	public Llfcs(Dso dso) {
+	public Llfcs(Provider dso) {
 		this.dso = dso;
 	}
 

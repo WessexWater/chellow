@@ -1,9 +1,8 @@
 package net.sf.chellow.physical;
 
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.UnsupportedEncodingException;
+import javax.servlet.ServletContext;
 
+import net.sf.chellow.monad.Debug;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.InternalException;
@@ -12,7 +11,6 @@ import net.sf.chellow.monad.MethodNotAllowedException;
 import net.sf.chellow.monad.MonadUtils;
 import net.sf.chellow.monad.NotFoundException;
 import net.sf.chellow.monad.Urlable;
-import net.sf.chellow.monad.UserException;
 import net.sf.chellow.monad.XmlTree;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
@@ -21,56 +19,35 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
-import com.Ostermiller.util.CSVParser;
-
 public class ClockInterval extends PersistentEntity {
 	static public ClockInterval getClockInterval(long id) throws HttpException {
-		ClockInterval interval = (ClockInterval) Hiber.session().get(ClockInterval.class, id);
+		ClockInterval interval = (ClockInterval) Hiber.session().get(
+				ClockInterval.class, id);
 		if (interval == null) {
 			throw new NotFoundException();
 		}
 		return interval;
 	}
 
-	static public void loadFromCsv() throws HttpException {
-		try {
-			ClassLoader classLoader = ClockInterval.class.getClassLoader();
-			CSVParser parser = new CSVParser(new InputStreamReader(classLoader
-					.getResource("net/sf/chellow/physical/ClockInterval.csv")
-					.openStream(), "UTF-8"));
-			parser.setCommentStart("#;!");
-			parser.setEscapes("nrtf", "\n\r\t\f");
-			String[] titles = parser.getLine();
-			if (titles.length < 8
-					|| !titles[0].trim().equals("Time Pattern Regime Id")
-					|| !titles[1].trim().equals("Day of the Week Id")
-					|| !titles[2].trim().equals("Start Day")
-					|| !titles[3].trim().equals("Start Month")
-					|| !titles[4].trim().equals("End Day")
-					|| !titles[5].trim().equals("End Month")
-					|| !titles[6].trim().equals("Start Time")
-					|| !titles[7].trim().equals("End Time")) {
-				throw new UserException(
-						"The first line of the CSV must contain the titles "
-								+ "Time Pattern Regime Id, Day of the Week Id, Start Day, Start Month, End Day, End Month, Start Time, End Time");
-			}
-			for (String[] values = parser.getLine(); values != null; values = parser
-					.getLine()) {
-				Tpr tpr = Tpr.getTpr(values[0]);
-				tpr.insertClockInterval(Integer.parseInt(values[1]), Integer
-						.parseInt(values[2]), Integer.parseInt(values[3]),
-						Integer.parseInt(values[4]), Integer
-								.parseInt(values[5]), Integer
-								.parseInt(values[6].substring(0, 2)), Integer
-								.parseInt(values[6].substring(3)), Integer
-								.parseInt(values[7].substring(0, 2)), Integer
-								.parseInt(values[7].substring(3)));
-			}
-		} catch (UnsupportedEncodingException e) {
-			throw new InternalException(e);
-		} catch (IOException e) {
-			throw new InternalException(e);
+	static public void loadFromCsv(ServletContext sc) throws HttpException {
+		Debug.print("Starting to add Clock Intervals.");
+		Mdd mdd = new Mdd(sc, "ClockInterval",
+				new String[] { "Time Pattern Regime Id", "Day of the Week Id",
+						"Start Day", "Start Month", "End Day", "End Month",
+						"Start Time", "End Time" });
+		for (String[] values = mdd.getLine(); values != null; values = mdd
+				.getLine()) {
+			Tpr tpr = Tpr.getTpr(values[0]);
+			tpr.insertClockInterval(Integer.parseInt(values[1]), Integer
+					.parseInt(values[2]), Integer.parseInt(values[3]), Integer
+					.parseInt(values[4]), Integer.parseInt(values[5]), Integer
+					.parseInt(values[6].substring(0, 2)), Integer
+					.parseInt(values[6].substring(3)), Integer
+					.parseInt(values[7].substring(0, 2)), Integer
+					.parseInt(values[7].substring(3)));
+			Hiber.close();
 		}
+		Debug.print("Finished adding Clock Intervals.");
 	}
 
 	private Tpr tpr;
