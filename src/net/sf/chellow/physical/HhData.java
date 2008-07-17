@@ -60,17 +60,18 @@ public class HhData implements Urlable, XmlDescriber {
 	}
 
 	@SuppressWarnings("unchecked")
-	private Document doc(Invocation inv) throws InternalException,
-			HttpException {
+	private Document doc(Invocation inv) throws HttpException {
 		Document doc = MonadUtils.newSourceDocument();
 		Element source = doc.getDocumentElement();
 		Element hhDataElement = toXml(doc);
 		source.appendChild(hhDataElement);
 		Element channelElement = channel.toXml(doc);
 		hhDataElement.appendChild(channelElement);
-		Element supplyElement = channel.getSupply().toXml(doc);
-		channelElement.appendChild(supplyElement);
-		supplyElement.appendChild(channel.getSupply().getOrganization().toXml(
+		Element supplyGenerationElement = channel.getSupplyGeneration().toXml(doc);
+		channelElement.appendChild(supplyGenerationElement);
+		Element supplyElement = channel.getSupplyGeneration().getSupply().toXml(doc);
+		supplyGenerationElement.appendChild(supplyElement);
+		supplyElement.appendChild(channel.getSupplyGeneration().getSupply().getOrganization().toXml(
 				doc));
 		source.appendChild(MonadDate.getMonthsXml(doc));
 		source.appendChild(MonadDate.getDaysXml(doc));

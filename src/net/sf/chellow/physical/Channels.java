@@ -29,10 +29,10 @@ public class Channels implements Urlable, XmlDescriber {
 		}
 	}
 
-	Supply supply;
+	SupplyGeneration generation;
 
-	public Channels(Supply supply) {
-		this.supply = supply;
+	public Channels(SupplyGeneration generation) {
+		this.generation = generation;
 	}
 
 	public UriPathElement getUriId() {
@@ -40,7 +40,7 @@ public class Channels implements Urlable, XmlDescriber {
 	}
 
 	public MonadUri getUri() throws InternalException, HttpException {
-		return supply.getUri().resolve(getUriId());
+		return generation.getUri().resolve(getUriId());
 	}
 
 	@SuppressWarnings("unchecked")
@@ -50,8 +50,8 @@ public class Channels implements Urlable, XmlDescriber {
 		Element source = doc.getDocumentElement();
 		Element channelsElement = (Element) toXml(doc);
 		source.appendChild(channelsElement);
-		channelsElement.appendChild(supply.toXml(doc, new XmlTree("organization")));
-		for (Channel channel : supply.getChannels()) {
+		channelsElement.appendChild(generation.toXml(doc, new XmlTree("organization")));
+		for (Channel channel : generation.getChannels()) {
 			channelsElement.appendChild(channel.toXml(doc));
 		}
 		inv.sendOk(doc);
@@ -69,7 +69,7 @@ public class Channels implements Urlable, XmlDescriber {
 				.session()
 				.createQuery(
 						"from Channel channel where channel.supply = :supply and channel.id = :channelId")
-				.setEntity("supply", supply).setLong("channelId",
+				.setEntity("supply", generation).setLong("channelId",
 						Long.parseLong(uriId.getString())).uniqueResult();
 	}
 

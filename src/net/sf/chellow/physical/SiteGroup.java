@@ -68,25 +68,22 @@ public class SiteGroup {
 			hhEndDate = hhEndDate.getNext();
 		}
 		for (Supply supply : getSupplies()) {
-			for (Channel channel : supply.getChannels()) {
-				if (!channel.getIsKwh()) {
-					continue;
-				}
+			for (boolean isImport : new boolean[] {true, false}) {
 				List<Float> hhStream = null;
 				if (supply.getSource().getCode().equals(SourceCode.NETWORK)) {
-					if (channel.getIsImport()) {
+					if (isImport) {
 						hhStream = importFromNet;
 					} else {
 						hhStream = exportToNet;
 					}
 				} else {
-					if (channel.getIsImport()) {
+					if (isImport) {
 						hhStream = importFromGen;
 					} else {
 						hhStream = exportToGen;
 					}
 				}
-				List<HhDatum> hhData = channel.getHhData(getFrom(), getTo());
+				List<HhDatum> hhData = supply.getHhData(isImport, true, getFrom(), getTo());
 				if (hhData.isEmpty()) {
 					continue;
 				}

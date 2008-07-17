@@ -163,10 +163,6 @@ public class Site extends PersistentEntity implements Urlable {
 				throw new InternalException(e);
 			}
 		}
-		supply.insertChannel(true, true);
-		supply.insertChannel(true, false);
-		supply.insertChannel(false, true);
-		supply.insertChannel(false, false);
 		if (importMpanRaw != null) {
 			supply.addMpanCore(importMpanRaw.getMpanCoreRaw());
 		}

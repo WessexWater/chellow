@@ -90,14 +90,12 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 	private Set<Mpan> mpans;
 
 	private Meter meter;
-
-	SupplyGeneration() {
-		setTypeName("supply-generation");
-	}
+	
+	private Set<Channel> channels;
 
 	SupplyGeneration(Supply supply, HhEndDate startDate, HhEndDate finishDate,
-			Meter meter) throws InternalException, HttpException {
-		this();
+			Meter meter) throws HttpException {
+		setChannels(new HashSet<Channel>());
 		this.supply = supply;
 		setSiteSupplyGenerations(new HashSet<SiteSupplyGeneration>());
 		setMpans(new HashSet<Mpan>());
@@ -152,6 +150,15 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 	public Mpan getMpan(IsImport isImport) {
 		return isImport.getBoolean() ? getImportMpan() : getExportMpan();
 	}
+	
+	public Set<Channel> getChannels() {
+		return channels;
+	}
+
+	void setChannels(Set<Channel> channels) {
+		this.channels = channels;
+	}
+
 
 	public Provider getDso() {
 		Provider dso = null;
@@ -327,11 +334,16 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 				}
 			}
 		}
+		insertChannel(true, true);
+		insertChannel(true, false);
+		insertChannel(false, true);
+		insertChannel(false, false);
 
 		Hiber.flush();
 		// more optimization possible here, doesn't necessarily need to check
 		// data.
 		getSupply().checkAfterUpdate(true, getStartDate(), getFinishDate());
+		
 	}
 
 	public Mpan getExportMpan() {
@@ -382,6 +394,16 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 			mpanCore = exportMpan.getMpanCore();
 		}
 		return mpanCore;
+	}
+	
+	public Channel getChannel(boolean isImport, boolean isKwh) {
+		for (Channel candidateChannel : channels) {
+			if (candidateChannel.getIsImport() == isImport
+					&& candidateChannel.getIsKwh() == isKwh) {
+				return candidateChannel;
+			}
+		}
+		return null;
 	}
 
 	void intrinsicUpdate(HhEndDate startDate, HhEndDate finishDate, Meter meter)
@@ -475,12 +497,23 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 	}
 
 	public Element toXml(Document doc) throws InternalException, HttpException {
+		setTypeName("supply-generation");
 		Element element = (Element) super.toXml(doc);
 		element.appendChild(startDate.toXml(doc));
 		if (finishDate != null) {
 			element.appendChild(finishDate.toXml(doc));
 		}
+		for (Channel channel : channels) {
+			element.appendChild(channel.toXml(doc));
+		}
 		return element;
+	}
+	
+	void insertChannel(boolean isImport, boolean isKwh) {
+		Channel channel = new Channel(this, isImport, isKwh);
+		Hiber.session().save(channel);
+		Hiber.flush();
+		channels.add(channel);
 	}
 
 	public void httpGet(Invocation inv) throws DesignerException,
@@ -764,7 +797,11 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 
 	public Urlable getChild(UriPathElement uriId) throws InternalException,
 			HttpException {
+		if (Channels.URI_ID.equals(uriId)) {
+			return new Channels(this);
+		} else {
 		throw new NotFoundException();
+		}
 	}
 
 	public void httpDelete(Invocation inv) throws InternalException,
@@ -813,5 +850,9 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 					+ rawRegisterRead.getMpanRaw() + ".");
 		}
 		return read;
+	}
+	
+	public Channels getChannelsInstance() {
+		return new Channels(this);
 	}
 }

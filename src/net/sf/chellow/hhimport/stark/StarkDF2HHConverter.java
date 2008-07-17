@@ -33,13 +33,11 @@ import java.util.TimeZone;
 import net.sf.chellow.data08.HhDatumRaw;
 import net.sf.chellow.data08.MpanCoreRaw;
 import net.sf.chellow.hhimport.HhConverter;
-import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.HttpException;
+import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.UserException;
 import net.sf.chellow.physical.HhDatumStatus;
 import net.sf.chellow.physical.HhEndDate;
-import net.sf.chellow.physical.IsImport;
-import net.sf.chellow.physical.IsKwh;
 
 public class StarkDF2HHConverter implements HhConverter {
 	private LineNumberReader reader;
@@ -50,9 +48,9 @@ public class StarkDF2HHConverter implements HhConverter {
 
 	private HhDatumRaw datumNext = null;
 
-	private IsImport isImport = null;
+	private boolean isImport;
 
-	private IsKwh isKwh = null;
+	private boolean isKwh;
 
 	private String line;
 
@@ -107,20 +105,20 @@ public class StarkDF2HHConverter implements HhConverter {
 					int sensor = Integer.parseInt(line.substring(2).trim());
 					switch (sensor) {
 					case 1:
-						isImport = new IsImport(true);
-						isKwh = new IsKwh(true);
+						isImport = true;
+						isKwh = true;
 						break;
 					case 2:
-						isImport = new IsImport(false);
-						isKwh = new IsKwh(true);
+						isImport = false;
+						isKwh = true;
 						break;
 					case 3:
-						isImport = new IsImport(true);
-						isKwh = new IsKwh(false);
+						isImport = true;
+						isKwh = false;
 						break;
 					case 4:
-						isImport = new IsImport(false);
-						isKwh = new IsKwh(false);
+						isImport = false;
+						isKwh = false;
 						break;
 
 					default:

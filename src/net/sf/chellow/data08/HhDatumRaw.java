@@ -4,15 +4,13 @@ import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.types.MonadObject;
 import net.sf.chellow.physical.HhDatumStatus;
 import net.sf.chellow.physical.HhEndDate;
-import net.sf.chellow.physical.IsImport;
-import net.sf.chellow.physical.IsKwh;
 
 public class HhDatumRaw extends MonadObject {
 	private MpanCoreRaw core;
 
-	private IsImport isImport;
+	private boolean isImport;
 
-	private IsKwh isKwh;
+	private boolean isKwh;
 
 	private HhEndDate endDate;
 
@@ -20,7 +18,7 @@ public class HhDatumRaw extends MonadObject {
 
 	private Character status;
 
-	public HhDatumRaw(MpanCoreRaw core, IsImport isImport, IsKwh isKwh,
+	public HhDatumRaw(MpanCoreRaw core, boolean isImport, boolean isKwh,
 			HhEndDate endDate, float value, HhDatumStatus status)
 			throws InternalException {
 		this.core = core;
@@ -43,11 +41,11 @@ public class HhDatumRaw extends MonadObject {
 		return core;
 	}
 
-	public IsImport getIsImport() {
+	public boolean getIsImport() {
 		return isImport;
 	}
 
-	public IsKwh getIsKwh() {
+	public boolean getIsKwh() {
 		return isKwh;
 	}
 

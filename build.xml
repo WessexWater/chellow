@@ -378,12 +378,13 @@
 		<deploy url="${manager.url}" username="${manager.username}" password="${manager.password}" path="${app.path}" localWar="file://${build.home}" />
 
 	</target>
+	<!--
 	<target name="one-test">
 		<antcall target="performTest">
 			<param name="test.id" value="05" />
 		</antcall>
 	</target>
-
+-->
 	<target name="reset-db" depends="compile">
 		<exec osfamily="windows" executable="C:\Program Files\PostgreSQL\8.2\bin\dropdb">
 			<arg line="-U postgres chellow" />
@@ -454,7 +455,7 @@
 		</antcall>
 		-->
 	</target>
-
+<!--
 	<target name="performTest">
 		<antcall target="remove" />
 		<exec executable="${catalina.home}/bin/shutdown.sh">
@@ -464,7 +465,8 @@
 		<exec executable="${catalina.home}/bin/startup.sh">
 			<env key="JAVA_HOME" value="${java.home}" />
 			<env key="CATALINA_OPTS" value="-server" />
-			<!--	<env key="CATALINA_OPTS" value="-server -Xmx32M -Dcom.sun.management.jmxremote -Xdebug -Xrunjdwp:transport=dt_socket,address=8000,server=y,suspend=n" /> -->
+				<env key="CATALINA_OPTS" value="-server -Xmx32M -Dcom.sun.management.jmxremote -Xdebug -Xrunjdwp:transport=dt_socket,address=8000,server=y,suspend=n" /> 
+	
 		</exec>
 		<waitfor>
 			<and>
@@ -491,7 +493,9 @@
 			<arg value="${test.home}/${test.id}/imprimatur.xml" />
 		</java>
 	</target>
-
+-->
+	
+<!--
 	<target name="performDbTest">
 		<antcall target="remove" />
 		<exec executable="${catalina.home}/bin/shutdown.sh">
@@ -524,7 +528,7 @@
 		<exec executable="psql" failonerror="true">
 			<env key="PGPORT" value="30103" />
 
-			<arg line="chellow -p 30103 -q --file ${test.home}/${test.id}/chellow.pgdump" />
+			<arg line="chellow -p 30103 -q file ${test.home}/${test.id}/chellow.pgdump" />
 		</exec>
 
 		<antcall target="install" />
@@ -533,6 +537,7 @@
 			<arg value="${test.home}/${test.id}/imprimatur.xml" />
 		</java>
 	</target>
+	-->
 <!--
 	<target name="oldTest" depends="compile" description="Tests the application">
 		<exec executable="dropdb">

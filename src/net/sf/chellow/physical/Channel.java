@@ -23,39 +23,39 @@
 package net.sf.chellow.physical;
 
 import java.util.Calendar;
-import java.util.Date;
 import java.util.List;
 
 import net.sf.chellow.billing.HhdcContract;
-import net.sf.chellow.data08.HhDatumRaw;
-// import net.sf.chellow.monad.bo.Debug;
 import net.sf.chellow.monad.DeployerException;
 import net.sf.chellow.monad.DesignerException;
 import net.sf.chellow.monad.Hiber;
+import net.sf.chellow.monad.HttpException;
+import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Invocation;
 import net.sf.chellow.monad.MonadUtils;
-import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Urlable;
-import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.UserException;
+import net.sf.chellow.monad.XmlTree;
 import net.sf.chellow.monad.Invocation.HttpMethod;
 import net.sf.chellow.monad.types.MonadBoolean;
 import net.sf.chellow.monad.types.MonadDate;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
 
-import org.hibernate.HibernateException;
-import org.hibernate.Query;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 public class Channel extends PersistentEntity implements Urlable {
+	public static final int IMPORT_KW = 1;
+	public static final int EXPORT_KW = 2;
+	public static final int IMPORT_KVAR = 3;
+	public static final int EXPORT_KVAR = 4;
+	
 	private static final long serialVersionUID = 1L;
 
 	static private HttpMethod[] httpMethods = { HttpMethod.GET };
-
-	public static void addHhData(HhdcContract dceService, List<HhDatumRaw> dataRaw)
-			throws InternalException, HttpException {
+/*
+	public static void addHhData(List<HhDatumRaw> dataRaw) throws HttpException {
 		Channel channel;
 		HhDatumRaw firstDatum = dataRaw.get(0);
 		try {
@@ -78,8 +78,8 @@ public class Channel extends PersistentEntity implements Urlable {
 		}
 		channel.addHhDataBlock(dceService, dataRaw);
 	}
-
-	private Supply supply;
+*/
+	private SupplyGeneration supplyGeneration;
 
 	private boolean isImport;
 
@@ -89,18 +89,18 @@ public class Channel extends PersistentEntity implements Urlable {
 		setTypeName("channel");
 	}
 
-	public Channel(Supply supply, boolean isImport, boolean isKwh) {
-		this.supply = supply;
+	public Channel(SupplyGeneration supplyGeneration, boolean isImport, boolean isKwh) {
+		this.supplyGeneration = supplyGeneration;
 		this.isImport = isImport;
 		this.isKwh = isKwh;
 	}
 
-	public Supply getSupply() {
-		return supply;
+	public SupplyGeneration getSupplyGeneration() {
+		return supplyGeneration;
 	}
 
-	void setSupply(Supply supply) {
-		this.supply = supply;
+	void setSupplyGeneration(SupplyGeneration supplyGeneration) {
+		this.supplyGeneration = supplyGeneration;
 	}
 
 	public boolean getIsImport() {
@@ -118,10 +118,9 @@ public class Channel extends PersistentEntity implements Urlable {
 	void setIsKwh(boolean isKwh) {
 		this.isKwh = isKwh;
 	}
-
+/*
 	@SuppressWarnings("unchecked")
-	private void addHhDataBlock(HhdcContract dceService, List<HhDatumRaw> dataRaw)
-			throws InternalException, HttpException {
+	public void addHhData(List<HhDatumRaw> dataRaw) throws HttpException {
 		// long now = System.currentTimeMillis();
 		// Debug.print("Starting method: " + (System.currentTimeMillis() -
 		// now));
@@ -304,35 +303,31 @@ public class Channel extends PersistentEntity implements Urlable {
 		// Debug.print("Finished method: " + (System.currentTimeMillis() -
 		// now));
 	}
-
-	private void siteCheck(HhEndDate from, HhEndDate to,
-			List<SupplyGeneration> supplyGenerations)
-			throws InternalException, HttpException {
-		// long now = System.currentTimeMillis();
+*/
+	public void siteCheck(HhEndDate from, HhEndDate to)
+			throws HttpException {
 		if (isKwh) {
 			// Debug.print("Starting site check: " + (System.currentTimeMillis()
 			// - now));
-			for (SupplyGeneration generation : supplyGenerations) {
-				Site site = generation.getSiteSupplyGenerations().iterator()
+				Site site = supplyGeneration.getSiteSupplyGenerations().iterator()
 						.next().getSite();
 				HhEndDate checkFrom = from.getDate().after(
-						generation.getStartDate().getDate()) ? from
-						: generation.getStartDate();
-				HhEndDate checkTo = generation.getFinishDate() == null
+						supplyGeneration.getStartDate().getDate()) ? from
+						: supplyGeneration.getStartDate();
+				HhEndDate checkTo = supplyGeneration.getFinishDate() == null
 						|| to.getDate().before(
-								generation.getFinishDate().getDate()) ? to
-						: generation.getFinishDate();
+								supplyGeneration.getFinishDate().getDate()) ? to
+						: supplyGeneration.getFinishDate();
 				// Debug.print("Got here 1.1.1 " + (System.currentTimeMillis() -
 				// now));
 				site.hhCheck(checkFrom, checkTo);
 				// Debug.print("Got here 1.1.2" + (System.currentTimeMillis() -
 				// now));
-			}
 			// Debug.print("Finishing site check: " +
 			// (System.currentTimeMillis() - now));
 		}
 	}
-
+/*
 	private void notActualSnag(HhEndDate from, HhEndDate to,
 			List<SupplyGeneration> supplyGenerations)
 			throws InternalException, HttpException {
@@ -344,25 +339,24 @@ public class Channel extends PersistentEntity implements Urlable {
 					|| to.getDate()
 							.before(generation.getFinishDate().getDate()) ? to
 					: generation.getFinishDate();
-			addChannelSnag(generation.getHhdceContract(isImport, isKwh),
-					ChannelSnag.SNAG_NOT_ACTUAL, checkFrom, checkTo, false);
+			addChannelSnag(ChannelSnag.SNAG_NOT_ACTUAL, checkFrom, checkTo, false);
 		}
 	}
-
-	private void addChannelSnag(HhdcContract dceService, String description,
+*/
+	public void addChannelSnag(String description,
 			HhEndDate startDate, HhEndDate finishDate, boolean isResolved)
-			throws InternalException, HttpException {
-		SnagDateBounded.addChannelSnag(dceService, this, description,
+			throws HttpException {
+		SnagDateBounded.addChannelSnag(supplyGeneration.getHhdceContract(isImport, isKwh), this, description,
 				startDate, finishDate, isResolved);
 	}
 
-	private void resolveSnag(String description, HhEndDate date)
+	public void resolveSnag(String description, HhEndDate date)
 			throws InternalException, HttpException {
 		resolveSnag(description, date, date);
 	}
 
 	@SuppressWarnings("unchecked")
-	private void resolveSnag(String description, HhEndDate startDate,
+	public void resolveSnag(String description, HhEndDate startDate,
 			HhEndDate finishDate) throws InternalException, HttpException {
 		for (ChannelSnag snag : (List<ChannelSnag>) Hiber
 				.session()
@@ -372,7 +366,7 @@ public class Channel extends PersistentEntity implements Urlable {
 						description.toString()).setTimestamp("startDate",
 						startDate.getDate()).setTimestamp("finishDate",
 						finishDate.getDate()).list()) {
-			addChannelSnag(snag.getContract(), description, snag.getStartDate()
+			addChannelSnag(description, snag.getStartDate()
 					.getDate().before(startDate.getDate()) ? startDate : snag
 					.getStartDate(), snag.getFinishDate().getDate().after(
 					finishDate.getDate()) ? finishDate : snag.getFinishDate(),
@@ -385,14 +379,13 @@ public class Channel extends PersistentEntity implements Urlable {
 	 * ProgrammerException, UserException { checkForMissing(null,
 	 * getCheckToDate()); }
 	 */
-
-	private HhEndDate getCheckToDate() throws InternalException,
-			HttpException {
+/*
+	private HhEndDate getCheckToDate() throws HttpException {
 		HhEndDate lastSnagDate = (HhEndDate) Hiber
 				.session()
 				.createQuery(
-						"select snag.finishDate from ChannelSnag snag where snag.channel = :channel and snag.description = :snagDescription and snag.dateResolved is null order by snag.finishDate.date desc")
-				.setEntity("channel", this).setString("snagDescription",
+						"select snag.finishDate from ChannelSnag snag where snag.channel.supply = :supply and snag.channel.isKwh = :isKwh and snag.channel.isImport = :isImport and snag.description = :snagDescription and snag.dateResolved is null order by snag.finishDate.date desc")
+				.setEntity("supply", this).setBoolean("isKwh", getIsKwh()).setBoolean("isImport", getIsImport()).setString("snagDescription",
 						ChannelSnag.SNAG_MISSING).setMaxResults(1)
 				.uniqueResult();
 		HhEndDate finish = null;
@@ -438,16 +431,18 @@ public class Channel extends PersistentEntity implements Urlable {
 			HttpException {
 		checkForMissingFromLatest(null);
 	}
-
+*/
 	/*
 	 * public void checkForMissing() throws ProgrammerException, UserException {
 	 * checkForMissing(null, null); }
 	 */
+	/*
 	public void checkForMissingFromLatest(HhEndDate to)
 			throws InternalException, HttpException {
 		/*
 		 * if (to == null) { to = getCheckToDate(); if (to == null) { return; } }
 		 */
+	/*
 		Date latestDatumDate = (Date) Hiber
 				.session()
 				.createQuery(
@@ -481,102 +476,16 @@ public class Channel extends PersistentEntity implements Urlable {
 		 * (!latestPresentDate.getDate().after(to.getDate())) {
 		 * checkForMissing(latestPresentDate, to); }
 		 */
+	/*
 		checkForMissing(latestPresentDate.getNext(), to);
 	}
-
-	@SuppressWarnings("unchecked")
-	public void checkForMissing(HhEndDate from, HhEndDate to)
-			throws InternalException, HttpException {
-		if (from == null) {
-			from = supply.getGenerationFirst().getStartDate();
-		}
-		if (from.getDate().before(
-				supply.getGenerationFirst().getStartDate().getDate())) {
-			resolveSnag(ChannelSnag.SNAG_MISSING, from, supply
-					.getGenerationFirst().getStartDate().getPrevious());
-			from = supply.getGenerationFirst().getStartDate();
-		}
-		if (to == null) {
-			to = getCheckToDate();
-		}
-		Calendar cal = MonadDate.getCalendar();
-		HhEndDate lastGenerationDate = supply.getGenerationLast()
-				.getFinishDate();
-		if (lastGenerationDate != null
-				&& to.getDate().after(lastGenerationDate.getDate())) {
-			resolveSnag(ChannelSnag.SNAG_MISSING, lastGenerationDate.getNext(),
-					to);
-			to = lastGenerationDate;
-		}
-		if (from.getDate().after(to.getDate())) {
-			return;
-		}
-		Query query = Hiber
-				.session()
-				.createQuery(
-						"select count(*) from HhDatum datum where datum.channel = :channel and datum.endDate.date >= :startDate and datum.endDate.date <= :finishDate")
-				.setEntity("channel", this);
-		List<SupplyGeneration> generations = supply.getGenerations(from, to);
-		for (int i = 0; i < generations.size(); i++) {
-			HhdcContract contractDce = generations.get(i).getHhdceContract(isImport,
-					isKwh);
-			HhEndDate generationStartDate = i == 0 ? from : generations.get(i)
-					.getStartDate();
-			HhEndDate generationFinishDate = i == generations.size() - 1 ? to
-					: generations.get(i).getFinishDate();
-			if (contractDce == null) {
-				resolveSnag(ChannelSnag.SNAG_MISSING, generationStartDate,
-						generationFinishDate);
-			} else {
-				HhEndDate spanStartDate = generationStartDate;
-				HhEndDate spanFinishDate = generationFinishDate;
-
-				boolean finished = false;
-				while (!finished) {
-					long present = (Long) query.setTimestamp("startDate",
-							spanStartDate.getDate()).setTimestamp("finishDate",
-							spanFinishDate.getDate()).uniqueResult();
-					if (present == 0) {
-						addChannelSnag(contractDce, ChannelSnag.SNAG_MISSING,
-								spanStartDate, spanFinishDate, false);
-						spanStartDate = HhEndDate.getNext(spanFinishDate);
-						spanFinishDate = generationFinishDate;
-						if (spanStartDate.getDate().after(
-								spanFinishDate.getDate())) {
-							finished = true;
-						}
-					} else {
-						long shouldBe = (long) (spanFinishDate.getDate()
-								.getTime()
-								- spanStartDate.getDate().getTime() + 1000 * 60 * 30)
-								/ (1000 * 60 * 30);
-						if (present == shouldBe) {
-							spanStartDate = HhEndDate.getNext(spanFinishDate);
-							spanFinishDate = generationFinishDate;
-							if (spanStartDate.getDate().after(
-									spanFinishDate.getDate())) {
-								finished = true;
-							}
-						} else {
-							spanFinishDate = new HhEndDate(new Date(HhEndDate
-									.roundDown(cal, spanStartDate.getDate()
-											.getTime()
-											+ (spanFinishDate.getDate()
-													.getTime() - spanStartDate
-													.getDate().getTime()) / 2)));
-						}
-					}
-				}
-			}
-		}
-	}
-
-	private HhdcContract getDceService(HhEndDate date) throws HttpException {
-		return supply.getGeneration(date).getHhdceContract(isImport, isKwh);
+*/
+	public HhdcContract getHhdcContract() throws HttpException {
+		return getSupplyGeneration().getHhdceContract(isImport, isKwh);
 	}
 
 	public void deleteData(HhEndDate from, int days)
-			throws InternalException, HttpException {
+			throws HttpException {
 		Calendar cal = MonadDate.getCalendar();
 		cal.setTime(from.getDate());
 		cal.add(Calendar.DAY_OF_MONTH, days);
@@ -592,19 +501,8 @@ public class Channel extends PersistentEntity implements Urlable {
 			throw new UserException
 					("There aren't any data to delete for this period.");
 		}
-		checkForMissing(from, to);
-		this.siteCheck(from, to, supply.getGenerations(from, to));
-	}
-
-	@SuppressWarnings("unchecked")
-	public List<HhDatum> getHhData(HhEndDate from, HhEndDate to) {
-		return (List<HhDatum>) Hiber
-				.session()
-				.createQuery(
-						"from HhDatum datum where datum.channel = :channel and datum.endDate.date >= :from and datum.endDate.date <= :to order by datum.endDate.date")
-				.setEntity("channel", this)
-				.setTimestamp("from", from.getDate()).setTimestamp("to",
-						to.getDate()).list();
+		supplyGeneration.getSupply().checkForMissing(from, to);
+		siteCheck(from, to);
 	}
 
 	public Element toXml(Document doc) throws InternalException,
@@ -621,12 +519,7 @@ public class Channel extends PersistentEntity implements Urlable {
 			InternalException, HttpException, DeployerException {
 		Document doc = MonadUtils.newSourceDocument();
 		Element source = doc.getDocumentElement();
-		Element channelElement = toXml(doc);
-		source.appendChild(channelElement);
-		Element supplyElement = getSupply().toXml(doc);
-		supplyElement.appendChild(supply.getOrganization().toXml(doc));
-		channelElement.appendChild(supplyElement);
-		supplyElement.appendChild(getSupply().getOrganization().toXml(doc));
+		source.appendChild(toXml(doc, new XmlTree("supplyGeneration", new XmlTree("supply", new XmlTree("organization")))));
 		inv.sendOk(doc);
 	}
 
@@ -654,7 +547,7 @@ public class Channel extends PersistentEntity implements Urlable {
 	}
 
 	public MonadUri getUri() throws InternalException, HttpException {
-		return supply.getChannelsInstance().getUri().resolve(getUriId());
+		return supplyGeneration.getChannelsInstance().getUri().resolve(getUriId());
 	}
 
 	public String toString() {

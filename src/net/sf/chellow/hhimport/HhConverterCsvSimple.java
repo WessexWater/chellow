@@ -36,9 +36,6 @@ import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.UserException;
 import net.sf.chellow.physical.HhDatumStatus;
 import net.sf.chellow.physical.HhEndDate;
-import net.sf.chellow.physical.IsImport;
-import net.sf.chellow.physical.IsKwh;
-
 import com.Ostermiller.util.CSVParser;
 
 public class HhConverterCsvSimple implements HhConverter {
@@ -110,8 +107,8 @@ public class HhConverterCsvSimple implements HhConverter {
 						"There must be fields for 'MPAN core', 'Imp / Exp', 'Units', 'Time' and 'Value'.");
 			}
 			MpanCoreRaw core = new MpanCoreRaw(values[0]);
-			IsImport isImport = new IsImport(values[1]);
-			IsKwh isKwh = new IsKwh(values[2]);
+			boolean isImport = Boolean.parseBoolean(values[1]);
+			boolean isKwh = Boolean.parseBoolean(values[2]);
 			HhEndDate endDate = new HhEndDate(values[3]);
 			float value = Float.parseFloat(values[4]);
 			HhDatumStatus status = null;
