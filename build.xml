@@ -601,6 +601,10 @@
 
 	</target>
 
+	<target name="short-test" description="Short Test">
+		<property name="mdd.dir" value="mdd-test" />
+		<antcall target="test" />
+	</target>
 
 	<!-- ==================== Prepare Target ================================== -->
 
@@ -622,11 +626,21 @@
 		<mkdir dir="${build.home}/WEB-INF" />
 		<mkdir dir="${build.home}/WEB-INF/classes" />
 
-
+		<condition property="mdd.dir" value="mdd">
+			<not>
+				<isset property="mdd.dir"/>
+			</not>
+		</condition>
+		<echo message="${mdd.dir}"/>
 		<!-- Copy static content of this web application -->
 		<copy todir="${build.home}">
-			<fileset dir="${web.home}" />
+			<fileset dir="${web.home}" excludes="WEB-INF/mdd/** WEB-INF/mdd-test/**" />
 		</copy>
+		<copy todir="${build.home}/WEB-INF/mdd" >
+			<fileset dir="${web.home}/WEB-INF/${mdd.dir}" />
+		</copy>
+		
+		
 
 		<!-- Copy external dependencies as required -->
 		<!-- *** CUSTOMIZE HERE AS REQUIRED BY YOUR APPLICATION *** -->
