@@ -1,5 +1,7 @@
 package net.sf.chellow.physical;
 
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
 import java.util.Date;
 import java.util.Set;
 
@@ -26,9 +28,13 @@ import org.w3c.dom.Element;
 
 public class Ssc extends PersistentEntity {
 	public static Ssc getSsc(String code) throws HttpException {
+		// canonicalize
+		int codeInt = Integer.parseInt(code);
+		NumberFormat numberFormat = new DecimalFormat("0000");
+		String codeStr = numberFormat.format(codeInt);
 		Ssc ssc = (Ssc) Hiber.session().createQuery(
-				"from Ssc ssc where ssc.code = :code").setString("code", code)
-				.uniqueResult();
+				"from Ssc ssc where ssc.code = :code").setString("code",
+				codeStr).uniqueResult();
 		if (ssc == null) {
 			throw new UserException("There isn't an SSC with code: " + code
 					+ ".");
@@ -36,7 +42,7 @@ public class Ssc extends PersistentEntity {
 		return ssc;
 	}
 
-	public static Ssc getSsc(long id) throws HttpException, InternalException {
+	public static Ssc getSsc(long id) throws HttpException {
 		Ssc ssc = (Ssc) Hiber.session().get(Ssc.class, id);
 		if (ssc == null) {
 			throw new UserException("There isn't an SSC with id: " + id + ".");
@@ -55,8 +61,8 @@ public class Ssc extends PersistentEntity {
 				"Teleswitch Group Id" });
 		for (String[] values = mdd.getLine(); values != null; values = mdd
 				.getLine()) {
-			Ssc ssc = new Ssc(values[0], mdd.toDate(values[1]), mdd.toDate(values[2]),
-					values[3], values[4].equals("I"));
+			Ssc ssc = new Ssc(values[0], mdd.toDate(values[1]), mdd
+					.toDate(values[2]), values[3], values[4].equals("I"));
 			Hiber.session().save(ssc);
 			Hiber.close();
 		}

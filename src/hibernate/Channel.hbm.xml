@@ -4,7 +4,7 @@
           "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
 <!-- 
 	
-	Copyright 2005 Meniscus Systems Ltd
+	Copyright 2005, 2008 Meniscus Systems Ltd
 	
 	This file is part of Chellow.
 	
@@ -31,8 +31,8 @@
 				<param name="sequence">channel_id_sequence</param>
 			</generator>
 		</id>
-		<many-to-one name="supply" class="Supply" column="supply_id"
-			unique-key="hh_datum_unique" foreign-key="fkey_channel_supply"/>
+		<many-to-one name="supplyGeneration" class="SupplyGeneration" column="supply_generation_id"
+			unique-key="hh_datum_unique" foreign-key="fkey_channel_supply_generation"/>
 		<property name="isImport" column="is_import" type="boolean"
 			not-null="true" unique-key="hh_datum_unique" />
 		<property name="isKwh" column="is_kwh" type="boolean"

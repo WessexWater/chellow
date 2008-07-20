@@ -4,7 +4,7 @@
           "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
 <!-- 
 	
-	Copyright 2005-2007 Meniscus Systems Ltd
+	Copyright 2005-2008 Meniscus Systems Ltd
 	
 	This file is part of Chellow.
 	
@@ -38,11 +38,6 @@
 			cascade="all,delete-orphan" order-by="start_date desc">
 			<key column="supply_id" />
 			<one-to-many class="SupplyGeneration" />
-		</set>
-		<set name="channels" inverse="true" cascade="all,delete-orphan"
-			order-by="is_import desc, is_kwh desc">
-			<key column="supply_id" />
-			<one-to-many class="Channel" />
 		</set>
 		<set name="mpanCores" inverse="true" lazy="true"
 			cascade="all,delete-orphan">

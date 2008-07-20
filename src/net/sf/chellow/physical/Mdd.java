@@ -54,7 +54,7 @@ public class Mdd {
 		} catch (IOException e) {
 			throw new InternalException(e);
 		}
-		dateFormat = new SimpleDateFormat("dd/MM/yyyy", Locale.UK);
+		dateFormat = new SimpleDateFormat("dd/MM/yy", Locale.UK);
 		dateFormat.setCalendar(new GregorianCalendar(TimeZone
 				.getTimeZone("GMT"), Locale.UK));
 	}

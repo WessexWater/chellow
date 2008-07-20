@@ -37,9 +37,13 @@
 			not-null="true" />
 		<property type="boolean" name="isImport" column="is_import"
 			not-null="true" />
-		<property type="timestamp" name="validFrom" column="valid_from"
-			not-null="true" />
-		<property type="timestamp" name="validTo" column="valid_to" />
+		<property type="timestamp" name="validFrom" not-null="true">
+			<column name="valid_from"
+				sql-type="timestamp with time zone" />
+		</property>
+		<property type="timestamp" name="validTo">
+			<column name="valid_to" sql-type="timestamp with time zone" />
+		</property>
 		<set name="measurementRequirements" inverse="true"
 			cascade="all,delete-orphan" order-by="tpr_id">
 			<key column="ssc_id" />

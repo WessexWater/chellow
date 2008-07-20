@@ -119,7 +119,8 @@ public class Llfc extends PersistentEntity {
 				Date validFrom = mdd.toDate(values[4]);
 				Date validTo = mdd.toDate(values[7]);
 				Hiber.session().save(
-						new Llfc(Provider.getProvider(participantCode, MarketRole.DISTRIBUTOR), Integer
+						new Llfc(Provider.getProvider(participantCode,
+								MarketRole.DISTRIBUTOR), Integer
 								.parseInt(values[3]), description, vLevel,
 								isSubstation, isImport, validFrom, validTo));
 				Hiber.close();

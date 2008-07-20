@@ -48,8 +48,12 @@
 		<many-to-one name="paymentType" class="MtcPaymentType"
 			column="payment_type_id" foreign-key="fkey_mtc_payment_type" />
 		<property type="integer" name="tprCount" column="tpr_count" />
-		<property type="timestamp" name="validFrom" column="valid_from"
-			not-null="true" />
-		<property type="timestamp" name="validTo" column="valid_to" />
+		<property type="timestamp" name="validFrom" not-null="true">
+			<column name="valid_from"
+				sql-type="timestamp with time zone" />
+		</property>
+		<property type="timestamp" name="validTo">
+			<column name="valid_to" sql-type="timestamp with time zone" />
+		</property>
 	</class>
 </hibernate-mapping>
