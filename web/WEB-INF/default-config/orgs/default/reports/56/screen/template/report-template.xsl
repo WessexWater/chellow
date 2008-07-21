@@ -12,33 +12,21 @@
 					href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/9/stream/output/" />
 
 				<title>
-					<xsl:value-of select="/source/org/@name" />
-					&gt; DCEs &gt;
-					<xsl:value-of select="/source/services/dce/@name" />
-					&gt; Services
+					<xsl:value-of select="/source/contracts/org/@name" />
+					&gt; HHDC Contracts
 				</title>
 			</head>
 			<body>
 				<p>
 					<a
-						href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/0/screen/output/">
-						<xsl:value-of select="/source/org/@name" />
-					</a>
-					&gt;
-					<a
-						href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/54/screen/output/">
-						<xsl:value-of select="'DCEs'" />
-					</a>
-					&gt;
-					<a
-						href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/55/screen/output/?dce-id={/source/services/dce/@id}">
+						href="{/source/request/@context-path}/orgs/{/source/contracts/org/@id}/reports/0/screen/output/">
 						<xsl:value-of
-							select="/source/services/dce/@name" />
+							select="/source/contracts/org/@name" />
 					</a>
 					&gt;
-					<xsl:value-of select="'Services ['" />
+					<xsl:value-of select="'HHDC Contracts ['" />
 					<a
-						href="{/source/request/@context-path}/orgs/{/source/org/@id}/dces/{/source/services/dce/@id}/services/">
+						href="{/source/request/@context-path}/orgs/{/source/contracts/org/@id}/hhdc-contracts/">
 						<xsl:value-of select="'edit'" />
 					</a>
 					<xsl:value-of select="']'" />
@@ -56,19 +44,20 @@
 				<table>
 					<thead>
 						<tr>
-							<th>Id</th>
+							<th>Chellow Id</th>
 							<th>Name</th>
 							<th>Start Date</th>
 							<th>Finish Date</th>
+							<th>HHDC</th>
 						</tr>
 					</thead>
 					<tbody>
 						<xsl:for-each
-							select="/source/services/dce-service">
+							select="/source/contracts/hhdc-contract">
 							<tr>
 								<td>
 									<a
-										href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/57/screen/output/?service-id={@id}">
+										href="{/source/request/@context-path}/orgs/{/source/contracts/org/@id}/reports/57/screen/output/?contract-id={@id}">
 										<xsl:value-of select="@id" />
 									</a>
 								</td>
@@ -90,6 +79,13 @@
 											Ongoing
 										</xsl:otherwise>
 									</xsl:choose>
+								</td>
+								<td>
+									<a
+										href="{/source/request/@context-path}/orgs/{/source/contracts/org/@id}/reports/23/screen/output/?provider-id={provider/@id}">
+										<xsl:value-of
+											select="provider/@name" />
+									</a>
 								</td>
 							</tr>
 						</xsl:for-each>

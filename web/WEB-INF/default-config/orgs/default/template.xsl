@@ -34,7 +34,8 @@
 					<a
 						href="{/source/request/@context-path}/orgs/1/reports/0/screen/output/">
 						<xsl:value-of select="'view'" />
-					</a><xsl:value-of select="']'" />
+					</a>
+					<xsl:value-of select="']'" />
 				</p>
 				<xsl:if test="//message">
 					<ul>
@@ -52,7 +53,7 @@
 							<fieldset>
 								<legend>
 									Are you sure you want to delete this
-									service?
+									organization?
 								</legend>
 								<input type="submit" name="delete"
 									value="Delete" />
@@ -95,7 +96,9 @@
 							<fieldset>
 								<input type="hidden" name="view"
 									value="confirm-delete" />
-								<legend>Delete this organization</legend>
+								<legend>
+									Delete this organization
+								</legend>
 								<input type="submit" value="Delete" />
 							</fieldset>
 						</form>
@@ -116,25 +119,23 @@
 							</li>
 						</ul>
 
-						<h2>Providers</h2>
+						<h2>Contracts</h2>
 
 						<ul>
 							<li>
-								<a href="suppliers/">Suppliers</a>
-							</li>
-							<li>
-								<a href="dcss/">
-									Data Collectors for Settlement
+								<a href="supplier-contracts/">
+									Supplier Contracts
 								</a>
 							</li>
 							<li>
-								<a href="dces/">
-									Data Collectors for Energy
-									Management
+								<a href="hhdc-contracts/">
+									HHDC Contracts
 								</a>
 							</li>
 							<li>
-								<a href="mops/">Meter Operators</a>
+								<a href="mop-contracts/">
+									Meter Operator Contracts
+								</a>
 							</li>
 						</ul>
 					</xsl:otherwise>

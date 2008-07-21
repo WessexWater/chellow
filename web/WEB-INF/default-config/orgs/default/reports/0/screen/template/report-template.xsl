@@ -49,14 +49,14 @@
 
 					<li>
 						<a
-							href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/54/screen/output/">
-							DCEs
+							href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/56/screen/output/">
+							DCE Contracts
 						</a>
 					</li>
 					<li>
 						<a
-							href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/35/screen/output/">
-							Suppliers
+							href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/37/screen/output/">
+							Supplier Contracts
 						</a>
 					</li>
 				</ul>

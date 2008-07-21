@@ -1,18 +1,14 @@
 from net.sf.chellow.monad import Hiber, XmlTree
-from net.sf.chellow.billing import Supplier
 
-supplier_id = inv.getLong('supplier-id')
-supplier = organization.getSupplier(supplier_id)
-services_element = doc.createElement('services')
-source.appendChild(services_element)
-for service in Hiber.session().createQuery("from SupplierService service where service.provider.id = :supplierId order by service.startRateScript.startDate.date").setLong("supplierId", supplier.getId()).list():
-    service_element = service.toXml(doc)
-    services_element.appendChild(service_element)
-    start_rate_script = service.getStartRateScript()
+contracts_element = doc.createElement('contracts')
+source.appendChild(contracts_element)
+for contract in Hiber.session().createQuery("from SupplierContract contract where contract.organization = :organization order by contract.startRateScript.startDate.date").setEntity("organization", organization).list():
+    contract_element = contract.toXml(doc, XmlTree('provider'))
+    contracts_element.appendChild(contract_element)
+    start_rate_script = contract.getStartRateScript()
     start_rate_script.setLabel('start')
-    service_element.appendChild(start_rate_script.toXml(doc))
-    finish_rate_script = service.getFinishRateScript()
+    contract_element.appendChild(start_rate_script.toXml(doc))
+    finish_rate_script = contract.getFinishRateScript()
     finish_rate_script.setLabel('finish')
-    service_element.appendChild(finish_rate_script.toXml(doc))
-services_element.appendChild(supplier.toXml(doc));
-source.appendChild(organization.toXml(doc))
+    contract_element.appendChild(finish_rate_script.toXml(doc))
+contracts_element.appendChild(organization.toXml(doc))

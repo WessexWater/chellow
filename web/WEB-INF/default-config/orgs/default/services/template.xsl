@@ -14,11 +14,8 @@
 				<title>
 					Chellow &gt; Organizations &gt;
 					<xsl:value-of
-						select="/source/dce-services/dce/org/@name" />
-					&gt; DCEs &gt;
-					<xsl:value-of
-						select="/source/dce-services/dce/@name" />
-					&gt; Services
+						select="/source/supplier-contracts/org/@name" />
+					&gt; Supplier Contracts
 				</title>
 
 			</head>
@@ -36,29 +33,19 @@
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/orgs/{/source/dce-services/dce/org/@id}/">
+						href="{/source/request/@context-path}/orgs/{/source/supplier-contracts/org/@id}/">
 						<xsl:value-of
-							select="/source/dce-services/dce/org/@name" />
+							select="/source/supplier-contracts/org/@name" />
 					</a>
 					&gt;
+					<xsl:value-of select="'Supplier Contracts ['" />
 					<a
-						href="{/source/request/@context-path}/orgs/{/source/dce-services/dce/org/@id}/dces/">
-						<xsl:value-of select="'DCEs'" />
-					</a>
-					&gt;
-					<a
-						href="{/source/request/@context-path}/orgs/{/source/dce-services/dce/org/@id}/dces/{/source/dce-services/dce/@id}/">
-						<xsl:value-of
-							select="/source/dce-services/dce/@name" />
-					</a>
-					&gt;
-					<xsl:value-of select="'Services ['" />
-					<a
-						href="{/source/request/@context-path}/orgs/{/source/dce-services/dce/org/@id}/reports/56/screen/output/?dce-id={/source/dce-services/dce/@id}">
+						href="{/source/request/@context-path}/orgs/{/source/supplier-contracts/org/@id}/reports/37/screen/output/">
 						<xsl:value-of select="'view'" />
 					</a>
 					<xsl:value-of select="']'" />
 				</p>
+				<br />
 				<xsl:if test="//message">
 					<ul>
 						<xsl:for-each select="//message">
@@ -68,7 +55,6 @@
 						</xsl:for-each>
 					</ul>
 				</xsl:if>
-				<br />
 				<xsl:choose>
 					<xsl:when
 						test="/source/response/@status-code = '201'">
@@ -76,7 +62,7 @@
 							The
 							<a
 								href="{/source/response/header[@name = 'Location']/@value}">
-								<xsl:value-of select="'new service'" />
+								<xsl:value-of select="'new contract'" />
 							</a>
 							has been successfully created.
 						</p>
@@ -84,9 +70,9 @@
 					<xsl:otherwise>
 						<ul>
 							<xsl:for-each
-								select="/source/dce-services/dce-service">
+								select="/source/supplier-contracts/supplier-contract">
 								<li>
-									<a href="{@id}">
+									<a href="{@id}/">
 										<xsl:value-of select="@name" />
 									</a>
 								</li>
@@ -96,45 +82,7 @@
 						<hr />
 						<form action="." method="post">
 							<fieldset>
-								<legend>Add a service</legend>
-								<br />
-								<label>
-									<xsl:value-of select="'Type '" />
-									<select name="type">
-										<option value="0">
-											<xsl:if
-												test="/source/request/parameter[@name='type']/value = '0'">
-												<xsl:attribute
-													name="checked">
-													checked
-												</xsl:attribute>
-											</xsl:if>
-											Service Only
-										</option>
-										<option value="1">
-											<xsl:if
-												test="/source/request/parameter[@name='type']/value = '1'">
-												<xsl:attribute
-													name="checked">
-													checked
-												</xsl:attribute>
-											</xsl:if>
-											Pass Through
-										</option>
-										<option value="2">
-											<xsl:if
-												test="/source/request/parameter[@name='type']/value = '2'">
-												<xsl:attribute
-													name="checked">
-													checked
-												</xsl:attribute>
-											</xsl:if>
-											Contract
-										</option>
-									</select>
-								</label>
-								<br />
-								<br />
+								<legend>Add a contract</legend>
 								<label>
 									<xsl:value-of select="'Name '" />
 									<input name="name"
@@ -328,36 +276,6 @@
 										</xsl:for-each>
 									</select>
 								</fieldset>
-								<br />
-								<label>
-									Frequency with which the data
-									arrives
-									<select name="frequency">
-										<option value="0">
-											<xsl:if
-												test="number(/source/request/parameter[@name = 'frequency']/value) = '0'">
-												<xsl:attribute
-													name="selected" />
-											</xsl:if>
-											Daily
-										</option>
-										<option value="1">
-											<xsl:if
-												test="number(/source/request/parameter[@name = 'frequency']/value) = '1'">
-												<xsl:attribute
-													name="selected" />
-											</xsl:if>
-											Monthly
-										</option>
-									</select>
-								</label>
-								<br />
-								<label>
-									Lag (number of days behind that the
-									data is delivered)
-									<input name="lag" />
-								</label>
-								<br />
 								<label>
 									<xsl:value-of
 										select="'Charge Script'" />
@@ -378,6 +296,7 @@
 									</textarea>
 								</label>
 								<br />
+
 								<br />
 								<input type="submit" value="Add" />
 								<input type="reset" value="Reset" />

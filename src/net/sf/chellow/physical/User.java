@@ -93,10 +93,10 @@ public class User extends PersistentEntity {
 			Role userRole = Role.insertRole(sessionUser, "user-" + user.getId());
 			userRole.insertPermission(sessionUser, userRole.getUri(), Arrays
 						.asList(Invocation.HttpMethod.GET));
-
+			user.addRole(sessionUser, userRole);
 			user.addRole(sessionUser, Role.find("basic-user"));
 			if (sessionUser != null) {
-				sessionUser.userRole().insertPermission(
+				sessionUser.getUserRole().insertPermission(
 						null,
 						user.getUri(),
 						Arrays.asList(Invocation.HttpMethod.GET,
@@ -278,7 +278,7 @@ public class User extends PersistentEntity {
 		Hiber.flush();
 	}
 
-	public Role userRole() throws HttpException {
+	public Role getUserRole() throws HttpException {
 		return Role.find("user-" + getId());
 	}
 

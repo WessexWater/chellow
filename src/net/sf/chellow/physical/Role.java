@@ -77,7 +77,7 @@ public class Role extends PersistentEntity {
 		Hiber.session().save(role);
 		Hiber.flush();
 		if (sessionUser != null) {
-			sessionUser.userRole().insertPermission(
+			sessionUser.getUserRole().insertPermission(
 					null,
 					role.getUri(),
 					Arrays.asList(Invocation.HttpMethod.GET,
