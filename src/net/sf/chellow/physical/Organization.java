@@ -204,7 +204,7 @@ public class Organization extends PersistentEntity {
 
 	public void httpGet(Invocation inv) throws HttpException {
 		Document doc = MonadUtils.newSourceDocument();
-		Element source = (Element) doc.getFirstChild();
+		Element source = doc.getDocumentElement();
 
 		source.appendChild(toXml(doc));
 		inv.sendOk(doc);

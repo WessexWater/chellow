@@ -25,15 +25,13 @@ package net.sf.chellow.billing;
 import java.util.Date;
 import java.util.List;
 
-import net.sf.chellow.monad.DeployerException;
-import net.sf.chellow.monad.DesignerException;
 import net.sf.chellow.monad.Hiber;
+import net.sf.chellow.monad.HttpException;
+import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Invocation;
 import net.sf.chellow.monad.MonadUtils;
 import net.sf.chellow.monad.NotFoundException;
-import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Urlable;
-import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.UserException;
 import net.sf.chellow.monad.XmlDescriber;
 import net.sf.chellow.monad.XmlTree;
@@ -55,7 +53,7 @@ public class HhdcContracts implements Urlable, XmlDescriber {
 
 	static {
 		try {
-			URI_ID = new UriPathElement("hhdc-services");
+			URI_ID = new UriPathElement("hhdc-contracts");
 		} catch (HttpException e) {
 			throw new RuntimeException(e);
 		}
@@ -71,7 +69,7 @@ public class HhdcContracts implements Urlable, XmlDescriber {
 		return URI_ID;
 	}
 
-	public MonadUri getUri() throws InternalException, HttpException {
+	public MonadUri getUri() throws HttpException {
 		return organization.getUri().resolve(getUrlId()).append("/");
 	}
 
@@ -86,7 +84,8 @@ public class HhdcContracts implements Urlable, XmlDescriber {
 		if (!inv.isValid()) {
 			throw new UserException(document());
 		}
-		Provider provider = Provider.getProvider(participantCode, MarketRole.HHDC);
+		Provider provider = Provider.getProvider(participantCode,
+				MarketRole.HHDC);
 		HhdcContract service = organization.insertHhdcContract(provider, name,
 				HhEndDate.roundDown(startDate), chargeScript, frequency, lag);
 		Hiber.commit();
@@ -94,8 +93,7 @@ public class HhdcContracts implements Urlable, XmlDescriber {
 	}
 
 	@SuppressWarnings("unchecked")
-	private Document document() throws InternalException, HttpException,
-			DesignerException {
+	private Document document() throws HttpException {
 		Document doc = MonadUtils.newSourceDocument();
 		Element source = doc.getDocumentElement();
 		Element contractsElement = (Element) toXml(doc);
@@ -104,10 +102,17 @@ public class HhdcContracts implements Urlable, XmlDescriber {
 		for (HhdcContract contract : (List<HhdcContract>) Hiber
 				.session()
 				.createQuery(
-						"from HhdceContract contract where contract.organization = :organization order by contract.name")
+						"from HhdcContract contract where contract.organization = :organization order by contract.name")
 				.setEntity("organization", organization).list()) {
 			contractsElement.appendChild(contract.toXml(doc, new XmlTree(
 					"provider")));
+		}
+		for (Provider provider : (List<Provider>) Hiber
+				.session()
+				.createQuery(
+						"from Provider provider where provider.role.code = :roleCode order by provider.participant.code")
+				.setCharacter("roleCode", MarketRole.HHDC).list()) {
+			source.appendChild(provider.toXml(doc, new XmlTree("participant")));
 		}
 		source.appendChild(MonadDate.getMonthsXml(doc));
 		source.appendChild(MonadDate.getDaysXml(doc));
@@ -115,8 +120,7 @@ public class HhdcContracts implements Urlable, XmlDescriber {
 		return doc;
 	}
 
-	public void httpGet(Invocation inv) throws DesignerException,
-			InternalException, HttpException, DeployerException {
+	public void httpGet(Invocation inv) throws HttpException {
 		inv.sendOk(document());
 	}
 
@@ -139,8 +143,8 @@ public class HhdcContracts implements Urlable, XmlDescriber {
 
 	}
 
-	public Node toXml(Document doc) throws InternalException, HttpException {
-		Element contractsElement = doc.createElement("dce-services");
+	public Node toXml(Document doc) throws HttpException {
+		Element contractsElement = doc.createElement("hhdc-contracts");
 		return contractsElement;
 	}
 

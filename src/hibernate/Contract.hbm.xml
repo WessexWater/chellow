@@ -31,8 +31,6 @@
 		<key column="service_id" foreign-key="fkey_contract_service" />
 		<many-to-one name="organization"
 			class="net.sf.chellow.physical.Organization" column="organization_id"
-			foreign-key="fkey_contract_organization" />
-		<many-to-one name="provider" class="Provider"
-			column="provider_id" foreign-key="fkey_contract_provider" />
+			foreign-key="fkey_contract_organization" not-null="true"/>
 	</joined-subclass>
 </hibernate-mapping>

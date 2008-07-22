@@ -27,7 +27,6 @@ import java.util.List;
 import net.sf.chellow.hhimport.HhDataImportProcesses;
 import net.sf.chellow.hhimport.stark.StarkAutomaticHhDataImporter;
 import net.sf.chellow.hhimport.stark.StarkAutomaticHhDataImporters;
-import net.sf.chellow.monad.DeployerException;
 import net.sf.chellow.monad.DesignerException;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.Invocation;
@@ -42,6 +41,7 @@ import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
 import net.sf.chellow.physical.ContractFrequency;
 import net.sf.chellow.physical.HhEndDate;
+import net.sf.chellow.physical.MarketRole;
 import net.sf.chellow.physical.Mpan;
 import net.sf.chellow.physical.ChannelSnags;
 import net.sf.chellow.physical.Organization;
@@ -52,8 +52,7 @@ import org.w3c.dom.Element;
 
 @SuppressWarnings("serial")
 public class HhdcContract extends Contract {
-	public static HhdcContract getHhdcContract(Long id) throws HttpException,
-			InternalException {
+	public static HhdcContract getHhdcContract(Long id) throws HttpException {
 		HhdcContract service = findDceService(id);
 		if (service == null) {
 			throw new UserException("There isn't a DCE service with that id.");
@@ -65,8 +64,6 @@ public class HhdcContract extends Contract {
 			InternalException {
 		return (HhdcContract) Hiber.session().get(HhdcContract.class, id);
 	}
-	
-	private Provider provider;
 
 	private ContractFrequency frequency;
 
@@ -81,14 +78,6 @@ public class HhdcContract extends Contract {
 			InternalException, DesignerException {
 		super(provider, organization, name, startDate, chargeScript);
 		intrinsicUpdate(name, chargeScript, frequency, lag);
-	}
-	
-	public Provider getProvider() {
-		return provider;
-	}
-	
-	void setProvider(Provider provider) {
-		this.provider = provider;
 	}
 
 	public ContractFrequency getFrequency() {
@@ -160,6 +149,7 @@ public class HhdcContract extends Contract {
 	}
 
 	public void httpPost(Invocation inv) throws HttpException {
+		// Long participantId = inv.getLong("participant-id");
 		String name = inv.getString("name");
 		String chargeScript = inv.getString("charge-script");
 		ContractFrequency frequency = inv.getValidatable(
@@ -173,17 +163,23 @@ public class HhdcContract extends Contract {
 		inv.sendOk(document());
 	}
 
-	protected Document document() throws InternalException, HttpException,
-			DesignerException {
+	@SuppressWarnings("unchecked")
+	protected Document document() throws HttpException {
 		Document doc = MonadUtils.newSourceDocument();
 		Element source = doc.getDocumentElement();
-		source.appendChild(toXml(doc, new XmlTree("provider", new XmlTree(
-				"organization"))));
+		source.appendChild(toXml(doc, new XmlTree("provider")
+				.put("organization")));
+		for (Provider provider : (List<Provider>) Hiber
+				.session()
+				.createQuery(
+						"from Provider provider where provider.role.code = :roleCode order by provider.participant.code")
+				.setCharacter("roleCode", MarketRole.HHDC).list()) {
+			source.appendChild(provider.toXml(doc, new XmlTree("participant")));
+		}
 		return doc;
 	}
 
-	public void httpGet(Invocation inv) throws DesignerException,
-			InternalException, HttpException, DeployerException {
+	public void httpGet(Invocation inv) throws HttpException {
 		inv.sendOk(document());
 	}
 

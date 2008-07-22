@@ -14,12 +14,9 @@
 				<title>
 					Chellow &gt; Organizations &gt;
 					<xsl:value-of
-						select="/source/dce-service/dce/org/@name" />
-					&gt; DCEs &gt;
-					<xsl:value-of
-						select="/source/dce-service/dce/@name" />
-					&gt; Services &gt;
-					<xsl:value-of select="/source/dce-service/@name" />
+						select="/source/hhdc-contract/org/@name" />
+					&gt; HHDC Contracts &gt;
+					<xsl:value-of select="/source/hhdc-contract/@name" />
 				</title>
 
 			</head>
@@ -47,28 +44,20 @@
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/orgs/{/source/dce-service/dce/org/@id}/">
+						href="{/source/request/@context-path}/orgs/{/source/hhdc-contract/org/@id}/">
 						<xsl:value-of
-							select="/source/dce-service/dce/org/@name" />
+							select="/source/hhdc-contract/org/@name" />
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/orgs/{/source/dce-service/dce/org/@id}/dces/">
-						<xsl:value-of select="'DCEs'" />
+						href="{/source/request/@context-path}/orgs/{/source/hhdc-contract/org/@id}/hhdc-contracts/">
+						<xsl:value-of select="'HHDC Contracts'" />
 					</a>
-					&gt;
-					<a
-						href="{/source/request/@context-path}/orgs/{/source/dce-service/dce/org/@id}/dces/{/source/dce-service/dce/@id}">
-						<xsl:value-of
-							select="/source/dce-service/dce/@name" />
-					</a>
-					&gt;
-					<a href="..">Services</a>
 					&gt;
 					<xsl:value-of
-						select="concat(/source/dce-service/@name, ' [')" />
+						select="concat(/source/hhdc-contract/@name, ' [')" />
 					<a
-						href="{/source/request/@context-path}/orgs/{/source/dce-service/dce/org/@id}/reports/57/screen/output/?service-id={/source/dce-service/@id}">
+						href="{/source/request/@context-path}/orgs/{/source/hhdc-contract/org/@id}/reports/57/screen/output/?contract-id={/source/hhdc-contract/@id}">
 						<xsl:value-of select="'view'" />
 					</a>
 					<xsl:value-of select="']'" />
@@ -77,7 +66,37 @@
 
 				<form action="." method="post">
 					<fieldset>
-						<legend>Update Service</legend>
+						<legend>Update Contract</legend>
+						<label>
+							HHDC
+							<select name="participant-id">
+								<xsl:for-each
+									select="/source/provider">
+									<option value="{participant/@id}">
+										<xsl:choose>
+											<xsl:when
+												test="/source/request/parameter[@name='participant-id']">
+												<xsl:if
+													test="/source/request/parameter[@name='participant-id']/value/text() = participant/@id">
+													<xsl:attribute
+														name="selected" />
+												</xsl:if>
+											</xsl:when>
+											<xsl:otherwise>
+												<xsl:if
+													test="/source/hhdc-contract/provider/participant/@id = participant/@id">
+													<xsl:attribute
+														name="selected" />
+												</xsl:if>
+											</xsl:otherwise>
+										</xsl:choose>
+										<xsl:value-of
+											select="concat(participant/@code, ' : ', @name)" />
+									</option>
+								</xsl:for-each>
+							</select>
+						</label>
+						<br />
 						<label>
 							<xsl:value-of select="'Name '" />
 							<input name="name">
@@ -90,7 +109,7 @@
 										</xsl:when>
 										<xsl:otherwise>
 											<xsl:value-of
-												select="/source/dce-service/@name" />
+												select="/source/hhdc-contract/@name" />
 										</xsl:otherwise>
 									</xsl:choose>
 								</xsl:attribute>
@@ -112,7 +131,7 @@
 										</xsl:when>
 										<xsl:otherwise>
 											<xsl:if
-												test="/source/dce-service/@frequency = '0'">
+												test="/source/hhdc-contract/@frequency = '0'">
 												<xsl:attribute
 													name="selected" />
 											</xsl:if>
@@ -132,7 +151,7 @@
 										</xsl:when>
 										<xsl:otherwise>
 											<xsl:if
-												test="/source/dce-service/@frequency = '1'">
+												test="/source/hhdc-contract/@frequency = '1'">
 												<xsl:attribute
 													name="selected" />
 											</xsl:if>
@@ -156,7 +175,7 @@
 										</xsl:when>
 										<xsl:otherwise>
 											<xsl:value-of
-												select="/source/dce-service/@lag" />
+												select="/source/hhdc-contract/@lag" />
 										</xsl:otherwise>
 									</xsl:choose>
 								</xsl:attribute>
@@ -171,7 +190,7 @@
 
 				<form action="?view=confirm-delete">
 					<fieldset>
-						<legend>Delete this service</legend>
+						<legend>Delete this contract</legend>
 						<input type="submit" value="Delete" />
 					</fieldset>
 				</form>
@@ -187,7 +206,7 @@
 						<a href="snags-site/">Site Snags</a>
 					</li>
 					<xsl:if
-						test="/source/dce-service/@has-stark-automatic-hh-data-importer='true'">
+						test="/source/hhdc-contract/@has-stark-automatic-hh-data-importer='true'">
 						<li>
 							<a
 								href="stark-automatic-hh-data-importer/">

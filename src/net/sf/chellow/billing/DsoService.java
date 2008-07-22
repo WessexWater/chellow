@@ -63,7 +63,7 @@ public class DsoService extends Service {
 
 	public DsoService(Provider provider, String name, HhEndDate startDate,
 			String chargeScript) throws HttpException {
-		super(name, startDate,
+		super(provider, name, startDate,
 				chargeScript);
 		internalUpdate(provider, name, startDate, chargeScript);
 	}

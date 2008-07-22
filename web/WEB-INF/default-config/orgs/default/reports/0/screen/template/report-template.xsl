@@ -9,7 +9,7 @@
 		<html>
 			<head>
 				<link rel="stylesheet" type="text/css"
-					href="{/source/request/@context-path}/orgs/1/reports/9/stream/output/" />
+					href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/9/stream/output/" />
 
 				<title>
 					<xsl:value-of select="/source/org/@name" />
@@ -50,7 +50,7 @@
 					<li>
 						<a
 							href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/56/screen/output/">
-							DCE Contracts
+							HHDC Contracts
 						</a>
 					</li>
 					<li>

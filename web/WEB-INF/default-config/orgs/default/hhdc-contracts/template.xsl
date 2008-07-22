@@ -14,11 +14,8 @@
 				<title>
 					Chellow &gt; Organizations &gt;
 					<xsl:value-of
-						select="/source/dce-services/dce/org/@name" />
-					&gt; DCEs &gt;
-					<xsl:value-of
-						select="/source/dce-services/dce/@name" />
-					&gt; Services
+						select="/source/hhdc-contracts/org/@name" />
+					&gt; HHDC Contracts
 				</title>
 
 			</head>
@@ -36,25 +33,14 @@
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/orgs/{/source/dce-services/dce/org/@id}/">
+						href="{/source/request/@context-path}/orgs/{/source/hhdc-contracts/org/@id}/">
 						<xsl:value-of
-							select="/source/dce-services/dce/org/@name" />
+							select="/source/hhdc-contracts/org/@name" />
 					</a>
 					&gt;
+					<xsl:value-of select="'Contracts ['" />
 					<a
-						href="{/source/request/@context-path}/orgs/{/source/dce-services/dce/org/@id}/dces/">
-						<xsl:value-of select="'DCEs'" />
-					</a>
-					&gt;
-					<a
-						href="{/source/request/@context-path}/orgs/{/source/dce-services/dce/org/@id}/dces/{/source/dce-services/dce/@id}/">
-						<xsl:value-of
-							select="/source/dce-services/dce/@name" />
-					</a>
-					&gt;
-					<xsl:value-of select="'Services ['" />
-					<a
-						href="{/source/request/@context-path}/orgs/{/source/dce-services/dce/org/@id}/reports/56/screen/output/?dce-id={/source/dce-services/dce/@id}">
+						href="{/source/request/@context-path}/orgs/{/source/hhdc-contracts/org/@id}/reports/56/screen/output/">
 						<xsl:value-of select="'view'" />
 					</a>
 					<xsl:value-of select="']'" />
@@ -76,7 +62,7 @@
 							The
 							<a
 								href="{/source/response/header[@name = 'Location']/@value}">
-								<xsl:value-of select="'new service'" />
+								<xsl:value-of select="'new contract'" />
 							</a>
 							has been successfully created.
 						</p>
@@ -84,7 +70,7 @@
 					<xsl:otherwise>
 						<ul>
 							<xsl:for-each
-								select="/source/dce-services/dce-service">
+								select="/source/hhdc-contracts/hhdc-contract">
 								<li>
 									<a href="{@id}">
 										<xsl:value-of select="@name" />
@@ -96,41 +82,27 @@
 						<hr />
 						<form action="." method="post">
 							<fieldset>
-								<legend>Add a service</legend>
+								<legend>Add a contract</legend>
 								<br />
 								<label>
-									<xsl:value-of select="'Type '" />
-									<select name="type">
-										<option value="0">
-											<xsl:if
-												test="/source/request/parameter[@name='type']/value = '0'">
-												<xsl:attribute
-													name="checked">
-													checked
-												</xsl:attribute>
-											</xsl:if>
-											Service Only
-										</option>
-										<option value="1">
-											<xsl:if
-												test="/source/request/parameter[@name='type']/value = '1'">
-												<xsl:attribute
-													name="checked">
-													checked
-												</xsl:attribute>
-											</xsl:if>
-											Pass Through
-										</option>
-										<option value="2">
-											<xsl:if
-												test="/source/request/parameter[@name='type']/value = '2'">
-												<xsl:attribute
-													name="checked">
-													checked
-												</xsl:attribute>
-											</xsl:if>
-											Contract
-										</option>
+									HHDC
+									<select name="participant-code">
+										<xsl:for-each
+											select="/source/provider">
+											<option
+												value="{participant/@code}">
+												<xsl:if
+													test="/source/request/parameter[@name='participant-code']/value = participant/@code">
+													<xsl:attribute
+														name="selected">
+																<xsl:value-of
+															select="'selected'" />
+															</xsl:attribute>
+												</xsl:if>
+												<xsl:value-of
+													select="concat(participant/@code, ' : ', @name)" />
+											</option>
+										</xsl:for-each>
 									</select>
 								</label>
 								<br />
@@ -372,7 +344,7 @@
 											</xsl:when>
 											<xsl:otherwise>
 												<xsl:value-of
-													select="/source/supplier-service/text()" />
+													select="/source/hhdc-contract/text()" />
 											</xsl:otherwise>
 										</xsl:choose>
 									</textarea>

@@ -42,7 +42,7 @@ public abstract class Contract extends Service {
 
 	public Contract(Provider provider, Organization organization, String name,
 			HhEndDate startDate, String chargeScript) throws HttpException {
-		super(name, startDate, chargeScript);
+		super(provider, name, startDate, chargeScript);
 		setOrganization(organization);
 	}
 

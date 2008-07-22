@@ -63,7 +63,7 @@ public class NonCoreService extends Service {
 
 	public NonCoreService(Provider provider, String name, HhEndDate startDate,
 			String chargeScript) throws HttpException {
-		super(name, startDate, chargeScript);
+		super(provider, name, startDate, chargeScript);
 		internalUpdate(provider, name, chargeScript);
 	}
 

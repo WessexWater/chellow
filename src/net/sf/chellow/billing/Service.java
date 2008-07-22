@@ -82,8 +82,9 @@ public abstract class Service extends PersistentEntity implements
 	public Service() {
 	}
 
-	public Service(String name,
+	public Service(Provider provider, String name,
 			HhEndDate startDate, String chargeScript) throws HttpException {
+		setProvider(provider);
 		rateScripts = new HashSet<RateScript>();
 		RateScript rateScript = new RateScript(this, startDate, null,
 				chargeScript);
