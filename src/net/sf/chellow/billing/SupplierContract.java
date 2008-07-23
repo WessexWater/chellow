@@ -25,15 +25,14 @@ package net.sf.chellow.billing;
 import java.util.List;
 
 import net.sf.chellow.hhimport.HhDataImportProcesses;
-import net.sf.chellow.monad.DeployerException;
 import net.sf.chellow.monad.DesignerException;
 import net.sf.chellow.monad.Hiber;
+import net.sf.chellow.monad.HttpException;
+import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Invocation;
 import net.sf.chellow.monad.MonadUtils;
 import net.sf.chellow.monad.NotFoundException;
-import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Urlable;
-import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.UserException;
 import net.sf.chellow.monad.XmlTree;
 import net.sf.chellow.monad.types.MonadDate;
@@ -72,6 +71,10 @@ public class SupplierContract extends Contract {
 			String name, HhEndDate startDate, String chargeScript)
 			throws HttpException {
 		super(supplier, organization, name, startDate, chargeScript);
+		if (supplier.getRole().getCode() != MarketRole.SUPPLIER) {
+			throw new UserException(
+					"The provider must have the role of supplier.");
+		}
 	}
 
 	public void update(String name, String chargeScript) throws HttpException {
@@ -91,8 +94,7 @@ public class SupplierContract extends Contract {
 		return getOrganization().getUri().resolve(getUriId()).append("/");
 	}
 
-	public void httpPost(Invocation inv) throws InternalException,
-			HttpException, DesignerException, DeployerException {
+	public void httpPost(Invocation inv) throws HttpException {
 		String chargeScript = inv.getString("charge-script");
 		if (inv.hasParameter("test")) {
 			Long billId = inv.getLong("bill-id");
@@ -150,8 +152,7 @@ public class SupplierContract extends Contract {
 		super.updateNotification(startDate, finishDate);
 	}
 
-	private Document document() throws InternalException, HttpException,
-			DesignerException {
+	private Document document() throws HttpException {
 		Document doc = MonadUtils.newSourceDocument();
 		Element source = doc.getDocumentElement();
 		source.appendChild(toXml(doc, new XmlTree("provider", new XmlTree(
@@ -162,8 +163,7 @@ public class SupplierContract extends Contract {
 		return doc;
 	}
 
-	public void httpGet(Invocation inv) throws DesignerException,
-			InternalException, HttpException, DeployerException {
+	public void httpGet(Invocation inv) throws HttpException {
 		inv.sendOk(document());
 	}
 
@@ -171,8 +171,7 @@ public class SupplierContract extends Contract {
 		return 0;
 	}
 
-	public Snag getSnag(UriPathElement uriId) throws HttpException,
-			InternalException {
+	public Snag getSnag(UriPathElement uriId) throws HttpException {
 		Snag snag = (Snag) Hiber
 				.session()
 				.createQuery(
@@ -189,8 +188,7 @@ public class SupplierContract extends Contract {
 		return new HhDataImportProcesses(this);
 	}
 
-	public Urlable getChild(UriPathElement uriId) throws InternalException,
-			HttpException {
+	public Urlable getChild(UriPathElement uriId) throws HttpException {
 		if (Batches.URI_ID.equals(uriId)) {
 			return new Batches(this);
 		} else if (RateScripts.URI_ID.equals(uriId)) {

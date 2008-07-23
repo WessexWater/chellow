@@ -9,18 +9,17 @@
 		<html>
 			<head>
 				<link rel="stylesheet" type="text/css"
-					href="{/source/request/@context-path}/orgs/1/reports/9/stream/output/" />
+					href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/9/stream/output/" />
 
-				<title>Chellow &gt; DSOs</title>
+				<title>Chellow &gt; Providers</title>
 			</head>
 			<body>
 				<p>
 					<a
-						href="{/source/request/@context-path}/orgs/1/reports/0/screen/output/">
-						<xsl:value-of
-							select="/source/org/@name" />
+						href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/0/screen/output/">
+						<xsl:value-of select="/source/org/@name" />
 					</a>
-					&gt; DSOs
+					&gt; Providers
 				</p>
 				<br />
 				<xsl:if test="//message">
@@ -33,26 +32,42 @@
 					</ul>
 				</xsl:if>
 				<table>
-					<caption>DSOs</caption>
 					<thead>
-						<th>Id</th>
-						<th>Code</th>
+						<th>Chellow Id</th>
 						<th>Name</th>
+						<th>Participant</th>
+						<th>Market Role</th>
+						<th>DSO Code</th>
 					</thead>
 					<tbody>
-						<xsl:for-each select="/source/dso">
+						<xsl:for-each
+							select="/source/provider">
 							<tr>
 								<td>
 									<a
-										href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/23/screen/output/?dso-id={@id}">
+										href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/23/screen/output/?provider-id={@id}">
 										<xsl:value-of select="@id" />
 									</a>
 								</td>
 								<td>
-									<xsl:value-of select="@code" />
+									<xsl:value-of select="@name" />
 								</td>
 								<td>
-									<xsl:value-of select="@name" />
+									<a
+										href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/23/screen/output/?participant-id={participant/@id}">
+										<xsl:value-of
+											select="participant/@name" />
+									</a>
+								</td>
+								<td>
+									<a
+										href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/23/screen/output/?participant-id={participant/@id}">
+										<xsl:value-of
+											select="market-role/@description" />
+									</a>
+								</td>
+								<td>
+									<xsl:value-of select="@dso-code" />
 								</td>
 							</tr>
 						</xsl:for-each>

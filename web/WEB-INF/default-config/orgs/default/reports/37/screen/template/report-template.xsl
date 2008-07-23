@@ -19,13 +19,13 @@
 			<body>
 				<p>
 					<a
-						href="{/source/request/@context-path}/orgs/{/source/contracts/org/@name}/reports/0/screen/output/">
-						<xsl:value-of select="/source/org/@name" />
+						href="{/source/request/@context-path}/orgs/{/source/contracts/org/@id}/reports/0/screen/output/">
+						<xsl:value-of select="/source/contracts/org/@name" />
 					</a>
 					&gt;
 					<xsl:value-of select="'Supplier Contracts ['" />
 					<a
-						href="{/source/request/@context-path}/orgs/{/source/org/@id}/supplier-contracts/">
+						href="{/source/request/@context-path}/orgs/{/source/contracts/org/@id}/supplier-contracts/">
 						<xsl:value-of select="'edit'" />
 					</a>
 					<xsl:value-of select="']'" />
@@ -80,7 +80,7 @@
 								</td>
 								<td>
 									<a
-										href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/23/screen/output/?provider-id={provider/@id}">
+										href="{/source/request/@context-path}/orgs/{/source/contracts/org/@id}/reports/23/screen/output/?provider-id={provider/@id}">
 										<xsl:value-of
 											select="provider/@name" />
 									</a>

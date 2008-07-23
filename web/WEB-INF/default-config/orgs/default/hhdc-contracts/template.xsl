@@ -86,13 +86,12 @@
 								<br />
 								<label>
 									HHDC
-									<select name="participant-code">
+									<select name="provider-id">
 										<xsl:for-each
 											select="/source/provider">
-											<option
-												value="{participant/@code}">
+											<option value="{@id}">
 												<xsl:if
-													test="/source/request/parameter[@name='participant-code']/value = participant/@code">
+													test="/source/request/parameter[@name='provider-id']/value = @id">
 													<xsl:attribute
 														name="selected">
 																<xsl:value-of

@@ -42,7 +42,6 @@ import net.sf.chellow.physical.ContractFrequency;
 import net.sf.chellow.physical.HhEndDate;
 import net.sf.chellow.physical.MarketRole;
 import net.sf.chellow.physical.Organization;
-
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -74,7 +73,7 @@ public class HhdcContracts implements Urlable, XmlDescriber {
 	}
 
 	public void httpPost(Invocation inv) throws HttpException {
-		String participantCode = inv.getString("participant-code");
+		Long providerId = inv.getLong("provider-id");
 		String name = inv.getString("name");
 		ContractFrequency frequency = inv.getValidatable(
 				ContractFrequency.class, "frequency");
@@ -84,12 +83,11 @@ public class HhdcContracts implements Urlable, XmlDescriber {
 		if (!inv.isValid()) {
 			throw new UserException(document());
 		}
-		Provider provider = Provider.getProvider(participantCode,
-				MarketRole.HHDC);
-		HhdcContract service = organization.insertHhdcContract(provider, name,
+		Provider provider = Provider.getProvider(providerId);
+		HhdcContract contract = organization.insertHhdcContract(provider, name,
 				HhEndDate.roundDown(startDate), chargeScript, frequency, lag);
 		Hiber.commit();
-		inv.sendCreated(document(), service.getUri());
+		inv.sendCreated(document(), contract.getUri());
 	}
 
 	@SuppressWarnings("unchecked")

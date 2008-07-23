@@ -69,22 +69,22 @@
 						<legend>Update Contract</legend>
 						<label>
 							HHDC
-							<select name="participant-id">
+							<select name="provider-id">
 								<xsl:for-each
 									select="/source/provider">
-									<option value="{participant/@id}">
+									<option value="{@id}">
 										<xsl:choose>
 											<xsl:when
-												test="/source/request/parameter[@name='participant-id']">
+												test="/source/request/parameter[@name='provider-id']">
 												<xsl:if
-													test="/source/request/parameter[@name='participant-id']/value/text() = participant/@id">
+													test="/source/request/parameter[@name='provider-id']/value/text() = @id">
 													<xsl:attribute
 														name="selected" />
 												</xsl:if>
 											</xsl:when>
 											<xsl:otherwise>
 												<xsl:if
-													test="/source/hhdc-contract/provider/participant/@id = participant/@id">
+													test="/source/hhdc-contract/provider/@id = @id">
 													<xsl:attribute
 														name="selected" />
 												</xsl:if>

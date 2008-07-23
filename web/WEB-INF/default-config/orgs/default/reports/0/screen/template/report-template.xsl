@@ -19,7 +19,8 @@
 				<p>
 					<xsl:value-of
 						select="concat(/source/org/@name, ' [')" />
-					<a href="{/source/request/@context-path}/orgs/1/">
+					<a
+						href="{/source/request/@context-path}/orgs/{/source/org/@id}/">
 						<xsl:value-of select="'edit'" />
 					</a>
 					<xsl:value-of select="']'" />
@@ -65,7 +66,7 @@
 				<ul>
 					<li>
 						<a
-							href="{/source/request/@context-path}/orgs/1/reports/16/stream/output/">
+							href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/16/stream/output/">
 							Electricity Supply Details
 						</a>
 					</li>
@@ -75,13 +76,19 @@
 				<ul>
 					<li>
 						<a
-							href="{/source/request/@context-path}/orgs/1/reports/22/screen/output/">
-							DSOs
+							href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/35/screen/output/">
+							Market Participants
 						</a>
 					</li>
 					<li>
 						<a
-							href="{/source/request/@context-path}/orgs/1/reports/26/screen/output/">
+							href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/22/screen/output/">
+							Providers
+						</a>
+					</li>
+					<li>
+						<a
+							href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/26/screen/output/">
 							Profile Classes
 						</a>
 					</li>

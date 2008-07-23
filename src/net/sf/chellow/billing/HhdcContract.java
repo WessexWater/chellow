@@ -53,15 +53,14 @@ import org.w3c.dom.Element;
 @SuppressWarnings("serial")
 public class HhdcContract extends Contract {
 	public static HhdcContract getHhdcContract(Long id) throws HttpException {
-		HhdcContract service = findDceService(id);
-		if (service == null) {
-			throw new UserException("There isn't a DCE service with that id.");
+		HhdcContract contract = findHhdcContract(id);
+		if (contract == null) {
+			throw new UserException("There isn't a HHDC contract with that id.");
 		}
-		return service;
+		return contract;
 	}
 
-	public static HhdcContract findDceService(Long id) throws HttpException,
-			InternalException {
+	public static HhdcContract findHhdcContract(Long id) throws HttpException {
 		return (HhdcContract) Hiber.session().get(HhdcContract.class, id);
 	}
 
@@ -74,9 +73,11 @@ public class HhdcContract extends Contract {
 
 	public HhdcContract(Provider provider, Organization organization,
 			String name, HhEndDate startDate, String chargeScript,
-			ContractFrequency frequency, int lag) throws HttpException,
-			InternalException, DesignerException {
+			ContractFrequency frequency, int lag) throws HttpException {
 		super(provider, organization, name, startDate, chargeScript);
+		if (provider.getRole().getCode() != MarketRole.HHDC) {
+			throw new UserException("The provider must have the HHDC role.");
+		}
 		intrinsicUpdate(name, chargeScript, frequency, lag);
 	}
 

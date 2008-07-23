@@ -1,7 +1,7 @@
-from net.sf.chellow.monad import Hiber
+from net.sf.chellow.monad import Hiber, XmlTree
 
-for dso in Hiber.session().createQuery(
-                'from Dso dso order by dso.code.string').list():
-    source.appendChild(dso.toXml(doc));
+for provider in Hiber.session().createQuery(
+                'from Provider provider order by provider.participant.code, provider.role.code').list():
+    source.appendChild(provider.toXml(doc, XmlTree('participant').put('role')));
 source.appendChild(organization.toXml(doc))
 

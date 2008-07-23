@@ -1,8 +1,8 @@
 from net.sf.chellow.monad import Hiber
-from net.sf.chellow.physical import Dso
+from net.sf.chellow.physical import Provider
 
-dso_id = inv.getLong('dso-id')
-dso = Dso.getDso(dso_id)
-source.appendChild(dso.toXml(doc));
+provider_id = inv.getLong('provider-id')
+provider = Provider.getProvider(provider_id)
+source.appendChild(provider.toXml(doc, XmlTree('participant').put('marketRole')));
 source.appendChild(organization.toXml(doc))
 

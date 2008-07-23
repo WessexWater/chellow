@@ -2,6 +2,7 @@ package net.sf.chellow.physical;
 
 import javax.servlet.ServletContext;
 
+import net.sf.chellow.billing.Provider;
 import net.sf.chellow.monad.Debug;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
@@ -118,5 +119,14 @@ public class Participant extends PersistentEntity {
 		element.setAttribute("code", code);
 		element.setAttribute("name", name);
 		return element;
+	}
+
+	public Provider getProvider(char roleCode) {
+		return (Provider) Hiber
+				.session()
+				.createQuery(
+						"from Provider provider where provider.participant = :participant and provider.role.code = :roleCode")
+				.setEntity("participant", this).setCharacter("roleCode",
+						roleCode).uniqueResult();
 	}
 }
