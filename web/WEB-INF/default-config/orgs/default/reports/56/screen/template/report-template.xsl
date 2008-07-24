@@ -9,7 +9,7 @@
 		<html>
 			<head>
 				<link rel="stylesheet" type="text/css"
-					href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/9/stream/output/" />
+					href="{/source/request/@context-path}/orgs/{/source/contracts/org/@id}/reports/9/stream/output/" />
 
 				<title>
 					<xsl:value-of select="/source/contracts/org/@name" />
