@@ -92,7 +92,7 @@
 								</td>
 								<td>
 									<a
-										href="{/source/request/@context-path}/market-roles/{market-role/@id}/">
+										href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/61/screen/output/?role-id={market-role/@id}">
 										<xsl:value-of
 											select="market-role/@description" />
 									</a>

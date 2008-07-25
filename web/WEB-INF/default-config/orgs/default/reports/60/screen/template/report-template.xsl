@@ -9,9 +9,9 @@
 		<html>
 			<head>
 				<link rel="stylesheet" type="text/css"
-					href="{/source/request/@context-path}/orgs/{/source/contracts/org/@id}/reports/9/stream/output/" />
+					href="{/source/request/@context-path}/orgs/{/source/roles/org/@id}/reports/9/stream/output/" />
 				<title>
-					<xsl:value-of select="/source/contracts/org/@name" />
+					<xsl:value-of select="/source/roles/org/@name" />
 					&gt; Market Roles
 				</title>
 			</head>
