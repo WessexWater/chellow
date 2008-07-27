@@ -313,9 +313,7 @@ public class Mtc extends PersistentEntity {
 	}
 
 	public Node toXml(Document doc) throws HttpException {
-		setTypeName("mtc");
-
-		Element element = (Element) super.toXml(doc);
+		Element element = super.toXml(doc, "mtc");
 
 		element.setAttributeNode(code.toXml(doc));
 		element.setAttribute("description", description);

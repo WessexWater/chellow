@@ -1,6 +1,6 @@
 /*
  
- Copyright 2005 Meniscus Systems Ltd
+ Copyright 2005, 2008 Meniscus Systems Ltd
  
  This file is part of Chellow.
 
@@ -41,12 +41,12 @@ import net.sf.chellow.monad.types.UriPathElement;
 import net.sf.chellow.ui.Chellow;
 
 import org.hibernate.HibernateException;
-import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
 public class Source extends PersistentEntity implements Urlable {
+	static public final String NETWORK_CODE = "net";
 	static private HttpMethod[] ALLOWED_METHODS = { HttpMethod.GET };
 
 	static public Source getSource(Long id) throws InternalException,
@@ -62,9 +62,9 @@ public class Source extends PersistentEntity implements Urlable {
 		}
 	}
 
-	static public Source getSource(SourceCode sourceCode)
-			throws InternalException, HttpException {
-		Source source = findSource(sourceCode.getString());
+	static public Source getSource(String sourceCode)
+			throws HttpException {
+		Source source = findSource(sourceCode);
 		if (source == null) {
 			throw new NotFoundException();
 		}
@@ -86,13 +86,7 @@ public class Source extends PersistentEntity implements Urlable {
 	}
 
 	static public Source insertSource(String code, String name)
-			throws InternalException, HttpException {
-		return insertSource(new SourceCode(code), new SourceName(name));
-	}
-
-	static public Source insertSource(SourceCode code, SourceName name)
-			throws InternalException, HttpException {
-
+			throws HttpException {
 		Source source = null;
 		try {
 			source = new Source(code, name);
@@ -111,37 +105,32 @@ public class Source extends PersistentEntity implements Urlable {
 		return source;
 	}
 
-	private SourceCode code;
+	private String code;
 
-	private SourceName name;
+	private String name;
 
 	//private Set<Supply> supplies;
 
 	public Source() {
-		setTypeName("source");
 	}
 
-	public Source(SourceCode code, SourceName name) {
-		this();
+	public Source(String code, String name) {
 		update(code, name);
 	}
 
-	public SourceCode getCode() {
+	public String getCode() {
 		return code;
 	}
 
-	public void setCode(SourceCode code) {
-		checkNull(this.code = code, "code");
-		code.setLabel("code");
+	public void setCode(String code) {
 	}
 
-	public SourceName getName() {
+	public String getName() {
 		return name;
 	}
 
-	public void setName(SourceName name) {
+	public void setName(String name) {
 		this.name = name;
-		name.setLabel("name");
 	}
 
 	/*
@@ -154,16 +143,16 @@ public class Source extends PersistentEntity implements Urlable {
 	}
 	*/
 
-	public void update(SourceCode code, SourceName name) {
+	public void update(String code, String name) {
 		setCode(code);
 		setName(name);
 	}
 
-	public Node toXml(Document doc) throws InternalException, HttpException {
-		Element element = (Element) super.toXml(doc);
+	public Node toXml(Document doc) throws HttpException {
+		Element element = super.toXml(doc, "source");
 
-		element.setAttributeNode((Attr) code.toXml(doc));
-		element.setAttributeNode((Attr) getName().toXml(doc));
+		element.setAttribute("code", code);
+		element.setAttribute("name", name);
 		return element;
 	}
 

@@ -164,9 +164,8 @@ public class Ssc extends PersistentEntity {
 		throw new MethodNotAllowedException();
 	}
 
-	public Element toXml(Document doc) throws InternalException, HttpException {
-		setTypeName("ssc");
-		Element element = (Element) super.toXml(doc);
+	public Element toXml(Document doc) throws HttpException {
+		Element element = super.toXml(doc, "ssc");
 
 		element.setAttribute("code", code);
 		element.setAttribute("description", description);

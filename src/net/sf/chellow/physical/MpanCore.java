@@ -167,9 +167,8 @@ public class MpanCore extends PersistentEntity {
 		}
 	}
 
-	public Node toXml(Document doc) throws InternalException, HttpException {
-		setTypeName("mpan-core");
-		Element element = (Element) super.toXml(doc);
+	public Node toXml(Document doc) throws HttpException {
+		Element element = super.toXml(doc, "mpan-core");
 
 		element.setAttributeNode(uniquePart.toXml(doc));
 		element.setAttributeNode(checkDigit.toXml(doc));

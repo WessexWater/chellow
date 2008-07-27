@@ -1,6 +1,6 @@
 /*
  
- Copyright 2005 Meniscus Systems Ltd
+ Copyright 2005, 2008 Meniscus Systems Ltd
  
  This file is part of Chellow.
 
@@ -24,17 +24,14 @@ package net.sf.chellow.physical;
 
 import java.util.List;
 
-import net.sf.chellow.monad.DeployerException;
-import net.sf.chellow.monad.DesignerException;
 import net.sf.chellow.monad.Hiber;
+import net.sf.chellow.monad.HttpException;
+import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Invocation;
 import net.sf.chellow.monad.MonadUtils;
 import net.sf.chellow.monad.NotFoundException;
-import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Urlable;
-import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.UserException;
-
 import net.sf.chellow.monad.types.MonadLong;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
@@ -87,10 +84,9 @@ public class Sites implements Urlable {
 		return organization.getUri().resolve(getUriId()).append("/");
 	}
 
-	public void httpPost(Invocation inv) throws InternalException,
-			HttpException, DesignerException, DeployerException {
+	public void httpPost(Invocation inv) throws HttpException {
 		Document doc = MonadUtils.newSourceDocument();
-		SiteCode code = inv.getValidatable(SiteCode.class, "code");
+		String code = inv.getString("code");
 		String name = inv.getString("name");
 		if (!inv.isValid()) {
 			throw new UserException(doc, null);
@@ -100,8 +96,7 @@ public class Sites implements Urlable {
 		inv.sendCreated(site.getUri());
 	}
 
-	public void httpGet(Invocation inv) throws DesignerException,
-			InternalException, HttpException, DeployerException {
+	public void httpGet(Invocation inv) throws HttpException {
 		Document doc = MonadUtils.newSourceDocument();
 		Element source = (Element) doc.getFirstChild();
 		Element organizationSource = (Element) source.appendChild(organization
@@ -145,8 +140,8 @@ public class Sites implements Urlable {
 		// TODO Auto-generated method stub
 
 	}
-
-	public Site getSite(SiteCode code) throws HttpException,
+/*
+	public Site getSite(String code) throws HttpException,
 			InternalException {
 		Site site = (Site) Hiber
 				.session()
@@ -159,6 +154,7 @@ public class Sites implements Urlable {
 		}
 		return site;
 	}
+	*/
 	/*
 	public SiteNameDataSource getSiteNameDataSource() throws ProgrammerException, UserException {
 		// find properties file

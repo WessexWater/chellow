@@ -49,7 +49,6 @@ import net.sf.chellow.ui.Chellow;
 
 import org.hibernate.HibernateException;
 import org.hibernate.exception.ConstraintViolationException;
-import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -132,11 +131,10 @@ public class User extends PersistentEntity {
 	private Set<Role> roles;
 
 	public User() {
-		setTypeName("user");
 	}
 
 	public User(EmailAddress emailAddress, Password password)
-			throws InternalException, HttpException {
+			throws HttpException {
 		update(emailAddress, password);
 	}
 
@@ -181,16 +179,14 @@ public class User extends PersistentEntity {
 	public String toString() {
 		try {
 			return getUriId().toString();
-		} catch (InternalException e) {
-			throw new RuntimeException(e);
 		} catch (HttpException e) {
 			throw new RuntimeException(e);
 		}
 	}
 
-	public Node toXml(Document doc) throws InternalException, HttpException {
-		Element element = (Element) super.toXml(doc);
-		element.setAttributeNode((Attr) emailAddress.toXml(doc));
+	public Node toXml(Document doc) throws HttpException {
+		Element element = super.toXml(doc, "user");
+		element.setAttributeNode(emailAddress.toXml(doc));
 		return element;
 	}
 

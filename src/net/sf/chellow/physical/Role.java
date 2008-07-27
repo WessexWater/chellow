@@ -39,7 +39,6 @@ import net.sf.chellow.monad.Urlable;
 import net.sf.chellow.monad.UserException;
 import net.sf.chellow.monad.XmlTree;
 import net.sf.chellow.monad.Invocation.HttpMethod;
-import net.sf.chellow.monad.types.MonadString;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
 import net.sf.chellow.ui.Chellow;
@@ -140,9 +139,8 @@ public class Role extends PersistentEntity {
 	}
 
 	public Node toXml(Document doc) throws HttpException {
-		setTypeName("role");
-		Element element = (Element) super.toXml(doc);
-		element.setAttributeNode(MonadString.toXml(doc, "name", name));
+		Element element = super.toXml(doc, "role");
+		element.setAttribute("name", name);
 		return element;
 	}
 

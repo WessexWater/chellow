@@ -100,8 +100,8 @@ public abstract class SnagDateBounded extends Snag {
 		setFinishDate(finishDate);
 	}
 
-	public Element toXml(Document doc) throws InternalException, HttpException {
-		Element element = (Element) super.toXml(doc);
+	public Element toXml(Document doc, String elementName) throws HttpException {
+		Element element = super.toXml(doc, elementName);
 
 		element.appendChild(startDate.toXml(doc));
 		element.appendChild(finishDate.toXml(doc));

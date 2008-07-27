@@ -66,7 +66,7 @@ public abstract class Service extends PersistentEntity implements
 		}
 		return contract;
 	}
-	
+
 	private Provider provider;
 
 	private String name;
@@ -82,8 +82,8 @@ public abstract class Service extends PersistentEntity implements
 	public Service() {
 	}
 
-	public Service(Provider provider, String name,
-			HhEndDate startDate, String chargeScript) throws HttpException {
+	public Service(Provider provider, String name, HhEndDate startDate,
+			String chargeScript) throws HttpException {
 		setProvider(provider);
 		rateScripts = new HashSet<RateScript>();
 		RateScript rateScript = new RateScript(this, startDate, null,
@@ -93,11 +93,11 @@ public abstract class Service extends PersistentEntity implements
 		setFinishRateScript(rateScript);
 		internalUpdate(name, chargeScript);
 	}
-	
+
 	public Provider getProvider() {
 		return provider;
 	}
-	
+
 	void setProvider(Provider provider) {
 		this.provider = provider;
 	}
@@ -142,15 +142,14 @@ public abstract class Service extends PersistentEntity implements
 		this.rateScripts = rateScripts;
 	}
 
-	protected void internalUpdate(String name,
-			String chargeScript) throws HttpException {
+	protected void internalUpdate(String name, String chargeScript)
+			throws HttpException {
 		setName(name);
 		setChargeScript(chargeScript);
 	}
 
 	@SuppressWarnings("unchecked")
-	public void update(String name, String chargeScript)
-			throws HttpException {
+	public void update(String name, String chargeScript) throws HttpException {
 		internalUpdate(name, chargeScript);
 		updateNotification();
 	}
@@ -217,18 +216,21 @@ public abstract class Service extends PersistentEntity implements
 	}
 
 	public Element toXml(Document doc) throws HttpException {
-		Element element = (Element) super.toXml(doc);
+		return toXml(doc, "service");
+	}
+
+	public Element toXml(Document doc, String elementName) throws HttpException {
+		Element element = super.toXml(doc, elementName);
 
 		element.setAttribute("name", name);
-		// startRateScript.setLabel("start");
-		// element.appendChild(startRateScript.toXML(doc));
-		// finishRateScript.setLabel("finish");
-		// element.appendChild(finishRateScript.toXML(doc));
+		startRateScript.setLabel("start");
+		element.appendChild(startRateScript.toXml(doc));
+		finishRateScript.setLabel("finish");
+		element.appendChild(finishRateScript.toXml(doc));
 		if (chargeScript != null) {
 			element.setAttribute("charge-script", chargeScript
 					.replace("\r", "").replace("\t", "    "));
 		}
-
 		return element;
 	}
 

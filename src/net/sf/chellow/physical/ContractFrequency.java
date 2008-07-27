@@ -23,7 +23,9 @@
 package net.sf.chellow.physical;
 
 
-import net.sf.chellow.monad.InternalException;
+import org.w3c.dom.Attr;
+import org.w3c.dom.Document;
+
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.types.MonadInteger;
 
@@ -42,17 +44,20 @@ public class ContractFrequency extends MonadInteger {
 	}
 
 	public ContractFrequency() {
-		setTypeName("frequency");
 	}
 
-	public ContractFrequency(String label, String integerString) throws HttpException, InternalException {
-		this();
+	public ContractFrequency(String label, String integerString) throws HttpException {
 		setLabel(label);
 		update(integerString);
 	}
 	
-	public ContractFrequency(int intValue) throws HttpException, InternalException {
-		this();
+	public ContractFrequency(int intValue) throws HttpException {
 		update(intValue);
+	}
+	
+	public Attr toXml(Document doc) {
+		Attr attribute = doc.createAttribute("frequency");
+		attribute.setNodeValue(this.toString());
+		return attribute;
 	}
 }

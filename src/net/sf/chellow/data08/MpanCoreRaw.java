@@ -41,8 +41,7 @@ public class MpanCoreRaw extends MonadObject {
 
 	private CheckDigit checkDigit;
 
-	public MpanCoreRaw(String mpanCore) throws InternalException,
-			HttpException {
+	public MpanCoreRaw(String mpanCore) throws HttpException {
 		this(null, mpanCore);
 	}
 
@@ -60,8 +59,7 @@ public class MpanCoreRaw extends MonadObject {
 	}
 
 	private void init(DsoCode dsoCode, MpanUniquePart uniquePart,
-			CheckDigit checkDigit) throws InternalException, HttpException {
-		setTypeName("mpan-core-raw");
+			CheckDigit checkDigit) throws HttpException {
 		if (dsoCode == null || uniquePart == null || checkDigit == null) {
 			throw new InternalException("No nulls allowed.");
 		}
@@ -109,27 +107,20 @@ public class MpanCoreRaw extends MonadObject {
 
 	public Attr toXml(Document doc) {
 		Attr attr = doc.createAttribute(getLabel());
-
 		attr.setValue(toString());
 		return attr;
 	}
 
 	private boolean checkCheckDigit(String toCheck, int checkDigit) {
-		int total = numericValue(toCheck, 0) * 3 + numericValue(toCheck, 1) * 5
-				+ numericValue(toCheck, 2) * 7 + numericValue(toCheck, 3) * 13
-				+ numericValue(toCheck, 4) * 17 + numericValue(toCheck, 5) * 19
-				+ numericValue(toCheck, 6) * 23 + numericValue(toCheck, 7) * 29
-				+ numericValue(toCheck, 8) * 31 + numericValue(toCheck, 9) * 37
-				+ numericValue(toCheck, 10) * 41 + numericValue(toCheck, 11)
-				* 43;
-		return total % 11 % 10 == checkDigit;
-	}
+		  int[] primes = {3, 5, 7, 13, 17, 19, 23, 29, 31, 37, 41, 43};
+		  int sum = 0;
+		  for (int i = 0; i < primes.length; i++) {
+		    sum += Character.getNumericValue(toCheck.charAt(i)) * primes[i];
+		  }
+		  return sum % 11 % 10 == checkDigit;
+		}
 
-	private int numericValue(String str, int position) {
-		return Character.getNumericValue(str.charAt(position));
-	}
-
-	public Provider getDso() throws InternalException, HttpException {
+	public Provider getDso() throws HttpException {
 		return Provider.getDso(dsoCode);
 	}
 

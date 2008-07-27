@@ -54,8 +54,7 @@ public class Password extends MonadString {
 	}
 	
 	public Attr toXml(Document doc) {
-		setTypeName("password");
-		return super.toXml(doc);
+		return super.toXml(doc, "password");
 	}
 	
 	public boolean equals(Object obj) {

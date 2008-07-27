@@ -45,7 +45,6 @@ import net.sf.chellow.monad.NotFoundException;
 import net.sf.chellow.monad.Urlable;
 import net.sf.chellow.monad.UserException;
 import net.sf.chellow.monad.types.MonadLong;
-import net.sf.chellow.monad.types.MonadString;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
 import net.sf.chellow.ui.Chellow;
@@ -126,15 +125,13 @@ public class Organization extends PersistentEntity {
 	}
 
 	public Node toXml(Document doc) throws HttpException {
-		setTypeName("org");
-		Element element = (Element) super.toXml(doc);
+		Element element = super.toXml(doc, "org");
 
-		element.setAttributeNode(MonadString.toXml(doc, "name", name));
+		element.setAttribute("name", name);
 		return element;
 	}
 
-	public Site insertSite(SiteCode code, String name)
-			throws InternalException, HttpException {
+	public Site insertSite(String code, String name) throws HttpException {
 		Site site = null;
 		try {
 			site = new Site(this, code, name);
@@ -163,8 +160,7 @@ public class Organization extends PersistentEntity {
 	 * already exists."); } else { throw new ProgrammerException(e); } } return
 	 * site; }
 	 */
-	public Site findSite(SiteCode siteCode) throws HttpException,
-			InternalException {
+	public Site findSite(String siteCode) throws HttpException {
 		return (Site) Hiber
 				.session()
 				.createQuery(
@@ -173,7 +169,7 @@ public class Organization extends PersistentEntity {
 						siteCode.toString()).uniqueResult();
 	}
 
-	public Site getSite(Long siteId) throws HttpException, InternalException {
+	public Site getSite(Long siteId) throws HttpException {
 		return (Site) Hiber
 				.session()
 				.createQuery(
@@ -187,17 +183,16 @@ public class Organization extends PersistentEntity {
 		return (List<Site>) Hiber
 				.session()
 				.createQuery(
-						"from Site site where site.organization = :organization order by site.code.string")
+						"from Site site where site.organization = :organization order by site.code")
 				.setEntity("organization", this).setMaxResults(50).list();
 	}
 
 	@SuppressWarnings("unchecked")
-	public List<Site> findSites(String searchTerm) throws InternalException,
-			HttpException {
+	public List<Site> findSites(String searchTerm) throws HttpException {
 		return (List<Site>) Hiber
 				.session()
 				.createQuery(
-						"from Site site where site.organization = :organization and lower(site.code.string || ' ' || site.name) like '%' || lower(:searchTerm) || '%' order by site.code.string")
+						"from Site site where site.organization = :organization and lower(site.code || ' ' || site.name) like '%' || lower(:searchTerm) || '%' order by site.code")
 				.setEntity("organization", this).setString("searchTerm",
 						searchTerm).setMaxResults(50).list();
 	}
@@ -243,8 +238,7 @@ public class Organization extends PersistentEntity {
 		return new GenDeltas(this);
 	}
 
-	public HhdcContract getHhdcContract(long id) throws HttpException,
-			InternalException {
+	public HhdcContract getHhdcContract(long id) throws HttpException {
 		HhdcContract contract = (HhdcContract) Hiber
 				.session()
 				.createQuery(
@@ -358,13 +352,8 @@ public class Organization extends PersistentEntity {
 		// TODO Auto-generated method stub
 	}
 
-	public Site getSite(SiteCode code) throws HttpException, InternalException {
-		Site site = (Site) Hiber
-				.session()
-				.createQuery(
-						"from Site site where site.organization = :organization and site.code.string = :siteCode")
-				.setEntity("organization", this).setString("siteCode",
-						code.getString()).uniqueResult();
+	public Site getSite(String code) throws HttpException {
+		Site site = findSite(code);
 		if (site == null) {
 			throw new NotFoundException("The site '" + code
 					+ "' cannot be found.");
@@ -403,7 +392,6 @@ public class Organization extends PersistentEntity {
 		}
 		return account;
 	}
-
 
 	/*
 	 * public void deleteSupplier(Supplier supplier) throws InternalException,

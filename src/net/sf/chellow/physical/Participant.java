@@ -113,8 +113,7 @@ public class Participant extends PersistentEntity {
 	}
 
 	public Node toXml(Document doc) throws HttpException {
-		setTypeName("participant");
-		Element element = (Element) super.toXml(doc);
+		Element element = super.toXml(doc, "participant");
 
 		element.setAttribute("code", code);
 		element.setAttribute("name", name);

@@ -62,7 +62,6 @@ public class AccountSnag extends SnagDateBounded {
 	private Account account;
 	
 	public AccountSnag() {
-		setTypeName("account-snag");
 	}
 
 	public AccountSnag(String description, Account account,
@@ -83,9 +82,8 @@ public class AccountSnag extends SnagDateBounded {
 	public void update() {
 	}
 
-	public Element toXml(Document doc) throws InternalException,
-			HttpException {
-		Element element = (Element) super.toXml(doc);
+	public Element toXml(Document doc) throws HttpException {
+		Element element = super.toXml(doc, "account-snag");
 		return element;
 	}
 

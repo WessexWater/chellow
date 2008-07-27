@@ -648,11 +648,8 @@ for (int i = 0; i < generations.size(); i++) {
 		this.source = source;
 	}
 
-	public Element toXml(Document doc) throws InternalException,
-			HttpException {
-		setTypeName("supply");
-		Element element = (Element) super.toXml(doc);
-
+	public Element toXml(Document doc) throws HttpException {
+		Element element = (Element) super.toXml(doc, "supply");
 		element.setAttribute("name", name);
 		return element;
 	}

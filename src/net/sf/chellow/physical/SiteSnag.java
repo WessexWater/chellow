@@ -81,10 +81,8 @@ public class SiteSnag extends SnagDateBounded {
 	}
 
 
-	public Element toXml(Document doc) throws InternalException, HttpException {
-		setTypeName("site-snag");
-		Element element = (Element) super.toXml(doc);
-
+	public Element toXml(Document doc) throws HttpException {
+		Element element = super.toXml(doc, "site-snag");
 		return element;
 	}
 

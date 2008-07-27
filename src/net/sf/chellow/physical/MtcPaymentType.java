@@ -139,9 +139,8 @@ public class MtcPaymentType extends PersistentEntity {
 		this.validTo = validTo;
 	}
 
-	public Node toXml(Document doc) throws InternalException, HttpException {
-		setTypeName("meter-payment-type");
-		Element element = (Element) super.toXml(doc);
+	public Node toXml(Document doc) throws HttpException {
+		Element element = super.toXml(doc, "meter-payment-type");
 
 		element.setAttribute("code", code);
 		element.setAttribute("description", description);

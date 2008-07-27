@@ -2,8 +2,6 @@ package net.sf.chellow.monad.types;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-
 import net.sf.chellow.monad.DeployerException;
 import net.sf.chellow.monad.DesignerException;
 import net.sf.chellow.monad.Invocation;
@@ -19,17 +17,14 @@ public class GeoPoint extends MonadObject {
 	private Double longitude;
 
 	GeoPoint() {
-		init();
 	}
 
 	public GeoPoint(Double latitude, Double longitude) {
-		init();
 		update(latitude, longitude);
 	}
 
 	public GeoPoint(String label, String latitudeString, String longitudeString)
-			throws InternalException, HttpException {
-		init();
+			throws HttpException {
 		setLabel(label);
 		MonadDouble latitude = new MonadDouble("latitude", latitudeString);
 		MonadDouble longitude = new MonadDouble("longitude", longitudeString);
@@ -40,10 +35,6 @@ public class GeoPoint extends MonadObject {
 	private void update(Double latitude, Double longitude) {
 		setLatitude(latitude);
 		setLongitude(longitude);
-	}
-
-	private void init() {
-		setTypeName("geo-point");
 	}
 
 	public Double getLatitude() {
@@ -91,8 +82,8 @@ public class GeoPoint extends MonadObject {
 
 	}
 
-	public Node toXml(Document doc) throws HttpException {
-		Element element = (Element) super.toXml(doc);
+	public Element toXml(Document doc) throws HttpException {
+		Element element = doc.createElement("geo-point");
 		element.setAttribute("latitude", getLatitude().toString());
 		element.setAttribute("longitude", getLongitude().toString());
 		element.setAttribute("string", toString());

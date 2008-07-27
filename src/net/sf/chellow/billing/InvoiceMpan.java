@@ -79,9 +79,8 @@ public class InvoiceMpan extends PersistentEntity {
 		this.mpan = mpan;
 	}
 
-	public Node toXml(Document doc) throws InternalException, HttpException {
-		setTypeName("invoice-mpan");
-		Element element = (Element) super.toXml(doc);
+	public Node toXml(Document doc) throws HttpException {
+		Element element = super.toXml(doc, "invoice-mpan");
 		return element;
 	}
 	public boolean equals(Object obj) {

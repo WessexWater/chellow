@@ -14,13 +14,10 @@
 				<title>
 					Chellow &gt; Organizations &gt;
 					<xsl:value-of
-						select="/source/supplier-service/supplier/org/@name" />
-					&gt; Suppliers &gt;
+						select="/source/supplier-contract/org/@name" />
+					&gt; Supplier Contracts &gt;
 					<xsl:value-of
-						select="/source/supplier-service/supplier/@name" />
-					&gt; Services &gt;
-					<xsl:value-of
-						select="/source/supplier-service/@name" />
+						select="/source/supplier-contract/@name" />
 				</title>
 
 			</head>
@@ -38,28 +35,20 @@
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/orgs/{/source/supplier-service/supplier/org/@id}/">
+						href="{/source/request/@context-path}/orgs/{/source/supplier-contract/org/@id}/">
 						<xsl:value-of
-							select="/source/supplier-service/supplier/org/@name" />
+							select="/source/supplier-contract/org/@name" />
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/orgs/{/source/supplier-service/supplier/org/@id}/suppliers/">
-						<xsl:value-of select="'Suppliers'" />
+						href="{/source/request/@context-path}/orgs/{/source/supplier-contract/org/@id}/supplier-contracts/">
+						Supplier Contracts
 					</a>
-					&gt;
-					<a
-						href="{/source/request/@context-path}/orgs/{/source/supplier-service/supplier/org/@id}/suppliers/{/source/supplier-service/supplier/@id}">
-						<xsl:value-of
-							select="/source/supplier-service/supplier/@name" />
-					</a>
-					&gt;
-					<a href="..">Services</a>
 					&gt;
 					<xsl:value-of
-						select="concat(/source/supplier-service/@name, ' [')" />
+						select="concat(/source/supplier-contract/@name, ' [')" />
 					<a
-						href="{/source/request/@context-path}/orgs/{/source/supplier-service/supplier/org/@id}/reports/38/screen/output/?supplier-service-id={/source/supplier-service/@id}">
+						href="{/source/request/@context-path}/orgs/{/source/supplier-contract/supplier/org/@id}/reports/38/screen/output/?contract-id={/source/supplier-contract/@id}">
 						<xsl:value-of select="'view'" />
 					</a>
 					<xsl:value-of select="']'" />
@@ -77,9 +66,38 @@
 
 				<form action="." method="post">
 					<fieldset>
-						<legend>Update service</legend>
+						<legend>Update contract</legend>
 						<br />
-						<xsl:value-of select="'Type: Contract'" />
+						<label>
+							Supplier
+							<select name="provider-id">
+								<xsl:for-each
+									select="/source/provider">
+									<option value="{@id}">
+										<xsl:choose>
+											<xsl:when
+												test="/source/request/parameter[@name='provider-id']">
+												<xsl:if
+													test="/source/request/parameter[@name='provider-id']/value/text() = @id">
+													<xsl:attribute
+														name="selected" />
+												</xsl:if>
+											</xsl:when>
+											<xsl:otherwise>
+												<xsl:if
+													test="/source/supplier-contract/provider/@id = @id">
+													<xsl:attribute
+														name="selected" />
+												</xsl:if>
+											</xsl:otherwise>
+										</xsl:choose>
+										<xsl:value-of
+											select="concat(participant/@code, ' : ', @name)" />
+									</option>
+								</xsl:for-each>
+							</select>
+						</label>
+						<br />
 						<br />
 						<label>
 							<xsl:value-of select="'Name '" />
@@ -93,7 +111,7 @@
 										</xsl:when>
 										<xsl:otherwise>
 											<xsl:value-of
-												select="/source/supplier-service/@name" />
+												select="/source/supplier-contract/@name" />
 										</xsl:otherwise>
 									</xsl:choose>
 								</xsl:attribute>
@@ -113,7 +131,7 @@
 								</xsl:when>
 								<xsl:otherwise>
 									<xsl:value-of
-										select="/source/supplier-service/@charge-script" />
+										select="/source/supplier-contract/@charge-script" />
 								</xsl:otherwise>
 							</xsl:choose>
 						</textarea>
@@ -137,7 +155,7 @@
 											</xsl:when>
 											<xsl:otherwise>
 												<xsl:value-of
-													select="/source/supplier-service/@bill-id" />
+													select="/source/supplier-contract/@bill-id" />
 											</xsl:otherwise>
 										</xsl:choose>
 									</xsl:attribute>
@@ -158,10 +176,10 @@
 						</fieldset>
 					</fieldset>
 				</form>
-
+				<br />
 				<form action=".">
 					<fieldset>
-						<legend>Delete this service</legend>
+						<legend>Delete this contract</legend>
 						<input type="hidden" name="view"
 							value="confirm-delete" />
 						<input type="submit" value="Delete" />

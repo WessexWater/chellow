@@ -186,8 +186,7 @@ public class ClockInterval extends PersistentEntity {
 	}
 
 	public Node toXml(Document doc) throws HttpException {
-		setTypeName("clock-interval");
-		Element element = (Element) super.toXml(doc);
+		Element element = super.toXml(doc, "clock-interval");
 		element.setAttribute("day-of-week", String.valueOf(dayOfWeek));
 		element.setAttribute("start-day", String.valueOf(startDay));
 		element.setAttribute("start-month", String.valueOf(startMonth));

@@ -1,6 +1,6 @@
 /*
  
- Copyright 2005-2007 Meniscus Systems Ltd
+ Copyright 2005-2008 Meniscus Systems Ltd
  
  This file is part of Chellow.
 
@@ -27,13 +27,11 @@ import java.util.Date;
 import net.sf.chellow.billing.Contract;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
+import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Invocation;
 import net.sf.chellow.monad.NotFoundException;
-import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Urlable;
-import net.sf.chellow.monad.types.MonadBoolean;
 import net.sf.chellow.monad.types.MonadDate;
-import net.sf.chellow.monad.types.MonadString;
 import net.sf.chellow.monad.types.UriPathElement;
 
 import org.w3c.dom.Document;
@@ -128,15 +126,15 @@ public abstract class Snag extends PersistentEntity implements Cloneable,
 	public void update() {
 	}
 
-	public Element toXml(Document doc) throws HttpException {
-		Element element = (Element) super.toXml(doc);
+	public Element toXml(Document doc, String elementName) throws HttpException {
+		Element element = super.toXml(doc, elementName);
 		element.appendChild(MonadDate.toXML(dateCreated, "created", doc));
 		if (dateResolved != null) {
 			element.appendChild(MonadDate.toXML(dateResolved, "resolved", doc));
 		}
-		element.setAttributeNode(MonadBoolean.toXml(doc, "is-ignored", isIgnored));
-		element.setAttributeNode(MonadString.toXml(doc, "progress", progress));
-		element.setAttributeNode(MonadString.toXml(doc, "description", description));
+		element.setAttribute("is-ignored", Boolean.toString(isIgnored));
+		element.setAttribute("progress", progress);
+		element.setAttribute("description", description);
 		return element;
 	}
 

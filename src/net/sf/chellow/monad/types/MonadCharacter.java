@@ -43,11 +43,9 @@ public class MonadCharacter extends MonadObject {
 	private boolean digitOnly;
 
 	public MonadCharacter() {
-		setTypeName(TYPE_NAME);
 	}
 
 	public MonadCharacter(String label, Character character) {
-		this();
 		setLabel(label);
 		setCharacter(character);
 	}
@@ -79,7 +77,7 @@ public class MonadCharacter extends MonadObject {
 	}
 
 	public Attr toXml(Document doc) {
-		Attr attr = doc.createAttribute((getLabel() == null) ? getTypeName()
+		Attr attr = doc.createAttribute((getLabel() == null) ? "character"
 				: getLabel());
 
 		attr.setValue(toString());

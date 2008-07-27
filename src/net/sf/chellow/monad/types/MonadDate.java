@@ -30,6 +30,7 @@ import java.util.GregorianCalendar;
 import java.util.Locale;
 import java.util.TimeZone;
 
+import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.UserException;
 
@@ -118,62 +119,51 @@ public class MonadDate extends MonadObject {
 	 * private MonadDay monadDay;
 	 */
 	// protected Calendar cal = getCalendar();
-	public MonadDate() throws InternalException, UserException {
-		init(null);
+	public MonadDate() throws HttpException {
 		update(new Date());
 	}
 
-	public MonadDate(Date date) throws InternalException, UserException {
-		init(null);
+	public MonadDate(Date date) throws HttpException {
 		update(date);
 	}
 
-	public MonadDate(String label, String dateStr) throws InternalException,
-			UserException {
-		init(label);
+	public MonadDate(String label, String dateStr) throws HttpException {
+		setLabel(label);
 		update(dateStr);
 	}
 
-	public MonadDate(String dateStr) throws InternalException, UserException {
-		init(null);
+	public MonadDate(String dateStr) throws HttpException {
 		update(dateStr);
 	}
 
-	public MonadDate(String label, Date date) throws InternalException, UserException {
-		init(label);
+	public MonadDate(String label, Date date) throws HttpException {
+		setLabel(label);
 		update(date);
 	}
 
 	public MonadDate(String label, String year, String month, String day)
-			throws InternalException, UserException {
-		init(label);
+			throws HttpException {
+		setLabel(label);
 		update(year, month, day);
 	}
 
 	public MonadDate(int year, MonadMonth month, MonadDay day)
-			throws InternalException, UserException {
-		init(null);
+			throws HttpException {
 		update(year, month, day);
 	}
 
-	private void init(String label) {
-		setTypeName("date");
-		setLabel(label);
-	}
-
 	protected void update(String year, String month, String day)
-			throws InternalException, UserException {
+			throws HttpException {
 		update(new MonadInteger("year", year).getInteger(), new MonadMonth(
 				month), new MonadDay(day));
 	}
 
 	public void initLast(int year, MonadMonth month, MonadDay day)
-			throws InternalException, UserException {
+			throws HttpException {
 		update(year, month, day);
 	}
 
-	public void update(String dateStr) throws InternalException,
-			UserException {
+	public void update(String dateStr) throws HttpException {
 		Date date = null;
 		SimpleDateFormat sdFormat = dateStr.trim().length() > 10 ? sdIsoDateTime()
 				: sdIsoDate();
@@ -196,7 +186,7 @@ public class MonadDate extends MonadObject {
 	}
 
 	public void update(int year, MonadMonth month, MonadDay day)
-			throws InternalException, UserException {
+			throws HttpException {
 		Calendar cal = getCalendar();
 		cal.clear();
 		try {
@@ -208,7 +198,7 @@ public class MonadDate extends MonadObject {
 		}
 	}
 
-	public void update(Date date) throws InternalException, UserException {
+	public void update(Date date) throws HttpException {
 		if (date == null) {
 			throw new InternalException("The date may not be null");
 		}

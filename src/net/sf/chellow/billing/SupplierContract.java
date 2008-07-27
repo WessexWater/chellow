@@ -25,7 +25,6 @@ package net.sf.chellow.billing;
 import java.util.List;
 
 import net.sf.chellow.hhimport.HhDataImportProcesses;
-import net.sf.chellow.monad.DesignerException;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.InternalException;
@@ -124,12 +123,12 @@ public class SupplierContract extends Contract {
 
 	@SuppressWarnings("unchecked")
 	void updateNotification(HhEndDate startDate, HhEndDate finishDate)
-			throws HttpException, InternalException, DesignerException {
+			throws HttpException {
 		List<Mpan> mpansOutside = Hiber
 				.session()
 				.createQuery(
-						"from Mpan mpan where mpan.supplierService = :supplierService and mpan.supplyGeneration.startDate.date < :startDate and (mpan.supplyGeneration.finishDate.date is null or mpan.supplyGeneration.finishDate > :finishDate) order by mpan.supplyGeneration.startDate.date desc")
-				.setEntity("supplierService", this).setTimestamp("startDate",
+						"from Mpan mpan where mpan.supplierAccount.contract.id = :contractId and mpan.supplyGeneration.startDate.date < :startDate and (mpan.supplyGeneration.finishDate.date is null or mpan.supplyGeneration.finishDate > :finishDate) order by mpan.supplyGeneration.startDate.date desc")
+				.setLong("contractId", this.getId()).setTimestamp("startDate",
 						getStartDate().getDate()).setTimestamp(
 						"finishDate",
 						getFinishDate() == null ? null : getFinishDate()
@@ -152,11 +151,19 @@ public class SupplierContract extends Contract {
 		super.updateNotification(startDate, finishDate);
 	}
 
+	@SuppressWarnings("unchecked")
 	private Document document() throws HttpException {
 		Document doc = MonadUtils.newSourceDocument();
 		Element source = doc.getDocumentElement();
-		source.appendChild(toXml(doc, new XmlTree("provider", new XmlTree(
-				"organization"))));
+		source.appendChild(toXml(doc, new XmlTree("provider")
+				.put("organization")));
+		for (Provider provider : (List<Provider>) Hiber
+				.session()
+				.createQuery(
+						"from Provider provider where provider.role.code = :roleCode order by provider.name")
+				.setCharacter("roleCode", MarketRole.SUPPLIER).list()) {
+			source.appendChild(provider.toXml(doc, new XmlTree("participant")));
+		}
 		source.appendChild(new MonadDate().toXml(doc));
 		source.appendChild(MonadDate.getMonthsXml(doc));
 		source.appendChild(MonadDate.getDaysXml(doc));
@@ -214,8 +221,7 @@ public class SupplierContract extends Contract {
 	}
 
 	public Element toXml(Document doc) throws HttpException {
-		setTypeName("supplier-contract");
-		Element element = super.toXml(doc);
+		Element element = super.toXml(doc, "supplier-contract");
 		return element;
 	}
 

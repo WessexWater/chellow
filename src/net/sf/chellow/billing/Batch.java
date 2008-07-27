@@ -36,7 +36,6 @@ import net.sf.chellow.monad.Urlable;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.UserException;
 import net.sf.chellow.monad.XmlTree;
-import net.sf.chellow.monad.types.MonadString;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
 import net.sf.chellow.physical.Mpan;
@@ -45,7 +44,6 @@ import net.sf.chellow.physical.Organization;
 import net.sf.chellow.physical.PersistentEntity;
 
 import org.hibernate.HibernateException;
-import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -102,10 +100,8 @@ public class Batch extends PersistentEntity implements Urlable {
 	}
 
 	public Node toXml(Document doc) throws HttpException {
-		setTypeName("batch");
-		Element element = (Element) super.toXml(doc);
-		element.setAttributeNode((Attr) MonadString.toXml(doc, "reference",
-				reference));
+		Element element = super.toXml(doc, "batch");
+		element.setAttribute("reference", reference);
 		return element;
 	}
 

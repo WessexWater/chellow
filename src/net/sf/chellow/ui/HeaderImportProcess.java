@@ -32,9 +32,7 @@ import net.sf.chellow.physical.MpanCore;
 import net.sf.chellow.physical.MpanTop;
 import net.sf.chellow.physical.Organization;
 import net.sf.chellow.physical.Site;
-import net.sf.chellow.physical.SiteCode;
-import net.sf.chellow.physical.SourceCode;
-import net.sf.chellow.physical.Sources;
+import net.sf.chellow.physical.Source;
 import net.sf.chellow.physical.Supply;
 import net.sf.chellow.physical.SupplyGeneration;
 
@@ -162,15 +160,14 @@ public class HeaderImportProcess extends Thread implements Urlable,
 							"There aren't enough fields in this row");
 				}
 				Site site = null;
-				String codeStr = values[2];
-				SiteCode code = new SiteCode(codeStr);
-				csvElement.appendChild(getField("Site Code", codeStr));
+				String code = values[2];
+				csvElement.appendChild(getField("Site Code", code));
 				if (action.equals("insert")) {
 					String name = values[3];
 					csvElement.appendChild(getField("Site name", name));
 					organization.insertSite(code, name);
 				} else {
-					site = organization.getSitesInstance().getSite(code);
+					site = organization.getSite(code);
 					if (site == null) {
 						throw new UserException(
 								"There is no site with this code.");
@@ -178,10 +175,9 @@ public class HeaderImportProcess extends Thread implements Urlable,
 					if (action.equals("delete")) {
 						organization.deleteSite(site);
 					} else if (action.equals("update")) {
-						String newCodeStr = values[3];
-						SiteCode newCode = new SiteCode(newCodeStr);
+						String newCode = values[3];
 						csvElement.appendChild(getField("New Site Code",
-								newCodeStr));
+								newCode));
 						String name = values[4];
 						csvElement.appendChild(getField("New site name", name));
 						site.update(newCode, name);
@@ -193,11 +189,11 @@ public class HeaderImportProcess extends Thread implements Urlable,
 						throw new UserException(
 								"There aren't enough fields in this row");
 					}
-					String siteCodeStr = values[2];
-					csvElement.appendChild(getField("Site Code", siteCodeStr));
-					String sourceCodeStr = values[3];
+					String siteCode = values[2];
+					csvElement.appendChild(getField("Site Code", siteCode));
+					String sourceCode = values[3];
 					csvElement.appendChild(getField("Source Code",
-							sourceCodeStr));
+							sourceCode));
 					String supplyName = values[4];
 					csvElement.appendChild(getField("Supply Name", supplyName));
 					String startDateStr = values[5];
@@ -287,7 +283,7 @@ public class HeaderImportProcess extends Thread implements Urlable,
 								exportAccountSupplierReference));
 						exportAccountSupplier = exportSupplierContract.getAccount(exportAccountSupplierReference);
 					}
-					Site site = organization.getSite(new SiteCode(siteCodeStr));
+					Site site = organization.getSite(siteCode);
 					site.insertSupply(supplyName, meterSerialNumber,
 							importMpanRaw, importHhdceAccount,
 							importSupplierAccount,
@@ -297,8 +293,7 @@ public class HeaderImportProcess extends Thread implements Urlable,
 							 false, true, true, true,
 							exportAgreedSupplyCapacity, HhEndDate
 									.roundUp(new MonadDate(startDateStr)
-											.getDate()), new SourceCode(
-									sourceCodeStr), null);
+											.getDate()), sourceCode, null);
 				} else if (action.equals("update")) {
 					if (values.length < 5) {
 						throw new UserException(
@@ -306,17 +301,17 @@ public class HeaderImportProcess extends Thread implements Urlable,
 					}
 					String mpanCoreStr = values[2];
 					csvElement.appendChild(getField("MPAN Core", mpanCoreStr));
-					String sourceCodeStr = values[3];
+					String sourceCode = values[3];
 					csvElement.appendChild(getField("Source Code",
-							sourceCodeStr));
+							sourceCode));
 					String supplyName = values[4];
 					csvElement.appendChild(getField("Supply Name", supplyName));
 					Supply supply = organization.getMpanCore(
 							new MpanCoreRaw(mpanCoreStr)).getSupply();
 					supply.update(supplyName.equals(NO_CHANGE) ? supply
-							.getName() : supplyName, sourceCodeStr
-							.equals(NO_CHANGE) ? supply.getSource() : Sources
-							.getSource(new SourceCode(sourceCodeStr)));
+							.getName() : supplyName, sourceCode
+							.equals(NO_CHANGE) ? supply.getSource() : Source
+							.getSource(sourceCode));
 				}
 			} else if (type.equals("supply-generation")) {
 				if (action.equals("update")) {

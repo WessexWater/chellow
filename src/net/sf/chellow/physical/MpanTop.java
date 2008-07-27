@@ -294,8 +294,7 @@ public class MpanTop extends PersistentEntity {
 	 * ssc.getMpanTops(); if (!mpanTops.contains(this)) { mpanTops.add(this); } } } }
 	 */
 	public Element toXml(Document doc) throws HttpException {
-		setTypeName("mpan-top");
-		Element mpanTopElement = (Element) super.toXml(doc);
+		Element mpanTopElement = super.toXml(doc, "mpan-top");
 		MonadDate from = new MonadDate(validFrom);
 		from.setLabel("from");
 		mpanTopElement.appendChild(from.toXml(doc));

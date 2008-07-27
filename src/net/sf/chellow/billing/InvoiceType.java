@@ -1,5 +1,7 @@
 package net.sf.chellow.billing;
 
+import org.w3c.dom.Attr;
+import org.w3c.dom.Document;
 import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.UserException;
@@ -113,11 +115,9 @@ public class InvoiceType extends MonadObject {
 	private int intValue;
 
 	InvoiceType() {
-		setTypeName("Unit");
 	}
 
-	private InvoiceType(int intValue) throws HttpException,
-			InternalException {
+	private InvoiceType(int intValue) throws HttpException {
 		if (intValue < 0) {
 			throw new UserException("The int value can't be negative.");
 		}
@@ -144,5 +144,12 @@ public class InvoiceType extends MonadObject {
 			}
 		}
 		return isEqual;
+	}
+
+	@Override
+	public Attr toXml(Document doc) throws HttpException {
+		Attr attr = doc.createAttribute("unit");
+		attr.setNodeValue(this.toString());
+		return null;
 	}
 }

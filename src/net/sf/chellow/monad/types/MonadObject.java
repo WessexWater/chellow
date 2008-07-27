@@ -40,11 +40,11 @@ import org.w3c.dom.Node;
 public abstract class MonadObject implements MonadValidatable, XmlDescriber {
 	private String label = null;
 
-	private String typeName = null;
+	//private String typeName = null;
 
 	public MonadObject(String typeName, String label) {
 		setLabel(label);
-		this.typeName = typeName;
+		//this.typeName = typeName;
 	}
 
 	public MonadObject(String label) {
@@ -61,7 +61,7 @@ public abstract class MonadObject implements MonadValidatable, XmlDescriber {
 	public String getLabel() {
 		return label;
 	}
-
+/*
 	public String getTypeName() {
 		if (typeName == null) {
 			typeName = this.getClass().getSimpleName();
@@ -72,9 +72,9 @@ public abstract class MonadObject implements MonadValidatable, XmlDescriber {
 	protected void setTypeName(String typeName) {
 		this.typeName = typeName;
 	}
-
-	public Node toXml(Document doc) throws HttpException {
-		Element element = doc.createElement(getTypeName());
+*/
+	public Node toXml(Document doc, String elementName) throws HttpException {
+		Element element = doc.createElement(elementName);
 
 		if (label != null) {
 			element.setAttribute("label", label);

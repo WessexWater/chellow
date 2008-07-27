@@ -24,24 +24,24 @@ package net.sf.chellow.physical;
 
 
 
+import org.w3c.dom.Attr;
+import org.w3c.dom.Document;
+
 import net.sf.chellow.monad.HttpException;
-import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.types.MonadString;
 
 public class MpanUniquePart extends MonadString {
 	public MpanUniquePart() {
-		setTypeName("MPANUniquePart");
 		setMaximumLength(10);
 		setMinimumLength(10);
 		onlyDigits = true;
 	}
 
-	public MpanUniquePart(String name) throws HttpException, InternalException {
+	public MpanUniquePart(String name) throws HttpException {
 		this(null, name);
 	}
 
-	public MpanUniquePart(String label, String name) throws HttpException, InternalException
-			{
+	public MpanUniquePart(String label, String name) throws HttpException {
 		this();
 		setLabel(label);
 			update(name);
@@ -51,5 +51,9 @@ public class MpanUniquePart extends MonadString {
 		// remove spaces
 		mpanCore = mpanCore.replace(" ", "");
 		super.update(mpanCore);
+	}
+	
+	public Attr toXml(Document doc) {
+		return super.toXml(doc, "MPANUniquePart");
 	}
 }

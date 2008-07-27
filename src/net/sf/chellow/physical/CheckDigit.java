@@ -23,6 +23,11 @@
 package net.sf.chellow.physical;
 
 
+
+
+import org.w3c.dom.Attr;
+import org.w3c.dom.Document;
+
 import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.types.MonadCharacter;
@@ -32,7 +37,6 @@ public class CheckDigit extends MonadCharacter {
 	private static final long serialVersionUID = -5301693222758775023L;
 
 	public CheckDigit() {
-		setTypeName("CheckDigit");
 		setDigitOnly(true);
 	}
 
@@ -45,5 +49,11 @@ public class CheckDigit extends MonadCharacter {
 		this();
 		setLabel(label);
 			update(character);
+	}
+	
+	public Attr toXml(Document doc) {
+		Attr attribute = doc.createAttribute("check-digit");
+		attribute.setNodeValue(toString());
+		return attribute;
 	}
 }

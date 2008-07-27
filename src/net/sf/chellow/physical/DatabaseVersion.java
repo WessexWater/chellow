@@ -1,5 +1,8 @@
 package net.sf.chellow.physical;
 
+import org.w3c.dom.Document;
+import org.w3c.dom.Node;
+
 import net.sf.chellow.monad.DeployerException;
 import net.sf.chellow.monad.DesignerException;
 import net.sf.chellow.monad.Hiber;
@@ -60,5 +63,11 @@ public class DatabaseVersion extends PersistentEntity {
 	public void httpDelete(Invocation inv) throws InternalException, DesignerException, HttpException, DeployerException {
 		// TODO Auto-generated method stub
 		
+	}
+
+	@Override
+	public Node toXml(Document doc) throws HttpException {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

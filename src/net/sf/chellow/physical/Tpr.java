@@ -163,8 +163,7 @@ public class Tpr extends PersistentEntity {
 	}
 
 	public Node toXml(Document doc) throws HttpException {
-		setTypeName("tpr");
-		Element element = (Element) super.toXml(doc);
+		Element element = super.toXml(doc, "tpr");
 
 		element.setAttribute("code", code);
 		element.setAttribute("is-teleswitch", String.valueOf(isTeleswitch));

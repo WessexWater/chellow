@@ -77,7 +77,6 @@ public class PcCode extends MonadInteger {
 	}
 
 	private void init() {
-		setTypeName("ProfileClassCode");
 		setMaximum(8);
 		setMinimum(0);
 	}

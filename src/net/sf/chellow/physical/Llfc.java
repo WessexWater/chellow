@@ -227,8 +227,7 @@ public class Llfc extends PersistentEntity {
 	}
 
 	public Node toXml(Document doc) throws HttpException {
-		setTypeName("llfc");
-		Element element = (Element) super.toXml(doc);
+		Element element = super.toXml(doc, "llfc");
 		element.setAttribute("code", code.toString());
 		element.setAttribute("description", description);
 		element.setAttribute("is-substation", Boolean.toString(isSubstation));

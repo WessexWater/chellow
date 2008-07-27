@@ -48,10 +48,18 @@
 						</td>
 					</tr>
 					<tr>
+						<th>Name</th>
+						<td>
+							<xsl:value-of
+								select="/source/provider/@name" />
+						</td>
+					</tr>
+
+					<tr>
 						<th>Participant</th>
 						<td>
 							<a
-								href="{/source/request/@context-path}/participants/{/source/provider/participant/@id}/">
+								href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/36/screen/output/?participant-id={/source/provider/participant/@id}">
 								<xsl:value-of
 									select="/source/provider/participant/@name" />
 							</a>
@@ -61,7 +69,7 @@
 						<th>Role</th>
 						<td>
 							<a
-								href="{/source/request/@context-path}/market-roles/{/source/provider/market-role/@id}/">
+								href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/61/screen/output/?role-id={/source/provider/market-role/@id}">
 								<xsl:value-of
 									select="/source/provider/market-role/@description" />
 							</a>
@@ -78,7 +86,17 @@
 						</tr>
 					</xsl:if>
 				</table>
+				<br />
 				<table>
+					<caption>
+						<xsl:choose>
+							<xsl:when
+								test="/source/provider/market-role/@code = 'R'">
+								Services
+							</xsl:when>
+							<xsl:otherwise>Contracts</xsl:otherwise>
+						</xsl:choose>
+					</caption>
 					<thead>
 						<tr>
 							<th>Chellow Id</th>
@@ -130,18 +148,12 @@
 										</xsl:otherwise>
 									</xsl:choose>
 								</td>
-								<td>
-									<a
-										href="{/source/request/@context-path}/orgs/{/source/contracts/org/@id}/reports/23/screen/output/?provider-id={provider/@id}">
-										<xsl:value-of
-											select="provider/@name" />
-									</a>
-								</td>
 							</tr>
 						</xsl:for-each>
 					</tbody>
 				</table>
-				<xsl:when
+
+				<xsl:if
 					test="/source/provider/market-role/@code = 'R'">
 					<ul>
 						<li>
@@ -157,7 +169,7 @@
 							</a>
 						</li>
 					</ul>
-				</xsl:when>
+				</xsl:if>
 			</body>
 		</html>
 	</xsl:template>

@@ -6,6 +6,7 @@ import java.util.Date;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
+import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.UserException;
 
@@ -14,18 +15,18 @@ import net.sf.chellow.monad.types.MonadDay;
 import net.sf.chellow.monad.types.MonadMonth;
 
 public class HhEndDate extends MonadDate {
-	public static HhEndDate getNext(HhEndDate date) throws InternalException, UserException {
+	public static HhEndDate getNext(HhEndDate date) throws HttpException {
 		return new HhEndDate(new Date(getNext(getCalendar(), date.getDate()
 				.getTime())));
 	}
 
 	public static HhEndDate getPrevious(HhEndDate date)
-			throws InternalException, UserException {
+			throws HttpException {
 		return new HhEndDate(new Date(getPrevious(getCalendar(), date.getDate()
 				.getTime())));
 	}
 
-	public static HhEndDate roundUp(Date date) throws InternalException, UserException {
+	public static HhEndDate roundUp(Date date) throws HttpException {
 		return new HhEndDate(new Date(roundUp(getCalendar(), date.getTime())));
 	}
 
@@ -54,7 +55,7 @@ public class HhEndDate extends MonadDate {
 		return cal.getTimeInMillis();
 	}
 
-	public static HhEndDate roundDown(Date date) throws InternalException, UserException {
+	public static HhEndDate roundDown(Date date) throws HttpException {
 		return new HhEndDate(new Date(roundDown(getCalendar(), date.getTime())));
 	}
 
@@ -76,43 +77,33 @@ public class HhEndDate extends MonadDate {
 		return cal.getTimeInMillis();
 	}
 
-	HhEndDate() throws InternalException, UserException {
+	HhEndDate() throws HttpException {
 		super(new Date(0));
-		setTypeName();
 	}
 
-	public HhEndDate(Date date) throws InternalException, UserException {
+	public HhEndDate(Date date) throws HttpException {
 		super(date);
-		setTypeName();
 	}
 
 	public HhEndDate(String label, String year, String month, String day)
-			throws InternalException, UserException {
+			throws HttpException {
 		super(label, year, month, day);
-		setTypeName();
 	}
 
 	public HhEndDate(int year, MonadMonth month, MonadDay day)
-			throws InternalException, UserException {
+			throws HttpException {
 		super(year, month, day);
-		setTypeName();
 	}
 
-	public HhEndDate(String dateStr) throws InternalException, UserException {
+	public HhEndDate(String dateStr) throws HttpException {
 		super(dateStr);
-		setTypeName();
 	}
 
-	public HhEndDate(String label, String dateStr) throws InternalException, UserException {
+	public HhEndDate(String label, String dateStr) throws HttpException {
 		super(label, dateStr);
-		setTypeName();
-	}
-	
-	private void setTypeName() {
-		setTypeName("hh-end-date");
 	}
 
-	public void update(Date date) throws InternalException, UserException {
+	public void update(Date date) throws HttpException {
 		if (date == null) {
 			throw new InternalException("Date can't be null I'm afraid.");
 		}
@@ -137,16 +128,16 @@ public class HhEndDate extends MonadDate {
 		super.update(cal.getTime());
 	}
 
-	public HhEndDate getPrevious() throws InternalException, UserException {
+	public HhEndDate getPrevious() throws HttpException {
 		return getPrevious(this);
 	}
 
-	public HhEndDate getNext() throws InternalException, UserException {
+	public HhEndDate getNext() throws HttpException {
 		return getNext(this);
 	}
 
 	public Element toXml(Document doc) throws InternalException {
-		return toXML(getDate(), getLabel(), doc, getTypeName());
+		return toXML(getDate(), getLabel(), doc, "hh-end-date");
 	}
 
 }

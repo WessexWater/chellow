@@ -1,6 +1,6 @@
 /*
  
- Copyright 2005-2007 Meniscus Systems Ltd
+ Copyright 2005-2008 Meniscus Systems Ltd
  
  This file is part of Chellow.
 
@@ -25,16 +25,13 @@ package net.sf.chellow.physical;
 import net.sf.chellow.data08.HhDatumRaw;
 import net.sf.chellow.monad.DeployerException;
 import net.sf.chellow.monad.DesignerException;
+import net.sf.chellow.monad.HttpException;
+import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Invocation;
 import net.sf.chellow.monad.NotFoundException;
-import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Urlable;
-import net.sf.chellow.monad.HttpException;
-import net.sf.chellow.monad.types.MonadCharacter;
-import net.sf.chellow.monad.types.MonadFloat;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
-
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -52,20 +49,19 @@ public class HhDatum extends PersistentEntity implements Urlable {
 	public HhDatum() {
 	}
 
-	public HhDatum(Channel channel, HhDatumRaw datumRaw) throws HttpException, InternalException {
+	public HhDatum(Channel channel, HhDatumRaw datumRaw) throws HttpException,
+			InternalException {
 		setChannel(channel);
 		setEndDate(datumRaw.getEndDate());
 		setValue(datumRaw.getValue());
 		setStatus(datumRaw.getStatus());
 	}
-/*	
-	public HhDatum(Channel channel, HhEndDate endDate, float value,
-			Character status) throws UserException, ProgrammerException {
-		this.channel = channel;
-		this.endDate = endDate;
-		update(value, status);
-	}
-*/
+
+	/*
+	 * public HhDatum(Channel channel, HhEndDate endDate, float value, Character
+	 * status) throws UserException, ProgrammerException { this.channel =
+	 * channel; this.endDate = endDate; update(value, status); }
+	 */
 	public Channel getChannel() {
 		return channel;
 	}
@@ -101,18 +97,16 @@ public class HhDatum extends PersistentEntity implements Urlable {
 	public void update(float value, Character status) throws HttpException,
 			InternalException {
 		this.value = value;
-			this.status = new HhDatumStatus(status).getCharacter();
+		this.status = new HhDatumStatus(status).getCharacter();
 	}
 
 	public Node toXml(Document doc) throws InternalException, HttpException {
-		setTypeName("hh-datum");
-		Element element = (Element) super.toXml(doc);
+		Element element = super.toXml(doc, "hh-datum");
 
 		element.appendChild(endDate.toXml(doc));
-		element.setAttributeNode(MonadFloat.toXml(doc, "value", value));
+		element.setAttribute("value", Float.toString(value));
 		if (status != null) {
-			element.setAttributeNode(MonadCharacter
-					.toXml(doc, "status", status));
+			element.setAttribute("status", Character.toString(status));
 		}
 		return element;
 	}

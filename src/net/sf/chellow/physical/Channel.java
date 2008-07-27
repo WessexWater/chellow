@@ -37,7 +37,6 @@ import net.sf.chellow.monad.Urlable;
 import net.sf.chellow.monad.UserException;
 import net.sf.chellow.monad.XmlTree;
 import net.sf.chellow.monad.Invocation.HttpMethod;
-import net.sf.chellow.monad.types.MonadBoolean;
 import net.sf.chellow.monad.types.MonadDate;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
@@ -86,7 +85,6 @@ public class Channel extends PersistentEntity implements Urlable {
 	private boolean isKwh;
 
 	public Channel() {
-		setTypeName("channel");
 	}
 
 	public Channel(SupplyGeneration supplyGeneration, boolean isImport, boolean isKwh) {
@@ -505,13 +503,10 @@ public class Channel extends PersistentEntity implements Urlable {
 		siteCheck(from, to);
 	}
 
-	public Element toXml(Document doc) throws InternalException,
-			HttpException {
-		Element element = (Element) super.toXml(doc);
-		element.setAttributeNode(MonadBoolean.toXml(doc, "is-import",
-				isImport));
-		element.setAttributeNode(MonadBoolean
-				.toXml(doc, "is-kwh", isKwh));
+	public Element toXml(Document doc) throws HttpException {
+		Element element = super.toXml(doc, "channel");
+		element.setAttribute("is-import", Boolean.toString(isImport));
+		element.setAttribute("is-kwh", Boolean.toString(isKwh));
 		return element;
 	}
 

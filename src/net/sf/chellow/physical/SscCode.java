@@ -49,7 +49,6 @@ public class SscCode extends MonadInteger {
 	}
 
 	private void init() {
-		setTypeName("code");
 		setMinimum(0);
 		setMaximum(9999);
 	}

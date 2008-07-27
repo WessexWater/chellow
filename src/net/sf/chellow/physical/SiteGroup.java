@@ -70,7 +70,7 @@ public class SiteGroup {
 		for (Supply supply : getSupplies()) {
 			for (boolean isImport : new boolean[] {true, false}) {
 				List<Float> hhStream = null;
-				if (supply.getSource().getCode().equals(SourceCode.NETWORK)) {
+				if (supply.getSource().getCode().equals(Source.NETWORK_CODE)) {
 					if (isImport) {
 						hhStream = importFromNet;
 					} else {

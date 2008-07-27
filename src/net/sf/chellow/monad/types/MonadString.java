@@ -104,7 +104,6 @@ public class MonadString extends MonadObject {
 	protected boolean onlyDigits;
 
 	public MonadString() {
-		setTypeName("String");
 	}
 
 	public MonadString(String value) throws HttpException {
@@ -113,7 +112,6 @@ public class MonadString extends MonadObject {
 
 	public MonadString(String label, String value) throws 
 			HttpException {
-		this();
 		setLabel(label);
 		update(value);
 	}
@@ -157,7 +155,7 @@ public class MonadString extends MonadObject {
 				if (Character.isISOControl(chars[i])) {
 					throw new UserException(
 							"The field '"
-									+ (getLabel() == null ? getTypeName()
+									+ (getLabel() == null ? "string"
 											: getLabel())
 									+ "' contains a control character (carriage return for example) which isn't allowed. "
 									+ "Control characters (carriage return for example) aren't allowed.");
@@ -167,13 +165,13 @@ public class MonadString extends MonadObject {
 		}
 		if ((maxLength != null) && (string.length() > maxLength.intValue())) {
 			throw new UserException("The field '"
-					+ (getLabel() == null ? getTypeName() : getLabel())
+					+ (getLabel() == null ? "string" : getLabel())
 					+ "' is too long. It shouldn't be more than "
 					+ maxLength.toString() + " characters long.");
 		}
 		if ((minLength != null) && (string.length() < minLength.intValue())) {
 			throw new UserException("The field '"
-					+ (getLabel() == null ? getTypeName() : getLabel())
+					+ (getLabel() == null ? "string" : getLabel())
 					+ "' is too short. It should be more than "
 					+ minLength.toString() + " characters in length.");
 		}
@@ -187,7 +185,7 @@ public class MonadString extends MonadObject {
 					*/
 					throw new UserException(
 							"The field '"
-									+ (getLabel() == null ? getTypeName()
+									+ (getLabel() == null ? "string"
 											: getLabel())
 									+ "' contains a character that lies outside the Unicode block '"
 									+ block.toString() + "'.");
@@ -211,7 +209,11 @@ public class MonadString extends MonadObject {
 	}
 
 	public Attr toXml(Document doc) {
-		return toXml(doc, (getLabel() == null) ? getTypeName() : getLabel(),
+		return toXml(doc, "string");
+	}
+	
+	public Attr toXml(Document doc, String elementName) {
+		return toXml(doc, (getLabel() == null) ? elementName : getLabel(),
 				string);
 	}
 

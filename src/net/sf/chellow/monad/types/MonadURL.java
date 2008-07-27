@@ -25,16 +25,17 @@ package net.sf.chellow.monad.types;
 import java.net.MalformedURLException;
 import java.net.URL;
 
+import org.w3c.dom.Attr;
+import org.w3c.dom.Document;
+
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.UserException;
 
 public class MonadURL extends MonadString {
 	public MonadURL() {
-		setTypeName("url");
 	}
 
 	public MonadURL(String url) throws HttpException {
-		this();
 		update(url);
 	}
 
@@ -44,5 +45,9 @@ public class MonadURL extends MonadString {
 		} catch (MalformedURLException e) {
 			throw new UserException("Invalid URL: " + e.getMessage());
 		}
+	}
+	
+	public Attr toXml(Document doc) {
+		return super.toXml(doc, "url");
 	}
 }

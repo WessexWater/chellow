@@ -496,9 +496,8 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 		mpans.remove(mpan);
 	}
 
-	public Element toXml(Document doc) throws InternalException, HttpException {
-		setTypeName("supply-generation");
-		Element element = (Element) super.toXml(doc);
+	public Element toXml(Document doc) throws HttpException {
+		Element element = super.toXml(doc, "supply-generation");
 		element.appendChild(startDate.toXml(doc));
 		if (finishDate != null) {
 			element.appendChild(finishDate.toXml(doc));
@@ -607,7 +606,7 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 			Hiber.commit();
 			inv.sendSeeOther(supply.getUri());
 		} else if (inv.hasParameter("attach")) {
-			SiteCode siteCode = inv.getValidatable(SiteCode.class, "site-code");
+			String siteCode = inv.getString("site-code");
 			if (!inv.isValid()) {
 				throw new UserException(document());
 			}

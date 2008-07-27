@@ -36,7 +36,6 @@ import net.sf.chellow.monad.Urlable;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.UserException;
 import net.sf.chellow.monad.XmlTree;
-import net.sf.chellow.monad.types.MonadInteger;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
 import net.sf.chellow.physical.ContractFrequency;
@@ -223,12 +222,11 @@ public class HhdcContract extends Contract {
 		return new SiteSnags(this);
 	}
 
-	public Element toXml(Document doc) throws InternalException, HttpException {
-		setTypeName("hhdc-contract");
-		Element element = super.toXml(doc);
+	public Element toXml(Document doc) throws HttpException {
+		Element element = super.toXml(doc, "hhdc-contract");
 
 		element.setAttributeNode(frequency.toXml(doc));
-		element.setAttributeNode(MonadInteger.toXml(doc, "lag", lag));
+		element.setAttribute("lag", Integer.toString(lag));
 		element.setAttribute("has-stark-automatic-hh-data-importer",
 				StarkAutomaticHhDataImporters.getImportersInstance()
 						.findImporter(this) == null ? "false" : "true");

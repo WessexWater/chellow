@@ -1,6 +1,6 @@
 /*
  
- Copyright 2005 Meniscus Systems Ltd
+ Copyright 2005, 2008 Meniscus Systems Ltd
  
  This file is part of Chellow.
 
@@ -25,23 +25,23 @@ package net.sf.chellow.physical;
 import java.text.NumberFormat;
 import java.util.Locale;
 
+import org.w3c.dom.Attr;
+import org.w3c.dom.Document;
+
 import net.sf.chellow.monad.HttpException;
-import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.types.MonadString;
 
 public class DsoCode extends MonadString {
 	public DsoCode() {
-		setTypeName("dso-code");
 		setMaximumLength(2);
 		onlyDigits = true;
 	}
 
-	public DsoCode(String code) throws HttpException, InternalException {
+	public DsoCode(String code) throws HttpException {
 		this(null, code);
 	}
 
-	public DsoCode(String label, String code) throws HttpException,
-			InternalException {
+	public DsoCode(String label, String code) throws HttpException {
 		this();
 		setLabel(label);
 		update(code);
@@ -56,5 +56,11 @@ public class DsoCode extends MonadString {
 
 	public boolean isSettlement() {
 		return Integer.parseInt(toString()) < 24;
+	}
+	
+	public Attr toXml(Document doc) {
+		Attr attribute = doc.createAttribute("dso-code");
+		attribute.setNodeValue(this.toString());
+		return attribute;
 	}
 }

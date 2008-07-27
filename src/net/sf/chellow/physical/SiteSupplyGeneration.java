@@ -1,6 +1,6 @@
 /*
  
- Copyright 2005 Meniscus Systems Ltd
+ Copyright 2005, 2008 Meniscus Systems Ltd
  
  This file is part of Chellow.
 
@@ -31,7 +31,6 @@ import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Urlable;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.UserException;
-import net.sf.chellow.monad.types.MonadBoolean;
 import net.sf.chellow.monad.types.MonadLong;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
@@ -61,7 +60,6 @@ public class SiteSupplyGeneration extends PersistentEntity {
 	private boolean isPhysical;
 
 	private SiteSupplyGeneration() {
-		setTypeName("site-supply-generation");
 	}
 
 	SiteSupplyGeneration(Site site, SupplyGeneration supplyGeneration, boolean isPhysical) {
@@ -95,10 +93,10 @@ public class SiteSupplyGeneration extends PersistentEntity {
 		this.isPhysical = isPhysical;
 	}
 
-	public Node toXml(Document doc) throws InternalException, HttpException {
-		Element element = (Element) super.toXml(doc);
+	public Node toXml(Document doc) throws HttpException {
+		Element element = super.toXml(doc, "site-supply-generation");
 
-		element.setAttributeNode(MonadBoolean.toXml(doc, "is-physical", isPhysical));
+		element.setAttribute("is-physical", Boolean.toString(isPhysical));
 		return element;
 	}
 	public boolean equals(Object obj) {

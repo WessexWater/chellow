@@ -36,8 +36,6 @@ import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Invocation;
 import net.sf.chellow.monad.Urlable;
 import net.sf.chellow.monad.UserException;
-import net.sf.chellow.monad.types.MonadBoolean;
-import net.sf.chellow.monad.types.MonadInteger;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
 
@@ -263,19 +261,13 @@ public class Mpan extends PersistentEntity {
 		return getMpanTop() + " " + getMpanCore();
 	}
 
-	public Node toXml(Document doc) throws InternalException, HttpException {
-		setTypeName("mpan");
-		Element element = (Element) super.toXml(doc);
-		element.setAttributeNode(MonadBoolean.toXml(doc, "has-import-kwh",
-				hasImportKwh));
-		element.setAttributeNode(MonadBoolean.toXml(doc, "has-import-kvarh",
-				hasImportKvarh));
-		element.setAttributeNode(MonadBoolean.toXml(doc, "has-export-kwh",
-				hasExportKwh));
-		element.setAttributeNode(MonadBoolean.toXml(doc, "has-export-kvarh",
-				hasExportKvarh));
-		element.setAttributeNode(MonadInteger.toXml(doc,
-				"agreed-supply-capacity", agreedSupplyCapacity));
+	public Node toXml(Document doc) throws HttpException {
+		Element element = (Element) super.toXml(doc, "mpan");
+		element.setAttribute("has-import-kwh", Boolean.toString(hasImportKwh));
+		element.setAttribute("has-import-kvarh", Boolean.toString(hasImportKvarh));
+		element.setAttribute("has-export-kwh", Boolean.toString(hasExportKwh));
+		element.setAttribute("has-export-kvarh", Boolean.toString(hasExportKvarh));
+		element.setAttribute("agreed-supply-capacity", Integer.toString(agreedSupplyCapacity));
 		element.setAttributeNode(getMpanRaw().toXml(doc));
 		return element;
 	}
@@ -318,22 +310,23 @@ public class Mpan extends PersistentEntity {
 					"An MPAN can't be deleted if still has invoices attached.");
 		}
 	}
-	
+
 	public HhdcContract getHhdceContract() throws HttpException {
 		HhdcContract contract = null;
 		if (hhdceAccount != null) {
-			return HhdcContract.getHhdcContract(hhdceAccount
-					.getContract().getId());
+			return HhdcContract.getHhdcContract(hhdceAccount.getContract()
+					.getId());
 		}
 		return contract;
 	}
-	
+
 	public SupplierContract getSupplierContract() throws HttpException {
-			return SupplierContract.getSupplierContract(supplierAccount
-					.getContract().getId());
+		return SupplierContract.getSupplierContract(supplierAccount
+				.getContract().getId());
 	}
 
-	public HhdcContract getHhdceContract(boolean isImport, boolean isKwh) throws HttpException {
+	public HhdcContract getHhdceContract(boolean isImport, boolean isKwh)
+			throws HttpException {
 		HhdcContract hhdceContract = null;
 		if (isImport) {
 			if (isKwh) {
@@ -360,8 +353,8 @@ public class Mpan extends PersistentEntity {
 	}
 
 	public MpanRaw getMpanRaw() throws HttpException {
-		return new MpanRaw(getMpanTop().getPc().getCode(),
-				getMpanTop().getMtc().getCode(), getMpanTop()
-						.getLlfc().getCode(), getMpanCore().getCore());
+		return new MpanRaw(getMpanTop().getPc().getCode(), getMpanTop()
+				.getMtc().getCode(), getMpanTop().getLlfc().getCode(),
+				getMpanCore().getCore());
 	}
 }

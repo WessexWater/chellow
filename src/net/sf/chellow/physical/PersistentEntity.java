@@ -1,6 +1,6 @@
 /*
  
- Copyright 2005 Meniscus Systems Ltd
+ Copyright 2005, 2008 Meniscus Systems Ltd
  
  This file is part of Chellow.
 
@@ -29,7 +29,6 @@ import net.sf.chellow.monad.types.UriPathElement;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import org.w3c.dom.Node;
 
 public abstract class PersistentEntity extends MonadObject implements Urlable {
 	private Long id;
@@ -49,8 +48,8 @@ public abstract class PersistentEntity extends MonadObject implements Urlable {
 			return new UriPathElement(Long.toString(id));
 	}
 
-	public Node toXml(Document doc) throws HttpException {
-		Element element = (Element) super.toXml(doc);
+	public Element toXml(Document doc, String elementName) throws HttpException {
+		Element element = (Element) super.toXml(doc, elementName);
 
 		element.setAttribute("id", id.toString());
 		return element;

@@ -29,7 +29,6 @@ import javax.servlet.ServletContext;
 import net.sf.chellow.monad.Debug;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
-import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Invocation;
 import net.sf.chellow.monad.MonadUtils;
 import net.sf.chellow.monad.NotFoundException;
@@ -135,9 +134,8 @@ public class MeterType extends PersistentEntity {
 		this.validTo = to;
 	}
 
-	public Node toXml(Document doc) throws InternalException, HttpException {
-		setTypeName("meter-type");
-		Element element = (Element) super.toXml(doc);
+	public Node toXml(Document doc) throws HttpException {
+		Element element = super.toXml(doc, "meter-type");
 
 		element.setAttribute("code", code);
 		element.setAttribute("description", description);

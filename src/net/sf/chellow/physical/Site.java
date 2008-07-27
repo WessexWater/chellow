@@ -53,14 +53,13 @@ import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
 
 import org.hibernate.HibernateException;
-import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 public class Site extends PersistentEntity implements Urlable {
 	private Organization organization;
 
-	private SiteCode code;
+	private String code;
 
 	private String name;
 
@@ -69,8 +68,8 @@ public class Site extends PersistentEntity implements Urlable {
 	public Site() {
 	}
 
-	public Site(Organization organization, SiteCode code, String name)
-			throws InternalException, HttpException {
+	public Site(Organization organization, String code, String name)
+			throws HttpException {
 		this();
 		this.organization = organization;
 		update(code, name);
@@ -84,15 +83,12 @@ public class Site extends PersistentEntity implements Urlable {
 		this.organization = organization;
 	}
 
-	public SiteCode getCode() {
+	public String getCode() {
 		return code;
 	}
 
-	public void setCode(SiteCode code) {
+	public void setCode(String code) {
 		this.code = code;
-		if (code != null) {
-			code.setLabel("code");
-		}
 	}
 
 	public String getName() {
@@ -112,21 +108,18 @@ public class Site extends PersistentEntity implements Urlable {
 		this.siteSupplyGenerations = siteSupplyGenerations;
 	}
 
-	public void update(SiteCode code, String name) throws InternalException,
-			HttpException {
+	public void update(String code, String name) throws HttpException {
 		setCode(code);
 		MonadString.update("name", name, true, 200, 0,
 				Character.UnicodeBlock.BASIC_LATIN, false);
 		setName(name);
 	}
 
-	public Element toXml(Document doc) throws InternalException,
-			HttpException {
-		setTypeName("site");
-		Element element = (Element) super.toXml(doc);
+	public Element toXml(Document doc) throws HttpException {
+		Element element = super.toXml(doc, "site");
 
-		element.setAttributeNode(MonadString.toXml(doc, "name", getName()));
-		element.setAttributeNode((Attr) getCode().toXml(doc));
+		element.setAttribute("name", name);
+		element.setAttribute("code", code);
 		return element;
 	}
 
@@ -140,8 +133,7 @@ public class Site extends PersistentEntity implements Urlable {
 			boolean exportHasDceImportKwh, boolean exportHasDceImportKvarh,
 			boolean exportHasDceExportKwh, boolean exportHasDceExportKvarh,
 			Integer exportAgreedSupplyCapacity, HhEndDate startDate,
-			SourceCode sourceCode, Long id) throws InternalException,
-			HttpException, DesignerException {
+			String sourceCode, Long id) throws HttpException {
 		Source source = Source.getSource(sourceCode);
 		Supply supply = new Supply(supplyName, source);
 		try {
@@ -325,8 +317,8 @@ public class Site extends PersistentEntity implements Urlable {
 						int physicalSupplies1 = site1.physicalSupplies();
 						int physicalSupplies2 = site2.physicalSupplies();
 						return physicalSupplies1 == physicalSupplies2 ? site2
-								.getCode().getString().compareTo(
-										site1.getCode().getString())
+								.getCode().compareTo(
+										site1.getCode())
 								: physicalSupplies2 - physicalSupplies1;
 					}
 				});
@@ -472,7 +464,7 @@ public class Site extends PersistentEntity implements Urlable {
 			Hiber.commit();
 			inv.sendOk(doc);
 		} else {
-			SiteCode code = inv.getValidatable(SiteCode.class, "code");
+			String code = inv.getString("code");
 			String name = inv.getString("name");
 			update(code, name);
 			Hiber.commit();
@@ -485,14 +477,12 @@ public class Site extends PersistentEntity implements Urlable {
 		throw new NotFoundException();
 	}
 
-	public void httpDelete(Invocation inv) throws InternalException,
-			HttpException, DesignerException, DeployerException {
+	public void httpDelete(Invocation inv) throws HttpException {
 		throw new MethodNotAllowedException();
 	}
 
 	public void detachSiteSupplyGeneration(
-			SiteSupplyGeneration siteSupplyGeneration) throws HttpException,
-			InternalException {
+			SiteSupplyGeneration siteSupplyGeneration) throws HttpException {
 		siteSupplyGenerations.remove(siteSupplyGeneration);
 	}
 }

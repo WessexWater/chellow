@@ -1,6 +1,6 @@
 /*
  
- Copyright 2005-2007 Meniscus Systems Ltd
+ Copyright 2005-2008 Meniscus Systems Ltd
  
  This file is part of Chellow.
 
@@ -29,14 +29,12 @@ import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 
-import net.sf.chellow.monad.DeployerException;
-import net.sf.chellow.monad.DesignerException;
 import net.sf.chellow.monad.Hiber;
+import net.sf.chellow.monad.HttpException;
+import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Invocation;
 import net.sf.chellow.monad.MonadUtils;
-import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Urlable;
-import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.UserException;
 import net.sf.chellow.monad.XmlTree;
 import net.sf.chellow.monad.types.MonadDate;
@@ -64,13 +62,10 @@ public class RateScript extends PersistentEntity {
 	private String script;
 
 	public RateScript() {
-		setTypeName("rate-script");
 	}
 
 	public RateScript(Service service, HhEndDate startDate,
-			HhEndDate finishDate, String script) throws InternalException,
-			DesignerException {
-		this();
+			HhEndDate finishDate, String script) throws HttpException {
 		setService(service);
 		internalUpdate(startDate, finishDate, script);
 	}
@@ -120,7 +115,7 @@ public class RateScript extends PersistentEntity {
 	}
 
 	public void update(HhEndDate startDate, HhEndDate finishDate, String script)
-			throws InternalException, HttpException, DesignerException {
+			throws HttpException {
 		HhEndDate originalStartDate = getStartDate();
 		HhEndDate originalFinishDate = getFinishDate();
 		RateScript previousRateScript = service.getPreviousRateScript(this);
@@ -171,8 +166,8 @@ public class RateScript extends PersistentEntity {
 		service.updateNotification(checkStartDate, checkFinishDate);
 	}
 
-	public Element toXml(Document doc) throws InternalException, HttpException {
-		Element element = (Element) super.toXml(doc);
+	public Element toXml(Document doc) throws HttpException {
+		Element element = super.toXml(doc, "rate-script");
 
 		startDate.setLabel("start");
 		element.appendChild(startDate.toXml(doc));
@@ -195,13 +190,11 @@ public class RateScript extends PersistentEntity {
 				.append("/");
 	}
 
-	public void httpGet(Invocation inv) throws DesignerException,
-			InternalException, HttpException, DeployerException {
+	public void httpGet(Invocation inv) throws HttpException {
 		inv.sendOk(document());
 	}
 
-	public void httpPost(Invocation inv) throws InternalException,
-			HttpException, DesignerException, DeployerException {
+	public void httpPost(Invocation inv) throws HttpException {
 		String script = inv.getString("script");
 		if (inv.hasParameter("test")) {
 			Long billId = inv.getLong("bill_id");
@@ -244,18 +237,16 @@ public class RateScript extends PersistentEntity {
 		}
 	}
 
-	public void httpDelete(Invocation inv) throws InternalException,
-			DesignerException, HttpException, DeployerException {
+	public void httpDelete(Invocation inv) throws HttpException {
 		// TODO Auto-generated method stub
 
 	}
 
-	private Document document() throws InternalException, HttpException,
-			DesignerException {
+	private Document document() throws HttpException {
 		Document doc = MonadUtils.newSourceDocument();
 		Element sourceElement = doc.getDocumentElement();
 
-		sourceElement.appendChild(toXml(doc, new XmlTree("contract",
+		sourceElement.appendChild(toXml(doc, new XmlTree("service",
 				new XmlTree("provider").put("organization"))));
 		sourceElement.appendChild(MonadDate.getMonthsXml(doc));
 		sourceElement.appendChild(MonadDate.getDaysXml(doc));
@@ -263,7 +254,7 @@ public class RateScript extends PersistentEntity {
 		return doc;
 	}
 
-	public Invocable invocableEngine() throws HttpException, InternalException {
+	public Invocable invocableEngine() throws HttpException {
 		ScriptEngineManager engineMgr = new ScriptEngineManager();
 		ScriptEngine scriptEngine = engineMgr.getEngineByName("jython");
 		Invocable invocableEngine = null;
@@ -276,8 +267,7 @@ public class RateScript extends PersistentEntity {
 		return invocableEngine;
 	}
 
-	public Object getRate(String rateName) throws HttpException,
-			InternalException {
+	public Object getRate(String rateName) throws HttpException {
 		Object rate = null;
 		try {
 			rate = invocableEngine().invokeFunction(rateName, new Object[0]);

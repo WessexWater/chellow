@@ -78,13 +78,11 @@ public class Bill extends PersistentEntity implements Urlable {
 	private Set<Invoice> invoices;
 
 	public Bill() {
-		setTypeName("bill");
 	}
 
 	@SuppressWarnings("unchecked")
 	public Bill(Contract contract, Account account) throws
 			InternalException {
-		this();
 		setAccount(account);
 		setContract(contract);
 	}
@@ -264,7 +262,7 @@ public class Bill extends PersistentEntity implements Urlable {
 	}
 
 	public Node toXml(Document doc) throws HttpException {
-		Element element = (Element) super.toXml(doc);
+		Element element = super.toXml(doc, "bill");
 		startDate.setLabel("start");
 		element.appendChild(startDate.toXml(doc));
 		finishDate.setLabel("finish");

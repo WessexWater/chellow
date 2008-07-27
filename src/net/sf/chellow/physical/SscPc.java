@@ -208,9 +208,8 @@ public class SscPc extends PersistentEntity {
 		this.to = to;
 	}
 
-	public Node toXml(Document doc) throws InternalException, HttpException {
-		setTypeName("ssc-pc");
-		Element element = (Element) super.toXml(doc);
+	public Node toXml(Document doc) throws HttpException {
+		Element element = super.toXml(doc, "ssc-pc");
 
 		MonadDate fromDate = new MonadDate(from);
 		fromDate.setLabel("from");

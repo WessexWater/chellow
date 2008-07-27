@@ -36,12 +36,10 @@ import net.sf.chellow.monad.Urlable;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.UserException;
 import net.sf.chellow.monad.XmlTree;
-import net.sf.chellow.monad.types.MonadBoolean;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
 
 import org.hibernate.HibernateException;
-import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -83,11 +81,9 @@ public class Permission extends PersistentEntity {
 	private Boolean isTraceAllowed;
 
 	public Permission() {
-		setTypeName("permission");
 	}
 
 	public Permission(Role role, MonadUri uriPattern, List<Invocation.HttpMethod> methods) throws HttpException {
-		this();
 		setRole(role);
 		update(uriPattern, methods);
 	}
@@ -200,14 +196,11 @@ public class Permission extends PersistentEntity {
 		}
 	}
 
-	public Element toXml(Document doc) throws InternalException,
-			HttpException {
-		Element element = (Element) super.toXml(doc);
-		element.setAttributeNode((Attr) uriPattern.toXml(doc));
-		element.setAttributeNode(MonadBoolean.toXml(doc, "is-post-allowed",
-				isPostAllowed));
-		element.setAttributeNode(MonadBoolean.toXml(doc, "is-get-allowed",
-				isGetAllowed));
+	public Element toXml(Document doc) throws HttpException {
+		Element element = super.toXml(doc, "permission");
+		element.setAttributeNode(uriPattern.toXml(doc));
+		element.setAttribute("is-post-allowed", Boolean.toString(isPostAllowed));
+		element.setAttribute("is-get-allowed", Boolean.toString(isGetAllowed));
 		return element;
 	}
 

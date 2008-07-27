@@ -98,9 +98,8 @@ public class ChannelSnag extends SnagDateBounded {
 	public void update() {
 	}
 
-	public Element toXml(Document doc) throws InternalException, HttpException {
-		setTypeName("channel-snag");
-		Element element = (Element) super.toXml(doc);
+	public Element toXml(Document doc) throws HttpException {
+		Element element = super.toXml(doc, "channel-snag");
 		return element;
 	}
 

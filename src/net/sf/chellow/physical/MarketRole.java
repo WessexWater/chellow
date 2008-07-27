@@ -116,8 +116,7 @@ public class MarketRole extends PersistentEntity {
 	}
 
 	public Node toXml(Document doc) throws HttpException {
-		setTypeName("market-role");
-		Element element = (Element) super.toXml(doc);
+		Element element = super.toXml(doc, "market-role");
 
 		element.setAttribute("code", String.valueOf(code));
 		element.setAttribute("description", description);

@@ -106,7 +106,7 @@ public class MonadInteger extends MonadObject {
 	}
 
 	public Attr toXml(Document doc) {
-		return toXml(doc, getLabel() == null ? getTypeName() : getLabel(),
+		return toXml(doc, getLabel() == null ? "integer" : getLabel(),
 				integer);
 	}
 

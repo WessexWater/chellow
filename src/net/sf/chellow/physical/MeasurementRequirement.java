@@ -97,9 +97,7 @@ public class MeasurementRequirement extends PersistentEntity {
 	}
 
 	public Node toXml(Document doc) throws HttpException {
-		setTypeName("measurement-requirement");
-
-		Element element = (Element) super.toXml(doc);
+		Element element = super.toXml(doc, "measurement-requirement");
 		return element;
 	}
 

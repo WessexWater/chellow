@@ -213,9 +213,8 @@ public class RegisterRead extends PersistentEntity {
 		return doc;
 	}
 
-	public Node toXml(Document doc) throws InternalException, HttpException {
-		setTypeName("register-read");
-		Element element = (Element) super.toXml(doc);
+	public Node toXml(Document doc) throws HttpException {
+		Element element = super.toXml(doc, "register-read");
 		element.setAttribute("coefficient", Float.toString(coefficient));
 		element.setAttribute("units", units.toString());
 		element.setAttribute("is-import", Boolean.toString(isImport));

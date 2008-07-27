@@ -227,12 +227,7 @@ public class Provider extends PersistentEntity implements Urlable {
 	}
 
 	public Element toXml(Document doc) throws HttpException {
-		/*
-		 * String typeName = null; if (role.getCode() == MarketRole.DISTRIBUTOR) {
-		 * typeName = "dso"; } else { typeName = "provider"; }
-		 */
-		setTypeName("provider");
-		Element element = (Element) super.toXml(doc);
+		Element element = super.toXml(doc, "provider");
 
 		element.setAttribute("name", name);
 		element.appendChild(MonadDate.toXML(validFrom, "from", doc));

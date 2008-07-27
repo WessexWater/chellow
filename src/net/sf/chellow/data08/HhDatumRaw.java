@@ -1,5 +1,9 @@
 package net.sf.chellow.data08;
 
+import org.w3c.dom.Document;
+import org.w3c.dom.Node;
+
+import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.types.MonadObject;
 import net.sf.chellow.physical.HhDatumStatus;
@@ -65,5 +69,11 @@ public class HhDatumRaw extends MonadObject {
 		return "MPAN core: " + core + ", Is import? " + isImport + ", Is Kwh? "
 				+ isKwh + ", End date " + endDate + ", Value " + value
 				+ ", Status " + status;
+	}
+
+	@Override
+	public Node toXml(Document doc) throws HttpException {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

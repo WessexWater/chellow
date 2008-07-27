@@ -22,14 +22,11 @@
 
 package net.sf.chellow.billing;
 
-import net.sf.chellow.monad.DeployerException;
-import net.sf.chellow.monad.DesignerException;
 import net.sf.chellow.monad.Hiber;
+import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.Invocation;
 import net.sf.chellow.monad.MonadUtils;
-import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Urlable;
-import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.UserException;
 import net.sf.chellow.monad.XmlTree;
 import net.sf.chellow.monad.types.MonadUri;
@@ -42,8 +39,7 @@ import org.w3c.dom.Element;
 
 @SuppressWarnings("serial")
 public class MopContract extends Contract {
-	public static MopContract getMopService(Long id) throws HttpException,
-			InternalException {
+	public static MopContract getMopService(Long id) throws HttpException {
 		MopContract contract = (MopContract) Hiber.session().get(
 				MopContract.class, id);
 		if (contract == null) {
@@ -81,7 +77,7 @@ public class MopContract extends Contract {
 		return isEqual;
 	}
 
-	public MonadUri getUri() throws InternalException, HttpException {
+	public MonadUri getUri() throws HttpException {
 		return getOrganization().mopContractsInstance().getUri().resolve(
 				getUriId()).append("/");
 	}
@@ -97,8 +93,7 @@ public class MopContract extends Contract {
 		inv.sendOk(document());
 	}
 
-	private Document document() throws InternalException, HttpException,
-			DesignerException {
+	private Document document() throws HttpException {
 		Document doc = MonadUtils.newSourceDocument();
 		Element source = doc.getDocumentElement();
 		source.appendChild(toXml(doc, new XmlTree("supplier")
@@ -106,13 +101,11 @@ public class MopContract extends Contract {
 		return doc;
 	}
 
-	public void httpGet(Invocation inv) throws DesignerException,
-			InternalException, HttpException, DeployerException {
+	public void httpGet(Invocation inv) throws HttpException {
 		inv.sendOk(document());
 	}
 
-	public void httpDelete(Invocation inv) throws InternalException,
-			HttpException {
+	public void httpDelete(Invocation inv) throws HttpException {
 		// TODO Auto-generated method stub
 
 	}
@@ -122,15 +115,13 @@ public class MopContract extends Contract {
 				+ getName();
 	}
 
-	public Urlable getChild(UriPathElement uriId) throws InternalException,
-			HttpException {
+	public Urlable getChild(UriPathElement uriId) throws HttpException {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	public Element toXml(Document doc) throws HttpException {
-		setTypeName("mop-contract");
-		Element element = super.toXml(doc);
+		Element element = super.toXml(doc, "mop-contract");
 		return element;
 	}
 }

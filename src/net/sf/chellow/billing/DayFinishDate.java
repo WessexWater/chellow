@@ -15,13 +15,13 @@ import net.sf.chellow.monad.types.MonadMonth;
 import net.sf.chellow.physical.HhEndDate;
 
 public class DayFinishDate extends HhEndDate {
-	public static DayFinishDate getNext(DayFinishDate date) throws InternalException, UserException {
+	public static DayFinishDate getNext(DayFinishDate date) throws HttpException {
 		return new DayFinishDate(new Date(getNext(getCalendar(), date.getDate()
 				.getTime())));
 	}
 
 	public static DayFinishDate getPrevious(DayFinishDate date)
-			throws InternalException, UserException {
+			throws HttpException {
 		return new DayFinishDate(new Date(getPrevious(getCalendar(), date.getDate()
 				.getTime())));
 	}
@@ -48,7 +48,7 @@ public class DayFinishDate extends HhEndDate {
 		return cal.getTimeInMillis();
 	}
 
-	public static DayFinishDate roundDown(Date date) throws InternalException, UserException {
+	public static DayFinishDate roundDown(Date date) throws HttpException {
 		return new DayFinishDate(new Date(roundDown(getCalendar(), date.getTime())));
 	}
 
@@ -62,49 +62,37 @@ public class DayFinishDate extends HhEndDate {
 		return cal.getTimeInMillis();
 	}
 
-	DayFinishDate() throws InternalException, UserException {
+	DayFinishDate() throws HttpException {
 		super(new Date(0));
-		setTypeName();
 	}
 
-	public DayFinishDate(Date date) throws InternalException, UserException {
+	public DayFinishDate(Date date) throws HttpException {
 		super(date);
-		setTypeName();
 	}
 	
-	public DayFinishDate(HhEndDate date) throws InternalException, HttpException {
+	public DayFinishDate(HhEndDate date) throws HttpException {
 		super(date.getDate());
-		setTypeName();
 	}
 
 	public DayFinishDate(String label, String year, String month, String day)
-			throws InternalException, HttpException {
+			throws HttpException {
 		super(label, year, month, day);
-		setTypeName();
 	}
 
 	public DayFinishDate(int year, MonadMonth month, MonadDay day)
-			throws InternalException, HttpException {
+			throws HttpException {
 		super(year, month, day);
-		setTypeName();
 	}
 
-	public DayFinishDate(String dateStr) throws InternalException, HttpException {
+	public DayFinishDate(String dateStr) throws HttpException {
 		super(dateStr);
-		setTypeName();
 	}
 
-	public DayFinishDate(String label, String dateStr) throws InternalException,
-			HttpException {
+	public DayFinishDate(String label, String dateStr) throws HttpException {
 		super(label, dateStr);
-		setTypeName();
-	}
-	
-	private void setTypeName() {
-		setTypeName("day-finish-date");
 	}
 
-	public void update(Date date) throws InternalException, UserException {
+	public void update(Date date) throws HttpException {
 		super.update(date);
 		Calendar cal = getCalendar();
 		cal.clear();
@@ -119,16 +107,16 @@ public class DayFinishDate extends HhEndDate {
 		}
 	}
 
-	public DayFinishDate getPrevious() throws InternalException, UserException {
+	public DayFinishDate getPrevious() throws HttpException {
 		return getPrevious(this);
 	}
 
-	public DayFinishDate getNext() throws InternalException, UserException {
+	public DayFinishDate getNext() throws HttpException {
 		return getNext(this);
 	}
 
 	public Element toXml(Document doc) throws InternalException {
-		return toXML(getDate(), getLabel(), doc, getTypeName());
+		return toXML(getDate(), getLabel(), doc, "day-finish-date");
 	}
 
 }

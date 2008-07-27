@@ -1,5 +1,9 @@
 package net.sf.chellow.physical;
 
+import org.w3c.dom.Document;
+import org.w3c.dom.Node;
+
+import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.UserException;
 import net.sf.chellow.monad.types.MonadObject;
@@ -102,7 +106,6 @@ public class ReadType extends MonadObject {
 	private int intValue;
 
 	ReadType() {
-		setTypeName("Unit");
 	}
 
 	private ReadType(int intValue) throws InternalException, UserException {
@@ -142,5 +145,10 @@ public class ReadType extends MonadObject {
 		} catch (UserException e) {
 			throw new RuntimeException(e);
 		}
+	}
+
+	@Override
+	public Node toXml(Document doc) throws HttpException {
+		return super.toXml(doc, "Unit");
 	}
 }

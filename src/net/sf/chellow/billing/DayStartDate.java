@@ -6,6 +6,7 @@ import java.util.Date;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
+import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.UserException;
 
@@ -14,14 +15,13 @@ import net.sf.chellow.monad.types.MonadMonth;
 import net.sf.chellow.physical.HhEndDate;
 
 public class DayStartDate extends HhEndDate {
-	public static DayStartDate getNext(DayStartDate date)
-			throws InternalException, UserException {
+	public static DayStartDate getNext(DayStartDate date) throws HttpException {
 		return new DayStartDate(new Date(getNext(getCalendar(), date.getDate()
 				.getTime())));
 	}
 
 	public static DayStartDate getPrevious(DayStartDate date)
-			throws InternalException, UserException {
+			throws HttpException {
 		return new DayStartDate(new Date(getPrevious(getCalendar(), date
 				.getDate().getTime())));
 	}
@@ -35,8 +35,9 @@ public class DayStartDate extends HhEndDate {
 		return roundUp(cal, date + 1);
 	}
 
-	public static DayStartDate roundUp(Date date) throws InternalException, UserException {
-		return new DayStartDate(new Date(roundUp(getCalendar(), date.getTime())));
+	public static DayStartDate roundUp(Date date) throws HttpException {
+		return new DayStartDate(
+				new Date(roundUp(getCalendar(), date.getTime())));
 	}
 
 	protected static long roundUp(Calendar cal, long date) {
@@ -51,7 +52,7 @@ public class DayStartDate extends HhEndDate {
 		return cal.getTimeInMillis();
 	}
 
-	public static DayStartDate roundDown(Date date) throws InternalException, UserException {
+	public static DayStartDate roundDown(Date date) throws HttpException {
 		return new DayStartDate(new Date(roundDown(getCalendar(), date
 				.getTime())));
 	}
@@ -73,44 +74,38 @@ public class DayStartDate extends HhEndDate {
 		return cal.getTimeInMillis();
 	}
 
-	DayStartDate() throws InternalException, UserException {
+	DayStartDate() throws HttpException {
 		super(DayStartDate.roundUp(new Date()).getDate());
-		setTypeName();
 	}
 
-	public DayStartDate(Date date) throws InternalException, UserException {
+	public DayStartDate(Date date) throws HttpException {
 		super(date);
-		setTypeName();
 	}
 
 	public DayStartDate(String label, String year, String month, String day)
-			throws InternalException, UserException {
+			throws HttpException {
 		super(label, year, month, day);
 		setTypeName();
 	}
 
 	public DayStartDate(int year, MonadMonth month, MonadDay day)
-			throws InternalException, UserException {
+			throws HttpException {
 		super(year, month, day);
-		setTypeName();
 	}
 
-	public DayStartDate(String dateStr) throws InternalException, UserException {
+	public DayStartDate(String dateStr) throws HttpException {
 		super(dateStr);
-		setTypeName();
 	}
 
-	public DayStartDate(String label, String dateStr)
-			throws InternalException, UserException {
+	public DayStartDate(String label, String dateStr) throws HttpException {
 		super(label, dateStr);
-		setTypeName();
 	}
 
 	private void setTypeName() {
-		setTypeName("day-start-date");
+		setTypeName();
 	}
 
-	public void update(Date date) throws InternalException, UserException {
+	public void update(Date date) throws HttpException {
 		super.update(date);
 		Calendar cal = getCalendar();
 		cal.clear();
@@ -126,16 +121,15 @@ public class DayStartDate extends HhEndDate {
 		super.update(cal.getTime());
 	}
 
-	public DayStartDate getPrevious() throws InternalException, UserException {
+	public DayStartDate getPrevious() throws HttpException {
 		return getPrevious(this);
 	}
 
-	public DayStartDate getNext() throws InternalException, UserException {
+	public DayStartDate getNext() throws HttpException {
 		return getNext(this);
 	}
 
 	public Element toXml(Document doc) throws InternalException {
-		return toXML(getDate(), getLabel(), doc, getTypeName());
+		return toXML(getDate(), getLabel(), doc, "day-start-date");
 	}
-
 }

@@ -131,9 +131,8 @@ public class Pc extends PersistentEntity {
 		return getCode() + " - " + getDescription();
 	}
 
-	public Node toXml(Document doc) throws InternalException, HttpException {
-		setTypeName("pc");
-		Element element = (Element) super.toXml(doc);
+	public Node toXml(Document doc) throws HttpException {
+		Element element = super.toXml(doc, "pc");
 
 		element.setAttributeNode(code.toXml(doc));
 		element.setAttribute("description", description);

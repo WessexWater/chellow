@@ -28,6 +28,7 @@ public class Sources implements Urlable {
 		}
 	}
 
+	/*
 	static public Source getSource(SourceCode code) throws HttpException,
 			InternalException {
 		Source source = (Source) Hiber.session().createQuery(
@@ -38,6 +39,7 @@ public class Sources implements Urlable {
 		}
 		return source;
 	}
+	*/
 
 	public Sources() {
 	}

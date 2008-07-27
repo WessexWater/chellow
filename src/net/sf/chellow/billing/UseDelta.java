@@ -1,6 +1,6 @@
 /*
  
- Copyright 2005 Meniscus Systems Ltd
+ Copyright 2005, 2008 Meniscus Systems Ltd
  
  This file is part of Chellow.
 
@@ -27,22 +27,20 @@ import java.util.Date;
 import net.sf.chellow.monad.DeployerException;
 import net.sf.chellow.monad.DesignerException;
 import net.sf.chellow.monad.Hiber;
+import net.sf.chellow.monad.HttpException;
+import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Invocation;
 import net.sf.chellow.monad.MonadUtils;
 import net.sf.chellow.monad.NotFoundException;
-import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Urlable;
-import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.UserException;
 import net.sf.chellow.monad.XmlTree;
-import net.sf.chellow.monad.types.MonadInteger;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
 import net.sf.chellow.physical.HhEndDate;
 import net.sf.chellow.physical.Organization;
 import net.sf.chellow.physical.PersistentEntity;
 import net.sf.chellow.physical.Site;
-import net.sf.chellow.physical.SiteCode;
 
 import org.hibernate.HibernateException;
 import org.w3c.dom.Document;
@@ -50,8 +48,7 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
 public class UseDelta extends PersistentEntity implements Urlable {
-	public static UseDelta getUseDelta(Long id) throws HttpException,
-			InternalException {
+	public static UseDelta getUseDelta(Long id) throws HttpException {
 		UseDelta useDelta = (UseDelta) Hiber.session().get(UseDelta.class, id);
 		if (useDelta == null) {
 			throw new UserException("There isn't an account with that id.");
@@ -75,15 +72,13 @@ public class UseDelta extends PersistentEntity implements Urlable {
 
 	private HhEndDate startDate;
 
-	private int kwhPerMonth;
+	private float kwChange;
 
 	public UseDelta() {
-		setTypeName("use-delta");
 	}
 
 	public UseDelta(Organization organization, Site site, HhEndDate startDate,
 			int kwhPerMonth) {
-		this();
 		setOrganization(organization);
 		update(site, startDate, kwhPerMonth);
 	}
@@ -112,26 +107,25 @@ public class UseDelta extends PersistentEntity implements Urlable {
 		this.startDate = startDate;
 	}
 
-	public int getKwhPerMonth() {
-		return kwhPerMonth;
+	public float getKwChange() {
+		return kwChange;
 	}
 
-	public void setKwhPerMonth(int kwhPerMonth) {
-		this.kwhPerMonth = kwhPerMonth;
+	public void setKwChange(float kwChange) {
+		this.kwChange = kwChange;
 	}
 
-	public void update(Site site, HhEndDate startDate, int kwhPerMonth) {
+	public void update(Site site, HhEndDate startDate, float kwChange) {
 		setSite(site);
 		setStartDate(startDate);
-		setKwhPerMonth(kwhPerMonth);
+		setKwChange(kwChange);
 	}
 
-	public Node toXml(Document doc) throws InternalException, HttpException {
-		Element element = (Element) super.toXml(doc);
+	public Node toXml(Document doc) throws HttpException {
+		Element element = super.toXml(doc, "use-delta");
 		startDate.setLabel("start");
 		element.appendChild(startDate.toXml(doc));
-		element.setAttributeNode(MonadInteger.toXml(doc, "kwh-per-month",
-				kwhPerMonth));
+		element.setAttribute("kw-change", Float.toString(kwChange));
 		return element;
 	}
 
@@ -143,7 +137,7 @@ public class UseDelta extends PersistentEntity implements Urlable {
 		if (!inv.isValid()) {
 			throw new UserException(document());
 		}
-		update(organization.getSite(new SiteCode(siteCode)), HhEndDate
+		update(organization.getSite(siteCode), HhEndDate
 				.roundUp(date), kwhPerMonth);
 		Hiber.commit();
 		inv.sendOk(document());

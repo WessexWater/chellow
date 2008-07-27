@@ -79,12 +79,10 @@ public class GenDelta extends PersistentEntity implements Urlable {
 	private int kwhPerMonth;
 
 	public GenDelta() {
-		setTypeName("use-delta");
 	}
 
 	public GenDelta(Organization organization, Supply supply, HhEndDate startDate,
 			int kwhPerMonth) {
-		this();
 		setOrganization(organization);
 		update(supply, startDate, kwhPerMonth);
 	}
@@ -127,8 +125,8 @@ public class GenDelta extends PersistentEntity implements Urlable {
 		setKwhPerMonth(kwhPerMonth);
 	}
 
-	public Node toXml(Document doc) throws InternalException, HttpException {
-		Element element = (Element) super.toXml(doc);
+	public Node toXml(Document doc) throws HttpException {
+		Element element = super.toXml(doc, "use-delta");
 		startDate.setLabel("start");
 		element.appendChild(startDate.toXml(doc));
 		element.setAttributeNode(MonadInteger.toXml(doc, "kwh-per-month",

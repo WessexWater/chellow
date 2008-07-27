@@ -256,8 +256,7 @@ public class Invoice extends PersistentEntity implements Urlable {
 	}
 
 	public Node toXml(Document doc) throws InternalException, HttpException {
-		setTypeName("invoice");
-		Element element = (Element) super.toXml(doc);
+		Element element = super.toXml(doc, "invoice");
 		issueDate.setLabel("issue");
 		element.appendChild(issueDate.toXml(doc));
 		startDate.setLabel("start");

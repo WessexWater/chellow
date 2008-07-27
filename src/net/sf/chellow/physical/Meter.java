@@ -1,11 +1,9 @@
 package net.sf.chellow.physical;
 
-import net.sf.chellow.monad.DeployerException;
-import net.sf.chellow.monad.DesignerException;
-import net.sf.chellow.monad.Invocation;
-import net.sf.chellow.monad.InternalException;
-import net.sf.chellow.monad.Urlable;
 import net.sf.chellow.monad.HttpException;
+import net.sf.chellow.monad.InternalException;
+import net.sf.chellow.monad.Invocation;
+import net.sf.chellow.monad.Urlable;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
 
@@ -18,7 +16,6 @@ public class Meter extends PersistentEntity {
 	private String serialNumber;
 
 	Meter() {
-		setTypeName("meter");
 	}
 
 	public Meter(Supply supply, String serialNumber) {
@@ -48,32 +45,28 @@ public class Meter extends PersistentEntity {
 		return null;
 	}
 
-	public MonadUri getUri() throws InternalException, HttpException {
+	public MonadUri getUri() throws HttpException {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
-	public void httpDelete(Invocation inv) throws InternalException,
-			DesignerException, HttpException, DeployerException {
+	public void httpDelete(Invocation inv) throws HttpException {
 		// TODO Auto-generated method stub
 
 	}
 
-	public void httpGet(Invocation inv) throws DesignerException,
-			InternalException, HttpException, DeployerException {
+	public void httpGet(Invocation inv) throws HttpException {
 		// TODO Auto-generated method stub
 
 	}
 
-	public void httpPost(Invocation inv) throws InternalException,
-			HttpException, DesignerException, DeployerException {
+	public void httpPost(Invocation inv) throws HttpException {
 		// TODO Auto-generated method stub
 
 	}
 
-	public Element toXml(Document doc) throws InternalException,
-			HttpException {
-		Element element = (Element) super.toXml(doc);
+	public Element toXml(Document doc) throws HttpException {
+		Element element = super.toXml(doc, "meter");
 		element.setAttribute("serial-number", serialNumber);
 		return element;
 	}

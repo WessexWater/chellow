@@ -115,8 +115,7 @@ public class Account extends PersistentEntity implements Urlable {
 	}
 
 	public Element toXml(Document doc) throws HttpException {
-		setTypeName("account");
-		Element element = (Element) super.toXml(doc);
+		Element element = super.toXml(doc, "account");
 
 		element.setAttribute("reference", reference);
 		return element;

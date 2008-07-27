@@ -25,13 +25,15 @@ package net.sf.chellow.monad.types;
 import java.net.URI;
 import java.net.URISyntaxException;
 
+import org.w3c.dom.Attr;
+import org.w3c.dom.Document;
+
 import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.UserException;
 
 public class MonadUri extends MonadString {
 	public MonadUri() {
-		setTypeName("URI");
 	}
 
 	public MonadUri(String uri) throws HttpException {
@@ -39,7 +41,6 @@ public class MonadUri extends MonadString {
 	}
 
 	public MonadUri(String label, String uri) throws HttpException {
-		this();
 		setLabel(label);
 		update(uri);
 	}
@@ -75,5 +76,9 @@ public class MonadUri extends MonadString {
 
 	public MonadUri append(String string) throws HttpException {
 		return new MonadUri(getString() + string);
+	}
+	
+	public Attr toXml(Document doc) {
+		return super.toXml(doc, "uri");
 	}
 }

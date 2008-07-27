@@ -47,6 +47,7 @@
 			<one-to-many class="RateScript" />
 		</set>
 		<many-to-one name="provider" class="Provider"
-			column="provider_id" foreign-key="fkey_contract_provider" not-null="true"/>
+			column="provider_id" foreign-key="fkey_contract_provider"
+			not-null="true" />
 	</class>
 </hibernate-mapping>

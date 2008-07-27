@@ -25,6 +25,7 @@ package net.sf.chellow.monad.types;
 import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
 
+import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.UserException;
 import net.sf.chellow.monad.XmlDescriber;
@@ -43,12 +44,12 @@ public class EmailAddress extends InternetAddress implements XmlDescriber,
 	}
 
 	public EmailAddress(String emailAddress)
-			throws InternalException, UserException {
+			throws HttpException {
 		this(null, emailAddress);
 	}
 
 	public EmailAddress(String label, String emailAddress)
-			throws InternalException, UserException {
+			throws HttpException {
 		if (emailAddress == null) {
 			throw new InternalException(
 					"Email address argument must not be null.");
@@ -73,7 +74,7 @@ public class EmailAddress extends InternetAddress implements XmlDescriber,
 		}
 	}
 
-	public Node toXml(Document doc) {
+	public Attr toXml(Document doc) {
 		Attr attr = doc.createAttribute("email-address");
 
 		attr.setNodeValue(getAddress());

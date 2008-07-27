@@ -180,8 +180,7 @@ public class DsoService extends Service {
 				+ getName();
 	}
 
-	public Element toXml(Document doc) throws InternalException, HttpException {
-		setTypeName("dso-service");
-		return super.toXml(doc);
+	public Element toXml(Document doc) throws HttpException {
+		return super.toXml(doc, "dso-service");
 	}
 }

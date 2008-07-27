@@ -31,11 +31,9 @@ import net.sf.chellow.monad.UserException;
 
 public class UriPathElement extends MonadUri {
 	public UriPathElement() {
-		setTypeName("UriPathElement");
 	}
 	
 	public UriPathElement(String uri) throws HttpException {
-		this();
 		update(uri);
 	}
 	

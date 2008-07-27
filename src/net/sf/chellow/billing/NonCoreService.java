@@ -174,9 +174,8 @@ public class NonCoreService extends Service {
 				+ getName();
 	}
 
-	public Element toXml(Document doc) throws InternalException, HttpException {
-		setTypeName("non-core-service");
-		Element element = (Element) super.toXml(doc);
+	public Element toXml(Document doc) throws HttpException {
+		Element element = super.toXml(doc, "non-core-service");
 		return element;
 	}
 }

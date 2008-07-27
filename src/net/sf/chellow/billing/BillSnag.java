@@ -64,11 +64,10 @@ public class BillSnag extends Snag {
 	private Bill bill;
 
 	public BillSnag() {
-		setTypeName("bill-snag");
 	}
 
 	public BillSnag(String description, Contract contract, Bill bill)
-			throws InternalException, HttpException {
+			throws HttpException {
 		super(description);
 		this.contract = contract;
 		this.bill = bill;
@@ -91,7 +90,7 @@ public class BillSnag extends Snag {
 	}
 
 	public Element toXml(Document doc) throws HttpException {
-		Element element = (Element) super.toXml(doc);
+		Element element = super.toXml(doc, "bill-snag");
 		return element;
 	}
 
