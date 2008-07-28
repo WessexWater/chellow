@@ -1,12 +1,11 @@
 from net.sf.chellow.monad import Hiber, XmlTree
-from net.sf.chellow.physical import Dso
+from net.sf.chellow.billing import Provider
 
 dso_id = inv.getLong('dso-id')
-dso = Dso.getDso(dso_id)
-llfs_element = doc.createElement('llfs')
-source.appendChild(llfs_element)
-for llf in Hiber.session().createQuery("from Llf llf where llf.dso = :dso order by llf.code").setEntity("dso", dso).list():
-    llfs_element.appendChild(llf.toXml(doc, XmlTree("voltageLevel")))
-llfs_element.appendChild(dso.toXml(doc));
+dso = Provider.getProvider(dso_id)
+llfcs_element = doc.createElement('llfcs')
+source.appendChild(llfcs_element)
+for llfc in Hiber.session().createQuery("from Llfc llfc where llfc.dso = :dso order by llfc.code").setEntity("dso", dso).list():
+    llfcs_element.appendChild(llfc.toXml(doc, XmlTree("voltageLevel")))
+llfcs_element.appendChild(dso.toXml(doc));
 source.appendChild(organization.toXml(doc))
-

@@ -1,7 +1,7 @@
 from net.sf.chellow.monad import Hiber, XmlTree
-from net.sf.chellow.physical import ProfileClass
+from net.sf.chellow.physical import Pc
 
 pc_id = inv.getLong('pc-id')
-pc = ProfileClass.getProfileClass(pc_id)
+pc = Pc.getPc(pc_id)
 source.appendChild(pc.toXml(doc))
 source.appendChild(organization.toXml(doc))

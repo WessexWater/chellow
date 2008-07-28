@@ -102,7 +102,7 @@
 					<li>
 						<a
 							href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/30/screen/output/">
-							Meter Timeswitches
+							Meter Timeswitch Classes
 						</a>
 					</li>
 					<li>

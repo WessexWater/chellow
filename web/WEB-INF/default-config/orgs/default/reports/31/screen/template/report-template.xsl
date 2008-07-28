@@ -12,25 +12,24 @@
 					href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/9/stream/output/" />
 
 				<title>
-					<xsl:value-of select="/source/org/@name"/> &gt; Meter Timeswitches &gt;
-					<xsl:value-of
-						select="/source/meter-timeswitch/@code" />
+					<xsl:value-of select="/source/org/@name" />
+					&gt; MTCs &gt;
+					<xsl:value-of select="/source/mtc/@code" />
 				</title>
 			</head>
 			<body>
 				<p>
 					<a
 						href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/0/screen/output/">
-						<xsl:value-of select="/source/org/@name"/>
+						<xsl:value-of select="/source/org/@name" />
 					</a>
 					&gt;
 					<a
 						href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/30/screen/output/">
-						<xsl:value-of select="'Meter Timeswitches'" />
+						<xsl:value-of select="'MTCs'" />
 					</a>
 					&gt;
-					<xsl:value-of
-						select="/source/meter-timeswitch/@code" />
+					<xsl:value-of select="/source/mtc/@code" />
 				</p>
 				<br />
 				<xsl:if test="//message">
@@ -43,36 +42,25 @@
 					</ul>
 				</xsl:if>
 				<table>
-					<caption>Properties</caption>
-					<thead>
-						<tr>
-							<th>Name</th>
-							<th>Value</th>
-						</tr>
-					</thead>
-					<tbody>
-						<tr>
-							<td>Id</td>
-							<td>
-								<xsl:value-of
-									select="/source/meter-timeswitch/@id" />
-							</td>
-						</tr>
-						<tr>
-							<td>Code</td>
-							<td>
-								<xsl:value-of
-									select="/source/meter-timeswitch/@code" />
-							</td>
-						</tr>
-						<tr>
-							<td>Description</td>
-							<td>
-								<xsl:value-of
-									select="/source/meter-timeswitch/@description" />
-							</td>
-						</tr>
-					</tbody>
+					<tr>
+						<th>Chellow Id</th>
+						<td>
+							<xsl:value-of select="/source/mtc/@id" />
+						</td>
+					</tr>
+					<tr>
+						<th>Code</th>
+						<td>
+							<xsl:value-of select="/source/mtc/@code" />
+						</td>
+					</tr>
+					<tr>
+						<th>Description</th>
+						<td>
+							<xsl:value-of
+								select="/source/mtc/@description" />
+						</td>
+					</tr>
 				</table>
 			</body>
 		</html>

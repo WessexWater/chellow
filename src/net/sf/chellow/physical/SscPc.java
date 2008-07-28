@@ -142,11 +142,13 @@ public class SscPc extends PersistentEntity {
 					DateFormat.SHORT, DateFormat.SHORT, Locale.UK);
 			for (String[] values = parser.getLine(); values != null; values = parser
 					.getLine()) {
-				Hiber.session().save(
-						new SscPc(Ssc.getSsc(values[0]), Pc
-								.getPc(Integer.parseInt(values[1])),
-								dateFormat.parse(values[2]), dateFormat
-										.parse(values[3])));
+				Hiber.session()
+						.save(
+								new SscPc(Ssc.getSsc(values[0]), Pc
+										.getPc(new PcCode(Integer
+												.parseInt(values[1]))),
+										dateFormat.parse(values[2]), dateFormat
+												.parse(values[3])));
 			}
 		} catch (UnsupportedEncodingException e) {
 			throw new InternalException(e);

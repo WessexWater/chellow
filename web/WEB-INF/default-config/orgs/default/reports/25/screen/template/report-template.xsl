@@ -9,38 +9,41 @@
 		<html>
 			<head>
 				<link rel="stylesheet" type="text/css"
-					href="{/source/request/@context-path}/orgs/1/reports/9/stream/output/" />
+					href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/9/stream/output/" />
 
 				<title>
-					<xsl:value-of select="/source/org/@name" /> &gt; DSOs &gt;
-					<xsl:value-of select="/source/llf/dso/@code" />
-					&gt; Line Loss Factors &gt;
-					<xsl:value-of select="/source/llf/@code" />
+					<xsl:value-of select="/source/org/@name" />
+					&gt; Providers &gt;
+					<xsl:value-of
+						select="/source/llfc/provider/@dso-code" />
+					&gt; LLFCs &gt;
+					<xsl:value-of select="/source/llfc/@code" />
 				</title>
 			</head>
 			<body>
 				<p>
 					<a
-						href="{/source/request/@context-path}/orgs/1/reports/0/screen/output/">
+						href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/0/screen/output/">
 						<xsl:value-of select="/source/org/@name" />
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/orgs/1/reports/22/screen/output/">
-						<xsl:value-of select="'DSOs'"/>
+						href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/22/screen/output/">
+						<xsl:value-of select="'Providers'" />
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/orgs/1/reports/23/screen/output/?dso-id={/source/llf/dso/@id}">
-						<xsl:value-of select="/source/llf/dso/@code" />
+						href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/23/screen/output/?provider-id={/source/llfc/provider/@id}">
+						<xsl:value-of
+							select="/source/llfc/provider/@dso-code" />
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/orgs/1/reports/24/screen/output/?dso-id={/source/llf/dso/@id}">
-						<xsl:value-of select="'Line Loss Factors'" />
+						href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/24/screen/output/?dso-id={/source/llfc/provider/@id}">
+						<xsl:value-of select="'LLFCs'" />
 					</a>
 					&gt;
-					<xsl:value-of select="/source/llf/@code" />
+					<xsl:value-of select="/source/llfc/@code" />
 				</p>
 				<br />
 				<xsl:if test="//message">
@@ -53,55 +56,47 @@
 					</ul>
 				</xsl:if>
 				<table>
-					<caption>Properties</caption>
-					<thead>
-						<tr>
-							<th>Name</th>
-							<th>Value</th>
-						</tr>
-					</thead>
-					<tbody>
-						<tr>
-							<td>Id</td>
-							<td>
-								<xsl:value-of select="/source/llf/@id" />
-							</td>
-						</tr>
-						<tr>
-							<td>Code</td>
-							<td>
-								<xsl:value-of
-									select="/source/llf/@code" />
-							</td>
-						</tr>
-						<tr>
-							<td>Description</td>
-							<td>
-								<xsl:value-of select="/source/llf/@description" />
-							</td>
+					<tr>
+						<th>Chellow Id</th>
+						<td>
+							<xsl:value-of select="/source/llfc/@id" />
+						</td>
+					</tr>
+					<tr>
+						<th>Code</th>
+						<td>
+							<xsl:value-of select="/source/llfc/@code" />
+						</td>
+					</tr>
+					<tr>
+						<th>Description</th>
+						<td>
+							<xsl:value-of
+								select="/source/llfc/@description" />
+						</td>
 
-						</tr>
-						<tr>
-							<td>Voltage Level</td>
-							<td>
-								<xsl:value-of
-									select="concat(/source/llf/voltage-level/@code, ' - ', /source/llf/voltage-level/@name)" />
-							</td>
-						</tr>
-						<tr>
-							<td>Is Substation?</td>
-							<td>
-								<xsl:value-of
-									select="/source/llf/@is-substation" />
-							</td>
-						</tr>
-						<tr>
-							<td>Is Import?</td>
-							<td>
-								<xsl:value-of select="/source/llf/@is-import" />
-							</td>
-						</tr>
-					</tbody>
+					</tr>
+					<tr>
+						<th>Voltage Level</th>
+						<td>
+							<xsl:value-of
+								select="concat(/source/llfc/voltage-level/@code, ' - ', /source/llfc/voltage-level/@name)" />
+						</td>
+					</tr>
+					<tr>
+						<th>Is Substation?</th>
+						<td>
+							<xsl:value-of
+								select="/source/llfc/@is-substation" />
+						</td>
+					</tr>
+					<tr>
+						<th>Is Import?</th>
+						<td>
+							<xsl:value-of
+								select="/source/llfc/@is-import" />
+						</td>
+					</tr>
 				</table>
 			</body>
 		</html>

@@ -9,9 +9,9 @@
 		<html>
 			<head>
 				<link rel="stylesheet" type="text/css"
-					href="{/source/request/@context-path}/orgs/1/reports/9/stream/output/" />
+					href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/9/stream/output/" />
 
-				<title>Chellow &gt; Meter Timeswitches</title>
+				<title>Chellow &gt; MTCs</title>
 			</head>
 			<body>
 				<p>
@@ -19,7 +19,7 @@
 						href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/0/screen/output/">
 						<xsl:value-of select="/source/org/@name"/>
 					</a>
-					&gt; Meter Timeswitches
+					&gt; MTCs
 				</p>
 				<br />
 				<xsl:if test="//message">
@@ -34,7 +34,7 @@
 				<table>
 					<thead>
 						<tr>
-							<th>Id</th>
+							<th>Chellow Id</th>
 							<th>Code</th>
 							<th>Dso</th>
 							<th>Description</th>
@@ -44,11 +44,11 @@
 					<tbody>
 
 						<xsl:for-each
-							select="/source/mtcs/meter-timeswitch">
+							select="/source/mtcs/mtc">
 							<tr>
 								<td>
 									<a
-										href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/31/screen/output/?mt-id={@id}">
+										href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/31/screen/output/?mtc-id={@id}">
 										<xsl:value-of select="@id" />
 									</a>
 								</td>
@@ -57,11 +57,11 @@
 								</td>
 								<td>
 									<xsl:choose>
-										<xsl:when test="dso">
+										<xsl:when test="provider">
 											<a
-												href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/23/screen/output/?dso-id={dso/@id}">
+												href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/23/screen/output/?provider-id={provider/@id}">
 												<xsl:value-of
-													select="dso/@code" />
+													select="provider/@dso-code" />
 											</a>
 										</xsl:when>
 										<xsl:otherwise>

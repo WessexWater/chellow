@@ -50,10 +50,11 @@ public class Pc extends PersistentEntity {
 		return pc;
 	}
 
+	/*
 	static public Pc getPc(int code) throws HttpException {
 		return getPc(new PcCode(code));
 	}
-
+*/
 	static public Pc getPc(PcCode code) throws HttpException {
 		Pc profileClass = findPc(code);
 		if (profileClass == null) {

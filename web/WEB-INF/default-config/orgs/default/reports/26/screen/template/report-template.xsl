@@ -9,14 +9,14 @@
 		<html>
 			<head>
 				<link rel="stylesheet" type="text/css"
-					href="{/source/request/@context-path}/orgs/1/reports/9/stream/output/" />
+					href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/9/stream/output/" />
 
 				<title><xsl:value-of select="/source/org/@name" /> &gt; Profile Classes</title>
 			</head>
 			<body>
 				<p>
 					<a
-						href="{/source/request/@context-path}/orgs/1/reports/0/screen/output/">
+						href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/0/screen/output/">
 						<xsl:value-of select="/source/org/@name" />
 					</a>
 					&gt; Profile Classes
@@ -34,18 +34,18 @@
 				<table>
 					<thead>
 						<tr>
-							<th>Id</th>
+							<th>Chellow Id</th>
 							<th>Code</th>
 							<th>Description</th>
 						</tr>
 					</thead>
 					<tbody>
 						<xsl:for-each
-							select="/source/pcs/profile-class">
+							select="/source/pcs/pc">
 							<tr>
 								<td>
 									<a
-										href="{/source/request/@context-path}/orgs/1/reports/27/screen/output/?pc-id={@id}">
+										href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/27/screen/output/?pc-id={@id}">
 										<xsl:value-of select="@id" />
 									</a>
 								</td>
@@ -63,4 +63,3 @@
 		</html>
 	</xsl:template>
 </xsl:stylesheet>
-

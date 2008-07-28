@@ -158,13 +158,13 @@
 					<ul>
 						<li>
 							<a
-								href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/24/screen/output/?dso-id={/source/dso/@id}">
+								href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/24/screen/output/?dso-id={/source/provider/@id}">
 								Line Loss Factors
 							</a>
 						</li>
 						<li>
 							<a
-								href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/28/screen/output/?dso-id={/source/dso/@id}">
+								href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/28/screen/output/?dso-id={/source/provider/@id}">
 								MPAN top lines
 							</a>
 						</li>

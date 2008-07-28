@@ -9,26 +9,27 @@
 		<html>
 			<head>
 				<link rel="stylesheet" type="text/css"
-					href="{/source/request/@context-path}/orgs/1/reports/9/stream/output/" />
+					href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/9/stream/output/" />
 
 				<title>
-					<xsl:value-of select="/source/org/@name" /> &gt; Profile Classes &gt;
-					<xsl:value-of select="/source/profile-class/@code" />
+					<xsl:value-of select="/source/org/@name" />
+					&gt; Profile Classes &gt;
+					<xsl:value-of select="/source/pc/@code" />
 				</title>
 			</head>
 			<body>
 				<p>
 					<a
-						href="{/source/request/@context-path}/orgs/1/reports/0/screen/output/">
+						href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/0/screen/output/">
 						<xsl:value-of select="/source/org/@name" />
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/orgs/1/reports/26/screen/output/">
-						<xsl:value-of select="'Profile Classes'"/>
+						href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/26/screen/output/">
+						<xsl:value-of select="'Profile Classes'" />
 					</a>
 					&gt;
-					<xsl:value-of select="/source/profile-class/@code" />
+					<xsl:value-of select="/source/pc/@code" />
 				</p>
 				<br />
 				<xsl:if test="//message">
@@ -41,35 +42,25 @@
 					</ul>
 				</xsl:if>
 				<table>
-					<caption>Properties</caption>
-					<thead>
-						<tr>
-							<th>Name</th>
-							<th>Value</th>
-						</tr>
-					</thead>
-					<tbody>
-						<tr>
-							<td>Id</td>
-							<td>
-								<xsl:value-of select="/source/profile-class/@id" />
-							</td>
-						</tr>
-						<tr>
-							<td>Code</td>
-							<td>
-								<xsl:value-of
-									select="/source/profile-class/@code" />
-							</td>
-						</tr>
-						<tr>
-							<td>Description</td>
-							<td>
-								<xsl:value-of select="/source/profile-class/@description" />
-							</td>
-
-						</tr>
-					</tbody>
+					<tr>
+						<th>Chellow Id</th>
+						<td>
+							<xsl:value-of select="/source/pc/@id" />
+						</td>
+					</tr>
+					<tr>
+						<th>Code</th>
+						<td>
+							<xsl:value-of select="/source/pc/@code" />
+						</td>
+					</tr>
+					<tr>
+						<th>Description</th>
+						<td>
+							<xsl:value-of
+								select="/source/pc/@description" />
+						</td>
+					</tr>
 				</table>
 			</body>
 		</html>

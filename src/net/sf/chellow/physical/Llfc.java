@@ -47,12 +47,12 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
 public class Llfc extends PersistentEntity {
-	static public Llfc getLlf(Long id) throws HttpException {
-		Llfc llf = (Llfc) Hiber.session().get(Llfc.class, id);
-		if (llf == null) {
+	static public Llfc getLlfc(Long id) throws HttpException {
+		Llfc llfc = (Llfc) Hiber.session().get(Llfc.class, id);
+		if (llfc == null) {
 			throw new UserException("There is no LLFC with that id.");
 		}
-		return llf;
+		return llfc;
 	}
 
 	@SuppressWarnings("unchecked")

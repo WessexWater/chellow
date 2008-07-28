@@ -1,8 +1,8 @@
 from net.sf.chellow.monad import Hiber, XmlTree
-from net.sf.chellow.physical import Llf
+from net.sf.chellow.physical import Llfc
 
-llf_id = inv.getLong('llf-id')
-llf = Llf.getLlf(llf_id)
-source.appendChild(llf.toXml(doc, XmlTree('dso').put('voltageLevel')))
+llfc_id = inv.getLong('llfc-id')
+llfc = Llfc.getLlfc(llfc_id)
+source.appendChild(llfc.toXml(doc, XmlTree('dso').put('voltageLevel')))
 source.appendChild(organization.toXml(doc))
 

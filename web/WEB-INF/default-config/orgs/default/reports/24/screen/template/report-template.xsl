@@ -9,31 +9,34 @@
 		<html>
 			<head>
 				<link rel="stylesheet" type="text/css"
-					href="{/source/request/@context-path}/orgs/1/reports/9/stream/output/" />
+					href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/9/stream/output/" />
 
 				<title>
-					<xsl:value-of select="/source/org/@name" /> &gt; DSOs &gt;
-					<xsl:value-of select="/source/llfs/dso/@code" />
-					&gt; Line Loss Factors
+					<xsl:value-of select="/source/org/@name" />
+					&gt; Providers &gt;
+					<xsl:value-of
+						select="/source/llfs/provider/@dso-code" />
+					&gt; LLFCs
 				</title>
 			</head>
 			<body>
 				<p>
 					<a
-						href="{/source/request/@context-path}/orgs/1/reports/0/screen/output/">
+						href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/0/screen/output/">
 						<xsl:value-of select="/source/org/@name" />
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/orgs/1/reports/22/screen/output/">
-						DSOs
+						href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/22/screen/output/">
+						Providers
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/orgs/1/reports/23/screen/output/?dso-id={/source/llfs/dso/@id}">
-						<xsl:value-of select="/source/llfs/dso/@code" />
+						href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/23/screen/output/?provider-id={/source/llfcs/provider/@id}">
+						<xsl:value-of
+							select="/source/llfcs/provider/@dso-code" />
 					</a>
-					&gt; Line Loss Factors
+					&gt; LLFCs
 				</p>
 				<br />
 				<xsl:if test="//message">
@@ -48,7 +51,7 @@
 				<table>
 					<thead>
 						<tr>
-							<th>Id</th>
+							<th>Chellow Id</th>
 							<th>Code</th>
 							<th>Description</th>
 							<th>Voltage Level</th>
@@ -57,11 +60,11 @@
 						</tr>
 					</thead>
 					<tbody>
-						<xsl:for-each
-							select="/source/llfs/llf">
+						<xsl:for-each select="/source/llfcs/llfc">
 							<tr>
 								<td>
-									<a href="{/source/request/@context-path}/orgs/1/reports/25/screen/output/?llf-id={@id}">
+									<a
+										href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/25/screen/output/?llfc-id={@id}">
 										<xsl:value-of select="@id" />
 									</a>
 								</td>
@@ -76,11 +79,26 @@
 										select="concat(voltage-level/@code, ' - ', voltage-level/@name)" />
 								</td>
 								<td>
-									<xsl:value-of
-										select="@is-substation" />
+									<xsl:choose>
+										<xsl:when
+											test="@is-substation='true'">
+											Has Substation
+										</xsl:when>
+										<xsl:otherwise>
+											No Substation
+										</xsl:otherwise>
+									</xsl:choose>
 								</td>
 								<td>
-									<xsl:value-of select="@is-import" />
+									<xsl:choose>
+										<xsl:when
+											test="@is-import='true'">
+											Import
+										</xsl:when>
+										<xsl:otherwise>
+											Export
+										</xsl:otherwise>
+									</xsl:choose>
 								</td>
 							</tr>
 						</xsl:for-each>
@@ -90,4 +108,3 @@
 		</html>
 	</xsl:template>
 </xsl:stylesheet>
-

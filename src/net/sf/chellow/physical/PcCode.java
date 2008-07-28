@@ -64,13 +64,11 @@ public class PcCode extends MonadInteger {
 		init();
 	}
 
-	public PcCode(int code) throws HttpException,
-			InternalException {
+	public PcCode(int code) throws HttpException {
 		this(null, code);
 	}
 
-	public PcCode(String label, int code) throws HttpException,
-			InternalException {
+	public PcCode(String label, int code) throws HttpException {
 		init();
 		setLabel(label);
 		update(code);
