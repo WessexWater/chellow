@@ -168,6 +168,7 @@ public class Ssc extends PersistentEntity {
 		Element element = super.toXml(doc, "ssc");
 
 		element.setAttribute("code", code);
+		element.setAttribute("is-import", Boolean.toString(isImport));
 		element.setAttribute("description", description);
 		MonadDate fromDate = new MonadDate(validFrom);
 		fromDate.setLabel("from");

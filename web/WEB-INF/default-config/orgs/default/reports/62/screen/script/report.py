@@ -1,7 +1,7 @@
 from net.sf.chellow.monad import Hiber, XmlTree
 
-roles_element = doc.createElement('roles')
-source.appendChild(roles_element)
-for role in Hiber.session().createQuery("from MarketRole role order by role.code").list():
-    roles_element.appendChild(role.toXml(doc))
-roles_element.appendChild(organization.toXml(doc))
+sscs_element = doc.createElement('sscs')
+source.appendChild(sscs_element)
+for ssc in Hiber.session().createQuery("from Ssc ssc order by ssc.code").list():
+    sscs_element.appendChild(ssc.toXml(doc, XmlTree("measurementRequirements", XmlTree("tpr"))))
+source.appendChild(organization.toXml(doc))

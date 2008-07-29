@@ -111,6 +111,13 @@
 							TPRs
 						</a>
 					</li>
+										<li>
+						<a
+							href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/62/screen/output/">
+							SSCs
+						</a>
+					</li>
+					
 				</ul>
 			</body>
 		</html>

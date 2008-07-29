@@ -97,8 +97,20 @@
 										select="concat(' ', llfc/@description)" />
 								</td>
 								<td>
-									<xsl:value-of
-										select="concat(ssc/@code, ' - ', ssc/@description)" />
+									<xsl:choose>
+										<xsl:when test="ssc">
+											<a
+												href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/63/screen/output/?ssc-id={ssc/@id}">
+												<xsl:value-of
+													select="ssc/@code" />
+											</a>
+											<xsl:value-of
+												select="concat(' ', ssc/@description)" />
+										</xsl:when>
+										<xsl:otherwise>
+											N/A
+										</xsl:otherwise>
+									</xsl:choose>
 								</td>
 								<td>
 									<xsl:value-of
