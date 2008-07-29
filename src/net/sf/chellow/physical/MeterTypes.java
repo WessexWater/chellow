@@ -4,7 +4,6 @@ import java.util.List;
 
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
-import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Invocation;
 import net.sf.chellow.monad.MonadUtils;
 import net.sf.chellow.monad.Urlable;
@@ -33,7 +32,7 @@ public class MeterTypes implements Urlable {
 		return URI_ID;
 	}
 
-	public MonadUri getUri() throws InternalException, HttpException {
+	public MonadUri getUri() throws HttpException {
 		return Chellow.getUrlableRoot().getUri().resolve(getUrlId())
 				.append("/");
 	}

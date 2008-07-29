@@ -109,7 +109,7 @@
 						</td>
 					</tr>
 					<tr>
-						<th>HH / NHH</th>
+						<th>Measurement Class</th>
 						<td>
 							<xsl:choose>
 								<xsl:when test="/source/mtc/@is-hh">
@@ -131,7 +131,7 @@
 						<th>Meter Type</th>
 						<td>
 							<a
-								href="{/source/request/@context-path}/meter-types/{/source/mtc/meter-type/@id}/">
+								href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/65/stream/output/?type-id={/source/mtc/meter-type/@id}">
 								<xsl:value-of
 									select="/source/mtc/meter-type/@description" />
 							</a>
@@ -141,7 +141,7 @@
 						<th>Payment Type</th>
 						<td>
 							<a
-								href="{/source/request/@context-path}/meter-payment-types/{/source/mtc/meter-payment-type/@id}/">
+								href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/67/stream/output/?type-id={/source/mtc/meter-payment-type/@id}">
 								<xsl:value-of
 									select="/source/mtc/meter-payment-type/@description" />
 							</a>
@@ -156,7 +156,7 @@
 									<xsl:value-of
 										select="/source/mtc/@tpr-count" />
 								</xsl:when>
-								<xsl:otherwise>N / A</xsl:otherwise>
+								<xsl:otherwise>N/A</xsl:otherwise>
 							</xsl:choose>
 						</td>
 					</tr>

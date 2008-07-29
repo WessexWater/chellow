@@ -105,6 +105,13 @@
 							Meter Timeswitch Classes
 						</a>
 					</li>
+										<li>
+						<a
+							href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/64/screen/output/">
+							Meter Types
+						</a>
+					</li>
+					
 					<li>
 						<a
 							href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/47/screen/output/">
