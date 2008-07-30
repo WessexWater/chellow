@@ -67,8 +67,6 @@ public abstract class Service extends PersistentEntity implements
 		return contract;
 	}
 
-	private Provider provider;
-
 	private String name;
 
 	private RateScript startRateScript;
@@ -82,9 +80,8 @@ public abstract class Service extends PersistentEntity implements
 	public Service() {
 	}
 
-	public Service(Provider provider, String name, HhEndDate startDate,
+	public Service(String name, HhEndDate startDate,
 			String chargeScript) throws HttpException {
-		setProvider(provider);
 		rateScripts = new HashSet<RateScript>();
 		RateScript rateScript = new RateScript(this, startDate, null,
 				chargeScript);
@@ -92,14 +89,6 @@ public abstract class Service extends PersistentEntity implements
 		setStartRateScript(rateScript);
 		setFinishRateScript(rateScript);
 		internalUpdate(name, chargeScript);
-	}
-
-	public Provider getProvider() {
-		return provider;
-	}
-
-	void setProvider(Provider provider) {
-		this.provider = provider;
 	}
 
 	public String getName() {

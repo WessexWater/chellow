@@ -4,7 +4,6 @@ import java.util.Date;
 
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
-import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.NotFoundException;
 import net.sf.chellow.monad.Urlable;
 import net.sf.chellow.monad.UserException;
@@ -22,8 +21,19 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 public class Dso extends Party {
-	static public Provider getDso(DsoCode code) throws HttpException {
-		Provider dso = findDso(code.getString());
+	static public Dso getDso(Participant participant) throws HttpException {
+		Dso dso = (Dso) Hiber.session().createQuery(
+				"from Dso dso where dso.participant = :participant").setEntity(
+				"participant", participant).uniqueResult();
+		if (dso == null) {
+			throw new UserException("There is no DSO with the participant '"
+					+ participant.getCode() + "'.");
+		}
+		return dso;
+	}
+
+	static public Dso getDso(DsoCode code) throws HttpException {
+		Dso dso = findDso(code.getString());
 		if (dso == null) {
 			throw new UserException("There is no DSO with the code '" + code
 					+ "'.");
@@ -31,10 +41,10 @@ public class Dso extends Party {
 		return dso;
 	}
 
-	static public Provider findDso(String code) throws HttpException {
-		return (Provider) Hiber.session().createQuery(
-				"from Provider provider where provider.dsoCode.string = :code")
-				.setString("code", code).uniqueResult();
+	static public Dso findDso(String code) throws HttpException {
+		return (Dso) Hiber.session().createQuery(
+				"from Dso dso where dso.code.string = :code").setString("code",
+				code).uniqueResult();
 	}
 
 	private DsoCode code;
@@ -64,14 +74,15 @@ public class Dso extends Party {
 		}
 		return element;
 	}
-	
+
 	public Llfc getLlfc(LlfcCode llfcCode, Date date) throws HttpException {
 		Llfc llfc = (Llfc) Hiber
 				.session()
 				.createQuery(
 						"from Llfc llfc where llfc.dso = :dso and llfc.code = :code and llfc.validFrom <= :date and (llfc.validTo is null or llfc.validTo >= :date)")
-				.setEntity("dso", this).setInteger("code", llfcCode.getInteger())
-				.setTimestamp("date", date).uniqueResult();
+				.setEntity("dso", this).setInteger("code",
+						llfcCode.getInteger()).setTimestamp("date", date)
+				.uniqueResult();
 		if (llfc == null) {
 			throw new UserException(
 					"There is no line loss factor with the code " + llfcCode
@@ -95,13 +106,14 @@ public class Dso extends Party {
 		}
 		return llfc;
 	}
+
 	public DsoServices servicesInstance() {
 		return new DsoServices(this);
 	}
-	
+
 	public DsoService insertService(String name, HhEndDate startDate,
 			String chargeScript) throws HttpException {
-		DsoService service = findDsoService(name);
+		DsoService service = findService(name);
 		if (service == null) {
 			service = new DsoService(this, name, startDate, chargeScript);
 		} else {
@@ -112,14 +124,15 @@ public class Dso extends Party {
 		Hiber.flush();
 		return service;
 	}
+
 	public DsoService findService(String name) throws HttpException {
-return (DsoService) Hiber
-		.session()
-		.createQuery(
-				"from DsoService service where service.provider = :provider and service.name = :serviceName")
-		.setEntity("provider", this).setString("serviceName", name)
-		.uniqueResult();
-}
+		return (DsoService) Hiber
+				.session()
+				.createQuery(
+						"from DsoService service where service.provider = :provider and service.name = :serviceName")
+				.setEntity("provider", this).setString("serviceName", name)
+				.uniqueResult();
+	}
 
 	@Override
 	public Urlable getChild(UriPathElement uriId) throws HttpException {

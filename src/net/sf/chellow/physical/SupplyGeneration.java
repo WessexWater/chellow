@@ -29,10 +29,10 @@ import java.util.List;
 import java.util.Set;
 
 import net.sf.chellow.billing.Account;
+import net.sf.chellow.billing.Dso;
 import net.sf.chellow.billing.HhdcContract;
 import net.sf.chellow.billing.Invoice;
 import net.sf.chellow.billing.InvoiceMpan;
-import net.sf.chellow.billing.Provider;
 import net.sf.chellow.billing.SupplierContract;
 import net.sf.chellow.monad.DeployerException;
 import net.sf.chellow.monad.DesignerException;
@@ -56,12 +56,12 @@ import org.w3c.dom.Element;
 
 public class SupplyGeneration extends PersistentEntity implements Urlable {
 	static public SupplyGeneration getSupplyGeneration(MonadLong id)
-			throws InternalException, HttpException {
+			throws HttpException {
 		return getSupplyGeneration(id.getLong());
 	}
 
 	static public SupplyGeneration getSupplyGeneration(Long id)
-			throws InternalException, HttpException {
+			throws HttpException {
 		try {
 			SupplyGeneration supplyGeneration = (SupplyGeneration) Hiber
 					.session().get(SupplyGeneration.class, id);
@@ -96,7 +96,7 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 	SupplyGeneration(Supply supply, HhEndDate startDate, HhEndDate finishDate,
 			Meter meter) throws HttpException {
 		setChannels(new HashSet<Channel>());
-		this.supply = supply;
+		setSupply(supply);
 		setSiteSupplyGenerations(new HashSet<SiteSupplyGeneration>());
 		setMpans(new HashSet<Mpan>());
 		intrinsicUpdate(startDate, finishDate, meter);
@@ -160,8 +160,8 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 	}
 
 
-	public Provider getDso() {
-		Provider dso = null;
+	public Dso getDso() {
+		Dso dso = null;
 		if (getImportMpan() != null) {
 			dso = getImportMpan().getMpanCore().getDso();
 		}
@@ -176,7 +176,7 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 	}
 
 	public void attachSite(Site site, boolean isLocation)
-			throws InternalException, HttpException {
+			throws HttpException {
 		boolean alreadyThere = false;
 		for (SiteSupplyGeneration siteSupplyGeneration : siteSupplyGenerations) {
 			if (siteSupplyGeneration.getSite().equals(site)) {
@@ -198,7 +198,7 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 		}
 	}
 
-	public void detachSite(Site site) throws HttpException, InternalException {
+	public void detachSite(Site site) throws HttpException {
 		if (siteSupplyGenerations.size() < 2) {
 			throw new UserException(
 					"A supply has to be attached to at least one site.");
@@ -229,8 +229,7 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 			Account exportHhdceAccount, Account exportSupplierAccount,
 			boolean exportHasImportKwh, boolean exportHasImportKvarh,
 			boolean exportHasExportKwh, boolean exportHasExportKvarh,
-			Integer exportAgreedSupplyCapacity) throws InternalException,
-			HttpException, DesignerException {
+			Integer exportAgreedSupplyCapacity) throws HttpException {
 		if (importMpanCore == null && exportMpanCore == null) {
 			throw new UserException(document(),
 					"A supply generation must have at least one MPAN.");
@@ -299,8 +298,8 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 
 		// Check that if settlement MPANs then they're the same DSO.
 		if (importMpanCore != null && exportMpanCore != null) {
-			if (importMpanCore.getDso().getDsoCode().isSettlement()
-					&& exportMpanCore.getDso().getDsoCode().isSettlement()
+			if (importMpanCore.getDso().getCode().isSettlement()
+					&& exportMpanCore.getDso().getCode().isSettlement()
 					&& !importMpanCore.getDso().equals(exportMpanCore.getDso())) {
 				throw new UserException(
 						"Two settlement MPAN generations on the same supply must have the same DSO.");
@@ -311,8 +310,8 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 						"The voltage level indicated by the Line Loss Factor must be the same for both the MPANs.");
 			}
 		}
-		Provider dso = getDso();
-		if (dso != null && dso.getDsoCode().equals(new DsoCode("22"))) {
+		Dso dso = getDso();
+		if (dso != null && dso.getCode().equals(new DsoCode("22"))) {
 			/*
 			 * if (importMpan != null) { LineLossFactorCode code =
 			 * importLineLossFactor.getCode(); if ((code.equals(new
@@ -435,7 +434,7 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 	}
 
 	public void update(HhEndDate startDate, HhEndDate finishDate, Meter meter)
-			throws InternalException, HttpException {
+			throws HttpException {
 		HhEndDate originalStartDate = getStartDate();
 		HhEndDate originalFinishDate = getFinishDate();
 		if (startDate.equals(originalStartDate)
@@ -526,8 +525,7 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 	}
 
 	@SuppressWarnings("unchecked")
-	private Document document() throws InternalException, HttpException,
-			DesignerException {
+	private Document document() throws HttpException {
 		Document doc = MonadUtils.newSourceDocument();
 		Element source = doc.getDocumentElement();
 		Element generationElement = (Element) toXml(doc, new XmlTree(
@@ -594,8 +592,7 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 		mpans.clear();
 	}
 
-	public void httpPost(Invocation inv) throws InternalException,
-			HttpException, DesignerException, DeployerException {
+	public void httpPost(Invocation inv) throws HttpException {
 		if (inv.hasParameter("delete")) {
 			try {
 				supply.deleteGeneration(this);
@@ -658,22 +655,26 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 				if (hasImportMpan) {
 					Long importMpanCoreId = inv.getLong("import-mpan-core-id");
 					importMpanCore = MpanCore.getMpanCore(importMpanCoreId);
-					Long importProfileClassId = inv
-							.getLong("import-profile-class-id");
-					Pc importProfileClass = Pc
-							.getPc(importProfileClassId);
-					LlfcCode importLlfCode = new LlfcCode(inv
+					Long importPcId = inv
+							.getLong("import-pc-id");
+					Pc importPc = Pc
+							.getPc(importPcId);
+					LlfcCode importLlfcCode = new LlfcCode(inv
 							.getInteger("import-llfc-code"));
-					Llfc importLlf = importMpanCore.getDso().getLlfc(
-							importLlfCode);
-					MtcCode importMeterTimeswitchCode = inv
+					Llfc importLlfc = importMpanCore.getDso().getLlfc(
+							importLlfcCode);
+					MtcCode importMtcCode = inv
 							.getValidatable(MtcCode.class,
-									"import-meter-timeswitch-code");
-					Mtc importMeterTimeswitch = Mtc
+									"import-mtc-code");
+					Mtc importMtc = Mtc
 							.getMtc(importMpanCore.getDso(),
-									importMeterTimeswitchCode);
-					importMpanTop = MpanTop.getAnMpanTop(importProfileClass,
-							importMeterTimeswitch, importLlf);
+									importMtcCode);
+					Ssc importSsc = null;
+					if (inv.hasParameter("import-ssc-code")) {
+						importSsc = Ssc.getSsc(inv.getString("import-ssc-code"));
+					}
+					importMpanTop = MpanTop.getMpanTop(importPc,
+							importMtc, importLlfc, importSsc, new Date());
 					importAgreedSupplyCapacity = inv
 							.getInteger("import-agreed-supply-capacity");
 					importHasImportKwh = inv
@@ -717,22 +718,26 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 				if (hasExportMpan) {
 					Long exportMpanCoreId = inv.getLong("export-mpan-core-id");
 					exportMpanCore = MpanCore.getMpanCore(exportMpanCoreId);
-					Long exportProfileClassId = inv
-							.getLong("export-profile-class-id");
-					Pc exportProfileClass = Pc
-							.getPc(exportProfileClassId);
-					LlfcCode exportLlfCode = new LlfcCode(inv
+					Long exportPcId = inv
+							.getLong("export-pc-id");
+					Pc exportPc = Pc
+							.getPc(exportPcId);
+					LlfcCode exportLlfcCode = new LlfcCode(inv
 							.getInteger("export-llfc-code"));
-					Llfc exportLlf = exportMpanCore.getDso().getLlfc(
-							exportLlfCode);
-					MtcCode exportMeterTimeswitchCode = inv
+					Llfc exportLlfc = exportMpanCore.getDso().getLlfc(
+							exportLlfcCode);
+					MtcCode exportMtcCode = inv
 							.getValidatable(MtcCode.class,
-									"export-meter-timeswitch-code");
-					Mtc exportMeterTimeswitch = Mtc
+									"export-mtc-code");
+					Mtc exportMtc = Mtc
 							.getMtc(exportMpanCore.getDso(),
-									exportMeterTimeswitchCode);
-					exportMpanTop = MpanTop.getAnMpanTop(exportProfileClass,
-							exportMeterTimeswitch, exportLlf);
+									exportMtcCode);
+					Ssc exportSsc = null;
+					if (inv.hasParameter("export-ssc-code")) {
+						exportSsc = Ssc.getSsc(inv.getString("export-ssc-code"));
+					}
+					exportMpanTop = MpanTop.getMpanTop(exportPc,
+							exportMtc, exportLlfc, exportSsc, new Date());
 					exportAgreedSupplyCapacity = inv
 							.getInteger("export-agreed-supply-capacity");
 					exportHasImportKwh = inv

@@ -22,6 +22,8 @@
 
 package net.sf.chellow.data08;
 
+import java.util.Date;
+
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.UserException;
@@ -35,6 +37,7 @@ import net.sf.chellow.physical.MpanTop;
 import net.sf.chellow.physical.Organization;
 import net.sf.chellow.physical.Pc;
 import net.sf.chellow.physical.PcCode;
+import net.sf.chellow.physical.Ssc;
 
 import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
@@ -48,7 +51,7 @@ public class MpanRaw extends MonadObject {
 
 	private MpanCoreRaw mpanCoreRaw;
 
-	public MpanRaw(String mpan) throws InternalException, HttpException {
+	public MpanRaw(String mpan) throws HttpException {
 		this(null, mpan);
 	}
 
@@ -111,13 +114,13 @@ public class MpanRaw extends MonadObject {
 		return mpanCoreRaw.getDso().getLlfc(llfcCode);
 	}
 
-	public MpanTop getMpanTop() throws HttpException {
-		return MpanTop.getAnMpanTop(getPc(), getMtc(),
-				getLlfc());
+	public MpanTop getMpanTop(Ssc ssc, Date date) throws HttpException {
+		return MpanTop.getMpanTop(getPc(), getMtc(),
+				getLlfc(), ssc, date);
 	}
 
 	public MpanCore getMpanCore(Organization organization)
-			throws InternalException, HttpException {
+			throws HttpException {
 		return organization.getMpanCore(mpanCoreRaw);
 	}
 

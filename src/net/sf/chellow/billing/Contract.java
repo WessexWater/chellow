@@ -35,6 +35,8 @@ import net.sf.chellow.physical.HhEndDate;
 import net.sf.chellow.physical.Organization;
 
 public abstract class Contract extends Service {
+	private Provider provider;
+	
 	private Organization organization;
 
 	public Contract() {
@@ -42,8 +44,17 @@ public abstract class Contract extends Service {
 
 	public Contract(Provider provider, Organization organization, String name,
 			HhEndDate startDate, String chargeScript) throws HttpException {
-		super(provider, name, startDate, chargeScript);
+		super(name, startDate, chargeScript);
+		setProvider(provider);
 		setOrganization(organization);
+	}
+	
+	public Provider getProvider() {
+		return provider;
+	}
+
+	void setProvider(Provider provider) {
+		this.provider = provider;
 	}
 
 	public Organization getOrganization() {

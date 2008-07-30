@@ -26,7 +26,7 @@ import java.util.Date;
 
 import javax.servlet.ServletContext;
 
-import net.sf.chellow.billing.Provider;
+import net.sf.chellow.billing.Dso;
 import net.sf.chellow.monad.Debug;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
@@ -44,12 +44,12 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
 public class Mtc extends PersistentEntity {
-	static public Mtc getMtc(Provider dso, MtcCode mtcCode)
+	static public Mtc getMtc(Dso dso, MtcCode mtcCode)
 			throws HttpException {
 		return findMtc(dso, mtcCode, true);
 	}
 
-	static public Mtc findMtc(Provider dso, MtcCode mtcCode,
+	static public Mtc findMtc(Dso dso, MtcCode mtcCode,
 			boolean throwException) throws HttpException {
 		dso = mtcCode.hasDso() ? dso : null;
 		Mtc mtc = null;
@@ -69,7 +69,7 @@ public class Mtc extends PersistentEntity {
 		}
 		if (throwException && mtc == null) {
 			throw new UserException("There isn't a meter timeswitch with DSO '"
-					+ (dso == null ? dso : dso.getDsoCode())
+					+ (dso == null ? dso : dso.getCode())
 					+ "' and Meter Timeswitch Code '" + mtcCode + "'");
 		}
 		return mtc;
@@ -84,7 +84,7 @@ public class Mtc extends PersistentEntity {
 		return mtc;
 	}
 
-	static public Mtc insertMtc(Provider dso, MtcCode code, String description,
+	static public Mtc insertMtc(Dso dso, MtcCode code, String description,
 			boolean hasRelatedMetering, Boolean hasComms, Boolean isHh,
 			MeterType meterType, MeterPaymentType paymentType, Integer tprCount,
 			Date from, Date to) throws HttpException {
@@ -152,8 +152,7 @@ public class Mtc extends PersistentEntity {
 				.getLine()) {
 			MtcCode code = new MtcCode(values[0]);
 			if (code.hasDso()) {
-				Provider dso = Provider.getProvider(values[2],
-						MarketRole.DISTRIBUTOR);
+				Dso dso = Dso.getDso(Participant.getParticipant(values[2]));
 				String description = values[5];
 				Boolean hasComms = null;
 				if (values[8].equals("Y")) {
@@ -184,7 +183,7 @@ public class Mtc extends PersistentEntity {
 		Debug.print("Starting to add MTCs.");
 	}
 
-	private Provider dso;
+	private Dso dso;
 
 	private MtcCode code;
 
@@ -202,7 +201,7 @@ public class Mtc extends PersistentEntity {
 	public Mtc() {
 	}
 
-	public Mtc(Provider dso, MtcCode code, String description,
+	public Mtc(Dso dso, MtcCode code, String description,
 			boolean hasRelatedMetering, Boolean hasComms, Boolean isHh,
 			MeterType meterType, MeterPaymentType paymentType, Integer tprCount,
 			Date validFrom, Date validTo) throws HttpException {
@@ -219,11 +218,11 @@ public class Mtc extends PersistentEntity {
 		setValidTo(validTo);
 	}
 
-	void setDso(Provider dso) {
+	void setDso(Dso dso) {
 		this.dso = dso;
 	}
 
-	public Provider getDso() {
+	public Dso getDso() {
 		return dso;
 	}
 
@@ -309,7 +308,7 @@ public class Mtc extends PersistentEntity {
 
 	public String toString() {
 		return code + " - " + description + " (DSO "
-				+ (dso == null ? null : dso.getDsoCode()) + ")";
+				+ (dso == null ? null : dso.getCode()) + ")";
 	}
 
 	public Node toXml(Document doc) throws HttpException {

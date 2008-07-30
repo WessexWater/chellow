@@ -30,7 +30,7 @@ import java.util.Map;
 
 import javax.servlet.ServletContext;
 
-import net.sf.chellow.billing.Provider;
+import net.sf.chellow.billing.Dso;
 import net.sf.chellow.monad.Debug;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
@@ -59,6 +59,7 @@ public class MpanTop extends PersistentEntity {
 
 	static public MpanTop findMpanTop(Pc pc, Mtc mtc, Llfc llfc, Ssc ssc,
 			Date date) throws HttpException {
+		
 		return (MpanTop) Hiber
 				.session()
 				.createQuery(
@@ -80,6 +81,7 @@ public class MpanTop extends PersistentEntity {
 		return mpanTop;
 	}
 
+	/*
 	@SuppressWarnings("unchecked")
 	static public MpanTop getAnMpanTop(Pc pc, Mtc mtc, Llfc llfc)
 			throws HttpException {
@@ -98,7 +100,7 @@ public class MpanTop extends PersistentEntity {
 		}
 		return mpanTops.get(0);
 	}
-
+*/
 	static public void loadFromCsv(ServletContext sc) throws HttpException {
 		Debug.print("Starting to add MPAN tops.");
 		try {
@@ -139,8 +141,7 @@ public class MpanTop extends PersistentEntity {
 
 			for (String[] values = mdd.getLine(); values != null; values = mdd
 					.getLine()) {
-				Provider dso = Provider.getProvider(values[2],
-						MarketRole.DISTRIBUTOR);
+				Dso dso = Dso.getDso(Participant.getParticipant(values[2]));
 				Date validFrom = mdd.toDate(values[7]);
 				Date validTo = mdd.toDate(values[8]);
 				Llfc llfc = dso.getLlfc(new LlfcCode(Integer
@@ -171,8 +172,7 @@ public class MpanTop extends PersistentEntity {
 					"Effective To Settlement Date {VMTCLC}" });
 			for (String[] values = mdd.getLine(); values != null; values = mdd
 					.getLine()) {
-				Provider dso = Provider.getProvider(values[2],
-						MarketRole.DISTRIBUTOR);
+				Dso dso = Dso.getDso(Participant.getParticipant(values[2]));
 				Date validFrom = mdd.toDate(values[5]);
 				Date validTo = mdd.toDate(values[6]);
 				Llfc llfc = dso.getLlfc(new LlfcCode(Integer

@@ -25,7 +25,7 @@ package net.sf.chellow.physical;
 import java.util.HashSet;
 import java.util.Set;
 
-import net.sf.chellow.billing.Provider;
+import net.sf.chellow.billing.Dso;
 import net.sf.chellow.data08.MpanCoreRaw;
 import net.sf.chellow.monad.DeployerException;
 import net.sf.chellow.monad.DesignerException;
@@ -59,7 +59,7 @@ public class MpanCore extends PersistentEntity {
 */
 	private Supply supply;
 
-	private Provider dso;
+	private Dso dso;
 
 	private MpanUniquePart uniquePart;
 
@@ -73,27 +73,24 @@ public class MpanCore extends PersistentEntity {
 	public MpanCore(Supply supply, MpanCoreRaw core)
 			throws 	HttpException {
 		setSupply(supply);
-		Provider importDso = Provider.getDso(core.getDsoCode());
+		Dso importDso = Dso.getDso(core.getDsoCode());
 		setMpans(new HashSet<Mpan>());
 		init(importDso, core.getUniquePart(), core.getCheckDigit());
 	}
 
-	public MpanCore(Provider dso, MpanUniquePart uniquePart, CheckDigit checkDigit)
-			throws InternalException,
-			HttpException {
+	public MpanCore(Dso dso, MpanUniquePart uniquePart, CheckDigit checkDigit)
+			throws HttpException {
 		init(dso, uniquePart, checkDigit);
 	}
 
-	private void init(Provider dso, MpanUniquePart uniquePart, CheckDigit checkDigit)
-			throws InternalException,
-			HttpException {
+	private void init(Dso dso, MpanUniquePart uniquePart, CheckDigit checkDigit)
+			throws HttpException {
 			update(dso, uniquePart, checkDigit);
 	}
 
-	public void update(Provider dso, MpanUniquePart uniquePart, CheckDigit checkDigit)
-			throws
-			InternalException, HttpException {
-		new MpanCoreRaw(dso.getDsoCode(), uniquePart, checkDigit);
+	public void update(Dso dso, MpanUniquePart uniquePart, CheckDigit checkDigit)
+			throws HttpException {
+		new MpanCoreRaw(dso.getCode(), uniquePart, checkDigit);
 		this.dso = dso;
 		this.uniquePart = uniquePart;
 		this.checkDigit = checkDigit;
@@ -107,11 +104,11 @@ public class MpanCore extends PersistentEntity {
 		this.supply = supply;
 	}
 
-	public Provider getDso() {
+	public Dso getDso() {
 		return dso;
 	}
 
-	protected void setDso(Provider dso) {
+	protected void setDso(Dso dso) {
 		this.dso = dso;
 	}
 
@@ -134,7 +131,7 @@ public class MpanCore extends PersistentEntity {
 	}
 
 	public MpanCoreRaw getCore() throws HttpException {
-			MpanCoreRaw core = new MpanCoreRaw(dso.getDsoCode(), uniquePart,
+			MpanCoreRaw core = new MpanCoreRaw(dso.getCode(), uniquePart,
 					checkDigit);
 			core.setLabel("core");
 			return core;

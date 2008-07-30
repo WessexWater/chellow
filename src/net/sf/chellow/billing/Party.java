@@ -38,21 +38,17 @@ import net.sf.chellow.monad.Invocation;
 import net.sf.chellow.monad.MonadUtils;
 import net.sf.chellow.monad.NotFoundException;
 import net.sf.chellow.monad.Urlable;
-import net.sf.chellow.monad.UserException;
 import net.sf.chellow.monad.XmlTree;
 import net.sf.chellow.monad.types.MonadDate;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
 import net.sf.chellow.physical.DsoCode;
 import net.sf.chellow.physical.HhEndDate;
-import net.sf.chellow.physical.Llfc;
-import net.sf.chellow.physical.LlfcCode;
-import net.sf.chellow.physical.Llfcs;
 import net.sf.chellow.physical.MarketRole;
 import net.sf.chellow.physical.Mdd;
-import net.sf.chellow.physical.MpanTops;
 import net.sf.chellow.physical.Participant;
 import net.sf.chellow.physical.PersistentEntity;
+
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -95,7 +91,7 @@ public class Party extends PersistentEntity implements Urlable {
 						while ((c = isr.read()) != -1) {
 							pythonString.write(c);
 						}
-						dsoService = dso.insertDsoService("main",
+						dsoService = dso.insertService("main",
 								new HhEndDate("2000-01-01T00:30Z"),
 								pythonString.toString());
 						RateScript dsoRateScript = dsoService.getRateScripts()
@@ -194,7 +190,7 @@ public class Party extends PersistentEntity implements Urlable {
 		}
 		return element;
 	}
-
+/*
 	public Account getAccount(String accountText) throws HttpException {
 		Account account = (Account) Hiber
 				.session()
@@ -208,7 +204,7 @@ public class Party extends PersistentEntity implements Urlable {
 		}
 		return account;
 	}
-
+*/
 	@SuppressWarnings("unchecked")
 	/*
 	 * abstract public List<SupplyGeneration> supplyGenerations(Account
@@ -219,13 +215,7 @@ public class Party extends PersistentEntity implements Urlable {
 	 */
 	@Override
 	public Urlable getChild(UriPathElement uriId) throws HttpException {
-		if (Llfcs.URI_ID.equals(uriId)) {
-			return new Llfcs(this);
-		} else if (MpanTops.URI_ID.equals(uriId)) {
-			return new MpanTops(this);
-		} else {
 			throw new NotFoundException();
-		}
 	}
 
 	@Override
@@ -253,64 +243,5 @@ public class Party extends PersistentEntity implements Urlable {
 	public void httpPost(Invocation inv) throws HttpException {
 		// TODO Auto-generated method stub
 
-	}
-
-	public DsoService findDsoService(String name) throws HttpException,
-			InternalException {
-		return (DsoService) Hiber
-				.session()
-				.createQuery(
-						"from DsoService service where service.provider = :provider and service.name = :serviceName")
-				.setEntity("provider", this).setString("serviceName", name)
-				.uniqueResult();
-	}
-
-	public DsoService insertDsoService(String name, HhEndDate startDate,
-			String chargeScript) throws HttpException {
-		DsoService service = findDsoService(name);
-		if (service == null) {
-			service = new DsoService(this, name, startDate, chargeScript);
-		} else {
-			throw new UserException(
-					"There is already a DSO service with this name.");
-		}
-		Hiber.session().save(service);
-		Hiber.flush();
-		return service;
-	}
-
-	public DsoServices dsoServicesInstance() {
-		return new DsoServices(this);
-	}
-
-	public Llfc getLlfc(LlfcCode code) throws HttpException {
-		Llfc llfc = (Llfc) Hiber
-				.session()
-				.createQuery(
-						"from Llfc llfc where llfc.dso = :dso and llfc.code = :code and llfc.validTo is null")
-				.setEntity("dso", this).setInteger("code", code.getInteger())
-				.uniqueResult();
-		if (llfc == null) {
-			throw new UserException("There is no ongoing LLFC with the code "
-					+ code + " associated with this DNO.");
-		}
-		return llfc;
-	}
-
-	public Llfc getLlfc(LlfcCode code, Date date) throws HttpException {
-		Llfc llfc = (Llfc) Hiber
-				.session()
-				.createQuery(
-						"from Llfc llfc where llfc.dso = :dso and llfc.code = :code and llfc.validFrom <= :date and (llfc.validTo is null or llfc.validTo >= :date)")
-				.setEntity("dso", this).setInteger("code", code.getInteger())
-				.setTimestamp("date", date).uniqueResult();
-		if (llfc == null) {
-			throw new UserException(
-					"There is no line loss factor with the code " + code
-							+ " associated with the DNO '"
-							+ getDsoCode().toString() + "' for the date "
-							+ date.toString() + ".");
-		}
-		return llfc;
 	}
 }

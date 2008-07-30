@@ -22,7 +22,7 @@
 
 package net.sf.chellow.data08;
 
-import net.sf.chellow.billing.Provider;
+import net.sf.chellow.billing.Dso;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.UserException;
@@ -120,8 +120,8 @@ public class MpanCoreRaw extends MonadObject {
 		  return sum % 11 % 10 == checkDigit;
 		}
 
-	public Provider getDso() throws HttpException {
-		return Provider.getDso(dsoCode);
+	public Dso getDso() throws HttpException {
+		return Dso.getDso(dsoCode);
 	}
 
 	public boolean equals(Object obj) {

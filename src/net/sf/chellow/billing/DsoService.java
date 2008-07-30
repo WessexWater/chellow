@@ -38,7 +38,6 @@ import net.sf.chellow.monad.types.MonadDate;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
 import net.sf.chellow.physical.HhEndDate;
-import net.sf.chellow.physical.MarketRole;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -57,22 +56,30 @@ public class DsoService extends Service {
 			InternalException {
 		return (DsoService) Hiber.session().get(DsoService.class, id);
 	}
+	
+	private Dso dso;
 
 	public DsoService() {
 	}
 
 	public DsoService(Dso dso, String name, HhEndDate startDate,
 			String chargeScript) throws HttpException {
-		super(dso, name, startDate,
+		super(name, startDate,
 				chargeScript);
-		internalUpdate(provider, name, startDate, chargeScript);
+		internalUpdate(dso, name, startDate, chargeScript);
+	}
+	
+	void setDso(Dso dso) {
+		this.dso = dso;
+	}
+	
+	public Dso getDso() {
+		return dso;
 	}
 
-	protected void internalUpdate(Provider provider, String name,
+	protected void internalUpdate(Dso dso, String name,
 			HhEndDate startDate, String chargeScript) throws HttpException {
-		if (provider.getRole().getCode() != MarketRole.DISTRIBUTOR) {
-			throw new UserException("The provider must be a distributor.");
-		}
+		setDso(dso);
 		super.internalUpdate(name, chargeScript);
 	}
 
@@ -110,7 +117,7 @@ public class DsoService extends Service {
 	}
 
 	public MonadUri getUri() throws InternalException, HttpException {
-		return getProvider().dsoServicesInstance().getUri().resolve(getUriId())
+		return dso.servicesInstance().getUri().resolve(getUriId())
 				.append("/");
 	}
 
@@ -124,7 +131,7 @@ public class DsoService extends Service {
 		if (inv.hasParameter("delete")) {
 			delete();
 			Hiber.commit();
-			inv.sendFound(getProvider().dsoServicesInstance().getUri());
+			inv.sendFound(dso.servicesInstance().getUri());
 		} else {
 			String name = inv.getString("name");
 			String chargeScript = inv.getString("charge-script");
@@ -176,7 +183,7 @@ public class DsoService extends Service {
 	}
 
 	public String toString() {
-		return "Service id " + getId() + " " + getProvider() + " name "
+		return "Service id " + getId() + " " + dso + " name "
 				+ getName();
 	}
 

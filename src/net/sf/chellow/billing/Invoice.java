@@ -288,7 +288,7 @@ public class Invoice extends PersistentEntity implements Urlable {
 			if (!inv.isValid()) {
 				throw new UserException(document());
 			}
-			update(batch.getContract().getProvider()
+			update(batch.getContract()
 					.getAccount(accountReference), new DayStartDate(issueDate),
 					new DayStartDate(startDate).getNext(), new DayFinishDate(
 							finishDate), net, vat, status);
