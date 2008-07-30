@@ -86,7 +86,7 @@ public class Mtc extends PersistentEntity {
 
 	static public Mtc insertMtc(Provider dso, MtcCode code, String description,
 			boolean hasRelatedMetering, Boolean hasComms, Boolean isHh,
-			MeterType meterType, MtcPaymentType paymentType, Integer tprCount,
+			MeterType meterType, MeterPaymentType paymentType, Integer tprCount,
 			Date from, Date to) throws HttpException {
 
 		Mtc mtc = new Mtc(dso, code, description, hasRelatedMetering, hasComms,
@@ -129,7 +129,7 @@ public class Mtc extends PersistentEntity {
 				Date validFrom = mdd.toDate(values[1]);
 				Date validTo = mdd.toDate(values[2]);
 				MeterType meterType = MeterType.getMtcMeterType(values[6]);
-				MtcPaymentType paymentType = MtcPaymentType
+				MeterPaymentType paymentType = MeterPaymentType
 						.getMtcPaymentType(values[7]);
 				boolean hasRelatedMetering = values[5].equals("T");
 				Mtc mtc = Mtc.insertMtc(null, code, description,
@@ -172,7 +172,7 @@ public class Mtc extends PersistentEntity {
 				Date validFrom = mdd.toDate(values[3]);
 				Date validTo = mdd.toDate(values[4]);
 				MeterType meterType = MeterType.getMtcMeterType(values[6]);
-				MtcPaymentType paymentType = MtcPaymentType
+				MeterPaymentType paymentType = MeterPaymentType
 						.getMtcPaymentType(values[7]);
 				Mtc mtc = Mtc.insertMtc(dso, code, description, false,
 						hasComms, isHh, meterType, paymentType, tprCount,
@@ -194,7 +194,7 @@ public class Mtc extends PersistentEntity {
 	private Boolean hasComms;
 	private Boolean isHh;
 	private MeterType meterType;
-	private MtcPaymentType paymentType;
+	private MeterPaymentType paymentType;
 	private Integer tprCount;
 	private Date validFrom;
 	private Date validTo;
@@ -204,7 +204,7 @@ public class Mtc extends PersistentEntity {
 
 	public Mtc(Provider dso, MtcCode code, String description,
 			boolean hasRelatedMetering, Boolean hasComms, Boolean isHh,
-			MeterType meterType, MtcPaymentType paymentType, Integer tprCount,
+			MeterType meterType, MeterPaymentType paymentType, Integer tprCount,
 			Date validFrom, Date validTo) throws HttpException {
 		setDso(dso);
 		setCode(code);
@@ -275,11 +275,11 @@ public class Mtc extends PersistentEntity {
 		this.meterType = meterType;
 	}
 
-	public MtcPaymentType getPaymentType() {
+	public MeterPaymentType getPaymentType() {
 		return paymentType;
 	}
 
-	void setPaymentType(MtcPaymentType paymentType) {
+	void setPaymentType(MeterPaymentType paymentType) {
 		this.paymentType = paymentType;
 	}
 

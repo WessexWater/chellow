@@ -26,7 +26,7 @@
 
 <hibernate-mapping
 	package="net.sf.chellow.billing">
-	<joined-subclass extends="Provider" name="Supplier"
+	<joined-subclass extends="Provider" name="MeterOperator"
 		table="supplier" lazy="true">
 		<key column="provider_id" foreign-key="fkey_supplier_provider"/>
 	</joined-subclass>

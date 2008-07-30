@@ -45,7 +45,7 @@
 
 		<many-to-one name="meterType" class="MeterType"
 			column="meter_type_id" foreign-key="fkey_mtc_meter_type" />
-		<many-to-one name="paymentType" class="MtcPaymentType"
+		<many-to-one name="paymentType" class="MeterPaymentType"
 			column="payment_type_id" foreign-key="fkey_mtc_payment_type" />
 		<property type="integer" name="tprCount" column="tpr_count" />
 		<property type="timestamp" name="validFrom" not-null="true">

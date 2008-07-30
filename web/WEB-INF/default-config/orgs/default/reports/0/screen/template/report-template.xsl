@@ -86,7 +86,7 @@
 							Market Roles
 						</a>
 					</li>
-					
+
 					<li>
 						<a
 							href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/22/screen/output/">
@@ -105,26 +105,31 @@
 							Meter Timeswitch Classes
 						</a>
 					</li>
-										<li>
+					<li>
 						<a
 							href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/64/screen/output/">
 							Meter Types
 						</a>
 					</li>
-					
+					<li>
+						<a
+							href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/66/screen/output/">
+							Meter Payment Types
+						</a>
+					</li>
 					<li>
 						<a
 							href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/47/screen/output/">
 							TPRs
 						</a>
 					</li>
-										<li>
+					<li>
 						<a
 							href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/62/screen/output/">
 							SSCs
 						</a>
 					</li>
-					
+
 				</ul>
 			</body>
 		</html>

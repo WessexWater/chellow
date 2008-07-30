@@ -12,7 +12,9 @@
 					href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/9/stream/output/" />
 				<title>
 					<xsl:value-of select="/source/org/@name" />
-					&gt; Meter Payment Types
+					&gt; Meter Payment Types &gt;
+					<xsl:value-of
+						select="/source/meter-payment-type/@description" />
 				</title>
 			</head>
 			<body>
@@ -22,7 +24,13 @@
 						<xsl:value-of select="/source/org/@name" />
 					</a>
 					&gt;
-					<xsl:value-of select="'Meter Payment Types'" />
+					<a
+						href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/66/screen/output/">
+						<xsl:value-of select="'Meter Payment Types'" />
+					</a>
+					&gt;
+					<xsl:value-of
+						select="/source/meter-payment-type/@description" />
 				</p>
 				<br />
 				<xsl:if test="//message">
@@ -35,33 +43,27 @@
 					</ul>
 				</xsl:if>
 				<table>
-					<thead>
-						<tr>
-							<th>Chellow Id</th>
-							<th>Code</th>
-							<th>Description</th>
-						</tr>
-					</thead>
-					<tbody>
-
-						<xsl:for-each
-							select="/source/meter-payment-types/meter-payment-type">
-							<tr>
-								<td>
-									<a
-										href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/67/screen/output/?type-id={@id}">
-										<xsl:value-of select="@id" />
-									</a>
-								</td>
-								<td>
-									<xsl:value-of select="@code" />
-								</td>
-								<td>
-									<xsl:value-of select="@description" />
-								</td>
-							</tr>
-						</xsl:for-each>
-					</tbody>
+					<tr>
+						<th>Chellow Id</th>
+						<td>
+							<xsl:value-of
+								select="/source/meter-payment-type/@id" />
+						</td>
+					</tr>
+					<tr>
+						<th>Code</th>
+						<td>
+							<xsl:value-of
+								select="/source/meter-payment-type/@code" />
+						</td>
+					</tr>
+					<tr>
+						<th>Description</th>
+						<td>
+							<xsl:value-of
+								select="/source/meter-payment-type/@description" />
+						</td>
+					</tr>
 				</table>
 			</body>
 		</html>

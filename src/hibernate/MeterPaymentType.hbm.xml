@@ -25,11 +25,11 @@
 -->
 
 <hibernate-mapping package="net.sf.chellow.physical">
-	<class name="MtcPaymentType" table="mtc_payment_type" lazy="true">
+	<class name="MeterPaymentType" table="meter_payment_type" lazy="true">
 		<id name="id">
 			<generator class="sequence">
 				<param name="sequence">
-					mtc_payment_type_id_sequence
+					meter_payment_type_id_sequence
 				</param>
 			</generator>
 		</id>

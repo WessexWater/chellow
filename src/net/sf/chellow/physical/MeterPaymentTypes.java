@@ -15,7 +15,7 @@ import net.sf.chellow.ui.Chellow;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-public class MtcPaymentTypes implements Urlable {
+public class MeterPaymentTypes implements Urlable {
 	public static final UriPathElement URI_ID;
 
 	static {
@@ -26,7 +26,7 @@ public class MtcPaymentTypes implements Urlable {
 		}
 	}
 
-	public MtcPaymentTypes() {
+	public MeterPaymentTypes() {
 	}
 
 	public UriPathElement getUrlId() {
@@ -44,7 +44,7 @@ public class MtcPaymentTypes implements Urlable {
 		Element source = doc.getDocumentElement();
 		Element paymentTypesElement = doc.createElement("meter-payment-types");
 		source.appendChild(paymentTypesElement);
-		for (MtcPaymentType paymentType : (List<MtcPaymentType>) Hiber
+		for (MeterPaymentType paymentType : (List<MeterPaymentType>) Hiber
 				.session()
 				.createQuery(
 						"from MtcPaymentType paymentType order by paymentType.code")
@@ -58,8 +58,8 @@ public class MtcPaymentTypes implements Urlable {
 		// TODO Auto-generated method stub
 	}
 
-	public MtcPaymentType getChild(UriPathElement uriId) throws HttpException {
-		return MtcPaymentType.getMtcPaymentType(Long.parseLong(uriId.getString()));
+	public MeterPaymentType getChild(UriPathElement uriId) throws HttpException {
+		return MeterPaymentType.getMeterPaymentType(Long.parseLong(uriId.getString()));
 	}
 
 	public void httpDelete(Invocation inv) throws HttpException {

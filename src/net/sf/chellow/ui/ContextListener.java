@@ -40,7 +40,7 @@ import net.sf.chellow.physical.MeasurementRequirement;
 import net.sf.chellow.physical.MpanTop;
 import net.sf.chellow.physical.Mtc;
 import net.sf.chellow.physical.MeterType;
-import net.sf.chellow.physical.MtcPaymentType;
+import net.sf.chellow.physical.MeterPaymentType;
 import net.sf.chellow.physical.Participant;
 import net.sf.chellow.physical.Password;
 import net.sf.chellow.physical.Pc;
@@ -278,7 +278,7 @@ public class ContextListener implements ServletContextListener {
 		VoltageLevel.insertVoltageLevels();
 		Llfc.loadFromCsv(context);
 		MeterType.loadFromCsv(context);
-		MtcPaymentType.loadFromCsv(context);
+		MeterPaymentType.loadFromCsv(context);
 		Mtc.loadFromCsv(context);
 		Tpr.loadFromCsv(context);
 		ClockInterval.loadFromCsv(context);

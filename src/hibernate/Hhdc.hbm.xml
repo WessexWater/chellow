@@ -24,10 +24,11 @@
 	
 -->
 
-<hibernate-mapping package="net.sf.chellow.billing">
-<joined-subclass extends="Party" name="Provider"
-		table="provider" lazy="true">
-		<key column="party_id" foreign-key="fkey_provider_party"/>
+<hibernate-mapping
+	package="net.sf.chellow.billing">
+	<joined-subclass extends="Provider" name="Hhdc"
+		table="hhdc" lazy="true">
+		<key column="provider_id" foreign-key="fkey_hhdc_provider"/>
 	</joined-subclass>
 </hibernate-mapping>
 

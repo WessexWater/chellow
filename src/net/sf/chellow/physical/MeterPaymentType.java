@@ -29,7 +29,6 @@ import javax.servlet.ServletContext;
 import net.sf.chellow.monad.Debug;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
-import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Invocation;
 import net.sf.chellow.monad.MonadUtils;
 import net.sf.chellow.monad.NotFoundException;
@@ -43,29 +42,29 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
-public class MtcPaymentType extends PersistentEntity {
-	static public MtcPaymentType getMtcPaymentType(String code)
+public class MeterPaymentType extends PersistentEntity {
+	static public MeterPaymentType getMtcPaymentType(String code)
 			throws HttpException {
-		MtcPaymentType type = findMtcPaymentType(code);
+		MeterPaymentType type = findMtcPaymentType(code);
 		if (type == null) {
 			throw new NotFoundException();
 		}
 		return type;
 	}
 
-	static public MtcPaymentType findMtcPaymentType(String code)
+	static public MeterPaymentType findMtcPaymentType(String code)
 			throws HttpException {
-		return (MtcPaymentType) Hiber
+		return (MeterPaymentType) Hiber
 				.session()
 				.createQuery(
-						"from MtcPaymentType meterType where meterType.code = :meterPaymentCode")
-				.setString("meterPaymentCode", code).uniqueResult();
+						"from MeterPaymentType type where type.code = :paymentCode")
+				.setString("paymentCode", code).uniqueResult();
 	}
 
-	static public MtcPaymentType getMtcPaymentType(Long id)
+	static public MeterPaymentType getMeterPaymentType(Long id)
 			throws HttpException {
-		MtcPaymentType type = (MtcPaymentType) Hiber.session().get(
-				MtcPaymentType.class, id);
+		MeterPaymentType type = (MeterPaymentType) Hiber.session().get(
+				MeterPaymentType.class, id);
 		if (type == null) {
 			throw new UserException(
 					"There is no meter timeswitch class payment type with that id.");
@@ -82,7 +81,7 @@ public class MtcPaymentType extends PersistentEntity {
 		for (String[] values = mdd.getLine(); values != null; values = mdd
 				.getLine()) {
 			Hiber.session().save(
-					new MtcPaymentType(values[0], values[1], mdd
+					new MeterPaymentType(values[0], values[1], mdd
 							.toDate(values[2]), mdd.toDate(values[3])));
 			Hiber.close();
 		}
@@ -96,10 +95,10 @@ public class MtcPaymentType extends PersistentEntity {
 	private Date validFrom;
 	private Date validTo;
 
-	public MtcPaymentType() {
+	public MeterPaymentType() {
 	}
 
-	public MtcPaymentType(String code, String description, Date validFrom,
+	public MeterPaymentType(String code, String description, Date validFrom,
 			Date validTo) throws HttpException {
 		setCode(code);
 		setDescription(description);
@@ -159,8 +158,7 @@ public class MtcPaymentType extends PersistentEntity {
 		return null;
 	}
 
-	public Urlable getChild(UriPathElement uriId) throws InternalException,
-			HttpException {
+	public Urlable getChild(UriPathElement uriId) throws HttpException {
 		// TODO Auto-generated method stub
 		return null;
 	}

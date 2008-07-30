@@ -24,17 +24,15 @@ package net.sf.chellow.physical;
 
 import java.util.List;
 
-import net.sf.chellow.billing.Provider;
-import net.sf.chellow.monad.DeployerException;
-import net.sf.chellow.monad.DesignerException;
+import net.sf.chellow.billing.Dso;
 import net.sf.chellow.monad.Hiber;
+import net.sf.chellow.monad.HttpException;
+import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Invocation;
 import net.sf.chellow.monad.MethodNotAllowedException;
 import net.sf.chellow.monad.MonadUtils;
 import net.sf.chellow.monad.NotFoundException;
-import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Urlable;
-import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.XmlDescriber;
 import net.sf.chellow.monad.XmlTree;
 import net.sf.chellow.monad.types.MonadUri;
@@ -56,9 +54,9 @@ public class MpanTops implements Urlable, XmlDescriber {
 		}
 	}
 
-	private Provider dso;
+	private Dso dso;
 
-	public MpanTops(Provider dso) {
+	public MpanTops(Dso dso) {
 		this.dso = dso;
 	}
 
@@ -70,8 +68,7 @@ public class MpanTops implements Urlable, XmlDescriber {
 		return dso.getUri().resolve(getUrlId()).append("/");
 	}
 
-	public void httpPost(Invocation inv) throws InternalException,
-			HttpException, DesignerException, DeployerException {
+	public void httpPost(Invocation inv) throws HttpException {
 		throw new MethodNotAllowedException();
 	}
 

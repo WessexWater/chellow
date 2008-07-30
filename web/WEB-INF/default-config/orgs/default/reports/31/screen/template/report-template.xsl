@@ -131,7 +131,7 @@
 						<th>Meter Type</th>
 						<td>
 							<a
-								href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/65/stream/output/?type-id={/source/mtc/meter-type/@id}">
+								href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/65/screen/output/?type-id={/source/mtc/meter-type/@id}">
 								<xsl:value-of
 									select="/source/mtc/meter-type/@description" />
 							</a>
@@ -141,7 +141,7 @@
 						<th>Payment Type</th>
 						<td>
 							<a
-								href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/67/stream/output/?type-id={/source/mtc/meter-payment-type/@id}">
+								href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/67/screen/output/?type-id={/source/mtc/meter-payment-type/@id}">
 								<xsl:value-of
 									select="/source/mtc/meter-payment-type/@description" />
 							</a>

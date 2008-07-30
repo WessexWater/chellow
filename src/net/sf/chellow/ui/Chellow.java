@@ -27,7 +27,7 @@ import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
 import net.sf.chellow.physical.MarketRoles;
 import net.sf.chellow.physical.MeterTypes;
-import net.sf.chellow.physical.MtcPaymentTypes;
+import net.sf.chellow.physical.MeterPaymentTypes;
 import net.sf.chellow.physical.Mtcs;
 import net.sf.chellow.physical.Organizations;
 import net.sf.chellow.physical.Participants;
@@ -66,7 +66,7 @@ public class Chellow extends Monad implements Urlable {
 
 	public static final NonCoreServices NON_CORE_SERVICES_INSTANCE = new NonCoreServices();
 	static public final MeterTypes METER_TYPES_INSTANCE = new MeterTypes();
-	static public final MtcPaymentTypes MTC_PAYMENT_TYPES_INSTANCE = new MtcPaymentTypes();
+	static public final MeterPaymentTypes MTC_PAYMENT_TYPES_INSTANCE = new MeterPaymentTypes();
 
 	static {
 		try {
@@ -174,7 +174,7 @@ public class Chellow extends Monad implements Urlable {
 			return MARKET_ROLES_INSTANCE;
 		} else if (MeterTypes.URI_ID.equals(uriId)) {
 			return METER_TYPES_INSTANCE;
-		} else if (MtcPaymentTypes.URI_ID.equals(uriId)) {
+		} else if (MeterPaymentTypes.URI_ID.equals(uriId)) {
 			return MTC_PAYMENT_TYPES_INSTANCE;
 		} else if (Providers.URI_ID.equals(uriId)) {
 			return PROVIDERS_INSTANCE;
