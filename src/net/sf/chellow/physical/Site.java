@@ -124,11 +124,11 @@ public class Site extends PersistentEntity implements Urlable {
 	}
 
 	public Supply insertSupply(String supplyName, String meterSerialNumber,
-			MpanRaw importMpanRaw, Account importHhdceAccount,
+			MpanRaw importMpanRaw, Ssc importSsc, Account importHhdceAccount,
 			Account importAccountSupplier,
 			boolean importHasDceImportKwh, boolean importHasDceImportKvarh,
 			boolean importHasDceExportKwh, boolean importHasDceExportKvarh,
-			Integer importAgreedSupplyCapacity, MpanRaw exportMpanRaw,
+			Integer importAgreedSupplyCapacity, MpanRaw exportMpanRaw, Ssc exportSsc,
 			Account exportHhdceAccount, Account exportAccountSupplier,
 			boolean exportHasDceImportKwh, boolean exportHasDceImportKvarh,
 			boolean exportHasDceExportKwh, boolean exportHasDceExportKvarh,
@@ -171,11 +171,11 @@ public class Site extends PersistentEntity implements Urlable {
 			}
 		}
 		SupplyGeneration supplyGeneration = supply.addGeneration(siteMap,
-				meter, importMpanRaw, importHhdceAccount, importAccountSupplier,
+				meter, importMpanRaw, importSsc, importHhdceAccount, importAccountSupplier,
 				 importHasDceImportKwh,
 				importHasDceImportKvarh, importHasDceExportKwh,
 				importHasDceExportKvarh, importAgreedSupplyCapacity,
-				exportMpanRaw, exportHhdceAccount, exportAccountSupplier,
+				exportMpanRaw, exportSsc, exportHhdceAccount, exportAccountSupplier,
 				 exportHasDceImportKwh,
 				exportHasDceImportKvarh, exportHasDceExportKwh,
 				exportHasDceExportKvarh, exportAgreedSupplyCapacity, null);

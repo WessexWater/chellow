@@ -142,7 +142,7 @@ public class Batch extends PersistentEntity implements Urlable {
 		Document doc = MonadUtils.newSourceDocument();
 		Element source = doc.getDocumentElement();
 		source.appendChild(toXml(doc, new XmlTree("service", new XmlTree(
-						"provider", new XmlTree("organization")))));
+				"provider", new XmlTree("organization")))));
 		return doc;
 	}
 
@@ -194,22 +194,22 @@ public class Batch extends PersistentEntity implements Urlable {
 			List<Mpan> candidateMpans = (List<Mpan>) Hiber
 					.session()
 					.createQuery(
-							"from Mpan mpan where mpan.mpanCore = :mpanCore and mpan.mpanTop = :mpanTop and mpan.supplyGeneration.startDate.date <= :finishDate and (mpan.supplyGeneration.finishDate.date is null or mpan.supplyGeneration.finishDate.date >= :startDate) order by mpan.supplyGeneration.startDate.date desc")
-					.setEntity("mpanCore", mpanCore).setEntity("mpanTop",
-							rawMpan.getMpanTop()).setTimestamp("finishDate",
-							rawInvoice.getFinishDate().getDate()).setTimestamp(
-							"startDate", rawInvoice.getStartDate().getDate())
-					.list();
+							"from Mpan mpan where mpan.mpanCore = :mpanCore and mpan.mpanTop.pc = :pc and mpan.mpanTop.mtc and mpan.mpanTop.llfc and mpan.supplyGeneration.startDate.date <= :finishDate and (mpan.supplyGeneration.finishDate.date is null or mpan.supplyGeneration.finishDate.date >= :startDate) order by mpan.supplyGeneration.startDate.date desc")
+					.setEntity("mpanCore", mpanCore).setEntity("pc",
+							rawMpan.getPc()).setEntity("mtc", rawMpan.getMtc())
+					.setEntity("llfc", rawMpan.getLlfc()).setTimestamp(
+							"finishDate", rawInvoice.getFinishDate().getDate())
+					.setTimestamp("startDate",
+							rawInvoice.getStartDate().getDate()).list();
 			if (candidateMpans.isEmpty()) {
 				throw new UserException("Problem with invoice '"
-								+ rawInvoice.getReference()
-								+ ". The invoice needs to be attached to the MPANs "
-								+ rawInvoice.getMpanText() + " but the MPAN "
-								+ rawMpan + " cannot be found between "
-								+ " the half-hour ending "
-								+ rawInvoice.getStartDate()
-								+ " and the half-hour ending "
-								+ rawInvoice.getFinishDate() + ".");
+						+ rawInvoice.getReference()
+						+ ". The invoice needs to be attached to the MPANs "
+						+ rawInvoice.getMpanText() + " but the MPAN " + rawMpan
+						+ " cannot be found between "
+						+ " the half-hour ending " + rawInvoice.getStartDate()
+						+ " and the half-hour ending "
+						+ rawInvoice.getFinishDate() + ".");
 			}
 			invoice.insertInvoiceMpan(candidateMpans.get(0));
 		}

@@ -37,12 +37,15 @@ public class SscCode extends MonadInteger {
 		init();
 	}
 
-	public SscCode(int code) throws HttpException, InternalException {
+	public SscCode(int code) throws HttpException {
 		this(null, code);
 	}
+	
+	public SscCode(String code) throws HttpException {
+		this(null, Integer.parseInt(code));
+	}
 
-	public SscCode(String label, int code) throws HttpException,
-			InternalException {
+	public SscCode(String label, int code) throws HttpException {
 		init();
 		setLabel(label);
 		update(code);

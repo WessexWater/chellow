@@ -1,7 +1,5 @@
 package net.sf.chellow.physical;
 
-import java.text.DecimalFormat;
-import java.text.NumberFormat;
 import java.util.Date;
 import java.util.Set;
 
@@ -27,14 +25,14 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 public class Ssc extends PersistentEntity {
-	public static Ssc getSsc(String code) throws HttpException {
+	public static Ssc getSsc(SscCode code) throws HttpException {
 		// canonicalize
-		int codeInt = Integer.parseInt(code);
-		NumberFormat numberFormat = new DecimalFormat("0000");
-		String codeStr = numberFormat.format(codeInt);
+		//int codeInt = Integer.parseInt(code);
+		//NumberFormat numberFormat = new DecimalFormat("0000");
+		//String codeStr = numberFormat.format(codeInt);
 		Ssc ssc = (Ssc) Hiber.session().createQuery(
 				"from Ssc ssc where ssc.code = :code").setString("code",
-				codeStr).uniqueResult();
+				code.toString()).uniqueResult();
 		if (ssc == null) {
 			throw new UserException("There isn't an SSC with code: " + code
 					+ ".");

@@ -33,6 +33,8 @@ import net.sf.chellow.physical.MpanTop;
 import net.sf.chellow.physical.Organization;
 import net.sf.chellow.physical.Site;
 import net.sf.chellow.physical.Source;
+import net.sf.chellow.physical.Ssc;
+import net.sf.chellow.physical.SscCode;
 import net.sf.chellow.physical.Supply;
 import net.sf.chellow.physical.SupplyGeneration;
 
@@ -210,27 +212,32 @@ public class HeaderImportProcess extends Thread implements Urlable,
 						importMpanRaw = new MpanRaw("import", importMpanStr);
 					}
 					Integer importAgreedSupplyCapacity = null;
-					HhdcContract importHhdceContract = null;
+					HhdcContract importHhdcContract = null;
 					Account importHhdceAccount = null;
 					SupplierContract importSupplierContract = null;
 					Account importSupplierAccount = null;
+					Ssc importSsc = null;
+					
 					if (importMpanRaw != null) {
+						String importSscStr = values[8];
+						csvElement.appendChild(getField("Import SSC", importSscStr));
+						importSsc = importSscStr.equals("null") ? null : Ssc.getSsc(new SscCode(Integer.parseInt(importSscStr)));
 						String importAgreedSupplyCapacityStr = values[8];
 						csvElement.appendChild(getField(
 								"Import Agreed Supply Capacity",
 								importAgreedSupplyCapacityStr));
 						importAgreedSupplyCapacity = new Integer(
 								importAgreedSupplyCapacityStr);
-						String importHhdceContractName = values[9];
-						csvElement.appendChild(getField("Import DCE Contract",
-								importHhdceContractName));
-						importHhdceContract = importHhdceContractName == null ? null
+						String importHhdcContractName = values[9];
+						csvElement.appendChild(getField("Import HHDC Contract",
+								importHhdcContractName));
+						importHhdcContract = importHhdcContractName == null ? null
 								: organization.getHhdcContract(
-										importHhdceContractName);
+										importHhdcContractName);
 						String importHhdceAccountReference = values[10];
-						csvElement.appendChild(getField("Import DCE Account",
+						csvElement.appendChild(getField("Import HHDC Account",
 								importHhdceAccountReference));
-						importHhdceAccount = importHhdceContract.getAccount(importHhdceAccountReference);
+						importHhdceAccount = importHhdcContract.getAccount(importHhdceAccountReference);
 						String importSupplierContractName = values[11];
 						csvElement.appendChild(getField(
 								"Import supplier contract name",
@@ -249,6 +256,7 @@ public class HeaderImportProcess extends Thread implements Urlable,
 					Account exportAccountSupplier = null;
 					Integer exportAgreedSupplyCapacity = null;
 					MpanRaw exportMpanRaw = null;
+					Ssc exportSsc = null;
 					String exportMpanStr = values[14];
 					csvElement.appendChild(getField("Export MPAN",
 							exportMpanStr));
@@ -256,6 +264,9 @@ public class HeaderImportProcess extends Thread implements Urlable,
 						exportMpanRaw = new MpanRaw("export", exportMpanStr);
 					}
 					if (exportMpanRaw != null) {
+						String exportSscStr = values[15];
+						csvElement.appendChild(getField("Export SSC", exportSscStr));
+						exportSsc = exportSscStr.equals("null") ? null : Ssc.getSsc(new SscCode(exportSscStr));
 						String exportAgreedSupplyCapacityStr = values[15];
 						csvElement.appendChild(getField(
 								"Export Agreed Supply Capacity",
@@ -263,12 +274,12 @@ public class HeaderImportProcess extends Thread implements Urlable,
 						exportAgreedSupplyCapacity = new Integer(
 								exportAgreedSupplyCapacityStr);
 						String exportHhdcContractName = values[16];
-						csvElement.appendChild(getField("Export DCE contract",
+						csvElement.appendChild(getField("Export HHDC contract",
 								exportHhdcContractName));
 						exportHhdceContract = exportHhdcContractName.length() == 0 ? null
 								: organization.getHhdcContract(exportHhdcContractName);
 						String exportHhdcAccountReference = values[17];
-						csvElement.appendChild(getField("Export DCE account",
+						csvElement.appendChild(getField("Export HHDC account",
 								exportHhdcAccountReference));
 						exportHhdceAccount = exportHhdceContract.getAccount(exportHhdcAccountReference);
 						String exportSupplierContractName = values[18];
@@ -285,10 +296,10 @@ public class HeaderImportProcess extends Thread implements Urlable,
 					}
 					Site site = organization.getSite(siteCode);
 					site.insertSupply(supplyName, meterSerialNumber,
-							importMpanRaw, importHhdceAccount,
+							importMpanRaw, importSsc, importHhdceAccount,
 							importSupplierAccount,
 							true, true, false, true,
-							importAgreedSupplyCapacity, exportMpanRaw,
+							importAgreedSupplyCapacity, exportMpanRaw, exportSsc,
 							exportHhdceAccount, exportAccountSupplier,
 							 false, true, true, true,
 							exportAgreedSupplyCapacity, HhEndDate
@@ -315,7 +326,7 @@ public class HeaderImportProcess extends Thread implements Urlable,
 				}
 			} else if (type.equals("supply-generation")) {
 				if (action.equals("update")) {
-					if (values.length < 28) {
+					if (values.length < 29) {
 						throw new UserException(
 								"There aren't enough fields in this row");
 					}

@@ -111,8 +111,8 @@ public class InvoiceConverterEdi implements InvoiceConverter {
 				if (line.endsWith("'")) {
 					segment = new Segment(line.substring(0, line.length() - 1));
 				} else {
-					throw new UserException
-							("This parser expects one segment per line.");
+					throw new UserException(
+							"This parser expects one segment per line.");
 				}
 				String code = segment.getCode();
 				if (code.equals("CLO")) {
@@ -222,18 +222,16 @@ public class InvoiceConverterEdi implements InvoiceConverter {
 				}
 				if (code.equals("MAN")) {
 					Element madn = segment.getElements().get(2);
-					PcCode profileClassCode = new PcCode(
-							madn.getInt(3));
-					MtcCode meterTimeswitchCode = new MtcCode(
-							madn.getComponents().get(4));
+					PcCode profileClassCode = new PcCode(madn.getInt(3));
+					MtcCode meterTimeswitchCode = new MtcCode(madn
+							.getComponents().get(4));
 					LlfcCode llfCode = new LlfcCode(madn.getInt(5));
 					MpanCoreRaw mpanCoreRaw = new MpanCoreRaw(madn
 							.getComponents().get(0)
 							+ madn.getComponents().get(1)
 							+ madn.getComponents().get(2));
 					mpanRaw = new MpanRaw(profileClassCode,
-							meterTimeswitchCode, llfCode,
-							mpanCoreRaw);
+							meterTimeswitchCode, llfCode, mpanCoreRaw);
 				}
 				if (code.equals("VAT")) {
 					Debug.print("started vat");
@@ -370,8 +368,8 @@ public class InvoiceConverterEdi implements InvoiceConverter {
 			try {
 				return new HhEndDate(dateFormat.parse(components.get(index)));
 			} catch (ParseException e) {
-				throw new UserException("Expected component "
-						+ index + " of element " + this.index + " of segment '"
+				throw new UserException("Expected component " + index
+						+ " of element " + this.index + " of segment '"
 						+ segment + "' to be a date. " + e.getMessage());
 			}
 		}
@@ -394,8 +392,8 @@ public class InvoiceConverterEdi implements InvoiceConverter {
 			try {
 				return Integer.parseInt(components.get(index));
 			} catch (NumberFormatException e) {
-				throw new UserException("Expected component "
-						+ index + " of element " + this.index + " of segment '"
+				throw new UserException("Expected component " + index
+						+ " of element " + this.index + " of segment '"
 						+ segment + "' to be an integer. " + e.getMessage());
 			}
 		}

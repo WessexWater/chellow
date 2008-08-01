@@ -38,7 +38,6 @@ import net.sf.chellow.physical.Organization;
 import net.sf.chellow.physical.Pc;
 import net.sf.chellow.physical.PcCode;
 import net.sf.chellow.physical.Ssc;
-
 import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 
@@ -61,16 +60,14 @@ public class MpanRaw extends MonadObject {
 		if (mpan.length() != 21) {
 			throw new UserException("The MPAN must contain exactly 21 digits.");
 		}
-		init(new PcCode(Integer.parseInt(mpan.substring(0, 2))),
-				new MtcCode(mpan.substring(2, 5)), new LlfcCode(mpan
-						.substring(5, 8)), new MpanCoreRaw(mpan.substring(8)));
+		init(new PcCode(Integer.parseInt(mpan.substring(0, 2))), new MtcCode(
+				mpan.substring(2, 5)), new LlfcCode(mpan.substring(5, 8)),
+				new MpanCoreRaw(mpan.substring(8)));
 	}
 
-	private void init(PcCode pcCode,
-			MtcCode mtcCode, LlfcCode llfCode,
+	private void init(PcCode pcCode, MtcCode mtcCode, LlfcCode llfCode,
 			MpanCoreRaw mpanCoreRaw) throws InternalException {
-		if (pcCode == null || mtcCode == null
-				|| mpanCoreRaw == null) {
+		if (pcCode == null || mtcCode == null || mpanCoreRaw == null) {
 			throw new InternalException("No nulls allowed.");
 		}
 		this.pcCode = pcCode;
@@ -79,9 +76,9 @@ public class MpanRaw extends MonadObject {
 		this.mpanCoreRaw = mpanCoreRaw;
 	}
 
-	public MpanRaw(PcCode pcCode,
-			MtcCode mtcCode, LlfcCode llfcCode,
-			MpanCoreRaw mpanCoreRaw) throws InternalException {
+	public MpanRaw(PcCode pcCode, MtcCode mtcCode, LlfcCode llfcCode,
+			MpanCoreRaw mpanCoreRaw)
+			throws InternalException {
 		init(pcCode, mtcCode, llfcCode, mpanCoreRaw);
 	}
 
@@ -106,8 +103,7 @@ public class MpanRaw extends MonadObject {
 	}
 
 	public Mtc getMtc() throws HttpException {
-		return Mtc.getMtc(mpanCoreRaw.getDso(),
-				mtcCode);
+		return Mtc.getMtc(mpanCoreRaw.getDso(), mtcCode);
 	}
 
 	public Llfc getLlfc() throws HttpException {
@@ -115,19 +111,16 @@ public class MpanRaw extends MonadObject {
 	}
 
 	public MpanTop getMpanTop(Ssc ssc, Date date) throws HttpException {
-		return MpanTop.getMpanTop(getPc(), getMtc(),
-				getLlfc(), ssc, date);
+		return MpanTop.getMpanTop(getPc(), getMtc(), getLlfc(), ssc, date);
 	}
 
-	public MpanCore getMpanCore(Organization organization)
-			throws HttpException {
+	public MpanCore getMpanCore(Organization organization) throws HttpException {
 		return organization.getMpanCore(mpanCoreRaw);
 	}
 
 	public String toString() {
-		return pcCode.toString() + " "
-				+ mtcCode.toString() + " " + llfcCode.toString()
-				+ " " + mpanCoreRaw.toString();
+		return pcCode.toString() + " " + mtcCode.toString() + " "
+				+ llfcCode.toString() + " " + mpanCoreRaw.toString();
 	}
 
 	public String toStringNoSpaces() {
@@ -146,8 +139,7 @@ public class MpanRaw extends MonadObject {
 		if (obj instanceof MpanRaw) {
 			MpanRaw mpan = (MpanRaw) obj;
 			isEqual = getPcCode().equals(mpan.getPcCode())
-					&& getMtcCode().equals(
-							mpan.getMtcCode())
+					&& getMtcCode().equals(mpan.getMtcCode())
 					&& getLlfcCode().equals(mpan.getLlfcCode())
 					&& getMpanCoreRaw().equals(mpan.getMpanCoreRaw());
 		}
@@ -155,8 +147,7 @@ public class MpanRaw extends MonadObject {
 	}
 
 	public int hashCode() {
-		return getPcCode().hashCode()
-				+ getMtcCode().hashCode() + getLlfcCode().hashCode()
-				+ getMpanCoreRaw().hashCode();
+		return getPcCode().hashCode() + getMtcCode().hashCode()
+				+ getLlfcCode().hashCode() + getMpanCoreRaw().hashCode();
 	}
 }

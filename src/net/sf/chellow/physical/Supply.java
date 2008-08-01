@@ -339,26 +339,25 @@ public class Supply extends PersistentEntity implements Urlable {
 	}
 
 	public SupplyGeneration addGeneration(Map<Site, Boolean> existingSiteMap,
-			Meter meter, MpanRaw importMpanRaw, Account importHhdceAccount,
+			Meter meter, MpanRaw importMpanRaw, Ssc importSsc, Account importHhdceAccount,
 			Account importSupplierAccount,
 			boolean importHasImportKwh,
 			boolean importHasImportKvarh, boolean importHasExportKwh,
 			boolean importHasExportKvarh, Integer importAgreedSupplyCapacity,
-			MpanRaw exportMpanRaw, Account exportHhdceAccount,
+			MpanRaw exportMpanRaw, Ssc exportSsc, Account exportHhdceAccount,
 			Account exportSupplierAccount,
 			 boolean exportHasImportKwh,
 			boolean exportHasImportKvarh, boolean exportHasExportKwh,
 			boolean exportHasExportKvarh, Integer exportAgreedSupplyCapacity,
-			HhEndDate finishDate) throws InternalException, HttpException,
-			DesignerException {
+			HhEndDate finishDate) throws HttpException {
 		Organization organization = existingSiteMap.keySet().iterator().next()
 				.getOrganization();
 		MpanTop importMpanTop = importMpanRaw == null ? null : importMpanRaw
-				.getMpanTop();
+				.getMpanTop(importSsc, finishDate == null ? new Date() : finishDate.getDate());
 		MpanCore importMpanCore = importMpanRaw == null ? null : importMpanRaw
 				.getMpanCore(organization);
 		MpanTop exportMpanTop = exportMpanRaw == null ? null : exportMpanRaw
-				.getMpanTop();
+				.getMpanTop(exportSsc, finishDate == null ? new Date() : finishDate.getDate());
 		MpanCore exportMpanCore = exportMpanRaw == null ? null : exportMpanRaw
 				.getMpanCore(organization);
 		return addGeneration(existingSiteMap, meter, importMpanTop,

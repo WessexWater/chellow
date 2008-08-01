@@ -147,7 +147,7 @@ public class MpanTop extends PersistentEntity {
 				Llfc llfc = dso.getLlfc(new LlfcCode(Integer
 						.parseInt(values[6])), validFrom);
 				Mtc mtc = Mtc.getMtc(dso, new MtcCode(values[0]));
-				Ssc ssc = Ssc.getSsc(values[4]);
+				Ssc ssc = Ssc.getSsc(new SscCode(Integer.parseInt(values[4])));
 				for (List<Object> sscPc : sscPcMap.get(ssc.getCode())) {
 					Date mapFrom = (Date) sscPc.get(1);
 					Date mapTo = (Date) sscPc.get(2);
