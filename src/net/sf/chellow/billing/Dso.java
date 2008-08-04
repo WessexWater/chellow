@@ -21,6 +21,14 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 public class Dso extends Party {
+	static public Dso getDso(Long id) throws HttpException {
+		Dso dso = (Dso) Hiber.session().get(Dso.class, id);
+		if (dso == null) {
+			throw new UserException("There is no DSO with the id '" + id + "'.");
+		}
+		return dso;
+	}
+
 	static public Dso getDso(Participant participant) throws HttpException {
 		Dso dso = (Dso) Hiber.session().createQuery(
 				"from Dso dso where dso.participant = :participant").setEntity(
@@ -69,9 +77,7 @@ public class Dso extends Party {
 
 	public Element toXml(Document doc) throws HttpException {
 		Element element = super.toXml(doc, "dso");
-		if (code != null) {
-			element.setAttribute("code", code.toString());
-		}
+		element.setAttribute("code", code.toString());
 		return element;
 	}
 
@@ -129,8 +135,8 @@ public class Dso extends Party {
 		return (DsoService) Hiber
 				.session()
 				.createQuery(
-						"from DsoService service where service.provider = :provider and service.name = :serviceName")
-				.setEntity("provider", this).setString("serviceName", name)
+						"from DsoService service where service.dso = :dso and service.name = :serviceName")
+				.setEntity("dso", this).setString("serviceName", name)
 				.uniqueResult();
 	}
 

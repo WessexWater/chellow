@@ -27,6 +27,7 @@ import java.util.List;
 
 import javax.servlet.ServletContext;
 
+import net.sf.chellow.billing.Dso;
 import net.sf.chellow.billing.Provider;
 import net.sf.chellow.monad.Debug;
 import net.sf.chellow.monad.Hiber;
@@ -119,8 +120,8 @@ public class Llfc extends PersistentEntity {
 				Date validFrom = mdd.toDate(values[4]);
 				Date validTo = mdd.toDate(values[7]);
 				Hiber.session().save(
-						new Llfc(Provider.getProvider(participantCode,
-								MarketRole.DISTRIBUTOR), Integer
+						new Llfc(Dso.getDso(Participant
+								.getParticipant(participantCode)), Integer
 								.parseInt(values[3]), description, vLevel,
 								isSubstation, isImport, validFrom, validTo));
 				Hiber.close();
@@ -131,7 +132,7 @@ public class Llfc extends PersistentEntity {
 		Debug.print("Finished adding LLFCs.");
 	}
 
-	private Provider dso;
+	private Dso dso;
 
 	private LlfcCode code;
 
@@ -149,7 +150,7 @@ public class Llfc extends PersistentEntity {
 	Llfc() {
 	}
 
-	public Llfc(Provider dso, int code, String description,
+	public Llfc(Dso dso, int code, String description,
 			VoltageLevel voltageLevel, boolean isSubstation, boolean isImport,
 			Date validFrom, Date validTo) throws HttpException {
 		setDso(dso);
@@ -162,11 +163,11 @@ public class Llfc extends PersistentEntity {
 		setValidTo(validTo);
 	}
 
-	public Provider getDso() {
+	public Dso getDso() {
 		return dso;
 	}
 
-	public void setDso(Provider dso) {
+	public void setDso(Dso dso) {
 		this.dso = dso;
 	}
 

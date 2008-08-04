@@ -11,9 +11,9 @@
 				<link rel="stylesheet" type="text/css"
 					href="{/source/request/@context-path}/style/" />
 				<title>
-					Chellow &gt; Providers &gt;
+					Chellow &gt; DSOs &gt;
 					<xsl:value-of
-						select="concat(/source/mpan-tops/provider/@id, ' &gt; MPAN tops')" />
+						select="concat(/source/mpan-tops/dso/@code, ' &gt; MPAN tops')" />
 				</title>
 			</head>
 
@@ -26,14 +26,14 @@
 					</a>
 					<xsl:value-of select="' &gt; '" />
 					<a
-						href="{/source/request/@context-path}/providers/">
-						<xsl:value-of select="'Providers'" />
+						href="{/source/request/@context-path}/dsos/">
+						<xsl:value-of select="'DSOs'" />
 					</a>
 					<xsl:value-of select="' &gt; '" />
 					<a
-						href="{/source/request/@context-path}/providers/{/source/mpan-tops/provider/@id}/">
+						href="{/source/request/@context-path}/dsos/{/source/mpan-tops/dso/@id}/">
 						<xsl:value-of
-							select="/source/mpan-tops/provider/@id" />
+							select="/source/mpan-tops/dso/@code" />
 					</a>
 					<xsl:value-of select="' &gt; Mpan tops '" />
 				</p>
@@ -108,4 +108,3 @@
 		</html>
 	</xsl:template>
 </xsl:stylesheet>
-

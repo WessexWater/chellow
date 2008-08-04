@@ -35,7 +35,7 @@
 				</p>
 
 				<p>
-					This is a list of providers that have the
+					This is a list of parties that have the
 					<a
 						href="{/source/request/@context-path}/market-roles/22/">
 						<xsl:value-of select="'distributor'" />

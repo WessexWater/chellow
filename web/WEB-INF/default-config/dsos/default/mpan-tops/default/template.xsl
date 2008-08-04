@@ -12,9 +12,9 @@
 					href="{/source/request/@context-path}/style/" />
 
 				<title>
-					Chellow &gt; Providers &gt;
+					Chellow &gt; DSOs &gt;
 					<xsl:value-of
-						select="/source/mpan-top/llfc/provider/@id" />
+						select="/source/mpan-top/llfc/dso/@code" />
 					&gt; MPAN Top Lines &gt;
 					<xsl:value-of select="/source/mpan-top/@id" />
 				</title>
@@ -29,18 +29,18 @@
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/providers/">
-						<xsl:value-of select="'Providers'" />
+						href="{/source/request/@context-path}/dsos/">
+						<xsl:value-of select="'DSOs'" />
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/dsos/{/source/mpan-top/llfc/provider/@id}/">
+						href="{/source/request/@context-path}/dsos/{/source/mpan-top/llfc/dso/@id}/">
 						<xsl:value-of
-							select="/source/mpan-top/llfc/provider/@id" />
+							select="/source/mpan-top/llfc/dso/@code" />
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/providers/{/source/mpan-top/llfc/provider/@id}/mpan-tops/">
+						href="{/source/request/@context-path}/dsos/{/source/mpan-top/llfc/dso/@id}/mpan-tops/">
 						<xsl:value-of select="'MPAN tops'" />
 					</a>
 					&gt;
@@ -82,7 +82,7 @@
 							<th>Line Loss Factor Class</th>
 							<td>
 								<a
-									href="{/source/request/@context-path}/providers/{/source/mpan-top/llfc/provider/@id}/llfcs/{/source/mpan-top/llfc/@id}/">
+									href="{/source/request/@context-path}/dsos/{/source/mpan-top/llfc/dso/@id}/llfcs/{/source/mpan-top/llfc/@id}/">
 									<xsl:value-of
 										select="concat(/source/mpan-top/llfc/@code, ' - ', /source/mpan-top/llfc/@description)" />
 								</a>

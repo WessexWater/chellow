@@ -9,6 +9,7 @@ import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 
+import net.sf.chellow.billing.Dsos;
 import net.sf.chellow.billing.NonCoreServices;
 import net.sf.chellow.billing.Providers;
 import net.sf.chellow.monad.BadRequestException;
@@ -63,7 +64,7 @@ public class Chellow extends Monad implements Urlable {
 
 	public static final Participants PARTICIPANTS_INSTANCE = new Participants();
 	public static final MarketRoles MARKET_ROLES_INSTANCE = new MarketRoles();
-
+	public static final Dsos DSOS_INSTANCE = new Dsos();
 	public static final NonCoreServices NON_CORE_SERVICES_INSTANCE = new NonCoreServices();
 	static public final MeterTypes METER_TYPES_INSTANCE = new MeterTypes();
 	static public final MeterPaymentTypes MTC_PAYMENT_TYPES_INSTANCE = new MeterPaymentTypes();
@@ -178,6 +179,8 @@ public class Chellow extends Monad implements Urlable {
 			return MTC_PAYMENT_TYPES_INSTANCE;
 		} else if (Providers.URI_ID.equals(uriId)) {
 			return PROVIDERS_INSTANCE;
+		} else if (Dsos.URI_ID.equals(uriId)) {
+			return DSOS_INSTANCE;
 		} else {
 			return null;
 		}

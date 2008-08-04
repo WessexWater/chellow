@@ -77,6 +77,7 @@
 		<mapping resource="hibernate/BillSnag.hbm.xml" />
 		<mapping resource="hibernate/RateScript.hbm.xml" />
 		<mapping resource="hibernate/DsoService.hbm.xml" />
+		<mapping resource="hibernate/Dso.hbm.xml" />
 		<mapping resource="hibernate/MpanTop.hbm.xml" />
 		<mapping resource="hibernate/Tpr.hbm.xml" />
 		<mapping resource="hibernate/TprLine.hbm.xml" />
@@ -91,5 +92,6 @@
 		<mapping resource="hibernate/MeterType.hbm.xml" />
 		<mapping resource="hibernate/MeterPaymentType.hbm.xml" />
 		<mapping resource="hibernate/ClockInterval.hbm.xml" />
+		<mapping resource="hibernate/Party.hbm.xml" />
 	</session-factory>
 </hibernate-configuration>

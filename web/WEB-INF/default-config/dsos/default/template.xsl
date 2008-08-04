@@ -42,57 +42,38 @@
 					</ul>
 				</xsl:if>
 				<table>
-					<caption>
-						DSO
-						<xsl:value-of
-							select="concat(/source/dso/@code, ' (',/source/dso/@name, ')')" />
-					</caption>
-					<thead>
-						<tr>
-							<th>Profile Class</th>
-							<th>Line Loss Factor</th>
-							<th>Meter Timeswitch</th>
-						</tr>
-					</thead>
-					<tbody>
-						<xsl:for-each
-							select="/source/dso/line-loss-factor">
-							<tr>
-								<td>
-									<xsl:for-each
-										select="profile-class">
-										<a
-											href="{/source/request/@context-path}/profile-classes/{@id}/">
-											<xsl:value-of
-												select="@code" />
-										</a>
-										<xsl:if
-											test="position() != last()">
-											<xsl:value-of select="', '" />
-										</xsl:if>
-									</xsl:for-each>
-								</td>
-								<td>
-									<xsl:value-of
-										select="concat(@code, ' ', @description)" />
-								</td>
-								<td>
-									<xsl:for-each
-										select="meter-timeswitch">
-										<a
-											href="{/source/request/@context-path}/meter-timswitches/{@id}/">
-											<xsl:value-of
-												select="@code" />
-										</a>
-										<xsl:if
-											test="position() != last()">
-											<xsl:value-of select="', '" />
-										</xsl:if>
-									</xsl:for-each>
-								</td>
-							</tr>
-						</xsl:for-each>
-					</tbody>
+					<tr>
+						<th>Chellow Id</th>
+						<td>
+							<xsl:value-of select="/source/dso/@id" />
+						</td>
+					</tr>
+					<tr>
+						<th>Code</th>
+						<td>
+							<xsl:value-of select="/source/dso/@code" />
+						</td>
+					</tr>
+					<tr>
+						<th>Participant</th>
+						<td>
+							<a
+								href="{/source/request/@context-path}/participants/{/source/dso/participant/@id}/">
+								<xsl:value-of
+									select="/source/dso/participant/@code" />
+							</a>
+						</td>
+					</tr>
+					<tr>
+						<th>Role</th>
+						<td>
+							<a
+								href="{/source/request/@context-path}/market-roles/{/source/dso/market-role/@id}/">
+								<xsl:value-of
+									select="/source/dso/market-role/@description" />
+							</a>
+						</td>
+					</tr>
 				</table>
 				<ul>
 					<li>

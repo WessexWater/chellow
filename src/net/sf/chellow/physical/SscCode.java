@@ -66,8 +66,12 @@ public class SscCode extends MonadInteger {
 
 	public Attr toXml(Document doc) {
 		Attr attr = doc.createAttribute("code");
-		DecimalFormat sscFormat = new DecimalFormat("0000");
-		attr.setValue(sscFormat.format(getInteger()));
+		attr.setValue(toString());
 		return attr;
+	}
+	
+	public String toString() {
+		DecimalFormat sscFormat = new DecimalFormat("0000");
+		return sscFormat.format(getInteger());
 	}
 }

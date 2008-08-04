@@ -137,6 +137,12 @@
 					</li>
 					<li>
 						<a
+							href="{/source/request/@context-path}/dsos/">
+							DSOs
+						</a>
+					</li>
+					<li>
+						<a
 							href="{/source/request/@context-path}/providers/">
 							Providers
 						</a>
