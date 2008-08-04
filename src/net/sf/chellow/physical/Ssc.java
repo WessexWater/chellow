@@ -39,6 +39,10 @@ public class Ssc extends PersistentEntity {
 		}
 		return ssc;
 	}
+	
+	public static Ssc getSsc(String code) throws HttpException {
+		return getSsc(new SscCode(code));
+	}
 
 	public static Ssc getSsc(long id) throws HttpException {
 		Ssc ssc = (Ssc) Hiber.session().get(Ssc.class, id);
