@@ -86,7 +86,12 @@
 							Market Roles
 						</a>
 					</li>
-
+					<li>
+						<a
+							href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/68/screen/output/">
+							DSOs
+						</a>
+					</li>
 					<li>
 						<a
 							href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/22/screen/output/">

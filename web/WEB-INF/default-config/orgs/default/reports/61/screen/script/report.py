@@ -5,6 +5,6 @@ role_id = inv.getLong('role-id')
 role = MarketRole.getMarketRole(role_id)
 role_element = role.toXml(doc)
 source.appendChild(role_element)
-for provider in Hiber.session().createQuery("from Provider provider where provider.role = :role order by provider.participant.code").setEntity("role", role).list():
-    role_element.appendChild(provider.toXml(doc, XmlTree('participant')))
+for party in Hiber.session().createQuery("from Party party where party.role = :role order by party.participant.code").setEntity("role", role).list():
+    role_element.appendChild(party.toXml(doc, XmlTree('participant')))
 source.appendChild(organization.toXml(doc))

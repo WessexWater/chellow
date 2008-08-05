@@ -179,9 +179,9 @@ public class Party extends PersistentEntity implements Urlable {
 	void setValidTo(Date to) {
 		this.validTo = to;
 	}
-
-	public Element toXml(Document doc) throws HttpException {
-		Element element = super.toXml(doc, "provider");
+	
+	public Element toXml(Document doc, String elementName) throws HttpException {
+		Element element = super.toXml(doc, elementName);
 
 		element.setAttribute("name", name);
 		element.appendChild(MonadDate.toXML(validFrom, "from", doc));
@@ -189,6 +189,10 @@ public class Party extends PersistentEntity implements Urlable {
 			element.appendChild(MonadDate.toXML(validTo, "to", doc));
 		}
 		return element;
+	}
+
+	public Element toXml(Document doc) throws HttpException {
+		return toXml(doc, "provider");
 	}
 /*
 	public Account getAccount(String accountText) throws HttpException {
