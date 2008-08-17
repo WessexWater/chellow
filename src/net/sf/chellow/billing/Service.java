@@ -33,7 +33,6 @@ import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 
 import net.sf.chellow.hhimport.HhDataImportProcesses;
-import net.sf.chellow.monad.DesignerException;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.Invocation;
 import net.sf.chellow.monad.NotFoundException;
@@ -53,18 +52,13 @@ import org.w3c.dom.Element;
 @SuppressWarnings("serial")
 public abstract class Service extends PersistentEntity implements
 		Comparable<Service>, Urlable {
-	public static final int TYPE_SERVICE_ONLY = 0;
 
-	public static final int TYPE_PASS_THROUGH = 1;
-
-	public static final int TYPE_CONTRACT = 2;
-
-	public static Service getContract(Long id) throws HttpException {
-		Service contract = (Service) Hiber.session().get(Service.class, id);
-		if (contract == null) {
-			throw new UserException("There isn't a contract with that id.");
+	public static Service getService(Long id) throws HttpException {
+		Service service = (Service) Hiber.session().get(Service.class, id);
+		if (service == null) {
+			throw new UserException("There isn't a service with that id.");
 		}
-		return contract;
+		return service;
 	}
 
 	private String name;
@@ -152,8 +146,7 @@ public abstract class Service extends PersistentEntity implements
 				.getFinishDate());
 	}
 
-	public void delete(RateScript rateScript) throws HttpException,
-			InternalException, DesignerException {
+	public void delete(RateScript rateScript) throws HttpException {
 		List<RateScript> rateScriptList = new ArrayList<RateScript>(rateScripts);
 		if (rateScriptList.size() < 2) {
 			throw new UserException("You can't delete the last rate script.");
@@ -212,10 +205,10 @@ public abstract class Service extends PersistentEntity implements
 		Element element = super.toXml(doc, elementName);
 
 		element.setAttribute("name", name);
-		startRateScript.setLabel("start");
-		element.appendChild(startRateScript.toXml(doc));
-		finishRateScript.setLabel("finish");
-		element.appendChild(finishRateScript.toXml(doc));
+		//startRateScript.setLabel("start");
+		//element.appendChild(startRateScript.toXml(doc));
+		//finishRateScript.setLabel("finish");
+		//element.appendChild(finishRateScript.toXml(doc));
 		if (chargeScript != null) {
 			element.setAttribute("charge-script", chargeScript
 					.replace("\r", "").replace("\t", "    "));
@@ -261,13 +254,9 @@ public abstract class Service extends PersistentEntity implements
 		return "Contract id " + getId() + " name " + getName();
 	}
 
-	public AccountSnags getSnagsAccountInstance() {
-		return new AccountSnags(this);
-	}
-
 	public BillElement billElement(String name, String chargeScript,
 			Account account, HhEndDate from, HhEndDate to)
-			throws HttpException, InternalException {
+			throws HttpException {
 		BillElement billElement = null;
 
 		try {
@@ -290,8 +279,7 @@ public abstract class Service extends PersistentEntity implements
 		return billElement;
 	}
 
-	public Invocable invocableEngine(String chargeScript) throws HttpException,
-			InternalException {
+	public Invocable invocableEngine(String chargeScript) throws HttpException {
 		ScriptEngineManager engineMgr = new ScriptEngineManager();
 		ScriptEngine scriptEngine = engineMgr.getEngineByName("jython");
 		Invocable invocableEngine = null;
@@ -306,18 +294,17 @@ public abstract class Service extends PersistentEntity implements
 	}
 
 	public BillElement billElement(Account account, HhEndDate from, HhEndDate to)
-			throws HttpException, InternalException {
+			throws HttpException {
 		return billElement("total", getChargeScript(), account, from, to);
 	}
 
 	public BillElement billElement(String name, Account account,
-			HhEndDate from, HhEndDate to) throws HttpException,
-			InternalException {
+			HhEndDate from, HhEndDate to) throws HttpException {
 		return billElement(name, getChargeScript(), account, from, to);
 	}
 
 	public RateScript getPreviousRateScript(RateScript script)
-			throws InternalException, HttpException {
+			throws HttpException {
 		return (RateScript) Hiber
 				.session()
 				.createQuery(
@@ -328,7 +315,7 @@ public abstract class Service extends PersistentEntity implements
 	}
 
 	public RateScript getNextRateScript(RateScript rateScript)
-			throws InternalException, HttpException {
+			throws HttpException {
 		if (rateScript.getFinishDate() == null) {
 			return null;
 		}
@@ -341,13 +328,13 @@ public abstract class Service extends PersistentEntity implements
 				.uniqueResult();
 	}
 
-	public Invocable engine() throws HttpException, InternalException {
+	public Invocable engine() throws HttpException {
 		return invocableEngine(getChargeScript());
 	}
 
 	@SuppressWarnings("unchecked")
 	public RateScript insertRateScript(HhEndDate startDate, String script)
-			throws InternalException, HttpException, DesignerException {
+			throws HttpException {
 		List<RateScript> rateScripts = (List<RateScript>) Hiber
 				.session()
 				.createQuery(
@@ -426,7 +413,7 @@ public abstract class Service extends PersistentEntity implements
 	}
 
 	public Object callFunction(String functionName, Object[] args)
-			throws HttpException, InternalException {
+			throws HttpException {
 		Object result = null;
 		try {
 			result = invocableEngine(getChargeScript()).invokeFunction(

@@ -127,6 +127,14 @@
 													select="@id" />
 											</a>
 										</xsl:when>
+										<xsl:when
+											test="/source/provider/market-role/@code = 'X'">
+											<a
+												href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/38/screen/output/?contract-id={@id}">
+												<xsl:value-of
+													select="@id" />
+											</a>
+										</xsl:when>
 									</xsl:choose>
 								</td>
 								<td>

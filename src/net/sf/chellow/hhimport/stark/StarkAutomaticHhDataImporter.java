@@ -9,7 +9,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.logging.Level;
 
-import net.sf.chellow.billing.Service;
+import net.sf.chellow.billing.Contract;
 import net.sf.chellow.hhimport.HhDataImportProcess;
 import net.sf.chellow.monad.DeployerException;
 import net.sf.chellow.monad.DesignerException;
@@ -301,8 +301,8 @@ public class StarkAutomaticHhDataImporter implements Urlable, XmlDescriber {
 		return null;
 	}
 
-	private Service getContract() throws HttpException, InternalException {
-		return Service.getContract(contractId);
+	private Contract getContract() throws HttpException {
+		return Contract.getContract(contractId);
 	}
 
 	public MonadUri getUri() throws InternalException, HttpException {

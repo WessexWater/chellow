@@ -9,52 +9,39 @@
 		<html>
 			<head>
 				<link rel="stylesheet" type="text/css"
-					href="{/source/request/@context-path}/orgs/1/reports/9/stream/output/" />
+					href="{/source/request/@context-path}/orgs/{/source/batches/supplier-contract/org/@id}/reports/9/stream/output/" />
 
 				<title>
-					<xsl:value-of select="/source/org/@name" />
-					&gt; Suppliers &gt;
 					<xsl:value-of
-						select="/source/batches/supplier-service/supplier/@name" />
-					&gt; Services &gt;
+						select="/source/batches/supplier-contract/org/@name" />
+					&gt; Supplier Contracts &gt;
 					<xsl:value-of
-						select="/source/batches/supplier-service/@name" />
+						select="/source/batches/supplier-contract/@name" />
 					&gt; Batches
 				</title>
 			</head>
 			<body>
 				<p>
 					<a
-						href="{/source/request/@context-path}/orgs/{/source/batches/supplier-service/supplier/org/@id}/reports/0/screen/output/">
+						href="{/source/request/@context-path}/orgs/{/source/batches/supplier-contract/org/@id}/reports/0/screen/output/">
 						<xsl:value-of
-							select="/source/batches/supplier-service/supplier/org/@name" />
+							select="/source/batches/supplier-contract/org/@name" />
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/orgs/{/source/batches/supplier-service/supplier/org/@id}/reports/35/screen/output/">
-						<xsl:value-of select="'Suppliers'" />
+						href="{/source/request/@context-path}/orgs/{/source/batches/supplier-contract/org/@id}/reports/37/screen/output/?supplier-id={/source/batches/supplier-contract/@id}">
+						<xsl:value-of select="'Supplier Contracts'" />
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/orgs/{/source/batches/supplier-service/supplier/org/@id}/reports/36/screen/output/?supplier-id={/source/batches/supplier-service/supplier/@id}">
+						href="{/source/request/@context-path}/orgs/{/source/batches/supplier-contract/org/@id}/reports/38/screen/output/?contract-id={/source/batches/supplier-contract/@id}">
 						<xsl:value-of
-							select="/source/batches/supplier-service/supplier/@name" />
-					</a>
-					&gt;
-					<a
-						href="{/source/request/@context-path}/orgs/{/source/batches/supplier-service/supplier/org/@id}/reports/37/screen/output/?supplier-id={/source/batches/supplier-service/supplier/@id}">
-						<xsl:value-of select="'Services'" />
-					</a>
-					&gt;
-					<a
-						href="{/source/request/@context-path}/orgs/{/source/batches/supplier-service/supplier/org/@id}/reports/38/screen/output/?supplier-service-id={/source/batches/supplier-service/@id}">
-						<xsl:value-of
-							select="/source/batches/supplier-service/@name" />
+							select="/source/batches/supplier-contract/@name" />
 					</a>
 					&gt;
 					<xsl:value-of select="'Batches ['" />
 					<a
-						href="{/source/request/@context-path}/orgs/{/source/batches/supplier-service/supplier/org/@id}/suppliers/{/source/batches/supplier-service/supplier/@id}/services/{/source/batches/supplier-service/@id}/batches/">
+						href="{/source/request/@context-path}/orgs/{/source/batches/supplier-contract/org/@id}/supplier-contracts/{/source/batches/supplier-contract/@id}/batches/">
 						<xsl:value-of select="'edit'" />
 					</a>
 					<xsl:value-of select="']'" />
@@ -74,7 +61,7 @@
 					<caption>Batches</caption>
 					<thead>
 						<tr>
-							<th>Id</th>
+							<th>Chellow Id</th>
 							<th>Reference</th>
 						</tr>
 					</thead>
@@ -83,7 +70,7 @@
 							<tr>
 								<td>
 									<a
-										href="{/source/request/@context-path}/orgs/{/source/batches/supplier-service/supplier/org/@id}/reports/45/screen/output/?batch-id={@id}">
+										href="{/source/request/@context-path}/orgs/{/source/batches/supplier-contract/org/@id}/reports/45/screen/output/?batch-id={@id}">
 										<xsl:value-of select="@id" />
 									</a>
 								</td>

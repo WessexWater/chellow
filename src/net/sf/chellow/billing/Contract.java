@@ -35,6 +35,14 @@ import net.sf.chellow.physical.HhEndDate;
 import net.sf.chellow.physical.Organization;
 
 public abstract class Contract extends Service {
+	public static Contract getContract(Long id) throws HttpException {
+		Contract contract = (Contract) Hiber.session().get(Contract.class, id);
+		if (contract == null) {
+			throw new UserException("There isn't a contract with that id.");
+		}
+		return contract;
+	}
+
 	private Provider provider;
 	
 	private Organization organization;
@@ -127,6 +135,10 @@ public abstract class Contract extends Service {
 							+ reference + "' attached to this provider.");
 		}
 		return account;
+	}
+
+	public AccountSnags getSnagsAccountInstance() {
+		return new AccountSnags(this);
 	}
 
 	public Account getAccount(String reference) throws HttpException {

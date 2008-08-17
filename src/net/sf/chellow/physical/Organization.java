@@ -273,7 +273,8 @@ public class Organization extends PersistentEntity {
 				.setEntity("organization", this).setString("name", name)
 				.uniqueResult();
 		if (contract == null) {
-			throw new NotFoundException();
+			throw new NotFoundException("There's no supplier contract named '"
+					+ name + "' for this organization.");
 		}
 		return contract;
 	}

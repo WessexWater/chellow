@@ -31,14 +31,13 @@
 						<span class="logo">Chellow</span>
 					</a>
 					<xsl:value-of select="' &gt; Providers'" />
-				</p> 
+				</p>
 				<table>
 					<thead>
 						<tr>
 							<th>Chellow Id</th>
 							<th>Participant</th>
 							<th>Market Role</th>
-							<th>DSO Code</th>
 						</tr>
 					</thead>
 					<tbody>
@@ -64,10 +63,6 @@
 										<xsl:value-of
 											select="market-role/@description" />
 									</a>
-								</td>
-								<td>
-																		<xsl:value-of
-											select="@dso-code" />
 								</td>
 							</tr>
 						</xsl:for-each>

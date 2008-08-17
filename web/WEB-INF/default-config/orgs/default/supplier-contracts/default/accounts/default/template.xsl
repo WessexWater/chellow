@@ -14,10 +14,10 @@
 				<title>
 					Chellow &gt; Organizations &gt;
 					<xsl:value-of
-						select="/source/account/org/@name" />
-					&gt; Suppliers &gt;
+						select="/source/account/supplier-contract/org/@name" />
+					&gt; Supplier Contracts &gt;
 					<xsl:value-of
-						select="/source/account/supplier/@name" />
+						select="/source/account/supplier-contract/@name" />
 					&gt; Accounts &gt;
 					<xsl:value-of select="/source/account/@reference" />
 				</title>
@@ -35,29 +35,30 @@
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/orgs/{/source/account/org/@id}/">
+						href="{/source/request/@context-path}/orgs/{/source/account/supplier-contract/org/@id}/">
 						<xsl:value-of
-							select="/source/account/org/@name" />
+							select="/source/account/supplier-contract/org/@name" />
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/orgs/{/source/account/org/@id}/suppliers/">
-						<xsl:value-of select="'Suppliers'" />
+						href="{/source/request/@context-path}/orgs/{/source/account/supplier-contract/org/@id}/supplier-contracts/">
+						<xsl:value-of select="'Supplier Contracts'" />
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/orgs/{/source/account/org/@id}/suppliers/{/source/account/supplier/@id}">
+						href="{/source/request/@context-path}/orgs/{/source/account/supplier-contract/org/@id}/supplier-contracts/{/source/account/supplier-contract/@id}/">
 						<xsl:value-of
-							select="/source/account/supplier/@name" />
+							select="/source/account/supplier-contract/@name" />
 					</a>
 					&gt;
 					<a href="..">
 						<xsl:value-of select="'Accounts'" />
 					</a>
 					&gt;
-					<xsl:value-of select="concat(/source/account/@reference, ' [')" />
+					<xsl:value-of
+						select="concat(/source/account/@reference, ' [')" />
 					<a
-						href="{/source/request/@context-path}/orgs/1/reports/41/screen/output/?account-id={/source/account/@id}">
+						href="{/source/request/@context-path}/orgs/{/source/account/supplier-contract/org/@id}/reports/41/screen/output/?account-id={/source/account/@id}">
 						<xsl:value-of select="'view'" />
 					</a>
 					<xsl:value-of select="']'" />
@@ -84,10 +85,10 @@
 						</form>
 					</xsl:when>
 					<xsl:otherwise>
-
 						<form action="." method="post">
 							<fieldset>
 								<legend>Update Account</legend>
+								<br/>
 								<label>
 									<xsl:value-of select="'Reference '" />
 									<input name="reference">
@@ -112,7 +113,7 @@
 								<input type="reset" value="Reset" />
 							</fieldset>
 						</form>
-
+						<br />
 						<form action=".">
 							<fieldset>
 								<input type="hidden" name="view"

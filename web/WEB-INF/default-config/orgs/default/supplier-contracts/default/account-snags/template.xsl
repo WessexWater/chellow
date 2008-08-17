@@ -14,13 +14,10 @@
 				<title>
 					Chellow &gt; Organizations &gt;
 					<xsl:value-of
-						select="/source/account-snags/supplier-service/supplier/org/@name" />
-					&gt; Suppliers &gt;
+						select="/source/account-snags/supplier-contract/org/@name" />
+					&gt; Supplier Contracts &gt;
 					<xsl:value-of
-						select="/source/account-snags/supplier-service/supplier/@name" />
-					&gt; Services &gt;
-					<xsl:value-of
-						select="/source/account-snags/supplier-service/@name" />
+						select="/source/account-snags/supplier-contract/@name" />
 					&gt; Account Snags
 				</title>
 			</head>
@@ -48,36 +45,25 @@
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/orgs/{/source/account-snags/supplier-service/supplier/org/@id}/">
+						href="{/source/request/@context-path}/orgs/{/source/account-snags/supplier-contract/org/@id}/">
 						<xsl:value-of
-							select="/source/account-snags/supplier-service/supplier/org/@name" />
+							select="/source/account-snags/supplier-contract/org/@name" />
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/orgs/{/source/account-snags/supplier-service/supplier/org/@id}/suppliers/">
-						<xsl:value-of select="'Suppliers'" />
+						href="{/source/request/@context-path}/orgs/{/source/account-snags/supplier-contract/org/@id}/supplier-contracts/">
+						<xsl:value-of select="'Supplier Contracts'" />
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/orgs/{/source/account-snags/supplier-service/supplier/org/@id}/suppliers/{/source/account-snags/supplier-service/supplier/@id}/">
+						href="{/source/request/@context-path}/orgs/{/source/account-snags/supplier-contract/org/@id}/supplier-contracts/{/source/account-snags/supplier-contract/@id}/">
 						<xsl:value-of
-							select="/source/account-snags/supplier-service/supplier/@name" />
-					</a>
-					&gt;
-					<a
-						href="{/source/request/@context-path}/orgs/{/source/account-snags/supplier-service/supplier/org/@id}/suppliers/{/source/account-snags/supplier-service/supplier/@id}/services/">
-						<xsl:value-of select="'Services'" />
-					</a>
-					&gt;
-					<a
-						href="{/source/request/@context-path}/orgs/{/source/account-snags/supplier-service/supplier/org/@id}/suppliers/{/source/account-snags/supplier-service/supplier/@id}/services/{/source/account-snags/supplier-service/@id}/">
-						<xsl:value-of
-							select="/source/account-snags/supplier-service/@name" />
+							select="/source/account-snags/supplier-contract/@name" />
 					</a>
 					&gt;
 					<xsl:value-of select="'Account Snags ['" />
 					<a
-						href="{/source/request/@context-path}/orgs/{/source/account-snags/supplier-service/supplier/org/@id}/reports/50/screen/output/?supplier-service-id={/source/account-snags/supplier-service/@id}">
+						href="{/source/request/@context-path}/orgs/{/source/account-snags/supplier-contract/org/@id}/reports/50/screen/output/?contract-id={/source/account-snags/supplier-contract/@id}">
 						<xsl:value-of select="'view'" />
 					</a>
 					<xsl:value-of select="']'" />
@@ -101,7 +87,7 @@
 							<caption>Account Snags</caption>
 							<thead>
 								<tr>
-									<th>Id</th>
+									<th>Chellow Id</th>
 									<th>Account</th>
 									<th>Start Date</th>
 									<th>Finish Date</th>
@@ -123,7 +109,7 @@
 										</td>
 										<td>
 											<a
-												href="{/source/request/@context-path}/orgs/{/source/account-snags/supplier-service/supplier/org/@id}/suppliers/{/source/account-snags/supplier-service/supplier/@id}/accounts/{account/@id}/">
+												href="{/source/request/@context-path}/orgs/{/source/account-snags/supplier-contract/supplier/org/@id}/suppliers/{/source/account-snags/supplier-contract/supplier/@id}/accounts/{account/@id}/">
 												<xsl:value-of
 													select="account/@reference" />
 											</a>
@@ -172,10 +158,10 @@
 							</tbody>
 						</table>
 						<br />
-						<hr />
 						<form action="." method="post">
 							<fieldset>
 								<legend>Add an account snag</legend>
+								<br/>
 								<label>
 									<xsl:value-of select="'Reference '" />
 									<input name="reference"

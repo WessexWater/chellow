@@ -21,3 +21,7 @@
 "UKDC","K","05/06/2004","","IMServ Europe Ltd","Scorpio","Rockingham Drive","Linford Wood","Milton Keynes","Bucks","","","","MK14 6LY",""
 "UKDC","M","01/05/2005","","IMServ Europe Ltd","Scorpio","Rockingham Drive","Linford Wood","Milton Keynes","","","","","MK14 6LY",""
 "UKDC","S","01/04/1996","","Scorpio","Rockingham Drive","Linford Wood","Milton Keynes","Buckinghamshire","","","","","MK14 6LY",""
+#
+# Parties for embedded generation
+#
+"CUST","R","01/04/1996","","Dummy DSO 99","New Alderston House","Strathclyde Business Park","Bellshill","Lanarkshire","","","","","ML4 3AL","99"

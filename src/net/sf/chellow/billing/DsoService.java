@@ -23,11 +23,8 @@
 package net.sf.chellow.billing;
 
 import net.sf.chellow.hhimport.HhDataImportProcesses;
-import net.sf.chellow.monad.DeployerException;
-import net.sf.chellow.monad.DesignerException;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
-import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Invocation;
 import net.sf.chellow.monad.MonadUtils;
 import net.sf.chellow.monad.NotFoundException;
@@ -38,13 +35,13 @@ import net.sf.chellow.monad.types.MonadDate;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
 import net.sf.chellow.physical.HhEndDate;
+
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 @SuppressWarnings("serial")
 public class DsoService extends Service {
-	public static DsoService getDsoService(Long id) throws HttpException,
-			InternalException {
+	public static DsoService getDsoService(Long id) throws HttpException {
 		DsoService service = findDsoService(id);
 		if (service == null) {
 			throw new UserException("There isn't a DSO service with that id.");
@@ -52,8 +49,7 @@ public class DsoService extends Service {
 		return service;
 	}
 
-	public static DsoService findDsoService(Long id) throws HttpException,
-			InternalException {
+	public static DsoService findDsoService(Long id) throws HttpException {
 		return (DsoService) Hiber.session().get(DsoService.class, id);
 	}
 	
@@ -116,7 +112,7 @@ public class DsoService extends Service {
 		return isEqual;
 	}
 
-	public MonadUri getUri() throws InternalException, HttpException {
+	public MonadUri getUri() throws HttpException {
 		return dso.servicesInstance().getUri().resolve(getUriId())
 				.append("/");
 	}
@@ -126,8 +122,7 @@ public class DsoService extends Service {
 		Hiber.session().delete(this);
 	}
 
-	public void httpPost(Invocation inv) throws InternalException,
-			HttpException, DesignerException, DeployerException {
+	public void httpPost(Invocation inv) throws HttpException {
 		if (inv.hasParameter("delete")) {
 			delete();
 			Hiber.commit();
@@ -149,19 +144,17 @@ public class DsoService extends Service {
 		}
 	}
 
-	private Document document() throws InternalException, HttpException,
-			DesignerException {
+	private Document document() throws HttpException {
 		Document doc = MonadUtils.newSourceDocument();
 		Element source = doc.getDocumentElement();
-		source.appendChild(toXml(doc, new XmlTree("provider")));
+		source.appendChild(toXml(doc, new XmlTree("dso")));
 		source.appendChild(MonadDate.getMonthsXml(doc));
 		source.appendChild(MonadDate.getDaysXml(doc));
 		source.appendChild(new MonadDate().toXml(doc));
 		return doc;
 	}
 
-	public void httpGet(Invocation inv) throws DesignerException,
-			InternalException, HttpException, DeployerException {
+	public void httpGet(Invocation inv) throws HttpException {
 		inv.sendOk(document());
 	}
 

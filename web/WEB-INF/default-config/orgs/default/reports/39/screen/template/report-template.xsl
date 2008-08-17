@@ -9,16 +9,13 @@
 		<html>
 			<head>
 				<link rel="stylesheet" type="text/css"
-					href="{/source/request/@context-path}/orgs/1/reports/9/stream/output/" />
-
+					href="{/source/request/@context-path}/orgs/{/source/rate-script/supplier-contract/org/@id}/reports/9/stream/output/" />
 				<title>
-					<xsl:value-of select="/source/org/@name" />
-					&gt; Supplies &gt;
 					<xsl:value-of
-						select="/source/rate-script/supplier-service/supplier/@code" />
-					&gt; Services &gt;
+						select="/source/rate-script/supplier-contract/org/@name" />
+					&gt; Supplier Contracts &gt;
 					<xsl:value-of
-						select="/source/rate-script/supplier-service/@name" />
+						select="/source/rate-script/supplier-contract/@name" />
 					&gt; Rate Script
 					<xsl:value-of select="/source/rate-script/@id" />
 				</title>
@@ -26,33 +23,29 @@
 			<body>
 				<p>
 					<a
-						href="{/source/request/@context-path}/orgs/1/reports/0/screen/output/">
-						<xsl:value-of select="/source/org/@name" />
-					</a>
-					&gt;
-					<a
-						href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/35/screen/output/">
-						<xsl:value-of select="'Suppliers'" />
-					</a>
-					&gt;
-					<a
-						href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/36/screen/output/?supplier-id={/source/rate-script/supplier-service/supplier/@id}">
+						href="{/source/request/@context-path}/orgs/{/source/rate-script/supplier-contract/org/@id}/reports/0/screen/output/">
 						<xsl:value-of
-							select="/source/rate-script/supplier-service/supplier/@name" />
+							select="/source/rate-script/supplier-contract/org/@name" />
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/37/screen/output/?supplier-id={/source/rate-script/supplier-service/supplier/@id}">
-						<xsl:value-of select="'Services'" />
+						href="{/source/request/@context-path}/orgs/{/source/rate-script/supplier-contract/org/@id}/reports/37/screen/output/">
+						<xsl:value-of select="'Supplier Contracts'" />
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/38/screen/output/?supplier-service-id={/source/rate-script/supplier-service/@id}">
+						href="{/source/request/@context-path}/orgs/{/source/rate-script/supplier-contract/org/@id}/reports/38/screen/output/?contract-id={/source/rate-script/supplier-contract/@id}">
 						<xsl:value-of
-							select="/source/rate-script/supplier-service/@name" />
+							select="/source/rate-script/supplier-contract/@name" />
 					</a>
 					&gt; Rate Script
-					<xsl:value-of select="/source/rate-script/@id" />
+					<xsl:value-of
+						select="concat(/source/rate-script/@id, ' [')" />
+					<a
+						href="{/source/request/@context-path}/orgs/{/source/rate-script/supplier-contract/org/@id}/supplier-contracts/{/source/rate-script/supplier-contract/@id}/rate-scripts/{/source/rate-script/@id}/">
+						<xsl:value-of select="'edit'" />
+					</a>
+					<xsl:value-of select="']'" />
 				</p>
 				<br />
 				<xsl:if test="//message">
@@ -65,44 +58,33 @@
 					</ul>
 				</xsl:if>
 				<table>
-					<caption>Properties</caption>
-					<thead>
-						<tr>
-							<th>Name</th>
-							<th>Value</th>
-						</tr>
-					</thead>
-					<tbody>
-						<tr>
-							<td>Id</td>
-							<td>
-								<xsl:value-of
-									select="/source/rate-script/@id" />
-							</td>
-						</tr>
-						<tr>
-							<td>Start Date</td>
-							<td>
-								<xsl:value-of
-									select="concat(/source/rate-script/hh-end-date[@label='start']/@year, '-', /source/rate-script/hh-end-date[@label='start']/@month, '-', /source/rate-script/hh-end-date[@label='start']/@day)" />
-							</td>
-						</tr>
-						<tr>
-							<td>Finish Date</td>
-							<td>
-								<xsl:choose>
-									<xsl:when
-										test="/source/rate-script/hh-end-date[@label='finish']">
-										<xsl:value-of
-											select="concat(/source/rate-script/hh-end-date[@label='finish']/@year, '-', /source/rate-script/hh-end-date[@label='finish']/@month, '-', /source/rate-script/hh-end-date[@label='finish']/@day)" />
-									</xsl:when>
-									<xsl:otherwise>
-										Ongoing
-									</xsl:otherwise>
-								</xsl:choose>
-							</td>
-						</tr>
-					</tbody>
+					<tr>
+						<th>Chellow Id</th>
+						<td>
+							<xsl:value-of
+								select="/source/rate-script/@id" />
+						</td>
+					</tr>
+					<tr>
+						<th>Start Date</th>
+						<td>
+							<xsl:value-of
+								select="concat(/source/rate-script/hh-end-date[@label='start']/@year, '-', /source/rate-script/hh-end-date[@label='start']/@month, '-', /source/rate-script/hh-end-date[@label='start']/@day)" />
+						</td>
+					</tr>
+					<tr>
+						<th>Finish Date</th>
+						<td>
+							<xsl:choose>
+								<xsl:when
+									test="/source/rate-script/hh-end-date[@label='finish']">
+									<xsl:value-of
+										select="concat(/source/rate-script/hh-end-date[@label='finish']/@year, '-', /source/rate-script/hh-end-date[@label='finish']/@month, '-', /source/rate-script/hh-end-date[@label='finish']/@day)" />
+								</xsl:when>
+								<xsl:otherwise>Ongoing</xsl:otherwise>
+							</xsl:choose>
+						</td>
+					</tr>
 				</table>
 
 				<h2>Script</h2>

@@ -49,7 +49,7 @@ import org.w3c.dom.Element;
 @SuppressWarnings("serial")
 public class SupplierContract extends Contract {
 	public static SupplierContract getSupplierContract(Long id)
-			throws HttpException, InternalException {
+			throws HttpException {
 		SupplierContract service = findSupplierService(id);
 		if (service == null) {
 			throw new UserException(
@@ -89,7 +89,7 @@ public class SupplierContract extends Contract {
 		return isEqual;
 	}
 
-	public MonadUri getUri() throws InternalException, HttpException {
+	public MonadUri getUri() throws HttpException {
 		return getOrganization().getUri().resolve(getUriId()).append("/");
 	}
 
@@ -155,14 +155,18 @@ public class SupplierContract extends Contract {
 	private Document document() throws HttpException {
 		Document doc = MonadUtils.newSourceDocument();
 		Element source = doc.getDocumentElement();
-		source.appendChild(toXml(doc, new XmlTree("provider")
-				.put("organization")));
+		Element contractElement = (Element) toXml(doc, new XmlTree("provider")
+				.put("organization"));
+		source.appendChild(contractElement);
 		for (Provider provider : (List<Provider>) Hiber
 				.session()
 				.createQuery(
 						"from Provider provider where provider.role.code = :roleCode order by provider.name")
 				.setCharacter("roleCode", MarketRole.SUPPLIER).list()) {
 			source.appendChild(provider.toXml(doc, new XmlTree("participant")));
+		}
+		for (RateScript script : getRateScripts()) {
+			contractElement.appendChild(script.toXml(doc));
 		}
 		source.appendChild(new MonadDate().toXml(doc));
 		source.appendChild(MonadDate.getMonthsXml(doc));
@@ -200,6 +204,8 @@ public class SupplierContract extends Contract {
 			return new Batches(this);
 		} else if (RateScripts.URI_ID.equals(uriId)) {
 			return new RateScripts(this);
+		} else if (Accounts.URI_ID.equals(uriId)) {
+			return new Accounts(this);
 		} else if (AccountSnags.URI_ID.equals(uriId)) {
 			return new AccountSnags(this);
 		} else if (BillSnags.URI_ID.equals(uriId)) {
@@ -241,5 +247,4 @@ public class SupplierContract extends Contract {
 		Hiber.session().delete(account);
 		Hiber.flush();
 	}
-
 }

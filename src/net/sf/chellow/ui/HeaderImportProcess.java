@@ -9,8 +9,6 @@ import net.sf.chellow.billing.HhdcContract;
 import net.sf.chellow.billing.SupplierContract;
 import net.sf.chellow.data08.MpanCoreRaw;
 import net.sf.chellow.data08.MpanRaw;
-import net.sf.chellow.monad.DeployerException;
-import net.sf.chellow.monad.DesignerException;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.InternalException;
@@ -62,7 +60,7 @@ public class HeaderImportProcess extends Thread implements Urlable,
 	private MonadUri uri;
 
 	public HeaderImportProcess(MonadUri uri, FileItem item)
-			throws InternalException, HttpException, DeployerException {
+			throws HttpException {
 		super("Import");
 		this.uri = uri;
 		if (item.getSize() == 0) {
@@ -142,8 +140,7 @@ public class HeaderImportProcess extends Thread implements Urlable,
 	}
 
 	private void processItem(Organization organization, String[] values)
-			throws InternalException, DeployerException, HttpException,
-			DesignerException {
+			throws HttpException {
 		String action = values[0].trim().toLowerCase();
 		String type = values[1].trim().toLowerCase();
 		Element csvElement = doc.createElement("csvLine");
@@ -745,8 +742,7 @@ public class HeaderImportProcess extends Thread implements Urlable,
 		return field;
 	}
 
-	public Urlable getChild(UriPathElement uriId) throws InternalException,
-			HttpException {
+	public Urlable getChild(UriPathElement uriId) throws HttpException {
 		return null;
 	}
 
@@ -754,8 +750,7 @@ public class HeaderImportProcess extends Thread implements Urlable,
 		return uri;
 	}
 
-	public void httpGet(Invocation inv) throws DesignerException,
-			InternalException, HttpException, DeployerException {
+	public void httpGet(Invocation inv) throws HttpException {
 		Document document = (Document) doc.cloneNode(true);
 		Element source = document.getDocumentElement();
 		Element processElement = (Element) toXml(document);
@@ -765,17 +760,15 @@ public class HeaderImportProcess extends Thread implements Urlable,
 		inv.sendOk(document);
 	}
 
-	public void httpPost(Invocation inv) throws InternalException,
-			HttpException, DesignerException, DeployerException {
+	public void httpPost(Invocation inv) throws HttpException {
 		halt();
 		inv.sendSeeOther(getUri());
 	}
 
-	public void httpDelete(Invocation inv) throws InternalException,
-			DesignerException, HttpException, DeployerException {
+	public void httpDelete(Invocation inv) throws HttpException {
 	}
 
-	public Node toXml(Document doc) throws InternalException, HttpException {
+	public Node toXml(Document doc) throws HttpException {
 		Element element = doc.createElement("header-import-process");
 		element.setAttribute("uri", uri.toString());
 		element.setAttribute("id", getUriId().toString());
@@ -786,20 +779,18 @@ public class HeaderImportProcess extends Thread implements Urlable,
 		return element;
 	}
 
-	public UriPathElement getUriId() throws InternalException, HttpException {
+	public UriPathElement getUriId() throws HttpException {
 		String uriString = uri.toString();
 		uriString = uriString.substring(0, uriString.length() - 1);
 		return new UriPathElement(uriString.substring(uriString
 				.lastIndexOf("/") + 1));
 	}
 
-	public Node toXml(Document doc, XmlTree tree) throws InternalException,
-			HttpException {
+	public Node toXml(Document doc, XmlTree tree) throws HttpException {
 		return null;
 	}
 
-	public Organization getOrganization() throws HttpException,
-			InternalException {
+	public Organization getOrganization() throws HttpException {
 		return (Organization) Chellow.dereferenceUri(uri.toUri().resolve(
 				"../.."));
 	}

@@ -146,6 +146,8 @@ public class Dso extends Party {
 			return new Llfcs(this);
 		} else if (MpanTops.URI_ID.equals(uriId)) {
 			return new MpanTops(this);
+		} else if (DsoServices.URI_ID.equals(uriId)) {
+			return new DsoServices(this);
 		} else {
 			throw new NotFoundException();
 		}

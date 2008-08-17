@@ -27,7 +27,6 @@ import java.util.List;
 
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
-import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Invocation;
 import net.sf.chellow.monad.MonadUtils;
 import net.sf.chellow.monad.NotFoundException;
@@ -50,7 +49,7 @@ public class DsoServices implements Urlable, XmlDescriber {
 
 	static {
 		try {
-			URI_ID = new UriPathElement("dso-services");
+			URI_ID = new UriPathElement("services");
 		} catch (HttpException e) {
 			throw new RuntimeException(e);
 		}
@@ -66,7 +65,7 @@ public class DsoServices implements Urlable, XmlDescriber {
 		return URI_ID;
 	}
 
-	public MonadUri getUri() throws InternalException, HttpException {
+	public MonadUri getUri() throws HttpException {
 		return dso.getUri().resolve(getUrlId()).append("/");
 	}
 
@@ -87,13 +86,13 @@ public class DsoServices implements Urlable, XmlDescriber {
 	private Document document() throws HttpException {
 		Document doc = MonadUtils.newSourceDocument();
 		Element source = doc.getDocumentElement();
-		Element servicesElement = (Element) toXml(doc);
+		Element servicesElement = toXml(doc);
 		source.appendChild(servicesElement);
 		servicesElement.appendChild(dso.toXml(doc));
 		for (DsoService service : (List<DsoService>) Hiber
 				.session()
 				.createQuery(
-						"from DsoService service where service.provider = :dso order by service.finishRateScript.finishDate.date desc")
+						"from DsoService service where service.dso = :dso order by service.finishRateScript.finishDate.date desc")
 				.setEntity("dso", dso).list()) {
 			servicesElement.appendChild(service.toXml(doc));
 		}
@@ -111,7 +110,7 @@ public class DsoServices implements Urlable, XmlDescriber {
 		DsoService service = (DsoService) Hiber
 				.session()
 				.createQuery(
-						"from DsoService service where service.provider = :dso and service.id = :serviceId")
+						"from DsoService service where service.dso = :dso and service.id = :serviceId")
 				.setEntity("dso", dso).setLong("serviceId",
 						Long.parseLong(uriId.getString())).uniqueResult();
 		if (service == null) {
@@ -125,13 +124,12 @@ public class DsoServices implements Urlable, XmlDescriber {
 
 	}
 
-	public Node toXml(Document doc) throws InternalException, HttpException {
+	public Element toXml(Document doc) throws HttpException {
 		Element contractsElement = doc.createElement("dso-services");
 		return contractsElement;
 	}
 
-	public Node toXml(Document doc, XmlTree tree) throws InternalException,
-			HttpException {
+	public Node toXml(Document doc, XmlTree tree) throws HttpException {
 		// TODO Auto-generated method stub
 		return null;
 	}

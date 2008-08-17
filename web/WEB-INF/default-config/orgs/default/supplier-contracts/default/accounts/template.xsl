@@ -14,10 +14,10 @@
 				<title>
 					Chellow &gt; Organizations &gt;
 					<xsl:value-of
-						select="/source/accounts/supplier/org/@name" />
-					&gt; Suppliers &gt;
+						select="/source/accounts/supplier-contract/org/@name" />
+					&gt; Supplier Contracts &gt;
 					<xsl:value-of
-						select="/source/accounts/supplier/@name" />
+						select="/source/accounts/supplier-contract/@name" />
 					&gt; Accounts
 				</title>
 
@@ -36,24 +36,24 @@
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/orgs/{/source/accounts/supplier/org/@id}/">
+						href="{/source/request/@context-path}/orgs/{/source/accounts/supplier-contract/org/@id}/">
 						<xsl:value-of
-							select="/source/accounts/supplier/org/@name" />
+							select="/source/accounts/supplier-contract/org/@name" />
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/orgs/{/source/accounts/supplier/org/@id}/suppliers/">
-						<xsl:value-of select="'Suppliers'" />
+						href="{/source/request/@context-path}/orgs/{/source/accounts/supplier-contract/org/@id}/supplier-contracts/">
+						<xsl:value-of select="'Supplier Contracts'" />
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/orgs/{/source/accounts/supplier/org/@id}/suppliers/{/source/accounts/supplier/@id}/">
+						href="{/source/request/@context-path}/orgs/{/source/accounts/supplier-contract/org/@id}/supplier-contracts/{/source/accounts/supplier-contract/@id}/">
 						<xsl:value-of
-							select="/source/accounts/supplier/@name" />
+							select="/source/accounts/supplier-contract/@name" />
 					</a>
 					&gt; <xsl:value-of select="'Accounts ['" />
 					<a
-						href="{/source/request/@context-path}/orgs/1/reports/1/screen/output/">
+						href="{/source/request/@context-path}/orgs/{/source/accounts/supplier-contract/org/@id}/reports/1/screen/output/">
 						<xsl:value-of select="'view'" />
 					</a>
 					<xsl:value-of select="']'" />
@@ -93,7 +93,6 @@
 							</xsl:for-each>
 						</ul>
 						<br />
-						<hr />
 						<form action="." method="post">
 							<fieldset>
 								<legend>Add an account</legend>

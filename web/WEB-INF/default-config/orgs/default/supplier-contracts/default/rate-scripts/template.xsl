@@ -13,10 +13,9 @@
 
 				<title>
 					Chellow &gt; Organizations &gt;
-					 &gt;
 					<xsl:value-of
-						select="/source/rate-scripts/supplier-contract/supplier/@name" />
-					&gt; Services &gt;
+						select="/source/rate-scripts/supplier-contract/org/@name" />
+					&gt; Supplier Contracts &gt;
 					<xsl:value-of
 						select="/source/rate-scripts/supplier-contract/@name" />
 					&gt; Rate Scripts
@@ -51,7 +50,13 @@
 						<xsl:value-of
 							select="/source/rate-scripts/supplier-contract/@name" />
 					</a>
-					&gt; Rate Scripts
+					&gt;
+					<xsl:value-of select="'Rate Scripts ['" />
+					<a
+						href="{/source/request/@context-path}/orgs/{/source/rate-scripts/supplier-contract/org/@id}/reports/38/screen/output/?contract-id={/source/rate-scripts/supplier-contract/@id}">
+						<xsl:value-of select="'view'" />
+					</a>
+					<xsl:value-of select="']'" />
 				</p>
 				<xsl:if test="//message">
 					<ul>
@@ -117,7 +122,7 @@
 							</tbody>
 						</table>
 						<br />
-						<br/>
+						<br />
 						<form action="." method="post">
 							<fieldset>
 								<legend>Add a rate script</legend>

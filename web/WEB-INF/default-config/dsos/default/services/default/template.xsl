@@ -14,7 +14,8 @@
 				<title>
 					Chellow &gt; DSOs &gt;
 					<xsl:value-of
-						select="concat(/source/dso-services/dso/@code, ' &gt; Services')" />
+						select="concat(/source/dso-service/dso/@code, ' &gt; Services &gt; ')" />
+					<xsl:value-of select="/source/dso-service/@name" />
 				</title>
 			</head>
 
@@ -33,9 +34,15 @@
 					<a
 						href="{/source/request/@context-path}/dsos/{/source/dso-services/dso/@id}/">
 						<xsl:value-of
-							select="/source/dso-services/dso/@code" />
+							select="/source/dso-service/dso/@code" />
 					</a>
-					<xsl:value-of select="' &gt; Services '" />
+					&gt;
+					<a
+						href="{/source/request/@context-path}/dsos/{/source/dso-services/dso/@id}/services/">
+						<xsl:value-of select="'Services'" />
+					</a>
+					&gt;
+					<xsl:value-of select="/source/dso-service/@name"/>
 				</p>
 
 				<xsl:if test="//message">
@@ -63,7 +70,7 @@
 						<table>
 							<thead>
 								<tr>
-									<th>Id</th>
+									<th>Chellow Id</th>
 									<th>Name</th>
 								</tr>
 							</thead>

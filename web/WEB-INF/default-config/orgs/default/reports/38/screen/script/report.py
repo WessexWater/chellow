@@ -1,12 +1,11 @@
 from net.sf.chellow.monad import Hiber, XmlTree, UserException
-from net.sf.chellow.billing import SupplierService
+from net.sf.chellow.billing import SupplierContract
 
-service_id = inv.getLong('supplier-service-id')
-service = SupplierService.getSupplierService(service_id)
-if not service.getProvider().getOrganization().equals(organization):
-    raise UserException("Such a supplier service doesn't exist in this organization")
-service_element = service.toXml(doc, XmlTree('provider'))
-source.appendChild(service_element)
-for rate_script in service.getRateScripts():
-    service_element.appendChild(rate_script.toXml(doc))
-source.appendChild(organization.toXml(doc))
+contract_id = inv.getLong('contract-id')
+contract = SupplierContract.getSupplierContract(contract_id)
+if not contract.getOrganization().equals(organization):
+    raise UserException("Such a supplier contract doesn't exist in this organization")
+contract_element = contract.toXml(doc, XmlTree('provider').put('organization'))
+source.appendChild(contract_element)
+for rate_script in contract.getRateScripts():
+    contract_element.appendChild(rate_script.toXml(doc))

@@ -29,15 +29,14 @@ import java.util.List;
 import java.util.Locale;
 import java.util.TimeZone;
 
-import net.sf.chellow.monad.DeployerException;
-import net.sf.chellow.monad.DesignerException;
 import net.sf.chellow.monad.Hiber;
+import net.sf.chellow.monad.HttpException;
+import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Invocation;
+import net.sf.chellow.monad.MethodNotAllowedException;
 import net.sf.chellow.monad.MonadUtils;
 import net.sf.chellow.monad.NotFoundException;
-import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Urlable;
-import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.UserException;
 import net.sf.chellow.monad.XmlTree;
 import net.sf.chellow.monad.types.MonadUri;
@@ -81,7 +80,7 @@ public class Account extends PersistentEntity implements Urlable {
 			((Account) result[0]).checkMissingFromLatest((Contract) result[1]);
 		}
 	}
-	
+
 	private Contract contract;
 
 	private String reference;
@@ -130,7 +129,7 @@ public class Account extends PersistentEntity implements Urlable {
 				throw e;
 			}
 			Hiber.commit();
-				inv.sendSeeOther(contract.accountsInstance().getUri());
+			inv.sendSeeOther(contract.accountsInstance().getUri());
 		} else {
 			String reference = inv.getString("reference");
 			if (!inv.isValid()) {
@@ -143,21 +142,20 @@ public class Account extends PersistentEntity implements Urlable {
 	}
 
 	@SuppressWarnings("unchecked")
-	private Document document() throws InternalException, HttpException,
-			DesignerException {
+	private Document document() throws HttpException {
 		Document doc = MonadUtils.newSourceDocument();
 		Element source = doc.getDocumentElement();
-		Element accountElement = (Element) toXml(doc, new XmlTree("organization")
-						.put("provider"));
+		Element accountElement = (Element) toXml(doc, new XmlTree("contract",
+				new XmlTree("organization").put("provider")));
 		source.appendChild(accountElement);
 		for (Mpan mpan : (List<Mpan>) Hiber.session().createQuery(
 				"from Mpan mpan where mpan.supplierAccount = :account")
 				.setEntity("account", this).list()) {
 			accountElement.appendChild(mpan.toXml(doc, new XmlTree(
-									"supplyGeneration", new XmlTree("supply")).put(
-									"mpanTop",
-									new XmlTree("profileClass").put("meterTimeswitch").put(
-											"llf")).put("mpanCore")));
+					"supplyGeneration", new XmlTree("supply")).put(
+					"mpanTop",
+					new XmlTree("profileClass").put("meterTimeswitch").put(
+							"llf")).put("mpanCore")));
 		}
 		for (Bill bill : (List<Bill>) Hiber
 				.session()
@@ -174,11 +172,11 @@ public class Account extends PersistentEntity implements Urlable {
 	}
 
 	public MonadUri getUri() throws HttpException {
-		return contract.accountsInstance().getUri().resolve(getUriId()).append("/");
+		return contract.accountsInstance().getUri().resolve(getUriId()).append(
+				"/");
 	}
 
-	public Urlable getChild(UriPathElement uriId) throws InternalException,
-			HttpException {
+	public Urlable getChild(UriPathElement uriId) throws HttpException {
 		if (Bills.URI_ID.equals(uriId)) {
 			return billsInstance();
 		} else {
@@ -186,20 +184,18 @@ public class Account extends PersistentEntity implements Urlable {
 		}
 	}
 
-	public void httpDelete(Invocation inv) throws InternalException,
-			DesignerException, HttpException, DeployerException {
-		// deleteAccount(this);
-		// inv.sendOk();
+	public void httpDelete(Invocation inv) throws HttpException {
+		throw new MethodNotAllowedException();
 	}
 
 	public void checkMissingFromLatest(Contract contract)
-			throws InternalException, HttpException {
+			throws HttpException {
 		checkMissingFromLatest(contract, null);
 	}
 
 	@SuppressWarnings("unchecked")
 	public void checkMissingFromLatest(Contract contract, HhEndDate to)
-			throws InternalException, HttpException {
+			throws HttpException {
 		List<Bill> bills = (List<Bill>) Hiber
 				.session()
 				.createQuery(
@@ -228,11 +224,11 @@ public class Account extends PersistentEntity implements Urlable {
 	void checkMissing(Contract contract, HhEndDate from, HhEndDate to)
 			throws HttpException {
 		List<SupplyGeneration> supplyGenerations = Hiber
-		.session()
-		.createQuery(
-				"select mpan.supplyGeneration from Mpan mpan where mpan.supplierAccount = :account order by mpan.supplyGeneration.startDate.date")
-		.setEntity("account", this).list();
-		
+				.session()
+				.createQuery(
+						"select mpan.supplyGeneration from Mpan mpan where mpan.supplierAccount = :account order by mpan.supplyGeneration.startDate.date")
+				.setEntity("account", this).list();
+
 		if (supplyGenerations.isEmpty()) {
 			return;
 		}
@@ -242,8 +238,8 @@ public class Account extends PersistentEntity implements Urlable {
 		if (to == null) {
 			int frequency = 1;
 			int profileClass = Integer.parseInt(supplyGenerations.get(0)
-					.getMpans().iterator().next().getMpanTop()
-					.getPc().getCode().toString());
+					.getMpans().iterator().next().getMpanTop().getPc()
+					.getCode().toString());
 			if (profileClass < 5 && profileClass > 1) {
 				frequency = 3;
 			}
@@ -290,8 +286,7 @@ public class Account extends PersistentEntity implements Urlable {
 	}
 
 	void addSnag(Contract contract, String description, HhEndDate startDate,
-			HhEndDate finishDate, boolean isResolved)
-			throws HttpException {
+			HhEndDate finishDate, boolean isResolved) throws HttpException {
 		SnagDateBounded.addAccountSnag(contract, this, description, startDate,
 				finishDate, isResolved);
 	}
@@ -302,7 +297,7 @@ public class Account extends PersistentEntity implements Urlable {
 
 	@SuppressWarnings("unchecked")
 	private List<Mpan> getMpans(HhEndDate from, HhEndDate to)
-			throws HttpException, InternalException {
+			throws HttpException {
 		char roleCode = contract.getProvider().getRole().getCode();
 		if (roleCode == MarketRole.SUPPLIER) {
 			if (to == null) {
@@ -344,8 +339,8 @@ public class Account extends PersistentEntity implements Urlable {
 			invoiceMpans.add(invoiceMpan.getMpan());
 		}
 		if (!accountMpans.equals(new ArrayList<Mpan>(invoiceMpans))) {
-			throw new UserException("Problem with account '"
-					+ reference + "' invoice '" + invoice.getReference()
+			throw new UserException("Problem with account '" + reference
+					+ "' invoice '" + invoice.getReference()
 					+ "' from the half-hour ending " + invoice.getStartDate()
 					+ " to the half-hour ending " + invoice.getFinishDate()
 					+ ". This bill has MPANs " + invoiceMpans
@@ -363,7 +358,7 @@ public class Account extends PersistentEntity implements Urlable {
 
 	@SuppressWarnings("unchecked")
 	private Bill combineBills(HhEndDate start, HhEndDate finish)
-			throws HttpException, InternalException {
+			throws HttpException {
 		List<Bill> bills = (List<Bill>) Hiber
 				.session()
 				.createQuery(
@@ -388,7 +383,7 @@ public class Account extends PersistentEntity implements Urlable {
 		}
 	}
 
-	void delete(Bill bill) throws InternalException, HttpException {
+	void delete(Bill bill) throws HttpException {
 		Contract contract = bill.getContract();
 		Bill foundBill = (Bill) Hiber
 				.session()
