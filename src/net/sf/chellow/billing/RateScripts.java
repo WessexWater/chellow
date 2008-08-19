@@ -132,8 +132,11 @@ public class RateScripts implements Urlable, XmlDescriber {
 		Element source = doc.getDocumentElement();
 		Element batchesElement = (Element) toXml(doc);
 		source.appendChild(batchesElement);
-		batchesElement.appendChild(service.toXml(doc, new XmlTree("provider")
-				.put("organization")));
+		if (service instanceof DsoService) {
+			batchesElement.appendChild(service.toXml(doc, new XmlTree("dso")));
+		} else {
+			batchesElement.appendChild(service.toXml(doc, new XmlTree("provider").put("organization")));
+		}
 		for (RateScript script : (List<RateScript>) Hiber
 				.session()
 				.createQuery(

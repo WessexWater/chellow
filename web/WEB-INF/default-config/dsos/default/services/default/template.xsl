@@ -41,7 +41,7 @@
 						<xsl:value-of select="'Services'" />
 					</a>
 					&gt;
-					<xsl:value-of select="/source/dso-service/@name"/>
+					<xsl:value-of select="/source/dso-service/@name" />
 				</p>
 
 				<xsl:if test="//message">
@@ -58,37 +58,6 @@
 						<legend>Update Service</legend>
 						<br />
 						<label>
-							Supplier
-							<select name="provider-id">
-								<xsl:for-each
-									select="/source/provider">
-									<option value="{@id}">
-										<xsl:choose>
-											<xsl:when
-												test="/source/request/parameter[@name='provider-id']">
-												<xsl:if
-													test="/source/request/parameter[@name='provider-id']/value/text() = @id">
-													<xsl:attribute
-														name="selected" />
-												</xsl:if>
-											</xsl:when>
-											<xsl:otherwise>
-												<xsl:if
-													test="/source/supplier-contract/provider/@id = @id">
-													<xsl:attribute
-														name="selected" />
-												</xsl:if>
-											</xsl:otherwise>
-										</xsl:choose>
-										<xsl:value-of
-											select="concat(participant/@code, ' : ', @name)" />
-									</option>
-								</xsl:for-each>
-							</select>
-						</label>
-						<br />
-						<br />
-						<label>
 							<xsl:value-of select="'Name '" />
 							<input name="name">
 								<xsl:attribute name="value">
@@ -100,7 +69,7 @@
 										</xsl:when>
 										<xsl:otherwise>
 											<xsl:value-of
-												select="/source/supplier-contract/@name" />
+												select="/source/dso-service/@name" />
 										</xsl:otherwise>
 									</xsl:choose>
 								</xsl:attribute>
@@ -120,7 +89,7 @@
 								</xsl:when>
 								<xsl:otherwise>
 									<xsl:value-of
-										select="/source/supplier-contract/@charge-script" />
+										select="/source/dso-service/@charge-script" />
 								</xsl:otherwise>
 							</xsl:choose>
 						</textarea>
@@ -181,6 +150,30 @@
 				</ul>
 			</body>
 		</html>
+	</xsl:template>
+	<xsl:template name="bill-element-template">
+		<xsl:param name="billElement" />
+		<p>
+			<em>
+				<xsl:value-of select="$billElement/@name" />
+			</em>
+			:
+			<xsl:value-of select="$billElement/@cost" />
+		</p>
+		<p>
+			<xsl:value-of select="$billElement/@working" />
+		</p>
+		<xsl:if test="$billElement/bill-element">
+			<ul>
+				<xsl:for-each select="$billElement/bill-element">
+					<li>
+						<xsl:call-template name="bill-element-template" />
+						<xsl:with-param name="billElement"
+							select="bill-element" />
+					</li>
+				</xsl:for-each>
+			</ul>
+		</xsl:if>
 	</xsl:template>
 </xsl:stylesheet>
 
