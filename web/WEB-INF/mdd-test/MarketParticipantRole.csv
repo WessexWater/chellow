@@ -1,4 +1,5 @@
 "Market Participant Id","Market Participant Role Code","Effective From Date {MPR}","Effective To Date {MPR}","Address Line 1","Address Line 2","Address Line 3","Address Line 4","Address Line 5","Address Line 6","Address Line 7","Address Line 8","Address Line 9","Post Code","Distributor Short Code"
+"POOL","Z","01/04/1996","","338 Euston Road","10th Floor","Regent's Place","London","","","","","","NW1 3BP",""
 "SWEB","3","01/10/1998","","Western Power Distribution","Sowton Office","Osprey Road","Exeter","Devon","","","","","EX2 7WP",""
 "SWEB","4","01/10/1998","","Western Power Distribution","Sowton Office","Osprey Road","Exeter","Devon","","","","","EX2 7WP",""
 "SWEB","8","17/04/2003","09/11/2007","Western Power Distribution ( South West)","Avonbank","Feeder Road","Bristol","","","","","","BS2 0TB",""

@@ -1,4 +1,5 @@
 "Market Participant Id","Market Participant Name","Pool Member Id"
+"CUST","Dummy ID for Customers",""
+"POOL","ELEXON Limited",""
 "SWEB","EDF Energy plc","SWEB"
 "UKDC","IMServ Europe Ltd","UKDC"
-"CUST","Dummy ID for Customers",""

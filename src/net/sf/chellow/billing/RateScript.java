@@ -246,8 +246,13 @@ public class RateScript extends PersistentEntity {
 		Document doc = MonadUtils.newSourceDocument();
 		Element sourceElement = doc.getDocumentElement();
 
-		sourceElement.appendChild(toXml(doc, new XmlTree("service",
-				new XmlTree("provider").put("organization"))));
+		if (service instanceof DsoService) {
+			sourceElement.appendChild(toXml(doc, new XmlTree("service",
+					new XmlTree("dso"))));
+		} else {
+			sourceElement.appendChild(toXml(doc, new XmlTree("service",
+					new XmlTree("provider").put("organization"))));
+		}
 		sourceElement.appendChild(MonadDate.getMonthsXml(doc));
 		sourceElement.appendChild(MonadDate.getDaysXml(doc));
 		sourceElement.appendChild(new MonadDate().toXml(doc));

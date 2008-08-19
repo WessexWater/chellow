@@ -12,8 +12,7 @@
 					href="{/source/request/@context-path}/style/" />
 
 				<title>
-					Chellow &gt;
-					DSOs &gt;
+					Chellow &gt; DSOs &gt;
 					<xsl:value-of
 						select="/source/rate-script/dso-service/dso/@code" />
 					&gt; Services &gt;
@@ -33,8 +32,7 @@
 						<span class="logo">Chellow</span>
 					</a>
 					&gt;
-					<a
-						href="{/source/request/@context-path}/dsos/">
+					<a href="{/source/request/@context-path}/dsos/">
 						<xsl:value-of select="'DSOs'" />
 					</a>
 					&gt;
@@ -310,15 +308,16 @@
 								value="Test without saving" />
 						</fieldset>
 						<br />
-						<br />
 						<input type="submit" value="Update" />
 						<input type="reset" value="Reset" />
 					</fieldset>
 				</form>
-
-				<form action="?view=confirm-delete">
+				<br />
+				<form action=".">
 					<fieldset>
 						<legend>Delete this Rate Script</legend>
+						<input type="hidden" name="view"
+							value="confirm-delete" />
 						<input type="submit" value="Delete" />
 					</fieldset>
 				</form>

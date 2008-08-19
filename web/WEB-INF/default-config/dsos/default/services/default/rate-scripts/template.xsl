@@ -116,7 +116,6 @@
 							</tbody>
 						</table>
 						<br />
-						<hr />
 						<form action="." method="post">
 							<fieldset>
 								<legend>Add a rate script</legend>
