@@ -79,7 +79,6 @@
 							</xsl:for-each>
 						</ul>
 						<br />
-						<hr />
 						<form action="." method="post">
 							<fieldset>
 								<legend>Add a contract</legend>

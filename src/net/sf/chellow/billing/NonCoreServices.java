@@ -25,15 +25,13 @@ package net.sf.chellow.billing;
 import java.util.Date;
 import java.util.List;
 
-import net.sf.chellow.monad.DeployerException;
-import net.sf.chellow.monad.DesignerException;
 import net.sf.chellow.monad.Hiber;
+import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.Invocation;
+import net.sf.chellow.monad.MethodNotAllowedException;
 import net.sf.chellow.monad.MonadUtils;
 import net.sf.chellow.monad.NotFoundException;
-import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Urlable;
-import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.UserException;
 import net.sf.chellow.monad.XmlDescriber;
 import net.sf.chellow.monad.XmlTree;
@@ -41,7 +39,6 @@ import net.sf.chellow.monad.types.MonadDate;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
 import net.sf.chellow.physical.HhEndDate;
-import net.sf.chellow.physical.MarketRole;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -66,20 +63,19 @@ public class NonCoreServices implements Urlable, XmlDescriber {
 		return URI_ID;
 	}
 
-	public MonadUri getUri() throws InternalException, HttpException {
+	public MonadUri getUri() throws HttpException {
 		return new MonadUri("/").resolve(getUrlId()).append("/");
 	}
 
 	public void httpPost(Invocation inv) throws HttpException {
-		String participantCode = inv.getString("participant-code");
+		Long providerId = inv.getLong("provider-id");
 		String name = inv.getString("name");
 		Date startDate = inv.getDate("start-date");
 		String chargeScript = inv.getString("charge-script");
 		if (!inv.isValid()) {
 			throw new UserException(document());
 		}
-		Provider provider = Provider.getProvider(participantCode,
-				MarketRole.NON_CORE_ROLE);
+		Provider provider = Provider.getProvider(providerId);
 		NonCoreService service = NonCoreService.insertNonCoreService(provider,
 				name, HhEndDate.roundDown(startDate), chargeScript);
 		Hiber.commit();
@@ -90,15 +86,22 @@ public class NonCoreServices implements Urlable, XmlDescriber {
 	private Document document() throws HttpException {
 		Document doc = MonadUtils.newSourceDocument();
 		Element source = doc.getDocumentElement();
-		Element servicesElement = (Element) toXml(doc);
+		Element servicesElement = toXml(doc);
 		source.appendChild(servicesElement);
 		for (NonCoreService service : (List<NonCoreService>) Hiber
 				.session()
 				.createQuery(
-						"from NonCoreService service where order by service.finishRateScript.finishDate.date desc, service.provider.code")
+						"from NonCoreService service order by service.finishRateScript.finishDate.date desc, service.provider.participant.code")
 				.list()) {
 			servicesElement.appendChild(service.toXml(doc, new XmlTree(
 					"provider")));
+		}
+		for (Provider provider : (List<Provider>) Hiber
+				.session()
+				.createQuery(
+						"from Provider provider where provider.role.code = 'Z' order by provider.participant.code, provider.name")
+				.list()) {
+			source.appendChild(provider.toXml(doc, new XmlTree("participant")));
 		}
 		source.appendChild(MonadDate.getMonthsXml(doc));
 		source.appendChild(MonadDate.getDaysXml(doc));
@@ -106,13 +109,11 @@ public class NonCoreServices implements Urlable, XmlDescriber {
 		return doc;
 	}
 
-	public void httpGet(Invocation inv) throws DesignerException,
-			InternalException, HttpException, DeployerException {
+	public void httpGet(Invocation inv) throws HttpException {
 		inv.sendOk(document());
 	}
 
-	public NonCoreService getChild(UriPathElement uriId) throws HttpException,
-			InternalException {
+	public NonCoreService getChild(UriPathElement uriId) throws HttpException {
 		NonCoreService service = (NonCoreService) Hiber.session().createQuery(
 				"from NonCoreService service where service.id = :serviceId")
 				.setLong("serviceId", Long.parseLong(uriId.getString()))
@@ -123,20 +124,16 @@ public class NonCoreServices implements Urlable, XmlDescriber {
 		return service;
 	}
 
-	public void httpDelete(Invocation inv) throws InternalException,
-			HttpException {
-		// TODO Auto-generated method stub
-
+	public void httpDelete(Invocation inv) throws HttpException {
+		throw new MethodNotAllowedException();
 	}
 
-	public Node toXml(Document doc) throws InternalException, HttpException {
-		Element contractsElement = doc.createElement("government-services");
+	public Element toXml(Document doc) throws HttpException {
+		Element contractsElement = doc.createElement("non-core-services");
 		return contractsElement;
 	}
 
-	public Node toXml(Document doc, XmlTree tree) throws InternalException,
-			HttpException {
-		// TODO Auto-generated method stub
+	public Node toXml(Document doc, XmlTree tree) throws HttpException {
 		return null;
 	}
 }

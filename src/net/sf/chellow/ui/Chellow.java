@@ -13,12 +13,10 @@ import net.sf.chellow.billing.Dsos;
 import net.sf.chellow.billing.NonCoreServices;
 import net.sf.chellow.billing.Providers;
 import net.sf.chellow.monad.BadRequestException;
-import net.sf.chellow.monad.DeployerException;
-import net.sf.chellow.monad.DesignerException;
 import net.sf.chellow.monad.ForbiddenException;
 import net.sf.chellow.monad.HttpException;
-import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Invocation;
+import net.sf.chellow.monad.MethodNotAllowedException;
 import net.sf.chellow.monad.Monad;
 import net.sf.chellow.monad.MonadContextParameters;
 import net.sf.chellow.monad.UnauthorizedException;
@@ -27,8 +25,8 @@ import net.sf.chellow.monad.Invocation.HttpMethod;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
 import net.sf.chellow.physical.MarketRoles;
-import net.sf.chellow.physical.MeterTypes;
 import net.sf.chellow.physical.MeterPaymentTypes;
+import net.sf.chellow.physical.MeterTypes;
 import net.sf.chellow.physical.Mtcs;
 import net.sf.chellow.physical.Organizations;
 import net.sf.chellow.physical.Participants;
@@ -125,8 +123,7 @@ public class Chellow extends Monad implements Urlable {
 		}
 	}
 
-	protected void checkPermissions(Invocation inv) throws HttpException,
-			InternalException {
+	protected void checkPermissions(Invocation inv) throws HttpException {
 		User user = ImplicitUserSource.getUser(inv);
 		if (requestAllowed(user, inv)) {
 			return;
@@ -141,8 +138,7 @@ public class Chellow extends Monad implements Urlable {
 		throw new ForbiddenException();
 	}
 
-	public void httpGet(Invocation inv) throws DesignerException,
-			InternalException, HttpException, DeployerException {
+	public void httpGet(Invocation inv) throws HttpException {
 		inv.sendOk();
 	}
 
@@ -186,9 +182,7 @@ public class Chellow extends Monad implements Urlable {
 		}
 	}
 
-	public void httpDelete(Invocation inv) throws InternalException,
-			DesignerException, HttpException, DeployerException {
-		// TODO Auto-generated method stub
-
+	public void httpDelete(Invocation inv) throws HttpException {
+		throw new MethodNotAllowedException();
 	}
 }

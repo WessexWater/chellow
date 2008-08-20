@@ -147,6 +147,12 @@
 							Providers
 						</a>
 					</li>
+					<li>
+						<a
+							href="{/source/request/@context-path}/non-core-services/">
+							Non-core services
+						</a>
+					</li>
 				</ul>
 			</body>
 		</html>
