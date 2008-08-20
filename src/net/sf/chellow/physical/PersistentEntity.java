@@ -23,6 +23,8 @@
 package net.sf.chellow.physical;
 
 import net.sf.chellow.monad.HttpException;
+import net.sf.chellow.monad.Invocation;
+import net.sf.chellow.monad.MethodNotAllowedException;
 import net.sf.chellow.monad.Urlable;
 import net.sf.chellow.monad.types.MonadObject;
 import net.sf.chellow.monad.types.UriPathElement;
@@ -67,4 +69,9 @@ public abstract class PersistentEntity extends MonadObject implements Urlable {
 	public int hashCode() {
 		return id == null ? super.hashCode() : id.intValue();
 	}
+	
+	public void httpDelete(Invocation inv) throws HttpException {
+		throw new MethodNotAllowedException();
+	}
+
 }

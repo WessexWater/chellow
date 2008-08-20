@@ -10,15 +10,12 @@
 			<head>
 				<link rel="stylesheet" type="text/css"
 					href="{/source/request/@context-path}/style/" />
-
 				<title>
-					Chellow &gt; Government &gt; Services &gt;
+					Chellow &gt; Non-core Services &gt;
 					<xsl:value-of
-						select="/source/government-service/@name" />
+						select="/source/non-core-service/@name" />
 				</title>
-
 			</head>
-
 			<body>
 				<p>
 					<a href="{/source/request/@context-path}/">
@@ -27,16 +24,13 @@
 						<span class="logo">Chellow</span>
 					</a>
 					&gt;
-					<a href="{/source/request/@context-path}/dsos/">
-						<xsl:value-of select="'Government'" />
-					</a>
-					&gt;
 					<a
-						href="{/source/request/@context-path}/government/services/">
-						<xsl:value-of select="'Services'" />
+						href="{/source/request/@context-path}/non-core-services/">
+						<xsl:value-of select="'Non-core Services'" />
 					</a>
 					&gt;
-					<xsl:value-of select="/source/government-service/@name" />
+					<xsl:value-of
+						select="/source/non-core-service/@name" />
 				</p>
 				<xsl:if test="//message">
 					<ul>
@@ -82,7 +76,7 @@
 												</xsl:when>
 												<xsl:otherwise>
 													<xsl:value-of
-														select="/source/government-service/@name" />
+														select="/source/non-core-service/@name" />
 												</xsl:otherwise>
 											</xsl:choose>
 										</xsl:attribute>
@@ -102,7 +96,7 @@
 										</xsl:when>
 										<xsl:otherwise>
 											<xsl:value-of
-												select="/source/government-service/@charge-script" />
+												select="/source/non-core-service/@charge-script" />
 										</xsl:otherwise>
 									</xsl:choose>
 								</textarea>
@@ -126,7 +120,7 @@
 												</xsl:when>
 												<xsl:otherwise>
 													<xsl:value-of
-														select="/source/government-service/@bill-id" />
+														select="/source/non-core-service/@bill-id" />
 												</xsl:otherwise>
 											</xsl:choose>
 										</input>
@@ -137,7 +131,7 @@
 								</fieldset>
 							</fieldset>
 						</form>
-
+						<br />
 						<form action=".">
 							<fieldset>
 								<legend>Delete this service</legend>

@@ -12,12 +12,9 @@
 					href="{/source/request/@context-path}/style/" />
 
 				<title>
-					Chellow &gt; Government &gt;
+					Chellow &gt; Non-core Services &gt;
 					<xsl:value-of
-						select="/source/rate-scripts/government-service/government/@name" />
-					&gt; Services &gt;
-					<xsl:value-of
-						select="/source/rate-scripts/government-service/@name" />
+						select="/source/rate-scripts/non-core-service/@name" />
 					&gt; Rate Scripts
 				</title>
 			</head>
@@ -31,19 +28,14 @@
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/government/">
-						<xsl:value-of select="'Government'" />
+						href="{/source/request/@context-path}/non-core-services/">
+						<xsl:value-of select="'Non-core Services'" />
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/government/services/">
-						<xsl:value-of select="'Services'" />
-					</a>
-					&gt;
-					<a
-						href="{/source/request/@context-path}/government/services/{/source/rate-scripts/government-service/@id}/">
+						href="{/source/request/@context-path}/non-core-services/{/source/rate-scripts/non-core-service/@id}/">
 						<xsl:value-of
-							select="/source/rate-scripts/government-service/@name" />
+							select="/source/rate-scripts/non-core-service/@name" />
 					</a>
 					&gt; Rate Scripts
 				</p>
@@ -75,7 +67,7 @@
 							<caption>Rate Scripts</caption>
 							<thead>
 								<tr>
-									<th>Id</th>
+									<th>Chellow Id</th>
 									<th>Start date</th>
 									<th>End date</th>
 								</tr>
@@ -111,7 +103,6 @@
 							</tbody>
 						</table>
 						<br />
-						<hr />
 						<form action="." method="post">
 							<fieldset>
 								<legend>Add a rate script</legend>

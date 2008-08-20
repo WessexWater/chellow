@@ -27,7 +27,6 @@ import java.util.List;
 
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
-import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Invocation;
 import net.sf.chellow.monad.MonadUtils;
 import net.sf.chellow.monad.NotFoundException;
@@ -74,7 +73,7 @@ public class RateScripts implements Urlable, XmlDescriber {
 		return URI_ID;
 	}
 
-	public MonadUri getUri() throws InternalException, HttpException {
+	public MonadUri getUri() throws HttpException {
 		return service.getUri().resolve(getUrlId()).append("/");
 	}
 
@@ -134,6 +133,8 @@ public class RateScripts implements Urlable, XmlDescriber {
 		source.appendChild(batchesElement);
 		if (service instanceof DsoService) {
 			batchesElement.appendChild(service.toXml(doc, new XmlTree("dso")));
+		} else if (service instanceof NonCoreService) {
+			batchesElement.appendChild(service.toXml(doc, new XmlTree("provider")));			
 		} else {
 			batchesElement.appendChild(service.toXml(doc, new XmlTree("provider").put("organization")));
 		}

@@ -12,10 +12,9 @@
 					href="{/source/request/@context-path}/style/" />
 
 				<title>
-					Chellow &gt;
-					Government &gt; Services &gt;
+					Chellow &gt; Non-core Services &gt;
 					<xsl:value-of
-						select="/source/rate-script/government-service/@name" />
+						select="/source/rate-script/non-core-service/@name" />
 					&gt; Rate Scripts &gt;
 					<xsl:value-of select="/source/rate-script/@id" />
 				</title>
@@ -29,23 +28,18 @@
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/government/">
-						<xsl:value-of select="'Government'" />
+						href="{/source/request/@context-path}/non-core-services/">
+						<xsl:value-of select="'Non-core Services'" />
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/government/services/">
-						<xsl:value-of select="'Services'" />
-					</a>
-					&gt;
-					<a
-						href="{/source/request/@context-path}/government/services/{/source/rate-script/government-service/@id}/">
+						href="{/source/request/@context-path}/non-core-services/{/source/rate-script/non-core-service/@id}/">
 						<xsl:value-of
-							select="/source/rate-script/government-service/@name" />
+							select="/source/rate-script/non-core-service/@name" />
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/government/services/{/source/rate-script/government-service/@id}/rate-scripts/">
+						href="{/source/request/@context-path}/non-core-services/{/source/rate-script/non-core-service/@id}/rate-scripts/">
 						<xsl:value-of select="'Rate Scripts'" />
 					</a>
 					&gt;
@@ -304,10 +298,12 @@
 						<input type="reset" value="Reset" />
 					</fieldset>
 				</form>
-
-				<form action="?view=confirm-delete">
+				<br />
+				<form action=".">
 					<fieldset>
 						<legend>Delete this Rate Script</legend>
+						<input type="hidden" name="view"
+							value="confirm-delete" />
 						<input type="submit" value="Delete" />
 					</fieldset>
 				</form>

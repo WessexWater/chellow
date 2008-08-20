@@ -237,11 +237,6 @@ public class RateScript extends PersistentEntity {
 		}
 	}
 
-	public void httpDelete(Invocation inv) throws HttpException {
-		// TODO Auto-generated method stub
-
-	}
-
 	private Document document() throws HttpException {
 		Document doc = MonadUtils.newSourceDocument();
 		Element sourceElement = doc.getDocumentElement();
@@ -249,6 +244,9 @@ public class RateScript extends PersistentEntity {
 		if (service instanceof DsoService) {
 			sourceElement.appendChild(toXml(doc, new XmlTree("service",
 					new XmlTree("dso"))));
+		} else if (service instanceof NonCoreService) {
+			sourceElement.appendChild(toXml(doc, new XmlTree("service",
+					new XmlTree("provider"))));
 		} else {
 			sourceElement.appendChild(toXml(doc, new XmlTree("service",
 					new XmlTree("provider").put("organization"))));
