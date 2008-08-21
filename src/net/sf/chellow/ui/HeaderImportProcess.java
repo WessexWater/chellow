@@ -221,30 +221,30 @@ public class HeaderImportProcess extends Thread implements Urlable,
 						importSsc = importSscStr.equals("null") ? null : Ssc
 								.getSsc(new SscCode(Integer
 										.parseInt(importSscStr)));
-						String importAgreedSupplyCapacityStr = values[8];
+						String importAgreedSupplyCapacityStr = values[9];
 						csvElement.appendChild(getField(
 								"Import Agreed Supply Capacity",
 								importAgreedSupplyCapacityStr));
 						importAgreedSupplyCapacity = new Integer(
 								importAgreedSupplyCapacityStr);
-						String importHhdcContractName = values[9];
+						String importHhdcContractName = values[10];
 						csvElement.appendChild(getField("Import HHDC Contract",
 								importHhdcContractName));
 						importHhdcContract = importHhdcContractName == null ? null
 								: organization
 										.getHhdcContract(importHhdcContractName);
-						String importHhdceAccountReference = values[10];
+						String importHhdceAccountReference = values[11];
 						csvElement.appendChild(getField("Import HHDC Account",
 								importHhdceAccountReference));
 						importHhdceAccount = importHhdcContract
 								.getAccount(importHhdceAccountReference);
-						String importSupplierContractName = values[11];
+						String importSupplierContractName = values[12];
 						csvElement.appendChild(getField(
 								"Import supplier contract name",
 								importSupplierContractName));
 						importSupplierContract = organization
 								.getSupplierContract(importSupplierContractName);
-						String importSupplierAccountReference = values[12];
+						String importSupplierAccountReference = values[13];
 						csvElement.appendChild(getField(
 								"Import supplier account reference",
 								importSupplierAccountReference));
@@ -270,30 +270,30 @@ public class HeaderImportProcess extends Thread implements Urlable,
 								exportSscStr));
 						exportSsc = exportSscStr.equals("null") ? null : Ssc
 								.getSsc(new SscCode(exportSscStr));
-						String exportAgreedSupplyCapacityStr = values[15];
+						String exportAgreedSupplyCapacityStr = values[16];
 						csvElement.appendChild(getField(
 								"Export Agreed Supply Capacity",
 								exportAgreedSupplyCapacityStr));
 						exportAgreedSupplyCapacity = new Integer(
 								exportAgreedSupplyCapacityStr);
-						String exportHhdcContractName = values[16];
+						String exportHhdcContractName = values[17];
 						csvElement.appendChild(getField("Export HHDC contract",
 								exportHhdcContractName));
 						exportHhdceContract = exportHhdcContractName.length() == 0 ? null
 								: organization
 										.getHhdcContract(exportHhdcContractName);
-						String exportHhdcAccountReference = values[17];
+						String exportHhdcAccountReference = values[18];
 						csvElement.appendChild(getField("Export HHDC account",
 								exportHhdcAccountReference));
 						exportHhdceAccount = exportHhdceContract
 								.getAccount(exportHhdcAccountReference);
-						String exportSupplierContractName = values[18];
+						String exportSupplierContractName = values[19];
 						csvElement.appendChild(getField(
 								"Export supplier contract name",
 								exportSupplierContractName));
 						exportSupplierContract = organization
 								.getSupplierContract(exportSupplierContractName);
-						String exportAccountSupplierReference = values[19];
+						String exportAccountSupplierReference = values[20];
 						csvElement.appendChild(getField(
 								"Export supplier account reference",
 								exportAccountSupplierReference));
@@ -727,10 +727,11 @@ public class HeaderImportProcess extends Thread implements Urlable,
 			}
 		} catch (HttpException e) {
 			String message = e.getMessage();
-			if (message != null) {
-				csvElement.appendChild(new MonadMessage(message).toXml(doc));
-				source.appendChild(csvElement);
+			if (message == null) {
+				message ="There has been a problem: " + e.getStackTraceString();
 			}
+			csvElement.appendChild(new MonadMessage(message).toXml(doc));
+			source.appendChild(csvElement);
 			throw e;
 		}
 	}

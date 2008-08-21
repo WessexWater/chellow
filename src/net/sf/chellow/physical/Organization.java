@@ -246,7 +246,8 @@ public class Organization extends PersistentEntity {
 				.setEntity("organization", this).setLong("contractId", id)
 				.uniqueResult();
 		if (contract == null) {
-			throw new NotFoundException();
+			throw new NotFoundException(
+					"There isn't an HHDC contract with the id " + id);
 		}
 		return contract;
 	}
@@ -259,7 +260,8 @@ public class Organization extends PersistentEntity {
 				.setEntity("organization", this).setString("name", name)
 				.uniqueResult();
 		if (contract == null) {
-			throw new NotFoundException();
+			throw new NotFoundException("There isn't an HHDC contract called '"
+					+ name + "'");
 		}
 		return contract;
 	}

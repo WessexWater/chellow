@@ -23,8 +23,6 @@
 package net.sf.chellow.monad;
 
 import java.io.File;
-import java.io.PrintWriter;
-import java.io.StringWriter;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -93,17 +91,5 @@ public class MonadUtils {
 					+ "' is not readable.");
 		}
 		return file;
-	}
-
-	public static String getStackTrace(Throwable e) {
-		StringWriter writer = new StringWriter();
-		PrintWriter printWriter = new PrintWriter(writer);
-		Throwable cause = ((InternalException) e).getCause();
-		e.printStackTrace(printWriter);
-		if (cause != null) {
-			printWriter.write("\n------------\nNested exception:\n");
-			cause.printStackTrace(printWriter);
-		}
-		return writer.toString();
 	}
 }

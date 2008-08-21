@@ -471,7 +471,7 @@ public abstract class Monad extends HttpServlet implements Urlable {
 							+ " Problem type : "
 							+ e.getCause().getClass().getName() + " Message: "
 							+ e.getException().getMessage() + "Stack trace: "
-							+ MonadUtils.getStackTrace(e.getException()) + e);
+							+ HttpException.getStackTraceString(e.getException()) + e);
 		}
 	}
 

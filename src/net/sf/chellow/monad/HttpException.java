@@ -22,12 +22,26 @@
 
 package net.sf.chellow.monad;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.net.URI;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 public abstract class HttpException extends Exception implements XmlDescriber {
+	public static String getStackTraceString(Throwable e) {
+		StringWriter writer = new StringWriter();
+		PrintWriter printWriter = new PrintWriter(writer);
+		Throwable cause = e.getCause();
+		e.printStackTrace(printWriter);
+		if (cause != null) {
+			printWriter.write("\n------------\nNested exception:\n");
+			cause.printStackTrace(printWriter);
+		}
+		return writer.toString();
+	}
+	
 	private static final long serialVersionUID = 1L;
 
 	private Document document;
@@ -77,5 +91,9 @@ public abstract class HttpException extends Exception implements XmlDescriber {
 	
 	public Element toXml(Document doc, XmlTree tree) {
 		return toXml(doc);
+	}
+	
+	public String getStackTraceString() {
+		return getStackTraceString(this);
 	}
 }

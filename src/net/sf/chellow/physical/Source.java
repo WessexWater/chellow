@@ -25,15 +25,13 @@ package net.sf.chellow.physical;
 import java.util.List;
 
 import net.sf.chellow.data08.Data;
-import net.sf.chellow.monad.DeployerException;
-import net.sf.chellow.monad.DesignerException;
 import net.sf.chellow.monad.Hiber;
+import net.sf.chellow.monad.HttpException;
+import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Invocation;
 import net.sf.chellow.monad.MonadUtils;
 import net.sf.chellow.monad.NotFoundException;
-import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Urlable;
-import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.UserException;
 import net.sf.chellow.monad.Invocation.HttpMethod;
 import net.sf.chellow.monad.types.MonadUri;
@@ -49,38 +47,30 @@ public class Source extends PersistentEntity implements Urlable {
 	static public final String NETWORK_CODE = "net";
 	static private HttpMethod[] ALLOWED_METHODS = { HttpMethod.GET };
 
-	static public Source getSource(Long id) throws InternalException,
-			HttpException {
-		try {
-			Source source = (Source) Hiber.session().get(Source.class, id);
-			if (source == null) {
-				throw new UserException("There is no source with that id.");
-			}
-			return source;
-		} catch (HibernateException e) {
-			throw new InternalException(e);
-		}
-	}
-
-	static public Source getSource(String sourceCode)
-			throws HttpException {
-		Source source = findSource(sourceCode);
+	static public Source getSource(Long id) throws HttpException {
+		Source source = (Source) Hiber.session().get(Source.class, id);
 		if (source == null) {
-			throw new NotFoundException();
+			throw new UserException("There is no source with that id.");
 		}
 		return source;
 	}
 
-	static public Source findSource(String code) throws InternalException,
-			HttpException {
+	static public Source getSource(String sourceCode) throws HttpException {
+		Source source = findSource(sourceCode);
+		if (source == null) {
+			throw new NotFoundException("There's no source with the code '" + sourceCode + "'");
+		}
+		return source;
+	}
+
+	static public Source findSource(String code) throws HttpException {
 		return (Source) Hiber.session().createQuery(
 				"from Source as source where " + "source.code.string = :code")
 				.setString("code", code).uniqueResult();
 	}
 
 	@SuppressWarnings("unchecked")
-	static public List<Source> getSources() throws InternalException,
-			HttpException {
+	static public List<Source> getSources() throws HttpException {
 		return (List<Source>) Hiber.session().createQuery(
 				"from Source as source").list();
 	}
@@ -96,8 +86,7 @@ public class Source extends PersistentEntity implements Urlable {
 			if (Data
 					.isSQLException(e,
 							"ERROR: duplicate key violates unique constraint \"site_code_key\"")) {
-				throw new UserException
-						("A site with this code already exists.");
+				throw new UserException("A site with this code already exists.");
 			} else {
 				throw new InternalException(e);
 			}
@@ -109,12 +98,10 @@ public class Source extends PersistentEntity implements Urlable {
 
 	private String name;
 
-	//private Set<Supply> supplies;
-
 	public Source() {
 	}
 
-	public Source(String code, String name) {
+	public Source(String code, String name) throws HttpException {
 		update(code, name);
 	}
 
@@ -123,6 +110,7 @@ public class Source extends PersistentEntity implements Urlable {
 	}
 
 	public void setCode(String code) {
+		this.code = code;
 	}
 
 	public String getName() {
@@ -133,17 +121,11 @@ public class Source extends PersistentEntity implements Urlable {
 		this.name = name;
 	}
 
-	/*
-	public Set getSupplies() {
-		return supplies;
-	}
-
-	protected void setSupplies(Set<Supply> supplies) {
-		this.supplies = supplies;
-	}
-	*/
-
-	public void update(String code, String name) {
+	public void update(String code, String name) throws HttpException {
+		if (code.length() > 6) {
+			throw new UserException(
+					"The source code is too long. It shouldn't be more than 5 characters long.");
+		}
 		setCode(code);
 		setName(name);
 	}
@@ -156,37 +138,26 @@ public class Source extends PersistentEntity implements Urlable {
 		return element;
 	}
 
-	/*
-	public void addSupply(Supply supply) {
-		supplies.add(supply);
-		// supply.getSites().add(this);
-	}
-	*/
-
-	public MonadUri getUri() throws InternalException, HttpException {
+	public MonadUri getUri() throws HttpException {
 		return Chellow.SOURCES_INSTANCE.getUri().resolve(getUriId());
 	}
 
-	public void httpGet(Invocation inv) throws DesignerException,
-			InternalException, HttpException, DeployerException {
+	public void httpGet(Invocation inv) throws HttpException {
 		Document doc = MonadUtils.newSourceDocument();
 		Element sourceElement = doc.getDocumentElement();
 		sourceElement.appendChild(toXml(doc));
 		inv.sendOk(doc);
 	}
 
-	public void httpPost(Invocation inv) throws InternalException,
-			HttpException {
+	public void httpPost(Invocation inv) throws HttpException {
 		inv.sendMethodNotAllowed(ALLOWED_METHODS);
 	}
 
-	public Urlable getChild(UriPathElement uriId) throws InternalException,
-			HttpException {
+	public Urlable getChild(UriPathElement uriId) throws HttpException {
 		throw new NotFoundException();
 	}
 
-	public void httpDelete(Invocation inv) throws InternalException,
-			DesignerException, HttpException, DeployerException {
+	public void httpDelete(Invocation inv) throws HttpException {
 		inv.sendMethodNotAllowed(ALLOWED_METHODS);
 	}
 }
