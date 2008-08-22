@@ -46,7 +46,7 @@ public class MpanCoreRaw extends MonadObject {
 	}
 
 	public MpanCoreRaw(String label, String mpanCore)
-			throws InternalException, HttpException {
+			throws HttpException {
 		setLabel(label);
 		mpanCore = mpanCore.replace(" ", "");
 		if (mpanCore.length() != 13) {
@@ -77,7 +77,7 @@ public class MpanCoreRaw extends MonadObject {
 	}
 
 	public MpanCoreRaw(DsoCode dsoCode, MpanUniquePart uniquePart,
-			CheckDigit checkDigit) throws InternalException, HttpException {
+			CheckDigit checkDigit) throws HttpException {
 		init(dsoCode, uniquePart, checkDigit);
 	}
 

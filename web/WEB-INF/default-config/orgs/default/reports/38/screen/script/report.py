@@ -9,3 +9,5 @@ contract_element = contract.toXml(doc, XmlTree('provider').put('organization'))
 source.appendChild(contract_element)
 for rate_script in contract.getRateScripts():
     contract_element.appendChild(rate_script.toXml(doc))
+for account in Hiber.session().createQuery("from Account account where account.contract = :contract order by account.reference").setEntity('contract', contract).list():
+    contract_element.appendChild(account.toXml(doc))

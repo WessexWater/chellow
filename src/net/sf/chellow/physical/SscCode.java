@@ -40,9 +40,17 @@ public class SscCode extends MonadInteger {
 	public SscCode(int code) throws HttpException {
 		this(null, code);
 	}
-	
-	public SscCode(String code) throws HttpException {
-		this(null, Integer.parseInt(code));
+
+	public SscCode(String codeStr) throws HttpException {
+		int code;
+		try {
+			code = Integer.parseInt(codeStr);
+		} catch (NumberFormatException e) {
+			throw new UserException("The SSC code must be an integer. "
+					+ e.getMessage());
+		}
+		update(code);
+		init();
 	}
 
 	public SscCode(String label, int code) throws HttpException {
@@ -58,8 +66,7 @@ public class SscCode extends MonadInteger {
 
 	public void update(int code) throws HttpException, InternalException {
 		if (code < 0) {
-			throw new UserException
-					("The SSC can't be negative.");
+			throw new UserException("The SSC can't be negative.");
 		}
 		super.update(code);
 	}
@@ -69,7 +76,7 @@ public class SscCode extends MonadInteger {
 		attr.setValue(toString());
 		return attr;
 	}
-	
+
 	public String toString() {
 		DecimalFormat sscFormat = new DecimalFormat("0000");
 		return sscFormat.format(getInteger());

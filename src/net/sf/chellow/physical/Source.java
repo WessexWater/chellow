@@ -65,7 +65,7 @@ public class Source extends PersistentEntity implements Urlable {
 
 	static public Source findSource(String code) throws HttpException {
 		return (Source) Hiber.session().createQuery(
-				"from Source as source where " + "source.code.string = :code")
+				"from Source as source where " + "source.code = :code")
 				.setString("code", code).uniqueResult();
 	}
 

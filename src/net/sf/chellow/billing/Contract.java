@@ -149,7 +149,7 @@ public abstract class Contract extends Service {
 				.setEntity("contract", this).setString("reference", reference)
 				.uniqueResult();
 		if (account == null) {
-			throw new NotFoundException();
+			throw new NotFoundException("The account '" + reference + "' can't be found.");
 		}
 		return account;
 	}

@@ -12,11 +12,11 @@ def create_item_element(doc, mpan, finish_generation):
     item_element.appendChild(finish_generation.toXml(doc))
     return item_element
 
-account_id = inv.getLong('account-id')
+account_id = inv.getLong('id')
 account = Account.getAccount(account_id)
-if not account.getOrganization().equals(organization):
+if not account.getContract().getOrganization().equals(organization):
     raise UserException("Such an account doesn't exist in this organization")
-account_element = account.toXml(doc, XmlTree('provider'))
+account_element = account.toXml(doc, XmlTree('contract', XmlTree('organization')))
 source.appendChild(account_element)
 
 mpans = Hiber.session().createQuery("from Mpan mpan where mpan.supplierAccount = :account order by mpan.mpanCore, mpan.supplyGeneration.startDate.date").setEntity('account', account).list()
@@ -31,4 +31,3 @@ for i in range(1, len(mpans)):
         current_mpan = mpan
         finish_generation = current_mpan.getSupplyGeneration()
 account_element.appendChild(create_item_element(doc, current_mpan, finish_generation))
-source.appendChild(organization.toXml(doc))

@@ -164,9 +164,9 @@ public class Organization extends PersistentEntity {
 		return (Site) Hiber
 				.session()
 				.createQuery(
-						"from Site as site where site.organization = :organization and site.code.string = :siteCode")
+						"from Site as site where site.organization = :organization and site.code = :siteCode")
 				.setEntity("organization", this).setString("siteCode",
-						siteCode.toString()).uniqueResult();
+						siteCode).uniqueResult();
 	}
 
 	public Site getSite(Long siteId) throws HttpException {

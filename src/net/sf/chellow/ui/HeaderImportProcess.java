@@ -218,15 +218,20 @@ public class HeaderImportProcess extends Thread implements Urlable,
 						String importSscStr = values[8];
 						csvElement.appendChild(getField("Import SSC",
 								importSscStr));
-						importSsc = importSscStr.equals("null") ? null : Ssc
-								.getSsc(new SscCode(Integer
-										.parseInt(importSscStr)));
+						importSsc = importSscStr.trim().length() == 0 ? null
+								: Ssc.getSsc(new SscCode(importSscStr));
 						String importAgreedSupplyCapacityStr = values[9];
 						csvElement.appendChild(getField(
 								"Import Agreed Supply Capacity",
 								importAgreedSupplyCapacityStr));
-						importAgreedSupplyCapacity = new Integer(
-								importAgreedSupplyCapacityStr);
+						try {
+							importAgreedSupplyCapacity = new Integer(
+									importAgreedSupplyCapacityStr);
+						} catch (NumberFormatException e) {
+							throw new UserException(
+									"The import supply capacity must be an integer."
+											+ e.getMessage());
+						}
 						String importHhdcContractName = values[10];
 						csvElement.appendChild(getField("Import HHDC Contract",
 								importHhdcContractName));
@@ -268,14 +273,20 @@ public class HeaderImportProcess extends Thread implements Urlable,
 						String exportSscStr = values[15];
 						csvElement.appendChild(getField("Export SSC",
 								exportSscStr));
-						exportSsc = exportSscStr.equals("null") ? null : Ssc
-								.getSsc(new SscCode(exportSscStr));
+						exportSsc = exportSscStr.trim().length() == 0 ? null
+								: Ssc.getSsc(new SscCode(exportSscStr));
 						String exportAgreedSupplyCapacityStr = values[16];
 						csvElement.appendChild(getField(
 								"Export Agreed Supply Capacity",
 								exportAgreedSupplyCapacityStr));
-						exportAgreedSupplyCapacity = new Integer(
-								exportAgreedSupplyCapacityStr);
+						try {
+							exportAgreedSupplyCapacity = new Integer(
+									exportAgreedSupplyCapacityStr);
+						} catch (NumberFormatException e) {
+							throw new UserException(
+									"The export agreed supply capacity must be an integer."
+											+ e.getMessage());
+						}
 						String exportHhdcContractName = values[17];
 						csvElement.appendChild(getField("Export HHDC contract",
 								exportHhdcContractName));
@@ -425,8 +436,14 @@ public class HeaderImportProcess extends Thread implements Urlable,
 										.getAgreedSupplyCapacity();
 							}
 						} else {
-							importAgreedSupplyCapacity = Integer
-									.parseInt(importAgreedSupplyCapacityStr);
+							try {
+								importAgreedSupplyCapacity = Integer
+										.parseInt(importAgreedSupplyCapacityStr);
+							} catch (NumberFormatException e) {
+								throw new UserException(
+										"The import agreed supply capacity must be an integer. "
+												+ e.getMessage());
+							}
 						}
 						String importHasImportKwhStr = values[9];
 						csvElement.appendChild(getField("Import is import kWh",
@@ -581,8 +598,14 @@ public class HeaderImportProcess extends Thread implements Urlable,
 										.getAgreedSupplyCapacity();
 							}
 						} else {
-							exportAgreedSupplyCapacity = new Integer(
-									exportAgreedSupplyCapacityStr);
+							try {
+								exportAgreedSupplyCapacity = new Integer(
+										exportAgreedSupplyCapacityStr);
+							} catch (NumberFormatException e) {
+								throw new UserException(
+										"The export supply capacity must be an integer. "
+												+ e.getMessage());
+							}
 						}
 						String exportHasImportKwhStr = values[19];
 						csvElement.appendChild(getField("Export is import kWh",
@@ -721,14 +744,41 @@ public class HeaderImportProcess extends Thread implements Urlable,
 						supplierAccount.update(newReference);
 					}
 				}
+			} else if (type.equals("hhdc-account")) {
+				if (values.length < 4) {
+					throw new UserException(
+							"There aren't enough fields in this row");
+				}
+				String hhdcContractName = values[2];
+				csvElement.appendChild(getField("Contract", hhdcContractName));
+				HhdcContract hhdcContract = organization
+						.getHhdcContract(hhdcContractName);
+				String hhdcAccountReference = values[3];
+				csvElement.appendChild(getField("Reference",
+						hhdcAccountReference));
+				if (action.equals("insert")) {
+					hhdcContract.insertAccount(hhdcAccountReference);
+				} else {
+					Account hhdcAccount = hhdcContract
+							.getAccount(hhdcAccountReference);
+					if (action.equals("delete")) {
+						hhdcContract.deleteAccount(hhdcAccount);
+					} else if (action.equals("update")) {
+						String newReference = values[4];
+						csvElement.appendChild(getField("New Reference",
+								newReference));
+						hhdcAccount.update(newReference);
+					}
+				}
 			} else {
 				throw new UserException("The 'Type' field can only "
-						+ "be 'site', 'supply' or 'supplier-account'.");
+						+ "be 'site', 'supply', 'hhdc' or 'supplier-account'.");
 			}
 		} catch (HttpException e) {
 			String message = e.getMessage();
 			if (message == null) {
-				message ="There has been a problem: " + e.getStackTraceString();
+				message = "There has been a problem: "
+						+ e.getStackTraceString();
 			}
 			csvElement.appendChild(new MonadMessage(message).toXml(doc));
 			source.appendChild(csvElement);
