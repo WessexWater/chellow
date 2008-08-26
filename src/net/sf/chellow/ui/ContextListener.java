@@ -334,6 +334,12 @@ public class ContextListener implements ServletContextListener {
 			//		new Invocation.HttpMethod[] { Invocation.HttpMethod.GET });
 		}
 		Hiber.commit();
+		Source.insertSource("net", "Public distribution system.");
+		Source.insertSource("chp", "Combined heat and power generator");
+		Source.insertSource("lm", "Load management generator");
+		Source.insertSource("turb", "Water turbine");
+		Source.insertSource("sub", "Sub meter");
+		Hiber.commit();
 	}
 
 	@SuppressWarnings("unchecked")

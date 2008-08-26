@@ -33,7 +33,7 @@
 		</id>
 		<many-to-one name="supply" class="Supply" column="supply_id"
 			not-null="true" foreign-key="fkey_mpan_core_supply" />
-		<many-to-one name="dso" class="net.sf.chellow.billing.Provider"
+		<many-to-one name="dso" class="net.sf.chellow.billing.Dso"
 			column="dso_id" unique-key="mpan_core" not-null="true"
 			foreign-key="fkey_mpan_core_dso" />
 		<component name="uniquePart" class="MpanUniquePart">
@@ -51,4 +51,3 @@
 		</set>
 	</class>
 </hibernate-mapping>
-

@@ -187,8 +187,7 @@ public class HhdcContract extends Contract {
 		return new HhDataImportProcesses(this);
 	}
 
-	public Urlable getChild(UriPathElement uriId) throws InternalException,
-			HttpException {
+	public Urlable getChild(UriPathElement uriId) throws HttpException {
 		if (HhDataImportProcesses.URI_ID.equals(uriId)) {
 			return getHhDataImportProcessesInstance();
 		} else if (ChannelSnags.URI_ID.equals(uriId)) {
@@ -198,15 +197,11 @@ public class HhdcContract extends Contract {
 		} else if (StarkAutomaticHhDataImporter.URI_ID.equals(uriId)) {
 			return StarkAutomaticHhDataImporters.getImportersInstance()
 					.findImporter(this);
+		} else if (Accounts.URI_ID.equals(uriId)) {
+			return new Accounts(this);
 		} else {
 			return null;
 		}
-	}
-
-	public void httpDelete(Invocation inv) throws InternalException,
-			HttpException {
-		// TODO Auto-generated method stub
-
 	}
 
 	public ChannelSnags getSnagsChannelInstance() {

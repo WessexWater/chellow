@@ -97,6 +97,7 @@
 							</select>
 						</label>
 						<br />
+						<br />
 						<label>
 							<xsl:value-of select="'Name '" />
 							<input name="name">
@@ -187,15 +188,21 @@
 						<input type="reset" value="Reset" />
 					</fieldset>
 				</form>
-
-				<form action="?view=confirm-delete">
+				<br />
+				<form action=".">
 					<fieldset>
 						<legend>Delete this contract</legend>
+						<input type="hidden" name="view"
+							value="confirm-delete" />
 						<input type="submit" value="Delete" />
 					</fieldset>
 				</form>
 
 				<ul>
+					<li>
+						<a href="accounts/">Accounts</a>
+					</li>
+
 					<li>
 						<a href="hh-data-imports/">HH data imports</a>
 					</li>

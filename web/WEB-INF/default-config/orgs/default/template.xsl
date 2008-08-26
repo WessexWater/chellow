@@ -92,6 +92,7 @@
 								<input type="reset" value="Reset" />
 							</fieldset>
 						</form>
+						<br />
 						<form action=".">
 							<fieldset>
 								<input type="hidden" name="view"

@@ -148,6 +148,13 @@
 							Batches
 						</a>
 					</li>
+										<li>
+						<a
+							href="{/source/request/@context-path}/orgs/{/source/supplier-contract/org/@id}/reports/40/screen/output/?supplier-contract-id={/source/supplier-contract/@id}">
+							Accounts
+						</a>
+					</li>
+					
 					<li>
 						<a
 							href="{/source/request/@context-path}/orgs/{/source/supplier-contract/org/@id}/reports/50/screen/output/?contract-id={/source/supplier-contract/@id}">
@@ -161,32 +168,7 @@
 						</a>
 					</li>
 				</ul>
-				<table>
-					<caption>Accounts</caption>
-					<thead>
-						<tr>
-							<th>Chellow Id</th>
-							<th>Reference</th>
-						</tr>
-					</thead>
-					<tbody>
-						<xsl:for-each
-							select="/source/supplier-contract/account">
-							<tr>
-								<td>
-									<a
-										href="{/source/request/@context-path}/orgs/{/source/supplier-contract/org/@id}/reports/41/screen/output/?id={@id}">
-										<xsl:value-of select="@id" />
-									</a>
-								</td>
-								<td>
-									<xsl:value-of select="@reference" />
-								</td>
-							</tr>
-						</xsl:for-each>
-					</tbody>
-				</table>
-
+			
 				<h2>Script</h2>
 				<pre>
 					<xsl:value-of

@@ -192,13 +192,19 @@
 					-->
 					<li>
 						<a
-							href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/18/screen/output/?service-id={/source/hhdc-contract/@id}">
+							href="{/source/request/@context-path}/orgs/{/source/hhdc-contract/org/@id}/reports/54/screen/output/?hhdc-contract-id={/source/hhdc-contract/@id}">
+							Accounts
+						</a>
+					</li>
+					<li>
+						<a
+							href="{/source/request/@context-path}/orgs/{/source/hhdc-contract/org/@id}/reports/18/screen/output/?service-id={/source/hhdc-contract/@id}">
 							Channel Snags
 						</a>
 					</li>
 					<li>
 						<a
-							href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/19/screen/output/?service-id={/source/hhdc-contract/@id}">
+							href="{/source/request/@context-path}/orgs/{/source/hhdc-contract/org/@id}/reports/19/screen/output/?service-id={/source/hhdc-contract/@id}">
 							Site Group Snags
 						</a>
 					</li>
@@ -206,7 +212,7 @@
 						test="/source/hhdc-contract/@has-stark-automatic-hh-data-importer='true'">
 						<li>
 							<a
-								href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/61/screen/output/?service-id={/source/hhdc-contract/@id}">
+								href="{/source/request/@context-path}/orgs/{/source/hhdc-contract/org/@id}/reports/61/screen/output/?service-id={/source/hhdc-contract/@id}">
 								Stark Automatic HH Data Importer
 							</a>
 						</li>

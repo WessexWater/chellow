@@ -57,7 +57,7 @@
 							<tr>
 								<td>
 									<a
-										href="{/source/request/@context-path}/orgs/{/source/contracts/org/@id}/reports/57/screen/output/?contract-id={@id}">
+										href="{/source/request/@context-path}/orgs/{/source/contracts/org/@id}/reports/57/screen/output/?hhdc-contract-id={@id}">
 										<xsl:value-of select="@id" />
 									</a>
 								</td>

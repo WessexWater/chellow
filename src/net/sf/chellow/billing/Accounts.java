@@ -24,20 +24,19 @@ package net.sf.chellow.billing;
 
 import java.util.List;
 
-import net.sf.chellow.monad.DeployerException;
-import net.sf.chellow.monad.DesignerException;
 import net.sf.chellow.monad.Hiber;
+import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.Invocation;
+import net.sf.chellow.monad.MethodNotAllowedException;
 import net.sf.chellow.monad.MonadUtils;
 import net.sf.chellow.monad.NotFoundException;
-import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Urlable;
-import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.UserException;
 import net.sf.chellow.monad.XmlDescriber;
 import net.sf.chellow.monad.XmlTree;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
+
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -64,12 +63,11 @@ public class Accounts implements Urlable, XmlDescriber {
 		return URI_ID;
 	}
 
-	public MonadUri getUri() throws InternalException, HttpException {
+	public MonadUri getUri() throws HttpException {
 		return contract.getUri().resolve(getUrlId()).append("/");
 	}
 
-	public void httpPost(Invocation inv) throws InternalException,
-			HttpException, DesignerException, DeployerException {
+	public void httpPost(Invocation inv) throws HttpException {
 		String reference = inv.getString("reference");
 		if (!inv.isValid()) {
 			throw new UserException(document());
@@ -79,49 +77,49 @@ public class Accounts implements Urlable, XmlDescriber {
 		inv.sendCreated(document(), account.getUri());
 	}
 
-	public void httpGet(Invocation inv) throws DesignerException,
-			InternalException, HttpException, DeployerException {
+	public void httpGet(Invocation inv) throws HttpException {
 		inv.sendOk(document());
 	}
 
-	public Account getChild(UriPathElement uriId) throws HttpException,
-			InternalException {
-		Account account = (Account) Hiber.session().createQuery(
-				"from Account account where account.id = :accountId").setLong(
-				"accountId", Long.parseLong(uriId.getString())).uniqueResult();
+	public Account getChild(UriPathElement uriId) throws HttpException {
+		Account account = (Account) Hiber
+				.session()
+				.createQuery(
+						"from Account account where account.contract = :contract and account.id = :accountId")
+				.setEntity("contract", contract).setLong("accountId",
+						Long.parseLong(uriId.getString())).uniqueResult();
 		if (account == null) {
 			throw new NotFoundException();
 		}
 		return account;
 	}
 
-	public void httpDelete(Invocation inv) throws InternalException,
-			HttpException {
+	public void httpDelete(Invocation inv) throws HttpException {
+		throw new MethodNotAllowedException();
 	}
 
-	public Node toXml(Document doc) throws InternalException, HttpException {
+	public Element toXml(Document doc) throws HttpException {
 		Element accountsElement = doc.createElement("accounts");
 		return accountsElement;
 	}
 
-	public Node toXml(Document doc, XmlTree tree) throws InternalException,
-			HttpException {
+	public Node toXml(Document doc, XmlTree tree) throws HttpException {
 		return null;
 	}
 
 	@SuppressWarnings("unchecked")
-	private Document document() throws InternalException, HttpException,
-			DesignerException {
+	private Document document() throws HttpException {
 		Document doc = MonadUtils.newSourceDocument();
 		Element source = doc.getDocumentElement();
-		Element accountsElement = (Element) toXml(doc);
+		Element accountsElement = toXml(doc);
 		source.appendChild(accountsElement);
-		accountsElement.appendChild(contract.toXml(doc, new XmlTree("organization")));
+		accountsElement.appendChild(contract.toXml(doc, new XmlTree(
+				"organization")));
 		for (Account account : (List<Account>) Hiber
 				.session()
 				.createQuery(
-						"from Account account order by account.reference")
-				.list()) {
+						"from Account account where account.contract = :contract order by account.reference")
+				.setEntity("contract", contract).list()) {
 			accountsElement.appendChild(account.toXml(doc));
 		}
 		return doc;

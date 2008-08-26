@@ -165,8 +165,8 @@ public class Organization extends PersistentEntity {
 				.session()
 				.createQuery(
 						"from Site as site where site.organization = :organization and site.code = :siteCode")
-				.setEntity("organization", this).setString("siteCode",
-						siteCode).uniqueResult();
+				.setEntity("organization", this)
+				.setString("siteCode", siteCode).uniqueResult();
 	}
 
 	public Site getSite(Long siteId) throws HttpException {
@@ -281,8 +281,21 @@ public class Organization extends PersistentEntity {
 		return contract;
 	}
 
-	public Supply getSupply(long id) throws InternalException,
-			NotFoundException {
+	public SupplierContract getSupplierContract(Long id) throws HttpException {
+		SupplierContract contract = (SupplierContract) Hiber
+				.session()
+				.createQuery(
+						"from SupplierContract contract where contract.organization = :organization and contract.id = :id")
+				.setEntity("organization", this).setLong("id", id)
+				.uniqueResult();
+		if (contract == null) {
+			throw new NotFoundException("There's no supplier contract named '"
+					+ name + "' for this organization.");
+		}
+		return contract;
+	}
+
+	public Supply getSupply(long id) throws HttpException {
 		Supply supply = findSupply(id);
 		if (supply == null) {
 			throw new NotFoundException("There is no supply with that id.");

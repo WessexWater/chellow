@@ -61,39 +61,30 @@
 				<xsl:if test="/source/csvLine">
 					<table id="import_table">
 						<caption>Failed line</caption>
-
-						<thead>
-							<tr>
-								<th>Line number</th>
-								<th>Action</th>
-
-								<th>Type</th>
-							</tr>
-						</thead>
-
 						<tbody>
 							<xsl:for-each select="/source/csvLine">
+								<tr>
+									<th>Line number</th>
+									<th>Action</th>
+									<th>Type</th>
+									<xsl:for-each
+										select="Field[position() > 2]">
+										<th>
+											<xsl:value-of
+												select="@name" />
+										</th>
+									</xsl:for-each>
+								</tr>
 								<tr>
 									<td>
 										<xsl:value-of select="@number" />
 									</td>
-
 									<xsl:for-each select="Field">
 										<td>
-											<xsl:if
-												test="position() > 2">
-												<em>
-													<xsl:value-of
-														select="@name" />
-												</em>
-												<xsl:value-of
-													select="' '" />
-											</xsl:if>
 											<xsl:value-of
 												select="text()" />
 										</td>
 									</xsl:for-each>
-
 									<td>
 										<xsl:if test="check-digit">
 											<p>
@@ -215,4 +206,3 @@
 		</html>
 	</xsl:template>
 </xsl:stylesheet>
-

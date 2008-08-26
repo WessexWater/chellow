@@ -112,3 +112,8 @@
 "SWEB","R","01/04/1996","950","01/04/1996","Profile 3 Unrestricted","A",""
 "SWEB","R","01/04/1996","970","01/04/1996","HH Unmetered Pseudo Metered","A",""
 "SWEB","R","01/04/1996","980","01/04/1996","PC 1&8 Unmetered Profiled","A",""
+#
+# Added in for DNO 99
+#
+"CUST","R","01/04/1996","570","01/04/1996","PC 5-8 & HH LV","A",""
+"CUST","R","01/04/1996","581","01/04/1996","Export (LV)","C",""

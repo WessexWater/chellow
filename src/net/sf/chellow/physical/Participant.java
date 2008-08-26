@@ -22,7 +22,8 @@ public class Participant extends PersistentEntity {
 		Participant participant = (Participant) Hiber.session().get(
 				Participant.class, id);
 		if (participant == null) {
-			throw new NotFoundException();
+			throw new NotFoundException("There isn't a participant with id "
+					+ id + ".");
 		}
 		return participant;
 	}
@@ -32,7 +33,8 @@ public class Participant extends PersistentEntity {
 				"from Participant participant where participant.code = :code")
 				.setString("code", code).uniqueResult();
 		if (participant == null) {
-			throw new NotFoundException();
+			throw new NotFoundException("There isn't a participant with code '"
+					+ code + "'.");
 		}
 		return participant;
 	}

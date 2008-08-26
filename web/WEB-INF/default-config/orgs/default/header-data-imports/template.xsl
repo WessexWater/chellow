@@ -81,7 +81,6 @@
 								<input type="submit" value="Import" />
 							</fieldset>
 						</form>
-					<hr />
 						<xsl:if
 							test="/source/header-import-processes/header-import-process">
 							<ul>

@@ -70,7 +70,7 @@ public class Account extends PersistentEntity implements Urlable {
 	 */
 	@SuppressWarnings("unchecked")
 	public static void checkAllMissingFromLatest(Organization organization)
-			throws InternalException, HttpException {
+			throws HttpException {
 		List<Object[]> results = (List<Object[]>) Hiber
 				.session()
 				.createQuery(

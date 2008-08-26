@@ -56,7 +56,7 @@
 								</li>
 							</xsl:for-each>
 						</ul>
-						<hr />
+
 						<form method="post"
 							action="{/source/request/@context-path}/orgs/">
 							<fieldset>

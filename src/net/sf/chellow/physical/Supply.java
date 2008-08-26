@@ -173,8 +173,7 @@ public class Supply extends PersistentEntity implements Urlable {
 		return hasMpanCoreRaw;
 	}
 
-	public MpanCore addMpanCore(MpanCoreRaw mpanCoreRaw) throws HttpException,
-			InternalException {
+	public MpanCore addMpanCore(MpanCoreRaw mpanCoreRaw) throws HttpException {
 		MpanCore mpanCore = new MpanCore(this, mpanCoreRaw);
 		try {
 			Hiber.session().save(mpanCore);

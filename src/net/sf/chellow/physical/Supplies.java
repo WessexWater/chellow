@@ -1,6 +1,6 @@
 /*
  
- Copyright 2005 Meniscus Systems Ltd
+ Copyright 2005, 2008 Meniscus Systems Ltd
  
  This file is part of Chellow.
 
@@ -25,19 +25,15 @@ package net.sf.chellow.physical;
 import java.util.List;
 
 import net.sf.chellow.data08.MpanCoreTerm;
-import net.sf.chellow.monad.DeployerException;
-import net.sf.chellow.monad.DesignerException;
 import net.sf.chellow.monad.Hiber;
+import net.sf.chellow.monad.HttpException;
+import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Invocation;
 import net.sf.chellow.monad.MethodNotAllowedException;
 import net.sf.chellow.monad.MonadUtils;
-import net.sf.chellow.monad.NotFoundException;
-import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Urlable;
-import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.XmlDescriber;
 import net.sf.chellow.monad.XmlTree;
-
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
 
@@ -72,7 +68,7 @@ public class Supplies implements Urlable, XmlDescriber {
 		this.organization = organization;
 	}
 
-	public MonadUri getUrlPath() throws InternalException, HttpException {
+	public MonadUri getUrlPath() throws HttpException {
 		return organization.getUri().resolve(getUriId()).append("/");
 	}
 
@@ -102,8 +98,7 @@ public class Supplies implements Urlable, XmlDescriber {
 		inv.sendOk(doc);
 	}
 
-	public void httpPost(Invocation inv) throws InternalException,
-			MethodNotAllowedException {
+	public void httpPost(Invocation inv) throws HttpException {
 		throw new MethodNotAllowedException();
 	}
 
@@ -121,21 +116,19 @@ public class Supplies implements Urlable, XmlDescriber {
 	 * .setEntity("organization", organization).setFirstResult( page *
 	 * PAGE_SIZE).setMaxResults(PAGE_SIZE).list(); }
 	 */
-	public Supply getChild(UriPathElement uriId) throws InternalException, NotFoundException {
+	public Supply getChild(UriPathElement uriId) throws HttpException {
 		return organization.getSupply(Long.parseLong(uriId.getString()));
 	}
 
-	public void httpDelete(Invocation inv) throws InternalException,
-			DesignerException, DeployerException {
-		// TODO Auto-generated method stub
-
+	public void httpDelete(Invocation inv) throws HttpException {
+		throw new MethodNotAllowedException();
 	}
 
 	public MonadUri getUri() throws HttpException {
 		return organization.getUri().resolve(getUriId());
 	}
 
-	public Node toXml(Document doc) throws InternalException {
+	public Node toXml(Document doc) throws HttpException {
 		Element element = doc.createElement("supplies");
 		return element;
 	}
