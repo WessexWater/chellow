@@ -290,4 +290,9 @@ public class Llfc extends PersistentEntity {
 		Hiber.flush();
 		return top;
 	}
+	
+	public String toString() {
+		return code + " - " + description + " (DSO "
+		+ (dso.getCode()) + ")";
+	}
 }

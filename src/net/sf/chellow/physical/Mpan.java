@@ -25,15 +25,13 @@ package net.sf.chellow.physical;
 import java.util.Set;
 
 import net.sf.chellow.billing.Account;
-import net.sf.chellow.billing.HhdcContract;
 import net.sf.chellow.billing.SupplierContract;
 import net.sf.chellow.data08.MpanRaw;
-import net.sf.chellow.monad.DeployerException;
-import net.sf.chellow.monad.DesignerException;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Invocation;
+import net.sf.chellow.monad.NotFoundException;
 import net.sf.chellow.monad.Urlable;
 import net.sf.chellow.monad.UserException;
 import net.sf.chellow.monad.types.MonadUri;
@@ -58,13 +56,11 @@ public class Mpan extends PersistentEntity {
 
 	private MpanCore mpanCore;
 
-	private Account hhdceAccount;
+	private Account hhdcAccount;
 
 	private Account supplierAccount;
 
 	private Account mopAccount;
-
-	private Account hhdcsAccount;
 
 	private boolean hasImportKwh;
 
@@ -122,20 +118,12 @@ public class Mpan extends PersistentEntity {
 		this.mopAccount = mopAccount;
 	}
 
-	public Account getHhdceAccount() {
-		return hhdceAccount;
+	public Account getHhdcAccount() {
+		return hhdcAccount;
 	}
 
-	void setHhdceAccount(Account hhdceAccount) {
-		this.hhdceAccount = hhdceAccount;
-	}
-
-	public Account getHhdcsAccount() {
-		return hhdcsAccount;
-	}
-
-	void setHhdcsAccount(Account hhdcsAccount) {
-		this.hhdcsAccount = hhdcsAccount;
+	void setHhdcAccount(Account hhdcAccount) {
+		this.hhdcAccount = hhdcAccount;
 	}
 
 	public Account getSupplierAccount() {
@@ -232,7 +220,7 @@ public class Mpan extends PersistentEntity {
 			throw new UserException(
 					"If there's a DCE account, surely there must be some data to collect?");
 		}
-		setHhdceAccount(hhdceAccount);
+		setHhdcAccount(hhdceAccount);
 		if (supplierAccount == null) {
 			throw new UserException("An MPAN must have a supplier account.");
 		}
@@ -273,35 +261,20 @@ public class Mpan extends PersistentEntity {
 	}
 
 	public MonadUri getUri() {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
-	public Urlable getChild(UriPathElement uriId) throws InternalException,
-			HttpException {
-		// TODO Auto-generated method stub
-		return null;
+	public Urlable getChild(UriPathElement uriId) throws HttpException {
+		throw new NotFoundException();
 	}
 
-	public void httpGet(Invocation inv) throws DesignerException,
-			InternalException, HttpException, DeployerException {
-		// TODO Auto-generated method stub
-
+	public void httpGet(Invocation inv) throws HttpException {
 	}
 
-	public void httpPost(Invocation inv) throws InternalException,
-			HttpException {
-		// TODO Auto-generated method stub
-
+	public void httpPost(Invocation inv) throws HttpException {
 	}
 
-	public void httpDelete(Invocation inv) throws InternalException,
-			DesignerException, HttpException, DeployerException {
-		// TODO Auto-generated method stub
-
-	}
-
-	void delete() throws HttpException, InternalException {
+	void delete() throws HttpException {
 		// check no invoices
 		if (((Long) Hiber.session().createQuery(
 				"from InvoiceMpan invoiceMpan where invoiceMpan.mpan = :mpan")
@@ -311,47 +284,41 @@ public class Mpan extends PersistentEntity {
 		}
 	}
 
-	public HhdcContract getHhdceContract() throws HttpException {
-		HhdcContract contract = null;
-		if (hhdceAccount != null) {
-			return HhdcContract.getHhdcContract(hhdceAccount.getContract()
-					.getId());
-		}
-		return contract;
-	}
-
 	public SupplierContract getSupplierContract() throws HttpException {
 		return SupplierContract.getSupplierContract(supplierAccount
 				.getContract().getId());
 	}
 
-	public HhdcContract getHhdceContract(boolean isImport, boolean isKwh)
+	/*
+	public Account getHhdcAccount(boolean isImport, boolean isKwh)
 			throws HttpException {
-		HhdcContract hhdceContract = null;
+		Account account = null;
 		if (isImport) {
 			if (isKwh) {
 				if (hasImportKwh) {
-					hhdceContract = getHhdceContract();
+					account = hhdcAccount;
 				}
 			} else {
 				if (hasImportKvarh) {
-					hhdceContract = getHhdceContract();
+					account = hhdcAccount;
 				}
 			}
 		} else {
 			if (isKwh) {
 				if (hasExportKwh) {
-					hhdceContract = getHhdceContract();
+					account = hhdcAccount;
 				}
 			} else {
 				if (hasExportKvarh) {
-					hhdceContract = getHhdceContract();
+					account = hhdcAccount;
 				}
 			}
 		}
-		return hhdceContract;
+		return account;
 	}
+*/
 
+	
 	public MpanRaw getMpanRaw() throws HttpException {
 		return new MpanRaw(getMpanTop().getPc().getCode(), getMpanTop()
 				.getMtc().getCode(), getMpanTop().getLlfc().getCode(),

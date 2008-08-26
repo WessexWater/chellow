@@ -45,6 +45,8 @@ import net.sf.chellow.monad.types.MonadDate;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
 
+import org.hibernate.Criteria;
+import org.hibernate.criterion.Restrictions;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -59,14 +61,26 @@ public class MpanTop extends PersistentEntity {
 
 	static public MpanTop findMpanTop(Pc pc, Mtc mtc, Llfc llfc, Ssc ssc,
 			Date date) throws HttpException {
-		
-		return (MpanTop) Hiber
-				.session()
-				.createQuery(
-						"from MpanTop top where top.pc = :pc and top.mtc = :mtc and top.llfc = :llfc and top.ssc = :ssc and top.validFrom <= :date and (top.validTo is null or top.validTo <= :date)")
-				.setEntity("pc", pc).setEntity("mtc", mtc).setEntity("llfc",
-						llfc).setEntity("ssc", ssc).setTimestamp("date", date)
-				.uniqueResult();
+		Criteria criteria = Hiber.session().createCriteria(MpanTop.class).add(
+				Restrictions.eq("pc", pc)).add(Restrictions.eq("mtc", mtc))
+				.add(Restrictions.eq("llfc", llfc)).add(
+						Restrictions.le("validFrom", date)).add(
+						Restrictions.or(Restrictions.isNull("validTo"),
+								Restrictions.le("validTo", date)));
+		if (ssc == null) {
+			criteria.add(Restrictions.isNull("ssc"));
+		} else {
+			criteria.add(Restrictions.eq("ssc", ssc));
+		}
+		return (MpanTop) criteria.uniqueResult();
+		/*
+		 * MpanTop mpanTop = (MpanTop) return (MpanTop) Hiber .session()
+		 * .createQuery( "from MpanTop top where top.pc = :pc and top.mtc = :mtc
+		 * and top.llfc = :llfc and top.ssc = :ssc and top.validFrom <= :date
+		 * and (top.validTo is null or top.validTo <= :date)") .setEntity("pc",
+		 * pc).setEntity("mtc", mtc).setEntity("llfc", llfc).setEntity("ssc",
+		 * ssc).setTimestamp("date", date) .uniqueResult();
+		 */
 	}
 
 	static public MpanTop getMpanTop(Pc pc, Mtc mtc, Llfc llfc, Ssc ssc,
@@ -82,25 +96,17 @@ public class MpanTop extends PersistentEntity {
 	}
 
 	/*
-	@SuppressWarnings("unchecked")
-	static public MpanTop getAnMpanTop(Pc pc, Mtc mtc, Llfc llfc)
-			throws HttpException {
-		List<MpanTop> mpanTops = (List<MpanTop>) Hiber
-				.session()
-				.createQuery(
-						"from MpanTop top where top.pc = :pc and top.mtc = :mtc and top.llfc = :llfc order by top.ssc.code")
-				.setEntity("pc", pc).setEntity("mtc", mtc).setEntity("llfc",
-						llfc).list();
-
-		if (mpanTops.isEmpty()) {
-			throw new UserException(
-					"There is no MPAN top line with Profile Class: " + pc
-							+ ", Meter Timeswitch: " + mtc
-							+ " and Line Loss Factor: " + llfc);
-		}
-		return mpanTops.get(0);
-	}
-*/
+	 * @SuppressWarnings("unchecked") static public MpanTop getAnMpanTop(Pc pc,
+	 * Mtc mtc, Llfc llfc) throws HttpException { List<MpanTop> mpanTops =
+	 * (List<MpanTop>) Hiber .session() .createQuery( "from MpanTop top where
+	 * top.pc = :pc and top.mtc = :mtc and top.llfc = :llfc order by
+	 * top.ssc.code") .setEntity("pc", pc).setEntity("mtc",
+	 * mtc).setEntity("llfc", llfc).list();
+	 * 
+	 * if (mpanTops.isEmpty()) { throw new UserException( "There is no MPAN top
+	 * line with Profile Class: " + pc + ", Meter Timeswitch: " + mtc + " and
+	 * Line Loss Factor: " + llfc); } return mpanTops.get(0); }
+	 */
 	static public void loadFromCsv(ServletContext sc) throws HttpException {
 		Debug.print("Starting to add MPAN tops.");
 		try {

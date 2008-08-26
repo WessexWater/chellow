@@ -498,12 +498,12 @@ public class HeaderImportProcess extends Thread implements Urlable,
 							if (importHhdceContractName.equals(NO_CHANGE)) {
 								if (existingImportMpan == null
 										|| existingImportMpan
-												.getHhdceContract() == null) {
+												.getHhdcAccount().getContract() == null) {
 									throw new UserException(
 											"There isn't an existing HHDCE contract");
 								} else {
-									importHhdceContract = existingImportMpan
-											.getHhdceContract();
+									importHhdceContract = (HhdcContract) existingImportMpan
+											.getHhdcAccount().getContract();
 								}
 							} else {
 								importHhdceContract = organization
@@ -650,8 +650,8 @@ public class HeaderImportProcess extends Thread implements Urlable,
 									throw new UserException(
 											"There isn't an existing export DCE contract.");
 								} else {
-									exportHhdceContract = existingExportMpan
-											.getHhdceContract();
+									exportHhdceContract = (HhdcContract) existingExportMpan
+											.getHhdcAccount().getContract();
 								}
 							} else {
 								exportHhdceContract = organization
@@ -664,12 +664,12 @@ public class HeaderImportProcess extends Thread implements Urlable,
 							if (exportHhdceAccountReference.equals(NO_CHANGE)) {
 								if (existingExportMpan == null
 										|| existingExportMpan
-												.getHhdceContract() == null) {
+												.getHhdcAccount().getContract() == null) {
 									throw new UserException(
 											"There isn't an existing export supplier.");
 								} else {
 									exportHhdceAccount = existingExportMpan
-											.getHhdceAccount();
+											.getHhdcAccount();
 								}
 							} else {
 								exportHhdceAccount = exportHhdceContract

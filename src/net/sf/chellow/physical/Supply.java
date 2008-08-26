@@ -63,10 +63,6 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 public class Supply extends PersistentEntity implements Urlable {
-	/*
-	 * static public Supply getSupply(MonadLong id) throws ProgrammerException,
-	 * UserException { return getSupply(id.getLong()); }
-	 */
 	static public Supply getSupply(Long id) throws InternalException,
 			HttpException {
 		try {
@@ -109,11 +105,10 @@ public class Supply extends PersistentEntity implements Urlable {
 
 	private Set<Meter> meters;
 
-	public Supply() throws InternalException {
+	public Supply() {
 	}
 
-	Supply(String name, Source source) throws InternalException,
-			HttpException {
+	Supply(String name, Source source) throws HttpException {
 		setGenerations(new HashSet<SupplyGeneration>());
 		update(name, source);
 		setMpanCores(new HashSet<MpanCore>());
@@ -297,7 +292,7 @@ public class Supply extends PersistentEntity implements Urlable {
 			newSupplyGeneration = addGeneration(existingSiteMap, existingMeter,
 					null, null, null, null, false, false, false, false,
 					null, existingExportMpan.getMpanTop(), existingExportMpan
-							.getMpanCore(), existingExportMpan.getHhdceAccount(),
+							.getMpanCore(), existingExportMpan.getHhdcAccount(),
 					existingExportMpan.getSupplierAccount(), existingExportMpan
 							.getHasImportKwh(), existingExportMpan
 							.getHasImportKvarh(), existingExportMpan
@@ -307,7 +302,7 @@ public class Supply extends PersistentEntity implements Urlable {
 		} else if (existingExportMpan == null) {
 			newSupplyGeneration = addGeneration(existingSiteMap, existingMeter,
 					existingImportMpan.getMpanTop(), existingImportMpan
-							.getMpanCore(), existingImportMpan.getHhdceAccount(),
+							.getMpanCore(), existingImportMpan.getHhdcAccount(),
 					existingImportMpan.getSupplierAccount(), existingImportMpan
 							.getHasImportKwh(), existingImportMpan
 							.getHasImportKvarh(), existingImportMpan
@@ -318,7 +313,7 @@ public class Supply extends PersistentEntity implements Urlable {
 		} else {
 			newSupplyGeneration = addGeneration(existingSiteMap, existingMeter,
 					existingImportMpan.getMpanTop(), existingImportMpan
-							.getMpanCore(), existingImportMpan.getHhdceAccount(),
+							.getMpanCore(), existingImportMpan.getHhdcAccount(),
 					existingImportMpan.getSupplierAccount(), existingImportMpan
 							.getHasImportKwh(), existingImportMpan
 							.getHasImportKvarh(), existingImportMpan
@@ -326,7 +321,7 @@ public class Supply extends PersistentEntity implements Urlable {
 							.getHasExportKvarh(), existingImportMpan
 							.getAgreedSupplyCapacity(), existingExportMpan
 							.getMpanTop(), existingExportMpan.getMpanCore(),
-					existingExportMpan.getHhdceAccount(), existingExportMpan
+					existingExportMpan.getHhdcAccount(), existingExportMpan
 							.getSupplierAccount(), existingExportMpan
 							.getHasImportKwh(), existingExportMpan
 							.getHasImportKvarh(), existingExportMpan
@@ -446,21 +441,20 @@ public class Supply extends PersistentEntity implements Urlable {
 		HhEndDate lastSnagDate = (HhEndDate) Hiber
 				.session()
 				.createQuery(
-						"select snag.finishDate from ChannelSnag snag where snag.channel.supply = :supply and snag.channel.isKwh = :isKwh and snag.channel.isImport = :isImport and snag.description = :snagDescription and snag.dateResolved is null order by snag.finishDate.date desc")
+						"select snag.finishDate from ChannelSnag snag where snag.channel.supplyGeneration.supply = :supply and snag.channel.isKwh = :isKwh and snag.channel.isImport = :isImport and snag.description = :snagDescription and snag.dateResolved is null order by snag.finishDate.date desc")
 				.setEntity("supply", this).setBoolean("isKwh", isKwh).setBoolean("isImport", isImport).setString("snagDescription",
 						ChannelSnag.SNAG_MISSING).setMaxResults(1)
 				.uniqueResult();
 		HhEndDate finish = null;
 		SupplyGeneration generation = getGenerationLast();
 		if (generation.getFinishDate() == null) {
-			HhdcContract latestDceService = generation.getHhdceContract(isImport,
-					isKwh);
-			if (latestDceService == null) {
+			HhdcContract latestHhdcContract = (HhdcContract) generation.getHhdcAccount().getContract();
+			if (latestHhdcContract == null) {
 				finish = HhEndDate.roundDown(new Date());
 			} else {
 				finish = HhEndDate.roundDown(new Date(System
 						.currentTimeMillis()
-						- 1000 * 60 * 60 * 24 * latestDceService.getLag()));
+						- 1000 * 60 * 60 * 24 * latestHhdcContract.getLag()));
 				Calendar cal = MonadDate.getCalendar();
 				cal.clear();
 				cal.setTime(finish.getDate());
@@ -468,10 +462,10 @@ public class Supply extends PersistentEntity implements Urlable {
 				cal.set(Calendar.SECOND, 0);
 				cal.set(Calendar.MINUTE, 0);
 				cal.set(Calendar.HOUR_OF_DAY, 0);
-				if (latestDceService.getFrequency().equals(
+				if (latestHhdcContract.getFrequency().equals(
 						ContractFrequency.DAILY)) {
 					finish = new HhEndDate(cal.getTime());
-				} else if (latestDceService.getFrequency().equals(
+				} else if (latestHhdcContract.getFrequency().equals(
 						ContractFrequency.MONTHLY)) {
 					cal.set(Calendar.DAY_OF_MONTH, 1);
 					finish = new HhEndDate(cal.getTime());
@@ -573,8 +567,7 @@ Query query = Hiber
 List<SupplyGeneration> generations = getGenerations(from, to);
 for (int i = 0; i < generations.size(); i++) {
 	Channel channel = generations.get(i).getChannel(isImport, isKwh);
-	HhdcContract contractDce = generations.get(i).getHhdceContract(isImport,
-			isKwh);
+	HhdcContract contractDce = (HhdcContract) generations.get(i).getHhdcAccount().getContract();
 	HhEndDate generationStartDate = i == 0 ? from : generations.get(i)
 			.getStartDate();
 	HhEndDate generationFinishDate = i == generations.size() - 1 ? to
@@ -731,8 +724,7 @@ for (int i = 0; i < generations.size(); i++) {
 							"select count(*) from HhDatum datum where datum.channel  = :channel and datum.endDate.date >= :startDate and datum.endDate.date <= :finishDate");
 			for (SupplyGeneration generation : getGenerations(from, to)) {
 				for (Channel channel : generation.getChannels()) {
-					if (generation.getHhdceContract(channel.getIsImport(), channel
-							.getIsKwh()) == null) {
+					if (generation.getHhdcAccount() == null) {
 						HhEndDate generationFinishDate = generation
 								.getFinishDate();
 						if (generationFinishDate == null) {
@@ -795,8 +787,7 @@ for (int i = 0; i < generations.size(); i++) {
 			}
 			for (SupplyGeneration generation : getGenerations(from, to)) {
 				for (Channel channel : generation.getChannels()) {
-					HhdcContract contractDce = generation.getHhdceContract(channel
-							.getIsImport(), channel.getIsKwh());
+					HhdcContract hhdcContract = (HhdcContract) generation.getHhdcAccount().getContract();
 					HhEndDate generationFinishDate = generation.getFinishDate();
 					for (ChannelSnag snag : (List<ChannelSnag>) (generationFinishDate == null ? Hiber
 							.session()
@@ -816,7 +807,7 @@ for (int i = 0; i < generations.size(); i++) {
 											"finishDate",
 											generation.getFinishDate()
 													.getDate()).list())) {
-						if (!snag.getContract().equals(contractDce)) {
+						if (!snag.getContract().equals(hhdcContract)) {
 							snag.resolve(false);
 						}
 					}
@@ -1040,12 +1031,11 @@ for (int i = 0; i < generations.size(); i++) {
 				to);
 		for (SupplyGeneration generation : supplyGenerations) {
 			Channel channel = generation.getChannel(isImport, isKwh);
-			HhdcContract actualDceService = generation.getHhdceContract(isImport,
-					isKwh);
+			HhdcContract actualHhdcContract = (HhdcContract) generation.getHhdcAccount().getContract();
 			if (channel == null) {
 				throw new UserException("HH data has been ignored from " + dataRaw.toString() + " to " + to + ".");
 			}
-			if (!contract.equals(actualDceService)) {
+			if (!contract.equals(actualHhdcContract)) {
 				throw new UserException
 						("Somewhere in the block of hh data between ("
 								+ dataRaw.get(0)

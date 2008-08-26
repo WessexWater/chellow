@@ -42,12 +42,9 @@
 		<many-to-one name="mopAccount"
 			class="net.sf.chellow.billing.Account" column="mop_account_id"
 			foreign-key="fkey_mpan_mop_account" />
-		<many-to-one name="hhdcsAccount"
-			class="net.sf.chellow.billing.Account" column="hhdcs_account_id"
-			foreign-key="fkey_mpan_hhdcs_account" />
-		<many-to-one name="hhdceAccount"
-			class="net.sf.chellow.billing.Account" column="hhdce_account_id"
-			foreign-key="fkey_mpan_hhdce_account" />
+		<many-to-one name="hhdcAccount"
+			class="net.sf.chellow.billing.Account" column="hhdc_account_id"
+			foreign-key="fkey_mpan_hhdc_account" />
 		<many-to-one name="supplierAccount"
 			class="net.sf.chellow.billing.Account" column="supplier_account_id"
 			foreign-key="fkey_mpan_supplier_account" />

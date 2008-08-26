@@ -1,8 +1,8 @@
 from net.sf.chellow.monad import Hiber, XmlTree
-from net.sf.chellow.billing import Provider
+from net.sf.chellow.billing import Dso
 
 dso_id = inv.getLong('dso-id')
-dso = Provider.getProvider(dso_id)
+dso = Dso.getDso(dso_id)
 llfcs_element = doc.createElement('llfcs')
 source.appendChild(llfcs_element)
 for llfc in Hiber.session().createQuery("from Llfc llfc where llfc.dso = :dso order by llfc.code").setEntity("dso", dso).list():

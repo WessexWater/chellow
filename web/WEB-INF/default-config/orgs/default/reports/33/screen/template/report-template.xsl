@@ -9,7 +9,7 @@
 		<html>
 			<head>
 				<link rel="stylesheet" type="text/css"
-					href="{/source/request/@context-path}/orgs/1/reports/9/stream/output/" />
+					href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/9/stream/output/" />
 
 				<title>
 					<xsl:value-of select="/source/org/@name" />
@@ -23,17 +23,17 @@
 			<body>
 				<p>
 					<a
-						href="{/source/request/@context-path}/orgs/1/reports/0/screen/output/">
+						href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/0/screen/output/">
 						<xsl:value-of select="/source/org/@name" />
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/22/screen/output/">
+						href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/68/screen/output/">
 						<xsl:value-of select="'DSOs'" />
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/23/screen/output/?dso-id={/source/dso-service/dso/@id}">
+						href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/69/screen/output/?dso-id={/source/dso-service/dso/@id}">
 						<xsl:value-of
 							select="/source/dso-service/dso/@code" />
 					</a>

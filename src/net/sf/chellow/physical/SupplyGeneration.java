@@ -90,8 +90,11 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 	private Set<Mpan> mpans;
 
 	private Meter meter;
-	
+
 	private Set<Channel> channels;
+
+	SupplyGeneration() {
+	}
 
 	SupplyGeneration(Supply supply, HhEndDate startDate, HhEndDate finishDate,
 			Meter meter) throws HttpException {
@@ -150,7 +153,7 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 	public Mpan getMpan(IsImport isImport) {
 		return isImport.getBoolean() ? getImportMpan() : getExportMpan();
 	}
-	
+
 	public Set<Channel> getChannels() {
 		return channels;
 	}
@@ -158,7 +161,6 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 	void setChannels(Set<Channel> channels) {
 		this.channels = channels;
 	}
-
 
 	public Dso getDso() {
 		Dso dso = null;
@@ -175,8 +177,7 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 		attachSite(site, false);
 	}
 
-	public void attachSite(Site site, boolean isLocation)
-			throws HttpException {
+	public void attachSite(Site site, boolean isLocation) throws HttpException {
 		boolean alreadyThere = false;
 		for (SiteSupplyGeneration siteSupplyGeneration : siteSupplyGenerations) {
 			if (siteSupplyGeneration.getSite().equals(site)) {
@@ -322,7 +323,8 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 			 * says that there should be an export MPAN, but there isn't one."); } }
 			 */
 			if (getExportMpan() != null && getImportMpan() != null) {
-				LlfcCode code = getImportMpan().getMpanTop().getLlfc().getCode();
+				LlfcCode code = getImportMpan().getMpanTop().getLlfc()
+						.getCode();
 				if (!code.equals(new LlfcCode(520))
 						&& !code.equals(new LlfcCode(550))
 						&& !code.equals(new LlfcCode(580))) {
@@ -342,7 +344,7 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 		// more optimization possible here, doesn't necessarily need to check
 		// data.
 		getSupply().checkAfterUpdate(true, getStartDate(), getFinishDate());
-		
+
 	}
 
 	public Mpan getExportMpan() {
@@ -369,32 +371,38 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 		this.meter = meter;
 	}
 
-	public HhdcContract getHhdceContract(boolean isImport, boolean isKwh)
-			throws HttpException {
-		HhdcContract hhdceContract = null;
-		if (importMpan != null) {
-			hhdceContract = importMpan.getHhdceContract(isImport, isKwh);
+	/*
+	 * public Account getHhdcAccount(boolean isImport, boolean isKwh) throws
+	 * HttpException { Account account = null; if (importMpan != null) { account =
+	 * importMpan.getHhdcAccount(isImport, isKwh); } if (account == null &&
+	 * exportMpan != null) { account = exportMpan.getHhdcAccount(isImport,
+	 * isKwh); } return account; }
+	 */
+	public Account getHhdcAccount() throws HttpException {
+		Account account = null;
+		for (Mpan mpan : getMpans()) {
+			if (mpan.getHhdcAccount() != null) {
+				account = mpan.getHhdcAccount();
+				break;
+			}
 		}
-		if (hhdceContract == null && exportMpan != null) {
-			hhdceContract = exportMpan.getHhdceContract(isImport, isKwh);
-		}
-		return hhdceContract;
+		return account;
 	}
 
 	public MpanCore getMpanCore(boolean isImport, boolean isKwh)
 			throws HttpException {
 		MpanCore mpanCore = null;
 		if (importMpan != null
-				&& importMpan.getHhdceContract(isImport, isKwh) != null) {
+				&& importMpan.getHhdcAccount() != null) {
 			mpanCore = importMpan.getMpanCore();
 		}
 		if (mpanCore == null && exportMpan != null
-				&& exportMpan.getHhdceContract(isImport, isKwh) != null) {
+				&& exportMpan.getHhdcAccount() != null) {
 			mpanCore = exportMpan.getMpanCore();
 		}
 		return mpanCore;
 	}
-	
+
 	public Channel getChannel(boolean isImport, boolean isKwh) {
 		for (Channel candidateChannel : channels) {
 			if (candidateChannel.getIsImport() == isImport
@@ -506,16 +514,27 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 		}
 		return element;
 	}
-	
-	void insertChannel(boolean isImport, boolean isKwh) {
+
+	Channel insertChannel(boolean isImport, boolean isKwh) throws HttpException {
+		boolean hasAccount = false;
+		for (Mpan mpan : getMpans()) {
+			if (mpan.getHhdcAccount() != null) {
+				hasAccount = true;
+				break;
+			}
+		}
+		if (!hasAccount) {
+			throw new UserException(
+					"You can't add a hh data channel to a supply generation if neither of the MPANs has an HHDC account.");
+		}
 		Channel channel = new Channel(this, isImport, isKwh);
 		Hiber.session().save(channel);
 		Hiber.flush();
 		channels.add(channel);
+		return channel;
 	}
 
-	public void httpGet(Invocation inv) throws DesignerException,
-			InternalException, HttpException, DeployerException {
+	public void httpGet(Invocation inv) throws HttpException {
 		inv.sendOk(document());
 	}
 
@@ -575,10 +594,8 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 		source.appendChild(MonadDate.getMonthsXml(doc));
 		source.appendChild(MonadDate.getDaysXml(doc));
 		source.appendChild(new MonadDate().toXml(doc));
-		for (Pc profileClass : (List<Pc>) Hiber
-				.session()
-				.createQuery(
-						"from ProfileClass profileClass order by profileClass.code")
+		for (Pc profileClass : (List<Pc>) Hiber.session().createQuery(
+				"from ProfileClass profileClass order by profileClass.code")
 				.list()) {
 			source.appendChild(profileClass.toXml(doc));
 		}
@@ -655,26 +672,23 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 				if (hasImportMpan) {
 					Long importMpanCoreId = inv.getLong("import-mpan-core-id");
 					importMpanCore = MpanCore.getMpanCore(importMpanCoreId);
-					Long importPcId = inv
-							.getLong("import-pc-id");
-					Pc importPc = Pc
-							.getPc(importPcId);
+					Long importPcId = inv.getLong("import-pc-id");
+					Pc importPc = Pc.getPc(importPcId);
 					LlfcCode importLlfcCode = new LlfcCode(inv
 							.getInteger("import-llfc-code"));
 					Llfc importLlfc = importMpanCore.getDso().getLlfc(
 							importLlfcCode);
-					MtcCode importMtcCode = inv
-							.getValidatable(MtcCode.class,
-									"import-mtc-code");
-					Mtc importMtc = Mtc
-							.getMtc(importMpanCore.getDso(),
-									importMtcCode);
+					MtcCode importMtcCode = inv.getValidatable(MtcCode.class,
+							"import-mtc-code");
+					Mtc importMtc = Mtc.getMtc(importMpanCore.getDso(),
+							importMtcCode);
 					Ssc importSsc = null;
 					if (inv.hasParameter("import-ssc-code")) {
-						importSsc = Ssc.getSsc(inv.getString("import-ssc-code"));
+						importSsc = Ssc
+								.getSsc(inv.getString("import-ssc-code"));
 					}
-					importMpanTop = MpanTop.getMpanTop(importPc,
-							importMtc, importLlfc, importSsc, new Date());
+					importMpanTop = MpanTop.getMpanTop(importPc, importMtc,
+							importLlfc, importSsc, new Date());
 					importAgreedSupplyCapacity = inv
 							.getInteger("import-agreed-supply-capacity");
 					importHasImportKwh = inv
@@ -690,14 +704,18 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 						String importHhdceContractName = inv
 								.getString("import-hhdce-contract-name");
 						if (importHhdceContractName.length() != 0) {
-							importHhdceContract = organization.getHhdcContract(importHhdceContractName);
-							String hhdceAccountReference = inv.getString("hhdce-account-reference");
-							importHhdceAccount = importHhdceContract.getAccount(hhdceAccountReference);
+							importHhdceContract = organization
+									.getHhdcContract(importHhdceContractName);
+							String hhdceAccountReference = inv
+									.getString("hhdce-account-reference");
+							importHhdceAccount = importHhdceContract
+									.getAccount(hhdceAccountReference);
 						}
 					}
 					String importSupplierContractName = inv
 							.getString("import-supplier-contract-name");
-					importSupplierContract = organization.getSupplierContract(importSupplierContractName);
+					importSupplierContract = organization
+							.getSupplierContract(importSupplierContractName);
 					String importSupplierAccountReference = inv
 							.getString("import-supplier-account-reference");
 					importSupplierAccount = importSupplierContract
@@ -718,26 +736,23 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 				if (hasExportMpan) {
 					Long exportMpanCoreId = inv.getLong("export-mpan-core-id");
 					exportMpanCore = MpanCore.getMpanCore(exportMpanCoreId);
-					Long exportPcId = inv
-							.getLong("export-pc-id");
-					Pc exportPc = Pc
-							.getPc(exportPcId);
+					Long exportPcId = inv.getLong("export-pc-id");
+					Pc exportPc = Pc.getPc(exportPcId);
 					LlfcCode exportLlfcCode = new LlfcCode(inv
 							.getInteger("export-llfc-code"));
 					Llfc exportLlfc = exportMpanCore.getDso().getLlfc(
 							exportLlfcCode);
-					MtcCode exportMtcCode = inv
-							.getValidatable(MtcCode.class,
-									"export-mtc-code");
-					Mtc exportMtc = Mtc
-							.getMtc(exportMpanCore.getDso(),
-									exportMtcCode);
+					MtcCode exportMtcCode = inv.getValidatable(MtcCode.class,
+							"export-mtc-code");
+					Mtc exportMtc = Mtc.getMtc(exportMpanCore.getDso(),
+							exportMtcCode);
 					Ssc exportSsc = null;
 					if (inv.hasParameter("export-ssc-code")) {
-						exportSsc = Ssc.getSsc(inv.getString("export-ssc-code"));
+						exportSsc = Ssc
+								.getSsc(inv.getString("export-ssc-code"));
 					}
-					exportMpanTop = MpanTop.getMpanTop(exportPc,
-							exportMtc, exportLlfc, exportSsc, new Date());
+					exportMpanTop = MpanTop.getMpanTop(exportPc, exportMtc,
+							exportLlfc, exportSsc, new Date());
 					exportAgreedSupplyCapacity = inv
 							.getInteger("export-agreed-supply-capacity");
 					exportHasImportKwh = inv
@@ -753,13 +768,18 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 						String exportHhdceContractName = inv
 								.getString("export-hhdce-contract-name");
 						if (exportHhdceContractName.length() != 0) {
-							exportHhdceContract = organization.getHhdcContract(exportHhdceContractName);
-							String exportHhdceAccountReference = inv.getString("export-hhdce-account-reference");
-							exportHhdceAccount = exportHhdceContract.getAccount(exportHhdceAccountReference);
+							exportHhdceContract = organization
+									.getHhdcContract(exportHhdceContractName);
+							String exportHhdceAccountReference = inv
+									.getString("export-hhdce-account-reference");
+							exportHhdceAccount = exportHhdceContract
+									.getAccount(exportHhdceAccountReference);
 						}
 					}
-					String exportSupplierContractName = inv.getString("export-supplier-contract-name");
-					exportSupplierContract = organization.getSupplierContract(exportSupplierContractName);
+					String exportSupplierContractName = inv
+							.getString("export-supplier-contract-name");
+					exportSupplierContract = organization
+							.getSupplierContract(exportSupplierContractName);
 					String exportSupplierAccountReference = inv
 							.getString("export-supplier-account-reference");
 					exportSupplierAccount = exportSupplierContract
@@ -767,14 +787,13 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 				}
 				addOrUpdateMpans(importMpanTop, importMpanCore,
 						importHhdceAccount, importSupplierAccount,
-					 importHasImportKwh,
-						importHasImportKvarh, importHasExportKwh,
-						importHasExportKvarh, importAgreedSupplyCapacity,
-						exportMpanTop, exportMpanCore, exportHhdceAccount,
-						exportSupplierAccount,
-						exportHasImportKwh, exportHasImportKvarh,
-						exportHasExportKwh, exportHasExportKvarh,
-						exportAgreedSupplyCapacity);
+						importHasImportKwh, importHasImportKvarh,
+						importHasExportKwh, importHasExportKvarh,
+						importAgreedSupplyCapacity, exportMpanTop,
+						exportMpanCore, exportHhdceAccount,
+						exportSupplierAccount, exportHasImportKwh,
+						exportHasImportKvarh, exportHasExportKwh,
+						exportHasExportKvarh, exportAgreedSupplyCapacity);
 				Meter meter = null;
 				if (meterSerialNumber != null
 						&& meterSerialNumber.length() != 0) {
@@ -804,7 +823,7 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 		if (Channels.URI_ID.equals(uriId)) {
 			return new Channels(this);
 		} else {
-		throw new NotFoundException();
+			throw new NotFoundException();
 		}
 	}
 
@@ -855,7 +874,7 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 		}
 		return read;
 	}
-	
+
 	public Channels getChannelsInstance() {
 		return new Channels(this);
 	}

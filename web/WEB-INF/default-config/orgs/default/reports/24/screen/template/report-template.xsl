@@ -13,9 +13,9 @@
 
 				<title>
 					<xsl:value-of select="/source/org/@name" />
-					&gt; Providers &gt;
+					&gt; DSOs &gt;
 					<xsl:value-of
-						select="/source/llfs/provider/@dso-code" />
+						select="/source/llfcs/dso/@code" />
 					&gt; LLFCs
 				</title>
 			</head>
@@ -27,14 +27,14 @@
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/22/screen/output/">
-						Providers
+						href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/68/screen/output/">
+						<xsl:value-of select="'DSOs'"/>
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/23/screen/output/?provider-id={/source/llfcs/provider/@id}">
+						href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/69/screen/output/?dso-id={/source/llfcs/dso/@id}">
 						<xsl:value-of
-							select="/source/llfcs/provider/@dso-code" />
+							select="/source/llfcs/dso/@code" />
 					</a>
 					&gt; LLFCs
 				</p>

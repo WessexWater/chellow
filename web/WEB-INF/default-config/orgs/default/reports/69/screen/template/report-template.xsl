@@ -10,14 +10,10 @@
 			<head>
 				<link rel="stylesheet" type="text/css"
 					href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/9/stream/output/" />
-
 				<title>
 					<xsl:value-of select="/source/org/@name" />
 					&gt; DSOs &gt;
-					<xsl:value-of
-						select="/source/llfc/dso/@code" />
-					&gt; LLFCs &gt;
-					<xsl:value-of select="/source/llfc/@code" />
+					<xsl:value-of select="/source/dso/@name" />
 				</title>
 			</head>
 			<body>
@@ -32,18 +28,7 @@
 						<xsl:value-of select="'DSOs'" />
 					</a>
 					&gt;
-					<a
-						href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/69/screen/output/?dso-id={/source/llfc/dso/@id}">
-						<xsl:value-of
-							select="/source/llfc/dso/@code" />
-					</a>
-					&gt;
-					<a
-						href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/24/screen/output/?dso-id={/source/llfc/dso/@id}">
-						<xsl:value-of select="'LLFCs'" />
-					</a>
-					&gt;
-					<xsl:value-of select="/source/llfc/@code" />
+					<xsl:value-of select="/source/dso/@code" />
 				</p>
 				<br />
 				<xsl:if test="//message">
@@ -59,45 +44,64 @@
 					<tr>
 						<th>Chellow Id</th>
 						<td>
-							<xsl:value-of select="/source/llfc/@id" />
+							<xsl:value-of select="/source/dso/@id" />
+						</td>
+					</tr>
+					<tr>
+						<th>Name</th>
+						<td>
+							<xsl:value-of select="/source/dso/@name" />
+						</td>
+					</tr>
+
+					<tr>
+						<th>Participant</th>
+						<td>
+							<a
+								href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/36/screen/output/?participant-id={/source/dso/participant/@id}">
+								<xsl:value-of
+									select="/source/dso/participant/@name" />
+							</a>
+						</td>
+					</tr>
+					<tr>
+						<th>Role</th>
+						<td>
+							<a
+								href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/61/screen/output/?role-id={/source/dso/market-role/@id}">
+								<xsl:value-of
+									select="/source/dso/market-role/@description" />
+							</a>
 						</td>
 					</tr>
 					<tr>
 						<th>Code</th>
 						<td>
-							<xsl:value-of select="/source/llfc/@code" />
-						</td>
-					</tr>
-					<tr>
-						<th>Description</th>
-						<td>
-							<xsl:value-of
-								select="/source/llfc/@description" />
-						</td>
-
-					</tr>
-					<tr>
-						<th>Voltage Level</th>
-						<td>
-							<xsl:value-of
-								select="concat(/source/llfc/voltage-level/@code, ' - ', /source/llfc/voltage-level/@name)" />
-						</td>
-					</tr>
-					<tr>
-						<th>Is Substation?</th>
-						<td>
-							<xsl:value-of
-								select="/source/llfc/@is-substation" />
-						</td>
-					</tr>
-					<tr>
-						<th>Is Import?</th>
-						<td>
-							<xsl:value-of
-								select="/source/llfc/@is-import" />
+							<xsl:value-of select="/source/dso/@code" />
 						</td>
 					</tr>
 				</table>
+				<br />
+				<ul>
+									<li>
+						<a
+							href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/32/screen/output/?dso-id={/source/dso/@id}">
+							Services
+						</a>
+					</li>
+					<li>
+						<a
+							href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/24/screen/output/?dso-id={/source/dso/@id}">
+							Line Loss Factors
+						</a>
+					</li>
+					<li>
+						<a
+							href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/28/screen/output/?dso-id={/source/dso/@id}">
+							MPAN top lines
+						</a>
+					</li>
+				</ul>
 			</body>
 		</html>
 	</xsl:template>

@@ -344,7 +344,7 @@ public class Channel extends PersistentEntity implements Urlable {
 	public void addChannelSnag(String description,
 			HhEndDate startDate, HhEndDate finishDate, boolean isResolved)
 			throws HttpException {
-		SnagDateBounded.addChannelSnag(supplyGeneration.getHhdceContract(isImport, isKwh), this, description,
+		SnagDateBounded.addChannelSnag((HhdcContract) supplyGeneration.getHhdcAccount().getContract(), this, description,
 				startDate, finishDate, isResolved);
 	}
 
@@ -479,7 +479,7 @@ public class Channel extends PersistentEntity implements Urlable {
 	}
 */
 	public HhdcContract getHhdcContract() throws HttpException {
-		return getSupplyGeneration().getHhdceContract(isImport, isKwh);
+		return (HhdcContract) getSupplyGeneration().getHhdcAccount().getContract();
 	}
 
 	public void deleteData(HhEndDate from, int days)

@@ -9,8 +9,7 @@
 		<html>
 			<head>
 				<link rel="stylesheet" type="text/css"
-					href="{/source/request/@context-path}/orgs/1/reports/9/stream/output/" />
-
+					href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/9/stream/output/" />
 				<title>
 					<xsl:value-of select="/source/org/@name" />
 					&gt; DSOs &gt;
@@ -21,18 +20,18 @@
 			<body>
 				<p>
 					<a
-						href="{/source/request/@context-path}/orgs/1/reports/0/screen/output/">
+						href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/0/screen/output/">
 						<xsl:value-of
 							select="/source/org/@name" />
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/orgs/1/reports/22/screen/output/">
+						href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/68/screen/output/">
 						<xsl:value-of select="'DSOs'" />
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/orgs/1/reports/23/screen/output/?dso-id={/source/services/dso/@id}">
+						href="{/source/request/@context-path}/orgs/1/reports/69/screen/output/?dso-id={/source/services/dso/@id}">
 						<xsl:value-of
 							select="/source/services/dso/@code" />
 					</a>
@@ -51,7 +50,7 @@
 				<table>
 					<thead>
 						<tr>
-							<th>Id</th>
+							<th>Chellow Id</th>
 							<th>Name</th>
 							<th>Start Date</th>
 							<th>Finish Date</th>
@@ -63,7 +62,7 @@
 							<tr>
 								<td>
 									<a
-										href="{/source/request/@context-path}/orgs/1/reports/33/screen/output/?dso-service-id={@id}">
+										href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/33/screen/output/?dso-service-id={@id}">
 										<xsl:value-of select="@id" />
 									</a>
 								</td>

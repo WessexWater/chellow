@@ -13,9 +13,9 @@
 
 				<title>
 					<xsl:value-of select="/source/org/@name" />
-					&gt; Providers &gt;
+					&gt; DSOs &gt;
 					<xsl:value-of
-						select="/source/mpan-tops/provider/@dso-code" />
+						select="/source/mpan-tops/dso/@code" />
 					&gt; MPAN top-lines
 				</title>
 			</head>
@@ -27,14 +27,14 @@
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/22/screen/output/">
-						<xsl:value-of select="'Providers'" />
+						href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/68/screen/output/">
+						<xsl:value-of select="'DSOs'" />
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/23/screen/output/?dso-id={/source/mpan-tops/dso/@id}">
+						href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/69/screen/output/?dso-id={/source/mpan-tops/dso/@id}">
 						<xsl:value-of
-							select="/source/mpan-tops/provider/@dso-code" />
+							select="/source/mpan-tops/dso/@code" />
 					</a>
 					&gt; MPAN top-lines
 				</p>

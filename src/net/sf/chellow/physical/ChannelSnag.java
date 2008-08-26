@@ -1,6 +1,6 @@
 /*
  
- Copyright 2005 Meniscus Systems Ltd
+ Copyright 2005, 2008 Meniscus Systems Ltd
  
  This file is part of Chellow.
 
@@ -24,13 +24,11 @@ package net.sf.chellow.physical;
 
 import net.sf.chellow.billing.Contract;
 import net.sf.chellow.billing.HhdcContract;
-import net.sf.chellow.monad.DeployerException;
-import net.sf.chellow.monad.DesignerException;
 import net.sf.chellow.monad.Hiber;
+import net.sf.chellow.monad.HttpException;
+import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Invocation;
 import net.sf.chellow.monad.MonadUtils;
-import net.sf.chellow.monad.InternalException;
-import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.NotFoundException;
 import net.sf.chellow.monad.XmlTree;
 import net.sf.chellow.monad.types.MonadUri;
@@ -76,7 +74,7 @@ public class ChannelSnag extends SnagDateBounded {
 
 	public ChannelSnag(String description, HhdcContract contract,
 			Channel channel, HhEndDate startDate, HhEndDate finishDate)
-			throws InternalException, HttpException {
+			throws HttpException {
 		super(description, startDate, finishDate);
 		this.channel = channel;
 		this.contract = contract;
@@ -122,25 +120,17 @@ public class ChannelSnag extends SnagDateBounded {
 		return contract;
 	}
 
-	public void httpGet(Invocation inv) throws DesignerException,
-			InternalException, HttpException, DeployerException {
+	public void httpGet(Invocation inv) throws HttpException {
 		inv.sendOk(document());
 	}
 
-	private Document document() throws InternalException, HttpException,
-			DesignerException {
+	private Document document() throws HttpException {
 		Document doc = MonadUtils.newSourceDocument();
 		Element sourceElement = doc.getDocumentElement();
 		sourceElement.appendChild(toXml(doc, new XmlTree("service",
 				new XmlTree("provider", new XmlTree("organization"))).put(
 				"channel", new XmlTree("supply"))));
 		return doc;
-	}
-
-	public void httpDelete(Invocation inv) throws InternalException,
-			DesignerException, HttpException, DeployerException {
-		// TODO Auto-generated method stub
-
 	}
 
 	public MonadUri getUri() throws HttpException {
@@ -150,6 +140,6 @@ public class ChannelSnag extends SnagDateBounded {
 
 	@Override
 	public void setContract(Contract contract) {
-		setContract((HhdcContract) contract);
+		this.contract = (HhdcContract) contract;
 	}
 }
