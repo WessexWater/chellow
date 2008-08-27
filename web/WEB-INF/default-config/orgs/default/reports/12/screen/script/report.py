@@ -4,7 +4,7 @@ from net.sf.chellow.monad.types import MonadDate
 import math
 from java.sql import Timestamp, ResultSet
 from java.util import GregorianCalendar, Calendar, TimeZone, Locale, Date
-from net.sf.chellow.physical import HhEndDate, SiteCode
+from net.sf.chellow.physical import HhEndDate
 
 start = System.currentTimeMillis()
 siteCode = inv.getString("site-code")
@@ -27,12 +27,12 @@ startDate = HhEndDate(cal.getTime()).getDate()
 cal.add(Calendar.DAY_OF_MONTH, 1)
 cal.add(Calendar.MINUTE, -30)
 finishDate = HhEndDate(cal.getTime()).getDate()
-site = organization.getSite(SiteCode(siteCode))
+site = organization.getSite(siteCode)
 source.appendChild(site.toXml(doc, XmlTree('organization')))
 source.appendChild(MonadDate.getMonthsXml(doc))
 source.appendChild(MonadDate.getDaysXml(doc))
 con = Hiber.session().connection()
-stmt = con.prepareStatement("select hh_datum.value, hh_datum.end_date, hh_datum.status, channel.is_import, supply.name, source.code from hh_datum, channel, supply, source where hh_datum.channel_id = channel.id and channel.supply_id = supply.id and supply.source_id = source.id and channel.is_kwh is true and hh_datum.end_date >= ? and hh_datum.end_date <= ? and supply.id in (select distinct supply.id from supply, supply_generation, site_supply_generation, site, source where supply.id = supply_generation.supply_id and supply_generation.id = site_supply_generation.supply_generation_id and site_supply_generation.site_id = ? and supply.source_id = source.id and source.code != 'sub') order by hh_datum.end_date", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.CLOSE_CURSORS_AT_COMMIT)
+stmt = con.prepareStatement("select hh_datum.value, hh_datum.end_date, hh_datum.status, channel.is_import, supply.name, source.code from hh_datum, channel, supply, supply_generation, source where hh_datum.channel_id = channel.id and channel.supply_generation_id = supply_generation.id and supply_generation.supply_id = supply.id and supply.source_id = source.id and channel.is_kwh is true and hh_datum.end_date >= ? and hh_datum.end_date <= ? and supply.id in (select distinct supply.id from supply, supply_generation, site_supply_generation, site, source where supply.id = supply_generation.supply_id and supply_generation.id = site_supply_generation.supply_generation_id and site_supply_generation.site_id = ? and supply.source_id = source.id and source.code != 'sub') order by hh_datum.end_date", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.CLOSE_CURSORS_AT_COMMIT)
 stmt.setTimestamp(1, Timestamp(startDate.getTime()))
 stmt.setTimestamp(2, Timestamp(finishDate.getTime()))
 stmt.setLong(3, site.getId())

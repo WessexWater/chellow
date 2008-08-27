@@ -25,7 +25,6 @@ package net.sf.chellow.physical;
 import java.util.Calendar;
 import java.util.List;
 
-import net.sf.chellow.billing.HhdcContract;
 import net.sf.chellow.monad.DeployerException;
 import net.sf.chellow.monad.DesignerException;
 import net.sf.chellow.monad.Hiber;
@@ -344,7 +343,7 @@ public class Channel extends PersistentEntity implements Urlable {
 	public void addChannelSnag(String description,
 			HhEndDate startDate, HhEndDate finishDate, boolean isResolved)
 			throws HttpException {
-		SnagDateBounded.addChannelSnag((HhdcContract) supplyGeneration.getHhdcAccount().getContract(), this, description,
+		SnagDateBounded.addChannelSnag(supplyGeneration.getHhdcContract(), this, description,
 				startDate, finishDate, isResolved);
 	}
 
@@ -478,9 +477,11 @@ public class Channel extends PersistentEntity implements Urlable {
 		checkForMissing(latestPresentDate.getNext(), to);
 	}
 */
+	/*
 	public HhdcContract getHhdcContract() throws HttpException {
-		return (HhdcContract) getSupplyGeneration().getHhdcAccount().getContract();
+		return (HhdcContract) getSupplyGeneration().getHhdcContract().getContract();
 	}
+	*/
 
 	public void deleteData(HhEndDate from, int days)
 			throws HttpException {

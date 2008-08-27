@@ -114,7 +114,7 @@
 						<table>
 							<caption>Supply generations</caption>
 							<tr>
-								<th>Id</th>
+								<th>Chellow Id</th>
 								<th>Supply</th>
 								<th>Import MPAN core</th>
 								<th>Export MPAN core</th>
@@ -140,16 +140,16 @@
 
 									<td>
 										<xsl:if
-											test="mpan[mpan-top/llf/@is-import='true']">
+											test="mpan[mpan-top/llfc/@is-import='true']">
 											<xsl:value-of
-												select="mpan[mpan-top/llf/@is-import='true']/mpan-core/@core" />
+												select="mpan[mpan-top/llfc/@is-import='true']/mpan-core/@core" />
 										</xsl:if>
 									</td>
 									<td>
 										<xsl:if
-											test="mpan[mpan-top/llf/@is-import='false']">
+											test="mpan[mpan-top/llfc/@is-import='false']">
 											<xsl:value-of
-												select="mpan[mpan-top/llf/@is-import='false']/mpan-core/@core" />
+												select="mpan[mpan-top/llfc/@is-import='false']/mpan-core/@core" />
 										</xsl:if>
 									</td>
 									<td>

@@ -448,7 +448,7 @@ public class Supply extends PersistentEntity implements Urlable {
 		HhEndDate finish = null;
 		SupplyGeneration generation = getGenerationLast();
 		if (generation.getFinishDate() == null) {
-			HhdcContract latestHhdcContract = (HhdcContract) generation.getHhdcAccount().getContract();
+			HhdcContract latestHhdcContract = generation.getHhdcContract();
 			if (latestHhdcContract == null) {
 				finish = HhEndDate.roundDown(new Date());
 			} else {
@@ -567,7 +567,7 @@ Query query = Hiber
 List<SupplyGeneration> generations = getGenerations(from, to);
 for (int i = 0; i < generations.size(); i++) {
 	Channel channel = generations.get(i).getChannel(isImport, isKwh);
-	HhdcContract contractDce = (HhdcContract) generations.get(i).getHhdcAccount().getContract();
+	HhdcContract contractDce = generations.get(i).getHhdcContract();
 	HhEndDate generationStartDate = i == 0 ? from : generations.get(i)
 			.getStartDate();
 	HhEndDate generationFinishDate = i == generations.size() - 1 ? to
@@ -724,7 +724,7 @@ for (int i = 0; i < generations.size(); i++) {
 							"select count(*) from HhDatum datum where datum.channel  = :channel and datum.endDate.date >= :startDate and datum.endDate.date <= :finishDate");
 			for (SupplyGeneration generation : getGenerations(from, to)) {
 				for (Channel channel : generation.getChannels()) {
-					if (generation.getHhdcAccount() == null) {
+					if (generation.getHhdcContract() == null) {
 						HhEndDate generationFinishDate = generation
 								.getFinishDate();
 						if (generationFinishDate == null) {
@@ -787,7 +787,7 @@ for (int i = 0; i < generations.size(); i++) {
 			}
 			for (SupplyGeneration generation : getGenerations(from, to)) {
 				for (Channel channel : generation.getChannels()) {
-					HhdcContract hhdcContract = (HhdcContract) generation.getHhdcAccount().getContract();
+					HhdcContract hhdcContract = generation.getHhdcContract();
 					HhEndDate generationFinishDate = generation.getFinishDate();
 					for (ChannelSnag snag : (List<ChannelSnag>) (generationFinishDate == null ? Hiber
 							.session()
@@ -1031,7 +1031,7 @@ for (int i = 0; i < generations.size(); i++) {
 				to);
 		for (SupplyGeneration generation : supplyGenerations) {
 			Channel channel = generation.getChannel(isImport, isKwh);
-			HhdcContract actualHhdcContract = (HhdcContract) generation.getHhdcAccount().getContract();
+			HhdcContract actualHhdcContract = generation.getHhdcContract();
 			if (channel == null) {
 				throw new UserException("HH data has been ignored from " + dataRaw.toString() + " to " + to + ".");
 			}

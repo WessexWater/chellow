@@ -16,7 +16,7 @@ for supply_generation in Hiber.session().createQuery("select siteSupplyGeneratio
     if not supply.equals(last_supply) or not supply_generation.getFinishDate().getNext().equals(last_supply_generation.getStartDate()):
         supply_element = supply.toXml(doc, XmlTree('source'))
         site_element.appendChild(supply_element)
-    supply_element.appendChild(supply_generation.toXml(doc, XmlTree("mpans", XmlTree("mpanCore").put('mpanTop', XmlTree('llf')))))
+    supply_element.appendChild(supply_generation.toXml(doc, XmlTree("mpans", XmlTree("mpanCore").put('mpanTop', XmlTree('llfc')))))
     last_supply = supply
     last_supply_generation = supply_generation
 cal = GregorianCalendar(TimeZone.getTimeZone("GMT"), Locale.UK)

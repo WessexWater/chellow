@@ -30,7 +30,8 @@
 						<xsl:value-of select="'Sites'" />
 					</a>
 					&gt;
-					<xsl:value-of select="concat(/source/site/@name, ' [')" />
+					<xsl:value-of
+						select="concat(/source/site/@name, ' [')" />
 					<a
 						href="{/source/request/@context-path}/orgs/{/source/site/org/@id}/sites/{/source/site/@id}/">
 						<xsl:value-of select="'edit'" />
@@ -46,16 +47,26 @@
 						</xsl:for-each>
 					</ul>
 				</xsl:if>
-				<ul>
-					<li>
-						Code:
-						<xsl:value-of select="/source/site/@code" />
-					</li>
-					<li>
-						Name:
-						<xsl:value-of select="/source/site/@name" />
-					</li>
-				</ul>
+				<table>
+					<tr>
+						<th>Chellow Id</th>
+						<td>
+							<xsl:value-of select="/source/site/@id" />
+						</td>
+					</tr>
+					<tr>
+						<th>Code</th>
+						<td>
+							<xsl:value-of select="/source/site/@code" />
+						</td>
+					</tr>
+					<tr>
+						<th>Name</th>
+						<td>
+							<xsl:value-of select="/source/site/@name" />
+						</td>
+					</tr>
+				</table>
 
 				<table>
 					<caption>Supplies that power this site</caption>
@@ -93,16 +104,16 @@
 								</td>
 								<td>
 									<xsl:if
-										test="supply-generation/mpan[mpan-top/llf/@is-import='true']">
+										test="supply-generation/mpan[mpan-top/llfc/@is-import='true']">
 										<xsl:value-of
-											select="supply-generation/mpan[mpan-top/llf/@is-import='true']/mpan-core/@core" />
+											select="supply-generation/mpan[mpan-top/llfc/@is-import='true']/mpan-core/@core" />
 									</xsl:if>
 								</td>
 								<td>
 									<xsl:if
-										test="supply-generation/mpan[mpan-top/llf/@is-import='false']">
+										test="supply-generation/mpan[mpan-top/llfc/@is-import='false']">
 										<xsl:value-of
-											select="supply-generation/mpan[mpan-top/llf/@is-import='false']/mpan-core/@core" />
+											select="supply-generation/mpan[mpan-top/llfc/@is-import='false']/mpan-core/@core" />
 									</xsl:if>
 								</td>
 							</tr>
@@ -191,4 +202,3 @@
 		</html>
 	</xsl:template>
 </xsl:stylesheet>
-

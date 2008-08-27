@@ -5,7 +5,6 @@
         doctype-public="-//W3C//DTD XHTML 1.1//EN"
         doctype-system="http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd"
         indent="yes" />
-
     <xsl:template match="/">
         <html>
             <head>

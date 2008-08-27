@@ -222,12 +222,12 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 	}
 
 	public void addOrUpdateMpans(MpanTop importMpanTop,
-			MpanCore importMpanCore, Account importHhdceAccount,
+			MpanCore importMpanCore, Account importHhdcAccount,
 			Account importSupplierAccount, boolean importHasImportKwh,
 			boolean importHasImportKvarh, boolean importHasExportKwh,
 			boolean importHasExportKvarh, Integer importAgreedSupplyCapacity,
 			MpanTop exportMpanTop, MpanCore exportMpanCore,
-			Account exportHhdceAccount, Account exportSupplierAccount,
+			Account exportHhdcAccount, Account exportSupplierAccount,
 			boolean exportHasImportKwh, boolean exportHasImportKvarh,
 			boolean exportHasExportKwh, boolean exportHasExportKvarh,
 			Integer exportAgreedSupplyCapacity) throws HttpException {
@@ -251,14 +251,14 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 			}
 			if (importMpan == null) {
 				setImportMpan(new Mpan(this, importMpanTop, importMpanCore,
-						importHhdceAccount, importSupplierAccount,
+						importHhdcAccount, importSupplierAccount,
 						importHasImportKwh, importHasImportKvarh,
 						importHasExportKwh, importHasExportKvarh,
 						importAgreedSupplyCapacity));
 				mpans.add(importMpan);
 			} else {
 				importMpan.update(importMpanTop, importMpanCore,
-						importHhdceAccount, importSupplierAccount,
+						importHhdcAccount, importSupplierAccount,
 						importHasImportKwh, importHasImportKvarh,
 						importHasExportKwh, importHasExportKvarh,
 						importAgreedSupplyCapacity);
@@ -281,20 +281,26 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 			}
 			if (exportMpan == null) {
 				setExportMpan(new Mpan(this, exportMpanTop, exportMpanCore,
-						exportHhdceAccount, exportSupplierAccount,
+						exportHhdcAccount, exportSupplierAccount,
 						exportHasImportKwh, exportHasImportKvarh,
 						exportHasExportKwh, exportHasExportKvarh,
 						exportAgreedSupplyCapacity));
 				mpans.add(exportMpan);
 			} else {
 				exportMpan.update(exportMpanTop, exportMpanCore,
-						exportHhdceAccount, exportSupplierAccount,
+						exportHhdcAccount, exportSupplierAccount,
 						exportHasImportKwh, exportHasImportKvarh,
 						exportHasExportKwh, exportHasExportKvarh,
 						exportAgreedSupplyCapacity);
 			}
 		}
-
+		if (importHhdcAccount != null
+				&& exportHhdcAccount != null
+				&& !importHhdcAccount.getContract().equals(
+						exportHhdcAccount.getContract())) {
+			throw new UserException(
+					"The HHDC for the import and export MPANs must be the same.");
+		}
 		Hiber.flush();
 
 		// Check that if settlement MPANs then they're the same DSO.
@@ -344,7 +350,6 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 		// more optimization possible here, doesn't necessarily need to check
 		// data.
 		getSupply().checkAfterUpdate(true, getStartDate(), getFinishDate());
-
 	}
 
 	public Mpan getExportMpan() {
@@ -378,22 +383,19 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 	 * exportMpan != null) { account = exportMpan.getHhdcAccount(isImport,
 	 * isKwh); } return account; }
 	 */
-	public Account getHhdcAccount() throws HttpException {
-		Account account = null;
+	public HhdcContract getHhdcContract() throws HttpException {
 		for (Mpan mpan : getMpans()) {
 			if (mpan.getHhdcAccount() != null) {
-				account = mpan.getHhdcAccount();
-				break;
+				return (HhdcContract) mpan.getHhdcAccount().getContract();
 			}
 		}
-		return account;
+		return null;
 	}
 
 	public MpanCore getMpanCore(boolean isImport, boolean isKwh)
 			throws HttpException {
 		MpanCore mpanCore = null;
-		if (importMpan != null
-				&& importMpan.getHhdcAccount() != null) {
+		if (importMpan != null && importMpan.getHhdcAccount() != null) {
 			mpanCore = importMpan.getMpanCore();
 		}
 		if (mpanCore == null && exportMpan != null
@@ -414,7 +416,7 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 	}
 
 	void intrinsicUpdate(HhEndDate startDate, HhEndDate finishDate, Meter meter)
-			throws InternalException, HttpException {
+			throws HttpException {
 		if (finishDate != null
 				&& startDate.getDate().after(finishDate.getDate())) {
 			throw new UserException(
@@ -428,7 +430,7 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 		setMeter(meter);
 	}
 
-	void delete() throws HttpException, InternalException {
+	void delete() throws HttpException {
 		List<SiteSupplyGeneration> ssGens = new ArrayList<SiteSupplyGeneration>();
 		for (SiteSupplyGeneration ssGen : siteSupplyGenerations) {
 			ssGens.add(ssGen);
