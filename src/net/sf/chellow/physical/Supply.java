@@ -913,7 +913,7 @@ for (int i = 0; i < generations.size(); i++) {
 		Element source = doc.getDocumentElement();
 		Element supplyElement = (Element) toXml(doc, new XmlTree("generations",
 						new XmlTree("mpans", new XmlTree("mpanCore").put("mpanTop",
-								new XmlTree("llf", new XmlTree("voltageLevel")))))
+								new XmlTree("llfc", new XmlTree("voltageLevel")))))
 						.put("mpanCores"));
 		source.appendChild(supplyElement);
 		supplyElement.appendChild(getOrganization().toXml(doc));

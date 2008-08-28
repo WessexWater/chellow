@@ -54,7 +54,6 @@ import net.sf.chellow.ui.Reports;
 import org.hibernate.exception.ConstraintViolationException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import org.w3c.dom.Node;
 
 public class Organization extends PersistentEntity {
 	static public Organization findOrganization(MonadUri urlId)
@@ -67,12 +66,12 @@ public class Organization extends PersistentEntity {
 	}
 
 	public static Organization getOrganization(MonadLong id)
-			throws InternalException, HttpException {
+			throws HttpException {
 		return getOrganization(id.getLong());
 	}
 
 	public static Organization getOrganization(Long id)
-			throws InternalException, HttpException {
+			throws HttpException {
 		Organization organization = (Organization) Hiber.session().get(
 				Organization.class, id);
 		if (organization == null) {
@@ -124,7 +123,7 @@ public class Organization extends PersistentEntity {
 		return super.toString() + " Name: " + getName();
 	}
 
-	public Node toXml(Document doc) throws HttpException {
+	public Element toXml(Document doc) throws HttpException {
 		Element element = super.toXml(doc, "org");
 
 		element.setAttribute("name", name);

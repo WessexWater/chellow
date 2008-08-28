@@ -2,21 +2,18 @@ package net.sf.chellow.ui;
 
 import java.io.StringWriter;
 
-import net.sf.chellow.monad.DeployerException;
-import net.sf.chellow.monad.DesignerException;
-import net.sf.chellow.monad.Invocation;
-import net.sf.chellow.monad.MonadUtils;
-import net.sf.chellow.monad.InternalException;
-import net.sf.chellow.monad.Urlable;
 import net.sf.chellow.monad.HttpException;
-import net.sf.chellow.monad.UserException;
+import net.sf.chellow.monad.InternalException;
+import net.sf.chellow.monad.Invocation;
+import net.sf.chellow.monad.MethodNotAllowedException;
 import net.sf.chellow.monad.MonadMessage;
+import net.sf.chellow.monad.MonadUtils;
+import net.sf.chellow.monad.Urlable;
+import net.sf.chellow.monad.UserException;
 import net.sf.chellow.monad.XmlTree;
-
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
 
-import org.python.core.PyException;
 import org.python.util.PythonInterpreter;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -39,17 +36,15 @@ public class ReportScreen implements ReportType {
 
 	private ReportScript reportScript = new ReportScript(this);
 
-	public ReportScreen(Report report) throws InternalException,
-			HttpException {
+	public ReportScreen(Report report) throws HttpException {
 		this.report = report;
 	}
-	
+
 	public Report getReport() {
 		return report;
 	}
 
-	public Urlable getChild(UriPathElement uriId) throws InternalException,
-			HttpException {
+	public Urlable getChild(UriPathElement uriId) throws HttpException {
 		if (ReportTemplate.URI_ID.equals(uriId)) {
 			return reportTemplate;
 		} else if (ReportScript.URI_ID.equals(uriId)) {
@@ -63,12 +58,11 @@ public class ReportScreen implements ReportType {
 		}
 	}
 
-	public MonadUri getUri() throws InternalException, HttpException {
+	public MonadUri getUri() throws HttpException {
 		return report.getUri().resolve(URI_ID).append("/");
 	}
 
-	public void httpGet(Invocation inv) throws DesignerException,
-			InternalException, HttpException, DeployerException {
+	public void httpGet(Invocation inv) throws HttpException {
 		inv.sendOk(document());
 	}
 
@@ -76,7 +70,7 @@ public class ReportScreen implements ReportType {
 		return reportTemplate;
 	}
 
-	private Document document() throws InternalException, HttpException {
+	private Document document() throws HttpException {
 		Document doc = MonadUtils.newSourceDocument();
 		Element source = doc.getDocumentElement();
 		Element screenElement = (Element) toXml(doc);
@@ -85,21 +79,18 @@ public class ReportScreen implements ReportType {
 		screenElement.appendChild(reportElement);
 		Element reportsElement = (Element) getReport().getReports().toXml(doc);
 		reportElement.appendChild(reportsElement);
-		Element organizationElement = (Element) getReport().getReports().getOrganization().toXml(doc);
+		Element organizationElement = (Element) getReport().getReports()
+				.getOrganization().toXml(doc);
 		reportsElement.appendChild(organizationElement);
 		return doc;
 	}
 
-	public void httpPost(Invocation inv) throws InternalException,
-			HttpException, DesignerException, DeployerException {
-		// TODO Auto-generated method stub
-
+	public void httpPost(Invocation inv) throws HttpException {
+		throw new MethodNotAllowedException();
 	}
 
-	public void httpDelete(Invocation inv) throws InternalException,
-			DesignerException, HttpException, DeployerException {
-		// TODO Auto-generated method stub
-
+	public void httpDelete(Invocation inv) throws HttpException {
+		throw new MethodNotAllowedException();
 	}
 
 	public Node toXml(Document doc) throws InternalException, HttpException {
@@ -107,9 +98,7 @@ public class ReportScreen implements ReportType {
 		return element;
 	}
 
-	public Node toXml(Document doc, XmlTree tree) throws InternalException,
-			HttpException {
-		// TODO Auto-generated method stub
+	public Node toXml(Document doc, XmlTree tree) throws HttpException {
 		return null;
 	}
 
@@ -126,6 +115,7 @@ public class ReportScreen implements ReportType {
 		interp.setErr(err);
 		try {
 			interp.execfile(reportScript.getInputStream());
+			/*
 		} catch (PyException e) {
 			inv.getResponse().setContentType("text/html");
 			Object obj = e.value.__tojava__(HttpException.class);
@@ -134,12 +124,16 @@ public class ReportScreen implements ReportType {
 			} else {
 				throw new UserException(e.toString());
 			}
-		}
-		if (out.toString().length() > 0) {
-			source.appendChild(new MonadMessage(out.toString()).toXml(doc));
-		}
-		if (err.toString().length() > 0) {
-			source.appendChild(new MonadMessage(err.toString()).toXml(doc));
+			*/
+		} catch (Throwable e) {
+			if (out.toString().length() > 0) {
+				source.appendChild(new MonadMessage(out.toString()).toXml(doc));
+			}
+			if (err.toString().length() > 0) {
+				source.appendChild(new MonadMessage(err.toString()).toXml(doc));
+			}
+			throw new UserException(e.getMessage() + " "
+					+ HttpException.getStackTraceString(e));
 		}
 	}
 }

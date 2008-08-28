@@ -9,7 +9,7 @@
 		<html>
 			<head>
 				<link rel="stylesheet" type="text/css"
-					href="{/source/request/@context-path}/orgs/1/reports/9/stream/output/" />
+					href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/9/stream/output/" />
 
 				<title>
 					<xsl:value-of select="/source/org/@name" />
@@ -148,29 +148,29 @@
 							<th>Profile Class</th>
 							<td>
 								<xsl:value-of
-									select="concat(/source/supply-generation/mpan[mpan-top/llf/@is-import='true']/mpan-top/profile-class/@code, ' - ', /source/supply-generation/mpan[mpan-top/llf/@is-import='true']/mpan-top/profile-class/@description)" />
+									select="concat(/source/supply-generation/mpan[mpan-top/llfc/@is-import='true']/mpan-top/pc/@code, ' - ', /source/supply-generation/mpan[mpan-top/llfc/@is-import='true']/mpan-top/pc/@description)" />
 							</td>
 							<td>
 								<xsl:value-of
-									select="concat(/source/supply-generation/mpan[mpan-top/llf/@is-import='false']/mpan-top/profile-class/@code, ' - ', /source/supply-generation/mpan[mpan-top/llf/@is-import='false']/mpan-top/profile-class/@description)" />
+									select="concat(/source/supply-generation/mpan[mpan-top/llfc/@is-import='false']/mpan-top/pc/@code, ' - ', /source/supply-generation/mpan[mpan-top/llfc/@is-import='false']/mpan-top/pc/@description)" />
 							</td>
 						</tr>
 						<tr>
 							<th>Meter Timeswitch Code</th>
 							<td>
 								<xsl:value-of
-									select="concat(/source/supply-generation/mpan[mpan-top/llf/@is-import='true']/mpan-top/meter-timeswitch/@code, ' - ', /source/supply-generation/mpan[mpan-top/llf/@is-import='true']/mpan-top/meter-timeswitch/@description)" />
+									select="concat(/source/supply-generation/mpan[mpan-top/llfc/@is-import='true']/mpan-top/mtc/@code, ' - ', /source/supply-generation/mpan[mpan-top/llfc/@is-import='true']/mpan-top/mtc/@description)" />
 							</td>
 							<td>
 								<xsl:value-of
-									select="concat(/source/supply-generation/mpan[mpan-top/llf/@is-import='false']/mpan-top/meter-timeswitch/@code, ' - ', /source/supply-generation/mpan[mpan-top/llf/@is-import='false']/mpan-top/meter-timeswitch/@description)" />
+									select="concat(/source/supply-generation/mpan[mpan-top/llfc/@is-import='false']/mpan-top/mtc/@code, ' - ', /source/supply-generation/mpan[mpan-top/llfc/@is-import='false']/mpan-top/mtc/@description)" />
 							</td>
 						</tr>
 						<tr>
-							<th>Line Loss Factor</th>
+							<th>Line Loss Factor Code</th>
 							<td>
 								<xsl:value-of
-									select="concat(/source/supply-generation/mpan[mpan-top/llf/@is-import='true']/mpan-top/llf/@code, ' - ', /source/supply-generation/mpan[mpan-top/llf/@is-import='true']/mpan-top/llf/@description)" />
+									select="concat(/source/supply-generation/mpan[mpan-top/llfc/@is-import='true']/mpan-top/llfc/@code, ' - ', /source/supply-generation/mpan[mpan-top/llfc/@is-import='true']/mpan-top/llfc/@description)" />
 							</td>
 							<td>
 								<xsl:value-of
@@ -181,22 +181,22 @@
 							<th>MPAN Core</th>
 							<td>
 								<xsl:value-of
-									select="/source/supply-generation/mpan[mpan-top/llf/@is-import='true']/mpan-core/@core" />
+									select="/source/supply-generation/mpan[mpan-top/llfc/@is-import='true']/mpan-core/@core" />
 							</td>
 							<td>
 								<xsl:value-of
-									select="/source/supply-generation/mpan[mpan-top/llf/@is-import='false']/mpan-core/@core" />
+									select="/source/supply-generation/mpan[mpan-top/llfc/@is-import='false']/mpan-core/@core" />
 							</td>
 						</tr>
 						<tr>
 							<th>Agreed Supply Capacity</th>
 							<td>
 								<xsl:value-of
-									select="/source/supply-generation/mpan[mpan-top/llf/@is-import='true']/@agreed-supply-capacity" />
+									select="/source/supply-generation/mpan[mpan-top/llfc/@is-import='true']/@agreed-supply-capacity" />
 							</td>
 							<td>
 								<xsl:value-of
-									select="/source/supply-generation/mpan[mpan-top/llf/@is-import='false']/@agreed-supply-capacity" />
+									select="/source/supply-generation/mpan[mpan-top/llfc/@is-import='false']/@agreed-supply-capacity" />
 							</td>
 						</tr>
 						<tr>
@@ -204,19 +204,19 @@
 							<td>
 								<ul>
 									<xsl:if
-										test="/source/supply-generation/mpan[mpan-top/llf/@is-import='true']/@has-import-kwh='true'">
+										test="/source/supply-generation/mpan[mpan-top/llfc/@is-import='true']/@has-import-kwh='true'">
 										<li>Import kWh</li>
 									</xsl:if>
 									<xsl:if
-										test="/source/supply-generation/mpan[mpan-top/llf/@is-import='true']/@has-import-kvarh='true'">
+										test="/source/supply-generation/mpan[mpan-top/llfc/@is-import='true']/@has-import-kvarh='true'">
 										<li>Import kVArh</li>
 									</xsl:if>
 									<xsl:if
-										test="/source/supply-generation/mpan[mpan-top/llf/@is-import='true']/@has-export-kwh='true'">
+										test="/source/supply-generation/mpan[mpan-top/llfc/@is-import='true']/@has-export-kwh='true'">
 										<li>Export kWh</li>
 									</xsl:if>
 									<xsl:if
-										test="/source/supply-generation/mpan[mpan-top/llf/@is-import='true']/@has-export-kvarh='true'">
+										test="/source/supply-generation/mpan[mpan-top/llfc/@is-import='true']/@has-export-kvarh='true'">
 										<li>Export kVArh</li>
 									</xsl:if>
 								</ul>
@@ -224,80 +224,50 @@
 							<td>
 								<ul>
 									<xsl:if
-										test="/source/supply-generation/mpan[mpan-top/llf/@is-import='false']/@has-import-kwh='true'">
+										test="/source/supply-generation/mpan[mpan-top/llfc/@is-import='false']/@has-import-kwh='true'">
 										<li>Import kWh</li>
 									</xsl:if>
 									<xsl:if
-										test="/source/supply-generation/mpan[mpan-top/llf/@is-import='false']/@has-import-kvarh='true'">
+										test="/source/supply-generation/mpan[mpan-top/llfc/@is-import='false']/@has-import-kvarh='true'">
 										<li>Import kVArh</li>
 									</xsl:if>
 									<xsl:if
-										test="/source/supply-generation/mpan[mpan-top/llf/@is-import='false']/@has-export-kwh='true'">
+										test="/source/supply-generation/mpan[mpan-top/llfc/@is-import='false']/@has-export-kwh='true'">
 										<li>Export kWh</li>
 									</xsl:if>
 									<xsl:if
-										test="/source/supply-generation/mpan[mpan-top/llf/@is-import='false']/@has-export-kvarh='true'">
+										test="/source/supply-generation/mpan[mpan-top/llfc/@is-import='false']/@has-export-kvarh='true'">
 										<li>Export kVArh</li>
 									</xsl:if>
 								</ul>
 							</td>
 						</tr>
 						<tr>
-							<th>DCE</th>
-							<td>
-								<xsl:value-of
-									select="/source/supply-generation/mpan[mpan-top/llf/@is-import='true']/dce-service/dce/@name" />
-							</td>
-							<td>
-								<xsl:value-of
-									select="/source/supply-generation/mpan[mpan-top/llf/@is-import='false']/dce-service/dce/@name" />
-							</td>
-						</tr>
-						<tr>
-							<th>DCE Service</th>
-							<td>
-								<xsl:value-of
-									select="/source/supply-generation/mpan[mpan-top/llf/@is-import='true']/dce-service/@name" />
-							</td>
-							<td>
-								<xsl:value-of
-									select="/source/supply-generation/mpan[mpan-top/llf/@is-import='false']/dce-service/@name" />
-							</td>
-						</tr>
-						<tr>
-							<th>Supplier</th>
+							<th>HHDC Account</th>
 							<td>
 								<a
-									href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/36/screen/output/?supplier-id={/source/supply-generation/mpan[mpan-top/llf/@is-import='true']/supplier-service/supplier/@id}">
-
+									href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/55/screen/output/?account-id={/source/supply-generation/mpan[mpan-top/llfc/@is-import='true']/account[hhdc-contract]/@id}">
 									<xsl:value-of
-										select="/source/supply-generation/mpan[mpan-top/llf/@is-import='true']/supplier-service/supplier/@name" />
+										select="/source/supply-generation/mpan[mpan-top/llfc/@is-import='true']/account[hhdc-contract]/@reference" />
+								</a>
+								<xsl:value-of select="' &gt; '" />
+								<a
+									href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/57/screen/output/?hhdc-contract-id={/source/supply-generation/mpan[mpan-top/llfc/@is-import='true']/account/hhdc-contract/@id}">
+									<xsl:value-of
+										select="/source/supply-generation/mpan[mpan-top/llfc/@is-import='true']/account/hhdc-contract/@name" />
 								</a>
 							</td>
 							<td>
 								<a
-									href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/36/screen/output/?supplier-id={/source/supply-generation/mpan[mpan-top/llf/@is-import='false']/supplier-service/supplier/@id}">
-
+									href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/55/screen/output/?account-id={/source/supply-generation/mpan[mpan-top/llfc/@is-import='false']/account[hhdc-contract]/@id}">
 									<xsl:value-of
-										select="/source/supply-generation/mpan[mpan-top/llf/@is-import='false']/supplier-service/supplier/@name" />
+										select="/source/supply-generation/mpan[mpan-top/llfc/@is-import='false']/account[hhdc-contract]/@reference" />
 								</a>
-							</td>
-						</tr>
-						<tr>
-							<th>Supplier Service</th>
-							<td>
+								<xsl:value-of select="' &gt; '" />
 								<a
-									href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/38/screen/output/?supplier-service-id={/source/supply-generation/mpan[mpan-top/llf/@is-import='true']/supplier-service/@id}">
-
+									href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/57/screen/output/?hhdc-contract-id={/source/supply-generation/mpan[mpan-top/llfc/@is-import='false']/account/hhdc-contract/@id}">
 									<xsl:value-of
-										select="/source/supply-generation/mpan[mpan-top/llf/@is-import='true']/supplier-service/@name" />
-								</a>
-							</td>
-							<td>
-								<a
-									href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/38/screen/output/?supplier-service-id={/source/supply-generation/mpan[mpan-top/llf/@is-import='false']/supplier-service/@id}">
-									<xsl:value-of
-										select="/source/supply-generation/mpan[mpan-top/llf/@is-import='false']/supplier-service/@name" />
+										select="/source/supply-generation/mpan[mpan-top/llfc/@is-import='false']/account/hhdc-contract/@name" />
 								</a>
 							</td>
 						</tr>
@@ -305,16 +275,28 @@
 							<th>Supplier Account</th>
 							<td>
 								<a
-									href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/41/screen/output/?account-id={/source/supply-generation/mpan[mpan-top/llf/@is-import='true']/account[@label='supplier']/@id}">
+									href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/41/screen/output/?account-id={/source/supply-generation/mpan[mpan-top/llfc/@is-import='true']/account[supplier-contract]/@id}">
 									<xsl:value-of
-										select="/source/supply-generation/mpan[mpan-top/llf/@is-import='true']/account[@label='supplier']/@reference" />
+										select="/source/supply-generation/mpan[mpan-top/llfc/@is-import='true']/account[supplier-contract]/@reference" />
+								</a>
+								<xsl:value-of select="' &gt; '" />
+								<a
+									href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/38/screen/output/?supplier-contract-id={/source/supply-generation/mpan[mpan-top/llfc/@is-import='true']/account/supplier-contract/@id}">
+									<xsl:value-of
+										select="/source/supply-generation/mpan[mpan-top/llfc/@is-import='true']/account/hhdc-contract/@name" />
 								</a>
 							</td>
 							<td>
 								<a
-									href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/41/screen/output/?account-id={/source/supply-generation/mpan[mpan-top/llf/@is-import='false']/account[@label='supplier']/@id}">
+									href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/41/screen/output/?account-id={/source/supply-generation/mpan[mpan-top/llfc/@is-import='false']/account[supplier-contract]/@id}">
 									<xsl:value-of
-										select="/source/supply-generation/mpan[mpan-top/llf/@is-import='false']/account[@label='supplier']/@reference" />
+										select="/source/supply-generation/mpan[mpan-top/llfc/@is-import='false']/account[supplier-contract]/@reference" />
+								</a>
+								<xsl:value-of select="' &gt; '" />
+								<a
+									href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/38/screen/output/?supplier-contract-id={/source/supply-generation/mpan[mpan-top/llfc/@is-import='false']/account/supplier-contract/@id}">
+									<xsl:value-of
+										select="/source/supply-generation/mpan[mpan-top/llfc/@is-import='false']/account/supplier-contract/@name" />
 								</a>
 							</td>
 						</tr>

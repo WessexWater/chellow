@@ -16,6 +16,8 @@ account_id = inv.getLong('account-id')
 account = Account.getAccount(account_id)
 if not account.getContract().getOrganization().equals(organization):
     raise UserException("Such an account doesn't exist in this organization")
+if account.getContract().getProvider().getRole().getCode() != 'X':
+    raise UserException("This account isn't attached to a supplier contract.")
 account_element = account.toXml(doc, XmlTree('contract', XmlTree('organization')))
 source.appendChild(account_element)
 

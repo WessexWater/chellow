@@ -1,12 +1,10 @@
 package net.sf.chellow.ui;
 
-import net.sf.chellow.monad.DeployerException;
-import net.sf.chellow.monad.DesignerException;
-import net.sf.chellow.monad.Invocation;
-import net.sf.chellow.monad.MonadUtils;
-import net.sf.chellow.monad.InternalException;
-import net.sf.chellow.monad.Urlable;
 import net.sf.chellow.monad.HttpException;
+import net.sf.chellow.monad.Invocation;
+import net.sf.chellow.monad.MethodNotAllowedException;
+import net.sf.chellow.monad.MonadUtils;
+import net.sf.chellow.monad.Urlable;
 import net.sf.chellow.monad.UserException;
 import net.sf.chellow.monad.XmlDescriber;
 import net.sf.chellow.monad.XmlTree;
@@ -24,10 +22,8 @@ public class Report implements Urlable, XmlDescriber {
 
 	private ChellowProperties properties;
 
-	
-
 	public Report(Reports reports, Long id, MonadUri uri)
-			throws InternalException, HttpException {
+			throws HttpException {
 		this.id = id;
 		this.reports = reports;
 		if (ChellowProperties.propertiesExists(uri, "report.properties")) {
@@ -43,8 +39,7 @@ public class Report implements Urlable, XmlDescriber {
 		return reports;
 	}
 
-	public Urlable getChild(UriPathElement uriId) throws InternalException,
-			HttpException {
+	public Urlable getChild(UriPathElement uriId) throws HttpException {
 		if (ReportScreen.URI_ID.equals(uriId)) {
 			return new ReportScreen(this);
 			/*
@@ -61,46 +56,39 @@ public class Report implements Urlable, XmlDescriber {
 		}
 	}
 
-	public MonadUri getUri() throws InternalException, HttpException {
+	public MonadUri getUri() throws HttpException {
 		return reports.getUri().resolve(id).append("/");
 	}
 
-	public void httpGet(Invocation inv) throws DesignerException,
-			InternalException, HttpException, DeployerException {
+	public void httpGet(Invocation inv) throws HttpException {
 		inv.sendOk(document());
 	}
 
-	public void httpPost(Invocation inv) throws InternalException,
-			HttpException, DesignerException, DeployerException {
-		// TODO Auto-generated method stub
-
+	public void httpPost(Invocation inv) throws HttpException {
+		throw new MethodNotAllowedException();
 	}
 
-	private Document document() throws InternalException, HttpException {
+	private Document document() throws HttpException {
 		Document doc = MonadUtils.newSourceDocument();
 		Element source = doc.getDocumentElement();
-		Element reportElement = (Element) toXml(doc);
+		Element reportElement = toXml(doc);
 		source.appendChild(reportElement);
 		reportElement.appendChild(reports.getOrganization().toXml(doc));
 		return doc;
 	}
 
-	public void httpDelete(Invocation inv) throws InternalException,
-			DesignerException, HttpException, DeployerException {
-		// TODO Auto-generated method stub
-
+	public void httpDelete(Invocation inv) throws HttpException {
+		throw new MethodNotAllowedException();
 	}
 
-	public Node toXml(Document doc) throws InternalException, HttpException {
+	public Element toXml(Document doc) throws HttpException {
 		Element element = doc.createElement("report");
 		element.setAttribute("name", properties.getProperty("name"));
 		element.setAttribute("id", id.toString());
 		return element;
 	}
 
-	public Node toXml(Document doc, XmlTree tree) throws InternalException,
-			HttpException {
-		// TODO Auto-generated method stub
+	public Node toXml(Document doc, XmlTree tree) throws HttpException {
 		return null;
 	}
 }

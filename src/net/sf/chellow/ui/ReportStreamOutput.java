@@ -36,8 +36,7 @@ public class ReportStreamOutput implements Urlable, XmlDescriber {
 
 	private ReportStream reportStream;
 
-	public ReportStreamOutput(ReportStream reportStream)
-			throws InternalException, HttpException {
+	public ReportStreamOutput(ReportStream reportStream) {
 		this.reportStream = reportStream;
 	}
 
@@ -45,12 +44,11 @@ public class ReportStreamOutput implements Urlable, XmlDescriber {
 		return reportStream;
 	}
 
-	public Urlable getChild(UriPathElement uriId) throws InternalException,
-			HttpException {
+	public Urlable getChild(UriPathElement uriId) throws HttpException {
 		return null;
 	}
 
-	public MonadUri getUri() throws InternalException, HttpException {
+	public MonadUri getUri() throws HttpException {
 		return reportStream.getUri().resolve(URI_ID).append("/");
 	}
 
@@ -88,7 +86,7 @@ public class ReportStreamOutput implements Urlable, XmlDescriber {
 		}
 	}
 
-	private Document document() throws InternalException, HttpException {
+	private Document document() throws HttpException {
 		Document doc = MonadUtils.newSourceDocument();
 		Element source = doc.getDocumentElement();
 		Element outputElement = (Element) toXml(doc);

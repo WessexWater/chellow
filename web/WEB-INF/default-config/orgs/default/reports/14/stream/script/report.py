@@ -37,13 +37,13 @@ supplies = Hiber.session().createQuery("select distinct supply from Supply suppl
 suppliesSQL = ''
 for supply in supplies:
     suppliesSQL = suppliesSQL + str(supply.getId()) + ','
-stmt = con.prepareStatement("select hh_datum.value, hh_datum.end_date, hh_datum.status, channel.is_import, supply.name, source.code from hh_datum, channel, supply, source where hh_datum.channel_id = channel.id and channel.supply_id = supply.id and supply.source_id = source.id and channel.is_kwh is true and hh_datum.end_date >= ? and hh_datum.end_date <= ? and supply.id in (" + suppliesSQL[:-1] + ") order by hh_datum.end_date", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.CLOSE_CURSORS_AT_COMMIT)
+stmt = con.prepareStatement("select hh_datum.value, hh_datum.end_date, hh_datum.status, channel.is_import, supply.name, source.code from hh_datum, channel, supply_generation, supply, source where hh_datum.channel_id = channel.id and channel.supply_generation_id = supply_generation.id and supply_generation.supply_id = supply.id and supply.source_id = source.id and channel.is_kwh is true and hh_datum.end_date >= ? and hh_datum.end_date <= ? and supply.id in (" + suppliesSQL[:-1] + ") order by hh_datum.end_date", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.CLOSE_CURSORS_AT_COMMIT)
 stmt.setTimestamp(1, Timestamp(startDate.getTime()))
 stmt.setTimestamp(2, Timestamp(finishDate.getTime()))
 stmt.setFetchSize(100)
 rs = stmt.executeQuery()
 hhDate = startDate.getTime()
-siteSnagQuery = Hiber.session().createQuery("select count(*) from SnagSite snag where snag.site = :site and snag.startDate.date <= :finishDate and snag.finishDate.date >= :startDate and (snag.dateResolved is null or (snag.dateResolved is not null and snag.isIgnored is true))").setEntity("site", site)
+siteSnagQuery = Hiber.session().createQuery("select count(*) from SiteSnag snag where snag.site = :site and snag.startDate.date <= :finishDate and snag.finishDate.date >= :startDate and (snag.dateResolved is null or (snag.dateResolved is not null and snag.isIgnored is true))").setEntity("site", site)
 if rs.next():
     hhChannelKwh = rs.getFloat("value")
     hhChannelEndDate = rs.getTimestamp("end_date")

@@ -1,8 +1,8 @@
 package net.sf.chellow.ui;
 
-import net.sf.chellow.monad.DeployerException;
 import net.sf.chellow.monad.DesignerException;
 import net.sf.chellow.monad.Invocation;
+import net.sf.chellow.monad.MethodNotAllowedException;
 import net.sf.chellow.monad.MonadUtils;
 import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Urlable;
@@ -30,8 +30,7 @@ public class ReportScreenOutput implements Urlable, XmlDescriber {
 
 	private ReportScreen reportScreen;
 
-	public ReportScreenOutput(ReportScreen reportScreen) throws InternalException,
-			HttpException {
+	public ReportScreenOutput(ReportScreen reportScreen) throws HttpException {
 		this.reportScreen = reportScreen;
 	}
 	
@@ -39,23 +38,21 @@ public class ReportScreenOutput implements Urlable, XmlDescriber {
 		return reportScreen;
 	}
 
-	public Urlable getChild(UriPathElement uriId) throws InternalException,
-			HttpException {
+	public Urlable getChild(UriPathElement uriId) throws HttpException {
 		return null;
 	}
 
-	public MonadUri getUri() throws InternalException, HttpException {
+	public MonadUri getUri() throws HttpException {
 		return reportScreen.getUri().resolve(URI_ID).append("/");
 	}
 
-	public void httpGet(Invocation inv) throws DesignerException,
-			InternalException, HttpException, DeployerException {
+	public void httpGet(Invocation inv) throws HttpException {
 		try {
 			//long startMillis = System.currentTimeMillis();
 			//Debug.print("Start request: " + (System.currentTimeMillis() - startMillis));
 			Document doc = MonadUtils.newSourceDocument();
 			Element source = doc.getDocumentElement();
-			Element reportElement = (Element) toXml(doc);
+			Element reportElement = toXml(doc);
 			source.appendChild(reportElement);
 			reportScreen.run(inv, doc);
 			//Debug.print("Created XML: " + (System.currentTimeMillis() - startMillis));
@@ -68,7 +65,7 @@ public class ReportScreenOutput implements Urlable, XmlDescriber {
 		}
 	}
 
-	private Document document() throws InternalException, HttpException {
+	private Document document() throws HttpException {
 		Document doc = MonadUtils.newSourceDocument();
 		Element source = doc.getDocumentElement();
         Element outputElement = (Element) toXml(doc);
@@ -84,19 +81,15 @@ public class ReportScreenOutput implements Urlable, XmlDescriber {
 		return doc;
 	}
 
-	public void httpPost(Invocation inv) throws InternalException,
-			HttpException, DesignerException, DeployerException {
-		// TODO Auto-generated method stub
-
+	public void httpPost(Invocation inv) throws HttpException {
+		throw new MethodNotAllowedException();
 	}
 
-	public void httpDelete(Invocation inv) throws InternalException,
-			DesignerException, HttpException, DeployerException {
-		// TODO Auto-generated method stub
-
+	public void httpDelete(Invocation inv) throws HttpException {
+		throw new MethodNotAllowedException();
 	}
 
-	public Node toXml(Document doc) throws InternalException, HttpException {
+	public Element toXml(Document doc) throws HttpException {
 		Element element = doc.createElement("screen-report-output");
 		return element;
 	}

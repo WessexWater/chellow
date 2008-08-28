@@ -19,7 +19,7 @@ if not account.getContract().getOrganization().equals(organization):
 account_element = account.toXml(doc, XmlTree('contract', XmlTree('organization')))
 source.appendChild(account_element)
 
-mpans = Hiber.session().createQuery("from Mpan mpan where mpan.supplierAccount = :account order by mpan.mpanCore, mpan.supplyGeneration.startDate.date").setEntity('account', account).list()
+mpans = Hiber.session().createQuery("from Mpan mpan where mpan.hhdcAccount = :account order by mpan.mpanCore, mpan.supplyGeneration.startDate.date").setEntity('account', account).list()
 if len(mpans) > 0:
     current_mpan = mpans[0]
     finish_generation = current_mpan.getSupplyGeneration()

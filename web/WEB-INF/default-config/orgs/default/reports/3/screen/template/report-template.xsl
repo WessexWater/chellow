@@ -85,7 +85,7 @@
 							<tr>
 								<td>
 									<a
-										href="{/source/request/@context-path}/orgs/1/reports/15/screen/output/?supply-generation-id={@id}">
+										href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/15/screen/output/?supply-generation-id={@id}">
 										<xsl:value-of select="@id" />
 									</a>
 								</td>
@@ -107,32 +107,32 @@
 								</td>
 								<td>
 									<xsl:value-of
-										select="concat(mpan[mpan-top/llf/@is-import='true']/mpan-top/profile-class/@code, ' ', mpan[mpan-top/llf/@is-import='true']/mpan-top/meter-timeswitch/@code, ' ', mpan[mpan-top/llf/@is-import='true']/llf/@code, ' ', mpan[mpan-top/llf/@is-import='true']/mpan-core/@core)" />
+										select="concat(mpan[mpan-top/llfc/@is-import='true']/mpan-top/pc/@code, ' ', mpan[mpan-top/llfc/@is-import='true']/mpan-top/mtc/@code, ' ', mpan[mpan-top/llfc/@is-import='true']/llfc/@code, ' ', mpan[mpan-top/llfc/@is-import='true']/mpan-core/@core)" />
 								</td>
 								<td>
 									<xsl:value-of
-										select="mpan[mpan-top/llf/@is-import='true']/@agreed-supply-capacity" />
+										select="mpan[mpan-top/llfc/@is-import='true']/@agreed-supply-capacity" />
 								</td>
 								<td>
 									<a
-										href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/41/screen/output/?account-id={mpan[mpan-top/llf/@is-import='true']/account/@id}">
+										href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/41/screen/output/?account-id={mpan[mpan-top/llfc/@is-import='true']/account[supplier-contract]/@id}">
 										<xsl:value-of
-											select="mpan[mpan-top/llf/@is-import='true']/account[@label='supplier']/@reference" />
+											select="mpan[mpan-top/llfc/@is-import='true']/account[supplier-contract]/@reference" />
 									</a>
 								</td>
 								<td>
 									<xsl:value-of
-										select="concat(mpan[mpan-top/llf/@is-import='false']/profile-class/@code, ' ', mpan[mpan-top/llf/@is-import='false']/meter-timeswitch/@code, ' ', mpan[mpan-top/llf/@is-import='false']/llf/@code, ' ', mpan[mpan-top/llf/@is-import='false']/mpan-core/@core)" />
+										select="concat(mpan[mpan-top/llfc/@is-import='false']/pc/@code, ' ', mpan[mpan-top/llfc/@is-import='false']/mtc/@code, ' ', mpan[mpan-top/llfc/@is-import='false']/llfc/@code, ' ', mpan[mpan-top/llfc/@is-import='false']/mpan-core/@core)" />
 								</td>
 								<td>
 									<xsl:value-of
-										select="mpan[mpan-top/llf/@is-import='false']/@agreed-supply-capacity" />
+										select="mpan[mpan-top/llfc/@is-import='false']/@agreed-supply-capacity" />
 								</td>
 								<td>
 									<a
-										href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/41/screen/output/?account-id={mpan[mpan-top/llf/@is-import='false']/account/@id}">
+										href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/41/screen/output/?account-id={mpan[mpan-top/llfc/@is-import='false']/account[supplier-contract]/@id}">
 										<xsl:value-of
-											select="mpan[mpan-top/llf/@is-import='false']/account[@label='supplier']/@reference" />
+											select="mpan[mpan-top/llfc/@is-import='false']/account[supplier-contract]/@reference" />
 									</a>
 								</td>
 							</tr>
@@ -144,19 +144,19 @@
 					<li>
 						kWh, kVA, MD etc. by month:
 						<a
-							href="{/source/request/@context-path}/orgs/1/reports/7/screen/output/?supply-id={/source/supply/@id}&amp;is-import=true">
+							href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/7/screen/output/?supply-id={/source/supply/@id}&amp;is-import=true">
 							<xsl:value-of select="'Import'" />
 						</a>
 						<xsl:value-of select="' '" />
 						<a
-							href="{/source/request/@context-path}/orgs/1/reports/7/screen/output/?supply-id={/source/supply/@id}&amp;is-import=false">
+							href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/7/screen/output/?supply-id={/source/supply/@id}&amp;is-import=false">
 							<xsl:value-of select="'Export'" />
 						</a>
 
 					</li>
 					<li>
 						<a
-							href="{/source/request/@context-path}/orgs/1/reports/8/screen/output/?supply-id={/source/supply/@id}&amp;start-year={/source/date/@year}&amp;start-month={/source/date/@month}">
+							href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/8/screen/output/?supply-id={/source/supply/@id}&amp;start-year={/source/date/@year}&amp;start-month={/source/date/@month}">
 							Raw HH data
 						</a>
 					</li>
@@ -165,4 +165,3 @@
 		</html>
 	</xsl:template>
 </xsl:stylesheet>
-
