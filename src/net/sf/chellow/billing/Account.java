@@ -33,7 +33,6 @@ import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Invocation;
-import net.sf.chellow.monad.MethodNotAllowedException;
 import net.sf.chellow.monad.MonadUtils;
 import net.sf.chellow.monad.NotFoundException;
 import net.sf.chellow.monad.Urlable;
@@ -152,10 +151,8 @@ public class Account extends PersistentEntity implements Urlable {
 				"from Mpan mpan where mpan.supplierAccount = :account")
 				.setEntity("account", this).list()) {
 			accountElement.appendChild(mpan.toXml(doc, new XmlTree(
-					"supplyGeneration", new XmlTree("supply")).put(
-					"mpanTop",
-					new XmlTree("profileClass").put("meterTimeswitch").put(
-							"llf")).put("mpanCore")));
+					"supplyGeneration", new XmlTree("supply")).put("mpanTop",
+					new XmlTree("pc").put("mtc").put("llfc")).put("mpanCore")));
 		}
 		for (Bill bill : (List<Bill>) Hiber
 				.session()
@@ -184,12 +181,7 @@ public class Account extends PersistentEntity implements Urlable {
 		}
 	}
 
-	public void httpDelete(Invocation inv) throws HttpException {
-		throw new MethodNotAllowedException();
-	}
-
-	public void checkMissingFromLatest(Contract contract)
-			throws HttpException {
+	public void checkMissingFromLatest(Contract contract) throws HttpException {
 		checkMissingFromLatest(contract, null);
 	}
 

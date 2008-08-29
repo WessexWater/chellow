@@ -1,6 +1,6 @@
 /*
  
- Copyright 2005 Meniscus Systems Ltd
+ Copyright 2005, 2008 Meniscus Systems Ltd
  
  This file is part of Chellow.
 
@@ -22,21 +22,18 @@
 
 package net.sf.chellow.physical;
 
-import net.sf.chellow.monad.DeployerException;
-import net.sf.chellow.monad.DesignerException;
 import net.sf.chellow.monad.Hiber;
+import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.Invocation;
+import net.sf.chellow.monad.MethodNotAllowedException;
 import net.sf.chellow.monad.MonadUtils;
 import net.sf.chellow.monad.NotFoundException;
-import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Urlable;
-import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.XmlDescriber;
 import net.sf.chellow.monad.XmlTree;
 import net.sf.chellow.monad.types.MonadDate;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
-
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -67,7 +64,7 @@ public class SupplyGenerations implements Urlable, XmlDescriber {
 		return supply;
 	}
 
-	public MonadUri getUri() throws InternalException, HttpException {
+	public MonadUri getUri() throws HttpException {
 		return supply.getUri().resolve(getUriId()).append("/");
 	}
 
@@ -75,8 +72,7 @@ public class SupplyGenerations implements Urlable, XmlDescriber {
 		return URI_ID;
 	}
 
-	public void httpPost(Invocation inv) throws InternalException,
-			HttpException, DesignerException, DeployerException {
+	public void httpPost(Invocation inv) throws HttpException {
 		MonadDate finishDate = inv.getMonadDate("finish-date");
 		SupplyGeneration supplyGeneration = supply.addGeneration(HhEndDate
 				.roundDown(finishDate.getDate()));
@@ -84,13 +80,11 @@ public class SupplyGenerations implements Urlable, XmlDescriber {
 		inv.sendCreated(document(), supplyGeneration.getUri());
 	}
 
-	public void httpGet(Invocation inv) throws DesignerException,
-			InternalException, HttpException, DeployerException {
+	public void httpGet(Invocation inv) throws HttpException {
 		inv.sendOk(document());
 	}
 
-	public Document document() throws DesignerException, InternalException,
-			HttpException, DeployerException {
+	public Document document() throws HttpException {
 		Document doc = MonadUtils.newSourceDocument();
 		Element source = doc.getDocumentElement();
 		/*
@@ -113,7 +107,7 @@ public class SupplyGenerations implements Urlable, XmlDescriber {
 	}
 
 	public SupplyGeneration getChild(UriPathElement uriId)
-			throws InternalException, HttpException {
+			throws HttpException {
 		SupplyGeneration supplyGeneration = (SupplyGeneration) Hiber
 				.session()
 				.createQuery(
@@ -126,20 +120,15 @@ public class SupplyGenerations implements Urlable, XmlDescriber {
 		return supplyGeneration;
 	}
 
-	public void httpDelete(Invocation inv) throws InternalException,
-			DesignerException, HttpException, DeployerException {
-		// TODO Auto-generated method stub
-
+	public void httpDelete(Invocation inv) throws HttpException {
+		throw new MethodNotAllowedException();
 	}
 
-	public Element toXml(Document doc) throws InternalException,
-			HttpException {
+	public Element toXml(Document doc) throws HttpException {
 		return doc.createElement("supply-generations");
 	}
 
-	public Node toXml(Document doc, XmlTree tree) throws InternalException,
-			HttpException {
-		// TODO Auto-generated method stub
+	public Node toXml(Document doc, XmlTree tree) throws HttpException {
 		return null;
 	}
 }

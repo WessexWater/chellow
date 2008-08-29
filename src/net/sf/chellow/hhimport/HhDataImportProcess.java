@@ -68,13 +68,12 @@ public class HhDataImportProcess extends Thread implements Urlable,
 	}
 
 	public HhDataImportProcess(Long contractId, Long id, InputStream is,
-			String fileName, long fileSize) throws InternalException,
-			HttpException {
+			String fileName, long fileSize) throws HttpException {
 		initialize(contractId, id, is, fileName, fileSize);
 	}
 
 	public void initialize(Long hhdcContractId, Long id, InputStream is,
-			String fileName, long size) throws InternalException, HttpException {
+			String fileName, long size) throws HttpException {
 		this.hhdcContractId = hhdcContractId;
 		this.id = id;
 		if (size == 0) {
@@ -178,13 +177,13 @@ public class HhDataImportProcess extends Thread implements Urlable,
 						|| !(mpanCoreRaw.equals(datum.getMpanCore())
 								&& datum.getIsImport() == firstDatum
 										.getIsImport()
-								&& datum.getIsKwh() == firstDatum.getIsKwh()
-								&& datum.getEndDate().getDate().equals(
+								&& datum.getIsKwh() == firstDatum.getIsKwh() && datum
+								.getEndDate().getDate().equals(
 										data.get(data.size() - 1).getEndDate()
 												.getNext().getDate()))) {
 					batchSize = data.size();
 					try {
-					supply.addHhData(contract, data);
+						supply.addHhData(contract, data);
 					} catch (UserException e) {
 						messages.add(e.getMessage());
 					}

@@ -174,7 +174,7 @@
 							</td>
 							<td>
 								<xsl:value-of
-									select="concat(/source/supply-generation/mpan[mpan-top/llf/@is-import='false']/mpan-top/llf/@code, ' - ', /source/supply-generation/mpan[mpan-top/llf/@is-import='false']/mpan-top/llf/@description)" />
+									select="concat(/source/supply-generation/mpan[mpan-top/llfc/@is-import='false']/mpan-top/llfc/@code, ' - ', /source/supply-generation/mpan[mpan-top/llfc/@is-import='false']/mpan-top/llfc/@description)" />
 							</td>
 						</tr>
 						<tr>

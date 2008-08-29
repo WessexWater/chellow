@@ -76,12 +76,12 @@ public class Mpan extends PersistentEntity {
 	}
 
 	Mpan(SupplyGeneration supplyGeneration, MpanTop mpanTop, MpanCore mpanCore,
-			Account hhdceAccount, Account supplierAccount,
-			boolean hasImportKwh, boolean hasImportKvarh, boolean hasExportKwh,
+			Account hhdcAccount, Account supplierAccount, boolean hasImportKwh,
+			boolean hasImportKvarh, boolean hasExportKwh,
 			boolean hasExportKvarh, int agreedSupplyCapacity)
 			throws HttpException {
 		this.supplyGeneration = supplyGeneration;
-		update(mpanTop, mpanCore, hhdceAccount, supplierAccount, hasImportKwh,
+		update(mpanTop, mpanCore, hhdcAccount, supplierAccount, hasImportKwh,
 				hasImportKvarh, hasExportKwh, hasExportKvarh,
 				agreedSupplyCapacity);
 	}
@@ -174,7 +174,7 @@ public class Mpan extends PersistentEntity {
 		this.agreedSupplyCapacity = agreedSupplyCapacity;
 	}
 
-	void update(MpanTop mpanTop, MpanCore mpanCore, Account hhdceAccount,
+	void update(MpanTop mpanTop, MpanCore mpanCore, Account hhdcAccount,
 			Account supplierAccount, boolean hasImportKwh,
 			boolean hasImportKvarh, boolean hasExportKwh,
 			boolean hasExportKvarh, int agreedSupplyCapacity)
@@ -189,11 +189,11 @@ public class Mpan extends PersistentEntity {
 			throw new UserException(
 					"You can't change an import mpan into an export one, and vice versa.");
 		}
-		if (hhdceAccount == null) {
-			hasImportKwh = false;
-			hasImportKvarh = false;
-			hasExportKwh = false;
-			hasExportKvarh = false;
+		if (hhdcAccount == null
+				&& (hasImportKwh == true || hasImportKvarh == true
+						|| hasExportKwh == true || hasExportKvarh == true)) {
+			throw new UserException(
+					"If an MPAN doesn't have an HHDC account, then it can't collect data on any channels.");
 		}
 		/*
 		 * Ssc kwRegister = (Ssc) Hiber .session() .createQuery( "from Register
@@ -215,12 +215,12 @@ public class Mpan extends PersistentEntity {
 			throw new InternalException("The mpan core can't be null.");
 		}
 		setMpanCore(mpanCore);
-		if (hhdceAccount != null
+		if (hhdcAccount != null
 				&& (!hasImportKwh && !hasImportKvarh && !hasExportKwh && !hasExportKvarh)) {
 			throw new UserException(
 					"If there's a DCE account, surely there must be some data to collect?");
 		}
-		setHhdcAccount(hhdceAccount);
+		setHhdcAccount(hhdcAccount);
 		if (supplierAccount == null) {
 			throw new UserException("An MPAN must have a supplier account.");
 		}
@@ -252,10 +252,13 @@ public class Mpan extends PersistentEntity {
 	public Node toXml(Document doc) throws HttpException {
 		Element element = (Element) super.toXml(doc, "mpan");
 		element.setAttribute("has-import-kwh", Boolean.toString(hasImportKwh));
-		element.setAttribute("has-import-kvarh", Boolean.toString(hasImportKvarh));
+		element.setAttribute("has-import-kvarh", Boolean
+				.toString(hasImportKvarh));
 		element.setAttribute("has-export-kwh", Boolean.toString(hasExportKwh));
-		element.setAttribute("has-export-kvarh", Boolean.toString(hasExportKvarh));
-		element.setAttribute("agreed-supply-capacity", Integer.toString(agreedSupplyCapacity));
+		element.setAttribute("has-export-kvarh", Boolean
+				.toString(hasExportKvarh));
+		element.setAttribute("agreed-supply-capacity", Integer
+				.toString(agreedSupplyCapacity));
 		element.setAttributeNode(getMpanRaw().toXml(doc));
 		return element;
 	}
@@ -290,35 +293,14 @@ public class Mpan extends PersistentEntity {
 	}
 
 	/*
-	public Account getHhdcAccount(boolean isImport, boolean isKwh)
-			throws HttpException {
-		Account account = null;
-		if (isImport) {
-			if (isKwh) {
-				if (hasImportKwh) {
-					account = hhdcAccount;
-				}
-			} else {
-				if (hasImportKvarh) {
-					account = hhdcAccount;
-				}
-			}
-		} else {
-			if (isKwh) {
-				if (hasExportKwh) {
-					account = hhdcAccount;
-				}
-			} else {
-				if (hasExportKvarh) {
-					account = hhdcAccount;
-				}
-			}
-		}
-		return account;
-	}
-*/
+	 * public Account getHhdcAccount(boolean isImport, boolean isKwh) throws
+	 * HttpException { Account account = null; if (isImport) { if (isKwh) { if
+	 * (hasImportKwh) { account = hhdcAccount; } } else { if (hasImportKvarh) {
+	 * account = hhdcAccount; } } } else { if (isKwh) { if (hasExportKwh) {
+	 * account = hhdcAccount; } } else { if (hasExportKvarh) { account =
+	 * hhdcAccount; } } } return account; }
+	 */
 
-	
 	public MpanRaw getMpanRaw() throws HttpException {
 		return new MpanRaw(getMpanTop().getPc().getCode(), getMpanTop()
 				.getMtc().getCode(), getMpanTop().getLlfc().getCode(),

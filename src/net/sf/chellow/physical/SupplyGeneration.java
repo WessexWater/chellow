@@ -51,6 +51,7 @@ import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
 
 import org.hibernate.HibernateException;
+import org.hibernate.exception.ConstraintViolationException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -150,8 +151,8 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 		this.importMpan = importMpan;
 	}
 
-	public Mpan getMpan(IsImport isImport) {
-		return isImport.getBoolean() ? getImportMpan() : getExportMpan();
+	public Mpan getMpan(boolean isImport) {
+		return isImport ? getImportMpan() : getExportMpan();
 	}
 
 	public Set<Channel> getChannels() {
@@ -173,7 +174,7 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 		return dso;
 	}
 
-	public void attachSite(Site site) throws InternalException, HttpException {
+	public void attachSite(Site site) throws HttpException {
 		attachSite(site, false);
 	}
 
@@ -296,10 +297,15 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 		}
 		if (importHhdcAccount != null
 				&& exportHhdcAccount != null
-				&& !importHhdcAccount.getContract().equals(
-						exportHhdcAccount.getContract())) {
+				&& importHhdcAccount.getContract().getId() != exportHhdcAccount
+						.getContract().getId()) {
 			throw new UserException(
 					"The HHDC for the import and export MPANs must be the same.");
+		}
+		if (importHhdcAccount == null && exportHhdcAccount == null
+				&& channels.size() > 0) {
+			throw new UserException(
+					"You can't have a supply generation with channels but no HHDC account.");
 		}
 		Hiber.flush();
 
@@ -341,11 +347,6 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 				}
 			}
 		}
-		insertChannel(true, true);
-		insertChannel(true, false);
-		insertChannel(false, true);
-		insertChannel(false, false);
-
 		Hiber.flush();
 		// more optimization possible here, doesn't necessarily need to check
 		// data.
@@ -530,8 +531,13 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 					"You can't add a hh data channel to a supply generation if neither of the MPANs has an HHDC account.");
 		}
 		Channel channel = new Channel(this, isImport, isKwh);
-		Hiber.session().save(channel);
-		Hiber.flush();
+		try {
+			Hiber.session().save(channel);
+			Hiber.flush();
+		} catch (ConstraintViolationException e) {
+			throw new UserException("There's already a channel with import: "
+					+ isImport + " and kWh: " + isKwh + ".");
+		}
 		channels.add(channel);
 		return channel;
 	}
@@ -558,11 +564,11 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 				.getSite().getOrganization().toXml(doc));
 		for (Mpan mpan : mpans) {
 			Element mpanElement = (Element) mpan.toXml(doc, new XmlTree(
-					"mpanCore").put("mpanTop",
-					new XmlTree("meterTimeswitch").put("llf"))
-					.put("dceService").put("supplierAccount",
-							new XmlTree("provider")).put("supplierService",
-							new XmlTree("provider")));
+					"mpanCore").put("mpanTop", new XmlTree("mtc").put("llfc"))
+					.put("hhdcAccount",
+							new XmlTree("contract", new XmlTree("provider")))
+					.put("supplierAccount",
+							new XmlTree("contract", new XmlTree("provider"))));
 			generationElement.appendChild(mpanElement);
 			for (RegisterRead read : (List<RegisterRead>) Hiber.session()
 					.createQuery(
@@ -596,10 +602,9 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 		source.appendChild(MonadDate.getMonthsXml(doc));
 		source.appendChild(MonadDate.getDaysXml(doc));
 		source.appendChild(new MonadDate().toXml(doc));
-		for (Pc profileClass : (List<Pc>) Hiber.session().createQuery(
-				"from ProfileClass profileClass order by profileClass.code")
-				.list()) {
-			source.appendChild(profileClass.toXml(doc));
+		for (Pc pc : (List<Pc>) Hiber.session().createQuery(
+				"from Pc pc order by pc.code").list()) {
+			source.appendChild(pc.toXml(doc));
 		}
 		return doc;
 	}
@@ -673,15 +678,20 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 
 				if (hasImportMpan) {
 					Long importMpanCoreId = inv.getLong("import-mpan-core-id");
-					importMpanCore = MpanCore.getMpanCore(importMpanCoreId);
 					Long importPcId = inv.getLong("import-pc-id");
-					Pc importPc = Pc.getPc(importPcId);
-					LlfcCode importLlfcCode = new LlfcCode(inv
-							.getInteger("import-llfc-code"));
-					Llfc importLlfc = importMpanCore.getDso().getLlfc(
-							importLlfcCode);
+					String importLlfcCodeStr = inv
+							.getString("import-llfc-code");
 					MtcCode importMtcCode = inv.getValidatable(MtcCode.class,
 							"import-mtc-code");
+					if (!inv.isValid()) {
+						throw new UserException(document());
+					}
+					LlfcCode importLlfcCode = new LlfcCode(importLlfcCodeStr);
+					importMpanCore = MpanCore.getMpanCore(importMpanCoreId);
+
+					Pc importPc = Pc.getPc(importPcId);
+					Llfc importLlfc = importMpanCore.getDso().getLlfc(
+							importLlfcCode);
 					Mtc importMtc = Mtc.getMtc(importMpanCore.getDso(),
 							importMtcCode);
 					Ssc importSsc = null;
@@ -879,5 +889,9 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 
 	public Channels getChannelsInstance() {
 		return new Channels(this);
+	}
+
+	public void deleteChannel(boolean isImport, boolean isKwh) {
+		// Channel channel = getChannel(isImport, isKwh);
 	}
 }

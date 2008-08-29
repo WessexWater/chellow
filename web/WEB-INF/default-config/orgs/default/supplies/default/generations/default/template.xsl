@@ -47,7 +47,7 @@
 					<a
 						href="{/source/request/@context-path}/orgs/{/source/org/@id}/supplies/{/source/supply-generation/supply/@id}/">
 						<xsl:value-of
-							select="/source/supply-generation/supply/@name" />
+							select="/source/supply-generation/supply/@id" />
 					</a>
 					&gt;
 					<a
@@ -436,7 +436,7 @@
 													</xsl:attribute>
 												</xsl:when>
 												<xsl:when
-													test="/source/request/@method='get' and /source/supply-generation/mpan[mpan-top/llf/@is-import='true']">
+													test="/source/request/@method='get' and /source/supply-generation/mpan[mpan-top/llfc/@is-import='true']">
 													<xsl:attribute
 														name="checked">
 														<xsl:value-of
@@ -451,25 +451,24 @@
 									<label>
 										<xsl:value-of
 											select="'Profile Class '" />
-										<select
-											name="import-profile-class-id">
+										<select name="import-pc-id">
 											<xsl:for-each
-												select="/source/profile-class">
+												select="/source/pc">
 												<option value="{@id}">
 													<xsl:value-of
 														select="concat(@code, ' - ', @description)" />
 													<xsl:choose>
 														<xsl:when
-															test="/source/request/parameter[@name='import-profile-class-id']">
+															test="/source/request/parameter[@name='import-pc-id']">
 															<xsl:if
-																test="@id = /source/request/parameter[@name='import-profile-class-id']/value">
+																test="@id = /source/request/parameter[@name='import-pc-id']/value">
 																<xsl:attribute
 																	name="selected" />
 															</xsl:if>
 														</xsl:when>
 														<xsl:otherwise>
 															<xsl:if
-																test="@id = /source/supply-generation/mpan[mpan-top/llf/@is-import='true']/profile-class/@id">
+																test="@id = /source/supply-generation/mpan[mpan-top/llfc/@is-import='true']/pc/@id">
 																<xsl:attribute
 																	name="selected" />
 															</xsl:if>
@@ -483,52 +482,52 @@
 									<br />
 									<label>
 										<xsl:value-of
-											select="'Meter Timeswitch '" />
-										<input
-											name="import-meter-timeswitch-code" size="3" maxlength="3">
+											select="'Meter Timeswitch Class '" />
+										<input name="import-mtc-code"
+											size="3" maxlength="3">
 											<xsl:attribute
 												name="value">
 												<xsl:choose>
 													<xsl:when
-														test="/source/request/parameter[@name='import-meter-timeswitch-code']">
+														test="/source/request/parameter[@name='import-mtc-code']">
 														<xsl:value-of
-															select="/source/request/parameter[@name='import-meter-timeswitch-code']/value" />
+															select="/source/request/parameter[@name='import-mtc-code']/value" />
 													</xsl:when>
 													<xsl:otherwise>
 														<xsl:value-of
-															select="/source/supply-generation/mpan[mpan-top/llf/@is-import='true']/mpan-top/meter-timeswitch/@code" />
+															select="/source/supply-generation/mpan[mpan-top/llfc/@is-import='true']/mpan-top/mtc/@code" />
 													</xsl:otherwise>
 												</xsl:choose>
 											</xsl:attribute>
 										</input>
 									</label>
 									<xsl:value-of
-										select="concat(' ', /source/supply-generation/mpan[mpan-top/llf/@is-import='true']/mpan-top/meter-timeswitch/@description)" />
+										select="concat(' ', /source/supply-generation/mpan[mpan-top/llfc/@is-import='true']/mpan-top/mtc/@description)" />
 
 									<br />
 									<label>
 										<xsl:value-of
-											select="'Line Loss Factor '" />
-										<input
-											name="import-line-loss-factor-code" size="3" maxlength="3">
+											select="'Line Loss Factor Class '" />
+										<input name="import-llfc-code"
+											size="3" maxlength="3">
 											<xsl:attribute
 												name="value">
 												<xsl:choose>
 													<xsl:when
-														test="/source/request/parameter[@name='import-line-loss-factor-code']">
+														test="/source/request/parameter[@name='import-llfc-code']">
 														<xsl:value-of
-															select="/source/request/parameter[@name='import-line-loss-factor-code']/value" />
+															select="/source/request/parameter[@name='import-llfc-code']/value" />
 													</xsl:when>
 													<xsl:otherwise>
 														<xsl:value-of
-															select="/source/supply-generation/mpan[mpan-top/llf/@is-import='true']/mpan-top/llf/@code" />
+															select="/source/supply-generation/mpan[mpan-top/llfc/@is-import='true']/mpan-top/llfc/@code" />
 													</xsl:otherwise>
 												</xsl:choose>
 											</xsl:attribute>
 										</input>
 									</label>
 									<xsl:value-of
-										select="concat(' ', /source/supply-generation/mpan[mpan-top/llf/@is-import='true']/mpan-top/llf/@description)" />
+										select="concat(' ', /source/supply-generation/mpan[mpan-top/llfc/@is-import='true']/mpan-top/llfc/@description)" />
 									<br />
 									<label>
 										<xsl:value-of
@@ -546,7 +545,7 @@
 														</xsl:when>
 														<xsl:otherwise>
 																<xsl:value-of
-															select="/source/supply-generation/mpan[mpan-top/llf/@is-import='true']/mpan-core/@core" />
+															select="/source/supply-generation/mpan[mpan-top/llfc/@is-import='true']/mpan-core/@core" />
 														</xsl:otherwise>
 														</xsl:choose>
 											</xsl:attribute>
@@ -569,7 +568,7 @@
 													</xsl:when>
 													<xsl:otherwise>
 														<xsl:value-of
-															select="/source/supply-generation/mpan[mpan-top/llf/@is-import='true']/@agreed-supply-capacity" />
+															select="/source/supply-generation/mpan[mpan-top/llfc/@is-import='true']/@agreed-supply-capacity" />
 													</xsl:otherwise>
 												</xsl:choose>
 											</xsl:attribute>
@@ -592,7 +591,7 @@
 													</xsl:attribute>
 												</xsl:when>
 												<xsl:when
-													test="/source/request/@method='get' and /source/supply-generation/mpan[mpan-top/llf/@is-import='true']/@has-import-kwh='true'">
+													test="/source/request/@method='get' and /source/supply-generation/mpan[mpan-top/llfc/@is-import='true']/@has-import-kwh='true'">
 													<xsl:attribute
 														name="checked">
 														<xsl:value-of
@@ -617,7 +616,7 @@
 													</xsl:attribute>
 												</xsl:when>
 												<xsl:when
-													test="/source/request/@method='get' and /source/supply-generation/mpan[mpan-top/llf/@is-import='true']/@has-import-kvarh='true'">
+													test="/source/request/@method='get' and /source/supply-generation/mpan[mpan-top/llfc/@is-import='true']/@has-import-kvarh='true'">
 													<xsl:attribute
 														name="checked">
 														<xsl:value-of
@@ -642,7 +641,7 @@
 													</xsl:attribute>
 												</xsl:when>
 												<xsl:when
-													test="/source/request/@method='get' and /source/supply-generation/mpan[mpan-top/llf/@is-import='true']/@has-export-kwh='true'">
+													test="/source/request/@method='get' and /source/supply-generation/mpan[mpan-top/llfc/@is-import='true']/@has-export-kwh='true'">
 													<xsl:attribute
 														name="checked">
 														<xsl:value-of
@@ -668,7 +667,7 @@
 													</xsl:attribute>
 												</xsl:when>
 												<xsl:when
-													test="/source/request/@method='get' and /source/supply-generation/mpan[mpan-top/llf/@is-import='true']/@has-export-kvarh='true'">
+													test="/source/request/@method='get' and /source/supply-generation/mpan[mpan-top/llfc/@is-import='true']/@has-export-kvarh='true'">
 													<xsl:attribute
 														name="checked">
 														<xsl:value-of
@@ -681,61 +680,105 @@
 									<br />
 									<br />
 									<label>
-										DCE Service
-										<select
-											name="import-dce-service-id">
-											<option value="null">
-												None
-											</option>
-											<xsl:for-each
-												select="/source/dce">
-												<optgroup
-													label="{@name}">
-													<xsl:for-each
-														select="dce-service">
-														<option
-															value="{@id}">
-															<xsl:choose>
-																<xsl:when
-																	test="/source/request/parameter[@name='import-dce-service-id']">
-																	<xsl:if
-																		test="/source/request/parameter[@name='import-dce-service-id']/value = @id">
-																		<xsl:attribute
-																			name="selected" />
-																	</xsl:if>
-																</xsl:when>
-																<xsl:otherwise>
-																	<xsl:if
-																		test="/source/supply-generation/mpan[mpan-top/llf/@is-import='true']/dce-service/@id = @id">
-																		<xsl:attribute
-																			name="selected" />
-																	</xsl:if>
-																</xsl:otherwise>
-															</xsl:choose>
-															<xsl:value-of
-																select="concat(../@name, ': ', @name)" />
-														</option>
-													</xsl:for-each>
-												</optgroup>
-											</xsl:for-each>
-										</select>
-									</label>
-									<br />
-									<label>
-										Supplier Name
+										HHDC Contract
 										<input
-											name="import-supplier-name">
+											name="import-hhdc-contract-name">
 											<xsl:attribute
 												name="value">
 												<xsl:choose>
 													<xsl:when
-														test="/source/request/parameter[@name='import-supplier-name']">
+														test="/source/request/parameter[@name='import-hhdc-contract-name']">
 														<xsl:value-of
-															select="/source/request/parameter[@name='import-supplier-name']/value" />
+															select="/source/request/parameter[@name='import-hhdc-contract-name']/value" />
 													</xsl:when>
 													<xsl:otherwise>
 														<xsl:value-of
-															select="/source/supply-generation/mpan[mpan-top/llf/@is-import='true']/supplier-service/supplier/@name" />
+															select="/source/supply-generation/mpan[mpan-top/llfc/@is-import='true']/account/hhdc-contract/@name" />
+													</xsl:otherwise>
+												</xsl:choose>
+											</xsl:attribute>
+										</input>
+									</label>
+									<br />
+									<label>
+										HHDC Account
+										<input
+											name="import-hhdc-account-reference">
+											<xsl:attribute
+												name="value">
+												<xsl:choose>
+													<xsl:when
+														test="/source/request/parameter[@name='import-hhdc-account-reference']">
+														<xsl:value-of
+															select="/source/request/parameter[@name='import-hhdc-account-reference']/value" />
+													</xsl:when>
+													<xsl:otherwise>
+														<xsl:value-of
+															select="/source/supply-generation/mpan[mpan-top/llfc/@is-import='true']/account[hhdc-contract]/@reference" />
+													</xsl:otherwise>
+												</xsl:choose>
+											</xsl:attribute>
+										</input>
+									</label>
+
+									<!-- 
+									<label>
+										DCE Service
+										<select
+										name="import-dce-service-id">
+										<option value="null">
+										None
+										</option>
+										<xsl:for-each
+										select="/source/dce">
+										<optgroup
+										label="{@name}">
+										<xsl:for-each
+										select="dce-service">
+										<option
+										value="{@id}">
+										<xsl:choose>
+										<xsl:when
+										test="/source/request/parameter[@name='import-dce-service-id']">
+										<xsl:if
+										test="/source/request/parameter[@name='import-dce-service-id']/value = @id">
+										<xsl:attribute
+										name="selected" />
+										</xsl:if>
+										</xsl:when>
+										<xsl:otherwise>
+										<xsl:if
+										test="/source/supply-generation/mpan[mpan-top/llfc/@is-import='true']/dce-service/@id = @id">
+										<xsl:attribute
+										name="selected" />
+										</xsl:if>
+										</xsl:otherwise>
+										</xsl:choose>
+										<xsl:value-of
+										select="concat(../@name, ': ', @name)" />
+										</option>
+										</xsl:for-each>
+										</optgroup>
+										</xsl:for-each>
+										</select>
+										</label>
+									-->
+									<br />
+									<label>
+										Supplier Contract
+										<input
+											name="import-supplier-contract-name">
+											<xsl:attribute
+												name="value">
+												<xsl:choose>
+													<xsl:when
+														test="/source/request/parameter[@name='import-supplier-contract-name']">
+														<xsl:value-of
+															select="/source/request/parameter[@name='import-supplier-contract-name']/value" />
+													</xsl:when>
+													<xsl:otherwise>
+														<xsl:value-of
+															select="/source/supply-generation/mpan[mpan-top/llfc/@is-import='true']/account/supplier-contract/@name" />
 													</xsl:otherwise>
 												</xsl:choose>
 											</xsl:attribute>
@@ -756,7 +799,7 @@
 													</xsl:when>
 													<xsl:otherwise>
 														<xsl:value-of
-															select="/source/supply-generation/mpan[mpan-top/llf/@is-import='true']/account/@reference" />
+															select="/source/supply-generation/mpan[mpan-top/llfc/@is-import='true']/account[supplier-contract]/@reference" />
 													</xsl:otherwise>
 												</xsl:choose>
 											</xsl:attribute>
@@ -764,26 +807,27 @@
 									</label>
 									<xsl:value-of select="' '" />
 									<a
-										href="{/source/request/@context-path}/orgs/{/source/org/@id}/suppliers/{/source/supply-generation/mpan[mpan-top/llf/@is-import='true']/account/supplier/@id}/accounts/{/source/supply-generation/mpan[mpan-top/llf/@is-import='true']/account[supplier]/@id}/">
+										href="{/source/request/@context-path}/orgs/{/source/org/@id}/supplier-contracts/{/source/supply-generation/mpan[mpan-top/llfc/@is-import='true']/account/supplier-contract/@id}/accounts/{/source/supply-generation/mpan[mpan-top/llfc/@is-import='true']/account[supplier-contract]/@id}/">
 										<xsl:value-of
-											select="/source/supply-generation/mpan[mpan-top/llf/@is-import='import']/account[supplier]/@reference" />
+											select="/source/supply-generation/mpan[mpan-top/llfc/@is-import='import']/account[supplier-contract]/@reference" />
 									</a>
 									<br />
-									<label>
+									<!--
+										<label>
 										Supplier Service
 										<input
-											name="import-supplier-service-name">
-											<xsl:attribute
-												name="value">
+										name="import-supplier-service-name">
+										<xsl:attribute
+										name="value">
 												<xsl:choose>
 													<xsl:when
-														test="/source/request/parameter[@name='import-supplier-service-name']">
+										test="/source/request/parameter[@name='import-supplier-service-name']">
 														<xsl:value-of
-															select="/source/request/parameter[@name='import-supplier-service-name']/value" />
+										select="/source/request/parameter[@name='import-supplier-service-name']/value" />
 													</xsl:when>
 													<xsl:otherwise>
 														<xsl:value-of
-															select="/source/supply-generation/mpan[mpan-top/llf/@is-import='true']/supplier-service/@name" />
+										select="/source/supply-generation/mpan[mpan-top/llfc/@is-import='true']/supplier-service/@name" />
 													</xsl:otherwise>
 												</xsl:choose>
 											</xsl:attribute>
@@ -791,17 +835,18 @@
 									</label>
 									<xsl:value-of select="' '" />
 									<a
-										href="{/source/request/@context-path}/orgs/{/source/org/@id}/suppliers/{/source/supply-generation/mpan[mpan-top/llf/@is-import='true']/account/supplier/@id}/services/{/source/supply-generation/mpan[mpan-top/llf/@is-import='true']/supplier-service/@id}/">
+										href="{/source/request/@context-path}/orgs/{/source/org/@id}/suppliers/{/source/supply-generation/mpan[mpan-top/llfc/@is-import='true']/account/supplier/@id}/services/{/source/supply-generation/mpan[mpan-top/llfc/@is-import='true']/supplier-service/@id}/">
 										<xsl:value-of
-											select="/source/supply-generation/mpan[mpan-top/llf/@is-import='true']/supplier-service/@name" />
-									</a>
+										select="/source/supply-generation/mpan[mpan-top/llfc/@is-import='true']/supplier-service/@name" />
+										</a>
+									-->
 									<br />
 									<br />
 									<table>
 										<caption>Invoices</caption>
 										<thead>
 											<tr>
-												<th>Id</th>
+												<th>Chellow Id</th>
 												<th>Reference</th>
 												<th>Bill</th>
 												<th>From</th>
@@ -814,7 +859,7 @@
 										</thead>
 										<tbody>
 											<xsl:for-each
-												select="/source/supply-generation/mpan[mpan-top/llf/@is-import='true']/invoice-mpan/invoice">
+												select="/source/supply-generation/mpan[mpan-top/llfc/@is-import='true']/invoice-mpan/invoice">
 												<tr>
 													<td>
 														<a
@@ -889,7 +934,7 @@
 										</caption>
 										<thead>
 											<tr>
-												<th>Id</th>
+												<th>Chellow Id</th>
 												<th>Coefficient</th>
 												<th>Units</th>
 												<th>TPR</th>
@@ -903,7 +948,7 @@
 											</tr>
 										</thead>
 										<xsl:for-each
-											select="/source/supply-generation/mpan[mpan-top/llf/@is-import='true']/register-read">
+											select="/source/supply-generation/mpan[mpan-top/llfc/@is-import='true']/register-read">
 											<tr>
 												<td>
 													<a
@@ -976,7 +1021,7 @@
 													</xsl:attribute>
 												</xsl:when>
 												<xsl:when
-													test="/source/request/@method='get' and /source/supply-generation/mpan[mpan-top/llf/@is-import='false']">
+													test="/source/request/@method='get' and /source/supply-generation/mpan[mpan-top/llfc/@is-import='false']">
 													<xsl:attribute
 														name="checked">
 														<xsl:value-of
@@ -991,25 +1036,24 @@
 									<label>
 										<xsl:value-of
 											select="'Profile Class '" />
-										<select
-											name="export-profile-class-id">
+										<select name="export-pc-id">
 											<xsl:for-each
-												select="/source/profile-class">
+												select="/source/pc">
 												<option value="{@id}">
 													<xsl:value-of
 														select="concat(@code, ' - ', @description)" />
 													<xsl:choose>
 														<xsl:when
-															test="/source/request/parameter[@name='export-profile-class-id']">
+															test="/source/request/parameter[@name='export-pc-id']">
 															<xsl:if
-																test="@id = /source/request/parameter[@name='export-profile-class-id']/value">
+																test="@id = /source/request/parameter[@name='export-pc-id']/value">
 																<xsl:attribute
 																	name="selected" />
 															</xsl:if>
 														</xsl:when>
 														<xsl:otherwise>
 															<xsl:if
-																test="@id = /source/supply-generation/mpan[mpan-top/llf/@is-import='false']/profile-class/@id">
+																test="@id = /source/supply-generation/mpan[mpan-top/llfc/@is-import='false']/pc/@id">
 																<xsl:attribute
 																	name="selected" />
 															</xsl:if>
@@ -1023,52 +1067,52 @@
 									<br />
 									<label>
 										<xsl:value-of
-											select="'Meter Timeswitch '" />
-										<input
-											name="export-meter-timeswitch-code" size="3" maxlength="3">
+											select="'Meter Timeswitch Class '" />
+										<input name="export-mtc-code"
+											size="3" maxlength="3">
 											<xsl:attribute
 												name="value">
 												<xsl:choose>
 													<xsl:when
-														test="/source/request/parameter[@name='export-meter-timeswitch-code']">
+														test="/source/request/parameter[@name='export-mtc-code']">
 														<xsl:value-of
-															select="/source/request/parameter[@name='export-meter-timeswitch-code']/value" />
+															select="/source/request/parameter[@name='export-mtc-code']/value" />
 													</xsl:when>
 													<xsl:otherwise>
 														<xsl:value-of
-															select="/source/supply-generation/mpan[mpan-top/llf/@is-import='false']/mpan-top/meter-timeswitch/@code" />
+															select="/source/supply-generation/mpan[mpan-top/llfc/@is-import='false']/mpan-top/mtc/@code" />
 													</xsl:otherwise>
 												</xsl:choose>
 											</xsl:attribute>
 										</input>
 									</label>
 									<xsl:value-of
-										select="concat(' ', /source/supply-generation/mpan[mpan-top/llf/@is-import='false']/mpan-top/meter-timeswitch/@description)" />
+										select="concat(' ', /source/supply-generation/mpan[mpan-top/llfc/@is-import='false']/mpan-top/mtc/@description)" />
 
 									<br />
 									<label>
 										<xsl:value-of
-											select="'Line Loss Factor '" />
-										<input
-											name="export-line-loss-factor-code" size="3" maxlength="3">
+											select="'Line Loss Factor Class '" />
+										<input name="export-llfc-code"
+											size="3" maxlength="3">
 											<xsl:attribute
 												name="value">
 												<xsl:choose>
 													<xsl:when
-														test="/source/request/parameter[@name='export-line-loss-factor-code']">
+														test="/source/request/parameter[@name='export-llfc-code']">
 														<xsl:value-of
-															select="/source/request/parameter[@name='export-line-loss-factor-code']/value" />
+															select="/source/request/parameter[@name='export-llfc-code']/value" />
 													</xsl:when>
 													<xsl:otherwise>
 														<xsl:value-of
-															select="/source/supply-generation/mpan[mpan-top/llf/@is-import='false']/mpan-top/llf/@code" />
+															select="/source/supply-generation/mpan[mpan-top/llfc/@is-import='false']/mpan-top/llfc/@code" />
 													</xsl:otherwise>
 												</xsl:choose>
 											</xsl:attribute>
 										</input>
 									</label>
 									<xsl:value-of
-										select="concat(' ', /source/supply-generation/mpan[mpan-top/llf/@is-import='false']/mpan-top/llf/@description)" />
+										select="concat(' ', /source/supply-generation/mpan[mpan-top/llfc/@is-import='false']/mpan-top/llfc/@description)" />
 									<br />
 									<label>
 										<xsl:value-of
@@ -1086,7 +1130,7 @@
 														</xsl:when>
 														<xsl:otherwise>
 																<xsl:value-of
-															select="/source/supply-generation/mpan[mpan-top/llf/@is-import='false']/mpan-core/@core" />
+															select="/source/supply-generation/mpan[mpan-top/llfc/@is-import='false']/mpan-core/@core" />
 														</xsl:otherwise>
 														</xsl:choose>
 											</xsl:attribute>
@@ -1109,7 +1153,7 @@
 													</xsl:when>
 													<xsl:otherwise>
 														<xsl:value-of
-															select="/source/supply-generation/mpan[mpan-top/llf/@is-import='false']/@agreed-supply-capacity" />
+															select="/source/supply-generation/mpan[mpan-top/llfc/@is-import='false']/@agreed-supply-capacity" />
 													</xsl:otherwise>
 												</xsl:choose>
 											</xsl:attribute>
@@ -1132,7 +1176,7 @@
 													</xsl:attribute>
 												</xsl:when>
 												<xsl:when
-													test="/source/request/@method='get' and /source/supply-generation/mpan[mpan-top/llf/@is-import='false']/@has-import-kwh='true'">
+													test="/source/request/@method='get' and /source/supply-generation/mpan[mpan-top/llfc/@is-import='false']/@has-import-kwh='true'">
 													<xsl:attribute
 														name="checked">
 														<xsl:value-of
@@ -1157,7 +1201,7 @@
 													</xsl:attribute>
 												</xsl:when>
 												<xsl:when
-													test="/source/request/@method='get' and /source/supply-generation/mpan[mpan-top/llf/@is-import='false']/@has-import-kvarh='true'">
+													test="/source/request/@method='get' and /source/supply-generation/mpan[mpan-top/llfc/@is-import='false']/@has-import-kvarh='true'">
 													<xsl:attribute
 														name="checked">
 														<xsl:value-of
@@ -1183,7 +1227,7 @@
 													</xsl:attribute>
 												</xsl:when>
 												<xsl:when
-													test="/source/request/@method='get' and /source/supply-generation/mpan[mpan-top/llf/@is-import='false']/@has-export-kwh='true'">
+													test="/source/request/@method='get' and /source/supply-generation/mpan[mpan-top/llfc/@is-import='false']/@has-export-kwh='true'">
 													<xsl:attribute
 														name="checked">
 														<xsl:value-of
@@ -1209,7 +1253,7 @@
 													</xsl:attribute>
 												</xsl:when>
 												<xsl:when
-													test="/source/request/@method='get' and /source/supply-generation/mpan[mpan-top/llf/@is-import='false']/@has-export-kvarh='true'">
+													test="/source/request/@method='get' and /source/supply-generation/mpan[mpan-top/llfc/@is-import='false']/@has-export-kvarh='true'">
 													<xsl:attribute
 														name="checked">
 														<xsl:value-of
@@ -1222,61 +1266,62 @@
 									<br />
 									<br />
 									<label>
-										DCE Service
-										<select
-											name="export-dce-service-id">
-											<option value="null">
-												None
-											</option>
-											<xsl:for-each
-												select="/source/dce">
-												<optgroup
-													label="{@name}">
-													<xsl:for-each
-														select="dce-service">
-														<option
-															value="{@id}">
-															<xsl:choose>
-																<xsl:when
-																	test="/source/request/parameter[@name='export-dce-service-id']">
-																	<xsl:if
-																		test="/source/request/parameter[@name='export-dce-service-id']/value = @id">
-																		<xsl:attribute
-																			name="selected" />
-																	</xsl:if>
-																</xsl:when>
-																<xsl:otherwise>
-																	<xsl:if
-																		test="/source/supply-generation/mpan[mpan-top/llf/@is-import='false']/dce-service/@id = @id">
-																		<xsl:attribute
-																			name="selected" />
-																	</xsl:if>
-																</xsl:otherwise>
-															</xsl:choose>
-															<xsl:value-of
-																select="concat(../@name, ': ', @name)" />
-														</option>
-													</xsl:for-each>
-												</optgroup>
-											</xsl:for-each>
-										</select>
-									</label>
-									<br />
-									<label>
-										Supplier Name
+										HHDC Contract
 										<input
-											name="export-supplier-name">
+											name="export-hhdc-contract-name">
 											<xsl:attribute
 												name="value">
 												<xsl:choose>
 													<xsl:when
-														test="/source/request/parameter[@name='export-supplier-name']">
+														test="/source/request/parameter[@name='export-hhdc-contract-name']">
 														<xsl:value-of
-															select="/source/request/parameter[@name='export-supplier-name']/value" />
+															select="/source/request/parameter[@name='export-hhdc-contract-name']/value" />
 													</xsl:when>
 													<xsl:otherwise>
 														<xsl:value-of
-															select="/source/supply-generation/mpan[mpan-top/llf/@is-import='false']/supplier-service/supplier/@name" />
+															select="/source/supply-generation/mpan[mpan-top/llfc/@is-import='false']/account/hhdc-contract/@name" />
+													</xsl:otherwise>
+												</xsl:choose>
+											</xsl:attribute>
+										</input>
+									</label>
+									<br />
+									<label>
+										HHDC Account
+										<input
+											name="export-hhdc-account-reference">
+											<xsl:attribute
+												name="value">
+												<xsl:choose>
+													<xsl:when
+														test="/source/request/parameter[@name='export-hhdc-account-reference']">
+														<xsl:value-of
+															select="/source/request/parameter[@name='export-hhdc-account-reference']/value" />
+													</xsl:when>
+													<xsl:otherwise>
+														<xsl:value-of
+															select="/source/supply-generation/mpan[mpan-top/llfc/@is-import='true']/account[hhdc-contract]/@reference" />
+													</xsl:otherwise>
+												</xsl:choose>
+											</xsl:attribute>
+										</input>
+									</label>
+									<br />
+									<label>
+										Supplier Contract
+										<input
+											name="export-supplier-contract-name">
+											<xsl:attribute
+												name="value">
+												<xsl:choose>
+													<xsl:when
+														test="/source/request/parameter[@name='export-supplier-contract-name']">
+														<xsl:value-of
+															select="/source/request/parameter[@name='export-supplier-contract-name']/value" />
+													</xsl:when>
+													<xsl:otherwise>
+														<xsl:value-of
+															select="/source/supply-generation/mpan[mpan-top/llfc/@is-import='false']/account/supplier-contract/@name" />
 													</xsl:otherwise>
 												</xsl:choose>
 											</xsl:attribute>
@@ -1297,7 +1342,7 @@
 													</xsl:when>
 													<xsl:otherwise>
 														<xsl:value-of
-															select="/source/supply-generation/mpan[mpan-top/llf/@is-import='false']/account[supplier]/@reference" />
+															select="/source/supply-generation/mpan[mpan-top/llfc/@is-import='false']/account[supplier-contract]/@reference" />
 													</xsl:otherwise>
 												</xsl:choose>
 											</xsl:attribute>
@@ -1305,36 +1350,9 @@
 									</label>
 									<xsl:value-of select="' '" />
 									<a
-										href="{/source/request/@context-path}/orgs/{/source/org/@id}/suppliers/{/source/supply-generation/mpan[mpan-top/llf/@is-import='false']/account/supplier/@id}/accounts/{/source/supply-generation/mpan[mpan-top/llf/@is-import='false']/account[supplier]/@id}">
+										href="{/source/request/@context-path}/orgs/{/source/org/@id}/supplier-contracts/{/source/supply-generation/mpan[mpan-top/llfc/@is-import='false']/account/supplier-contract/@id}/accounts/{/source/supply-generation/mpan[mpan-top/llfc/@is-import='true']/account[supplier-contract]/@id}/">
 										<xsl:value-of
-											select="/source/supply-generation/mpan[mpan-top/llf/@is-import='false']/account[supplier]/@reference" />
-									</a>
-									<br />
-									<label>
-										Supplier Service
-										<input
-											name="export-supplier-service-name">
-											<xsl:attribute
-												name="value">
-												<xsl:choose>
-													<xsl:when
-														test="/source/request/parameter[@name='export-supplier-service-name']">
-														<xsl:value-of
-															select="/source/request/parameter[@name='export-supplier-service-name']/value" />
-													</xsl:when>
-													<xsl:otherwise>
-														<xsl:value-of
-															select="/source/supply-generation/mpan[mpan-top/llf/@is-import='false']/supplier-service/@name" />
-													</xsl:otherwise>
-												</xsl:choose>
-											</xsl:attribute>
-										</input>
-									</label>
-									<xsl:value-of select="' '" />
-									<a
-										href="{/source/request/@context-path}/orgs/{/source/org/@id}/suppliers/{/source/supply-generation/mpan[mpan-top/llf/@is-import='false']/account/supplier/@id}/services/{/source/supply-generation/mpan[mpan-top/llf/@is-import='true']/supplier-service/@id}/">
-										<xsl:value-of
-											select="/source/supply-generation/mpan[mpan-top/llf/@is-import='false']/supplier-service/@name" />
+											select="/source/supply-generation/mpan[mpan-top/llfc/@is-import='false']/account[supplier-contract]/@reference" />
 									</a>
 									<br />
 									<br />
@@ -1342,7 +1360,7 @@
 										<caption>Invoices</caption>
 										<thead>
 											<tr>
-												<th>Id</th>
+												<th>Chellow Id</th>
 												<th>Reference</th>
 												<th>Bill</th>
 												<th>From</th>
@@ -1355,7 +1373,7 @@
 										</thead>
 										<tbody>
 											<xsl:for-each
-												select="/source/supply-generation/mpan[mpan-top/llf/@is-import='false']/invoice-mpan/invoice">
+												select="/source/supply-generation/mpan[mpan-top/llfc/@is-import='false']/invoice-mpan/invoice">
 												<tr>
 													<td>
 														<a
@@ -1430,7 +1448,7 @@
 										</caption>
 										<thead>
 											<tr>
-												<th>Id</th>
+												<th>Chellow Id</th>
 												<th>Coefficient</th>
 												<th>Units</th>
 												<th>TPR</th>
@@ -1444,7 +1462,7 @@
 											</tr>
 										</thead>
 										<xsl:for-each
-											select="/source/supply-generation/mpan[mpan-top/llf/@is-import='false']/register-read">
+											select="/source/supply-generation/mpan[mpan-top/llfc/@is-import='false']/register-read">
 											<tr>
 												<td>
 													<a

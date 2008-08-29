@@ -10,7 +10,7 @@
 		<html>
 			<head>
 				<link rel="stylesheet" type="text/css"
-					href="{/source/request/@context-path}/orgs/1/reports/9/stream/output/" />
+					href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/9/stream/output/" />
 
 				<title>
 					<xsl:value-of select="/source/org/@name" />
@@ -33,7 +33,7 @@
 					&gt;
 					<a
 						href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/3/screen/output/?supply-id={/source/supply/@id}">
-						<xsl:value-of select="/source/supply/@name" />
+						<xsl:value-of select="/source/supply/@id" />
 					</a>
 					&gt;
 					<xsl:choose>
