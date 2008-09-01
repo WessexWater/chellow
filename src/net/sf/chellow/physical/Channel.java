@@ -48,35 +48,26 @@ public class Channel extends PersistentEntity implements Urlable {
 	public static final int EXPORT_KW = 2;
 	public static final int IMPORT_KVAR = 3;
 	public static final int EXPORT_KVAR = 4;
-	
+
 	private static final long serialVersionUID = 1L;
 
 	static private HttpMethod[] httpMethods = { HttpMethod.GET };
-/*
-	public static void addHhData(List<HhDatumRaw> dataRaw) throws HttpException {
-		Channel channel;
-		HhDatumRaw firstDatum = dataRaw.get(0);
-		try {
-			channel = (Channel) Hiber
-					.session()
-					.createQuery(
-							"select distinct channel from MpanCore mpanCore join mpanCore.supply.channels as channel where channel.isImport = :isImport and channel.isKwh = :isKwh and mpanCore.dso.code.string || mpanCore.uniquePart.string || mpanCore.checkDigit.character = :core")
-					.setBoolean("isImport",
-							firstDatum.getIsImport().getBoolean()).setBoolean(
-							"isKwh", firstDatum.getIsKwh().getBoolean())
-					.setString("core",
-							firstDatum.getMpanCore().toStringNoSpaces())
-					.uniqueResult();
-		} catch (HibernateException e) {
-			throw new InternalException(e);
-		}
-		if (channel == null) {
-			throw new UserException("The MPAN core "
-					+ firstDatum.getMpanCore() + " is not set up in Chellow.");
-		}
-		channel.addHhDataBlock(dceService, dataRaw);
-	}
-*/
+	/*
+	 * public static void addHhData(List<HhDatumRaw> dataRaw) throws
+	 * HttpException { Channel channel; HhDatumRaw firstDatum = dataRaw.get(0);
+	 * try { channel = (Channel) Hiber .session() .createQuery( "select distinct
+	 * channel from MpanCore mpanCore join mpanCore.supply.channels as channel
+	 * where channel.isImport = :isImport and channel.isKwh = :isKwh and
+	 * mpanCore.dso.code.string || mpanCore.uniquePart.string ||
+	 * mpanCore.checkDigit.character = :core") .setBoolean("isImport",
+	 * firstDatum.getIsImport().getBoolean()).setBoolean( "isKwh",
+	 * firstDatum.getIsKwh().getBoolean()) .setString("core",
+	 * firstDatum.getMpanCore().toStringNoSpaces()) .uniqueResult(); } catch
+	 * (HibernateException e) { throw new InternalException(e); } if (channel ==
+	 * null) { throw new UserException("The MPAN core " +
+	 * firstDatum.getMpanCore() + " is not set up in Chellow."); }
+	 * channel.addHhDataBlock(dceService, dataRaw); }
+	 */
 	private SupplyGeneration supplyGeneration;
 
 	private boolean isImport;
@@ -86,7 +77,8 @@ public class Channel extends PersistentEntity implements Urlable {
 	public Channel() {
 	}
 
-	public Channel(SupplyGeneration supplyGeneration, boolean isImport, boolean isKwh) {
+	public Channel(SupplyGeneration supplyGeneration, boolean isImport,
+			boolean isKwh) {
 		this.supplyGeneration = supplyGeneration;
 		this.isImport = isImport;
 		this.isKwh = isKwh;
@@ -115,236 +107,144 @@ public class Channel extends PersistentEntity implements Urlable {
 	void setIsKwh(boolean isKwh) {
 		this.isKwh = isKwh;
 	}
-/*
-	@SuppressWarnings("unchecked")
-	public void addHhData(List<HhDatumRaw> dataRaw) throws HttpException {
-		// long now = System.currentTimeMillis();
-		// Debug.print("Starting method: " + (System.currentTimeMillis() -
-		// now));
-		HhEndDate from = dataRaw.get(0).getEndDate();
-		HhEndDate to = dataRaw.get(dataRaw.size() - 1).getEndDate();
-		List<SupplyGeneration> supplyGenerations = supply.getGenerations(from,
-				to);
-		for (SupplyGeneration generation : supplyGenerations) {
-			HhdcContract actualDceService = generation.getHhdceContract(isImport,
-					isKwh);
-			if (actualDceService == null) {
-				addChannelSnag(dceService, ChannelSnag.SNAG_DATA_IGNORED, from,
-						to, false);
-				return;
-			}
-			if (!dceService.equals(actualDceService)) {
-				throw new UserException
-						("Somewhere in the block of hh data between ("
-								+ dataRaw.get(0)
-								+ ") and ("
-								+ dataRaw.get(dataRaw.size() - 1)
-								+ ") and between the dates "
-								+ generation.getStartDate()
-								+ " and "
-								+ (generation.getFinishDate() == null ? "ongoing"
-										: generation.getFinishDate())
-								+ " there are one or more data with a contract that is not the contract under which the data is provided.");
-			}
-		}
-		if (supply.getGeneration(from) == null) {
-			addChannelSnag(dceService, ChannelSnag.SNAG_DATA_IGNORED, from, to,
-					false);
-			return;
-		}
-		if (supply.getGeneration(to) == null) {
-			addChannelSnag(dceService, ChannelSnag.SNAG_DATA_IGNORED, from, to,
-					false);
-			return;
-		}
-		List<HhDatum> data = (List<HhDatum>) Hiber
-				.session()
-				.createQuery(
-						"from HhDatum datum where datum.channel = :channel and "
-								+ "datum.endDate.date >= :startDate and datum.endDate.date <= :finishDate order by datum.endDate.date")
-				.setEntity("channel", this).setTimestamp("startDate",
-						from.getDate())
-				.setTimestamp("finishDate", to.getDate()).list();
-		if (data.isEmpty()) {
-			checkForMissingFromLatest(from.getPrevious());
-		}
-		HhEndDate siteCheckFrom = null;
-		HhEndDate siteCheckTo = null;
-		HhEndDate notActualFrom = null;
-		HhEndDate notActualTo = null;
-		HhEndDate resolveMissingFrom = null;
-		HhEndDate resolveMissingTo = null;
-		HhEndDate prevEndDate = null;
-		int missing = 0;
-		// Debug.print("Starting to go through each hh: "
-		// + (System.currentTimeMillis() - now));
-		HhDatum originalDatum = null;
-		for (int i = 0; i < dataRaw.size(); i++) {
-			// Debug.print("Start processing hh: "
-			// + (System.currentTimeMillis() - now));
-			boolean added = false;
-			boolean altered = false;
-			HhDatumRaw datumRaw = dataRaw.get(i);
-			HhDatum datum = null;
 
-			if (i - missing < data.size()) {
-				datum = data.get(i - missing);
-				if (!datumRaw.getEndDate().equals(datum.getEndDate())) {
-					datum = null;
-				}
-			}
-			if (datum == null) {
-				// Debug.print("About to save datum: "
-				// + (System.currentTimeMillis() - now));
-				Hiber.session().save(new HhDatum(this, datumRaw));
-				// Debug.print("Saved datum: "
-				// + (System.currentTimeMillis() - now));
-				added = true;
-				missing++;
-				if (resolveMissingFrom == null) {
-					resolveMissingFrom = datumRaw.getEndDate();
-				}
-				resolveMissingTo = datumRaw.getEndDate();
-				// Debug.print("Resolved missing: "
-				// + (System.currentTimeMillis() - now));
-			} else if (datumRaw.getValue() != datum.getValue()
-					|| (datumRaw.getStatus() == null ? datum.getStatus() != null
-							: !datumRaw.getStatus().equals(datum.getStatus()))) {
-				// Debug.print("About to update datum: "
-				// + (System.currentTimeMillis() - now));
-				originalDatum = datum;
-				datum.update(datumRaw.getValue(), datumRaw.getStatus());
-				altered = true;
-			}
-			// Debug.print("About to see if changed: "
-			// + (System.currentTimeMillis() - now));
-			if (added || altered) {
-				if (siteCheckFrom == null) {
-					siteCheckFrom = datumRaw.getEndDate();
-				}
-				siteCheckTo = datumRaw.getEndDate();
-				if (datumRaw.getValue() < 0) {
-					addChannelSnag(dceService == null ? getDceService(datumRaw
-							.getEndDate()) : dceService,
-							ChannelSnag.SNAG_NEGATIVE, datumRaw.getEndDate(),
-							datumRaw.getEndDate(), false);
-				} else if (altered && originalDatum.getValue() < 0) {
-					resolveSnag(ChannelSnag.SNAG_NEGATIVE, datumRaw
-							.getEndDate());
-				}
-				if (!HhDatumStatus.ACTUAL.equals(datumRaw.getStatus())) {
-					if (notActualFrom == null) {
-						notActualFrom = datumRaw.getEndDate();
-					}
-					notActualTo = datumRaw.getEndDate();
-				} else if (altered
-						&& !originalDatum.getStatus().equals(
-								HhDatumStatus.ACTUAL)) {
-					resolveSnag(ChannelSnag.SNAG_NOT_ACTUAL, datumRaw
-							.getEndDate());
-				}
-			}
-			if (siteCheckTo != null && siteCheckTo.equals(prevEndDate)) {
-				// Debug.print("About to do site check: "
-				// + (System.currentTimeMillis() - now));
-				siteCheck(siteCheckFrom, siteCheckTo, supplyGenerations);
-				siteCheckFrom = null;
-				siteCheckTo = null;
-				// Debug.print("Finished site check: "
-				// + (System.currentTimeMillis() - now));
-			}
-			if (notActualTo != null && notActualTo.equals(prevEndDate)) {
-				// Debug.print("Started not actual: "
-				// + (System.currentTimeMillis() - now));
-				notActualSnag(notActualFrom, notActualTo, supplyGenerations);
-				// Debug.print("Finished not actual: "
-				// + (System.currentTimeMillis() - now));
-				notActualFrom = null;
-				notActualTo = null;
-			}
-			if (resolveMissingTo != null
-					&& resolveMissingTo.equals(prevEndDate)) {
-				// Debug.print("Starting resolvedMissing: "
-				// + (System.currentTimeMillis() - now));
-				resolveSnag(ChannelSnag.SNAG_MISSING, resolveMissingFrom,
-						resolveMissingTo);
-				resolveMissingFrom = null;
-				resolveMissingTo = null;
-				// Debug.print("Finished resolveMissing: "
-				// + (System.currentTimeMillis() - now));
-			}
-			prevEndDate = datumRaw.getEndDate();
-		}
-		if (siteCheckTo != null && siteCheckTo.equals(prevEndDate)) {
-			// Debug.print("About to start site thing: "
-			// + (System.currentTimeMillis() - now));
-			siteCheck(siteCheckFrom, siteCheckTo, supplyGenerations);
-			// Debug.print("About to finish site thing: "
-			// + (System.currentTimeMillis() - now));
-		}
-		if (notActualTo != null && notActualTo.equals(prevEndDate)) {
-			// Debug.print("About to start not actual: "
-			// + (System.currentTimeMillis() - now));
-			notActualSnag(notActualFrom, notActualTo, supplyGenerations);
-			// Debug.print("About to finsih not actual: "
-			// + (System.currentTimeMillis() - now));
-		}
-		if (resolveMissingTo != null && resolveMissingTo.equals(prevEndDate)) {
-			// Debug.print("About to start resolvem: "
-			// + (System.currentTimeMillis() - now));
-			resolveSnag(ChannelSnag.SNAG_MISSING, resolveMissingFrom,
-					resolveMissingTo);
-			// Debug.print("About to finish resolvem: "
-			// + (System.currentTimeMillis() - now));
-		}
-		// Debug.print("Finished method: " + (System.currentTimeMillis() -
-		// now));
-	}
-*/
-	public void siteCheck(HhEndDate from, HhEndDate to)
-			throws HttpException {
+	/*
+	 * @SuppressWarnings("unchecked") public void addHhData(List<HhDatumRaw>
+	 * dataRaw) throws HttpException { // long now = System.currentTimeMillis(); //
+	 * Debug.print("Starting method: " + (System.currentTimeMillis() - // now));
+	 * HhEndDate from = dataRaw.get(0).getEndDate(); HhEndDate to =
+	 * dataRaw.get(dataRaw.size() - 1).getEndDate(); List<SupplyGeneration>
+	 * supplyGenerations = supply.getGenerations(from, to); for
+	 * (SupplyGeneration generation : supplyGenerations) { HhdcContract
+	 * actualDceService = generation.getHhdceContract(isImport, isKwh); if
+	 * (actualDceService == null) { addChannelSnag(dceService,
+	 * ChannelSnag.SNAG_DATA_IGNORED, from, to, false); return; } if
+	 * (!dceService.equals(actualDceService)) { throw new UserException
+	 * ("Somewhere in the block of hh data between (" + dataRaw.get(0) + ") and (" +
+	 * dataRaw.get(dataRaw.size() - 1) + ") and between the dates " +
+	 * generation.getStartDate() + " and " + (generation.getFinishDate() == null ?
+	 * "ongoing" : generation.getFinishDate()) + " there are one or more data
+	 * with a contract that is not the contract under which the data is
+	 * provided."); } } if (supply.getGeneration(from) == null) {
+	 * addChannelSnag(dceService, ChannelSnag.SNAG_DATA_IGNORED, from, to,
+	 * false); return; } if (supply.getGeneration(to) == null) {
+	 * addChannelSnag(dceService, ChannelSnag.SNAG_DATA_IGNORED, from, to,
+	 * false); return; } List<HhDatum> data = (List<HhDatum>) Hiber .session()
+	 * .createQuery( "from HhDatum datum where datum.channel = :channel and " +
+	 * "datum.endDate.date >= :startDate and datum.endDate.date <= :finishDate
+	 * order by datum.endDate.date") .setEntity("channel",
+	 * this).setTimestamp("startDate", from.getDate())
+	 * .setTimestamp("finishDate", to.getDate()).list(); if (data.isEmpty()) {
+	 * checkForMissingFromLatest(from.getPrevious()); } HhEndDate siteCheckFrom =
+	 * null; HhEndDate siteCheckTo = null; HhEndDate notActualFrom = null;
+	 * HhEndDate notActualTo = null; HhEndDate resolveMissingFrom = null;
+	 * HhEndDate resolveMissingTo = null; HhEndDate prevEndDate = null; int
+	 * missing = 0; // Debug.print("Starting to go through each hh: " // +
+	 * (System.currentTimeMillis() - now)); HhDatum originalDatum = null; for
+	 * (int i = 0; i < dataRaw.size(); i++) { // Debug.print("Start processing
+	 * hh: " // + (System.currentTimeMillis() - now)); boolean added = false;
+	 * boolean altered = false; HhDatumRaw datumRaw = dataRaw.get(i); HhDatum
+	 * datum = null;
+	 * 
+	 * if (i - missing < data.size()) { datum = data.get(i - missing); if
+	 * (!datumRaw.getEndDate().equals(datum.getEndDate())) { datum = null; } }
+	 * if (datum == null) { // Debug.print("About to save datum: " // +
+	 * (System.currentTimeMillis() - now)); Hiber.session().save(new
+	 * HhDatum(this, datumRaw)); // Debug.print("Saved datum: " // +
+	 * (System.currentTimeMillis() - now)); added = true; missing++; if
+	 * (resolveMissingFrom == null) { resolveMissingFrom =
+	 * datumRaw.getEndDate(); } resolveMissingTo = datumRaw.getEndDate(); //
+	 * Debug.print("Resolved missing: " // + (System.currentTimeMillis() -
+	 * now)); } else if (datumRaw.getValue() != datum.getValue() ||
+	 * (datumRaw.getStatus() == null ? datum.getStatus() != null :
+	 * !datumRaw.getStatus().equals(datum.getStatus()))) { // Debug.print("About
+	 * to update datum: " // + (System.currentTimeMillis() - now));
+	 * originalDatum = datum; datum.update(datumRaw.getValue(),
+	 * datumRaw.getStatus()); altered = true; } // Debug.print("About to see if
+	 * changed: " // + (System.currentTimeMillis() - now)); if (added ||
+	 * altered) { if (siteCheckFrom == null) { siteCheckFrom =
+	 * datumRaw.getEndDate(); } siteCheckTo = datumRaw.getEndDate(); if
+	 * (datumRaw.getValue() < 0) { addChannelSnag(dceService == null ?
+	 * getDceService(datumRaw .getEndDate()) : dceService,
+	 * ChannelSnag.SNAG_NEGATIVE, datumRaw.getEndDate(), datumRaw.getEndDate(),
+	 * false); } else if (altered && originalDatum.getValue() < 0) {
+	 * resolveSnag(ChannelSnag.SNAG_NEGATIVE, datumRaw .getEndDate()); } if
+	 * (!HhDatumStatus.ACTUAL.equals(datumRaw.getStatus())) { if (notActualFrom ==
+	 * null) { notActualFrom = datumRaw.getEndDate(); } notActualTo =
+	 * datumRaw.getEndDate(); } else if (altered &&
+	 * !originalDatum.getStatus().equals( HhDatumStatus.ACTUAL)) {
+	 * resolveSnag(ChannelSnag.SNAG_NOT_ACTUAL, datumRaw .getEndDate()); } } if
+	 * (siteCheckTo != null && siteCheckTo.equals(prevEndDate)) { //
+	 * Debug.print("About to do site check: " // + (System.currentTimeMillis() -
+	 * now)); siteCheck(siteCheckFrom, siteCheckTo, supplyGenerations);
+	 * siteCheckFrom = null; siteCheckTo = null; // Debug.print("Finished site
+	 * check: " // + (System.currentTimeMillis() - now)); } if (notActualTo !=
+	 * null && notActualTo.equals(prevEndDate)) { // Debug.print("Started not
+	 * actual: " // + (System.currentTimeMillis() - now));
+	 * notActualSnag(notActualFrom, notActualTo, supplyGenerations); //
+	 * Debug.print("Finished not actual: " // + (System.currentTimeMillis() -
+	 * now)); notActualFrom = null; notActualTo = null; } if (resolveMissingTo !=
+	 * null && resolveMissingTo.equals(prevEndDate)) { // Debug.print("Starting
+	 * resolvedMissing: " // + (System.currentTimeMillis() - now));
+	 * resolveSnag(ChannelSnag.SNAG_MISSING, resolveMissingFrom,
+	 * resolveMissingTo); resolveMissingFrom = null; resolveMissingTo = null; //
+	 * Debug.print("Finished resolveMissing: " // + (System.currentTimeMillis() -
+	 * now)); } prevEndDate = datumRaw.getEndDate(); } if (siteCheckTo != null &&
+	 * siteCheckTo.equals(prevEndDate)) { // Debug.print("About to start site
+	 * thing: " // + (System.currentTimeMillis() - now));
+	 * siteCheck(siteCheckFrom, siteCheckTo, supplyGenerations); //
+	 * Debug.print("About to finish site thing: " // +
+	 * (System.currentTimeMillis() - now)); } if (notActualTo != null &&
+	 * notActualTo.equals(prevEndDate)) { // Debug.print("About to start not
+	 * actual: " // + (System.currentTimeMillis() - now));
+	 * notActualSnag(notActualFrom, notActualTo, supplyGenerations); //
+	 * Debug.print("About to finsih not actual: " // +
+	 * (System.currentTimeMillis() - now)); } if (resolveMissingTo != null &&
+	 * resolveMissingTo.equals(prevEndDate)) { // Debug.print("About to start
+	 * resolvem: " // + (System.currentTimeMillis() - now));
+	 * resolveSnag(ChannelSnag.SNAG_MISSING, resolveMissingFrom,
+	 * resolveMissingTo); // Debug.print("About to finish resolvem: " // +
+	 * (System.currentTimeMillis() - now)); } // Debug.print("Finished method: " +
+	 * (System.currentTimeMillis() - // now)); }
+	 */
+	public void siteCheck(HhEndDate from, HhEndDate to) throws HttpException {
 		if (isKwh) {
 			// Debug.print("Starting site check: " + (System.currentTimeMillis()
 			// - now));
-				Site site = supplyGeneration.getSiteSupplyGenerations().iterator()
-						.next().getSite();
-				HhEndDate checkFrom = from.getDate().after(
-						supplyGeneration.getStartDate().getDate()) ? from
-						: supplyGeneration.getStartDate();
-				HhEndDate checkTo = supplyGeneration.getFinishDate() == null
-						|| to.getDate().before(
-								supplyGeneration.getFinishDate().getDate()) ? to
-						: supplyGeneration.getFinishDate();
-				// Debug.print("Got here 1.1.1 " + (System.currentTimeMillis() -
-				// now));
-				site.hhCheck(checkFrom, checkTo);
-				// Debug.print("Got here 1.1.2" + (System.currentTimeMillis() -
-				// now));
+			Site site = supplyGeneration.getSiteSupplyGenerations().iterator()
+					.next().getSite();
+			HhEndDate checkFrom = from.getDate().after(
+					supplyGeneration.getStartDate().getDate()) ? from
+					: supplyGeneration.getStartDate();
+			HhEndDate checkTo = supplyGeneration.getFinishDate() == null
+					|| to.getDate().before(
+							supplyGeneration.getFinishDate().getDate()) ? to
+					: supplyGeneration.getFinishDate();
+			// Debug.print("Got here 1.1.1 " + (System.currentTimeMillis() -
+			// now));
+			site.hhCheck(checkFrom, checkTo);
+			// Debug.print("Got here 1.1.2" + (System.currentTimeMillis() -
+			// now));
 			// Debug.print("Finishing site check: " +
 			// (System.currentTimeMillis() - now));
 		}
 	}
-/*
-	private void notActualSnag(HhEndDate from, HhEndDate to,
-			List<SupplyGeneration> supplyGenerations)
-			throws InternalException, HttpException {
-		for (SupplyGeneration generation : supplyGenerations) {
-			HhEndDate checkFrom = from.getDate().after(
-					generation.getStartDate().getDate()) ? from : generation
-					.getStartDate();
-			HhEndDate checkTo = generation.getFinishDate() == null
-					|| to.getDate()
-							.before(generation.getFinishDate().getDate()) ? to
-					: generation.getFinishDate();
-			addChannelSnag(ChannelSnag.SNAG_NOT_ACTUAL, checkFrom, checkTo, false);
-		}
-	}
-*/
-	public void addChannelSnag(String description,
-			HhEndDate startDate, HhEndDate finishDate, boolean isResolved)
-			throws HttpException {
-		SnagDateBounded.addChannelSnag(supplyGeneration.getHhdcContract(), this, description,
-				startDate, finishDate, isResolved);
+
+	/*
+	 * private void notActualSnag(HhEndDate from, HhEndDate to, List<SupplyGeneration>
+	 * supplyGenerations) throws InternalException, HttpException { for
+	 * (SupplyGeneration generation : supplyGenerations) { HhEndDate checkFrom =
+	 * from.getDate().after( generation.getStartDate().getDate()) ? from :
+	 * generation .getStartDate(); HhEndDate checkTo =
+	 * generation.getFinishDate() == null || to.getDate()
+	 * .before(generation.getFinishDate().getDate()) ? to :
+	 * generation.getFinishDate(); addChannelSnag(ChannelSnag.SNAG_NOT_ACTUAL,
+	 * checkFrom, checkTo, false); } }
+	 */
+	public void addChannelSnag(String description, HhEndDate startDate,
+			HhEndDate finishDate, boolean isResolved) throws HttpException {
+		SnagDateBounded.addChannelSnag(supplyGeneration.getHhdcContract(),
+				this, description, startDate, finishDate, isResolved);
 	}
 
 	public void resolveSnag(String description, HhEndDate date)
@@ -363,11 +263,12 @@ public class Channel extends PersistentEntity implements Urlable {
 						description.toString()).setTimestamp("startDate",
 						startDate.getDate()).setTimestamp("finishDate",
 						finishDate.getDate()).list()) {
-			addChannelSnag(description, snag.getStartDate()
-					.getDate().before(startDate.getDate()) ? startDate : snag
-					.getStartDate(), snag.getFinishDate().getDate().after(
-					finishDate.getDate()) ? finishDate : snag.getFinishDate(),
-					true);
+			addChannelSnag(
+					description,
+					snag.getStartDate().getDate().before(startDate.getDate()) ? startDate
+							: snag.getStartDate(),
+					snag.getFinishDate().getDate().after(finishDate.getDate()) ? finishDate
+							: snag.getFinishDate(), true);
 		}
 	}
 
@@ -376,115 +277,75 @@ public class Channel extends PersistentEntity implements Urlable {
 	 * ProgrammerException, UserException { checkForMissing(null,
 	 * getCheckToDate()); }
 	 */
-/*
-	private HhEndDate getCheckToDate() throws HttpException {
-		HhEndDate lastSnagDate = (HhEndDate) Hiber
-				.session()
-				.createQuery(
-						"select snag.finishDate from ChannelSnag snag where snag.channel.supply = :supply and snag.channel.isKwh = :isKwh and snag.channel.isImport = :isImport and snag.description = :snagDescription and snag.dateResolved is null order by snag.finishDate.date desc")
-				.setEntity("supply", this).setBoolean("isKwh", getIsKwh()).setBoolean("isImport", getIsImport()).setString("snagDescription",
-						ChannelSnag.SNAG_MISSING).setMaxResults(1)
-				.uniqueResult();
-		HhEndDate finish = null;
-		SupplyGeneration generation = supply.getGenerationLast();
-		if (generation.getFinishDate() == null) {
-			HhdcContract latestDceService = generation.getHhdceContract(isImport,
-					isKwh);
-			if (latestDceService == null) {
-				finish = HhEndDate.roundDown(new Date());
-			} else {
-				finish = HhEndDate.roundDown(new Date(System
-						.currentTimeMillis()
-						- 1000 * 60 * 60 * 24 * latestDceService.getLag()));
-				Calendar cal = MonadDate.getCalendar();
-				cal.clear();
-				cal.setTime(finish.getDate());
-				cal.set(Calendar.MILLISECOND, 0);
-				cal.set(Calendar.SECOND, 0);
-				cal.set(Calendar.MINUTE, 0);
-				cal.set(Calendar.HOUR_OF_DAY, 0);
-				if (latestDceService.getFrequency().equals(
-						ContractFrequency.DAILY)) {
-					finish = new HhEndDate(cal.getTime());
-				} else if (latestDceService.getFrequency().equals(
-						ContractFrequency.MONTHLY)) {
-					cal.set(Calendar.DAY_OF_MONTH, 1);
-					finish = new HhEndDate(cal.getTime());
-				} else {
-					throw new InternalException("Frequency not recognized.");
-				}
-			}
-		} else {
-			finish = generation.getFinishDate();
-		}
-		if (lastSnagDate != null) {
-			finish = finish.getDate().after(lastSnagDate.getDate()) ? finish
-					: lastSnagDate;
-		}
-		return finish;
-	}
-
-	public void checkForMissingFromLatest() throws InternalException,
-			HttpException {
-		checkForMissingFromLatest(null);
-	}
-*/
+	/*
+	 * private HhEndDate getCheckToDate() throws HttpException { HhEndDate
+	 * lastSnagDate = (HhEndDate) Hiber .session() .createQuery( "select
+	 * snag.finishDate from ChannelSnag snag where snag.channel.supply = :supply
+	 * and snag.channel.isKwh = :isKwh and snag.channel.isImport = :isImport and
+	 * snag.description = :snagDescription and snag.dateResolved is null order
+	 * by snag.finishDate.date desc") .setEntity("supply",
+	 * this).setBoolean("isKwh", getIsKwh()).setBoolean("isImport",
+	 * getIsImport()).setString("snagDescription",
+	 * ChannelSnag.SNAG_MISSING).setMaxResults(1) .uniqueResult(); HhEndDate
+	 * finish = null; SupplyGeneration generation = supply.getGenerationLast();
+	 * if (generation.getFinishDate() == null) { HhdcContract latestDceService =
+	 * generation.getHhdceContract(isImport, isKwh); if (latestDceService ==
+	 * null) { finish = HhEndDate.roundDown(new Date()); } else { finish =
+	 * HhEndDate.roundDown(new Date(System .currentTimeMillis() - 1000 * 60 * 60 *
+	 * 24 * latestDceService.getLag())); Calendar cal = MonadDate.getCalendar();
+	 * cal.clear(); cal.setTime(finish.getDate()); cal.set(Calendar.MILLISECOND,
+	 * 0); cal.set(Calendar.SECOND, 0); cal.set(Calendar.MINUTE, 0);
+	 * cal.set(Calendar.HOUR_OF_DAY, 0); if
+	 * (latestDceService.getFrequency().equals( ContractFrequency.DAILY)) {
+	 * finish = new HhEndDate(cal.getTime()); } else if
+	 * (latestDceService.getFrequency().equals( ContractFrequency.MONTHLY)) {
+	 * cal.set(Calendar.DAY_OF_MONTH, 1); finish = new HhEndDate(cal.getTime()); }
+	 * else { throw new InternalException("Frequency not recognized."); } } }
+	 * else { finish = generation.getFinishDate(); } if (lastSnagDate != null) {
+	 * finish = finish.getDate().after(lastSnagDate.getDate()) ? finish :
+	 * lastSnagDate; } return finish; }
+	 * 
+	 * public void checkForMissingFromLatest() throws InternalException,
+	 * HttpException { checkForMissingFromLatest(null); }
+	 */
 	/*
 	 * public void checkForMissing() throws ProgrammerException, UserException {
 	 * checkForMissing(null, null); }
 	 */
 	/*
-	public void checkForMissingFromLatest(HhEndDate to)
-			throws InternalException, HttpException {
-		/*
-		 * if (to == null) { to = getCheckToDate(); if (to == null) { return; } }
-		 */
+	 * public void checkForMissingFromLatest(HhEndDate to) throws
+	 * InternalException, HttpException { /* if (to == null) { to =
+	 * getCheckToDate(); if (to == null) { return; } }
+	 */
 	/*
-		Date latestDatumDate = (Date) Hiber
-				.session()
-				.createQuery(
-						"select max(datum.endDate.date) from HhDatum datum where datum.channel = :channel")
-				.setEntity("channel", this).uniqueResult();
-		Date latestMissingDate = (Date) Hiber
-				.session()
-				.createQuery(
-						"select max(snag.finishDate.date) from ChannelSnag snag where snag.channel = :channel and snag.description = :description")
-				.setEntity("channel", this).setString("description",
-						ChannelSnag.SNAG_MISSING).uniqueResult();
-		HhEndDate latestPresentDate;
-		if (latestDatumDate == null) {
-			if (latestMissingDate == null) {
-				latestPresentDate = supply.getGenerationFirst().getStartDate();
-			} else {
-				latestPresentDate = new HhEndDate(latestMissingDate);
-			}
-		} else {
-			if (latestMissingDate == null) {
-				latestPresentDate = new HhEndDate(latestDatumDate);
-			} else {
-				latestPresentDate = new HhEndDate(latestMissingDate).getDate()
-						.after(new HhEndDate(latestDatumDate).getDate()) ? new HhEndDate(
-						latestMissingDate)
-						: new HhEndDate(latestDatumDate);
-			}
-		}
-		/*
-		 * latestPresentDate = latestPresentDate.getNext(); if
-		 * (!latestPresentDate.getDate().after(to.getDate())) {
-		 * checkForMissing(latestPresentDate, to); }
-		 */
+	 * Date latestDatumDate = (Date) Hiber .session() .createQuery( "select
+	 * max(datum.endDate.date) from HhDatum datum where datum.channel =
+	 * :channel") .setEntity("channel", this).uniqueResult(); Date
+	 * latestMissingDate = (Date) Hiber .session() .createQuery( "select
+	 * max(snag.finishDate.date) from ChannelSnag snag where snag.channel =
+	 * :channel and snag.description = :description") .setEntity("channel",
+	 * this).setString("description", ChannelSnag.SNAG_MISSING).uniqueResult();
+	 * HhEndDate latestPresentDate; if (latestDatumDate == null) { if
+	 * (latestMissingDate == null) { latestPresentDate =
+	 * supply.getGenerationFirst().getStartDate(); } else { latestPresentDate =
+	 * new HhEndDate(latestMissingDate); } } else { if (latestMissingDate ==
+	 * null) { latestPresentDate = new HhEndDate(latestDatumDate); } else {
+	 * latestPresentDate = new HhEndDate(latestMissingDate).getDate() .after(new
+	 * HhEndDate(latestDatumDate).getDate()) ? new HhEndDate( latestMissingDate) :
+	 * new HhEndDate(latestDatumDate); } } /* latestPresentDate =
+	 * latestPresentDate.getNext(); if
+	 * (!latestPresentDate.getDate().after(to.getDate())) {
+	 * checkForMissing(latestPresentDate, to); }
+	 */
 	/*
-		checkForMissing(latestPresentDate.getNext(), to);
-	}
-*/
+	 * checkForMissing(latestPresentDate.getNext(), to); }
+	 */
 	/*
-	public HhdcContract getHhdcContract() throws HttpException {
-		return (HhdcContract) getSupplyGeneration().getHhdcContract().getContract();
-	}
-	*/
+	 * public HhdcContract getHhdcContract() throws HttpException { return
+	 * (HhdcContract) getSupplyGeneration().getHhdcContract().getContract(); }
+	 */
 
-	public void deleteData(HhEndDate from, int days)
-			throws HttpException {
+	public void deleteData(HhEndDate from, int days) throws HttpException {
 		Calendar cal = MonadDate.getCalendar();
 		cal.setTime(from.getDate());
 		cal.add(Calendar.DAY_OF_MONTH, days);
@@ -497,8 +358,8 @@ public class Channel extends PersistentEntity implements Urlable {
 				.setTimestamp("from", from.getDate()).setTimestamp("to",
 						to.getDate()).executeUpdate();
 		if (numDeleted == 0) {
-			throw new UserException
-					("There aren't any data to delete for this period.");
+			throw new UserException(
+					"There aren't any data to delete for this period.");
 		}
 		supplyGeneration.getSupply().checkForMissing(from, to);
 		siteCheck(from, to);
@@ -515,7 +376,8 @@ public class Channel extends PersistentEntity implements Urlable {
 			InternalException, HttpException, DeployerException {
 		Document doc = MonadUtils.newSourceDocument();
 		Element source = doc.getDocumentElement();
-		source.appendChild(toXml(doc, new XmlTree("supplyGeneration", new XmlTree("supply", new XmlTree("organization")))));
+		source.appendChild(toXml(doc, new XmlTree("supplyGeneration",
+				new XmlTree("supply", new XmlTree("organization")))));
 		inv.sendOk(doc);
 	}
 
@@ -542,8 +404,9 @@ public class Channel extends PersistentEntity implements Urlable {
 		inv.sendMethodNotAllowed(httpMethods);
 	}
 
-	public MonadUri getUri() throws InternalException, HttpException {
-		return supplyGeneration.getChannelsInstance().getUri().resolve(getUriId());
+	public MonadUri getUri() throws HttpException {
+		return supplyGeneration.getChannelsInstance().getUri().resolve(
+				getUriId());
 	}
 
 	public String toString() {

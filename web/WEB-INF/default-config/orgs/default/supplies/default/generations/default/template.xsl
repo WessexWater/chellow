@@ -90,17 +90,16 @@
 						</p>
 					</xsl:when>
 					<xsl:otherwise>
-						<br />
 						<table>
 							<caption>Sites</caption>
 							<thead>
 								<tr>
 									<th>Code</th>
 									<th>Name</th>
-									<th></th>
-									<th></th>
 									<xsl:if
 										test="count(/source/supply-generation/site-supply-generation) > 1">
+										<th></th>
+										<th></th>
 										<th></th>
 									</xsl:if>
 								</tr>
@@ -120,31 +119,32 @@
 											<xsl:value-of
 												select="site/@name" />
 										</td>
-										<td>
-											<xsl:if
-												test="@is-physical = 'true' and count(/source/supply-generation/site-supply-generation) > 1">
-												Located here
-											</xsl:if>
-										</td>
-										<td>
-											<xsl:if
-												test="@is-physical = 'false'">
-												<form method="post"
-													action=".">
-													<fieldset>
-														<legend>
-															Set location
-														</legend>
-														<input
-															type="hidden" name="site-id" value="{site/@id}" />
-														<input
-															type="submit" name="set-location" value="Set Location" />
-													</fieldset>
-												</form>
-											</xsl:if>
-										</td>
 										<xsl:if
 											test="count(/source/supply-generation/site-supply-generation) > 1">
+											<td>
+												<xsl:if
+													test="@is-physical = 'true'">
+													Located here
+												</xsl:if>
+											</td>
+											<td>
+												<xsl:if
+													test="@is-physical = 'false'">
+													<form method="post"
+														action=".">
+														<fieldset>
+															<legend>
+																Set
+																location
+															</legend>
+															<input
+																type="hidden" name="site-id" value="{site/@id}" />
+															<input
+																type="submit" name="set-location" value="Set Location" />
+														</fieldset>
+													</form>
+												</xsl:if>
+											</td>
 											<td>
 												<form method="post"
 													action=".">
@@ -165,6 +165,7 @@
 								</xsl:for-each>
 							</tbody>
 						</table>
+						<br />
 						<form method="post" action=".">
 							<fieldset>
 								<legend>Attach to another site</legend>
@@ -179,7 +180,7 @@
 								<input type="reset" />
 							</fieldset>
 						</form>
-
+						<br />
 						<form action="." method="post">
 							<fieldset>
 								<legend>
@@ -722,7 +723,7 @@
 									</label>
 
 									<!-- 
-									<label>
+										<label>
 										DCE Service
 										<select
 										name="import-dce-service-id">
@@ -819,22 +820,22 @@
 										name="import-supplier-service-name">
 										<xsl:attribute
 										name="value">
-												<xsl:choose>
-													<xsl:when
+										<xsl:choose>
+										<xsl:when
 										test="/source/request/parameter[@name='import-supplier-service-name']">
-														<xsl:value-of
+										<xsl:value-of
 										select="/source/request/parameter[@name='import-supplier-service-name']/value" />
-													</xsl:when>
-													<xsl:otherwise>
-														<xsl:value-of
+										</xsl:when>
+										<xsl:otherwise>
+										<xsl:value-of
 										select="/source/supply-generation/mpan[mpan-top/llfc/@is-import='true']/supplier-service/@name" />
-													</xsl:otherwise>
-												</xsl:choose>
-											</xsl:attribute>
+										</xsl:otherwise>
+										</xsl:choose>
+										</xsl:attribute>
 										</input>
-									</label>
-									<xsl:value-of select="' '" />
-									<a
+										</label>
+										<xsl:value-of select="' '" />
+										<a
 										href="{/source/request/@context-path}/orgs/{/source/org/@id}/suppliers/{/source/supply-generation/mpan[mpan-top/llfc/@is-import='true']/account/supplier/@id}/services/{/source/supply-generation/mpan[mpan-top/llfc/@is-import='true']/supplier-service/@id}/">
 										<xsl:value-of
 										select="/source/supply-generation/mpan[mpan-top/llfc/@is-import='true']/supplier-service/@name" />
@@ -1534,6 +1535,11 @@
 								<input type="submit" value="Delete" />
 							</fieldset>
 						</form>
+						<ul>
+							<li>
+								<a href="channels/">Channels</a>
+							</li>
+						</ul>
 					</xsl:otherwise>
 				</xsl:choose>
 			</body>

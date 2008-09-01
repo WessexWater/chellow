@@ -152,12 +152,9 @@
 								<input type="submit" value="Delete" />
 							</fieldset>
 						</form>
-						<h4>
-							<a href="generations/">Generations</a>
-						</h4>
-						<h4>
-							<a href="channels/">Channels</a>
-						</h4>
+						<ul>
+							<li><a href="generations/">Generations</a></li>
+						</ul>
 					</xsl:otherwise>
 				</xsl:choose>
 			</body>

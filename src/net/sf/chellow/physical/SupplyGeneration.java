@@ -34,8 +34,6 @@ import net.sf.chellow.billing.HhdcContract;
 import net.sf.chellow.billing.Invoice;
 import net.sf.chellow.billing.InvoiceMpan;
 import net.sf.chellow.billing.SupplierContract;
-import net.sf.chellow.monad.DeployerException;
-import net.sf.chellow.monad.DesignerException;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.InternalException;
@@ -302,11 +300,12 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 			throw new UserException(
 					"The HHDC for the import and export MPANs must be the same.");
 		}
-		if (importHhdcAccount == null && exportHhdcAccount == null
-				&& channels.size() > 0) {
-			throw new UserException(
-					"You can't have a supply generation with channels but no HHDC account.");
-		}
+		synchronizeChannel(true, true, importHasImportKwh, exportHasImportKwh);
+		synchronizeChannel(true, false, importHasImportKvarh,
+				exportHasImportKvarh);
+		synchronizeChannel(false, true, importHasExportKwh, exportHasExportKwh);
+		synchronizeChannel(false, false, importHasExportKvarh,
+				exportHasExportKvarh);
 		Hiber.flush();
 
 		// Check that if settlement MPANs then they're the same DSO.
@@ -351,6 +350,19 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 		// more optimization possible here, doesn't necessarily need to check
 		// data.
 		getSupply().checkAfterUpdate(true, getStartDate(), getFinishDate());
+	}
+
+	private void synchronizeChannel(boolean isImport, boolean isKwh,
+			boolean importHasChannel, boolean exportHasChannel)
+			throws HttpException {
+		if ((importHasChannel || exportHasChannel)
+				&& getChannel(isImport, isKwh) == null) {
+			insertChannel(isImport, isKwh);
+		}
+		if (!importHasChannel && !exportHasChannel
+				&& getChannel(isImport, isKwh) != null) {
+			deleteChannel(isImport, isKwh);
+		}
 	}
 
 	public Mpan getExportMpan() {
@@ -442,6 +454,13 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 			ssGen.getSite().detachSiteSupplyGeneration(ssGen);
 			Hiber.flush();
 		}
+		List<Channel> ssChannels = new ArrayList<Channel>();
+		for (Channel channel : channels) {
+			ssChannels.add(channel);
+		}
+		for (Channel channel : ssChannels) {
+			deleteChannel(channel.getIsImport(), channel.getIsKwh());
+		}
 	}
 
 	public void update(HhEndDate startDate, HhEndDate finishDate, Meter meter)
@@ -498,7 +517,7 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 				((SupplyGeneration) obj).getFinishDate().getDate());
 	}
 
-	public void deleteMpan(Mpan mpan) throws HttpException, InternalException {
+	public void deleteMpan(Mpan mpan) throws HttpException {
 		if (mpans.size() < 2) {
 			throw new UserException(
 					"There must be at least one MPAN generation in each supply generation.");
@@ -609,7 +628,7 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 		return doc;
 	}
 
-	void deleteMpans() throws HttpException, InternalException {
+	void deleteMpans() throws HttpException {
 		for (Mpan mpan : mpans) {
 			mpan.delete();
 		}
@@ -830,8 +849,7 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 				getUriId()).append("/");
 	}
 
-	public Urlable getChild(UriPathElement uriId) throws InternalException,
-			HttpException {
+	public Urlable getChild(UriPathElement uriId) throws HttpException {
 		if (Channels.URI_ID.equals(uriId)) {
 			return new Channels(this);
 		} else {
@@ -839,18 +857,11 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 		}
 	}
 
-	public void httpDelete(Invocation inv) throws InternalException,
-			DesignerException, HttpException, DeployerException {
-		// TODO Auto-generated method stub
-
-	}
-
 	public String toString() {
 		return "SupplyGeneration id " + getId();
 	}
 
-	public void setPhysicalLocation(Site site) throws InternalException,
-			HttpException {
+	public void setPhysicalLocation(Site site) throws HttpException {
 		SiteSupplyGeneration targetSiteSupply = null;
 		for (SiteSupplyGeneration siteSupply : siteSupplyGenerations) {
 			if (site.equals(siteSupply.getSite())) {
@@ -867,7 +878,7 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 	}
 
 	public RegisterRead insertRegisterRead(RegisterReadRaw rawRegisterRead,
-			Invoice invoice) throws HttpException, InternalException {
+			Invoice invoice) throws HttpException {
 		Mpan importMpan = getImportMpan();
 		Mpan exportMpan = getExportMpan();
 		RegisterRead read = null;
@@ -891,7 +902,20 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 		return new Channels(this);
 	}
 
-	public void deleteChannel(boolean isImport, boolean isKwh) {
-		// Channel channel = getChannel(isImport, isKwh);
+	public void deleteChannel(boolean isImport, boolean isKwh)
+			throws HttpException {
+		Channel channel = getChannel(isImport, isKwh);
+		if ((Long) Hiber
+				.session()
+				.createQuery(
+						"select count(*) from HhDatum datum where datum.channel = :channel")
+				.setEntity("channel", this).uniqueResult() > 0) {
+			throw new UserException(
+					"One can't delete a channel if there are still HH data attached to it.");
+		}
+		Hiber.session().delete(this);
+		Hiber.session().flush();
+		channels.remove(channel);
+		Hiber.session().flush();
 	}
 }

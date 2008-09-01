@@ -412,21 +412,6 @@ public class Supply extends PersistentEntity implements Urlable {
 		for (Map.Entry<Site, Boolean> entry : siteMap.entrySet()) {
 			supplyGeneration.attachSite(entry.getKey(), entry.getValue());
 		}
-		// Add initial channels
-		if (importHasImportKwh) {
-			supplyGeneration.insertChannel(true, true);
-			supplyGeneration.insertChannel(true, false);
-			supplyGeneration.insertChannel(false, false);
-		}
-		if (importHasExportKwh) {
-			supplyGeneration.insertChannel(false, true);
-			if (supplyGeneration.getChannel(false, false) == null) {
-				supplyGeneration.insertChannel(false, false);
-			}
-			if (supplyGeneration.getChannel(true, false) == null) {
-				supplyGeneration.insertChannel(true, false);
-			}
-		}
 		supplyGeneration.setMeter(meter);
 		return supplyGeneration;
 	}
@@ -1257,7 +1242,7 @@ public class Supply extends PersistentEntity implements Urlable {
 	}
 
 	@SuppressWarnings("unchecked")
-	public void delete(Supply supply) throws InternalException, HttpException {
+	public void delete(Supply supply) throws HttpException {
 		long numInvoiceMpans = (Long) Hiber
 				.session()
 				.createQuery(
@@ -1274,14 +1259,6 @@ public class Supply extends PersistentEntity implements Urlable {
 		 * throw UserException .newInvalidParameter("One can't delete a supply
 		 * if there are still register reads attached to its MPANs."); }
 		 */
-		if ((Long) Hiber
-				.session()
-				.createQuery(
-						"select count(*) from HhDatum datum where datum.channel.supply = :supply")
-				.setEntity("supply", this).uniqueResult() > 0) {
-			throw new UserException(
-					"One can't delete a supply if there are still HH data attached to it.");
-		}
 		for (SupplyGeneration generation : getGenerations()) {
 			generation.delete();
 		}
