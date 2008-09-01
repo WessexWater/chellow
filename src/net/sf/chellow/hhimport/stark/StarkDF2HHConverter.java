@@ -36,7 +36,6 @@ import net.sf.chellow.hhimport.HhConverter;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.UserException;
-import net.sf.chellow.physical.HhDatumStatus;
 import net.sf.chellow.physical.HhEndDate;
 
 public class StarkDF2HHConverter implements HhConverter {
@@ -142,7 +141,7 @@ public class StarkDF2HHConverter implements HhConverter {
 					HhEndDate endDate = new HhEndDate(dateFormat.parse(line
 							.substring(0, datePos).replace(",", " ")));
 					int valuePos = line.indexOf(',', datePos + 1);
-					HhDatumStatus status = null;
+					Character status = null;
 					Float valueKw = null;
 					if (valuePos < 0) {
 						valueKw = Float.parseFloat(line.substring(datePos + 1));
@@ -150,8 +149,7 @@ public class StarkDF2HHConverter implements HhConverter {
 						valueKw = Float.parseFloat(line.substring(datePos + 1,
 								valuePos));
 						String trimmedLine = line.trim();
-						status = new HhDatumStatus(trimmedLine
-								.charAt(trimmedLine.length() - 1));
+						status = trimmedLine.charAt(trimmedLine.length() - 1);
 					}
 					if (!core.getDsoCode().getString().equals("99")
 							&& valueKw * 10 % 2 == 1) {

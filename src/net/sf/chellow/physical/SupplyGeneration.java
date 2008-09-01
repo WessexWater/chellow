@@ -23,6 +23,7 @@
 package net.sf.chellow.physical;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
@@ -44,34 +45,24 @@ import net.sf.chellow.monad.Urlable;
 import net.sf.chellow.monad.UserException;
 import net.sf.chellow.monad.XmlTree;
 import net.sf.chellow.monad.types.MonadDate;
-import net.sf.chellow.monad.types.MonadLong;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
 
-import org.hibernate.HibernateException;
+import org.hibernate.Query;
 import org.hibernate.exception.ConstraintViolationException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 public class SupplyGeneration extends PersistentEntity implements Urlable {
-	static public SupplyGeneration getSupplyGeneration(MonadLong id)
-			throws HttpException {
-		return getSupplyGeneration(id.getLong());
-	}
-
 	static public SupplyGeneration getSupplyGeneration(Long id)
 			throws HttpException {
-		try {
-			SupplyGeneration supplyGeneration = (SupplyGeneration) Hiber
-					.session().get(SupplyGeneration.class, id);
-			if (supplyGeneration == null) {
-				throw new UserException(
-						"There is no supply generation with that id.");
-			}
-			return supplyGeneration;
-		} catch (HibernateException e) {
-			throw new InternalException(e);
+		SupplyGeneration supplyGeneration = (SupplyGeneration) Hiber.session()
+				.get(SupplyGeneration.class, id);
+		if (supplyGeneration == null) {
+			throw new UserException(
+					"There is no supply generation with that id.");
 		}
+		return supplyGeneration;
 	}
 
 	private Supply supply;
@@ -127,7 +118,6 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 
 	void setStartDate(HhEndDate startDate) {
 		this.startDate = startDate;
-		startDate.setLabel("start");
 	}
 
 	public HhEndDate getFinishDate() {
@@ -136,9 +126,6 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 
 	void setFinishDate(HhEndDate finishDate) {
 		this.finishDate = finishDate;
-		if (finishDate != null) {
-			finishDate.setLabel("finish");
-		}
 	}
 
 	public Mpan getImportMpan() {
@@ -844,7 +831,7 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 		}
 	}
 
-	public MonadUri getUri() throws InternalException, HttpException {
+	public MonadUri getUri() throws HttpException {
 		return supply.getSupplyGenerationsInstance().getUri().resolve(
 				getUriId()).append("/");
 	}
@@ -917,5 +904,122 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 		Hiber.session().flush();
 		channels.remove(channel);
 		Hiber.session().flush();
+	}
+	
+	@SuppressWarnings("unchecked")
+	private void resolveChannelSnags(String description, HhEndDate from,
+			HhEndDate to) throws HttpException {
+		for (Channel channel : (List<Channel>) Hiber
+				.session()
+				.createQuery(
+						"from Channel channel where channel.supplyGeneration.supply = :supply and channel.supplyGeneration.fromDate <= :to and channel.supplyGeneration.toDate >= :from")) {
+			channel.resolveSnag(description, from, to);
+		}
+	}
+
+	@SuppressWarnings("unchecked")
+	private void resolveChannelSnags(boolean isImport, boolean isKwh,
+			String description, HhEndDate from, HhEndDate to)
+			throws HttpException {
+		for (Channel channel : (List<Channel>) Hiber
+				.session()
+				.createQuery(
+						"from Channel channel where channel.supplyGeneration.supply = :supply and channel.isImport = :isImport and channel.isKwh = :isKwh and channel.supplyGeneration.fromDate <= :to and channel.supplyGeneration.toDate >= :from")
+				.setEntity("supply", this).setBoolean("isImport", isImport)
+				.setBoolean("isKwh", isKwh)
+				.setTimestamp("from", from.getDate()).setTime("to",
+						to.getDate()).list()) {
+			channel.resolveSnag(description, from, to);
+		}
+	}
+
+	
+	private void checkForMissing(HhEndDate from, HhEndDate to) throws HttpException {
+		if (from == null) {
+			from = getStartDate();
+		}
+		if (from.getDate()
+				.before(getStartDate().getDate())) {
+			resolveChannelSnags(ChannelSnag.SNAG_MISSING, from,
+					getStartDate().getPrevious());
+			from = getStartDate();
+		}
+		if (to == null) {
+			to = getCheckToDate(isImport, isKwh);
+		}
+		Calendar cal = MonadDate.getCalendar();
+		HhEndDate lastGenerationDate = getGenerationLast().getFinishDate();
+		if (lastGenerationDate != null
+				&& to.getDate().after(lastGenerationDate.getDate())) {
+			resolveChannelSnags(isImport, isKwh, ChannelSnag.SNAG_MISSING,
+					lastGenerationDate.getNext(), to);
+			to = lastGenerationDate;
+		}
+		if (from.getDate().after(to.getDate())) {
+			return;
+		}
+
+		Query query = Hiber
+				.session()
+				.createQuery(
+						"select count(*) from HhDatum datum where datum.channel = :channel and datum.endDate.date >= :startDate and datum.endDate.date <= :finishDate")
+				.setEntity("channel", this);
+		List<SupplyGeneration> generations = getGenerations(from, to);
+		for (int i = 0; i < generations.size(); i++) {
+			SupplyGeneration generation = generations.get(i);
+			Channel channel = generation.getChannel(isImport, isKwh);
+			if (channel == null) {
+				continue;
+			}
+			HhdcContract hhdcContract = generation.getHhdcContract();
+			HhEndDate generationStartDate = i == 0 ? from : generations.get(i)
+					.getStartDate();
+			HhEndDate generationFinishDate = i == generations.size() - 1 ? to
+					: generation.getFinishDate();
+			if (hhdcContract == null) {
+				channel.resolveSnag(ChannelSnag.SNAG_MISSING,
+						generationStartDate, generationFinishDate);
+			} else {
+				HhEndDate spanStartDate = generationStartDate;
+				HhEndDate spanFinishDate = generationFinishDate;
+
+				boolean finished = false;
+				while (!finished) {
+					long present = (Long) query.setTimestamp("startDate",
+							spanStartDate.getDate()).setTimestamp("finishDate",
+							spanFinishDate.getDate()).uniqueResult();
+					if (present == 0) {
+						channel.addChannelSnag(ChannelSnag.SNAG_MISSING,
+								spanStartDate, spanFinishDate, false);
+						spanStartDate = HhEndDate.getNext(spanFinishDate);
+						spanFinishDate = generationFinishDate;
+						if (spanStartDate.getDate().after(
+								spanFinishDate.getDate())) {
+							finished = true;
+						}
+					} else {
+						long shouldBe = (long) (spanFinishDate.getDate()
+								.getTime()
+								- spanStartDate.getDate().getTime() + 1000 * 60 * 30)
+								/ (1000 * 60 * 30);
+						if (present == shouldBe) {
+							spanStartDate = HhEndDate.getNext(spanFinishDate);
+							spanFinishDate = generationFinishDate;
+							if (spanStartDate.getDate().after(
+									spanFinishDate.getDate())) {
+								finished = true;
+							}
+						} else {
+							spanFinishDate = new HhEndDate(new Date(HhEndDate
+									.roundDown(cal, spanStartDate.getDate()
+											.getTime()
+											+ (spanFinishDate.getDate()
+													.getTime() - spanStartDate
+													.getDate().getTime()) / 2)));
+						}
+					}
+				}
+			}
+		}
 	}
 }

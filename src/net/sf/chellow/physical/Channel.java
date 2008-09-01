@@ -23,10 +23,10 @@
 package net.sf.chellow.physical;
 
 import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 
-import net.sf.chellow.monad.DeployerException;
-import net.sf.chellow.monad.DesignerException;
+import net.sf.chellow.billing.HhdcContract;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.InternalException;
@@ -35,7 +35,6 @@ import net.sf.chellow.monad.MonadUtils;
 import net.sf.chellow.monad.Urlable;
 import net.sf.chellow.monad.UserException;
 import net.sf.chellow.monad.XmlTree;
-import net.sf.chellow.monad.Invocation.HttpMethod;
 import net.sf.chellow.monad.types.MonadDate;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
@@ -51,7 +50,7 @@ public class Channel extends PersistentEntity implements Urlable {
 
 	private static final long serialVersionUID = 1L;
 
-	static private HttpMethod[] httpMethods = { HttpMethod.GET };
+	//static private HttpMethod[] httpMethods = { HttpMethod.GET };
 	/*
 	 * public static void addHhData(List<HhDatumRaw> dataRaw) throws
 	 * HttpException { Channel channel; HhDatumRaw firstDatum = dataRaw.get(0);
@@ -248,13 +247,13 @@ public class Channel extends PersistentEntity implements Urlable {
 	}
 
 	public void resolveSnag(String description, HhEndDate date)
-			throws InternalException, HttpException {
+			throws HttpException {
 		resolveSnag(description, date, date);
 	}
 
 	@SuppressWarnings("unchecked")
 	public void resolveSnag(String description, HhEndDate startDate,
-			HhEndDate finishDate) throws InternalException, HttpException {
+			HhEndDate finishDate) throws HttpException {
 		for (ChannelSnag snag : (List<ChannelSnag>) Hiber
 				.session()
 				.createQuery(
@@ -372,8 +371,7 @@ public class Channel extends PersistentEntity implements Urlable {
 		return element;
 	}
 
-	public void httpGet(Invocation inv) throws DesignerException,
-			InternalException, HttpException, DeployerException {
+	public void httpGet(Invocation inv) throws HttpException {
 		Document doc = MonadUtils.newSourceDocument();
 		Element source = doc.getDocumentElement();
 		source.appendChild(toXml(doc, new XmlTree("supplyGeneration",
@@ -385,23 +383,16 @@ public class Channel extends PersistentEntity implements Urlable {
 		return new HhData(this);
 	}
 
-	public void httpPost(Invocation inv) throws InternalException,
-			HttpException {
+	public void httpPost(Invocation inv) throws HttpException {
 
 	}
 
-	public Urlable getChild(UriPathElement uriId) throws HttpException,
-			InternalException {
+	public Urlable getChild(UriPathElement uriId) throws HttpException {
 		Urlable child = null;
 		if (HhData.URI_ID.equals(uriId)) {
 			child = new HhData(this);
 		}
 		return child;
-	}
-
-	public void httpDelete(Invocation inv) throws InternalException,
-			HttpException {
-		inv.sendMethodNotAllowed(httpMethods);
 	}
 
 	public MonadUri getUri() throws HttpException {
@@ -413,4 +404,6 @@ public class Channel extends PersistentEntity implements Urlable {
 		return "Channel id: " + getId() + "is import: " + getIsImport()
 				+ " is kWh: " + getIsKwh();
 	}
+	
+
 }

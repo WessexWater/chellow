@@ -73,5 +73,13 @@ public abstract class PersistentEntity extends MonadObject implements Urlable {
 	public void httpDelete(Invocation inv) throws HttpException {
 		throw new MethodNotAllowedException();
 	}
+	
+	public void httpGet(Invocation inv) throws HttpException {
+		throw new MethodNotAllowedException();
+	}
+	
+	public void httpPost(Invocation inv) throws HttpException {
+		throw new MethodNotAllowedException();
+	}
 
 }

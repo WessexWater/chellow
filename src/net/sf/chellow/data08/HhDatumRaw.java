@@ -1,15 +1,38 @@
 package net.sf.chellow.data08;
 
-import org.w3c.dom.Document;
-import org.w3c.dom.Node;
-
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.InternalException;
-import net.sf.chellow.monad.types.MonadObject;
-import net.sf.chellow.physical.HhDatumStatus;
+import net.sf.chellow.monad.UserException;
 import net.sf.chellow.physical.HhEndDate;
 
-public class HhDatumRaw extends MonadObject {
+public class HhDatumRaw {
+	public static Character ACTUAL = 'A';
+	public static Character ESTIMATE = 'E';
+	
+	public static Character checkStatus(Character status) throws HttpException {
+		if (status != null
+				&& !(status.equals(ESTIMATE) || status.equals(ACTUAL))) {
+			throw new UserException(
+					"The status character must be E, A or null.");
+		}
+		return status;
+	}
+
+	private static Character checkStatus(String status) throws HttpException {
+		if (status != null) {
+			status = status.trim();
+			if (status.length() > 1) {
+				throw new UserException(
+						"The status can only be a single character.");
+			}
+			Character statusCharacter = new Character(status.charAt(0));
+			checkStatus(statusCharacter);
+			return statusCharacter;
+		} else {
+			return null;
+		}
+	}
+
 	private MpanCoreRaw core;
 
 	private boolean isImport;
@@ -23,22 +46,22 @@ public class HhDatumRaw extends MonadObject {
 	private Character status;
 
 	public HhDatumRaw(MpanCoreRaw core, boolean isImport, boolean isKwh,
-			HhEndDate endDate, float value, HhDatumStatus status)
-			throws InternalException {
+			HhEndDate endDate, float value, String status) throws HttpException {
+		this(core, isImport, isKwh, endDate, value, checkStatus(status));
+	}
+	
+	public HhDatumRaw(MpanCoreRaw core, boolean isImport, boolean isKwh,
+			HhEndDate endDate, float value, Character status) throws HttpException {
 		this.core = core;
 		this.isImport = isImport;
 		this.isKwh = isKwh;
 		if (endDate == null) {
-			throw new InternalException(
-					"The value 'endDate' must not be null.");
+			throw new InternalException("The value 'endDate' must not be null.");
 		}
 		this.endDate = endDate;
 		this.value = value;
-		if (status == null) {
-			this.status = null;
-		} else {
-			this.status = status.getCharacter();
-		}
+		checkStatus(status);
+		this.status = status;
 	}
 
 	public MpanCoreRaw getMpanCore() {
@@ -69,11 +92,5 @@ public class HhDatumRaw extends MonadObject {
 		return "MPAN core: " + core + ", Is import? " + isImport + ", Is Kwh? "
 				+ isKwh + ", End date " + endDate + ", Value " + value
 				+ ", Status " + status;
-	}
-
-	@Override
-	public Node toXml(Document doc) throws HttpException {
-		// TODO Auto-generated method stub
-		return null;
 	}
 }

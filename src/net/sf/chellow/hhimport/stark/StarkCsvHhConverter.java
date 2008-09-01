@@ -36,7 +36,6 @@ import net.sf.chellow.hhimport.HhConverter;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.UserException;
-import net.sf.chellow.physical.HhDatumStatus;
 import net.sf.chellow.physical.HhEndDate;
 
 import com.Ostermiller.util.CSVParser;
@@ -67,7 +66,8 @@ public class StarkCsvHhConverter implements HhConverter {
 					|| !titles[2].equals("Units") || !titles[3].equals("Time")
 					|| !titles[4].equals("Value")
 					|| !titles[5].equals("Status")) {
-				throw new UserException("The first line of the CSV must contain the titles "
+				throw new UserException(
+						"The first line of the CSV must contain the titles "
 								+ "MPAN core, Imp / Exp, Units, Time, Value, Status.");
 			}
 			try {
@@ -104,7 +104,8 @@ public class StarkCsvHhConverter implements HhConverter {
 			String[] values = shredder.getLine();
 			if (values != null) {
 				if (values.length < 5) {
-					throw new UserException("There must be fields for 'MPAN core', 'Imp / Exp', 'Units', 'Time' and 'Value'.");
+					throw new UserException(
+							"There must be fields for 'MPAN core', 'Imp / Exp', 'Units', 'Time' and 'Value'.");
 				}
 				MpanCoreRaw core = new MpanCoreRaw(values[0]);
 				boolean isImport = values[1].equals("0");
@@ -114,17 +115,18 @@ public class StarkCsvHhConverter implements HhConverter {
 				} else if (values[2].trim().equals("kVArh")) {
 					isKwh = false;
 				} else {
-					throw new UserException("The 'Units' field must be 'kWh' or 'kVArh'");
+					throw new UserException(
+							"The 'Units' field must be 'kWh' or 'kVArh'");
 				}
 				HhEndDate endDate = new HhEndDate(dateFormat.parse(values[3]));
 				float value = Float.parseFloat(values[4]);
-				HhDatumStatus status = null;
+				Character status = null;
 				if (values.length > 5) {
-					char statusChar = 'E';
 					if (values[5].equals("65")) {
-						statusChar = 'A';
+						status = HhDatumRaw.ACTUAL;
+					} else {
+						status = HhDatumRaw.ESTIMATE;
 					}
-					status = new HhDatumStatus(statusChar);
 				}
 				datum = new HhDatumRaw(core, isImport, isKwh, endDate, value,
 						status);
@@ -141,7 +143,8 @@ public class StarkCsvHhConverter implements HhConverter {
 			throw rte;
 		} catch (HttpException e) {
 			try {
-				throw new RuntimeException(new UserException("Problem at line number: "
+				throw new RuntimeException(new UserException(
+						"Problem at line number: "
 								+ shredder.getLastLineNumber() + ". Problem: "
 								+ e.getMessage()));
 			} catch (InternalException e1) {

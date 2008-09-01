@@ -23,11 +23,7 @@
 package net.sf.chellow.physical;
 
 import net.sf.chellow.data08.HhDatumRaw;
-import net.sf.chellow.monad.DeployerException;
-import net.sf.chellow.monad.DesignerException;
 import net.sf.chellow.monad.HttpException;
-import net.sf.chellow.monad.InternalException;
-import net.sf.chellow.monad.Invocation;
 import net.sf.chellow.monad.NotFoundException;
 import net.sf.chellow.monad.Urlable;
 import net.sf.chellow.monad.types.MonadUri;
@@ -35,7 +31,6 @@ import net.sf.chellow.monad.types.UriPathElement;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import org.w3c.dom.Node;
 
 public class HhDatum extends PersistentEntity implements Urlable {
 	private Channel channel;
@@ -49,12 +44,10 @@ public class HhDatum extends PersistentEntity implements Urlable {
 	public HhDatum() {
 	}
 
-	public HhDatum(Channel channel, HhDatumRaw datumRaw) throws HttpException,
-			InternalException {
+	public HhDatum(Channel channel, HhDatumRaw datumRaw) throws HttpException {
 		setChannel(channel);
 		setEndDate(datumRaw.getEndDate());
-		setValue(datumRaw.getValue());
-		setStatus(datumRaw.getStatus());
+		update(datumRaw.getValue(), datumRaw.getStatus());
 	}
 
 	/*
@@ -94,13 +87,12 @@ public class HhDatum extends PersistentEntity implements Urlable {
 		this.status = status;
 	}
 
-	public void update(float value, Character status) throws HttpException,
-			InternalException {
+	public void update(float value, Character status) throws HttpException {
 		this.value = value;
-		this.status = new HhDatumStatus(status).getCharacter();
+		this.status = HhDatumRaw.checkStatus(status);
 	}
 
-	public Node toXml(Document doc) throws InternalException, HttpException {
+	public Element toXml(Document doc) throws HttpException {
 		Element element = super.toXml(doc, "hh-datum");
 
 		element.appendChild(endDate.toXml(doc));
@@ -116,30 +108,11 @@ public class HhDatum extends PersistentEntity implements Urlable {
 				+ status;
 	}
 
-	public MonadUri getUri() throws InternalException, HttpException {
+	public MonadUri getUri() throws HttpException {
 		return channel.getHhDataInstance().getUri().resolve(getUriId());
 	}
 
-	public Urlable getChild(UriPathElement urlId) throws InternalException,
-			HttpException {
+	public Urlable getChild(UriPathElement urlId) throws HttpException {
 		throw new NotFoundException();
-	}
-
-	public void httpGet(Invocation inv) throws DesignerException,
-			InternalException, HttpException, DeployerException {
-		// TODO Auto-generated method stub
-
-	}
-
-	public void httpPost(Invocation inv) throws InternalException,
-			HttpException {
-		// TODO Auto-generated method stub
-
-	}
-
-	public void httpDelete(Invocation inv) throws InternalException,
-			HttpException {
-		// TODO Auto-generated method stub
-
 	}
 }
