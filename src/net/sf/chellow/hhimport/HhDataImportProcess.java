@@ -31,7 +31,9 @@ import net.sf.chellow.monad.XmlDescriber;
 import net.sf.chellow.monad.XmlTree;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
-import net.sf.chellow.physical.Supply;
+import net.sf.chellow.physical.Channel;
+import net.sf.chellow.physical.HhEndDate;
+import net.sf.chellow.physical.SupplyGeneration;
 import net.sf.chellow.ui.ChellowLogger;
 
 import org.apache.commons.fileupload.FileItem;
@@ -51,17 +53,17 @@ public class HhDataImportProcess extends Thread implements Urlable,
 
 	private Integer batchSize = null;
 
-	private List<Supply> supplies = null;
+	private List<SupplyGeneration> supplyGenerations = null;
 
 	private Long id;
 
 	private Long hhdcContractId;
 
-	public HhDataImportProcess(Long dceServiceId, Long id, FileItem item)
+	public HhDataImportProcess(Long hhdcContractId, Long id, FileItem item)
 			throws HttpException {
 		try {
-			initialize(dceServiceId, id, item.getInputStream(), item.getName(),
-					item.getSize());
+			initialize(hhdcContractId, id, item.getInputStream(), item
+					.getName(), item.getSize());
 		} catch (IOException e) {
 			throw new InternalException(e);
 		}
@@ -157,12 +159,32 @@ public class HhDataImportProcess extends Thread implements Urlable,
 			MpanCoreRaw mpanCoreRaw = datum.getMpanCore();
 			HhdcContract contract = HhdcContract
 					.getHhdcContract(hhdcContractId);
-			Supply supply = contract.getOrganization()
-					.findMpanCore(mpanCoreRaw).getSupply();
+			/*
+			 * Supply supply = contract.getOrganization()
+			 * .findMpanCore(mpanCoreRaw).getSupply();
+			 */
+			SupplyGeneration generation = contract.getOrganization()
+					.findMpanCore(mpanCoreRaw).getSupply().getGeneration(
+							datum.getEndDate());
 
+			if (generation == null) {
+				throw new UserException("HH datum has been ignored: "
+						+ datum.toString() + ".");
+			}
+			Channel channel = generation.getChannel(datum.getIsImport(), datum
+					.getIsKwh());
+			HhEndDate genFinishDate = generation.getFinishDate();
 			List<HhDatumRaw> data = new ArrayList<HhDatumRaw>();
+			data.add(datum);
 			HhDatumRaw firstDatum = datum;
-
+			if (!converter.hasNext()) {
+				batchSize = data.size();
+				try {
+					channel.addHhData(contract, data);
+				} catch (UserException e) {
+					messages.add(e.getMessage());
+				}
+			}
 			while (!shouldHalt() && converter.hasNext()) {
 				try {
 					datum = converter.next();
@@ -180,10 +202,12 @@ public class HhDataImportProcess extends Thread implements Urlable,
 								&& datum.getIsKwh() == firstDatum.getIsKwh() && datum
 								.getEndDate().getDate().equals(
 										data.get(data.size() - 1).getEndDate()
-												.getNext().getDate()))) {
+												.getNext().getDate()))
+						|| (genFinishDate != null && genFinishDate.getDate()
+								.before(datum.getEndDate().getDate()))) {
 					batchSize = data.size();
 					try {
-						supply.addHhData(contract, data);
+						channel.addHhData(contract, data);
 					} catch (UserException e) {
 						messages.add(e.getMessage());
 					}
@@ -191,22 +215,37 @@ public class HhDataImportProcess extends Thread implements Urlable,
 					data.clear();
 					mpanCoreRaw = datum.getMpanCore();
 					contract = HhdcContract.getHhdcContract(hhdcContractId);
-					supply = contract.getOrganization().findMpanCore(
-							mpanCoreRaw).getSupply();
+					generation = contract.getOrganization().findMpanCore(
+							mpanCoreRaw).getSupply().getGeneration(
+							datum.getEndDate());
+					if (generation == null) {
+						throw new UserException("HH datum has been ignored: "
+								+ datum.toString() + ".");
+					}
+					channel = generation.getChannel(datum.getIsImport(), datum
+							.getIsKwh());
+					genFinishDate = generation.getFinishDate();
 				}
 				data.add(datum);
 			}
 			if (!data.isEmpty()) {
-				supply.addHhData(contract, data);
+				channel.addHhData(contract, data);
 			}
 			Hiber.close();
 			// check hh data - supply level
-			supplies = (List<Supply>) Hiber.session()
-					.createQuery("from Supply").list();
-			for (int i = 0; i < supplies.size(); i++) {
+			supplyGenerations = (List<SupplyGeneration>) Hiber
+					.session()
+					.createQuery(
+							"from SupplyGeneration supplyGeneration join supplyGeneration.siteSupplyGenerations siteSupplyGeneration where siteSupplyGeneration.site.organization = :organization and generation.finishDate.date is null")
+					.setEntity(
+							"organization",
+							HhdcContract.getHhdcContract(hhdcContractId)
+									.getOrganization()).list();
+			for (int i = 0; i < supplyGenerations.size(); i++) {
 				suppliesChecked = i;
-				Supply.getSupply(supplies.get(i).getId())
-						.checkForMissingFromLatest();
+				SupplyGeneration.getSupplyGeneration(
+						supplyGenerations.get(i).getId())
+						.checkForMissingFromLatest(null);
 				Hiber.close();
 			}
 		} catch (IOException e) {
@@ -242,30 +281,27 @@ public class HhDataImportProcess extends Thread implements Urlable,
 		return halt;
 	}
 
-	public UriPathElement getUriId() throws InternalException, HttpException {
+	public UriPathElement getUriId() throws HttpException {
 		return new UriPathElement(Long.toString(id));
 	}
 
-	public Urlable getChild(UriPathElement urlId) throws InternalException,
-			NotFoundException {
+	public Urlable getChild(UriPathElement urlId) throws HttpException {
 		throw new NotFoundException();
 	}
 
-	public MonadUri getUri() throws InternalException, HttpException {
+	public MonadUri getUri() throws HttpException {
 		return getDceService().getHhDataImportProcessesInstance().getUri()
 				.resolve(getUriId()).append("/");
 	}
 
-	private HhdcContract getDceService() throws HttpException,
-			InternalException {
+	private HhdcContract getDceService() throws HttpException {
 		return HhdcContract.getHhdcContract(hhdcContractId);
 	}
 
-	public void httpGet(Invocation inv) throws DesignerException,
-			InternalException, HttpException, DeployerException {
+	public void httpGet(Invocation inv) throws HttpException {
 		Document doc = MonadUtils.newSourceDocument();
 		Element source = doc.getDocumentElement();
-		Element processElement = (Element) toXml(doc);
+		Element processElement = toXml(doc);
 		source.appendChild(processElement);
 		processElement.appendChild(getDceService().toXml(doc,
 				new XmlTree("provider", new XmlTree("organization"))));
@@ -285,13 +321,13 @@ public class HhDataImportProcess extends Thread implements Urlable,
 	}
 
 	public String status() {
-		return supplies == null ? "Processing line number "
+		return supplyGenerations == null ? "Processing line number "
 				+ converter.lastLineNumber() + " and batch size is "
 				+ batchSize + "." : "Checking supply " + (suppliesChecked + 1)
-				+ " of " + supplies.size() + ".";
+				+ " of " + supplyGenerations.size() + ".";
 	}
 
-	public Node toXml(Document doc) throws InternalException, HttpException {
+	public Element toXml(Document doc) throws HttpException {
 		Element importElement = doc.createElement("hh-data-import");
 		importElement.setAttribute("uri-id", getUriId().toString());
 		importElement.setAttribute("progress", status());

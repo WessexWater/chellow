@@ -23,7 +23,6 @@
 package net.sf.chellow.physical;
 
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
@@ -48,7 +47,6 @@ import net.sf.chellow.monad.types.MonadDate;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
 
-import org.hibernate.Query;
 import org.hibernate.exception.ConstraintViolationException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -336,7 +334,7 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 		Hiber.flush();
 		// more optimization possible here, doesn't necessarily need to check
 		// data.
-		getSupply().checkAfterUpdate(true, getStartDate(), getFinishDate());
+		getSupply().checkAfterUpdate(getStartDate(), getFinishDate());
 	}
 
 	private void synchronizeChannel(boolean isImport, boolean isKwh,
@@ -494,7 +492,7 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 					originalFinishDate.getDate()) ? finishDate
 					: originalFinishDate;
 		}
-		supply.checkAfterUpdate(true, startDate.getDate().before(
+		supply.checkAfterUpdate(startDate.getDate().before(
 				originalStartDate.getDate()) ? startDate : originalStartDate,
 				checkFinishDate);
 	}
@@ -906,6 +904,7 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 		Hiber.session().flush();
 	}
 	
+	/*
 	@SuppressWarnings("unchecked")
 	private void resolveChannelSnags(String description, HhEndDate from,
 			HhEndDate to) throws HttpException {
@@ -916,7 +915,8 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 			channel.resolveSnag(description, from, to);
 		}
 	}
-
+*/
+	/*
 	@SuppressWarnings("unchecked")
 	private void resolveChannelSnags(boolean isImport, boolean isKwh,
 			String description, HhEndDate from, HhEndDate to)
@@ -932,8 +932,21 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 			channel.resolveSnag(description, from, to);
 		}
 	}
-
+	*/
 	
+	public void checkForMissing(HhEndDate from, HhEndDate to) throws HttpException {
+		for (Channel channel : channels) {
+			channel.checkForMissing(from, to);
+		}
+	}
+
+	public void checkForMissingFromLatest(HhEndDate to) throws HttpException {
+		for (Channel channel : channels) {
+			channel.checkForMissingFromLatest(to);
+		}
+	}
+	
+	/*
 	private void checkForMissing(HhEndDate from, HhEndDate to) throws HttpException {
 		if (from == null) {
 			from = getStartDate();
@@ -1022,4 +1035,5 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 			}
 		}
 	}
+	*/
 }

@@ -23,7 +23,6 @@
 package net.sf.chellow.physical;
 
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -54,7 +53,6 @@ import net.sf.chellow.monad.types.UriPathElement;
 
 import org.hibernate.Criteria;
 import org.hibernate.HibernateException;
-import org.hibernate.Query;
 import org.hibernate.criterion.Restrictions;
 import org.hibernate.exception.ConstraintViolationException;
 import org.w3c.dom.Document;
@@ -407,10 +405,8 @@ public class Supply extends PersistentEntity {
 		supplyGeneration.setMeter(meter);
 		return supplyGeneration;
 	}
-
-	public void checkForMissingFromLatest() throws HttpException {
-		checkForMissing(null, null);
-	}
+	
+	/*
 	private HhEndDate getCheckToDate(boolean isImport, boolean isKwh)
 	throws HttpException {
 HhEndDate lastSnagDate = (HhEndDate) Hiber
@@ -459,52 +455,10 @@ if (lastSnagDate != null) {
 return finish;
 }
 
-
-	public void checkForMissingFromLatest(HhEndDate to) throws HttpException {
-		/*
-		 * if (to == null) { to = getCheckToDate(); if (to == null) { return; } }
-		 */
-		Date latestDatumDate = (Date) Hiber
-				.session()
-				.createQuery(
-						"select max(datum.endDate.date) from HhDatum datum where datum.channel = :channel")
-				.setEntity("channel", this).uniqueResult();
-		Date latestMissingDate = (Date) Hiber
-				.session()
-				.createQuery(
-						"select max(snag.finishDate.date) from ChannelSnag snag where snag.channel = :channel and snag.description = :description")
-				.setEntity("channel", this).setString("description",
-						ChannelSnag.SNAG_MISSING).uniqueResult();
-		HhEndDate latestPresentDate;
-		if (latestDatumDate == null) {
-			if (latestMissingDate == null) {
-				latestPresentDate = getGenerationFirst().getStartDate();
-			} else {
-				latestPresentDate = new HhEndDate(latestMissingDate);
-			}
-		} else {
-			if (latestMissingDate == null) {
-				latestPresentDate = new HhEndDate(latestDatumDate);
-			} else {
-				latestPresentDate = new HhEndDate(latestMissingDate).getDate()
-						.after(new HhEndDate(latestDatumDate).getDate()) ? new HhEndDate(
-						latestMissingDate)
-						: new HhEndDate(latestDatumDate);
-			}
-		}
-		/*
-		 * latestPresentDate = latestPresentDate.getNext(); if
-		 * (!latestPresentDate.getDate().after(to.getDate())) {
-		 * checkForMissing(latestPresentDate, to); }
-		 */
-		checkForMissing(latestPresentDate.getNext(), to);
-	}
+*/
 
 	public void checkForMissing(HhEndDate from, HhEndDate to)
 			throws HttpException {
-		if (to == null) {
-			to = checkToDate();
-		}
 		for (SupplyGeneration supplyGeneration : getGenerations(from, to)) {
 			supplyGeneration.checkForMissing(from, to);
 		}
@@ -955,7 +909,7 @@ return finish;
 			throw new NotFoundException();
 		}
 	}
-
+/*
 	@SuppressWarnings("unchecked")
 	public void addHhData(HhdcContract contract, List<HhDatumRaw> dataRaw)
 			throws HttpException {
@@ -1001,7 +955,7 @@ return finish;
 					.createQuery(
 							"from HhDatum datum where datum.channel = :channel and "
 									+ "datum.endDate.date >= :startDate and datum.endDate.date <= :finishDate order by datum.endDate.date")
-					.setEntity("channel", this).setTimestamp("startDate",
+					.setEntity("channel", channel).setTimestamp("startDate",
 							generation.getStartDate().getDate()).setTimestamp(
 							"finishDate", generation.getFinishDate().getDate())
 					.list();
@@ -1149,6 +1103,223 @@ return finish;
 		}
 	}
 
+*/
+	@SuppressWarnings("unchecked")
+	public void addHhData(HhdcContract contract, List<HhDatumRaw> dataRaw)
+			throws HttpException {
+		// long now = System.currentTimeMillis();
+		// Debug.print("Starting method: " + (System.currentTimeMillis() -
+		// now));
+
+		HhEndDate from = dataRaw.get(0).getEndDate();
+		HhEndDate to = dataRaw.get(dataRaw.size() - 1).getEndDate();
+		/*
+		boolean isImport = dataRaw.get(0).getIsImport();
+		boolean isKwh = dataRaw.get(0).getIsKwh();
+		*/
+		if (getGeneration(from) == null) {
+			throw new UserException("HH data has been ignored from "
+					+ dataRaw.toString() + " to " + to + ".");
+		}
+		if (getGeneration(to) == null) {
+			throw new UserException("HH data has been ignored from "
+					+ dataRaw.toString() + " to " + to + ".");
+		}
+		List<SupplyGeneration> supplyGenerations = getGenerations(from, to);
+		for (SupplyGeneration generation : supplyGenerations) {
+			Channel channel = generation.getChannel(isImport, isKwh);
+			HhdcContract actualHhdcContract = generation.getHhdcContract();
+			if (channel == null) {
+				throw new UserException("HH data has been ignored from "
+						+ dataRaw.toString() + " to " + to + ".");
+			}
+			if (!contract.equals(actualHhdcContract)) {
+				throw new UserException(
+						"Somewhere in the block of hh data between ("
+								+ dataRaw.get(0)
+								+ ") and ("
+								+ dataRaw.get(dataRaw.size() - 1)
+								+ ") and between the dates "
+								+ generation.getStartDate()
+								+ " and "
+								+ (generation.getFinishDate() == null ? "ongoing"
+										: generation.getFinishDate())
+								+ " there are one or more data with a contract that is not the contract under which the data is provided.");
+			}
+			List<HhDatum> data = (List<HhDatum>) Hiber
+					.session()
+					.createQuery(
+							"from HhDatum datum where datum.channel = :channel and "
+									+ "datum.endDate.date >= :startDate and datum.endDate.date <= :finishDate order by datum.endDate.date")
+					.setEntity("channel", channel).setTimestamp("startDate",
+							generation.getStartDate().getDate()).setTimestamp(
+							"finishDate", generation.getFinishDate().getDate())
+					.list();
+			if (data.isEmpty()) {
+				checkForMissingFromLatest(from.getPrevious());
+			}
+			
+			
+			
+			
+			
+			
+			
+			boolean isImport = dataRaw.get(0).getIsImport();
+			boolean isKwh = dataRaw.get(0).getIsKwh();
+			SupplyGeneration supplyGeneration = getGeneration(from);
+			Channel channel = supplyGeneration.getChannel(isImport, isKwh);
+			if (supplyGeneration == null) {
+				throw new UserException("HH data has been ignored from "
+						+ dataRaw.toString() + " to " + to + ".");
+			}
+			if (getGeneration(to) == null) {
+				throw new UserException("HH data has been ignored from "
+						+ dataRaw.toString() + " to " + to + ".");
+			}			
+			HhEndDate siteCheckFrom = null;
+			HhEndDate siteCheckTo = null;
+			HhEndDate notActualFrom = null;
+			HhEndDate notActualTo = null;
+			HhEndDate resolveMissingFrom = null;
+			HhEndDate resolveMissingTo = null;
+			HhEndDate prevEndDate = null;
+			Channel prevChannel = null;
+			int missing = 0;
+			// Debug.print("Starting to go through each hh: "
+			// + (System.currentTimeMillis() - now));
+			HhDatum originalDatum = null;
+			for (int i = 0; i < dataRaw.size(); i++) {
+				// Debug.print("Start processing hh: "
+				// + (System.currentTimeMillis() - now));
+				boolean added = false;
+				boolean altered = false;
+				HhDatumRaw datumRaw = dataRaw.get(i);
+				HhDatum datum = null;
+
+				if (i - missing < data.size()) {
+					datum = data.get(i - missing);
+					if (!datumRaw.getEndDate().equals(datum.getEndDate())) {
+						datum = null;
+					}
+				}
+				if (datum == null) {
+					// Debug.print("About to save datum: "
+					// + (System.currentTimeMillis() - now));
+					Hiber.session().save(new HhDatum(channel, datumRaw));
+					// Debug.print("Saved datum: "
+					// + (System.currentTimeMillis() - now));
+					added = true;
+					missing++;
+					if (resolveMissingFrom == null) {
+						resolveMissingFrom = datumRaw.getEndDate();
+					}
+					resolveMissingTo = datumRaw.getEndDate();
+					// Debug.print("Resolved missing: "
+					// + (System.currentTimeMillis() - now));
+				} else if (datumRaw.getValue() != datum.getValue()
+						|| (datumRaw.getStatus() == null ? datum.getStatus() != null
+								: !datumRaw.getStatus().equals(
+										datum.getStatus()))) {
+					// Debug.print("About to update datum: "
+					// + (System.currentTimeMillis() - now));
+					originalDatum = datum;
+					datum.update(datumRaw.getValue(), datumRaw.getStatus());
+					altered = true;
+				}
+				// Debug.print("About to see if changed: "
+				// + (System.currentTimeMillis() - now));
+				if (added || altered) {
+					if (siteCheckFrom == null) {
+						siteCheckFrom = datumRaw.getEndDate();
+					}
+					siteCheckTo = datumRaw.getEndDate();
+					if (datumRaw.getValue() < 0) {
+						channel.addChannelSnag(ChannelSnag.SNAG_NEGATIVE,
+								datumRaw.getEndDate(), datumRaw.getEndDate(),
+								false);
+					} else if (altered && originalDatum.getValue() < 0) {
+						channel.resolveSnag(ChannelSnag.SNAG_NEGATIVE, datumRaw
+								.getEndDate());
+					}
+					if (!HhDatumRaw.ACTUAL.equals(datumRaw.getStatus())) {
+						if (notActualFrom == null) {
+							notActualFrom = datumRaw.getEndDate();
+						}
+						notActualTo = datumRaw.getEndDate();
+					} else if (altered
+							&& !originalDatum.getStatus().equals(
+									HhDatumRaw.ACTUAL)) {
+						channel.resolveSnag(ChannelSnag.SNAG_NOT_ACTUAL,
+								datumRaw.getEndDate());
+					}
+				}
+				if (siteCheckTo != null && siteCheckTo.equals(prevEndDate) || channel.equals(prevChannel)) {
+					// Debug.print("About to do site check: "
+					// + (System.currentTimeMillis() - now));
+					channel.siteCheck(siteCheckFrom, siteCheckTo);
+					siteCheckFrom = null;
+					siteCheckTo = null;
+					// Debug.print("Finished site check: "
+					// + (System.currentTimeMillis() - now));
+				}
+				if (notActualTo != null && notActualTo.equals(prevEndDate)) {
+					// Debug.print("Started not actual: "
+					// + (System.currentTimeMillis() - now));
+					channel.addChannelSnag(ChannelSnag.SNAG_NOT_ACTUAL,
+							notActualFrom, notActualTo, false);
+					// notActualSnag(notActualFrom, notActualTo,
+					// supplyGenerations);
+					// Debug.print("Finished not actual: "
+					// + (System.currentTimeMillis() - now));
+					notActualFrom = null;
+					notActualTo = null;
+				}
+				if (resolveMissingTo != null
+						&& resolveMissingTo.equals(prevEndDate)) {
+					// Debug.print("Starting resolvedMissing: "
+					// + (System.currentTimeMillis() - now));
+					channel.resolveSnag(ChannelSnag.SNAG_MISSING,
+							resolveMissingFrom, resolveMissingTo);
+					resolveMissingFrom = null;
+					resolveMissingTo = null;
+					// Debug.print("Finished resolveMissing: "
+					// + (System.currentTimeMillis() - now));
+				}
+				prevEndDate = datumRaw.getEndDate();
+			}
+			if (siteCheckTo != null && siteCheckTo.equals(prevEndDate)) {
+				// Debug.print("About to start site thing: "
+				// + (System.currentTimeMillis() - now));
+				channel.siteCheck(siteCheckFrom, siteCheckTo);
+				// Debug.print("About to finish site thing: "
+				// + (System.currentTimeMillis() - now));
+			}
+			if (notActualTo != null && notActualTo.equals(prevEndDate)) {
+				// Debug.print("About to start not actual: "
+				// + (System.currentTimeMillis() - now));
+				channel.addChannelSnag(ChannelSnag.SNAG_NOT_ACTUAL,
+						notActualFrom, notActualTo, false);
+				// channel.notActualSnag(notActualFrom, notActualTo,
+				// supplyGenerations);
+				// Debug.print("About to finsih not actual: "
+				// + (System.currentTimeMillis() - now));
+			}
+			if (resolveMissingTo != null
+					&& resolveMissingTo.equals(prevEndDate)) {
+				// Debug.print("About to start resolvem: "
+				// + (System.currentTimeMillis() - now));
+				channel.resolveSnag(ChannelSnag.SNAG_MISSING,
+						resolveMissingFrom, resolveMissingTo);
+				// Debug.print("About to finish resolvem: "
+				// + (System.currentTimeMillis() - now));
+			}
+			// Debug.print("Finished method: " + (System.currentTimeMillis() -
+			// now));
+		}
+	}
+
+	
 	public Organization getOrganization() {
 		return getGenerations().iterator().next().getSiteSupplyGenerations()
 				.iterator().next().getSite().getOrganization();
