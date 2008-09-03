@@ -117,11 +117,11 @@
 										</td>
 										<td>
 											<xsl:value-of
-												select="mpan[@label='import']/mpan-core/@core" />
+												select="mpan[mpan-top/llfc/@is-import='true']/mpan-core/@core" />
 										</td>
 										<td>
 											<xsl:value-of
-												select="mpan[@label='export']/mpan-core/@core" />
+												select="mpan[mpan-top/llfc/@is-import='false']/mpan-core/@core" />
 										</td>
 									</tr>
 								</xsl:for-each>

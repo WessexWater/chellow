@@ -31,7 +31,6 @@ import java.util.Map;
 import java.util.Set;
 
 import net.sf.chellow.billing.Account;
-import net.sf.chellow.billing.HhdcContract;
 import net.sf.chellow.billing.Invoice;
 import net.sf.chellow.billing.Service;
 import net.sf.chellow.data08.HhDatumRaw;
@@ -516,7 +515,7 @@ return finish;
 	}
 
 	public void deleteGeneration(SupplyGeneration generation)
-			throws InternalException, HttpException {
+			throws HttpException {
 		if (getGenerations().size() == 1) {
 			throw new UserException(
 					"The only way to delete the last generation is to delete the entire supply.");
@@ -691,7 +690,7 @@ return finish;
 			for (HhDatum datum : (List<HhDatum>) Hiber
 					.session()
 					.createQuery(
-							"from HhDatum datum where datum.channel.supplyGeneration = :supplyGeneration and datum.endDate.date < datum.channel.supplyGeneration.startDate.date or (datum.channel.supplyGeneration.finishDate.date is not null and datum.endDate.date < datum.channel.supplyGeneration.finishDate.date")
+							"from HhDatum datum where datum.channel.supplyGeneration = :supplyGeneration and (datum.endDate.date < datum.channel.supplyGeneration.startDate.date or (datum.channel.supplyGeneration.finishDate.date is not null and datum.endDate.date < datum.channel.supplyGeneration.finishDate.date))")
 					.setEntity("supplyGeneration", generation).list()) {
 				Channel channel = datum.getChannel();
 				HhEndDate endDate = datum.getEndDate();
@@ -720,7 +719,7 @@ return finish;
 			for (ChannelSnag snag : (List<ChannelSnag>) Hiber
 					.session()
 					.createQuery(
-							"from ChannelSnag snag where snag.channel.supplyGeneration = :supplyGeneration and datum.endDate.date < datum.channel.supplyGeneration.startDate.date or (datum.channel.supplyGeneration.finishDate.date is not null and datum.endDate.date < datum.channel.supplyGeneration.finishDate.date")
+							"from ChannelSnag snag where snag.channel.supplyGeneration = :supplyGeneration and (snag.finishDate.date < snag.channel.supplyGeneration.startDate.date or (snag.channel.supplyGeneration.finishDate.date is not null and snag.startDate.date > snag.channel.supplyGeneration.finishDate.date))")
 					.setEntity("supplyGeneration", generation).list()) {
 				ChannelSnag.deleteChannelSnag(snag);
 			}
@@ -1104,6 +1103,7 @@ return finish;
 	}
 
 */
+	/*
 	@SuppressWarnings("unchecked")
 	public void addHhData(HhdcContract contract, List<HhDatumRaw> dataRaw)
 			throws HttpException {
@@ -1116,7 +1116,7 @@ return finish;
 		/*
 		boolean isImport = dataRaw.get(0).getIsImport();
 		boolean isKwh = dataRaw.get(0).getIsKwh();
-		*/
+	
 		if (getGeneration(from) == null) {
 			throw new UserException("HH data has been ignored from "
 					+ dataRaw.toString() + " to " + to + ".");
@@ -1162,9 +1162,9 @@ return finish;
 			
 			
 			
+	*/		
 			
-			
-			
+	/*		
 			boolean isImport = dataRaw.get(0).getIsImport();
 			boolean isKwh = dataRaw.get(0).getIsKwh();
 			SupplyGeneration supplyGeneration = getGeneration(from);
@@ -1318,7 +1318,7 @@ return finish;
 			// now));
 		}
 	}
-
+*/
 	
 	public Organization getOrganization() {
 		return getGenerations().iterator().next().getSiteSupplyGenerations()
