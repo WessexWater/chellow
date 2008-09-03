@@ -87,18 +87,14 @@ public class SupplyGenerations implements Urlable, XmlDescriber {
 	public Document document() throws HttpException {
 		Document doc = MonadUtils.newSourceDocument();
 		Element source = doc.getDocumentElement();
-		/*
-		 * Element generationsElement = (Element) getXML( new
-		 * XMLTree("siteSupplyGenerations", new XMLTree("site", new XMLTree(
-		 * "organization")).put("supply")), doc);
-		 */
 		Element generationsElement = toXml(doc);
 		source.appendChild(generationsElement);
-		generationsElement.appendChild(supply.toXml(
-				doc, new XmlTree("organization")));
+		generationsElement.appendChild(supply.toXml(doc, new XmlTree(
+				"organization")));
 		for (SupplyGeneration supplyGeneration : supply.getGenerations()) {
-			generationsElement.appendChild(supplyGeneration.toXml(doc, new XmlTree(
-							"mpans", new XmlTree("mpanCore"))));
+			generationsElement.appendChild(supplyGeneration.toXml(doc,
+					new XmlTree("mpans", new XmlTree("mpanCore").put("mpanTop",
+							new XmlTree("pc").put("llfc").put("mtc")))));
 		}
 		source.appendChild(new MonadDate().toXml(doc));
 		source.appendChild(MonadDate.getMonthsXml(doc));
@@ -106,8 +102,7 @@ public class SupplyGenerations implements Urlable, XmlDescriber {
 		return doc;
 	}
 
-	public SupplyGeneration getChild(UriPathElement uriId)
-			throws HttpException {
+	public SupplyGeneration getChild(UriPathElement uriId) throws HttpException {
 		SupplyGeneration supplyGeneration = (SupplyGeneration) Hiber
 				.session()
 				.createQuery(

@@ -256,6 +256,9 @@ public abstract class Monad extends HttpServlet implements Urlable {
 				inv.sendUnauthorized();
 			} catch (UserException e) {
 				Document doc = e.getDocument();
+				if (doc == null) {
+					doc = MonadUtils.newSourceDocument();
+				}
 				if (e.getMessage() != null) {
 					Element sourceElement = doc.getDocumentElement();
 					sourceElement.appendChild(e.toXml(doc));

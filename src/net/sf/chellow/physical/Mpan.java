@@ -22,6 +22,7 @@
 
 package net.sf.chellow.physical;
 
+import java.util.Date;
 import java.util.Set;
 
 import net.sf.chellow.billing.Account;
@@ -42,7 +43,7 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
 public class Mpan extends PersistentEntity {
-	static public Mpan getMpan(Long id) throws InternalException, HttpException {
+	static public Mpan getMpan(Long id) throws HttpException {
 		Mpan mpan = (Mpan) Hiber.session().get(Mpan.class, id);
 		if (mpan == null) {
 			throw new UserException("There is no mpan with that id.");
@@ -82,6 +83,17 @@ public class Mpan extends PersistentEntity {
 			throws HttpException {
 		this.supplyGeneration = supplyGeneration;
 		update(mpanTop, mpanCore, hhdcAccount, supplierAccount, hasImportKwh,
+				hasImportKvarh, hasExportKwh, hasExportKvarh,
+				agreedSupplyCapacity);
+	}
+
+	Mpan(SupplyGeneration supplyGeneration, MpanRaw mpanRaw, Ssc ssc,
+			Account hhdcAccount, Account supplierAccount, boolean hasImportKwh,
+			boolean hasImportKvarh, boolean hasExportKwh,
+			boolean hasExportKvarh, int agreedSupplyCapacity)
+			throws HttpException {
+		this.supplyGeneration = supplyGeneration;
+		update(mpanRaw, ssc, hhdcAccount, supplierAccount, hasImportKwh,
 				hasImportKvarh, hasExportKwh, hasExportKvarh,
 				agreedSupplyCapacity);
 	}
@@ -179,6 +191,10 @@ public class Mpan extends PersistentEntity {
 			boolean hasImportKvarh, boolean hasExportKwh,
 			boolean hasExportKvarh, int agreedSupplyCapacity)
 			throws HttpException {
+		if (!mpanCore.getSupply().equals(supplyGeneration.getSupply())) {
+			throw new UserException(
+					"This MPAN core is not attached to this supply.");
+		}
 		if (!mpanTop.getLlfc().getDso().equals(mpanCore.getDso())) {
 			throw new UserException(
 					"The MPAN top line DSO doesn't match the MPAN core DSO.");
@@ -244,6 +260,30 @@ public class Mpan extends PersistentEntity {
 		setHasExportKvarh(hasExportKvarh);
 		setAgreedSupplyCapacity(agreedSupplyCapacity);
 	}
+	
+	void update(MpanRaw mpanRaw, Ssc ssc,
+			Account hhdcAccount, Account supplierAccount, boolean hasImportKwh,
+			boolean hasImportKvarh, boolean hasExportKwh,
+			boolean hasExportKvarh, int agreedSupplyCapacity)
+			throws HttpException {
+		Organization organization = supplyGeneration.getSupply()
+				.getOrganization();
+		MpanTop mpanTop = mpanRaw.getMpanTop(ssc, supplyGeneration
+				.getFinishDate() == null ? new Date() : supplyGeneration
+				.getFinishDate().getDate());
+		MpanCore mpanCore = mpanRaw.getMpanCore(organization);
+		if (mpanCore == null) {
+			mpanCore = supplyGeneration.getSupply().addMpanCore(
+					mpanRaw.getMpanCoreRaw());
+		} else if (!mpanCore.getSupply().equals(supplyGeneration.getSupply())) {
+			throw new UserException(
+					"This MPAN core is already attached to another supply.");
+		}
+		update(mpanTop, mpanCore, hhdcAccount, supplierAccount, hasImportKwh,
+				hasImportKvarh, hasExportKwh, hasExportKvarh,
+				agreedSupplyCapacity);
+	}
+
 
 	public String toString() {
 		return getMpanTop() + " " + getMpanCore();

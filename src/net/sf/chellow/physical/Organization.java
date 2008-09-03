@@ -460,8 +460,14 @@ public class Organization extends PersistentEntity {
 	}
 
 	@SuppressWarnings("unchecked")
-	public MpanCore findMpanCore(MpanCoreRaw core) throws InternalException,
-			HttpException {
+	public MpanCore findMpanCore(MpanCoreRaw core) throws HttpException {
+		return (MpanCore) Hiber
+				.session()
+				.createQuery(
+						"from MpanCore mpanCore where mpanCore.supply.organization = :organization and mpanCore.dso = :dso and mpanCore.uniquePart.string = :uniquePart")
+				.setEntity("organization", this).setEntity("dso", core.getDso()).setString(
+						"uniquePart", core.getUniquePart().getString()).uniqueResult();
+		/*
 		for (MpanCore mpanCore : (List<MpanCore>) Hiber
 				.session()
 				.createQuery(
@@ -484,10 +490,10 @@ public class Organization extends PersistentEntity {
 			}
 		}
 		return null;
+		*/
 	}
 
-	public MpanCore getMpanCore(MpanCoreRaw coreRaw) throws HttpException,
-			InternalException {
+	public MpanCore getMpanCore(MpanCoreRaw coreRaw) throws HttpException {
 		MpanCore core = findMpanCore(coreRaw);
 		if (core == null) {
 			throw new UserException("There isn't an MPAN with the core " + core);

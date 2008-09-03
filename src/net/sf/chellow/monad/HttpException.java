@@ -74,10 +74,7 @@ public abstract class HttpException extends Exception implements XmlDescriber {
 		this.statusCode = statusCode;
 	}
 
-	public void setDocument(Document doc) throws InternalException {
-		if (doc == null) {
-			doc = MonadUtils.newSourceDocument();
-		}
+	public void setDocument(Document doc) {
 		this.document = doc;
 	}
 

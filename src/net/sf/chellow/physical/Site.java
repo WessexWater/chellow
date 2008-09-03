@@ -132,7 +132,7 @@ public class Site extends PersistentEntity implements Urlable {
 			Integer exportAgreedSupplyCapacity, HhEndDate startDate,
 			String sourceCode, Long id) throws HttpException {
 		Source source = Source.getSource(sourceCode);
-		Supply supply = new Supply(supplyName, source);
+		Supply supply = new Supply(organization, supplyName, source);
 		try {
 			supply.setId(id);
 			Hiber.session().save(supply);

@@ -26,8 +26,6 @@ import net.sf.chellow.monad.types.UriPathElement;
 import net.sf.chellow.physical.HhEndDate;
 import net.sf.chellow.physical.Meter;
 import net.sf.chellow.physical.Mpan;
-import net.sf.chellow.physical.MpanCore;
-import net.sf.chellow.physical.MpanTop;
 import net.sf.chellow.physical.Organization;
 import net.sf.chellow.physical.Site;
 import net.sf.chellow.physical.Source;
@@ -383,8 +381,6 @@ public class HeaderImportProcess extends Thread implements Urlable,
 					String importMpanStr = values[7];
 					csvElement.appendChild(getField("Import MPAN",
 							importMpanStr));
-					MpanTop importMpanTop = null;
-					MpanCore importMpanCore = null;
 					boolean importHasImportKwh = false;
 					boolean importHasImportKvarh = false;
 					boolean importHasExportKwh = false;
@@ -411,8 +407,6 @@ public class HeaderImportProcess extends Thread implements Urlable,
 						importMpanRaw = new MpanRaw(importMpanStr);
 					}
 					if (importMpanRaw != null) {
-						importMpanCore = importMpanRaw
-								.getMpanCore(organization);
 						if (importSscCode.equals(NO_CHANGE)) {
 							if (existingImportMpan == null) {
 								throw new UserException(
@@ -425,8 +419,6 @@ public class HeaderImportProcess extends Thread implements Urlable,
 							importSsc = importSscCode.length() == 0 ? null
 									: Ssc.getSsc(importSscCode);
 						}
-						importMpanTop = importMpanRaw.getMpanTop(importSsc,
-								supplyGeneration.getStartDate().getDate());
 						if (importAgreedSupplyCapacityStr.equals(NO_CHANGE)) {
 							if (existingImportMpan == null) {
 								throw new UserException(
@@ -548,8 +540,6 @@ public class HeaderImportProcess extends Thread implements Urlable,
 					String exportMpanStr = values[18];
 					csvElement
 							.appendChild(getField("Eport MPAN", exportMpanStr));
-					MpanTop exportMpanTop = null;
-					MpanCore exportMpanCore = null;
 					String exportSscCode = values[20];
 					Ssc exportSsc = null;
 					MpanRaw exportMpanRaw = null;
@@ -573,8 +563,6 @@ public class HeaderImportProcess extends Thread implements Urlable,
 					SupplierContract exportSupplierContract = null;
 					Account exportAccountSupplier = null;
 					if (exportMpanRaw != null) {
-						exportMpanCore = exportMpanRaw
-								.getMpanCore(organization);
 						if (exportSscCode.equals(NO_CHANGE)) {
 							if (existingExportMpan == null) {
 								throw new UserException(
@@ -587,8 +575,6 @@ public class HeaderImportProcess extends Thread implements Urlable,
 							exportSsc = exportSscCode.length() == 0 ? null
 									: Ssc.getSsc(exportSscCode);
 						}
-						exportMpanTop = exportMpanRaw.getMpanTop(exportSsc,
-								supplyGeneration.getStartDate().getDate());
 						if (exportAgreedSupplyCapacityStr.equals(NO_CHANGE)) {
 							if (existingExportMpan == null) {
 								throw new UserException(
@@ -707,12 +693,12 @@ public class HeaderImportProcess extends Thread implements Urlable,
 									.getAccount(exportSupplierAccountReference);
 						}
 					}
-					supplyGeneration.addOrUpdateMpans(importMpanTop,
-							importMpanCore, importHhdceAccount,
+					supplyGeneration.addOrUpdateMpans(importMpanRaw,
+							importSsc, importHhdceAccount,
 							importSupplierAccount, importHasImportKwh,
 							importHasImportKvarh, importHasExportKwh,
 							importHasExportKvarh, importAgreedSupplyCapacity,
-							exportMpanTop, exportMpanCore, exportHhdceAccount,
+							exportMpanRaw, exportSsc, exportHhdceAccount,
 							exportAccountSupplier, exportHasImportKwh,
 							exportHasImportKvarh, exportHasExportKwh,
 							exportHasExportKvarh, exportAgreedSupplyCapacity);

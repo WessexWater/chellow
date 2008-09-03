@@ -31,6 +31,8 @@
 				<param name="sequence">supply_id_sequence</param>
 			</generator>
 		</id>
+		<many-to-one name="organization" class="Organization"
+			column="organization_id" not-null="true" />
 		<property name="name" column="name" />
 		<many-to-one name="source" class="Source" column="source_id"
 			not-null="true" foreign-key="fkey_supply_source" />

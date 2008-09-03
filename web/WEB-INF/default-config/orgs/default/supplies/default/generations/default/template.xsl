@@ -534,14 +534,14 @@
 										<xsl:value-of
 											select="'MPAN Core '" />
 										<input
-											name="import-mpan-core-id" size="16">
+											name="import-mpan-core" size="16">
 											<xsl:attribute
 												name="value">
 													<xsl:choose>
 														<xsl:when
-														test="/source/request/parameter[@name='import-mpan-core-id']">
+														test="/source/request/parameter[@name='import-mpan-core']">
 															<xsl:value-of
-															select="/source/request/parameter[@name='import-mpan-core-id']/value">
+															select="/source/request/parameter[@name='import-mpan-core']/value">
 															</xsl:value-of>
 														</xsl:when>
 														<xsl:otherwise>
@@ -1119,14 +1119,14 @@
 										<xsl:value-of
 											select="'MPAN Core '" />
 										<input
-											name="export-mpan-core-id" size="16">
+											name="export-mpan-core" size="16">
 											<xsl:attribute
 												name="value">
 													<xsl:choose>
 														<xsl:when
-														test="/source/request/parameter[@name='export-mpan-core-id']">
+														test="/source/request/parameter[@name='export-mpan-core']">
 															<xsl:value-of
-															select="/source/request/parameter[@name='export-mpan-core-id']/value">
+															select="/source/request/parameter[@name='export-mpan-core']/value">
 															</xsl:value-of>
 														</xsl:when>
 														<xsl:otherwise>

@@ -34,6 +34,8 @@ import net.sf.chellow.billing.HhdcContract;
 import net.sf.chellow.billing.Invoice;
 import net.sf.chellow.billing.InvoiceMpan;
 import net.sf.chellow.billing.SupplierContract;
+import net.sf.chellow.data08.MpanCoreRaw;
+import net.sf.chellow.data08.MpanRaw;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.InternalException;
@@ -205,104 +207,132 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 		Hiber.flush();
 	}
 
-	public void addOrUpdateMpans(MpanTop importMpanTop,
-			MpanCore importMpanCore, Account importHhdcAccount,
-			Account importSupplierAccount, boolean importHasImportKwh,
-			boolean importHasImportKvarh, boolean importHasExportKwh,
-			boolean importHasExportKvarh, Integer importAgreedSupplyCapacity,
-			MpanTop exportMpanTop, MpanCore exportMpanCore,
-			Account exportHhdcAccount, Account exportSupplierAccount,
-			boolean exportHasImportKwh, boolean exportHasImportKvarh,
-			boolean exportHasExportKwh, boolean exportHasExportKvarh,
-			Integer exportAgreedSupplyCapacity) throws HttpException {
-		if (importMpanCore == null && exportMpanCore == null) {
+	/*
+	 * public void addOrUpdateMpans(MpanTop importMpanTop, MpanCore
+	 * importMpanCore, Account importHhdcAccount, Account importSupplierAccount,
+	 * boolean importHasImportKwh, boolean importHasImportKvarh, boolean
+	 * importHasExportKwh, boolean importHasExportKvarh, Integer
+	 * importAgreedSupplyCapacity, MpanTop exportMpanTop, MpanCore
+	 * exportMpanCore, Account exportHhdcAccount, Account exportSupplierAccount,
+	 * boolean exportHasImportKwh, boolean exportHasImportKvarh, boolean
+	 * exportHasExportKwh, boolean exportHasExportKvarh, Integer
+	 * exportAgreedSupplyCapacity) throws HttpException { if (importMpanCore ==
+	 * null && exportMpanCore == null) { throw new UserException(document(), "A
+	 * supply generation must have at least one MPAN."); } if (importMpanCore ==
+	 * null) { mpans.remove(importMpan); setImportMpan(null); } else { if
+	 * (!importMpanCore.getSupply().equals(getSupply())) { throw new
+	 * UserException( "This import MPAN core is not attached to this supply."); }
+	 * if (!importMpanTop.getLlfc().getIsImport()) { throw new
+	 * UserException(document(), "The import line loss factor '" +
+	 * importMpanTop.getLlfc() + "' says that the MPAN is actually export."); }
+	 * if (importMpan == null) { setImportMpan(new Mpan(this, importMpanTop,
+	 * importMpanCore, importHhdcAccount, importSupplierAccount,
+	 * importHasImportKwh, importHasImportKvarh, importHasExportKwh,
+	 * importHasExportKvarh, importAgreedSupplyCapacity));
+	 * mpans.add(importMpan); } else { importMpan.update(importMpanTop,
+	 * importMpanCore, importHhdcAccount, importSupplierAccount,
+	 * importHasImportKwh, importHasImportKvarh, importHasExportKwh,
+	 * importHasExportKvarh, importAgreedSupplyCapacity); } } if (exportMpanCore ==
+	 * null) { mpans.remove(exportMpan); setExportMpan(null); } else { if
+	 * (!exportMpanCore.getSupply().equals(getSupply())) { throw new
+	 * UserException( "This export MPAN core is not attached to this supply."); }
+	 * if (exportMpanTop.getLlfc().getIsImport()) { throw new UserException(
+	 * "Problem with the export MPAN with core '" + exportMpanCore + "'. The
+	 * Line Loss Factor '" + exportMpanTop.getLlfc() + "' says that the MPAN is
+	 * actually import."); } if (exportMpan == null) { setExportMpan(new
+	 * Mpan(this, exportMpanTop, exportMpanCore, exportHhdcAccount,
+	 * exportSupplierAccount, exportHasImportKwh, exportHasImportKvarh,
+	 * exportHasExportKwh, exportHasExportKvarh, exportAgreedSupplyCapacity));
+	 * mpans.add(exportMpan); } else { exportMpan.update(exportMpanTop,
+	 * exportMpanCore, exportHhdcAccount, exportSupplierAccount,
+	 * exportHasImportKwh, exportHasImportKvarh, exportHasExportKwh,
+	 * exportHasExportKvarh, exportAgreedSupplyCapacity); } } if
+	 * (importHhdcAccount != null && exportHhdcAccount != null &&
+	 * importHhdcAccount.getContract().getId() != exportHhdcAccount
+	 * .getContract().getId()) { throw new UserException( "The HHDC for the
+	 * import and export MPANs must be the same."); } synchronizeChannel(true,
+	 * true, importHasImportKwh, exportHasImportKwh); synchronizeChannel(true,
+	 * false, importHasImportKvarh, exportHasImportKvarh);
+	 * synchronizeChannel(false, true, importHasExportKwh, exportHasExportKwh);
+	 * synchronizeChannel(false, false, importHasExportKvarh,
+	 * exportHasExportKvarh); Hiber.flush(); // Check that if settlement MPANs
+	 * then they're the same DSO. if (importMpanCore != null && exportMpanCore !=
+	 * null) { if (importMpanCore.getDso().getCode().isSettlement() &&
+	 * exportMpanCore.getDso().getCode().isSettlement() &&
+	 * !importMpanCore.getDso().equals(exportMpanCore.getDso())) { throw new
+	 * UserException( "Two settlement MPAN generations on the same supply must
+	 * have the same DSO."); } if
+	 * (!importMpanTop.getLlfc().getVoltageLevel().equals(
+	 * exportMpanTop.getLlfc().getVoltageLevel())) { throw new UserException(
+	 * "The voltage level indicated by the Line Loss Factor must be the same for
+	 * both the MPANs."); } } Dso dso = getDso(); if (dso != null &&
+	 * dso.getCode().equals(new DsoCode("22"))) { /* if (importMpan != null) {
+	 * LineLossFactorCode code = importLineLossFactor.getCode(); if
+	 * ((code.equals(new LineLossFactorCode("520")) || code.equals(new
+	 * LineLossFactorCode("550")) || code .equals(new
+	 * LineLossFactorCode("580"))) && getExportMpan() == null) { throw
+	 * UserException .newOk("The Line Loss Factor of the import MPAN says that
+	 * there should be an export MPAN, but there isn't one."); } }
+	 */
+	/*
+	 * if (getExportMpan() != null && getImportMpan() != null) { LlfcCode code =
+	 * getImportMpan().getMpanTop().getLlfc() .getCode(); if (!code.equals(new
+	 * LlfcCode(520)) && !code.equals(new LlfcCode(550)) && !code.equals(new
+	 * LlfcCode(580))) { throw new UserException( "The DSO is 22, there's an
+	 * export MPAN and the Line Loss Factor of the import MPAN " +
+	 * getImportMpan() + " can only be 520, 550 or 580."); } } } Hiber.flush(); //
+	 * more optimization possible here, doesn't necessarily need to check //
+	 * data. getSupply().checkAfterUpdate(getStartDate(), getFinishDate()); }
+	 */
+	private void checkAfterUpdate() throws HttpException {
+		if (importMpan == null && exportMpan == null) {
 			throw new UserException(document(),
 					"A supply generation must have at least one MPAN.");
 		}
-		if (importMpanCore == null) {
-			mpans.remove(importMpan);
-			setImportMpan(null);
-		} else {
-			if (!importMpanCore.getSupply().equals(getSupply())) {
-				throw new UserException(
-						"This import MPAN core is not attached to this supply.");
-			}
-			if (!importMpanTop.getLlfc().getIsImport()) {
+		if (importMpan != null) {
+			if (!importMpan.getMpanTop().getLlfc().getIsImport()) {
 				throw new UserException(document(),
 						"The import line loss factor '"
-								+ importMpanTop.getLlfc()
+								+ importMpan.getMpanTop().getLlfc()
 								+ "' says that the MPAN is actually export.");
 			}
-			if (importMpan == null) {
-				setImportMpan(new Mpan(this, importMpanTop, importMpanCore,
-						importHhdcAccount, importSupplierAccount,
-						importHasImportKwh, importHasImportKvarh,
-						importHasExportKwh, importHasExportKvarh,
-						importAgreedSupplyCapacity));
-				mpans.add(importMpan);
-			} else {
-				importMpan.update(importMpanTop, importMpanCore,
-						importHhdcAccount, importSupplierAccount,
-						importHasImportKwh, importHasImportKvarh,
-						importHasExportKwh, importHasExportKvarh,
-						importAgreedSupplyCapacity);
-			}
 		}
-		if (exportMpanCore == null) {
-			mpans.remove(exportMpan);
-			setExportMpan(null);
-		} else {
-			if (!exportMpanCore.getSupply().equals(getSupply())) {
-				throw new UserException(
-						"This export MPAN core is not attached to this supply.");
-			}
-			if (exportMpanTop.getLlfc().getIsImport()) {
+		if (exportMpan != null) {
+			if (exportMpan.getMpanTop().getLlfc().getIsImport()) {
 				throw new UserException(
 						"Problem with the export MPAN with core '"
-								+ exportMpanCore + "'. The Line Loss Factor '"
-								+ exportMpanTop.getLlfc()
+								+ exportMpan.getMpanCore()
+								+ "'. The Line Loss Factor '"
+								+ exportMpan.getMpanTop().getLlfc()
 								+ "' says that the MPAN is actually import.");
 			}
-			if (exportMpan == null) {
-				setExportMpan(new Mpan(this, exportMpanTop, exportMpanCore,
-						exportHhdcAccount, exportSupplierAccount,
-						exportHasImportKwh, exportHasImportKvarh,
-						exportHasExportKwh, exportHasExportKvarh,
-						exportAgreedSupplyCapacity));
-				mpans.add(exportMpan);
-			} else {
-				exportMpan.update(exportMpanTop, exportMpanCore,
-						exportHhdcAccount, exportSupplierAccount,
-						exportHasImportKwh, exportHasImportKvarh,
-						exportHasExportKwh, exportHasExportKvarh,
-						exportAgreedSupplyCapacity);
-			}
 		}
-		if (importHhdcAccount != null
-				&& exportHhdcAccount != null
-				&& importHhdcAccount.getContract().getId() != exportHhdcAccount
-						.getContract().getId()) {
+		if (importMpan.getHhdcAccount() != null
+				&& exportMpan.getHhdcAccount() != null
+				&& importMpan.getHhdcAccount().getContract().getId() != exportMpan
+						.getHhdcAccount().getContract().getId()) {
 			throw new UserException(
 					"The HHDC for the import and export MPANs must be the same.");
 		}
-		synchronizeChannel(true, true, importHasImportKwh, exportHasImportKwh);
-		synchronizeChannel(true, false, importHasImportKvarh,
-				exportHasImportKvarh);
-		synchronizeChannel(false, true, importHasExportKwh, exportHasExportKwh);
-		synchronizeChannel(false, false, importHasExportKvarh,
-				exportHasExportKvarh);
+		synchronizeChannel(true, true, importMpan.getHasImportKwh(), exportMpan
+				.getHasImportKwh());
+		synchronizeChannel(true, false, importMpan.getHasImportKvarh(),
+				exportMpan.getHasImportKvarh());
+		synchronizeChannel(false, true, importMpan.getHasExportKwh(),
+				exportMpan.getHasExportKwh());
+		synchronizeChannel(false, false, importMpan.getHasExportKvarh(),
+				exportMpan.getHasExportKvarh());
 		Hiber.flush();
 
 		// Check that if settlement MPANs then they're the same DSO.
-		if (importMpanCore != null && exportMpanCore != null) {
-			if (importMpanCore.getDso().getCode().isSettlement()
-					&& exportMpanCore.getDso().getCode().isSettlement()
-					&& !importMpanCore.getDso().equals(exportMpanCore.getDso())) {
+		if (importMpan != null && exportMpan != null) {
+			if (!importMpan.getMpanCore().getDso().equals(
+					exportMpan.getMpanCore().getDso())) {
 				throw new UserException(
-						"Two settlement MPAN generations on the same supply must have the same DSO.");
+						"Two MPAN generations on the same supply must have the same DSO.");
 			}
-			if (!importMpanTop.getLlfc().getVoltageLevel().equals(
-					exportMpanTop.getLlfc().getVoltageLevel())) {
+			if (!importMpan.getMpanTop().getLlfc().getVoltageLevel().equals(
+					exportMpan.getMpanTop().getLlfc().getVoltageLevel())) {
 				throw new UserException(
 						"The voltage level indicated by the Line Loss Factor must be the same for both the MPANs.");
 			}
@@ -318,6 +348,7 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 			 * UserException .newOk("The Line Loss Factor of the import MPAN
 			 * says that there should be an export MPAN, but there isn't one."); } }
 			 */
+
 			if (getExportMpan() != null && getImportMpan() != null) {
 				LlfcCode code = getImportMpan().getMpanTop().getLlfc()
 						.getCode();
@@ -335,6 +366,59 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 		// more optimization possible here, doesn't necessarily need to check
 		// data.
 		getSupply().checkAfterUpdate(getStartDate(), getFinishDate());
+	}
+
+	public void addOrUpdateMpans(MpanRaw importMpanRaw, Ssc importSsc,
+			Account importHhdcAccount, Account importSupplierAccount,
+			boolean importHasImportKwh, boolean importHasImportKvarh,
+			boolean importHasExportKwh, boolean importHasExportKvarh,
+			Integer importAgreedSupplyCapacity, MpanRaw exportMpanRaw,
+			Ssc exportSsc, Account exportHhdcAccount,
+			Account exportSupplierAccount, boolean exportHasImportKwh,
+			boolean exportHasImportKvarh, boolean exportHasExportKwh,
+			boolean exportHasExportKvarh, Integer exportAgreedSupplyCapacity)
+			throws HttpException {
+		if (importMpan == null) {
+			if (importMpanRaw != null) {
+				setImportMpan(new Mpan(this, importMpanRaw, importSsc,
+						importHhdcAccount, importSupplierAccount,
+						importHasImportKwh, importHasImportKvarh,
+						importHasExportKwh, importHasExportKvarh,
+						importAgreedSupplyCapacity));
+				mpans.add(getImportMpan());
+			}
+		} else {
+			if (importMpanRaw == null) {
+				mpans.remove(importMpan);
+				setImportMpan(null);
+			} else {
+				importMpan.update(importMpanRaw, importSsc, importHhdcAccount,
+						importSupplierAccount, importHasImportKwh,
+						importHasImportKvarh, importHasExportKwh,
+						importHasExportKvarh, importAgreedSupplyCapacity);
+			}
+		}
+		if (exportMpan == null) {
+			if (exportMpanRaw != null) {
+				setExportMpan(new Mpan(this, exportMpanRaw, exportSsc,
+						exportHhdcAccount, exportSupplierAccount,
+						exportHasImportKwh, exportHasImportKvarh,
+						exportHasExportKwh, exportHasExportKvarh,
+						exportAgreedSupplyCapacity));
+				mpans.add(getExportMpan());
+			}
+		} else {
+			if (exportMpanRaw == null) {
+				mpans.remove(exportMpan);
+				setExportMpan(null);
+			} else {
+				exportMpan.update(importMpanRaw, importSsc, importHhdcAccount,
+						importSupplierAccount, importHasImportKwh,
+						importHasImportKvarh, importHasExportKwh,
+						importHasExportKvarh, importAgreedSupplyCapacity);
+			}
+		}
+		checkAfterUpdate();
 	}
 
 	private void synchronizeChannel(boolean isImport, boolean isKwh,
@@ -384,7 +468,8 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 	public HhdcContract getHhdcContract() throws HttpException {
 		for (Mpan mpan : getMpans()) {
 			if (mpan.getHhdcAccount() != null) {
-				return (HhdcContract) mpan.getHhdcAccount().getContract();
+				return HhdcContract.getHhdcContract(mpan.getHhdcAccount()
+						.getContract().getId());
 			}
 		}
 		return null;
@@ -653,7 +738,7 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 		} else if (inv.hasParameter("set-location")) {
 			Long siteId = inv.getLong("site-id");
 			if (!inv.isValid()) {
-				throw new UserException();
+				throw new UserException(document());
 			}
 			Site site = organization().getSite(siteId);
 			setPhysicalLocation(site);
@@ -661,8 +746,8 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 			inv.sendOk(document());
 		} else {
 			Organization organization = organization();
-			MpanTop importMpanTop = null;
-			MpanCore importMpanCore = null;
+			MpanRaw importMpanRaw = null;
+			Ssc importSsc = null;
 			Integer importAgreedSupplyCapacity = null;
 			Date startDate = inv.getDate("start-date");
 			Date finishDate = null;
@@ -680,10 +765,11 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 				finishDate = inv.getDate("finish-date");
 			}
 			try {
-				Boolean hasImportMpan = inv.getBoolean("has-import-mpan");
+				boolean hasImportMpan = inv.getBoolean("has-import-mpan");
 
 				if (hasImportMpan) {
-					Long importMpanCoreId = inv.getLong("import-mpan-core-id");
+					String importMpanCoreStr = inv
+							.getString("import-mpan-core");
 					Long importPcId = inv.getLong("import-pc-id");
 					String importLlfcCodeStr = inv
 							.getString("import-llfc-code");
@@ -692,21 +778,14 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 					if (!inv.isValid()) {
 						throw new UserException(document());
 					}
-					LlfcCode importLlfcCode = new LlfcCode(importLlfcCodeStr);
-					importMpanCore = MpanCore.getMpanCore(importMpanCoreId);
-
 					Pc importPc = Pc.getPc(importPcId);
-					Llfc importLlfc = importMpanCore.getDso().getLlfc(
-							importLlfcCode);
-					Mtc importMtc = Mtc.getMtc(importMpanCore.getDso(),
-							importMtcCode);
-					Ssc importSsc = null;
 					if (inv.hasParameter("import-ssc-code")) {
 						importSsc = Ssc
 								.getSsc(inv.getString("import-ssc-code"));
 					}
-					importMpanTop = MpanTop.getMpanTop(importPc, importMtc,
-							importLlfc, importSsc, new Date());
+					importMpanRaw = new MpanRaw(importPc.getCode(),
+							importMtcCode, new LlfcCode(importLlfcCodeStr),
+							new MpanCoreRaw(importMpanCoreStr));
 					importAgreedSupplyCapacity = inv
 							.getInteger("import-agreed-supply-capacity");
 					importHasImportKwh = inv
@@ -739,8 +818,8 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 					importSupplierAccount = importSupplierContract
 							.getAccount(importSupplierAccountReference);
 				}
-				MpanTop exportMpanTop = null;
-				MpanCore exportMpanCore = null;
+				MpanRaw exportMpanRaw = null;
+				Ssc exportSsc = null;
 				Integer exportAgreedSupplyCapacity = null;
 				Account exportHhdceAccount = null;
 				HhdcContract exportHhdceContract = null;
@@ -752,25 +831,21 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 				boolean exportHasExportKvarh = false;
 				boolean hasExportMpan = inv.getBoolean("has-export-mpan");
 				if (hasExportMpan) {
-					Long exportMpanCoreId = inv.getLong("export-mpan-core-id");
-					exportMpanCore = MpanCore.getMpanCore(exportMpanCoreId);
+					String exportMpanCoreStr = inv
+							.getString("export-mpan-core");
 					Long exportPcId = inv.getLong("export-pc-id");
 					Pc exportPc = Pc.getPc(exportPcId);
 					LlfcCode exportLlfcCode = new LlfcCode(inv
 							.getInteger("export-llfc-code"));
-					Llfc exportLlfc = exportMpanCore.getDso().getLlfc(
-							exportLlfcCode);
 					MtcCode exportMtcCode = inv.getValidatable(MtcCode.class,
 							"export-mtc-code");
-					Mtc exportMtc = Mtc.getMtc(exportMpanCore.getDso(),
-							exportMtcCode);
-					Ssc exportSsc = null;
 					if (inv.hasParameter("export-ssc-code")) {
 						exportSsc = Ssc
 								.getSsc(inv.getString("export-ssc-code"));
 					}
-					exportMpanTop = MpanTop.getMpanTop(exportPc, exportMtc,
-							exportLlfc, exportSsc, new Date());
+					exportMpanRaw = new MpanRaw(exportPc.getCode(),
+							exportMtcCode, exportLlfcCode, new MpanCoreRaw(
+									exportMpanCoreStr));
 					exportAgreedSupplyCapacity = inv
 							.getInteger("export-agreed-supply-capacity");
 					exportHasImportKwh = inv
@@ -803,12 +878,11 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 					exportSupplierAccount = exportSupplierContract
 							.getAccount(exportSupplierAccountReference);
 				}
-				addOrUpdateMpans(importMpanTop, importMpanCore,
-						importHhdceAccount, importSupplierAccount,
-						importHasImportKwh, importHasImportKvarh,
-						importHasExportKwh, importHasExportKvarh,
-						importAgreedSupplyCapacity, exportMpanTop,
-						exportMpanCore, exportHhdceAccount,
+				addOrUpdateMpans(importMpanRaw, importSsc, importHhdceAccount,
+						importSupplierAccount, importHasImportKwh,
+						importHasImportKvarh, importHasExportKwh,
+						importHasExportKvarh, importAgreedSupplyCapacity,
+						exportMpanRaw, exportSsc, exportHhdceAccount,
 						exportSupplierAccount, exportHasImportKwh,
 						exportHasImportKvarh, exportHasExportKwh,
 						exportHasExportKvarh, exportAgreedSupplyCapacity);
