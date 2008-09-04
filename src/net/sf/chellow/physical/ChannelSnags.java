@@ -34,37 +34,37 @@ public class ChannelSnags implements Urlable, XmlDescriber {
 		}
 	}
 
-	HhdcContract dceService;
+	HhdcContract hhdcContract;
 
-	public ChannelSnags(HhdcContract dceService) {
-		this.dceService = dceService;
+	public ChannelSnags(HhdcContract hhdcContract) {
+		this.hhdcContract = hhdcContract;
 	}
 
 	public UriPathElement getUriId() {
 		return URI_ID;
 	}
 
-	public MonadUri getUri() throws InternalException, HttpException {
-		return dceService.getUri().resolve(getUriId()).append("/");
+	public MonadUri getUri() throws HttpException {
+		return hhdcContract.getUri().resolve(getUriId()).append("/");
 	}
 
 	@SuppressWarnings("unchecked")
 	public void httpGet(Invocation inv) throws HttpException {
 		Document doc = MonadUtils.newSourceDocument();
 		Element source = doc.getDocumentElement();
-		Element snagsElement = (Element) toXml(doc);
+		Element snagsElement = toXml(doc);
 		source.appendChild(snagsElement);
-		snagsElement.appendChild(dceService.toXml(doc, new XmlTree("provider",
-						new XmlTree("organization"))));
+		snagsElement.appendChild(hhdcContract.toXml(doc,
+				new XmlTree("provider").put("organization")));
 		List<ChannelSnag> snagsChannel = (List<ChannelSnag>) Hiber
 				.session()
 				.createQuery(
-						"from ChannelSnag snag where snag.dateResolved is null and snag.service = :service order by snag.channel.supply.id, snag.channel.isImport, snag.channel.isKwh, snag.description, snag.startDate.date")
-				.setEntity("service", dceService).setMaxResults(PAGE_SIZE)
+						"from ChannelSnag snag where snag.dateResolved is null and snag.contract = :contract order by snag.channel.supplyGeneration.supply.id, snag.channel.isImport, snag.channel.isKwh, snag.description, snag.startDate.date")
+				.setEntity("contract", hhdcContract).setMaxResults(PAGE_SIZE)
 				.list();
 		for (ChannelSnag snag : snagsChannel) {
 			snagsElement.appendChild(snag.toXml(doc, new XmlTree("channel",
-							new XmlTree("supply"))));
+					new XmlTree("supplyGeneration", new XmlTree("supply")))));
 		}
 		source.appendChild(MonadDate.getMonthsXml(doc));
 		source.appendChild(MonadDate.getDaysXml(doc));
@@ -79,8 +79,8 @@ public class ChannelSnags implements Urlable, XmlDescriber {
 			ScrollableResults snags = Hiber
 					.session()
 					.createQuery(
-							"from ChannelSnag snag where dceService = :dceService and snag.finishDate < :ignoreDate")
-					.setEntity("dceService", dceService).setTimestamp(
+							"from ChannelSnag snag where snag.contract = :contract and snag.finishDate < :ignoreDate")
+					.setEntity("contract", hhdcContract).setTimestamp(
 							"ignoreDate", ignoreDate.getDate()).scroll(
 							ScrollMode.FORWARD_ONLY);
 			while (snags.next()) {
@@ -107,8 +107,8 @@ public class ChannelSnags implements Urlable, XmlDescriber {
 		return null;
 	}
 
-	public Node toXml(Document doc) throws InternalException, HttpException {
-		return doc.createElement("snags-channel");
+	public Element toXml(Document doc) throws HttpException {
+		return doc.createElement("channel-snags");
 	}
 
 	public Node toXml(Document doc, XmlTree tree) throws HttpException {

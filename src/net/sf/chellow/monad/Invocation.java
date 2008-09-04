@@ -232,11 +232,11 @@ public class Invocation {
 		return monadLong;
 	}
 
-	public boolean getBoolean(String parameterName)
-			throws InternalException {
-		if (hasParameter(parameterName) && getString(parameterName).equals("true")) {
+	public boolean getBoolean(String parameterName) throws InternalException {
+		if (hasParameter(parameterName)
+				&& getString(parameterName).equals("true")) {
 			return true;
-			
+
 		} else {
 			return false;
 		}
@@ -327,8 +327,8 @@ public class Invocation {
 	}
 
 	public <T extends MonadValidatable> T getValidatable(Class<T> clazz,
-			ParameterName[] parameterNames, List<? extends Object> list, String label)
-			throws InternalException {
+			ParameterName[] parameterNames, List<? extends Object> list,
+			String label) throws InternalException {
 		T obj = null;
 		List<HttpParameter> parameters = null;
 
@@ -370,8 +370,7 @@ public class Invocation {
 			throw new InternalException(e);
 		} catch (InternalException e) {
 			instantiationExceptions.add(new MonadInstantiationException(clazz
-					.getName(), label, new UserException(e
-					.getMessage())));
+					.getName(), label, new UserException(e.getMessage())));
 		} catch (HttpException e) {
 			instantiationExceptions.add(new MonadInstantiationException(clazz
 					.getName(), label, e));
@@ -407,7 +406,8 @@ public class Invocation {
 	}
 
 	@SuppressWarnings("unchecked")
-	public Node requestXml(Document doc) throws InternalException, DesignerException {
+	public Node requestXml(Document doc) throws InternalException,
+			DesignerException {
 		Element requestElement = doc.createElement("request");
 		Map<String, String[]> parameterMap = getRequest().getParameterMap();
 
@@ -447,9 +447,8 @@ public class Invocation {
 		}
 		if (fileItem == null) {
 			instantiationExceptions.add(new MonadInstantiationException(
-					FileItem.class.getName(), name, new UserException
-							("File parameter '" + name
-									+ "' is required.")));
+					FileItem.class.getName(), name, new UserException(
+							"File parameter '" + name + "' is required.")));
 		}
 		return fileItem;
 	}
@@ -462,9 +461,8 @@ public class Invocation {
 				String[] parameterValues = getParameterValues(parameterNames[i]);
 
 				if (parameterValues == null || parameterValues.length < 1) {
-					throw new UserException(
-							"The parameter '" + parameterNames[i]
-									+ "' is required.");
+					throw new UserException("The parameter '"
+							+ parameterNames[i] + "' is required.");
 				} else if (parameterValues.length > 1) {
 					throw new UserException("Too many parameter values.");
 				}
@@ -578,12 +576,17 @@ public class Invocation {
 		}
 	}
 
-	public void sendNotFound() throws InternalException {
+	public void sendNotFound(String message) throws InternalException {
 		try {
-			res.sendError(HttpServletResponse.SC_NOT_FOUND);
+			res.sendError(HttpServletResponse.SC_NOT_FOUND, message);
 		} catch (IOException e) {
 			throw new InternalException(e);
 		}
+	}
+
+	public void sendNotFound(Document doc) throws HttpException {
+		res.setStatus(HttpServletResponse.SC_NOT_FOUND);
+		returnPage(doc, req.getPathInfo(), "template.xsl");
 	}
 
 	public void sendUnauthorized() throws InternalException {
@@ -836,8 +839,8 @@ public class Invocation {
 
 		public MonadInstantiationException(String typeName, String label,
 				String messageCode, String parameterName, String parameterValue) {
-			this(typeName, label, new MonadMessage(messageCode, new VFParameter(
-					parameterName, parameterValue)));
+			this(typeName, label, new MonadMessage(messageCode,
+					new VFParameter(parameterName, parameterValue)));
 		}
 
 		public MonadInstantiationException(String typeName, String label) {
@@ -862,7 +865,8 @@ public class Invocation {
 		 * public void addChild(MonadInstantiationException e) {
 		 * monadInstantiationExceptions.add(e); }
 		 */
-		public Node toXml(Document doc) throws InternalException, DesignerException {
+		public Node toXml(Document doc) throws InternalException,
+				DesignerException {
 			Element element = doc.createElement(typeName);
 
 			if (label != null) {
@@ -883,8 +887,8 @@ public class Invocation {
 			this.label = label;
 		}
 
-		public Node toXml(Document doc, XmlTree tree)
-				throws InternalException, DesignerException {
+		public Node toXml(Document doc, XmlTree tree) throws InternalException,
+				DesignerException {
 			return toXml(doc);
 		}
 	}

@@ -14,14 +14,11 @@
 				<title>
 					Chellow &gt; Organizations &gt;
 					<xsl:value-of
-						select="/source/snags-channel/dce-service/dce/org/@name" />
-					&gt; DCEs &gt;
+						select="/source/channel-snags/hhdc-contract/org/@name" />
+					&gt; HHDC Contracts
 					<xsl:value-of
-						select="/source/snags-channel/dce-service/dce/@name" />
-					&gt; Services
-					<xsl:value-of
-						select="/source/snags-channel/dce-service/@name" />
-					&gt; Snags
+						select="/source/channel-snags/hhdc-contract/@name" />
+					&gt; Channel Snags
 				</title>
 
 			</head>
@@ -49,36 +46,25 @@
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/orgs/{/source/snags-channel/dce-service/dce/org/@id}/">
+						href="{/source/request/@context-path}/orgs/{/source/channel-snags/hhdc-contract/org/@id}/">
 						<xsl:value-of
-							select="/source/snags-channel/dce-service/dce/org/@name" />
+							select="/source/channel-snags/hhdc-contract/org/@name" />
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/orgs/{/source/snags-channel/dce-service/dce/org/@id}/dces/">
-						<xsl:value-of select="'DCEs'" />
+						href="{/source/request/@context-path}/orgs/{/source/channel-snags/hhdc-contract/org/@id}/hhdc-contracts/">
+						<xsl:value-of select="'HHDC Contracts'" />
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/orgs/{/source/snags-channel/dce-service/dce/org/@id}/dces/{/source/snags-channel/dce-service/dce/@id}/">
+						href="{/source/request/@context-path}/orgs/{/source/channel-snags/hhdc-contract/org/@id}/hhdc-contracts/{/source/channel-snags/hhdc-contract/@id}/">
 						<xsl:value-of
-							select="/source/snags-channel/dce-service/dce/@name" />
-					</a>
-					&gt;
-					<a
-						href="{/source/request/@context-path}/orgs/{/source/snags-channel/dce-service/dce/org/@id}/dces/{/source/snags-channel/dce-service/dce/@id}/services/">
-						<xsl:value-of select="'Services'" />
-					</a>
-					&gt;
-					<a
-						href="{/source/request/@context-path}/orgs/{/source/snags-channel/dce-service/dce/org/@id}/dces/{/source/snags-channel/dce-service/dce/@id}/services/{/source/snags-channel/dce-service/@id}/">
-						<xsl:value-of
-							select="/source/snags-channel/dce-service/@name" />
+							select="/source/channel-snags/hhdc-contract/@name" />
 					</a>
 					&gt;
 					<xsl:value-of select="'Channel Snags ['" />
 					<a
-						href="{/source/request/@context-path}/orgs/{/source/snags-channel/dce-service/dce/org/@id}/reports/57/screen/output/?service-id={/source/snags-channel/dce-service/@id}">
+						href="{/source/request/@context-path}/orgs/{/source/channel-snags/hhdc-contract/org/@id}/reports/18/screen/output/?hhdc-contract-id={/source/channel-snags/hhdc-contract/@id}">
 						<xsl:value-of select="'view'" />
 					</a>
 					<xsl:value-of select="']'" />
@@ -88,7 +74,7 @@
 				<table>
 					<thead>
 						<tr>
-							<th>Id</th>
+							<th>Chellow Id</th>
 							<th>Supply</th>
 							<th>Imp / Exp</th>
 							<th>Units</th>
@@ -99,7 +85,7 @@
 					</thead>
 					<tbody>
 						<xsl:for-each
-							select="/source/snags-channel/channel-snag">
+							select="/source/channel-snags/channel-snag">
 							<tr>
 								<td>
 									<a href="{@id}/">
@@ -108,9 +94,9 @@
 								</td>
 								<td>
 									<a
-										href="{/source/request/@context-path}/orgs/{/source/snags-channel/dce-service/dce/org/@id}/supplies/{channel/supply/@id}/">
+										href="{/source/request/@context-path}/orgs/{/source/channel-snags/hhdc-contract/org/@id}/supplies/{channel/supply-generation/@id}/generations/{channel/supply-generation/@id}/">
 										<xsl:value-of
-											select="channel/supply/@name" />
+											select="channel/supply-generation/@id" />
 									</a>
 								</td>
 								<td>

@@ -186,6 +186,22 @@ public class Mpan extends PersistentEntity {
 		this.agreedSupplyCapacity = agreedSupplyCapacity;
 	}
 
+	public boolean hasChannel(boolean isImport, boolean isKwh) {
+		if (isImport) {
+			if (isKwh) {
+				return hasImportKwh;
+			} else {
+				return hasImportKvarh;
+			}
+		} else {
+			if (isKwh) {
+				return hasExportKwh;
+			} else {
+				return hasExportKvarh;
+			}
+		}
+	}
+
 	void update(MpanTop mpanTop, MpanCore mpanCore, Account hhdcAccount,
 			Account supplierAccount, boolean hasImportKwh,
 			boolean hasImportKvarh, boolean hasExportKwh,
@@ -200,7 +216,7 @@ public class Mpan extends PersistentEntity {
 					"The MPAN top line DSO doesn't match the MPAN core DSO.");
 		}
 		if (getMpanTop() != null
-				&& !getMpanTop().getSsc().getIsImport() == mpanTop.getSsc()
+				&& !getMpanTop().getLlfc().getIsImport() == mpanTop.getLlfc()
 						.getIsImport()) {
 			throw new UserException(
 					"You can't change an import mpan into an export one, and vice versa.");
@@ -260,9 +276,9 @@ public class Mpan extends PersistentEntity {
 		setHasExportKvarh(hasExportKvarh);
 		setAgreedSupplyCapacity(agreedSupplyCapacity);
 	}
-	
-	void update(MpanRaw mpanRaw, Ssc ssc,
-			Account hhdcAccount, Account supplierAccount, boolean hasImportKwh,
+
+	void update(MpanRaw mpanRaw, Ssc ssc, Account hhdcAccount,
+			Account supplierAccount, boolean hasImportKwh,
 			boolean hasImportKvarh, boolean hasExportKwh,
 			boolean hasExportKvarh, int agreedSupplyCapacity)
 			throws HttpException {
@@ -283,7 +299,6 @@ public class Mpan extends PersistentEntity {
 				hasImportKvarh, hasExportKwh, hasExportKvarh,
 				agreedSupplyCapacity);
 	}
-
 
 	public String toString() {
 		return getMpanTop() + " " + getMpanCore();

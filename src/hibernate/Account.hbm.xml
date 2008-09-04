@@ -33,7 +33,8 @@
 		</id>
 		<many-to-one name="contract"
 			class="net.sf.chellow.billing.Contract" column="contract_id"
-			unique-key="contract-reference" foreign-key="fkey_account_contract" />
+			unique-key="contract-reference" foreign-key="fkey_account_contract"
+			not-null="true" />
 		<property type="string" name="reference" column="reference"
 			not-null="true" unique-key="contract-reference" />
 	</class>

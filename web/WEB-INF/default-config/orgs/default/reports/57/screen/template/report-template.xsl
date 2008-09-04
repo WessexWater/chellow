@@ -198,7 +198,7 @@
 					</li>
 					<li>
 						<a
-							href="{/source/request/@context-path}/orgs/{/source/hhdc-contract/org/@id}/reports/18/screen/output/?service-id={/source/hhdc-contract/@id}">
+							href="{/source/request/@context-path}/orgs/{/source/hhdc-contract/org/@id}/reports/18/screen/output/?hhdc-contract-id={/source/hhdc-contract/@id}">
 							Channel Snags
 						</a>
 					</li>

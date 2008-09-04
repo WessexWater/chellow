@@ -100,7 +100,7 @@ public abstract class Monad extends HttpServlet implements Urlable {
 	// private static final Class[] invocationConstructorTypes = {
 	// HttpServletRequest.class, HttpServletResponse.class, String.class };
 
-	//private Class<Object>[] ARG_TYPES = new Class[1];
+	// private Class<Object>[] ARG_TYPES = new Class[1];
 
 	/*
 	 * private Map<String, List<DesignerMethodFilter>> designerMethods = new
@@ -140,7 +140,7 @@ public abstract class Monad extends HttpServlet implements Urlable {
 		urlableRoot = this;
 		// thisClass = this.getClass();
 		invocationClass = getInvocationClass();
-		//ARG_TYPES[0] = invocationClass;
+		// ARG_TYPES[0] = invocationClass;
 		Handler consoleHandler = new ConsoleHandler();
 		consoleHandler.setFormatter(new MonadFormatter());
 		logger.addHandler(consoleHandler);
@@ -219,8 +219,8 @@ public abstract class Monad extends HttpServlet implements Urlable {
 				String pathInfo = req.getPathInfo();
 				if (pathInfo != null && !pathInfo.endsWith("/")) {
 					try {
-						throw new MovedPermanentlyException(new URI(
-								contextPath + req.getPathInfo() + "/"));
+						throw new MovedPermanentlyException(new URI(contextPath
+								+ req.getPathInfo() + "/"));
 					} catch (URISyntaxException e) {
 						throw new BadRequestException(e.getMessage());
 					}
@@ -245,10 +245,22 @@ public abstract class Monad extends HttpServlet implements Urlable {
 			} catch (MovedPermanentlyException e) {
 				inv.sendMovedPermanently(e.getLocation());
 			} catch (NotFoundException e) {
-				inv.sendNotFound();
+				String message = e.getMessage();
+				if (message == null) {
+					message = e.getStackTraceString();
+				}
+				Document doc = e.getDocument();
+				if (doc == null) {
+					inv.sendNotFound(message);
+				} else {
+					Element sourceElement = doc.getDocumentElement();
+					sourceElement.appendChild(e.toXml(doc));
+					inv.sendNotFound(doc);
+				}
 			} catch (OkException e) {
 				if (e.getMessage() != null) {
-					Element sourceElement = e.getDocument().getDocumentElement();
+					Element sourceElement = e.getDocument()
+							.getDocumentElement();
 					sourceElement.appendChild(e.toXml(e.getDocument()));
 				}
 				inv.sendOk(e.getDocument());
@@ -291,8 +303,7 @@ public abstract class Monad extends HttpServlet implements Urlable {
 		Monad.CONFIG_DIR = configDir;
 	}
 
-	static public URL getConfigResource(MonadUri uri)
-			throws HttpException {
+	static public URL getConfigResource(MonadUri uri) throws HttpException {
 		URL url = getConfigFile(uri);
 		if (url == null) {
 			url = getConfigUrl(uri);
@@ -455,26 +466,25 @@ public abstract class Monad extends HttpServlet implements Urlable {
 		} catch (TransformerConfigurationException e) {
 			Throwable throwable = e.getCause();
 			throw new UserException("Problem transforming template '"
-							+ templatePath
-							+ " : "
-							+ templateName
-							+ " "
-							+ e.getMessageAndLocation()
-							+ e.getMessage()
-							+ e.getLocationAsString()
-							+ " "
-							+ e.getLocator()
-							+ (throwable == null ? "" : " Problem type : "
-									+ throwable.getClass().getName()
-									+ " Message: " + throwable.getMessage()));
+					+ templatePath
+					+ " : "
+					+ templateName
+					+ " "
+					+ e.getMessageAndLocation()
+					+ e.getMessage()
+					+ e.getLocationAsString()
+					+ " "
+					+ e.getLocator()
+					+ (throwable == null ? "" : " Problem type : "
+							+ throwable.getClass().getName() + " Message: "
+							+ throwable.getMessage()));
 		} catch (TransformerException e) {
 			throw new UserException("Problem transforming template '"
-							+ templatePath + " : " + templateName + "'. "
-							+ e.getMessageAndLocation() + " "
-							+ " Problem type : "
-							+ e.getCause().getClass().getName() + " Message: "
-							+ e.getException().getMessage() + "Stack trace: "
-							+ HttpException.getStackTraceString(e.getException()) + e);
+					+ templatePath + " : " + templateName + "'. "
+					+ e.getMessageAndLocation() + " " + " Problem type : "
+					+ e.getCause().getClass().getName() + " Message: "
+					+ e.getException().getMessage() + "Stack trace: "
+					+ HttpException.getStackTraceString(e.getException()) + e);
 		}
 	}
 
@@ -494,8 +504,7 @@ public abstract class Monad extends HttpServlet implements Urlable {
 		}
 	}
 
-	public static Urlable dereferenceUri(URI uri) throws HttpException,
-			InternalException {
+	public static Urlable dereferenceUri(URI uri) throws HttpException {
 		Urlable urlable = urlableRoot;
 		String pathInfo = uri.getPath();
 		if (pathInfo.length() > 1) {

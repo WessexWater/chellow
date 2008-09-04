@@ -36,6 +36,7 @@ import net.sf.chellow.billing.InvoiceMpan;
 import net.sf.chellow.billing.SupplierContract;
 import net.sf.chellow.data08.MpanCoreRaw;
 import net.sf.chellow.data08.MpanRaw;
+import net.sf.chellow.monad.Debug;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.InternalException;
@@ -149,14 +150,11 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 	}
 
 	public Dso getDso() {
-		Dso dso = null;
-		if (getImportMpan() != null) {
-			dso = getImportMpan().getMpanCore().getDso();
+		if (importMpan == null) {
+			return exportMpan.getMpanCore().getDso();
+		} else {
+			return importMpan.getMpanCore().getDso();
 		}
-		if (dso == null && getExportMpan() != null) {
-			dso = getExportMpan().getMpanCore().getDso();
-		}
-		return dso;
 	}
 
 	public void attachSite(Site site) throws HttpException {
@@ -307,25 +305,18 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 								+ "' says that the MPAN is actually import.");
 			}
 		}
-		if (importMpan.getHhdcAccount() != null
-				&& exportMpan.getHhdcAccount() != null
-				&& importMpan.getHhdcAccount().getContract().getId() != exportMpan
-						.getHhdcAccount().getContract().getId()) {
-			throw new UserException(
-					"The HHDC for the import and export MPANs must be the same.");
-		}
-		synchronizeChannel(true, true, importMpan.getHasImportKwh(), exportMpan
-				.getHasImportKwh());
-		synchronizeChannel(true, false, importMpan.getHasImportKvarh(),
-				exportMpan.getHasImportKvarh());
-		synchronizeChannel(false, true, importMpan.getHasExportKwh(),
-				exportMpan.getHasExportKwh());
-		synchronizeChannel(false, false, importMpan.getHasExportKvarh(),
-				exportMpan.getHasExportKvarh());
-		Hiber.flush();
 
 		// Check that if settlement MPANs then they're the same DSO.
 		if (importMpan != null && exportMpan != null) {
+			Account importHhdcAccount = importMpan.getHhdcAccount();
+			Account exportHhdcAccount = exportMpan.getHhdcAccount();
+			if (importHhdcAccount != null
+					&& exportHhdcAccount != null
+					&& !importHhdcAccount.getContract().getId().equals(
+							exportHhdcAccount.getContract().getId())) {
+				throw new UserException(
+						"The HHDC for the import and export MPANs must be the same.");
+			}
 			if (!importMpan.getMpanCore().getDso().equals(
 					exportMpan.getMpanCore().getDso())) {
 				throw new UserException(
@@ -365,7 +356,12 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 		Hiber.flush();
 		// more optimization possible here, doesn't necessarily need to check
 		// data.
+		synchronizeChannel(true, true);
+		synchronizeChannel(true, false);
+		synchronizeChannel(false, true);
+		synchronizeChannel(false, false);
 		getSupply().checkAfterUpdate(getStartDate(), getFinishDate());
+		Hiber.flush();
 	}
 
 	public void addOrUpdateMpans(MpanRaw importMpanRaw, Ssc importSsc,
@@ -421,9 +417,12 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 		checkAfterUpdate();
 	}
 
-	private void synchronizeChannel(boolean isImport, boolean isKwh,
-			boolean importHasChannel, boolean exportHasChannel)
+	private void synchronizeChannel(boolean isImport, boolean isKwh)
 			throws HttpException {
+		boolean importHasChannel = importMpan == null ? false : importMpan
+				.hasChannel(isImport, isKwh);
+		boolean exportHasChannel = exportMpan == null ? false : exportMpan
+				.hasChannel(isImport, isKwh);
 		if ((importHasChannel || exportHasChannel)
 				&& getChannel(isImport, isKwh) == null) {
 			insertChannel(isImport, isKwh);
@@ -637,11 +636,6 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 		inv.sendOk(document());
 	}
 
-	private Organization organization() {
-		return getSiteSupplyGenerations().iterator().next().getSite()
-				.getOrganization();
-	}
-
 	@SuppressWarnings("unchecked")
 	private Document document() throws HttpException {
 		Document doc = MonadUtils.newSourceDocument();
@@ -708,63 +702,59 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 	}
 
 	public void httpPost(Invocation inv) throws HttpException {
-		if (inv.hasParameter("delete")) {
-			try {
+		try {
+			if (inv.hasParameter("delete")) {
 				supply.deleteGeneration(this);
-			} catch (HttpException e) {
-				e.setDocument(document());
-				throw e;
-			}
-			Hiber.commit();
-			inv.sendSeeOther(supply.getUri());
-		} else if (inv.hasParameter("attach")) {
-			String siteCode = inv.getString("site-code");
-			if (!inv.isValid()) {
-				throw new UserException(document());
-			}
-			Site site = organization().getSite(siteCode);
-			attachSite(site);
-			Hiber.commit();
-			inv.sendOk(document());
-		} else if (inv.hasParameter("detach")) {
-			Long siteId = inv.getLong("site-id");
-			if (!inv.isValid()) {
-				throw new UserException(document());
-			}
-			Site site = organization().getSite(siteId);
-			detachSite(site);
-			Hiber.commit();
-			inv.sendOk(document());
-		} else if (inv.hasParameter("set-location")) {
-			Long siteId = inv.getLong("site-id");
-			if (!inv.isValid()) {
-				throw new UserException(document());
-			}
-			Site site = organization().getSite(siteId);
-			setPhysicalLocation(site);
-			Hiber.commit();
-			inv.sendOk(document());
-		} else {
-			Organization organization = organization();
-			MpanRaw importMpanRaw = null;
-			Ssc importSsc = null;
-			Integer importAgreedSupplyCapacity = null;
-			Date startDate = inv.getDate("start-date");
-			Date finishDate = null;
-			String meterSerialNumber = inv.getString("meter-serial-number");
-			HhdcContract importHhdceContract = null;
-			Account importHhdceAccount = null;
-			SupplierContract importSupplierContract = null;
-			Account importSupplierAccount = null;
-			boolean importHasImportKwh = false;
-			boolean importHasImportKvarh = false;
-			boolean importHasExportKwh = false;
-			boolean importHasExportKvarh = false;
-			boolean isEnded = inv.getBoolean("is-ended");
-			if (isEnded) {
-				finishDate = inv.getDate("finish-date");
-			}
-			try {
+				Hiber.commit();
+				inv.sendSeeOther(supply.getUri());
+			} else if (inv.hasParameter("attach")) {
+				String siteCode = inv.getString("site-code");
+				if (!inv.isValid()) {
+					throw new UserException(document());
+				}
+				Site site = supply.getOrganization().getSite(siteCode);
+				attachSite(site);
+				Hiber.commit();
+				inv.sendOk(document());
+			} else if (inv.hasParameter("detach")) {
+				Long siteId = inv.getLong("site-id");
+				if (!inv.isValid()) {
+					throw new UserException(document());
+				}
+				Site site = supply.getOrganization().getSite(siteId);
+				detachSite(site);
+				Hiber.commit();
+				inv.sendOk(document());
+			} else if (inv.hasParameter("set-location")) {
+				Long siteId = inv.getLong("site-id");
+				if (!inv.isValid()) {
+					throw new UserException(document());
+				}
+				Site site = supply.getOrganization().getSite(siteId);
+				setPhysicalLocation(site);
+				Hiber.commit();
+				inv.sendOk(document());
+			} else {
+				Debug.print("got here 445");
+				Organization organization = supply.getOrganization();
+				MpanRaw importMpanRaw = null;
+				Ssc importSsc = null;
+				Integer importAgreedSupplyCapacity = null;
+				Date startDate = inv.getDate("start-date");
+				Date finishDate = null;
+				String meterSerialNumber = inv.getString("meter-serial-number");
+				HhdcContract importHhdcContract = null;
+				Account importHhdcAccount = null;
+				SupplierContract importSupplierContract = null;
+				Account importSupplierAccount = null;
+				boolean importHasImportKwh = false;
+				boolean importHasImportKvarh = false;
+				boolean importHasExportKwh = false;
+				boolean importHasExportKvarh = false;
+				boolean isEnded = inv.getBoolean("is-ended");
+				if (isEnded) {
+					finishDate = inv.getDate("finish-date");
+				}
 				boolean hasImportMpan = inv.getBoolean("has-import-mpan");
 
 				if (hasImportMpan) {
@@ -798,15 +788,15 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 							.getBoolean("import-has-export-kvarh");
 					if (importHasImportKwh || importHasImportKvarh
 							|| importHasExportKwh || importHasExportKvarh) {
-						String importHhdceContractName = inv
-								.getString("import-hhdce-contract-name");
-						if (importHhdceContractName.length() != 0) {
-							importHhdceContract = organization
-									.getHhdcContract(importHhdceContractName);
-							String hhdceAccountReference = inv
-									.getString("hhdce-account-reference");
-							importHhdceAccount = importHhdceContract
-									.getAccount(hhdceAccountReference);
+						String importHhdcContractName = inv
+								.getString("import-hhdc-contract-name");
+						if (importHhdcContractName.length() != 0) {
+							importHhdcContract = organization
+									.getHhdcContract(importHhdcContractName);
+							String importHhdcAccountReference = inv
+									.getString("import-hhdc-account-reference");
+							importHhdcAccount = importHhdcContract
+									.getAccount(importHhdcAccountReference);
 						}
 					}
 					String importSupplierContractName = inv
@@ -821,8 +811,8 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 				MpanRaw exportMpanRaw = null;
 				Ssc exportSsc = null;
 				Integer exportAgreedSupplyCapacity = null;
-				Account exportHhdceAccount = null;
-				HhdcContract exportHhdceContract = null;
+				Account exportHhdcAccount = null;
+				HhdcContract exportHhdcContract = null;
 				Account exportSupplierAccount = null;
 				SupplierContract exportSupplierContract = null;
 				boolean exportHasImportKwh = false;
@@ -858,15 +848,15 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 							.getBoolean("export-has-export-kvarh");
 					if (exportHasImportKwh || exportHasImportKvarh
 							|| exportHasExportKwh || exportHasExportKvarh) {
-						String exportHhdceContractName = inv
-								.getString("export-hhdce-contract-name");
-						if (exportHhdceContractName.length() != 0) {
-							exportHhdceContract = organization
-									.getHhdcContract(exportHhdceContractName);
-							String exportHhdceAccountReference = inv
-									.getString("export-hhdce-account-reference");
-							exportHhdceAccount = exportHhdceContract
-									.getAccount(exportHhdceAccountReference);
+						String exportHhdcContractName = inv
+								.getString("export-hhdc-contract-name");
+						if (exportHhdcContractName.length() != 0) {
+							exportHhdcContract = organization
+									.getHhdcContract(exportHhdcContractName);
+							String exportHhdcAccountReference = inv
+									.getString("export-hhdc-account-reference");
+							exportHhdcAccount = exportHhdcContract
+									.getAccount(exportHhdcAccountReference);
 						}
 					}
 					String exportSupplierContractName = inv
@@ -878,11 +868,11 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 					exportSupplierAccount = exportSupplierContract
 							.getAccount(exportSupplierAccountReference);
 				}
-				addOrUpdateMpans(importMpanRaw, importSsc, importHhdceAccount,
+				addOrUpdateMpans(importMpanRaw, importSsc, importHhdcAccount,
 						importSupplierAccount, importHasImportKwh,
 						importHasImportKvarh, importHasExportKwh,
 						importHasExportKvarh, importAgreedSupplyCapacity,
-						exportMpanRaw, exportSsc, exportHhdceAccount,
+						exportMpanRaw, exportSsc, exportHhdcAccount,
 						exportSupplierAccount, exportHasImportKwh,
 						exportHasImportKvarh, exportHasExportKwh,
 						exportHasExportKvarh, exportAgreedSupplyCapacity);
@@ -896,12 +886,12 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 				}
 				update(new HhEndDate(startDate), finishDate == null ? null
 						: new HhEndDate(finishDate), meter);
-			} catch (HttpException e) {
-				e.setDocument(document());
-				throw e;
+				Hiber.commit();
+				inv.sendOk(document());
 			}
-			Hiber.commit();
-			inv.sendOk(document());
+		} catch (HttpException e) {
+			e.setDocument(document());
+			throw e;
 		}
 	}
 
