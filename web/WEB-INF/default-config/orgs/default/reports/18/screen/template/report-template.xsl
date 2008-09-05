@@ -66,9 +66,9 @@
 				<table>
 					<thead>
 						<tr>
-							<th>SnagId</th>
+							<th>Chellow Id</th>
 							<th>MPAN</th>
-							<th>Site Name</th>
+							<th>Sites</th>
 							<th>Snag Description</th>
 							<th>Supply</th>
 							<th>Units</th>
@@ -81,12 +81,12 @@
 							<tr>
 								<td>
 									<a
-										href="{/source/request/@context-path}/orgs/{/source/channel-snags/hhdc-contract/dce/org/@id}/reports/58/screen/output/?snag-id={@id}">
+										href="{/source/request/@context-path}/orgs/{/source/channel-snags/hhdc-contract/org/@id}/reports/58/screen/output/?snag-id={@id}">
 										<xsl:value-of select="@id" />
 									</a>
 									<xsl:value-of select="' ['" />
 									<a
-										href="{/source/request/@context-path}/orgs/{/source/channel-snags/hhdc-contract/dce/org/@id}/dces/{/source/channel-snags/hhdc-contract/dce/@id}/services/{/source/channel-snags/hhdc-contract/@id}/channel-snags/{@id}/">
+										href="{/source/request/@context-path}/orgs/{/source/channel-snags/hhdc-contract/org/@id}/hhdc-contracts/{/source/channel-snags/hhdc-contract/@id}/channel-snags/{@id}/">
 										<xsl:value-of select="'edit'" />
 									</a>
 									<xsl:value-of select="']'" />
@@ -97,8 +97,15 @@
 										select="channel/supply-generation/mpan" />
 								</td>
 								<td>
-									<xsl:value-of
-										select="channel/supply-generation/site-supply-generation/site/@name" />
+									<ul>
+										<xsl:for-each
+											select="channel/supply-generation/site-supply-generation">
+											<li>
+												<xsl:value-of
+													select="concat(site/@code, ' ', site/@name)" />
+											</li>
+										</xsl:for-each>
+									</ul>
 								</td>
 								<td>
 									<xsl:value-of select="@description" />

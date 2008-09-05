@@ -1,3 +1,25 @@
+/*
+ 
+ Copyright 2008 Meniscus Systems Ltd
+ 
+ This file is part of Chellow.
+
+ Chellow is free software; you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation; either version 2 of the License, or
+ (at your option) any later version.
+
+ Chellow is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
+
+ You should have received a copy of the GNU General Public License
+ along with Chellow; if not, write to the Free Software
+ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+
+ */
+
 package net.sf.chellow.physical;
 
 import java.util.List;
@@ -5,11 +27,9 @@ import java.util.List;
 import net.sf.chellow.billing.HhdcContract;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
-import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Invocation;
 import net.sf.chellow.monad.MonadUtils;
 import net.sf.chellow.monad.Urlable;
-import net.sf.chellow.monad.XmlDescriber;
 import net.sf.chellow.monad.XmlTree;
 import net.sf.chellow.monad.types.MonadDate;
 import net.sf.chellow.monad.types.MonadUri;
@@ -19,9 +39,8 @@ import org.hibernate.ScrollMode;
 import org.hibernate.ScrollableResults;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import org.w3c.dom.Node;
 
-public class ChannelSnags implements Urlable, XmlDescriber {
+public class ChannelSnags extends EntityList {
 	static private final int PAGE_SIZE = 20;
 
 	public static final UriPathElement URI_ID;
@@ -98,22 +117,7 @@ public class ChannelSnags implements Urlable, XmlDescriber {
 		return Snag.getSnag(urlId.getString());
 	}
 
-	public void httpDelete(Invocation inv) throws HttpException {
-		// TODO Auto-generated method stub
-	}
-
-	public MonadUri getMonadUri() throws InternalException {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
 	public Element toXml(Document doc) throws HttpException {
 		return doc.createElement("channel-snags");
 	}
-
-	public Node toXml(Document doc, XmlTree tree) throws HttpException {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
 }

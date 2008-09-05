@@ -88,11 +88,6 @@ public class ChannelSnag extends SnagDateBounded {
 		this.channel = channel;
 	}
 
-	/*
-	 * public void resolve(boolean isIgnored) throws ProgrammerException,
-	 * UserException { setDateResolved(new MonadDate()); setIsIgnored(new
-	 * MonadBoolean(isIgnored)); }
-	 */
 	public void update() {
 	}
 
@@ -127,9 +122,9 @@ public class ChannelSnag extends SnagDateBounded {
 	private Document document() throws HttpException {
 		Document doc = MonadUtils.newSourceDocument();
 		Element sourceElement = doc.getDocumentElement();
-		sourceElement.appendChild(toXml(doc, new XmlTree("service",
-				new XmlTree("provider", new XmlTree("organization"))).put(
-				"channel", new XmlTree("supply"))));
+		sourceElement.appendChild(toXml(doc, new XmlTree("contract",
+				new XmlTree("provider").put("organization")).put("channel",
+				new XmlTree("supplyGeneration", new XmlTree("supply")))));
 		return doc;
 	}
 
