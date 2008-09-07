@@ -13,9 +13,11 @@
 					<xsl:value-of
 						select="/source/channel/supply-generation/supply/org/@name" />
 					&gt; Supplies &gt;
-					<xsl:value-of select="/source/channel/supply-generation/supply/@id" />
+					<xsl:value-of
+						select="/source/channel/supply-generation/supply/@id" />
 					&gt; Generations &gt;
-					<xsl:value-of select="/source/channel/supply-generation/supply/@id" />
+					<xsl:value-of
+						select="/source/channel/supply-generation/supply/@id" />
 					&gt; Channels &gt;
 					<xsl:value-of select="/source/channel/@id" />
 				</title>
@@ -49,11 +51,22 @@
 					<a
 						href="{/source/request/@context-path}/orgs/{/source/channel/supply-generation/supply/org/@id}/supplies/{/source/channel/supply-generation/supply/@id}/">
 						<xsl:value-of
-							select="/source/channel/supply-generation/supply/@name" />
+							select="/source/channel/supply-generation/supply/@id" />
+					</a>
+										&gt;
+					<a
+						href="{/source/request/@context-path}/orgs/{/source/channel/supply-generation/supply/org/@id}/supplies/{/source/channel/supply-generation/supply/@id}/generations/">
+						<xsl:value-of select="'Generations'" />
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/orgs/{/source/channel/supply-generation/supply/org/@id}/supplies/{/source/channel/supply-generation/supply/@id}/channels/">
+						href="{/source/request/@context-path}/orgs/{/source/channel/supply-generation/supply/org/@id}/supplies/{/source/channel/supply-generation/supply/@id}/generations/{/source/channel/supply-generation/@id}/">
+						<xsl:value-of
+							select="/source/channel/supply-generation/@id" />
+					</a>
+					&gt;
+					<a
+						href="{/source/request/@context-path}/orgs/{/source/channel/supply-generation/supply/org/@id}/supplies/{/source/channel/supply-generation/supply/@id}/generations/{/source/channel/supply-generation/@id}/channels/">
 						<xsl:value-of select="'Channels'" />
 					</a>
 					&gt;
@@ -73,7 +86,8 @@
 				<ul>
 					<li>
 						<xsl:choose>
-							<xsl:when test="/source/channel/@is-import='true'">
+							<xsl:when
+								test="/source/channel/@is-import='true'">
 								Import
 							</xsl:when>
 							<xsl:otherwise>Export</xsl:otherwise>
@@ -81,7 +95,8 @@
 					</li>
 					<li>
 						<xsl:choose>
-							<xsl:when test="/source/channel/@is-kwh='true'">
+							<xsl:when
+								test="/source/channel/@is-kwh='true'">
 								kWh
 							</xsl:when>
 							<xsl:otherwise>kVArh</xsl:otherwise>

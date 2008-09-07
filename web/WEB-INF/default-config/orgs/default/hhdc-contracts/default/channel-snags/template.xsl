@@ -75,7 +75,7 @@
 					<thead>
 						<tr>
 							<th>Chellow Id</th>
-							<th>Supply</th>
+							<th>Supply Generation</th>
 							<th>Imp / Exp</th>
 							<th>Units</th>
 							<th>Snag Type</th>
@@ -94,7 +94,7 @@
 								</td>
 								<td>
 									<a
-										href="{/source/request/@context-path}/orgs/{/source/channel-snags/hhdc-contract/org/@id}/supplies/{channel/supply-generation/@id}/generations/{channel/supply-generation/@id}/">
+										href="{/source/request/@context-path}/orgs/{/source/channel-snags/hhdc-contract/org/@id}/supplies/{channel/supply-generation/supply/@id}/generations/{channel/supply-generation/@id}/">
 										<xsl:value-of
 											select="channel/supply-generation/@id" />
 									</a>

@@ -6,16 +6,14 @@ import net.sf.chellow.monad.Invocation;
 import net.sf.chellow.monad.MethodNotAllowedException;
 import net.sf.chellow.monad.MonadUtils;
 import net.sf.chellow.monad.Urlable;
-import net.sf.chellow.monad.XmlDescriber;
 import net.sf.chellow.monad.XmlTree;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import org.w3c.dom.Node;
 
-public class Channels implements Urlable, XmlDescriber {
+public class Channels extends EntityList {
 	public static final UriPathElement URI_ID;
 
 	static {
@@ -26,7 +24,7 @@ public class Channels implements Urlable, XmlDescriber {
 		}
 	}
 
-	SupplyGeneration generation;
+	private SupplyGeneration generation;
 
 	public Channels(SupplyGeneration generation) {
 		this.generation = generation;
@@ -62,20 +60,12 @@ public class Channels implements Urlable, XmlDescriber {
 		return (Channel) Hiber
 				.session()
 				.createQuery(
-						"from Channel channel where channel.supply = :supply and channel.id = :channelId")
-				.setEntity("supply", generation).setLong("channelId",
+						"from Channel channel where channel.supplyGeneration = :supplyGeneration and channel.id = :channelId")
+				.setEntity("supplyGeneration", generation).setLong("channelId",
 						Long.parseLong(uriId.getString())).uniqueResult();
-	}
-
-	public void httpDelete(Invocation inv) throws HttpException {
-		throw new MethodNotAllowedException();
 	}
 
 	public Element toXml(Document doc) throws HttpException {
 		return doc.createElement("channels");
-	}
-
-	public Node toXml(Document doc, XmlTree tree) throws HttpException {
-		return null;
 	}
 }

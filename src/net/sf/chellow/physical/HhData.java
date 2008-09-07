@@ -7,28 +7,21 @@ import java.util.List;
 import java.util.Locale;
 import java.util.TimeZone;
 
-import net.sf.chellow.monad.DeployerException;
-import net.sf.chellow.monad.DesignerException;
 import net.sf.chellow.monad.Hiber;
+import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.Invocation;
+import net.sf.chellow.monad.MonadMessage;
 import net.sf.chellow.monad.MonadUtils;
 import net.sf.chellow.monad.NotFoundException;
-import net.sf.chellow.monad.InternalException;
-import net.sf.chellow.monad.Urlable;
-import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.UserException;
-import net.sf.chellow.monad.MonadMessage;
-import net.sf.chellow.monad.XmlDescriber;
-import net.sf.chellow.monad.XmlTree;
 import net.sf.chellow.monad.types.MonadDate;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import org.w3c.dom.Node;
 
-public class HhData implements Urlable, XmlDescriber {
+public class HhData extends EntityList {
 	public static final UriPathElement URI_ID;
 
 	static {
@@ -39,7 +32,7 @@ public class HhData implements Urlable, XmlDescriber {
 		}
 	}
 
-	Channel channel;
+	private Channel channel;
 
 	HhData(Channel channel) {
 		this.channel = channel;
@@ -49,13 +42,12 @@ public class HhData implements Urlable, XmlDescriber {
 		return URI_ID;
 	}
 
-	public MonadUri getUri() throws InternalException, HttpException {
+	public MonadUri getUri() throws HttpException {
 		return channel.getUri().resolve(getUriId());
 	}
 
 	@SuppressWarnings("unchecked")
-	public void httpGet(Invocation inv) throws DesignerException,
-			InternalException, HttpException, DeployerException {
+	public void httpGet(Invocation inv) throws HttpException {
 		inv.sendOk(doc(inv));
 	}
 
@@ -67,12 +59,14 @@ public class HhData implements Urlable, XmlDescriber {
 		source.appendChild(hhDataElement);
 		Element channelElement = channel.toXml(doc);
 		hhDataElement.appendChild(channelElement);
-		Element supplyGenerationElement = channel.getSupplyGeneration().toXml(doc);
+		Element supplyGenerationElement = channel.getSupplyGeneration().toXml(
+				doc);
 		channelElement.appendChild(supplyGenerationElement);
-		Element supplyElement = channel.getSupplyGeneration().getSupply().toXml(doc);
+		Element supplyElement = channel.getSupplyGeneration().getSupply()
+				.toXml(doc);
 		supplyGenerationElement.appendChild(supplyElement);
-		supplyElement.appendChild(channel.getSupplyGeneration().getSupply().getOrganization().toXml(
-				doc));
+		supplyElement.appendChild(channel.getSupplyGeneration().getSupply()
+				.getOrganization().toXml(doc));
 		source.appendChild(MonadDate.getMonthsXml(doc));
 		source.appendChild(MonadDate.getDaysXml(doc));
 		source.appendChild(new MonadDate().toXml(doc));
@@ -102,8 +96,7 @@ public class HhData implements Urlable, XmlDescriber {
 		return doc;
 	}
 
-	public void httpPost(Invocation inv) throws InternalException,
-			HttpException, DesignerException, DeployerException {
+	public void httpPost(Invocation inv) throws HttpException {
 		// delete hh data
 		Date deleteFrom = inv.getDate("delete-from");
 		int days = inv.getInteger("days");
@@ -116,13 +109,13 @@ public class HhData implements Urlable, XmlDescriber {
 		}
 		Document doc = doc(inv);
 		Element docElement = doc.getDocumentElement();
-		docElement.appendChild(new MonadMessage("HH data deleted successfully.")
-				.toXml(doc));
+		docElement
+				.appendChild(new MonadMessage("HH data deleted successfully.")
+						.toXml(doc));
 		inv.sendOk(doc);
 	}
 
-	public HhDatum getChild(UriPathElement uriId) throws InternalException,
-			HttpException {
+	public HhDatum getChild(UriPathElement uriId) throws HttpException {
 		HhDatum hhDatum = (HhDatum) Hiber
 				.session()
 				.createQuery(
@@ -135,20 +128,7 @@ public class HhData implements Urlable, XmlDescriber {
 		return hhDatum;
 	}
 
-	public void httpDelete(Invocation inv) throws InternalException,
-			HttpException {
-		// TODO Auto-generated method stub
-
-	}
-
-	public Element toXml(Document doc) throws InternalException,
-			HttpException {
+	public Element toXml(Document doc) throws HttpException {
 		return doc.createElement("hh-data");
-	}
-
-	public Node toXml(Document doc, XmlTree tree) throws InternalException,
-			HttpException {
-		// TODO Auto-generated method stub
-		return null;
 	}
 }

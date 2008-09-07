@@ -110,7 +110,7 @@
 								<input type="submit" value="Delete" />
 							</fieldset>
 						</form>
-						<hr />
+						<br />
 						<table>
 							<caption>Supply generations</caption>
 							<tr>

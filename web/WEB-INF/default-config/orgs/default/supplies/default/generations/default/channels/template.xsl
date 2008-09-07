@@ -16,14 +16,14 @@
 					<xsl:value-of
 						select="/source/channels/supply-generation/supply/org/@name" />
 					&gt; Supplies &gt;
-					<xsl:value-of select="/source/channels/supply-generation/supply/@id" />
+					<xsl:value-of
+						select="/source/channels/supply-generation/supply/@id" />
 					&gt; Generations &gt;
-					<xsl:value-of select="/source/channels/supply-generation/@id" />					
-					&gt; Channels &gt;
+					<xsl:value-of
+						select="/source/channels/supply-generation/@id" />
+					&gt; Channels
 				</title>
-
 			</head>
-
 			<body>
 				<xsl:if test="//message">
 					<ul>
@@ -34,7 +34,6 @@
 						</xsl:for-each>
 					</ul>
 				</xsl:if>
-
 				<p>
 					<a href="{/source/request/@context-path}/">
 						<img
@@ -47,20 +46,31 @@
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/orgs/{/source/channels/supply-generation/supply/site/org/@id}/">
+						href="{/source/request/@context-path}/orgs/{/source/channels/supply-generation/supply/org/@id}/">
 						<xsl:value-of
 							select="/source/channels/supply-generation/supply/org/@name" />
 					</a>
 					&gt;
 					<a
 						href="{/source/request/@context-path}/orgs/{/source/channels/supply-generation/supply/org/@id}/supplies/">
-						<xsl:value-of select="'Supplies'"/>
+						<xsl:value-of select="'Supplies'" />
 					</a>
 					&gt;
 					<a
 						href="{/source/request/@context-path}/orgs/{/source/channels/supply-generation/supply/org/@id}/supplies/{/source/channels/supply-generation/supply/@id}/">
 						<xsl:value-of
 							select="/source/channels/supply-generation/supply/@id" />
+					</a>
+					&gt;
+					<a
+						href="{/source/request/@context-path}/orgs/{/source/channels/supply-generation/supply/org/@id}/supplies/{/source/channels/supply-generation/supply/@id}/generations/">
+						<xsl:value-of select="'Generations'" />
+					</a>
+					&gt;
+					<a
+						href="{/source/request/@context-path}/orgs/{/source/channels/supply-generation/supply/org/@id}/supplies/{/source/channels/supply-generation/supply/@id}/generations/{/source/channels/supply-generation/@id}">
+						<xsl:value-of
+							select="/source/channels/supply-generation/@id" />
 					</a>
 					&gt; Channels
 				</p>

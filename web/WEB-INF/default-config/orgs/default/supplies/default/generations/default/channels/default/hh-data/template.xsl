@@ -14,17 +14,18 @@
 				<title>
 					Chellow &gt; Organizations &gt;
 					<xsl:value-of
-						select="/source/hh-data/channel/supply/org/@name" />
+						select="/source/hh-data/channel/supply-generation/supply/org/@name" />
 					&gt; Supplies &gt;
 					<xsl:value-of
-						select="/source/hh-data/channel/supply/@id" />
+						select="/source/hh-data/channel/supply-generation/supply/@id" />
+					&gt; Supply Generations &gt;
+					<xsl:value-of
+						select="/source/hh-data/channel/supply-generation/@id" />
 					&gt; Channels &gt;
 					<xsl:value-of select="/source/hh-data/channel/@id" />
 					&gt; HH Data
 				</title>
-
 			</head>
-
 			<body>
 				<p>
 					<a href="{/source/request/@context-path}/">
@@ -38,34 +39,44 @@
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/orgs/{/source/hh-data/channel/supply/org/@id}/">
+						href="{/source/request/@context-path}/orgs/{/source/hh-data/channel/supply-generation/supply/org/@id}/">
 						<xsl:value-of
-							select="/source/hh-data/channel/supply/org/@name" />
+							select="/source/hh-data/channel/supply-generation/supply/org/@name" />
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/orgs/{/source/hh-data/channel/supply/org/@id}/supplies/">
+						href="{/source/request/@context-path}/orgs/{/source/hh-data/channel/supply-generation/supply/org/@id}/supplies/">
 						<xsl:value-of select="'Supplies'" />
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/orgs/{/source/hh-data/channel/supply/org/@id}/supplies/{/source/hh-data/channel/supply/@id}/">
+						href="{/source/request/@context-path}/orgs/{/source/hh-data/channel/supply-generation/supply/org/@id}/supplies/{/source/hh-data/channel/supply-generation/supply/@id}/">
 						<xsl:value-of
-							select="/source/hh-data/channel/supply/@id" />
+							select="/source/hh-data/channel/supply-generation/supply/@id" />
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/orgs/{/source/hh-data/channel/supply/org/@id}/supplies/{/source/hh-data/channel/supply/@id}/channels/">
+						href="{/source/request/@context-path}/orgs/{/source/hh-data/channel/supply-generation/supply/org/@id}/supplies/{/source/hh-data/channel/supply-generation/supply/@id}/generations/">
+						<xsl:value-of select="'Generations'" />
+					</a>
+					&gt;
+					<a
+						href="{/source/request/@context-path}/orgs/{/source/hh-data/channel/supply-generation/supply/org/@id}/supplies/{/source/hh-data/channel/supply-generation/supply/@id}/generations/{/source/hh-data/channel/supply-generation/@id}/">
+						<xsl:value-of
+							select="/source/hh-data/channel/supply-generation/@id" />
+					</a>
+					&gt;
+					<a
+						href="{/source/request/@context-path}/orgs/{/source/hh-data/channel/supply-generation/supply/org/@id}/supplies/{/source/hh-data/channel/supply-generation/supply/@id}/generations/{/source/hh-data/channel/supply-generation/@id}/channels/">
 						<xsl:value-of select="'Channels'" />
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/orgs/{/source/hh-data/channel/supply/org/@id}/supplies/{/source/hh-data/channel/supply/@id}/channels/{/source/hh-data/channel/@id}/">
+						href="{/source/request/@context-path}/orgs/{/source/hh-data/channel/supply-generation/supply/org/@id}/supplies/{/source/hh-data/channel/supply-generation/supply/@id}/generations/{/source/hh-data/channel/supply-generation/@id}/channels/{/source/hh-data/channel/@id}/">
 						<xsl:value-of
 							select="/source/hh-data/channel/@id" />
 					</a>
 					&gt; HH Data
-
 				</p>
 				<xsl:if test="//message">
 					<ul>
@@ -199,7 +210,7 @@
 								<input type="reset" value="Reset" />
 							</fieldset>
 						</form>
-
+						<br />
 						<table>
 							<caption>HH Data</caption>
 							<thead>
@@ -248,6 +259,7 @@
 								</xsl:for-each>
 							</tbody>
 						</table>
+						<br />
 						<form action=".">
 							<fieldset>
 								<input type="hidden" name="view"
