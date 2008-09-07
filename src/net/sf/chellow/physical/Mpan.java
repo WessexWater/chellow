@@ -342,11 +342,6 @@ public class Mpan extends PersistentEntity {
 		}
 	}
 
-	public SupplierContract getSupplierContract() throws HttpException {
-		return SupplierContract.getSupplierContract(supplierAccount
-				.getContract().getId());
-	}
-
 	/*
 	 * public Account getHhdcAccount(boolean isImport, boolean isKwh) throws
 	 * HttpException { Account account = null; if (isImport) { if (isKwh) { if
