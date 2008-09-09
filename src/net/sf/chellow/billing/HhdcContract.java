@@ -208,11 +208,6 @@ public class HhdcContract extends Contract {
 		return new ChannelSnags(this);
 	}
 
-	public String toString() {
-		return "Service id " + getId() + " " + getProvider() + " name "
-				+ getName();
-	}
-
 	public SiteSnags getSnagsSiteInstance() {
 		return new SiteSnags(this);
 	}

@@ -22,7 +22,6 @@
 
 package net.sf.chellow.billing;
 
-import net.sf.chellow.hhimport.HhDataImportProcesses;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.Invocation;
@@ -158,21 +157,12 @@ public class DsoService extends Service {
 		inv.sendOk(document());
 	}
 
-	public HhDataImportProcesses getHhDataImportProcessesInstance() {
-		return new HhDataImportProcesses(this);
-	}
-
 	public Urlable getChild(UriPathElement uriId) throws HttpException {
 		if (RateScripts.URI_ID.equals(uriId)) {
 			return new RateScripts(this);
 		} else {
 			throw new NotFoundException();
 		}
-	}
-
-	public void httpDelete(Invocation inv) throws HttpException {
-		// TODO Auto-generated method stub
-
 	}
 
 	public String toString() {

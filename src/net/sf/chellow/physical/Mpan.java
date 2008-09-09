@@ -26,7 +26,6 @@ import java.util.Date;
 import java.util.Set;
 
 import net.sf.chellow.billing.Account;
-import net.sf.chellow.billing.SupplierContract;
 import net.sf.chellow.data08.MpanRaw;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;

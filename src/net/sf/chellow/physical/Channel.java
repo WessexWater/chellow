@@ -40,7 +40,10 @@ import net.sf.chellow.monad.types.MonadDate;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
 
+import org.hibernate.Criteria;
 import org.hibernate.Query;
+import org.hibernate.criterion.Order;
+import org.hibernate.criterion.Restrictions;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -559,27 +562,33 @@ public class Channel extends PersistentEntity implements Urlable {
 	public void addHhData(HhdcContract contract, List<HhDatumRaw> dataRaw)
 			throws HttpException {
 		if (!contract.equals(supplyGeneration.getHhdcContract())) {
-			throw new UserException(
-					"Somewhere in the block of hh data between ("
-							+ dataRaw.get(0)
-							+ ") and ("
-							+ dataRaw.get(dataRaw.size() - 1)
-							+ ") and between the dates "
-							+ supplyGeneration.getStartDate()
-							+ " and "
-							+ (supplyGeneration.getFinishDate() == null ? "ongoing"
-									: supplyGeneration.getFinishDate())
-							+ " there are one or more data with a contract that is not the contract under which the data is provided.");
+			throw new UserException("The block of hh data between ("
+					+ dataRaw.get(0) + ") and ("
+					+ dataRaw.get(dataRaw.size() - 1) + ") has contract "
+					+ supplyGeneration.getHhdcContract()
+					+ " but the data is provided under contract " + contract
+					+ ".");
 		}
-		List<HhDatum> data = (List<HhDatum>) Hiber
-				.session()
-				.createQuery(
-						"from HhDatum datum where datum.channel = :channel and "
-								+ "datum.endDate.date >= :startDate and datum.endDate.date <= :finishDate order by datum.endDate.date")
-				.setEntity("channel", this).setTimestamp("startDate",
-						supplyGeneration.getStartDate().getDate())
-				.setTimestamp("finishDate",
-						supplyGeneration.getFinishDate().getDate()).list();
+		Criteria dataCriteria = Hiber.session().createCriteria(HhDatum.class);
+		dataCriteria.add(Restrictions.eq("channel", this));
+		dataCriteria.add(Restrictions.ge("endDate.date", supplyGeneration
+				.getStartDate().getDate()));
+		if (supplyGeneration.getFinishDate() != null) {
+			dataCriteria.add(Restrictions.le("endDate.date", supplyGeneration
+					.getFinishDate().getDate()));
+		}
+		dataCriteria.addOrder(Order.asc("endDate.date"));
+		List<HhDatum> data = (List<HhDatum>) dataCriteria.list();
+		/*
+		 * List<HhDatum> data = (List<HhDatum>) Hiber .session() .createQuery(
+		 * "from HhDatum datum where datum.channel = :channel and " +
+		 * "datum.endDate.date >= :startDate and datum.endDate.date <=
+		 * :finishDate order by datum.endDate.date") .setEntity("channel",
+		 * this).setTimestamp("startDate",
+		 * supplyGeneration.getStartDate().getDate())
+		 * .setTimestamp("finishDate",
+		 * supplyGeneration.getFinishDate().getDate()).list();
+		 */
 		if (data.isEmpty()) {
 			checkForMissingFromLatest(dataRaw.get(0).getEndDate().getPrevious());
 		}

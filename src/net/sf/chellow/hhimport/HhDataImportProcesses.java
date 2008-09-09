@@ -3,27 +3,23 @@ package net.sf.chellow.hhimport;
 import java.util.HashMap;
 import java.util.Map;
 
-import net.sf.chellow.billing.Service;
-import net.sf.chellow.monad.DeployerException;
-import net.sf.chellow.monad.DesignerException;
+import net.sf.chellow.billing.HhdcContract;
+import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.Invocation;
 import net.sf.chellow.monad.MonadUtils;
 import net.sf.chellow.monad.NotFoundException;
-import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Urlable;
-import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.UserException;
 import net.sf.chellow.monad.XmlTree;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
+import net.sf.chellow.physical.EntityList;
 
 import org.apache.commons.fileupload.FileItem;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import org.w3c.dom.Node;
 
-
-public class HhDataImportProcesses implements Urlable {
+public class HhDataImportProcesses extends EntityList {
 	static public final MonadUri URI_ID;
 
 	static private long processSerial = 0;
@@ -38,10 +34,10 @@ public class HhDataImportProcesses implements Urlable {
 		}
 	}
 
-	private Service service;
+	private HhdcContract contract;
 
-	public HhDataImportProcesses(Service service) {
-		this.service = service;
+	public HhDataImportProcesses(HhdcContract contract) {
+		this.contract = contract;
 	}
 
 	/*
@@ -85,10 +81,9 @@ public class HhDataImportProcesses implements Urlable {
 		return URI_ID;
 	}
 
-	public Urlable getChild(UriPathElement uriId) throws InternalException,
-			HttpException {
+	public Urlable getChild(UriPathElement uriId) throws HttpException {
 		Map<Long, HhDataImportProcess> contractProcesses = processes
-				.get(service.getId());
+				.get(contract.getId());
 		if (contractProcesses == null) {
 			throw new NotFoundException();
 		}
@@ -100,21 +95,19 @@ public class HhDataImportProcesses implements Urlable {
 		return process;
 	}
 
-	public void httpGet(Invocation inv) throws DesignerException,
-			InternalException, HttpException, DeployerException {
+	public void httpGet(Invocation inv) throws HttpException {
 		inv.sendOk(document());
 	}
 
-	private Document document() throws InternalException, HttpException,
-			DesignerException {
+	private Document document() throws HttpException {
 		Document doc = MonadUtils.newSourceDocument();
 		Element source = (Element) doc.getFirstChild();
-		Element hhDataImportsElement = (Element) toXML(doc);
+		Element hhDataImportsElement = toXml(doc);
 		source.appendChild(hhDataImportsElement);
-		hhDataImportsElement.appendChild(service.toXml(doc, new XmlTree(
-						"provider", new XmlTree("organization"))));
+		hhDataImportsElement.appendChild(contract.toXml(doc, new XmlTree(
+				"provider").put("organization")));
 		Map<Long, HhDataImportProcess> contractProcesses = processes
-				.get(service.getId());
+				.get(contract.getId());
 		if (contractProcesses != null) {
 			for (HhDataImportProcess process : contractProcesses.values()) {
 				hhDataImportsElement.appendChild(process.toXml(doc));
@@ -123,24 +116,23 @@ public class HhDataImportProcesses implements Urlable {
 		return doc;
 	}
 
-	public void httpPost(Invocation inv) throws InternalException,
-			HttpException, DesignerException, DeployerException {
+	public void httpPost(Invocation inv) throws HttpException {
 		FileItem fileItem = inv.getFileItem("import-file");
 		if (!inv.isValid()) {
 			throw new UserException(document());
 		}
 		try {
 			HhDataImportProcess hhImportProcess = new HhDataImportProcess(
-					service.getId(), processSerial++, fileItem);
+					contract.getId(), processSerial++, fileItem);
 			hhImportProcess.start();
 
 			Map<Long, HhDataImportProcess> contractProcesses = processes
-					.get(service.getId());
+					.get(contract.getId());
 			if (contractProcesses == null) {
-				processes.put(service.getId(),
+				processes.put(contract.getId(),
 						new HashMap<Long, HhDataImportProcess>());
 			}
-			contractProcesses = processes.get(service.getId());
+			contractProcesses = processes.get(contract.getId());
 			contractProcesses.put(Long.parseLong(hhImportProcess.getUriId()
 					.toString()), hhImportProcess);
 			inv.sendCreated(document(), hhImportProcess.getUri());
@@ -150,23 +142,11 @@ public class HhDataImportProcesses implements Urlable {
 		}
 	}
 
-	public void httpDelete(Invocation inv) throws InternalException,
-			DesignerException, HttpException, DeployerException {
-		// TODO Auto-generated method stub
-
-	}
-
-	public Node toXML(Document doc) throws InternalException, HttpException {
+	public Element toXml(Document doc) throws HttpException {
 		return doc.createElement("hh-data-imports");
 	}
 
-	public Node getXML(XmlTree tree, Document doc) throws InternalException,
-			HttpException {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	public MonadUri getUri() throws InternalException, HttpException {
-		return service.getUri().resolve(getUriId()).append("/");
+	public MonadUri getUri() throws HttpException {
+		return contract.getUri().resolve(getUriId()).append("/");
 	}
 }

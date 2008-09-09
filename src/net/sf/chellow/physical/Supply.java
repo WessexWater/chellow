@@ -1407,7 +1407,7 @@ return finish;
 			generation.getChannel(false, true).siteCheck(from, to);
 		}
 	}
-
+/*
 	@SuppressWarnings("unchecked")
 	public List<HhDatum> getHhData(boolean isImport, boolean isKwh,
 			HhEndDate from, HhEndDate to) {
@@ -1420,4 +1420,5 @@ return finish;
 				.setTimestamp("from", from.getDate()).setTimestamp("to",
 						to.getDate()).list();
 	}
+	*/
 }

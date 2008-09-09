@@ -32,7 +32,6 @@ import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 
-import net.sf.chellow.hhimport.HhDataImportProcesses;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.Invocation;
 import net.sf.chellow.monad.NotFoundException;
@@ -243,15 +242,11 @@ public abstract class Service extends PersistentEntity implements
 		return snag;
 	}
 
-	public HhDataImportProcesses getHhDataImportProcessesInstance() {
-		return new HhDataImportProcesses(this);
-	}
-
 	public void httpDelete(Invocation inv) throws HttpException {
 	}
 
 	public String toString() {
-		return "Contract id " + getId() + " name " + getName();
+		return "Service id " + getId() + " name " + getName();
 	}
 
 	public BillElement billElement(String name, String chargeScript,

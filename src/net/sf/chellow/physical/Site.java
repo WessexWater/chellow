@@ -241,13 +241,13 @@ public class Site extends PersistentEntity implements Urlable {
 				}
 				if (snag1To != null
 						&& (snag1To.equals(previousEndDate))) {
-					group.addDceSnag(
+					group.addHhdcSnag(
 							SiteGroup.EXPORT_NET_GT_IMPORT_GEN, snag1From, snag1To, false);
 					snag1From = null;
 					snag1To = null;
 				}
 				if (resolve1To != null && resolve1To.equals(previousEndDate)) {
-					group.resolveDceSnag(SiteGroup.EXPORT_NET_GT_IMPORT_GEN, resolve1From,
+					group.resolveHhdcSnag(SiteGroup.EXPORT_NET_GT_IMPORT_GEN, resolve1From,
 							resolve1To);
 					resolve1From = null;
 					resolve1To = null;
@@ -266,13 +266,13 @@ public class Site extends PersistentEntity implements Urlable {
 				}
 				if (snag2To != null
 						&& snag2To.equals(previousEndDate)) {
-					group.addDceSnag(SiteGroup.EXPORT_GEN_GT_IMPORT,
+					group.addHhdcSnag(SiteGroup.EXPORT_GEN_GT_IMPORT,
 							snag2From, snag2To, false);
 					snag2From = null;
 					snag2To = null;
 				}
 				if (resolve2To != null && resolve2To.equals(previousEndDate)) {
-					group.resolveDceSnag(SiteGroup.EXPORT_GEN_GT_IMPORT, resolve2From,
+					group.resolveHhdcSnag(SiteGroup.EXPORT_GEN_GT_IMPORT, resolve2From,
 							resolve2To);
 					resolve2From = null;
 					resolve2To = null;
@@ -282,19 +282,19 @@ public class Site extends PersistentEntity implements Urlable {
 				hhEndDate = hhEndDate.getNext();
 			}
 			if (snag1To != null && snag1To.equals(previousEndDate)) {
-				group.addDceSnag(SiteGroup.EXPORT_NET_GT_IMPORT_GEN,
+				group.addHhdcSnag(SiteGroup.EXPORT_NET_GT_IMPORT_GEN,
 						snag1From, snag1To, false);
 			}
 			if (resolve1To != null && resolve1To.equals(previousEndDate)) {
-				group.resolveDceSnag(SiteGroup.EXPORT_NET_GT_IMPORT_GEN, resolve1From,
+				group.resolveHhdcSnag(SiteGroup.EXPORT_NET_GT_IMPORT_GEN, resolve1From,
 						resolve1To);
 			}
 			if (snag2To != null && snag2To.equals(previousEndDate)) {
-				group.addDceSnag(SiteGroup.EXPORT_GEN_GT_IMPORT,
+				group.addHhdcSnag(SiteGroup.EXPORT_GEN_GT_IMPORT,
 						snag2From, snag2To, false);
 			}
 			if (resolve2To != null && resolve2To.equals(previousEndDate)) {
-				group.resolveDceSnag(SiteGroup.EXPORT_GEN_GT_IMPORT, resolve2From, resolve2To);
+				group.resolveHhdcSnag(SiteGroup.EXPORT_GEN_GT_IMPORT, resolve2From, resolve2To);
 			}
 		}
 	}

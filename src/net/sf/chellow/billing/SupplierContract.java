@@ -24,7 +24,6 @@ package net.sf.chellow.billing;
 
 import java.util.List;
 
-import net.sf.chellow.hhimport.HhDataImportProcesses;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.InternalException;
@@ -193,10 +192,6 @@ public class SupplierContract extends Contract {
 			throw new NotFoundException();
 		}
 		return snag;
-	}
-
-	public HhDataImportProcesses getHhDataImportProcessesInstance() {
-		return new HhDataImportProcesses(this);
 	}
 
 	public Urlable getChild(UriPathElement uriId) throws HttpException {

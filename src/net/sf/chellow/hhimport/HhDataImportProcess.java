@@ -235,7 +235,7 @@ public class HhDataImportProcess extends Thread implements Urlable,
 			supplyGenerations = (List<SupplyGeneration>) Hiber
 					.session()
 					.createQuery(
-							"from SupplyGeneration supplyGeneration join supplyGeneration.siteSupplyGenerations siteSupplyGeneration where siteSupplyGeneration.site.organization = :organization and generation.finishDate.date is null")
+							"select supplyGeneration from SupplyGeneration supplyGeneration join supplyGeneration.siteSupplyGenerations siteSupplyGeneration where siteSupplyGeneration.site.organization = :organization and supplyGeneration.finishDate.date is null")
 					.setEntity(
 							"organization",
 							HhdcContract.getHhdcContract(hhdcContractId)
@@ -289,11 +289,11 @@ public class HhDataImportProcess extends Thread implements Urlable,
 	}
 
 	public MonadUri getUri() throws HttpException {
-		return getDceService().getHhDataImportProcessesInstance().getUri()
+		return getHhdcContract().getHhDataImportProcessesInstance().getUri()
 				.resolve(getUriId()).append("/");
 	}
 
-	private HhdcContract getDceService() throws HttpException {
+	private HhdcContract getHhdcContract() throws HttpException {
 		return HhdcContract.getHhdcContract(hhdcContractId);
 	}
 
@@ -302,8 +302,8 @@ public class HhDataImportProcess extends Thread implements Urlable,
 		Element source = doc.getDocumentElement();
 		Element processElement = toXml(doc);
 		source.appendChild(processElement);
-		processElement.appendChild(getDceService().toXml(doc,
-				new XmlTree("provider", new XmlTree("organization"))));
+		processElement.appendChild(getHhdcContract().toXml(doc,
+				new XmlTree("provider").put("organization")));
 		inv.sendOk(doc);
 	}
 

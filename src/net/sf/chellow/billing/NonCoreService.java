@@ -22,16 +22,13 @@
 
 package net.sf.chellow.billing;
 
-import net.sf.chellow.hhimport.HhDataImportProcesses;
-import net.sf.chellow.monad.DeployerException;
-import net.sf.chellow.monad.DesignerException;
 import net.sf.chellow.monad.Hiber;
+import net.sf.chellow.monad.HttpException;
+import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Invocation;
 import net.sf.chellow.monad.MonadUtils;
 import net.sf.chellow.monad.NotFoundException;
-import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Urlable;
-import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.UserException;
 import net.sf.chellow.monad.XmlTree;
 import net.sf.chellow.monad.types.MonadDate;
@@ -100,19 +97,17 @@ public class NonCoreService extends Service {
 		return isEqual;
 	}
 
-	public MonadUri getUri() throws InternalException, HttpException {
+	public MonadUri getUri() throws HttpException {
 		return Chellow.NON_CORE_SERVICES_INSTANCE.getUri().resolve(getUriId())
 				.append("/");
 	}
 
-	public void delete() throws HttpException, InternalException,
-			DesignerException {
+	public void delete() throws HttpException {
 		super.delete();
 		Hiber.session().delete(this);
 	}
 
-	public void httpPost(Invocation inv) throws InternalException,
-			HttpException, DesignerException, DeployerException {
+	public void httpPost(Invocation inv) throws HttpException {
 		if (inv.hasParameter("delete")) {
 			delete();
 			Hiber.commit();
@@ -134,8 +129,7 @@ public class NonCoreService extends Service {
 		}
 	}
 
-	private Document document() throws InternalException, HttpException,
-			DesignerException {
+	private Document document() throws HttpException {
 		Document doc = MonadUtils.newSourceDocument();
 		Element source = doc.getDocumentElement();
 		source.appendChild(toXml(doc, new XmlTree("provider")));
@@ -145,28 +139,20 @@ public class NonCoreService extends Service {
 		return doc;
 	}
 
-	public void httpGet(Invocation inv) throws DesignerException,
-			InternalException, HttpException, DeployerException {
+	public void httpGet(Invocation inv) throws HttpException {
 		inv.sendOk(document());
 	}
-
+/*
 	public HhDataImportProcesses getHhDataImportProcessesInstance() {
 		return new HhDataImportProcesses(this);
 	}
-
-	public Urlable getChild(UriPathElement uriId) throws InternalException,
-			HttpException {
+*/
+	public Urlable getChild(UriPathElement uriId) throws HttpException {
 		if (RateScripts.URI_ID.equals(uriId)) {
 			return new RateScripts(this);
 		} else {
 			throw new NotFoundException();
 		}
-	}
-
-	public void httpDelete(Invocation inv) throws InternalException,
-			HttpException {
-		// TODO Auto-generated method stub
-
 	}
 
 	public String toString() {

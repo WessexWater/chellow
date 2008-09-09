@@ -5,9 +5,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.hibernate.Query;
+
 import net.sf.chellow.billing.HhdcContract;
 import net.sf.chellow.monad.Hiber;
-import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.HttpException;
 
 public class SiteGroup {
@@ -47,8 +48,8 @@ public class SiteGroup {
 		return supplies;
 	}
 
-	public Map<String, List<Float>> hhData() throws InternalException,
-			HttpException {
+	@SuppressWarnings("unchecked")
+	public Map<String, List<Float>> hhData() throws HttpException {
 		Map<String, List<Float>> map = new HashMap<String, List<Float>>();
 		List<Float> importFromNet = new ArrayList<Float>();
 		map.put("import-from-net", importFromNet);
@@ -67,7 +68,14 @@ public class SiteGroup {
 			exportToGen.add(0f);
 			hhEndDate = hhEndDate.getNext();
 		}
+		Query query = Hiber
+		.session()
+		.createQuery(
+				"from HhDatum datum where datum.channel.supplyGeneration.supply = :supply and datum.channel.isImport = :isImport and datum.channel.isKwh = true and datum.endDate.date >= :from and datum.endDate.date <= :to order by datum.endDate.date")
+		.setTimestamp("from", from.getDate()).setTimestamp("to",
+				to.getDate());
 		for (Supply supply : getSupplies()) {
+			query.setEntity("supply", supply);
 			for (boolean isImport : new boolean[] {true, false}) {
 				List<Float> hhStream = null;
 				if (supply.getSource().getCode().equals(Source.NETWORK_CODE)) {
@@ -83,7 +91,8 @@ public class SiteGroup {
 						hhStream = exportToGen;
 					}
 				}
-				List<HhDatum> hhData = supply.getHhData(isImport, true, getFrom(), getTo());
+				query.setBoolean("isImport", isImport);
+				List<HhDatum> hhData = (List<HhDatum>) query.list();
 				if (hhData.isEmpty()) {
 					continue;
 				}
@@ -108,49 +117,48 @@ public class SiteGroup {
 		return map;
 	}
 
-	public void addDceSnag(String description, HhEndDate startDate,
+	public void addHhdcSnag(String description, HhEndDate startDate,
 			HhEndDate finishDate, boolean isResolved)
-			throws InternalException, HttpException {
+			throws HttpException {
 		// which sevice?
 		Site site = sites.get(0);
-		HhdcContract service = getDceService(startDate);
-		HhEndDate serviceEndDate = service.getFinishRateScript()
+		HhdcContract contract = getHhdcContract(startDate);
+		HhEndDate contractEndDate = contract.getFinishRateScript()
 				.getFinishDate();
 		SnagDateBounded
-				.addSiteSnag(service, site, description, startDate,
-						serviceEndDate == null
-								|| serviceEndDate.getDate().after(
+				.addSiteSnag(contract, site, description, startDate,
+						contractEndDate == null
+								|| contractEndDate.getDate().after(
 										finishDate.getDate()) ? finishDate
-								: serviceEndDate, isResolved);
-		while (!(serviceEndDate == null || !serviceEndDate.getDate().before(
+								: contractEndDate, isResolved);
+		while (!(contractEndDate == null || !contractEndDate.getDate().before(
 				finishDate.getDate()))) {
-			service = getDceService(serviceEndDate.getNext());
-			serviceEndDate = service.getFinishRateScript().getFinishDate();
-			SnagDateBounded.addSiteSnag(service, site, description, service
+			contract = getHhdcContract(contractEndDate.getNext());
+			contractEndDate = contract.getFinishRateScript().getFinishDate();
+			SnagDateBounded.addSiteSnag(contract, site, description, contract
 					.getStartRateScript().getStartDate(),
-					serviceEndDate == null
-							|| serviceEndDate.getDate().after(
+					contractEndDate == null
+							|| contractEndDate.getDate().after(
 									finishDate.getDate()) ? finishDate
-							: serviceEndDate, isResolved);
+							: contractEndDate, isResolved);
 		}
 	}
 
 	@SuppressWarnings("unchecked")
-	private HhdcContract getDceService(HhEndDate date) throws HttpException,
-			InternalException {
-		List<Long> serviceIds = (List<Long>) Hiber
+	private HhdcContract getHhdcContract(HhEndDate date) throws HttpException {
+		List<Long> contractIds = (List<Long>) Hiber
 				.session()
 				.createQuery(
-						"select distinct mpan.dceService.id from Mpan mpan where mpan.supplyGeneration.supply in (:supplies) and mpan.supplyGeneration.startDate.date <= :date and (mpan.supplyGeneration.finishDate.date is null or mpan.supplyGeneration.finishDate >= :date) order by mpan.dceService.id")
+						"select distinct mpan.hhdcAccount.contract.id from Mpan mpan where mpan.supplyGeneration.supply in (:supplies) and mpan.supplyGeneration.startDate.date <= :date and (mpan.supplyGeneration.finishDate.date is null or mpan.supplyGeneration.finishDate >= :date) order by mpan.hhdcAccount.contract.id")
 				.setParameterList("supplies", supplies).setTimestamp("date",
 						date.getDate()).list();
-		return serviceIds.size() > 0 ? HhdcContract.getHhdcContract(serviceIds
+		return contractIds.size() > 0 ? HhdcContract.getHhdcContract(contractIds
 				.get(0)) : null;
 	}
 
 	@SuppressWarnings("unchecked")
-	public void resolveDceSnag(String description, HhEndDate startDate,
-			HhEndDate finishDate) throws InternalException, HttpException {
+	public void resolveHhdcSnag(String description, HhEndDate startDate,
+			HhEndDate finishDate) throws HttpException {
 		if (!startDate.getDate().after(finishDate.getDate())) {
 			for (SiteSnag snag : (List<SiteSnag>) Hiber
 					.session()
@@ -160,7 +168,7 @@ public class SiteGroup {
 							description.toString()).setTimestamp("startDate",
 							startDate.getDate()).setTimestamp("finishDate",
 							finishDate.getDate()).list()) {
-				addDceSnag(description, snag.getStartDate().getDate().before(
+				addHhdcSnag(description, snag.getStartDate().getDate().before(
 						startDate.getDate()) ? startDate : snag.getStartDate(),
 						snag.getFinishDate().getDate().after(
 								finishDate.getDate()) ? finishDate : snag

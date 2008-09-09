@@ -10,17 +10,13 @@
 			<head>
 				<link rel="stylesheet" type="text/css"
 					href="{/source/request/@context-path}/style/" />
-
 				<title>
 					Chellow &gt; Organizations &gt;
 					<xsl:value-of
-						select="/source/hh-data-imports/dce-service/dce/org/@name" />
-					&gt; DCEs &gt;
+						select="/source/hh-data-imports/hhdc-contract/org/@name" />
+					&gt; HHDC Contracts
 					<xsl:value-of
-						select="/source/hh-data-imports/dce-service/dce/@name" />
-					&gt; Services
-					<xsl:value-of
-						select="/source/hh-data-imports/dce-service/@id" />
+						select="/source/hh-data-imports/hhdc-contract/@id" />
 					&gt; HH Data Imports
 				</title>
 
@@ -39,32 +35,20 @@
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/orgs/{/source/hh-data-imports/dce-service/dce/org/@id}/">
+						href="{/source/request/@context-path}/orgs/{/source/hh-data-imports/hhdc-contract/org/@id}/">
 						<xsl:value-of
-							select="/source/hh-data-imports/dce-service/dce/org/@name" />
+							select="/source/hh-data-imports/hhdc-contract/org/@name" />
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/orgs/{/source/hh-data-imports/dce-service/dce/org/@id}/dces/">
-						<xsl:value-of select="'DCEs'" />
+						href="{/source/request/@context-path}/orgs/{/source/hh-data-imports/hhdc-contract/org/@id}/hhdc-contracts/">
+						<xsl:value-of select="'HHDC Contracts'" />
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/orgs/{/source/hh-data-imports/dce-service/dce/org/@id}/dces/{/source/hh-data-imports/dce-service/dce/@id}/">
+						href="{/source/request/@context-path}/orgs/{/source/hh-data-imports/hhdc-contract/org/@id}/hhdc-contracts/{/source/hh-data-imports/hhdc-contract/@id}/">
 						<xsl:value-of
-							select="/source/hh-data-imports/dce-service/dce/@name" />
-					</a>
-					&gt;
-					<a
-						href="{/source/request/@context-path}/orgs/{/source/hh-data-imports/dce-service/dce/org/@id}/dces/{/source/hh-data-imports/dce-service/dce/@id}/services/">
-
-						<xsl:value-of select="'Services'" />
-					</a>
-					&gt;
-					<a
-						href="{/source/request/@context-path}/orgs/{/source/hh-data-imports/dce-service/dce/org/@id}/dces/{/source/hh-data-imports/dce-service/dce/@id}/services/{/source/hh-data-imports/dce-service/@id}/">
-						<xsl:value-of
-							select="/source/hh-data-imports/dce-service/@name" />
+							select="/source/hh-data-imports/hhdc-contract/@name" />
 					</a>
 					&gt; HH Data Imports
 				</p>
@@ -94,7 +78,6 @@
 							</xsl:for-each>
 						</ul>
 						<br />
-						<hr />
 						<xsl:if test="//message[not(../../hh-data-import)]">
 							<ul>
 								<xsl:for-each select="//message">
@@ -124,7 +107,6 @@
 								<input type="submit" value="Import" />
 							</fieldset>
 						</form>
-
 						<br />
 					</xsl:otherwise>
 				</xsl:choose>
