@@ -727,4 +727,40 @@ public class Channel extends PersistentEntity implements Urlable {
 		// Debug.print("Finished method: " + (System.currentTimeMillis() -
 		// now));
 	}
+
+	@SuppressWarnings("unchecked")
+	public void internalCheck() throws HttpException {
+		List<ChannelSnag> snags = (List<ChannelSnag>) Hiber
+				.session()
+				.createQuery(
+						"from ChannelSnag snag where snag.channel = :channel and snag.startDate.date < snag.channel.supplyGeneration.startDate.date")
+				.setEntity("channel", this).list();
+		if (!snags.isEmpty()) {
+			HhEndDate startDate = snags.get(0).getStartDate();
+			HhEndDate finishDate = supplyGeneration.getStartDate()
+					.getPrevious();
+			resolveSnag(ChannelSnag.SNAG_MISSING, startDate, finishDate);
+			resolveSnag(ChannelSnag.SNAG_DATA_IGNORED, startDate, finishDate);
+			resolveSnag(ChannelSnag.SNAG_NEGATIVE, startDate, finishDate);
+			resolveSnag(ChannelSnag.SNAG_NOT_ACTUAL, startDate, finishDate);
+		}
+		if (supplyGeneration.getFinishDate() != null) {
+			snags = (List<ChannelSnag>) Hiber
+					.session()
+					.createQuery(
+							"from ChannelSnag snag where snag.channel = :channel and snag.finishDate.date > snag.channel.supplyGeneration.finishDate.date").setEntity("channel", this)
+					.list();
+			if (!snags.isEmpty()) {
+				HhEndDate startDate = supplyGeneration.getFinishDate()
+						.getNext();
+				HhEndDate finishDate = snags.get(snags.size() - 1)
+						.getFinishDate();
+				resolveSnag(ChannelSnag.SNAG_MISSING, startDate, finishDate);
+				resolveSnag(ChannelSnag.SNAG_DATA_IGNORED, startDate,
+						finishDate);
+				resolveSnag(ChannelSnag.SNAG_NEGATIVE, startDate, finishDate);
+				resolveSnag(ChannelSnag.SNAG_NOT_ACTUAL, startDate, finishDate);
+			}
+		}
+	}
 }

@@ -93,7 +93,7 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 		setSupply(supply);
 		setSiteSupplyGenerations(new HashSet<SiteSupplyGeneration>());
 		setMpans(new HashSet<Mpan>());
-		intrinsicUpdate(startDate, finishDate, meter);
+		internalUpdate(startDate, finishDate, meter);
 	}
 
 	void setSupply(Supply supply) {
@@ -497,7 +497,7 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 		return null;
 	}
 
-	void intrinsicUpdate(HhEndDate startDate, HhEndDate finishDate, Meter meter)
+	public void internalUpdate(HhEndDate startDate, HhEndDate finishDate, Meter meter)
 			throws HttpException {
 		if (finishDate != null
 				&& startDate.getDate().after(finishDate.getDate())) {
@@ -510,6 +510,10 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 		setStartDate(startDate);
 		setFinishDate(finishDate);
 		setMeter(meter);
+		// resolve any snags channel snags outside range
+		for (Channel channel : channels) {
+			channel.internalCheck();
+		}
 	}
 
 	void delete() throws HttpException {
@@ -549,7 +553,7 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 				throw new UserException(
 						"The start date must be after the start date of the previous generation.");
 			}
-			previousSupplyGeneration.intrinsicUpdate(previousSupplyGeneration
+			previousSupplyGeneration.internalUpdate(previousSupplyGeneration
 					.getStartDate(), startDate.getPrevious(), meter);
 		}
 		SupplyGeneration nextSupplyGeneration = supply.getGenerationNext(this);
@@ -564,11 +568,11 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 				throw new UserException(
 						"The finish date must be before the finish date of the next generation.");
 			}
-			nextSupplyGeneration.intrinsicUpdate(finishDate.getNext(),
+			nextSupplyGeneration.internalUpdate(finishDate.getNext(),
 					nextSupplyGeneration.getFinishDate(), nextSupplyGeneration
 							.getMeter());
 		}
-		intrinsicUpdate(startDate, finishDate, meter);
+		internalUpdate(startDate, finishDate, meter);
 		Hiber.flush();
 		HhEndDate checkFinishDate = null;
 		if (originalFinishDate != null && finishDate != null) {

@@ -394,7 +394,7 @@ public class Supply extends PersistentEntity {
 			}
 			supplyGeneration = new SupplyGeneration(this, existingGeneration
 					.getStartDate(), finishDate, meter);
-			existingGeneration.setStartDate(HhEndDate.getNext(finishDate));
+			existingGeneration.internalUpdate(HhEndDate.getNext(finishDate), existingGeneration.getFinishDate(), existingGeneration.getMeter());
 			generations.add(supplyGeneration);
 		}
 		Hiber.flush();
@@ -722,6 +722,7 @@ return finish;
 			}
 		}
 		checkForMissing(from, to);
+		/*
 		for (SupplyGeneration generation : getGenerations(from, to)) {
 			for (ChannelSnag snag : (List<ChannelSnag>) Hiber
 					.session()
@@ -731,6 +732,7 @@ return finish;
 				ChannelSnag.deleteChannelSnag(snag);
 			}
 		}
+		*/
 		// Register reads
 
 		if (from.getDate().before(supplyStartDate)
