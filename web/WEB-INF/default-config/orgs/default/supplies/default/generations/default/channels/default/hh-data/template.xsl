@@ -87,7 +87,27 @@
 						</xsl:for-each>
 					</ul>
 				</xsl:if>
-				<br />
+				<h4>Channel</h4>
+				<ul>
+					<li>
+						<xsl:choose>
+							<xsl:when
+								test="/source/hh-data/channel/@is-import = 'true'">
+								Import
+							</xsl:when>
+							<xsl:otherwise>Export</xsl:otherwise>
+						</xsl:choose>
+					</li>
+					<li>
+						<xsl:choose>
+							<xsl:when
+								test="/source/hh-data/channel/@is-kwh = 'true'">
+								kWh
+							</xsl:when>
+							<xsl:otherwise>kVArh</xsl:otherwise>
+						</xsl:choose>
+					</li>
+				</ul>
 				<xsl:choose>
 					<xsl:when
 						test="/source/request/@method='get' and /source/request/parameter[@name='view']/value='confirm-delete'">

@@ -154,6 +154,9 @@ public class HhDataImportProcess extends Thread implements Urlable,
 	@SuppressWarnings("unchecked")
 	public void run() {
 		try {
+			if (!converter.hasNext()) {
+				return;
+			}
 			HhDatumRaw datum = converter.next();
 			MpanCoreRaw mpanCoreRaw = datum.getMpanCore();
 			HhdcContract contract = HhdcContract
