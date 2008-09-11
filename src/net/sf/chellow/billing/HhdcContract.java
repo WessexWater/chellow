@@ -27,22 +27,20 @@ import java.util.List;
 import net.sf.chellow.hhimport.HhDataImportProcesses;
 import net.sf.chellow.hhimport.stark.StarkAutomaticHhDataImporter;
 import net.sf.chellow.hhimport.stark.StarkAutomaticHhDataImporters;
-import net.sf.chellow.monad.DesignerException;
 import net.sf.chellow.monad.Hiber;
+import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.Invocation;
 import net.sf.chellow.monad.MonadUtils;
-import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Urlable;
-import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.UserException;
 import net.sf.chellow.monad.XmlTree;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
+import net.sf.chellow.physical.ChannelSnags;
 import net.sf.chellow.physical.ContractFrequency;
 import net.sf.chellow.physical.HhEndDate;
 import net.sf.chellow.physical.MarketRole;
 import net.sf.chellow.physical.Mpan;
-import net.sf.chellow.physical.ChannelSnags;
 import net.sf.chellow.physical.Organization;
 import net.sf.chellow.physical.SiteSnags;
 
@@ -97,8 +95,7 @@ public class HhdcContract extends Contract {
 	}
 
 	private void intrinsicUpdate(String name, String chargeScript,
-			ContractFrequency frequency, int lag) throws HttpException,
-			InternalException, DesignerException {
+			ContractFrequency frequency, int lag) throws HttpException {
 		super.internalUpdate(name, chargeScript);
 		setFrequency(frequency);
 		setLag(lag);
@@ -106,8 +103,7 @@ public class HhdcContract extends Contract {
 
 	@SuppressWarnings("unchecked")
 	public void update(String name, String chargeScript,
-			ContractFrequency frequency, int lag) throws HttpException,
-			InternalException, DesignerException {
+			ContractFrequency frequency, int lag) throws HttpException {
 		intrinsicUpdate(name, chargeScript, frequency, lag);
 		updateNotification();
 		// test if new dates agree with supply generation dates.
@@ -115,8 +111,7 @@ public class HhdcContract extends Contract {
 	}
 
 	@SuppressWarnings("unchecked")
-	void updateNotification() throws HttpException, InternalException,
-			DesignerException {
+	void updateNotification() throws HttpException {
 		super.updateNotification();
 		for (Mpan mpan : (List<Mpan>) Hiber
 				.session()
@@ -143,7 +138,7 @@ public class HhdcContract extends Contract {
 		return isEqual;
 	}
 
-	public MonadUri getUri() throws InternalException, HttpException {
+	public MonadUri getUri() throws HttpException {
 		return getOrganization().hhdcContractsInstance().getUri().resolve(
 				getUriId()).append("/");
 	}
@@ -191,9 +186,9 @@ public class HhdcContract extends Contract {
 		if (HhDataImportProcesses.URI_ID.equals(uriId)) {
 			return getHhDataImportProcessesInstance();
 		} else if (ChannelSnags.URI_ID.equals(uriId)) {
-			return getSnagsChannelInstance();
+			return getChannelSnagsInstance();
 		} else if (SiteSnags.URI_ID.equals(uriId)) {
-			return getSnagsSiteInstance();
+			return getSiteSnagsInstance();
 		} else if (StarkAutomaticHhDataImporter.URI_ID.equals(uriId)) {
 			return StarkAutomaticHhDataImporters.getImportersInstance()
 					.findImporter(this);
@@ -204,11 +199,11 @@ public class HhdcContract extends Contract {
 		}
 	}
 
-	public ChannelSnags getSnagsChannelInstance() {
+	public ChannelSnags getChannelSnagsInstance() {
 		return new ChannelSnags(this);
 	}
 
-	public SiteSnags getSnagsSiteInstance() {
+	public SiteSnags getSiteSnagsInstance() {
 		return new SiteSnags(this);
 	}
 

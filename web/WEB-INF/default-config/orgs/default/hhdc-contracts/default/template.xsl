@@ -31,7 +31,6 @@
 						</xsl:for-each>
 					</ul>
 				</xsl:if>
-
 				<p>
 					<a href="{/source/request/@context-path}/">
 						<img
@@ -210,7 +209,7 @@
 						<a href="channel-snags/">Channel Snags</a>
 					</li>
 					<li>
-						<a href="snags-site/">Site Snags</a>
+						<a href="site-snags/">Site Snags</a>
 					</li>
 					<xsl:if
 						test="/source/hhdc-contract/@has-stark-automatic-hh-data-importer='true'">

@@ -215,10 +215,17 @@ public class Mpan extends PersistentEntity {
 					"The MPAN top line DSO doesn't match the MPAN core DSO.");
 		}
 		if (getMpanTop() != null
-				&& !getMpanTop().getLlfc().getIsImport() == mpanTop.getLlfc()
+				&& getMpanTop().getLlfc().getIsImport() != mpanTop.getLlfc()
 						.getIsImport()) {
 			throw new UserException(
-					"You can't change an import mpan into an export one, and vice versa.");
+					"You can't change an import mpan into an export one, and vice versa. The existing MPAN has LLFC "
+							+ getMpanTop().getLlfc()
+							+ " that has IsImport "
+							+ getMpanTop().getLlfc().getIsImport()
+							+ " whereas the new MPAN has LLFC "
+							+ mpanTop.getLlfc()
+							+ " which has IsImport "
+							+ mpanTop.getLlfc().getIsImport() + ".");
 		}
 		if (hhdcAccount == null
 				&& (hasImportKwh == true || hasImportKvarh == true

@@ -43,13 +43,13 @@ public class SiteSnag extends SnagDateBounded {
 
 	public static SiteSnag getSiteSnag(Long id) throws HttpException {
 		SiteSnag snag = (SiteSnag) Hiber.session().get(SiteSnag.class, id);
-		
+
 		if (snag == null) {
 			throw new NotFoundException();
 		}
 		return snag;
 	}
-	
+
 	private Site site;
 
 	private HhdcContract contract;
@@ -80,7 +80,6 @@ public class SiteSnag extends SnagDateBounded {
 		this.contract = (HhdcContract) contract;
 	}
 
-
 	public Element toXml(Document doc) throws HttpException {
 		Element element = super.toXml(doc, "site-snag");
 		return element;
@@ -108,19 +107,14 @@ public class SiteSnag extends SnagDateBounded {
 	private Document document() throws HttpException {
 		Document doc = MonadUtils.newSourceDocument();
 		Element sourceElement = doc.getDocumentElement();
-		sourceElement.appendChild(toXml(doc, new XmlTree("service",
-				new XmlTree("provider", new XmlTree("organization")))
-				.put("site")));
+		sourceElement.appendChild(toXml(doc, new XmlTree("contract",
+				new XmlTree("provider").put("organization")).put("site")));
 		return doc;
 	}
 
-	public void httpDelete(Invocation inv) throws HttpException {
-		// TODO Auto-generated method stub
-	}
-
 	public MonadUri getUri() throws HttpException {
-		return getContract().getSnagsSiteInstance().getUri().resolve(getUriId())
-				.append("/");
+		return getContract().getSiteSnagsInstance().getUri()
+				.resolve(getUriId()).append("/");
 	}
 
 	public void delete() {

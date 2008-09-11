@@ -204,7 +204,7 @@
 					</li>
 					<li>
 						<a
-							href="{/source/request/@context-path}/orgs/{/source/hhdc-contract/org/@id}/reports/19/screen/output/?service-id={/source/hhdc-contract/@id}">
+							href="{/source/request/@context-path}/orgs/{/source/hhdc-contract/org/@id}/reports/19/screen/output/?hhdc-contract-id={/source/hhdc-contract/@id}">
 							Site Group Snags
 						</a>
 					</li>

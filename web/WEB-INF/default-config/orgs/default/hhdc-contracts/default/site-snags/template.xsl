@@ -14,13 +14,11 @@
 				<title>
 					Chellow &gt; Organizations &gt;
 					<xsl:value-of
-						select="/source/site-snags/dce-service/dce/org/@name" />
-					&gt; DCEs &gt;
+						select="/source/site-snags/hhdc-contract/org/@name" />
+					&gt; HHDC Contracts
 					<xsl:value-of
-						select="/source/site-snags/dce-service/dce/@name" />
-					&gt; Services
-					<xsl:value-of select="/source/site-snags/dce-service/@name" />
-					&gt; Snags
+						select="/source/site-snags/hhdc-contract/@name" />
+					&gt; Site Snags
 				</title>
 
 			</head>
@@ -48,35 +46,25 @@
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/orgs/{/source/site-snags/dce-service/dce/org/@id}/">
+						href="{/source/request/@context-path}/orgs/{/source/site-snags/hhdc-contract/org/@id}/">
 						<xsl:value-of
-							select="/source/site-snags/dce-service/dce/org/@name" />
+							select="/source/site-snags/hhdc-contract/org/@name" />
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/orgs/{/source/site-snags/dce-service/dce/org/@id}/dces/">
-						<xsl:value-of select="'DCEs'" />
+						href="{/source/request/@context-path}/orgs/{/source/site-snags/hhdc-contract/org/@id}/hhdc-contracts/">
+						<xsl:value-of select="'HHDC Contracts'" />
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/orgs/{/source/site-snags/dce-service/dce/org/@id}/dces/{/source/site-snags/dce-service/dce/@id}/">
+						href="{/source/request/@context-path}/orgs/{/source/site-snags/hhdc-contract/org/@id}/hhdc-contracts/{/source/site-snags/hhdc-contract/@id}/">
 						<xsl:value-of
-							select="/source/site-snags/dce-service/dce/@name" />
+							select="/source/site-snags/hhdc-contract/@name" />
 					</a>
 					&gt;
+					<xsl:value-of select="'Site Snags ['" />
 					<a
-						href="{/source/request/@context-path}/orgs/{/source/site-snags/dce-service/dce/org/@id}/dces/{/source/site-snags/dce-service/dce/@id}/services/">
-						<xsl:value-of select="'Services'" />
-					</a>
-					&gt;
-					<a
-						href="{/source/request/@context-path}/orgs/{/source/site-snags/dce-service/dce/org/@id}/dces/{/source/site-snags/dce-service/dce/@id}/services/{/source/site-snags/dce-service/@id}/">
-						<xsl:value-of
-							select="/source/site-snags/dce-service/@name" />
-					</a>
-					&gt; <xsl:value-of select="'Site Snags ['" />
-					<a
-						href="{/source/request/@context-path}/orgs/{/source/site-snags/dce-service/dce/org/@id}/reports/19/screen/output/?service-id={/source/site-snags/dce-service/@id}">
+						href="{/source/request/@context-path}/orgs/{/source/site-snags/hhdc-contract/org/@id}/reports/19/screen/output/?hhdc-contract-id={/source/site-snags/hhdc-contract/@id}">
 						<xsl:value-of select="'view'" />
 					</a>
 					<xsl:value-of select="']'" />
@@ -104,7 +92,7 @@
 								</td>
 								<td>
 									<a
-										href="{/source/request/@context-path}/orgs/{/source/site-snags/contract/supplier/org/@id}/sites/{site/@id}/">
+										href="{/source/request/@context-path}/orgs/{/source/site-snags/hhdc-contract/org/@id}/sites/{site/@id}/">
 										<xsl:value-of
 											select="concat(site/@code, ' ', site/@name)" />
 									</a>
@@ -139,7 +127,6 @@
 											select="/source/request/parameter[@name='ignore-date-year']/value/text()" />
 									</xsl:attribute>
 								</xsl:when>
-
 								<xsl:otherwise>
 									<xsl:attribute name="value">
 										<xsl:value-of
@@ -206,7 +193,8 @@
 									<xsl:value-of select="@number" />
 								</option>
 							</xsl:for-each>
-						</select><xsl:value-of select="' '"/>
+						</select>
+						<xsl:value-of select="' '" />
 						<input type="submit" name="ignore"
 							value="Ignore" />
 						<input type="reset" value="Reset" />

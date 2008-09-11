@@ -129,7 +129,7 @@ public class ChannelSnag extends SnagDateBounded {
 	}
 
 	public MonadUri getUri() throws HttpException {
-		return getContract().getSnagsChannelInstance().getUri().resolve(
+		return getContract().getChannelSnagsInstance().getUri().resolve(
 				getUriId()).append("/");
 	}
 

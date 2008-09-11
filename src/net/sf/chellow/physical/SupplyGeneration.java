@@ -408,10 +408,10 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 				mpans.remove(exportMpan);
 				setExportMpan(null);
 			} else {
-				exportMpan.update(importMpanRaw, importSsc, importHhdcAccount,
-						importSupplierAccount, importHasImportKwh,
-						importHasImportKvarh, importHasExportKwh,
-						importHasExportKvarh, importAgreedSupplyCapacity);
+				exportMpan.update(exportMpanRaw, exportSsc, exportHhdcAccount,
+						exportSupplierAccount, exportHasImportKwh,
+						exportHasImportKvarh, exportHasExportKwh,
+						exportHasExportKvarh, exportAgreedSupplyCapacity);
 			}
 		}
 		checkAfterUpdate();
@@ -497,8 +497,8 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 		return null;
 	}
 
-	public void internalUpdate(HhEndDate startDate, HhEndDate finishDate, Meter meter)
-			throws HttpException {
+	public void internalUpdate(HhEndDate startDate, HhEndDate finishDate,
+			Meter meter) throws HttpException {
 		if (finishDate != null
 				&& startDate.getDate().after(finishDate.getDate())) {
 			throw new UserException(
@@ -828,15 +828,18 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 					String exportMpanCoreStr = inv
 							.getString("export-mpan-core");
 					Long exportPcId = inv.getLong("export-pc-id");
-					Pc exportPc = Pc.getPc(exportPcId);
 					LlfcCode exportLlfcCode = new LlfcCode(inv
 							.getInteger("export-llfc-code"));
 					MtcCode exportMtcCode = inv.getValidatable(MtcCode.class,
 							"export-mtc-code");
+					if (!inv.isValid()) {
+						throw new UserException();
+					}
 					if (inv.hasParameter("export-ssc-code")) {
 						exportSsc = Ssc
 								.getSsc(inv.getString("export-ssc-code"));
 					}
+					Pc exportPc = Pc.getPc(exportPcId);
 					exportMpanRaw = new MpanRaw(exportPc.getCode(),
 							exportMtcCode, exportLlfcCode, new MpanCoreRaw(
 									exportMpanCoreStr));
@@ -957,6 +960,7 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 		return new Channels(this);
 	}
 
+	@SuppressWarnings("unchecked")
 	public void deleteChannel(boolean isImport, boolean isKwh)
 			throws HttpException {
 		Channel channel = getChannel(isImport, isKwh);
@@ -968,8 +972,13 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 			throw new UserException(
 					"One can't delete a channel if there are still HH data attached to it.");
 		}
-		Hiber.session().delete(this);
-		Hiber.session().flush();
+		// delete any concommitant snags
+		for (ChannelSnag snag : (List<ChannelSnag>) Hiber.session()
+				.createQuery(
+						"from ChannelSnag snag where snag.channel = :channel")
+				.setEntity("channel", channel)) {
+			ChannelSnag.deleteChannelSnag(snag);
+		}
 		channels.remove(channel);
 		Hiber.session().flush();
 	}
