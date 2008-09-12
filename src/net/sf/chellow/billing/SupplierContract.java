@@ -89,7 +89,8 @@ public class SupplierContract extends Contract {
 	}
 
 	public MonadUri getUri() throws HttpException {
-		return getOrganization().getUri().resolve(getUriId()).append("/");
+		return getOrganization().supplierContractsInstance().getUri().resolve(
+				getUriId()).append("/");
 	}
 
 	public void httpPost(Invocation inv) throws HttpException {

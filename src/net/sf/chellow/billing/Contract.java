@@ -28,7 +28,6 @@ import org.hibernate.exception.ConstraintViolationException;
 
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
-import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.NotFoundException;
 import net.sf.chellow.monad.UserException;
 import net.sf.chellow.physical.HhEndDate;
@@ -89,8 +88,7 @@ public abstract class Contract extends Service {
 	}
 
 	@SuppressWarnings("unchecked")
-	public void deleteAccount(Account account) throws HttpException,
-			InternalException {
+	public void deleteAccount(Account account) throws HttpException {
 		if (!account.getContract().equals(this)) {
 			throw new UserException(
 					"The account isn't attached to this contract.");

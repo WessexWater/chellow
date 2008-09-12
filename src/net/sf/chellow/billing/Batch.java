@@ -25,15 +25,13 @@ package net.sf.chellow.billing;
 import java.util.List;
 
 import net.sf.chellow.data08.MpanRaw;
-import net.sf.chellow.monad.DeployerException;
-import net.sf.chellow.monad.DesignerException;
 import net.sf.chellow.monad.Hiber;
+import net.sf.chellow.monad.HttpException;
+import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Invocation;
 import net.sf.chellow.monad.MonadUtils;
 import net.sf.chellow.monad.NotFoundException;
-import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Urlable;
-import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.UserException;
 import net.sf.chellow.monad.XmlTree;
 import net.sf.chellow.monad.types.MonadUri;
@@ -46,11 +44,9 @@ import net.sf.chellow.physical.PersistentEntity;
 import org.hibernate.HibernateException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import org.w3c.dom.Node;
 
-public class Batch extends PersistentEntity implements Urlable {
-	public static Batch getBatch(Long id) throws HttpException,
-			InternalException {
+public class Batch extends PersistentEntity {
+	public static Batch getBatch(Long id) throws HttpException {
 		Batch batch = (Batch) Hiber.session().get(Batch.class, id);
 		if (batch == null) {
 			throw new UserException("There isn't a batch with that id.");
@@ -99,14 +95,13 @@ public class Batch extends PersistentEntity implements Urlable {
 		setReference(reference);
 	}
 
-	public Node toXml(Document doc) throws HttpException {
+	public Element toXml(Document doc) throws HttpException {
 		Element element = super.toXml(doc, "batch");
 		element.setAttribute("reference", reference);
 		return element;
 	}
 
-	public void httpPost(Invocation inv) throws InternalException,
-			HttpException, DesignerException, DeployerException {
+	public void httpPost(Invocation inv) throws HttpException {
 		if (inv.hasParameter("delete")) {
 			try {
 				delete();
@@ -128,7 +123,7 @@ public class Batch extends PersistentEntity implements Urlable {
 	}
 
 	@SuppressWarnings("unchecked")
-	private void delete() throws InternalException, HttpException {
+	private void delete() throws HttpException {
 		for (Invoice invoice : (List<Invoice>) Hiber.session().createQuery(
 				"from Invoice invoice where invoice.batch = :batch").setEntity(
 				"batch", this).list()) {
@@ -137,8 +132,7 @@ public class Batch extends PersistentEntity implements Urlable {
 		Hiber.session().delete(this);
 	}
 
-	private Document document() throws InternalException, HttpException,
-			DesignerException {
+	private Document document() throws HttpException {
 		Document doc = MonadUtils.newSourceDocument();
 		Element source = doc.getDocumentElement();
 		source.appendChild(toXml(doc, new XmlTree("service", new XmlTree(
@@ -146,18 +140,16 @@ public class Batch extends PersistentEntity implements Urlable {
 		return doc;
 	}
 
-	public void httpGet(Invocation inv) throws DesignerException,
-			InternalException, HttpException, DeployerException {
+	public void httpGet(Invocation inv) throws HttpException {
 		inv.sendOk(document());
 	}
 
-	public MonadUri getUri() throws InternalException, HttpException {
+	public MonadUri getUri() throws HttpException {
 		return contract.batchesInstance().getUri().resolve(getUriId()).append(
 				"/");
 	}
 
-	public Urlable getChild(UriPathElement uriId) throws InternalException,
-			HttpException {
+	public Urlable getChild(UriPathElement uriId) throws HttpException {
 		if (InvoiceImports.URI_ID.equals(uriId)) {
 			return invoiceImportsInstance();
 		} else if (Invoices.URI_ID.equals(uriId)) {
@@ -167,8 +159,7 @@ public class Batch extends PersistentEntity implements Urlable {
 		}
 	}
 
-	public void httpDelete(Invocation inv) throws InternalException,
-			DesignerException, HttpException, DeployerException {
+	public void httpDelete(Invocation inv) throws HttpException {
 		deleteBatch(this);
 		inv.sendOk();
 	}
@@ -182,8 +173,7 @@ public class Batch extends PersistentEntity implements Urlable {
 	}
 
 	@SuppressWarnings("unchecked")
-	Invoice insertInvoice(InvoiceRaw rawInvoice) throws HttpException,
-			InternalException {
+	Invoice insertInvoice(InvoiceRaw rawInvoice) throws HttpException {
 		Invoice invoice = new Invoice(this, rawInvoice);
 		Hiber.session().save(invoice);
 		Hiber.flush();

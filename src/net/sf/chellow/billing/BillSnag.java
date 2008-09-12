@@ -1,6 +1,6 @@
 /*
  
- Copyright 2005-2007 Meniscus Systems Ltd
+ Copyright 2005-2008 Meniscus Systems Ltd
  
  This file is part of Chellow.
 
@@ -22,14 +22,12 @@
 
 package net.sf.chellow.billing;
 
-import net.sf.chellow.monad.DeployerException;
-import net.sf.chellow.monad.DesignerException;
 import net.sf.chellow.monad.Hiber;
+import net.sf.chellow.monad.HttpException;
+import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Invocation;
 import net.sf.chellow.monad.MonadUtils;
 import net.sf.chellow.monad.NotFoundException;
-import net.sf.chellow.monad.InternalException;
-import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.XmlTree;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.physical.Snag;
@@ -59,26 +57,26 @@ public class BillSnag extends Snag {
 		Hiber.session().delete(snag);
 	}
 
-	private Contract contract;
+	private SupplierContract contract;
 
 	private Bill bill;
 
 	public BillSnag() {
 	}
 
-	public BillSnag(String description, Contract contract, Bill bill)
+	public BillSnag(String description, Bill bill)
 			throws HttpException {
 		super(description);
-		this.contract = contract;
+		this.contract = SupplierContract.getSupplierContract(bill.getAccount().getContract().getId());
 		this.bill = bill;
 	}
 
-	public Contract getContract() {
+	public SupplierContract getContract() {
 		return contract;
 	}
 
 	public void setContract(Contract contract) {
-		this.contract = contract;
+		this.contract = (SupplierContract) contract;
 	}
 
 	public Bill getBill() {
@@ -109,28 +107,20 @@ public class BillSnag extends Snag {
 		return super.toString();
 	}
 
-	public void httpGet(Invocation inv) throws DesignerException,
-			InternalException, HttpException, DeployerException {
+	public void httpGet(Invocation inv) throws HttpException {
 		inv.sendOk(document());
 	}
 
-	private Document document() throws InternalException, HttpException,
-			DesignerException {
+	private Document document() throws HttpException {
 		Document doc = MonadUtils.newSourceDocument();
 		Element sourceElement = doc.getDocumentElement();
-		sourceElement.appendChild(toXml(doc, new XmlTree("service",
-				new XmlTree("provider", new XmlTree("organization"))).put(
+		sourceElement.appendChild(toXml(doc, new XmlTree("contract",
+				new XmlTree("provider").put("organization")).put(
 				"bill", new XmlTree("account"))));
 		return doc;
 	}
 
-	public void httpDelete(Invocation inv) throws InternalException,
-			DesignerException, HttpException, DeployerException {
-		// TODO Auto-generated method stub
-
-	}
-
-	public MonadUri getUri() throws InternalException, HttpException {
+	public MonadUri getUri() throws HttpException {
 		return getContract().getSnagsAccountInstance().getUri().resolve(
 				getUriId()).append("/");
 	}

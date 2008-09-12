@@ -40,10 +40,7 @@ import net.sf.chellow.monad.types.MonadDate;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
 
-import org.hibernate.Criteria;
 import org.hibernate.Query;
-import org.hibernate.criterion.Order;
-import org.hibernate.criterion.Restrictions;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -561,24 +558,34 @@ public class Channel extends PersistentEntity implements Urlable {
 	@SuppressWarnings("unchecked")
 	public void addHhData(HhdcContract contract, List<HhDatumRaw> dataRaw)
 			throws HttpException {
+		HhDatumRaw firstRawDatum = dataRaw.get(0);
+		HhDatumRaw lastRawDatum = dataRaw.get(dataRaw.size() - 1);
 		if (!contract.equals(supplyGeneration.getHhdcContract())) {
 			throw new UserException("The block of hh data between ("
-					+ dataRaw.get(0) + ") and ("
-					+ dataRaw.get(dataRaw.size() - 1) + ") has contract "
-					+ supplyGeneration.getHhdcContract()
+					+ firstRawDatum + ") and (" + lastRawDatum
+					+ ") has contract " + supplyGeneration.getHhdcContract()
 					+ " but the data is provided under contract " + contract
 					+ ".");
 		}
-		Criteria dataCriteria = Hiber.session().createCriteria(HhDatum.class);
-		dataCriteria.add(Restrictions.eq("channel", this));
-		dataCriteria.add(Restrictions.ge("endDate.date", supplyGeneration
-				.getStartDate().getDate()));
-		if (supplyGeneration.getFinishDate() != null) {
-			dataCriteria.add(Restrictions.le("endDate.date", supplyGeneration
-					.getFinishDate().getDate()));
-		}
-		dataCriteria.addOrder(Order.asc("endDate.date"));
-		List<HhDatum> data = (List<HhDatum>) dataCriteria.list();
+		// Criteria dataCriteria =
+		// Hiber.session().createCriteria(HhDatum.class);
+		// dataCriteria.add(Restrictions.eq("channel", this));
+		// dataCriteria.add(Restrictions.ge("endDate.date", supplyGeneration
+		// .getStartDate().getDate()));
+		// if (supplyGeneration.getFinishDate() != null) {
+		// dataCriteria.add(Restrictions.le("endDate.date", supplyGeneration
+		// .getFinishDate().getDate()));
+		// }
+		// dataCriteria.addOrder(Order.asc("endDate.date"));
+		List<HhDatum> data = (List<HhDatum>) Hiber
+				.session()
+				.createQuery(
+						"from HhDatum datum where datum.channel = :channel and "
+								+ "datum.endDate.date >= :startDate and datum.endDate.date <= :finishDate order by datum.endDate.date")
+				.setEntity("channel", this).setTimestamp("startDate",
+						firstRawDatum.getEndDate().getDate()).setTimestamp(
+						"finishDate", lastRawDatum.getEndDate().getDate())
+				.list();
 		/*
 		 * List<HhDatum> data = (List<HhDatum>) Hiber .session() .createQuery(
 		 * "from HhDatum datum where datum.channel = :channel and " +
@@ -590,7 +597,7 @@ public class Channel extends PersistentEntity implements Urlable {
 		 * supplyGeneration.getFinishDate().getDate()).list();
 		 */
 		if (data.isEmpty()) {
-			checkForMissingFromLatest(dataRaw.get(0).getEndDate().getPrevious());
+			checkForMissingFromLatest(firstRawDatum.getEndDate().getPrevious());
 		}
 		HhEndDate siteCheckFrom = null;
 		HhEndDate siteCheckTo = null;
@@ -623,6 +630,7 @@ public class Channel extends PersistentEntity implements Urlable {
 				Hiber.session().save(new HhDatum(this, datumRaw));
 				// Debug.print("Saved datum: "
 				// + (System.currentTimeMillis() - now));
+				Hiber.flush();
 				added = true;
 				missing++;
 				if (resolveMissingFrom == null) {
@@ -638,6 +646,7 @@ public class Channel extends PersistentEntity implements Urlable {
 				// + (System.currentTimeMillis() - now));
 				originalDatum = datum;
 				datum.update(datumRaw.getValue(), datumRaw.getStatus());
+				Hiber.flush();
 				altered = true;
 			}
 			// Debug.print("About to see if changed: "
@@ -748,8 +757,8 @@ public class Channel extends PersistentEntity implements Urlable {
 			snags = (List<ChannelSnag>) Hiber
 					.session()
 					.createQuery(
-							"from ChannelSnag snag where snag.channel = :channel and snag.finishDate.date > snag.channel.supplyGeneration.finishDate.date").setEntity("channel", this)
-					.list();
+							"from ChannelSnag snag where snag.channel = :channel and snag.finishDate.date > snag.channel.supplyGeneration.finishDate.date")
+					.setEntity("channel", this).list();
 			if (!snags.isEmpty()) {
 				HhEndDate startDate = supplyGeneration.getFinishDate()
 						.getNext();

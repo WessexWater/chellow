@@ -828,8 +828,7 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 					String exportMpanCoreStr = inv
 							.getString("export-mpan-core");
 					Long exportPcId = inv.getLong("export-pc-id");
-					LlfcCode exportLlfcCode = new LlfcCode(inv
-							.getInteger("export-llfc-code"));
+					String llfcCodeStr = inv.getString("export-llfc-code");
 					MtcCode exportMtcCode = inv.getValidatable(MtcCode.class,
 							"export-mtc-code");
 					if (!inv.isValid()) {
@@ -841,8 +840,8 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 					}
 					Pc exportPc = Pc.getPc(exportPcId);
 					exportMpanRaw = new MpanRaw(exportPc.getCode(),
-							exportMtcCode, exportLlfcCode, new MpanCoreRaw(
-									exportMpanCoreStr));
+							exportMtcCode, new LlfcCode(llfcCodeStr),
+							new MpanCoreRaw(exportMpanCoreStr));
 					exportAgreedSupplyCapacity = inv
 							.getInteger("export-agreed-supply-capacity");
 					exportHasImportKwh = inv
@@ -968,7 +967,7 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 				.session()
 				.createQuery(
 						"select count(*) from HhDatum datum where datum.channel = :channel")
-				.setEntity("channel", this).uniqueResult() > 0) {
+				.setEntity("channel", channel).uniqueResult() > 0) {
 			throw new UserException(
 					"One can't delete a channel if there are still HH data attached to it.");
 		}
@@ -976,7 +975,7 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 		for (ChannelSnag snag : (List<ChannelSnag>) Hiber.session()
 				.createQuery(
 						"from ChannelSnag snag where snag.channel = :channel")
-				.setEntity("channel", channel)) {
+				.setEntity("channel", channel).list()) {
 			ChannelSnag.deleteChannelSnag(snag);
 		}
 		channels.remove(channel);

@@ -25,30 +25,25 @@ package net.sf.chellow.billing;
 import java.util.Date;
 import java.util.List;
 
-import net.sf.chellow.monad.DeployerException;
-import net.sf.chellow.monad.DesignerException;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Invocation;
 import net.sf.chellow.monad.MonadUtils;
 import net.sf.chellow.monad.NotFoundException;
-import net.sf.chellow.monad.Urlable;
 import net.sf.chellow.monad.UserException;
-import net.sf.chellow.monad.XmlDescriber;
-import net.sf.chellow.monad.XmlTree;
 import net.sf.chellow.monad.types.MonadDate;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
+import net.sf.chellow.physical.EntityList;
 import net.sf.chellow.physical.HhEndDate;
 import net.sf.chellow.physical.Organization;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import org.w3c.dom.Node;
 
 @SuppressWarnings("serial")
-public class SupplierContracts implements Urlable, XmlDescriber {
+public class SupplierContracts extends EntityList {
 	public static final UriPathElement URI_ID;
 
 	static {
@@ -108,8 +103,7 @@ public class SupplierContracts implements Urlable, XmlDescriber {
 		return doc;
 	}
 
-	public void httpGet(Invocation inv) throws DesignerException,
-			InternalException, HttpException, DeployerException {
+	public void httpGet(Invocation inv) throws HttpException {
 		inv.sendOk(document());
 	}
 
@@ -127,22 +121,11 @@ public class SupplierContracts implements Urlable, XmlDescriber {
 		return contract;
 	}
 
-	public void httpDelete(Invocation inv) throws InternalException,
-			HttpException {
-		// TODO Auto-generated method stub
-
-	}
-
 	public Element toXml(Document doc) throws InternalException, HttpException {
 		Element contractsElement = doc.createElement("supplier-contracts");
 		return contractsElement;
 	}
 
-	public Node toXml(Document doc, XmlTree tree) throws InternalException,
-			HttpException {
-		// TODO Auto-generated method stub
-		return null;
-	}
 	/*
 	 * public List<SupplyGeneration> supplyGenerations(Account account) {
 	 * return Hiber .session() .createQuery( "select mpan.supplyGeneration from

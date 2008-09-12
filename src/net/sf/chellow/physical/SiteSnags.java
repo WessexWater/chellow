@@ -1,5 +1,6 @@
 package net.sf.chellow.physical;
 
+import java.util.Date;
 import java.util.List;
 
 import net.sf.chellow.billing.HhdcContract;
@@ -34,8 +35,8 @@ public class SiteSnags extends EntityList {
 
 	HhdcContract hhdcContract;
 
-	public SiteSnags(HhdcContract dceService) {
-		this.hhdcContract = dceService;
+	public SiteSnags(HhdcContract hhdcContract) {
+		this.hhdcContract = hhdcContract;
 	}
 
 	public UriPathElement getUriId() {
@@ -57,7 +58,8 @@ public class SiteSnags extends EntityList {
 		Element source = doc.getDocumentElement();
 		Element snagsElement = toXml(doc);
 		source.appendChild(snagsElement);
-		snagsElement.appendChild(hhdcContract.toXml(doc, new XmlTree("provider").put("organization")));
+		snagsElement.appendChild(hhdcContract.toXml(doc,
+				new XmlTree("provider").put("organization")));
 		for (SiteSnag snag : (List<SiteSnag>) Hiber
 				.session()
 				.createQuery(
@@ -75,14 +77,14 @@ public class SiteSnags extends EntityList {
 	@SuppressWarnings("unchecked")
 	public void httpPost(Invocation inv) throws HttpException {
 		if (inv.hasParameter("ignore")) {
-			MonadDate ignoreDate = inv.getMonadDate("ignore-date");
+			Date ignoreDate = inv.getDate("ignore-date");
 
 			ScrollableResults snags = Hiber
 					.session()
 					.createQuery(
 							"from SiteSnag snag where snag.contract = :contract and snag.finishDate < :ignoreDate")
 					.setEntity("contract", hhdcContract).setTimestamp(
-							"ignoreDate", ignoreDate.getDate()).scroll(
+							"ignoreDate", ignoreDate).scroll(
 							ScrollMode.FORWARD_ONLY);
 			while (snags.next()) {
 				SiteSnag snag = (SiteSnag) snags.get(0);
@@ -91,6 +93,7 @@ public class SiteSnags extends EntityList {
 				Hiber.session().clear();
 			}
 			Hiber.commit();
+			hhdcContract = HhdcContract.getHhdcContract(hhdcContract.getId());
 			inv.sendOk(document());
 		}
 	}

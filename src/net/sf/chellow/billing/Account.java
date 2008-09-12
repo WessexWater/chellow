@@ -70,13 +70,12 @@ public class Account extends PersistentEntity implements Urlable {
 	@SuppressWarnings("unchecked")
 	public static void checkAllMissingFromLatest(Organization organization)
 			throws HttpException {
-		List<Object[]> results = (List<Object[]>) Hiber
+		for (Account account : (List<Account>) Hiber
 				.session()
 				.createQuery(
-						"select distinct mpan.supplierAccount, mpan.supplierContract from Mpan mpan where mpan.supplierAccount.organization = :organization")
-				.setEntity("organization", organization).list();
-		for (Object[] result : results) {
-			((Account) result[0]).checkMissingFromLatest((Contract) result[1]);
+						"select distinct mpan.supplierAccount from Mpan mpan where mpan.supplyGeneration.finishDate.date is null and mpan.supplierAccount.contract.organization = :organization")
+				.setEntity("organization", organization).list()) {
+			account.checkMissingFromLatest();
 		}
 	}
 
@@ -181,19 +180,18 @@ public class Account extends PersistentEntity implements Urlable {
 		}
 	}
 
-	public void checkMissingFromLatest(Contract contract) throws HttpException {
-		checkMissingFromLatest(contract, null);
+	public void checkMissingFromLatest() throws HttpException {
+		checkMissingFromLatest(null);
 	}
 
 	@SuppressWarnings("unchecked")
-	public void checkMissingFromLatest(Contract contract, HhEndDate to)
-			throws HttpException {
+	public void checkMissingFromLatest(HhEndDate to) throws HttpException {
 		List<Bill> bills = (List<Bill>) Hiber
 				.session()
 				.createQuery(
-						"from Bill bill where bill.account = :account and bill.service.id = :serviceId order by bill.finishDate.date desc")
-				.setEntity("account", this).setLong("serviceId",
-						contract.getId()).list();
+						"from Bill bill where bill.account = :account and bill.contract = :contract order by bill.finishDate.date desc")
+				.setEntity("account", this).setEntity("contract",
+						contract).list();
 		Bill latestBill = null;
 		if (bills != null && !bills.isEmpty()) {
 			latestBill = bills.get(0);
@@ -339,13 +337,12 @@ public class Account extends PersistentEntity implements Urlable {
 					+ " but the account in Chellow has MPANs '" + accountMpans
 					+ "'.");
 		}
-		Contract contract = invoice.getBatch().getContract();
 		if (bill == null) {
-			bill = new Bill(contract, this);
+			bill = new Bill(this);
 			Hiber.session().save(bill);
 		}
 		bill.attach(invoice);
-		checkMissing(contract, bill.getStartDate(), bill.getFinishDate());
+		checkMissing(bill.getStartDate(), bill.getFinishDate());
 	}
 
 	@SuppressWarnings("unchecked")
@@ -376,7 +373,6 @@ public class Account extends PersistentEntity implements Urlable {
 	}
 
 	void delete(Bill bill) throws HttpException {
-		Contract contract = bill.getContract();
 		Bill foundBill = (Bill) Hiber
 				.session()
 				.createQuery(
@@ -389,7 +385,7 @@ public class Account extends PersistentEntity implements Urlable {
 		} else {
 			Hiber.session().delete(bill);
 		}
-		checkMissing(contract, foundBill.getStartDate(), foundBill
+		checkMissing(foundBill.getStartDate(), foundBill
 				.getFinishDate());
 	}
 }

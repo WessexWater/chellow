@@ -33,8 +33,10 @@
 		</id>
 		<many-to-one name="account" class="Account" column="account_id"
 			foreign-key="fkey_bill_account" />
+		<!-- 
 		<many-to-one name="contract" class="Contract" column="contract_id"
 			foreign-key="fkey_bill_contract" />
+		-->
 		<component name="startDate" class="DayStartDate">
 			<property type="timestamp" name="date">
 				<column name="start_date"

@@ -25,24 +25,22 @@ package net.sf.chellow.billing;
 import java.util.List;
 
 import net.sf.chellow.monad.Hiber;
+import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.Invocation;
-import net.sf.chellow.monad.MethodNotAllowedException;
 import net.sf.chellow.monad.MonadUtils;
 import net.sf.chellow.monad.NotFoundException;
-import net.sf.chellow.monad.Urlable;
-import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.UserException;
-import net.sf.chellow.monad.XmlDescriber;
 import net.sf.chellow.monad.XmlTree;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
+import net.sf.chellow.physical.EntityList;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
 @SuppressWarnings("serial")
-public class Batches implements Urlable, XmlDescriber {
+public class Batches extends EntityList {
 	public static final UriPathElement URI_ID;
 
 	static {
@@ -93,26 +91,18 @@ public class Batches implements Urlable, XmlDescriber {
 		Batch batch = (Batch) Hiber
 				.session()
 				.createQuery(
-						"from Batch batch where batch.service = :service and batch.id = :batchId")
-				.setEntity("service", contract).setLong("batchId",
+						"from Batch batch where batch.contract = :contract and batch.id = :batchId")
+				.setEntity("contract", contract).setLong("batchId",
 						Long.parseLong(uriId.getString())).uniqueResult();
 		if (batch == null) {
-			throw new NotFoundException();
+			throw new NotFoundException("Can't find the batch " + uriId + ".");
 		}
 		return batch;
-	}
-
-	public void httpDelete(Invocation inv) throws HttpException {
-		throw new MethodNotAllowedException();
 	}
 
 	public Node toXml(Document doc) throws HttpException {
 		Element batchesElement = doc.createElement("batches");
 		return batchesElement;
-	}
-
-	public Node toXml(Document doc, XmlTree tree) throws HttpException {
-		return null;
 	}
 
 	@SuppressWarnings("unchecked")
