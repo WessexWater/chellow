@@ -33,11 +33,10 @@ import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 
 import net.sf.chellow.monad.Hiber;
+import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.Invocation;
 import net.sf.chellow.monad.NotFoundException;
-import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Urlable;
-import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.UserException;
 import net.sf.chellow.monad.types.UriPathElement;
 import net.sf.chellow.physical.HhEndDate;
@@ -73,8 +72,8 @@ public abstract class Service extends PersistentEntity implements
 	public Service() {
 	}
 
-	public Service(String name, HhEndDate startDate,
-			String chargeScript) throws HttpException {
+	public Service(String name, HhEndDate startDate, String chargeScript)
+			throws HttpException {
 		rateScripts = new HashSet<RateScript>();
 		RateScript rateScript = new RateScript(this, startDate, null,
 				chargeScript);
@@ -204,10 +203,10 @@ public abstract class Service extends PersistentEntity implements
 		Element element = super.toXml(doc, elementName);
 
 		element.setAttribute("name", name);
-		//startRateScript.setLabel("start");
-		//element.appendChild(startRateScript.toXml(doc));
-		//finishRateScript.setLabel("finish");
-		//element.appendChild(finishRateScript.toXml(doc));
+		// startRateScript.setLabel("start");
+		// element.appendChild(startRateScript.toXml(doc));
+		// finishRateScript.setLabel("finish");
+		// element.appendChild(finishRateScript.toXml(doc));
 		if (chargeScript != null) {
 			element.setAttribute("charge-script", chargeScript
 					.replace("\r", "").replace("\t", "    "));
@@ -228,8 +227,7 @@ public abstract class Service extends PersistentEntity implements
 		return 0;
 	}
 
-	public Snag getSnag(UriPathElement uriId) throws HttpException,
-			InternalException {
+	public Snag getSnag(UriPathElement uriId) throws HttpException {
 		Snag snag = (Snag) Hiber
 				.session()
 				.createQuery(
@@ -249,15 +247,14 @@ public abstract class Service extends PersistentEntity implements
 		return "Service id " + getId() + " name " + getName();
 	}
 
-	public BillElement billElement(String name, String chargeScript,
-			Account account, HhEndDate from, HhEndDate to)
-			throws HttpException {
-		BillElement billElement = null;
+	public VirtualBill virtualBill(String name, Account account,
+			HhEndDate from, HhEndDate to) throws HttpException {
+		VirtualBill bill = null;
 
 		try {
 			Object[] args = { account, from, to };
-			billElement = (BillElement) engine().invokeFunction(
-					name + "Element", args);
+			bill = (VirtualBill) engine()
+					.invokeFunction(name + "VirtualBill", args);
 		} catch (ScriptException e) {
 			throw new UserException(e.getMessage());
 		} catch (NoSuchMethodException e) {
@@ -271,31 +268,26 @@ public abstract class Service extends PersistentEntity implements
 				throw new UserException(e.toString());
 			}
 		}
-		return billElement;
+		return bill;
 	}
 
-	public Invocable invocableEngine(String chargeScript) throws HttpException {
-		ScriptEngineManager engineMgr = new ScriptEngineManager();
-		ScriptEngine scriptEngine = engineMgr.getEngineByName("jython");
-		Invocable invocableEngine = null;
-		try {
-			scriptEngine.eval(chargeScript);
-			scriptEngine.put("service", this);
-			invocableEngine = (Invocable) scriptEngine;
-		} catch (ScriptException e) {
-			throw new UserException(e.getMessage());
-		}
-		return invocableEngine;
-	}
-
-	public BillElement billElement(Account account, HhEndDate from, HhEndDate to)
+	/*
+	 * public Invocable invocableEngine(String chargeScript) throws
+	 * HttpException { ScriptEngineManager engineMgr = new
+	 * ScriptEngineManager(); ScriptEngine scriptEngine =
+	 * engineMgr.getEngineByName("jython"); Invocable invocableEngine = null;
+	 * try { scriptEngine.eval(chargeScript); scriptEngine.put("service", this);
+	 * invocableEngine = (Invocable) scriptEngine; } catch (ScriptException e) {
+	 * throw new UserException(e.getMessage()); } return invocableEngine; }
+	 */
+	public VirtualBill billElement(Account account, HhEndDate from, HhEndDate to)
 			throws HttpException {
-		return billElement("total", getChargeScript(), account, from, to);
+		return virtualBill("total", account, from, to);
 	}
 
-	public BillElement billElement(String name, Account account,
+	public VirtualBill billElement(String name, Account account,
 			HhEndDate from, HhEndDate to) throws HttpException {
-		return billElement(name, getChargeScript(), account, from, to);
+		return virtualBill(name, account, from, to);
 	}
 
 	public RateScript getPreviousRateScript(RateScript script)
@@ -324,7 +316,18 @@ public abstract class Service extends PersistentEntity implements
 	}
 
 	public Invocable engine() throws HttpException {
-		return invocableEngine(getChargeScript());
+		ScriptEngineManager engineMgr = new ScriptEngineManager();
+		ScriptEngine scriptEngine = engineMgr.getEngineByName("jython");
+		Invocable invocableEngine = null;
+		try {
+			scriptEngine.eval(chargeScript);
+			scriptEngine.put("service", this);
+			invocableEngine = (Invocable) scriptEngine;
+		} catch (ScriptException e) {
+			throw new UserException(e.getMessage());
+		}
+		return invocableEngine;
+		// return invocableEngine(getChargeScript());
 	}
 
 	@SuppressWarnings("unchecked")
@@ -411,8 +414,7 @@ public abstract class Service extends PersistentEntity implements
 			throws HttpException {
 		Object result = null;
 		try {
-			result = invocableEngine(getChargeScript()).invokeFunction(
-					functionName, args);
+			result = engine().invokeFunction(functionName, args);
 		} catch (ScriptException e) {
 			throw new UserException(e.getMessage());
 		} catch (NoSuchMethodException e) {

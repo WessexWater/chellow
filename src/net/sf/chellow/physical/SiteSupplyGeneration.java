@@ -24,46 +24,36 @@ package net.sf.chellow.physical;
 
 import net.sf.chellow.monad.DeployerException;
 import net.sf.chellow.monad.DesignerException;
-import net.sf.chellow.monad.Hiber;
+import net.sf.chellow.monad.HttpException;
+import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Invocation;
 import net.sf.chellow.monad.NotFoundException;
-import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Urlable;
-import net.sf.chellow.monad.HttpException;
-import net.sf.chellow.monad.UserException;
-import net.sf.chellow.monad.types.MonadLong;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
 
-import org.hibernate.HibernateException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import org.w3c.dom.Node;
 
 public class SiteSupplyGeneration extends PersistentEntity {
-	static public SiteSupplyGeneration getSiteSupply(MonadLong id) throws HttpException {
-		try {
-			SiteSupplyGeneration site = (SiteSupplyGeneration) Hiber.session().get(SiteSupplyGeneration.class, id.getLong());
-			if (site == null) {
-				throw new UserException("There is no site_supply with " + "that id.");
-			}
-			return site;
-		} catch (HibernateException e) {
-			throw new InternalException(e);
-		}
-	}
-
+	/*
+	 * static public SiteSupplyGeneration getSiteSupply(MonadLong id) throws
+	 * HttpException { SiteSupplyGeneration site = (SiteSupplyGeneration)
+	 * Hiber.session().get( SiteSupplyGeneration.class, id.getLong()); if (site ==
+	 * null) { throw new UserException("There is no site-supply with " + "that
+	 * id."); } return site; }
+	 */
 	private Site site;
 
 	private SupplyGeneration supplyGeneration;
-	
+
 	private boolean isPhysical;
 
-	private SiteSupplyGeneration() {
+	SiteSupplyGeneration() {
 	}
 
-	SiteSupplyGeneration(Site site, SupplyGeneration supplyGeneration, boolean isPhysical) {
-		this();
+	SiteSupplyGeneration(Site site, SupplyGeneration supplyGeneration,
+			boolean isPhysical) {
 		setSite(site);
 		setSupplyGeneration(supplyGeneration);
 		setIsPhysical(isPhysical);
@@ -84,7 +74,7 @@ public class SiteSupplyGeneration extends PersistentEntity {
 	protected void setSupplyGeneration(SupplyGeneration supplyGeneration) {
 		this.supplyGeneration = supplyGeneration;
 	}
-	
+
 	public boolean getIsPhysical() {
 		return isPhysical;
 	}
@@ -93,45 +83,39 @@ public class SiteSupplyGeneration extends PersistentEntity {
 		this.isPhysical = isPhysical;
 	}
 
-	public Node toXml(Document doc) throws HttpException {
+	public Element toXml(Document doc) throws HttpException {
 		Element element = super.toXml(doc, "site-supply-generation");
 
 		element.setAttribute("is-physical", Boolean.toString(isPhysical));
 		return element;
 	}
+
 	public boolean equals(Object obj) {
 		boolean isEqual = false;
-		
+
 		if (obj instanceof SiteSupplyGeneration) {
 			isEqual = ((SiteSupplyGeneration) obj).getId().equals(getId());
 		}
 		return isEqual;
 	}
 
-	public void httpGet(Invocation inv) throws DesignerException, InternalException, HttpException, DeployerException {
+	public void httpGet(Invocation inv) throws DesignerException,
+			InternalException, HttpException, DeployerException {
 		// TODO Auto-generated method stub
-		
+
 	}
 
-	public void httpPost(Invocation inv) throws InternalException, HttpException {
+	public void httpPost(Invocation inv) throws InternalException,
+			HttpException {
 		// TODO Auto-generated method stub
-		
-	}
-	
-	public void httpDelete(Invocation inv) throws DesignerException,
-		InternalException, HttpException, DeployerException {
-	/*
-	getSite().detachSiteSupply(this);
-	Hiber.commit();
-	inv.sendOk(MonadUtilsUI.newSourceDocument());
-	*/
+
 	}
 
-	public Urlable getChild(UriPathElement uriId) throws InternalException, HttpException {
+	public Urlable getChild(UriPathElement uriId) throws HttpException {
 		throw new NotFoundException();
 	}
 
-	public MonadUri getUri() throws InternalException, HttpException {
+	public MonadUri getUri() throws HttpException {
 		// TODO Auto-generated method stub
 		return null;
 	}

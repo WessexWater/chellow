@@ -197,15 +197,30 @@ public class RateScript extends PersistentEntity {
 	public void httpPost(Invocation inv) throws HttpException {
 		String script = inv.getString("script");
 		if (inv.hasParameter("test")) {
-			Long billId = inv.getLong("bill_id");
+			Date startDate = inv.getDate("start-date");
+			Date finishDate = null;
+			boolean hasFinished = inv.getBoolean("has-finished");
+			if (!inv.isValid()) {
+				throw new UserException(document());
+			}
+			if (hasFinished) {
+				finishDate = inv.getDate("finish-date");
+				if (!inv.isValid()) {
+					throw new UserException(document());
+				}
+			}
+			Long billId = inv.getLong("bill-id");
 			if (!inv.isValid()) {
 				throw new UserException(document());
 			}
 			Bill bill = Bill.getBill(billId);
 			Document doc = document();
 			Element source = doc.getDocumentElement();
-
-			source.appendChild(bill.getElement().toXml(doc));
+			update(
+					HhEndDate.roundDown(startDate).getNext(),
+					finishDate == null ? null : HhEndDate.roundDown(finishDate),
+					script);
+			source.appendChild(bill.getVirtualBill().toXml(doc));
 			inv.sendOk(doc);
 		} else if (inv.hasParameter("delete")) {
 			service.delete(this);

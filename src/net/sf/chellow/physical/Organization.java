@@ -25,7 +25,6 @@ package net.sf.chellow.physical;
 import java.util.List;
 import java.util.Set;
 
-import net.sf.chellow.billing.Account;
 import net.sf.chellow.billing.GenDeltas;
 import net.sf.chellow.billing.HhdcContract;
 import net.sf.chellow.billing.HhdcContracts;
@@ -391,21 +390,6 @@ public class Organization extends PersistentEntity {
 		}
 		Hiber.session().delete(site);
 		Hiber.flush();
-	}
-
-	public Account getAccount(Provider provider, String accountReference)
-			throws HttpException {
-		Account account = (Account) Hiber
-				.session()
-				.createQuery(
-						"from Account account where account.organization = :organization and account.provider = :provider and account.reference = :accountReference")
-				.setEntity("organization", this)
-				.setEntity("provider", provider).setString("accountReference",
-						accountReference).uniqueResult();
-		if (account == null) {
-			throw new NotFoundException();
-		}
-		return account;
 	}
 
 	/*

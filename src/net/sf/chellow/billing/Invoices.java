@@ -27,23 +27,21 @@ import java.util.List;
 import net.sf.chellow.monad.DeployerException;
 import net.sf.chellow.monad.DesignerException;
 import net.sf.chellow.monad.Hiber;
+import net.sf.chellow.monad.HttpException;
+import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Invocation;
 import net.sf.chellow.monad.MonadUtils;
 import net.sf.chellow.monad.NotFoundException;
-import net.sf.chellow.monad.InternalException;
-import net.sf.chellow.monad.Urlable;
-import net.sf.chellow.monad.HttpException;
-import net.sf.chellow.monad.XmlDescriber;
 import net.sf.chellow.monad.XmlTree;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
+import net.sf.chellow.physical.EntityList;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import org.w3c.dom.Node;
 
 @SuppressWarnings("serial")
-public class Invoices implements Urlable, XmlDescriber {
+public class Invoices extends EntityList {
 	public static final UriPathElement URI_ID;
 
 	static {
@@ -72,7 +70,7 @@ public class Invoices implements Urlable, XmlDescriber {
 		return URI_ID;
 	}
 
-	public MonadUri getUri() throws InternalException, HttpException {
+	public MonadUri getUri() throws HttpException {
 		return batch.getUri().resolve(getUrlId()).append("/");
 	}
 
@@ -80,20 +78,18 @@ public class Invoices implements Urlable, XmlDescriber {
 			HttpException, DesignerException, DeployerException {
 	}
 
-	public void httpGet(Invocation inv) throws DesignerException,
-			InternalException, HttpException, DeployerException {
+	public void httpGet(Invocation inv) throws HttpException {
 		inv.sendOk(document());
 	}
 
 	@SuppressWarnings("unchecked")
-	private Document document() throws InternalException, HttpException,
-			DesignerException {
+	private Document document() throws HttpException {
 		Document doc = MonadUtils.newSourceDocument();
 		Element source = doc.getDocumentElement();
 		Element invoicesElement = toXml(doc);
 		source.appendChild(invoicesElement);
-		invoicesElement.appendChild(batch.toXml(doc, new XmlTree("service",
-						new XmlTree("provider", new XmlTree("organization")))));
+		invoicesElement.appendChild(batch.toXml(doc, new XmlTree("contract",
+						new XmlTree("provider").put("organization"))));
 		for (Invoice invoice : (List<Invoice>) Hiber
 				.session()
 				.createQuery(
@@ -105,8 +101,7 @@ public class Invoices implements Urlable, XmlDescriber {
 		return doc;
 	}
 
-	public Invoice getChild(UriPathElement uriId) throws HttpException,
-			InternalException {
+	public Invoice getChild(UriPathElement uriId) throws HttpException {
 		Invoice invoice = (Invoice) Hiber
 				.session()
 				.createQuery(
@@ -119,18 +114,8 @@ public class Invoices implements Urlable, XmlDescriber {
 		return invoice;
 	}
 
-	public void httpDelete(Invocation inv) throws InternalException,
-			HttpException {
-	}
-
-	public Element toXml(Document doc) throws InternalException,
-			HttpException {
+	public Element toXml(Document doc) throws HttpException {
 		Element billsElement = doc.createElement("invoices");
 		return billsElement;
-	}
-
-	public Node toXml(Document doc, XmlTree tree) throws InternalException,
-			HttpException {
-		return null;
 	}
 }

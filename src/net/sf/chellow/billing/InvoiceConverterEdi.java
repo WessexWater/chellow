@@ -201,8 +201,7 @@ public class InvoiceConverterEdi implements InvoiceConverter {
 							registerReads.add(new RegisterReadRaw(mpanRaw, read
 									.getCoefficient(), read
 									.getMeterSerialNumber(), read.getUnits(),
-									read.getTpr(), read.getIsImport(), read
-											.getPreviousDate(), read
+									read.getTpr(), read.getPreviousDate(), read
 											.getPreviousValue(), read
 											.getPreviousType(), read
 											.getCurrentDate(), read

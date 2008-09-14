@@ -3,14 +3,12 @@ package net.sf.chellow.billing;
 import java.util.HashMap;
 import java.util.Map;
 
-import net.sf.chellow.monad.DeployerException;
-import net.sf.chellow.monad.DesignerException;
+import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.Invocation;
+import net.sf.chellow.monad.MethodNotAllowedException;
 import net.sf.chellow.monad.MonadUtils;
 import net.sf.chellow.monad.NotFoundException;
-import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Urlable;
-import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.UserException;
 import net.sf.chellow.monad.XmlTree;
 import net.sf.chellow.monad.types.MonadUri;
@@ -46,8 +44,7 @@ public class InvoiceImports implements Urlable {
 		return URI_ID;
 	}
 
-	public Urlable getChild(UriPathElement uriId) throws InternalException,
-			HttpException {
+	public Urlable getChild(UriPathElement uriId) throws HttpException {
 		Map<Long, InvoiceImport> batchImports = imports.get(batch.getId());
 		if (batchImports == null) {
 			throw new NotFoundException();
@@ -60,19 +57,17 @@ public class InvoiceImports implements Urlable {
 		return billImport;
 	}
 
-	public void httpGet(Invocation inv) throws DesignerException,
-			InternalException, HttpException, DeployerException {
+	public void httpGet(Invocation inv) throws HttpException {
 		inv.sendOk(document());
 	}
 
-	private Document document() throws InternalException, HttpException,
-			DesignerException {
+	private Document document() throws HttpException {
 		Document doc = MonadUtils.newSourceDocument();
-		Element source = (Element) doc.getFirstChild();
-		Element billImportsElement = (Element) toXML(doc);
+		Element source = doc.getDocumentElement();
+		Element billImportsElement = toXML(doc);
 		source.appendChild(billImportsElement);
-		billImportsElement.appendChild(batch.toXml(doc, new XmlTree("service",
-						new XmlTree("provider", new XmlTree("organization")))));
+		billImportsElement.appendChild(batch.toXml(doc, new XmlTree("contract",
+				new XmlTree("provider").put("organization"))));
 		Map<Long, InvoiceImport> batchImports = imports.get(batch.getId());
 		if (batchImports != null) {
 			for (InvoiceImport billImport : batchImports.values()) {
@@ -82,8 +77,7 @@ public class InvoiceImports implements Urlable {
 		return doc;
 	}
 
-	public void httpPost(Invocation inv) throws InternalException,
-			HttpException, DesignerException, DeployerException {
+	public void httpPost(Invocation inv) throws HttpException {
 		FileItem fileItem = inv.getFileItem("file");
 		if (!inv.isValid()) {
 			throw new UserException(document());
@@ -107,23 +101,20 @@ public class InvoiceImports implements Urlable {
 		}
 	}
 
-	public void httpDelete(Invocation inv) throws InternalException,
-			DesignerException, HttpException, DeployerException {
-		// TODO Auto-generated method stub
-
+	public void httpDelete(Invocation inv) throws HttpException {
+		throw new MethodNotAllowedException();
 	}
 
-	public Node toXML(Document doc) throws InternalException, HttpException {
+	public Element toXML(Document doc) throws HttpException {
 		return doc.createElement("invoice-imports");
 	}
 
-	public Node getXML(XmlTree tree, Document doc) throws InternalException,
-			HttpException {
+	public Node getXML(XmlTree tree, Document doc) throws HttpException {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
-	public MonadUri getUri() throws InternalException, HttpException {
+	public MonadUri getUri() throws HttpException {
 		return batch.getUri().resolve(getUriId()).append("/");
 	}
 }

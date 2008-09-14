@@ -385,10 +385,6 @@ public class Channel extends PersistentEntity implements Urlable {
 		return new HhData(this);
 	}
 
-	public void httpPost(Invocation inv) throws HttpException {
-
-	}
-
 	public Urlable getChild(UriPathElement uriId) throws HttpException {
 		Urlable child = null;
 		if (HhData.URI_ID.equals(uriId)) {
@@ -738,7 +734,7 @@ public class Channel extends PersistentEntity implements Urlable {
 	}
 
 	@SuppressWarnings("unchecked")
-	public void internalCheck() throws HttpException {
+	public void onSupplyGenerationChange() throws HttpException {
 		List<ChannelSnag> snags = (List<ChannelSnag>) Hiber
 				.session()
 				.createQuery(

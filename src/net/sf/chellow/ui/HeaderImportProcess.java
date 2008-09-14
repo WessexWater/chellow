@@ -206,7 +206,7 @@ public class HeaderImportProcess extends Thread implements Urlable,
 					}
 					Integer importAgreedSupplyCapacity = null;
 					HhdcContract importHhdcContract = null;
-					Account importHhdceAccount = null;
+					Account importHhdcAccount = null;
 					SupplierContract importSupplierContract = null;
 					Account importSupplierAccount = null;
 					Ssc importSsc = null;
@@ -232,14 +232,16 @@ public class HeaderImportProcess extends Thread implements Urlable,
 						String importHhdcContractName = values[10];
 						csvElement.appendChild(getField("Import HHDC Contract",
 								importHhdcContractName));
-						importHhdcContract = importHhdcContractName == null ? null
-								: organization
-										.getHhdcContract(importHhdcContractName);
+						importHhdcContract = importHhdcContractName.trim()
+								.length() == 0 ? null : organization
+								.getHhdcContract(importHhdcContractName);
 						String importHhdceAccountReference = values[11];
 						csvElement.appendChild(getField("Import HHDC Account",
 								importHhdceAccountReference));
-						importHhdceAccount = importHhdcContract
-								.getAccount(importHhdceAccountReference);
+						if (importHhdcContract != null) {
+							importHhdcAccount = importHhdcContract
+									.getAccount(importHhdceAccountReference);
+						}
 						String importSupplierContractName = values[12];
 						csvElement.appendChild(getField(
 								"Import supplier contract name",
@@ -253,8 +255,8 @@ public class HeaderImportProcess extends Thread implements Urlable,
 						importSupplierAccount = importSupplierContract
 								.getAccount(importSupplierAccountReference);
 					}
-					HhdcContract exportHhdceContract = null;
-					Account exportHhdceAccount = null;
+					HhdcContract exportHhdcContract = null;
+					Account exportHhdcAccount = null;
 					SupplierContract exportSupplierContract = null;
 					Account exportAccountSupplier = null;
 					Integer exportAgreedSupplyCapacity = null;
@@ -287,14 +289,16 @@ public class HeaderImportProcess extends Thread implements Urlable,
 						String exportHhdcContractName = values[17];
 						csvElement.appendChild(getField("Export HHDC contract",
 								exportHhdcContractName));
-						exportHhdceContract = exportHhdcContractName.length() == 0 ? null
+						exportHhdcContract = exportHhdcContractName.length() == 0 ? null
 								: organization
 										.getHhdcContract(exportHhdcContractName);
 						String exportHhdcAccountReference = values[18];
 						csvElement.appendChild(getField("Export HHDC account",
 								exportHhdcAccountReference));
-						exportHhdceAccount = exportHhdceContract
-								.getAccount(exportHhdcAccountReference);
+						if (exportHhdcContract != null) {
+							exportHhdcAccount = exportHhdcContract
+									.getAccount(exportHhdcAccountReference);
+						}
 						String exportSupplierContractName = values[19];
 						csvElement.appendChild(getField(
 								"Export supplier contract name",
@@ -310,11 +314,17 @@ public class HeaderImportProcess extends Thread implements Urlable,
 					}
 					Site site = organization.getSite(siteCode);
 					site.insertSupply(supplyName, meterSerialNumber,
-							importMpanRaw, importSsc, importHhdceAccount,
-							importSupplierAccount, true, true, false, true,
+							importMpanRaw, importSsc, importHhdcAccount,
+							importSupplierAccount,
+							importHhdcAccount == null ? false : true,
+							importHhdcAccount == null ? false : true, false,
+							importHhdcAccount == null ? false : true,
 							importAgreedSupplyCapacity, exportMpanRaw,
-							exportSsc, exportHhdceAccount,
-							exportAccountSupplier, false, true, true, true,
+							exportSsc, exportHhdcAccount,
+							exportAccountSupplier, false,
+							exportHhdcAccount == null ? false : true,
+							exportHhdcAccount == null ? false : true,
+							exportHhdcAccount == null ? false : true,
 							exportAgreedSupplyCapacity, HhEndDate
 									.roundUp(new MonadDate(startDateStr)
 											.getDate()), sourceCode, null);

@@ -26,11 +26,10 @@ import java.util.HashSet;
 import java.util.Set;
 
 import net.sf.chellow.data08.MpanRaw;
-import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.HttpException;
+import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.UserException;
 import net.sf.chellow.monad.types.MonadObject;
-import net.sf.chellow.monad.types.MonadString;
 import net.sf.chellow.physical.RegisterReadRaw;
 
 import org.w3c.dom.Document;
@@ -38,7 +37,7 @@ import org.w3c.dom.Element;
 
 public class InvoiceRaw extends MonadObject {
 	private InvoiceType type;
-	
+
 	private DayStartDate issueDate;
 
 	private DayStartDate startDate;
@@ -49,7 +48,7 @@ public class InvoiceRaw extends MonadObject {
 
 	private double vat;
 
-	private String accountText;
+	private String accountReference;
 
 	private String reference;
 
@@ -59,11 +58,10 @@ public class InvoiceRaw extends MonadObject {
 
 	private Set<RegisterReadRaw> reads = new HashSet<RegisterReadRaw>();
 
-	public InvoiceRaw(InvoiceType type, String accountText, String mpanText,
+	public InvoiceRaw(InvoiceType type, String accountReference, String mpanText,
 			String reference, DayStartDate issueDate, DayStartDate startDate,
 			DayFinishDate finishDate, double net, double vat,
-			Set<RegisterReadRaw> registerReads) throws HttpException,
-			InternalException {
+			Set<RegisterReadRaw> registerReads) throws HttpException {
 		this.type = type;
 		if (issueDate == null) {
 			throw new InternalException("The issue date can't be null.");
@@ -83,10 +81,10 @@ public class InvoiceRaw extends MonadObject {
 			throw new UserException("The invoiceText parameter is required.");
 		}
 		this.reference = reference;
-		if (accountText == null) {
-			throw new UserException("The accountText parameter is required.");
+		if (accountReference == null) {
+			throw new UserException("The accountReference parameter is required.");
 		}
-		this.accountText = accountText;
+		this.accountReference = accountReference;
 		if (mpanText == null) {
 			throw new UserException("The mpanText parameter is required.");
 		}
@@ -95,9 +93,8 @@ public class InvoiceRaw extends MonadObject {
 				mpans.add(new MpanRaw(mpanStr));
 			} catch (HttpException e) {
 				throw new UserException("While parsing the MPAN string '"
-								+ mpanText
-								+ "' I encountered difficulties with '"
-								+ mpanStr + "'. " + e.getMessage());
+						+ mpanText + "' I encountered difficulties with '"
+						+ mpanStr + "'. " + e.getMessage());
 			}
 		}
 		this.mpanText = mpanText;
@@ -117,7 +114,7 @@ public class InvoiceRaw extends MonadObject {
 	public DayStartDate getIssueDate() {
 		return issueDate;
 	}
-	
+
 	public DayStartDate getStartDate() {
 		return startDate;
 	}
@@ -138,8 +135,8 @@ public class InvoiceRaw extends MonadObject {
 		return reference;
 	}
 
-	public String getAccountText() {
-		return accountText;
+	public String getAccountReference() {
+		return accountReference;
 	}
 
 	public String getMpanText() {
@@ -152,15 +149,17 @@ public class InvoiceRaw extends MonadObject {
 
 	public Element toXml(Document doc) throws InternalException {
 		Element element = doc.createElement("invoice-raw");
+		element.setAttribute("reference", reference);
+		issueDate.setLabel("issue");
+		element.appendChild(issueDate.toXml(doc));
 		startDate.setLabel("start");
 		element.appendChild(startDate.toXml(doc));
 		finishDate.setLabel("finish");
 		element.appendChild(finishDate.toXml(doc));
 		element.setAttribute("net", Double.toString(net));
 		element.setAttribute("vat", Double.toString(vat));
-		element.setAttribute("reference", reference);
-		element.setAttribute("account-reference", accountText);
-		element.setAttributeNode(MonadString.toXml(doc, "mpan-text", mpanText));
+		element.setAttribute("account-reference", accountReference);
+		element.setAttribute("mpan-text", mpanText);
 		return element;
 	}
 }

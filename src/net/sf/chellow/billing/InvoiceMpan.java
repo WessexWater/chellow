@@ -41,24 +41,23 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
 public class InvoiceMpan extends PersistentEntity {
-	static public InvoiceMpan getInvoiceMpan(Long id) throws InternalException,
-			HttpException {
-			InvoiceMpan invoiceMpan = (InvoiceMpan) Hiber.session().get(InvoiceMpan.class, id);
-			if (invoiceMpan == null) {
-				throw new UserException("There is no invoice-mpan with that id.");
-			}
-			return invoiceMpan;
+	static public InvoiceMpan getInvoiceMpan(Long id) throws HttpException {
+		InvoiceMpan invoiceMpan = (InvoiceMpan) Hiber.session().get(
+				InvoiceMpan.class, id);
+		if (invoiceMpan == null) {
+			throw new UserException("There is no invoice-mpan with that id.");
+		}
+		return invoiceMpan;
 	}
 
 	private Invoice invoice;
 
 	private Mpan mpan;
 
-	private InvoiceMpan() {
+	InvoiceMpan() {
 	}
 
 	InvoiceMpan(Invoice invoice, Mpan mpan) {
-		this();
 		setInvoice(invoice);
 		setMpan(mpan);
 	}
@@ -83,35 +82,38 @@ public class InvoiceMpan extends PersistentEntity {
 		Element element = super.toXml(doc, "invoice-mpan");
 		return element;
 	}
+
 	public boolean equals(Object obj) {
 		boolean isEqual = false;
-		
+
 		if (obj instanceof InvoiceMpan) {
 			isEqual = ((InvoiceMpan) obj).getId().equals(getId());
 		}
 		return isEqual;
 	}
 
-	public void httpGet(Invocation inv) throws DesignerException, InternalException, HttpException, DeployerException {
+	public void httpGet(Invocation inv) throws DesignerException,
+			InternalException, HttpException, DeployerException {
 		// TODO Auto-generated method stub
-		
+
 	}
 
-	public void httpPost(Invocation inv) throws InternalException, HttpException {
+	public void httpPost(Invocation inv) throws InternalException,
+			HttpException {
 		// TODO Auto-generated method stub
-		
+
 	}
-	
+
 	public void httpDelete(Invocation inv) throws DesignerException,
-		InternalException, HttpException, DeployerException {
-	/*
-	getSite().detachSiteSupply(this);
-	Hiber.commit();
-	inv.sendOk(MonadUtilsUI.newSourceDocument());
-	*/
+			InternalException, HttpException, DeployerException {
+		/*
+		 * getSite().detachSiteSupply(this); Hiber.commit();
+		 * inv.sendOk(MonadUtilsUI.newSourceDocument());
+		 */
 	}
 
-	public Urlable getChild(UriPathElement uriId) throws InternalException, HttpException {
+	public Urlable getChild(UriPathElement uriId) throws InternalException,
+			HttpException {
 		throw new NotFoundException();
 	}
 

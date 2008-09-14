@@ -121,16 +121,16 @@ public class Site extends PersistentEntity implements Urlable {
 	}
 
 	public Supply insertSupply(String supplyName, String meterSerialNumber,
-			MpanRaw importMpanRaw, Ssc importSsc, Account importHhdceAccount,
-			Account importAccountSupplier,
-			boolean importHasDceImportKwh, boolean importHasDceImportKvarh,
-			boolean importHasDceExportKwh, boolean importHasDceExportKvarh,
-			Integer importAgreedSupplyCapacity, MpanRaw exportMpanRaw, Ssc exportSsc,
-			Account exportHhdceAccount, Account exportAccountSupplier,
-			boolean exportHasDceImportKwh, boolean exportHasDceImportKvarh,
-			boolean exportHasDceExportKwh, boolean exportHasDceExportKvarh,
-			Integer exportAgreedSupplyCapacity, HhEndDate startDate,
-			String sourceCode, Long id) throws HttpException {
+			MpanRaw importMpanRaw, Ssc importSsc, Account importHhdcAccount,
+			Account importAccountSupplier, boolean importHasImportKwh,
+			boolean importHasImportKvarh, boolean importHasExportKwh,
+			boolean importHasExportKvarh, Integer importAgreedSupplyCapacity,
+			MpanRaw exportMpanRaw, Ssc exportSsc, Account exportHhdcAccount,
+			Account exportAccountSupplier, boolean exportHasImportKwh,
+			boolean exportHasImportKvarh, boolean exportHasExportKwh,
+			boolean exportHasExportKvarh, Integer exportAgreedSupplyCapacity,
+			HhEndDate startDate, String sourceCode, Long id)
+			throws HttpException {
 		Source source = Source.getSource(sourceCode);
 		Supply supply = new Supply(organization, supplyName, source);
 		try {
@@ -168,24 +168,22 @@ public class Site extends PersistentEntity implements Urlable {
 			}
 		}
 		SupplyGeneration supplyGeneration = supply.addGeneration(siteMap,
-				meter, importMpanRaw, importSsc, importHhdceAccount, importAccountSupplier,
-				 importHasDceImportKwh,
-				importHasDceImportKvarh, importHasDceExportKwh,
-				importHasDceExportKvarh, importAgreedSupplyCapacity,
-				exportMpanRaw, exportSsc, exportHhdceAccount, exportAccountSupplier,
-				 exportHasDceImportKwh,
-				exportHasDceImportKvarh, exportHasDceExportKwh,
-				exportHasDceExportKvarh, exportAgreedSupplyCapacity, null);
+				meter, importMpanRaw, importSsc, importHhdcAccount,
+				importAccountSupplier, importHasImportKwh,
+				importHasImportKvarh, importHasExportKwh, importHasExportKvarh,
+				importAgreedSupplyCapacity, exportMpanRaw, exportSsc,
+				exportHhdcAccount, exportAccountSupplier, exportHasImportKwh,
+				exportHasImportKvarh, exportHasExportKwh, exportHasExportKvarh,
+				exportAgreedSupplyCapacity, null);
 		supplyGeneration.update(startDate, supplyGeneration.getFinishDate(),
 				meter);
 		Hiber.flush();
 		return supply;
 	}
 
-	public void hhCheck(HhEndDate from, HhEndDate to)
-			throws HttpException {
-		//Calendar cal = GregorianCalendar.getInstance(TimeZone
-		//		.getTimeZone("GMT"), Locale.UK);
+	public void hhCheck(HhEndDate from, HhEndDate to) throws HttpException {
+		// Calendar cal = GregorianCalendar.getInstance(TimeZone
+		// .getTimeZone("GMT"), Locale.UK);
 		for (SiteGroup group : groups(from, to, false)) {
 			// long now = System.currentTimeMillis();
 			// Debug.print("About to go checking: "
@@ -209,25 +207,25 @@ public class Site extends PersistentEntity implements Urlable {
 			int i = 0;
 			HhEndDate hhEndDate = group.getFrom();
 			HhEndDate previousEndDate = null;
-			//cal.clear();
-			//cal.setTime(hhEndDate.getDate());
-			//cal.set(Calendar.DAY_OF_MONTH, 1);
-			//cal.set(Calendar.HOUR_OF_DAY, 0);
-			//cal.set(Calendar.MINUTE, 0);
-			//cal.set(Calendar.SECOND, 0);
-			//cal.set(Calendar.MILLISECOND, 0);
-			//DceService previousDceService = getDceService(new HhEndDate(cal
-			//		.getTime()));
-			//DceService dceService = previousDceService;
-			//int month = cal.get(Calendar.MONTH);
+			// cal.clear();
+			// cal.setTime(hhEndDate.getDate());
+			// cal.set(Calendar.DAY_OF_MONTH, 1);
+			// cal.set(Calendar.HOUR_OF_DAY, 0);
+			// cal.set(Calendar.MINUTE, 0);
+			// cal.set(Calendar.SECOND, 0);
+			// cal.set(Calendar.MILLISECOND, 0);
+			// DceService previousDceService = getDceService(new HhEndDate(cal
+			// .getTime()));
+			// DceService dceService = previousDceService;
+			// int month = cal.get(Calendar.MONTH);
 			while (!hhEndDate.getDate().after(group.getTo().getDate())) {
-				//cal.clear();
-				//cal.setTime(hhEndDate.getDate());
-				//if (month != cal.get(Calendar.MONTH)) {
-				//	month = cal.get(Calendar.MONTH);
-				//	previousDceService = dceService;
-				//	dceService = getDceService(new HhEndDate(cal.getTime()));
-				//}
+				// cal.clear();
+				// cal.setTime(hhEndDate.getDate());
+				// if (month != cal.get(Calendar.MONTH)) {
+				// month = cal.get(Calendar.MONTH);
+				// previousDceService = dceService;
+				// dceService = getDceService(new HhEndDate(cal.getTime()));
+				// }
 				if (exportToNet.get(i) > importFromGen.get(i)) {
 					if (snag1From == null) {
 						snag1From = hhEndDate;
@@ -239,16 +237,15 @@ public class Site extends PersistentEntity implements Urlable {
 					}
 					resolve1To = hhEndDate;
 				}
-				if (snag1To != null
-						&& (snag1To.equals(previousEndDate))) {
-					group.addHhdcSnag(
-							SiteGroup.EXPORT_NET_GT_IMPORT_GEN, snag1From, snag1To, false);
+				if (snag1To != null && (snag1To.equals(previousEndDate))) {
+					group.addHhdcSnag(SiteGroup.EXPORT_NET_GT_IMPORT_GEN,
+							snag1From, snag1To, false);
 					snag1From = null;
 					snag1To = null;
 				}
 				if (resolve1To != null && resolve1To.equals(previousEndDate)) {
-					group.resolveHhdcSnag(SiteGroup.EXPORT_NET_GT_IMPORT_GEN, resolve1From,
-							resolve1To);
+					group.resolveHhdcSnag(SiteGroup.EXPORT_NET_GT_IMPORT_GEN,
+							resolve1From, resolve1To);
 					resolve1From = null;
 					resolve1To = null;
 				}
@@ -264,16 +261,15 @@ public class Site extends PersistentEntity implements Urlable {
 					}
 					resolve2To = hhEndDate;
 				}
-				if (snag2To != null
-						&& snag2To.equals(previousEndDate)) {
+				if (snag2To != null && snag2To.equals(previousEndDate)) {
 					group.addHhdcSnag(SiteGroup.EXPORT_GEN_GT_IMPORT,
 							snag2From, snag2To, false);
 					snag2From = null;
 					snag2To = null;
 				}
 				if (resolve2To != null && resolve2To.equals(previousEndDate)) {
-					group.resolveHhdcSnag(SiteGroup.EXPORT_GEN_GT_IMPORT, resolve2From,
-							resolve2To);
+					group.resolveHhdcSnag(SiteGroup.EXPORT_GEN_GT_IMPORT,
+							resolve2From, resolve2To);
 					resolve2From = null;
 					resolve2To = null;
 				}
@@ -286,21 +282,22 @@ public class Site extends PersistentEntity implements Urlable {
 						snag1From, snag1To, false);
 			}
 			if (resolve1To != null && resolve1To.equals(previousEndDate)) {
-				group.resolveHhdcSnag(SiteGroup.EXPORT_NET_GT_IMPORT_GEN, resolve1From,
-						resolve1To);
+				group.resolveHhdcSnag(SiteGroup.EXPORT_NET_GT_IMPORT_GEN,
+						resolve1From, resolve1To);
 			}
 			if (snag2To != null && snag2To.equals(previousEndDate)) {
-				group.addHhdcSnag(SiteGroup.EXPORT_GEN_GT_IMPORT,
-						snag2From, snag2To, false);
+				group.addHhdcSnag(SiteGroup.EXPORT_GEN_GT_IMPORT, snag2From,
+						snag2To, false);
 			}
 			if (resolve2To != null && resolve2To.equals(previousEndDate)) {
-				group.resolveHhdcSnag(SiteGroup.EXPORT_GEN_GT_IMPORT, resolve2From, resolve2To);
+				group.resolveHhdcSnag(SiteGroup.EXPORT_GEN_GT_IMPORT,
+						resolve2From, resolve2To);
 			}
 		}
 	}
 
-	public List<SiteGroup> groups(HhEndDate from, HhEndDate to, boolean primaryOnly)
-			throws HttpException {
+	public List<SiteGroup> groups(HhEndDate from, HhEndDate to,
+			boolean primaryOnly) throws HttpException {
 		List<SiteGroup> groups = new ArrayList<SiteGroup>();
 		HhEndDate checkFrom = from;
 		HhEndDate checkTo = to;
@@ -314,8 +311,7 @@ public class Site extends PersistentEntity implements Urlable {
 						int physicalSupplies1 = site1.physicalSupplies();
 						int physicalSupplies2 = site2.physicalSupplies();
 						return physicalSupplies1 == physicalSupplies2 ? site2
-								.getCode().compareTo(
-										site1.getCode())
+								.getCode().compareTo(site1.getCode())
 								: physicalSupplies2 - physicalSupplies1;
 					}
 				});
@@ -434,9 +430,10 @@ public class Site extends PersistentEntity implements Urlable {
 				.createQuery(
 						"select supplyGeneration from SupplyGeneration supplyGeneration join supplyGeneration.siteSupplyGenerations siteSupplyGeneration where siteSupplyGeneration.site = :site order by supplyGeneration.finishDate.date")
 				.setEntity("site", this).list()) {
-			siteElement.appendChild(generation.toXml(doc, new XmlTree("mpans",
-							new XmlTree("mpanCore").put("mpanTop", new XmlTree("llfc"))).put("supply",
-							new XmlTree("source"))));
+			siteElement.appendChild(generation.toXml(doc,
+					new XmlTree("mpans", new XmlTree("mpanCore").put("mpanTop",
+							new XmlTree("llfc"))).put("supply", new XmlTree(
+							"source"))));
 		}
 		return doc;
 	}

@@ -29,8 +29,6 @@ public class RegisterRead extends PersistentEntity {
 
 	private Tpr tpr;
 
-	private boolean isImport;
-
 	private DayFinishDate previousDate;
 
 	private float previousValue;
@@ -47,8 +45,7 @@ public class RegisterRead extends PersistentEntity {
 	}
 
 	public RegisterRead(Mpan mpan, RegisterReadRaw rawRegisterRead,
-			Invoice invoice) throws HttpException, InternalException {
-		this();
+			Invoice invoice) throws HttpException {
 		setMpan(mpan);
 		if (invoice == null) {
 			throw new InternalException("The invoice must not be null.");
@@ -57,14 +54,12 @@ public class RegisterRead extends PersistentEntity {
 		setTpr(Tpr.getTpr(rawRegisterRead.getTpr()));
 		setCoefficient(rawRegisterRead.getCoefficient());
 		setUnits(rawRegisterRead.getUnits());
-		setIsImport(rawRegisterRead.getIsImport());
 		setPreviousDate(rawRegisterRead.getPreviousDate());
 		setPreviousValue(rawRegisterRead.getPreviousValue());
 		setPreviousType(rawRegisterRead.getPreviousType());
 		setPresentDate(rawRegisterRead.getPresentDate());
 		setpresentValue(rawRegisterRead.getPresentValue());
 		setpresentType(rawRegisterRead.getPresentType());
-
 	}
 
 	public Mpan getMpan() {
@@ -97,14 +92,6 @@ public class RegisterRead extends PersistentEntity {
 
 	void setUnits(Units units) {
 		this.units = units;
-	}
-
-	boolean getIsImport() {
-		return isImport;
-	}
-
-	void setIsImport(boolean isImport) {
-		this.isImport = isImport;
 	}
 
 	public Tpr getTpr() {
@@ -172,11 +159,6 @@ public class RegisterRead extends PersistentEntity {
 		return null;
 	}
 
-	public void httpDelete(Invocation inv) throws HttpException {
-		// TODO Auto-generated method stub
-
-	}
-
 	public void httpGet(Invocation inv) throws HttpException {
 		inv.sendOk(document());
 	}
@@ -217,7 +199,6 @@ public class RegisterRead extends PersistentEntity {
 		Element element = super.toXml(doc, "register-read");
 		element.setAttribute("coefficient", Float.toString(coefficient));
 		element.setAttribute("units", units.toString());
-		element.setAttribute("is-import", Boolean.toString(isImport));
 		previousDate.setLabel("previous");
 		element.appendChild(previousDate.toXml(doc));
 		element.setAttribute("previous-value", Float.toString(previousValue));

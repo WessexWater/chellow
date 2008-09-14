@@ -32,11 +32,13 @@ import net.sf.chellow.monad.Invocation;
 import net.sf.chellow.monad.MonadUtils;
 import net.sf.chellow.monad.NotFoundException;
 import net.sf.chellow.monad.UserException;
+import net.sf.chellow.monad.XmlTree;
 import net.sf.chellow.monad.types.MonadDate;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
 import net.sf.chellow.physical.EntityList;
 import net.sf.chellow.physical.HhEndDate;
+import net.sf.chellow.physical.MarketRole;
 import net.sf.chellow.physical.Organization;
 
 import org.w3c.dom.Document;
@@ -97,6 +99,13 @@ public class SupplierContracts extends EntityList {
 				.list()) {
 			contractsElement.appendChild(contract.toXml(doc));
 		}
+		for (Provider provider : (List<Provider>) Hiber
+				.session()
+				.createQuery(
+						"from Provider provider where provider.role.code = :roleCode order by provider.participant.code")
+				.setCharacter("roleCode", MarketRole.SUPPLIER).list()) {
+			source.appendChild(provider.toXml(doc, new XmlTree("participant")));
+		}
 		source.appendChild(MonadDate.getMonthsXml(doc));
 		source.appendChild(MonadDate.getDaysXml(doc));
 		source.appendChild(new MonadDate().toXml(doc));
@@ -121,7 +130,7 @@ public class SupplierContracts extends EntityList {
 		return contract;
 	}
 
-	public Element toXml(Document doc) throws InternalException, HttpException {
+	public Element toXml(Document doc) throws HttpException {
 		Element contractsElement = doc.createElement("supplier-contracts");
 		return contractsElement;
 	}

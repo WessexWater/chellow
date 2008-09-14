@@ -31,16 +31,13 @@
 				<param name="sequence">register_read_id_sequence</param>
 			</generator>
 		</id>
-		<many-to-one name="mpan" class="Mpan"
-			column="mpan_id" not-null="true"
-			foreign-key="fkey_mpan__register_read" />
+		<many-to-one name="mpan" class="Mpan" column="mpan_id"
+			not-null="true" foreign-key="fkey_mpan__register_read" />
 		<many-to-one name="invoice"
 			class="net.sf.chellow.billing.Invoice" column="invoice_id"
 			not-null="true" foreign-key="fkey_invoice__register_read" />
 		<many-to-one name="tpr" class="Tpr" column="tpr_id"
 			not-null="true" foreign-key="fkey_tpr__register_read" />
-		<property type="boolean" name="isImport"
-			column="is_import" not-null="true" />
 		<component name="presentDate"
 			class="net.sf.chellow.billing.DayFinishDate">
 			<property name="date" type="timestamp" not-null="true">

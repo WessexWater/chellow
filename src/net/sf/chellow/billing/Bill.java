@@ -27,15 +27,13 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import net.sf.chellow.monad.DeployerException;
-import net.sf.chellow.monad.DesignerException;
 import net.sf.chellow.monad.Hiber;
+import net.sf.chellow.monad.HttpException;
+import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Invocation;
 import net.sf.chellow.monad.MonadUtils;
 import net.sf.chellow.monad.NotFoundException;
-import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Urlable;
-import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.UserException;
 import net.sf.chellow.monad.XmlTree;
 import net.sf.chellow.monad.types.MonadDate;
@@ -117,7 +115,6 @@ public class Bill extends PersistentEntity implements Urlable {
 	public void detach(Invoice invoice) throws HttpException {
 		HhEndDate billStart = getStartDate();
 		HhEndDate billFinish = getFinishDate();
-		Contract contract = getContract();
 		Account account = getAccount();
 
 		invoices.remove(invoice);
@@ -144,7 +141,7 @@ public class Bill extends PersistentEntity implements Urlable {
 		} else {
 			setSummary();
 		}
-		account.checkMissing(contract, billStart, billFinish);
+		account.checkMissing(billStart, billFinish);
 	}
 
 	private void setSummary() throws HttpException {
@@ -193,7 +190,7 @@ public class Bill extends PersistentEntity implements Urlable {
 	}
 
 	public void check() throws HttpException {
-		if (getElement().getCost() != nonRejectedCost()) {
+		if (getVirtualBill().getCost() != nonRejectedCost()) {
 			addSnag(false);
 		}
 	}
@@ -262,8 +259,7 @@ public class Bill extends PersistentEntity implements Urlable {
 	}
 
 	@SuppressWarnings("unchecked")
-	private Document document() throws InternalException, HttpException,
-			DesignerException {
+	private Document document() throws HttpException {
 		Document doc = MonadUtils.newSourceDocument();
 		Element source = doc.getDocumentElement();
 		Element billElement = (Element) toXml(doc, new XmlTree("account",
@@ -282,22 +278,16 @@ public class Bill extends PersistentEntity implements Urlable {
 		return doc;
 	}
 
-	public void httpGet(Invocation inv) throws DesignerException,
-			InternalException, HttpException, DeployerException {
+	public void httpGet(Invocation inv) throws HttpException {
 		inv.sendOk(document());
 	}
 
-	public MonadUri getUri() throws InternalException, HttpException {
+	public MonadUri getUri() throws HttpException {
 		return account.billsInstance().getUri().resolve(getUriId()).append("/");
 	}
 
 	public Urlable getChild(UriPathElement uriId) throws HttpException {
 		throw new NotFoundException();
-	}
-
-	public void httpPost(Invocation inv) throws HttpException {
-		// TODO Auto-generated method stub
-
 	}
 
 	/*
@@ -306,13 +296,8 @@ public class Bill extends PersistentEntity implements Urlable {
 	 * chargeScript, account, startDate, finishDate); }
 	 */
 
-	BillElement getElement(String chargeScript) throws HttpException {
-		return contract.billElement("total", chargeScript, account, startDate,
-				finishDate);
-	}
-
-	BillElement getElement() throws HttpException {
-		return contract.billElement("total", account, startDate, finishDate);
+	VirtualBill getVirtualBill() throws HttpException {
+		return account.getContract().virtualBill("total", account, startDate, finishDate);
 	}
 
 	/*

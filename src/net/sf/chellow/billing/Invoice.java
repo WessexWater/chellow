@@ -96,15 +96,13 @@ public class Invoice extends PersistentEntity implements Urlable {
 
 	private Set<RegisterRead> reads;
 
-	private Set<InvoiceMpan> invoiceMpans;
+	//private Set<InvoiceMpan> invoiceMpans;
 
 	public Invoice() {
 	}
 
 	@SuppressWarnings("unchecked")
-	public Invoice(Batch batch, InvoiceRaw invoiceRaw) throws HttpException,
-			InternalException {
-		this();
+	public Invoice(Batch batch, InvoiceRaw invoiceRaw) throws HttpException {
 		setBatch(batch);
 		setBill(null);
 		internalUpdate(invoiceRaw.getIssueDate(), invoiceRaw.getStartDate(),
@@ -230,7 +228,7 @@ public class Invoice extends PersistentEntity implements Urlable {
 
 	private void internalUpdate(DayStartDate issueDate, DayStartDate startDate,
 			DayFinishDate finishDate, double net, double vat, int status)
-			throws HttpException, InternalException {
+			throws HttpException {
 		setIssueDate(issueDate);
 		if (startDate.getDate().after(finishDate.getDate())) {
 			throw new UserException
@@ -249,13 +247,13 @@ public class Invoice extends PersistentEntity implements Urlable {
 
 	public void update(Account account, DayStartDate issueDate,
 			DayStartDate startDate, DayFinishDate finishDate, double net,
-			double vat, int status) throws HttpException, InternalException {
+			double vat, int status) throws HttpException {
 		internalUpdate(issueDate, startDate, finishDate, net, vat, status);
 		bill.detach(this);
 		account.attach(this);
 	}
 
-	public Node toXml(Document doc) throws InternalException, HttpException {
+	public Element toXml(Document doc) throws HttpException {
 		Element element = super.toXml(doc, "invoice");
 		issueDate.setLabel("issue");
 		element.appendChild(issueDate.toXml(doc));
@@ -297,8 +295,7 @@ public class Invoice extends PersistentEntity implements Urlable {
 		}
 	}
 
-	private Document document() throws InternalException, HttpException,
-			DesignerException {
+	private Document document() throws HttpException {
 		Document doc = MonadUtils.newSourceDocument();
 		Element source = doc.getDocumentElement();
 		Element invoiceElement = (Element) toXml(doc,
@@ -321,18 +318,16 @@ public class Invoice extends PersistentEntity implements Urlable {
 		return doc;
 	}
 
-	public void httpGet(Invocation inv) throws DesignerException,
-			InternalException, HttpException, DeployerException {
+	public void httpGet(Invocation inv) throws HttpException {
 		inv.sendOk(document());
 	}
 
-	public MonadUri getUri() throws InternalException, HttpException {
+	public MonadUri getUri() throws HttpException {
 		return batch.invoicesInstance().getUri().resolve(getUriId())
 				.append("/");
 	}
 
-	public Urlable getChild(UriPathElement uriId) throws InternalException,
-			HttpException {
+	public Urlable getChild(UriPathElement uriId) throws HttpException {
 		if (RegisterReads.URI_ID.equals(uriId)) {
 			return registerReadsInstance();
 		} else {
@@ -344,12 +339,8 @@ public class Invoice extends PersistentEntity implements Urlable {
 		return new RegisterReads(this);
 	}
 
-	public void httpDelete(Invocation inv) throws InternalException,
-			DesignerException, HttpException, DeployerException {
-	}
-
 	public RegisterRead insertRead(Mpan mpan, RegisterReadRaw rawRead)
-			throws HttpException, InternalException {
+			throws HttpException {
 		RegisterRead read = new RegisterRead(mpan, rawRead, this);
 		if (reads == null) {
 			reads = new HashSet<RegisterRead>();
@@ -360,7 +351,7 @@ public class Invoice extends PersistentEntity implements Urlable {
 	}
 
 	@SuppressWarnings("unchecked")
-	public void delete() throws InternalException, HttpException {
+	public void delete() throws HttpException {
 		bill.detach(this);
 		reads.clear();
 		invoiceMpans.clear();

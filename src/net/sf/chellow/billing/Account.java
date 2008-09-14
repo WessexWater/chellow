@@ -189,9 +189,8 @@ public class Account extends PersistentEntity implements Urlable {
 		List<Bill> bills = (List<Bill>) Hiber
 				.session()
 				.createQuery(
-						"from Bill bill where bill.account = :account and bill.contract = :contract order by bill.finishDate.date desc")
-				.setEntity("account", this).setEntity("contract",
-						contract).list();
+						"from Bill bill where bill.account = :account order by bill.finishDate.date desc")
+				.setEntity("account", this).list();
 		Bill latestBill = null;
 		if (bills != null && !bills.isEmpty()) {
 			latestBill = bills.get(0);
@@ -207,11 +206,11 @@ public class Account extends PersistentEntity implements Urlable {
 						.after(from.getDate()))) {
 			from = accountSnag.getFinishDate();
 		}
-		checkMissing(contract, from, to);
+		checkMissing(from, to);
 	}
 
 	@SuppressWarnings("unchecked")
-	void checkMissing(Contract contract, HhEndDate from, HhEndDate to)
+	void checkMissing(HhEndDate from, HhEndDate to)
 			throws HttpException {
 		List<SupplyGeneration> supplyGenerations = Hiber
 				.session()
@@ -255,27 +254,26 @@ public class Account extends PersistentEntity implements Urlable {
 		List<Bill> bills = (List<Bill>) Hiber
 				.session()
 				.createQuery(
-						"from Bill bill where bill.account = :account and bill.service.id = :serviceId and bill.startDate.date <= :to and bill.finishDate.date >= :from order by bill.finishDate.date")
-				.setEntity("account", this).setLong("serviceId",
-						contract.getId()).setTimestamp("to", to.getDate())
+						"from Bill bill where bill.account = :account and bill.startDate.date <= :to and bill.finishDate.date >= :from order by bill.finishDate.date")
+				.setEntity("account", this).setTimestamp("to", to.getDate())
 				.setTimestamp("from", from.getDate()).list();
 		HhEndDate gapStart = from;
 		for (int i = 0; i < bills.size(); i++) {
 			Bill bill = bills.get(i);
 			if (bill.getStartDate().getDate().after(gapStart.getDate())) {
-				addSnag(contract, AccountSnag.MISSING_BILL, gapStart, bill
+				addSnag(AccountSnag.MISSING_BILL, gapStart, bill
 						.getStartDate().getPrevious(), false);
 			}
-			addSnag(contract, AccountSnag.MISSING_BILL, bill.getStartDate(),
+			addSnag(AccountSnag.MISSING_BILL, bill.getStartDate(),
 					bill.getFinishDate(), true);
 			gapStart = bill.getFinishDate().getNext();
 		}
 		if (!gapStart.getDate().after(to.getDate())) {
-			addSnag(contract, AccountSnag.MISSING_BILL, gapStart, to, false);
+			addSnag(AccountSnag.MISSING_BILL, gapStart, to, false);
 		}
 	}
 
-	void addSnag(Contract contract, String description, HhEndDate startDate,
+	void addSnag(String description, HhEndDate startDate,
 			HhEndDate finishDate, boolean isResolved) throws HttpException {
 		SnagDateBounded.addAccountSnag(contract, this, description, startDate,
 				finishDate, isResolved);

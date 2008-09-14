@@ -83,6 +83,27 @@
 							<fieldset>
 								<legend>Add a contract</legend>
 								<label>
+									Supplier
+									<select name="provider-id">
+										<xsl:for-each
+											select="/source/provider">
+											<option value="{@id}">
+												<xsl:if
+													test="/source/request/parameter[@name='provider-id']/value = @id">
+													<xsl:attribute
+														name="selected">
+																<xsl:value-of
+															select="'selected'" />
+															</xsl:attribute>
+												</xsl:if>
+												<xsl:value-of
+													select="concat(participant/@code, ' : ', @name)" />
+											</option>
+										</xsl:for-each>
+									</select>
+								</label>
+								<br />
+								<label>
 									<xsl:value-of select="'Name '" />
 									<input name="name"
 										value="{/source/request/parameter[@name = 'name']/value}" />

@@ -104,7 +104,8 @@ public class SupplierContract extends Contract {
 				Bill bill = Bill.getBill(billId);
 				Document doc = document();
 				Element source = doc.getDocumentElement();
-				source.appendChild(bill.getElement(chargeScript).toXml(doc));
+				update(getName(), chargeScript);
+				source.appendChild(bill.getVirtualBill().toXml(doc));
 				inv.sendOk(doc);
 			} catch (HttpException e) {
 				e.setDocument(document());

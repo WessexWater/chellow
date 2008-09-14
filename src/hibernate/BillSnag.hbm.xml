@@ -24,15 +24,14 @@
 	
 -->
 
-
 <hibernate-mapping package="net.sf.chellow.billing">
 	<joined-subclass extends="net.sf.chellow.physical.Snag"
 		name="BillSnag" table="bill_snag" lazy="true">
 		<key column="snag_id" foreign-key="fkey_bill_snag_snag" />
-		<many-to-one name="contract" class="Contract" column="contract_id"
-			not-null="true" foreign-key="fkey_bill_snag_contract" />
+		<many-to-one name="contract" class="SupplierContract"
+			column="supplier_contract_id" not-null="true"
+			foreign-key="fkey_bill_snag_contract" />
 		<many-to-one name="bill" class="Bill" column="bill_id"
 			foreign-key="fkey_bill_snag_bill" />
 	</joined-subclass>
 </hibernate-mapping>
-

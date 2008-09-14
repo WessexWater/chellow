@@ -515,11 +515,11 @@ public class Supply extends PersistentEntity {
 			previousGeneration.update(previousGeneration.getStartDate(),
 					generation.getFinishDate(), previousGeneration.getMeter());
 		}
-		checkAfterUpdate(generation.getStartDate(), generation.getFinishDate());
+		onSupplyGenerationChange(generation.getStartDate(), generation.getFinishDate());
 	}
 
 	@SuppressWarnings("unchecked")
-	public void checkAfterUpdate(HhEndDate from, HhEndDate to)
+	public void onSupplyGenerationChange(HhEndDate from, HhEndDate to)
 			throws HttpException {
 		Hiber.flush();
 		Date supplyStartDate = getGenerationFirst().getStartDate().getDate();

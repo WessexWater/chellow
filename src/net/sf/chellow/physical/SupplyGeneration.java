@@ -282,87 +282,6 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 	 * more optimization possible here, doesn't necessarily need to check //
 	 * data. getSupply().checkAfterUpdate(getStartDate(), getFinishDate()); }
 	 */
-	private void checkAfterUpdate() throws HttpException {
-		if (importMpan == null && exportMpan == null) {
-			throw new UserException(document(),
-					"A supply generation must have at least one MPAN.");
-		}
-		if (importMpan != null) {
-			if (!importMpan.getMpanTop().getLlfc().getIsImport()) {
-				throw new UserException(document(),
-						"The import line loss factor '"
-								+ importMpan.getMpanTop().getLlfc()
-								+ "' says that the MPAN is actually export.");
-			}
-		}
-		if (exportMpan != null) {
-			if (exportMpan.getMpanTop().getLlfc().getIsImport()) {
-				throw new UserException(
-						"Problem with the export MPAN with core '"
-								+ exportMpan.getMpanCore()
-								+ "'. The Line Loss Factor '"
-								+ exportMpan.getMpanTop().getLlfc()
-								+ "' says that the MPAN is actually import.");
-			}
-		}
-
-		// Check that if settlement MPANs then they're the same DSO.
-		if (importMpan != null && exportMpan != null) {
-			Account importHhdcAccount = importMpan.getHhdcAccount();
-			Account exportHhdcAccount = exportMpan.getHhdcAccount();
-			if (importHhdcAccount != null
-					&& exportHhdcAccount != null
-					&& !importHhdcAccount.getContract().getId().equals(
-							exportHhdcAccount.getContract().getId())) {
-				throw new UserException(
-						"The HHDC for the import and export MPANs must be the same.");
-			}
-			if (!importMpan.getMpanCore().getDso().equals(
-					exportMpan.getMpanCore().getDso())) {
-				throw new UserException(
-						"Two MPAN generations on the same supply must have the same DSO.");
-			}
-			if (!importMpan.getMpanTop().getLlfc().getVoltageLevel().equals(
-					exportMpan.getMpanTop().getLlfc().getVoltageLevel())) {
-				throw new UserException(
-						"The voltage level indicated by the Line Loss Factor must be the same for both the MPANs.");
-			}
-		}
-		Dso dso = getDso();
-		if (dso != null && dso.getCode().equals(new DsoCode("22"))) {
-			/*
-			 * if (importMpan != null) { LineLossFactorCode code =
-			 * importLineLossFactor.getCode(); if ((code.equals(new
-			 * LineLossFactorCode("520")) || code.equals(new
-			 * LineLossFactorCode("550")) || code .equals(new
-			 * LineLossFactorCode("580"))) && getExportMpan() == null) { throw
-			 * UserException .newOk("The Line Loss Factor of the import MPAN
-			 * says that there should be an export MPAN, but there isn't one."); } }
-			 */
-
-			if (getExportMpan() != null && getImportMpan() != null) {
-				LlfcCode code = getImportMpan().getMpanTop().getLlfc()
-						.getCode();
-				if (!code.equals(new LlfcCode(520))
-						&& !code.equals(new LlfcCode(550))
-						&& !code.equals(new LlfcCode(580))) {
-					throw new UserException(
-							"The DSO is 22, there's an export MPAN and the Line Loss Factor of the import MPAN "
-									+ getImportMpan()
-									+ " can only be 520, 550 or 580.");
-				}
-			}
-		}
-		Hiber.flush();
-		// more optimization possible here, doesn't necessarily need to check
-		// data.
-		synchronizeChannel(true, true);
-		synchronizeChannel(true, false);
-		synchronizeChannel(false, true);
-		synchronizeChannel(false, false);
-		getSupply().checkAfterUpdate(getStartDate(), getFinishDate());
-		Hiber.flush();
-	}
 
 	public void addOrUpdateMpans(MpanRaw importMpanRaw, Ssc importSsc,
 			Account importHhdcAccount, Account importSupplierAccount,
@@ -414,7 +333,81 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 						exportHasExportKvarh, exportAgreedSupplyCapacity);
 			}
 		}
-		checkAfterUpdate();
+		if (importMpan == null && exportMpan == null) {
+			throw new UserException(document(),
+					"A supply generation must have at least one MPAN.");
+		}
+		if (importMpan != null) {
+			if (!importMpan.getMpanTop().getLlfc().getIsImport()) {
+				throw new UserException(document(),
+						"The import line loss factor '"
+								+ importMpan.getMpanTop().getLlfc()
+								+ "' says that the MPAN is actually export.");
+			}
+		}
+		if (exportMpan != null) {
+			if (exportMpan.getMpanTop().getLlfc().getIsImport()) {
+				throw new UserException(
+						"Problem with the export MPAN with core '"
+								+ exportMpan.getMpanCore()
+								+ "'. The Line Loss Factor '"
+								+ exportMpan.getMpanTop().getLlfc()
+								+ "' says that the MPAN is actually import.");
+			}
+		}
+		if (importMpan != null && exportMpan != null) {
+			if (importHhdcAccount != null
+					&& exportHhdcAccount != null
+					&& !importHhdcAccount.getContract().getId().equals(
+							exportHhdcAccount.getContract().getId())) {
+				throw new UserException(
+						"The HHDC for the import and export MPANs must be the same.");
+			}
+			if (!importMpan.getMpanCore().getDso().equals(
+					exportMpan.getMpanCore().getDso())) {
+				throw new UserException(
+						"Two MPAN generations on the same supply must have the same DSO.");
+			}
+			if (!importMpan.getMpanTop().getLlfc().getVoltageLevel().equals(
+					exportMpan.getMpanTop().getLlfc().getVoltageLevel())) {
+				throw new UserException(
+						"The voltage level indicated by the Line Loss Factor must be the same for both the MPANs.");
+			}
+		}
+		Dso dso = getDso();
+		if (dso != null && dso.getCode().equals(new DsoCode("22"))) {
+			/*
+			 * if (importMpan != null) { LineLossFactorCode code =
+			 * importLineLossFactor.getCode(); if ((code.equals(new
+			 * LineLossFactorCode("520")) || code.equals(new
+			 * LineLossFactorCode("550")) || code .equals(new
+			 * LineLossFactorCode("580"))) && getExportMpan() == null) { throw
+			 * UserException .newOk("The Line Loss Factor of the import MPAN
+			 * says that there should be an export MPAN, but there isn't one."); } }
+			 */
+
+			if (getExportMpan() != null && getImportMpan() != null) {
+				LlfcCode code = getImportMpan().getMpanTop().getLlfc()
+						.getCode();
+				if (!code.equals(new LlfcCode(520))
+						&& !code.equals(new LlfcCode(550))
+						&& !code.equals(new LlfcCode(580))) {
+					throw new UserException(
+							"The DSO is 22, there's an export MPAN and the Line Loss Factor of the import MPAN "
+									+ getImportMpan()
+									+ " can only be 520, 550 or 580.");
+				}
+			}
+		}
+		Hiber.flush();
+		// more optimization possible here, doesn't necessarily need to check
+		// data.
+		synchronizeChannel(true, true);
+		synchronizeChannel(true, false);
+		synchronizeChannel(false, true);
+		synchronizeChannel(false, false);
+		getSupply().onSupplyGenerationChange(getStartDate(), getFinishDate());
+		Hiber.flush();
 	}
 
 	private void synchronizeChannel(boolean isImport, boolean isKwh)
@@ -512,7 +505,7 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 		setMeter(meter);
 		// resolve any snags channel snags outside range
 		for (Channel channel : channels) {
-			channel.internalCheck();
+			channel.onSupplyGenerationChange();
 		}
 	}
 
@@ -580,7 +573,7 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 					originalFinishDate.getDate()) ? finishDate
 					: originalFinishDate;
 		}
-		supply.checkAfterUpdate(startDate.getDate().before(
+		supply.onSupplyGenerationChange(startDate.getDate().before(
 				originalStartDate.getDate()) ? startDate : originalStartDate,
 				checkFinishDate);
 	}

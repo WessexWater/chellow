@@ -4,7 +4,6 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 
 import net.sf.chellow.monad.HttpException;
-import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.UserException;
 import net.sf.chellow.monad.types.MonadObject;
 
@@ -32,14 +31,12 @@ public class ReadType extends MonadObject {
 			CUSTOMER = new ReadType(4);
 			COMPUTER = new ReadType(5);
 			EXCHANGE = new ReadType(6);
-		} catch (InternalException e) {
-			throw new RuntimeException(e.getMessage());
-		} catch (UserException e) {
+		} catch (HttpException e) {
 			throw new RuntimeException(e.getMessage());
 		}
 	}
 
-	public static ReadType getType(int intValue) throws InternalException, UserException {
+	public static ReadType getType(int intValue) throws HttpException {
 		switch (intValue) {
 		case 0:
 			return NORMAL;
@@ -61,7 +58,7 @@ public class ReadType extends MonadObject {
 		}
 	}
 
-	public static String name(ReadType type) throws InternalException, UserException {
+	public static String name(ReadType type) throws HttpException {
 		switch (type.getInt()) {
 		case 0:
 			return "normal";
@@ -82,7 +79,7 @@ public class ReadType extends MonadObject {
 		}
 	}
 
-	public static ReadType getType(String name) throws InternalException, UserException {
+	public static ReadType getType(String name) throws HttpException {
 		name = name.trim().toLowerCase();
 		if (name.equals("normal")) {
 			return NORMAL;
@@ -108,7 +105,7 @@ public class ReadType extends MonadObject {
 	ReadType() {
 	}
 
-	private ReadType(int intValue) throws InternalException, UserException {
+	private ReadType(int intValue) throws HttpException {
 		if (intValue < 0) {
 			throw new UserException("The int value can't be negative.");
 		}
@@ -140,9 +137,7 @@ public class ReadType extends MonadObject {
 	public String toString() {
 		try {
 			return name(this);
-		} catch (InternalException e) {
-			throw new RuntimeException(e);
-		} catch (UserException e) {
+		} catch (HttpException e) {
 			throw new RuntimeException(e);
 		}
 	}

@@ -134,13 +134,13 @@ public class InvoiceConverterCsv implements InvoiceConverter {
 						reads.add(new RegisterReadRaw(new MpanRaw(values[i]),
 								Float.parseFloat(values[i + 1]), values[i + 2],
 								Units.getUnits(values[i + 3]), Integer
-										.parseInt(values[i + 4]), Boolean.parseBoolean(values[i + 5]),
-								new DayFinishDate(values[i + 6]), Float
-										.parseFloat(values[i + 7]), ReadType
-										.getType(values[i + 8]),
-								new DayFinishDate(values[i + 9]), Float
-										.parseFloat(values[i + 10]), ReadType
-										.getType(values[i + 11])));
+										.parseInt(values[i + 4]),
+								new DayFinishDate(values[i + 5]), Float
+										.parseFloat(values[i + 6]), ReadType
+										.getType(values[i + 7]),
+								new DayFinishDate(values[i + 8]), Float
+										.parseFloat(values[i + 9]), ReadType
+										.getType(values[i + 10])));
 					}
 					rawBills.add(new InvoiceRaw(invoiceTypeMap.get(values[0]),
 							values[1], values[2], values[3], new DayStartDate(

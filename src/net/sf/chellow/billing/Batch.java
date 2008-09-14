@@ -135,8 +135,8 @@ public class Batch extends PersistentEntity {
 	private Document document() throws HttpException {
 		Document doc = MonadUtils.newSourceDocument();
 		Element source = doc.getDocumentElement();
-		source.appendChild(toXml(doc, new XmlTree("service", new XmlTree(
-				"provider", new XmlTree("organization")))));
+		source.appendChild(toXml(doc, new XmlTree("contract", new XmlTree(
+				"provider").put("organization"))));
 		return doc;
 	}
 
@@ -184,7 +184,7 @@ public class Batch extends PersistentEntity {
 			List<Mpan> candidateMpans = (List<Mpan>) Hiber
 					.session()
 					.createQuery(
-							"from Mpan mpan where mpan.mpanCore = :mpanCore and mpan.mpanTop.pc = :pc and mpan.mpanTop.mtc and mpan.mpanTop.llfc and mpan.supplyGeneration.startDate.date <= :finishDate and (mpan.supplyGeneration.finishDate.date is null or mpan.supplyGeneration.finishDate.date >= :startDate) order by mpan.supplyGeneration.startDate.date desc")
+							"from Mpan mpan where mpan.mpanCore = :mpanCore and mpan.mpanTop.pc = :pc and mpan.mpanTop.mtc = :mtc and mpan.mpanTop.llfc = :llfc and mpan.supplyGeneration.startDate.date <= :finishDate and (mpan.supplyGeneration.finishDate.date is null or mpan.supplyGeneration.finishDate.date >= :startDate) order by mpan.supplyGeneration.startDate.date desc")
 					.setEntity("mpanCore", mpanCore).setEntity("pc",
 							rawMpan.getPc()).setEntity("mtc", rawMpan.getMtc())
 					.setEntity("llfc", rawMpan.getLlfc()).setTimestamp(
@@ -204,8 +204,7 @@ public class Batch extends PersistentEntity {
 			invoice.insertInvoiceMpan(candidateMpans.get(0));
 		}
 		Hiber.flush();
-		Account account = organization.getAccount(getContract().getProvider(),
-				rawInvoice.getAccountText());
+		Account account = getContract().getAccount(rawInvoice.getAccountReference());
 		account.attach(invoice);
 		return invoice;
 	}
