@@ -144,7 +144,7 @@
 				<ul>
 					<li>
 						<a
-							href="{/source/request/@context-path}/orgs/{/source/supplier-contract/org/@id}/reports/44/screen/output/?contract-id={/source/supplier-contract/@id}">
+							href="{/source/request/@context-path}/orgs/{/source/supplier-contract/org/@id}/reports/44/screen/output/?supplier-contract-id={/source/supplier-contract/@id}">
 							Batches
 						</a>
 					</li>

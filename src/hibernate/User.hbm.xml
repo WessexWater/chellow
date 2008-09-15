@@ -4,7 +4,7 @@
           "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
 <!-- 
 	
-	Copyright 2005 Meniscus Systems Ltd
+	Copyright 2005, 2008 Meniscus Systems Ltd
 	
 	This file is part of Chellow.
 	
@@ -24,8 +24,7 @@
 	
 -->
 
-<hibernate-mapping
-	package="net.sf.chellow.physical">
+<hibernate-mapping package="net.sf.chellow.physical">
 	<class name="User" table="`user`" lazy="true">
 		<id name="id">
 			<generator class="sequence">
@@ -37,10 +36,8 @@
 			<property name="address" column="email_address"
 				not-null="true" unique="true" />
 		</component>
-		<component name="password"
-			class="Password">
-			<property name="string" column="password" not-null="true" />
-		</component>
+		<property type="string" name="passwordDigest"
+			column="password_digest" not-null="true" />
 		<set name="roles" table="user_role" lazy="true">
 			<key>
 				<column name="user_id" not-null="true" />

@@ -32,7 +32,6 @@ import net.sf.chellow.billing.Account;
 import net.sf.chellow.billing.Dso;
 import net.sf.chellow.billing.HhdcContract;
 import net.sf.chellow.billing.Invoice;
-import net.sf.chellow.billing.InvoiceMpan;
 import net.sf.chellow.billing.SupplierContract;
 import net.sf.chellow.data08.MpanCoreRaw;
 import net.sf.chellow.data08.MpanRaw;
@@ -660,6 +659,7 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 						new XmlTree("batch", new XmlTree("service",
 								new XmlTree("provider"))))));
 			}
+			/*
 			for (InvoiceMpan invoiceMpan : (List<InvoiceMpan>) Hiber
 					.session()
 					.createQuery(
@@ -669,6 +669,7 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 						"invoice", new XmlTree("batch", new XmlTree("service",
 								new XmlTree("provider"))))));
 			}
+			*/
 		}
 		// Organization organization = organization();
 		/*

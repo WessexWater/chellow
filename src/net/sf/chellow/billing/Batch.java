@@ -22,7 +22,9 @@
 
 package net.sf.chellow.billing;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import net.sf.chellow.data08.MpanRaw;
 import net.sf.chellow.monad.Hiber;
@@ -201,10 +203,23 @@ public class Batch extends PersistentEntity {
 						+ " and the half-hour ending "
 						+ rawInvoice.getFinishDate() + ".");
 			}
-			invoice.insertInvoiceMpan(candidateMpans.get(0));
+			//invoice.insertInvoiceMpan(candidateMpans.get(0));
+		}
+		Account account = getContract().getAccount(rawInvoice.getAccountReference());
+		Set<MpanRaw> accountMpans = new HashSet<MpanRaw>();
+		for (Mpan mpan : account.getMpans(invoice.getStartDate(), invoice.getFinishDate())) {
+			accountMpans.add(mpan.getMpanRaw());
+		}
+		if (!accountMpans.equals(rawInvoice.getMpans())) {
+			throw new UserException("Problem with account '" + reference
+					+ "' invoice '" + invoice.getReference()
+					+ "' from the half-hour ending " + invoice.getStartDate()
+					+ " to the half-hour ending " + invoice.getFinishDate()
+					+ ". This invoice has MPANs " + rawInvoice.getMpans()
+					+ " but the account in Chellow has MPANs '" + accountMpans
+					+ "'.");
 		}
 		Hiber.flush();
-		Account account = getContract().getAccount(rawInvoice.getAccountReference());
 		account.attach(invoice);
 		return invoice;
 	}

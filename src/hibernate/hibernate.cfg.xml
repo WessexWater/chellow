@@ -84,7 +84,9 @@
 		<mapping resource="hibernate/Meter.hbm.xml" />
 		<mapping resource="hibernate/RegisterRead.hbm.xml" />
 		<mapping resource="hibernate/Ssc.hbm.xml" />
+		<!-- 
 		<mapping resource="hibernate/InvoiceMpan.hbm.xml" />
+		-->
 		<mapping resource="hibernate/Participant.hbm.xml" />
 		<mapping resource="hibernate/MarketRole.hbm.xml" />
 		<mapping resource="hibernate/MeasurementRequirement.hbm.xml" />

@@ -22,36 +22,36 @@
 
 package net.sf.chellow.physical;
 
+import java.io.UnsupportedEncodingException;
 import java.net.URI;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import net.sf.chellow.monad.DeployerException;
-import net.sf.chellow.monad.DesignerException;
 import net.sf.chellow.monad.Hiber;
+import net.sf.chellow.monad.HttpException;
+import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Invocation;
 import net.sf.chellow.monad.MonadUtils;
 import net.sf.chellow.monad.NotFoundException;
-import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Urlable;
-import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.UserException;
 import net.sf.chellow.monad.XmlTree;
 import net.sf.chellow.monad.Invocation.HttpMethod;
 import net.sf.chellow.monad.types.EmailAddress;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
-
 import net.sf.chellow.ui.Chellow;
 
-import org.hibernate.HibernateException;
 import org.hibernate.exception.ConstraintViolationException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import org.w3c.dom.Node;
+
+import com.Ostermiller.util.Base64;
 
 public class User extends PersistentEntity {
 	public static final UriPathElement USERS_URI_ID;
@@ -64,12 +64,8 @@ public class User extends PersistentEntity {
 		}
 	}
 
-	static public User getUser(Long id) throws InternalException {
-		try {
-			return (User) Hiber.session().get(User.class, id);
-		} catch (HibernateException e) {
-			throw new InternalException(e);
-		}
+	static public User getUser(Long id) {
+		return (User) Hiber.session().get(User.class, id);
 	}
 
 	static public User findUserByEmail(EmailAddress emailAddress)
@@ -83,15 +79,16 @@ public class User extends PersistentEntity {
 	}
 
 	static public User insertUser(User sessionUser, EmailAddress emailAddress,
-			Password password) throws HttpException {
+			String password) throws HttpException {
 		User user = null;
 		try {
 			user = new User(emailAddress, password);
 			Hiber.session().save(user);
 			Hiber.flush();
-			Role userRole = Role.insertRole(sessionUser, "user-" + user.getId());
+			Role userRole = Role
+					.insertRole(sessionUser, "user-" + user.getId());
 			userRole.insertPermission(sessionUser, userRole.getUri(), Arrays
-						.asList(Invocation.HttpMethod.GET));
+					.asList(Invocation.HttpMethod.GET));
 			user.addRole(sessionUser, userRole);
 			user.addRole(sessionUser, Role.find("basic-user"));
 			if (sessionUser != null) {
@@ -124,31 +121,48 @@ public class User extends PersistentEntity {
 		return user;
 	}
 
+	public static String digest(String password) throws HttpException {
+		try {
+			MessageDigest md = MessageDigest.getInstance("SHA-256");
+			md.update(password.getBytes("UTF-8"));
+			return Base64.encodeToString(md.digest());
+		} catch (NoSuchAlgorithmException e) {
+			throw new InternalException(e.getMessage());
+		} catch (UnsupportedEncodingException e) {
+			throw new InternalException(e.getMessage());
+		}
+	}
+
 	private EmailAddress emailAddress;
 
-	private Password password;
+	private String passwordDigest;
 
 	private Set<Role> roles;
 
 	public User() {
 	}
 
-	public User(EmailAddress emailAddress, Password password)
+	public User(EmailAddress emailAddress, String password)
 			throws HttpException {
 		update(emailAddress, password);
 	}
 
-	public void update(EmailAddress emailAddress, Password password) {
+	public void update(EmailAddress emailAddress, String password)
+			throws HttpException {
 		setEmailAddress(emailAddress);
-		setPassword(password);
+		if (password.length() < 6) {
+			throw new UserException(
+					"The password must be at least 6 characters long.");
+		}
+		setPasswordDigest(digest(password));
 	}
 
-	public Password getPassword() {
-		return password;
+	public String getPasswordDigest() {
+		return passwordDigest;
 	}
 
-	protected void setPassword(Password password) {
-		this.password = password;
+	protected void setPasswordDigest(String passwordDigest) {
+		this.passwordDigest = passwordDigest;
 	}
 
 	public EmailAddress getEmailAddress() {
@@ -184,7 +198,7 @@ public class User extends PersistentEntity {
 		}
 	}
 
-	public Node toXml(Document doc) throws HttpException {
+	public Element toXml(Document doc) throws HttpException {
 		Element element = super.toXml(doc, "user");
 		element.setAttributeNode(emailAddress.toXml(doc));
 		return element;
@@ -194,23 +208,19 @@ public class User extends PersistentEntity {
 		return Chellow.USERS_INSTANCE.getUri().resolve(getUriId());
 	}
 
-	public Urlable getChild(UriPathElement uriId) throws InternalException,
-			HttpException {
+	public Urlable getChild(UriPathElement uriId) throws HttpException {
 		throw new NotFoundException();
 	}
 
-	public void httpGet(Invocation inv) throws DesignerException,
-			InternalException, HttpException, DeployerException {
+	public void httpGet(Invocation inv) throws HttpException {
 		inv.sendOk(document());
 	}
 
-	private Document document() throws InternalException, HttpException,
-			DesignerException {
+	private Document document() throws HttpException {
 		return document(null);
 	}
 
-	private Document document(String message) throws InternalException,
-			HttpException, DesignerException {
+	private Document document(String message) throws HttpException {
 		Document doc = MonadUtils.newSourceDocument();
 		Element source = doc.getDocumentElement();
 		source.appendChild(toXml(doc, new XmlTree("roles")));
@@ -232,32 +242,26 @@ public class User extends PersistentEntity {
 			Hiber.close();
 			inv.sendSeeOther(getUri());
 		} else if (inv.hasParameter("current-password")) {
-			Password currentPassword = inv.getValidatable(Password.class,
-					"current-password");
-			Password newPassword = inv.getValidatable(Password.class,
-					"new-password");
-			Password confirmNewPassword = inv.getValidatable(Password.class,
-					"confirm-new-password");
+			String currentPassword = inv.getString("current-password");
+			String newPassword = inv.getString("new-password");
+			String confirmNewPassword = inv.getString("confirm-new-password");
 
 			if (!inv.isValid()) {
 				throw new UserException(document());
 			}
-			if (!getPassword().equals(currentPassword)) {
+			if (!getPasswordDigest().equals(digest(currentPassword))) {
 				throw new UserException("The current password is incorrect.");
 			}
 			if (!newPassword.equals(confirmNewPassword)) {
 				throw new UserException("The new passwords aren't the same.");
 			}
-			setPassword(newPassword);
+			setPasswordDigest(digest(newPassword));
 			Hiber.commit();
 			inv.sendOk(document("New password set successfully."));
 		} else {
 			throw new UserException(
 					"I can't really see what you're trying to do.");
 		}
-	}
-
-	public void httpDelete(Invocation inv) throws HttpException {
 	}
 
 	public void addRole(User sessionUser, Role role) throws HttpException {

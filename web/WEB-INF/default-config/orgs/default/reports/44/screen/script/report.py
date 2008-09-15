@@ -1,7 +1,7 @@
 from net.sf.chellow.monad import Hiber, XmlTree, UserException
 from net.sf.chellow.billing import SupplierContract
 
-contract_id = inv.getLong('contract-id')
+contract_id = inv.getLong('supplier-contract-id')
 contract = SupplierContract.getSupplierContract(contract_id)
 if not contract.getOrganization().equals(organization):
     raise UserException("Such a supplier contract doesn't exist in this organization")

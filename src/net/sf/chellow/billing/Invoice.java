@@ -54,7 +54,6 @@ import net.sf.chellow.physical.Supply;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import org.w3c.dom.Node;
 
 public class Invoice extends PersistentEntity implements Urlable {
 	public static final int PENDING = 0;
@@ -110,7 +109,7 @@ public class Invoice extends PersistentEntity implements Urlable {
 						.getVat(), PENDING);
 		setReference(invoiceRaw.getReference());
 		// setAccountText(invoiceRaw.getAccountText());
-		invoiceMpans = new HashSet<InvoiceMpan>();
+		//invoiceMpans = new HashSet<InvoiceMpan>();
 		Organization organization = batch.getContract().getOrganization();
 		for (RegisterReadRaw rawRead : invoiceRaw.getRegisterReads()) {
 			MpanCoreRaw mpanCoreRaw = rawRead.getMpanRaw().getMpanCoreRaw();
@@ -120,9 +119,9 @@ public class Invoice extends PersistentEntity implements Urlable {
 		}
 	}
 
-	public void insertInvoiceMpan(Mpan mpan) {
-		invoiceMpans.add(new InvoiceMpan(this, mpan));
-	}
+	//public void insertInvoiceMpan(Mpan mpan) {
+	//	invoiceMpans.add(new InvoiceMpan(this, mpan));
+	//}
 
 	public Batch getBatch() {
 		return batch;
@@ -194,13 +193,13 @@ public class Invoice extends PersistentEntity implements Urlable {
 	 * public void setAccountText(String accountText) { this.accountText =
 	 * accountText; }
 	 */
-	public Set<InvoiceMpan> getInvoiceMpans() {
-		return invoiceMpans;
-	}
+	//public Set<InvoiceMpan> getInvoiceMpans() {
+	//	return invoiceMpans;
+	//}
 
-	public void setInvoiceMpans(Set<InvoiceMpan> invoiceMpans) {
-		this.invoiceMpans = invoiceMpans;
-	}
+	//public void setInvoiceMpans(Set<InvoiceMpan> invoiceMpans) {
+	//	this.invoiceMpans = invoiceMpans;
+	//}
 
 	public int getStatus() {
 		return status;
@@ -310,11 +309,13 @@ public class Invoice extends PersistentEntity implements Urlable {
 									new XmlTree("mpanCore").put("supplyGeneration",
 											new XmlTree("supply")))));
 		}
+		/*
 		for (InvoiceMpan invoiceMpan : invoiceMpans) {
 			invoiceElement.appendChild(invoiceMpan.toXml(doc,
 					new XmlTree("mpan",
 							new XmlTree("supplyGeneration", new XmlTree("supply")))));
 		}
+		*/
 		return doc;
 	}
 
@@ -354,7 +355,7 @@ public class Invoice extends PersistentEntity implements Urlable {
 	public void delete() throws HttpException {
 		bill.detach(this);
 		reads.clear();
-		invoiceMpans.clear();
+		//invoiceMpans.clear();
 		Hiber.flush();
 		Hiber.session().delete(this);
 		Hiber.flush();

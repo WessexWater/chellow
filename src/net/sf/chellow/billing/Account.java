@@ -22,7 +22,6 @@
 
 package net.sf.chellow.billing;
 
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.List;
@@ -284,7 +283,7 @@ public class Account extends PersistentEntity implements Urlable {
 	}
 
 	@SuppressWarnings("unchecked")
-	private List<Mpan> getMpans(HhEndDate from, HhEndDate to)
+	public List<Mpan> getMpans(HhEndDate from, HhEndDate to)
 			throws HttpException {
 		char roleCode = contract.getProvider().getRole().getCode();
 		if (roleCode == MarketRole.SUPPLIER) {
@@ -320,9 +319,11 @@ public class Account extends PersistentEntity implements Urlable {
 	void attach(Invoice invoice) throws HttpException {
 		Bill bill = combineBills(invoice.getStartDate(), invoice
 				.getFinishDate());
+		/*
 		List<Mpan> accountMpans = getMpans(invoice.getStartDate(), invoice
 				.getFinishDate());
 		List<Mpan> invoiceMpans = new ArrayList<Mpan>();
+		
 		for (InvoiceMpan invoiceMpan : invoice.getInvoiceMpans()) {
 			invoiceMpans.add(invoiceMpan.getMpan());
 		}
@@ -335,6 +336,7 @@ public class Account extends PersistentEntity implements Urlable {
 					+ " but the account in Chellow has MPANs '" + accountMpans
 					+ "'.");
 		}
+		*/
 		if (bill == null) {
 			bill = new Bill(this);
 			Hiber.session().save(bill);

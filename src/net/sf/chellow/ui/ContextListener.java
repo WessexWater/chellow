@@ -42,7 +42,6 @@ import net.sf.chellow.physical.Mtc;
 import net.sf.chellow.physical.MeterType;
 import net.sf.chellow.physical.MeterPaymentType;
 import net.sf.chellow.physical.Participant;
-import net.sf.chellow.physical.Password;
 import net.sf.chellow.physical.Pc;
 import net.sf.chellow.physical.Role;
 import net.sf.chellow.physical.Source;
@@ -315,7 +314,7 @@ public class ContextListener implements ServletContextListener {
 		User adminUser = User.findUserByEmail(adminUserEmailAddress);
 		if (adminUser == null) {
 			adminUser = User.insertUser(null, adminUserEmailAddress,
-					new Password("administrator"));
+					"administrator");
 
 			Role adminRole = Role.insertRole(null, "administrator");
 			adminRole.insertPermission(null, new MonadUri("/"), Arrays.asList(
@@ -328,7 +327,7 @@ public class ContextListener implements ServletContextListener {
 		User basicUser = User.findUserByEmail(basicUserEmailAddress);
 		if (basicUser == null) {
 			basicUser = User.insertUser(null, basicUserEmailAddress,
-					new Password("basic-user"));
+					"basic-user");
 			Hiber.flush();
 						//basicUserRole.insertPermission("/participants/",
 			//		new Invocation.HttpMethod[] { Invocation.HttpMethod.GET });
@@ -418,7 +417,7 @@ public class ContextListener implements ServletContextListener {
 			User adminUser = User.findUserByEmail(adminUserEmailAddress);
 			if (adminUser == null) {
 				adminUser = User.insertUser(null, adminUserEmailAddress,
-						new Password("administrator"));
+						"administrator");
 
 				Role adminRole = Role.insertRole(null, "administrator");
 				adminRole.insertPermission(null, new MonadUri("/"), Arrays.asList(
@@ -431,7 +430,7 @@ public class ContextListener implements ServletContextListener {
 			User basicUser = User.findUserByEmail(basicUserEmailAddress);
 			if (basicUser == null) {
 				basicUser = User.insertUser(null, basicUserEmailAddress,
-						new Password("basic-user"));
+						"basic-user");
 				Hiber.flush();
 				Role basicUserRole = Role.insertRole(null, "basic-user");
 				Hiber.flush();

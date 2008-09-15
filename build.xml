@@ -390,14 +390,14 @@
 			<arg line="-U postgres chellow" />
 		</exec>
 		<exec osfamily="windows" executable="C:\Program Files\PostgreSQL\8.2\bin\createdb" failonerror="true">
-			<arg line="-U postgres -T template0 chellow" />
+			<arg line="--encoding UTF8 -U postgres -T template0 chellow" />
 		</exec>
 
 		<exec osfamily="unix" executable="dropdb">
 			<arg line="-U postgres chellow" />
 		</exec>
 		<exec osfamily="unix" executable="createdb" failonerror="true">
-			<arg line="-U postgres -T template0 chellow" />
+			<arg line="--encoding UTF8 -U postgres -T template0 chellow" />
 		</exec>
 
 		<!--

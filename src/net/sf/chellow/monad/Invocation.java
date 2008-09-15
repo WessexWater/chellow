@@ -57,7 +57,6 @@ import net.sf.chellow.monad.types.MonadString;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.MonadValidatable;
 import net.sf.chellow.monad.types.UriPathElement;
-import net.sf.chellow.physical.Password;
 import net.sf.chellow.physical.User;
 import net.sf.chellow.ui.Chellow;
 
@@ -643,11 +642,13 @@ public class Invocation {
 		}
 		User user = Chellow.USERS_INSTANCE.findUser(new EmailAddress(
 				usernameAndPassword[0]));
+		Debug.print("password :" + usernameAndPassword[1]);
+		Debug.print("password digest:" + User.digest(usernameAndPassword[1]));
 
 		if (user == null) {
 			return null;
-		} else if (!user.getPassword().equals(
-				new Password(usernameAndPassword[1]))) {
+		} else if (!user.getPasswordDigest().equals(
+				User.digest(usernameAndPassword[1]))) {
 			return null;
 		}
 		return user;

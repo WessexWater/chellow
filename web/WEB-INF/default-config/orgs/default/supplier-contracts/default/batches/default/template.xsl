@@ -68,7 +68,13 @@
 						<xsl:value-of select="'Batches'" />
 					</a>
 					&gt;
-					<xsl:value-of select="/source/batch/@reference" />
+					<xsl:value-of
+						select="concat(/source/batch/@reference, ' [')" />
+					<a
+						href="{/source/request/@context-path}/orgs/{/source/batch/supplier-contract/org/@id}/reports/45/screen/output/?batch-id={/source/batch/@id}">
+						<xsl:value-of select="'view'" />
+					</a>
+					<xsl:value-of select="']'" />
 				</p>
 				<br />
 				<xsl:choose>

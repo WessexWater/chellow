@@ -77,8 +77,7 @@ public class MpanRaw extends MonadObject {
 	}
 
 	public MpanRaw(PcCode pcCode, MtcCode mtcCode, LlfcCode llfcCode,
-			MpanCoreRaw mpanCoreRaw)
-			throws InternalException {
+			MpanCoreRaw mpanCoreRaw) throws InternalException {
 		init(pcCode, mtcCode, llfcCode, mpanCoreRaw);
 	}
 

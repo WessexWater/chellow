@@ -65,7 +65,7 @@ public class Users implements Urlable, XmlDescriber {
 
 	public void httpPost(Invocation inv) throws HttpException {
 		EmailAddress emailAddress = inv.getEmailAddress("email-address");
-		Password password = inv.getValidatable(Password.class, "password");
+		String password = inv.getString("password");
 		if (!inv.isValid()) {
 			throw new UserException();
 		}
