@@ -134,7 +134,12 @@
 							SSCs
 						</a>
 					</li>
-
+					<li>
+						<a
+							href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/70/screen/output/">
+							Read Types
+						</a>
+					</li>
 				</ul>
 			</body>
 		</html>

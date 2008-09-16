@@ -222,7 +222,7 @@
 										</td>
 										<td>
 											<xsl:value-of
-												select="@previous-type" />
+												select="read-type[@label='previous']/@code" />
 										</td>
 										<td>
 											<xsl:value-of
@@ -234,7 +234,7 @@
 										</td>
 										<td>
 											<xsl:value-of
-												select="@present-type" />
+												select="read-type[@label='present']/@code" />
 										</td>
 									</xsl:for-each>
 								</tr>

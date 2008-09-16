@@ -25,6 +25,7 @@ package net.sf.chellow.physical;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.Invocation;
 import net.sf.chellow.monad.MethodNotAllowedException;
+import net.sf.chellow.monad.NotFoundException;
 import net.sf.chellow.monad.Urlable;
 import net.sf.chellow.monad.types.MonadObject;
 import net.sf.chellow.monad.types.UriPathElement;
@@ -34,7 +35,7 @@ import org.w3c.dom.Element;
 
 public abstract class PersistentEntity extends MonadObject implements Urlable {
 	private Long id;
-	
+
 	public PersistentEntity() {
 	}
 
@@ -45,9 +46,9 @@ public abstract class PersistentEntity extends MonadObject implements Urlable {
 	protected void setId(Long id) {
 		this.id = id;
 	}
-	
+
 	public UriPathElement getUriId() throws HttpException {
-			return new UriPathElement(Long.toString(id));
+		return new UriPathElement(Long.toString(id));
 	}
 
 	public Element toXml(Document doc, String elementName) throws HttpException {
@@ -56,30 +57,33 @@ public abstract class PersistentEntity extends MonadObject implements Urlable {
 		element.setAttribute("id", id.toString());
 		return element;
 	}
-	
+
 	public boolean equals(Object obj) {
 		boolean isEqual = false;
-		
+
 		if (obj instanceof PersistentEntity) {
 			isEqual = ((PersistentEntity) obj).getId().equals(getId());
 		}
 		return isEqual;
 	}
-	
+
 	public int hashCode() {
 		return id == null ? super.hashCode() : id.intValue();
 	}
-	
+
 	public void httpDelete(Invocation inv) throws HttpException {
 		throw new MethodNotAllowedException();
 	}
-	
+
 	public void httpGet(Invocation inv) throws HttpException {
 		throw new MethodNotAllowedException();
 	}
-	
+
 	public void httpPost(Invocation inv) throws HttpException {
 		throw new MethodNotAllowedException();
 	}
 
+	public Urlable getChild(UriPathElement uriId) throws HttpException {
+		throw new NotFoundException();
+	}
 }

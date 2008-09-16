@@ -47,9 +47,9 @@
 		</component>
 		<property type="float" name="presentValue"
 			column="present_value" not-null="true" />
-		<component name="presentType" class="ReadType">
-			<property name="int" column="present_type" />
-		</component>
+		<many-to-one name="presentType" class="ReadType"
+			column="present_type_id" not-null="true"
+			foreign-key="fkey_present_type__register_read" />
 		<component name="previousDate"
 			class="net.sf.chellow.billing.DayFinishDate">
 			<property name="date" type="timestamp" not-null="true">
@@ -59,9 +59,9 @@
 		</component>
 		<property type="float" name="previousValue"
 			column="previous_value" not-null="true" />
-		<component name="previousType" class="ReadType">
-			<property name="int" column="previous_type" />
-		</component>
+		<many-to-one name="previousType" class="ReadType"
+			column="previous_type_id" not-null="true"
+			foreign-key="fkey_previous_type__register_read" />
 		<component name="units" class="Units">
 			<property name="int" column="units" />
 		</component>

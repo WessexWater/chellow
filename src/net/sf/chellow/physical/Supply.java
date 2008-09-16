@@ -31,8 +31,6 @@ import java.util.Map;
 import java.util.Set;
 
 import net.sf.chellow.billing.Account;
-import net.sf.chellow.billing.Invoice;
-import net.sf.chellow.billing.Service;
 import net.sf.chellow.data08.HhDatumRaw;
 import net.sf.chellow.data08.MpanCoreRaw;
 import net.sf.chellow.data08.MpanRaw;
@@ -1085,13 +1083,6 @@ public class Supply extends PersistentEntity {
 			isEqual = getId().equals(((Supply) obj).getId());
 		}
 		return isEqual;
-	}
-
-	public RegisterRead insertRegisterRead(RegisterReadRaw rawRegisterRead,
-			Invoice invoice, Service service) throws HttpException {
-		SupplyGeneration supplyGeneration = this.getGeneration(rawRegisterRead
-				.getPresentDate());
-		return supplyGeneration.insertRegisterRead(rawRegisterRead, invoice);
 	}
 
 	public Meter findMeter(String meterSerialNumber) {

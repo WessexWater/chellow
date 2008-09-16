@@ -101,8 +101,7 @@ public class Bill extends PersistentEntity implements Urlable {
 		return invoice;
 	}
 */
-	public void attach(Invoice invoice) throws InternalException,
-			HttpException {
+	public void attach(Invoice invoice) throws HttpException {
 		invoice.setBill(this);
 		if (invoices == null) {
 			invoices = new HashSet<Invoice>();

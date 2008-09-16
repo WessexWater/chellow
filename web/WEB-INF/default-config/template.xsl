@@ -153,6 +153,13 @@
 							Non-core services
 						</a>
 					</li>
+					<li>
+						<a
+							href="{/source/request/@context-path}/read-types/">
+							Read types
+						</a>
+					</li>
+
 				</ul>
 			</body>
 		</html>

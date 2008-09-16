@@ -2,6 +2,7 @@ package net.sf.chellow.physical;
 
 import net.sf.chellow.billing.DayFinishDate;
 import net.sf.chellow.billing.Invoice;
+import net.sf.chellow.data08.MpanCoreRaw;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.InternalException;
@@ -9,6 +10,7 @@ import net.sf.chellow.monad.Invocation;
 import net.sf.chellow.monad.MonadMessage;
 import net.sf.chellow.monad.MonadUtils;
 import net.sf.chellow.monad.Urlable;
+import net.sf.chellow.monad.UserException;
 import net.sf.chellow.monad.XmlTree;
 import net.sf.chellow.monad.types.MonadDate;
 import net.sf.chellow.monad.types.MonadUri;
@@ -44,22 +46,44 @@ public class RegisterRead extends PersistentEntity {
 	RegisterRead() {
 	}
 
-	public RegisterRead(Mpan mpan, RegisterReadRaw rawRegisterRead,
-			Invoice invoice) throws HttpException {
-		setMpan(mpan);
+	public RegisterRead(Invoice invoice, RegisterReadRaw rawRead)
+			throws HttpException {
 		if (invoice == null) {
 			throw new InternalException("The invoice must not be null.");
 		}
 		setInvoice(invoice);
-		setTpr(Tpr.getTpr(rawRegisterRead.getTpr()));
-		setCoefficient(rawRegisterRead.getCoefficient());
-		setUnits(rawRegisterRead.getUnits());
-		setPreviousDate(rawRegisterRead.getPreviousDate());
-		setPreviousValue(rawRegisterRead.getPreviousValue());
-		setPreviousType(rawRegisterRead.getPreviousType());
-		setPresentDate(rawRegisterRead.getPresentDate());
-		setpresentValue(rawRegisterRead.getPresentValue());
-		setpresentType(rawRegisterRead.getPresentType());
+		setTpr(Tpr.getTpr(rawRead.getTpr()));
+		setCoefficient(rawRead.getCoefficient());
+		setUnits(rawRead.getUnits());
+		setPreviousDate(rawRead.getPreviousDate());
+		setPreviousValue(rawRead.getPreviousValue());
+		setPreviousType(rawRead.getPreviousType());
+		setPresentDate(rawRead.getPresentDate());
+		setpresentValue(rawRead.getPresentValue());
+		setpresentType(rawRead.getPresentType());
+
+		MpanCoreRaw mpanCoreRaw = rawRead.getMpanRaw().getMpanCoreRaw();
+		Organization org = invoice.getBatch().getContract().getOrganization();
+		MpanCore mpanCore = org.getMpanCore(mpanCoreRaw);
+		Supply supply = mpanCore.getSupply();
+		SupplyGeneration supplyGeneration = supply.getGeneration(rawRead
+				.getPresentDate());
+		Mpan importMpan = supplyGeneration.getImportMpan();
+		Mpan exportMpan = supplyGeneration.getExportMpan();
+		if (importMpan != null
+				&& importMpan.getMpanRaw().equals(rawRead.getMpanRaw())) {
+			setMpan(importMpan);
+		} else if (exportMpan != null
+				&& exportMpan.getMpanRaw().equals(rawRead.getMpanRaw())) {
+			setMpan(exportMpan);
+		} else {
+			throw new UserException("For the supply " + getId()
+					+ " neither the import MPAN " + importMpan
+					+ " or the export MPAN " + exportMpan
+					+ " match the register read MPAN " + rawRead.getMpanRaw()
+					+ ".");
+		}
+		precedingRead();
 	}
 
 	public Mpan getMpan() {
@@ -184,12 +208,12 @@ public class RegisterRead extends PersistentEntity {
 	private Document document() throws HttpException {
 		Document doc = MonadUtils.newSourceDocument();
 		Element source = doc.getDocumentElement();
-		source.appendChild(toXml(doc, new XmlTree("invoice", new XmlTree("batch",
-								new XmlTree("service", new XmlTree("provider", new XmlTree(
-										"organization"))))).put(
-								"mpan",
-								new XmlTree("supplyGeneration", new XmlTree("supply"))
-										.put("mpanRaw")).put("tpr")));
+		source.appendChild(toXml(doc, new XmlTree("invoice", new XmlTree(
+				"batch", new XmlTree("service", new XmlTree("provider",
+						new XmlTree("organization"))))).put(
+				"mpan",
+				new XmlTree("supplyGeneration", new XmlTree("supply"))
+						.put("mpanRaw")).put("tpr")));
 		source.appendChild(MonadDate.getMonthsXml(doc));
 		source.appendChild(MonadDate.getDaysXml(doc));
 		return doc;
@@ -208,5 +232,19 @@ public class RegisterRead extends PersistentEntity {
 		element.setAttribute("present-value", Float.toString(presentValue));
 		element.setAttribute("present-type", presentType.toString());
 		return element;
+	}
+
+	public void attach() {
+	}
+	
+	private RegisterRead precedingRead() throws HttpException {
+		if (previousType.getCode() == ReadType.TYPE_INITIAL) {
+			return null;
+		}
+		RegisterRead read = (RegisterRead) Hiber.session().createQuery("from RegisterRead read where read.mpan.mpanCore = :mpanCore and read.presentDate.date = :readDate").setEntity("mpanCore", getMpan().getMpanCore()).setDate("readDate", getPreviousDate().getDate()).uniqueResult();
+		if (read == null) {
+			throw new UserException("There isn't a preceding read for this read.");
+		}
+		return read;
 	}
 }

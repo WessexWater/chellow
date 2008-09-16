@@ -43,6 +43,7 @@ import net.sf.chellow.physical.MeterType;
 import net.sf.chellow.physical.MeterPaymentType;
 import net.sf.chellow.physical.Participant;
 import net.sf.chellow.physical.Pc;
+import net.sf.chellow.physical.ReadType;
 import net.sf.chellow.physical.Role;
 import net.sf.chellow.physical.Source;
 import net.sf.chellow.physical.Ssc;
@@ -270,6 +271,7 @@ public class ContextListener implements ServletContextListener {
 		}
 		DatabaseVersion.setDatabaseVersion(11);
 		Hiber.close();
+		ReadType.loadFromCsv(context);
 		Pc.loadFromCsv(context);
 		MarketRole.loadFromCsv(context);
 		Participant.loadFromCsv(context);

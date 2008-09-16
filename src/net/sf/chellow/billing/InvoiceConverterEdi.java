@@ -54,20 +54,21 @@ import net.sf.chellow.physical.RegisterReadRaw;
 import net.sf.chellow.physical.Units;
 
 public class InvoiceConverterEdi implements InvoiceConverter {
-	private static final Map<Integer, ReadType> readTypeMap = Collections
-			.synchronizedMap(new HashMap<Integer, ReadType>());
+	private static final Map<Integer, Character> readTypeMap = Collections
+			.synchronizedMap(new HashMap<Integer, Character>());
 
 	private static final Map<String, InvoiceType> invoiceTypeMap = Collections
 			.synchronizedMap(new HashMap<String, InvoiceType>());
 
 	static {
-		readTypeMap.put(0, ReadType.NORMAL);
-		readTypeMap.put(1, ReadType.MANUAL_ESTIMATE);
-		readTypeMap.put(2, ReadType.COMPUTER_ESTIMATE);
-		readTypeMap.put(3, ReadType.REMOVED);
-		readTypeMap.put(4, ReadType.CUSTOMER);
-		readTypeMap.put(5, ReadType.COMPUTER);
-		readTypeMap.put(6, ReadType.EXCHANGE);
+		readTypeMap.put(0, ReadType.TYPE_ROUTINE);
+		readTypeMap.put(1, ReadType.TYPE_ESTIMATE);
+		readTypeMap.put(2, ReadType.TYPE_ESTIMATE);
+		readTypeMap.put(3, ReadType.TYPE_ROUTINE);
+		readTypeMap.put(4, ReadType.TYPE_CUSTOMER);
+		readTypeMap.put(5, ReadType.TYPE_ROUTINE);
+		readTypeMap.put(6, ReadType.TYPE_ROUTINE);
+		readTypeMap.put(7, ReadType.TYPE_INITIAL);
 
 		invoiceTypeMap.put("A", InvoiceType.AMENDED);
 		invoiceTypeMap.put("F", InvoiceType.FINAL);
@@ -177,6 +178,7 @@ public class InvoiceConverterEdi implements InvoiceConverter {
 						if (chargeType.equals("7")) {
 							Element tmod = segment.getElements().get(3);
 							Element mtnr = segment.getElements().get(4);
+							Element mloc = segment.getElements().get(5);
 							Element prrd = segment.getElements().get(9);
 							Element adjf = segment.getElements().get(12);
 							ReadType presentReadType = prrd.getReadType(1);
@@ -185,12 +187,15 @@ public class InvoiceConverterEdi implements InvoiceConverter {
 							float presentReadingValue = prrd.getInt(0) / 1000;
 							float previousReadingValue = prrd.getInt(2) / 1000;
 							String meterSerialNumber = mtnr.getString(0);
+							MpanCoreRaw mpanCoreRaw = new MpanCoreRaw(mloc
+									.getString(0));
 							int tpr = tmod.getInt(0);
-							reads.add(new LocalRegisterReadRaw(coefficient,
-									meterSerialNumber, Units.KWH, tpr, true,
-									previousReadDate, previousReadingValue,
-									previousReadType, registerFinishDate,
-									presentReadingValue, presentReadType));
+							reads.add(new LocalRegisterReadRaw(mpanCoreRaw,
+									coefficient, meterSerialNumber, Units.KWH,
+									tpr, true, previousReadDate,
+									previousReadingValue, previousReadType,
+									registerFinishDate, presentReadingValue,
+									presentReadType));
 						}
 					}
 				}
@@ -198,6 +203,11 @@ public class InvoiceConverterEdi implements InvoiceConverter {
 					if (messageType.equals("UTLBIL")) {
 						Set<RegisterReadRaw> registerReads = new HashSet<RegisterReadRaw>();
 						for (LocalRegisterReadRaw read : reads) {
+							if (!mpanRaw.getMpanCoreRaw().equals(
+									read.getMpanCoreRaw())) {
+								throw new UserException(
+										"The mpan core in the register read doesn't match the mpan core in the invoice.");
+							}
 							registerReads.add(new RegisterReadRaw(mpanRaw, read
 									.getCoefficient(), read
 									.getMeterSerialNumber(), read.getUnits(),
@@ -382,12 +392,11 @@ public class InvoiceConverterEdi implements InvoiceConverter {
 			return result;
 		}
 
-		public ReadType getReadType(int index) throws HttpException,
-				InternalException {
-			return readTypeMap.get(getInt(index));
+		public ReadType getReadType(int index) throws HttpException {
+			return ReadType.getReadType(readTypeMap.get(getInt(index)));
 		}
 
-		public int getInt(int index) throws HttpException, InternalException {
+		public int getInt(int index) throws HttpException {
 			try {
 				return Integer.parseInt(components.get(index));
 			} catch (NumberFormatException e) {
@@ -403,6 +412,8 @@ public class InvoiceConverterEdi implements InvoiceConverter {
 	}
 
 	private class LocalRegisterReadRaw {
+		private MpanCoreRaw mpanCoreRaw;
+
 		private float coefficient;
 
 		private String meterSerialNumber;
@@ -425,12 +436,13 @@ public class InvoiceConverterEdi implements InvoiceConverter {
 
 		private ReadType currentType;
 
-		public LocalRegisterReadRaw(float coefficient,
+		public LocalRegisterReadRaw(MpanCoreRaw mpanCoreRaw, float coefficient,
 				String meterSerialNumber, Units units, int tpr,
 				boolean isImport, DayFinishDate previousDate,
 				float previousValue, ReadType previousType,
 				DayFinishDate currentDate, float currentValue,
 				ReadType currentType) throws InternalException {
+			this.mpanCoreRaw = mpanCoreRaw;
 			this.coefficient = coefficient;
 			this.meterSerialNumber = meterSerialNumber;
 			this.units = units;
@@ -442,6 +454,10 @@ public class InvoiceConverterEdi implements InvoiceConverter {
 			this.currentDate = currentDate;
 			this.currentValue = currentValue;
 			this.currentType = currentType;
+		}
+
+		public MpanCoreRaw getMpanCoreRaw() {
+			return mpanCoreRaw;
 		}
 
 		public float getCoefficient() {

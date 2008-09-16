@@ -642,9 +642,6 @@ public class Invocation {
 		}
 		User user = Chellow.USERS_INSTANCE.findUser(new EmailAddress(
 				usernameAndPassword[0]));
-		Debug.print("password :" + usernameAndPassword[1]);
-		Debug.print("password digest:" + User.digest(usernameAndPassword[1]));
-
 		if (user == null) {
 			return null;
 		} else if (!user.getPasswordDigest().equals(

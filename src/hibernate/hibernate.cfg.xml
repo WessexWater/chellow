@@ -95,5 +95,6 @@
 		<mapping resource="hibernate/MeterPaymentType.hbm.xml" />
 		<mapping resource="hibernate/ClockInterval.hbm.xml" />
 		<mapping resource="hibernate/Party.hbm.xml" />
+		<mapping resource="hibernate/ReadType.hbm.xml" />
 	</session-factory>
 </hibernate-configuration>

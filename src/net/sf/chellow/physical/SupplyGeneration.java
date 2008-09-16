@@ -31,7 +31,6 @@ import java.util.Set;
 import net.sf.chellow.billing.Account;
 import net.sf.chellow.billing.Dso;
 import net.sf.chellow.billing.HhdcContract;
-import net.sf.chellow.billing.Invoice;
 import net.sf.chellow.billing.SupplierContract;
 import net.sf.chellow.data08.MpanCoreRaw;
 import net.sf.chellow.data08.MpanRaw;
@@ -927,7 +926,7 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 		}
 		Hiber.flush();
 	}
-
+/*
 	public RegisterRead insertRegisterRead(RegisterReadRaw rawRegisterRead,
 			Invoice invoice) throws HttpException {
 		Mpan importMpan = getImportMpan();
@@ -948,7 +947,7 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 		}
 		return read;
 	}
-
+*/
 	public Channels getChannelsInstance() {
 		return new Channels(this);
 	}

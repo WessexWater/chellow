@@ -26,16 +26,15 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
-import net.sf.chellow.data08.MpanCoreRaw;
 import net.sf.chellow.monad.DeployerException;
 import net.sf.chellow.monad.DesignerException;
 import net.sf.chellow.monad.Hiber;
+import net.sf.chellow.monad.HttpException;
+import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Invocation;
 import net.sf.chellow.monad.MonadUtils;
 import net.sf.chellow.monad.NotFoundException;
-import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Urlable;
-import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.UserException;
 import net.sf.chellow.monad.XmlTree;
 import net.sf.chellow.monad.types.MonadDate;
@@ -43,14 +42,10 @@ import net.sf.chellow.monad.types.MonadDouble;
 import net.sf.chellow.monad.types.MonadInteger;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
-import net.sf.chellow.physical.Mpan;
-import net.sf.chellow.physical.MpanCore;
-import net.sf.chellow.physical.Organization;
 import net.sf.chellow.physical.PersistentEntity;
 import net.sf.chellow.physical.RegisterRead;
 import net.sf.chellow.physical.RegisterReadRaw;
 import net.sf.chellow.physical.RegisterReads;
-import net.sf.chellow.physical.Supply;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -110,12 +105,8 @@ public class Invoice extends PersistentEntity implements Urlable {
 		setReference(invoiceRaw.getReference());
 		// setAccountText(invoiceRaw.getAccountText());
 		//invoiceMpans = new HashSet<InvoiceMpan>();
-		Organization organization = batch.getContract().getOrganization();
 		for (RegisterReadRaw rawRead : invoiceRaw.getRegisterReads()) {
-			MpanCoreRaw mpanCoreRaw = rawRead.getMpanRaw().getMpanCoreRaw();
-			MpanCore mpanCore = organization.getMpanCore(mpanCoreRaw);
-			Supply supply = mpanCore.getSupply();
-			supply.insertRegisterRead(rawRead, this, batch.getContract());
+			insertRead(rawRead);
 		}
 	}
 
@@ -340,14 +331,15 @@ public class Invoice extends PersistentEntity implements Urlable {
 		return new RegisterReads(this);
 	}
 
-	public RegisterRead insertRead(Mpan mpan, RegisterReadRaw rawRead)
+	public RegisterRead insertRead(RegisterReadRaw rawRead)
 			throws HttpException {
-		RegisterRead read = new RegisterRead(mpan, rawRead, this);
+		RegisterRead read = new RegisterRead(this, rawRead);
 		if (reads == null) {
 			reads = new HashSet<RegisterRead>();
 		}
 		reads.add(read);
 		Hiber.flush();
+		read.attach();
 		return read;
 	}
 

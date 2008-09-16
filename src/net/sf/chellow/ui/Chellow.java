@@ -31,6 +31,7 @@ import net.sf.chellow.physical.Mtcs;
 import net.sf.chellow.physical.Organizations;
 import net.sf.chellow.physical.Participants;
 import net.sf.chellow.physical.Pcs;
+import net.sf.chellow.physical.ReadTypes;
 import net.sf.chellow.physical.Roles;
 import net.sf.chellow.physical.Sources;
 import net.sf.chellow.physical.Sscs;
@@ -66,6 +67,7 @@ public class Chellow extends Monad implements Urlable {
 	public static final NonCoreServices NON_CORE_SERVICES_INSTANCE = new NonCoreServices();
 	static public final MeterTypes METER_TYPES_INSTANCE = new MeterTypes();
 	static public final MeterPaymentTypes MTC_PAYMENT_TYPES_INSTANCE = new MeterPaymentTypes();
+	static public final ReadTypes READ_TYPES_INSTANCE = new ReadTypes();
 
 	static {
 		try {
@@ -177,6 +179,8 @@ public class Chellow extends Monad implements Urlable {
 			return PROVIDERS_INSTANCE;
 		} else if (Dsos.URI_ID.equals(uriId)) {
 			return DSOS_INSTANCE;
+		} else if (ReadTypes.URI_ID.equals(uriId)) {
+			return READ_TYPES_INSTANCE;
 		} else {
 			return null;
 		}

@@ -107,11 +107,13 @@ public class RegisterReadRaw extends MonadObject {
 		previousDate.setLabel("previous");
 		element.appendChild(previousDate.toXml(doc));
 		element.setAttribute("previous-value", Float.toString(previousValue));
-		element.setAttribute("previous-type", ReadType.name(previousType));
+		previousType.setLabel("previous");
+		element.appendChild(previousType.toXml(doc));
 		presentDate.setLabel("present");
 		element.appendChild(presentDate.toXml(doc));
 		element.setAttribute("present-value", Float.toString(presentValue));
-		element.setAttribute("present-type", ReadType.name(presentType));
+		presentType.setLabel("present");
+		element.appendChild(presentType.toXml(doc));
 		return element;
 	}
 }
