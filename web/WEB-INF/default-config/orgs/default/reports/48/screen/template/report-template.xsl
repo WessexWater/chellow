@@ -80,12 +80,56 @@
 						</td>
 					</tr>
 				</table>
-
-				<ul>
-					<li>
-						<a href="clock-intervals">Clock Intervals</a>
-					</li>
-				</ul>
+				<br />
+				<table>
+					<caption>Clock Intervals</caption>
+					<thead>
+						<th>Day Of Week</th>
+						<th>Start Day</th>
+						<th>Start Month</th>
+						<th>End Day</th>
+						<th>End Month</th>
+						<th>Start Hour</th>
+						<th>Start Minute</th>
+						<th>End Hour</th>
+						<th>End Minute</th>
+					</thead>
+					<tbody>
+						<xsl:for-each
+							select="/source/tpr/clock-interval">
+							<tr>
+								<td>
+									<xsl:value-of select="@day-of-week" />
+								</td>
+								<td>
+									<xsl:value-of select="@start-day" />
+								</td>
+								<td>
+									<xsl:value-of select="@start-month" />
+								</td>
+								<td>
+									<xsl:value-of select="@end-day" />
+								</td>
+								<td>
+									<xsl:value-of select="@end-month" />
+								</td>
+								<td>
+									<xsl:value-of select="@start-hour" />
+								</td>
+								<td>
+									<xsl:value-of
+										select="@start-minute" />
+								</td>
+								<td>
+									<xsl:value-of select="@end-hour" />
+								</td>
+								<td>
+									<xsl:value-of select="@end-minute" />
+								</td>
+							</tr>
+						</xsl:for-each>
+					</tbody>
+				</table>
 
 				<h3>SSCs</h3>
 

@@ -104,9 +104,11 @@
 								href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/48/screen/output/?tpr-id={@id}">
 								<xsl:value-of select="@code" />
 							</a>
+							<!-- 
 							<xsl:if test="position() != last()">
 								<xsl:value-of select="', '" />
 							</xsl:if>
+							-->
 						</li>
 					</xsl:for-each>
 				</ul>

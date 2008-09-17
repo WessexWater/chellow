@@ -655,7 +655,7 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 							"from RegisterRead read where read.mpan = :mpan")
 					.setEntity("mpan", mpan).list()) {
 				mpanElement.appendChild(read.toXml(doc, new XmlTree("invoice",
-						new XmlTree("batch", new XmlTree("service",
+						new XmlTree("batch", new XmlTree("contract",
 								new XmlTree("provider"))))));
 			}
 			/*

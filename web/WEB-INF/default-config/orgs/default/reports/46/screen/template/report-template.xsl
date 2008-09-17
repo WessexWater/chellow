@@ -86,13 +86,11 @@
 						</td>
 					</tr>
 					<tr>
-						<th>Account Reference</th>
+						<th>Bill</th>
 						<td>
-							<xsl:value-of
-								select="concat(/source/invoice/bill/account/@reference, ' ')" />
 							<a
 								href="{/source/request/@context-path}/orgs/{/source/invoice/batch/supplier-contract/org/@id}/reports/43/screen/output/?bill-id={/source/invoice/bill/@id}">
-								<xsl:value-of select="'Bill'" />
+								<xsl:value-of select="/source/invoice/bill/@id" />
 							</a>
 							<xsl:value-of select="' &lt; '" />
 							<a
@@ -101,7 +99,7 @@
 							</a>
 							&lt;
 							<a
-								href="{/source/request/@context-path}/orgs/{/source/invoice/batch/supplier-account/org/@id}/reports/41/screen/output/?account-id={/source/invoice/bill/account/@id}">
+								href="{/source/request/@context-path}/orgs/{/source/invoice/batch/supplier-contract/org/@id}/reports/41/screen/output/?account-id={/source/invoice/bill/account/@id}">
 								<xsl:value-of
 									select="/source/invoice/bill/account/@reference" />
 							</a>
@@ -112,14 +110,9 @@
 							</a>
 							&lt;
 							<a
-								href="{/source/request/@context-path}/orgs/{/source/invoice/batch/supplier-contract/org/@id}/reports/36/screen/output/?supplier-id={/source/invoice/batch/supplier-contract/@id}">
+								href="{/source/request/@context-path}/orgs/{/source/invoice/batch/supplier-contract/org/@id}/reports/38/screen/output/?supplier-contract-id={/source/invoice/batch/supplier-contract/@id}">
 								<xsl:value-of
 									select="/source/invoice/batch/supplier-contract/@name" />
-							</a>
-							&lt;
-							<a
-								href="{/source/request/@context-path}/orgs/{/source/invoice/batch/supplier-contract/org/@id}/reports/35/screen/output/">
-								<xsl:value-of select="'Suppliers'" />
 							</a>
 						</td>
 					</tr>
@@ -185,7 +178,6 @@
 							<th>Coefficient</th>
 							<th>Units</th>
 							<th>TPR</th>
-							<th>Is Import?</th>
 							<th>Previous Date</th>
 							<th>Previous Value</th>
 							<th>Previous Type</th>
@@ -217,9 +209,6 @@
 								</a>
 							</td>
 							<td>
-								<xsl:value-of select="@is-import" />
-							</td>
-							<td>
 								<xsl:value-of
 									select="concat(day-finish-date[@label='previous']/@year, '-', day-finish-date[@label='previous']/@month, '-', day-finish-date[@label='previous']/@day)" />
 							</td>
@@ -227,7 +216,8 @@
 								<xsl:value-of select="@previous-value" />
 							</td>
 							<td>
-								<xsl:value-of select="@previous-type" />
+								<xsl:value-of
+									select="read-type[@label='previous']/@code" />
 							</td>
 							<td>
 								<xsl:value-of
@@ -237,7 +227,8 @@
 								<xsl:value-of select="@present-value" />
 							</td>
 							<td>
-								<xsl:value-of select="@present-type" />
+								<xsl:value-of
+									select="read-type[@label='present']/@code" />
 							</td>
 						</tr>
 					</xsl:for-each>

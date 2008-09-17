@@ -25,26 +25,20 @@ package net.sf.chellow.physical;
 import java.util.List;
 
 import net.sf.chellow.billing.Invoice;
-import net.sf.chellow.monad.DeployerException;
-import net.sf.chellow.monad.DesignerException;
 import net.sf.chellow.monad.Hiber;
+import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.Invocation;
 import net.sf.chellow.monad.MonadUtils;
 import net.sf.chellow.monad.NotFoundException;
-import net.sf.chellow.monad.InternalException;
-import net.sf.chellow.monad.Urlable;
-import net.sf.chellow.monad.HttpException;
-import net.sf.chellow.monad.XmlDescriber;
 import net.sf.chellow.monad.XmlTree;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import org.w3c.dom.Node;
 
 @SuppressWarnings("serial")
-public class RegisterReads implements Urlable, XmlDescriber {
+public class RegisterReads extends EntityList {
 	public static final UriPathElement URI_ID;
 
 	static {
@@ -65,12 +59,11 @@ public class RegisterReads implements Urlable, XmlDescriber {
 		return URI_ID;
 	}
 
-	public MonadUri getUri() throws InternalException, HttpException {
+	public MonadUri getUri() throws HttpException {
 		return invoice.getUri().resolve(getUrlId()).append("/");
 	}
 
-	public void httpPost(Invocation inv) throws InternalException,
-			HttpException, DesignerException, DeployerException {
+	public void httpPost(Invocation inv) throws HttpException {
 		/*
 		 * String reference = inv.getString("reference"); if (!inv.isValid()) {
 		 * throw UserException.newInvalidParameter(document()); } Account
@@ -79,13 +72,11 @@ public class RegisterReads implements Urlable, XmlDescriber {
 		 */
 	}
 
-	public void httpGet(Invocation inv) throws DesignerException,
-			InternalException, HttpException, DeployerException {
+	public void httpGet(Invocation inv) throws HttpException {
 		inv.sendOk(document());
 	}
 
-	public RegisterRead getChild(UriPathElement uriId) throws HttpException,
-			InternalException {
+	public RegisterRead getChild(UriPathElement uriId) throws HttpException {
 		RegisterRead read = (RegisterRead) Hiber
 				.session()
 				.createQuery(
@@ -98,38 +89,28 @@ public class RegisterReads implements Urlable, XmlDescriber {
 		return read;
 	}
 
-	public void httpDelete(Invocation inv) throws InternalException,
-			HttpException {
-	}
-
-	public Node toXml(Document doc) throws InternalException, HttpException {
+	public Element toXml(Document doc) throws HttpException {
 		Element accountsElement = doc.createElement("register-reads");
 		return accountsElement;
 	}
 
-	public Node toXml(Document doc, XmlTree tree) throws InternalException,
-			HttpException {
-		return null;
-	}
-
 	@SuppressWarnings("unchecked")
-	private Document document() throws InternalException, HttpException,
-			DesignerException {
+	private Document document() throws HttpException {
 		Document doc = MonadUtils.newSourceDocument();
 		Element source = doc.getDocumentElement();
-		Element readsElement = (Element) toXml(doc);
+		Element readsElement = toXml(doc);
 		source.appendChild(readsElement);
 		readsElement.appendChild(invoice.toXml(doc, new XmlTree("batch",
-								new XmlTree("service", new XmlTree("provider", new XmlTree(
-										"organization"))))));
+				new XmlTree("contract", new XmlTree("provider")
+						.put("organization")))));
 		for (RegisterRead read : (List<RegisterRead>) Hiber
 				.session()
 				.createQuery(
 						"from RegisterRead read where read.invoice = :invoice order by read.presentDate.date, read.id")
 				.setEntity("invoice", invoice).list()) {
 			readsElement.appendChild(read.toXml(doc, new XmlTree("mpan",
-									new XmlTree("mpanCore").put("supplyGeneration",
-											new XmlTree("supply"))).put("tpr")));
+					new XmlTree("mpanCore").put("supplyGeneration",
+							new XmlTree("supply"))).put("tpr")));
 		}
 		return doc;
 	}

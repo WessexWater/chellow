@@ -90,7 +90,7 @@ public class Invoice extends PersistentEntity implements Urlable {
 
 	private Set<RegisterRead> reads;
 
-	//private Set<InvoiceMpan> invoiceMpans;
+	// private Set<InvoiceMpan> invoiceMpans;
 
 	public Invoice() {
 	}
@@ -104,15 +104,15 @@ public class Invoice extends PersistentEntity implements Urlable {
 						.getVat(), PENDING);
 		setReference(invoiceRaw.getReference());
 		// setAccountText(invoiceRaw.getAccountText());
-		//invoiceMpans = new HashSet<InvoiceMpan>();
+		// invoiceMpans = new HashSet<InvoiceMpan>();
 		for (RegisterReadRaw rawRead : invoiceRaw.getRegisterReads()) {
 			insertRead(rawRead);
 		}
 	}
 
-	//public void insertInvoiceMpan(Mpan mpan) {
-	//	invoiceMpans.add(new InvoiceMpan(this, mpan));
-	//}
+	// public void insertInvoiceMpan(Mpan mpan) {
+	// invoiceMpans.add(new InvoiceMpan(this, mpan));
+	// }
 
 	public Batch getBatch() {
 		return batch;
@@ -184,14 +184,12 @@ public class Invoice extends PersistentEntity implements Urlable {
 	 * public void setAccountText(String accountText) { this.accountText =
 	 * accountText; }
 	 */
-	//public Set<InvoiceMpan> getInvoiceMpans() {
-	//	return invoiceMpans;
-	//}
-
-	//public void setInvoiceMpans(Set<InvoiceMpan> invoiceMpans) {
-	//	this.invoiceMpans = invoiceMpans;
-	//}
-
+	// public Set<InvoiceMpan> getInvoiceMpans() {
+	// return invoiceMpans;
+	// }
+	// public void setInvoiceMpans(Set<InvoiceMpan> invoiceMpans) {
+	// this.invoiceMpans = invoiceMpans;
+	// }
 	public int getStatus() {
 		return status;
 	}
@@ -221,16 +219,16 @@ public class Invoice extends PersistentEntity implements Urlable {
 			throws HttpException {
 		setIssueDate(issueDate);
 		if (startDate.getDate().after(finishDate.getDate())) {
-			throw new UserException
-					("The bill start date can't be after the finish date.");
+			throw new UserException(
+					"The bill start date can't be after the finish date.");
 		}
 		setStartDate(startDate);
 		setFinishDate(finishDate);
 		setNet(net);
 		setVat(vat);
 		if (status != PENDING && status != PAID && status != REJECTED) {
-			throw new UserException
-					("The status must be 'pending', 'paid' or 'rejected'.");
+			throw new UserException(
+					"The status must be 'pending', 'paid' or 'rejected'.");
 		}
 		setStatus(status);
 	}
@@ -276,10 +274,10 @@ public class Invoice extends PersistentEntity implements Urlable {
 			if (!inv.isValid()) {
 				throw new UserException(document());
 			}
-			update(batch.getContract()
-					.getAccount(accountReference), new DayStartDate(issueDate),
-					new DayStartDate(startDate).getNext(), new DayFinishDate(
-							finishDate), net, vat, status);
+			update(batch.getContract().getAccount(accountReference),
+					new DayStartDate(issueDate), new DayStartDate(startDate)
+							.getNext(), new DayFinishDate(finishDate), net,
+					vat, status);
 			Hiber.commit();
 			inv.sendOk(document());
 		}
@@ -288,25 +286,23 @@ public class Invoice extends PersistentEntity implements Urlable {
 	private Document document() throws HttpException {
 		Document doc = MonadUtils.newSourceDocument();
 		Element source = doc.getDocumentElement();
-		Element invoiceElement = (Element) toXml(doc,
-				new XmlTree("batch",
-						new XmlTree("service", new XmlTree("provider", new XmlTree(
-								"organization")))).put("bill", new XmlTree("account")));
+		Element invoiceElement = (Element) toXml(doc, new XmlTree("batch",
+				new XmlTree("contract", new XmlTree("provider")
+						.put("organization"))).put("bill", new XmlTree(
+				"account")));
 		source.appendChild(invoiceElement);
 		source.appendChild(MonadDate.getMonthsXml(doc));
 		source.appendChild(MonadDate.getDaysXml(doc));
 		for (RegisterRead read : reads) {
 			invoiceElement.appendChild(read.toXml(doc, new XmlTree("mpan",
-									new XmlTree("mpanCore").put("supplyGeneration",
-											new XmlTree("supply")))));
+					new XmlTree("mpanCore").put("supplyGeneration",
+							new XmlTree("supply")))));
 		}
 		/*
-		for (InvoiceMpan invoiceMpan : invoiceMpans) {
-			invoiceElement.appendChild(invoiceMpan.toXml(doc,
-					new XmlTree("mpan",
-							new XmlTree("supplyGeneration", new XmlTree("supply")))));
-		}
-		*/
+		 * for (InvoiceMpan invoiceMpan : invoiceMpans) {
+		 * invoiceElement.appendChild(invoiceMpan.toXml(doc, new XmlTree("mpan",
+		 * new XmlTree("supplyGeneration", new XmlTree("supply"))))); }
+		 */
 		return doc;
 	}
 
@@ -347,7 +343,7 @@ public class Invoice extends PersistentEntity implements Urlable {
 	public void delete() throws HttpException {
 		bill.detach(this);
 		reads.clear();
-		//invoiceMpans.clear();
+		// invoiceMpans.clear();
 		Hiber.flush();
 		Hiber.session().delete(this);
 		Hiber.flush();

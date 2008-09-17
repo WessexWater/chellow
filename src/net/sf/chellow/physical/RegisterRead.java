@@ -209,8 +209,8 @@ public class RegisterRead extends PersistentEntity {
 		Document doc = MonadUtils.newSourceDocument();
 		Element source = doc.getDocumentElement();
 		source.appendChild(toXml(doc, new XmlTree("invoice", new XmlTree(
-				"batch", new XmlTree("service", new XmlTree("provider",
-						new XmlTree("organization"))))).put(
+				"batch", new XmlTree("contract", new XmlTree("provider")
+						.put("organization")))).put(
 				"mpan",
 				new XmlTree("supplyGeneration", new XmlTree("supply"))
 						.put("mpanRaw")).put("tpr")));
@@ -226,24 +226,32 @@ public class RegisterRead extends PersistentEntity {
 		previousDate.setLabel("previous");
 		element.appendChild(previousDate.toXml(doc));
 		element.setAttribute("previous-value", Float.toString(previousValue));
-		element.setAttribute("previous-type", previousType.toString());
+		previousType.setLabel("previous");
+		element.appendChild(previousType.toXml(doc));
 		presentDate.setLabel("present");
 		element.appendChild(presentDate.toXml(doc));
 		element.setAttribute("present-value", Float.toString(presentValue));
-		element.setAttribute("present-type", presentType.toString());
+		presentType.setLabel("present");
+		element.appendChild(presentType.toXml(doc));
 		return element;
 	}
 
 	public void attach() {
 	}
-	
+
 	private RegisterRead precedingRead() throws HttpException {
 		if (previousType.getCode() == ReadType.TYPE_INITIAL) {
 			return null;
 		}
-		RegisterRead read = (RegisterRead) Hiber.session().createQuery("from RegisterRead read where read.mpan.mpanCore = :mpanCore and read.presentDate.date = :readDate").setEntity("mpanCore", getMpan().getMpanCore()).setDate("readDate", getPreviousDate().getDate()).uniqueResult();
+		RegisterRead read = (RegisterRead) Hiber
+				.session()
+				.createQuery(
+						"from RegisterRead read where read.mpan.mpanCore = :mpanCore and read.presentDate.date = :readDate")
+				.setEntity("mpanCore", getMpan().getMpanCore()).setDate(
+						"readDate", getPreviousDate().getDate()).uniqueResult();
 		if (read == null) {
-			throw new UserException("There isn't a preceding read for this read.");
+			throw new UserException(
+					"There isn't a preceding read for this read.");
 		}
 		return read;
 	}

@@ -63,7 +63,7 @@
 					&gt;
 					<xsl:value-of select="'Bill Snags ['" />
 					<a
-						href="{/source/request/@context-path}/orgs/{/source/bill-snags/supplier-contract/org/@id}/reports/52/screen/output/?contract-id={/source/bill-snags/supplier-contract/@id}">
+						href="{/source/request/@context-path}/orgs/{/source/bill-snags/supplier-contract/org/@id}/reports/52/screen/output/?supplier-contract-id={/source/bill-snags/supplier-contract/@id}">
 						<xsl:value-of select="'view'" />
 					</a>
 					<xsl:value-of select="']'" />

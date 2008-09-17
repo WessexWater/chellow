@@ -49,7 +49,6 @@ import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
 
 import org.hibernate.Criteria;
-import org.hibernate.HibernateException;
 import org.hibernate.Query;
 import org.hibernate.criterion.Restrictions;
 import org.hibernate.exception.ConstraintViolationException;
@@ -66,16 +65,11 @@ public class Supply extends PersistentEntity {
 	}
 
 	public static Supply getSupply(MpanCoreRaw core) throws HttpException {
-		Supply supply;
-		try {
-			supply = (Supply) Hiber
-					.session()
-					.createQuery(
-							"select distinct mpan.supplyGeneration.supply from Mpan mpan where mpan.dso.code.string || mpan.uniquePart.string || mpan.checkDigit.character = :core")
-					.setString("core", core.toStringNoSpaces()).uniqueResult();
-		} catch (HibernateException e) {
-			throw new InternalException(e);
-		}
+		Supply supply = (Supply) Hiber
+				.session()
+				.createQuery(
+						"select distinct mpan.supplyGeneration.supply from Mpan mpan where mpan.dso.code.string || mpan.uniquePart.string || mpan.checkDigit.character = :core")
+				.setString("core", core.toStringNoSpaces()).uniqueResult();
 		if (supply == null) {
 			throw new UserException("The MPAN core " + core
 					+ " is not set up in Chellow.");
@@ -513,7 +507,8 @@ public class Supply extends PersistentEntity {
 			previousGeneration.update(previousGeneration.getStartDate(),
 					generation.getFinishDate(), previousGeneration.getMeter());
 		}
-		onSupplyGenerationChange(generation.getStartDate(), generation.getFinishDate());
+		onSupplyGenerationChange(generation.getStartDate(), generation
+				.getFinishDate());
 	}
 
 	@SuppressWarnings("unchecked")
@@ -615,7 +610,7 @@ public class Supply extends PersistentEntity {
 					.createQuery(
 							"from HhDatum datum where datum.channel.supplyGeneration.supply = :supply and datum.endDate.date >= :from"
 									+ (generation.getFinishDate() == null ? ""
-									: " and datum.endDate.date <= :to"))
+											: " and datum.endDate.date <= :to"))
 					.setEntity("supply", this).setTimestamp("from",
 							generation.getStartDate().getDate());
 			if (generation.getFinishDate() != null) {

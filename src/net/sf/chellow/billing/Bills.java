@@ -24,26 +24,22 @@ package net.sf.chellow.billing;
 
 import java.util.List;
 
-import net.sf.chellow.monad.DeployerException;
-import net.sf.chellow.monad.DesignerException;
 import net.sf.chellow.monad.Hiber;
+import net.sf.chellow.monad.HttpException;
+import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Invocation;
 import net.sf.chellow.monad.MonadUtils;
 import net.sf.chellow.monad.NotFoundException;
-import net.sf.chellow.monad.InternalException;
-import net.sf.chellow.monad.Urlable;
-import net.sf.chellow.monad.HttpException;
-import net.sf.chellow.monad.XmlDescriber;
 import net.sf.chellow.monad.XmlTree;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
+import net.sf.chellow.physical.EntityList;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import org.w3c.dom.Node;
 
 @SuppressWarnings("serial")
-public class Bills implements Urlable, XmlDescriber {
+public class Bills extends EntityList {
 	public static final UriPathElement URI_ID;
 
 	static {
@@ -72,28 +68,21 @@ public class Bills implements Urlable, XmlDescriber {
 		return URI_ID;
 	}
 
-	public MonadUri getUri() throws InternalException, HttpException {
+	public MonadUri getUri() throws HttpException {
 		return account.getUri().resolve(getUrlId()).append("/");
 	}
 
-	public void httpPost(Invocation inv) throws InternalException,
-			HttpException, DesignerException, DeployerException {
-	}
-
-	public void httpGet(Invocation inv) throws DesignerException,
-			InternalException, HttpException, DeployerException {
+	public void httpGet(Invocation inv) throws HttpException {
 		inv.sendOk(document());
 	}
 
 	@SuppressWarnings("unchecked")
-	private Document document() throws InternalException, HttpException,
-			DesignerException {
+	private Document document() throws HttpException {
 		Document doc = MonadUtils.newSourceDocument();
 		Element source = doc.getDocumentElement();
 		Element billsElement = toXml(doc);
 		source.appendChild(billsElement);
-		billsElement.appendChild(account.toXml(doc, new XmlTree("provider",
-						new XmlTree("organization"))));
+		billsElement.appendChild(account.toXml(doc, new XmlTree("contract", new XmlTree("provider").put("organization"))));
 		for (Bill bill : (List<Bill>) Hiber
 				.session()
 				.createQuery(
@@ -104,8 +93,7 @@ public class Bills implements Urlable, XmlDescriber {
 		return doc;
 	}
 
-	public Bill getChild(UriPathElement uriId) throws HttpException,
-			InternalException {
+	public Bill getChild(UriPathElement uriId) throws HttpException {
 		Bill bill = (Bill) Hiber
 				.session()
 				.createQuery(
@@ -118,18 +106,15 @@ public class Bills implements Urlable, XmlDescriber {
 		return bill;
 	}
 
-	public void httpDelete(Invocation inv) throws InternalException,
-			HttpException {
-	}
-
 	public Element toXml(Document doc) throws InternalException,
 			HttpException {
 		Element billsElement = doc.createElement("bills");
 		return billsElement;
 	}
 
-	public Node toXml(Document doc, XmlTree tree) throws InternalException,
-			HttpException {
-		return null;
+	@Override
+	public void httpPost(Invocation inv) throws HttpException {
+		// TODO Auto-generated method stub
+		
 	}
 }

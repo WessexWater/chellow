@@ -157,13 +157,13 @@
 					
 					<li>
 						<a
-							href="{/source/request/@context-path}/orgs/{/source/supplier-contract/org/@id}/reports/50/screen/output/?contract-id={/source/supplier-contract/@id}">
+							href="{/source/request/@context-path}/orgs/{/source/supplier-contract/org/@id}/reports/50/screen/output/?supplier-contract-id={/source/supplier-contract/@id}">
 							Account Snags
 						</a>
 					</li>
 					<li>
 						<a
-							href="{/source/request/@context-path}/orgs/{/source/supplier-contract/org/@id}/reports/52/screen/output/?contract-id={/source/supplier-contract/@id}">
+							href="{/source/request/@context-path}/orgs/{/source/supplier-contract/org/@id}/reports/52/screen/output/?supplier-contract-id={/source/supplier-contract/@id}">
 							Bill Snags
 						</a>
 					</li>
