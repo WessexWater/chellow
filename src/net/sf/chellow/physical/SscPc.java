@@ -30,7 +30,6 @@ import java.text.ParseException;
 import java.util.Date;
 import java.util.Locale;
 
-import net.sf.chellow.data08.Data;
 import net.sf.chellow.monad.DeployerException;
 import net.sf.chellow.monad.DesignerException;
 import net.sf.chellow.monad.Hiber;
@@ -44,7 +43,6 @@ import net.sf.chellow.monad.types.MonadDate;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
 
-import org.hibernate.HibernateException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -60,12 +58,13 @@ public class SscPc extends PersistentEntity {
 		}
 		return profileClass;
 	}
-
+/*
 	static public Pc getProfileClass(int code) throws InternalException,
 			HttpException {
 		return getProfileClass(new PcCode(code));
 	}
-
+*/
+/*
 	static public Pc getProfileClass(PcCode code) throws InternalException,
 			HttpException {
 		Pc profileClass = findProfileClass(code);
@@ -74,25 +73,28 @@ public class SscPc extends PersistentEntity {
 		}
 		return profileClass;
 	}
-
+	*/
+/*
 	static public Pc findProfileClass(PcCode code) {
 		return findProfileClass(code.getInteger());
 	}
-
+	*/
+	/*
 	static public Pc findProfileClass(int code) {
 		return (Pc) Hiber
 				.session()
 				.createQuery(
-						"from ProfileClass as profileClass where profileClass.code.integer = :code")
+						"from Pc pc where pc.code = :code")
 				.setInteger("code", code).uniqueResult();
 	}
-
+*/
 	/*
 	 * @SuppressWarnings("unchecked") static public List<ProfileClass>
 	 * findAll() throws ProgrammerException { return (List<ProfileClass>) Hiber
 	 * .session() .createQuery( "from ProfileClass profileClass order by
 	 * profileClass.code.integer") .list(); }
 	 */
+	/*
 	public static Pc insertProfileClass(int code, String description)
 			throws InternalException, HttpException {
 
@@ -113,7 +115,7 @@ public class SscPc extends PersistentEntity {
 		}
 		return profileClass;
 	}
-
+*/
 	static public void loadFromCsv() throws HttpException {
 		try {
 			ClassLoader classLoader = SscPc.class.getClassLoader();
@@ -145,8 +147,7 @@ public class SscPc extends PersistentEntity {
 				Hiber.session()
 						.save(
 								new SscPc(Ssc.getSsc(values[0]), Pc
-										.getPc(new PcCode(Integer
-												.parseInt(values[1]))),
+										.getPc(values[1]),
 										dateFormat.parse(values[2]), dateFormat
 												.parse(values[3])));
 			}

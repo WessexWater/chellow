@@ -29,7 +29,6 @@ import net.sf.chellow.physical.Organization;
 import net.sf.chellow.physical.Site;
 import net.sf.chellow.physical.Source;
 import net.sf.chellow.physical.Ssc;
-import net.sf.chellow.physical.SscCode;
 import net.sf.chellow.physical.Supply;
 import net.sf.chellow.physical.SupplyGeneration;
 
@@ -216,7 +215,7 @@ public class HeaderImportProcess extends Thread implements Urlable,
 						csvElement.appendChild(getField("Import SSC",
 								importSscStr));
 						importSsc = importSscStr.trim().length() == 0 ? null
-								: Ssc.getSsc(new SscCode(importSscStr));
+								: Ssc.getSsc(importSscStr);
 						String importAgreedSupplyCapacityStr = values[9];
 						csvElement.appendChild(getField(
 								"Import Agreed Supply Capacity",
@@ -273,7 +272,7 @@ public class HeaderImportProcess extends Thread implements Urlable,
 						csvElement.appendChild(getField("Export SSC",
 								exportSscStr));
 						exportSsc = exportSscStr.trim().length() == 0 ? null
-								: Ssc.getSsc(new SscCode(exportSscStr));
+								: Ssc.getSsc(exportSscStr);
 						String exportAgreedSupplyCapacityStr = values[16];
 						csvElement.appendChild(getField(
 								"Export Agreed Supply Capacity",

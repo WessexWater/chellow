@@ -22,6 +22,7 @@
 
 package net.sf.chellow.physical;
 
+import java.text.DecimalFormat;
 import java.util.Date;
 
 import javax.servlet.ServletContext;
@@ -44,33 +45,37 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
 public class Mtc extends PersistentEntity {
-	static public Mtc getMtc(Dso dso, MtcCode mtcCode)
+	static public Mtc getMtc(Dso dso, String code)
 			throws HttpException {
-		return findMtc(dso, mtcCode, true);
+		return findMtc(dso, code, true);
+	}
+	
+	static public boolean hasDso(int code) {
+		return !((code > 499 && code < 510) || (code > 799 && code < 1000));
 	}
 
-	static public Mtc findMtc(Dso dso, MtcCode mtcCode,
+	static public Mtc findMtc(Dso dso, String codeStr,
 			boolean throwException) throws HttpException {
-		dso = mtcCode.hasDso() ? dso : null;
+		int code = Integer.parseInt(codeStr);
+		dso = hasDso(code) ? dso : null;
 		Mtc mtc = null;
 		if (dso == null) {
 			mtc = (Mtc) Hiber
 					.session()
 					.createQuery(
-							"from Mtc as mtc where mtc.dso is null and mtc.code.integer = :mtcCode")
-					.setInteger("mtcCode", mtcCode.getInteger()).uniqueResult();
+							"from Mtc as mtc where mtc.dso is null and mtc.code = :mtcCode")
+					.setInteger("mtcCode", code).uniqueResult();
 		} else {
 			mtc = (Mtc) Hiber
 					.session()
 					.createQuery(
-							"from Mtc as mtc where mtc.dso = :dso and mtc.code.integer = :mtcCode")
-					.setEntity("dso", dso).setInteger("mtcCode",
-							mtcCode.getInteger()).uniqueResult();
+							"from Mtc as mtc where mtc.dso = :dso and mtc.code = :mtcCode")
+					.setEntity("dso", dso).setInteger("mtcCode", code).uniqueResult();
 		}
 		if (throwException && mtc == null) {
 			throw new UserException("There isn't a meter timeswitch with DSO '"
 					+ (dso == null ? dso : dso.getCode())
-					+ "' and Meter Timeswitch Code '" + mtcCode + "'");
+					+ "' and Meter Timeswitch Code '" + code + "'");
 		}
 		return mtc;
 	}
@@ -84,7 +89,7 @@ public class Mtc extends PersistentEntity {
 		return mtc;
 	}
 
-	static public Mtc insertMtc(Dso dso, MtcCode code, String description,
+	static public Mtc insertMtc(Dso dso, String code, String description,
 			boolean hasRelatedMetering, Boolean hasComms, Boolean isHh,
 			MeterType meterType, MeterPaymentType paymentType, Integer tprCount,
 			Date from, Date to) throws HttpException {
@@ -110,7 +115,7 @@ public class Mtc extends PersistentEntity {
 		for (String[] values = mdd.getLine(); values != null; values = mdd
 				.getLine()) {
 			if (values[4].equals("T")) {
-				MtcCode code = new MtcCode(values[0]);
+				String code = values[0];
 				String description = values[3];
 				Boolean hasComms = null;
 				if (values[8].equals("Y")) {
@@ -150,8 +155,9 @@ public class Mtc extends PersistentEntity {
 				"MTC Type Indicator", "MTC TPR Count" });
 		for (String[] values = mdd.getLine(); values != null; values = mdd
 				.getLine()) {
-			MtcCode code = new MtcCode(values[0]);
-			if (code.hasDso()) {
+			String codeStr = values[0];
+			int code = Integer.parseInt(values[0]);
+			if (Mtc.hasDso(code)) {
 				Dso dso = Dso.getDso(Participant.getParticipant(values[2]));
 				String description = values[5];
 				Boolean hasComms = null;
@@ -173,7 +179,7 @@ public class Mtc extends PersistentEntity {
 				MeterType meterType = MeterType.getMtcMeterType(values[6]);
 				MeterPaymentType paymentType = MeterPaymentType
 						.getMtcPaymentType(values[7]);
-				Mtc mtc = Mtc.insertMtc(dso, code, description, false,
+				Mtc mtc = Mtc.insertMtc(dso, codeStr, description, false,
 						hasComms, isHh, meterType, paymentType, tprCount,
 						validFrom, validTo);
 				Hiber.session().save(mtc);
@@ -185,7 +191,7 @@ public class Mtc extends PersistentEntity {
 
 	private Dso dso;
 
-	private MtcCode code;
+	private int code;
 
 	private String description;
 
@@ -201,12 +207,12 @@ public class Mtc extends PersistentEntity {
 	public Mtc() {
 	}
 
-	public Mtc(Dso dso, MtcCode code, String description,
+	public Mtc(Dso dso, String code, String description,
 			boolean hasRelatedMetering, Boolean hasComms, Boolean isHh,
 			MeterType meterType, MeterPaymentType paymentType, Integer tprCount,
 			Date validFrom, Date validTo) throws HttpException {
 		setDso(dso);
-		setCode(code);
+		setCode(Integer.parseInt(code));
 		setDescription(description);
 		setHasRelatedMetering(hasRelatedMetering);
 		setHasComms(hasComms);
@@ -226,11 +232,11 @@ public class Mtc extends PersistentEntity {
 		return dso;
 	}
 
-	public MtcCode getCode() {
+	public int getCode() {
 		return code;
 	}
 
-	void setCode(MtcCode code) {
+	void setCode(int code) {
 		this.code = code;
 	}
 
@@ -313,8 +319,8 @@ public class Mtc extends PersistentEntity {
 
 	public Node toXml(Document doc) throws HttpException {
 		Element element = super.toXml(doc, "mtc");
-
-		element.setAttributeNode(code.toXml(doc));
+		DecimalFormat mtcFormat = new DecimalFormat("000");
+		element.setAttribute("code", mtcFormat.format(code));
 		element.setAttribute("description", description);
 		element.setAttribute("has-related-metering", Boolean
 				.toString(hasRelatedMetering));

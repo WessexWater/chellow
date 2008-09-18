@@ -31,10 +31,8 @@
 				<param name="sequence">pc_id_sequence</param>
 			</generator>
 		</id>
-		<component name="code" class="PcCode">
-			<property type="integer" name="integer" column="code"
-				unique="true" not-null="true" />
-		</component>
+		<property type="integer" name="code" column="code" unique="true"
+			not-null="true" />
 		<property name="description" column="name" unique="true"
 			not-null="true" />
 	</class>

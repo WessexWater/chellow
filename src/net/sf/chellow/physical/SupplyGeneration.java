@@ -385,11 +385,11 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 			 */
 
 			if (getExportMpan() != null && getImportMpan() != null) {
-				LlfcCode code = getImportMpan().getMpanTop().getLlfc()
+				int code = getImportMpan().getMpanTop().getLlfc()
 						.getCode();
-				if (!code.equals(new LlfcCode(520))
-						&& !code.equals(new LlfcCode(550))
-						&& !code.equals(new LlfcCode(580))) {
+				if (code != 520
+						&& code != 550
+						&& code != 580) {
 					throw new UserException(
 							"The DSO is 22, there's an export MPAN and the Line Loss Factor of the import MPAN "
 									+ getImportMpan()
@@ -760,8 +760,7 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 					Long importPcId = inv.getLong("import-pc-id");
 					String importLlfcCodeStr = inv
 							.getString("import-llfc-code");
-					MtcCode importMtcCode = inv.getValidatable(MtcCode.class,
-							"import-mtc-code");
+					String importMtcCode = inv.getString("import-mtc-code");
 					if (!inv.isValid()) {
 						throw new UserException(document());
 					}
@@ -770,8 +769,8 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 						importSsc = Ssc
 								.getSsc(inv.getString("import-ssc-code"));
 					}
-					importMpanRaw = new MpanRaw(importPc.getCode(),
-							importMtcCode, new LlfcCode(importLlfcCodeStr),
+					importMpanRaw = new MpanRaw(Integer.toString(importPc.getCode()),
+							importMtcCode, importLlfcCodeStr,
 							new MpanCoreRaw(importMpanCoreStr));
 					importAgreedSupplyCapacity = inv
 							.getInteger("import-agreed-supply-capacity");
@@ -822,8 +821,7 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 							.getString("export-mpan-core");
 					Long exportPcId = inv.getLong("export-pc-id");
 					String llfcCodeStr = inv.getString("export-llfc-code");
-					MtcCode exportMtcCode = inv.getValidatable(MtcCode.class,
-							"export-mtc-code");
+					String exportMtcCode = inv.getString("export-mtc-code");
 					if (!inv.isValid()) {
 						throw new UserException();
 					}
@@ -832,8 +830,8 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 								.getSsc(inv.getString("export-ssc-code"));
 					}
 					Pc exportPc = Pc.getPc(exportPcId);
-					exportMpanRaw = new MpanRaw(exportPc.getCode(),
-							exportMtcCode, new LlfcCode(llfcCodeStr),
+					exportMpanRaw = new MpanRaw(Integer.toString(exportPc.getCode()),
+							exportMtcCode, llfcCodeStr,
 							new MpanCoreRaw(exportMpanCoreStr));
 					exportAgreedSupplyCapacity = inv
 							.getInteger("export-agreed-supply-capacity");

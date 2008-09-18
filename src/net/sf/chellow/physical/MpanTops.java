@@ -82,7 +82,7 @@ public class MpanTops implements Urlable, XmlDescriber {
 		for (MpanTop mpanTop : (List<MpanTop>) Hiber
 				.session()
 				.createQuery(
-						"from MpanTop mpanTop where mpanTop.llfc.dso = :dso order by mpanTop.llfc.code.integer, mpanTop.pc.code.integer")
+						"from MpanTop mpanTop where mpanTop.llfc.dso = :dso order by mpanTop.llfc.code, mpanTop.pc.code")
 				.setEntity("dso", dso).list()) {
 			mpanTopsElement.appendChild(mpanTop.toXml(doc, new XmlTree("llfc",
 					new XmlTree("dso")).put("pc").put("mtc").put("ssc")));

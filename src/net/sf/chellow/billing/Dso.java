@@ -11,7 +11,6 @@ import net.sf.chellow.monad.types.UriPathElement;
 import net.sf.chellow.physical.DsoCode;
 import net.sf.chellow.physical.HhEndDate;
 import net.sf.chellow.physical.Llfc;
-import net.sf.chellow.physical.LlfcCode;
 import net.sf.chellow.physical.Llfcs;
 import net.sf.chellow.physical.MarketRole;
 import net.sf.chellow.physical.MpanTops;
@@ -81,17 +80,17 @@ public class Dso extends Party {
 		return element;
 	}
 
-	public Llfc getLlfc(LlfcCode llfcCode, Date date) throws HttpException {
+	public Llfc getLlfc(String code, Date date) throws HttpException {
 		Llfc llfc = (Llfc) Hiber
 				.session()
 				.createQuery(
 						"from Llfc llfc where llfc.dso = :dso and llfc.code = :code and llfc.validFrom <= :date and (llfc.validTo is null or llfc.validTo >= :date)")
 				.setEntity("dso", this).setInteger("code",
-						llfcCode.getInteger()).setTimestamp("date", date)
+						Integer.parseInt(code)).setTimestamp("date", date)
 				.uniqueResult();
 		if (llfc == null) {
 			throw new UserException(
-					"There is no line loss factor with the code " + llfcCode
+					"There is no line loss factor with the code " + code
 							+ " associated with the DNO '"
 							+ getCode().toString() + "' for the date "
 							+ date.toString() + ".");
@@ -99,12 +98,12 @@ public class Dso extends Party {
 		return llfc;
 	}
 
-	public Llfc getLlfc(LlfcCode code) throws HttpException {
+	public Llfc getLlfc(String code) throws HttpException {
 		Llfc llfc = (Llfc) Hiber
 				.session()
 				.createQuery(
 						"from Llfc llfc where llfc.dso = :dso and llfc.code = :code and llfc.validTo is null")
-				.setEntity("dso", this).setInteger("code", code.getInteger())
+				.setEntity("dso", this).setInteger("code", Integer.parseInt(code))
 				.uniqueResult();
 		if (llfc == null) {
 			throw new UserException("There is no ongoing LLFC with the code "

@@ -22,6 +22,7 @@
 
 package net.sf.chellow.physical;
 
+import java.text.DecimalFormat;
 import java.util.Date;
 import java.util.List;
 
@@ -134,7 +135,7 @@ public class Llfc extends PersistentEntity {
 
 	private Dso dso;
 
-	private LlfcCode code;
+	private int code;
 
 	private String description;
 
@@ -154,7 +155,7 @@ public class Llfc extends PersistentEntity {
 			VoltageLevel voltageLevel, boolean isSubstation, boolean isImport,
 			Date validFrom, Date validTo) throws HttpException {
 		setDso(dso);
-		setCode(new LlfcCode(code));
+		setCode(code);
 		setDescription(description);
 		setVoltageLevel(voltageLevel);
 		setIsSubstation(isSubstation);
@@ -171,11 +172,11 @@ public class Llfc extends PersistentEntity {
 		this.dso = dso;
 	}
 
-	public LlfcCode getCode() {
+	public int getCode() {
 		return code;
 	}
 
-	void setCode(LlfcCode code) {
+	void setCode(int code) {
 		this.code = code;
 	}
 
@@ -228,8 +229,9 @@ public class Llfc extends PersistentEntity {
 	}
 
 	public Node toXml(Document doc) throws HttpException {
+		DecimalFormat llfcFormat = new DecimalFormat("000");
 		Element element = super.toXml(doc, "llfc");
-		element.setAttribute("code", code.toString());
+		element.setAttribute("code", llfcFormat.format(code));
 		element.setAttribute("description", description);
 		element.setAttribute("is-substation", Boolean.toString(isSubstation));
 		element.setAttribute("is-import", Boolean.toString(isImport));

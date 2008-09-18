@@ -116,11 +116,11 @@ public class MpanTop extends PersistentEntity {
 							"Effective From Settlement Date {VSCPC}",
 							"Effective To Settlement Date {VSCPC}" });
 
-			Map<String, List<List<Object>>> sscPcMap = new HashMap<String, List<List<Object>>>();
+			Map<Integer, List<List<Object>>> sscPcMap = new HashMap<Integer, List<List<Object>>>();
 			for (String[] values = mdd.getLine(); values != null; values = mdd
 					.getLine()) {
-				String sscCode = values[1];
-				PcCode pcCode = new PcCode(Integer.parseInt(values[0]));
+				int sscCode = Integer.parseInt(values[1]);
+				String pcCode = values[0];
 				Date validFrom = mdd.toDate(values[2]);
 				Date validTo = mdd.toDate(values[3]);
 
@@ -150,10 +150,9 @@ public class MpanTop extends PersistentEntity {
 				Dso dso = Dso.getDso(Participant.getParticipant(values[2]));
 				Date validFrom = mdd.toDate(values[7]);
 				Date validTo = mdd.toDate(values[8]);
-				Llfc llfc = dso.getLlfc(new LlfcCode(Integer
-						.parseInt(values[6])), validFrom);
-				Mtc mtc = Mtc.getMtc(dso, new MtcCode(values[0]));
-				Ssc ssc = Ssc.getSsc(new SscCode(Integer.parseInt(values[4])));
+				Llfc llfc = dso.getLlfc(values[6], validFrom);
+				Mtc mtc = Mtc.getMtc(dso, values[0]);
+				Ssc ssc = Ssc.getSsc(values[4]);
 				for (List<Object> sscPc : sscPcMap.get(ssc.getCode())) {
 					Date mapFrom = (Date) sscPc.get(1);
 					Date mapTo = (Date) sscPc.get(2);
@@ -163,7 +162,7 @@ public class MpanTop extends PersistentEntity {
 					if (mapTo != null && validTo != null) {
 						derivedTo = validTo.before(mapTo) ? validTo : mapTo;
 					}
-					llfc.insertMpanTop(Pc.getPc((PcCode) sscPc.get(0)), mtc,
+					llfc.insertMpanTop(Pc.getPc((String) sscPc.get(0)), mtc,
 							ssc, derivedFrom, derivedTo);
 				}
 				Hiber.close();
@@ -181,10 +180,9 @@ public class MpanTop extends PersistentEntity {
 				Dso dso = Dso.getDso(Participant.getParticipant(values[2]));
 				Date validFrom = mdd.toDate(values[5]);
 				Date validTo = mdd.toDate(values[6]);
-				Llfc llfc = dso.getLlfc(new LlfcCode(Integer
-						.parseInt(values[4])), validFrom);
-				Mtc mtc = Mtc.getMtc(dso, new MtcCode(values[0]));
-				llfc.insertMpanTop(Pc.getPc(new PcCode(0)), mtc, null,
+				Llfc llfc = dso.getLlfc(values[4], validFrom);
+				Mtc mtc = Mtc.getMtc(dso, values[0]);
+				llfc.insertMpanTop(Pc.getPc("0"), mtc, null,
 						validFrom, validTo);
 				Hiber.close();
 			}

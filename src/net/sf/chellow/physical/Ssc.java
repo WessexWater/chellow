@@ -1,5 +1,6 @@
 package net.sf.chellow.physical;
 
+import java.text.DecimalFormat;
 import java.util.Date;
 import java.util.Set;
 
@@ -25,23 +26,19 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 public class Ssc extends PersistentEntity {
-	public static Ssc getSsc(SscCode code) throws HttpException {
+	public static Ssc getSsc(String code) throws HttpException {
 		// canonicalize
 		//int codeInt = Integer.parseInt(code);
 		//NumberFormat numberFormat = new DecimalFormat("0000");
 		//String codeStr = numberFormat.format(codeInt);
 		Ssc ssc = (Ssc) Hiber.session().createQuery(
-				"from Ssc ssc where ssc.code = :code").setString("code",
-				code.toString()).uniqueResult();
+				"from Ssc ssc where ssc.code = :code").setInteger("code",
+				Integer.parseInt(code)).uniqueResult();
 		if (ssc == null) {
 			throw new UserException("There isn't an SSC with code: " + code
 					+ ".");
 		}
 		return ssc;
-	}
-	
-	public static Ssc getSsc(String code) throws HttpException {
-		return getSsc(new SscCode(code));
 	}
 
 	public static Ssc getSsc(long id) throws HttpException {
@@ -71,7 +68,7 @@ public class Ssc extends PersistentEntity {
 		Debug.print("Finished adding SSCs.");
 	}
 
-	private String code;
+	private int code;
 	private Date validFrom;
 	private Date validTo;
 	private String description;
@@ -83,18 +80,18 @@ public class Ssc extends PersistentEntity {
 
 	public Ssc(String code, Date validFrom, Date validTo, String description,
 			boolean isImport) throws HttpException {
-		setCode(code);
+		setCode(Integer.parseInt(code));
 		setValidFrom(validFrom);
 		setValidTo(validTo);
 		setDescription(description);
 		setIsImport(isImport);
 	}
 
-	public String getCode() {
+	public int getCode() {
 		return code;
 	}
 
-	void setCode(String code) {
+	void setCode(int code) {
 		this.code = code;
 	}
 
@@ -168,8 +165,9 @@ public class Ssc extends PersistentEntity {
 
 	public Element toXml(Document doc) throws HttpException {
 		Element element = super.toXml(doc, "ssc");
+		DecimalFormat sscFormat = new DecimalFormat("0000");
 
-		element.setAttribute("code", code);
+		element.setAttribute("code", sscFormat.format(code));
 		element.setAttribute("is-import", Boolean.toString(isImport));
 		element.setAttribute("description", description);
 		MonadDate fromDate = new MonadDate(validFrom);

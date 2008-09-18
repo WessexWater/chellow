@@ -41,14 +41,11 @@ import net.sf.chellow.data08.MpanCoreRaw;
 import net.sf.chellow.data08.MpanRaw;
 import net.sf.chellow.monad.Debug;
 import net.sf.chellow.monad.Hiber;
-import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.HttpException;
+import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.UserException;
 import net.sf.chellow.monad.types.MonadDate;
 import net.sf.chellow.physical.HhEndDate;
-import net.sf.chellow.physical.LlfcCode;
-import net.sf.chellow.physical.MtcCode;
-import net.sf.chellow.physical.PcCode;
 import net.sf.chellow.physical.ReadType;
 import net.sf.chellow.physical.RegisterReadRaw;
 import net.sf.chellow.physical.Units;
@@ -231,16 +228,15 @@ public class InvoiceConverterEdi implements InvoiceConverter {
 				}
 				if (code.equals("MAN")) {
 					Element madn = segment.getElements().get(2);
-					PcCode profileClassCode = new PcCode(madn.getInt(3));
-					MtcCode meterTimeswitchCode = new MtcCode(madn
-							.getComponents().get(4));
-					LlfcCode llfCode = new LlfcCode(madn.getInt(5));
+					String pcCode = madn.getString(3);
+					String mtcCode = madn.getComponents().get(4);
+					String llfCode = madn.getString(5);
 					MpanCoreRaw mpanCoreRaw = new MpanCoreRaw(madn
 							.getComponents().get(0)
 							+ madn.getComponents().get(1)
 							+ madn.getComponents().get(2));
-					mpanRaw = new MpanRaw(profileClassCode,
-							meterTimeswitchCode, llfCode, mpanCoreRaw);
+					mpanRaw = new MpanRaw(pcCode,
+							mtcCode, llfCode, mpanCoreRaw);
 				}
 				if (code.equals("VAT")) {
 					Debug.print("started vat");

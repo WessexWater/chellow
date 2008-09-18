@@ -31,7 +31,7 @@
 				<param name="sequence">ssc_id_sequence</param>
 			</generator>
 		</id>
-		<property type="string" name="code" column="code" unique="true"
+		<property type="integer" name="code" column="code" unique="true"
 			not-null="true" />
 		<property type="string" name="description" column="description"
 			not-null="true" />

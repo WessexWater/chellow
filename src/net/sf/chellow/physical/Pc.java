@@ -22,6 +22,8 @@
 
 package net.sf.chellow.physical;
 
+import java.text.DecimalFormat;
+
 import javax.servlet.ServletContext;
 
 import net.sf.chellow.monad.Debug;
@@ -51,12 +53,11 @@ public class Pc extends PersistentEntity {
 	}
 
 	/*
-	static public Pc getPc(int code) throws HttpException {
-		return getPc(new PcCode(code));
-	}
-*/
-	static public Pc getPc(PcCode code) throws HttpException {
-		Pc profileClass = findPc(code);
+	 * static public Pc getPc(int code) throws HttpException { return getPc(new
+	 * PcCode(code)); }
+	 */
+	static public Pc getPc(String code) throws HttpException {
+		Pc profileClass = findPc(Integer.parseInt(code));
 		if (profileClass == null) {
 			throw new UserException("There is no profile class with that code.");
 		}
@@ -69,7 +70,7 @@ public class Pc extends PersistentEntity {
 
 	static public Pc findPc(int code) {
 		return (Pc) Hiber.session().createQuery(
-				"from Pc pc where pc.code.integer = :code").setInteger("code",
+				"from Pc pc where pc.code = :code").setInteger("code",
 				code).uniqueResult();
 	}
 
@@ -81,37 +82,34 @@ public class Pc extends PersistentEntity {
 				"Effective To Settlement Date {PCLA}" });
 		for (String[] values = mdd.getLine(); values != null; values = mdd
 				.getLine()) {
-			Hiber.session().save(
-					new Pc(new PcCode(Integer.parseInt(values[0])), values[2]));
+			Hiber.session().save(new Pc(values[0], values[2]));
 			Hiber.close();
 		}
 		Debug.print("Added PCs.");
 	}
 
-	private PcCode code;
+	private int code;
 
 	private String description;
 
 	public Pc() {
 	}
 
-	public Pc(PcCode code, String description) {
+	public Pc(String code, String description) {
 		this(null, code, description);
 	}
 
-	public Pc(String label, PcCode code, String description) {
-		this();
+	public Pc(String label, String code, String description) {
 		setLabel(label);
-		this.code = code;
+		this.code = Integer.parseInt(code);
 		this.description = description;
 	}
 
-	void setCode(PcCode code) {
-		code.setLabel("code");
+	void setCode(int code) {
 		this.code = code;
 	}
 
-	public PcCode getCode() {
+	public int getCode() {
 		return code;
 	}
 
@@ -134,8 +132,9 @@ public class Pc extends PersistentEntity {
 
 	public Node toXml(Document doc) throws HttpException {
 		Element element = super.toXml(doc, "pc");
+		DecimalFormat pcFormat = new DecimalFormat("00");
 
-		element.setAttributeNode(code.toXml(doc));
+		element.setAttribute("code", pcFormat.format(code));
 		element.setAttribute("description", description);
 		return element;
 	}

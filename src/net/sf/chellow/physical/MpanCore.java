@@ -35,28 +35,22 @@ import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Urlable;
 import net.sf.chellow.monad.HttpException;
 
-
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
 
-import org.hibernate.HibernateException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
 public class MpanCore extends PersistentEntity {
 	static public MpanCore getMpanCore(Long id) throws InternalException {
-		try {
-			return (MpanCore) Hiber.session().get(MpanCore.class, id);
-		} catch (HibernateException e) {
-			throw new InternalException(e);
-		}
+		return (MpanCore) Hiber.session().get(MpanCore.class, id);
 	}
-/*
-	static public MpanCore getMpanCore(MonadLong id) throws ProgrammerException {
-		return getMpanCore(id.getLong());
-	}
-*/
+
+	/*
+	 * static public MpanCore getMpanCore(MonadLong id) throws
+	 * ProgrammerException { return getMpanCore(id.getLong()); }
+	 */
 	private Supply supply;
 
 	private Dso dso;
@@ -70,8 +64,7 @@ public class MpanCore extends PersistentEntity {
 	public MpanCore() {
 	}
 
-	public MpanCore(Supply supply, MpanCoreRaw core)
-			throws 	HttpException {
+	public MpanCore(Supply supply, MpanCoreRaw core) throws HttpException {
 		setSupply(supply);
 		Dso importDso = Dso.getDso(core.getDsoCode());
 		setMpans(new HashSet<Mpan>());
@@ -85,7 +78,7 @@ public class MpanCore extends PersistentEntity {
 
 	private void init(Dso dso, MpanUniquePart uniquePart, CheckDigit checkDigit)
 			throws HttpException {
-			update(dso, uniquePart, checkDigit);
+		update(dso, uniquePart, checkDigit);
 	}
 
 	public void update(Dso dso, MpanUniquePart uniquePart, CheckDigit checkDigit)
@@ -131,10 +124,10 @@ public class MpanCore extends PersistentEntity {
 	}
 
 	public MpanCoreRaw getCore() throws HttpException {
-			MpanCoreRaw core = new MpanCoreRaw(dso.getCode(), uniquePart,
-					checkDigit);
-			core.setLabel("core");
-			return core;
+		MpanCoreRaw core = new MpanCoreRaw(dso.getCode(), uniquePart,
+				checkDigit);
+		core.setLabel("core");
+		return core;
 	}
 
 	public Set<Mpan> getMpans() {
@@ -153,7 +146,7 @@ public class MpanCore extends PersistentEntity {
 		}
 		return isEqual;
 	}
-	
+
 	public String toString() {
 		try {
 			return getCore().toString();
@@ -177,23 +170,27 @@ public class MpanCore extends PersistentEntity {
 		return null;
 	}
 
-	public Urlable getChild(UriPathElement uriId) throws InternalException, HttpException {
+	public Urlable getChild(UriPathElement uriId) throws InternalException,
+			HttpException {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
-	public void httpGet(Invocation inv) throws DesignerException, InternalException, HttpException, DeployerException {
+	public void httpGet(Invocation inv) throws DesignerException,
+			InternalException, HttpException, DeployerException {
 		// TODO Auto-generated method stub
-		
+
 	}
 
-	public void httpPost(Invocation inv) throws InternalException, HttpException {
+	public void httpPost(Invocation inv) throws InternalException,
+			HttpException {
 		// TODO Auto-generated method stub
-		
+
 	}
 
-	public void httpDelete(Invocation inv) throws InternalException, DesignerException, HttpException, DeployerException {
+	public void httpDelete(Invocation inv) throws InternalException,
+			DesignerException, HttpException, DeployerException {
 		// TODO Auto-generated method stub
-		
+
 	}
 }
