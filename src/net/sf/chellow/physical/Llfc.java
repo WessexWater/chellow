@@ -227,11 +227,15 @@ public class Llfc extends PersistentEntity {
 	void setValidTo(Date to) {
 		this.validTo = to;
 	}
+	
+	public String codeAsString() {
+		DecimalFormat llfcFormat = new DecimalFormat("000");
+		return llfcFormat.format(code);
+	}
 
 	public Node toXml(Document doc) throws HttpException {
-		DecimalFormat llfcFormat = new DecimalFormat("000");
 		Element element = super.toXml(doc, "llfc");
-		element.setAttribute("code", llfcFormat.format(code));
+		element.setAttribute("code", codeAsString());
 		element.setAttribute("description", description);
 		element.setAttribute("is-substation", Boolean.toString(isSubstation));
 		element.setAttribute("is-import", Boolean.toString(isImport));

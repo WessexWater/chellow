@@ -320,8 +320,14 @@ public class Mpan extends PersistentEntity {
 				.toString(hasExportKvarh));
 		element.setAttribute("agreed-supply-capacity", Integer
 				.toString(agreedSupplyCapacity));
-		element.setAttribute("mpan", mpanTop.getPc().toString() + " " + mpanTop.getMtc().toString() + " "
-				+ mpanTop.getLlfc().toString() + " " + mpanCore.toString());
+		element.setAttribute("mpan", mpanTop.getPc().toXml(doc)
+				.getTextContent()
+				+ " "
+				+ mpanTop.getMtc().toXml(doc).getTextContent()
+				+ " "
+				+ mpanTop.getLlfc().toXml(doc).getTextContent()
+				+ " "
+				+ mpanCore.toString());
 		return element;
 	}
 
@@ -359,8 +365,9 @@ public class Mpan extends PersistentEntity {
 	 */
 
 	public MpanRaw getMpanRaw() throws HttpException {
-		return new MpanRaw(Integer.toString(getMpanTop().getPc().getCode()), Integer.toString(getMpanTop()
-				.getMtc().getCode()), Integer.toString(getMpanTop().getLlfc().getCode()),
+		return new MpanRaw(Integer.toString(getMpanTop().getPc().getCode()),
+				Integer.toString(getMpanTop().getMtc().getCode()), Integer
+						.toString(getMpanTop().getLlfc().getCode()),
 				getMpanCore().getCore());
 	}
 }

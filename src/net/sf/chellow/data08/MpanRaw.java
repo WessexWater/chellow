@@ -110,8 +110,8 @@ public class MpanRaw extends MonadObject {
 	}
 
 	public String toString() {
-		return pc.toString() + " " + mtc.toString() + " "
-				+ llfc.toString() + " " + mpanCoreRaw.toString();
+		return pc.codeAsString() + " " + mtc.codeAsString() + " "
+				+ llfc.codeAsString() + " " + mpanCoreRaw.toString();
 	}
 
 	public String toStringNoSpaces() {

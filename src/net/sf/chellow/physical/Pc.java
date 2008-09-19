@@ -129,12 +129,17 @@ public class Pc extends PersistentEntity {
 	public String toString() {
 		return getCode() + " - " + getDescription();
 	}
+	
+	public String codeAsString() {
+		DecimalFormat pcFormat = new DecimalFormat("00");
+		return pcFormat.format(code);
+	}
 
 	public Node toXml(Document doc) throws HttpException {
 		Element element = super.toXml(doc, "pc");
-		DecimalFormat pcFormat = new DecimalFormat("00");
+		
 
-		element.setAttribute("code", pcFormat.format(code));
+		element.setAttribute("code", codeAsString());
 		element.setAttribute("description", description);
 		return element;
 	}

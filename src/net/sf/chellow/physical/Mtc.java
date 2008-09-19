@@ -316,11 +316,15 @@ public class Mtc extends PersistentEntity {
 		return code + " - " + description + " (DSO "
 				+ (dso == null ? null : dso.getCode()) + ")";
 	}
+	
+	public String codeAsString() {
+		DecimalFormat mtcFormat = new DecimalFormat("000");
+		return mtcFormat.format(code);		
+	}
 
 	public Node toXml(Document doc) throws HttpException {
 		Element element = super.toXml(doc, "mtc");
-		DecimalFormat mtcFormat = new DecimalFormat("000");
-		element.setAttribute("code", mtcFormat.format(code));
+		element.setAttribute("code", codeAsString());
 		element.setAttribute("description", description);
 		element.setAttribute("has-related-metering", Boolean
 				.toString(hasRelatedMetering));
