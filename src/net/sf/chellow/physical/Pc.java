@@ -64,10 +64,6 @@ public class Pc extends PersistentEntity {
 		return profileClass;
 	}
 
-	static public Pc findPc(PcCode code) {
-		return findPc(code.getInteger());
-	}
-
 	static public Pc findPc(int code) {
 		return (Pc) Hiber.session().createQuery(
 				"from Pc pc where pc.code = :code").setInteger("code",
