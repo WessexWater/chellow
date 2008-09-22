@@ -25,11 +25,9 @@
 -->
 
 <hibernate-mapping package="net.sf.chellow.billing">
-	<joined-subclass extends="Party" name="Dso"
-		table="dso" lazy="true">
+	<joined-subclass extends="Party" name="Dso" table="dso"
+		lazy="true">
 		<key column="party_id" foreign-key="fkey_dso_party" />
-		<component name="code" class="net.sf.chellow.physical.DsoCode">
-			<property name="string" column="code" />
-		</component>
+		<property type="string" name="code" column="code" />
 	</joined-subclass>
 </hibernate-mapping>

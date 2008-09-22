@@ -27,7 +27,7 @@ import java.util.Date;
 import java.util.List;
 
 import net.sf.chellow.billing.HhdcContract;
-import net.sf.chellow.data08.HhDatumRaw;
+import net.sf.chellow.hhimport.HhDatumRaw;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.InternalException;
@@ -659,13 +659,13 @@ public class Channel extends PersistentEntity implements Urlable {
 					resolveSnag(ChannelSnag.SNAG_NEGATIVE, datumRaw
 							.getEndDate());
 				}
-				if (!HhDatumRaw.ACTUAL.equals(datumRaw.getStatus())) {
+				if (!HhDatum.ACTUAL.equals(datumRaw.getStatus())) {
 					if (notActualFrom == null) {
 						notActualFrom = datumRaw.getEndDate();
 					}
 					notActualTo = datumRaw.getEndDate();
 				} else if (altered
-						&& !originalDatum.getStatus().equals(HhDatumRaw.ACTUAL)) {
+						&& !originalDatum.getStatus().equals(HhDatum.ACTUAL)) {
 					resolveSnag(ChannelSnag.SNAG_NOT_ACTUAL, datumRaw
 							.getEndDate());
 				}

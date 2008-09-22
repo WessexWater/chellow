@@ -8,7 +8,6 @@ import net.sf.chellow.monad.NotFoundException;
 import net.sf.chellow.monad.Urlable;
 import net.sf.chellow.monad.UserException;
 import net.sf.chellow.monad.types.UriPathElement;
-import net.sf.chellow.physical.DsoCode;
 import net.sf.chellow.physical.HhEndDate;
 import net.sf.chellow.physical.Llfc;
 import net.sf.chellow.physical.Llfcs;
@@ -39,8 +38,8 @@ public class Dso extends Party {
 		return dso;
 	}
 
-	static public Dso getDso(DsoCode code) throws HttpException {
-		Dso dso = findDso(code.getString());
+	static public Dso getDso(String code) throws HttpException {
+		Dso dso = findDso(code);
 		if (dso == null) {
 			throw new UserException("There is no DSO with the code '" + code
 					+ "'.");
@@ -50,14 +49,14 @@ public class Dso extends Party {
 
 	static public Dso findDso(String code) throws HttpException {
 		return (Dso) Hiber.session().createQuery(
-				"from Dso dso where dso.code.string = :code").setString("code",
+				"from Dso dso where dso.code = :code").setString("code",
 				code).uniqueResult();
 	}
 
-	private DsoCode code;
+	private String code;
 
 	public Dso(String name, Participant participant, Date validFrom,
-			Date validTo, DsoCode code) throws HttpException {
+			Date validTo, String code) throws HttpException {
 		super(name, participant, MarketRole.DISTRIBUTOR, validFrom, validTo);
 		setCode(code);
 	}
@@ -66,11 +65,11 @@ public class Dso extends Party {
 		super();
 	}
 
-	void setCode(DsoCode code) {
+	void setCode(String code) {
 		this.code = code;
 	}
 
-	public DsoCode getCode() {
+	public String getCode() {
 		return code;
 	}
 

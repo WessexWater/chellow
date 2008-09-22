@@ -1,17 +1,17 @@
-package net.sf.chellow.data08;
+package net.sf.chellow.hhimport;
 
+import net.sf.chellow.data08.MpanCoreRaw;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.UserException;
+import net.sf.chellow.physical.HhDatum;
 import net.sf.chellow.physical.HhEndDate;
 
 public class HhDatumRaw {
-	public static Character ACTUAL = 'A';
-	public static Character ESTIMATE = 'E';
 	
 	public static Character checkStatus(Character status) throws HttpException {
 		if (status != null
-				&& !(status.equals(ESTIMATE) || status.equals(ACTUAL))) {
+				&& !(status.equals(HhDatum.ESTIMATE) || status.equals(HhDatum.ACTUAL))) {
 			throw new UserException(
 					"The status character must be E, A or null.");
 		}

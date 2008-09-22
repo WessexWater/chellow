@@ -96,7 +96,8 @@
 								</label>
 								<br />
 								<br />
-								<input type="submit" value="Update" />
+								<input name="update" type="submit"
+									value="Update" />
 								<input type="reset" value="Reset" />
 							</fieldset>
 						</form>
@@ -188,6 +189,216 @@
 							</fieldset>
 							</form>
 						-->
+						<br />
+						<form action="." method="post">
+							<fieldset>
+								<legend>Insert a supply</legend>
+								<br />
+								<label>
+									Source
+									<select name="source-id">
+										<xsl:for-each
+											select="/source/source">
+											<option value="{@id}">
+												<xsl:if
+													test="/source/request/parameter[@name='source-id']/value = @id">
+													<xsl:attribute
+														name="selected">
+																<xsl:value-of
+															select="'selected'" />
+															</xsl:attribute>
+												</xsl:if>
+												<xsl:value-of
+													select="concat(@code, ' : ', @name)" />
+											</option>
+										</xsl:for-each>
+									</select>
+								</label>
+								<br />
+								<label>
+									<xsl:value-of select="'Name '" />
+									<input name="name"
+										value="{/source/request/parameter[@name = 'name']/value}" />
+								</label>
+								<br />
+								<br />
+								<fieldset>
+									<legend>Start Date</legend>
+									<input name="start-date-year"
+										maxlength="4" size="4">
+										<xsl:attribute name="value">
+											<xsl:choose>
+												<xsl:when
+													test="/source/request/parameter[@name='start-date-year']">
+													<xsl:value-of
+														select="/source/request/parameter[@name='start-date-year']/value" />
+												</xsl:when>
+												<xsl:otherwise>
+													<xsl:value-of
+														select="/source/date/@year" />
+												</xsl:otherwise>
+											</xsl:choose>
+										</xsl:attribute>
+									</input>
+									<xsl:value-of select="' - '" />
+									<select name="start-date-month">
+										<xsl:for-each
+											select="/source/months/month">
+											<option value="{@number}">
+												<xsl:choose>
+													<xsl:when
+														test="/source/request/parameter[@name='start-date-month']">
+														<xsl:if
+															test="/source/request/parameter[@name='start-date-month']/value = @number">
+															<xsl:attribute
+																name="selected">
+																<xsl:value-of
+																	select="'selected'" />
+															</xsl:attribute>
+														</xsl:if>
+													</xsl:when>
+													<xsl:otherwise>
+														<xsl:if
+															test="/source/date/@month = @number">
+															<xsl:attribute
+																name="selected">
+																<xsl:value-of
+																	select="'selected'" />
+															</xsl:attribute>
+														</xsl:if>
+													</xsl:otherwise>
+												</xsl:choose>
+												<xsl:value-of
+													select="@number" />
+											</option>
+										</xsl:for-each>
+									</select>
+									<xsl:value-of select="' - '" />
+									<select name="start-date-day">
+										<xsl:for-each
+											select="/source/days/day">
+											<option value="{@number}">
+												<xsl:choose>
+													<xsl:when
+														test="/source/request/parameter[@name='start-date-day']">
+														<xsl:if
+															test="/source/request/parameter[@name='start-date-day']/value = @number">
+															<xsl:attribute
+																name="selected">
+																<xsl:value-of
+																	select="'selected'" />
+															</xsl:attribute>
+														</xsl:if>
+													</xsl:when>
+													<xsl:otherwise>
+														<xsl:if
+															test="/source/date/@day = @number">
+															<xsl:attribute
+																name="selected">
+																<xsl:value-of
+																	select="'selected'" />
+															</xsl:attribute>
+														</xsl:if>
+													</xsl:otherwise>
+												</xsl:choose>
+												<xsl:value-of
+													select="@number" />
+											</option>
+										</xsl:for-each>
+									</select>
+								</fieldset>
+								<br />
+								<label>
+									<xsl:value-of
+										select="'Meter Serial Number '" />
+									<input name="meter-serial-number"
+										value="{/source/request/parameter[@name = 'meter-serial-number']/value}" />
+								</label>
+								<br />
+								<br />
+								<fieldset>
+									<legend>Import</legend>
+									<label>
+										<xsl:value-of select="'Mpan '" />
+										<input name="import-mpan"
+											value="{/source/request/parameter[@name = 'import-mpan']/value}" />
+									</label>
+									<br />
+									<label>
+										<xsl:value-of select="'SSC '" />
+										<input name="import-ssc"
+											value="{/source/request/parameter[@name = 'import-ssc']/value}" />
+									</label>
+									<br />
+									<label>
+										<xsl:value-of
+											select="'Supply Capacity '" />
+										<input
+											name="import-supply-capacity"
+											value="{/source/request/parameter[@name = 'import-supply-capacity']/value}" />
+									</label>
+									<br />
+									<label>
+										<xsl:value-of
+											select="'HHDC Contract '" />
+										<input
+											name="import-hhdc-contract"
+											value="{/source/request/parameter[@name = 'import-hhdc-contract']/value}" />
+									</label>
+									<br />
+									<label>
+										<xsl:value-of
+											select="'HHDC Account '" />
+										<input
+											name="import-hhdc-account"
+											value="{/source/request/parameter[@name = 'import-hhdc-account']/value}" />
+									</label>
+								</fieldset>
+								<br />
+								<fieldset>
+									<legend>Export</legend>
+									<label>
+										<xsl:value-of select="'Mpan '" />
+										<input name="export-mpan"
+											value="{/source/request/parameter[@name = 'export-mpan']/value}" />
+									</label>
+									<br />
+									<label>
+										<xsl:value-of select="'SSC '" />
+										<input name="export-ssc"
+											value="{/source/request/parameter[@name = 'export-ssc']/value}" />
+									</label>
+									<br />
+									<label>
+										<xsl:value-of
+											select="'Supply Capacity '" />
+										<input
+											name="export-supply-capacity"
+											value="{/source/request/parameter[@name = 'export-supply-capacity']/value}" />
+									</label>
+									<br />
+									<label>
+										<xsl:value-of
+											select="'HHDC Contract '" />
+										<input
+											name="export-hhdc-contract"
+											value="{/source/request/parameter[@name = 'export-hhdc-contract']/value}" />
+									</label>
+									<br />
+									<label>
+										<xsl:value-of
+											select="'HHDC Account '" />
+										<input
+											name="export-hhdc-account"
+											value="{/source/request/parameter[@name = 'export-hhdc-account']/value}" />
+									</label>
+								</fieldset>
+								<br />
+								<input name="insert" type="submit"
+									value="Insert" />
+								<input type="reset" value="Reset" />
+							</fieldset>
+						</form>
 					</xsl:otherwise>
 				</xsl:choose>
 			</body>

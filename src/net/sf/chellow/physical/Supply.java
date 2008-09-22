@@ -31,7 +31,6 @@ import java.util.Map;
 import java.util.Set;
 
 import net.sf.chellow.billing.Account;
-import net.sf.chellow.data08.HhDatumRaw;
 import net.sf.chellow.data08.MpanCoreRaw;
 import net.sf.chellow.data08.MpanRaw;
 import net.sf.chellow.monad.Hiber;
@@ -632,7 +631,7 @@ public class Supply extends PersistentEntity {
 						targetChannel.addChannelSnag(ChannelSnag.SNAG_NEGATIVE,
 								endDate, endDate, false);
 					}
-					if (!datum.getStatus().equals(HhDatumRaw.ACTUAL)) {
+					if (!datum.getStatus().equals(HhDatum.ACTUAL)) {
 						targetChannel.addChannelSnag(
 								ChannelSnag.SNAG_NOT_ACTUAL, endDate, endDate,
 								false);

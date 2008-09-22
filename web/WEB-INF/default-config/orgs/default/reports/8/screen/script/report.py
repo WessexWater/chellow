@@ -3,7 +3,7 @@ from java.util import Calendar, GregorianCalendar, TimeZone, Locale, Date
 from net.sf.chellow.monad.types import MonadDate
 from java.sql import Timestamp, ResultSet
 from java.text import SimpleDateFormat
-from net.sf.chellow.physical import HhEndDate, HhDatumStatus
+from net.sf.chellow.physical import HhEndDate, HhDatum
 
 cal = GregorianCalendar(TimeZone.getTimeZone("GMT"), Locale.UK)
 supply_id = inv.getLong("supply-id")
@@ -35,7 +35,7 @@ stmt.setTimestamp(3, Timestamp(finishDate.getTime()))
 stmt.setFetchSize(100)
 rs = stmt.executeQuery()
 hhDate = HhEndDate(startDate).getNext().getDate().getTime()
-actualStatus = HhDatumStatus.ACTUAL
+actualStatus = HhDatum.ACTUAL
 if rs.next():
     value = rs.getFloat("value")
     hhChannelEndDate = rs.getTimestamp("end_date")

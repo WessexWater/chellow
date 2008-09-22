@@ -30,12 +30,13 @@ import java.text.ParseException;
 import java.util.Locale;
 import java.util.TimeZone;
 
-import net.sf.chellow.data08.HhDatumRaw;
 import net.sf.chellow.data08.MpanCoreRaw;
 import net.sf.chellow.hhimport.HhConverter;
+import net.sf.chellow.hhimport.HhDatumRaw;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.UserException;
+import net.sf.chellow.physical.HhDatum;
 import net.sf.chellow.physical.HhEndDate;
 
 import com.Ostermiller.util.CSVParser;
@@ -123,9 +124,9 @@ public class StarkCsvHhConverter implements HhConverter {
 				Character status = null;
 				if (values.length > 5) {
 					if (values[5].equals("65")) {
-						status = HhDatumRaw.ACTUAL;
+						status = HhDatum.ACTUAL;
 					} else {
-						status = HhDatumRaw.ESTIMATE;
+						status = HhDatum.ESTIMATE;
 					}
 				}
 				datum = new HhDatumRaw(core, isImport, isKwh, endDate, value,

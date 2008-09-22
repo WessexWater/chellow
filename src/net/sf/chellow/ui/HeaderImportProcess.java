@@ -199,134 +199,65 @@ public class HeaderImportProcess extends Thread implements Urlable,
 					String importMpanStr = values[7];
 					csvElement.appendChild(getField("Import MPAN",
 							importMpanStr));
-					MpanRaw importMpanRaw = null;
-					if (importMpanStr.length() != 0) {
-						importMpanRaw = new MpanRaw("import", importMpanStr);
-					}
-					Integer importAgreedSupplyCapacity = null;
-					HhdcContract importHhdcContract = null;
-					Account importHhdcAccount = null;
-					SupplierContract importSupplierContract = null;
-					Account importSupplierAccount = null;
-					Ssc importSsc = null;
-
-					if (importMpanRaw != null) {
-						String importSscStr = values[8];
-						csvElement.appendChild(getField("Import SSC",
-								importSscStr));
-						importSsc = importSscStr.trim().length() == 0 ? null
-								: Ssc.getSsc(importSscStr);
-						String importAgreedSupplyCapacityStr = values[9];
-						csvElement.appendChild(getField(
-								"Import Agreed Supply Capacity",
-								importAgreedSupplyCapacityStr));
-						try {
-							importAgreedSupplyCapacity = new Integer(
-									importAgreedSupplyCapacityStr);
-						} catch (NumberFormatException e) {
-							throw new UserException(
-									"The import supply capacity must be an integer."
-											+ e.getMessage());
-						}
-						String importHhdcContractName = values[10];
-						csvElement.appendChild(getField("Import HHDC Contract",
-								importHhdcContractName));
-						importHhdcContract = importHhdcContractName.trim()
-								.length() == 0 ? null : organization
-								.getHhdcContract(importHhdcContractName);
-						String importHhdceAccountReference = values[11];
-						csvElement.appendChild(getField("Import HHDC Account",
-								importHhdceAccountReference));
-						if (importHhdcContract != null) {
-							importHhdcAccount = importHhdcContract
-									.getAccount(importHhdceAccountReference);
-						}
-						String importSupplierContractName = values[12];
-						csvElement.appendChild(getField(
-								"Import supplier contract name",
-								importSupplierContractName));
-						importSupplierContract = organization
-								.getSupplierContract(importSupplierContractName);
-						String importSupplierAccountReference = values[13];
-						csvElement.appendChild(getField(
-								"Import supplier account reference",
-								importSupplierAccountReference));
-						importSupplierAccount = importSupplierContract
-								.getAccount(importSupplierAccountReference);
-					}
-					HhdcContract exportHhdcContract = null;
-					Account exportHhdcAccount = null;
-					SupplierContract exportSupplierContract = null;
-					Account exportAccountSupplier = null;
-					Integer exportAgreedSupplyCapacity = null;
-					MpanRaw exportMpanRaw = null;
-					Ssc exportSsc = null;
+					String importSscCode = values[8];
+					csvElement
+							.appendChild(getField("Import SSC", importSscCode));
+					String importAgreedSupplyCapacityStr = values[9];
+					csvElement.appendChild(getField(
+							"Import Agreed Supply Capacity",
+							importAgreedSupplyCapacityStr));
+					String importHhdcContractName = values[10];
+					csvElement.appendChild(getField("Import HHDC Contract",
+							importHhdcContractName));
+					String importHhdcAccountReference = values[11];
+					csvElement.appendChild(getField("Import HHDC Account",
+							importHhdcAccountReference));
+					String importSupplierContractName = values[12];
+					csvElement.appendChild(getField(
+							"Import supplier contract name",
+							importSupplierContractName));
+					String importSupplierAccountReference = values[13];
+					csvElement.appendChild(getField(
+							"Import supplier account reference",
+							importSupplierAccountReference));
 					String exportMpanStr = values[14];
 					csvElement.appendChild(getField("Export MPAN",
 							exportMpanStr));
-					if (exportMpanStr.length() != 0) {
-						exportMpanRaw = new MpanRaw("export", exportMpanStr);
-					}
-					if (exportMpanRaw != null) {
-						String exportSscStr = values[15];
-						csvElement.appendChild(getField("Export SSC",
-								exportSscStr));
-						exportSsc = exportSscStr.trim().length() == 0 ? null
-								: Ssc.getSsc(exportSscStr);
-						String exportAgreedSupplyCapacityStr = values[16];
-						csvElement.appendChild(getField(
-								"Export Agreed Supply Capacity",
-								exportAgreedSupplyCapacityStr));
-						try {
-							exportAgreedSupplyCapacity = new Integer(
-									exportAgreedSupplyCapacityStr);
-						} catch (NumberFormatException e) {
-							throw new UserException(
-									"The export agreed supply capacity must be an integer."
-											+ e.getMessage());
-						}
-						String exportHhdcContractName = values[17];
-						csvElement.appendChild(getField("Export HHDC contract",
-								exportHhdcContractName));
-						exportHhdcContract = exportHhdcContractName.length() == 0 ? null
-								: organization
-										.getHhdcContract(exportHhdcContractName);
-						String exportHhdcAccountReference = values[18];
-						csvElement.appendChild(getField("Export HHDC account",
-								exportHhdcAccountReference));
-						if (exportHhdcContract != null) {
-							exportHhdcAccount = exportHhdcContract
-									.getAccount(exportHhdcAccountReference);
-						}
-						String exportSupplierContractName = values[19];
-						csvElement.appendChild(getField(
-								"Export supplier contract name",
-								exportSupplierContractName));
-						exportSupplierContract = organization
-								.getSupplierContract(exportSupplierContractName);
-						String exportAccountSupplierReference = values[20];
-						csvElement.appendChild(getField(
-								"Export supplier account reference",
-								exportAccountSupplierReference));
-						exportAccountSupplier = exportSupplierContract
-								.getAccount(exportAccountSupplierReference);
-					}
+					String exportSscCode = values[15];
+					csvElement
+							.appendChild(getField("Export SSC", exportSscCode));
+					String exportAgreedSupplyCapacityStr = values[16];
+					csvElement.appendChild(getField(
+							"Export Agreed Supply Capacity",
+							exportAgreedSupplyCapacityStr));
+					String exportHhdcContractName = values[17];
+					csvElement.appendChild(getField("Export HHDC contract",
+							exportHhdcContractName));
+					String exportHhdcAccountReference = values[18];
+					csvElement.appendChild(getField("Export HHDC account",
+							exportHhdcAccountReference));
+					String exportSupplierContractName = values[19];
+					csvElement.appendChild(getField(
+							"Export supplier contract name",
+							exportSupplierContractName));
+					String exportSupplierAccountReference = values[20];
+					csvElement.appendChild(getField(
+							"Export supplier account reference",
+							exportSupplierAccountReference));
 					Site site = organization.getSite(siteCode);
 					site.insertSupply(supplyName, meterSerialNumber,
-							importMpanRaw, importSsc, importHhdcAccount,
-							importSupplierAccount,
-							importHhdcAccount == null ? false : true,
-							importHhdcAccount == null ? false : true, false,
-							importHhdcAccount == null ? false : true,
-							importAgreedSupplyCapacity, exportMpanRaw,
-							exportSsc, exportHhdcAccount,
-							exportAccountSupplier, false,
-							exportHhdcAccount == null ? false : true,
-							exportHhdcAccount == null ? false : true,
-							exportHhdcAccount == null ? false : true,
-							exportAgreedSupplyCapacity, HhEndDate
+							importMpanStr, importSscCode,
+							importHhdcContractName, importHhdcAccountReference,
+							importSupplierContractName,
+							importSupplierAccountReference,
+							importAgreedSupplyCapacityStr, exportMpanStr,
+							exportSscCode, exportHhdcContractName,
+							exportHhdcAccountReference,
+							exportSupplierContractName,
+							exportSupplierAccountReference,
+							exportAgreedSupplyCapacityStr, HhEndDate
 									.roundUp(new MonadDate(startDateStr)
-											.getDate()), sourceCode, null);
+											.getDate()), sourceCode);
 				} else if (action.equals("update")) {
 					if (values.length < 5) {
 						throw new UserException(

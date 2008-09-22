@@ -24,10 +24,8 @@ package net.sf.chellow.physical;
 
 import java.util.List;
 
-import net.sf.chellow.data08.Data;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
-import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Invocation;
 import net.sf.chellow.monad.MonadUtils;
 import net.sf.chellow.monad.NotFoundException;
@@ -38,7 +36,6 @@ import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
 import net.sf.chellow.ui.Chellow;
 
-import org.hibernate.HibernateException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -58,7 +55,8 @@ public class Source extends PersistentEntity implements Urlable {
 	static public Source getSource(String sourceCode) throws HttpException {
 		Source source = findSource(sourceCode);
 		if (source == null) {
-			throw new NotFoundException("There's no source with the code '" + sourceCode + "'");
+			throw new NotFoundException("There's no source with the code '"
+					+ sourceCode + "'");
 		}
 		return source;
 	}
@@ -77,20 +75,9 @@ public class Source extends PersistentEntity implements Urlable {
 
 	static public Source insertSource(String code, String name)
 			throws HttpException {
-		Source source = null;
-		try {
-			source = new Source(code, name);
-			Hiber.session().save(source);
-			Hiber.flush();
-		} catch (HibernateException e) {
-			if (Data
-					.isSQLException(e,
-							"ERROR: duplicate key violates unique constraint \"site_code_key\"")) {
-				throw new UserException("A site with this code already exists.");
-			} else {
-				throw new InternalException(e);
-			}
-		}
+		Source source = new Source(code, name);
+		Hiber.session().save(source);
+		Hiber.flush();
 		return source;
 	}
 

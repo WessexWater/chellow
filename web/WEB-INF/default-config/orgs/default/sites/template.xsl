@@ -86,7 +86,7 @@
 								</li>
 							</xsl:for-each>
 						</ul>
-						<hr />
+						<br />
 						<form action="." method="post">
 							<fieldset>
 								<legend>Add site</legend>

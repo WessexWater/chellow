@@ -22,7 +22,7 @@
 
 package net.sf.chellow.physical;
 
-import net.sf.chellow.data08.HhDatumRaw;
+import net.sf.chellow.hhimport.HhDatumRaw;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.NotFoundException;
 import net.sf.chellow.monad.Urlable;
@@ -32,7 +32,10 @@ import net.sf.chellow.monad.types.UriPathElement;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-public class HhDatum extends PersistentEntity implements Urlable {
+public class HhDatum extends PersistentEntity {
+	public static Character ACTUAL = 'A';
+	public static Character ESTIMATE = 'E';
+
 	private Channel channel;
 
 	private HhEndDate endDate;

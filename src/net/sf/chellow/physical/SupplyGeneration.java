@@ -373,7 +373,7 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 			}
 		}
 		Dso dso = getDso();
-		if (dso != null && dso.getCode().equals(new DsoCode("22"))) {
+		if (dso != null && dso.getCode().equals("22")) {
 			/*
 			 * if (importMpan != null) { LineLossFactorCode code =
 			 * importLineLossFactor.getCode(); if ((code.equals(new

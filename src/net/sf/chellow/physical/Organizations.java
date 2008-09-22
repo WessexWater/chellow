@@ -24,7 +24,6 @@ package net.sf.chellow.physical;
 
 import java.util.List;
 
-import net.sf.chellow.data08.Data;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.InternalException;
@@ -67,7 +66,7 @@ public class Organizations implements Urlable {
 			Hiber.session().save(organization);
 			Hiber.flush();
 		} catch (HibernateException e) {
-			if (Data
+			if (HttpException
 					.isSQLException(e,
 							"ERROR: duplicate key violates unique constraint \"site_code_key\"")) {
 				throw new UserException

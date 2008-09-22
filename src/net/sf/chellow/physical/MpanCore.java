@@ -22,25 +22,17 @@
 
 package net.sf.chellow.physical;
 
-import java.util.HashSet;
-import java.util.Set;
-
 import net.sf.chellow.billing.Dso;
 import net.sf.chellow.data08.MpanCoreRaw;
-import net.sf.chellow.monad.DeployerException;
-import net.sf.chellow.monad.DesignerException;
 import net.sf.chellow.monad.Hiber;
-import net.sf.chellow.monad.Invocation;
-import net.sf.chellow.monad.InternalException;
-import net.sf.chellow.monad.Urlable;
 import net.sf.chellow.monad.HttpException;
-
+import net.sf.chellow.monad.InternalException;
+import net.sf.chellow.monad.Invocation;
+import net.sf.chellow.monad.MethodNotAllowedException;
 import net.sf.chellow.monad.types.MonadUri;
-import net.sf.chellow.monad.types.UriPathElement;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import org.w3c.dom.Node;
 
 public class MpanCore extends PersistentEntity {
 	static public MpanCore getMpanCore(Long id) throws InternalException {
@@ -55,38 +47,30 @@ public class MpanCore extends PersistentEntity {
 
 	private Dso dso;
 
-	private MpanUniquePart uniquePart;
+	private String uniquePart;
 
-	private CheckDigit checkDigit;
+	private char checkDigit;
 
-	private Set<Mpan> mpans;
+	// private Set<Mpan> mpans;
 
 	public MpanCore() {
 	}
 
 	public MpanCore(Supply supply, MpanCoreRaw core) throws HttpException {
 		setSupply(supply);
-		Dso importDso = Dso.getDso(core.getDsoCode());
-		setMpans(new HashSet<Mpan>());
-		init(importDso, core.getUniquePart(), core.getCheckDigit());
+// setMpans(new HashSet<Mpan>());
+		update(core);
 	}
+/*
+ * public MpanCore(Dso dso, MpanUniquePart uniquePart, CheckDigit checkDigit)
+ * throws HttpException { init(dso, uniquePart, checkDigit); }
+ */
 
-	public MpanCore(Dso dso, MpanUniquePart uniquePart, CheckDigit checkDigit)
+	public void update(MpanCoreRaw core)
 			throws HttpException {
-		init(dso, uniquePart, checkDigit);
-	}
-
-	private void init(Dso dso, MpanUniquePart uniquePart, CheckDigit checkDigit)
-			throws HttpException {
-		update(dso, uniquePart, checkDigit);
-	}
-
-	public void update(Dso dso, MpanUniquePart uniquePart, CheckDigit checkDigit)
-			throws HttpException {
-		new MpanCoreRaw(dso.getCode(), uniquePart, checkDigit);
-		this.dso = dso;
-		this.uniquePart = uniquePart;
-		this.checkDigit = checkDigit;
+		this.dso = core.getDso();
+		this.uniquePart = core.getUniquePart();
+		this.checkDigit = core.getCheckDigit();
 	}
 
 	public Supply getSupply() {
@@ -105,31 +89,28 @@ public class MpanCore extends PersistentEntity {
 		this.dso = dso;
 	}
 
-	public MpanUniquePart getUniquePart() {
+	public String getUniquePart() {
 		return uniquePart;
 	}
 
-	protected void setUniquePart(MpanUniquePart uniquePart) {
-		uniquePart.setLabel("uniquePart");
+	protected void setUniquePart(String uniquePart) {
 		this.uniquePart = uniquePart;
 	}
 
-	public CheckDigit getCheckDigit() {
+	public char getCheckDigit() {
 		return checkDigit;
 	}
 
-	protected void setCheckDigit(CheckDigit checkDigit) {
-		checkDigit.setLabel("checkDigit");
+	protected void setCheckDigit(char checkDigit) {
 		this.checkDigit = checkDigit;
 	}
 
 	public MpanCoreRaw getCore() throws HttpException {
-		MpanCoreRaw core = new MpanCoreRaw(dso.getCode(), uniquePart,
-				checkDigit);
+		MpanCoreRaw core = new MpanCoreRaw(dso.getCode() + uniquePart + checkDigit);
 		core.setLabel("core");
 		return core;
 	}
-
+/*
 	public Set<Mpan> getMpans() {
 		return mpans;
 	}
@@ -137,7 +118,7 @@ public class MpanCore extends PersistentEntity {
 	void setMpans(Set<Mpan> mpans) {
 		this.mpans = mpans;
 	}
-
+*/
 	public boolean equals(Object object) {
 		boolean isEqual = false;
 		if (object instanceof MpanCore) {
@@ -149,20 +130,18 @@ public class MpanCore extends PersistentEntity {
 
 	public String toString() {
 		try {
-			return getCore().toString();
-		} catch (InternalException e) {
-			throw new RuntimeException(e);
+			return new MpanCoreRaw(dso.getCode() + uniquePart + checkDigit).toString();
 		} catch (HttpException e) {
 			throw new RuntimeException(e);
 		}
 	}
 
-	public Node toXml(Document doc) throws HttpException {
+	public Element toXml(Document doc) throws HttpException {
 		Element element = super.toXml(doc, "mpan-core");
 
-		element.setAttributeNode(uniquePart.toXml(doc));
-		element.setAttributeNode(checkDigit.toXml(doc));
-		element.setAttributeNode(getCore().toXml(doc));
+		element.setAttribute("uniquePart", uniquePart);
+		element.setAttribute("checkDigit", Character.toString(checkDigit));
+		element.setAttribute("core", toString());
 		return element;
 	}
 
@@ -170,27 +149,7 @@ public class MpanCore extends PersistentEntity {
 		return null;
 	}
 
-	public Urlable getChild(UriPathElement uriId) throws InternalException,
-			HttpException {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	public void httpGet(Invocation inv) throws DesignerException,
-			InternalException, HttpException, DeployerException {
-		// TODO Auto-generated method stub
-
-	}
-
-	public void httpPost(Invocation inv) throws InternalException,
-			HttpException {
-		// TODO Auto-generated method stub
-
-	}
-
-	public void httpDelete(Invocation inv) throws InternalException,
-			DesignerException, HttpException, DeployerException {
-		// TODO Auto-generated method stub
-
+	public void httpGet(Invocation inv) throws HttpException {
+		throw new MethodNotAllowedException();
 	}
 }

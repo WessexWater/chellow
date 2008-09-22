@@ -30,9 +30,9 @@ import java.text.ParseException;
 import java.util.Locale;
 import java.util.TimeZone;
 
-import net.sf.chellow.data08.HhDatumRaw;
 import net.sf.chellow.data08.MpanCoreRaw;
 import net.sf.chellow.hhimport.HhConverter;
+import net.sf.chellow.hhimport.HhDatumRaw;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.UserException;
@@ -151,7 +151,7 @@ public class StarkDF2HHConverter implements HhConverter {
 						String trimmedLine = line.trim();
 						status = trimmedLine.charAt(trimmedLine.length() - 1);
 					}
-					if (!core.getDsoCode().getString().equals("99")
+					if (!core.getDso().getCode().equals("99")
 							&& valueKw * 10 % 2 == 1) {
 						throw new UserException(
 								"Problem at line number: "

@@ -8,7 +8,7 @@ from java.awt import Font, Color
 import math
 from java.sql import ResultSet, Timestamp
 from java.text import DateFormat
-from net.sf.chellow.physical import HhEndDate, HhDatumStatus
+from net.sf.chellow.physical import HhEndDate, HhDatum
 
 start = System.currentTimeMillis()
 inv.getResponse().setContentType("image/png")
@@ -44,7 +44,7 @@ hhDate = HhEndDate(startDate).getDate().getTime()
 maxScale = 0
 minScale = 0
 resultData = []
-actualStatus = HhDatumStatus.ACTUAL
+actualStatus = HhDatum.ACTUAL
 if rs.next():
     hhChannelValue = rs.getFloat("value")
     hhChannelEndDate = rs.getTimestamp("end_date")

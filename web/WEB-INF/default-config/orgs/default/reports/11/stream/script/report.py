@@ -1,5 +1,5 @@
 from net.sf.chellow.monad import Hiber, UserException
-from net.sf.chellow.physical import HhEndDate, HhDatumStatus
+from net.sf.chellow.physical import HhEndDate, HhDatum
 from net.sf.chellow.monad.types import MonadDate
 from java.awt.image import BufferedImage
 from javax.imageio import ImageIO
@@ -82,7 +82,7 @@ minDisplacedScale = 0
 maxUsedScale = 0
 minUsedScale = 0
 resultData = []
-actualStatus = HhDatumStatus.ACTUAL
+actualStatus = HhDatum.ACTUAL
 if rs.next():
     hhChannelValue = rs.getFloat("value")
     hhChannelEndDate = rs.getTimestamp("end_date")

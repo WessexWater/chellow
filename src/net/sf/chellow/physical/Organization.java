@@ -448,9 +448,9 @@ public class Organization extends PersistentEntity {
 		return (MpanCore) Hiber
 				.session()
 				.createQuery(
-						"from MpanCore mpanCore where mpanCore.supply.organization = :organization and mpanCore.dso = :dso and mpanCore.uniquePart.string = :uniquePart")
+						"from MpanCore mpanCore where mpanCore.supply.organization = :organization and mpanCore.dso = :dso and mpanCore.uniquePart = :uniquePart")
 				.setEntity("organization", this).setEntity("dso", core.getDso()).setString(
-						"uniquePart", core.getUniquePart().getString()).uniqueResult();
+						"uniquePart", core.getUniquePart()).uniqueResult();
 		/*
 		for (MpanCore mpanCore : (List<MpanCore>) Hiber
 				.session()

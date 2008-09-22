@@ -42,7 +42,6 @@ import net.sf.chellow.monad.XmlTree;
 import net.sf.chellow.monad.types.MonadDate;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
-import net.sf.chellow.physical.DsoCode;
 import net.sf.chellow.physical.HhEndDate;
 import net.sf.chellow.physical.MarketRole;
 import net.sf.chellow.physical.Mdd;
@@ -70,10 +69,8 @@ public class Party extends PersistentEntity implements Urlable {
 			Date validTo = mdd.toDate(values[3]);
 			char roleCode = role.getCode();
 			if (roleCode == MarketRole.DISTRIBUTOR) {
-				DsoCode dsoCode = new DsoCode(
-						values[14]);
 				Dso dso = new Dso(values[4], participant,
-						validFrom, validTo, dsoCode);
+						validFrom, validTo, values[14]);
 				Hiber.session().save(dso);
 				Hiber.close();
 				ClassLoader dsoClassLoader = Provider.class.getClassLoader();
@@ -81,7 +78,7 @@ public class Party extends PersistentEntity implements Urlable {
 				try {
 					URL resource = dsoClassLoader
 							.getResource("net/sf/chellow/billing/dso"
-									+ dso.getCode().getString()
+									+ dso.getCode()
 									+ "Service.py");
 					if (resource != null) {
 						InputStreamReader isr = new InputStreamReader(resource
@@ -98,7 +95,7 @@ public class Party extends PersistentEntity implements Urlable {
 								.iterator().next();
 						isr = new InputStreamReader(dsoClassLoader.getResource(
 								"net/sf/chellow/billing/dso"
-										+ dso.getCode().getString()
+										+ dso.getCode()
 										+ "ServiceRateScript.py").openStream(),
 								"UTF-8");
 						pythonString = new StringWriter();

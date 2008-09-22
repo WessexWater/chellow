@@ -29,7 +29,6 @@ import java.text.DateFormat;
 import java.util.Locale;
 import java.util.TimeZone;
 
-import net.sf.chellow.data08.HhDatumRaw;
 import net.sf.chellow.data08.MpanCoreRaw;
 import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.HttpException;

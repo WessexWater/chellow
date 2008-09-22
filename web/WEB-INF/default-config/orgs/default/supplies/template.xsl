@@ -10,15 +10,12 @@
 			<head>
 				<link rel="stylesheet" type="text/css"
 					href="{/source/request/@context-path}/style/" />
-
 				<title>
 					Chellow &gt; Organizations &gt;
 					<xsl:value-of select="/source/org/@name" />
 					&gt; Supplies
 				</title>
-
 			</head>
-
 			<body>
 				<xsl:if test="//message">
 					<ul>
@@ -29,7 +26,6 @@
 						</xsl:for-each>
 					</ul>
 				</xsl:if>
-
 				<p>
 					<a href="{/source/request/@context-path}/">
 						<img
@@ -54,7 +50,6 @@
 					<xsl:value-of select="']'" />
 				</p>
 				<br />
-
 				<form action=".">
 					<fieldset>
 						<legend>Search by MPAN core</legend>

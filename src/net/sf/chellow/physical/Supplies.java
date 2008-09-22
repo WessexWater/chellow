@@ -27,21 +27,17 @@ import java.util.List;
 import net.sf.chellow.data08.MpanCoreTerm;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
-import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Invocation;
 import net.sf.chellow.monad.MethodNotAllowedException;
 import net.sf.chellow.monad.MonadUtils;
-import net.sf.chellow.monad.Urlable;
-import net.sf.chellow.monad.XmlDescriber;
 import net.sf.chellow.monad.XmlTree;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import org.w3c.dom.Node;
 
-public class Supplies implements Urlable, XmlDescriber {
+public class Supplies extends EntityList {
 	// private static final int PAGE_SIZE = 25;
 
 	public static final UriPathElement URI_ID;
@@ -87,7 +83,7 @@ public class Supplies implements Urlable, XmlDescriber {
 			for (Object[] array : (List<Object[]>) Hiber
 					.session()
 					.createQuery(
-							"select distinct mpanCore,mpanCore.dso.code.string, mpanCore.uniquePart.string, mpanCore.checkDigit.character from MpanCore mpanCore join mpanCore.supply.generations supplyGeneration join supplyGeneration.siteSupplyGenerations siteSupplyGeneration where siteSupplyGeneration.site.organization = :organization and lower(mpanCore.dso.code.string || mpanCore.uniquePart.string || mpanCore.checkDigit.character) like lower(:term) order by mpanCore.dso.code.string, mpanCore.uniquePart.string, mpanCore.checkDigit.character")
+							"select distinct mpanCore, mpanCore.dso.code, mpanCore.uniquePart, mpanCore.checkDigit from MpanCore mpanCore join mpanCore.supply.generations supplyGeneration join supplyGeneration.siteSupplyGenerations siteSupplyGeneration where siteSupplyGeneration.site.organization = :organization and lower(mpanCore.dso.code || mpanCore.uniquePart || mpanCore.checkDigit) like lower(:term) order by mpanCore.dso.code, mpanCore.uniquePart, mpanCore.checkDigit")
 					.setEntity("organization", organization).setString("term",
 							"%" + pattern.toString() + "%").setMaxResults(50)
 					.list()) {
@@ -120,21 +116,12 @@ public class Supplies implements Urlable, XmlDescriber {
 		return organization.getSupply(Long.parseLong(uriId.getString()));
 	}
 
-	public void httpDelete(Invocation inv) throws HttpException {
-		throw new MethodNotAllowedException();
-	}
-
 	public MonadUri getUri() throws HttpException {
 		return organization.getUri().resolve(getUriId());
 	}
 
-	public Node toXml(Document doc) throws HttpException {
+	public Element toXml(Document doc) throws HttpException {
 		Element element = doc.createElement("supplies");
 		return element;
-	}
-
-	public Node toXml(Document doc, XmlTree tree) throws InternalException {
-		// TODO Auto-generated method stub
-		return null;
 	}
 }

@@ -25,7 +25,10 @@ package net.sf.chellow.monad;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.net.URI;
+import java.sql.BatchUpdateException;
+import java.sql.SQLException;
 
+import org.hibernate.HibernateException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -41,6 +44,20 @@ public abstract class HttpException extends Exception implements XmlDescriber {
 		}
 		return writer.toString();
 	}
+	
+	static public boolean isSQLException(HibernateException e, String message) {
+		boolean isSQLException = false;
+
+		if (e.getCause() instanceof BatchUpdateException) {
+			BatchUpdateException be = (BatchUpdateException) e.getCause();
+			if (be.getNextException() instanceof SQLException) {
+				SQLException sqle = (SQLException) be.getNextException();
+				isSQLException = sqle.getMessage().equals(message);
+			}
+		}
+		return isSQLException;
+	}
+
 	
 	private static final long serialVersionUID = 1L;
 

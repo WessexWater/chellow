@@ -24,85 +24,81 @@ package net.sf.chellow.data08;
 
 import net.sf.chellow.billing.Dso;
 import net.sf.chellow.monad.HttpException;
-import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.UserException;
 import net.sf.chellow.monad.types.MonadObject;
-import net.sf.chellow.physical.CheckDigit;
-import net.sf.chellow.physical.DsoCode;
-import net.sf.chellow.physical.MpanUniquePart;
-
 import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 
 public class MpanCoreRaw extends MonadObject {
-	private DsoCode dsoCode;
+	private Dso dso;
 
-	private MpanUniquePart uniquePart;
+	private String uniquePart;
 
-	private CheckDigit checkDigit;
+	private char checkDigit;
 
 	public MpanCoreRaw(String mpanCore) throws HttpException {
 		this(null, mpanCore);
 	}
 
-	public MpanCoreRaw(String label, String mpanCore)
-			throws HttpException {
+	public MpanCoreRaw(String label, String mpanCore) throws HttpException {
 		setLabel(label);
 		mpanCore = mpanCore.replace(" ", "");
 		if (mpanCore.length() != 13) {
 			throw new UserException("The MPAN core (" + mpanCore
 					+ ") must contain exactly 13 digits.");
 		}
-		init(new DsoCode(mpanCore.substring(0, 2)), new MpanUniquePart(mpanCore
-				.substring(2, 12)), new CheckDigit(new Character(mpanCore
-				.charAt(mpanCore.length() - 1))));
+		init(mpanCore.substring(0, 2), mpanCore.substring(2, 12), mpanCore
+				.charAt(mpanCore.length() - 1));
 	}
 
-	private void init(DsoCode dsoCode, MpanUniquePart uniquePart,
-			CheckDigit checkDigit) throws HttpException {
-		if (dsoCode == null || uniquePart == null || checkDigit == null) {
-			throw new InternalException("No nulls allowed.");
+	private void init(String dsoCode, String uniquePart, char checkDigit)
+			throws HttpException {
+		for (char ch : uniquePart.toCharArray()) {
+			if (!Character.isDigit(ch)) {
+				throw new UserException(
+						"Each character of an MPAN must be a digit.");
+			}
+		}
+		if (!Character.isDigit(checkDigit)) {
+			throw new UserException(
+					"Each character of an MPAN must be a digit.");
 		}
 		if (!checkCheckDigit(dsoCode.toString() + uniquePart.toString(),
-				Character
-						.getNumericValue(checkDigit.getCharacter().charValue()))) {
+				Character.getNumericValue(checkDigit))) {
 
 			throw new UserException(
 					"This is not a valid MPAN core. It fails the checksum test.");
 		}
-
-		this.dsoCode = dsoCode;
+		this.dso = Dso.getDso(dsoCode);
 		this.uniquePart = uniquePart;
 		this.checkDigit = checkDigit;
 	}
 
-	public MpanCoreRaw(DsoCode dsoCode, MpanUniquePart uniquePart,
-			CheckDigit checkDigit) throws HttpException {
-		init(dsoCode, uniquePart, checkDigit);
+	/*
+	 * public MpanCoreRaw(String dsoCode, MpanUniquePart uniquePart, CheckDigit
+	 * checkDigit) throws HttpException { init(dsoCode, uniquePart, checkDigit); }
+	 */
+	public Dso getDso() {
+		return dso;
 	}
 
-	public DsoCode getDsoCode() {
-		return dsoCode;
-	}
-
-	public MpanUniquePart getUniquePart() {
+	public String getUniquePart() {
 		return uniquePart;
 	}
 
-	public CheckDigit getCheckDigit() {
+	public char getCheckDigit() {
 		return checkDigit;
 	}
 
 	public String toString() {
-		return dsoCode.toString() + " " + uniquePart.toString().substring(0, 4)
+		return dso.getCode() + " " + uniquePart.toString().substring(0, 4)
 				+ " " + uniquePart.toString().substring(4, 8) + " "
 				+ uniquePart.toString().substring(8)
-				+ checkDigit.getCharacter().charValue();
+				+ checkDigit;
 	}
 
 	public String toStringNoSpaces() {
-		return dsoCode.toString() + uniquePart.toString()
-				+ checkDigit.toString();
+		return dso.getCode() + uniquePart.toString() + checkDigit;
 	}
 
 	public Attr toXml(Document doc) {
@@ -112,16 +108,12 @@ public class MpanCoreRaw extends MonadObject {
 	}
 
 	private boolean checkCheckDigit(String toCheck, int checkDigit) {
-		  int[] primes = {3, 5, 7, 13, 17, 19, 23, 29, 31, 37, 41, 43};
-		  int sum = 0;
-		  for (int i = 0; i < primes.length; i++) {
-		    sum += Character.getNumericValue(toCheck.charAt(i)) * primes[i];
-		  }
-		  return sum % 11 % 10 == checkDigit;
+		int[] primes = { 3, 5, 7, 13, 17, 19, 23, 29, 31, 37, 41, 43 };
+		int sum = 0;
+		for (int i = 0; i < primes.length; i++) {
+			sum += Character.getNumericValue(toCheck.charAt(i)) * primes[i];
 		}
-
-	public Dso getDso() throws HttpException {
-		return Dso.getDso(dsoCode);
+		return sum % 11 % 10 == checkDigit;
 	}
 
 	public boolean equals(Object obj) {
@@ -129,15 +121,14 @@ public class MpanCoreRaw extends MonadObject {
 
 		if (obj instanceof MpanCoreRaw) {
 			MpanCoreRaw core = (MpanCoreRaw) obj;
-			isEqual = getDsoCode().equals(core.getDsoCode())
+			isEqual = getDso().equals(core.getDso())
 					&& getUniquePart().equals(core.getUniquePart())
-					&& getCheckDigit().equals(core.getCheckDigit());
+					&& getCheckDigit() == core.getCheckDigit();
 		}
 		return isEqual;
 	}
 
 	public int hashCode() {
-		return dsoCode.hashCode() + uniquePart.hashCode()
-				+ checkDigit.hashCode();
+		return dso.hashCode() + uniquePart.hashCode();
 	}
 }

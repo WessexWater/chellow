@@ -33,7 +33,8 @@ import java.util.Map;
 import java.util.Set;
 
 import net.sf.chellow.billing.Account;
-import net.sf.chellow.data08.Data;
+import net.sf.chellow.billing.HhdcContract;
+import net.sf.chellow.billing.SupplierContract;
 import net.sf.chellow.data08.MpanRaw;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
@@ -45,6 +46,7 @@ import net.sf.chellow.monad.NotFoundException;
 import net.sf.chellow.monad.Urlable;
 import net.sf.chellow.monad.UserException;
 import net.sf.chellow.monad.XmlTree;
+import net.sf.chellow.monad.types.MonadDate;
 import net.sf.chellow.monad.types.MonadString;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
@@ -121,6 +123,97 @@ public class Site extends PersistentEntity implements Urlable {
 	}
 
 	public Supply insertSupply(String supplyName, String meterSerialNumber,
+			String importMpanStr, String importSscCode,
+			String importHhdcContractName, String importHhdcAccountReference,
+			String importSupplierContractName,
+			String importSupplierAccountReference,
+			String importAgreedSupplyCapacityStr, String exportMpanStr,
+			String exportSscCode, String exportHhdcContractName,
+			String exportHhdcAccountReference,
+			String exportSupplierContractName,
+			String exportSupplierAccountReference,
+			String exportAgreedSupplyCapacityStr, HhEndDate startDate,
+			String sourceCode) throws HttpException {
+
+		MpanRaw importMpanRaw = null;
+		if (importMpanStr.length() != 0) {
+			importMpanRaw = new MpanRaw("import", importMpanStr);
+		}
+		Integer importAgreedSupplyCapacity = null;
+		HhdcContract importHhdcContract = null;
+		Account importHhdcAccount = null;
+		SupplierContract importSupplierContract = null;
+		Account importSupplierAccount = null;
+		Ssc importSsc = null;
+
+		if (importMpanRaw != null) {
+			importSsc = importSscCode.trim().length() == 0 ? null : Ssc
+					.getSsc(importSscCode);
+			try {
+				importAgreedSupplyCapacity = new Integer(
+						importAgreedSupplyCapacityStr);
+			} catch (NumberFormatException e) {
+				throw new UserException(
+						"The import supply capacity must be an integer."
+								+ e.getMessage());
+			}
+			importHhdcContract = importHhdcContractName.trim().length() == 0 ? null
+					: organization.getHhdcContract(importHhdcContractName);
+			if (importHhdcContract != null) {
+				importHhdcAccount = importHhdcContract
+						.getAccount(importHhdcAccountReference);
+			}
+			importSupplierContract = organization
+					.getSupplierContract(importSupplierContractName);
+			importSupplierAccount = importSupplierContract
+					.getAccount(importSupplierAccountReference);
+		}
+		HhdcContract exportHhdcContract = null;
+		Account exportHhdcAccount = null;
+		SupplierContract exportSupplierContract = null;
+		Account exportAccountSupplier = null;
+		Integer exportAgreedSupplyCapacity = null;
+		MpanRaw exportMpanRaw = null;
+		Ssc exportSsc = null;
+		if (exportMpanStr.length() != 0) {
+			exportMpanRaw = new MpanRaw("export", exportMpanStr);
+		}
+		if (exportMpanRaw != null) {
+			exportSsc = exportSscCode.trim().length() == 0 ? null : Ssc
+					.getSsc(exportSscCode);
+			try {
+				exportAgreedSupplyCapacity = new Integer(
+						exportAgreedSupplyCapacityStr);
+			} catch (NumberFormatException e) {
+				throw new UserException(
+						"The export agreed supply capacity must be an integer."
+								+ e.getMessage());
+			}
+			exportHhdcContract = exportHhdcContractName.length() == 0 ? null
+					: organization.getHhdcContract(exportHhdcContractName);
+			if (exportHhdcContract != null) {
+				exportHhdcAccount = exportHhdcContract
+						.getAccount(exportHhdcAccountReference);
+			}
+			exportSupplierContract = organization
+					.getSupplierContract(exportSupplierContractName);
+			exportAccountSupplier = exportSupplierContract
+					.getAccount(exportSupplierAccountReference);
+		}
+		return insertSupply(supplyName, meterSerialNumber, importMpanRaw,
+				importSsc, importHhdcAccount, importSupplierAccount,
+				importHhdcAccount == null ? false : true,
+				importHhdcAccount == null ? false : true, false,
+				importHhdcAccount == null ? false : true,
+				importAgreedSupplyCapacity, exportMpanRaw, exportSsc,
+				exportHhdcAccount, exportAccountSupplier, false,
+				exportHhdcAccount == null ? false : true,
+				exportHhdcAccount == null ? false : true,
+				exportHhdcAccount == null ? false : true,
+				exportAgreedSupplyCapacity, startDate, sourceCode);
+	}
+
+	public Supply insertSupply(String supplyName, String meterSerialNumber,
 			MpanRaw importMpanRaw, Ssc importSsc, Account importHhdcAccount,
 			Account importAccountSupplier, boolean importHasImportKwh,
 			boolean importHasImportKvarh, boolean importHasExportKwh,
@@ -129,17 +222,16 @@ public class Site extends PersistentEntity implements Urlable {
 			Account exportAccountSupplier, boolean exportHasImportKwh,
 			boolean exportHasImportKvarh, boolean exportHasExportKwh,
 			boolean exportHasExportKvarh, Integer exportAgreedSupplyCapacity,
-			HhEndDate startDate, String sourceCode, Long id)
-			throws HttpException {
+			HhEndDate startDate, String sourceCode) throws HttpException {
 		Source source = Source.getSource(sourceCode);
 		Supply supply = new Supply(organization, supplyName, source);
 		try {
-			supply.setId(id);
+			// supply.setId(id);
 			Hiber.session().save(supply);
 			Hiber.flush();
 		} catch (HibernateException e) {
 			Hiber.rollBack();
-			if (Data
+			if (HttpException
 					.isSQLException(e,
 							"ERROR: duplicate key violates unique constraint \"mpan_dso_id_key\"")) {
 				BatchUpdateException be = (BatchUpdateException) e.getCause();
@@ -422,9 +514,9 @@ public class Site extends PersistentEntity implements Urlable {
 	@SuppressWarnings("unchecked")
 	private Document document() throws HttpException {
 		Document doc = MonadUtils.newSourceDocument();
-		Element source = (Element) doc.getFirstChild();
+		Element docElem = doc.getDocumentElement();
 		Element siteElement = (Element) toXml(doc, new XmlTree("organization"));
-		source.appendChild(siteElement);
+		docElem.appendChild(siteElement);
 		for (SupplyGeneration generation : (List<SupplyGeneration>) Hiber
 				.session()
 				.createQuery(
@@ -435,6 +527,13 @@ public class Site extends PersistentEntity implements Urlable {
 							new XmlTree("llfc"))).put("supply", new XmlTree(
 							"source"))));
 		}
+		for (Source source : (List<Source>) Hiber.session().createQuery(
+				"from Source source order by source.code").list()) {
+			docElem.appendChild(source.toXml(doc));
+		}
+		docElem.appendChild(MonadDate.getMonthsXml(doc));
+		docElem.appendChild(MonadDate.getDaysXml(doc));
+		docElem.appendChild(new MonadDate().toXml(doc));
 		return doc;
 	}
 
@@ -454,12 +553,58 @@ public class Site extends PersistentEntity implements Urlable {
 					.toXml(doc));
 			Hiber.commit();
 			inv.sendOk(doc);
-		} else {
+		} else if (inv.hasParameter("update")) {
 			String code = inv.getString("code");
 			String name = inv.getString("name");
 			update(code, name);
 			Hiber.commit();
 			inv.sendOk(document());
+		} else if (inv.hasParameter("insert")) {
+			String name = inv.getString("name");
+			String meterSerialNumber = inv.getString("meter-serial-number");
+			String importMpanStr = inv.getString("import-mpan");
+			String importSscCode = inv.getString("import-ssc");
+			String importHhdcContractName = inv
+					.getString("import-hhdc-contract-name");
+			String importHhdcAccountReference = inv
+					.getString("import-hhdc-account-reference");
+			String importSupplierContractName = inv
+					.getString("import-supplier-contract-name");
+			String importSupplierAccountReference = inv
+					.getString("import-supplier-account-reference");
+			String importAgreedSupplyCapacityStr = inv
+					.getString("import-agreed-supply-capacity");
+			String exportMpanStr = inv.getString("export-mpan-str");
+			String exportSscCode = inv.getString("export-ssc-code");
+			String exportHhdcContractName = inv
+					.getString("export-hhdc-contract-name");
+			String exportHhdcAccountReference = inv
+					.getString("export-hhdc-account-reference");
+			String exportSupplierContractName = inv
+					.getString("export-supplier-contract-name");
+			String exportSupplierAccountReference = inv
+					.getString("export-supplier-account-reference");
+			String exportAgreedSupplyCapacityStr = inv
+					.getString("export-agreed-supply-capacity");
+			Date startDate = inv.getDate("start-date");
+			String sourceCode = inv.getString("source-code");
+			try {
+				Supply supply = insertSupply(name, meterSerialNumber,
+						importMpanStr, importSscCode, importHhdcContractName,
+						importHhdcAccountReference, importSupplierContractName,
+						importSupplierAccountReference,
+						importAgreedSupplyCapacityStr, exportMpanStr,
+						exportSscCode, exportHhdcContractName,
+						exportHhdcAccountReference, exportSupplierContractName,
+						exportSupplierAccountReference,
+						exportAgreedSupplyCapacityStr,
+						new HhEndDate(startDate), sourceCode);
+				Hiber.commit();
+				inv.sendCreated(supply.getUri());
+			} catch (HttpException e) {
+				e.setDocument(document());
+				throw e;
+			}
 		}
 	}
 
