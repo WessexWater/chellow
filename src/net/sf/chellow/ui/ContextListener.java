@@ -1,6 +1,7 @@
 package net.sf.chellow.ui;
 
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -301,6 +302,31 @@ public class ContextListener implements ServletContextListener {
 			stmt.execute("alter table account add contract_id bigint not null");
 			
 			stmt.execute("alter table account_snag rename service_id to contract_id");
+
+			stmt.execute("alter table batch rename service_id to contract_id");
+
+			stmt.execute("alter table bill drop service_id");
+			
+			stmt.execute("alter table bill_snag rename service_id to supplier_contract_id");
+			
+			ResultSet srs = stmt.executeQuery("select supply.id as supply_id from supply");
+			long supply_id;
+			while (srs.next()) {
+				supply_id = srs.getLong("supply_id");
+				ResultSet sgrs = stmt.executeQuery("select supply_generation_id as supply_generation_id, supply_generation.start_date, supply_generation.finish_date");
+			}
+			PreparedStatement siteSupplyGenerationInsert = con .prepareStatement("insert into site_supply_generation (id, site_id, supply_generation_id, is_physical) values (?, ?, ?, ?)");
+			long siteSupplyGenerationId = 1;
+			while
+				(srs.next()) { long siteId = srs.getLong("site_id"); long
+				  supplyGenerationId = srs.getLong("supply_generation_id"); boolean
+				  isPhysical = srs.getBoolean("is_physical");
+				  siteSupplyGenerationInsert.setLong(1, siteSupplyGenerationId);
+				  siteSupplyGenerationInsert.setLong(2, siteId);
+				  siteSupplyGenerationInsert.setLong(3, supplyGenerationId);
+				  siteSupplyGenerationInsert.setBoolean(4, isPhysical);
+				  siteSupplyGenerationInsert.execute(); siteSupplyGenerationId++; }
+				  srs.close();
 
 			/*
 			 * stmt .execute("update meter_timeswitch set description = 'HH Code
