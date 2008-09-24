@@ -34,7 +34,7 @@ public class Mtcs implements Urlable {
 		return URI_ID;
 	}
 
-	public MonadUri getUri() throws InternalException, HttpException {
+	public MonadUri getUri() throws HttpException {
 		return Chellow.getUrlableRoot().getUri().resolve(getUrlId())
 				.append("/");
 	}

@@ -6,37 +6,54 @@ import net.sf.chellow.monad.MethodNotAllowedException;
 import net.sf.chellow.monad.MonadUtils;
 import net.sf.chellow.monad.Urlable;
 import net.sf.chellow.monad.UserException;
-import net.sf.chellow.monad.XmlDescriber;
 import net.sf.chellow.monad.XmlTree;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
+import net.sf.chellow.physical.PersistentEntity;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
-public class Report implements Urlable, XmlDescriber {
-	private Long id;
+public class Report extends PersistentEntity {
+	private String name;
 
-	private Reports reports;
+	private String script;
+	
+	private String template;
 
-	private ChellowProperties properties;
-
-	public Report(Reports reports, Long id, MonadUri uri)
-			throws HttpException {
-		this.id = id;
-		this.reports = reports;
-		if (ChellowProperties.propertiesExists(uri, "report.properties")) {
-			properties = new ChellowProperties(uri, "report.properties");
-		} else {
-			throw new UserException
-					("Can't find the 'report.properties' file at "
-							+ uri + ".");
-		}
+	public Report(String name, String script, String template) throws HttpException {
+		update(name, script, template);
 	}
-
-	public Reports getReports() {
-		return reports;
+	
+	public String getName() {
+		return name;
+	}
+	
+	void setName(String name) {
+		this.name = name;
+	}
+	
+	public String getScript() {
+		return script;
+	}
+	
+	void setScript(String script) {
+		this.script = script;
+	}
+	
+	public String getTemplate() {
+		return template;
+	}
+	
+	void setTemplate(String template) {
+		this.template = template;
+	}
+	
+	private void update(String name, String script, String template) {
+		setName(name);
+		setScript(script);
+		setTemplate(template);
 	}
 
 	public Urlable getChild(UriPathElement uriId) throws HttpException {
@@ -57,7 +74,7 @@ public class Report implements Urlable, XmlDescriber {
 	}
 
 	public MonadUri getUri() throws HttpException {
-		return reports.getUri().resolve(id).append("/");
+		return reportsInstance().getUri().resolve(getId()).append("/");
 	}
 
 	public void httpGet(Invocation inv) throws HttpException {
@@ -82,13 +99,12 @@ public class Report implements Urlable, XmlDescriber {
 	}
 
 	public Element toXml(Document doc) throws HttpException {
-		Element element = doc.createElement("report");
-		element.setAttribute("name", properties.getProperty("name"));
-		element.setAttribute("id", id.toString());
+		Element element = super.toXml(doc, "report");
+		element.setAttribute("name", "name");
+		element.setAttribute("script", script);
+		if (template != null) {
+			element.setAttribute("template", template);
+		}
 		return element;
-	}
-
-	public Node toXml(Document doc, XmlTree tree) throws HttpException {
-		return null;
 	}
 }

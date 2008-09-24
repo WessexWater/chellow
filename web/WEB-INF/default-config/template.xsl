@@ -160,8 +160,17 @@
 						</a>
 					</li>
 					<li>
-					<a href="{/source/request/@context-path}//">
-					
+						<a
+							href="{/source/request/@context-path}/reports/">
+							Reports
+						</a>
+					</li>
+					<li>
+						<a
+							href="{/source/request/@context-path}/general-imports/">
+							General CSV Imports
+						</a>
+					</li>
 				</ul>
 			</body>
 		</html>

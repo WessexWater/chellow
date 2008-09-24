@@ -2,28 +2,30 @@ package net.sf.chellow.ui;
 
 import java.io.File;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
+import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.Invocation;
 import net.sf.chellow.monad.MethodNotAllowedException;
 import net.sf.chellow.monad.Monad;
 import net.sf.chellow.monad.MonadUtils;
 import net.sf.chellow.monad.Urlable;
-import net.sf.chellow.monad.XmlDescriber;
+import net.sf.chellow.monad.UserException;
 import net.sf.chellow.monad.XmlTree;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
-import net.sf.chellow.physical.Organization;
+import net.sf.chellow.physical.EntityList;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
-public class Reports implements Urlable, XmlDescriber {
+public class Reports extends EntityList {
 	public static final UriPathElement URI_ID;
 
 	static {
@@ -34,10 +36,7 @@ public class Reports implements Urlable, XmlDescriber {
 		}
 	}
 
-	private Organization organization;
-
-	public Reports(Organization organization) {
-		this.organization = organization;
+	public Reports() {
 	}
 
 	@SuppressWarnings("unchecked")
@@ -103,33 +102,45 @@ public class Reports implements Urlable, XmlDescriber {
 		return reports;
 	}
 
+	@SuppressWarnings("unchecked")
+	private Document document() throws HttpException {
+		Document doc = MonadUtils.newSourceDocument();
+		Element source = doc.getDocumentElement();
+		Element reportsElement = toXml(doc);
+		
+		source.appendChild(reportsElement);
+		for (Report report : (List<Report>) Hiber.session().createQuery(
+				"from Report report order by report.id").list()) {
+			reportsElement.appendChild(report.toXml(doc));
+		}
+		return doc;
+	}
+
 	public UriPathElement getUriId() {
 		return URI_ID;
 	}
 
 	public MonadUri getUri() throws HttpException {
-		return organization.getUri().resolve(getUriId()).append("/");
+		return Chellow.getUrlableRoot().getUri().resolve(URI_ID).append("/");
 	}
 
 	@SuppressWarnings("unchecked")
 	public void httpGet(Invocation inv) throws HttpException {
-		Document doc = MonadUtils.newSourceDocument();
-		Element source = doc.getDocumentElement();
-		Element reportsElement = toXml(doc);
-		source.appendChild(reportsElement);
-		reportsElement.appendChild(organization.toXml(doc));
-		try {
-			for (Report report : getReports().values()) {
-				reportsElement.appendChild(report.toXml(doc));
-			}
-		} catch (HttpException e) {
-			e.setDocument(doc);
-			throw e;
-		}
-		inv.sendOk(doc);
+		inv.sendOk(document());
 	}
 
 	public void httpPost(Invocation inv) throws HttpException {
+		String name = inv.getString("name");
+		String script = inv.getString("script");
+		
+		if (!inv.isValid()) {
+			throw new UserException(document());
+		}
+		String template = null;
+		if (inv.hasParameter("has-template")) { 
+		template = inv.getString("template");
+		}
+		
 		/*
 		 * MonadString name = inv.getMonadString("name"); Document doc =
 		 * MonadUtilsUI.newSourceDocument();
@@ -141,10 +152,6 @@ public class Reports implements Urlable, XmlDescriber {
 		 * Invocation.HttpMethod.POST }); Hiber.close();
 		 * inv.sendCreated(role.getUri());
 		 */
-	}
-
-	public Organization getOrganization() {
-		return organization;
 	}
 
 	public Urlable getChild(UriPathElement uriId) throws HttpException {

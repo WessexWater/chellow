@@ -68,6 +68,7 @@ public class Chellow extends Monad implements Urlable {
 	static public final MeterTypes METER_TYPES_INSTANCE = new MeterTypes();
 	static public final MeterPaymentTypes MTC_PAYMENT_TYPES_INSTANCE = new MeterPaymentTypes();
 	static public final ReadTypes READ_TYPES_INSTANCE = new ReadTypes();
+	static public final Reports REPORTS_INSTANCE = new Reports();
 
 	static {
 		try {
@@ -181,6 +182,8 @@ public class Chellow extends Monad implements Urlable {
 			return DSOS_INSTANCE;
 		} else if (ReadTypes.URI_ID.equals(uriId)) {
 			return READ_TYPES_INSTANCE;
+		} else if (Reports.URI_ID.equals(uriId)) {
+			return REPORTS_INSTANCE;
 		} else {
 			return null;
 		}
