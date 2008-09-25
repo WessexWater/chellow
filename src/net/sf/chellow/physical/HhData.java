@@ -65,8 +65,6 @@ public class HhData extends EntityList {
 		Element supplyElement = channel.getSupplyGeneration().getSupply()
 				.toXml(doc);
 		supplyGenerationElement.appendChild(supplyElement);
-		supplyElement.appendChild(channel.getSupplyGeneration().getSupply()
-				.getOrganization().toXml(doc));
 		source.appendChild(MonadDate.getMonthsXml(doc));
 		source.appendChild(MonadDate.getDaysXml(doc));
 		source.appendChild(new MonadDate().toXml(doc));

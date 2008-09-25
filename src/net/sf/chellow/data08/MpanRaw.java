@@ -32,7 +32,6 @@ import net.sf.chellow.physical.Llfc;
 import net.sf.chellow.physical.MpanCore;
 import net.sf.chellow.physical.MpanTop;
 import net.sf.chellow.physical.Mtc;
-import net.sf.chellow.physical.Organization;
 import net.sf.chellow.physical.Pc;
 import net.sf.chellow.physical.Ssc;
 
@@ -105,8 +104,8 @@ public class MpanRaw extends MonadObject {
 		return MpanTop.getMpanTop(getPc(), getMtc(), getLlfc(), ssc, date);
 	}
 
-	public MpanCore getMpanCore(Organization organization) throws HttpException {
-		return organization.getMpanCore(mpanCoreRaw);
+	public MpanCore getMpanCore() throws HttpException {
+		return MpanCore.getMpanCore(mpanCoreRaw);
 	}
 
 	public String toString() {

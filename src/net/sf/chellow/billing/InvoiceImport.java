@@ -30,7 +30,6 @@ import net.sf.chellow.monad.XmlDescriber;
 import net.sf.chellow.monad.XmlTree;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
-import net.sf.chellow.physical.Organization;
 import net.sf.chellow.ui.ChellowLogger;
 
 import org.apache.commons.fileupload.FileItem;
@@ -197,8 +196,7 @@ public class InvoiceImport extends Thread implements Urlable, XmlDescriber {
 				messages
 						.add("The import has finished, but not all invoices were successfully loaded.");
 			}
-			Organization organization = batch.getContract().getOrganization();
-			Account.checkAllMissingFromLatest(organization);
+			Account.checkAllMissingFromLatest();
 		} catch (InternalException e) {
 			messages.add("ProgrammerException : " + e.getMessage());
 			throw new RuntimeException(e);

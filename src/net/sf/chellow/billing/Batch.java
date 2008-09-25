@@ -40,7 +40,6 @@ import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
 import net.sf.chellow.physical.Mpan;
 import net.sf.chellow.physical.MpanCore;
-import net.sf.chellow.physical.Organization;
 import net.sf.chellow.physical.PersistentEntity;
 
 import org.hibernate.HibernateException;
@@ -179,9 +178,8 @@ public class Batch extends PersistentEntity {
 		Invoice invoice = new Invoice(this, rawInvoice);
 		Hiber.session().save(invoice);
 		Hiber.flush();
-		Organization organization = getContract().getOrganization();
 		for (MpanRaw rawMpan : rawInvoice.getMpans()) {
-			MpanCore mpanCore = organization.getMpanCore(rawMpan
+			MpanCore mpanCore = MpanCore.getMpanCore(rawMpan
 					.getMpanCoreRaw());
 			List<Mpan> candidateMpans = (List<Mpan>) Hiber
 					.session()

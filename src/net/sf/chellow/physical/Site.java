@@ -50,13 +50,67 @@ import net.sf.chellow.monad.types.MonadDate;
 import net.sf.chellow.monad.types.MonadString;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
+import net.sf.chellow.ui.Chellow;
 
 import org.hibernate.HibernateException;
+import org.hibernate.exception.ConstraintViolationException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-public class Site extends PersistentEntity implements Urlable {
-	private Organization organization;
+public class Site extends PersistentEntity {
+	static public Site insertSite(String code, String name)
+			throws HttpException {
+		Site site = null;
+		try {
+			site = new Site(code, name);
+			Hiber.session().save(site);
+			Hiber.flush();
+		} catch (ConstraintViolationException e) {
+			throw new UserException("A site with this code already exists.");
+		}
+		return site;
+	}
+
+	static public Site getSite(Long id) throws HttpException {
+		Site site = (Site) Hiber.session().get(Site.class, id);
+		if (site == null) {
+			throw new NotFoundException("There isn't a site with the id " + id
+					+ ".");
+		}
+		return site;
+	}
+
+	static public Site findSite(String siteCode) throws HttpException {
+		return (Site) Hiber.session().createQuery(
+				"from Site as site where site.code = :siteCode").setString(
+				"siteCode", siteCode).uniqueResult();
+	}
+
+	static public Site getSite(String code) throws HttpException {
+		Site site = findSite(code);
+		if (site == null) {
+			throw new NotFoundException("The site '" + code
+					+ "' cannot be found.");
+		}
+		return site;
+	}
+
+	@SuppressWarnings("unchecked")
+	static public void deleteSite(Site site) throws HttpException {
+		if (Hiber.session().createQuery(
+				"from SiteSupplyGeneration ssg where ssg.site = :site")
+				.setEntity("site", site).list().size() > 0) {
+			throw new UserException(
+					"This site can't be deleted while there are still supply generations attached to it.");
+		}
+		for (SiteSnag snag : (List<SiteSnag>) Hiber.session().createQuery(
+				"from SiteSnag snag where site = :site")
+				.setEntity("site", site).list()) {
+			snag.delete();
+		}
+		Hiber.session().delete(site);
+		Hiber.flush();
+	}
 
 	private String code;
 
@@ -67,19 +121,8 @@ public class Site extends PersistentEntity implements Urlable {
 	public Site() {
 	}
 
-	public Site(Organization organization, String code, String name)
-			throws HttpException {
-		this();
-		this.organization = organization;
+	public Site(String code, String name) throws HttpException {
 		update(code, name);
-	}
-
-	public Organization getOrganization() {
-		return organization;
-	}
-
-	public void setOrganization(Organization organization) {
-		this.organization = organization;
 	}
 
 	public String getCode() {
@@ -158,12 +201,12 @@ public class Site extends PersistentEntity implements Urlable {
 								+ e.getMessage());
 			}
 			importHhdcContract = importHhdcContractName.trim().length() == 0 ? null
-					: organization.getHhdcContract(importHhdcContractName);
+					: HhdcContract.getHhdcContract(importHhdcContractName);
 			if (importHhdcContract != null) {
 				importHhdcAccount = importHhdcContract
 						.getAccount(importHhdcAccountReference);
 			}
-			importSupplierContract = organization
+			importSupplierContract = SupplierContract
 					.getSupplierContract(importSupplierContractName);
 			importSupplierAccount = importSupplierContract
 					.getAccount(importSupplierAccountReference);
@@ -190,12 +233,12 @@ public class Site extends PersistentEntity implements Urlable {
 								+ e.getMessage());
 			}
 			exportHhdcContract = exportHhdcContractName.length() == 0 ? null
-					: organization.getHhdcContract(exportHhdcContractName);
+					: HhdcContract.getHhdcContract(exportHhdcContractName);
 			if (exportHhdcContract != null) {
 				exportHhdcAccount = exportHhdcContract
 						.getAccount(exportHhdcAccountReference);
 			}
-			exportSupplierContract = organization
+			exportSupplierContract = SupplierContract
 					.getSupplierContract(exportSupplierContractName);
 			exportAccountSupplier = exportSupplierContract
 					.getAccount(exportSupplierAccountReference);
@@ -224,7 +267,7 @@ public class Site extends PersistentEntity implements Urlable {
 			boolean exportHasExportKvarh, Integer exportAgreedSupplyCapacity,
 			HhEndDate startDate, String sourceCode) throws HttpException {
 		Source source = Source.getSource(sourceCode);
-		Supply supply = new Supply(organization, supplyName, source);
+		Supply supply = new Supply(supplyName, source);
 		try {
 			// supply.setId(id);
 			Hiber.session().save(supply);
@@ -494,8 +537,7 @@ public class Site extends PersistentEntity implements Urlable {
 	}
 
 	public MonadUri getUri() throws HttpException {
-		return organization.getSitesInstance().getUri().resolve(getUriId())
-				.append("/");
+		return Chellow.SITES_INSTANCE.getUri().resolve(getUriId()).append("/");
 	}
 
 	public boolean equals(Object obj) {
@@ -544,7 +586,7 @@ public class Site extends PersistentEntity implements Urlable {
 
 			source.appendChild(toXml(doc));
 			try {
-				organization.deleteSite(this);
+				Site.deleteSite(this);
 			} catch (HttpException e) {
 				e.setDocument(doc);
 				throw e;

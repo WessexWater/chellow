@@ -49,10 +49,10 @@ public class ReportScreen implements ReportType {
 			return reportTemplate;
 		} else if (ReportScript.URI_ID.equals(uriId)) {
 			return reportScript;
-		} else if (ReportScriptOutput.URI_ID.equals(uriId)) {
-			return new ReportScriptOutput(this);
-		} else if (ReportScreenOutput.URI_ID.equals(uriId)) {
-			return new ReportScreenOutput(this);
+		} else if (ReportXmlOutput.URI_ID.equals(uriId)) {
+			return new ReportXmlOutput(this);
+		} else if (ReportOutput.URI_ID.equals(uriId)) {
+			return new ReportOutput(this);
 		} else {
 			return null;
 		}

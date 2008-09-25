@@ -63,8 +63,7 @@ public class RegisterRead extends PersistentEntity {
 		setpresentType(rawRead.getPresentType());
 
 		MpanCoreRaw mpanCoreRaw = rawRead.getMpanRaw().getMpanCoreRaw();
-		Organization org = invoice.getBatch().getContract().getOrganization();
-		MpanCore mpanCore = org.getMpanCore(mpanCoreRaw);
+		MpanCore mpanCore = MpanCore.getMpanCore(mpanCoreRaw);
 		Supply supply = mpanCore.getSupply();
 		SupplyGeneration supplyGeneration = supply.getGeneration(rawRead
 				.getPresentDate());

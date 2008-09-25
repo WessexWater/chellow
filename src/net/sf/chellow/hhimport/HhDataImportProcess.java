@@ -31,6 +31,7 @@ import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
 import net.sf.chellow.physical.Channel;
 import net.sf.chellow.physical.HhEndDate;
+import net.sf.chellow.physical.MpanCore;
 import net.sf.chellow.physical.SupplyGeneration;
 import net.sf.chellow.ui.ChellowLogger;
 
@@ -164,9 +165,8 @@ public class HhDataImportProcess extends Thread implements Urlable,
 			 * Supply supply = contract.getOrganization()
 			 * .findMpanCore(mpanCoreRaw).getSupply();
 			 */
-			SupplyGeneration generation = contract.getOrganization()
-					.findMpanCore(mpanCoreRaw).getSupply().getGeneration(
-							datum.getEndDate());
+			SupplyGeneration generation = MpanCore.findMpanCore(mpanCoreRaw)
+					.getSupply().getGeneration(datum.getEndDate());
 
 			if (generation == null) {
 				throw new UserException("HH datum has been ignored: "
@@ -216,9 +216,8 @@ public class HhDataImportProcess extends Thread implements Urlable,
 					data.clear();
 					mpanCoreRaw = datum.getMpanCore();
 					contract = HhdcContract.getHhdcContract(hhdcContractId);
-					generation = contract.getOrganization().findMpanCore(
-							mpanCoreRaw).getSupply().getGeneration(
-							datum.getEndDate());
+					generation = MpanCore.findMpanCore(mpanCoreRaw).getSupply()
+							.getGeneration(datum.getEndDate());
 					if (generation == null) {
 						throw new UserException("HH datum has been ignored: "
 								+ datum.toString() + ".");
@@ -237,11 +236,8 @@ public class HhDataImportProcess extends Thread implements Urlable,
 			supplyGenerations = (List<SupplyGeneration>) Hiber
 					.session()
 					.createQuery(
-							"select supplyGeneration from SupplyGeneration supplyGeneration join supplyGeneration.siteSupplyGenerations siteSupplyGeneration where siteSupplyGeneration.site.organization = :organization and supplyGeneration.finishDate.date is null")
-					.setEntity(
-							"organization",
-							HhdcContract.getHhdcContract(hhdcContractId)
-									.getOrganization()).list();
+							"select supplyGeneration from SupplyGeneration supplyGeneration where supplyGeneration.finishDate.date is null")
+					.list();
 			for (int i = 0; i < supplyGenerations.size(); i++) {
 				suppliesChecked = i;
 				SupplyGeneration.getSupplyGeneration(

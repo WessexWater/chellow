@@ -29,6 +29,8 @@ import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Invocation;
 import net.sf.chellow.monad.MethodNotAllowedException;
+import net.sf.chellow.monad.NotFoundException;
+import net.sf.chellow.monad.UserException;
 import net.sf.chellow.monad.types.MonadUri;
 
 import org.w3c.dom.Document;
@@ -37,6 +39,24 @@ import org.w3c.dom.Element;
 public class MpanCore extends PersistentEntity {
 	static public MpanCore getMpanCore(Long id) throws InternalException {
 		return (MpanCore) Hiber.session().get(MpanCore.class, id);
+	}
+	
+	static public MpanCore getMpanCore(MpanCoreRaw coreRaw) throws HttpException {
+ 		MpanCore core = findMpanCore(coreRaw);
+ 		if (core == null) {
+ 			throw new NotFoundException("There isn't an MPAN with the core " + core);
+ 		}
+ 		return core;
+ 	}
+	
+	static public MpanCore findMpanCore(MpanCoreRaw core) throws HttpException {
+		   return (MpanCore) Hiber
+		   				.session()
+		   				.createQuery(
+		   						"from MpanCore mpanCore where mpanCore.dso = :dso and mpanCore.uniquePart = :uniquePart")
+		   				.setEntity("dso", core.getDso()).setString(
+		   						"uniquePart", core.getUniquePart()).uniqueResult();
+		   
 	}
 
 	/*

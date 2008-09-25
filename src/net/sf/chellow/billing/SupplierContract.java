@@ -39,14 +39,24 @@ import net.sf.chellow.monad.types.UriPathElement;
 import net.sf.chellow.physical.HhEndDate;
 import net.sf.chellow.physical.MarketRole;
 import net.sf.chellow.physical.Mpan;
-import net.sf.chellow.physical.Organization;
 import net.sf.chellow.physical.Snag;
+import net.sf.chellow.ui.Chellow;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 @SuppressWarnings("serial")
 public class SupplierContract extends Contract {
+	static public SupplierContract insertSupplierContract(Provider provider,
+			String name, HhEndDate startDate, String chargeScript)
+			throws HttpException {
+		SupplierContract contract = new SupplierContract(provider, name,
+				startDate, chargeScript);
+		Hiber.session().save(contract);
+		Hiber.flush();
+		return contract;
+	}
+
 	public static SupplierContract getSupplierContract(Long id)
 			throws HttpException {
 		SupplierContract service = findSupplierService(id);
@@ -62,13 +72,26 @@ public class SupplierContract extends Contract {
 				id);
 	}
 
+	static public SupplierContract getSupplierContract(String name)
+			throws HttpException {
+		SupplierContract contract = (SupplierContract) Hiber
+				.session()
+				.createQuery(
+						"from SupplierContract contract where contract.name = :name")
+				.setString("name", name).uniqueResult();
+		if (contract == null) {
+			throw new NotFoundException("There's no supplier contract named '"
+					+ name + "'.");
+		}
+		return contract;
+	}
+
 	public SupplierContract() {
 	}
 
-	public SupplierContract(Provider supplier, Organization organization,
-			String name, HhEndDate startDate, String chargeScript)
-			throws HttpException {
-		super(supplier, organization, name, startDate, chargeScript);
+	public SupplierContract(Provider supplier, String name,
+			HhEndDate startDate, String chargeScript) throws HttpException {
+		super(supplier, name, startDate, chargeScript);
 		if (supplier.getRole().getCode() != MarketRole.SUPPLIER) {
 			throw new UserException(
 					"The provider must have the role of supplier.");
@@ -89,8 +112,8 @@ public class SupplierContract extends Contract {
 	}
 
 	public MonadUri getUri() throws HttpException {
-		return getOrganization().supplierContractsInstance().getUri().resolve(
-				getUriId()).append("/");
+		return Chellow.SUPPLIER_CONTRACTS_INSTANCE.getUri().resolve(getUriId())
+				.append("/");
 	}
 
 	public void httpPost(Invocation inv) throws HttpException {

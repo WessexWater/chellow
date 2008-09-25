@@ -32,13 +32,22 @@ import net.sf.chellow.monad.XmlTree;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
 import net.sf.chellow.physical.HhEndDate;
-import net.sf.chellow.physical.Organization;
+import net.sf.chellow.ui.Chellow;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 @SuppressWarnings("serial")
 public class MopContract extends Contract {
+	static public MopContract insertMopContract(Provider provider, String name,
+			   			HhEndDate startDate, String chargeScript) throws HttpException {
+			   		MopContract contract = new MopContract(provider, name, startDate,
+			   				chargeScript);
+			   		Hiber.session().save(contract);
+			   		Hiber.flush();
+			   		return contract;
+			   }
+
 	public static MopContract getMopService(Long id) throws HttpException {
 		MopContract contract = (MopContract) Hiber.session().get(
 				MopContract.class, id);
@@ -54,10 +63,10 @@ public class MopContract extends Contract {
 	public MopContract() {
 	}
 
-	public MopContract(Provider provider, Organization organization,
+	public MopContract(Provider provider,
 			String name, HhEndDate startDate, String chargeScript)
 			throws HttpException {
-		super(provider, organization, name, startDate, chargeScript);
+		super(provider, name, startDate, chargeScript);
 	}
 	
 	public Provider getProvider() {
@@ -78,7 +87,7 @@ public class MopContract extends Contract {
 	}
 
 	public MonadUri getUri() throws HttpException {
-		return getOrganization().mopContractsInstance().getUri().resolve(
+		return Chellow.MOP_CONTRACTS_INSTANCE.getUri().resolve(
 				getUriId()).append("/");
 	}
 

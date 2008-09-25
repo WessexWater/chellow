@@ -22,8 +22,6 @@
 
 package net.sf.chellow.billing;
 
-import java.util.Date;
-
 import net.sf.chellow.monad.DeployerException;
 import net.sf.chellow.monad.DesignerException;
 import net.sf.chellow.monad.Hiber;
@@ -38,7 +36,6 @@ import net.sf.chellow.monad.XmlTree;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
 import net.sf.chellow.physical.HhEndDate;
-import net.sf.chellow.physical.Organization;
 import net.sf.chellow.physical.PersistentEntity;
 import net.sf.chellow.physical.Site;
 
@@ -66,8 +63,6 @@ public class UseDelta extends PersistentEntity implements Urlable {
 		}
 	}
 
-	private Organization organization;
-
 	private Site site;
 
 	private HhEndDate startDate;
@@ -77,18 +72,9 @@ public class UseDelta extends PersistentEntity implements Urlable {
 	public UseDelta() {
 	}
 
-	public UseDelta(Organization organization, Site site, HhEndDate startDate,
+	public UseDelta(Site site, HhEndDate startDate,
 			int kwhPerMonth) {
-		setOrganization(organization);
 		update(site, startDate, kwhPerMonth);
-	}
-
-	public Organization getOrganization() {
-		return organization;
-	}
-
-	public void setOrganization(Organization organization) {
-		this.organization = organization;
 	}
 
 	public Site getSite() {
@@ -131,20 +117,21 @@ public class UseDelta extends PersistentEntity implements Urlable {
 
 	public void httpPost(Invocation inv) throws InternalException,
 			HttpException, DesignerException, DeployerException {
+		/*
 		String siteCode = inv.getString("site-code");
 		Date date = inv.getDate("start-date");
 		int kwhPerMonth = inv.getInteger("kwh-per-month");
 		if (!inv.isValid()) {
 			throw new UserException(document());
 		}
-		update(organization.getSite(siteCode), HhEndDate
+		update(Site.getSite(siteCode), HhEndDate
 				.roundUp(date), kwhPerMonth);
 		Hiber.commit();
 		inv.sendOk(document());
+		*/
 	}
 
-	private Document document() throws InternalException, HttpException,
-			DesignerException {
+	private Document document() throws HttpException {
 		Document doc = MonadUtils.newSourceDocument();
 		Element source = doc.getDocumentElement();
 		source
@@ -159,8 +146,9 @@ public class UseDelta extends PersistentEntity implements Urlable {
 	}
 
 	public MonadUri getUri() throws InternalException, HttpException {
-		return organization.useDeltasInstance().getUri().resolve(getUriId())
-				.append("/");
+		//return organization.useDeltasInstance().getUri().resolve(getUriId())
+		//		.append("/");
+		return null;
 	}
 
 	public Urlable getChild(UriPathElement uriId) throws InternalException,

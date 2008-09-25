@@ -46,6 +46,7 @@ import net.sf.chellow.monad.XmlTree;
 import net.sf.chellow.monad.types.MonadDate;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
+import net.sf.chellow.ui.Chellow;
 
 import org.hibernate.Criteria;
 import org.hibernate.Query;
@@ -75,9 +76,7 @@ public class Supply extends PersistentEntity {
 		}
 		return supply;
 	}
-
-	private Organization organization;
-
+	
 	private String name;
 
 	private Source source;
@@ -91,9 +90,8 @@ public class Supply extends PersistentEntity {
 	public Supply() {
 	}
 
-	Supply(Organization organization, String name, Source source)
+	Supply(String name, Source source)
 			throws HttpException {
-		setOrganization(organization);
 		setGenerations(new HashSet<SupplyGeneration>());
 		update(name, source);
 		setMpanCores(new HashSet<MpanCore>());
@@ -106,14 +104,6 @@ public class Supply extends PersistentEntity {
 		}
 		setName(name);
 		setSource(source);
-	}
-
-	public Organization getOrganization() {
-		return organization;
-	}
-
-	void setOrganization(Organization organization) {
-		this.organization = organization;
 	}
 
 	public String getName() {
@@ -755,7 +745,6 @@ public class Supply extends PersistentEntity {
 						new XmlTree("llfc", new XmlTree("voltageLevel")))))
 				.put("mpanCores"));
 		source.appendChild(supplyElement);
-		supplyElement.appendChild(getOrganization().toXml(doc));
 		addSourcesXML(source);
 		source.appendChild(MonadDate.getMonthsXml(doc));
 		source.appendChild(MonadDate.getDaysXml(doc));
@@ -770,12 +759,11 @@ public class Supply extends PersistentEntity {
 				Element source = doc.getDocumentElement();
 
 				source.appendChild(toXml(doc));
-				Organization org = getOrganization();
 				delete(this);
 				Hiber.commit();
 				source.appendChild(new MonadMessage(
 						"Supply deleted successfully.").toXml(doc));
-				inv.sendSeeOther(org.getUri());
+				inv.sendSeeOther(Chellow.SUPPLIES_INSTANCE.getUri());
 			} else {
 				String name = inv.getString("name");
 				Long sourceId = inv.getLong("source-id");
@@ -797,7 +785,7 @@ public class Supply extends PersistentEntity {
 	}
 
 	public MonadUri getUri() throws HttpException {
-		return getOrganization().suppliesInstance().getUrlPath().resolve(
+		return Chellow.SUPPLIES_INSTANCE.getUrlPath().resolve(
 				getUriId()).append("/");
 	}
 

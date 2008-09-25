@@ -31,7 +31,6 @@ import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.NotFoundException;
 import net.sf.chellow.monad.UserException;
 import net.sf.chellow.physical.HhEndDate;
-import net.sf.chellow.physical.Organization;
 
 public abstract class Contract extends Service {
 	public static Contract getContract(Long id) throws HttpException {
@@ -43,17 +42,14 @@ public abstract class Contract extends Service {
 	}
 
 	private Provider provider;
-	
-	private Organization organization;
 
 	public Contract() {
 	}
 
-	public Contract(Provider provider, Organization organization, String name,
+	public Contract(Provider provider, String name,
 			HhEndDate startDate, String chargeScript) throws HttpException {
 		super(name, startDate, chargeScript);
 		setProvider(provider);
-		setOrganization(organization);
 	}
 	
 	public Provider getProvider() {
@@ -62,14 +58,6 @@ public abstract class Contract extends Service {
 
 	void setProvider(Provider provider) {
 		this.provider = provider;
-	}
-
-	public Organization getOrganization() {
-		return organization;
-	}
-
-	void setOrganization(Organization organization) {
-		this.organization = organization;
 	}
 
 	public Batch insertBatch(String reference) {

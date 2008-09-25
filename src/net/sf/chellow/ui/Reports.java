@@ -1,29 +1,19 @@
 package net.sf.chellow.ui;
 
-import java.io.File;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.SortedMap;
-import java.util.TreeMap;
 
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.Invocation;
-import net.sf.chellow.monad.MethodNotAllowedException;
-import net.sf.chellow.monad.Monad;
 import net.sf.chellow.monad.MonadUtils;
 import net.sf.chellow.monad.Urlable;
 import net.sf.chellow.monad.UserException;
-import net.sf.chellow.monad.XmlTree;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
 import net.sf.chellow.physical.EntityList;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import org.w3c.dom.Node;
 
 public class Reports extends EntityList {
 	public static final UriPathElement URI_ID;
@@ -38,7 +28,7 @@ public class Reports extends EntityList {
 
 	public Reports() {
 	}
-
+/*
 	@SuppressWarnings("unchecked")
 	private Map<Long, Report> getReports() throws HttpException {
 		SortedMap<Long, Report> reports = new TreeMap<Long, Report>();
@@ -101,6 +91,7 @@ public class Reports extends EntityList {
 		}
 		return reports;
 	}
+	*/
 
 	@SuppressWarnings("unchecked")
 	private Document document() throws HttpException {
@@ -155,18 +146,10 @@ public class Reports extends EntityList {
 	}
 
 	public Urlable getChild(UriPathElement uriId) throws HttpException {
-		return getReports().get(Long.parseLong(uriId.toString()));
-	}
-
-	public void httpDelete(Invocation inv) throws HttpException {
-		throw new MethodNotAllowedException();
+		return Report.getReport(Long.parseLong(uriId.toString()));
 	}
 
 	public Element toXml(Document doc) throws HttpException {
 		return doc.createElement("reports");
-	}
-
-	public Node toXml(Document doc, XmlTree tree) throws HttpException {
-		return null;
 	}
 }

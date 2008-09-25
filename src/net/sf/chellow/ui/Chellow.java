@@ -10,8 +10,11 @@ import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 
 import net.sf.chellow.billing.Dsos;
+import net.sf.chellow.billing.HhdcContracts;
+import net.sf.chellow.billing.MopContracts;
 import net.sf.chellow.billing.NonCoreServices;
 import net.sf.chellow.billing.Providers;
+import net.sf.chellow.billing.SupplierContracts;
 import net.sf.chellow.monad.BadRequestException;
 import net.sf.chellow.monad.ForbiddenException;
 import net.sf.chellow.monad.HttpException;
@@ -28,13 +31,14 @@ import net.sf.chellow.physical.MarketRoles;
 import net.sf.chellow.physical.MeterPaymentTypes;
 import net.sf.chellow.physical.MeterTypes;
 import net.sf.chellow.physical.Mtcs;
-import net.sf.chellow.physical.Organizations;
 import net.sf.chellow.physical.Participants;
 import net.sf.chellow.physical.Pcs;
 import net.sf.chellow.physical.ReadTypes;
 import net.sf.chellow.physical.Roles;
+import net.sf.chellow.physical.Sites;
 import net.sf.chellow.physical.Sources;
 import net.sf.chellow.physical.Sscs;
+import net.sf.chellow.physical.Supplies;
 import net.sf.chellow.physical.Tprs;
 import net.sf.chellow.physical.User;
 import net.sf.chellow.physical.Users;
@@ -59,7 +63,9 @@ public class Chellow extends Monad implements Urlable {
 	static public final Tprs TPRS_INSTANCE = new Tprs();
 	static public final Sscs SSCS_INSTANCE = new Sscs();
 
-	public static final Organizations ORGANIZATIONS_INSTANCE = new Organizations();
+	public static final HhdcContracts HHDC_CONTRACTS_INSTANCE = new HhdcContracts();
+	public static final MopContracts MOP_CONTRACTS_INSTANCE = new MopContracts();
+	public static final SupplierContracts SUPPLIER_CONTRACTS_INSTANCE = new SupplierContracts();
 
 	public static final Participants PARTICIPANTS_INSTANCE = new Participants();
 	public static final MarketRoles MARKET_ROLES_INSTANCE = new MarketRoles();
@@ -69,6 +75,11 @@ public class Chellow extends Monad implements Urlable {
 	static public final MeterPaymentTypes MTC_PAYMENT_TYPES_INSTANCE = new MeterPaymentTypes();
 	static public final ReadTypes READ_TYPES_INSTANCE = new ReadTypes();
 	static public final Reports REPORTS_INSTANCE = new Reports();
+	static public final Supplies SUPPLIES_INSTANCE = new Supplies();
+	static public final Sites SITES_INSTANCE = new Sites();
+	static public final HeaderImportProcesses HEADER_IMPORT_PROCESSES = new HeaderImportProcesses();
+
+
 
 	static {
 		try {
@@ -152,8 +163,6 @@ public class Chellow extends Monad implements Urlable {
 	public Urlable getChild(UriPathElement uriId) throws HttpException {
 		if (Sources.URI_ID.equals(uriId)) {
 			return SOURCES_INSTANCE;
-		} else if (Organizations.URI_ID.equals(uriId)) {
-			return ORGANIZATIONS_INSTANCE;
 		} else if (Users.URI_ID.equals(uriId)) {
 			return USERS_INSTANCE;
 		} else if (Roles.URI_ID.equals(uriId)) {

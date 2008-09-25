@@ -42,7 +42,6 @@ import net.sf.chellow.monad.types.UriPathElement;
 import net.sf.chellow.physical.HhEndDate;
 import net.sf.chellow.physical.MarketRole;
 import net.sf.chellow.physical.Mpan;
-import net.sf.chellow.physical.Organization;
 import net.sf.chellow.physical.PersistentEntity;
 import net.sf.chellow.physical.SnagDateBounded;
 import net.sf.chellow.physical.SupplyGeneration;
@@ -67,13 +66,13 @@ public class Account extends PersistentEntity implements Urlable {
 	 * ProgrammerException(e); } }
 	 */
 	@SuppressWarnings("unchecked")
-	public static void checkAllMissingFromLatest(Organization organization)
+	public static void checkAllMissingFromLatest()
 			throws HttpException {
 		for (Account account : (List<Account>) Hiber
 				.session()
 				.createQuery(
-						"select distinct mpan.supplierAccount from Mpan mpan where mpan.supplyGeneration.finishDate.date is null and mpan.supplierAccount.contract.organization = :organization")
-				.setEntity("organization", organization).list()) {
+						"select distinct mpan.supplierAccount from Mpan mpan where mpan.supplyGeneration.finishDate.date is null")
+				.list()) {
 			account.checkMissingFromLatest();
 		}
 	}

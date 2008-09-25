@@ -26,24 +26,23 @@ import java.util.List;
 
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
-import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Invocation;
 import net.sf.chellow.monad.MonadUtils;
 import net.sf.chellow.monad.NotFoundException;
-import net.sf.chellow.monad.Urlable;
 import net.sf.chellow.monad.UserException;
-import net.sf.chellow.monad.types.MonadLong;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
+import net.sf.chellow.ui.Chellow;
 
-import org.hibernate.HibernateException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-public class Sites implements Urlable {
-	//public static final SiteNameDataSource DEFAULT_SOURCE = new DefaultSiteName();
+public class Sites extends EntityList {
+	// public static final SiteNameDataSource DEFAULT_SOURCE = new
+	// DefaultSiteName();
 	public static final UriPathElement URI_ID;
-	//public static final Map<Long, SiteNameDataSource> sources = new HashMap<Long, SiteNameDataSource>();
+	// public static final Map<Long, SiteNameDataSource> sources = new
+	// HashMap<Long, SiteNameDataSource>();
 	static {
 		try {
 			URI_ID = new UriPathElement("sites");
@@ -52,36 +51,19 @@ public class Sites implements Urlable {
 		}
 	}
 
-	static public Site getSite(MonadLong id) throws InternalException,
-			HttpException {
-		try {
-			Site site = (Site) Hiber.session().get(Site.class, id.getLong());
-			if (site == null) {
-				throw new UserException
-						("There is no site with " + "that id.");
-			}
-			return site;
-		} catch (HibernateException e) {
-			throw new InternalException(e);
+	static public Site getSite(Long id) throws HttpException {
+		Site site = (Site) Hiber.session().get(Site.class, id);
+		if (site == null) {
+			throw new UserException("There is no site with " + "that id.");
 		}
+		return site;
 	}
 
-	private Organization organization;
-
-	Sites(Organization organization) {
-		setOrganization(organization);
+	public Sites() {
 	}
 
-	public Organization getOrganization() {
-		return organization;
-	}
-
-	public void setOrganization(Organization organization) {
-		this.organization = organization;
-	}
-
-	public MonadUri getUri() throws InternalException, HttpException {
-		return organization.getUri().resolve(getUriId()).append("/");
+	public MonadUri getUri() throws HttpException {
+		return Chellow.ROOT_URI.resolve(getUriId()).append("/");
 	}
 
 	public void httpPost(Invocation inv) throws HttpException {
@@ -91,28 +73,39 @@ public class Sites implements Urlable {
 		if (!inv.isValid()) {
 			throw new UserException(doc, null);
 		}
-		Site site = organization.insertSite(code, name);
+		Site site = Site.insertSite(code, name);
 		Hiber.commit();
 		inv.sendCreated(site.getUri());
 	}
 
+	@SuppressWarnings("unchecked")
 	public void httpGet(Invocation inv) throws HttpException {
 		Document doc = MonadUtils.newSourceDocument();
-		Element source = (Element) doc.getFirstChild();
-		Element organizationSource = (Element) source.appendChild(organization
-				.toXml(doc));
+		Element source = doc.getDocumentElement();
+		Element sitesElement = toXml(doc);
+		source.appendChild(sitesElement);
 		List<Site> sites = null;
 		if (inv.hasParameter("search-pattern")) {
 			String searchTerm = inv.getString("search-pattern");
 			if (!inv.isValid()) {
 				throw new UserException(doc, null);
 			}
-			sites = organization.findSites(searchTerm);
+sites = (List<Site>) Hiber
+				   				.session()
+				   				.createQuery(
+				   						"from Site site where lower(site.code || ' ' || site.name) like '%' || lower(:searchTerm) || '%' order by site.code")
+				   				.setString("searchTerm",
+				   						searchTerm).setMaxResults(50).list();
+				   	
 		} else {
-			sites = organization.findSites();
+			sites = (List<Site>) Hiber
+				.session()
+   				.createQuery(
+   						"from Site site order by site.code")
+   				.setMaxResults(50).list();
 		}
 		for (Site site : sites) {
-			organizationSource.appendChild(site.toXml(doc));
+			sitesElement.appendChild(site.toXml(doc));
 		}
 		inv.sendOk(doc);
 	}
@@ -121,13 +114,12 @@ public class Sites implements Urlable {
 		return URI_ID;
 	}
 
-	public Site getChild(UriPathElement uriId) throws HttpException,
-			InternalException {
+	public Site getChild(UriPathElement uriId) throws HttpException {
 		Site site = (Site) Hiber
 				.session()
 				.createQuery(
-						"from Site site where site.organization = :organization and site.id = :siteId")
-				.setEntity("organization", organization).setLong("siteId",
+						"from Site site where id = :siteId")
+			.setLong("siteId",
 						Long.parseLong(uriId.getString())).uniqueResult();
 		if (site == null) {
 			throw new NotFoundException();
@@ -135,42 +127,30 @@ public class Sites implements Urlable {
 		return site;
 	}
 
-	public void httpDelete(Invocation inv) throws InternalException,
-			HttpException {
-		// TODO Auto-generated method stub
-
-	}
-/*
-	public Site getSite(String code) throws HttpException,
-			InternalException {
-		Site site = (Site) Hiber
-				.session()
-				.createQuery(
-						"from Site site where site.organization = :organization and site.code.string = :siteCode")
-				.setEntity("organization", organization).setString("siteCode",
-						code.getString()).uniqueResult();
-		if (site == null) {
-			throw new NotFoundException();
-		}
-		return site;
-	}
-	*/
 	/*
-	public SiteNameDataSource getSiteNameDataSource() throws ProgrammerException, UserException {
-		// find properties file
-		if (ChellowProperties.propertiesExists(getUri().append("names/"), "names.properties")) {
-			ChellowProperties props = new ChellowProperties(getUri().append("names/"), "names.properties");
-			long propsLastModified = props.getLastModified();
-			SiteNameDataSource source = sources.get(organization.getId());
-			if (source == null || source.getValidFrom() < propsLastModified) {
-				sources.put(organization.getId(), new CSVSiteName(organization.getId(), propsLastModified));
-			}
-		}
-		SiteNameDataSource source = sources.get(organization.getId());
-		if (source == null) {
-			source = DEFAULT_SOURCE;
-		}
-		return source;
+	 * public Site getSite(String code) throws HttpException, InternalException {
+	 * Site site = (Site) Hiber .session() .createQuery( "from Site site where
+	 * site.organization = :organization and site.code.string = :siteCode")
+	 * .setEntity("organization", organization).setString("siteCode",
+	 * code.getString()).uniqueResult(); if (site == null) { throw new
+	 * NotFoundException(); } return site; }
+	 */
+	/*
+	 * public SiteNameDataSource getSiteNameDataSource() throws
+	 * ProgrammerException, UserException { // find properties file if
+	 * (ChellowProperties.propertiesExists(getUri().append("names/"),
+	 * "names.properties")) { ChellowProperties props = new
+	 * ChellowProperties(getUri().append("names/"), "names.properties"); long
+	 * propsLastModified = props.getLastModified(); SiteNameDataSource source =
+	 * sources.get(organization.getId()); if (source == null ||
+	 * source.getValidFrom() < propsLastModified) {
+	 * sources.put(organization.getId(), new CSVSiteName(organization.getId(),
+	 * propsLastModified)); } } SiteNameDataSource source =
+	 * sources.get(organization.getId()); if (source == null) { source =
+	 * DEFAULT_SOURCE; } return source; }
+	 */
+	public Element toXml(Document doc) throws HttpException {
+		Element element = doc.createElement("sites");
+		return element;
 	}
-	*/
 }

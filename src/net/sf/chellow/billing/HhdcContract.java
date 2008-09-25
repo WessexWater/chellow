@@ -31,6 +31,7 @@ import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.Invocation;
 import net.sf.chellow.monad.MonadUtils;
+import net.sf.chellow.monad.NotFoundException;
 import net.sf.chellow.monad.Urlable;
 import net.sf.chellow.monad.UserException;
 import net.sf.chellow.monad.XmlTree;
@@ -41,14 +42,24 @@ import net.sf.chellow.physical.ContractFrequency;
 import net.sf.chellow.physical.HhEndDate;
 import net.sf.chellow.physical.MarketRole;
 import net.sf.chellow.physical.Mpan;
-import net.sf.chellow.physical.Organization;
 import net.sf.chellow.physical.SiteSnags;
+import net.sf.chellow.ui.Chellow;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 @SuppressWarnings("serial")
 public class HhdcContract extends Contract {
+	static public HhdcContract insertHhdcContract(Provider provider,
+			String name, HhEndDate startDate, String chargeScript,
+			ContractFrequency frequency, int lag) throws HttpException {
+		HhdcContract contract = new HhdcContract(provider, name, startDate,
+				chargeScript, frequency, lag);
+		Hiber.session().save(contract);
+		Hiber.flush();
+		return contract;
+	}
+
 	public static HhdcContract getHhdcContract(Long id) throws HttpException {
 		HhdcContract contract = findHhdcContract(id);
 		if (contract == null) {
@@ -61,6 +72,17 @@ public class HhdcContract extends Contract {
 		return (HhdcContract) Hiber.session().get(HhdcContract.class, id);
 	}
 
+	public static HhdcContract getHhdcContract(String name) throws HttpException {
+		HhdcContract contract = (HhdcContract) Hiber.session().createQuery(
+				"from HhdcContract contract where contract.name = :name")
+				.setString("name", name).uniqueResult();
+		if (contract == null) {
+			throw new NotFoundException("There isn't an HHDC contract called '"
+					+ name + "'");
+		}
+		return contract;
+	}
+
 	private ContractFrequency frequency;
 
 	private int lag;
@@ -68,10 +90,10 @@ public class HhdcContract extends Contract {
 	public HhdcContract() {
 	}
 
-	public HhdcContract(Provider provider, Organization organization,
-			String name, HhEndDate startDate, String chargeScript,
-			ContractFrequency frequency, int lag) throws HttpException {
-		super(provider, organization, name, startDate, chargeScript);
+	public HhdcContract(Provider provider, String name, HhEndDate startDate,
+			String chargeScript, ContractFrequency frequency, int lag)
+			throws HttpException {
+		super(provider, name, startDate, chargeScript);
 		if (provider.getRole().getCode() != MarketRole.HHDC) {
 			throw new UserException("The provider must have the HHDC role.");
 		}
@@ -139,8 +161,8 @@ public class HhdcContract extends Contract {
 	}
 
 	public MonadUri getUri() throws HttpException {
-		return getOrganization().hhdcContractsInstance().getUri().resolve(
-				getUriId()).append("/");
+		return Chellow.HHDC_CONTRACTS_INSTANCE.getUri().resolve(getUriId())
+				.append("/");
 	}
 
 	public void httpPost(Invocation inv) throws HttpException {

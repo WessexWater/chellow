@@ -45,6 +45,7 @@ import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.xml.transform.Result;
+import javax.xml.transform.Source;
 import javax.xml.transform.stream.StreamResult;
 
 import net.sf.chellow.monad.types.EmailAddress;
@@ -559,6 +560,12 @@ public class Invocation {
 		returnPage(doc, templatePath, templateName);
 	}
 
+	public void sendOk(Document doc, Source templateSource)
+			throws HttpException {
+		res.setStatus(HttpServletResponse.SC_OK);
+		returnPage(doc, templateSource);
+	}
+
 	public void sendOk(Document doc) throws HttpException {
 		String templatePath = req.getPathInfo();
 		if (templatePath == null) {
@@ -682,6 +689,22 @@ public class Invocation {
 			throw new InternalException(e);
 		}
 		Monad.returnStream(doc, templatePath, templateName, result);
+	}
+
+	private void returnPage(Document doc, Source templateSource)
+			throws HttpException {
+		try {
+			Element source = doc.getDocumentElement();
+			source.appendChild(requestXml(doc));
+			source.appendChild(responseXml(doc));
+			getResponse().setContentType("text/html;charset=us-ascii");
+			res.setDateHeader("Date", System.currentTimeMillis());
+			res.setHeader("Cache-Control", "no-cache");
+			Result result = new StreamResult(getResponse().getWriter());
+			Monad.returnStream(doc, templateSource, result);
+		} catch (IOException e) {
+			throw new InternalException(e);
+		}
 	}
 
 	/*

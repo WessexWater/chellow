@@ -39,7 +39,7 @@ import net.sf.chellow.monad.types.UriPathElement;
 import net.sf.chellow.physical.EntityList;
 import net.sf.chellow.physical.HhEndDate;
 import net.sf.chellow.physical.MarketRole;
-import net.sf.chellow.physical.Organization;
+import net.sf.chellow.ui.Chellow;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -56,18 +56,15 @@ public class SupplierContracts extends EntityList {
 		}
 	}
 
-	private Organization organization;
-
-	public SupplierContracts(Organization organization) {
-		this.organization = organization;
+	public SupplierContracts() {
 	}
 
 	public UriPathElement getUrlId() {
 		return URI_ID;
 	}
 
-	public MonadUri getUri() throws InternalException, HttpException {
-		return organization.getUri().resolve(getUrlId()).append("/");
+	public MonadUri getUri() throws HttpException {
+		return Chellow.ROOT_URI.resolve(getUrlId()).append("/");
 	}
 
 	public void httpPost(Invocation inv) throws HttpException {
@@ -79,7 +76,7 @@ public class SupplierContracts extends EntityList {
 			throw new UserException(document());
 		}
 		Provider provider = Provider.getProvider(providerId);
-		SupplierContract contract = organization.insertSupplierContract(
+		SupplierContract contract = SupplierContract.insertSupplierContract(
 				provider, name, HhEndDate.roundDown(startDate), chargeScript);
 		Hiber.commit();
 		inv.sendCreated(document(), contract.getUri());
@@ -91,7 +88,6 @@ public class SupplierContracts extends EntityList {
 		Element source = doc.getDocumentElement();
 		Element contractsElement = toXml(doc);
 		source.appendChild(contractsElement);
-		contractsElement.appendChild(organization.toXml(doc));
 		for (SupplierContract contract : (List<SupplierContract>) Hiber
 				.session()
 				.createQuery(

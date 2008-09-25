@@ -1,10 +1,15 @@
 package net.sf.chellow.ui;
 
+import java.io.StringReader;
+
+import javax.xml.transform.stream.StreamSource;
+
 import net.sf.chellow.monad.DesignerException;
 import net.sf.chellow.monad.Invocation;
 import net.sf.chellow.monad.MethodNotAllowedException;
 import net.sf.chellow.monad.MonadUtils;
 import net.sf.chellow.monad.InternalException;
+import net.sf.chellow.monad.NotFoundException;
 import net.sf.chellow.monad.Urlable;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.XmlDescriber;
@@ -17,7 +22,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
-public class ReportScreenOutput implements Urlable, XmlDescriber {
+public class ReportOutput implements Urlable, XmlDescriber {
 	public static final UriPathElement URI_ID;
 
 	static {
@@ -28,22 +33,22 @@ public class ReportScreenOutput implements Urlable, XmlDescriber {
 		}
 	}
 
-	private ReportScreen reportScreen;
+	private Report report;
 
-	public ReportScreenOutput(ReportScreen reportScreen) throws HttpException {
-		this.reportScreen = reportScreen;
+	public ReportOutput(Report report) throws HttpException {
+		this.report = report;
 	}
 	
-	public ReportScreen getReportScreen() {
-		return reportScreen;
+	public Report getReport() {
+		return report;
 	}
 
 	public Urlable getChild(UriPathElement uriId) throws HttpException {
-		return null;
+		throw new NotFoundException();
 	}
 
 	public MonadUri getUri() throws HttpException {
-		return reportScreen.getUri().resolve(URI_ID).append("/");
+		return report.getUri().resolve(URI_ID).append("/");
 	}
 
 	public void httpGet(Invocation inv) throws HttpException {
@@ -54,10 +59,9 @@ public class ReportScreenOutput implements Urlable, XmlDescriber {
 			Element source = doc.getDocumentElement();
 			Element reportElement = toXml(doc);
 			source.appendChild(reportElement);
-			reportScreen.run(inv, doc);
+			report.run(inv, doc);
 			//Debug.print("Created XML: " + (System.currentTimeMillis() - startMillis));
-			inv.sendOk(doc, reportScreen.getTemplate().getUri().toString(),
-					ReportTemplate.TEMPLATE_FILE_NAME);
+			inv.sendOk(doc, new StreamSource(new StringReader(report.getScript())));
 			//Debug.print("Finished request: " + (System.currentTimeMillis() - startMillis));
 		} catch (HttpException e) {
 			e.setDocument(document());
@@ -68,16 +72,10 @@ public class ReportScreenOutput implements Urlable, XmlDescriber {
 	private Document document() throws HttpException {
 		Document doc = MonadUtils.newSourceDocument();
 		Element source = doc.getDocumentElement();
-        Element outputElement = (Element) toXml(doc);
+        Element outputElement = toXml(doc);
         source.appendChild(outputElement);
-        Element screenElement = (Element) getReportScreen().toXml(doc);
-        outputElement.appendChild(screenElement);
-        Element reportElement = (Element) getReportScreen().getReport().toXml(doc);
-        screenElement.appendChild(reportElement);
-        Element reportsElement = (Element) getReportScreen().getReport().getReports().toXml(doc);
-        reportElement.appendChild(reportsElement);
-        Element organizationElement = (Element) getReportScreen().getReport().getReports().getOrganization().toXml(doc);
-        reportsElement.appendChild(organizationElement);
+        Element reportElement = getReport().toXml(doc);
+        outputElement.appendChild(reportElement);
 		return doc;
 	}
 

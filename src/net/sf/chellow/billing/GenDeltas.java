@@ -24,17 +24,14 @@ package net.sf.chellow.billing;
 
 import net.sf.chellow.monad.DeployerException;
 import net.sf.chellow.monad.DesignerException;
-import net.sf.chellow.monad.Hiber;
-import net.sf.chellow.monad.Invocation;
-import net.sf.chellow.monad.NotFoundException;
-import net.sf.chellow.monad.InternalException;
-import net.sf.chellow.monad.Urlable;
 import net.sf.chellow.monad.HttpException;
+import net.sf.chellow.monad.InternalException;
+import net.sf.chellow.monad.Invocation;
+import net.sf.chellow.monad.Urlable;
 import net.sf.chellow.monad.XmlDescriber;
 import net.sf.chellow.monad.XmlTree;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
-import net.sf.chellow.physical.Organization;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -53,26 +50,13 @@ public class GenDeltas implements Urlable, XmlDescriber {
 		}
 	}
 
-	private Organization organization;
-
-	public GenDeltas(Organization organization) {
-		setOrganization(organization);
-	}
-
-	public Organization getOrganization() {
-		return organization;
-	}
-
-	void setOrganization(Organization organization) {
-		this.organization = organization;
-	}
-
 	public UriPathElement getUrlId() {
 		return URI_ID;
 	}
 
 	public MonadUri getUri() throws InternalException, HttpException {
-		return organization.getUri().resolve(getUrlId()).append("/");
+		// return organization.getUri().resolve(getUrlId()).append("/");
+		return null;
 	}
 
 	public void httpPost(Invocation inv) throws InternalException,
@@ -85,6 +69,7 @@ public class GenDeltas implements Urlable, XmlDescriber {
 
 	public GenDelta getChild(UriPathElement uriId) throws HttpException,
 			InternalException {
+		/*
 		GenDelta genDelta = (GenDelta) Hiber
 				.session()
 				.createQuery(
@@ -95,6 +80,8 @@ public class GenDeltas implements Urlable, XmlDescriber {
 			throw new NotFoundException();
 		}
 		return genDelta;
+		*/
+		return null;
 	}
 
 	public void httpDelete(Invocation inv) throws InternalException,

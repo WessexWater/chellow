@@ -25,7 +25,7 @@ import net.sf.chellow.monad.types.UriPathElement;
 import net.sf.chellow.physical.HhEndDate;
 import net.sf.chellow.physical.Meter;
 import net.sf.chellow.physical.Mpan;
-import net.sf.chellow.physical.Organization;
+import net.sf.chellow.physical.MpanCore;
 import net.sf.chellow.physical.Site;
 import net.sf.chellow.physical.Source;
 import net.sf.chellow.physical.Ssc;
@@ -99,9 +99,7 @@ public class HeaderImportProcess extends Thread implements Urlable,
 
 	public void run() {
 		Element source = (Element) doc.getFirstChild();
-		Organization organization;
 		try {
-			organization = getOrganization();
 			for (String[] values = shredder.getLine(); values != null
 					&& !shouldHalt(); values = shredder.getLine()) {
 				setLineNumber(shredder.lastLineNumber());
@@ -110,7 +108,7 @@ public class HeaderImportProcess extends Thread implements Urlable,
 							"There must be an 'Action' field followed "
 									+ "by a 'Type' field.");
 				}
-				processItem(organization, values);
+				processItem(values);
 				Hiber.close();
 			}
 			if (shouldHalt()) {
@@ -135,7 +133,7 @@ public class HeaderImportProcess extends Thread implements Urlable,
 		}
 	}
 
-	private void processItem(Organization organization, String[] values)
+	private void processItem(String[] values)
 			throws HttpException {
 		String action = values[0].trim().toLowerCase();
 		String type = values[1].trim().toLowerCase();
@@ -160,15 +158,15 @@ public class HeaderImportProcess extends Thread implements Urlable,
 				if (action.equals("insert")) {
 					String name = values[3];
 					csvElement.appendChild(getField("Site name", name));
-					organization.insertSite(code, name);
+					Site.insertSite(code, name);
 				} else {
-					site = organization.getSite(code);
+					site = Site.getSite(code);
 					if (site == null) {
 						throw new UserException(
 								"There is no site with this code.");
 					}
 					if (action.equals("delete")) {
-						organization.deleteSite(site);
+						Site.deleteSite(site);
 					} else if (action.equals("update")) {
 						String newCode = values[3];
 						csvElement.appendChild(getField("New Site Code",
@@ -244,7 +242,7 @@ public class HeaderImportProcess extends Thread implements Urlable,
 					csvElement.appendChild(getField(
 							"Export supplier account reference",
 							exportSupplierAccountReference));
-					Site site = organization.getSite(siteCode);
+					Site site = Site.getSite(siteCode);
 					site.insertSupply(supplyName, meterSerialNumber,
 							importMpanStr, importSscCode,
 							importHhdcContractName, importHhdcAccountReference,
@@ -269,7 +267,7 @@ public class HeaderImportProcess extends Thread implements Urlable,
 					csvElement.appendChild(getField("Source Code", sourceCode));
 					String supplyName = values[4];
 					csvElement.appendChild(getField("Supply Name", supplyName));
-					Supply supply = organization.getMpanCore(
+					Supply supply = MpanCore.getMpanCore(
 							new MpanCoreRaw(mpanCoreStr)).getSupply();
 					supply.update(supplyName.equals(NO_CHANGE) ? supply
 							.getName() : supplyName, sourceCode
@@ -286,7 +284,7 @@ public class HeaderImportProcess extends Thread implements Urlable,
 					csvElement.appendChild(getField("MPAN Core", mpanCoreStr));
 					String dateStr = values[3];
 					csvElement.appendChild(getField("Date", dateStr));
-					Supply supply = organization.getMpanCore(
+					Supply supply = MpanCore.getMpanCore(
 							new MpanCoreRaw(mpanCoreStr)).getSupply();
 					String startDateStr = values[4];
 					csvElement
@@ -440,7 +438,7 @@ public class HeaderImportProcess extends Thread implements Urlable,
 										.getHhdcContract(account.getContract()
 												.getId());
 							} else {
-								importHhdcContract = organization
+								importHhdcContract = HhdcContract
 										.getHhdcContract(importHhdcContractName);
 							}
 							String importHhdcAccountReference = values[15];
@@ -479,11 +477,11 @@ public class HeaderImportProcess extends Thread implements Urlable,
 								throw new UserException(
 										"There isn't an existing import supplier.");
 							}
-							importSupplierContract = organization
+							importSupplierContract = SupplierContract
 									.getSupplierContract(account.getContract()
 											.getId());
 						} else {
-							importSupplierContract = organization
+							importSupplierContract = SupplierContract
 									.getSupplierContract(importContractSupplierName);
 						}
 						String importSupplierAccountReference = values[17];
@@ -612,7 +610,7 @@ public class HeaderImportProcess extends Thread implements Urlable,
 										.getHhdcContract(account.getContract()
 												.getId());
 							} else {
-								exportHhdcContract = organization
+								exportHhdcContract = HhdcContract
 										.getHhdcContract(exportHhdcContractName);
 							}
 							String exportHhdcAccountReference = values[26];
@@ -656,7 +654,7 @@ public class HeaderImportProcess extends Thread implements Urlable,
 									.getSupplierContract(account.getContract()
 											.getId());
 						} else {
-							exportSupplierContract = organization
+							exportSupplierContract = SupplierContract
 									.getSupplierContract(exportContractSupplierName);
 						}
 						String exportSupplierAccountReference = values[28];
@@ -693,7 +691,7 @@ public class HeaderImportProcess extends Thread implements Urlable,
 				String supplierContractName = values[2];
 				csvElement.appendChild(getField("Contract",
 						supplierContractName));
-				SupplierContract supplierContract = organization
+				SupplierContract supplierContract = SupplierContract
 						.getSupplierContract(supplierContractName);
 				String supplierAccountReference = values[3];
 				csvElement.appendChild(getField("Reference",
@@ -719,7 +717,7 @@ public class HeaderImportProcess extends Thread implements Urlable,
 				}
 				String hhdcContractName = values[2];
 				csvElement.appendChild(getField("Contract", hhdcContractName));
-				HhdcContract hhdcContract = organization
+				HhdcContract hhdcContract = HhdcContract
 						.getHhdcContract(hhdcContractName);
 				String hhdcAccountReference = values[3];
 				csvElement.appendChild(getField("Reference",
@@ -772,9 +770,8 @@ public class HeaderImportProcess extends Thread implements Urlable,
 	public void httpGet(Invocation inv) throws HttpException {
 		Document document = (Document) doc.cloneNode(true);
 		Element source = document.getDocumentElement();
-		Element processElement = (Element) toXml(document);
+		Element processElement = toXml(document);
 		source.appendChild(processElement);
-		processElement.appendChild(getOrganization().toXml(document));
 		Hiber.close();
 		inv.sendOk(document);
 	}
@@ -787,7 +784,7 @@ public class HeaderImportProcess extends Thread implements Urlable,
 	public void httpDelete(Invocation inv) throws HttpException {
 	}
 
-	public Node toXml(Document doc) throws HttpException {
+	public Element toXml(Document doc) throws HttpException {
 		Element element = doc.createElement("header-import-process");
 		element.setAttribute("uri", uri.toString());
 		element.setAttribute("id", getUriId().toString());
@@ -807,10 +804,5 @@ public class HeaderImportProcess extends Thread implements Urlable,
 
 	public Node toXml(Document doc, XmlTree tree) throws HttpException {
 		return null;
-	}
-
-	public Organization getOrganization() throws HttpException {
-		return (Organization) Chellow.dereferenceUri(uri.toUri().resolve(
-				"../.."));
 	}
 }

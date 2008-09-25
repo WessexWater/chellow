@@ -1,21 +1,32 @@
 package net.sf.chellow.ui;
 
+import java.io.StringWriter;
+
+import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.Invocation;
 import net.sf.chellow.monad.MethodNotAllowedException;
+import net.sf.chellow.monad.MonadMessage;
 import net.sf.chellow.monad.MonadUtils;
+import net.sf.chellow.monad.NotFoundException;
 import net.sf.chellow.monad.Urlable;
 import net.sf.chellow.monad.UserException;
-import net.sf.chellow.monad.XmlTree;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
 import net.sf.chellow.physical.PersistentEntity;
 
+import org.python.util.PythonInterpreter;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import org.w3c.dom.Node;
 
 public class Report extends PersistentEntity {
+	public static Report getReport(Long id) throws HttpException {
+		Report report = (Report) Hiber.session().get(Report.class, id);
+		if (report == null) {
+			throw new NotFoundException("The report " + id + " can't be found.");
+		}
+		return report;
+	}
 	private String name;
 
 	private String script;
@@ -57,24 +68,52 @@ public class Report extends PersistentEntity {
 	}
 
 	public Urlable getChild(UriPathElement uriId) throws HttpException {
-		if (ReportScreen.URI_ID.equals(uriId)) {
-			return new ReportScreen(this);
-			/*
-		} else if (ReportTemplate.URI_ID.equals(uriId)) {
-//			return reportTemplate;
-		} else if (ReportScript.URI_ID.equals(uriId)) {
-//			return reportScript;
- * 
- */
-		} else if (ReportStream.URI_ID.equals(uriId)) {
-			return new ReportStream(this);
+		if (ReportOutput.URI_ID.equals(uriId)) {
+			return new ReportOutput(this);
+		} else if (ReportXmlOutput.URI_ID.equals(uriId)) {
+			return new ReportXmlOutput(this);
 		} else {
-			return null;
+			throw new NotFoundException();
+		}
+	}
+	
+	public void run(Invocation inv, Document doc) throws HttpException {
+		PythonInterpreter interp = new PythonInterpreter();
+		Element source = doc.getDocumentElement();
+		interp.set("doc", doc);
+		interp.set("source", source);
+		interp.set("inv", inv);
+		StringWriter out = new StringWriter();
+		interp.setOut(out);
+		StringWriter err = new StringWriter();
+		interp.setErr(err);
+		try {
+			interp.exec(script);
+			/*
+		} catch (PyException e) {
+			inv.getResponse().setContentType("text/html");
+			Object obj = e.value.__tojava__(HttpException.class);
+			if (obj instanceof HttpException) {
+				throw (HttpException) obj;
+			} else {
+				throw new UserException(e.toString());
+			}
+			*/
+		} catch (Throwable e) {
+			if (out.toString().length() > 0) {
+				source.appendChild(new MonadMessage(out.toString()).toXml(doc));
+			}
+			if (err.toString().length() > 0) {
+				source.appendChild(new MonadMessage(err.toString()).toXml(doc));
+			}
+			throw new UserException(e.getMessage() + " "
+					+ HttpException.getStackTraceString(e));
 		}
 	}
 
+
 	public MonadUri getUri() throws HttpException {
-		return reportsInstance().getUri().resolve(getId()).append("/");
+		return Chellow.REPORTS_INSTANCE.getUri().resolve(getId()).append("/");
 	}
 
 	public void httpGet(Invocation inv) throws HttpException {
@@ -90,12 +129,7 @@ public class Report extends PersistentEntity {
 		Element source = doc.getDocumentElement();
 		Element reportElement = toXml(doc);
 		source.appendChild(reportElement);
-		reportElement.appendChild(reports.getOrganization().toXml(doc));
 		return doc;
-	}
-
-	public void httpDelete(Invocation inv) throws HttpException {
-		throw new MethodNotAllowedException();
 	}
 
 	public Element toXml(Document doc) throws HttpException {

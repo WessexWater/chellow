@@ -34,7 +34,6 @@ import net.sf.chellow.billing.HhdcContract;
 import net.sf.chellow.billing.SupplierContract;
 import net.sf.chellow.data08.MpanCoreRaw;
 import net.sf.chellow.data08.MpanRaw;
-import net.sf.chellow.monad.Debug;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.InternalException;
@@ -636,12 +635,9 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 		Document doc = MonadUtils.newSourceDocument();
 		Element source = doc.getDocumentElement();
 		Element generationElement = (Element) toXml(doc, new XmlTree(
-				"siteSupplyGenerations", new XmlTree("site", new XmlTree(
-						"organization"))).put("meter").put("supply",
+				"siteSupplyGenerations", new XmlTree("site")).put("meter").put("supply",
 				new XmlTree("source")));
 		source.appendChild(generationElement);
-		source.appendChild(getSiteSupplyGenerations().iterator().next()
-				.getSite().getOrganization().toXml(doc));
 		for (Mpan mpan : mpans) {
 			Element mpanElement = (Element) mpan.toXml(doc, new XmlTree(
 					"mpanCore").put("mpanTop", new XmlTree("mtc").put("llfc"))
@@ -709,7 +705,7 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 				if (!inv.isValid()) {
 					throw new UserException(document());
 				}
-				Site site = supply.getOrganization().getSite(siteCode);
+				Site site = Site.getSite(siteCode);
 				attachSite(site);
 				Hiber.commit();
 				inv.sendOk(document());
@@ -718,7 +714,7 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 				if (!inv.isValid()) {
 					throw new UserException(document());
 				}
-				Site site = supply.getOrganization().getSite(siteId);
+				Site site = Site.getSite(siteId);
 				detachSite(site);
 				Hiber.commit();
 				inv.sendOk(document());
@@ -727,13 +723,11 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 				if (!inv.isValid()) {
 					throw new UserException(document());
 				}
-				Site site = supply.getOrganization().getSite(siteId);
+				Site site = Site.getSite(siteId);
 				setPhysicalLocation(site);
 				Hiber.commit();
 				inv.sendOk(document());
-			} else {
-				Debug.print("got here 445");
-				Organization organization = supply.getOrganization();
+			} else {		
 				MpanRaw importMpanRaw = null;
 				Ssc importSsc = null;
 				Integer importAgreedSupplyCapacity = null;
@@ -787,7 +781,7 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 						String importHhdcContractName = inv
 								.getString("import-hhdc-contract-name");
 						if (importHhdcContractName.length() != 0) {
-							importHhdcContract = organization
+							importHhdcContract = HhdcContract
 									.getHhdcContract(importHhdcContractName);
 							String importHhdcAccountReference = inv
 									.getString("import-hhdc-account-reference");
@@ -797,7 +791,7 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 					}
 					String importSupplierContractName = inv
 							.getString("import-supplier-contract-name");
-					importSupplierContract = organization
+					importSupplierContract = SupplierContract
 							.getSupplierContract(importSupplierContractName);
 					String importSupplierAccountReference = inv
 							.getString("import-supplier-account-reference");
@@ -848,7 +842,7 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 						String exportHhdcContractName = inv
 								.getString("export-hhdc-contract-name");
 						if (exportHhdcContractName.length() != 0) {
-							exportHhdcContract = organization
+							exportHhdcContract = HhdcContract
 									.getHhdcContract(exportHhdcContractName);
 							String exportHhdcAccountReference = inv
 									.getString("export-hhdc-account-reference");
@@ -858,7 +852,7 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 					}
 					String exportSupplierContractName = inv
 							.getString("export-supplier-contract-name");
-					exportSupplierContract = organization
+					exportSupplierContract = SupplierContract
 							.getSupplierContract(exportSupplierContractName);
 					String exportSupplierAccountReference = inv
 							.getString("export-supplier-account-reference");

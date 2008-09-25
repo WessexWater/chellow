@@ -39,7 +39,7 @@ import net.sf.chellow.physical.ContractFrequency;
 import net.sf.chellow.physical.EntityList;
 import net.sf.chellow.physical.HhEndDate;
 import net.sf.chellow.physical.MarketRole;
-import net.sf.chellow.physical.Organization;
+import net.sf.chellow.ui.Chellow;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -56,10 +56,7 @@ public class HhdcContracts extends EntityList {
 		}
 	}
 
-	private Organization organization;
-
-	public HhdcContracts(Organization organization) {
-		this.organization = organization;
+	public HhdcContracts() {
 	}
 
 	public UriPathElement getUrlId() {
@@ -67,7 +64,7 @@ public class HhdcContracts extends EntityList {
 	}
 
 	public MonadUri getUri() throws HttpException {
-		return organization.getUri().resolve(getUrlId()).append("/");
+		return Chellow.ROOT_URI.resolve(getUrlId()).append("/");
 	}
 
 	public void httpPost(Invocation inv) throws HttpException {
@@ -82,7 +79,7 @@ public class HhdcContracts extends EntityList {
 			throw new UserException(document());
 		}
 		Provider provider = Provider.getProvider(providerId);
-		HhdcContract contract = organization.insertHhdcContract(provider, name,
+		HhdcContract contract = HhdcContract.insertHhdcContract(provider, name,
 				HhEndDate.roundDown(startDate), chargeScript, frequency, lag);
 		Hiber.commit();
 		inv.sendCreated(document(), contract.getUri());
@@ -94,12 +91,11 @@ public class HhdcContracts extends EntityList {
 		Element source = doc.getDocumentElement();
 		Element contractsElement = toXml(doc);
 		source.appendChild(contractsElement);
-		contractsElement.appendChild(organization.toXml(doc));
 		for (HhdcContract contract : (List<HhdcContract>) Hiber
 				.session()
 				.createQuery(
-						"from HhdcContract contract where contract.organization = :organization order by contract.name")
-				.setEntity("organization", organization).list()) {
+						"from HhdcContract contract where order by contract.name")
+				.list()) {
 			contractsElement.appendChild(contract.toXml(doc, new XmlTree(
 					"provider")));
 		}
@@ -121,12 +117,10 @@ public class HhdcContracts extends EntityList {
 	}
 
 	public HhdcContract getChild(UriPathElement uriId) throws HttpException {
-		HhdcContract contract = (HhdcContract) Hiber
-				.session()
-				.createQuery(
-						"from HhdcContract contract where contract.organization = :organization and contract.id = :contractId")
-				.setEntity("organization", organization).setLong("contractId",
-						Long.parseLong(uriId.getString())).uniqueResult();
+		HhdcContract contract = (HhdcContract) Hiber.session().createQuery(
+				"from HhdcContract contract where contract.id = :contractId")
+				.setLong("contractId", Long.parseLong(uriId.getString()))
+				.uniqueResult();
 		if (contract == null) {
 			throw new NotFoundException();
 		}

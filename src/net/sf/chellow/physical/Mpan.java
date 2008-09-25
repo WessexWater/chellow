@@ -23,8 +23,6 @@
 package net.sf.chellow.physical;
 
 import java.util.Date;
-import java.util.Set;
-
 import net.sf.chellow.billing.Account;
 import net.sf.chellow.data08.MpanRaw;
 import net.sf.chellow.monad.Hiber;
@@ -262,19 +260,6 @@ public class Mpan extends PersistentEntity {
 		if (supplierAccount == null) {
 			throw new UserException("An MPAN must have a supplier account.");
 		}
-		Set<SiteSupplyGeneration> siteSupplyGenerations = getSupplyGeneration()
-				.getSiteSupplyGenerations();
-		if (siteSupplyGenerations != null
-				&& !siteSupplyGenerations.isEmpty()
-				&& !siteSupplyGenerations
-						.iterator()
-						.next()
-						.getSite()
-						.getOrganization()
-						.equals(supplierAccount.getContract().getOrganization())) {
-			throw new UserException(
-					"The supplier account must be attached to the same organization as the MPAN.");
-		}
 		setSupplierAccount(supplierAccount);
 		setHasImportKwh(hasImportKwh);
 		setHasImportKvarh(hasImportKvarh);
@@ -288,12 +273,10 @@ public class Mpan extends PersistentEntity {
 			boolean hasImportKvarh, boolean hasExportKwh,
 			boolean hasExportKvarh, int agreedSupplyCapacity)
 			throws HttpException {
-		Organization organization = supplyGeneration.getSupply()
-				.getOrganization();
 		MpanTop mpanTop = mpanRaw.getMpanTop(ssc, supplyGeneration
 				.getFinishDate() == null ? new Date() : supplyGeneration
 				.getFinishDate().getDate());
-		MpanCore mpanCore = mpanRaw.getMpanCore(organization);
+		MpanCore mpanCore = mpanRaw.getMpanCore();
 		if (mpanCore == null) {
 			mpanCore = supplyGeneration.getSupply().addMpanCore(
 					mpanRaw.getMpanCoreRaw());

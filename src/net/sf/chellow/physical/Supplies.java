@@ -33,6 +33,7 @@ import net.sf.chellow.monad.MonadUtils;
 import net.sf.chellow.monad.XmlTree;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
+import net.sf.chellow.ui.Chellow;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -50,22 +51,11 @@ public class Supplies extends EntityList {
 		}
 	}
 
-	private Organization organization;
-
-	Supplies(Organization organization) {
-		setOrganization(organization);
-	}
-
-	public Organization getOrganization() {
-		return organization;
-	}
-
-	protected void setOrganization(Organization organization) {
-		this.organization = organization;
+	public Supplies() {
 	}
 
 	public MonadUri getUrlPath() throws HttpException {
-		return organization.getUri().resolve(getUriId()).append("/");
+		return Chellow.ROOT_URI.resolve(getUriId()).append("/");
 	}
 
 	public UriPathElement getUriId() {
@@ -76,15 +66,14 @@ public class Supplies extends EntityList {
 	public void httpGet(Invocation inv) throws HttpException {
 		Document doc = MonadUtils.newSourceDocument();
 		Element source = doc.getDocumentElement();
-		source.appendChild(organization.toXml(doc));
 		if (inv.hasParameter("search-pattern")) {
 			MpanCoreTerm pattern = inv.getValidatable(MpanCoreTerm.class,
 					"search-pattern");
 			for (Object[] array : (List<Object[]>) Hiber
 					.session()
 					.createQuery(
-							"select distinct mpanCore, mpanCore.dso.code, mpanCore.uniquePart, mpanCore.checkDigit from MpanCore mpanCore join mpanCore.supply.generations supplyGeneration join supplyGeneration.siteSupplyGenerations siteSupplyGeneration where siteSupplyGeneration.site.organization = :organization and lower(mpanCore.dso.code || mpanCore.uniquePart || mpanCore.checkDigit) like lower(:term) order by mpanCore.dso.code, mpanCore.uniquePart, mpanCore.checkDigit")
-					.setEntity("organization", organization).setString("term",
+							"select distinct mpanCore, mpanCore.dso.code, mpanCore.uniquePart, mpanCore.checkDigit from MpanCore mpanCore where lower(mpanCore.dso.code || mpanCore.uniquePart || mpanCore.checkDigit) like lower(:term) order by mpanCore.dso.code, mpanCore.uniquePart, mpanCore.checkDigit")
+					.setString("term",
 							"%" + pattern.toString() + "%").setMaxResults(50)
 					.list()) {
 				source.appendChild(((MpanCore) array[0]).toXml(doc, new XmlTree(
@@ -113,11 +102,11 @@ public class Supplies extends EntityList {
 	 * PAGE_SIZE).setMaxResults(PAGE_SIZE).list(); }
 	 */
 	public Supply getChild(UriPathElement uriId) throws HttpException {
-		return organization.getSupply(Long.parseLong(uriId.getString()));
+		return Supply.getSupply(Long.parseLong(uriId.getString()));
 	}
 
 	public MonadUri getUri() throws HttpException {
-		return organization.getUri().resolve(getUriId());
+		return Chellow.ROOT_URI.resolve(getUriId());
 	}
 
 	public Element toXml(Document doc) throws HttpException {

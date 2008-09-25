@@ -3,20 +3,16 @@ package net.sf.chellow.ui;
 import java.util.HashMap;
 import java.util.Map;
 
-import net.sf.chellow.monad.DeployerException;
-import net.sf.chellow.monad.DesignerException;
+import net.sf.chellow.monad.HttpException;
+import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Invocation;
 import net.sf.chellow.monad.MonadUtils;
-import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Urlable;
-import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.UserException;
 import net.sf.chellow.monad.XmlDescriber;
 import net.sf.chellow.monad.XmlTree;
-
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
-import net.sf.chellow.physical.Organization;
 
 import org.apache.commons.fileupload.FileItem;
 import org.w3c.dom.Document;
@@ -28,7 +24,7 @@ public class HeaderImportProcesses implements Urlable, XmlDescriber {
 
 	private static long processSerial = 0;
 
-	public static final Map<Long, Map<Long, HeaderImportProcess>> processes = new HashMap<Long, Map<Long, HeaderImportProcess>>();
+	public static final Map<Long, HeaderImportProcess> processes = new HashMap<Long, HeaderImportProcess>();
 
 	static {
 		try {
@@ -38,38 +34,29 @@ public class HeaderImportProcesses implements Urlable, XmlDescriber {
 		}
 	}
 
-	private Organization organization;
-
-	public HeaderImportProcesses(Organization organization) {
-		this.organization = organization;
+	public HeaderImportProcesses() {
 	}
 
 	public UriPathElement getUriId() {
 		return URI_ID;
 	}
 
-	public MonadUri getUri() throws InternalException, HttpException {
-		return organization.getUri().resolve(getUriId()).append("/");
+	public MonadUri getUri() throws HttpException {
+		return Chellow.HEADER_IMPORT_PROCESSES.getUri().resolve(getUriId()).append("/");
 	}
 
-	public void httpGet(Invocation inv) throws DesignerException,
-			InternalException, HttpException, DeployerException {
+	public void httpGet(Invocation inv) throws HttpException {
 		inv.sendOk(document());
 	}
 
-	private Document document() throws InternalException, HttpException {
+	private Document document() throws HttpException {
 		Document doc = MonadUtils.newSourceDocument();
-		Element source = (Element) doc.getFirstChild();
-		Element processesElement = (Element) toXml(doc);
+		Element source = doc.getDocumentElement();
+		Element processesElement = toXml(doc);
 		source.appendChild(processesElement);
-		Map<Long, HeaderImportProcess> orgProcesses = processes
-				.get(organization.getId());
-		if (orgProcesses != null) {
-			for (HeaderImportProcess process : orgProcesses.values()) {
+			for (HeaderImportProcess process : processes.values()) {
 				processesElement.appendChild(process.toXml(doc));
 			}
-		}
-		processesElement.appendChild(organization.toXml(doc));
 		return doc;
 	}
 
@@ -85,13 +72,7 @@ public class HeaderImportProcesses implements Urlable, XmlDescriber {
 			process = new HeaderImportProcess(getUri().resolve(
 					new UriPathElement(Long.toString(processId))).append("/"),
 					fileItem);
-			Map<Long, HeaderImportProcess> orgProcesses = processes
-					.get(organization.getId());
-			if (orgProcesses == null) {
-				orgProcesses = new HashMap<Long, HeaderImportProcess>();
-				processes.put(organization.getId(), orgProcesses);
-			}
-			orgProcesses.put(processId, process);
+			processes.put(processId, process);
 		} catch (HttpException e) {
 			e.setDocument(document());
 			throw e;
@@ -100,23 +81,11 @@ public class HeaderImportProcesses implements Urlable, XmlDescriber {
 		inv.sendCreated(document(), process.getUri());
 	}
 
-	public Urlable getChild(UriPathElement urlId) throws InternalException,
-			HttpException {
-		Map<Long, HeaderImportProcess> processMap = processes.get(organization
-				.getId());
-		if (processMap == null) {
-			return null;
-		}
-		return processMap.get(Long.parseLong(urlId.toString()));
+	public Urlable getChild(UriPathElement urlId) throws HttpException {
+		return processes.get(Long.parseLong(urlId.toString()));
 	}
 
-	public void httpDelete(Invocation inv) throws InternalException,
-			DesignerException, HttpException, DeployerException {
-		// TODO Auto-generated method stub
-
-	}
-
-	public Node toXml(Document doc) throws InternalException, HttpException {
+	public Element toXml(Document doc) throws HttpException {
 		Element element = doc.createElement("header-import-processes");
 		return element;
 	}
@@ -125,5 +94,11 @@ public class HeaderImportProcesses implements Urlable, XmlDescriber {
 			HttpException {
 		// TODO Auto-generated method stub
 		return null;
+	}
+
+	@Override
+	public void httpDelete(Invocation inv) throws HttpException {
+		// TODO Auto-generated method stub
+		
 	}
 }

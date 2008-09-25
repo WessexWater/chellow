@@ -41,7 +41,6 @@ import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
 import net.sf.chellow.physical.HhEndDate;
 import net.sf.chellow.physical.MpanCore;
-import net.sf.chellow.physical.Organization;
 import net.sf.chellow.physical.PersistentEntity;
 import net.sf.chellow.physical.Supply;
 
@@ -70,8 +69,6 @@ public class GenDelta extends PersistentEntity implements Urlable {
 		}
 	}
 
-	private Organization organization;
-
 	private Supply supply;
 
 	private HhEndDate startDate;
@@ -81,18 +78,9 @@ public class GenDelta extends PersistentEntity implements Urlable {
 	public GenDelta() {
 	}
 
-	public GenDelta(Organization organization, Supply supply, HhEndDate startDate,
+	public GenDelta(Supply supply, HhEndDate startDate,
 			int kwhPerMonth) {
-		setOrganization(organization);
 		update(supply, startDate, kwhPerMonth);
-	}
-
-	public Organization getOrganization() {
-		return organization;
-	}
-
-	public void setOrganization(Organization organization) {
-		this.organization = organization;
 	}
 
 	public Supply getSupply() {
@@ -143,7 +131,7 @@ public class GenDelta extends PersistentEntity implements Urlable {
 			throw new UserException(document());
 		}
 		try {
-			MpanCore mpanCore = organization.getMpanCore(new MpanCoreRaw(mpanCoreStr));
+			MpanCore mpanCore = MpanCore.getMpanCore(new MpanCoreRaw(mpanCoreStr));
 			update(mpanCore.getSupply(), HhEndDate
 					.roundUp(date), kwhPerMonth);
 		} catch (HttpException e) {
@@ -170,8 +158,9 @@ public class GenDelta extends PersistentEntity implements Urlable {
 	}
 
 	public MonadUri getUri() throws InternalException, HttpException {
-		return organization.genDeltasInstance().getUri().resolve(getUriId())
-				.append("/");
+		//return organization.genDeltasInstance().getUri().resolve(getUriId())
+		//		.append("/");
+		return null;
 	}
 
 	public Urlable getChild(UriPathElement uriId) throws InternalException,
