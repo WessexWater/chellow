@@ -1,8 +1,11 @@
 package net.sf.chellow.hhimport.stark;
 
+import java.io.IOException;
+import java.io.StringReader;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.Map.Entry;
@@ -13,7 +16,6 @@ import net.sf.chellow.billing.HhdcContract;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.HttpException;
-import net.sf.chellow.monad.types.MonadUri;
 
 public class StarkAutomaticHhDataImporters extends TimerTask {
 	private static StarkAutomaticHhDataImporters importersInstance;
@@ -44,18 +46,25 @@ public class StarkAutomaticHhDataImporters extends TimerTask {
 		return programmerException;
 	}
 
-	public StarkAutomaticHhDataImporter findImporter(HhdcContract service)
-			throws InternalException, HttpException {
-		MonadUri importerUri = service.getUri().resolve(
-				StarkAutomaticHhDataImporter.URI_ID);
+	public StarkAutomaticHhDataImporter findImporter(HhdcContract contract)
+			throws HttpException {
+		Properties props = new Properties();
 		StarkAutomaticHhDataImporter importer = null;
-		if (StarkAutomaticHhDataImporter.importerExists(importerUri)) {
-			importer = importers.get(service.getId());
-			if (importer == null) {
+
+		try {
+			props.load(new StringReader(contract.getImporterProperties()));
+		} catch (IOException e) {
+			throw new InternalException(e);
+		}
+		if (props.getProperty("importer.name").equals(
+				"StarkAutomaticHhDataImporter")) {
+			importer = importers.get(contract.getId());
+			if (importer == null
+					|| !importer.getPropertiesString().equals(
+							contract.getImporterProperties())) {
 				try {
-					importer = new StarkAutomaticHhDataImporter(service
-							.getId());
-					importers.put(service.getId(), importer);
+					importer = new StarkAutomaticHhDataImporter(contract);
+					importers.put(contract.getId(), importer);
 				} catch (HttpException e) {
 					logger.logp(Level.SEVERE, "StarkAutomaticHhDataImporter",
 							"run",

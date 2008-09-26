@@ -30,7 +30,6 @@ import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Invocation;
 import net.sf.chellow.monad.MethodNotAllowedException;
 import net.sf.chellow.monad.NotFoundException;
-import net.sf.chellow.monad.UserException;
 import net.sf.chellow.monad.types.MonadUri;
 
 import org.w3c.dom.Document;

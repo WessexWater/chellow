@@ -131,18 +131,9 @@ public class Reports extends EntityList {
 		if (inv.hasParameter("has-template")) { 
 		template = inv.getString("template");
 		}
-		
-		/*
-		 * MonadString name = inv.getMonadString("name"); Document doc =
-		 * MonadUtilsUI.newSourceDocument();
-		 * 
-		 * if (!inv.isValid()) { inv.sendInvalidParameter(doc); } Role role =
-		 * Role.insertRole(name); User user = inv.getUser();
-		 * user.userRole(user).insertPermission(role.getUri().toString(), new
-		 * Invocation.HttpMethod[] { Invocation.HttpMethod.GET,
-		 * Invocation.HttpMethod.POST }); Hiber.close();
-		 * inv.sendCreated(role.getUri());
-		 */
+		Report report = Report.insertReport(name, script, template);
+		Hiber.commit();
+		inv.sendCreated(report.getUri());
 	}
 
 	public Urlable getChild(UriPathElement uriId) throws HttpException {

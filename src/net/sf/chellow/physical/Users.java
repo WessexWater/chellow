@@ -24,6 +24,7 @@ package net.sf.chellow.physical;
 
 import java.util.List;
 
+import net.sf.chellow.billing.Provider;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.InternalException;
@@ -66,10 +67,18 @@ public class Users implements Urlable, XmlDescriber {
 	public void httpPost(Invocation inv) throws HttpException {
 		EmailAddress emailAddress = inv.getEmailAddress("email-address");
 		String password = inv.getString("password");
+		Integer userRole = inv.getInteger("role");
+		String participantCode = inv.getString("participant-code");
+		Character roleCode = inv.getCharacter("role-code");
+
 		if (!inv.isValid()) {
 			throw new UserException();
 		}
-		User user = User.insertUser(inv.getUser(), emailAddress, password);
+		Provider provider = null;
+		if (userRole == User.PROVIDER_VIEWER) {
+			provider = Provider.getProvider(participantCode, roleCode);
+		}
+		User user = User.insertUser(emailAddress, password, userRole, provider);
 		Hiber.commit();
 		inv.sendCreated(user.getUri());
 	}

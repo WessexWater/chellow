@@ -23,15 +23,11 @@
 package net.sf.chellow.physical;
 
 import java.io.UnsupportedEncodingException;
-import java.net.URI;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 
+import net.sf.chellow.billing.Provider;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.InternalException;
@@ -41,7 +37,6 @@ import net.sf.chellow.monad.NotFoundException;
 import net.sf.chellow.monad.Urlable;
 import net.sf.chellow.monad.UserException;
 import net.sf.chellow.monad.XmlTree;
-import net.sf.chellow.monad.Invocation.HttpMethod;
 import net.sf.chellow.monad.types.EmailAddress;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
@@ -55,6 +50,9 @@ import com.Ostermiller.util.Base64;
 
 public class User extends PersistentEntity {
 	public static final UriPathElement USERS_URI_ID;
+	public static final int EDITOR = 0;
+	public static final int ORG_VIEWER = 1;
+	public static final int PROVIDER_VIEWER = 2;
 
 	static {
 		try {
@@ -78,26 +76,13 @@ public class User extends PersistentEntity {
 				.uniqueResult();
 	}
 
-	static public User insertUser(User sessionUser, EmailAddress emailAddress,
-			String password) throws HttpException {
+	static public User insertUser(EmailAddress emailAddress,
+			String password, int role, Provider provider) throws HttpException {
 		User user = null;
 		try {
-			user = new User(emailAddress, password);
+			user = new User(emailAddress, password, role, provider);
 			Hiber.session().save(user);
 			Hiber.flush();
-			Role userRole = Role
-					.insertRole(sessionUser, "user-" + user.getId());
-			userRole.insertPermission(sessionUser, userRole.getUri(), Arrays
-					.asList(Invocation.HttpMethod.GET));
-			user.addRole(sessionUser, userRole);
-			user.addRole(sessionUser, Role.find("basic-user"));
-			if (sessionUser != null) {
-				sessionUser.getUserRole().insertPermission(
-						null,
-						user.getUri(),
-						Arrays.asList(Invocation.HttpMethod.GET,
-								Invocation.HttpMethod.POST));
-			}
 		} catch (ConstraintViolationException e) {
 			SQLException sqle = e.getSQLException();
 			if (sqle != null) {
@@ -137,12 +122,16 @@ public class User extends PersistentEntity {
 
 	private String passwordDigest;
 
-	private Set<Role> roles;
+	private int role;
+	
+	private Provider provider;
+	
+	//private Set<Role> roles;
 
 	public User() {
 	}
 
-	public User(EmailAddress emailAddress, String password)
+	public User(EmailAddress emailAddress, String password, int role, Provider provider)
 			throws HttpException {
 		update(emailAddress, password);
 	}
@@ -173,12 +162,20 @@ public class User extends PersistentEntity {
 		this.emailAddress = emailAddress;
 	}
 
-	public Set<Role> getRoles() {
-		return roles;
+	public int getRole() {
+		return role;
 	}
 
-	protected void setRoles(Set<Role> roles) {
-		this.roles = roles;
+	protected void setRole(int role) {
+		this.role = role;
+	}
+	
+	public Provider getProvider() {
+		return provider;
+	}
+	
+	void setProvider(Provider provider) {
+		this.provider = provider;
 	}
 
 	public boolean equals(Object object) {
@@ -235,12 +232,6 @@ public class User extends PersistentEntity {
 			Hiber.session().delete(this);
 			Hiber.close();
 			inv.sendSeeOther(Chellow.USERS_INSTANCE.getUri());
-		} else if (inv.hasParameter("role-id")) {
-			Long roleId = inv.getLong("role-id");
-			Role role = Role.getRole(roleId);
-			addRole(inv.getUser(), role);
-			Hiber.close();
-			inv.sendSeeOther(getUri());
 		} else if (inv.hasParameter("current-password")) {
 			String currentPassword = inv.getString("current-password");
 			String newPassword = inv.getString("new-password");
@@ -261,43 +252,6 @@ public class User extends PersistentEntity {
 		} else {
 			throw new UserException(
 					"I can't really see what you're trying to do.");
-		}
-	}
-
-	public void addRole(User sessionUser, Role role) throws HttpException {
-		if (sessionUser != null) {
-			for (Permission permission : role.getPermissions()) {
-				sessionUser.methodsAllowed(permission.getUriPattern(),
-						permission.getMethods());
-			}
-		}
-		if (roles == null) {
-			roles = new HashSet<Role>();
-		}
-		roles.add(role);
-		Hiber.flush();
-	}
-
-	public Role getUserRole() throws HttpException {
-		return Role.find("user-" + getId());
-	}
-
-	public boolean methodAllowed(URI uri, HttpMethod method) {
-		for (Role role : getRoles()) {
-			if (role.methodAllowed(uri, method)) {
-				return true;
-			}
-		}
-		return false;
-	}
-
-	public void methodsAllowed(MonadUri uriPattern,
-			List<Invocation.HttpMethod> methods) throws HttpException {
-		for (Invocation.HttpMethod method : methods) {
-			if (!methodAllowed(uriPattern.toUri(), method)) {
-				throw new UserException(
-						"You can't assign greater permissions that you have.");
-			}
 		}
 	}
 }

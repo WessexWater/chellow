@@ -1,7 +1,5 @@
 package net.sf.chellow.ui;
 
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.Properties;
 import java.util.logging.Level;
 
@@ -13,9 +11,9 @@ import net.sf.chellow.billing.Dsos;
 import net.sf.chellow.billing.HhdcContracts;
 import net.sf.chellow.billing.MopContracts;
 import net.sf.chellow.billing.NonCoreServices;
+import net.sf.chellow.billing.Provider;
 import net.sf.chellow.billing.Providers;
 import net.sf.chellow.billing.SupplierContracts;
-import net.sf.chellow.monad.BadRequestException;
 import net.sf.chellow.monad.ForbiddenException;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.Invocation;
@@ -27,6 +25,7 @@ import net.sf.chellow.monad.Urlable;
 import net.sf.chellow.monad.Invocation.HttpMethod;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
+import net.sf.chellow.physical.MarketRole;
 import net.sf.chellow.physical.MarketRoles;
 import net.sf.chellow.physical.MeterPaymentTypes;
 import net.sf.chellow.physical.MeterTypes;
@@ -34,7 +33,6 @@ import net.sf.chellow.physical.Mtcs;
 import net.sf.chellow.physical.Participants;
 import net.sf.chellow.physical.Pcs;
 import net.sf.chellow.physical.ReadTypes;
-import net.sf.chellow.physical.Roles;
 import net.sf.chellow.physical.Sites;
 import net.sf.chellow.physical.Sources;
 import net.sf.chellow.physical.Sscs;
@@ -46,10 +44,9 @@ import net.sf.chellow.physical.Users;
 public class Chellow extends Monad implements Urlable {
 	private static final long serialVersionUID = 1L;
 
-	static private final HttpMethod[] ALLOWED_METHODS = { HttpMethod.GET };
+	// static private final HttpMethod[] ALLOWED_METHODS = { HttpMethod.GET };
 
 	static public final MonadUri ROOT_URI;
-	static public final Roles ROLES_INSTANCE = new Roles();
 
 	static public final Sources SOURCES_INSTANCE = new Sources();
 
@@ -78,8 +75,6 @@ public class Chellow extends Monad implements Urlable {
 	static public final Supplies SUPPLIES_INSTANCE = new Supplies();
 	static public final Sites SITES_INSTANCE = new Sites();
 	static public final HeaderImportProcesses HEADER_IMPORT_PROCESSES = new HeaderImportProcesses();
-
-
 
 	static {
 		try {
@@ -127,27 +122,39 @@ public class Chellow extends Monad implements Urlable {
 		return "Chellow electricity billing and reporting.";
 	}
 
-	private boolean requestAllowed(User user, Invocation inv)
-			throws HttpException {
-		try {
-			return user.methodAllowed(new URI(inv.getRequest().getPathInfo()),
-					inv.getMethod());
-		} catch (URISyntaxException e) {
-			throw new BadRequestException();
-		}
-	}
-
 	protected void checkPermissions(Invocation inv) throws HttpException {
-		User user = ImplicitUserSource.getUser(inv);
-		if (requestAllowed(user, inv)) {
-			return;
+		User user = inv.getUser();
+		if (user == null) {
+			user = ImplicitUserSource.getUser(inv);
 		}
-		user = inv.getUser();
 		if (user == null) {
 			throw new UnauthorizedException();
 		}
-		if (requestAllowed(user, inv)) {
+		int role = user.getRole();
+		HttpMethod method = inv.getMethod();
+		String pathInfo = inv.getRequest().getPathInfo();
+		if (role == User.ORG_VIEWER) {
+			if (method.equals(HttpMethod.GET) || method.equals(HttpMethod.HEAD)) {
+				return;
+			}
+		} else if (role == User.EDITOR) {
 			return;
+		} else if (role == User.PROVIDER_VIEWER) {
+			if (method.equals(HttpMethod.GET) || method.equals(HttpMethod.HEAD)) {
+				Provider provider = user.getProvider();
+				char marketRoleCode = provider.getRole().getCode();
+				if (marketRoleCode == MarketRole.HHDC) {
+					if (pathInfo.startsWith("/hhdc-contracts/"
+							+ provider.getId())) {
+						return;
+					}
+				} else if (marketRoleCode == MarketRole.SUPPLIER) {
+					if (pathInfo.startsWith("/supplier-contracts/"
+							+ provider.getId())) {
+						return;
+					}
+				}
+			}
 		}
 		throw new ForbiddenException();
 	}
@@ -157,7 +164,7 @@ public class Chellow extends Monad implements Urlable {
 	}
 
 	public void httpPost(Invocation inv) throws HttpException {
-		inv.sendMethodNotAllowed(ALLOWED_METHODS);
+		throw new MethodNotAllowedException();
 	}
 
 	public Urlable getChild(UriPathElement uriId) throws HttpException {
@@ -165,8 +172,6 @@ public class Chellow extends Monad implements Urlable {
 			return SOURCES_INSTANCE;
 		} else if (Users.URI_ID.equals(uriId)) {
 			return USERS_INSTANCE;
-		} else if (Roles.URI_ID.equals(uriId)) {
-			return ROLES_INSTANCE;
 		} else if (NonCoreServices.URI_ID.equals(uriId)) {
 			return NON_CORE_SERVICES_INSTANCE;
 		} else if (Pcs.URI_ID.equals(uriId)) {

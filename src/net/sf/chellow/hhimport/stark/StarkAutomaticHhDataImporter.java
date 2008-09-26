@@ -2,14 +2,19 @@ package net.sf.chellow.hhimport.stark;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.StringReader;
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.List;
+import java.util.Properties;
 import java.util.logging.Level;
 
 import net.sf.chellow.billing.Contract;
+import net.sf.chellow.billing.HhdcContract;
 import net.sf.chellow.hhimport.HhDataImportProcess;
 import net.sf.chellow.monad.DeployerException;
 import net.sf.chellow.monad.DesignerException;
@@ -60,40 +65,91 @@ public class StarkAutomaticHhDataImporter implements Urlable, XmlDescriber {
 
 	private Long contractId;
 
-	public StarkAutomaticHhDataImporter(Long contractId) throws HttpException,
-			InternalException {
-		this.contractId = contractId;
+	private Properties properties;
+
+	private Properties state;
+
+	public StarkAutomaticHhDataImporter(HhdcContract contract)
+			throws HttpException {
+		contractId = contract.getId();
+	}
+
+	public String getPropertiesString() throws InternalException {
+		StringWriter sw = new StringWriter();
+		try {
+			properties.store(sw, null);
+		} catch (IOException e) {
+			throw new InternalException(e);
+		}
+		return sw.toString();
 	}
 
 	private void log(String message) throws InternalException, HttpException {
-		messages
-				.add(new MonadMessage(new MonadDate().toString() + ": " + message));
+		messages.add(new MonadMessage(new MonadDate().toString() + ": "
+				+ message));
 		if (messages.size() > 200) {
 			messages.remove(0);
 		}
 	}
 
+	private String getProperty(String name) throws HttpException {
+		String value = properties.getProperty(name);
+		if (value == null) {
+			throw new UserException("The property '" + name
+					+ "' is required, but could not be found.");
+		}
+		return value;
+	}
+
+	private String getPropertyNameLastImportDate(int directory) {
+		return "lastImportDate" + directory;
+	}
+
+	private String getPropertyNameLastImportName(int directory) {
+		return "lastImportName" + directory;
+	}
+
 	public void run() {
 		FTPClient ftp = null;
 		try {
-			StarkHhDownloaderEtcProperties etcProperties = new StarkHhDownloaderEtcProperties(
-					getUri());
-			StarkHhDownloaderVarProperties varProperties = new StarkHhDownloaderVarProperties(
-					getUri());
+			HhdcContract contract = HhdcContract.getHhdcContract(contractId);
+			properties = new Properties();
+			state = new Properties();
+			try {
+				properties.load(new StringReader(contract
+						.getImporterProperties()));
+				state.load(new StringReader(contract.getImporterState()));
+			} catch (IOException e) {
+				throw new InternalException(e);
+			}
+			String hostName = getProperty("hostname");
+			String userName = getProperty("username");
+			String password = getProperty("password");
+			List<String> directories = new ArrayList<String>();
+			String directory = null;
+			for (int i = 0; (directory = properties
+					.getProperty("directory" + i)) != null; i++) {
+				directories.add(directory);
+			}
+
+			// StarkHhDownloaderEtcProperties etcProperties = new
+			// StarkHhDownloaderEtcProperties(
+			// getUri());
+			// StarkHhDownloaderVarProperties varProperties = new
+			// StarkHhDownloaderVarProperties(
+			// getUri());
 			ftp = new FTPClient();
 			int reply;
-			ftp.connect(etcProperties.getHostname());
-			log("Connecting to ftp server at " + etcProperties.getHostname()
-					+ ".");
+			ftp.connect(hostName);
+			log("Connecting to ftp server at " + hostName + ".");
 			log("Server replied with '" + ftp.getReplyString() + "'.");
 			reply = ftp.getReplyCode();
 			if (!FTPReply.isPositiveCompletion(reply)) {
 				throw new UserException("FTP server refused connection.");
 			}
 			log("Connected to server, now logging in.");
-			ftp.login(etcProperties.getUsername(), etcProperties.getPassword());
+			ftp.login(userName, password);
 			log("Server replied with '" + ftp.getReplyString() + "'.");
-			List<String> directories = etcProperties.getDirectories();
 			for (int i = 0; i < directories.size(); i++) {
 				log("Checking the directory '" + directories.get(i) + "'.");
 				boolean found = false;
@@ -110,24 +166,21 @@ public class StarkAutomaticHhDataImporter implements Urlable, XmlDescriber {
 						}
 					}
 				});
+				String lastImportDateStr = getPropertyNameLastImportDate(i);
+				Date lastImportDate = null;
+				if (lastImportDateStr != null
+						&& lastImportDateStr.length() != 0) {
+					lastImportDate = new MonadDate(lastImportDateStr).getDate();
+				}
+				String lastImportName = getProperty(getPropertyNameLastImportName(i));
 				for (FTPFile file : files) {
 					if (file.getType() == FTPFile.FILE_TYPE
-							&& (varProperties.getLastImportDate(i) == null ? true
-									: (file.getTimestamp().getTime().equals(
-											varProperties.getLastImportDate(i)
-													.getDate()) ? file
-											.getName()
-											.compareTo(
-													varProperties
-															.getLastImportName(i)) < 0
-											: file
-													.getTimestamp()
-													.getTime()
-													.after(
-															varProperties
-																	.getLastImportDate(
-																			i)
-																	.getDate())))) {
+							&& (lastImportDate == null ? true : (file
+									.getTimestamp().getTime().equals(
+											lastImportDate) ? file.getName()
+									.compareTo(lastImportName) < 0 : file
+									.getTimestamp().getTime().after(
+											lastImportDate)))) {
 						String fileName = directories.get(i) + "\\"
 								+ file.getName();
 						if (file.getSize() == 0) {
@@ -138,7 +191,8 @@ public class StarkAutomaticHhDataImporter implements Urlable, XmlDescriber {
 							InputStream is = ftp.retrieveFileStream(fileName);
 							if (is == null) {
 								reply = ftp.getReplyCode();
-								throw new UserException("Can't download the file '"
+								throw new UserException(
+										"Can't download the file '"
 												+ file.getName()
 												+ "', server says: " + reply
 												+ ".");
@@ -159,13 +213,14 @@ public class StarkAutomaticHhDataImporter implements Urlable, XmlDescriber {
 							}
 						}
 						if (!ftp.completePendingCommand()) {
-							throw new OkException("Couldn't complete ftp transaction: "
+							throw new OkException(
+									"Couldn't complete ftp transaction: "
 											+ ftp.getReplyString());
 						}
-						varProperties.setLastImportDate(i, new MonadDate(file
-								.getTimestamp().getTime()));
-						varProperties.setLastImportName(i, file.getName());
-						found = true;
+						state.setProperty(getPropertyNameLastImportDate(i),
+								new MonadDate(lastImportDate).toString());
+						state.setProperty(getPropertyNameLastImportName(i),
+								file.getName());
 					}
 				}
 				if (!found) {
@@ -268,13 +323,14 @@ public class StarkAutomaticHhDataImporter implements Urlable, XmlDescriber {
 		Element source = doc.getDocumentElement();
 		Element importerElement = (Element) toXml(doc);
 		source.appendChild(importerElement);
-		importerElement.appendChild(getContract().toXml(
-				doc, new XmlTree("provider", new XmlTree("organization"))));
+		importerElement.appendChild(getContract().toXml(doc,
+				new XmlTree("provider", new XmlTree("organization"))));
 		for (MonadMessage message : getLog()) {
 			importerElement.appendChild(message.toXml(doc));
 		}
 		if (hhImporter != null) {
-			importerElement.appendChild(new MonadMessage(hhImporter.status()).toXml(doc));
+			importerElement.appendChild(new MonadMessage(hhImporter.status())
+					.toXml(doc));
 		}
 		inv.sendOk(doc);
 	}

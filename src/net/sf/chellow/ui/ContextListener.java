@@ -1,12 +1,9 @@
 package net.sf.chellow.ui;
 
 import java.sql.Connection;
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Properties;
 import java.util.logging.FileHandler;
 import java.util.logging.Level;
@@ -25,7 +22,6 @@ import net.sf.chellow.monad.DeployerException;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.InternalException;
-import net.sf.chellow.monad.Invocation;
 import net.sf.chellow.monad.Monad;
 import net.sf.chellow.monad.MonadContextParameters;
 import net.sf.chellow.monad.MonadFormatter;
@@ -38,14 +34,13 @@ import net.sf.chellow.physical.DatabaseVersion;
 import net.sf.chellow.physical.Llfc;
 import net.sf.chellow.physical.MarketRole;
 import net.sf.chellow.physical.MeasurementRequirement;
+import net.sf.chellow.physical.MeterPaymentType;
+import net.sf.chellow.physical.MeterType;
 import net.sf.chellow.physical.MpanTop;
 import net.sf.chellow.physical.Mtc;
-import net.sf.chellow.physical.MeterType;
-import net.sf.chellow.physical.MeterPaymentType;
 import net.sf.chellow.physical.Participant;
 import net.sf.chellow.physical.Pc;
 import net.sf.chellow.physical.ReadType;
-import net.sf.chellow.physical.Role;
 import net.sf.chellow.physical.Source;
 import net.sf.chellow.physical.Ssc;
 import net.sf.chellow.physical.Tpr;
@@ -105,44 +100,10 @@ public class ContextListener implements ServletContextListener {
 				}
 				schemaRs.close();
 				if (rs.next()) {
-					switch (rs.getInt("version")) {
-					case 0:
-						throw new UserException(
-								"Database version too old to upgrade with this version.");
-					case 1:
-						throw new UserException(
-								"Database version too old to upgrade with this version.");
-					case 2:
-						throw new UserException(
-								"Database version too old to upgrade with this version.");
-					case 3:
-						throw new UserException(
-								"Database version too old to upgrade with this version.");
-					case 4:
-						throw new UserException(
-								"Database version too old to upgrade with this version.");
-					case 5:
-						throw new UserException(
-								"Database version too old to upgrade with this version.");
-					case 6:
-						throw new UserException(
-								"Database version too old to upgrade with this version.");
-					case 7:
-						throw new UserException(
-								"Database version too old to upgrade with this version.");
-					case 8:
-						throw new UserException(
-								"Database version too old to upgrade with this version.");
-					case 9:
-						throw new UserException(
-								"Database version too old to upgrade with this version.");
-					case 10:
-						throw new UserException(
-								"Database version too old to upgrade with this version.");
-					case 11:
-						Debug.print("It's version 11");
-						upgrade11to12(con);
-						break;
+					int VERSION_EXPECTED = 12;
+					int version = rs.getInt("version");
+					if (version != VERSION_EXPECTED) {
+						throw new UserException("The database version is " + version + " but this version of Chellow expects database version " + VERSION_EXPECTED);
 					}
 				}
 			} catch (SQLException sqle) {
@@ -235,47 +196,14 @@ public class ContextListener implements ServletContextListener {
 		Ssc.loadFromCsv(context);
 		MeasurementRequirement.loadFromCsv(context);
 		MpanTop.loadFromCsv(context);
-		Role basicUserRole = Role.insertRole(null, "basic-user");
 		Hiber.flush();
-		basicUserRole.insertPermission(null, basicUserRole.getUri(), Arrays
-				.asList(Invocation.HttpMethod.GET));
-		basicUserRole.insertPermission(null, new MonadUri("/"), Arrays
-				.asList(Invocation.HttpMethod.GET));
-		basicUserRole.insertPermission(null, new MonadUri("/orgs/"),
-				new ArrayList<Invocation.HttpMethod>());
-		basicUserRole.insertPermission(null, new MonadUri("/users/"),
-				new ArrayList<Invocation.HttpMethod>());
-		basicUserRole.insertPermission(null,
-				new MonadUri("/users/implicit-me/"), Arrays
-						.asList(Invocation.HttpMethod.GET));
-		basicUserRole.insertPermission(null,
-				new MonadUri("/users/explicit-me/"), Arrays
-						.asList(Invocation.HttpMethod.GET));
-		basicUserRole.insertPermission(null, new MonadUri("/roles/"),
-				new ArrayList<Invocation.HttpMethod>());
 
 		EmailAddress adminUserEmailAddress = new EmailAddress(
 				"administrator@localhost");
 		User adminUser = User.findUserByEmail(adminUserEmailAddress);
 		if (adminUser == null) {
-			adminUser = User.insertUser(null, adminUserEmailAddress,
-					"administrator");
-
-			Role adminRole = Role.insertRole(null, "administrator");
-			adminRole.insertPermission(null, new MonadUri("/"), Arrays.asList(
-					Invocation.HttpMethod.GET, Invocation.HttpMethod.POST,
-					Invocation.HttpMethod.DELETE));
-			adminUser.addRole(null, adminRole);
-		}
-		EmailAddress basicUserEmailAddress = new EmailAddress(
-				"basic-user@localhost");
-		User basicUser = User.findUserByEmail(basicUserEmailAddress);
-		if (basicUser == null) {
-			basicUser = User.insertUser(null, basicUserEmailAddress,
-					"basic-user");
-			Hiber.flush();
-			// basicUserRole.insertPermission("/participants/",
-			// new Invocation.HttpMethod[] { Invocation.HttpMethod.GET });
+			adminUser = User.insertUser(adminUserEmailAddress,
+					"administrator", User.EDITOR, null);
 		}
 		Hiber.commit();
 		Source.insertSource("net", "Public distribution system.");
@@ -285,7 +213,7 @@ public class ContextListener implements ServletContextListener {
 		Source.insertSource("sub", "Sub meter");
 		Hiber.commit();
 	}
-
+/*
 	@SuppressWarnings("unchecked")
 	private void upgrade11to12(Connection con) throws HttpException {
 		try {
@@ -391,12 +319,14 @@ public class ContextListener implements ServletContextListener {
 			 * setval('site_supply_generation_id_sequence', max(id)) from
 			 * site_supply_generation"); stmt.close();
 			 */
+	/*
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
 		Debug.print("Finished upgrading.");
 		// dataDelta(con);
 	}
+	*/
 	/*
 	 * private void upgrade09to10(Connection con) throws ProgrammerException {
 	 * try { Statement stmt = con.createStatement(); stmt .execute("CREATE TABLE

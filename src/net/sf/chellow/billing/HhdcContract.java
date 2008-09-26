@@ -52,9 +52,9 @@ import org.w3c.dom.Element;
 public class HhdcContract extends Contract {
 	static public HhdcContract insertHhdcContract(Provider provider,
 			String name, HhEndDate startDate, String chargeScript,
-			ContractFrequency frequency, int lag) throws HttpException {
+			ContractFrequency frequency, int lag, String importerProperties) throws HttpException {
 		HhdcContract contract = new HhdcContract(provider, name, startDate,
-				chargeScript, frequency, lag);
+				chargeScript, frequency, lag, importerProperties);
 		Hiber.session().save(contract);
 		Hiber.flush();
 		return contract;
@@ -86,18 +86,21 @@ public class HhdcContract extends Contract {
 	private ContractFrequency frequency;
 
 	private int lag;
+	
+	private String importerProperties;
+	private String importerState;
 
 	public HhdcContract() {
 	}
 
 	public HhdcContract(Provider provider, String name, HhEndDate startDate,
-			String chargeScript, ContractFrequency frequency, int lag)
+			String chargeScript, ContractFrequency frequency, int lag, String importerProperties)
 			throws HttpException {
 		super(provider, name, startDate, chargeScript);
 		if (provider.getRole().getCode() != MarketRole.HHDC) {
 			throw new UserException("The provider must have the HHDC role.");
 		}
-		intrinsicUpdate(name, chargeScript, frequency, lag);
+		intrinsicUpdate(name, chargeScript, frequency, lag, importerProperties);
 	}
 
 	public ContractFrequency getFrequency() {
@@ -115,18 +118,35 @@ public class HhdcContract extends Contract {
 	void setLag(int lag) {
 		this.lag = lag;
 	}
+	
+	public String getImporterProperties() {
+		return importerProperties;
+	}
+	
+	void setImporterProperties(String properties) {
+		this.importerProperties = properties;
+	}
+	
+	public String getImporterState() {
+		return importerState;
+	}
+	
+	void setImporterState(String state) {
+		this.importerState = state;
+	}
 
 	private void intrinsicUpdate(String name, String chargeScript,
-			ContractFrequency frequency, int lag) throws HttpException {
+			ContractFrequency frequency, int lag, String importerProperties) throws HttpException {
 		super.internalUpdate(name, chargeScript);
 		setFrequency(frequency);
 		setLag(lag);
+		setImporterProperties(importerProperties);
 	}
 
 	@SuppressWarnings("unchecked")
 	public void update(String name, String chargeScript,
-			ContractFrequency frequency, int lag) throws HttpException {
-		intrinsicUpdate(name, chargeScript, frequency, lag);
+			ContractFrequency frequency, int lag, String importerProperties) throws HttpException {
+		intrinsicUpdate(name, chargeScript, frequency, lag, importerProperties);
 		updateNotification();
 		// test if new dates agree with supply generation dates.
 
@@ -166,18 +186,25 @@ public class HhdcContract extends Contract {
 	}
 
 	public void httpPost(Invocation inv) throws HttpException {
-		// Long participantId = inv.getLong("participant-id");
+		if (inv.hasParameter("update-importer-state")) {
+			String state = inv.getString("importer-state");
+			setImporterState(state);
+			Hiber.commit();
+			inv.sendOk(document());
+		} else {
 		String name = inv.getString("name");
 		String chargeScript = inv.getString("charge-script");
 		ContractFrequency frequency = inv.getValidatable(
 				ContractFrequency.class, "frequency");
 		int lag = inv.getInteger("lag");
+		String importerProperties = inv.getString("importer-properties");
 		if (!inv.isValid()) {
 			throw new UserException(document());
 		}
-		update(name, chargeScript, frequency, lag);
+		update(name, chargeScript, frequency, lag, importerProperties);
 		Hiber.commit();
 		inv.sendOk(document());
+		}
 	}
 
 	@SuppressWarnings("unchecked")

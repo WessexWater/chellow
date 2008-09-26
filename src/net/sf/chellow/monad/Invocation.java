@@ -321,6 +321,21 @@ public class Invocation {
 		}
 	}
 
+	public Character getCharacter(String parameterName)
+			throws InternalException {
+		MonadString monadString = getMonadString(parameterName);
+		if (monadString != null) {
+			String chars = monadString.getString();
+			if (chars.length() > 0) {
+				return chars.charAt(0);
+			} else {
+				return null;
+			}
+		} else {
+			return null;
+		}
+	}
+
 	public MonadString getMonadString(String parameterNameString)
 			throws InternalException {
 		return getValidatable(MonadString.class, parameterNameString);

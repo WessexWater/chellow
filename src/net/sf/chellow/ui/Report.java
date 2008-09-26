@@ -27,40 +27,50 @@ public class Report extends PersistentEntity {
 		}
 		return report;
 	}
+
+	public static Report insertReport(String name, String script,
+			String template) throws HttpException {
+		Report report = new Report(name, script, template);
+		Hiber.session().save(report);
+		Hiber.flush();
+		return report;
+	}
+
 	private String name;
 
 	private String script;
-	
+
 	private String template;
 
-	public Report(String name, String script, String template) throws HttpException {
+	public Report(String name, String script, String template)
+			throws HttpException {
 		update(name, script, template);
 	}
-	
+
 	public String getName() {
 		return name;
 	}
-	
+
 	void setName(String name) {
 		this.name = name;
 	}
-	
+
 	public String getScript() {
 		return script;
 	}
-	
+
 	void setScript(String script) {
 		this.script = script;
 	}
-	
+
 	public String getTemplate() {
 		return template;
 	}
-	
+
 	void setTemplate(String template) {
 		this.template = template;
 	}
-	
+
 	private void update(String name, String script, String template) {
 		setName(name);
 		setScript(script);
@@ -76,7 +86,7 @@ public class Report extends PersistentEntity {
 			throw new NotFoundException();
 		}
 	}
-	
+
 	public void run(Invocation inv, Document doc) throws HttpException {
 		PythonInterpreter interp = new PythonInterpreter();
 		Element source = doc.getDocumentElement();
@@ -90,15 +100,12 @@ public class Report extends PersistentEntity {
 		try {
 			interp.exec(script);
 			/*
-		} catch (PyException e) {
-			inv.getResponse().setContentType("text/html");
-			Object obj = e.value.__tojava__(HttpException.class);
-			if (obj instanceof HttpException) {
-				throw (HttpException) obj;
-			} else {
-				throw new UserException(e.toString());
-			}
-			*/
+			 * } catch (PyException e) {
+			 * inv.getResponse().setContentType("text/html"); Object obj =
+			 * e.value.__tojava__(HttpException.class); if (obj instanceof
+			 * HttpException) { throw (HttpException) obj; } else { throw new
+			 * UserException(e.toString()); }
+			 */
 		} catch (Throwable e) {
 			if (out.toString().length() > 0) {
 				source.appendChild(new MonadMessage(out.toString()).toXml(doc));
@@ -110,7 +117,6 @@ public class Report extends PersistentEntity {
 					+ HttpException.getStackTraceString(e));
 		}
 	}
-
 
 	public MonadUri getUri() throws HttpException {
 		return Chellow.REPORTS_INSTANCE.getUri().resolve(getId()).append("/");

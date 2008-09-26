@@ -4,7 +4,6 @@ import java.io.StringReader;
 
 import javax.xml.transform.stream.StreamSource;
 
-import net.sf.chellow.monad.DesignerException;
 import net.sf.chellow.monad.Invocation;
 import net.sf.chellow.monad.MethodNotAllowedException;
 import net.sf.chellow.monad.MonadUtils;
@@ -97,6 +96,7 @@ public class ReportOutput implements Urlable, XmlDescriber {
 		// TODO Auto-generated method stub
 		return null;
 	}
+	/*
 	
 	public void run(Invocation inv, Document doc) throws InternalException,
 	DesignerException, HttpException {
@@ -128,6 +128,7 @@ if (out.toString().length() > 0) {
 if (err.toString().length() > 0) {
 	source.appendChild(new VFMessage(err.toString()).toXML(doc));
 }
-*/
+
 }
+*/
 }

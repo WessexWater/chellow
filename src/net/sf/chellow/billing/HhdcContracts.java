@@ -75,12 +75,14 @@ public class HhdcContracts extends EntityList {
 		Date startDate = inv.getDate("start-date");
 		String chargeScript = inv.getString("charge-script");
 		Integer lag = inv.getInteger("lag");
+		String importerProperties = inv.toString();
 		if (!inv.isValid()) {
 			throw new UserException(document());
 		}
 		Provider provider = Provider.getProvider(providerId);
 		HhdcContract contract = HhdcContract.insertHhdcContract(provider, name,
-				HhEndDate.roundDown(startDate), chargeScript, frequency, lag);
+				HhEndDate.roundDown(startDate), chargeScript, frequency, lag,
+				importerProperties);
 		Hiber.commit();
 		inv.sendCreated(document(), contract.getUri());
 	}
