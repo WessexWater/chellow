@@ -23,8 +23,10 @@
 package net.sf.chellow.physical;
 
 import java.util.Date;
+import java.util.List;
+
 import net.sf.chellow.billing.Account;
-import net.sf.chellow.data08.MpanRaw;
+import net.sf.chellow.billing.Dso;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.InternalException;
@@ -48,11 +50,33 @@ public class Mpan extends PersistentEntity {
 		return mpan;
 	}
 
+	@SuppressWarnings("unchecked")
+	static public List<Mpan> getMpans(String mpanStr, HhEndDate from,
+			HhEndDate to) throws HttpException {
+		MpanRaw raw = new MpanRaw(mpanStr);
+		MpanCore core = MpanCore.getMpanCore(raw.getMpanCore());
+		List<SupplyGeneration> supplyGenerations = core.getSupply()
+				.getGenerations(from, to);
+		Dso dso = core.getDso();
+		return (List<Mpan>) Hiber
+				.session()
+				.createQuery(
+						"from Mpan mpan where mpan.core = :core and mpan.supplyGeneration in (:supplyGenerations) and mpan.top.pc = :pc and mpan.top.mtc = :mtc and mpan.top.llfc = :llfc")
+				.setEntity("pc", Pc.getPc(raw.getPcCode())).setEntity("mtc",
+						Mtc.getMtc(dso, raw.getMtcCode())).setEntity("llfc",
+						dso.getLlfc(raw.getLlfcCode())).setParameterList(
+						"supplyGenerations", supplyGenerations).list();
+	}
+	
+	static public String canonicalize(String mpanStr) throws HttpException {
+		return new MpanRaw(mpanStr).toString();
+	}
+
 	private SupplyGeneration supplyGeneration;
 
-	private MpanTop mpanTop;
+	private MpanTop top;
 
-	private MpanCore mpanCore;
+	private MpanCore core;
 
 	private Account hhdcAccount;
 
@@ -73,27 +97,26 @@ public class Mpan extends PersistentEntity {
 	Mpan() {
 	}
 
-	Mpan(SupplyGeneration supplyGeneration, MpanTop mpanTop, MpanCore mpanCore,
+	Mpan(SupplyGeneration supplyGeneration, String mpanStr, Ssc ssc,
 			Account hhdcAccount, Account supplierAccount, boolean hasImportKwh,
 			boolean hasImportKvarh, boolean hasExportKwh,
 			boolean hasExportKvarh, int agreedSupplyCapacity)
 			throws HttpException {
 		this.supplyGeneration = supplyGeneration;
-		update(mpanTop, mpanCore, hhdcAccount, supplierAccount, hasImportKwh,
+		update(mpanStr, ssc, hhdcAccount, supplierAccount, hasImportKwh,
 				hasImportKvarh, hasExportKwh, hasExportKvarh,
 				agreedSupplyCapacity);
 	}
 
-	Mpan(SupplyGeneration supplyGeneration, MpanRaw mpanRaw, Ssc ssc,
-			Account hhdcAccount, Account supplierAccount, boolean hasImportKwh,
-			boolean hasImportKvarh, boolean hasExportKwh,
-			boolean hasExportKvarh, int agreedSupplyCapacity)
-			throws HttpException {
-		this.supplyGeneration = supplyGeneration;
-		update(mpanRaw, ssc, hhdcAccount, supplierAccount, hasImportKwh,
-				hasImportKvarh, hasExportKwh, hasExportKvarh,
-				agreedSupplyCapacity);
-	}
+	/*
+	 * Mpan(SupplyGeneration supplyGeneration, MpanRaw mpanRaw, Ssc ssc, Account
+	 * hhdcAccount, Account supplierAccount, boolean hasImportKwh, boolean
+	 * hasImportKvarh, boolean hasExportKwh, boolean hasExportKvarh, int
+	 * agreedSupplyCapacity) throws HttpException { this.supplyGeneration =
+	 * supplyGeneration; update(mpanRaw, ssc, hhdcAccount, supplierAccount,
+	 * hasImportKwh, hasImportKvarh, hasExportKwh, hasExportKvarh,
+	 * agreedSupplyCapacity); }
+	 */
 
 	public SupplyGeneration getSupplyGeneration() {
 		return supplyGeneration;
@@ -103,20 +126,20 @@ public class Mpan extends PersistentEntity {
 		this.supplyGeneration = supplyGeneration;
 	}
 
-	public MpanTop getMpanTop() {
-		return mpanTop;
+	public MpanTop getTop() {
+		return top;
 	}
 
-	void setMpanTop(MpanTop mpanTop) {
-		this.mpanTop = mpanTop;
+	void setTop(MpanTop top) {
+		this.top = top;
 	}
 
-	public MpanCore getMpanCore() {
-		return mpanCore;
+	public MpanCore getCore() {
+		return core;
 	}
 
-	void setMpanCore(MpanCore mpanCore) {
-		this.mpanCore = mpanCore;
+	void setCore(MpanCore core) {
+		this.core = core;
 	}
 
 	public Account getMopAccount() {
@@ -199,8 +222,8 @@ public class Mpan extends PersistentEntity {
 		}
 	}
 
-	void update(MpanTop mpanTop, MpanCore mpanCore, Account hhdcAccount,
-			Account supplierAccount, boolean hasImportKwh,
+	private void update(MpanTop mpanTop, MpanCore mpanCore,
+			Account hhdcAccount, Account supplierAccount, boolean hasImportKwh,
 			boolean hasImportKvarh, boolean hasExportKwh,
 			boolean hasExportKvarh, int agreedSupplyCapacity)
 			throws HttpException {
@@ -212,14 +235,14 @@ public class Mpan extends PersistentEntity {
 			throw new UserException(
 					"The MPAN top line DSO doesn't match the MPAN core DSO.");
 		}
-		if (getMpanTop() != null
-				&& getMpanTop().getLlfc().getIsImport() != mpanTop.getLlfc()
+		if (getTop() != null
+				&& getTop().getLlfc().getIsImport() != mpanTop.getLlfc()
 						.getIsImport()) {
 			throw new UserException(
 					"You can't change an import mpan into an export one, and vice versa. The existing MPAN has LLFC "
-							+ getMpanTop().getLlfc()
+							+ getTop().getLlfc()
 							+ " that has IsImport "
-							+ getMpanTop().getLlfc().getIsImport()
+							+ getTop().getLlfc().getIsImport()
 							+ " whereas the new MPAN has LLFC "
 							+ mpanTop.getLlfc()
 							+ " which has IsImport "
@@ -246,11 +269,11 @@ public class Mpan extends PersistentEntity {
 		 * .newInvalidParameter("For a profile class of 00, the meter timeswitch
 		 * cannot have any registers."); }
 		 */
-		setMpanTop(mpanTop);
+		setTop(mpanTop);
 		if (mpanCore == null) {
 			throw new InternalException("The mpan core can't be null.");
 		}
-		setMpanCore(mpanCore);
+		setCore(mpanCore);
 		if (hhdcAccount != null
 				&& (!hasImportKwh && !hasImportKvarh && !hasExportKwh && !hasExportKvarh)) {
 			throw new UserException(
@@ -268,29 +291,35 @@ public class Mpan extends PersistentEntity {
 		setAgreedSupplyCapacity(agreedSupplyCapacity);
 	}
 
-	void update(MpanRaw mpanRaw, Ssc ssc, Account hhdcAccount,
+	public void update(String mpan, Ssc ssc, Account hhdcAccount,
 			Account supplierAccount, boolean hasImportKwh,
 			boolean hasImportKvarh, boolean hasExportKwh,
 			boolean hasExportKvarh, int agreedSupplyCapacity)
 			throws HttpException {
-		MpanTop mpanTop = mpanRaw.getMpanTop(ssc, supplyGeneration
-				.getFinishDate() == null ? new Date() : supplyGeneration
-				.getFinishDate().getDate());
-		MpanCore mpanCore = mpanRaw.getMpanCore();
+		MpanRaw mpanRaw = new MpanRaw(mpan);
+		MpanCore mpanCore = MpanCore.findMpanCore(mpanRaw.getMpanCore());
 		if (mpanCore == null) {
-			mpanCore = supplyGeneration.getSupply().addMpanCore(
-					mpanRaw.getMpanCoreRaw());
-		} else if (!mpanCore.getSupply().equals(supplyGeneration.getSupply())) {
+			supplyGeneration.getSupply().addMpanCore(mpanRaw.getMpanCore());
+		}
+		if (!mpanCore.getSupply().equals(supplyGeneration.getSupply())) {
 			throw new UserException(
 					"This MPAN core is already attached to another supply.");
 		}
+		Dso dso = mpanCore.getDso();
+		Pc pc = Pc.getPc(mpanRaw.getPcCode());
+		Llfc llfc = dso.getLlfc(mpanRaw.getLlfcCode());
+		Mtc mtc = Mtc.getMtc(dso, mpanRaw.getMtcCode());
+		MpanTop mpanTop = MpanTop.getMpanTop(pc, mtc, llfc, ssc,
+				supplyGeneration.getFinishDate() == null ? new Date()
+						: supplyGeneration.getFinishDate().getDate());
+
 		update(mpanTop, mpanCore, hhdcAccount, supplierAccount, hasImportKwh,
 				hasImportKvarh, hasExportKwh, hasExportKvarh,
 				agreedSupplyCapacity);
 	}
 
 	public String toString() {
-		return getMpanTop() + " " + getMpanCore();
+		return getTop() + " " + getCore();
 	}
 
 	public Node toXml(Document doc) throws HttpException {
@@ -303,14 +332,14 @@ public class Mpan extends PersistentEntity {
 				.toString(hasExportKvarh));
 		element.setAttribute("agreed-supply-capacity", Integer
 				.toString(agreedSupplyCapacity));
-		element.setAttribute("mpan", mpanTop.getPc().toXml(doc)
+		element.setAttribute("mpan", top.getPc().toXml(doc)
 				.getTextContent()
 				+ " "
-				+ mpanTop.getMtc().toXml(doc).getTextContent()
+				+ top.getMtc().toXml(doc).getTextContent()
 				+ " "
-				+ mpanTop.getLlfc().toXml(doc).getTextContent()
+				+ top.getLlfc().toXml(doc).getTextContent()
 				+ " "
-				+ mpanCore.toString());
+				+ core.toString());
 		return element;
 	}
 
@@ -346,11 +375,69 @@ public class Mpan extends PersistentEntity {
 	 * account = hhdcAccount; } } else { if (hasExportKvarh) { account =
 	 * hhdcAccount; } } } return account; }
 	 */
+	/*
+	 * public MpanRaw getMpanRaw() throws HttpException { return new
+	 * MpanRaw(Integer.toString(getMpanTop().getPc().getCode()),
+	 * Integer.toString(getMpanTop().getMtc().getCode()), Integer
+	 * .toString(getMpanTop().getLlfc().getCode()), getMpanCore().getCore()); }
+	 */
+	static private class MpanRaw {
+		private String pcCode;
 
-	public MpanRaw getMpanRaw() throws HttpException {
-		return new MpanRaw(Integer.toString(getMpanTop().getPc().getCode()),
-				Integer.toString(getMpanTop().getMtc().getCode()), Integer
-						.toString(getMpanTop().getLlfc().getCode()),
-				getMpanCore().getCore());
+		private String mtcCode;
+
+		private String llfcCode;
+
+		private String mpanCore;
+
+		public MpanRaw(String mpan) throws HttpException {
+			mpan = mpan.replace(" ", "");
+			if (mpan.length() != 21) {
+				throw new UserException(
+						"An MPAN must contain exactly 21 digits.");
+			}
+			pcCode = mpan.substring(0, 2);
+			mtcCode = mpan.substring(2, 5);
+			llfcCode = mpan.substring(5, 8);
+			mpanCore = mpan.substring(8);
+		}
+
+		public String getPcCode() {
+			return pcCode;
+		}
+
+		public String getMtcCode() {
+			return mtcCode;
+		}
+
+		public String getLlfcCode() {
+			return llfcCode;
+		}
+
+		public String getMpanCore() {
+			return mpanCore;
+		}
+
+		/*
+		 * public String toString() { return pc.codeAsString() + " " +
+		 * mtc.codeAsString() + " " + llfc.codeAsString() + " " +
+		 * mpanCore.toString(); }
+		 */
+
+		public String toStringNoSpaces() {
+			return toString().replace(" ", "");
+		}
+		/*
+		 * public boolean equals(Object obj) { boolean isEqual = false; if (obj
+		 * instanceof MpanRaw) { MpanRaw mpan = (MpanRaw) obj; isEqual =
+		 * getPc().equals(mpan.getPc()) && getMtc().equals(mpan.getMtc()) &&
+		 * getLlfc().equals(mpan.getLlfc()) &&
+		 * getMpanCore().equals(mpan.getMpanCore()); } return isEqual; }
+		 */
+		/*
+		 * public int hashCode() { return getPc().hashCode() +
+		 * getMtc().hashCode() + getLlfc().hashCode() +
+		 * getMpanCore().hashCode(); }
+		 */
 	}
 }

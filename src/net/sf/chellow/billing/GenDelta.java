@@ -22,25 +22,21 @@
 
 package net.sf.chellow.billing;
 
-import java.util.Date;
-
-import net.sf.chellow.data08.MpanCoreRaw;
 import net.sf.chellow.monad.DeployerException;
 import net.sf.chellow.monad.DesignerException;
 import net.sf.chellow.monad.Hiber;
+import net.sf.chellow.monad.HttpException;
+import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Invocation;
 import net.sf.chellow.monad.MonadUtils;
 import net.sf.chellow.monad.NotFoundException;
-import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Urlable;
-import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.UserException;
 import net.sf.chellow.monad.XmlTree;
 import net.sf.chellow.monad.types.MonadInteger;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
 import net.sf.chellow.physical.HhEndDate;
-import net.sf.chellow.physical.MpanCore;
 import net.sf.chellow.physical.PersistentEntity;
 import net.sf.chellow.physical.Supply;
 
@@ -124,6 +120,7 @@ public class GenDelta extends PersistentEntity implements Urlable {
 
 	public void httpPost(Invocation inv) throws InternalException,
 			HttpException, DesignerException, DeployerException {
+		/*
 		String mpanCoreStr = inv.getString("mpan-core");
 		Date date = inv.getDate("start-date");
 		int kwhPerMonth = inv.getInteger("kwh-per-month");
@@ -140,6 +137,7 @@ public class GenDelta extends PersistentEntity implements Urlable {
 		}
 		Hiber.commit();
 		inv.sendOk(document());
+		*/
 	}
 
 	private Document document() throws InternalException, HttpException,

@@ -30,7 +30,6 @@ import java.text.ParseException;
 import java.util.Locale;
 import java.util.TimeZone;
 
-import net.sf.chellow.data08.MpanCoreRaw;
 import net.sf.chellow.hhimport.HhConverter;
 import net.sf.chellow.hhimport.HhDatumRaw;
 import net.sf.chellow.monad.HttpException;
@@ -38,6 +37,7 @@ import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.UserException;
 import net.sf.chellow.physical.HhDatum;
 import net.sf.chellow.physical.HhEndDate;
+import net.sf.chellow.physical.MpanCore;
 
 import com.Ostermiller.util.CSVParser;
 
@@ -108,7 +108,7 @@ public class StarkCsvHhConverter implements HhConverter {
 					throw new UserException(
 							"There must be fields for 'MPAN core', 'Imp / Exp', 'Units', 'Time' and 'Value'.");
 				}
-				MpanCoreRaw core = new MpanCoreRaw(values[0]);
+				MpanCore core = MpanCore.getMpanCore(values[0]);
 				boolean isImport = values[1].equals("0");
 				boolean isKwh;
 				if (values[2].trim().equals("kWh")) {

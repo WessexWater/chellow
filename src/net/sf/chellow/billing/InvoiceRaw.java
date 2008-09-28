@@ -25,7 +25,6 @@ package net.sf.chellow.billing;
 import java.util.HashSet;
 import java.util.Set;
 
-import net.sf.chellow.data08.MpanRaw;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.UserException;
@@ -52,13 +51,11 @@ public class InvoiceRaw extends MonadObject {
 
 	private String reference;
 
-	private String mpanText;
-
-	private Set<MpanRaw> mpans = new HashSet<MpanRaw>();
+	private Set<String> mpanStrings = new HashSet<String>();
 
 	private Set<RegisterReadRaw> reads = new HashSet<RegisterReadRaw>();
 
-	public InvoiceRaw(InvoiceType type, String accountReference, String mpanText,
+	public InvoiceRaw(InvoiceType type, String accountReference, Set<String> mpanStrings,
 			String reference, DayStartDate issueDate, DayStartDate startDate,
 			DayFinishDate finishDate, double net, double vat,
 			Set<RegisterReadRaw> registerReads) throws HttpException {
@@ -85,9 +82,7 @@ public class InvoiceRaw extends MonadObject {
 			throw new UserException("The accountReference parameter is required.");
 		}
 		this.accountReference = accountReference;
-		if (mpanText == null) {
-			throw new UserException("The mpanText parameter is required.");
-		}
+		/*
 		for (String mpanStr : mpanText.split(",")) {
 			try {
 				mpans.add(new MpanRaw(mpanStr));
@@ -97,7 +92,8 @@ public class InvoiceRaw extends MonadObject {
 						+ mpanStr + "'. " + e.getMessage());
 			}
 		}
-		this.mpanText = mpanText;
+		*/
+		this.mpanStrings = mpanStrings;
 		if (registerReads != null) {
 			this.reads = registerReads;
 		}
@@ -107,8 +103,8 @@ public class InvoiceRaw extends MonadObject {
 		return type;
 	}
 
-	public Set<MpanRaw> getMpans() {
-		return mpans;
+	public Set<String> getMpanStrings() {
+		return mpanStrings;
 	}
 
 	public DayStartDate getIssueDate() {
@@ -139,10 +135,6 @@ public class InvoiceRaw extends MonadObject {
 		return accountReference;
 	}
 
-	public String getMpanText() {
-		return mpanText;
-	}
-
 	public Set<RegisterReadRaw> getRegisterReads() {
 		return reads;
 	}
@@ -159,7 +151,6 @@ public class InvoiceRaw extends MonadObject {
 		element.setAttribute("net", Double.toString(net));
 		element.setAttribute("vat", Double.toString(vat));
 		element.setAttribute("account-reference", accountReference);
-		element.setAttribute("mpan-text", mpanText);
 		return element;
 	}
 }

@@ -30,18 +30,18 @@ import java.text.ParseException;
 import java.util.Locale;
 import java.util.TimeZone;
 
-import net.sf.chellow.data08.MpanCoreRaw;
 import net.sf.chellow.hhimport.HhConverter;
 import net.sf.chellow.hhimport.HhDatumRaw;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.UserException;
 import net.sf.chellow.physical.HhEndDate;
+import net.sf.chellow.physical.MpanCore;
 
 public class StarkDF2HHConverter implements HhConverter {
 	private LineNumberReader reader;
 
-	private MpanCoreRaw core;
+	private MpanCore core;
 
 	private HhDatumRaw datum = null;
 
@@ -99,7 +99,7 @@ public class StarkDF2HHConverter implements HhConverter {
 		try {
 			while (datum == null && line != null) {
 				if (line.startsWith("#O")) {
-					core = new MpanCoreRaw("", line.substring(2));
+					core = MpanCore.getMpanCore(line.substring(2));
 				} else if (line.startsWith("#S")) {
 					int sensor = Integer.parseInt(line.substring(2).trim());
 					switch (sensor) {

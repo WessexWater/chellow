@@ -2,7 +2,6 @@ package net.sf.chellow.physical;
 
 import net.sf.chellow.billing.DayFinishDate;
 import net.sf.chellow.billing.Invoice;
-import net.sf.chellow.data08.MpanCoreRaw;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.InternalException;
@@ -62,24 +61,23 @@ public class RegisterRead extends PersistentEntity {
 		setpresentValue(rawRead.getPresentValue());
 		setpresentType(rawRead.getPresentType());
 
-		MpanCoreRaw mpanCoreRaw = rawRead.getMpanRaw().getMpanCoreRaw();
-		MpanCore mpanCore = MpanCore.getMpanCore(mpanCoreRaw);
+		MpanCore mpanCore = rawRead.getMpanCore();
 		Supply supply = mpanCore.getSupply();
 		SupplyGeneration supplyGeneration = supply.getGeneration(rawRead
 				.getPresentDate());
 		Mpan importMpan = supplyGeneration.getImportMpan();
 		Mpan exportMpan = supplyGeneration.getExportMpan();
 		if (importMpan != null
-				&& importMpan.getMpanRaw().equals(rawRead.getMpanRaw())) {
+				&& importMpan.getCore().equals(mpanCore)) {
 			setMpan(importMpan);
 		} else if (exportMpan != null
-				&& exportMpan.getMpanRaw().equals(rawRead.getMpanRaw())) {
+				&& exportMpan.getCore().equals(mpanCore)) {
 			setMpan(exportMpan);
 		} else {
 			throw new UserException("For the supply " + getId()
-					+ " neither the import MPAN " + importMpan
-					+ " or the export MPAN " + exportMpan
-					+ " match the register read MPAN " + rawRead.getMpanRaw()
+					+ " neither the import MPAN core " + importMpan
+					+ " or the export MPAN core " + exportMpan
+					+ " match the register read MPAN core " + mpanCore
 					+ ".");
 		}
 		precedingRead();
@@ -246,7 +244,7 @@ public class RegisterRead extends PersistentEntity {
 				.session()
 				.createQuery(
 						"from RegisterRead read where read.mpan.mpanCore = :mpanCore and read.presentDate.date = :readDate")
-				.setEntity("mpanCore", getMpan().getMpanCore()).setDate(
+				.setEntity("mpanCore", getMpan().getCore()).setDate(
 						"readDate", getPreviousDate().getDate()).uniqueResult();
 		if (read == null) {
 			throw new UserException(

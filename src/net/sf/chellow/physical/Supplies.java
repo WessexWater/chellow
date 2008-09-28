@@ -24,7 +24,6 @@ package net.sf.chellow.physical;
 
 import java.util.List;
 
-import net.sf.chellow.data08.MpanCoreTerm;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.Invocation;
@@ -67,14 +66,14 @@ public class Supplies extends EntityList {
 		Document doc = MonadUtils.newSourceDocument();
 		Element source = doc.getDocumentElement();
 		if (inv.hasParameter("search-pattern")) {
-			MpanCoreTerm pattern = inv.getValidatable(MpanCoreTerm.class,
-					"search-pattern");
+			String pattern = inv.getString("search-pattern");
+			pattern = pattern.replace(" ", "");
 			for (Object[] array : (List<Object[]>) Hiber
 					.session()
 					.createQuery(
 							"select distinct mpanCore, mpanCore.dso.code, mpanCore.uniquePart, mpanCore.checkDigit from MpanCore mpanCore where lower(mpanCore.dso.code || mpanCore.uniquePart || mpanCore.checkDigit) like lower(:term) order by mpanCore.dso.code, mpanCore.uniquePart, mpanCore.checkDigit")
 					.setString("term",
-							"%" + pattern.toString() + "%").setMaxResults(50)
+							"%" + pattern + "%").setMaxResults(50)
 					.list()) {
 				source.appendChild(((MpanCore) array[0]).toXml(doc, new XmlTree(
 								"supply").put("dso")));

@@ -58,7 +58,17 @@ public class MpanTop extends PersistentEntity {
 		}
 		return mpanTop;
 	}
-
+/*
+	@SuppressWarnings("unchecked")
+	static public List<MpanTop> getMpanTops(Pc pc, Mtc mtc, Llfc llfc, Date date) {
+		return (List<MpanTop>) Hiber
+				.session()
+				.createQuery(
+						"from MpanTop top where top.pc = :pc and top.mtc = :mtc and top.llfc = :llfc and top.validFrom <= :date and (top.validTo is null or top.validTo >= :date)")
+				.setEntity("pc", pc).setEntity("mtc", mtc).setEntity("llfc",
+						llfc).setTimestamp("date", date).list();
+	}
+*/
 	static public MpanTop findMpanTop(Pc pc, Mtc mtc, Llfc llfc, Ssc ssc,
 			Date date) throws HttpException {
 		Criteria criteria = Hiber.session().createCriteria(MpanTop.class).add(
@@ -66,7 +76,7 @@ public class MpanTop extends PersistentEntity {
 				.add(Restrictions.eq("llfc", llfc)).add(
 						Restrictions.le("validFrom", date)).add(
 						Restrictions.or(Restrictions.isNull("validTo"),
-								Restrictions.le("validTo", date)));
+								Restrictions.ge("validTo", date)));
 		if (ssc == null) {
 			criteria.add(Restrictions.isNull("ssc"));
 		} else {
@@ -182,8 +192,9 @@ public class MpanTop extends PersistentEntity {
 				Date validTo = mdd.toDate(values[6]);
 				Llfc llfc = dso.getLlfc(values[4], validFrom);
 				Mtc mtc = Mtc.getMtc(dso, values[0]);
-				llfc.insertMpanTop(Pc.getPc("0"), mtc, null,
-						validFrom, validTo);
+				llfc
+						.insertMpanTop(Pc.getPc("0"), mtc, null, validFrom,
+								validTo);
 				Hiber.close();
 			}
 		} catch (NumberFormatException e) {
@@ -308,5 +319,9 @@ public class MpanTop extends PersistentEntity {
 			mpanTopElement.appendChild(to.toXml(doc));
 		}
 		return mpanTopElement;
+	}
+	
+	public String toString() {
+		return pc.codeAsString() + " " + mtc.codeAsString() + " " + llfc.codeAsString();
 	}
 }

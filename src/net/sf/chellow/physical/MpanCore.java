@@ -1,6 +1,6 @@
 /*
  
- Copyright 2005 Meniscus Systems Ltd
+ Copyright 2005, 2008 Meniscus Systems Ltd
  
  This file is part of Chellow.
 
@@ -23,13 +23,13 @@
 package net.sf.chellow.physical;
 
 import net.sf.chellow.billing.Dso;
-import net.sf.chellow.data08.MpanCoreRaw;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Invocation;
 import net.sf.chellow.monad.MethodNotAllowedException;
 import net.sf.chellow.monad.NotFoundException;
+import net.sf.chellow.monad.UserException;
 import net.sf.chellow.monad.types.MonadUri;
 
 import org.w3c.dom.Document;
@@ -40,22 +40,24 @@ public class MpanCore extends PersistentEntity {
 		return (MpanCore) Hiber.session().get(MpanCore.class, id);
 	}
 	
-	static public MpanCore getMpanCore(MpanCoreRaw coreRaw) throws HttpException {
- 		MpanCore core = findMpanCore(coreRaw);
- 		if (core == null) {
- 			throw new NotFoundException("There isn't an MPAN with the core " + core);
- 		}
- 		return core;
- 	}
+	static public MpanCore getMpanCore(String core) throws HttpException {
+		MpanCore mpanCore = findMpanCore(core);
+		if (mpanCore == null) {
+			throw new NotFoundException("There isn't an MPAN with the core "
+					+ core);
+		}
+		return mpanCore;
+
+	}
 	
-	static public MpanCore findMpanCore(MpanCoreRaw core) throws HttpException {
-		   return (MpanCore) Hiber
-		   				.session()
-		   				.createQuery(
-		   						"from MpanCore mpanCore where mpanCore.dso = :dso and mpanCore.uniquePart = :uniquePart")
-		   				.setEntity("dso", core.getDso()).setString(
-		   						"uniquePart", core.getUniquePart()).uniqueResult();
-		   
+	static public MpanCore findMpanCore(String core) throws HttpException {
+		MpanCoreRaw raw = new MpanCoreRaw(core);
+		return (MpanCore) Hiber
+		.session()
+		.createQuery(
+				"from MpanCore mpanCore where mpanCore.dso = :dso and mpanCore.uniquePart = :uniquePart")
+		.setEntity("dso", raw.getDso()).setString("uniquePart",
+				raw.getUniquePart()).uniqueResult();
 	}
 
 	/*
@@ -75,21 +77,22 @@ public class MpanCore extends PersistentEntity {
 	public MpanCore() {
 	}
 
-	public MpanCore(Supply supply, MpanCoreRaw core) throws HttpException {
+	public MpanCore(Supply supply, String core) throws HttpException {
 		setSupply(supply);
-// setMpans(new HashSet<Mpan>());
+		// setMpans(new HashSet<Mpan>());
 		update(core);
 	}
-/*
- * public MpanCore(Dso dso, MpanUniquePart uniquePart, CheckDigit checkDigit)
- * throws HttpException { init(dso, uniquePart, checkDigit); }
- */
 
-	public void update(MpanCoreRaw core)
-			throws HttpException {
-		this.dso = core.getDso();
-		this.uniquePart = core.getUniquePart();
-		this.checkDigit = core.getCheckDigit();
+	/*
+	 * public MpanCore(Dso dso, MpanUniquePart uniquePart, CheckDigit
+	 * checkDigit) throws HttpException { init(dso, uniquePart, checkDigit); }
+	 */
+
+	public void update(String core) throws HttpException {
+		MpanCoreRaw coreRaw = new MpanCoreRaw(core);
+		this.dso = coreRaw.getDso();
+		this.uniquePart = coreRaw.getUniquePart();
+		this.checkDigit = coreRaw.getCheckDigit();
 	}
 
 	public Supply getSupply() {
@@ -125,19 +128,15 @@ public class MpanCore extends PersistentEntity {
 	}
 
 	public MpanCoreRaw getCore() throws HttpException {
-		MpanCoreRaw core = new MpanCoreRaw(dso.getCode() + uniquePart + checkDigit);
-		core.setLabel("core");
-		return core;
-	}
-/*
-	public Set<Mpan> getMpans() {
-		return mpans;
+		return new MpanCoreRaw(dso.getCode() + uniquePart
+				+ checkDigit);
 	}
 
-	void setMpans(Set<Mpan> mpans) {
-		this.mpans = mpans;
-	}
-*/
+	/*
+	 * public Set<Mpan> getMpans() { return mpans; }
+	 * 
+	 * void setMpans(Set<Mpan> mpans) { this.mpans = mpans; }
+	 */
 	public boolean equals(Object object) {
 		boolean isEqual = false;
 		if (object instanceof MpanCore) {
@@ -149,7 +148,8 @@ public class MpanCore extends PersistentEntity {
 
 	public String toString() {
 		try {
-			return new MpanCoreRaw(dso.getCode() + uniquePart + checkDigit).toString();
+			return new MpanCoreRaw(dso.getCode() + uniquePart + checkDigit)
+					.toString();
 		} catch (HttpException e) {
 			throw new RuntimeException(e);
 		}
@@ -170,5 +170,99 @@ public class MpanCore extends PersistentEntity {
 
 	public void httpGet(Invocation inv) throws HttpException {
 		throw new MethodNotAllowedException();
+	}
+	
+
+	static public class MpanCoreRaw {
+		private Dso dso;
+
+		private String uniquePart;
+
+		private char checkDigit;
+
+		public MpanCoreRaw(String mpanCore) throws HttpException {
+			mpanCore = mpanCore.replace(" ", "");
+			if (mpanCore.length() != 13) {
+				throw new UserException("The MPAN core (" + mpanCore
+						+ ") must contain exactly 13 digits.");
+			}
+			init(mpanCore.substring(0, 2), mpanCore.substring(2, 12), mpanCore
+					.charAt(mpanCore.length() - 1));
+		}
+
+		private void init(String dsoCode, String uniquePart, char checkDigit)
+				throws HttpException {
+			for (char ch : uniquePart.toCharArray()) {
+				if (!Character.isDigit(ch)) {
+					throw new UserException(
+							"Each character of an MPAN must be a digit.");
+				}
+			}
+			if (!Character.isDigit(checkDigit)) {
+				throw new UserException(
+						"Each character of an MPAN must be a digit.");
+			}
+			if (!checkCheckDigit(dsoCode.toString() + uniquePart.toString(),
+					Character.getNumericValue(checkDigit))) {
+
+				throw new UserException(
+						"This is not a valid MPAN core. It fails the checksum test.");
+			}
+			this.dso = Dso.getDso(dsoCode);
+			this.uniquePart = uniquePart;
+			this.checkDigit = checkDigit;
+		}
+
+		/*
+		 * public MpanCoreRaw(String dsoCode, MpanUniquePart uniquePart, CheckDigit
+		 * checkDigit) throws HttpException { init(dsoCode, uniquePart, checkDigit); }
+		 */
+		public Dso getDso() {
+			return dso;
+		}
+
+		public String getUniquePart() {
+			return uniquePart;
+		}
+
+		public char getCheckDigit() {
+			return checkDigit;
+		}
+
+		public String toString() {
+			return dso.getCode() + " " + uniquePart.toString().substring(0, 4)
+					+ " " + uniquePart.toString().substring(4, 8) + " "
+					+ uniquePart.toString().substring(8)
+					+ checkDigit;
+		}
+
+		public String toStringNoSpaces() {
+			return dso.getCode() + uniquePart.toString() + checkDigit;
+		}
+
+		private boolean checkCheckDigit(String toCheck, int checkDigit) {
+			int[] primes = { 3, 5, 7, 13, 17, 19, 23, 29, 31, 37, 41, 43 };
+			int sum = 0;
+			for (int i = 0; i < primes.length; i++) {
+				sum += Character.getNumericValue(toCheck.charAt(i)) * primes[i];
+			}
+			return sum % 11 % 10 == checkDigit;
+		}
+
+		public boolean equals(Object obj) {
+			boolean isEqual = false;
+
+			if (obj instanceof MpanCoreRaw) {
+				MpanCoreRaw core = (MpanCoreRaw) obj;
+				isEqual = getDso().equals(core.getDso())
+						&& getUniquePart().equals(core.getUniquePart())
+						&& getCheckDigit() == core.getCheckDigit();
+			}
+			return isEqual;
+		}
+
+		public int hashCode() {
+			return dso.hashCode() + uniquePart.hashCode();
+		}
 	}
 }

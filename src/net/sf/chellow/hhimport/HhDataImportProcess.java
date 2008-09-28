@@ -14,7 +14,6 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
 import net.sf.chellow.billing.HhdcContract;
-import net.sf.chellow.data08.MpanCoreRaw;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.InternalException;
@@ -158,14 +157,14 @@ public class HhDataImportProcess extends Thread implements Urlable,
 				return;
 			}
 			HhDatumRaw datum = converter.next();
-			MpanCoreRaw mpanCoreRaw = datum.getMpanCore();
+			MpanCore mpanCore = datum.getMpanCore();
 			HhdcContract contract = HhdcContract
 					.getHhdcContract(hhdcContractId);
 			/*
 			 * Supply supply = contract.getOrganization()
 			 * .findMpanCore(mpanCoreRaw).getSupply();
 			 */
-			SupplyGeneration generation = MpanCore.findMpanCore(mpanCoreRaw)
+			SupplyGeneration generation = mpanCore
 					.getSupply().getGeneration(datum.getEndDate());
 
 			if (generation == null) {
@@ -197,7 +196,7 @@ public class HhDataImportProcess extends Thread implements Urlable,
 					}
 				}
 				if (data.size() > 1000
-						|| !(mpanCoreRaw.equals(datum.getMpanCore())
+						|| !(mpanCore.equals(datum.getMpanCore())
 								&& datum.getIsImport() == firstDatum
 										.getIsImport()
 								&& datum.getIsKwh() == firstDatum.getIsKwh() && datum
@@ -214,9 +213,9 @@ public class HhDataImportProcess extends Thread implements Urlable,
 					}
 					Hiber.close();
 					data.clear();
-					mpanCoreRaw = datum.getMpanCore();
+					mpanCore = datum.getMpanCore();
 					contract = HhdcContract.getHhdcContract(hhdcContractId);
-					generation = MpanCore.findMpanCore(mpanCoreRaw).getSupply()
+					generation = mpanCore.getSupply()
 							.getGeneration(datum.getEndDate());
 					if (generation == null) {
 						throw new UserException("HH datum has been ignored: "

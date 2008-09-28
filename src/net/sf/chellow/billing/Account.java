@@ -225,7 +225,7 @@ public class Account extends PersistentEntity implements Urlable {
 		if (to == null) {
 			int frequency = 1;
 			int profileClass = supplyGenerations.get(0)
-					.getMpans().iterator().next().getMpanTop().getPc()
+					.getMpans().iterator().next().getTop().getPc()
 					.getCode();
 			if (profileClass < 5 && profileClass > 1) {
 				frequency = 3;

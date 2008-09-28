@@ -26,7 +26,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import net.sf.chellow.data08.MpanRaw;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.InternalException;
@@ -39,7 +38,6 @@ import net.sf.chellow.monad.XmlTree;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
 import net.sf.chellow.physical.Mpan;
-import net.sf.chellow.physical.MpanCore;
 import net.sf.chellow.physical.PersistentEntity;
 
 import org.hibernate.HibernateException;
@@ -178,6 +176,7 @@ public class Batch extends PersistentEntity {
 		Invoice invoice = new Invoice(this, rawInvoice);
 		Hiber.session().save(invoice);
 		Hiber.flush();
+		/*
 		for (MpanRaw rawMpan : rawInvoice.getMpans()) {
 			MpanCore mpanCore = MpanCore.getMpanCore(rawMpan
 					.getMpanCoreRaw());
@@ -203,18 +202,23 @@ public class Batch extends PersistentEntity {
 			}
 			//invoice.insertInvoiceMpan(candidateMpans.get(0));
 		}
+		*/
 		Account account = getContract().getAccount(rawInvoice.getAccountReference());
-		Set<MpanRaw> accountMpans = new HashSet<MpanRaw>();
+		Set<String> accountMpanStrings = new HashSet<String>();
 		for (Mpan mpan : account.getMpans(invoice.getStartDate(), invoice.getFinishDate())) {
-			accountMpans.add(mpan.getMpanRaw());
+			accountMpanStrings.add(mpan.toString());
 		}
-		if (!accountMpans.equals(rawInvoice.getMpans())) {
+		Set<String> invoiceMpanStrings = new HashSet<String>();
+		for (String mpanStr : rawInvoice.getMpanStrings()) {
+			invoiceMpanStrings.add(Mpan.canonicalize(mpanStr));
+		}
+		if (!accountMpanStrings.equals(invoiceMpanStrings)) {
 			throw new UserException("Problem with account '" + reference
 					+ "' invoice '" + invoice.getReference()
 					+ "' from the half-hour ending " + invoice.getStartDate()
 					+ " to the half-hour ending " + invoice.getFinishDate()
-					+ ". This invoice has MPANs " + rawInvoice.getMpans()
-					+ " but the account in Chellow has MPANs '" + accountMpans
+					+ ". This invoice has MPANs " + rawInvoice.getMpanStrings()
+					+ " but the account in Chellow has MPANs '" + accountMpanStrings
 					+ "'.");
 		}
 		Hiber.flush();

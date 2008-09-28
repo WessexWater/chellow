@@ -1,6 +1,6 @@
 /*
  
- Copyright 2005 Meniscus Systems Ltd
+ Copyright 2005, 2008 Meniscus Systems Ltd
  
  This file is part of Chellow.
 
@@ -36,11 +36,11 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TimeZone;
 
-import net.sf.chellow.data08.MpanRaw;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.UserException;
+import net.sf.chellow.physical.MpanCore;
 import net.sf.chellow.physical.ReadType;
 import net.sf.chellow.physical.RegisterReadRaw;
 import net.sf.chellow.physical.Units;
@@ -78,37 +78,37 @@ public class InvoiceConverterCsv implements InvoiceConverter {
 			String[] titles = shredder.getLine();
 
 			if (titles.length < 7) {
-				throw new UserException
-						("The first line of the CSV must contain the 7 titles "
+				throw new UserException(
+						"The first line of the CSV must contain the 7 titles "
 								+ "'Account Text, MPAN Text, Invoice Text, Start Date, Finish Date, Net, VAT'.");
 			}
 			if (!titles[0].trim().toLowerCase().equals("account text")) {
-				throw new UserException
-						("The title of the first column should be 'Account Text'.");
+				throw new UserException(
+						"The title of the first column should be 'Account Text'.");
 			}
 			if (!titles[1].trim().toLowerCase().equals("mpan text")) {
-				throw new UserException
-						("The title of the second column should be 'MPAN Text'.");
+				throw new UserException(
+						"The title of the second column should be 'MPAN Text'.");
 			}
 			if (!titles[2].trim().toLowerCase().equals("invoice text")) {
-				throw new UserException
-						("The title of the third column should be 'Invoice Text'.");
+				throw new UserException(
+						"The title of the third column should be 'Invoice Text'.");
 			}
 			if (!titles[3].trim().toLowerCase().equals("start date")) {
-				throw new UserException
-						("The title of the fouth column should be 'Start Date'.");
+				throw new UserException(
+						"The title of the fouth column should be 'Start Date'.");
 			}
 			if (!titles[4].trim().toLowerCase().equals("finish date")) {
-				throw new UserException
-						("The title of the fifth column should be 'Finish Date'.");
+				throw new UserException(
+						"The title of the fifth column should be 'Finish Date'.");
 			}
 			if (!titles[5].trim().toLowerCase().equals("net")) {
-				throw new UserException
-						("The title of the sixth column should be 'Net'.");
+				throw new UserException(
+						"The title of the sixth column should be 'Net'.");
 			}
 			if (!titles[6].trim().toLowerCase().equals("vat")) {
-				throw new UserException
-						("The title of the seventh column should be 'VAT'.");
+				throw new UserException(
+						"The title of the seventh column should be 'VAT'.");
 			}
 		} catch (IOException e) {
 			throw new InternalException(e);
@@ -123,16 +123,16 @@ public class InvoiceConverterCsv implements InvoiceConverter {
 				for (String[] values = shredder.getLine(); values != null; values = shredder
 						.getLine()) {
 					if (values.length < 7) {
-						throw new UserException
-								("Problem at line number "
+						throw new UserException(
+								"Problem at line number "
 										+ shredder.getLastLineNumber()
 										+ "; there aren't enough fields, there should be 7");
 					}
 					Set<RegisterReadRaw> reads = new HashSet<RegisterReadRaw>();
 					for (int i = 9; i < values.length; i += 11) {
-
-						reads.add(new RegisterReadRaw(new MpanRaw(values[i]),
-								Float.parseFloat(values[i + 1]), values[i + 2],
+						reads.add(new RegisterReadRaw(MpanCore
+								.getMpanCore(values[i]), Float
+								.parseFloat(values[i + 1]), values[i + 2],
 								Units.getUnits(values[i + 3]), Integer
 										.parseInt(values[i + 4]),
 								new DayFinishDate(values[i + 5]), Float
@@ -142,9 +142,11 @@ public class InvoiceConverterCsv implements InvoiceConverter {
 										.parseFloat(values[i + 9]), ReadType
 										.getReadType(values[i + 10])));
 					}
+					Set<String> mpanStrings = new HashSet<String>();
+					mpanStrings.add(values[2]);
 					rawBills.add(new InvoiceRaw(invoiceTypeMap.get(values[0]),
-							values[1], values[2], values[3], new DayStartDate(
-									values[4]), new DayStartDate(
+							values[1], mpanStrings, values[3],
+							new DayStartDate(values[4]), new DayStartDate(
 									values[5]).getNext(), new DayFinishDate(
 									values[6]), Double.parseDouble(values[7]),
 							Double.parseDouble(values[8]), reads));

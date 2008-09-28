@@ -160,12 +160,12 @@ public class SupplierContract extends Contract {
 		if (!mpansOutside.isEmpty()) {
 			throw new UserException(document(),
 					mpansOutside.size() > 1 ? "The MPANs with cores "
-							+ mpansOutside.get(0).getMpanCore()
+							+ mpansOutside.get(0).getCore()
 							+ " and "
 							+ mpansOutside.get(mpansOutside.size() - 1)
-									.getMpanCore() + " use this service"
+									.getCore() + " use this service"
 							: "An MPAN with core "
-									+ mpansOutside.get(0).getMpanCore()
+									+ mpansOutside.get(0).getCore()
 									+ " uses this service and lies outside "
 									+ startDate
 									+ " to "

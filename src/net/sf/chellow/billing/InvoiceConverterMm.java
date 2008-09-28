@@ -1,6 +1,6 @@
 /*
  
- Copyright 2005 Meniscus Systems Ltd
+ Copyright 2005, 2008 Meniscus Systems Ltd
  
  This file is part of Chellow.
 
@@ -30,12 +30,13 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 import java.util.TimeZone;
 
-import net.sf.chellow.data08.MpanRaw;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.HttpException;
@@ -60,7 +61,7 @@ public class InvoiceConverterMm implements InvoiceConverter {
 		if (rawBills.isEmpty()) {
 			String line;
 			List<List<Object>> billFields = new ArrayList<List<Object>>();
-			Map<String, String> mpanLookup = new HashMap<String, String>();
+			Map<String, Set<String>> mpanLookup = new HashMap<String, Set<String>>();
 			dateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
 			try {
 				line = lreader.readLine();
@@ -71,7 +72,7 @@ public class InvoiceConverterMm implements InvoiceConverter {
 				String recordType = null;
 				double net = 0;
 				double vat = 0;
-				String mpanText = null;
+				// String mpanText = null;
 				while (line != null) {
 					recordType = getRecordType(line);
 					if (!recordType.equals("0000")
@@ -85,14 +86,15 @@ public class InvoiceConverterMm implements InvoiceConverter {
 						vat += Double.parseDouble(line.substring(85, 97)) / 100;
 					}
 					if (recordType.equals("0461")) {
-						String mpanStr;
-						mpanStr = new MpanRaw(line.substring(148, 156)
-								+ line.substring(135, 148)).toString();
-						if (mpanText == null) {
-							mpanText = mpanStr;
-						} else if (mpanText.indexOf(mpanStr) == -1) {
-							mpanText = mpanText + ", " + mpanStr;
+						Set<String> mpanStrings = mpanLookup
+								.get(accountReference);
+						if (mpanStrings == null) {
+							mpanLookup.put(accountReference,
+									new HashSet<String>());
+							mpanStrings = mpanLookup.get(accountReference);
 						}
+						mpanStrings.add(line.substring(148, 156)
+								+ line.substring(135, 148));
 					}
 					if (recordType.equals("0101")) {
 						try {
@@ -100,16 +102,16 @@ public class InvoiceConverterMm implements InvoiceConverter {
 									dateFormat.parse(line.substring(66, 74)))
 									.getNext().getDate()).getNext();
 						} catch (ParseException e) {
-							throw new UserException
-									("Can't parse the start date: '"
+							throw new UserException(
+									"Can't parse the start date: '"
 											+ e.getMessage() + "'.");
 						}
 						try {
 							finishDate = new DayFinishDate(dateFormat
 									.parse(line.substring(74, 82)));
 						} catch (ParseException e) {
-							throw new UserException
-									("Can't parse the finish date: '"
+							throw new UserException(
+									"Can't parse the finish date: '"
 											+ e.getMessage() + "'.");
 						}
 					}
@@ -125,18 +127,17 @@ public class InvoiceConverterMm implements InvoiceConverter {
 								|| !invoiceNumber.equals(invoiceNumberNext)) {
 							List<Object> fields = new ArrayList<Object>();
 							fields.add(accountReference);
-							fields.add(mpanText);
 							fields.add(invoiceNumber);
 							fields.add(startDate);
 							fields.add(finishDate);
 							fields.add(net);
 							fields.add(vat);
 							billFields.add(fields);
-							if (mpanLookup.get(accountReference) == null) {
-								mpanLookup.put(accountReference, mpanText);
-							}
+							/*
+							 * if (mpanLookup.get(accountReference) == null) {
+							 * mpanLookup.put(accountReference, mpanText); }
+							 */
 							accountReference = null;
-							mpanText = null;
 							invoiceNumber = null;
 							startDate = null;
 							finishDate = null;
@@ -153,15 +154,16 @@ public class InvoiceConverterMm implements InvoiceConverter {
 			}
 			for (List<Object> fields : billFields) {
 				try {
-					rawBills.add(new InvoiceRaw(InvoiceType.NORMAL, (String) fields.get(0), fields
-							.get(1) == null ? mpanLookup.get((String) fields
-							.get(0)) : (String) fields.get(1), (String) fields
-							.get(2), (DayStartDate) fields.get(3), (DayStartDate) fields.get(3),
+					rawBills.add(new InvoiceRaw(InvoiceType.NORMAL,
+							(String) fields.get(0), mpanLookup
+									.get((String) fields.get(0)),
+							(String) fields.get(2), (DayStartDate) fields
+									.get(3), (DayStartDate) fields.get(3),
 							(DayFinishDate) fields.get(4), (Double) fields
 									.get(5), (Double) fields.get(6), null));
 				} catch (HttpException e) {
-					throw new UserException
-						("I'm having trouble parsing the file. The problem seems to be with the bill with account number '"
+					throw new UserException(
+							"I'm having trouble parsing the file. The problem seems to be with the bill with account number '"
 									+ (String) fields.get(0)
 									+ "' and invoice number '"
 									+ (String) fields.get(2)

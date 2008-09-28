@@ -31,8 +31,6 @@ import java.util.Map;
 import java.util.Set;
 
 import net.sf.chellow.billing.Account;
-import net.sf.chellow.data08.MpanCoreRaw;
-import net.sf.chellow.data08.MpanRaw;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.InternalException;
@@ -46,6 +44,7 @@ import net.sf.chellow.monad.XmlTree;
 import net.sf.chellow.monad.types.MonadDate;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
+import net.sf.chellow.physical.MpanCore.MpanCoreRaw;
 import net.sf.chellow.ui.Chellow;
 
 import org.hibernate.Criteria;
@@ -137,7 +136,7 @@ public class Supply extends PersistentEntity {
 	void setMeters(Set<Meter> meters) {
 		this.meters = meters;
 	}
-
+/*
 	public boolean hasMpanCoreRaw(MpanCoreRaw mpanCoreRaw) throws HttpException {
 		boolean hasMpanCoreRaw = false;
 		for (MpanCore mpanCore : mpanCores) {
@@ -148,17 +147,17 @@ public class Supply extends PersistentEntity {
 		}
 		return hasMpanCoreRaw;
 	}
-
-	public MpanCore addMpanCore(MpanCoreRaw mpanCoreRaw) throws HttpException {
-		MpanCore mpanCore = new MpanCore(this, mpanCoreRaw);
+*/
+	public MpanCore addMpanCore(String mpanCore) throws HttpException {
+		MpanCore core = new MpanCore(this, mpanCore);
 		try {
-			Hiber.session().save(mpanCore);
-			mpanCores.add(mpanCore);
+			Hiber.session().save(core);
+			mpanCores.add(core);
 			Hiber.flush();
 		} catch (ConstraintViolationException e) {
 			throw new UserException("This MPAN core already exists.");
 		}
-		return mpanCore;
+		return core;
 	}
 
 	public Meter insertMeter(String meterSerialNumber) throws HttpException {
@@ -271,8 +270,8 @@ public class Supply extends PersistentEntity {
 		if (existingImportMpan == null) {
 			newSupplyGeneration = addGeneration(existingSiteMap, existingMeter,
 					null, null, null, null, false, false, false, false, null,
-					existingExportMpan.getMpanRaw(), existingExportMpan
-							.getMpanTop().getSsc(), existingExportMpan
+					existingExportMpan.toString(), existingExportMpan
+							.getTop().getSsc(), existingExportMpan
 							.getHhdcAccount(), existingExportMpan
 							.getSupplierAccount(), existingExportMpan
 							.getHasImportKwh(), existingExportMpan
@@ -282,8 +281,8 @@ public class Supply extends PersistentEntity {
 							.getAgreedSupplyCapacity(), finishDate);
 		} else if (existingExportMpan == null) {
 			newSupplyGeneration = addGeneration(existingSiteMap, existingMeter,
-					existingImportMpan.getMpanRaw(), existingImportMpan
-							.getMpanTop().getSsc(), existingImportMpan
+					existingImportMpan.toString(), existingImportMpan
+							.getTop().getSsc(), existingImportMpan
 							.getHhdcAccount(), existingImportMpan
 							.getSupplierAccount(), existingImportMpan
 							.getHasImportKwh(), existingImportMpan
@@ -294,8 +293,8 @@ public class Supply extends PersistentEntity {
 					false, false, false, false, null, finishDate);
 		} else {
 			newSupplyGeneration = addGeneration(existingSiteMap, existingMeter,
-					existingImportMpan.getMpanRaw(), existingImportMpan
-							.getMpanTop().getSsc(), existingImportMpan
+					existingImportMpan.toString(), existingImportMpan
+							.getTop().getSsc(), existingImportMpan
 							.getHhdcAccount(), existingImportMpan
 							.getSupplierAccount(), existingImportMpan
 							.getHasImportKwh(), existingImportMpan
@@ -303,7 +302,7 @@ public class Supply extends PersistentEntity {
 							.getHasExportKwh(), existingImportMpan
 							.getHasExportKvarh(), existingImportMpan
 							.getAgreedSupplyCapacity(), existingExportMpan
-							.getMpanRaw(), existingExportMpan.getMpanTop()
+							.toString(), existingExportMpan.getTop()
 							.getSsc(), existingExportMpan.getHhdcAccount(),
 					existingExportMpan.getSupplierAccount(), existingExportMpan
 							.getHasImportKwh(), existingExportMpan
@@ -343,11 +342,11 @@ public class Supply extends PersistentEntity {
 	 * exportHasExportKvarh, exportAgreedSupplyCapacity, finishDate); }
 	 */
 	public SupplyGeneration addGeneration(Map<Site, Boolean> siteMap,
-			Meter meter, MpanRaw importMpanRaw, Ssc importSsc,
+			Meter meter, String importMpanStr, Ssc importSsc,
 			Account importHhdceAccount, Account importAccountSupplier,
 			boolean importHasImportKwh, boolean importHasImportKvarh,
 			boolean importHasExportKwh, boolean importHasExportKvarh,
-			Integer importAgreedSupplyCapacity, MpanRaw exportMpanRaw,
+			Integer importAgreedSupplyCapacity, String exportMpanStr,
 			Ssc exportSsc, Account exportHhdceAccount,
 			Account exportSupplierAccount, boolean exportHasImportKwh,
 			boolean exportHasImportKvarh, boolean exportHasExportKwh,
@@ -377,10 +376,10 @@ public class Supply extends PersistentEntity {
 			generations.add(supplyGeneration);
 		}
 		Hiber.flush();
-		supplyGeneration.addOrUpdateMpans(importMpanRaw, importSsc,
+		supplyGeneration.addOrUpdateMpans(importMpanStr, importSsc,
 				importHhdceAccount, importAccountSupplier, importHasImportKwh,
 				importHasImportKvarh, importHasExportKwh, importHasExportKvarh,
-				importAgreedSupplyCapacity, exportMpanRaw, exportSsc,
+				importAgreedSupplyCapacity, exportMpanStr, exportSsc,
 				exportHhdceAccount, exportSupplierAccount, exportHasImportKwh,
 				exportHasImportKvarh, exportHasExportKwh, exportHasExportKvarh,
 				exportAgreedSupplyCapacity);
@@ -679,7 +678,7 @@ public class Supply extends PersistentEntity {
 										generation.getFinishDate().getDate()))) {
 					SupplyGeneration targetGeneration = getGeneration(read
 							.getPresentDate());
-					Mpan targetMpan = read.getMpan().getMpanTop().getLlfc()
+					Mpan targetMpan = read.getMpan().getTop().getLlfc()
 							.getIsImport() ? targetGeneration.getImportMpan()
 							: targetGeneration.getExportMpan();
 					if (targetMpan == null) {

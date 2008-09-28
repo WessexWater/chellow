@@ -1,7 +1,6 @@
 package net.sf.chellow.physical;
 
 import net.sf.chellow.billing.DayFinishDate;
-import net.sf.chellow.data08.MpanRaw;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.types.MonadObject;
@@ -10,7 +9,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 public class RegisterReadRaw extends MonadObject {
-	private MpanRaw mpanRaw;
+	private MpanCore mpanCore;
 
 	private String meterSerialNumber;
 
@@ -32,15 +31,15 @@ public class RegisterReadRaw extends MonadObject {
 
 	private ReadType presentType;
 
-	public RegisterReadRaw(MpanRaw mpanRaw, float coefficient,
+	public RegisterReadRaw(MpanCore mpanCore, float coefficient,
 			String meterSerialNumber, Units units, int tpr,
 			DayFinishDate previousDate, float previousValue,
 			ReadType previousType, DayFinishDate presentDate,
 			float presentValue, ReadType presentType) throws InternalException {
-		if (mpanRaw == null) {
+		if (mpanCore == null) {
 			throw new InternalException("mpan raw argument can't be null.");
 		}
-		this.mpanRaw = mpanRaw;
+		this.mpanCore = mpanCore;
 		this.coefficient = coefficient;
 		this.meterSerialNumber = meterSerialNumber;
 		this.units = units;
@@ -53,8 +52,8 @@ public class RegisterReadRaw extends MonadObject {
 		this.presentType = presentType;
 	}
 
-	public MpanRaw getMpanRaw() {
-		return mpanRaw;
+	public MpanCore getMpanCore() {
+		return mpanCore;
 	}
 
 	public float getCoefficient() {
@@ -99,7 +98,7 @@ public class RegisterReadRaw extends MonadObject {
 
 	public Element toXml(Document doc) throws HttpException {
 		Element element = doc.createElement("register-read-raw");
-		element.setAttribute("mpan", mpanRaw.toString());
+		element.setAttribute("mpan-core", mpanCore.toString());
 		element.setAttribute("coefficient", Float.toString(coefficient));
 		element.setAttribute("meter-serial-number", meterSerialNumber);
 		element.setAttribute("units", Units.name(units));

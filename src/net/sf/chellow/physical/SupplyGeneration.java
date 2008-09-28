@@ -32,8 +32,6 @@ import net.sf.chellow.billing.Account;
 import net.sf.chellow.billing.Dso;
 import net.sf.chellow.billing.HhdcContract;
 import net.sf.chellow.billing.SupplierContract;
-import net.sf.chellow.data08.MpanCoreRaw;
-import net.sf.chellow.data08.MpanRaw;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.InternalException;
@@ -148,9 +146,9 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 
 	public Dso getDso() {
 		if (importMpan == null) {
-			return exportMpan.getMpanCore().getDso();
+			return exportMpan.getCore().getDso();
 		} else {
-			return importMpan.getMpanCore().getDso();
+			return importMpan.getCore().getDso();
 		}
 	}
 
@@ -280,19 +278,19 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 	 * data. getSupply().checkAfterUpdate(getStartDate(), getFinishDate()); }
 	 */
 
-	public void addOrUpdateMpans(MpanRaw importMpanRaw, Ssc importSsc,
+	public void addOrUpdateMpans(String importMpanStr, Ssc importSsc,
 			Account importHhdcAccount, Account importSupplierAccount,
 			boolean importHasImportKwh, boolean importHasImportKvarh,
 			boolean importHasExportKwh, boolean importHasExportKvarh,
-			Integer importAgreedSupplyCapacity, MpanRaw exportMpanRaw,
+			Integer importAgreedSupplyCapacity, String exportMpanStr,
 			Ssc exportSsc, Account exportHhdcAccount,
 			Account exportSupplierAccount, boolean exportHasImportKwh,
 			boolean exportHasImportKvarh, boolean exportHasExportKwh,
 			boolean exportHasExportKvarh, Integer exportAgreedSupplyCapacity)
 			throws HttpException {
 		if (importMpan == null) {
-			if (importMpanRaw != null) {
-				setImportMpan(new Mpan(this, importMpanRaw, importSsc,
+			if (importMpanStr != null && importMpanStr.length() != 0) {
+				setImportMpan(new Mpan(this, importMpanStr, importSsc,
 						importHhdcAccount, importSupplierAccount,
 						importHasImportKwh, importHasImportKvarh,
 						importHasExportKwh, importHasExportKvarh,
@@ -300,19 +298,19 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 				mpans.add(getImportMpan());
 			}
 		} else {
-			if (importMpanRaw == null) {
+			if (importMpanStr == null || importMpanStr.length() == 0) {
 				mpans.remove(importMpan);
 				setImportMpan(null);
 			} else {
-				importMpan.update(importMpanRaw, importSsc, importHhdcAccount,
+				importMpan.update(importMpanStr, importSsc, importHhdcAccount,
 						importSupplierAccount, importHasImportKwh,
 						importHasImportKvarh, importHasExportKwh,
 						importHasExportKvarh, importAgreedSupplyCapacity);
 			}
 		}
 		if (exportMpan == null) {
-			if (exportMpanRaw != null) {
-				setExportMpan(new Mpan(this, exportMpanRaw, exportSsc,
+			if (exportMpanStr != null && exportMpanStr.length() != 0) {
+				setExportMpan(new Mpan(this, exportMpanStr, exportSsc,
 						exportHhdcAccount, exportSupplierAccount,
 						exportHasImportKwh, exportHasImportKvarh,
 						exportHasExportKwh, exportHasExportKvarh,
@@ -320,11 +318,11 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 				mpans.add(getExportMpan());
 			}
 		} else {
-			if (exportMpanRaw == null) {
+			if (exportMpanStr == null || exportMpanStr.length() == 0) {
 				mpans.remove(exportMpan);
 				setExportMpan(null);
 			} else {
-				exportMpan.update(exportMpanRaw, exportSsc, exportHhdcAccount,
+				exportMpan.update(exportMpanStr, exportSsc, exportHhdcAccount,
 						exportSupplierAccount, exportHasImportKwh,
 						exportHasImportKvarh, exportHasExportKwh,
 						exportHasExportKvarh, exportAgreedSupplyCapacity);
@@ -335,20 +333,20 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 					"A supply generation must have at least one MPAN.");
 		}
 		if (importMpan != null) {
-			if (!importMpan.getMpanTop().getLlfc().getIsImport()) {
+			if (!importMpan.getTop().getLlfc().getIsImport()) {
 				throw new UserException(document(),
 						"The import line loss factor '"
-								+ importMpan.getMpanTop().getLlfc()
+								+ importMpan.getTop().getLlfc()
 								+ "' says that the MPAN is actually export.");
 			}
 		}
 		if (exportMpan != null) {
-			if (exportMpan.getMpanTop().getLlfc().getIsImport()) {
+			if (exportMpan.getTop().getLlfc().getIsImport()) {
 				throw new UserException(
 						"Problem with the export MPAN with core '"
-								+ exportMpan.getMpanCore()
+								+ exportMpan.getCore()
 								+ "'. The Line Loss Factor '"
-								+ exportMpan.getMpanTop().getLlfc()
+								+ exportMpan.getTop().getLlfc()
 								+ "' says that the MPAN is actually import.");
 			}
 		}
@@ -360,13 +358,13 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 				throw new UserException(
 						"The HHDC for the import and export MPANs must be the same.");
 			}
-			if (!importMpan.getMpanCore().getDso().equals(
-					exportMpan.getMpanCore().getDso())) {
+			if (!importMpan.getCore().getDso().equals(
+					exportMpan.getCore().getDso())) {
 				throw new UserException(
 						"Two MPAN generations on the same supply must have the same DSO.");
 			}
-			if (!importMpan.getMpanTop().getLlfc().getVoltageLevel().equals(
-					exportMpan.getMpanTop().getLlfc().getVoltageLevel())) {
+			if (!importMpan.getTop().getLlfc().getVoltageLevel().equals(
+					exportMpan.getTop().getLlfc().getVoltageLevel())) {
 				throw new UserException(
 						"The voltage level indicated by the Line Loss Factor must be the same for both the MPANs.");
 			}
@@ -384,11 +382,8 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 			 */
 
 			if (getExportMpan() != null && getImportMpan() != null) {
-				int code = getImportMpan().getMpanTop().getLlfc()
-						.getCode();
-				if (code != 520
-						&& code != 550
-						&& code != 580) {
+				int code = getImportMpan().getTop().getLlfc().getCode();
+				if (code != 520 && code != 550 && code != 580) {
 					throw new UserException(
 							"The DSO is 22, there's an export MPAN and the Line Loss Factor of the import MPAN "
 									+ getImportMpan()
@@ -468,11 +463,11 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 			throws HttpException {
 		MpanCore mpanCore = null;
 		if (importMpan != null && importMpan.getHhdcAccount() != null) {
-			mpanCore = importMpan.getMpanCore();
+			mpanCore = importMpan.getCore();
 		}
 		if (mpanCore == null && exportMpan != null
 				&& exportMpan.getHhdcAccount() != null) {
-			mpanCore = exportMpan.getMpanCore();
+			mpanCore = exportMpan.getCore();
 		}
 		return mpanCore;
 	}
@@ -635,8 +630,8 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 		Document doc = MonadUtils.newSourceDocument();
 		Element source = doc.getDocumentElement();
 		Element generationElement = (Element) toXml(doc, new XmlTree(
-				"siteSupplyGenerations", new XmlTree("site")).put("meter").put("supply",
-				new XmlTree("source")));
+				"siteSupplyGenerations", new XmlTree("site")).put("meter").put(
+				"supply", new XmlTree("source")));
 		source.appendChild(generationElement);
 		for (Mpan mpan : mpans) {
 			Element mpanElement = (Element) mpan.toXml(doc, new XmlTree(
@@ -655,16 +650,13 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 								new XmlTree("provider"))))));
 			}
 			/*
-			for (InvoiceMpan invoiceMpan : (List<InvoiceMpan>) Hiber
-					.session()
-					.createQuery(
-							"from InvoiceMpan invoiceMpan where invoiceMpan.mpan = :mpan")
-					.setEntity("mpan", mpan).list()) {
-				mpanElement.appendChild(invoiceMpan.toXml(doc, new XmlTree(
-						"invoice", new XmlTree("batch", new XmlTree("service",
-								new XmlTree("provider"))))));
-			}
-			*/
+			 * for (InvoiceMpan invoiceMpan : (List<InvoiceMpan>) Hiber
+			 * .session() .createQuery( "from InvoiceMpan invoiceMpan where
+			 * invoiceMpan.mpan = :mpan") .setEntity("mpan", mpan).list()) {
+			 * mpanElement.appendChild(invoiceMpan.toXml(doc, new XmlTree(
+			 * "invoice", new XmlTree("batch", new XmlTree("service", new
+			 * XmlTree("provider")))))); }
+			 */
 		}
 		// Organization organization = organization();
 		/*
@@ -727,8 +719,8 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 				setPhysicalLocation(site);
 				Hiber.commit();
 				inv.sendOk(document());
-			} else {		
-				MpanRaw importMpanRaw = null;
+			} else {
+				String importMpanStr = null;
 				Ssc importSsc = null;
 				Integer importAgreedSupplyCapacity = null;
 				Date startDate = inv.getDate("start-date");
@@ -763,9 +755,8 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 						importSsc = Ssc
 								.getSsc(inv.getString("import-ssc-code"));
 					}
-					importMpanRaw = new MpanRaw(Integer.toString(importPc.getCode()),
-							importMtcCode, importLlfcCodeStr,
-							new MpanCoreRaw(importMpanCoreStr));
+					importMpanStr = importPc.codeAsString() + importMtcCode
+							+ importLlfcCodeStr + importMpanCoreStr;
 					importAgreedSupplyCapacity = inv
 							.getInteger("import-agreed-supply-capacity");
 					importHasImportKwh = inv
@@ -798,7 +789,7 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 					importSupplierAccount = importSupplierContract
 							.getAccount(importSupplierAccountReference);
 				}
-				MpanRaw exportMpanRaw = null;
+				String exportMpanStr = null;
 				Ssc exportSsc = null;
 				Integer exportAgreedSupplyCapacity = null;
 				Account exportHhdcAccount = null;
@@ -824,9 +815,8 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 								.getSsc(inv.getString("export-ssc-code"));
 					}
 					Pc exportPc = Pc.getPc(exportPcId);
-					exportMpanRaw = new MpanRaw(Integer.toString(exportPc.getCode()),
-							exportMtcCode, llfcCodeStr,
-							new MpanCoreRaw(exportMpanCoreStr));
+					exportMpanStr = exportPc.codeAsString() + exportMtcCode
+							+ llfcCodeStr + exportMpanCoreStr;
 					exportAgreedSupplyCapacity = inv
 							.getInteger("export-agreed-supply-capacity");
 					exportHasImportKwh = inv
@@ -859,11 +849,11 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 					exportSupplierAccount = exportSupplierContract
 							.getAccount(exportSupplierAccountReference);
 				}
-				addOrUpdateMpans(importMpanRaw, importSsc, importHhdcAccount,
+				addOrUpdateMpans(importMpanStr, importSsc, importHhdcAccount,
 						importSupplierAccount, importHasImportKwh,
 						importHasImportKvarh, importHasExportKwh,
 						importHasExportKvarh, importAgreedSupplyCapacity,
-						exportMpanRaw, exportSsc, exportHhdcAccount,
+						exportMpanStr, exportSsc, exportHhdcAccount,
 						exportSupplierAccount, exportHasImportKwh,
 						exportHasImportKvarh, exportHasExportKwh,
 						exportHasExportKvarh, exportAgreedSupplyCapacity);
@@ -918,28 +908,20 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 		}
 		Hiber.flush();
 	}
-/*
-	public RegisterRead insertRegisterRead(RegisterReadRaw rawRegisterRead,
-			Invoice invoice) throws HttpException {
-		Mpan importMpan = getImportMpan();
-		Mpan exportMpan = getExportMpan();
-		RegisterRead read = null;
-		if (importMpan != null
-				&& importMpan.getMpanRaw().equals(rawRegisterRead.getMpanRaw())) {
-			read = invoice.insertRead(importMpan, rawRegisterRead);
-		} else if (exportMpan != null
-				&& exportMpan.getMpanRaw().equals(rawRegisterRead.getMpanRaw())) {
-			read = invoice.insertRead(exportMpan, rawRegisterRead);
-		} else {
-			throw new UserException("For the supply " + getId()
-					+ " neither the import MPAN " + importMpan
-					+ " or the export MPAN " + exportMpan
-					+ " match the register read MPAN "
-					+ rawRegisterRead.getMpanRaw() + ".");
-		}
-		return read;
-	}
-*/
+
+	/*
+	 * public RegisterRead insertRegisterRead(RegisterReadRaw rawRegisterRead,
+	 * Invoice invoice) throws HttpException { Mpan importMpan =
+	 * getImportMpan(); Mpan exportMpan = getExportMpan(); RegisterRead read =
+	 * null; if (importMpan != null &&
+	 * importMpan.getMpanRaw().equals(rawRegisterRead.getMpanRaw())) { read =
+	 * invoice.insertRead(importMpan, rawRegisterRead); } else if (exportMpan !=
+	 * null && exportMpan.getMpanRaw().equals(rawRegisterRead.getMpanRaw())) {
+	 * read = invoice.insertRead(exportMpan, rawRegisterRead); } else { throw
+	 * new UserException("For the supply " + getId() + " neither the import MPAN " +
+	 * importMpan + " or the export MPAN " + exportMpan + " match the register
+	 * read MPAN " + rawRegisterRead.getMpanRaw() + "."); } return read; }
+	 */
 	public Channels getChannelsInstance() {
 		return new Channels(this);
 	}

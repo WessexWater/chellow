@@ -35,7 +35,6 @@ import java.util.Set;
 import net.sf.chellow.billing.Account;
 import net.sf.chellow.billing.HhdcContract;
 import net.sf.chellow.billing.SupplierContract;
-import net.sf.chellow.data08.MpanRaw;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.InternalException;
@@ -177,11 +176,6 @@ public class Site extends PersistentEntity {
 			String exportSupplierAccountReference,
 			String exportAgreedSupplyCapacityStr, HhEndDate startDate,
 			String sourceCode) throws HttpException {
-
-		MpanRaw importMpanRaw = null;
-		if (importMpanStr.length() != 0) {
-			importMpanRaw = new MpanRaw("import", importMpanStr);
-		}
 		Integer importAgreedSupplyCapacity = null;
 		HhdcContract importHhdcContract = null;
 		Account importHhdcAccount = null;
@@ -189,7 +183,7 @@ public class Site extends PersistentEntity {
 		Account importSupplierAccount = null;
 		Ssc importSsc = null;
 
-		if (importMpanRaw != null) {
+		if (importMpanStr != null && importMpanStr.length() != 0) {
 			importSsc = importSscCode.trim().length() == 0 ? null : Ssc
 					.getSsc(importSscCode);
 			try {
@@ -216,12 +210,8 @@ public class Site extends PersistentEntity {
 		SupplierContract exportSupplierContract = null;
 		Account exportAccountSupplier = null;
 		Integer exportAgreedSupplyCapacity = null;
-		MpanRaw exportMpanRaw = null;
 		Ssc exportSsc = null;
-		if (exportMpanStr.length() != 0) {
-			exportMpanRaw = new MpanRaw("export", exportMpanStr);
-		}
-		if (exportMpanRaw != null) {
+		if (exportMpanStr != null && exportMpanStr.length() != 0) {
 			exportSsc = exportSscCode.trim().length() == 0 ? null : Ssc
 					.getSsc(exportSscCode);
 			try {
@@ -243,12 +233,12 @@ public class Site extends PersistentEntity {
 			exportAccountSupplier = exportSupplierContract
 					.getAccount(exportSupplierAccountReference);
 		}
-		return insertSupply(supplyName, meterSerialNumber, importMpanRaw,
+		return insertSupply(supplyName, meterSerialNumber, importMpanStr,
 				importSsc, importHhdcAccount, importSupplierAccount,
 				importHhdcAccount == null ? false : true,
 				importHhdcAccount == null ? false : true, false,
 				importHhdcAccount == null ? false : true,
-				importAgreedSupplyCapacity, exportMpanRaw, exportSsc,
+				importAgreedSupplyCapacity, exportMpanStr, exportSsc,
 				exportHhdcAccount, exportAccountSupplier, false,
 				exportHhdcAccount == null ? false : true,
 				exportHhdcAccount == null ? false : true,
@@ -257,11 +247,11 @@ public class Site extends PersistentEntity {
 	}
 
 	public Supply insertSupply(String supplyName, String meterSerialNumber,
-			MpanRaw importMpanRaw, Ssc importSsc, Account importHhdcAccount,
+			String importMpanStr, Ssc importSsc, Account importHhdcAccount,
 			Account importAccountSupplier, boolean importHasImportKwh,
 			boolean importHasImportKvarh, boolean importHasExportKwh,
 			boolean importHasExportKvarh, Integer importAgreedSupplyCapacity,
-			MpanRaw exportMpanRaw, Ssc exportSsc, Account exportHhdcAccount,
+			String exportMpanStr, Ssc exportSsc, Account exportHhdcAccount,
 			Account exportAccountSupplier, boolean exportHasImportKwh,
 			boolean exportHasImportKvarh, boolean exportHasExportKwh,
 			boolean exportHasExportKvarh, Integer exportAgreedSupplyCapacity,
@@ -287,12 +277,14 @@ public class Site extends PersistentEntity {
 				throw new InternalException(e);
 			}
 		}
+		/*
 		if (importMpanRaw != null) {
 			supply.addMpanCore(importMpanRaw.getMpanCoreRaw());
 		}
 		if (exportMpanRaw != null) {
 			supply.addMpanCore(exportMpanRaw.getMpanCoreRaw());
 		}
+		*/
 		Map<Site, Boolean> siteMap = new HashMap<Site, Boolean>();
 		siteMap.put(this, true);
 		Meter meter = null;
@@ -303,10 +295,10 @@ public class Site extends PersistentEntity {
 			}
 		}
 		SupplyGeneration supplyGeneration = supply.addGeneration(siteMap,
-				meter, importMpanRaw, importSsc, importHhdcAccount,
+				meter, importMpanStr, importSsc, importHhdcAccount,
 				importAccountSupplier, importHasImportKwh,
 				importHasImportKvarh, importHasExportKwh, importHasExportKvarh,
-				importAgreedSupplyCapacity, exportMpanRaw, exportSsc,
+				importAgreedSupplyCapacity, exportMpanStr, exportSsc,
 				exportHhdcAccount, exportAccountSupplier, exportHasImportKwh,
 				exportHasImportKvarh, exportHasExportKwh, exportHasExportKvarh,
 				exportAgreedSupplyCapacity, null);
