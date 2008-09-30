@@ -38,6 +38,7 @@
 		</component>
 		<property type="string" name="passwordDigest"
 			column="password_digest" not-null="true" />
+		<!--
 		<set name="roles" table="user_role" lazy="true">
 			<key>
 				<column name="user_id" not-null="true" />
@@ -46,6 +47,7 @@
 				<column name="role_id" not-null="true" />
 			</many-to-many>
 		</set>
+		-->
 	</class>
 </hibernate-mapping>
 

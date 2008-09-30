@@ -1,5 +1,9 @@
 package net.sf.chellow.physical;
 
+import java.io.IOException;
+import java.io.StringReader;
+import java.util.Properties;
+
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 
@@ -13,24 +17,32 @@ import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
 
-public class DatabaseVersion extends PersistentEntity {
+public class Configuration extends PersistentEntity {
 	static public void setDatabaseVersion(int version) {
-		DatabaseVersion databaseVersion = (DatabaseVersion) Hiber.session()
-				.createQuery("from DatabaseVersion").uniqueResult();
-		if (databaseVersion == null) {
-			databaseVersion = new DatabaseVersion();
-			databaseVersion.setVersion(version);
-			Hiber.session().save(databaseVersion);
+		Configuration configuration = getConfiguration();
+		if (configuration == null) {
+			configuration = new Configuration();
+			configuration.setVersion(version);
+			Hiber.session().save(configuration);
 			Hiber.flush();
 		} else {
-			databaseVersion.setVersion(version);
+			configuration.setVersion(version);
 			Hiber.flush();
 		}
+	}
+	
+	static public Configuration getConfiguration() {
+		return (Configuration) Hiber.session()
+		.createQuery("from DatabaseVersion").uniqueResult();
 	}
 
 	private int version;
 
-	public DatabaseVersion() {
+	private String implicitUserProperties;
+	
+	private String chellowProperties;
+	
+	public Configuration() {
 	}
 
 	int getVersion() {
@@ -39,6 +51,22 @@ public class DatabaseVersion extends PersistentEntity {
 
 	void setVersion(int version) {
 		this.version = version;
+	}
+	
+	public String getImplicitUserProperties() {
+		return implicitUserProperties;
+	}
+	
+	void setImplicitUserProperties(String implicitUserProperties) {
+		this.implicitUserProperties = implicitUserProperties;
+	}
+	
+	public String getChellowProperties() {
+		return chellowProperties;
+	}
+	
+	void setChellowProperties(String chellowProperties) {
+		this.chellowProperties = chellowProperties;
 	}
 
 	public MonadUri getUri() {
@@ -69,5 +97,15 @@ public class DatabaseVersion extends PersistentEntity {
 	public Node toXml(Document doc) throws HttpException {
 		// TODO Auto-generated method stub
 		return null;
+	}
+	
+	public String getChellowProperty(String name) throws HttpException {
+		Properties props = new Properties();
+		try {
+			props.load(new StringReader(chellowProperties));
+		} catch (IOException e) {
+			throw new InternalException(e);
+		}
+		return props.getProperty(name);
 	}
 }

@@ -92,7 +92,6 @@ public class Chellow extends Monad implements Urlable {
 		super();
 		setTemplateDirName("");
 		setRealmName("Chellow");
-		Monad.setConfigDir(ChellowConfiguration.getConfigurationDirectory());
 	}
 
 	public void init(ServletConfig conf) throws ServletException {

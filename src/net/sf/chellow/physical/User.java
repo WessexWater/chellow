@@ -53,6 +53,15 @@ public class User extends PersistentEntity {
 	public static final int EDITOR = 0;
 	public static final int ORG_VIEWER = 1;
 	public static final int PROVIDER_VIEWER = 2;
+	public static final EmailAddress BASIC_USER_EMAIL_ADDRESS;
+
+	static {
+		try {
+			BASIC_USER_EMAIL_ADDRESS = new EmailAddress("basic-user@localhost");
+		} catch (HttpException e) {
+			throw new RuntimeException(e);
+		}
+	}
 
 	static {
 		try {

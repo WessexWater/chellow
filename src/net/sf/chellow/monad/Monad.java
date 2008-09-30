@@ -89,7 +89,7 @@ public abstract class Monad extends HttpServlet implements Urlable {
 
 	private String realmName;
 
-	static private final String CONFIG_PREFIX = "/WEB-INF/default-config";
+	static private final String CONFIG_PREFIX = "/WEB-INF/templates";
 
 	static private final String DEBUG_FILE_NAME = "debug";
 
@@ -173,7 +173,6 @@ public abstract class Monad extends HttpServlet implements Urlable {
 	public void init(ServletConfig conf) throws ServletException {
 		super.init(conf);
 		context = conf.getServletContext();
-
 		/*
 		 * try { invocationConstructor = invocationClass
 		 * .getConstructor(invocationConstructorTypes); } catch
@@ -299,10 +298,12 @@ public abstract class Monad extends HttpServlet implements Urlable {
 		}
 	}
 
+	/*
 	static public void setConfigDir(File configDir) {
 		Monad.CONFIG_DIR = configDir;
 	}
-
+	*/
+/*
 	static public URL getConfigResource(MonadUri uri) throws HttpException {
 		URL url = getConfigFile(uri);
 		if (url == null) {
@@ -310,7 +311,8 @@ public abstract class Monad extends HttpServlet implements Urlable {
 		}
 		return url;
 	}
-
+*/
+	/*
 	static public URL getConfigFile(MonadUri uri) throws HttpException {
 		URL url = null;
 		try {
@@ -325,7 +327,7 @@ public abstract class Monad extends HttpServlet implements Urlable {
 			throw new InternalException(e);
 		}
 	}
-
+*/
 	static public URL getConfigUrl(MonadUri uri) throws HttpException {
 		URL url = null;
 		try {
@@ -363,7 +365,7 @@ public abstract class Monad extends HttpServlet implements Urlable {
 		}
 		return newUri;
 	}
-
+/*
 	static public MonadUri getConfigFile(MonadUri uri, String[] elements,
 			int position) throws HttpException {
 		List<String> fileElements = getConfigFileElements(uri);
@@ -383,7 +385,8 @@ public abstract class Monad extends HttpServlet implements Urlable {
 		}
 		return newUri;
 	}
-
+*/
+	/*
 	@SuppressWarnings("unchecked")
 	static public List<String> getConfigFileElements(MonadUri uri)
 			throws InternalException {
@@ -400,7 +403,8 @@ public abstract class Monad extends HttpServlet implements Urlable {
 		}
 		return urlElements;
 	}
-
+*/
+	
 	@SuppressWarnings("unchecked")
 	static public List<String> getConfigUrlElements(MonadUri uri) {
 		List<String> urlElements = new ArrayList<String>();
@@ -420,7 +424,7 @@ public abstract class Monad extends HttpServlet implements Urlable {
 			throws HttpException {
 		InputStream is = null;
 		try {
-			URL url = getConfigResource(new MonadUri(path).append(name));
+			URL url = getConfigUrl(new MonadUri(path).append(name));
 			if (url != null) {
 				is = url.openStream();
 			}

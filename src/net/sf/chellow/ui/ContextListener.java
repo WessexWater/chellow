@@ -18,7 +18,6 @@ import javax.sql.DataSource;
 import net.sf.chellow.billing.Provider;
 import net.sf.chellow.hhimport.stark.StarkAutomaticHhDataImporters;
 import net.sf.chellow.monad.Debug;
-import net.sf.chellow.monad.DeployerException;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.InternalException;
@@ -28,9 +27,8 @@ import net.sf.chellow.monad.MonadFormatter;
 import net.sf.chellow.monad.MonadHandler;
 import net.sf.chellow.monad.UserException;
 import net.sf.chellow.monad.types.EmailAddress;
-import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.physical.ClockInterval;
-import net.sf.chellow.physical.DatabaseVersion;
+import net.sf.chellow.physical.Configuration;
 import net.sf.chellow.physical.Llfc;
 import net.sf.chellow.physical.MarketRole;
 import net.sf.chellow.physical.MeasurementRequirement;
@@ -51,8 +49,6 @@ import org.hibernate.tool.hbm2ddl.SchemaUpdate;
 import org.python.util.PythonInterpreter;
 
 public class ContextListener implements ServletContextListener {
-	static final private String CONFIG_DIR_PARAM_NAME = "chellow.configuration_directory";
-
 	private ServletContext context = null;
 
 	private MonadContextParameters monadParameters;
@@ -103,7 +99,11 @@ public class ContextListener implements ServletContextListener {
 					int VERSION_EXPECTED = 12;
 					int version = rs.getInt("version");
 					if (version != VERSION_EXPECTED) {
-						throw new UserException("The database version is " + version + " but this version of Chellow expects database version " + VERSION_EXPECTED);
+						throw new UserException(
+								"The database version is "
+										+ version
+										+ " but this version of Chellow expects database version "
+										+ VERSION_EXPECTED);
 					}
 				}
 			} catch (SQLException sqle) {
@@ -112,21 +112,11 @@ public class ContextListener implements ServletContextListener {
 			} finally {
 				con.close();
 			}
-
-			String configDirStr = context
-					.getInitParameter(CONFIG_DIR_PARAM_NAME);
-			if (configDirStr == null) {
-				throw new DeployerException("The init parameter '"
-						+ CONFIG_DIR_PARAM_NAME + "'. hasn't been set.");
-			}
-			ChellowConfiguration.setConfigurationDirectory(context,
-					configDirStr);
+			Configuration config = Configuration.getConfiguration();
 			StarkAutomaticHhDataImporters.start();
-			ChellowProperties chellowProperties = new ChellowProperties(
-					new MonadUri("/"), "chellow.properties");
 			Properties postProps = new Properties();
-			postProps.setProperty("python.path", chellowProperties
-					.getProperty("python.path"));
+			postProps.setProperty("python.path", config
+					.getChellowProperty("python.path"));
 			PythonInterpreter.initialize(System.getProperties(), postProps,
 					new String[] {});
 		} catch (Throwable e) {
@@ -179,7 +169,7 @@ public class ContextListener implements ServletContextListener {
 		} catch (SQLException e) {
 			throw new InternalException(e);
 		}
-		DatabaseVersion.setDatabaseVersion(12);
+		Configuration.setDatabaseVersion(12);
 		Hiber.close();
 		ReadType.loadFromCsv(context);
 		Pc.loadFromCsv(context);
@@ -202,8 +192,8 @@ public class ContextListener implements ServletContextListener {
 				"administrator@localhost");
 		User adminUser = User.findUserByEmail(adminUserEmailAddress);
 		if (adminUser == null) {
-			adminUser = User.insertUser(adminUserEmailAddress,
-					"administrator", User.EDITOR, null);
+			adminUser = User.insertUser(adminUserEmailAddress, "administrator",
+					User.EDITOR, null);
 		}
 		Hiber.commit();
 		Source.insertSource("net", "Public distribution system.");
@@ -213,120 +203,107 @@ public class ContextListener implements ServletContextListener {
 		Source.insertSource("sub", "Sub meter");
 		Hiber.commit();
 	}
-/*
-	@SuppressWarnings("unchecked")
-	private void upgrade11to12(Connection con) throws HttpException {
-		try {
-			Statement stmt = con.createStatement();
-			stmt
-					.execute("COMMENT ON SCHEMA public IS 'Standard public schema'");
-			stmt.execute("drop LANGUAGE plpgsql");
-			
-			
-			
-			stmt.execute("delete * from account");
-			stmt.execute("alter table account drop organization_id");
-			stmt.execute("alter table account drop provider_id");
-			stmt.execute("alter table account add contract_id bigint not null");
-			
-			stmt.execute("alter table account_snag rename service_id to contract_id");
-
-			stmt.execute("alter table batch rename service_id to contract_id");
-
-			stmt.execute("alter table bill drop service_id");
-			
-			stmt.execute("alter table bill_snag rename service_id to supplier_contract_id");
-			
-			ResultSet srs = stmt.executeQuery("select supply.id as supply_id from supply");
-			long supply_id;
-			while (srs.next()) {
-				supply_id = srs.getLong("supply_id");
-				ResultSet sgrs = stmt.executeQuery("select supply_generation_id as supply_generation_id, supply_generation.start_date, supply_generation.finish_date");
-			}
-			PreparedStatement siteSupplyGenerationInsert = con .prepareStatement("insert into site_supply_generation (id, site_id, supply_generation_id, is_physical) values (?, ?, ?, ?)");
-			long siteSupplyGenerationId = 1;
-			while
-				(srs.next()) { long siteId = srs.getLong("site_id"); long
-				  supplyGenerationId = srs.getLong("supply_generation_id"); boolean
-				  isPhysical = srs.getBoolean("is_physical");
-				  siteSupplyGenerationInsert.setLong(1, siteSupplyGenerationId);
-				  siteSupplyGenerationInsert.setLong(2, siteId);
-				  siteSupplyGenerationInsert.setLong(3, supplyGenerationId);
-				  siteSupplyGenerationInsert.setBoolean(4, isPhysical);
-				  siteSupplyGenerationInsert.execute(); siteSupplyGenerationId++; }
-				  srs.close();
-
-			/*
-			 * stmt .execute("update meter_timeswitch set description = 'HH Code
-			 * 5 and above (with Comms)', is_unmetered = false where code =
-			 * '845'"); stmt .execute("update meter_timeswitch set description =
-			 * 'HH Code 5 and above (without Comms)', is_unmetered = false where
-			 * code = '846'"); stmt .execute("update meter_timeswitch set
-			 * description = 'HH Code 6 A (with Comms)', is_unmetered = false
-			 * where code = '847'"); stmt .execute("update meter_timeswitch set
-			 * description = 'HH Code 6 B (with Comms)', is_unmetered = false
-			 * where code = '848'"); stmt .execute("update meter_timeswitch set
-			 * description = 'HH Code 6 C (with Comms)', is_unmetered = false
-			 * where code = '849'"); stmt .execute("update meter_timeswitch set
-			 * description = 'HH Code 6 D (with Comms)', is_unmetered = false
-			 * where code = '850'"); stmt .execute("update meter_timeswitch set
-			 * description = 'HH Code 6 A (without Comms)', is_unmetered = false
-			 * where code = '851'"); stmt .execute("update meter_timeswitch set
-			 * description = 'HH Code 6 B (without Comms)', is_unmetered = false
-			 * where code = '852'"); stmt .execute("update meter_timeswitch set
-			 * description = 'HH Code 6 C (without Comms)', is_unmetered = false
-			 * where code = '853'"); stmt .execute("update meter_timeswitch set
-			 * description = 'HH Code 6 D (without Comms)', is_unmetered = false
-			 * where code = '854'"); stmt .execute("update meter_timeswitch set
-			 * description = 'HH Code 7 (with Comms)', is_unmetered = false
-			 * where code = '855'"); stmt .execute("update meter_timeswitch set
-			 * description = 'HH Code 7 (without Comms)', is_unmetered = false
-			 * where code = '856'");
-			 */
-			/*
-			 * stmt .execute("CREATE TABLE site_supply_generation (id bigint NOT
-			 * NULL, supply_generation_id bigint NOT NULL, site_id bigint NOT
-			 * NULL, is_physical boolean NOT NULL);"); stmt .execute("CREATE
-			 * SEQUENCE site_supply_generation_id_sequence INCREMENT BY 1 NO
-			 * MAXVALUE NO MINVALUE CACHE 1;"); stmt .execute("ALTER TABLE ONLY
-			 * site_supply_generation ADD CONSTRAINT site_supply_generation_pkey
-			 * PRIMARY KEY (id);"); stmt .execute("ALTER TABLE ONLY
-			 * site_supply_generation ADD CONSTRAINT
-			 * fkey_site_supply_generation_site FOREIGN KEY (site_id) REFERENCES
-			 * site(id);"); stmt .execute("ALTER TABLE ONLY
-			 * site_supply_generation ADD CONSTRAINT
-			 * fkey_site_supply_generation_supply_generation FOREIGN KEY
-			 * (supply_generation_id) REFERENCES supply_generation(id);");
-			 * ResultSet srs = stmt .executeQuery("select site_supply.site_id as
-			 * site_id, supply_generation.id as supply_generation_id,
-			 * site_supply.is_physical as is_physical from site_supply,
-			 * supply_generation where site_supply.supply_id =
-			 * supply_generation.supply_id"); PreparedStatement
-			 * siteSupplyGenerationInsert = con .prepareStatement("insert into
-			 * site_supply_generation (id, site_id, supply_generation_id,
-			 * is_physical) values (?, ?, ?, ?)"); long siteSupplyGenerationId =
-			 * 1; while (srs.next()) { long siteId = srs.getLong("site_id");
-			 * long supplyGenerationId = srs.getLong("supply_generation_id");
-			 * boolean isPhysical = srs.getBoolean("is_physical");
-			 * siteSupplyGenerationInsert.setLong(1, siteSupplyGenerationId);
-			 * siteSupplyGenerationInsert.setLong(2, siteId);
-			 * siteSupplyGenerationInsert.setLong(3, supplyGenerationId);
-			 * siteSupplyGenerationInsert.setBoolean(4, isPhysical);
-			 * siteSupplyGenerationInsert.execute(); siteSupplyGenerationId++; }
-			 * srs.close(); stmt.execute("drop table site_supply");
-			 * stmt.execute("drop sequence site_supply_id_sequence"); stmt
-			 * .executeQuery("select
-			 * setval('site_supply_generation_id_sequence', max(id)) from
-			 * site_supply_generation"); stmt.close();
-			 */
 	/*
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
-		Debug.print("Finished upgrading.");
-		// dataDelta(con);
-	}
-	*/
+	 * @SuppressWarnings("unchecked") private void upgrade11to12(Connection con)
+	 * throws HttpException { try { Statement stmt = con.createStatement(); stmt
+	 * .execute("COMMENT ON SCHEMA public IS 'Standard public schema'");
+	 * stmt.execute("drop LANGUAGE plpgsql");
+	 * 
+	 * 
+	 * 
+	 * stmt.execute("delete * from account"); stmt.execute("alter table account
+	 * drop organization_id"); stmt.execute("alter table account drop
+	 * provider_id"); stmt.execute("alter table account add contract_id bigint
+	 * not null");
+	 * 
+	 * stmt.execute("alter table account_snag rename service_id to
+	 * contract_id");
+	 * 
+	 * stmt.execute("alter table batch rename service_id to contract_id");
+	 * 
+	 * stmt.execute("alter table bill drop service_id");
+	 * 
+	 * stmt.execute("alter table bill_snag rename service_id to
+	 * supplier_contract_id");
+	 * 
+	 * ResultSet srs = stmt.executeQuery("select supply.id as supply_id from
+	 * supply"); long supply_id; while (srs.next()) { supply_id =
+	 * srs.getLong("supply_id"); ResultSet sgrs = stmt.executeQuery("select
+	 * supply_generation_id as supply_generation_id,
+	 * supply_generation.start_date, supply_generation.finish_date"); }
+	 * PreparedStatement siteSupplyGenerationInsert = con
+	 * .prepareStatement("insert into site_supply_generation (id, site_id,
+	 * supply_generation_id, is_physical) values (?, ?, ?, ?)"); long
+	 * siteSupplyGenerationId = 1; while (srs.next()) { long siteId =
+	 * srs.getLong("site_id"); long supplyGenerationId =
+	 * srs.getLong("supply_generation_id"); boolean isPhysical =
+	 * srs.getBoolean("is_physical"); siteSupplyGenerationInsert.setLong(1,
+	 * siteSupplyGenerationId); siteSupplyGenerationInsert.setLong(2, siteId);
+	 * siteSupplyGenerationInsert.setLong(3, supplyGenerationId);
+	 * siteSupplyGenerationInsert.setBoolean(4, isPhysical);
+	 * siteSupplyGenerationInsert.execute(); siteSupplyGenerationId++; }
+	 * srs.close();
+	 *  /* stmt .execute("update meter_timeswitch set description = 'HH Code 5
+	 * and above (with Comms)', is_unmetered = false where code = '845'"); stmt
+	 * .execute("update meter_timeswitch set description = 'HH Code 5 and above
+	 * (without Comms)', is_unmetered = false where code = '846'"); stmt
+	 * .execute("update meter_timeswitch set description = 'HH Code 6 A (with
+	 * Comms)', is_unmetered = false where code = '847'"); stmt .execute("update
+	 * meter_timeswitch set description = 'HH Code 6 B (with Comms)',
+	 * is_unmetered = false where code = '848'"); stmt .execute("update
+	 * meter_timeswitch set description = 'HH Code 6 C (with Comms)',
+	 * is_unmetered = false where code = '849'"); stmt .execute("update
+	 * meter_timeswitch set description = 'HH Code 6 D (with Comms)',
+	 * is_unmetered = false where code = '850'"); stmt .execute("update
+	 * meter_timeswitch set description = 'HH Code 6 A (without Comms)',
+	 * is_unmetered = false where code = '851'"); stmt .execute("update
+	 * meter_timeswitch set description = 'HH Code 6 B (without Comms)',
+	 * is_unmetered = false where code = '852'"); stmt .execute("update
+	 * meter_timeswitch set description = 'HH Code 6 C (without Comms)',
+	 * is_unmetered = false where code = '853'"); stmt .execute("update
+	 * meter_timeswitch set description = 'HH Code 6 D (without Comms)',
+	 * is_unmetered = false where code = '854'"); stmt .execute("update
+	 * meter_timeswitch set description = 'HH Code 7 (with Comms)', is_unmetered =
+	 * false where code = '855'"); stmt .execute("update meter_timeswitch set
+	 * description = 'HH Code 7 (without Comms)', is_unmetered = false where
+	 * code = '856'");
+	 */
+	/*
+	 * stmt .execute("CREATE TABLE site_supply_generation (id bigint NOT NULL,
+	 * supply_generation_id bigint NOT NULL, site_id bigint NOT NULL,
+	 * is_physical boolean NOT NULL);"); stmt .execute("CREATE SEQUENCE
+	 * site_supply_generation_id_sequence INCREMENT BY 1 NO MAXVALUE NO MINVALUE
+	 * CACHE 1;"); stmt .execute("ALTER TABLE ONLY site_supply_generation ADD
+	 * CONSTRAINT site_supply_generation_pkey PRIMARY KEY (id);"); stmt
+	 * .execute("ALTER TABLE ONLY site_supply_generation ADD CONSTRAINT
+	 * fkey_site_supply_generation_site FOREIGN KEY (site_id) REFERENCES
+	 * site(id);"); stmt .execute("ALTER TABLE ONLY site_supply_generation ADD
+	 * CONSTRAINT fkey_site_supply_generation_supply_generation FOREIGN KEY
+	 * (supply_generation_id) REFERENCES supply_generation(id);"); ResultSet srs =
+	 * stmt .executeQuery("select site_supply.site_id as site_id,
+	 * supply_generation.id as supply_generation_id, site_supply.is_physical as
+	 * is_physical from site_supply, supply_generation where
+	 * site_supply.supply_id = supply_generation.supply_id"); PreparedStatement
+	 * siteSupplyGenerationInsert = con .prepareStatement("insert into
+	 * site_supply_generation (id, site_id, supply_generation_id, is_physical)
+	 * values (?, ?, ?, ?)"); long siteSupplyGenerationId = 1; while
+	 * (srs.next()) { long siteId = srs.getLong("site_id"); long
+	 * supplyGenerationId = srs.getLong("supply_generation_id"); boolean
+	 * isPhysical = srs.getBoolean("is_physical");
+	 * siteSupplyGenerationInsert.setLong(1, siteSupplyGenerationId);
+	 * siteSupplyGenerationInsert.setLong(2, siteId);
+	 * siteSupplyGenerationInsert.setLong(3, supplyGenerationId);
+	 * siteSupplyGenerationInsert.setBoolean(4, isPhysical);
+	 * siteSupplyGenerationInsert.execute(); siteSupplyGenerationId++; }
+	 * srs.close(); stmt.execute("drop table site_supply"); stmt.execute("drop
+	 * sequence site_supply_id_sequence"); stmt .executeQuery("select
+	 * setval('site_supply_generation_id_sequence', max(id)) from
+	 * site_supply_generation"); stmt.close();
+	 */
+	/*
+	 * } catch (SQLException e) { e.printStackTrace(); } Debug.print("Finished
+	 * upgrading."); // dataDelta(con); }
+	 */
 	/*
 	 * private void upgrade09to10(Connection con) throws ProgrammerException {
 	 * try { Statement stmt = con.createStatement(); stmt .execute("CREATE TABLE

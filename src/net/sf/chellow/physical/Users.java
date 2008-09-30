@@ -38,9 +38,7 @@ import net.sf.chellow.monad.types.EmailAddress;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
 import net.sf.chellow.ui.Chellow;
-import net.sf.chellow.ui.ExplicitMe;
-import net.sf.chellow.ui.ImplicitMe;
-import net.sf.chellow.ui.NewUserForm;
+import net.sf.chellow.ui.Me;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -101,12 +99,8 @@ public class Users implements Urlable, XmlDescriber {
 	}
 
 	public Urlable getChild(UriPathElement uriId) throws HttpException {
-		if (NewUserForm.URI_ID.equals(uriId)) {
-			return new NewUserForm();
-		} else if (ImplicitMe.URI_ID.equals(uriId)) {
-			return new ImplicitMe();
-		} else if (ExplicitMe.URI_ID.equals(uriId)) {
-			return new ExplicitMe();
+		if (Me.URI_ID.equals(uriId)) {
+			return new Me();
 		} else {
 			return (User) Hiber.session().createQuery(
 					"from User user where user.id = :userId").setLong("userId",

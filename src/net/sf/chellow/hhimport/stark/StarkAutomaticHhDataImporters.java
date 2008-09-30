@@ -50,27 +50,34 @@ public class StarkAutomaticHhDataImporters extends TimerTask {
 			throws HttpException {
 		Properties props = new Properties();
 		StarkAutomaticHhDataImporter importer = null;
-
-		try {
-			props.load(new StringReader(contract.getImporterProperties()));
-		} catch (IOException e) {
-			throw new InternalException(e);
-		}
-		if (props.getProperty("importer.name").equals(
-				"StarkAutomaticHhDataImporter")) {
-			importer = importers.get(contract.getId());
-			if (importer == null
-					|| !importer.getPropertiesString().equals(
-							contract.getImporterProperties())) {
-				try {
-					importer = new StarkAutomaticHhDataImporter(contract);
-					importers.put(contract.getId(), importer);
-				} catch (HttpException e) {
-					logger.logp(Level.SEVERE, "StarkAutomaticHhDataImporter",
-							"run",
-							"Problem creating new Stark Automatic Hh Data Importer. "
-									+ e.getMessage(), e);
+		String importerProps = contract.getImporterProperties();
+		if (importerProps != null) {
+			try {
+				props.load(new StringReader(importerProps));
+			} catch (IOException e) {
+				throw new InternalException(e);
+			}
+			if (props.getProperty("importer.name").equals(
+					"StarkAutomaticHhDataImporter")) {
+				importer = importers.get(contract.getId());
+				if (importer == null
+						|| !importer.getPropertiesString().equals(
+								contract.getImporterProperties())) {
+					try {
+						importer = new StarkAutomaticHhDataImporter(contract);
+						importers.put(contract.getId(), importer);
+					} catch (HttpException e) {
+						logger.logp(Level.SEVERE,
+								"StarkAutomaticHhDataImporter", "run",
+								"Problem creating new Stark Automatic Hh Data Importer. "
+										+ e.getMessage(), e);
+					}
 				}
+			}
+		}
+		if (importer == null) {
+			if (importers.containsKey(contract.getId())) {
+				importers.remove(contract.getId());
 			}
 		}
 		return importer;
@@ -81,14 +88,14 @@ public class StarkAutomaticHhDataImporters extends TimerTask {
 		try {
 			for (Entry<Long, StarkAutomaticHhDataImporter> importerEntry : importers
 					.entrySet()) {
-				if (!StarkAutomaticHhDataImporter.importerExists(importerEntry
-						.getValue().getUri())) {
+				if (HhdcContract.findHhdcContract(importerEntry
+						.getKey()) == null) {
 					importers.remove(importerEntry.getKey());
 				}
 			}
-			for (HhdcContract dceService : (List<HhdcContract>) Hiber.session()
-					.createQuery("from DceService service").list()) {
-				findImporter(dceService);
+			for (HhdcContract contract : (List<HhdcContract>) Hiber.session()
+					.createQuery("from HhdcContract contract").list()) {
+				findImporter(contract);
 			}
 			for (StarkAutomaticHhDataImporter importer : importers.values()) {
 				importer.run();

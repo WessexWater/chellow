@@ -32,8 +32,6 @@ import net.sf.chellow.monad.types.MonadDate;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
 import net.sf.chellow.ui.ChellowLogger;
-import net.sf.chellow.ui.ChellowProperties;
-
 import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPFile;
 import org.apache.commons.net.ftp.FTPReply;
@@ -50,12 +48,6 @@ public class StarkAutomaticHhDataImporter implements Urlable, XmlDescriber {
 		} catch (HttpException e) {
 			throw new RuntimeException(e);
 		}
-	}
-
-	static public boolean importerExists(MonadUri importerUri)
-			throws InternalException {
-		return ChellowProperties
-				.propertiesExists(importerUri, "etc.properties");
 	}
 
 	private HhDataImportProcess hhImporter;

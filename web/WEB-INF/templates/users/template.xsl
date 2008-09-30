@@ -4,16 +4,13 @@
 	<xsl:output method="html" encoding="US-ASCII"
 		doctype-public="-//W3C//DTD HTML 4.01//EN"
 		doctype-system="http://www.w3.org/TR/html4/strict.dtd" indent="yes" />
-
 	<xsl:template match="/">
 		<html>
 			<head>
 				<link rel="stylesheet" type="text/css"
 					href="{/source/request/@context-path}/style/" />
-
 				<title>Chellow &gt; Users</title>
 			</head>
-
 			<body>
 				<p>
 					<a href="{/source/request/@context-path}/">
@@ -39,22 +36,20 @@
 							The
 							<a
 								href="{/source/response/header[@name = 'Location']/@value}">
-								<xsl:value-of
-									select="'new user'" />
+								<xsl:value-of select="'new user'" />
 							</a>
 							has been successfully created.
 						</p>
 					</xsl:when>
-					<xsl:when test="/source/request/@method='get'">
+					<xsl:otherwise>
 						<table>
 							<thead>
 								<tr>
-									<th>Id</th>
+									<th>Chellow Id</th>
 									<th>Email Address</th>
 								</tr>
 							</thead>
 							<tbody>
-
 								<xsl:for-each
 									select="/source/users/user">
 									<tr>
@@ -73,21 +68,14 @@
 								</xsl:for-each>
 							</tbody>
 						</table>
-						<hr />
-
-						<p>
-							<a href="new-user-form/">New User Form</a>
-						</p>
-					</xsl:when>
-					<xsl:otherwise>
-						<form method="post" action=".">
+						<br/>
+						<form method="post" action="..">
 							<fieldset>
 								<legend>Add new user</legend>
 								<br />
 								<label>
 									Email Address
-									<input name="email-address"
-										value="{/source/request/parameter[@name='email-address']/value}" />
+									<input name="email-address" />
 								</label>
 								<br />
 								<label>
@@ -103,7 +91,6 @@
 						</form>
 					</xsl:otherwise>
 				</xsl:choose>
-
 			</body>
 		</html>
 	</xsl:template>
