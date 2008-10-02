@@ -111,15 +111,15 @@ public class Dso extends Party {
 		return llfc;
 	}
 
-	public DsoServices servicesInstance() {
-		return new DsoServices(this);
+	public DsoContracts servicesInstance() {
+		return new DsoContracts(this);
 	}
 
-	public DsoService insertService(String name, HhEndDate startDate,
+	public DsoContract insertService(String name, HhEndDate startDate,
 			String chargeScript) throws HttpException {
-		DsoService service = findService(name);
+		DsoContract service = findService(name);
 		if (service == null) {
-			service = new DsoService(this, name, startDate, chargeScript);
+			service = new DsoContract(this, name, startDate, chargeScript);
 		} else {
 			throw new UserException(
 					"There is already a DSO service with this name.");
@@ -129,8 +129,8 @@ public class Dso extends Party {
 		return service;
 	}
 
-	public DsoService findService(String name) throws HttpException {
-		return (DsoService) Hiber
+	public DsoContract findService(String name) throws HttpException {
+		return (DsoContract) Hiber
 				.session()
 				.createQuery(
 						"from DsoService service where service.dso = :dso and service.name = :serviceName")
@@ -144,11 +144,15 @@ public class Dso extends Party {
 			return new Llfcs(this);
 		} else if (MpanTops.URI_ID.equals(uriId)) {
 			return new MpanTops(this);
-		} else if (DsoServices.URI_ID.equals(uriId)) {
-			return new DsoServices(this);
+		} else if (DsoContracts.URI_ID.equals(uriId)) {
+			return new DsoContracts(this);
 		} else {
 			throw new NotFoundException();
 		}
+	}
+
+	public DsoContracts contractsInstance() {
+		return new DsoContracts(this);
 	}
 
 }

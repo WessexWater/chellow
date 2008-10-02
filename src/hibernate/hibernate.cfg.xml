@@ -42,7 +42,6 @@
 		-->
 		<property name="hibernate.jdbc.batch_size">20</property>
 		<!-- Mapping files -->
-		<mapping resource="hibernate/Service.hbm.xml" />
 		<mapping resource="hibernate/VoltageLevel.hbm.xml" />
 		<mapping resource="hibernate/Source.hbm.xml" />
 		<mapping resource="hibernate/Site.hbm.xml" />
@@ -54,29 +53,26 @@
 		<mapping resource="hibernate/ChannelSnag.hbm.xml" />
 		<mapping resource="hibernate/Snag.hbm.xml" />
 		<mapping resource="hibernate/SiteSnag.hbm.xml" />
-		<mapping resource="hibernate/DatabaseVersion.hbm.xml" />
+		<mapping resource="hibernate/Configuration.hbm.xml" />
 		<mapping resource="hibernate/Channel.hbm.xml" />
 		<mapping resource="hibernate/SiteSupplyGeneration.hbm.xml" />
 		<mapping resource="hibernate/Llfc.hbm.xml" />
 		<mapping resource="hibernate/Pc.hbm.xml" />
 		<mapping resource="hibernate/Mtc.hbm.xml" />
-		<mapping resource="hibernate/Organization.hbm.xml" />
 		<mapping resource="hibernate/User.hbm.xml" />
-		<mapping resource="hibernate/Role.hbm.xml" />
-		<mapping resource="hibernate/Permission.hbm.xml" />
 		<mapping resource="hibernate/Provider.hbm.xml" />
 		<mapping resource="hibernate/SupplierContract.hbm.xml" />
 		<mapping resource="hibernate/Account.hbm.xml" />
 		<mapping resource="hibernate/MopContract.hbm.xml" />
 		<mapping resource="hibernate/HhdcContract.hbm.xml" />
-		<mapping resource="hibernate/NonCoreService.hbm.xml" />
+		<mapping resource="hibernate/NonCoreContract.hbm.xml" />
 		<mapping resource="hibernate/Batch.hbm.xml" />
 		<mapping resource="hibernate/Bill.hbm.xml" />
 		<mapping resource="hibernate/Invoice.hbm.xml" />
 		<mapping resource="hibernate/AccountSnag.hbm.xml" />
 		<mapping resource="hibernate/BillSnag.hbm.xml" />
 		<mapping resource="hibernate/RateScript.hbm.xml" />
-		<mapping resource="hibernate/DsoService.hbm.xml" />
+		<mapping resource="hibernate/DsoContract.hbm.xml" />
 		<mapping resource="hibernate/Dso.hbm.xml" />
 		<mapping resource="hibernate/MpanTop.hbm.xml" />
 		<mapping resource="hibernate/Tpr.hbm.xml" />

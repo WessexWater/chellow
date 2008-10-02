@@ -42,34 +42,35 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 @SuppressWarnings("serial")
-public class NonCoreService extends Service {
-	static public NonCoreService insertNonCoreService(Provider provider,
+public class NonCoreContract extends Contract {
+	static public NonCoreContract insertNonCoreService(Provider provider,
 			String name, HhEndDate startDate, String chargeScript)
 			throws HttpException {
-		NonCoreService service = new NonCoreService(provider, name, startDate,
+		NonCoreContract service = new NonCoreContract(provider, name, startDate,
 				chargeScript);
 		Hiber.session().save(service);
 		Hiber.session().flush();
 		return service;
 	}
+	
+	private Provider nonCore;
 
-	private Provider provider;
-
-	public NonCoreService() {
+	public NonCoreContract() {
 	}
 
-	public NonCoreService(Provider provider, String name, HhEndDate startDate,
+	public NonCoreContract(Provider nonCore, String name, HhEndDate startDate,
 			String chargeScript) throws HttpException {
 		super(name, startDate, chargeScript);
-		internalUpdate(provider, name, chargeScript);
+		setParty(nonCore);
+		internalUpdate(name, chargeScript);
 	}
-
-	public Provider getProvider() {
-		return provider;
+	
+	void setParty(Provider nonCore) {
+		this.nonCore = nonCore;
 	}
-
-	void setProvider(Provider provider) {
-		this.provider = provider;
+	
+	public Provider getParty() {
+		return nonCore;
 	}
 
 	@SuppressWarnings("unchecked")
@@ -85,13 +86,13 @@ public class NonCoreService extends Service {
 					"The provider must be of type Z for a non-core service.");
 		}
 		super.internalUpdate(name, chargeScript);
-		setProvider(provider);
+		setParty(provider);
 	}
 
 	public boolean equals(Object obj) {
 		boolean isEqual = false;
-		if (obj instanceof NonCoreService) {
-			NonCoreService contract = (NonCoreService) obj;
+		if (obj instanceof NonCoreContract) {
+			NonCoreContract contract = (NonCoreContract) obj;
 			isEqual = contract.getId().equals(getId());
 		}
 		return isEqual;
@@ -155,13 +156,8 @@ public class NonCoreService extends Service {
 		}
 	}
 
-	public String toString() {
-		return "Service id " + getId() + " " + getProvider() + " name "
-				+ getName();
-	}
-
 	public Element toXml(Document doc) throws HttpException {
-		Element element = super.toXml(doc, "non-core-service");
+		Element element = super.toXml(doc, "non-core-contract");
 		return element;
 	}
 }

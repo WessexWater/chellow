@@ -4,7 +4,7 @@
           "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
 <!-- 
 	
-	Copyright 2005 Meniscus Systems Ltd
+	Copyright 2005, 2008 Meniscus Systems Ltd
 	
 	This file is part of Chellow.
 	
@@ -24,10 +24,17 @@
 	
 -->
 
-<hibernate-mapping
-	package="net.sf.chellow.billing">
-	<joined-subclass extends="Service" name="DcsService"
-		table="dcs_service" lazy="true">
-		<key column="service_id" foreign-key="fkey_dcs_service_service"/>
-	</joined-subclass>
+<hibernate-mapping package="net.sf.chellow.physical">
+	<class name="Configuration" table="configuration">
+		<id name="id">
+			<generator class="sequence">
+				<param name="sequence">configuration_id_sequence</param>
+			</generator>
+		</id>
+		<property type="integer" name="version" column="version" />
+		<property type="string" name="implicitUserProperties"
+			column="implicit_user_properties" />
+		<property type="string" name="chellowProperties"
+			column="chellow_properties" />
+	</class>
 </hibernate-mapping>

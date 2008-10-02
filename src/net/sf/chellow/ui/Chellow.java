@@ -10,7 +10,7 @@ import javax.servlet.ServletException;
 import net.sf.chellow.billing.Dsos;
 import net.sf.chellow.billing.HhdcContracts;
 import net.sf.chellow.billing.MopContracts;
-import net.sf.chellow.billing.NonCoreServices;
+import net.sf.chellow.billing.NonCoreContracts;
 import net.sf.chellow.billing.Provider;
 import net.sf.chellow.billing.Providers;
 import net.sf.chellow.billing.SupplierContracts;
@@ -67,7 +67,7 @@ public class Chellow extends Monad implements Urlable {
 	public static final Participants PARTICIPANTS_INSTANCE = new Participants();
 	public static final MarketRoles MARKET_ROLES_INSTANCE = new MarketRoles();
 	public static final Dsos DSOS_INSTANCE = new Dsos();
-	public static final NonCoreServices NON_CORE_SERVICES_INSTANCE = new NonCoreServices();
+	public static final NonCoreContracts NON_CORE_SERVICES_INSTANCE = new NonCoreContracts();
 	static public final MeterTypes METER_TYPES_INSTANCE = new MeterTypes();
 	static public final MeterPaymentTypes MTC_PAYMENT_TYPES_INSTANCE = new MeterPaymentTypes();
 	static public final ReadTypes READ_TYPES_INSTANCE = new ReadTypes();
@@ -171,7 +171,7 @@ public class Chellow extends Monad implements Urlable {
 			return SOURCES_INSTANCE;
 		} else if (Users.URI_ID.equals(uriId)) {
 			return USERS_INSTANCE;
-		} else if (NonCoreServices.URI_ID.equals(uriId)) {
+		} else if (NonCoreContracts.URI_ID.equals(uriId)) {
 			return NON_CORE_SERVICES_INSTANCE;
 		} else if (Pcs.URI_ID.equals(uriId)) {
 			return PROFILE_CLASSES_INSTANCE;

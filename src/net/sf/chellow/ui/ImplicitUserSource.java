@@ -14,8 +14,8 @@ import net.sf.chellow.physical.User;
 public class ImplicitUserSource {
 	static public User getUser(Invocation inv) throws HttpException {
 		User user = null;
-		Configuration dbVersion = Configuration.getConfiguration();
-		String propsString = dbVersion.getImplicitUserProperties();
+		Configuration configuration = Configuration.getConfiguration();
+		String propsString = configuration.getImplicitUserProperties();
 		if (propsString != null) {
 			Properties props = new Properties();
 			try {
@@ -30,13 +30,12 @@ public class ImplicitUserSource {
 						.findUserByEmail(new EmailAddress(emailAddressString));
 			}
 		}
-		if (user == null) {
-			user = User.findUserByEmail(User.BASIC_USER_EMAIL_ADDRESS);
-			if (user == null) {
-				throw new InternalException("The basic user '"
-						+ User.BASIC_USER_EMAIL_ADDRESS + "' can't be found.");
-			}
-		}
+		/*
+		 * if (user == null) { user =
+		 * User.findUserByEmail(User.BASIC_USER_EMAIL_ADDRESS); if (user ==
+		 * null) { throw new InternalException("The basic user '" +
+		 * User.BASIC_USER_EMAIL_ADDRESS + "' can't be found."); } }
+		 */
 		return user;
 	}
 }

@@ -284,7 +284,7 @@ public class Account extends PersistentEntity implements Urlable {
 	@SuppressWarnings("unchecked")
 	public List<Mpan> getMpans(HhEndDate from, HhEndDate to)
 			throws HttpException {
-		char roleCode = contract.getProvider().getRole().getCode();
+		char roleCode = contract.getParty().getRole().getCode();
 		if (roleCode == MarketRole.SUPPLIER) {
 			if (to == null) {
 				return Hiber

@@ -34,85 +34,55 @@ import net.sf.chellow.monad.types.MonadDate;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
 import net.sf.chellow.physical.HhEndDate;
-
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 @SuppressWarnings("serial")
-public class DsoService extends Service {
-	public static DsoService getDsoService(Long id) throws HttpException {
-		DsoService service = findDsoService(id);
+public class DsoContract extends Contract {
+	public static DsoContract getDsoService(Long id) throws HttpException {
+		DsoContract service = findDsoService(id);
 		if (service == null) {
 			throw new UserException("There isn't a DSO service with that id.");
 		}
 		return service;
 	}
 
-	public static DsoService findDsoService(Long id) throws HttpException {
-		return (DsoService) Hiber.session().get(DsoService.class, id);
+	public static DsoContract findDsoService(Long id) throws HttpException {
+		return (DsoContract) Hiber.session().get(DsoContract.class, id);
 	}
 	
 	private Dso dso;
 
-	public DsoService() {
+	public DsoContract() {
 	}
 
-	public DsoService(Dso dso, String name, HhEndDate startDate,
+	public DsoContract(Dso dso, String name, HhEndDate startDate,
 			String chargeScript) throws HttpException {
 		super(name, startDate,
 				chargeScript);
-		internalUpdate(dso, name, startDate, chargeScript);
+		setParty(dso);
+		internalUpdate(name, chargeScript);
 	}
 	
-	void setDso(Dso dso) {
-		this.dso = dso;
-	}
-	
-	public Dso getDso() {
+	@Override
+	public Dso getParty() {
 		return dso;
 	}
-
-	protected void internalUpdate(Dso dso, String name,
-			HhEndDate startDate, String chargeScript) throws HttpException {
-		setDso(dso);
-		super.internalUpdate(name, chargeScript);
-	}
-
-	@SuppressWarnings("unchecked")
-	public void update(String name, String chargeScript) throws HttpException {
-		super.update(name, chargeScript);
-		Hiber.flush();
-		/*
-		 * Long numInSpace = null; if (finishDate == null) { numInSpace = (Long)
-		 * Hiber .session() .createQuery( "select count(*) from DsoService
-		 * service where service.provider = :dso and (service.finishDate.date is
-		 * null or service.finishDate.date >= :startDate)") .setEntity("dso",
-		 * getProvider()).setTimestamp("startDate",
-		 * startDate.getDate()).uniqueResult(); } else { numInSpace = (Long)
-		 * Hiber .session() .createQuery( "select count(*) from DsoService
-		 * service where service.dso = :dso and service.startDate.date <=
-		 * :finishDate and (service.finishDate.date is null or
-		 * service.finishDate.date >= :startDate)") .setEntity("provider",
-		 * getProvider()).setTimestamp( "startDate",
-		 * startDate.getDate()).setTimestamp( "finishDate",
-		 * finishDate.getDate()).uniqueResult(); } if (numInSpace > 1) { throw
-		 * UserException .newInvalidParameter("With these start and finish
-		 * dates, the service would overlap with other services and that can't
-		 * happen with DSOs"); }
-		 */
+	void setParty(Dso dso) {
+		this.dso = dso;
 	}
 
 	public boolean equals(Object obj) {
 		boolean isEqual = false;
-		if (obj instanceof DsoService) {
-			DsoService contract = (DsoService) obj;
+		if (obj instanceof DsoContract) {
+			DsoContract contract = (DsoContract) obj;
 			isEqual = contract.getId().equals(getId());
 		}
 		return isEqual;
 	}
 
 	public MonadUri getUri() throws HttpException {
-		return dso.servicesInstance().getUri().resolve(getUriId())
+		return dso.contractsInstance().getUri().resolve(getUriId())
 				.append("/");
 	}
 
@@ -125,7 +95,7 @@ public class DsoService extends Service {
 		if (inv.hasParameter("delete")) {
 			delete();
 			Hiber.commit();
-			inv.sendFound(dso.servicesInstance().getUri());
+			inv.sendFound(dso.contractsInstance().getUri());
 		} else {
 			String name = inv.getString("name");
 			String chargeScript = inv.getString("charge-script");
@@ -166,11 +136,10 @@ public class DsoService extends Service {
 	}
 
 	public String toString() {
-		return "Service id " + getId() + " " + dso + " name "
-				+ getName();
+		return super.toString() + " " + getParty();
 	}
 
 	public Element toXml(Document doc) throws HttpException {
-		return super.toXml(doc, "dso-service");
+		return super.toXml(doc, "dso-contract");
 	}
 }

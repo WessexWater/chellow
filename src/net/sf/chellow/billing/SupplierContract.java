@@ -85,17 +85,28 @@ public class SupplierContract extends Contract {
 		}
 		return contract;
 	}
+	
+	Provider supplier;
 
 	public SupplierContract() {
 	}
 
 	public SupplierContract(Provider supplier, String name,
 			HhEndDate startDate, String chargeScript) throws HttpException {
-		super(supplier, name, startDate, chargeScript);
+		super(name, startDate, chargeScript);
 		if (supplier.getRole().getCode() != MarketRole.SUPPLIER) {
 			throw new UserException(
 					"The provider must have the role of supplier.");
 		}
+		setParty(supplier);
+	}
+	
+	void setParty(Provider supplier) {
+		this.supplier = supplier;
+	}
+	
+	public Provider getParty() {
+		return supplier;
 	}
 
 	public void update(String name, String chargeScript) throws HttpException {
@@ -241,18 +252,13 @@ public class SupplierContract extends Contract {
 
 	}
 
-	public String toString() {
-		return "Contract id " + getId() + " " + getProvider() + " name "
-				+ getName();
-	}
-
 	public Element toXml(Document doc) throws HttpException {
 		Element element = super.toXml(doc, "supplier-contract");
 		return element;
 	}
 
 	public void deleteAccount(Account account) throws HttpException {
-		if (account.getContract().getProvider().getRole().getCode() != MarketRole.SUPPLIER) {
+		if (account.getContract().getParty().getRole().getCode() != MarketRole.SUPPLIER) {
 			throw new InternalException(
 					"The account isn't attached to this contract.");
 		}

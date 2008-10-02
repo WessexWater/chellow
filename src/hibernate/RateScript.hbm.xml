@@ -4,7 +4,7 @@
           "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
 <!-- 
 	
-	Copyright 2005-2007 Meniscus Systems Ltd
+	Copyright 2005-2008 Meniscus Systems Ltd
 	
 	This file is part of Chellow.
 	
@@ -31,7 +31,7 @@
 				<param name="sequence">rate_script_id_sequence</param>
 			</generator>
 		</id>
-		<many-to-one name="service" class="Service" column="service_id" foreign-key="fkey_rate_script_service"/>
+		<many-to-one name="contract" class="Contract" column="contract_id" foreign-key="fkey_rate_script_contract"/>
 		<component name="startDate"
 			class="net.sf.chellow.physical.HhEndDate">
 			<property type="timestamp" name="date">

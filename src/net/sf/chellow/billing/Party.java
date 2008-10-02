@@ -51,7 +51,7 @@ import net.sf.chellow.physical.PersistentEntity;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-public class Party extends PersistentEntity implements Urlable {
+public abstract class Party extends PersistentEntity implements Urlable {
 	static public void loadFromCsv(ServletContext sc) throws HttpException {
 		Debug.print("Starting to add Parties.");
 		Mdd mdd = new Mdd(sc, "MarketParticipantRole", new String[] {
@@ -74,7 +74,7 @@ public class Party extends PersistentEntity implements Urlable {
 				Hiber.session().save(dso);
 				Hiber.close();
 				ClassLoader dsoClassLoader = Provider.class.getClassLoader();
-				DsoService dsoService;
+				DsoContract dsoService;
 				try {
 					URL resource = dsoClassLoader
 							.getResource("net/sf/chellow/billing/dso"
@@ -189,7 +189,7 @@ public class Party extends PersistentEntity implements Urlable {
 	}
 
 	public Element toXml(Document doc) throws HttpException {
-		return toXml(doc, "provider");
+		return toXml(doc, "party");
 	}
 /*
 	public Account getAccount(String accountText) throws HttpException {

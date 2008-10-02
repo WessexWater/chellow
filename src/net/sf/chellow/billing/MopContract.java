@@ -58,23 +58,24 @@ public class MopContract extends Contract {
 		return contract;
 	}
 	
-	private Provider provider;
+	private Provider mop;
 
 	public MopContract() {
 	}
 
-	public MopContract(Provider provider,
+	public MopContract(Provider mop,
 			String name, HhEndDate startDate, String chargeScript)
 			throws HttpException {
-		super(provider, name, startDate, chargeScript);
+		super(name, startDate, chargeScript);
+		setParty(mop);
 	}
 	
-	public Provider getProvider() {
-		return provider;
+	public Provider getParty() {
+		return mop;
 	}
 	
-	void setProvider(Provider provider) {
-		this.provider = provider;
+	void setParty(Provider mop) {
+		this.mop = mop;
 	}
 
 	public boolean equals(Object obj) {
@@ -120,8 +121,7 @@ public class MopContract extends Contract {
 	}
 
 	public String toString() {
-		return "Contract id " + getId() + " " + getProvider() + " name "
-				+ getName();
+		return super.toString() + " " + mop;
 	}
 
 	public Urlable getChild(UriPathElement uriId) throws HttpException {

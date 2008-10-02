@@ -55,17 +55,17 @@ public class RateScripts implements Urlable, XmlDescriber {
 		}
 	}
 
-	private Service service;
+	private Contract service;
 
-	public RateScripts(Service service) {
+	public RateScripts(Contract service) {
 		setService(service);
 	}
 
-	public Service getService() {
+	public Contract getService() {
 		return service;
 	}
 
-	void setService(Service service) {
+	void setService(Contract service) {
 		this.service = service;
 	}
 
@@ -131,9 +131,9 @@ public class RateScripts implements Urlable, XmlDescriber {
 		Element source = doc.getDocumentElement();
 		Element batchesElement = (Element) toXml(doc);
 		source.appendChild(batchesElement);
-		if (service instanceof DsoService) {
+		if (service instanceof DsoContract) {
 			batchesElement.appendChild(service.toXml(doc, new XmlTree("dso")));
-		} else if (service instanceof NonCoreService) {
+		} else if (service instanceof NonCoreContract) {
 			batchesElement.appendChild(service.toXml(doc, new XmlTree("provider")));			
 		} else {
 			batchesElement.appendChild(service.toXml(doc, new XmlTree("provider").put("organization")));

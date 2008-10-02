@@ -34,11 +34,11 @@ import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Invocation;
 import net.sf.chellow.monad.MonadUtils;
+import net.sf.chellow.monad.NotFoundException;
 import net.sf.chellow.monad.Urlable;
 import net.sf.chellow.monad.UserException;
 import net.sf.chellow.monad.XmlTree;
 import net.sf.chellow.monad.types.MonadDate;
-import net.sf.chellow.monad.types.MonadString;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
 import net.sf.chellow.physical.HhEndDate;
@@ -53,7 +53,7 @@ public class RateScript extends PersistentEntity {
 		return (RateScript) Hiber.session().get(RateScript.class, id);
 	}
 
-	private Service service;
+	private Contract contract;
 
 	private HhEndDate startDate;
 
@@ -64,18 +64,18 @@ public class RateScript extends PersistentEntity {
 	public RateScript() {
 	}
 
-	public RateScript(Service service, HhEndDate startDate,
+	public RateScript(Contract contract, HhEndDate startDate,
 			HhEndDate finishDate, String script) throws HttpException {
-		setService(service);
+		setContract(contract);
 		internalUpdate(startDate, finishDate, script);
 	}
 
-	public Service getService() {
-		return service;
+	public Contract getContract() {
+		return contract;
 	}
 
-	void setService(Service service) {
-		this.service = service;
+	void setContract(Contract contract) {
+		this.contract = contract;
 	}
 
 	public HhEndDate getStartDate() {
@@ -118,8 +118,8 @@ public class RateScript extends PersistentEntity {
 			throws HttpException {
 		HhEndDate originalStartDate = getStartDate();
 		HhEndDate originalFinishDate = getFinishDate();
-		RateScript previousRateScript = service.getPreviousRateScript(this);
-		RateScript nextRateScript = service.getNextRateScript(this);
+		RateScript previousRateScript = contract.getPreviousRateScript(this);
+		RateScript nextRateScript = contract.getNextRateScript(this);
 
 		internalUpdate(startDate, finishDate, script);
 		if (previousRateScript != null) {
@@ -163,7 +163,7 @@ public class RateScript extends PersistentEntity {
 					originalStartDate.getDate()) ? startDate
 					: originalStartDate;
 		}
-		service.updateNotification(checkStartDate, checkFinishDate);
+		contract.updateNotification(checkStartDate, checkFinishDate);
 	}
 
 	public Element toXml(Document doc) throws HttpException {
@@ -175,18 +175,17 @@ public class RateScript extends PersistentEntity {
 			finishDate.setLabel("finish");
 			element.appendChild(finishDate.toXml(doc));
 		}
-		element.setAttributeNode(MonadString.toXml(doc, "script", script
-				.replace("\r", "").replace("\t", "    ")));
+		element.setAttribute("script", script.replace("\r", "").replace("\t",
+				"    "));
 		return element;
 	}
 
-	public Urlable getChild(UriPathElement uriId) throws InternalException {
-		// TODO Auto-generated method stub
-		return null;
+	public Urlable getChild(UriPathElement uriId) throws HttpException {
+		throw new NotFoundException();
 	}
 
 	public MonadUri getUri() throws HttpException {
-		return getService().rateScriptsInstance().getUri().resolve(getUriId())
+		return getContract().rateScriptsInstance().getUri().resolve(getUriId())
 				.append("/");
 	}
 
@@ -223,9 +222,9 @@ public class RateScript extends PersistentEntity {
 			source.appendChild(bill.getVirtualBill().toXml(doc));
 			inv.sendOk(doc);
 		} else if (inv.hasParameter("delete")) {
-			service.delete(this);
+			contract.delete(this);
 			Hiber.commit();
-			inv.sendFound(service.rateScriptsInstance().getUri());
+			inv.sendFound(contract.rateScriptsInstance().getUri());
 		} else {
 			Date startDate = inv.getDate("start-date");
 			Date finishDate = null;
@@ -256,10 +255,10 @@ public class RateScript extends PersistentEntity {
 		Document doc = MonadUtils.newSourceDocument();
 		Element sourceElement = doc.getDocumentElement();
 
-		if (service instanceof DsoService) {
+		if (contract instanceof DsoContract) {
 			sourceElement.appendChild(toXml(doc, new XmlTree("service",
 					new XmlTree("dso"))));
-		} else if (service instanceof NonCoreService) {
+		} else if (contract instanceof NonCoreContract) {
 			sourceElement.appendChild(toXml(doc, new XmlTree("service",
 					new XmlTree("provider"))));
 		} else {

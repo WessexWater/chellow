@@ -31,13 +31,10 @@
 				<param name="sequence">site_id_sequence</param>
 			</generator>
 		</id>
-		<many-to-one name="organization" class="Organization"
-			column="organization_id" not-null="true"
-			unique-key="site_code_unique" foreign-key="fkey_site_organization" />
 		<property type="string" name="code" column="code"
-			not-null="true" unique-key="site_code_unique" />
+			not-null="true" unique="true" />
 		<property type="string" name="name" column="name"
-			not-null="true" />
+			not-null="true" unique="true" />
 		<set name="siteSupplyGenerations" lazy="true" inverse="true">
 			<key column="site_id" />
 			<one-to-many class="SiteSupplyGeneration" />

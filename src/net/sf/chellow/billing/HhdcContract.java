@@ -82,6 +82,8 @@ public class HhdcContract extends Contract {
 		}
 		return contract;
 	}
+	
+	private Provider hhdc;
 
 	private ContractFrequency frequency;
 
@@ -93,14 +95,23 @@ public class HhdcContract extends Contract {
 	public HhdcContract() {
 	}
 
-	public HhdcContract(Provider provider, String name, HhEndDate startDate,
+	public HhdcContract(Provider hhdc, String name, HhEndDate startDate,
 			String chargeScript, ContractFrequency frequency, int lag, String importerProperties)
 			throws HttpException {
-		super(provider, name, startDate, chargeScript);
-		if (provider.getRole().getCode() != MarketRole.HHDC) {
+		super(name, startDate, chargeScript);
+		if (hhdc.getRole().getCode() != MarketRole.HHDC) {
 			throw new UserException("The provider must have the HHDC role.");
 		}
+		setParty(hhdc);
 		intrinsicUpdate(name, chargeScript, frequency, lag, importerProperties);
+	}
+	
+	void setParty(Provider hhdc) {
+		this.hhdc = hhdc;
+	}
+	
+	public Provider getParty() {
+		return hhdc;
 	}
 
 	public ContractFrequency getFrequency() {

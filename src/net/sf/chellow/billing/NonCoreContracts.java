@@ -45,7 +45,7 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
 @SuppressWarnings("serial")
-public class NonCoreServices implements Urlable, XmlDescriber {
+public class NonCoreContracts implements Urlable, XmlDescriber {
 	public static final UriPathElement URI_ID;
 
 	static {
@@ -56,7 +56,7 @@ public class NonCoreServices implements Urlable, XmlDescriber {
 		}
 	}
 
-	public NonCoreServices() {
+	public NonCoreContracts() {
 	}
 
 	public UriPathElement getUrlId() {
@@ -76,7 +76,7 @@ public class NonCoreServices implements Urlable, XmlDescriber {
 			throw new UserException(document());
 		}
 		Provider provider = Provider.getProvider(providerId);
-		NonCoreService service = NonCoreService.insertNonCoreService(provider,
+		NonCoreContract service = NonCoreContract.insertNonCoreService(provider,
 				name, HhEndDate.roundDown(startDate), chargeScript);
 		Hiber.commit();
 		inv.sendCreated(document(), service.getUri());
@@ -88,7 +88,7 @@ public class NonCoreServices implements Urlable, XmlDescriber {
 		Element source = doc.getDocumentElement();
 		Element servicesElement = toXml(doc);
 		source.appendChild(servicesElement);
-		for (NonCoreService service : (List<NonCoreService>) Hiber
+		for (NonCoreContract service : (List<NonCoreContract>) Hiber
 				.session()
 				.createQuery(
 						"from NonCoreService service order by service.finishRateScript.finishDate.date desc, service.provider.participant.code")
@@ -113,8 +113,8 @@ public class NonCoreServices implements Urlable, XmlDescriber {
 		inv.sendOk(document());
 	}
 
-	public NonCoreService getChild(UriPathElement uriId) throws HttpException {
-		NonCoreService service = (NonCoreService) Hiber.session().createQuery(
+	public NonCoreContract getChild(UriPathElement uriId) throws HttpException {
+		NonCoreContract service = (NonCoreContract) Hiber.session().createQuery(
 				"from NonCoreService service where service.id = :serviceId")
 				.setLong("serviceId", Long.parseLong(uriId.getString()))
 				.uniqueResult();

@@ -141,7 +141,7 @@ public class ContextListener implements ServletContextListener {
 		try {
 			Statement stmt = con.createStatement();
 			stmt
-					.execute("ALTER TABLE service ALTER COLUMN charge_script TYPE text;");
+					.execute("ALTER TABLE contract ALTER COLUMN charge_script TYPE text;");
 			stmt
 					.execute("ALTER TABLE rate_script ALTER COLUMN script TYPE text;");
 

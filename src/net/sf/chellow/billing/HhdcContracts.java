@@ -55,7 +55,7 @@ public class HhdcContracts extends EntityList {
 			throw new RuntimeException(e);
 		}
 	}
-
+	
 	public HhdcContracts() {
 	}
 
