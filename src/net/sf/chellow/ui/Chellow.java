@@ -11,7 +11,7 @@ import net.sf.chellow.billing.Dsos;
 import net.sf.chellow.billing.HhdcContracts;
 import net.sf.chellow.billing.MopContracts;
 import net.sf.chellow.billing.NonCoreContracts;
-import net.sf.chellow.billing.Provider;
+import net.sf.chellow.billing.Party;
 import net.sf.chellow.billing.Providers;
 import net.sf.chellow.billing.SupplierContracts;
 import net.sf.chellow.monad.ForbiddenException;
@@ -25,6 +25,7 @@ import net.sf.chellow.monad.Urlable;
 import net.sf.chellow.monad.Invocation.HttpMethod;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
+import net.sf.chellow.physical.Configuration;
 import net.sf.chellow.physical.MarketRole;
 import net.sf.chellow.physical.MarketRoles;
 import net.sf.chellow.physical.MeterPaymentTypes;
@@ -132,28 +133,32 @@ public class Chellow extends Monad implements Urlable {
 		int role = user.getRole();
 		HttpMethod method = inv.getMethod();
 		String pathInfo = inv.getRequest().getPathInfo();
-		if (role == User.ORG_VIEWER) {
+		if (role == User.VIEWER) {
 			if (method.equals(HttpMethod.GET) || method.equals(HttpMethod.HEAD)) {
 				return;
 			}
 		} else if (role == User.EDITOR) {
 			return;
-		} else if (role == User.PROVIDER_VIEWER) {
+		} else if (role == User.PARTY_VIEWER) {
 			if (method.equals(HttpMethod.GET) || method.equals(HttpMethod.HEAD)) {
-				Provider provider = user.getProvider();
-				char marketRoleCode = provider.getRole().getCode();
+				Party party = user.getParty();
+				char marketRoleCode = party.getRole().getCode();
 				if (marketRoleCode == MarketRole.HHDC) {
-					if (pathInfo.startsWith("/hhdc-contracts/"
-							+ provider.getId())) {
+					if (pathInfo.startsWith("/hhdc-contracts/" + party.getId())) {
 						return;
 					}
 				} else if (marketRoleCode == MarketRole.SUPPLIER) {
 					if (pathInfo.startsWith("/supplier-contracts/"
-							+ provider.getId())) {
+							+ party.getId())) {
 						return;
 					}
 				}
+			} else {
+				return;
 			}
+		}
+		if (inv.getUser() == null) {
+			throw new UnauthorizedException();
 		}
 		throw new ForbiddenException();
 	}
@@ -197,6 +202,8 @@ public class Chellow extends Monad implements Urlable {
 			return READ_TYPES_INSTANCE;
 		} else if (Reports.URI_ID.equals(uriId)) {
 			return REPORTS_INSTANCE;
+		} else if (Configuration.URI_ID.equals(uriId)) {
+			return Configuration.getConfiguration();
 		} else {
 			return null;
 		}

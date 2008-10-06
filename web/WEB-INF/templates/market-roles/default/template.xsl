@@ -31,7 +31,6 @@
 					<xsl:value-of
 						select="concat(' &gt; ', /source/market-role/@code)" />
 				</p>
-
 				<xsl:if test="//message">
 					<ul>
 						<xsl:for-each select="//message">

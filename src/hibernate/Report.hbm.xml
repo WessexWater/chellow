@@ -24,8 +24,8 @@
 	
 -->
 
-<hibernate-mapping package="net.sf.chellow.billing">
-	<class name="Service" table="service" lazy="true">
+<hibernate-mapping package="net.sf.chellow.ui">
+	<class name="Report" table="report" lazy="true">
 		<id name="id">
 			<generator class="sequence">
 				<param name="sequence">report_id_sequence</param>
@@ -35,7 +35,6 @@
 			not-null="true" />
 		<property type="string" name="script" column="script"
 			not-null="true" />
-		<property type="string" name="template" column="template"
-			not-null="true" />
+		<property type="string" name="template" column="template" />
 	</class>
 </hibernate-mapping>

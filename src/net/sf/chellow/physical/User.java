@@ -26,12 +26,14 @@ import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
+import java.util.List;
 
-import net.sf.chellow.billing.Provider;
+import net.sf.chellow.billing.Party;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Invocation;
+import net.sf.chellow.monad.MonadMessage;
 import net.sf.chellow.monad.MonadUtils;
 import net.sf.chellow.monad.NotFoundException;
 import net.sf.chellow.monad.Urlable;
@@ -51,18 +53,16 @@ import com.Ostermiller.util.Base64;
 public class User extends PersistentEntity {
 	public static final UriPathElement USERS_URI_ID;
 	public static final int EDITOR = 0;
-	public static final int ORG_VIEWER = 1;
-	public static final int PROVIDER_VIEWER = 2;
-	public static final EmailAddress BASIC_USER_EMAIL_ADDRESS;
+	public static final int VIEWER = 1;
+	public static final int PARTY_VIEWER = 2;
 
-	static {
-		try {
-			BASIC_USER_EMAIL_ADDRESS = new EmailAddress("basic-user@localhost");
-		} catch (HttpException e) {
-			throw new RuntimeException(e);
-		}
-	}
-
+	/*
+	 * public static final EmailAddress BASIC_USER_EMAIL_ADDRESS;
+	 * 
+	 * static { try { BASIC_USER_EMAIL_ADDRESS = new
+	 * EmailAddress("basic-user@localhost"); } catch (HttpException e) { throw
+	 * new RuntimeException(e); } }
+	 */
 	static {
 		try {
 			USERS_URI_ID = new UriPathElement("users");
@@ -85,11 +85,11 @@ public class User extends PersistentEntity {
 				.uniqueResult();
 	}
 
-	static public User insertUser(EmailAddress emailAddress,
-			String password, int role, Provider provider) throws HttpException {
+	static public User insertUser(EmailAddress emailAddress, String password,
+			int role, Party party) throws HttpException {
 		User user = null;
 		try {
-			user = new User(emailAddress, password, role, provider);
+			user = new User(emailAddress, password, role, party);
 			Hiber.session().save(user);
 			Hiber.flush();
 		} catch (ConstraintViolationException e) {
@@ -132,27 +132,29 @@ public class User extends PersistentEntity {
 	private String passwordDigest;
 
 	private int role;
-	
-	private Provider provider;
-	
-	//private Set<Role> roles;
+
+	private Party party;
+
+	// private Set<Role> roles;
 
 	public User() {
 	}
 
-	public User(EmailAddress emailAddress, String password, int role, Provider provider)
-			throws HttpException {
-		update(emailAddress, password);
+	public User(EmailAddress emailAddress, String password, int role,
+			Party party) throws HttpException {
+		update(emailAddress, password, role, party);
 	}
 
-	public void update(EmailAddress emailAddress, String password)
-			throws HttpException {
+	public void update(EmailAddress emailAddress, String password, int role,
+			Party party) throws HttpException {
 		setEmailAddress(emailAddress);
 		if (password.length() < 6) {
 			throw new UserException(
 					"The password must be at least 6 characters long.");
 		}
 		setPasswordDigest(digest(password));
+		setRole(role);
+		setParty(party);
 	}
 
 	public String getPasswordDigest() {
@@ -178,13 +180,13 @@ public class User extends PersistentEntity {
 	protected void setRole(int role) {
 		this.role = role;
 	}
-	
-	public Provider getProvider() {
-		return provider;
+
+	public Party getParty() {
+		return party;
 	}
-	
-	void setProvider(Provider provider) {
-		this.provider = provider;
+
+	void setParty(Party party) {
+		this.party = party;
 	}
 
 	public boolean equals(Object object) {
@@ -226,12 +228,17 @@ public class User extends PersistentEntity {
 		return document(null);
 	}
 
+	@SuppressWarnings("unchecked")
 	private Document document(String message) throws HttpException {
 		Document doc = MonadUtils.newSourceDocument();
 		Element source = doc.getDocumentElement();
-		source.appendChild(toXml(doc, new XmlTree("roles")));
+		source.appendChild(toXml(doc, new XmlTree("party")));
+		for (MarketRole role : (List<MarketRole>) Hiber.session().createQuery(
+				"from MarketRole role order by role.code").list()) {
+			source.appendChild(role.toXml(doc));
+		}
 		if (message != null) {
-			// source.appendChild(new VFMessage(message).toXML(doc));
+			source.appendChild(new MonadMessage(message).toXml(doc));
 		}
 		return doc;
 	}

@@ -4,20 +4,31 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.util.Properties;
 
-import org.w3c.dom.Document;
-import org.w3c.dom.Node;
-
-import net.sf.chellow.monad.DeployerException;
-import net.sf.chellow.monad.DesignerException;
 import net.sf.chellow.monad.Hiber;
-import net.sf.chellow.monad.Invocation;
-import net.sf.chellow.monad.InternalException;
-import net.sf.chellow.monad.Urlable;
 import net.sf.chellow.monad.HttpException;
+import net.sf.chellow.monad.InternalException;
+import net.sf.chellow.monad.Invocation;
+import net.sf.chellow.monad.MonadUtils;
+import net.sf.chellow.monad.NotFoundException;
+import net.sf.chellow.monad.Urlable;
+import net.sf.chellow.monad.UserException;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
 
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+
 public class Configuration extends PersistentEntity {
+	public static final UriPathElement URI_ID;
+
+	static {
+		try {
+			URI_ID = new UriPathElement("configuration");
+		} catch (HttpException e) {
+			throw new RuntimeException(e);
+		}
+	}
+
 	static public void setDatabaseVersion(int version) {
 		Configuration configuration = getConfiguration();
 		if (configuration == null) {
@@ -73,34 +84,59 @@ public class Configuration extends PersistentEntity {
 		return null;
 	}
 
-	public Urlable getChild(UriPathElement uriId) throws InternalException,
-			HttpException {
-		// TODO Auto-generated method stub
-		return null;
+	public Urlable getChild(UriPathElement uriId) throws HttpException {
+		throw new NotFoundException();
 	}
 
-	public void httpGet(Invocation inv) throws DesignerException,
-			InternalException, HttpException, DeployerException {
-		// TODO Auto-generated method stub
-
+	public void httpGet(Invocation inv) throws HttpException {
+		inv.sendOk(document());
 	}
 
-	public void httpPost(Invocation inv) throws InternalException,
-			HttpException {
-		// TODO Auto-generated method stub
-
+	public void httpPost(Invocation inv) throws HttpException {
+		String implicitUserProperties = inv
+				.getString("implicit-user-properties");
+		String chellowProperties = inv.getString("chellow-properties");
+		if (!inv.isValid()) {
+			throw new UserException();
+		}
+		update(implicitUserProperties, chellowProperties);
+		Hiber.commit();
+		inv.sendOk(document());
 	}
 
-	public void httpDelete(Invocation inv) throws InternalException,
-			DesignerException, HttpException, DeployerException {
-		// TODO Auto-generated method stub
-
+	public void update(String implicitUserProperties, String chellowProperties)
+			throws HttpException {
+		Properties impProps = new Properties();
+		Properties chellowProps = new Properties();
+		try {
+			impProps.load(new StringReader(implicitUserProperties));
+			setImplicitUserProperties(implicitUserProperties);
+			chellowProps.load(new StringReader(chellowProperties));
+			setChellowProperties(chellowProperties);
+		} catch (IOException e) {
+			throw new InternalException(e);
+		}
 	}
 
 	@Override
-	public Node toXml(Document doc) throws HttpException {
-		// TODO Auto-generated method stub
-		return null;
+	public Element toXml(Document doc) throws HttpException {
+		Element element = doc.createElement("configuration");
+		element.setAttribute("version", Integer.toString(version));
+		Element impProps = doc.createElement("implicit-user-properties");
+		element.appendChild(impProps);
+		impProps.setTextContent(implicitUserProperties);
+		Element chellowProps = doc.createElement("chellow-properties");
+		element.appendChild(chellowProps);
+		chellowProps.setTextContent(chellowProperties);
+		return element;
+	}
+
+	private Document document() throws HttpException {
+		Document doc = MonadUtils.newSourceDocument();
+		Element source = doc.getDocumentElement();
+		Element configElement = toXml(doc);
+		source.appendChild(configElement);
+		return doc;
 	}
 
 	public String getChellowProperty(String name) throws HttpException {

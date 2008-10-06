@@ -24,7 +24,7 @@ package net.sf.chellow.physical;
 
 import java.util.List;
 
-import net.sf.chellow.billing.Provider;
+import net.sf.chellow.billing.Party;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.InternalException;
@@ -32,8 +32,6 @@ import net.sf.chellow.monad.Invocation;
 import net.sf.chellow.monad.MonadUtils;
 import net.sf.chellow.monad.Urlable;
 import net.sf.chellow.monad.UserException;
-import net.sf.chellow.monad.XmlDescriber;
-import net.sf.chellow.monad.XmlTree;
 import net.sf.chellow.monad.types.EmailAddress;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
@@ -42,9 +40,8 @@ import net.sf.chellow.ui.Me;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import org.w3c.dom.Node;
 
-public class Users implements Urlable, XmlDescriber {
+public class Users extends EntityList {
 	public static final UriPathElement URI_ID;
 
 	static {
@@ -67,31 +64,47 @@ public class Users implements Urlable, XmlDescriber {
 		String password = inv.getString("password");
 		Integer userRole = inv.getInteger("role");
 		String participantCode = inv.getString("participant-code");
-		Character roleCode = inv.getCharacter("role-code");
+		Long marketRoleId = inv.getLong("market-role-id");
 
 		if (!inv.isValid()) {
-			throw new UserException();
+			throw new UserException(document());
 		}
-		Provider provider = null;
-		if (userRole == User.PROVIDER_VIEWER) {
-			provider = Provider.getProvider(participantCode, roleCode);
+		try {
+			Party party = null;
+			if (userRole == User.PARTY_VIEWER) {
+				party = Party.getParty(participantCode, MarketRole
+						.getMarketRole(marketRoleId));
+			}
+			User user = User
+					.insertUser(emailAddress, password, userRole, party);
+			Hiber.commit();
+			inv.sendCreated(user.getUri());
+		} catch (HttpException e) {
+			e.setDocument(document());
+			throw e;
 		}
-		User user = User.insertUser(emailAddress, password, userRole, provider);
-		Hiber.commit();
-		inv.sendCreated(user.getUri());
 	}
 
 	@SuppressWarnings("unchecked")
 	public void httpGet(Invocation inv) throws HttpException {
+		inv.sendOk(document());
+	}
+
+	@SuppressWarnings("unchecked")
+	private Document document() throws HttpException {
 		Document doc = MonadUtils.newSourceDocument();
 		Element source = doc.getDocumentElement();
-		Element usersElement = (Element) toXml(doc);
+		Element usersElement = toXml(doc);
 		source.appendChild(usersElement);
 		for (User user : (List<User>) Hiber.session().createQuery(
 				"from User user").list()) {
 			usersElement.appendChild(user.toXml(doc));
 		}
-		inv.sendOk(doc);
+		for (MarketRole role : (List<MarketRole>) Hiber.session().createQuery(
+				"from MarketRole role").list()) {
+			source.appendChild(role.toXml(doc));
+		}
+		return doc;
 	}
 
 	public UriPathElement getUriId() {
@@ -117,23 +130,7 @@ public class Users implements Urlable, XmlDescriber {
 				.uniqueResult();
 	}
 
-	public void httpDelete(Invocation inv) throws HttpException {
-		// TODO Auto-generated method stub
-
-	}
-
-	public UriPathElement setUriId(UriPathElement uriId)
-			throws InternalException {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	public Node toXml(Document doc) throws HttpException {
+	public Element toXml(Document doc) throws HttpException {
 		return doc.createElement("users");
-	}
-
-	public Node toXml(Document doc, XmlTree tree) throws HttpException {
-		// TODO Auto-generated method stub
-		return null;
 	}
 }

@@ -112,11 +112,14 @@ public class ContextListener implements ServletContextListener {
 			} finally {
 				con.close();
 			}
-			Configuration config = Configuration.getConfiguration();
+			//Configuration config = Configuration.getConfiguration();
+			/*
+			String pythonPath = config
+			.getChellowProperty("python.path");
+			*/
 			StarkAutomaticHhDataImporters.start();
 			Properties postProps = new Properties();
-			postProps.setProperty("python.path", config
-					.getChellowProperty("python.path"));
+			//postProps.setProperty("python.path", pythonPath);
 			PythonInterpreter.initialize(System.getProperties(), postProps,
 					new String[] {});
 		} catch (Throwable e) {
@@ -188,13 +191,8 @@ public class ContextListener implements ServletContextListener {
 		MpanTop.loadFromCsv(context);
 		Hiber.flush();
 
-		EmailAddress adminUserEmailAddress = new EmailAddress(
-				"administrator@localhost");
-		User adminUser = User.findUserByEmail(adminUserEmailAddress);
-		if (adminUser == null) {
-			adminUser = User.insertUser(adminUserEmailAddress, "administrator",
-					User.EDITOR, null);
-		}
+		User.insertUser(new EmailAddress("administrator@localhost"),
+				"administrator", User.EDITOR, null);
 		Hiber.commit();
 		Source.insertSource("net", "Public distribution system.");
 		Source.insertSource("chp", "Combined heat and power generator");
@@ -242,15 +240,14 @@ public class ContextListener implements ServletContextListener {
 	 * siteSupplyGenerationInsert.setLong(3, supplyGenerationId);
 	 * siteSupplyGenerationInsert.setBoolean(4, isPhysical);
 	 * siteSupplyGenerationInsert.execute(); siteSupplyGenerationId++; }
-	 * srs.close();
-	 *  /* stmt .execute("update meter_timeswitch set description = 'HH Code 5
-	 * and above (with Comms)', is_unmetered = false where code = '845'"); stmt
-	 * .execute("update meter_timeswitch set description = 'HH Code 5 and above
-	 * (without Comms)', is_unmetered = false where code = '846'"); stmt
-	 * .execute("update meter_timeswitch set description = 'HH Code 6 A (with
-	 * Comms)', is_unmetered = false where code = '847'"); stmt .execute("update
-	 * meter_timeswitch set description = 'HH Code 6 B (with Comms)',
-	 * is_unmetered = false where code = '848'"); stmt .execute("update
+	 * srs.close(); /* stmt .execute("update meter_timeswitch set description =
+	 * 'HH Code 5 and above (with Comms)', is_unmetered = false where code =
+	 * '845'"); stmt .execute("update meter_timeswitch set description = 'HH
+	 * Code 5 and above (without Comms)', is_unmetered = false where code =
+	 * '846'"); stmt .execute("update meter_timeswitch set description = 'HH
+	 * Code 6 A (with Comms)', is_unmetered = false where code = '847'"); stmt
+	 * .execute("update meter_timeswitch set description = 'HH Code 6 B (with
+	 * Comms)', is_unmetered = false where code = '848'"); stmt .execute("update
 	 * meter_timeswitch set description = 'HH Code 6 C (with Comms)',
 	 * is_unmetered = false where code = '849'"); stmt .execute("update
 	 * meter_timeswitch set description = 'HH Code 6 D (with Comms)',

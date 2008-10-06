@@ -52,6 +52,24 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 public abstract class Party extends PersistentEntity implements Urlable {
+	static public Party getParty(String participantCode, char roleCode) throws HttpException {
+		return getParty(participantCode, MarketRole.getMarketRole(roleCode));
+	}
+	
+	static public Party getParty(String participantCode, MarketRole role)
+			throws HttpException {
+		Party party = (Party) Hiber
+				.session()
+				.createQuery(
+						"from Party party where party.participant.code = :participantCode and party.role = :role")
+				.setString("participantCode", participantCode).setEntity(
+						"role", role).uniqueResult();
+		if (party == null) {
+			throw new NotFoundException();
+		}
+		return party;
+	}
+
 	static public void loadFromCsv(ServletContext sc) throws HttpException {
 		Debug.print("Starting to add Parties.");
 		Mdd mdd = new Mdd(sc, "MarketParticipantRole", new String[] {
@@ -69,8 +87,8 @@ public abstract class Party extends PersistentEntity implements Urlable {
 			Date validTo = mdd.toDate(values[3]);
 			char roleCode = role.getCode();
 			if (roleCode == MarketRole.DISTRIBUTOR) {
-				Dso dso = new Dso(values[4], participant,
-						validFrom, validTo, values[14]);
+				Dso dso = new Dso(values[4], participant, validFrom, validTo,
+						values[14]);
 				Hiber.session().save(dso);
 				Hiber.close();
 				ClassLoader dsoClassLoader = Provider.class.getClassLoader();
@@ -78,8 +96,7 @@ public abstract class Party extends PersistentEntity implements Urlable {
 				try {
 					URL resource = dsoClassLoader
 							.getResource("net/sf/chellow/billing/dso"
-									+ dso.getCode()
-									+ "Service.py");
+									+ dso.getCode() + "Service.py");
 					if (resource != null) {
 						InputStreamReader isr = new InputStreamReader(resource
 								.openStream(), "UTF-8");
@@ -88,14 +105,12 @@ public abstract class Party extends PersistentEntity implements Urlable {
 						while ((c = isr.read()) != -1) {
 							pythonString.write(c);
 						}
-						dsoService = dso.insertService("main",
-								new HhEndDate("2000-01-01T00:30Z"),
-								pythonString.toString());
+						dsoService = dso.insertService("main", new HhEndDate(
+								"2000-01-01T00:30Z"), pythonString.toString());
 						RateScript dsoRateScript = dsoService.getRateScripts()
 								.iterator().next();
 						isr = new InputStreamReader(dsoClassLoader.getResource(
-								"net/sf/chellow/billing/dso"
-										+ dso.getCode()
+								"net/sf/chellow/billing/dso" + dso.getCode()
 										+ "ServiceRateScript.py").openStream(),
 								"UTF-8");
 						pythonString = new StringWriter();
@@ -110,8 +125,8 @@ public abstract class Party extends PersistentEntity implements Urlable {
 					throw new InternalException(e);
 				}
 			} else {
-				Provider provider = new Provider(values[4], participant, roleCode,
-						validFrom, validTo);
+				Provider provider = new Provider(values[4], participant,
+						roleCode, validFrom, validTo);
 				Hiber.session().save(provider);
 				Hiber.close();
 			}
@@ -176,7 +191,7 @@ public abstract class Party extends PersistentEntity implements Urlable {
 	void setValidTo(Date to) {
 		this.validTo = to;
 	}
-	
+
 	public Element toXml(Document doc, String elementName) throws HttpException {
 		Element element = super.toXml(doc, elementName);
 
@@ -191,21 +206,17 @@ public abstract class Party extends PersistentEntity implements Urlable {
 	public Element toXml(Document doc) throws HttpException {
 		return toXml(doc, "party");
 	}
-/*
-	public Account getAccount(String accountText) throws HttpException {
-		Account account = (Account) Hiber
-				.session()
-				.createQuery(
-						"from Account account where account.provider = :provider and account.reference = :accountReference")
-				.setEntity("provider", this).setString("accountReference",
-						accountText.trim()).uniqueResult();
-		if (account == null) {
-			throw new UserException("There isn't an account for '" + getName()
-					+ "' with the reference '" + accountText + "'.");
-		}
-		return account;
-	}
-*/
+
+	/*
+	 * public Account getAccount(String accountText) throws HttpException {
+	 * Account account = (Account) Hiber .session() .createQuery( "from Account
+	 * account where account.provider = :provider and account.reference =
+	 * :accountReference") .setEntity("provider",
+	 * this).setString("accountReference", accountText.trim()).uniqueResult();
+	 * if (account == null) { throw new UserException("There isn't an account
+	 * for '" + getName() + "' with the reference '" + accountText + "'."); }
+	 * return account; }
+	 */
 	@SuppressWarnings("unchecked")
 	/*
 	 * abstract public List<SupplyGeneration> supplyGenerations(Account
@@ -216,7 +227,7 @@ public abstract class Party extends PersistentEntity implements Urlable {
 	 */
 	@Override
 	public Urlable getChild(UriPathElement uriId) throws HttpException {
-			throw new NotFoundException();
+		throw new NotFoundException();
 	}
 
 	@Override

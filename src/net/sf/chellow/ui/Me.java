@@ -30,6 +30,9 @@ public class Me implements Urlable {
 
 	public void httpGet(Invocation inv) throws HttpException {
 		User user = inv.getUser();
+		if (user == null) {
+			user = ImplicitUserSource.getUser(inv);
+		}
 		inv.sendFound(user.getUri());
 	}
 

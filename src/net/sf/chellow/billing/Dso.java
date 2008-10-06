@@ -117,7 +117,7 @@ public class Dso extends Party {
 
 	public DsoContract insertService(String name, HhEndDate startDate,
 			String chargeScript) throws HttpException {
-		DsoContract service = findService(name);
+		DsoContract service = findContract(name);
 		if (service == null) {
 			service = new DsoContract(this, name, startDate, chargeScript);
 		} else {
@@ -129,12 +129,12 @@ public class Dso extends Party {
 		return service;
 	}
 
-	public DsoContract findService(String name) throws HttpException {
+	public DsoContract findContract(String name) throws HttpException {
 		return (DsoContract) Hiber
 				.session()
 				.createQuery(
-						"from DsoService service where service.dso = :dso and service.name = :serviceName")
-				.setEntity("dso", this).setString("serviceName", name)
+						"from DsoContract contract where contract.party = :dso and contract.name = :contractName")
+				.setEntity("dso", this).setString("contractName", name)
 				.uniqueResult();
 	}
 

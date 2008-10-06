@@ -47,6 +47,8 @@
 								<tr>
 									<th>Chellow Id</th>
 									<th>Email Address</th>
+									<th>Role</th>
+									<th>Party</th>
 								</tr>
 							</thead>
 							<tbody>
@@ -64,12 +66,32 @@
 											<xsl:value-of
 												select="@email-address" />
 										</td>
+										<td>
+											<xsl:choose>
+												<xsl:when
+													test="@role = 0">
+													Editor
+												</xsl:when>
+												<xsl:when
+													test="@role = 1">
+													Viewer
+												</xsl:when>
+												<xsl:when
+													test="@role = 2">
+													Party Viewer
+												</xsl:when>
+											</xsl:choose>
+										</td>
+										<td><xsl:if test="party">
+										<xsl:value-of select="party/@name"/>
+										</xsl:if>
+										</td>
 									</tr>
 								</xsl:for-each>
 							</tbody>
 						</table>
-						<br/>
-						<form method="post" action="..">
+						<br />
+						<form method="post" action=".">
 							<fieldset>
 								<legend>Add new user</legend>
 								<br />
@@ -82,6 +104,73 @@
 									Password
 									<input type="password"
 										name="password" />
+								</label>
+								<br />
+								<label>
+									User Role
+									<select name="role">
+										<option value="0">
+											<xsl:if
+												test="/source/request/parameter[@name='role']/value = 0">
+												<xsl:attribute
+													name="selected">
+																<xsl:value-of
+														select="'selected'" />
+															</xsl:attribute>
+											</xsl:if>
+											Editor
+										</option>
+										<option value="1">
+											<xsl:if
+												test="/source/request/parameter[@name='role']/value = 1">
+												<xsl:attribute
+													name="selected">
+																<xsl:value-of
+														select="'selected'" />
+															</xsl:attribute>
+											</xsl:if>
+											Viewer
+										</option>
+										<option value="2">
+											<xsl:if
+												test="/source/request/parameter[@name='role']/value = 2">
+												<xsl:attribute
+													name="selected">
+																<xsl:value-of
+														select="'selected'" />
+															</xsl:attribute>
+											</xsl:if>
+											Party Viewer
+										</option>
+									</select>
+								</label>
+								<br />
+								<label>
+									<xsl:value-of
+										select="'Participant Code '" />
+									<input name="participant-code"
+										value="{/source/request/parameter[@name = 'participant-code']/value}" />
+								</label>
+								<br />
+								<label>
+									Market Role
+									<select name="market-role-id">
+										<xsl:for-each
+											select="/source/market-role">
+											<option value="{@id}">
+												<xsl:if
+													test="/source/request/parameter[@name='market-role-id']/value = @id">
+													<xsl:attribute
+														name="selected">
+																<xsl:value-of
+															select="'selected'" />
+															</xsl:attribute>
+												</xsl:if>
+												<xsl:value-of
+													select="concat(@code, ' : ', @description)" />
+											</option>
+										</xsl:for-each>
+									</select>
 								</label>
 								<br />
 								<br />

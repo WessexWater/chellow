@@ -31,7 +31,6 @@
 					<xsl:value-of
 						select="concat(' &gt; ', /source/user/@email-address)" />
 				</p>
-
 				<xsl:if test="//message">
 					<ul>
 						<xsl:for-each select="//message">
@@ -85,11 +84,79 @@
 									</input>
 								</label>
 								<br />
+								<label>
+									User Role
+									<select name="role">
+										<option value="0">
+											<xsl:if
+												test="/source/request/parameter[@name='role']/value = 0">
+												<xsl:attribute
+													name="selected">
+																<xsl:value-of
+														select="'selected'" />
+															</xsl:attribute>
+											</xsl:if>
+											Editor
+										</option>
+										<option value="1">
+											<xsl:if
+												test="/source/request/parameter[@name='role']/value = 1">
+												<xsl:attribute
+													name="selected">
+																<xsl:value-of
+														select="'selected'" />
+															</xsl:attribute>
+											</xsl:if>
+											Viewer
+										</option>
+										<option value="2">
+											<xsl:if
+												test="/source/request/parameter[@name='role']/value = 2">
+												<xsl:attribute
+													name="selected">
+																<xsl:value-of
+														select="'selected'" />
+															</xsl:attribute>
+											</xsl:if>
+											Party Viewer
+										</option>
+									</select>
+								</label>
+								<br />
+								<label>
+									<xsl:value-of
+										select="'Participant Code '" />
+									<input name="participant-code"
+										value="{/source/request/parameter[@name = 'participant-code']/value}" />
+								</label>
+								<br />
+								<label>
+									Market Role
+									<select name="market-role-id">
+										<xsl:for-each
+											select="/source/market-role">
+											<option value="{@id}">
+												<xsl:if
+													test="/source/request/parameter[@name='market-role-id']/value = @id">
+													<xsl:attribute
+														name="selected">
+																<xsl:value-of
+															select="'selected'" />
+															</xsl:attribute>
+												</xsl:if>
+												<xsl:value-of
+													select="concat(@code, ' : ', @description)" />
+											</option>
+										</xsl:for-each>
+									</select>
+								</label>
+								<br />
 								<br />
 								<input type="submit" value="Update" />
 								<input type="reset" value="Reset" />
 							</fieldset>
 						</form>
+						<br />
 						<form method="post" action=".">
 							<fieldset>
 								<legend>Change password</legend>
@@ -118,40 +185,13 @@
 								<input type="reset" value="Reset" />
 							</fieldset>
 						</form>
+						<br />
 						<form action=".">
 							<fieldset>
 								<input type="hidden" name="view"
 									value="confirm-delete" />
 								<legend>Delete this user</legend>
 								<input type="submit" value="Delete" />
-							</fieldset>
-						</form>
-						<hr />
-						<h3>Roles</h3>
-
-						<ul>
-							<xsl:for-each select="/source/user/role">
-								<li>
-									<a
-										href="{/source/request/@context-path}/roles/{@id}/">
-										<xsl:value-of select="@name" />
-									</a>
-								</li>
-							</xsl:for-each>
-						</ul>
-						<form method="post" action=".">
-							<fieldset>
-								<legend>Add existing role</legend>
-								<br />
-								<label>
-									Role id
-									<input name="role-id"
-										value="{/source/request/parameter[@name='role-id']/value}" />
-								</label>
-								<br />
-								<br />
-								<input type="submit" value="Add" />
-								<input type="reset" value="Reset" />
 							</fieldset>
 						</form>
 					</xsl:otherwise>

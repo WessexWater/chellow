@@ -60,8 +60,8 @@ public abstract class Contract extends PersistentEntity implements
 		return service;
 	}
 
-	//private Party party;
-	
+	// private Party party;
+
 	private String name;
 
 	private RateScript startRateScript;
@@ -77,7 +77,7 @@ public abstract class Contract extends PersistentEntity implements
 
 	public Contract(String name, HhEndDate startDate, String chargeScript)
 			throws HttpException {
-		//setParty(party);
+		// setParty(party);
 		rateScripts = new HashSet<RateScript>();
 		RateScript rateScript = new RateScript(this, startDate, null,
 				chargeScript);
@@ -86,15 +86,12 @@ public abstract class Contract extends PersistentEntity implements
 		setFinishRateScript(rateScript);
 		internalUpdate(name, chargeScript);
 	}
+
 	/*
-	public Party getParty() {
-		return party;
-	}
-	
-	void setParty(Party party) {
-		this.party = party;
-	}
-*/
+	 * public Party getParty() { return party; }
+	 * 
+	 * void setParty(Party party) { this.party = party; }
+	 */
 	public String getName() {
 		return name;
 	}
@@ -265,8 +262,8 @@ public abstract class Contract extends PersistentEntity implements
 
 		try {
 			Object[] args = { account, from, to };
-			bill = (VirtualBill) engine()
-					.invokeFunction(name + "VirtualBill", args);
+			bill = (VirtualBill) engine().invokeFunction(name + "VirtualBill",
+					args);
 		} catch (ScriptException e) {
 			throw new UserException(e.getMessage());
 		} catch (NoSuchMethodException e) {
@@ -307,8 +304,8 @@ public abstract class Contract extends PersistentEntity implements
 		return (RateScript) Hiber
 				.session()
 				.createQuery(
-						"from RateScript script where script.service = :service and script.finishDate.date = :scriptFinishDate")
-				.setEntity("service", this).setTimestamp("scriptFinishDate",
+						"from RateScript script where script.contract = :contract and script.finishDate.date = :scriptFinishDate")
+				.setEntity("contract", this).setTimestamp("scriptFinishDate",
 						script.getStartDate().getPrevious().getDate())
 				.uniqueResult();
 	}
@@ -321,8 +318,8 @@ public abstract class Contract extends PersistentEntity implements
 		return (RateScript) Hiber
 				.session()
 				.createQuery(
-						"from RateScript script where script.service = :service and script.startDate.date = :scriptStartDate")
-				.setEntity("service", this).setTimestamp("scriptStartDate",
+						"from RateScript script where script.contract = :contract and script.startDate.date = :scriptStartDate")
+				.setEntity("contract", this).setTimestamp("scriptStartDate",
 						rateScript.getFinishDate().getNext().getDate())
 				.uniqueResult();
 	}
@@ -333,7 +330,7 @@ public abstract class Contract extends PersistentEntity implements
 		Invocable invocableEngine = null;
 		try {
 			scriptEngine.eval(chargeScript);
-			scriptEngine.put("service", this);
+			scriptEngine.put("contract", this);
 			invocableEngine = (Invocable) scriptEngine;
 		} catch (ScriptException e) {
 			throw new UserException(e.getMessage());
@@ -348,8 +345,8 @@ public abstract class Contract extends PersistentEntity implements
 		List<RateScript> rateScripts = (List<RateScript>) Hiber
 				.session()
 				.createQuery(
-						"from RateScript script where script.service = :service order by script.startDate.date")
-				.setEntity("service", this).list();
+						"from RateScript script where script.contract = :contract order by script.startDate.date")
+				.setEntity("contract", this).list();
 		RateScript rateScript = rateScripts.get(rateScripts.size() - 1);
 		if (rateScript.getFinishDate() != null
 				&& startDate.getDate().after(
@@ -406,10 +403,9 @@ public abstract class Contract extends PersistentEntity implements
 		return Hiber
 				.session()
 				.createQuery(
-						"from RateScript script where script.service = :service and script.startDate.date <= :to and (script.finishDate.date is null or script.finishDate.date >= :from)")
-				.setEntity("service", this)
-				.setTimestamp("from", from.getDate()).setTimestamp("to",
-						to.getDate()).list();
+						"from RateScript script where script.contract = :contract and script.startDate.date <= :to and (script.finishDate.date is null or script.finishDate.date >= :from)")
+				.setEntity("contract", this).setTimestamp("from",
+						from.getDate()).setTimestamp("to", to.getDate()).list();
 	}
 
 	@SuppressWarnings("unchecked")
@@ -417,9 +413,9 @@ public abstract class Contract extends PersistentEntity implements
 		return (RateScript) Hiber
 				.session()
 				.createQuery(
-						"from RateScript script where script.service = :service and script.startDate.date <= :date and (script.finishDate.date is null or script.finishDate.date >= :date)")
-				.setEntity("service", this)
-				.setTimestamp("date", date.getDate()).uniqueResult();
+						"from RateScript script where script.contract = :contract and script.startDate.date <= :date and (script.finishDate.date is null or script.finishDate.date >= :date)")
+				.setEntity("contract", this).setTimestamp("date",
+						date.getDate()).uniqueResult();
 	}
 
 	public Object callFunction(String functionName, Object[] args)
@@ -442,6 +438,7 @@ public abstract class Contract extends PersistentEntity implements
 		}
 		return result;
 	}
+
 	public static Contract getContract(Long id) throws HttpException {
 		Contract contract = (Contract) Hiber.session().get(Contract.class, id);
 		if (contract == null) {
@@ -516,7 +513,8 @@ public abstract class Contract extends PersistentEntity implements
 				.setEntity("contract", this).setString("reference", reference)
 				.uniqueResult();
 		if (account == null) {
-			throw new NotFoundException("The account '" + reference + "' can't be found.");
+			throw new NotFoundException("The account '" + reference
+					+ "' can't be found.");
 		}
 		return account;
 	}
@@ -524,6 +522,6 @@ public abstract class Contract extends PersistentEntity implements
 	public Batches batchesInstance() {
 		return new Batches(this);
 	}
-	
+
 	public abstract Party getParty();
 }

@@ -92,5 +92,6 @@
 		<mapping resource="hibernate/ClockInterval.hbm.xml" />
 		<mapping resource="hibernate/Party.hbm.xml" />
 		<mapping resource="hibernate/ReadType.hbm.xml" />
+		<mapping resource="hibernate/Report.hbm.xml" />
 	</session-factory>
 </hibernate-configuration>

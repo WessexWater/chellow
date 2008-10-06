@@ -29,6 +29,13 @@
 				</xsl:if>
 				<ul>
 					<li>
+						<a
+							href="{/source/request/@context-path}/reports/0/output/">
+							Viewer's Home
+						</a>
+					</li>
+
+					<li>
 						<a href="http://chellow.wikispaces.com/"
 							target="_blank">
 							Docs
@@ -85,14 +92,8 @@
 						<ul>
 							<li>
 								<a
-									href="{/source/request/@context-path}/users/implicit-me/">
-									Me (without username and password)
-								</a>
-							</li>
-							<li>
-								<a
-									href="{/source/request/@context-path}/users/explicit-me/">
-									Me (with username and password)
+									href="{/source/request/@context-path}/users/me/">
+									Me
 								</a>
 							</li>
 						</ul>
