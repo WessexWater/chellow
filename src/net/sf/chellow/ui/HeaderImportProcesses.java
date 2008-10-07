@@ -1,5 +1,8 @@
 package net.sf.chellow.ui;
 
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -42,7 +45,8 @@ public class HeaderImportProcesses implements Urlable, XmlDescriber {
 	}
 
 	public MonadUri getUri() throws HttpException {
-		return Chellow.HEADER_IMPORT_PROCESSES.getUri().resolve(getUriId()).append("/");
+		return Chellow.HEADER_IMPORT_PROCESSES.getUri().resolve(getUriId())
+				.append("/");
 	}
 
 	public void httpGet(Invocation inv) throws HttpException {
@@ -54,9 +58,9 @@ public class HeaderImportProcesses implements Urlable, XmlDescriber {
 		Element source = doc.getDocumentElement();
 		Element processesElement = toXml(doc);
 		source.appendChild(processesElement);
-			for (HeaderImportProcess process : processes.values()) {
-				processesElement.appendChild(process.toXml(doc));
-			}
+		for (HeaderImportProcess process : processes.values()) {
+			processesElement.appendChild(process.toXml(doc));
+		}
 		return doc;
 	}
 
@@ -69,9 +73,18 @@ public class HeaderImportProcesses implements Urlable, XmlDescriber {
 		}
 		try {
 			long processId = processSerial++;
-			process = new HeaderImportProcess(getUri().resolve(
-					new UriPathElement(Long.toString(processId))).append("/"),
-					fileItem);
+			try {
+				String fileName = fileItem.getFieldName();
+				
+				process = new HeaderImportProcess(getUri().resolve(
+						new UriPathElement(Long.toString(processId))).append(
+						"/"), new InputStreamReader(fileItem.getInputStream(),
+						"UTF-8"), fileName.substring(fileName.length() - 3));
+			} catch (UnsupportedEncodingException e) {
+				throw new InternalException(e);
+			} catch (IOException e) {
+				throw new InternalException(e);
+			}
 			processes.put(processId, process);
 		} catch (HttpException e) {
 			e.setDocument(document());
@@ -99,6 +112,6 @@ public class HeaderImportProcesses implements Urlable, XmlDescriber {
 	@Override
 	public void httpDelete(Invocation inv) throws HttpException {
 		// TODO Auto-generated method stub
-		
+
 	}
 }

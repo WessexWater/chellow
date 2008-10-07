@@ -1,8 +1,15 @@
 package net.sf.chellow.ui;
 
 import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.Reader;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Level;
+
+import javax.xml.stream.XMLEventReader;
+import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.events.XMLEvent;
 
 import net.sf.chellow.billing.Account;
 import net.sf.chellow.billing.HhdcContract;
@@ -30,11 +37,9 @@ import net.sf.chellow.physical.Ssc;
 import net.sf.chellow.physical.Supply;
 import net.sf.chellow.physical.SupplyGeneration;
 
-import org.apache.commons.fileupload.FileItem;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
-
 import com.Ostermiller.util.CSVParser;
 
 public class HeaderImportProcess extends Thread implements Urlable,
@@ -47,35 +52,25 @@ public class HeaderImportProcess extends Thread implements Urlable,
 
 	private Element source = doc.getDocumentElement();
 
-	private CSVParser shredder;
+	private Digester digester;
 
 	private int lineNumber;
 
 	private MonadUri uri;
 
-	public HeaderImportProcess(MonadUri uri, FileItem item)
+	public HeaderImportProcess(MonadUri uri, Reader reader, String extension)
 			throws HttpException {
 		super("Import");
 		this.uri = uri;
-		if (item.getSize() == 0) {
-			throw new UserException("File has zero length");
-		}
-		try {
-			shredder = new CSVParser(new InputStreamReader(item
-					.getInputStream(), "UTF-8"));
-			shredder.setCommentStart("#;!");
-			shredder.setEscapes("nrtf", "\n\r\t\f");
-			String[] titles = shredder.getLine();
+		digester = new Digester(reader, extension);
+		String[] titles = digester.getLine();
 
-			if (titles.length < 2
-					|| !titles[0].trim().toLowerCase().equals("action")
-					|| !titles[1].trim().toLowerCase().equals("type")) {
-				throw new UserException(
-						"The first line of the CSV must contain the titles "
-								+ "'Action, Type'.");
-			}
-		} catch (IOException e) {
-			throw new InternalException(e);
+		if (titles.length < 2
+				|| !titles[0].trim().toLowerCase().equals("action")
+				|| !titles[1].trim().toLowerCase().equals("type")) {
+			throw new UserException(
+					"The first line of the CSV must contain the titles "
+							+ "'Action, Type'.");
 		}
 	}
 
@@ -98,9 +93,9 @@ public class HeaderImportProcess extends Thread implements Urlable,
 	public void run() {
 		Element source = (Element) doc.getFirstChild();
 		try {
-			for (String[] values = shredder.getLine(); values != null
-					&& !shouldHalt(); values = shredder.getLine()) {
-				setLineNumber(shredder.lastLineNumber());
+			for (String[] values = digester.getLine(); values != null
+					&& !shouldHalt(); values = digester.getLine()) {
+				setLineNumber(digester.getLastLineNumber());
 				if (values.length < 2) {
 					throw new UserException(
 							"There must be an 'Action' field followed "
@@ -795,5 +790,73 @@ public class HeaderImportProcess extends Thread implements Urlable,
 
 	public Node toXml(Document doc, XmlTree tree) throws HttpException {
 		return null;
+	}
+
+	private class Digester {
+		private CSVParser shredder;
+		private XMLEventReader r;
+
+		Digester(Reader reader, String extension) throws HttpException {
+			if (extension.equals("csv")) {
+				shredder = new CSVParser(reader);
+				shredder.setCommentStart("#;!");
+				shredder.setEscapes("nrtf", "\n\r\t\f");
+
+			} else if (extension.equals("xml")) {
+				XMLInputFactory factory = XMLInputFactory.newInstance();
+				try {
+					r = factory.createXMLEventReader(reader);
+				} catch (XMLStreamException e) {
+					throw new InternalException(e);
+				}
+			}
+		}
+
+		public int getLastLineNumber() throws HttpException {
+			if (shredder == null) {
+				try {
+					return r.peek().getLocation().getLineNumber();
+				} catch (XMLStreamException e) {
+					throw new InternalException(e);
+				}
+			} else {
+				return shredder.getLastLineNumber();
+			}
+		}
+
+		public String[] getLine() throws HttpException {
+			if (shredder == null) {
+				List<String> events = new ArrayList<String>();
+				if (r.hasNext()) {
+					try {
+						boolean inValue = false;
+						XMLEvent e = r.nextEvent();
+						while (!(e.isEndElement() && e.asEndElement().getName()
+								.equals("line"))) {
+							if (e.isStartElement()
+									&& e.asStartElement().getName().equals(
+											"value")) {
+								inValue = true;
+							} else if (e.isEndElement()
+									&& e.asEndElement().getName().equals(
+											"value")) {
+								inValue = false;
+							} else if (inValue && e.isCharacters()) {
+								events.add(e.asCharacters().getData());
+							}
+						}
+					} catch (XMLStreamException e) {
+						throw new InternalException(e);
+					}
+				}
+				return events.toArray(new String[1]);
+			} else {
+				try {
+					return shredder.getLine();
+				} catch (IOException e) {
+					throw new InternalException(e);
+				}
+			}
+		}
 	}
 }
