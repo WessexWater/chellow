@@ -9,12 +9,10 @@
 		<html>
 			<head>
 				<title>
-					Chellow &gt; Organizations &gt;
+					Chellow
+					&gt; General Imports &gt;
 					<xsl:value-of
-						select="/source/header-import-process/org/@name" />
-					&gt; Header Data Imports &gt;
-					<xsl:value-of
-						select="/source/header-import-process/@id" />
+						select="/source/general-import/@id" />
 				</title>
 
 				<link rel="stylesheet" type="text/css"
@@ -28,23 +26,13 @@
 						<span class="logo">Chellow</span>
 					</a>
 					&gt;
-					<a href="{/source/request/@context-path}/orgs/">
-						<xsl:value-of select="'Organizations'" />
-					</a>
-					&gt;
 					<a
-						href="{/source/request/@context-path}/orgs/{/source/header-import-process/org/@id}/">
-						<xsl:value-of
-							select="/source/header-import-process/org/@name" />
-					</a>
-					&gt;
-					<a
-						href="{/source/request/@context-path}/orgs/{/source/header-import-process/org/@id}/header-data-imports/">
-						<xsl:value-of select="'Header Data Imports'" />
+						href="{/source/request/@context-path}/general-imports/">
+						<xsl:value-of select="'General Imports'" />
 					</a>
 					&gt;
 					<xsl:value-of
-						select="/source/header-import-process/@id" />
+						select="/source/general-import/@id" />
 				</p>
 				<xsl:if test="//message">
 					<ul>
@@ -190,10 +178,10 @@
 				</xsl:if>
 
 				<xsl:if
-					test="/source/header-import-process/@progress">
+					test="/source/general-import/@progress">
 					<p>
 						<xsl:value-of
-							select="/source/header-import-process/@progress" />
+							select="/source/general-import/@progress" />
 					</p>
 					<p>Refresh the page to see latest progress.</p>
 

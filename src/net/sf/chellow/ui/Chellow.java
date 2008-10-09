@@ -75,7 +75,7 @@ public class Chellow extends Monad implements Urlable {
 	static public final Reports REPORTS_INSTANCE = new Reports();
 	static public final Supplies SUPPLIES_INSTANCE = new Supplies();
 	static public final Sites SITES_INSTANCE = new Sites();
-	static public final HeaderImportProcesses HEADER_IMPORT_PROCESSES = new HeaderImportProcesses();
+	static public final GeneralImports GENERAL_IMPORT_PROCESSES = new GeneralImports();
 
 	static {
 		try {
@@ -204,6 +204,8 @@ public class Chellow extends Monad implements Urlable {
 			return REPORTS_INSTANCE;
 		} else if (Configuration.URI_ID.equals(uriId)) {
 			return Configuration.getConfiguration();
+		} else if (GeneralImports.URI_ID.equals(uriId)) {
+			return GENERAL_IMPORT_PROCESSES;
 		} else {
 			return null;
 		}

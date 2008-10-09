@@ -1,9 +1,16 @@
 package net.sf.chellow.ui;
 
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.StringWriter;
+import java.io.UnsupportedEncodingException;
+import java.util.List;
+
+import javax.servlet.ServletContext;
 
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
+import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Invocation;
 import net.sf.chellow.monad.MethodNotAllowedException;
 import net.sf.chellow.monad.MonadMessage;
@@ -27,6 +34,33 @@ public class Report extends PersistentEntity {
 		}
 		return report;
 	}
+	
+	public static Report getReport(String name) throws HttpException {
+		Report report = (Report) Hiber.session().createQuery("from Report report where report.name = :name").setString("name", name).uniqueResult();
+		if (report == null) {
+			throw new NotFoundException("Can't find the report '" + name + "'.");
+		}
+		return report;
+	}
+	
+	public static void loadReports(ServletContext context) throws HttpException {
+
+		try {
+			GeneralImport process = new GeneralImport(null,
+					new InputStreamReader(context.getResource(
+							"/WEB-INF/reports.xml").openStream(), "UTF-8"),
+					"xml");
+			process.run();
+			List<MonadMessage> errors = process.getErrors();
+			if (!errors.isEmpty()) {
+				throw new InternalException(errors.get(0).getDescription());
+			}
+		} catch (UnsupportedEncodingException e) {
+			throw new InternalException(e);
+		} catch (IOException e) {
+			throw new InternalException(e);
+		}
+	}
 
 	public static Report insertReport(String name, String script,
 			String template) throws HttpException {
@@ -41,6 +75,9 @@ public class Report extends PersistentEntity {
 	private String script;
 
 	private String template;
+	
+	public Report() {
+	}
 
 	public Report(String name, String script, String template)
 			throws HttpException {
@@ -71,7 +108,7 @@ public class Report extends PersistentEntity {
 		this.template = template;
 	}
 
-	private void update(String name, String script, String template) {
+	public void update(String name, String script, String template) {
 		setName(name);
 		setScript(script);
 		setTemplate(template);
@@ -140,7 +177,7 @@ public class Report extends PersistentEntity {
 
 	public Element toXml(Document doc) throws HttpException {
 		Element element = super.toXml(doc, "report");
-		element.setAttribute("name", "name");
+		element.setAttribute("name", name);
 		element.setAttribute("script", script);
 		if (template != null) {
 			element.setAttribute("template", template);

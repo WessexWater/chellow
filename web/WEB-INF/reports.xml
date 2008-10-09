@@ -1,6 +1,10 @@
 <?xml version="1.0"?>
 <csv>
 	<line>
+		<value>action</value>
+		<value>type</value>
+	</line>
+	<line>
 		<value>insert</value>
 		<value>report</value>
 		<value>Home</value>

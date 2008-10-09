@@ -169,6 +169,11 @@ public class ContextListener implements ServletContextListener {
 					.execute("CREATE INDEX site_snag__start_date ON site_snag (start_date);");
 			stmt
 					.execute("CREATE INDEX hh_datum__end_date ON hh_datum (end_date)");
+			stmt
+			.execute("ALTER TABLE report ALTER COLUMN script TYPE text;");
+			stmt
+			.execute("ALTER TABLE report ALTER COLUMN template TYPE text;");
+
 		} catch (SQLException e) {
 			throw new InternalException(e);
 		}
@@ -189,6 +194,7 @@ public class ContextListener implements ServletContextListener {
 		Ssc.loadFromCsv(context);
 		MeasurementRequirement.loadFromCsv(context);
 		MpanTop.loadFromCsv(context);
+		//Report.loadReports(context);
 		Hiber.flush();
 
 		User.insertUser(new EmailAddress("administrator@localhost"),

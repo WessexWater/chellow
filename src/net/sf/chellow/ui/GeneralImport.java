@@ -14,6 +14,7 @@ import javax.xml.stream.events.XMLEvent;
 import net.sf.chellow.billing.Account;
 import net.sf.chellow.billing.HhdcContract;
 import net.sf.chellow.billing.SupplierContract;
+import net.sf.chellow.monad.Debug;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.InternalException;
@@ -42,8 +43,7 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import com.Ostermiller.util.CSVParser;
 
-public class HeaderImportProcess extends Thread implements Urlable,
-		XmlDescriber {
+public class GeneralImport extends Thread implements Urlable, XmlDescriber {
 	private static final String NO_CHANGE = "{no change}";
 
 	private boolean halt = false;
@@ -51,14 +51,14 @@ public class HeaderImportProcess extends Thread implements Urlable,
 	private Document doc = MonadUtils.newSourceDocument();
 
 	private Element source = doc.getDocumentElement();
-
+	private List<MonadMessage> errors = new ArrayList<MonadMessage>();
 	private Digester digester;
 
 	private int lineNumber;
 
 	private MonadUri uri;
 
-	public HeaderImportProcess(MonadUri uri, Reader reader, String extension)
+	public GeneralImport(MonadUri uri, Reader reader, String extension)
 			throws HttpException {
 		super("Import");
 		this.uri = uri;
@@ -68,6 +68,7 @@ public class HeaderImportProcess extends Thread implements Urlable,
 		if (titles.length < 2
 				|| !titles[0].trim().toLowerCase().equals("action")
 				|| !titles[1].trim().toLowerCase().equals("type")) {
+			Debug.print("Titles " + titles.length);
 			throw new UserException(
 					"The first line of the CSV must contain the titles "
 							+ "'Action, Type'.");
@@ -82,20 +83,16 @@ public class HeaderImportProcess extends Thread implements Urlable,
 		return halt;
 	}
 
-	private synchronized int getLineNumber() {
+	public int getLineNumber() {
 		return lineNumber;
 	}
 
-	private synchronized void setLineNumber(int lineNumber) {
-		this.lineNumber = lineNumber;
-	}
-
 	public void run() {
-		Element source = (Element) doc.getFirstChild();
+		// Element source = (Element) doc.getFirstChild();
 		try {
 			for (String[] values = digester.getLine(); values != null
 					&& !shouldHalt(); values = digester.getLine()) {
-				setLineNumber(digester.getLastLineNumber());
+				// lineNumber = digester.getLastLineNumber();
 				if (values.length < 2) {
 					throw new UserException(
 							"There must be an 'Action' field followed "
@@ -105,19 +102,19 @@ public class HeaderImportProcess extends Thread implements Urlable,
 				Hiber.close();
 			}
 			if (shouldHalt()) {
-				source.appendChild(new MonadMessage(
-						"The import has been cancelled.").toXml(doc));
+				errors.add(new MonadMessage("The import has been cancelled."));
 			} else {
 				source.appendChild(new MonadMessage(
 						"The file has been imported successfully.").toXml(doc));
 			}
 		} catch (HttpException e) {
-			source.appendChild(new MonadMessage(
+			errors.add(new MonadMessage(e.getMessage()));
+			errors.add(new MonadMessage(
 					"There are errors that need to be corrected before "
-							+ "the file can be imported.").toXml(doc));
+							+ "the file can be imported."));
 		} catch (Throwable e) {
-			source.appendChild(new MonadMessage("Programmer Exception: "
-					+ e.getClass() + " " + e.getMessage()).toXml(doc));
+			errors.add(new MonadMessage("Programmer Exception: " + e.getClass()
+					+ " " + e.getMessage()));
 			ChellowLogger.getLogger().log(Level.SEVERE,
 					"From header import process", e);
 		} finally {
@@ -722,9 +719,32 @@ public class HeaderImportProcess extends Thread implements Urlable,
 						hhdcAccount.update(newReference);
 					}
 				}
+			} else if (type.equals("report")) {
+				if (values.length < 5) {
+					throw new UserException(
+							"There aren't enough fields in this row");
+				}
+				String name = values[2];
+				csvElement.appendChild(getField("Name", name));
+				if (action.equals("insert")) {
+					String script = values[3];
+					csvElement.appendChild(getField("Script", script));
+					String template = values[4];
+					csvElement.appendChild(getField("Template", template));
+					Report.insertReport(name, script, template);
+				} else if (action.equals("update")) {
+					/*
+					 * String script = values[3];
+					 * csvElement.appendChild(getField("Script", script));
+					 * String template = values[4];
+					 * csvElement.appendChild(getField("Template", template));
+					 * Report report = Report.getReport(name);
+					 */
+				}
 			} else {
-				throw new UserException("The 'Type' field can only "
-						+ "be 'site', 'supply', 'hhdc' or 'supplier-account'.");
+				throw new UserException(
+						"The 'Type' field can only "
+								+ "be 'site', 'supply', 'hhdc', 'report' or 'supplier-account'.");
 			}
 		} catch (HttpException e) {
 			String message = e.getMessage();
@@ -758,6 +778,9 @@ public class HeaderImportProcess extends Thread implements Urlable,
 		Element source = document.getDocumentElement();
 		Element processElement = toXml(document);
 		source.appendChild(processElement);
+		for (MonadMessage message : errors) {
+			source.appendChild(message.toXml(document));
+		}
 		Hiber.close();
 		inv.sendOk(document);
 	}
@@ -771,7 +794,7 @@ public class HeaderImportProcess extends Thread implements Urlable,
 	}
 
 	public Element toXml(Document doc) throws HttpException {
-		Element element = doc.createElement("header-import-process");
+		Element element = doc.createElement("general-import");
 		element.setAttribute("uri", uri.toString());
 		element.setAttribute("id", getUriId().toString());
 		if (isAlive()) {
@@ -779,6 +802,10 @@ public class HeaderImportProcess extends Thread implements Urlable,
 					+ getLineNumber() + ".");
 		}
 		return element;
+	}
+
+	public List<MonadMessage> getErrors() {
+		return errors;
 	}
 
 	public UriPathElement getUriId() throws HttpException {
@@ -793,7 +820,7 @@ public class HeaderImportProcess extends Thread implements Urlable,
 	}
 
 	private class Digester {
-		private CSVParser shredder;
+		private CSVParser shredder = null;
 		private XMLEventReader r;
 
 		Digester(Reader reader, String extension) throws HttpException {
@@ -809,50 +836,68 @@ public class HeaderImportProcess extends Thread implements Urlable,
 				} catch (XMLStreamException e) {
 					throw new InternalException(e);
 				}
+			} else {
+				throw new UserException("The file extension was '" + extension
+						+ "' but only csv or xml is recognized.");
 			}
 		}
 
-		public int getLastLineNumber() throws HttpException {
-			if (shredder == null) {
-				try {
-					return r.peek().getLocation().getLineNumber();
-				} catch (XMLStreamException e) {
-					throw new InternalException(e);
-				}
-			} else {
-				return shredder.getLastLineNumber();
-			}
-		}
+		/*
+		 * public int getLineNumber() throws HttpException { return lineNumber;
+		 * 
+		 * if (shredder == null) { try { return
+		 * r.peek().getLocation().getLineNumber(); } catch (XMLStreamException
+		 * e) { throw new InternalException(e); } } else { return
+		 * shredder.getLastLineNumber(); } }
+		 */
 
 		public String[] getLine() throws HttpException {
 			if (shredder == null) {
-				List<String> events = new ArrayList<String>();
+				Debug.print("starting to get a line.");
+				List<String> values = new ArrayList<String>();
 				if (r.hasNext()) {
 					try {
 						boolean inValue = false;
 						XMLEvent e = r.nextEvent();
-						while (!(e.isEndElement() && e.asEndElement().getName()
-								.equals("line"))) {
+						lineNumber = e.getLocation().getLineNumber();
+						StringBuilder value = null;
+						while (!e.isEndDocument()
+								&& !(e.isEndElement() && e.asEndElement()
+										.getName().getLocalPart()
+										.equals("line"))) {
 							if (e.isStartElement()
-									&& e.asStartElement().getName().equals(
-											"value")) {
+									&& e.asStartElement().getName()
+											.getLocalPart().equals("value")) {
+								value = new StringBuilder();
 								inValue = true;
 							} else if (e.isEndElement()
-									&& e.asEndElement().getName().equals(
-											"value")) {
+									&& e.asEndElement().getName()
+											.getLocalPart().equals("value")) {
+								values.add(value.toString());
 								inValue = false;
 							} else if (inValue && e.isCharacters()) {
-								events.add(e.asCharacters().getData());
+								Debug.print("Adding value "
+										+ e.asCharacters().getData());
+								value.append(e.asCharacters().getData());
 							}
+							e = r.nextEvent();
+							lineNumber = e.getLocation().getLineNumber();
 						}
 					} catch (XMLStreamException e) {
 						throw new InternalException(e);
 					}
 				}
-				return events.toArray(new String[1]);
+				Debug.print("finish getting a line");
+				if (values.isEmpty()) {
+					return null;
+				} else {
+					return values.toArray(new String[0]);
+				}
 			} else {
 				try {
-					return shredder.getLine();
+					String[] line = shredder.getLine();
+					lineNumber = shredder.getLastLineNumber();
+					return line;
 				} catch (IOException e) {
 					throw new InternalException(e);
 				}

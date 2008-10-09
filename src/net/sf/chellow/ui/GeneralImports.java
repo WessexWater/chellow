@@ -9,6 +9,7 @@ import java.util.Map;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Invocation;
+import net.sf.chellow.monad.MethodNotAllowedException;
 import net.sf.chellow.monad.MonadUtils;
 import net.sf.chellow.monad.Urlable;
 import net.sf.chellow.monad.UserException;
@@ -22,22 +23,22 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
-public class HeaderImportProcesses implements Urlable, XmlDescriber {
+public class GeneralImports implements Urlable, XmlDescriber {
 	public static final UriPathElement URI_ID;
 
 	private static long processSerial = 0;
 
-	public static final Map<Long, HeaderImportProcess> processes = new HashMap<Long, HeaderImportProcess>();
+	public static final Map<Long, GeneralImport> processes = new HashMap<Long, GeneralImport>();
 
 	static {
 		try {
-			URI_ID = new UriPathElement("header-data-imports");
+			URI_ID = new UriPathElement("general-imports");
 		} catch (HttpException e) {
 			throw new RuntimeException(e);
 		}
 	}
 
-	public HeaderImportProcesses() {
+	public GeneralImports() {
 	}
 
 	public UriPathElement getUriId() {
@@ -45,8 +46,7 @@ public class HeaderImportProcesses implements Urlable, XmlDescriber {
 	}
 
 	public MonadUri getUri() throws HttpException {
-		return Chellow.HEADER_IMPORT_PROCESSES.getUri().resolve(getUriId())
-				.append("/");
+		return Chellow.ROOT_URI.resolve(getUriId()).append("/");
 	}
 
 	public void httpGet(Invocation inv) throws HttpException {
@@ -58,7 +58,7 @@ public class HeaderImportProcesses implements Urlable, XmlDescriber {
 		Element source = doc.getDocumentElement();
 		Element processesElement = toXml(doc);
 		source.appendChild(processesElement);
-		for (HeaderImportProcess process : processes.values()) {
+		for (GeneralImport process : processes.values()) {
 			processesElement.appendChild(process.toXml(doc));
 		}
 		return doc;
@@ -66,7 +66,7 @@ public class HeaderImportProcesses implements Urlable, XmlDescriber {
 
 	public void httpPost(Invocation inv) throws HttpException {
 		FileItem fileItem = inv.getFileItem("import-file");
-		HeaderImportProcess process;
+		GeneralImport process;
 
 		if (!inv.isValid()) {
 			throw new UserException(document());
@@ -74,9 +74,9 @@ public class HeaderImportProcesses implements Urlable, XmlDescriber {
 		try {
 			long processId = processSerial++;
 			try {
-				String fileName = fileItem.getFieldName();
-				
-				process = new HeaderImportProcess(getUri().resolve(
+				String fileName = fileItem.getName();
+
+				process = new GeneralImport(getUri().resolve(
 						new UriPathElement(Long.toString(processId))).append(
 						"/"), new InputStreamReader(fileItem.getInputStream(),
 						"UTF-8"), fileName.substring(fileName.length() - 3));
@@ -99,19 +99,16 @@ public class HeaderImportProcesses implements Urlable, XmlDescriber {
 	}
 
 	public Element toXml(Document doc) throws HttpException {
-		Element element = doc.createElement("header-import-processes");
+		Element element = doc.createElement("general-imports");
 		return element;
 	}
 
-	public Node toXml(Document doc, XmlTree tree) throws InternalException,
-			HttpException {
-		// TODO Auto-generated method stub
+	public Node toXml(Document doc, XmlTree tree) throws HttpException {
 		return null;
 	}
 
 	@Override
 	public void httpDelete(Invocation inv) throws HttpException {
-		// TODO Auto-generated method stub
-
+		throw new MethodNotAllowedException();
 	}
 }

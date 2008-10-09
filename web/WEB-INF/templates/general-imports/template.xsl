@@ -11,11 +11,7 @@
 				<link rel="stylesheet" type="text/css"
 					href="{/source/request/@context-path}/style/" />
 
-				<title>
-					Chellow &gt; Organizations &gt;
-					<xsl:value-of select="/source/header-import-processes/org/@name" />
-					&gt; Header Data Imports
-				</title>
+				<title>Chellow &gt; General Imports</title>
 
 			</head>
 
@@ -26,17 +22,7 @@
 							alt="Chellow Logo" />
 						<span class="logo">Chellow</span>
 					</a>
-					&gt;
-					<a href="{/source/request/@context-path}/orgs/">
-						<xsl:value-of select="'Organizations'" />
-					</a>
-					&gt;
-					<a
-						href="{/source/request/@context-path}/orgs/{/source/header-import-processes/org/@id}/">
-						<xsl:value-of
-							select="/source/header-import-processes/org/@name" />
-					</a>
-					&gt; Header Data Imports
+					&gt; General Imports
 				</p>
 
 				<xsl:if test="//message">
@@ -57,13 +43,13 @@
 							<a
 								href="{/source/response/header[@name = 'Location']/@value}">
 								<xsl:value-of
-									select="'new header data import'" />
+									select="'new general import'" />
 							</a>
 							has started off okay.
 						</p>
 					</xsl:when>
 					<xsl:otherwise>
-											<form enctype="multipart/form-data"
+						<form enctype="multipart/form-data"
 							method="post" action=".">
 							<fieldset>
 								<legend>New import</legend>
@@ -82,10 +68,10 @@
 							</fieldset>
 						</form>
 						<xsl:if
-							test="/source/header-import-processes/header-import-process">
+							test="/source/general-imports/general-import">
 							<ul>
 								<xsl:for-each
-									select="/source/header-import-processes/header-import-process">
+									select="/source/general-imports/general-import">
 									<li>
 										<a href="{@id}/">
 											<xsl:value-of select="@id" />
