@@ -14,7 +14,6 @@ import javax.xml.stream.events.XMLEvent;
 import net.sf.chellow.billing.Account;
 import net.sf.chellow.billing.HhdcContract;
 import net.sf.chellow.billing.SupplierContract;
-import net.sf.chellow.monad.Debug;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.InternalException;
@@ -68,7 +67,6 @@ public class GeneralImport extends Thread implements Urlable, XmlDescriber {
 		if (titles.length < 2
 				|| !titles[0].trim().toLowerCase().equals("action")
 				|| !titles[1].trim().toLowerCase().equals("type")) {
-			Debug.print("Titles " + titles.length);
 			throw new UserException(
 					"The first line of the CSV must contain the titles "
 							+ "'Action, Type'.");
@@ -853,7 +851,6 @@ public class GeneralImport extends Thread implements Urlable, XmlDescriber {
 
 		public String[] getLine() throws HttpException {
 			if (shredder == null) {
-				Debug.print("starting to get a line.");
 				List<String> values = new ArrayList<String>();
 				if (r.hasNext()) {
 					try {
@@ -876,8 +873,6 @@ public class GeneralImport extends Thread implements Urlable, XmlDescriber {
 								values.add(value.toString());
 								inValue = false;
 							} else if (inValue && e.isCharacters()) {
-								Debug.print("Adding value "
-										+ e.asCharacters().getData());
 								value.append(e.asCharacters().getData());
 							}
 							e = r.nextEvent();
@@ -887,7 +882,6 @@ public class GeneralImport extends Thread implements Urlable, XmlDescriber {
 						throw new InternalException(e);
 					}
 				}
-				Debug.print("finish getting a line");
 				if (values.isEmpty()) {
 					return null;
 				} else {

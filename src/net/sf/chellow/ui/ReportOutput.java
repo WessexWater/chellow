@@ -7,7 +7,6 @@ import javax.xml.transform.stream.StreamSource;
 import net.sf.chellow.monad.Invocation;
 import net.sf.chellow.monad.MethodNotAllowedException;
 import net.sf.chellow.monad.MonadUtils;
-import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.NotFoundException;
 import net.sf.chellow.monad.Urlable;
 import net.sf.chellow.monad.HttpException;
@@ -60,7 +59,7 @@ public class ReportOutput implements Urlable, XmlDescriber {
 			source.appendChild(reportElement);
 			report.run(inv, doc);
 			//Debug.print("Created XML: " + (System.currentTimeMillis() - startMillis));
-			inv.sendOk(doc, new StreamSource(new StringReader(report.getScript())));
+			inv.sendOk(doc, new StreamSource(new StringReader(report.getTemplate())));
 			//Debug.print("Finished request: " + (System.currentTimeMillis() - startMillis));
 		} catch (HttpException e) {
 			e.setDocument(document());
@@ -87,13 +86,11 @@ public class ReportOutput implements Urlable, XmlDescriber {
 	}
 
 	public Element toXml(Document doc) throws HttpException {
-		Element element = doc.createElement("screen-report-output");
+		Element element = doc.createElement("report-output");
 		return element;
 	}
 
-	public Node toXml(Document doc, XmlTree tree) throws InternalException,
-			HttpException {
-		// TODO Auto-generated method stub
+	public Node toXml(Document doc, XmlTree tree) throws HttpException {
 		return null;
 	}
 	/*

@@ -28,80 +28,52 @@ public class Reports extends EntityList {
 
 	public Reports() {
 	}
-/*
-	@SuppressWarnings("unchecked")
-	private Map<Long, Report> getReports() throws HttpException {
-		SortedMap<Long, Report> reports = new TreeMap<Long, Report>();
-		if (Monad.getConfigDir() != null) {
-			File reportsPath = new File(Monad.getConfigDir().toString()
-					+ getUri().toString().replace("/", File.separator));
-			File[] fileListing = reportsPath.listFiles();
-			if (fileListing != null) {
-				for (File file : fileListing) {
-					if (file.isDirectory() && !file.getName().equals("default")) {
-						Long id = new Long(Long.parseLong(file.getName()));
-						MonadUri uri = new MonadUri(reportsPath.toString()
-								.substring(
-										Monad.getConfigDir().toString()
-												.length()).replace("\\", "/")
-								+ "/" + file.getName() + "/");
-						reports.put(id, new Report(this, id, uri));
-					}
-				}
-			}
-			reportsPath = new File(Monad.getConfigDir().toString()
-					+ Chellow.ORGANIZATIONS_INSTANCE.getUri().toString()
-							.replace("/", File.separator) + "default"
-					+ File.separator + "reports");
-			fileListing = reportsPath.listFiles();
-			if (fileListing != null) {
-				for (File file : fileListing) {
-					if (file.isDirectory() && !file.getName().equals("default")) {
-						Long id = new Long(Long.parseLong(file.getName()));
-						MonadUri uri = new MonadUri(reportsPath.toString()
-								.substring(
-										Monad.getConfigDir().toString()
-												.length()).replace("\\", "/")
-								+ "/" + file.getName() + "/");
-						reports.put(id, new Report(this, id, uri));
-					}
-				}
-			}
-		}
-		Set<String> allPaths = new HashSet<String>();
-		Set<String> paths = Monad.getContext().getResourcePaths(
-				Monad.getConfigPrefix() + getUri().toString());
-		if (paths != null) {
-			allPaths.addAll(paths);
-		}
-		paths = Monad.getContext().getResourcePaths(
-				Monad.getConfigPrefix()
-						+ Chellow.ORGANIZATIONS_INSTANCE.getUri().toString()
-						+ "default/reports/");
-		allPaths.addAll(paths);
-		for (String path : allPaths) {
-			if (path.endsWith("/") && !path.endsWith("/default/")) {
-				String idPath = path.substring(0, path.length() - 1);
-				Long id = new Long(Long.parseLong(idPath.substring(idPath
-						.lastIndexOf("/") + 1, idPath.length())));
-				MonadUri reportUri = new MonadUri(path.substring(Monad
-						.getConfigPrefix().length()));
-				reports.put(id, new Report(this, id, reportUri));
-			}
-		}
-		return reports;
-	}
-	*/
+
+	/*
+	 * @SuppressWarnings("unchecked") private Map<Long, Report> getReports()
+	 * throws HttpException { SortedMap<Long, Report> reports = new TreeMap<Long,
+	 * Report>(); if (Monad.getConfigDir() != null) { File reportsPath = new
+	 * File(Monad.getConfigDir().toString() + getUri().toString().replace("/",
+	 * File.separator)); File[] fileListing = reportsPath.listFiles(); if
+	 * (fileListing != null) { for (File file : fileListing) { if
+	 * (file.isDirectory() && !file.getName().equals("default")) { Long id = new
+	 * Long(Long.parseLong(file.getName())); MonadUri uri = new
+	 * MonadUri(reportsPath.toString() .substring(
+	 * Monad.getConfigDir().toString() .length()).replace("\\", "/") + "/" +
+	 * file.getName() + "/"); reports.put(id, new Report(this, id, uri)); } } }
+	 * reportsPath = new File(Monad.getConfigDir().toString() +
+	 * Chellow.ORGANIZATIONS_INSTANCE.getUri().toString() .replace("/",
+	 * File.separator) + "default" + File.separator + "reports"); fileListing =
+	 * reportsPath.listFiles(); if (fileListing != null) { for (File file :
+	 * fileListing) { if (file.isDirectory() &&
+	 * !file.getName().equals("default")) { Long id = new
+	 * Long(Long.parseLong(file.getName())); MonadUri uri = new
+	 * MonadUri(reportsPath.toString() .substring(
+	 * Monad.getConfigDir().toString() .length()).replace("\\", "/") + "/" +
+	 * file.getName() + "/"); reports.put(id, new Report(this, id, uri)); } } } }
+	 * Set<String> allPaths = new HashSet<String>(); Set<String> paths =
+	 * Monad.getContext().getResourcePaths( Monad.getConfigPrefix() +
+	 * getUri().toString()); if (paths != null) { allPaths.addAll(paths); }
+	 * paths = Monad.getContext().getResourcePaths( Monad.getConfigPrefix() +
+	 * Chellow.ORGANIZATIONS_INSTANCE.getUri().toString() + "default/reports/");
+	 * allPaths.addAll(paths); for (String path : allPaths) { if
+	 * (path.endsWith("/") && !path.endsWith("/default/")) { String idPath =
+	 * path.substring(0, path.length() - 1); Long id = new
+	 * Long(Long.parseLong(idPath.substring(idPath .lastIndexOf("/") + 1,
+	 * idPath.length()))); MonadUri reportUri = new
+	 * MonadUri(path.substring(Monad .getConfigPrefix().length()));
+	 * reports.put(id, new Report(this, id, reportUri)); } } return reports; }
+	 */
 
 	@SuppressWarnings("unchecked")
 	private Document document() throws HttpException {
 		Document doc = MonadUtils.newSourceDocument();
 		Element source = doc.getDocumentElement();
 		Element reportsElement = toXml(doc);
-		
+
 		source.appendChild(reportsElement);
 		for (Report report : (List<Report>) Hiber.session().createQuery(
-				"from Report report order by report.id").list()) {
+				"from Report report order by report.name").list()) {
 			reportsElement.appendChild(report.toXml(doc));
 		}
 		return doc;
@@ -123,13 +95,13 @@ public class Reports extends EntityList {
 	public void httpPost(Invocation inv) throws HttpException {
 		String name = inv.getString("name");
 		String script = inv.getString("script");
-		
+
 		if (!inv.isValid()) {
 			throw new UserException(document());
 		}
 		String template = null;
-		if (inv.hasParameter("has-template")) { 
-		template = inv.getString("template");
+		if (inv.hasParameter("has-template")) {
+			template = inv.getString("template");
 		}
 		Report report = Report.insertReport(name, script, template);
 		Hiber.commit();

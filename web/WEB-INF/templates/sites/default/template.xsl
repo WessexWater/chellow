@@ -9,9 +9,7 @@
 		<html>
 			<head>
 				<title>
-					Chellow &gt; Organizations &gt;
-					<xsl:value-of select="/source/site/org/@name" />
-					&gt; Sites &gt;
+					Chellow &gt; Sites &gt;
 					<xsl:value-of
 						select="concat(/source/site/@code, ' ', /source/site/@name)" />
 				</title>
@@ -27,24 +25,15 @@
 						<span class="logo">Chellow</span>
 					</a>
 					&gt;
-					<a href="{/source/request/@context-path}/orgs/">
-						<xsl:value-of select="'Organizations'" />
-					</a>
-					&gt;
 					<a
-						href="{/source/request/@context-path}/orgs/{/source/site/org/@id}/">
-						<xsl:value-of select="/source/site/org/@name" />
-					</a>
-					&gt;
-					<a
-						href="{/source/request/@context-path}/orgs/{/source/site/org/@id}/sites/">
+						href="{/source/request/@context-path}/sites/">
 						<xsl:value-of select="'Sites'" />
 					</a>
 					&gt;
 					<xsl:value-of
 						select="concat(/source/site/@code, ' ', /source/site/@name, ' [')" />
 					<a
-						href="{/source/request/@context-path}/orgs/{/source/site/org/@id}/reports/2/screen/output/?site-id={/source/site/@id}">
+						href="{/source/request/@context-path}/reports/3/output/?site-id={/source/site/@id}">
 						<xsl:value-of select="'view'" />
 					</a>
 					<xsl:value-of select="']'" />
@@ -77,7 +66,6 @@
 					</xsl:when>
 					<xsl:otherwise>
 						<br />
-
 						<form action="." method="post">
 							<fieldset>
 								<legend>Update this site</legend>
@@ -127,18 +115,17 @@
 								<tr>
 									<td>
 										<a
-											href="{/source/request/@context-path}/orgs/{/source/site/org/@id}/supplies/{supply/@id}/generations/{@id}/">
+											href="{/source/request/@context-path}/supplies/{supply/@id}/generations/{@id}/">
 											<xsl:value-of select="@id" />
 										</a>
 									</td>
 									<td>
 										<a
-											href="{/source/request/@context-path}/orgs/{/source/site/org/@id}/supplies/{supply/@id}/">
+											href="{/source/request/@context-path}/supplies/{supply/@id}/">
 											<xsl:value-of
 												select="supply/@id" />
 										</a>
 									</td>
-
 									<td>
 										<xsl:if
 											test="mpan[mpan-top/llfc/@is-import='true']">

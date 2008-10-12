@@ -202,7 +202,7 @@ public abstract class Monad extends HttpServlet implements Urlable {
 	 * filterList); }
 	 */
 	protected abstract void checkPermissions(Invocation inv)
-			throws InternalException, HttpException;
+			throws HttpException;
 
 	@SuppressWarnings("unchecked")
 	public void service(HttpServletRequest req, HttpServletResponse res)
@@ -502,19 +502,13 @@ public abstract class Monad extends HttpServlet implements Urlable {
 			transformer.transform(new DOMSource(doc), result);
 		} catch (TransformerConfigurationException e) {
 			Throwable throwable = e.getCause();
-			throw new UserException("Problem transforming template '"
-					+ " : "
-					+ " "
-					+ e.getMessageAndLocation()
-					+ e.getMessage()
-					+ e.getLocationAsString()
-					+ " "
-					+ e.getLocator()
+			throw new UserException("Transformer configuration problem: "
+					+ e.getMessageAndLocation() 
 					+ (throwable == null ? "" : " Problem type : "
 							+ throwable.getClass().getName() + " Message: "
 							+ throwable.getMessage()));
 		} catch (TransformerException e) {
-			throw new UserException("Problem transforming template '" + " : "
+			throw new UserException("Problem transforming template, TransformerException '" + " : "
 					+ "'. " + e.getMessageAndLocation() + " "
 					+ " Problem type : " + e.getCause().getClass().getName()
 					+ " Message: " + e.getException().getMessage()

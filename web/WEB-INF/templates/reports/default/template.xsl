@@ -12,10 +12,7 @@
 					href="{/source/request/@context-path}/style/" />
 
 				<title>
-					Chellow &gt; Organizations &gt;
-					<xsl:value-of
-						select="/source/report/org/@name" />
-					&gt; Reports &gt;
+					Chellow &gt; Reports &gt;
 					<xsl:value-of select="/source/report/@name" />
 				</title>
 
@@ -29,25 +26,13 @@
 						<span class="logo">Chellow</span>
 					</a>
 					&gt;
-					<a href="{/source/request/@context-path}/orgs/">
-						<xsl:value-of select="'Organizations'" />
-					</a>
-					&gt;
 					<a
-						href="{/source/request/@context-path}/orgs/{/source/report/org/@id}/">
-						<xsl:value-of
-							select="/source/report/org/@name" />
-					</a>
-					&gt;
-					<a
-						href="{/source/request/@context-path}/orgs/{/source/report/org/@id}/reports/">
-						<xsl:value-of
-							select="'Reports'"/>
+						href="{/source/request/@context-path}/reports/">
+						<xsl:value-of select="'Reports'" />
 					</a>
 					&gt;
 					<xsl:value-of select="/source/report/@name" />
 				</p>
-				<br />
 				<xsl:if test="//message">
 					<ul>
 						<xsl:for-each select="//message">
@@ -59,12 +44,73 @@
 				</xsl:if>
 				<ul>
 					<li>
-						<a href="screen/">Screen</a>
+						<a href="output/">Output</a>
 					</li>
 					<li>
-						<a href="stream/">Stream</a>
+						<a href="xml-output/">XML Output</a>
 					</li>
 				</ul>
+				<form method="post" action=".">
+					<fieldset>
+						<legend>Update Report</legend>
+						<label>
+							<xsl:value-of select="'Name '" />
+							<input name="name">
+								<xsl:attribute name="value">
+									<xsl:choose>
+										<xsl:when
+											test="/source/request/parameter[@name = 'name']/value">
+											<xsl:value-of
+												select="/source/request/parameter[@name = 'name']/value" />
+										</xsl:when>
+										<xsl:otherwise>
+											<xsl:value-of
+												select="/source/report/@name" />
+										</xsl:otherwise>
+									</xsl:choose>
+								</xsl:attribute>
+							</input>
+						</label>
+						<br />
+						<br />
+						<label>Script</label>
+						<br />
+						<textarea name="script" cols="80" rows="50">
+							<xsl:choose>
+								<xsl:when
+									test="/source/request/parameter[@name = 'script']/value">
+									<xsl:value-of
+										select="/source/request/parameter[@name = 'script']/value" />
+								</xsl:when>
+								<xsl:otherwise>
+									<xsl:value-of
+										select="/source/report/script/text()" />
+								</xsl:otherwise>
+							</xsl:choose>
+						</textarea>
+						<br />
+						<br />
+						<label>Template</label>
+						<br />
+						<textarea name="template" cols="80" rows="50">
+							<xsl:choose>
+								<xsl:when
+									test="/source/request/parameter[@name = 'template']/value">
+									<xsl:value-of
+										select="/source/request/parameter[@name = 'template']/value" />
+								</xsl:when>
+								<xsl:otherwise>
+									<xsl:value-of
+										select="/source/report/template/text()" />
+								</xsl:otherwise>
+							</xsl:choose>
+						</textarea>
+						<br />
+						<input type="submit" value="Save" />
+						<input type="reset" value="Reset" />
+					</fieldset>
+				</form>
+
 			</body>
 		</html>
 	</xsl:template>

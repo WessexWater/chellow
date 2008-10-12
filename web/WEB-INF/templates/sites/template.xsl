@@ -10,15 +10,10 @@
 			<head>
 				<link rel="stylesheet" type="text/css"
 					href="{/source/request/@context-path}/style/" />
-
 				<title>
-					Chellow &gt; Organizations &gt;
-					<xsl:value-of select="/source/org/@name" />
-					&gt; Sites
+					Chellow &gt; Sites
 				</title>
-
 			</head>
-
 			<body>
 				<xsl:if test="//message">
 					<ul>
@@ -36,18 +31,9 @@
 						<span class="logo">Chellow</span>
 					</a>
 					&gt;
-					<a href="{/source/request/@context-path}/orgs/">
-						<xsl:value-of select="'Organizations'" />
-					</a>
-					&gt;
-					<a
-						href="{/source/request/@context-path}/orgs/{/source/org/@id}/">
-						<xsl:value-of select="/source/org/@name" />
-					</a>
-					&gt;
 					<xsl:value-of select="'Sites ['" />
 					<a
-						href="{/source/request/@context-path}/orgs/1/reports/1/screen/output/">
+						href="{/source/request/@context-path}/reports/2/output/">
 						<xsl:value-of select="'view'" />
 					</a>
 					<xsl:value-of select="']'" />
@@ -77,7 +63,7 @@
 							The search results are truncated after 50.
 						</p>
 						<ul>
-							<xsl:for-each select="/source/org/site">
+							<xsl:for-each select="/source/site">
 								<li>
 									<a href="{@id}/">
 										<xsl:value-of
@@ -115,4 +101,3 @@
 		</html>
 	</xsl:template>
 </xsl:stylesheet>
-

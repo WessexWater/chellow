@@ -30,7 +30,7 @@
 				<ul>
 					<li>
 						<a
-							href="{/source/request/@context-path}/reports/0/output/">
+							href="{/source/request/@context-path}/reports/1/output/">
 							Viewer's Home
 						</a>
 					</li>

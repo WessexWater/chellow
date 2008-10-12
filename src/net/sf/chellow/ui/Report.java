@@ -12,7 +12,6 @@ import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Invocation;
-import net.sf.chellow.monad.MethodNotAllowedException;
 import net.sf.chellow.monad.MonadMessage;
 import net.sf.chellow.monad.MonadUtils;
 import net.sf.chellow.monad.NotFoundException;
@@ -34,15 +33,17 @@ public class Report extends PersistentEntity {
 		}
 		return report;
 	}
-	
+
 	public static Report getReport(String name) throws HttpException {
-		Report report = (Report) Hiber.session().createQuery("from Report report where report.name = :name").setString("name", name).uniqueResult();
+		Report report = (Report) Hiber.session().createQuery(
+				"from Report report where report.name = :name").setString(
+				"name", name).uniqueResult();
 		if (report == null) {
 			throw new NotFoundException("Can't find the report '" + name + "'.");
 		}
 		return report;
 	}
-	
+
 	public static void loadReports(ServletContext context) throws HttpException {
 
 		try {
@@ -75,7 +76,7 @@ public class Report extends PersistentEntity {
 	private String script;
 
 	private String template;
-	
+
 	public Report() {
 	}
 
@@ -164,7 +165,16 @@ public class Report extends PersistentEntity {
 	}
 
 	public void httpPost(Invocation inv) throws HttpException {
-		throw new MethodNotAllowedException();
+		String name = inv.getString("name");
+		String script = inv.getString("script");
+		String template = inv.getString("template");
+
+		if (!inv.isValid()) {
+			throw new UserException(document());
+		}
+		update(name, script, template.length() == 0 ? null : template);
+		Hiber.commit();
+		inv.sendOk(document());
 	}
 
 	private Document document() throws HttpException {
@@ -178,9 +188,13 @@ public class Report extends PersistentEntity {
 	public Element toXml(Document doc) throws HttpException {
 		Element element = super.toXml(doc, "report");
 		element.setAttribute("name", name);
-		element.setAttribute("script", script);
+		Element scriptElement = doc.createElement("script");
+		element.appendChild(scriptElement);
+		scriptElement.setTextContent(script);
 		if (template != null) {
-			element.setAttribute("template", template);
+			Element templateElement = doc.createElement("template");
+			element.appendChild(templateElement);
+			templateElement.setTextContent(template);
 		}
 		return element;
 	}
