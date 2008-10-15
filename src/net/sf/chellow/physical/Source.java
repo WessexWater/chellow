@@ -126,7 +126,7 @@ public class Source extends PersistentEntity implements Urlable {
 	}
 
 	public MonadUri getUri() throws HttpException {
-		return Chellow.SOURCES_INSTANCE.getUri().resolve(getUriId());
+		return Chellow.SOURCES_INSTANCE.getUri().resolve(getUriId()).append("/");
 	}
 
 	public void httpGet(Invocation inv) throws HttpException {

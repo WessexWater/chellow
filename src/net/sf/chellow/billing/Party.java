@@ -51,7 +51,7 @@ import net.sf.chellow.physical.PersistentEntity;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-public abstract class Party extends PersistentEntity implements Urlable {
+public abstract class Party extends PersistentEntity {
 	static public Party getParty(String participantCode, char roleCode) throws HttpException {
 		return getParty(participantCode, MarketRole.getMarketRole(roleCode));
 	}
@@ -234,12 +234,6 @@ public abstract class Party extends PersistentEntity implements Urlable {
 	public MonadUri getUri() throws HttpException {
 		// TODO Auto-generated method stub
 		return null;
-	}
-
-	@Override
-	public void httpDelete(Invocation inv) throws HttpException {
-		// TODO Auto-generated method stub
-
 	}
 
 	@Override

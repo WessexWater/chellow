@@ -57,8 +57,8 @@ public class StarkAutomaticHhDataImporters extends TimerTask {
 			} catch (IOException e) {
 				throw new InternalException(e);
 			}
-			if (props.getProperty("importer.name").equals(
-					"StarkAutomaticHhDataImporter")) {
+			if ("StarkAutomaticHhDataImporter".equals(props
+					.getProperty("importer.name"))) {
 				importer = importers.get(contract.getId());
 				if (importer == null
 						|| !importer.getPropertiesString().equals(
@@ -88,8 +88,7 @@ public class StarkAutomaticHhDataImporters extends TimerTask {
 		try {
 			for (Entry<Long, StarkAutomaticHhDataImporter> importerEntry : importers
 					.entrySet()) {
-				if (HhdcContract.findHhdcContract(importerEntry
-						.getKey()) == null) {
+				if (HhdcContract.findHhdcContract(importerEntry.getKey()) == null) {
 					importers.remove(importerEntry.getKey());
 				}
 			}

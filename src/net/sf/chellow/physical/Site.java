@@ -549,7 +549,7 @@ public class Site extends PersistentEntity {
 	private Document document() throws HttpException {
 		Document doc = MonadUtils.newSourceDocument();
 		Element docElem = doc.getDocumentElement();
-		Element siteElement = (Element) toXml(doc, new XmlTree("organization"));
+		Element siteElement = toXml(doc);
 		docElem.appendChild(siteElement);
 		for (SupplyGeneration generation : (List<SupplyGeneration>) Hiber
 				.session()

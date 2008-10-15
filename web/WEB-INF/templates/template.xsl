@@ -43,6 +43,84 @@
 					</li>
 					<li>
 						<a
+							href="{/source/request/@context-path}/users/">
+							Users
+						</a>
+						<ul>
+							<li>
+								<a
+									href="{/source/request/@context-path}/users/me/">
+									Me
+								</a>
+							</li>
+						</ul>
+					</li>
+					<li>
+						<a
+							href="{/source/request/@context-path}/hhdc-contracts/">
+							HHDC Contracts
+						</a>
+					</li>
+					
+					<li>
+						<a
+							href="{/source/request/@context-path}/non-core-contracts/">
+							Non-core Contracts
+						</a>
+					</li>
+					<li>
+						<a
+							href="{/source/request/@context-path}/reports/">
+							Reports
+						</a>
+					</li>
+					<li>
+						<a
+							href="{/source/request/@context-path}/general-imports/">
+							General CSV Imports
+						</a>
+					</li>
+					<li>
+						<a
+							href="{/source/request/@context-path}/configuration/">
+							Configuration
+						</a>
+					</li>
+				</ul>
+				<h2>Industry Info</h2>
+				<ul>
+					<li>
+						<a
+							href="{/source/request/@context-path}/read-types/">
+							Read types
+						</a>
+					</li>
+										<li>
+						<a
+							href="{/source/request/@context-path}/market-roles/">
+							Market Roles
+						</a>
+					</li>
+					<li>
+						<a
+							href="{/source/request/@context-path}/dsos/">
+							DSOs
+						</a>
+					</li>
+					<li>
+						<a
+							href="{/source/request/@context-path}/providers/">
+							Providers
+						</a>
+					</li>
+										<li>
+						<a
+							href="{/source/request/@context-path}/participants/">
+							Market Participants
+						</a>
+					</li>
+										<li>
+						<a
 							href="{/source/request/@context-path}/sources/">
 							Sources
 						</a>
@@ -82,74 +160,6 @@
 						<a
 							href="{/source/request/@context-path}/sscs/">
 							SSCs
-						</a>
-					</li>
-					<li>
-						<a
-							href="{/source/request/@context-path}/users/">
-							Users
-						</a>
-						<ul>
-							<li>
-								<a
-									href="{/source/request/@context-path}/users/me/">
-									Me
-								</a>
-							</li>
-						</ul>
-					</li>
-					<li>
-						<a
-							href="{/source/request/@context-path}/participants/">
-							Market Participants
-						</a>
-					</li>
-					<li>
-						<a
-							href="{/source/request/@context-path}/market-roles/">
-							Market Roles
-						</a>
-					</li>
-					<li>
-						<a
-							href="{/source/request/@context-path}/dsos/">
-							DSOs
-						</a>
-					</li>
-					<li>
-						<a
-							href="{/source/request/@context-path}/providers/">
-							Providers
-						</a>
-					</li>
-					<li>
-						<a
-							href="{/source/request/@context-path}/non-core-services/">
-							Non-core services
-						</a>
-					</li>
-					<li>
-						<a
-							href="{/source/request/@context-path}/read-types/">
-							Read types
-						</a>
-					</li>
-					<li>
-						<a
-							href="{/source/request/@context-path}/reports/">
-							Reports
-						</a>
-					</li>
-					<li>
-						<a
-							href="{/source/request/@context-path}/general-imports/">
-							General CSV Imports
-						</a>
-					</li>
-					<li>
-						<a
-							href="{/source/request/@context-path}/configuration/">
-							Configuration
 						</a>
 					</li>
 				</ul>

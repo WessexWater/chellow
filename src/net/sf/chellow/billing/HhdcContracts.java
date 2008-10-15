@@ -55,7 +55,7 @@ public class HhdcContracts extends EntityList {
 			throw new RuntimeException(e);
 		}
 	}
-	
+
 	public HhdcContracts() {
 	}
 
@@ -93,13 +93,12 @@ public class HhdcContracts extends EntityList {
 		Element source = doc.getDocumentElement();
 		Element contractsElement = toXml(doc);
 		source.appendChild(contractsElement);
-		for (HhdcContract contract : (List<HhdcContract>) Hiber
-				.session()
+		for (HhdcContract contract : (List<HhdcContract>) Hiber.session()
 				.createQuery(
-						"from HhdcContract contract where order by contract.name")
+						"from HhdcContract contract order by contract.name")
 				.list()) {
 			contractsElement.appendChild(contract.toXml(doc, new XmlTree(
-					"provider")));
+					"party")));
 		}
 		for (Provider provider : (List<Provider>) Hiber
 				.session()

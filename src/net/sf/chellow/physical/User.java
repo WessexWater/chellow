@@ -213,7 +213,7 @@ public class User extends PersistentEntity {
 	}
 
 	public MonadUri getUri() throws HttpException {
-		return Chellow.USERS_INSTANCE.getUri().resolve(getUriId());
+		return Chellow.USERS_INSTANCE.getUri().resolve(getUriId()).append("/");
 	}
 
 	public Urlable getChild(UriPathElement uriId) throws HttpException {

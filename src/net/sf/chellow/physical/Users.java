@@ -63,8 +63,6 @@ public class Users extends EntityList {
 		EmailAddress emailAddress = inv.getEmailAddress("email-address");
 		String password = inv.getString("password");
 		Integer userRole = inv.getInteger("role");
-		String participantCode = inv.getString("participant-code");
-		Long marketRoleId = inv.getLong("market-role-id");
 
 		if (!inv.isValid()) {
 			throw new UserException(document());
@@ -72,6 +70,9 @@ public class Users extends EntityList {
 		try {
 			Party party = null;
 			if (userRole == User.PARTY_VIEWER) {
+				String participantCode = inv.getString("participant-code");
+				Long marketRoleId = inv.getLong("market-role-id");
+
 				party = Party.getParty(participantCode, MarketRole
 						.getMarketRole(marketRoleId));
 			}
@@ -80,6 +81,7 @@ public class Users extends EntityList {
 			Hiber.commit();
 			inv.sendCreated(user.getUri());
 		} catch (HttpException e) {
+			Hiber.rollBack();
 			e.setDocument(document());
 			throw e;
 		}

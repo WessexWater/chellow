@@ -9,9 +9,7 @@
 			<head>
 				<link rel="stylesheet" type="text/css"
 					href="{/source/request/@context-path}/style/" />
-				<title>
-					Chellow &gt; HHDC Contracts
-				</title>
+				<title>Chellow &gt; HHDC Contracts</title>
 			</head>
 			<body>
 				<p>
@@ -21,7 +19,7 @@
 						<span class="logo">Chellow</span>
 					</a>
 					&gt;
-					<xsl:value-of select="'Contracts ['" />
+					<xsl:value-of select="'HHDC Contracts ['" />
 					<a
 						href="{/source/request/@context-path}/orgs/{/source/hhdc-contracts/org/@id}/reports/56/screen/output/">
 						<xsl:value-of select="'view'" />
@@ -45,7 +43,8 @@
 							The
 							<a
 								href="{/source/response/header[@name = 'Location']/@value}">
-								<xsl:value-of select="'new contract'" />
+								<xsl:value-of
+									select="'new HHDC contract'" />
 							</a>
 							has been successfully created.
 						</p>
