@@ -10,32 +10,14 @@
 			<head>
 				<link rel="stylesheet" type="text/css"
 					href="{/source/request/@context-path}/style/" />
-
-				<title>
-					Chellow &gt; Organizations &gt;
-					<xsl:value-of
-						select="/source/supplier-contracts/org/@name" />
-					&gt; Supplier Contracts
-				</title>
-
+				<title>Chellow &gt; Supplier Contracts</title>
 			</head>
-
 			<body>
 				<p>
 					<a href="{/source/request/@context-path}/">
 						<img
 							src="{/source/request/@context-path}/logo/" />
 						<span class="logo">Chellow</span>
-					</a>
-					&gt;
-					<a href="{/source/request/@context-path}/orgs/">
-						<xsl:value-of select="'Organizations'" />
-					</a>
-					&gt;
-					<a
-						href="{/source/request/@context-path}/orgs/{/source/supplier-contracts/org/@id}/">
-						<xsl:value-of
-							select="/source/supplier-contracts/org/@name" />
 					</a>
 					&gt;
 					<xsl:value-of select="'Supplier Contracts ['" />

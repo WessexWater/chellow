@@ -6,23 +6,21 @@ import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Invocation;
-import net.sf.chellow.monad.MethodNotAllowedException;
 import net.sf.chellow.monad.MonadUtils;
 import net.sf.chellow.monad.Urlable;
-import net.sf.chellow.monad.XmlDescriber;
 import net.sf.chellow.monad.XmlTree;
 import net.sf.chellow.monad.types.MonadDate;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
+import net.sf.chellow.physical.EntityList;
 import net.sf.chellow.physical.Snag;
 
 import org.hibernate.ScrollMode;
 import org.hibernate.ScrollableResults;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import org.w3c.dom.Node;
 
-public class AccountSnags implements Urlable, XmlDescriber {
+public class AccountSnags extends EntityList {
 	static private final int PAGE_SIZE = 20;
 
 	public static final UriPathElement URI_ID;
@@ -103,10 +101,6 @@ public class AccountSnags implements Urlable, XmlDescriber {
 		return Snag.getSnag(urlId.getString());
 	}
 
-	public void httpDelete(Invocation inv) throws HttpException {
-		throw new MethodNotAllowedException();
-	}
-
 	public MonadUri getMonadUri() throws InternalException {
 		// TODO Auto-generated method stub
 		return null;
@@ -114,10 +108,5 @@ public class AccountSnags implements Urlable, XmlDescriber {
 
 	public Element toXml(Document doc) throws HttpException {
 		return doc.createElement("account-snags");
-	}
-
-	public Node toXml(Document doc, XmlTree tree) throws HttpException {
-		// TODO Auto-generated method stub
-		return null;
 	}
 }

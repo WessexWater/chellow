@@ -26,7 +26,6 @@ import java.util.List;
 
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
-import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Invocation;
 import net.sf.chellow.monad.MonadUtils;
 import net.sf.chellow.monad.NotFoundException;
@@ -82,7 +81,7 @@ public class Bills extends EntityList {
 		Element source = doc.getDocumentElement();
 		Element billsElement = toXml(doc);
 		source.appendChild(billsElement);
-		billsElement.appendChild(account.toXml(doc, new XmlTree("contract", new XmlTree("provider").put("organization"))));
+		billsElement.appendChild(account.toXml(doc, new XmlTree("contract", new XmlTree("party"))));
 		for (Bill bill : (List<Bill>) Hiber
 				.session()
 				.createQuery(
@@ -106,8 +105,7 @@ public class Bills extends EntityList {
 		return bill;
 	}
 
-	public Element toXml(Document doc) throws InternalException,
-			HttpException {
+	public Element toXml(Document doc) throws HttpException {
 		Element billsElement = doc.createElement("bills");
 		return billsElement;
 	}

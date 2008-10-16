@@ -27,22 +27,18 @@ import java.util.List;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.Invocation;
-import net.sf.chellow.monad.MethodNotAllowedException;
 import net.sf.chellow.monad.MonadUtils;
 import net.sf.chellow.monad.NotFoundException;
-import net.sf.chellow.monad.Urlable;
 import net.sf.chellow.monad.UserException;
-import net.sf.chellow.monad.XmlDescriber;
-import net.sf.chellow.monad.XmlTree;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
+import net.sf.chellow.physical.EntityList;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import org.w3c.dom.Node;
 
 @SuppressWarnings("serial")
-public class Accounts implements Urlable, XmlDescriber {
+public class Accounts extends EntityList {
 	public static final UriPathElement URI_ID;
 
 	static {
@@ -94,17 +90,9 @@ public class Accounts implements Urlable, XmlDescriber {
 		return account;
 	}
 
-	public void httpDelete(Invocation inv) throws HttpException {
-		throw new MethodNotAllowedException();
-	}
-
 	public Element toXml(Document doc) throws HttpException {
 		Element accountsElement = doc.createElement("accounts");
 		return accountsElement;
-	}
-
-	public Node toXml(Document doc, XmlTree tree) throws HttpException {
-		return null;
 	}
 
 	@SuppressWarnings("unchecked")
@@ -113,8 +101,7 @@ public class Accounts implements Urlable, XmlDescriber {
 		Element source = doc.getDocumentElement();
 		Element accountsElement = toXml(doc);
 		source.appendChild(accountsElement);
-		accountsElement.appendChild(contract.toXml(doc, new XmlTree(
-				"organization")));
+		accountsElement.appendChild(contract.toXml(doc));
 		for (Account account : (List<Account>) Hiber
 				.session()
 				.createQuery(

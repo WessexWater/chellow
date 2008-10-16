@@ -66,8 +66,7 @@ public class Account extends PersistentEntity implements Urlable {
 	 * ProgrammerException(e); } }
 	 */
 	@SuppressWarnings("unchecked")
-	public static void checkAllMissingFromLatest()
-			throws HttpException {
+	public static void checkAllMissingFromLatest() throws HttpException {
 		for (Account account : (List<Account>) Hiber
 				.session()
 				.createQuery(
@@ -142,7 +141,7 @@ public class Account extends PersistentEntity implements Urlable {
 		Document doc = MonadUtils.newSourceDocument();
 		Element source = doc.getDocumentElement();
 		Element accountElement = (Element) toXml(doc, new XmlTree("contract",
-				new XmlTree("organization").put("provider")));
+				new XmlTree("party")));
 		source.appendChild(accountElement);
 		for (Mpan mpan : (List<Mpan>) Hiber.session().createQuery(
 				"from Mpan mpan where mpan.supplierAccount = :account")
@@ -208,8 +207,7 @@ public class Account extends PersistentEntity implements Urlable {
 	}
 
 	@SuppressWarnings("unchecked")
-	void checkMissing(HhEndDate from, HhEndDate to)
-			throws HttpException {
+	void checkMissing(HhEndDate from, HhEndDate to) throws HttpException {
 		List<SupplyGeneration> supplyGenerations = Hiber
 				.session()
 				.createQuery(
@@ -224,9 +222,8 @@ public class Account extends PersistentEntity implements Urlable {
 		}
 		if (to == null) {
 			int frequency = 1;
-			int profileClass = supplyGenerations.get(0)
-					.getMpans().iterator().next().getTop().getPc()
-					.getCode();
+			int profileClass = supplyGenerations.get(0).getMpans().iterator()
+					.next().getTop().getPc().getCode();
 			if (profileClass < 5 && profileClass > 1) {
 				frequency = 3;
 			}
@@ -259,11 +256,11 @@ public class Account extends PersistentEntity implements Urlable {
 		for (int i = 0; i < bills.size(); i++) {
 			Bill bill = bills.get(i);
 			if (bill.getStartDate().getDate().after(gapStart.getDate())) {
-				addSnag(AccountSnag.MISSING_BILL, gapStart, bill
-						.getStartDate().getPrevious(), false);
+				addSnag(AccountSnag.MISSING_BILL, gapStart, bill.getStartDate()
+						.getPrevious(), false);
 			}
-			addSnag(AccountSnag.MISSING_BILL, bill.getStartDate(),
-					bill.getFinishDate(), true);
+			addSnag(AccountSnag.MISSING_BILL, bill.getStartDate(), bill
+					.getFinishDate(), true);
 			gapStart = bill.getFinishDate().getNext();
 		}
 		if (!gapStart.getDate().after(to.getDate())) {
@@ -271,8 +268,8 @@ public class Account extends PersistentEntity implements Urlable {
 		}
 	}
 
-	void addSnag(String description, HhEndDate startDate,
-			HhEndDate finishDate, boolean isResolved) throws HttpException {
+	void addSnag(String description, HhEndDate startDate, HhEndDate finishDate,
+			boolean isResolved) throws HttpException {
 		SnagDateBounded.addAccountSnag(contract, this, description, startDate,
 				finishDate, isResolved);
 	}
@@ -319,23 +316,18 @@ public class Account extends PersistentEntity implements Urlable {
 		Bill bill = combineBills(invoice.getStartDate(), invoice
 				.getFinishDate());
 		/*
-		List<Mpan> accountMpans = getMpans(invoice.getStartDate(), invoice
-				.getFinishDate());
-		List<Mpan> invoiceMpans = new ArrayList<Mpan>();
-		
-		for (InvoiceMpan invoiceMpan : invoice.getInvoiceMpans()) {
-			invoiceMpans.add(invoiceMpan.getMpan());
-		}
-		if (!accountMpans.equals(new ArrayList<Mpan>(invoiceMpans))) {
-			throw new UserException("Problem with account '" + reference
-					+ "' invoice '" + invoice.getReference()
-					+ "' from the half-hour ending " + invoice.getStartDate()
-					+ " to the half-hour ending " + invoice.getFinishDate()
-					+ ". This bill has MPANs " + invoiceMpans
-					+ " but the account in Chellow has MPANs '" + accountMpans
-					+ "'.");
-		}
-		*/
+		 * List<Mpan> accountMpans = getMpans(invoice.getStartDate(), invoice
+		 * .getFinishDate()); List<Mpan> invoiceMpans = new ArrayList<Mpan>();
+		 * 
+		 * for (InvoiceMpan invoiceMpan : invoice.getInvoiceMpans()) {
+		 * invoiceMpans.add(invoiceMpan.getMpan()); } if
+		 * (!accountMpans.equals(new ArrayList<Mpan>(invoiceMpans))) { throw
+		 * new UserException("Problem with account '" + reference + "' invoice '" +
+		 * invoice.getReference() + "' from the half-hour ending " +
+		 * invoice.getStartDate() + " to the half-hour ending " +
+		 * invoice.getFinishDate() + ". This bill has MPANs " + invoiceMpans + "
+		 * but the account in Chellow has MPANs '" + accountMpans + "'."); }
+		 */
 		if (bill == null) {
 			bill = new Bill(this);
 			Hiber.session().save(bill);
@@ -384,7 +376,6 @@ public class Account extends PersistentEntity implements Urlable {
 		} else {
 			Hiber.session().delete(bill);
 		}
-		checkMissing(foundBill.getStartDate(), foundBill
-				.getFinishDate());
+		checkMissing(foundBill.getStartDate(), foundBill.getFinishDate());
 	}
 }

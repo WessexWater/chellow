@@ -256,14 +256,14 @@ public class RateScript extends PersistentEntity {
 		Element sourceElement = doc.getDocumentElement();
 
 		if (contract instanceof DsoContract) {
-			sourceElement.appendChild(toXml(doc, new XmlTree("service",
+			sourceElement.appendChild(toXml(doc, new XmlTree("contract",
 					new XmlTree("dso"))));
 		} else if (contract instanceof NonCoreContract) {
-			sourceElement.appendChild(toXml(doc, new XmlTree("service",
-					new XmlTree("provider"))));
+			sourceElement.appendChild(toXml(doc, new XmlTree("contract",
+					new XmlTree("party"))));
 		} else {
-			sourceElement.appendChild(toXml(doc, new XmlTree("service",
-					new XmlTree("provider").put("organization"))));
+			sourceElement.appendChild(toXml(doc, new XmlTree("contract",
+					new XmlTree("party"))));
 		}
 		sourceElement.appendChild(MonadDate.getMonthsXml(doc));
 		sourceElement.appendChild(MonadDate.getDaysXml(doc));

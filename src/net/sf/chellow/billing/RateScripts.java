@@ -30,21 +30,19 @@ import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.Invocation;
 import net.sf.chellow.monad.MonadUtils;
 import net.sf.chellow.monad.NotFoundException;
-import net.sf.chellow.monad.Urlable;
 import net.sf.chellow.monad.UserException;
-import net.sf.chellow.monad.XmlDescriber;
 import net.sf.chellow.monad.XmlTree;
 import net.sf.chellow.monad.types.MonadDate;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
+import net.sf.chellow.physical.EntityList;
 import net.sf.chellow.physical.HhEndDate;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import org.w3c.dom.Node;
 
 @SuppressWarnings("serial")
-public class RateScripts implements Urlable, XmlDescriber {
+public class RateScripts extends EntityList {
 	public static final UriPathElement URI_ID;
 
 	static {
@@ -55,18 +53,18 @@ public class RateScripts implements Urlable, XmlDescriber {
 		}
 	}
 
-	private Contract service;
+	private Contract contract;
 
-	public RateScripts(Contract service) {
-		setService(service);
+	public RateScripts(Contract contract) {
+		setContract(contract);
 	}
 
-	public Contract getService() {
-		return service;
+	public Contract getContract() {
+		return contract;
 	}
 
-	void setService(Contract service) {
-		this.service = service;
+	void setContract(Contract contract) {
+		this.contract = contract;
 	}
 
 	public UriPathElement getUrlId() {
@@ -74,7 +72,7 @@ public class RateScripts implements Urlable, XmlDescriber {
 	}
 
 	public MonadUri getUri() throws HttpException {
-		return service.getUri().resolve(getUrlId()).append("/");
+		return contract.getUri().resolve(getUrlId()).append("/");
 	}
 
 	public void httpPost(Invocation inv) throws HttpException {
@@ -84,7 +82,7 @@ public class RateScripts implements Urlable, XmlDescriber {
 			throw new UserException(document());
 		}
 		try {
-			RateScript rateScript = service.insertRateScript(HhEndDate
+			RateScript rateScript = contract.insertRateScript(HhEndDate
 					.roundDown(startDate).getNext(), script);
 			Hiber.commit();
 			Hiber.flush();
@@ -104,8 +102,8 @@ public class RateScripts implements Urlable, XmlDescriber {
 		RateScript script = (RateScript) Hiber
 				.session()
 				.createQuery(
-						"from RateScript script where script.service = :service and script.id = :scriptId")
-				.setEntity("service", service).setLong("scriptId",
+						"from RateScript script where script.contract = :contract and script.id = :scriptId")
+				.setEntity("contract", contract).setLong("scriptId",
 						Long.parseLong(uriId.getString())).uniqueResult();
 		if (script == null) {
 			throw new NotFoundException();
@@ -113,36 +111,31 @@ public class RateScripts implements Urlable, XmlDescriber {
 		return script;
 	}
 
-	public void httpDelete(Invocation inv) throws HttpException {
-	}
-
-	public Node toXml(Document doc) throws HttpException {
-		Element batchesElement = doc.createElement("rate-scripts");
-		return batchesElement;
-	}
-
-	public Node toXml(Document doc, XmlTree tree) throws HttpException {
-		return null;
+	public Element toXml(Document doc) throws HttpException {
+		Element rateScriptsElement = doc.createElement("rate-scripts");
+		return rateScriptsElement;
 	}
 
 	@SuppressWarnings("unchecked")
 	private Document document() throws HttpException {
 		Document doc = MonadUtils.newSourceDocument();
 		Element source = doc.getDocumentElement();
-		Element batchesElement = (Element) toXml(doc);
+		Element batchesElement = toXml(doc);
 		source.appendChild(batchesElement);
-		if (service instanceof DsoContract) {
-			batchesElement.appendChild(service.toXml(doc, new XmlTree("dso")));
-		} else if (service instanceof NonCoreContract) {
-			batchesElement.appendChild(service.toXml(doc, new XmlTree("provider")));			
+		if (contract instanceof DsoContract) {
+			batchesElement.appendChild(contract.toXml(doc, new XmlTree("dso")));
+		} else if (contract instanceof NonCoreContract) {
+			batchesElement.appendChild(contract
+					.toXml(doc, new XmlTree("party")));
 		} else {
-			batchesElement.appendChild(service.toXml(doc, new XmlTree("provider").put("organization")));
+			batchesElement.appendChild(contract
+					.toXml(doc, new XmlTree("party")));
 		}
 		for (RateScript script : (List<RateScript>) Hiber
 				.session()
 				.createQuery(
-						"from RateScript script where script.service = :service order by script.startDate.date")
-				.setEntity("service", service).list()) {
+						"from RateScript script where script.contract = :contract order by script.startDate.date")
+				.setEntity("contract", contract).list()) {
 			batchesElement.appendChild(script.toXml(doc));
 		}
 		source.appendChild(new MonadDate().toXml(doc));

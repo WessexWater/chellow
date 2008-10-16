@@ -4,23 +4,16 @@
 	<xsl:output method="html" encoding="US-ASCII"
 		doctype-public="-//W3C//DTD HTML 4.01//EN"
 		doctype-system="http://www.w3.org/TR/html4/strict.dtd" indent="yes" />
-
 	<xsl:template match="/">
 		<html>
 			<head>
 				<link rel="stylesheet" type="text/css"
 					href="{/source/request/@context-path}/style/" />
-
 				<title>
-					Chellow &gt; Organizations &gt;
-					<xsl:value-of
-						select="/source/hhdc-contract/org/@name" />
-					&gt; HHDC Contracts &gt;
+					Chellow &gt; HHDC Contracts &gt;
 					<xsl:value-of select="/source/hhdc-contract/@name" />
 				</title>
-
 			</head>
-
 			<body>
 				<xsl:if test="//message">
 					<ul>
@@ -38,18 +31,8 @@
 						<span class="logo">Chellow</span>
 					</a>
 					&gt;
-					<a href="{/source/request/@context-path}/orgs/">
-						<xsl:value-of select="'Organizations'" />
-					</a>
-					&gt;
 					<a
-						href="{/source/request/@context-path}/orgs/{/source/hhdc-contract/org/@id}/">
-						<xsl:value-of
-							select="/source/hhdc-contract/org/@name" />
-					</a>
-					&gt;
-					<a
-						href="{/source/request/@context-path}/orgs/{/source/hhdc-contract/org/@id}/hhdc-contracts/">
+						href="{/source/request/@context-path}/hhdc-contracts/">
 						<xsl:value-of select="'HHDC Contracts'" />
 					</a>
 					&gt;
@@ -196,12 +179,10 @@
 						<input type="submit" value="Delete" />
 					</fieldset>
 				</form>
-
 				<ul>
 					<li>
 						<a href="accounts/">Accounts</a>
 					</li>
-
 					<li>
 						<a href="hh-data-imports/">HH data imports</a>
 					</li>

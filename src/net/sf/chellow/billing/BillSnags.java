@@ -6,22 +6,20 @@ import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Invocation;
-import net.sf.chellow.monad.MethodNotAllowedException;
 import net.sf.chellow.monad.MonadUtils;
 import net.sf.chellow.monad.Urlable;
-import net.sf.chellow.monad.XmlDescriber;
 import net.sf.chellow.monad.XmlTree;
 import net.sf.chellow.monad.types.MonadDate;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
+import net.sf.chellow.physical.EntityList;
 
 import org.hibernate.ScrollMode;
 import org.hibernate.ScrollableResults;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import org.w3c.dom.Node;
 
-public class BillSnags implements Urlable, XmlDescriber {
+public class BillSnags extends EntityList {
 	static private final int PAGE_SIZE = 20;
 
 	public static final UriPathElement URI_ID;
@@ -60,7 +58,7 @@ public class BillSnags implements Urlable, XmlDescriber {
 		Element snagsElement = toXml(doc);
 		source.appendChild(snagsElement);
 		if (contract instanceof SupplierContract) {
-			snagsElement.appendChild(contract.toXml(doc, new XmlTree("provider").put("organization")));
+			snagsElement.appendChild(contract.toXml(doc, new XmlTree("party")));
 		}
 		for (BillSnag snag : (List<BillSnag>) Hiber
 				.session()
@@ -103,24 +101,12 @@ public class BillSnags implements Urlable, XmlDescriber {
 		return BillSnag.getBillSnag(Long.parseLong(urlId.getString()));
 	}
 
-	public void httpDelete(Invocation inv) throws HttpException {
-		throw new MethodNotAllowedException();
-	}
-
 	public MonadUri getMonadUri() throws InternalException {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
-	public Element toXml(Document doc) throws InternalException,
-			HttpException {
+	public Element toXml(Document doc) throws HttpException {
 		return doc.createElement("bill-snags");
 	}
-
-	public Node toXml(Document doc, XmlTree tree) throws InternalException,
-			HttpException {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
 }

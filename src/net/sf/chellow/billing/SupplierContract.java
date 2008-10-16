@@ -190,8 +190,7 @@ public class SupplierContract extends Contract {
 	private Document document() throws HttpException {
 		Document doc = MonadUtils.newSourceDocument();
 		Element source = doc.getDocumentElement();
-		Element contractElement = (Element) toXml(doc, new XmlTree("provider")
-				.put("organization"));
+		Element contractElement = (Element) toXml(doc, new XmlTree("party"));
 		source.appendChild(contractElement);
 		for (Provider provider : (List<Provider>) Hiber
 				.session()

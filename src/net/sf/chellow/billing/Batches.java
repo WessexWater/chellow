@@ -111,8 +111,7 @@ public class Batches extends EntityList {
 		Element source = doc.getDocumentElement();
 		Element batchesElement = (Element) toXml(doc);
 		source.appendChild(batchesElement);
-		batchesElement.appendChild(contract.toXml(doc, new XmlTree("provider")
-				.put("organization")));
+		batchesElement.appendChild(contract.toXml(doc, new XmlTree("party")));
 		for (Batch batch : (List<Batch>) Hiber
 				.session()
 				.createQuery(

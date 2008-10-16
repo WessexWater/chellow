@@ -210,6 +210,8 @@ public class Chellow extends Monad implements Urlable {
 			return SITES_INSTANCE;
 		} else if (HhdcContracts.URI_ID.equals(uriId)) {
 			return HHDC_CONTRACTS_INSTANCE;
+		} else if (SupplierContracts.URI_ID.equals(uriId)) {
+			return SUPPLIER_CONTRACTS_INSTANCE;
 		} else {
 			return null;
 		}

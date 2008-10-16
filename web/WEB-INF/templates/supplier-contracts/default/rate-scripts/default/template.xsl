@@ -4,18 +4,13 @@
 	<xsl:output method="html" encoding="US-ASCII"
 		doctype-public="-//W3C//DTD HTML 4.01//EN"
 		doctype-system="http://www.w3.org/TR/html4/strict.dtd" indent="yes" />
-
 	<xsl:template match="/">
 		<html>
 			<head>
 				<link rel="stylesheet" type="text/css"
 					href="{/source/request/@context-path}/style/" />
-
 				<title>
-					Chellow &gt; Organizations &gt;
-					<xsl:value-of
-						select="/source/rate-script/supplier-contract/supplier/org/@name" />
-					&gt; Supplier Contracts &gt;
+					Chellow &gt; Supplier Contracts &gt;
 					<xsl:value-of
 						select="/source/rate-script/supplier-contract/@name" />
 					&gt; Rate Scripts &gt;
@@ -30,29 +25,19 @@
 						<span class="logo">Chellow</span>
 					</a>
 					&gt;
-					<a href="{/source/request/@context-path}/orgs/">
-						<xsl:value-of select="'Organizations'" />
-					</a>
-					&gt;
 					<a
-						href="{/source/request/@context-path}/orgs/{/source/rate-script/supplier-contract/org/@id}/">
-						<xsl:value-of
-							select="/source/rate-script/supplier-contract/org/@name" />
-					</a>
-					&gt;
-					<a
-						href="{/source/request/@context-path}/orgs/{/source/rate-script/supplier-contract/org/@id}/supplier-contracts/">
+						href="{/source/request/@context-path}/supplier-contracts/">
 						<xsl:value-of select="'Supplier Contracts'" />
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/orgs/{/source/rate-script/supplier-contract/org/@id}/supplier-contracts/{/source/rate-script/supplier-contract/@id}/">
+						href="{/source/request/@context-path}/supplier-contracts/{/source/rate-script/supplier-contract/@id}/">
 						<xsl:value-of
 							select="/source/rate-script/supplier-contract/@name" />
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/orgs/{/source/rate-script/supplier-contract/org/@id}/supplier-contracts/{/source/rate-script/supplier-contract/@id}/rate-scripts/">
+						href="{/source/request/@context-path}/supplier-contracts/{/source/rate-script/supplier-contract/@id}/rate-scripts/">
 						<xsl:value-of select="'Rate Scripts'" />
 					</a>
 					&gt;
@@ -345,7 +330,6 @@
 								<input type="reset" value="Reset" />
 							</fieldset>
 						</form>
-
 						<form action=".">
 							<fieldset>
 								<input type="hidden" name="view"

@@ -10,18 +10,13 @@
 			<head>
 				<link rel="stylesheet" type="text/css"
 					href="{/source/request/@context-path}/style/" />
-
 				<title>
-					Chellow &gt; Organizations &gt;
-					<xsl:value-of
-						select="/source/rate-scripts/supplier-contract/org/@name" />
-					&gt; Supplier Contracts &gt;
+					Chellow &gt; Supplier Contracts &gt;
 					<xsl:value-of
 						select="/source/rate-scripts/supplier-contract/@name" />
 					&gt; Rate Scripts
 				</title>
 			</head>
-
 			<body>
 				<p>
 					<a href="{/source/request/@context-path}/">
@@ -30,23 +25,13 @@
 						<span class="logo">Chellow</span>
 					</a>
 					&gt;
-					<a href="{/source/request/@context-path}/orgs/">
-						<xsl:value-of select="'Organizations'" />
-					</a>
-					&gt;
 					<a
-						href="{/source/request/@context-path}/orgs/{/source/rate-scripts/supplier-contract/org/@id}/">
-						<xsl:value-of
-							select="/source/rate-scripts/supplier-contract/org/@name" />
-					</a>
-					&gt;
-					<a
-						href="{/source/request/@context-path}/orgs/{/source/rate-scripts/supplier-contract/org/@id}/supplier-contracts/">
+						href="{/source/request/@context-path}/supplier-contracts/">
 						<xsl:value-of select="'Supplier Contracts'" />
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/orgs/{/source/rate-scripts/supplier-contract/org/@id}/supplier-contracts/{/source/rate-scripts/supplier-contract/@id}/">
+						href="{/source/request/@context-path}/supplier-contracts/{/source/rate-scripts/supplier-contract/@id}/">
 						<xsl:value-of
 							select="/source/rate-scripts/supplier-contract/@name" />
 					</a>

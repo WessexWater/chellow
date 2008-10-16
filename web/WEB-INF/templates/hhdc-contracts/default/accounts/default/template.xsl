@@ -4,18 +4,13 @@
 	<xsl:output method="html" encoding="US-ASCII"
 		doctype-public="-//W3C//DTD HTML 4.01//EN"
 		doctype-system="http://www.w3.org/TR/html4/strict.dtd" indent="yes" />
-
 	<xsl:template match="/">
 		<html>
 			<head>
 				<link rel="stylesheet" type="text/css"
 					href="{/source/request/@context-path}/style/" />
-
 				<title>
-					Chellow &gt; Organizations &gt;
-					<xsl:value-of
-						select="/source/account/hhdc-contract/org/@name" />
-					&gt; HHDC Contracts &gt;
+					Chellow &gt; HHDC Contracts &gt;
 					<xsl:value-of
 						select="/source/account/hhdc-contract/@name" />
 					&gt; Accounts &gt;
@@ -30,23 +25,13 @@
 						<span class="logo">Chellow</span>
 					</a>
 					&gt;
-					<a href="{/source/request/@context-path}/orgs/">
-						<xsl:value-of select="'Organizations'" />
-					</a>
-					&gt;
 					<a
-						href="{/source/request/@context-path}/orgs/{/source/account/hhdc-contract/org/@id}/">
-						<xsl:value-of
-							select="/source/account/hhdc-contract/org/@name" />
-					</a>
-					&gt;
-					<a
-						href="{/source/request/@context-path}/orgs/{/source/account/hhdc-contract/org/@id}/hhdc-contracts/">
+						href="{/source/request/@context-path}/hhdc-contracts/">
 						<xsl:value-of select="'HHDC Contracts'" />
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/orgs/{/source/account/hhdc-contract/org/@id}/hhdc-contracts/{/source/account/hhdc-contract/@id}/">
+						href="{/source/request/@context-path}/hhdc-contracts/{/source/account/hhdc-contract/@id}/">
 						<xsl:value-of
 							select="/source/account/hhdc-contract/@name" />
 					</a>
@@ -88,7 +73,7 @@
 						<form action="." method="post">
 							<fieldset>
 								<legend>Update Account</legend>
-								<br/>
+								<br />
 								<label>
 									<xsl:value-of select="'Reference '" />
 									<input name="reference">
@@ -138,7 +123,7 @@
 									<xsl:value-of
 										select="concat(profile-class/@code, ' ', meter-timeswitch/@code, ' ', line-loss-factor/@code, ' ', mpan-core/@core, ' ')" />
 									<a
-										href="{/source/request/@context-path}/orgs/{/source/account/org/@id}/supplies/{supply-generation/supply/@id}/generations/{supply-generation/@id}/">
+										href="{/source/request/@context-path}/supplies/{supply-generation/supply/@id}/generations/{supply-generation/@id}/">
 										Supply Generation
 									</a>
 								</li>

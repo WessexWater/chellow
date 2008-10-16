@@ -12,7 +12,6 @@
 					href="{/source/request/@context-path}/style/" />
 				<title>Chellow</title>
 			</head>
-
 			<body>
 				<p>
 					<img src="{/source/request/@context-path}/logo/" />
@@ -57,11 +56,16 @@
 					</li>
 					<li>
 						<a
+							href="{/source/request/@context-path}/supplier-contracts/">
+							Supplier Contracts
+						</a>
+					</li>
+					<li>
+						<a
 							href="{/source/request/@context-path}/hhdc-contracts/">
 							HHDC Contracts
 						</a>
 					</li>
-					
 					<li>
 						<a
 							href="{/source/request/@context-path}/non-core-contracts/">
@@ -95,7 +99,7 @@
 							Read types
 						</a>
 					</li>
-										<li>
+					<li>
 						<a
 							href="{/source/request/@context-path}/market-roles/">
 							Market Roles
@@ -113,13 +117,13 @@
 							Providers
 						</a>
 					</li>
-										<li>
+					<li>
 						<a
 							href="{/source/request/@context-path}/participants/">
 							Market Participants
 						</a>
 					</li>
-										<li>
+					<li>
 						<a
 							href="{/source/request/@context-path}/sources/">
 							Sources

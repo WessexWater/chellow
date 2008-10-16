@@ -10,19 +10,13 @@
 			<head>
 				<link rel="stylesheet" type="text/css"
 					href="{/source/request/@context-path}/style/" />
-
 				<title>
-					Chellow &gt; Organizations &gt;
-					<xsl:value-of
-						select="/source/accounts/hhdc-contract/org/@name" />
-					&gt; HHDC Contracts &gt;
+					Chellow &gt; HHDC Contracts &gt;
 					<xsl:value-of
 						select="/source/accounts/hhdc-contract/@name" />
 					&gt; Accounts
 				</title>
-
 			</head>
-
 			<body>
 				<p>
 					<a href="{/source/request/@context-path}/">
@@ -31,27 +25,18 @@
 						<span class="logo">Chellow</span>
 					</a>
 					&gt;
-					<a href="{/source/request/@context-path}/orgs/">
-						<xsl:value-of select="'Organizations'" />
-					</a>
-					&gt;
 					<a
-						href="{/source/request/@context-path}/orgs/{/source/accounts/hhdc-contract/org/@id}/">
-						<xsl:value-of
-							select="/source/accounts/hhdc-contract/org/@name" />
-					</a>
-					&gt;
-					<a
-						href="{/source/request/@context-path}/orgs/{/source/accounts/hhdc-contract/org/@id}/hhdc-contracts/">
+						href="{/source/request/@context-path}/hhdc-contracts/">
 						<xsl:value-of select="'HHDC Contracts'" />
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/orgs/{/source/accounts/hhdc-contract/org/@id}/hhdc-contracts/{/source/accounts/hhdc-contract/@id}/">
+						href="{/source/request/@context-path}/hhdc-contracts/{/source/accounts/hhdc-contract/@id}/">
 						<xsl:value-of
 							select="/source/accounts/hhdc-contract/@name" />
 					</a>
-					&gt; <xsl:value-of select="'Accounts ['" />
+					&gt;
+					<xsl:value-of select="'Accounts ['" />
 					<a
 						href="{/source/request/@context-path}/orgs/{/source/accounts/hhdc-contract/org/@id}/reports/1/screen/output/">
 						<xsl:value-of select="'view'" />
