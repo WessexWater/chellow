@@ -43,7 +43,7 @@ import org.w3c.dom.Element;
 
 @SuppressWarnings("serial")
 public class NonCoreContract extends Contract {
-	static public NonCoreContract insertNonCoreService(Provider provider,
+	static public NonCoreContract insertNonCoreContract(Provider provider,
 			String name, HhEndDate startDate, String chargeScript)
 			throws HttpException {
 		NonCoreContract service = new NonCoreContract(provider, name, startDate,

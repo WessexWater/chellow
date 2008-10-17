@@ -28,29 +28,26 @@ import java.util.List;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.Invocation;
-import net.sf.chellow.monad.MethodNotAllowedException;
 import net.sf.chellow.monad.MonadUtils;
 import net.sf.chellow.monad.NotFoundException;
-import net.sf.chellow.monad.Urlable;
 import net.sf.chellow.monad.UserException;
-import net.sf.chellow.monad.XmlDescriber;
 import net.sf.chellow.monad.XmlTree;
 import net.sf.chellow.monad.types.MonadDate;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
+import net.sf.chellow.physical.EntityList;
 import net.sf.chellow.physical.HhEndDate;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import org.w3c.dom.Node;
 
 @SuppressWarnings("serial")
-public class NonCoreContracts implements Urlable, XmlDescriber {
+public class NonCoreContracts extends EntityList {
 	public static final UriPathElement URI_ID;
 
 	static {
 		try {
-			URI_ID = new UriPathElement("non-core-services");
+			URI_ID = new UriPathElement("non-core-contracts");
 		} catch (HttpException e) {
 			throw new RuntimeException(e);
 		}
@@ -76,25 +73,25 @@ public class NonCoreContracts implements Urlable, XmlDescriber {
 			throw new UserException(document());
 		}
 		Provider provider = Provider.getProvider(providerId);
-		NonCoreContract service = NonCoreContract.insertNonCoreService(provider,
+		NonCoreContract contract = NonCoreContract.insertNonCoreContract(provider,
 				name, HhEndDate.roundDown(startDate), chargeScript);
 		Hiber.commit();
-		inv.sendCreated(document(), service.getUri());
+		inv.sendCreated(document(), contract.getUri());
 	}
 
 	@SuppressWarnings("unchecked")
 	private Document document() throws HttpException {
 		Document doc = MonadUtils.newSourceDocument();
 		Element source = doc.getDocumentElement();
-		Element servicesElement = toXml(doc);
-		source.appendChild(servicesElement);
-		for (NonCoreContract service : (List<NonCoreContract>) Hiber
+		Element contractsElement = toXml(doc);
+		source.appendChild(contractsElement);
+		for (NonCoreContract contract : (List<NonCoreContract>) Hiber
 				.session()
 				.createQuery(
-						"from NonCoreService service order by service.finishRateScript.finishDate.date desc, service.provider.participant.code")
+						"from NonCoreContract contract order by contract.finishRateScript.finishDate.date desc, contract.party.participant.code")
 				.list()) {
-			servicesElement.appendChild(service.toXml(doc, new XmlTree(
-					"provider")));
+			contractsElement.appendChild(contract.toXml(doc, new XmlTree(
+					"party")));
 		}
 		for (Provider provider : (List<Provider>) Hiber
 				.session()
@@ -114,26 +111,18 @@ public class NonCoreContracts implements Urlable, XmlDescriber {
 	}
 
 	public NonCoreContract getChild(UriPathElement uriId) throws HttpException {
-		NonCoreContract service = (NonCoreContract) Hiber.session().createQuery(
-				"from NonCoreService service where service.id = :serviceId")
-				.setLong("serviceId", Long.parseLong(uriId.getString()))
+		NonCoreContract contract = (NonCoreContract) Hiber.session().createQuery(
+				"from NonCoreContract contract where contract.id = :contractId")
+				.setLong("contractId", Long.parseLong(uriId.getString()))
 				.uniqueResult();
-		if (service == null) {
+		if (contract == null) {
 			throw new NotFoundException();
 		}
-		return service;
-	}
-
-	public void httpDelete(Invocation inv) throws HttpException {
-		throw new MethodNotAllowedException();
+		return contract;
 	}
 
 	public Element toXml(Document doc) throws HttpException {
 		Element contractsElement = doc.createElement("non-core-services");
 		return contractsElement;
-	}
-
-	public Node toXml(Document doc, XmlTree tree) throws HttpException {
-		return null;
 	}
 }
