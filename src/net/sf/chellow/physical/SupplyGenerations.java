@@ -25,11 +25,8 @@ package net.sf.chellow.physical;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.Invocation;
-import net.sf.chellow.monad.MethodNotAllowedException;
 import net.sf.chellow.monad.MonadUtils;
 import net.sf.chellow.monad.NotFoundException;
-import net.sf.chellow.monad.Urlable;
-import net.sf.chellow.monad.XmlDescriber;
 import net.sf.chellow.monad.XmlTree;
 import net.sf.chellow.monad.types.MonadDate;
 import net.sf.chellow.monad.types.MonadUri;
@@ -37,9 +34,8 @@ import net.sf.chellow.monad.types.UriPathElement;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import org.w3c.dom.Node;
 
-public class SupplyGenerations implements Urlable, XmlDescriber {
+public class SupplyGenerations extends EntityList {
 	public static final UriPathElement URI_ID;
 
 	static {
@@ -89,11 +85,10 @@ public class SupplyGenerations implements Urlable, XmlDescriber {
 		Element source = doc.getDocumentElement();
 		Element generationsElement = toXml(doc);
 		source.appendChild(generationsElement);
-		generationsElement.appendChild(supply.toXml(doc, new XmlTree(
-				"organization")));
+		generationsElement.appendChild(supply.toXml(doc));
 		for (SupplyGeneration supplyGeneration : supply.getGenerations()) {
 			generationsElement.appendChild(supplyGeneration.toXml(doc,
-					new XmlTree("mpans", new XmlTree("mpanCore").put("mpanTop",
+					new XmlTree("mpans", new XmlTree("core").put("top",
 							new XmlTree("pc").put("llfc").put("mtc")))));
 		}
 		source.appendChild(new MonadDate().toXml(doc));
@@ -115,15 +110,7 @@ public class SupplyGenerations implements Urlable, XmlDescriber {
 		return supplyGeneration;
 	}
 
-	public void httpDelete(Invocation inv) throws HttpException {
-		throw new MethodNotAllowedException();
-	}
-
 	public Element toXml(Document doc) throws HttpException {
 		return doc.createElement("supply-generations");
-	}
-
-	public Node toXml(Document doc, XmlTree tree) throws HttpException {
-		return null;
 	}
 }

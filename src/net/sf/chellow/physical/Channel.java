@@ -377,7 +377,7 @@ public class Channel extends PersistentEntity implements Urlable {
 		Document doc = MonadUtils.newSourceDocument();
 		Element source = doc.getDocumentElement();
 		source.appendChild(toXml(doc, new XmlTree("supplyGeneration",
-				new XmlTree("supply", new XmlTree("organization")))));
+				new XmlTree("supply"))));
 		inv.sendOk(doc);
 	}
 

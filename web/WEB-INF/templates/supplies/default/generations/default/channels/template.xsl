@@ -4,18 +4,13 @@
 	<xsl:output method="html" encoding="US-ASCII"
 		doctype-public="-//W3C//DTD HTML 4.01//EN"
 		doctype-system="http://www.w3.org/TR/html4/strict.dtd" indent="yes" />
-
 	<xsl:template match="/">
 		<html>
 			<head>
 				<link rel="stylesheet" type="text/css"
 					href="{/source/request/@context-path}/style/" />
-
 				<title>
-					Chellow &gt; Organizations &gt;
-					<xsl:value-of
-						select="/source/channels/supply-generation/supply/org/@name" />
-					&gt; Supplies &gt;
+					Chellow &gt; Supplies &gt;
 					<xsl:value-of
 						select="/source/channels/supply-generation/supply/@id" />
 					&gt; Generations &gt;
@@ -41,34 +36,24 @@
 						<span class="logo">Chellow</span>
 					</a>
 					&gt;
-					<a href="{/source/request/@context-path}/orgs/">
-						<xsl:value-of select="'Organizations'" />
-					</a>
-					&gt;
 					<a
-						href="{/source/request/@context-path}/orgs/{/source/channels/supply-generation/supply/org/@id}/">
-						<xsl:value-of
-							select="/source/channels/supply-generation/supply/org/@name" />
-					</a>
-					&gt;
-					<a
-						href="{/source/request/@context-path}/orgs/{/source/channels/supply-generation/supply/org/@id}/supplies/">
+						href="{/source/request/@context-path}/supplies/">
 						<xsl:value-of select="'Supplies'" />
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/orgs/{/source/channels/supply-generation/supply/org/@id}/supplies/{/source/channels/supply-generation/supply/@id}/">
+						href="{/source/request/@context-path}/supplies/{/source/channels/supply-generation/supply/@id}/">
 						<xsl:value-of
 							select="/source/channels/supply-generation/supply/@id" />
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/orgs/{/source/channels/supply-generation/supply/org/@id}/supplies/{/source/channels/supply-generation/supply/@id}/generations/">
+						href="{/source/request/@context-path}/supplies/{/source/channels/supply-generation/supply/@id}/generations/">
 						<xsl:value-of select="'Generations'" />
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/orgs/{/source/channels/supply-generation/supply/org/@id}/supplies/{/source/channels/supply-generation/supply/@id}/generations/{/source/channels/supply-generation/@id}">
+						href="{/source/request/@context-path}/supplies/{/source/channels/supply-generation/supply/@id}/generations/{/source/channels/supply-generation/@id}">
 						<xsl:value-of
 							select="/source/channels/supply-generation/@id" />
 					</a>

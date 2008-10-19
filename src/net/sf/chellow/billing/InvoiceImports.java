@@ -67,7 +67,7 @@ public class InvoiceImports implements Urlable {
 		Element billImportsElement = toXML(doc);
 		source.appendChild(billImportsElement);
 		billImportsElement.appendChild(batch.toXml(doc, new XmlTree("contract",
-				new XmlTree("provider").put("organization"))));
+				new XmlTree("party"))));
 		Map<Long, InvoiceImport> batchImports = imports.get(batch.getId());
 		if (batchImports != null) {
 			for (InvoiceImport billImport : batchImports.values()) {
@@ -110,7 +110,6 @@ public class InvoiceImports implements Urlable {
 	}
 
 	public Node getXML(XmlTree tree, Document doc) throws HttpException {
-		// TODO Auto-generated method stub
 		return null;
 	}
 

@@ -90,19 +90,17 @@ public class Sites extends EntityList {
 			if (!inv.isValid()) {
 				throw new UserException(doc, null);
 			}
-sites = (List<Site>) Hiber
-				   				.session()
-				   				.createQuery(
-				   						"from Site site where lower(site.code || ' ' || site.name) like '%' || lower(:searchTerm) || '%' order by site.code")
-				   				.setString("searchTerm",
-				   						searchTerm).setMaxResults(50).list();
-				   	
-		} else {
 			sites = (List<Site>) Hiber
-				.session()
-   				.createQuery(
-   						"from Site site order by site.code")
-   				.setMaxResults(50).list();
+					.session()
+					.createQuery(
+							"from Site site where lower(site.code || ' ' || site.name) like '%' || lower(:searchTerm) || '%' order by site.code")
+					.setString("searchTerm", searchTerm).setMaxResults(50)
+					.list();
+
+		} else {
+			sites = (List<Site>) Hiber.session().createQuery(
+					"from Site site order by site.code").setMaxResults(50)
+					.list();
 		}
 		for (Site site : sites) {
 			sitesElement.appendChild(site.toXml(doc));
@@ -115,12 +113,9 @@ sites = (List<Site>) Hiber
 	}
 
 	public Site getChild(UriPathElement uriId) throws HttpException {
-		Site site = (Site) Hiber
-				.session()
-				.createQuery(
-						"from Site site where id = :siteId")
-			.setLong("siteId",
-						Long.parseLong(uriId.getString())).uniqueResult();
+		Site site = (Site) Hiber.session().createQuery(
+				"from Site site where id = :siteId").setLong("siteId",
+				Long.parseLong(uriId.getString())).uniqueResult();
 		if (site == null) {
 			throw new NotFoundException();
 		}

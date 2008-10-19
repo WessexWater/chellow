@@ -44,8 +44,7 @@ public class Channels extends EntityList {
 		Element source = doc.getDocumentElement();
 		Element channelsElement = toXml(doc);
 		source.appendChild(channelsElement);
-		channelsElement.appendChild(generation.toXml(doc, new XmlTree("supply",
-				new XmlTree("organization"))));
+		channelsElement.appendChild(generation.toXml(doc, new XmlTree("supply")));
 		for (Channel channel : generation.getChannels()) {
 			channelsElement.appendChild(channel.toXml(doc));
 		}

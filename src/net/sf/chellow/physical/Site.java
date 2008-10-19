@@ -557,7 +557,7 @@ public class Site extends PersistentEntity {
 						"select supplyGeneration from SupplyGeneration supplyGeneration join supplyGeneration.siteSupplyGenerations siteSupplyGeneration where siteSupplyGeneration.site = :site order by supplyGeneration.finishDate.date")
 				.setEntity("site", this).list()) {
 			siteElement.appendChild(generation.toXml(doc,
-					new XmlTree("mpans", new XmlTree("mpanCore").put("mpanTop",
+					new XmlTree("mpans", new XmlTree("core").put("top",
 							new XmlTree("llfc"))).put("supply", new XmlTree(
 							"source"))));
 		}

@@ -213,7 +213,7 @@ public class HhDataImportProcess extends Thread implements Urlable,
 					}
 					Hiber.close();
 					data.clear();
-					mpanCore = datum.getMpanCore();
+					mpanCore = MpanCore.getMpanCore(datum.getMpanCore().getId());
 					contract = HhdcContract.getHhdcContract(hhdcContractId);
 					generation = mpanCore.getSupply()
 							.getGeneration(datum.getEndDate());
@@ -300,7 +300,7 @@ public class HhDataImportProcess extends Thread implements Urlable,
 		Element processElement = toXml(doc);
 		source.appendChild(processElement);
 		processElement.appendChild(getHhdcContract().toXml(doc,
-				new XmlTree("provider").put("organization")));
+				new XmlTree("party")));
 		inv.sendOk(doc);
 	}
 

@@ -59,7 +59,7 @@ public class SiteSnags extends EntityList {
 		Element snagsElement = toXml(doc);
 		source.appendChild(snagsElement);
 		snagsElement.appendChild(hhdcContract.toXml(doc,
-				new XmlTree("provider").put("organization")));
+				new XmlTree("party")));
 		for (SiteSnag snag : (List<SiteSnag>) Hiber
 				.session()
 				.createQuery(

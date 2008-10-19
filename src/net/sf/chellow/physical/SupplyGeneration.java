@@ -634,12 +634,12 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 				"supply", new XmlTree("source")));
 		source.appendChild(generationElement);
 		for (Mpan mpan : mpans) {
-			Element mpanElement = (Element) mpan.toXml(doc, new XmlTree(
-					"mpanCore").put("mpanTop", new XmlTree("mtc").put("llfc"))
-					.put("hhdcAccount",
-							new XmlTree("contract", new XmlTree("provider")))
-					.put("supplierAccount",
-							new XmlTree("contract", new XmlTree("provider"))));
+			Element mpanElement = (Element) mpan.toXml(doc, new XmlTree("core")
+					.put("top", new XmlTree("mtc").put("llfc")).put(
+							"hhdcAccount",
+							new XmlTree("contract", new XmlTree("party"))).put(
+							"supplierAccount",
+							new XmlTree("contract", new XmlTree("party"))));
 			generationElement.appendChild(mpanElement);
 			for (RegisterRead read : (List<RegisterRead>) Hiber.session()
 					.createQuery(
@@ -647,7 +647,7 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 					.setEntity("mpan", mpan).list()) {
 				mpanElement.appendChild(read.toXml(doc, new XmlTree("invoice",
 						new XmlTree("batch", new XmlTree("contract",
-								new XmlTree("provider"))))));
+								new XmlTree("party"))))));
 			}
 			/*
 			 * for (InvoiceMpan invoiceMpan : (List<InvoiceMpan>) Hiber

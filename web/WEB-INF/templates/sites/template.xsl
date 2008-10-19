@@ -63,7 +63,7 @@
 							The search results are truncated after 50.
 						</p>
 						<ul>
-							<xsl:for-each select="/source/site">
+							<xsl:for-each select="/source/sites/site">
 								<li>
 									<a href="{@id}/">
 										<xsl:value-of

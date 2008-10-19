@@ -29,5 +29,7 @@
 		table="supplier_contract" lazy="true">
 		<key column="contract_id"
 			foreign-key="fkey_supplier_contract_contract" />
+		<many-to-one name="party" class="Provider" column="provider_id"
+			foreign-key="fkey_supplier_contract_provider" not-null="true" />
 	</joined-subclass>
 </hibernate-mapping>

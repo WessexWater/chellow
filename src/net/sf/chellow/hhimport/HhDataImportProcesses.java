@@ -101,11 +101,11 @@ public class HhDataImportProcesses extends EntityList {
 
 	private Document document() throws HttpException {
 		Document doc = MonadUtils.newSourceDocument();
-		Element source = (Element) doc.getFirstChild();
+		Element source = doc.getDocumentElement();
 		Element hhDataImportsElement = toXml(doc);
 		source.appendChild(hhDataImportsElement);
 		hhDataImportsElement.appendChild(contract.toXml(doc, new XmlTree(
-				"provider").put("organization")));
+				"party")));
 		Map<Long, HhDataImportProcess> contractProcesses = processes
 				.get(contract.getId());
 		if (contractProcesses != null) {

@@ -23,7 +23,9 @@
 package net.sf.chellow.physical;
 
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import net.sf.chellow.billing.Account;
 import net.sf.chellow.billing.Dso;
@@ -67,9 +69,22 @@ public class Mpan extends PersistentEntity {
 						dso.getLlfc(raw.getLlfcCode())).setParameterList(
 						"supplyGenerations", supplyGenerations).list();
 	}
-	
-	static public String canonicalize(String mpanStr) throws HttpException {
-		return new MpanRaw(mpanStr).toString();
+
+	/*
+	 * static public String canonicalize(String mpanStr) throws HttpException {
+	 * return new MpanRaw(mpanStr).toString(); }
+	 */
+	static public boolean isEqual(Set<String> mpans1, Set<String> mpans2)
+			throws HttpException {
+		Set<MpanRaw> mpansRaw1 = new HashSet<MpanRaw>();
+		for (String mpan : mpans1) {
+			mpansRaw1.add(new MpanRaw(mpan));
+		}
+		Set<MpanRaw> mpansRaw2 = new HashSet<MpanRaw>();
+		for (String mpan : mpans2) {
+			mpansRaw2.add(new MpanRaw(mpan));
+		}
+		return mpansRaw1.equals(mpansRaw2);
 	}
 
 	private SupplyGeneration supplyGeneration;
@@ -299,7 +314,8 @@ public class Mpan extends PersistentEntity {
 		MpanRaw mpanRaw = new MpanRaw(mpan);
 		MpanCore mpanCore = MpanCore.findMpanCore(mpanRaw.getMpanCore());
 		if (mpanCore == null) {
-			supplyGeneration.getSupply().addMpanCore(mpanRaw.getMpanCore());
+			mpanCore = supplyGeneration.getSupply().addMpanCore(
+					mpanRaw.getMpanCore());
 		}
 		if (!mpanCore.getSupply().equals(supplyGeneration.getSupply())) {
 			throw new UserException(
@@ -332,13 +348,9 @@ public class Mpan extends PersistentEntity {
 				.toString(hasExportKvarh));
 		element.setAttribute("agreed-supply-capacity", Integer
 				.toString(agreedSupplyCapacity));
-		element.setAttribute("mpan", top.getPc().toXml(doc)
-				.getTextContent()
-				+ " "
-				+ top.getMtc().toXml(doc).getTextContent()
-				+ " "
-				+ top.getLlfc().toXml(doc).getTextContent()
-				+ " "
+		element.setAttribute("mpan", top.getPc().toXml(doc).getTextContent()
+				+ " " + top.getMtc().toXml(doc).getTextContent() + " "
+				+ top.getLlfc().toXml(doc).getTextContent() + " "
 				+ core.toString());
 		return element;
 	}
@@ -418,15 +430,14 @@ public class Mpan extends PersistentEntity {
 			return mpanCore;
 		}
 
-		/*
-		 * public String toString() { return pc.codeAsString() + " " +
-		 * mtc.codeAsString() + " " + llfc.codeAsString() + " " +
-		 * mpanCore.toString(); }
-		 */
+		public String toString() {
+			return pcCode + " " + mtcCode + " " + llfcCode + " " + mpanCore;
+		}
 
 		public String toStringNoSpaces() {
 			return toString().replace(" ", "");
 		}
+
 		/*
 		 * public boolean equals(Object obj) { boolean isEqual = false; if (obj
 		 * instanceof MpanRaw) { MpanRaw mpan = (MpanRaw) obj; isEqual =
@@ -434,10 +445,13 @@ public class Mpan extends PersistentEntity {
 		 * getLlfc().equals(mpan.getLlfc()) &&
 		 * getMpanCore().equals(mpan.getMpanCore()); } return isEqual; }
 		 */
-		/*
-		 * public int hashCode() { return getPc().hashCode() +
-		 * getMtc().hashCode() + getLlfc().hashCode() +
-		 * getMpanCore().hashCode(); }
-		 */
+		public boolean equals(Object obj) {
+			return toString().equals(obj.toString());
+		}
+
+		public int hashCode() {
+			return getPcCode().hashCode() + getMtcCode().hashCode()
+					+ getLlfcCode().hashCode() + getMpanCore().hashCode();
+		}
 	}
 }

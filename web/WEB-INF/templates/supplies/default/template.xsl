@@ -4,18 +4,14 @@
 	<xsl:output method="html" encoding="US-ASCII"
 		doctype-public="-//W3C//DTD HTML 4.01//EN"
 		doctype-system="http://www.w3.org/TR/html4/strict.dtd" indent="yes" />
-
 	<xsl:template match="/">
 		<html>
 			<head>
 				<title>
-					Chellow &gt; Organizations &gt;
-					<xsl:value-of select="/source/supply/org/@name" />
-					&gt; Sites &gt;
+					Chellow &gt; Sites &gt;
 					<xsl:value-of
 						select="concat(/source/supply/@code, ' ', /source/supply/@name)" />
 				</title>
-
 				<link rel="stylesheet" type="text/css"
 					href="{/source/request/@context-path}/style/" />
 			</head>
@@ -27,24 +23,15 @@
 						<span class="logo">Chellow</span>
 					</a>
 					&gt;
-					<a href="{/source/request/@context-path}/orgs/">
-						<xsl:value-of select="'Organizations'" />
-					</a>
-					&gt;
 					<a
-						href="{/source/request/@context-path}/orgs/{/source/supply/org/@id}/">
-						<xsl:value-of select="/source/supply/org/@name" />
-					</a>
-					&gt;
-					<a
-						href="{/source/request/@context-path}/orgs/{/source/supply/org/@id}/supplies/">
+						href="{/source/request/@context-path}/supplies/">
 						<xsl:value-of select="'Supplies'" />
 					</a>
 					&gt;
 					<xsl:value-of
 						select="concat(/source/supply/@id, ' [')" />
 					<a
-						href="{/source/request/@context-path}/orgs/1/reports/3/screen/output/?supply-id={/source/supply/@id}">
+						href="{/source/request/@context-path}/reports/4/output/?supply-id={/source/supply/@id}">
 						<xsl:value-of select="'view'" />
 					</a>
 					<xsl:value-of select="']'" />
@@ -153,7 +140,9 @@
 							</fieldset>
 						</form>
 						<ul>
-							<li><a href="generations/">Generations</a></li>
+							<li>
+								<a href="generations/">Generations</a>
+							</li>
 						</ul>
 					</xsl:otherwise>
 				</xsl:choose>

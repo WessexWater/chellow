@@ -91,7 +91,7 @@ public class InvoiceConverterEdi implements InvoiceConverter {
 		String line;
 		try {
 			line = lreader.readLine();
-			Set<String> mpanStrings = new HashSet<String>();
+			Set<String> mpanStrings = null;
 			DayStartDate issueDate = null;
 			DayStartDate startDate = null;
 			DayFinishDate finishDate = null;
@@ -140,6 +140,7 @@ public class InvoiceConverterEdi implements InvoiceConverter {
 						vat = 0f;
 						reads = new HashSet<LocalRegisterReadRaw>();
 						invoiceTypeCode = null;
+						mpanStrings = new HashSet<String>();
 					}
 				}
 				if (code.equals("CCD")) {
@@ -198,15 +199,15 @@ public class InvoiceConverterEdi implements InvoiceConverter {
 					if (messageType.equals("UTLBIL")) {
 						Set<RegisterReadRaw> registerReads = new HashSet<RegisterReadRaw>();
 						for (LocalRegisterReadRaw read : reads) {
-							/* Let's just assume that this is true!
-							if (!mpan.getMpanCore().equals(
-									read.getMpanCore())) {
-								throw new UserException(
-										"The mpan core in the register read doesn't match the mpan core in the invoice.");
-							}
-							*/
-							registerReads.add(new RegisterReadRaw(read.getMpanCore(), read
-									.getCoefficient(), read
+							/*
+							 * Let's just assume that this is true! if
+							 * (!mpan.getMpanCore().equals( read.getMpanCore())) {
+							 * throw new UserException( "The mpan core in the
+							 * register read doesn't match the mpan core in the
+							 * invoice."); }
+							 */
+							registerReads.add(new RegisterReadRaw(read
+									.getMpanCore(), read.getCoefficient(), read
 									.getMeterSerialNumber(), read.getUnits(),
 									read.getTpr(), read.getPreviousDate(), read
 											.getPreviousValue(), read
@@ -218,9 +219,9 @@ public class InvoiceConverterEdi implements InvoiceConverter {
 						InvoiceType invoiceType = invoiceTypeMap
 								.get(invoiceTypeCode);
 						InvoiceRaw invoiceRaw = new InvoiceRaw(invoiceType,
-								accountReference, mpanStrings,
-								invoiceNumber, issueDate, startDate,
-								finishDate, net, vat, registerReads);
+								accountReference, mpanStrings, invoiceNumber,
+								issueDate, startDate, finishDate, net, vat,
+								registerReads);
 						rawInvoices.add(invoiceRaw);
 						Debug.print("at mtr: " + invoiceNumber + " "
 								+ startDate + " " + finishDate);
@@ -228,12 +229,12 @@ public class InvoiceConverterEdi implements InvoiceConverter {
 				}
 				if (code.equals("MAN")) {
 					Element madn = segment.getElements().get(2);
-					String pcCode = madn.getString(3);
+					String pcCode = "0" + madn.getString(3);
 					String mtcCode = madn.getComponents().get(4);
 					String llfcCode = madn.getString(5);
 
-					mpanStrings.add(pcCode + mtcCode + llfcCode + madn
-							.getComponents().get(0)
+					mpanStrings.add(pcCode + " " + mtcCode + " " + llfcCode
+							+ " " + madn.getComponents().get(0) + " "
 							+ madn.getComponents().get(1)
 							+ madn.getComponents().get(2));
 				}

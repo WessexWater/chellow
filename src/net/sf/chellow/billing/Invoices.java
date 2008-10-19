@@ -89,7 +89,7 @@ public class Invoices extends EntityList {
 		Element invoicesElement = toXml(doc);
 		source.appendChild(invoicesElement);
 		invoicesElement.appendChild(batch.toXml(doc, new XmlTree("contract",
-						new XmlTree("provider").put("organization"))));
+						new XmlTree("party"))));
 		for (Invoice invoice : (List<Invoice>) Hiber
 				.session()
 				.createQuery(

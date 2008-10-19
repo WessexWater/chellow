@@ -42,18 +42,17 @@
 					</li>
 					<li>
 						<a
-							href="{/source/request/@context-path}/users/">
-							Users
+							href="{/source/request/@context-path}/sites/">
+							Sites
 						</a>
-						<ul>
-							<li>
-								<a
-									href="{/source/request/@context-path}/users/me/">
-									Me
-								</a>
-							</li>
-						</ul>
 					</li>
+					<li>
+						<a
+							href="{/source/request/@context-path}/supplies/">
+							Supplies
+						</a>
+					</li>
+
 					<li>
 						<a
 							href="{/source/request/@context-path}/supplier-contracts/">
@@ -83,6 +82,20 @@
 							href="{/source/request/@context-path}/general-imports/">
 							General CSV Imports
 						</a>
+					</li>
+					<li>
+						<a
+							href="{/source/request/@context-path}/users/">
+							Users
+						</a>
+						<ul>
+							<li>
+								<a
+									href="{/source/request/@context-path}/users/me/">
+									Me
+								</a>
+							</li>
+						</ul>
 					</li>
 					<li>
 						<a

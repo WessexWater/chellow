@@ -147,8 +147,8 @@ public class Account extends PersistentEntity implements Urlable {
 				"from Mpan mpan where mpan.supplierAccount = :account")
 				.setEntity("account", this).list()) {
 			accountElement.appendChild(mpan.toXml(doc, new XmlTree(
-					"supplyGeneration", new XmlTree("supply")).put("mpanTop",
-					new XmlTree("pc").put("mtc").put("llfc")).put("mpanCore")));
+					"supplyGeneration", new XmlTree("supply")).put("top",
+					new XmlTree("pc").put("mtc").put("llfc")).put("core")));
 		}
 		for (Bill bill : (List<Bill>) Hiber
 				.session()
@@ -281,7 +281,9 @@ public class Account extends PersistentEntity implements Urlable {
 	@SuppressWarnings("unchecked")
 	public List<Mpan> getMpans(HhEndDate from, HhEndDate to)
 			throws HttpException {
-		char roleCode = contract.getParty().getRole().getCode();
+		Party party = contract.getParty();
+		MarketRole role = party.getRole();
+		char roleCode = role.getCode();
 		if (roleCode == MarketRole.SUPPLIER) {
 			if (to == null) {
 				return Hiber

@@ -151,6 +151,15 @@ public class InvoiceRaw extends MonadObject {
 		element.setAttribute("net", Double.toString(net));
 		element.setAttribute("vat", Double.toString(vat));
 		element.setAttribute("account-reference", accountReference);
+		StringBuilder mpans = new StringBuilder();
+		for (String mpan : mpanStrings) {
+			mpans.append(mpan + ", ");
+		}
+		if (mpans.length() > 0) {
+			element.setAttribute("mpans", mpans.substring(0, mpans.length() - 2));
+		} else {
+			element.setAttribute("mpans", mpans.toString());
+		}
 		return element;
 	}
 }

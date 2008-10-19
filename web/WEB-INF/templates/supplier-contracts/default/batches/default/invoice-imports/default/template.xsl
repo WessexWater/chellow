@@ -4,22 +4,18 @@
 	<xsl:output method="html" encoding="US-ASCII"
 		doctype-public="-//W3C//DTD HTML 4.01//EN"
 		doctype-system="http://www.w3.org/TR/html4/strict.dtd" indent="yes" />
-
 	<xsl:template match="/">
 		<html>
 			<head>
 				<link rel="stylesheet" type="text/css"
-					href="{/source/request/@context-path}/orgs/{/source/invoice-import/batch/supplier-contract/org/@id}/reports/9/stream/output/" />
+					href="{/source/request/@context-path}/style/" />
 				<style>
 					table { width: 300em; }
 
 					caption { text-align: left; }
 				</style>
 				<title>
-					Chellow &gt; Organizations &gt;
-					<xsl:value-of
-						select="/source/invoice-import/batch/supplier-contract/org/@name" />
-					&gt; Supplier Contracts &gt;
+					Chellow &gt; Supplier Contracts &gt;
 					<xsl:value-of
 						select="/source/invoice-import/batch/supplier-contract/@name" />
 					&gt; Batches &gt;
@@ -37,40 +33,30 @@
 						<span class="logo">Chellow</span>
 					</a>
 					&gt;
-					<a href="{/source/request/@context-path}/orgs/">
-						<xsl:value-of select="'Organizations'" />
-					</a>
-					&gt;
 					<a
-						href="{/source/request/@context-path}/orgs/{/source/invoice-import/batch/supplier-contract/org/@id}/">
-						<xsl:value-of
-							select="/source/invoice-import/batch/supplier-contract/org/@name" />
-					</a>
-					&gt;
-					<a
-						href="{/source/request/@context-path}/orgs/{/source/invoice-import/batch/supplier-contract/org/@id}/supplier-contracts/">
+						href="{/source/request/@context-path}/supplier-contracts/">
 						<xsl:value-of select="'Supplier Contracts'" />
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/orgs/{/source/invoice-import/batch/supplier-contract/org/@id}/supplier-contracts/{/source/invoice-import/batch/supplier-contract/@id}/">
+						href="{/source/request/@context-path}/supplier-contracts/{/source/invoice-import/batch/supplier-contract/@id}/">
 						<xsl:value-of
 							select="/source/invoice-import/batch/supplier-contract/@name" />
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/orgs/{/source/invoice-import/batch/supplier-contract/org/@id}/supplier-contracts/{/source/invoice-import/batch/supplier-contract/@id}/batches/">
+						href="{/source/request/@context-path}/supplier-contracts/{/source/invoice-import/batch/supplier-contract/@id}/batches/">
 						<xsl:value-of select="'Batches'" />
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/orgs/{/source/invoice-import/batch/supplier-contract/org/@id}/supplier-contracts/{/source/invoice-import/batch/supplier-contract/@id}/batches/{/source/invoice-import/batch/@id}/">
+						href="{/source/request/@context-path}/supplier-contracts/{/source/invoice-import/batch/supplier-contract/@id}/batches/{/source/invoice-import/batch/@id}/">
 						<xsl:value-of
 							select="/source/invoice-import/batch/@reference" />
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/orgs/{/source/invoice-import/batch/supplier-contract/org/@id}/supplier-contracts/{/source/invoice-import/batch/supplier-contract/@id}/batches/{/source/invoice-import/batch/@id}/invoice-imports/">
+						href="{/source/request/@context-path}/supplier-contracts/{/source/invoice-import/batch/supplier-contract/@id}/batches/{/source/invoice-import/batch/@id}/invoice-imports/">
 						<xsl:value-of select="'Invoice Imports'" />
 					</a>
 					&gt;
@@ -100,7 +86,7 @@
 								<th>Problem</th>
 								<th>Reference</th>
 								<th>Account Reference</th>
-								<th>MPAN Text</th>
+								<th>MPANs</th>
 								<th>Issue Date</th>
 								<th>Start Date</th>
 								<th>Finish Date</th>
@@ -171,7 +157,7 @@
 									</td>
 									<td>
 										<xsl:value-of
-											select="@mpan-text" />
+											select="@mpans" />
 									</td>
 									<td>
 										<xsl:value-of
@@ -195,7 +181,7 @@
 										select="register-read-raw">
 										<td>
 											<xsl:value-of
-												select="@mpan" />
+												select="@mpan-core" />
 										</td>
 										<td>
 											<xsl:value-of
@@ -305,7 +291,7 @@
 							<tr>
 								<th>Reference</th>
 								<th>Account Reference</th>
-								<th>MPAN Text</th>
+								<th>MPANs</th>
 								<th>Issue Date</th>
 								<th>Start Date</th>
 								<th>Finish Date</th>
@@ -371,7 +357,7 @@
 									</td>
 									<td>
 										<xsl:value-of
-											select="@mpan-text" />
+											select="@mpans" />
 									</td>
 									<td>
 										<xsl:value-of
@@ -395,7 +381,7 @@
 										select="register-read-raw">
 										<td>
 											<xsl:value-of
-												select="@mpan" />
+												select="@mpan-core" />
 										</td>
 										<td>
 											<xsl:value-of

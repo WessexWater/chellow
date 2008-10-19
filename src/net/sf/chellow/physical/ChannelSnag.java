@@ -123,8 +123,8 @@ public class ChannelSnag extends SnagDateBounded {
 		Document doc = MonadUtils.newSourceDocument();
 		Element sourceElement = doc.getDocumentElement();
 		sourceElement.appendChild(toXml(doc, new XmlTree("contract",
-				new XmlTree("provider").put("organization")).put("channel",
-				new XmlTree("supplyGeneration", new XmlTree("supply")))));
+				new XmlTree("party")).put("channel", new XmlTree(
+				"supplyGeneration", new XmlTree("supply")))));
 		return doc;
 	}
 

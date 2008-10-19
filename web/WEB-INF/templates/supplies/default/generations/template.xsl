@@ -4,25 +4,18 @@
 	<xsl:output method="html" encoding="US-ASCII"
 		doctype-public="-//W3C//DTD HTML 4.01//EN"
 		doctype-system="http://www.w3.org/TR/html4/strict.dtd" indent="yes" />
-
 	<xsl:template match="/">
 		<html>
 			<head>
 				<link rel="stylesheet" type="text/css"
 					href="{/source/request/@context-path}/style/" />
-
 				<title>
-					Chellow &gt; Organizations &gt;
-					<xsl:value-of
-						select="/source/supply-generations/supply/org/@name" />
-					&gt; Supplies &gt;
+					Chellow &gt; Supplies &gt;
 					<xsl:value-of
 						select="/source/supply-generations/supply/@id" />
 					&gt; Generations &gt;
 				</title>
-
 			</head>
-
 			<body>
 				<p>
 					<a href="{/source/request/@context-path}/">
@@ -31,23 +24,13 @@
 						<span class="logo">Chellow</span>
 					</a>
 					&gt;
-					<a href="{/source/request/@context-path}/orgs/">
-						<xsl:value-of select="'Organizations'" />
-					</a>
-					&gt;
 					<a
-						href="{/source/request/@context-path}/orgs/{/source/supply-generations/supply/org/@id}/">
-						<xsl:value-of
-							select="/source/supply-generations/supply/org/@name" />
-					</a>
-					&gt;
-					<a
-						href="{/source/request/@context-path}/orgs/{/source/supply-generations/supply/org/@id}/supplies/">
+						href="{/source/request/@context-path}/supplies/">
 						<xsl:value-of select="'Supplies'" />
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/orgs/{/source/supply-generations/supply/org/@id}/supplies/{/source/supply-generations/supply/@id}/">
+						href="{/source/request/@context-path}/supplies/{/source/supply-generations/supply/@id}/">
 						<xsl:value-of
 							select="/source/supply-generations/supply/@id" />
 					</a>

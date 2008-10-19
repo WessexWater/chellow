@@ -12,10 +12,7 @@
 					href="{/source/request/@context-path}/style/" />
 
 				<title>
-					Chellow &gt; Organizations &gt;
-					<xsl:value-of
-						select="/source/hh-data/channel/supply-generation/supply/org/@name" />
-					&gt; Supplies &gt;
+					Chellow &gt; Supplies &gt;
 					<xsl:value-of
 						select="/source/hh-data/channel/supply-generation/supply/@id" />
 					&gt; Supply Generations &gt;
@@ -34,45 +31,35 @@
 						<span class="logo">Chellow</span>
 					</a>
 					&gt;
-					<a href="{/source/request/@context-path}/orgs/">
-						<xsl:value-of select="'Organizations'" />
-					</a>
-					&gt;
 					<a
-						href="{/source/request/@context-path}/orgs/{/source/hh-data/channel/supply-generation/supply/org/@id}/">
-						<xsl:value-of
-							select="/source/hh-data/channel/supply-generation/supply/org/@name" />
-					</a>
-					&gt;
-					<a
-						href="{/source/request/@context-path}/orgs/{/source/hh-data/channel/supply-generation/supply/org/@id}/supplies/">
+						href="{/source/request/@context-path}/supplies/">
 						<xsl:value-of select="'Supplies'" />
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/orgs/{/source/hh-data/channel/supply-generation/supply/org/@id}/supplies/{/source/hh-data/channel/supply-generation/supply/@id}/">
+						href="{/source/request/@context-path}/supplies/{/source/hh-data/channel/supply-generation/supply/@id}/">
 						<xsl:value-of
 							select="/source/hh-data/channel/supply-generation/supply/@id" />
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/orgs/{/source/hh-data/channel/supply-generation/supply/org/@id}/supplies/{/source/hh-data/channel/supply-generation/supply/@id}/generations/">
+						href="{/source/request/@context-path}/supplies/{/source/hh-data/channel/supply-generation/supply/@id}/generations/">
 						<xsl:value-of select="'Generations'" />
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/orgs/{/source/hh-data/channel/supply-generation/supply/org/@id}/supplies/{/source/hh-data/channel/supply-generation/supply/@id}/generations/{/source/hh-data/channel/supply-generation/@id}/">
+						href="{/source/request/@context-path}/supplies/{/source/hh-data/channel/supply-generation/supply/@id}/generations/{/source/hh-data/channel/supply-generation/@id}/">
 						<xsl:value-of
 							select="/source/hh-data/channel/supply-generation/@id" />
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/orgs/{/source/hh-data/channel/supply-generation/supply/org/@id}/supplies/{/source/hh-data/channel/supply-generation/supply/@id}/generations/{/source/hh-data/channel/supply-generation/@id}/channels/">
+						href="{/source/request/@context-path}/supplies/{/source/hh-data/channel/supply-generation/supply/@id}/generations/{/source/hh-data/channel/supply-generation/@id}/channels/">
 						<xsl:value-of select="'Channels'" />
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/orgs/{/source/hh-data/channel/supply-generation/supply/org/@id}/supplies/{/source/hh-data/channel/supply-generation/supply/@id}/generations/{/source/hh-data/channel/supply-generation/@id}/channels/{/source/hh-data/channel/@id}/">
+						href="{/source/request/@context-path}/supplies/{/source/hh-data/channel/supply-generation/supply/@id}/generations/{/source/hh-data/channel/supply-generation/@id}/channels/{/source/hh-data/channel/@id}/">
 						<xsl:value-of
 							select="/source/hh-data/channel/@id" />
 					</a>
@@ -152,7 +139,6 @@
 													select="/source/request/parameter[@name='hh-finish-date-year']/value/text()" />
 											</xsl:attribute>
 										</xsl:when>
-
 										<xsl:otherwise>
 											<xsl:attribute
 												name="value">
@@ -162,7 +148,6 @@
 										</xsl:otherwise>
 									</xsl:choose>
 								</input>
-
 								-
 								<select name="hh-finish-date-month">
 									<xsl:for-each
@@ -193,7 +178,6 @@
 										</option>
 									</xsl:for-each>
 								</select>
-
 								-
 								<select name="hh-finish-date-day">
 									<xsl:for-each

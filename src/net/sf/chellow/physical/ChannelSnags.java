@@ -73,15 +73,13 @@ public class ChannelSnags extends EntityList {
 		Element source = doc.getDocumentElement();
 		Element snagsElement = toXml(doc);
 		source.appendChild(snagsElement);
-		snagsElement.appendChild(hhdcContract.toXml(doc,
-				new XmlTree("provider").put("organization")));
-		List<ChannelSnag> snagsChannel = (List<ChannelSnag>) Hiber
+		snagsElement.appendChild(hhdcContract.toXml(doc, new XmlTree("party")));
+		for (ChannelSnag snag : (List<ChannelSnag>) Hiber
 				.session()
 				.createQuery(
-						"from ChannelSnag snag where snag.dateResolved is null and snag.contract = :contract order by snag.channel.supplyGeneration.supply.id, snag.channel.isImport, snag.channel.isKwh, snag.description, snag.startDate.date")
+						"from ChannelSnag snag where snag.dateResolved is null and snag.contract = :contract order by snag.channel.supplyGeneration.supply.id, snag.channel.supplyGeneration.id, snag.channel.isImport, snag.channel.isKwh, snag.description, snag.startDate.date")
 				.setEntity("contract", hhdcContract).setMaxResults(PAGE_SIZE)
-				.list();
-		for (ChannelSnag snag : snagsChannel) {
+				.list()) {
 			snagsElement.appendChild(snag.toXml(doc, new XmlTree("channel",
 					new XmlTree("supplyGeneration", new XmlTree("supply")))));
 		}

@@ -243,10 +243,8 @@ public class InvoiceImport extends Thread implements Urlable, XmlDescriber {
 		Element source = doc.getDocumentElement();
 		Element processElement = toXml(doc);
 		source.appendChild(processElement);
-		processElement.appendChild(getBatch().toXml(
-				doc,
-				new XmlTree("contract", new XmlTree("provider")
-						.put("organization"))));
+		processElement.appendChild(getBatch().toXml(doc,
+				new XmlTree("contract", new XmlTree("party"))));
 		inv.sendOk(doc);
 	}
 

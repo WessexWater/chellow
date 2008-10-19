@@ -10,11 +10,7 @@
 			<head>
 				<link rel="stylesheet" type="text/css"
 					href="{/source/request/@context-path}/style/" />
-				<title>
-					Chellow &gt; Organizations &gt;
-					<xsl:value-of select="/source/org/@name" />
-					&gt; Supplies
-				</title>
+				<title>Chellow &gt; Supplies</title>
 			</head>
 			<body>
 				<xsl:if test="//message">
@@ -31,15 +27,6 @@
 						<img
 							src="{/source/request/@context-path}/logo/" />
 						<span class="logo">Chellow</span>
-					</a>
-					&gt;
-					<a href="{/source/request/@context-path}/orgs/">
-						Organizations
-					</a>
-					&gt;
-					<a
-						href="{/source/request/@context-path}/orgs/{/source/org/@id}/">
-						<xsl:value-of select="/source/org/@name" />
 					</a>
 					&gt;
 					<xsl:value-of select="'Supplies ['" />
@@ -81,7 +68,7 @@
 									</td>
 									<td>
 										<a
-											href="{/source/request/@context-path}/orgs/{/source/org/@id}/supplies/{supply/@id}/">
+											href="{/source/request/@context-path}/supplies/{supply/@id}/">
 											<xsl:value-of
 												select="supply/@id" />
 										</a>

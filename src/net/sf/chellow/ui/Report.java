@@ -112,6 +112,9 @@ public class Report extends PersistentEntity {
 	public void update(String name, String script, String template) {
 		setName(name);
 		setScript(script);
+		if (template != null && template.trim().length() == 0) {
+			template = null;
+		}
 		setTemplate(template);
 	}
 
@@ -165,16 +168,22 @@ public class Report extends PersistentEntity {
 	}
 
 	public void httpPost(Invocation inv) throws HttpException {
-		String name = inv.getString("name");
-		String script = inv.getString("script");
-		String template = inv.getString("template");
+		if (inv.hasParameter("delete")) {
+			delete();
+			Hiber.commit();
+			inv.sendFound(Chellow.REPORTS_INSTANCE.getUri());
+		} else {
+			String name = inv.getString("name");
+			String script = inv.getString("script");
+			String template = inv.getString("template");
 
-		if (!inv.isValid()) {
-			throw new UserException(document());
+			if (!inv.isValid()) {
+				throw new UserException(document());
+			}
+			update(name, script, template.length() == 0 ? null : template);
+			Hiber.commit();
+			inv.sendOk(document());
 		}
-		update(name, script, template.length() == 0 ? null : template);
-		Hiber.commit();
-		inv.sendOk(document());
 	}
 
 	private Document document() throws HttpException {
@@ -197,5 +206,10 @@ public class Report extends PersistentEntity {
 			templateElement.setTextContent(template);
 		}
 		return element;
+	}
+
+	public void delete() {
+		Hiber.session().delete(this);
+		Hiber.flush();
 	}
 }

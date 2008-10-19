@@ -12,18 +12,13 @@
 					href="{/source/request/@context-path}/style/" />
 
 				<title>
-					Chellow &gt; Organizations &gt;
-					<xsl:value-of
-						select="/source/batch/supplier-contract/org/@name" />
-					&gt; Supplier Contracts &gt;
+					Chellow &gt; Supplier Contracts &gt;
 					<xsl:value-of
 						select="/source/batch/supplier-contract/@name" />
 					&gt; Batches &gt;
 					<xsl:value-of select="/source/batch/@code" />
 				</title>
-
 			</head>
-
 			<body>
 				<xsl:if test="//message">
 					<ul>
@@ -34,7 +29,6 @@
 						</xsl:for-each>
 					</ul>
 				</xsl:if>
-
 				<p>
 					<a href="{/source/request/@context-path}/">
 						<img
@@ -42,29 +36,19 @@
 						<span class="logo">Chellow</span>
 					</a>
 					&gt;
-					<a href="{/source/request/@context-path}/orgs/">
-						<xsl:value-of select="'Organizations'" />
-					</a>
-					&gt;
 					<a
-						href="{/source/request/@context-path}/orgs/{/source/batch/supplier-contract/org/@id}/">
-						<xsl:value-of
-							select="/source/batch/supplier-contract/org/@name" />
-					</a>
-					&gt;
-					<a
-						href="{/source/request/@context-path}/orgs/{/source/batch/supplier-contract/org/@id}/supplier-contracts/">
+						href="{/source/request/@context-path}/supplier-contracts/">
 						<xsl:value-of select="'Supplier Contracts'" />
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/orgs/{/source/batch/supplier-contract/org/@id}/supplier-contracts/{/source/batch/supplier-contract/@id}/">
+						href="{/source/request/@context-path}/supplier-contracts/{/source/batch/supplier-contract/@id}/">
 						<xsl:value-of
 							select="/source/batch/supplier-contract/@name" />
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/orgs/{/source/batch/supplier-contract/org/@id}/supplier-contracts/{/source/batch/supplier-contract/@id}/batches/">
+						href="{/source/request/@context-path}/supplier-contracts/{/source/batch/supplier-contract/@id}/batches/">
 						<xsl:value-of select="'Batches'" />
 					</a>
 					&gt;

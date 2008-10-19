@@ -4,24 +4,18 @@
 	<xsl:output method="html" encoding="US-ASCII"
 		doctype-public="-//W3C//DTD HTML 4.01//EN"
 		doctype-system="http://www.w3.org/TR/html4/strict.dtd" indent="yes" />
-
 	<xsl:template match="/">
 		<html>
 			<head>
 				<link rel="stylesheet" type="text/css"
 					href="{/source/request/@context-path}/style/" />
 				<title>
-					Chellow &gt; Organizations &gt;
-					<xsl:value-of
-						select="/source/hh-data-imports/hhdc-contract/org/@name" />
-					&gt; HHDC Contracts
+					Chellow &gt; HHDC Contracts
 					<xsl:value-of
 						select="/source/hh-data-imports/hhdc-contract/@id" />
 					&gt; HH Data Imports
 				</title>
-
 			</head>
-
 			<body>
 				<p>
 					<a href="{/source/request/@context-path}/">
@@ -30,23 +24,13 @@
 						<span class="logo">Chellow</span>
 					</a>
 					&gt;
-					<a href="{/source/request/@context-path}/orgs/">
-						<xsl:value-of select="'Organizations'" />
-					</a>
-					&gt;
 					<a
-						href="{/source/request/@context-path}/orgs/{/source/hh-data-imports/hhdc-contract/org/@id}/">
-						<xsl:value-of
-							select="/source/hh-data-imports/hhdc-contract/org/@name" />
-					</a>
-					&gt;
-					<a
-						href="{/source/request/@context-path}/orgs/{/source/hh-data-imports/hhdc-contract/org/@id}/hhdc-contracts/">
+						href="{/source/request/@context-path}/hhdc-contracts/">
 						<xsl:value-of select="'HHDC Contracts'" />
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/orgs/{/source/hh-data-imports/hhdc-contract/org/@id}/hhdc-contracts/{/source/hh-data-imports/hhdc-contract/@id}/">
+						href="{/source/request/@context-path}/hhdc-contracts/{/source/hh-data-imports/hhdc-contract/@id}/">
 						<xsl:value-of
 							select="/source/hh-data-imports/hhdc-contract/@name" />
 					</a>
@@ -78,7 +62,8 @@
 							</xsl:for-each>
 						</ul>
 						<br />
-						<xsl:if test="//message[not(../../hh-data-import)]">
+						<xsl:if
+							test="//message[not(../../hh-data-import)]">
 							<ul>
 								<xsl:for-each select="//message">
 									<li>
@@ -103,7 +88,6 @@
 										name="import-file" size="45"
 										value="{/source/request/parameter[@name = 'import-file']}" />
 								</label>
-
 								<input type="submit" value="Import" />
 							</fieldset>
 						</form>

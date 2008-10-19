@@ -1,13 +1,16 @@
 package net.sf.chellow.ui;
 
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.List;
+import javax.servlet.http.HttpServletResponse;
 
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
+import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Invocation;
 import net.sf.chellow.monad.MonadUtils;
 import net.sf.chellow.monad.Urlable;
-import net.sf.chellow.monad.UserException;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
 import net.sf.chellow.physical.EntityList;
@@ -89,23 +92,53 @@ public class Reports extends EntityList {
 
 	@SuppressWarnings("unchecked")
 	public void httpGet(Invocation inv) throws HttpException {
+		if (inv.hasParameter("view")) {
+			inv.getResponse().setStatus(HttpServletResponse.SC_OK);
+			inv.getResponse().setContentType("text/plain");
+			inv.getResponse().setHeader("Content-Disposition", "filename=reports.xml;");
+			PrintWriter pw = null;
+			try {
+				pw = inv.getResponse().getWriter();
+			} catch (IOException e) {
+				throw new InternalException(e);
+			}
+			pw.println("<?xml version=\"1.0\"?>");
+			pw.println("<csv>");
+			pw.println("  <line>");
+			pw.println("    <value>action</value>");
+			pw.println("    <value>type</value>");
+			pw.println("  </line>");
+			pw.flush();
+			for (Report report : (List<Report>) Hiber.session().createQuery("from Report report where report.name like '0 %' order by report.id").list()) {
+			    pw.println("  <line>");
+			    pw.println("    <value>insert</value>");
+			    pw.println("    <value>report</value>");
+			    pw.println("    <value>" + report.getName() + "</value>");
+			    pw.println("    <value><![CDATA[" + report.getScript() + "]]></value>");
+			    pw.print("    <value><![CDATA[");
+			    if (report.getTemplate() != null) {
+			        pw.print(report.getTemplate());
+			    }
+			    pw.println("]]></value>");
+			    pw.println("  </line>");
+			}
+			pw.println("</csv>");
+			pw.close();
+		} else {
 		inv.sendOk(document());
+		}
 	}
 
 	public void httpPost(Invocation inv) throws HttpException {
 		String name = inv.getString("name");
-		String script = inv.getString("script");
-
-		if (!inv.isValid()) {
-			throw new UserException(document());
+		try {
+			Report report = Report.insertReport(name, "", null);
+			Hiber.commit();
+			inv.sendCreated(document(), report.getUri());
+		} catch (HttpException e) {
+			e.setDocument(document());
+			throw e;
 		}
-		String template = null;
-		if (inv.hasParameter("has-template")) {
-			template = inv.getString("template");
-		}
-		Report report = Report.insertReport(name, script, template);
-		Hiber.commit();
-		inv.sendCreated(report.getUri());
 	}
 
 	public Urlable getChild(UriPathElement uriId) throws HttpException {

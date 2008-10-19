@@ -4,25 +4,19 @@
 	<xsl:output method="html" encoding="US-ASCII"
 		doctype-public="-//W3C//DTD HTML 4.01//EN"
 		doctype-system="http://www.w3.org/TR/html4/strict.dtd" indent="yes" />
-
 	<xsl:template match="/">
 		<html>
 			<head>
 				<link rel="stylesheet" type="text/css"
 					href="{/source/request/@context-path}/style/" />
-
 				<title>
-					Chellow &gt; Organizations &gt;
-					<xsl:value-of
-						select="/source/accounts/supplier-contract/org/@name" />
+					Chellow
 					&gt; Supplier Contracts &gt;
 					<xsl:value-of
 						select="/source/accounts/supplier-contract/@name" />
 					&gt; Accounts
 				</title>
-
 			</head>
-
 			<body>
 				<p>
 					<a href="{/source/request/@context-path}/">
@@ -31,29 +25,19 @@
 						<span class="logo">Chellow</span>
 					</a>
 					&gt;
-					<a href="{/source/request/@context-path}/orgs/">
-						<xsl:value-of select="'Organizations'" />
-					</a>
-					&gt;
 					<a
-						href="{/source/request/@context-path}/orgs/{/source/accounts/supplier-contract/org/@id}/">
-						<xsl:value-of
-							select="/source/accounts/supplier-contract/org/@name" />
-					</a>
-					&gt;
-					<a
-						href="{/source/request/@context-path}/orgs/{/source/accounts/supplier-contract/org/@id}/supplier-contracts/">
+						href="{/source/request/@context-path}/supplier-contracts/">
 						<xsl:value-of select="'Supplier Contracts'" />
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/orgs/{/source/accounts/supplier-contract/org/@id}/supplier-contracts/{/source/accounts/supplier-contract/@id}/">
+						href="{/source/request/@context-path}/supplier-contracts/{/source/accounts/supplier-contract/@id}/">
 						<xsl:value-of
 							select="/source/accounts/supplier-contract/@name" />
 					</a>
 					&gt; <xsl:value-of select="'Accounts ['" />
 					<a
-						href="{/source/request/@context-path}/orgs/{/source/accounts/supplier-contract/org/@id}/reports/1/screen/output/">
+						href="{/source/request/@context-path}/reports/1/screen/output/">
 						<xsl:value-of select="'view'" />
 					</a>
 					<xsl:value-of select="']'" />

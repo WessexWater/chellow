@@ -4,7 +4,6 @@
 	<xsl:output method="html" encoding="US-ASCII"
 		doctype-public="-//W3C//DTD HTML 4.01//EN"
 		doctype-system="http://www.w3.org/TR/html4/strict.dtd" indent="yes" />
-
 	<xsl:template match="/">
 		<html>
 			<head>
@@ -12,17 +11,13 @@
 					href="{/source/request/@context-path}/style/" />
 
 				<title>
-					Chellow &gt; Organizations &gt;
-					<xsl:value-of
-						select="/source/site-snag/hhdc-contract/org/@name" />
-					&gt; HHDC Contracts &gt;
+					Chellow &gt; HHDC Contracts &gt;
 					<xsl:value-of
 						select="/source/site-snag/hhdc-contract/@name" />
 					&gt; Site Snags &gt;
 					<xsl:value-of select="/source/site-snag/@id" />
 				</title>
 			</head>
-
 			<body>
 				<xsl:if test="//message">
 					<ul>
@@ -40,33 +35,24 @@
 						<span class="logo">Chellow</span>
 					</a>
 					&gt;
-					<a href="{/source/request/@context-path}/orgs/">
-						<xsl:value-of select="'Organizations'" />
+					<a
+						href="{/source/request/@context-path}/hhdc-contracts/">
+						<xsl:value-of select="'HHDC Contracts'" />
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/orgs/{/source/site-snag/hhdc-contract/org/@id}/">
-						<xsl:value-of
-							select="/source/site-snag/hhdc-contract/org/@name" />
-					</a>
-					&gt;
-					<a
-						href="{/source/request/@context-path}/orgs/{/source/site-snag/hhdc-contract/org/@id}/hhdc-contracts/">
-						<xsl:value-of select="'HHDC Contracts'"/>
-					</a>
-					&gt;
-					<a
-						href="{/source/request/@context-path}/orgs/{/source/site-snag/hhdc-contract/org/@id}/hhdc-contracts/{/source/site-snag/hhdc-contract/@id}/">
+						href="{/source/request/@context-path}/hhdc-contracts/{/source/site-snag/hhdc-contract/@id}/">
 						<xsl:value-of
 							select="/source/site-snag/hhdc-contract/@name" />
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/orgs/{/source/site-snag/hhdc-contract/org/@id}/hhdc-contracts/{/source/site-snag/hhdc-contract/@id}/site-snags/">
+						href="{/source/request/@context-path}/hhdc-contracts/{/source/site-snag/hhdc-contract/@id}/site-snags/">
 						Site Snags
 					</a>
 					&gt;
-					<xsl:value-of select="concat(/source/site-snag/@id, ' [')" />
+					<xsl:value-of
+						select="concat(/source/site-snag/@id, ' [')" />
 					<a
 						href="{/source/request/@context-path}/orgs/{/source/site-snag/hhdc-contract/org/@id}/reports/59/screen/output/?snag-id={/source/site-snag/@id}">
 						<xsl:value-of select="'view'" />
@@ -109,11 +95,10 @@
 
 					<li>
 						<a
-							href="{/source/request/@context-path}/orgs/{/source/site-snag/hhdc-contract/org/@id}/sites/{/source/site-snag/site/@id}/">
+							href="{/source/request/@context-path}/sites/{/source/site-snag/site/@id}/">
 							Site
 						</a>
 					</li>
-
 					<li>
 						Start Date:
 						<xsl:value-of
@@ -135,10 +120,12 @@
 									<xsl:choose>
 										<xsl:when
 											test="/source/site-snag/@is-ignored='true'">
-											<xsl:value-of select="'false'"/>
+											<xsl:value-of
+												select="'false'" />
 										</xsl:when>
 										<xsl:otherwise>
-											<xsl:value-of select="'true'"/>
+											<xsl:value-of
+												select="'true'" />
 										</xsl:otherwise>
 									</xsl:choose>
 								</xsl:attribute>

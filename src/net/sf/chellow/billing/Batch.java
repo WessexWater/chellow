@@ -135,7 +135,7 @@ public class Batch extends PersistentEntity {
 		Document doc = MonadUtils.newSourceDocument();
 		Element source = doc.getDocumentElement();
 		source.appendChild(toXml(doc, new XmlTree("contract", new XmlTree(
-				"provider").put("organization"))));
+				"party"))));
 		return doc;
 	}
 
@@ -177,49 +177,43 @@ public class Batch extends PersistentEntity {
 		Hiber.session().save(invoice);
 		Hiber.flush();
 		/*
-		for (MpanRaw rawMpan : rawInvoice.getMpans()) {
-			MpanCore mpanCore = MpanCore.getMpanCore(rawMpan
-					.getMpanCoreRaw());
-			List<Mpan> candidateMpans = (List<Mpan>) Hiber
-					.session()
-					.createQuery(
-							"from Mpan mpan where mpan.mpanCore = :mpanCore and mpan.mpanTop.pc = :pc and mpan.mpanTop.mtc = :mtc and mpan.mpanTop.llfc = :llfc and mpan.supplyGeneration.startDate.date <= :finishDate and (mpan.supplyGeneration.finishDate.date is null or mpan.supplyGeneration.finishDate.date >= :startDate) order by mpan.supplyGeneration.startDate.date desc")
-					.setEntity("mpanCore", mpanCore).setEntity("pc",
-							rawMpan.getPc()).setEntity("mtc", rawMpan.getMtc())
-					.setEntity("llfc", rawMpan.getLlfc()).setTimestamp(
-							"finishDate", rawInvoice.getFinishDate().getDate())
-					.setTimestamp("startDate",
-							rawInvoice.getStartDate().getDate()).list();
-			if (candidateMpans.isEmpty()) {
-				throw new UserException("Problem with invoice '"
-						+ rawInvoice.getReference()
-						+ ". The invoice needs to be attached to the MPANs "
-						+ rawInvoice.getMpanText() + " but the MPAN " + rawMpan
-						+ " cannot be found between "
-						+ " the half-hour ending " + rawInvoice.getStartDate()
-						+ " and the half-hour ending "
-						+ rawInvoice.getFinishDate() + ".");
-			}
-			//invoice.insertInvoiceMpan(candidateMpans.get(0));
-		}
-		*/
-		Account account = getContract().getAccount(rawInvoice.getAccountReference());
+		 * for (MpanRaw rawMpan : rawInvoice.getMpans()) { MpanCore mpanCore =
+		 * MpanCore.getMpanCore(rawMpan .getMpanCoreRaw()); List<Mpan>
+		 * candidateMpans = (List<Mpan>) Hiber .session() .createQuery( "from
+		 * Mpan mpan where mpan.mpanCore = :mpanCore and mpan.mpanTop.pc = :pc
+		 * and mpan.mpanTop.mtc = :mtc and mpan.mpanTop.llfc = :llfc and
+		 * mpan.supplyGeneration.startDate.date <= :finishDate and
+		 * (mpan.supplyGeneration.finishDate.date is null or
+		 * mpan.supplyGeneration.finishDate.date >= :startDate) order by
+		 * mpan.supplyGeneration.startDate.date desc") .setEntity("mpanCore",
+		 * mpanCore).setEntity("pc", rawMpan.getPc()).setEntity("mtc",
+		 * rawMpan.getMtc()) .setEntity("llfc", rawMpan.getLlfc()).setTimestamp(
+		 * "finishDate", rawInvoice.getFinishDate().getDate())
+		 * .setTimestamp("startDate",
+		 * rawInvoice.getStartDate().getDate()).list(); if
+		 * (candidateMpans.isEmpty()) { throw new UserException("Problem with
+		 * invoice '" + rawInvoice.getReference() + ". The invoice needs to be
+		 * attached to the MPANs " + rawInvoice.getMpanText() + " but the MPAN " +
+		 * rawMpan + " cannot be found between " + " the half-hour ending " +
+		 * rawInvoice.getStartDate() + " and the half-hour ending " +
+		 * rawInvoice.getFinishDate() + "."); }
+		 * //invoice.insertInvoiceMpan(candidateMpans.get(0)); }
+		 */
+		Account account = getContract().getAccount(
+				rawInvoice.getAccountReference());
 		Set<String> accountMpanStrings = new HashSet<String>();
-		for (Mpan mpan : account.getMpans(invoice.getStartDate(), invoice.getFinishDate())) {
+		for (Mpan mpan : account.getMpans(invoice.getStartDate(), invoice
+				.getFinishDate())) {
 			accountMpanStrings.add(mpan.toString());
 		}
-		Set<String> invoiceMpanStrings = new HashSet<String>();
-		for (String mpanStr : rawInvoice.getMpanStrings()) {
-			invoiceMpanStrings.add(Mpan.canonicalize(mpanStr));
-		}
-		if (!accountMpanStrings.equals(invoiceMpanStrings)) {
+		if (!Mpan.isEqual(accountMpanStrings, rawInvoice.getMpanStrings())) {
 			throw new UserException("Problem with account '" + reference
 					+ "' invoice '" + invoice.getReference()
 					+ "' from the half-hour ending " + invoice.getStartDate()
 					+ " to the half-hour ending " + invoice.getFinishDate()
 					+ ". This invoice has MPANs " + rawInvoice.getMpanStrings()
-					+ " but the account in Chellow has MPANs '" + accountMpanStrings
-					+ "'.");
+					+ " but the account in Chellow has MPANs '"
+					+ accountMpanStrings + "'.");
 		}
 		Hiber.flush();
 		account.attach(invoice);

@@ -27,7 +27,10 @@
 <hibernate-mapping package="net.sf.chellow.billing">
 	<joined-subclass extends="Contract" name="HhdcContract"
 		table="hhdc_contract" lazy="true">
-		<key column="contract_id" foreign-key="fkey_hhdc_contract_contract" />
+		<key column="contract_id"
+			foreign-key="fkey_hhdc_contract_contract" />
+		<many-to-one name="party" class="Provider" column="provider_id"
+			foreign-key="fkey_hhdc_contract_provider" not-null="true" />
 		<component name="frequency"
 			class="net.sf.chellow.physical.ContractFrequency">
 			<property name="integer" column="frequency" type="integer"
