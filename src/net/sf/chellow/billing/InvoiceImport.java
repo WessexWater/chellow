@@ -48,7 +48,8 @@ public class InvoiceImport extends Thread implements Urlable, XmlDescriber {
 	}
 	private boolean halt = false;
 
-	private List<String> messages = new ArrayList<String>();
+	private List<String> messages = Collections
+			.synchronizedList(new ArrayList<String>());
 
 	private List<Map<InvoiceRaw, String>> failedInvoices = Collections
 			.synchronizedList(new ArrayList<Map<InvoiceRaw, String>>());

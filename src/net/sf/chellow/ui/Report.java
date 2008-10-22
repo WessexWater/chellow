@@ -45,7 +45,6 @@ public class Report extends PersistentEntity {
 	}
 
 	public static void loadReports(ServletContext context) throws HttpException {
-
 		try {
 			GeneralImport process = new GeneralImport(null,
 					new InputStreamReader(context.getResource(
@@ -164,7 +163,11 @@ public class Report extends PersistentEntity {
 	}
 
 	public void httpGet(Invocation inv) throws HttpException {
-		inv.sendOk(document());
+		Document doc = MonadUtils.newSourceDocument();
+		Element source = doc.getDocumentElement();
+		Element reportElement = toXml(doc);
+		source.appendChild(reportElement);
+		inv.sendOk(doc);
 	}
 
 	public void httpPost(Invocation inv) throws HttpException {
@@ -177,21 +180,31 @@ public class Report extends PersistentEntity {
 			String script = inv.getString("script");
 			String template = inv.getString("template");
 
-			if (!inv.isValid()) {
-				throw new UserException(document());
+			script = script.replace("\r", "").replace("\t", "    ");
+			template = template.length() == 0 ? null : template.replace("\r", "")
+					.replace("\t", "    "); 
+			Document doc = MonadUtils.newSourceDocument();
+			Element source = doc.getDocumentElement();
+			Element scriptElement = doc.createElement("script");
+			source.appendChild(scriptElement);
+			scriptElement.setTextContent(script);
+			source.setAttribute("script", script);
+			if (template != null) {
+				Element templateElement = doc.createElement("template");
+				source.appendChild(templateElement);
+				templateElement.setTextContent(template);
 			}
-			update(name, script, template.length() == 0 ? null : template);
+			if (!inv.isValid()) {
+				Element reportElement = toXml(doc);
+				source.appendChild(reportElement);
+				throw new UserException(doc);
+			}
+			update(name, script, template);
 			Hiber.commit();
-			inv.sendOk(document());
+			Element reportElement = toXml(doc);
+			source.appendChild(reportElement);
+			inv.sendOk(doc);
 		}
-	}
-
-	private Document document() throws HttpException {
-		Document doc = MonadUtils.newSourceDocument();
-		Element source = doc.getDocumentElement();
-		Element reportElement = toXml(doc);
-		source.appendChild(reportElement);
-		return doc;
 	}
 
 	public Element toXml(Document doc) throws HttpException {

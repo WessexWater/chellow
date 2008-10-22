@@ -95,7 +95,8 @@ public class Reports extends EntityList {
 		if (inv.hasParameter("view")) {
 			inv.getResponse().setStatus(HttpServletResponse.SC_OK);
 			inv.getResponse().setContentType("text/plain");
-			inv.getResponse().setHeader("Content-Disposition", "filename=reports.xml;");
+			inv.getResponse().setHeader("Content-Disposition",
+					"filename=reports.xml;");
 			PrintWriter pw = null;
 			try {
 				pw = inv.getResponse().getWriter();
@@ -109,23 +110,31 @@ public class Reports extends EntityList {
 			pw.println("    <value>type</value>");
 			pw.println("  </line>");
 			pw.flush();
-			for (Report report : (List<Report>) Hiber.session().createQuery("from Report report where report.name like '0 %' order by report.id").list()) {
-			    pw.println("  <line>");
-			    pw.println("    <value>insert</value>");
-			    pw.println("    <value>report</value>");
-			    pw.println("    <value>" + report.getName() + "</value>");
-			    pw.println("    <value><![CDATA[" + report.getScript() + "]]></value>");
-			    pw.print("    <value><![CDATA[");
-			    if (report.getTemplate() != null) {
-			        pw.print(report.getTemplate());
-			    }
-			    pw.println("]]></value>");
-			    pw.println("  </line>");
+			for (Report report : (List<Report>) Hiber
+					.session()
+					.createQuery(
+							"from Report report where report.name like '0 %' order by report.id")
+					.list()) {
+				pw.println("  <line>");
+				pw.println("    <value>insert</value>");
+				pw.println("    <value>report</value>");
+				pw.println("    <value>" + report.getName() + "</value>");
+				pw.println("    <value><![CDATA["
+						+ report.getScript().replace("<![CDATA[",
+								"&lt;![CDATA[").replace("]]>", "]]&gt;")
+						+ "]]></value>");
+				pw.print("    <value><![CDATA[");
+				if (report.getTemplate() != null) {
+					pw.print(report.getTemplate().replace("<![CDATA[",
+							"&lt;![CDATA[").replace("]]>", "]]&gt;"));
+				}
+				pw.println("]]></value>");
+				pw.println("  </line>");
 			}
 			pw.println("</csv>");
 			pw.close();
 		} else {
-		inv.sendOk(document());
+			inv.sendOk(document());
 		}
 	}
 

@@ -30,16 +30,6 @@
 						</xsl:for-each>
 					</ul>
 				</xsl:if>
-				<ul>
-					<xsl:for-each select="/source/reports/report">
-						<li>
-							<a href="{@id}/">
-								<xsl:value-of select="@id" />
-							</a>
-							<xsl:value-of select="concat(' - ', @name)" />
-						</li>
-					</xsl:for-each>
-				</ul>
 				<xsl:choose>
 					<xsl:when
 						test="/source/response/@status-code = '201'">
@@ -47,12 +37,24 @@
 							The
 							<a
 								href="{/source/request/@context-path}{/source/response/header[@name = 'Location']/@value}">
-								new contract
+								<xsl:value-of select="'new report'" />
 							</a>
 							has been successfully created.
 						</p>
 					</xsl:when>
 					<xsl:otherwise>
+						<ul>
+							<xsl:for-each
+								select="/source/reports/report">
+								<li>
+									<a href="{@id}/">
+										<xsl:value-of select="@id" />
+									</a>
+									<xsl:value-of
+										select="concat(' - ', @name)" />
+								</li>
+							</xsl:for-each>
+						</ul>
 						<br />
 						<form action="." method="post">
 							<fieldset>
@@ -68,7 +70,11 @@
 								<input type="reset" value="Reset" />
 							</fieldset>
 						</form>
-						<p><a href="?view=csv">Download all reports in a CSV XML file.</a></p>
+						<p>
+							<a href="?view=csv">
+								Download all reports in a CSV XML file.
+							</a>
+						</p>
 					</xsl:otherwise>
 				</xsl:choose>
 			</body>

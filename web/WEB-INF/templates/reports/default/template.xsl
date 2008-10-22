@@ -95,7 +95,7 @@
 										<xsl:when
 											test="/source/request/parameter[@name = 'script']/value">
 											<xsl:value-of
-												select="/source/request/parameter[@name = 'script']/value" />
+												select="/source/script/text()" />
 										</xsl:when>
 										<xsl:otherwise>
 											<xsl:value-of
@@ -113,7 +113,7 @@
 										<xsl:when
 											test="/source/request/parameter[@name = 'template']/value">
 											<xsl:value-of
-												select="/source/request/parameter[@name = 'template']/value" />
+												select="/source/template/text()" />
 										</xsl:when>
 										<xsl:otherwise>
 											<xsl:value-of

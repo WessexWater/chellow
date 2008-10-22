@@ -221,8 +221,7 @@ if inv.hasParameter('search-pattern'):
     <value>insert</value>
     <value>report</value>
     <value>0 Site</value>
-    <value><![CDATA[
-from net.sf.chellow.monad import Hiber, XmlTree, UserException
+    <value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree, UserException
 from net.sf.chellow.monad.types import MonadDate
 from java.util import GregorianCalendar, Calendar, TimeZone, Locale, Date
 from net.sf.chellow.physical import Site
@@ -248,19 +247,18 @@ cal = GregorianCalendar(TimeZone.getTimeZone("GMT"), Locale.UK)
 cal.add(Calendar.DAY_OF_MONTH, -1)
 yesterday = MonadDate(cal.getTime())
 yesterday.setLabel('yesterday')
-source.appendChild(yesterday.toXml(doc))
-   ]]></value>
+source.appendChild(yesterday.toXml(doc))]]></value>
     <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
 <xsl:stylesheet version="1.0"
-	xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
-	<xsl:output method="xml" encoding="US-ASCII"
-		doctype-public="-//W3C//DTD XHTML 1.1//EN"
-		doctype-system="http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd"
-		indent="yes" />
+    xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+    <xsl:output method="xml" encoding="US-ASCII"
+        doctype-public="-//W3C//DTD XHTML 1.1//EN"
+        doctype-system="http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd"
+        indent="yes" />
   <xsl:template match="/">
     <html>
       <head>
-        <link rel="stylesheet" type="text/css"  href="{/source/request/@context-path}/orgs/1/reports/9/stream/output/" />
+        <link rel="stylesheet" type="text/css"  href="{/source/request/@context-path}/reports/10/output/" />
           <title>
             Home &gt; Sites &gt;
               <xsl:value-of select="/source/site/@name" />
@@ -275,178 +273,218 @@ source.appendChild(yesterday.toXml(doc))
           <xsl:value-of select="'edit'" /></a>
           <xsl:value-of select="']'" />
         </p>
-	<xsl:if test="//message">
-					<ul>
-						<xsl:for-each select="//message">
-							<li>
-								<xsl:value-of select="@description" />
-							</li>
-						</xsl:for-each>
-					</ul>
-				</xsl:if>
-				<table>
-					<tr>
-						<th>Chellow Id</th>
-						<td>
-							<xsl:value-of select="/source/site/@id" />
-						</td>
-					</tr>
-					<tr>
-						<th>Code</th>
-						<td>
-							<xsl:value-of select="/source/site/@code" />
-						</td>
-					</tr>
-					<tr>
-						<th>Name</th>
-						<td>
-							<xsl:value-of select="/source/site/@name" />
-						</td>
-					</tr>
-				</table>
+    <xsl:if test="//message">
+                    <ul>
+                        <xsl:for-each select="//message">
+                            <li>
+                                <xsl:value-of select="@description" />
+                            </li>
+                        </xsl:for-each>
+                    </ul>
+                </xsl:if>
+                <table>
+                    <tr>
+                        <th>Chellow Id</th>
+                        <td>
+                            <xsl:value-of select="/source/site/@id" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Code</th>
+                        <td>
+                            <xsl:value-of select="/source/site/@code" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Name</th>
+                        <td>
+                            <xsl:value-of select="/source/site/@name" />
+                        </td>
+                    </tr>
+                </table>
+                <table>
+                    <caption>Supplies that power this site</caption>
+                    <thead>
+                        <tr>
+                            <th>Chellow Id</th>
+                            <th>Name</th>
+                            <th>From</th>
+                            <th>To</th>
+                            <th>Source</th>
+                            <th>Import MPAN core</th>
+                            <th>Export MPAN core</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <xsl:for-each
+                            select="/source/site/supply[not(supply-generation[1]/hh-end-date[@label='finish'])]">
+                            <tr>
+                                <td>
+                                    <a
+                                        href="{/source/request/@context-path}/reports/4/output/?supply-id={@id}">
+                                        <xsl:value-of select="@id" />
+                                    </a>
+                                </td>
+                                <td>
+                                    <xsl:value-of select="@name" />
+                                </td>
+                                <td>
+                                    <xsl:value-of
+                                        select="concat(supply-generation[last()]/hh-end-date[@label='start']/@year, '-', supply-generation[last()]/hh-end-date[@label='start']/@month, '-', supply-generation[last()]/hh-end-date[@label='start']/@day)" />
+                                </td>
+                                <td>Ongoing</td>
+                                <td>
+                                    <xsl:value-of select="source/@code" />
+                                </td>
+                                <td>
+                                    <xsl:if
+                                        test="supply-generation/mpan[mpan-top/llfc/@is-import='true']">
+                                        <xsl:value-of
+                                            select="supply-generation/mpan[mpan-top/llfc/@is-import='true']/mpan-core/@core" />
+                                    </xsl:if>
+                                </td>
+                                <td>
+                                    <xsl:if
+                                        test="supply-generation/mpan[mpan-top/llfc/@is-import='false']">
+                                        <xsl:value-of
+                                            select="supply-generation/mpan[mpan-top/llfc/@is-import='false']/mpan-core/@core" />
+                                    </xsl:if>
+                                </td>
+                            </tr>
+                        </xsl:for-each>
+                        <xsl:if
+                            test="/source/site/supply[supply-generation[1]/hh-end-date[@label='finish']]">
+                            <xsl:for-each
+                                select="/source/site/supply[supply-generation[1]/hh-end-date[@label='finish']]">
+                                <tr>
+                                    <td>
+                                        <a
+                                            href="{/source/request/@context-path}/reports/4/output/?supply-id={@id}">
+                                            <xsl:value-of select="@id" />
+                                        </a>
+                                    </td>
+                                    <td>
+                                        <xsl:value-of select="@name" />
+                                    </td>
+                                    <td>
+                                        <xsl:value-of
+                                            select="concat(supply-generation[last()]/hh-end-date[@label='start']/@year, '-', supply-generation[last()]/hh-end-date[@label='start']/@month, '-', supply-generation[last()]/hh-end-date[@label='start']/@day)" />
+                                    </td>
+                                    <td>
+                                        <xsl:value-of
+                                            select="concat(supply-generation[1]/hh-end-date[@label='finish']/@year, '-', supply-generation[1]/hh-end-date[@label='finish']/@month, '-', supply-generation[1]/hh-end-date[@label='finish']/@day)" />
+                                    </td>
+                                    <td>
+                                        <xsl:value-of
 
-				<table>
-					<caption>Supplies that power this site</caption>
-					<thead>
-						<tr>
-							<th>Chellow Id</th>
-							<th>Name</th>
-							<th>From</th>
-							<th>To</th>
-							<th>Source</th>
-							<th>Import MPAN core</th>
-							<th>Export MPAN core</th>
-						</tr>
-					</thead>
-					<tbody>
-						<xsl:for-each
-							select="/source/site/supply[not(supply-generation[1]/hh-end-date[@label='finish'])]">
-							<tr>
-								<td>
-									<a
-										href="{/source/request/@context-path}/reports/4/output/?supply-id={@id}">
-										<xsl:value-of select="@id" />
-									</a>
-								</td>
-								<td>
-									<xsl:value-of select="@name" />
-								</td>
-								<td>
-									<xsl:value-of
-										select="concat(supply-generation[last()]/hh-end-date[@label='start']/@year, '-', supply-generation[last()]/hh-end-date[@label='start']/@month, '-', supply-generation[last()]/hh-end-date[@label='start']/@day)" />
-								</td>
-								<td>Ongoing</td>
-								<td>
-									<xsl:value-of select="source/@code" />
-								</td>
-								<td>
-									<xsl:if
-										test="supply-generation/mpan[mpan-top/llfc/@is-import='true']">
-										<xsl:value-of
-											select="supply-generation/mpan[mpan-top/llfc/@is-import='true']/mpan-core/@core" />
-									</xsl:if>
-								</td>
-								<td>
-									<xsl:if
-										test="supply-generation/mpan[mpan-top/llfc/@is-import='false']">
-										<xsl:value-of
-											select="supply-generation/mpan[mpan-top/llfc/@is-import='false']/mpan-core/@core" />
-									</xsl:if>
-								</td>
-							</tr>
-						</xsl:for-each>
-						<xsl:if
-							test="/source/site/supply[supply-generation[1]/hh-end-date[@label='finish']]">
-							<xsl:for-each
-								select="/source/site/supply[supply-generation[1]/hh-end-date[@label='finish']]">
-								<tr>
-									<td>
-										<a
-											href="{/source/request/@context-path}/reports/4/output/?supply-id={@id}">
-											<xsl:value-of select="@id" />
-										</a>
-									</td>
-									<td>
-										<xsl:value-of select="@name" />
-									</td>
-									<td>
-										<xsl:value-of
-											select="concat(supply-generation[last()]/hh-end-date[@label='start']/@year, '-', supply-generation[last()]/hh-end-date[@label='start']/@month, '-', supply-generation[last()]/hh-end-date[@label='start']/@day)" />
-									</td>
-									<td>
-										<xsl:value-of
-											select="concat(supply-generation[1]/hh-end-date[@label='finish']/@year, '-', supply-generation[1]/hh-end-date[@label='finish']/@month, '-', supply-generation[1]/hh-end-date[@label='finish']/@day)" />
-									</td>
-									<td>
-										<xsl:value-of
-											select="source/@code" />
-									</td>
-									<td>
-										<xsl:if
-											test="supply-generation/mpan[@label='import']">
-											<xsl:value-of
-												select="supply-generation/mpan[@label='import']/mpan-core/@core" />
-										</xsl:if>
-									</td>
-									<td>
-										<xsl:if
-											test="supply-generation/mpan[@label='export']">
-											<xsl:value-of
-												select="supply-generation/mpan[@label='export']/mpan-core/@core" />
-										</xsl:if>
-									</td>
-								</tr>
-							</xsl:for-each>
-						</xsl:if>
-					</tbody>
-				</table>
-				<ul>
-					<li>
-						<a
-							href="{/source/request/@context-path}/orgs/1/reports/4/screen/output/?site-id={/source/site/@id}">
-							<xsl:value-of
-								select="'Graph of site usage'" />
-						</a>
-					</li>
-					<li>
-						<a
-							href="{/source/request/@context-path}/orgs/1/reports/5/screen/output/?site-id={/source/site/@id}">
-							<xsl:value-of select="'Generation Graphs'" />
-						</a>
-					</li>
-					<li>
-						<a
-							href="{/source/request/@context-path}/orgs/1/reports/6/screen/output/?site-id={/source/site/@id}">
-							<xsl:value-of
-								select="'Table of site level monthly kWh, MD kWh etc.'" />
-						</a>
-					</li>
-					<li>
-						<a
-							href="{/source/request/@context-path}/orgs/1/reports/12/screen/output/?site-code={/source/site/@code}&amp;year={/source/date[@label = 'yesterday']/@year}&amp;month={/source/date[@label = 'yesterday']/@month}&amp;day={/source/date[@label='yesterday']/@day}">
-							<xsl:value-of select="'Table of hh data'" />
-						</a>
-					</li>
-					<li>
-						<a
-							href="{/source/request/@context-path}/orgs/1/reports/13/screen/output/?site-id={/source/site/@id}">
-							<xsl:value-of
-								select="'Bulk hh data download'" />
-						</a>
-					</li>
-				</ul>
-			</body>
-		</html>
-	</xsl:template>
-</xsl:stylesheet>
-]]></value>
+
+
+                                            select="source/@code" />
+
+
+
+                                    </td>
+
+
+
+                                    <td>
+
+
+
+                                        <xsl:if
+
+
+
+                                            test="supply-generation/mpan[@label='import']">
+
+
+
+                                            <xsl:value-of
+
+
+
+                                                select="supply-generation/mpan[@label='import']/mpan-core/@core" />
+
+
+
+                                        </xsl:if>
+
+
+
+                                    </td>
+
+
+
+                                    <td>
+
+
+
+                                        <xsl:if
+
+
+
+                                            test="supply-generation/mpan[@label='export']">
+
+
+
+                                            <xsl:value-of
+
+
+
+                                                select="supply-generation/mpan[@label='export']/mpan-core/@core" />
+
+
+
+                                        </xsl:if>
+                                    </td>
+                                </tr>
+                            </xsl:for-each>
+                        </xsl:if>
+                    </tbody>
+                </table>
+
+      <ul>
+        <li><a href="{/source/request/@context-path}/reports/5/output/?site-id={/source/site/@id}"><xsl:value-of select="'Graph of site usage'" /></a>
+         </li>
+         <li><a href="{/source/request/@context-path}/reports/6/output/?site-id={/source/site/@id}">
+         <xsl:value-of select="'Generation Graphs'" />
+                        </a>
+          </li>
+          <li><a href="{/source/request/@context-path}/reports/7/output/?site-id={/source/site/@id}">
+<xsl:value-of select="'Table of site level monthly kWh, MD kWh etc.'" /></a>
+          </li>
+          <li>
+        <a href="{/source/request/@context-path}/orgs/1/reports/12/screen/output/?site-code={/source/site/@code}&amp;year={/source/date[@label = 'yesterday']/@year}&amp;month={/source/date[@label = 'yesterday']/@month}&amp;day={/source/date[@label='yesterday']/@day}">
+
+
+
+                            <xsl:value-of select="'Table of hh data'" />
+
+
+
+                        </a>
+
+          </li>
+
+          <li><a href="{/source/request/@context-path}/orgs/1/reports/13/screen/output/?site-id={/source/site/@id}"><xsl:value-of select="'Bulk hh data download'" /></a>
+
+          </li>
+
+        </ul>
+
+      </body>
+
+    </html>
+
+  </xsl:template>
+
+</xsl:stylesheet>]]></value>
   </line>
   <line>
     <value>insert</value>
     <value>report</value>
     <value>0 Supply</value>
-    <value><![CDATA[
-from net.sf.chellow.monad import Hiber, UserException, XmlTree
+    <value><![CDATA[from net.sf.chellow.monad import Hiber, UserException, XmlTree
 from net.sf.chellow.monad.types import MonadDate
 
 supply_id = inv.getLong("supply-id")
@@ -458,14 +496,14 @@ source.appendChild(MonadDate().toXml(doc))
 ]]></value>
     <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
 <xsl:stylesheet version="1.0"
-	xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
-	<xsl:output method="html" encoding="US-ASCII"
-		doctype-public="-//W3C//DTD HTML 4.01//EN"
-		doctype-system="http://www.w3.org/TR/html4/strict.dtd" indent="yes" />
+    xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+    <xsl:output method="html" encoding="US-ASCII"
+        doctype-public="-//W3C//DTD HTML 4.01//EN"
+        doctype-system="http://www.w3.org/TR/html4/strict.dtd" indent="yes" />
   <xsl:template match="/">
     <html>
       <head>
-        <link rel="stylesheet" type="text/css" href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/9/stream/output/" />
+        <link rel="stylesheet" type="text/css" href="{/source/request/@context-path}/reports/10/output/" />
         <title>
           Home &gt; Supplies &gt; <xsl:value-of select="/source/supply/@id" />
         </title>
@@ -473,780 +511,1839 @@ source.appendChild(MonadDate().toXml(doc))
       <body>
         <p>
           <a href="{/source/request/@context-path}/reports/1/output/">
-	<xsl:value-of select="'Home'" /></a> &gt;
+    <xsl:value-of select="'Home'" /></a> &gt;
           <a href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/49/screen/output/">
         <xsl:value-of select="'Supplies'" />
         </a> &gt;  <xsl:value-of select="concat(/source/supply/@id, ' [')" />
         <a href="{/source/request/@context-path}/supplies/{/source/supply/@id}/">
         <xsl:value-of select="'edit'" /></a>
-	<xsl:value-of select="']'" />
+    <xsl:value-of select="']'" />
         </p>
+          <xsl:if test="//message">
+                    <ul>
+                        <xsl:for-each select="//message">
+                            <li>
+                                <xsl:value-of select="@description" />
+                            </li>
+                        </xsl:for-each>
+                    </ul>
+                </xsl:if>
+                <ul>
+                    <li>
+                        <xsl:value-of
+                            select="concat('Name: ', /source/supply/@name)" />
+                    </li>
+                    <li>
+                        <xsl:value-of
+                            select="concat('Source: ', /source/supply/source/@code, ' - ', /source/supply/source/@name)" />
+                    </li>
+                </ul>
 
-				<xsl:if test="//message">
-					<ul>
-						<xsl:for-each select="//message">
+                <table>
+                    <caption>Generations</caption>
+                    <thead>
+                        <tr>
+                            <th rowspan="2">Id</th>
+                            <th rowspan="2">From</th>
+                            <th rowspan="2">To</th>
+                            <th colspan="3">Import</th>
+                            <th colspan="3">Export</th>
+                        </tr>
+                        <tr>
+                            <th>MPAN</th>
+                            <th>kVA</th>
+                            <th>Supplier Account</th>
+                            <th>MPAN</th>
+                            <th>kVA</th>
+                            <th>Supplier Account</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <xsl:for-each
+                            select="/source/supply/supply-generation">
+                            <tr>
+                                <td>
+                                    <a
+                                        href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/15/screen/output/?supply-generation-id={@id}">
+                                        <xsl:value-of select="@id" />
+                                    </a>
+                                </td>
+                                <td>
+                                    <xsl:value-of
+                                        select="concat(hh-end-date[@label='start']/@year, '-', hh-end-date[@label='start']/@month, '-', hh-end-date[@label='start']/@day)" />
+                                </td>
+                                <td>
+                                    <xsl:choose>
+                                        <xsl:when
+                                            test="hh-end-date[@label='finish']">
+                                            <xsl:value-of
+                                                select="concat(hh-end-date[@label='finish']/@year, '-', hh-end-date[@label='finish']/@month, '-', hh-end-date[@label='finish']/@day)" />
+                                        </xsl:when>
+                                        <xsl:otherwise>
+                                            Ongoing
+                                        </xsl:otherwise>
+                                    </xsl:choose>
+                                </td>
+                                <td>
+                                    <xsl:value-of
+                                        select="concat(mpan[mpan-top/llfc/@is-import='true']/mpan-top/pc/@code, ' ', mpan[mpan-top/llfc/@is-import='true']/mpan-top/mtc/@code, ' ', mpan[mpan-top/llfc/@is-import='true']/llfc/@code, ' ', mpan[mpan-top/llfc/@is-import='true']/mpan-core/@core)" />
+                                </td>
+                                <td>
+                                    <xsl:value-of
+                                        select="mpan[mpan-top/llfc/@is-import='true']/@agreed-supply-capacity" />
+                                </td>
+                                <td>
+                                    <a
+                                        href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/41/screen/output/?account-id={mpan[mpan-top/llfc/@is-import='true']/account[supplier-contract]/@id}">
+                                        <xsl:value-of
+                                            select="mpan[mpan-top/llfc/@is-import='true']/account[supplier-contract]/@reference" />
+                                    </a>
+                                </td>
+                                <td>
+                                    <xsl:value-of
+                                        select="concat(mpan[mpan-top/llfc/@is-import='false']/pc/@code, ' ', mpan[mpan-top/llfc/@is-import='false']/mtc/@code, ' ', mpan[mpan-top/llfc/@is-import='false']/llfc/@code, ' ', mpan[mpan-top/llfc/@is-import='false']/mpan-core/@core)" />
+                                </td>
+                                <td>
+                                    <xsl:value-of
+                                        select="mpan[mpan-top/llfc/@is-import='false']/@agreed-supply-capacity" />
+                                </td>
+                                <td>
+                                    <a
+                                        href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/41/screen/output/?account-id={mpan[mpan-top/llfc/@is-import='false']/account[supplier-contract]/@id}">
+                                        <xsl:value-of
+                                            select="mpan[mpan-top/llfc/@is-import='false']/account[supplier-contract]/@reference" />
+                                    </a>
+                                </td>
+                            </tr>
+                        </xsl:for-each>
+                    </tbody>
+                </table>
 
-							<li>
-								<xsl:value-of select="@description" />
-							</li>
-						</xsl:for-each>
-					</ul>
-				</xsl:if>
-				<ul>
-					<li>
-						<xsl:value-of
-							select="concat('Name: ', /source/supply/@name)" />
-					</li>
-					<li>
-						<xsl:value-of
-							select="concat('Source: ', /source/supply/source/@code, ' - ', /source/supply/source/@name)" />
-					</li>
-				</ul>
+                <ul>
+                    <li>
+                        kWh, kVA, MD etc. by month:
+                        <a
+                            href="{/source/request/@context-path}/reports/8/output/?supply-id={/source/supply/@id}&amp;is-import=true">
+                            <xsl:value-of select="'Import'" />
+                        </a>
+                        <xsl:value-of select="' '" />
+                        <a
+                            href="{/source/request/@context-path}/reports/8/output/?supply-id={/source/supply/@id}&amp;is-import=false">
+                            <xsl:value-of select="'Export'" />
+                        </a>
+                    </li>
+                    <li>
+                        <a
+                            href="{/source/request/@context-path}/reports/9/output/?supply-id={/source/supply/@id}&amp;start-year={/source/date/@year}&amp;start-month={/source/date/@month}">
+                            Raw HH data
+                        </a>
+                    </li>
+                </ul>
+            </body>
+   </html>
+  </xsl:template>
+</xsl:stylesheet>]]></value>
+  </line>
+  <line>
+    <value>insert</value>
+    <value>report</value>
+    <value>0 Site hh graph container</value>
+    <value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree
+from net.sf.chellow.monad.types import MonadDate
+from net.sf.chellow.physical import Site
+from java.util import Calendar
 
-				<table>
-					<caption>Generations</caption>
-					<thead>
-						<tr>
-							<th rowspan="2">Id</th>
-							<th rowspan="2">From</th>
-							<th rowspan="2">To</th>
-							<th colspan="3">Import</th>
-							<th colspan="3">Export</th>
-						</tr>
-						<tr>
-							<th>MPAN</th>
-							<th>kVA</th>
-							<th>Supplier Account</th>
-							<th>MPAN</th>
-							<th>kVA</th>
-							<th>Supplier Account</th>
-						</tr>
-					</thead>
-					<tbody>
-						<xsl:for-each
-							select="/source/supply/supply-generation">
-							<tr>
-								<td>
-									<a
-										href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/15/screen/output/?supply-generation-id={@id}">
-										<xsl:value-of select="@id" />
-									</a>
-								</td>
-								<td>
-									<xsl:value-of
-										select="concat(hh-end-date[@label='start']/@year, '-', hh-end-date[@label='start']/@month, '-', hh-end-date[@label='start']/@day)" />
-								</td>
-								<td>
-									<xsl:choose>
-										<xsl:when
-											test="hh-end-date[@label='finish']">
-											<xsl:value-of
-												select="concat(hh-end-date[@label='finish']/@year, '-', hh-end-date[@label='finish']/@month, '-', hh-end-date[@label='finish']/@day)" />
-										</xsl:when>
-										<xsl:otherwise>
-											Ongoing
-										</xsl:otherwise>
-									</xsl:choose>
-								</td>
-								<td>
-									<xsl:value-of
-										select="concat(mpan[mpan-top/llfc/@is-import='true']/mpan-top/pc/@code, ' ', mpan[mpan-top/llfc/@is-import='true']/mpan-top/mtc/@code, ' ', mpan[mpan-top/llfc/@is-import='true']/llfc/@code, ' ', mpan[mpan-top/llfc/@is-import='true']/mpan-core/@core)" />
-								</td>
-								<td>
-									<xsl:value-of
-										select="mpan[mpan-top/llfc/@is-import='true']/@agreed-supply-capacity" />
-								</td>
-								<td>
-									<a
-										href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/41/screen/output/?account-id={mpan[mpan-top/llfc/@is-import='true']/account[supplier-contract]/@id}">
-										<xsl:value-of
-											select="mpan[mpan-top/llfc/@is-import='true']/account[supplier-contract]/@reference" />
-									</a>
-								</td>
-								<td>
-									<xsl:value-of
-										select="concat(mpan[mpan-top/llfc/@is-import='false']/pc/@code, ' ', mpan[mpan-top/llfc/@is-import='false']/mtc/@code, ' ', mpan[mpan-top/llfc/@is-import='false']/llfc/@code, ' ', mpan[mpan-top/llfc/@is-import='false']/mpan-core/@core)" />
-								</td>
-								<td>
-									<xsl:value-of
-										select="mpan[mpan-top/llfc/@is-import='false']/@agreed-supply-capacity" />
-								</td>
-								<td>
-									<a
-										href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/41/screen/output/?account-id={mpan[mpan-top/llfc/@is-import='false']/account[supplier-contract]/@id}">
-										<xsl:value-of
-											select="mpan[mpan-top/llfc/@is-import='false']/account[supplier-contract]/@reference" />
-									</a>
-								</td>
-							</tr>
-						</xsl:for-each>
-					</tbody>
-				</table>
+site_id = inv.getLong("site-id")
+site = Site.getSite(site_id)
+source.appendChild(site.toXml(doc))
+cal = MonadDate.getCalendar()
 
-				<ul>
-					<li>
-						kWh, kVA, MD etc. by month:
-						<a
-							href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/7/screen/output/?supply-id={/source/supply/@id}&amp;is-import=true">
-							<xsl:value-of select="'Import'" />
-						</a>
-						<xsl:value-of select="' '" />
-						<a
-							href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/7/screen/output/?supply-id={/source/supply/@id}&amp;is-import=false">
-							<xsl:value-of select="'Export'" />
-						</a>
+if inv.hasParameter("finish-date-year") and inv.hasParameter("finish-date-month"):
+    year = inv.getInteger("finish-date-year")
+    month = inv.getInteger("finish-date-month")
+else:
+    year = cal.get(Calendar.YEAR)
+    month = cal.get(Calendar.MONTH) + 1
+if inv.hasParameter("months"):
+    months = inv.getInteger("months")
+else:
+    months = 1
+for i in range(12):
+    monthElement = doc.createElement("month")
+    source.appendChild(monthElement)
+    monthElement.setAttribute("value", str(i + 1))
+source.setAttribute("finish-date-year", str(year))
+source.setAttribute("finish-date-month", str(month))
+source.setAttribute("months", str(months))]]></value>
+    <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
+<xsl:stylesheet version="1.0"
+    xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+    <xsl:output method="html" encoding="US-ASCII"
+        doctype-public="-//W3C//DTD HTML 4.01//EN"
+        doctype-system="http://www.w3.org/TR/html4/strict.dtd" indent="yes" />
+    <xsl:template match="/">
+        <html>
+            <head>
+                <link rel="stylesheet" type="text/css"
+                    href="{/source/request/@context-path}/style/" />
+                <title>
+                    Home &gt; Sites &gt;
+                    <xsl:value-of select="/source/site/@name" />
+                    HH graph of site use
+                </title>
+            </head>
+            <body>
+                <p>
+                    Home &gt;
+                    <a href="{/source/request/@context-path}/reports/2/output/">
+                        <xsl:value-of select="'Sites'" />
+                    </a>
+                    &gt; <a
+                        href="{/source/request/@context-path}/reports/3/output/?site-id={/source/site/@id}">
+                        <xsl:value-of select="/source/site/@name" />
+                    </a>
+                    &gt; HH graph of site use
+                </p>
+                <xsl:if test="//message">
+                    <ul>
+                        <xsl:for-each select="//message">
+                            <li>
+                                <xsl:value-of select="@description" />
+                            </li>
+                        </xsl:for-each>
+                    </ul>
+                </xsl:if>
+                <p>
+                    <img
 
-					</li>
-					<li>
-						<a
-							href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/8/screen/output/?supply-id={/source/supply/@id}&amp;start-year={/source/date/@year}&amp;start-month={/source/date/@month}">
-							Raw HH data
-						</a>
-					</li>
-				</ul>
-			</body>
-		</html>
-	</xsl:template>
+
+
+
+
+
+
+                        src="{/source/request/@context-path}/orgs/{/source/site/org/@id}/reports/10/stream/output/?site-id={/source/site/@id}&amp;finish-date-year={/source/@finish-date-year}&amp;finish-date-month={/source/@finish-date-month}&amp;months={/source/@months}" />
+
+
+
+
+
+
+
+                </p>
+
+
+
+
+
+
+
+                <form action=".">
+
+
+
+
+
+
+
+                    <fieldset>
+
+
+
+
+
+
+
+                        <legend>Show graph</legend>
+
+
+
+
+
+
+
+                        <input type="hidden" name="site-id"
+
+
+
+
+
+
+
+                            value="{/source/request/parameter[@name='site-id']/value}" />
+
+
+
+
+
+
+
+                        <xsl:value-of select="'For '" />
+
+
+
+
+
+
+
+                        <select name="months">
+
+
+
+
+
+
+
+                            <xsl:for-each select="/source/month">
+
+
+
+
+
+
+
+                                <option>
+
+
+
+
+
+
+
+                                    <xsl:if
+
+
+
+
+
+
+
+                                        test="/source/@months = @value">
+
+
+
+
+
+
+
+                                        <xsl:attribute
+
+
+
+
+
+
+
+                                            name="selected">selected</xsl:attribute>
+
+
+
+
+
+
+
+                                    </xsl:if>
+
+
+
+
+
+
+
+                                    <xsl:value-of select="@value" />
+
+
+
+
+
+
+
+                                </option>
+
+
+
+
+
+
+
+                            </xsl:for-each>
+
+
+
+
+
+
+
+                        </select>
+
+
+
+
+
+
+
+                        <xsl:value-of select="' months finishing in '" />
+
+
+
+
+
+
+
+                        <input size="4" length="4"
+
+
+
+
+
+
+
+                            name="finish-date-year" value="{/source/@finish-date-year}" />
+
+
+
+
+
+
+
+                        <xsl:value-of select="' - '" />
+
+
+
+
+
+
+
+                        <select name="finish-date-month">
+
+
+
+
+
+
+
+                            <xsl:for-each select="/source/month">
+
+
+
+
+
+
+
+                                <option>
+
+
+
+
+
+
+
+                                    <xsl:if
+
+
+
+
+
+
+
+                                        test="number(/source/@finish-date-month) = number(@value)">
+
+
+
+
+
+
+
+                                        <xsl:attribute
+
+
+
+
+
+
+
+                                            name="selected">selected</xsl:attribute>
+
+
+
+
+
+
+
+                                    </xsl:if>
+
+
+
+
+
+
+
+                                    <xsl:value-of select="@value" />
+
+
+
+
+
+
+
+                                </option>
+
+
+
+
+
+
+
+                            </xsl:for-each>
+
+
+
+
+
+
+
+                        </select>
+
+
+
+
+
+
+
+                        <xsl:value-of select="' '" />
+
+
+
+
+
+
+
+                        <input type="submit" value="Show" />
+
+
+
+
+
+
+
+                    </fieldset>
+
+
+
+
+
+
+
+                </form>
+
+
+
+
+
+
+
+            </body>
+
+
+
+
+
+
+
+        </html>
+
+
+
+
+
+
+
+    </xsl:template>
+
+
+
+
+
+
+
+</xsl:stylesheet>]]></value>
+  </line>
+  <line>
+    <value>insert</value>
+    <value>report</value>
+    <value>0 Site Generation Graph Container</value>
+    <value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree
+from net.sf.chellow.monad.types import MonadDate
+from net.sf.chellow.physical import Site
+from java.util import Calendar
+
+site_id = inv.getLong("site-id")
+site = Site.getSite(site_id)
+source.appendChild(site.toXml(doc))
+cal = MonadDate.getCalendar()
+if inv.hasParameter("finish-date-year"):
+    year = inv.getInteger("finish-date-year")
+else:
+    year = cal.get(Calendar.YEAR)
+source.setAttribute("finish-date-year", str(year))
+if inv.hasParameter("finish-date-month"):
+    month = inv.getInteger("finish-date-month")
+else:
+    month = cal.get(Calendar.MONTH)
+if inv.hasParameter("months"):
+    months = inv.getInteger("months")
+else:
+    months = 1
+for i in range(12):
+    monthElement = doc.createElement("month")
+    source.appendChild(monthElement)
+    monthElement.setAttribute("value", str(i + 1))
+source.setAttribute("finish-date-year", str(year))
+source.setAttribute("finish-date-month", str(month))
+source.setAttribute("months", str(months))
+source.appendChild(inv.requestXml(doc))]]></value>
+    <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
+<xsl:stylesheet version="1.0"
+    xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+  <xsl:output method="xml" encoding="US-ASCII"
+    doctype-public="-//W3C//DTD XHTML 1.1//EN"
+    doctype-system="http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd"
+    indent="yes" />
+  <xsl:template match="/">
+    <html>
+      <head>
+        <link rel="stylesheet" type="text/css"
+            href="{/source/request/@context-path}/style/" />
+        <title>Home &gt; Sites &gt;
+            <xsl:value-of select="/source/site/@name" />
+        </title>
+      </head>
+      <body>
+        <p>
+          <a href="{/source/request/@context-path}/reports/1/output/">
+                        <xsl:value-of select="'Home'" />
+                    </a>
+          &gt;
+          <a href="{/source/request/@context-path}/reports/2/output/">
+            <xsl:value-of select="'Sites'" />
+                    </a>
+                    &gt;
+                    <a
+                        href="{/source/request/@context-path}/reports/3/output/?site-id={/source/site/@id}">
+                        <xsl:value-of select="/source/site/@name" />
+                    </a>
+                    &gt; HH graph of generation
+                </p>
+                <xsl:if test="//message">
+                    <ul>
+
+
+                        <xsl:for-each select="//message">
+
+                            <li>
+                                <xsl:value-of select="@description" />
+                            </li>
+                        </xsl:for-each>
+                    </ul>
+                </xsl:if>
+
+                <p>
+                    <img
+                        src="{/source/request/@context-path}/orgs/{/source/site/org/@id}/reports/11/stream/output/?site-id={/source/site/@id}&amp;finish-date-year={/source/@finish-date-year}&amp;finish-date-month={/source/@finish-date-month}&amp;months={/source/@months}" />
+                </p>
+                <form action=".">
+                    <fieldset>
+                        <legend>Show graph</legend>
+                        <input type="hidden" name="site-id"
+                            value="{/source/request/parameter[@name='site-id']/value}" />
+                        <xsl:value-of select="'For '" />
+                        <select name="months">
+                            <xsl:for-each select="/source/month">
+                                <option>
+                                    <xsl:if
+                                        test="/source/@months = @value">
+                                        <xsl:attribute
+                                            name="selected">selected</xsl:attribute>
+                                    </xsl:if>
+                                    <xsl:value-of select="@value" />
+                                </option>
+                            </xsl:for-each>
+                        </select>
+                        <xsl:value-of select="' months finishing in '" />
+                        <input size="4" length="4"
+                            name="finish-date-year" value="{/source/@finish-date-year}" />
+                        <xsl:value-of select="' - '" />
+                        <select name="finish-date-month">
+                            <xsl:for-each select="/source/month">
+                                <option>
+                                    <xsl:if
+                                        test="number(/source/@finish-date-month) = number(@value)">
+                                        <xsl:attribute
+                                            name="selected">selected</xsl:attribute>
+                                    </xsl:if>
+                                    <xsl:value-of select="@value" />
+                                </option>
+                            </xsl:for-each>
+                        </select>
+                        <xsl:value-of select="' '" />
+                        <input type="submit" value="Show" />
+                    </fieldset>
+                </form>
+            </body>
+        </html>
+    </xsl:template>
+</xsl:stylesheet>]]></value>
+  </line>
+  <line>
+    <value>insert</value>
+    <value>report</value>
+    <value>0 Site Monthly figures</value>
+    <value><![CDATA[from net.sf.chellow.monad import Hiber, UserException, XmlTree
+from java.lang import System
+from net.sf.chellow.monad.types import MonadDate
+import math
+from java.sql import Timestamp, ResultSet
+from java.util import GregorianCalendar, Calendar, TimeZone, Locale, Date
+from net.sf.chellow.physical import HhEndDate
+from net.sf.chellow.physical import Site
+
+siteId = inv.getLong("site-id")
+cal = GregorianCalendar(TimeZone.getTimeZone("GMT"), Locale.UK)
+if inv.hasParameter("finish-date-year"):
+    year = inv.getInteger("finish-date-year")
+    cal.set(Calendar.YEAR, year)
+if inv.hasParameter("finish-date-month"):
+    month = inv.getInteger("finish-date-month")
+    cal.set(Calendar.MONTH, month)
+for i in range(12):
+    month_element = doc.createElement("month-in-year")
+    source.appendChild(month_element)
+    month_element.setAttribute('value', '%02d' % (i + 1))
+#source.appendChild(inv.requestXml(doc))
+if not inv.isValid():
+    raise UserException()
+
+cal.set(Calendar.DAY_OF_MONTH, 1)
+cal.set(Calendar.HOUR_OF_DAY, 0)
+cal.set(Calendar.MINUTE, 0)
+cal.set(Calendar.SECOND, 0)
+cal.set(Calendar.MILLISECOND, 0)
+finishDate = HhEndDate(cal.getTime()).getDate()
+cal.add(Calendar.MONTH, -1)
+source.setAttribute("finish-date-year", str(cal.get(Calendar.YEAR)))
+source.setAttribute("finish-date-month", str(cal.get(Calendar.MONTH) + 1))
+cal.add(Calendar.MONTH, -11)
+cal.add(Calendar.MINUTE, 30)
+startDate = HhEndDate(cal.getTime()).getDate()
+site = Site.getSite(siteId)
+source.appendChild(site.toXml(doc))
+supplies = Hiber.session().createQuery("select distinct supply from Supply supply join supply.generations supplyGeneration join supplyGeneration.siteSupplyGenerations siteSupplyGeneration where siteSupplyGeneration.site = :site and supply.source.code != 'sub'").setEntity('site', site).list()
+suppliesSQL = ''
+for supply in supplies:
+    suppliesSQL = suppliesSQL + str(supply.getId()) + ','
+con = Hiber.session().connection()
+stmt = con.prepareStatement("select hh_datum.value, hh_datum.end_date, hh_datum.status, channel.is_import, supply.name, source.code from hh_datum, channel, supply, supply_generation, source where hh_datum.channel_id = channel.id and channel.supply_generation_id = supply_generation.id and supply_generation.supply_id = supply.id and supply.source_id = source.id and channel.is_kwh is true and hh_datum.end_date >= ? and hh_datum.end_date <= ? and supply.id in (" + suppliesSQL[:-1] + ") order by hh_datum.end_date desc", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.CLOSE_CURSORS_AT_COMMIT)
+stmt.setTimestamp(1, Timestamp(startDate.getTime()))
+stmt.setTimestamp(2, Timestamp(finishDate.getTime()))
+stmt.setFetchSize(100)
+rs = stmt.executeQuery()
+hhDate = finishDate.getTime()
+maxExportedKw = 0
+maxExportedKwDate = None
+maxExportedKwYear = 0
+maxExportedKwYearDate = None
+exportedKwhMonth = 0
+exportedKwhYear = 0
+exportedKwh = 0
+maxImportedKw = 0
+maxImportedKwDate = None
+maxImportedKwYear = 0
+maxImportedKwYearDate = None
+importedKwhMonth = 0
+importedKwhYear = 0
+importedKwh = 0
+maxGeneratedKw = 0
+maxGeneratedKwDate = None
+maxGeneratedKwYear = 0
+maxGeneratedKwYearDate = None
+generatedKwhMonth = 0
+generatedKwhYear = 0
+generatedKwh = 0
+maxParasiticKw = 0
+maxParasiticKwDate = None
+maxParasiticKwYear = 0
+maxParasiticKwYearDate = None
+parasiticKwhMonth = 0
+parasiticKwhYear = 0
+parasiticKwh = 0
+maxDisplacedKw = 0
+maxDisplacedKwDate = None
+maxDisplacedKwYear = 0
+maxDisplacedKwYearDate = None
+displacedKwhMonth = 0
+displacedKwhYear = 0
+displacedKwh = 0
+maxUsedKw = 0
+maxUsedKwDate = None
+maxUsedKwYear = 0
+maxUsedKwYearDate = None
+usedKwhMonth = 0
+usedKwhYear = 0
+usedKwh = 0
+
+siteSnagQuery = Hiber.session().createQuery("select count(*) from SiteSnag snag where snag.site = :site and snag.startDate.date <= :finishDate and snag.finishDate.date >= :startDate and (snag.dateResolved is null or (snag.dateResolved is not null and snag.isIgnored is true))").setEntity("site", site)
+
+if rs.next():
+    #raise net.sf.chellow.monad.ui.UserException.newInvalidParameter("got to rs next")
+    hhChannelKw = rs.getFloat("value") * 2
+    hhChannelEndDate = rs.getTimestamp("end_date")
+    isImport = rs.getBoolean("is_import")
+    status = rs.getString("status")
+    sourceCode = rs.getString("code")
+    supplyName = rs.getString("name")
+    finishDateMillis = finishDate.getTime()
+    startDateMillis = startDate.getTime()
+    cal.clear()
+    cal.setTime(hhChannelEndDate)
+    previousMonth = cal.get(Calendar.MONTH)
+    #cal = net.sf.chellow.monad.vf.bo.MonadDate.getCalendar()
+    while hhDate >= startDateMillis:
+        exportedKw = 0
+        importedKw = 0
+        parasiticKw = 0
+        generatedKw = 0
+        while hhChannelEndDate != None and hhChannelEndDate.getTime() == hhDate:
+            if not isImport and sourceCode == "net":
+                exportedKw = exportedKw + hhChannelKw
+            if isImport and sourceCode == "net":
+                importedKw = importedKw + hhChannelKw
+            if isImport and (sourceCode == "lm" or sourceCode == "chp" or sourceCode == "turb"):
+                generatedKw = generatedKw + hhChannelKw
+            if not isImport and (sourceCode == "lm" or sourceCode == "chp" or sourceCode == "turb"):
+                parasiticKw = parasiticKw + hhChannelKw
+            if rs.next():
+                sourceCode = rs.getString("code")
+                supplyName = rs.getString("name")
+                hhChannelKw = rs.getFloat("value") * 2
+                hhChannelEndDate = rs.getTimestamp("end_date")
+                isImport = rs.getBoolean("is_import")
+                status = rs.getString("status")
+                cal.clear()
+                cal.setTime(hhChannelEndDate)
+                month = cal.get(Calendar.MONTH)
+            else:
+                hhChannelEndDate = None
+        if exportedKw > maxExportedKw:
+            maxExportedKw = exportedKw
+            maxExportedKwDate = hhDate
+        if importedKw > maxImportedKw:
+            maxImportedKw = importedKw
+            maxImportedKwDate = hhDate
+        if generatedKw > maxGeneratedKw:
+            maxGeneratedKw = generatedKw
+            maxGeneratedKwDate = hhDate
+        if parasiticKw > maxParasiticKw:
+            maxParasiticKw = parasiticKw
+            maxParasiticKwDate = hhDate
+        displacedKw = generatedKw - parasiticKw - exportedKw
+        if displacedKw > maxDisplacedKw:
+            maxDisplacedKw = displacedKw
+            maxDisplacedKwDate = hhDate
+        usedKw = importedKw + displacedKw
+        if usedKw > maxUsedKw:
+            maxUsedKw = usedKw
+            maxUsedKwDate = hhDate
+        exportedKwhMonth = exportedKwhMonth + exportedKw / 2
+        importedKwhMonth = importedKwhMonth + importedKw / 2
+        generatedKwhMonth = generatedKwhMonth + generatedKw / 2
+        parasiticKwhMonth = parasiticKwhMonth + parasiticKw / 2
+        displacedKwhMonth = displacedKwhMonth + displacedKw / 2
+        usedKwhMonth = usedKwhMonth + usedKw / 2
+        cal.clear()
+        cal.setTimeInMillis(hhDate)
+        hhDate = HhEndDate.getPrevious(cal, hhDate)
+        cal.clear()
+        cal.setTimeInMillis(hhDate)
+        if cal.get(Calendar.DAY_OF_MONTH) == 1 and cal.get(Calendar.HOUR_OF_DAY) == 0 and cal.get(Calendar.MINUTE) == 0:
+            monthElement = doc.createElement("month")
+            source.appendChild(monthElement)
+            cal.add(Calendar.MINUTE, 30)
+            monthStartDate = cal.getTime()
+            cal.add(Calendar.MONTH, 1)
+            cal.add(Calendar.MINUTE, -30)
+            monthFinishDate = cal.getTime()
+            if siteSnagQuery.setTimestamp("startDate", monthStartDate).setTimestamp("finishDate", monthFinishDate).uniqueResult() > 0:
+                monthElement.setAttribute("has-site-snags", "true")
+            monthStartMonadDate = HhEndDate(monthStartDate)
+            monthStartMonadDate.setLabel("start")
+            monthElement.appendChild(monthStartMonadDate.toXml(doc))
+            monthFinishMonadDate = HhEndDate(monthFinishDate)
+            monthFinishMonadDate.setLabel("finish")
+            monthElement.appendChild(monthFinishMonadDate.toXml(doc))
+            monthElement.setAttribute("max-exported-kw", str(int(round(maxExportedKw))))
+            if maxExportedKwDate != None:
+                monthElement.setAttribute("max-exported-kw-date", MonadDate(Date(maxExportedKwDate)).toString())
+            monthElement.setAttribute("exported-kwh", str(int(round(exportedKwhMonth))))
+            monthElement.setAttribute("max-imported-kw", str(int(round(maxImportedKw))))
+            if maxImportedKwDate != None:
+                monthElement.setAttribute("max-imported-kw-date", MonadDate(Date(maxImportedKwDate)).toString())
+            monthElement.setAttribute("imported-kwh", str(int(round(importedKwhMonth))))
+            monthElement.setAttribute("max-generated-kw", str(int(round(maxGeneratedKw))))
+            if maxGeneratedKwDate != None:
+                monthElement.setAttribute("max-generated-kw-date", MonadDate(Date(maxGeneratedKwDate)).toString())
+            monthElement.setAttribute("generated-kwh", str(int(round(generatedKwhMonth))))
+            monthElement.setAttribute("max-parasitic-kw", str(int(round(maxParasiticKw))))
+            if maxParasiticKwDate != None:
+                monthElement.setAttribute("max-parasitic-kw-date", MonadDate(Date(maxParasiticKwDate)).toString())
+            monthElement.setAttribute("parasitic-kwh", str(int(round(parasiticKwhMonth))))
+            monthElement.setAttribute("max-displaced-kw", str(int(round(maxDisplacedKw))))
+            if maxDisplacedKwDate != None:
+                monthElement.setAttribute("max-displaced-kw-date", MonadDate(Date(maxDisplacedKwDate)).toString())
+            monthElement.setAttribute("displaced-kwh", str(int(round(displacedKwhMonth))))
+            monthElement.setAttribute("max-used-kw", str(int(round(maxUsedKw))))
+            if maxUsedKwDate != None:
+                monthElement.setAttribute("max-used-kw-date", MonadDate(Date(maxUsedKwDate)).toString())
+            monthElement.setAttribute("used-kwh", str(int(round(usedKwhMonth))))
+            if maxExportedKw > maxExportedKwYear:
+                maxExportedKwYear = maxExportedKw
+                maxExportedKwYearDate = maxExportedKwDate
+            maxExportedKw = 0
+            maxExportedKwDate = None
+            exportedKwhYear = exportedKwhYear + exportedKwhMonth
+            exportedKwhMonth = 0
+            if maxImportedKw > maxImportedKwYear:
+                maxImportedKwYear = maxImportedKw
+                maxImportedKwYearDate = maxImportedKwDate
+            maxImportedKw = 0
+            maxImportedKwDate = None
+            importedKwhYear = importedKwhYear + importedKwhMonth
+            importedKwhMonth = 0
+            if maxGeneratedKw > maxGeneratedKwYear:
+                maxGeneratedKwYear = maxGeneratedKw
+                maxGeneratedKwYearDate = maxGeneratedKwDate
+            maxGeneratedKw = 0
+            maxGeneratedKwDate = None
+            generatedKwhYear = generatedKwhYear + generatedKwhMonth
+            generatedKwhMonth = 0
+            if maxParasiticKw > maxParasiticKwYear:
+                maxParasiticKwYear = maxParasiticKw
+                maxParasiticKwYearDate = maxParasiticKwDate
+            maxParasiticKw = 0
+            maxParasiticKwDate = None
+            parasiticKwhYear = parasiticKwhYear + parasiticKwhMonth
+            parasiticKwhMonth = 0
+            if maxDisplacedKw > maxDisplacedKwYear:
+                maxDisplacedKwYear = maxDisplacedKw
+                maxDisplacedKwYearDate = maxDisplacedKwDate
+            maxDisplacedKw = 0
+            maxDisplacedKwDate = None
+            displacedKwhYear = displacedKwhYear + displacedKwhMonth
+            displacedKwhMonth = 0
+            if maxUsedKw > maxUsedKwYear:
+                maxUsedKwYear = maxUsedKw
+                maxUsedKwYearDate = maxUsedKwDate
+            maxUsedKw = 0
+            maxUsedKwDate = None
+            usedKwhYear = usedKwhYear + usedKwhMonth
+            usedKwhMonth = 0
+    source.setAttribute("max-exported-kw", str(int(round(maxExportedKwYear))))
+    if maxExportedKwYearDate != None:
+        source.setAttribute("max-exported-kw-date", MonadDate(Date(maxExportedKwYearDate)).toString())
+    source.setAttribute("exported-kwh", str(int(round(exportedKwhYear))))
+    source.setAttribute("max-imported-kw", str(int(round(maxImportedKwYear))))
+    if maxImportedKwYearDate != None:
+        source.setAttribute("max-imported-kw-date", MonadDate(Date(maxImportedKwYearDate)).toString())
+    source.setAttribute("imported-kwh", str(int(round(importedKwhYear))))
+    source.setAttribute("max-generated-kw", str(int(round(maxGeneratedKwYear))))
+    if maxGeneratedKwYearDate != None:
+        source.setAttribute("max-generated-kw-date", MonadDate(Date(maxGeneratedKwYearDate)).toString())
+    source.setAttribute("generated-kwh", str(int(round(generatedKwhYear))))
+    source.setAttribute("max-parasitic-kw", str(int(round(maxParasiticKwYear))))
+    if maxParasiticKwYearDate != None:
+        source.setAttribute("max-parasitic-kw-date", MonadDate(Date(maxParasiticKwYearDate)).toString())
+    source.setAttribute("parasitic-kwh", str(int(round(parasiticKwhYear))))
+    source.setAttribute("max-displaced-kw", str(int(round(maxDisplacedKwYear))))
+    if maxDisplacedKwYearDate != None:
+        source.setAttribute("max-displaced-kw-date", MonadDate(Date(maxDisplacedKwYearDate)).toString())
+    source.setAttribute("displaced-kwh", str(int(round(displacedKwhYear))))
+    source.setAttribute("max-used-kw", str(int(round(maxUsedKwYear))))
+    if maxUsedKwYearDate != None:
+        source.setAttribute("max-used-kw-date", MonadDate(Date(maxUsedKwYearDate)).toString())
+    source.setAttribute("used-kwh", str(int(round(usedKwhYear))))]]></value>
+    <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
+<xsl:stylesheet version="1.0"
+    xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+    <xsl:output method="xml" encoding="US-ASCII"
+        doctype-public="-//W3C//DTD XHTML 1.1//EN"
+        doctype-system="http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd"
+        indent="yes" />
+  <xsl:template match="/">
+    <html>
+      <head>
+        <link rel="stylesheet" type="text/css"
+            href="{/source/request/@context-path}/reports/10/output/" />
+        <title>Home &gt; Sites &gt; <xsl:value-of
+                        select="concat(/source/site/@code, ' ', /source/site/@name)" />
+                    &gt; Monthly figures
+        </title>
+                <style>
+                    &lt;![CDATA[
+                colgroup.gray {
+                    background: silver;
+                }
+
+                tr.error {
+                    color: red;
+                }
+                ]]&gt;
+                </style>
+      </head>
+      <body>
+        <p><a href="{/source/request/@context-path}/reports/1/output/">
+                        <xsl:value-of select="'Home'" />
+                    </a>
+                    &gt;
+                    <a
+                        href="{/source/request/@context-path}/reports/2/output/">
+                        <xsl:value-of select="'Sites'" />
+                    </a>
+                    &gt;
+                    <a
+                        href="{/source/request/@context-path}/reports/3/output/?site-id={/source/site/@id}">
+                        <xsl:value-of
+                            select="concat(/source/site/@code, ' ', /source/site/@name)" />
+                    </a>
+                    &gt; Monthly figures
+                </p>
+                <xsl:if test="//message">
+                    <ul>
+                        <xsl:for-each select="//message">
+                            <li>
+                                <xsl:value-of select="@description" />
+                            </li>
+                        </xsl:for-each>
+                    </ul>
+                </xsl:if>
+                <form action=".">
+                    <fieldset>
+                        <legend>Show table</legend>
+                        <input type="hidden" name="site-id"
+                            value="{/source/request/parameter[@name='site-id']/value}" />
+                        <xsl:value-of
+                            select="'For 12 months finishing at the end of '" />
+                        <input size="4" length="4"
+                            name="finish-date-year" value="{/source/@finish-date-year}" />
+                        <xsl:value-of select="' - '" />
+                        <select name="finish-date-month">
+                            <xsl:for-each
+                                select="/source/month-in-year">
+                                <option>
+                                    <xsl:if
+                                        test="number(/source/@finish-date-month) = number(@value)">
+                                        <xsl:attribute
+                                            name="selected">selected</xsl:attribute>
+                                    </xsl:if>
+                                    <xsl:value-of select="@value" />
+                                </option>
+                            </xsl:for-each>
+                        </select>
+                        <xsl:value-of select="' '" />
+                        <input type="submit" value="Show" />
+                    </fieldset>
+                </form>
+
+                <table>
+                    <caption>Months</caption>
+                    <colgroup />
+                    <colgroup class="gray" span="3" />
+                    <colgroup span="3" />
+                    <colgroup class="gray" span="3" />
+                    <colgroup span="3" />
+                    <colgroup class="gray" span="3" />
+                    <colgroup span="3" />
+                    <tfoot>
+                        <tr>
+                            <th>For all months</th>
+                            <th>
+                                <xsl:value-of
+                                    select="/source/@max-imported-kw" />
+                            </th>
+                            <th>
+                                <xsl:choose>
+                                    <xsl:when
+                                        test="/source/@max-imported-kw-date">
+                                        <xsl:value-of
+                                            select="/source/@max-imported-kw-date" />
+                                    </xsl:when>
+                                    <xsl:otherwise>NA</xsl:otherwise>
+                                </xsl:choose>
+                            </th>
+                            <th>
+                                <xsl:value-of
+                                    select="/source/@imported-kwh" />
+                            </th>
+                            <th>
+                                <xsl:value-of
+                                    select="/source/@max-used-kw" />
+                            </th>
+                            <th>
+                                <xsl:choose>
+                                    <xsl:when
+                                        test="/source/@max-used-kw-date">
+                                        <xsl:value-of
+                                            select="/source/@max-used-kw-date" />
+                                    </xsl:when>
+                                    <xsl:otherwise>NA</xsl:otherwise>
+                                </xsl:choose>
+                            </th>
+                            <th>
+                                <xsl:value-of
+                                    select="/source/@used-kwh" />
+                            </th>
+                            <th>
+                                <xsl:value-of
+                                    select="/source/@max-displaced-kw" />
+                            </th>
+                            <th>
+                                <xsl:choose>
+                                    <xsl:when
+                                        test="/source/@max-displaced-kw-date">
+                                        <xsl:value-of
+                                            select="/source/@max-displaced-kw-date" />
+                                    </xsl:when>
+                                    <xsl:otherwise>NA</xsl:otherwise>
+                                </xsl:choose>
+                            </th>
+                            <th>
+                                <xsl:value-of
+                                    select="/source/@displaced-kwh" />
+                            </th>
+                            <th>
+                                <xsl:value-of
+                                    select="/source/@max-generated-kw" />
+                            </th>
+                            <th>
+                                <xsl:choose>
+                                    <xsl:when
+                                        test="/source/@max-generated-kw-date">
+                                        <xsl:value-of
+                                            select="/source/@max-generated-kw-date" />
+                                    </xsl:when>
+                                    <xsl:otherwise>NA</xsl:otherwise>
+                                </xsl:choose>
+                            </th>
+                            <th>
+                                <xsl:value-of
+                                    select="/source/@generated-kwh" />
+                            </th>
+                            <th>
+                                <xsl:value-of
+                                    select="/source/@max-exported-kw" />
+                            </th>
+                            <th>
+                                <xsl:choose>
+                                    <xsl:when
+                                        test="/source/@max-exported-kw-date">
+                                        <xsl:value-of
+                                            select="/source/@max-exported-kw-date" />
+                                    </xsl:when>
+                                    <xsl:otherwise>NA</xsl:otherwise>
+                                </xsl:choose>
+                            </th>
+                            <th>
+                                <xsl:value-of
+                                    select="/source/@exported-kwh" />
+                            </th>
+                            <th>
+                                <xsl:value-of
+                                    select="/source/@max-parasitic-kw" />
+                            </th>
+                            <th>
+                                <xsl:choose>
+                                    <xsl:when
+                                        test="/source/@max-parasitic-kw-date">
+                                        <xsl:value-of
+                                            select="/source/@max-parasitic-kw-date" />
+                                    </xsl:when>
+                                    <xsl:otherwise>NA</xsl:otherwise>
+                                </xsl:choose>
+                            </th>
+                            <th>
+                                <xsl:value-of
+                                    select="/source/@parasitic-kwh" />
+                            </th>
+                        </tr>
+                    </tfoot>
+                    <thead>
+                        <tr>
+                            <th rowspan="2">Month</th>
+                            <th colspan="3">Imported</th>
+                            <th colspan="3">Used</th>
+                            <th colspan="3">Displaced</th>
+                            <th colspan="3">Generated</th>
+                            <th colspan="3">Exported</th>
+                            <th colspan="3">Parasitic</th>
+                        </tr>
+                        <tr>
+                            <th>MD / kW</th>
+                            <th>Date of MD</th>
+                            <th>kWh</th>
+                            <th>MD / kW</th>
+                            <th>Date of MD</th>
+                            <th>kWh</th>
+                            <th>MD / kW</th>
+                            <th>Date of MD</th>
+                            <th>kWh</th>
+                            <th>MD / kW</th>
+                            <th>Date of MD</th>
+                            <th>kWh</th>
+                            <th>MD / kW</th>
+                            <th>Date of MD</th>
+                            <th>kWh</th>
+                            <th>MD / kW</th>
+                            <th>Date of MD</th>
+                            <th>kWh</th>
+                            <th>Data quality</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <xsl:for-each select="/source/month">
+                            <tr>
+                                <xsl:if test="@has-site-snags">
+                                    <xsl:attribute name="class">
+                                        <xsl:value-of select="'error'" />
+                                    </xsl:attribute>
+                                </xsl:if>
+                                <td>
+                                    <xsl:value-of
+                                        select="concat(hh-end-date[@label='start']/@year, '-', hh-end-date[@label='start']/@month)" />
+                                </td>
+                                <td>
+                                    <xsl:value-of
+                                        select="@max-imported-kw" />
+                                </td>
+                                <td>
+                                    <xsl:choose>
+                                        <xsl:when
+                                            test="@max-imported-kw-date">
+                                            <xsl:value-of
+                                                select="@max-imported-kw-date" />
+                                        </xsl:when>
+                                        <xsl:otherwise>
+                                            NA
+                                        </xsl:otherwise>
+                                    </xsl:choose>
+                                </td>
+                                <td>
+                                    <xsl:value-of
+                                        select="@imported-kwh" />
+                                </td>
+                                <td>
+                                    <xsl:value-of select="@max-used-kw" />
+                                </td>
+                                <td>
+                                    <xsl:choose>
+                                        <xsl:when
+                                            test="@max-used-kw-date">
+                                            <xsl:value-of
+                                                select="@max-used-kw-date" />
+                                        </xsl:when>
+                                        <xsl:otherwise>
+                                            NA
+                                        </xsl:otherwise>
+                                    </xsl:choose>
+                                </td>
+                                <td>
+                                    <xsl:value-of select="@used-kwh" />
+                                </td>
+                                <td>
+                                    <xsl:value-of
+                                        select="@max-displaced-kw" />
+                                </td>
+                                <td>
+                                    <xsl:choose>
+                                        <xsl:when
+                                            test="@max-displaced-kw-date">
+                                            <xsl:value-of
+                                                select="@max-displaced-kw-date" />
+                                        </xsl:when>
+                                        <xsl:otherwise>
+                                            NA
+                                        </xsl:otherwise>
+                                    </xsl:choose>
+                                </td>
+                                <td>
+                                    <xsl:value-of
+                                        select="@displaced-kwh" />
+                                </td>
+                                <td>
+                                    <xsl:value-of
+                                        select="@max-generated-kw" />
+                                </td>
+                                <td>
+                                    <xsl:choose>
+                                        <xsl:when
+                                            test="@max-generated-kw-date">
+                                            <xsl:value-of
+                                                select="@max-generated-kw-date" />
+                                        </xsl:when>
+                                        <xsl:otherwise>
+                                            NA
+                                        </xsl:otherwise>
+                                    </xsl:choose>
+                                </td>
+                                <td>
+                                    <xsl:value-of
+                                        select="@generated-kwh" />
+                                </td>
+                                <td>
+                                    <xsl:value-of
+                                        select="@max-exported-kw" />
+                                </td>
+                                <td>
+                                    <xsl:choose>
+                                        <xsl:when
+                                            test="@max-exported-kw-date">
+                                            <xsl:value-of
+                                                select="@max-exported-kw-date" />
+                                        </xsl:when>
+                                        <xsl:otherwise>
+                                            NA
+                                        </xsl:otherwise>
+                                    </xsl:choose>
+                                </td>
+                                <td>
+                                    <xsl:value-of
+                                        select="@exported-kwh" />
+                                </td>
+                                <td>
+                                    <xsl:value-of
+                                        select="@max-parasitic-kw" />
+                                </td>
+                                <td>
+                                    <xsl:choose>
+                                        <xsl:when
+                                            test="@max-parasitic-kw-date">
+                                            <xsl:value-of
+                                                select="@max-parasitic-kw-date" />
+                                        </xsl:when>
+                                        <xsl:otherwise>
+                                            NA
+                                        </xsl:otherwise>
+                                    </xsl:choose>
+                                </td>
+                                <td>
+                                    <xsl:value-of
+                                        select="@parasitic-kwh" />
+                                </td>
+                                <td>
+                                    <xsl:if
+                                        test="@has-site-snags = 'true'">
+                                        See
+                                        <a
+                                            href="{/source/request/@context-path}/orgs/1/reports/5/screen/output/?site-id={/source/site/@id}&amp;months=1&amp;finish-date-year={hh-end-date[@label='start']/@year}&amp;finish-date-month={hh-end-date[@label='start']/@month}">
+                                            generation graph
+                                        </a>
+                                        for errors.
+                                    </xsl:if>
+                                </td>
+                            </tr>
+                        </xsl:for-each>
+                    </tbody>
+                </table>
+            </body>
+        </html>
+    </xsl:template>
+</xsl:stylesheet>]]></value>
+  </line>
+  <line>
+    <value>insert</value>
+    <value>report</value>
+    <value>0 Supply MPAN months</value>
+    <value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree
+from java.util import Calendar
+import java.util
+from net.sf.chellow.physical import HhEndDate, Supply
+
+supply_id = inv.getLong("supply-id")
+supply = Supply.getSupply(supply_id)
+source.appendChild(supply.toXml(doc))
+is_import = inv.getBoolean("is-import");
+#kwhChannel = supply.getChannel(isImport, True) 
+#kvarhChannel = supply.getChannel(isImport, False)
+cal = java.util.GregorianCalendar(java.util.TimeZone.getTimeZone("GMT"), java.util.Locale.UK)
+cal.set(Calendar.DAY_OF_MONTH, 1)
+cal.set(Calendar.HOUR_OF_DAY, 0)
+cal.set(Calendar.MINUTE, 0)
+cal.set(Calendar.SECOND, 0)
+cal.set(Calendar.MILLISECOND, 0)
+monthFinish = HhEndDate(cal.getTime())
+nextMonthFinish = None
+for i in range(60):
+    cal.add(Calendar.MONTH, -1)
+    nextMonthFinish = HhEndDate(cal.getTime())
+    monthStart = nextMonthFinish.getNext()
+    
+    monthElement = doc.createElement("month")
+    source.appendChild(monthElement)
+    generation = supply.getGeneration(monthFinish)
+    if generation != None:
+        mpan = generation.getMpan(is_import)
+        if mpan != None:
+            monthElement.setAttribute("mpan-core", mpan.getCore().toString())
+            monthElement.setAttribute("agreed-supply-capacity", str(mpan.getAgreedSupplyCapacity()))
+    kwhDatumAtMd = Hiber.session().createQuery("from HhDatum datum where datum.channel.supplyGeneration.supply = :supply and datum.channel.isKwh = true and datum.endDate.date >= :startDate and datum.endDate.date <= :finishDate and datum.value = (select max(datum.value) from HhDatum datum where datum.channel.supplyGeneration.supply = :supply and datum.channel.isKwh = true and datum.endDate.date >= :startDate and datum.endDate.date <= :finishDate) order by datum.endDate.date").setEntity("supply", supply).setTimestamp("startDate", monthStart.getDate()).setTimestamp("finishDate", monthFinish.getDate()).setMaxResults(1).uniqueResult()
+    if kwhDatumAtMd != None:
+        mdKwh = kwhDatumAtMd.getValue()
+        monthElement.setAttribute("md-kw", str(round(mdKwh * 2)))
+        kvarhDatumAtMd = Hiber.session().createQuery("from HhDatum datum where datum.channel.supplyGeneration.supply = :supply and datum.channel.isKwh = false and datum.endDate.date = :mdDate").setEntity("supply", supply).setTimestamp("mdDate", kwhDatumAtMd.getEndDate().getDate()).uniqueResult()
+        if kvarhDatumAtMd != None:
+            kvarhAtMd = kvarhDatumAtMd.getValue()
+            kvahAtMd = (mdKwh ** 2 + kvarhAtMd ** 2) ** 0.5
+            if kvahAtMd > 0:
+                pf = mdKwh / kvahAtMd
+                monthElement.setAttribute("pf", str(round(pf, 4)))
+            monthElement.setAttribute("kva-at-md", str(round(kvahAtMd * 2)))
+    totalKwh = Hiber.session().createQuery("select sum(datum.value) from HhDatum datum where datum.channel.supplyGeneration.supply = :supply and datum.channel.isKwh = true and datum.endDate.date >= :startDate and datum.endDate.date <= :finishDate").setEntity("supply", supply).setTimestamp("startDate", monthStart.getDate()).setTimestamp("finishDate", monthFinish.getDate()).uniqueResult()
+    if totalKwh != None:
+        monthElement.setAttribute("total-kwh", str(round(totalKwh)))
+    monthElement.setAttribute("date", monthStart.toString())
+    monthFinish = nextMonthFinish]]></value>
+    <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
+<xsl:stylesheet version="1.0"
+    xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+    <xsl:output method="xml" encoding="US-ASCII"
+        doctype-public="-//W3C//DTD XHTML 1.1//EN"
+        doctype-system="http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd"
+        indent="yes" />
+    <xsl:template match="/">
+        <html>
+            <head>
+                <link rel="stylesheet" type="text/css"
+                    href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/9/stream/output/" />
+                <title>
+                    Home &gt; Supplies &gt;
+                    <xsl:value-of select="/source/supply/@name" />
+                </title>
+            </head>
+            <body>
+                <p>
+                    <a
+                        href="{/source/request/@context-path}/reports/1/output/">
+                        <xsl:value-of select="'Home'" />
+                    </a>
+                    &gt;
+                    <a
+                        href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/49/screen/output/">
+                        <xsl:value-of select="'Supplies'" />
+                    </a>
+                    &gt;
+                    <a
+                        href="{/source/request/@context-path}/reports/4/output/?supply-id={/source/supply/@id}">
+                        <xsl:value-of select="/source/supply/@id" />
+                    </a>
+                    &gt;
+                    <xsl:choose>
+                        <xsl:when
+                            test="/source/request/parameter[@name='is-import']/value = 'true'">
+                            Import
+                        </xsl:when>
+                        <xsl:otherwise>Export</xsl:otherwise>
+                    </xsl:choose>
+                    data by month
+                </p>
+
+                <xsl:if test="//message">
+                    <ul>
+                        <xsl:for-each select="//message">
+
+                            <li>
+                                <xsl:value-of select="@description" />
+                            </li>
+                        </xsl:for-each>
+                    </ul>
+                </xsl:if>
+                <table>
+                    <caption>Months</caption>
+                    <thead>
+                        <tr>
+                            <th>Month Starting</th>
+                            <th>MPAN Core</th>
+                            <th>MD / kW</th>
+                            <th>Power Factor</th>
+                            <th>MD / kVA</th>
+                            <th>Agreed Supply Capacity (kVA)</th>
+                            <th>kWh</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <xsl:for-each select="/source/month">
+                            <tr>
+                                <td>
+                                    <xsl:value-of select="@date" />
+                                </td>
+                                <td>
+                                    <xsl:choose>
+                                        <xsl:when test="@mpan-core">
+                                            <xsl:value-of
+                                                select="@mpan-core" />
+                                        </xsl:when>
+                                        <xsl:otherwise>
+                                            NA
+                                        </xsl:otherwise>
+                                    </xsl:choose>
+                                </td>
+                                <td>
+                                    <xsl:choose>
+                                        <xsl:when test="@md-kw">
+                                            <xsl:value-of
+                                                select="round(@md-kw)" />
+                                        </xsl:when>
+                                        <xsl:otherwise>
+                                            NA
+                                        </xsl:otherwise>
+                                    </xsl:choose>
+                                </td>
+                                <td>
+                                    <xsl:choose>
+                                        <xsl:when test="@pf">
+                                            <xsl:value-of select="@pf" />
+                                        </xsl:when>
+                                        <xsl:otherwise>
+                                            NA
+                                        </xsl:otherwise>
+                                    </xsl:choose>
+                                </td>
+                                <td>
+                                    <xsl:choose>
+                                        <xsl:when test="@kva-at-md">
+                                            <xsl:value-of
+                                                select="round(@kva-at-md)" />
+                                        </xsl:when>
+                                        <xsl:otherwise>
+                                            NA
+                                        </xsl:otherwise>
+                                    </xsl:choose>
+                                </td>
+                                <td>
+                                    <xsl:choose>
+                                        <xsl:when
+                                            test="@agreed-supply-capacity">
+                                            <xsl:value-of
+                                                select="@agreed-supply-capacity" />
+                                        </xsl:when>
+                                        <xsl:otherwise>
+                                            NA
+                                        </xsl:otherwise>
+                                    </xsl:choose>
+                                </td>
+                                <td>
+                                    <xsl:choose>
+                                        <xsl:when test="@total-kwh">
+                                            <xsl:value-of
+                                                select="round(@total-kwh)" />
+                                        </xsl:when>
+                                        <xsl:otherwise>
+                                            NA
+                                        </xsl:otherwise>
+                                    </xsl:choose>
+                                </td>
+                            </tr>
+                        </xsl:for-each>
+                    </tbody>
+                </table>
+            </body>
+        </html>
+    </xsl:template>
 </xsl:stylesheet>
+
 ]]></value>
   </line>
   <line>
     <value>insert</value>
     <value>report</value>
-    <value>Home</value>
+    <value>0 Supply Raw HH Data</value>
+    <value><![CDATA[from net.sf.chellow.monad import Hiber, UserException, XmlTree
+from java.util import Calendar, GregorianCalendar, TimeZone, Locale, Date
+from net.sf.chellow.monad.types import MonadDate
+from java.sql import Timestamp, ResultSet
+from java.text import SimpleDateFormat
+from net.sf.chellow.physical import HhEndDate, HhDatum, Supply
+
+cal = GregorianCalendar(TimeZone.getTimeZone("GMT"), Locale.UK)
+supply_id = inv.getLong("supply-id")
+startDateYear = inv.getInteger("start-year")
+startDateMonth = inv.getInteger("start-month")
+if not inv.isValid():
+    raise UserException()
+
+cal.clear()
+cal.set(Calendar.YEAR, startDateYear)
+cal.set(Calendar.MONTH, startDateMonth - 1)
+cal.set(Calendar.DAY_OF_MONTH, 1)
+startDate = cal.getTime()
+cal.add(Calendar.MONTH, 1)
+finishDate = cal.getTime()
+dateFormat = SimpleDateFormat("yyyy-MM-dd' 'HH:mm'Z'")
+dateFormat.setCalendar(cal)
+supply = Supply.getSupply(supply_id)
+supplyElement = supply.toXml(doc, XmlTree("generationLast", XmlTree("mpans", XmlTree("core"))).put("source"))
+source.appendChild(supplyElement)
+source.appendChild(MonadDate.getMonthsXml(doc))
+source.appendChild(MonadDate.getDaysXml(doc))
+con = Hiber.session().connection()
+stmt = con.prepareStatement("select hh_datum.value, hh_datum.end_date, hh_datum.status, channel.is_import, channel.is_kwh from hh_datum, channel, supply_generation where hh_datum.channel_id = channel.id and channel.supply_generation_id = supply_generation.id and supply_generation.supply_id = ? and hh_datum.end_date > ? and hh_datum.end_date <= ? order by hh_datum.end_date", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.CLOSE_CURSORS_AT_COMMIT)
+stmt.setInt(1, supply.getId())
+stmt.setTimestamp(2, Timestamp(startDate.getTime()))
+stmt.setTimestamp(3, Timestamp(finishDate.getTime()))
+stmt.setFetchSize(100)
+rs = stmt.executeQuery()
+hhDate = HhEndDate(startDate).getNext().getDate().getTime()
+actualStatus = HhDatum.ACTUAL
+if rs.next():
+    value = rs.getFloat("value")
+    hhChannelEndDate = rs.getTimestamp("end_date")
+    isImport = rs.getBoolean("is_import")
+    isKwh = rs.getBoolean("is_kwh")
+    status = rs.getString("status")
+    finishDateMillis = finishDate.getTime()
+    cal = MonadDate.getCalendar()
+    while hhDate <= finishDateMillis:
+        datumElement = doc.createElement("datum")
+        supplyElement.appendChild(datumElement)
+        datumElement.setAttribute("timestamp", dateFormat.format(Date(hhDate)))
+        while hhChannelEndDate != None and hhChannelEndDate.getTime() == hhDate:
+            if isImport:
+                if isKwh:
+                    datumElement.setAttribute("import-kwh-value", str(round(value, 2)))
+                    datumElement.setAttribute("import-kwh-status", status)
+                else:
+                    datumElement.setAttribute("import-kvarh-value", str(round(value, 2)))
+                    datumElement.setAttribute("import-kvarh-status", status)
+            else:
+                if isKwh:
+                    datumElement.setAttribute("export-kwh-value", str(round(value, 2)))
+                    datumElement.setAttribute("export-kwh-status", status)
+                else:
+                    datumElement.setAttribute("export-kvarh-value", str(round(value, 2)))
+                    datumElement.setAttribute("export-kvarh-status", status)
+            if rs.next():
+                value = rs.getFloat("value")
+                hhChannelEndDate = rs.getTimestamp("end_date")
+                isImport = rs.getBoolean("is_import")
+                isKwh = rs.getBoolean("is_kwh")
+                status = rs.getString("status")
+            else:
+                hhChannelEndDate = None
+
+        hhDate = HhEndDate.getNext(cal, hhDate)
+rs.close()]]></value>
+    <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
+<xsl:stylesheet version="1.0"
+    xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+    <xsl:output method="xml" encoding="US-ASCII"
+        doctype-public="-//W3C//DTD XHTML 1.1//EN"
+        doctype-system="http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd"
+        indent="yes" />
+
+    <xsl:template match="/">
+        <html>
+            <head>
+                <link rel="stylesheet" type="text/css"
+                    href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/9/stream/output/" />
+
+                <title>
+                    Home &gt; Supplies &gt;
+                    <xsl:value-of select="/source/supply/@name" />
+                    &gt; Hh data
+                </title>
+            </head>
+            <body>
+                <p>
+                    <a
+                        href="{/source/request/@context-path}/reports/1/output/">
+                        <xsl:value-of select="'Home'" />
+                    </a>
+                    &gt;
+                    <a
+                        href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/49/screen/output/">
+                        <xsl:value-of select="'Supplies'" />
+                    </a>
+                    &gt;
+                    <a
+                        href="{/source/request/@context-path}/reports/4/output/?supply-id={/source/supply/@id}">
+                        <xsl:value-of select="/source/supply/@name" />
+                    </a>
+                    &gt; HH Data
+                </p>
+
+                <xsl:if test="//message">
+                    <ul>
+                        <xsl:for-each select="//message">
+
+                            <li>
+                                <xsl:value-of select="@description" />
+                            </li>
+                        </xsl:for-each>
+                    </ul>
+                </xsl:if>
+
+                <h3>Supply details</h3>
+
+                <ul>
+                    <li>
+                        Name:
+                        <xsl:value-of select="/source/supply/@name" />
+                    </li>
+                    <li>
+                        Import MPAN core:
+                        <xsl:value-of
+                            select="/source/supply/supply-generation/mpan[@label='import']/mpan-core/@core" />
+                    </li>
+                    <li>
+                        Export MPAN core:
+                        <xsl:value-of
+                            select="/source/supply/supply-generation/mpan[@label='export']/mpan-core/@core" />
+                    </li>
+                    <li>
+                        Source Code:
+                        <xsl:value-of
+                            select="/source/supply/source/@code" />
+                    </li>
+                </ul>
+
+                <form action=".">
+                    <fieldset>
+                        <legend>Show hh data</legend>
+                        <input type="hidden" name="supply-id"
+                            value="{/source/supply/@id}" />
+                        <br />
+                        <fieldset>
+                            <legend>Month</legend>
+                            <input name="start-year"
+                                value="{/source/request/parameter[@name='start-year']/value}"
+                                size="4" maxlength="4" />
+                            <xsl:value-of select="' - '" />
+                            <select name="start-month">
+                                <xsl:for-each
+                                    select="/source/months/month">
+                                    <option value="{@number}">
+                                        <xsl:if
+                                            test="@number=/source/request/parameter[@name='start-month']/value">
+                                            <xsl:attribute
+                                                name="selected">selected</xsl:attribute>
+                                        </xsl:if>
+                                        <xsl:value-of select="@number" />
+                                    </option>
+                                </xsl:for-each>
+                            </select>
+                        </fieldset>
+                        <br />
+                        <input type="submit" value="Show" />
+                    </fieldset>
+                </form>
+                <table>
+                    <caption>Hh Data</caption>
+                    <thead>
+                        <tr>
+                            <th rowspan="3">Timestamp</th>
+                            <th colspan="4">Import</th>
+                            <th colspan="4">Export</th>
+                        </tr>
+                        <tr>
+                            <th colspan="2">kWh</th>
+                            <th colspan="2">kVArh</th>
+                            <th colspan="2">kWh</th>
+                            <th colspan="2">kVArh</th>
+                        </tr>
+                        <tr>
+                            <th>Value</th>
+                            <th>Status</th>
+                            <th>Value</th>
+                            <th>Status</th>
+                            <th>Value</th>
+                            <th>Status</th>
+                            <th>Value</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <xsl:for-each select="/source/supply/datum">
+                            <tr>
+                                <td>
+                                    <xsl:value-of select="@timestamp" />
+                                </td>
+                                <td>
+                                    <xsl:value-of
+                                        select="@import-kwh-value" />
+                                </td>
+                                <td>
+                                    <xsl:value-of
+                                        select="@import-kwh-status" />
+                                </td>
+                                <td>
+                                    <xsl:value-of
+                                        select="@import-kvarh-value" />
+                                </td>
+                                <td>
+                                    <xsl:value-of
+                                        select="@import-kvarh-status" />
+                                </td>
+                                <td>
+                                    <xsl:value-of
+                                        select="@export-kwh-value" />
+                                </td>
+                                <td>
+                                    <xsl:value-of
+                                        select="@export-kwh-status" />
+                                </td>
+                                <td>
+                                    <xsl:value-of
+                                        select="@export-kvarh-value" />
+                                </td>
+                                <td>
+                                    <xsl:value-of
+                                        select="@export-kvarh-status" />
+                                </td>
+                            </tr>
+                        </xsl:for-each>
+                    </tbody>
+                </table>
+            </body>
+        </html>
+    </xsl:template>
+</xsl:stylesheet>]]></value>
+  </line>
+  <line>
+    <value>insert</value>
+    <value>report</value>
+    <value>0 Style Sheet</value>
+    <value><![CDATA[inv.getResponse().setContentType("text/css")
+pw = inv.getResponse().getWriter()
+pw.println("table {                         ")
+pw.println("    border: thin solid gray;    ")
+pw.println("    border-collapse: collapse;  ")
+pw.println("}                               ")
+pw.println("td {                            ")
+pw.println("    border: thin solid gray;    ")
+pw.println("}                               ")
+pw.println("th {                            ")
+pw.println("    border: thin solid gray;    ")
+pw.println("}                               ")
+pw.println("#title {                        ")
+pw.println("    font-size: xx-large         ")
+pw.println("}                               ")
+pw.println(".logo {                         ")
+pw.println("    color: green;               ")
+pw.println("}                               ")
+pw.println("                                ")
+pw.println("                                ")
+pw.println("                                ")
+pw.println("                                ")
+pw.println("                                ")
+pw.println("                                ")
+pw.println("                                ")
+pw.close()]]></value>
     <value><![CDATA[]]></value>
-    <value><![CDATA[
-
-    ]]></value>
-  </line>
-  <line>
-    <value>insert</value>
-    <value>report</value>
-    <value>Home</value>
-    <value><![CDATA[]]></value>
-    <value><![CDATA[
-
-    ]]></value>
-  </line>
-  <line>
-    <value>insert</value>
-    <value>report</value>
-    <value>Home</value>
-    <value><![CDATA[]]></value>
-    <value><![CDATA[
-
-    ]]></value>
-  </line>
-  <line>
-    <value>insert</value>
-    <value>report</value>
-    <value>Home</value>
-    <value><![CDATA[]]></value>
-    <value><![CDATA[
-
-    ]]></value>
-  </line>
-  <line>
-    <value>insert</value>
-    <value>report</value>
-    <value>Home</value>
-    <value><![CDATA[]]></value>
-    <value><![CDATA[
-
-    ]]></value>
-  </line>
-  <line>
-    <value>insert</value>
-    <value>report</value>
-    <value>Home</value>
-    <value><![CDATA[]]></value>
-    <value><![CDATA[
-
-    ]]></value>
-  </line>
-  <line>
-    <value>insert</value>
-    <value>report</value>
-    <value>Home</value>
-    <value><![CDATA[]]></value>
-    <value><![CDATA[
-
-    ]]></value>
-  </line>
-  <line>
-    <value>insert</value>
-    <value>report</value>
-    <value>Home</value>
-    <value><![CDATA[]]></value>
-    <value><![CDATA[
-
-    ]]></value>
-  </line>
-  <line>
-    <value>insert</value>
-    <value>report</value>
-    <value>Home</value>
-    <value><![CDATA[]]></value>
-    <value><![CDATA[
-
-    ]]></value>
-  </line>
-  <line>
-    <value>insert</value>
-    <value>report</value>
-    <value>Home</value>
-    <value><![CDATA[]]></value>
-    <value><![CDATA[
-
-    ]]></value>
-  </line>
-  <line>
-    <value>insert</value>
-    <value>report</value>
-    <value>Home</value>
-    <value><![CDATA[]]></value>
-    <value><![CDATA[
-
-    ]]></value>
-  </line>
-  <line>
-    <value>insert</value>
-    <value>report</value>
-    <value>Home</value>
-    <value><![CDATA[]]></value>
-    <value><![CDATA[
-
-    ]]></value>
-  </line>
-  <line>
-    <value>insert</value>
-    <value>report</value>
-    <value>Home</value>
-    <value><![CDATA[]]></value>
-    <value><![CDATA[
-
-    ]]></value>
-  </line>
-  <line>
-    <value>insert</value>
-    <value>report</value>
-    <value>Home</value>
-    <value><![CDATA[]]></value>
-    <value><![CDATA[
-
-    ]]></value>
-  </line>
-  <line>
-    <value>insert</value>
-    <value>report</value>
-    <value>Home</value>
-    <value><![CDATA[]]></value>
-    <value><![CDATA[
-
-    ]]></value>
-  </line>
-  <line>
-    <value>insert</value>
-    <value>report</value>
-    <value>Home</value>
-    <value><![CDATA[]]></value>
-    <value><![CDATA[
-
-    ]]></value>
-  </line>
-  <line>
-    <value>insert</value>
-    <value>report</value>
-    <value>Home</value>
-    <value><![CDATA[]]></value>
-    <value><![CDATA[
-
-    ]]></value>
-  </line>
-  <line>
-    <value>insert</value>
-    <value>report</value>
-    <value>Home</value>
-    <value><![CDATA[]]></value>
-    <value><![CDATA[
-
-    ]]></value>
-  </line>
-  <line>
-    <value>insert</value>
-    <value>report</value>
-    <value>Home</value>
-    <value><![CDATA[]]></value>
-    <value><![CDATA[
-
-    ]]></value>
-  </line>
-  <line>
-    <value>insert</value>
-    <value>report</value>
-    <value>Home</value>
-    <value><![CDATA[]]></value>
-    <value><![CDATA[
-
-    ]]></value>
-  </line>
-  <line>
-    <value>insert</value>
-    <value>report</value>
-    <value>Home</value>
-    <value><![CDATA[]]></value>
-    <value><![CDATA[
-
-    ]]></value>
-  </line>
-  <line>
-    <value>insert</value>
-    <value>report</value>
-    <value>Home</value>
-    <value><![CDATA[]]></value>
-    <value><![CDATA[
-
-    ]]></value>
-  </line>
-  <line>
-    <value>insert</value>
-    <value>report</value>
-    <value>Home</value>
-    <value><![CDATA[]]></value>
-    <value><![CDATA[
-
-    ]]></value>
-  </line>
-  <line>
-    <value>insert</value>
-    <value>report</value>
-    <value>Home</value>
-    <value><![CDATA[]]></value>
-    <value><![CDATA[
-
-    ]]></value>
-  </line>
-  <line>
-    <value>insert</value>
-    <value>report</value>
-    <value>Home</value>
-    <value><![CDATA[]]></value>
-    <value><![CDATA[
-
-    ]]></value>
-  </line>
-  <line>
-    <value>insert</value>
-    <value>report</value>
-    <value>Home</value>
-    <value><![CDATA[]]></value>
-    <value><![CDATA[
-
-    ]]></value>
-  </line>
-  <line>
-    <value>insert</value>
-    <value>report</value>
-    <value>Home</value>
-    <value><![CDATA[]]></value>
-    <value><![CDATA[
-
-    ]]></value>
-  </line>
-  <line>
-    <value>insert</value>
-    <value>report</value>
-    <value>Home</value>
-    <value><![CDATA[]]></value>
-    <value><![CDATA[
-
-    ]]></value>
-  </line>
-  <line>
-    <value>insert</value>
-    <value>report</value>
-    <value>Home</value>
-    <value><![CDATA[]]></value>
-    <value><![CDATA[
-
-    ]]></value>
-  </line>
-  <line>
-    <value>insert</value>
-    <value>report</value>
-    <value>Home</value>
-    <value><![CDATA[]]></value>
-    <value><![CDATA[
-
-    ]]></value>
-  </line>
-  <line>
-    <value>insert</value>
-    <value>report</value>
-    <value>Home</value>
-    <value><![CDATA[]]></value>
-    <value><![CDATA[
-
-    ]]></value>
-  </line>
-  <line>
-    <value>insert</value>
-    <value>report</value>
-    <value>Home</value>
-    <value><![CDATA[]]></value>
-    <value><![CDATA[
-
-    ]]></value>
-  </line>
-  <line>
-    <value>insert</value>
-    <value>report</value>
-    <value>Home</value>
-    <value><![CDATA[]]></value>
-    <value><![CDATA[
-
-    ]]></value>
-  </line>
-  <line>
-    <value>insert</value>
-    <value>report</value>
-    <value>Home</value>
-    <value><![CDATA[]]></value>
-    <value><![CDATA[
-
-    ]]></value>
-  </line>
-  <line>
-    <value>insert</value>
-    <value>report</value>
-    <value>Home</value>
-    <value><![CDATA[]]></value>
-    <value><![CDATA[
-
-    ]]></value>
-  </line>
-  <line>
-    <value>insert</value>
-    <value>report</value>
-    <value>Home</value>
-    <value><![CDATA[]]></value>
-    <value><![CDATA[
-
-    ]]></value>
-  </line>
-  <line>
-    <value>insert</value>
-    <value>report</value>
-    <value>Home</value>
-    <value><![CDATA[]]></value>
-    <value><![CDATA[
-
-    ]]></value>
-  </line>
-  <line>
-    <value>insert</value>
-    <value>report</value>
-    <value>Home</value>
-    <value><![CDATA[]]></value>
-    <value><![CDATA[
-
-    ]]></value>
-  </line>
-  <line>
-    <value>insert</value>
-    <value>report</value>
-    <value>Home</value>
-    <value><![CDATA[]]></value>
-    <value><![CDATA[
-
-    ]]></value>
-  </line>
-  <line>
-    <value>insert</value>
-    <value>report</value>
-    <value>Home</value>
-    <value><![CDATA[]]></value>
-    <value><![CDATA[
-
-    ]]></value>
-  </line>
-  <line>
-    <value>insert</value>
-    <value>report</value>
-    <value>Home</value>
-    <value><![CDATA[]]></value>
-    <value><![CDATA[
-
-    ]]></value>
-  </line>
-  <line>
-    <value>insert</value>
-    <value>report</value>
-    <value>Home</value>
-    <value><![CDATA[]]></value>
-    <value><![CDATA[
-
-    ]]></value>
-  </line>
-  <line>
-    <value>insert</value>
-    <value>report</value>
-    <value>Home</value>
-    <value><![CDATA[]]></value>
-    <value><![CDATA[
-
-    ]]></value>
-  </line>
-  <line>
-    <value>insert</value>
-    <value>report</value>
-    <value>Home</value>
-    <value><![CDATA[]]></value>
-    <value><![CDATA[
-
-    ]]></value>
-  </line>
-  <line>
-    <value>insert</value>
-    <value>report</value>
-    <value>Home</value>
-    <value><![CDATA[]]></value>
-    <value><![CDATA[
-
-    ]]></value>
-  </line>
-  <line>
-    <value>insert</value>
-    <value>report</value>
-    <value>Home</value>
-    <value><![CDATA[]]></value>
-    <value><![CDATA[
-
-    ]]></value>
-  </line>
-  <line>
-    <value>insert</value>
-    <value>report</value>
-    <value>Home</value>
-    <value><![CDATA[]]></value>
-    <value><![CDATA[
-
-    ]]></value>
-  </line>
-  <line>
-    <value>insert</value>
-    <value>report</value>
-    <value>Home</value>
-    <value><![CDATA[]]></value>
-    <value><![CDATA[
-
-    ]]></value>
-  </line>
-  <line>
-    <value>insert</value>
-    <value>report</value>
-    <value>Home</value>
-    <value><![CDATA[]]></value>
-    <value><![CDATA[
-
-    ]]></value>
-  </line>
-  <line>
-    <value>insert</value>
-    <value>report</value>
-    <value>Home</value>
-    <value><![CDATA[]]></value>
-    <value><![CDATA[
-
-    ]]></value>
-  </line>
-  <line>
-    <value>insert</value>
-    <value>report</value>
-    <value>Home</value>
-    <value><![CDATA[]]></value>
-    <value><![CDATA[
-
-    ]]></value>
-  </line>
-  <line>
-    <value>insert</value>
-    <value>report</value>
-    <value>Home</value>
-    <value><![CDATA[]]></value>
-    <value><![CDATA[
-
-    ]]></value>
-  </line>
-  <line>
-    <value>insert</value>
-    <value>report</value>
-    <value>Home</value>
-    <value><![CDATA[]]></value>
-    <value><![CDATA[
-
-    ]]></value>
-  </line>
-  <line>
-    <value>insert</value>
-    <value>report</value>
-    <value>Home</value>
-    <value><![CDATA[]]></value>
-    <value><![CDATA[
-
-    ]]></value>
-  </line>
-  <line>
-    <value>insert</value>
-    <value>report</value>
-    <value>Home</value>
-    <value><![CDATA[]]></value>
-    <value><![CDATA[
-
-    ]]></value>
-  </line>
-  <line>
-    <value>insert</value>
-    <value>report</value>
-    <value>Home</value>
-    <value><![CDATA[]]></value>
-    <value><![CDATA[
-
-    ]]></value>
-  </line>
-  <line>
-    <value>insert</value>
-    <value>report</value>
-    <value>Home</value>
-    <value><![CDATA[]]></value>
-    <value><![CDATA[
-
-    ]]></value>
-  </line>
-  <line>
-    <value>insert</value>
-    <value>report</value>
-    <value>Home</value>
-    <value><![CDATA[]]></value>
-    <value><![CDATA[
-
-    ]]></value>
-  </line>
-  <line>
-    <value>insert</value>
-    <value>report</value>
-    <value>Home</value>
-    <value><![CDATA[]]></value>
-    <value><![CDATA[
-
-    ]]></value>
-  </line>
-  <line>
-    <value>insert</value>
-    <value>report</value>
-    <value>Home</value>
-    <value><![CDATA[]]></value>
-    <value><![CDATA[
-
-    ]]></value>
-  </line>
-  <line>
-    <value>insert</value>
-    <value>report</value>
-    <value>Home</value>
-    <value><![CDATA[]]></value>
-    <value><![CDATA[
-
-    ]]></value>
-  </line>
-  <line>
-    <value>insert</value>
-    <value>report</value>
-    <value>Home</value>
-    <value><![CDATA[]]></value>
-    <value><![CDATA[
-
-    ]]></value>
-  </line>
-  <line>
-    <value>insert</value>
-    <value>report</value>
-    <value>Home</value>
-    <value><![CDATA[]]></value>
-    <value><![CDATA[
-
-    ]]></value>
-  </line>
-  <line>
-    <value>insert</value>
-    <value>report</value>
-    <value>Home</value>
-    <value><![CDATA[]]></value>
-    <value><![CDATA[
-
-    ]]></value>
-  </line>
-  <line>
-    <value>insert</value>
-    <value>report</value>
-    <value>Home</value>
-    <value><![CDATA[]]></value>
-    <value><![CDATA[
-
-    ]]></value>
-  </line>
-  <line>
-    <value>insert</value>
-    <value>report</value>
-    <value>Home</value>
-    <value><![CDATA[]]></value>
-    <value><![CDATA[
-
-    ]]></value>
-  </line>
-  <line>
-    <value>insert</value>
-    <value>report</value>
-    <value>Home</value>
-    <value><![CDATA[]]></value>
-    <value><![CDATA[
-
-    ]]></value>
-  </line>
-  <line>
-    <value>insert</value>
-    <value>report</value>
-    <value>Home</value>
-    <value><![CDATA[]]></value>
-    <value><![CDATA[
-
-    ]]></value>
-  </line>
-  <line>
-    <value>insert</value>
-    <value>report</value>
-    <value>Home</value>
-    <value><![CDATA[]]></value>
-    <value><![CDATA[
-
-    ]]></value>
-  </line>
-  <line>
-    <value>insert</value>
-    <value>report</value>
-    <value>Home</value>
-    <value><![CDATA[]]></value>
-    <value><![CDATA[
-
-    ]]></value>
-  </line>
-  <line>
-    <value>insert</value>
-    <value>report</value>
-    <value>Home</value>
-    <value><![CDATA[]]></value>
-    <value><![CDATA[
-
-    ]]></value>
   </line>
 </csv>

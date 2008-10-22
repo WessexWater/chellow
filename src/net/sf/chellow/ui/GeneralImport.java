@@ -870,7 +870,9 @@ public class GeneralImport extends Thread implements Urlable, XmlDescriber {
 							} else if (e.isEndElement()
 									&& e.asEndElement().getName()
 											.getLocalPart().equals("value")) {
-								values.add(value.toString());
+								values.add(value.toString().replace(
+										"&lt;![CDATA[", "<![CDATA[").replace(
+										"]]&gt;", "]]>"));
 								inValue = false;
 							} else if (inValue && e.isCharacters()) {
 								value.append(e.asCharacters().getData());
