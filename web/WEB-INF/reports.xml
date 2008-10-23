@@ -376,65 +376,20 @@ source.appendChild(yesterday.toXml(doc))]]></value>
                                     </td>
                                     <td>
                                         <xsl:value-of
-
-
-
                                             select="source/@code" />
-
-
-
                                     </td>
-
-
-
                                     <td>
-
-
-
                                         <xsl:if
-
-
-
                                             test="supply-generation/mpan[@label='import']">
-
-
-
                                             <xsl:value-of
-
-
-
                                                 select="supply-generation/mpan[@label='import']/mpan-core/@core" />
-
-
-
                                         </xsl:if>
-
-
-
                                     </td>
-
-
-
                                     <td>
-
-
-
                                         <xsl:if
-
-
-
                                             test="supply-generation/mpan[@label='export']">
-
-
-
                                             <xsl:value-of
-
-
-
                                                 select="supply-generation/mpan[@label='export']/mpan-core/@core" />
-
-
-
                                         </xsl:if>
                                     </td>
                                 </tr>
@@ -454,18 +409,10 @@ source.appendChild(yesterday.toXml(doc))]]></value>
 <xsl:value-of select="'Table of site level monthly kWh, MD kWh etc.'" /></a>
           </li>
           <li>
-        <a href="{/source/request/@context-path}/orgs/1/reports/12/screen/output/?site-code={/source/site/@code}&amp;year={/source/date[@label = 'yesterday']/@year}&amp;month={/source/date[@label = 'yesterday']/@month}&amp;day={/source/date[@label='yesterday']/@day}">
-
-
-
+        <a href="{/source/request/@context-path}/reports/13/output/?site-code={/source/site/@code}&amp;year={/source/date[@label = 'yesterday']/@year}&amp;month={/source/date[@label = 'yesterday']/@month}&amp;day={/source/date[@label='yesterday']/@day}">
                             <xsl:value-of select="'Table of hh data'" />
-
-
-
                         </a>
-
           </li>
-
           <li><a href="{/source/request/@context-path}/orgs/1/reports/13/screen/output/?site-id={/source/site/@id}"><xsl:value-of select="'Bulk hh data download'" /></a>
 
           </li>
@@ -694,7 +641,7 @@ source.setAttribute("months", str(months))]]></value>
             </head>
             <body>
                 <p>
-                    Home &gt;
+                    <a href="{/source/request/@context-path}/reports/1/output/">Home</a> &gt;
                     <a href="{/source/request/@context-path}/reports/2/output/">
                         <xsl:value-of select="'Sites'" />
                     </a>
@@ -715,357 +662,48 @@ source.setAttribute("months", str(months))]]></value>
                 </xsl:if>
                 <p>
                     <img
-
-
-
-
-
-
-
-                        src="{/source/request/@context-path}/orgs/{/source/site/org/@id}/reports/10/stream/output/?site-id={/source/site/@id}&amp;finish-date-year={/source/@finish-date-year}&amp;finish-date-month={/source/@finish-date-month}&amp;months={/source/@months}" />
-
-
-
-
-
-
-
+                        src="{/source/request/@context-path}/reports/11/output/?site-id={/source/site/@id}&amp;finish-date-year={/source/@finish-date-year}&amp;finish-date-month={/source/@finish-date-month}&amp;months={/source/@months}" />
                 </p>
-
-
-
-
-
-
-
                 <form action=".">
-
-
-
-
-
-
-
                     <fieldset>
-
-
-
-
-
-
-
                         <legend>Show graph</legend>
-
-
-
-
-
-
-
                         <input type="hidden" name="site-id"
-
-
-
-
-
-
-
                             value="{/source/request/parameter[@name='site-id']/value}" />
-
-
-
-
-
-
-
                         <xsl:value-of select="'For '" />
-
-
-
-
-
-
-
                         <select name="months">
-
-
-
-
-
-
-
                             <xsl:for-each select="/source/month">
-
-
-
-
-
-
-
                                 <option>
-
-
-
-
-
-
-
                                     <xsl:if
-
-
-
-
-
-
-
                                         test="/source/@months = @value">
-
-
-
-
-
-
-
                                         <xsl:attribute
-
-
-
-
-
-
-
-                                            name="selected">selected</xsl:attribute>
-
-
-
-
-
-
-
+   name="selected">selected</xsl:attribute>
                                     </xsl:if>
-
-
-
-
-
-
-
                                     <xsl:value-of select="@value" />
-
-
-
-
-
-
-
                                 </option>
-
-
-
-
-
-
-
                             </xsl:for-each>
-
-
-
-
-
-
-
                         </select>
-
-
-
-
-
-
-
                         <xsl:value-of select="' months finishing in '" />
-
-
-
-
-
-
-
                         <input size="4" length="4"
-
-
-
-
-
-
-
                             name="finish-date-year" value="{/source/@finish-date-year}" />
-
-
-
-
-
-
-
                         <xsl:value-of select="' - '" />
-
-
-
-
-
-
-
                         <select name="finish-date-month">
-
-
-
-
-
-
-
                             <xsl:for-each select="/source/month">
-
-
-
-
-
-
-
                                 <option>
-
-
-
-
-
-
-
                                     <xsl:if
-
-
-
-
-
-
-
                                         test="number(/source/@finish-date-month) = number(@value)">
-
-
-
-
-
-
-
-                                        <xsl:attribute
-
-
-
-
-
-
-
-                                            name="selected">selected</xsl:attribute>
-
-
-
-
-
-
-
+                                        <xsl:attribute name="selected">selected</xsl:attribute>
                                     </xsl:if>
-
-
-
-
-
-
-
                                     <xsl:value-of select="@value" />
-
-
-
-
-
-
-
                                 </option>
-
-
-
-
-
-
-
                             </xsl:for-each>
-
-
-
-
-
-
-
                         </select>
-
-
-
-
-
-
-
                         <xsl:value-of select="' '" />
-
-
-
-
-
-
-
                         <input type="submit" value="Show" />
-
-
-
-
-
-
-
                     </fieldset>
-
-
-
-
-
-
-
                 </form>
-
-
-
-
-
-
-
             </body>
-
-
-
-
-
-
-
         </html>
-
-
-
-
-
-
-
     </xsl:template>
-
-
-
-
-
-
-
 </xsl:stylesheet>]]></value>
   </line>
   <line>
@@ -1136,8 +774,6 @@ source.appendChild(inv.requestXml(doc))]]></value>
                 </p>
                 <xsl:if test="//message">
                     <ul>
-
-
                         <xsl:for-each select="//message">
 
                             <li>
@@ -1149,7 +785,7 @@ source.appendChild(inv.requestXml(doc))]]></value>
 
                 <p>
                     <img
-                        src="{/source/request/@context-path}/orgs/{/source/site/org/@id}/reports/11/stream/output/?site-id={/source/site/@id}&amp;finish-date-year={/source/@finish-date-year}&amp;finish-date-month={/source/@finish-date-month}&amp;months={/source/@months}" />
+                        src="{/source/request/@context-path}/reports/12/output/?site-id={/source/site/@id}&amp;finish-date-year={/source/@finish-date-year}&amp;finish-date-month={/source/@finish-date-month}&amp;months={/source/@months}" />
                 </p>
                 <form action=".">
                     <fieldset>
@@ -2345,5 +1981,861 @@ pw.println("                                ")
 pw.println("                                ")
 pw.close()]]></value>
     <value><![CDATA[]]></value>
+  </line>
+  <line>
+    <value>insert</value>
+    <value>report</value>
+    <value>0 Site HH Graph</value>
+    <value><![CDATA[from net.sf.chellow.monad import Hiber, UserException
+from java.lang import System
+from net.sf.chellow.monad.types import MonadDate 
+from java.util import GregorianCalendar, TimeZone, Locale, Calendar, Date
+from java.awt.image import BufferedImage
+from javax.imageio import ImageIO
+from java.awt import Font, Color
+import math
+from java.sql import ResultSet, Timestamp
+from java.text import DateFormat
+from net.sf.chellow.physical import HhEndDate, HhDatum, Site
+
+start = System.currentTimeMillis()
+inv.getResponse().setContentType("image/png")
+site_id = inv.getLong("site-id")
+finishDateYear = inv.getInteger("finish-date-year")
+finishDateMonth = inv.getInteger("finish-date-month")
+months = inv.getInteger("months")
+if not inv.isValid():
+    raise UserException.newInvalidParameter()
+cal = GregorianCalendar(TimeZone.getTimeZone("GMT"), Locale.UK)
+cal.clear()
+cal.set(Calendar.YEAR, finishDateYear)
+cal.set(Calendar.MONTH, finishDateMonth)
+cal.set(Calendar.DAY_OF_MONTH, 1)
+finishDate = cal.getTime()
+cal.add(Calendar.MONTH, -1 * months)
+startDate = cal.getTime()
+cal.setTime(finishDate)
+cal.add(Calendar.DAY_OF_MONTH, -1)
+
+site = Site.getSite(site_id)
+supplies = Hiber.session().createQuery("select distinct supply from Supply supply join supply.generations supplyGeneration join supplyGeneration.siteSupplyGenerations siteSupplyGeneration where siteSupplyGeneration.site = :site and supply.source.code != 'sub'").setEntity('site', site).list()
+suppliesSQL = ''
+for supply in supplies:
+    suppliesSQL = suppliesSQL + str(supply.getId()) + ','
+con = Hiber.session().connection()
+stmt = con.prepareStatement("select hh_datum.value, hh_datum.end_date, hh_datum.status, channel.is_import from hh_datum, channel, supply_generation, supply where hh_datum.channel_id = channel.id and channel.supply_generation_id = supply_generation.id and supply_generation.supply_id = supply.id and channel.is_kwh is true and hh_datum.end_date >= ? and hh_datum.end_date <= ? and supply.id in (" + suppliesSQL[:-1] + ") order by hh_datum.end_date", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.CLOSE_CURSORS_AT_COMMIT)
+stmt.setTimestamp(1, Timestamp(startDate.getTime()))
+stmt.setTimestamp(2, Timestamp(finishDate.getTime()))
+stmt.setFetchSize(100)
+rs = stmt.executeQuery()
+hhDate = HhEndDate(startDate).getDate().getTime()
+maxScale = 0
+minScale = 0
+resultData = []
+actualStatus = HhDatum.ACTUAL
+if rs.next():
+    hhChannelValue = rs.getFloat("value")
+    hhChannelEndDate = rs.getTimestamp("end_date")
+    isImport = rs.getBoolean("is_import")
+    status = rs.getString("status")
+    finishDateMillis = finishDate.getTime()
+    cal = MonadDate.getCalendar()
+    while hhDate <= finishDateMillis:
+        complete = "blank"
+        hhValue = 0
+        while hhChannelEndDate != None and hhChannelEndDate.getTime() == hhDate:
+            if isImport:
+                hhValue = hhValue + hhChannelValue
+            else:
+                hhValue = hhValue - hhChannelValue
+            if status == actualStatus:
+                if complete == "blank":
+                    complete = "actual"
+            else:
+                complete = "not-actual"
+            if rs.next():
+                hhChannelValue = rs.getFloat("value")
+                hhChannelEndDate = rs.getTimestamp("end_date")
+                isImport = rs.getBoolean("is_import")
+                status = rs.getString("status")
+            else:
+                hhChannelEndDate = None
+        hhDate = HhEndDate.getNext(cal, hhDate)
+        resultData.append([hhValue, hhDate, complete == "actual"])
+        maxScale = max(maxScale, hhValue)
+        minScale = min(minScale, hhValue)
+    System.err.println('ooostep is max scale' + str(maxScale) + ' min scale ' + str(minScale))
+    if maxScale > 0 and maxScale < 10:
+        maxScale = 10
+    if minScale < 0 and minScale > -10:
+        minScale = -10
+    if minScale == 0 and maxScale == 0:
+        minScale = 10
+        maxScale = 10
+    System.err.println('pppstep is max scale' + str(maxScale) + ' min scale ' + str(minScale))
+    step = 10**int(math.floor(math.log10(maxScale - minScale)))
+    System.err.println('kkstep is ' + str(step) + ' max scale' + str(maxScale) + ' min scale ' + str(minScale))
+    if step > (maxScale - minScale) / 2:
+        step = int(float(step) / 4)
+if len(resultData) > 0:
+    graphLeft = 100
+    image = BufferedImage(graphLeft + len(resultData) + 100, 400, BufferedImage.TYPE_4BYTE_ABGR)
+    graphics = image.createGraphics()
+    defaultFont = graphics.getFont()
+    smallFont = Font(defaultFont.getName(), defaultFont.getStyle(), 10)
+    maxHeight = 300
+    scaleFactor = float(maxHeight) / (maxScale - minScale)
+    graphTop = 50
+    xAxis = int(graphTop + maxScale * scaleFactor)
+    monthDateFormat = DateFormat.getDateInstance(DateFormat.LONG, Locale.UK)
+    monthDateFormat.applyLocalizedPattern("MMMMMM")
+    yearDateFormat = DateFormat.getDateInstance(DateFormat.LONG, Locale.UK)
+    yearDateFormat.applyLocalizedPattern("yyyy")
+    monthPoints = []
+    for i in range(len(resultData)):
+        dataHh = resultData[i]
+        value = dataHh[0]
+        date = dataHh[1]
+        cal.setTimeInMillis(date)
+        hour = cal.get(Calendar.HOUR_OF_DAY)
+        minute = cal.get(Calendar.MINUTE)
+        height = int(value * scaleFactor)
+        if dataHh[2]:
+            graphics.setColor(Color.BLUE)
+        else:
+            graphics.setColor(Color.GRAY)
+            graphics.fillRect(graphLeft + i, graphTop, 1, maxHeight)
+            graphics.setColor(Color.BLACK)
+        if height > 0:
+            graphics.fillRect(graphLeft + i, xAxis - height, 1, height)
+        else:
+            graphics.fillRect(graphLeft + i, xAxis, 1, abs(height))
+        if hour == 0 and minute == 30:
+            day = cal.get(Calendar.DAY_OF_MONTH)
+            dayOfWeek = cal.get(Calendar.DAY_OF_WEEK)
+            if dayOfWeek == 7 or dayOfWeek == 1:
+                graphics.setColor(Color.RED)
+            else:
+                graphics.setColor(Color.BLACK)
+            graphics.drawString(str(day), graphLeft + i + 16, graphTop + maxHeight + 20)
+            graphics.setColor(Color.BLACK)
+            graphics.fillRect(graphLeft + i, graphTop + maxHeight, 1, 5)
+            if day == 15:
+                graphics.drawString(monthDateFormat.format(cal.getTime()), graphLeft + i + 16, graphTop + maxHeight + 45)
+                monthPoints.append(i)
+    graphics.setColor(Color.BLACK)
+    graphics.fillRect(graphLeft, graphTop, 1, maxHeight)
+    scalePoints = []
+    System.err.println('step is ' + str(step) + ' max scale' + str(maxScale) + ' min scale ' + str(maxScale))
+    for i in range(0, int(maxScale), step):
+        scalePoints.append(i)
+    for i in range(0, int(minScale), step * -1):
+        scalePoints.append(i)
+    graphics.setColor(Color.BLACK)
+    for point in scalePoints:
+        graphics.fillRect(graphLeft - 5, int(xAxis - point * scaleFactor), len(resultData) + 5, 1)
+        graphics.drawString(str(point * 2), graphLeft - 40, int(xAxis - point * scaleFactor + 5))
+        for monthPoint in monthPoints:
+            graphics.drawString(str(point * 2), graphLeft + monthPoint + 16, int(xAxis - point * scaleFactor - 2))
+    graphics.drawString("kW", graphLeft - 90, 100)
+    title = "Electricity use at site " + site.getCode().toString() + " " + site.getName() + " for " + str(months) + " month"
+    if months > 1:
+        title = title + "s"
+    title = title + " ending " + monthDateFormat.format(Date(finishDate.getTime() - 1)) + " " + yearDateFormat.format(Date(finishDate.getTime() - 1))
+    graphics.drawString(title, 30, 30)
+    graphics.setFont(smallFont)
+    graphics.drawString("Poor data is denoted by a grey background and black foreground.", 30, 395)
+else:
+    image = BufferedImage(400, 400, BufferedImage.TYPE_4BYTE_ABGR)
+    graphics = image.createGraphics()
+    graphics.setColor(Color.BLACK)
+    graphics.drawString("No data available for this period.", 30, 10)
+
+os = inv.getResponse().getOutputStream()
+graphics.setColor(Color.BLACK)
+#graphics.drawString("report took..." + str(java.lang.System.currentTimeMillis() - start) + "ms", 10, 390)
+ImageIO.write(image, "png", os)
+os.close()]]></value>
+    <value><![CDATA[]]></value>
+  </line>
+  <line>
+    <value>insert</value>
+    <value>report</value>
+    <value>0 Generation Graph</value>
+    <value><![CDATA[from net.sf.chellow.monad import Hiber, UserException
+from net.sf.chellow.physical import HhEndDate, HhDatum, Site
+from net.sf.chellow.monad.types import MonadDate
+from java.awt.image import BufferedImage
+from javax.imageio import ImageIO
+from java.awt import Color, Font
+import math
+from java.sql import Timestamp, ResultSet
+from java.text import DateFormat
+from java.lang import System
+from java.util import GregorianCalendar, TimeZone, Locale, Calendar, Date
+
+colour_list = [Color.BLUE, Color.GREEN, Color.RED, Color.YELLOW, Color.MAGENTA, Color.CYAN, Color.PINK]
+
+def set_colour(graphics, supplies, id, name, source_code):
+    if not id in supplies:
+        supplies[id] = [len(supplies), name, source_code]
+    graphics.setColor(colour_list[supplies[id][0]])
+
+def paint_legend(supplies, graph_top):
+    i = 0
+    for supply in supplies.values():
+        graphics.setColor(colour_list[supply[0]])
+        graphics.fillRect(12, int(graph_top + 15 + (10 * i)), 8, 8)
+        graphics.setColor(Color.BLACK)
+        graphics.drawString(supply[2] + ' ' + supply[1], 25, int(graph_top + 22 + (10 * i)))
+        i = i + 1        
+
+def minimum_scale(min_scale, max_scale):
+    if min_scale == 0 and max_scale == 0:
+        min_scale = 0
+        max_scale = 10
+    if min_scale < 0 and min_scale > -10:
+        min_scale = -10
+    if max_scale > 0 and max_scale < 10:
+        max_scale = 10
+    return min_scale, max_scale
+
+start = System.currentTimeMillis()
+inv.getResponse().setContentType("image/png")
+site_id = inv.getLong("site-id")
+finishDateYear = inv.getInteger("finish-date-year")
+finishDateMonth = inv.getInteger("finish-date-month")
+months = inv.getInteger("months")
+if not inv.isValid():
+    raise UserException.newInvalidParameter()
+cal = GregorianCalendar(TimeZone.getTimeZone("GMT"), Locale.UK)
+cal.clear()
+cal.set(Calendar.YEAR, finishDateYear)
+cal.set(Calendar.MONTH, finishDateMonth)
+cal.set(Calendar.DAY_OF_MONTH, 1)
+finishDate = cal.getTime()
+cal.add(Calendar.MONTH, -1 * months)
+startDate = cal.getTime()
+cal.setTime(finishDate)
+cal.add(Calendar.DAY_OF_MONTH, -1)
+
+site = Site.getSite(site_id)
+supplies = Hiber.session().createQuery("select distinct supply from Supply supply join supply.generations supplyGeneration join supplyGeneration.siteSupplyGenerations siteSupplyGeneration where siteSupplyGeneration.site = :site and supply.source.code != 'sub'").setEntity('site', site).list()
+suppliesSQL = ''
+for supply in supplies:
+    suppliesSQL = suppliesSQL + str(supply.getId()) + ','
+con = Hiber.session().connection()
+stmt = con.prepareStatement("select hh_datum.value, hh_datum.end_date, hh_datum.status, channel.is_import, supply.name, source.code, supply.id from hh_datum, channel, supply_generation, supply, source where hh_datum.channel_id = channel.id and channel.supply_generation_id = supply_generation.id and supply_generation.supply_id = supply.id and supply.source_id = source.id and channel.is_kwh is true and hh_datum.end_date >= ? and hh_datum.end_date <= ? and supply.id in (" + suppliesSQL[:-1] + ") order by hh_datum.end_date, supply.id", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.CLOSE_CURSORS_AT_COMMIT)
+stmt.setTimestamp(1, Timestamp(startDate.getTime()))
+stmt.setTimestamp(2, Timestamp(finishDate.getTime()))
+stmt.setFetchSize(100)
+rs = stmt.executeQuery()
+hhDate = HhEndDate(startDate).getDate().getTime()
+maxHeight = 80
+pxStep = 10
+maxOverallScale = 0
+minOverallScale = 0
+maxExportedScale = 0
+minExportedScale = 0
+maxImportedScale = 0
+minImportedScale = 0
+maxGeneratedScale = 0
+maxParasiticScale = 0
+maxDisplacedScale = 0
+minDisplacedScale = 0
+maxUsedScale = 0
+minUsedScale = 0
+resultData = []
+actualStatus = HhDatum.ACTUAL
+if rs.next():
+    hhChannelValue = rs.getFloat("value")
+    hhChannelEndDate = rs.getTimestamp("end_date")
+    isImport = rs.getBoolean("is_import")
+    status = rs.getString("status")
+    sourceCode = rs.getString("code")
+    supplyName = rs.getString("name")
+    supply_id = rs.getLong('id')
+    finishDateMillis = finishDate.getTime()
+    cal = MonadDate.getCalendar()
+    while hhDate <= finishDateMillis:
+        complete = "blank"
+        exportedValue = 0
+        importedValue = 0
+        parasiticValue = 0
+        generatedValue = 0
+        supplyList = []
+        while hhChannelEndDate != None and hhChannelEndDate.getTime() == hhDate:
+            if not isImport and sourceCode == "net":
+                exportedValue = exportedValue + hhChannelValue
+            if isImport and sourceCode == "net":
+                importedValue = importedValue + hhChannelValue
+            if isImport and (sourceCode == "lm" or sourceCode == "chp" or sourceCode == "turb"):
+                generatedValue = generatedValue + hhChannelValue
+            if not isImport and (sourceCode == "lm" or sourceCode == "chp" or sourceCode == "turb"):
+                parasiticValue = parasiticValue + hhChannelValue
+            supplyList.append([supplyName, sourceCode, isImport, hhChannelValue, supply_id])
+            if rs.next():
+                sourceCode = rs.getString("code")
+                supplyName = rs.getString("name")
+                hhChannelValue = rs.getFloat("value")
+                hhChannelEndDate = rs.getTimestamp("end_date")
+                isImport = rs.getBoolean("is_import")
+                status = rs.getString("status")
+                supply_id = rs.getLong('id')
+            else:
+                hhChannelEndDate = None
+        maxExportedScale = max(maxExportedScale, exportedValue)
+        minExportedScale = min(minExportedScale, exportedValue)
+        maxImportedScale = max(maxImportedScale, importedValue)
+        minImportedScale = min(minImportedScale, importedValue)
+        maxGeneratedScale = max(maxGeneratedScale, generatedValue)
+        maxParasiticScale = max(maxParasiticScale, parasiticValue)
+        displacedValue = generatedValue - parasiticValue - exportedValue
+        maxDisplacedScale = max(maxDisplacedScale, displacedValue)
+        minDisplacedScale = min(minDisplacedScale, displacedValue)
+        usedValue = importedValue + displacedValue
+        maxUsedScale = max(maxUsedScale, usedValue)
+        minUsedScale = min(minUsedScale, usedValue)
+        resultData.append([hhDate, supplyList, usedValue, displacedValue])
+        hhDate = HhEndDate.getNext(cal, hhDate)
+    #raise net.sf.chellow.monad.ui.UserException.newInvalidParameter("ResultData: " + str(resultData)) 
+    #raise net.sf.chellow.monad.ui.UserException.newInvalidParameter("Overall: " + str(maxOverallScale) + " " + str(minOverallScale) + " Exported: " + str(maxExportedScale) + " " + str(minExportedScale) + " Imported: " + str(maxImportedScale) + " " + str(minImportedScale) + " Generated: " + str(maxGeneratedScale) + " Parasitic: " + str(maxParasiticScale) + " Displaced: " + str(maxDisplacedScale) + " " + str(minDisplacedScale) + " Used: " + str(maxUsedScale) + " " + str(minUsedScale))
+    minimized_scale = minimum_scale(minExportedScale, maxExportedScale)
+    minExportedScale = minimized_scale[0]
+    maxExportedScale = minimized_scale[1]
+    minimized_scale = minimum_scale(minImportedScale, maxImportedScale)
+    minImportedScale = minimized_scale[0]
+    maxImportedScale = minimized_scale[1]
+    if maxGeneratedScale == 0 and maxParasiticScale == 0:
+        maxGeneratedScale = 10
+        maxParasiticScale = 10
+    minimized_scale = minimum_scale(minUsedScale, maxUsedScale)
+    minUsedScale = minimized_scale[0]
+    maxUsedScale = minimized_scale[1]
+    minimized_scale = minimum_scale(minDisplacedScale, maxDisplacedScale)
+    minDisplacedScale = minimized_scale[0]
+    maxDisplacedScale = minimized_scale[1]
+    maxOverallScale = max(maxExportedScale, maxImportedScale, maxGeneratedScale, maxDisplacedScale, maxUsedScale)
+    minOverallScale = min(minExportedScale, minImportedScale, minDisplacedScale, minUsedScale)
+    rawStepOverall = (maxOverallScale * 2) / (maxHeight / pxStep)
+    factorOverall = 10**int(math.floor(math.log10(rawStepOverall)))
+    endOverall = rawStepOverall / factorOverall
+    newEndOverall = 1
+    if endOverall >= 2:
+        newEndOverall = 2
+    if endOverall >= 5:
+        newEndOverall = 5
+    stepOverall = newEndOverall * factorOverall
+    #raise net.sf.chellow.monad.ui.UserException.newInvalidParameter("Overall Step: " + str(stepOverall))
+if len(resultData) > 0:
+    graphLeft = 180
+    scaleFactorOverall = float(maxHeight) / maxOverallScale
+    #raise net.sf.chellow.monad.ui.UserException.newInvalidParameter(str(scaleFactorExported) + " " + str(scaleFactorUsed) + " " + str(scaleFactorDisplaced) + " " + str(scaleFactorImported) + " " + str(scaleFactorGenerated))
+    graphOrderExported = 5
+    graphOrderImported = 4
+    graphOrderGenerated = 3
+    graphOrderUsed = 1
+    graphOrderDisplaced = 2
+    minUsed = 0
+    minDisplaced = 0
+    minParasitic = 0
+    for i in range(0, int(minUsedScale), stepOverall * -1):
+        minUsed = min(minUsed, i)
+    for i in range(0, int(minDisplacedScale), stepOverall * -1):
+        minDisplaced = min(minDisplaced, i)
+    for i in range(0, int(maxParasiticScale), stepOverall):
+        minParasitic = max(minParasitic, i)
+    #raise net.sf.chellow.monad.ui.UserException.newInvalidParameter(str(int((abs(minParasitic)) * scaleFactorOverall)))
+    minUsed = int(abs(minUsed) * scaleFactorOverall)
+    minDisplaced = int(abs(minDisplaced) * scaleFactorOverall)
+    minParasitic = int(abs(minParasitic) * scaleFactorOverall)
+    graphTopExported = ((graphOrderExported - 1) * (maxHeight + 22)) + 30 + minUsed + minDisplaced + minParasitic
+    graphTopImported = ((graphOrderImported - 1) * (maxHeight + 22)) + 30 + minUsed + minDisplaced + minParasitic
+    graphTopGenerated = ((graphOrderGenerated - 1) * (maxHeight + 22)) + 30 + minUsed + minDisplaced
+    graphTopUsed = ((graphOrderUsed - 1) * (maxHeight + 22)) + 30
+    graphTopDisplaced = ((graphOrderDisplaced - 1) * (maxHeight + 22)) + 30 + minUsed
+    image = BufferedImage(graphLeft + len(resultData) + 100, ((maxHeight + 22) * 5) + 60 + minUsed + minDisplaced + minParasitic, BufferedImage.TYPE_4BYTE_ABGR)
+    graphics = image.createGraphics()
+    defaultFont = graphics.getFont()
+    smallFont = Font(defaultFont.getName(), defaultFont.getStyle(), 10)
+    keyFont = Font(defaultFont.getName(), defaultFont.getStyle(), 9)
+    #raise net.sf.chellow.monad.ui.UserException.newInvalidParameter(str(graphTopExported) + " " + str(graphTopImported) + " " + str(graphTopUsed) + " " + str(graphTopDisplaced))
+    xAxisExported = int(graphTopExported + maxOverallScale * scaleFactorOverall)
+    xAxisImported = int(graphTopImported + maxOverallScale * scaleFactorOverall)
+    xAxisGenerated = int(graphTopGenerated + maxOverallScale * scaleFactorOverall)
+    xAxisUsed = int(graphTopUsed + maxOverallScale * scaleFactorOverall)
+    xAxisDisplaced = int(graphTopDisplaced + maxOverallScale * scaleFactorOverall)
+    monthDateFormat = DateFormat.getDateInstance(DateFormat.LONG, Locale.UK)
+    monthDateFormat.applyLocalizedPattern("MMMMMM")
+    yearDateFormat = DateFormat.getDateInstance(DateFormat.LONG, Locale.UK)
+    yearDateFormat.applyLocalizedPattern("yyyy")
+    generated_supplies = {}
+    imported_supplies = {}
+    exported_supplies = {}
+    monthPoints = []
+    for i in range(len(resultData)):
+        dataHh = resultData[i]
+        date = dataHh[0]
+        usedValue = dataHh[2]
+        displacedValue = dataHh[3]
+        dataHhSupplyList = dataHh[1]
+        cal.setTimeInMillis(date)
+        hour = cal.get(Calendar.HOUR_OF_DAY)
+        minute = cal.get(Calendar.MINUTE)
+        graphics.setColor(Color.BLUE)
+        usedHeight = int(usedValue * scaleFactorOverall)
+        if usedHeight < 0:
+            graphics.fillRect(graphLeft + i, xAxisUsed, 1, abs(usedHeight))
+        else:
+            graphics.fillRect(graphLeft + i, xAxisUsed - usedHeight, 1, usedHeight)
+        displacedHeight = int(displacedValue * scaleFactorOverall)
+        if displacedHeight < 0:
+            graphics.fillRect(graphLeft + i, xAxisDisplaced, 1, abs(displacedHeight))
+        else:
+            graphics.fillRect(graphLeft + i, xAxisDisplaced - displacedHeight, 1, displacedHeight)
+        generatedTotal = 0
+        parasiticTotal = 0
+        importedTotal = 0
+        exportedTotal = 0
+        for j in dataHhSupplyList:
+            name = j[0]
+            source = j[1]
+            isImport = j[2]
+            value = j[3]
+            id = j[4]
+            height = int(value * scaleFactorOverall)
+            if  source == "net" and not isImport:
+                set_colour(graphics, exported_supplies, id, name, source)
+                exportedTotal = exportedTotal + height
+                graphics.fillRect(graphLeft + i, xAxisExported - exportedTotal, 1, height)
+            if  source == "net" and isImport:
+                set_colour(graphics, imported_supplies, id, name, source)
+                importedTotal = importedTotal + height
+                graphics.fillRect(graphLeft + i, xAxisImported - importedTotal, 1, height)
+            if isImport and (source == "lm"):
+                set_colour(graphics, generated_supplies, id, name, source)
+                generatedTotal = generatedTotal + height
+                graphics.fillRect(graphLeft + i, xAxisGenerated - generatedTotal, 1, height)
+            if isImport and (source == "chp"):
+                set_colour(graphics, generated_supplies, id, name, source)
+                generatedTotal = generatedTotal + height
+                graphics.fillRect(graphLeft + i, xAxisGenerated -  generatedTotal, 1, height)
+            if isImport and (source == "turb"):
+                set_colour(graphics, generated_supplies, id, name, source)
+                generatedTotal = generatedTotal + height
+                graphics.fillRect(graphLeft + i, xAxisGenerated - generatedTotal, 1, height)
+            if not isImport and (source == "lm"):
+                set_colour(graphics, generated_supplies, id, name, source)
+                parasiticTotal = parasiticTotal + height
+                graphics.fillRect(graphLeft + i, xAxisGenerated, 1, height)
+            if not isImport and (source == "chp"):
+                set_colour(graphics, generated_supplies, id, name, source)
+                parasiticTotal = parasiticTotal + height
+                graphics.fillRect(graphLeft + i, xAxisGenerated, 1, height)
+            if not isImport and (source == "turb"):
+                set_colour(graphics, generated_supplies, id, name, source)
+                parasiticTotal = parasiticTotal + height
+                graphics.fillRect(graphLeft + i, xAxisGenerated, 1, height) 
+        if hour == 0 and minute == 30:
+            day = cal.get(Calendar.DAY_OF_MONTH)
+            dayOfWeek = cal.get(Calendar.DAY_OF_WEEK)
+            if dayOfWeek == 7 or dayOfWeek == 1:
+                graphics.setColor(Color.RED)
+            else:
+                graphics.setColor(Color.BLACK)
+            graphics.drawString(str(day), graphLeft + i + 16, ((maxHeight + 22) * 5) + 30 + minUsed + minDisplaced + minParasitic)
+            graphics.setColor(Color.BLACK)
+            graphics.fillRect(graphLeft + i, graphTopExported + maxHeight, 1, 5)
+            graphics.fillRect(graphLeft + i, graphTopImported + maxHeight, 1, 5)
+            graphics.fillRect(graphLeft + i, graphTopGenerated + maxHeight, 1, 5)
+            graphics.fillRect(graphLeft + i, graphTopUsed + maxHeight, 1, 5)
+            graphics.fillRect(graphLeft + i, graphTopDisplaced + maxHeight, 1, 5)
+            if day == 15:
+                graphics.drawString(monthDateFormat.format(cal.getTime()), graphLeft + i + 16, ((maxHeight + 22) * 5) + 50 + minUsed + minDisplaced + minParasitic)
+                monthPoints.append(i)
+    graphics.setColor(Color.BLACK)
+    graphics.fillRect(graphLeft, graphTopExported, 1, maxHeight)
+    graphics.fillRect(graphLeft, graphTopImported, 1, maxHeight)
+    graphics.fillRect(graphLeft, graphTopGenerated, 1, maxHeight + minParasitic)
+    graphics.fillRect(graphLeft, graphTopUsed, 1, maxHeight + minUsed)
+    graphics.fillRect(graphLeft, graphTopDisplaced, 1, maxHeight + minDisplaced)
+    scalePointsExported = []
+    for i in range(0, int(maxOverallScale), stepOverall):
+        scalePointsExported.append(i)
+    #for i in range(0, int(minExportedScale), stepOverall * -1):
+        #scalePointsExported.append(i)
+    graphics.setColor(Color.BLACK)
+    for point in scalePointsExported:
+        graphics.fillRect(graphLeft - 5, int(xAxisExported - point * scaleFactorOverall), len(resultData) + 5, 1)
+        graphics.drawString(str(point * 2), graphLeft - 40, int(xAxisExported - point * scaleFactorOverall + 5))
+        for monthPoint in monthPoints:
+            graphics.drawString(str(point * 2), graphLeft + monthPoint + 16, int(xAxisExported - point * scaleFactorOverall - 2))
+    scalePointsImported = []
+    for i in range(0, int(maxOverallScale), stepOverall):
+        scalePointsImported.append(i)
+    #for i in range(0, int(minOverallScale), stepOverall * -1):
+        #scalePointsImported.append(i)
+    graphics.setColor(Color.BLACK)
+    for point in scalePointsImported:
+        graphics.fillRect(graphLeft - 5, int(xAxisImported - point * scaleFactorOverall), len(resultData) + 5, 1)
+        graphics.drawString(str(point * 2), graphLeft - 40, int(xAxisImported - point * scaleFactorOverall + 5))
+        for monthPoint in monthPoints:
+            graphics.drawString(str(point * 2), graphLeft + monthPoint + 16, int(xAxisImported - point * scaleFactorOverall - 2))
+    scalePointsGenerated = []
+    for i in range(0, int(maxOverallScale), stepOverall):
+        scalePointsGenerated.append(i)
+    for i in range(0, int(maxParasiticScale), stepOverall):
+        scalePointsGenerated.append(i * -1)
+    graphics.setColor(Color.BLACK)
+    for point in scalePointsGenerated:
+        graphics.fillRect(graphLeft - 5, int(xAxisGenerated - point * scaleFactorOverall), len(resultData) + 5, 1)
+        graphics.drawString(str(point * 2), graphLeft - 40, int(xAxisGenerated - point * scaleFactorOverall + 5))
+        for monthPoint in monthPoints:
+            graphics.drawString(str(point * 2), graphLeft + monthPoint + 16, int(xAxisGenerated - point * scaleFactorOverall - 2))
+    scalePointsUsed = []
+    for i in range(0, int(maxOverallScale), stepOverall):
+        scalePointsUsed.append(i)
+    for i in range(0, int(minUsedScale), stepOverall * -1):
+        scalePointsUsed.append(i)
+    for point in scalePointsUsed:
+        graphics.fillRect(graphLeft - 5, int(xAxisUsed - point * scaleFactorOverall), len(resultData) + 5, 1)
+        graphics.drawString(str(point * 2), graphLeft - 40, int(xAxisUsed - point * scaleFactorOverall + 5))
+        for monthPoint in monthPoints:
+            graphics.drawString(str(point * 2), graphLeft + monthPoint + 16, int(xAxisUsed - point * scaleFactorOverall - 2))
+    scalePointsDisplaced = []
+    for i in range(0, int(maxOverallScale), stepOverall):
+        scalePointsDisplaced.append(i)
+    for i in range(0, int(minDisplacedScale), stepOverall * -1):
+        scalePointsDisplaced.append(i)
+    for point in scalePointsDisplaced:
+        graphics.fillRect(graphLeft - 5, int(xAxisDisplaced - point * scaleFactorOverall), len(resultData) + 5, 1)
+        graphics.drawString(str(point * 2), graphLeft - 40, int(xAxisDisplaced - point * scaleFactorOverall + 5))
+        for monthPoint in monthPoints:
+            graphics.drawString(str(point * 2), graphLeft + monthPoint + 16, int(xAxisDisplaced - point * scaleFactorOverall - 2))
+    graphics.drawString("kW", graphLeft - 90, graphTopExported + 10)
+    graphics.drawString("kW", graphLeft - 90, graphTopImported + 10)
+    graphics.drawString("kW", graphLeft - 90, graphTopGenerated + 10)
+    graphics.drawString("kW", graphLeft - 90, graphTopUsed + 10)
+    graphics.drawString("kW", graphLeft - 90, graphTopDisplaced + 10)
+    title = "Electricity generation at site " + site.getCode().toString() + " " + site.getName() + " for " + str(months) + " month"
+    if months > 1:
+        title = title + "s"
+    title = title + " ending " + monthDateFormat.format(Date(finishDate.getTime() - 1)) + " " + yearDateFormat.format(Date(finishDate.getTime() - 1))
+    graphics.drawString(title, 30, 20)
+    graphics.drawString("Imported", 10, graphTopImported + 10)
+    graphics.drawString("Exported", 10, graphTopExported + 10)
+    graphics.drawString("Generated", 10, graphTopGenerated + 10)
+    graphics.drawString("Used", 10, graphTopUsed + 10)
+    graphics.drawString("Displaced", 10, graphTopDisplaced + 10)
+    graphics.setFont(smallFont)
+    graphics.drawString("Poor data is denoted by a grey background and black foreground.", 30, ((maxHeight + 22) * 5) + 50 + minUsed + minDisplaced + minParasitic)
+    graphics.setFont(keyFont)
+    paint_legend(exported_supplies, graphTopExported)
+    paint_legend(imported_supplies, graphTopImported)
+    paint_legend(generated_supplies, graphTopGenerated)
+else:
+    image = BufferedImage(400, 400, BufferedImage.TYPE_4BYTE_ABGR)
+    graphics = image.createGraphics()
+    graphics.setColor(Color.BLACK)
+    graphics.drawString("No data available for this period.", 30, 10)
+
+os = inv.getResponse().getOutputStream()
+graphics.setColor(Color.BLACK)
+#graphics.drawString("report took..." + str(java.lang.System.currentTimeMillis() - start) + "ms", 10, 390)
+ImageIO.write(image, "png", os)
+os.close()]]></value>
+    <value><![CDATA[]]></value>
+  </line>
+  <line>
+    <value>insert</value>
+    <value>report</value>
+    <value>0 Site HH figures</value>
+    <value><![CDATA[from net.sf.chellow.monad import Hiber, UserException, XmlTree
+from java.lang import System
+from net.sf.chellow.monad.types import MonadDate
+import math
+from java.sql import Timestamp, ResultSet
+from java.util import GregorianCalendar, Calendar, TimeZone, Locale, Date
+from net.sf.chellow.physical import HhEndDate
+
+start = System.currentTimeMillis()
+siteCode = inv.getString("site-code")
+cal = GregorianCalendar(TimeZone.getTimeZone("GMT"), Locale.UK)
+year = inv.getInteger("year")
+month = inv.getInteger("month")
+day = inv.getInteger("day")
+if not inv.isValid():
+  raise UserException.newInvalidParameter()
+cal.set(Calendar.YEAR, year)
+cal.set(Calendar.MONTH, month - 1)
+cal.set(Calendar.DAY_OF_MONTH, day)
+cal.set(Calendar.HOUR_OF_DAY, 0)
+cal.set(Calendar.MINUTE, 0)
+cal.set(Calendar.SECOND, 0)
+cal.set(Calendar.MILLISECOND, 0)
+cal.add(Calendar.MINUTE, 30)
+startDate = HhEndDate(cal.getTime()).getDate()
+source.appendChild(HhEndDate(startDate).toXml(doc))
+#raise UserException.newInvalidParameter("date " + str(startDate))
+cal.add(Calendar.DAY_OF_MONTH, 1)
+cal.add(Calendar.MINUTE, -30)
+finishDate = HhEndDate(cal.getTime()).getDate()
+site = organization.getSite(siteCode)
+source.appendChild(site.toXml(doc, XmlTree('organization')))
+source.appendChild(MonadDate.getMonthsXml(doc))
+source.appendChild(MonadDate.getDaysXml(doc))
+con = Hiber.session().connection()
+stmt = con.prepareStatement("select hh_datum.value, hh_datum.end_date, hh_datum.status, channel.is_import, supply.name, source.code from hh_datum, channel, supply, supply_generation, source where hh_datum.channel_id = channel.id and channel.supply_generation_id = supply_generation.id and supply_generation.supply_id = supply.id and supply.source_id = source.id and channel.is_kwh is true and hh_datum.end_date >= ? and hh_datum.end_date <= ? and supply.id in (select distinct supply.id from supply, supply_generation, site_supply_generation, site, source where supply.id = supply_generation.supply_id and supply_generation.id = site_supply_generation.supply_generation_id and site_supply_generation.site_id = ? and supply.source_id = source.id and source.code != 'sub') order by hh_datum.end_date", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.CLOSE_CURSORS_AT_COMMIT)
+stmt.setTimestamp(1, Timestamp(startDate.getTime()))
+stmt.setTimestamp(2, Timestamp(finishDate.getTime()))
+stmt.setLong(3, site.getId())
+stmt.setFetchSize(100)
+rs = stmt.executeQuery()
+hhDate = startDate.getTime()
+siteSnagQuery = Hiber.session().createQuery("select count(*) from SiteSnag snag where snag.site = :site and snag.startDate.date <= :finishDate and snag.finishDate.date >= :startDate and (snag.dateResolved is null or (snag.dateResolved is not null and snag.isIgnored is true))").setEntity("site", site)
+if rs.next():
+    hhChannelKwh = rs.getFloat("value")
+    hhChannelEndDate = rs.getTimestamp("end_date")
+    isImport = rs.getBoolean("is_import")
+    status = rs.getString("status")
+    sourceCode = rs.getString("code")
+    supplyName = rs.getString("name")
+    finishDateMillis = finishDate.getTime()
+    startDateMillis = startDate.getTime()
+    cal.clear()
+    cal.setTime(hhChannelEndDate)
+    previousMonth = cal.get(Calendar.MONTH)
+    while hhDate <= finishDateMillis:
+        exportedKwh = 0
+        importedKwh = 0
+        parasiticKwh = 0
+        generatedKwh = 0
+        displacedKwh = 0
+        while hhChannelEndDate != None and hhChannelEndDate.getTime() == hhDate:
+            if not isImport and sourceCode == "net":
+                exportedKwh = exportedKwh + hhChannelKwh
+            if isImport and sourceCode == "net":
+                importedKwh = importedKwh + hhChannelKwh
+            if isImport and (sourceCode == "lm" or sourceCode == "chp" or sourceCode == "turb"):
+                generatedKwh = generatedKwh + hhChannelKwh
+            if not isImport and (sourceCode == "lm" or sourceCode == "chp" or sourceCode == "turb"):
+                parasiticKwh = parasiticKwh + hhChannelKwh
+            if rs.next():
+                sourceCode = rs.getString("code")
+                supplyName = rs.getString("name")
+                hhChannelKwh = rs.getFloat("value")
+                hhChannelEndDate = rs.getTimestamp("end_date")
+                isImport = rs.getBoolean("is_import")
+                status = rs.getString("status")
+                cal.clear()
+                cal.setTime(hhChannelEndDate)
+                month = cal.get(Calendar.MONTH)
+            else:
+                hhChannelEndDate = None
+        displacedKwh = generatedKwh - exportedKwh - parasiticKwh
+        usedKwh = importedKwh + displacedKwh
+        hhElement = doc.createElement("hh")
+        source.appendChild(hhElement)
+        '''
+        if siteSnagQuery.setTimestamp("startDate", startDate).setTimestamp("finishDate", monthFinishDate).uniqueResult() > 0:
+            monthElement.setAttribute("has-site-snags", "true")
+        '''
+        hhElement.appendChild(HhEndDate(Date(hhDate)).toXml(doc))
+        hhElement.setAttribute("exported-kwh", str(round(exportedKwh, 1)))
+        hhElement.setAttribute("imported-kwh", str(round(importedKwh, 1)))
+        hhElement.setAttribute("generated-kwh", str(round(generatedKwh, 1)))
+        hhElement.setAttribute("parasitic-kwh", str(round(parasiticKwh, 1)))
+        hhElement.setAttribute("displaced-kwh", str(round(displacedKwh, 1)))
+        hhElement.setAttribute("used-kwh", str(round(usedKwh, 1)))
+        hhDate = HhEndDate.getNext(cal, hhDate)]]></value>
+    <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
+<xsl:stylesheet version="1.0"
+    xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+    <xsl:output method="xml" encoding="US-ASCII"
+        doctype-public="-//W3C//DTD XHTML 1.1//EN"
+        doctype-system="http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd"
+        indent="yes" />
+    <xsl:template match="/">
+        <html>
+            <head>
+                <link rel="stylesheet" type="text/css"
+                    href="{/source/request/@context-path}/orgs/{/source/site/org/@id}/reports/9/stream/output/" />
+
+                <title>
+                    <xsl:value-of select="/source/site/org/@name" />
+                    &gt; Sites &gt;
+                    <xsl:value-of
+                        select="concat(/source/site/@code, ' ', /source/site/@name)" />
+                    &gt; HH data
+                </title>
+                <style>
+                    &lt;![CDATA[
+                colgroup.gray {
+                    background: silver;
+                }
+
+                tr.error {
+                    color: red;
+                }
+                ]]&gt;
+                </style>
+            </head>
+
+            <body>
+                <p>
+                    <a
+                        href="{/source/request/@context-path}/orgs/{/source/site/org/@id}/reports/0/screen/output/">
+                        <xsl:value-of select="/source/site/org/@name" />
+                    </a>
+                    &gt;
+                    <a
+                        href="{/source/request/@context-path}/orgs/{/source/site/org/@id}/reports/1/screen/output/">
+                        <xsl:value-of select="'Sites'" />
+                    </a>
+                    &gt;
+                    <a
+                        href="{/source/request/@context-path}/orgs/{/source/site/org/@id}/reports/2/screen/output/?site-id={/source/site/@id}">
+                        <xsl:value-of
+                            select="concat(/source/site/@code, ' ', /source/site/@name)" />
+                    </a>
+                    &gt; HH data
+                </p>
+
+                <xsl:if test="//message">
+                    <ul>
+                        <xsl:for-each select="//message">
+
+                            <li>
+                                <xsl:value-of select="@description" />
+                            </li>
+                        </xsl:for-each>
+                    </ul>
+                </xsl:if>
+                <form action=".">
+                    <fieldset>
+                        <legend>Show data</legend>
+                        <br />
+                        <label>
+                            <xsl:value-of select="'Site Code '" />
+                            <input name="site-code"
+                                value="{/source/request/parameter[@name='site-code']/value}" />
+                        </label>
+                        <br />
+                        <br />
+                        <fieldset>
+                            <legend>Date</legend>
+                            <br />
+                            <input size="4" length="4" name="year"
+                                value="{/source/hh-end-date/@year}" />
+                            <xsl:value-of select="' - '" />
+                            <select name="month">
+                                <xsl:for-each
+                                    select="/source/months/month">
+                                    <option>
+                                        <xsl:if
+                                            test="number(/source/hh-end-date/@month) = number(@number)">
+                                            <xsl:attribute
+                                                name="selected">selected</xsl:attribute>
+                                        </xsl:if>
+                                        <xsl:value-of select="@number" />
+                                    </option>
+                                </xsl:for-each>
+                            </select>
+                            <xsl:value-of select="' - '" />
+                            <select name="day">
+                                <xsl:for-each
+                                    select="/source/days/day">
+                                    <option>
+                                        <xsl:if
+                                            test="number(/source/hh-end-date/@day) = number(@number)">
+                                            <xsl:attribute
+                                                name="selected">selected</xsl:attribute>
+                                        </xsl:if>
+                                        <xsl:value-of select="@number" />
+                                    </option>
+                                </xsl:for-each>
+                            </select>
+                        </fieldset>
+                        <br />
+                        <input type="submit" value="Show" />
+                    </fieldset>
+                </form>
+                <table>
+                    <caption>HH Data</caption>
+                    <colgroup />
+                    <colgroup class="gray" />
+                    <colgroup />
+                    <colgroup class="gray" />
+                    <colgroup />
+                    <colgroup class="gray" />
+                    <thead>
+                        <tr>
+                            <th>Timestamp</th>
+                            <th>Imported</th>
+                            <th>Used</th>
+                            <th>Displaced</th>
+                            <th>Generated</th>
+                            <th>Exported</th>
+                            <th>Parasitic</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <xsl:for-each select="/source/hh">
+                            <tr>
+                                <xsl:if test="@has-site-snags">
+                                    <xsl:attribute name="class">
+                                        <xsl:value-of select="'error'" />
+                                    </xsl:attribute>
+                                </xsl:if>
+                                <td>
+                                    <xsl:value-of
+                                        select="concat(hh-end-date/@year, '-', hh-end-date/@month, '-', hh-end-date/@day, ' ', hh-end-date/@hour, ':', hh-end-date/@minute, 'Z')" />
+                                </td>
+                                <td>
+                                    <xsl:value-of
+                                        select="@imported-kwh" />
+                                </td>
+                                <td>
+                                    <xsl:value-of select="@used-kwh" />
+                                </td>
+                                <td>
+                                    <xsl:value-of
+                                        select="@displaced-kwh" />
+                                </td>
+                                <td>
+                                    <xsl:value-of
+                                        select="@generated-kwh" />
+                                </td>
+                                <td>
+                                    <xsl:value-of
+                                        select="@exported-kwh" />
+                                </td>
+                                <td>
+                                    <xsl:value-of
+                                        select="@parasitic-kwh" />
+                                </td>
+                                <!--
+                                    <td>
+                                    <xsl:if
+                                    test="@has-site-snags = 'true'">
+                                    See
+                                    <a
+                                    href="{/source/request/@context-path}/orgs/1/reports/5/screen/output/?site-id={/source/site/@id}&amp;months=1&amp;finish-date-year={hh-end-date[@label='start']/@year}&amp;finish-date-month={hh-end-date[@label='start']/@month}">
+                                    generation graph
+                                    </a>
+                                    for errors.
+                                    </xsl:if>
+                                    </td>
+                                -->
+                            </tr>
+                        </xsl:for-each>
+                    </tbody>
+                </table>
+            </body>
+        </html>
+    </xsl:template>
+</xsl:stylesheet>
+
+]]></value>
   </line>
 </csv>

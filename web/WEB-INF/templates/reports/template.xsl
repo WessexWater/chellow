@@ -36,25 +36,28 @@
 						<p>
 							The
 							<a
-								href="{/source/request/@context-path}{/source/response/header[@name = 'Location']/@value}">
+								href="{/source/response/header[@name = 'Location']/@value}">
 								<xsl:value-of select="'new report'" />
 							</a>
 							has been successfully created.
 						</p>
 					</xsl:when>
 					<xsl:otherwise>
-						<ul>
+						<table>
 							<xsl:for-each
 								select="/source/reports/report">
-								<li>
-									<a href="{@id}/">
-										<xsl:value-of select="@id" />
-									</a>
-									<xsl:value-of
-										select="concat(' - ', @name)" />
-								</li>
+								<tr>
+									<td>
+										<a href="{@id}/">
+											<xsl:value-of select="@id" />
+										</a>
+									</td>
+									<td>
+										<xsl:value-of select="@name" />
+									</td>
+								</tr>
 							</xsl:for-each>
-						</ul>
+						</table>
 						<br />
 						<form action="." method="post">
 							<fieldset>
