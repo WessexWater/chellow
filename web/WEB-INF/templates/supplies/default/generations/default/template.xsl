@@ -8,8 +8,7 @@
 		<html>
 			<head>
 				<title>
-					Chellow
-					&gt; Supplies &gt;
+					Chellow &gt; Supplies &gt;
 					<xsl:value-of
 						select="/source/supply-generation/supply/@id" />
 					&gt; Generations &gt;
@@ -46,7 +45,7 @@
 					<xsl:value-of
 						select="concat(/source/supply-generation/@id, ' [')" />
 					<a
-						href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/15/screen/output/?supply-generation-id={/source/supply-generation/@id}">
+						href="{/source/request/@context-path}/reports/16/output/?supply-generation-id={/source/supply-generation/@id}">
 						<xsl:value-of select="'view'" />
 					</a>
 					<xsl:value-of select="']'" />
@@ -521,8 +520,8 @@
 									<label>
 										<xsl:value-of
 											select="'MPAN Core '" />
-										<input
-											name="import-mpan-core" size="16">
+										<input name="import-mpan-core"
+											size="16">
 											<xsl:attribute
 												name="value">
 													<xsl:choose>
@@ -1106,8 +1105,8 @@
 									<label>
 										<xsl:value-of
 											select="'MPAN Core '" />
-										<input
-											name="export-mpan-core" size="16">
+										<input name="export-mpan-core"
+											size="16">
 											<xsl:attribute
 												name="value">
 													<xsl:choose>
