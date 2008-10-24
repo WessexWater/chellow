@@ -19,26 +19,26 @@
     <html>
       <head>
         <link rel="stylesheet" type="text/css"
-	  href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/9/stream/output/" />
-	<title>
-	  Home
-	</title>
+      href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/9/stream/output/" />
+    <title>
+      Home
+    </title>
       </head>
       <body>
         <p>
           <xsl:value-of select="'Home ['" />
-	  <a href="{/source/request/@context-path}/">
-	  <xsl:value-of select="'edit'" />
-	  </a>
-	  <xsl:value-of select="']'" />
-	</p>
+      <a href="{/source/request/@context-path}/">
+      <xsl:value-of select="'edit'" />
+      </a>
+      <xsl:value-of select="']'" />
+    </p>
         <xsl:if test="//message">
           <ul>
             <xsl:for-each select="//message">
               <li>
                 <xsl:value-of select="@description" />
               </li>
-	    </xsl:for-each>
+        </xsl:for-each>
           </ul>
         </xsl:if>
         <ul>
@@ -46,85 +46,84 @@
             <a href="{/source/request/@context-path}/reports/2/output/">Sites</a>
           </li>
           <li>
-            <a href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/49/screen/output/">
+            <a href="{/source/request/@context-path}/reports/50/output/">
               Supplies
             </a>
           </li>
           <li>
-            <a href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/56/screen/output/">HHDC Contracts
+            <a href="{/source/request/@context-path}/reports/57/output/">HHDC Contracts
             </a>
           </li>
-          <li><a href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/37/screen/output/">Supplier Contracts
+          <li><a href="{/source/request/@context-path}/reports/38/output/">Supplier Contracts
           </a>
-	  </li>
+      </li>
         </ul>
         <h3>Bulk CSV downloads</h3>
         <ul>
-          <li><a href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/16/stream/output/">Electricity Supply Details
+          <li><a href="{/source/request/@context-path}/reports/17/output/">Electricity Supply Details
             </a>
           </li>
         </ul>
         <h3>Industry Info</h3>
         <ul>
           <li>
-            <a href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/35/screen/output/">
+            <a href="{/source/request/@context-path}/reports/36/output/">
             Market Participants
             </a>
           </li>
           <li>
-            <a href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/60/screen/output/">
+            <a href="{/source/request/@context-path}/reports/61/output/">
               Market Roles
             </a>
           </li>
           <li>
-            <a href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/68/screen/output/">DSOs
+            <a href="{/source/request/@context-path}/reports/69/output/">DSOs
             </a>
           </li>
-          <li><a href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/22/screen/output/">
+          <li><a href="{/source/request/@context-path}/reports/23/output/">
             Providers
             </a>
           </li>
-          <li><a href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/26/screen/output/">
+          <li><a href="{/source/request/@context-path}/reports/27/output/">
             Profile Classes
             </a>
           </li>
           <li>
           <a
-             href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/30/screen/output/">
-	Meter Timeswitch Classes
-			</a>
-					</li>
-					<li>
-						<a
-							href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/64/screen/output/">
-							Meter Types
-						</a>
-					</li>
-					<li>
-						<a
-							href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/66/screen/output/">
-							Meter Payment Types
-						</a>
-					</li>
-					<li>
-						<a
-							href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/47/screen/output/">
-							TPRs
-						</a>
-					</li>
-					<li>
-						<a
-							href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/62/screen/output/">
-							SSCs
-						</a>
-					</li>
-					<li>
-						<a
-							href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/70/screen/output/">
-							Read Types
-						</a>
-					</li>
-				</ul>
+             href="{/source/request/@context-path}/reports/31/output/">
+    Meter Timeswitch Classes
+            </a>
+                    </li>
+                    <li>
+                        <a
+    href="{/source/request/@context-path}/reports/65/output/">
+                            Meter Types
+                        </a>
+                    </li>
+                    <li>
+                        <a
+                            href="{/source/request/@context-path}/reports/67/output/">
+                            Meter Payment Types
+                        </a>
+                    </li>
+                    <li>
+                        <a
+    href="{/source/request/@context-path}/reports/48/output/">
+                            TPRs
+                        </a>
+                    </li>
+                    <li>
+<a href="{/source/request/@context-path}/reports/63/output/">
+                            SSCs
+                        </a>
+                    </li>
+                    <li>
+                        <a
+    href="{/source/request/@context-path}/reports/71/output/">
+    Read Types
+                        </a>
+                    </li>
+                </ul>
       </body>
     </html>
   </xsl:template>
@@ -3389,46 +3388,66 @@ source.appendChild(MonadDate().toXml(doc))]]></value>
     <value><![CDATA[from net.sf.chellow.monad import Hiber
 from net.sf.chellow.physical import ReadType
 
+def mpan_fields(mpan):
+    NON_ESTIMATE_READ_TYPES = [ReadType.TYPE_CHANGE_OF_SUPPLIER, ReadType.TYPE_CUSTOMER, ReadType.TYPE_FINAL, ReadType.TYPE_INITIAL, ReadType.TYPE_DC_MANUAL, ReadType.TYPE_ROUTINE, ReadType.TYPE_SPECIAL, ReadType.TYPE_CHANGE_OF_TENANCY]
+    fields = {}
+    if mpan == None:
+        fields['mpan_core'] = ' '
+        fields['agreed_sc'] = ' '
+        fields['llfc_code'] = ' '
+        fields['llfc_description'] = ' '
+        fields['last_read_date'] = ' '
+    else:
+        fields['mpan_core'] = mpan.getCore().toString()
+        fields['agreed_sc'] = str(mpan.getAgreedSupplyCapacity())
+        mpan_top = mpan.getTop()
+        llfc = mpan_top.getLlfc()
+        fields['llfc_code'] = llfc.codeAsString()
+        fields['llfc_description'] = llfc.getDescription()
+        i = 0
+        found = False
+        reads = Hiber.session().createQuery("from RegisterRead read where read.mpan = :mpan order by read.presentDate.date").setEntity('mpan', mpan).list()
+        while found is not True and i < len(reads):
+            read = reads[i]
+            associated_reads = Hiber.session().createQuery("from RegisterRead read where read.invoice = :invoice and read.presentDate.date = :presentDate").setEntity('invoice', read.getInvoice()).setTimestamp('presentDate', read.getPresentDate().getDate()).list()
+            found = True
+            for associated_read in associated_reads:
+                if read.presentType not in NON_ESTIMATE_READ_TYPES:
+                    found = False
+                    break
+            i = i + 1
+        fields['last_read_date'] = 'None'
+        if found:
+            fields['last_read_date'] = read.getPresentDate().toString()
+        return fields
+
 inv.getResponse().setContentType('text/csv')
 inv.getResponse().addHeader('Content-Disposition', 'attachment; filename="report.csv"')
 pw = inv.getResponse().getWriter()
 
-pw.println("Physical Site Id, Physical Site Name, Other Site Ids, Other Site Names, Supply Id, Source, DNO Name, Voltage Level, Import MPAN core, Import Agreed Supply Capacity (kVA), Import Line Loss Factor, Import Line Loss Factor Description,  Import Last Read, Export MPAN core, Export Agreed Supply Capacity (kVA), Export Line Loss Factor, Export Line Loss Factor Description,  Export Last Read")
-NON_ESTIMATE_READ_TYPES = [ReadType.NORMAL, ReadType.CUSTOMER]
-for supply_generation in Hiber.session().createQuery("from SupplyGeneration generation where supplyGeneration.finishDate.date is null order by generation.supply.id").list():
+pw.println("Physical Site Id, Physical Site Name, Other Site Ids, Other Site Names, Supply Id, Source, DNO Name, Voltage Level, Import MPAN core, Import Agreed Supply Capacity (kVA), Import LLFC Code, Import LLFC Description,  Import Last Read, Export MPAN core, Export Agreed Supply Capacity (kVA), Export LLFC Code, Export LLFC Description,  Export Last Read")
+for supply_generation in Hiber.session().createQuery("from SupplyGeneration generation where generation.finishDate.date is null order by generation.supply.id").list():
     site_codes = ''
     site_names = ''
-    supply = supply_generation.getSupply()
-    mpan_top = mpan.getTop()
-    line_loss_factor = mpan_top.getLlf()
-    if line_loss_factor.getIsImport():
-        imp_exp = "import"
-    else:
-        imp_exp = "export"
-    mpan_core = mpan.getCore()
     for site_supply_generation in supply_generation.getSiteSupplyGenerations():
-        site = site_supply_generation.getSite();
-        site_codes = site_codes + site.getCode().toString() + ', '
-        site_names = site_names + site.getName() + ', '
+        if site_supply_generation.getIsPhysical():
+            physical_site = site_supply_generation.getSite()
+        else:
+            site = site_supply_generation.getSite();
+            site_codes = site_codes + site.getCode() + ', '
+            site_names = site_names + site.getName() + ', '
     site_codes = site_codes[:-2]
     site_names = site_names[:-2]
-    #How do we find last read?
-    i = 0
-    found = False
-    reads = Hiber.session().createQuery("from RegisterRead read where read.mpan = :mpan and read.presentType in (:readTypes) order by read.presentDate.date").setEntity('mpan', mpan).setParameterList('readTypes', NON_ESTIMATE_READ_TYPES).list()
-    while found is not True and i < len(reads):
-        read = reads[i]
-        associated_reads = Hiber.session().createQuery("from RegisterRead read where read.invoice = :invoice and read.presentDate.date = :presentDate").setEntity('invoice', read.getInvoice()).setTimestamp('presentDate', read.getPresentDate().getDate()).list()
-        found = True
-        for associated_read in associated_reads:
-            if read.presentType not in NON_ESTIMATE_READ_TYPES:
-                found = False
-                break
-        i = i + 1
-    last_read_date = 'None'
-    if found:
-        last_read_date = read.getPresentDate().toString()
-    pw.println('"' + site_codes + '","' + site_names + '",' + str(supply.getId()) + "," + supply.getSource().getCode().toString() + "," + mpan_core.toString() + "," + imp_exp + "," + mpan_core.getDso().getName() + "," + str(mpan.getAgreedSupplyCapacity()) + "," + line_loss_factor.getCode().toString() + "," + line_loss_factor.getDescription() + "," + line_loss_factor.getVoltageLevel().getCode().toString() + "," + last_read_date)
+    supply = supply_generation.getSupply()
+    mpan = supply_generation.getMpans()[0]
+    import_fields = mpan_fields(supply_generation.getImportMpan())
+    export_fields = mpan_fields(supply_generation.getExportMpan())
+    pw.print('"' + physical_site.getCode() + '","' + physical_site.getName() + '","' + site_codes + '","' + site_names + '",' + str(supply.getId()) + ',' + supply.getSource().getCode() + ',"' + mpan.getCore().getDso().getName() + '",' + mpan.getTop().getLlfc().getVoltageLevel().getCode())
+    pw.print(',' + import_fields['mpan_core'] + ",")
+    pw.print(import_fields['agreed_sc'])
+    pw.print("," + import_fields['llfc_code'])
+    pw.print("," + import_fields['llfc_description'] + "," + import_fields['last_read_date'] + ',')
+    pw.println(export_fields['mpan_core'] + "," + export_fields['agreed_sc'] + "," + export_fields['llfc_code'] + "," + export_fields['llfc_description'] + "," + export_fields['last_read_date'])
     pw.flush()
 pw.close()]]></value>
     <value><![CDATA[]]></value>
