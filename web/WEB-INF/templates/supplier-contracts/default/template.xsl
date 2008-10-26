@@ -4,7 +4,6 @@
 	<xsl:output method="html" encoding="US-ASCII"
 		doctype-public="-//W3C//DTD HTML 4.01//EN"
 		doctype-system="http://www.w3.org/TR/html4/strict.dtd" indent="yes" />
-
 	<xsl:template match="/">
 		<html>
 			<head>
@@ -32,7 +31,7 @@
 					<xsl:value-of
 						select="concat(/source/supplier-contract/@name, ' [')" />
 					<a
-						href="{/source/request/@context-path}/orgs/{/source/supplier-contract/org/@id}/reports/38/screen/output/?supplier-contract-id={/source/supplier-contract/@id}">
+						href="{/source/request/@context-path}/reports/39/output/?supplier-contract-id={/source/supplier-contract/@id}">
 						<xsl:value-of select="'view'" />
 					</a>
 					<xsl:value-of select="']'" />

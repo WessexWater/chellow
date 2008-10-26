@@ -4,7 +4,6 @@
 	<xsl:output method="html" encoding="US-ASCII"
 		doctype-public="-//W3C//DTD HTML 4.01//EN"
 		doctype-system="http://www.w3.org/TR/html4/strict.dtd" indent="yes" />
-
 	<xsl:template match="/">
 		<html>
 			<head>
@@ -22,7 +21,7 @@
 					&gt;
 					<xsl:value-of select="'Supplier Contracts ['" />
 					<a
-						href="{/source/request/@context-path}/orgs/{/source/supplier-contracts/org/@id}/reports/37/screen/output/">
+						href="{/source/request/@context-path}/reports/38/output/">
 						<xsl:value-of select="'view'" />
 					</a>
 					<xsl:value-of select="']'" />
