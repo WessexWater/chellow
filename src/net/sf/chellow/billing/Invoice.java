@@ -287,15 +287,14 @@ public class Invoice extends PersistentEntity implements Urlable {
 		Document doc = MonadUtils.newSourceDocument();
 		Element source = doc.getDocumentElement();
 		Element invoiceElement = (Element) toXml(doc, new XmlTree("batch",
-				new XmlTree("contract", new XmlTree("provider")
-						.put("organization"))).put("bill", new XmlTree(
-				"account")));
+				new XmlTree("contract", new XmlTree("party"))).put("bill",
+				new XmlTree("account")));
 		source.appendChild(invoiceElement);
 		source.appendChild(MonadDate.getMonthsXml(doc));
 		source.appendChild(MonadDate.getDaysXml(doc));
 		for (RegisterRead read : reads) {
 			invoiceElement.appendChild(read.toXml(doc, new XmlTree("mpan",
-					new XmlTree("mpanCore").put("supplyGeneration",
+					new XmlTree("core").put("supplyGeneration",
 							new XmlTree("supply")))));
 		}
 		/*

@@ -10,7 +10,6 @@
 			<head>
 				<link rel="stylesheet" type="text/css"
 					href="{/source/request/@context-path}/style/" />
-
 				<title>
 					Chellow &gt; Supplier Contracts &gt;
 					<xsl:value-of
@@ -55,7 +54,7 @@
 					<xsl:value-of
 						select="concat(/source/batch/@reference, ' [')" />
 					<a
-						href="{/source/request/@context-path}/orgs/{/source/batch/supplier-contract/org/@id}/reports/45/screen/output/?batch-id={/source/batch/@id}">
+						href="{/source/request/@context-path}/reports/46/output/?batch-id={/source/batch/@id}">
 						<xsl:value-of select="'view'" />
 					</a>
 					<xsl:value-of select="']'" />

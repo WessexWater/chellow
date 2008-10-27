@@ -46,8 +46,8 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
-public class Bill extends PersistentEntity implements Urlable {
-	public static Bill getBill(Long id) throws HttpException, InternalException {
+public class Bill extends PersistentEntity {
+	public static Bill getBill(Long id) throws HttpException {
 		Bill bill = (Bill) Hiber.session().get(Bill.class, id);
 		if (bill == null) {
 			throw new UserException("There isn't a bill with that id.");
@@ -256,8 +256,7 @@ public class Bill extends PersistentEntity implements Urlable {
 		Document doc = MonadUtils.newSourceDocument();
 		Element source = doc.getDocumentElement();
 		Element billElement = (Element) toXml(doc, new XmlTree("account",
-				new XmlTree("contract", new XmlTree("provider")
-						.put("organization"))));
+				new XmlTree("contract", new XmlTree("party"))));
 		source.appendChild(billElement);
 		for (Invoice invoice : (List<Invoice>) Hiber
 				.session()

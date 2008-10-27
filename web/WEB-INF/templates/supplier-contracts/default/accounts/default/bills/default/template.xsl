@@ -4,18 +4,13 @@
 	<xsl:output method="html" encoding="US-ASCII"
 		doctype-public="-//W3C//DTD HTML 4.01//EN"
 		doctype-system="http://www.w3.org/TR/html4/strict.dtd" indent="yes" />
-
 	<xsl:template match="/">
 		<html>
 			<head>
 				<link rel="stylesheet" type="text/css"
 					href="{/source/request/@context-path}/style/" />
-
 				<title>
-					Chellow &gt; Organizations &gt;
-					<xsl:value-of
-						select="/source/bill/account/supplier-contract/org/@name" />
-					&gt; Supplier Contracts &gt;
+					Chellow &gt; Supplier Contracts &gt;
 					<xsl:value-of
 						select="/source/bill/account/supplier-contract/@name" />
 					&gt; Accounts &gt;
@@ -26,7 +21,6 @@
 						select="/source/bill/account/bill/@id" />
 				</title>
 			</head>
-
 			<body>
 				<p>
 					<a href="{/source/request/@context-path}/">
@@ -35,47 +29,37 @@
 						<span class="logo">Chellow</span>
 					</a>
 					&gt;
-					<a href="{/source/request/@context-path}/orgs/">
-						<xsl:value-of select="'Organizations'" />
-					</a>
-					&gt;
 					<a
-						href="{/source/request/@context-path}/orgs/{/source/bill/account/supplier-contract/org/@id}/">
-						<xsl:value-of
-							select="/source/bill/account/supplier-contract/org/@name" />
-					</a>
-					&gt;
-					<a
-						href="{/source/request/@context-path}/orgs/{/source/bill/account/supplier-contract/org/@id}/supplier-contracts/">
+						href="{/source/request/@context-path}/supplier-contracts/">
 						<xsl:value-of select="'Supplier Contracts'" />
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/orgs/{/source/bill/account/supplier-contract/org/@id}/supplier-contracts/{/source/bill/account/supplier-contract/@id}/">
+						href="{/source/request/@context-path}/supplier-contracts/{/source/bill/account/supplier-contract/@id}/">
 						<xsl:value-of
 							select="/source/bill/account/supplier-contract/@name" />
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/orgs/{/source/bill/account/supplier-contract/org/@id}/supplier-contracts/{/source/bill/account/supplier-contract/@id}/accounts/">
+						href="{/source/request/@context-path}/supplier-contracts/{/source/bill/account/supplier-contract/@id}/accounts/">
 						<xsl:value-of select="'Accounts'" />
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/orgs/{/source/bill/account/supplier-contract/org/@id}/supplier-contracts/{/source/bill/account/supplier-contract/@id}/accounts/{/source/bill/account/@id}/">
+						href="{/source/request/@context-path}/supplier-contracts/{/source/bill/account/supplier-contract/@id}/accounts/{/source/bill/account/@id}/">
 						<xsl:value-of
 							select="/source/bill/account/@reference" />
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/orgs/{/source/bill/account/supplier-contract/org/@id}/supplier-contracts/{/source/bill/account/supplier-contract/@id}/accounts/{/source/bill/account/@id}/bills/">
+						href="{/source/request/@context-path}/supplier-contracts/{/source/bill/account/supplier-contract/@id}/accounts/{/source/bill/account/@id}/bills/">
 						<xsl:value-of select="'Bills'" />
 					</a>
 					&gt;
 					<xsl:value-of
 						select="concat(/source/bill/@id, ' [')" />
 					<a
-						href="{/source/request/@context-path}/orgs/{/source/bill/account/supplier-contract/org/@id}/reports/43/screen/output/?bill-id={/source/bill/@id}">
+						href="{/source/request/@context-path}/reports/44/output/?bill-id={/source/bill/@id}">
 						<xsl:value-of select="'view'" />
 					</a>
 					<xsl:value-of select="']'" />
@@ -128,7 +112,7 @@
 							<tr>
 								<td>
 									<a
-										href="{/source/request/@context-path}/orgs/{/source/bill/account/supplier-contract/org/@id}/supplier-contracts/{/source/bill/account/supplier-contract/@id}/batches/{batch/@id}/invoices/{@id}/">
+										href="{/source/request/@context-path}/supplier-contracts/{/source/bill/account/supplier-contract/@id}/batches/{batch/@id}/invoices/{@id}/">
 										<xsl:value-of select="@id" />
 									</a>
 								</td>
@@ -137,7 +121,7 @@
 								</td>
 								<td>
 									<a
-										href="{/source/request/@context-path}/orgs/{/source/bill/account/supplier-contract/org/@id}/supplier-contracts/{/source/bill/account/supplier-contract/@id}/batches/{batch/@id}/">
+										href="{/source/request/@context-path}/supplier-contracts/{/source/bill/account/supplier-contract/@id}/batches/{batch/@id}/">
 										<xsl:value-of
 											select="batch/@reference" />
 									</a>
