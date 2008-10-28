@@ -27,7 +27,6 @@
 						</xsl:for-each>
 					</ul>
 				</xsl:if>
-
 				<p>
 					<a href="{/source/request/@context-path}/">
 						<img
@@ -54,7 +53,7 @@
 					<xsl:value-of
 						select="concat(/source/channel-snag/@id, ' [')" />
 					<a
-						href="{/source/request/@context-path}/orgs/{/source/channel-snag/hhdc-contract/org/@id}/reports/58/screen/output/?snag-id={/source/channel-snag/@id}">
+						href="{/source/request/@context-path}/reports/59/output/?snag-id={/source/channel-snag/@id}">
 						<xsl:value-of select="'view'" />
 					</a>
 					<xsl:value-of select="']'" />

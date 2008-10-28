@@ -40,8 +40,7 @@ public class BillSnag extends Snag {
 
 	// public static final String CALCULATION_ERROR = "Calculation error";
 
-	static public BillSnag getBillSnag(Long id) throws HttpException,
-			InternalException {
+	static public BillSnag getBillSnag(Long id) throws HttpException {
 		BillSnag snag = (BillSnag) Hiber.session().get(BillSnag.class, id);
 		if (snag == null) {
 			throw new NotFoundException();
@@ -115,7 +114,7 @@ public class BillSnag extends Snag {
 		Document doc = MonadUtils.newSourceDocument();
 		Element sourceElement = doc.getDocumentElement();
 		sourceElement.appendChild(toXml(doc, new XmlTree("contract",
-				new XmlTree("provider").put("organization")).put(
+				new XmlTree("party")).put(
 				"bill", new XmlTree("account"))));
 		return doc;
 	}

@@ -24,7 +24,7 @@ public class AccountSnags extends EntityList {
 	static private final int PAGE_SIZE = 20;
 
 	public static final UriPathElement URI_ID;
-	
+
 	static {
 		try {
 			URI_ID = new UriPathElement("account-snags");
@@ -59,13 +59,14 @@ public class AccountSnags extends EntityList {
 		Element snagsElement = toXml(doc);
 		source.appendChild(snagsElement);
 		if (contract instanceof SupplierContract) {
-			snagsElement.appendChild(contract.toXml(doc, new XmlTree("provider").put("organization")));
+			snagsElement.appendChild(contract.toXml(doc, new XmlTree("party")));
 		}
 		for (AccountSnag snag : (List<AccountSnag>) Hiber
 				.session()
 				.createQuery(
 						"from AccountSnag snag where snag.dateResolved is null and snag.contract = :contract order by snag.account.reference, snag.description, snag.startDate.date")
-				.setEntity("contract", contract).setMaxResults(PAGE_SIZE).list()) {
+				.setEntity("contract", contract).setMaxResults(PAGE_SIZE)
+				.list()) {
 			snagsElement.appendChild(snag.toXml(doc, new XmlTree("account")));
 		}
 		source.appendChild(MonadDate.getMonthsXml(doc));

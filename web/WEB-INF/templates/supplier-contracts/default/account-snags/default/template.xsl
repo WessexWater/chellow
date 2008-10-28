@@ -4,7 +4,6 @@
 	<xsl:output method="html" encoding="US-ASCII"
 		doctype-public="-//W3C//DTD HTML 4.01//EN"
 		doctype-system="http://www.w3.org/TR/html4/strict.dtd" indent="yes" />
-
 	<xsl:template match="/">
 		<html>
 			<head>
@@ -12,13 +11,7 @@
 					href="{/source/request/@context-path}/style/" />
 
 				<title>
-					Chellow &gt; Organizations &gt;
-					<xsl:value-of
-						select="/source/account-snag/supplier-service/supplier/org/@name" />
-					&gt; Suppliers &gt;
-					<xsl:value-of
-						select="/source/account-snag/supplier-service/supplier/@name" />
-					&gt; Services &gt;
+					Chellow &gt; Supplier Contracts &gt;
 					<xsl:value-of
 						select="/source/account-snag/supplier-service/@name" />
 					&gt; Account Snags &gt;
@@ -35,7 +28,6 @@
 						</xsl:for-each>
 					</ul>
 				</xsl:if>
-
 				<p>
 					<a href="{/source/request/@context-path}/">
 						<img
@@ -43,47 +35,26 @@
 						<span class="logo">Chellow</span>
 					</a>
 					&gt;
-					<a href="{/source/request/@context-path}/orgs/">
-						<xsl:value-of select="'Organizations'" />
+					<a
+						href="{/source/request/@context-path}/supplier-contracts/">
+						<xsl:value-of select="'Supplier Contracts'" />
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/orgs/{/source/account-snag/supplier-service/supplier/org/@id}/">
+						href="{/source/request/@context-path}/supplier-contracts/{/source/account-snag/supplier-contract/@id}/">
 						<xsl:value-of
-							select="/source/account-snag/supplier-service/supplier/org/@name" />
+							select="/source/account-snag/supplier-contract/@name" />
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/orgs/{/source/account-snag/supplier-service/supplier/org/@id}/suppliers/">
-						<xsl:value-of select="'Suppliers'" />
-					</a>
-					&gt;
-					<a
-						href="{/source/request/@context-path}/orgs/{/source/account-snag/supplier-service/supplier/org/@id}/suppliers/{/source/account-snag/supplier-service/supplier/@id}">
-						<xsl:value-of
-							select="/source/account-snag/supplier-service/supplier/@name" />
-					</a>
-					&gt;
-					<a
-						href="{/source/request/@context-path}/orgs/{/source/account-snag/supplier-service/supplier/org/@id}/suppliers/{/source/account-snag/supplier-service/supplier/@id}/services/">
-						<xsl:value-of select="'Services'" />
-					</a>
-					&gt;
-					<a
-						href="{/source/request/@context-path}/orgs/{/source/account-snag/supplier-service/supplier/org/@id}/suppliers/{/source/account-snag/supplier-service/supplier/@id}/services/{/source/account-snag/supplier-service/@id}/">
-						<xsl:value-of
-							select="/source/account-snag/supplier-service/@name" />
-					</a>
-					&gt;
-					<a
-						href="{/source/request/@context-path}/orgs/{/source/account-snag/supplier-service/supplier/org/@id}/suppliers/{/source/account-snag/supplier-service/supplier/@id}/services/{/source/account-snag/supplier-service/@id}/account-snags/">
+						href="{/source/request/@context-path}/supplier-contracts/{/source/account-snag/supplier-contract/@id}/account-snags/">
 						<xsl:value-of select="'Account Snags'" />
 					</a>
 					&gt;
 					<xsl:value-of
 						select="concat(/source/account-snag/@id, ' [')" />
 					<a
-						href="{/source/request/@context-path}/orgs/{/source/account-snag/supplier-service/supplier/org/@id}/reports/51/screen/output/?snag-id={/source/account-snag/@id}">
+						href="{/source/request/@context-path}/reports/52/output/?snag-id={/source/account-snag/@id}">
 						<xsl:value-of select="'view'" />
 					</a>
 					<xsl:value-of select="']'" />
@@ -101,7 +72,7 @@
 						<th>Account</th>
 						<td>
 							<a
-								href="{/source/request/@context-path}/orgs/{/source/account-snag/supplier-service/supplier/org/@id}/suppliers/{/source/account-snag/supplier-service/supplier/@id}/accounts/{/source/account-snag/account/@id}/">
+								href="{/source/request/@context-path}/supplier-contracts/{/source/account-snag/supplier-contract/@id}/accounts/{/source/account-snag/account/@id}/">
 								<xsl:value-of
 									select="/source/account-snag/account/@reference" />
 							</a>

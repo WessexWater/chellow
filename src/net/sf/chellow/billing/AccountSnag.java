@@ -1,6 +1,6 @@
 /*
  
- Copyright 2005-2007 Meniscus Systems Ltd
+ Copyright 2005-2008 Meniscus Systems Ltd
  
  This file is part of Chellow.
 
@@ -22,14 +22,12 @@
 
 package net.sf.chellow.billing;
 
-import net.sf.chellow.monad.DeployerException;
-import net.sf.chellow.monad.DesignerException;
 import net.sf.chellow.monad.Hiber;
+import net.sf.chellow.monad.HttpException;
+import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Invocation;
 import net.sf.chellow.monad.MonadUtils;
 import net.sf.chellow.monad.NotFoundException;
-import net.sf.chellow.monad.InternalException;
-import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.XmlTree;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.physical.HhEndDate;
@@ -41,8 +39,7 @@ import org.w3c.dom.Element;
 public class AccountSnag extends SnagDateBounded {
 	public static final String MISSING_BILL = "Missing bill.";
 
-	public static AccountSnag getAccountSnag(Long id) throws HttpException,
-			InternalException {
+	public static AccountSnag getAccountSnag(Long id) throws HttpException {
 		AccountSnag snag = (AccountSnag) Hiber.session().get(AccountSnag.class,
 				id);
 		if (snag == null) {
@@ -60,13 +57,12 @@ public class AccountSnag extends SnagDateBounded {
 	}
 
 	private Account account;
-	
+
 	public AccountSnag() {
 	}
 
 	public AccountSnag(String description, Account account,
-			HhEndDate startDate, HhEndDate finishDate)
-			throws HttpException {
+			HhEndDate startDate, HhEndDate finishDate) throws HttpException {
 		super(description, startDate, finishDate);
 		this.account = account;
 	}
@@ -102,30 +98,23 @@ public class AccountSnag extends SnagDateBounded {
 		return super.toString();
 	}
 
-	public void httpGet(Invocation inv) throws DesignerException,
-			InternalException, HttpException, DeployerException {
+	public void httpGet(Invocation inv) throws HttpException {
 		inv.sendOk(document());
 	}
 
-	private Document document() throws InternalException, HttpException,
-			DesignerException {
+	private Document document() throws HttpException {
 		Document doc = MonadUtils.newSourceDocument();
 		Element sourceElement = doc.getDocumentElement();
-		sourceElement.appendChild(toXml(doc, new XmlTree("service", new XmlTree(
-						"provider", new XmlTree("organization"))).put("account")));
+		sourceElement.appendChild(toXml(doc, new XmlTree("contract",
+				new XmlTree("party")).put("account")));
 		return doc;
 	}
 
-	public void httpDelete(Invocation inv) throws InternalException,
-			DesignerException, HttpException, DeployerException {
-		// TODO Auto-generated method stub
-
-	}
-
-	public MonadUri getUri() throws InternalException, HttpException {
+	public MonadUri getUri() throws HttpException {
 		return getContract().getSnagsAccountInstance().getUri().resolve(
 				getUriId()).append("/");
 	}
+
 	/*
 	 * public boolean isCombinable(SnagDateBounded snag) throws
 	 * ProgrammerException, UserException { Bill incomingBill = ((AccountSnag)
