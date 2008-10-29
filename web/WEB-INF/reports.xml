@@ -3474,13 +3474,12 @@ if not inv.isValid():
 contract = HhdcContract.getHhdcContract(contract_id)
 snags_element = doc.createElement('channel-snags')
 source.appendChild(snags_element)
-snags_element.appendChild(contract.toXml(doc, XmlTree('provider').put('organization'))) 
-#for snag_row in Hiber.session().createQuery("select distinct snag from ChannelSnag snag join snag.channel.supplyGeneration.siteSupplyGenerations siteSupplyGeneration where snag.channel.supplyGeneration.supply.organization = :organization and snag.dateResolved is null and snag.contract = :contract and snag.startDate.date < :activeDate order by siteSupplyGeneration.site.code, snag.startDate.date, snag.channel.id").setEntity("organization", organization).setEntity('contract', contract).setTimestamp("activeDate",Date(System.currentTimeMillis()-(5*24*60*60*1000))).list():
-snags = Hiber.session().createQuery("select distinct snag, siteSupplyGeneration.site.code, snag.startDate.date, snag.channel.id from ChannelSnag snag join snag.channel.supplyGeneration.siteSupplyGenerations siteSupplyGeneration where snag.channel.supplyGeneration.supply.organization = :organization and snag.dateResolved is null and snag.contract = :contract and snag.startDate.date < :activeDate order by siteSupplyGeneration.site.code, snag.startDate.date, snag.channel.id").setEntity("organization", organization).setEntity('contract', contract).setTimestamp("activeDate",Date(System.currentTimeMillis()-(5*24*60*60*1000))).list()
+snags_element.appendChild(contract.toXml(doc, XmlTree('party'))) 
+snags = Hiber.session().createQuery("select distinct snag, siteSupplyGeneration.site.code, snag.startDate.date, snag.channel.id from ChannelSnag snag join snag.channel.supplyGeneration.siteSupplyGenerations siteSupplyGeneration where snag.dateResolved is null and snag.contract = :contract and snag.startDate.date < :activeDate order by siteSupplyGeneration.site.code, snag.startDate.date, snag.channel.id").setEntity('contract', contract).setTimestamp("activeDate",Date(System.currentTimeMillis()-(5*24*60*60*1000))).list()
 for snag_row in snags:
-    snags_element.appendChild(snag_row[0].toXml(doc, XmlTree('channel', XmlTree('supplyGeneration', XmlTree('supply').put('siteSupplyGenerations', XmlTree('site')).put("mpans", XmlTree("mpanCore", XmlTree("dso")))))))
-activeSites = Hiber.session().createQuery("select count(distinct siteSupplyGeneration.site) from ChannelSnag snag join snag.channel.supplyGeneration.siteSupplyGenerations siteSupplyGeneration where siteSupplyGeneration.site.organization = :organization and snag.dateResolved is null and snag.contract = :contract and snag.startDate.date < :activeDate").setEntity('organization', organization).setEntity('contract', contract).setTimestamp("activeDate",Date(System.currentTimeMillis()-(5*24*60*60*1000))).uniqueResult()
-totalSites = Hiber.session().createQuery("select count(distinct siteSupplyGeneration.site) from ChannelSnag snag join snag.channel.supplyGeneration.siteSupplyGenerations siteSupplyGeneration where siteSupplyGeneration.site.organization = :organization and snag.dateResolved is null and snag.contract = :contract").setEntity('organization', organization).setEntity('contract', contract).uniqueResult()
+    snags_element.appendChild(snag_row[0].toXml(doc, XmlTree('channel', XmlTree('supplyGeneration', XmlTree('supply').put('siteSupplyGenerations', XmlTree('site')).put("mpans", XmlTree("core", XmlTree("dso")))))))
+activeSites = Hiber.session().createQuery("select count(distinct siteSupplyGeneration.site) from ChannelSnag snag join snag.channel.supplyGeneration.siteSupplyGenerations siteSupplyGeneration where snag.dateResolved is null and snag.contract = :contract and snag.startDate.date < :activeDate").setEntity('contract', contract).setTimestamp("activeDate",Date(System.currentTimeMillis()-(5*24*60*60*1000))).uniqueResult()
+totalSites = Hiber.session().createQuery("select count(distinct siteSupplyGeneration.site) from ChannelSnag snag join snag.channel.supplyGeneration.siteSupplyGenerations siteSupplyGeneration where snag.dateResolved is null and snag.contract = :contract").setEntity('contract', contract).uniqueResult()
 
 snags_element.setAttribute("snag-count", str(len(snags)))
 snags_element.setAttribute("site-count", str(activeSites))
@@ -3492,45 +3491,40 @@ snags_element.setAttribute("pending-site-count", str(totalSites - activeSites))]
         doctype-public="-//W3C//DTD XHTML 1.1//EN"
         doctype-system="http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd"
         indent="yes" />
-
     <xsl:template match="/">
         <html>
             <head>
                 <link rel="stylesheet" type="text/css"
-                    href="{/source/request/@context-path}/orgs/{/source/channel-snags/hhdc-contract/org/@id}/reports/9/stream/output/" />
+                    href="{/source/request/@context-path}/reports/10/output/" />
                 <title>
-                    <xsl:value-of
-                        select="/source/channel-snags/hhdc-contract/org/@name" />
-                    &gt; HHDC Contracts &gt;
+                    Home &gt; HHDC Contracts &gt;
                     <xsl:value-of
                         select="/source/channel-snags/hhdc-contract/@name" />
                     &gt; Channel Snags
                 </title>
-
             </head>
-
             <body>
                 <p>
                     <a
-                        href="{/source/request/@context-path}/orgs/{/source/channel-snags/hhdc-contract/org/@id}/reports/0/screen/output/">
+                        href="{/source/request/@context-path}/reports/1/output/">
                         <xsl:value-of
-                            select="/source/channel-snags/hhdc-contract/org/@name" />
+                            select="'Home'" />
                     </a>
                     &gt;
                     <a
-                        href="{/source/request/@context-path}/orgs/{/source/channel-snags/hhdc-contract/org/@id}/reports/56/screen/output/?hhdc-contract-id={/source/channel-snags/hhdc-contract/@id}">
-                        <xsl:value-of select="'HHDC Contract'" />
+                        href="{/source/request/@context-path}/reports/57/output/?hhdc-contract-id={/source/channel-snags/hhdc-contract/@id}">
+                        <xsl:value-of select="'HHDC Contracts'" />
                     </a>
                     &gt;
                     <a
-                        href="{/source/request/@context-path}/orgs/{/source/channel-snags/hhdc-contract/org/@id}/reports/57/screen/output/?hhdc-contract-id={/source/channel-snags/hhdc-contract/@id}">
+                        href="{/source/request/@context-path}/reports/58/output/?hhdc-contract-id={/source/channel-snags/hhdc-contract/@id}">
                         <xsl:value-of
                             select="/source/channel-snags/hhdc-contract/@name" />
                     </a>
                     &gt;
                     <xsl:value-of select="'Channel Snags ['" />
                     <a
-                        href="{/source/request/@context-path}/orgs/{/source/channel-snags/hhdc-contract/org/@id}/hhdc-contracts/{/source/channel-snags/hhdc-contract/@id}/channel-snags/">
+                        href="{/source/request/@context-path}/hhdc-contracts/{/source/channel-snags/hhdc-contract/@id}/channel-snags/">
                         <xsl:value-of select="'edit'" />
                     </a>
                     <xsl:value-of select="']'" />
@@ -3568,12 +3562,12 @@ snags_element.setAttribute("pending-site-count", str(totalSites - activeSites))]
                             <tr>
                                 <td>
                                     <a
-                                        href="{/source/request/@context-path}/orgs/{/source/channel-snags/hhdc-contract/org/@id}/reports/58/screen/output/?snag-id={@id}">
+                                        href="{/source/request/@context-path}/reports/59/output/?snag-id={@id}">
                                         <xsl:value-of select="@id" />
                                     </a>
                                     <xsl:value-of select="' ['" />
                                     <a
-                                        href="{/source/request/@context-path}/orgs/{/source/channel-snags/hhdc-contract/org/@id}/hhdc-contracts/{/source/channel-snags/hhdc-contract/@id}/channel-snags/{@id}/">
+                                        href="{/source/request/@context-path}/hhdc-contracts/{/source/channel-snags/hhdc-contract/@id}/channel-snags/{@id}/">
                                         <xsl:value-of select="'edit'" />
                                     </a>
                                     <xsl:value-of select="']'" />
@@ -3664,24 +3658,22 @@ snags_element.setAttribute("pending-site-count", str(totalSites - activeSites))]
   <line>
     <value>insert</value>
     <value>report</value>
-    <value>0 HHDC Site Group Snags</value>
+    <value>0 HHDC Contract Site Group Snags</value>
     <value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree
 from net.sf.chellow.billing import HhdcContract
 
 contract_id = inv.getLong('hhdc-contract-id')
 contract = HhdcContract.getHhdcContract(contract_id)
-snags = Hiber.session().createQuery("select snag, snag.site from SiteSnag snag where snag.site.organization = :organization and snag.dateResolved is null and snag.contract = :contract order by snag.site.code, snag.startDate.date").setEntity("organization", organization).setEntity('contract', contract).list()
+snags = Hiber.session().createQuery("select snag, snag.site from SiteSnag snag where snag.dateResolved is null and snag.contract = :contract order by snag.site.code, snag.startDate.date").setEntity('contract', contract).list()
 snags_element = doc.createElement('site-snags')
 source.appendChild(snags_element)
-snags_element.appendChild(contract.toXml(doc, XmlTree('provider').put('organization')))
+snags_element.appendChild(contract.toXml(doc, XmlTree('party')))
 for snag_row in snags:
     snag_element = snag_row[0].toXml(doc)
     snags_element.appendChild(snag_element)
     site_element = snag_row[1].toXml(doc)
     snag_element.appendChild(site_element)
-
-sites = Hiber.session().createQuery("select count(distinct snag.site) from SiteSnag snag where snag.site.organization = :organization and snag.contract = :contract and snag.dateResolved is null").setEntity("organization", organization).setEntity('contract', contract).uniqueResult()
-
+sites = Hiber.session().createQuery("select count(distinct snag.site) from SiteSnag snag where snag.contract = :contract and snag.dateResolved is null").setEntity('contract', contract).uniqueResult()
 snags_element.setAttribute("snag-count", str(len(snags)))
 snags_element.setAttribute("site-count", str(sites))
 ]]></value>
@@ -3697,40 +3689,36 @@ snags_element.setAttribute("site-count", str(sites))
         <html>
             <head>
                 <link rel="stylesheet" type="text/css"
-                    href="{/source/request/@context-path}/orgs/{/source/site-snags/hhdc-contract/org/@id}/reports/9/stream/output/" />
-
+                    href="{/source/request/@context-path}/reports/10/output/" />
                 <title>
-                    <xsl:value-of
-                        select="/source/site-snags/hhdc-contract/org/@name" />
-                    &gt; HHDC Contracts &gt;
+                    Home &gt; HHDC Contracts &gt;
                     <xsl:value-of
                         select="/source/site-snags/hhdc-contract/@name" />
                     &gt; Site Snags
                 </title>
             </head>
-
             <body>
                 <p>
                     <a
-                        href="{/source/request/@context-path}/orgs/{/source/site-snags/hhdc-contract/org/@id}/reports/0/screen/output/">
+                        href="{/source/request/@context-path}/reports/1/output/">
                         <xsl:value-of
-                            select="/source/site-snags/hhdc-contract/org/@name" />
+                            select="'Home'" />
                     </a>
                     &gt;
                     <a
-                        href="{/source/request/@context-path}/orgs/{/source/site-snags/hhdc-contract/org/@id}/reports/56/screen/output/?hhdc-contract-id={/source/site-snags/hhdc-contract/@id}">
+                        href="{/source/request/@context-path}/reports/57/output/?hhdc-contract-id={/source/site-snags/hhdc-contract/@id}">
                         <xsl:value-of select="'HHDC Contracts'" />
                     </a>
                     &gt;
                     <a
-                        href="{/source/request/@context-path}/orgs/{/source/site-snags/hhdc-contract/org/@id}/reports/57/screen/output/?hhdc-contract-id={/source/site-snags/hhdc-contract/@id}">
+                        href="{/source/request/@context-path}/reports/58/output/?hhdc-contract-id={/source/site-snags/hhdc-contract/@id}">
                         <xsl:value-of
                             select="/source/site-snags/hhdc-contract/@name" />
                     </a>
                     &gt;
                     <xsl:value-of select="'Site Snags ['" />
                     <a
-                        href="{/source/request/@context-path}/orgs/{/source/site-snags/hhdc-contract/org/@id}/hhdc-contracts/{/source/site-snags/hhdc-contract/@id}/site-snags/">
+                        href="{/source/request/@context-path}/hhdc-contracts/{/source/site-snags/hhdc-contract/@id}/site-snags/">
                         <xsl:value-of select="'edit'" />
                     </a>
                     <xsl:value-of select="']'" />
@@ -3744,7 +3732,6 @@ snags_element.setAttribute("site-count", str(sites))
                     Site(s)
                     <br />
                 </p>
-
                 <table>
                     <thead>
                         <tr>
@@ -3761,19 +3748,19 @@ snags_element.setAttribute("site-count", str(sites))
                             <tr>
                                 <td>
                                     <a
-                                        href="{/source/request/@context-path}/orgs/{/source/site-snags/hhdc-contract/org/@id}/reports/59/screen/output/?snag-id={@id}">
+                                        href="{/source/request/@context-path}/reports/60/output/?snag-id={@id}">
                                         <xsl:value-of select="@id" />
                                     </a>
                                     <xsl:value-of select="' ['" />
                                     <a
-                                        href="{/source/request/@context-path}/orgs/{/source/site-snags/hhdc-contract/org/@id}/hhdc-contracts/{/source/site-snags/hhdc-contract/@id}/site-snags/{@id}/">
+                                        href="{/source/request/@context-path}/hhdc-contracts/{/source/site-snags/hhdc-contract/@id}/site-snags/{@id}/">
                                         <xsl:value-of select="'edit'" />
                                     </a>
                                     <xsl:value-of select="']'" />
                                 </td>
                                 <td>
                                     <a
-                                        href="{/source/request/@context-path}/orgs/{/source/site-snags/hhdc-contract/org/@id}/reports/2/screen/output/?site-id={site/@id}">
+                                        href="{/source/request/@context-path}/reports/3/output/?site-id={site/@id}">
                                         <xsl:value-of
                                             select="site/@code" />
                                     </a>
@@ -3799,7 +3786,6 @@ snags_element.setAttribute("site-count", str(sites))
                         </xsl:for-each>
                     </tbody>
                 </table>
-
             </body>
         </html>
     </xsl:template>
@@ -4226,13 +4212,11 @@ llfcs_element.appendChild(dso.toXml(doc))]]></value>
     <xsl:output method="html" encoding="US-ASCII"
         doctype-public="-//W3C//DTD HTML 4.01//EN"
         doctype-system="http://www.w3.org/TR/html4/strict.dtd" indent="yes" />
-
     <xsl:template match="/">
         <html>
             <head>
                 <link rel="stylesheet" type="text/css"
                     href="{/source/request/@context-path}/reports/10/output/" />
-
                 <title>
                     Home &gt; DSOs &gt;
                     <xsl:value-of
@@ -4285,7 +4269,7 @@ llfcs_element.appendChild(dso.toXml(doc))]]></value>
                             <tr>
                                 <td>
                                     <a
-                                        href="{/source/request/@context-path}/reports/25/output/?llfc-id={@id}">
+                                        href="{/source/request/@context-path}/reports/26/output/?llfc-id={@id}">
                                         <xsl:value-of select="@id" />
                                     </a>
                                 </td>
@@ -4346,13 +4330,11 @@ source.appendChild(llfc.toXml(doc, XmlTree('dso').put('voltageLevel')))]]></valu
     <xsl:output method="html" encoding="US-ASCII"
         doctype-public="-//W3C//DTD HTML 4.01//EN"
         doctype-system="http://www.w3.org/TR/html4/strict.dtd" indent="yes" />
-
     <xsl:template match="/">
         <html>
             <head>
                 <link rel="stylesheet" type="text/css"
                     href="{/source/request/@context-path}/reports/10/output/" />
-
                 <title>
                     Home &gt; DSOs &gt;
                     <xsl:value-of
@@ -4365,7 +4347,7 @@ source.appendChild(llfc.toXml(doc, XmlTree('dso').put('voltageLevel')))]]></valu
                 <p>
                     <a
                         href="{/source/request/@context-path}/reports/1/output/">
-                        <xsl:value-of select="'Home" />
+                        <xsl:value-of select="'Home'" />
                     </a>
                     &gt;
                     <a
@@ -4606,7 +4588,7 @@ dso_id = inv.getLong('dso-id')
 dso = Dso.getDso(dso_id)
 mpan_tops_element = doc.createElement('mpan-tops')
 source.appendChild(mpan_tops_element)
-for mpan_top in Hiber.session().createQuery("from MpanTop mpanTop where mpanTop.llfc.dso = :dso order by mpanTop.pc.code.integer, mpanTop.llfc.code.integer, mpanTop.mtc.code.integer").setEntity("dso", dso).list():
+for mpan_top in Hiber.session().createQuery("from MpanTop mpanTop where mpanTop.llfc.dso = :dso order by mpanTop.pc.code, mpanTop.llfc.code, mpanTop.mtc.code").setEntity("dso", dso).list():
     mpan_tops_element.appendChild(mpan_top.toXml(doc, XmlTree("pc").put("llfc").put("mtc").put("ssc")))
 mpan_tops_element.appendChild(dso.toXml(doc))]]></value>
     <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
@@ -4635,7 +4617,7 @@ mpan_tops_element.appendChild(dso.toXml(doc))]]></value>
                     </a>
                     &gt;
                     <a
-                        href="{/source/request/@context-path}/orgs/reports/69/output/">
+                        href="{/source/request/@context-path}/reports/69/output/">
                         <xsl:value-of select="'DSOs'" />
                     </a>
                     &gt;
@@ -4673,7 +4655,7 @@ mpan_tops_element.appendChild(dso.toXml(doc))]]></value>
                             select="/source/mpan-tops/mpan-top">
                             <tr>
                                 <td>
-                                    <a href="{@id}/">
+                                    <a href="{/source/request/@context-path}/reports/30/output/?mpan-top-id={@id}">
                                         <xsl:value-of select="@id" />
                                     </a>
                                 </td>
@@ -4753,7 +4735,7 @@ from net.sf.chellow.physical import MpanTop
 
 mpan_top_id = inv.getLong('mpan-top-id')
 mpan_top = MpanTop.getMpanTop(mpan_top_id)
-source.appendChild(mpan_top.toXml(doc, XmlTree('profileClass').put('llf', XmlTree('dso')).put('meterTimeswitch')))]]></value>
+source.appendChild(mpan_top.toXml(doc, XmlTree('pc').put('llfc', XmlTree('dso')).put('mtc')))]]></value>
     <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
 <xsl:stylesheet version="1.0"
     xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
@@ -4768,9 +4750,9 @@ source.appendChild(mpan_top.toXml(doc, XmlTree('profileClass').put('llf', XmlTre
                 <title>
                     Home &gt; DSOs &gt;
                     <xsl:value-of
-                        select="/source/mpan-top/llf/dso/@code" />
+                        select="/source/mpan-top/llfc/dso/@code" />
                     &gt; MPAN tops &gt;
-                    <xsl:value-of select="/source/mpan-top/llf/@code" />
+                    <xsl:value-of select="/source/mpan-top/llfc/@code" />
                 </title>
             </head>
             <body>
@@ -4787,13 +4769,13 @@ source.appendChild(mpan_top.toXml(doc, XmlTree('profileClass').put('llf', XmlTre
                     </a>
                     &gt;
                     <a
-                        href="{/source/request/@context-path}/reports/24/output/?dso-id={/source/mpan-top/llf/dso/@id}">
+                        href="{/source/request/@context-path}/reports/70/output/?dso-id={/source/mpan-top/llfc/dso/@id}">
                         <xsl:value-of
-                            select="/source/mpan-top/llf/dso/@code" />
+                            select="/source/mpan-top/llfc/dso/@code" />
                     </a>
                     &gt;
                     <a
-                        href="{/source/request/@context-path}/reports/29/output/?dso-id={/source/mpan-top/llf/dso/@id}">
+                        href="{/source/request/@context-path}/reports/29/output/?dso-id={/source/mpan-top/llfc/dso/@id}">
                         <xsl:value-of select="'MPAN tops'" />
                     </a>
                     &gt;
@@ -4822,19 +4804,19 @@ source.appendChild(mpan_top.toXml(doc, XmlTree('profileClass').put('llf', XmlTre
                             <td>Profile Class</td>
                             <td>
                                 <a
-                                    href="{/source/request/@context-path}/reports/28/output/?pc-id={/source/mpan-top/profile-class/@id}">
+                                    href="{/source/request/@context-path}/reports/28/output/?pc-id={/source/mpan-top/pc/@id}">
                                     <xsl:value-of
-                                        select="concat(/source/mpan-top/profile-class/@code, ' - ', /source/mpan-top/profile-class/@description)" />
+                                        select="concat(/source/mpan-top/pc/@code, ' - ', /source/mpan-top/pc/@description)" />
                                 </a>
                             </td>
                         </tr>
                         <tr>
-                            <td>Meter Timeswitch</td>
+                            <td>Meter Timeswitch Class</td>
                             <td>
                                 <a
-                                    href="{/source/request/@context-path}/reports/32/output/?mt-id={/source/mpan-top/meter-timeswitch/@id}">
+                                    href="{/source/request/@context-path}/reports/32/output/?mtc-id={/source/mpan-top/mtc/@id}">
                                     <xsl:value-of
-                                        select="concat(/source/mpan-top/meter-timeswitch/@code, ' - ', /source/mpan-top/meter-timeswitch/@description)" />
+                                        select="concat(/source/mpan-top/mtc/@code, ' - ', /source/mpan-top/mtc/@description)" />
                                 </a>
                             </td>
                         </tr>
@@ -4842,9 +4824,9 @@ source.appendChild(mpan_top.toXml(doc, XmlTree('profileClass').put('llf', XmlTre
                             <td>Line Loss Factor</td>
                             <td>
                                 <a
-                                    href="{/source/request/@context-path}/reports/26/output/?llf-id={/source/mpan-top/llf/@id}">
+                                    href="{/source/request/@context-path}/reports/26/output/?llfc-id={/source/mpan-top/llfc/@id}">
                                     <xsl:value-of
-                                        select="concat(/source/mpan-top/llf/@code, ' - ', /source/mpan-top/llf/@description)" />
+                                        select="concat(/source/mpan-top/llfc/@code, ' - ', /source/mpan-top/llfc/@description)" />
                                 </a>
                             </td>
                         </tr>
@@ -5176,7 +5158,7 @@ dso_id = inv.getLong('dso-id')
 dso = Dso.getDso(dso_id)
 contracts_element = doc.createElement('dso-contracts')
 source.appendChild(contracts_element)
-for contract in Hiber.session().createQuery("from DsoContract contract where contract.dso = :dso order by contract.startRateScript.startDate.date").setEntity("dso", dso).list():
+for contract in Hiber.session().createQuery("from DsoContract contract where contract.party = :dso order by contract.startRateScript.startDate.date").setEntity("dso", dso).list():
     contract_element = contract.toXml(doc)
     contracts_element.appendChild(contract_element)
     start_rate_script = contract.getStartRateScript()
@@ -5288,8 +5270,8 @@ contracts_element.appendChild(dso.toXml(doc))]]></value>
 from net.sf.chellow.billing import DsoContract
 
 contract_id = inv.getLong('dso-contract-id')
-contract = DsoService.getDsoContract(contract_id)
-contract_element = contract.toXml(doc, XmlTree('dso'))
+contract = DsoContract.getDsoContract(contract_id)
+contract_element = contract.toXml(doc, XmlTree('party'))
 source.appendChild(contract_element)
 for rate_script in contract.getRateScripts():
     contract_element.appendChild(rate_script.toXml(doc))]]></value>
@@ -5449,13 +5431,13 @@ for rate_script in contract.getRateScripts():
   <line>
     <value>insert</value>
     <value>report</value>
-    <value>0 DSO Rate Script</value>
+    <value>0 DSO Contract Rate Script</value>
     <value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree
 from net.sf.chellow.billing import RateScript
 
 script_id = inv.getLong('dso-rate-script-id')
 script = RateScript.getRateScript(script_id)
-source.appendChild(script.toXml(doc, XmlTree('contract', XmlTree('dso'))))]]></value>
+source.appendChild(script.toXml(doc, XmlTree('contract', XmlTree('party'))))]]></value>
     <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
 <xsl:stylesheet version="1.0"
     xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
@@ -5746,7 +5728,7 @@ for party in Hiber.session().createQuery("from Party party where party.participa
                                     </xsl:when>
                                     <xsl:otherwise>
                                       <a
-                                          href="{/source/request/@context-path}/reports/24/output/?provider-id={@id}">
+                                          href="{/source/request/@context-path}/reports/70/output/?dso-id={@id}">
                                           <xsl:value-of select="@id" />
                                       </a>
                                     </xsl:otherwise>
@@ -6052,7 +6034,7 @@ for account in Hiber.session().createQuery("from Account account where account.c
                     
                     <li>
                         <a
-                            href="{/source/request/@context-path}/reports/50/output/?supplier-contract-id={/source/supplier-contract/@id}">
+                            href="{/source/request/@context-path}/reports/51/output/?supplier-contract-id={/source/supplier-contract/@id}">
                             Account Snags
                         </a>
                     </li>
@@ -7285,6 +7267,2930 @@ for tpr in Hiber.session().createQuery("from Tpr tpr order by tpr.code").list():
                         </li>
                     </xsl:for-each>
                 </ul>
+            </body>
+        </html>
+    </xsl:template>
+</xsl:stylesheet>]]></value>
+  </line>
+  <line>
+    <value>insert</value>
+    <value>report</value>
+    <value>0 TPR</value>
+    <value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree
+from net.sf.chellow.physical import Tpr
+
+tpr_id = inv.getLong('tpr-id')
+tpr = Tpr.getTpr(tpr_id)
+source.appendChild(tpr.toXml(doc, XmlTree("measurementRequirements", XmlTree("ssc")).put("clockIntervals")))]]></value>
+    <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
+<xsl:stylesheet version="1.0"
+    xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+    <xsl:output method="html" encoding="US-ASCII"
+        doctype-public="-//W3C//DTD HTML 4.01//EN"
+        doctype-system="http://www.w3.org/TR/html4/strict.dtd" indent="yes" />
+    <xsl:template match="/">
+        <html>
+            <head>
+                <link rel="stylesheet" type="text/css"
+                    href="{/source/request/@context-path}/reports/10/output/" />
+                <title>
+                    Home &gt; TPRs &gt;
+                    <xsl:value-of select="/source/tpr/@code" />
+                </title>
+            </head>
+            <body>
+                <p>
+                    <a
+                        href="{/source/request/@context-path}/reports/1/output/">
+                        <xsl:value-of select="'Home'" />
+                    </a>
+                    &gt;
+                    <a
+                        href="{/source/request/@context-path}/reports/48/output/">
+                        <xsl:value-of select="'TPRs'" />
+                    </a>
+                    &gt;
+                    <xsl:value-of select="/source/tpr/@code" />
+                </p>
+                <br />
+                <xsl:if test="//message">
+                    <ul>
+                        <xsl:for-each select="//message">
+                            <li>
+                                <xsl:value-of select="@description" />
+                            </li>
+                        </xsl:for-each>
+                    </ul>
+                </xsl:if>
+                <table>
+                    <tr>
+                        <th>Chellow Id</th>
+                        <td>
+                            <xsl:value-of select="/source/tpr/@id" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Code</th>
+                        <td>
+                            <xsl:value-of select="/source/tpr/@code" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Teleswitch or Clock</th>
+                        <td>
+                            <xsl:choose>
+                                <xsl:when
+                                    test="/source/tpr/@is-teleswitch='true'">
+                                    Teleswitch
+                                </xsl:when>
+                                <xsl:otherwise>Clock</xsl:otherwise>
+                            </xsl:choose>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>GMT or Clock Time</th>
+                        <td>
+                            <xsl:choose>
+                                <xsl:when test="@is-gmt='true'">
+                                    GMT
+                                </xsl:when>
+                                <xsl:otherwise>
+                                    Clock Time
+                                </xsl:otherwise>
+                            </xsl:choose>
+                        </td>
+                    </tr>
+                </table>
+                <br />
+                <table>
+                    <caption>Clock Intervals</caption>
+                    <thead>
+                        <th>Day Of Week</th>
+                        <th>Start Day</th>
+                        <th>Start Month</th>
+                        <th>End Day</th>
+                        <th>End Month</th>
+                        <th>Start Hour</th>
+                        <th>Start Minute</th>
+                        <th>End Hour</th>
+                        <th>End Minute</th>
+                    </thead>
+                    <tbody>
+                        <xsl:for-each
+                            select="/source/tpr/clock-interval">
+                            <tr>
+                                <td>
+                                    <xsl:value-of select="@day-of-week" />
+                                </td>
+                                <td>
+                                    <xsl:value-of select="@start-day" />
+                                </td>
+                                <td>
+                                    <xsl:value-of select="@start-month" />
+                                </td>
+                                <td>
+                                    <xsl:value-of select="@end-day" />
+                                </td>
+                                <td>
+                                    <xsl:value-of select="@end-month" />
+                                </td>
+                                <td>
+                                    <xsl:value-of select="@start-hour" />
+                                </td>
+                                <td>
+                                    <xsl:value-of
+                                        select="@start-minute" />
+                                </td>
+                                <td>
+                                    <xsl:value-of select="@end-hour" />
+                                </td>
+                                <td>
+                                    <xsl:value-of select="@end-minute" />
+                                </td>
+                            </tr>
+                        </xsl:for-each>
+                    </tbody>
+                </table>
+
+                <h3>SSCs</h3>
+
+                <ul>
+                    <xsl:for-each
+                        select="/source/tpr/measurement-requirement/ssc">
+                        <li>
+                            <a
+                                href="{/source/request/@context-path}/reports/64/output/?ssc-id={@id}">
+                                <xsl:value-of select="@code"></xsl:value-of>
+                            </a>
+                        </li>
+                    </xsl:for-each>
+                </ul>
+            </body>
+        </html>
+    </xsl:template>
+</xsl:stylesheet>]]></value>
+  </line>
+  <line>
+    <value>insert</value>
+    <value>report</value>
+    <value>0 Supplies</value>
+    <value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree
+from net.sf.chellow.data08 import MpanCoreTerm
+
+if inv.hasParameter('search-pattern'):
+    search_pattern = MpanCoreTerm(inv.getString('search-pattern'))
+    for mpan_core_list in Hiber.session().createQuery("select distinct mpanCore, mpanCore.dso.code, mpanCore.uniquePart, mpanCore.checkDigit from MpanCore mpanCore where lower(mpanCore.dso.code || mpanCore.uniquePart || mpanCore.checkDigit) like lower(:term) order by mpanCore.dso.code, mpanCore.uniquePart, mpanCore.checkDigit").setString("term","%" + search_pattern.toString() + "%").setMaxResults(50).list():
+        source.appendChild(mpan_core_list[0].toXml(doc, XmlTree("supply").put("dso")))]]></value>
+    <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
+<xsl:stylesheet version="1.0"
+    xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+    <xsl:output method="html" encoding="US-ASCII"
+        doctype-public="-//W3C//DTD HTML 4.01//EN"
+        doctype-system="http://www.w3.org/TR/html4/strict.dtd" indent="yes" />
+    <xsl:template match="/">
+        <html>
+            <head>
+                <link rel="stylesheet" type="text/css"
+                    href="{/source/request/@context-path}/reports/10/output/" />
+
+                <title>
+                    Home &gt; Supplies
+                </title>
+            </head>
+            <body>
+                <p>
+                    <a
+                        href="{/source/request/@context-path}/reports/1/output/">
+                        <xsl:value-of select="'Home'" />
+                    </a>
+                    &gt;
+                    <xsl:value-of select="'Supplies ['" />
+                    <a
+                        href="{/source/request/@context-path}/supplies/">
+                        <xsl:value-of select="'edit'" />
+                    </a>
+                    <xsl:value-of select="']'" />
+                </p>
+                <br />
+                <xsl:if test="//message">
+                    <ul>
+
+
+                        <xsl:for-each select="//message">
+
+                            <li>
+                                <xsl:value-of select="@description" />
+                            </li>
+                        </xsl:for-each>
+                    </ul>
+                </xsl:if>
+                <form action=".">
+                    <fieldset><legend>Search by MPAN core</legend>
+                        <input name="search-pattern"
+                            value="{/source/request/parameter[@name='search-pattern']/value}" />
+                        <xsl:value-of select="' '" />
+                        <input type="submit" value="Search" />
+                    </fieldset>
+                </form>
+                <xsl:choose>
+                    <xsl:when test="/source/mpan-core">
+                        <p>
+                            Only the first 50 supplies of the search
+                            results are shown.
+                        </p>
+                        <table>
+                            <caption>
+                                Supplies
+                            </caption>
+                            <tr>
+                                <th>MPAN Core</th>
+                                <th>Supply</th>
+                            </tr>
+                            <xsl:for-each
+                                select="/source/mpan-core">
+                                <tr>
+                                    <td>
+                                        <code>
+                                            <xsl:value-of
+                                                select="@core" />
+                                        </code>
+                                    </td>
+                                    <td>
+                                        <a
+                                            href="{/source/request/@context-path}/reports/4/output/?supply-id={supply/@id}">
+                                            <xsl:value-of
+                                                select="supply/@id" />
+                                        </a>
+                                    </td>
+                                </tr>
+                            </xsl:for-each>
+                        </table>
+                    </xsl:when>
+                    <xsl:when
+                        test="/source/request/parameter[@name='search-pattern']">
+                        <p>No supplies matched your search</p>
+                    </xsl:when>
+                </xsl:choose>
+            </body>
+        </html>
+    </xsl:template>
+</xsl:stylesheet>]]></value>
+  </line>
+  <line>
+    <value>insert</value>
+    <value>report</value>
+    <value>0 Supplier Contract Account Snags</value>
+    <value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree, UserException
+from net.sf.chellow.billing import SupplierContract
+
+contract_id = inv.getLong('supplier-contract-id')
+contract = SupplierContract.getSupplierContract(contract_id)
+account_snags_element = doc.createElement('account-snags')
+source.appendChild(account_snags_element)
+account_snags_element.appendChild(contract.toXml(doc, XmlTree('party')))
+source.appendChild(account_snags_element)
+for account_snag in Hiber.session().createQuery("from AccountSnag snag where snag.dateResolved is null and snag.contract = :contract order by snag.account.reference, snag.description, snag.startDate.date").setEntity('contract', contract).list():
+    account_snags_element.appendChild(account_snag.toXml(doc, XmlTree('account')))]]></value>
+    <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
+<xsl:stylesheet version="1.0"
+    xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+    <xsl:output method="html" encoding="US-ASCII"
+        doctype-public="-//W3C//DTD HTML 4.01//EN"
+        doctype-system="http://www.w3.org/TR/html4/strict.dtd" indent="yes" />
+    <xsl:template match="/">
+        <html>
+            <head>
+                <link rel="stylesheet" type="text/css"
+                    href="{/source/request/@context-path}/reports/10/output/" />
+
+                <title>
+                    Home &gt; Supplier Contracts &gt;
+                    <xsl:value-of
+                        select="/source/account-snags/supplier-contract/@name" />
+                    &gt; Account Snags
+                </title>
+            </head>
+            <body>
+                <p>
+                    <a
+                        href="{/source/request/@context-path}/reports/1/output/">
+                        <xsl:value-of
+                            select="'Home'" />
+                    </a>
+                    &gt;
+                    <a
+                        href="{/source/request/@context-path}/reports/38/output/">
+                        <xsl:value-of select="'Supplier Contracts'" />
+                    </a>
+                    &gt;
+                    <a
+                        href="{/source/request/@context-path}/reports/39/output/?supplier-contract-id={/source/account-snags/supplier-contract/@id}">
+                        <xsl:value-of
+                            select="/source/account-snags/supplier-contract/@name" />
+                    </a>
+                    &gt;
+                    <xsl:value-of select="'Account Snags ['" />
+                    <a
+                        href="{/source/request/@context-path}/supplier-contracts/{/source/account-snags/supplier-contract/@id}/account-snags/">
+                        <xsl:value-of select="'edit'" />
+                    </a>
+                    <xsl:value-of select="']'" />
+                </p>
+                <br />
+                <xsl:if test="//message">
+                    <ul>
+                        <xsl:for-each select="//message">
+                            <li>
+                                <xsl:value-of select="@description" />
+                            </li>
+                        </xsl:for-each>
+                    </ul>
+                </xsl:if>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Chellow Id</th>
+                            <th>Account</th>
+                            <th>Start Date</th>
+                            <th>Finish Date</th>
+                            <th>Date Created</th>
+                            <th>Date Resolved</th>
+                            <th>Is Ignored?</th>
+                            <th>Description</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <xsl:for-each
+                            select="/source/account-snags/account-snag">
+                            <tr>
+                                <td>
+                                    <a
+                                        href="{/source/request/@context-path}/reports/52/output/?snag-id={@id}">
+                                        <xsl:value-of select="@id" />
+                                    </a>
+                                </td>
+                                <td>
+                                    <a
+                                        href="{/source/request/@context-path}/reports/42/output/?account-id={account/@id}">
+                                        <xsl:value-of
+                                            select="account/@reference" />
+                                    </a>
+                                </td>
+                                <td>
+                                    <xsl:value-of
+                                        select="concat(hh-end-date[@label='start']/@year, '-', hh-end-date[@label='start']/@month, '-', hh-end-date[@label='start']/@day)" />
+                                </td>
+                                <td>
+                                    <xsl:value-of
+                                        select="concat(hh-end-date[@label='finish']/@year, '-', hh-end-date[@label='finish']/@month, '-', hh-end-date[@label='finish']/@day)" />
+                                </td>
+                                <td>
+                                    <xsl:value-of
+                                        select="concat(date[@label='created']/@year, '-', date[@label='created']/@month, '-', date[@label='created']/@day)" />
+                                </td>
+                                <td>
+                                    <xsl:choose>
+                                        <xsl:when
+                                            test="hh-end-date[@label='resolved']">
+                                            <xsl:value-of
+                                                select="concat(hh-end-date[@label='resolved']/@year, '-', hh-end-date[@label='resolved']/@month, '-', hh-end-date[@label='resolved']/@day)" />
+                                        </xsl:when>
+                                        <xsl:otherwise>
+                                            Unresolved
+                                        </xsl:otherwise>
+                                    </xsl:choose>
+                                </td>
+                                <td>
+                                    <xsl:choose>
+                                        <xsl:when
+                                            test="@is-ignored = 'true'">
+                                            Yes
+                                        </xsl:when>
+                                        <xsl:otherwise>
+                                            No
+                                        </xsl:otherwise>
+                                    </xsl:choose>
+                                </td>
+                                <td>
+                                    <xsl:value-of select="@description" />
+                                </td>
+                            </tr>
+                        </xsl:for-each>
+                    </tbody>
+                </table>
+            </body>
+        </html>
+    </xsl:template>
+</xsl:stylesheet>]]></value>
+  </line>
+  <line>
+    <value>insert</value>
+    <value>report</value>
+    <value>0 Supplier Contract Account Snag</value>
+    <value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree, UserException
+from net.sf.chellow.billing import AccountSnag
+
+snag_id = inv.getLong('snag-id')
+snag = AccountSnag.getAccountSnag(snag_id)
+source.appendChild(snag.toXml(doc, XmlTree('contract', XmlTree('party')).put('account')))]]></value>
+    <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
+<xsl:stylesheet version="1.0"
+    xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+    <xsl:output method="html" encoding="US-ASCII"
+        doctype-public="-//W3C//DTD HTML 4.01//EN"
+        doctype-system="http://www.w3.org/TR/html4/strict.dtd" indent="yes" />
+    <xsl:template match="/">
+        <html>
+            <head>
+                <link rel="stylesheet" type="text/css"
+                    href="{/source/request/@context-path}/reports/10/output/" />
+                <title>
+                    Home &gt; Supplier Contracts &gt;
+                    <xsl:value-of
+                        select="/source/account-snag/supplier-contract/@name" />
+                    &gt; Account Snags &gt;
+                    <xsl:value-of select="/source/account-snag/@id" />
+                </title>
+            </head>
+            <body>
+                <p>
+                    <a
+                        href="{/source/request/@context-path}/reports/1/output/">
+                        <xsl:value-of
+                            select="'Home'" />
+                    </a>
+                    &gt;
+                    <a
+                        href="{/source/request/@context-path}/reports/38/output/">
+                        <xsl:value-of select="'Supplier Contracts'" />
+                    </a>
+                    &gt;
+                    <a
+                        href="{/source/request/@context-path}/reports/39/output/?supplier-contract-id={/source/account-snag/supplier-contract/@id}">
+                        <xsl:value-of
+                            select="/source/account-snag/supplier-contract/@name" />
+                    </a>
+                    &gt;
+                    <a
+                        href="{/source/request/@context-path}/reports/45/output/?supplier-contract-id={/source/account-snag/supplier-contract/@id}">
+                        <xsl:value-of select="'Account Snags'" />
+                    </a>
+                    &gt;
+                    <xsl:value-of
+                        select="concat(/source/account-snag/@id, ' [')" />
+                    <a
+                        href="{/source/request/@context-path}/supplier-contracts/{/source/account-snag/supplier-contract/@id}/account-snags/{/source/account-snag/@id}/">
+                        <xsl:value-of select="'edit'" />
+                    </a>
+                    <xsl:value-of select="']'" />
+                </p>
+                <br />
+                <xsl:if test="//message">
+                    <ul>
+                        <xsl:for-each select="//message">
+                            <li>
+                                <xsl:value-of select="@description" />
+                            </li>
+                        </xsl:for-each>
+                    </ul>
+                </xsl:if>
+                <table>
+                    <tr>
+                        <th>Chellow Id</th>
+                        <td>
+                            <xsl:value-of
+                                select="/source/account-snag/@id" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Account</th>
+                        <td>
+                            <a
+                                href="{/source/request/@context-path}/reports/42/output/?account-id={/source/account-snag/account/@id}">
+                                <xsl:value-of
+                                    select="/source/account-snag/account/@reference" />
+                            </a>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Start Date</th>
+                        <td>
+                            <xsl:value-of
+                                select="concat(' ', /source/account-snag/hh-end-date[@label='start']/@year, '-', /source/account-snag/hh-end-date[@label='start']/@month, '-', /source/account-snag/hh-end-date[@label='start']/@day)" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Finish Date</th>
+                        <td>
+                            <xsl:value-of
+                                select="concat(' ', /source/account-snag/hh-end-date[@label='finish']/@year, '-', /source/account-snag/hh-end-date[@label='finish']/@month, '-', /source/account-snag/hh-end-date[@label='finish']/@day)" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Date Created</th>
+                        <td>
+                            <xsl:value-of
+                                select="concat(' ', /source/account-snag/date[@label='created']/@year, '-', /source/account-snag/date[@label='created']/@month, '-', /source/account-snag/date[@label='created']/@day)" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Date Resolved</th>
+                        <td>
+                            <xsl:choose>
+                                <xsl:when
+                                    test="/source/account-snag/hh-end-date[@label='resolved']">
+                                    <xsl:value-of
+                                        select="concat(/source/account-snag/hh-end-date[@label='resolved']/@year, '-', /source/account-snag/hh-end-date[@label='resolved']/@month, '-', /source/account-snag/hh-end-date[@label='resolved']/@day)" />
+                                </xsl:when>
+                                <xsl:otherwise>
+                                    Unresolved
+                                </xsl:otherwise>
+                            </xsl:choose>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Is Ignored?</th>
+                        <td>
+                            <xsl:choose>
+                                <xsl:when
+                                    test="/source/account-snag/@is-ignored = 'true'">
+                                    Yes
+                                </xsl:when>
+                                <xsl:otherwise>No</xsl:otherwise>
+                            </xsl:choose>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Description</th>
+                        <td>
+                            <xsl:value-of
+                                select="/source/account-snag/@description" />
+                        </td>
+                    </tr>
+                </table>
+            </body>
+        </html>
+    </xsl:template>
+</xsl:stylesheet>]]></value>
+  </line>
+  <line>
+    <value>insert</value>
+    <value>report</value>
+    <value>0 Supplier Contract Bill Snags</value>
+    <value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree, UserException
+from net.sf.chellow.billing import SupplierContract
+
+contract_id = inv.getLong('supplier-contract-id')
+contract = SupplierContract.getSupplierContract(contract_id)
+bill_snags_element = doc.createElement('bill-snags')
+source.appendChild(bill_snags_element)
+bill_snags_element.appendChild(contract.toXml(doc, XmlTree('party')))
+source.appendChild(bill_snags_element)
+for bill_snag in Hiber.session().createQuery("from BillSnag snag where snag.dateResolved is null and snag.contract = :contract order by snag.bill.id, snag.description").setEntity('contract', contract).list():
+    bill_snags_element.appendChild(bill_snag.toXml(doc, XmlTree('bill')))]]></value>
+    <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
+<xsl:stylesheet version="1.0"
+    xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+    <xsl:output method="html" encoding="US-ASCII"
+        doctype-public="-//W3C//DTD HTML 4.01//EN"
+        doctype-system="http://www.w3.org/TR/html4/strict.dtd" indent="yes" />
+    <xsl:template match="/">
+        <html>
+            <head>
+                <link rel="stylesheet" type="text/css"
+                    href="{/source/request/@context-path}/reports/10/output/" />
+                <title>
+                    Home &gt; Supplier Contracts &gt;
+                    <xsl:value-of
+                        select="/source/bill-snags/supplier-contract/@name" />
+                    &gt; Bill Snags
+                </title>
+            </head>
+            <body>
+                <p>
+                    <a
+                        href="{/source/request/@context-path}/reports/1/output/">
+                        <xsl:value-of
+                            select="'Home'" />
+                    </a>
+                    &gt;
+                    <a
+                        href="{/source/request/@context-path}/reports/38/output/">
+                        <xsl:value-of select="'Supplier Contracts'" />
+                    </a>
+                    &gt;
+                    <a
+                        href="{/source/request/@context-path}/reports/39/output/?supplier-contract-id={/source/bill-snags/supplier-contract/@id}">
+                        <xsl:value-of
+                            select="/source/bill-snags/supplier-contract/@name" />
+                    </a>
+                    &gt;
+                    <xsl:value-of select="'Bill Snags ['" />
+                    <a
+                        href="{/source/request/@context-path}/supplier-contracts/{/source/bill-snags/supplier-contract/@id}/bill-snags/">
+                        <xsl:value-of select="'edit'" />
+                    </a>
+                    <xsl:value-of select="']'" />
+                </p>
+                <br />
+                <xsl:if test="//message">
+                    <ul>
+                        <xsl:for-each select="//message">
+                            <li>
+                                <xsl:value-of select="@description" />
+                            </li>
+                        </xsl:for-each>
+                    </ul>
+                </xsl:if>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Chellow Id</th>
+                            <th>Bill</th>
+                            <th>Date Created</th>
+                            <th>Date Resolved</th>
+                            <th>Is Ignored?</th>
+                            <th>Description</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <xsl:for-each
+                            select="/source/bill-snags/bill-snag">
+                            <tr>
+                                <td>
+                                    <a
+                                        href="{/source/request/@context-path}/reports/54/output/?snag-id={@id}">
+                                        <xsl:value-of select="@id" />
+                                    </a>
+                                </td>
+                                <td>
+                                    <a
+                                        href="{/source/request/@context-path}/reports/44/output/?bill-id={bill/@id}">
+                                        <xsl:value-of select="bill/@id" />
+                                    </a>
+                                </td>
+                                <td>
+                                    <xsl:value-of
+                                        select="concat(date[@label='created']/@year, '-', date[@label='created']/@month, '-', date[@label='created']/@day)" />
+                                </td>
+                                <td>
+                                    <xsl:choose>
+                                        <xsl:when
+                                            test="hh-end-date[@label='resolved']">
+                                            <xsl:value-of
+                                                select="concat(hh-end-date[@label='resolved']/@year, '-', hh-end-date[@label='resolved']/@month, '-', hh-end-date[@label='resolved']/@day)" />
+                                        </xsl:when>
+                                        <xsl:otherwise>
+                                            Unresolved
+                                        </xsl:otherwise>
+                                    </xsl:choose>
+                                </td>
+                                <td>
+                                    <xsl:choose>
+                                        <xsl:when
+                                            test="@is-ignored = 'true'">
+                                            Yes
+                                        </xsl:when>
+                                        <xsl:otherwise>
+                                            No
+                                        </xsl:otherwise>
+                                    </xsl:choose>
+                                </td>
+                                <td>
+                                    <xsl:value-of select="@description" />
+                                </td>
+                            </tr>
+                        </xsl:for-each>
+                    </tbody>
+                </table>
+            </body>
+        </html>
+    </xsl:template>
+</xsl:stylesheet>]]></value>
+  </line>
+  <line>
+    <value>insert</value>
+    <value>report</value>
+    <value>0 Supplier Contract Bill Snag</value>
+    <value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree, UserException
+from net.sf.chellow.billing import BillSnag
+
+snag_id = inv.getLong('snag-id')
+snag = BillSnag.getBillSnag(snag_id)
+source.appendChild(snag.toXml(doc, XmlTree('contract', XmlTree('party')).put('bill', XmlTree('account'))))]]></value>
+    <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
+<xsl:stylesheet version="1.0"
+    xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+    <xsl:output method="html" encoding="US-ASCII"
+        doctype-public="-//W3C//DTD HTML 4.01//EN"
+        doctype-system="http://www.w3.org/TR/html4/strict.dtd" indent="yes" />
+    <xsl:template match="/">
+        <html>
+            <head>
+                <link rel="stylesheet" type="text/css"
+                    href="{/source/request/@context-path}/reports/10/output/" />
+                <title>
+                    Home &gt; Supplier Contracts &gt;
+                    <xsl:value-of
+                        select="/source/bill-snag/supplier-contract/@name" />
+                    &gt; Bill Snags &gt;
+                    <xsl:value-of select="/source/bill-snag/@id" />
+                </title>
+            </head>
+            <body>
+                <p>
+                    <a
+                        href="{/source/request/@context-path}/reports/1/output/">
+                        <xsl:value-of select="'Home'" />
+                    </a>
+                    &gt;
+                    <a
+                        href="{/source/request/@context-path}/reports/38/output/?supplier-id={/source/bill-snag/supplier-contract/@id}">
+                        <xsl:value-of select="'Supplier Contracts'" />
+                    </a>
+                    &gt;
+                    <a
+                        href="{/source/request/@context-path}/reports/39/output/?supplier-contract-id={/source/bill-snag/supplier-contract/@id}">
+                        <xsl:value-of
+                            select="/source/bill-snag/supplier-contract/@name" />
+                    </a>
+                    &gt;
+                    <a
+                        href="{/source/request/@context-path}/reports/45/output/?supplier-contract-id={/source/bill-snag/supplier-contract/@id}">
+                        <xsl:value-of select="'Bill Snags'" />
+                    </a>
+                    &gt;
+                    <xsl:value-of
+                        select="concat(/source/bill-snag/@id, ' [')" />
+                    <a
+                        href="{/source/request/@context-path}/supplier-contracts/{/source/bill-snag/supplier-contract/@id}/bill-snags/{/source/bill-snag/@id}/">
+                        <xsl:value-of select="'edit'" />
+                    </a>
+                    <xsl:value-of select="']'" />
+                </p>
+                <br />
+                <xsl:if test="//message">
+                    <ul>
+                        <xsl:for-each select="//message">
+                            <li>
+                                <xsl:value-of select="@description" />
+                            </li>
+                        </xsl:for-each>
+                    </ul>
+                </xsl:if>
+                <table>
+                    <tr>
+                        <th>Chellow Id</th>
+                        <td>
+                            <xsl:value-of
+                                select="/source/bill-snag/@id" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Bill</th>
+                        <td>
+                            <a
+                                href="{/source/request/@context-path}/reports/44/output/?bill-id={/source/bill-snag/bill/@id}">
+                                <xsl:value-of
+                                    select="/source/bill-snag/bill/@id" />
+                            </a>
+                        </td>
+
+                    </tr>
+                    <tr>
+                        <th>Date Created</th>
+                        <td>
+                            <xsl:value-of
+                                select="concat(/source/bill-snag/date[@label='created']/@year, '-', /source/bill-snag/date[@label='created']/@month, '-', /source/bill-snag/date[@label='created']/@day)" />
+                        </td>
+
+                    </tr>
+                    <tr>
+                        <th>Date Resolved</th>
+                        <td>
+                            <xsl:choose>
+                                <xsl:when
+                                    test="/source/bill-snag/date[@label='resolved']">
+                                    <xsl:value-of
+                                        select="concat(/source/bill-snag/date[@label='resolved']/@year, '-', /source/bill-snag/date[@label='resolved']/@month, '-', /source/bill-snag/date[@label='resolved']/@day)" />
+                                </xsl:when>
+                                <xsl:otherwise>
+                                    Unresolved
+                                </xsl:otherwise>
+                            </xsl:choose>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Is Ignored?</th>
+                        <td>
+                            <xsl:choose>
+                                <xsl:when
+                                    test="/source/bill-snag/@is-ignored = 'true'">
+                                    Yes
+                                </xsl:when>
+                                <xsl:otherwise>No</xsl:otherwise>
+                            </xsl:choose>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Description</th>
+                        <td>
+                            <xsl:value-of
+                                select="/source/bill-snag/@description" />
+                        </td>
+                    </tr>
+                </table>
+            </body>
+        </html>
+    </xsl:template>
+</xsl:stylesheet>]]></value>
+  </line>
+  <line>
+    <value>insert</value>
+    <value>report</value>
+    <value>0 HHDC Contract Accounts</value>
+    <value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree
+from net.sf.chellow.billing import HhdcContract
+
+id = inv.getLong('hhdc-contract-id')
+contract = HhdcContract.getHhdcContract(id)
+accounts_element = doc.createElement('accounts')
+source.appendChild(accounts_element)
+accounts_element.appendChild(contract.toXml(doc))
+for account in Hiber.session().createQuery("from Account account where account.contract = :contract order by account.reference").setEntity('contract', contract).list():
+    account_element = account.toXml(doc)
+    accounts_element.appendChild(account_element)]]></value>
+    <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
+<xsl:stylesheet version="1.0"
+    xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+    <xsl:output method="html" encoding="US-ASCII"
+        doctype-public="-//W3C//DTD HTML 4.01//EN"
+        doctype-system="http://www.w3.org/TR/html4/strict.dtd" indent="yes" />
+    <xsl:template match="/">
+        <html>
+            <head>
+                <link rel="stylesheet" type="text/css"
+                    href="{/source/request/@context-path}/reports/10/output/" />
+                <title>
+                    Home &gt; HHDC Contracts &gt;
+                    <xsl:value-of
+                        select="/source/accounts/hhdc-contract/@name" />
+                    &gt; Accounts
+                </title>
+            </head>
+            <body>
+                <p>
+                    <a
+                        href="{/source/request/@context-path}/reports/1/output/">
+                        <xsl:value-of select="'Home'" />
+                    </a>
+                    &gt;
+                    <a
+                        href="{/source/request/@context-path}/reports/57/output/">
+                        <xsl:value-of select="'HHDC Contracts'" />
+                    </a>
+                    &gt;
+                    <a
+                        href="{/source/request/@context-path}/reports/58/output/?hhdc-contract-id={/source/accounts/hhdc-contract/@id}">
+                        <xsl:value-of
+                            select="/source/accounts/hhdc-contract/@name" />
+                    </a>
+                    &gt; Accounts
+                </p>
+                <br />
+                <xsl:if test="//message">
+                    <ul>
+                        <xsl:for-each select="//message">
+                            <li>
+                                <xsl:value-of select="@description" />
+                            </li>
+                        </xsl:for-each>
+                    </ul>
+                </xsl:if>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Chellow Id</th>
+                            <th>Name</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <xsl:for-each
+                            select="/source/accounts/account">
+                            <tr>
+                                <td>
+                                    <a
+                                        href="{/source/request/@context-path}/reports/56/output/?account-id={@id}">
+                                        <xsl:value-of select="@id" />
+                                    </a>
+                                </td>
+                                <td>
+                                    <xsl:value-of select="@reference" />
+                                </td>
+                            </tr>
+                        </xsl:for-each>
+                    </tbody>
+                </table>
+            </body>
+        </html>
+    </xsl:template>
+</xsl:stylesheet>]]></value>
+  </line>
+  <line>
+    <value>insert</value>
+    <value>report</value>
+    <value>0 HHDC Contract Account</value>
+    <value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree, UserException
+from net.sf.chellow.billing import Account
+
+def create_item_element(doc, mpan, finish_generation):
+    item_element = doc.createElement('item')
+    account_element.appendChild(item_element)
+    item_element.appendChild(mpan.getCore().toXml(doc))
+    start_generation = mpan.getSupplyGeneration()
+    start_generation.setLabel('start')
+    item_element.appendChild(start_generation.toXml(doc))
+    finish_generation.setLabel('finish')
+    item_element.appendChild(finish_generation.toXml(doc))
+    return item_element
+
+account_id = inv.getLong('account-id')
+account = Account.getAccount(account_id)
+account_element = account.toXml(doc, XmlTree('contract'))
+source.appendChild(account_element)
+
+mpans = Hiber.session().createQuery("from Mpan mpan where mpan.hhdcAccount = :account order by mpan.core, mpan.supplyGeneration.startDate.date").setEntity('account', account).list()
+if len(mpans) > 0:
+    current_mpan = mpans[0]
+    finish_generation = current_mpan.getSupplyGeneration()
+    for i in range(1, len(mpans)):
+        mpan = mpans[i]
+        if current_mpan.getCore().equals(mpan.getCore()) and finish_generation.getFinishDate().getNext().getDate().equals(mpan.getSupplyGeneration().getStartDate().getDate()):
+            finish_generation = mpan.getSupplyGeneration()
+        else:
+            account_element.appendChild(create_item_element(doc, current_mpan, finish_generation))
+            current_mpan = mpan
+            finish_generation = current_mpan.getSupplyGeneration()
+    account_element.appendChild(create_item_element(doc, current_mpan, finish_generation))]]></value>
+    <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
+<xsl:stylesheet version="1.0"
+    xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+    <xsl:output method="html" encoding="US-ASCII"
+        doctype-public="-//W3C//DTD HTML 4.01//EN"
+        doctype-system="http://www.w3.org/TR/html4/strict.dtd" indent="yes" />
+    <xsl:template match="/">
+        <html>
+            <head>
+                <link rel="stylesheet" type="text/css"
+                    href="{/source/request/@context-path}/reports/10/output/" />
+                <title>
+                    Home &gt; HHDC Contracts &gt;
+                    <xsl:value-of
+                        select="/source/account/hhdc-contract/@name" />
+                    &gt; Account:
+                    <xsl:value-of select="/source/account/@reference" />
+                </title>
+            </head>
+            <body>
+                <p>
+                    <a
+                        href="{/source/request/@context-path}/reports/1/output/">
+                        <xsl:value-of
+                            select="'Home'" />
+                    </a>
+                    &gt;
+                    <a
+                        href="{/source/request/@context-path}/reports/57/output/">
+                        <xsl:value-of select="'HHDC Contracts'" />
+                    </a>
+                    &gt;
+                    <a
+                        href="{/source/request/@context-path}/reports/58/output/?hhdc-contract-id={/source/account/hhdc-contract/@id}">
+                        <xsl:value-of
+                            select="/source/account/hhdc-contract/@name" />
+                    </a>
+                    &gt;
+                    <a
+                        href="{/source/request/@context-path}/reports/55/output/?hhdc-contract-id={/source/account/hhdc-contract/@id}">
+                        <xsl:value-of select="'Accounts'" />
+                    </a>
+                    &gt;
+                    <xsl:value-of
+                        select="concat(/source/account/@reference , ' [')" />
+                    <a
+                        href="{/source/request/@context-path}/hhdc-contracts/{/source/account/hhdc-contract/@id}/accounts/{/source/account/@id}/">
+                        <xsl:value-of select="'edit'" />
+                    </a>
+                    <xsl:value-of select="']'" />
+                </p>
+                <br />
+                <xsl:if test="//message">
+                    <ul>
+                        <xsl:for-each select="//message">
+                            <li>
+                                <xsl:value-of select="@description" />
+                            </li>
+                        </xsl:for-each>
+                    </ul>
+                </xsl:if>
+                <table>
+                    <tbody>
+                        <tr>
+                            <th>Chellow Id</th>
+                            <td>
+                                <xsl:value-of
+                                    select="/source/account/@id" />
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>Reference</th>
+                            <td>
+                                <xsl:value-of
+                                    select="/source/account/@reference" />
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <ul>
+                    <li>
+                        <a
+                            href="{/source/request/@context-path}/reports/43/output/?account-id={/source/account/@id}">
+                            Bills
+                        </a>
+                    </li>
+                </ul>
+
+                <table>
+                    <caption>MPANs</caption>
+                    <thead>
+                        <tr>
+                            <th rowspan="2">MPAN Core</th>
+                            <th colspan="2">Supply Generations</th>
+                        </tr>
+                        <tr>
+                            <th>From</th>
+                            <th>To</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <xsl:for-each select="/source/account/item">
+                            <tr>
+                                <td>
+                                    <xsl:value-of
+                                        select="mpan-core/@core" />
+                                </td>
+                                <td>
+                                    <a
+                                        href="{/source/request/@context-path}/reports/16/output/?supply-generation-id={supply-generation[@label='start']/@id}">
+                                        <xsl:value-of
+                                            select="'Supply Generation'" />
+                                    </a>
+                                </td>
+                                <td>
+                                    <a
+                                        href="{/source/request/@context-path}/reports/16/output/?supply-generation-id={supply-generation[@label='finish']/@id}">
+                                        <xsl:value-of
+                                            select="'Supply Generation'" />
+                                    </a>
+                                </td>
+                            </tr>
+                        </xsl:for-each>
+                    </tbody>
+                </table>
+            </body>
+        </html>
+    </xsl:template>
+</xsl:stylesheet>]]></value>
+  </line>
+  <line>
+    <value>insert</value>
+    <value>report</value>
+    <value>0 HHDC Contracts</value>
+    <value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree
+
+contracts_element = doc.createElement('contracts')
+source.appendChild(contracts_element)
+for contract in Hiber.session().createQuery("from HhdcContract contract order by contract.startRateScript.startDate.date").list():
+    contract_element = contract.toXml(doc, XmlTree('party'))
+    contracts_element.appendChild(contract_element)
+    start_rate_script = contract.getStartRateScript()
+    start_rate_script.setLabel('start')
+    contract_element.appendChild(start_rate_script.toXml(doc))
+    finish_rate_script = contract.getFinishRateScript()
+    finish_rate_script.setLabel('finish')
+    contract_element.appendChild(finish_rate_script.toXml(doc))]]></value>
+    <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
+<xsl:stylesheet version="1.0"
+    xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+    <xsl:output method="html" encoding="US-ASCII"
+        doctype-public="-//W3C//DTD HTML 4.01//EN"
+        doctype-system="http://www.w3.org/TR/html4/strict.dtd" indent="yes" />
+    <xsl:template match="/">
+        <html>
+            <head>
+                <link rel="stylesheet" type="text/css"
+                    href="{/source/request/@context-path}/reports/10/output/" />
+                <title>
+                    Home &gt; HHDC Contracts
+                </title>
+            </head>
+            <body>
+                <p>
+                    <a
+                        href="{/source/request/@context-path}/reports/1/output/">
+                        <xsl:value-of select="'Home'" />
+                    </a>
+                    &gt;
+                    <xsl:value-of select="'HHDC Contracts ['" />
+                    <a
+                        href="{/source/request/@context-path}/orgs/{/source/contracts/org/@id}/hhdc-contracts/">
+                        <xsl:value-of select="'edit'" />
+                    </a>
+                    <xsl:value-of select="']'" />
+                </p>
+                <br />
+                <xsl:if test="//message">
+                    <ul>
+                        <xsl:for-each select="//message">
+                            <li>
+                                <xsl:value-of select="@description" />
+                            </li>
+                        </xsl:for-each>
+                    </ul>
+                </xsl:if>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Chellow Id</th>
+                            <th>Name</th>
+                            <th>Start Date</th>
+                            <th>Finish Date</th>
+                            <th>HHDC</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <xsl:for-each
+                            select="/source/contracts/hhdc-contract">
+                            <tr>
+                                <td>
+                                    <a
+                                        href="{/source/request/@context-path}/reports/58/output/?hhdc-contract-id={@id}">
+                                        <xsl:value-of select="@id" />
+                                    </a>
+                                </td>
+                                <td>
+                                    <xsl:value-of select="@name" />
+                                </td>
+                                <td>
+                                    <xsl:value-of
+                                        select="concat(rate-script[@label='start']/hh-end-date[@label='start']/@year, '-', rate-script[@label='start']/hh-end-date[@label='start']/@month, '-', rate-script[@label='start']/hh-end-date[@label='start']/@day)" />
+                                </td>
+                                <td>
+                                    <xsl:choose>
+                                        <xsl:when
+                                            test="rate-script[@label='finish']/hh-end-date[@label='finish']">
+                                            <xsl:value-of
+                                                select="concat(rate-script[@label='finish']/hh-end-date[@label='finish']/@year, '-', rate-script[@label='finish']/hh-end-date[@label='finish']/@month, '-', rate-script[@label='finish']/hh-end-date[@label='finish']/@day)" />
+                                        </xsl:when>
+                                        <xsl:otherwise>
+                                            Ongoing
+                                        </xsl:otherwise>
+                                    </xsl:choose>
+                                </td>
+                                <td>
+                                    <a
+                                        href="{/source/request/@context-path}/reports/24/output/?provider-id={provider/@id}">
+                                        <xsl:value-of
+                                            select="provider/@name" />
+                                    </a>
+                                </td>
+                            </tr>
+                        </xsl:for-each>
+                    </tbody>
+                </table>
+            </body>
+        </html>
+    </xsl:template>
+</xsl:stylesheet>]]></value>
+  </line>
+  <line>
+    <value>insert</value>
+    <value>report</value>
+    <value>0 HHDC Contract</value>
+    <value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree, UserException
+from net.sf.chellow.billing import HhdcContract
+
+contract_id = inv.getLong('hhdc-contract-id')
+contract = HhdcContract.getHhdcContract(contract_id)
+source.appendChild(contract.toXml(doc, XmlTree('party', XmlTree('participant')).put('rateScripts')))]]></value>
+    <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
+<xsl:stylesheet version="1.0"
+    xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+    <xsl:output method="html" encoding="US-ASCII"
+        doctype-public="-//W3C//DTD HTML 4.01//EN"
+        doctype-system="http://www.w3.org/TR/html4/strict.dtd" indent="yes" />
+    <xsl:template match="/">
+        <html>
+            <head>
+                <link rel="stylesheet" type="text/css"
+                    href="{/source/request/@context-path}/reports/10/output/" />
+
+                <title>
+                    Home &gt; HHDC Contracts &gt;
+                    <xsl:value-of select="/source/hhdc-contract/@name" />
+                </title>
+            </head>
+            <body>
+                <p>
+                    <a
+                        href="{/source/request/@context-path}/reports/1/output/">
+                        <xsl:value-of
+                            select="'Home'" />
+                    </a>
+                    &gt;
+                    <a
+                        href="{/source/request/@context-path}/reports/57/output/">
+                        <xsl:value-of select="'HHDC Contracts'" />
+                    </a>
+                    &gt;
+                    <xsl:value-of
+                        select="concat(/source/hhdc-contract/@name, ' [')" />
+                    <a
+                        href="{/source/request/@context-path}/hhdc-contracts/{/source/hhdc-contract/@id}/">
+                        <xsl:value-of select="'edit'" />
+                    </a>
+                    <xsl:value-of select="']'" />
+                </p>
+                <br />
+                <xsl:if test="//message">
+                    <ul>
+                        <xsl:for-each select="//message">
+                            <li>
+                                <xsl:value-of select="@description" />
+                            </li>
+                        </xsl:for-each>
+                    </ul>
+                </xsl:if>
+                <table>
+                    <tbody>
+                        <tr>
+                            <th>Chellow Id</th>
+                            <td>
+                                <xsl:value-of
+                                    select="/source/hhdc-contract/@id" />
+                            </td>
+                            <tr>
+                                <th>Provider</th>
+                                <td>
+                                    <a
+                                        href="{/source/request/@context-path}/reports/24/output/?provider-id={/source/hhdc-contract/provider/@id}">
+                                        <xsl:value-of
+                                            select="/source/hhdc-contract/provider/@name" />
+                                    </a>
+                                </td>
+                            </tr>
+                        </tr>
+                        <tr>
+                            <th>Name</th>
+                            <td>
+                                <xsl:value-of
+                                    select="/source/hhdc-contract/@name" />
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>
+                                Frequency with which the data arrives
+                            </th>
+                            <td>
+                                <xsl:choose>
+                                    <xsl:when
+                                        test="/source/hhdc-contract/@frequency = '0'">
+                                        <xsl:value-of select="'Daily'" />
+                                    </xsl:when>
+                                    <xsl:when
+                                        test="/source/hhdc-contract/@frequency = '1'">
+                                        <xsl:value-of
+                                            select="'Monthly'" />
+                                    </xsl:when>
+                                </xsl:choose>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>
+                                Lag (number of days behind that the data
+                                is delivered)
+                            </th>
+                            <td>
+                                <xsl:value-of
+                                    select="/source/hhdc-contract/@lag" />
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>Start Date</th>
+                            <td>
+                                <xsl:value-of
+                                    select="concat(/source/hhdc-contract/rate-script[position()=1]/hh-end-date[@label='start']/@year, '-', /source/hhdc-contract/rate-script[position()=1]/hh-end-date[@label='start']/@month, '-', /source/hhdc-contract/rate-script[position()=1]/hh-end-date[@label='start']/@day)" />
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>Finish Date</th>
+                            <td>
+                                <xsl:choose>
+                                    <xsl:when
+                                        test="/source/hhdc-contract/rate-script[position()=last()]/hh-end-date[@label='finish']">
+                                        <xsl:value-of
+                                            select="concat(/source/hhdc-contract/rate-script[position()=last()]/hh-end-date[@label='finish']/@year, '-', /source/hhdc-contract/rate-script[position()=last()]/hh-end-date[@label='finish']/@month, '-', /source/hhdc-contract/rate-script[position()=last()]/hh-end-date[@label='finish']/@day)" />
+                                    </xsl:when>
+                                    <xsl:otherwise>
+                                        Ongoing
+                                    </xsl:otherwise>
+                                </xsl:choose>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                <br />
+                <!--
+                    <table>
+                    <caption>Rate Scripts</caption>
+                    <thead>
+                    <tr>
+                    <th>Chellow Id</th>
+                    <th>From</th>
+                    <th>To</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <xsl:for-each
+                    select="/source/hhdc-contract/rate-script">
+                    <tr>
+                    <td>
+                    <a
+                    href="{/source/request/@context-path}/reports/40/output/?hhdc-rate-script-id={@id}">
+                    <xsl:value-of select="@id" />
+                    </a>
+                    </td>
+                    <td>
+                    <xsl:value-of
+                    select="concat(hh-end-date[@label='start']/@year, '-', hh-end-date[@label='start']/@month, '-', hh-end-date[@label='start']/@day)" />
+                    </td>
+                    <td>
+                    <xsl:choose>
+                    <xsl:when
+                    test="hh-end-date[@label='finish']">
+                    <xsl:value-of
+                    select="concat(hh-end-date[@label='finish']/@year, '-', hh-end-date[@label='finish']/@month, '-', hh-end-date[@label='finish']/@day)" />
+                    </xsl:when>
+                    <xsl:otherwise>
+                    Ongoing
+                    </xsl:otherwise>
+                    </xsl:choose>
+                    </td>
+                    </tr>
+                    </xsl:for-each>
+                    </tbody>
+                    </table>
+                -->
+                <ul>
+                    <!--
+                        <li>
+                        <a
+                        href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/44/screen/output/?hhdc-contract-id={/source/hhdc-contract/@id}">
+                        Batches
+                        </a>
+                        </li>
+                        <li>
+                        <a
+                        href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/50/screen/output/?hhdc-contract-id={/source/hhdc-contract/@id}">
+                        Account Snags
+                        </a>
+                        </li>
+                        <li>
+                        <a
+                        href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/52/screen/output/?service-id={/source/hhdc-contract/@id}">
+                        Bill Snags
+                        </a>
+                        </li>
+                    -->
+                    <li>
+                        <a
+                            href="{/source/request/@context-path}/reports/55/output/?hhdc-contract-id={/source/hhdc-contract/@id}">
+                            Accounts
+                        </a>
+                    </li>
+                    <li>
+                        <a
+                            href="{/source/request/@context-path}/reports/19/output/?hhdc-contract-id={/source/hhdc-contract/@id}">
+                            Channel Snags
+                        </a>
+                    </li>
+                    <li>
+                        <a
+                            href="{/source/request/@context-path}/reports/20/output/?hhdc-contract-id={/source/hhdc-contract/@id}">
+                            Site Group Snags
+                        </a>
+                    </li>
+                    <xsl:if
+                        test="/source/hhdc-contract/@has-stark-automatic-hh-data-importer='true'">
+                        <li>
+                            <a
+                                href="{/source/request/@context-path}/reports/62/output/?hhdc-contract-id={/source/hhdc-contract/@id}">
+                                Stark Automatic HH Data Importer
+                            </a>
+                        </li>
+                    </xsl:if>
+                </ul>
+                <!--
+                    <h2>Script</h2>
+                    <pre>
+                    <xsl:value-of
+                    select="/source/hhdc-contract/@charge-script" />
+                    </pre>
+                -->
+            </body>
+        </html>
+    </xsl:template>
+</xsl:stylesheet>]]></value>
+  </line>
+  <line>
+    <value>insert</value>
+    <value>report</value>
+    <value>0 HHDC Contract Channel Snag</value>
+    <value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree, UserException
+from net.sf.chellow.physical import ChannelSnag
+
+snag_id = inv.getLong('snag-id')
+snag = ChannelSnag.getChannelSnag(snag_id)
+source.appendChild(snag.toXml(doc, XmlTree("contract").put("channel", XmlTree("supplyGeneration", XmlTree('supply')))))]]></value>
+    <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
+<xsl:stylesheet version="1.0"
+    xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+    <xsl:output method="html" encoding="US-ASCII"
+        doctype-public="-//W3C//DTD HTML 4.01//EN"
+        doctype-system="http://www.w3.org/TR/html4/strict.dtd" indent="yes" />
+    <xsl:template match="/">
+        <html>
+            <head>
+                <link rel="stylesheet" type="text/css"
+                    href="{/source/request/@context-path}/reports/10/output/" />
+                <title>
+                    Home &gt; HHDC Contracts &gt;
+                    <xsl:value-of
+                        select="/source/channel-snag/hhdc-contract/@name" />
+                    &gt; Channel Snags &gt;
+                    <xsl:value-of select="/source/channel-snag/@id" />
+                </title>
+            </head>
+            <body>
+                <p>
+                    <a
+                        href="{/source/request/@context-path}/reports/1/output/">
+                        <xsl:value-of
+                            select="'Home'" />
+                    </a>
+                    &gt;
+                    <a
+                        href="{/source/request/@context-path}/reports/57/output/">
+                        <xsl:value-of select="'HHDC Contracts'" />
+                    </a>
+                    &gt;
+                    <a
+                        href="{/source/request/@context-path}/reports/58/output/?hhdc-contract-id={/source/channel-snag/hhdc-contract/@id}">
+                        <xsl:value-of
+                            select="/source/channel-snag/hhdc-contract/@name" />
+                    </a>
+                    &gt;
+                    <a
+                        href="{/source/request/@context-path}/reports/19/output/?hhdc-contract-id={/source/channel-snag/hhdc-contract/@id}">
+                        <xsl:value-of select="'Channel Snags'" />
+                    </a>
+                    &gt;
+                    <xsl:value-of
+                        select="concat(/source/channel-snag/@id, ' [')" />
+                    <a
+                        href="{/source/request/@context-path}/hhdc-contracts/{/source/channel-snag/hhdc-contract/@id}/channel-snags/{/source/channel-snag/@id}/">
+                        <xsl:value-of select="'edit'" />
+                    </a>
+                    <xsl:value-of select="']'" />
+
+                </p>
+                <br />
+                <xsl:if test="//message">
+                    <ul>
+                        <xsl:for-each select="//message">
+                            <li>
+                                <xsl:value-of select="@description" />
+                            </li>
+                        </xsl:for-each>
+                    </ul>
+                </xsl:if>
+                <table>
+                    <tbody>
+                        <tr>
+                            <th>Chellow Id</th>
+                            <td>
+                                <xsl:value-of
+                                    select="/source/channel-snag/@id" />
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>Date Created</th>
+                            <td>
+                                <xsl:value-of
+                                    select="concat(/source/channel-snag/date[@label='created']/@year, '-', /source/channel-snag/date[@label='created']/@month, '-', /source/channel-snag/date[@label='created']/@day, 'T', /source/channel-snag/date[@label='created']/@hour, ':', /source/channel-snag/date[@label='created']/@minute, 'Z')" />
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>Date Resolved</th>
+                            <td>
+                                <xsl:choose>
+                                    <xsl:when
+                                        test="/source/channel-snag/date[@label='resolved']">
+                                        <xsl:value-of
+                                            select="concat(/source/channel-snag/date[@label='resolved']/@year, '-', /source/channel-snag/date[@label='resolved']/@month, '-', /source/channel-snag/date[@label='resolved']/@day, 'T', /source/channel-snag/date[@label='resolved']/@hour, ':', /source/channel-snag/date[@label='resolved']/@minute, 'Z')" />
+                                    </xsl:when>
+                                    <xsl:otherwise>
+                                        Unresolved
+                                    </xsl:otherwise>
+                                </xsl:choose>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>Ignored?</th>
+                            <td>
+                                <xsl:choose>
+                                    <xsl:when
+                                        test="/source/channel-snag/@is-ignored='true'">
+                                        Ignored
+                                    </xsl:when>
+                                    <xsl:otherwise>
+                                        Not ignored
+                                    </xsl:otherwise>
+                                </xsl:choose>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>Description</th>
+                            <td>
+                                <xsl:value-of
+                                    select="/source/channel-snag/@description" />
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>Progress</th>
+                            <td>
+                                <xsl:value-of
+                                    select="/source/channel-snag/@progress" />
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>Channel</th>
+                            <td>
+                                <a
+                                    href="{/source/request/@context-path}/reports/4/output/?supply-id={/source/channel-snag/channel/supply/@id}">
+                                    <xsl:value-of
+                                        select="/source/channel-snag/@id" />
+                                </a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>Start Date</th>
+                            <td>
+                                <xsl:value-of
+                                    select="concat(/source/channel-snag/hh-end-date[@label='start']/@year, '-', /source/channel-snag/hh-end-date[@label='start']/@month, '-', /source/channel-snag/hh-end-date[@label='start']/@day, 'T', /source/channel-snag/hh-end-date[@label='start']/@hour, ':', /source/channel-snag/hh-end-date[@label='start']/@minute, 'Z')" />
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>Finish Date:</th>
+                            <td>
+                                <xsl:value-of
+                                    select="concat(/source/channel-snag/hh-end-date[@label='finish']/@year, '-', /source/channel-snag/hh-end-date[@label='finish']/@month, '-', /source/channel-snag/hh-end-date[@label='finish']/@day, 'T', /source/channel-snag/hh-end-date[@label='finish']/@hour, ':', /source/channel-snag/hh-end-date[@label='finish']/@minute, 'Z')" />
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </body>
+        </html>
+    </xsl:template>
+</xsl:stylesheet>]]></value>
+  </line>
+  <line>
+    <value>insert</value>
+    <value>report</value>
+    <value>0 HHDC Contract Site Group Snag</value>
+    <value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree, UserException
+from net.sf.chellow.physical import SiteSnag
+
+snag_id = inv.getLong('snag-id')
+snag = SiteSnag.getSiteSnag(snag_id)
+source.appendChild(snag.toXml(doc, XmlTree("contract", XmlTree(
+                        "party")).put("site")))]]></value>
+    <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
+<xsl:stylesheet version="1.0"
+    xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+    <xsl:output method="html" encoding="US-ASCII"
+        doctype-public="-//W3C//DTD HTML 4.01//EN"
+        doctype-system="http://www.w3.org/TR/html4/strict.dtd" indent="yes" />
+    <xsl:template match="/">
+        <html>
+            <head>
+                <link rel="stylesheet" type="text/css"
+                    href="{/source/request/@context-path}/reports/10/output/" />
+                <title>
+                    Home &gt; HHDC Contracts &gt;
+                    <xsl:value-of
+                        select="/source/site-snag/hhdc-contract/@name" />
+                    &gt; Site Snags &gt;
+                    <xsl:value-of select="/source/site-snag/@id" />
+                </title>
+            </head>
+            <body>
+                <p>
+                    <a
+                        href="{/source/request/@context-path}/reports/1/output/">
+                        <xsl:value-of
+                            select="'Home'" />
+                    </a>
+                    &gt;
+                    <a
+                        href="{/source/request/@context-path}/reports/57/output/?hhdc-contract-id={/source/site-snag/hhdc-contract/@id}">
+                        <xsl:value-of select="'HHDC Contracts'" />
+                    </a>
+                    &gt;
+                    <a
+                        href="{/source/request/@context-path}/reports/58/output/?hhdc-contract-id={/source/site-snag/hhdc-contract/@id}">
+                        <xsl:value-of
+                            select="/source/site-snag/hhdc-contract/@name" />
+                    </a>
+                    &gt;
+                    <a
+                        href="{/source/request/@context-path}/reports/20/output/?hhdc-contract-id={/source/site-snag/hhdc-contract/@id}">
+                        <xsl:value-of select="'Site Snags'" />
+                    </a>
+                    &gt;
+                    <xsl:value-of
+                        select="concat(/source/site-snag/@id, ' [')" />
+                    <a
+                        href="{/source/request/@context-path}/hhdc-contracts/{/source/site-snag/hhdc-contract/@id}/site-snags/{/source/site-snag/@id}/">
+                        <xsl:value-of select="'edit'" />
+                    </a>
+                    <xsl:value-of select="']'" />
+                </p>
+                <br />
+                <xsl:if test="//message">
+                    <ul>
+                        <xsl:for-each select="//message">
+                            <li>
+                                <xsl:value-of select="@description" />
+                            </li>
+                        </xsl:for-each>
+                    </ul>
+                </xsl:if>
+                <table>
+                    <tbody>
+                        <tr>
+                            <th>Chellow Id</th>
+                            <td>
+                                <xsl:value-of
+                                    select="/source/site-snag/@id" />
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>Date Created</th>
+                            <td>
+                                <xsl:value-of
+                                    select="concat(/source/site-snag/date[@label='created']/@year, '-', /source/site-snag/date[@label='created']/@month, '-', /source/site-snag/date[@label='created']/@day, 'T', /source/site-snag/date[@label='created']/@hour, ':', /source/site-snag/date[@label='created']/@minute, 'Z')" />
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>Date Resolved</th>
+                            <td>
+                                <xsl:choose>
+                                    <xsl:when
+                                        test="/source/site-snag/date[@label='resolved']">
+                                        <xsl:value-of
+                                            select="concat(/source/site-snag/date[@label='resolved']/@year, '-', /source/site-snag/date[@label='resolved']/@month, '-', /source/site-snag/date[@label='resolved']/@day, 'T', /source/site-snag/date[@label='resolved']/@hour, ':', /source/site-snag/date[@label='resolved']/@minute, 'Z')" />
+                                    </xsl:when>
+                                    <xsl:otherwise>
+                                        Unresolved
+                                    </xsl:otherwise>
+                                </xsl:choose>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>Ignored?</th>
+                            <td>
+                                <xsl:choose>
+                                    <xsl:when
+                                        test="/source/site-snag/@is-ignored='true'">
+                                        Ignored
+                                    </xsl:when>
+                                    <xsl:otherwise>
+                                        Not ignored
+                                    </xsl:otherwise>
+                                </xsl:choose>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>Description</th>
+                            <td>
+                                <xsl:value-of
+                                    select="/source/site-snag/@description" />
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>Progress</th>
+                            <td>
+                                <xsl:value-of
+                                    select="/source/site-snag/@progress" />
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>Site</th>
+                            <td>
+                                <a
+                                    href="{/source/request/@context-path}/orgs/{/source/site-snag/hhdc-contract/org/@id}/reports/2/screen/output/?site-id={/source/site-snag/site/@id}">
+                                    <xsl:value-of
+                                        select="/source/site-snag/site/@id" />
+                                </a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>Start Date</th>
+                            <td>
+                                <xsl:value-of
+                                    select="concat(/source/site-snag/hh-end-date[@label='start']/@year, '-', /source/site-snag/hh-end-date[@label='start']/@month, '-', /source/site-snag/hh-end-date[@label='start']/@day, 'T', /source/site-snag/hh-end-date[@label='start']/@hour, ':', /source/site-snag/hh-end-date[@label='start']/@minute, 'Z')" />
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>Finish Date:</th>
+                            <td>
+                                <xsl:value-of
+                                    select="concat(/source/site-snag/hh-end-date[@label='finish']/@year, '-', /source/site-snag/hh-end-date[@label='finish']/@month, '-', /source/site-snag/hh-end-date[@label='finish']/@day, 'T', /source/site-snag/hh-end-date[@label='finish']/@hour, ':', /source/site-snag/hh-end-date[@label='finish']/@minute, 'Z')" />
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </body>
+        </html>
+    </xsl:template>
+</xsl:stylesheet>]]></value>
+  </line>
+  <line>
+    <value>insert</value>
+    <value>report</value>
+    <value>0 Market Roles</value>
+    <value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree
+
+roles_element = doc.createElement('roles')
+source.appendChild(roles_element)
+for role in Hiber.session().createQuery("from MarketRole role order by role.code").list():
+    roles_element.appendChild(role.toXml(doc))]]></value>
+    <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
+<xsl:stylesheet version="1.0"
+    xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+    <xsl:output method="html" encoding="US-ASCII"
+        doctype-public="-//W3C//DTD HTML 4.01//EN"
+        doctype-system="http://www.w3.org/TR/html4/strict.dtd" indent="yes" />
+    <xsl:template match="/">
+        <html>
+            <head>
+                <link rel="stylesheet" type="text/css"
+                    href="{/source/request/@context-path}/reports/10/output/" />
+                <title>
+                    Home &gt; Market Roles
+                </title>
+            </head>
+            <body>
+                <p>
+                    <a
+                        href="{/source/request/@context-path}/reports/1/output/">
+                        <xsl:value-of select="'Home'" />
+                    </a>
+                    &gt;
+                    <xsl:value-of select="'Market Roles'" />
+                </p>
+                <br />
+                <xsl:if test="//message">
+                    <ul>
+                        <xsl:for-each select="//message">
+                            <li>
+                                <xsl:value-of select="@description" />
+                            </li>
+                        </xsl:for-each>
+                    </ul>
+                </xsl:if>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Chellow Id</th>
+                            <th>Code</th>
+                            <th>Description</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <xsl:for-each
+                            select="/source/roles/market-role">
+                            <tr>
+                                <td>
+                                    <a
+                                        href="{/source/request/@context-path}/reports/62/output/?role-id={@id}">
+                                        <xsl:value-of select="@id" />
+                                    </a>
+                                </td>
+                                <td>
+                                    <xsl:value-of select="@code" />
+                                </td>
+                                <td>
+                                    <xsl:value-of select="@description" />
+                                </td>
+                            </tr>
+                        </xsl:for-each>
+                    </tbody>
+                </table>
+            </body>
+        </html>
+    </xsl:template>
+</xsl:stylesheet>]]></value>
+  </line>
+  <line>
+    <value>insert</value>
+    <value>report</value>
+    <value>0 Market Role</value>
+    <value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree
+from net.sf.chellow.physical import MarketRole
+
+role_id = inv.getLong('role-id')
+role = MarketRole.getMarketRole(role_id)
+role_element = role.toXml(doc)
+source.appendChild(role_element)
+for party in Hiber.session().createQuery("from Party party where party.role = :role order by party.participant.code").setEntity("role", role).list():
+    role_element.appendChild(party.toXml(doc, XmlTree('participant')))]]></value>
+    <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
+<xsl:stylesheet version="1.0"
+    xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+    <xsl:output method="html" encoding="US-ASCII"
+        doctype-public="-//W3C//DTD HTML 4.01//EN"
+        doctype-system="http://www.w3.org/TR/html4/strict.dtd" indent="yes" />
+    <xsl:template match="/">
+        <html>
+            <head>
+                <link rel="stylesheet" type="text/css"
+                    href="{/source/request/@context-path}/reports/10/output/" />
+                <title>
+                    Home &gt; Market Roles &gt;
+                    <xsl:value-of
+                        select="/source/market-role/@description" />
+                </title>
+            </head>
+            <body>
+                <p>
+                    <a
+                        href="{/source/request/@context-path}/reports/1/output/">
+                        <xsl:value-of select="'Home'" />
+                    </a>
+                    &gt;
+                    <a
+                        href="{/source/request/@context-path}/reports/61/output/">
+                        <xsl:value-of select="'Market Roles'" />
+                    </a>
+                    &gt;
+                    <xsl:value-of
+                        select="/source/market-role/@description" />
+                </p>
+                <br />
+                <xsl:if test="//message">
+                    <ul>
+                        <xsl:for-each select="//message">
+                            <li>
+                                <xsl:value-of select="@description" />
+                            </li>
+                        </xsl:for-each>
+                    </ul>
+                </xsl:if>
+                <table>
+                    <tr>
+                        <th>Chellow Id</th>
+                        <td>
+                            <xsl:value-of
+                                select="/source/market-role/@id" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Code</th>
+                        <td>
+                            <xsl:value-of
+                                select="/source/market-role/@code" />
+                        </td>
+                    </tr>
+                    <tr>
+
+                        <th>Description</th>
+                        <td>
+                            <xsl:value-of
+                                select="/source/market-role/@description" />
+                        </td>
+                    </tr>
+                </table>
+                <br />
+                <xsl:choose>
+                    <xsl:when test="/source/market-role/@code='R'">
+                        <table>
+                            <caption>DSOs</caption>
+                            <thead>
+                                <tr>
+                                    <th>Chellow Id</th>
+                                    <th>Code</th>
+                                    <th>Name</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <xsl:for-each
+                                    select="/source/market-role/dso">
+                                    <tr>
+                                        <td>
+                                            <a
+                                                href="{/source/request/@context-path}/reports/70/output/?dso-id={@id}">
+                                                <xsl:value-of
+                                                    select="@id" />
+                                            </a>
+                                        </td>
+                                        <td>
+                                            <xsl:value-of
+                                                select="@code" />
+                                        </td>
+                                        <td>
+                                            <xsl:value-of
+                                                select="@name" />
+                                        </td>
+                                    </tr>
+                                </xsl:for-each>
+                            </tbody>
+                        </table>
+                    </xsl:when>
+                    <xsl:otherwise>
+                        <table>
+                            <caption>Providers</caption>
+                            <thead>
+                                <tr>
+                                    <th>Chellow Id</th>
+                                    <th>Name</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <xsl:for-each
+                                    select="/source/market-role/provider">
+                                    <tr>
+                                        <td>
+                                            <a
+                                                href="{/source/request/@context-path}/reports/24/output/?provider-id={@id}">
+                                                <xsl:value-of
+                                                    select="@id" />
+                                            </a>
+                                        </td>
+                                        <td>
+                                            <xsl:value-of
+                                                select="@name" />
+                                        </td>
+                                    </tr>
+                                </xsl:for-each>
+                            </tbody>
+                        </table>
+
+                    </xsl:otherwise>
+                </xsl:choose>
+            </body>
+        </html>
+    </xsl:template>
+</xsl:stylesheet>]]></value>
+  </line>
+  <line>
+    <value>insert</value>
+    <value>report</value>
+    <value>0 SSCs</value>
+    <value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree
+
+sscs_element = doc.createElement('sscs')
+source.appendChild(sscs_element)
+for ssc in Hiber.session().createQuery("from Ssc ssc order by ssc.code").list():
+    sscs_element.appendChild(ssc.toXml(doc, XmlTree("measurementRequirements", XmlTree("tpr"))))]]></value>
+    <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
+<xsl:stylesheet version="1.0"
+    xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+    <xsl:output method="html" encoding="US-ASCII"
+        doctype-public="-//W3C//DTD HTML 4.01//EN"
+        doctype-system="http://www.w3.org/TR/html4/strict.dtd" indent="yes" />
+    <xsl:template match="/">
+        <html>
+            <head>
+                <link rel="stylesheet" type="text/css"
+                    href="{/source/request/@context-path}/reports/10/output/" />
+                <title>
+                    <xsl:value-of select="'Home'" />
+                    &gt; SSCs
+                </title>
+            </head>
+            <body>
+                <p>
+                    <a
+                        href="{/source/request/@context-path}/reports/1/output/">
+                        <xsl:value-of select="'Home'" />
+                    </a>
+                    &gt;
+                    <xsl:value-of select="'SSCs'" />
+                </p>
+                <br />
+                <xsl:if test="//message">
+                    <ul>
+                        <xsl:for-each select="//message">
+                            <li>
+                                <xsl:value-of select="@description" />
+                            </li>
+                        </xsl:for-each>
+                    </ul>
+                </xsl:if>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Chellow Id</th>
+                            <th>Code</th>
+                            <th>Description</th>
+                            <th>Imp/Exp</th>
+                            <th>From</th>
+                            <th>To</th>
+                            <th>Tprs</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <xsl:for-each select="/source/sscs/ssc">
+                            <tr>
+                                <td>
+                                    <a
+                                        href="{/source/request/@context-path}/reports/64/output/?ssc-id={@id}">
+                                        <xsl:value-of select="@id" />
+                                    </a>
+                                </td>
+                                <td>
+                                    <xsl:value-of select="@code" />
+                                </td>
+                                <td>
+                                    <xsl:value-of select="@description" />
+                                </td>
+                                <td>
+                                    <xsl:choose>
+                                        <xsl:when
+                                            test="@is-import='true'">
+                                            Import
+                                        </xsl:when>
+                                        <xsl:otherwise>
+                                            Export
+                                        </xsl:otherwise>
+                                    </xsl:choose>
+                                </td>
+                                <td>
+                                    <xsl:value-of
+                                        select="concat(date[@label='from']/@year, '-', date[@label='from']/@month, '-', date[@label='from']/@day, ' ', date[@label='from']/@hour, ':', date[@label='from']/@minute)" />
+                                </td>
+                                <td>
+                                    <xsl:choose>
+                                        <xsl:when
+                                            test="date[@label='to']">
+                                            <xsl:value-of
+                                                select="concat(date[@label='to']/@year, '-', date[@label='to']/@month, '-', date[@label='to']/@day, ' ', date[@label='to']/@hour, ':', date[@label='to']/@minute)" />
+                                        </xsl:when>
+                                        <xsl:otherwise>
+                                            Ongoing
+                                        </xsl:otherwise>
+                                    </xsl:choose>
+                                </td>
+                                <td>
+                                    <xsl:for-each
+                                        select="measurement-requirement">
+                                        <a
+                                            href="{/source/request/@context-path}/reports/49/output/?tpr-id={tpr/@id}">
+                                            <xsl:value-of
+                                                select="tpr/@code" />
+                                        </a>
+                                        <xsl:if
+                                            test="position() != last()">
+                                            <xsl:value-of select="', '" />
+                                        </xsl:if>
+                                    </xsl:for-each>
+                                </td>
+                            </tr>
+                        </xsl:for-each>
+                    </tbody>
+                </table>
+            </body>
+        </html>
+    </xsl:template>
+</xsl:stylesheet>]]></value>
+  </line>
+  <line>
+    <value>insert</value>
+    <value>report</value>
+    <value>0 SSC</value>
+    <value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree
+from net.sf.chellow.physical import Ssc
+
+ssc_id = inv.getLong('ssc-id')
+ssc = Ssc.getSsc(ssc_id)
+source.appendChild(ssc.toXml(doc, XmlTree("measurementRequirements", XmlTree("tpr"))))]]></value>
+    <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
+<xsl:stylesheet version="1.0"
+    xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+    <xsl:output method="html" encoding="US-ASCII"
+        doctype-public="-//W3C//DTD HTML 4.01//EN"
+        doctype-system="http://www.w3.org/TR/html4/strict.dtd" indent="yes" />
+    <xsl:template match="/">
+        <html>
+            <head>
+                <link rel="stylesheet" type="text/css"
+                    href="{/source/request/@context-path}/reports/10/output/" />
+                <title>
+                    Home &gt; SSCs &gt;
+                    <xsl:value-of select="/source/ssc/@description" />
+                </title>
+            </head>
+            <body>
+                <p>
+                    <a
+                        href="{/source/request/@context-path}/reports/1/output/">
+                        <xsl:value-of select="'Home'" />
+                    </a>
+                    &gt;
+                    <a
+                        href="{/source/request/@context-path}/reports/63/output/">
+                        <xsl:value-of select="'SSCs'" />
+                    </a>
+                    &gt;
+                    <xsl:value-of select="/source/ssc/@description" />
+                </p>
+                <br />
+                <xsl:if test="//message">
+                    <ul>
+                        <xsl:for-each select="//message">
+                            <li>
+                                <xsl:value-of select="@description" />
+                            </li>
+                        </xsl:for-each>
+                    </ul>
+                </xsl:if>
+                <table>
+                    <tr>
+                        <th>Chellow Id</th>
+                        <td>
+                            <xsl:value-of select="/source/ssc/@id" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Code</th>
+                        <td>
+                            <xsl:value-of select="/source/ssc/@code" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Description</th>
+                        <td>
+                            <xsl:value-of
+                                select="/source/ssc/@description" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Is Import?</th>
+                        <td>
+                            <xsl:choose>
+                                <xsl:when
+                                    test="/source/ssc/@is-import='true'">
+                                    Import
+                                </xsl:when>
+                                <xsl:otherwise>Export</xsl:otherwise>
+                            </xsl:choose>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>From</th>
+                        <td>
+                            <xsl:value-of
+                                select="concat(/source/ssc/date[@label='from']/@year, '-', /source/ssc/date[@label='from']/@month, '-', /source/ssc/date[@label='from']/@day, ' ', /source/ssc/date[@label='from']/@hour, ':', /source/ssc/date[@label='from']/@minute)" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>To</th>
+                        <td>
+                            <xsl:choose>
+                                <xsl:when
+                                    test="/source/ssc/date[@label='to']">
+                                    <xsl:value-of
+                                        select="concat(/source/ssc/date[@label='to']/@year, '-', /source/ssc/date[@label='to']/@month, '-', /source/ssc/date[@label='to']/@day, ' ', /source/ssc/date[@label='to']/@hour, ':', /source/ssc/date[@label='to']/@minute)" />
+                                </xsl:when>
+                                <xsl:otherwise>Ongoing</xsl:otherwise>
+                            </xsl:choose>
+                        </td>
+                    </tr>
+                </table>
+
+                <h4>TPRs</h4>
+
+                <ul>
+                    <xsl:for-each
+                        select="/source/ssc/measurement-requirement/tpr">
+                        <li>
+                            <a
+                                href="{/source/request/@context-path}/reports/49/output/?tpr-id={@id}">
+                                <xsl:value-of select="@code" />
+                            </a>
+                            <!-- 
+                            <xsl:if test="position() != last()">
+                                <xsl:value-of select="', '" />
+                            </xsl:if>
+                            -->
+                        </li>
+                    </xsl:for-each>
+                </ul>
+            </body>
+        </html>
+    </xsl:template>
+</xsl:stylesheet>]]></value>
+  </line>
+  <line>
+    <value>insert</value>
+    <value>report</value>
+    <value>0 Meter Types</value>
+    <value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree
+
+types_element = doc.createElement('meter-types')
+source.appendChild(types_element)
+for type in Hiber.session().createQuery("from MeterType type order by type.code").list():
+    types_element.appendChild(type.toXml(doc))]]></value>
+    <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
+<xsl:stylesheet version="1.0"
+    xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+    <xsl:output method="html" encoding="US-ASCII"
+        doctype-public="-//W3C//DTD HTML 4.01//EN"
+        doctype-system="http://www.w3.org/TR/html4/strict.dtd" indent="yes" />
+    <xsl:template match="/">
+        <html>
+            <head>
+                <link rel="stylesheet" type="text/css"
+                    href="{/source/request/@context-path}/reports/10/output/" />
+                <title>
+                    <xsl:value-of select="'Home'" />
+                    &gt; Meter Types
+                </title>
+            </head>
+            <body>
+                <p>
+                    <a
+                        href="{/source/request/@context-path}/reports/1/output/">
+                        <xsl:value-of select="'Home'" />
+                    </a>
+                    &gt;
+                    <xsl:value-of select="'Meter Types'" />
+                </p>
+                <br />
+                <xsl:if test="//message">
+                    <ul>
+                        <xsl:for-each select="//message">
+                            <li>
+                                <xsl:value-of select="@description" />
+                            </li>
+                        </xsl:for-each>
+                    </ul>
+                </xsl:if>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Chellow Id</th>
+                            <th>Code</th>
+                            <th>Description</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+
+                        <xsl:for-each
+                            select="/source/meter-types/meter-type">
+                            <tr>
+                                <td>
+                                    <a
+                                        href="{/source/request/@context-path}/reports/66/output/?type-id={@id}">
+                                        <xsl:value-of select="@id" />
+                                    </a>
+                                </td>
+                                <td>
+                                    <xsl:value-of select="@code" />
+                                </td>
+
+                                <td>
+                                    <xsl:value-of select="@description" />
+                                </td>
+                            </tr>
+                        </xsl:for-each>
+                    </tbody>
+                </table>
+            </body>
+        </html>
+    </xsl:template>
+</xsl:stylesheet>]]></value>
+  </line>
+  <line>
+    <value>insert</value>
+    <value>report</value>
+    <value>0 Meter Type</value>
+    <value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree
+from net.sf.chellow.physical import MeterType
+
+type_id = inv.getLong('type-id')
+type = MeterType.getMeterType(type_id)
+source.appendChild(type.toXml(doc))]]></value>
+    <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
+<xsl:stylesheet version="1.0"
+    xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+    <xsl:output method="html" encoding="US-ASCII"
+        doctype-public="-//W3C//DTD HTML 4.01//EN"
+        doctype-system="http://www.w3.org/TR/html4/strict.dtd" indent="yes" />
+    <xsl:template match="/">
+        <html>
+            <head>
+                <link rel="stylesheet" type="text/css"
+                    href="{/source/request/@context-path}/reports/10/output/" />
+                <title>
+                    Home &gt; Meter Types &gt;
+                    <xsl:value-of
+                        select="/source/meter-type/@description" />
+                </title>
+            </head>
+            <body>
+                <p>
+                    <a
+                        href="{/source/request/@context-path}/reports/1/output/">
+                        <xsl:value-of select="'Home'" />
+                    </a>
+                    &gt;
+                    <a
+                        href="{/source/request/@context-path}/reports/65/output/">
+                        <xsl:value-of select="'Meter Types'" />
+                    </a>
+                    &gt;
+                    <xsl:value-of
+                        select="/source/meter-type/@description" />
+                </p>
+                <br />
+                <xsl:if test="//message">
+                    <ul>
+                        <xsl:for-each select="//message">
+                            <li>
+                                <xsl:value-of select="@description" />
+                            </li>
+                        </xsl:for-each>
+                    </ul>
+                </xsl:if>
+                <table>
+                    <tr>
+                        <th>Chellow Id</th>
+                        <td>
+                            <xsl:value-of
+                                select="/source/meter-type/@id" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Code</th>
+                        <td>
+                            <xsl:value-of
+                                select="/source/meter-type/@code" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Description</th>
+                        <td>
+                            <xsl:value-of
+                                select="/source/meter-type/@description" />
+                        </td>
+                    </tr>
+                </table>
+            </body>
+        </html>
+    </xsl:template>
+</xsl:stylesheet>]]></value>
+  </line>
+  <line>
+    <value>insert</value>
+    <value>report</value>
+    <value>0 MTC Payment Types</value>
+    <value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree
+
+types_element = doc.createElement('meter-payment-types')
+source.appendChild(types_element)
+for type in Hiber.session().createQuery("from MeterPaymentType type order by type.code").list():
+    types_element.appendChild(type.toXml(doc))]]></value>
+    <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
+<xsl:stylesheet version="1.0"
+    xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+    <xsl:output method="html" encoding="US-ASCII"
+        doctype-public="-//W3C//DTD HTML 4.01//EN"
+        doctype-system="http://www.w3.org/TR/html4/strict.dtd" indent="yes" />
+    <xsl:template match="/">
+        <html>
+            <head>
+                <link rel="stylesheet" type="text/css"
+                    href="{/source/request/@context-path}/reports/10/output/" />
+                <title>
+                    Home &gt; Meter Payment Types
+                </title>
+            </head>
+            <body>
+                <p>
+                    <a
+                        href="{/source/request/@context-path}/reports/1/output/">
+                        <xsl:value-of select="'Home'" />
+                    </a>
+                    &gt;
+                    <xsl:value-of select="'Meter Payment Types'" />
+                </p>
+                <br />
+                <xsl:if test="//message">
+                    <ul>
+                        <xsl:for-each select="//message">
+                            <li>
+                                <xsl:value-of select="@description" />
+                            </li>
+                        </xsl:for-each>
+                    </ul>
+                </xsl:if>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Chellow Id</th>
+                            <th>Code</th>
+                            <th>Description</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+
+                        <xsl:for-each
+                            select="/source/meter-payment-types/meter-payment-type">
+                            <tr>
+                                <td>
+                                    <a
+                                        href="{/source/request/@context-path}/reports/68/output/?type-id={@id}">
+                                        <xsl:value-of select="@id" />
+                                    </a>
+                                </td>
+                                <td>
+                                    <xsl:value-of select="@code" />
+                                </td>
+                                <td>
+                                    <xsl:value-of select="@description" />
+                                </td>
+                            </tr>
+                        </xsl:for-each>
+                    </tbody>
+                </table>
+            </body>
+        </html>
+    </xsl:template>
+</xsl:stylesheet>]]></value>
+  </line>
+  <line>
+    <value>insert</value>
+    <value>report</value>
+    <value>0 MTC Payment Type</value>
+    <value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree
+from net.sf.chellow.physical import MeterPaymentType
+
+type_id = inv.getLong('type-id')
+type = MeterPaymentType.getMeterPaymentType(type_id)
+source.appendChild(type.toXml(doc))]]></value>
+    <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
+<xsl:stylesheet version="1.0"
+    xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+    <xsl:output method="html" encoding="US-ASCII"
+        doctype-public="-//W3C//DTD HTML 4.01//EN"
+        doctype-system="http://www.w3.org/TR/html4/strict.dtd" indent="yes" />
+    <xsl:template match="/">
+        <html>
+            <head>
+                <link rel="stylesheet" type="text/css"
+                    href="{/source/request/@context-path}/reports/10/output/" />
+                <title>
+                    Home &gt; Meter Payment Types &gt;
+                    <xsl:value-of
+                        select="/source/meter-payment-type/@description" />
+                </title>
+            </head>
+            <body>
+                <p>
+                    <a
+                        href="{/source/request/@context-path}/reports/1/output/">
+                        <xsl:value-of select="'Home'" />
+                    </a>
+                    &gt;
+                    <a
+                        href="{/source/request/@context-path}/reports/67/output/">
+                        <xsl:value-of select="'Meter Payment Types'" />
+                    </a>
+                    &gt;
+                    <xsl:value-of
+                        select="/source/meter-payment-type/@description" />
+                </p>
+                <br />
+                <xsl:if test="//message">
+                    <ul>
+                        <xsl:for-each select="//message">
+                            <li>
+                                <xsl:value-of select="@description" />
+                            </li>
+                        </xsl:for-each>
+                    </ul>
+                </xsl:if>
+                <table>
+                    <tr>
+                        <th>Chellow Id</th>
+                        <td>
+                            <xsl:value-of
+                                select="/source/meter-payment-type/@id" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Code</th>
+                        <td>
+                            <xsl:value-of
+                                select="/source/meter-payment-type/@code" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Description</th>
+                        <td>
+                            <xsl:value-of
+                                select="/source/meter-payment-type/@description" />
+                        </td>
+                    </tr>
+                </table>
+            </body>
+        </html>
+    </xsl:template>
+</xsl:stylesheet>]]></value>
+  </line>
+  <line>
+    <value>insert</value>
+    <value>report</value>
+    <value>0 DSOs</value>
+    <value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree
+
+for dso in Hiber.session().createQuery(
+                'from Dso dso order by dso.code').list():
+    source.appendChild(dso.toXml(doc, XmlTree('participant').put('role')))]]></value>
+    <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
+<xsl:stylesheet version="1.0"
+    xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+    <xsl:output method="html" encoding="US-ASCII"
+        doctype-public="-//W3C//DTD HTML 4.01//EN"
+        doctype-system="http://www.w3.org/TR/html4/strict.dtd" indent="yes" />
+    <xsl:template match="/">
+        <html>
+            <head>
+                <link rel="stylesheet" type="text/css"
+                    href="{/source/request/@context-path}/reports/10/output/" />
+                <title>Home &gt; DSOs</title>
+            </head>
+            <body>
+                <p>
+                    <a
+                        href="{/source/request/@context-path}/reports/1/output/">
+                        <xsl:value-of select="'Home'" />
+                    </a>
+                    &gt; DSOs
+                </p>
+                <br />
+                <xsl:if test="//message">
+                    <ul>
+                        <xsl:for-each select="//message">
+                            <li>
+                                <xsl:value-of select="@description" />
+                            </li>
+                        </xsl:for-each>
+                    </ul>
+                </xsl:if>
+                <p>
+                    This is a list of parties that have the
+                    <a
+                        href="{/source/request/@context-path}/reports/62/output/?role-id=22">
+                        <xsl:value-of select="'distributor'" />
+                    </a>
+                    role.
+                </p>
+                <table>
+                    <thead>
+                        <th>Chellow Id</th>
+                        <th>Code</th>
+                        <th>Name</th>
+                        <th>Participant</th>
+                    </thead>
+                    <tbody>
+                        <xsl:for-each select="/source/dso">
+                            <tr>
+                                <td>
+                                    <a
+                                        href="{/source/request/@context-path}/reports/70/output/?dso-id={@id}">
+                                        <xsl:value-of select="@id" />
+                                    </a>
+                                </td>
+                                <td>
+                                    <xsl:value-of select="@code" />
+                                </td>
+                                <td>
+                                    <xsl:value-of select="@name" />
+                                </td>
+                                <td>
+                                    <a
+                                        href="{/source/request/@context-path}/reports/37/output/?participant-id={participant/@id}">
+                                        <xsl:value-of
+                                            select="participant/@name" />
+                                    </a>
+                                </td>
+                            </tr>
+                        </xsl:for-each>
+                    </tbody>
+                </table>
+            </body>
+        </html>
+    </xsl:template>
+</xsl:stylesheet>]]></value>
+  </line>
+  <line>
+    <value>insert</value>
+    <value>report</value>
+    <value>0 DSO</value>
+    <value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree
+from net.sf.chellow.billing import Dso
+
+dso_id = inv.getLong('dso-id')
+dso = Dso.getDso(dso_id)
+dso_element = dso.toXml(doc, XmlTree('participant').put('role'))
+source.appendChild(dso_element)
+for contract in Hiber.session().createQuery("from DsoContract contract where contract.party = :dso order by contract.name").setEntity('dso', dso).list():
+    dso_element.appendChild(contract.toXml(doc, XmlTree('rateScripts')))]]></value>
+    <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
+<xsl:stylesheet version="1.0"
+    xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+    <xsl:output method="html" encoding="US-ASCII"
+        doctype-public="-//W3C//DTD HTML 4.01//EN"
+        doctype-system="http://www.w3.org/TR/html4/strict.dtd" indent="yes" />
+    <xsl:template match="/">
+        <html>
+            <head>
+                <link rel="stylesheet" type="text/css"
+                    href="{/source/request/@context-path}/reports/10/output/" />
+                <title>
+                    Home &gt; DSOs &gt;
+                    <xsl:value-of select="/source/dso/@name" />
+                </title>
+            </head>
+            <body>
+                <p>
+                    <a
+                        href="{/source/request/@context-path}/reports/1/output/">
+                        <xsl:value-of select="'Home'" />
+                    </a>
+                    &gt;
+                    <a
+                        href="{/source/request/@context-path}/reports/69/output/">
+                        <xsl:value-of select="'DSOs'" />
+                    </a>
+                    &gt;
+                    <xsl:value-of select="/source/dso/@code" />
+                </p>
+                <br />
+                <xsl:if test="//message">
+                    <ul>
+                        <xsl:for-each select="//message">
+                            <li>
+                                <xsl:value-of select="@description" />
+                            </li>
+                        </xsl:for-each>
+                    </ul>
+                </xsl:if>
+                <table>
+                    <tr>
+                        <th>Chellow Id</th>
+                        <td>
+                            <xsl:value-of select="/source/dso/@id" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Name</th>
+                        <td>
+                            <xsl:value-of select="/source/dso/@name" />
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <th>Participant</th>
+                        <td>
+                            <a
+                                href="{/source/request/@context-path}/reports/37/output/?participant-id={/source/dso/participant/@id}">
+                                <xsl:value-of
+                                    select="/source/dso/participant/@name" />
+                            </a>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Role</th>
+                        <td>
+                            <a
+                                href="{/source/request/@context-path}/reports/62/output/?role-id={/source/dso/market-role/@id}">
+                                <xsl:value-of
+                                    select="/source/dso/market-role/@description" />
+                            </a>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Code</th>
+                        <td>
+                            <xsl:value-of select="/source/dso/@code" />
+                        </td>
+                    </tr>
+                </table>
+                <br />
+                <ul>
+                                    <li>
+                        <a
+                            href="{/source/request/@context-path}/reports/33/output/?dso-id={/source/dso/@id}">
+                            Contracts
+                        </a>
+                    </li>
+                    <li>
+                        <a
+                            href="{/source/request/@context-path}/reports/25/output/?dso-id={/source/dso/@id}">
+                            Line Loss Factors
+                        </a>
+                    </li>
+                    <li>
+                        <a
+                            href="{/source/request/@context-path}/reports/29/output/?dso-id={/source/dso/@id}">
+                            MPAN top lines
+                        </a>
+                    </li>
+                </ul>
+            </body>
+        </html>
+    </xsl:template>
+</xsl:stylesheet>]]></value>
+  </line>
+  <line>
+    <value>insert</value>
+    <value>report</value>
+    <value>0 Read Types</value>
+    <value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree
+
+types_element = doc.createElement('read-types')
+source.appendChild(types_element)
+for type in Hiber.session().createQuery("from ReadType type order by type.code").list():
+    types_element.appendChild(type.toXml(doc))]]></value>
+    <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
+<xsl:stylesheet version="1.0"
+    xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+    <xsl:output method="html" encoding="US-ASCII"
+        doctype-public="-//W3C//DTD HTML 4.01//EN"
+        doctype-system="http://www.w3.org/TR/html4/strict.dtd" indent="yes" />
+    <xsl:template match="/">
+        <html>
+            <head>
+                <link rel="stylesheet" type="text/css"
+                    href="{/source/request/@context-path}/reports/10/output/" />
+                <title>
+                    Home &gt; Read Types
+                </title>
+            </head>
+            <body>
+                <p>
+                    <a
+                        href="{/source/request/@context-path}/reports/1/output/">
+                        <xsl:value-of select="'Home'" />
+                    </a>
+                    &gt;
+                    <xsl:value-of select="'Read Types'" />
+                </p>
+                <br />
+                <xsl:if test="//message">
+                    <ul>
+                        <xsl:for-each select="//message">
+                            <li>
+                                <xsl:value-of select="@description" />
+                            </li>
+                        </xsl:for-each>
+                    </ul>
+                </xsl:if>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Chellow Id</th>
+                            <th>Code</th>
+                            <th>Description</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+
+                        <xsl:for-each
+                            select="/source/read-types/read-type">
+                            <tr>
+                                <td>
+                                    <a
+                                        href="{/source/request/@context-path}/reports/72/output/?type-id={@id}">
+                                        <xsl:value-of select="@id" />
+                                    </a>
+                                </td>
+                                <td>
+                                    <xsl:value-of select="@code" />
+                                </td>
+                                <td>
+                                    <xsl:value-of select="@description" />
+                                </td>
+                            </tr>
+                        </xsl:for-each>
+                    </tbody>
+                </table>
+            </body>
+        </html>
+    </xsl:template>
+</xsl:stylesheet>]]></value>
+  </line>
+  <line>
+    <value>insert</value>
+    <value>report</value>
+    <value>0 Read Type</value>
+    <value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree
+from net.sf.chellow.physical import ReadType
+
+type_id = inv.getLong('type-id')
+type = ReadType.getReadType(type_id)
+source.appendChild(type.toXml(doc))]]></value>
+    <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
+<xsl:stylesheet version="1.0"
+    xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+    <xsl:output method="html" encoding="US-ASCII"
+        doctype-public="-//W3C//DTD HTML 4.01//EN"
+        doctype-system="http://www.w3.org/TR/html4/strict.dtd" indent="yes" />
+    <xsl:template match="/">
+        <html>
+            <head>
+                <link rel="stylesheet" type="text/css"
+                    href="{/source/request/@context-path}/reports/10/output/" />
+                <title>
+                    Home &gt; Read Types &gt;
+                    <xsl:value-of
+                        select="/source/read-type/@description" />
+                </title>
+            </head>
+            <body>
+                <p>
+                    <a
+                        href="{/source/request/@context-path}/reports/1/output/">
+                        <xsl:value-of select="'Home'" />
+                    </a>
+                    &gt;
+                    <a
+                        href="{/source/request/@context-path}/reports/71/output/">
+                        <xsl:value-of select="'Read Types'" />
+                    </a>
+                    &gt;
+                    <xsl:value-of
+                        select="/source/read-type/@description" />
+                </p>
+                <br />
+                <xsl:if test="//message">
+                    <ul>
+                        <xsl:for-each select="//message">
+                            <li>
+                                <xsl:value-of select="@description" />
+                            </li>
+                        </xsl:for-each>
+                    </ul>
+                </xsl:if>
+                <table>
+                    <tr>
+                        <th>Chellow Id</th>
+                        <td>
+                            <xsl:value-of
+                                select="/source/read-type/@id" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Code</th>
+                        <td>
+                            <xsl:value-of
+                                select="/source/read-type/@code" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Description</th>
+                        <td>
+                            <xsl:value-of
+                                select="/source/read-type/@description" />
+                        </td>
+                    </tr>
+                </table>
             </body>
         </html>
     </xsl:template>

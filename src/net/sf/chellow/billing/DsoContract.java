@@ -39,15 +39,15 @@ import org.w3c.dom.Element;
 
 @SuppressWarnings("serial")
 public class DsoContract extends Contract {
-	public static DsoContract getDsoService(Long id) throws HttpException {
-		DsoContract service = findDsoService(id);
-		if (service == null) {
-			throw new UserException("There isn't a DSO service with that id.");
+	public static DsoContract getDsoContract(Long id) throws HttpException {
+		DsoContract contract = findDsoContract(id);
+		if (contract == null) {
+			throw new UserException("There isn't a DSO contract with that id.");
 		}
-		return service;
+		return contract;
 	}
 
-	public static DsoContract findDsoService(Long id) throws HttpException {
+	public static DsoContract findDsoContract(Long id) throws HttpException {
 		return (DsoContract) Hiber.session().get(DsoContract.class, id);
 	}
 	
