@@ -179,6 +179,12 @@
 							SSCs
 						</a>
 					</li>
+					<li>
+						<a
+							href="{/source/request/@context-path}/gsp-groups/">
+							GSP Groups
+						</a>
+					</li>
 				</ul>
 			</body>
 		</html>

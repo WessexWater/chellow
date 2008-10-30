@@ -93,5 +93,6 @@
 		<mapping resource="hibernate/Party.hbm.xml" />
 		<mapping resource="hibernate/ReadType.hbm.xml" />
 		<mapping resource="hibernate/Report.hbm.xml" />
+		<mapping resource="hibernate/GspGroup.hbm.xml" />
 	</session-factory>
 </hibernate-configuration>

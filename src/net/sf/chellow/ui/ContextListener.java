@@ -29,6 +29,7 @@ import net.sf.chellow.monad.UserException;
 import net.sf.chellow.monad.types.EmailAddress;
 import net.sf.chellow.physical.ClockInterval;
 import net.sf.chellow.physical.Configuration;
+import net.sf.chellow.physical.GspGroup;
 import net.sf.chellow.physical.Llfc;
 import net.sf.chellow.physical.MarketRole;
 import net.sf.chellow.physical.MeasurementRequirement;
@@ -167,6 +168,7 @@ public class ContextListener implements ServletContextListener {
 		}
 		Configuration.setDatabaseVersion(12);
 		Hiber.close();
+		GspGroup.loadFromCsv(context);
 		ReadType.loadFromCsv(context);
 		Pc.loadFromCsv(context);
 		MarketRole.loadFromCsv(context);

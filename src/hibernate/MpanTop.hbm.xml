@@ -39,6 +39,8 @@
 			not-null="true" foreign-key="fkey_mpan_llfc" />
 		<many-to-one name="ssc" class="Ssc" column="ssc_id"
 			foreign-key="fkey_mpan_ssc" />
+		<many-to-one name="gspGroup" class="GspGroup" column="gsp_group_id"
+			foreign-key="fkey_mpan_gsp_group" />
 		<property type="timestamp" name="validFrom" column="valid_from"
 			not-null="true" />
 		<property type="timestamp" name="validTo" column="valid_to" />

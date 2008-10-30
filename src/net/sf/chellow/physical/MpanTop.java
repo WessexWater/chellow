@@ -211,6 +211,8 @@ public class MpanTop extends PersistentEntity {
 	private Llfc llfc;
 
 	private Ssc ssc;
+	
+	private GspGroup gspGroup;
 
 	private Date validFrom;
 	private Date validTo;
@@ -218,12 +220,13 @@ public class MpanTop extends PersistentEntity {
 	MpanTop() {
 	}
 
-	MpanTop(Pc pc, Mtc mtc, Llfc llfc, Ssc ssc, Date validFrom, Date validTo)
+	MpanTop(Pc pc, Mtc mtc, Llfc llfc, Ssc ssc, GspGroup gspGroup, Date validFrom, Date validTo)
 			throws HttpException {
 		setMtc(mtc);
 		setLlfc(llfc);
 		setPc(pc);
 		setSsc(ssc);
+		setGspGroup(gspGroup);
 		setValidFrom(validFrom);
 		setValidTo(validTo);
 	}
@@ -260,6 +263,14 @@ public class MpanTop extends PersistentEntity {
 		this.ssc = ssc;
 	}
 
+	public GspGroup getGspGroup() {
+		return gspGroup;
+	}
+
+	void setGspGroup(GspGroup gspGroup) {
+		this.gspGroup = gspGroup;
+	}
+	
 	public Date getValidFrom() {
 		return validFrom;
 	}

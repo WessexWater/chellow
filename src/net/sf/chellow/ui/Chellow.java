@@ -26,6 +26,7 @@ import net.sf.chellow.monad.Invocation.HttpMethod;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
 import net.sf.chellow.physical.Configuration;
+import net.sf.chellow.physical.GspGroups;
 import net.sf.chellow.physical.MarketRole;
 import net.sf.chellow.physical.MarketRoles;
 import net.sf.chellow.physical.MeterPaymentTypes;
@@ -76,6 +77,7 @@ public class Chellow extends Monad implements Urlable {
 	static public final Supplies SUPPLIES_INSTANCE = new Supplies();
 	static public final Sites SITES_INSTANCE = new Sites();
 	static public final GeneralImports GENERAL_IMPORT_PROCESSES = new GeneralImports();
+	static public final GspGroups GSP_GROUPS_INSTANCE = new GspGroups();
 
 	static {
 		try {
@@ -172,7 +174,9 @@ public class Chellow extends Monad implements Urlable {
 	}
 
 	public Urlable getChild(UriPathElement uriId) throws HttpException {
-		if (Sources.URI_ID.equals(uriId)) {
+		if (Reports.URI_ID.equals(uriId)) {
+			return REPORTS_INSTANCE;
+		} else if (Sources.URI_ID.equals(uriId)) {
 			return SOURCES_INSTANCE;
 		} else if (Users.URI_ID.equals(uriId)) {
 			return USERS_INSTANCE;
@@ -200,8 +204,6 @@ public class Chellow extends Monad implements Urlable {
 			return DSOS_INSTANCE;
 		} else if (ReadTypes.URI_ID.equals(uriId)) {
 			return READ_TYPES_INSTANCE;
-		} else if (Reports.URI_ID.equals(uriId)) {
-			return REPORTS_INSTANCE;
 		} else if (Configuration.URI_ID.equals(uriId)) {
 			return Configuration.getConfiguration();
 		} else if (GeneralImports.URI_ID.equals(uriId)) {
@@ -214,6 +216,8 @@ public class Chellow extends Monad implements Urlable {
 			return SUPPLIER_CONTRACTS_INSTANCE;
 		} else if (Supplies.URI_ID.equals(uriId)) {
 			return SUPPLIES_INSTANCE;
+		} else if (GspGroups.URI_ID.equals(uriId)) {
+			return GSP_GROUPS_INSTANCE;
 		} else {
 			return null;
 		}
