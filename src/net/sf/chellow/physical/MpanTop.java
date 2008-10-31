@@ -126,7 +126,7 @@ public class MpanTop extends PersistentEntity {
 							"Effective From Settlement Date {VSCPC}",
 							"Effective To Settlement Date {VSCPC}" });
 
-			Map<Integer, List<List<Object>>> sscPcMap = new HashMap<Integer, List<List<Object>>>();
+			Map<Integer, List<List<Object>>> dsoGroupSscPcMap = new HashMap<Integer, List<List<Object>>>();
 			for (String[] values = mdd.getLine(); values != null; values = mdd
 					.getLine()) {
 				int sscCode = Integer.parseInt(values[1]);
