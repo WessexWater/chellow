@@ -20,6 +20,24 @@ import net.sf.chellow.monad.UserException;
 import com.Ostermiller.util.CSVParser;
 
 public class Mdd {
+	static public Date maxDate(Date d1, Date d2) {
+		Date result = null;
+		if (d1 != null && d2 != null) {
+			result = d1.after(d2) ? d1 : d2;
+		}
+		return result;
+	}
+	
+	static public Date minDate(Date d1, Date d2) {
+		if (d1 == null) {
+			return d2;
+		}
+		if (d2 == null) {
+			return d1;
+		}
+		return d1.before(d2) ? d1 : d2;
+	}
+	
 	private CSVParser parser;
 	private DateFormat dateFormat;
 

@@ -58,17 +58,16 @@ public class MpanTop extends PersistentEntity {
 		}
 		return mpanTop;
 	}
-/*
-	@SuppressWarnings("unchecked")
-	static public List<MpanTop> getMpanTops(Pc pc, Mtc mtc, Llfc llfc, Date date) {
-		return (List<MpanTop>) Hiber
-				.session()
-				.createQuery(
-						"from MpanTop top where top.pc = :pc and top.mtc = :mtc and top.llfc = :llfc and top.validFrom <= :date and (top.validTo is null or top.validTo >= :date)")
-				.setEntity("pc", pc).setEntity("mtc", mtc).setEntity("llfc",
-						llfc).setTimestamp("date", date).list();
-	}
-*/
+
+	/*
+	 * @SuppressWarnings("unchecked") static public List<MpanTop>
+	 * getMpanTops(Pc pc, Mtc mtc, Llfc llfc, Date date) { return (List<MpanTop>)
+	 * Hiber .session() .createQuery( "from MpanTop top where top.pc = :pc and
+	 * top.mtc = :mtc and top.llfc = :llfc and top.validFrom <= :date and
+	 * (top.validTo is null or top.validTo >= :date)") .setEntity("pc",
+	 * pc).setEntity("mtc", mtc).setEntity("llfc", llfc).setTimestamp("date",
+	 * date).list(); }
+	 */
 	static public MpanTop findMpanTop(Pc pc, Mtc mtc, Llfc llfc, Ssc ssc,
 			Date date) throws HttpException {
 		Criteria criteria = Hiber.session().createCriteria(MpanTop.class).add(
@@ -120,30 +119,79 @@ public class MpanTop extends PersistentEntity {
 	static public void loadFromCsv(ServletContext sc) throws HttpException {
 		Debug.print("Starting to add MPAN tops.");
 		try {
-			Mdd mdd = new Mdd(sc, "ValidSettlementConfigurationProfileClass",
-					new String[] { "Profile Class Id",
-							"Standard Settlement Configuration Id",
-							"Effective From Settlement Date {VSCPC}",
-							"Effective To Settlement Date {VSCPC}" });
-
-			Map<Integer, List<List<Object>>> dsoGroupSscPcMap = new HashMap<Integer, List<List<Object>>>();
+			/*
+			 * Mdd mdd = new Mdd(sc, "ValidSettlementConfigurationProfileClass",
+			 * new String[] { "Profile Class Id", "Standard Settlement
+			 * Configuration Id", "Effective From Settlement Date {VSCPC}",
+			 * "Effective To Settlement Date {VSCPC}" }); Map<Integer, List<List<Object>>>
+			 * dsoGroupSscPcMap = new HashMap<Integer, List<List<Object>>>();
+			 * for (String[] values = mdd.getLine(); values != null; values =
+			 * mdd .getLine()) { int sscCode = Integer.parseInt(values[1]);
+			 * String pcCode = values[0]; Date validFrom =
+			 * mdd.toDate(values[2]); Date validTo = mdd.toDate(values[3]);
+			 * 
+			 * if (!sscPcMap.containsKey(sscCode)) { sscPcMap.put(sscCode, new
+			 * ArrayList<List<Object>>()); } List<List<Object>> sscPcs =
+			 * sscPcMap.get(sscCode); List<Object> sscPc = new ArrayList<Object>();
+			 * sscPc.add(pcCode); sscPc.add(validFrom); sscPc.add(validTo);
+			 * sscPcs.add(sscPc); }
+			 */
+			Map<String, List<List<Object>>> dsoGroupMap = new HashMap<String, List<List<Object>>>();
+			Mdd mdd = new Mdd(sc, "GspGroupDistributor", new String[] {
+					"GSP Group Id", "Market Participant Id",
+					"Market Participant Role Code",
+					"Effective From Date {MPR}",
+					"Effective From Settlement Date {GGD}",
+					"Effective To Settlement Date {GGD}" });
 			for (String[] values = mdd.getLine(); values != null; values = mdd
 					.getLine()) {
-				int sscCode = Integer.parseInt(values[1]);
-				String pcCode = values[0];
-				Date validFrom = mdd.toDate(values[2]);
-				Date validTo = mdd.toDate(values[3]);
-
-				if (!sscPcMap.containsKey(sscCode)) {
-					sscPcMap.put(sscCode, new ArrayList<List<Object>>());
+				String gspCode = values[0];
+				String dsoCode = values[1];
+				Date validFrom = mdd.toDate(values[3]);
+				if (validFrom.before(mdd.toDate(values[4]))) {
+					validFrom = mdd.toDate(values[4]);
 				}
-				List<List<Object>> sscPcs = sscPcMap.get(sscCode);
-				List<Object> sscPc = new ArrayList<Object>();
-				sscPc.add(pcCode);
-				sscPc.add(validFrom);
-				sscPc.add(validTo);
-				sscPcs.add(sscPc);
+				Date validTo = mdd.toDate(values[5]);
+
+				if (!dsoGroupMap.containsKey(dsoCode)) {
+					dsoGroupMap.put(dsoCode, new ArrayList<List<Object>>());
+				}
+				Debug.print("dso code : " + dsoCode);
+				List<List<Object>> groupsList = dsoGroupMap.get(dsoCode);
+				List<Object> groupList = new ArrayList<Object>();
+				groupsList.add(groupList);
+				groupList.add(gspCode);
+				groupList.add(validFrom);
+				groupList.add(validTo);
 			}
+			Map<String, List<List<Object>>> groupSscMap = new HashMap<String, List<List<Object>>>();
+			mdd = new Mdd(sc, "AverageFractionOfYearlyConsumptionSet",
+					new String[] { "GSP Group Id", "Profile Class Id",
+							"Standard Settlement Configuration Id",
+							"Effective From Settlement Date {VSCPC}",
+							"Effective From Settlement Date {AFOYCS}",
+							"Effective To Settlement Date {AFOYCS}" });
+			for (String[] values = mdd.getLine(); values != null; values = mdd
+					.getLine()) {
+				String gspCode = values[0];
+				String pcCode = values[1];
+				int sscCode = Integer.parseInt(values[2]);
+				Date validFrom = Mdd.minDate(mdd.toDate(values[3]), mdd
+						.toDate(values[4]));
+				Date validTo = mdd.toDate(values[5]);
+				String key = gspCode + sscCode;
+				Debug.print("Adding key " + key);
+				if (!groupSscMap.containsKey(key)) {
+					groupSscMap.put(key, new ArrayList<List<Object>>());
+				}
+				List<List<Object>> groupSscsList = groupSscMap.get(key);
+				List<Object> groupSscList = new ArrayList<Object>();
+				groupSscsList.add(groupSscList);
+				groupSscList.add(pcCode);
+				groupSscList.add(validFrom);
+				groupSscList.add(validTo);
+			}
+
 			mdd = new Mdd(sc, "ValidMtcLlfcSsc", new String[] {
 					"Meter Timeswitch Class Id",
 					"Effective From Settlement Date {MTC}",
@@ -157,25 +205,35 @@ public class MpanTop extends PersistentEntity {
 
 			for (String[] values = mdd.getLine(); values != null; values = mdd
 					.getLine()) {
-				Dso dso = Dso.getDso(Participant.getParticipant(values[2]));
+				String participantCode = values[2];
+				Dso dso = Dso.getDso(Participant
+						.getParticipant(participantCode));
 				Date validFrom = mdd.toDate(values[7]);
 				Date validTo = mdd.toDate(values[8]);
 				Llfc llfc = dso.getLlfc(values[6], validFrom);
 				Mtc mtc = Mtc.getMtc(dso, values[0]);
 				Ssc ssc = Ssc.getSsc(values[4]);
-				for (List<Object> sscPc : sscPcMap.get(ssc.getCode())) {
-					Date mapFrom = (Date) sscPc.get(1);
-					Date mapTo = (Date) sscPc.get(2);
-					Date derivedFrom = validFrom.after(mapFrom) ? validFrom
-							: mapFrom;
-					Date derivedTo = null;
-					if (mapTo != null && validTo != null) {
-						derivedTo = validTo.before(mapTo) ? validTo : mapTo;
+				for (List<Object> groupList : dsoGroupMap.get(participantCode)) {
+					String groupCode = (String) groupList.get(0);
+					GspGroup group = GspGroup.getGspGroup(groupCode);
+					Date groupFrom = Mdd.maxDate((Date) groupList.get(1),
+							validFrom);
+					Date groupTo = Mdd
+							.minDate((Date) groupList.get(2), validTo);
+					Debug.print("Key " + groupCode
+							+ ssc.getCode());
+					for (List<Object> groupSscList : groupSscMap.get(groupCode
+							+ ssc.getCode())) {
+						String pcCode = (String) groupSscList.get(0);
+						Date from = Mdd.maxDate((Date) groupSscList.get(1),
+								groupFrom);
+						Date to = Mdd.minDate((Date) groupSscList.get(2),
+								groupTo);
+						llfc.insertMpanTop(Pc.getPc(pcCode), mtc, ssc, group,
+								from, to);
+						Hiber.close();
 					}
-					llfc.insertMpanTop(Pc.getPc((String) sscPc.get(0)), mtc,
-							ssc, derivedFrom, derivedTo);
 				}
-				Hiber.close();
 			}
 			mdd = new Mdd(sc, "ValidMtcLlfc", new String[] {
 					"Meter Timeswitch Class Id",
@@ -187,15 +245,23 @@ public class MpanTop extends PersistentEntity {
 					"Effective To Settlement Date {VMTCLC}" });
 			for (String[] values = mdd.getLine(); values != null; values = mdd
 					.getLine()) {
-				Dso dso = Dso.getDso(Participant.getParticipant(values[2]));
+				String participantCode = values[2];
+				Dso dso = Dso.getDso(Participant
+						.getParticipant(participantCode));
 				Date validFrom = mdd.toDate(values[5]);
 				Date validTo = mdd.toDate(values[6]);
 				Llfc llfc = dso.getLlfc(values[4], validFrom);
 				Mtc mtc = Mtc.getMtc(dso, values[0]);
-				llfc
-						.insertMpanTop(Pc.getPc("0"), mtc, null, validFrom,
-								validTo);
-				Hiber.close();
+				Debug.print("ptcode " + participantCode);
+				for (List<Object> groupList : dsoGroupMap.get(participantCode)) {
+					GspGroup group = GspGroup.getGspGroup((String) groupList
+							.get(0));
+					Date from = Mdd.maxDate((Date) groupList.get(1), validFrom);
+					Date to = Mdd.minDate((Date) groupList.get(2), validTo);
+					llfc.insertMpanTop(Pc.getPc("0"), mtc, null, group, from,
+							to);
+					Hiber.close();
+				}
 			}
 		} catch (NumberFormatException e) {
 			throw new InternalException(e);
@@ -211,7 +277,7 @@ public class MpanTop extends PersistentEntity {
 	private Llfc llfc;
 
 	private Ssc ssc;
-	
+
 	private GspGroup gspGroup;
 
 	private Date validFrom;
@@ -220,8 +286,8 @@ public class MpanTop extends PersistentEntity {
 	MpanTop() {
 	}
 
-	MpanTop(Pc pc, Mtc mtc, Llfc llfc, Ssc ssc, GspGroup gspGroup, Date validFrom, Date validTo)
-			throws HttpException {
+	MpanTop(Pc pc, Mtc mtc, Llfc llfc, Ssc ssc, GspGroup gspGroup,
+			Date validFrom, Date validTo) throws HttpException {
 		setMtc(mtc);
 		setLlfc(llfc);
 		setPc(pc);
@@ -270,7 +336,7 @@ public class MpanTop extends PersistentEntity {
 	void setGspGroup(GspGroup gspGroup) {
 		this.gspGroup = gspGroup;
 	}
-	
+
 	public Date getValidFrom() {
 		return validFrom;
 	}
@@ -331,8 +397,9 @@ public class MpanTop extends PersistentEntity {
 		}
 		return mpanTopElement;
 	}
-	
+
 	public String toString() {
-		return pc.codeAsString() + " " + mtc.codeAsString() + " " + llfc.codeAsString();
+		return pc.codeAsString() + " " + mtc.codeAsString() + " "
+				+ llfc.codeAsString();
 	}
 }

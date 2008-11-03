@@ -48,6 +48,14 @@ public class GspGroup extends PersistentEntity {
 		}
 		return group;
 	}
+
+	public static GspGroup getGspGroup(String code) throws HttpException {
+		GspGroup group = (GspGroup) Hiber.session().createQuery("from GspGroup group where group.code = :code").setString("code", code).uniqueResult();
+		if (group == null) {
+			throw new NotFoundException("There isn't a GSP group with that code.");
+		}
+		return group;
+	}
 	
 	static public void loadFromCsv(ServletContext sc) throws HttpException {
 		Debug.print("Starting to add Gsp groups.");
