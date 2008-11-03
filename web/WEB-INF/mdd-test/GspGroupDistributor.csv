@@ -1,0 +1,5 @@
+"GSP Group Id","Market Participant Id","Market Participant Role Code","Effective From Date {MPR}","Effective From Settlement Date {GGD}","Effective To Settlement Date {GGD}"
+"_L","SWEB","R","01/04/1996","01/04/1996",""
+#
+# Added for 99 mpans
+"_L","CUST","R","01/04/2005","07/10/2008",""
