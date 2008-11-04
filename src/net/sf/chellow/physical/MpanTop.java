@@ -27,6 +27,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import javax.servlet.ServletContext;
 
@@ -164,7 +165,7 @@ public class MpanTop extends PersistentEntity {
 				groupList.add(validFrom);
 				groupList.add(validTo);
 			}
-			Map<String, List<List<Object>>> groupSscMap = new HashMap<String, List<List<Object>>>();
+			Map<String, Map<String, List<Object>>> groupSscMap = new HashMap<String, Map<String, List<Object>>>();
 			mdd = new Mdd(sc, "AverageFractionOfYearlyConsumptionSet",
 					new String[] { "GSP Group Id", "Profile Class Id",
 							"Standard Settlement Configuration Id",
@@ -182,14 +183,31 @@ public class MpanTop extends PersistentEntity {
 				String key = gspCode + sscCode;
 				Debug.print("Adding key " + key);
 				if (!groupSscMap.containsKey(key)) {
-					groupSscMap.put(key, new ArrayList<List<Object>>());
+					groupSscMap.put(key, new HashMap<String, List<Object>>());
 				}
-				List<List<Object>> groupSscsList = groupSscMap.get(key);
-				List<Object> groupSscList = new ArrayList<Object>();
-				groupSscsList.add(groupSscList);
-				groupSscList.add(pcCode);
-				groupSscList.add(validFrom);
-				groupSscList.add(validTo);
+				Map<String, List<Object>> groupSscPcMap = groupSscMap.get(key);
+				if (groupSscPcMap.containsKey(pcCode)) {
+					List<Object> groupSscList = groupSscPcMap.get(pcCode);
+					groupSscList.set(0, Mdd.minDate((Date) groupSscList.get(0),
+							validFrom));
+					groupSscList.set(1, Mdd.maxDate((Date) groupSscList.get(1),
+							validTo));
+					/*
+					 * if (validFrom != null && mapTo != null && mapTo.getTime() +
+					 * 24 * 60 * 60 == validFrom.getTime()) {
+					 * groupSscList.set(1, validTo); } else if (validTo != null &&
+					 * mapFrom != null && validTo.getTime() + 24 * 60 * 60 ==
+					 * mapFrom.getTime()) { groupSscList.set(0, validFrom); }
+					 * else { groupSscList = new ArrayList<Object>();
+					 * groupSscsList.add(groupSscList);
+					 * groupSscList.add(validFrom); groupSscList.add(validTo); }
+					 */
+				} else {
+					List<Object> groupSscList = new ArrayList<Object>();
+					groupSscPcMap.put(pcCode, groupSscList);
+					groupSscList.add(validFrom);
+					groupSscList.add(validTo);
+				}
 			}
 
 			mdd = new Mdd(sc, "ValidMtcLlfcSsc", new String[] {
@@ -220,15 +238,14 @@ public class MpanTop extends PersistentEntity {
 							validFrom);
 					Date groupTo = Mdd
 							.minDate((Date) groupList.get(2), validTo);
-					Debug.print("Key " + groupCode
-							+ ssc.getCode());
-					for (List<Object> groupSscList : groupSscMap.get(groupCode
-							+ ssc.getCode())) {
-						String pcCode = (String) groupSscList.get(0);
-						Date from = Mdd.maxDate((Date) groupSscList.get(1),
-								groupFrom);
-						Date to = Mdd.minDate((Date) groupSscList.get(2),
-								groupTo);
+					Debug.print("Key " + groupCode + ssc.getCode());
+					for (Entry<String, List<Object>> entrySet : groupSscMap
+							.get(groupCode + ssc.getCode()).entrySet()) {
+						String pcCode = entrySet.getKey();
+						Date from = Mdd.maxDate((Date) entrySet.getValue().get(
+								0), groupFrom);
+						Date to = Mdd.minDate(
+								(Date) entrySet.getValue().get(1), groupTo);
 						llfc.insertMpanTop(Pc.getPc(pcCode), mtc, ssc, group,
 								from, to);
 						Hiber.close();
