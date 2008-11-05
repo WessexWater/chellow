@@ -183,11 +183,12 @@ public class Site extends PersistentEntity {
 		SupplierContract importSupplierContract = null;
 		Account importSupplierAccount = null;
 		Ssc importSsc = null;
-		GspGroup importGspGroup = GspGroup.getGspGroup(importGspGroupCode);
+		GspGroup importGspGroup = null;
 
 		if (importMpanStr != null && importMpanStr.length() != 0) {
 			importSsc = importSscCode.trim().length() == 0 ? null : Ssc
 					.getSsc(importSscCode);
+			importGspGroup = GspGroup.getGspGroup(importGspGroupCode);
 			try {
 				importAgreedSupplyCapacity = new Integer(
 						importAgreedSupplyCapacityStr);
@@ -213,10 +214,11 @@ public class Site extends PersistentEntity {
 		Account exportAccountSupplier = null;
 		Integer exportAgreedSupplyCapacity = null;
 		Ssc exportSsc = null;
-		GspGroup exportGspGroup = GspGroup.getGspGroup(exportGspGroupCode);
+		GspGroup exportGspGroup = null;
 		if (exportMpanStr != null && exportMpanStr.length() != 0) {
 			exportSsc = exportSscCode.trim().length() == 0 ? null : Ssc
 					.getSsc(exportSscCode);
+			exportGspGroup = GspGroup.getGspGroup(exportGspGroupCode);
 			try {
 				exportAgreedSupplyCapacity = new Integer(
 						exportAgreedSupplyCapacityStr);
@@ -628,12 +630,14 @@ public class Site extends PersistentEntity {
 			String sourceCode = inv.getString("source-code");
 			try {
 				Supply supply = insertSupply(name, meterSerialNumber,
-						importMpanStr, importSscCode, importGspGroupCode, importHhdcContractName,
-						importHhdcAccountReference, importSupplierContractName,
+						importMpanStr, importSscCode, importGspGroupCode,
+						importHhdcContractName, importHhdcAccountReference,
+						importSupplierContractName,
 						importSupplierAccountReference,
 						importAgreedSupplyCapacityStr, exportMpanStr,
-						exportSscCode, exportGspGroupCode, exportHhdcContractName,
-						exportHhdcAccountReference, exportSupplierContractName,
+						exportSscCode, exportGspGroupCode,
+						exportHhdcContractName, exportHhdcAccountReference,
+						exportSupplierContractName,
 						exportSupplierAccountReference,
 						exportAgreedSupplyCapacityStr,
 						new HhEndDate(startDate), sourceCode);

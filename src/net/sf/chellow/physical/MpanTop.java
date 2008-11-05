@@ -71,25 +71,56 @@ public class MpanTop extends PersistentEntity {
 	 */
 	static public MpanTop findMpanTop(Pc pc, Mtc mtc, Llfc llfc, Ssc ssc,
 			GspGroup group, Date date) throws HttpException {
-		Criteria criteria = Hiber.session().createCriteria(MpanTop.class).add(
-				Restrictions.eq("pc", pc)).add(Restrictions.eq("mtc", mtc))
-				.add(Restrictions.eq("gspGroup", group)).add(
-						Restrictions.eq("llfc", llfc)).add(
-						Restrictions.le("validFrom", date)).add(
-						Restrictions.or(Restrictions.isNull("validTo"),
-								Restrictions.ge("validTo", date)));
-		if (ssc == null) {
-			criteria.add(Restrictions.isNull("ssc"));
-		} else {
-			criteria.add(Restrictions.eq("ssc", ssc));
-		}
-		return (MpanTop) criteria.uniqueResult();
 		/*
-		 * MpanTop mpanTop = (MpanTop) return (MpanTop) Hiber .session()
-		 * .createQuery( "from MpanTop top where top.pc = :pc and top.mtc = :mtc
-		 * and top.llfc = :llfc and top.ssc = :ssc and top.validFrom <= :date
-		 * and (top.validTo is null or top.validTo <= :date)") .setEntity("pc",
-		 * pc).setEntity("mtc", mtc).setEntity("llfc", llfc).setEntity("ssc",
+		Debug.print("trying to find mpantop. " + pc + " " + mtc + " " + llfc + " " + ssc + " " + group + " " + date);
+		if (ssc == null) {
+		Debug.print("About to loop.");
+		for (MpanTop top : (List<MpanTop>) Hiber.session().createQuery("from MpanTop top where top.pc = :pc and top.mtc = :mtc and top.llfc = :llfc and top.gspGroup = :group and ssc is null").setEntity("group", group).setEntity("pc", pc).setEntity("llfc", llfc).setEntity("mtc", mtc).list()) {
+			Debug.print("MpanTop " + top.getPc() + " " + top.getMtc() + " " + top.getLlfc() + " " + top.getSsc() + " " + top.getGspGroup() + " " + top.getValidFrom() + " " + top.getValidTo());
+		}
+		}
+		StringBuilder queryString = new StringBuilder(
+				"from MpanTop top where top.pc = :pc and top.mtc = :mtc and top.llfc = :llfc and top.gspGroup = :group and top.validFrom <= :date and (top.validTo is null or top.validTo >= :date)");
+		Query query = null;
+		if (ssc == null) {
+			queryString.append(" and top.ssc is null");
+			query = Hiber.session().createQuery(queryString.toString())
+					.setEntity("pc", pc).setEntity("mtc", mtc).setEntity(
+							"llfc", llfc).setEntity("group", group)
+					.setTimestamp("date", date);
+		} else {
+			queryString.append(" and top.ssc = :ssc");
+			query = Hiber.session().createQuery(queryString.toString())
+					.setEntity("pc", pc).setEntity("mtc", mtc).setEntity(
+							"llfc", llfc).setEntity("ssc", ssc).setEntity(
+							"group", group).setTimestamp("date", date);
+		}
+		return (MpanTop) query.uniqueResult();
+		// return (MpanTop) Hiber.session().createQuery("from MpanTop top where
+		// top.pc = :pc and top.mtc = :mtc and top.llfc = :llfc and top.ssc =
+		// :ssc and top.gspGroup = :group and top.validFrom <= :date and
+		// (top.validTo is null or top.validTo >= :date)").setEntity("pc",
+		// pc).setEntity("mtc", mtc).setEntity("llfc",
+		// llfc).setEntity("gspGroup", group).setEntity("date",
+		// date).uniqueResult();
+
+		 */
+		
+		  Criteria criteria =
+		  Hiber.session().createCriteria(MpanTop.class).add(
+		  Restrictions.eq("pc", pc)).add(Restrictions.eq("mtc", mtc))
+		  .add(Restrictions.eq("gspGroup", group)).add( Restrictions.eq("llfc",
+		  llfc)).add( Restrictions.le("validFrom", date)).add(
+		  Restrictions.or(Restrictions.isNull("validTo"),
+		  Restrictions.ge("validTo", date))); if (ssc == null) {
+		  criteria.add(Restrictions.isNull("ssc")); } else {
+		  criteria.add(Restrictions.eq("ssc", ssc)); } return (MpanTop)
+		  criteria.uniqueResult(); /* MpanTop mpanTop = (MpanTop) return
+		  (MpanTop) Hiber .session() .createQuery( "from MpanTop top where
+		  top.pc = :pc and top.mtc = :mtc and top.llfc = :llfc and top.ssc =
+		 * :ssc and top.validFrom <= :date and (top.validTo is null or
+		 * top.validTo <= :date)") .setEntity("pc", pc).setEntity("mtc",
+		 * mtc).setEntity("llfc", llfc).setEntity("ssc",
 		 * ssc).setTimestamp("date", date) .uniqueResult();
 		 */
 	}
@@ -101,7 +132,8 @@ public class MpanTop extends PersistentEntity {
 			throw new UserException(
 					"There is no MPAN top line with Profile Class: " + pc
 							+ ", Meter Timeswitch: " + mtc
-							+ " and Line Loss Factor: " + llfc);
+							+ ", Line Loss Factor: " + llfc + ", SSC: " + ssc
+							+ ", GSP Group: " + group + " and Date: " + date);
 		}
 		return mpanTop;
 	}

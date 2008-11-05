@@ -50,17 +50,20 @@ public class GspGroup extends PersistentEntity {
 	}
 
 	public static GspGroup getGspGroup(String code) throws HttpException {
-		GspGroup group = (GspGroup) Hiber.session().createQuery("from GspGroup group where group.code = :code").setString("code", code).uniqueResult();
+		GspGroup group = (GspGroup) Hiber.session().createQuery(
+				"from GspGroup group where group.code = :code").setString(
+				"code", code).uniqueResult();
 		if (group == null) {
-			throw new NotFoundException("There isn't a GSP group with that code.");
+			throw new NotFoundException(
+					"There isn't a GSP group with the code " + code + ".");
 		}
 		return group;
 	}
-	
+
 	static public void loadFromCsv(ServletContext sc) throws HttpException {
 		Debug.print("Starting to add Gsp groups.");
-		Mdd mdd = new Mdd(sc, "GspGroup",
-				new String[] { "GSP Group Id", "GSP Group Name" });
+		Mdd mdd = new Mdd(sc, "GspGroup", new String[] { "GSP Group Id",
+				"GSP Group Name" });
 		for (String[] values = mdd.getLine(); values != null; values = mdd
 				.getLine()) {
 			GspGroup group = new GspGroup(values[0], values[1]);
@@ -112,7 +115,7 @@ public class GspGroup extends PersistentEntity {
 	public void httpGet(Invocation inv) throws HttpException {
 		Document doc = MonadUtils.newSourceDocument();
 		Element source = doc.getDocumentElement();
-		
+
 		source.appendChild(toXml(doc));
 		inv.sendOk(doc);
 	}
@@ -124,5 +127,9 @@ public class GspGroup extends PersistentEntity {
 
 	public Urlable getChild(UriPathElement uriId) throws HttpException {
 		throw new NotFoundException();
+	}
+	
+	public String toString() {
+		return code + " - " + description;
 	}
 }
