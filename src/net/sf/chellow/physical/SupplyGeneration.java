@@ -279,22 +279,22 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 	 */
 
 	public void addOrUpdateMpans(String importMpanStr, Ssc importSsc,
-			Account importHhdcAccount, Account importSupplierAccount,
-			boolean importHasImportKwh, boolean importHasImportKvarh,
-			boolean importHasExportKwh, boolean importHasExportKvarh,
-			Integer importAgreedSupplyCapacity, String exportMpanStr,
-			Ssc exportSsc, Account exportHhdcAccount,
-			Account exportSupplierAccount, boolean exportHasImportKwh,
-			boolean exportHasImportKvarh, boolean exportHasExportKwh,
-			boolean exportHasExportKvarh, Integer exportAgreedSupplyCapacity)
-			throws HttpException {
+			GspGroup importGspGroup, Account importHhdcAccount,
+			Account importSupplierAccount, boolean importHasImportKwh,
+			boolean importHasImportKvarh, boolean importHasExportKwh,
+			boolean importHasExportKvarh, Integer importAgreedSupplyCapacity,
+			String exportMpanStr, Ssc exportSsc, GspGroup exportGspGroup,
+			Account exportHhdcAccount, Account exportSupplierAccount,
+			boolean exportHasImportKwh, boolean exportHasImportKvarh,
+			boolean exportHasExportKwh, boolean exportHasExportKvarh,
+			Integer exportAgreedSupplyCapacity) throws HttpException {
 		if (importMpan == null) {
 			if (importMpanStr != null && importMpanStr.length() != 0) {
 				setImportMpan(new Mpan(this, importMpanStr, importSsc,
-						importHhdcAccount, importSupplierAccount,
-						importHasImportKwh, importHasImportKvarh,
-						importHasExportKwh, importHasExportKvarh,
-						importAgreedSupplyCapacity));
+						importGspGroup, importHhdcAccount,
+						importSupplierAccount, importHasImportKwh,
+						importHasImportKvarh, importHasExportKwh,
+						importHasExportKvarh, importAgreedSupplyCapacity));
 				mpans.add(getImportMpan());
 			}
 		} else {
@@ -302,19 +302,20 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 				mpans.remove(importMpan);
 				setImportMpan(null);
 			} else {
-				importMpan.update(importMpanStr, importSsc, importHhdcAccount,
-						importSupplierAccount, importHasImportKwh,
-						importHasImportKvarh, importHasExportKwh,
-						importHasExportKvarh, importAgreedSupplyCapacity);
+				importMpan.update(importMpanStr, importSsc, importGspGroup,
+						importHhdcAccount, importSupplierAccount,
+						importHasImportKwh, importHasImportKvarh,
+						importHasExportKwh, importHasExportKvarh,
+						importAgreedSupplyCapacity);
 			}
 		}
 		if (exportMpan == null) {
 			if (exportMpanStr != null && exportMpanStr.length() != 0) {
 				setExportMpan(new Mpan(this, exportMpanStr, exportSsc,
-						exportHhdcAccount, exportSupplierAccount,
-						exportHasImportKwh, exportHasImportKvarh,
-						exportHasExportKwh, exportHasExportKvarh,
-						exportAgreedSupplyCapacity));
+						exportGspGroup, exportHhdcAccount,
+						exportSupplierAccount, exportHasImportKwh,
+						exportHasImportKvarh, exportHasExportKwh,
+						exportHasExportKvarh, exportAgreedSupplyCapacity));
 				mpans.add(getExportMpan());
 			}
 		} else {
@@ -322,10 +323,11 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 				mpans.remove(exportMpan);
 				setExportMpan(null);
 			} else {
-				exportMpan.update(exportMpanStr, exportSsc, exportHhdcAccount,
-						exportSupplierAccount, exportHasImportKwh,
-						exportHasImportKvarh, exportHasExportKwh,
-						exportHasExportKvarh, exportAgreedSupplyCapacity);
+				exportMpan.update(exportMpanStr, exportSsc, exportGspGroup,
+						exportHhdcAccount, exportSupplierAccount,
+						exportHasImportKwh, exportHasImportKvarh,
+						exportHasExportKwh, exportHasExportKvarh,
+						exportAgreedSupplyCapacity);
 			}
 		}
 		if (importMpan == null && exportMpan == null) {
@@ -722,6 +724,7 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 			} else {
 				String importMpanStr = null;
 				Ssc importSsc = null;
+				GspGroup importGspGroup = null;
 				Integer importAgreedSupplyCapacity = null;
 				Date startDate = inv.getDate("start-date");
 				Date finishDate = null;
@@ -747,6 +750,7 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 					String importLlfcCodeStr = inv
 							.getString("import-llfc-code");
 					String importMtcCode = inv.getString("import-mtc-code");
+					Long importGspGroupId = inv.getLong("import-gsp-group-id");
 					if (!inv.isValid()) {
 						throw new UserException(document());
 					}
@@ -755,6 +759,7 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 						importSsc = Ssc
 								.getSsc(inv.getString("import-ssc-code"));
 					}
+					importGspGroup = GspGroup.getGspGroup(importGspGroupId);
 					importMpanStr = importPc.codeAsString() + importMtcCode
 							+ importLlfcCodeStr + importMpanCoreStr;
 					importAgreedSupplyCapacity = inv
@@ -791,6 +796,7 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 				}
 				String exportMpanStr = null;
 				Ssc exportSsc = null;
+				GspGroup exportGspGroup = null;
 				Integer exportAgreedSupplyCapacity = null;
 				Account exportHhdcAccount = null;
 				HhdcContract exportHhdcContract = null;
@@ -814,9 +820,11 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 						exportSsc = Ssc
 								.getSsc(inv.getString("export-ssc-code"));
 					}
+					Long exportGspGroupId = inv.getLong("export-gsp-group-id");
 					Pc exportPc = Pc.getPc(exportPcId);
 					exportMpanStr = exportPc.codeAsString() + exportMtcCode
 							+ llfcCodeStr + exportMpanCoreStr;
+					exportGspGroup = GspGroup.getGspGroup(exportGspGroupId);
 					exportAgreedSupplyCapacity = inv
 							.getInteger("export-agreed-supply-capacity");
 					exportHasImportKwh = inv
@@ -849,11 +857,12 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 					exportSupplierAccount = exportSupplierContract
 							.getAccount(exportSupplierAccountReference);
 				}
-				addOrUpdateMpans(importMpanStr, importSsc, importHhdcAccount,
-						importSupplierAccount, importHasImportKwh,
-						importHasImportKvarh, importHasExportKwh,
-						importHasExportKvarh, importAgreedSupplyCapacity,
-						exportMpanStr, exportSsc, exportHhdcAccount,
+				addOrUpdateMpans(importMpanStr, importSsc, importGspGroup,
+						importHhdcAccount, importSupplierAccount,
+						importHasImportKwh, importHasImportKvarh,
+						importHasExportKwh, importHasExportKvarh,
+						importAgreedSupplyCapacity, exportMpanStr, exportSsc,
+						exportGspGroup, exportHhdcAccount,
 						exportSupplierAccount, exportHasImportKwh,
 						exportHasImportKvarh, exportHasExportKwh,
 						exportHasExportKvarh, exportAgreedSupplyCapacity);

@@ -263,10 +263,12 @@ public class Supply extends PersistentEntity {
 		}
 		if (existingImportMpan == null) {
 			newSupplyGeneration = addGeneration(existingSiteMap, existingMeter,
-					null, null, null, null, false, false, false, false, null,
-					existingExportMpan.toString(), existingExportMpan.getTop()
-							.getSsc(), existingExportMpan.getHhdcAccount(),
-					existingExportMpan.getSupplierAccount(), existingExportMpan
+					null, null, null, null, null, false, false, false, false,
+					null, existingExportMpan.toString(), existingExportMpan
+							.getTop().getSsc(), existingExportMpan.getTop()
+							.getGspGroup(),
+					existingExportMpan.getHhdcAccount(), existingExportMpan
+							.getSupplierAccount(), existingExportMpan
 							.getHasImportKwh(), existingExportMpan
 							.getHasImportKvarh(), existingExportMpan
 							.getHasExportKwh(), existingExportMpan
@@ -275,25 +277,30 @@ public class Supply extends PersistentEntity {
 		} else if (existingExportMpan == null) {
 			newSupplyGeneration = addGeneration(existingSiteMap, existingMeter,
 					existingImportMpan.toString(), existingImportMpan.getTop()
-							.getSsc(), existingImportMpan.getHhdcAccount(),
-					existingImportMpan.getSupplierAccount(), existingImportMpan
+							.getSsc(), existingImportMpan.getTop()
+							.getGspGroup(),
+					existingImportMpan.getHhdcAccount(), existingImportMpan
+							.getSupplierAccount(), existingImportMpan
 							.getHasImportKwh(), existingImportMpan
 							.getHasImportKvarh(), existingImportMpan
 							.getHasExportKwh(), existingImportMpan
 							.getHasExportKvarh(), existingImportMpan
 							.getAgreedSupplyCapacity(), null, null, null, null,
-					false, false, false, false, null, finishDate);
+					null, false, false, false, false, null, finishDate);
 		} else {
 			newSupplyGeneration = addGeneration(existingSiteMap, existingMeter,
 					existingImportMpan.toString(), existingImportMpan.getTop()
-							.getSsc(), existingImportMpan.getHhdcAccount(),
-					existingImportMpan.getSupplierAccount(), existingImportMpan
+							.getSsc(), existingImportMpan.getTop()
+							.getGspGroup(),
+					existingImportMpan.getHhdcAccount(), existingImportMpan
+							.getSupplierAccount(), existingImportMpan
 							.getHasImportKwh(), existingImportMpan
 							.getHasImportKvarh(), existingImportMpan
 							.getHasExportKwh(), existingImportMpan
 							.getHasExportKvarh(), existingImportMpan
 							.getAgreedSupplyCapacity(), existingExportMpan
 							.toString(), existingExportMpan.getTop().getSsc(),
+					existingExportMpan.getTop().getGspGroup(),
 					existingExportMpan.getHhdcAccount(), existingExportMpan
 							.getSupplierAccount(), existingExportMpan
 							.getHasImportKwh(), existingExportMpan
@@ -334,15 +341,16 @@ public class Supply extends PersistentEntity {
 	 */
 	public SupplyGeneration addGeneration(Map<Site, Boolean> siteMap,
 			Meter meter, String importMpanStr, Ssc importSsc,
-			Account importHhdceAccount, Account importAccountSupplier,
-			boolean importHasImportKwh, boolean importHasImportKvarh,
-			boolean importHasExportKwh, boolean importHasExportKvarh,
-			Integer importAgreedSupplyCapacity, String exportMpanStr,
-			Ssc exportSsc, Account exportHhdceAccount,
-			Account exportSupplierAccount, boolean exportHasImportKwh,
-			boolean exportHasImportKvarh, boolean exportHasExportKwh,
-			boolean exportHasExportKvarh, Integer exportAgreedSupplyCapacity,
-			HhEndDate finishDate) throws HttpException {
+			GspGroup importGspGroup, Account importHhdcAccount,
+			Account importAccountSupplier, boolean importHasImportKwh,
+			boolean importHasImportKvarh, boolean importHasExportKwh,
+			boolean importHasExportKvarh, Integer importAgreedSupplyCapacity,
+			String exportMpanStr, Ssc exportSsc, GspGroup exportGspGroup,
+			Account exportHhdcAccount, Account exportSupplierAccount,
+			boolean exportHasImportKwh, boolean exportHasImportKvarh,
+			boolean exportHasExportKwh, boolean exportHasExportKvarh,
+			Integer exportAgreedSupplyCapacity, HhEndDate finishDate)
+			throws HttpException {
 		if (getGenerationFinishing(finishDate) != null) {
 			throw new UserException(
 					"There's already a supply generation with this finish date.");
@@ -368,10 +376,11 @@ public class Supply extends PersistentEntity {
 		}
 		Hiber.flush();
 		supplyGeneration.addOrUpdateMpans(importMpanStr, importSsc,
-				importHhdceAccount, importAccountSupplier, importHasImportKwh,
-				importHasImportKvarh, importHasExportKwh, importHasExportKvarh,
-				importAgreedSupplyCapacity, exportMpanStr, exportSsc,
-				exportHhdceAccount, exportSupplierAccount, exportHasImportKwh,
+				importGspGroup, importHhdcAccount, importAccountSupplier,
+				importHasImportKwh, importHasImportKvarh, importHasExportKwh,
+				importHasExportKvarh, importAgreedSupplyCapacity,
+				exportMpanStr, exportSsc, exportGspGroup, exportHhdcAccount,
+				exportSupplierAccount, exportHasImportKwh,
 				exportHasImportKvarh, exportHasExportKwh, exportHasExportKvarh,
 				exportAgreedSupplyCapacity);
 		for (Map.Entry<Site, Boolean> entry : siteMap.entrySet()) {

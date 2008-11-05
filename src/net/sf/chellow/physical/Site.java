@@ -166,12 +166,13 @@ public class Site extends PersistentEntity {
 
 	public Supply insertSupply(String supplyName, String meterSerialNumber,
 			String importMpanStr, String importSscCode,
-			String importHhdcContractName, String importHhdcAccountReference,
+			String importGspGroupCode, String importHhdcContractName,
+			String importHhdcAccountReference,
 			String importSupplierContractName,
 			String importSupplierAccountReference,
 			String importAgreedSupplyCapacityStr, String exportMpanStr,
-			String exportSscCode, String exportHhdcContractName,
-			String exportHhdcAccountReference,
+			String exportSscCode, String exportGspGroupCode,
+			String exportHhdcContractName, String exportHhdcAccountReference,
 			String exportSupplierContractName,
 			String exportSupplierAccountReference,
 			String exportAgreedSupplyCapacityStr, HhEndDate startDate,
@@ -182,6 +183,7 @@ public class Site extends PersistentEntity {
 		SupplierContract importSupplierContract = null;
 		Account importSupplierAccount = null;
 		Ssc importSsc = null;
+		GspGroup importGspGroup = GspGroup.getGspGroup(importGspGroupCode);
 
 		if (importMpanStr != null && importMpanStr.length() != 0) {
 			importSsc = importSscCode.trim().length() == 0 ? null : Ssc
@@ -211,6 +213,7 @@ public class Site extends PersistentEntity {
 		Account exportAccountSupplier = null;
 		Integer exportAgreedSupplyCapacity = null;
 		Ssc exportSsc = null;
+		GspGroup exportGspGroup = GspGroup.getGspGroup(exportGspGroupCode);
 		if (exportMpanStr != null && exportMpanStr.length() != 0) {
 			exportSsc = exportSscCode.trim().length() == 0 ? null : Ssc
 					.getSsc(exportSscCode);
@@ -234,24 +237,26 @@ public class Site extends PersistentEntity {
 					.getAccount(exportSupplierAccountReference);
 		}
 		return insertSupply(supplyName, meterSerialNumber, importMpanStr,
-				importSsc, importHhdcAccount, importSupplierAccount,
+				importSsc, importGspGroup, importHhdcAccount,
+				importSupplierAccount,
 				importHhdcAccount == null ? false : true,
 				importHhdcAccount == null ? false : true, false,
 				importHhdcAccount == null ? false : true,
 				importAgreedSupplyCapacity, exportMpanStr, exportSsc,
-				exportHhdcAccount, exportAccountSupplier, false,
-				exportHhdcAccount == null ? false : true,
+				exportGspGroup, exportHhdcAccount, exportAccountSupplier,
+				false, exportHhdcAccount == null ? false : true,
 				exportHhdcAccount == null ? false : true,
 				exportHhdcAccount == null ? false : true,
 				exportAgreedSupplyCapacity, startDate, sourceCode);
 	}
 
 	public Supply insertSupply(String supplyName, String meterSerialNumber,
-			String importMpanStr, Ssc importSsc, Account importHhdcAccount,
-			Account importAccountSupplier, boolean importHasImportKwh,
-			boolean importHasImportKvarh, boolean importHasExportKwh,
-			boolean importHasExportKvarh, Integer importAgreedSupplyCapacity,
-			String exportMpanStr, Ssc exportSsc, Account exportHhdcAccount,
+			String importMpanStr, Ssc importSsc, GspGroup importGspGroup,
+			Account importHhdcAccount, Account importAccountSupplier,
+			boolean importHasImportKwh, boolean importHasImportKvarh,
+			boolean importHasExportKwh, boolean importHasExportKvarh,
+			Integer importAgreedSupplyCapacity, String exportMpanStr,
+			Ssc exportSsc, GspGroup exportGspGroup, Account exportHhdcAccount,
 			Account exportAccountSupplier, boolean exportHasImportKwh,
 			boolean exportHasImportKvarh, boolean exportHasExportKwh,
 			boolean exportHasExportKvarh, Integer exportAgreedSupplyCapacity,
@@ -278,13 +283,11 @@ public class Site extends PersistentEntity {
 			}
 		}
 		/*
-		if (importMpanRaw != null) {
-			supply.addMpanCore(importMpanRaw.getMpanCoreRaw());
-		}
-		if (exportMpanRaw != null) {
-			supply.addMpanCore(exportMpanRaw.getMpanCoreRaw());
-		}
-		*/
+		 * if (importMpanRaw != null) {
+		 * supply.addMpanCore(importMpanRaw.getMpanCoreRaw()); } if
+		 * (exportMpanRaw != null) {
+		 * supply.addMpanCore(exportMpanRaw.getMpanCoreRaw()); }
+		 */
 		Map<Site, Boolean> siteMap = new HashMap<Site, Boolean>();
 		siteMap.put(this, true);
 		Meter meter = null;
@@ -295,13 +298,13 @@ public class Site extends PersistentEntity {
 			}
 		}
 		SupplyGeneration supplyGeneration = supply.addGeneration(siteMap,
-				meter, importMpanStr, importSsc, importHhdcAccount,
-				importAccountSupplier, importHasImportKwh,
+				meter, importMpanStr, importSsc, importGspGroup,
+				importHhdcAccount, importAccountSupplier, importHasImportKwh,
 				importHasImportKvarh, importHasExportKwh, importHasExportKvarh,
 				importAgreedSupplyCapacity, exportMpanStr, exportSsc,
-				exportHhdcAccount, exportAccountSupplier, exportHasImportKwh,
-				exportHasImportKvarh, exportHasExportKwh, exportHasExportKvarh,
-				exportAgreedSupplyCapacity, null);
+				exportGspGroup, exportHhdcAccount, exportAccountSupplier,
+				exportHasImportKwh, exportHasImportKvarh, exportHasExportKwh,
+				exportHasExportKvarh, exportAgreedSupplyCapacity, null);
 		supplyGeneration.update(startDate, supplyGeneration.getFinishDate(),
 				meter);
 		Hiber.flush();
@@ -556,10 +559,9 @@ public class Site extends PersistentEntity {
 				.createQuery(
 						"select supplyGeneration from SupplyGeneration supplyGeneration join supplyGeneration.siteSupplyGenerations siteSupplyGeneration where siteSupplyGeneration.site = :site order by supplyGeneration.finishDate.date")
 				.setEntity("site", this).list()) {
-			siteElement.appendChild(generation.toXml(doc,
-					new XmlTree("mpans", new XmlTree("core").put("top",
-							new XmlTree("llfc"))).put("supply", new XmlTree(
-							"source"))));
+			siteElement.appendChild(generation.toXml(doc, new XmlTree("mpans",
+					new XmlTree("core").put("top", new XmlTree("llfc"))).put(
+					"supply", new XmlTree("source"))));
 		}
 		for (Source source : (List<Source>) Hiber.session().createQuery(
 				"from Source source order by source.code").list()) {
@@ -598,6 +600,7 @@ public class Site extends PersistentEntity {
 			String meterSerialNumber = inv.getString("meter-serial-number");
 			String importMpanStr = inv.getString("import-mpan");
 			String importSscCode = inv.getString("import-ssc");
+			String importGspGroupCode = inv.getString("import-gsp-code");
 			String importHhdcContractName = inv
 					.getString("import-hhdc-contract-name");
 			String importHhdcAccountReference = inv
@@ -610,6 +613,7 @@ public class Site extends PersistentEntity {
 					.getString("import-agreed-supply-capacity");
 			String exportMpanStr = inv.getString("export-mpan-str");
 			String exportSscCode = inv.getString("export-ssc-code");
+			String exportGspGroupCode = inv.getString("exportGspGroupCode");
 			String exportHhdcContractName = inv
 					.getString("export-hhdc-contract-name");
 			String exportHhdcAccountReference = inv
@@ -624,11 +628,11 @@ public class Site extends PersistentEntity {
 			String sourceCode = inv.getString("source-code");
 			try {
 				Supply supply = insertSupply(name, meterSerialNumber,
-						importMpanStr, importSscCode, importHhdcContractName,
+						importMpanStr, importSscCode, importGspGroupCode, importHhdcContractName,
 						importHhdcAccountReference, importSupplierContractName,
 						importSupplierAccountReference,
 						importAgreedSupplyCapacityStr, exportMpanStr,
-						exportSscCode, exportHhdcContractName,
+						exportSscCode, exportGspGroupCode, exportHhdcContractName,
 						exportHhdcAccountReference, exportSupplierContractName,
 						exportSupplierAccountReference,
 						exportAgreedSupplyCapacityStr,

@@ -112,13 +112,13 @@ public class Mpan extends PersistentEntity {
 	Mpan() {
 	}
 
-	Mpan(SupplyGeneration supplyGeneration, String mpanStr, Ssc ssc,
+	Mpan(SupplyGeneration supplyGeneration, String mpanStr, Ssc ssc, GspGroup gspGroup,
 			Account hhdcAccount, Account supplierAccount, boolean hasImportKwh,
 			boolean hasImportKvarh, boolean hasExportKwh,
 			boolean hasExportKvarh, int agreedSupplyCapacity)
 			throws HttpException {
 		this.supplyGeneration = supplyGeneration;
-		update(mpanStr, ssc, hhdcAccount, supplierAccount, hasImportKwh,
+		update(mpanStr, ssc, gspGroup, hhdcAccount, supplierAccount, hasImportKwh,
 				hasImportKvarh, hasExportKwh, hasExportKvarh,
 				agreedSupplyCapacity);
 	}
@@ -306,7 +306,7 @@ public class Mpan extends PersistentEntity {
 		setAgreedSupplyCapacity(agreedSupplyCapacity);
 	}
 
-	public void update(String mpan, Ssc ssc, Account hhdcAccount,
+	public void update(String mpan, Ssc ssc, GspGroup gspGroup, Account hhdcAccount,
 			Account supplierAccount, boolean hasImportKwh,
 			boolean hasImportKvarh, boolean hasExportKwh,
 			boolean hasExportKvarh, int agreedSupplyCapacity)
@@ -325,7 +325,7 @@ public class Mpan extends PersistentEntity {
 		Pc pc = Pc.getPc(mpanRaw.getPcCode());
 		Llfc llfc = dso.getLlfc(mpanRaw.getLlfcCode());
 		Mtc mtc = Mtc.getMtc(dso, mpanRaw.getMtcCode());
-		MpanTop mpanTop = MpanTop.getMpanTop(pc, mtc, llfc, ssc,
+		MpanTop mpanTop = MpanTop.getMpanTop(pc, mtc, llfc, ssc, gspGroup,
 				supplyGeneration.getFinishDate() == null ? new Date()
 						: supplyGeneration.getFinishDate().getDate());
 

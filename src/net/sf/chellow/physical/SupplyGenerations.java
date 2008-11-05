@@ -89,7 +89,8 @@ public class SupplyGenerations extends EntityList {
 		for (SupplyGeneration supplyGeneration : supply.getGenerations()) {
 			generationsElement.appendChild(supplyGeneration.toXml(doc,
 					new XmlTree("mpans", new XmlTree("core").put("top",
-							new XmlTree("pc").put("llfc").put("mtc")))));
+							new XmlTree("pc").put("llfc").put("mtc").put(
+									"gsp-group")))));
 		}
 		source.appendChild(new MonadDate().toXml(doc));
 		source.appendChild(MonadDate.getMonthsXml(doc));

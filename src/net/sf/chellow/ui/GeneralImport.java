@@ -27,6 +27,7 @@ import net.sf.chellow.monad.XmlTree;
 import net.sf.chellow.monad.types.MonadDate;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
+import net.sf.chellow.physical.GspGroup;
 import net.sf.chellow.physical.HhEndDate;
 import net.sf.chellow.physical.Meter;
 import net.sf.chellow.physical.Mpan;
@@ -165,7 +166,7 @@ public class GeneralImport extends Thread implements Urlable, XmlDescriber {
 				}
 			} else if (type.equals("supply")) {
 				if (action.equals("insert")) {
-					if (values.length < 21) {
+					if (values.length < 23) {
 						throw new UserException(
 								"There aren't enough fields in this row");
 					}
@@ -187,57 +188,63 @@ public class GeneralImport extends Thread implements Urlable, XmlDescriber {
 					String importSscCode = values[8];
 					csvElement
 							.appendChild(getField("Import SSC", importSscCode));
-					String importAgreedSupplyCapacityStr = values[9];
+					String importGspGroupCode = values[9];
+					csvElement.appendChild(getField("Import GSP Group",
+							importGspGroupCode));
+					String importAgreedSupplyCapacityStr = values[10];
 					csvElement.appendChild(getField(
 							"Import Agreed Supply Capacity",
 							importAgreedSupplyCapacityStr));
-					String importHhdcContractName = values[10];
+					String importHhdcContractName = values[11];
 					csvElement.appendChild(getField("Import HHDC Contract",
 							importHhdcContractName));
-					String importHhdcAccountReference = values[11];
+					String importHhdcAccountReference = values[12];
 					csvElement.appendChild(getField("Import HHDC Account",
 							importHhdcAccountReference));
-					String importSupplierContractName = values[12];
+					String importSupplierContractName = values[13];
 					csvElement.appendChild(getField(
 							"Import supplier contract name",
 							importSupplierContractName));
-					String importSupplierAccountReference = values[13];
+					String importSupplierAccountReference = values[14];
 					csvElement.appendChild(getField(
 							"Import supplier account reference",
 							importSupplierAccountReference));
-					String exportMpanStr = values[14];
+					String exportMpanStr = values[15];
 					csvElement.appendChild(getField("Export MPAN",
 							exportMpanStr));
-					String exportSscCode = values[15];
+					String exportSscCode = values[16];
 					csvElement
 							.appendChild(getField("Export SSC", exportSscCode));
-					String exportAgreedSupplyCapacityStr = values[16];
+					String exportGspGroupCode = values[17];
+					csvElement.appendChild(getField("Export GSP Group",
+							exportGspGroupCode));
+					String exportAgreedSupplyCapacityStr = values[18];
 					csvElement.appendChild(getField(
 							"Export Agreed Supply Capacity",
 							exportAgreedSupplyCapacityStr));
-					String exportHhdcContractName = values[17];
+					String exportHhdcContractName = values[19];
 					csvElement.appendChild(getField("Export HHDC contract",
 							exportHhdcContractName));
-					String exportHhdcAccountReference = values[18];
+					String exportHhdcAccountReference = values[20];
 					csvElement.appendChild(getField("Export HHDC account",
 							exportHhdcAccountReference));
-					String exportSupplierContractName = values[19];
+					String exportSupplierContractName = values[21];
 					csvElement.appendChild(getField(
 							"Export supplier contract name",
 							exportSupplierContractName));
-					String exportSupplierAccountReference = values[20];
+					String exportSupplierAccountReference = values[22];
 					csvElement.appendChild(getField(
 							"Export supplier account reference",
 							exportSupplierAccountReference));
 					Site site = Site.getSite(siteCode);
 					site.insertSupply(supplyName, meterSerialNumber,
-							importMpanStr, importSscCode,
+							importMpanStr, importSscCode, importGspGroupCode,
 							importHhdcContractName, importHhdcAccountReference,
 							importSupplierContractName,
 							importSupplierAccountReference,
 							importAgreedSupplyCapacityStr, exportMpanStr,
-							exportSscCode, exportHhdcContractName,
-							exportHhdcAccountReference,
+							exportSscCode, exportGspGroupCode,
+							exportHhdcContractName, exportHhdcAccountReference,
 							exportSupplierContractName,
 							exportSupplierAccountReference,
 							exportAgreedSupplyCapacityStr, HhEndDate
@@ -313,7 +320,11 @@ public class GeneralImport extends Thread implements Urlable, XmlDescriber {
 					csvElement
 							.appendChild(getField("Import SSC", importSscCode));
 					Ssc importSsc = null;
-					String importAgreedSupplyCapacityStr = values[9];
+					String importGspGroupCode = values[9];
+					csvElement.appendChild(getField("Import GSP Group",
+							importGspGroupCode));
+					GspGroup importGspGroup = null;
+					String importAgreedSupplyCapacityStr = values[10];
 					csvElement.appendChild(getField(
 							"Import Agreed Supply Capacity",
 							importAgreedSupplyCapacityStr));
@@ -340,6 +351,17 @@ public class GeneralImport extends Thread implements Urlable, XmlDescriber {
 							importSsc = importSscCode.length() == 0 ? null
 									: Ssc.getSsc(importSscCode);
 						}
+						if (importGspGroupCode.equals(NO_CHANGE)) {
+							if (existingImportMpan == null) {
+								throw new UserException(
+										"There isn't an existing import MPAN.");
+							} else {
+								importGspGroup = existingImportMpan.getTop()
+										.getGspGroup();
+							}
+						} else {
+							importGspGroup = GspGroup.getGspGroup(importSscCode);
+						}
 						if (importAgreedSupplyCapacityStr.equals(NO_CHANGE)) {
 							if (existingImportMpan == null) {
 								throw new UserException(
@@ -358,14 +380,14 @@ public class GeneralImport extends Thread implements Urlable, XmlDescriber {
 												+ e.getMessage());
 							}
 						}
-						String importHasImportKwhStr = values[10];
+						String importHasImportKwhStr = values[11];
 						csvElement.appendChild(getField("Import is import kWh",
 								importHasImportKwhStr));
 						importHasImportKwh = importHasImportKwhStr
 								.equals(NO_CHANGE) ? existingImportMpan == null ? false
 								: existingImportMpan.getHasImportKwh()
 								: Boolean.parseBoolean(importHasImportKwhStr);
-						String importHasImportKvarhStr = values[11];
+						String importHasImportKvarhStr = values[12];
 						csvElement.appendChild(getField(
 								"Import is import kVArh",
 								importHasImportKvarhStr));
@@ -373,14 +395,14 @@ public class GeneralImport extends Thread implements Urlable, XmlDescriber {
 								.equals(NO_CHANGE) ? existingImportMpan == null ? false
 								: existingImportMpan.getHasImportKvarh()
 								: Boolean.parseBoolean(importHasImportKvarhStr);
-						String importHasExportKwhStr = values[12];
+						String importHasExportKwhStr = values[13];
 						csvElement.appendChild(getField("Import is export kWh",
 								importHasExportKwhStr));
 						importHasExportKwh = importHasExportKwhStr
 								.equals(NO_CHANGE) ? existingImportMpan == null ? false
 								: existingImportMpan.getHasExportKwh()
 								: Boolean.parseBoolean(importHasExportKwhStr);
-						String importHasExportKvarhStr = values[13];
+						String importHasExportKvarhStr = values[14];
 						csvElement.appendChild(getField(
 								"Import is export kVArh",
 								importHasExportKvarhStr));
@@ -403,7 +425,7 @@ public class GeneralImport extends Thread implements Urlable, XmlDescriber {
 							 * importHhdce = Provider.getProvider(
 							 * importHhdceStr, MarketRole.HHDC); }
 							 */
-							String importHhdcContractName = values[14];
+							String importHhdcContractName = values[15];
 							csvElement.appendChild(getField(
 									"Import HHDC Contract",
 									importHhdcContractName));
@@ -425,7 +447,7 @@ public class GeneralImport extends Thread implements Urlable, XmlDescriber {
 								importHhdcContract = HhdcContract
 										.getHhdcContract(importHhdcContractName);
 							}
-							String importHhdcAccountReference = values[15];
+							String importHhdcAccountReference = values[16];
 							csvElement.appendChild(getField(
 									"Import HHDC account reference",
 									importHhdcAccountReference));
@@ -446,7 +468,7 @@ public class GeneralImport extends Thread implements Urlable, XmlDescriber {
 										.getAccount(importHhdcAccountReference);
 							}
 						}
-						String importContractSupplierName = values[16];
+						String importContractSupplierName = values[17];
 						csvElement.appendChild(getField(
 								"Import Supplier Contract",
 								importContractSupplierName));
@@ -468,7 +490,7 @@ public class GeneralImport extends Thread implements Urlable, XmlDescriber {
 							importSupplierContract = SupplierContract
 									.getSupplierContract(importContractSupplierName);
 						}
-						String importSupplierAccountReference = values[17];
+						String importSupplierAccountReference = values[18];
 						csvElement.appendChild(getField(
 								"Import Supplier Account Reference",
 								importSupplierAccountReference));
@@ -489,16 +511,18 @@ public class GeneralImport extends Thread implements Urlable, XmlDescriber {
 									.getAccount(importSupplierAccountReference);
 						}
 					}
-					String exportMpanStr = values[18];
+					String exportMpanStr = values[19];
 					csvElement
 							.appendChild(getField("Eport MPAN", exportMpanStr));
-					String exportSscCode = values[19];
+					String exportSscCode = values[20];
 					Ssc exportSsc = null;
+					String exportGspGroupCode = values[21];
+					GspGroup exportGspGroup = null;
 					boolean exportHasImportKwh = false;
 					boolean exportHasImportKvarh = false;
 					boolean exportHasExportKwh = false;
 					boolean exportHasExportKvarh = false;
-					String exportAgreedSupplyCapacityStr = values[20];
+					String exportAgreedSupplyCapacityStr = values[22];
 					csvElement.appendChild(getField(
 							"Export Agreed Supply Capacity",
 							exportAgreedSupplyCapacityStr));
@@ -524,6 +548,18 @@ public class GeneralImport extends Thread implements Urlable, XmlDescriber {
 							exportSsc = exportSscCode.length() == 0 ? null
 									: Ssc.getSsc(exportSscCode);
 						}
+						if (exportGspGroupCode.equals(NO_CHANGE)) {
+							if (existingExportMpan == null) {
+								throw new UserException(
+										"There isn't an existing export MPAN.");
+							} else {
+								exportGspGroup = existingExportMpan.getTop()
+										.getGspGroup();
+							}
+						} else {
+							exportGspGroup = GspGroup
+									.getGspGroup(exportGspGroupCode);
+						}
 						if (exportAgreedSupplyCapacityStr.equals(NO_CHANGE)) {
 							if (existingExportMpan == null) {
 								throw new UserException(
@@ -542,14 +578,14 @@ public class GeneralImport extends Thread implements Urlable, XmlDescriber {
 												+ e.getMessage());
 							}
 						}
-						String exportHasImportKwhStr = values[21];
+						String exportHasImportKwhStr = values[23];
 						csvElement.appendChild(getField("Export is import kWh",
 								exportHasImportKwhStr));
 						exportHasImportKwh = exportHasImportKwhStr
 								.equals(NO_CHANGE) ? existingExportMpan == null ? false
 								: existingExportMpan.getHasImportKwh()
 								: Boolean.parseBoolean(exportHasImportKwhStr);
-						String exportHasImportKvarhStr = values[22];
+						String exportHasImportKvarhStr = values[24];
 						csvElement.appendChild(getField(
 								"Export is import kVArh",
 								exportHasImportKvarhStr));
@@ -557,14 +593,14 @@ public class GeneralImport extends Thread implements Urlable, XmlDescriber {
 								.equals(NO_CHANGE) ? existingExportMpan == null ? false
 								: existingExportMpan.getHasImportKvarh()
 								: Boolean.parseBoolean(exportHasImportKvarhStr);
-						String exportHasExportKwhStr = values[23];
+						String exportHasExportKwhStr = values[25];
 						csvElement.appendChild(getField("Export is export kWh",
 								exportHasExportKwhStr));
 						exportHasExportKwh = exportHasExportKwhStr
 								.equals(NO_CHANGE) ? existingExportMpan == null ? false
 								: existingExportMpan.getHasExportKwh()
 								: Boolean.parseBoolean(exportHasExportKwhStr);
-						String exportHasExportKvarhStr = values[24];
+						String exportHasExportKvarhStr = values[26];
 						csvElement.appendChild(getField(
 								"Export is export kVArh",
 								exportHasExportKvarhStr));
@@ -575,7 +611,7 @@ public class GeneralImport extends Thread implements Urlable, XmlDescriber {
 						HhdcContract exportHhdcContract = null;
 						if (exportHasImportKwh || exportHasImportKvarh
 								|| exportHasExportKwh || exportHasExportKvarh) {
-							String exportHhdcContractName = values[25];
+							String exportHhdcContractName = values[27];
 							if (exportHhdcContractName.equals(NO_CHANGE)) {
 								if (existingExportMpan == null) {
 									throw new UserException(
@@ -594,7 +630,7 @@ public class GeneralImport extends Thread implements Urlable, XmlDescriber {
 								exportHhdcContract = HhdcContract
 										.getHhdcContract(exportHhdcContractName);
 							}
-							String exportHhdcAccountReference = values[26];
+							String exportHhdcAccountReference = values[28];
 							csvElement.appendChild(getField(
 									"Export HHDC account",
 									exportHhdcAccountReference));
@@ -616,7 +652,7 @@ public class GeneralImport extends Thread implements Urlable, XmlDescriber {
 										.getAccount(exportHhdcAccountReference);
 							}
 						}
-						String exportContractSupplierName = values[27];
+						String exportContractSupplierName = values[29];
 						csvElement.appendChild(getField(
 								"Export Supplier Contract",
 								exportContractSupplierName));
@@ -638,7 +674,7 @@ public class GeneralImport extends Thread implements Urlable, XmlDescriber {
 							exportSupplierContract = SupplierContract
 									.getSupplierContract(exportContractSupplierName);
 						}
-						String exportSupplierAccountReference = values[28];
+						String exportSupplierAccountReference = values[30];
 						csvElement.appendChild(getField(
 								"Export Supplier Account",
 								exportSupplierAccountReference));
@@ -655,14 +691,15 @@ public class GeneralImport extends Thread implements Urlable, XmlDescriber {
 						}
 					}
 					supplyGeneration.addOrUpdateMpans(importMpanStr, importSsc,
-							importHhdcAccount, importSupplierAccount,
-							importHasImportKwh, importHasImportKvarh,
-							importHasExportKwh, importHasExportKvarh,
-							importAgreedSupplyCapacity, exportMpanStr,
-							exportSsc, exportHhdcAccount,
-							exportAccountSupplier, exportHasImportKwh,
-							exportHasImportKvarh, exportHasExportKwh,
-							exportHasExportKvarh, exportAgreedSupplyCapacity);
+							importGspGroup, importHhdcAccount,
+							importSupplierAccount, importHasImportKwh,
+							importHasImportKvarh, importHasExportKwh,
+							importHasExportKvarh, importAgreedSupplyCapacity,
+							exportMpanStr, exportSsc, exportGspGroup,
+							exportHhdcAccount, exportAccountSupplier,
+							exportHasImportKwh, exportHasImportKvarh,
+							exportHasExportKwh, exportHasExportKvarh,
+							exportAgreedSupplyCapacity);
 				}
 			} else if (type.equals("supplier-account")) {
 				if (values.length < 4) {

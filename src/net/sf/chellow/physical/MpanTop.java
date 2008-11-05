@@ -70,10 +70,11 @@ public class MpanTop extends PersistentEntity {
 	 * date).list(); }
 	 */
 	static public MpanTop findMpanTop(Pc pc, Mtc mtc, Llfc llfc, Ssc ssc,
-			Date date) throws HttpException {
+			GspGroup group, Date date) throws HttpException {
 		Criteria criteria = Hiber.session().createCriteria(MpanTop.class).add(
 				Restrictions.eq("pc", pc)).add(Restrictions.eq("mtc", mtc))
-				.add(Restrictions.eq("llfc", llfc)).add(
+				.add(Restrictions.eq("gspGroup", group)).add(
+						Restrictions.eq("llfc", llfc)).add(
 						Restrictions.le("validFrom", date)).add(
 						Restrictions.or(Restrictions.isNull("validTo"),
 								Restrictions.ge("validTo", date)));
@@ -94,8 +95,8 @@ public class MpanTop extends PersistentEntity {
 	}
 
 	static public MpanTop getMpanTop(Pc pc, Mtc mtc, Llfc llfc, Ssc ssc,
-			Date date) throws HttpException {
-		MpanTop mpanTop = findMpanTop(pc, mtc, llfc, ssc, date);
+			GspGroup group, Date date) throws HttpException {
+		MpanTop mpanTop = findMpanTop(pc, mtc, llfc, ssc, group, date);
 		if (mpanTop == null) {
 			throw new UserException(
 					"There is no MPAN top line with Profile Class: " + pc
@@ -157,7 +158,6 @@ public class MpanTop extends PersistentEntity {
 				if (!dsoGroupMap.containsKey(dsoCode)) {
 					dsoGroupMap.put(dsoCode, new ArrayList<List<Object>>());
 				}
-				Debug.print("dso code : " + dsoCode);
 				List<List<Object>> groupsList = dsoGroupMap.get(dsoCode);
 				List<Object> groupList = new ArrayList<Object>();
 				groupsList.add(groupList);
@@ -181,7 +181,6 @@ public class MpanTop extends PersistentEntity {
 						.toDate(values[4]));
 				Date validTo = mdd.toDate(values[5]);
 				String key = gspCode + sscCode;
-				Debug.print("Adding key " + key);
 				if (!groupSscMap.containsKey(key)) {
 					groupSscMap.put(key, new HashMap<String, List<Object>>());
 				}
@@ -238,7 +237,6 @@ public class MpanTop extends PersistentEntity {
 							validFrom);
 					Date groupTo = Mdd
 							.minDate((Date) groupList.get(2), validTo);
-					Debug.print("Key " + groupCode + ssc.getCode());
 					for (Entry<String, List<Object>> entrySet : groupSscMap
 							.get(groupCode + ssc.getCode()).entrySet()) {
 						String pcCode = entrySet.getKey();
@@ -269,7 +267,6 @@ public class MpanTop extends PersistentEntity {
 				Date validTo = mdd.toDate(values[6]);
 				Llfc llfc = dso.getLlfc(values[4], validFrom);
 				Mtc mtc = Mtc.getMtc(dso, values[0]);
-				Debug.print("ptcode " + participantCode);
 				for (List<Object> groupList : dsoGroupMap.get(participantCode)) {
 					GspGroup group = GspGroup.getGspGroup((String) groupList
 							.get(0));
