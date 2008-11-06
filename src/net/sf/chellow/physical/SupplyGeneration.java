@@ -637,8 +637,10 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 		source.appendChild(generationElement);
 		for (Mpan mpan : mpans) {
 			Element mpanElement = (Element) mpan.toXml(doc, new XmlTree("core")
-					.put("top", new XmlTree("mtc").put("llfc")).put(
-							"hhdcAccount",
+					.put(
+							"top",
+							new XmlTree("mtc").put("llfc").put("ssc").put(
+									"gspGroup")).put("hhdcAccount",
 							new XmlTree("contract", new XmlTree("party"))).put(
 							"supplierAccount",
 							new XmlTree("contract", new XmlTree("party"))));
@@ -677,6 +679,10 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 		for (Pc pc : (List<Pc>) Hiber.session().createQuery(
 				"from Pc pc order by pc.code").list()) {
 			source.appendChild(pc.toXml(doc));
+		}
+		for (GspGroup group : (List<GspGroup>) Hiber.session().createQuery(
+				"from GspGroup group order by group.code").list()) {
+			source.appendChild(group.toXml(doc));
 		}
 		return doc;
 	}

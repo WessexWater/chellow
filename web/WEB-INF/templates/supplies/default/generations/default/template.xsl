@@ -443,8 +443,6 @@
 											<xsl:for-each
 												select="/source/pc">
 												<option value="{@id}">
-													<xsl:value-of
-														select="concat(@code, ' - ', @description)" />
 													<xsl:choose>
 														<xsl:when
 															test="/source/request/parameter[@name='import-pc-id']">
@@ -462,6 +460,8 @@
 															</xsl:if>
 														</xsl:otherwise>
 													</xsl:choose>
+													<xsl:value-of
+														select="concat(@code, ' - ', @description)" />
 												</option>
 											</xsl:for-each>
 										</select>
@@ -538,6 +538,62 @@
 														</xsl:choose>
 											</xsl:attribute>
 										</input>
+									</label>
+									<br />
+									<label>
+										<xsl:value-of select="'SSC '" />
+										<input name="import-ssc-code"
+											size="16">
+											<xsl:attribute
+												name="value">
+													<xsl:choose>
+														<xsl:when
+														test="/source/request/parameter[@name='import-ssc-code']">
+															<xsl:value-of
+															select="/source/request/parameter[@name='import-ssc-code']/value">
+															</xsl:value-of>
+														</xsl:when>
+														<xsl:otherwise>
+																<xsl:value-of
+															select="/source/supply-generation/mpan[mpan-top/llfc/@is-import='true']/ssc/@code" />
+														</xsl:otherwise>
+														</xsl:choose>
+											</xsl:attribute>
+										</input>
+									</label>
+									<br />
+									<xsl:value-of
+										select="concat(' ', /source/supply-generation/mpan[mpan-top/llfc/@is-import='true']/mpan-top/ssc/@description)" />
+									<label>
+										<xsl:value-of
+											select="'GSP Group '" />
+										<select
+											name="import-gsp-group-id">
+											<xsl:for-each
+												select="/source/gsp-group">
+												<option value="{@id}">
+													<xsl:choose>
+														<xsl:when
+															test="/source/request/parameter[@name='import-gsp-group-id']">
+															<xsl:if
+																test="@id = /source/request/parameter[@name='import-gsp-group-id']/value">
+																<xsl:attribute
+																	name="selected" />
+															</xsl:if>
+														</xsl:when>
+														<xsl:otherwise>
+															<xsl:if
+																test="@id = /source/supply-generation/mpan[mpan-top/llfc/@is-import='true']/mpan-top/gsp-group/@id">
+																<xsl:attribute
+																	name="selected" />
+															</xsl:if>
+														</xsl:otherwise>
+													</xsl:choose>
+													<xsl:value-of
+														select="concat(@code, ' ', @description)" />
+												</option>
+											</xsl:for-each>
+										</select>
 									</label>
 									<br />
 									<br />
@@ -1028,8 +1084,6 @@
 											<xsl:for-each
 												select="/source/pc">
 												<option value="{@id}">
-													<xsl:value-of
-														select="concat(@code, ' - ', @description)" />
 													<xsl:choose>
 														<xsl:when
 															test="/source/request/parameter[@name='export-pc-id']">
@@ -1047,6 +1101,8 @@
 															</xsl:if>
 														</xsl:otherwise>
 													</xsl:choose>
+													<xsl:value-of
+														select="concat(@code, ' - ', @description)" />
 												</option>
 											</xsl:for-each>
 										</select>
@@ -1076,7 +1132,6 @@
 									</label>
 									<xsl:value-of
 										select="concat(' ', /source/supply-generation/mpan[mpan-top/llfc/@is-import='false']/mpan-top/mtc/@description)" />
-
 									<br />
 									<label>
 										<xsl:value-of
@@ -1123,6 +1178,62 @@
 														</xsl:choose>
 											</xsl:attribute>
 										</input>
+									</label>
+									<br />
+									<label>
+										<xsl:value-of select="'SSC '" />
+										<input name="export-ssc-code"
+											size="16">
+											<xsl:attribute
+												name="value">
+													<xsl:choose>
+														<xsl:when
+														test="/source/request/parameter[@name='export-ssc-code']">
+															<xsl:value-of
+															select="/source/request/parameter[@name='export-ssc-code']/value">
+															</xsl:value-of>
+														</xsl:when>
+														<xsl:otherwise>
+																<xsl:value-of
+															select="/source/supply-generation/mpan[mpan-top/llfc/@is-import='false']/ssc/@code" />
+														</xsl:otherwise>
+														</xsl:choose>
+											</xsl:attribute>
+										</input>
+									</label>
+									<xsl:value-of
+										select="concat(' ', /source/supply-generation/mpan[mpan-top/llfc/@is-import='false']/mpan-top/ssc/@description)" />
+									<br />
+									<label>
+										<xsl:value-of
+											select="'GSP Group '" />
+										<select
+											name="export-gsp-group-id">
+											<xsl:for-each
+												select="/source/gsp-group">
+												<option value="{@id}">
+													<xsl:choose>
+														<xsl:when
+															test="/source/request/parameter[@name='export-gsp-group-id']">
+															<xsl:if
+																test="@id = /source/request/parameter[@name='export-gsp-group-id']/value">
+																<xsl:attribute
+																	name="selected" />
+															</xsl:if>
+														</xsl:when>
+														<xsl:otherwise>
+															<xsl:if
+																test="@id = /source/supply-generation/mpan[mpan-top/llfc/@is-import='false']/mpan-top/gsp-group/@id">
+																<xsl:attribute
+																	name="selected" />
+															</xsl:if>
+														</xsl:otherwise>
+													</xsl:choose>
+													<xsl:value-of
+														select="concat(@code, ' ', @description)" />
+												</option>
+											</xsl:for-each>
+										</select>
 									</label>
 									<br />
 									<br />
