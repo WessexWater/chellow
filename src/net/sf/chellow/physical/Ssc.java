@@ -27,18 +27,19 @@ import org.w3c.dom.Element;
 
 public class Ssc extends PersistentEntity {
 	public static Ssc getSsc(String code) throws HttpException {
-		// canonicalize
-		//int codeInt = Integer.parseInt(code);
-		//NumberFormat numberFormat = new DecimalFormat("0000");
-		//String codeStr = numberFormat.format(codeInt);
-		Ssc ssc = (Ssc) Hiber.session().createQuery(
-				"from Ssc ssc where ssc.code = :code").setInteger("code",
-				Integer.parseInt(code)).uniqueResult();
-		if (ssc == null) {
-			throw new UserException("There isn't an SSC with code: " + code
-					+ ".");
+		try {
+			Ssc ssc = (Ssc) Hiber.session().createQuery(
+					"from Ssc ssc where ssc.code = :code").setInteger("code",
+					Integer.parseInt(code)).uniqueResult();
+			if (ssc == null) {
+				throw new UserException("There isn't an SSC with code: " + code
+						+ ".");
+			}
+			return ssc;
+		} catch (NumberFormatException e) {
+			throw new UserException("An SCC code must be an integer. "
+					+ e.getMessage());
 		}
-		return ssc;
 	}
 
 	public static Ssc getSsc(long id) throws HttpException {

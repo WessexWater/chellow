@@ -25,8 +25,7 @@
 						<span class="logo">Chellow</span>
 					</a>
 					&gt;
-					<a
-						href="{/source/request/@context-path}/sites/">
+					<a href="{/source/request/@context-path}/sites/">
 						<xsl:value-of select="'Sites'" />
 					</a>
 					&gt;
@@ -319,6 +318,26 @@
 									<br />
 									<label>
 										<xsl:value-of
+											select="'GSP Group '" />
+										<select
+											name="import-gsp-group-id">
+											<xsl:for-each
+												select="/source/gsp-group">
+												<option value="{@id}">
+													<xsl:if
+														test="@id = /source/request/parameter[@name='import-gsp-group-id']/value">
+														<xsl:attribute
+															name="selected" />
+													</xsl:if>
+													<xsl:value-of
+														select="concat(@code, ' ', @description)" />
+												</option>
+											</xsl:for-each>
+										</select>
+									</label>
+									<br />
+									<label>
+										<xsl:value-of
 											select="'Supply Capacity '" />
 										<input
 											name="import-supply-capacity"
@@ -354,6 +373,26 @@
 										<xsl:value-of select="'SSC '" />
 										<input name="export-ssc"
 											value="{/source/request/parameter[@name = 'export-ssc']/value}" />
+									</label>
+									<br />
+									<label>
+										<xsl:value-of
+											select="'GSP Group '" />
+										<select
+											name="export-gsp-group-id">
+											<xsl:for-each
+												select="/source/gsp-group">
+												<option value="{@id}">
+													<xsl:if
+														test="@id = /source/request/parameter[@name='export-gsp-group-id']/value">
+														<xsl:attribute
+															name="selected" />
+													</xsl:if>
+													<xsl:value-of
+														select="concat(@code, ' ', @description)" />
+												</option>
+											</xsl:for-each>
+										</select>
 									</label>
 									<br />
 									<label>

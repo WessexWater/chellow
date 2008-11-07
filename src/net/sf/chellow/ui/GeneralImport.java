@@ -237,17 +237,85 @@ public class GeneralImport extends Thread implements Urlable, XmlDescriber {
 							"Export supplier account reference",
 							exportSupplierAccountReference));
 					Site site = Site.getSite(siteCode);
+					Integer importAgreedSupplyCapacity = null;
+					HhdcContract importHhdcContract = null;
+					Account importHhdcAccount = null;
+					SupplierContract importSupplierContract = null;
+					Account importSupplierAccount = null;
+					Ssc importSsc = null;
+					GspGroup importGspGroup = null;
+
+					if (importMpanStr != null && importMpanStr.length() != 0) {
+						importSsc = importSscCode.trim().length() == 0 ? null
+								: Ssc.getSsc(importSscCode);
+						importGspGroup = GspGroup
+								.getGspGroup(importGspGroupCode);
+						try {
+							importAgreedSupplyCapacity = new Integer(
+									importAgreedSupplyCapacityStr);
+						} catch (NumberFormatException e) {
+							throw new UserException(
+									"The import supply capacity must be an integer."
+											+ e.getMessage());
+						}
+						importHhdcContract = importHhdcContractName.trim()
+								.length() == 0 ? null : HhdcContract
+								.getHhdcContract(importHhdcContractName);
+						if (importHhdcContract != null) {
+							importHhdcAccount = importHhdcContract
+									.getAccount(importHhdcAccountReference);
+						}
+						importSupplierContract = SupplierContract
+								.getSupplierContract(importSupplierContractName);
+						importSupplierAccount = importSupplierContract
+								.getAccount(importSupplierAccountReference);
+					}
+					HhdcContract exportHhdcContract = null;
+					Account exportHhdcAccount = null;
+					SupplierContract exportSupplierContract = null;
+					Account exportAccountSupplier = null;
+					Integer exportAgreedSupplyCapacity = null;
+					Ssc exportSsc = null;
+					GspGroup exportGspGroup = null;
+					if (exportMpanStr != null
+							&& exportMpanStr.trim().length() != 0) {
+						exportSsc = exportSscCode.trim().length() == 0 ? null
+								: Ssc.getSsc(exportSscCode);
+						exportGspGroup = GspGroup
+								.getGspGroup(exportGspGroupCode);
+						try {
+							exportAgreedSupplyCapacity = new Integer(
+									exportAgreedSupplyCapacityStr);
+						} catch (NumberFormatException e) {
+							throw new UserException(
+									"The export agreed supply capacity must be an integer."
+											+ e.getMessage());
+						}
+						exportHhdcContract = exportHhdcContractName.length() == 0 ? null
+								: HhdcContract
+										.getHhdcContract(exportHhdcContractName);
+						if (exportHhdcContract != null) {
+							exportHhdcAccount = exportHhdcContract
+									.getAccount(exportHhdcAccountReference);
+						}
+						exportSupplierContract = SupplierContract
+								.getSupplierContract(exportSupplierContractName);
+						exportAccountSupplier = exportSupplierContract
+								.getAccount(exportSupplierAccountReference);
+					}
 					site.insertSupply(supplyName, meterSerialNumber,
-							importMpanStr, importSscCode, importGspGroupCode,
-							importHhdcContractName, importHhdcAccountReference,
-							importSupplierContractName,
-							importSupplierAccountReference,
-							importAgreedSupplyCapacityStr, exportMpanStr,
-							exportSscCode, exportGspGroupCode,
-							exportHhdcContractName, exportHhdcAccountReference,
-							exportSupplierContractName,
-							exportSupplierAccountReference,
-							exportAgreedSupplyCapacityStr, HhEndDate
+							importMpanStr, importSsc, importGspGroup,
+							importHhdcAccount, importSupplierAccount,
+							importHhdcAccount == null ? false : true,
+							importHhdcAccount == null ? false : true, false,
+							importHhdcAccount == null ? false : true,
+							importAgreedSupplyCapacity, exportMpanStr,
+							exportSsc, exportGspGroup, exportHhdcAccount,
+							exportAccountSupplier, false,
+							exportHhdcAccount == null ? false : true,
+							exportHhdcAccount == null ? false : true,
+							exportHhdcAccount == null ? false : true,
+							exportAgreedSupplyCapacity, HhEndDate
 									.roundUp(new MonadDate(startDateStr)
 											.getDate()), sourceCode);
 				} else if (action.equals("update")) {
@@ -360,7 +428,8 @@ public class GeneralImport extends Thread implements Urlable, XmlDescriber {
 										.getGspGroup();
 							}
 						} else {
-							importGspGroup = GspGroup.getGspGroup(importSscCode);
+							importGspGroup = GspGroup
+									.getGspGroup(importSscCode);
 						}
 						if (importAgreedSupplyCapacityStr.equals(NO_CHANGE)) {
 							if (existingImportMpan == null) {

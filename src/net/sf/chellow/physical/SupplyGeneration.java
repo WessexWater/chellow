@@ -756,14 +756,14 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 					String importLlfcCodeStr = inv
 							.getString("import-llfc-code");
 					String importMtcCode = inv.getString("import-mtc-code");
+					String importSscCode = inv.getString("import-ssc-code");
 					Long importGspGroupId = inv.getLong("import-gsp-group-id");
 					if (!inv.isValid()) {
 						throw new UserException(document());
 					}
 					Pc importPc = Pc.getPc(importPcId);
-					if (inv.hasParameter("import-ssc-code")) {
-						importSsc = Ssc
-								.getSsc(inv.getString("import-ssc-code"));
+					if (importSscCode.trim().length() > 0) {
+						importSsc = Ssc.getSsc(importSscCode);
 					}
 					importGspGroup = GspGroup.getGspGroup(importGspGroupId);
 					importMpanStr = importPc.codeAsString() + importMtcCode
@@ -819,12 +819,12 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 					Long exportPcId = inv.getLong("export-pc-id");
 					String llfcCodeStr = inv.getString("export-llfc-code");
 					String exportMtcCode = inv.getString("export-mtc-code");
+					String exportSscCode = inv.getString("export-ssc-code");
 					if (!inv.isValid()) {
 						throw new UserException();
 					}
-					if (inv.hasParameter("export-ssc-code")) {
-						exportSsc = Ssc
-								.getSsc(inv.getString("export-ssc-code"));
+					if (exportSscCode.trim().length() > 0) {
+						exportSsc = Ssc.getSsc(exportSscCode);
 					}
 					Long exportGspGroupId = inv.getLong("export-gsp-group-id");
 					Pc exportPc = Pc.getPc(exportPcId);
