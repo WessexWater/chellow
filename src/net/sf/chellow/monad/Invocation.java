@@ -421,8 +421,7 @@ public class Invocation {
 	}
 
 	@SuppressWarnings("unchecked")
-	public Node requestXml(Document doc) throws InternalException,
-			DesignerException {
+	public Element requestXml(Document doc) throws HttpException {
 		Element requestElement = doc.createElement("request");
 		Map<String, String[]> parameterMap = getRequest().getParameterMap();
 
@@ -469,7 +468,7 @@ public class Invocation {
 	}
 
 	public List<HttpParameter> getParameters(ParameterName[] parameterNames)
-			throws HttpException, InternalException {
+			throws HttpException {
 		List<HttpParameter> parameters = new ArrayList<HttpParameter>();
 		if (parameterNames != null) {
 			for (int i = 0; i < parameterNames.length; i++) {
@@ -488,13 +487,11 @@ public class Invocation {
 		return parameters;
 	}
 
-	public void sendCreated(MonadUri uri) throws InternalException,
-			DesignerException, DeployerException, HttpException {
+	public void sendCreated(MonadUri uri) throws HttpException {
 		sendCreated(null, uri);
 	}
 
-	public void sendBadRequest(String message) throws InternalException,
-			DesignerException, DeployerException, HttpException {
+	public void sendBadRequest(String message) throws HttpException {
 		try {
 			res.sendError(HttpServletResponse.SC_BAD_REQUEST, message);
 		} catch (IOException e) {
@@ -502,13 +499,11 @@ public class Invocation {
 		}
 	}
 
-	public void sendFound(MonadString uri) throws InternalException,
-			DesignerException, DeployerException {
+	public void sendFound(MonadString uri) throws HttpException {
 		sendFound(uri.toString());
 	}
 
-	public void sendFound(String uri) throws InternalException,
-			DesignerException, DeployerException {
+	public void sendFound(String uri) throws HttpException {
 		URI locationUri;
 		try {
 			locationUri = new URI(req.getScheme(), null, req.getServerName(),
@@ -522,9 +517,7 @@ public class Invocation {
 		}
 	}
 
-	public void sendCreated(Document doc, MonadUri uri)
-			throws InternalException, DesignerException, DeployerException,
-			HttpException {
+	public void sendCreated(Document doc, MonadUri uri) throws HttpException {
 		URI locationUri;
 		try {
 			locationUri = new URI(req.getScheme(), null, req.getServerName(),
@@ -547,7 +540,7 @@ public class Invocation {
 		}
 	}
 
-	public HttpMethod getMethod() throws HttpException, InternalException {
+	public HttpMethod getMethod() throws HttpException {
 		String method = req.getMethod();
 		if (method.equals("GET")) {
 			return HttpMethod.GET;
@@ -695,7 +688,11 @@ public class Invocation {
 		}
 		source.appendChild(requestXml(doc));
 		source.appendChild(responseXml(doc));
-		getResponse().setContentType("text/html;charset=us-ascii");
+		if (templatePath == null) {
+			res.setContentType("text/xml");
+		} else {
+			res.setContentType("text/html;charset=us-ascii");
+		}
 		res.setDateHeader("Date", System.currentTimeMillis());
 		res.setHeader("Cache-Control", "no-cache");
 		try {
@@ -901,8 +898,7 @@ public class Invocation {
 		 * public void addChild(MonadInstantiationException e) {
 		 * monadInstantiationExceptions.add(e); }
 		 */
-		public Node toXml(Document doc) throws InternalException,
-				DesignerException {
+		public Node toXml(Document doc) throws HttpException {
 			Element element = doc.createElement(typeName);
 
 			if (label != null) {
@@ -923,8 +919,7 @@ public class Invocation {
 			this.label = label;
 		}
 
-		public Node toXml(Document doc, XmlTree tree) throws InternalException,
-				DesignerException {
+		public Node toXml(Document doc, XmlTree tree) throws HttpException {
 			return toXml(doc);
 		}
 	}

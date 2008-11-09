@@ -31,11 +31,15 @@
 					</ul>
 				</xsl:if>
 				<p>
-					Database Version
+					Version
 					<xsl:value-of
 						select="/source/configuration/@version" />
 				</p>
-
+				<p>
+					Database Version
+					<xsl:value-of
+						select="/source/configuration/@db-version" />
+				</p>
 				<form action="." method="post">
 					<fieldset>
 						<legend>Update Configuration</legend>

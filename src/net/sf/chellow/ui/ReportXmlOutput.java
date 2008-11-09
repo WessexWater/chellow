@@ -75,7 +75,7 @@ public class ReportXmlOutput implements Urlable, XmlDescriber {
 	}
 
 	public Element toXml(Document doc) throws HttpException {
-		Element element = doc.createElement("report-xml-output");
+		Element element = doc.createElement("xml-output");
 		return element;
 	}
 

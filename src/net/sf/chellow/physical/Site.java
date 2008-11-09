@@ -174,8 +174,7 @@ public class Site extends PersistentEntity {
 			Account exportAccountSupplier, boolean exportHasImportKwh,
 			boolean exportHasImportKvarh, boolean exportHasExportKwh,
 			boolean exportHasExportKvarh, Integer exportAgreedSupplyCapacity,
-			HhEndDate startDate, String sourceCode) throws HttpException {
-		Source source = Source.getSource(sourceCode);
+			HhEndDate startDate, Source source) throws HttpException {
 		Supply supply = new Supply(supplyName, source);
 		try {
 			// supply.setId(id);
@@ -514,11 +513,13 @@ public class Site extends PersistentEntity {
 			Hiber.commit();
 			inv.sendOk(document());
 		} else if (inv.hasParameter("insert")) {
+			try {
 			String name = inv.getString("name");
+			Long sourceId = inv.getLong("source-id");
 			String meterSerialNumber = inv.getString("meter-serial-number");
 			String importMpanStr = inv.getString("import-mpan");
-			String importSscCode = inv.getString("import-ssc");
-			Long importGspGroupId = inv.getLong("import-gsp-id");
+			String importSscCode = inv.getString("import-ssc-code");
+			Long importGspGroupId = inv.getLong("import-gsp-group-id");
 			String importHhdcContractName = inv
 					.getString("import-hhdc-contract-name");
 			String importHhdcAccountReference = inv
@@ -529,7 +530,7 @@ public class Site extends PersistentEntity {
 					.getString("import-supplier-account-reference");
 			String importAgreedSupplyCapacityStr = inv
 					.getString("import-agreed-supply-capacity");
-			String exportMpanStr = inv.getString("export-mpan-str");
+			String exportMpanStr = inv.getString("export-mpan");
 			String exportSscCode = inv.getString("export-ssc-code");
 			Long exportGspGroupId = inv.getLong("export-gsp-group-id");
 			String exportHhdcContractName = inv
@@ -543,64 +544,66 @@ public class Site extends PersistentEntity {
 			String exportAgreedSupplyCapacityStr = inv
 					.getString("export-agreed-supply-capacity");
 			Date startDate = inv.getDate("start-date");
-			String sourceCode = inv.getString("source-code");
-			Ssc importSsc = null;
-			GspGroup importGspGroup = null;
-			HhdcContract importHhdcContract = null;
-			Account importHhdcAccount = null;
-			SupplierContract importSupplierContract = null;
-			Account importSupplierAccount = null;
-			Integer importAgreedSupplyCapacity = null;
-			if (importMpanStr.trim().length() > 0) {
-				if (importSscCode.trim().length() > 0) {
-					importSsc = Ssc.getSsc(importSscCode);
+				if (!inv.isValid()) {
+					throw new UserException();
 				}
-				importGspGroup = GspGroup.getGspGroup(importGspGroupId);
-				importHhdcContract = HhdcContract
-						.getHhdcContract(importHhdcContractName);
-				importHhdcAccount = importHhdcContract
-						.getAccount(importHhdcAccountReference);
-				importSupplierContract = SupplierContract
-						.getSupplierContract(importSupplierContractName);
-				importSupplierAccount = importSupplierContract
-						.getAccount(importSupplierAccountReference);
-				try {
-					importAgreedSupplyCapacity = new Integer(
-							importAgreedSupplyCapacityStr);
-				} catch (NumberFormatException e) {
-					throw new UserException(
-							"The import supply capacity must be an integer."
-									+ e.getMessage());
+				Source source = Source.getSource(sourceId);
+				Ssc importSsc = null;
+				GspGroup importGspGroup = null;
+				HhdcContract importHhdcContract = null;
+				Account importHhdcAccount = null;
+				SupplierContract importSupplierContract = null;
+				Account importSupplierAccount = null;
+				Integer importAgreedSupplyCapacity = null;
+				if (importMpanStr.trim().length() > 0) {
+					if (importSscCode.trim().length() > 0) {
+						importSsc = Ssc.getSsc(importSscCode);
+					}
+					importGspGroup = GspGroup.getGspGroup(importGspGroupId);
+					importHhdcContract = HhdcContract
+							.getHhdcContract(importHhdcContractName);
+					importHhdcAccount = importHhdcContract
+							.getAccount(importHhdcAccountReference);
+					importSupplierContract = SupplierContract
+							.getSupplierContract(importSupplierContractName);
+					importSupplierAccount = importSupplierContract
+							.getAccount(importSupplierAccountReference);
+					try {
+						importAgreedSupplyCapacity = new Integer(
+								importAgreedSupplyCapacityStr);
+					} catch (NumberFormatException e) {
+						throw new UserException(
+								"The import supply capacity must be an integer."
+										+ e.getMessage());
+					}
 				}
-			}
-			Ssc exportSsc = null;
-			GspGroup exportGspGroup = null;
-			Account exportHhdcAccount = null;
-			Account exportSupplierAccount = null;
-			Integer exportAgreedSupplyCapacity = null;
-			if (exportMpanStr.trim().length() > 0) {
-				if (exportSscCode.trim().length() > 0) {
-					exportSsc = Ssc.getSsc(exportSscCode);
+				Ssc exportSsc = null;
+				GspGroup exportGspGroup = null;
+				Account exportHhdcAccount = null;
+				Account exportSupplierAccount = null;
+				Integer exportAgreedSupplyCapacity = null;
+				if (exportMpanStr.trim().length() > 0) {
+					if (exportSscCode.trim().length() > 0) {
+						exportSsc = Ssc.getSsc(exportSscCode);
+					}
+					exportGspGroup = GspGroup.getGspGroup(exportGspGroupId);
+					HhdcContract exportHhdcContract = HhdcContract
+							.getHhdcContract(exportHhdcContractName);
+					exportHhdcAccount = exportHhdcContract
+							.getAccount(exportHhdcAccountReference);
+					SupplierContract exportSupplierContract = SupplierContract
+							.getSupplierContract(exportSupplierContractName);
+					exportSupplierAccount = exportSupplierContract
+							.getAccount(exportSupplierAccountReference);
+					try {
+						exportAgreedSupplyCapacity = new Integer(
+								exportAgreedSupplyCapacityStr);
+					} catch (NumberFormatException e) {
+						throw new UserException(
+								"The export supply capacity must be an integer."
+										+ e.getMessage());
+					}
 				}
-				exportGspGroup = GspGroup.getGspGroup(exportGspGroupId);
-				HhdcContract exportHhdcContract = HhdcContract
-						.getHhdcContract(exportHhdcContractName);
-				exportHhdcAccount = exportHhdcContract
-						.getAccount(exportHhdcAccountReference);
-				SupplierContract exportSupplierContract = SupplierContract
-						.getSupplierContract(exportSupplierContractName);
-				exportSupplierAccount = exportSupplierContract
-						.getAccount(exportSupplierAccountReference);
-				try {
-					exportAgreedSupplyCapacity = new Integer(
-							exportAgreedSupplyCapacityStr);
-				} catch (NumberFormatException e) {
-					throw new UserException(
-							"The export supply capacity must be an integer."
-									+ e.getMessage());
-				}
-			}
-			try {
 				Supply supply = insertSupply(name, meterSerialNumber,
 						importMpanStr, importSsc, importGspGroup,
 						importHhdcAccount, importSupplierAccount,
@@ -614,7 +617,7 @@ public class Site extends PersistentEntity {
 						exportHhdcAccount == null ? false : true,
 						exportHhdcAccount == null ? false : true,
 						exportAgreedSupplyCapacity, new HhEndDate(startDate),
-						sourceCode);
+						source);
 				Hiber.commit();
 				inv.sendCreated(supply.getUri());
 			} catch (HttpException e) {

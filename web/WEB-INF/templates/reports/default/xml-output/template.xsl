@@ -10,13 +10,9 @@
 				<link rel="stylesheet" type="text/css"
 					href="{/source/request/@context-path}/style/" />
 				<title>
-					Chellow &gt; Organizations &gt;
-					<xsl:value-of
-						select="/source/script-output/screen-report/report/org/@name" />
-					&gt; Reports &gt;
-					<xsl:value-of select="/source/script-output/screen-report/report/@name" />
-					&gt; Screen
-					&gt; Script output
+					Chellow &gt; Reports &gt;
+					<xsl:value-of select="/source/xml-output/report/@name" />
+					&gt; XML Output
 				</title>
 
 			</head>
@@ -29,33 +25,17 @@
 						<span class="logo">Chellow</span>
 					</a>
 					&gt;
-					<a href="{/source/request/@context-path}/orgs/">
-						<xsl:value-of select="'Organizations'" />
-					</a>
-					&gt;
 					<a
-						href="{/source/request/@context-path}/orgs/{/source/script-output/screen/report/org/@id}/">
-						<xsl:value-of
-							select="/source/script-output/screen/report/org/@name" />
-					</a>
-					&gt;
-					<a
-						href="{/source/request/@context-path}/orgs/{/source/script-output/screen/report/org/@id}/reports/">
+						href="{/source/request/@context-path}/reports/">
 						<xsl:value-of select="'Reports'" />
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/orgs/{/source/script-output/screen-report/report/org/@id}/reports/{/source/script-output/screen-report/report/@id}/">
+						href="{/source/request/@context-path}/reports/{/source/xml-output/report/@id}/">
 						<xsl:value-of
-							select="/source/script-output/screen-report/report/@name" />
+							select="/source/xml-output/report/@name" />
 					</a>
-					&gt;
-					<a
-						href="{/source/request/@context-path}/orgs/{/source/script-output/screen-report/report/org/@id}/reports/{/source/script-output/report/@id}/screen/">
-						<xsl:value-of
-							select="'Screen'" />
-					</a>
-					&gt; Script output
+					&gt; XML Output
 				</p>
 				<br />
 				<xsl:if test="//message">
@@ -71,7 +51,7 @@
 				</xsl:if>
 
 				<pre>
-					<xsl:value-of select="/source/script-output/result/text()" />
+					<xsl:value-of select="/source/xml-output/result/text()" />
 				</pre>
 			</body>
 		</html>

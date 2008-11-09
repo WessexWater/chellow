@@ -37,9 +37,9 @@
 					</a>
 					<xsl:value-of select="']'" />
 				</p>
-				<xsl:if test="/source/message">
+				<xsl:if test="//message">
 					<ul>
-						<xsl:for-each select="/source/message">
+						<xsl:for-each select="//message">
 							<li>
 								<xsl:value-of select="@description" />
 							</li>
@@ -61,6 +61,17 @@
 						</form>
 						<p>
 							<a href=".">Cancel</a>
+						</p>
+					</xsl:when>
+					<xsl:when
+						test="/source/response/@status-code = '201'">
+						<p>
+							The
+							<a
+								href="{/source/response/header[@name = 'Location']/@value}">
+								<xsl:value-of select="'new supply'" />
+							</a>
+							has been successfully created.
 						</p>
 					</xsl:when>
 					<xsl:otherwise>
@@ -307,13 +318,14 @@
 									<label>
 										<xsl:value-of select="'Mpan '" />
 										<input name="import-mpan"
+											size="35"
 											value="{/source/request/parameter[@name = 'import-mpan']/value}" />
 									</label>
 									<br />
 									<label>
 										<xsl:value-of select="'SSC '" />
-										<input name="import-ssc"
-											value="{/source/request/parameter[@name = 'import-ssc']/value}" />
+										<input name="import-ssc-code"
+											value="{/source/request/parameter[@name = 'import-ssc-code']/value}" />
 									</label>
 									<br />
 									<label>
@@ -338,26 +350,42 @@
 									<br />
 									<label>
 										<xsl:value-of
-											select="'Supply Capacity '" />
+											select="'Agreed Supply Capacity '" />
 										<input
-											name="import-supply-capacity"
-											value="{/source/request/parameter[@name = 'import-supply-capacity']/value}" />
+											name="import-agreed-supply-capacity"
+											value="{/source/request/parameter[@name = 'import-agreed-supply-capacity']/value}" />
 									</label>
 									<br />
 									<label>
 										<xsl:value-of
-											select="'HHDC Contract '" />
+											select="'HHDC Contract Name '" />
 										<input
-											name="import-hhdc-contract"
-											value="{/source/request/parameter[@name = 'import-hhdc-contract']/value}" />
+											name="import-hhdc-contract-name"
+											value="{/source/request/parameter[@name = 'import-hhdc-contract-name']/value}" />
 									</label>
 									<br />
 									<label>
 										<xsl:value-of
-											select="'HHDC Account '" />
+											select="'HHDC Account Reference '" />
 										<input
-											name="import-hhdc-account"
-											value="{/source/request/parameter[@name = 'import-hhdc-account']/value}" />
+											name="import-hhdc-account-reference"
+											value="{/source/request/parameter[@name = 'import-hhdc-account-reference']/value}" />
+									</label>
+									<br />
+									<label>
+										<xsl:value-of
+											select="'Supplier Contract Name '" />
+										<input
+											name="import-supplier-contract-name"
+											value="{/source/request/parameter[@name = 'import-supplier-contract-name']/value}" />
+									</label>
+									<br />
+									<label>
+										<xsl:value-of
+											select="'Supplier Account Reference '" />
+										<input
+											name="import-supplier-account-reference"
+											value="{/source/request/parameter[@name = 'import-hhdc-account-reference']/value}" />
 									</label>
 								</fieldset>
 								<br />
@@ -366,13 +394,14 @@
 									<label>
 										<xsl:value-of select="'Mpan '" />
 										<input name="export-mpan"
+											size="35"
 											value="{/source/request/parameter[@name = 'export-mpan']/value}" />
 									</label>
 									<br />
 									<label>
 										<xsl:value-of select="'SSC '" />
-										<input name="export-ssc"
-											value="{/source/request/parameter[@name = 'export-ssc']/value}" />
+										<input name="export-ssc-code"
+											value="{/source/request/parameter[@name = 'export-ssc-code']/value}" />
 									</label>
 									<br />
 									<label>
@@ -397,26 +426,42 @@
 									<br />
 									<label>
 										<xsl:value-of
-											select="'Supply Capacity '" />
+											select="'Agreed Supply Capacity '" />
 										<input
-											name="export-supply-capacity"
-											value="{/source/request/parameter[@name = 'export-supply-capacity']/value}" />
+											name="export-agreed-supply-capacity"
+											value="{/source/request/parameter[@name = 'export-agreed-supply-capacity']/value}" />
 									</label>
 									<br />
 									<label>
 										<xsl:value-of
-											select="'HHDC Contract '" />
+											select="'HHDC Contract Name'" />
 										<input
-											name="export-hhdc-contract"
-											value="{/source/request/parameter[@name = 'export-hhdc-contract']/value}" />
+											name="export-hhdc-contract-name"
+											value="{/source/request/parameter[@name = 'export-hhdc-contract-name']/value}" />
 									</label>
 									<br />
 									<label>
 										<xsl:value-of
-											select="'HHDC Account '" />
+											select="'HHDC Account Reference'" />
 										<input
-											name="export-hhdc-account"
-											value="{/source/request/parameter[@name = 'export-hhdc-account']/value}" />
+											name="export-hhdc-account-reference"
+											value="{/source/request/parameter[@name = 'export-hhdc-account-reference']/value}" />
+									</label>
+									<br />
+									<label>
+										<xsl:value-of
+											select="'Supplier Contract Name '" />
+										<input
+											name="export-supplier-contract-name"
+											value="{/source/request/parameter[@name = 'export-supplier-contract-name']/value}" />
+									</label>
+									<br />
+									<label>
+										<xsl:value-of
+											select="'Supplier Account Reference '" />
+										<input
+											name="export-supplier-account-reference"
+											value="{/source/request/parameter[@name = 'export-supplier-account-reference']/value}" />
 									</label>
 								</fieldset>
 								<br />

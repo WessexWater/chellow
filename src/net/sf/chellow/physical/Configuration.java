@@ -1,13 +1,18 @@
 package net.sf.chellow.physical;
 
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.Reader;
 import java.io.StringReader;
+import java.io.StringWriter;
+import java.io.UnsupportedEncodingException;
 import java.util.Properties;
 
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Invocation;
+import net.sf.chellow.monad.Monad;
 import net.sf.chellow.monad.MonadUtils;
 import net.sf.chellow.monad.NotFoundException;
 import net.sf.chellow.monad.Urlable;
@@ -121,7 +126,21 @@ public class Configuration extends PersistentEntity {
 	@Override
 	public Element toXml(Document doc) throws HttpException {
 		Element element = doc.createElement("configuration");
-		element.setAttribute("version", Integer.toString(version));
+		element.setAttribute("db-version", Integer.toString(version));
+		try {
+			Reader is = new InputStreamReader(Monad.getContext().getResource(
+					"/WEB-INF/VERSION").openStream(), "UTF-8");
+			int c;
+			StringWriter sr = new StringWriter();
+			while ((c = is.read()) != -1) {
+				sr.write(c);
+			}
+			element.setAttribute("version", sr.toString());
+		} catch (UnsupportedEncodingException e) {
+			throw new InternalException(e);
+		} catch (IOException e) {
+			throw new InternalException(e);
+		}
 		Element impProps = doc.createElement("implicit-user-properties");
 		element.appendChild(impProps);
 		impProps.setTextContent(implicitUserProperties);

@@ -237,6 +237,7 @@ public class GeneralImport extends Thread implements Urlable, XmlDescriber {
 							"Export supplier account reference",
 							exportSupplierAccountReference));
 					Site site = Site.getSite(siteCode);
+					Source source = Source.getSource(sourceCode);
 					Integer importAgreedSupplyCapacity = null;
 					HhdcContract importHhdcContract = null;
 					Account importHhdcAccount = null;
@@ -317,7 +318,7 @@ public class GeneralImport extends Thread implements Urlable, XmlDescriber {
 							exportHhdcAccount == null ? false : true,
 							exportAgreedSupplyCapacity, HhEndDate
 									.roundUp(new MonadDate(startDateStr)
-											.getDate()), sourceCode);
+											.getDate()), source);
 				} else if (action.equals("update")) {
 					if (values.length < 5) {
 						throw new UserException(

@@ -299,35 +299,22 @@ public abstract class Monad extends HttpServlet implements Urlable {
 	}
 
 	/*
-	static public void setConfigDir(File configDir) {
-		Monad.CONFIG_DIR = configDir;
-	}
-	*/
-/*
-	static public URL getConfigResource(MonadUri uri) throws HttpException {
-		URL url = getConfigFile(uri);
-		if (url == null) {
-			url = getConfigUrl(uri);
-		}
-		return url;
-	}
-*/
+	 * static public void setConfigDir(File configDir) { Monad.CONFIG_DIR =
+	 * configDir; }
+	 */
 	/*
-	static public URL getConfigFile(MonadUri uri) throws HttpException {
-		URL url = null;
-		try {
-			MonadUri uriNew = getConfigFile(new MonadUri("/"), uri.toString()
-					.substring(1).split("/"), 0);
-			if (uriNew != null) {
-				url = new File(CONFIG_DIR.toString() + File.separator
-						+ uriNew.toString()).toURI().toURL();
-			}
-			return url;
-		} catch (MalformedURLException e) {
-			throw new InternalException(e);
-		}
-	}
-*/
+	 * static public URL getConfigResource(MonadUri uri) throws HttpException {
+	 * URL url = getConfigFile(uri); if (url == null) { url = getConfigUrl(uri); }
+	 * return url; }
+	 */
+	/*
+	 * static public URL getConfigFile(MonadUri uri) throws HttpException { URL
+	 * url = null; try { MonadUri uriNew = getConfigFile(new MonadUri("/"),
+	 * uri.toString() .substring(1).split("/"), 0); if (uriNew != null) { url =
+	 * new File(CONFIG_DIR.toString() + File.separator +
+	 * uriNew.toString()).toURI().toURL(); } return url; } catch
+	 * (MalformedURLException e) { throw new InternalException(e); } }
+	 */
 	static public URL getConfigUrl(MonadUri uri) throws HttpException {
 		URL url = null;
 		try {
@@ -365,46 +352,29 @@ public abstract class Monad extends HttpServlet implements Urlable {
 		}
 		return newUri;
 	}
-/*
-	static public MonadUri getConfigFile(MonadUri uri, String[] elements,
-			int position) throws HttpException {
-		List<String> fileElements = getConfigFileElements(uri);
-		MonadUri newUri = null;
-		if (fileElements.contains(elements[position])) {
-			newUri = uri.resolve(elements[position]);
-			if (position < elements.length - 1) {
-				newUri = newUri.append("/");
-				newUri = getConfigFile(newUri, elements, position + 1);
-			}
-		}
-		if (newUri == null && fileElements.contains("default")) {
-			newUri = uri.append("default/");
-			if (position < elements.length - 1) {
-				newUri = getConfigFile(newUri, elements, position + 1);
-			}
-		}
-		return newUri;
-	}
-*/
+
 	/*
-	@SuppressWarnings("unchecked")
-	static public List<String> getConfigFileElements(MonadUri uri)
-			throws InternalException {
-		List<String> urlElements = new ArrayList<String>();
-		if (Monad.getConfigDir() != null) {
-			File urlsPath = new File(Monad.getConfigDir().toString()
-					+ uri.toString().replace("/", File.separator));
-			String[] files = urlsPath.list();
-			if (files != null) {
-				for (String file : files) {
-					urlElements.add(file);
-				}
-			}
-		}
-		return urlElements;
-	}
-*/
-	
+	 * static public MonadUri getConfigFile(MonadUri uri, String[] elements, int
+	 * position) throws HttpException { List<String> fileElements =
+	 * getConfigFileElements(uri); MonadUri newUri = null; if
+	 * (fileElements.contains(elements[position])) { newUri =
+	 * uri.resolve(elements[position]); if (position < elements.length - 1) {
+	 * newUri = newUri.append("/"); newUri = getConfigFile(newUri, elements,
+	 * position + 1); } } if (newUri == null &&
+	 * fileElements.contains("default")) { newUri = uri.append("default/"); if
+	 * (position < elements.length - 1) { newUri = getConfigFile(newUri,
+	 * elements, position + 1); } } return newUri; }
+	 */
+	/*
+	 * @SuppressWarnings("unchecked") static public List<String>
+	 * getConfigFileElements(MonadUri uri) throws InternalException { List<String>
+	 * urlElements = new ArrayList<String>(); if (Monad.getConfigDir() != null) {
+	 * File urlsPath = new File(Monad.getConfigDir().toString() +
+	 * uri.toString().replace("/", File.separator)); String[] files =
+	 * urlsPath.list(); if (files != null) { for (String file : files) {
+	 * urlElements.add(file); } } } return urlElements; }
+	 */
+
 	@SuppressWarnings("unchecked")
 	static public List<String> getConfigUrlElements(MonadUri uri) {
 		List<String> urlElements = new ArrayList<String>();
@@ -437,83 +407,98 @@ public abstract class Monad extends HttpServlet implements Urlable {
 	@SuppressWarnings("unchecked")
 	static public void returnStream(Document doc, String templatePath,
 			String templateName, Result result) throws HttpException {
-		TransformerFactory tf = TransformerFactory.newInstance();
-		InputStream templateIs = null;
-		InputStream debugIs = null;
-		Transformer transformer;
-		tf.setURIResolver(new ElectedURIResolver());
 		if (templatePath != null && templateName != null) {
-			templateIs = getConfigIs(templatePath, templateName);
+			InputStream templateIs = getConfigIs(templatePath, templateName);
 			if (templateIs == null) {
 				throw new DesignerException("The resource '" + templatePath
 						+ " : " + templateName
 						+ "' is needed but does not exist.");
 			}
-			debugIs = getConfigIs(templatePath, DEBUG_FILE_NAME);
-		}
-		try {
+			InputStream debugIs = getConfigIs(templatePath, DEBUG_FILE_NAME);
 			if (debugIs != null) {
-				StringWriter sr = new StringWriter();
+				try {
+					StringWriter sr = new StringWriter();
+					TransformerFactory tf = TransformerFactory.newInstance();
+					tf.setURIResolver(new ElectedURIResolver());
+					Transformer transformer;
 
-				transformer = tf.newTransformer();
-				transformer.setOutputProperty(OutputKeys.INDENT, "yes");
-				// transformer.setOutputProperty(
-				// "{http://xml.apache.org/xslt}indent-amount", "2");
-				transformer.transform(new DOMSource(doc), new StreamResult(sr));
-				logger.logp(Level.INFO, "uk.org.tlocke.monad.Monad",
-						"returnStream", sr.toString());
+					transformer = tf.newTransformer();
+					transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+					// transformer.setOutputProperty(
+					// "{http://xml.apache.org/xslt}indent-amount", "2");
+					transformer.transform(new DOMSource(doc), new StreamResult(
+							sr));
+					logger.logp(Level.INFO, "uk.org.tlocke.monad.Monad",
+							"returnStream", sr.toString());
+				} catch (TransformerConfigurationException e) {
+					Throwable throwable = e.getCause();
+					throw new UserException("Problem transforming template '"
+							+ templatePath
+							+ " : "
+							+ templateName
+							+ " "
+							+ e.getMessageAndLocation()
+							+ e.getMessage()
+							+ e.getLocationAsString()
+							+ " "
+							+ e.getLocator()
+							+ (throwable == null ? "" : " Problem type : "
+									+ throwable.getClass().getName()
+									+ " Message: " + throwable.getMessage()));
+				} catch (TransformerException e) {
+					throw new UserException("Problem transforming template '"
+							+ templatePath
+							+ " : "
+							+ templateName
+							+ "'. "
+							+ e.getMessageAndLocation()
+							+ " "
+							+ " Problem type : "
+							+ e.getCause().getClass().getName()
+							+ " Message: "
+							+ e.getException().getMessage()
+							+ "Stack trace: "
+							+ HttpException.getStackTraceString(e
+									.getException()) + e);
+				}
 			}
-		} catch (TransformerConfigurationException e) {
-			Throwable throwable = e.getCause();
-			throw new UserException("Problem transforming template '"
-					+ templatePath
-					+ " : "
-					+ templateName
-					+ " "
-					+ e.getMessageAndLocation()
-					+ e.getMessage()
-					+ e.getLocationAsString()
-					+ " "
-					+ e.getLocator()
-					+ (throwable == null ? "" : " Problem type : "
-							+ throwable.getClass().getName() + " Message: "
-							+ throwable.getMessage()));
-		} catch (TransformerException e) {
-			throw new UserException("Problem transforming template '"
-					+ templatePath + " : " + templateName + "'. "
-					+ e.getMessageAndLocation() + " " + " Problem type : "
-					+ e.getCause().getClass().getName() + " Message: "
-					+ e.getException().getMessage() + "Stack trace: "
-					+ HttpException.getStackTraceString(e.getException()) + e);
+			returnStream(doc, new StreamSource(templateIs), result);
+		} else {
+			returnStream(doc, null, result);
 		}
-		returnStream(doc, new StreamSource(templateIs), result);
 	}
 
 	@SuppressWarnings("unchecked")
 	static public void returnStream(Document doc, Source templateSource,
 			Result result) throws HttpException {
-		TransformerFactory tf = TransformerFactory.newInstance();
-		Transformer transformer;
-		tf.setURIResolver(new ElectedURIResolver());
 		try {
-			transformer = templateSource == null ? tf.newTransformer() : tf
-					.newTransformer(templateSource);
+			TransformerFactory tf = TransformerFactory.newInstance();
+			Transformer transformer = templateSource == null ? tf
+					.newTransformer() : tf.newTransformer(templateSource);
+			tf.setURIResolver(new ElectedURIResolver());
 			transformer.setOutputProperty(OutputKeys.INDENT, "yes");
 			transformer.transform(new DOMSource(doc), result);
 		} catch (TransformerConfigurationException e) {
 			Throwable throwable = e.getCause();
 			throw new UserException("Transformer configuration problem: "
-					+ e.getMessageAndLocation() 
+					+ e.getMessageAndLocation()
 					+ (throwable == null ? "" : " Problem type : "
 							+ throwable.getClass().getName() + " Message: "
 							+ throwable.getMessage()));
 		} catch (TransformerException e) {
-			throw new UserException("Problem transforming template, TransformerException '" + " : "
-					+ "'. " + e.getMessageAndLocation() + " "
-					+ " Problem type : " + e.getCause().getClass().getName()
-					+ " Message: " + e.getException().getMessage()
-					+ "Stack trace: "
-					+ HttpException.getStackTraceString(e.getException()) + e);
+			throw new UserException(
+					"Problem transforming template, TransformerException '"
+							+ " : "
+							+ "'. "
+							+ e.getMessageAndLocation()
+							+ " "
+							+ " Problem type : "
+							+ e.getCause().getClass().getName()
+							+ " Message: "
+							+ e.getException().getMessage()
+							+ "Stack trace: "
+							+ HttpException.getStackTraceString(e
+									.getException()) + e);
 		}
 	}
 
