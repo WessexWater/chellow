@@ -44,7 +44,33 @@ public abstract class HttpException extends Exception implements XmlDescriber {
 		}
 		return writer.toString();
 	}
-	
+
+	public static String getUserMessage(Throwable e) {
+		StringBuilder builder = new StringBuilder(e.getClass().getName() + " "
+				+ e.getMessage());
+		/*
+		if (e instanceof JDBCException) {
+			JDBCException je = (JDBCException) e;
+			SQLException se = je.getSQLException();
+			if (se != null) {
+				builder.append(" " + getUserMessage(se));
+			}
+		}
+		*/
+		if (e instanceof SQLException) {
+			SQLException se = (SQLException) e;
+			SQLException ne = se.getNextException();
+			if (ne != null) {
+				builder.append(" " + getUserMessage(ne));
+			}
+		}
+		Throwable cause = e.getCause();
+		if (cause != null) {
+			builder.append(" " + getUserMessage(cause));
+		}
+		return builder.toString();
+	}
+
 	static public boolean isSQLException(HibernateException e, String message) {
 		boolean isSQLException = false;
 
@@ -58,7 +84,6 @@ public abstract class HttpException extends Exception implements XmlDescriber {
 		return isSQLException;
 	}
 
-	
 	private static final long serialVersionUID = 1L;
 
 	private Document document;
@@ -98,15 +123,15 @@ public abstract class HttpException extends Exception implements XmlDescriber {
 	public Document getDocument() {
 		return document;
 	}
-	
+
 	public Element toXml(Document doc) {
 		return new MonadMessage(getMessage()).toXml(doc);
 	}
-	
+
 	public Element toXml(Document doc, XmlTree tree) {
 		return toXml(doc);
 	}
-	
+
 	public String getStackTraceString() {
 		return getStackTraceString(this);
 	}

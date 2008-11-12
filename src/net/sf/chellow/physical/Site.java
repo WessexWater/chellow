@@ -65,7 +65,8 @@ public class Site extends PersistentEntity {
 			Hiber.session().save(site);
 			Hiber.flush();
 		} catch (ConstraintViolationException e) {
-			throw new UserException("A site with this code already exists.");
+			throw new UserException("Problem saving site, perhaps there's a duplicate code or name. "
+					+ HttpException.getUserMessage(e));
 		}
 		return site;
 	}
@@ -514,36 +515,36 @@ public class Site extends PersistentEntity {
 			inv.sendOk(document());
 		} else if (inv.hasParameter("insert")) {
 			try {
-			String name = inv.getString("name");
-			Long sourceId = inv.getLong("source-id");
-			String meterSerialNumber = inv.getString("meter-serial-number");
-			String importMpanStr = inv.getString("import-mpan");
-			String importSscCode = inv.getString("import-ssc-code");
-			Long importGspGroupId = inv.getLong("import-gsp-group-id");
-			String importHhdcContractName = inv
-					.getString("import-hhdc-contract-name");
-			String importHhdcAccountReference = inv
-					.getString("import-hhdc-account-reference");
-			String importSupplierContractName = inv
-					.getString("import-supplier-contract-name");
-			String importSupplierAccountReference = inv
-					.getString("import-supplier-account-reference");
-			String importAgreedSupplyCapacityStr = inv
-					.getString("import-agreed-supply-capacity");
-			String exportMpanStr = inv.getString("export-mpan");
-			String exportSscCode = inv.getString("export-ssc-code");
-			Long exportGspGroupId = inv.getLong("export-gsp-group-id");
-			String exportHhdcContractName = inv
-					.getString("export-hhdc-contract-name");
-			String exportHhdcAccountReference = inv
-					.getString("export-hhdc-account-reference");
-			String exportSupplierContractName = inv
-					.getString("export-supplier-contract-name");
-			String exportSupplierAccountReference = inv
-					.getString("export-supplier-account-reference");
-			String exportAgreedSupplyCapacityStr = inv
-					.getString("export-agreed-supply-capacity");
-			Date startDate = inv.getDate("start-date");
+				String name = inv.getString("name");
+				Long sourceId = inv.getLong("source-id");
+				String meterSerialNumber = inv.getString("meter-serial-number");
+				String importMpanStr = inv.getString("import-mpan");
+				String importSscCode = inv.getString("import-ssc-code");
+				Long importGspGroupId = inv.getLong("import-gsp-group-id");
+				String importHhdcContractName = inv
+						.getString("import-hhdc-contract-name");
+				String importHhdcAccountReference = inv
+						.getString("import-hhdc-account-reference");
+				String importSupplierContractName = inv
+						.getString("import-supplier-contract-name");
+				String importSupplierAccountReference = inv
+						.getString("import-supplier-account-reference");
+				String importAgreedSupplyCapacityStr = inv
+						.getString("import-agreed-supply-capacity");
+				String exportMpanStr = inv.getString("export-mpan");
+				String exportSscCode = inv.getString("export-ssc-code");
+				Long exportGspGroupId = inv.getLong("export-gsp-group-id");
+				String exportHhdcContractName = inv
+						.getString("export-hhdc-contract-name");
+				String exportHhdcAccountReference = inv
+						.getString("export-hhdc-account-reference");
+				String exportSupplierContractName = inv
+						.getString("export-supplier-contract-name");
+				String exportSupplierAccountReference = inv
+						.getString("export-supplier-account-reference");
+				String exportAgreedSupplyCapacityStr = inv
+						.getString("export-agreed-supply-capacity");
+				Date startDate = inv.getDate("start-date");
 				if (!inv.isValid()) {
 					throw new UserException();
 				}

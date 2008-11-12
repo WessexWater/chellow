@@ -27,10 +27,13 @@ public class Dso extends Party {
 		return dso;
 	}
 
+	@SuppressWarnings("unchecked")
 	static public Dso getDso(Participant participant) throws HttpException {
-		Dso dso = (Dso) Hiber.session().createQuery(
-				"from Dso dso where dso.participant = :participant").setEntity(
-				"participant", participant).uniqueResult();
+		Dso dso = (Dso) Hiber
+				.session()
+				.createQuery(
+						"from Dso dso where dso.participant = :participant and dso.validTo is null")
+				.setEntity("participant", participant).uniqueResult();
 		if (dso == null) {
 			throw new UserException("There is no DSO with the participant '"
 					+ participant.getCode() + "'.");
@@ -49,8 +52,8 @@ public class Dso extends Party {
 
 	static public Dso findDso(String code) throws HttpException {
 		return (Dso) Hiber.session().createQuery(
-				"from Dso dso where dso.code = :code").setString("code",
-				code).uniqueResult();
+				"from Dso dso where dso.code = :code").setString("code", code)
+				.uniqueResult();
 	}
 
 	private String code;
@@ -102,8 +105,8 @@ public class Dso extends Party {
 				.session()
 				.createQuery(
 						"from Llfc llfc where llfc.dso = :dso and llfc.code = :code and llfc.validTo is null")
-				.setEntity("dso", this).setInteger("code", Integer.parseInt(code))
-				.uniqueResult();
+				.setEntity("dso", this).setInteger("code",
+						Integer.parseInt(code)).uniqueResult();
 		if (llfc == null) {
 			throw new UserException("There is no ongoing LLFC with the code "
 					+ code + " associated with this DNO.");

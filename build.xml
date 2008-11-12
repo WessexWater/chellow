@@ -420,14 +420,16 @@
 		</exec>
 	</target>
 -->
-	<target name="test" depends="compile" description="Tests the application">
+	<target name="setup-test" depends="compile" description="Tests the application">
 		<antcall target="reset-db" />
 		<antcall target="install" />
+		<!--
 		<copy file="${test.home}/imprimatur.pre.xml" tofile="${test.home}/imprimatur.xml" />
 		<replace file="${test.home}/imprimatur.xml" token="@@test.port@@" value="${test.port}" />
 		<java jar="${imprimatur.jar}" fork="true" failonerror="true">
 			<arg value="${test.home}/imprimatur.xml" />
 		</java>
+		-->
 		<!--
 		<java jar="${imprimatur.jar}" fork="true" failonerror="true">
 					<arg value="${test.home}/${test.id}/imprimatur.xml" />
@@ -455,7 +457,7 @@
 		</antcall>
 		-->
 	</target>
-<!--
+	<!--
 	<target name="performTest">
 		<antcall target="remove" />
 		<exec executable="${catalina.home}/bin/shutdown.sh">
@@ -494,8 +496,8 @@
 		</java>
 	</target>
 -->
-	
-<!--
+
+	<!--
 	<target name="performDbTest">
 		<antcall target="remove" />
 		<exec executable="${catalina.home}/bin/shutdown.sh">
@@ -538,7 +540,7 @@
 		</java>
 	</target>
 	-->
-<!--
+	<!--
 	<target name="oldTest" depends="compile" description="Tests the application">
 		<exec executable="dropdb">
 			<env key="PGPORT" value="30103" />
@@ -603,7 +605,14 @@
 
 	<target name="short-test" description="Short Test">
 		<property name="mdd.dir" value="mdd-test" />
-		<antcall target="test" />
+		<antcall target="compile" />
+		<antcall target="reset-db" />
+		<antcall target="install" />
+		<copy file="${test.home}/imprimatur.pre.xml" tofile="${test.home}/imprimatur.xml" />
+		<replace file="${test.home}/imprimatur.xml" token="@@test.port@@" value="${test.port}" />
+		<java jar="${imprimatur.jar}" fork="true" failonerror="true">
+			<arg value="${test.home}/imprimatur.xml" />
+		</java>
 	</target>
 
 	<!-- ==================== Prepare Target ================================== -->
@@ -628,20 +637,20 @@
 
 		<condition property="mdd.dir" value="mdd">
 			<not>
-				<isset property="mdd.dir"/>
+				<isset property="mdd.dir" />
 			</not>
 		</condition>
-		<echo message="${mdd.dir}"/>
+		<echo message="${mdd.dir}" />
 		<!-- Copy static content of this web application -->
 		<copy todir="${build.home}">
 			<fileset dir="${web.home}" excludes="WEB-INF/mdd/** WEB-INF/mdd-test/**" />
 		</copy>
-		
-		<copy todir="${build.home}/WEB-INF/mdd" >
+
+		<copy todir="${build.home}/WEB-INF/mdd">
 			<fileset dir="${web.home}/WEB-INF/${mdd.dir}" />
 		</copy>
-		<exec dir="${basedir}" executable="svnversion" output="${build.home}/WEB-INF/VERSION"/>	
-		
+		<exec dir="${basedir}" executable="svnversion" output="${build.home}/WEB-INF/VERSION" />
+
 
 		<!-- Copy external dependencies as required -->
 		<!-- *** CUSTOMIZE HERE AS REQUIRED BY YOUR APPLICATION *** -->

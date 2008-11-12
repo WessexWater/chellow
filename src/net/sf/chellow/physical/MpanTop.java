@@ -72,57 +72,70 @@ public class MpanTop extends PersistentEntity {
 	static public MpanTop findMpanTop(Pc pc, Mtc mtc, Llfc llfc, Ssc ssc,
 			GspGroup group, Date date) throws HttpException {
 		/*
-		Debug.print("trying to find mpantop. " + pc + " " + mtc + " " + llfc + " " + ssc + " " + group + " " + date);
-		if (ssc == null) {
-		Debug.print("About to loop.");
-		for (MpanTop top : (List<MpanTop>) Hiber.session().createQuery("from MpanTop top where top.pc = :pc and top.mtc = :mtc and top.llfc = :llfc and top.gspGroup = :group and ssc is null").setEntity("group", group).setEntity("pc", pc).setEntity("llfc", llfc).setEntity("mtc", mtc).list()) {
-			Debug.print("MpanTop " + top.getPc() + " " + top.getMtc() + " " + top.getLlfc() + " " + top.getSsc() + " " + top.getGspGroup() + " " + top.getValidFrom() + " " + top.getValidTo());
-		}
-		}
-		StringBuilder queryString = new StringBuilder(
-				"from MpanTop top where top.pc = :pc and top.mtc = :mtc and top.llfc = :llfc and top.gspGroup = :group and top.validFrom <= :date and (top.validTo is null or top.validTo >= :date)");
-		Query query = null;
-		if (ssc == null) {
-			queryString.append(" and top.ssc is null");
-			query = Hiber.session().createQuery(queryString.toString())
-					.setEntity("pc", pc).setEntity("mtc", mtc).setEntity(
-							"llfc", llfc).setEntity("group", group)
-					.setTimestamp("date", date);
-		} else {
-			queryString.append(" and top.ssc = :ssc");
-			query = Hiber.session().createQuery(queryString.toString())
-					.setEntity("pc", pc).setEntity("mtc", mtc).setEntity(
-							"llfc", llfc).setEntity("ssc", ssc).setEntity(
-							"group", group).setTimestamp("date", date);
-		}
-		return (MpanTop) query.uniqueResult();
-		// return (MpanTop) Hiber.session().createQuery("from MpanTop top where
-		// top.pc = :pc and top.mtc = :mtc and top.llfc = :llfc and top.ssc =
-		// :ssc and top.gspGroup = :group and top.validFrom <= :date and
-		// (top.validTo is null or top.validTo >= :date)").setEntity("pc",
-		// pc).setEntity("mtc", mtc).setEntity("llfc",
-		// llfc).setEntity("gspGroup", group).setEntity("date",
-		// date).uniqueResult();
+		 * Debug.print("trying to find mpantop. " + pc + " " + mtc + " " + llfc + " " +
+		 * ssc + " " + group + " " + date); if (ssc == null) {
+		 * Debug.print("About to loop."); for (MpanTop top : (List<MpanTop>)
+		 * Hiber.session().createQuery("from MpanTop top where top.pc = :pc and
+		 * top.mtc = :mtc and top.llfc = :llfc and top.gspGroup = :group and ssc
+		 * is null").setEntity("group", group).setEntity("pc",
+		 * pc).setEntity("llfc", llfc).setEntity("mtc", mtc).list()) {
+		 * Debug.print("MpanTop " + top.getPc() + " " + top.getMtc() + " " +
+		 * top.getLlfc() + " " + top.getSsc() + " " + top.getGspGroup() + " " +
+		 * top.getValidFrom() + " " + top.getValidTo()); } } StringBuilder
+		 * queryString = new StringBuilder( "from MpanTop top where top.pc = :pc
+		 * and top.mtc = :mtc and top.llfc = :llfc and top.gspGroup = :group and
+		 * top.validFrom <= :date and (top.validTo is null or top.validTo >=
+		 * :date)"); Query query = null; if (ssc == null) { queryString.append("
+		 * and top.ssc is null"); query =
+		 * Hiber.session().createQuery(queryString.toString()) .setEntity("pc",
+		 * pc).setEntity("mtc", mtc).setEntity( "llfc", llfc).setEntity("group",
+		 * group) .setTimestamp("date", date); } else { queryString.append(" and
+		 * top.ssc = :ssc"); query =
+		 * Hiber.session().createQuery(queryString.toString()) .setEntity("pc",
+		 * pc).setEntity("mtc", mtc).setEntity( "llfc", llfc).setEntity("ssc",
+		 * ssc).setEntity( "group", group).setTimestamp("date", date); } return
+		 * (MpanTop) query.uniqueResult(); // return (MpanTop)
+		 * Hiber.session().createQuery("from MpanTop top where // top.pc = :pc
+		 * and top.mtc = :mtc and top.llfc = :llfc and top.ssc = // :ssc and
+		 * top.gspGroup = :group and top.validFrom <= :date and // (top.validTo
+		 * is null or top.validTo >= :date)").setEntity("pc", //
+		 * pc).setEntity("mtc", mtc).setEntity("llfc", //
+		 * llfc).setEntity("gspGroup", group).setEntity("date", //
+		 * date).uniqueResult();
+		 * 
+		 */
 
-		 */
-		
-		  Criteria criteria =
-		  Hiber.session().createCriteria(MpanTop.class).add(
-		  Restrictions.eq("pc", pc)).add(Restrictions.eq("mtc", mtc))
-		  .add(Restrictions.eq("gspGroup", group)).add( Restrictions.eq("llfc",
-		  llfc)).add( Restrictions.le("validFrom", date)).add(
-		  Restrictions.or(Restrictions.isNull("validTo"),
-		  Restrictions.ge("validTo", date))); if (ssc == null) {
-		  criteria.add(Restrictions.isNull("ssc")); } else {
-		  criteria.add(Restrictions.eq("ssc", ssc)); } return (MpanTop)
-		  criteria.uniqueResult(); /* MpanTop mpanTop = (MpanTop) return
-		  (MpanTop) Hiber .session() .createQuery( "from MpanTop top where
-		  top.pc = :pc and top.mtc = :mtc and top.llfc = :llfc and top.ssc =
-		 * :ssc and top.validFrom <= :date and (top.validTo is null or
-		 * top.validTo <= :date)") .setEntity("pc", pc).setEntity("mtc",
-		 * mtc).setEntity("llfc", llfc).setEntity("ssc",
-		 * ssc).setTimestamp("date", date) .uniqueResult();
-		 */
+		Criteria criteria = Hiber.session().createCriteria(MpanTop.class).add(
+				Restrictions.eq("pc", pc)).add(Restrictions.eq("mtc", mtc))
+				.add(Restrictions.eq("gspGroup", group)).add(
+						Restrictions.eq("llfc", llfc)).add(
+						Restrictions.le("validFrom", date)).add(
+						Restrictions.or(Restrictions.isNull("validTo"),
+								Restrictions.ge("validTo", date)));
+		if (ssc == null) {
+			criteria.add(Restrictions.isNull("ssc"));
+		} else {
+			criteria.add(Restrictions.eq("ssc", ssc));
+		}
+		return (MpanTop) criteria.uniqueResult(); /*
+													 * MpanTop mpanTop =
+													 * (MpanTop) return
+													 * (MpanTop) Hiber
+													 * .session() .createQuery(
+													 * "from MpanTop top where
+													 * top.pc = :pc and top.mtc =
+													 * :mtc and top.llfc = :llfc
+													 * and top.ssc = :ssc and
+													 * top.validFrom <= :date
+													 * and (top.validTo is null
+													 * or top.validTo <=
+													 * :date)") .setEntity("pc",
+													 * pc).setEntity("mtc",
+													 * mtc).setEntity("llfc",
+													 * llfc).setEntity("ssc",
+													 * ssc).setTimestamp("date",
+													 * date) .uniqueResult();
+													 */
 	}
 
 	static public MpanTop getMpanTop(Pc pc, Mtc mtc, Llfc llfc, Ssc ssc,
@@ -153,25 +166,33 @@ public class MpanTop extends PersistentEntity {
 	static public void loadFromCsv(ServletContext sc) throws HttpException {
 		Debug.print("Starting to add MPAN tops.");
 		try {
-			/*
-			 * Mdd mdd = new Mdd(sc, "ValidSettlementConfigurationProfileClass",
-			 * new String[] { "Profile Class Id", "Standard Settlement
-			 * Configuration Id", "Effective From Settlement Date {VSCPC}",
-			 * "Effective To Settlement Date {VSCPC}" }); Map<Integer, List<List<Object>>>
-			 * dsoGroupSscPcMap = new HashMap<Integer, List<List<Object>>>();
-			 * for (String[] values = mdd.getLine(); values != null; values =
-			 * mdd .getLine()) { int sscCode = Integer.parseInt(values[1]);
-			 * String pcCode = values[0]; Date validFrom =
-			 * mdd.toDate(values[2]); Date validTo = mdd.toDate(values[3]);
-			 * 
-			 * if (!sscPcMap.containsKey(sscCode)) { sscPcMap.put(sscCode, new
-			 * ArrayList<List<Object>>()); } List<List<Object>> sscPcs =
-			 * sscPcMap.get(sscCode); List<Object> sscPc = new ArrayList<Object>();
-			 * sscPc.add(pcCode); sscPc.add(validFrom); sscPc.add(validTo);
-			 * sscPcs.add(sscPc); }
-			 */
+
+			Mdd mdd = new Mdd(sc, "ValidSettlementConfigurationProfileClass",
+					new String[] { "Profile Class Id",
+							"Standard Settlement Configuration Id",
+							"Effective From Settlement Date {VSCPC}",
+							"Effective To Settlement Date {VSCPC}" });
+			Map<Integer, List<List<Object>>> sscPcMap = new HashMap<Integer, List<List<Object>>>();
+			for (String[] values = mdd.getLine(); values != null; values = mdd
+					.getLine()) {
+				int sscCode = Integer.parseInt(values[1]);
+				String pcCode = values[0];
+				Date validFrom = mdd.toDate(values[2]);
+				Date validTo = mdd.toDate(values[3]);
+
+				if (!sscPcMap.containsKey(sscCode)) {
+					sscPcMap.put(sscCode, new ArrayList<List<Object>>());
+				}
+				List<List<Object>> sscPcs = sscPcMap.get(sscCode);
+				List<Object> sscPc = new ArrayList<Object>();
+				sscPc.add(pcCode);
+				sscPc.add(validFrom);
+				sscPc.add(validTo);
+				sscPcs.add(sscPc);
+			}
+
 			Map<String, List<List<Object>>> dsoGroupMap = new HashMap<String, List<List<Object>>>();
-			Mdd mdd = new Mdd(sc, "GspGroupDistributor", new String[] {
+			mdd = new Mdd(sc, "GspGroupDistributor", new String[] {
 					"GSP Group Id", "Market Participant Id",
 					"Market Participant Role Code",
 					"Effective From Date {MPR}",
@@ -269,16 +290,39 @@ public class MpanTop extends PersistentEntity {
 							validFrom);
 					Date groupTo = Mdd
 							.minDate((Date) groupList.get(2), validTo);
-					for (Entry<String, List<Object>> entrySet : groupSscMap
-							.get(groupCode + ssc.getCode()).entrySet()) {
-						String pcCode = entrySet.getKey();
-						Date from = Mdd.maxDate((Date) entrySet.getValue().get(
-								0), groupFrom);
-						Date to = Mdd.minDate(
-								(Date) entrySet.getValue().get(1), groupTo);
-						llfc.insertMpanTop(Pc.getPc(pcCode), mtc, ssc, group,
-								from, to);
-						Hiber.close();
+					//Debug.print("GC :" + groupCode + " ssc " + ssc.getCode()
+					//		+ " part " + participantCode + " llfc "
+					//		+ llfc.codeAsString() + " mtc "
+					//		+ mtc.codeAsString());
+					//Debug
+					//		.print(""
+					//				+ groupSscMap
+					//						.get(groupCode + ssc.getCode()));
+					Map<String, List<Object>> pcs = groupSscMap.get(groupCode
+							+ ssc.getCode());
+					if (pcs != null) {
+						for (Entry<String, List<Object>> entrySet : pcs
+								.entrySet()) {
+							String pcCode = entrySet.getKey();
+							Date from = Mdd.maxDate((Date) entrySet.getValue()
+									.get(0), groupFrom);
+							Date to = Mdd.minDate((Date) entrySet.getValue()
+									.get(1), groupTo);
+							llfc.insertMpanTop(Pc.getPc(pcCode), mtc, ssc,
+									group, from, to);
+							Hiber.close();
+						}
+					} else {
+						List<List<Object>> pclasses = sscPcMap.get(ssc.getCode());
+						for (List<Object> pcList : pclasses) {
+							String pcCode = (String) pcList.get(0);
+							Date from = Mdd.maxDate((Date) pcList.get(1)
+									, groupFrom);
+							Date to = Mdd.minDate((Date) pcList.get(2), groupTo);
+							llfc.insertMpanTop(Pc.getPc(pcCode), mtc, ssc,
+									group, from, to);
+							Hiber.close();
+						}
 					}
 				}
 			}
