@@ -75,11 +75,11 @@ public abstract class Contract extends PersistentEntity implements
 	public Contract() {
 	}
 
-	public Contract(String name, HhEndDate startDate, String chargeScript)
+	public Contract(String name, HhEndDate startDate, HhEndDate finishDate, String chargeScript)
 			throws HttpException {
 		// setParty(party);
 		rateScripts = new HashSet<RateScript>();
-		RateScript rateScript = new RateScript(this, startDate, null,
+		RateScript rateScript = new RateScript(this, startDate, finishDate,
 				chargeScript);
 		rateScripts.add(rateScript);
 		setStartRateScript(rateScript);
@@ -87,11 +87,6 @@ public abstract class Contract extends PersistentEntity implements
 		internalUpdate(name, chargeScript);
 	}
 
-	/*
-	 * public Party getParty() { return party; }
-	 * 
-	 * void setParty(Party party) { this.party = party; }
-	 */
 	public String getName() {
 		return name;
 	}
@@ -506,17 +501,21 @@ public abstract class Contract extends PersistentEntity implements
 	}
 
 	public Account getAccount(String reference) throws HttpException {
-		Account account = (Account) Hiber
-				.session()
-				.createQuery(
-						"from Account account where account.contract = :contract and account.reference = :reference")
-				.setEntity("contract", this).setString("reference", reference)
-				.uniqueResult();
+		Account account = findAccount(reference);
 		if (account == null) {
 			throw new NotFoundException("The account '" + reference
 					+ "' can't be found.");
 		}
 		return account;
+	}
+
+	public Account findAccount(String reference) throws HttpException {
+		return (Account) Hiber
+				.session()
+				.createQuery(
+						"from Account account where account.contract = :contract and account.reference = :reference")
+				.setEntity("contract", this).setString("reference", reference)
+				.uniqueResult();
 	}
 
 	public Batches batchesInstance() {

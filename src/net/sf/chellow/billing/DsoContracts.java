@@ -54,7 +54,7 @@ public class DsoContracts implements Urlable, XmlDescriber {
 			throw new RuntimeException(e);
 		}
 	}
-	
+
 	private Dso dso;
 
 	public DsoContracts(Dso dso) {
@@ -76,10 +76,15 @@ public class DsoContracts implements Urlable, XmlDescriber {
 		if (!inv.isValid()) {
 			throw new UserException(document());
 		}
-		DsoContract service = dso.insertService(name, HhEndDate
-				.roundDown(startDate), chargeScript);
+		Date finishDate = null;
+		if (inv.hasParameter("has-finished")) {
+			finishDate = inv.getDate("finish-date");
+		}
+		DsoContract contract = dso.insertContract(name, HhEndDate
+				.roundDown(startDate), finishDate == null ? null : HhEndDate
+				.roundDown(finishDate), chargeScript);
 		Hiber.commit();
-		inv.sendCreated(document(), service.getUri());
+		inv.sendCreated(document(), contract.getUri());
 	}
 
 	@SuppressWarnings("unchecked")

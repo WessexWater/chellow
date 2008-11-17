@@ -40,13 +40,14 @@ import org.w3c.dom.Element;
 @SuppressWarnings("serial")
 public class MopContract extends Contract {
 	static public MopContract insertMopContract(Provider provider, String name,
-			   			HhEndDate startDate, String chargeScript) throws HttpException {
-			   		MopContract contract = new MopContract(provider, name, startDate,
-			   				chargeScript);
-			   		Hiber.session().save(contract);
-			   		Hiber.flush();
-			   		return contract;
-			   }
+			HhEndDate startDate, HhEndDate finishDate, String chargeScript)
+			throws HttpException {
+		MopContract contract = new MopContract(provider, name, startDate,
+				finishDate, chargeScript);
+		Hiber.session().save(contract);
+		Hiber.flush();
+		return contract;
+	}
 
 	public static MopContract getMopService(Long id) throws HttpException {
 		MopContract contract = (MopContract) Hiber.session().get(
@@ -57,23 +58,22 @@ public class MopContract extends Contract {
 		}
 		return contract;
 	}
-	
+
 	private Provider mop;
 
 	public MopContract() {
 	}
 
-	public MopContract(Provider mop,
-			String name, HhEndDate startDate, String chargeScript)
-			throws HttpException {
-		super(name, startDate, chargeScript);
+	public MopContract(Provider mop, String name, HhEndDate startDate,
+			HhEndDate finishDate, String chargeScript) throws HttpException {
+		super(name, startDate, finishDate, chargeScript);
 		setParty(mop);
 	}
-	
+
 	public Provider getParty() {
 		return mop;
 	}
-	
+
 	void setParty(Provider mop) {
 		this.mop = mop;
 	}
@@ -88,8 +88,8 @@ public class MopContract extends Contract {
 	}
 
 	public MonadUri getUri() throws HttpException {
-		return Chellow.MOP_CONTRACTS_INSTANCE.getUri().resolve(
-				getUriId()).append("/");
+		return Chellow.MOP_CONTRACTS_INSTANCE.getUri().resolve(getUriId())
+				.append("/");
 	}
 
 	public void httpPost(Invocation inv) throws HttpException {

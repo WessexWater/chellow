@@ -35,7 +35,6 @@ import net.sf.chellow.monad.XmlTree;
 import net.sf.chellow.monad.types.MonadDate;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
-import net.sf.chellow.physical.ContractFrequency;
 import net.sf.chellow.physical.EntityList;
 import net.sf.chellow.physical.HhEndDate;
 import net.sf.chellow.physical.MarketRole;
@@ -70,8 +69,7 @@ public class HhdcContracts extends EntityList {
 	public void httpPost(Invocation inv) throws HttpException {
 		Long providerId = inv.getLong("provider-id");
 		String name = inv.getString("name");
-		ContractFrequency frequency = inv.getValidatable(
-				ContractFrequency.class, "frequency");
+		String frequency = inv.getString("frequency");
 		Date startDate = inv.getDate("start-date");
 		String chargeScript = inv.getString("charge-script");
 		Integer lag = inv.getInteger("lag");
@@ -81,8 +79,8 @@ public class HhdcContracts extends EntityList {
 		}
 		Provider provider = Provider.getProvider(providerId);
 		HhdcContract contract = HhdcContract.insertHhdcContract(provider, name,
-				HhEndDate.roundDown(startDate), chargeScript, frequency, lag,
-				importerProperties);
+				HhEndDate.roundDown(startDate), null, chargeScript,
+				frequency, lag, importerProperties);
 		Hiber.commit();
 		inv.sendCreated(document(), contract.getUri());
 	}

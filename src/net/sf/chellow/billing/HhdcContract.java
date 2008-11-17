@@ -38,24 +38,65 @@ import net.sf.chellow.monad.XmlTree;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
 import net.sf.chellow.physical.ChannelSnags;
-import net.sf.chellow.physical.ContractFrequency;
 import net.sf.chellow.physical.HhEndDate;
 import net.sf.chellow.physical.MarketRole;
 import net.sf.chellow.physical.Mpan;
 import net.sf.chellow.physical.SiteSnags;
 import net.sf.chellow.ui.Chellow;
+import net.sf.chellow.ui.GeneralImport;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 @SuppressWarnings("serial")
 public class HhdcContract extends Contract {
+	static public final String GENERAL_IMPORT_NAME = "hhdc-contract";
+	static public final String FREQUENCY_DAILY = "daily";
+	static public final String FREQUENCY_MONTHLY = "monthly";
+
+	static public void generalImport(String action, String[] values,
+			Element csvElement) throws HttpException {
+		if (values.length < 8) {
+			throw new UserException("There aren't enough fields in this row");
+		}
+		String participantCode = values[0];
+		GeneralImport.addField(csvElement, "Participant Code", participantCode);
+		Provider provider = Provider.getProvider(participantCode,
+				MarketRole.HHDC);
+		String name = values[1];
+		GeneralImport.addField(csvElement, "Name", name);
+
+		if (action.equals("insert")) {
+			String startDateStr = values[2];
+			GeneralImport.addField(csvElement, "Start Date", startDateStr);
+			HhEndDate startDate = new HhEndDate(startDateStr);
+			String finishDateStr = values[3];
+			GeneralImport.addField(csvElement, "Finish Date", finishDateStr);
+			HhEndDate finishDate = null;
+			if (finishDateStr.length() > 0) {
+				finishDate = new HhEndDate(finishDateStr);
+			}
+			String frequency = values[4];
+			GeneralImport.addField(csvElement, "Frequency", frequency);
+			String lagStr = values[5];
+			GeneralImport.addField(csvElement, "Lag", lagStr);
+			int lag = Integer.parseInt(lagStr);
+			String chargeScript = values[6];
+			GeneralImport.addField(csvElement, "Charge Script", chargeScript);
+			String importerProperties = values[7];
+			GeneralImport.addField(csvElement, "Importer Properties",
+					importerProperties);
+			insertHhdcContract(provider, name, startDate, finishDate,
+					chargeScript, frequency, lag, importerProperties);
+		}
+	}
+
 	static public HhdcContract insertHhdcContract(Provider provider,
-			String name, HhEndDate startDate, String chargeScript,
-			ContractFrequency frequency, int lag, String importerProperties)
-			throws HttpException {
+			String name, HhEndDate startDate, HhEndDate finishDate,
+			String chargeScript, String frequency, int lag,
+			String importerProperties) throws HttpException {
 		HhdcContract contract = new HhdcContract(provider, name, startDate,
-				chargeScript, frequency, lag, importerProperties);
+				finishDate, chargeScript, frequency, lag, importerProperties);
 		Hiber.session().save(contract);
 		Hiber.flush();
 		return contract;
@@ -87,7 +128,7 @@ public class HhdcContract extends Contract {
 
 	private Provider hhdc;
 
-	private ContractFrequency frequency;
+	private String frequency;
 
 	private int lag;
 
@@ -98,9 +139,9 @@ public class HhdcContract extends Contract {
 	}
 
 	public HhdcContract(Provider hhdc, String name, HhEndDate startDate,
-			String chargeScript, ContractFrequency frequency, int lag,
-			String importerProperties) throws HttpException {
-		super(name, startDate, chargeScript);
+			HhEndDate finishDate, String chargeScript, String frequency,
+			int lag, String importerProperties) throws HttpException {
+		super(name, startDate, finishDate, chargeScript);
 		if (hhdc.getRole().getCode() != MarketRole.HHDC) {
 			throw new UserException("The provider must have the HHDC role.");
 		}
@@ -116,11 +157,11 @@ public class HhdcContract extends Contract {
 		return hhdc;
 	}
 
-	public ContractFrequency getFrequency() {
+	public String getFrequency() {
 		return frequency;
 	}
 
-	void setFrequency(ContractFrequency frequency) {
+	void setFrequency(String frequency) {
 		this.frequency = frequency;
 	}
 
@@ -149,18 +190,22 @@ public class HhdcContract extends Contract {
 	}
 
 	private void intrinsicUpdate(String name, String chargeScript,
-			ContractFrequency frequency, int lag, String importerProperties)
+			String frequency, int lag, String importerProperties)
 			throws HttpException {
 		super.internalUpdate(name, chargeScript);
+		if (!(FREQUENCY_DAILY.equals(frequency) || FREQUENCY_MONTHLY
+				.equals(frequency))) {
+			throw new UserException("The frequency must be " + FREQUENCY_DAILY
+					+ " or " + FREQUENCY_MONTHLY);
+		}
 		setFrequency(frequency);
 		setLag(lag);
 		setImporterProperties(importerProperties);
 	}
 
 	@SuppressWarnings("unchecked")
-	public void update(String name, String chargeScript,
-			ContractFrequency frequency, int lag, String importerProperties)
-			throws HttpException {
+	public void update(String name, String chargeScript, String frequency,
+			int lag, String importerProperties) throws HttpException {
 		intrinsicUpdate(name, chargeScript, frequency, lag, importerProperties);
 		updateNotification();
 		// test if new dates agree with supply generation dates.
@@ -209,8 +254,7 @@ public class HhdcContract extends Contract {
 		} else {
 			String name = inv.getString("name");
 			String chargeScript = inv.getString("charge-script");
-			ContractFrequency frequency = inv.getValidatable(
-					ContractFrequency.class, "frequency");
+			String frequency = inv.getString("frequency");
 			int lag = inv.getInteger("lag");
 			String importerProperties = inv.getString("importer-properties");
 			if (!inv.isValid()) {
@@ -273,7 +317,7 @@ public class HhdcContract extends Contract {
 	public Element toXml(Document doc) throws HttpException {
 		Element element = super.toXml(doc, "hhdc-contract");
 
-		element.setAttributeNode(frequency.toXml(doc));
+		element.setAttribute("frequency", frequency);
 		element.setAttribute("lag", Integer.toString(lag));
 		element.setAttribute("has-stark-automatic-hh-data-importer",
 				StarkAutomaticHhDataImporters.getImportersInstance()

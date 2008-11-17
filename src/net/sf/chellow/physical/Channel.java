@@ -492,10 +492,10 @@ public class Channel extends PersistentEntity implements Urlable {
 			cal.set(Calendar.MINUTE, 0);
 			cal.set(Calendar.HOUR_OF_DAY, 0);
 			if (latestHhdcContract.getFrequency().equals(
-					ContractFrequency.DAILY)) {
+					HhdcContract.FREQUENCY_DAILY)) {
 				finish = new HhEndDate(cal.getTime());
 			} else if (latestHhdcContract.getFrequency().equals(
-					ContractFrequency.MONTHLY)) {
+					HhdcContract.FREQUENCY_MONTHLY)) {
 				cal.set(Calendar.DAY_OF_MONTH, 1);
 				finish = new HhEndDate(cal.getTime());
 			} else {

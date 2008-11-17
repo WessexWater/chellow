@@ -70,7 +70,7 @@ public class SupplyGenerations extends EntityList {
 
 	public void httpPost(Invocation inv) throws HttpException {
 		MonadDate finishDate = inv.getMonadDate("finish-date");
-		SupplyGeneration supplyGeneration = supply.addGeneration(HhEndDate
+		SupplyGeneration supplyGeneration = supply.insertGeneration(HhEndDate
 				.roundDown(finishDate.getDate()));
 		Hiber.commit();
 		inv.sendCreated(document(), supplyGeneration.getUri());

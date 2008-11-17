@@ -22,19 +22,53 @@
 
 package net.sf.chellow.physical;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import net.sf.chellow.hhimport.HhDatumRaw;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.NotFoundException;
 import net.sf.chellow.monad.Urlable;
+import net.sf.chellow.monad.UserException;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
+import net.sf.chellow.ui.GeneralImport;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 public class HhDatum extends PersistentEntity {
-	public static Character ACTUAL = 'A';
-	public static Character ESTIMATE = 'E';
+	public static final Character ACTUAL = 'A';
+	public static final Character ESTIMATE = 'E';
+	
+	static public void generalImport(String action, String[] values,
+			Element csvElement) throws HttpException {
+		if (values.length < 8) {
+			throw new UserException("There aren't enough fields in this row");
+		}
+		String mpanCoreStr = GeneralImport.addField(csvElement,
+				"MPAN Core", values[0]);
+		MpanCore mpanCore = MpanCore.getMpanCore(mpanCoreStr);
+		String dateStr = GeneralImport.addField(csvElement, "Date", values[1]);
+        HhEndDate date = new HhEndDate(dateStr);
+        Supply supply = mpanCore.getSupply();
+        SupplyGeneration supplyGeneration = supply.getGeneration(date);
+        String isImportStr = GeneralImport.addField(csvElement, "Is Import?", values[2]);
+        boolean isImport = Boolean.parseBoolean(isImportStr);
+        String isKwhStr = GeneralImport.addField(csvElement, "Is Kwh?", values[3]);
+        boolean isKwh = Boolean.parseBoolean(isKwhStr);
+        Channel channel = supplyGeneration.getChannel(isImport, isKwh);
+		if (action.equals("insert")) {
+			String valueStr = GeneralImport.addField(csvElement, "Value", values[4]);
+			float value = Float.parseFloat(valueStr);
+			String status = GeneralImport.addField(csvElement, "Status", values[5]);
+			HhDatumRaw datumRaw = new HhDatumRaw(mpanCore, isImport, isKwh,
+					date, value, status);
+			List<HhDatumRaw> dataRaw = new ArrayList<HhDatumRaw>();
+			dataRaw.add(datumRaw);
+			channel.addHhData(supplyGeneration.getHhdcContract(), dataRaw);
+		}
+	}
 
 	private Channel channel;
 

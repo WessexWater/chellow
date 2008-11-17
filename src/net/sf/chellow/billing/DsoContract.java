@@ -50,24 +50,24 @@ public class DsoContract extends Contract {
 	public static DsoContract findDsoContract(Long id) throws HttpException {
 		return (DsoContract) Hiber.session().get(DsoContract.class, id);
 	}
-	
+
 	private Dso dso;
 
 	public DsoContract() {
 	}
 
 	public DsoContract(Dso dso, String name, HhEndDate startDate,
-			String chargeScript) throws HttpException {
-		super(name, startDate,
-				chargeScript);
+			HhEndDate finishDate, String chargeScript) throws HttpException {
+		super(name, startDate, finishDate, chargeScript);
 		setParty(dso);
 		internalUpdate(name, chargeScript);
 	}
-	
+
 	@Override
 	public Dso getParty() {
 		return dso;
 	}
+
 	void setParty(Dso dso) {
 		this.dso = dso;
 	}
@@ -82,8 +82,7 @@ public class DsoContract extends Contract {
 	}
 
 	public MonadUri getUri() throws HttpException {
-		return dso.contractsInstance().getUri().resolve(getUriId())
-				.append("/");
+		return dso.contractsInstance().getUri().resolve(getUriId()).append("/");
 	}
 
 	public void delete() throws HttpException {

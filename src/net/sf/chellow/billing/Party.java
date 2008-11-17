@@ -105,8 +105,8 @@ public abstract class Party extends PersistentEntity {
 						while ((c = isr.read()) != -1) {
 							pythonString.write(c);
 						}
-						dsoService = dso.insertService("main", new HhEndDate(
-								"2000-01-01T00:30Z"), pythonString.toString());
+						dsoService = dso.insertContract("main", new HhEndDate(
+								"2000-01-01T00:30Z"), null, pythonString.toString());
 						RateScript dsoRateScript = dsoService.getRateScripts()
 								.iterator().next();
 						isr = new InputStreamReader(dsoClassLoader.getResource(

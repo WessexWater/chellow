@@ -45,26 +45,76 @@ import net.sf.chellow.physical.Mpan;
 import net.sf.chellow.physical.PersistentEntity;
 import net.sf.chellow.physical.SnagDateBounded;
 import net.sf.chellow.physical.SupplyGeneration;
+import net.sf.chellow.ui.GeneralImport;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-public class Account extends PersistentEntity implements Urlable {
+public class Account extends PersistentEntity {
+	public static void generalImportHhdc(String action, String[] values,
+			Element csvElement) throws HttpException {
+		if (values.length < 2) {
+			throw new UserException("There aren't enough fields in this row");
+		}
+		String hhdcContractName = GeneralImport.addField(csvElement,
+				"Contract", values[0]);
+		HhdcContract hhdcContract = HhdcContract
+				.getHhdcContract(hhdcContractName);
+		String hhdcAccountReference = GeneralImport.addField(csvElement,
+				"Reference", values[1]);
+		if (action.equals("insert")) {
+			hhdcContract.insertAccount(hhdcAccountReference);
+		} else {
+			Account hhdcAccount = hhdcContract.getAccount(hhdcAccountReference);
+			if (action.equals("delete")) {
+				hhdcContract.deleteAccount(hhdcAccount);
+			} else if (action.equals("update")) {
+				String newReference = GeneralImport.addField(csvElement,
+						"New Reference", values[2]);
+				hhdcAccount.update(newReference);
+			}
+		}
+	}
+
+	public static void generalImportSupplier(String action, String[] values,
+			Element csvElement) throws HttpException {
+		if (values.length < 2) {
+			throw new UserException("There aren't enough fields in this row");
+		}
+		String supplierContractName = GeneralImport.addField(csvElement,
+				"Contract", values[0]);
+		SupplierContract supplierContract = SupplierContract
+				.getSupplierContract(supplierContractName);
+		String supplierAccountReference = GeneralImport.addField(csvElement,
+				"Reference", values[1]);
+		if (action.equals("insert")) {
+			supplierContract.insertAccount(supplierAccountReference);
+		} else {
+			Account supplierAccount = supplierContract
+					.getAccount(supplierAccountReference);
+			if (action.equals("delete")) {
+				supplierContract.deleteAccount(supplierAccount);
+			} else if (action.equals("update")) {
+				String newReference = GeneralImport.addField(csvElement,
+						"New Reference", values[2]);
+				supplierAccount.update(newReference);
+			}
+		}
+	}
+
 	public static Account getAccount(Long id) throws HttpException,
 			InternalException {
-		Account account = (Account) Hiber.session().get(Account.class, id);
+		Account account = findAccount(id);
 		if (account == null) {
 			throw new UserException("There isn't an account with that id.");
 		}
 		return account;
 	}
 
-	/*
-	 * public static void deleteAccount(Account account) throws
-	 * ProgrammerException { try { Hiber.session().delete(account);
-	 * Hiber.flush(); } catch (HibernateException e) { throw new
-	 * ProgrammerException(e); } }
-	 */
+	public static Account findAccount(Long id) throws HttpException {
+		return (Account) Hiber.session().get(Account.class, id);
+	}
+
 	@SuppressWarnings("unchecked")
 	public static void checkAllMissingFromLatest() throws HttpException {
 		for (Account account : (List<Account>) Hiber

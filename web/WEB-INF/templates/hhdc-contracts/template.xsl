@@ -21,7 +21,7 @@
 					&gt;
 					<xsl:value-of select="'HHDC Contracts ['" />
 					<a
-						href="{/source/request/@context-path}/orgs/{/source/hhdc-contracts/org/@id}/reports/56/screen/output/">
+						href="{/source/request/@context-path}/reports/57/output/">
 						<xsl:value-of select="'view'" />
 					</a>
 					<xsl:value-of select="']'" />
@@ -285,17 +285,17 @@
 									Frequency with which the data
 									arrives
 									<select name="frequency">
-										<option value="0">
+										<option value="daily">
 											<xsl:if
-												test="number(/source/request/parameter[@name = 'frequency']/value) = '0'">
+												test="/source/request/parameter[@name = 'frequency']/value = 'daily'">
 												<xsl:attribute
 													name="selected" />
 											</xsl:if>
 											Daily
 										</option>
-										<option value="1">
+										<option value="monthly">
 											<xsl:if
-												test="number(/source/request/parameter[@name = 'frequency']/value) = '1'">
+												test="/source/request/parameter[@name = 'frequency']/value = 'monthly'">
 												<xsl:attribute
 													name="selected" />
 											</xsl:if>

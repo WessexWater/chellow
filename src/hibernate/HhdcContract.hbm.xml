@@ -31,11 +31,8 @@
 			foreign-key="fkey_hhdc_contract_contract" />
 		<many-to-one name="party" class="Provider" column="provider_id"
 			foreign-key="fkey_hhdc_contract_provider" not-null="true" />
-		<component name="frequency"
-			class="net.sf.chellow.physical.ContractFrequency">
-			<property name="integer" column="frequency" type="integer"
-				not-null="true" />
-		</component>
+		<property name="frequency" column="frequency" type="string"
+			not-null="true" />
 		<property name="lag" column="lag" type="integer"
 			not-null="true" />
 	</joined-subclass>

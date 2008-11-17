@@ -73,8 +73,9 @@ public class NonCoreContracts extends EntityList {
 			throw new UserException(document());
 		}
 		Provider provider = Provider.getProvider(providerId);
-		NonCoreContract contract = NonCoreContract.insertNonCoreContract(provider,
-				name, HhEndDate.roundDown(startDate), chargeScript);
+		NonCoreContract contract = NonCoreContract.insertNonCoreContract(
+				provider, name, HhEndDate.roundDown(startDate), null,
+				chargeScript);
 		Hiber.commit();
 		inv.sendCreated(document(), contract.getUri());
 	}
@@ -111,8 +112,10 @@ public class NonCoreContracts extends EntityList {
 	}
 
 	public NonCoreContract getChild(UriPathElement uriId) throws HttpException {
-		NonCoreContract contract = (NonCoreContract) Hiber.session().createQuery(
-				"from NonCoreContract contract where contract.id = :contractId")
+		NonCoreContract contract = (NonCoreContract) Hiber
+				.session()
+				.createQuery(
+						"from NonCoreContract contract where contract.id = :contractId")
 				.setLong("contractId", Long.parseLong(uriId.getString()))
 				.uniqueResult();
 		if (contract == null) {

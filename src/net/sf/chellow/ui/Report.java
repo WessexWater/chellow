@@ -26,6 +26,28 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 public class Report extends PersistentEntity {
+	public static void generalImport(String action, String[] values,
+			Element csvElement) throws HttpException {
+		if (values.length < 3) {
+			throw new UserException("There aren't enough fields in this row");
+		}
+		String name = GeneralImport.addField(csvElement, "Name", values[0]);
+		if (action.equals("insert")) {
+			String script = GeneralImport.addField(csvElement, "Script",
+					values[1]);
+			String template = GeneralImport.addField(csvElement, "Template",
+					values[2]);
+			Report.insertReport(name, script, template);
+		} else if (action.equals("update")) {
+			/*
+			 * String script = values[3];
+			 * csvElement.appendChild(getField("Script", script)); String
+			 * template = values[4]; csvElement.appendChild(getField("Template",
+			 * template)); Report report = Report.getReport(name);
+			 */
+		}
+	}
+
 	public static Report getReport(Long id) throws HttpException {
 		Report report = (Report) Hiber.session().get(Report.class, id);
 		if (report == null) {
@@ -181,8 +203,8 @@ public class Report extends PersistentEntity {
 			String template = inv.getString("template");
 
 			script = script.replace("\r", "").replace("\t", "    ");
-			template = template.length() == 0 ? null : template.replace("\r", "")
-					.replace("\t", "    "); 
+			template = template.length() == 0 ? null : template.replace("\r",
+					"").replace("\t", "    ");
 			Document doc = MonadUtils.newSourceDocument();
 			Element source = doc.getDocumentElement();
 			Element scriptElement = doc.createElement("script");

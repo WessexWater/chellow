@@ -74,7 +74,7 @@ public class MopContracts extends EntityList {
 		}
 		Provider mop = Provider.getProvider(mopCode, MarketRole.MOP);
 		MopContract contract = MopContract.insertMopContract(mop, name,
-				HhEndDate.roundDown(startDate), chargeScript);
+				HhEndDate.roundDown(startDate), null, chargeScript);
 		Hiber.commit();
 		inv.sendCreated(contract.getUri());
 	}

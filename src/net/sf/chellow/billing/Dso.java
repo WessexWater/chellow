@@ -114,15 +114,15 @@ public class Dso extends Party {
 		return llfc;
 	}
 
-	public DsoContracts servicesInstance() {
+	public DsoContracts contractsInstance() {
 		return new DsoContracts(this);
 	}
 
-	public DsoContract insertService(String name, HhEndDate startDate,
+	public DsoContract insertContract(String name, HhEndDate startDate, HhEndDate finishDate,
 			String chargeScript) throws HttpException {
 		DsoContract service = findContract(name);
 		if (service == null) {
-			service = new DsoContract(this, name, startDate, chargeScript);
+			service = new DsoContract(this, name, startDate, finishDate, chargeScript);
 		} else {
 			throw new UserException(
 					"There is already a DSO service with this name.");
@@ -153,9 +153,4 @@ public class Dso extends Party {
 			throw new NotFoundException();
 		}
 	}
-
-	public DsoContracts contractsInstance() {
-		return new DsoContracts(this);
-	}
-
 }

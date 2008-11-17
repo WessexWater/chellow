@@ -24,8 +24,10 @@ package net.sf.chellow.physical;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import net.sf.chellow.billing.Account;
@@ -44,12 +46,574 @@ import net.sf.chellow.monad.XmlTree;
 import net.sf.chellow.monad.types.MonadDate;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
+import net.sf.chellow.ui.GeneralImport;
 
 import org.hibernate.exception.ConstraintViolationException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-public class SupplyGeneration extends PersistentEntity implements Urlable {
+public class SupplyGeneration extends PersistentEntity {
+	static public void generalImport(String action, String[] values,
+			Element csvElement) throws HttpException {
+		if (action.equals("update")) {
+			if (values.length < 29) {
+				throw new UserException(
+						"There aren't enough fields in this row");
+			}
+			String mpanCoreStr = GeneralImport.addField(csvElement,
+					"MPAN Core", values[0]);
+			MpanCore mpanCore = MpanCore.getMpanCore(mpanCoreStr);
+			Supply supply = mpanCore.getSupply();
+			String dateStr = GeneralImport.addField(csvElement, "Date",
+					values[1]);
+
+			SupplyGeneration supplyGeneration = supply.getGeneration(dateStr
+					.length() == 0 ? null : new HhEndDate(dateStr));
+			if (supplyGeneration == null) {
+				throw new UserException(
+						"There isn't a generation at this date.");
+			}
+			String startDateStr = GeneralImport.addField(csvElement,
+					"Start date", values[2]);
+			String finishDateStr = GeneralImport.addField(csvElement,
+					"Finish date", values[3]);
+			String meterSerialNumber = GeneralImport.addField(csvElement,
+					"Meter Serial Number", values[4]);
+			Meter meter = null;
+			if (meterSerialNumber.length() != 0) {
+				meter = supply.findMeter(meterSerialNumber);
+				if (meter == null) {
+					meter = supply.insertMeter(meterSerialNumber);
+				}
+			}
+			supplyGeneration.update(startDateStr
+					.equals(GeneralImport.NO_CHANGE) ? supplyGeneration
+					.getStartDate() : new HhEndDate("start", startDateStr),
+					finishDateStr.length() == 0 ? null : (finishDateStr
+							.equals(GeneralImport.NO_CHANGE) ? supplyGeneration
+							.getFinishDate() : new HhEndDate("finish",
+							finishDateStr)), meter);
+			String importMpanStr = GeneralImport.addField(csvElement,
+					"Import MPAN", values[5]);
+			boolean importHasImportKwh = false;
+			boolean importHasImportKvarh = false;
+			boolean importHasExportKwh = false;
+			boolean importHasExportKvarh = false;
+			String importSscCode = GeneralImport.addField(csvElement,
+					"Import SSC", values[6]);
+			Ssc importSsc = null;
+			String importGspGroupCode = GeneralImport.addField(csvElement,
+					"Import GSP Group", values[7]);
+			GspGroup importGspGroup = null;
+			String importAgreedSupplyCapacityStr = GeneralImport.addField(
+					csvElement, "Import Agreed Supply Capacity", values[8]);
+			Integer importAgreedSupplyCapacity = null;
+			Mpan existingImportMpan = supplyGeneration.getImportMpan();
+			HhdcContract importHhdcContract = null;
+			Account importHhdcAccount = null;
+			SupplierContract importSupplierContract = null;
+			Account importSupplierAccount = null;
+			if (importMpanStr.equals(GeneralImport.NO_CHANGE)) {
+				importMpanStr = existingImportMpan == null ? null
+						: existingImportMpan.toString();
+			}
+			if (importMpanStr != null) {
+				if (importSscCode.equals(GeneralImport.NO_CHANGE)) {
+					if (existingImportMpan == null) {
+						throw new UserException(
+								"There isn't an existing import MPAN.");
+					} else {
+						importSsc = existingImportMpan.getTop().getSsc();
+					}
+				} else {
+					importSsc = importSscCode.length() == 0 ? null : Ssc
+							.getSsc(importSscCode);
+				}
+				if (importGspGroupCode.equals(GeneralImport.NO_CHANGE)) {
+					if (existingImportMpan == null) {
+						throw new UserException(
+								"There isn't an existing import MPAN.");
+					} else {
+						importGspGroup = existingImportMpan.getTop()
+								.getGspGroup();
+					}
+				} else {
+					importGspGroup = GspGroup.getGspGroup(importSscCode);
+				}
+				if (importAgreedSupplyCapacityStr
+						.equals(GeneralImport.NO_CHANGE)) {
+					if (existingImportMpan == null) {
+						throw new UserException(
+								"There isn't an existing import MPAN.");
+					} else {
+						importAgreedSupplyCapacity = existingImportMpan
+								.getAgreedSupplyCapacity();
+					}
+				} else {
+					try {
+						importAgreedSupplyCapacity = Integer
+								.parseInt(importAgreedSupplyCapacityStr);
+					} catch (NumberFormatException e) {
+						throw new UserException(
+								"The import agreed supply capacity must be an integer. "
+										+ e.getMessage());
+					}
+				}
+				String importHasImportKwhStr = GeneralImport.addField(
+						csvElement, "Import is import kWh", values[9]);
+				importHasImportKwh = importHasImportKwhStr
+						.equals(GeneralImport.NO_CHANGE) ? existingImportMpan == null ? false
+						: existingImportMpan.getHasImportKwh()
+						: Boolean.parseBoolean(importHasImportKwhStr);
+				String importHasImportKvarhStr = GeneralImport.addField(
+						csvElement, "Import is import kVArh", values[10]);
+				importHasImportKvarh = importHasImportKvarhStr
+						.equals(GeneralImport.NO_CHANGE) ? existingImportMpan == null ? false
+						: existingImportMpan.getHasImportKvarh()
+						: Boolean.parseBoolean(importHasImportKvarhStr);
+				String importHasExportKwhStr = GeneralImport.addField(
+						csvElement, "Import is export kWh", values[11]);
+				importHasExportKwh = importHasExportKwhStr
+						.equals(GeneralImport.NO_CHANGE) ? existingImportMpan == null ? false
+						: existingImportMpan.getHasExportKwh()
+						: Boolean.parseBoolean(importHasExportKwhStr);
+				String importHasExportKvarhStr = GeneralImport.addField(
+						csvElement, "Import is export kVArh", values[12]);
+				importHasExportKvarh = importHasExportKvarhStr
+						.equals(GeneralImport.NO_CHANGE) ? existingImportMpan == null ? false
+						: existingImportMpan.getHasExportKvarh()
+						: Boolean.parseBoolean(importHasExportKvarhStr);
+				if (importHasImportKwh || importHasImportKvarh
+						|| importHasExportKwh || importHasExportKvarh) {
+					/*
+					 * String importHhdceStr = values[13];
+					 * csvElement.appendChild(getField("Import DCE",
+					 * importHhdceStr)); if (importHhdceStr.equals(NO_CHANGE)) {
+					 * if (existingImportMpan.getHhdceContract() == null) {
+					 * throw new UserException( "There isn't an existing DCE
+					 * contract"); } else { importHhdce = existingImportMpan
+					 * .getHhdceContract().getProvider(); } } else { importHhdce =
+					 * Provider.getProvider( importHhdceStr, MarketRole.HHDC); }
+					 */
+					String importHhdcContractName = GeneralImport.addField(
+							csvElement, "Import HHDC Contract", values[13]);
+					if (importHhdcContractName.equals(GeneralImport.NO_CHANGE)) {
+						if (existingImportMpan == null) {
+							throw new UserException(
+									"There isn't an existing HHDC contract");
+						}
+						Account account = existingImportMpan.getHhdcAccount();
+						if (account == null) {
+							throw new UserException(
+									"There isn't an existing HHDC contract");
+						}
+						importHhdcContract = HhdcContract
+								.getHhdcContract(account.getContract().getId());
+					} else {
+						importHhdcContract = HhdcContract
+								.getHhdcContract(importHhdcContractName);
+					}
+					String importHhdcAccountReference = GeneralImport.addField(
+							csvElement, "Import HHDC account reference",
+							values[14]);
+					if (importHhdcAccountReference
+							.equals(GeneralImport.NO_CHANGE)) {
+						if (existingImportMpan == null) {
+							throw new UserException(
+									"There isn't an existing import HHDC account");
+						}
+						Account account = existingImportMpan.getHhdcAccount();
+						if (account == null) {
+							throw new UserException(
+									"There isn't an existing HHDC account");
+						}
+						importHhdcAccount = account;
+					} else {
+						importHhdcAccount = importHhdcContract
+								.getAccount(importHhdcAccountReference);
+					}
+				}
+				String importContractSupplierName = GeneralImport.addField(
+						csvElement, "Import Supplier Contract", values[15]);
+				if (importContractSupplierName.equals(GeneralImport.NO_CHANGE)) {
+					if (existingImportMpan == null) {
+						throw new UserException(
+								"There isn't an existing import supplier.");
+					}
+					Account account = existingImportMpan.getSupplierAccount();
+					if (account == null) {
+						throw new UserException(
+								"There isn't an existing import supplier.");
+					}
+					importSupplierContract = SupplierContract
+							.getSupplierContract(account.getContract().getId());
+				} else {
+					importSupplierContract = SupplierContract
+							.getSupplierContract(importContractSupplierName);
+				}
+				String importSupplierAccountReference = GeneralImport.addField(
+						csvElement, "Import Supplier Account Reference",
+						values[16]);
+				if (importSupplierAccountReference
+						.equals(GeneralImport.NO_CHANGE)) {
+					if (existingImportMpan == null) {
+						throw new UserException(
+								"There isn't an existing import supplier account.");
+					}
+					Account account = existingImportMpan.getSupplierAccount();
+					if (account == null) {
+						throw new UserException(
+								"There isn't an existing import supplier account.");
+					}
+					importSupplierAccount = account;
+				} else {
+					importSupplierAccount = importSupplierContract
+							.getAccount(importSupplierAccountReference);
+				}
+			}
+			String exportMpanStr = GeneralImport.addField(csvElement,
+					"Eport MPAN", values[17]);
+			String exportSscCode = GeneralImport.addField(csvElement,
+					"Export SSC", values[18]);
+			Ssc exportSsc = null;
+			String exportGspGroupCode = GeneralImport.addField(csvElement,
+					"Export GSP Group", values[19]);
+			GspGroup exportGspGroup = null;
+			boolean exportHasImportKwh = false;
+			boolean exportHasImportKvarh = false;
+			boolean exportHasExportKwh = false;
+			boolean exportHasExportKvarh = false;
+			String exportAgreedSupplyCapacityStr = GeneralImport.addField(
+					csvElement, "Export Agreed Supply Capacity", values[20]);
+			Mpan existingExportMpan = supplyGeneration.getExportMpan();
+			Integer exportAgreedSupplyCapacity = null;
+			if (exportMpanStr.equals(GeneralImport.NO_CHANGE)) {
+				exportMpanStr = existingExportMpan == null ? null
+						: existingExportMpan.toString();
+			}
+			Account exportHhdcAccount = null;
+			SupplierContract exportSupplierContract = null;
+			Account exportAccountSupplier = null;
+			if (exportMpanStr != null) {
+				if (exportSscCode.equals(GeneralImport.NO_CHANGE)) {
+					if (existingExportMpan == null) {
+						throw new UserException(
+								"There isn't an existing export MPAN.");
+					} else {
+						exportSsc = existingExportMpan.getTop().getSsc();
+					}
+				} else {
+					exportSsc = exportSscCode.length() == 0 ? null : Ssc
+							.getSsc(exportSscCode);
+				}
+				if (exportGspGroupCode.equals(GeneralImport.NO_CHANGE)) {
+					if (existingExportMpan == null) {
+						throw new UserException(
+								"There isn't an existing export MPAN.");
+					} else {
+						exportGspGroup = existingExportMpan.getTop()
+								.getGspGroup();
+					}
+				} else {
+					exportGspGroup = GspGroup.getGspGroup(exportGspGroupCode);
+				}
+				if (exportAgreedSupplyCapacityStr
+						.equals(GeneralImport.NO_CHANGE)) {
+					if (existingExportMpan == null) {
+						throw new UserException(
+								"There isn't an existing export MPAN.");
+					} else {
+						exportAgreedSupplyCapacity = existingExportMpan
+								.getAgreedSupplyCapacity();
+					}
+				} else {
+					try {
+						exportAgreedSupplyCapacity = new Integer(
+								exportAgreedSupplyCapacityStr);
+					} catch (NumberFormatException e) {
+						throw new UserException(
+								"The export supply capacity must be an integer. "
+										+ e.getMessage());
+					}
+				}
+				String exportHasImportKwhStr = GeneralImport.addField(
+						csvElement, "Export is import kWh", values[21]);
+				exportHasImportKwh = exportHasImportKwhStr
+						.equals(GeneralImport.NO_CHANGE) ? existingExportMpan == null ? false
+						: existingExportMpan.getHasImportKwh()
+						: Boolean.parseBoolean(exportHasImportKwhStr);
+				String exportHasImportKvarhStr = GeneralImport.addField(
+						csvElement, "Export is import kVArh", values[22]);
+				exportHasImportKvarh = exportHasImportKvarhStr
+						.equals(GeneralImport.NO_CHANGE) ? existingExportMpan == null ? false
+						: existingExportMpan.getHasImportKvarh()
+						: Boolean.parseBoolean(exportHasImportKvarhStr);
+				String exportHasExportKwhStr = GeneralImport.addField(
+						csvElement, "Export is export kWh", values[23]);
+				exportHasExportKwh = exportHasExportKwhStr
+						.equals(GeneralImport.NO_CHANGE) ? existingExportMpan == null ? false
+						: existingExportMpan.getHasExportKwh()
+						: Boolean.parseBoolean(exportHasExportKwhStr);
+				String exportHasExportKvarhStr = GeneralImport.addField(
+						csvElement, "Export is export kVArh", values[24]);
+				exportHasExportKvarh = exportHasExportKvarhStr
+						.equals(GeneralImport.NO_CHANGE) ? existingExportMpan == null ? false
+						: existingExportMpan.getHasExportKvarh()
+						: Boolean.parseBoolean(exportHasExportKvarhStr);
+				HhdcContract exportHhdcContract = null;
+				if (exportHasImportKwh || exportHasImportKvarh
+						|| exportHasExportKwh || exportHasExportKvarh) {
+					String exportHhdcContractName = GeneralImport
+							.addField(csvElement, "Export HHDC Contract Name",
+									values[25]);
+					if (exportHhdcContractName.equals(GeneralImport.NO_CHANGE)) {
+						if (existingExportMpan == null) {
+							throw new UserException(
+									"There isn't an existing export HHDC contract.");
+						}
+						Account account = existingExportMpan.getHhdcAccount();
+						if (account == null) {
+							throw new UserException(
+									"There isn't an existing export HHDC contract.");
+						}
+						exportHhdcContract = HhdcContract
+								.getHhdcContract(account.getContract().getId());
+					} else {
+						exportHhdcContract = HhdcContract
+								.getHhdcContract(exportHhdcContractName);
+					}
+					String exportHhdcAccountReference = GeneralImport.addField(
+							csvElement, "Export HHDC account", values[26]);
+					if (exportHhdcAccountReference
+							.equals(GeneralImport.NO_CHANGE)) {
+						if (existingExportMpan == null) {
+							throw new UserException(
+									"There isn't an existing export supplier account.");
+						}
+						Account account = existingExportMpan.getHhdcAccount();
+						if (account == null) {
+							throw new UserException(
+									"There isn't an existing export supplier account.");
+						}
+						exportHhdcAccount = existingExportMpan.getHhdcAccount();
+					} else {
+						exportHhdcAccount = exportHhdcContract
+								.getAccount(exportHhdcAccountReference);
+					}
+				}
+				String exportContractSupplierName = GeneralImport.addField(
+						csvElement, "Export Supplier Contract", values[27]);
+				if (exportContractSupplierName.equals(GeneralImport.NO_CHANGE)) {
+					if (existingExportMpan == null) {
+						throw new UserException(
+								"There isn't an existing export supplier contract.");
+					}
+					Account account = existingExportMpan.getSupplierAccount();
+					if (account == null) {
+						throw new UserException(
+								"There isn't an existing export supplier contract.");
+					}
+					exportSupplierContract = SupplierContract
+							.getSupplierContract(account.getContract().getId());
+				} else {
+					exportSupplierContract = SupplierContract
+							.getSupplierContract(exportContractSupplierName);
+				}
+				String exportSupplierAccountReference = GeneralImport.addField(
+						csvElement, "Export Supplier Account", values[28]);
+				if (exportSupplierAccountReference
+						.equals(GeneralImport.NO_CHANGE)) {
+					if (existingExportMpan == null) {
+						throw new UserException(
+								"There isn't an existing export supplier.");
+					}
+					exportAccountSupplier = existingExportMpan
+							.getSupplierAccount();
+				} else {
+					exportAccountSupplier = exportSupplierContract
+							.getAccount(exportSupplierAccountReference);
+				}
+			}
+			supplyGeneration.addOrUpdateMpans(importMpanStr, importSsc,
+					importGspGroup, importHhdcAccount, importSupplierAccount,
+					importHasImportKwh, importHasImportKvarh,
+					importHasExportKwh, importHasExportKvarh,
+					importAgreedSupplyCapacity, exportMpanStr, exportSsc,
+					exportGspGroup, exportHhdcAccount, exportAccountSupplier,
+					exportHasImportKwh, exportHasImportKvarh,
+					exportHasExportKwh, exportHasExportKvarh,
+					exportAgreedSupplyCapacity);
+		} else if (action.equals("insert")) {
+			String siteCode = GeneralImport.addField(csvElement, "Site Code",
+					values[0]);
+			Site site = Site.getSite(siteCode);
+			String mpanCoreStr = GeneralImport.addField(csvElement,
+					"MPAN Core", values[0]);
+			MpanCore mpanCore = MpanCore.getMpanCore(mpanCoreStr);
+			Supply supply = mpanCore.getSupply();
+			String finishDateStr = GeneralImport.addField(csvElement,
+					"Finish date", values[1]);
+			HhEndDate finishDate = finishDateStr.length() == 0 ? null : new HhEndDate(finishDateStr);
+			String meterSerialNumber = GeneralImport.addField(csvElement,
+					"Meter Serial Number", values[2]);
+			Meter meter = null;
+			if (meterSerialNumber.length() != 0) {
+				meter = supply.findMeter(meterSerialNumber);
+				if (meter == null) {
+					meter = supply.insertMeter(meterSerialNumber);
+				}
+			}
+			String importMpanStr = GeneralImport.addField(csvElement,
+					"Import MPAN", values[3]);
+			boolean importHasImportKwh = false;
+			boolean importHasImportKvarh = false;
+			boolean importHasExportKwh = false;
+			boolean importHasExportKvarh = false;
+			String importSscCode = GeneralImport.addField(csvElement,
+					"Import SSC", values[4]);
+			Ssc importSsc = null;
+			String importGspGroupCode = GeneralImport.addField(csvElement,
+					"Import GSP Group", values[5]);
+			GspGroup importGspGroup = null;
+			String importAgreedSupplyCapacityStr = GeneralImport.addField(
+					csvElement, "Import Agreed Supply Capacity", values[6]);
+			Integer importAgreedSupplyCapacity = null;
+			HhdcContract importHhdcContract = null;
+			Account importHhdcAccount = null;
+			SupplierContract importSupplierContract = null;
+			Account importSupplierAccount = null;
+			if (importMpanStr != null) {
+				importSsc = importSscCode.length() == 0 ? null : Ssc
+						.getSsc(importSscCode);
+				importGspGroup = GspGroup.getGspGroup(importGspGroupCode);
+				try {
+					importAgreedSupplyCapacity = Integer
+							.parseInt(importAgreedSupplyCapacityStr);
+				} catch (NumberFormatException e) {
+					throw new UserException(
+							"The import agreed supply capacity must be an integer. "
+									+ e.getMessage());
+				}
+				String importHasImportKwhStr = GeneralImport.addField(
+						csvElement, "Import is import kWh", values[7]);
+				importHasImportKwh = Boolean
+						.parseBoolean(importHasImportKwhStr);
+				String importHasImportKvarhStr = GeneralImport.addField(
+						csvElement, "Import is import kVArh", values[8]);
+				importHasImportKvarh = Boolean
+						.parseBoolean(importHasImportKvarhStr);
+				String importHasExportKwhStr = GeneralImport.addField(
+						csvElement, "Import is export kWh", values[9]);
+				importHasExportKwh = Boolean
+						.parseBoolean(importHasExportKwhStr);
+				String importHasExportKvarhStr = GeneralImport.addField(
+						csvElement, "Import is export kVArh", values[10]);
+				importHasExportKvarh = Boolean
+						.parseBoolean(importHasExportKvarhStr);
+				if (importHasImportKwh || importHasImportKvarh
+						|| importHasExportKwh || importHasExportKvarh) {
+					String importHhdcContractName = GeneralImport.addField(
+							csvElement, "Import HHDC Contract", values[11]);
+					importHhdcContract = HhdcContract
+							.getHhdcContract(importHhdcContractName);
+					String importHhdcAccountReference = GeneralImport.addField(
+							csvElement, "Import HHDC account reference",
+							values[12]);
+					importHhdcAccount = importHhdcContract
+							.getAccount(importHhdcAccountReference);
+				}
+				String importContractSupplierName = GeneralImport.addField(
+						csvElement, "Import Supplier Contract", values[13]);
+				importSupplierContract = SupplierContract
+						.getSupplierContract(importContractSupplierName);
+				String importSupplierAccountReference = GeneralImport.addField(
+						csvElement, "Import Supplier Account Reference",
+						values[14]);
+				importSupplierAccount = importSupplierContract
+						.getAccount(importSupplierAccountReference);
+			}
+			String exportMpanStr = GeneralImport.addField(csvElement,
+					"Eport MPAN", values[15]);
+			String exportSscCode = GeneralImport.addField(csvElement,
+					"Export SSC", values[16]);
+			Ssc exportSsc = null;
+			String exportGspGroupCode = GeneralImport.addField(csvElement,
+					"Export GSP Group", values[17]);
+			GspGroup exportGspGroup = null;
+			boolean exportHasImportKwh = false;
+			boolean exportHasImportKvarh = false;
+			boolean exportHasExportKwh = false;
+			boolean exportHasExportKvarh = false;
+			String exportAgreedSupplyCapacityStr = GeneralImport.addField(
+					csvElement, "Export Agreed Supply Capacity", values[18]);
+			Integer exportAgreedSupplyCapacity = null;
+			Account exportHhdcAccount = null;
+			SupplierContract exportSupplierContract = null;
+			Account exportSupplierAccount = null;
+			if (exportMpanStr != null) {
+				exportSsc = exportSscCode.length() == 0 ? null : Ssc
+						.getSsc(exportSscCode);
+				exportGspGroup = GspGroup.getGspGroup(exportGspGroupCode);
+				try {
+					exportAgreedSupplyCapacity = new Integer(
+							exportAgreedSupplyCapacityStr);
+				} catch (NumberFormatException e) {
+					throw new UserException(
+							"The export supply capacity must be an integer. "
+									+ e.getMessage());
+				}
+				String exportHasImportKwhStr = GeneralImport.addField(
+						csvElement, "Export is import kWh", values[19]);
+				exportHasImportKwh = Boolean
+						.parseBoolean(exportHasImportKwhStr);
+				String exportHasImportKvarhStr = GeneralImport.addField(
+						csvElement, "Export is import kVArh", values[20]);
+				exportHasImportKvarh = Boolean
+						.parseBoolean(exportHasImportKvarhStr);
+				String exportHasExportKwhStr = GeneralImport.addField(
+						csvElement, "Export is export kWh", values[21]);
+				exportHasExportKwh = Boolean
+						.parseBoolean(exportHasExportKwhStr);
+				String exportHasExportKvarhStr = GeneralImport.addField(
+						csvElement, "Export is export kVArh", values[22]);
+				exportHasExportKvarh = Boolean
+						.parseBoolean(exportHasExportKvarhStr);
+				HhdcContract exportHhdcContract = null;
+				if (exportHasImportKwh || exportHasImportKvarh
+						|| exportHasExportKwh || exportHasExportKvarh) {
+					String exportHhdcContractName = GeneralImport
+							.addField(csvElement, "Export HHDC Contract Name",
+									values[23]);
+					exportHhdcContract = HhdcContract
+							.getHhdcContract(exportHhdcContractName);
+					String exportHhdcAccountReference = GeneralImport.addField(
+							csvElement, "Export HHDC account", values[24]);
+					exportHhdcAccount = exportHhdcContract
+							.getAccount(exportHhdcAccountReference);
+				}
+				String exportContractSupplierName = GeneralImport.addField(
+						csvElement, "Export Supplier Contract", values[25]);
+				exportSupplierContract = SupplierContract
+						.getSupplierContract(exportContractSupplierName);
+				String exportSupplierAccountReference = GeneralImport.addField(
+						csvElement, "Export Supplier Account", values[26]);
+				exportSupplierAccount = exportSupplierContract
+						.getAccount(exportSupplierAccountReference);
+			}
+			Map<Site, Boolean> siteMap = new HashMap<Site, Boolean>();
+			siteMap.put(site, true);
+			supply.insertGeneration(siteMap, finishDate, meter, importMpanStr, importSsc,
+					importGspGroup, importHhdcAccount, importSupplierAccount,
+					importHasImportKwh, importHasImportKvarh,
+					importHasExportKwh, importHasExportKvarh,
+					importAgreedSupplyCapacity, exportMpanStr, exportSsc,
+					exportGspGroup, exportHhdcAccount, exportSupplierAccount,
+					exportHasImportKwh, exportHasImportKvarh,
+					exportHasExportKwh, exportHasExportKvarh,
+					exportAgreedSupplyCapacity);
+		}
+	}
+
 	static public SupplyGeneration getSupplyGeneration(Long id)
 			throws HttpException {
 		SupplyGeneration supplyGeneration = (SupplyGeneration) Hiber.session()
@@ -280,13 +844,13 @@ public class SupplyGeneration extends PersistentEntity implements Urlable {
 
 	public void addOrUpdateMpans(String importMpanStr, Ssc importSsc,
 			GspGroup importGspGroup, Account importHhdcAccount,
-			Account importSupplierAccount, boolean importHasImportKwh,
-			boolean importHasImportKvarh, boolean importHasExportKwh,
-			boolean importHasExportKvarh, Integer importAgreedSupplyCapacity,
+			Account importSupplierAccount, Boolean importHasImportKwh,
+			Boolean importHasImportKvarh, Boolean importHasExportKwh,
+			Boolean importHasExportKvarh, Integer importAgreedSupplyCapacity,
 			String exportMpanStr, Ssc exportSsc, GspGroup exportGspGroup,
 			Account exportHhdcAccount, Account exportSupplierAccount,
-			boolean exportHasImportKwh, boolean exportHasImportKvarh,
-			boolean exportHasExportKwh, boolean exportHasExportKvarh,
+			Boolean exportHasImportKwh, Boolean exportHasImportKvarh,
+			Boolean exportHasExportKwh, Boolean exportHasExportKvarh,
 			Integer exportAgreedSupplyCapacity) throws HttpException {
 		if (importMpan == null) {
 			if (importMpanStr != null && importMpanStr.length() != 0) {

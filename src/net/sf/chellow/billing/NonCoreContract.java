@@ -44,31 +44,31 @@ import org.w3c.dom.Element;
 @SuppressWarnings("serial")
 public class NonCoreContract extends Contract {
 	static public NonCoreContract insertNonCoreContract(Provider provider,
-			String name, HhEndDate startDate, String chargeScript)
-			throws HttpException {
-		NonCoreContract service = new NonCoreContract(provider, name, startDate,
-				chargeScript);
+			String name, HhEndDate startDate, HhEndDate finishDate,
+			String chargeScript) throws HttpException {
+		NonCoreContract service = new NonCoreContract(provider, name,
+				startDate, finishDate, chargeScript);
 		Hiber.session().save(service);
 		Hiber.session().flush();
 		return service;
 	}
-	
+
 	private Provider nonCore;
 
 	public NonCoreContract() {
 	}
 
 	public NonCoreContract(Provider nonCore, String name, HhEndDate startDate,
-			String chargeScript) throws HttpException {
-		super(name, startDate, chargeScript);
+			HhEndDate finishDate, String chargeScript) throws HttpException {
+		super(name, startDate, finishDate, chargeScript);
 		setParty(nonCore);
 		internalUpdate(name, chargeScript);
 	}
-	
+
 	void setParty(Provider nonCore) {
 		this.nonCore = nonCore;
 	}
-	
+
 	public Provider getParty() {
 		return nonCore;
 	}
@@ -143,11 +143,11 @@ public class NonCoreContract extends Contract {
 	public void httpGet(Invocation inv) throws HttpException {
 		inv.sendOk(document());
 	}
-/*
-	public HhDataImportProcesses getHhDataImportProcessesInstance() {
-		return new HhDataImportProcesses(this);
-	}
-*/
+
+	/*
+	 * public HhDataImportProcesses getHhDataImportProcessesInstance() { return
+	 * new HhDataImportProcesses(this); }
+	 */
 	public Urlable getChild(UriPathElement uriId) throws HttpException {
 		if (RateScripts.URI_ID.equals(uriId)) {
 			return new RateScripts(this);

@@ -102,19 +102,19 @@
 						<label>
 							Frequency with which the data arrives
 							<select name="frequency">
-								<option value="0">
+								<option value="daily">
 									<xsl:choose>
 										<xsl:when
 											test="/source/request/parameter[@name = 'frequency']">
 											<xsl:if
-												test="number(/source/request/parameter[@name = 'frequency']/Value) = '0'">
+												test="/source/request/parameter[@name = 'frequency']/Value = 'daily'">
 												<xsl:attribute
 													name="selected" />
 											</xsl:if>
 										</xsl:when>
 										<xsl:otherwise>
 											<xsl:if
-												test="/source/hhdc-contract/@frequency = '0'">
+												test="/source/hhdc-contract/@frequency = 'daily'">
 												<xsl:attribute
 													name="selected" />
 											</xsl:if>
@@ -122,19 +122,19 @@
 									</xsl:choose>
 									Daily
 								</option>
-								<option value="1">
+								<option value="monthly">
 									<xsl:choose>
 										<xsl:when
 											test="/source/request/parameter[@name = 'frequency']">
 											<xsl:if
-												test="number(/source/request/parameter[@name = 'frequency']/Value) = '1'">
+												test="/source/request/parameter[@name = 'frequency']/Value = 'monthly'">
 												<xsl:attribute
 													name="selected" />
 											</xsl:if>
 										</xsl:when>
 										<xsl:otherwise>
 											<xsl:if
-												test="/source/hhdc-contract/@frequency = '1'">
+												test="/source/hhdc-contract/@frequency = 'monthly'">
 												<xsl:attribute
 													name="selected" />
 											</xsl:if>

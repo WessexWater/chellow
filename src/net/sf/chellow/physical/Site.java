@@ -50,6 +50,7 @@ import net.sf.chellow.monad.types.MonadString;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
 import net.sf.chellow.ui.Chellow;
+import net.sf.chellow.ui.GeneralImport;
 
 import org.hibernate.HibernateException;
 import org.hibernate.exception.ConstraintViolationException;
@@ -57,6 +58,35 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 public class Site extends PersistentEntity {
+	static public void generalImport(String action, String[] values,
+			Element csvElement) throws HttpException {
+		if (values.length < 2) {
+			throw new UserException("There aren't enough fields in this row");
+		}
+		Site site = null;
+		String code = values[0];
+		GeneralImport.addField(csvElement, "Site Code", code);
+		if (action.equals("insert")) {
+			String name = values[1];
+			GeneralImport.addField(csvElement, "Site name", name);
+			insertSite(code, name);
+		} else {
+			site = Site.getSite(code);
+			if (site == null) {
+				throw new UserException("There is no site with this code.");
+			}
+			if (action.equals("delete")) {
+				Site.deleteSite(site);
+			} else if (action.equals("update")) {
+				String newCode = values[2];
+				GeneralImport.addField(csvElement, "New Site Code", newCode);
+				String name = values[3];
+				GeneralImport.addField(csvElement, "New site name", name);
+				site.update(newCode, name);
+			}
+		}
+	}
+
 	static public Site insertSite(String code, String name)
 			throws HttpException {
 		Site site = null;
@@ -65,8 +95,9 @@ public class Site extends PersistentEntity {
 			Hiber.session().save(site);
 			Hiber.flush();
 		} catch (ConstraintViolationException e) {
-			throw new UserException("Problem saving site, perhaps there's a duplicate code or name. "
-					+ HttpException.getUserMessage(e));
+			throw new UserException(
+					"Problem saving site, perhaps there's a duplicate code or name. "
+							+ HttpException.getUserMessage(e));
 		}
 		return site;
 	}
@@ -165,20 +196,18 @@ public class Site extends PersistentEntity {
 		return element;
 	}
 
-	public Supply insertSupply(String supplyName, String meterSerialNumber,
+	public Supply insertSupply(Source source, String supplyName,HhEndDate startDate, String meterSerialNumber,
 			String importMpanStr, Ssc importSsc, GspGroup importGspGroup,
 			Account importHhdcAccount, Account importAccountSupplier,
-			boolean importHasImportKwh, boolean importHasImportKvarh,
-			boolean importHasExportKwh, boolean importHasExportKvarh,
+			Boolean importHasImportKwh, Boolean importHasImportKvarh,
+			Boolean importHasExportKwh, Boolean importHasExportKvarh,
 			Integer importAgreedSupplyCapacity, String exportMpanStr,
 			Ssc exportSsc, GspGroup exportGspGroup, Account exportHhdcAccount,
-			Account exportAccountSupplier, boolean exportHasImportKwh,
-			boolean exportHasImportKvarh, boolean exportHasExportKwh,
-			boolean exportHasExportKvarh, Integer exportAgreedSupplyCapacity,
-			HhEndDate startDate, Source source) throws HttpException {
+			Account exportAccountSupplier, Boolean exportHasImportKwh,
+			Boolean exportHasImportKvarh, Boolean exportHasExportKwh,
+			Boolean exportHasExportKvarh, Integer exportAgreedSupplyCapacity) throws HttpException {
 		Supply supply = new Supply(supplyName, source);
 		try {
-			// supply.setId(id);
 			Hiber.session().save(supply);
 			Hiber.flush();
 		} catch (HibernateException e) {
@@ -211,14 +240,14 @@ public class Site extends PersistentEntity {
 				meter = supply.insertMeter(meterSerialNumber);
 			}
 		}
-		SupplyGeneration supplyGeneration = supply.addGeneration(siteMap,
+		SupplyGeneration supplyGeneration = supply.insertGeneration(siteMap, null,
 				meter, importMpanStr, importSsc, importGspGroup,
 				importHhdcAccount, importAccountSupplier, importHasImportKwh,
 				importHasImportKvarh, importHasExportKwh, importHasExportKvarh,
 				importAgreedSupplyCapacity, exportMpanStr, exportSsc,
 				exportGspGroup, exportHhdcAccount, exportAccountSupplier,
 				exportHasImportKwh, exportHasImportKvarh, exportHasExportKwh,
-				exportHasExportKvarh, exportAgreedSupplyCapacity, null);
+				exportHasExportKvarh, exportAgreedSupplyCapacity);
 		supplyGeneration.update(startDate, supplyGeneration.getFinishDate(),
 				meter);
 		Hiber.flush();
@@ -605,7 +634,7 @@ public class Site extends PersistentEntity {
 										+ e.getMessage());
 					}
 				}
-				Supply supply = insertSupply(name, meterSerialNumber,
+				Supply supply = insertSupply(source, name, new HhEndDate(startDate), meterSerialNumber,
 						importMpanStr, importSsc, importGspGroup,
 						importHhdcAccount, importSupplierAccount,
 						importHhdcAccount == null ? false : true,
@@ -617,8 +646,7 @@ public class Site extends PersistentEntity {
 						exportHhdcAccount == null ? false : true,
 						exportHhdcAccount == null ? false : true,
 						exportHhdcAccount == null ? false : true,
-						exportAgreedSupplyCapacity, new HhEndDate(startDate),
-						source);
+						exportAgreedSupplyCapacity);
 				Hiber.commit();
 				inv.sendCreated(supply.getUri());
 			} catch (HttpException e) {

@@ -8588,7 +8588,7 @@ for contract in Hiber.session().createQuery("from HhdcContract contract order by
                     &gt;
                     <xsl:value-of select="'HHDC Contracts ['" />
                     <a
-                        href="{/source/request/@context-path}/orgs/{/source/contracts/org/@id}/hhdc-contracts/">
+                        href="{/source/request/@context-path}/hhdc-contracts/">
                         <xsl:value-of select="'edit'" />
                     </a>
                     <xsl:value-of select="']'" />

@@ -41,17 +41,46 @@ import net.sf.chellow.physical.MarketRole;
 import net.sf.chellow.physical.Mpan;
 import net.sf.chellow.physical.Snag;
 import net.sf.chellow.ui.Chellow;
+import net.sf.chellow.ui.GeneralImport;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 @SuppressWarnings("serial")
 public class SupplierContract extends Contract {
+	static public void generalImport(String action, String[] values,
+			Element csvElement) throws HttpException {
+		if (values.length < 8) {
+			throw new UserException("There aren't enough fields in this row");
+		}
+		String participantCode = GeneralImport.addField(csvElement,
+				"Participant Code", values[0]);
+		Provider provider = Provider.getProvider(participantCode,
+				MarketRole.SUPPLIER);
+		String name = GeneralImport.addField(csvElement, "Name", values[1]);
+
+		if (action.equals("insert")) {
+			String startDateStr = GeneralImport.addField(csvElement,
+					"Start Date", values[2]);
+			HhEndDate startDate = new HhEndDate(startDateStr);
+			String finishDateStr = GeneralImport.addField(csvElement,
+					"Finish Date", values[3]);
+			HhEndDate finishDate = null;
+			if (finishDateStr.length() > 0) {
+				finishDate = new HhEndDate(finishDateStr);
+			}
+			String chargeScript = GeneralImport.addField(csvElement,
+					"Charge Script", values[6]);
+			insertSupplierContract(provider, name, startDate, finishDate,
+					chargeScript);
+		}
+	}
+
 	static public SupplierContract insertSupplierContract(Provider provider,
-			String name, HhEndDate startDate, String chargeScript)
-			throws HttpException {
+			String name, HhEndDate startDate, HhEndDate finishDate,
+			String chargeScript) throws HttpException {
 		SupplierContract contract = new SupplierContract(provider, name,
-				startDate, chargeScript);
+				startDate, finishDate, chargeScript);
 		Hiber.session().save(contract);
 		Hiber.flush();
 		return contract;
@@ -85,26 +114,27 @@ public class SupplierContract extends Contract {
 		}
 		return contract;
 	}
-	
+
 	Provider supplier;
 
 	public SupplierContract() {
 	}
 
 	public SupplierContract(Provider supplier, String name,
-			HhEndDate startDate, String chargeScript) throws HttpException {
-		super(name, startDate, chargeScript);
+			HhEndDate startDate, HhEndDate finishDate, String chargeScript)
+			throws HttpException {
+		super(name, startDate, finishDate, chargeScript);
 		if (supplier.getRole().getCode() != MarketRole.SUPPLIER) {
 			throw new UserException(
 					"The provider must have the role of supplier.");
 		}
 		setParty(supplier);
 	}
-	
+
 	void setParty(Provider supplier) {
 		this.supplier = supplier;
 	}
-	
+
 	public Provider getParty() {
 		return supplier;
 	}
