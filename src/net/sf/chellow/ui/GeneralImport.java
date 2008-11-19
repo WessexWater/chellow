@@ -1,11 +1,17 @@
 package net.sf.chellow.ui;
 
+import java.io.BufferedInputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.Reader;
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Level;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 
 import javax.xml.stream.XMLEventReader;
 import javax.xml.stream.XMLInputFactory;
@@ -55,10 +61,33 @@ public class GeneralImport extends Thread implements Urlable, XmlDescriber {
 
 	private MonadUri uri;
 
-	public GeneralImport(MonadUri uri, Reader reader, String extension)
+	public GeneralImport(MonadUri uri, InputStream is, String extension)
 			throws HttpException {
 		super("Import");
 		this.uri = uri;
+		if (extension.equals("zip")) {
+			ZipInputStream zin;
+			try {
+				zin = new ZipInputStream(new BufferedInputStream(is));
+				ZipEntry entry = zin.getNextEntry();
+				if (entry == null) {
+					throw new UserException(null,
+							"Can't find an entry within the zip file.");
+				} else {
+					is = zin;
+					String name = entry.getName();
+					extension = name.substring(name.length() - 3);
+				}
+			} catch (IOException e) {
+				throw new InternalException(e);
+			}
+		}
+		Reader reader;
+		try {
+			reader = new InputStreamReader(is, "UTF-8");
+		} catch (UnsupportedEncodingException e) {
+			throw new InternalException(e);
+		}
 		digester = new Digester(reader, extension);
 		String[] titles = digester.getLine();
 
@@ -86,15 +115,53 @@ public class GeneralImport extends Thread implements Urlable, XmlDescriber {
 	public void run() {
 		// Element source = (Element) doc.getFirstChild();
 		try {
-			for (String[] values = digester.getLine(); values != null
-					&& !shouldHalt(); values = digester.getLine()) {
+			for (String[] allValues = digester.getLine(); allValues != null
+					&& !shouldHalt(); allValues = digester.getLine()) {
 				// lineNumber = digester.getLastLineNumber();
-				if (values.length < 2) {
+				if (allValues.length < 2) {
 					throw new UserException(
 							"There must be an 'Action' field followed "
 									+ "by a 'Type' field.");
 				}
-				processItem(values);
+				String action = allValues[0].trim().toLowerCase();
+				String type = allValues[1].trim().toLowerCase();
+				csvElement = doc.createElement("csvLine");
+				// try {
+				csvElement.setAttribute("number", String.valueOf(lineNumber));
+				addField(csvElement, "Action", allValues, 0);
+				addField(csvElement, "Type", allValues, 1);
+				if (!action.equals("insert") && !action.equals("update")
+						&& !action.equals("delete")) {
+					throw new UserException("The 'Action' field can "
+							+ "only be 'insert', 'update', 'delete'.");
+				}
+				String[] values = Arrays.copyOfRange(allValues, 2,
+						allValues.length);
+				if (type.equals("site")) {
+					Site.generalImport(action, values, csvElement);
+				} else if (type.equals("site-supply-generation")) {
+					SiteSupplyGeneration.generalImport(action, values,
+							csvElement);
+				} else if (type.equals("supply")) {
+					Supply.generalImport(action, values, csvElement);
+				} else if (type.equals("supply-generation")) {
+					SupplyGeneration.generalImport(action, values, csvElement);
+				} else if (type.equals("supplier-account")) {
+					Account.generalImportSupplier(action, values, csvElement);
+				} else if (type.equals("hhdc-account")) {
+					Account.generalImportHhdc(action, values, csvElement);
+				} else if (type.equals("report")) {
+					Report.generalImport(action, values, csvElement);
+				} else if (type.equals("hhdc-contract")) {
+					HhdcContract.generalImport(action, values, csvElement);
+				} else if (type.equals("supplier-contract")) {
+					SupplierContract.generalImport(action, values, csvElement);
+				} else if (type.equals("hh-datum")) {
+					HhDatum.generalImport(action, values, csvElement);
+				} else {
+					throw new UserException(
+							"The type " + type + " isn't recognized.");
+				}
 				Hiber.close();
 			}
 			if (shouldHalt()) {
@@ -104,16 +171,20 @@ public class GeneralImport extends Thread implements Urlable, XmlDescriber {
 						"The file has been imported successfully.").toXml(doc));
 			}
 		} catch (HttpException e) {
-			errors.add(new MonadMessage(e.getMessage()));
-			//errors.add(new MonadMessage(
-			//		"There are errors that need to be corrected before "
-			//				+ "the file can be imported."));
+			String message = e.getMessage();
+			if (message == null) {
+				message = HttpException.getStackTraceString(e);
+			}
+			errors.add(new MonadMessage(message));
+			// errors.add(new MonadMessage(
+			// "There are errors that need to be corrected before "
+			// + "the file can be imported."));
 			if (csvElement != null) {
 				source.appendChild(csvElement);
 			}
 		} catch (Throwable e) {
-			errors.add(new MonadMessage("Programmer Exception: " + e.getClass()
-					+ " " + e.getMessage()));
+			errors.add(new MonadMessage("Programmer Exception: "
+					+ HttpException.getStackTraceString(e)));
 			ChellowLogger.getLogger().log(Level.SEVERE,
 					"From header import process", e);
 		} finally {
@@ -122,48 +193,12 @@ public class GeneralImport extends Thread implements Urlable, XmlDescriber {
 		}
 	}
 
-	private void processItem(String[] allValues) throws HttpException {
-		String action = allValues[0].trim().toLowerCase();
-		String type = allValues[1].trim().toLowerCase();
-		csvElement = doc.createElement("csvLine");
-		// try {
-		csvElement.setAttribute("number", String.valueOf(lineNumber));
-		addField(csvElement, "Action", allValues[0]);
-		addField(csvElement, "Type", allValues[1]);
-		if (!action.equals("insert") && !action.equals("update")
-				&& !action.equals("delete")) {
-			throw new UserException("The 'Action' field can "
-					+ "only be 'insert', 'update', 'delete'.");
+	public static String addField(Element csvElement, String name,
+			String[] values, int index) throws HttpException {
+		if (index > values.length - 1) {
+			throw new UserException("Another field " + name + " is required.");
 		}
-		String[] values = Arrays.copyOfRange(allValues, 2, allValues.length);
-		if (type.equals("site")) {
-			Site.generalImport(action, values, csvElement);
-		} else if (type.equals("site-supply-generation")) {
-			SiteSupplyGeneration.generalImport(action, values, csvElement);
-		} else if (type.equals("supply")) {
-			Supply.generalImport(action, values, csvElement);
-		} else if (type.equals("supply-generation")) {
-			SupplyGeneration.generalImport(action, values, csvElement);
-		} else if (type.equals("supplier-account")) {
-			Account.generalImportSupplier(action, values, csvElement);
-		} else if (type.equals("hhdc-account")) {
-			Account.generalImportHhdc(action, values, csvElement);
-		} else if (type.equals("report")) {
-			Report.generalImport(action, values, csvElement);
-		} else if (type.equals("hhdc-contract")) {
-			HhdcContract.generalImport(action, values, csvElement);
-		} else if (type.equals("supplier-contract")) {
-			SupplierContract.generalImport(action, values, csvElement);
-		} else if (type.equals("hh-datum")) {
-			HhDatum.generalImport(action, values, csvElement);
-		} else {
-			throw new UserException(
-					"The 'Type' field can only "
-							+ "be 'site', 'supply', 'hhdc', 'report' or 'supplier-account'.");
-		}
-	}
-
-	public static String addField(Element csvElement, String name, String value) {
+		String value = values[index];
 		Document doc = csvElement.getOwnerDocument();
 		Element field = doc.createElement("Field");
 		csvElement.appendChild(field);
@@ -188,7 +223,6 @@ public class GeneralImport extends Thread implements Urlable, XmlDescriber {
 		for (MonadMessage message : errors) {
 			source.appendChild(message.toXml(document));
 		}
-		Hiber.close();
 		inv.sendOk(document);
 	}
 

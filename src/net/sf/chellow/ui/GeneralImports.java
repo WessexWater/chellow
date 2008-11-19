@@ -1,8 +1,6 @@
 package net.sf.chellow.ui;
 
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -78,10 +76,8 @@ public class GeneralImports implements Urlable, XmlDescriber {
 
 				process = new GeneralImport(getUri().resolve(
 						new UriPathElement(Long.toString(processId))).append(
-						"/"), new InputStreamReader(fileItem.getInputStream(),
-						"UTF-8"), fileName.substring(fileName.length() - 3));
-			} catch (UnsupportedEncodingException e) {
-				throw new InternalException(e);
+						"/"), fileItem.getInputStream(), fileName
+						.substring(fileName.length() - 3));
 			} catch (IOException e) {
 				throw new InternalException(e);
 			}

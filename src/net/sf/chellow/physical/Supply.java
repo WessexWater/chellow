@@ -61,26 +61,22 @@ public class Supply extends PersistentEntity {
 	public static void generalImport(String action, String[] values,
 			Element csvElement) throws HttpException {
 		if (action.equals("insert")) {
-			if (values.length < 21) {
-				throw new UserException(
-						"There aren't enough fields in this row");
-			}
 			String siteCode = GeneralImport.addField(csvElement, "Site Code",
-					values[0]);
+					values, 0);
 			Site site = Site.getSite(siteCode);
 			String sourceCode = GeneralImport.addField(csvElement,
-					"Source Code", values[1]);
+					"Source Code", values, 1);
 			Source source = Source.getSource(sourceCode);
 			String supplyName = GeneralImport.addField(csvElement,
-					"Supply Name", values[2]);
+					"Supply Name", values, 2);
 			String startDateStr = GeneralImport.addField(csvElement,
-					"Start date", values[3]);
+					"Start date", values, 3);
 			HhEndDate startDate = HhEndDate.roundUp(new MonadDate(startDateStr)
 					.getDate());
 			String meterSerialNumber = GeneralImport.addField(csvElement,
-					"Meter Serial Number", values[4]);
+					"Meter Serial Number", values, 4);
 			String importMpanStr = GeneralImport.addField(csvElement,
-					"Import MPAN", values[5]);
+					"Import MPAN", values, 5);
 			Integer importAgreedSupplyCapacity = null;
 			Boolean importHasImportKwh = null;
 			Boolean importHasImportKvarh = null;
@@ -95,14 +91,14 @@ public class Supply extends PersistentEntity {
 
 			if (importMpanStr != null && importMpanStr.length() != 0) {
 				String importSscCode = GeneralImport.addField(csvElement,
-						"Import SSC", values[6]);
+						"Import SSC", values, 6);
 				importSsc = importSscCode.trim().length() == 0 ? null : Ssc
 						.getSsc(importSscCode);
 				String importGspGroupCode = GeneralImport.addField(csvElement,
-						"Import GSP Group", values[7]);
+						"Import GSP Group", values, 7);
 				importGspGroup = GspGroup.getGspGroup(importGspGroupCode);
 				String importAgreedSupplyCapacityStr = GeneralImport.addField(
-						csvElement, "Import Agreed Supply Capacity", values[8]);
+						csvElement, "Import Agreed Supply Capacity", values, 8);
 				try {
 					importAgreedSupplyCapacity = new Integer(
 							importAgreedSupplyCapacityStr);
@@ -112,39 +108,39 @@ public class Supply extends PersistentEntity {
 									+ e.getMessage());
 				}
 				String importHasImportKwhStr = GeneralImport.addField(
-						csvElement, "Import has import kWh", values[9]);
+						csvElement, "Import has import kWh", values, 9);
 				importHasImportKwh = Boolean
 						.parseBoolean(importHasImportKwhStr);
 				String importHasImportKvarhStr = GeneralImport.addField(
-						csvElement, "Import has import kVArh", values[10]);
+						csvElement, "Import has import kVArh", values, 10);
 				importHasImportKvarh = Boolean
 						.parseBoolean(importHasImportKvarhStr);
 				String importHasExportKwhStr = GeneralImport.addField(
-						csvElement, "Import has export kWh", values[11]);
+						csvElement, "Import has export kWh", values, 11);
 				importHasExportKwh = Boolean
 						.parseBoolean(importHasExportKwhStr);
 				String importHasExportKvarhStr = GeneralImport.addField(
-						csvElement, "Import has export kVArh", values[12]);
+						csvElement, "Import has export kVArh", values, 12);
 				importHasExportKvarh = Boolean
 						.parseBoolean(importHasExportKvarhStr);
 				String importHhdcContractName = GeneralImport.addField(
-						csvElement, "Import HHDC Contract", values[13]);
+						csvElement, "Import HHDC Contract", values, 13);
 				importHhdcContract = importHhdcContractName.trim().length() == 0 ? null
 						: HhdcContract.getHhdcContract(importHhdcContractName);
 				if (importHhdcContract != null) {
 					String importHhdcAccountReference = GeneralImport.addField(
-							csvElement, "Import HHDC Account", values[14]);
+							csvElement, "Import HHDC Account", values, 14);
 					importHhdcAccount = importHhdcContract
 							.getAccount(importHhdcAccountReference);
 				}
 				String importSupplierContractName = GeneralImport
 						.addField(csvElement, "Import supplier contract name",
-								values[15]);
+								values, 15);
 				importSupplierContract = SupplierContract
 						.getSupplierContract(importSupplierContractName);
 				String importSupplierAccountReference = GeneralImport.addField(
 						csvElement, "Import supplier account reference",
-						values[16]);
+						values, 16);
 				importSupplierAccount = importSupplierContract
 						.getAccount(importSupplierAccountReference);
 			}
@@ -160,32 +156,32 @@ public class Supply extends PersistentEntity {
 			Ssc exportSsc = null;
 			GspGroup exportGspGroup = null;
 			String exportMpanStr = GeneralImport.addField(csvElement,
-					"Export MPAN", values[17]);
+					"Export MPAN", values, 17);
 			if (exportMpanStr != null && exportMpanStr.trim().length() != 0) {
 				String exportSscCode = GeneralImport.addField(csvElement,
-						"Export SSC", values[18]);
+						"Export SSC", values, 18);
 				exportSsc = exportSscCode.trim().length() == 0 ? null : Ssc
 						.getSsc(exportSscCode);
 				String exportGspGroupCode = GeneralImport.addField(csvElement,
-						"Export GSP Group", values[19]);
+						"Export GSP Group", values, 19);
 				exportGspGroup = GspGroup.getGspGroup(exportGspGroupCode);
 				String exportAgreedSupplyCapacityStr = GeneralImport
 						.addField(csvElement, "Export Agreed Supply Capacity",
-								values[20]);
+								values, 20);
 				String exportHasImportKwhStr = GeneralImport.addField(
-						csvElement, "Export is import kWh", values[21]);
+						csvElement, "Export is import kWh", values, 21);
 				exportHasImportKwh = Boolean
 						.parseBoolean(exportHasImportKwhStr);
 				String exportHasImportKvarhStr = GeneralImport.addField(
-						csvElement, "Export is import kVArh", values[22]);
+						csvElement, "Export is import kVArh", values, 22);
 				exportHasImportKvarh = Boolean
 						.parseBoolean(exportHasImportKvarhStr);
 				String exportHasExportKwhStr = GeneralImport.addField(
-						csvElement, "Export is export kWh", values[23]);
+						csvElement, "Export is export kWh", values, 23);
 				exportHasExportKwh = Boolean
 						.parseBoolean(exportHasExportKwhStr);
 				String exportHasExportKvarhStr = GeneralImport.addField(
-						csvElement, "Export is export kVArh", values[24]);
+						csvElement, "Export is export kVArh", values, 24);
 				exportHasExportKvarh = Boolean
 						.parseBoolean(exportHasExportKvarhStr);
 				try {
@@ -197,23 +193,23 @@ public class Supply extends PersistentEntity {
 									+ e.getMessage());
 				}
 				String exportHhdcContractName = GeneralImport.addField(
-						csvElement, "Export HHDC contract", values[25]);
+						csvElement, "Export HHDC contract", values, 25);
 				exportHhdcContract = exportHhdcContractName.length() == 0 ? null
 						: HhdcContract.getHhdcContract(exportHhdcContractName);
 				if (exportHhdcContract != null) {
 					String exportHhdcAccountReference = GeneralImport.addField(
-							csvElement, "Export HHDC account", values[26]);
+							csvElement, "Export HHDC account", values, 26);
 					exportHhdcAccount = exportHhdcContract
 							.getAccount(exportHhdcAccountReference);
 				}
 				String exportSupplierContractName = GeneralImport
 						.addField(csvElement, "Export supplier contract name",
-								values[27]);
+								values, 27);
 				exportSupplierContract = SupplierContract
 						.getSupplierContract(exportSupplierContractName);
 				String exportSupplierAccountReference = GeneralImport.addField(
 						csvElement, "Export supplier account reference",
-						values[28]);
+						values, 28);
 				exportAccountSupplier = exportSupplierContract
 						.getAccount(exportSupplierAccountReference);
 			}
@@ -233,11 +229,11 @@ public class Supply extends PersistentEntity {
 						"There aren't enough fields in this row");
 			}
 			String mpanCoreStr = GeneralImport.addField(csvElement,
-					"MPAN Core", values[0]);
+					"MPAN Core", values, 0);
 			String sourceCode = GeneralImport.addField(csvElement,
-					"Source Code", values[1]);
+					"Source Code", values, 1);
 			String supplyName = GeneralImport.addField(csvElement,
-					"Supply Name", values[2]);
+					"Supply Name", values, 2);
 			Supply supply = MpanCore.getMpanCore(mpanCoreStr).getSupply();
 			supply.update(supplyName.equals(GeneralImport.NO_CHANGE) ? supply
 					.getName() : supplyName, sourceCode

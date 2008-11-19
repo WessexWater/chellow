@@ -60,15 +60,12 @@ import org.w3c.dom.Element;
 public class Site extends PersistentEntity {
 	static public void generalImport(String action, String[] values,
 			Element csvElement) throws HttpException {
-		if (values.length < 2) {
-			throw new UserException("There aren't enough fields in this row");
-		}
 		Site site = null;
-		String code = values[0];
-		GeneralImport.addField(csvElement, "Site Code", code);
+		String code = GeneralImport
+				.addField(csvElement, "Site Code", values, 0);
 		if (action.equals("insert")) {
-			String name = values[1];
-			GeneralImport.addField(csvElement, "Site name", name);
+			String name = GeneralImport.addField(csvElement, "Site name",
+					values, 1);
 			insertSite(code, name);
 		} else {
 			site = Site.getSite(code);
@@ -78,10 +75,10 @@ public class Site extends PersistentEntity {
 			if (action.equals("delete")) {
 				Site.deleteSite(site);
 			} else if (action.equals("update")) {
-				String newCode = values[2];
-				GeneralImport.addField(csvElement, "New Site Code", newCode);
-				String name = values[3];
-				GeneralImport.addField(csvElement, "New site name", name);
+				String newCode = GeneralImport.addField(csvElement,
+						"New Site Code", values, 2);
+				String name = GeneralImport.addField(csvElement,
+						"New site name", values, 3);
 				site.update(newCode, name);
 			}
 		}
@@ -196,7 +193,8 @@ public class Site extends PersistentEntity {
 		return element;
 	}
 
-	public Supply insertSupply(Source source, String supplyName,HhEndDate startDate, String meterSerialNumber,
+	public Supply insertSupply(Source source, String supplyName,
+			HhEndDate startDate, String meterSerialNumber,
 			String importMpanStr, Ssc importSsc, GspGroup importGspGroup,
 			Account importHhdcAccount, Account importAccountSupplier,
 			Boolean importHasImportKwh, Boolean importHasImportKvarh,
@@ -205,7 +203,8 @@ public class Site extends PersistentEntity {
 			Ssc exportSsc, GspGroup exportGspGroup, Account exportHhdcAccount,
 			Account exportAccountSupplier, Boolean exportHasImportKwh,
 			Boolean exportHasImportKvarh, Boolean exportHasExportKwh,
-			Boolean exportHasExportKvarh, Integer exportAgreedSupplyCapacity) throws HttpException {
+			Boolean exportHasExportKvarh, Integer exportAgreedSupplyCapacity)
+			throws HttpException {
 		Supply supply = new Supply(supplyName, source);
 		try {
 			Hiber.session().save(supply);
@@ -240,8 +239,8 @@ public class Site extends PersistentEntity {
 				meter = supply.insertMeter(meterSerialNumber);
 			}
 		}
-		SupplyGeneration supplyGeneration = supply.insertGeneration(siteMap, null,
-				meter, importMpanStr, importSsc, importGspGroup,
+		SupplyGeneration supplyGeneration = supply.insertGeneration(siteMap,
+				null, meter, importMpanStr, importSsc, importGspGroup,
 				importHhdcAccount, importAccountSupplier, importHasImportKwh,
 				importHasImportKvarh, importHasExportKwh, importHasExportKvarh,
 				importAgreedSupplyCapacity, exportMpanStr, exportSsc,
@@ -634,9 +633,10 @@ public class Site extends PersistentEntity {
 										+ e.getMessage());
 					}
 				}
-				Supply supply = insertSupply(source, name, new HhEndDate(startDate), meterSerialNumber,
-						importMpanStr, importSsc, importGspGroup,
-						importHhdcAccount, importSupplierAccount,
+				Supply supply = insertSupply(source, name, new HhEndDate(
+						startDate), meterSerialNumber, importMpanStr,
+						importSsc, importGspGroup, importHhdcAccount,
+						importSupplierAccount,
 						importHhdcAccount == null ? false : true,
 						importHhdcAccount == null ? false : true, false,
 						importHhdcAccount == null ? false : true,

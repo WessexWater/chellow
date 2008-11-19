@@ -69,7 +69,7 @@
 								<legend>Update Report</legend>
 								<label>
 									<xsl:value-of select="'Name '" />
-									<input name="name">
+									<input name="name" size="100">
 										<xsl:attribute name="value">
 									<xsl:choose>
 										<xsl:when

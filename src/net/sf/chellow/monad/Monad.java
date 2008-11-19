@@ -38,8 +38,6 @@ import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.mail.internet.AddressException;
-import javax.mail.internet.InternetAddress;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
@@ -266,32 +264,33 @@ public abstract class Monad extends HttpServlet implements Urlable {
 			} catch (UnauthorizedException e) {
 				inv.sendUnauthorized();
 			} catch (UserException e) {
-				Document doc = e.getDocument();
-				if (doc == null) {
-					doc = MonadUtils.newSourceDocument();
+				try {
+					Document doc = e.getDocument();
+					if (doc == null) {
+						doc = MonadUtils.newSourceDocument();
+					}
+					if (e.getMessage() != null) {
+						Element sourceElement = doc.getDocumentElement();
+						sourceElement.appendChild(e.toXml(doc));
+					}
+					inv.sendUser(doc);
+				} catch (Throwable te) {
+					logger.logp(Level.SEVERE, "uk.org.tlocke.monad.Monad",
+							"service", "Can't process request", e);
+					res.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
+							HttpException.getStackTraceString(te)
+									+ HttpException.getStackTraceString(e));
 				}
-				if (e.getMessage() != null) {
-					Element sourceElement = doc.getDocumentElement();
-					sourceElement.appendChild(e.toXml(doc));
-				}
-				inv.sendUser(doc);
 			} catch (BadRequestException e) {
 				inv.sendBadRequest(e.getMessage());
 			}
 		} catch (Throwable e) {
-			try {
-				new InternetAddress("tlocke@tlocke.org.uk");
-			} catch (AddressException ae) {
-			}
 			logger.logp(Level.SEVERE, "uk.org.tlocke.monad.Monad", "service",
 					"Can't process request", e);
-			res
-					.sendError(
-							HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
-							(e instanceof HttpException) ? e.getMessage()
-									: "There has been an error with our software. The "
-											+ "administrator has been informed, and the problem will "
-											+ "be put right as soon as possible.");
+			logger.logp(Level.SEVERE, "uk.org.tlocke.monad.Monad", "service",
+					"Can't process request", e);
+			res.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
+					HttpException.getStackTraceString(e));
 		} finally {
 			Hiber.rollBack();
 			Hiber.close();

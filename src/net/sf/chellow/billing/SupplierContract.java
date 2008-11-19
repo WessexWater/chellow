@@ -50,27 +50,24 @@ import org.w3c.dom.Element;
 public class SupplierContract extends Contract {
 	static public void generalImport(String action, String[] values,
 			Element csvElement) throws HttpException {
-		if (values.length < 8) {
-			throw new UserException("There aren't enough fields in this row");
-		}
 		String participantCode = GeneralImport.addField(csvElement,
-				"Participant Code", values[0]);
+				"Participant Code", values, 0);
 		Provider provider = Provider.getProvider(participantCode,
 				MarketRole.SUPPLIER);
-		String name = GeneralImport.addField(csvElement, "Name", values[1]);
+		String name = GeneralImport.addField(csvElement, "Name", values, 1);
 
 		if (action.equals("insert")) {
 			String startDateStr = GeneralImport.addField(csvElement,
-					"Start Date", values[2]);
+					"Start Date", values, 2);
 			HhEndDate startDate = new HhEndDate(startDateStr);
 			String finishDateStr = GeneralImport.addField(csvElement,
-					"Finish Date", values[3]);
+					"Finish Date", values, 3);
 			HhEndDate finishDate = null;
 			if (finishDateStr.length() > 0) {
 				finishDate = new HhEndDate(finishDateStr);
 			}
 			String chargeScript = GeneralImport.addField(csvElement,
-					"Charge Script", values[6]);
+					"Charge Script", values, 4);
 			insertSupplierContract(provider, name, startDate, finishDate,
 					chargeScript);
 		}

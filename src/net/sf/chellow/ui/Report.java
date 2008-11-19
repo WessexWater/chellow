@@ -1,7 +1,6 @@
 package net.sf.chellow.ui;
 
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.util.List;
@@ -28,15 +27,12 @@ import org.w3c.dom.Element;
 public class Report extends PersistentEntity {
 	public static void generalImport(String action, String[] values,
 			Element csvElement) throws HttpException {
-		if (values.length < 3) {
-			throw new UserException("There aren't enough fields in this row");
-		}
-		String name = GeneralImport.addField(csvElement, "Name", values[0]);
+		String name = GeneralImport.addField(csvElement, "Name", values, 0);
 		if (action.equals("insert")) {
 			String script = GeneralImport.addField(csvElement, "Script",
-					values[1]);
+					values, 1);
 			String template = GeneralImport.addField(csvElement, "Template",
-					values[2]);
+					values, 2);
 			Report.insertReport(name, script, template);
 		} else if (action.equals("update")) {
 			/*
@@ -68,10 +64,8 @@ public class Report extends PersistentEntity {
 
 	public static void loadReports(ServletContext context) throws HttpException {
 		try {
-			GeneralImport process = new GeneralImport(null,
-					new InputStreamReader(context.getResource(
-							"/WEB-INF/reports.xml").openStream(), "UTF-8"),
-					"xml");
+			GeneralImport process = new GeneralImport(null, context
+					.getResource("/WEB-INF/reports.xml").openStream(), "xml");
 			process.run();
 			List<MonadMessage> errors = process.getErrors();
 			if (!errors.isEmpty()) {

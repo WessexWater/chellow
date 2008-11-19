@@ -59,33 +59,31 @@ public class HhdcContract extends Contract {
 		if (values.length < 8) {
 			throw new UserException("There aren't enough fields in this row");
 		}
-		String participantCode = values[0];
-		GeneralImport.addField(csvElement, "Participant Code", participantCode);
+		String participantCode = GeneralImport.addField(csvElement,
+				"Participant Code", values, 0);
 		Provider provider = Provider.getProvider(participantCode,
 				MarketRole.HHDC);
-		String name = values[1];
-		GeneralImport.addField(csvElement, "Name", name);
+		String name = GeneralImport.addField(csvElement, "Name", values, 1);
 
 		if (action.equals("insert")) {
-			String startDateStr = values[2];
-			GeneralImport.addField(csvElement, "Start Date", startDateStr);
+			String startDateStr = GeneralImport.addField(csvElement,
+					"Start Date", values, 2);
 			HhEndDate startDate = new HhEndDate(startDateStr);
-			String finishDateStr = values[3];
-			GeneralImport.addField(csvElement, "Finish Date", finishDateStr);
+			String finishDateStr = GeneralImport.addField(csvElement,
+					"Finish Date", values, 3);
 			HhEndDate finishDate = null;
 			if (finishDateStr.length() > 0) {
 				finishDate = new HhEndDate(finishDateStr);
 			}
-			String frequency = values[4];
-			GeneralImport.addField(csvElement, "Frequency", frequency);
-			String lagStr = values[5];
-			GeneralImport.addField(csvElement, "Lag", lagStr);
+			String frequency = GeneralImport.addField(csvElement, "Frequency",
+					values, 4);
+			String lagStr = GeneralImport
+					.addField(csvElement, "Lag", values, 5);
 			int lag = Integer.parseInt(lagStr);
-			String chargeScript = values[6];
-			GeneralImport.addField(csvElement, "Charge Script", chargeScript);
-			String importerProperties = values[7];
-			GeneralImport.addField(csvElement, "Importer Properties",
-					importerProperties);
+			String chargeScript = GeneralImport.addField(csvElement,
+					"Charge Script", values, 6);
+			String importerProperties = GeneralImport.addField(csvElement,
+					"Importer Properties", values, 7);
 			insertHhdcContract(provider, name, startDate, finishDate,
 					chargeScript, frequency, lag, importerProperties);
 		}
@@ -95,6 +93,11 @@ public class HhdcContract extends Contract {
 			String name, HhEndDate startDate, HhEndDate finishDate,
 			String chargeScript, String frequency, int lag,
 			String importerProperties) throws HttpException {
+		HhdcContract existing = findHhdcContract(name);
+		if (existing != null) {
+			throw new UserException(
+					"There's already a HHDC contract with the name " + name);
+		}
 		HhdcContract contract = new HhdcContract(provider, name, startDate,
 				finishDate, chargeScript, frequency, lag, importerProperties);
 		Hiber.session().save(contract);
@@ -116,14 +119,19 @@ public class HhdcContract extends Contract {
 
 	public static HhdcContract getHhdcContract(String name)
 			throws HttpException {
-		HhdcContract contract = (HhdcContract) Hiber.session().createQuery(
-				"from HhdcContract contract where contract.name = :name")
-				.setString("name", name).uniqueResult();
+		HhdcContract contract = findHhdcContract(name);
 		if (contract == null) {
 			throw new NotFoundException("There isn't an HHDC contract called '"
 					+ name + "'");
 		}
 		return contract;
+	}
+
+	public static HhdcContract findHhdcContract(String name)
+			throws HttpException {
+		return (HhdcContract) Hiber.session().createQuery(
+				"from HhdcContract contract where contract.name = :name")
+				.setString("name", name).uniqueResult();
 	}
 
 	private Provider hhdc;

@@ -292,7 +292,7 @@ public class Mpan extends PersistentEntity {
 		if (hhdcAccount != null
 				&& (!hasImportKwh && !hasImportKvarh && !hasExportKwh && !hasExportKvarh)) {
 			throw new UserException(
-					"If there's a DCE account, surely there must be some data to collect?");
+					"If there's a HHDC account, surely there must be some data to collect?");
 		}
 		setHhdcAccount(hhdcAccount);
 		if (supplierAccount == null) {

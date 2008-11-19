@@ -30,7 +30,6 @@ import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Invocation;
 import net.sf.chellow.monad.NotFoundException;
 import net.sf.chellow.monad.Urlable;
-import net.sf.chellow.monad.UserException;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
 import net.sf.chellow.ui.GeneralImport;
@@ -41,20 +40,17 @@ import org.w3c.dom.Element;
 public class SiteSupplyGeneration extends PersistentEntity {
 	static public void generalImport(String action, String[] values,
 			Element csvElement) throws HttpException {
-		if (values.length < 8) {
-			throw new UserException("There aren't enough fields in this row");
-		}
 		String siteCode = GeneralImport.addField(csvElement,
-				"Site Code", values[0]);
+				"Site Code", values, 0);
 		Site site = Site.getSite(siteCode);
-		String mpanCoreStr = GeneralImport.addField(csvElement, "MPAN Core", values[1]);
+		String mpanCoreStr = GeneralImport.addField(csvElement, "MPAN Core", values, 1);
 		MpanCore mpanCore = MpanCore.getMpanCore(mpanCoreStr);
-		String startDateStr = GeneralImport.addField(csvElement, "Generation Start Date", values[2]);
+		String startDateStr = GeneralImport.addField(csvElement, "Generation Start Date", values, 2);
 		HhEndDate startDate = new HhEndDate(startDateStr);
 		SupplyGeneration supplyGeneration = mpanCore.getSupply().getGeneration(startDate);
 		if (action.equals("insert")) {
 			String isLocationStr = GeneralImport.addField(csvElement,
-					"Is Location?", values[3]);
+					"Is Location?", values, 3);
 			boolean isLocation = Boolean.parseBoolean(isLocationStr);
 			supplyGeneration.attachSite(site, isLocation);
 			Hiber.flush();

@@ -53,15 +53,12 @@ import org.w3c.dom.Element;
 public class Account extends PersistentEntity {
 	public static void generalImportHhdc(String action, String[] values,
 			Element csvElement) throws HttpException {
-		if (values.length < 2) {
-			throw new UserException("There aren't enough fields in this row");
-		}
 		String hhdcContractName = GeneralImport.addField(csvElement,
-				"Contract", values[0]);
+				"Contract", values, 0);
 		HhdcContract hhdcContract = HhdcContract
 				.getHhdcContract(hhdcContractName);
 		String hhdcAccountReference = GeneralImport.addField(csvElement,
-				"Reference", values[1]);
+				"Reference", values, 1);
 		if (action.equals("insert")) {
 			hhdcContract.insertAccount(hhdcAccountReference);
 		} else {
@@ -70,7 +67,7 @@ public class Account extends PersistentEntity {
 				hhdcContract.deleteAccount(hhdcAccount);
 			} else if (action.equals("update")) {
 				String newReference = GeneralImport.addField(csvElement,
-						"New Reference", values[2]);
+						"New Reference", values, 2);
 				hhdcAccount.update(newReference);
 			}
 		}
@@ -82,11 +79,11 @@ public class Account extends PersistentEntity {
 			throw new UserException("There aren't enough fields in this row");
 		}
 		String supplierContractName = GeneralImport.addField(csvElement,
-				"Contract", values[0]);
+				"Contract", values, 0);
 		SupplierContract supplierContract = SupplierContract
 				.getSupplierContract(supplierContractName);
 		String supplierAccountReference = GeneralImport.addField(csvElement,
-				"Reference", values[1]);
+				"Reference", values, 1);
 		if (action.equals("insert")) {
 			supplierContract.insertAccount(supplierAccountReference);
 		} else {
@@ -96,7 +93,7 @@ public class Account extends PersistentEntity {
 				supplierContract.deleteAccount(supplierAccount);
 			} else if (action.equals("update")) {
 				String newReference = GeneralImport.addField(csvElement,
-						"New Reference", values[2]);
+						"New Reference", values, 2);
 				supplierAccount.update(newReference);
 			}
 		}

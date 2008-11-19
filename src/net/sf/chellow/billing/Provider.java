@@ -31,6 +31,7 @@ import net.sf.chellow.monad.MonadUtils;
 import net.sf.chellow.monad.NotFoundException;
 import net.sf.chellow.monad.XmlTree;
 import net.sf.chellow.monad.types.MonadUri;
+import net.sf.chellow.physical.MarketRole;
 import net.sf.chellow.physical.Participant;
 
 import org.w3c.dom.Document;
@@ -39,14 +40,21 @@ import org.w3c.dom.Element;
 public class Provider extends Party {
 	static public Provider getProvider(String participantCode, char roleCode)
 			throws HttpException {
+		Participant participant = Participant.getParticipant(participantCode);
+		MarketRole role = MarketRole.getMarketRole(roleCode);
 		Provider provider = (Provider) Hiber
 				.session()
 				.createQuery(
-						"from Provider provider where provider.participant.code = :participantCode and provider.role.code = :roleCode")
-				.setString("participantCode", participantCode).setCharacter(
-						"roleCode", roleCode).uniqueResult();
+						"from Provider provider where provider.participant = :participant and provider.role = :role")
+				.setEntity("participant", participant).setEntity("role", role)
+				.uniqueResult();
 		if (provider == null) {
-			throw new NotFoundException();
+			throw new NotFoundException(
+					"There isn't a provider with participant code "
+							+ participant.getCode() + " ("
+							+ participant.getName() + ") and role code "
+							+ role.getCode() + " (" + role.getDescription()
+							+ ").");
 		}
 		return provider;
 	}
@@ -64,29 +72,23 @@ public class Provider extends Party {
 
 	public Provider(String name, Participant participant, char role,
 			Date validFrom, Date validTo) throws HttpException {
-		super(name, participant, role,
-				validFrom, validTo);
+		super(name, participant, role, validFrom, validTo);
 	}
-
 
 	public Element toXml(Document doc) throws HttpException {
 		return super.toXml(doc, "provider");
 	}
-/*
-	public Account getAccount(String accountText) throws HttpException {
-		Account account = (Account) Hiber
-				.session()
-				.createQuery(
-						"from Account account where account.provider = :provider and account.reference = :accountReference")
-				.setEntity("provider", this).setString("accountReference",
-						accountText.trim()).uniqueResult();
-		if (account == null) {
-			throw new UserException("There isn't an account for '" + getName()
-					+ "' with the reference '" + accountText + "'.");
-		}
-		return account;
-	}
-*/
+
+	/*
+	 * public Account getAccount(String accountText) throws HttpException {
+	 * Account account = (Account) Hiber .session() .createQuery( "from Account
+	 * account where account.provider = :provider and account.reference =
+	 * :accountReference") .setEntity("provider",
+	 * this).setString("accountReference", accountText.trim()).uniqueResult();
+	 * if (account == null) { throw new UserException("There isn't an account
+	 * for '" + getName() + "' with the reference '" + accountText + "'."); }
+	 * return account; }
+	 */
 
 	@Override
 	public MonadUri getUri() throws HttpException {
