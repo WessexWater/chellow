@@ -69,6 +69,10 @@ public class Mpan extends PersistentEntity {
 						dso.getLlfc(raw.getLlfcCode())).setParameterList(
 						"supplyGenerations", supplyGenerations).list();
 	}
+	
+	static public String getCore(String mpan) throws HttpException {
+		return new MpanRaw(mpan).getMpanCore();
+	}
 
 	/*
 	 * static public String canonicalize(String mpanStr) throws HttpException {

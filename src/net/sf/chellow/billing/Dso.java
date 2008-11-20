@@ -1,18 +1,22 @@
 package net.sf.chellow.billing;
 
 import java.util.Date;
+import java.util.List;
 
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
+import net.sf.chellow.monad.Invocation;
+import net.sf.chellow.monad.MonadUtils;
 import net.sf.chellow.monad.NotFoundException;
 import net.sf.chellow.monad.Urlable;
 import net.sf.chellow.monad.UserException;
+import net.sf.chellow.monad.XmlTree;
 import net.sf.chellow.monad.types.UriPathElement;
+import net.sf.chellow.physical.GspGroup;
 import net.sf.chellow.physical.HhEndDate;
 import net.sf.chellow.physical.Llfc;
 import net.sf.chellow.physical.Llfcs;
 import net.sf.chellow.physical.MarketRole;
-import net.sf.chellow.physical.MpanTops;
 import net.sf.chellow.physical.Participant;
 
 import org.w3c.dom.Document;
@@ -118,11 +122,12 @@ public class Dso extends Party {
 		return new DsoContracts(this);
 	}
 
-	public DsoContract insertContract(String name, HhEndDate startDate, HhEndDate finishDate,
-			String chargeScript) throws HttpException {
+	public DsoContract insertContract(String name, HhEndDate startDate,
+			HhEndDate finishDate, String chargeScript) throws HttpException {
 		DsoContract service = findContract(name);
 		if (service == null) {
-			service = new DsoContract(this, name, startDate, finishDate, chargeScript);
+			service = new DsoContract(this, name, startDate, finishDate,
+					chargeScript);
 		} else {
 			throw new UserException(
 					"There is already a DSO service with this name.");
@@ -141,12 +146,28 @@ public class Dso extends Party {
 				.uniqueResult();
 	}
 
+	@SuppressWarnings("unchecked")
+	@Override
+	public void httpGet(Invocation inv) throws HttpException {
+		Document doc = MonadUtils.newSourceDocument();
+		Element source = doc.getDocumentElement();
+		Element dsoElement = (Element) toXml(doc, new XmlTree("participant")
+				.put("role"));
+		source.appendChild(dsoElement);
+		for (GspGroup group : (List<GspGroup>) Hiber
+				.session()
+				.createQuery(
+						"select distinct top.gspGroup from MpanTop top where top.llfc.dso = :dso order by top.gspGroup.code")
+				.setEntity("dso", this).list()) {
+			dsoElement.appendChild(group.toXml(doc));
+		}
+		inv.sendOk(doc);
+	}
+
 	@Override
 	public Urlable getChild(UriPathElement uriId) throws HttpException {
 		if (Llfcs.URI_ID.equals(uriId)) {
 			return new Llfcs(this);
-		} else if (MpanTops.URI_ID.equals(uriId)) {
-			return new MpanTops(this);
 		} else if (DsoContracts.URI_ID.equals(uriId)) {
 			return new DsoContracts(this);
 		} else {

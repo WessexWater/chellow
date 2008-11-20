@@ -31,19 +31,16 @@ import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Invocation;
 import net.sf.chellow.monad.MethodNotAllowedException;
 import net.sf.chellow.monad.MonadUtils;
-import net.sf.chellow.monad.NotFoundException;
-import net.sf.chellow.monad.Urlable;
-import net.sf.chellow.monad.XmlDescriber;
 import net.sf.chellow.monad.XmlTree;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
+import net.sf.chellow.ui.Chellow;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import org.w3c.dom.Node;
 
 @SuppressWarnings("serial")
-public class MpanTops implements Urlable, XmlDescriber {
+public class MpanTops extends EntityList {
 	public static final UriPathElement URI_ID;
 
 	static {
@@ -54,18 +51,15 @@ public class MpanTops implements Urlable, XmlDescriber {
 		}
 	}
 
-	private Dso dso;
-
-	public MpanTops(Dso dso) {
-		this.dso = dso;
+	public MpanTops() {
 	}
 
 	public UriPathElement getUrlId() {
 		return URI_ID;
 	}
 
-	public MonadUri getUri() throws InternalException, HttpException {
-		return dso.getUri().resolve(getUrlId()).append("/");
+	public MonadUri getUri() throws HttpException {
+		return Chellow.ROOT_URI.resolve(getUrlId()).append("/");
 	}
 
 	public void httpPost(Invocation inv) throws HttpException {
@@ -76,31 +70,41 @@ public class MpanTops implements Urlable, XmlDescriber {
 	public void httpGet(Invocation inv) throws HttpException {
 		Document doc = MonadUtils.newSourceDocument();
 		Element source = doc.getDocumentElement();
-		Element mpanTopsElement = (Element) toXml(doc);
+		Element mpanTopsElement = toXml(doc);
 		source.appendChild(mpanTopsElement);
-		mpanTopsElement.appendChild(dso.toXml(doc));
-		for (MpanTop mpanTop : (List<MpanTop>) Hiber
-				.session()
-				.createQuery(
-						"from MpanTop mpanTop where mpanTop.llfc.dso = :dso order by mpanTop.llfc.code, mpanTop.pc.code")
-				.setEntity("dso", dso).list()) {
-			mpanTopsElement.appendChild(mpanTop.toXml(doc, new XmlTree("llfc",
-					new XmlTree("dso")).put("pc").put("mtc").put("ssc")));
+		if (inv.hasParameter("dso-id") && inv.hasParameter("gsp-group-id")) {
+			Long dsoId = inv.getLong("dso-id");
+			Dso dso = Dso.getDso(dsoId);
+			Long gspGroupId = inv.getLong("gsp-group-id");
+			GspGroup gspGroup = GspGroup.getGspGroup(gspGroupId);
+			for (MpanTop mpanTop : (List<MpanTop>) Hiber
+					.session()
+					.createQuery(
+							"from MpanTop mpanTop where mpanTop.llfc.dso = :dso and mpanTop.gspGroup = :gspGroup order by mpanTop.llfc.code, mpanTop.pc.code")
+					.setEntity("dso", dso).setEntity("gspGroup", gspGroup).list()) {
+				mpanTopsElement.appendChild(mpanTop.toXml(doc, new XmlTree(
+						"llfc", new XmlTree("dso")).put("pc").put("mtc").put(
+						"ssc").put("gspGroup")));
+			}
+		} else {
+			for (GspGroup group : (List<GspGroup>) Hiber.session().createQuery(
+					"from GspGroup group order by group.code").list()) {
+				Element groupElement = group.toXml(doc);
+				source.appendChild(groupElement);
+				for (Dso dso : (List<Dso>) Hiber
+						.session()
+						.createQuery(
+								"select distinct top.llfc.dso from MpanTop top where top.gspGroup = :gspGroup order by top.llfc.dso.code")
+						.setEntity("gspGroup", group).list()) {
+					groupElement.appendChild(dso.toXml(doc));
+				}
+			}
 		}
 		inv.sendOk(doc);
 	}
 
 	public MpanTop getChild(UriPathElement uriId) throws HttpException {
-		MpanTop mpanTop = (MpanTop) Hiber
-				.session()
-				.createQuery(
-						"from MpanTop mpanTop where mpanTop.llfc.dso = :dso and mpanTop.id = :mpanTopId")
-				.setEntity("dso", dso).setLong("mpanTopId",
-						Long.parseLong(uriId.getString())).uniqueResult();
-		if (mpanTop == null) {
-			throw new NotFoundException();
-		}
-		return mpanTop;
+		return MpanTop.getMpanTop(Long.parseLong(uriId.getString()));
 	}
 
 	public void httpDelete(Invocation inv) throws InternalException,
@@ -108,14 +112,8 @@ public class MpanTops implements Urlable, XmlDescriber {
 		throw new MethodNotAllowedException();
 	}
 
-	public Node toXml(Document doc) throws InternalException, HttpException {
+	public Element toXml(Document doc) throws InternalException, HttpException {
 		Element mpanTopsElement = doc.createElement("mpan-tops");
 		return mpanTopsElement;
-	}
-
-	public Node toXml(Document doc, XmlTree tree) throws InternalException,
-			HttpException {
-		// TODO Auto-generated method stub
-		return null;
 	}
 }

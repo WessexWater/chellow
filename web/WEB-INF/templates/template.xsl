@@ -4,7 +4,6 @@
 	<xsl:output method="html" encoding="US-ASCII"
 		doctype-public="-//W3C//DTD HTML 4.01//EN"
 		doctype-system="http://www.w3.org/TR/html4/strict.dtd" indent="yes" />
-
 	<xsl:template match="/">
 		<html>
 			<head>
@@ -185,6 +184,12 @@
 							GSP Groups
 						</a>
 					</li>
+					<li>
+						<a
+							href="{/source/request/@context-path}/mpan-tops/">
+							MPAN Top Lines
+						</a>
+					</li>					
 				</ul>
 			</body>
 		</html>

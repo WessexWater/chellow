@@ -80,7 +80,18 @@
 						<a href="llfcs/">Line Loss Factor Classes</a>
 					</li>
 					<li>
-						<a href="mpan-tops/">MPAN top lines</a>
+						MPAN top lines
+						<ul>
+							<xsl:for-each
+								select="/source/dso/gsp-group">
+								<li>
+									<a
+										href="{/source/request/@context-path}/mpan-tops/?dso-id={/source/dso/@id}&amp;gsp-group-id={@id}">
+										<xsl:value-of select="@code" />
+									</a>
+								</li>
+							</xsl:for-each>
+						</ul>
 					</li>
 
 					<li>
@@ -91,4 +102,3 @@
 		</html>
 	</xsl:template>
 </xsl:stylesheet>
-

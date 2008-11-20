@@ -31,6 +31,7 @@ import net.sf.chellow.physical.MarketRole;
 import net.sf.chellow.physical.MarketRoles;
 import net.sf.chellow.physical.MeterPaymentTypes;
 import net.sf.chellow.physical.MeterTypes;
+import net.sf.chellow.physical.MpanTops;
 import net.sf.chellow.physical.Mtcs;
 import net.sf.chellow.physical.Participants;
 import net.sf.chellow.physical.Pcs;
@@ -78,6 +79,7 @@ public class Chellow extends Monad implements Urlable {
 	static public final Sites SITES_INSTANCE = new Sites();
 	static public final GeneralImports GENERAL_IMPORT_PROCESSES = new GeneralImports();
 	static public final GspGroups GSP_GROUPS_INSTANCE = new GspGroups();
+	static public final MpanTops MPAN_TOPS_INSTANCE = new MpanTops();
 
 	static {
 		try {
@@ -218,6 +220,8 @@ public class Chellow extends Monad implements Urlable {
 			return SUPPLIES_INSTANCE;
 		} else if (GspGroups.URI_ID.equals(uriId)) {
 			return GSP_GROUPS_INSTANCE;
+		} else if (MpanTops.URI_ID.equals(uriId)) {
+			return MPAN_TOPS_INSTANCE;
 		} else {
 			return null;
 		}

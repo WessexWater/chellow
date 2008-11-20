@@ -232,15 +232,8 @@ public class Site extends PersistentEntity {
 		 */
 		Map<Site, Boolean> siteMap = new HashMap<Site, Boolean>();
 		siteMap.put(this, true);
-		Meter meter = null;
-		if (meterSerialNumber != null && meterSerialNumber.length() != 0) {
-			meter = supply.findMeter(meterSerialNumber);
-			if (meter == null) {
-				meter = supply.insertMeter(meterSerialNumber);
-			}
-		}
 		SupplyGeneration supplyGeneration = supply.insertGeneration(siteMap,
-				null, meter, importMpanStr, importSsc, importGspGroup,
+				null, meterSerialNumber, importMpanStr, importSsc, importGspGroup,
 				importHhdcAccount, importAccountSupplier, importHasImportKwh,
 				importHasImportKvarh, importHasExportKwh, importHasExportKvarh,
 				importAgreedSupplyCapacity, exportMpanStr, exportSsc,
@@ -248,7 +241,7 @@ public class Site extends PersistentEntity {
 				exportHasImportKwh, exportHasImportKvarh, exportHasExportKwh,
 				exportHasExportKvarh, exportAgreedSupplyCapacity);
 		supplyGeneration.update(startDate, supplyGeneration.getFinishDate(),
-				meter);
+				supplyGeneration.getMeter());
 		Hiber.flush();
 		return supply;
 	}

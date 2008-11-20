@@ -58,9 +58,12 @@
           </a>
       </li>
         </ul>
-        <h3>Bulk CSV downloads</h3>
+        <h3>CSV downloads</h3>
         <ul>
           <li><a href="{/source/request/@context-path}/reports/17/output/">Electricity Supply Details
+            </a>
+          </li>
+          <li><a href="{/source/request/@context-path}/reports/73/output/">HH data, all sites, 1 year
             </a>
           </li>
         </ul>
@@ -127,6 +130,12 @@
                         <a
     href="{/source/request/@context-path}/reports/22/output/">
     GSP Groups
+                        </a>
+                    </li>
+                    <li>
+                        <a
+    href="{/source/request/@context-path}/reports/74/output/">
+    MPAN Top Lines
                         </a>
                     </li>
                 </ul>
@@ -3412,7 +3421,7 @@ source.appendChild(MonadDate().toXml(doc))]]></value>
   <line>
     <value>insert</value>
     <value>report</value>
-    <value>0 Supplies Moment</value>
+    <value>0 CSV Supplies Moment</value>
     <value><![CDATA[from net.sf.chellow.monad import Hiber
 from net.sf.chellow.physical import ReadType
 
@@ -8900,7 +8909,6 @@ source.appendChild(contract.toXml(doc, XmlTree('party', XmlTree('participant')).
   <line>
     <value>insert</value>
     <value>report</value>
-
     <value>0 HHDC Contract Channel Snag</value>
     <value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree, UserException
 from net.sf.chellow.physical import ChannelSnag
@@ -10392,6 +10400,240 @@ source.appendChild(type.toXml(doc))]]></value>
                         </td>
                     </tr>
                 </table>
+            </body>
+        </html>
+    </xsl:template>
+</xsl:stylesheet>]]></value>
+  </line>
+  <line>
+    <value>insert</value>
+    <value>report</value>
+    <value>0 CSV 1 Year, All sites, HH data</value>
+    <value><![CDATA[from net.sf.chellow.monad import Hiber
+from java.util import Calendar, GregorianCalendar, TimeZone, Locale
+from java.text import DateFormat
+from java.util.zip import ZipOutputStream, ZipEntry
+from java.io import OutputStreamWriter, PrintWriter
+from org.hibernate import CacheMode, ScrollMode
+from net.sf.chellow.physical import HhEndDate
+from java.lang import System, Long
+from net.sf.chellow.physical import Channel
+
+cal = GregorianCalendar(TimeZone.getTimeZone('Europe/London'), Locale.UK)
+cal.set(Calendar.MILLISECOND, 0)
+cal.set(Calendar.SECOND, 0)
+cal.set(Calendar.MINUTE, 0)
+cal.set(Calendar.HOUR_OF_DAY, 0)
+cal.set(Calendar.DAY_OF_MONTH, 1)
+cal.set(Calendar.MONTH, Calendar.AUGUST)
+finishDate = cal.getTime()
+cal.add(Calendar.MILLISECOND, 1)
+cal.add(Calendar.YEAR, -1)
+startDate = cal.getTime()
+inv.getResponse().setContentType('application/zip')
+inv.getResponse().setHeader('Content-Disposition', 'filename=output.zip;')
+sout = inv.getResponse().getOutputStream()
+#sout = System.out
+#raise InvalidArgumentException('got here 60')
+zout = ZipOutputStream(sout)
+pw = PrintWriter(OutputStreamWriter(zout, 'UTF-8'))
+dateFormat = DateFormat.getDateInstance(DateFormat.LONG, Locale.UK)
+dateFormat.applyLocalizedPattern("yyyy-MM-dd")
+dateFormat.setCalendar(cal)
+
+channels = Hiber.session().createQuery("select channel from Channel channel join channel.supply.generations generation where (generation.finishDate.date is null or generation.finishDate.date > :finishDate) and channel.isImport is true and channel.isKwh is true and channel.supply.id = 80").setTimestamp("finishDate", finishDate).list()
+
+for channel in channels:
+    channel = Hiber.session().get(channel.getClass(), Long(channel.getId()))
+    generation = channel.getSupply().getGeneration(HhEndDate(finishDate))
+    if generation == None or generation.getImportMpan() == None:
+        mpanCoreStr = "NA"
+    else:
+        mpanCoreStr = generation.getImportMpan().getMpanCore().toString()
+    zout.putNextEntry(ZipEntry(mpanCoreStr + '_' + str(channel.getId()) + '.csv'))
+    pw.print("MPAN Core,Date,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48")
+    currentDate = HhEndDate.roundUp(startDate)
+    #hhData = Hiber.session().createQuery("select datum.value, datum.endDate.date from HhDatum datum where datum.channel = :channel and datum.endDate.date > :startDate and datum.endDate.date <= :finishDate order by datum.endDate.date").setEntity("channel", channel).setTimestamp("startDate", startDate).setTimestamp("finishDate", finishDate).setCacheMode(CacheMode.IGNORE).scroll(ScrollMode.FORWARD_ONLY)
+    hhData = Hiber.session().createQuery("select datum.value, datum.endDate.date from HhDatum datum where datum.channel = :channel and datum.endDate.date > :startDate and datum.endDate.date <= :finishDate order by datum.endDate.date").setEntity("channel", channel).setTimestamp("startDate", startDate).setTimestamp("finishDate", finishDate).list()
+    datumEndDate = None
+    datumValue = None
+    hh_data_count = 0
+    while not currentDate.getDate().after(finishDate):
+        cal.setTime(currentDate.getDate())
+        if cal.get(Calendar.HOUR_OF_DAY) == 0 and cal.get(Calendar.MINUTE) == 30:
+            pw.print("\r\n" + mpanCoreStr + "," + dateFormat.format(currentDate.getDate()))
+        pw.print(",")
+        if (datumEndDate == None or datumEndDate.before(currentDate.getDate())) and hh_data_count < len(hhData):
+            row = hhData[hh_data_count]
+            hh_data_count = hh_data_count + 1
+            datumValue = row[0]
+            datumEndDate = row[1]
+        if datumEndDate is not None and datumEndDate.getTime() == currentDate.getDate().getTime():
+            pw.print(str(round(datumValue,1)))
+        currentDate = currentDate.getNext()
+    Hiber.session().clear()
+    pw.flush()
+pw.close()]]></value>
+    <value><![CDATA[]]></value>
+  </line>
+  <line>
+    <value>insert</value>
+    <value>report</value>
+    <value>0 MPAN Top Lines</value>
+    <value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree
+from net.sf.chellow.physical import GspGroup
+from net.sf.chellow.billing import Dso
+
+groups_element = doc.createElement('gsp-groups')
+source.appendChild(groups_element)
+for group in Hiber.session().createQuery("from GspGroup group order by group.code").list():
+    groups_element.appendChild(group.toXml(doc))
+
+tops_element = doc.createElement('mpan-tops')
+source.appendChild(tops_element);
+if inv.hasParameter("dso-id") and inv.hasParameter("gsp-group-id"):
+    dso_id = inv.getLong("dso-id")
+    dso = Dso.getDso(dso_id)
+    gsp_group_id = inv.getLong("gsp-group-id")
+    gspGroup = GspGroup.getGspGroup(gsp_group_id)
+    for mpan_top in Hiber.session().createQuery("from MpanTop mpanTop where mpanTop.llfc.dso = :dso and mpanTop.gspGroup = :gspGroup order by mpanTop.llfc.code, mpanTop.pc.code").setEntity("dso", dso).setEntity("gspGroup", gspGroup).list():
+        tops_element.appendChild(mpan_top.toXml(doc, XmlTree("llfc", XmlTree("dso")).put("pc").put("mtc").put("ssc").put("gspGroup")))
+else:
+    for group in Hiber.session().createQuery("from GspGroup group order by group.code").list():
+        group_element = group.toXml(doc)
+        source.appendChild(group_element);
+        for dso in Hiber.session().createQuery("select distinct top.llfc.dso from MpanTop top where top.gspGroup = :gspGroup order by top.llfc.dso.code").setEntity("gspGroup", group).list():
+            group_element.appendChild(dso.toXml(doc))]]></value>
+    <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
+<xsl:stylesheet version="1.0"
+    xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+    <xsl:output method="html" encoding="US-ASCII"
+        doctype-public="-//W3C//DTD HTML 4.01//EN"
+        doctype-system="http://www.w3.org/TR/html4/strict.dtd" indent="yes" />
+    <xsl:template match="/">
+        <html>
+            <head>
+                <link rel="stylesheet" type="text/css"
+                    href="{/source/request/@context-path}/reports/10/output/" />
+                <title>
+                    <xsl:value-of select="'Home'" />
+                    &gt; MPAN Top Lines
+                </title>
+            </head>
+            <body>
+                <p>
+                    <a
+                        href="{/source/request/@context-path}/reports/1/output/">
+                        <xsl:value-of select="'Home'" />
+                    </a>
+                    &gt;
+                    <a>
+                        <xsl:if test="/source/mpan-tops/mpan-top">
+                            <xsl:attribute name="href">
+                    <xsl:value-of
+                                    select="concat(/source/request/@context-path, '/reports/74/output/')" />
+                    </xsl:attribute>
+                        </xsl:if>
+                        <xsl:value-of select="'Mpan Top Lines'" />
+                    </a>
+                </p>
+                <xsl:if test="//message">
+                    <ul>
+                        <xsl:for-each select="//message">
+                            <li>
+                                <xsl:value-of select="@description" />
+                            </li>
+                        </xsl:for-each>
+                    </ul>
+                </xsl:if>
+                <xsl:choose>
+                    <xsl:when test="/source/mpan-tops/mpan-top">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Chellow Id</th>
+                                    <th>GSP Group</th>
+                                    <th>DSO</th>
+                                    <th>PC</th>
+                                    <th>MTC</th>
+                                    <th>LLFC</th>
+                                    <th>SSC</th>
+                                    <th>Valid From</th>
+                                    <th>Valid To</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <xsl:for-each
+                                    select="/source/mpan-tops/mpan-top">
+                                    <tr>
+                                        <td>
+                                            <a
+                                                href="{/source/request/@context-path}/reports/30/output/?mpan-top-id={@id}">
+                                                <xsl:value-of
+                                                    select="@id" />
+                                            </a>
+                                        </td>
+                                        <td>
+                                            <xsl:value-of
+                                                select="concat(gsp-group/@code, ' - ', gsp-group/@description)" />
+                                        </td>
+                                        <td>
+                                            <xsl:value-of
+                                                select="concat(llfc/dso/@code, ' - ', llfc/dso/@name)" />
+                                        </td>
+                                        <td>
+                                            <xsl:value-of
+                                                select="concat(pc/@code, ' - ', pc/@description)" />
+                                        </td>
+                                        <td>
+                                            <xsl:value-of
+                                                select="concat(mtc/@code, ' - ', mtc/@description)" />
+                                        </td>
+                                        <td>
+                                            <xsl:value-of
+                                                select="concat(llfc/@code, ' - ', llfc/@description)" />
+                                        </td>
+                                        <td>
+                                            <xsl:value-of
+                                                select="concat(ssc/@code, ' - ', ssc/@description)" />
+                                        </td>
+                                        <td>
+                                            <xsl:value-of
+                                                select="concat(date[@label='from']/@year, '-', date[@label='from']/@month, '-', date[@label='from']/@day, ' ', date[@label='from']/@hour, ':', date[@label='from']/@minute, ' Z')" />
+                                        </td>
+                                        <td>
+                                            <xsl:choose>
+                                                <xsl:when
+                                                    test="date[@label='to']">
+                                                    <xsl:value-of
+                                                        select="concat(date[@label='to']/@year, '-', date[@label='to']/@month, '-', date[@label='to']/@day, ' ', date[@label='to']/@hour, ':', date[@label='to']/@minute, ' Z')" />
+                                                </xsl:when>
+                                                <xsl:otherwise>
+                                                    Ongoing
+                                                </xsl:otherwise>
+                                            </xsl:choose>
+                                        </td>
+                                    </tr>
+                                </xsl:for-each>
+                            </tbody>
+                        </table>
+                    </xsl:when>
+                    <xsl:otherwise>
+                        <ul>
+                            <xsl:for-each select="/source/gsp-group">
+                                <xsl:for-each select="dso">
+                                    <li>
+                                        <a
+                                            href="{/source/request/@context-path}/reports/74/output/?gsp-group-id={../@id}&amp;dso-id={@id}">
+                                            <xsl:value-of
+                                                select="concat(../@code, ' ', @code)" />
+                                        </a>
+                                    </li>
+                                </xsl:for-each>
+                            </xsl:for-each>
+                        </ul>
+                    </xsl:otherwise>
+                </xsl:choose>
             </body>
         </html>
     </xsl:template>

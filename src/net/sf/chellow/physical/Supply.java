@@ -450,7 +450,7 @@ public class Supply extends PersistentEntity {
 		}
 		if (existingImportMpan == null) {
 			newSupplyGeneration = insertGeneration(existingSiteMap, finishDate,
-					existingMeter, null, null, null, null, null, false, false,
+					existingMeter.getSerialNumber(), null, null, null, null, null, false, false,
 					false, false, null, existingExportMpan.toString(),
 					existingExportMpan.getTop().getSsc(), existingExportMpan
 							.getTop().getGspGroup(), existingExportMpan
@@ -463,7 +463,7 @@ public class Supply extends PersistentEntity {
 							.getAgreedSupplyCapacity());
 		} else if (existingExportMpan == null) {
 			newSupplyGeneration = insertGeneration(existingSiteMap, finishDate,
-					existingMeter, existingImportMpan.toString(),
+					existingMeter.getSerialNumber(), existingImportMpan.toString(),
 					existingImportMpan.getTop().getSsc(), existingImportMpan
 							.getTop().getGspGroup(), existingImportMpan
 							.getHhdcAccount(), existingImportMpan
@@ -476,7 +476,7 @@ public class Supply extends PersistentEntity {
 					null, false, false, false, false, null);
 		} else {
 			newSupplyGeneration = insertGeneration(existingSiteMap, finishDate,
-					existingMeter, existingImportMpan.toString(),
+					existingMeter.getSerialNumber(), existingImportMpan.toString(),
 					existingImportMpan.getTop().getSsc(), existingImportMpan
 							.getTop().getGspGroup(), existingImportMpan
 							.getHhdcAccount(), existingImportMpan
@@ -527,7 +527,7 @@ public class Supply extends PersistentEntity {
 	 * exportHasExportKvarh, exportAgreedSupplyCapacity, finishDate); }
 	 */
 	public SupplyGeneration insertGeneration(Map<Site, Boolean> siteMap,
-			HhEndDate finishDate, Meter meter, String importMpanStr,
+			HhEndDate finishDate, String meterSerialNumber, String importMpanStr,
 			Ssc importSsc, GspGroup importGspGroup, Account importHhdcAccount,
 			Account importSupplierAccount, Boolean importHasImportKwh,
 			Boolean importHasImportKvarh, Boolean importHasExportKwh,
@@ -540,6 +540,13 @@ public class Supply extends PersistentEntity {
 		if (getGenerationFinishing(finishDate) != null) {
 			throw new UserException(
 					"There's already a supply generation with this finish date.");
+		}
+		Meter meter = null;
+		if (meterSerialNumber.trim().length() != 0) {
+			meter = findMeter(meterSerialNumber);
+			if (meter == null) {
+				meter = insertMeter(meterSerialNumber);
+			}
 		}
 		SupplyGeneration supplyGeneration = null;
 		if (generations.isEmpty()) {
