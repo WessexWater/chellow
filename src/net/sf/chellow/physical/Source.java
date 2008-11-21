@@ -109,10 +109,12 @@ public class Source extends PersistentEntity implements Urlable {
 	}
 
 	public void update(String code, String name) throws HttpException {
+		/*
 		if (code.length() > 6) {
 			throw new UserException(
 					"The source code is too long. It shouldn't be more than 5 characters long.");
 		}
+		*/
 		setCode(code);
 		setName(name);
 	}

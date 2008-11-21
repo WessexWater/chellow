@@ -25,13 +25,15 @@ package net.sf.chellow.physical;
 import java.util.ArrayList;
 import java.util.List;
 
+import net.sf.chellow.billing.HhdcContract;
 import net.sf.chellow.hhimport.HhDatumRaw;
+import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.NotFoundException;
 import net.sf.chellow.monad.Urlable;
+import net.sf.chellow.monad.UserException;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
-import net.sf.chellow.ui.GeneralImport;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -40,25 +42,112 @@ public class HhDatum extends PersistentEntity {
 	public static final Character ACTUAL = 'A';
 	public static final Character ESTIMATE = 'E';
 	
-	static public void generalImport(String action, String[] values,
-			Element csvElement) throws HttpException {
-		String mpanCoreStr = GeneralImport.addField(csvElement,
-				"MPAN Core", values, 0);
+	static private String getCsvField(String fieldName, String[] values, int index) throws HttpException {
+		if (index > values.length - 1) {
+			throw new UserException("Another field called " + fieldName
+					+ " needs to be added on to " + values);
+		}
+		return values[index];
+	}
+	
+	static public void generalImportInsert(List<HhDatumRaw> rawData) throws HttpException {
+		HhDatumRaw datum = rawData.get(0);
+		String mpanCoreStr = datum.getMpanCore();
 		MpanCore mpanCore = MpanCore.getMpanCore(mpanCoreStr);
-		String dateStr = GeneralImport.addField(csvElement, "Date", values, 1);
+		SupplyGeneration generation = mpanCore
+				.getSupply().getGeneration(datum.getEndDate());
+        HhdcContract contract = generation.getHhdcContract();
+		if (generation == null) {
+			throw new UserException("HH datum has been ignored: "
+					+ datum.toString() + ".");
+		}
+		Channel channel = generation.getChannel(datum.getIsImport(), datum
+				.getIsKwh());
+		HhEndDate genFinishDate = generation.getFinishDate();
+		List<HhDatumRaw> data = new ArrayList<HhDatumRaw>();
+		data.add(datum);
+		HhDatumRaw firstDatum = datum;
+		if (rawData.size() == 1) {
+			//batchSize = data.size();
+			//try {
+				channel.addHhData(contract, data);
+			//} catch (UserException e) {
+			//	messages.add(e.getMessage());
+			//}
+		}
+		for (int i = 1; i < rawData.size(); i++) {
+				datum = rawData.get(i);
+			if (data.size() > 1000
+					|| !(mpanCoreStr.equals(datum.getMpanCore())
+							&& datum.getIsImport() == firstDatum
+									.getIsImport()
+							&& datum.getIsKwh() == firstDatum.getIsKwh() && datum
+							.getEndDate().getDate().equals(
+									data.get(data.size() - 1).getEndDate()
+											.getNext().getDate()))
+					|| (genFinishDate != null && genFinishDate.getDate()
+							.before(datum.getEndDate().getDate()))) {
+				//batchSize = data.size();
+		//		try {
+					channel.addHhData(contract, data);
+			//	} catch (UserException e) {
+				//	messages.add(e.getMessage());
+			//	}
+				Hiber.close();
+				data.clear();
+				mpanCoreStr = datum.getMpanCore();
+				mpanCore = MpanCore.getMpanCore(mpanCoreStr);
+				generation = mpanCore.getSupply()
+						.getGeneration(datum.getEndDate());
+				if (generation == null) {
+					throw new UserException("HH datum has been ignored: "
+							+ datum.toString() + ".");
+				}
+				contract = generation.getHhdcContract();
+				channel = generation.getChannel(datum.getIsImport(), datum
+						.getIsKwh());
+				genFinishDate = generation.getFinishDate();
+			}
+			data.add(datum);
+		}
+		if (!data.isEmpty()) {
+			channel.addHhData(contract, data);
+		}
+		//Hiber.close();
+}
+	static public HhDatumRaw generalImportRaw(String[] values) throws HttpException {
+		String mpanCoreStr = getCsvField("MPAN Core", values, 2);
+		//MpanCore mpanCore = MpanCore.getMpanCore(mpanCoreStr);
+		String dateStr = getCsvField("Date", values, 3);
+        HhEndDate date = new HhEndDate(dateStr);
+        String isImportStr = getCsvField("Is Import?", values, 4);
+        boolean isImport = Boolean.parseBoolean(isImportStr);
+        String isKwhStr = getCsvField("Is Kwh?", values, 5);
+        boolean isKwh = Boolean.parseBoolean(isKwhStr);
+			String valueStr = getCsvField("Value", values, 6);
+			float value = Float.parseFloat(valueStr);
+			String status = getCsvField("Status", values, 7);
+			return new HhDatumRaw(mpanCoreStr, isImport, isKwh,
+					date, value, status);
+	}
+	
+	static public void generalImport(String action, String[] values) throws HttpException {
+		String mpanCoreStr = getCsvField("MPAN Core", values, 2);
+		MpanCore mpanCore = MpanCore.getMpanCore(mpanCoreStr);
+		String dateStr = getCsvField("Date", values, 3);
         HhEndDate date = new HhEndDate(dateStr);
         Supply supply = mpanCore.getSupply();
         SupplyGeneration supplyGeneration = supply.getGeneration(date);
-        String isImportStr = GeneralImport.addField(csvElement, "Is Import?", values, 2);
+        String isImportStr = getCsvField("Is Import?", values, 4);
         boolean isImport = Boolean.parseBoolean(isImportStr);
-        String isKwhStr = GeneralImport.addField(csvElement, "Is Kwh?", values, 3);
+        String isKwhStr = getCsvField("Is Kwh?", values, 5);
         boolean isKwh = Boolean.parseBoolean(isKwhStr);
         Channel channel = supplyGeneration.getChannel(isImport, isKwh);
 		if (action.equals("insert")) {
-			String valueStr = GeneralImport.addField(csvElement, "Value", values, 4);
+			String valueStr = getCsvField("Value", values, 6);
 			float value = Float.parseFloat(valueStr);
-			String status = GeneralImport.addField(csvElement, "Status", values, 5);
-			HhDatumRaw datumRaw = new HhDatumRaw(mpanCore, isImport, isKwh,
+			String status = getCsvField("Status", values, 7);
+			HhDatumRaw datumRaw = new HhDatumRaw(mpanCoreStr, isImport, isKwh,
 					date, value, status);
 			List<HhDatumRaw> dataRaw = new ArrayList<HhDatumRaw>();
 			dataRaw.add(datumRaw);

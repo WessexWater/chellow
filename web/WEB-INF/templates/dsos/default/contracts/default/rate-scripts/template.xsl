@@ -4,20 +4,18 @@
 	<xsl:output method="html" encoding="US-ASCII"
 		doctype-public="-//W3C//DTD HTML 4.01//EN"
 		doctype-system="http://www.w3.org/TR/html4/strict.dtd" indent="yes" />
-
 	<xsl:template match="/">
 		<html>
 			<head>
 				<link rel="stylesheet" type="text/css"
 					href="{/source/request/@context-path}/style/" />
-
 				<title>
 					Chellow &gt; DSOs &gt;
 					<xsl:value-of
-						select="/source/rate-scripts/dso-service/dso/@code" />
-					&gt; Services &gt;
+						select="/source/rate-scripts/dso-contract/dso/@code" />
+					&gt; Contracts &gt;
 					<xsl:value-of
-						select="/source/rate-scripts/dso-service/@name" />
+						select="/source/rate-scripts/dso-contract/@name" />
 					&gt; Rate Scripts
 				</title>
 			</head>
@@ -35,20 +33,20 @@
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/dsos/{/source/rate-scripts/dso-service/dso/@id}/">
+						href="{/source/request/@context-path}/dsos/{/source/rate-scripts/dso-contract/dso/@id}/">
 						<xsl:value-of
-							select="/source/rate-scripts/dso-service/dso/@code" />
+							select="/source/rate-scripts/dso-contract/dso/@code" />
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/dsos/{/source/rate-scripts/dso-service/dso/@id}/services/">
-						<xsl:value-of select="'Services'" />
+						href="{/source/request/@context-path}/dsos/{/source/rate-scripts/dso-contract/dso/@id}/contracts/">
+						<xsl:value-of select="'Contracts'" />
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/dsos/{/source/rate-scripts/dso-service/dso/@id}/services/{/source/rate-scripts/dso-service/@id}/">
+						href="{/source/request/@context-path}/dsos/{/source/rate-scripts/dso-contract/dso/@id}/contracts/{/source/rate-scripts/dso-contract/@id}/">
 						<xsl:value-of
-							select="/source/rate-scripts/dso-service/@name" />
+							select="/source/rate-scripts/dso-contract/@name" />
 					</a>
 					&gt; Rate Scripts
 				</p>
@@ -80,7 +78,7 @@
 							<caption>Rate Scripts</caption>
 							<thead>
 								<tr>
-									<th>Id</th>
+									<th>Chellow Id</th>
 									<th>Start date</th>
 									<th>End date</th>
 								</tr>

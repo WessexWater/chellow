@@ -157,7 +157,8 @@ public class HhDataImportProcess extends Thread implements Urlable,
 				return;
 			}
 			HhDatumRaw datum = converter.next();
-			MpanCore mpanCore = datum.getMpanCore();
+			String mpanCoreStr = datum.getMpanCore();
+			MpanCore mpanCore = MpanCore.getMpanCore(mpanCoreStr);
 			HhdcContract contract = HhdcContract
 					.getHhdcContract(hhdcContractId);
 			/*
@@ -195,8 +196,8 @@ public class HhDataImportProcess extends Thread implements Urlable,
 						throw e;
 					}
 				}
-				if (data.size() > 1000
-						|| !(mpanCore.equals(datum.getMpanCore())
+				if (data.size() > 100
+						|| !(mpanCoreStr.equals(datum.getMpanCore())
 								&& datum.getIsImport() == firstDatum
 										.getIsImport()
 								&& datum.getIsKwh() == firstDatum.getIsKwh() && datum
@@ -213,7 +214,8 @@ public class HhDataImportProcess extends Thread implements Urlable,
 					}
 					Hiber.close();
 					data.clear();
-					mpanCore = MpanCore.getMpanCore(datum.getMpanCore().getId());
+					mpanCoreStr = datum.getMpanCore();
+					mpanCore = MpanCore.getMpanCore(mpanCoreStr);
 					contract = HhdcContract.getHhdcContract(hhdcContractId);
 					generation = mpanCore.getSupply()
 							.getGeneration(datum.getEndDate());

@@ -36,12 +36,11 @@ import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.UserException;
 import net.sf.chellow.physical.HhEndDate;
-import net.sf.chellow.physical.MpanCore;
 
 public class StarkDF2HHConverter implements HhConverter {
 	private LineNumberReader reader;
 
-	private MpanCore core;
+	private String core;
 
 	private HhDatumRaw datum = null;
 
@@ -99,7 +98,7 @@ public class StarkDF2HHConverter implements HhConverter {
 		try {
 			while (datum == null && line != null) {
 				if (line.startsWith("#O")) {
-					core = MpanCore.getMpanCore(line.substring(2));
+					core = line.substring(2);
 				} else if (line.startsWith("#S")) {
 					int sensor = Integer.parseInt(line.substring(2).trim());
 					switch (sensor) {
@@ -151,7 +150,7 @@ public class StarkDF2HHConverter implements HhConverter {
 						String trimmedLine = line.trim();
 						status = trimmedLine.charAt(trimmedLine.length() - 1);
 					}
-					if (!core.getDso().getCode().equals("99")
+					if (!core.trim().startsWith("99")
 							&& valueKw * 10 % 2 == 1) {
 						throw new UserException(
 								"Problem at line number: "

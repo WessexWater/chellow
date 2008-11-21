@@ -194,6 +194,7 @@ public class ContextListener implements ServletContextListener {
 		Source.insertSource("lm", "Load management generator");
 		Source.insertSource("turb", "Water turbine");
 		Source.insertSource("sub", "Sub meter");
+		Source.insertSource("chp-net", "CHP connected directly to network.");
 		Hiber.commit();
 	}
 	/*

@@ -4,7 +4,6 @@
 	<xsl:output method="html" encoding="US-ASCII"
 		doctype-public="-//W3C//DTD HTML 4.01//EN"
 		doctype-system="http://www.w3.org/TR/html4/strict.dtd" indent="yes" />
-
 	<xsl:template match="/">
 		<html>
 			<head>
@@ -13,8 +12,8 @@
 				<title>
 					Chellow &gt; DSOs &gt;
 					<xsl:value-of
-						select="concat(/source/dso-service/dso/@code, ' &gt; Services &gt; ')" />
-					<xsl:value-of select="/source/dso-service/@name" />
+						select="concat(/source/dso-contract/dso/@code, ' &gt; Contracts &gt; ')" />
+					<xsl:value-of select="/source/dso-contract/@name" />
 				</title>
 			</head>
 
@@ -31,17 +30,17 @@
 					</a>
 					<xsl:value-of select="' &gt; '" />
 					<a
-						href="{/source/request/@context-path}/dsos/{/source/dso-service/dso/@id}/">
+						href="{/source/request/@context-path}/dsos/{/source/dso-contract/dso/@id}/">
 						<xsl:value-of
-							select="/source/dso-service/dso/@code" />
+							select="/source/dso-contract/dso/@code" />
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/dsos/{/source/dso-service/dso/@id}/services/">
-						<xsl:value-of select="'Services'" />
+						href="{/source/request/@context-path}/dsos/{/source/dso-contract/dso/@id}/contracts/">
+						<xsl:value-of select="'Contracts'" />
 					</a>
 					&gt;
-					<xsl:value-of select="/source/dso-service/@name" />
+					<xsl:value-of select="/source/dso-contract/@name" />
 				</p>
 
 				<xsl:if test="//message">
@@ -55,7 +54,7 @@
 				</xsl:if>
 				<form action="." method="post">
 					<fieldset>
-						<legend>Update Service</legend>
+						<legend>Update Contract</legend>
 						<br />
 						<label>
 							<xsl:value-of select="'Name '" />
@@ -69,7 +68,7 @@
 										</xsl:when>
 										<xsl:otherwise>
 											<xsl:value-of
-												select="/source/dso-service/@name" />
+												select="/source/dso-contract/@name" />
 										</xsl:otherwise>
 									</xsl:choose>
 								</xsl:attribute>
@@ -89,7 +88,7 @@
 								</xsl:when>
 								<xsl:otherwise>
 									<xsl:value-of
-										select="/source/dso-service/@charge-script" />
+										select="/source/dso-contract/@charge-script" />
 								</xsl:otherwise>
 							</xsl:choose>
 						</textarea>
@@ -137,7 +136,7 @@
 				<br />
 				<form action=".">
 					<fieldset>
-						<legend>Delete this service</legend>
+						<legend>Delete this Contract</legend>
 						<input type="hidden" name="view"
 							value="confirm-delete" />
 						<input type="submit" value="Delete" />

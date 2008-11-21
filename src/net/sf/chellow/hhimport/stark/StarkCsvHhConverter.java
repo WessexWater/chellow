@@ -37,8 +37,6 @@ import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.UserException;
 import net.sf.chellow.physical.HhDatum;
 import net.sf.chellow.physical.HhEndDate;
-import net.sf.chellow.physical.MpanCore;
-
 import com.Ostermiller.util.CSVParser;
 
 public class StarkCsvHhConverter implements HhConverter {
@@ -108,7 +106,7 @@ public class StarkCsvHhConverter implements HhConverter {
 					throw new UserException(
 							"There must be fields for 'MPAN core', 'Imp / Exp', 'Units', 'Time' and 'Value'.");
 				}
-				MpanCore core = MpanCore.getMpanCore(values[0]);
+				String core = values[0];
 				boolean isImport = values[1].equals("0");
 				boolean isKwh;
 				if (values[2].trim().equals("kWh")) {

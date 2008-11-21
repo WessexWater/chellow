@@ -5,7 +5,6 @@ import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.UserException;
 import net.sf.chellow.physical.HhDatum;
 import net.sf.chellow.physical.HhEndDate;
-import net.sf.chellow.physical.MpanCore;
 
 public class HhDatumRaw {
 	
@@ -33,7 +32,7 @@ public class HhDatumRaw {
 		}
 	}
 
-	private MpanCore core;
+	private String core;
 
 	private boolean isImport;
 
@@ -45,12 +44,12 @@ public class HhDatumRaw {
 
 	private Character status;
 
-	public HhDatumRaw(MpanCore core, boolean isImport, boolean isKwh,
+	public HhDatumRaw(String core, boolean isImport, boolean isKwh,
 			HhEndDate endDate, float value, String status) throws HttpException {
 		this(core, isImport, isKwh, endDate, value, checkStatus(status));
 	}
 	
-	public HhDatumRaw(MpanCore core, boolean isImport, boolean isKwh,
+	public HhDatumRaw(String core, boolean isImport, boolean isKwh,
 			HhEndDate endDate, float value, Character status) throws HttpException {
 		this.core = core;
 		this.isImport = isImport;
@@ -64,7 +63,7 @@ public class HhDatumRaw {
 		this.status = status;
 	}
 
-	public MpanCore getMpanCore() {
+	public String getMpanCore() {
 		return core;
 	}
 

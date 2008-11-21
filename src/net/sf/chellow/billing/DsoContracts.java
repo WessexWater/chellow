@@ -30,13 +30,12 @@ import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.Invocation;
 import net.sf.chellow.monad.MonadUtils;
 import net.sf.chellow.monad.NotFoundException;
-import net.sf.chellow.monad.Urlable;
 import net.sf.chellow.monad.UserException;
-import net.sf.chellow.monad.XmlDescriber;
 import net.sf.chellow.monad.XmlTree;
 import net.sf.chellow.monad.types.MonadDate;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
+import net.sf.chellow.physical.EntityList;
 import net.sf.chellow.physical.HhEndDate;
 
 import org.w3c.dom.Document;
@@ -44,12 +43,12 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
 @SuppressWarnings("serial")
-public class DsoContracts implements Urlable, XmlDescriber {
+public class DsoContracts extends EntityList {
 	public static final UriPathElement URI_ID;
 
 	static {
 		try {
-			URI_ID = new UriPathElement("services");
+			URI_ID = new UriPathElement("contracts");
 		} catch (HttpException e) {
 			throw new RuntimeException(e);
 		}
@@ -91,15 +90,15 @@ public class DsoContracts implements Urlable, XmlDescriber {
 	private Document document() throws HttpException {
 		Document doc = MonadUtils.newSourceDocument();
 		Element source = doc.getDocumentElement();
-		Element servicesElement = toXml(doc);
-		source.appendChild(servicesElement);
-		servicesElement.appendChild(dso.toXml(doc));
-		for (DsoContract service : (List<DsoContract>) Hiber
+		Element contractsElement = toXml(doc);
+		source.appendChild(contractsElement);
+		contractsElement.appendChild(dso.toXml(doc));
+		for (DsoContract contract : (List<DsoContract>) Hiber
 				.session()
 				.createQuery(
-						"from DsoService service where service.dso = :dso order by service.finishRateScript.finishDate.date desc")
+						"from DsoContract contract where contract.party = :dso order by contract.finishRateScript.finishDate.date desc")
 				.setEntity("dso", dso).list()) {
-			servicesElement.appendChild(service.toXml(doc));
+			contractsElement.appendChild(contract.toXml(doc));
 		}
 		source.appendChild(MonadDate.getMonthsXml(doc));
 		source.appendChild(MonadDate.getDaysXml(doc));
@@ -112,16 +111,16 @@ public class DsoContracts implements Urlable, XmlDescriber {
 	}
 
 	public DsoContract getChild(UriPathElement uriId) throws HttpException {
-		DsoContract service = (DsoContract) Hiber
+		DsoContract contract = (DsoContract) Hiber
 				.session()
 				.createQuery(
-						"from DsoService service where service.dso = :dso and service.id = :serviceId")
-				.setEntity("dso", dso).setLong("serviceId",
+						"from DsoContract contract where contract.party = :dso and contract.id = :contractId")
+				.setEntity("dso", dso).setLong("contractId",
 						Long.parseLong(uriId.getString())).uniqueResult();
-		if (service == null) {
+		if (contract == null) {
 			throw new NotFoundException();
 		}
-		return service;
+		return contract;
 	}
 
 	public void httpDelete(Invocation inv) throws HttpException {
@@ -130,7 +129,7 @@ public class DsoContracts implements Urlable, XmlDescriber {
 	}
 
 	public Element toXml(Document doc) throws HttpException {
-		Element contractsElement = doc.createElement("dso-services");
+		Element contractsElement = doc.createElement("dso-contracts");
 		return contractsElement;
 	}
 

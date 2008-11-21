@@ -120,23 +120,15 @@ public class RateScripts extends EntityList {
 	private Document document() throws HttpException {
 		Document doc = MonadUtils.newSourceDocument();
 		Element source = doc.getDocumentElement();
-		Element batchesElement = toXml(doc);
-		source.appendChild(batchesElement);
-		if (contract instanceof DsoContract) {
-			batchesElement.appendChild(contract.toXml(doc, new XmlTree("dso")));
-		} else if (contract instanceof NonCoreContract) {
-			batchesElement.appendChild(contract
-					.toXml(doc, new XmlTree("party")));
-		} else {
-			batchesElement.appendChild(contract
-					.toXml(doc, new XmlTree("party")));
-		}
+		Element scriptsElement = toXml(doc);
+		source.appendChild(scriptsElement);
+		scriptsElement.appendChild(contract.toXml(doc, new XmlTree("party")));
 		for (RateScript script : (List<RateScript>) Hiber
 				.session()
 				.createQuery(
 						"from RateScript script where script.contract = :contract order by script.startDate.date")
 				.setEntity("contract", contract).list()) {
-			batchesElement.appendChild(script.toXml(doc));
+			scriptsElement.appendChild(script.toXml(doc));
 		}
 		source.appendChild(new MonadDate().toXml(doc));
 		source.appendChild(MonadDate.getMonthsXml(doc));
