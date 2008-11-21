@@ -50,20 +50,32 @@
               Supplies
             </a>
           </li>
-          <li>
-            <a href="{/source/request/@context-path}/reports/57/output/">HHDC Contracts
+          <li>Contracts
+            <ul>
+              <li><a href="{/source/request/@context-path}/reports/57/output/">HHDC
             </a>
+              </li>
+              <li><a href="{/source/request/@context-path}/reports/38/output/">Supplier
+                  </a>
+              </li>
+            </ul>
           </li>
-          <li><a href="{/source/request/@context-path}/reports/38/output/">Supplier Contracts
-          </a>
-      </li>
         </ul>
-        <h3>CSV downloads</h3>
+        <h3>CSV Downloads</h3>
         <ul>
           <li><a href="{/source/request/@context-path}/reports/17/output/">Electricity Supply Details
             </a>
           </li>
           <li><a href="{/source/request/@context-path}/reports/73/output/">HH data, all sites, 1 year
+            </a>
+          </li>
+          <li><a href="{/source/request/@context-path}/reports/29/output/">Sites Period
+            </a>
+          </li>
+          <li><a href="{/source/request/@context-path}/reports/21/output/">TRIAD Data Quality
+            </a>
+          </li>
+          <li><a href="{/source/request/@context-path}/reports/74/output/">Supplies Period
             </a>
           </li>
         </ul>
@@ -130,12 +142,6 @@
                         <a
     href="{/source/request/@context-path}/reports/22/output/">
     GSP Groups
-                        </a>
-                    </li>
-                    <li>
-                        <a
-    href="{/source/request/@context-path}/reports/74/output/">
-    MPAN Top Lines
                         </a>
                     </li>
                 </ul>
@@ -254,7 +260,7 @@ for supply_generation in Hiber.session().createQuery("select siteSupplyGeneratio
     if not supply.equals(last_supply) or not supply_generation.getFinishDate().getNext().equals(last_supply_generation.getStartDate()):
         supply_element = supply.toXml(doc, XmlTree('source'))
         site_element.appendChild(supply_element)
-    supply_element.appendChild(supply_generation.toXml(doc, XmlTree("mpans", XmlTree("core").put('top', XmlTree('llfc')))))
+    supply_element.appendChild(supply_generation.toXml(doc, XmlTree("mpans", XmlTree("core").put('llfc'))))
     last_supply = supply
     last_supply_generation = supply_generation
 cal = GregorianCalendar(TimeZone.getTimeZone("GMT"), Locale.UK)
@@ -352,16 +358,16 @@ source.appendChild(yesterday.toXml(doc))]]></value>
                                 </td>
                                 <td>
                                     <xsl:if
-                                        test="supply-generation/mpan[mpan-top/llfc/@is-import='true']">
+                                        test="supply-generation/mpan[llfc/@is-import='true']">
                                         <xsl:value-of
-                                            select="supply-generation/mpan[mpan-top/llfc/@is-import='true']/mpan-core/@core" />
+                                            select="supply-generation/mpan[llfc/@is-import='true']/mpan-core/@core" />
                                     </xsl:if>
                                 </td>
                                 <td>
                                     <xsl:if
-                                        test="supply-generation/mpan[mpan-top/llfc/@is-import='false']">
+                                        test="supply-generation/mpan[llfc/@is-import='false']">
                                         <xsl:value-of
-                                            select="supply-generation/mpan[mpan-top/llfc/@is-import='false']/mpan-core/@core" />
+                                            select="supply-generation/mpan[llfc/@is-import='false']/mpan-core/@core" />
                                     </xsl:if>
                                 </td>
                             </tr>
@@ -446,7 +452,7 @@ supply_id = inv.getLong("supply-id")
 if not inv.isValid():
     raise UserException()
 supply = Hiber.session().createQuery("select supply from Supply supply join supply.generations generation join generation.siteSupplyGenerations siteSupplyGeneration where supply.id = :supplyId").setLong("supplyId", supply_id).uniqueResult() 
-source.appendChild(supply.toXml(doc, XmlTree("source").put("generations", XmlTree("mpans", XmlTree("core").put("top", XmlTree("mtc").put("pc").put("llfc", XmlTree("voltageLevel"))).put("supplierAccount", XmlTree('contract')).put('hhdcAccount', XmlTree("contract", XmlTree("party"))))).put("mpanCores")))
+source.appendChild(supply.toXml(doc, XmlTree("source").put("generations", XmlTree("mpans", XmlTree("core").put("mtc").put("pc").put("llfc", XmlTree("voltageLevel")).put("supplierAccount", XmlTree('contract')).put('hhdcAccount', XmlTree("contract", XmlTree("party"))))).put("mpanCores")))
 source.appendChild(MonadDate().toXml(doc))
 ]]></value>
     <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
@@ -541,32 +547,32 @@ source.appendChild(MonadDate().toXml(doc))
                                 </td>
                                 <td>
                                     <xsl:value-of
-                                        select="concat(mpan[mpan-top/llfc/@is-import='true']/mpan-top/pc/@code, ' ', mpan[mpan-top/llfc/@is-import='true']/mpan-top/mtc/@code, ' ', mpan[mpan-top/llfc/@is-import='true']/llfc/@code, ' ', mpan[mpan-top/llfc/@is-import='true']/mpan-core/@core)" />
+                                        select="concat(mpan[llfc/@is-import='true']/pc/@code, ' ', mpan[llfc/@is-import='true']/mtc/@code, ' ', mpan[llfc/@is-import='true']/llfc/@code, ' ', mpan[llfc/@is-import='true']/mpan-core/@core)" />
                                 </td>
                                 <td>
                                     <xsl:value-of
-                                        select="mpan[mpan-top/llfc/@is-import='true']/@agreed-supply-capacity" />
+                                        select="mpan[llfc/@is-import='true']/@agreed-supply-capacity" />
                                 </td>
                                 <td>
                                     <a
-                                        href="{/source/request/@context-path}/reports/42/output/?account-id={mpan[mpan-top/llfc/@is-import='true']/account[supplier-contract]/@id}">
+                                        href="{/source/request/@context-path}/reports/42/output/?account-id={mpan[llfc/@is-import='true']/account[supplier-contract]/@id}">
                                         <xsl:value-of
-                                            select="mpan[mpan-top/llfc/@is-import='true']/account[supplier-contract]/@reference" />
+                                            select="mpan[llfc/@is-import='true']/account[supplier-contract]/@reference" />
                                     </a>
                                 </td>
                                 <td>
                                     <xsl:value-of
-                                        select="concat(mpan[mpan-top/llfc/@is-import='false']/pc/@code, ' ', mpan[mpan-top/llfc/@is-import='false']/mtc/@code, ' ', mpan[mpan-top/llfc/@is-import='false']/llfc/@code, ' ', mpan[mpan-top/llfc/@is-import='false']/mpan-core/@core)" />
+                                        select="concat(mpan[llfc/@is-import='false']/pc/@code, ' ', mpan[llfc/@is-import='false']/mtc/@code, ' ', mpan[llfc/@is-import='false']/llfc/@code, ' ', mpan[llfc/@is-import='false']/mpan-core/@core)" />
                                 </td>
                                 <td>
                                     <xsl:value-of
-                                        select="mpan[mpan-top/llfc/@is-import='false']/@agreed-supply-capacity" />
+                                        select="mpan[llfc/@is-import='false']/@agreed-supply-capacity" />
                                 </td>
                                 <td>
                                     <a
-                                        href="{/source/request/@context-path}/reports/42/output/?account-id={mpan[mpan-top/llfc/@is-import='false']/account[supplier-contract]/@id}">
+                                        href="{/source/request/@context-path}/reports/42/output/?account-id={mpan[llfc/@is-import='false']/account[supplier-contract]/@id}">
                                         <xsl:value-of
-                                            select="mpan[mpan-top/llfc/@is-import='false']/account[supplier-contract]/@reference" />
+                                            select="mpan[llfc/@is-import='false']/account[supplier-contract]/@reference" />
                                     </a>
                                 </td>
                             </tr>
@@ -3088,7 +3094,7 @@ supply_generation_id = inv.getLong("supply-generation-id")
 if not inv.isValid():
     raise UserException()
 supply_generation = SupplyGeneration.getSupplyGeneration(supply_generation_id)
-source.appendChild(supply_generation.toXml(doc, XmlTree("mpans", XmlTree("core").put('top', XmlTree("mtc").put('llfc', XmlTree('voltageLevel')).put('pc').put('ssc').put('gspGroup')).put('hhdcAccount', XmlTree('contract', XmlTree('party'))).put('supplierAccount', XmlTree('contract', XmlTree('party')))).put('supply', XmlTree('source')).put('siteSupplyGenerations', XmlTree('site'))))
+source.appendChild(supply_generation.toXml(doc, XmlTree("mpans", XmlTree("core").put("mtc").put('llfc', XmlTree('voltageLevel')).put('pc').put('ssc').put('gspGroup').put('hhdcAccount', XmlTree('contract', XmlTree('party'))).put('supplierAccount', XmlTree('contract', XmlTree('party')))).put('supply', XmlTree('source')).put('siteSupplyGenerations', XmlTree('site'))))
 source.appendChild(MonadDate().toXml(doc))]]></value>
     <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
 <xsl:stylesheet version="1.0"
@@ -3237,77 +3243,77 @@ source.appendChild(MonadDate().toXml(doc))]]></value>
                             <th>Profile Class</th>
                             <td>
                                 <xsl:value-of
-                                    select="concat(/source/supply-generation/mpan[mpan-top/llfc/@is-import='true']/mpan-top/pc/@code, ' - ', /source/supply-generation/mpan[mpan-top/llfc/@is-import='true']/mpan-top/pc/@description)" />
+                                    select="concat(/source/supply-generation/mpan[llfc/@is-import='true']/pc/@code, ' - ', /source/supply-generation/mpan[llfc/@is-import='true']/pc/@description)" />
                             </td>
                             <td>
                                 <xsl:value-of
-                                    select="concat(/source/supply-generation/mpan[mpan-top/llfc/@is-import='false']/mpan-top/pc/@code, ' - ', /source/supply-generation/mpan[mpan-top/llfc/@is-import='false']/mpan-top/pc/@description)" />
+                                    select="concat(/source/supply-generation/mpan[llfc/@is-import='false']/pc/@code, ' - ', /source/supply-generation/mpan[llfc/@is-import='false']/pc/@description)" />
                             </td>
                         </tr>
                         <tr>
                             <th>Meter Timeswitch Class</th>
                             <td>
                                 <xsl:value-of
-                                    select="concat(/source/supply-generation/mpan[mpan-top/llfc/@is-import='true']/mpan-top/mtc/@code, ' - ', /source/supply-generation/mpan[mpan-top/llfc/@is-import='true']/mpan-top/mtc/@description)" />
+                                    select="concat(/source/supply-generation/mpan[llfc/@is-import='true']/mtc/@code, ' - ', /source/supply-generation/mpan[llfc/@is-import='true']/mtc/@description)" />
                             </td>
                             <td>
                                 <xsl:value-of
-                                    select="concat(/source/supply-generation/mpan[mpan-top/llfc/@is-import='false']/mpan-top/mtc/@code, ' - ', /source/supply-generation/mpan[mpan-top/llfc/@is-import='false']/mpan-top/mtc/@description)" />
+                                    select="concat(/source/supply-generation/mpan[llfc/@is-import='false']/mtc/@code, ' - ', /source/supply-generation/mpan[llfc/@is-import='false']/mtc/@description)" />
                             </td>
                         </tr>
                         <tr>
                             <th>Line Loss Factor Class</th>
                             <td>
                                 <xsl:value-of
-                                    select="concat(/source/supply-generation/mpan[mpan-top/llfc/@is-import='true']/mpan-top/llfc/@code, ' - ', /source/supply-generation/mpan[mpan-top/llfc/@is-import='true']/mpan-top/llfc/@description)" />
+                                    select="concat(/source/supply-generation/mpan[llfc/@is-import='true']/llfc/@code, ' - ', /source/supply-generation/mpan[llfc/@is-import='true']/llfc/@description)" />
                             </td>
                             <td>
                                 <xsl:value-of
-                                    select="concat(/source/supply-generation/mpan[mpan-top/llfc/@is-import='false']/mpan-top/llfc/@code, ' - ', /source/supply-generation/mpan[mpan-top/llfc/@is-import='false']/mpan-top/llfc/@description)" />
+                                    select="concat(/source/supply-generation/mpan[llfc/@is-import='false']/llfc/@code, ' - ', /source/supply-generation/mpan[llfc/@is-import='false']/llfc/@description)" />
                             </td>
                         </tr>
                         <tr>
                             <th>MPAN Core</th>
                             <td>
                                 <xsl:value-of
-                                    select="/source/supply-generation/mpan[mpan-top/llfc/@is-import='true']/mpan-core/@core" />
+                                    select="/source/supply-generation/mpan[llfc/@is-import='true']/@core" />
                             </td>
                             <td>
                                 <xsl:value-of
-                                    select="/source/supply-generation/mpan[mpan-top/llfc/@is-import='false']/mpan-core/@core" />
+                                    select="/source/supply-generation/mpan[llfc/@is-import='false']/@core" />
                             </td>
                         </tr>
                         <tr>
                             <th>SSC</th>
                             <td>
                                 <xsl:value-of
-                                    select="concat(/source/supply-generation/mpan[mpan-top/llfc/@is-import='true']/mpan-top/ssc/@code, ' - ', /source/supply-generation/mpan[mpan-top/llfc/@is-import='true']/mpan-top/ssc/@description)" />
+                                    select="concat(/source/supply-generation/mpan[llfc/@is-import='true']/ssc/@code, ' - ', /source/supply-generation/mpan[llfc/@is-import='true']/ssc/@description)" />
                             </td>
                             <td>
                                 <xsl:value-of
-                                    select="concat(/source/supply-generation/mpan[mpan-top/llfc/@is-import='false']/mpan-top/ssc/@code, ' - ', /source/supply-generation/mpan[mpan-top/llfc/@is-import='false']/mpan-top/ssc/@description)" />
+                                    select="concat(/source/supply-generation/mpan[llfc/@is-import='false']/ssc/@code, ' - ', /source/supply-generation/mpan[llfc/@is-import='false']/ssc/@description)" />
                             </td>
                         </tr>
                         <tr>
                             <th>GSP Group</th>
                             <td>
                                 <xsl:value-of
-                                    select="concat(/source/supply-generation/mpan[mpan-top/llfc/@is-import='true']/mpan-top/gsp-group/@code, ' - ', /source/supply-generation/mpan[mpan-top/llfc/@is-import='true']/mpan-top/gsp-group/@description)" />
+                                    select="concat(/source/supply-generation/mpan[llfc/@is-import='true']/gsp-group/@code, ' - ', /source/supply-generation/mpan[llfc/@is-import='true']/gsp-group/@description)" />
                             </td>
                             <td>
                                 <xsl:value-of
-                                    select="concat(/source/supply-generation/mpan[mpan-top/llfc/@is-import='false']/mpan-top/gsp-group/@code, ' - ', /source/supply-generation/mpan[mpan-top/llfc/@is-import='false']/mpan-top/gsp-group/@description)" />
+                                    select="concat(/source/supply-generation/mpan[llfc/@is-import='false']/gsp-group/@code, ' - ', /source/supply-generation/mpan[llfc/@is-import='false']/gsp-group/@description)" />
                             </td>
                         </tr>
                         <tr>
                             <th>Agreed Supply Capacity</th>
                             <td>
                                 <xsl:value-of
-                                    select="/source/supply-generation/mpan[mpan-top/llfc/@is-import='true']/@agreed-supply-capacity" />
+                                    select="/source/supply-generation/mpan[llfc/@is-import='true']/@agreed-supply-capacity" />
                             </td>
                             <td>
                                 <xsl:value-of
-                                    select="/source/supply-generation/mpan[mpan-top/llfc/@is-import='false']/@agreed-supply-capacity" />
+                                    select="/source/supply-generation/mpan[llfc/@is-import='false']/@agreed-supply-capacity" />
                             </td>
                         </tr>
                         <tr>
@@ -3315,19 +3321,19 @@ source.appendChild(MonadDate().toXml(doc))]]></value>
                             <td>
                                 <ul>
                                     <xsl:if
-                                        test="/source/supply-generation/mpan[mpan-top/llfc/@is-import='true']/@has-import-kwh='true'">
+                                        test="/source/supply-generation/mpan[llfc/@is-import='true']/@has-import-kwh='true'">
                                         <li>Import kWh</li>
                                     </xsl:if>
                                     <xsl:if
-                                        test="/source/supply-generation/mpan[mpan-top/llfc/@is-import='true']/@has-import-kvarh='true'">
+                                        test="/source/supply-generation/mpan[llfc/@is-import='true']/@has-import-kvarh='true'">
                                         <li>Import kVArh</li>
                                     </xsl:if>
                                     <xsl:if
-                                        test="/source/supply-generation/mpan[mpan-top/llfc/@is-import='true']/@has-export-kwh='true'">
+                                        test="/source/supply-generation/mpan[llfc/@is-import='true']/@has-export-kwh='true'">
                                         <li>Export kWh</li>
                                     </xsl:if>
                                     <xsl:if
-                                        test="/source/supply-generation/mpan[mpan-top/llfc/@is-import='true']/@has-export-kvarh='true'">
+                                        test="/source/supply-generation/mpan[llfc/@is-import='true']/@has-export-kvarh='true'">
                                         <li>Export kVArh</li>
                                     </xsl:if>
                                 </ul>
@@ -3335,19 +3341,19 @@ source.appendChild(MonadDate().toXml(doc))]]></value>
                             <td>
                                 <ul>
                                     <xsl:if
-                                        test="/source/supply-generation/mpan[mpan-top/llfc/@is-import='false']/@has-import-kwh='true'">
+                                        test="/source/supply-generation/mpan[llfc/@is-import='false']/@has-import-kwh='true'">
                                         <li>Import kWh</li>
                                     </xsl:if>
                                     <xsl:if
-                                        test="/source/supply-generation/mpan[mpan-top/llfc/@is-import='false']/@has-import-kvarh='true'">
+                                        test="/source/supply-generation/mpan[llfc/@is-import='false']/@has-import-kvarh='true'">
                                         <li>Import kVArh</li>
                                     </xsl:if>
                                     <xsl:if
-                                        test="/source/supply-generation/mpan[mpan-top/llfc/@is-import='false']/@has-export-kwh='true'">
+                                        test="/source/supply-generation/mpan[llfc/@is-import='false']/@has-export-kwh='true'">
                                         <li>Export kWh</li>
                                     </xsl:if>
                                     <xsl:if
-                                        test="/source/supply-generation/mpan[mpan-top/llfc/@is-import='false']/@has-export-kvarh='true'">
+                                        test="/source/supply-generation/mpan[llfc/@is-import='false']/@has-export-kvarh='true'">
                                         <li>Export kVArh</li>
                                     </xsl:if>
                                 </ul>
@@ -3357,28 +3363,28 @@ source.appendChild(MonadDate().toXml(doc))]]></value>
                             <th>HHDC Account</th>
                             <td>
                                 <a
-                                    href="{/source/request/@context-path}/reports/56/output/?account-id={/source/supply-generation/mpan[mpan-top/llfc/@is-import='true']/account[hhdc-contract]/@id}">
+                                    href="{/source/request/@context-path}/reports/56/output/?account-id={/source/supply-generation/mpan[llfc/@is-import='true']/account[hhdc-contract]/@id}">
                                     <xsl:value-of
-                                        select="/source/supply-generation/mpan[mpan-top/llfc/@is-import='true']/account[hhdc-contract]/@reference" />
+                                        select="/source/supply-generation/mpan[llfc/@is-import='true']/account[hhdc-contract]/@reference" />
                                 </a>
                                 <xsl:value-of select="' &gt; '" />
                                 <a
-                                    href="{/source/request/@context-path}/reports/58/output/?hhdc-contract-id={/source/supply-generation/mpan[mpan-top/llfc/@is-import='true']/account/hhdc-contract/@id}">
+                                    href="{/source/request/@context-path}/reports/58/output/?hhdc-contract-id={/source/supply-generation/mpan[llfc/@is-import='true']/account/hhdc-contract/@id}">
                                     <xsl:value-of
-                                        select="/source/supply-generation/mpan[mpan-top/llfc/@is-import='true']/account/hhdc-contract/@name" />
+                                        select="/source/supply-generation/mpan[llfc/@is-import='true']/account/hhdc-contract/@name" />
                                 </a>
                             </td>
                             <td>
                                 <a
-                                    href="{/source/request/@context-path}/reports/56/output/?account-id={/source/supply-generation/mpan[mpan-top/llfc/@is-import='false']/account[hhdc-contract]/@id}">
+                                    href="{/source/request/@context-path}/reports/56/output/?account-id={/source/supply-generation/mpan[llfc/@is-import='false']/account[hhdc-contract]/@id}">
                                     <xsl:value-of
-                                        select="/source/supply-generation/mpan[mpan-top/llfc/@is-import='false']/account[hhdc-contract]/@reference" />
+                                        select="/source/supply-generation/mpan[llfc/@is-import='false']/account[hhdc-contract]/@reference" />
                                 </a>
                                 <xsl:value-of select="' &gt; '" />
                                 <a
-                                    href="{/source/request/@context-path}/reports/58/output/?hhdc-contract-id={/source/supply-generation/mpan[mpan-top/llfc/@is-import='false']/account/hhdc-contract/@id}">
+                                    href="{/source/request/@context-path}/reports/58/output/?hhdc-contract-id={/source/supply-generation/mpan[llfc/@is-import='false']/account/hhdc-contract/@id}">
                                     <xsl:value-of
-                                        select="/source/supply-generation/mpan[mpan-top/llfc/@is-import='false']/account/hhdc-contract/@name" />
+                                        select="/source/supply-generation/mpan[llfc/@is-import='false']/account/hhdc-contract/@name" />
                                 </a>
                             </td>
                         </tr>
@@ -3386,28 +3392,28 @@ source.appendChild(MonadDate().toXml(doc))]]></value>
                             <th>Supplier Account</th>
                             <td>
                                 <a
-                                    href="{/source/request/@context-path}/reports/42/output/?account-id={/source/supply-generation/mpan[mpan-top/llfc/@is-import='true']/account[supplier-contract]/@id}">
+                                    href="{/source/request/@context-path}/reports/42/output/?account-id={/source/supply-generation/mpan[llfc/@is-import='true']/account[supplier-contract]/@id}">
                                     <xsl:value-of
-                                        select="/source/supply-generation/mpan[mpan-top/llfc/@is-import='true']/account[supplier-contract]/@reference" />
+                                        select="/source/supply-generation/mpan[llfc/@is-import='true']/account[supplier-contract]/@reference" />
                                 </a>
                                 <xsl:value-of select="' &gt; '" />
                                 <a
-                                    href="{/source/request/@context-path}/reports/39/output/?supplier-contract-id={/source/supply-generation/mpan[mpan-top/llfc/@is-import='true']/account/supplier-contract/@id}">
+                                    href="{/source/request/@context-path}/reports/39/output/?supplier-contract-id={/source/supply-generation/mpan[llfc/@is-import='true']/account/supplier-contract/@id}">
                                     <xsl:value-of
-                                        select="/source/supply-generation/mpan[mpan-top/llfc/@is-import='true']/account/supplier-contract/@name" />
+                                        select="/source/supply-generation/mpan[llfc/@is-import='true']/account/supplier-contract/@name" />
                                 </a>
                             </td>
                             <td>
                                 <a
-                                    href="{/source/request/@context-path}/reports/42/output/?account-id={/source/supply-generation/mpan[mpan-top/llfc/@is-import='false']/account[supplier-contract]/@id}">
+                                    href="{/source/request/@context-path}/reports/42/output/?account-id={/source/supply-generation/mpan[llfc/@is-import='false']/account[supplier-contract]/@id}">
                                     <xsl:value-of
-                                        select="/source/supply-generation/mpan[mpan-top/llfc/@is-import='false']/account[supplier-contract]/@reference" />
+                                        select="/source/supply-generation/mpan[llfc/@is-import='false']/account[supplier-contract]/@reference" />
                                 </a>
                                 <xsl:value-of select="' &gt; '" />
                                 <a
-                                    href="{/source/request/@context-path}/reports/39/output/?supplier-contract-id={/source/supply-generation/mpan[mpan-top/llfc/@is-import='false']/account/supplier-contract/@id}">
+                                    href="{/source/request/@context-path}/reports/39/output/?supplier-contract-id={/source/supply-generation/mpan[llfc/@is-import='false']/account/supplier-contract/@id}">
                                     <xsl:value-of
-                                        select="/source/supply-generation/mpan[mpan-top/llfc/@is-import='false']/account/supplier-contract/@name" />
+                                        select="/source/supply-generation/mpan[llfc/@is-import='false']/account/supplier-contract/@name" />
                                 </a>
                             </td>
                         </tr>
@@ -3437,8 +3443,7 @@ def mpan_fields(mpan):
     else:
         fields['mpan_core'] = mpan.getCore().toString()
         fields['agreed_sc'] = str(mpan.getAgreedSupplyCapacity())
-        mpan_top = mpan.getTop()
-        llfc = mpan_top.getLlfc()
+        llfc = mpan.getLlfc()
         fields['llfc_code'] = llfc.codeAsString()
         fields['llfc_description'] = llfc.getDescription()
         i = 0
@@ -3479,7 +3484,7 @@ for supply_generation in Hiber.session().createQuery("from SupplyGeneration gene
     mpan = supply_generation.getMpans()[0]
     import_fields = mpan_fields(supply_generation.getImportMpan())
     export_fields = mpan_fields(supply_generation.getExportMpan())
-    pw.print('"' + physical_site.getCode() + '","' + physical_site.getName() + '","' + site_codes + '","' + site_names + '",' + str(supply.getId()) + ',' + supply.getSource().getCode() + ',"' + mpan.getCore().getDso().getName() + '",' + mpan.getTop().getLlfc().getVoltageLevel().getCode())
+    pw.print('"' + physical_site.getCode() + '","' + physical_site.getName() + '","' + site_codes + '","' + site_names + '",' + str(supply.getId()) + ',' + supply.getSource().getCode() + ',"' + mpan.getCore().getDso().getName() + '",' + mpan.getLlfc().getVoltageLevel().getCode())
     pw.print(',' + import_fields['mpan_core'] + ",")
     pw.print(import_fields['agreed_sc'])
     pw.print("," + import_fields['llfc_code'])
@@ -3916,110 +3921,45 @@ snags_element.setAttribute("site-count", str(sites))
   <line>
     <value>insert</value>
     <value>report</value>
-    <value>0 TRIAD report</value>
-    <value><![CDATA[from net.sf.chellow.monad import Hiber, UserException
-from java.util import GregorianCalendar, TimeZone, Locale, Calendar
-from net.sf.chellow.physical import HhEndDate
-from java.text import DateFormat
+    <value>0 CSV TRIAD Data Quality</value>
+    <value><![CDATA[from net.sf.chellow.monad import Hiber
+from net.sf.chellow.physical import HhEndDate, SupplyGeneration
 
-year = inv.getInteger("year")
-month = inv.getInteger("month")
-if not inv.isValid():
-    raise UserException.newInvalidParameter()
-cal = GregorianCalendar(TimeZone.getTimeZone("GMT"), Locale.UK)
-cal_ct = GregorianCalendar(TimeZone.getTimeZone("BST"), Locale.UK)
-cal.clear()
-cal.set(Calendar.YEAR, year)
-cal.set(Calendar.MONTH, month - 1)
-startDate = HhEndDate(cal.getTime()).getNext()
-cal.add(Calendar.MONTH, 1)
-finishDate = HhEndDate(cal.getTime())
-inv.getResponse().setContentType("text/plain")
+#TRIAD_DATES = [HhEndDate("2006-12-20T17:30Z"), HhEndDate("2007-01-23T17:30Z"), HhEndDate("2007-02-08T18:00Z")]
+
+TRIAD_DATES = [HhEndDate("2007-11-26T17:30Z"), HhEndDate("2007-12-17T17:30Z"), HhEndDate("2008-01-03T17:30Z")]
+
+def triad_status(query, triad_number, is_import):
+    datum = query.setTimestamp('triadDate', TRIAD_DATES[triad_number].getDate()).setBoolean('isImport', is_import).uniqueResult()
+    if datum is None:
+        return 'No data'
+    else:
+        return str(datum.getStatus())
+
+inv.getResponse().setContentType("text/csv")
 pw = inv.getResponse().getWriter()
-pw.print("Site Code,Site Name,Associated Sites,TRIAD kW\n")
-dateFormat = DateFormat.getDateInstance(DateFormat.LONG, Locale.UK)
-dateFormat.applyLocalizedPattern("yyyy-MM-dd")
-for site in Hiber.session().createQuery("select distinct site from Site site join site.siteSupplyGenerations siteSupplyGeneration where siteSupplyGeneration.supplyGeneration.supply.source.code.string in ('lm','chp','turb') and site.organization = :organization and siteSupplyGeneration.supplyGeneration.startDate.date <= :finishDate and (siteSupplyGeneration.supplyGeneration.finishDate.date = null or siteSupplyGeneration.supplyGeneration.finishDate.date >= :startDate) order by site.code.string").setEntity('organization', organization).setTimestamp('startDate', startDate.getDate()).setTimestamp('finishDate', finishDate.getDate()).list():
-    pw.print('main site ' + site.getCode().toString())
+pw.println("Supply Id, Source, Import MPAN Core, Import Status 1, Import Status 2, Import Status 3, Export MPAN Core, Export Status 1, Export Status 2, Export Status 3")
+triad_query = Hiber.session().createQuery("select datum from HhDatum datum where datum.channel.supplyGeneration.supply = :supply and datum.channel.isKwh is true and datum.channel.isImport is :isImport and datum.endDate.date = :triadDate")
+
+generations = Hiber.session().createQuery("from SupplyGeneration generation where generation.finishDate.date is null and generation.supply.source.code != 'sub'").scroll()
+while generations.next():
+    generation = generations.get(0)
+    supply = generation.getSupply()
+    triad_query.setEntity('supply', supply)
+    import_mpan = generation.getImportMpan()
+    if import_mpan is None:
+        import_mpan_str = 'None'
+    else:
+        import_mpan_str = import_mpan.getCore().toString()
+    export_mpan = generation.getExportMpan()
+    if export_mpan is None:
+        export_mpan_str = 'None'
+    else:
+        export_mpan_str = export_mpan.getCore().toString()
+    pw.println(str(supply.getId()) + "," + supply.getSource().getCode() + "," + import_mpan_str + "," + triad_status(triad_query, 0, True) + "," + triad_status(triad_query, 1, True) + "," + triad_status(triad_query, 2, True) + "," + export_mpan_str + "," + triad_status(triad_query, 0, False) + "," + triad_status(triad_query, 1, False) + "," + triad_status(triad_query, 2, False))
     pw.flush()
-    for group in organization.getSite(site.getId()).groups(startDate, finishDate):
-        sites = group.getSites()
-        pw.print(' sites ')
-        for sitee in sites:
-            pw.print(sitee.getCode().toString())
-        pw.print(' endsites')
-        pw.flush()
-        '''
-        site_code = sites[0].getCode().toString()
-        site_name = sites[0].getName()
-        has_triad_est = False
-        associate_string = ''
-        for i in range(1, len(sites) - 1):
-            associate_string = associate_string + sites[i].getCode().toString() + ' '
-        supplies = group.getSupplies()
-        primary_supply = None
-        for supply in supplies:
-            source_code = supply.getSource().getCode().toString()
-            if source_code == 'lm' or source_code == 'turb':
-                has_triad_est = True
-            pw.print('site ' + site_code + ' source_code ' + source_code + ' supply id ' + str(supply.getId()))
-            pw.print('supply name ' + supply.getName().toString())
-            if primary_supply == None and source_code == 'net':
-                primary_supply = supply
-        pw.print(' primary supply ' + str(primary_supply.getId()) + ' date ' + startDate.toString())
-        primary_supply_generation = primary_supply.getGeneration(startDate)
-        #pw.print('primary supp generation ' + str(primary_supply_generation.getId()))
-        for mpan in primary_supply_generation.getMpans():
-            if int(mpan.getMpanCore().getDso().getCode().toString()) < 24:
-                #pw.print('found primary mpan')
-                primary_mpan = mpan
-                break
-        is_substation = primary_mpan.getLineLossFactor().getIsSubstation().getBoolean()
-        dso = primary_mpan.getMpanCore().getDso()
-        dso_service = dso.getService('main')
-        voltage_level = primary_mpan.getLineLossFactor().getVoltageLevel().getCode().toString()
-        llf_calculator = dso_service.callFunction('llf_calculator', [voltage_level, is_substation])
-        hh_date = group.getFrom()
-        num_triad_kwh = 0
-        triad_kwh = 0
-        stream_map = group.hhData()
-        i = 0
-        import_from_net = stream_map['import-from-net']
-        export_to_net = stream_map['export-to-net']
-        import_from_gen = stream_map['import-from-gen']
-        export_to_gen = stream_map['export-to-gen']
-        while not hh_date.getDate().after(group.getTo().getDate()):
-            displaced_hh = import_from_gen[i] - export_to_gen[i] - export_to_net[i]
-            used_hh = displaced_hh + import_from_net[i]
-            cal.setTime(hh_date.getDate())
-            year = cal.get(Calendar.YEAR)
-            month = cal.get(Calendar.MONTH)
-            day = cal.get(Calendar.DAY_OF_MONTH)
-            day_of_week = cal.get(Calendar.DAY_OF_WEEK)
-            hour = cal.get(Calendar.HOUR_OF_DAY)
-            minute = cal.get(Calendar.MINUTE)
-            decimal_hour = hour + minute / 60
-            cal_ct.setTime(hh_date.getDate())
-            year_ct = cal_ct.get(Calendar.YEAR)
-            month_ct = cal_ct.get(Calendar.MONTH)
-            day_ct = cal_ct.get(Calendar.DAY_OF_MONTH)
-            day_of_week_ct = cal_ct.get(Calendar.DAY_OF_WEEK)
-            hour_ct = cal_ct.get(Calendar.HOUR_OF_DAY)
-            minute_ct = cal_ct.get(Calendar.MINUTE)
-            decimal_hour_ct = hour_ct + minute_ct / 60            
-            if decimal_hour >= 16 and decimal_hour <= 19 and (month > 9 or month < 2) and day_of_week > 1 and day_of_week < 7:
-                num_triad_kwh = num_triad_kwh + 1
-                triad_kwh = triad_kwh + used_hh * llf_calculator.llf(hh_date, year, month, day, day_of_week, hour, minute, decimal_hour, year_ct, month_ct, day_ct, day_of_week_ct, hour_ct, minute_ct, decimal_hour_ct)
-                i = i + 1
-            hh_date = hh_date.getNext()
-        if has_triad_est:
-            est_triad_kw = triad_kwh / 4 / num_triad_kwh * 2
-        else:
-            est_triad_kw = 0
-        pw.print('"' + site_code + '","' + site_name + '","' + associate_string + '",' + str(round(est_triad_kw, 1)) + '\n')
-        pw.flush()
-        '''
-    Hiber.session().clear()
+    Hiber().session().clear()
+generations.close()
 pw.close()]]></value>
     <value><![CDATA[]]></value>
   </line>
@@ -4763,34 +4703,28 @@ source.appendChild(pc.toXml(doc))]]></value>
   <line>
     <value>insert</value>
     <value>report</value>
-    <value>0 DSO MPAN tops</value>
-    <value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree
-from net.sf.chellow.billing import Dso
+    <value>0 CSV Sites Period Selector</value>
+    <value><![CDATA[from java.util import GregorianCalendar, TimeZone, Locale, Calendar
+from net.sf.chellow.monad.types import MonadDate
 
-dso_id = inv.getLong('dso-id')
-dso = Dso.getDso(dso_id)
-mpan_tops_element = doc.createElement('mpan-tops')
-source.appendChild(mpan_tops_element)
-for mpan_top in Hiber.session().createQuery("from MpanTop mpanTop where mpanTop.llfc.dso = :dso order by mpanTop.pc.code, mpanTop.llfc.code, mpanTop.mtc.code").setEntity("dso", dso).list():
-    mpan_tops_element.appendChild(mpan_top.toXml(doc, XmlTree("pc").put("llfc").put("mtc").put("ssc").put('gspGroup')))
-mpan_tops_element.appendChild(dso.toXml(doc))]]></value>
+cal = GregorianCalendar(TimeZone.getTimeZone("GMT"), Locale.UK)
+cal.add(Calendar.MONTH, -1)
+source.appendChild(MonadDate(cal.getTime()).toXml(doc))
+source.appendChild(MonadDate.getMonthsXml(doc))]]></value>
     <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
 <xsl:stylesheet version="1.0"
     xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
-    <xsl:output method="html" encoding="US-ASCII"
-        doctype-public="-//W3C//DTD HTML 4.01//EN"
-        doctype-system="http://www.w3.org/TR/html4/strict.dtd" indent="yes" />
+    <xsl:output method="xml" encoding="US-ASCII"
+        doctype-public="-//W3C//DTD XHTML 1.1//EN"
+        doctype-system="http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd"
+        indent="yes" />
     <xsl:template match="/">
         <html>
             <head>
                 <link rel="stylesheet" type="text/css"
-                    href="{/source/request/@context-path}/reports/10/output/" />
-                <title>
-                    Home &gt; DSOs &gt;
-                    <xsl:value-of
-                        select="/source/mpan-tops/dso/@code" />
-                    &gt; MPAN top-lines
-                </title>
+                    href="{/source/request/@context-path}/style/" />
+
+                <title>Chellow &gt; CSV Sites Period</title>
             </head>
             <body>
                 <p>
@@ -4799,20 +4733,9 @@ mpan_tops_element.appendChild(dso.toXml(doc))]]></value>
                         <xsl:value-of select="'Home'" />
                     </a>
                     &gt;
-                    <a
-                        href="{/source/request/@context-path}/reports/69/output/">
-                        <xsl:value-of select="'DSOs'" />
-                    </a>
-                    &gt;
-                    <a
-                        href="{/source/request/@context-path}/reports/70/output/?dso-id={/source/mpan-tops/dso/@id}">
-                        <xsl:value-of
-                            select="/source/mpan-tops/dso/@code" />
-                    </a>
-                    &gt; MPAN top-lines
+                    <xsl:value-of select="'CSV Sites Period'" />
                 </p>
-                <br />
-                <xsl:if test="//message">
+                  <xsl:if test="//message">
                     <ul>
                         <xsl:for-each select="//message">
                             <li>
@@ -4821,99 +4744,40 @@ mpan_tops_element.appendChild(dso.toXml(doc))]]></value>
                         </xsl:for-each>
                     </ul>
                 </xsl:if>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Chellow Id</th>
-                            <th>PC</th>
-                            <th>MTC</th>
-                            <th>LLFC</th>
-                            <th>SSC</th>
-                            <th>GSP Group</th>
-                            <th>Valid From</th>
-                            <th>Valid To</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <xsl:for-each
-                            select="/source/mpan-tops/mpan-top">
-                            <tr>
-                                <td>
-                                    <a href="{/source/request/@context-path}/reports/30/output/?mpan-top-id={@id}">
-                                        <xsl:value-of select="@id" />
-                                    </a>
-                                </td>
-                                <td>
-                                    <a
-                                        href="{/source/request/@context-path}/reports/28/output/?pc-id={pc/@id}">
-                                        <xsl:value-of select="pc/@code" />
-                                    </a>
-                                    <xsl:value-of
-                                        select="concat(' ', pc/@description)" />
-                                </td>
-                                <td>
-                                    <a
-                                        href="{/source/request/@context-path}/reports/32/output/?mtc-id={mtc/@id}">
-                                        <xsl:value-of
-                                            select="mtc/@code" />
-                                    </a>
-                                    <xsl:value-of
-                                        select="concat(' ', mtc/@description)" />
-                                </td>
-                                <td>
-                                    <a
-                                        href="{/source/request/@context-path}/reports/26/output/?llfc-id={llfc/@id}">
-                                        <xsl:value-of
-                                            select="llfc/@code" />
-                                    </a>
-                                    <xsl:value-of
-                                        select="concat(' ', llfc/@description)" />
-                                </td>
-                                <td>
-                                    <xsl:choose>
-                                        <xsl:when test="ssc">
-                                            <a
-                                                href="{/source/request/@context-path}/reports/64/output/?ssc-id={ssc/@id}">
-                                                <xsl:value-of
-                                                    select="ssc/@code" />
-                                            </a>
-                                            <xsl:value-of
-                                                select="concat(' ', ssc/@description)" />
-                                        </xsl:when>
-                                        <xsl:otherwise>
-                                            N/A
-                                        </xsl:otherwise>
-                                    </xsl:choose>
-                                </td>
-                                <td>
-                                    <a
-                                        href="{/source/request/@context-path}/reports/18/output/?gsp-group-id={gsp-group/@id}">
-                                        <xsl:value-of
-                                            select="gsp-group/@code" />
-                                    </a>
-                                    <xsl:value-of
-                                        select="concat(' ', gsp-group/@description)" />
-                                </td>
-                                <td>
-                                    <xsl:value-of
-                                        select="concat(date[@label='from']/@year, '-', date[@label='from']/@month, '-', date[@label='from']/@day, ' ', date[@label='from']/@hour, ':', date[@label='from']/@minute, ' Z')" />
-                                </td>
-                                <td>
-                                    <xsl:choose>
-                                        <xsl:when
-                                            test="date[@label='to']">
-                                            <xsl:value-of
-                                                select="concat(date[@label='to']/@year, '-', date[@label='to']/@month, '-', date[@label='to']/@day, ' ', date[@label='to']/@hour, ':', date[@label='to']/@minute, ' Z')" />
-                                        </xsl:when>
-                                        <xsl:otherwise>
-                                            Ongoing
-                                        </xsl:otherwise>
-                                    </xsl:choose>
-                                </td>
-                            </tr>
-                        </xsl:for-each>
-                    </tbody>
-                </table>
+                <form action="{/source/request/@context-path}/reports/30/output/">
+                    <fieldset>
+                        <legend>Download</legend>
+<br/>
+<fieldset><legend>From</legend>
+                        <input name="year" value="{/source/date/@year}" maxlength="4" size="4"/><xsl:value-of select="' - '"/>
+                        <select name="month">
+                            <xsl:for-each select="/source/months/month">
+                                <option value="{@number}">
+                                    <xsl:if test="@number=/source/date/@month">
+                                        <xsl:attribute name="selected">selected</xsl:attribute>
+                                    </xsl:if>
+                                    <xsl:value-of select="@number"/>
+                                </option>
+                            </xsl:for-each>
+                        </select>
+</fieldset>
+<br/>
+                        <label><xsl:value-of select="'Months '"/></label>
+                        <input name="months" maxlength="2" size="2">
+                          <xsl:attribute name="value">
+                            <xsl:choose>
+                              <xsl:when test="/source/request/parameter[@name='months']">
+                                <xsl:value-of select="/source/request/parameter[@name='months']/value"/>
+                              </xsl:when>
+                              <xsl:otherwise>
+                                <xsl:value-of select="'1'"/>
+                              </xsl:otherwise>
+                            </xsl:choose>
+                          </xsl:attribute>
+                        </input>
+                        <input type="submit" value="Download"/>
+                    </fieldset>
+                </form>
             </body>
         </html>
     </xsl:template>
@@ -4922,126 +4786,95 @@ mpan_tops_element.appendChild(dso.toXml(doc))]]></value>
   <line>
     <value>insert</value>
     <value>report</value>
-    <value>0 DSO MPAN top</value>
-    <value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree
-from net.sf.chellow.physical import MpanTop
+    <value>0 CSV Sites Period</value>
+    <value><![CDATA[from net.sf.chellow.monad import Hiber, UserException
+from java.lang import System
+from net.sf.chellow.monad.types import MonadDate
+import math
+from java.sql import Timestamp, ResultSet
+from java.util import GregorianCalendar, Calendar, TimeZone, Locale, Date
+from net.sf.chellow.physical import HhEndDate
 
-mpan_top_id = inv.getLong('mpan-top-id')
-mpan_top = MpanTop.getMpanTop(mpan_top_id)
-source.appendChild(mpan_top.toXml(doc, XmlTree('pc').put('llfc', XmlTree('dso')).put('mtc')))]]></value>
-    <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
-<xsl:stylesheet version="1.0"
-    xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
-    <xsl:output method="html" encoding="US-ASCII"
-        doctype-public="-//W3C//DTD HTML 4.01//EN"
-        doctype-system="http://www.w3.org/TR/html4/strict.dtd" indent="yes" />
-    <xsl:template match="/">
-        <html>
-            <head>
-                <link rel="stylesheet" type="text/css"
-                    href="{/source/request/@context-path}/reports/10/output/" />
-                <title>
-                    Home &gt; DSOs &gt;
-                    <xsl:value-of
-                        select="/source/mpan-top/llfc/dso/@code" />
-                    &gt; MPAN tops &gt;
-                    <xsl:value-of select="/source/mpan-top/llfc/@code" />
-                </title>
-            </head>
-            <body>
-                <p>
-                    <a
-                        href="{/source/request/@context-path}/reports/1/output/">
-                        <xsl:value-of
-                            select="'Home'" />
-                    </a>
-                    &gt;
-                    <a
-                        href="{/source/request/@context-path}/reports/23/output/">
-                        <xsl:value-of select="'DSOs'" />
-                    </a>
-                    &gt;
-                    <a
-                        href="{/source/request/@context-path}/reports/70/output/?dso-id={/source/mpan-top/llfc/dso/@id}">
-                        <xsl:value-of
-                            select="/source/mpan-top/llfc/dso/@code" />
-                    </a>
-                    &gt;
-                    <a
-                        href="{/source/request/@context-path}/reports/29/output/?dso-id={/source/mpan-top/llfc/dso/@id}">
-                        <xsl:value-of select="'MPAN tops'" />
-                    </a>
-                    &gt;
-                    <xsl:value-of select="/source/mpan-top/@id" />
-                </p>
-                <br />
-                <xsl:if test="//message">
-                    <ul>
-                        <xsl:for-each select="//message">
-                            <li>
-                                <xsl:value-of select="@description" />
-                            </li>
-                        </xsl:for-each>
-                    </ul>
-                </xsl:if>
-                <table>
-                    <caption>MPAN top line properties</caption>
-                    <thead>
-                        <tr>
-                            <th>Property</th>
-                            <th>Value</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>Profile Class</td>
-                            <td>
-                                <a
-                                    href="{/source/request/@context-path}/reports/28/output/?pc-id={/source/mpan-top/pc/@id}">
-                                    <xsl:value-of
-                                        select="concat(/source/mpan-top/pc/@code, ' - ', /source/mpan-top/pc/@description)" />
-                                </a>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>Meter Timeswitch Class</td>
-                            <td>
-                                <a
-                                    href="{/source/request/@context-path}/reports/32/output/?mtc-id={/source/mpan-top/mtc/@id}">
-                                    <xsl:value-of
-                                        select="concat(/source/mpan-top/mtc/@code, ' - ', /source/mpan-top/mtc/@description)" />
-                                </a>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>Line Loss Factor</td>
-                            <td>
-                                <a
-                                    href="{/source/request/@context-path}/reports/26/output/?llfc-id={/source/mpan-top/llfc/@id}">
-                                    <xsl:value-of
-                                        select="concat(/source/mpan-top/llfc/@code, ' - ', /source/mpan-top/llfc/@description)" />
-                                </a>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
+year = inv.getInteger("year")
+month = inv.getInteger("month")
+months = inv.getInteger("months")
 
-                <h3>SSCs</h3>
+cal = GregorianCalendar(TimeZone.getTimeZone("GMT"), Locale.UK)
+cal.clear()
+cal.set(Calendar.YEAR, year)
+cal.set(Calendar.MONTH, month - 1)
+cal.add(Calendar.MONTH, 1)
+finish_date = HhEndDate(cal.getTime())
+cal.add(Calendar.MONTH, -1 * months)
+start_date = HhEndDate(cal.getTime())
 
-                <ul>
-                    <xsl:for-each select="/source/mpan-top/ssc">
-                        <li>
-                            <a
-                                href="{/source/request/@context-path}/sscs/{@id}/">
-                                <xsl:value-of select="@code" />
-                            </a>
-                        </li>
-                    </xsl:for-each>
-                </ul>
-            </body>
-        </html>
-    </xsl:template>
-</xsl:stylesheet>]]></value>
+inv.getResponse().setContentType("text/csv")
+inv.getResponse().setHeader('Content-Disposition', 'filename=output.csv;')
+pw = inv.getResponse().getWriter()
+pw.println("Site Id, Site Name, Associated Site Ids, Sources, From, To, Imported kWh, Displaced kWh, Exported kWh, Used kWh, Parasitic kWh")
+pw.flush()
+sites = Hiber.session().createQuery("from Site site order by site.code").scroll()
+while sites.next():
+    query = Hiber.session().createQuery("select sum(datum.value) from HhDatum datum where datum.channel.supplyGeneration = :supplyGeneration and datum.channel.isImport is :isImport and datum.channel.isKwh is true and datum.channel.supplyGeneration.supply.source.code in (:sources) and datum.endDate.date >= :startDate and datum.endDate <= :finishDate")
+    site = sites.get(0)
+    site_code = site.getCode()
+    associates = []
+    sources = []
+    has_physical = False
+    site_supply_generations = Hiber.session().createQuery("from SiteSupplyGeneration siteSupplyGeneration where siteSupplyGeneration.site = :site and siteSupplyGeneration.isPhysical is true and siteSupplyGeneration.supplyGeneration.supply.source.code != 'sub' and siteSupplyGeneration.supplyGeneration.startDate.date <= :finishDate and (siteSupplyGeneration.supplyGeneration.finishDate is null or siteSupplyGeneration.supplyGeneration.finishDate.date >= :startDate)").setEntity('site', site).setTimestamp('startDate', start_date.getDate()).setTimestamp('finishDate', finish_date.getDate()).scroll()
+    import_from_net = 0
+    export_to_net = 0
+    import_from_gen = 0
+    export_to_gen = 0
+    while site_supply_generations.next():
+        has_physical = True
+        site_supply_generation = site_supply_generations.get(0)
+        supply_generation = site_supply_generation.getSupplyGeneration()
+        for ss_gen in supply_generation.getSiteSupplyGenerations():
+            ss_gen_site_code = ss_gen.getSite().getCode()
+            if ss_gen.getId() != site_supply_generation.getId() and ss_gen_site_code != site_code and ss_gen_site_code not in associates:
+                associates.append(ss_gen_site_code)
+            ss_gen_source = ss_gen.getSupplyGeneration().getSupply().getSource().getCode()
+            if ss_gen_source not in sources:
+                sources.append(ss_gen_source)
+        result = query.setEntity('supplyGeneration', supply_generation).setTimestamp('startDate', start_date.getDate()).setTimestamp('finishDate', finish_date.getDate()).setBoolean('isImport', True).setParameterList('sources', ['net']).uniqueResult()
+        if result is not None:
+            import_from_net = import_from_net + result
+        result = query.setBoolean('isImport', False).uniqueResult()
+        if result is not None:
+            export_to_net = export_to_net + result
+        result = query.setParameterList('sources', ['lm', 'turb', 'chp']).uniqueResult()
+        if result is not None:
+            export_to_gen = export_to_gen + result
+        result = query.setBoolean('isImport', True).uniqueResult()
+        if result is not None:
+            import_to_gen = import_from_gen + result
+    if has_physical:
+        associate_str = ''
+        for associate in associates:
+            associate_str = associate_str + associate + ', '
+        sources.sort()
+        sources_str = ''
+        for source in sources:
+            sources_str = sources_str + source + ', '
+        displaced = import_from_gen - export_to_net - export_to_gen
+        used = displaced + import_from_net
+        pw.print('"' + site_code + '","')
+        pw.print(site.getName() + '","')     
+        pw.print(associate_str[:-2] + '","')
+        pw.print(sources_str[:-2] + '",')
+        pw.print(start_date.toString() + ',')
+        pw.print(finish_date.toString() + ',')
+        pw.print(str(round(import_from_net)))
+        pw.print(',' + str(round(displaced)) + ',')
+        pw.print(str(round(export_to_net)) + ',')
+        pw.print(str(round(used)) + ',')
+        pw.print(str(round(export_to_gen)) + '\n')
+    pw.flush()
+    Hiber.session().clear()
+sites.close()
+pw.close()]]></value>
+    <value><![CDATA[]]></value>
   </line>
   <line>
     <value>insert</value>
@@ -10235,12 +10068,6 @@ for contract in Hiber.session().createQuery("from DsoContract contract where con
                             Line Loss Factors
                         </a>
                     </li>
-                    <li>
-                        <a
-                            href="{/source/request/@context-path}/reports/29/output/?dso-id={/source/dso/@id}">
-                            MPAN top lines
-                        </a>
-                    </li>
                 </ul>
             </body>
         </html>
@@ -10441,11 +10268,11 @@ dateFormat = DateFormat.getDateInstance(DateFormat.LONG, Locale.UK)
 dateFormat.applyLocalizedPattern("yyyy-MM-dd")
 dateFormat.setCalendar(cal)
 
-channels = Hiber.session().createQuery("select channel from Channel channel join channel.supply.generations generation where (generation.finishDate.date is null or generation.finishDate.date > :finishDate) and channel.isImport is true and channel.isKwh is true and channel.supply.id = 80").setTimestamp("finishDate", finishDate).list()
+channels = Hiber.session().createQuery("select channel from Channel channel where (channel.generation.finishDate.date is null or channel.generation.finishDate.date > :finishDate) and channel.isImport is true and channel.isKwh is true").setTimestamp("finishDate", finishDate).scroll()
 
-for channel in channels:
-    channel = Hiber.session().get(channel.getClass(), Long(channel.getId()))
-    generation = channel.getSupply().getGeneration(HhEndDate(finishDate))
+while channels.next():
+    channel = channels.get(0)
+    generation = channel.getGeneration(HhEndDate(finishDate))
     if generation == None or generation.getImportMpan() == None:
         mpanCoreStr = "NA"
     else:
@@ -10479,46 +10306,28 @@ pw.close()]]></value>
   <line>
     <value>insert</value>
     <value>report</value>
-    <value>0 MPAN Top Lines</value>
-    <value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree
-from net.sf.chellow.physical import GspGroup
-from net.sf.chellow.billing import Dso
+    <value>0 CSV Supplies Period Selector</value>
+    <value><![CDATA[from java.util import GregorianCalendar, TimeZone, Locale, Calendar
+from net.sf.chellow.monad.types import MonadDate
 
-groups_element = doc.createElement('gsp-groups')
-source.appendChild(groups_element)
-for group in Hiber.session().createQuery("from GspGroup group order by group.code").list():
-    groups_element.appendChild(group.toXml(doc))
-
-tops_element = doc.createElement('mpan-tops')
-source.appendChild(tops_element);
-if inv.hasParameter("dso-id") and inv.hasParameter("gsp-group-id"):
-    dso_id = inv.getLong("dso-id")
-    dso = Dso.getDso(dso_id)
-    gsp_group_id = inv.getLong("gsp-group-id")
-    gspGroup = GspGroup.getGspGroup(gsp_group_id)
-    for mpan_top in Hiber.session().createQuery("from MpanTop mpanTop where mpanTop.llfc.dso = :dso and mpanTop.gspGroup = :gspGroup order by mpanTop.llfc.code, mpanTop.pc.code").setEntity("dso", dso).setEntity("gspGroup", gspGroup).list():
-        tops_element.appendChild(mpan_top.toXml(doc, XmlTree("llfc", XmlTree("dso")).put("pc").put("mtc").put("ssc").put("gspGroup")))
-else:
-    for group in Hiber.session().createQuery("from GspGroup group order by group.code").list():
-        group_element = group.toXml(doc)
-        source.appendChild(group_element);
-        for dso in Hiber.session().createQuery("select distinct top.llfc.dso from MpanTop top where top.gspGroup = :gspGroup order by top.llfc.dso.code").setEntity("gspGroup", group).list():
-            group_element.appendChild(dso.toXml(doc))]]></value>
+cal = GregorianCalendar(TimeZone.getTimeZone("GMT"), Locale.UK)
+cal.add(Calendar.MONTH, -1)
+source.appendChild(MonadDate(cal.getTime()).toXml(doc))
+source.appendChild(MonadDate.getMonthsXml(doc))]]></value>
     <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
 <xsl:stylesheet version="1.0"
     xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
-    <xsl:output method="html" encoding="US-ASCII"
-        doctype-public="-//W3C//DTD HTML 4.01//EN"
-        doctype-system="http://www.w3.org/TR/html4/strict.dtd" indent="yes" />
+    <xsl:output method="xml" encoding="US-ASCII"
+        doctype-public="-//W3C//DTD XHTML 1.1//EN"
+        doctype-system="http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd"
+        indent="yes" />
     <xsl:template match="/">
         <html>
             <head>
                 <link rel="stylesheet" type="text/css"
-                    href="{/source/request/@context-path}/reports/10/output/" />
-                <title>
-                    <xsl:value-of select="'Home'" />
-                    &gt; MPAN Top Lines
-                </title>
+                    href="{/source/request/@context-path}/style/" />
+
+                <title>Chellow &gt; CSV Supplies Period</title>
             </head>
             <body>
                 <p>
@@ -10527,17 +10336,9 @@ else:
                         <xsl:value-of select="'Home'" />
                     </a>
                     &gt;
-                    <a>
-                        <xsl:if test="/source/mpan-tops/mpan-top">
-                            <xsl:attribute name="href">
-                    <xsl:value-of
-                                    select="concat(/source/request/@context-path, '/reports/74/output/')" />
-                    </xsl:attribute>
-                        </xsl:if>
-                        <xsl:value-of select="'Mpan Top Lines'" />
-                    </a>
+                    <xsl:value-of select="'CSV Supplies Period'" />
                 </p>
-                <xsl:if test="//message">
+                  <xsl:if test="//message">
                     <ul>
                         <xsl:for-each select="//message">
                             <li>
@@ -10546,97 +10347,130 @@ else:
                         </xsl:for-each>
                     </ul>
                 </xsl:if>
-                <xsl:choose>
-                    <xsl:when test="/source/mpan-tops/mpan-top">
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>Chellow Id</th>
-                                    <th>GSP Group</th>
-                                    <th>DSO</th>
-                                    <th>PC</th>
-                                    <th>MTC</th>
-                                    <th>LLFC</th>
-                                    <th>SSC</th>
-                                    <th>Valid From</th>
-                                    <th>Valid To</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <xsl:for-each
-                                    select="/source/mpan-tops/mpan-top">
-                                    <tr>
-                                        <td>
-                                            <a
-                                                href="{/source/request/@context-path}/reports/30/output/?mpan-top-id={@id}">
-                                                <xsl:value-of
-                                                    select="@id" />
-                                            </a>
-                                        </td>
-                                        <td>
-                                            <xsl:value-of
-                                                select="concat(gsp-group/@code, ' - ', gsp-group/@description)" />
-                                        </td>
-                                        <td>
-                                            <xsl:value-of
-                                                select="concat(llfc/dso/@code, ' - ', llfc/dso/@name)" />
-                                        </td>
-                                        <td>
-                                            <xsl:value-of
-                                                select="concat(pc/@code, ' - ', pc/@description)" />
-                                        </td>
-                                        <td>
-                                            <xsl:value-of
-                                                select="concat(mtc/@code, ' - ', mtc/@description)" />
-                                        </td>
-                                        <td>
-                                            <xsl:value-of
-                                                select="concat(llfc/@code, ' - ', llfc/@description)" />
-                                        </td>
-                                        <td>
-                                            <xsl:value-of
-                                                select="concat(ssc/@code, ' - ', ssc/@description)" />
-                                        </td>
-                                        <td>
-                                            <xsl:value-of
-                                                select="concat(date[@label='from']/@year, '-', date[@label='from']/@month, '-', date[@label='from']/@day, ' ', date[@label='from']/@hour, ':', date[@label='from']/@minute, ' Z')" />
-                                        </td>
-                                        <td>
-                                            <xsl:choose>
-                                                <xsl:when
-                                                    test="date[@label='to']">
-                                                    <xsl:value-of
-                                                        select="concat(date[@label='to']/@year, '-', date[@label='to']/@month, '-', date[@label='to']/@day, ' ', date[@label='to']/@hour, ':', date[@label='to']/@minute, ' Z')" />
-                                                </xsl:when>
-                                                <xsl:otherwise>
-                                                    Ongoing
-                                                </xsl:otherwise>
-                                            </xsl:choose>
-                                        </td>
-                                    </tr>
-                                </xsl:for-each>
-                            </tbody>
-                        </table>
-                    </xsl:when>
-                    <xsl:otherwise>
-                        <ul>
-                            <xsl:for-each select="/source/gsp-group">
-                                <xsl:for-each select="dso">
-                                    <li>
-                                        <a
-                                            href="{/source/request/@context-path}/reports/74/output/?gsp-group-id={../@id}&amp;dso-id={@id}">
-                                            <xsl:value-of
-                                                select="concat(../@code, ' ', @code)" />
-                                        </a>
-                                    </li>
-                                </xsl:for-each>
+                <form action="{/source/request/@context-path}/reports/75/output/">
+                    <fieldset>
+                        <legend>Supply level information</legend>
+<br/>
+<fieldset><legend>From</legend>
+                        <input name="year" value="{/source/date/@year}" maxlength="4" size="4"/><xsl:value-of select="' - '"/>
+                        <select name="month">
+                            <xsl:for-each select="/source/months/month">
+                                <option value="{@number}">
+                                    <xsl:if test="@number=/source/date/@month">
+                                        <xsl:attribute name="selected">selected</xsl:attribute>
+                                    </xsl:if>
+                                    <xsl:value-of select="@number"/>
+                                </option>
                             </xsl:for-each>
-                        </ul>
-                    </xsl:otherwise>
-                </xsl:choose>
+                        </select>
+</fieldset>
+<br/>
+                        <label><xsl:value-of select="'Months '"/></label>
+                        <input name="months" maxlength="2" size="2">
+                          <xsl:attribute name="value">
+                            <xsl:choose>
+                              <xsl:when test="/source/request/parameter[@name='months']">
+                                <xsl:value-of select="/source/request/parameter[@name='months']/value"/>
+                              </xsl:when>
+                              <xsl:otherwise>
+                                <xsl:value-of select="'1'"/>
+                              </xsl:otherwise>
+                            </xsl:choose>
+                          </xsl:attribute>
+                        </input>
+                        <input type="submit" value="Download"/>
+                    </fieldset>
+                </form>
             </body>
         </html>
     </xsl:template>
 </xsl:stylesheet>]]></value>
+  </line>
+  <line>
+    <value>insert</value>
+    <value>report</value>
+    <value>0 CSV Supplies Period</value>
+    <value><![CDATA[from net.sf.chellow.monad import Hiber
+from java.util import GregorianCalendar, TimeZone, Locale, Calendar
+from net.sf.chellow.physical import HhEndDate, Supply
+from java.sql import Timestamp, ResultSet
+
+def hh_summary(query, is_import):
+    md = 0
+    sum = 0
+    non_actual = 0
+    hh_data = query.setBoolean('isImport', is_import).scroll()
+    while hh_data.next():
+        hh_value = hh_data.get(0)
+        hh_status = hh_data.get(1)
+        md = max(md, hh_value)
+        sum = sum + hh_value
+        if hh_status != 'A':
+            non_actual = non_actual + hh_value
+    hh_data.close()
+    return md * 2, sum, non_actual
+    
+inv.getResponse().setContentType("text/csv")
+inv.getResponse().setHeader('Content-Disposition', 'filename=output.csv;')
+pw = inv.getResponse().getWriter()
+start_date_year = inv.getInteger("year")
+start_date_month = inv.getInteger("month")
+months = inv.getInteger("months")
+if not inv.isValid():
+    raise UserException()
+cal = GregorianCalendar(TimeZone.getTimeZone("GMT"), Locale.UK)
+cal.clear()
+cal.set(Calendar.YEAR, start_date_year)
+cal.set(Calendar.MONTH, start_date_month - 1)
+cal.set(Calendar.DAY_OF_MONTH, 1)
+cal.set(Calendar.HOUR_OF_DAY, 0)
+cal.set(Calendar.MINUTE, 30)
+cal.set(Calendar.SECOND, 0)
+cal.set(Calendar.MILLISECOND, 0)
+start_date = HhEndDate(cal.getTime())
+cal.add(Calendar.MONTH, months)
+cal.add(Calendar.MINUTE, -30)
+finish_date = HhEndDate(cal.getTime())
+
+'''
+con = Hiber.session().connection()
+stmt = con.prepareStatement("select hh_datum.value, hh_datum.status from hh_datum where hh_datum.channel_id = ? and hh_datum.end_date >= ? and hh_datum.end_date <= ?", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.CLOSE_CURSORS_AT_COMMIT)
+stmt.setTimestamp(2, Timestamp(start_date.getDate().getTime()))
+stmt.setTimestamp(3, Timestamp(finish_date.getDate().getTime()))
+stmt.setFetchSize(100)
+'''
+
+query = Hiber.session().createQuery("select datum.value, datum.status from HhDatum datum where datum.channel.supplyGeneration.supply = :supply and datum.channel.isImport is :isImport and datum.channel.isKwh is true and datum.endDate.date >= :startDate and datum.endDate.date <= :finishDate").setTimestamp('startDate', start_date.getDate()).setTimestamp('finishDate', finish_date.getDate())
+
+
+pw.println("Supply Id, Supply Name, Source, Site Ids, Site Names, From, To, Import MPAN Core, Import Total kWh, Import Non-actual kWh, Import MD / kW, Export MPAN Core, Export Total kWh, Export Non-actual kWh, Export MD / kW")
+supplies = Hiber.session().createQuery("select generation.supply from SupplyGeneration generation where (generation.finishDate.date is null or generation.finishDate.date >= :startDate) and generation.startDate.date <= :finishDate order by generation.supply.id").setTimestamp('startDate', start_date.getDate()).setTimestamp('finishDate', finish_date.getDate()).scroll()
+while supplies.next():
+    supply = supplies.get(0)
+    site_codes = ''
+    site_names = ''
+    generation = supply.getGenerationLast()
+    for site_supply_generation in generation.getSiteSupplyGenerations():
+        site = site_supply_generation.getSite();
+        site_codes = site_codes + site.getCode() + ', '
+        site_names = site_names + site.getName() + ', '
+    site_codes = site_codes[:-2]
+    site_names = site_names[:-2]
+    import_mpan = generation.getImportMpan()
+    import_mpan_core_str = ''
+    if import_mpan is not None:
+        import_mpan_core_str = import_mpan.getCore().toString()
+    export_mpan = generation.getExportMpan()
+    export_mpan_core_str = ''
+    if export_mpan is not None:
+        export_mpan_core_str = export_mpan.getCore().toString()
+    query.setEntity('supply', supply)
+    import_result = hh_summary(query, True)
+    export_result = hh_summary(query, False)
+    pw.println(str(supply.getId()) + ',"' + supply.getName() + '",' + supply.getSource().getCode() + ',"' + site_codes + '","' + site_names + '",' + start_date.toString() + "," + finish_date.toString() + "," + import_mpan_core_str + "," + str(round(import_result[1])) + ',' + str(round(import_result[2])) + "," + str(round(import_result[0])) + "," + export_mpan_core_str + "," + str(round(export_result[1])) + ',' + str(round(export_result[2])) + "," + str(round(export_result[0])))
+    pw.flush()
+    Hiber.session().clear()
+pw.close()]]></value>
+    <value><![CDATA[]]></value>
   </line>
 </csv>

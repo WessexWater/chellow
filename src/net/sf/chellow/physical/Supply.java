@@ -88,17 +88,34 @@ public class Supply extends PersistentEntity {
 			Account importSupplierAccount = null;
 			Ssc importSsc = null;
 			GspGroup importGspGroup = null;
-
+			String importSscCode = GeneralImport.addField(csvElement,
+					"Import SSC", values, 6);
+			String importGspGroupCode = GeneralImport.addField(csvElement,
+					"Import GSP Group", values, 7);
+			String importAgreedSupplyCapacityStr = GeneralImport.addField(
+					csvElement, "Import Agreed Supply Capacity", values, 8);
+			String importHasImportKwhStr = GeneralImport.addField(csvElement,
+					"Import has import kWh", values, 9);
+			String importHasImportKvarhStr = GeneralImport.addField(csvElement,
+					"Import has import kVArh", values, 10);
+			String importHasExportKwhStr = GeneralImport.addField(csvElement,
+					"Import has export kWh", values, 11);
+			String importHasExportKvarhStr = GeneralImport.addField(
+					csvElement, "Import has export kVArh", values, 12);
+			String importHhdcContractName = GeneralImport.addField(
+					csvElement, "Import HHDC Contract", values, 13);
+			String importHhdcAccountReference = GeneralImport.addField(
+					csvElement, "Import HHDC Account", values, 14);
+			String importSupplierContractName = GeneralImport
+					.addField(csvElement, "Import supplier contract name",
+							values, 15);
+			String importSupplierAccountReference = GeneralImport.addField(
+					csvElement, "Import supplier account reference",
+					values, 16);
 			if (importMpanStr != null && importMpanStr.length() != 0) {
-				String importSscCode = GeneralImport.addField(csvElement,
-						"Import SSC", values, 6);
 				importSsc = importSscCode.trim().length() == 0 ? null : Ssc
 						.getSsc(importSscCode);
-				String importGspGroupCode = GeneralImport.addField(csvElement,
-						"Import GSP Group", values, 7);
 				importGspGroup = GspGroup.getGspGroup(importGspGroupCode);
-				String importAgreedSupplyCapacityStr = GeneralImport.addField(
-						csvElement, "Import Agreed Supply Capacity", values, 8);
 				try {
 					importAgreedSupplyCapacity = new Integer(
 							importAgreedSupplyCapacityStr);
@@ -107,40 +124,22 @@ public class Supply extends PersistentEntity {
 							"The import supply capacity must be an integer."
 									+ e.getMessage());
 				}
-				String importHasImportKwhStr = GeneralImport.addField(
-						csvElement, "Import has import kWh", values, 9);
 				importHasImportKwh = Boolean
 						.parseBoolean(importHasImportKwhStr);
-				String importHasImportKvarhStr = GeneralImport.addField(
-						csvElement, "Import has import kVArh", values, 10);
 				importHasImportKvarh = Boolean
 						.parseBoolean(importHasImportKvarhStr);
-				String importHasExportKwhStr = GeneralImport.addField(
-						csvElement, "Import has export kWh", values, 11);
 				importHasExportKwh = Boolean
 						.parseBoolean(importHasExportKwhStr);
-				String importHasExportKvarhStr = GeneralImport.addField(
-						csvElement, "Import has export kVArh", values, 12);
 				importHasExportKvarh = Boolean
 						.parseBoolean(importHasExportKvarhStr);
-				String importHhdcContractName = GeneralImport.addField(
-						csvElement, "Import HHDC Contract", values, 13);
 				importHhdcContract = importHhdcContractName.trim().length() == 0 ? null
 						: HhdcContract.getHhdcContract(importHhdcContractName);
 				if (importHhdcContract != null) {
-					String importHhdcAccountReference = GeneralImport.addField(
-							csvElement, "Import HHDC Account", values, 14);
 					importHhdcAccount = importHhdcContract
 							.getAccount(importHhdcAccountReference);
 				}
-				String importSupplierContractName = GeneralImport
-						.addField(csvElement, "Import supplier contract name",
-								values, 15);
 				importSupplierContract = SupplierContract
 						.getSupplierContract(importSupplierContractName);
-				String importSupplierAccountReference = GeneralImport.addField(
-						csvElement, "Import supplier account reference",
-						values, 16);
 				importSupplierAccount = importSupplierContract
 						.getAccount(importSupplierAccountReference);
 			}
@@ -450,10 +449,10 @@ public class Supply extends PersistentEntity {
 		}
 		if (existingImportMpan == null) {
 			newSupplyGeneration = insertGeneration(existingSiteMap, finishDate,
-					existingMeter.getSerialNumber(), null, null, null, null, null, false, false,
-					false, false, null, existingExportMpan.toString(),
-					existingExportMpan.getTop().getSsc(), existingExportMpan
-							.getTop().getGspGroup(), existingExportMpan
+					existingMeter.getSerialNumber(), null, null, null, null,
+					null, false, false, false, false, null, existingExportMpan
+							.toString(), existingExportMpan.getSsc(),
+					existingExportMpan.getGspGroup(), existingExportMpan
 							.getHhdcAccount(), existingExportMpan
 							.getSupplierAccount(), existingExportMpan
 							.getHasImportKwh(), existingExportMpan
@@ -463,10 +462,11 @@ public class Supply extends PersistentEntity {
 							.getAgreedSupplyCapacity());
 		} else if (existingExportMpan == null) {
 			newSupplyGeneration = insertGeneration(existingSiteMap, finishDate,
-					existingMeter.getSerialNumber(), existingImportMpan.toString(),
-					existingImportMpan.getTop().getSsc(), existingImportMpan
-							.getTop().getGspGroup(), existingImportMpan
-							.getHhdcAccount(), existingImportMpan
+					existingMeter == null ? "" : existingMeter
+							.getSerialNumber(), existingImportMpan.toString(),
+					existingImportMpan.getSsc(), existingImportMpan
+							.getGspGroup(),
+					existingImportMpan.getHhdcAccount(), existingImportMpan
 							.getSupplierAccount(), existingImportMpan
 							.getHasImportKwh(), existingImportMpan
 							.getHasImportKvarh(), existingImportMpan
@@ -476,19 +476,20 @@ public class Supply extends PersistentEntity {
 					null, false, false, false, false, null);
 		} else {
 			newSupplyGeneration = insertGeneration(existingSiteMap, finishDate,
-					existingMeter.getSerialNumber(), existingImportMpan.toString(),
-					existingImportMpan.getTop().getSsc(), existingImportMpan
-							.getTop().getGspGroup(), existingImportMpan
-							.getHhdcAccount(), existingImportMpan
+					existingMeter == null ? "" : existingMeter
+							.getSerialNumber(), existingImportMpan.toString(),
+					existingImportMpan.getSsc(), existingImportMpan
+							.getGspGroup(),
+					existingImportMpan.getHhdcAccount(), existingImportMpan
 							.getSupplierAccount(), existingImportMpan
 							.getHasImportKwh(), existingImportMpan
 							.getHasImportKvarh(), existingImportMpan
 							.getHasExportKwh(), existingImportMpan
 							.getHasExportKvarh(), existingImportMpan
 							.getAgreedSupplyCapacity(), existingExportMpan
-							.toString(), existingExportMpan.getTop().getSsc(),
-					existingExportMpan.getTop().getGspGroup(),
-					existingExportMpan.getHhdcAccount(), existingExportMpan
+							.toString(), existingExportMpan.getSsc(),
+					existingExportMpan.getGspGroup(), existingExportMpan
+							.getHhdcAccount(), existingExportMpan
 							.getSupplierAccount(), existingExportMpan
 							.getHasImportKwh(), existingExportMpan
 							.getHasImportKvarh(), existingExportMpan
@@ -527,16 +528,17 @@ public class Supply extends PersistentEntity {
 	 * exportHasExportKvarh, exportAgreedSupplyCapacity, finishDate); }
 	 */
 	public SupplyGeneration insertGeneration(Map<Site, Boolean> siteMap,
-			HhEndDate finishDate, String meterSerialNumber, String importMpanStr,
-			Ssc importSsc, GspGroup importGspGroup, Account importHhdcAccount,
-			Account importSupplierAccount, Boolean importHasImportKwh,
-			Boolean importHasImportKvarh, Boolean importHasExportKwh,
-			Boolean importHasExportKvarh, Integer importAgreedSupplyCapacity,
-			String exportMpanStr, Ssc exportSsc, GspGroup exportGspGroup,
-			Account exportHhdcAccount, Account exportSupplierAccount,
-			Boolean exportHasImportKwh, Boolean exportHasImportKvarh,
-			Boolean exportHasExportKwh, Boolean exportHasExportKvarh,
-			Integer exportAgreedSupplyCapacity) throws HttpException {
+			HhEndDate finishDate, String meterSerialNumber,
+			String importMpanStr, Ssc importSsc, GspGroup importGspGroup,
+			Account importHhdcAccount, Account importSupplierAccount,
+			Boolean importHasImportKwh, Boolean importHasImportKvarh,
+			Boolean importHasExportKwh, Boolean importHasExportKvarh,
+			Integer importAgreedSupplyCapacity, String exportMpanStr,
+			Ssc exportSsc, GspGroup exportGspGroup, Account exportHhdcAccount,
+			Account exportSupplierAccount, Boolean exportHasImportKwh,
+			Boolean exportHasImportKvarh, Boolean exportHasExportKwh,
+			Boolean exportHasExportKvarh, Integer exportAgreedSupplyCapacity)
+			throws HttpException {
 		if (getGenerationFinishing(finishDate) != null) {
 			throw new UserException(
 					"There's already a supply generation with this finish date.");
@@ -871,8 +873,8 @@ public class Supply extends PersistentEntity {
 										generation.getFinishDate().getDate()))) {
 					SupplyGeneration targetGeneration = getGeneration(read
 							.getPresentDate());
-					Mpan targetMpan = read.getMpan().getTop().getLlfc()
-							.getIsImport() ? targetGeneration.getImportMpan()
+					Mpan targetMpan = read.getMpan().getLlfc().getIsImport() ? targetGeneration
+							.getImportMpan()
 							: targetGeneration.getExportMpan();
 					if (targetMpan == null) {
 						throw new UserException(
@@ -933,8 +935,8 @@ public class Supply extends PersistentEntity {
 		Document doc = MonadUtils.newSourceDocument();
 		Element source = doc.getDocumentElement();
 		Element supplyElement = (Element) toXml(doc, new XmlTree("generations",
-				new XmlTree("mpans", new XmlTree("core").put("top",
-						new XmlTree("llfc", new XmlTree("voltageLevel"))))));
+				new XmlTree("mpans", new XmlTree("core").put("llfc",
+						new XmlTree("voltageLevel")))));
 		source.appendChild(supplyElement);
 		addSourcesXML(source);
 		source.appendChild(MonadDate.getMonthsXml(doc));

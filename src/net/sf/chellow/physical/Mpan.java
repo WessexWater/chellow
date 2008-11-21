@@ -22,7 +22,6 @@
 
 package net.sf.chellow.physical;
 
-import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -31,7 +30,6 @@ import net.sf.chellow.billing.Account;
 import net.sf.chellow.billing.Dso;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
-import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Invocation;
 import net.sf.chellow.monad.NotFoundException;
 import net.sf.chellow.monad.Urlable;
@@ -41,7 +39,6 @@ import net.sf.chellow.monad.types.UriPathElement;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import org.w3c.dom.Node;
 
 public class Mpan extends PersistentEntity {
 	static public Mpan getMpan(Long id) throws HttpException {
@@ -69,7 +66,7 @@ public class Mpan extends PersistentEntity {
 						dso.getLlfc(raw.getLlfcCode())).setParameterList(
 						"supplyGenerations", supplyGenerations).list();
 	}
-	
+
 	static public String getCore(String mpan) throws HttpException {
 		return new MpanRaw(mpan).getMpanCore();
 	}
@@ -93,7 +90,15 @@ public class Mpan extends PersistentEntity {
 
 	private SupplyGeneration supplyGeneration;
 
-	private MpanTop top;
+	private Pc pc;
+
+	private Mtc mtc;
+
+	private Llfc llfc;
+
+	private Ssc ssc;
+
+	private GspGroup gspGroup;
 
 	private MpanCore core;
 
@@ -116,26 +121,16 @@ public class Mpan extends PersistentEntity {
 	Mpan() {
 	}
 
-	Mpan(SupplyGeneration supplyGeneration, String mpanStr, Ssc ssc, GspGroup gspGroup,
-			Account hhdcAccount, Account supplierAccount, boolean hasImportKwh,
-			boolean hasImportKvarh, boolean hasExportKwh,
+	Mpan(SupplyGeneration supplyGeneration, String mpanStr, Ssc ssc,
+			GspGroup gspGroup, Account hhdcAccount, Account supplierAccount,
+			boolean hasImportKwh, boolean hasImportKvarh, boolean hasExportKwh,
 			boolean hasExportKvarh, int agreedSupplyCapacity)
 			throws HttpException {
 		this.supplyGeneration = supplyGeneration;
-		update(mpanStr, ssc, gspGroup, hhdcAccount, supplierAccount, hasImportKwh,
-				hasImportKvarh, hasExportKwh, hasExportKvarh,
+		update(mpanStr, ssc, gspGroup, hhdcAccount, supplierAccount,
+				hasImportKwh, hasImportKvarh, hasExportKwh, hasExportKvarh,
 				agreedSupplyCapacity);
 	}
-
-	/*
-	 * Mpan(SupplyGeneration supplyGeneration, MpanRaw mpanRaw, Ssc ssc, Account
-	 * hhdcAccount, Account supplierAccount, boolean hasImportKwh, boolean
-	 * hasImportKvarh, boolean hasExportKwh, boolean hasExportKvarh, int
-	 * agreedSupplyCapacity) throws HttpException { this.supplyGeneration =
-	 * supplyGeneration; update(mpanRaw, ssc, hhdcAccount, supplierAccount,
-	 * hasImportKwh, hasImportKvarh, hasExportKwh, hasExportKvarh,
-	 * agreedSupplyCapacity); }
-	 */
 
 	public SupplyGeneration getSupplyGeneration() {
 		return supplyGeneration;
@@ -145,12 +140,28 @@ public class Mpan extends PersistentEntity {
 		this.supplyGeneration = supplyGeneration;
 	}
 
-	public MpanTop getTop() {
-		return top;
+	public Pc getPc() {
+		return pc;
 	}
 
-	void setTop(MpanTop top) {
-		this.top = top;
+	void setPc(Pc pc) {
+		this.pc = pc;
+	}
+
+	public Mtc getMtc() {
+		return mtc;
+	}
+
+	void setMtc(Mtc mtc) {
+		this.mtc = mtc;
+	}
+
+	public Llfc getLlfc() {
+		return llfc;
+	}
+
+	void setLlfc(Llfc llfc) {
+		this.llfc = llfc;
 	}
 
 	public MpanCore getCore() {
@@ -159,6 +170,22 @@ public class Mpan extends PersistentEntity {
 
 	void setCore(MpanCore core) {
 		this.core = core;
+	}
+
+	public Ssc getSsc() {
+		return ssc;
+	}
+
+	void setSsc(Ssc ssc) {
+		this.ssc = ssc;
+	}
+
+	public GspGroup getGspGroup() {
+		return gspGroup;
+	}
+
+	void setGspGroup(GspGroup gspGroup) {
+		this.gspGroup = gspGroup;
 	}
 
 	public Account getMopAccount() {
@@ -241,58 +268,51 @@ public class Mpan extends PersistentEntity {
 		}
 	}
 
-	private void update(MpanTop mpanTop, MpanCore mpanCore,
+	public void update(String mpan, Ssc ssc, GspGroup gspGroup,
 			Account hhdcAccount, Account supplierAccount, boolean hasImportKwh,
 			boolean hasImportKvarh, boolean hasExportKwh,
 			boolean hasExportKvarh, int agreedSupplyCapacity)
 			throws HttpException {
+		MpanRaw mpanRaw = new MpanRaw(mpan);
+		MpanCore mpanCore = MpanCore.findMpanCore(mpanRaw.getMpanCore());
+		if (mpanCore == null) {
+			mpanCore = supplyGeneration.getSupply().addMpanCore(
+					mpanRaw.getMpanCore());
+		}
+		Dso dso = mpanCore.getDso();
+		Pc pc = Pc.getPc(mpanRaw.getPcCode());
+		Llfc llfc = dso.getLlfc(mpanRaw.getLlfcCode());
+		Mtc mtc = Mtc.getMtc(dso, mpanRaw.getMtcCode());
 		if (!mpanCore.getSupply().equals(supplyGeneration.getSupply())) {
 			throw new UserException(
-					"This MPAN core is not attached to this supply.");
+					"This MPAN core is already attached to another supply.");
 		}
-		if (!mpanTop.getLlfc().getDso().equals(mpanCore.getDso())) {
+		if (!llfc.getDso().equals(mpanCore.getDso())) {
 			throw new UserException(
 					"The MPAN top line DSO doesn't match the MPAN core DSO.");
 		}
-		if (getTop() != null
-				&& getTop().getLlfc().getIsImport() != mpanTop.getLlfc()
-						.getIsImport()) {
+		if (getLlfc() != null && getLlfc().getIsImport() != llfc.getIsImport()) {
 			throw new UserException(
 					"You can't change an import mpan into an export one, and vice versa. The existing MPAN has LLFC "
-							+ getTop().getLlfc()
+							+ getLlfc()
 							+ " that has IsImport "
-							+ getTop().getLlfc().getIsImport()
+							+ getLlfc().getIsImport()
 							+ " whereas the new MPAN has LLFC "
-							+ mpanTop.getLlfc()
-							+ " which has IsImport "
-							+ mpanTop.getLlfc().getIsImport() + ".");
+							+ llfc
+							+ " which has IsImport " + llfc.getIsImport() + ".");
 		}
+		setPc(pc);
+		setMtc(mtc);
+		setLlfc(llfc);
+		setSsc(ssc);
+		setGspGroup(gspGroup);
+		setCore(mpanCore);
 		if (hhdcAccount == null
 				&& (hasImportKwh == true || hasImportKvarh == true
 						|| hasExportKwh == true || hasExportKvarh == true)) {
 			throw new UserException(
 					"If an MPAN doesn't have an HHDC account, then it can't collect data on any channels.");
 		}
-		/*
-		 * Ssc kwRegister = (Ssc) Hiber .session() .createQuery( "from Register
-		 * register where register.meterTimeswitch = :mtc and register.units =
-		 * :units") .setEntity("mtc", meterTimeswitch).setInteger("units",
-		 * Ssc.Units.KW.ordinal()).uniqueResult(); int pc =
-		 * Integer.parseInt(profileClass.getCode().getString()); if (pc > 4 &&
-		 * kwRegister == null) { throw UserException .newInvalidParameter("For a
-		 * profile class of 05 and above, the meter timeswitch must have a kW
-		 * register."); } if (pc < 5 && kwRegister != null) { throw
-		 * UserException .newInvalidParameter("For a profile class of 04 and
-		 * below, the meter timeswitch cannot have a kW register."); } if (pc ==
-		 * 0 & meterTimeswitch.getRegisters().size() > 0) { throw UserException
-		 * .newInvalidParameter("For a profile class of 00, the meter timeswitch
-		 * cannot have any registers."); }
-		 */
-		setTop(mpanTop);
-		if (mpanCore == null) {
-			throw new InternalException("The mpan core can't be null.");
-		}
-		setCore(mpanCore);
 		if (hhdcAccount != null
 				&& (!hasImportKwh && !hasImportKvarh && !hasExportKwh && !hasExportKvarh)) {
 			throw new UserException(
@@ -310,40 +330,13 @@ public class Mpan extends PersistentEntity {
 		setAgreedSupplyCapacity(agreedSupplyCapacity);
 	}
 
-	public void update(String mpan, Ssc ssc, GspGroup gspGroup, Account hhdcAccount,
-			Account supplierAccount, boolean hasImportKwh,
-			boolean hasImportKvarh, boolean hasExportKwh,
-			boolean hasExportKvarh, int agreedSupplyCapacity)
-			throws HttpException {
-		MpanRaw mpanRaw = new MpanRaw(mpan);
-		MpanCore mpanCore = MpanCore.findMpanCore(mpanRaw.getMpanCore());
-		if (mpanCore == null) {
-			mpanCore = supplyGeneration.getSupply().addMpanCore(
-					mpanRaw.getMpanCore());
-		}
-		if (!mpanCore.getSupply().equals(supplyGeneration.getSupply())) {
-			throw new UserException(
-					"This MPAN core is already attached to another supply.");
-		}
-		Dso dso = mpanCore.getDso();
-		Pc pc = Pc.getPc(mpanRaw.getPcCode());
-		Llfc llfc = dso.getLlfc(mpanRaw.getLlfcCode());
-		Mtc mtc = Mtc.getMtc(dso, mpanRaw.getMtcCode());
-		MpanTop mpanTop = MpanTop.getMpanTop(pc, mtc, llfc, ssc, gspGroup,
-				supplyGeneration.getFinishDate() == null ? new Date()
-						: supplyGeneration.getFinishDate().getDate());
-
-		update(mpanTop, mpanCore, hhdcAccount, supplierAccount, hasImportKwh,
-				hasImportKvarh, hasExportKwh, hasExportKvarh,
-				agreedSupplyCapacity);
-	}
-
 	public String toString() {
-		return getTop() + " " + getCore();
+		return pc.codeAsString() + " " + mtc.codeAsString() + " "
+				+ llfc.codeAsString() + " " + core;
 	}
 
-	public Node toXml(Document doc) throws HttpException {
-		Element element = (Element) super.toXml(doc, "mpan");
+	public Element toXml(Document doc) throws HttpException {
+		Element element = super.toXml(doc, "mpan");
 		element.setAttribute("has-import-kwh", Boolean.toString(hasImportKwh));
 		element.setAttribute("has-import-kvarh", Boolean
 				.toString(hasImportKvarh));
@@ -352,10 +345,9 @@ public class Mpan extends PersistentEntity {
 				.toString(hasExportKvarh));
 		element.setAttribute("agreed-supply-capacity", Integer
 				.toString(agreedSupplyCapacity));
-		element.setAttribute("mpan", top.getPc().toXml(doc).getTextContent()
-				+ " " + top.getMtc().toXml(doc).getTextContent() + " "
-				+ top.getLlfc().toXml(doc).getTextContent() + " "
-				+ core.toString());
+		element.setAttribute("mpan", pc.toXml(doc).getTextContent() + " "
+				+ mtc.toXml(doc).getTextContent() + " "
+				+ llfc.toXml(doc).getTextContent() + " " + core.toString());
 		return element;
 	}
 

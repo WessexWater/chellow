@@ -35,9 +35,15 @@ public class ClockInterval extends PersistentEntity {
 				new String[] { "Time Pattern Regime Id", "Day of the Week Id",
 						"Start Day", "Start Month", "End Day", "End Month",
 						"Start Time", "End Time" });
+		String tprCode = null;
+		Tpr tpr = null;
 		for (String[] values = mdd.getLine(); values != null; values = mdd
 				.getLine()) {
-			Tpr tpr = Tpr.getTpr(values[0]);
+			String newTprCode = values[0];
+			if (!newTprCode.equals(tprCode)) {
+				tpr = Tpr.getTpr(newTprCode);
+				tprCode = newTprCode;
+			}
 			tpr.insertClockInterval(Integer.parseInt(values[1]), Integer
 					.parseInt(values[2]), Integer.parseInt(values[3]), Integer
 					.parseInt(values[4]), Integer.parseInt(values[5]), Integer

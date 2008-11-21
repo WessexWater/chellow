@@ -79,6 +79,7 @@
 						</tr>
 					</xsl:if>
 				</table>
+				<!--
 				<xsl:if test="/source/provider/market-role/@code='R'">
 					<ul>
 						<li>
@@ -92,6 +93,7 @@
 						</li>
 					</ul>
 				</xsl:if>
+				-->
 			</body>
 		</html>
 	</xsl:template>

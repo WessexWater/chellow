@@ -35,7 +35,6 @@ import net.sf.chellow.physical.MarketRole;
 import net.sf.chellow.physical.MeasurementRequirement;
 import net.sf.chellow.physical.MeterPaymentType;
 import net.sf.chellow.physical.MeterType;
-import net.sf.chellow.physical.MpanTop;
 import net.sf.chellow.physical.Mtc;
 import net.sf.chellow.physical.Participant;
 import net.sf.chellow.physical.Pc;
@@ -183,7 +182,7 @@ public class ContextListener implements ServletContextListener {
 		ClockInterval.loadFromCsv(context);
 		Ssc.loadFromCsv(context);
 		MeasurementRequirement.loadFromCsv(context);
-		MpanTop.loadFromCsv(context);
+		//MpanTop.loadFromCsv(context);
 		Report.loadReports(context);
 		Hiber.flush();
 

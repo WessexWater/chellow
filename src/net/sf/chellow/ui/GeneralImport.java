@@ -159,8 +159,8 @@ public class GeneralImport extends Thread implements Urlable, XmlDescriber {
 				} else if (type.equals("hh-datum")) {
 					HhDatum.generalImport(action, values, csvElement);
 				} else {
-					throw new UserException(
-							"The type " + type + " isn't recognized.");
+					throw new UserException("The type " + type
+							+ " isn't recognized.");
 				}
 				Hiber.close();
 			}
@@ -196,7 +196,8 @@ public class GeneralImport extends Thread implements Urlable, XmlDescriber {
 	public static String addField(Element csvElement, String name,
 			String[] values, int index) throws HttpException {
 		if (index > values.length - 1) {
-			throw new UserException("Another field " + name + " is required.");
+			throw new UserException("Another field called " + name
+					+ " needs to be added on the end.");
 		}
 		String value = values[index];
 		Document doc = csvElement.getOwnerDocument();

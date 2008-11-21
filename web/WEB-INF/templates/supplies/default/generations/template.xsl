@@ -100,11 +100,11 @@
 										</td>
 										<td>
 											<xsl:value-of
-												select="mpan[mpan-top/llfc/@is-import='true']/mpan-core/@core" />
+												select="mpan[llfc/@is-import='true']/mpan-core/@core" />
 										</td>
 										<td>
 											<xsl:value-of
-												select="mpan[mpan-top/llfc/@is-import='false']/mpan-core/@core" />
+												select="mpan[llfc/@is-import='false']/mpan-core/@core" />
 										</td>
 									</tr>
 								</xsl:for-each>

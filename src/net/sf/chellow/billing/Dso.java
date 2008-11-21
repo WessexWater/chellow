@@ -1,7 +1,6 @@
 package net.sf.chellow.billing;
 
 import java.util.Date;
-import java.util.List;
 
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
@@ -12,7 +11,6 @@ import net.sf.chellow.monad.Urlable;
 import net.sf.chellow.monad.UserException;
 import net.sf.chellow.monad.XmlTree;
 import net.sf.chellow.monad.types.UriPathElement;
-import net.sf.chellow.physical.GspGroup;
 import net.sf.chellow.physical.HhEndDate;
 import net.sf.chellow.physical.Llfc;
 import net.sf.chellow.physical.Llfcs;
@@ -151,16 +149,7 @@ public class Dso extends Party {
 	public void httpGet(Invocation inv) throws HttpException {
 		Document doc = MonadUtils.newSourceDocument();
 		Element source = doc.getDocumentElement();
-		Element dsoElement = (Element) toXml(doc, new XmlTree("participant")
-				.put("role"));
-		source.appendChild(dsoElement);
-		for (GspGroup group : (List<GspGroup>) Hiber
-				.session()
-				.createQuery(
-						"select distinct top.gspGroup from MpanTop top where top.llfc.dso = :dso order by top.gspGroup.code")
-				.setEntity("dso", this).list()) {
-			dsoElement.appendChild(group.toXml(doc));
-		}
+		source.appendChild(toXml(doc, new XmlTree("participant").put("role")));
 		inv.sendOk(doc);
 	}
 

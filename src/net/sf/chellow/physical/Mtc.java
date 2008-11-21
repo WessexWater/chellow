@@ -144,6 +144,7 @@ public class Mtc extends PersistentEntity {
 				Hiber.close();
 			}
 		}
+		Debug.print("Finishing common MTC and starting to add MTCs in PES Area.");
 		mdd = new Mdd(sc, "MtcInPesArea", new String[] {
 				"Meter Timeswitch Class Id",
 				"Effective From Settlement Date {MTC}",
@@ -153,12 +154,18 @@ public class Mtc extends PersistentEntity {
 				"Meter Timeswitch Class Description", "MTC Meter Type Id",
 				"MTC Payment Type Id", "MTC Communication Indicator",
 				"MTC Type Indicator", "MTC TPR Count" });
+		Dso dso = null;
+		String oldParticipantCode = null;
 		for (String[] values = mdd.getLine(); values != null; values = mdd
 				.getLine()) {
 			String codeStr = values[0];
 			int code = Integer.parseInt(values[0]);
 			if (Mtc.hasDso(code)) {
-				Dso dso = Dso.getDso(Participant.getParticipant(values[2]));
+				String participantCode = values[2];
+				if (!participantCode.equals(oldParticipantCode)) {
+					dso = Dso.getDso(Participant.getParticipant(participantCode));
+					oldParticipantCode = participantCode;
+				}
 				String description = values[5];
 				Boolean hasComms = null;
 				if (values[8].equals("Y")) {
@@ -186,7 +193,7 @@ public class Mtc extends PersistentEntity {
 				Hiber.close();
 			}
 		}
-		Debug.print("Starting to add MTCs.");
+		Debug.print("Finished adding MTCs.");
 	}
 
 	private Dso dso;

@@ -119,7 +119,7 @@ public class SupplyGeneration extends PersistentEntity {
 						throw new UserException(
 								"There isn't an existing import MPAN.");
 					} else {
-						importSsc = existingImportMpan.getTop().getSsc();
+						importSsc = existingImportMpan.getSsc();
 					}
 				} else {
 					importSsc = importSscCode.length() == 0 ? null : Ssc
@@ -130,8 +130,7 @@ public class SupplyGeneration extends PersistentEntity {
 						throw new UserException(
 								"There isn't an existing import MPAN.");
 					} else {
-						importGspGroup = existingImportMpan.getTop()
-								.getGspGroup();
+						importGspGroup = existingImportMpan.getGspGroup();
 					}
 				} else {
 					importGspGroup = GspGroup.getGspGroup(importSscCode);
@@ -296,7 +295,7 @@ public class SupplyGeneration extends PersistentEntity {
 						throw new UserException(
 								"There isn't an existing export MPAN.");
 					} else {
-						exportSsc = existingExportMpan.getTop().getSsc();
+						exportSsc = existingExportMpan.getSsc();
 					}
 				} else {
 					exportSsc = exportSscCode.length() == 0 ? null : Ssc
@@ -307,8 +306,7 @@ public class SupplyGeneration extends PersistentEntity {
 						throw new UserException(
 								"There isn't an existing export MPAN.");
 					} else {
-						exportGspGroup = existingExportMpan.getTop()
-								.getGspGroup();
+						exportGspGroup = existingExportMpan.getGspGroup();
 					}
 				} else {
 					exportGspGroup = GspGroup.getGspGroup(exportGspGroupCode);
@@ -543,18 +541,19 @@ public class SupplyGeneration extends PersistentEntity {
 						"Export SSC", values, 16);
 				String exportGspGroupCode = GeneralImport.addField(csvElement,
 						"Export GSP Group", values, 17);
-				String exportAgreedSupplyCapacityStr = GeneralImport.addField(
-						csvElement, "Export Agreed Supply Capacity", values, 18);
-				String exportHasImportKwhStr = GeneralImport.addField(csvElement,
-						"Export is import kWh", values, 19);
-				String exportHasImportKvarhStr = GeneralImport.addField(csvElement,
-						"Export is import kVArh", values, 20);
-				String exportHasExportKwhStr = GeneralImport.addField(csvElement,
-						"Export is export kWh", values, 21);
-				String exportHasExportKvarhStr = GeneralImport.addField(csvElement,
-						"Export is export kVArh", values, 22);
-				String exportHhdcContractName = GeneralImport.addField(csvElement,
-						"Export HHDC Contract Name", values, 23);
+				String exportAgreedSupplyCapacityStr = GeneralImport
+						.addField(csvElement, "Export Agreed Supply Capacity",
+								values, 18);
+				String exportHasImportKwhStr = GeneralImport.addField(
+						csvElement, "Export is import kWh", values, 19);
+				String exportHasImportKvarhStr = GeneralImport.addField(
+						csvElement, "Export is import kVArh", values, 20);
+				String exportHasExportKwhStr = GeneralImport.addField(
+						csvElement, "Export is export kWh", values, 21);
+				String exportHasExportKvarhStr = GeneralImport.addField(
+						csvElement, "Export is export kVArh", values, 22);
+				String exportHhdcContractName = GeneralImport.addField(
+						csvElement, "Export HHDC Contract Name", values, 23);
 				String exportHhdcAccountReference = GeneralImport.addField(
 						csvElement, "Export HHDC account", values, 24);
 				String exportContractSupplierName = GeneralImport.addField(
@@ -762,84 +761,6 @@ public class SupplyGeneration extends PersistentEntity {
 		Hiber.flush();
 	}
 
-	/*
-	 * public void addOrUpdateMpans(MpanTop importMpanTop, MpanCore
-	 * importMpanCore, Account importHhdcAccount, Account importSupplierAccount,
-	 * boolean importHasImportKwh, boolean importHasImportKvarh, boolean
-	 * importHasExportKwh, boolean importHasExportKvarh, Integer
-	 * importAgreedSupplyCapacity, MpanTop exportMpanTop, MpanCore
-	 * exportMpanCore, Account exportHhdcAccount, Account exportSupplierAccount,
-	 * boolean exportHasImportKwh, boolean exportHasImportKvarh, boolean
-	 * exportHasExportKwh, boolean exportHasExportKvarh, Integer
-	 * exportAgreedSupplyCapacity) throws HttpException { if (importMpanCore ==
-	 * null && exportMpanCore == null) { throw new UserException(document(), "A
-	 * supply generation must have at least one MPAN."); } if (importMpanCore ==
-	 * null) { mpans.remove(importMpan); setImportMpan(null); } else { if
-	 * (!importMpanCore.getSupply().equals(getSupply())) { throw new
-	 * UserException( "This import MPAN core is not attached to this supply."); }
-	 * if (!importMpanTop.getLlfc().getIsImport()) { throw new
-	 * UserException(document(), "The import line loss factor '" +
-	 * importMpanTop.getLlfc() + "' says that the MPAN is actually export."); }
-	 * if (importMpan == null) { setImportMpan(new Mpan(this, importMpanTop,
-	 * importMpanCore, importHhdcAccount, importSupplierAccount,
-	 * importHasImportKwh, importHasImportKvarh, importHasExportKwh,
-	 * importHasExportKvarh, importAgreedSupplyCapacity));
-	 * mpans.add(importMpan); } else { importMpan.update(importMpanTop,
-	 * importMpanCore, importHhdcAccount, importSupplierAccount,
-	 * importHasImportKwh, importHasImportKvarh, importHasExportKwh,
-	 * importHasExportKvarh, importAgreedSupplyCapacity); } } if (exportMpanCore ==
-	 * null) { mpans.remove(exportMpan); setExportMpan(null); } else { if
-	 * (!exportMpanCore.getSupply().equals(getSupply())) { throw new
-	 * UserException( "This export MPAN core is not attached to this supply."); }
-	 * if (exportMpanTop.getLlfc().getIsImport()) { throw new UserException(
-	 * "Problem with the export MPAN with core '" + exportMpanCore + "'. The
-	 * Line Loss Factor '" + exportMpanTop.getLlfc() + "' says that the MPAN is
-	 * actually import."); } if (exportMpan == null) { setExportMpan(new
-	 * Mpan(this, exportMpanTop, exportMpanCore, exportHhdcAccount,
-	 * exportSupplierAccount, exportHasImportKwh, exportHasImportKvarh,
-	 * exportHasExportKwh, exportHasExportKvarh, exportAgreedSupplyCapacity));
-	 * mpans.add(exportMpan); } else { exportMpan.update(exportMpanTop,
-	 * exportMpanCore, exportHhdcAccount, exportSupplierAccount,
-	 * exportHasImportKwh, exportHasImportKvarh, exportHasExportKwh,
-	 * exportHasExportKvarh, exportAgreedSupplyCapacity); } } if
-	 * (importHhdcAccount != null && exportHhdcAccount != null &&
-	 * importHhdcAccount.getContract().getId() != exportHhdcAccount
-	 * .getContract().getId()) { throw new UserException( "The HHDC for the
-	 * import and export MPANs must be the same."); } synchronizeChannel(true,
-	 * true, importHasImportKwh, exportHasImportKwh); synchronizeChannel(true,
-	 * false, importHasImportKvarh, exportHasImportKvarh);
-	 * synchronizeChannel(false, true, importHasExportKwh, exportHasExportKwh);
-	 * synchronizeChannel(false, false, importHasExportKvarh,
-	 * exportHasExportKvarh); Hiber.flush(); // Check that if settlement MPANs
-	 * then they're the same DSO. if (importMpanCore != null && exportMpanCore !=
-	 * null) { if (importMpanCore.getDso().getCode().isSettlement() &&
-	 * exportMpanCore.getDso().getCode().isSettlement() &&
-	 * !importMpanCore.getDso().equals(exportMpanCore.getDso())) { throw new
-	 * UserException( "Two settlement MPAN generations on the same supply must
-	 * have the same DSO."); } if
-	 * (!importMpanTop.getLlfc().getVoltageLevel().equals(
-	 * exportMpanTop.getLlfc().getVoltageLevel())) { throw new UserException(
-	 * "The voltage level indicated by the Line Loss Factor must be the same for
-	 * both the MPANs."); } } Dso dso = getDso(); if (dso != null &&
-	 * dso.getCode().equals(new DsoCode("22"))) { /* if (importMpan != null) {
-	 * LineLossFactorCode code = importLineLossFactor.getCode(); if
-	 * ((code.equals(new LineLossFactorCode("520")) || code.equals(new
-	 * LineLossFactorCode("550")) || code .equals(new
-	 * LineLossFactorCode("580"))) && getExportMpan() == null) { throw
-	 * UserException .newOk("The Line Loss Factor of the import MPAN says that
-	 * there should be an export MPAN, but there isn't one."); } }
-	 */
-	/*
-	 * if (getExportMpan() != null && getImportMpan() != null) { LlfcCode code =
-	 * getImportMpan().getMpanTop().getLlfc() .getCode(); if (!code.equals(new
-	 * LlfcCode(520)) && !code.equals(new LlfcCode(550)) && !code.equals(new
-	 * LlfcCode(580))) { throw new UserException( "The DSO is 22, there's an
-	 * export MPAN and the Line Loss Factor of the import MPAN " +
-	 * getImportMpan() + " can only be 520, 550 or 580."); } } } Hiber.flush(); //
-	 * more optimization possible here, doesn't necessarily need to check //
-	 * data. getSupply().checkAfterUpdate(getStartDate(), getFinishDate()); }
-	 */
-
 	public void addOrUpdateMpans(String importMpanStr, Ssc importSsc,
 			GspGroup importGspGroup, Account importHhdcAccount,
 			Account importSupplierAccount, Boolean importHasImportKwh,
@@ -897,20 +818,19 @@ public class SupplyGeneration extends PersistentEntity {
 					"A supply generation must have at least one MPAN.");
 		}
 		if (importMpan != null) {
-			if (!importMpan.getTop().getLlfc().getIsImport()) {
+			if (!importMpan.getLlfc().getIsImport()) {
 				throw new UserException(document(),
-						"The import line loss factor '"
-								+ importMpan.getTop().getLlfc()
+						"The import line loss factor '" + importMpan.getLlfc()
 								+ "' says that the MPAN is actually export.");
 			}
 		}
 		if (exportMpan != null) {
-			if (exportMpan.getTop().getLlfc().getIsImport()) {
+			if (exportMpan.getLlfc().getIsImport()) {
 				throw new UserException(
 						"Problem with the export MPAN with core '"
 								+ exportMpan.getCore()
 								+ "'. The Line Loss Factor '"
-								+ exportMpan.getTop().getLlfc()
+								+ exportMpan.getLlfc()
 								+ "' says that the MPAN is actually import.");
 			}
 		}
@@ -925,10 +845,10 @@ public class SupplyGeneration extends PersistentEntity {
 			if (!importMpan.getCore().getDso().equals(
 					exportMpan.getCore().getDso())) {
 				throw new UserException(
-						"Two MPAN generations on the same supply must have the same DSO.");
+						"Two MPANs on the same supply generation must have the same DSO.");
 			}
-			if (!importMpan.getTop().getLlfc().getVoltageLevel().equals(
-					exportMpan.getTop().getLlfc().getVoltageLevel())) {
+			if (!importMpan.getLlfc().getVoltageLevel().equals(
+					exportMpan.getLlfc().getVoltageLevel())) {
 				throw new UserException(
 						"The voltage level indicated by the Line Loss Factor must be the same for both the MPANs.");
 			}
@@ -946,7 +866,7 @@ public class SupplyGeneration extends PersistentEntity {
 			 */
 
 			if (getExportMpan() != null && getImportMpan() != null) {
-				int code = getImportMpan().getTop().getLlfc().getCode();
+				int code = getImportMpan().getLlfc().getCode();
 				if (code != 520 && code != 550 && code != 580) {
 					throw new UserException(
 							"The DSO is 22, there's an export MPAN and the Line Loss Factor of the import MPAN "
@@ -1199,10 +1119,8 @@ public class SupplyGeneration extends PersistentEntity {
 		source.appendChild(generationElement);
 		for (Mpan mpan : mpans) {
 			Element mpanElement = (Element) mpan.toXml(doc, new XmlTree("core")
-					.put(
-							"top",
-							new XmlTree("mtc").put("llfc").put("ssc").put(
-									"gspGroup")).put("hhdcAccount",
+					.put("mtc").put("llfc").put("ssc").put("gspGroup").put(
+							"hhdcAccount",
 							new XmlTree("contract", new XmlTree("party"))).put(
 							"supplierAccount",
 							new XmlTree("contract", new XmlTree("party"))));

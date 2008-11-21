@@ -32,7 +32,7 @@
 			</generator>
 		</id>
 		<property type="string" name="name" column="name"
-			not-null="true" />
+			not-null="true" unique="true"/>
 		<property type="string" name="script" column="script"
 			not-null="true" />
 		<property type="string" name="template" column="template" />

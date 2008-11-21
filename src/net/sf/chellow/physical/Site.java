@@ -233,13 +233,14 @@ public class Site extends PersistentEntity {
 		Map<Site, Boolean> siteMap = new HashMap<Site, Boolean>();
 		siteMap.put(this, true);
 		SupplyGeneration supplyGeneration = supply.insertGeneration(siteMap,
-				null, meterSerialNumber, importMpanStr, importSsc, importGspGroup,
-				importHhdcAccount, importAccountSupplier, importHasImportKwh,
-				importHasImportKvarh, importHasExportKwh, importHasExportKvarh,
-				importAgreedSupplyCapacity, exportMpanStr, exportSsc,
-				exportGspGroup, exportHhdcAccount, exportAccountSupplier,
-				exportHasImportKwh, exportHasImportKvarh, exportHasExportKwh,
-				exportHasExportKvarh, exportAgreedSupplyCapacity);
+				null, meterSerialNumber, importMpanStr, importSsc,
+				importGspGroup, importHhdcAccount, importAccountSupplier,
+				importHasImportKwh, importHasImportKvarh, importHasExportKwh,
+				importHasExportKvarh, importAgreedSupplyCapacity,
+				exportMpanStr, exportSsc, exportGspGroup, exportHhdcAccount,
+				exportAccountSupplier, exportHasImportKwh,
+				exportHasImportKvarh, exportHasExportKwh, exportHasExportKvarh,
+				exportAgreedSupplyCapacity);
 		supplyGeneration.update(startDate, supplyGeneration.getFinishDate(),
 				supplyGeneration.getMeter());
 		Hiber.flush();
@@ -495,8 +496,8 @@ public class Site extends PersistentEntity {
 						"select supplyGeneration from SupplyGeneration supplyGeneration join supplyGeneration.siteSupplyGenerations siteSupplyGeneration where siteSupplyGeneration.site = :site order by supplyGeneration.finishDate.date")
 				.setEntity("site", this).list()) {
 			siteElement.appendChild(generation.toXml(doc, new XmlTree("mpans",
-					new XmlTree("core").put("top", new XmlTree("llfc"))).put(
-					"supply", new XmlTree("source"))));
+					new XmlTree("core").put("llfc")).put("supply", new XmlTree(
+					"source"))));
 		}
 		for (Source source : (List<Source>) Hiber.session().createQuery(
 				"from Source source order by source.code").list()) {

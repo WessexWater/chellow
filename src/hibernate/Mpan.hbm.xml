@@ -34,8 +34,16 @@
 		<many-to-one name="supplyGeneration" class="SupplyGeneration"
 			column="supply_generation_id" not-null="true"
 			foreign-key="fkey_mpan_supply_generation" />
-		<many-to-one name="top" class="MpanTop" column="top_id"
-			not-null="true" foreign-key="fkey_mpan__top" />
+		<many-to-one name="pc" class="Pc" column="pc_id" not-null="true"
+			foreign-key="fkey_mpan__pc" />
+		<many-to-one name="mtc" class="Mtc" column="mtc_id"
+			not-null="true" foreign-key="fkey_mpan_mtc" />
+		<many-to-one name="llfc" class="Llfc" column="llfc_id"
+			not-null="true" foreign-key="fkey_mpan_llfc" />
+		<many-to-one name="ssc" class="Ssc" column="ssc_id"
+			foreign-key="fkey_mpan_ssc" />
+		<many-to-one name="gspGroup" class="GspGroup" column="gsp_group_id"
+			foreign-key="fkey_mpan_gsp_group" />
 		<many-to-one name="core" class="MpanCore" column="core_id"
 			not-null="true" foreign-key="fkey_mpan__core" />
 		<many-to-one name="mopAccount"
@@ -57,12 +65,5 @@
 			column="has_export_kvarh" not-null="true" />
 		<property name="agreedSupplyCapacity"
 			column="agreed_supply_capacity" not-null="true" />
-		<!-- 
-			<set name="invoiceMpans" inverse="true"
-			cascade="all,delete-orphan" order-by="invoice_id">
-			<key column="mpan_id" />
-			<one-to-many class="InvoiceMpan" />
-			</set>
-		-->
 	</class>
 </hibernate-mapping>

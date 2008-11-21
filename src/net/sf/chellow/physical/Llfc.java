@@ -46,7 +46,6 @@ import net.sf.chellow.monad.types.UriPathElement;
 import org.hibernate.HibernateException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import org.w3c.dom.Node;
 
 public class Llfc extends PersistentEntity {
 	static public Llfc getLlfc(Long id) throws HttpException {
@@ -91,6 +90,7 @@ public class Llfc extends PersistentEntity {
 	}
 
 	static public void loadFromCsv(ServletContext sc) throws HttpException {
+		long startTime = System.currentTimeMillis();
 		Debug.print("Starting to add LLFCs.");
 		try {
 			Mdd mdd = new Mdd(sc, "LineLossFactorClass", new String[] {
@@ -100,9 +100,16 @@ public class Llfc extends PersistentEntity {
 					"Line Loss Factor Class Description",
 					"MS Specific LLF Class Indicator",
 					"Effective To Settlement Date {LLFC}" });
+			String oldParticipantCode = null;
+			Dso dso = null;
 			for (String[] values = mdd.getLine(); values != null; values = mdd
 					.getLine()) {
 				String participantCode = values[0];
+				if (!participantCode.equals(oldParticipantCode)) {
+					dso = Dso.getDso(Participant
+							.getParticipant(participantCode));
+					oldParticipantCode = participantCode;
+				}
 				String description = values[5];
 				VoltageLevel vLevel = null;
 				if (description.contains(VoltageLevel.EHV)) {
@@ -121,16 +128,16 @@ public class Llfc extends PersistentEntity {
 				Date validFrom = mdd.toDate(values[4]);
 				Date validTo = mdd.toDate(values[7]);
 				Hiber.session().save(
-						new Llfc(Dso.getDso(Participant
-								.getParticipant(participantCode)), Integer
-								.parseInt(values[3]), description, vLevel,
-								isSubstation, isImport, validFrom, validTo));
+						new Llfc(dso, Integer.parseInt(values[3]), description,
+								vLevel, isSubstation, isImport, validFrom,
+								validTo));
 				Hiber.close();
 			}
 		} catch (NumberFormatException e) {
 			throw new InternalException(e);
 		}
-		Debug.print("Finished adding LLFCs.");
+		Debug.print("Finished adding LLFCs. "
+				+ (System.currentTimeMillis() - startTime));
 	}
 
 	private Dso dso;
@@ -227,13 +234,13 @@ public class Llfc extends PersistentEntity {
 	void setValidTo(Date to) {
 		this.validTo = to;
 	}
-	
+
 	public String codeAsString() {
 		DecimalFormat llfcFormat = new DecimalFormat("000");
 		return llfcFormat.format(code);
 	}
 
-	public Node toXml(Document doc) throws HttpException {
+	public Element toXml(Document doc) throws HttpException {
 		Element element = super.toXml(doc, "llfc");
 		element.setAttribute("code", codeAsString());
 		element.setAttribute("description", description);
@@ -272,33 +279,7 @@ public class Llfc extends PersistentEntity {
 
 	}
 
-	public void httpDelete(Invocation inv) throws HttpException {
-		// TODO Auto-generated method stub
-
-	}
-
-	/*
-	 * public void attachProfileClass(ProfileClass profileClass) throws
-	 * UserException, ProgrammerException { if
-	 * (profileClasses.contains(profileClass)) { throw UserException
-	 * .newInvalidParameter("This profile class is already attached to this line
-	 * loss factor."); } profileClasses.add(profileClass); }
-	 * 
-	 * public void addMeterTimeswitches(String codes) throws
-	 * ProgrammerException, UserException { for (String code : codes.split(",")) {
-	 * addMeterTimeswitch(code); } }
-	 */
-
-	public MpanTop insertMpanTop(Pc pc, Mtc mtc, Ssc ssc, GspGroup gspGroup, Date from, Date to)
-			throws HttpException {
-		MpanTop top = new MpanTop(pc, mtc, this, ssc, gspGroup, from, to);
-		Hiber.session().save(top);
-		Hiber.flush();
-		return top;
-	}
-	
 	public String toString() {
-		return code + " - " + description + " (DSO "
-		+ (dso.getCode()) + ")";
+		return code + " - " + description + " (DSO " + (dso.getCode()) + ")";
 	}
 }
