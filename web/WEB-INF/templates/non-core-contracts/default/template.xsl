@@ -11,9 +11,9 @@
 				<link rel="stylesheet" type="text/css"
 					href="{/source/request/@context-path}/style/" />
 				<title>
-					Chellow &gt; Non-core Services &gt;
+					Chellow &gt; Non-core Contracts &gt;
 					<xsl:value-of
-						select="/source/non-core-service/@name" />
+						select="/source/non-core-contract/@name" />
 				</title>
 			</head>
 			<body>
@@ -25,12 +25,12 @@
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/non-core-services/">
-						<xsl:value-of select="'Non-core Services'" />
+						href="{/source/request/@context-path}/non-core-contracts/">
+						<xsl:value-of select="'Non-core Contracts'" />
 					</a>
 					&gt;
 					<xsl:value-of
-						select="/source/non-core-service/@name" />
+						select="/source/non-core-contract/@name" />
 				</p>
 				<xsl:if test="//message">
 					<ul>
@@ -49,7 +49,7 @@
 							<fieldset>
 								<legend>
 									Are you sure you want to delete this
-									service?
+									contract?
 								</legend>
 								<input type="submit" name="delete"
 									value="Delete" />
@@ -62,7 +62,7 @@
 					<xsl:otherwise>
 						<form action="." method="post">
 							<fieldset>
-								<legend>Update service</legend>
+								<legend>Update Contract</legend>
 								<br />
 								<label>
 									<xsl:value-of select="'Name '" />
@@ -76,7 +76,7 @@
 												</xsl:when>
 												<xsl:otherwise>
 													<xsl:value-of
-														select="/source/non-core-service/@name" />
+														select="/source/non-core-contract/@name" />
 												</xsl:otherwise>
 											</xsl:choose>
 										</xsl:attribute>
@@ -96,7 +96,7 @@
 										</xsl:when>
 										<xsl:otherwise>
 											<xsl:value-of
-												select="/source/non-core-service/@charge-script" />
+												select="/source/non-core-contract/@charge-script" />
 										</xsl:otherwise>
 									</xsl:choose>
 								</textarea>
@@ -120,7 +120,7 @@
 												</xsl:when>
 												<xsl:otherwise>
 													<xsl:value-of
-														select="/source/non-core-service/@bill-id" />
+														select="/source/non-core-contract/@bill-id" />
 												</xsl:otherwise>
 											</xsl:choose>
 										</input>
@@ -134,7 +134,7 @@
 						<br />
 						<form action=".">
 							<fieldset>
-								<legend>Delete this service</legend>
+								<legend>Delete this contract</legend>
 								<input type="hidden" name="view"
 									value="confirm-delete" />
 								<input type="submit" value="Delete" />

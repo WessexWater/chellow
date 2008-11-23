@@ -10,12 +10,14 @@ import net.sf.chellow.monad.NotFoundException;
 import net.sf.chellow.monad.Urlable;
 import net.sf.chellow.monad.UserException;
 import net.sf.chellow.monad.XmlTree;
+import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
 import net.sf.chellow.physical.HhEndDate;
 import net.sf.chellow.physical.Llfc;
 import net.sf.chellow.physical.Llfcs;
 import net.sf.chellow.physical.MarketRole;
 import net.sf.chellow.physical.Participant;
+import net.sf.chellow.ui.Chellow;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -121,18 +123,18 @@ public class Dso extends Party {
 	}
 
 	public DsoContract insertContract(String name, HhEndDate startDate,
-			HhEndDate finishDate, String chargeScript) throws HttpException {
-		DsoContract service = findContract(name);
-		if (service == null) {
-			service = new DsoContract(this, name, startDate, finishDate,
-					chargeScript);
+			HhEndDate finishDate, String chargeScript, String rateScript) throws HttpException {
+		DsoContract contract = findContract(name);
+		if (contract == null) {
+			contract = new DsoContract(this, name, startDate, finishDate,
+					chargeScript, rateScript);
 		} else {
 			throw new UserException(
 					"There is already a DSO service with this name.");
 		}
-		Hiber.session().save(service);
+		Hiber.session().save(contract);
 		Hiber.flush();
-		return service;
+		return contract;
 	}
 
 	public DsoContract findContract(String name) throws HttpException {
@@ -162,5 +164,10 @@ public class Dso extends Party {
 		} else {
 			throw new NotFoundException();
 		}
+	}
+
+	@Override
+	public MonadUri getUri() throws HttpException {
+		return Chellow.DSOS_INSTANCE.getUri().resolve(getUriId()).append("/");
 	}
 }

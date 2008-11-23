@@ -43,6 +43,7 @@ import net.sf.chellow.monad.types.EmailAddress;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
 import net.sf.chellow.ui.Chellow;
+import net.sf.chellow.ui.GeneralImport;
 
 import org.hibernate.exception.ConstraintViolationException;
 import org.w3c.dom.Document;
@@ -52,22 +53,39 @@ import com.Ostermiller.util.Base64;
 
 public class User extends PersistentEntity {
 	public static final UriPathElement USERS_URI_ID;
-	public static final int EDITOR = 0;
-	public static final int VIEWER = 1;
-	public static final int PARTY_VIEWER = 2;
 
-	/*
-	 * public static final EmailAddress BASIC_USER_EMAIL_ADDRESS;
-	 * 
-	 * static { try { BASIC_USER_EMAIL_ADDRESS = new
-	 * EmailAddress("basic-user@localhost"); } catch (HttpException e) { throw
-	 * new RuntimeException(e); } }
-	 */
 	static {
 		try {
 			USERS_URI_ID = new UriPathElement("users");
 		} catch (HttpException e) {
 			throw new RuntimeException(e);
+		}
+	}
+
+	public static void generalImport(String action, String[] values,
+			Element csvElement) throws HttpException {
+		if (action.equals("insert")) {
+			String emailAddressStr = GeneralImport.addField(csvElement,
+					"Email Address", values, 0);
+			EmailAddress emailAddress = new EmailAddress(emailAddressStr);
+			String password = GeneralImport.addField(csvElement, "Password",
+					values, 1);
+			String passwordDigest = GeneralImport.addField(csvElement,
+					"Password Digest", values, 2);
+			String userRoleCode = GeneralImport.addField(csvElement,
+					"User Role Code", values, 3);
+			UserRole userRole = UserRole.getUserRole(userRoleCode);
+			String participantCode = GeneralImport.addField(csvElement,
+					"Participant Code", values, 4);
+			Party party = null;
+			if (participantCode.trim().length() != 0) {
+				String marketRoleCode = GeneralImport.addField(csvElement,
+						"Market Role Code", values, 5);
+				party = Party.getParty(participantCode, marketRoleCode);
+			}
+			User.insertUser(emailAddress, password, passwordDigest, userRole,
+					party);
+		} else if (action.equals("update")) {
 		}
 	}
 
@@ -86,10 +104,12 @@ public class User extends PersistentEntity {
 	}
 
 	static public User insertUser(EmailAddress emailAddress, String password,
-			int role, Party party) throws HttpException {
+			String passwordDigest, UserRole userRole, Party party)
+			throws HttpException {
 		User user = null;
 		try {
-			user = new User(emailAddress, password, role, party);
+			user = new User(emailAddress, password, passwordDigest, userRole,
+					party);
 			Hiber.session().save(user);
 			Hiber.flush();
 		} catch (ConstraintViolationException e) {
@@ -131,7 +151,7 @@ public class User extends PersistentEntity {
 
 	private String passwordDigest;
 
-	private int role;
+	private UserRole role;
 
 	private Party party;
 
@@ -140,21 +160,40 @@ public class User extends PersistentEntity {
 	public User() {
 	}
 
-	public User(EmailAddress emailAddress, String password, int role,
-			Party party) throws HttpException {
-		update(emailAddress, password, role, party);
+	public User(EmailAddress emailAddress, String password,
+			String passwordDigest, UserRole role, Party party)
+			throws HttpException {
+		update(emailAddress, password, passwordDigest, role, party);
 	}
 
-	public void update(EmailAddress emailAddress, String password, int role,
-			Party party) throws HttpException {
+	public void update(EmailAddress emailAddress, String password,
+			String passwordDigest, UserRole role, Party party)
+			throws HttpException {
 		setEmailAddress(emailAddress);
-		if (password.length() < 6) {
-			throw new UserException(
-					"The password must be at least 6 characters long.");
+		if (password == null) {
+			if (passwordDigest == null) {
+				throw new UserException(
+						"There must be either a password or a password digest.");
+			}
+		} else {
+			if (passwordDigest == null) {
+				passwordDigest = digest(password);
+			} else {
+				throw new UserException(
+						"There can't be both a password and password digest.");
+			}
 		}
-		setPasswordDigest(digest(password));
+		setPasswordDigest(passwordDigest);
 		setRole(role);
-		setParty(party);
+		if (role.getCode().equals(UserRole.PARTY_VIEWER)) {
+			if (party == null) {
+				throw new UserException(
+						"There must be a party if the role is party-viewer.");
+			}
+			setParty(party);
+		} else {
+			setParty(null);
+		}
 	}
 
 	public String getPasswordDigest() {
@@ -173,11 +212,11 @@ public class User extends PersistentEntity {
 		this.emailAddress = emailAddress;
 	}
 
-	public int getRole() {
+	public UserRole getRole() {
 		return role;
 	}
 
-	protected void setRole(int role) {
+	protected void setRole(UserRole role) {
 		this.role = role;
 	}
 
@@ -237,6 +276,10 @@ public class User extends PersistentEntity {
 				"from MarketRole role order by role.code").list()) {
 			source.appendChild(role.toXml(doc));
 		}
+		for (UserRole role : (List<UserRole>) Hiber.session().createQuery(
+				"from UserRole role order by role.code").list()) {
+			source.appendChild(role.toXml(doc));
+		}
 		if (message != null) {
 			source.appendChild(new MonadMessage(message).toXml(doc));
 		}
@@ -261,6 +304,10 @@ public class User extends PersistentEntity {
 			}
 			if (!newPassword.equals(confirmNewPassword)) {
 				throw new UserException("The new passwords aren't the same.");
+			}
+			if (newPassword.length() < 6) {
+				throw new UserException(
+						"The password must be at least 6 characters long.");
 			}
 			setPasswordDigest(digest(newPassword));
 			Hiber.commit();

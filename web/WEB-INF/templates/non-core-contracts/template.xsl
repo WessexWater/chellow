@@ -4,14 +4,13 @@
 	<xsl:output method="html" encoding="US-ASCII"
 		doctype-public="-//W3C//DTD HTML 4.01//EN"
 		doctype-system="http://www.w3.org/TR/html4/strict.dtd" indent="yes" />
-
 	<xsl:template match="/">
 		<html>
 			<head>
 				<link rel="stylesheet" type="text/css"
 					href="{/source/request/@context-path}/style/" />
 
-				<title>Chellow &gt; Non-core Services</title>
+				<title>Chellow &gt; Non-core Contracts</title>
 			</head>
 			<body>
 				<p>
@@ -20,7 +19,7 @@
 							src="{/source/request/@context-path}/logo/" />
 						<span class="logo">Chellow</span>
 					</a>
-					<xsl:value-of select="' &gt; Non-core Services'" />
+					<xsl:value-of select="' &gt; Non-core Contracts'" />
 				</p>
 
 				<xsl:if test="//message">
@@ -39,7 +38,7 @@
 							The
 							<a
 								href="{/source/response/header[@name = 'Location']/@value}">
-								<xsl:value-of select="'new service'" />
+								<xsl:value-of select="'new contract'" />
 							</a>
 							has been successfully created.
 						</p>
@@ -54,11 +53,11 @@
 							</thead>
 							<tbody>
 								<xsl:for-each
-									select="/source/non-core-services/non-core-service">
+									select="/source/non-core-contracts/non-core-contract">
 									<tr>
 										<td>
 											<a
-												href="{/source/request/@context-path}/non-core-services/{@id}/">
+												href="{/source/request/@context-path}/non-core-contracts/{@id}/">
 												<xsl:value-of
 													select="@id" />
 											</a>
@@ -74,7 +73,7 @@
 						<br />
 						<form action="." method="post">
 							<fieldset>
-								<legend>Add a service</legend>
+								<legend>Add a contract</legend>
 								<br />
 								<label>
 									Non-core Provider
@@ -97,7 +96,7 @@
 									</select>
 								</label>
 								<br />
-								<br/>
+								<br />
 								<label>
 									<xsl:value-of select="'Name '" />
 									<input name="name"
@@ -191,31 +190,17 @@
 									</select>
 								</fieldset>
 								<br />
-								<label>
-									<xsl:value-of
-										select="'Charge Script'" />
-									<br />
-									<textarea name="charge-script"
-										cols="80" rows="50">
-										<xsl:choose>
-											<xsl:when
-												test="/source/request/parameter[@name='charge-script']">
-												<xsl:value-of
-													select="translate(/source/request/parameter[@name='charge-script']/value, '&#xD;&#xA;','')" />
-											</xsl:when>
-											<xsl:otherwise>
-												<xsl:value-of
-													select="/source/supplier-service/text()" />
-											</xsl:otherwise>
-										</xsl:choose>
-									</textarea>
-								</label>
-								<br />
 								<br />
 								<input type="submit" value="Add" />
 								<input type="reset" value="Reset" />
 							</fieldset>
 						</form>
+												<p>
+							<a href="?view=csv">
+								Download all contracts in a CSV XML file.
+							</a>
+						</p>
+						
 					</xsl:otherwise>
 				</xsl:choose>
 			</body>

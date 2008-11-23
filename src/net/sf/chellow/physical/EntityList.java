@@ -15,6 +15,10 @@ public abstract class EntityList implements Urlable, XmlDescriber {
 		throw new MethodNotAllowedException();
 	}
 	
+	public void httpPost(Invocation inv) throws HttpException {
+		throw new MethodNotAllowedException();
+	}
+	
 	public Node toXml(Document doc, XmlTree tree) throws HttpException {
 		return null;
 	}

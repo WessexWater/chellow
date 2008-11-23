@@ -57,8 +57,8 @@ public class DsoContract extends Contract {
 	}
 
 	public DsoContract(Dso dso, String name, HhEndDate startDate,
-			HhEndDate finishDate, String chargeScript) throws HttpException {
-		super(name, startDate, finishDate, chargeScript);
+			HhEndDate finishDate, String chargeScript, String rateScript) throws HttpException {
+		super(name, startDate, finishDate, chargeScript, rateScript);
 		setParty(dso);
 		internalUpdate(name, chargeScript);
 	}

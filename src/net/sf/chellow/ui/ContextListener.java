@@ -15,6 +15,7 @@ import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 import javax.sql.DataSource;
 
+import net.sf.chellow.billing.NonCoreContract;
 import net.sf.chellow.billing.Provider;
 import net.sf.chellow.hhimport.stark.StarkAutomaticHhDataImporters;
 import net.sf.chellow.monad.Debug;
@@ -43,6 +44,7 @@ import net.sf.chellow.physical.Source;
 import net.sf.chellow.physical.Ssc;
 import net.sf.chellow.physical.Tpr;
 import net.sf.chellow.physical.User;
+import net.sf.chellow.physical.UserRole;
 import net.sf.chellow.physical.VoltageLevel;
 
 import org.hibernate.tool.hbm2ddl.SchemaUpdate;
@@ -182,12 +184,16 @@ public class ContextListener implements ServletContextListener {
 		ClockInterval.loadFromCsv(context);
 		Ssc.loadFromCsv(context);
 		MeasurementRequirement.loadFromCsv(context);
-		//MpanTop.loadFromCsv(context);
+		// MpanTop.loadFromCsv(context);
 		Report.loadReports(context);
+		NonCoreContract.loadNonCoreContracts(context);
 		Hiber.flush();
-
+		UserRole.insertUserRole(UserRole.EDITOR);
+		UserRole.insertUserRole(UserRole.PARTY_VIEWER);
+		UserRole.insertUserRole(UserRole.VIEWER);
 		User.insertUser(new EmailAddress("administrator@localhost"),
-				"administrator", User.EDITOR, null);
+				"administrator", null, UserRole.getUserRole(UserRole.EDITOR),
+				null);
 		Hiber.commit();
 		Source.insertSource("net", "Public distribution system.");
 		Source.insertSource("chp", "Combined heat and power generator");

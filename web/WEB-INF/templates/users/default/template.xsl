@@ -86,40 +86,31 @@
 								<br />
 								<label>
 									User Role
-									<select name="role">
-										<option value="0">
-											<xsl:if
-												test="/source/request/parameter[@name='role']/value = 0">
-												<xsl:attribute
-													name="selected">
-																<xsl:value-of
-														select="'selected'" />
-															</xsl:attribute>
-											</xsl:if>
-											Editor
-										</option>
-										<option value="1">
-											<xsl:if
-												test="/source/request/parameter[@name='role']/value = 1">
-												<xsl:attribute
-													name="selected">
-																<xsl:value-of
-														select="'selected'" />
-															</xsl:attribute>
-											</xsl:if>
-											Viewer
-										</option>
-										<option value="2">
-											<xsl:if
-												test="/source/request/parameter[@name='role']/value = 2">
-												<xsl:attribute
-													name="selected">
-																<xsl:value-of
-														select="'selected'" />
-															</xsl:attribute>
-											</xsl:if>
-											Party Viewer
-										</option>
+									<select name="user-role-id">
+										<xsl:for-each
+											select="/source/user-role">
+											<option value="{@id}">
+												<xsl:choose>
+													<xsl:when
+														test="/source/request/parameter[@name='user-role-id']">
+														<xsl:if
+															test="/source/request/parameter[@name='user-role-id']/value/text() = @id">
+															<xsl:attribute
+																name="selected" />
+														</xsl:if>
+													</xsl:when>
+													<xsl:otherwise>
+														<xsl:if
+															test="/source/user/user-role/@id = @id">
+															<xsl:attribute
+																name="selected" />
+														</xsl:if>
+													</xsl:otherwise>
+												</xsl:choose>
+												<xsl:value-of
+													select="@code" />
+											</option>
+										</xsl:for-each>
 									</select>
 								</label>
 								<br />

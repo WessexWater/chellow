@@ -4,6 +4,7 @@ import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.PrintWriter;
 import java.io.Reader;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
@@ -20,6 +21,8 @@ import javax.xml.stream.events.XMLEvent;
 
 import net.sf.chellow.billing.Account;
 import net.sf.chellow.billing.HhdcContract;
+import net.sf.chellow.billing.NonCoreContract;
+import net.sf.chellow.billing.RateScript;
 import net.sf.chellow.billing.SupplierContract;
 import net.sf.chellow.hhimport.HhDatumRaw;
 import net.sf.chellow.monad.Hiber;
@@ -39,6 +42,7 @@ import net.sf.chellow.physical.Site;
 import net.sf.chellow.physical.SiteSupplyGeneration;
 import net.sf.chellow.physical.Supply;
 import net.sf.chellow.physical.SupplyGeneration;
+import net.sf.chellow.physical.User;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -47,6 +51,16 @@ import org.w3c.dom.Node;
 import com.Ostermiller.util.CSVParser;
 
 public class GeneralImport extends Thread implements Urlable, XmlDescriber {
+	public static void printXmlLine(PrintWriter pw, String[] values) {
+		pw.println("  <line>");
+		for (String value : values) {
+			pw.println("    <value><![CDATA["
+					+ value.replace("<![CDATA[",
+							"&lt;![CDATA[").replace("]]>", "]]&gt;")
+					+ "]]></value>");	
+		}
+		pw.println("  </line>");
+	}
 	public static final String NO_CHANGE = "{no change}";
 
 	private boolean halt = false;
@@ -170,9 +184,19 @@ public class GeneralImport extends Thread implements Urlable, XmlDescriber {
 						Report.generalImport(action, values, csvElement);
 					} else if (type.equals("hhdc-contract")) {
 						HhdcContract.generalImport(action, values, csvElement);
+					} else if (type.equals("hhdc-contract-rate-script")) {
+						RateScript.generalImportHhdc(action, values, csvElement);
+					} else if (type.equals("non-core-contract")) {
+						NonCoreContract.generalImport(action, values, csvElement);
+					} else if (type.equals("non-core-contract-rate-script")) {
+						RateScript.generalImportNonCore(action, values, csvElement);
 					} else if (type.equals("supplier-contract")) {
 						SupplierContract.generalImport(action, values,
 								csvElement);
+					} else if (type.equals("supplier-contract-rate-script")) {
+						RateScript.generalImportSupplier(action, values, csvElement);
+					} else if (type.equals("user")) {
+						User.generalImport(action, values, csvElement);
 					} else {
 						throw new UserException("The type " + type
 								+ " isn't recognized.");

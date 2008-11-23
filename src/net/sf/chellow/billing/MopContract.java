@@ -40,10 +40,10 @@ import org.w3c.dom.Element;
 @SuppressWarnings("serial")
 public class MopContract extends Contract {
 	static public MopContract insertMopContract(Provider provider, String name,
-			HhEndDate startDate, HhEndDate finishDate, String chargeScript)
+			HhEndDate startDate, HhEndDate finishDate, String chargeScript, String rateScript)
 			throws HttpException {
 		MopContract contract = new MopContract(provider, name, startDate,
-				finishDate, chargeScript);
+				finishDate, chargeScript, rateScript);
 		Hiber.session().save(contract);
 		Hiber.flush();
 		return contract;
@@ -65,8 +65,8 @@ public class MopContract extends Contract {
 	}
 
 	public MopContract(Provider mop, String name, HhEndDate startDate,
-			HhEndDate finishDate, String chargeScript) throws HttpException {
-		super(name, startDate, finishDate, chargeScript);
+			HhEndDate finishDate, String chargeScript, String rateScript) throws HttpException {
+		super(name, startDate, finishDate, chargeScript, rateScript);
 		setParty(mop);
 	}
 

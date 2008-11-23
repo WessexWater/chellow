@@ -31,7 +31,6 @@ import net.sf.chellow.monad.Invocation;
 import net.sf.chellow.monad.MonadUtils;
 import net.sf.chellow.monad.NotFoundException;
 import net.sf.chellow.monad.UserException;
-import net.sf.chellow.monad.XmlTree;
 import net.sf.chellow.monad.types.MonadDate;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
@@ -40,7 +39,6 @@ import net.sf.chellow.physical.HhEndDate;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import org.w3c.dom.Node;
 
 @SuppressWarnings("serial")
 public class DsoContracts extends EntityList {
@@ -81,7 +79,7 @@ public class DsoContracts extends EntityList {
 		}
 		DsoContract contract = dso.insertContract(name, HhEndDate
 				.roundDown(startDate), finishDate == null ? null : HhEndDate
-				.roundDown(finishDate), chargeScript);
+				.roundDown(finishDate), chargeScript, "");
 		Hiber.commit();
 		inv.sendCreated(document(), contract.getUri());
 	}
@@ -123,18 +121,8 @@ public class DsoContracts extends EntityList {
 		return contract;
 	}
 
-	public void httpDelete(Invocation inv) throws HttpException {
-		// TODO Auto-generated method stub
-
-	}
-
 	public Element toXml(Document doc) throws HttpException {
 		Element contractsElement = doc.createElement("dso-contracts");
 		return contractsElement;
-	}
-
-	public Node toXml(Document doc, XmlTree tree) throws HttpException {
-		// TODO Auto-generated method stub
-		return null;
 	}
 }

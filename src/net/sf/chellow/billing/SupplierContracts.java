@@ -71,13 +71,12 @@ public class SupplierContracts extends EntityList {
 		Long providerId = inv.getLong("provider-id");
 		String name = inv.getString("name");
 		Date startDate = inv.getDate("start-date");
-		String chargeScript = inv.getString("charge-script");
 		if (!inv.isValid()) {
 			throw new UserException(document());
 		}
 		Provider provider = Provider.getProvider(providerId);
 		SupplierContract contract = SupplierContract.insertSupplierContract(
-				provider, name, HhEndDate.roundDown(startDate), null, chargeScript);
+				provider, name, HhEndDate.roundDown(startDate), null, "", "");
 		Hiber.commit();
 		inv.sendCreated(document(), contract.getUri());
 	}

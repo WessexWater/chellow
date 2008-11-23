@@ -22,10 +22,17 @@
 
 package net.sf.chellow.billing;
 
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.util.List;
+
+import javax.servlet.ServletContext;
+
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Invocation;
+import net.sf.chellow.monad.MonadMessage;
 import net.sf.chellow.monad.MonadUtils;
 import net.sf.chellow.monad.NotFoundException;
 import net.sf.chellow.monad.Urlable;
@@ -37,17 +44,83 @@ import net.sf.chellow.monad.types.UriPathElement;
 import net.sf.chellow.physical.HhEndDate;
 import net.sf.chellow.physical.MarketRole;
 import net.sf.chellow.ui.Chellow;
-
+import net.sf.chellow.ui.GeneralImport;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 @SuppressWarnings("serial")
 public class NonCoreContract extends Contract {
+	public static NonCoreContract getNonCoreContract(String name)
+			throws HttpException {
+		NonCoreContract contract = findNonCoreContract(name);
+		if (contract == null) {
+			throw new NotFoundException(
+					"There isn't a non core contract called '" + name + "'");
+		}
+		return contract;
+	}
+
+	public static NonCoreContract findNonCoreContract(String name)
+			throws HttpException {
+		return (NonCoreContract) Hiber.session().createQuery(
+				"from NonCoreContract contract where contract.name = :name")
+				.setString("name", name).uniqueResult();
+	}
+
+	public static void generalImport(String action, String[] values,
+			Element csvElement) throws HttpException {
+		if (action.equals("insert")) {
+			String participantCode = GeneralImport.addField(csvElement,
+					"Participant Code", values, 0);
+			Provider provider = Provider.getProvider(participantCode,
+					MarketRole.NON_CORE_ROLE);
+			String name = GeneralImport.addField(csvElement, "Name", values, 1);
+			String startDateStr = GeneralImport.addField(csvElement,
+					"Start Date", values, 2);
+			HhEndDate startDate = new HhEndDate(startDateStr);
+			String finishDateStr = GeneralImport.addField(csvElement,
+					"Finish Date", values, 3);
+			HhEndDate finishDate = finishDateStr.trim().length() == 0 ? null
+					: new HhEndDate(finishDateStr);
+			String chargeScript = GeneralImport.addField(csvElement,
+					"Charge Script", values, 4);
+			String rateScript = GeneralImport.addField(csvElement,
+					"Rate Script", values, 5);
+			NonCoreContract.insertNonCoreContract(provider, name, startDate,
+					finishDate, chargeScript, rateScript);
+		} else if (action.equals("update")) {
+			/*
+			 * String script = values[3];
+			 * csvElement.appendChild(getField("Script", script)); String
+			 * template = values[4]; csvElement.appendChild(getField("Template",
+			 * template)); Report report = Report.getReport(name);
+			 */
+		}
+	}
+
+	public static void loadNonCoreContracts(ServletContext context)
+			throws HttpException {
+		try {
+			GeneralImport process = new GeneralImport(null, context
+					.getResource("/WEB-INF/non-core-contracts.xml")
+					.openStream(), "xml");
+			process.run();
+			List<MonadMessage> errors = process.getErrors();
+			if (!errors.isEmpty()) {
+				throw new InternalException(errors.get(0).getDescription());
+			}
+		} catch (UnsupportedEncodingException e) {
+			throw new InternalException(e);
+		} catch (IOException e) {
+			throw new InternalException(e);
+		}
+	}
+
 	static public NonCoreContract insertNonCoreContract(Provider provider,
 			String name, HhEndDate startDate, HhEndDate finishDate,
-			String chargeScript) throws HttpException {
+			String chargeScript, String rateScript) throws HttpException {
 		NonCoreContract service = new NonCoreContract(provider, name,
-				startDate, finishDate, chargeScript);
+				startDate, finishDate, chargeScript, rateScript);
 		Hiber.session().save(service);
 		Hiber.session().flush();
 		return service;
@@ -59,8 +132,9 @@ public class NonCoreContract extends Contract {
 	}
 
 	public NonCoreContract(Provider nonCore, String name, HhEndDate startDate,
-			HhEndDate finishDate, String chargeScript) throws HttpException {
-		super(name, startDate, finishDate, chargeScript);
+			HhEndDate finishDate, String chargeScript, String rateScript)
+			throws HttpException {
+		super(name, startDate, finishDate, chargeScript, rateScript);
 		setParty(nonCore);
 		internalUpdate(name, chargeScript);
 	}
@@ -133,7 +207,7 @@ public class NonCoreContract extends Contract {
 	private Document document() throws HttpException {
 		Document doc = MonadUtils.newSourceDocument();
 		Element source = doc.getDocumentElement();
-		source.appendChild(toXml(doc, new XmlTree("provider")));
+		source.appendChild(toXml(doc, new XmlTree("party")));
 		source.appendChild(MonadDate.getMonthsXml(doc));
 		source.appendChild(MonadDate.getDaysXml(doc));
 		source.appendChild(new MonadDate().toXml(doc));

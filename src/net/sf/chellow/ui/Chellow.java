@@ -41,6 +41,8 @@ import net.sf.chellow.physical.Sscs;
 import net.sf.chellow.physical.Supplies;
 import net.sf.chellow.physical.Tprs;
 import net.sf.chellow.physical.User;
+import net.sf.chellow.physical.UserRole;
+import net.sf.chellow.physical.UserRoles;
 import net.sf.chellow.physical.Users;
 
 public class Chellow extends Monad implements Urlable {
@@ -78,6 +80,7 @@ public class Chellow extends Monad implements Urlable {
 	static public final Sites SITES_INSTANCE = new Sites();
 	static public final GeneralImports GENERAL_IMPORT_PROCESSES = new GeneralImports();
 	static public final GspGroups GSP_GROUPS_INSTANCE = new GspGroups();
+	static public final UserRoles USER_ROLES_INSTANCE = new UserRoles();
 
 	static {
 		try {
@@ -132,16 +135,17 @@ public class Chellow extends Monad implements Urlable {
 		if (user == null) {
 			throw new UnauthorizedException();
 		}
-		int role = user.getRole();
+		UserRole role = user.getRole();
 		HttpMethod method = inv.getMethod();
 		String pathInfo = inv.getRequest().getPathInfo();
-		if (role == User.VIEWER) {
+		String roleCode = role.getCode();
+		if (roleCode.equals(UserRole.VIEWER)) {
 			if (method.equals(HttpMethod.GET) || method.equals(HttpMethod.HEAD)) {
 				return;
 			}
-		} else if (role == User.EDITOR) {
+		} else if (roleCode.equals(UserRole.EDITOR)) {
 			return;
-		} else if (role == User.PARTY_VIEWER) {
+		} else if (roleCode.equals(UserRole.PARTY_VIEWER)) {
 			if (method.equals(HttpMethod.GET) || method.equals(HttpMethod.HEAD)) {
 				Party party = user.getParty();
 				char marketRoleCode = party.getRole().getCode();
@@ -218,6 +222,8 @@ public class Chellow extends Monad implements Urlable {
 			return SUPPLIES_INSTANCE;
 		} else if (GspGroups.URI_ID.equals(uriId)) {
 			return GSP_GROUPS_INSTANCE;
+		} else if (UserRoles.URI_ID.equals(uriId)) {
+			return USER_ROLES_INSTANCE;
 		} else {
 			return null;
 		}

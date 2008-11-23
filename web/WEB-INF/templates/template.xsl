@@ -96,6 +96,12 @@
 							</li>
 						</ul>
 					</li>
+										<li>
+						<a
+							href="{/source/request/@context-path}/user-roles/">
+							User Roles
+						</a>
+					</li>
 					<li>
 						<a
 							href="{/source/request/@context-path}/configuration/">

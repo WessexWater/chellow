@@ -9,6 +9,7 @@ import net.sf.chellow.monad.Invocation;
 import net.sf.chellow.monad.MonadUtils;
 import net.sf.chellow.monad.NotFoundException;
 import net.sf.chellow.monad.Urlable;
+import net.sf.chellow.monad.UserException;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
 
@@ -30,6 +31,14 @@ public class MarketRole extends PersistentEntity {
 			throw new NotFoundException();
 		}
 		return marketRole;
+	}
+	
+	static public MarketRole getMarketRole(String code) throws HttpException {
+		String trimmed = code.trim();
+		if (trimmed.length() > 1) {
+			throw new UserException("A market role code must be a single character.");
+		}
+		return getMarketRole(trimmed.charAt(0));
 	}
 
 	static public MarketRole getMarketRole(char code) throws HttpException {

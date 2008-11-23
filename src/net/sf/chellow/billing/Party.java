@@ -40,7 +40,6 @@ import net.sf.chellow.monad.NotFoundException;
 import net.sf.chellow.monad.Urlable;
 import net.sf.chellow.monad.XmlTree;
 import net.sf.chellow.monad.types.MonadDate;
-import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
 import net.sf.chellow.physical.HhEndDate;
 import net.sf.chellow.physical.MarketRole;
@@ -52,18 +51,26 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 public abstract class Party extends PersistentEntity {
-	static public Party getParty(String participantCode, char roleCode) throws HttpException {
-		return getParty(participantCode, MarketRole.getMarketRole(roleCode));
+	static public Party getParty(String participantCode, char roleCode)
+			throws HttpException {
+		return getParty(Participant.getParticipant(participantCode), MarketRole
+				.getMarketRole(roleCode));
 	}
-	
-	static public Party getParty(String participantCode, MarketRole role)
+
+	static public Party getParty(String participantCode, String roleCode)
+			throws HttpException {
+		return getParty(Participant.getParticipant(participantCode), MarketRole
+				.getMarketRole(roleCode));
+	}
+
+	static public Party getParty(Participant participant, MarketRole role)
 			throws HttpException {
 		Party party = (Party) Hiber
 				.session()
 				.createQuery(
-						"from Party party where party.participant.code = :participantCode and party.role = :role")
-				.setString("participantCode", participantCode).setEntity(
-						"role", role).uniqueResult();
+						"from Party party where party.participant = :participant and party.role = :role")
+				.setEntity("participant", participant).setEntity("role", role)
+				.uniqueResult();
 		if (party == null) {
 			throw new NotFoundException();
 		}
@@ -106,7 +113,8 @@ public abstract class Party extends PersistentEntity {
 							pythonString.write(c);
 						}
 						dsoService = dso.insertContract("main", new HhEndDate(
-								"2000-01-01T00:30Z"), null, pythonString.toString());
+								"2000-01-01T00:30Z"), null, pythonString
+								.toString(), "");
 						RateScript dsoRateScript = dsoService.getRateScripts()
 								.iterator().next();
 						isr = new InputStreamReader(dsoClassLoader.getResource(
@@ -228,12 +236,6 @@ public abstract class Party extends PersistentEntity {
 	@Override
 	public Urlable getChild(UriPathElement uriId) throws HttpException {
 		throw new NotFoundException();
-	}
-
-	@Override
-	public MonadUri getUri() throws HttpException {
-		// TODO Auto-generated method stub
-		return null;
 	}
 
 	@Override

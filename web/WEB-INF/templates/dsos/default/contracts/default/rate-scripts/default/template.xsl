@@ -4,20 +4,18 @@
 	<xsl:output method="html" encoding="US-ASCII"
 		doctype-public="-//W3C//DTD HTML 4.01//EN"
 		doctype-system="http://www.w3.org/TR/html4/strict.dtd" indent="yes" />
-
 	<xsl:template match="/">
 		<html>
 			<head>
 				<link rel="stylesheet" type="text/css"
 					href="{/source/request/@context-path}/style/" />
-
 				<title>
 					Chellow &gt; DSOs &gt;
 					<xsl:value-of
-						select="/source/rate-script/dso-service/dso/@code" />
-					&gt; Services &gt;
+						select="/source/rate-script/dso-contract/dso/@code" />
+					&gt; Contracts &gt;
 					<xsl:value-of
-						select="/source/rate-script/dso-service/@name" />
+						select="/source/rate-script/dso-contract/@name" />
 					&gt; Rate Scripts &gt;
 					<xsl:value-of select="/source/rate-script/@id" />
 				</title>
@@ -37,24 +35,24 @@
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/dsos/{/source/rate-script/dso-service/dso/@id}">
+						href="{/source/request/@context-path}/dsos/{/source/rate-script/dso-contract/dso/@id}">
 						<xsl:value-of
-							select="/source/rate-script/dso-service/dso/@code" />
+							select="/source/rate-script/dso-contract/dso/@code" />
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/dsos/{/source/rate-script/dso-service/dso/@id}/services/">
-						<xsl:value-of select="'Services'" />
+						href="{/source/request/@context-path}/dsos/{/source/rate-script/dso-contract/dso/@id}/contracts/">
+						<xsl:value-of select="'Contracts'" />
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/dsos/{/source/rate-script/dso-service/dso/@id}/services/{/source/rate-script/dso-service/@id}/">
+						href="{/source/request/@context-path}/dsos/{/source/rate-script/dso-contract/dso/@id}/contracts/{/source/rate-script/dso-contract/@id}/">
 						<xsl:value-of
-							select="/source/rate-script/dso-service/@name" />
+							select="/source/rate-script/dso-contract/@name" />
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/dsos/{/source/rate-script/dso-service/dso/@id}/services/{/source/rate-script/dso-service/@id}/rate-scripts/">
+						href="{/source/request/@context-path}/dsos/{/source/rate-script/dso-contract/dso/@id}/contracts/{/source/rate-script/dso-contract/@id}/rate-scripts/">
 						<xsl:value-of select="'Rate Scripts'" />
 					</a>
 					&gt;
@@ -307,9 +305,6 @@
 							<input type="submit"
 								value="Test without saving" />
 						</fieldset>
-						<br />
-						<input type="submit" value="Update" />
-						<input type="reset" value="Reset" />
 					</fieldset>
 				</form>
 				<br />

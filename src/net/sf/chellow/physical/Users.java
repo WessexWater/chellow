@@ -32,6 +32,7 @@ import net.sf.chellow.monad.Invocation;
 import net.sf.chellow.monad.MonadUtils;
 import net.sf.chellow.monad.Urlable;
 import net.sf.chellow.monad.UserException;
+import net.sf.chellow.monad.XmlTree;
 import net.sf.chellow.monad.types.EmailAddress;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
@@ -62,22 +63,23 @@ public class Users extends EntityList {
 	public void httpPost(Invocation inv) throws HttpException {
 		EmailAddress emailAddress = inv.getEmailAddress("email-address");
 		String password = inv.getString("password");
-		Integer userRole = inv.getInteger("role");
+		long userRoleId = inv.getLong("user-role-id");
 
 		if (!inv.isValid()) {
 			throw new UserException(document());
 		}
+		UserRole role = UserRole.getUserRole(userRoleId);
 		try {
 			Party party = null;
-			if (userRole == User.PARTY_VIEWER) {
+			if (role.getCode().equals(UserRole.PARTY_VIEWER)) {
 				String participantCode = inv.getString("participant-code");
 				Long marketRoleId = inv.getLong("market-role-id");
 
-				party = Party.getParty(participantCode, MarketRole
+				party = Party.getParty(Participant.getParticipant(participantCode), MarketRole
 						.getMarketRole(marketRoleId));
 			}
 			User user = User
-					.insertUser(emailAddress, password, userRole, party);
+					.insertUser(emailAddress, password, null, role, party);
 			Hiber.commit();
 			inv.sendCreated(user.getUri());
 		} catch (HttpException e) {
@@ -100,12 +102,16 @@ public class Users extends EntityList {
 		source.appendChild(usersElement);
 		for (User user : (List<User>) Hiber.session().createQuery(
 				"from User user").list()) {
-			usersElement.appendChild(user.toXml(doc));
+			usersElement.appendChild(user.toXml(doc, new XmlTree("role")));
 		}
 		for (MarketRole role : (List<MarketRole>) Hiber.session().createQuery(
 				"from MarketRole role").list()) {
 			source.appendChild(role.toXml(doc));
 		}
+		for (UserRole role : (List<UserRole>) Hiber.session().createQuery(
+		"from UserRole role").list()) {
+	source.appendChild(role.toXml(doc));
+}
 		return doc;
 	}
 

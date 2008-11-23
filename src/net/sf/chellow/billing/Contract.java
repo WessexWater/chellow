@@ -43,6 +43,8 @@ import net.sf.chellow.physical.HhEndDate;
 import net.sf.chellow.physical.PersistentEntity;
 import net.sf.chellow.physical.Snag;
 
+import org.hibernate.Criteria;
+import org.hibernate.criterion.Restrictions;
 import org.hibernate.exception.ConstraintViolationException;
 import org.python.core.PyException;
 import org.w3c.dom.Document;
@@ -50,7 +52,7 @@ import org.w3c.dom.Element;
 
 @SuppressWarnings("serial")
 public abstract class Contract extends PersistentEntity implements
-		Comparable<Contract>, Urlable {
+		Comparable<Contract> {
 
 	public static Contract getService(Long id) throws HttpException {
 		Contract service = (Contract) Hiber.session().get(Contract.class, id);
@@ -75,12 +77,12 @@ public abstract class Contract extends PersistentEntity implements
 	public Contract() {
 	}
 
-	public Contract(String name, HhEndDate startDate, HhEndDate finishDate, String chargeScript)
-			throws HttpException {
+	public Contract(String name, HhEndDate startDate, HhEndDate finishDate,
+			String chargeScript, String rateScriptStr) throws HttpException {
 		// setParty(party);
 		rateScripts = new HashSet<RateScript>();
 		RateScript rateScript = new RateScript(this, startDate, finishDate,
-				chargeScript);
+				rateScriptStr);
 		rateScripts.add(rateScript);
 		setStartRateScript(rateScript);
 		setFinishRateScript(rateScript);
@@ -181,20 +183,12 @@ public abstract class Contract extends PersistentEntity implements
 		if (to == null) {
 			to = getFinishDate();
 		}
-		List<Bill> bills = null;
-		if (to == null) {
-			bills = (List<Bill>) Hiber.session().createQuery(
-					"from Bill bill where bill.finishDate.date >= :from")
-					.setTimestamp("from", from.getDate()).list();
-		} else {
-			bills = (List<Bill>) Hiber
-					.session()
-					.createQuery(
-							"from Bill bill where (bill.finishDate.date >= :from) and (bill.startDate.date <= :to)")
-					.setTimestamp("from", from.getDate()).setTime("to",
-							to.getDate()).list();
+		Criteria criteria = Hiber.session().createCriteria(Bill.class).add(
+				Restrictions.ge("finishDate.date", from.getDate()));
+		if (to != null) {
+			criteria.add(Restrictions.le("startDate.date", to.getDate()));
 		}
-		for (Bill bill : bills) {
+		for (Bill bill : (List<Bill>) criteria.list()) {
 			bill.check();
 		}
 	}

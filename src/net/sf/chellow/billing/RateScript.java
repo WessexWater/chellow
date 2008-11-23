@@ -31,7 +31,6 @@ import javax.script.ScriptException;
 
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
-import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Invocation;
 import net.sf.chellow.monad.MonadUtils;
 import net.sf.chellow.monad.NotFoundException;
@@ -43,12 +42,61 @@ import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
 import net.sf.chellow.physical.HhEndDate;
 import net.sf.chellow.physical.PersistentEntity;
+import net.sf.chellow.ui.GeneralImport;
 
 import org.python.core.PyException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 public class RateScript extends PersistentEntity {
+	public static void generalImportHhdc(String action, String[] values,
+			Element csvElement) throws HttpException {
+		if (action.equals("insert")) {
+			String contractName = GeneralImport.addField(csvElement,
+					"Contract Name", values, 0);
+			HhdcContract contract = HhdcContract.getHhdcContract(contractName);
+			String startDateStr = GeneralImport.addField(csvElement,
+					"Start Date", values, 1);
+			HhEndDate startDate = new HhEndDate(startDateStr);
+			String script = GeneralImport.addField(csvElement,
+					"Script", values, 2);
+			contract.insertRateScript(startDate, script);
+		} else if (action.equals("update")) {
+		}
+	}
+
+	public static void generalImportSupplier(String action, String[] values,
+			Element csvElement) throws HttpException {
+		if (action.equals("insert")) {
+			String contractName = GeneralImport.addField(csvElement,
+					"Contract Name", values, 0);
+			SupplierContract contract = SupplierContract.getSupplierContract(contractName);
+			String startDateStr = GeneralImport.addField(csvElement,
+					"Start Date", values, 1);
+			HhEndDate startDate = new HhEndDate(startDateStr);
+			String script = GeneralImport.addField(csvElement,
+					"Script", values, 2);
+			contract.insertRateScript(startDate, script);
+		} else if (action.equals("update")) {
+		}
+	}
+
+	public static void generalImportNonCore(String action, String[] values,
+			Element csvElement) throws HttpException {
+		if (action.equals("insert")) {
+			String contractName = GeneralImport.addField(csvElement,
+					"Contract Name", values, 0);
+			NonCoreContract contract = NonCoreContract.getNonCoreContract(contractName);
+			String startDateStr = GeneralImport.addField(csvElement,
+					"Start Date", values, 1);
+			HhEndDate startDate = new HhEndDate(startDateStr);
+			String script = GeneralImport.addField(csvElement,
+					"Script", values, 2);
+			contract.insertRateScript(startDate, script);
+		} else if (action.equals("update")) {
+		}
+	}
+
 	static public RateScript getRateScript(Long id) {
 		return (RateScript) Hiber.session().get(RateScript.class, id);
 	}
@@ -103,13 +151,13 @@ public class RateScript extends PersistentEntity {
 	}
 
 	void internalUpdate(HhEndDate startDate, HhEndDate finishDate, String script)
-			throws InternalException {
+			throws HttpException {
 		setStartDate(startDate);
 		setFinishDate(finishDate);
 		if (finishDate != null
 				&& startDate.getDate().after(finishDate.getDate())) {
-			throw new InternalException(
-					"start date can't be after the finish date");
+			throw new UserException(
+					"The start date can't be after the finish date");
 		}
 		setScript(script);
 	}
@@ -124,13 +172,13 @@ public class RateScript extends PersistentEntity {
 		internalUpdate(startDate, finishDate, script);
 		if (previousRateScript != null) {
 			if (!previousRateScript.getStartDate().getDate().before(
-					finishDate.getDate())) {
+					startDate.getDate())) {
 				throw new UserException(
 						"The start date must be after the start date of the previous rate script.");
 			}
 			previousRateScript.internalUpdate(
 					previousRateScript.getStartDate(),
-					finishDate.getPrevious(), previousRateScript.getScript());
+					startDate.getPrevious(), previousRateScript.getScript());
 		}
 		if (nextRateScript != null) {
 			if (finishDate == null) {
@@ -175,8 +223,7 @@ public class RateScript extends PersistentEntity {
 			finishDate.setLabel("finish");
 			element.appendChild(finishDate.toXml(doc));
 		}
-		element.setAttribute("script", script.replace("\r", "").replace("\t",
-				"    "));
+		element.setAttribute("script", script);
 		return element;
 	}
 
@@ -195,6 +242,8 @@ public class RateScript extends PersistentEntity {
 
 	public void httpPost(Invocation inv) throws HttpException {
 		String script = inv.getString("script");
+		script = script.replace("\r", "").replace("\t", "    ");
+
 		if (inv.hasParameter("test")) {
 			Date startDate = inv.getDate("start-date");
 			Date finishDate = null;
@@ -254,17 +303,8 @@ public class RateScript extends PersistentEntity {
 	private Document document() throws HttpException {
 		Document doc = MonadUtils.newSourceDocument();
 		Element sourceElement = doc.getDocumentElement();
-
-		if (contract instanceof DsoContract) {
-			sourceElement.appendChild(toXml(doc, new XmlTree("contract",
-					new XmlTree("dso"))));
-		} else if (contract instanceof NonCoreContract) {
-			sourceElement.appendChild(toXml(doc, new XmlTree("contract",
-					new XmlTree("party"))));
-		} else {
-			sourceElement.appendChild(toXml(doc, new XmlTree("contract",
-					new XmlTree("party"))));
-		}
+		sourceElement.appendChild(toXml(doc, new XmlTree("contract",
+				new XmlTree("party"))));
 		sourceElement.appendChild(MonadDate.getMonthsXml(doc));
 		sourceElement.appendChild(MonadDate.getDaysXml(doc));
 		sourceElement.appendChild(new MonadDate().toXml(doc));

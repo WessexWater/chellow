@@ -84,22 +84,24 @@ public class HhdcContract extends Contract {
 					"Charge Script", values, 6);
 			String importerProperties = GeneralImport.addField(csvElement,
 					"Importer Properties", values, 7);
+			String rateScript = GeneralImport.addField(csvElement,
+					"Rate Script", values, 8);
 			insertHhdcContract(provider, name, startDate, finishDate,
-					chargeScript, frequency, lag, importerProperties);
+					chargeScript, frequency, lag, importerProperties, rateScript);
 		}
 	}
 
 	static public HhdcContract insertHhdcContract(Provider provider,
 			String name, HhEndDate startDate, HhEndDate finishDate,
 			String chargeScript, String frequency, int lag,
-			String importerProperties) throws HttpException {
+			String importerProperties, String rateScript) throws HttpException {
 		HhdcContract existing = findHhdcContract(name);
 		if (existing != null) {
 			throw new UserException(
 					"There's already a HHDC contract with the name " + name);
 		}
 		HhdcContract contract = new HhdcContract(provider, name, startDate,
-				finishDate, chargeScript, frequency, lag, importerProperties);
+				finishDate, chargeScript, frequency, lag, importerProperties, rateScript);
 		Hiber.session().save(contract);
 		Hiber.flush();
 		return contract;
@@ -148,8 +150,8 @@ public class HhdcContract extends Contract {
 
 	public HhdcContract(Provider hhdc, String name, HhEndDate startDate,
 			HhEndDate finishDate, String chargeScript, String frequency,
-			int lag, String importerProperties) throws HttpException {
-		super(name, startDate, finishDate, chargeScript);
+			int lag, String importerProperties, String rateScript) throws HttpException {
+		super(name, startDate, finishDate, chargeScript, rateScript);
 		if (hhdc.getRole().getCode() != MarketRole.HHDC) {
 			throw new UserException("The provider must have the HHDC role.");
 		}
@@ -262,6 +264,7 @@ public class HhdcContract extends Contract {
 		} else {
 			String name = inv.getString("name");
 			String chargeScript = inv.getString("charge-script");
+			chargeScript = chargeScript.replace("\r", "").replace("\t", "    ");
 			String frequency = inv.getString("frequency");
 			int lag = inv.getInteger("lag");
 			String importerProperties = inv.getString("importer-properties");

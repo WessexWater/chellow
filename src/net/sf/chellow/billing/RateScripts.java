@@ -76,14 +76,13 @@ public class RateScripts extends EntityList {
 	}
 
 	public void httpPost(Invocation inv) throws HttpException {
-		String script = inv.getString("script");
 		Date startDate = inv.getDate("start-date");
 		if (!inv.isValid()) {
 			throw new UserException(document());
 		}
 		try {
 			RateScript rateScript = contract.insertRateScript(HhEndDate
-					.roundDown(startDate).getNext(), script);
+					.roundDown(startDate).getNext(), "");
 			Hiber.commit();
 			Hiber.flush();
 			inv.sendCreated(document(), rateScript.getUri());

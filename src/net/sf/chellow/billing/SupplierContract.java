@@ -68,16 +68,18 @@ public class SupplierContract extends Contract {
 			}
 			String chargeScript = GeneralImport.addField(csvElement,
 					"Charge Script", values, 4);
+			String rateScript = GeneralImport.addField(csvElement,
+					"Rate Script", values, 5);
 			insertSupplierContract(provider, name, startDate, finishDate,
-					chargeScript);
+					chargeScript, rateScript);
 		}
 	}
 
 	static public SupplierContract insertSupplierContract(Provider provider,
 			String name, HhEndDate startDate, HhEndDate finishDate,
-			String chargeScript) throws HttpException {
+			String chargeScript, String rateScript) throws HttpException {
 		SupplierContract contract = new SupplierContract(provider, name,
-				startDate, finishDate, chargeScript);
+				startDate, finishDate, chargeScript, rateScript);
 		Hiber.session().save(contract);
 		Hiber.flush();
 		return contract;
@@ -118,9 +120,9 @@ public class SupplierContract extends Contract {
 	}
 
 	public SupplierContract(Provider supplier, String name,
-			HhEndDate startDate, HhEndDate finishDate, String chargeScript)
+			HhEndDate startDate, HhEndDate finishDate, String chargeScript, String rateScript)
 			throws HttpException {
-		super(name, startDate, finishDate, chargeScript);
+		super(name, startDate, finishDate, chargeScript, rateScript);
 		if (supplier.getRole().getCode() != MarketRole.SUPPLIER) {
 			throw new UserException(
 					"The provider must have the role of supplier.");
@@ -156,6 +158,8 @@ public class SupplierContract extends Contract {
 
 	public void httpPost(Invocation inv) throws HttpException {
 		String chargeScript = inv.getString("charge-script");
+		chargeScript = chargeScript.replace("\r", "").replace("\t", "    ");
+
 		if (inv.hasParameter("test")) {
 			Long billId = inv.getLong("bill-id");
 			if (!inv.isValid()) {

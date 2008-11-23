@@ -4,7 +4,6 @@
 	<xsl:output method="html" encoding="US-ASCII"
 		doctype-public="-//W3C//DTD HTML 4.01//EN"
 		doctype-system="http://www.w3.org/TR/html4/strict.dtd" indent="yes" />
-
 	<xsl:template match="/">
 		<html>
 			<head>
@@ -12,9 +11,9 @@
 					href="{/source/request/@context-path}/style/" />
 
 				<title>
-					Chellow &gt; Non-core Services &gt;
+					Chellow &gt; Non-core Contracts &gt;
 					<xsl:value-of
-						select="/source/rate-script/non-core-service/@name" />
+						select="/source/rate-script/non-core-contract/@name" />
 					&gt; Rate Scripts &gt;
 					<xsl:value-of select="/source/rate-script/@id" />
 				</title>
@@ -28,18 +27,18 @@
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/non-core-services/">
-						<xsl:value-of select="'Non-core Services'" />
+						href="{/source/request/@context-path}/non-core-contracts/">
+						<xsl:value-of select="'Non-core Contracts'" />
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/non-core-services/{/source/rate-script/non-core-service/@id}/">
+						href="{/source/request/@context-path}/non-core-contracts/{/source/rate-script/non-core-contract/@id}/">
 						<xsl:value-of
-							select="/source/rate-script/non-core-service/@name" />
+							select="/source/rate-script/non-core-contract/@name" />
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/non-core-services/{/source/rate-script/non-core-service/@id}/rate-scripts/">
+						href="{/source/request/@context-path}/non-core-contracts/{/source/rate-script/non-core-contract/@id}/rate-scripts/">
 						<xsl:value-of select="'Rate Scripts'" />
 					</a>
 					&gt;
@@ -57,7 +56,7 @@
 				</xsl:if>
 				<form action="." method="post">
 					<fieldset>
-						<legend>Update rate-script</legend>
+						<legend>Update Rate Script</legend>
 						<br />
 						<fieldset>
 							<legend>Start date</legend>
@@ -292,10 +291,6 @@
 							<input type="submit"
 								value="Test without saving" />
 						</fieldset>
-						<br />
-						<br />
-						<input type="submit" value="Update" />
-						<input type="reset" value="Reset" />
 					</fieldset>
 				</form>
 				<br />

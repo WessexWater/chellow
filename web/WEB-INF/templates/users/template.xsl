@@ -67,24 +67,17 @@
 												select="@email-address" />
 										</td>
 										<td>
-											<xsl:choose>
-												<xsl:when
-													test="@role = 0">
-													Editor
-												</xsl:when>
-												<xsl:when
-													test="@role = 1">
-													Viewer
-												</xsl:when>
-												<xsl:when
-													test="@role = 2">
-													Party Viewer
-												</xsl:when>
-											</xsl:choose>
+											<a
+												href="{/source/request/@context-path}/user-roles/{user-role/@id}/">
+												<xsl:value-of
+													select="user-role/@code" />
+											</a>
 										</td>
-										<td><xsl:if test="party">
-										<xsl:value-of select="party/@name"/>
-										</xsl:if>
+										<td>
+											<xsl:if test="party">
+												<xsl:value-of
+													select="party/@name" />
+											</xsl:if>
 										</td>
 									</tr>
 								</xsl:for-each>
@@ -97,7 +90,7 @@
 								<br />
 								<label>
 									Email Address
-									<input name="email-address" />
+									<input name="email-address" value="/source/request/parameter[@name='email-address']/value/text()" />
 								</label>
 								<br />
 								<label>
@@ -107,41 +100,20 @@
 								</label>
 								<br />
 								<label>
-									User Role
-									<select name="role">
-										<option value="0">
-											<xsl:if
-												test="/source/request/parameter[@name='role']/value = 0">
-												<xsl:attribute
-													name="selected">
-																<xsl:value-of
-														select="'selected'" />
-															</xsl:attribute>
-											</xsl:if>
-											Editor
-										</option>
-										<option value="1">
-											<xsl:if
-												test="/source/request/parameter[@name='role']/value = 1">
-												<xsl:attribute
-													name="selected">
-																<xsl:value-of
-														select="'selected'" />
-															</xsl:attribute>
-											</xsl:if>
-											Viewer
-										</option>
-										<option value="2">
-											<xsl:if
-												test="/source/request/parameter[@name='role']/value = 2">
-												<xsl:attribute
-													name="selected">
-																<xsl:value-of
-														select="'selected'" />
-															</xsl:attribute>
-											</xsl:if>
-											Party Viewer
-										</option>
+									Role
+									<select name="user-role-id">
+										<xsl:for-each
+											select="/source/user-role">
+											<option value="{@id}">
+												<xsl:if
+													test="/source/request/parameter[@name='user-role-id']/value/text() = @id">
+													<xsl:attribute
+														name="selected" />
+												</xsl:if>
+												<xsl:value-of
+													select="@code" />
+											</option>
+										</xsl:for-each>
 									</select>
 								</label>
 								<br />
