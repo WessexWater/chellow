@@ -1,0 +1,64 @@
+<?xml version="1.0"?>
+<csv>
+  <line>
+    <value>action</value>
+    <value>type</value>
+  </line>
+  <line>
+    <value><![CDATA[insert]]></value>
+    <value><![CDATA[non-core-contract]]></value>
+    <value><![CDATA[POOL]]></value>
+    <value><![CDATA[TRIAD]]></value>
+    <value><![CDATA[2005-01-01T00:30Z]]></value>
+    <value><![CDATA[]]></value>
+    <value><![CDATA[from net.sf.chellow.billing import BillElement
+
+def totalElement(account, startDate, finishDate):
+    totalElement = BillElement("total", 103, "Dso cost")
+    return totalElement
+
+def supplyElement(supply, start_date, finish_date, is_import):
+    channel = supply.getChannel(is_import, true)
+    total_cost = 0
+    triad_elements = []
+    cal = GregorianCalendar.getInstance(TimeZone.getTimeZone("GMT"), Locale.UK)
+    cal.setTime(start_date.getDate())
+    cal.set(Calendar.Month, 2)
+    cal.set(Calendar.DAY_OF_MONTH, 1)
+    cal.set(Calendar.HOUR_OF_DAY, 0)
+    cal.set(Calendar.MINUTE, 30)
+    if cal.getTime().before(start_date.getDate()):
+        cal.add(Calendar.YEAR, 1)
+    while !cal.getTime().after(finish_date.getDate()):
+        rate_collection = getRate(cal.getTime())
+        dates = rate_collection(0)
+        rate = rate_collection(1)
+        total_msp_kw = 0 
+        cost = 0
+        supplyGeneration = supply.getGeneration(cal.getTime())
+        dso = supplyGeneration.getDso()
+        voltage_level = supplyGeneration.getMpans().iterator().next().getLineLossFactor().getVoltageLevel()
+        triad_date_working = ''
+        for date in dates:
+            HhDatum hh_datum = Hiber.session().createQuery("from HhDatum datum where datum.channel = :channel and datum.endDate.date = :endDate").setEntity('channel', channel).setTimestamp('endDate', date.getDate()).uniqueResult()
+            datum_kw = hh_datum.getValue()
+            total_msp_kw = total_msp_kw + datum_kw
+            triad_date_working = triad_date_working + '(' + datum_kw + ' kW status: ' + hh_datum.getStatus() + ') '
+        average_msp_kw = total_msp_kw / 3
+        llf = dso.getService('main').callFunction('llf', [voltageLevel, isSubstation, date, year, month, day, dayOfWeek, hour, minute, yearCt, monthCt, dayCt, dayOfWeekCt, hourCt, minuteCt])
+        triad_elements.append(BillElement('triad ' + HhEndDate(cal.getTime()).toString(), cost, 'Cost ' + cost ' GBP = Rate ' rate + ' (GBP / kW) * Average GSP ' + average_gsp_kw + ' (kW) where Average GSP ' + gsp_kw + ' (kW) = LLF ' + llf + ' * Average MSP ' + average_msp_kw + ' (kW) where Average MSP ' + average_msp_kw + ' (kW) = Total MSP ' + total_msp_kw + ' (kW) / 3 where Total MSP ' + total_msp_kw + ' (kW) = ' + triad_date_working))
+        cal.add(Calendar.YEAR, 1)
+    supply_element = BillElement("supply total", total_cost, "Sum of triad elements")
+    for triad_element in triad_elements:
+        supply_element.addSubElement(triad_element)
+    return supply_element]]></value>
+    <value><![CDATA[import sys
+import net.sf.chellow.billing
+import net.sf.chellow.monad.ui
+import net.sf.chellow.physical
+
+def totalElement(account, startDate, finishDate):
+    totalElement = net.sf.chellow.billing.BillElement("total", 103, "Dso cost")
+    return totalElement]]></value>
+  </line>
+</csv>
