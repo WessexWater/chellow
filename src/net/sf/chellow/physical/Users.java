@@ -63,7 +63,7 @@ public class Users extends EntityList {
 	public void httpPost(Invocation inv) throws HttpException {
 		EmailAddress emailAddress = inv.getEmailAddress("email-address");
 		String password = inv.getString("password");
-		long userRoleId = inv.getLong("user-role-id");
+		Long userRoleId = inv.getLong("user-role-id");
 
 		if (!inv.isValid()) {
 			throw new UserException(document());

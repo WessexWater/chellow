@@ -201,6 +201,7 @@ public class GeneralImport extends Thread implements Urlable, XmlDescriber {
 						throw new UserException("The type " + type
 								+ " isn't recognized.");
 					}
+					csvElement = null;
 				}
 				Hiber.close();
 				allValues = digester.getLine();

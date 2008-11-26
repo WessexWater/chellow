@@ -39,6 +39,7 @@ public class Configuration extends PersistentEntity {
 		if (configuration == null) {
 			configuration = new Configuration();
 			configuration.setVersion(version);
+			configuration.setProperties("");
 			Hiber.session().save(configuration);
 			Hiber.flush();
 		} else {
@@ -54,9 +55,7 @@ public class Configuration extends PersistentEntity {
 
 	private int version;
 
-	private String implicitUserProperties;
-
-	private String chellowProperties;
+	private String properties;
 
 	public Configuration() {
 	}
@@ -69,20 +68,12 @@ public class Configuration extends PersistentEntity {
 		this.version = version;
 	}
 
-	public String getImplicitUserProperties() {
-		return implicitUserProperties;
+	public String getProperties() {
+		return properties;
 	}
 
-	void setImplicitUserProperties(String implicitUserProperties) {
-		this.implicitUserProperties = implicitUserProperties;
-	}
-
-	public String getChellowProperties() {
-		return chellowProperties;
-	}
-
-	void setChellowProperties(String chellowProperties) {
-		this.chellowProperties = chellowProperties;
+	void setProperties(String properties) {
+		this.properties = properties;
 	}
 
 	public MonadUri getUri() {
@@ -98,26 +89,21 @@ public class Configuration extends PersistentEntity {
 	}
 
 	public void httpPost(Invocation inv) throws HttpException {
-		String implicitUserProperties = inv
-				.getString("implicit-user-properties");
-		String chellowProperties = inv.getString("chellow-properties");
+		String properties = inv.getString("properties");
 		if (!inv.isValid()) {
 			throw new UserException();
 		}
-		update(implicitUserProperties, chellowProperties);
+		update(properties);
 		Hiber.commit();
 		inv.sendOk(document());
 	}
 
-	public void update(String implicitUserProperties, String chellowProperties)
+	public void update(String properties)
 			throws HttpException {
-		Properties impProps = new Properties();
-		Properties chellowProps = new Properties();
+		Properties props = new Properties();
 		try {
-			impProps.load(new StringReader(implicitUserProperties));
-			setImplicitUserProperties(implicitUserProperties);
-			chellowProps.load(new StringReader(chellowProperties));
-			setChellowProperties(chellowProperties);
+			props.load(new StringReader(properties));
+			setProperties(properties);
 		} catch (IOException e) {
 			throw new InternalException(e);
 		}
@@ -141,12 +127,9 @@ public class Configuration extends PersistentEntity {
 		} catch (IOException e) {
 			throw new InternalException(e);
 		}
-		Element impProps = doc.createElement("implicit-user-properties");
-		element.appendChild(impProps);
-		impProps.setTextContent(implicitUserProperties);
-		Element chellowProps = doc.createElement("chellow-properties");
-		element.appendChild(chellowProps);
-		chellowProps.setTextContent(chellowProperties);
+		Element propsElement = doc.createElement("properties");
+		element.appendChild(propsElement);
+		propsElement.setTextContent(properties);
 		return element;
 	}
 
@@ -158,10 +141,10 @@ public class Configuration extends PersistentEntity {
 		return doc;
 	}
 
-	public String getChellowProperty(String name) throws HttpException {
+	public String getProperty(String name) throws HttpException {
 		Properties props = new Properties();
 		try {
-			props.load(new StringReader(chellowProperties));
+			props.load(new StringReader(properties));
 		} catch (IOException e) {
 			throw new InternalException(e);
 		}

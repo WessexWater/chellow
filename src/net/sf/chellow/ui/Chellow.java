@@ -128,6 +128,11 @@ public class Chellow extends Monad implements Urlable {
 	}
 
 	protected void checkPermissions(Invocation inv) throws HttpException {
+		HttpMethod method = inv.getMethod();
+		String pathInfo = inv.getRequest().getPathInfo();
+		if (method.equals(HttpMethod.GET) && pathInfo.equals("/")) {
+			return;
+		}
 		User user = inv.getUser();
 		if (user == null) {
 			user = ImplicitUserSource.getUser(inv);
@@ -136,11 +141,12 @@ public class Chellow extends Monad implements Urlable {
 			throw new UnauthorizedException();
 		}
 		UserRole role = user.getRole();
-		HttpMethod method = inv.getMethod();
-		String pathInfo = inv.getRequest().getPathInfo();
 		String roleCode = role.getCode();
 		if (roleCode.equals(UserRole.VIEWER)) {
-			if (method.equals(HttpMethod.GET) || method.equals(HttpMethod.HEAD)) {
+			if (pathInfo.startsWith("/reports/")
+					&& pathInfo.endsWith("/output/")
+					&& (method.equals(HttpMethod.GET)
+					|| method.equals(HttpMethod.HEAD))) {
 				return;
 			}
 		} else if (roleCode.equals(UserRole.EDITOR)) {

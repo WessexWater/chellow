@@ -328,6 +328,7 @@ public class Mpan extends PersistentEntity {
 		setHasExportKwh(hasExportKwh);
 		setHasExportKvarh(hasExportKvarh);
 		setAgreedSupplyCapacity(agreedSupplyCapacity);
+		supplyGeneration.onMpanChange();
 	}
 
 	public String toString() {

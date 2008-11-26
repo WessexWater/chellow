@@ -4,19 +4,16 @@
 	<xsl:output method="html" encoding="US-ASCII"
 		doctype-public="-//W3C//DTD HTML 4.01//EN"
 		doctype-system="http://www.w3.org/TR/html4/strict.dtd" indent="yes" />
-
 	<xsl:template match="/">
 		<html>
 			<head>
 				<link rel="stylesheet" type="text/css"
 					href="{/source/request/@context-path}/style/" />
-
 				<title>
 					Chellow &gt; Users &gt;
 					<xsl:value-of select="/source/user/@email-address" />
 				</title>
 			</head>
-
 			<body>
 				<p>
 					<a href="{/source/request/@context-path}/">
@@ -67,7 +64,8 @@
 								<br />
 								<label>
 									Email Address
-									<input name="email-address">
+									<input name="email-address"
+										size="100">
 										<xsl:attribute name="value">
 											<xsl:choose>
 												<xsl:when

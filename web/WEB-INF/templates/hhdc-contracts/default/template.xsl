@@ -15,15 +15,6 @@
 				</title>
 			</head>
 			<body>
-				<xsl:if test="//message">
-					<ul>
-						<xsl:for-each select="//message">
-							<li>
-								<xsl:value-of select="@description" />
-							</li>
-						</xsl:for-each>
-					</ul>
-				</xsl:if>
 				<p>
 					<a href="{/source/request/@context-path}/">
 						<img
@@ -39,11 +30,20 @@
 					<xsl:value-of
 						select="concat(/source/hhdc-contract/@name, ' [')" />
 					<a
-						href="{/source/request/@context-path}/orgs/{/source/hhdc-contract/org/@id}/reports/57/screen/output/?contract-id={/source/hhdc-contract/@id}">
+						href="{/source/request/@context-path}/reports/58/output/?hhdc-contract-id={/source/hhdc-contract/@id}">
 						<xsl:value-of select="'view'" />
 					</a>
 					<xsl:value-of select="']'" />
 				</p>
+				<xsl:if test="//message">
+					<ul>
+						<xsl:for-each select="//message">
+							<li>
+								<xsl:value-of select="@description" />
+							</li>
+						</xsl:for-each>
+					</ul>
+				</xsl:if>
 				<br />
 
 				<form action="." method="post">
@@ -166,11 +166,84 @@
 						</label>
 						<br />
 						<br />
+						Charge script
+						<br />
+						<textarea name="charge-script" rows="40"
+							cols="80">
+							<xsl:choose>
+								<xsl:when
+									test="/source/request/parameter[@name='charge-script']">
+									<xsl:value-of
+										select="/source/@charge-script" />
+								</xsl:when>
+								<xsl:otherwise>
+									<xsl:value-of
+										select="/source/hhdc-contract/@charge-script" />
+								</xsl:otherwise>
+							</xsl:choose>
+						</textarea>
+						<br />
+						<br />
+						Properties
+						<br />
+						<textarea name="properties" rows="40"
+							cols="80">
+							<xsl:choose>
+								<xsl:when
+									test="/source/request/parameter[@name='properties']">
+									<xsl:value-of
+										select="/source/@properties" />
+								</xsl:when>
+								<xsl:otherwise>
+									<xsl:value-of
+										select="/source/hhdc-contract/@properties" />
+								</xsl:otherwise>
+							</xsl:choose>
+						</textarea>
+						<h4>Example</h4>
+						<p>
+							<code>
+								<pre>
+									importer.name=StarkAutomaticHhDataImporter
+									hostname=example.com
+									username=username
+									password=password
+									directory0=downloads1
+									directory1=downloads2
+								</pre>
+							</code>
+						</p>
+						<br />
+						<br />
 						<input type="submit" value="Update" />
 						<input type="reset" value="Reset" />
 					</fieldset>
 				</form>
 				<br />
+				<form action="." method="post">
+					<fieldset>
+						<legend>Update State</legend>
+						<label>State</label>
+						<br />
+						<textarea name="state" rows="40" cols="80">
+							<xsl:choose>
+								<xsl:when
+									test="/source/request/parameter[@name='state']">
+									<xsl:value-of
+										select="/source/@state" />
+								</xsl:when>
+								<xsl:otherwise>
+									<xsl:value-of
+										select="/source/hhdc-contract/@state" />
+								</xsl:otherwise>
+							</xsl:choose>
+						</textarea>
+						<br />
+						<input type="submit" name="update-state"
+							value="Update" />
+						<input type="reset" value="Reset" />
+					</fieldset>
+				</form>
 				<form action=".">
 					<fieldset>
 						<legend>Delete this contract</legend>

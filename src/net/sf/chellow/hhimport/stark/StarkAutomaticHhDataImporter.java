@@ -2,36 +2,32 @@ package net.sf.chellow.hhimport.stark;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.StringReader;
-import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
-import java.util.Properties;
 import java.util.logging.Level;
 
 import net.sf.chellow.billing.Contract;
 import net.sf.chellow.billing.HhdcContract;
 import net.sf.chellow.hhimport.HhDataImportProcess;
-import net.sf.chellow.monad.DeployerException;
-import net.sf.chellow.monad.DesignerException;
+import net.sf.chellow.monad.HttpException;
+import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Invocation;
+import net.sf.chellow.monad.MonadMessage;
 import net.sf.chellow.monad.MonadUtils;
 import net.sf.chellow.monad.OkException;
-import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Urlable;
-import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.UserException;
-import net.sf.chellow.monad.MonadMessage;
 import net.sf.chellow.monad.XmlDescriber;
 import net.sf.chellow.monad.XmlTree;
 import net.sf.chellow.monad.types.MonadDate;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
 import net.sf.chellow.ui.ChellowLogger;
+
 import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPFile;
 import org.apache.commons.net.ftp.FTPReply;
@@ -57,40 +53,19 @@ public class StarkAutomaticHhDataImporter implements Urlable, XmlDescriber {
 
 	private Long contractId;
 
-	private Properties properties;
-
-	private Properties state;
+	// private Properties state;
 
 	public StarkAutomaticHhDataImporter(HhdcContract contract)
 			throws HttpException {
 		contractId = contract.getId();
 	}
 
-	public String getPropertiesString() throws InternalException {
-		StringWriter sw = new StringWriter();
-		try {
-			properties.store(sw, null);
-		} catch (IOException e) {
-			throw new InternalException(e);
-		}
-		return sw.toString();
-	}
-
-	private void log(String message) throws InternalException, HttpException {
+	private void log(String message) throws HttpException {
 		messages.add(new MonadMessage(new MonadDate().toString() + ": "
 				+ message));
 		if (messages.size() > 200) {
 			messages.remove(0);
 		}
-	}
-
-	private String getProperty(String name) throws HttpException {
-		String value = properties.getProperty(name);
-		if (value == null) {
-			throw new UserException("The property '" + name
-					+ "' is required, but could not be found.");
-		}
-		return value;
 	}
 
 	private String getPropertyNameLastImportDate(int directory) {
@@ -105,31 +80,20 @@ public class StarkAutomaticHhDataImporter implements Urlable, XmlDescriber {
 		FTPClient ftp = null;
 		try {
 			HhdcContract contract = HhdcContract.getHhdcContract(contractId);
-			properties = new Properties();
-			state = new Properties();
-			try {
-				properties.load(new StringReader(contract
-						.getImporterProperties()));
-				state.load(new StringReader(contract.getImporterState()));
-			} catch (IOException e) {
-				throw new InternalException(e);
-			}
-			String hostName = getProperty("hostname");
-			String userName = getProperty("username");
-			String password = getProperty("password");
+			/*
+			 * state = new Properties(); try { state.load(new
+			 * StringReader(contract.getState())); } catch (IOException e) {
+			 * throw new InternalException(e); }
+			 */
+			String hostName = contract.getProperty("hostname");
+			String userName = contract.getProperty("username");
+			String password = contract.getProperty("password");
 			List<String> directories = new ArrayList<String>();
 			String directory = null;
-			for (int i = 0; (directory = properties
-					.getProperty("directory" + i)) != null; i++) {
+			for (int i = 0; (directory = contract.getProperty("directory" + i)) != null; i++) {
 				directories.add(directory);
 			}
 
-			// StarkHhDownloaderEtcProperties etcProperties = new
-			// StarkHhDownloaderEtcProperties(
-			// getUri());
-			// StarkHhDownloaderVarProperties varProperties = new
-			// StarkHhDownloaderVarProperties(
-			// getUri());
 			ftp = new FTPClient();
 			int reply;
 			ftp.connect(hostName);
@@ -158,13 +122,15 @@ public class StarkAutomaticHhDataImporter implements Urlable, XmlDescriber {
 						}
 					}
 				});
-				String lastImportDateStr = getPropertyNameLastImportDate(i);
+				String lastImportDateStr = contract
+						.getStateProperty(getPropertyNameLastImportDate(i));
 				Date lastImportDate = null;
 				if (lastImportDateStr != null
 						&& lastImportDateStr.length() != 0) {
 					lastImportDate = new MonadDate(lastImportDateStr).getDate();
 				}
-				String lastImportName = getProperty(getPropertyNameLastImportName(i));
+				String lastImportName = contract
+						.getProperty(getPropertyNameLastImportName(i));
 				for (FTPFile file : files) {
 					if (file.getType() == FTPFile.FILE_TYPE
 							&& (lastImportDate == null ? true : (file
@@ -209,10 +175,12 @@ public class StarkAutomaticHhDataImporter implements Urlable, XmlDescriber {
 									"Couldn't complete ftp transaction: "
 											+ ftp.getReplyString());
 						}
-						state.setProperty(getPropertyNameLastImportDate(i),
+						contract.setStateProperty(
+								getPropertyNameLastImportDate(i),
 								new MonadDate(lastImportDate).toString());
-						state.setProperty(getPropertyNameLastImportName(i),
-								file.getName());
+						contract.setStateProperty(
+								getPropertyNameLastImportName(i), file
+										.getName());
 					}
 				}
 				if (!found) {
@@ -267,56 +235,13 @@ public class StarkAutomaticHhDataImporter implements Urlable, XmlDescriber {
 		return messages;
 	}
 
-	/*
-	 * public void init(ServletConfig conf) throws ServletException {
-	 * super.init(conf); ServletContext context = getServletContext();
-	 * Properties mailProperties = new Properties(); DesignerMethodFilter[]
-	 * designerMethodFilters = {};
-	 * 
-	 * setHibernateUtil(Hiber.getUtil()); try { MonadContextParameters
-	 * monadParameters = (MonadContextParameters) context
-	 * .getAttribute("monadParameters"); HostName mailHost =
-	 * monadParameters.getMailHost();
-	 * 
-	 * addDesignerMethod("defaultAction", designerMethodFilters); /*
-	 * addDesignerMethod("showConfiguration", designerMethodFilters);
-	 * addDesignerMethod("updateConfiguration", designerMethodFilters);
-	 */
-	// addDesignerMethod("showControls", designerMethodFilters);
-	// addDesignerMethod("cancelProcessing", designerMethodFilters);
-	// addDesignerMethod("startProcessing", designerMethodFilters);
-	/*
-	 * if (mailHost != null) { mailProperties.setProperty("mail.host",
-	 * mailHost.toString()); } } catch (Throwable e) { logger.logp(Level.SEVERE,
-	 * "net.sf.theelected.ui.Chellow", "init", "Can't initialize servlet.", e);
-	 * throw new ServletException(e.getMessage()); } }
-	 */
-	/**
-	 * returns information about the servlet
-	 */
-	/*
-	 * public String getServletInfo() { return "Monitors the automatic importing
-	 * of HH data."; }
-	 */
-	/*
-	 * public void service(HttpServletRequest req, HttpServletResponse res)
-	 * throws IOException { try { Invocation inv = new Invocation(req, res,
-	 * this); httpGet(inv); } catch (Throwable e) { try { new
-	 * InternetAddress("tlocke@tlocke.org.uk"); } catch (AddressException ae) { }
-	 * logger.logp(Level.SEVERE, "uk.org.tlocke.monad.Monad", "service", "Can't
-	 * process request", e); res .sendError(
-	 * HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "There has been an error
-	 * with our software. The " + "administrator has been informed, and the
-	 * problem will " + "be put right as soon as possible."); } }
-	 */
-	public void httpGet(Invocation inv) throws DesignerException,
-			InternalException, HttpException, DeployerException {
+	public void httpGet(Invocation inv) throws HttpException {
 		Document doc = MonadUtils.newSourceDocument();
 		Element source = doc.getDocumentElement();
-		Element importerElement = (Element) toXml(doc);
+		Element importerElement = toXml(doc);
 		source.appendChild(importerElement);
 		importerElement.appendChild(getContract().toXml(doc,
-				new XmlTree("provider", new XmlTree("organization"))));
+				new XmlTree("party")));
 		for (MonadMessage message : getLog()) {
 			importerElement.appendChild(message.toXml(doc));
 		}
@@ -357,31 +282,11 @@ public class StarkAutomaticHhDataImporter implements Urlable, XmlDescriber {
 		return getContract().getUri().resolve(getUriId()).append("/");
 	}
 
-	/*
-	 * private class StreamPartSource implements PartSource { private long
-	 * length;
-	 * 
-	 * private String fileName;
-	 * 
-	 * private InputStream inputStream;
-	 * 
-	 * public StreamPartSource(long length, String fileName, InputStream
-	 * inputStream) { this.length = length; this.fileName = fileName;
-	 * this.inputStream = inputStream; }
-	 * 
-	 * public long getLength() { return length; }
-	 * 
-	 * public String getFileName() { return fileName; }
-	 * 
-	 * public InputStream createInputStream() throws IOException { return
-	 * inputStream; } }
-	 */
-	public Node toXml(Document doc) throws InternalException, HttpException {
+	public Element toXml(Document doc) throws InternalException, HttpException {
 		return doc.createElement("stark-automatic-hh-data-importer");
 	}
 
-	public Node toXml(Document doc, XmlTree tree) throws InternalException,
-			HttpException {
+	public Node toXml(Document doc, XmlTree tree) throws HttpException {
 		// TODO Auto-generated method stub
 		return null;
 	}

@@ -12,15 +12,9 @@
 					href="{/source/request/@context-path}/style/" />
 
 				<title>
-					Chellow &gt; Organizations &gt;
+					Chellow &gt; HHDC Contracts &gt;
 					<xsl:value-of
-						select="/source/stark-automatic-hh-data-importer/dce-service/dce/org/@name" />
-					&gt; DCEs &gt;
-					<xsl:value-of
-						select="/source/stark-automatic-hh-data-importer/dce-service/dce/@name" />
-					&gt; Services &gt;
-					<xsl:value-of
-						select="/source/stark-automatic-hh-data-importer/dce-service/@name" />
+						select="/source/stark-automatic-hh-data-importer/hhdc-contract/@name" />
 					&gt; Stark Automatic HH Data Downloader
 				</title>
 
@@ -34,45 +28,22 @@
 						<span class="logo">Chellow</span>
 					</a>
 					&gt;
-					<a href="{/source/request/@context-path}/orgs/">
-						<xsl:value-of select="'Organizations'" />
+					<a
+						href="{/source/request/@context-path}/hhdc-contracts/">
+						<xsl:value-of select="'HHDC Contracts'" />
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/orgs/{/source/stark-automatic-hh-data-importer/dce-service/dce/org/@id}/">
+						href="{/source/request/@context-path}/hhdc-contracts/{/source/stark-automatic-hh-data-importer/hhdc-contract/@id}/">
 						<xsl:value-of
-							select="/source/stark-automatic-hh-data-importer/dce-service/dce/org/@name" />
-					</a>
-					&gt;
-					<a
-						href="{/source/request/@context-path}/orgs/{/source/stark-automatic-hh-data-importer/dce-service/dce/org/@id}/dces/">
-						<xsl:value-of select="'DCEs'" />
-					</a>
-					&gt;
-					<a
-						href="{/source/request/@context-path}/orgs/{/source/stark-automatic-hh-data-importer/dce-service/dce/org/@id}/dces/{/source/stark-automatic-hh-data-importer/dce-service/dce/@id}/">
-						<xsl:value-of
-							select="/source/stark-automatic-hh-data-importer/dce-service/dce/@name" />
-					</a>
-					&gt;
-					<a
-						href="{/source/request/@context-path}/orgs/{/source/stark-automatic-hh-data-importer/dce-service/dce/org/@id}/dces/{/source/stark-automatic-hh-data-importer/dce-service/dce/@id}/services/">
-						<xsl:value-of select="'Services'" />
-					</a>
-					&gt;
-					<a
-						href="{/source/request/@context-path}/orgs/{/source/stark-automatic-hh-data-importer/dce-service/dce/org/@id}/dces/{/source/stark-automatic-hh-data-importer/dce-service/dce/@id}/services/{/source/stark-automatic-hh-data-importer/dce-service/@id}/">
-						<xsl:value-of
-							select="/source/stark-automatic-hh-data-importer/dce-service/@name" />
+							select="/source/stark-automatic-hh-data-importer/hhdc-contract/@name" />
 					</a>
 					&gt; Stark Automatic HH Data Downloader
 				</p>
 				<br />
-
 				<h1>Log</h1>
 				<ul>
-					<xsl:for-each
-						select="//message">
+					<xsl:for-each select="//message">
 						<li>
 							<xsl:value-of select="@description" />
 						</li>

@@ -188,7 +188,7 @@ public class SupplierContract extends Contract {
 	}
 
 	@SuppressWarnings("unchecked")
-	void updateNotification(HhEndDate startDate, HhEndDate finishDate)
+	void onUpdate(HhEndDate startDate, HhEndDate finishDate)
 			throws HttpException {
 		List<Mpan> mpansOutside = Hiber
 				.session()
@@ -214,7 +214,7 @@ public class SupplierContract extends Contract {
 									+ (finishDate == null ? "ongoing"
 											: finishDate + "."));
 		}
-		super.updateNotification(startDate, finishDate);
+		super.onUpdate(startDate, finishDate);
 	}
 
 	@SuppressWarnings("unchecked")

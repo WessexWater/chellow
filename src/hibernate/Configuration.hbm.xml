@@ -4,7 +4,7 @@
           "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
 <!-- 
 	
-	Copyright 2005, 2008 Meniscus Systems Ltd
+	Copyright 2008 Meniscus Systems Ltd
 	
 	This file is part of Chellow.
 	
@@ -32,9 +32,11 @@
 			</generator>
 		</id>
 		<property type="integer" name="version" column="version" />
+		<!--
 		<property type="string" name="implicitUserProperties"
 			column="implicit_user_properties" />
-		<property type="string" name="chellowProperties"
-			column="chellow_properties" />
+		-->
+		<property type="string" name="properties"
+			column="properties" />
 	</class>
 </hibernate-mapping>

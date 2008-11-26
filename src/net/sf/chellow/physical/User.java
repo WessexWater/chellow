@@ -83,8 +83,9 @@ public class User extends PersistentEntity {
 						"Market Role Code", values, 5);
 				party = Party.getParty(participantCode, marketRoleCode);
 			}
-			User.insertUser(emailAddress, password, passwordDigest, userRole,
-					party);
+			User.insertUser(emailAddress, password.trim().length() == 0 ? null
+					: password, passwordDigest.trim().length() == 0 ? null
+					: passwordDigest, userRole, party);
 		} else if (action.equals("update")) {
 		}
 	}
@@ -154,8 +155,6 @@ public class User extends PersistentEntity {
 	private UserRole role;
 
 	private Party party;
-
-	// private Set<Role> roles;
 
 	public User() {
 	}
@@ -271,7 +270,7 @@ public class User extends PersistentEntity {
 	private Document document(String message) throws HttpException {
 		Document doc = MonadUtils.newSourceDocument();
 		Element source = doc.getDocumentElement();
-		source.appendChild(toXml(doc, new XmlTree("party")));
+		source.appendChild(toXml(doc, new XmlTree("party").put("role")));
 		for (MarketRole role : (List<MarketRole>) Hiber.session().createQuery(
 				"from MarketRole role order by role.code").list()) {
 			source.appendChild(role.toXml(doc));

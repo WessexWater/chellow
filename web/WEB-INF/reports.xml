@@ -2151,7 +2151,7 @@ if len(resultData) > 0:
         for monthPoint in monthPoints:
             graphics.drawString(str(point * 2), graphLeft + monthPoint + 16, int(xAxis - point * scaleFactor - 2))
     graphics.drawString("kW", graphLeft - 90, 100)
-    title = "Electricity use at site " + site.getCode().toString() + " " + site.getName() + " for " + str(months) + " month"
+    title = "Electricity use at site " + site.getCode() + " " + site.getName() + " for " + str(months) + " month"
     if months > 1:
         title = title + "s"
     title = title + " ending " + monthDateFormat.format(Date(finishDate.getTime() - 1)) + " " + yearDateFormat.format(Date(finishDate.getTime() - 1))
@@ -2220,7 +2220,7 @@ finishDateYear = inv.getInteger("finish-date-year")
 finishDateMonth = inv.getInteger("finish-date-month")
 months = inv.getInteger("months")
 if not inv.isValid():
-    raise UserException.newInvalidParameter()
+    raise UserException()
 cal = GregorianCalendar(TimeZone.getTimeZone("GMT"), Locale.UK)
 cal.clear()
 cal.set(Calendar.YEAR, finishDateYear)
@@ -2530,7 +2530,7 @@ if len(resultData) > 0:
     graphics.drawString("kW", graphLeft - 90, graphTopGenerated + 10)
     graphics.drawString("kW", graphLeft - 90, graphTopUsed + 10)
     graphics.drawString("kW", graphLeft - 90, graphTopDisplaced + 10)
-    title = "Electricity generation at site " + site.getCode().toString() + " " + site.getName() + " for " + str(months) + " month"
+    title = "Electricity generation at site " + site.getCode() + " " + site.getName() + " for " + str(months) + " month"
     if months > 1:
         title = title + "s"
     title = title + " ending " + monthDateFormat.format(Date(finishDate.getTime() - 1)) + " " + yearDateFormat.format(Date(finishDate.getTime() - 1))
@@ -3063,7 +3063,7 @@ if rs.next():
         cal.clear()
         cal.setTimeInMillis(hhDate)
         if cal.get(Calendar.HOUR_OF_DAY) == 0 and cal.get(Calendar.MINUTE) == 30:
-            pw.print('\r\n' + site.getCode().toString() + ',' + type + ',' + dateFormat.format(Date(hhDate)))
+            pw.print('\r\n' + site.getCode() + ',' + type + ',' + dateFormat.format(Date(hhDate)))
             pw.flush()
         pw.print(",")
         if type == 'used':

@@ -1005,6 +1005,54 @@ public class SupplyGeneration extends PersistentEntity {
 		}
 	}
 
+	private void checkMpanRelationship() throws HttpException {
+		HhdcContract hhdcContract = getHhdcContract();
+		if (hhdcContract != null) {
+			HhEndDate hhdcContractStartDate = hhdcContract.getStartRateScript()
+					.getStartDate();
+			if (hhdcContractStartDate.getDate().after(getStartDate().getDate())) {
+				throw new UserException(
+						"The HHDC contract starts after the supply generation.");
+			}
+			HhEndDate hhdcContractFinishDate = hhdcContract
+					.getFinishRateScript().getFinishDate();
+			if (hhdcContractFinishDate != null
+					&& (finishDate == null || hhdcContractFinishDate.getDate()
+							.before(getStartDate().getDate()))) {
+				throw new UserException("The HHDC contract "
+						+ hhdcContract.getId()
+						+ " finishes before the supply generation.");
+			}
+		}
+		for (Mpan mpan : mpans) {
+			SupplierContract supplierContract = SupplierContract
+					.getSupplierContract(mpan.getSupplierAccount()
+							.getContract().getId());
+			HhEndDate supplierContractStartDate = supplierContract
+					.getStartRateScript().getStartDate();
+			if (supplierContractStartDate.getDate().after(
+					getStartDate().getDate())) {
+				throw new UserException(
+						"The supplier contract starts after the supply generation.");
+			}
+			HhEndDate supplierContractFinishDate = supplierContract
+					.getFinishRateScript().getFinishDate();
+			if (finishDate == null
+					&& supplierContractFinishDate != null
+					|| supplierContractFinishDate != null
+					&& finishDate != null
+					&& supplierContractFinishDate.getDate().before(
+							getStartDate().getDate())) {
+				throw new UserException(
+						"The supplier contract finishes before the supply generation.");
+			}
+		}
+	}
+
+	public void onMpanChange() throws HttpException {
+		checkMpanRelationship();
+	}
+
 	public void update(HhEndDate startDate, HhEndDate finishDate, Meter meter)
 			throws HttpException {
 		HhEndDate originalStartDate = getStartDate();
@@ -1049,6 +1097,7 @@ public class SupplyGeneration extends PersistentEntity {
 					originalFinishDate.getDate()) ? finishDate
 					: originalFinishDate;
 		}
+		checkMpanRelationship();
 		supply.onSupplyGenerationChange(startDate.getDate().before(
 				originalStartDate.getDate()) ? startDate : originalStartDate,
 				checkFinishDate);

@@ -1,11 +1,8 @@
 package net.sf.chellow.hhimport.stark;
 
-import java.io.IOException;
-import java.io.StringReader;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.Map.Entry;
@@ -14,8 +11,8 @@ import java.util.logging.Logger;
 
 import net.sf.chellow.billing.HhdcContract;
 import net.sf.chellow.monad.Hiber;
-import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.HttpException;
+import net.sf.chellow.monad.InternalException;
 
 public class StarkAutomaticHhDataImporters extends TimerTask {
 	private static StarkAutomaticHhDataImporters importersInstance;
@@ -48,30 +45,19 @@ public class StarkAutomaticHhDataImporters extends TimerTask {
 
 	public StarkAutomaticHhDataImporter findImporter(HhdcContract contract)
 			throws HttpException {
-		Properties props = new Properties();
 		StarkAutomaticHhDataImporter importer = null;
-		String importerProps = contract.getImporterProperties();
-		if (importerProps != null) {
-			try {
-				props.load(new StringReader(importerProps));
-			} catch (IOException e) {
-				throw new InternalException(e);
-			}
-			if ("StarkAutomaticHhDataImporter".equals(props
-					.getProperty("importer.name"))) {
-				importer = importers.get(contract.getId());
-				if (importer == null
-						|| !importer.getPropertiesString().equals(
-								contract.getImporterProperties())) {
-					try {
-						importer = new StarkAutomaticHhDataImporter(contract);
-						importers.put(contract.getId(), importer);
-					} catch (HttpException e) {
-						logger.logp(Level.SEVERE,
-								"StarkAutomaticHhDataImporter", "run",
-								"Problem creating new Stark Automatic Hh Data Importer. "
-										+ e.getMessage(), e);
-					}
+		if ("StarkAutomaticHhDataImporter".equals(contract
+				.getProperty("importer.name"))) {
+			importer = importers.get(contract.getId());
+			if (importer == null) {
+				try {
+					importer = new StarkAutomaticHhDataImporter(contract);
+					importers.put(contract.getId(), importer);
+				} catch (HttpException e) {
+					logger.logp(Level.SEVERE, "StarkAutomaticHhDataImporter",
+							"run",
+							"Problem creating new Stark Automatic Hh Data Importer. "
+									+ e.getMessage(), e);
 				}
 			}
 		}

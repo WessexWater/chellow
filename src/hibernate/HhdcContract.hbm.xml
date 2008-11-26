@@ -35,5 +35,9 @@
 			not-null="true" />
 		<property name="lag" column="lag" type="integer"
 			not-null="true" />
+		<property name="properties" column="properties" type="string"
+			not-null="true" />
+		<property name="state" column="state" type="string"
+			not-null="true" />
 	</joined-subclass>
 </hibernate-mapping>

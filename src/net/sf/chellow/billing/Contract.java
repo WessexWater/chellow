@@ -138,15 +138,15 @@ public abstract class Contract extends PersistentEntity implements
 	@SuppressWarnings("unchecked")
 	public void update(String name, String chargeScript) throws HttpException {
 		internalUpdate(name, chargeScript);
-		updateNotification();
+		onUpdate();
 	}
 
-	void updateNotification() throws HttpException {
-		updateNotification(null, null);
+	void onUpdate() throws HttpException {
+		onUpdate(null, null);
 	}
 
 	public void delete() throws HttpException {
-		updateNotification(startRateScript.getStartDate(), finishRateScript
+		onUpdate(startRateScript.getStartDate(), finishRateScript
 				.getFinishDate());
 	}
 
@@ -163,7 +163,7 @@ public abstract class Contract extends PersistentEntity implements
 		}
 		getRateScripts().remove(rateScript);
 		Hiber.flush();
-		updateNotification(rateScript.getStartDate(), rateScript
+		onUpdate(rateScript.getStartDate(), rateScript
 				.getFinishDate());
 	}
 
@@ -176,7 +176,7 @@ public abstract class Contract extends PersistentEntity implements
 	}
 
 	@SuppressWarnings("unchecked")
-	void updateNotification(HhEndDate from, HhEndDate to) throws HttpException {
+	void onUpdate(HhEndDate from, HhEndDate to) throws HttpException {
 		if (from == null) {
 			from = getStartDate();
 		}
@@ -370,7 +370,7 @@ public abstract class Contract extends PersistentEntity implements
 				script);
 		getRateScripts().add(newRateScript);
 		Hiber.flush();
-		updateNotification(newRateScript.getStartDate(), newRateScript
+		onUpdate(newRateScript.getStartDate(), newRateScript
 				.getFinishDate());
 		return newRateScript;
 	}

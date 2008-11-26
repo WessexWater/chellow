@@ -211,7 +211,7 @@ public class RateScript extends PersistentEntity {
 					originalStartDate.getDate()) ? startDate
 					: originalStartDate;
 		}
-		contract.updateNotification(checkStartDate, checkFinishDate);
+		contract.onUpdate(checkStartDate, checkFinishDate);
 	}
 
 	public Element toXml(Document doc) throws HttpException {

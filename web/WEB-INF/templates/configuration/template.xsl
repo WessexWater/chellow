@@ -4,7 +4,6 @@
 	<xsl:output method="html" encoding="US-ASCII"
 		doctype-public="-//W3C//DTD HTML 4.01//EN"
 		doctype-system="http://www.w3.org/TR/html4/strict.dtd" indent="yes" />
-
 	<xsl:template match="/">
 		<html>
 			<head>
@@ -44,40 +43,34 @@
 					<fieldset>
 						<legend>Update Configuration</legend>
 						<br />
-						<label>Implicit User Properties</label>
+						<label>Properties</label>
 						<br />
-						<textarea name="implicit-user-properties"
-							cols="80" rows="50">
-							<xsl:choose>
-								<xsl:when
-									test="/source/request/parameter[@name = 'implicit-user-properties']">
-									<xsl:value-of
-										select="/source/request/parameter[@name = 'implicit-user-properties']/value" />
-								</xsl:when>
-								<xsl:otherwise>
-									<xsl:value-of
-										select="/source/configuration/implicit-user-properties/text()" />
-								</xsl:otherwise>
-							</xsl:choose>
-						</textarea>
-						<br />
-						<br />
-						<label>Chellow Properties</label>
-						<br />
-						<textarea name="chellow-properties" cols="80"
+						<textarea name="properties" cols="80"
 							rows="50">
 							<xsl:choose>
 								<xsl:when
-									test="/source/request/parameter[@name = 'chellow-properties']">
+									test="/source/request/parameter[@name = 'properties']">
 									<xsl:value-of
-										select="/source/request/parameter[@name = 'chellow-properties']/value" />
+										select="/source/request/parameter[@name = 'properties']/value" />
 								</xsl:when>
 								<xsl:otherwise>
 									<xsl:value-of
-										select="/source/configuration/chellow-properties/text()" />
+										select="/source/configuration/properties/text()" />
 								</xsl:otherwise>
 							</xsl:choose>
 						</textarea>
+						<h4>Example</h4>
+						<p>
+							The line below means that any request
+							with IP 127.0.0.1 will automatically be
+							associated with the user
+							implicit-user@localhost.
+						</p>
+						<p>
+							<code>
+								ip127-0-0-1=implicit-user@localhost
+							</code>
+						</p>
 						<br />
 						<br />
 						<input type="submit" value="Update" />
