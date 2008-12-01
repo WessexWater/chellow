@@ -44,25 +44,24 @@ import org.w3c.dom.Element;
 public class HhDatum extends PersistentEntity {
 	public static final Character ACTUAL = 'A';
 	public static final Character ESTIMATE = 'E';
-/*
-	static private String getCsvField(String fieldName, String[] values,
-			int index) throws HttpException {
-		if (index > values.length - 1) {
-			throw new UserException("Another field called " + fieldName
-					+ " needs to be added on to " + values);
-		}
-		return values[index];
-	}
-*/
-	static private void handleException(List<String> messages, String message) throws HttpException {
+
+	/*
+	 * static private String getCsvField(String fieldName, String[] values, int
+	 * index) throws HttpException { if (index > values.length - 1) { throw new
+	 * UserException("Another field called " + fieldName + " needs to be added
+	 * on to " + values); } return values[index]; }
+	 */
+	static private void handleException(List<String> messages, String message)
+			throws HttpException {
 		if (messages == null) {
 			throw new UserException(message);
 		} else {
 			messages.add(message);
 		}
 	}
-	static public void insert(Iterator<HhDatumRaw> rawData, List<Boolean> halt, List<String> messages)
-			throws HttpException {
+
+	static public void insert(Iterator<HhDatumRaw> rawData, List<Boolean> halt,
+			List<String> messages) throws HttpException {
 		if (!rawData.hasNext()) {
 			return;
 		}
@@ -77,7 +76,7 @@ public class HhDatum extends PersistentEntity {
 		boolean isKwh = datum.getIsKwh();
 		if (generation == null) {
 			handleException(messages, "HH datum has been ignored: "
-				+ datum.toString() + ".");
+					+ datum.toString() + ".");
 		}
 		Channel channel = generation.getChannel(isImport, isKwh);
 		if (channel == null) {
@@ -91,9 +90,9 @@ public class HhDatum extends PersistentEntity {
 		if (!rawData.hasNext()) {
 			// batchSize = data.size();
 			try {
-			channel.addHhData(data);
+				channel.addHhData(data);
 			} catch (UserException e) {
-		handleException(messages, e.getMessage());
+				handleException(messages, e.getMessage());
 			}
 		}
 		while (rawData.hasNext() && !halt.get(0)) {
@@ -108,9 +107,9 @@ public class HhDatum extends PersistentEntity {
 							.before(endDate))) {
 				// batchSize = data.size();
 				try {
-				channel.addHhData(data);
+					channel.addHhData(data);
 				} catch (UserException e) {
-				handleException(messages, e.getMessage());
+					handleException(messages, e.getMessage());
 				}
 				Hiber.close();
 				data.clear();
@@ -126,7 +125,8 @@ public class HhDatum extends PersistentEntity {
 				isKwh = datum.getIsKwh();
 				channel = generation.getChannel(isImport, isKwh);
 				if (channel == null) {
-					handleException(messages, "There is no channel for the datum: "
+					handleException(messages,
+							"There is no channel for the datum: "
 									+ datum.toString() + ".");
 				}
 				genFinishDate = generation.getFinishDate();
@@ -139,18 +139,16 @@ public class HhDatum extends PersistentEntity {
 		}
 		// Hiber.close();
 	}
-/*
-	static public HhDatumRaw generalImportRaw(String[] values)
-			throws HttpException {
-		String mpanCoreStr = getCsvField("MPAN Core", values, 2);
-		String date = getCsvField("Date", values, 3);
-		String isImport = getCsvField("Is Import?", values, 4);
-		String isKwh = getCsvField("Is Kwh?", values, 5);
-		String value = getCsvField("Value", values, 6);
-		String status = getCsvField("Status", values, 7);
-		return new HhDatumRaw(mpanCoreStr, isImport, isKwh, date, value, status);
-	}
-	*/
+
+	/*
+	 * static public HhDatumRaw generalImportRaw(String[] values) throws
+	 * HttpException { String mpanCoreStr = getCsvField("MPAN Core", values, 2);
+	 * String date = getCsvField("Date", values, 3); String isImport =
+	 * getCsvField("Is Import?", values, 4); String isKwh = getCsvField("Is
+	 * Kwh?", values, 5); String value = getCsvField("Value", values, 6); String
+	 * status = getCsvField("Status", values, 7); return new
+	 * HhDatumRaw(mpanCoreStr, isImport, isKwh, date, value, status); }
+	 */
 
 	/*
 	 * static public void generalImport(String action, String[] values) throws

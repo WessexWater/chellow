@@ -33,7 +33,6 @@ import java.util.List;
 
 import net.sf.chellow.billing.HhdcContract;
 import net.sf.chellow.hhimport.HhDatumRaw;
-import net.sf.chellow.monad.Debug;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.InternalException;
@@ -559,9 +558,10 @@ public class Channel extends PersistentEntity implements Urlable {
 
 	@SuppressWarnings( { "unchecked", "deprecation" })
 	public void addHhData(List<HhDatumRaw> dataRaw) throws HttpException {
-		long now = System.currentTimeMillis();
+		//long now = System.currentTimeMillis();
 		HhDatumRaw firstRawDatum = dataRaw.get(0);
 		HhDatumRaw lastRawDatum = dataRaw.get(dataRaw.size() - 1);
+		//Debug.print("First dr = " + firstRawDatum + " cond dr " + lastRawDatum);
 		List<HhDatum> data = (List<HhDatum>) Hiber
 				.session()
 				.createQuery(
@@ -572,8 +572,8 @@ public class Channel extends PersistentEntity implements Urlable {
 						"finishDate", lastRawDatum.getEndDate().getDate())
 				.list();
 		if (data.isEmpty()) {
-			Debug.print("Starting to check for missing from latest: "
-			 + (System.currentTimeMillis() - now));
+			//Debug.print("Starting to check for missing from latest: "
+			// + (System.currentTimeMillis() - now));
 			checkForMissingFromLatest(firstRawDatum.getEndDate().getPrevious());
 		}
 		HhEndDate siteCheckFrom = null;
@@ -596,8 +596,8 @@ public class Channel extends PersistentEntity implements Urlable {
 		}
 		int batchSize = 0;
 		for (int i = 0; i < dataRaw.size(); i++) {
-			 Debug.print("Start processing hh: "
-			 + (System.currentTimeMillis() - now));
+			 //Debug.print("Start processing hh: "
+			 //+ (System.currentTimeMillis() - now));
 			boolean added = false;
 			boolean altered = false;
 			HhDatumRaw datumRaw = dataRaw.get(i);
@@ -610,8 +610,8 @@ public class Channel extends PersistentEntity implements Urlable {
 				}
 			}
 			if (datum == null) {
-				 Debug.print("About to save datum: "
-				 + (System.currentTimeMillis() - now));
+				 //Debug.print("About to save datum: "
+				 //+ (System.currentTimeMillis() - now));
 				try {
 					stmt.setLong(1, getId());
 
@@ -629,9 +629,8 @@ public class Channel extends PersistentEntity implements Urlable {
 				} catch (SQLException e) {
 					throw new InternalException(e);
 				}
-				 Hiber.session().save(new HhDatum(this, datumRaw));
-				 Debug.print("Saved datum: "
-				 + (System.currentTimeMillis() - now));
+				 //Debug.print("Saved datum: "
+				 //+ (System.currentTimeMillis() - now));
 				 Hiber.flush();
 				lastAdditionDate = datumRaw.getEndDate();
 				added = true;
@@ -640,20 +639,20 @@ public class Channel extends PersistentEntity implements Urlable {
 					resolveMissingFrom = datumRaw.getEndDate();
 				}
 				resolveMissingTo = datumRaw.getEndDate();
-				 Debug.print("Resolved missing: "
-				 + (System.currentTimeMillis() - now));
+				// Debug.print("Resolved missing: "
+				// + (System.currentTimeMillis() - now));
 			} else if (datumRaw.getValue() != datum.getValue()
 					|| (datumRaw.getStatus() == null ? datum.getStatus() != null
 							: !datumRaw.getStatus().equals(datum.getStatus()))) {
-				 Debug.print("About to update datum: "
-				 + (System.currentTimeMillis() - now));
+				 //Debug.print("About to update datum: "
+				 //+ (System.currentTimeMillis() - now));
 				originalDatum = datum;
 				datum.update(datumRaw.getValue(), datumRaw.getStatus());
 				Hiber.flush();
 				altered = true;
 			}
-			 Debug.print("About to see if changed: "
-		 + (System.currentTimeMillis() - now));
+			 //Debug.print("About to see if changed: "
+		 //+ (System.currentTimeMillis() - now));
 			if (added || altered) {
 				if (siteCheckFrom == null) {
 					siteCheckFrom = datumRaw.getEndDate();
@@ -679,11 +678,11 @@ public class Channel extends PersistentEntity implements Urlable {
 			}
 			if (lastAdditionDate != null
 					&& (lastAdditionDate.equals(prevEndDate) || batchSize > 100)) {
-				 Debug.print("About to execute batch "
-				 + (System.currentTimeMillis() - now));
+				 //Debug.print("About to execute batch "
+				 //+ (System.currentTimeMillis() - now));
 				try {
 					stmt.executeBatch();
-					 Debug.print("Added  lines.");
+					// Debug.print("Added  lines.");
 					batchSize = 0;
 				} catch (SQLException e) {
 					throw new InternalException(e);

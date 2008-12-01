@@ -36,7 +36,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
-public class StarkAutomaticHhDataImporter implements Urlable, XmlDescriber {
+public class StarkAutomaticHhDataImporter implements Urlable, XmlDescriber, Runnable {
 	static public final UriPathElement URI_ID;
 
 	static {
@@ -54,7 +54,7 @@ public class StarkAutomaticHhDataImporter implements Urlable, XmlDescriber {
 
 	private Long contractId;
 
-	// private Properties state;
+	private boolean running = false;
 
 	public StarkAutomaticHhDataImporter(HhdcContract contract)
 			throws HttpException {
@@ -78,9 +78,19 @@ public class StarkAutomaticHhDataImporter implements Urlable, XmlDescriber {
 	}
 
 	public void run() {
+		if (running) {
+			return;
+		} else {
+			running = true;
+		}
+		
 		FTPClient ftp = null;
 		try {
 			HhdcContract contract = HhdcContract.getHhdcContract(contractId);
+			//Debug.print("About to set state property3");
+			//contract.setStateProperty(
+			//		"Hello", "hello");
+			//Debug.print("Has set state prop3");
 			/*
 			 * state = new Properties(); try { state.load(new
 			 * StringReader(contract.getState())); } catch (IOException e) {
@@ -108,6 +118,7 @@ public class StarkAutomaticHhDataImporter implements Urlable, XmlDescriber {
 			ftp.login(userName, password);
 			log("Server replied with '" + ftp.getReplyString() + "'.");
 			for (int i = 0; i < directories.size(); i++) {
+				contract = HhdcContract.getHhdcContract(contractId);
 				log("Checking the directory '" + directories.get(i) + "'.");
 				boolean found = false;
 				FTPFile[] filesArray = ftp.listFiles(directories.get(i));
@@ -133,7 +144,7 @@ public class StarkAutomaticHhDataImporter implements Urlable, XmlDescriber {
 					lastImportDate = new Date(0);
 				}
 				String lastImportName = contract
-						.getProperty(getPropertyNameLastImportName(i));
+						.getStateProperty(getPropertyNameLastImportName(i));
 				for (FTPFile file : files) {
 					if (file.getType() == FTPFile.FILE_TYPE
 							&& (lastImportDate == null ? true : (file
@@ -178,12 +189,14 @@ public class StarkAutomaticHhDataImporter implements Urlable, XmlDescriber {
 									"Couldn't complete ftp transaction: "
 											+ ftp.getReplyString());
 						}
+						contract = HhdcContract.getHhdcContract(contractId);
 						contract.setStateProperty(
 								getPropertyNameLastImportDate(i),
-								new MonadDate(lastImportDate).toString());
+								new MonadDate(file.getTimestamp().getTime()).toString());
 						contract.setStateProperty(
 								getPropertyNameLastImportName(i), file
 										.getName());
+						Hiber.commit();
 					}
 				}
 				if (!found) {
@@ -218,6 +231,7 @@ public class StarkAutomaticHhDataImporter implements Urlable, XmlDescriber {
 			ChellowLogger.getLogger().logp(Level.SEVERE, "ContextListener",
 					"contextInitialized", "Can't initialize context.", e);
 		} finally {
+			running = false;
 			if (ftp != null && ftp.isConnected()) {
 				try {
 					ftp.logout();
@@ -237,6 +251,24 @@ public class StarkAutomaticHhDataImporter implements Urlable, XmlDescriber {
 	public List<MonadMessage> getLog() {
 		return messages;
 	}
+	
+	private Document document() throws HttpException {
+		Document doc = MonadUtils.newSourceDocument();
+		Element source = doc.getDocumentElement();
+		Element importerElement = toXml(doc);
+		source.appendChild(importerElement);
+		importerElement.appendChild(getContract().toXml(doc,
+				new XmlTree("party")));
+		for (MonadMessage message : getLog()) {
+			importerElement.appendChild(message.toXml(doc));
+		}
+		if (hhImporter != null) {
+			importerElement.appendChild(new MonadMessage(hhImporter.status())
+					.toXml(doc));
+		}
+		return doc;
+	}
+
 
 	public void httpGet(Invocation inv) throws HttpException {
 		Document doc = MonadUtils.newSourceDocument();
@@ -259,10 +291,12 @@ public class StarkAutomaticHhDataImporter implements Urlable, XmlDescriber {
 		return URI_ID;
 	}
 
-	public void httpPost(Invocation inv) throws InternalException,
-			HttpException {
-		// TODO Auto-generated method stub
-
+	public void httpPost(Invocation inv) throws HttpException {
+		if (running) {
+			throw new UserException(document(), "This import is already running.");
+		}
+		new Thread(this).start();
+		inv.sendOk(document());
 	}
 
 	public void httpDelete(Invocation inv) throws InternalException,

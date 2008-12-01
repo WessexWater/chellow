@@ -46,8 +46,7 @@ public class HhDataImportProcess extends Thread implements Urlable,
 	private HhConverter converter;
 
 	private long suppliesChecked;
-
-	private Integer batchSize = null;
+    //private Integer batchSize = null;
 
 	private List<SupplyGeneration> supplyGenerations = null;
 
@@ -301,8 +300,7 @@ public class HhDataImportProcess extends Thread implements Urlable,
 
 	public String status() {
 		return supplyGenerations == null ? "Processing line number "
-				+ converter.lastLineNumber() + " and batch size is "
-				+ batchSize + "." : "Checking supply " + (suppliesChecked + 1)
+				+ converter.lastLineNumber() + "." : "Checking supply " + (suppliesChecked + 1)
 				+ " of " + supplyGenerations.size() + ".";
 	}
 

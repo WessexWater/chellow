@@ -40,6 +40,12 @@
 					</a>
 					&gt; Stark Automatic HH Data Downloader
 				</p>
+				<form action="." method="post">
+					<fieldset>
+						<legend>Import now</legend>
+						<input type="submit" value="Import" />
+					</fieldset>
+				</form>
 				<br />
 				<h1>Log</h1>
 				<ul>
