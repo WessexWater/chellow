@@ -238,6 +238,16 @@
 								</xsl:otherwise>
 							</xsl:choose>
 						</textarea>
+						<h4>Example</h4>
+						<p>
+							<code>
+								<pre>
+									lastImportDate0=2008-11-30
+									lastImportName0=Example
+								</pre>
+							</code>
+						</p>
+						
 						<br />
 						<input type="submit" name="update-state"
 							value="Update" />

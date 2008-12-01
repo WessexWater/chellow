@@ -9,6 +9,7 @@ import java.io.Reader;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.zip.ZipEntry;
@@ -25,6 +26,7 @@ import net.sf.chellow.billing.NonCoreContract;
 import net.sf.chellow.billing.RateScript;
 import net.sf.chellow.billing.SupplierContract;
 import net.sf.chellow.hhimport.HhDatumRaw;
+import net.sf.chellow.monad.Debug;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.InternalException;
@@ -55,12 +57,12 @@ public class GeneralImport extends Thread implements Urlable, XmlDescriber {
 		pw.println("  <line>");
 		for (String value : values) {
 			pw.println("    <value><![CDATA["
-					+ value.replace("<![CDATA[",
-							"&lt;![CDATA[").replace("]]>", "]]&gt;")
-					+ "]]></value>");	
+					+ value.replace("<![CDATA[", "&lt;![CDATA[").replace("]]>",
+							"]]&gt;") + "]]></value>");
 		}
 		pw.println("  </line>");
 	}
+
 	public static final String NO_CHANGE = "{no change}";
 
 	private boolean halt = false;
@@ -128,6 +130,9 @@ public class GeneralImport extends Thread implements Urlable, XmlDescriber {
 	}
 
 	public void run() {
+		long totalHhTime = 0;
+		List<Boolean> halt = Collections.synchronizedList(new ArrayList<Boolean>());
+		halt.add(false);
 		try {
 			String[] allValues = digester.getLine();
 			List<HhDatumRaw> hhData = new ArrayList<HhDatumRaw>();
@@ -140,18 +145,24 @@ public class GeneralImport extends Thread implements Urlable, XmlDescriber {
 				String action = allValues[0].trim().toLowerCase();
 				String type = allValues[1].trim().toLowerCase();
 				if (type.equals("hh-datum")) {
-					//Debug.print("Type is hh-datum");
+					long startProchh = System.currentTimeMillis();
+					// Debug.print("Type is hh-datum");
 					if (action.equals("insert")) {
-						//Debug.print("action is insert");
-						hhData.add(HhDatum.generalImportRaw(allValues));
-						//Debug.print("size " + hhData.size());
+						// Debug.print("action is insert");
+						hhData.add(new HhDatumRaw(allValues[2], allValues[3],
+								allValues[4], allValues[5], allValues[6],
+								allValues[7]));
+						// Debug.print("size " + hhData.size());
 						if (hhData.size() > 1000) {
-							HhDatum.generalImportInsert(hhData);
+							HhDatum.insert(hhData.iterator(), halt, null);
 							hhData.clear();
 						}
-					} else {
-						HhDatum.generalImport(action, allValues);
 					}
+					/*
+					 * else { HhDatum.generalImport(action, allValues); }
+					 */
+					totalHhTime = totalHhTime + System.currentTimeMillis()
+							- startProchh;
 				} else {
 					csvElement = doc.createElement("csvLine");
 					// try {
@@ -185,16 +196,20 @@ public class GeneralImport extends Thread implements Urlable, XmlDescriber {
 					} else if (type.equals("hhdc-contract")) {
 						HhdcContract.generalImport(action, values, csvElement);
 					} else if (type.equals("hhdc-contract-rate-script")) {
-						RateScript.generalImportHhdc(action, values, csvElement);
+						RateScript
+								.generalImportHhdc(action, values, csvElement);
 					} else if (type.equals("non-core-contract")) {
-						NonCoreContract.generalImport(action, values, csvElement);
+						NonCoreContract.generalImport(action, values,
+								csvElement);
 					} else if (type.equals("non-core-contract-rate-script")) {
-						RateScript.generalImportNonCore(action, values, csvElement);
+						RateScript.generalImportNonCore(action, values,
+								csvElement);
 					} else if (type.equals("supplier-contract")) {
 						SupplierContract.generalImport(action, values,
 								csvElement);
 					} else if (type.equals("supplier-contract-rate-script")) {
-						RateScript.generalImportSupplier(action, values, csvElement);
+						RateScript.generalImportSupplier(action, values,
+								csvElement);
 					} else if (type.equals("user")) {
 						User.generalImport(action, values, csvElement);
 					} else {
@@ -208,8 +223,8 @@ public class GeneralImport extends Thread implements Urlable, XmlDescriber {
 			}
 
 			if (!hhData.isEmpty()) {
-				//Debug.print("not empty, so adding.");
-				HhDatum.generalImportInsert(hhData);
+				// Debug.print("not empty, so adding.");
+				HhDatum.insert(hhData.iterator(), halt, null);
 				Hiber.close();
 			}
 
@@ -241,6 +256,7 @@ public class GeneralImport extends Thread implements Urlable, XmlDescriber {
 			Hiber.rollBack();
 			Hiber.close();
 		}
+		Debug.print("TotalTimeHH " + totalHhTime);
 	}
 
 	public static String addField(Element csvElement, String name,

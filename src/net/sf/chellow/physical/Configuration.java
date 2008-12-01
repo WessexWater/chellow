@@ -34,38 +34,24 @@ public class Configuration extends PersistentEntity {
 		}
 	}
 
-	static public void setDatabaseVersion(int version) {
-		Configuration configuration = getConfiguration();
-		if (configuration == null) {
-			configuration = new Configuration();
-			configuration.setVersion(version);
-			configuration.setProperties("");
-			Hiber.session().save(configuration);
-			Hiber.flush();
-		} else {
-			configuration.setVersion(version);
+	static public Configuration getConfiguration() {
+		Configuration config = (Configuration) Hiber.session()
+				.createQuery("from Configuration").uniqueResult();
+		if (config == null) {
+			config = new Configuration("");
+			Hiber.session().save(config);
 			Hiber.flush();
 		}
+		return config;
 	}
-
-	static public Configuration getConfiguration() {
-		return (Configuration) Hiber.session()
-				.createQuery("from Configuration").uniqueResult();
-	}
-
-	private int version;
 
 	private String properties;
 
 	public Configuration() {
 	}
-
-	int getVersion() {
-		return version;
-	}
-
-	void setVersion(int version) {
-		this.version = version;
+	
+	public Configuration(String properties) {
+		setProperties(properties);
 	}
 
 	public String getProperties() {
@@ -112,7 +98,6 @@ public class Configuration extends PersistentEntity {
 	@Override
 	public Element toXml(Document doc) throws HttpException {
 		Element element = doc.createElement("configuration");
-		element.setAttribute("db-version", Integer.toString(version));
 		try {
 			Reader is = new InputStreamReader(Monad.getContext().getResource(
 					"/WEB-INF/VERSION").openStream(), "UTF-8");

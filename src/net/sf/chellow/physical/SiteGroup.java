@@ -1,15 +1,17 @@
 package net.sf.chellow.physical;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.hibernate.Query;
-
 import net.sf.chellow.billing.HhdcContract;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
+
+import org.hibernate.Query;
+import org.hibernate.ScrollableResults;
 
 public class SiteGroup {
 	public static final String EXPORT_NET_GT_IMPORT_GEN = "Export to net > import from generators.";
@@ -60,23 +62,23 @@ public class SiteGroup {
 		List<Float> exportToGen = new ArrayList<Float>();
 		map.put("export-to-gen", exportToGen);
 
-		HhEndDate hhEndDate = getFrom();
-		while (!hhEndDate.getDate().after(getTo().getDate())) {
+		Calendar cal = HhEndDate.getCalendar();
+		for (long end = getFrom().getDate().getTime(); end <= getTo().getDate()
+				.getTime(); end = HhEndDate.getNext(cal, end)) {
 			importFromNet.add(0f);
 			exportToNet.add(0f);
 			importFromGen.add(0f);
 			exportToGen.add(0f);
-			hhEndDate = hhEndDate.getNext();
 		}
 		Query query = Hiber
-		.session()
-		.createQuery(
-				"from HhDatum datum where datum.channel.supplyGeneration.supply = :supply and datum.channel.isImport = :isImport and datum.channel.isKwh = true and datum.endDate.date >= :from and datum.endDate.date <= :to order by datum.endDate.date")
-		.setTimestamp("from", from.getDate()).setTimestamp("to",
-				to.getDate());
+				.session()
+				.createQuery(
+						"select datum.endDate.date , datum.value from HhDatum datum where datum.channel.supplyGeneration.supply = :supply and datum.channel.isImport = :isImport and datum.channel.isKwh = true and datum.endDate.date >= :from and datum.endDate.date <= :to order by datum.endDate.date")
+				.setTimestamp("from", from.getDate()).setTimestamp("to",
+						to.getDate());
 		for (Supply supply : getSupplies()) {
 			query.setEntity("supply", supply);
-			for (boolean isImport : new boolean[] {true, false}) {
+			for (boolean isImport : new boolean[] { true, false }) {
 				List<Float> hhStream = null;
 				if (supply.getSource().getCode().equals(Source.NETWORK_CODE)) {
 					if (isImport) {
@@ -92,25 +94,31 @@ public class SiteGroup {
 					}
 				}
 				query.setBoolean("isImport", isImport);
-				List<HhDatum> hhData = (List<HhDatum>) query.list();
-				if (hhData.isEmpty()) {
+				ScrollableResults hhData = query.scroll();
+				if (!hhData.next()) {
 					continue;
 				}
 				int i = 0;
-				int missing = 0;
-				hhEndDate = getFrom();
-				while (!hhEndDate.getDate().after(getTo().getDate())) {
-					HhDatum datum = null;
-					if (i - missing < hhData.size()) {
-						datum = hhData.get(i - missing);
-						if (!hhEndDate.equals(datum.getEndDate())) {
-							missing++;
-						} else {
-							hhStream.set(i, hhStream.get(i) + datum.getValue());
+				// int missing = 0;
+				long datumEndDate = hhData.getDate(0).getTime();
+				float datumValue = hhData.getFloat(1);
+				for (long end = getFrom().getDate().getTime(); end <= getTo()
+						.getDate().getTime(); end = HhEndDate.getNext(cal, end)) {
+					if (datumEndDate == end) {
+						hhStream.set(i, hhStream.get(i) + datumValue);
+						if (hhData.next()) {
+							datumEndDate = hhData.getDate(0).getTime();
+							datumValue = hhData.getFloat(1);
 						}
 					}
+					/*
+					 * HhDatum datum = null; if (i - missing < hhData.size()) {
+					 * datum = hhData.get(i - missing); if (end !=
+					 * datum.getEndDate().getDate().getTime()) { missing++; }
+					 * else { hhStream.set(i, hhStream.get(i) +
+					 * datum.getValue()); } }
+					 */
 					i++;
-					hhEndDate = hhEndDate.getNext();
 				}
 			}
 		}
@@ -118,19 +126,17 @@ public class SiteGroup {
 	}
 
 	public void addHhdcSnag(String description, HhEndDate startDate,
-			HhEndDate finishDate, boolean isResolved)
-			throws HttpException {
+			HhEndDate finishDate, boolean isResolved) throws HttpException {
 		// which sevice?
 		Site site = sites.get(0);
 		HhdcContract contract = getHhdcContract(startDate);
 		HhEndDate contractEndDate = contract.getFinishRateScript()
 				.getFinishDate();
-		SnagDateBounded
-				.addSiteSnag(contract, site, description, startDate,
-						contractEndDate == null
-								|| contractEndDate.getDate().after(
-										finishDate.getDate()) ? finishDate
-								: contractEndDate, isResolved);
+		SnagDateBounded.addSiteSnag(contract, site, description, startDate,
+				contractEndDate == null
+						|| contractEndDate.getDate()
+								.after(finishDate.getDate()) ? finishDate
+						: contractEndDate, isResolved);
 		while (!(contractEndDate == null || !contractEndDate.getDate().before(
 				finishDate.getDate()))) {
 			contract = getHhdcContract(contractEndDate.getNext());
@@ -152,8 +158,8 @@ public class SiteGroup {
 						"select distinct mpan.hhdcAccount.contract.id from Mpan mpan where mpan.supplyGeneration.supply in (:supplies) and mpan.supplyGeneration.startDate.date <= :date and (mpan.supplyGeneration.finishDate.date is null or mpan.supplyGeneration.finishDate >= :date) order by mpan.hhdcAccount.contract.id")
 				.setParameterList("supplies", supplies).setTimestamp("date",
 						date.getDate()).list();
-		return contractIds.size() > 0 ? HhdcContract.getHhdcContract(contractIds
-				.get(0)) : null;
+		return contractIds.size() > 0 ? HhdcContract
+				.getHhdcContract(contractIds.get(0)) : null;
 	}
 
 	@SuppressWarnings("unchecked")

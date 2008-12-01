@@ -28,9 +28,7 @@ import net.sf.chellow.monad.XmlDescriber;
 import net.sf.chellow.monad.XmlTree;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
-import net.sf.chellow.physical.Channel;
-import net.sf.chellow.physical.HhEndDate;
-import net.sf.chellow.physical.MpanCore;
+import net.sf.chellow.physical.HhDatum;
 import net.sf.chellow.physical.SupplyGeneration;
 import net.sf.chellow.ui.ChellowLogger;
 
@@ -41,7 +39,7 @@ import org.w3c.dom.Node;
 
 public class HhDataImportProcess extends Thread implements Urlable,
 		XmlDescriber {
-	private boolean halt = false;
+	private List<Boolean> halt = new ArrayList<Boolean>();
 
 	private List<String> messages = new ArrayList<String>();
 
@@ -74,6 +72,7 @@ public class HhDataImportProcess extends Thread implements Urlable,
 
 	public void initialize(Long hhdcContractId, Long id, InputStream is,
 			String fileName, long size) throws HttpException {
+		halt.add(false);
 		this.hhdcContractId = hhdcContractId;
 		this.id = id;
 		if (size == 0) {
@@ -153,18 +152,11 @@ public class HhDataImportProcess extends Thread implements Urlable,
 	@SuppressWarnings("unchecked")
 	public void run() {
 		try {
-			if (!converter.hasNext()) {
-				return;
-			}
+			HhDatum.insert(converter, halt, messages);
+			/*
 			HhDatumRaw datum = converter.next();
 			String mpanCoreStr = datum.getMpanCore();
 			MpanCore mpanCore = MpanCore.getMpanCore(mpanCoreStr);
-			HhdcContract contract = HhdcContract
-					.getHhdcContract(hhdcContractId);
-			/*
-			 * Supply supply = contract.getOrganization()
-			 * .findMpanCore(mpanCoreRaw).getSupply();
-			 */
 			SupplyGeneration generation = mpanCore
 					.getSupply().getGeneration(datum.getEndDate());
 
@@ -181,7 +173,7 @@ public class HhDataImportProcess extends Thread implements Urlable,
 			if (!converter.hasNext()) {
 				batchSize = data.size();
 				try {
-					channel.addHhData(contract, data);
+					channel.addHhData(data);
 				} catch (UserException e) {
 					messages.add(e.getMessage());
 				}
@@ -208,7 +200,7 @@ public class HhDataImportProcess extends Thread implements Urlable,
 								.before(datum.getEndDate().getDate()))) {
 					batchSize = data.size();
 					try {
-						channel.addHhData(contract, data);
+						channel.addHhData(data);
 					} catch (UserException e) {
 						messages.add(e.getMessage());
 					}
@@ -216,7 +208,6 @@ public class HhDataImportProcess extends Thread implements Urlable,
 					data.clear();
 					mpanCoreStr = datum.getMpanCore();
 					mpanCore = MpanCore.getMpanCore(mpanCoreStr);
-					contract = HhdcContract.getHhdcContract(hhdcContractId);
 					generation = mpanCore.getSupply()
 							.getGeneration(datum.getEndDate());
 					if (generation == null) {
@@ -230,8 +221,9 @@ public class HhDataImportProcess extends Thread implements Urlable,
 				data.add(datum);
 			}
 			if (!data.isEmpty()) {
-				channel.addHhData(contract, data);
+				channel.addHhData(data);
 			}
+			*/
 			Hiber.close();
 			// check hh data - supply level
 			supplyGenerations = (List<SupplyGeneration>) Hiber
@@ -246,9 +238,6 @@ public class HhDataImportProcess extends Thread implements Urlable,
 						.checkForMissingFromLatest(null);
 				Hiber.close();
 			}
-		} catch (IOException e) {
-			messages.add("ProgrammerException : ");
-			throw new RuntimeException(e);
 		} catch (InternalException e) {
 			messages.add("ProgrammerException : " + e.getMessage());
 			throw new RuntimeException(e);
@@ -271,12 +260,8 @@ public class HhDataImportProcess extends Thread implements Urlable,
 		}
 	}
 
-	public synchronized void halt() {
-		halt = true;
-	}
-
-	private boolean shouldHalt() {
-		return halt;
+	public void halt() {
+		halt.set(0, true);
 	}
 
 	public UriPathElement getUriId() throws HttpException {

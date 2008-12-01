@@ -33,10 +33,9 @@
 			</generator>
 		</id>
 		<many-to-one name="channel" class="Channel" column="channel_id"
-			unique-key="hh_datum_unique" foreign-key="fkey_hh_datum_channel" />
+			foreign-key="fkey_hh_datum_channel" />
 		<component name="endDate" class="HhEndDate">
-			<property name="date" type="timestamp" not-null="true"
-				unique-key="hh_datum_unique">
+			<property name="date" type="timestamp" not-null="true">
 				<column name="end_date"
 					sql-type="timestamp with time zone" />
 			</property>

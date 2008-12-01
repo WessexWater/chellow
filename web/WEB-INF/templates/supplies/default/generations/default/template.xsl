@@ -1399,7 +1399,7 @@
 													</xsl:when>
 													<xsl:otherwise>
 														<xsl:value-of
-															select="/source/supply-generation/mpan[llfc/@is-import='true']/account[hhdc-contract]/@reference" />
+															select="/source/supply-generation/mpan[llfc/@is-import='false']/account[hhdc-contract]/@reference" />
 													</xsl:otherwise>
 												</xsl:choose>
 											</xsl:attribute>

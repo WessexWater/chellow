@@ -33,6 +33,7 @@ import java.util.Set;
 import net.sf.chellow.billing.Account;
 import net.sf.chellow.billing.HhdcContract;
 import net.sf.chellow.billing.SupplierContract;
+import net.sf.chellow.monad.Debug;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.InternalException;
@@ -697,6 +698,7 @@ public class Supply extends PersistentEntity {
 	@SuppressWarnings("unchecked")
 	public void onSupplyGenerationChange(HhEndDate from, HhEndDate to)
 			throws HttpException {
+		Debug.print("started on supgen change. 55");
 		Hiber.flush();
 		Date supplyStartDate = getGenerationFirst().getStartDate().getDate();
 		Date supplyFinishDate = getGenerationLast().getFinishDate() == null ? null
@@ -787,6 +789,7 @@ public class Supply extends PersistentEntity {
 			throw new UserException(
 					"There are HH data after the end of the updated supply.");
 		}
+		Debug.print("starting generation loop.");
 		for (SupplyGeneration generation : getGenerations(from, to)) {
 			Query query = Hiber
 					.session()
@@ -799,6 +802,7 @@ public class Supply extends PersistentEntity {
 			if (generation.getFinishDate() != null) {
 				query.setTimestamp("to", generation.getFinishDate().getDate());
 			}
+			Debug.print("starting datum loop");
 			for (HhDatum datum : (List<HhDatum>) query.list()) {
 				Channel channel = datum.getChannel();
 				HhEndDate endDate = datum.getEndDate();
@@ -826,6 +830,7 @@ public class Supply extends PersistentEntity {
 				}
 			}
 		}
+		Debug.print("about to check missing.");
 		checkForMissing(from, to);
 		/*
 		 * for (SupplyGeneration generation : getGenerations(from, to)) { for

@@ -28,6 +28,7 @@ import java.util.Set;
 
 import net.sf.chellow.billing.Account;
 import net.sf.chellow.billing.Dso;
+import net.sf.chellow.monad.Debug;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.Invocation;
@@ -273,6 +274,7 @@ public class Mpan extends PersistentEntity {
 			boolean hasImportKvarh, boolean hasExportKwh,
 			boolean hasExportKvarh, int agreedSupplyCapacity)
 			throws HttpException {
+		Debug.print("starting to update mpan");
 		MpanRaw mpanRaw = new MpanRaw(mpan);
 		MpanCore mpanCore = MpanCore.findMpanCore(mpanRaw.getMpanCore());
 		if (mpanCore == null) {
@@ -328,6 +330,7 @@ public class Mpan extends PersistentEntity {
 		setHasExportKwh(hasExportKwh);
 		setHasExportKvarh(hasExportKvarh);
 		setAgreedSupplyCapacity(agreedSupplyCapacity);
+		Debug.print("calling onmpanchange 66");
 		supplyGeneration.onMpanChange();
 	}
 

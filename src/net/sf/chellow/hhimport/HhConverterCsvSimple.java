@@ -32,7 +32,6 @@ import java.util.TimeZone;
 import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.UserException;
-import net.sf.chellow.physical.HhEndDate;
 import com.Ostermiller.util.CSVParser;
 
 public class HhConverterCsvSimple implements HhConverter {
@@ -103,17 +102,12 @@ public class HhConverterCsvSimple implements HhConverter {
 				throw new UserException(
 						"There must be fields for 'MPAN core', 'Imp / Exp', 'Units', 'Time' and 'Value'.");
 			}
-			String core = values[0];
-			boolean isImport = Boolean.parseBoolean(values[1]);
-			boolean isKwh = Boolean.parseBoolean(values[2]);
-			HhEndDate endDate = new HhEndDate(values[3]);
-			float value = Float.parseFloat(values[4]);
 			String status = null;
 			if (values.length > 5) {
 				status = values[5];
 			}
-			datum = new HhDatumRaw(core, isImport, isKwh, endDate, value,
-					status);
+			datum = new HhDatumRaw(values[0], values[1], values[2], values[3],
+					values[4], status);
 			datumNext = datum;
 			return this.datum;
 		} catch (IOException e) {

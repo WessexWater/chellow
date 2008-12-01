@@ -22,12 +22,18 @@
 
 package net.sf.chellow.physical;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.sql.Types;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
 import net.sf.chellow.billing.HhdcContract;
 import net.sf.chellow.hhimport.HhDatumRaw;
+import net.sf.chellow.monad.Debug;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.InternalException;
@@ -551,28 +557,11 @@ public class Channel extends PersistentEntity implements Urlable {
 		checkForMissing(latestPresentDate.getNext(), to);
 	}
 
-	@SuppressWarnings("unchecked")
-	public void addHhData(HhdcContract contract, List<HhDatumRaw> dataRaw)
-			throws HttpException {
+	@SuppressWarnings( { "unchecked", "deprecation" })
+	public void addHhData(List<HhDatumRaw> dataRaw) throws HttpException {
+		long now = System.currentTimeMillis();
 		HhDatumRaw firstRawDatum = dataRaw.get(0);
 		HhDatumRaw lastRawDatum = dataRaw.get(dataRaw.size() - 1);
-		if (!contract.equals(supplyGeneration.getHhdcContract())) {
-			throw new UserException("The block of hh data between ("
-					+ firstRawDatum + ") and (" + lastRawDatum
-					+ ") has contract " + supplyGeneration.getHhdcContract()
-					+ " but the data is provided under contract " + contract
-					+ ".");
-		}
-		// Criteria dataCriteria =
-		// Hiber.session().createCriteria(HhDatum.class);
-		// dataCriteria.add(Restrictions.eq("channel", this));
-		// dataCriteria.add(Restrictions.ge("endDate.date", supplyGeneration
-		// .getStartDate().getDate()));
-		// if (supplyGeneration.getFinishDate() != null) {
-		// dataCriteria.add(Restrictions.le("endDate.date", supplyGeneration
-		// .getFinishDate().getDate()));
-		// }
-		// dataCriteria.addOrder(Order.asc("endDate.date"));
 		List<HhDatum> data = (List<HhDatum>) Hiber
 				.session()
 				.createQuery(
@@ -582,17 +571,9 @@ public class Channel extends PersistentEntity implements Urlable {
 						firstRawDatum.getEndDate().getDate()).setTimestamp(
 						"finishDate", lastRawDatum.getEndDate().getDate())
 				.list();
-		/*
-		 * List<HhDatum> data = (List<HhDatum>) Hiber .session() .createQuery(
-		 * "from HhDatum datum where datum.channel = :channel and " +
-		 * "datum.endDate.date >= :startDate and datum.endDate.date <=
-		 * :finishDate order by datum.endDate.date") .setEntity("channel",
-		 * this).setTimestamp("startDate",
-		 * supplyGeneration.getStartDate().getDate())
-		 * .setTimestamp("finishDate",
-		 * supplyGeneration.getFinishDate().getDate()).list();
-		 */
 		if (data.isEmpty()) {
+			Debug.print("Starting to check for missing from latest: "
+			 + (System.currentTimeMillis() - now));
 			checkForMissingFromLatest(firstRawDatum.getEndDate().getPrevious());
 		}
 		HhEndDate siteCheckFrom = null;
@@ -601,14 +582,22 @@ public class Channel extends PersistentEntity implements Urlable {
 		HhEndDate notActualTo = null;
 		HhEndDate resolveMissingFrom = null;
 		HhEndDate resolveMissingTo = null;
+		HhEndDate lastAdditionDate = null;
 		HhEndDate prevEndDate = null;
 		int missing = 0;
-		// Debug.print("Starting to go through each hh: "
-		// + (System.currentTimeMillis() - now));
 		HhDatum originalDatum = null;
+		Connection con = Hiber.session().connection();
+		PreparedStatement stmt;
+		try {
+			stmt = con
+					.prepareStatement("INSERT INTO hh_datum VALUES (nextval('hh_datum_id_sequence'), ?, ?, ?, ?)");
+		} catch (SQLException e1) {
+			throw new InternalException(e1);
+		}
+		int batchSize = 0;
 		for (int i = 0; i < dataRaw.size(); i++) {
-			// Debug.print("Start processing hh: "
-			// + (System.currentTimeMillis() - now));
+			 Debug.print("Start processing hh: "
+			 + (System.currentTimeMillis() - now));
 			boolean added = false;
 			boolean altered = false;
 			HhDatumRaw datumRaw = dataRaw.get(i);
@@ -621,32 +610,50 @@ public class Channel extends PersistentEntity implements Urlable {
 				}
 			}
 			if (datum == null) {
-				// Debug.print("About to save datum: "
-				// + (System.currentTimeMillis() - now));
-				Hiber.session().save(new HhDatum(this, datumRaw));
-				// Debug.print("Saved datum: "
-				// + (System.currentTimeMillis() - now));
-				Hiber.flush();
+				 Debug.print("About to save datum: "
+				 + (System.currentTimeMillis() - now));
+				try {
+					stmt.setLong(1, getId());
+
+					stmt.setTimestamp(2, new Timestamp(datumRaw.getEndDate()
+							.getDate().getTime()));
+					stmt.setFloat(3, datumRaw.getValue());
+					Character status = datumRaw.getStatus();
+					if (status == null) {
+						stmt.setNull(4, Types.CHAR);
+					} else {
+						stmt.setString(4, datumRaw.getStatus().toString());
+					}
+					stmt.addBatch();
+					batchSize++;
+				} catch (SQLException e) {
+					throw new InternalException(e);
+				}
+				 Hiber.session().save(new HhDatum(this, datumRaw));
+				 Debug.print("Saved datum: "
+				 + (System.currentTimeMillis() - now));
+				 Hiber.flush();
+				lastAdditionDate = datumRaw.getEndDate();
 				added = true;
 				missing++;
 				if (resolveMissingFrom == null) {
 					resolveMissingFrom = datumRaw.getEndDate();
 				}
 				resolveMissingTo = datumRaw.getEndDate();
-				// Debug.print("Resolved missing: "
-				// + (System.currentTimeMillis() - now));
+				 Debug.print("Resolved missing: "
+				 + (System.currentTimeMillis() - now));
 			} else if (datumRaw.getValue() != datum.getValue()
 					|| (datumRaw.getStatus() == null ? datum.getStatus() != null
 							: !datumRaw.getStatus().equals(datum.getStatus()))) {
-				// Debug.print("About to update datum: "
-				// + (System.currentTimeMillis() - now));
+				 Debug.print("About to update datum: "
+				 + (System.currentTimeMillis() - now));
 				originalDatum = datum;
 				datum.update(datumRaw.getValue(), datumRaw.getStatus());
 				Hiber.flush();
 				altered = true;
 			}
-			// Debug.print("About to see if changed: "
-			// + (System.currentTimeMillis() - now));
+			 Debug.print("About to see if changed: "
+		 + (System.currentTimeMillis() - now));
 			if (added || altered) {
 				if (siteCheckFrom == null) {
 					siteCheckFrom = datumRaw.getEndDate();
@@ -670,6 +677,19 @@ public class Channel extends PersistentEntity implements Urlable {
 							.getEndDate());
 				}
 			}
+			if (lastAdditionDate != null
+					&& (lastAdditionDate.equals(prevEndDate) || batchSize > 100)) {
+				 Debug.print("About to execute batch "
+				 + (System.currentTimeMillis() - now));
+				try {
+					stmt.executeBatch();
+					 Debug.print("Added  lines.");
+					batchSize = 0;
+				} catch (SQLException e) {
+					throw new InternalException(e);
+				}
+				lastAdditionDate = null;
+			}
 			if (siteCheckTo != null && siteCheckTo.equals(prevEndDate)) {
 				// Debug.print("About to do site check: "
 				// + (System.currentTimeMillis() - now));
@@ -684,8 +704,6 @@ public class Channel extends PersistentEntity implements Urlable {
 				// + (System.currentTimeMillis() - now));
 				addChannelSnag(ChannelSnag.SNAG_NOT_ACTUAL, notActualFrom,
 						notActualTo, false);
-				// notActualSnag(notActualFrom, notActualTo,
-				// supplyGenerations);
 				// Debug.print("Finished not actual: "
 				// + (System.currentTimeMillis() - now));
 				notActualFrom = null;
@@ -704,32 +722,40 @@ public class Channel extends PersistentEntity implements Urlable {
 			}
 			prevEndDate = datumRaw.getEndDate();
 		}
+		if (lastAdditionDate != null && lastAdditionDate.equals(prevEndDate)) {
+			// Debug.print("About to execute batch 2: "
+			// + (System.currentTimeMillis() - now));
+			try {
+				stmt.executeBatch();
+			} catch (SQLException e) {
+				throw new InternalException(e);
+			}
+			lastAdditionDate = null;
+		}
 		if (siteCheckTo != null && siteCheckTo.equals(prevEndDate)) {
-			// Debug.print("About to start site thing: "
+			// Debug.print("About to start site thing 2: "
 			// + (System.currentTimeMillis() - now));
 			siteCheck(siteCheckFrom, siteCheckTo);
-			// Debug.print("About to finish site thing: "
+			// Debug.print("About to finish site thing 2: "
 			// + (System.currentTimeMillis() - now));
 		}
 		if (notActualTo != null && notActualTo.equals(prevEndDate)) {
-			// Debug.print("About to start not actual: "
+			// Debug.print("About to start not actual 2: "
 			// + (System.currentTimeMillis() - now));
 			addChannelSnag(ChannelSnag.SNAG_NOT_ACTUAL, notActualFrom,
 					notActualTo, false);
-			// channel.notActualSnag(notActualFrom, notActualTo,
-			// supplyGenerations);
-			// Debug.print("About to finsih not actual: "
+			// Debug.print("About to finsih not actual 2: "
 			// + (System.currentTimeMillis() - now));
 		}
 		if (resolveMissingTo != null && resolveMissingTo.equals(prevEndDate)) {
-			// Debug.print("About to start resolvem: "
+			// Debug.print("About to start resolvem 2: "
 			// + (System.currentTimeMillis() - now));
 			resolveSnag(ChannelSnag.SNAG_MISSING, resolveMissingFrom,
 					resolveMissingTo);
-			// Debug.print("About to finish resolvem: "
+			// Debug.print("About to finish resolvem 2: "
 			// + (System.currentTimeMillis() - now));
 		}
-		// Debug.print("Finished method: " + (System.currentTimeMillis() -
+		// Debug.print("Finished method 2: " + (System.currentTimeMillis() -
 		// now));
 	}
 

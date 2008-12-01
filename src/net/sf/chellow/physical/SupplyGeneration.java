@@ -34,6 +34,7 @@ import net.sf.chellow.billing.Account;
 import net.sf.chellow.billing.Dso;
 import net.sf.chellow.billing.HhdcContract;
 import net.sf.chellow.billing.SupplierContract;
+import net.sf.chellow.monad.Debug;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.InternalException;
@@ -771,6 +772,7 @@ public class SupplyGeneration extends PersistentEntity {
 			Boolean exportHasImportKwh, Boolean exportHasImportKvarh,
 			Boolean exportHasExportKwh, Boolean exportHasExportKvarh,
 			Integer exportAgreedSupplyCapacity) throws HttpException {
+		Debug.print("starting add or update.");
 		if (importMpan == null) {
 			if (importMpanStr != null && importMpanStr.length() != 0) {
 				setImportMpan(new Mpan(this, importMpanStr, importSsc,
@@ -882,8 +884,10 @@ public class SupplyGeneration extends PersistentEntity {
 		synchronizeChannel(true, false);
 		synchronizeChannel(false, true);
 		synchronizeChannel(false, false);
-		getSupply().onSupplyGenerationChange(getStartDate(), getFinishDate());
+		Debug.print("starting onsupgen change. 99");
 		Hiber.flush();
+		onMpanChange();
+		Debug.print("finished add or update.");
 	}
 
 	private void synchronizeChannel(boolean isImport, boolean isKwh)
@@ -1051,6 +1055,9 @@ public class SupplyGeneration extends PersistentEntity {
 
 	public void onMpanChange() throws HttpException {
 		checkMpanRelationship();
+		Debug.print("checked relationsip.");
+			checkForMissing(getStartDate(), getFinishDate());
+		Debug.print("finished on mpan change.");
 	}
 
 	public void update(HhEndDate startDate, HhEndDate finishDate, Meter meter)
@@ -1091,13 +1098,17 @@ public class SupplyGeneration extends PersistentEntity {
 		}
 		internalUpdate(startDate, finishDate, meter);
 		Hiber.flush();
-		HhEndDate checkFinishDate = null;
+		checkMpanRelationship();
+		HhEndDate checkFinishDate = originalStartDate;
 		if (originalFinishDate != null && finishDate != null) {
+			if (!originalFinishDate.getDate().equals(finishDate)) {
 			checkFinishDate = finishDate.getDate().after(
 					originalFinishDate.getDate()) ? finishDate
 					: originalFinishDate;
+			}
+		} else if (originalFinishDate == null || finishDate == null) {
+			checkFinishDate = null;
 		}
-		checkMpanRelationship();
 		supply.onSupplyGenerationChange(startDate.getDate().before(
 				originalStartDate.getDate()) ? startDate : originalStartDate,
 				checkFinishDate);
@@ -1257,6 +1268,7 @@ public class SupplyGeneration extends PersistentEntity {
 				Hiber.commit();
 				inv.sendOk(document());
 			} else {
+				Debug.print("Starting to update");
 				String importMpanStr = null;
 				Ssc importSsc = null;
 				GspGroup importGspGroup = null;
@@ -1413,6 +1425,7 @@ public class SupplyGeneration extends PersistentEntity {
 						: new HhEndDate(finishDate), meter);
 				Hiber.commit();
 				inv.sendOk(document());
+				Debug.print("Finished updating httpd.");
 			}
 		} catch (HttpException e) {
 			e.setDocument(document());

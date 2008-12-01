@@ -24,6 +24,7 @@ package net.sf.chellow.physical;
 
 import java.sql.BatchUpdateException;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
@@ -251,6 +252,9 @@ public class Site extends PersistentEntity {
 		// Calendar cal = GregorianCalendar.getInstance(TimeZone
 		// .getTimeZone("GMT"), Locale.UK);
 		for (SiteGroup group : groups(from, to, false)) {
+			if (group.getSupplies().size() == 1) {
+				continue;
+			}
 			// long now = System.currentTimeMillis();
 			// Debug.print("About to go checking: "
 			// + (System.currentTimeMillis() - now));
@@ -271,27 +275,13 @@ public class Site extends PersistentEntity {
 			HhEndDate snag2From = null;
 			HhEndDate snag2To = null;
 			int i = 0;
-			HhEndDate hhEndDate = group.getFrom();
 			HhEndDate previousEndDate = null;
-			// cal.clear();
-			// cal.setTime(hhEndDate.getDate());
-			// cal.set(Calendar.DAY_OF_MONTH, 1);
-			// cal.set(Calendar.HOUR_OF_DAY, 0);
-			// cal.set(Calendar.MINUTE, 0);
-			// cal.set(Calendar.SECOND, 0);
-			// cal.set(Calendar.MILLISECOND, 0);
-			// DceService previousDceService = getDceService(new HhEndDate(cal
-			// .getTime()));
-			// DceService dceService = previousDceService;
-			// int month = cal.get(Calendar.MONTH);
-			while (!hhEndDate.getDate().after(group.getTo().getDate())) {
-				// cal.clear();
-				// cal.setTime(hhEndDate.getDate());
-				// if (month != cal.get(Calendar.MONTH)) {
-				// month = cal.get(Calendar.MONTH);
-				// previousDceService = dceService;
-				// dceService = getDceService(new HhEndDate(cal.getTime()));
-				// }
+		Calendar cal = HhEndDate.getCalendar();
+			for (HhEndDate hhEndDate = group.getFrom(); !hhEndDate.getDate().after(group.getTo().getDate()); hhEndDate = new HhEndDate(new Date(HhEndDate.getNext(cal, hhEndDate.getDate().getTime())))) {
+				
+			
+			//while (!hhEndDate.getDate().after(group.getTo().getDate())) {
+			
 				if (exportToNet.get(i) > importFromGen.get(i)) {
 					if (snag1From == null) {
 						snag1From = hhEndDate;

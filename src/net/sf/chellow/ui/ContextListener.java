@@ -1,7 +1,6 @@
 package net.sf.chellow.ui;
 
 import java.sql.Connection;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Properties;
@@ -26,7 +25,6 @@ import net.sf.chellow.monad.Monad;
 import net.sf.chellow.monad.MonadContextParameters;
 import net.sf.chellow.monad.MonadFormatter;
 import net.sf.chellow.monad.MonadHandler;
-import net.sf.chellow.monad.UserException;
 import net.sf.chellow.monad.types.EmailAddress;
 import net.sf.chellow.physical.ClockInterval;
 import net.sf.chellow.physical.Configuration;
@@ -84,21 +82,10 @@ public class ContextListener implements ServletContextListener {
 			Connection con = ds.getConnection();
 			Statement stmt = con.createStatement();
 
-			// Find database version
+			// Find if DB has been created
 			try {
-				ResultSet rs = stmt
-						.executeQuery("select version from configuration;");
-				if (rs.next()) {
-					int VERSION_EXPECTED = 12;
-					int version = rs.getInt("version");
-					if (version != VERSION_EXPECTED) {
-						throw new UserException(
-								"The database version is "
-										+ version
-										+ " but this version of Chellow expects database version "
-										+ VERSION_EXPECTED);
-					}
-				}
+				stmt
+						.executeQuery("select properties from configuration;");
 			} catch (SQLException sqle) {
 				initializeDatabase(con);
 				Hiber.close();
@@ -159,15 +146,14 @@ public class ContextListener implements ServletContextListener {
 					.execute("CREATE INDEX site_snag__snag_id_idx ON site_snag (snag_id);");
 			stmt
 					.execute("CREATE INDEX site_snag__start_date ON site_snag (start_date);");
-			stmt
-					.execute("CREATE INDEX hh_datum__end_date ON hh_datum (end_date)");
+			stmt.execute("CREATE UNIQUE INDEX channel_date ON hh_datum (channel_id, end_date);");
 			stmt.execute("ALTER TABLE report ALTER COLUMN script TYPE text;");
 			stmt.execute("ALTER TABLE report ALTER COLUMN template TYPE text;");
 
 		} catch (SQLException e) {
 			throw new InternalException(e);
 		}
-		Configuration.setDatabaseVersion(12);
+		Configuration.getConfiguration();
 		Hiber.close();
 		GspGroup.loadFromCsv(context);
 		ReadType.loadFromCsv(context);

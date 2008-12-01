@@ -34,11 +34,6 @@
 					<xsl:value-of
 						select="/source/configuration/@version" />
 				</p>
-				<p>
-					Database Version
-					<xsl:value-of
-						select="/source/configuration/@db-version" />
-				</p>
 				<form action="." method="post">
 					<fieldset>
 						<legend>Update Configuration</legend>
@@ -61,8 +56,8 @@
 						</textarea>
 						<h4>Example</h4>
 						<p>
-							The line below means that any request
-							with IP 127.0.0.1 will automatically be
+							The line below means that any request with
+							IP 127.0.0.1 will automatically be
 							associated with the user
 							implicit-user@localhost.
 						</p>

@@ -33,14 +33,34 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 public abstract class HttpException extends Exception implements XmlDescriber {
+	/*
+	 * public static String getStackTraceString(Throwable e) { StringWriter
+	 * writer = new StringWriter(); PrintWriter printWriter = new
+	 * PrintWriter(writer); Throwable cause = e.getCause();
+	 * e.printStackTrace(printWriter); if (cause != null) {
+	 * printWriter.write("\n------------\nNested exception:\n");
+	 * cause.printStackTrace(printWriter); } return writer.toString(); }
+	 */
 	public static String getStackTraceString(Throwable e) {
 		StringWriter writer = new StringWriter();
 		PrintWriter printWriter = new PrintWriter(writer);
-		Throwable cause = e.getCause();
+		printWriter.write(e.getClass().getName() + " " + e.getMessage());
 		e.printStackTrace(printWriter);
+		/*
+		 * if (e instanceof JDBCException) { JDBCException je = (JDBCException)
+		 * e; SQLException se = je.getSQLException(); if (se != null) {
+		 * builder.append(" " + get(se)); } }
+		 */
+		if (e instanceof SQLException) {
+			SQLException se = (SQLException) e;
+			SQLException ne = se.getNextException();
+			if (ne != null) {
+				printWriter.write(" " + getStackTraceString(ne));
+			}
+		}
+		Throwable cause = e.getCause();
 		if (cause != null) {
-			printWriter.write("\n------------\nNested exception:\n");
-			cause.printStackTrace(printWriter);
+			printWriter.write(" " + getStackTraceString(cause));
 		}
 		return writer.toString();
 	}
@@ -49,14 +69,10 @@ public abstract class HttpException extends Exception implements XmlDescriber {
 		StringBuilder builder = new StringBuilder(e.getClass().getName() + " "
 				+ e.getMessage());
 		/*
-		if (e instanceof JDBCException) {
-			JDBCException je = (JDBCException) e;
-			SQLException se = je.getSQLException();
-			if (se != null) {
-				builder.append(" " + getUserMessage(se));
-			}
-		}
-		*/
+		 * if (e instanceof JDBCException) { JDBCException je = (JDBCException)
+		 * e; SQLException se = je.getSQLException(); if (se != null) {
+		 * builder.append(" " + getUserMessage(se)); } }
+		 */
 		if (e instanceof SQLException) {
 			SQLException se = (SQLException) e;
 			SQLException ne = se.getNextException();

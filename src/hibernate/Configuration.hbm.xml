@@ -31,11 +31,6 @@
 				<param name="sequence">configuration_id_sequence</param>
 			</generator>
 		</id>
-		<property type="integer" name="version" column="version" />
-		<!--
-		<property type="string" name="implicitUserProperties"
-			column="implicit_user_properties" />
-		-->
 		<property type="string" name="properties"
 			column="properties" />
 	</class>

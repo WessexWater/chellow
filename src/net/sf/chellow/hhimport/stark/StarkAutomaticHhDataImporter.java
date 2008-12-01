@@ -13,6 +13,7 @@ import java.util.logging.Level;
 import net.sf.chellow.billing.Contract;
 import net.sf.chellow.billing.HhdcContract;
 import net.sf.chellow.hhimport.HhDataImportProcess;
+import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Invocation;
@@ -128,6 +129,8 @@ public class StarkAutomaticHhDataImporter implements Urlable, XmlDescriber {
 				if (lastImportDateStr != null
 						&& lastImportDateStr.length() != 0) {
 					lastImportDate = new MonadDate(lastImportDateStr).getDate();
+				} else {
+					lastImportDate = new Date(0);
 				}
 				String lastImportName = contract
 						.getProperty(getPropertyNameLastImportName(i));
@@ -186,8 +189,9 @@ public class StarkAutomaticHhDataImporter implements Urlable, XmlDescriber {
 				if (!found) {
 					log("No new files found.");
 				}
+				Hiber.close();
 			}
-		} catch (HttpException e) {
+		} catch (UserException e) {
 			try {
 				log(e.getMessage());
 			} catch (InternalException e1) {
@@ -205,8 +209,7 @@ public class StarkAutomaticHhDataImporter implements Urlable, XmlDescriber {
 			}
 		} catch (Throwable e) {
 			try {
-				log("Exception: " + e.getClass().getName() + " Message: "
-						+ e.getMessage());
+				log("Exception: " + HttpException.getStackTraceString(e));
 			} catch (InternalException e1) {
 				throw new RuntimeException(e1);
 			} catch (HttpException e1) {
