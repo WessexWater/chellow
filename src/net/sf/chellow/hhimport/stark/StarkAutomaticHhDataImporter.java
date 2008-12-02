@@ -153,6 +153,7 @@ public class StarkAutomaticHhDataImporter implements Urlable, XmlDescriber, Runn
 									.compareTo(lastImportName) < 0 : file
 									.getTimestamp().getTime().after(
 											lastImportDate)))) {
+						found = true;
 						String fileName = directories.get(i) + "\\"
 								+ file.getName();
 						if (file.getSize() == 0) {
