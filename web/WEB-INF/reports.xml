@@ -1736,7 +1736,7 @@ finishDate = cal.getTime()
 dateFormat = SimpleDateFormat("yyyy-MM-dd' 'HH:mm'Z'")
 dateFormat.setCalendar(cal)
 supply = Supply.getSupply(supply_id)
-supplyElement = supply.toXml(doc, XmlTree("generationLast", XmlTree("mpans", XmlTree("core"))).put("source"))
+supplyElement = supply.toXml(doc, XmlTree("generationLast", XmlTree("mpans", XmlTree("core").put('llfc'))).put("source"))
 source.appendChild(supplyElement)
 source.appendChild(MonadDate.getMonthsXml(doc))
 source.appendChild(MonadDate.getDaysXml(doc))
@@ -1847,12 +1847,12 @@ rs.close()]]></value>
                     <li>
                         Import MPAN core:
                         <xsl:value-of
-                            select="/source/supply/supply-generation/mpan[@label='import']/mpan-core/@core" />
+                            select="/source/supply/supply-generation/mpan[llfc/@is-import='true']/mpan-core/@core" />
                     </li>
                     <li>
                         Export MPAN core:
                         <xsl:value-of
-                            select="/source/supply/supply-generation/mpan[@label='export']/mpan-core/@core" />
+                            select="/source/supply/supply-generation/mpan[llfc/@is-import='false']/mpan-core/@core" />
                     </li>
                     <li>
                         Source Code:
@@ -3276,11 +3276,11 @@ source.appendChild(MonadDate().toXml(doc))]]></value>
                             <th>MPAN Core</th>
                             <td>
                                 <xsl:value-of
-                                    select="/source/supply-generation/mpan[llfc/@is-import='true']/@core" />
+                                    select="/source/supply-generation/mpan[llfc/@is-import='true']/mpan-core/@core" />
                             </td>
                             <td>
                                 <xsl:value-of
-                                    select="/source/supply-generation/mpan[llfc/@is-import='false']/@core" />
+                                    select="/source/supply-generation/mpan[llfc/@is-import='false']/mpan-core/@core" />
                             </td>
                         </tr>
                         <tr>
@@ -3590,15 +3590,20 @@ contract = HhdcContract.getHhdcContract(contract_id)
 snags_element = doc.createElement('channel-snags')
 source.appendChild(snags_element)
 snags_element.appendChild(contract.toXml(doc, XmlTree('party'))) 
-snags = Hiber.session().createQuery("select distinct snag, siteSupplyGeneration.site.code, snag.startDate.date, snag.channel.id from ChannelSnag snag join snag.channel.supplyGeneration.siteSupplyGenerations siteSupplyGeneration where snag.dateResolved is null and snag.contract = :contract and snag.startDate.date < :activeDate order by siteSupplyGeneration.site.code, snag.startDate.date, snag.channel.id").setEntity('contract', contract).setTimestamp("activeDate",Date(System.currentTimeMillis()-(5*24*60*60*1000))).list()
-for snag_row in snags:
-    snags_element.appendChild(snag_row[0].toXml(doc, XmlTree('channel', XmlTree('supplyGeneration', XmlTree('supply').put('siteSupplyGenerations', XmlTree('site')).put("mpans", XmlTree("core", XmlTree("dso")))))))
+#snags = Hiber.session().createQuery("select distinct snag, siteSupplyGeneration.site.code, snag.startDate.date, snag.channel.id from ChannelSnag snag join snag.channel.supplyGeneration.siteSupplyGenerations siteSupplyGeneration where snag.dateResolved is null and snag.contract = :contract and snag.startDate.date < :activeDate order by siteSupplyGeneration.site.code, snag.startDate.date, snag.channel.id").setEntity('contract', contract).setTimestamp("activeDate",Date(System.currentTimeMillis()-(5*24*60*60*1000))).list()
+snags = Hiber.session().createQuery("select distinct snag, siteSupplyGeneration.site.code, snag.startDate.date, snag.channel.id from ChannelSnag snag join snag.channel.supplyGeneration.siteSupplyGenerations siteSupplyGeneration where snag.dateResolved is null and snag.contract = :contract order by siteSupplyGeneration.site.code, snag.startDate.date, snag.channel.id").setEntity('contract', contract).scroll()
+i = 0
+while snags.next() and i < 100:
+    snags_element.appendChild(snags.get(0).toXml(doc, XmlTree('channel', XmlTree('supplyGeneration', XmlTree('supply').put('siteSupplyGenerations', XmlTree('site')).put("mpans", XmlTree("core", XmlTree("dso")))))))
+    i = i + 1
+'''
 activeSites = Hiber.session().createQuery("select count(distinct siteSupplyGeneration.site) from ChannelSnag snag join snag.channel.supplyGeneration.siteSupplyGenerations siteSupplyGeneration where snag.dateResolved is null and snag.contract = :contract and snag.startDate.date < :activeDate").setEntity('contract', contract).setTimestamp("activeDate",Date(System.currentTimeMillis()-(5*24*60*60*1000))).uniqueResult()
 totalSites = Hiber.session().createQuery("select count(distinct siteSupplyGeneration.site) from ChannelSnag snag join snag.channel.supplyGeneration.siteSupplyGenerations siteSupplyGeneration where snag.dateResolved is null and snag.contract = :contract").setEntity('contract', contract).uniqueResult()
 
 snags_element.setAttribute("snag-count", str(len(snags)))
 snags_element.setAttribute("site-count", str(activeSites))
-snags_element.setAttribute("pending-site-count", str(totalSites - activeSites))]]></value>
+snags_element.setAttribute("pending-site-count", str(totalSites - activeSites))
+''']]></value>
     <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
 <xsl:stylesheet version="1.0"
     xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
