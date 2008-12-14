@@ -124,7 +124,7 @@ public class StarkDF2HHConverter implements HhConverter {
 								new UserException(
 										"The sensor number must be between 1 and 4 inclusive."));
 					}
-				} else if (line.length() > 0 && !line.equals("#F2")) {
+				} else if (line.trim().length() > 0 && !line.equals("#F2")) {
 					int datePos = line.indexOf(',');
 					if (datePos < 0) {
 						throw new UserException("Problem at line number: "
@@ -161,6 +161,7 @@ public class StarkDF2HHConverter implements HhConverter {
 					}
 					datum = new HhDatumRaw(core, isImport, isKwh, endDate,
 							valueKw / 2, status);
+					//Debug.print("Datum is " + datum);
 				}
 				line = reader.readLine();
 			}

@@ -74,6 +74,31 @@
 						</xsl:for-each>
 					</ul>
 				</xsl:if>
+				<h4>Supply Generation</h4>
+
+				<table>
+					<tr>
+						<td>Start Date</td>
+						<td>
+							<xsl:value-of
+								select="concat(/source/hh-data/channel/supply-generation/hh-end-date[@label='start']/@year, '-', /source/hh-data/channel/supply-generation/hh-end-date[@label='start']/@month, '-', /source/hh-data/channel/supply-generation/hh-end-date[@label='start']/@day, ' ', /source/hh-data/channel/supply-generation/hh-end-date[@label='start']/@hour, ':', /source/hh-data/channel/supply-generation/hh-end-date[@label='start']/@minute)" />
+						</td>
+					</tr>
+					<tr>
+						<td>Finish Date</td>
+						<td>
+							<xsl:choose>
+								<xsl:when
+									test="/source/hh-data/channel/supply-generation/hh-end-date[@label='finish']">
+									<xsl:value-of
+										select="concat(/source/hh-data/channel/supply-generation/hh-end-date[@label='finish']/@year, '-', /source/hh-data/channel/supply-generation/hh-end-date[@label='finish']/@month, '-', /source/hh-data/channel/supply-generation/hh-end-date[@label='finish']/@day, ' ', /source/hh-data/channel/supply-generation/hh-end-date[@label='finish']/@hour, ':', /source/hh-data/channel/supply-generation/hh-end-date[@label='finish']/@minute)" />
+								</xsl:when>
+								<xsl:otherwise>Ongoing</xsl:otherwise>
+							</xsl:choose>
+						</td>
+					</tr>
+				</table>
+
 				<h4>Channel</h4>
 				<ul>
 					<li>
@@ -126,17 +151,17 @@
 					<xsl:otherwise>
 						<form action=".">
 							<fieldset>
-								<legend>End day</legend>
+								<legend>Month</legend>
 								<input size="4" maxlength="4"
-									name="hh-finish-date-year">
+									name="year">
 									<xsl:choose>
 										<xsl:when
-											test="/source/request/parameter[@name='hh-finish-date-year']">
+											test="/source/request/parameter[@name='year']">
 
 											<xsl:attribute
 												name="value">
 												<xsl:value-of
-													select="/source/request/parameter[@name='hh-finish-date-year']/value/text()" />
+													select="/source/request/parameter[@name='year']/value/text()" />
 											</xsl:attribute>
 										</xsl:when>
 										<xsl:otherwise>
@@ -149,16 +174,16 @@
 									</xsl:choose>
 								</input>
 								-
-								<select name="hh-finish-date-month">
+								<select name="month">
 									<xsl:for-each
 										select="/source/months/month">
 										<option value="{@number}">
 											<xsl:choose>
 												<xsl:when
-													test="/source/request/parameter[@name='hh-finish-date-month']">
+													test="/source/request/parameter[@name='month']">
 
 													<xsl:if
-														test="/source/request/parameter[@name='hh-finish-date-month']/value/text() = number(@number)">
+														test="/source/request/parameter[@name='month']/value/text() = number(@number)">
 
 														<xsl:attribute
 															name="selected" />
@@ -172,37 +197,6 @@
 													</xsl:if>
 												</xsl:otherwise>
 											</xsl:choose>
-
-											<xsl:value-of
-												select="@number" />
-										</option>
-									</xsl:for-each>
-								</select>
-								-
-								<select name="hh-finish-date-day">
-									<xsl:for-each
-										select="/source/days/day">
-										<option value="{@number}">
-											<xsl:choose>
-												<xsl:when
-													test="/source/request/parameter[@name='hh-finish-date-day']">
-
-													<xsl:if
-														test="/source/request/parameter[@name='hh-finish-date-day']/value/text() = @number">
-
-														<xsl:attribute
-															name="selected" />
-													</xsl:if>
-												</xsl:when>
-												<xsl:otherwise>
-													<xsl:if
-														test="/source/date/@day = @number">
-														<xsl:attribute
-															name="selected" />
-													</xsl:if>
-												</xsl:otherwise>
-											</xsl:choose>
-
 											<xsl:value-of
 												select="@number" />
 										</option>

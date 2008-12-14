@@ -596,8 +596,7 @@ public class Channel extends PersistentEntity implements Urlable {
 		}
 		int batchSize = 0;
 		for (int i = 0; i < dataRaw.size(); i++) {
-			 //Debug.print("Start processing hh: "
-			 //+ (System.currentTimeMillis() - now));
+			 //Debug.print("Start processing hh: " + (System.currentTimeMillis() - now));
 			boolean added = false;
 			boolean altered = false;
 			HhDatumRaw datumRaw = dataRaw.get(i);
@@ -639,12 +638,12 @@ public class Channel extends PersistentEntity implements Urlable {
 					resolveMissingFrom = datumRaw.getEndDate();
 				}
 				resolveMissingTo = datumRaw.getEndDate();
-				// Debug.print("Resolved missing: "
-				// + (System.currentTimeMillis() - now));
+				 //Debug.print("Resolved missing: "
+				 //+ (System.currentTimeMillis() - now));
 			} else if (datumRaw.getValue() != datum.getValue()
 					|| (datumRaw.getStatus() == null ? datum.getStatus() != null
 							: !datumRaw.getStatus().equals(datum.getStatus()))) {
-				 //Debug.print("About to update datum: "
+				 //Debug.print("About to update datum: " + datum + " with " + datumRaw + " "
 				 //+ (System.currentTimeMillis() - now));
 				originalDatum = datum;
 				datum.update(datumRaw.getValue(), datumRaw.getStatus());
@@ -682,7 +681,7 @@ public class Channel extends PersistentEntity implements Urlable {
 				 //+ (System.currentTimeMillis() - now));
 				try {
 					stmt.executeBatch();
-					// Debug.print("Added  lines.");
+					 //Debug.print("Added  lines.");
 					batchSize = 0;
 				} catch (SQLException e) {
 					throw new InternalException(e);
@@ -690,40 +689,40 @@ public class Channel extends PersistentEntity implements Urlable {
 				lastAdditionDate = null;
 			}
 			if (siteCheckTo != null && siteCheckTo.equals(prevEndDate)) {
-				// Debug.print("About to do site check: "
-				// + (System.currentTimeMillis() - now));
+				 //Debug.print("About to do site check: "
+				 //+ (System.currentTimeMillis() - now));
 				siteCheck(siteCheckFrom, siteCheckTo);
 				siteCheckFrom = null;
 				siteCheckTo = null;
-				// Debug.print("Finished site check: "
+				 //Debug.print("Finished site check: "
 				// + (System.currentTimeMillis() - now));
 			}
 			if (notActualTo != null && notActualTo.equals(prevEndDate)) {
-				// Debug.print("Started not actual: "
-				// + (System.currentTimeMillis() - now));
+				 //Debug.print("Started not actual: "
+				 //+ (System.currentTimeMillis() - now));
 				addChannelSnag(ChannelSnag.SNAG_NOT_ACTUAL, notActualFrom,
 						notActualTo, false);
-				// Debug.print("Finished not actual: "
-				// + (System.currentTimeMillis() - now));
+				 //Debug.print("Finished not actual: "
+				 //+ (System.currentTimeMillis() - now));
 				notActualFrom = null;
 				notActualTo = null;
 			}
 			if (resolveMissingTo != null
 					&& resolveMissingTo.equals(prevEndDate)) {
-				// Debug.print("Starting resolvedMissing: "
-				// + (System.currentTimeMillis() - now));
+				 //Debug.print("Starting resolvedMissing: "
+				 //+ (System.currentTimeMillis() - now));
 				resolveSnag(ChannelSnag.SNAG_MISSING, resolveMissingFrom,
 						resolveMissingTo);
 				resolveMissingFrom = null;
 				resolveMissingTo = null;
-				// Debug.print("Finished resolveMissing: "
-				// + (System.currentTimeMillis() - now));
+				 //Debug.print("Finished resolveMissing: "
+				 //+ (System.currentTimeMillis() - now));
 			}
 			prevEndDate = datumRaw.getEndDate();
 		}
 		if (lastAdditionDate != null && lastAdditionDate.equals(prevEndDate)) {
-			// Debug.print("About to execute batch 2: "
-			// + (System.currentTimeMillis() - now));
+			 //Debug.print("About to execute batch 2: "
+			 //+ (System.currentTimeMillis() - now));
 			try {
 				stmt.executeBatch();
 			} catch (SQLException e) {
@@ -732,30 +731,30 @@ public class Channel extends PersistentEntity implements Urlable {
 			lastAdditionDate = null;
 		}
 		if (siteCheckTo != null && siteCheckTo.equals(prevEndDate)) {
-			// Debug.print("About to start site thing 2: "
-			// + (System.currentTimeMillis() - now));
+			 //Debug.print("About to start site thing 2: "
+			 //+ (System.currentTimeMillis() - now));
 			siteCheck(siteCheckFrom, siteCheckTo);
-			// Debug.print("About to finish site thing 2: "
-			// + (System.currentTimeMillis() - now));
+			 //Debug.print("About to finish site thing 2: "
+			 //+ (System.currentTimeMillis() - now));
 		}
 		if (notActualTo != null && notActualTo.equals(prevEndDate)) {
-			// Debug.print("About to start not actual 2: "
-			// + (System.currentTimeMillis() - now));
+			 //Debug.print("About to start not actual 2: "
+			 //+ (System.currentTimeMillis() - now));
 			addChannelSnag(ChannelSnag.SNAG_NOT_ACTUAL, notActualFrom,
 					notActualTo, false);
-			// Debug.print("About to finsih not actual 2: "
-			// + (System.currentTimeMillis() - now));
+			 //Debug.print("About to finsih not actual 2: "
+			 //+ (System.currentTimeMillis() - now));
 		}
 		if (resolveMissingTo != null && resolveMissingTo.equals(prevEndDate)) {
-			// Debug.print("About to start resolvem 2: "
-			// + (System.currentTimeMillis() - now));
+			 //Debug.print("About to start resolvem 2: "
+			 //+ (System.currentTimeMillis() - now));
 			resolveSnag(ChannelSnag.SNAG_MISSING, resolveMissingFrom,
 					resolveMissingTo);
-			// Debug.print("About to finish resolvem 2: "
-			// + (System.currentTimeMillis() - now));
+			 //Debug.print("About to finish resolvem 2: "
+			 //+ (System.currentTimeMillis() - now));
 		}
 		// Debug.print("Finished method 2: " + (System.currentTimeMillis() -
-		// now));
+		 //now));
 	}
 
 	@SuppressWarnings("unchecked")

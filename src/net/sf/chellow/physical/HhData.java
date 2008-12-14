@@ -3,7 +3,6 @@ package net.sf.chellow.physical;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
-import java.util.List;
 import java.util.Locale;
 import java.util.TimeZone;
 
@@ -18,6 +17,7 @@ import net.sf.chellow.monad.types.MonadDate;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
 
+import org.hibernate.ScrollableResults;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -67,29 +67,55 @@ public class HhData extends EntityList {
 		supplyGenerationElement.appendChild(supplyElement);
 		source.appendChild(MonadDate.getMonthsXml(doc));
 		source.appendChild(MonadDate.getDaysXml(doc));
-		source.appendChild(new MonadDate().toXml(doc));
 		Calendar cal = GregorianCalendar.getInstance(TimeZone
 				.getTimeZone("GMT"), Locale.UK);
-		if (inv.hasParameter("hh-finish-date-year")) {
-			Date hhFinishDate = inv.getDate("hh-finish-date");
+		cal.setLenient(false);
+		HhEndDate generationStartDate = channel.getSupplyGeneration()
+				.getStartDate();
+		HhEndDate generationFinishDate = channel.getSupplyGeneration()
+				.getFinishDate();
+		if (inv.hasParameter("year")) {
+			int year = inv.getInteger("year");
+			int month = inv.getInteger("month");
 			if (!inv.isValid()) {
 				throw new UserException(doc);
 			}
-			cal.setTime(hhFinishDate);
-			cal.add(Calendar.DAY_OF_MONTH, 1);
+			cal.set(Calendar.YEAR, year);
+			cal.set(Calendar.MONTH, month - 1);
 		} else {
-			cal.set(Calendar.HOUR, 0);
-			cal.set(Calendar.MINUTE, 0);
-			cal.set(Calendar.SECOND, 0);
-			cal.set(Calendar.MILLISECOND, 0);
+			cal.setTime(generationStartDate.getDate());
 		}
-		for (HhDatum hhDatum : (List<HhDatum>) Hiber
+		cal.set(Calendar.DAY_OF_MONTH, 1);
+		cal.set(Calendar.HOUR, 0);
+		cal.set(Calendar.MINUTE, 30);
+		cal.set(Calendar.SECOND, 0);
+		cal.set(Calendar.MILLISECOND, 0);
+		Date startDate;
+		try {
+			startDate = cal.getTime();
+		} catch (IllegalArgumentException e) {
+			throw new UserException(doc, "Invalid date. "
+					+ e.getMessage());
+		}
+		source.appendChild(new MonadDate(startDate).toXml(doc));
+		cal.add(Calendar.MONTH, 1);
+		cal.add(Calendar.MINUTE, -30);
+		Date finishDate = cal.getTime();
+		if ((generationFinishDate != null && generationFinishDate.getDate()
+				.before(startDate))
+				|| generationStartDate.getDate().after(finishDate)) {
+			throw new UserException(doc,
+					"This month doesn't overlap with the generation.");
+		}
+		ScrollableResults hhData = Hiber
 				.session()
 				.createQuery(
-						"from HhDatum datum where datum.channel = :channel and datum.endDate.date <= :to order by datum.endDate.date")
-				.setEntity("channel", channel).setDate("to", cal.getTime())
-				.setMaxResults(48).list()) {
-			hhDataElement.appendChild(hhDatum.toXml(doc));
+						"from HhDatum datum where datum.channel = :channel and datum.endDate.date >= :from and datum.endDate.date <= :to order by datum.endDate.date")
+				.setEntity("channel", channel).setDate("from", startDate)
+				.setDate("to", finishDate).scroll();
+		while (hhData.next()) {
+			HhDatum datum = (HhDatum) hhData.get(0);
+			hhDataElement.appendChild(datum.toXml(doc));
 		}
 		return doc;
 	}
