@@ -651,7 +651,6 @@
 		</copy>
 		<exec dir="${basedir}" executable="svnversion" output="${build.home}/WEB-INF/VERSION" />
 
-
 		<!-- Copy external dependencies as required -->
 		<!-- *** CUSTOMIZE HERE AS REQUIRED BY YOUR APPLICATION *** -->
 		<mkdir dir="${build.home}/WEB-INF/lib" />

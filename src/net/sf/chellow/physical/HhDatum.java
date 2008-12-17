@@ -32,9 +32,13 @@ import net.sf.chellow.hhimport.HhDatumRaw;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.InternalException;
+import net.sf.chellow.monad.Invocation;
+import net.sf.chellow.monad.MonadMessage;
+import net.sf.chellow.monad.MonadUtils;
 import net.sf.chellow.monad.NotFoundException;
 import net.sf.chellow.monad.Urlable;
 import net.sf.chellow.monad.UserException;
+import net.sf.chellow.monad.XmlTree;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
 
@@ -253,5 +257,39 @@ public class HhDatum extends PersistentEntity {
 
 	public Urlable getChild(UriPathElement urlId) throws HttpException {
 		throw new NotFoundException();
+	}
+
+	public void httpGet(Invocation inv) throws HttpException {
+		inv.sendOk(document(null));
+	}
+
+	private Document document(String message) throws HttpException {
+		Document doc = MonadUtils.newSourceDocument();
+		Element source = doc.getDocumentElement();
+		source.appendChild(toXml(doc, new XmlTree("channel", new XmlTree(
+				"supplyGeneration", new XmlTree("supply")))));
+		if (message != null) {
+			source.appendChild(new MonadMessage(message).toXml(doc));
+		}
+		return doc;
+	}
+	
+	public void httpPost(Invocation inv) throws HttpException {
+		// delete hh data
+		Date deleteFrom = inv.getDate("delete-from");
+		int days = inv.getInteger("days");
+		try {
+			channel.deleteData(new HhEndDate(deleteFrom).getNext(), days);
+			Hiber.commit();
+		} catch (HttpException e) {
+			e.setDocument(doc(inv));
+			throw e;
+		}
+		Document doc = doc(inv);
+		Element docElement = doc.getDocumentElement();
+		docElement
+				.appendChild(new MonadMessage("HH data deleted successfully.")
+						.toXml(doc));
+		inv.sendOk(doc);
 	}
 }

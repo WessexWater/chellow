@@ -743,6 +743,12 @@
 											</xsl:attribute>
 										</input>
 									</label>
+									<xsl:value-of select="' '" />
+									<a
+										href="{/source/request/@context-path}/hhdc-contracts/{/source/supply-generation/mpan[llfc/@is-import='true']/account/hhdc-contract/@id}/">
+										<xsl:value-of
+											select="/source/supply-generation/mpan[llfc/@is-import='true']/account/hhdc-contract/@name" />
+									</a>
 									<br />
 									<label>
 										HHDC Account
@@ -1384,6 +1390,12 @@
 											</xsl:attribute>
 										</input>
 									</label>
+									<xsl:value-of select="' '" />
+									<a
+										href="{/source/request/@context-path}/hhdc-contracts/{/source/supply-generation/mpan[llfc/@is-import='false']/account/hhdc-contract/@id}/">
+										<xsl:value-of
+											select="/source/supply-generation/mpan[llfc/@is-import='false']/account/hhdc-contract/@name" />
+									</a>
 									<br />
 									<label>
 										HHDC Account

@@ -213,6 +213,7 @@
 							<caption>HH Data</caption>
 							<thead>
 								<tr>
+									<th>Chellow Id</th>
 									<th>Time</th>
 									<th>
 										<xsl:choose>
@@ -241,6 +242,13 @@
 								<xsl:for-each
 									select="/source/hh-data/hh-datum">
 									<tr>
+										<td>
+											<a
+												href="{/source/request/@context-path}/supplies/{/source/hh-data/channel/supply-generation/supply/@id}/generations/{/source/hh-data/channel/supply-generation/@id}/channels/{/source/hh-data/channel/@id}/hh-data/{@id}/">
+												<xsl:value-of
+													select="@id" />
+											</a>
+										</td>
 										<td>
 											<xsl:value-of
 												select="concat(hh-end-date/@year, '-', hh-end-date/@month, '-', hh-end-date/@day, 'T', hh-end-date/@hour, ':', hh-end-date/@minute, 'Z')" />
