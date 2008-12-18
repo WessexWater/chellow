@@ -125,7 +125,11 @@ public class HhData extends EntityList {
 		Date deleteFrom = inv.getDate("delete-from");
 		int days = inv.getInteger("days");
 		try {
-			channel.deleteData(new HhEndDate(deleteFrom).getNext(), days);
+			Calendar cal = MonadDate.getCalendar();
+			cal.setTime(deleteFrom);
+			cal.add(Calendar.DAY_OF_MONTH, days);
+			HhEndDate to = new HhEndDate(cal.getTime()).getPrevious();
+			channel.deleteData(new HhEndDate(deleteFrom).getNext(), to);
 			Hiber.commit();
 		} catch (HttpException e) {
 			e.setDocument(doc(inv));

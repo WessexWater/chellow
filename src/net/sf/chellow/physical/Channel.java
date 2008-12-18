@@ -49,7 +49,7 @@ import org.hibernate.Query;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-public class Channel extends PersistentEntity implements Urlable {
+public class Channel extends PersistentEntity {
 	public static final int IMPORT_KW = 1;
 	public static final int EXPORT_KW = 2;
 	public static final int IMPORT_KVAR = 3;
@@ -351,11 +351,7 @@ public class Channel extends PersistentEntity implements Urlable {
 	 * (HhdcContract) getSupplyGeneration().getHhdcContract().getContract(); }
 	 */
 
-	public void deleteData(HhEndDate from, int days) throws HttpException {
-		Calendar cal = MonadDate.getCalendar();
-		cal.setTime(from.getDate());
-		cal.add(Calendar.DAY_OF_MONTH, days);
-		HhEndDate to = new HhEndDate(cal.getTime()).getPrevious();
+	public void deleteData(HhEndDate from, HhEndDate to) throws HttpException {
 		long numDeleted = Hiber
 				.session()
 				.createQuery(

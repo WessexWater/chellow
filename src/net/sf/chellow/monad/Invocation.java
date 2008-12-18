@@ -52,6 +52,7 @@ import net.sf.chellow.monad.types.EmailAddress;
 import net.sf.chellow.monad.types.GeoPoint;
 import net.sf.chellow.monad.types.MonadDate;
 import net.sf.chellow.monad.types.MonadDouble;
+import net.sf.chellow.monad.types.MonadFloat;
 import net.sf.chellow.monad.types.MonadInteger;
 import net.sf.chellow.monad.types.MonadLong;
 import net.sf.chellow.monad.types.MonadString;
@@ -273,6 +274,12 @@ public class Invocation {
 		MonadInteger monadInteger = getValidatable(MonadInteger.class,
 				parameterNameString);
 		return monadInteger == null ? null : monadInteger.getInteger();
+	}
+
+	public Float getFloat(String parameterNameString) throws InternalException {
+		MonadFloat monadFloat = getValidatable(MonadFloat.class,
+				parameterNameString);
+		return monadFloat == null ? null : monadFloat.getFloat();
 	}
 
 	public Double getDouble(String parameterNameString)
@@ -603,11 +610,11 @@ public class Invocation {
 		returnPage(doc, req.getPathInfo(), "template.xsl");
 	}
 
-	public void sendUnauthorized() throws InternalException {
+	public void sendUnauthorized(String message) throws InternalException {
 		res.setHeader("WWW-Authenticate", "Basic realm=\""
 				+ monad.getRealmName() + "\"");
 		try {
-			res.sendError(HttpServletResponse.SC_UNAUTHORIZED);
+			res.sendError(HttpServletResponse.SC_UNAUTHORIZED, message);
 		} catch (IOException e) {
 			throw new InternalException(e);
 		}
@@ -652,8 +659,10 @@ public class Invocation {
 		}
 		String[] usernameAndPassword = Base64.decode(authHeader.substring(6))
 				.split(":");
-		if (usernameAndPassword.length != 2) {
+		if (usernameAndPassword == null || usernameAndPassword.length != 2) {
 			return null;
+//			throw new BadRequestException(
+//					"The Authorization header must contain a base64 encoded string consisting of a username and password separated by a ':'.");
 		}
 		User user = Chellow.USERS_INSTANCE.findUser(new EmailAddress(
 				usernameAndPassword[0]));

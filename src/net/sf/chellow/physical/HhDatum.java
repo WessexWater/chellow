@@ -273,23 +273,31 @@ public class HhDatum extends PersistentEntity {
 		}
 		return doc;
 	}
-	
+
 	public void httpPost(Invocation inv) throws HttpException {
-		// delete hh data
-		Date deleteFrom = inv.getDate("delete-from");
-		int days = inv.getInteger("days");
-		try {
-			channel.deleteData(new HhEndDate(deleteFrom).getNext(), days);
-			Hiber.commit();
-		} catch (HttpException e) {
-			e.setDocument(doc(inv));
-			throw e;
+		if (inv.hasParameter("delete")) {
+			try {
+				channel.deleteData(endDate, endDate);
+				inv.sendFound(channel.getUri());
+				Hiber.commit();
+			} catch (HttpException e) {
+				e.setDocument(document(null));
+				throw e;
+			}
+		} else {
+			Float value = inv.getFloat("value");
+			Character status = inv.getCharacter("status");
+			if (!inv.isValid()) {
+				throw new UserException();
+			}
+			try {
+				update(value, status);
+				Hiber.commit();
+			} catch (HttpException e) {
+				e.setDocument(document(null));
+				throw e;
+			}
+			inv.sendOk(document("HH Datum updated successfully"));
 		}
-		Document doc = doc(inv);
-		Element docElement = doc.getDocumentElement();
-		docElement
-				.appendChild(new MonadMessage("HH data deleted successfully.")
-						.toXml(doc));
-		inv.sendOk(doc);
 	}
 }

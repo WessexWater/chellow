@@ -222,7 +222,11 @@ public abstract class Monad extends HttpServlet implements Urlable {
 						throw new BadRequestException(e.getMessage());
 					}
 				}
-				checkPermissions(inv);
+				try {
+					checkPermissions(inv);
+				} catch (UserException e) {
+					throw new UnauthorizedException(e.getMessage());
+				}
 				Urlable urlable = inv.dereferenceUrl();
 				if (urlable == null) {
 					inv.returnStatic(getServletConfig().getServletContext(),
@@ -262,7 +266,7 @@ public abstract class Monad extends HttpServlet implements Urlable {
 				}
 				inv.sendOk(e.getDocument());
 			} catch (UnauthorizedException e) {
-				inv.sendUnauthorized();
+				inv.sendUnauthorized(e.getMessage());
 			} catch (UserException e) {
 				try {
 					Document doc = e.getDocument();
