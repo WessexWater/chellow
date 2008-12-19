@@ -581,7 +581,8 @@ public class Channel extends PersistentEntity {
 		HhEndDate lastAdditionDate = null;
 		HhEndDate prevEndDate = null;
 		int missing = 0;
-		HhDatum originalDatum = null;
+		float originalDatumValue = 0;
+		Character originalDatumStatus = null;
 		Connection con = Hiber.session().connection();
 		PreparedStatement stmt;
 		try {
@@ -641,7 +642,8 @@ public class Channel extends PersistentEntity {
 							: !datumRaw.getStatus().equals(datum.getStatus()))) {
 				 //Debug.print("About to update datum: " + datum + " with " + datumRaw + " "
 				 //+ (System.currentTimeMillis() - now));
-				originalDatum = datum;
+				originalDatumValue = datum.getValue();
+				originalDatumStatus = datum.getStatus();
 				datum.update(datumRaw.getValue(), datumRaw.getStatus());
 				Hiber.flush();
 				altered = true;
@@ -656,7 +658,7 @@ public class Channel extends PersistentEntity {
 				if (datumRaw.getValue() < 0) {
 					addChannelSnag(ChannelSnag.SNAG_NEGATIVE, datumRaw
 							.getEndDate(), datumRaw.getEndDate(), false);
-				} else if (altered && originalDatum.getValue() < 0) {
+				} else if (altered && originalDatumValue < 0) {
 					resolveSnag(ChannelSnag.SNAG_NEGATIVE, datumRaw
 							.getEndDate());
 				}
@@ -666,7 +668,7 @@ public class Channel extends PersistentEntity {
 					}
 					notActualTo = datumRaw.getEndDate();
 				} else if (altered
-						&& !originalDatum.getStatus().equals(HhDatum.ACTUAL)) {
+						&& !originalDatumStatus.equals(HhDatum.ACTUAL)) {
 					resolveSnag(ChannelSnag.SNAG_NOT_ACTUAL, datumRaw
 							.getEndDate());
 				}

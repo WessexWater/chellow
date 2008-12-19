@@ -291,7 +291,12 @@ public class HhDatum extends PersistentEntity {
 				throw new UserException();
 			}
 			try {
-				update(value, status);
+				List<HhDatumRaw> dataRaw = new ArrayList<HhDatumRaw>();
+				dataRaw.add(new HhDatumRaw(channel.getSupplyGeneration()
+						.getMpans().iterator().next().getCore().toString(),
+						channel.getIsImport(), channel.getIsKwh(), endDate,
+						value, status));
+				channel.addHhData(dataRaw);
 				Hiber.commit();
 			} catch (HttpException e) {
 				e.setDocument(document(null));
