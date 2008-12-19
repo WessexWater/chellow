@@ -386,10 +386,10 @@
 	</target>
 -->
 	<target name="reset-db" depends="compile">
-		<exec osfamily="windows" executable="C:\Program Files\PostgreSQL\8.2\bin\dropdb">
+		<exec osfamily="windows" executable="C:\Program Files\PostgreSQL\8.3\bin\dropdb">
 			<arg line="-U postgres chellow" />
 		</exec>
-		<exec osfamily="windows" executable="C:\Program Files\PostgreSQL\8.2\bin\createdb" failonerror="true">
+		<exec osfamily="windows" executable="C:\Program Files\PostgreSQL\8.3\bin\createdb" failonerror="true">
 			<arg line="-U postgres -T template0 chellow" />
 		</exec>
 
