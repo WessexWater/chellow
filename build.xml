@@ -661,36 +661,19 @@
 		<!-- Copy static files from external dependencies as needed -->
 		<!-- *** CUSTOMIZE HERE AS REQUIRED BY YOUR APPLICATION *** -->
 		<!--
-		<copy todir="${build.home}/WEB-INF/lib" file="${javalib.home}/jaf-1.1/activation.jar" />
 -->
+		<copy todir="${build.home}/WEB-INF/lib" file="/usr/share/java/commons-dbcp-1.2.1.jar"/>
 		<copy todir="${build.home}/WEB-INF/lib" file="${javalib.home}/javamail-1.4.1/mail.jar" />
 
-		<copy todir="${build.home}/WEB-INF/lib" file="${javalib.home}/hibernate-3.2/hibernate3.jar" />
-
-		<copy todir="${build.home}/WEB-INF/lib" file="${javalib.home}/hibernate-3.2/lib/dom4j-1.6.1.jar" />
-
-		<copy todir="${build.home}/WEB-INF/lib" file="${javalib.home}/hibernate-3.2/lib/cglib-2.1.3.jar" />
-
-		<copy todir="${build.home}/WEB-INF/lib" file="${javalib.home}/hibernate-3.2/lib/commons-collections-2.1.1.jar" />
-
-		<copy todir="${build.home}/WEB-INF/lib" file="${javalib.home}/hibernate-3.2/lib/commons-logging-1.0.4.jar" />
-
-		<copy todir="${build.home}/WEB-INF/lib" file="${javalib.home}/hibernate-3.2/lib/ehcache-1.2.3.jar" />
-
-		<copy todir="${build.home}/WEB-INF/lib" file="${javalib.home}/hibernate-3.2/lib/jta.jar" />
-
-		<copy todir="${build.home}/WEB-INF/lib" file="${javalib.home}/hibernate-3.2/lib/log4j-1.2.11.jar" />
-
-		<copy todir="${build.home}/WEB-INF/lib" file="${javalib.home}/hibernate-3.2/lib/antlr-2.7.6.jar" />
-
-		<copy todir="${build.home}/WEB-INF/lib" file="${javalib.home}/hibernate-3.2/lib/asm.jar" />
-
+		<copy todir="${build.home}/WEB-INF/lib" file="${javalib.home}/hibernate-distribution-3.3.1.GA/hibernate3.jar">
+			<fileset dir="${javalib.home}/hibernate-distribution-3.3.1.GA/lib/required" />
+		</copy>
 		<copy todir="${build.home}/WEB-INF/lib" file="${javalib.home}/commons-fileupload-1.2.1/lib/commons-fileupload-1.2.1.jar" />
 		<copy todir="${build.home}/WEB-INF/lib" file="${javalib.home}/commons-io-1.4/commons-io-1.4.jar" />
 
 		<copy todir="${build.home}/WEB-INF/lib" file="${javalib.home}/ostermillerutils_1_07_00.jar" />
 
-		<copy todir="${build.home}/WEB-INF/lib" file="${javalib.home}/commons-net-1.4.1/commons-net-1.4.1.jar" />
+		<copy todir="${build.home}/WEB-INF/lib" file="${javalib.home}/commons-net-2.0/commons-net-2.0.jar" />
 		<copy todir="${build.home}/WEB-INF/lib" file="${javalib.home}/jakarta-oro-2.0.8/jakarta-oro-2.0.8.jar" />
 		<copy todir="${build.home}/WEB-INF/lib" file="${javalib.home}/commons-httpclient-3.1/commons-httpclient-3.1.jar" />
 		<copy todir="${build.home}/WEB-INF/lib" file="${javalib.home}/commons-codec-1.3/commons-codec-1.3.jar" />

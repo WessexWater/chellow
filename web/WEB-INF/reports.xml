@@ -3076,6 +3076,8 @@ if rs.next():
             hh_value = parasiticKwh
         elif type == 'displaced':
             hh_value = displacedKwh
+        elif type == 'generated':
+            hh_value = generatedKwh
         pw.print(str(round(hh_value, 1)))
         hhDate = HhEndDate.getNext(cal, hhDate)
         Hiber.session().clear()

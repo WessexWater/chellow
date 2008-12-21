@@ -1287,15 +1287,31 @@ public class Supply extends PersistentEntity {
 
 	@SuppressWarnings("unchecked")
 	public void delete(Supply supply) throws HttpException {
-		long numInvoiceMpans = (Long) Hiber
+		if ((Long) Hiber
 				.session()
 				.createQuery(
-						"select count(*) from InvoiceMpan invoiceMpan where invoiceMpan.mpan.supplyGeneration.supply = :supply")
-				.setEntity("supply", this).uniqueResult();
-		if (numInvoiceMpans > 0) {
+						"select count(invoice) from Invoice invoice, Mpan mpan where invoice.bill.account = mpan.supplierAccount and mpan.supplyGeneration.supply = :supply")
+				.setEntity("supply", this).uniqueResult() > 0) {
 			throw new UserException(
-					"One can't delete a supply if there are still invoices attached to its MPANs.");
+					"One can't delete a supply if there are still invoices associated with supplier accounts referred to by its MPANs.");
 		}
+		if ((Long) Hiber
+				.session()
+				.createQuery(
+						"select count(invoice) from Invoice invoice, Mpan mpan where invoice.bill.account = mpan.hhdcAccount and mpan.supplyGeneration.supply = :supply")
+				.setEntity("supply", this).uniqueResult() > 0) {
+			throw new UserException(
+					"One can't delete a supply if there are still invoices associated with hhdc accounts referred to by its MPANs.");
+		}
+		if ((Long) Hiber
+				.session()
+				.createQuery(
+						"select count(invoice) from Invoice invoice, Mpan mpan where invoice.bill.account = mpan.mopAccount and mpan.supplyGeneration.supply = :supply")
+				.setEntity("supply", this).uniqueResult() > 0) {
+			throw new UserException(
+					"One can't delete a supply if there are still invoices associated with MOP accounts referred to by its MPANs.");
+		}
+
 		/*
 		 * long reads = (Long) Hiber .session() .createQuery( "select count(*)
 		 * from RegisterRead read where read.mpan.supplyGeneration.supply =
@@ -1310,7 +1326,7 @@ public class Supply extends PersistentEntity {
 		for (ChannelSnag snag : (List<ChannelSnag>) Hiber
 				.session()
 				.createQuery(
-						"from ChannelSnag snag where snag.channel.supply = :supply")
+						"from ChannelSnag snag where snag.channel.supplyGeneration.supply = :supply")
 				.setEntity("supply", this).list()) {
 			Hiber.session().delete(snag);
 			Hiber.flush();
