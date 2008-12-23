@@ -312,8 +312,24 @@ public class User extends PersistentEntity {
 			Hiber.commit();
 			inv.sendOk(document("New password set successfully."));
 		} else {
-			throw new UserException(
-					"I can't really see what you're trying to do.");
+			EmailAddress emailAddress = inv.getEmailAddress("email-address");
+			Long userRoleId = inv.getLong("user-role-id");
+			UserRole userRole = UserRole.getUserRole(userRoleId);
+			if (!inv.isValid()) {
+				throw new UserException(document());
+			}
+			Party party = null;
+			if (userRole.getCode().equals(UserRole.PARTY_VIEWER)) {
+				String participantCode = inv.getString("participant-code");
+				Long marketRoleId = inv.getLong("market-role-id");
+
+				party = Party.getParty(Participant
+						.getParticipant(participantCode), MarketRole
+						.getMarketRole(marketRoleId));
+			}
+			update(emailAddress, null, getPasswordDigest(), userRole, party);
+			Hiber.commit();
+			inv.sendOk(document("Updated successfully."));
 		}
 	}
 }

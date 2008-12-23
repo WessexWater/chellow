@@ -662,7 +662,10 @@
 		<!-- *** CUSTOMIZE HERE AS REQUIRED BY YOUR APPLICATION *** -->
 		<!--
 -->
+		<!--
 		<copy todir="${build.home}/WEB-INF/lib" file="/usr/share/java/commons-dbcp-1.2.1.jar"/>
+		-->
+		<copy todir="${build.home}/WEB-INF/lib" file="${javalib.home}/slf4j-1.5.2/slf4j-jdk14-1.5.2.jar" />
 		<copy todir="${build.home}/WEB-INF/lib" file="${javalib.home}/javamail-1.4.1/mail.jar" />
 
 		<copy todir="${build.home}/WEB-INF/lib" file="${javalib.home}/hibernate-distribution-3.3.1.GA/hibernate3.jar">
