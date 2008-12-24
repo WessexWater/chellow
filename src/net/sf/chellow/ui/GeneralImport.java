@@ -154,7 +154,7 @@ public class GeneralImport extends Thread implements Urlable, XmlDescriber {
 								allValues[7]));
 						// Debug.print("size " + hhData.size());
 						if (hhData.size() > 1000) {
-							HhDatum.insert(hhData.iterator(), halt, null);
+							HhDatum.insert(hhData.iterator(), halt);
 							hhData.clear();
 						}
 					}
@@ -224,7 +224,7 @@ public class GeneralImport extends Thread implements Urlable, XmlDescriber {
 
 			if (!hhData.isEmpty()) {
 				// Debug.print("not empty, so adding.");
-				HhDatum.insert(hhData.iterator(), halt, null);
+				HhDatum.insert(hhData.iterator(), halt);
 				Hiber.close();
 			}
 

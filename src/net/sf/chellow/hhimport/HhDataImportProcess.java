@@ -151,7 +151,7 @@ public class HhDataImportProcess extends Thread implements Urlable,
 	@SuppressWarnings("unchecked")
 	public void run() {
 		try {
-			HhDatum.insert(converter, halt, messages);
+			HhDatum.insert(converter, halt);
 			/*
 			 * HhDatumRaw datum = converter.next(); String mpanCoreStr =
 			 * datum.getMpanCore(); MpanCore mpanCore =

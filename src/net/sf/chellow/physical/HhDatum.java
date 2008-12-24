@@ -55,17 +55,9 @@ public class HhDatum extends PersistentEntity {
 	 * UserException("Another field called " + fieldName + " needs to be added
 	 * on to " + values); } return values[index]; }
 	 */
-	static private void handleException(List<String> messages, String message)
-			throws HttpException {
-		if (messages == null) {
-			throw new UserException(message);
-		} else {
-			messages.add(message);
-		}
-	}
 
-	static public void insert(Iterator<HhDatumRaw> rawData, List<Boolean> halt,
-			List<String> messages) throws HttpException {
+	static public void insert(Iterator<HhDatumRaw> rawData, List<Boolean> halt)
+			throws HttpException {
 		if (!rawData.hasNext()) {
 			return;
 		}
@@ -79,12 +71,12 @@ public class HhDatum extends PersistentEntity {
 		boolean isImport = datum.getIsImport();
 		boolean isKwh = datum.getIsKwh();
 		if (generation == null) {
-			handleException(messages, "HH datum has been ignored: "
+			throw new UserException("HH datum has been ignored: "
 					+ datum.toString() + ".");
 		}
 		Channel channel = generation.getChannel(isImport, isKwh);
 		if (channel == null) {
-			handleException(messages, "There is no channel for the datum: "
+			throw new UserException("There is no channel for the datum: "
 					+ datum.toString() + ".");
 		}
 		HhEndDate genFinishDate = generation.getFinishDate();
@@ -93,11 +85,7 @@ public class HhDatum extends PersistentEntity {
 		// HhDatumRaw firstDatum = datum;
 		if (!rawData.hasNext()) {
 			// batchSize = data.size();
-			try {
-				channel.addHhData(data);
-			} catch (UserException e) {
-				handleException(messages, e.getMessage());
-			}
+			channel.addHhData(data);
 		}
 		while (rawData.hasNext() && !halt.get(0)) {
 			datum = rawData.next();
@@ -110,11 +98,7 @@ public class HhDatum extends PersistentEntity {
 					|| (genFinishDate != null && genFinishDate.getDate()
 							.before(endDate))) {
 				// batchSize = data.size();
-				try {
-					channel.addHhData(data);
-				} catch (UserException e) {
-					handleException(messages, e.getMessage());
-				}
+				channel.addHhData(data);
 				Hiber.close();
 				data.clear();
 				mpanCoreStr = datum.getMpanCore();
@@ -122,14 +106,14 @@ public class HhDatum extends PersistentEntity {
 				generation = mpanCore.getSupply().getGeneration(
 						datum.getEndDate());
 				if (generation == null) {
-					handleException(messages, "HH datum has been ignored: "
+					throw new UserException("HH datum has been ignored: "
 							+ datum.toString() + ".");
 				}
 				isImport = datum.getIsImport();
 				isKwh = datum.getIsKwh();
 				channel = generation.getChannel(isImport, isKwh);
 				if (channel == null) {
-					handleException(messages,
+					throw new UserException(
 							"There is no channel for the datum: "
 									+ datum.toString() + ".");
 				}

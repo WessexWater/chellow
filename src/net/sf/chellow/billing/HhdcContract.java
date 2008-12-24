@@ -283,6 +283,7 @@ public class HhdcContract extends Contract {
 				throw new UserException(document());
 			}
 			chargeScript = chargeScript.replace("\r", "").replace("\t", "    ");
+			properties = properties.replace("\r", "").replace("\t", "    ");
 			try {
 				update(name, chargeScript, frequency, lag, properties);
 			} catch (UserException e) {
