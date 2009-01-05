@@ -304,21 +304,27 @@ public class Account extends PersistentEntity {
 			Bill bill = bills.get(i);
 			if (bill.getStartDate().getDate().after(gapStart.getDate())) {
 				addSnag(AccountSnag.MISSING_BILL, gapStart, bill.getStartDate()
-						.getPrevious(), false);
+						.getPrevious());
 			}
-			addSnag(AccountSnag.MISSING_BILL, bill.getStartDate(), bill
-					.getFinishDate(), true);
+			deleteSnag(AccountSnag.MISSING_BILL, bill.getStartDate(), bill
+					.getFinishDate());
 			gapStart = bill.getFinishDate().getNext();
 		}
 		if (!gapStart.getDate().after(to.getDate())) {
-			addSnag(AccountSnag.MISSING_BILL, gapStart, to, false);
+			addSnag(AccountSnag.MISSING_BILL, gapStart, to);
 		}
 	}
 
-	void addSnag(String description, HhEndDate startDate, HhEndDate finishDate,
-			boolean isResolved) throws HttpException {
+	void deleteSnag(String description, HhEndDate startDate,
+			HhEndDate finishDate) throws HttpException {
+		SnagDateBounded.deleteAccountSnag(contract, this, description,
+				startDate, finishDate);
+	}
+
+	void addSnag(String description, HhEndDate startDate, HhEndDate finishDate)
+			throws HttpException {
 		SnagDateBounded.addAccountSnag(contract, this, description, startDate,
-				finishDate, isResolved);
+				finishDate);
 	}
 
 	Bills billsInstance() {

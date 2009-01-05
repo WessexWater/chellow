@@ -1,6 +1,6 @@
 /*
  
- Copyright 2005-2008 Meniscus Systems Ltd
+ Copyright 2005-2009 Meniscus Systems Ltd
  
  This file is part of Chellow.
 
@@ -23,7 +23,6 @@
 package net.sf.chellow.physical;
 
 import net.sf.chellow.billing.Contract;
-import net.sf.chellow.billing.HhdcContract;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.InternalException;
@@ -32,6 +31,7 @@ import net.sf.chellow.monad.MonadUtils;
 import net.sf.chellow.monad.NotFoundException;
 import net.sf.chellow.monad.XmlTree;
 import net.sf.chellow.monad.types.MonadUri;
+import net.sf.chellow.ui.Chellow;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -52,16 +52,13 @@ public class SiteSnag extends SnagDateBounded {
 
 	private Site site;
 
-	private HhdcContract contract;
-
 	public SiteSnag() {
 	}
 
-	public SiteSnag(String description, HhdcContract contract, Site site,
+	public SiteSnag(String description, Site site,
 			HhEndDate startDate, HhEndDate finishDate) throws HttpException {
 		super(description, startDate, finishDate);
 		this.site = site;
-		this.contract = contract;
 	}
 
 	public Site getSite() {
@@ -70,14 +67,6 @@ public class SiteSnag extends SnagDateBounded {
 
 	void setSite(Site site) {
 		this.site = site;
-	}
-
-	public HhdcContract getContract() {
-		return contract;
-	}
-
-	public void setContract(Contract contract) {
-		this.contract = (HhdcContract) contract;
 	}
 
 	public Element toXml(Document doc) throws HttpException {
@@ -97,7 +86,7 @@ public class SiteSnag extends SnagDateBounded {
 	}
 
 	public String toString() {
-		return super.toString() + " Contract: " + getContract();
+		return super.toString() + " Site: " + getSite();
 	}
 
 	public void httpGet(Invocation inv) throws HttpException {
@@ -113,11 +102,23 @@ public class SiteSnag extends SnagDateBounded {
 	}
 
 	public MonadUri getUri() throws HttpException {
-		return getContract().getSiteSnagsInstance().getUri()
+		return Chellow.SITE_SNAGS_INSTANCE.getUri()
 				.resolve(getUriId()).append("/");
 	}
 
 	public void delete() {
 		Hiber.session().delete(this);
+	}
+
+	@Override
+	public Contract getContract() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public void setContract(Contract contract) {
+		// TODO Auto-generated method stub
+		
 	}
 }

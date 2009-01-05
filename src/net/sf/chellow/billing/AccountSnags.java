@@ -89,7 +89,7 @@ public class AccountSnags extends EntityList {
 							ScrollMode.FORWARD_ONLY);
 			while (snags.next()) {
 				AccountSnag snag = (AccountSnag) snags.get(0);
-				snag.resolve(true);
+				snag.setIsIgnored(true);
 				Hiber.session().flush();
 				Hiber.session().clear();
 			}

@@ -66,6 +66,12 @@
 					</li>
 					<li>
 						<a
+							href="{/source/request/@context-path}/site-snags/">
+							Site Snags
+						</a>
+					</li>
+					<li>
+						<a
 							href="{/source/request/@context-path}/non-core-contracts/">
 							Non-core Contracts
 						</a>

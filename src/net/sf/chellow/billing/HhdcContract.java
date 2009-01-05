@@ -1,6 +1,6 @@
 /*
  
- Copyright 2005, 2008 Meniscus Systems Ltd
+ Copyright 2005, 2008-2009 Meniscus Systems Ltd
  
  This file is part of Chellow.
 
@@ -46,7 +46,6 @@ import net.sf.chellow.physical.ChannelSnags;
 import net.sf.chellow.physical.HhEndDate;
 import net.sf.chellow.physical.MarketRole;
 import net.sf.chellow.physical.Mpan;
-import net.sf.chellow.physical.SiteSnags;
 import net.sf.chellow.ui.Chellow;
 import net.sf.chellow.ui.GeneralImport;
 
@@ -331,8 +330,6 @@ public class HhdcContract extends Contract {
 			return getHhDataImportProcessesInstance();
 		} else if (ChannelSnags.URI_ID.equals(uriId)) {
 			return getChannelSnagsInstance();
-		} else if (SiteSnags.URI_ID.equals(uriId)) {
-			return getSiteSnagsInstance();
 		} else if (StarkAutomaticHhDataImporter.URI_ID.equals(uriId)) {
 			return StarkAutomaticHhDataImporters.getImportersInstance()
 					.findImporter(this);
@@ -345,10 +342,6 @@ public class HhdcContract extends Contract {
 
 	public ChannelSnags getChannelSnagsInstance() {
 		return new ChannelSnags(this);
-	}
-
-	public SiteSnags getSiteSnagsInstance() {
-		return new SiteSnags(this);
 	}
 
 	public Element toXml(Document doc) throws HttpException {

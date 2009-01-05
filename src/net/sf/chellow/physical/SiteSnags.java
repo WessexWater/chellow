@@ -3,7 +3,6 @@ package net.sf.chellow.physical;
 import java.util.Date;
 import java.util.List;
 
-import net.sf.chellow.billing.HhdcContract;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.InternalException;
@@ -14,6 +13,7 @@ import net.sf.chellow.monad.XmlTree;
 import net.sf.chellow.monad.types.MonadDate;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
+import net.sf.chellow.ui.Chellow;
 
 import org.hibernate.ScrollMode;
 import org.hibernate.ScrollableResults;
@@ -33,10 +33,7 @@ public class SiteSnags extends EntityList {
 		}
 	}
 
-	HhdcContract hhdcContract;
-
-	public SiteSnags(HhdcContract hhdcContract) {
-		this.hhdcContract = hhdcContract;
+	public SiteSnags() {
 	}
 
 	public UriPathElement getUriId() {
@@ -44,7 +41,7 @@ public class SiteSnags extends EntityList {
 	}
 
 	public MonadUri getUri() throws HttpException {
-		return hhdcContract.getUri().resolve(getUriId()).append("/");
+		return Chellow.ROOT_URI.resolve(getUriId()).append("/");
 	}
 
 	@SuppressWarnings("unchecked")
@@ -58,13 +55,11 @@ public class SiteSnags extends EntityList {
 		Element source = doc.getDocumentElement();
 		Element snagsElement = toXml(doc);
 		source.appendChild(snagsElement);
-		snagsElement.appendChild(hhdcContract.toXml(doc,
-				new XmlTree("party")));
 		for (SiteSnag snag : (List<SiteSnag>) Hiber
 				.session()
 				.createQuery(
-						"from SiteSnag snag where snag.dateResolved is null and snag.contract = :contract order by snag.site.code, snag.description, snag.startDate.date")
-				.setEntity("contract", hhdcContract).setMaxResults(PAGE_SIZE)
+						"from SiteSnag snag where snag.isIgnored = false order by snag.site.code, snag.description, snag.startDate.date")
+				.setMaxResults(PAGE_SIZE)
 				.list()) {
 			snagsElement.appendChild(snag.toXml(doc, new XmlTree("site")));
 		}
@@ -82,18 +77,17 @@ public class SiteSnags extends EntityList {
 			ScrollableResults snags = Hiber
 					.session()
 					.createQuery(
-							"from SiteSnag snag where snag.contract = :contract and snag.finishDate < :ignoreDate")
-					.setEntity("contract", hhdcContract).setTimestamp(
+							"from SiteSnag snag where snag.finishDate < :ignoreDate")
+					.setTimestamp(
 							"ignoreDate", ignoreDate).scroll(
 							ScrollMode.FORWARD_ONLY);
 			while (snags.next()) {
 				SiteSnag snag = (SiteSnag) snags.get(0);
-				snag.resolve(true);
+				snag.setIsIgnored(true);
 				Hiber.session().flush();
 				Hiber.session().clear();
 			}
 			Hiber.commit();
-			hhdcContract = HhdcContract.getHhdcContract(hhdcContract.getId());
 			inv.sendOk(document());
 		}
 	}

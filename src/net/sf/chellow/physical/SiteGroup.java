@@ -6,7 +6,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import net.sf.chellow.billing.HhdcContract;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
 
@@ -125,61 +124,15 @@ public class SiteGroup {
 		return map;
 	}
 
-	public void addHhdcSnag(String description, HhEndDate startDate,
-			HhEndDate finishDate, boolean isResolved) throws HttpException {
-		// which sevice?
-		Site site = sites.get(0);
-		HhdcContract contract = getHhdcContract(startDate);
-		HhEndDate contractEndDate = contract.getFinishRateScript()
-				.getFinishDate();
-		SnagDateBounded.addSiteSnag(contract, site, description, startDate,
-				contractEndDate == null
-						|| contractEndDate.getDate()
-								.after(finishDate.getDate()) ? finishDate
-						: contractEndDate, isResolved);
-		while (!(contractEndDate == null || !contractEndDate.getDate().before(
-				finishDate.getDate()))) {
-			contract = getHhdcContract(contractEndDate.getNext());
-			contractEndDate = contract.getFinishRateScript().getFinishDate();
-			SnagDateBounded.addSiteSnag(contract, site, description, contract
-					.getStartRateScript().getStartDate(),
-					contractEndDate == null
-							|| contractEndDate.getDate().after(
-									finishDate.getDate()) ? finishDate
-							: contractEndDate, isResolved);
-		}
-	}
-
-	@SuppressWarnings("unchecked")
-	private HhdcContract getHhdcContract(HhEndDate date) throws HttpException {
-		List<Long> contractIds = (List<Long>) Hiber
-				.session()
-				.createQuery(
-						"select distinct mpan.hhdcAccount.contract.id from Mpan mpan where mpan.supplyGeneration.supply in (:supplies) and mpan.supplyGeneration.startDate.date <= :date and (mpan.supplyGeneration.finishDate.date is null or mpan.supplyGeneration.finishDate >= :date) order by mpan.hhdcAccount.contract.id")
-				.setParameterList("supplies", supplies).setTimestamp("date",
-						date.getDate()).list();
-		return contractIds.size() > 0 ? HhdcContract
-				.getHhdcContract(contractIds.get(0)) : null;
-	}
-
-	@SuppressWarnings("unchecked")
-	public void resolveHhdcSnag(String description, HhEndDate startDate,
+	public void addSiteSnag(String description, HhEndDate startDate,
 			HhEndDate finishDate) throws HttpException {
-		if (!startDate.getDate().after(finishDate.getDate())) {
-			for (SiteSnag snag : (List<SiteSnag>) Hiber
-					.session()
-					.createQuery(
-							"from SiteSnag snag where snag.site = :site and snag.description = :description and snag.startDate.date <= :finishDate and snag.finishDate.date >= :startDate and snag.dateResolved is null")
-					.setEntity("site", sites.get(0)).setString("description",
-							description.toString()).setTimestamp("startDate",
-							startDate.getDate()).setTimestamp("finishDate",
-							finishDate.getDate()).list()) {
-				addHhdcSnag(description, snag.getStartDate().getDate().before(
-						startDate.getDate()) ? startDate : snag.getStartDate(),
-						snag.getFinishDate().getDate().after(
-								finishDate.getDate()) ? finishDate : snag
-								.getFinishDate(), true);
-			}
-		}
+		SnagDateBounded.addSiteSnag(sites.get(0), description, startDate,
+				finishDate);
+	}
+
+	@SuppressWarnings("unchecked")
+	public void deleteHhdcSnag(String description, HhEndDate startDate,
+			HhEndDate finishDate) throws HttpException {
+		SnagDateBounded.deleteSiteSnag(sites.get(0), description, startDate, finishDate);
 	}
 }

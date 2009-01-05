@@ -1,6 +1,6 @@
 /*
  
- Copyright 2005-2007 Meniscus Systems Ltd
+ Copyright 2005-2008 Meniscus Systems Ltd
  
  This file is part of Chellow.
 
@@ -85,8 +85,7 @@ public abstract class SnagDateBounded extends Snag {
 		update(startDate, finishDate);
 	}
 
-	public void updateFinishDate(HhEndDate finishDate)
-			throws InternalException {
+	public void updateFinishDate(HhEndDate finishDate) throws InternalException {
 		update(startDate, finishDate);
 	}
 
@@ -125,9 +124,8 @@ public abstract class SnagDateBounded extends Snag {
 
 	@SuppressWarnings("unchecked")
 	private static void addSnagDateBounded(SnagToAdd snagToAdd)
-			throws InternalException, HttpException {
-		SnagDateBounded unresolved = snagToAdd.getIsResolved() ? null
-				: snagToAdd.newSnag();
+			throws HttpException {
+		SnagDateBounded background = snagToAdd.newSnag();
 		for (SnagDateBounded snag : snagToAdd.getCoveredSnags()) {
 			if (snag.getFinishDate().getDate().after(
 					snagToAdd.getFinishDate().getDate())) {
@@ -146,45 +144,36 @@ public abstract class SnagDateBounded extends Snag {
 				snag.setStartDate(snagToAdd.getStartDate());
 				snagToAdd.insertSnag(outerSnag);
 				Hiber.flush();
-				if (unresolved != null) {
-					unresolved.setFinishDate(HhEndDate.getNext(snag
-							.getFinishDate()));
-					unresolved.setStartDate(HhEndDate.getNext(snag
-							.getFinishDate()));
-				}
+				background.setFinishDate(HhEndDate
+						.getNext(snag.getFinishDate()));
+				background
+						.setStartDate(HhEndDate.getNext(snag.getFinishDate()));
 			}
-			if (unresolved != null) {
-				if (unresolved.getStartDate().getDate().before(
-						snag.getStartDate().getDate())
-						&& !snagToAdd.getIsResolved()) {
-					unresolved.setFinishDate(snag.getStartDate().getPrevious());
-					snagToAdd.insertSnag(unresolved);
-					unresolved = snagToAdd.newSnag(snag.getFinishDate()
-							.getNext(), snag.getFinishDate().getNext());
-				} else {
-					unresolved.setFinishDate(snag.getFinishDate().getNext());
-					unresolved.setStartDate(snag.getFinishDate().getNext());
-				}
+			//snag.setContract(snagToAdd.getContract());
+			if (background.getStartDate().getDate().before(
+					snag.getStartDate().getDate())) {
+				background.setFinishDate(snag.getStartDate().getPrevious());
+				snagToAdd.insertSnag(background);
+				background = snagToAdd.newSnag(snag.getFinishDate().getNext(),
+						snag.getFinishDate().getNext());
+			} else {
+				background.setFinishDate(snag.getFinishDate().getNext());
+				background.setStartDate(snag.getFinishDate().getNext());
 			}
 		}
-		if (unresolved != null
-				&& !unresolved.getStartDate().getDate().after(
-						snagToAdd.getFinishDate().getDate())) {
-			unresolved.setFinishDate(snagToAdd.getFinishDate());
-			snagToAdd.insertSnag(unresolved);
+		if (!background.getStartDate().getDate().after(
+				snagToAdd.getFinishDate().getDate())) {
+			background.setFinishDate(snagToAdd.getFinishDate());
+			snagToAdd.insertSnag(background);
 		}
-		for (SnagDateBounded snag : snagToAdd.getCoveredSnags()) {
-			if (snagToAdd.getIsResolved()) {
-				if (snag.getDateResolved() == null) {
-					snag.resolve(false);
-				} else if (snag.getIsIgnored() == true) {
-					snag.setIsIgnored(false);
-				}
-			} else if (snag.getDateResolved() != null && !snag.getIsIgnored()) {
-				snag.deResolve();
-			}
-			snag.setContract(snagToAdd.getContract());
-		}
+		/*
+		 * for (SnagDateBounded snag : snagToAdd.getCoveredSnags()) { if
+		 * (snagToAdd.getIsResolved()) { if (snag.getDateResolved() == null) {
+		 * snag.resolve(false); } else if (snag.getIsIgnored() == true) {
+		 * snag.setIsIgnored(false); } } else if (snag.getDateResolved() != null &&
+		 * !snag.getIsIgnored()) { snag.deResolve(); }
+		 * snag.setContract(snagToAdd.getContract()); }
+		 */
 		SnagDateBounded previousSnag = null;
 		for (SnagDateBounded snag : snagToAdd.getCoveredSnags(snagToAdd
 				.getStartDate().getPrevious(), snagToAdd.getFinishDate()
@@ -203,25 +192,70 @@ public abstract class SnagDateBounded extends Snag {
 		}
 	}
 
-	public static void addChannelSnag(HhdcContract contractDce, Channel channel,
-			String description, HhEndDate startDate, HhEndDate finishDate,
-			boolean isResolved) throws InternalException, HttpException {
-		addSnagDateBounded(new ChannelSnagToAdd(contractDce, channel,
-				description, startDate, finishDate, isResolved));
+	@SuppressWarnings("unchecked")
+	private static void deleteSnagDateBounded(SnagToAdd snagToAdd)
+			throws HttpException {
+		for (SnagDateBounded snag : snagToAdd.getCoveredSnags()) {
+			boolean trimmed = false;
+			if (snag.getFinishDate().getDate().after(
+					snagToAdd.getFinishDate().getDate())) {
+				snag.setStartDate(HhEndDate.getNext(snagToAdd.getFinishDate()));
+				trimmed = true;
+				Hiber.flush();
+			}
+			if (snag.getStartDate().getDate().before(
+					snagToAdd.getStartDate().getDate())) {
+				snag.setFinishDate(HhEndDate.getPrevious(snagToAdd
+						.getStartDate()));
+				trimmed = true;
+				Hiber.flush();
+			}
+			if (!trimmed) {
+				snagToAdd.deleteSnag(snag);
+			}
+		}
 	}
 
-	public static void addSiteSnag(HhdcContract contractDce, Site site,
-			String description, HhEndDate startDate, HhEndDate finishDate,
-			boolean isResolved) throws InternalException, HttpException {
-		addSnagDateBounded(new SiteSnagToAdd(contractDce, site, description,
-				startDate, finishDate, isResolved));
+	public static void deleteAccountSnag(Contract contract, Account account,
+			String description, HhEndDate startDate, HhEndDate finishDate)
+			throws HttpException {
+		deleteSnagDateBounded(new AccountSnagToAdd(contract, account,
+				description, startDate, finishDate));
+	}
+	
+	public static void deleteChannelSnag(HhdcContract contract, Channel channel,
+			String description, HhEndDate startDate, HhEndDate finishDate)
+			throws HttpException {
+		deleteSnagDateBounded(new ChannelSnagToAdd(contract, channel,
+				description, startDate, finishDate));
 	}
 
-	public static void addAccountSnag(Contract service, Account account,
-			String description, HhEndDate startDate, HhEndDate finishDate,
-			boolean isResolved) throws InternalException, HttpException {
-		addSnagDateBounded(new AccountSnagToAdd(service, account, description,
-				startDate, finishDate, isResolved));
+	public static void deleteSiteSnag(Site site,
+			String description, HhEndDate startDate, HhEndDate finishDate)
+			throws HttpException {
+		deleteSnagDateBounded(new SiteSnagToAdd(site,
+				description, startDate, finishDate));
+	}
+
+	public static void addChannelSnag(HhdcContract hhdcContract,
+			Channel channel, String description, HhEndDate startDate,
+			HhEndDate finishDate) throws HttpException {
+		addSnagDateBounded(new ChannelSnagToAdd(hhdcContract, channel,
+				description, startDate, finishDate));
+	}
+
+	public static void addSiteSnag(Site site,
+			String description, HhEndDate startDate, HhEndDate finishDate)
+			throws HttpException {
+		addSnagDateBounded(new SiteSnagToAdd(site, description,
+				startDate, finishDate));
+	}
+
+	public static void addAccountSnag(Contract contract, Account account,
+			String description, HhEndDate startDate, HhEndDate finishDate)
+			throws HttpException {
+		addSnagDateBounded(new AccountSnagToAdd(contract, account, description,
+				startDate, finishDate));
 	}
 
 	private static interface SnagToAdd {
@@ -242,8 +276,6 @@ public abstract class SnagDateBounded extends Snag {
 
 		public void insertSnag(SnagDateBounded snag);
 
-		public boolean getIsResolved();
-
 		public Contract getContract();
 
 		public void deleteSnag(SnagDateBounded snag);
@@ -260,17 +292,13 @@ public abstract class SnagDateBounded extends Snag {
 
 		private HhEndDate finishDate;
 
-		private boolean isResolved;
-
 		public ChannelSnagToAdd(HhdcContract contract, Channel channel,
-				String description, HhEndDate startDate, HhEndDate finishDate,
-				boolean isResolved) {
+				String description, HhEndDate startDate, HhEndDate finishDate) {
 			this.contract = contract;
 			this.channel = channel;
 			this.description = description;
 			this.startDate = startDate;
 			this.finishDate = finishDate;
-			this.isResolved = isResolved;
 		}
 
 		public HhEndDate getFinishDate() {
@@ -288,8 +316,7 @@ public abstract class SnagDateBounded extends Snag {
 							description);
 		}
 
-		public SnagDateBounded newSnag() throws InternalException,
-				HttpException {
+		public SnagDateBounded newSnag() throws HttpException {
 			return new ChannelSnag(description, contract, channel, startDate,
 					finishDate);
 		}
@@ -304,13 +331,9 @@ public abstract class SnagDateBounded extends Snag {
 		}
 
 		public SnagDateBounded newSnag(HhEndDate startDate, HhEndDate finishDate)
-				throws InternalException, HttpException {
+				throws HttpException {
 			return new ChannelSnag(description, contract, channel, startDate,
 					finishDate);
-		}
-
-		public boolean getIsResolved() {
-			return isResolved;
 		}
 
 		public HhdcContract getContract() {
@@ -338,8 +361,6 @@ public abstract class SnagDateBounded extends Snag {
 	}
 
 	private static class SiteSnagToAdd implements SnagToAdd {
-		private HhdcContract contract;
-
 		private Site site;
 
 		private String description;
@@ -348,19 +369,14 @@ public abstract class SnagDateBounded extends Snag {
 
 		private HhEndDate finishDate;
 
-		private boolean isResolved;
-
 		private Query query;
 
-		public SiteSnagToAdd(HhdcContract contract, Site site,
-				String description, HhEndDate startDate, HhEndDate finishDate,
-				boolean isResolved) {
-			this.contract = contract;
+		public SiteSnagToAdd(Site site,
+				String description, HhEndDate startDate, HhEndDate finishDate) {
 			this.site = site;
 			this.description = description;
 			this.startDate = startDate;
 			this.finishDate = finishDate;
-			this.isResolved = isResolved;
 			query = Hiber
 					.session()
 					.createQuery(
@@ -373,9 +389,8 @@ public abstract class SnagDateBounded extends Snag {
 			return finishDate;
 		}
 
-		public SnagDateBounded newSnag() throws InternalException,
-				HttpException {
-			return new SiteSnag(description, contract, site, startDate,
+		public SnagDateBounded newSnag() throws HttpException {
+			return new SiteSnag(description, site, startDate,
 					finishDate);
 		}
 
@@ -389,17 +404,9 @@ public abstract class SnagDateBounded extends Snag {
 		}
 
 		public SnagDateBounded newSnag(HhEndDate startDate, HhEndDate finishDate)
-				throws InternalException, HttpException {
-			return new SiteSnag(description, contract, site, startDate,
+				throws HttpException {
+			return new SiteSnag(description, site, startDate,
 					finishDate);
-		}
-
-		public boolean getIsResolved() {
-			return isResolved;
-		}
-
-		public HhdcContract getContract() {
-			return contract;
 		}
 
 		public void deleteSnag(SnagDateBounded snag) {
@@ -419,6 +426,10 @@ public abstract class SnagDateBounded extends Snag {
 					finishDate.getDate()).setTimestamp("startDate",
 					startDate.getDate()).list();
 		}
+
+		public Contract getContract() {
+			return null;
+		}
 	}
 
 	private static class AccountSnagToAdd implements SnagToAdd {
@@ -432,19 +443,15 @@ public abstract class SnagDateBounded extends Snag {
 
 		private HhEndDate finishDate;
 
-		private boolean isResolved;
-
 		private Query query;
 
 		public AccountSnagToAdd(Contract contract, Account account,
-				String description, HhEndDate startDate, HhEndDate finishDate,
-				boolean isResolved) {
+				String description, HhEndDate startDate, HhEndDate finishDate) {
 			this.contract = contract;
 			this.account = account;
 			this.description = description;
 			this.startDate = startDate;
 			this.finishDate = finishDate;
-			this.isResolved = isResolved;
 			query = Hiber
 					.session()
 					.createQuery(
@@ -458,8 +465,7 @@ public abstract class SnagDateBounded extends Snag {
 		}
 
 		public SnagDateBounded newSnag() throws HttpException {
-			return new AccountSnag(description, account, startDate,
-					finishDate);
+			return new AccountSnag(description, account, startDate, finishDate);
 		}
 
 		public void insertSnag(SnagDateBounded snag) {
@@ -473,12 +479,7 @@ public abstract class SnagDateBounded extends Snag {
 
 		public SnagDateBounded newSnag(HhEndDate startDate, HhEndDate finishDate)
 				throws HttpException {
-			return new AccountSnag(description, account, startDate,
-					finishDate);
-		}
-
-		public boolean getIsResolved() {
-			return isResolved;
+			return new AccountSnag(description, account, startDate, finishDate);
 		}
 
 		public Contract getContract() {
@@ -503,24 +504,17 @@ public abstract class SnagDateBounded extends Snag {
 		}
 	}
 
-	public boolean isCombinable(SnagDateBounded snag)
-			throws InternalException, HttpException {
+	private boolean isCombinable(SnagDateBounded snag) throws HttpException {
 		boolean combinable = getFinishDate().getDate().getTime() == snag
-				.getStartDate().getPrevious().getDate().getTime()
-				&& getContract().equals(snag.getContract());
+				.getStartDate().getPrevious().getDate().getTime();
+		if (combinable) {
+			combinable = getContract() != null && getContract().equals(snag.getContract());
+		}
 		if (combinable) {
 			combinable = snag.getProgress().equals(getProgress());
 		}
 		if (combinable) {
-			if (getDateResolved() == null && snag.getDateResolved() == null) {
-				combinable = true;
-			} else if ((getDateResolved() != null && snag.getDateResolved() != null)
-					&& getDateResolved().equals(snag.getDateResolved())
-					&& getIsIgnored() == snag.getIsIgnored()) {
-				combinable = true;
-			} else {
-				combinable = false;
-			}
+			combinable = getIsIgnored() == snag.getIsIgnored();
 		}
 		return combinable;
 	}

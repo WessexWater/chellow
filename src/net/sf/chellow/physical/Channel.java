@@ -33,6 +33,7 @@ import java.util.List;
 
 import net.sf.chellow.billing.HhdcContract;
 import net.sf.chellow.hhimport.HhDatumRaw;
+import net.sf.chellow.monad.Debug;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.InternalException;
@@ -248,28 +249,36 @@ public class Channel extends PersistentEntity {
 	 * checkFrom, checkTo, false); } }
 	 */
 	public void addChannelSnag(String description, HhEndDate startDate,
-			HhEndDate finishDate, boolean isResolved) throws HttpException {
+			HhEndDate finishDate) throws HttpException {
+		Debug.print("contract id " + supplyGeneration.getHhdcContract());
 		SnagDateBounded.addChannelSnag(supplyGeneration.getHhdcContract(),
-				this, description, startDate, finishDate, isResolved);
+				this, description, startDate, finishDate);
+	}
+	
+	void deleteSnag(String description, HhEndDate startDate,
+			HhEndDate finishDate) throws HttpException {
+		SnagDateBounded.deleteChannelSnag(supplyGeneration.getHhdcContract(), this, description,
+				startDate, finishDate);
 	}
 
-	public void resolveSnag(String description, HhEndDate date)
+	public void deleteSnag(String description, HhEndDate date)
 			throws HttpException {
-		resolveSnag(description, date, date);
+		deleteSnag(description, date, date);
 	}
 
+	/*
 	@SuppressWarnings("unchecked")
 	public void resolveSnag(String description, HhEndDate startDate,
 			HhEndDate finishDate) throws HttpException {
 		for (ChannelSnag snag : (List<ChannelSnag>) Hiber
 				.session()
 				.createQuery(
-						"from ChannelSnag snag where snag.channel = :channel and snag.description = :description and snag.startDate.date <= :finishDate and snag.finishDate.date >= :startDate and snag.dateResolved is null")
+						"from ChannelSnag snag where snag.channel = :channel and snag.description = :description and snag.startDate.date <= :finishDate and snag.finishDate.date >= :startDate")
 				.setEntity("channel", this).setString("description",
 						description.toString()).setTimestamp("startDate",
 						startDate.getDate()).setTimestamp("finishDate",
 						finishDate.getDate()).list()) {
-			addChannelSnag(
+			deleteChannelSnag(
 					description,
 					snag.getStartDate().getDate().before(startDate.getDate()) ? startDate
 							: snag.getStartDate(),
@@ -277,7 +286,7 @@ public class Channel extends PersistentEntity {
 							: snag.getFinishDate(), true);
 		}
 	}
-
+*/
 	/*
 	 * public void checkForMissingFromBeginning(MonadDate to) throws
 	 * ProgrammerException, UserException { checkForMissing(null,
@@ -410,7 +419,7 @@ public class Channel extends PersistentEntity {
 			from = supplyGeneration.getStartDate();
 		}
 		if (from.getDate().before(supplyGeneration.getStartDate().getDate())) {
-			resolveSnag(ChannelSnag.SNAG_MISSING, from, supplyGeneration
+			deleteSnag(ChannelSnag.SNAG_MISSING, from, supplyGeneration
 					.getStartDate().getPrevious());
 			from = supplyGeneration.getStartDate();
 		}
@@ -421,7 +430,7 @@ public class Channel extends PersistentEntity {
 		HhEndDate generationEndDate = supplyGeneration.getFinishDate();
 		if (generationEndDate != null
 				&& to.getDate().after(generationEndDate.getDate())) {
-			resolveSnag(ChannelSnag.SNAG_MISSING, generationEndDate.getNext(),
+			deleteSnag(ChannelSnag.SNAG_MISSING, generationEndDate.getNext(),
 					to);
 			to = generationEndDate;
 		}
@@ -441,8 +450,9 @@ public class Channel extends PersistentEntity {
 					spanStartDate.getDate()).setTimestamp("finishDate",
 					spanFinishDate.getDate()).uniqueResult();
 			if (present == 0) {
+				Debug.print("Adding a snag.");
 				addChannelSnag(ChannelSnag.SNAG_MISSING, spanStartDate,
-						spanFinishDate, false);
+						spanFinishDate);
 				spanStartDate = HhEndDate.getNext(spanFinishDate);
 				spanFinishDate = to;
 				if (spanStartDate.getDate().after(spanFinishDate.getDate())) {
@@ -474,7 +484,7 @@ public class Channel extends PersistentEntity {
 		HhEndDate lastSnagDate = (HhEndDate) Hiber
 				.session()
 				.createQuery(
-						"select snag.finishDate from ChannelSnag snag where snag.channel = :channel and snag.channel.isKwh = :isKwh and snag.channel.isImport = :isImport and snag.description = :snagDescription and snag.dateResolved is null order by snag.finishDate.date desc")
+						"select snag.finishDate from ChannelSnag snag where snag.channel = :channel and snag.channel.isKwh = :isKwh and snag.channel.isImport = :isImport and snag.description = :snagDescription order by snag.finishDate.date desc")
 				.setEntity("channel", this).setBoolean("isKwh", isKwh)
 				.setBoolean("isImport", isImport).setString("snagDescription",
 						ChannelSnag.SNAG_MISSING).setMaxResults(1)
@@ -576,8 +586,8 @@ public class Channel extends PersistentEntity {
 		HhEndDate siteCheckTo = null;
 		HhEndDate notActualFrom = null;
 		HhEndDate notActualTo = null;
-		HhEndDate resolveMissingFrom = null;
-		HhEndDate resolveMissingTo = null;
+		HhEndDate deleteMissingFrom = null;
+		HhEndDate deleteMissingTo = null;
 		HhEndDate lastAdditionDate = null;
 		HhEndDate prevEndDate = null;
 		int missing = 0;
@@ -631,10 +641,10 @@ public class Channel extends PersistentEntity {
 				lastAdditionDate = datumRaw.getEndDate();
 				added = true;
 				missing++;
-				if (resolveMissingFrom == null) {
-					resolveMissingFrom = datumRaw.getEndDate();
+				if (deleteMissingFrom == null) {
+					deleteMissingFrom = datumRaw.getEndDate();
 				}
-				resolveMissingTo = datumRaw.getEndDate();
+				deleteMissingTo = datumRaw.getEndDate();
 				 //Debug.print("Resolved missing: "
 				 //+ (System.currentTimeMillis() - now));
 			} else if (datumRaw.getValue() != datum.getValue()
@@ -657,9 +667,9 @@ public class Channel extends PersistentEntity {
 				siteCheckTo = datumRaw.getEndDate();
 				if (datumRaw.getValue() < 0) {
 					addChannelSnag(ChannelSnag.SNAG_NEGATIVE, datumRaw
-							.getEndDate(), datumRaw.getEndDate(), false);
+							.getEndDate(), datumRaw.getEndDate());
 				} else if (altered && originalDatumValue < 0) {
-					resolveSnag(ChannelSnag.SNAG_NEGATIVE, datumRaw
+					deleteSnag(ChannelSnag.SNAG_NEGATIVE, datumRaw
 							.getEndDate());
 				}
 				if (!HhDatum.ACTUAL.equals(datumRaw.getStatus())) {
@@ -669,7 +679,7 @@ public class Channel extends PersistentEntity {
 					notActualTo = datumRaw.getEndDate();
 				} else if (altered
 						&& !originalDatumStatus.equals(HhDatum.ACTUAL)) {
-					resolveSnag(ChannelSnag.SNAG_NOT_ACTUAL, datumRaw
+					deleteSnag(ChannelSnag.SNAG_NOT_ACTUAL, datumRaw
 							.getEndDate());
 				}
 			}
@@ -699,20 +709,20 @@ public class Channel extends PersistentEntity {
 				 //Debug.print("Started not actual: "
 				 //+ (System.currentTimeMillis() - now));
 				addChannelSnag(ChannelSnag.SNAG_NOT_ACTUAL, notActualFrom,
-						notActualTo, false);
+						notActualTo);
 				 //Debug.print("Finished not actual: "
 				 //+ (System.currentTimeMillis() - now));
 				notActualFrom = null;
 				notActualTo = null;
 			}
-			if (resolveMissingTo != null
-					&& resolveMissingTo.equals(prevEndDate)) {
+			if (deleteMissingTo != null
+					&& deleteMissingTo.equals(prevEndDate)) {
 				 //Debug.print("Starting resolvedMissing: "
 				 //+ (System.currentTimeMillis() - now));
-				resolveSnag(ChannelSnag.SNAG_MISSING, resolveMissingFrom,
-						resolveMissingTo);
-				resolveMissingFrom = null;
-				resolveMissingTo = null;
+				deleteSnag(ChannelSnag.SNAG_MISSING, deleteMissingFrom,
+						deleteMissingTo);
+				deleteMissingFrom = null;
+				deleteMissingTo = null;
 				 //Debug.print("Finished resolveMissing: "
 				 //+ (System.currentTimeMillis() - now));
 			}
@@ -739,15 +749,15 @@ public class Channel extends PersistentEntity {
 			 //Debug.print("About to start not actual 2: "
 			 //+ (System.currentTimeMillis() - now));
 			addChannelSnag(ChannelSnag.SNAG_NOT_ACTUAL, notActualFrom,
-					notActualTo, false);
+					notActualTo);
 			 //Debug.print("About to finsih not actual 2: "
 			 //+ (System.currentTimeMillis() - now));
 		}
-		if (resolveMissingTo != null && resolveMissingTo.equals(prevEndDate)) {
+		if (deleteMissingTo != null && deleteMissingTo.equals(prevEndDate)) {
 			 //Debug.print("About to start resolvem 2: "
 			 //+ (System.currentTimeMillis() - now));
-			resolveSnag(ChannelSnag.SNAG_MISSING, resolveMissingFrom,
-					resolveMissingTo);
+			deleteSnag(ChannelSnag.SNAG_MISSING, deleteMissingFrom,
+					deleteMissingTo);
 			 //Debug.print("About to finish resolvem 2: "
 			 //+ (System.currentTimeMillis() - now));
 		}
@@ -766,10 +776,10 @@ public class Channel extends PersistentEntity {
 			HhEndDate startDate = snags.get(0).getStartDate();
 			HhEndDate finishDate = supplyGeneration.getStartDate()
 					.getPrevious();
-			resolveSnag(ChannelSnag.SNAG_MISSING, startDate, finishDate);
-			resolveSnag(ChannelSnag.SNAG_DATA_IGNORED, startDate, finishDate);
-			resolveSnag(ChannelSnag.SNAG_NEGATIVE, startDate, finishDate);
-			resolveSnag(ChannelSnag.SNAG_NOT_ACTUAL, startDate, finishDate);
+			deleteSnag(ChannelSnag.SNAG_MISSING, startDate, finishDate);
+			deleteSnag(ChannelSnag.SNAG_DATA_IGNORED, startDate, finishDate);
+			deleteSnag(ChannelSnag.SNAG_NEGATIVE, startDate, finishDate);
+			deleteSnag(ChannelSnag.SNAG_NOT_ACTUAL, startDate, finishDate);
 		}
 		if (supplyGeneration.getFinishDate() != null) {
 			snags = (List<ChannelSnag>) Hiber
@@ -782,11 +792,11 @@ public class Channel extends PersistentEntity {
 						.getNext();
 				HhEndDate finishDate = snags.get(snags.size() - 1)
 						.getFinishDate();
-				resolveSnag(ChannelSnag.SNAG_MISSING, startDate, finishDate);
-				resolveSnag(ChannelSnag.SNAG_DATA_IGNORED, startDate,
+				deleteSnag(ChannelSnag.SNAG_MISSING, startDate, finishDate);
+				deleteSnag(ChannelSnag.SNAG_DATA_IGNORED, startDate,
 						finishDate);
-				resolveSnag(ChannelSnag.SNAG_NEGATIVE, startDate, finishDate);
-				resolveSnag(ChannelSnag.SNAG_NOT_ACTUAL, startDate, finishDate);
+				deleteSnag(ChannelSnag.SNAG_NEGATIVE, startDate, finishDate);
+				deleteSnag(ChannelSnag.SNAG_NOT_ACTUAL, startDate, finishDate);
 			}
 		}
 	}

@@ -817,12 +817,11 @@ public class Supply extends PersistentEntity {
 					datum.setChannel(targetChannel);
 					if (datum.getValue() < 0) {
 						targetChannel.addChannelSnag(ChannelSnag.SNAG_NEGATIVE,
-								endDate, endDate, false);
+								endDate, endDate);
 					}
 					if (!datum.getStatus().equals(HhDatum.ACTUAL)) {
 						targetChannel.addChannelSnag(
-								ChannelSnag.SNAG_NOT_ACTUAL, endDate, endDate,
-								false);
+								ChannelSnag.SNAG_NOT_ACTUAL, endDate, endDate);
 					}
 					// channel.resolveSnag(ChannelSnag.SNAG_NEGATIVE, endDate);
 					// channel.resolveSnag(ChannelSnag.SNAG_NOT_ACTUAL,

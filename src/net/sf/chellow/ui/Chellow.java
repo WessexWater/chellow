@@ -35,6 +35,7 @@ import net.sf.chellow.physical.Mtcs;
 import net.sf.chellow.physical.Participants;
 import net.sf.chellow.physical.Pcs;
 import net.sf.chellow.physical.ReadTypes;
+import net.sf.chellow.physical.SiteSnags;
 import net.sf.chellow.physical.Sites;
 import net.sf.chellow.physical.Sources;
 import net.sf.chellow.physical.Sscs;
@@ -81,6 +82,7 @@ public class Chellow extends Monad implements Urlable {
 	static public final GeneralImports GENERAL_IMPORT_PROCESSES = new GeneralImports();
 	static public final GspGroups GSP_GROUPS_INSTANCE = new GspGroups();
 	static public final UserRoles USER_ROLES_INSTANCE = new UserRoles();
+	static public final SiteSnags SITE_SNAGS_INSTANCE = new SiteSnags();
 
 	static {
 		try {
@@ -230,6 +232,8 @@ public class Chellow extends Monad implements Urlable {
 			return GSP_GROUPS_INSTANCE;
 		} else if (UserRoles.URI_ID.equals(uriId)) {
 			return USER_ROLES_INSTANCE;
+		} else if (SiteSnags.URI_ID.equals(uriId)) {
+			return SITE_SNAGS_INSTANCE;
 		} else {
 			return null;
 		}

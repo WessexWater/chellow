@@ -36,10 +36,6 @@
 			<column name="date_created"
 				sql-type="timestamp with time zone" />
 		</property>
-		<property name="dateResolved" type="timestamp">
-			<column name="date_resolved"
-				sql-type="timestamp with time zone" />
-		</property>
 		<property name="description" column="description" type="string"
 			not-null="true" />
 		<property name="progress" column="progress" type="string"

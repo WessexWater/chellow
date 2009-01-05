@@ -126,9 +126,6 @@ public class ContextListener implements ServletContextListener {
 					.execute("ALTER TABLE contract ALTER COLUMN charge_script TYPE text;");
 			stmt
 					.execute("ALTER TABLE rate_script ALTER COLUMN script TYPE text;");
-
-			stmt
-					.execute("create index date_resolved_idx on snag (date_resolved)");
 			stmt.execute("create index description_idx on snag (description)");
 			stmt.execute("create index is_ignored_idx on snag (is_ignored)");
 			stmt.execute("create index snag_id_idx on channel_snag (snag_id)");

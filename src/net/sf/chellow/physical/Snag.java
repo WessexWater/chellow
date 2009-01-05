@@ -54,8 +54,6 @@ public abstract class Snag extends PersistentEntity implements Cloneable,
 
 	private Date dateCreated;
 
-	private Date dateResolved;
-
 	private boolean isIgnored;
 
 	private String description;
@@ -78,14 +76,6 @@ public abstract class Snag extends PersistentEntity implements Cloneable,
 
 	void setDateCreated(Date dateCreated) {
 		this.dateCreated = dateCreated;
-	}
-
-	public Date getDateResolved() {
-		return dateResolved;
-	}
-
-	public void setDateResolved(Date dateResolved) {
-		this.dateResolved = dateResolved;
 	}
 
 	public boolean getIsIgnored() {
@@ -113,25 +103,12 @@ public abstract class Snag extends PersistentEntity implements Cloneable,
 		this.progress = progress;
 	}
 
-	public void resolve(boolean isIgnored) throws InternalException {
-		setDateResolved(new Date());
-		setIsIgnored(isIgnored);
-	}
-
-	public void deResolve() {
-		setDateResolved(null);
-		setIsIgnored(false);
-	}
-
 	public void update() {
 	}
 
 	public Element toXml(Document doc, String elementName) throws HttpException {
 		Element element = super.toXml(doc, elementName);
 		element.appendChild(MonadDate.toXML(dateCreated, "created", doc));
-		if (dateResolved != null) {
-			element.appendChild(MonadDate.toXML(dateResolved, "resolved", doc));
-		}
 		element.setAttribute("is-ignored", Boolean.toString(isIgnored));
 		element.setAttribute("progress", progress);
 		element.setAttribute("description", description);
@@ -149,21 +126,16 @@ public abstract class Snag extends PersistentEntity implements Cloneable,
 		return cloned;
 	}
 
-	public Urlable getChild(UriPathElement uriId) throws InternalException, NotFoundException {
+	public Urlable getChild(UriPathElement uriId) throws HttpException {
 		throw new NotFoundException();
 	}
 
 	public void httpPost(Invocation inv) throws HttpException {
 		if (inv.hasParameter("ignore")) {
 			boolean ignore = inv.getBoolean("ignore");
-			boolean ignored = getIsIgnored();
-			if (ignored != ignore) {
-				if (ignore && this.getDateResolved() == null) {
-					resolve(true);
-				}
-				if (!ignore) {
-					deResolve();
-				}
+			boolean isIgnored = getIsIgnored();
+			if (isIgnored != ignore) {
+				setIsIgnored(ignore);
 			}
 			Hiber.commit();
 			inv.sendSeeOther(getUri());

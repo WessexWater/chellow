@@ -139,8 +139,8 @@ public class Bill extends PersistentEntity {
 
 	private void setSummary() throws HttpException {
 		if (getStartDate() != null) {
-			getAccount().addSnag(AccountSnag.MISSING_BILL, getStartDate(),
-					getFinishDate(), true);
+			account.deleteSnag(AccountSnag.MISSING_BILL, getStartDate(),
+					getFinishDate());
 		}
 		HhEndDate oldStartDate = getStartDate();
 		DayStartDate startDate = null;
@@ -184,7 +184,7 @@ public class Bill extends PersistentEntity {
 
 	public void check() throws HttpException {
 		if (getVirtualBill().getCost() != nonRejectedCost()) {
-			addSnag(false);
+			addSnag();
 		}
 	}
 
@@ -319,22 +319,15 @@ public class Bill extends PersistentEntity {
 
 	}
 
-	private void addSnag(boolean isResolved) throws HttpException {
+	private BillSnag addSnag() throws HttpException {
 		BillSnag snag = (BillSnag) Hiber.session().createQuery(
 				"from BillSnag snag where snag.bill = :bill").setEntity("bill",
 				this).uniqueResult();
 
-		if (isResolved) {
-			if (snag != null) {
-				snag.resolve(false);
-			}
-		} else {
-			if (snag == null) {
-				BillSnag.insertBillSnag(new BillSnag(BillSnag.INCORRECT_BILL,
-						this));
-			} else {
-				snag.deResolve();
-			}
+		if (snag == null) {
+			BillSnag
+					.insertBillSnag(new BillSnag(BillSnag.INCORRECT_BILL, this));
 		}
+		return snag;
 	}
 }

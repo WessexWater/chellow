@@ -11,10 +11,7 @@
 					href="{/source/request/@context-path}/style/" />
 
 				<title>
-					Chellow &gt; HHDC Contracts &gt;
-					<xsl:value-of
-						select="/source/site-snag/hhdc-contract/@name" />
-					&gt; Site Snags &gt;
+					Chellow &gt; Site Snags &gt;
 					<xsl:value-of select="/source/site-snag/@id" />
 				</title>
 			</head>
@@ -36,25 +33,14 @@
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/hhdc-contracts/">
-						<xsl:value-of select="'HHDC Contracts'" />
-					</a>
-					&gt;
-					<a
-						href="{/source/request/@context-path}/hhdc-contracts/{/source/site-snag/hhdc-contract/@id}/">
-						<xsl:value-of
-							select="/source/site-snag/hhdc-contract/@name" />
-					</a>
-					&gt;
-					<a
-						href="{/source/request/@context-path}/hhdc-contracts/{/source/site-snag/hhdc-contract/@id}/site-snags/">
+						href="{/source/request/@context-path}/site-snags/">
 						Site Snags
 					</a>
 					&gt;
 					<xsl:value-of
 						select="concat(/source/site-snag/@id, ' [')" />
 					<a
-						href="{/source/request/@context-path}/orgs/{/source/site-snag/hhdc-contract/org/@id}/reports/59/screen/output/?snag-id={/source/site-snag/@id}">
+						href="{/source/request/@context-path}/reports/60/output/?snag-id={/source/site-snag/@id}">
 						<xsl:value-of select="'view'" />
 					</a>
 					<xsl:value-of select="']'" />
@@ -65,17 +51,6 @@
 						Date Created:
 						<xsl:value-of
 							select="concat(/source/site-snag/date[@label='created']/@year, '-', /source/site-snag/date[@label='created']/@month, '-', /source/site-snag/date[@label='created']/@day)" />
-					</li>
-					<li>
-						Date Resolved:
-						<xsl:choose>
-							<xsl:when
-								test="/source/site-snag/date[@label='resolved']">
-								<xsl:value-of
-									select="concat(/source/site-snag/date[@label='resolved']/@year, '-', /source/site-snag/date[@label='resolved']/@month, '-', /source/site-snag/date[@label='resolved']/@day)" />
-							</xsl:when>
-							<xsl:otherwise>Unresolved</xsl:otherwise>
-						</xsl:choose>
 					</li>
 					<li>
 						Ignored?:

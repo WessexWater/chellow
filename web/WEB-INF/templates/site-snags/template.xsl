@@ -11,10 +11,7 @@
 					href="{/source/request/@context-path}/style/" />
 
 				<title>
-					Chellow &gt; HHDC Contracts
-					<xsl:value-of
-						select="/source/site-snags/hhdc-contract/@name" />
-					&gt; Site Snags
+					Chellow &gt; Site Snags
 				</title>
 			</head>
 			<body>
@@ -34,20 +31,9 @@
 						<span class="logo">Chellow</span>
 					</a>
 					&gt;
-					<a
-						href="{/source/request/@context-path}/hhdc-contracts/">
-						<xsl:value-of select="'HHDC Contracts'" />
-					</a>
-					&gt;
-					<a
-						href="{/source/request/@context-path}/hhdc-contracts/{/source/site-snags/hhdc-contract/@id}/">
-						<xsl:value-of
-							select="/source/site-snags/hhdc-contract/@name" />
-					</a>
-					&gt;
 					<xsl:value-of select="'Site Snags ['" />
 					<a
-						href="{/source/request/@context-path}/reports/20/output/?hhdc-contract-id={/source/site-snags/hhdc-contract/@id}">
+						href="{/source/request/@context-path}/reports/20/output/">
 						<xsl:value-of select="'view'" />
 					</a>
 					<xsl:value-of select="']'" />

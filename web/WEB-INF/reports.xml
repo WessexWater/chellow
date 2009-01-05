@@ -60,6 +60,8 @@
               </li>
             </ul>
           </li>
+          <li><a href="{/source/request/@context-path}/reports/20/output/">
+              Site Snags</a></li>
         </ul>
         <h3>CSV Downloads</h3>
         <ul>
@@ -3780,22 +3782,19 @@ snags_element.setAttribute("pending-site-count", str(totalSites - activeSites))
   <line>
     <value>insert</value>
     <value>report</value>
-    <value>0 HHDC Contract Site Group Snags</value>
+    <value>0 Site Group Snags</value>
     <value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree
 from net.sf.chellow.billing import HhdcContract
 
-contract_id = inv.getLong('hhdc-contract-id')
-contract = HhdcContract.getHhdcContract(contract_id)
-snags = Hiber.session().createQuery("select snag, snag.site from SiteSnag snag where snag.dateResolved is null and snag.contract = :contract order by snag.site.code, snag.startDate.date").setEntity('contract', contract).list()
+snags = Hiber.session().createQuery("select snag, snag.site from SiteSnag snag where snag.isIgnored = false order by snag.site.code, snag.startDate.date").list()
 snags_element = doc.createElement('site-snags')
 source.appendChild(snags_element)
-snags_element.appendChild(contract.toXml(doc, XmlTree('party')))
 for snag_row in snags:
     snag_element = snag_row[0].toXml(doc)
     snags_element.appendChild(snag_element)
     site_element = snag_row[1].toXml(doc)
     snag_element.appendChild(site_element)
-sites = Hiber.session().createQuery("select count(distinct snag.site) from SiteSnag snag where snag.contract = :contract and snag.dateResolved is null").setEntity('contract', contract).uniqueResult()
+sites = Hiber.session().createQuery("select count(distinct snag.site) from SiteSnag snag where snag.isIgnored = false").uniqueResult()
 snags_element.setAttribute("snag-count", str(len(snags)))
 snags_element.setAttribute("site-count", str(sites))
 ]]></value>
@@ -3813,10 +3812,7 @@ snags_element.setAttribute("site-count", str(sites))
                 <link rel="stylesheet" type="text/css"
                     href="{/source/request/@context-path}/reports/10/output/" />
                 <title>
-                    Home &gt; HHDC Contracts &gt;
-                    <xsl:value-of
-                        select="/source/site-snags/hhdc-contract/@name" />
-                    &gt; Site Snags
+                    Home &gt; Site Snags
                 </title>
             </head>
             <body>
@@ -3827,20 +3823,9 @@ snags_element.setAttribute("site-count", str(sites))
                             select="'Home'" />
                     </a>
                     &gt;
-                    <a
-                        href="{/source/request/@context-path}/reports/57/output/?hhdc-contract-id={/source/site-snags/hhdc-contract/@id}">
-                        <xsl:value-of select="'HHDC Contracts'" />
-                    </a>
-                    &gt;
-                    <a
-                        href="{/source/request/@context-path}/reports/58/output/?hhdc-contract-id={/source/site-snags/hhdc-contract/@id}">
-                        <xsl:value-of
-                            select="/source/site-snags/hhdc-contract/@name" />
-                    </a>
-                    &gt;
                     <xsl:value-of select="'Site Snags ['" />
                     <a
-                        href="{/source/request/@context-path}/hhdc-contracts/{/source/site-snags/hhdc-contract/@id}/site-snags/">
+                        href="{/source/request/@context-path}/site-snags/">
                         <xsl:value-of select="'edit'" />
                     </a>
                     <xsl:value-of select="']'" />
@@ -3875,7 +3860,7 @@ snags_element.setAttribute("site-count", str(sites))
                                     </a>
                                     <xsl:value-of select="' ['" />
                                     <a
-                                        href="{/source/request/@context-path}/hhdc-contracts/{/source/site-snags/hhdc-contract/@id}/site-snags/{@id}/">
+                                        href="{/source/request/@context-path}/site-snags/{@id}/">
                                         <xsl:value-of select="'edit'" />
                                     </a>
                                     <xsl:value-of select="']'" />
@@ -8718,12 +8703,6 @@ source.appendChild(contract.toXml(doc, XmlTree('party', XmlTree('participant')).
                             Channel Snags
                         </a>
                     </li>
-                    <li>
-                        <a
-                            href="{/source/request/@context-path}/reports/20/output/?hhdc-contract-id={/source/hhdc-contract/@id}">
-                            Site Group Snags
-                        </a>
-                    </li>
                     <xsl:if
                         test="/source/hhdc-contract/@has-stark-automatic-hh-data-importer='true'">
                         <li>
@@ -8927,14 +8906,13 @@ source.appendChild(snag.toXml(doc, XmlTree("contract").put("channel", XmlTree("s
   <line>
     <value>insert</value>
     <value>report</value>
-    <value>0 HHDC Contract Site Group Snag</value>
+    <value>0 Site Group Snag</value>
     <value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree, UserException
 from net.sf.chellow.physical import SiteSnag
 
 snag_id = inv.getLong('snag-id')
 snag = SiteSnag.getSiteSnag(snag_id)
-source.appendChild(snag.toXml(doc, XmlTree("contract", XmlTree(
-                        "party")).put("site")))]]></value>
+source.appendChild(snag.toXml(doc, XmlTree("site")))]]></value>
     <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
 <xsl:stylesheet version="1.0"
     xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
@@ -8947,10 +8925,7 @@ source.appendChild(snag.toXml(doc, XmlTree("contract", XmlTree(
                 <link rel="stylesheet" type="text/css"
                     href="{/source/request/@context-path}/reports/10/output/" />
                 <title>
-                    Home &gt; HHDC Contracts &gt;
-                    <xsl:value-of
-                        select="/source/site-snag/hhdc-contract/@name" />
-                    &gt; Site Snags &gt;
+                    Home &gt; Site Snags &gt;
                     <xsl:value-of select="/source/site-snag/@id" />
                 </title>
             </head>
@@ -8963,25 +8938,14 @@ source.appendChild(snag.toXml(doc, XmlTree("contract", XmlTree(
                     </a>
                     &gt;
                     <a
-                        href="{/source/request/@context-path}/reports/57/output/?hhdc-contract-id={/source/site-snag/hhdc-contract/@id}">
-                        <xsl:value-of select="'HHDC Contracts'" />
-                    </a>
-                    &gt;
-                    <a
-                        href="{/source/request/@context-path}/reports/58/output/?hhdc-contract-id={/source/site-snag/hhdc-contract/@id}">
-                        <xsl:value-of
-                            select="/source/site-snag/hhdc-contract/@name" />
-                    </a>
-                    &gt;
-                    <a
-                        href="{/source/request/@context-path}/reports/20/output/?hhdc-contract-id={/source/site-snag/hhdc-contract/@id}">
+                        href="{/source/request/@context-path}/reports/20/output/">
                         <xsl:value-of select="'Site Snags'" />
                     </a>
                     &gt;
                     <xsl:value-of
                         select="concat(/source/site-snag/@id, ' [')" />
                     <a
-                        href="{/source/request/@context-path}/hhdc-contracts/{/source/site-snag/hhdc-contract/@id}/site-snags/{/source/site-snag/@id}/">
+                        href="{/source/request/@context-path}/site-snags/{/source/site-snag/@id}/">
                         <xsl:value-of select="'edit'" />
                     </a>
                     <xsl:value-of select="']'" />
@@ -9010,21 +8974,6 @@ source.appendChild(snag.toXml(doc, XmlTree("contract", XmlTree(
                             <td>
                                 <xsl:value-of
                                     select="concat(/source/site-snag/date[@label='created']/@year, '-', /source/site-snag/date[@label='created']/@month, '-', /source/site-snag/date[@label='created']/@day, 'T', /source/site-snag/date[@label='created']/@hour, ':', /source/site-snag/date[@label='created']/@minute, 'Z')" />
-                            </td>
-                        </tr>
-                        <tr>
-                            <th>Date Resolved</th>
-                            <td>
-                                <xsl:choose>
-                                    <xsl:when
-                                        test="/source/site-snag/date[@label='resolved']">
-                                        <xsl:value-of
-                                            select="concat(/source/site-snag/date[@label='resolved']/@year, '-', /source/site-snag/date[@label='resolved']/@month, '-', /source/site-snag/date[@label='resolved']/@day, 'T', /source/site-snag/date[@label='resolved']/@hour, ':', /source/site-snag/date[@label='resolved']/@minute, 'Z')" />
-                                    </xsl:when>
-                                    <xsl:otherwise>
-                                        Unresolved
-                                    </xsl:otherwise>
-                                </xsl:choose>
                             </td>
                         </tr>
                         <tr>
@@ -9059,7 +9008,7 @@ source.appendChild(snag.toXml(doc, XmlTree("contract", XmlTree(
                             <th>Site</th>
                             <td>
                                 <a
-                                    href="{/source/request/@context-path}/orgs/{/source/site-snag/hhdc-contract/org/@id}/reports/2/screen/output/?site-id={/source/site-snag/site/@id}">
+                                    href="{/source/request/@context-path}/reports/3/output/?site-id={/source/site-snag/site/@id}">
                                     <xsl:value-of
                                         select="/source/site-snag/site/@id" />
                                 </a>

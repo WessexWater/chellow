@@ -77,7 +77,7 @@ public class ChannelSnags extends EntityList {
 		for (ChannelSnag snag : (List<ChannelSnag>) Hiber
 				.session()
 				.createQuery(
-						"from ChannelSnag snag where snag.dateResolved is null and snag.contract = :contract order by snag.channel.supplyGeneration.supply.id, snag.channel.supplyGeneration.id, snag.channel.isImport, snag.channel.isKwh, snag.description, snag.startDate.date")
+						"from ChannelSnag snag where snag.contract = :contract order by snag.channel.supplyGeneration.supply.id, snag.channel.supplyGeneration.id, snag.channel.isImport, snag.channel.isKwh, snag.description, snag.startDate.date")
 				.setEntity("contract", hhdcContract).setMaxResults(PAGE_SIZE)
 				.list()) {
 			snagsElement.appendChild(snag.toXml(doc, new XmlTree("channel",
@@ -102,7 +102,7 @@ public class ChannelSnags extends EntityList {
 							ScrollMode.FORWARD_ONLY);
 			while (snags.next()) {
 				ChannelSnag snag = (ChannelSnag) snags.get(0);
-				snag.resolve(true);
+				snag.setIsIgnored(true);
 				Hiber.session().flush();
 				Hiber.session().clear();
 			}

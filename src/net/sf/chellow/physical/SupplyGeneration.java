@@ -49,6 +49,7 @@ import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
 import net.sf.chellow.ui.GeneralImport;
 
+import org.hibernate.ScrollableResults;
 import org.hibernate.exception.ConstraintViolationException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -772,7 +773,7 @@ public class SupplyGeneration extends PersistentEntity {
 			Boolean exportHasImportKwh, Boolean exportHasImportKvarh,
 			Boolean exportHasExportKwh, Boolean exportHasExportKvarh,
 			Integer exportAgreedSupplyCapacity) throws HttpException {
-		Debug.print("starting add or update.");
+		HhdcContract originalHhdcContract = getHhdcContract();
 		if (importMpan == null) {
 			if (importMpanStr != null && importMpanStr.length() != 0) {
 				setImportMpan(new Mpan(this, importMpanStr, importSsc,
@@ -878,16 +879,34 @@ public class SupplyGeneration extends PersistentEntity {
 			}
 		}
 		Hiber.flush();
+		HhdcContract hhdcContract = getHhdcContract();
+		if (originalHhdcContract != null && !originalHhdcContract.equals(hhdcContract)) {
+			ScrollableResults channelSnags = Hiber
+					.session()
+					.createQuery(
+							"from ChannelSnag snag where snag.channel.supplyGeneration = :supplyGeneration and snag.startDate.date >= :startDate and (snag.channel.supplyGeneration.finishDate.date is null or snag.finishDate.date <= :finishDate)")
+					.setEntity("supplyGeneration", this).setTimestamp(
+							"startDate", startDate.getDate()).setTimestamp(
+							"finishDate",
+							finishDate == null ? null : finishDate.getDate())
+					.scroll();
+			while (channelSnags.next()) {
+				((ChannelSnag) channelSnags.get(0)).setContract(hhdcContract);
+			}
+			channelSnags.close();
+		}
 		// more optimization possible here, doesn't necessarily need to check
 		// data.
 		synchronizeChannel(true, true);
 		synchronizeChannel(true, false);
 		synchronizeChannel(false, true);
 		synchronizeChannel(false, false);
-		Debug.print("starting onsupgen change. 99");
+		// Debug.print("starting onsupgen change. 99");
 		Hiber.flush();
-		onMpanChange();
-		Debug.print("finished add or update.");
+		checkMpanRelationship();
+		// Debug.print("checked relationsip.");
+		checkForMissing(getStartDate(), getFinishDate());
+		// Debug.print("finished add or update.");
 	}
 
 	private void synchronizeChannel(boolean isImport, boolean isKwh)
@@ -1053,13 +1072,6 @@ public class SupplyGeneration extends PersistentEntity {
 		}
 	}
 
-	public void onMpanChange() throws HttpException {
-		checkMpanRelationship();
-		Debug.print("checked relationsip.");
-			checkForMissing(getStartDate(), getFinishDate());
-		Debug.print("finished on mpan change.");
-	}
-
 	public void update(HhEndDate startDate, HhEndDate finishDate, Meter meter)
 			throws HttpException {
 		HhEndDate originalStartDate = getStartDate();
@@ -1102,9 +1114,9 @@ public class SupplyGeneration extends PersistentEntity {
 		HhEndDate checkFinishDate = originalStartDate;
 		if (originalFinishDate != null && finishDate != null) {
 			if (!originalFinishDate.getDate().equals(finishDate)) {
-			checkFinishDate = finishDate.getDate().after(
-					originalFinishDate.getDate()) ? finishDate
-					: originalFinishDate;
+				checkFinishDate = finishDate.getDate().after(
+						originalFinishDate.getDate()) ? finishDate
+						: originalFinishDate;
 			}
 		} else if (originalFinishDate == null || finishDate == null) {
 			checkFinishDate = null;
@@ -1323,6 +1335,7 @@ public class SupplyGeneration extends PersistentEntity {
 							|| importHasExportKwh || importHasExportKvarh) {
 						String importHhdcContractName = inv
 								.getString("import-hhdc-contract-name");
+						Debug.print("contract name" + importHhdcContractName);
 						if (importHhdcContractName.length() != 0) {
 							importHhdcContract = HhdcContract
 									.getHhdcContract(importHhdcContractName);
