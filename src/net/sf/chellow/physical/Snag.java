@@ -1,6 +1,6 @@
 /*
  
- Copyright 2005-2008 Meniscus Systems Ltd
+ Copyright 2005-2009 Meniscus Systems Ltd
  
  This file is part of Chellow.
 
@@ -24,7 +24,6 @@ package net.sf.chellow.physical;
 
 import java.util.Date;
 
-import net.sf.chellow.billing.Contract;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.InternalException;
@@ -142,6 +141,6 @@ public abstract class Snag extends PersistentEntity implements Cloneable,
 		}
 	}
 
-	public abstract Contract getContract();
-	public abstract void setContract(Contract contract);
+	//public abstract Contract getContract();
+	//public abstract void setContract(Contract contract);
 }

@@ -149,7 +149,7 @@ public abstract class SnagDateBounded extends Snag {
 				background
 						.setStartDate(HhEndDate.getNext(snag.getFinishDate()));
 			}
-			//snag.setContract(snagToAdd.getContract());
+			// snag.setContract(snagToAdd.getContract());
 			if (background.getStartDate().getDate().before(
 					snag.getStartDate().getDate())) {
 				background.setFinishDate(snag.getStartDate().getPrevious());
@@ -222,19 +222,18 @@ public abstract class SnagDateBounded extends Snag {
 		deleteSnagDateBounded(new AccountSnagToAdd(contract, account,
 				description, startDate, finishDate));
 	}
-	
-	public static void deleteChannelSnag(HhdcContract contract, Channel channel,
-			String description, HhEndDate startDate, HhEndDate finishDate)
-			throws HttpException {
+
+	public static void deleteChannelSnag(HhdcContract contract,
+			Channel channel, String description, HhEndDate startDate,
+			HhEndDate finishDate) throws HttpException {
 		deleteSnagDateBounded(new ChannelSnagToAdd(contract, channel,
 				description, startDate, finishDate));
 	}
 
-	public static void deleteSiteSnag(Site site,
-			String description, HhEndDate startDate, HhEndDate finishDate)
-			throws HttpException {
-		deleteSnagDateBounded(new SiteSnagToAdd(site,
-				description, startDate, finishDate));
+	public static void deleteSiteSnag(Site site, String description,
+			HhEndDate startDate, HhEndDate finishDate) throws HttpException {
+		deleteSnagDateBounded(new SiteSnagToAdd(site, description, startDate,
+				finishDate));
 	}
 
 	public static void addChannelSnag(HhdcContract hhdcContract,
@@ -244,11 +243,10 @@ public abstract class SnagDateBounded extends Snag {
 				description, startDate, finishDate));
 	}
 
-	public static void addSiteSnag(Site site,
-			String description, HhEndDate startDate, HhEndDate finishDate)
-			throws HttpException {
-		addSnagDateBounded(new SiteSnagToAdd(site, description,
-				startDate, finishDate));
+	public static void addSiteSnag(Site site, String description,
+			HhEndDate startDate, HhEndDate finishDate) throws HttpException {
+		addSnagDateBounded(new SiteSnagToAdd(site, description, startDate,
+				finishDate));
 	}
 
 	public static void addAccountSnag(Contract contract, Account account,
@@ -371,8 +369,8 @@ public abstract class SnagDateBounded extends Snag {
 
 		private Query query;
 
-		public SiteSnagToAdd(Site site,
-				String description, HhEndDate startDate, HhEndDate finishDate) {
+		public SiteSnagToAdd(Site site, String description,
+				HhEndDate startDate, HhEndDate finishDate) {
 			this.site = site;
 			this.description = description;
 			this.startDate = startDate;
@@ -390,8 +388,7 @@ public abstract class SnagDateBounded extends Snag {
 		}
 
 		public SnagDateBounded newSnag() throws HttpException {
-			return new SiteSnag(description, site, startDate,
-					finishDate);
+			return new SiteSnag(description, site, startDate, finishDate);
 		}
 
 		public void insertSnag(SnagDateBounded snag) {
@@ -405,8 +402,7 @@ public abstract class SnagDateBounded extends Snag {
 
 		public SnagDateBounded newSnag(HhEndDate startDate, HhEndDate finishDate)
 				throws HttpException {
-			return new SiteSnag(description, site, startDate,
-					finishDate);
+			return new SiteSnag(description, site, startDate, finishDate);
 		}
 
 		public void deleteSnag(SnagDateBounded snag) {
@@ -504,18 +500,9 @@ public abstract class SnagDateBounded extends Snag {
 		}
 	}
 
-	private boolean isCombinable(SnagDateBounded snag) throws HttpException {
-		boolean combinable = getFinishDate().getDate().getTime() == snag
-				.getStartDate().getPrevious().getDate().getTime();
-		if (combinable) {
-			combinable = getContract() != null && getContract().equals(snag.getContract());
-		}
-		if (combinable) {
-			combinable = snag.getProgress().equals(getProgress());
-		}
-		if (combinable) {
-			combinable = getIsIgnored() == snag.getIsIgnored();
-		}
-		return combinable;
+	protected boolean isCombinable(SnagDateBounded snag) throws HttpException {
+		return getFinishDate().getDate().getTime() == snag.getStartDate()
+				.getPrevious().getDate().getTime()
+				&& getIsIgnored() == snag.getIsIgnored();
 	}
 }

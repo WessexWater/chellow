@@ -1,6 +1,6 @@
 /*
  
- Copyright 2005-2008 Meniscus Systems Ltd
+ Copyright 2005-2009 Meniscus Systems Ltd
  
  This file is part of Chellow.
 
@@ -111,7 +111,7 @@ public class AccountSnag extends SnagDateBounded {
 	}
 
 	public MonadUri getUri() throws HttpException {
-		return getContract().getSnagsAccountInstance().getUri().resolve(
+		return account.getContract().getSnagsAccountInstance().getUri().resolve(
 				getUriId()).append("/");
 	}
 
@@ -122,13 +122,4 @@ public class AccountSnag extends SnagDateBounded {
 	 * null && getBill() == null) || (incomingBill != null && incomingBill
 	 * .equals(getBill()))); }
 	 */
-
-	@Override
-	public Contract getContract() {
-		return account.getContract();
-	}
-
-	@Override
-	public void setContract(Contract contract) {
-	}
 }

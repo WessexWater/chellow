@@ -22,7 +22,6 @@
 
 package net.sf.chellow.physical;
 
-import net.sf.chellow.billing.Contract;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.InternalException;
@@ -96,8 +95,7 @@ public class SiteSnag extends SnagDateBounded {
 	private Document document() throws HttpException {
 		Document doc = MonadUtils.newSourceDocument();
 		Element sourceElement = doc.getDocumentElement();
-		sourceElement.appendChild(toXml(doc, new XmlTree("contract",
-				new XmlTree("party")).put("site")));
+		sourceElement.appendChild(toXml(doc, new XmlTree("site")));
 		return doc;
 	}
 
@@ -108,17 +106,5 @@ public class SiteSnag extends SnagDateBounded {
 
 	public void delete() {
 		Hiber.session().delete(this);
-	}
-
-	@Override
-	public Contract getContract() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public void setContract(Contract contract) {
-		// TODO Auto-generated method stub
-		
 	}
 }
