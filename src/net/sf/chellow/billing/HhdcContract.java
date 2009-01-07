@@ -30,7 +30,7 @@ import java.util.Properties;
 
 import net.sf.chellow.hhimport.HhDataImportProcesses;
 import net.sf.chellow.hhimport.StarkAutomaticHhDataImporter;
-import net.sf.chellow.hhimport.stark.StarkAutomaticHhDataImporters;
+import net.sf.chellow.hhimport.StarkAutomaticHhDataImporters;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.InternalException;
