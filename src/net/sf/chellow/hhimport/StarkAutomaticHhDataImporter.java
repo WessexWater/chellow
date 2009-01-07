@@ -1,4 +1,4 @@
-package net.sf.chellow.hhimport.stark;
+package net.sf.chellow.hhimport;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -12,7 +12,6 @@ import java.util.logging.Level;
 
 import net.sf.chellow.billing.Contract;
 import net.sf.chellow.billing.HhdcContract;
-import net.sf.chellow.hhimport.HhDataImportProcess;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.InternalException;

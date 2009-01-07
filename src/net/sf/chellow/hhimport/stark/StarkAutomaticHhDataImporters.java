@@ -10,6 +10,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import net.sf.chellow.billing.HhdcContract;
+import net.sf.chellow.hhimport.StarkAutomaticHhDataImporter;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.InternalException;
