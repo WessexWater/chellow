@@ -14,6 +14,8 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
 import net.sf.chellow.billing.HhdcContract;
+import net.sf.chellow.hhimport.stark.StarkCsvHhConverter;
+import net.sf.chellow.hhimport.stark.StarkDf2HhConverter;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.InternalException;
@@ -78,14 +80,13 @@ public class HhDataImportProcess extends Thread implements Urlable,
 			throw new UserException("File has zero length");
 		}
 		fileName = fileName.toLowerCase();
-		if (!fileName.endsWith(".df2") && !fileName.endsWith(".stark.csv")
-				&& !fileName.endsWith(".simple.csv")
-				&& !fileName.endsWith(".zip")) {
-			throw new UserException(
-					"The extension of the filename '"
-							+ fileName
-							+ "' is not one of the recognized extensions; '.zip', '.df2', '.stark.csv', '.simple.csv'.");
-		}
+		/*
+		 * if (!fileName.endsWith(".df2") && !fileName.endsWith(".stark.csv") &&
+		 * !fileName.endsWith(".simple.csv") && !fileName.endsWith(".zip")) {
+		 * throw new UserException( "The extension of the filename '" + fileName + "'
+		 * is not one of the recognized extensions; '.zip', '.df2',
+		 * '.stark.csv', '.simple.csv'."); }
+		 */
 		if (fileName.endsWith(".zip")) {
 			ZipInputStream zin;
 			try {
@@ -104,26 +105,26 @@ public class HhDataImportProcess extends Thread implements Urlable,
 				throw new InternalException(e);
 			}
 		}
-		String converterName;
+		Class<? extends HhConverter> converterClass;
 		if (fileName.endsWith(".df2")) {
-			converterName = "net.sf.chellow.hhimport.stark.StarkDF2HHConverter";
+			converterClass = StarkDf2HhConverter.class;
 		} else if (fileName.endsWith(".stark.csv")) {
-			converterName = "net.sf.chellow.hhimport.stark.StarkCsvHhConverter";
+			converterClass = StarkCsvHhConverter.class;
 		} else if (fileName.endsWith(".simple.csv")) {
-			converterName = "net.sf.chellow.hhimport.HhConverterCsvSimple";
+			converterClass = HhConverterCsvSimple.class;
+		} else if (fileName.endsWith(".bg.csv")) {
+			converterClass = HhConverterBglobal.class;
 		} else {
 			throw new UserException(
 					"The extension of the filename '"
 							+ fileName
-							+ "' is not one of the recognized extensions; '.df2', '.stark.csv', '.simple.csv'.");
+							+ "' is not one of the recognized extensions; '.df2', '.stark.csv', '.simple.csv', '.bg.csv");
 		}
 
 		try {
-			converter = (HhConverter) Class
-					.forName(converterName)
-					.getConstructor(new Class<?>[] { Reader.class })
-					.newInstance(
-							new Object[] { new InputStreamReader(is, "UTF-8") });
+			converter = converterClass.getConstructor(
+					new Class<?>[] { Reader.class }).newInstance(
+					new Object[] { new InputStreamReader(is, "UTF-8") });
 		} catch (IllegalArgumentException e) {
 			throw new InternalException(e);
 		} catch (SecurityException e) {
@@ -142,8 +143,6 @@ public class HhDataImportProcess extends Thread implements Urlable,
 				throw new InternalException(e);
 			}
 		} catch (NoSuchMethodException e) {
-			throw new InternalException(e);
-		} catch (ClassNotFoundException e) {
 			throw new InternalException(e);
 		}
 	}

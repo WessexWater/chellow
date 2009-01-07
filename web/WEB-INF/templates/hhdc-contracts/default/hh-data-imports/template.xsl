@@ -51,17 +51,20 @@
 						</p>
 					</xsl:when>
 					<xsl:otherwise>
-						<ul>
-							<xsl:for-each
-								select="/source/hh-data-imports/hh-data-import">
-								<li>
-									<a href="{@uri-id}/">
-										<xsl:value-of select="@uri-id" />
-									</a>
-								</li>
-							</xsl:for-each>
-						</ul>
-						<br />
+						<xsl:if
+							test="/source/hh-data-imports/hh-data-import">
+							<ul>
+								<xsl:for-each
+									select="/source/hh-data-imports/hh-data-import">
+									<li>
+										<a href="{@uri-id}/">
+											<xsl:value-of
+												select="@uri-id" />
+										</a>
+									</li>
+								</xsl:for-each>
+							</ul>
+						</xsl:if>
 						<xsl:if
 							test="//message[not(../../hh-data-import)]">
 							<ul>

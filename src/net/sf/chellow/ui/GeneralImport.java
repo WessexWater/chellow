@@ -40,6 +40,7 @@ import net.sf.chellow.monad.XmlTree;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
 import net.sf.chellow.physical.HhDatum;
+import net.sf.chellow.physical.HhEndDate;
 import net.sf.chellow.physical.Site;
 import net.sf.chellow.physical.SiteSupplyGeneration;
 import net.sf.chellow.physical.Supply;
@@ -149,9 +150,14 @@ public class GeneralImport extends Thread implements Urlable, XmlDescriber {
 					// Debug.print("Type is hh-datum");
 					if (action.equals("insert")) {
 						// Debug.print("action is insert");
-						hhData.add(new HhDatumRaw(allValues[2], allValues[3],
-								allValues[4], allValues[5], allValues[6],
-								allValues[7]));
+						Character status = null;
+						String statusString = allValues[7].trim();
+						if (statusString.length() > 0) {
+							status = statusString.charAt(0);
+						}
+						hhData.add(new HhDatumRaw(allValues[2], Boolean.parseBoolean(allValues[3]),
+								Boolean.parseBoolean(allValues[4]), new HhEndDate(allValues[5]), Float.parseFloat(allValues[6]),
+								status));
 						// Debug.print("size " + hhData.size());
 						if (hhData.size() > 1000) {
 							HhDatum.insert(hhData.iterator(), halt);
