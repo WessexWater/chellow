@@ -14,8 +14,6 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
 import net.sf.chellow.billing.HhdcContract;
-import net.sf.chellow.hhimport.stark.StarkCsvHhConverter;
-import net.sf.chellow.hhimport.stark.StarkDf2HhConverter;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.InternalException;
