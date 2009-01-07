@@ -16,7 +16,7 @@ import javax.sql.DataSource;
 
 import net.sf.chellow.billing.NonCoreContract;
 import net.sf.chellow.billing.Provider;
-import net.sf.chellow.hhimport.stark.StarkAutomaticHhDataImporters;
+import net.sf.chellow.hhimport.StarkAutomaticHhDataImporters;
 import net.sf.chellow.monad.Debug;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
