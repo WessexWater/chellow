@@ -35,12 +35,12 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
-public class StarkAutomaticHhDataImporter implements Urlable, XmlDescriber, Runnable {
+public class AutomaticHhDataImporter implements Urlable, XmlDescriber, Runnable {
 	static public final UriPathElement URI_ID;
 
 	static {
 		try {
-			URI_ID = new UriPathElement("stark-automatic-hh-data-importer");
+			URI_ID = new UriPathElement("automatic-hh-data-importer");
 		} catch (HttpException e) {
 			throw new RuntimeException(e);
 		}
@@ -53,10 +53,9 @@ public class StarkAutomaticHhDataImporter implements Urlable, XmlDescriber, Runn
 
 	private Long contractId;
 
-	private boolean running = false;
+	private Thread thread = null;
 
-	public StarkAutomaticHhDataImporter(HhdcContract contract)
-			throws HttpException {
+	public AutomaticHhDataImporter(HhdcContract contract) throws HttpException {
 		contractId = contract.getId();
 	}
 
@@ -77,19 +76,18 @@ public class StarkAutomaticHhDataImporter implements Urlable, XmlDescriber, Runn
 	}
 
 	public void run() {
-		if (running) {
+		if (thread != null && thread.isAlive()) {
 			return;
-		} else {
-			running = true;
 		}
-		
+		thread = Thread.currentThread();
+
 		FTPClient ftp = null;
 		try {
 			HhdcContract contract = HhdcContract.getHhdcContract(contractId);
-			//Debug.print("About to set state property3");
-			//contract.setStateProperty(
-			//		"Hello", "hello");
-			//Debug.print("Has set state prop3");
+			// Debug.print("About to set state property3");
+			// contract.setStateProperty(
+			// "Hello", "hello");
+			// Debug.print("Has set state prop3");
 			/*
 			 * state = new Properties(); try { state.load(new
 			 * StringReader(contract.getState())); } catch (IOException e) {
@@ -98,6 +96,7 @@ public class StarkAutomaticHhDataImporter implements Urlable, XmlDescriber, Runn
 			String hostName = contract.getProperty("hostname");
 			String userName = contract.getProperty("username");
 			String password = contract.getProperty("password");
+			String fileType = contract.getProperty("file.type");
 			List<String> directories = new ArrayList<String>();
 			String directory = null;
 			for (int i = 0; (directory = contract.getProperty("directory" + i)) != null; i++) {
@@ -172,7 +171,7 @@ public class StarkAutomaticHhDataImporter implements Urlable, XmlDescriber, Runn
 							log("File stream obtained successfully.");
 							hhImporter = new HhDataImportProcess(getContract()
 									.getId(), new Long(0), is, fileName
-									+ ".df2", file.getSize());
+									+ fileType, file.getSize());
 							hhImporter.run();
 
 							List<String> messages = hhImporter.getMessages();
@@ -192,7 +191,8 @@ public class StarkAutomaticHhDataImporter implements Urlable, XmlDescriber, Runn
 						contract = HhdcContract.getHhdcContract(contractId);
 						contract.setStateProperty(
 								getPropertyNameLastImportDate(i),
-								new MonadDate(file.getTimestamp().getTime()).toString());
+								new MonadDate(file.getTimestamp().getTime())
+										.toString());
 						contract.setStateProperty(
 								getPropertyNameLastImportName(i), file
 										.getName());
@@ -231,7 +231,7 @@ public class StarkAutomaticHhDataImporter implements Urlable, XmlDescriber, Runn
 			ChellowLogger.getLogger().logp(Level.SEVERE, "ContextListener",
 					"contextInitialized", "Can't initialize context.", e);
 		} finally {
-			running = false;
+			thread = null;
 			if (ftp != null && ftp.isConnected()) {
 				try {
 					ftp.logout();
@@ -251,7 +251,7 @@ public class StarkAutomaticHhDataImporter implements Urlable, XmlDescriber, Runn
 	public List<MonadMessage> getLog() {
 		return messages;
 	}
-	
+
 	private Document document() throws HttpException {
 		Document doc = MonadUtils.newSourceDocument();
 		Element source = doc.getDocumentElement();
@@ -266,9 +266,19 @@ public class StarkAutomaticHhDataImporter implements Urlable, XmlDescriber, Runn
 			importerElement.appendChild(new MonadMessage(hhImporter.status())
 					.toXml(doc));
 		}
+		String threadStatus = null;
+		if (thread == null) {
+			threadStatus = "null";
+		} else {
+			if (thread.isAlive()) {
+				threadStatus = "alive";
+			} else {
+				threadStatus = "dead";
+			}
+		}
+		source.setAttribute("thread-status", threadStatus);
 		return doc;
 	}
-
 
 	public void httpGet(Invocation inv) throws HttpException {
 		Document doc = MonadUtils.newSourceDocument();
@@ -292,22 +302,28 @@ public class StarkAutomaticHhDataImporter implements Urlable, XmlDescriber, Runn
 	}
 
 	public void httpPost(Invocation inv) throws HttpException {
-		if (running) {
-			throw new UserException(document(), "This import is already running.");
+		if (inv.hasParameter("interrupt")) {
+			if (thread != null && thread.isAlive()) {
+				thread.interrupt();
+				inv.sendOk(document());
+			} else {
+				throw new UserException(document(),
+						"The import isn't running, and so can't be interrupted.");
+			}
+		} else {
+			if (thread != null && thread.isAlive()) {
+				throw new UserException(document(),
+						"This import is already running.");
+			}
+			new Thread(this).start();
+			inv.sendOk(document());
 		}
-		new Thread(this).start();
-		inv.sendOk(document());
 	}
 
-	public void httpDelete(Invocation inv) throws InternalException,
-			HttpException {
-		// TODO Auto-generated method stub
-
+	public void httpDelete(Invocation inv) throws HttpException {
 	}
 
-	public Urlable getChild(UriPathElement uriId) throws InternalException,
-			HttpException {
-		// TODO Auto-generated method stub
+	public Urlable getChild(UriPathElement uriId) throws HttpException {
 		return null;
 	}
 
@@ -315,16 +331,15 @@ public class StarkAutomaticHhDataImporter implements Urlable, XmlDescriber, Runn
 		return Contract.getContract(contractId);
 	}
 
-	public MonadUri getUri() throws InternalException, HttpException {
+	public MonadUri getUri() throws HttpException {
 		return getContract().getUri().resolve(getUriId()).append("/");
 	}
 
-	public Element toXml(Document doc) throws InternalException, HttpException {
+	public Element toXml(Document doc) throws HttpException {
 		return doc.createElement("stark-automatic-hh-data-importer");
 	}
 
 	public Node toXml(Document doc, XmlTree tree) throws HttpException {
-		// TODO Auto-generated method stub
 		return null;
 	}
 }

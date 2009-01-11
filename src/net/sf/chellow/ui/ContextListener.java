@@ -16,7 +16,7 @@ import javax.sql.DataSource;
 
 import net.sf.chellow.billing.NonCoreContract;
 import net.sf.chellow.billing.Provider;
-import net.sf.chellow.hhimport.StarkAutomaticHhDataImporters;
+import net.sf.chellow.hhimport.AutomaticHhDataImporters;
 import net.sf.chellow.monad.Debug;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
@@ -96,7 +96,7 @@ public class ContextListener implements ServletContextListener {
 			/*
 			 * String pythonPath = config .getChellowProperty("python.path");
 			 */
-			StarkAutomaticHhDataImporters.start();
+			AutomaticHhDataImporters.start();
 			Properties postProps = new Properties();
 			// postProps.setProperty("python.path", pythonPath);
 			PythonInterpreter.initialize(System.getProperties(), postProps,

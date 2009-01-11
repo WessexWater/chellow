@@ -14,12 +14,11 @@
 				<title>
 					Chellow &gt; HHDC Contracts &gt;
 					<xsl:value-of
-						select="/source/stark-automatic-hh-data-importer/hhdc-contract/@name" />
-					&gt; Stark Automatic HH Data Downloader
+						select="/source/automatic-hh-data-importer/hhdc-contract/@name" />
+					&gt; Automatic HH Data Downloader
 				</title>
 
 			</head>
-
 			<body>
 				<p>
 					<a href="{/source/request/@context-path}/">
@@ -34,18 +33,37 @@
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/hhdc-contracts/{/source/stark-automatic-hh-data-importer/hhdc-contract/@id}/">
+						href="{/source/request/@context-path}/hhdc-contracts/{/source/automatic-hh-data-importer/hhdc-contract/@id}/">
 						<xsl:value-of
-							select="/source/stark-automatic-hh-data-importer/hhdc-contract/@name" />
+							select="/source/automatic-hh-data-importer/hhdc-contract/@name" />
 					</a>
-					&gt; Stark Automatic HH Data Downloader
+					&gt; Automatic HH Data Downloader
 				</p>
-				<form action="." method="post">
-					<fieldset>
-						<legend>Import now</legend>
-						<input type="submit" value="Import" />
-					</fieldset>
-				</form>
+				<p>
+					Status:
+					<xsl:value-of
+						select="concat(' ', /source/@thread-status" />
+				</p>
+				<xsl:choose>
+					<xsl:when
+						test="/source/@thread-status = 'null' or /source/@thread-status = 'dead'">
+						<form action="." method="post">
+							<fieldset>
+								<legend>Import now</legend>
+								<input type="submit" value="Import" />
+							</fieldset>
+						</form>
+					</xsl:when>
+					<xsl:when test="/source/@thread-status = 'alive'">
+						<form action="." method="post">
+							<fieldset>
+								<legend>Interrupt The Import</legend>
+								<input type="submit" name="interrupt"
+									value="Interrupt" />
+							</fieldset>
+						</form>
+					</xsl:when>
+				</xsl:choose>
 				<br />
 				<h1>Log</h1>
 				<ul>

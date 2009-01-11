@@ -204,7 +204,8 @@
 						<p>
 							<code>
 								<pre>
-									importer.name=StarkAutomaticHhDataImporter
+									has.importer=yes
+									file.type=.df2
 									hostname=example.com
 									username=username
 									password=password

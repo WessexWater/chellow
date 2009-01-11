@@ -14,22 +14,22 @@ import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.InternalException;
 
-public class StarkAutomaticHhDataImporters extends TimerTask {
-	private static StarkAutomaticHhDataImporters importersInstance;
+public class AutomaticHhDataImporters extends TimerTask {
+	private static AutomaticHhDataImporters importersInstance;
 
 	private static Timer timer;
 
-	public synchronized static StarkAutomaticHhDataImporters start()
+	public synchronized static AutomaticHhDataImporters start()
 			throws InternalException {
 		if (importersInstance == null) {
-			importersInstance = new StarkAutomaticHhDataImporters();
+			importersInstance = new AutomaticHhDataImporters();
 			timer = new Timer(true);
 			timer.schedule(importersInstance, 0, 60 * 60 * 1000);
 		}
 		return importersInstance;
 	}
 
-	public static StarkAutomaticHhDataImporters getImportersInstance() {
+	public static AutomaticHhDataImporters getImportersInstance() {
 		return importersInstance;
 	}
 
@@ -37,21 +37,20 @@ public class StarkAutomaticHhDataImporters extends TimerTask {
 
 	private Logger logger = Logger.getLogger("net.sf.chellow");
 
-	private final Map<Long, StarkAutomaticHhDataImporter> importers = new HashMap<Long, StarkAutomaticHhDataImporter>();
+	private final Map<Long, AutomaticHhDataImporter> importers = new HashMap<Long, AutomaticHhDataImporter>();
 
 	public InternalException getProgrammerException() {
 		return programmerException;
 	}
 
-	public StarkAutomaticHhDataImporter findImporter(HhdcContract contract)
+	public AutomaticHhDataImporter findImporter(HhdcContract contract)
 			throws HttpException {
-		StarkAutomaticHhDataImporter importer = null;
-		if ("StarkAutomaticHhDataImporter".equals(contract
-				.getProperty("importer.name"))) {
+		AutomaticHhDataImporter importer = null;
+		if (contract.getProperty("has.importer") != null) {
 			importer = importers.get(contract.getId());
 			if (importer == null) {
 				try {
-					importer = new StarkAutomaticHhDataImporter(contract);
+					importer = new AutomaticHhDataImporter(contract);
 					importers.put(contract.getId(), importer);
 				} catch (HttpException e) {
 					logger.logp(Level.SEVERE, "StarkAutomaticHhDataImporter",
@@ -72,7 +71,7 @@ public class StarkAutomaticHhDataImporters extends TimerTask {
 	@SuppressWarnings("unchecked")
 	public void run() {
 		try {
-			for (Entry<Long, StarkAutomaticHhDataImporter> importerEntry : importers
+			for (Entry<Long, AutomaticHhDataImporter> importerEntry : importers
 					.entrySet()) {
 				if (HhdcContract.findHhdcContract(importerEntry.getKey()) == null) {
 					importers.remove(importerEntry.getKey());
@@ -82,7 +81,7 @@ public class StarkAutomaticHhDataImporters extends TimerTask {
 					.createQuery("from HhdcContract contract").list()) {
 				findImporter(contract);
 			}
-			for (StarkAutomaticHhDataImporter importer : importers.values()) {
+			for (AutomaticHhDataImporter importer : importers.values()) {
 				importer.run();
 			}
 			Hiber.close();

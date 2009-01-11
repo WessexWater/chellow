@@ -29,8 +29,8 @@ import java.util.List;
 import java.util.Properties;
 
 import net.sf.chellow.hhimport.HhDataImportProcesses;
-import net.sf.chellow.hhimport.StarkAutomaticHhDataImporter;
-import net.sf.chellow.hhimport.StarkAutomaticHhDataImporters;
+import net.sf.chellow.hhimport.AutomaticHhDataImporter;
+import net.sf.chellow.hhimport.AutomaticHhDataImporters;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.InternalException;
@@ -330,8 +330,8 @@ public class HhdcContract extends Contract {
 			return getHhDataImportProcessesInstance();
 		} else if (ChannelSnags.URI_ID.equals(uriId)) {
 			return getChannelSnagsInstance();
-		} else if (StarkAutomaticHhDataImporter.URI_ID.equals(uriId)) {
-			return StarkAutomaticHhDataImporters.getImportersInstance()
+		} else if (AutomaticHhDataImporter.URI_ID.equals(uriId)) {
+			return AutomaticHhDataImporters.getImportersInstance()
 					.findImporter(this);
 		} else if (Accounts.URI_ID.equals(uriId)) {
 			return new Accounts(this);
@@ -350,7 +350,7 @@ public class HhdcContract extends Contract {
 		element.setAttribute("frequency", frequency);
 		element.setAttribute("lag", Integer.toString(lag));
 		element.setAttribute("has-stark-automatic-hh-data-importer",
-				StarkAutomaticHhDataImporters.getImportersInstance()
+				AutomaticHhDataImporters.getImportersInstance()
 						.findImporter(this) == null ? "false" : "true");
 		element.setAttribute("properties", properties);
 		element.setAttribute("state", state);
