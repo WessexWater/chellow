@@ -42,7 +42,10 @@
 				<p>
 					Status:
 					<xsl:value-of
-						select="concat(' ', /source/@thread-status" />
+						select="concat(' ', /source/@thread-status)" />
+				</p>
+				<p>
+					<a href=".">Refresh page</a>
 				</p>
 				<xsl:choose>
 					<xsl:when

@@ -277,11 +277,11 @@
 						<a href="site-snags/">Site Snags</a>
 					</li>
 					<xsl:if
-						test="/source/hhdc-contract/@has-stark-automatic-hh-data-importer='true'">
+						test="/source/hhdc-contract/@has-automatic-hh-data-importer='true'">
 						<li>
 							<a
-								href="stark-automatic-hh-data-importer/">
-								Stark Automatic HH Data Importer
+								href="automatic-hh-data-importer/">
+								Automatic HH Data Importer
 							</a>
 						</li>
 					</xsl:if>

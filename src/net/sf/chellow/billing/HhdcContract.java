@@ -349,7 +349,7 @@ public class HhdcContract extends Contract {
 
 		element.setAttribute("frequency", frequency);
 		element.setAttribute("lag", Integer.toString(lag));
-		element.setAttribute("has-stark-automatic-hh-data-importer",
+		element.setAttribute("has-automatic-hh-data-importer",
 				AutomaticHhDataImporters.getImportersInstance()
 						.findImporter(this) == null ? "false" : "true");
 		element.setAttribute("properties", properties);

@@ -281,6 +281,7 @@ public class AutomaticHhDataImporter implements Urlable, XmlDescriber, Runnable 
 	}
 
 	public void httpGet(Invocation inv) throws HttpException {
+		/*
 		Document doc = MonadUtils.newSourceDocument();
 		Element source = doc.getDocumentElement();
 		Element importerElement = toXml(doc);
@@ -294,7 +295,8 @@ public class AutomaticHhDataImporter implements Urlable, XmlDescriber, Runnable 
 			importerElement.appendChild(new MonadMessage(hhImporter.status())
 					.toXml(doc));
 		}
-		inv.sendOk(doc);
+		*/
+		inv.sendOk(document());
 	}
 
 	public UriPathElement getUriId() {
@@ -336,7 +338,7 @@ public class AutomaticHhDataImporter implements Urlable, XmlDescriber, Runnable 
 	}
 
 	public Element toXml(Document doc) throws HttpException {
-		return doc.createElement("stark-automatic-hh-data-importer");
+		return doc.createElement("automatic-hh-data-importer");
 	}
 
 	public Node toXml(Document doc, XmlTree tree) throws HttpException {
