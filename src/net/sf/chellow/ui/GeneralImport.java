@@ -26,7 +26,6 @@ import net.sf.chellow.billing.NonCoreContract;
 import net.sf.chellow.billing.RateScript;
 import net.sf.chellow.billing.SupplierContract;
 import net.sf.chellow.hhimport.HhDatumRaw;
-import net.sf.chellow.monad.Debug;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.InternalException;
@@ -262,7 +261,7 @@ public class GeneralImport extends Thread implements Urlable, XmlDescriber {
 			Hiber.rollBack();
 			Hiber.close();
 		}
-		Debug.print("TotalTimeHH " + totalHhTime);
+		//Debug.print("TotalTimeHH " + totalHhTime);
 	}
 
 	public static String addField(Element csvElement, String name,

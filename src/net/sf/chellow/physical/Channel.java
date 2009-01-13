@@ -33,7 +33,6 @@ import java.util.List;
 
 import net.sf.chellow.billing.HhdcContract;
 import net.sf.chellow.hhimport.HhDatumRaw;
-import net.sf.chellow.monad.Debug;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.InternalException;
@@ -250,7 +249,7 @@ public class Channel extends PersistentEntity {
 	 */
 	public void addChannelSnag(String description, HhEndDate startDate,
 			HhEndDate finishDate) throws HttpException {
-		Debug.print("contract id " + supplyGeneration.getHhdcContract());
+		//Debug.print("contract id " + supplyGeneration.getHhdcContract());
 		SnagDateBounded.addChannelSnag(supplyGeneration.getHhdcContract(),
 				this, description, startDate, finishDate);
 	}
@@ -450,7 +449,7 @@ public class Channel extends PersistentEntity {
 					spanStartDate.getDate()).setTimestamp("finishDate",
 					spanFinishDate.getDate()).uniqueResult();
 			if (present == 0) {
-				Debug.print("Adding a snag.");
+				//Debug.print("Adding a snag.");
 				addChannelSnag(ChannelSnag.SNAG_MISSING, spanStartDate,
 						spanFinishDate);
 				spanStartDate = HhEndDate.getNext(spanFinishDate);

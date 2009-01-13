@@ -836,7 +836,6 @@ public class SupplyGeneration extends PersistentEntity {
 								+ "' says that the MPAN is actually import.");
 			}
 		}
-		try {
 		if (importMpan != null && exportMpan != null) {
 			if (importHhdcAccount != null
 					&& exportHhdcAccount != null
@@ -877,24 +876,6 @@ public class SupplyGeneration extends PersistentEntity {
 									+ " can only be 520, 550 or 580.");
 				}
 			}
-		}
-		} catch (HttpException e) {
-			if (importMpan.getId() == null) {
-				importMpan = null;
-			}
-			if (exportMpan.getId() == null) {
-				exportMpan = null;
-			}
-			List<Mpan> toRemove = new ArrayList<Mpan>();
-			for (Mpan mpan : mpans) {
-				if (mpan.getId() == null) {
-					toRemove.add(mpan);
-				}
-			}
-			for (Mpan mpan : toRemove) {
-				mpans.remove(mpan);
-			}
-			throw e;
 		}
 		Hiber.flush();
 		HhdcContract hhdcContract = getHhdcContract();
@@ -1265,6 +1246,7 @@ public class SupplyGeneration extends PersistentEntity {
 	}
 
 	public void httpPost(Invocation inv) throws HttpException {
+		Document doc = document();
 		try {
 			if (inv.hasParameter("delete")) {
 				supply.deleteGeneration(this);
@@ -1462,8 +1444,7 @@ public class SupplyGeneration extends PersistentEntity {
 				inv.sendOk(document());
 			}
 		} catch (HttpException e) {
-			Hiber.rollBack();
-			e.setDocument(document());
+			e.setDocument(doc);
 			throw e;
 		}
 	}

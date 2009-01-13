@@ -37,7 +37,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
-import net.sf.chellow.monad.Debug;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.InternalException;
@@ -223,8 +222,6 @@ public class InvoiceConverterEdi implements InvoiceConverter {
 								issueDate, startDate, finishDate, net, vat,
 								registerReads);
 						rawInvoices.add(invoiceRaw);
-						Debug.print("at mtr: " + invoiceNumber + " "
-								+ startDate + " " + finishDate);
 					}
 				}
 				if (code.equals("MAN")) {
@@ -239,7 +236,6 @@ public class InvoiceConverterEdi implements InvoiceConverter {
 							+ madn.getComponents().get(2));
 				}
 				if (code.equals("VAT")) {
-					Debug.print("started vat");
 					Element uvla = segment.getElements().get(5);
 					net = uvla.getFloat();
 					Element uvtt = segment.getElements().get(6);

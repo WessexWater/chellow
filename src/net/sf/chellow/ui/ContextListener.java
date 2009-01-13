@@ -6,6 +6,7 @@ import java.sql.Statement;
 import java.util.Properties;
 import java.util.logging.FileHandler;
 import java.util.logging.Level;
+import java.util.logging.LogManager;
 import java.util.logging.Logger;
 
 import javax.naming.InitialContext;
@@ -60,7 +61,7 @@ public class ContextListener implements ServletContextListener {
 		context = event.getServletContext();
 		Monad.setContext(context);
 		try {
-
+			LogManager.getLogManager().getLogger("").setLevel(Level.SEVERE);
 			FileHandler fh = new FileHandler("%t/chellow.log");
 
 			fh.setFormatter(new MonadFormatter());
