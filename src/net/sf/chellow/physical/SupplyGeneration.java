@@ -34,7 +34,6 @@ import net.sf.chellow.billing.Account;
 import net.sf.chellow.billing.Dso;
 import net.sf.chellow.billing.HhdcContract;
 import net.sf.chellow.billing.SupplierContract;
-import net.sf.chellow.monad.Debug;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.InternalException;
@@ -837,6 +836,7 @@ public class SupplyGeneration extends PersistentEntity {
 								+ "' says that the MPAN is actually import.");
 			}
 		}
+		try {
 		if (importMpan != null && exportMpan != null) {
 			if (importHhdcAccount != null
 					&& exportHhdcAccount != null
@@ -877,6 +877,24 @@ public class SupplyGeneration extends PersistentEntity {
 									+ " can only be 520, 550 or 580.");
 				}
 			}
+		}
+		} catch (HttpException e) {
+			if (importMpan.getId() == null) {
+				importMpan = null;
+			}
+			if (exportMpan.getId() == null) {
+				exportMpan = null;
+			}
+			List<Mpan> toRemove = new ArrayList<Mpan>();
+			for (Mpan mpan : mpans) {
+				if (mpan.getId() == null) {
+					toRemove.add(mpan);
+				}
+			}
+			for (Mpan mpan : toRemove) {
+				mpans.remove(mpan);
+			}
+			throw e;
 		}
 		Hiber.flush();
 		HhdcContract hhdcContract = getHhdcContract();
@@ -1280,7 +1298,6 @@ public class SupplyGeneration extends PersistentEntity {
 				Hiber.commit();
 				inv.sendOk(document());
 			} else {
-				Debug.print("Starting to update");
 				String importMpanStr = null;
 				Ssc importSsc = null;
 				GspGroup importGspGroup = null;
@@ -1331,11 +1348,13 @@ public class SupplyGeneration extends PersistentEntity {
 							.getBoolean("import-has-export-kwh");
 					importHasExportKvarh = inv
 							.getBoolean("import-has-export-kvarh");
+					if (!inv.isValid()) {
+						throw new UserException();
+					}
 					if (importHasImportKwh || importHasImportKvarh
 							|| importHasExportKwh || importHasExportKvarh) {
 						String importHhdcContractName = inv
 								.getString("import-hhdc-contract-name");
-						Debug.print("contract name" + importHhdcContractName);
 						if (importHhdcContractName.length() != 0) {
 							importHhdcContract = HhdcContract
 									.getHhdcContract(importHhdcContractName);
@@ -1395,6 +1414,9 @@ public class SupplyGeneration extends PersistentEntity {
 							.getBoolean("export-has-export-kwh");
 					exportHasExportKvarh = inv
 							.getBoolean("export-has-export-kvarh");
+					if (!inv.isValid()) {
+						throw new UserException();
+					}
 					if (exportHasImportKwh || exportHasImportKvarh
 							|| exportHasExportKwh || exportHasExportKvarh) {
 						String exportHhdcContractName = inv
@@ -1438,9 +1460,9 @@ public class SupplyGeneration extends PersistentEntity {
 						: new HhEndDate(finishDate), meter);
 				Hiber.commit();
 				inv.sendOk(document());
-				Debug.print("Finished updating httpd.");
 			}
 		} catch (HttpException e) {
+			Hiber.rollBack();
 			e.setDocument(document());
 			throw e;
 		}

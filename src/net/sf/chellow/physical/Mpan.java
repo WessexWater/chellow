@@ -31,6 +31,7 @@ import net.sf.chellow.billing.Dso;
 // import net.sf.chellow.monad.Debug;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
+import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Invocation;
 import net.sf.chellow.monad.NotFoundException;
 import net.sf.chellow.monad.Urlable;
@@ -270,11 +271,25 @@ public class Mpan extends PersistentEntity {
 	}
 
 	public void update(String mpan, Ssc ssc, GspGroup gspGroup,
-			Account hhdcAccount, Account supplierAccount, boolean hasImportKwh,
-			boolean hasImportKvarh, boolean hasExportKwh,
-			boolean hasExportKvarh, int agreedSupplyCapacity)
+			Account hhdcAccount, Account supplierAccount, Boolean hasImportKwh,
+			Boolean hasImportKvarh, Boolean hasExportKwh,
+			Boolean hasExportKvarh, Integer agreedSupplyCapacity)
 			throws HttpException {
-		//Debug.print("starting to update mpan");
+		if (hasImportKwh == null) {
+			throw new InternalException("hasImportKwh can't be null");
+		}
+		if (hasImportKvarh == null) {
+			throw new InternalException("hasImportKvarh can't be null");
+		}
+		if (hasExportKwh == null) {
+			throw new InternalException("hasExportKwh can't be null");
+		}
+		if (hasExportKvarh == null) {
+			throw new InternalException("hasExportKvarh can't be null");
+		}
+		if (agreedSupplyCapacity == null) {
+			throw new InternalException("agreedSupplyCapacity can't be null");
+		}
 		MpanRaw mpanRaw = new MpanRaw(mpan);
 		MpanCore mpanCore = MpanCore.findMpanCore(mpanRaw.getMpanCore());
 		if (mpanCore == null) {
