@@ -1,6 +1,6 @@
 /*
  
- Copyright 2005-2008 Meniscus Systems Ltd
+ Copyright 2005-2009 Meniscus Systems Ltd
  
  This file is part of Chellow.
 
@@ -52,6 +52,7 @@ import net.sf.chellow.ui.GeneralImport;
 
 import org.hibernate.Criteria;
 import org.hibernate.Query;
+import org.hibernate.ScrollableResults;
 import org.hibernate.criterion.Restrictions;
 import org.hibernate.exception.ConstraintViolationException;
 import org.w3c.dom.Document;
@@ -100,18 +101,17 @@ public class Supply extends PersistentEntity {
 					"Import has import kVArh", values, 10);
 			String importHasExportKwhStr = GeneralImport.addField(csvElement,
 					"Import has export kWh", values, 11);
-			String importHasExportKvarhStr = GeneralImport.addField(
-					csvElement, "Import has export kVArh", values, 12);
-			String importHhdcContractName = GeneralImport.addField(
-					csvElement, "Import HHDC Contract", values, 13);
+			String importHasExportKvarhStr = GeneralImport.addField(csvElement,
+					"Import has export kVArh", values, 12);
+			String importHhdcContractName = GeneralImport.addField(csvElement,
+					"Import HHDC Contract", values, 13);
 			String importHhdcAccountReference = GeneralImport.addField(
 					csvElement, "Import HHDC Account", values, 14);
-			String importSupplierContractName = GeneralImport
-					.addField(csvElement, "Import supplier contract name",
-							values, 15);
-			String importSupplierAccountReference = GeneralImport.addField(
-					csvElement, "Import supplier account reference",
-					values, 16);
+			String importSupplierContractName = GeneralImport.addField(
+					csvElement, "Import supplier contract name", values, 15);
+			String importSupplierAccountReference = GeneralImport
+					.addField(csvElement, "Import supplier account reference",
+							values, 16);
 			if (importMpanStr != null && importMpanStr.length() != 0) {
 				importSsc = importSscCode.trim().length() == 0 ? null : Ssc
 						.getSsc(importSscCode);
@@ -788,42 +788,65 @@ public class Supply extends PersistentEntity {
 					"There are HH data after the end of the updated supply.");
 		}
 		for (SupplyGeneration generation : getGenerations(from, to)) {
-			Query query = Hiber
-					.session()
-					.createQuery(
-							"from HhDatum datum where datum.channel.supplyGeneration.supply = :supply and datum.endDate.date >= :from"
-									+ (generation.getFinishDate() == null ? ""
-											: " and datum.endDate.date <= :to"))
-					.setEntity("supply", this).setTimestamp("from",
-							generation.getStartDate().getDate());
-			if (generation.getFinishDate() != null) {
-				query.setTimestamp("to", generation.getFinishDate().getDate());
-			}
-			for (HhDatum datum : (List<HhDatum>) query.list()) {
-				Channel channel = datum.getChannel();
-				HhEndDate endDate = datum.getEndDate();
-				Channel targetChannel = getGeneration(endDate).getChannel(
-						channel.getIsImport(), channel.getIsKwh());
-				if (targetChannel == null) {
-					throw new UserException(
-							"There is no channel for the HH datum: "
-									+ datum.toString() + " to move to.");
-				}
-				if (!channel.equals(targetChannel)) {
-					datum.setChannel(targetChannel);
-					if (datum.getValue() < 0) {
-						targetChannel.addChannelSnag(ChannelSnag.SNAG_NEGATIVE,
-								endDate, endDate);
+			for (Boolean isImport : new Boolean[] { true, false }) {
+				for (Boolean isKwh : new Boolean[] { true, false }) {
+					Channel targetChannel = generation.getChannel(isImport,
+							isKwh);
+					Query query = Hiber
+							.session()
+							.createQuery(
+									"from HhDatum datum where datum.channel.supplyGeneration.supply = :supply and datum.channel.isImport = :isImport and datum.channel.isKwh = :isKwh and datum.endDate.date >= :from"
+											+ (generation.getFinishDate() == null ? ""
+													: " and datum.endDate.date <= :to")
+											+ (targetChannel == null ? ""
+											: " and datum.channel != :targetChannel"))
+							.setEntity("supply", this).setBoolean("isImport",
+									isImport).setBoolean("isKwh", isKwh)
+							.setTimestamp("from",
+									generation.getStartDate().getDate());
+					if (generation.getFinishDate() != null) {
+						query.setTimestamp("to", generation.getFinishDate()
+								.getDate());
 					}
-					if (!datum.getStatus().equals(HhDatum.ACTUAL)) {
-						targetChannel.addChannelSnag(
-								ChannelSnag.SNAG_NOT_ACTUAL, endDate, endDate);
+					if (targetChannel != null) {
+						query.setEntity("targetChannel", targetChannel);
 					}
-					// channel.resolveSnag(ChannelSnag.SNAG_NEGATIVE, endDate);
-					// channel.resolveSnag(ChannelSnag.SNAG_NOT_ACTUAL,
-					// endDate);
+					ScrollableResults hhData = query.scroll();
+					HhDatum datum = null;
+					if (hhData.next()) {
+						datum = (HhDatum) hhData.get(0);
+						if (targetChannel == null) {
+							throw new UserException(
+									"There is no channel for the HH datum: "
+											+ datum.toString() + " to move to.");
+						}
+					}
+					hhData.beforeFirst();
+					while (hhData.next()) {
+						datum = (HhDatum) hhData.get(0);
+						HhEndDate endDate = datum.getEndDate();
+						datum.setChannel(targetChannel);
+						if (datum.getValue() < 0) {
+							targetChannel
+									.addChannelSnag(ChannelSnag.SNAG_NEGATIVE,
+											endDate, endDate);
+						}
+						if (!datum.getStatus().equals(HhDatum.ACTUAL)) {
+							targetChannel.addChannelSnag(
+									ChannelSnag.SNAG_NOT_ACTUAL, endDate,
+									endDate);
+						}
+						// channel.resolveSnag(ChannelSnag.SNAG_NEGATIVE,
+						// endDate);
+						// channel.resolveSnag(ChannelSnag.SNAG_NOT_ACTUAL,
+						// endDate);
+						Hiber.flush();
+						Hiber.session().evict(datum);
+					}
+					hhData.close();
 				}
 			}
+
 		}
 		checkForMissing(from, to);
 		/*

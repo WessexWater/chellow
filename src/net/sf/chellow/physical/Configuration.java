@@ -6,6 +6,7 @@ import java.io.Reader;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
+import java.text.DecimalFormat;
 import java.util.Properties;
 
 import net.sf.chellow.monad.Hiber;
@@ -35,8 +36,8 @@ public class Configuration extends PersistentEntity {
 	}
 
 	static public Configuration getConfiguration() {
-		Configuration config = (Configuration) Hiber.session()
-				.createQuery("from Configuration").uniqueResult();
+		Configuration config = (Configuration) Hiber.session().createQuery(
+				"from Configuration").uniqueResult();
 		if (config == null) {
 			config = new Configuration("");
 			Hiber.session().save(config);
@@ -49,7 +50,7 @@ public class Configuration extends PersistentEntity {
 
 	public Configuration() {
 	}
-	
+
 	public Configuration(String properties) {
 		setProperties(properties);
 	}
@@ -84,8 +85,7 @@ public class Configuration extends PersistentEntity {
 		inv.sendOk(document());
 	}
 
-	public void update(String properties)
-			throws HttpException {
+	public void update(String properties) throws HttpException {
 		Properties props = new Properties();
 		try {
 			props.load(new StringReader(properties));
@@ -123,6 +123,11 @@ public class Configuration extends PersistentEntity {
 		Element source = doc.getDocumentElement();
 		Element configElement = toXml(doc);
 		source.appendChild(configElement);
+		DecimalFormat df = new DecimalFormat("###,###,###,###,##0");
+		Runtime runtime = Runtime.getRuntime();
+		source.setAttribute("free-memory", df.format(runtime.freeMemory()));
+		source.setAttribute("max-memory", df.format(runtime.maxMemory()));
+		source.setAttribute("total-memory", df.format(runtime.totalMemory()));
 		return doc;
 	}
 
