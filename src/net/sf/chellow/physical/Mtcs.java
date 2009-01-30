@@ -48,7 +48,7 @@ public class Mtcs implements Urlable {
 		for (Mtc mtc : (List<Mtc>) Hiber
 				.session()
 				.createQuery(
-						"select mtc from Mtc mtc left outer join mtc.dso dso order by mtc.code, dso.code.string")
+						"select mtc from Mtc mtc left outer join mtc.dso dso order by mtc.code, dso.code")
 				.list()) {
 			mtcsElement.appendChild(mtc.toXml(doc, new XmlTree("dso").put(
 					"meterType").put("paymentType")));
