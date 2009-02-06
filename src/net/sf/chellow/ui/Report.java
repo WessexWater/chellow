@@ -196,6 +196,9 @@ public class Report extends PersistentEntity {
 			String script = inv.getString("script");
 			String template = inv.getString("template");
 
+			if (!inv.isValid()) {
+				throw new UserException();
+			}
 			script = script.replace("\r", "").replace("\t", "    ");
 			template = template.length() == 0 ? null : template.replace("\r",
 					"").replace("\t", "    ");
