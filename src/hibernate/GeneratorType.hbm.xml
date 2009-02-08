@@ -4,7 +4,7 @@
           "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
 <!-- 
 	
-	Copyright 2005-2009 Meniscus Systems Ltd
+	Copyright 2009 Meniscus Systems Ltd
 	
 	This file is part of Chellow.
 	
@@ -25,31 +25,14 @@
 -->
 
 <hibernate-mapping package="net.sf.chellow.physical">
-	<class name="Supply" table="supply" lazy="true">
+	<class name="GeneratorType" table="generator_type" lazy="true">
 		<id name="id">
 			<generator class="sequence">
-				<param name="sequence">supply_id_sequence</param>
+				<param name="sequence">generator_type_id_sequence</param>
 			</generator>
 		</id>
-		<property name="name" column="name" />
-		<many-to-one name="source" class="Source" column="source_id"
-			not-null="true" foreign-key="fkey_supply_source" />
-		<many-to-one name="generatorType" class="GeneratorType" column="generator_type_id"
-			not-null="true" foreign-key="fkey_supply_generator_type" />
-		<set name="generations" inverse="true"
-			cascade="all,delete-orphan" order-by="start_date desc">
-			<key column="supply_id" />
-			<one-to-many class="SupplyGeneration" />
-		</set>
-		<set name="mpanCores" inverse="true" lazy="true"
-			cascade="all,delete-orphan">
-			<key column="supply_id" />
-			<one-to-many class="MpanCore" />
-		</set>
-		<set name="meters" inverse="true" lazy="true"
-			cascade="all,delete-orphan">
-			<key column="supply_id" />
-			<one-to-many class="Meter" />
-		</set>
+		<property type="string" name="code" column="code" unique="true" />
+		<property name="name" type="string" column="name" unique="true" />
 	</class>
 </hibernate-mapping>
+

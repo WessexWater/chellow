@@ -29,6 +29,7 @@ import net.sf.chellow.monad.MonadHandler;
 import net.sf.chellow.monad.types.EmailAddress;
 import net.sf.chellow.physical.ClockInterval;
 import net.sf.chellow.physical.Configuration;
+import net.sf.chellow.physical.GeneratorType;
 import net.sf.chellow.physical.GspGroup;
 import net.sf.chellow.physical.Llfc;
 import net.sf.chellow.physical.MarketRole;
@@ -180,11 +181,12 @@ public class ContextListener implements ServletContextListener {
 				null);
 		Hiber.commit();
 		Source.insertSource("net", "Public distribution system.");
-		Source.insertSource("chp", "Combined heat and power generator");
-		Source.insertSource("lm", "Load management generator");
-		Source.insertSource("turb", "Water turbine");
 		Source.insertSource("sub", "Sub meter");
-		Source.insertSource("chp-net", "CHP connected directly to network.");
+		Source.insertSource("gen-net", "Generator connected directly to network.");
+		Source.insertSource("gen", "Generator.");
+		GeneratorType.insertGeneratorType("chp", "Combined heat and power.");
+		GeneratorType.insertGeneratorType("lm", "Load management.");
+		GeneratorType.insertGeneratorType("turb", "Water turbine.");
 		Hiber.commit();
 	}
 	/*

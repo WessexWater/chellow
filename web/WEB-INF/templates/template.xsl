@@ -155,6 +155,12 @@
 					</li>
 					<li>
 						<a
+							href="{/source/request/@context-path}/generator-types/">
+							Generator Types
+						</a>
+					</li>
+					<li>
+						<a
 							href="{/source/request/@context-path}/pcs/">
 							Profile Classes
 						</a>

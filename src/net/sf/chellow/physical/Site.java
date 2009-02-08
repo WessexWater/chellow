@@ -194,7 +194,7 @@ public class Site extends PersistentEntity {
 		return element;
 	}
 
-	public Supply insertSupply(Source source, String supplyName,
+	public Supply insertSupply(Source source, GeneratorType generatorType, String supplyName,
 			HhEndDate startDate, String meterSerialNumber,
 			String importMpanStr, Ssc importSsc, GspGroup importGspGroup,
 			Account importHhdcAccount, Account importAccountSupplier,
@@ -206,7 +206,7 @@ public class Site extends PersistentEntity {
 			Boolean exportHasImportKvarh, Boolean exportHasExportKwh,
 			Boolean exportHasExportKvarh, Integer exportAgreedSupplyCapacity)
 			throws HttpException {
-		Supply supply = new Supply(supplyName, source);
+		Supply supply = new Supply(supplyName, source, generatorType);
 		try {
 			Hiber.session().save(supply);
 			Hiber.flush();
@@ -561,6 +561,11 @@ public class Site extends PersistentEntity {
 					throw new UserException();
 				}
 				Source source = Source.getSource(sourceId);
+				GeneratorType generatorType = null;
+				if (source.getCode().equals(Source.GENERATOR_CODE)) {
+					Long generatorTypeId = inv.getLong("generator-type-id");
+					generatorType = GeneratorType.getGeneratorType(generatorTypeId);
+				}
 				Ssc importSsc = null;
 				GspGroup importGspGroup = null;
 				HhdcContract importHhdcContract = null;
@@ -617,7 +622,7 @@ public class Site extends PersistentEntity {
 										+ e.getMessage());
 					}
 				}
-				Supply supply = insertSupply(source, name, new HhEndDate(
+				Supply supply = insertSupply(source, generatorType, name, new HhEndDate(
 						startDate), meterSerialNumber, importMpanStr,
 						importSsc, importGspGroup, importHhdcAccount,
 						importSupplierAccount,

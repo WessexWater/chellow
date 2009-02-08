@@ -1,6 +1,6 @@
 /*
  
- Copyright 2005, 2009 Meniscus Systems Ltd
+ Copyright 2009 Meniscus Systems Ltd
  
  This file is part of Chellow.
 
@@ -22,8 +22,6 @@
 
 package net.sf.chellow.physical;
 
-import java.util.List;
-
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.Invocation;
@@ -39,57 +37,46 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
-public class Source extends PersistentEntity implements Urlable {
-	static public final String NETWORK_CODE = "net";
-	static public final String GENERATOR_CODE = "gen";
-	static public final String GENERATOR_NETWORK_CODE = "gen-net";
-	static public final String SUBMETER_CODE = "sub";
-
-	static public Source getSource(Long id) throws HttpException {
-		Source source = (Source) Hiber.session().get(Source.class, id);
-		if (source == null) {
-			throw new UserException("There is no source with that id.");
+public class GeneratorType extends PersistentEntity {
+	static public GeneratorType getGeneratorType(Long id) throws HttpException {
+		GeneratorType type = (GeneratorType) Hiber.session().get(GeneratorType.class, id);
+		if (type == null) {
+			throw new UserException("There is no generator type with that id.");
 		}
-		return source;
+		return type;
 	}
 
-	static public Source getSource(String sourceCode) throws HttpException {
-		Source source = findSource(sourceCode);
-		if (source == null) {
-			throw new NotFoundException("There's no source with the code '"
-					+ sourceCode + "'");
+	static public GeneratorType getGeneratorType(String code) throws HttpException {
+		GeneratorType type = findGeneratorType(code);
+		if (type == null) {
+			throw new NotFoundException("There's no generator type with the code '"
+					+ code + "'");
 		}
-		return source;
+		return type;
 	}
 
-	static public Source findSource(String code) throws HttpException {
-		return (Source) Hiber.session().createQuery(
-				"from Source as source where " + "source.code = :code")
+	static public GeneratorType findGeneratorType(String code) throws HttpException {
+		return (GeneratorType) Hiber.session().createQuery(
+				"from GeneratorType type where " + "type.code = :code")
 				.setString("code", code).uniqueResult();
 	}
 
-	@SuppressWarnings("unchecked")
-	static public List<Source> getSources() throws HttpException {
-		return (List<Source>) Hiber.session().createQuery(
-				"from Source as source").list();
-	}
-
-	static public Source insertSource(String code, String name)
+	static public GeneratorType insertGeneratorType(String code, String name)
 			throws HttpException {
-		Source source = new Source(code, name);
-		Hiber.session().save(source);
+		GeneratorType type = new GeneratorType(code, name);
+		Hiber.session().save(type);
 		Hiber.flush();
-		return source;
+		return type;
 	}
 
 	private String code;
 
 	private String name;
 
-	public Source() {
+	public GeneratorType() {
 	}
 
-	public Source(String code, String name) throws HttpException {
+	public GeneratorType(String code, String name) throws HttpException {
 		update(code, name);
 	}
 
@@ -110,18 +97,12 @@ public class Source extends PersistentEntity implements Urlable {
 	}
 
 	public void update(String code, String name) throws HttpException {
-		/*
-		if (code.length() > 6) {
-			throw new UserException(
-					"The source code is too long. It shouldn't be more than 5 characters long.");
-		}
-		*/
 		setCode(code);
 		setName(name);
 	}
 
 	public Node toXml(Document doc) throws HttpException {
-		Element element = super.toXml(doc, "source");
+		Element element = super.toXml(doc, "generator-type");
 
 		element.setAttribute("code", code);
 		element.setAttribute("name", name);
@@ -129,7 +110,7 @@ public class Source extends PersistentEntity implements Urlable {
 	}
 
 	public MonadUri getUri() throws HttpException {
-		return Chellow.SOURCES_INSTANCE.getUri().resolve(getUriId()).append("/");
+		return Chellow.GENERATOR_TYPES_INSTANCE.getUri().resolve(getUriId()).append("/");
 	}
 
 	public void httpGet(Invocation inv) throws HttpException {

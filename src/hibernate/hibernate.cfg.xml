@@ -4,7 +4,7 @@
     "http://hibernate.sourceforge.net/hibernate-configuration-3.0.dtd">
 <!-- 
 	
-	Copyright 2005-2008 Meniscus Systems Ltd
+	Copyright 2005-2009 Meniscus Systems Ltd
 	
 	This file is part of Chellow.
 	
@@ -94,5 +94,6 @@
 		<mapping resource="hibernate/Report.hbm.xml" />
 		<mapping resource="hibernate/GspGroup.hbm.xml" />
 		<mapping resource="hibernate/UserRole.hbm.xml" />
+		<mapping resource="hibernate/GeneratorType.hbm.xml" />
 	</session-factory>
 </hibernate-configuration>

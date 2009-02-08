@@ -26,6 +26,7 @@ import net.sf.chellow.monad.Invocation.HttpMethod;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
 import net.sf.chellow.physical.Configuration;
+import net.sf.chellow.physical.GeneratorTypes;
 import net.sf.chellow.physical.GspGroups;
 import net.sf.chellow.physical.MarketRole;
 import net.sf.chellow.physical.MarketRoles;
@@ -83,6 +84,7 @@ public class Chellow extends Monad implements Urlable {
 	static public final GspGroups GSP_GROUPS_INSTANCE = new GspGroups();
 	static public final UserRoles USER_ROLES_INSTANCE = new UserRoles();
 	static public final SiteSnags SITE_SNAGS_INSTANCE = new SiteSnags();
+	static public final GeneratorTypes GENERATOR_TYPES_INSTANCE = new GeneratorTypes();
 
 	static {
 		try {
