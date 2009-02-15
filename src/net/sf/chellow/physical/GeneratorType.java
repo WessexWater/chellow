@@ -35,7 +35,6 @@ import net.sf.chellow.ui.Chellow;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import org.w3c.dom.Node;
 
 public class GeneratorType extends PersistentEntity {
 	static public GeneratorType getGeneratorType(Long id) throws HttpException {
@@ -71,13 +70,13 @@ public class GeneratorType extends PersistentEntity {
 
 	private String code;
 
-	private String name;
+	private String description;
 
 	public GeneratorType() {
 	}
 
-	public GeneratorType(String code, String name) throws HttpException {
-		update(code, name);
+	public GeneratorType(String code, String description) throws HttpException {
+		update(code, description);
 	}
 
 	public String getCode() {
@@ -88,24 +87,24 @@ public class GeneratorType extends PersistentEntity {
 		this.code = code;
 	}
 
-	public String getName() {
-		return name;
+	public String getDescription() {
+		return description;
 	}
 
-	public void setName(String name) {
-		this.name = name;
+	public void setDescription(String description) {
+		this.description = description;
 	}
 
-	public void update(String code, String name) throws HttpException {
+	public void update(String code, String description) throws HttpException {
 		setCode(code);
-		setName(name);
+		setDescription(description);
 	}
 
-	public Node toXml(Document doc) throws HttpException {
+	public Element toXml(Document doc) throws HttpException {
 		Element element = super.toXml(doc, "generator-type");
 
 		element.setAttribute("code", code);
-		element.setAttribute("name", name);
+		element.setAttribute("description", description);
 		return element;
 	}
 

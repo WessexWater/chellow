@@ -1,5 +1,7 @@
 package net.sf.chellow.physical;
 
+import java.util.List;
+
 import net.sf.chellow.monad.DeployerException;
 import net.sf.chellow.monad.DesignerException;
 import net.sf.chellow.monad.Hiber;
@@ -52,12 +54,13 @@ public class Sources implements Urlable {
 		return Chellow.getUrlableRoot().getUri().resolve(getUriId());
 	}
 
-	public void httpGet(Invocation inv) throws DesignerException,
-			InternalException, HttpException, DeployerException {
+	@SuppressWarnings("unchecked")
+	public void httpGet(Invocation inv) throws HttpException {
 		Document doc = MonadUtils.newSourceDocument();
 		Element sourceElement = (Element) doc.getFirstChild();
 
-		for (Source source : Source.getSources()) {
+		for (Source source : (List<Source>) Hiber.session().createQuery(
+		"from Source source order by source.code").list()) {
 			sourceElement.appendChild(source.toXml(doc));
 		}
 		inv.sendOk(doc);

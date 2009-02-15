@@ -32,7 +32,7 @@
 			</generator>
 		</id>
 		<property type="string" name="code" column="code" unique="true" />
-		<property name="name" type="string" column="name" unique="true" />
+		<property name="description" type="string" column="description" unique="true" />
 	</class>
 </hibernate-mapping>
 

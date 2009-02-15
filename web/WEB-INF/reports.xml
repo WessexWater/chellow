@@ -19,7 +19,7 @@
     <html>
       <head>
         <link rel="stylesheet" type="text/css"
-      href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/9/stream/output/" />
+      href="{/source/request/@context-path}/reports/10/output/" />
     <title>
       Home
     </title>
@@ -68,8 +68,8 @@
           <li><a href="{/source/request/@context-path}/reports/17/output/">Electricity Supply Details
             </a>
           </li>
-          <li><a href="{/source/request/@context-path}/reports/73/output/">HH data, all sites, 1 year
-            </a>
+          <li><a href="{/source/request/@context-path}/reports/73/output/">HH data, all sites, 1 year</a> (WARNING: Long load time)
+            
           </li>
           <li><a href="{/source/request/@context-path}/reports/29/output/">Sites Period
             </a>
@@ -156,8 +156,7 @@
     <value>insert</value>
     <value>report</value>
     <value>0 Sites</value>
-    <value><![CDATA[
-from net.sf.chellow.monad import Hiber
+    <value><![CDATA[from net.sf.chellow.monad import Hiber
 
 if inv.hasParameter('search-pattern'):
     search_pattern = inv.getString('search-pattern')
@@ -166,77 +165,78 @@ if inv.hasParameter('search-pattern'):
 ]]></value>
     <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
 <xsl:stylesheet version="1.0"
-	xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
-	<xsl:output method="html" encoding="US-ASCII"
-		doctype-public="-//W3C//DTD HTML 4.01//EN"
-		doctype-system="http://www.w3.org/TR/html4/strict.dtd" indent="yes" />
-	<xsl:template match="/">
-		<html>
-			<head>
-				<link rel="stylesheet" type="text/css"
-					href="{/source/request/@context-path}/reports/10/output/" />
-				<title>
-					Home &gt; Sites
-				</title>
-			</head>
-			<body>
-				<p>
-					<a
-						href="{/source/request/@context-path}/reports/1/output/">
-						<xsl:value-of select="'Home'" />
-					</a>
-					&gt;
-					<xsl:value-of select="'Sites ['" />
-					<a
-						href="{/source/request/@context-path}/sites/">
-						<xsl:value-of select="'edit'" />
-					</a>
-					<xsl:value-of select="']'" />
-				</p>
-				<br />
-				<xsl:if test="//message">
-					<ul>
-						<xsl:for-each select="//message">
-							<li>
-								<xsl:value-of select="@description" />
-							</li>
-						</xsl:for-each>
-					</ul>
-				</xsl:if>
-				<form action=".">
-					<fieldset>
-						<input name="search-pattern"
-							value="{/source/request/parameter[@name='search-pattern']/value}" />
-						<xsl:value-of select="' '" />
-						<input type="submit" value="Search" />
-					</fieldset>
-				</form>
-				<xsl:choose>
-					<xsl:when test="/source/site">
-						<p>
-							Only the first 50 sites of the search
-							results are shown.
-						</p>
-						<ul>
-							<xsl:for-each select="/source/site">
-								<li>
-									<a
-										href="{/source/request/@context-path}/reports/3/output/?site-id={@id}">
-										<xsl:value-of
-											select="concat(@code, ' ', @name)" />
-									</a>
-								</li>
-							</xsl:for-each>
-						</ul>
-					</xsl:when>
-					<xsl:when
-						test="/source/request/parameter[@name='search-pattern']">
-						<p>No sites matched your search</p>
-					</xsl:when>
-				</xsl:choose>
-			</body>
-		</html>
-	</xsl:template>
+    xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+    <xsl:output method="html" encoding="US-ASCII"
+        doctype-public="-//W3C//DTD HTML 4.01//EN"
+        doctype-system="http://www.w3.org/TR/html4/strict.dtd" indent="yes" />
+    <xsl:template match="/">
+        <html>
+            <head>
+                <link rel="stylesheet" type="text/css"
+                    href="{/source/request/@context-path}/reports/10/output/" />
+                <title>
+                    Home &gt; Sites
+                </title>
+            </head>
+            <body>
+                <p>
+                    <a
+                        href="{/source/request/@context-path}/reports/1/output/">
+                        <xsl:value-of select="'Home'" />
+                    </a>
+                    &gt;
+                    <xsl:value-of select="'Sites ['" />
+                    <a
+                        href="{/source/request/@context-path}/sites/">
+                        <xsl:value-of select="'edit'" />
+                    </a>
+                    <xsl:value-of select="']'" />
+                </p>
+                <br />
+                <xsl:if test="//message">
+                    <ul>
+                        <xsl:for-each select="//message">
+                            <li>
+                                <xsl:value-of select="@description" />
+                            </li>
+                        </xsl:for-each>
+                    </ul>
+                </xsl:if>
+                <form name="siteselection" action=".">
+                    <fieldset>
+                        <input name="search-pattern"
+                            value="{/source/request/parameter[@name='search-pattern']/value}" 
+tabindex="1" />
+                        <xsl:value-of select="' '" />
+                        <input type="submit" value="Search" />
+                    </fieldset>
+                </form>
+                <xsl:choose>
+                    <xsl:when test="/source/site">
+                        <p>
+                            Only the first 50 sites of the search
+                            results are shown.
+                        </p>
+                        <ul>
+                            <xsl:for-each select="/source/site">
+                                <li>
+                                    <a
+                                        href="{/source/request/@context-path}/reports/3/output/?site-id={@id}">
+                                        <xsl:value-of
+                                            select="concat(@code, ' ', @name)" />
+                                    </a>
+                                </li>
+                            </xsl:for-each>
+                        </ul>
+                    </xsl:when>
+                    <xsl:when
+                        test="/source/request/parameter[@name='search-pattern']">
+                        <p>No sites matched your search</p>
+                    </xsl:when>
+                </xsl:choose>
+            </body>
+        </html>
+    </xsl:template>
 </xsl:stylesheet>]]></value>
   </line>
   <line>
@@ -324,6 +324,7 @@ source.appendChild(yesterday.toXml(doc))]]></value>
                         </td>
                     </tr>
                 </table>
+                <br/>
                 <table>
                     <caption>Supplies that power this site</caption>
                     <thead>
@@ -647,7 +648,7 @@ source.setAttribute("months", str(months))]]></value>
         <html>
             <head>
                 <link rel="stylesheet" type="text/css"
-                    href="{/source/request/@context-path}/style/" />
+                    href="{/source/request/@context-path}/reports/10/output" />
                 <title>
                     Home &gt; Sites &gt;
                     <xsl:value-of select="/source/site/@name" />
@@ -742,7 +743,7 @@ source.setAttribute("finish-date-year", str(year))
 if inv.hasParameter("finish-date-month"):
     month = inv.getInteger("finish-date-month")
 else:
-    month = cal.get(Calendar.MONTH)
+    month = cal.get(Calendar.MONTH) + 1
 if inv.hasParameter("months"):
     months = inv.getInteger("months")
 else:
@@ -766,7 +767,7 @@ source.appendChild(inv.requestXml(doc))]]></value>
     <html>
       <head>
         <link rel="stylesheet" type="text/css"
-            href="{/source/request/@context-path}/style/" />
+            href="{/source/request/@context-path}/reports/10/output/" />
         <title>Home &gt; Sites &gt;
             <xsl:value-of select="/source/site/@name" />
         </title>
@@ -942,7 +943,7 @@ usedKwhMonth = 0
 usedKwhYear = 0
 usedKwh = 0
 
-siteSnagQuery = Hiber.session().createQuery("select count(*) from SiteSnag snag where snag.site = :site and snag.startDate.date <= :finishDate and snag.finishDate.date >= :startDate and (snag.dateResolved is null or (snag.dateResolved is not null and snag.isIgnored is true))").setEntity("site", site)
+siteSnagQuery = Hiber.session().createQuery("select count(*) from SiteSnag snag where snag.site = :site and snag.startDate.date <= :finishDate and snag.finishDate.date >= :startDate)").setEntity("site", site)
 
 if rs.next():
     #raise net.sf.chellow.monad.ui.UserException.newInvalidParameter("got to rs next")
@@ -964,13 +965,13 @@ if rs.next():
         parasiticKw = 0
         generatedKw = 0
         while hhChannelEndDate != None and hhChannelEndDate.getTime() == hhDate:
-            if not isImport and sourceCode == "net":
+            if not isImport and sourceCode in ('net', 'gen-net'):
                 exportedKw = exportedKw + hhChannelKw
-            if isImport and sourceCode == "net":
+            if isImport and sourceCode in ('net', 'gen-net'):
                 importedKw = importedKw + hhChannelKw
-            if isImport and (sourceCode == "lm" or sourceCode == "chp" or sourceCode == "turb"):
+            if (isImport and sourceCode == 'gen') or (not isImport and sourceCode == 'gen-net'):
                 generatedKw = generatedKw + hhChannelKw
-            if not isImport and (sourceCode == "lm" or sourceCode == "chp" or sourceCode == "turb"):
+            if (not isImport and sourceCode == 'gen') or (isImport and sourceCode == 'gen-net'):
                 parasiticKw = parasiticKw + hhChannelKw
             if rs.next():
                 sourceCode = rs.getString("code")
@@ -1492,7 +1493,7 @@ if rs.next():
                                         test="@has-site-snags = 'true'">
                                         See
                                         <a
-                                            href="{/source/request/@context-path}/orgs/1/reports/5/screen/output/?site-id={/source/site/@id}&amp;months=1&amp;finish-date-year={hh-end-date[@label='start']/@year}&amp;finish-date-month={hh-end-date[@label='start']/@month}">
+                                            href="{/source/request/@context-path}/reports/6/output/?site-id={/source/site/@id}&amp;months=1&amp;finish-date-year={hh-end-date[@label='start']/@year}&amp;finish-date-month={hh-end-date[@label='start']/@month}">
                                             generation graph
                                         </a>
                                         for errors.
@@ -1511,55 +1512,74 @@ if rs.next():
     <value>insert</value>
     <value>report</value>
     <value>0 Supply MPAN months</value>
-    <value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree
-from java.util import Calendar
-import java.util
+    <value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree, UserException
+from net.sf.chellow.monad.types import MonadDate
+from java.util import Calendar, Locale, TimeZone, GregorianCalendar
 from net.sf.chellow.physical import HhEndDate, Supply
 
 supply_id = inv.getLong("supply-id")
 supply = Supply.getSupply(supply_id)
 source.appendChild(supply.toXml(doc))
 is_import = inv.getBoolean("is-import");
-#kwhChannel = supply.getChannel(isImport, True) 
-#kvarhChannel = supply.getChannel(isImport, False)
-cal = java.util.GregorianCalendar(java.util.TimeZone.getTimeZone("GMT"), java.util.Locale.UK)
+cal = GregorianCalendar(TimeZone.getTimeZone("GMT"), Locale.UK)
+source.appendChild(MonadDate().toXml(doc))
+if inv.hasParameter('year'):
+    year = inv.getInteger('year')
+    years = inv.getInteger('years')
+else:
+    year = cal.get(Calendar.YEAR)
+    years = 1
+
+#cal.add(Calendar.MONTH, -1)
+#source.appendChild(MonadDate(cal.getTime()).toXml(doc))
+source.appendChild(MonadDate.getMonthsXml(doc))
+
+cal.set(Calendar.YEAR, year - years + 1)
+cal.set(Calendar.MONTH, Calendar.JANUARY)
 cal.set(Calendar.DAY_OF_MONTH, 1)
 cal.set(Calendar.HOUR_OF_DAY, 0)
-cal.set(Calendar.MINUTE, 0)
+cal.set(Calendar.MINUTE, 30)
 cal.set(Calendar.SECOND, 0)
 cal.set(Calendar.MILLISECOND, 0)
-monthFinish = HhEndDate(cal.getTime())
-nextMonthFinish = None
-for i in range(60):
-    cal.add(Calendar.MONTH, -1)
-    nextMonthFinish = HhEndDate(cal.getTime())
-    monthStart = nextMonthFinish.getNext()
+month_start = HhEndDate(cal.getTime())
+
+kwh_at_md_query = Hiber.session().createQuery("from HhDatum datum where datum.channel.supplyGeneration.supply = :supply and datum.channel.isKwh = true and datum.channel.isImport = :isImport and datum.endDate.date >= :startDate and datum.endDate.date <= :finishDate order by datum.value desc, datum.endDate.date").setEntity("supply", supply).setBoolean('isImport', is_import)
+
+kvarh_at_md_query = Hiber.session().createQuery("from HhDatum datum where datum.channel.supplyGeneration.supply = :supply and datum.channel.isKwh = false and datum.channel.isImport = :isImport and datum.endDate.date = :mdDate").setEntity("supply", supply).setBoolean('isImport', is_import)
+
+total_kwh_query = Hiber.session().createQuery("select sum(datum.value) from HhDatum datum where datum.channel.supplyGeneration.supply = :supply and datum.channel.isKwh = true and datum.channel.isImport = :isImport and datum.endDate.date >= :startDate and datum.endDate.date <= :finishDate").setEntity("supply", supply).setBoolean('isImport', is_import)
+
+for i in range(12 * years):
+    cal.add(Calendar.MONTH, 1)
+    next_month_start = HhEndDate(cal.getTime())
+    month_finish = next_month_start.getPrevious()
     
-    monthElement = doc.createElement("month")
-    source.appendChild(monthElement)
-    generation = supply.getGeneration(monthFinish)
+    month_element = doc.createElement("month")
+    source.appendChild(month_element)
+    generation = supply.getGeneration(month_finish)
     if generation != None:
         mpan = generation.getMpan(is_import)
         if mpan != None:
-            monthElement.setAttribute("mpan-core", mpan.getCore().toString())
-            monthElement.setAttribute("agreed-supply-capacity", str(mpan.getAgreedSupplyCapacity()))
-    kwhDatumAtMd = Hiber.session().createQuery("from HhDatum datum where datum.channel.supplyGeneration.supply = :supply and datum.channel.isKwh = true and datum.endDate.date >= :startDate and datum.endDate.date <= :finishDate and datum.value = (select max(datum.value) from HhDatum datum where datum.channel.supplyGeneration.supply = :supply and datum.channel.isKwh = true and datum.endDate.date >= :startDate and datum.endDate.date <= :finishDate) order by datum.endDate.date").setEntity("supply", supply).setTimestamp("startDate", monthStart.getDate()).setTimestamp("finishDate", monthFinish.getDate()).setMaxResults(1).uniqueResult()
-    if kwhDatumAtMd != None:
-        mdKwh = kwhDatumAtMd.getValue()
-        monthElement.setAttribute("md-kw", str(round(mdKwh * 2)))
-        kvarhDatumAtMd = Hiber.session().createQuery("from HhDatum datum where datum.channel.supplyGeneration.supply = :supply and datum.channel.isKwh = false and datum.endDate.date = :mdDate").setEntity("supply", supply).setTimestamp("mdDate", kwhDatumAtMd.getEndDate().getDate()).uniqueResult()
-        if kvarhDatumAtMd != None:
-            kvarhAtMd = kvarhDatumAtMd.getValue()
-            kvahAtMd = (mdKwh ** 2 + kvarhAtMd ** 2) ** 0.5
-            if kvahAtMd > 0:
-                pf = mdKwh / kvahAtMd
-                monthElement.setAttribute("pf", str(round(pf, 4)))
-            monthElement.setAttribute("kva-at-md", str(round(kvahAtMd * 2)))
-    totalKwh = Hiber.session().createQuery("select sum(datum.value) from HhDatum datum where datum.channel.supplyGeneration.supply = :supply and datum.channel.isKwh = true and datum.endDate.date >= :startDate and datum.endDate.date <= :finishDate").setEntity("supply", supply).setTimestamp("startDate", monthStart.getDate()).setTimestamp("finishDate", monthFinish.getDate()).uniqueResult()
-    if totalKwh != None:
-        monthElement.setAttribute("total-kwh", str(round(totalKwh)))
-    monthElement.setAttribute("date", monthStart.toString())
-    monthFinish = nextMonthFinish]]></value>
+            month_element.setAttribute("mpan-core", mpan.getCore().toString())
+            month_element.setAttribute("agreed-supply-capacity", str(mpan.getAgreedSupplyCapacity()))
+    kwh_at_md_datum = kwh_at_md_query.setTimestamp("startDate", month_start.getDate()).setTimestamp("finishDate", month_finish.getDate()).setMaxResults(1).uniqueResult()
+    if kwh_at_md_datum is not None:
+        kwh_at_md = kwh_at_md_datum.getValue()
+        month_element.setAttribute("md-kw", str(round(kwh_at_md * 2)))
+        month_element.setAttribute("md-date", kwh_at_md_datum.getEndDate().toString())
+        kvarh_at_md_datum = kvarh_at_md_query.setTimestamp("mdDate", kwh_at_md_datum.getEndDate().getDate()).uniqueResult()
+        if kvarh_at_md_datum != None:
+            kvarh_at_md = kvarh_at_md_datum.getValue()
+            kvah_at_md = (kwh_at_md ** 2 + kvarh_at_md ** 2) ** 0.5
+            if kvah_at_md > 0:
+                pf = kwh_at_md / kvah_at_md
+                month_element.setAttribute("pf", str(round(pf, 4)))
+            month_element.setAttribute("kva-at-md", str(round(kvah_at_md * 2)))
+    total_kwh = total_kwh_query.setTimestamp("startDate", month_start.getDate()).setTimestamp("finishDate", month_finish.getDate()).uniqueResult()
+    if total_kwh != None:
+        month_element.setAttribute("total-kwh", str(round(total_kwh)))
+    month_element.setAttribute("date", month_start.toString())
+    month_start = next_month_start]]></value>
     <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
 <xsl:stylesheet version="1.0"
     xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
@@ -1571,7 +1591,7 @@ for i in range(60):
         <html>
             <head>
                 <link rel="stylesheet" type="text/css"
-                    href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/9/stream/output/" />
+                    href="{/source/request/@context-path}/reports/10/output/" />
                 <title>
                     Home &gt; Supplies &gt;
                     <xsl:value-of select="/source/supply/@name" />
@@ -1585,7 +1605,7 @@ for i in range(60):
                     </a>
                     &gt;
                     <a
-                        href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/49/screen/output/">
+                        href="{/source/request/@context-path}/reports/50/output/">
                         <xsl:value-of select="'Supplies'" />
                     </a>
                     &gt;
@@ -1614,17 +1634,56 @@ for i in range(60):
                         </xsl:for-each>
                     </ul>
                 </xsl:if>
+                <form action=".">
+                    <fieldset>
+                        <input type="hidden" name="is-import" value="{/source/request/parameter[@name='is-import']/value}"/>
+                        <input type="hidden" name="supply-id" value="{/source/supply/@id}"/>
+                        <legend>View Supply Months</legend>
+<br/>
+
+                        <xsl:value-of select="'For '"/>
+                        <input name="years" maxlength="2" size="2">
+                          <xsl:attribute name="value">
+                            <xsl:choose>
+                              <xsl:when test="/source/request/parameter[@name='years']">
+                                <xsl:value-of select="/source/request/parameter[@name='years']/value"/>
+                              </xsl:when>
+                              <xsl:otherwise>
+                                <xsl:value-of select="'1'"/>
+                              </xsl:otherwise>
+                            </xsl:choose>
+                          </xsl:attribute>
+                        </input><xsl:value-of select="' years, ending 31st December '"/>
+<input name="year" maxlength="4" size="4">
+<xsl:attribute name="value">
+    <xsl:choose>
+        <xsl:when test="/source/request/parameter[@name='year']">
+            <xsl:value-of select="/source/request/parameter[@name='year']"/>
+        </xsl:when>
+        <xsl:otherwise>
+            <xsl:value-of select="/source/date/@year"/>
+        </xsl:otherwise>
+    </xsl:choose>
+</xsl:attribute>
+</input><xsl:value-of select="' '"/>
+                       <input type="submit" value="View"/><br/><br/>
+                    </fieldset>
+                </form>
                 <table>
                     <caption>Months</caption>
                     <thead>
                         <tr>
-                            <th>Month Starting</th>
-                            <th>MPAN Core</th>
-                            <th>MD / kW</th>
+                            <th rowspan="2">Month Starting</th>
+                            <th rowspan="2">MPAN Core</th>
+                            <th colspan="4">At MD kW</th>
+                            <th rowspan="2">Agreed Supply Capacity (kVA)</th>
+                            <th rowspan="2">kWh</th>
+                        </tr>
+                        <tr>
+                            <th>Date</th>
+                            <th>kW</th>
                             <th>Power Factor</th>
-                            <th>MD / kVA</th>
-                            <th>Agreed Supply Capacity (kVA)</th>
-                            <th>kWh</th>
+                            <th>kVA</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -1638,6 +1697,17 @@ for i in range(60):
                                         <xsl:when test="@mpan-core">
                                             <xsl:value-of
                                                 select="@mpan-core" />
+                                        </xsl:when>
+                                        <xsl:otherwise>
+                                            NA
+                                        </xsl:otherwise>
+                                    </xsl:choose>
+                                </td>
+                                <td>
+                                    <xsl:choose>
+                                        <xsl:when test="@md-date">
+                                            <xsl:value-of
+                                                select="@md-date" />
                                         </xsl:when>
                                         <xsl:otherwise>
                                             NA
@@ -1706,9 +1776,7 @@ for i in range(60):
             </body>
         </html>
     </xsl:template>
-</xsl:stylesheet>
-
-]]></value>
+</xsl:stylesheet>]]></value>
   </line>
   <line>
     <value>insert</value>
@@ -2020,7 +2088,7 @@ finishDateYear = inv.getInteger("finish-date-year")
 finishDateMonth = inv.getInteger("finish-date-month")
 months = inv.getInteger("months")
 if not inv.isValid():
-    raise UserException.newInvalidParameter()
+    raise UserException()
 cal = GregorianCalendar(TimeZone.getTimeZone("GMT"), Locale.UK)
 cal.clear()
 cal.set(Calendar.YEAR, finishDateYear)
@@ -2033,12 +2101,12 @@ cal.setTime(finishDate)
 cal.add(Calendar.DAY_OF_MONTH, -1)
 
 site = Site.getSite(site_id)
-supplies = Hiber.session().createQuery("select distinct supply from Supply supply join supply.generations supplyGeneration join supplyGeneration.siteSupplyGenerations siteSupplyGeneration where siteSupplyGeneration.site = :site and supply.source.code != 'sub'").setEntity('site', site).list()
+supplies = Hiber.session().createQuery("select distinct supply from Supply supply join supply.generations supplyGeneration join supplyGeneration.siteSupplyGenerations siteSupplyGeneration where siteSupplyGeneration.site = :site and supply.source.code not in ('sub', 'gen-net')").setEntity('site', site).list()
 suppliesSQL = ''
 for supply in supplies:
     suppliesSQL = suppliesSQL + str(supply.getId()) + ','
 con = Hiber.session().connection()
-stmt = con.prepareStatement("select hh_datum.value, hh_datum.end_date, hh_datum.status, channel.is_import from hh_datum, channel, supply_generation, supply where hh_datum.channel_id = channel.id and channel.supply_generation_id = supply_generation.id and supply_generation.supply_id = supply.id and channel.is_kwh is true and hh_datum.end_date >= ? and hh_datum.end_date <= ? and supply.id in (" + suppliesSQL[:-1] + ") order by hh_datum.end_date", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.CLOSE_CURSORS_AT_COMMIT)
+stmt = con.prepareStatement("select hh_datum.value, hh_datum.end_date, hh_datum.status, channel.is_import, source.code from hh_datum, channel, supply_generation, supply, source where hh_datum.channel_id = channel.id and channel.supply_generation_id = supply_generation.id and supply_generation.supply_id = supply.id and supply.source_id = source.id and channel.is_kwh is true and hh_datum.end_date >= ? and hh_datum.end_date <= ? and supply.id in (" + suppliesSQL[:-1] + ") order by hh_datum.end_date", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.CLOSE_CURSORS_AT_COMMIT)
 stmt.setTimestamp(1, Timestamp(startDate.getTime()))
 stmt.setTimestamp(2, Timestamp(finishDate.getTime()))
 stmt.setFetchSize(100)
@@ -2053,6 +2121,7 @@ if rs.next():
     hhChannelEndDate = rs.getTimestamp("end_date")
     isImport = rs.getBoolean("is_import")
     status = rs.getString("status")
+    source_code = rs.getString('code')
     finishDateMillis = finishDate.getTime()
     cal = MonadDate.getCalendar()
     while hhDate <= finishDateMillis:
@@ -2280,13 +2349,13 @@ if rs.next():
         generatedValue = 0
         supplyList = []
         while hhChannelEndDate != None and hhChannelEndDate.getTime() == hhDate:
-            if not isImport and sourceCode == "net":
+            if not isImport and sourceCode in ('net', 'gen-net'):
                 exportedValue = exportedValue + hhChannelValue
-            if isImport and sourceCode == "net":
+            if isImport and sourceCode in ('net', 'gen-net'):
                 importedValue = importedValue + hhChannelValue
-            if isImport and (sourceCode == "lm" or sourceCode == "chp" or sourceCode == "turb"):
+            if (isImport and sourceCode == 'gen') or (not isImport and sourceCode == 'gen-net'):
                 generatedValue = generatedValue + hhChannelValue
-            if not isImport and (sourceCode == "lm" or sourceCode == "chp" or sourceCode == "turb"):
+            if (not isImport and sourceCode == 'gen') or (isImport and sourceCode == 'gen-net'):
                 parasiticValue = parasiticValue + hhChannelValue
             supplyList.append([supplyName, sourceCode, isImport, hhChannelValue, supply_id])
             if rs.next():
@@ -2419,38 +2488,22 @@ if len(resultData) > 0:
             value = j[3]
             id = j[4]
             height = int(value * scaleFactorOverall)
-            if  source == "net" and not isImport:
+            if source in ('net', 'gen-net') and not isImport:
                 set_colour(graphics, exported_supplies, id, name, source)
                 exportedTotal = exportedTotal + height
                 graphics.fillRect(graphLeft + i, xAxisExported - exportedTotal, 1, height)
-            if  source == "net" and isImport:
+            if source in ('net', 'gen-net') and isImport:
                 set_colour(graphics, imported_supplies, id, name, source)
                 importedTotal = importedTotal + height
                 graphics.fillRect(graphLeft + i, xAxisImported - importedTotal, 1, height)
-            if isImport and (source == "lm"):
+            if (isImport and source == 'gen') or (not isImport and source == 'gen-net'):
                 set_colour(graphics, generated_supplies, id, name, source)
                 generatedTotal = generatedTotal + height
                 graphics.fillRect(graphLeft + i, xAxisGenerated - generatedTotal, 1, height)
-            if isImport and (source == "chp"):
-                set_colour(graphics, generated_supplies, id, name, source)
-                generatedTotal = generatedTotal + height
-                graphics.fillRect(graphLeft + i, xAxisGenerated -  generatedTotal, 1, height)
-            if isImport and (source == "turb"):
-                set_colour(graphics, generated_supplies, id, name, source)
-                generatedTotal = generatedTotal + height
-                graphics.fillRect(graphLeft + i, xAxisGenerated - generatedTotal, 1, height)
-            if not isImport and (source == "lm"):
+            if (not isImport and source == 'gen') or (isImport and source == 'gen-net'):
                 set_colour(graphics, generated_supplies, id, name, source)
                 parasiticTotal = parasiticTotal + height
                 graphics.fillRect(graphLeft + i, xAxisGenerated, 1, height)
-            if not isImport and (source == "chp"):
-                set_colour(graphics, generated_supplies, id, name, source)
-                parasiticTotal = parasiticTotal + height
-                graphics.fillRect(graphLeft + i, xAxisGenerated, 1, height)
-            if not isImport and (source == "turb"):
-                set_colour(graphics, generated_supplies, id, name, source)
-                parasiticTotal = parasiticTotal + height
-                graphics.fillRect(graphLeft + i, xAxisGenerated, 1, height) 
         if hour == 0 and minute == 30:
             day = cal.get(Calendar.DAY_OF_MONTH)
             dayOfWeek = cal.get(Calendar.DAY_OF_WEEK)
@@ -2607,7 +2660,7 @@ stmt.setLong(3, site.getId())
 stmt.setFetchSize(100)
 rs = stmt.executeQuery()
 hhDate = startDate.getTime()
-siteSnagQuery = Hiber.session().createQuery("select count(*) from SiteSnag snag where snag.site = :site and snag.startDate.date <= :finishDate and snag.finishDate.date >= :startDate and (snag.dateResolved is null or (snag.dateResolved is not null and snag.isIgnored is true))").setEntity("site", site)
+siteSnagQuery = Hiber.session().createQuery("select count(*) from SiteSnag snag where snag.site = :site and snag.startDate.date <= :finishDate and snag.finishDate.date >= :startDate)").setEntity("site", site)
 if rs.next():
     hhChannelKwh = rs.getFloat("value")
     hhChannelEndDate = rs.getTimestamp("end_date")
@@ -2627,13 +2680,13 @@ if rs.next():
         generatedKwh = 0
         displacedKwh = 0
         while hhChannelEndDate != None and hhChannelEndDate.getTime() == hhDate:
-            if not isImport and sourceCode == "net":
+            if not isImport and sourceCode in ('net', 'gen-net'):
                 exportedKwh = exportedKwh + hhChannelKwh
-            if isImport and sourceCode == "net":
+            if isImport and sourceCode in ('net', 'gen-net'):
                 importedKwh = importedKwh + hhChannelKwh
-            if isImport and (sourceCode == "lm" or sourceCode == "chp" or sourceCode == "turb"):
+            if (isImport and sourceCode == 'gen') or (not isImport and sourceCode == 'gen-net'):
                 generatedKwh = generatedKwh + hhChannelKwh
-            if not isImport and (sourceCode == "lm" or sourceCode == "chp" or sourceCode == "turb"):
+            if (not isImport and sourceCode == 'gen') or (isImport and sourceCode == 'gen-net'):
                 parasiticKwh = parasiticKwh + hhChannelKwh
             if rs.next():
                 sourceCode = rs.getString("code")
@@ -2930,12 +2983,9 @@ source.appendChild(MonadDate().toXml(doc))]]></value>
                 <form
                     action="{/source/request/@context-path}/reports/15/output/">
                     <fieldset>
-                        <legend>Download HH data</legend>
+                        <legend>Download HH data (kWh)</legend>
                         <input type="hidden" name="site-id"
                             value="{/source/site/@id}" />
-                        <br />
-                        <label>
-                            <xsl:value-of select="'Type '" />
                             <select name="type">
                                 <option value="used">Used</option>
                                 <option value="imported">
@@ -2954,16 +3004,21 @@ source.appendChild(MonadDate().toXml(doc))]]></value>
                                     Parasitic
                                 </option>
                             </select>
-                        </label>
-                        <br />
-                        <br />
-                        <label>
-                            <xsl:value-of select="'Year '" />
-                            <input size="4" length="4" name="year"
-                                value="{/source/date/@year}" />
-                        </label>
-                        <br />
-                        <br />
+                        <xsl:value-of select="' for '" /><input size="2" length="2" name="months" value="1" /><xsl:value-of select="' month(s) finishing at the end of '" /><input size="4" length="4" name="year" value="{/source/date/@year}" /><xsl:value-of select="' - '" />
+                                               <select name="month">
+                            <xsl:for-each
+                                select="/source/months/month">
+                                <option>
+                                    <xsl:if
+                                        test="/source/date/@month = @number">
+                                        <xsl:attribute
+                                    name="selected">selected</xsl:attribute>
+                                    </xsl:if>
+                                    <xsl:value-of select="@number" />
+                                </option>
+                            </xsl:for-each>
+                        </select>
+                        <xsl:value-of select="' '" />
                         <input type="submit" value="Download" />
                     </fieldset>
                 </form>
@@ -2986,6 +3041,8 @@ from java.sql import ResultSet, Timestamp
 TYPES = ['used', 'generated', 'exported', 'displaced', 'parasitic', 'imported']
 site_id = inv.getLong("site-id")
 year = inv.getInteger("year")
+month = inv.getInteger("month")
+months = inv.getInteger("months")
 type = inv.getString("type")
 if not inv.isValid():
     raise UserException()
@@ -2995,15 +3052,16 @@ site = Site.getSite(site_id)
 cal = GregorianCalendar(TimeZone.getTimeZone("GMT"), Locale.UK)
 cal.set(Calendar.MILLISECOND, 0)
 cal.set(Calendar.SECOND, 0)
-cal.set(Calendar.MINUTE, 30)
+cal.set(Calendar.MINUTE, 0)
 cal.set(Calendar.HOUR_OF_DAY, 0)
 cal.set(Calendar.DAY_OF_MONTH, 1)
-cal.set(Calendar.MONTH, Calendar.JANUARY)
+cal.set(Calendar.MONTH, month - 1)
 cal.set(Calendar.YEAR, year)
-startDate = cal.getTime()
-cal.add(Calendar.MINUTE, -30)
-cal.add(Calendar.YEAR, 1)
+cal.add(Calendar.MONTH, 1)
 finishDate = cal.getTime()
+cal.add(Calendar.MINUTE, 30)
+cal.add(Calendar.MONTH, -1 * months)
+startDate = cal.getTime()
 inv.getResponse().setContentType("text/csv")
 inv.getResponse().setHeader('Content-Disposition', 'filename=output.csv;')
 pw = inv.getResponse().getWriter()
@@ -3022,7 +3080,7 @@ stmt.setTimestamp(2, Timestamp(finishDate.getTime()))
 stmt.setFetchSize(100)
 rs = stmt.executeQuery()
 hhDate = startDate.getTime()
-siteSnagQuery = Hiber.session().createQuery("select count(*) from SiteSnag snag where snag.site = :site and snag.startDate.date <= :finishDate and snag.finishDate.date >= :startDate and (snag.dateResolved is null or (snag.dateResolved is not null and snag.isIgnored is true))").setEntity("site", site)
+siteSnagQuery = Hiber.session().createQuery("select count(*) from SiteSnag snag where snag.site = :site and snag.startDate.date <= :finishDate and snag.finishDate.date >= :startDate and snag.isIgnored is true").setEntity("site", site)
 if rs.next():
     hhChannelKwh = rs.getFloat("value")
     hhChannelEndDate = rs.getTimestamp("end_date")
@@ -3039,13 +3097,13 @@ if rs.next():
         generatedKwh = 0
         displacedKwh = 0
         while hhChannelEndDate != None and hhChannelEndDate.getTime() == hhDate:
-            if not isImport and sourceCode == "net":
+            if not isImport and sourceCode in ('net', 'gen-net'):
                 exportedKwh = exportedKwh + hhChannelKwh
-            if isImport and sourceCode == "net":
+            if isImport and sourceCode in ('net', 'gen-net'):
                 importedKwh = importedKwh + hhChannelKwh
-            if isImport and (sourceCode == "lm" or sourceCode == "chp" or sourceCode == "turb"):
+            if (isImport and sourceCode == 'gen') or (not isImport and sourceCode == 'gen-net'):
                 generatedKwh = generatedKwh + hhChannelKwh
-            if not isImport and (sourceCode == "lm" or sourceCode == "chp" or sourceCode == "turb"):
+            if (not isImport and sourceCode == 'gen') or (isImport and sourceCode == 'gen-net'):
                 parasiticKwh = parasiticKwh + hhChannelKwh
             if rs.next():
                 sourceCode = rs.getString("code")
@@ -3431,7 +3489,7 @@ source.appendChild(MonadDate().toXml(doc))]]></value>
   <line>
     <value>insert</value>
     <value>report</value>
-    <value>0 CSV Supplies Moment</value>
+    <value>0 CSV Supplies Snapshot</value>
     <value><![CDATA[from net.sf.chellow.monad import Hiber
 from net.sf.chellow.physical import ReadType
 
@@ -3582,7 +3640,7 @@ source.appendChild(group.toXml(doc))]]></value>
     <value>insert</value>
     <value>report</value>
     <value>0 HHDC Channel Snags</value>
-    <value><![CDATA[from net.sf.chellow.monad import XmlTree, Hiber
+    <value><![CDATA[from net.sf.chellow.monad import XmlTree, Hiber, UserException
 from java.util import Date
 from java.lang import System
 from net.sf.chellow.billing import HhdcContract
@@ -3594,20 +3652,24 @@ contract = HhdcContract.getHhdcContract(contract_id)
 snags_element = doc.createElement('channel-snags')
 source.appendChild(snags_element)
 snags_element.appendChild(contract.toXml(doc, XmlTree('party'))) 
-#snags = Hiber.session().createQuery("select distinct snag, siteSupplyGeneration.site.code, snag.startDate.date, snag.channel.id from ChannelSnag snag join snag.channel.supplyGeneration.siteSupplyGenerations siteSupplyGeneration where snag.dateResolved is null and snag.contract = :contract and snag.startDate.date < :activeDate order by siteSupplyGeneration.site.code, snag.startDate.date, snag.channel.id").setEntity('contract', contract).setTimestamp("activeDate",Date(System.currentTimeMillis()-(5*24*60*60*1000))).list()
-snags = Hiber.session().createQuery("select distinct snag, siteSupplyGeneration.site.code, snag.startDate.date, snag.channel.id from ChannelSnag snag join snag.channel.supplyGeneration.siteSupplyGenerations siteSupplyGeneration where snag.dateResolved is null and snag.contract = :contract order by siteSupplyGeneration.site.code, snag.startDate.date, snag.channel.id").setEntity('contract', contract).scroll()
+
+#snags = Hiber.session().createQuery("select distinct snag, siteSupplyGeneration.site.code, snag.startDate.date, snag.channel.id from ChannelSnag snag join snag.channel.supplyGeneration.siteSupplyGenerations siteSupplyGeneration where snag.isIgnored is false and snag.contract = :contract and snag.startDate.date < :activeDate order by siteSupplyGeneration.site.code, snag.startDate.date, snag.channel.id").setEntity('contract', contract).setTimestamp("activeDate",Date(System.currentTimeMillis()-(5*24*60*60*1000))).list()
+
+snag_count = Hiber.session().createQuery("select count(distinct snag) from ChannelSnag snag join snag.channel.supplyGeneration.siteSupplyGenerations siteSupplyGeneration where snag.isIgnored is false and snag.contract = :contract").setEntity('contract', contract).uniqueResult()
+
+snags = Hiber.session().createQuery("select distinct snag, siteSupplyGeneration.site.code, snag.startDate.date, snag.channel.id from ChannelSnag snag join snag.channel.supplyGeneration.siteSupplyGenerations siteSupplyGeneration where snag.isIgnored is false and snag.contract = :contract order by siteSupplyGeneration.site.code, snag.startDate.date, snag.channel.id").setEntity('contract', contract).scroll()
 i = 0
 while snags.next() and i < 100:
     snags_element.appendChild(snags.get(0).toXml(doc, XmlTree('channel', XmlTree('supplyGeneration', XmlTree('supply').put('siteSupplyGenerations', XmlTree('site')).put("mpans", XmlTree("core", XmlTree("dso")))))))
     i = i + 1
-'''
-activeSites = Hiber.session().createQuery("select count(distinct siteSupplyGeneration.site) from ChannelSnag snag join snag.channel.supplyGeneration.siteSupplyGenerations siteSupplyGeneration where snag.dateResolved is null and snag.contract = :contract and snag.startDate.date < :activeDate").setEntity('contract', contract).setTimestamp("activeDate",Date(System.currentTimeMillis()-(5*24*60*60*1000))).uniqueResult()
-totalSites = Hiber.session().createQuery("select count(distinct siteSupplyGeneration.site) from ChannelSnag snag join snag.channel.supplyGeneration.siteSupplyGenerations siteSupplyGeneration where snag.dateResolved is null and snag.contract = :contract").setEntity('contract', contract).uniqueResult()
 
-snags_element.setAttribute("snag-count", str(len(snags)))
+activeSites = Hiber.session().createQuery("select count(distinct siteSupplyGeneration.site) from ChannelSnag snag join snag.channel.supplyGeneration.siteSupplyGenerations siteSupplyGeneration where snag.isIgnored is false and snag.contract = :contract and snag.startDate.date < :activeDate").setEntity('contract', contract).setTimestamp("activeDate",Date(System.currentTimeMillis()-(5*24*60*60*1000))).uniqueResult()
+
+totalSites = Hiber.session().createQuery("select count(distinct siteSupplyGeneration.site) from ChannelSnag snag join snag.channel.supplyGeneration.siteSupplyGenerations siteSupplyGeneration where snag.isIgnored is false and snag.contract = :contract").setEntity('contract', contract).uniqueResult()
+
+snags_element.setAttribute("snag-count", str(snag_count))
 snags_element.setAttribute("site-count", str(activeSites))
-snags_element.setAttribute("pending-site-count", str(totalSites - activeSites))
-''']]></value>
+snags_element.setAttribute("pending-site-count", str(totalSites - activeSites))]]></value>
     <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
 <xsl:stylesheet version="1.0"
     xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
@@ -3766,16 +3828,7 @@ snags_element.setAttribute("pending-site-count", str(totalSites - activeSites))
     </xsl:template>
 
     <xsl:template match="hh-end-date">
-        <xsl:value-of select="@year" />
-        -
-        <xsl:value-of select="@month" />
-        -
-        <xsl:value-of select="@day" />
-        <xsl:text></xsl:text>
-        <xsl:value-of select="@hour" />
-        :
-        <xsl:value-of select="@minute" />
-        <xsl:text>Z</xsl:text>
+        <xsl:value-of select="concat(@year,'-',@month,'-',@day,' ',@hour,':',@minute,' Z')" />
     </xsl:template>
 </xsl:stylesheet>]]></value>
   </line>
@@ -4096,7 +4149,7 @@ for provider in Hiber.session().createQuery("from Provider provider order by pro
                                 </td>
                                 <td>
                                     <a
-                                        href="{/source/request/@context-path}/reports/36/output/?participant-id={participant/@id}">
+                                        href="{/source/request/@context-path}/reports/37/output/?participant-id={participant/@id}">
                                         <xsl:value-of
                                             select="participant/@name" />
                                     </a>
@@ -4740,21 +4793,7 @@ source.appendChild(MonadDate.getMonthsXml(doc))]]></value>
                     <fieldset>
                         <legend>Download</legend>
 <br/>
-<fieldset><legend>From</legend>
-                        <input name="year" value="{/source/date/@year}" maxlength="4" size="4"/><xsl:value-of select="' - '"/>
-                        <select name="month">
-                            <xsl:for-each select="/source/months/month">
-                                <option value="{@number}">
-                                    <xsl:if test="@number=/source/date/@month">
-                                        <xsl:attribute name="selected">selected</xsl:attribute>
-                                    </xsl:if>
-                                    <xsl:value-of select="@number"/>
-                                </option>
-                            </xsl:for-each>
-                        </select>
-</fieldset>
-<br/>
-                        <label><xsl:value-of select="'Months '"/></label>
+                        <xsl:value-of select="'For '"/>
                         <input name="months" maxlength="2" size="2">
                           <xsl:attribute name="value">
                             <xsl:choose>
@@ -4767,6 +4806,18 @@ source.appendChild(MonadDate.getMonthsXml(doc))]]></value>
                             </xsl:choose>
                           </xsl:attribute>
                         </input>
+<xsl:value-of select="' month(s) finishing at the end of '"/>
+                        <input name="year" value="{/source/date/@year}" maxlength="4" size="4"/><xsl:value-of select="' - '"/>
+                        <select name="month">
+                            <xsl:for-each select="/source/months/month">
+                                <option value="{@number}">
+                                    <xsl:if test="@number=/source/date/@month">
+                                        <xsl:attribute name="selected">selected</xsl:attribute>
+                                    </xsl:if>
+                                    <xsl:value-of select="@number"/>
+                                </option>
+                            </xsl:for-each>
+                        </select>
                         <input type="submit" value="Download"/>
                     </fieldset>
                 </form>
@@ -4798,12 +4849,13 @@ cal.set(Calendar.MONTH, month - 1)
 cal.add(Calendar.MONTH, 1)
 finish_date = HhEndDate(cal.getTime())
 cal.add(Calendar.MONTH, -1 * months)
+cal.add(Calendar.MINUTE, 30)
 start_date = HhEndDate(cal.getTime())
 
 inv.getResponse().setContentType("text/csv")
 inv.getResponse().setHeader('Content-Disposition', 'filename=output.csv;')
 pw = inv.getResponse().getWriter()
-pw.println("Site Id, Site Name, Associated Site Ids, Sources, From, To, Imported kWh, Displaced kWh, Exported kWh, Used kWh, Parasitic kWh")
+pw.println("Site Id, Site Name, Associated Site Ids, Sources, From, To, Imported kWh, Displaced kWh, Exported kWh, Used kWh, Parasitic kWh, Generated kWh")
 pw.flush()
 sites = Hiber.session().createQuery("from Site site order by site.code").scroll()
 while sites.next():
@@ -4829,18 +4881,25 @@ while sites.next():
             ss_gen_source = ss_gen.getSupplyGeneration().getSupply().getSource().getCode()
             if ss_gen_source not in sources:
                 sources.append(ss_gen_source)
-        result = query.setEntity('supplyGeneration', supply_generation).setTimestamp('startDate', start_date.getDate()).setTimestamp('finishDate', finish_date.getDate()).setBoolean('isImport', True).setParameterList('sources', ['net']).uniqueResult()
+        result = query.setEntity('supplyGeneration', supply_generation).setTimestamp('startDate', start_date.getDate()).setTimestamp('finishDate', finish_date.getDate()).setBoolean('isImport', True).setParameterList('sources', ['net', 'gen-net']).uniqueResult()
         if result is not None:
             import_from_net = import_from_net + result
         result = query.setBoolean('isImport', False).uniqueResult()
         if result is not None:
             export_to_net = export_to_net + result
-        result = query.setParameterList('sources', ['lm', 'turb', 'chp']).uniqueResult()
+        result = query.setParameterList('sources', ['gen']).uniqueResult()
         if result is not None:
             export_to_gen = export_to_gen + result
+        result = query.setParameterList('sources', ['gen-net']).uniqueResult()
+        if result is not None:
+            import_from_gen = import_from_gen + result
         result = query.setBoolean('isImport', True).uniqueResult()
         if result is not None:
-            import_to_gen = import_from_gen + result
+            export_to_gen = export_to_gen + result
+        result = query.setParameterList('sources', ['gen']).uniqueResult()
+        if result is not None:
+            import_from_gen = import_from_gen + result
+        result = query.
     if has_physical:
         associate_str = ''
         for associate in associates:
@@ -4861,7 +4920,8 @@ while sites.next():
         pw.print(',' + str(round(displaced)) + ',')
         pw.print(str(round(export_to_net)) + ',')
         pw.print(str(round(used)) + ',')
-        pw.print(str(round(export_to_gen)) + '\n')
+        pw.print(str(round(export_to_gen)) + ',')
+        pw.print(str(round(import_from_gen)) + '\n')
     pw.flush()
     Hiber.session().clear()
 sites.close()
@@ -4877,7 +4937,7 @@ pw.close()]]></value>
 mtcs_element = doc.createElement('mtcs')
 source.appendChild(mtcs_element)
 for mt in Hiber.session().createQuery("select mtc from Mtc mtc left outer join mtc.dso dso order by mtc.code, dso.code").list():
-    mtcs_element.appendChild(mt.toXml(doc, XmlTree('dso')))]]></value>
+    mtcs_element.appendChild(mt.toXml(doc, XmlTree('dso').put('meterType')))]]></value>
     <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
 <xsl:stylesheet version="1.0"
     xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
@@ -4916,7 +4976,8 @@ for mt in Hiber.session().createQuery("select mtc from Mtc mtc left outer join m
                             <th>Code</th>
                             <th>Dso</th>
                             <th>Description</th>
-                            <th>Is Unmetered?</th>
+                            <th>Meter Type</th>
+                            <th>TPR count</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -4951,15 +5012,13 @@ for mt in Hiber.session().createQuery("select mtc from Mtc mtc left outer join m
                                     <xsl:value-of select="@description" />
                                 </td>
                                 <td>
-                                    <xsl:choose>
-                                        <xsl:when
-                                            test="@is-unmetered = 'true'">
-                                            Unmetered
-                                        </xsl:when>
-                                        <xsl:otherwise>
-                                            Metered
-                                        </xsl:otherwise>
-                                    </xsl:choose>
+                                    <a href="{/source/request/@context-path}/reports/66/output/?type-id={meter-type/@id}">
+                                                <xsl:value-of
+                                                    select="meter-type/@code" />
+                                            </a>
+                                </td>
+                                <td>
+                                    <xsl:value-of select="@tpr-count" />
                                 </td>
                             </tr>
                         </xsl:for-each>
@@ -8703,15 +8762,6 @@ source.appendChild(contract.toXml(doc, XmlTree('party', XmlTree('participant')).
                             Channel Snags
                         </a>
                     </li>
-                    <xsl:if
-                        test="/source/hhdc-contract/@has-stark-automatic-hh-data-importer='true'">
-                        <li>
-                            <a
-                                href="{/source/request/@context-path}/reports/62/output/?hhdc-contract-id={/source/hhdc-contract/@id}">
-                                Stark Automatic HH Data Importer
-                            </a>
-                        </li>
-                    </xsl:if>
                 </ul>
                 <!--
                     <h2>Script</h2>
@@ -10224,15 +10274,15 @@ dateFormat = DateFormat.getDateInstance(DateFormat.LONG, Locale.UK)
 dateFormat.applyLocalizedPattern("yyyy-MM-dd")
 dateFormat.setCalendar(cal)
 
-channels = Hiber.session().createQuery("select channel from Channel channel where (channel.generation.finishDate.date is null or channel.generation.finishDate.date > :finishDate) and channel.isImport is true and channel.isKwh is true").setTimestamp("finishDate", finishDate).scroll()
+channels = Hiber.session().createQuery("select channel from Channel channel where (channel.supplyGeneration.finishDate.date is null or channel.supplyGeneration.finishDate.date > :finishDate) and channel.isImport is true and channel.isKwh is true").setTimestamp("finishDate", finishDate).scroll()
 
 while channels.next():
     channel = channels.get(0)
-    generation = channel.getGeneration(HhEndDate(finishDate))
+    generation = channel.getSupplyGeneration()
     if generation == None or generation.getImportMpan() == None:
         mpanCoreStr = "NA"
     else:
-        mpanCoreStr = generation.getImportMpan().getMpanCore().toString()
+        mpanCoreStr = generation.getImportMpan().getCore().toString()
     zout.putNextEntry(ZipEntry(mpanCoreStr + '_' + str(channel.getId()) + '.csv'))
     pw.print("MPAN Core,Date,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48")
     currentDate = HhEndDate.roundUp(startDate)
@@ -10281,7 +10331,7 @@ source.appendChild(MonadDate.getMonthsXml(doc))]]></value>
         <html>
             <head>
                 <link rel="stylesheet" type="text/css"
-                    href="{/source/request/@context-path}/style/" />
+                    href="{/source/request/@context-path}/reports/10/output/" />
 
                 <title>Chellow &gt; CSV Supplies Period</title>
             </head>
@@ -10351,20 +10401,31 @@ from java.util import GregorianCalendar, TimeZone, Locale, Calendar
 from net.sf.chellow.physical import HhEndDate, Supply
 from java.sql import Timestamp, ResultSet
 
-def hh_summary(query, is_import):
+def hh_summary(query, kvarh_at_md_query, is_import):
     md = 0
     sum = 0
     non_actual = 0
+    date_at_md = None
+    kvarh_at_md = 0
     hh_data = query.setBoolean('isImport', is_import).scroll()
+    kva_at_md_query.setBoolean('isImport', is_import)
     while hh_data.next():
         hh_value = hh_data.get(0)
         hh_status = hh_data.get(1)
-        md = max(md, hh_value)
+        if hh_value > md:
+            md = hh_value
+            date_at_md = hh_data.get(2)
+            kvarh_at_md = kvarh_at_md_query.setTimestamp('mdDate', date_at_md.getDate()).uniqueResult()
         sum = sum + hh_value
         if hh_status != 'A':
             non_actual = non_actual + hh_value
     hh_data.close()
-    return md * 2, sum, non_actual
+    kw_at_md = md * 2
+    if kvarh_at_md is None:
+        kva_at_md = 'None'
+    else:
+        kva_at_md = str(round(((kvarh_at_md * 2)**2 + kw_at_md**2)**0.5))
+    return kw_at_md, sum, non_actual, date_at_md, kva_at_md
     
 inv.getResponse().setContentType("text/csv")
 inv.getResponse().setHeader('Content-Disposition', 'filename=output.csv;')
@@ -10396,10 +10457,11 @@ stmt.setTimestamp(3, Timestamp(finish_date.getDate().getTime()))
 stmt.setFetchSize(100)
 '''
 
-query = Hiber.session().createQuery("select datum.value, datum.status from HhDatum datum where datum.channel.supplyGeneration.supply = :supply and datum.channel.isImport is :isImport and datum.channel.isKwh is true and datum.endDate.date >= :startDate and datum.endDate.date <= :finishDate").setTimestamp('startDate', start_date.getDate()).setTimestamp('finishDate', finish_date.getDate())
+query = Hiber.session().createQuery("select datum.value, datum.status, datum.endDate from HhDatum datum where datum.channel.supplyGeneration.supply = :supply and datum.channel.isImport is :isImport and datum.channel.isKwh is true and datum.endDate.date >= :startDate and datum.endDate.date <= :finishDate").setTimestamp('startDate', start_date.getDate()).setTimestamp('finishDate', finish_date.getDate())
 
+kva_at_md_query = Hiber.session().createQuery("select datum.value from HhDatum datum where datum.channel.supplyGeneration.supply = :supply and datum.channel.isImport is :isImport and datum.channel.isKwh is false and datum.endDate.date = :mdDate")
 
-pw.println("Supply Id, Supply Name, Source, Site Ids, Site Names, From, To, Import MPAN Core, Import Total kWh, Import Non-actual kWh, Import MD / kW, Export MPAN Core, Export Total kWh, Export Non-actual kWh, Export MD / kW")
+pw.println("Supply Id, Supply Name, Source, Site Ids, Site Names, From, To, Import MPAN Core, Import Total kWh, Import Non-actual kWh, Import MD / kW, Import MD Date, Import MD / kVA, Export MPAN Core, Export Total kWh, Export Non-actual kWh, Export MD / kW, Export MD Date, Export MD / kVA")
 supplies = Hiber.session().createQuery("select generation.supply from SupplyGeneration generation where (generation.finishDate.date is null or generation.finishDate.date >= :startDate) and generation.startDate.date <= :finishDate order by generation.supply.id").setTimestamp('startDate', start_date.getDate()).setTimestamp('finishDate', finish_date.getDate()).scroll()
 while supplies.next():
     supply = supplies.get(0)
@@ -10421,9 +10483,10 @@ while supplies.next():
     if export_mpan is not None:
         export_mpan_core_str = export_mpan.getCore().toString()
     query.setEntity('supply', supply)
-    import_result = hh_summary(query, True)
-    export_result = hh_summary(query, False)
-    pw.println(str(supply.getId()) + ',"' + supply.getName() + '",' + supply.getSource().getCode() + ',"' + site_codes + '","' + site_names + '",' + start_date.toString() + "," + finish_date.toString() + "," + import_mpan_core_str + "," + str(round(import_result[1])) + ',' + str(round(import_result[2])) + "," + str(round(import_result[0])) + "," + export_mpan_core_str + "," + str(round(export_result[1])) + ',' + str(round(export_result[2])) + "," + str(round(export_result[0])))
+    kva_at_md_query.setEntity('supply', supply)
+    import_result = hh_summary(query, kva_at_md_query, True)
+    export_result = hh_summary(query, kva_at_md_query, False)
+    pw.println(str(supply.getId()) + ',"' + supply.getName() + '",' + supply.getSource().getCode() + ',"' + site_codes + '","' + site_names + '",' + start_date.toString() + "," + finish_date.toString() + "," + import_mpan_core_str + "," + str(round(import_result[1])) + ',' + str(round(import_result[2])) + "," + str(round(import_result[0])) + "," + str(import_result[3]) + "," + import_result[4] + "," + export_mpan_core_str + "," + str(round(export_result[1])) + ',' + str(round(export_result[2])) + "," + str(round(export_result[0])) + "," + str(export_result[3]) + "," + export_result[4])
     pw.flush()
     Hiber.session().clear()
 pw.close()]]></value>

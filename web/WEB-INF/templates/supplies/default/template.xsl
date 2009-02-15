@@ -8,7 +8,7 @@
 		<html>
 			<head>
 				<title>
-					Chellow &gt; Sites &gt;
+					Chellow &gt; Supplies &gt;
 					<xsl:value-of
 						select="concat(/source/supply/@code, ' ', /source/supply/@name)" />
 				</title>
@@ -90,8 +90,7 @@
 								<br />
 								<br />
 								<label>
-									<xsl:value-of
-										select="'Source Code '" />
+									<xsl:value-of select="'Source '" />
 									<select name="source-id">
 										<xsl:for-each
 											select="/source/source">
@@ -119,11 +118,38 @@
 										</xsl:for-each>
 									</select>
 								</label>
-								<xsl:value-of select="' '" />
-								<a
-									href="{/source/request/@context-path}/sources/">
-									<xsl:value-of select="'Sources'" />
-								</a>
+								<br />
+								<br />
+								<label>
+									<xsl:value-of
+										select="'Generator Type '" />
+									<select name="generator-type-id">
+										<xsl:for-each
+											select="/source/generator-type">
+											<option value="{@id}">
+												<xsl:choose>
+													<xsl:when
+														test="/source/request/parameter[@name='generator-type-id']">
+														<xsl:if
+															test="@id = /source/request/parameter[@name='generator-type-id']/value">
+															<xsl:attribute
+																name="selected" />
+														</xsl:if>
+													</xsl:when>
+													<xsl:otherwise>
+														<xsl:if
+															test="@id = /source/supply/generator-type/@id">
+															<xsl:attribute
+																name="selected" />
+														</xsl:if>
+													</xsl:otherwise>
+												</xsl:choose>
+												<xsl:value-of
+													select="@code" />
+											</option>
+										</xsl:for-each>
+									</select>
+								</label>
 								<br />
 								<br />
 								<input type="submit" value="Update" />

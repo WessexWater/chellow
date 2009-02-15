@@ -35,7 +35,7 @@
 		<many-to-one name="source" class="Source" column="source_id"
 			not-null="true" foreign-key="fkey_supply_source" />
 		<many-to-one name="generatorType" class="GeneratorType" column="generator_type_id"
-			not-null="true" foreign-key="fkey_supply_generator_type" />
+			foreign-key="fkey_supply_generator_type" />
 		<set name="generations" inverse="true"
 			cascade="all,delete-orphan" order-by="start_date desc">
 			<key column="supply_id" />

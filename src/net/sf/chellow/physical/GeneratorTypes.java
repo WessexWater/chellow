@@ -42,7 +42,9 @@ public class GeneratorTypes implements Urlable {
 		Document doc = MonadUtils.newSourceDocument();
 		Element sourceElement = doc.getDocumentElement();
 
-		for (GeneratorType type : (List<GeneratorType>) Hiber.session().createQuery("from GeneratorType type order by type.code").list()) {
+		for (GeneratorType type : (List<GeneratorType>) Hiber.session()
+				.createQuery("from GeneratorType type order by type.code")
+				.list()) {
 			sourceElement.appendChild(type.toXml(doc));
 		}
 		inv.sendOk(doc);

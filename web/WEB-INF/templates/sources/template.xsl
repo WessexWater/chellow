@@ -38,14 +38,17 @@
 				<table>
 					<thead>
 						<tr>
+							<th>Chellow Id</th>
 							<th>Code</th>
 							<th>Name</th>
 						</tr>
 					</thead>
 					<tbody>
-
 						<xsl:for-each select="/source/source">
 							<tr>
+								<td>
+									<xsl:value-of select="@id" />
+								</td>
 								<td>
 									<xsl:value-of select="@code" />
 								</td>

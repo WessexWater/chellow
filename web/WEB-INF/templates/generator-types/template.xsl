@@ -41,7 +41,7 @@
 					</thead>
 					<tbody>
 						<xsl:for-each
-							select="/source/generator-types/generator-type">
+							select="/source/generator-type">
 							<tr>
 								<td>
 									<a

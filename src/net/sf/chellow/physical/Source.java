@@ -22,8 +22,6 @@
 
 package net.sf.chellow.physical;
 
-import java.util.List;
-
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.Invocation;
@@ -66,12 +64,6 @@ public class Source extends PersistentEntity implements Urlable {
 		return (Source) Hiber.session().createQuery(
 				"from Source as source where " + "source.code = :code")
 				.setString("code", code).uniqueResult();
-	}
-
-	@SuppressWarnings("unchecked")
-	static public List<Source> getSources() throws HttpException {
-		return (List<Source>) Hiber.session().createQuery(
-				"from Source as source").list();
 	}
 
 	static public Source insertSource(String code, String name)

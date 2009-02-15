@@ -71,7 +71,8 @@ public class Supply extends PersistentEntity {
 					"Generator Type", values, 2);
 			Source source = Source.getSource(sourceCode);
 			GeneratorType generatorType = null;
-			if (source.getCode().equals(Source.GENERATOR_CODE)) {
+			if (source.getCode().equals(Source.GENERATOR_CODE)
+					|| source.getCode().equals(Source.GENERATOR_NETWORK_CODE)) {
 				generatorType = GeneratorType
 						.getGeneratorType(generatorTypeCode);
 			}
@@ -304,10 +305,11 @@ public class Supply extends PersistentEntity {
 		}
 		setName(name);
 		setSource(source);
-		if (source.getCode().equals(Source.GENERATOR_CODE)
+		if ((source.getCode().equals(Source.GENERATOR_CODE) || source.getCode()
+				.equals(Source.GENERATOR_NETWORK_CODE))
 				&& generatorType == null) {
 			throw new UserException(
-					"If the source is 'gen', there must be a generator type.");
+					"If the source is 'gen' or 'gen-net', there must be a generator type.");
 		}
 		setGeneratorType(generatorType);
 	}
@@ -977,20 +979,24 @@ public class Supply extends PersistentEntity {
 				.uniqueResult();
 	}
 
-	private void addSourcesXML(Element element) throws HttpException {
-		for (Source source : Source.getSources()) {
-			element.appendChild(source.toXml(element.getOwnerDocument()));
-		}
-	}
-
+	@SuppressWarnings("unchecked")
 	private Document document() throws HttpException {
 		Document doc = MonadUtils.newSourceDocument();
 		Element source = doc.getDocumentElement();
 		Element supplyElement = (Element) toXml(doc, new XmlTree("generations",
 				new XmlTree("mpans", new XmlTree("core").put("llfc",
-						new XmlTree("voltageLevel")))));
+						new XmlTree("voltageLevel")))).put("source").put(
+				"generatorType"));
 		source.appendChild(supplyElement);
-		addSourcesXML(source);
+		for (Source supplySource : (List<Source>) Hiber.session().createQuery(
+		"from Source source order by source.code").list()) {
+			source.appendChild(supplySource.toXml(doc));
+		}
+		for (GeneratorType type : (List<GeneratorType>) Hiber.session()
+				.createQuery("from GeneratorType type order by type.code")
+				.list()) {
+			source.appendChild(type.toXml(doc));
+		}
 		source.appendChild(MonadDate.getMonthsXml(doc));
 		source.appendChild(MonadDate.getDaysXml(doc));
 		source.appendChild(new MonadDate().toXml(doc));
@@ -1017,8 +1023,13 @@ public class Supply extends PersistentEntity {
 				}
 				Source supplySource = Source.getSource(sourceId);
 				GeneratorType type = null;
-				if (supplySource.getCode().equals(Source.GENERATOR_CODE)) {
-					Long generatorTypeId = inv.getLong("generator-source-id");
+				if (supplySource.getCode().equals(Source.GENERATOR_CODE)
+						|| supplySource.getCode().equals(
+								Source.GENERATOR_NETWORK_CODE)) {
+					Long generatorTypeId = inv.getLong("generator-type-id");
+					if (!inv.isValid()) {
+						throw new UserException(document());
+					}
 					type = GeneratorType.getGeneratorType(generatorTypeId);
 				}
 				update(name, supplySource, type);
@@ -1044,17 +1055,13 @@ public class Supply extends PersistentEntity {
 		return new SupplyGenerations(this);
 	}
 
-	public void httpPostSupplyGeneration(Invocation inv) throws HttpException {
-		Boolean isOngoing = inv.getBoolean("isOngoing");
-		HhEndDate finishDate = null;
-		if (!isOngoing) {
-			finishDate = HhEndDate.roundDown(inv.getDate("finishDate"));
-		}
-		insertGeneration(finishDate);
-		Hiber.commit();
-		inv.sendOk(document());
-	}
-
+	/*
+	 * public void httpPostSupplyGeneration(Invocation inv) throws HttpException {
+	 * Boolean isOngoing = inv.getBoolean("isOngoing"); HhEndDate finishDate =
+	 * null; if (!isOngoing) { finishDate =
+	 * HhEndDate.roundDown(inv.getDate("finishDate")); }
+	 * insertGeneration(finishDate); Hiber.commit(); inv.sendOk(document()); }
+	 */
 	/*
 	 * public Channel getChannel(UriPathElement urlId) throws HttpException {
 	 * Channel channel = (Channel) Hiber .session() .createQuery( "from Channel

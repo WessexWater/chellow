@@ -4,7 +4,6 @@
 	<xsl:output method="html" encoding="US-ASCII"
 		doctype-public="-//W3C//DTD HTML 4.01//EN"
 		doctype-system="http://www.w3.org/TR/html4/strict.dtd" indent="yes" />
-
 	<xsl:template match="/">
 		<html>
 			<head>
@@ -25,7 +24,7 @@
 					</a>
 					<xsl:value-of select="' &gt; '" />
 					<a
-						href="{/source/request/@context-path}/read-types/">
+						href="{/source/request/@context-path}/generator-types/">
 						<xsl:value-of select="'Generator Types'" />
 					</a>
 					<xsl:value-of

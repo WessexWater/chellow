@@ -236,6 +236,8 @@ public class Chellow extends Monad implements Urlable {
 			return USER_ROLES_INSTANCE;
 		} else if (SiteSnags.URI_ID.equals(uriId)) {
 			return SITE_SNAGS_INSTANCE;
+		} else if (GeneratorTypes.URI_ID.equals(uriId)) {
+			return GENERATOR_TYPES_INSTANCE;
 		} else {
 			return null;
 		}
