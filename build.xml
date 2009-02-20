@@ -301,7 +301,7 @@
 
 		<!-- Compile Java classes as necessary -->
 		<mkdir dir="${build.home}/WEB-INF/classes" />
-		<javac source="1.5" target="1.5" srcdir="${src.home}" destdir="${build.home}/WEB-INF/classes" debug="${compile.debug}" deprecation="${compile.deprecation}" optimize="${compile.optimize}">
+		<javac source="1.6" target="1.6" srcdir="${src.home}" destdir="${build.home}/WEB-INF/classes" debug="${compile.debug}" deprecation="${compile.deprecation}" optimize="${compile.optimize}">
 			<classpath refid="compile.classpath" />
 		</javac>
 

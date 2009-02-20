@@ -37,8 +37,8 @@ import java.util.Set;
 import java.util.TimeZone;
 
 import net.sf.chellow.monad.Hiber;
-import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.HttpException;
+import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.UserException;
 import net.sf.chellow.physical.MpanCore;
 import net.sf.chellow.physical.ReadType;
@@ -76,39 +76,20 @@ public class InvoiceConverterCsv implements InvoiceConverter {
 			shredder.setCommentStart("#;!");
 			shredder.setEscapes("nrtf", "\n\r\t\f");
 			String[] titles = shredder.getLine();
-
-			if (titles.length < 7) {
+			String[] desiredTitles = new String[] { "InvoiceType",
+					"Account Reference", "Mpans", "Invoice Reference",
+					"Issue Date", "Start Date", "Finish Date", "Net", "VAT" };
+			if (titles.length < desiredTitles.length) {
 				throw new UserException(
-						"The first line of the CSV must contain the 7 titles "
-								+ "'Account Text, MPAN Text, Invoice Text, Start Date, Finish Date, Net, VAT'.");
+						"The first line of the CSV must contain at least "
+								+ desiredTitles.length + " titles.");
 			}
-			if (!titles[0].trim().toLowerCase().equals("account text")) {
-				throw new UserException(
-						"The title of the first column should be 'Account Text'.");
-			}
-			if (!titles[1].trim().toLowerCase().equals("mpan text")) {
-				throw new UserException(
-						"The title of the second column should be 'MPAN Text'.");
-			}
-			if (!titles[2].trim().toLowerCase().equals("invoice text")) {
-				throw new UserException(
-						"The title of the third column should be 'Invoice Text'.");
-			}
-			if (!titles[3].trim().toLowerCase().equals("start date")) {
-				throw new UserException(
-						"The title of the fouth column should be 'Start Date'.");
-			}
-			if (!titles[4].trim().toLowerCase().equals("finish date")) {
-				throw new UserException(
-						"The title of the fifth column should be 'Finish Date'.");
-			}
-			if (!titles[5].trim().toLowerCase().equals("net")) {
-				throw new UserException(
-						"The title of the sixth column should be 'Net'.");
-			}
-			if (!titles[6].trim().toLowerCase().equals("vat")) {
-				throw new UserException(
-						"The title of the seventh column should be 'VAT'.");
+			for (int i = 0; i < desiredTitles.length; i++) {
+				if (!titles[i].trim().toLowerCase().equals(
+						desiredTitles[i].trim().toLowerCase())) {
+					throw new UserException("The title of column " + i
+							+ " should be '" + desiredTitles[i] + "'.");
+				}
 			}
 		} catch (IOException e) {
 			throw new InternalException(e);
@@ -143,7 +124,9 @@ public class InvoiceConverterCsv implements InvoiceConverter {
 										.getReadType(values[i + 10])));
 					}
 					Set<String> mpanStrings = new HashSet<String>();
-					mpanStrings.add(values[2]);
+					for (String mpanStr: values[2].split(",")) {
+					mpanStrings.add(mpanStr);
+					}
 					rawBills.add(new InvoiceRaw(invoiceTypeMap.get(values[0]),
 							values[1], mpanStrings, values[3],
 							new DayStartDate(values[4]), new DayStartDate(
