@@ -110,8 +110,8 @@
 					</li>
 					<li>
 						<a
-							href="{/source/request/@context-path}/configuration/">
-							Configuration
+							href="{/source/request/@context-path}/reports/77/output/">
+							Admin
 						</a>
 					</li>
 				</ul>

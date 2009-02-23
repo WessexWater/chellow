@@ -10492,4 +10492,115 @@ while supplies.next():
 pw.close()]]></value>
     <value><![CDATA[]]></value>
   </line>
+  <line>
+    <value>insert</value>
+    <value>report</value>
+    <value>0 Admin: DSO Contract Dump</value>
+    <value><![CDATA[from net.sf.chellow.monad import Hiber, UserException, MonadUtils
+from net.sf.chellow.monad.types import UriPathElement
+from java.util import GregorianCalendar, TimeZone, Locale, Calendar
+from net.sf.chellow.physical import HhEndDate
+from java.text import DateFormat
+from java.io import OutputStreamWriter, PrintWriter
+from java.security import MessageDigest
+from com.Ostermiller.util import Base64
+import java.lang.String
+
+def print_line(pw, values):
+    pw.println('    <line>')
+    for value in values:
+        if value is None:
+            value = ''
+        else:
+            value = str(value)
+        pw.println('        <value>&lt;![CDATA[' + value + ']]&gt;</value>')
+    pw.println('    </line>')
+
+inv.getResponse().setContentType('text/xml')
+inv.getResponse().setHeader('Content-Disposition', 'attachment; filename=output.xml;')
+pw = inv.getResponse().getWriter()
+
+pw.println('<?xml version="1.0"?>')
+pw.flush()
+pw.println('<csv>')
+print_line(pw, ['Action', 'Type'])
+
+
+# DSO Contracts
+
+contracts = Hiber.session().createQuery("from DsoContract contract order by contract.party.code, contract.name").scroll()
+while contracts.next():
+    contract = contracts.get(0)
+    contract_name = contract.getName()
+    rate_scripts = Hiber.session().createQuery("from RateScript script where script.contract.id = :contractId order by script.startDate.date").setLong('contractId', contract.getId()).list()
+    start_rate_script = rate_scripts[0]
+    print_line(pw, ['insert', 'dso-contract', contract.getParty().getCode(), contract_name, start_rate_script.getStartDate(), rate_scripts[len(rate_scripts) - 1].getFinishDate(), contract.getChargeScript(), start_rate_script.getScript()])
+    for i in range(1, len(rate_scripts)):
+        rate_script = rate_scripts[i]
+        print_line(pw, ['insert', 'dso-contract-rate-script', contract.getParty().getCode(), contract.getName(), rate_script.getStartDate(), rate_script.getFinishDate(), rate_script.getScript()])
+Hiber.session().clear()
+contracts.close()
+pw.println('</csv>')
+pw.flush()
+pw.close()]]></value>
+    <value><![CDATA[]]></value>
+  </line>
+  <line>
+    <value>insert</value>
+    <value>report</value>
+    <value>0 Admin: Home</value>
+    <value><![CDATA[]]></value>
+    <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
+<xsl:stylesheet version="1.0"
+    xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+    <xsl:output method="html" encoding="US-ASCII"
+        doctype-public="-//W3C//DTD HTML 4.01//EN"
+        doctype-system="http://www.w3.org/TR/html4/strict.dtd" indent="yes" />
+    <xsl:template match="/">
+        <html>
+            <head>
+                <link rel="stylesheet" type="text/css"
+                    href="{/source/request/@context-path}/reports/10/output/" />
+                <title>
+                    Home &gt; Admin
+                </title>
+            </head>
+            <body>
+                <p>
+                    <a
+                        href="{/source/request/@context-path}/">
+                        <xsl:value-of select="'Home'" />
+                    </a>
+                    &gt;
+                    <xsl:value-of select="'Admin'" />
+                </p>
+                <br />
+                <xsl:if test="//message">
+                    <ul>
+                        <xsl:for-each select="//message">
+                            <li>
+                                <xsl:value-of select="@description" />
+                            </li>
+                        </xsl:for-each>
+                    </ul>
+                </xsl:if>
+                <br />
+                <ul>
+                    <li>
+                        <a
+                            href="{/source/request/@context-path}/reports/76/output/">DSO Dump
+                        </a>
+                    </li>
+                                        <li>
+                        <a
+                            href="{/source/request/@context-path}/configuration/">
+                            Configuration
+                        </a>
+                    </li>
+                </ul>
+            </body>
+        </html>
+    </xsl:template>
+</xsl:stylesheet>]]></value>
+  </line>
 </csv>

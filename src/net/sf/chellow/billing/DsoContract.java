@@ -1,6 +1,6 @@
 /*
  
- Copyright 2005-2008 Meniscus Systems Ltd
+ Copyright 2005-2009 Meniscus Systems Ltd
  
  This file is part of Chellow.
 
@@ -22,9 +22,17 @@
 
 package net.sf.chellow.billing;
 
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.util.List;
+
+import javax.servlet.ServletContext;
+
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
+import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Invocation;
+import net.sf.chellow.monad.MonadMessage;
 import net.sf.chellow.monad.MonadUtils;
 import net.sf.chellow.monad.NotFoundException;
 import net.sf.chellow.monad.Urlable;
@@ -34,6 +42,8 @@ import net.sf.chellow.monad.types.MonadDate;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
 import net.sf.chellow.physical.HhEndDate;
+import net.sf.chellow.ui.GeneralImport;
+
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -51,13 +61,59 @@ public class DsoContract extends Contract {
 		return (DsoContract) Hiber.session().get(DsoContract.class, id);
 	}
 
+	static public void generalImport(String action, String[] values,
+			Element csvElement) throws HttpException {
+		if (values.length < 6) {
+			throw new UserException("There aren't enough fields in this row");
+		}
+		String dsoCode = GeneralImport.addField(csvElement,
+				"DSO Code", values, 0);
+		Dso dso = Dso.getDso(dsoCode);
+		String name = GeneralImport.addField(csvElement, "Name", values, 1);
+
+		if (action.equals("insert")) {
+			String startDateStr = GeneralImport.addField(csvElement,
+					"Start Date", values, 2);
+			HhEndDate startDate = new HhEndDate(startDateStr);
+			String finishDateStr = GeneralImport.addField(csvElement,
+					"Finish Date", values, 3);
+			HhEndDate finishDate = null;
+			if (finishDateStr.length() > 0) {
+				finishDate = new HhEndDate(finishDateStr);
+			}
+			String chargeScript = GeneralImport.addField(csvElement,
+					"Charge Script", values, 4);
+			String rateScript = GeneralImport.addField(csvElement,
+					"Rate Script", values, 5);
+			dso.insertContract(name, startDate, finishDate, chargeScript,
+					rateScript);
+		}
+	}
+	
+	public static void loadFromCsv(ServletContext context) throws HttpException {
+		try {
+			GeneralImport process = new GeneralImport(null, context
+					.getResource("/WEB-INF/mdd/dso-contracts.xml").openStream(), "xml");
+			process.run();
+			List<MonadMessage> errors = process.getErrors();
+			if (!errors.isEmpty()) {
+				throw new InternalException(errors.get(0).getDescription());
+			}
+		} catch (UnsupportedEncodingException e) {
+			throw new InternalException(e);
+		} catch (IOException e) {
+			throw new InternalException(e);
+		}
+	}
+
 	private Dso dso;
 
 	public DsoContract() {
 	}
 
 	public DsoContract(Dso dso, String name, HhEndDate startDate,
-			HhEndDate finishDate, String chargeScript, String rateScript) throws HttpException {
+			HhEndDate finishDate, String chargeScript, String rateScript)
+			throws HttpException {
 		super(name, startDate, finishDate, chargeScript, rateScript);
 		setParty(dso);
 		internalUpdate(name, chargeScript);

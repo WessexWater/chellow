@@ -1,6 +1,6 @@
 /*
  
- Copyright 2008 Meniscus Systems Ltd
+ Copyright 2008-2009 Meniscus Systems Ltd
  
  This file is part of Chellow.
 
@@ -22,10 +22,6 @@
 
 package net.sf.chellow.billing;
 
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.StringWriter;
-import java.net.URL;
 import java.util.Date;
 
 import javax.servlet.ServletContext;
@@ -33,7 +29,6 @@ import javax.servlet.ServletContext;
 import net.sf.chellow.monad.Debug;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
-import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Invocation;
 import net.sf.chellow.monad.MonadUtils;
 import net.sf.chellow.monad.NotFoundException;
@@ -41,7 +36,6 @@ import net.sf.chellow.monad.Urlable;
 import net.sf.chellow.monad.XmlTree;
 import net.sf.chellow.monad.types.MonadDate;
 import net.sf.chellow.monad.types.UriPathElement;
-import net.sf.chellow.physical.HhEndDate;
 import net.sf.chellow.physical.MarketRole;
 import net.sf.chellow.physical.Mdd;
 import net.sf.chellow.physical.Participant;
@@ -98,40 +92,6 @@ public abstract class Party extends PersistentEntity {
 						values[14]);
 				Hiber.session().save(dso);
 				Hiber.close();
-				ClassLoader dsoClassLoader = Provider.class.getClassLoader();
-				DsoContract dsoService;
-				try {
-					URL resource = dsoClassLoader
-							.getResource("net/sf/chellow/billing/dso"
-									+ dso.getCode() + "Service.py");
-					if (resource != null) {
-						InputStreamReader isr = new InputStreamReader(resource
-								.openStream(), "UTF-8");
-						StringWriter pythonString = new StringWriter();
-						int c;
-						while ((c = isr.read()) != -1) {
-							pythonString.write(c);
-						}
-						dsoService = dso.insertContract("main", new HhEndDate(
-								"2000-01-01T00:30Z"), null, pythonString
-								.toString(), "");
-						RateScript dsoRateScript = dsoService.getRateScripts()
-								.iterator().next();
-						isr = new InputStreamReader(dsoClassLoader.getResource(
-								"net/sf/chellow/billing/dso" + dso.getCode()
-										+ "ServiceRateScript.py").openStream(),
-								"UTF-8");
-						pythonString = new StringWriter();
-						while ((c = isr.read()) != -1) {
-							pythonString.write(c);
-						}
-						dsoRateScript.update(dsoRateScript.getStartDate(),
-								dsoRateScript.getFinishDate(), pythonString
-										.toString());
-					}
-				} catch (IOException e) {
-					throw new InternalException(e);
-				}
 			} else {
 				Provider provider = new Provider(values[4], participant,
 						roleCode, validFrom, validTo);

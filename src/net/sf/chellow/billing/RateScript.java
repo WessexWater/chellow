@@ -58,24 +58,66 @@ public class RateScript extends PersistentEntity {
 			String startDateStr = GeneralImport.addField(csvElement,
 					"Start Date", values, 1);
 			HhEndDate startDate = new HhEndDate(startDateStr);
-			String script = GeneralImport.addField(csvElement,
-					"Script", values, 2);
-			contract.insertRateScript(startDate, script);
+			String finishDateStr = GeneralImport.addField(csvElement,
+					"Finish Date", values, 2);
+			HhEndDate finishDate = null;
+			if (finishDateStr.trim().length() > 0) {
+				finishDate = new HhEndDate(finishDateStr);
+			}
+			String script = GeneralImport.addField(csvElement, "Script",
+					values, 3);
+			RateScript rateScript = contract
+					.insertRateScript(startDate, script);
+			if (finishDate != null) {
+				rateScript.update(rateScript.getStartDate(), finishDate,
+						rateScript.getScript());
+			}
 		} else if (action.equals("update")) {
 		}
 	}
 
+	public static void generalImportDso(String action, String[] values,
+			Element csvElement) throws HttpException {
+		if (action.equals("insert")) {
+			String dsoCode = GeneralImport.addField(csvElement,
+					"Dso Code", values, 0);
+			Dso dso = Dso.getDso(dsoCode);
+			String contractName = GeneralImport.addField(csvElement,
+					"Contract Name", values, 1);
+			DsoContract contract = dso.getContract(contractName);
+			String startDateStr = GeneralImport.addField(csvElement,
+					"Start Date", values, 2);
+			HhEndDate startDate = new HhEndDate(startDateStr);
+			String finishDateStr = GeneralImport.addField(csvElement,
+					"Finish Date", values, 3);
+			HhEndDate finishDate = null;
+			if (finishDateStr.trim().length() > 0) {
+				finishDate = new HhEndDate(finishDateStr);
+			}
+			String script = GeneralImport.addField(csvElement, "Script",
+					values, 4);
+			RateScript rateScript = contract
+					.insertRateScript(startDate, script);
+			if (finishDate != null) {
+				rateScript.update(rateScript.getStartDate(), finishDate,
+						rateScript.getScript());
+			}
+		} else if (action.equals("update")) {
+		}
+	}
+	
 	public static void generalImportSupplier(String action, String[] values,
 			Element csvElement) throws HttpException {
 		if (action.equals("insert")) {
 			String contractName = GeneralImport.addField(csvElement,
 					"Contract Name", values, 0);
-			SupplierContract contract = SupplierContract.getSupplierContract(contractName);
+			SupplierContract contract = SupplierContract
+					.getSupplierContract(contractName);
 			String startDateStr = GeneralImport.addField(csvElement,
 					"Start Date", values, 1);
 			HhEndDate startDate = new HhEndDate(startDateStr);
-			String script = GeneralImport.addField(csvElement,
-					"Script", values, 2);
+			String script = GeneralImport.addField(csvElement, "Script",
+					values, 2);
 			contract.insertRateScript(startDate, script);
 		} else if (action.equals("update")) {
 		}
@@ -86,12 +128,13 @@ public class RateScript extends PersistentEntity {
 		if (action.equals("insert")) {
 			String contractName = GeneralImport.addField(csvElement,
 					"Contract Name", values, 0);
-			NonCoreContract contract = NonCoreContract.getNonCoreContract(contractName);
+			NonCoreContract contract = NonCoreContract
+					.getNonCoreContract(contractName);
 			String startDateStr = GeneralImport.addField(csvElement,
 					"Start Date", values, 1);
 			HhEndDate startDate = new HhEndDate(startDateStr);
-			String script = GeneralImport.addField(csvElement,
-					"Script", values, 2);
+			String script = GeneralImport.addField(csvElement, "Script",
+					values, 2);
 			contract.insertRateScript(startDate, script);
 		} else if (action.equals("update")) {
 		}
@@ -177,8 +220,8 @@ public class RateScript extends PersistentEntity {
 						"The start date must be after the start date of the previous rate script.");
 			}
 			previousRateScript.internalUpdate(
-					previousRateScript.getStartDate(),
-					startDate.getPrevious(), previousRateScript.getScript());
+					previousRateScript.getStartDate(), startDate.getPrevious(),
+					previousRateScript.getScript());
 		}
 		if (nextRateScript != null) {
 			if (finishDate == null) {

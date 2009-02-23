@@ -123,7 +123,8 @@ public class Dso extends Party {
 	}
 
 	public DsoContract insertContract(String name, HhEndDate startDate,
-			HhEndDate finishDate, String chargeScript, String rateScript) throws HttpException {
+			HhEndDate finishDate, String chargeScript, String rateScript)
+			throws HttpException {
 		DsoContract contract = findContract(name);
 		if (contract == null) {
 			contract = new DsoContract(this, name, startDate, finishDate,
@@ -164,6 +165,19 @@ public class Dso extends Party {
 		} else {
 			throw new NotFoundException();
 		}
+	}
+
+	public DsoContract getContract(String name) throws HttpException {
+		DsoContract contract = (DsoContract) Hiber
+				.session()
+				.createQuery(
+						"from DsoContract contract where contract.party.id = :dsoId and contract.name = :name")
+				.setLong("dsoId", getId()).setString("name", name)
+				.uniqueResult();
+		if (contract == null) {
+			throw new NotFoundException("DSO contract not found.");
+		}
+		return contract;
 	}
 
 	@Override

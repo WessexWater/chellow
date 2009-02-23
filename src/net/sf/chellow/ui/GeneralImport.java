@@ -21,6 +21,7 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.events.XMLEvent;
 
 import net.sf.chellow.billing.Account;
+import net.sf.chellow.billing.DsoContract;
 import net.sf.chellow.billing.HhdcContract;
 import net.sf.chellow.billing.NonCoreContract;
 import net.sf.chellow.billing.RateScript;
@@ -70,8 +71,11 @@ public class GeneralImport extends Thread implements Urlable, XmlDescriber {
 	private Document doc = MonadUtils.newSourceDocument();
 
 	private Element source = doc.getDocumentElement();
+
 	Element csvElement = null;
+
 	private List<MonadMessage> errors = new ArrayList<MonadMessage>();
+
 	private Digester digester;
 
 	private int lineNumber;
@@ -178,7 +182,8 @@ public class GeneralImport extends Thread implements Urlable, XmlDescriber {
 						for (String value : allValues) {
 							message.append(value + ", ");
 						}
-						throw new UserException(message + ". Message: "+ e.getMessage());
+						throw new UserException(message + ". Message: "
+								+ e.getMessage());
 					}
 				} else {
 					csvElement = doc.createElement("csvLine");
@@ -229,6 +234,10 @@ public class GeneralImport extends Thread implements Urlable, XmlDescriber {
 								csvElement);
 					} else if (type.equals("user")) {
 						User.generalImport(action, values, csvElement);
+					} else if (type.equals("dso-contract")) {
+						DsoContract.generalImport(action, values, csvElement);
+					} else if (type.equals("dso-contract-rate-script")) {
+						RateScript.generalImportDso(action, values, csvElement);
 					} else {
 						throw new UserException("The type " + type
 								+ " isn't recognized.");
@@ -346,6 +355,7 @@ public class GeneralImport extends Thread implements Urlable, XmlDescriber {
 
 	private class Digester {
 		private CSVParser shredder = null;
+
 		private XMLEventReader r;
 
 		Digester(Reader reader, String extension) throws HttpException {

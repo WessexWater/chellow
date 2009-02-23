@@ -15,6 +15,7 @@ import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 import javax.sql.DataSource;
 
+import net.sf.chellow.billing.DsoContract;
 import net.sf.chellow.billing.NonCoreContract;
 import net.sf.chellow.billing.Provider;
 import net.sf.chellow.hhimport.AutomaticHhDataImporters;
@@ -160,6 +161,7 @@ public class ContextListener implements ServletContextListener {
 		MarketRole.loadFromCsv(context);
 		Participant.loadFromCsv(context);
 		Provider.loadFromCsv(context);
+		DsoContract.loadFromCsv(context);
 		VoltageLevel.insertVoltageLevels();
 		Llfc.loadFromCsv(context);
 		MeterType.loadFromCsv(context);
@@ -169,7 +171,6 @@ public class ContextListener implements ServletContextListener {
 		ClockInterval.loadFromCsv(context);
 		Ssc.loadFromCsv(context);
 		MeasurementRequirement.loadFromCsv(context);
-		// MpanTop.loadFromCsv(context);
 		Report.loadReports(context);
 		NonCoreContract.loadNonCoreContracts(context);
 		Hiber.flush();
