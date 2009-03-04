@@ -25,6 +25,7 @@ package net.sf.chellow.hhimport;
 import java.io.IOException;
 import java.io.LineNumberReader;
 import java.io.Reader;
+import java.math.BigDecimal;
 import java.text.DateFormat;
 import java.util.Locale;
 import java.util.TimeZone;
@@ -109,7 +110,7 @@ public class HhConverterCsvSimple implements HhConverter {
 				status = values[5].trim().charAt(0);
 			}
 			datum = new HhDatumRaw(values[0], Boolean.parseBoolean(values[1]), Boolean.parseBoolean(values[2]), new HhEndDate(values[3]),
-					Float.parseFloat(values[4]), status);
+					new BigDecimal(values[4]), status);
 			datumNext = datum;
 			return this.datum;
 		} catch (IOException e) {

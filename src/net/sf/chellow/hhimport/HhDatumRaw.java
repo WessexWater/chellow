@@ -1,5 +1,7 @@
 package net.sf.chellow.hhimport;
 
+import java.math.BigDecimal;
+
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.physical.HhEndDate;
 
@@ -12,7 +14,7 @@ public class HhDatumRaw {
 
 	private HhEndDate endDate;
 
-	private float value;
+	private BigDecimal value;
 
 	private Character status;
 
@@ -28,7 +30,7 @@ public class HhDatumRaw {
 	 */
 
 	public HhDatumRaw(String core, boolean isImport, boolean isKwh,
-			HhEndDate endDate, float value, Character status)
+			HhEndDate endDate, BigDecimal value, Character status)
 			throws HttpException {
 		this.core = core;
 		this.isImport = isImport;
@@ -54,7 +56,7 @@ public class HhDatumRaw {
 		return endDate;
 	}
 
-	public float getValue() {
+	public BigDecimal getValue() {
 		return value;
 	}
 

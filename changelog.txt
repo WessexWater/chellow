@@ -1,3 +1,7 @@
+* Database now stores exact values for HH data, rather than storing it as binary numbers.
+
+
+
 For bug fixes please see:
 
 http://sourceforge.net/tracker/?group_id=149672&atid=775513

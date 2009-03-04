@@ -27,6 +27,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.reflect.InvocationTargetException;
+import java.math.BigDecimal;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -280,6 +281,14 @@ public class Invocation {
 		MonadFloat monadFloat = getValidatable(MonadFloat.class,
 				parameterNameString);
 		return monadFloat == null ? null : monadFloat.getFloat();
+	}
+
+	public BigDecimal getBigDecimal(String paramName) throws InternalException {
+		if (hasParameter(paramName)) {
+			return new BigDecimal(getString(paramName));
+		} else {
+			return null;
+		}
 	}
 
 	public Double getDouble(String parameterNameString)
@@ -661,8 +670,9 @@ public class Invocation {
 				.split(":");
 		if (usernameAndPassword == null || usernameAndPassword.length != 2) {
 			return null;
-//			throw new BadRequestException(
-//					"The Authorization header must contain a base64 encoded string consisting of a username and password separated by a ':'.");
+			// throw new BadRequestException(
+			// "The Authorization header must contain a base64 encoded string
+			// consisting of a username and password separated by a ':'.");
 		}
 		User user = Chellow.USERS_INSTANCE.findUser(new EmailAddress(
 				usernameAndPassword[0]));

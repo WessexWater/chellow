@@ -25,6 +25,7 @@ package net.sf.chellow.hhimport;
 import java.io.IOException;
 import java.io.LineNumberReader;
 import java.io.Reader;
+import java.math.BigDecimal;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.util.Locale;
@@ -116,7 +117,7 @@ public class StarkCsvHhConverter implements HhConverter {
 							"The 'Units' field must be 'kWh' or 'kVArh'");
 				}
 				HhEndDate endDate = new HhEndDate(dateFormat.parse(values[3]));
-				float value = Float.parseFloat(values[4]);
+				BigDecimal value = new BigDecimal(values[4]);
 				Character status = null;
 				if (values.length > 5) {
 					if (values[5].equals("65")) {

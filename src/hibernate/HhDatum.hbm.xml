@@ -4,7 +4,7 @@
           "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
 <!-- 
 	
-	Copyright 2005-2007 Meniscus Systems Ltd
+	Copyright 2005-2007, 2009 Meniscus Systems Ltd
 	
 	This file is part of Chellow.
 	
@@ -40,7 +40,7 @@
 					sql-type="timestamp with time zone" />
 			</property>
 		</component>
-		<property name="value" column="value" type="float"
+		<property name="value" column="value" type="big_decimal"
 			not-null="true" />
 		<property name="status" column="status" type="character" />
 	</class>

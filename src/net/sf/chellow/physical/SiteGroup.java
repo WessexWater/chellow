@@ -50,24 +50,24 @@ public class SiteGroup {
 	}
 
 	@SuppressWarnings("unchecked")
-	public Map<String, List<Float>> hhData() throws HttpException {
-		Map<String, List<Float>> map = new HashMap<String, List<Float>>();
-		List<Float> importFromNet = new ArrayList<Float>();
+	public Map<String, List<Double>> hhData() throws HttpException {
+		Map<String, List<Double>> map = new HashMap<String, List<Double>>();
+		List<Double> importFromNet = new ArrayList<Double>();
 		map.put("import-from-net", importFromNet);
-		List<Float> exportToNet = new ArrayList<Float>();
+		List<Double> exportToNet = new ArrayList<Double>();
 		map.put("export-to-net", exportToNet);
-		List<Float> importFromGen = new ArrayList<Float>();
+		List<Double> importFromGen = new ArrayList<Double>();
 		map.put("import-from-gen", importFromGen);
-		List<Float> exportToGen = new ArrayList<Float>();
+		List<Double> exportToGen = new ArrayList<Double>();
 		map.put("export-to-gen", exportToGen);
 
 		Calendar cal = HhEndDate.getCalendar();
 		for (long end = getFrom().getDate().getTime(); end <= getTo().getDate()
 				.getTime(); end = HhEndDate.getNext(cal, end)) {
-			importFromNet.add(0f);
-			exportToNet.add(0f);
-			importFromGen.add(0f);
-			exportToGen.add(0f);
+			importFromNet.add(0d);
+			exportToNet.add(0d);
+			importFromGen.add(0d);
+			exportToGen.add(0d);
 		}
 		Query query = Hiber
 				.session()
@@ -75,7 +75,7 @@ public class SiteGroup {
 						"select datum.endDate.date , datum.value from HhDatum datum where datum.channel.supplyGeneration.supply = :supply and datum.channel.isImport = :isImport and datum.channel.isKwh = true and datum.endDate.date >= :from and datum.endDate.date <= :to order by datum.endDate.date")
 				.setTimestamp("from", from.getDate()).setTimestamp("to",
 						to.getDate());
-		List<List<Float>> hhStreams = new ArrayList<List<Float>>();
+		List<List<Double>> hhStreams = new ArrayList<List<Double>>();
 		for (Supply supply : getSupplies()) {
 			query.setEntity("supply", supply);
 			String sourceCode = supply.getSource().getCode();
@@ -109,16 +109,16 @@ public class SiteGroup {
 				}
 				int i = 0;
 				long datumEndDate = hhData.getDate(0).getTime();
-				float datumValue = hhData.getFloat(1);
+				double datumValue = hhData.getBigDecimal(1).doubleValue();
 				for (long end = getFrom().getDate().getTime(); end <= getTo()
 						.getDate().getTime(); end = HhEndDate.getNext(cal, end)) {
 					if (datumEndDate == end) {
-						for (List<Float> hhStream : hhStreams) {
+						for (List<Double> hhStream : hhStreams) {
 							hhStream.set(i, hhStream.get(i) + datumValue);
 						}
 						if (hhData.next()) {
 							datumEndDate = hhData.getDate(0).getTime();
-							datumValue = hhData.getFloat(1);
+							datumValue = hhData.getBigDecimal(1).doubleValue();
 						}
 					}
 					i++;

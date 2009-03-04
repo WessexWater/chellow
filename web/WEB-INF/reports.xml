@@ -1820,7 +1820,7 @@ rs = stmt.executeQuery()
 hhDate = HhEndDate(startDate).getNext().getDate().getTime()
 actualStatus = HhDatum.ACTUAL
 if rs.next():
-    value = rs.getFloat("value")
+    value_str = rs.getBigDecimal("value").toString()
     hhChannelEndDate = rs.getTimestamp("end_date")
     isImport = rs.getBoolean("is_import")
     isKwh = rs.getBoolean("is_kwh")
@@ -1834,20 +1834,20 @@ if rs.next():
         while hhChannelEndDate != None and hhChannelEndDate.getTime() == hhDate:
             if isImport:
                 if isKwh:
-                    datumElement.setAttribute("import-kwh-value", str(round(value, 2)))
+                    datumElement.setAttribute("import-kwh-value", value_str)
                     datumElement.setAttribute("import-kwh-status", status)
                 else:
-                    datumElement.setAttribute("import-kvarh-value", str(round(value, 2)))
+                    datumElement.setAttribute("import-kvarh-value", value_str)
                     datumElement.setAttribute("import-kvarh-status", status)
             else:
                 if isKwh:
-                    datumElement.setAttribute("export-kwh-value", str(round(value, 2)))
+                    datumElement.setAttribute("export-kwh-value", value_str)
                     datumElement.setAttribute("export-kwh-status", status)
                 else:
-                    datumElement.setAttribute("export-kvarh-value", str(round(value, 2)))
+                    datumElement.setAttribute("export-kvarh-value", value_str)
                     datumElement.setAttribute("export-kvarh-status", status)
             if rs.next():
-                value = rs.getFloat("value")
+                value_str = rs.getBigDecimal("value").toString()
                 hhChannelEndDate = rs.getTimestamp("end_date")
                 isImport = rs.getBoolean("is_import")
                 isKwh = rs.getBoolean("is_kwh")
@@ -4855,7 +4855,7 @@ start_date = HhEndDate(cal.getTime())
 inv.getResponse().setContentType("text/csv")
 inv.getResponse().setHeader('Content-Disposition', 'filename=output.csv;')
 pw = inv.getResponse().getWriter()
-pw.println("Site Id, Site Name, Associated Site Ids, Sources, From, To, Imported kWh, Displaced kWh, Exported kWh, Used kWh, Parasitic kWh, Generated kWh")
+pw.println("Site Id, Site Name, Associated Site Ids, Sources, Generator Types, From, To, Imported kWh, Displaced kWh, Exported kWh, Used kWh, Parasitic kWh, Generated kWh")
 pw.flush()
 sites = Hiber.session().createQuery("from Site site order by site.code").scroll()
 while sites.next():
@@ -4864,6 +4864,7 @@ while sites.next():
     site_code = site.getCode()
     associates = []
     sources = []
+    generator_types = []
     has_physical = False
     site_supply_generations = Hiber.session().createQuery("from SiteSupplyGeneration siteSupplyGeneration where siteSupplyGeneration.site = :site and siteSupplyGeneration.isPhysical is true and siteSupplyGeneration.supplyGeneration.supply.source.code != 'sub' and siteSupplyGeneration.supplyGeneration.startDate.date <= :finishDate and (siteSupplyGeneration.supplyGeneration.finishDate is null or siteSupplyGeneration.supplyGeneration.finishDate.date >= :startDate)").setEntity('site', site).setTimestamp('startDate', start_date.getDate()).setTimestamp('finishDate', finish_date.getDate()).scroll()
     import_from_net = 0
@@ -4878,28 +4879,32 @@ while sites.next():
             ss_gen_site_code = ss_gen.getSite().getCode()
             if ss_gen.getId() != site_supply_generation.getId() and ss_gen_site_code != site_code and ss_gen_site_code not in associates:
                 associates.append(ss_gen_site_code)
-            ss_gen_source = ss_gen.getSupplyGeneration().getSupply().getSource().getCode()
+            sup = ss_gen.getSupplyGeneration().getSupply()
+            ss_gen_source = sup.getSource().getCode()
             if ss_gen_source not in sources:
                 sources.append(ss_gen_source)
+            if sup.getGeneratorType() is not None:
+                ss_gen_gtype = sup.getGeneratorType().getCode()
+                if sup.getGeneratorType() not in generator_types:
+                    generator_types.append(ss_gen_gtype)
         result = query.setEntity('supplyGeneration', supply_generation).setTimestamp('startDate', start_date.getDate()).setTimestamp('finishDate', finish_date.getDate()).setBoolean('isImport', True).setParameterList('sources', ['net', 'gen-net']).uniqueResult()
         if result is not None:
-            import_from_net = import_from_net + result
+            import_from_net = import_from_net + result.doubleValue()
         result = query.setBoolean('isImport', False).uniqueResult()
         if result is not None:
-            export_to_net = export_to_net + result
+            export_to_net = export_to_net + result.doubleValue()
         result = query.setParameterList('sources', ['gen']).uniqueResult()
         if result is not None:
-            export_to_gen = export_to_gen + result
+            export_to_gen = export_to_gen + result.doubleValue()
         result = query.setParameterList('sources', ['gen-net']).uniqueResult()
         if result is not None:
-            import_from_gen = import_from_gen + result
+            import_from_gen = import_from_gen + result.doubleValue()
         result = query.setBoolean('isImport', True).uniqueResult()
         if result is not None:
-            export_to_gen = export_to_gen + result
+            export_to_gen = export_to_gen + result.doubleValue()
         result = query.setParameterList('sources', ['gen']).uniqueResult()
         if result is not None:
-            import_from_gen = import_from_gen + result
-        result = query.
+            import_from_gen = import_from_gen + result.doubleValue()
     if has_physical:
         associate_str = ''
         for associate in associates:
@@ -4908,12 +4913,17 @@ while sites.next():
         sources_str = ''
         for source in sources:
             sources_str = sources_str + source + ', '
+        generator_types.sort()
+        generator_types_str = ''
+        for generator_type in generator_types:
+            generator_types_str = generator_types_str + generator_type + ', '
         displaced = import_from_gen - export_to_net - export_to_gen
         used = displaced + import_from_net
         pw.print('"' + site_code + '","')
         pw.print(site.getName() + '","')     
         pw.print(associate_str[:-2] + '","')
-        pw.print(sources_str[:-2] + '",')
+        pw.print(sources_str[:-2] + '","')
+        pw.print(generator_types_str[:-2] + '",')
         pw.print(start_date.toString() + ',')
         pw.print(finish_date.toString() + ',')
         pw.print(str(round(import_from_net)))

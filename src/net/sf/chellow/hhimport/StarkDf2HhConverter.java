@@ -25,6 +25,7 @@ package net.sf.chellow.hhimport;
 import java.io.IOException;
 import java.io.LineNumberReader;
 import java.io.Reader;
+import java.math.BigDecimal;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.util.Locale;
@@ -36,6 +37,8 @@ import net.sf.chellow.monad.UserException;
 import net.sf.chellow.physical.HhEndDate;
 
 public class StarkDf2HhConverter implements HhConverter {
+	static private final BigDecimal BIG_DECIMAL_2 = new BigDecimal("2");
+
 	private LineNumberReader reader;
 
 	private String core;
@@ -139,17 +142,30 @@ public class StarkDf2HhConverter implements HhConverter {
 							.substring(0, datePos).replace(",", " ")));
 					int valuePos = line.indexOf(',', datePos + 1);
 					Character status = null;
-					Float valueKw = null;
+					BigDecimal valueKw = null;
+
 					if (valuePos < 0) {
-						valueKw = Float.parseFloat(line.substring(datePos + 1));
+						String kwString = line.substring(datePos + 1).trim();
+						try {
+							valueKw = new BigDecimal(kwString);
+						} catch (NumberFormatException e) {
+							throw new UserException(
+									"Problem parsing the kW value: " + kwString);
+						}
 					} else {
-						valueKw = Float.parseFloat(line.substring(datePos + 1,
-								valuePos));
+						String kwString = line.substring(datePos + 1, valuePos).trim();
+						try {
+							valueKw = new BigDecimal(kwString);
+						} catch (NumberFormatException e) {
+							throw new UserException(
+									"Problem parsing the kW value: " + kwString);
+						}
 						String trimmedLine = line.trim();
 						status = trimmedLine.charAt(trimmedLine.length() - 1);
 					}
+
 					if (!core.trim().startsWith("99")
-							&& valueKw * 10 % 2 == 1) {
+							&& valueKw.doubleValue() * 10 % 2 == 1) {
 						throw new UserException(
 								"Problem at line number: "
 										+ lastLineNumber()
@@ -158,8 +174,8 @@ public class StarkDf2HhConverter implements HhConverter {
 										+ "'. For a settlement MPAN the last digit of the value must be even. If it isn't it means that the data is probably kWh rather than kW.");
 					}
 					datum = new HhDatumRaw(core, isImport, isKwh, endDate,
-							valueKw / 2, status);
-					//Debug.print("Datum is " + datum);
+							valueKw.divide(BIG_DECIMAL_2), status);
+					// Debug.print("Datum is " + datum);
 				}
 				line = reader.readLine();
 			}

@@ -7,6 +7,7 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.io.Reader;
 import java.io.UnsupportedEncodingException;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -163,8 +164,7 @@ public class GeneralImport extends Thread implements Urlable, XmlDescriber {
 							hhData.add(new HhDatumRaw(allValues[2], Boolean
 									.parseBoolean(allValues[4]), Boolean
 									.parseBoolean(allValues[5]), new HhEndDate(
-									allValues[3]), Float
-									.parseFloat(allValues[6]), status));
+									allValues[3]), new BigDecimal(allValues[6]), status));
 							// Debug.print("size " + hhData.size());
 							if (hhData.size() > 1000) {
 								HhDatum.insert(hhData.iterator(), halt);

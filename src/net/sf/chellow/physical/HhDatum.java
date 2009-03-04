@@ -22,6 +22,7 @@
 
 package net.sf.chellow.physical;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -160,7 +161,7 @@ public class HhDatum extends PersistentEntity {
 
 	private HhEndDate endDate;
 
-	private float value;
+	private BigDecimal value;
 
 	private Character status;
 
@@ -193,11 +194,11 @@ public class HhDatum extends PersistentEntity {
 		this.endDate = endDate;
 	}
 
-	public float getValue() {
+	public BigDecimal getValue() {
 		return value;
 	}
 
-	void setValue(float value) {
+	void setValue(BigDecimal value) {
 		this.value = value;
 	}
 
@@ -209,7 +210,7 @@ public class HhDatum extends PersistentEntity {
 		this.status = status;
 	}
 
-	public void update(float value, Character status) throws HttpException {
+	public void update(BigDecimal value, Character status) throws HttpException {
 		this.value = value;
 		if (status != null
 				&& !(status.equals(ESTIMATE) || status.equals(ACTUAL))) {
@@ -223,7 +224,7 @@ public class HhDatum extends PersistentEntity {
 		Element element = super.toXml(doc, "hh-datum");
 
 		element.appendChild(endDate.toXml(doc));
-		element.setAttribute("value", Float.toString(value));
+		element.setAttribute("value", value.toString());
 		if (status != null) {
 			element.setAttribute("status", Character.toString(status));
 		}
@@ -269,7 +270,7 @@ public class HhDatum extends PersistentEntity {
 				throw e;
 			}
 		} else {
-			Float value = inv.getFloat("value");
+			BigDecimal value = inv.getBigDecimal("value");
 			Character status = inv.getCharacter("status");
 			if (!inv.isValid()) {
 				throw new UserException();

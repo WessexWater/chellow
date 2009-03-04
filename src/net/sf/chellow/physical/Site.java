@@ -258,12 +258,12 @@ public class Site extends PersistentEntity {
 			// long now = System.currentTimeMillis();
 			// Debug.print("About to go checking: "
 			// + (System.currentTimeMillis() - now));
-			Map<String, List<Float>> map = group.hhData();
+			Map<String, List<Double>> map = group.hhData();
 
-			List<Float> importFromNet = map.get("import-from-net");
-			List<Float> exportToNet = map.get("export-to-net");
-			List<Float> importFromGen = map.get("import-from-gen");
-			List<Float> exportToGen = map.get("export-to-gen");
+			List<Double> importFromNet = map.get("import-from-net");
+			List<Double> exportToNet = map.get("export-to-net");
+			List<Double> importFromGen = map.get("import-from-gen");
+			List<Double> exportToGen = map.get("export-to-gen");
 			// Debug.print("Got to vague midpoint. "
 			// + (System.currentTimeMillis() - now));
 			HhEndDate resolve1From = null;

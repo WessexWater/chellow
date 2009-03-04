@@ -24,6 +24,7 @@ package net.sf.chellow.hhimport;
 
 import java.io.IOException;
 import java.io.Reader;
+import java.math.BigDecimal;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -104,8 +105,7 @@ public class HhConverterBglobal implements HhConverter {
 					cal.setTime(date);
 					cal.add(Calendar.MINUTE, 30 * (hhIndex + 1));
 					datum = new HhDatumRaw(values[0], true, true,
-							new HhEndDate(cal.getTime()), Float
-									.parseFloat(values[hhIndex + 3]), null);
+							new HhEndDate(cal.getTime()), new BigDecimal(values[hhIndex + 3]), null);
 				} catch (NumberFormatException e) {
 					throw new UserException("Problem formatting value. "
 							+ e.getMessage());

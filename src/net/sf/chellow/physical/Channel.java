@@ -22,6 +22,7 @@
 
 package net.sf.chellow.physical;
 
+import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -590,7 +591,7 @@ public class Channel extends PersistentEntity {
 		HhEndDate lastAdditionDate = null;
 		HhEndDate prevEndDate = null;
 		int missing = 0;
-		float originalDatumValue = 0;
+		BigDecimal originalDatumValue = new BigDecimal(0);
 		Character originalDatumStatus = null;
 		Connection con = Hiber.session().connection();
 		PreparedStatement stmt;
@@ -622,7 +623,7 @@ public class Channel extends PersistentEntity {
 
 					stmt.setTimestamp(2, new Timestamp(datumRaw.getEndDate()
 							.getDate().getTime()));
-					stmt.setFloat(3, datumRaw.getValue());
+					stmt.setBigDecimal(3, datumRaw.getValue());
 					Character status = datumRaw.getStatus();
 					if (status == null) {
 						stmt.setNull(4, Types.CHAR);
@@ -664,10 +665,10 @@ public class Channel extends PersistentEntity {
 					siteCheckFrom = datumRaw.getEndDate();
 				}
 				siteCheckTo = datumRaw.getEndDate();
-				if (datumRaw.getValue() < 0) {
+				if (datumRaw.getValue().doubleValue() < 0) {
 					addChannelSnag(ChannelSnag.SNAG_NEGATIVE, datumRaw
 							.getEndDate(), datumRaw.getEndDate());
-				} else if (altered && originalDatumValue < 0) {
+				} else if (altered && originalDatumValue.doubleValue() < 0) {
 					deleteSnag(ChannelSnag.SNAG_NEGATIVE, datumRaw
 							.getEndDate());
 				}

@@ -858,7 +858,7 @@ public class Supply extends PersistentEntity {
 						datum = (HhDatum) hhData.get(0);
 						HhEndDate endDate = datum.getEndDate();
 						datum.setChannel(targetChannel);
-						if (datum.getValue() < 0) {
+						if (datum.getValue().doubleValue() < 0) {
 							targetChannel
 									.addChannelSnag(ChannelSnag.SNAG_NEGATIVE,
 											endDate, endDate);
