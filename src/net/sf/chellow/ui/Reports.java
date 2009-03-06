@@ -118,6 +118,7 @@ public class Reports extends EntityList {
 				pw.println("  <line>");
 				pw.println("    <value>insert</value>");
 				pw.println("    <value>report</value>");
+				pw.println("    <value>" + report.getId() + "</value>");
 				pw.println("    <value>" + report.getName() + "</value>");
 				pw.println("    <value><![CDATA["
 						+ report.getScript().replace("<![CDATA[",
@@ -141,7 +142,7 @@ public class Reports extends EntityList {
 	public void httpPost(Invocation inv) throws HttpException {
 		String name = inv.getString("name");
 		try {
-			Report report = Report.insertReport(name, "", null);
+			Report report = Report.insertReport(null, name, "", null);
 			Hiber.commit();
 			inv.sendCreated(document(), report.getUri());
 		} catch (HttpException e) {

@@ -18,6 +18,7 @@ import net.sf.chellow.monad.Urlable;
 import net.sf.chellow.monad.UserException;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
+import net.sf.chellow.physical.Configuration;
 import net.sf.chellow.physical.PersistentEntity;
 
 import org.python.util.PythonInterpreter;
@@ -27,13 +28,18 @@ import org.w3c.dom.Element;
 public class Report extends PersistentEntity {
 	public static void generalImport(String action, String[] values,
 			Element csvElement) throws HttpException {
-		String name = GeneralImport.addField(csvElement, "Name", values, 0);
+		String idString = GeneralImport.addField(csvElement, "Id", values, 0);
+		Long id = null;
+		if (idString.trim().length() > 0) {
+			id = new Long(idString);
+		}
+		String name = GeneralImport.addField(csvElement, "Name", values, 1);
 		if (action.equals("insert")) {
 			String script = GeneralImport.addField(csvElement, "Script",
-					values, 1);
-			String template = GeneralImport.addField(csvElement, "Template",
 					values, 2);
-			Report.insertReport(name, script, template);
+			String template = GeneralImport.addField(csvElement, "Template",
+					values, 3);
+			Report.insertReport(id, name, script, template);
 		} else if (action.equals("update")) {
 			/*
 			 * String script = values[3];
@@ -78,9 +84,9 @@ public class Report extends PersistentEntity {
 		}
 	}
 
-	public static Report insertReport(String name, String script,
+	public static Report insertReport(Long id, String name, String script,
 			String template) throws HttpException {
-		Report report = new Report(name, script, template);
+		Report report = new Report(id, name, script, template);
 		Hiber.session().save(report);
 		Hiber.flush();
 		return report;
@@ -95,8 +101,33 @@ public class Report extends PersistentEntity {
 	public Report() {
 	}
 
-	public Report(String name, String script, String template)
+	public Report(Long id, String name, String script, String template)
 			throws HttpException {
+		Configuration configuration = Configuration.getConfiguration();
+		boolean isCore = name.startsWith("0 ");
+		
+		if (id == null) {
+			if (isCore) {
+				id = configuration.nextCoreReportId();
+			} else {
+				id = configuration.nextUserReportId();
+			}
+		} else {
+			if (isCore) {
+				if (id > configuration.getCoreReportId()) {
+					configuration.setCoreReportId(id);
+				}
+			} else {
+				if (id > configuration.getUserReportId()) {
+					id = configuration.nextUserReportId();
+				}
+			}
+		}
+		boolean isOdd = id % 2 == 1;
+		if (isOdd != isCore) {
+			throw new UserException("The ids of core reports must be odd, those of user reports must be even.");
+		}
+		setId(id);
 		update(name, script, template);
 	}
 

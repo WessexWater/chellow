@@ -48,11 +48,17 @@ public class Configuration extends PersistentEntity {
 
 	private String properties;
 
+	private long coreReportId;
+
+	private long userReportId;
+
 	public Configuration() {
 	}
 
 	public Configuration(String properties) {
 		setProperties(properties);
+		setCoreReportId(1);
+		setUserReportId(0);
 	}
 
 	public String getProperties() {
@@ -61,6 +67,22 @@ public class Configuration extends PersistentEntity {
 
 	void setProperties(String properties) {
 		this.properties = properties;
+	}
+
+	public long getCoreReportId() {
+		return coreReportId;
+	}
+
+	public void setCoreReportId(long id) {
+		coreReportId = id;
+	}
+
+	public long getUserReportId() {
+		return userReportId;
+	}
+
+	public void setUserReportId(long id) {
+		userReportId = id;
 	}
 
 	public MonadUri getUri() {
@@ -139,5 +161,15 @@ public class Configuration extends PersistentEntity {
 			throw new InternalException(e);
 		}
 		return props.getProperty(name);
+	}
+
+	public long nextCoreReportId() {
+		coreReportId += 2;
+		return coreReportId;
+	}
+
+	public long nextUserReportId() {
+		coreReportId += 2;
+		return coreReportId;
 	}
 }

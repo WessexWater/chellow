@@ -7,6 +7,7 @@
   <line>
     <value>insert</value>
     <value>report</value>
+    <value>1</value>
     <value>0 Home</value>
     <value><![CDATA[]]></value>
     <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
@@ -155,6 +156,7 @@
   <line>
     <value>insert</value>
     <value>report</value>
+    <value>3</value>
     <value>0 Sites</value>
     <value><![CDATA[from net.sf.chellow.monad import Hiber
 
@@ -242,6 +244,7 @@ tabindex="1" />
   <line>
     <value>insert</value>
     <value>report</value>
+    <value>5</value>
     <value>0 Site</value>
     <value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree, UserException
 from net.sf.chellow.monad.types import MonadDate
@@ -447,6 +450,7 @@ source.appendChild(yesterday.toXml(doc))]]></value>
   <line>
     <value>insert</value>
     <value>report</value>
+    <value>7</value>
     <value>0 Supply</value>
     <value><![CDATA[from net.sf.chellow.monad import Hiber, UserException, XmlTree
 from net.sf.chellow.monad.types import MonadDate
@@ -610,6 +614,7 @@ source.appendChild(MonadDate().toXml(doc))
   <line>
     <value>insert</value>
     <value>report</value>
+    <value>9</value>
     <value>0 Site hh graph container</value>
     <value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree
 from net.sf.chellow.monad.types import MonadDate
@@ -725,6 +730,7 @@ source.setAttribute("months", str(months))]]></value>
   <line>
     <value>insert</value>
     <value>report</value>
+    <value>11</value>
     <value>0 Site Generation Graph Container</value>
     <value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree
 from net.sf.chellow.monad.types import MonadDate
@@ -849,6 +855,7 @@ source.appendChild(inv.requestXml(doc))]]></value>
   <line>
     <value>insert</value>
     <value>report</value>
+    <value>13</value>
     <value>0 Site Monthly figures</value>
     <value><![CDATA[from net.sf.chellow.monad import Hiber, UserException, XmlTree
 from java.lang import System
@@ -1511,6 +1518,7 @@ if rs.next():
   <line>
     <value>insert</value>
     <value>report</value>
+    <value>15</value>
     <value>0 Supply MPAN months</value>
     <value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree, UserException
 from net.sf.chellow.monad.types import MonadDate
@@ -1781,6 +1789,7 @@ for i in range(12 * years):
   <line>
     <value>insert</value>
     <value>report</value>
+    <value>17</value>
     <value>0 Supply Raw HH Data</value>
     <value><![CDATA[from net.sf.chellow.monad import Hiber, UserException, XmlTree
 from java.util import Calendar, GregorianCalendar, TimeZone, Locale, Date
@@ -2036,6 +2045,7 @@ rs.close()]]></value>
   <line>
     <value>insert</value>
     <value>report</value>
+    <value>19</value>
     <value>0 Style Sheet</value>
     <value><![CDATA[inv.getResponse().setContentType("text/css")
 pw = inv.getResponse().getWriter()
@@ -2068,6 +2078,7 @@ pw.close()]]></value>
   <line>
     <value>insert</value>
     <value>report</value>
+    <value>21</value>
     <value>0 Site HH Graph</value>
     <value><![CDATA[from net.sf.chellow.monad import Hiber, UserException
 from java.lang import System
@@ -2245,6 +2256,7 @@ os.close()]]></value>
   <line>
     <value>insert</value>
     <value>report</value>
+    <value>23</value>
     <value>0 Generation Graph</value>
     <value><![CDATA[from net.sf.chellow.monad import Hiber, UserException
 from net.sf.chellow.physical import HhEndDate, HhDatum, Site
@@ -2617,6 +2629,7 @@ os.close()]]></value>
   <line>
     <value>insert</value>
     <value>report</value>
+    <value>25</value>
     <value>0 Site HH figures</value>
     <value><![CDATA[from net.sf.chellow.monad import Hiber, UserException, XmlTree
 from java.lang import System
@@ -2907,6 +2920,7 @@ if rs.next():
   <line>
     <value>insert</value>
     <value>report</value>
+    <value>27</value>
     <value>0 Site HH bulk figures selector</value>
     <value><![CDATA[from net.sf.chellow.monad import UserException, XmlTree
 from net.sf.chellow.monad.types import MonadDate
@@ -3030,6 +3044,7 @@ source.appendChild(MonadDate().toXml(doc))]]></value>
   <line>
     <value>insert</value>
     <value>report</value>
+    <value>29</value>
     <value>0 Site HH bulk figures</value>
     <value><![CDATA[from java.util import GregorianCalendar, TimeZone, Locale, Calendar, Date
 from net.sf.chellow.monad import Hiber, UserException
@@ -3147,6 +3162,7 @@ pw.close()]]></value>
   <line>
     <value>insert</value>
     <value>report</value>
+    <value>31</value>
     <value>0 Supply Generation</value>
     <value><![CDATA[from net.sf.chellow.monad import Hiber, UserException, XmlTree
 from net.sf.chellow.monad.types import MonadDate
@@ -3489,6 +3505,7 @@ source.appendChild(MonadDate().toXml(doc))]]></value>
   <line>
     <value>insert</value>
     <value>report</value>
+    <value>33</value>
     <value>0 CSV Supplies Snapshot</value>
     <value><![CDATA[from net.sf.chellow.monad import Hiber
 from net.sf.chellow.physical import ReadType
@@ -3559,6 +3576,7 @@ pw.close()]]></value>
   <line>
     <value>insert</value>
     <value>report</value>
+    <value>35</value>
     <value>0 GSP Group</value>
     <value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree
 from net.sf.chellow.physical import GspGroup
@@ -3639,6 +3657,7 @@ source.appendChild(group.toXml(doc))]]></value>
   <line>
     <value>insert</value>
     <value>report</value>
+    <value>37</value>
     <value>0 HHDC Channel Snags</value>
     <value><![CDATA[from net.sf.chellow.monad import XmlTree, Hiber, UserException
 from java.util import Date
@@ -3835,6 +3854,7 @@ snags_element.setAttribute("pending-site-count", str(totalSites - activeSites))]
   <line>
     <value>insert</value>
     <value>report</value>
+    <value>39</value>
     <value>0 Site Group Snags</value>
     <value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree
 from net.sf.chellow.billing import HhdcContract
@@ -3966,6 +3986,7 @@ snags_element.setAttribute("site-count", str(sites))
   <line>
     <value>insert</value>
     <value>report</value>
+    <value>41</value>
     <value>0 CSV TRIAD Data Quality</value>
     <value><![CDATA[from net.sf.chellow.monad import Hiber
 from net.sf.chellow.physical import HhEndDate, SupplyGeneration
@@ -4011,6 +4032,7 @@ pw.close()]]></value>
   <line>
     <value>insert</value>
     <value>report</value>
+    <value>43</value>
     <value>0 GSP Groups</value>
     <value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree
 
@@ -4091,6 +4113,7 @@ for group in Hiber.session().createQuery("from GspGroup group order by group.cod
   <line>
     <value>insert</value>
     <value>report</value>
+    <value>45</value>
     <value>0 Providers</value>
     <value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree
 
@@ -4173,6 +4196,7 @@ for provider in Hiber.session().createQuery("from Provider provider order by pro
   <line>
     <value>insert</value>
     <value>report</value>
+    <value>47</value>
     <value>0 Provider</value>
     <value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree
 from net.sf.chellow.billing import Provider
@@ -4363,6 +4387,7 @@ if query != None:
   <line>
     <value>insert</value>
     <value>report</value>
+    <value>49</value>
     <value>0 DSO LLFCs</value>
     <value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree
 from net.sf.chellow.billing import Dso
@@ -4485,6 +4510,7 @@ llfcs_element.appendChild(dso.toXml(doc))]]></value>
   <line>
     <value>insert</value>
     <value>report</value>
+    <value>51</value>
     <value>0 DSO LLFC</value>
     <value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree
 from net.sf.chellow.physical import Llfc
@@ -4597,6 +4623,7 @@ source.appendChild(llfc.toXml(doc, XmlTree('dso').put('voltageLevel')))]]></valu
   <line>
     <value>insert</value>
     <value>report</value>
+    <value>53</value>
     <value>0 Profile Classes</value>
     <value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree
 
@@ -4671,6 +4698,7 @@ for pc in Hiber.session().createQuery("from Pc pc order by pc.code").list():
   <line>
     <value>insert</value>
     <value>report</value>
+    <value>55</value>
     <value>0 Profile Class</value>
     <value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree
 from net.sf.chellow.physical import Pc
@@ -4748,6 +4776,7 @@ source.appendChild(pc.toXml(doc))]]></value>
   <line>
     <value>insert</value>
     <value>report</value>
+    <value>57</value>
     <value>0 CSV Sites Period Selector</value>
     <value><![CDATA[from java.util import GregorianCalendar, TimeZone, Locale, Calendar
 from net.sf.chellow.monad.types import MonadDate
@@ -4829,6 +4858,7 @@ source.appendChild(MonadDate.getMonthsXml(doc))]]></value>
   <line>
     <value>insert</value>
     <value>report</value>
+    <value>59</value>
     <value>0 CSV Sites Period</value>
     <value><![CDATA[from net.sf.chellow.monad import Hiber, UserException
 from java.lang import System
@@ -4941,6 +4971,7 @@ pw.close()]]></value>
   <line>
     <value>insert</value>
     <value>report</value>
+    <value>61</value>
     <value>0 MTCs</value>
     <value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree
 
@@ -5042,6 +5073,7 @@ for mt in Hiber.session().createQuery("select mtc from Mtc mtc left outer join m
   <line>
     <value>insert</value>
     <value>report</value>
+    <value>63</value>
     <value>0 MTC</value>
     <value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree
 from net.sf.chellow.physical import Mtc
@@ -5237,6 +5269,7 @@ source.appendChild(mtc.toXml(doc, XmlTree('meterType').put('paymentType').put('d
   <line>
     <value>insert</value>
     <value>report</value>
+    <value>65</value>
     <value>0 DSO Contracts</value>
     <value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree
 from net.sf.chellow.billing import Dso
@@ -5352,6 +5385,7 @@ contracts_element.appendChild(dso.toXml(doc))]]></value>
   <line>
     <value>insert</value>
     <value>report</value>
+    <value>67</value>
     <value>0 DSO Contract</value>
     <value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree
 from net.sf.chellow.billing import DsoContract
@@ -5518,6 +5552,7 @@ for rate_script in contract.getRateScripts():
   <line>
     <value>insert</value>
     <value>report</value>
+    <value>69</value>
     <value>0 DSO Contract Rate Script</value>
     <value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree
 from net.sf.chellow.billing import RateScript
@@ -5642,6 +5677,7 @@ source.appendChild(script.toXml(doc, XmlTree('contract', XmlTree('party'))))]]><
   <line>
     <value>insert</value>
     <value>report</value>
+    <value>71</value>
     <value>0 Participants</value>
     <value><![CDATA[from net.sf.chellow.monad import Hiber
 
@@ -5716,6 +5752,7 @@ for participant in Hiber.session().createQuery('from Participant participant ord
   <line>
     <value>insert</value>
     <value>report</value>
+    <value>73</value>
     <value>0 Participant</value>
     <value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree
 from net.sf.chellow.physical import Participant
@@ -5843,6 +5880,7 @@ for party in Hiber.session().createQuery("from Party party where party.participa
   <line>
     <value>insert</value>
     <value>report</value>
+    <value>75</value>
     <value>0 Supplier Contracts</value>
     <value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree
 
@@ -5954,6 +5992,7 @@ for contract in Hiber.session().createQuery("from SupplierContract contract orde
   <line>
     <value>insert</value>
     <value>report</value>
+    <value>77</value>
     <value>0 Supplier Contract</value>
     <value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree, UserException
 from net.sf.chellow.billing import SupplierContract
@@ -6145,6 +6184,7 @@ for account in Hiber.session().createQuery("from Account account where account.c
   <line>
     <value>insert</value>
     <value>report</value>
+    <value>79</value>
     <value>0 Supplier Contract Rate Script</value>
     <value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree
 from net.sf.chellow.billing import RateScript
@@ -6252,6 +6292,7 @@ source.appendChild(script.toXml(doc, XmlTree('contract', XmlTree('party'))))]]><
   <line>
     <value>insert</value>
     <value>report</value>
+    <value>81</value>
     <value>0 Supplier Accounts</value>
     <value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree
 from net.sf.chellow.billing import SupplierContract
@@ -6344,6 +6385,7 @@ for account in Hiber.session().createQuery("from Account account where account.c
   <line>
     <value>insert</value>
     <value>report</value>
+    <value>83</value>
     <value>0 Supplier Account</value>
     <value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree, UserException
 from net.sf.chellow.billing import Account
@@ -6515,6 +6557,7 @@ if len(mpans) > 0:
   <line>
     <value>insert</value>
     <value>report</value>
+    <value>85</value>
     <value>0 Supplier Bills</value>
     <value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree, UserException
 from net.sf.chellow.billing import Account
@@ -6635,6 +6678,7 @@ for bill in Hiber.session().createQuery("from Bill bill where bill.account = :ac
   <line>
     <value>insert</value>
     <value>report</value>
+    <value>87</value>
     <value>0 Supplier Bill</value>
     <value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree, UserException
 from net.sf.chellow.billing import Bill
@@ -6812,6 +6856,7 @@ for invoice in Hiber.session().createQuery("from Invoice invoice where invoice.b
   <line>
     <value>insert</value>
     <value>report</value>
+    <value>89</value>
     <value>0 Supplier Contract Batches</value>
     <value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree, UserException
 from net.sf.chellow.billing import SupplierContract
@@ -6909,6 +6954,7 @@ for batch in Hiber.session().createQuery("from Batch batch where batch.contract 
   <line>
     <value>insert</value>
     <value>report</value>
+    <value>91</value>
     <value>0 Supplier Contract Batch</value>
     <value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree, UserException
 from net.sf.chellow.billing import Batch
@@ -7057,6 +7103,7 @@ for invoice in Hiber.session().createQuery("from Invoice invoice where invoice.b
   <line>
     <value>insert</value>
     <value>report</value>
+    <value>93</value>
     <value>0 Supplier Contract Bill Invoice</value>
     <value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree, UserException
 from net.sf.chellow.billing import Invoice
@@ -7306,6 +7353,7 @@ for register_read in Hiber.session().createQuery("from RegisterRead read where r
   <line>
     <value>insert</value>
     <value>report</value>
+    <value>95</value>
     <value>0 TPRs</value>
     <value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree
 
@@ -7362,6 +7410,7 @@ for tpr in Hiber.session().createQuery("from Tpr tpr order by tpr.code").list():
   <line>
     <value>insert</value>
     <value>report</value>
+    <value>97</value>
     <value>0 TPR</value>
     <value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree
 from net.sf.chellow.physical import Tpr
@@ -7520,6 +7569,7 @@ source.appendChild(tpr.toXml(doc, XmlTree("measurementRequirements", XmlTree("ss
   <line>
     <value>insert</value>
     <value>report</value>
+    <value>99</value>
     <value>0 Supplies</value>
     <value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree
 
@@ -7626,6 +7676,7 @@ if inv.hasParameter("search-pattern"):
   <line>
     <value>insert</value>
     <value>report</value>
+    <value>101</value>
     <value>0 Supplier Contract Account Snags</value>
     <value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree, UserException
 from net.sf.chellow.billing import SupplierContract
@@ -7773,6 +7824,7 @@ for account_snag in Hiber.session().createQuery("from AccountSnag snag where sna
   <line>
     <value>insert</value>
     <value>report</value>
+    <value>103</value>
     <value>0 Supplier Contract Account Snag</value>
     <value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree, UserException
 from net.sf.chellow.billing import AccountSnag
@@ -7923,6 +7975,7 @@ source.appendChild(snag.toXml(doc, XmlTree('contract', XmlTree('party')).put('ac
   <line>
     <value>insert</value>
     <value>report</value>
+    <value>105</value>
     <value>0 Supplier Contract Bill Snags</value>
     <value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree, UserException
 from net.sf.chellow.billing import SupplierContract
@@ -8058,6 +8111,7 @@ for bill_snag in Hiber.session().createQuery("from BillSnag snag where snag.date
   <line>
     <value>insert</value>
     <value>report</value>
+    <value>107</value>
     <value>0 Supplier Contract Bill Snag</value>
     <value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree, UserException
 from net.sf.chellow.billing import BillSnag
@@ -8195,6 +8249,7 @@ source.appendChild(snag.toXml(doc, XmlTree('contract', XmlTree('party')).put('bi
   <line>
     <value>insert</value>
     <value>report</value>
+    <value>109</value>
     <value>0 HHDC Contract Accounts</value>
     <value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree
 from net.sf.chellow.billing import HhdcContract
@@ -8286,6 +8341,7 @@ for account in Hiber.session().createQuery("from Account account where account.c
   <line>
     <value>insert</value>
     <value>report</value>
+    <value>111</value>
     <value>0 HHDC Contract Account</value>
     <value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree, UserException
 from net.sf.chellow.billing import Account
@@ -8453,6 +8509,7 @@ if len(mpans) > 0:
   <line>
     <value>insert</value>
     <value>report</value>
+    <value>113</value>
     <value>0 HHDC Contracts</value>
     <value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree
 
@@ -8564,6 +8621,7 @@ for contract in Hiber.session().createQuery("from HhdcContract contract order by
   <line>
     <value>insert</value>
     <value>report</value>
+    <value>115</value>
     <value>0 HHDC Contract</value>
     <value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree, UserException
 from net.sf.chellow.billing import HhdcContract
@@ -8788,6 +8846,7 @@ source.appendChild(contract.toXml(doc, XmlTree('party', XmlTree('participant')).
   <line>
     <value>insert</value>
     <value>report</value>
+    <value>117</value>
     <value>0 HHDC Contract Channel Snag</value>
     <value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree, UserException
 from net.sf.chellow.physical import ChannelSnag
@@ -8966,6 +9025,7 @@ source.appendChild(snag.toXml(doc, XmlTree("contract").put("channel", XmlTree("s
   <line>
     <value>insert</value>
     <value>report</value>
+    <value>119</value>
     <value>0 Site Group Snag</value>
     <value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree, UserException
 from net.sf.chellow.physical import SiteSnag
@@ -9098,6 +9158,7 @@ source.appendChild(snag.toXml(doc, XmlTree("site")))]]></value>
   <line>
     <value>insert</value>
     <value>report</value>
+    <value>121</value>
     <value>0 Market Roles</value>
     <value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree
 
@@ -9175,6 +9236,7 @@ for role in Hiber.session().createQuery("from MarketRole role order by role.code
   <line>
     <value>insert</value>
     <value>report</value>
+    <value>123</value>
     <value>0 Market Role</value>
     <value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree
 from net.sf.chellow.physical import MarketRole
@@ -9326,6 +9388,7 @@ for party in Hiber.session().createQuery("from Party party where party.role = :r
   <line>
     <value>insert</value>
     <value>report</value>
+    <value>125</value>
     <value>0 SSCs</value>
     <value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree
 
@@ -9448,6 +9511,7 @@ for ssc in Hiber.session().createQuery("from Ssc ssc order by ssc.code").list():
   <line>
     <value>insert</value>
     <value>report</value>
+    <value>127</value>
     <value>0 SSC</value>
     <value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree
 from net.sf.chellow.physical import Ssc
@@ -9575,6 +9639,7 @@ source.appendChild(ssc.toXml(doc, XmlTree("measurementRequirements", XmlTree("tp
   <line>
     <value>insert</value>
     <value>report</value>
+    <value>129</value>
     <value>0 Meter Types</value>
     <value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree
 
@@ -9655,6 +9720,7 @@ for type in Hiber.session().createQuery("from MeterType type order by type.code"
   <line>
     <value>insert</value>
     <value>report</value>
+    <value>131</value>
     <value>0 Meter Type</value>
     <value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree
 from net.sf.chellow.physical import MeterType
@@ -9735,6 +9801,7 @@ source.appendChild(type.toXml(doc))]]></value>
   <line>
     <value>insert</value>
     <value>report</value>
+    <value>133</value>
     <value>0 MTC Payment Types</value>
     <value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree
 
@@ -9813,6 +9880,7 @@ for type in Hiber.session().createQuery("from MeterPaymentType type order by typ
   <line>
     <value>insert</value>
     <value>report</value>
+    <value>135</value>
     <value>0 MTC Payment Type</value>
     <value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree
 from net.sf.chellow.physical import MeterPaymentType
@@ -9893,6 +9961,7 @@ source.appendChild(type.toXml(doc))]]></value>
   <line>
     <value>insert</value>
     <value>report</value>
+    <value>137</value>
     <value>0 DSOs</value>
     <value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree
 
@@ -9979,6 +10048,7 @@ for dso in Hiber.session().createQuery(
   <line>
     <value>insert</value>
     <value>report</value>
+    <value>139</value>
     <value>0 DSO</value>
     <value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree
 from net.sf.chellow.billing import Dso
@@ -10093,6 +10163,7 @@ for contract in Hiber.session().createQuery("from DsoContract contract where con
   <line>
     <value>insert</value>
     <value>report</value>
+    <value>141</value>
     <value>0 Read Types</value>
     <value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree
 
@@ -10171,6 +10242,7 @@ for type in Hiber.session().createQuery("from ReadType type order by type.code")
   <line>
     <value>insert</value>
     <value>report</value>
+    <value>143</value>
     <value>0 Read Type</value>
     <value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree
 from net.sf.chellow.physical import ReadType
@@ -10251,6 +10323,7 @@ source.appendChild(type.toXml(doc))]]></value>
   <line>
     <value>insert</value>
     <value>report</value>
+    <value>145</value>
     <value>0 CSV 1 Year, All sites, HH data</value>
     <value><![CDATA[from net.sf.chellow.monad import Hiber
 from java.util import Calendar, GregorianCalendar, TimeZone, Locale
@@ -10322,6 +10395,7 @@ pw.close()]]></value>
   <line>
     <value>insert</value>
     <value>report</value>
+    <value>147</value>
     <value>0 CSV Supplies Period Selector</value>
     <value><![CDATA[from java.util import GregorianCalendar, TimeZone, Locale, Calendar
 from net.sf.chellow.monad.types import MonadDate
@@ -10405,6 +10479,7 @@ source.appendChild(MonadDate.getMonthsXml(doc))]]></value>
   <line>
     <value>insert</value>
     <value>report</value>
+    <value>149</value>
     <value>0 CSV Supplies Period</value>
     <value><![CDATA[from net.sf.chellow.monad import Hiber
 from java.util import GregorianCalendar, TimeZone, Locale, Calendar
@@ -10505,7 +10580,8 @@ pw.close()]]></value>
   <line>
     <value>insert</value>
     <value>report</value>
-    <value>0 Admin: DSO Contract Dump</value>
+    <value>151</value>
+    <value>0 Admin: DSO Contract Export</value>
     <value><![CDATA[from net.sf.chellow.monad import Hiber, UserException, MonadUtils
 from net.sf.chellow.monad.types import UriPathElement
 from java.util import GregorianCalendar, TimeZone, Locale, Calendar
@@ -10558,6 +10634,7 @@ pw.close()]]></value>
   <line>
     <value>insert</value>
     <value>report</value>
+    <value>153</value>
     <value>0 Admin: Home</value>
     <value><![CDATA[]]></value>
     <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
@@ -10598,7 +10675,7 @@ pw.close()]]></value>
                 <ul>
                     <li>
                         <a
-                            href="{/source/request/@context-path}/reports/76/output/">DSO Dump
+                            href="{/source/request/@context-path}/reports/76/output/">DSO Contract Export
                         </a>
                     </li>
                                         <li>
@@ -10612,5 +10689,237 @@ pw.close()]]></value>
         </html>
     </xsl:template>
 </xsl:stylesheet>]]></value>
+  </line>
+  <line>
+    <value>insert</value>
+    <value>report</value>
+    <value>155</value>
+    <value>0 User Data Export</value>
+    <value><![CDATA[from net.sf.chellow.monad import Hiber, UserException, MonadUtils
+from net.sf.chellow.monad.types import UriPathElement
+from java.util import GregorianCalendar, TimeZone, Locale, Calendar
+from net.sf.chellow.physical import HhEndDate
+from java.text import DateFormat
+from java.util.zip import ZipOutputStream, ZipEntry
+from java.io import OutputStreamWriter, PrintWriter
+from java.security import MessageDigest
+from com.Ostermiller.util import Base64
+import java.lang.String
+
+def mpan_fields(mpan):
+    if mpan == None:
+        return ['', '', '', '', '', '', '', '', '', '', '', '']
+    else:
+        mpan_str = mpan.toString()
+        ssc = mpan.getSsc()
+        if ssc is None:
+            ssc_code = ''
+        else:
+            ssc_code = ssc.getCode()
+        gsp_group = mpan.getGspGroup().getCode()
+        supply_capacity = str(mpan.getAgreedSupplyCapacity())
+        if mpan.getHasImportKwh():
+            has_import_kwh = 'True'
+        else:
+            has_import_kwh = 'False'
+        if mpan.getHasImportKvarh():
+            has_import_kvarh = 'True'
+        else:
+            has_import_kvarh = 'False'
+        if mpan.getHasExportKwh():
+            has_export_kwh = 'True'
+        else:
+            has_export_kwh = 'False'
+        if mpan.getHasExportKvarh():
+            has_export_kvarh = 'True'
+        else:
+            has_export_kvarh = 'False'
+        hhdc_account = mpan.getHhdcAccount()
+        if hhdc_account is None:
+            hhdc_contract_name = ''
+            hhdc_account_reference = ''
+        else:
+            hhdc_contract_name = hhdc_account.getContract().getName()
+            hhdc_account_reference = hhdc_account.getReference()
+        supplier_account = mpan.getSupplierAccount()
+        supplier_contract_name = supplier_account.getContract().getName()
+        supplier_account_reference = supplier_account.getReference()
+    return [mpan_str, ssc_code, gsp_group, supply_capacity, has_import_kwh, has_import_kvarh, has_export_kwh, has_export_kvarh, hhdc_contract_name, hhdc_account_reference, supplier_contract_name, supplier_account_reference]
+
+def print_line(pw, values):
+    pw.println('    <line>')
+    for value in values:
+        if value is None:
+            value = ''
+        else:
+            value = str(value)
+        pw.println('        <value>&lt;![CDATA[' + value + ']]&gt;</value>')
+    pw.println('    </line>')
+
+
+inv.getResponse().setContentType('application/zip')
+inv.getResponse().setHeader('Content-Disposition', 'filename=output.zip;')
+sout = inv.getResponse().getOutputStream()
+zout = ZipOutputStream(sout)
+pw = PrintWriter(OutputStreamWriter(zout, 'UTF-8'))
+zout.putNextEntry(ZipEntry('out.xml'))
+#inv.getResponse().setContentType('text/xml')
+#inv.getResponse().setHeader('Content-Disposition', 'attachment; filename=output.xml;')
+#pw = inv.getResponse().getWriter()
+
+pw.println('<?xml version="1.0"?>')
+pw.flush()
+pw.println('<csv>')
+print_line(pw, ['Action', 'Type'])
+
+
+# Reports
+
+reports = Hiber.session().createQuery("from Report report where report.name not like '0 %' order by report.id").scroll()
+while reports.next():
+    report = reports.get(0)
+    print_line(pw, ['insert', 'report', '', report.getName(), report.getScript(), report.getTemplate()])
+
+
+# Users
+
+users = Hiber.session().createQuery("from User user order by user.id").scroll()
+while users.next():
+    user = users.get(0)
+    email_address = user.getEmailAddress().toString()
+    if email_address == 'administrator@localhost':
+        print_line(pw, ['update', 'user', 'administrator@localhost', '{no change}', '', user.getPasswordDigest(), user.getRole().getCode(), '', ''])
+    else:
+        print_line(pw, ['insert', 'user', user.getEmailAddress(), '', user.getPasswordDigest(), user.getRole().getCode(), '', ''])
+users.close()
+
+
+# Sites
+
+sites = Hiber.session().createQuery('from Site site order by site.id').scroll()
+while sites.next():
+    site = sites.get(0)
+    print_line(pw, ['insert', 'site', site.getCode(), site.getName()])
+sites.close()
+
+
+# HHDC Contracts
+
+contracts = Hiber.session().createQuery("from HhdcContract contract order by contract.id").scroll()
+while contracts.next():
+    contract = contracts.get(0)
+    rate_scripts = Hiber.session().createQuery("from RateScript script where script.contract.id = :contractId order by script.startDate.date").setLong('contractId', contract.getId()).list()
+    start_rate_script = rate_scripts[0]
+    print_line(pw, ['insert', 'hhdc-contract', contract.getParty().getParticipant().getCode(), contract.getName(), start_rate_script.getStartDate(), start_rate_script.getFinishDate(), contract.getFrequency(), contract.getLag(), contract.getChargeScript(), start_rate_script.getScript(), contract.getProperties()])
+    if len(rate_scripts) > 1:
+        for rate_script in rate_scripts[1:]:
+            print_line(pw, ['insert', 'hhdc-contract-rate-script', contract.getName(), rate_script.getStartDate(), rate_script.getFinishDate(), rateScript.getScript()])
+    for account in Hiber.session().createQuery("from Account account where account.contract.id = :contractId").setLong('contractId', contract.getId()).list():
+        print_line(pw, ['insert', 'hhdc-account', contract.getName(), account.getReference()])
+Hiber.session().clear()
+contracts.close()
+
+
+# Supplier Contracts
+
+contracts = Hiber.session().createQuery("from SupplierContract contract order by contract.id").scroll()
+while contracts.next():
+    contract = contracts.get(0)
+    contract_name = contract.getName()
+    rate_scripts = Hiber.session().createQuery("from RateScript script where script.contract.id = :contractId order by script.startDate.date").setLong('contractId', contract.getId()).list()
+    start_rate_script = rate_scripts[0]
+    print_line(pw, ['insert', 'supplier-contract', contract.getParty().getParticipant().getCode(), contract_name, start_rate_script.getStartDate(), start_rate_script.getFinishDate(), contract.getChargeScript(), start_rate_script.getScript()])
+    if len(rate_scripts) > 1:
+        for rate_script in rate_scripts[1:]:
+            print_line(pw, ['insert', 'supplier-contract-rate-script', contract.getName(), rate_script.getStartDate(), rate_script.getFinishDate(), rateScript.getScript()])
+    for account in Hiber.session().createQuery("from Account account where account.contract.id = :contractId").setLong('contractId', contract.getId()).list():
+        print_line(pw, ['insert', 'supplier-account', contract.getName(), account.getReference()])
+Hiber.session().clear()
+contracts.close()
+
+
+# Supplies
+
+sc_lookup = {'net': ('net', ''), 'sub': ('sub', ''), 'chp-net': ('gen-net', 'chp'), 'chp': ('gen', 'chp'), 'lm': ('gen', 'lm'), 'turb': ('gen', 'turb')}
+supplies = Hiber.session().createQuery("from Supply supply order by supply.id").scroll()
+while supplies.next():
+    supply = supplies.get(0) 
+    supplyGenerations = Hiber.session().createQuery('from SupplyGeneration generation where generation.supply = :supply order by generation.startDate.date').setEntity('supply', supply).list()
+    first_generation = supplyGenerations[0]
+    last_generation = supplyGenerations[len(supplyGenerations) - 1]
+    physical_site = Hiber.session().createQuery("select siteSupplyGeneration.site from SiteSupplyGeneration siteSupplyGeneration where siteSupplyGeneration.supplyGeneration = :supplyGeneration and siteSupplyGeneration.isPhysical is true").setEntity('supplyGeneration', last_generation).uniqueResult()
+    site_code = physical_site.getCode()
+    sc_list = sc_lookup[supply.getSource().getCode()]
+    supply_name = supply.getName()
+    start_date = first_generation.getStartDate().toString()
+    meter = last_generation.getMeter()
+    if meter is None:
+        meter_serial_number = ''
+    else:
+        meter_serial_number = meter.getSerialNumber()
+    values = ['insert', 'supply', site_code, sc_list[0], sc_list[1], supply_name, start_date, meter_serial_number]
+    values = values + mpan_fields(last_generation.getImportMpan())
+    values = values + mpan_fields(last_generation.getExportMpan())
+    print_line(pw, values)
+    generations = Hiber.session().createQuery("from SupplyGeneration generation where generation.supply = :supply order by generation.startDate.date desc").setEntity('supply', supply).scroll()
+    generations.next()
+    while generations.next():
+        generation = generations.get(0)
+        physical_site = Hiber.session().createQuery("select siteSupplyGeneration.site from SiteSupplyGeneration siteSupplyGeneration where siteSupplyGeneration.supplyGeneration = :supplyGeneration and siteSupplyGeneration.isPhysical is true").setEntity('supplyGeneration', last_generation).uniqueResult()
+        site_code = physical_site.getCode()
+        finish_date = generation.getFinishDate()
+        meter_serial_number = ''
+        values = ['insert', 'supply-generation', site_code, finish_date, meter_serial_number]
+        values = values + mpan_fields(generation.getImportMpan())
+        values = values + mpan_fields(generation.getExportMpan())
+        print_line(pw, values)
+    generations.beforeFirst()
+    while generations.next():
+        generation = generations.get(0)
+        start_date = generation.getStartDate()
+        finish_date = generation.getFinishDate()
+        site_supply_generations = Hiber.session().createQuery("from SiteSupplyGeneration siteSupplyGeneration where siteSupplyGeneration.supplyGeneration = :supplyGeneration and siteSupplyGeneration.isPhysical is false").setEntity('supplyGeneration', generation).scroll()
+        while site_supply_generations.next():
+            site_supply_generation = site_supply_generations.get(0)
+            print_line(pw, ['insert', 'site-supply-generation', site_supply_generation.getSite().getCode(), generation.getMpans()[0].getCore(), start_date, 'false'])
+        site_supply_generations.close()
+        query = "select datum.endDate, datum.value, datum.status from HhDatum datum where datum.channel = :channel and datum.endDate.date >= :startDate"
+        if finish_date is None:
+            hh_data_q = Hiber.session().createQuery(query + " order by datum.endDate.date").setTimestamp('startDate', start_date.getDate())
+        else:
+            hh_data_q = Hiber.session().createQuery(query + " and datum.endDate.date <= :finishDate  order by datum.endDate.date").setTimestamp('finishDate', finish_date.getDate())
+        hh_data_q.setTimestamp('startDate', start_date.getDate())
+        mpan_core_str = generation.getMpans()[0].getCore().toString()
+        channels = Hiber.session().createQuery("from Channel channel where channel.supplyGeneration = :supplyGeneration").setEntity('supplyGeneration', generation).scroll()
+        while channels.next():
+            channel = channels.get(0)
+            if channel.getIsImport():
+                is_import = 'true'
+            else:
+                is_import = 'false'
+            if channel.getIsKwh():
+                is_kwh = 'true'
+            else:
+                is_kwh = 'false'
+            hh_data_q.setEntity('channel', channel)
+
+            hh_data = hh_data_q.scroll()
+            while hh_data.next():
+                pw.println('    <line>')
+                status = hh_data.get(2)
+                if status is None:
+                    status = ''
+                for value in ['insert', 'hh-datum', mpan_core_str, str(hh_data.get(0)), is_import, is_kwh, str(round(hh_data.get(1), 1)), status]:
+                    pw.println('        <value>' + value + '</value>')
+                pw.println('    </line>')
+            hh_data.close()
+        channels.close()
+    generations.close()
+    Hiber.session().clear()
+supplies.close()
+pw.println('</csv>')
+pw.flush()
+pw.close()]]></value>
+    <value><![CDATA[]]></value>
   </line>
 </csv>

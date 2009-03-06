@@ -33,5 +33,7 @@
 		</id>
 		<property type="string" name="properties"
 			column="properties" />
+		<property type="long" column="core_report_id" name="coreReportId"/>
+		<property type="long" column="user_report_id" name="userReportId"/>
 	</class>
 </hibernate-mapping>

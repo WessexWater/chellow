@@ -27,12 +27,10 @@
 <hibernate-mapping package="net.sf.chellow.ui">
 	<class name="Report" table="report" lazy="true">
 		<id name="id">
-			<generator class="sequence">
-				<param name="sequence">report_id_sequence</param>
-			</generator>
+			<generator class="assigned" />
 		</id>
 		<property type="string" name="name" column="name"
-			not-null="true" unique="true"/>
+			not-null="true" unique="true" />
 		<property type="string" name="script" column="script"
 			not-null="true" />
 		<property type="string" name="template" column="template" />
