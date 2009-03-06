@@ -20,7 +20,7 @@
     <html>
       <head>
         <link rel="stylesheet" type="text/css"
-      href="{/source/request/@context-path}/reports/10/output/" />
+      href="{/source/request/@context-path}/reports/19/output/" />
     <title>
       Home
     </title>
@@ -44,106 +44,106 @@
         </xsl:if>
         <ul>
           <li>
-            <a href="{/source/request/@context-path}/reports/2/output/">Sites</a>
+            <a href="{/source/request/@context-path}/reports/3/output/">Sites</a>
           </li>
           <li>
-            <a href="{/source/request/@context-path}/reports/50/output/">
+            <a href="{/source/request/@context-path}/reports/99/output/">
               Supplies
             </a>
           </li>
           <li>Contracts
             <ul>
-              <li><a href="{/source/request/@context-path}/reports/57/output/">HHDC
+              <li><a href="{/source/request/@context-path}/reports/113/output/">HHDC
             </a>
               </li>
-              <li><a href="{/source/request/@context-path}/reports/38/output/">Supplier
+              <li><a href="{/source/request/@context-path}/reports/75/output/">Supplier
                   </a>
               </li>
             </ul>
           </li>
-          <li><a href="{/source/request/@context-path}/reports/20/output/">
+          <li><a href="{/source/request/@context-path}/reports/39/output/">
               Site Snags</a></li>
         </ul>
         <h3>CSV Downloads</h3>
         <ul>
-          <li><a href="{/source/request/@context-path}/reports/17/output/">Electricity Supply Details
+          <li><a href="{/source/request/@context-path}/reports/33/output/">Electricity Supply Details
             </a>
           </li>
-          <li><a href="{/source/request/@context-path}/reports/73/output/">HH data, all sites, 1 year</a> (WARNING: Long load time)
+          <li><a href="{/source/request/@context-path}/reports/145/output/">HH data, all sites, 1 year</a> (WARNING: Long load time)
             
           </li>
-          <li><a href="{/source/request/@context-path}/reports/29/output/">Sites Period
+          <li><a href="{/source/request/@context-path}/reports/57/output/">Sites Period
             </a>
           </li>
-          <li><a href="{/source/request/@context-path}/reports/21/output/">TRIAD Data Quality
+          <li><a href="{/source/request/@context-path}/reports/41/output/">TRIAD Data Quality
             </a>
           </li>
-          <li><a href="{/source/request/@context-path}/reports/74/output/">Supplies Period
+          <li><a href="{/source/request/@context-path}/reports/147/output/">Supplies Period
             </a>
           </li>
         </ul>
         <h3>Industry Info</h3>
         <ul>
           <li>
-            <a href="{/source/request/@context-path}/reports/36/output/">
+            <a href="{/source/request/@context-path}/reports/71/output/">
             Market Participants
             </a>
           </li>
           <li>
-            <a href="{/source/request/@context-path}/reports/61/output/">
+            <a href="{/source/request/@context-path}/reports/121/output/">
               Market Roles
             </a>
           </li>
           <li>
-            <a href="{/source/request/@context-path}/reports/69/output/">DSOs
+            <a href="{/source/request/@context-path}/reports/137/output/">DSOs
             </a>
           </li>
-          <li><a href="{/source/request/@context-path}/reports/23/output/">
+          <li><a href="{/source/request/@context-path}/reports/45/output/">
             Providers
             </a>
           </li>
-          <li><a href="{/source/request/@context-path}/reports/27/output/">
+          <li><a href="{/source/request/@context-path}/reports/53/output/">
             Profile Classes
             </a>
           </li>
           <li>
           <a
-             href="{/source/request/@context-path}/reports/31/output/">
+             href="{/source/request/@context-path}/reports/61/output/">
     Meter Timeswitch Classes
             </a>
                     </li>
                     <li>
                         <a
-    href="{/source/request/@context-path}/reports/65/output/">
+    href="{/source/request/@context-path}/reports/129/output/">
                             Meter Types
                         </a>
                     </li>
                     <li>
                         <a
-                            href="{/source/request/@context-path}/reports/67/output/">
+                            href="{/source/request/@context-path}/reports/134/output/">
                             Meter Payment Types
                         </a>
                     </li>
                     <li>
                         <a
-    href="{/source/request/@context-path}/reports/48/output/">
+    href="{/source/request/@context-path}/reports/95/output/">
                             TPRs
                         </a>
                     </li>
                     <li>
-<a href="{/source/request/@context-path}/reports/63/output/">
+<a href="{/source/request/@context-path}/reports/125/output/">
                             SSCs
                         </a>
                     </li>
                     <li>
                         <a
-    href="{/source/request/@context-path}/reports/71/output/">
+    href="{/source/request/@context-path}/reports/141/output/">
     Read Types
                         </a>
                     </li>
                     <li>
                         <a
-    href="{/source/request/@context-path}/reports/22/output/">
+    href="{/source/request/@context-path}/reports/43/output/">
     GSP Groups
                         </a>
                     </li>
@@ -175,7 +175,7 @@ if inv.hasParameter('search-pattern'):
         <html>
             <head>
                 <link rel="stylesheet" type="text/css"
-                    href="{/source/request/@context-path}/reports/10/output/" />
+                    href="{/source/request/@context-path}/reports/19/output/" />
                 <title>
                     Home &gt; Sites
                 </title>
@@ -223,7 +223,7 @@ tabindex="1" />
                             <xsl:for-each select="/source/site">
                                 <li>
                                     <a
-                                        href="{/source/request/@context-path}/reports/3/output/?site-id={@id}">
+                                        href="{/source/request/@context-path}/reports/5/output/?site-id={@id}">
                                         <xsl:value-of
                                             select="concat(@code, ' ', @name)" />
                                     </a>
@@ -283,7 +283,7 @@ source.appendChild(yesterday.toXml(doc))]]></value>
   <xsl:template match="/">
     <html>
       <head>
-        <link rel="stylesheet" type="text/css"  href="{/source/request/@context-path}/reports/10/output/" />
+        <link rel="stylesheet" type="text/css" href="{/source/request/@context-path}/reports/19/output/" />
           <title>
             Home &gt; Sites &gt;
               <xsl:value-of select="/source/site/@name" />
@@ -292,7 +292,7 @@ source.appendChild(yesterday.toXml(doc))]]></value>
       <body>
         <p>
           <a href="{/source/request/@context-path}/reports/1/output/"><xsl:value-of select="'Home'" /></a> &gt;
-          <a href="{/source/request/@context-path}/reports/2/output/"><xsl:value-of select="'Sites'" /></a>
+          <a href="{/source/request/@context-path}/reports/3/output/"><xsl:value-of select="'Sites'" /></a>
           &gt; <xsl:value-of select="concat(/source/site/@name, ' [')" />
           <a href="{/source/request/@context-path}/sites/{/source/site/@id}/">
           <xsl:value-of select="'edit'" /></a>
@@ -347,7 +347,7 @@ source.appendChild(yesterday.toXml(doc))]]></value>
                             <tr>
                                 <td>
                                     <a
-                                        href="{/source/request/@context-path}/reports/4/output/?supply-id={@id}">
+                                        href="{/source/request/@context-path}/reports/7/output/?supply-id={@id}">
                                         <xsl:value-of select="@id" />
                                     </a>
                                 </td>
@@ -385,7 +385,7 @@ source.appendChild(yesterday.toXml(doc))]]></value>
                                 <tr>
                                     <td>
                                         <a
-                                            href="{/source/request/@context-path}/reports/4/output/?supply-id={@id}">
+                                            href="{/source/request/@context-path}/reports/7/output/?supply-id={@id}">
                                             <xsl:value-of select="@id" />
                                         </a>
                                     </td>
@@ -425,21 +425,21 @@ source.appendChild(yesterday.toXml(doc))]]></value>
                 </table>
 
       <ul>
-        <li><a href="{/source/request/@context-path}/reports/5/output/?site-id={/source/site/@id}"><xsl:value-of select="'Graph of site usage'" /></a>
+        <li><a href="{/source/request/@context-path}/reports/9/output/?site-id={/source/site/@id}"><xsl:value-of select="'Graph of site usage'" /></a>
          </li>
-         <li><a href="{/source/request/@context-path}/reports/6/output/?site-id={/source/site/@id}">
+         <li><a href="{/source/request/@context-path}/reports/11/output/?site-id={/source/site/@id}">
          <xsl:value-of select="'Generation Graphs'" />
                         </a>
           </li>
-          <li><a href="{/source/request/@context-path}/reports/7/output/?site-id={/source/site/@id}">
+          <li><a href="{/source/request/@context-path}/reports/13/output/?site-id={/source/site/@id}">
 <xsl:value-of select="'Table of site level monthly kWh, MD kWh etc.'" /></a>
           </li>
           <li>
-        <a href="{/source/request/@context-path}/reports/13/output/?site-code={/source/site/@code}&amp;year={/source/date[@label = 'yesterday']/@year}&amp;month={/source/date[@label = 'yesterday']/@month}&amp;day={/source/date[@label='yesterday']/@day}">
+        <a href="{/source/request/@context-path}/reports/25/output/?site-code={/source/site/@code}&amp;year={/source/date[@label = 'yesterday']/@year}&amp;month={/source/date[@label = 'yesterday']/@month}&amp;day={/source/date[@label='yesterday']/@day}">
                             <xsl:value-of select="'Table of hh data'" />
                         </a>
           </li>
-          <li><a href="{/source/request/@context-path}/reports/14/output/?site-id={/source/site/@id}"><xsl:value-of select="'Bulk hh data download'" /></a>
+          <li><a href="{/source/request/@context-path}/reports/27/output/?site-id={/source/site/@id}"><xsl:value-of select="'Bulk hh data download'" /></a>
           </li>
         </ul>
       </body>
@@ -471,7 +471,7 @@ source.appendChild(MonadDate().toXml(doc))
   <xsl:template match="/">
     <html>
       <head>
-        <link rel="stylesheet" type="text/css" href="{/source/request/@context-path}/reports/10/output/" />
+        <link rel="stylesheet" type="text/css" href="{/source/request/@context-path}/reports/19/output/" />
         <title>
           Home &gt; Supplies &gt; <xsl:value-of select="/source/supply/@id" />
         </title>
@@ -480,7 +480,7 @@ source.appendChild(MonadDate().toXml(doc))
         <p>
           <a href="{/source/request/@context-path}/reports/1/output/">
     <xsl:value-of select="'Home'" /></a> &gt;
-          <a href="{/source/request/@context-path}/reports/50/output/">
+          <a href="{/source/request/@context-path}/reports/99/output/">
         <xsl:value-of select="'Supplies'" />
         </a> &gt;  <xsl:value-of select="concat(/source/supply/@id, ' [')" />
         <a href="{/source/request/@context-path}/supplies/{/source/supply/@id}/">
@@ -532,7 +532,7 @@ source.appendChild(MonadDate().toXml(doc))
                             <tr>
                                 <td>
                                     <a
-                                        href="{/source/request/@context-path}/reports/16/output/?supply-generation-id={@id}">
+                                        href="{/source/request/@context-path}/reports/31/output/?supply-generation-id={@id}">
                                         <xsl:value-of select="@id" />
                                     </a>
                                 </td>
@@ -562,7 +562,7 @@ source.appendChild(MonadDate().toXml(doc))
                                 </td>
                                 <td>
                                     <a
-                                        href="{/source/request/@context-path}/reports/42/output/?account-id={mpan[llfc/@is-import='true']/account[supplier-contract]/@id}">
+                                        href="{/source/request/@context-path}/reports/83/output/?account-id={mpan[llfc/@is-import='true']/account[supplier-contract]/@id}">
                                         <xsl:value-of
                                             select="mpan[llfc/@is-import='true']/account[supplier-contract]/@reference" />
                                     </a>
@@ -577,7 +577,7 @@ source.appendChild(MonadDate().toXml(doc))
                                 </td>
                                 <td>
                                     <a
-                                        href="{/source/request/@context-path}/reports/42/output/?account-id={mpan[llfc/@is-import='false']/account[supplier-contract]/@id}">
+                                        href="{/source/request/@context-path}/reports/83/output/?account-id={mpan[llfc/@is-import='false']/account[supplier-contract]/@id}">
                                         <xsl:value-of
                                             select="mpan[llfc/@is-import='false']/account[supplier-contract]/@reference" />
                                     </a>
@@ -590,18 +590,18 @@ source.appendChild(MonadDate().toXml(doc))
                     <li>
                         kWh, kVA, MD etc. by month:
                         <a
-                            href="{/source/request/@context-path}/reports/8/output/?supply-id={/source/supply/@id}&amp;is-import=true">
+                            href="{/source/request/@context-path}/reports/15/output/?supply-id={/source/supply/@id}&amp;is-import=true">
                             <xsl:value-of select="'Import'" />
                         </a>
                         <xsl:value-of select="' '" />
                         <a
-                            href="{/source/request/@context-path}/reports/8/output/?supply-id={/source/supply/@id}&amp;is-import=false">
+                            href="{/source/request/@context-path}/reports/15/output/?supply-id={/source/supply/@id}&amp;is-import=false">
                             <xsl:value-of select="'Export'" />
                         </a>
                     </li>
                     <li>
                         <a
-                            href="{/source/request/@context-path}/reports/9/output/?supply-id={/source/supply/@id}&amp;start-year={/source/date/@year}&amp;start-month={/source/date/@month}">
+                            href="{/source/request/@context-path}/reports/17/output/?supply-id={/source/supply/@id}&amp;start-year={/source/date/@year}&amp;start-month={/source/date/@month}">
                             Raw HH data
                         </a>
                     </li>
@@ -653,7 +653,7 @@ source.setAttribute("months", str(months))]]></value>
         <html>
             <head>
                 <link rel="stylesheet" type="text/css"
-                    href="{/source/request/@context-path}/reports/10/output" />
+                    href="{/source/request/@context-path}/reports/19/output" />
                 <title>
                     Home &gt; Sites &gt;
                     <xsl:value-of select="/source/site/@name" />
@@ -663,11 +663,11 @@ source.setAttribute("months", str(months))]]></value>
             <body>
                 <p>
                     <a href="{/source/request/@context-path}/reports/1/output/">Home</a> &gt;
-                    <a href="{/source/request/@context-path}/reports/2/output/">
+                    <a href="{/source/request/@context-path}/reports/3/output/">
                         <xsl:value-of select="'Sites'" />
                     </a>
                     &gt; <a
-                        href="{/source/request/@context-path}/reports/3/output/?site-id={/source/site/@id}">
+                        href="{/source/request/@context-path}/reports/5/output/?site-id={/source/site/@id}">
                         <xsl:value-of select="/source/site/@name" />
                     </a>
                     &gt; HH graph of site use
@@ -683,7 +683,7 @@ source.setAttribute("months", str(months))]]></value>
                 </xsl:if>
                 <p>
                     <img
-                        src="{/source/request/@context-path}/reports/11/output/?site-id={/source/site/@id}&amp;finish-date-year={/source/@finish-date-year}&amp;finish-date-month={/source/@finish-date-month}&amp;months={/source/@months}" />
+                        src="{/source/request/@context-path}/reports/21/output/?site-id={/source/site/@id}&amp;finish-date-year={/source/@finish-date-year}&amp;finish-date-month={/source/@finish-date-month}&amp;months={/source/@months}" />
                 </p>
                 <form action=".">
                     <fieldset>
@@ -773,7 +773,7 @@ source.appendChild(inv.requestXml(doc))]]></value>
     <html>
       <head>
         <link rel="stylesheet" type="text/css"
-            href="{/source/request/@context-path}/reports/10/output/" />
+            href="{/source/request/@context-path}/reports/19/output/" />
         <title>Home &gt; Sites &gt;
             <xsl:value-of select="/source/site/@name" />
         </title>
@@ -784,12 +784,12 @@ source.appendChild(inv.requestXml(doc))]]></value>
                         <xsl:value-of select="'Home'" />
                     </a>
           &gt;
-          <a href="{/source/request/@context-path}/reports/2/output/">
+          <a href="{/source/request/@context-path}/reports/3/output/">
             <xsl:value-of select="'Sites'" />
                     </a>
                     &gt;
                     <a
-                        href="{/source/request/@context-path}/reports/3/output/?site-id={/source/site/@id}">
+                        href="{/source/request/@context-path}/reports/5/output/?site-id={/source/site/@id}">
                         <xsl:value-of select="/source/site/@name" />
                     </a>
                     &gt; HH graph of generation
@@ -807,7 +807,7 @@ source.appendChild(inv.requestXml(doc))]]></value>
 
                 <p>
                     <img
-                        src="{/source/request/@context-path}/reports/12/output/?site-id={/source/site/@id}&amp;finish-date-year={/source/@finish-date-year}&amp;finish-date-month={/source/@finish-date-month}&amp;months={/source/@months}" />
+                        src="{/source/request/@context-path}/reports/23/output/?site-id={/source/site/@id}&amp;finish-date-year={/source/@finish-date-year}&amp;finish-date-month={/source/@finish-date-month}&amp;months={/source/@months}" />
                 </p>
                 <form action=".">
                     <fieldset>
@@ -3184,7 +3184,7 @@ source.appendChild(MonadDate().toXml(doc))]]></value>
         <html>
             <head>
                 <link rel="stylesheet" type="text/css"
-                    href="{/source/request/@context-path}/reports/10/output/" />
+                    href="{/source/request/@context-path}/reports/19/output/" />
                 <title>
                     Home &gt; Sites &gt; Supply:
                     <xsl:value-of
@@ -3202,12 +3202,12 @@ source.appendChild(MonadDate().toXml(doc))]]></value>
                     </a>
                     &gt;
                     <a
-                        href="{/source/request/@context-path}/reports/50/output/">
+                        href="{/source/request/@context-path}/reports/99/output/">
                         <xsl:value-of select="'Supplies'" />
                     </a>
                     &gt;
                     <a
-                        href="{/source/request/@context-path}/reports/4/output/?supply-id={/source/supply-generation/supply/@id}">
+                        href="{/source/request/@context-path}/reports/7/output/?supply-id={/source/supply-generation/supply/@id}">
                         <xsl:value-of
                             select="/source/supply-generation/supply/@id" />
                     </a>
@@ -3250,7 +3250,7 @@ source.appendChild(MonadDate().toXml(doc))]]></value>
                             <tr>
                                 <td>
                                     <a
-                                        href="{/source/request/@context-path}/reports/3/output/?site-id={site/@id}">
+                                        href="{/source/request/@context-path}/reports/5/output/?site-id={site/@id}">
                                         <xsl:value-of
                                             select="site/@code" />
                                     </a>
@@ -3276,7 +3276,7 @@ source.appendChild(MonadDate().toXml(doc))]]></value>
                     <li>
                         <xsl:value-of select="'Supply Name: '" />
                         <a
-                            href="{/source/request/@context-path}/reports/4/output/?supply-id={/source/supply-generation/supply/@id}">
+                            href="{/source/request/@context-path}/reports/7/output/?supply-id={/source/supply-generation/supply/@id}">
                             <xsl:value-of
                                 select="/source/supply-generation/supply/@name" />
                         </a>
@@ -3441,26 +3441,26 @@ source.appendChild(MonadDate().toXml(doc))]]></value>
                             <th>HHDC Account</th>
                             <td>
                                 <a
-                                    href="{/source/request/@context-path}/reports/56/output/?account-id={/source/supply-generation/mpan[llfc/@is-import='true']/account[hhdc-contract]/@id}">
+                                    href="{/source/request/@context-path}/reports/111/output/?account-id={/source/supply-generation/mpan[llfc/@is-import='true']/account[hhdc-contract]/@id}">
                                     <xsl:value-of
                                         select="/source/supply-generation/mpan[llfc/@is-import='true']/account[hhdc-contract]/@reference" />
                                 </a>
                                 <xsl:value-of select="' &gt; '" />
                                 <a
-                                    href="{/source/request/@context-path}/reports/58/output/?hhdc-contract-id={/source/supply-generation/mpan[llfc/@is-import='true']/account/hhdc-contract/@id}">
+                                    href="{/source/request/@context-path}/reports/115/output/?hhdc-contract-id={/source/supply-generation/mpan[llfc/@is-import='true']/account/hhdc-contract/@id}">
                                     <xsl:value-of
                                         select="/source/supply-generation/mpan[llfc/@is-import='true']/account/hhdc-contract/@name" />
                                 </a>
                             </td>
                             <td>
                                 <a
-                                    href="{/source/request/@context-path}/reports/56/output/?account-id={/source/supply-generation/mpan[llfc/@is-import='false']/account[hhdc-contract]/@id}">
+                                    href="{/source/request/@context-path}/reports/111/output/?account-id={/source/supply-generation/mpan[llfc/@is-import='false']/account[hhdc-contract]/@id}">
                                     <xsl:value-of
                                         select="/source/supply-generation/mpan[llfc/@is-import='false']/account[hhdc-contract]/@reference" />
                                 </a>
                                 <xsl:value-of select="' &gt; '" />
                                 <a
-                                    href="{/source/request/@context-path}/reports/58/output/?hhdc-contract-id={/source/supply-generation/mpan[llfc/@is-import='false']/account/hhdc-contract/@id}">
+                                    href="{/source/request/@context-path}/reports/115/output/?hhdc-contract-id={/source/supply-generation/mpan[llfc/@is-import='false']/account/hhdc-contract/@id}">
                                     <xsl:value-of
                                         select="/source/supply-generation/mpan[llfc/@is-import='false']/account/hhdc-contract/@name" />
                                 </a>
@@ -3470,26 +3470,26 @@ source.appendChild(MonadDate().toXml(doc))]]></value>
                             <th>Supplier Account</th>
                             <td>
                                 <a
-                                    href="{/source/request/@context-path}/reports/42/output/?account-id={/source/supply-generation/mpan[llfc/@is-import='true']/account[supplier-contract]/@id}">
+                                    href="{/source/request/@context-path}/reports/83/output/?account-id={/source/supply-generation/mpan[llfc/@is-import='true']/account[supplier-contract]/@id}">
                                     <xsl:value-of
                                         select="/source/supply-generation/mpan[llfc/@is-import='true']/account[supplier-contract]/@reference" />
                                 </a>
                                 <xsl:value-of select="' &gt; '" />
                                 <a
-                                    href="{/source/request/@context-path}/reports/39/output/?supplier-contract-id={/source/supply-generation/mpan[llfc/@is-import='true']/account/supplier-contract/@id}">
+                                    href="{/source/request/@context-path}/reports/47/output/?supplier-contract-id={/source/supply-generation/mpan[llfc/@is-import='true']/account/supplier-contract/@id}">
                                     <xsl:value-of
                                         select="/source/supply-generation/mpan[llfc/@is-import='true']/account/supplier-contract/@name" />
                                 </a>
                             </td>
                             <td>
                                 <a
-                                    href="{/source/request/@context-path}/reports/42/output/?account-id={/source/supply-generation/mpan[llfc/@is-import='false']/account[supplier-contract]/@id}">
+                                    href="{/source/request/@context-path}/reports/83/output/?account-id={/source/supply-generation/mpan[llfc/@is-import='false']/account[supplier-contract]/@id}">
                                     <xsl:value-of
                                         select="/source/supply-generation/mpan[llfc/@is-import='false']/account[supplier-contract]/@reference" />
                                 </a>
                                 <xsl:value-of select="' &gt; '" />
                                 <a
-                                    href="{/source/request/@context-path}/reports/39/output/?supplier-contract-id={/source/supply-generation/mpan[llfc/@is-import='false']/account/supplier-contract/@id}">
+                                    href="{/source/request/@context-path}/reports/77/output/?supplier-contract-id={/source/supply-generation/mpan[llfc/@is-import='false']/account/supplier-contract/@id}">
                                     <xsl:value-of
                                         select="/source/supply-generation/mpan[llfc/@is-import='false']/account/supplier-contract/@name" />
                                 </a>
@@ -4129,7 +4129,7 @@ for provider in Hiber.session().createQuery("from Provider provider order by pro
         <html>
             <head>
                 <link rel="stylesheet" type="text/css"
-                    href="{/source/request/@context-path}/reports/10/output/" />
+                    href="{/source/request/@context-path}/reports/19/output/" />
                 <title>Chellow &gt; Providers</title>
             </head>
             <body>
@@ -4163,7 +4163,7 @@ for provider in Hiber.session().createQuery("from Provider provider order by pro
                             <tr>
                                 <td>
                                     <a
-                                        href="{/source/request/@context-path}/reports/24/output/?provider-id={@id}">
+                                        href="{/source/request/@context-path}/reports/47/output/?provider-id={@id}">
                                         <xsl:value-of select="@id" />
                                     </a>
                                 </td>
@@ -4172,14 +4172,14 @@ for provider in Hiber.session().createQuery("from Provider provider order by pro
                                 </td>
                                 <td>
                                     <a
-                                        href="{/source/request/@context-path}/reports/37/output/?participant-id={participant/@id}">
+                                        href="{/source/request/@context-path}/reports/73/output/?participant-id={participant/@id}">
                                         <xsl:value-of
                                             select="participant/@name" />
                                     </a>
                                 </td>
                                 <td>
                                     <a
-                                        href="{/source/request/@context-path}/reports/61/output/?role-id={market-role/@id}">
+                                        href="{/source/request/@context-path}/reports/121/output/?role-id={market-role/@id}">
                                         <xsl:value-of
                                             select="market-role/@description" />
                                     </a>
@@ -4227,7 +4227,7 @@ if query != None:
         <html>
             <head>
                 <link rel="stylesheet" type="text/css"
-                    href="{/source/request/@context-path}/reports/10/output/" />
+                    href="{/source/request/@context-path}/reports/19/output/" />
                 <title>
                     Home &gt; Providers &gt;
                     <xsl:value-of select="/source/provider/@name" />
@@ -4241,7 +4241,7 @@ if query != None:
                     </a>
                     &gt;
                     <a
-                        href="{/source/request/@context-path}/reports/23/output/">
+                        href="{/source/request/@context-path}/reports/45/output/">
                         <xsl:value-of select="'Providers'" />
                     </a>
                     &gt;
@@ -4276,7 +4276,7 @@ if query != None:
                         <th>Participant</th>
                         <td>
                             <a
-                                href="{/source/request/@context-path}/reports/37/output/?participant-id={/source/provider/participant/@id}">
+                                href="{/source/request/@context-path}/reports/73/output/?participant-id={/source/provider/participant/@id}">
                                 <xsl:value-of
                                     select="/source/provider/participant/@name" />
                             </a>
@@ -4286,7 +4286,7 @@ if query != None:
                         <th>Role</th>
                         <td>
                             <a
-                                href="{/source/request/@context-path}/reports/61/output/?role-id={/source/provider/market-role/@id}">
+                                href="{/source/request/@context-path}/reports/121/output/?role-id={/source/provider/market-role/@id}">
                                 <xsl:value-of
                                     select="/source/provider/market-role/@description" />
                             </a>
@@ -4331,7 +4331,7 @@ if query != None:
                                         <xsl:when
                                             test="/source/provider/market-role/@code = 'C'">
                                             <a
-                                                href="{/source/request/@context-path}/reports/57/output/?contract-id={@id}">
+                                                href="{/source/request/@context-path}/reports/113/output/?contract-id={@id}">
                                                 <xsl:value-of
                                                     select="@id" />
                                             </a>
@@ -4339,7 +4339,7 @@ if query != None:
                                         <xsl:when
                                             test="/source/provider/market-role/@code = 'R'">
                                             <a
-                                                href="{/source/request/@context-path}/reports/57/output/?contract-id={@id}">
+                                                href="{/source/request/@context-path}/reports/113/output/?contract-id={@id}">
                                                 <xsl:value-of
                                                     select="@id" />
                                             </a>
@@ -4347,7 +4347,7 @@ if query != None:
                                         <xsl:when
                                             test="/source/provider/market-role/@code = 'X'">
                                             <a
-                                                href="{/source/request/@context-path}/reports/38/output/?contract-id={@id}">
+                                                href="{/source/request/@context-path}/reports/75/output/?contract-id={@id}">
                                                 <xsl:value-of
                                                     select="@id" />
                                             </a>
@@ -5693,7 +5693,7 @@ for participant in Hiber.session().createQuery('from Participant participant ord
         <html>
             <head>
                 <link rel="stylesheet" type="text/css"
-                    href="{/source/request/@context-path}/reports/10/output/" />
+                    href="{/source/request/@context-path}/reports/19/output/" />
                 <title>
                     Home &gt; Participants
                 </title>
@@ -5730,7 +5730,7 @@ for participant in Hiber.session().createQuery('from Participant participant ord
                             <tr>
                                 <td>
                                     <a
-                                        href="{/source/request/@context-path}/reports/37/output/?participant-id={@id}">
+                                        href="{/source/request/@context-path}/reports/73/output/?participant-id={@id}">
                                         <xsl:value-of select="@id" />
                                     </a>
                                 </td>
@@ -5773,7 +5773,7 @@ for party in Hiber.session().createQuery("from Party party where party.participa
         <html>
             <head>
                 <link rel="stylesheet" type="text/css"
-                    href="{/source/request/@context-path}/reports/10/output/" />
+                    href="{/source/request/@context-path}/reports/19/output/" />
                 <title>
                     Home &gt; Market Participants &gt;
                     <xsl:value-of select="/source/participant/@name" />
@@ -5787,7 +5787,7 @@ for party in Hiber.session().createQuery("from Party party where party.participa
                     </a>
                     &gt;
                     <a
-                        href="{/source/request/@context-path}/reports/36/output/">
+                        href="{/source/request/@context-path}/reports/71/output/">
                         <xsl:value-of select="'Market Participants'" />
                     </a>
                     &gt;
@@ -5844,15 +5844,15 @@ for party in Hiber.session().createQuery("from Party party where party.participa
                             <tr>
                                 <td>
                                   <xsl:choose>
-                                    <xsl:when test="provider">
+                                    <xsl:when test="../provider">
                                       <a
-                                          href="{/source/request/@context-path}/reports/24/output/?provider-id={@id}">
+                                          href="{/source/request/@context-path}/reports/47/output/?provider-id={@id}">
                                           <xsl:value-of select="@id" />
                                       </a>
                                     </xsl:when>
                                     <xsl:otherwise>
                                       <a
-                                          href="{/source/request/@context-path}/reports/70/output/?dso-id={@id}">
+                                          href="{/source/request/@context-path}/reports/139/output/?dso-id={@id}">
                                           <xsl:value-of select="@id" />
                                       </a>
                                     </xsl:otherwise>
@@ -5863,7 +5863,7 @@ for party in Hiber.session().createQuery("from Party party where party.participa
                                 </td>
                                 <td>
                                     <a
-                                        href="{/source/request/@context-path}/reports/62/output/?role-id={market-role/@id}">
+                                        href="{/source/request/@context-path}/reports/123/output/?role-id={market-role/@id}">
                                         <xsl:value-of
                                             select="market-role/@description" />
                                     </a>
@@ -5905,7 +5905,7 @@ for contract in Hiber.session().createQuery("from SupplierContract contract orde
         <html>
             <head>
                 <link rel="stylesheet" type="text/css"
-                    href="{/source/request/@context-path}/reports/10/output/" />
+                    href="{/source/request/@context-path}/reports/19/output/" />
                 <title>
                     Home &gt; Supplier Contracts
                 </title>
@@ -5950,7 +5950,7 @@ for contract in Hiber.session().createQuery("from SupplierContract contract orde
                             <tr>
                                 <td>
                                     <a
-                                        href="{/source/request/@context-path}/reports/39/output/?supplier-contract-id={@id}">
+                                        href="{/source/request/@context-path}/reports/77/output/?supplier-contract-id={@id}">
                                         <xsl:value-of select="@id" />
                                     </a>
                                 </td>
@@ -5975,7 +5975,7 @@ for contract in Hiber.session().createQuery("from SupplierContract contract orde
                                 </td>
                                 <td>
                                     <a
-                                        href="{/source/request/@context-path}/reports/24/output/?provider-id={provider/@id}">
+                                        href="{/source/request/@context-path}/reports/47/output/?provider-id={provider/@id}">
                                         <xsl:value-of
                                             select="provider/@name" />
                                     </a>
@@ -6431,7 +6431,7 @@ if len(mpans) > 0:
         <html>
             <head>
                 <link rel="stylesheet" type="text/css"
-                    href="{/source/request/@context-path}/reports/10/output/" />
+                    href="{/source/request/@context-path}/reports/19/output/" />
 
                 <title>
                     Home &gt; Supplier Contracts &gt;
@@ -6450,18 +6450,18 @@ if len(mpans) > 0:
                     </a>
                     &gt;
                     <a
-                        href="{/source/request/@context-path}/reports/38/output/">
+                        href="{/source/request/@context-path}/reports/75/output/">
                         <xsl:value-of select="'Supplier Contracts'" />
                     </a>
                     &gt;
                     <a
-                        href="{/source/request/@context-path}/reports/39/output/?supplier-contract-id={/source/account/supplier-contract/@id}">
+                        href="{/source/request/@context-path}/reports/77/output/?supplier-contract-id={/source/account/supplier-contract/@id}">
                         <xsl:value-of
                             select="/source/account/supplier-contract/@name" />
                     </a>
                     &gt;
                     <a
-                        href="{/source/request/@context-path}/reports/41/output/?supplier-contract-id={/source/account/supplier-contract/@id}">
+                        href="{/source/request/@context-path}/reports/81/output/?supplier-contract-id={/source/account/supplier-contract/@id}">
                         <xsl:value-of
                             select="'Accounts'" />
                     </a>
@@ -6506,7 +6506,7 @@ if len(mpans) > 0:
                 <ul>
                     <li>
                         <a
-                            href="{/source/request/@context-path}/reports/43/output/?account-id={/source/account/@id}">
+                            href="{/source/request/@context-path}/reports/85/output/?account-id={/source/account/@id}">
                             Bills
                         </a>
                     </li>
@@ -6533,14 +6533,14 @@ if len(mpans) > 0:
                                 </td>
                                 <td>
                                     <a
-                                        href="{/source/request/@context-path}/reports/16/output/?supply-generation-id={supply-generation[@label='start']/@id}">
+                                        href="{/source/request/@context-path}/reports/31/output/?supply-generation-id={supply-generation[@label='start']/@id}">
                                         <xsl:value-of
                                             select="'Supply Generation'" />
                                     </a>
                                 </td>
                                 <td>
                                     <a
-                                        href="{/source/request/@context-path}/reports/16/output/?supply-generation-id={supply-generation[@label='finish']/@id}">
+                                        href="{/source/request/@context-path}/reports/31/output/?supply-generation-id={supply-generation[@label='finish']/@id}">
                                         <xsl:value-of
                                             select="'Supply Generation'" />
                                     </a>
@@ -7588,7 +7588,7 @@ if inv.hasParameter("search-pattern"):
         <html>
             <head>
                 <link rel="stylesheet" type="text/css"
-                    href="{/source/request/@context-path}/reports/10/output/" />
+                    href="{/source/request/@context-path}/reports/19/output/" />
 
                 <title>
                     Home &gt; Supplies
@@ -7654,7 +7654,7 @@ if inv.hasParameter("search-pattern"):
                                     </td>
                                     <td>
                                         <a
-                                            href="{/source/request/@context-path}/reports/4/output/?supply-id={supply/@id}">
+                                            href="{/source/request/@context-path}/reports/7/output/?supply-id={supply/@id}">
                                             <xsl:value-of
                                                 select="supply/@id" />
                                         </a>
@@ -9176,7 +9176,7 @@ for role in Hiber.session().createQuery("from MarketRole role order by role.code
         <html>
             <head>
                 <link rel="stylesheet" type="text/css"
-                    href="{/source/request/@context-path}/reports/10/output/" />
+                    href="{/source/request/@context-path}/reports/19/output/" />
                 <title>
                     Home &gt; Market Roles
                 </title>
@@ -9214,7 +9214,7 @@ for role in Hiber.session().createQuery("from MarketRole role order by role.code
                             <tr>
                                 <td>
                                     <a
-                                        href="{/source/request/@context-path}/reports/62/output/?role-id={@id}">
+                                        href="{/source/request/@context-path}/reports/123/output/?role-id={@id}">
                                         <xsl:value-of select="@id" />
                                     </a>
                                 </td>
@@ -9257,7 +9257,7 @@ for party in Hiber.session().createQuery("from Party party where party.role = :r
         <html>
             <head>
                 <link rel="stylesheet" type="text/css"
-                    href="{/source/request/@context-path}/reports/10/output/" />
+                    href="{/source/request/@context-path}/reports/19/output/" />
                 <title>
                     Home &gt; Market Roles &gt;
                     <xsl:value-of
@@ -9272,7 +9272,7 @@ for party in Hiber.session().createQuery("from Party party where party.role = :r
                     </a>
                     &gt;
                     <a
-                        href="{/source/request/@context-path}/reports/61/output/">
+                        href="{/source/request/@context-path}/reports/121/output/">
                         <xsl:value-of select="'Market Roles'" />
                     </a>
                     &gt;
@@ -9331,7 +9331,7 @@ for party in Hiber.session().createQuery("from Party party where party.role = :r
                                     <tr>
                                         <td>
                                             <a
-                                                href="{/source/request/@context-path}/reports/70/output/?dso-id={@id}">
+                                                href="{/source/request/@context-path}/reports/139/output/?dso-id={@id}">
                                                 <xsl:value-of
                                                     select="@id" />
                                             </a>
@@ -9364,7 +9364,7 @@ for party in Hiber.session().createQuery("from Party party where party.role = :r
                                     <tr>
                                         <td>
                                             <a
-                                                href="{/source/request/@context-path}/reports/24/output/?provider-id={@id}">
+                                                href="{/source/request/@context-path}/reports/47/output/?provider-id={@id}">
                                                 <xsl:value-of
                                                     select="@id" />
                                             </a>
@@ -9978,7 +9978,7 @@ for dso in Hiber.session().createQuery(
         <html>
             <head>
                 <link rel="stylesheet" type="text/css"
-                    href="{/source/request/@context-path}/reports/10/output/" />
+                    href="{/source/request/@context-path}/reports/19/output/" />
                 <title>Home &gt; DSOs</title>
             </head>
             <body>
@@ -10002,7 +10002,7 @@ for dso in Hiber.session().createQuery(
                 <p>
                     This is a list of parties that have the
                     <a
-                        href="{/source/request/@context-path}/reports/62/output/?role-id=22">
+                        href="{/source/request/@context-path}/reports/123/output/?role-id=22">
                         <xsl:value-of select="'distributor'" />
                     </a>
                     role.
@@ -10019,7 +10019,7 @@ for dso in Hiber.session().createQuery(
                             <tr>
                                 <td>
                                     <a
-                                        href="{/source/request/@context-path}/reports/70/output/?dso-id={@id}">
+                                        href="{/source/request/@context-path}/reports/139/output/?dso-id={@id}">
                                         <xsl:value-of select="@id" />
                                     </a>
                                 </td>
@@ -10031,7 +10031,7 @@ for dso in Hiber.session().createQuery(
                                 </td>
                                 <td>
                                     <a
-                                        href="{/source/request/@context-path}/reports/37/output/?participant-id={participant/@id}">
+                                        href="{/source/request/@context-path}/reports/73/output/?participant-id={participant/@id}">
                                         <xsl:value-of
                                             select="participant/@name" />
                                     </a>
@@ -10069,7 +10069,7 @@ for contract in Hiber.session().createQuery("from DsoContract contract where con
         <html>
             <head>
                 <link rel="stylesheet" type="text/css"
-                    href="{/source/request/@context-path}/reports/10/output/" />
+                    href="{/source/request/@context-path}/reports/19/output/" />
                 <title>
                     Home &gt; DSOs &gt;
                     <xsl:value-of select="/source/dso/@name" />
@@ -10083,7 +10083,7 @@ for contract in Hiber.session().createQuery("from DsoContract contract where con
                     </a>
                     &gt;
                     <a
-                        href="{/source/request/@context-path}/reports/69/output/">
+                        href="{/source/request/@context-path}/reports/137/output/">
                         <xsl:value-of select="'DSOs'" />
                     </a>
                     &gt;
@@ -10117,7 +10117,7 @@ for contract in Hiber.session().createQuery("from DsoContract contract where con
                         <th>Participant</th>
                         <td>
                             <a
-                                href="{/source/request/@context-path}/reports/37/output/?participant-id={/source/dso/participant/@id}">
+                                href="{/source/request/@context-path}/reports/73/output/?participant-id={/source/dso/participant/@id}">
                                 <xsl:value-of
                                     select="/source/dso/participant/@name" />
                             </a>
@@ -10127,7 +10127,7 @@ for contract in Hiber.session().createQuery("from DsoContract contract where con
                         <th>Role</th>
                         <td>
                             <a
-                                href="{/source/request/@context-path}/reports/62/output/?role-id={/source/dso/market-role/@id}">
+                                href="{/source/request/@context-path}/reports/123/output/?role-id={/source/dso/market-role/@id}">
                                 <xsl:value-of
                                     select="/source/dso/market-role/@description" />
                             </a>
@@ -10144,13 +10144,13 @@ for contract in Hiber.session().createQuery("from DsoContract contract where con
                 <ul>
                                     <li>
                         <a
-                            href="{/source/request/@context-path}/reports/33/output/?dso-id={/source/dso/@id}">
+                            href="{/source/request/@context-path}/reports/65/output/?dso-id={/source/dso/@id}">
                             Contracts
                         </a>
                     </li>
                     <li>
                         <a
-                            href="{/source/request/@context-path}/reports/25/output/?dso-id={/source/dso/@id}">
+                            href="{/source/request/@context-path}/reports/49/output/?dso-id={/source/dso/@id}">
                             Line Loss Factors
                         </a>
                     </li>
