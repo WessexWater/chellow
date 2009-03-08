@@ -1,6 +1,10 @@
 * Database now stores exact values for HH data, rather than storing it as binary numbers.
 
-
+* After this upgrade, all report ids will persist through upgrades. Core reports will have odd
+  numbers, and user reports even numbers.
+  
+* Added support for 3rd party supplies.
+  
 
 For bug fixes please see:
 

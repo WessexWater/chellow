@@ -194,8 +194,8 @@ public class Site extends PersistentEntity {
 		return element;
 	}
 
-	public Supply insertSupply(Source source, GeneratorType generatorType, String supplyName,
-			HhEndDate startDate, String meterSerialNumber,
+	public Supply insertSupply(Source source, GeneratorType generatorType,
+			String supplyName, HhEndDate startDate, String meterSerialNumber,
 			String importMpanStr, Ssc importSsc, GspGroup importGspGroup,
 			Account importHhdcAccount, Account importAccountSupplier,
 			Boolean importHasImportKwh, Boolean importHasImportKvarh,
@@ -264,6 +264,7 @@ public class Site extends PersistentEntity {
 			List<Double> exportToNet = map.get("export-to-net");
 			List<Double> importFromGen = map.get("import-from-gen");
 			List<Double> exportToGen = map.get("export-to-gen");
+
 			// Debug.print("Got to vague midpoint. "
 			// + (System.currentTimeMillis() - now));
 			HhEndDate resolve1From = null;
@@ -276,12 +277,11 @@ public class Site extends PersistentEntity {
 			HhEndDate snag2To = null;
 			int i = 0;
 			HhEndDate previousEndDate = null;
-		Calendar cal = HhEndDate.getCalendar();
-			for (HhEndDate hhEndDate = group.getFrom(); !hhEndDate.getDate().after(group.getTo().getDate()); hhEndDate = new HhEndDate(new Date(HhEndDate.getNext(cal, hhEndDate.getDate().getTime())))) {
-				
-			
-			//while (!hhEndDate.getDate().after(group.getTo().getDate())) {
-			
+			Calendar cal = HhEndDate.getCalendar();
+			for (HhEndDate hhEndDate = group.getFrom(); !hhEndDate.getDate()
+					.after(group.getTo().getDate()); hhEndDate = new HhEndDate(
+					new Date(HhEndDate.getNext(cal, hhEndDate.getDate()
+							.getTime())))) {
 				if (exportToNet.get(i) > importFromGen.get(i)) {
 					if (snag1From == null) {
 						snag1From = hhEndDate;
@@ -564,7 +564,8 @@ public class Site extends PersistentEntity {
 				GeneratorType generatorType = null;
 				if (source.getCode().equals(Source.GENERATOR_CODE)) {
 					Long generatorTypeId = inv.getLong("generator-type-id");
-					generatorType = GeneratorType.getGeneratorType(generatorTypeId);
+					generatorType = GeneratorType
+							.getGeneratorType(generatorTypeId);
 				}
 				Ssc importSsc = null;
 				GspGroup importGspGroup = null;
@@ -622,10 +623,10 @@ public class Site extends PersistentEntity {
 										+ e.getMessage());
 					}
 				}
-				Supply supply = insertSupply(source, generatorType, name, new HhEndDate(
-						startDate), meterSerialNumber, importMpanStr,
-						importSsc, importGspGroup, importHhdcAccount,
-						importSupplierAccount,
+				Supply supply = insertSupply(source, generatorType, name,
+						new HhEndDate(startDate), meterSerialNumber,
+						importMpanStr, importSsc, importGspGroup,
+						importHhdcAccount, importSupplierAccount,
 						importHhdcAccount == null ? false : true,
 						importHhdcAccount == null ? false : true, false,
 						importHhdcAccount == null ? false : true,

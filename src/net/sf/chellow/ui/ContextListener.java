@@ -87,8 +87,7 @@ public class ContextListener implements ServletContextListener {
 
 			// Find if DB has been created
 			try {
-				stmt
-						.executeQuery("select properties from configuration;");
+				stmt.executeQuery("select properties from configuration;");
 			} catch (SQLException sqle) {
 				initializeDatabase(con);
 				Hiber.close();
@@ -146,7 +145,8 @@ public class ContextListener implements ServletContextListener {
 					.execute("CREATE INDEX site_snag__snag_id_idx ON site_snag (snag_id);");
 			stmt
 					.execute("CREATE INDEX site_snag__start_date ON site_snag (start_date);");
-			stmt.execute("CREATE UNIQUE INDEX channel_date ON hh_datum (channel_id, end_date);");
+			stmt
+					.execute("CREATE UNIQUE INDEX channel_date ON hh_datum (channel_id, end_date);");
 			stmt.execute("ALTER TABLE report ALTER COLUMN script TYPE text;");
 			stmt.execute("ALTER TABLE report ALTER COLUMN template TYPE text;");
 
@@ -181,10 +181,14 @@ public class ContextListener implements ServletContextListener {
 				"administrator", null, UserRole.getUserRole(UserRole.EDITOR),
 				null);
 		Hiber.commit();
-		Source.insertSource("net", "Public distribution system.");
-		Source.insertSource("sub", "Sub meter");
-		Source.insertSource("gen-net", "Generator connected directly to network.");
-		Source.insertSource("gen", "Generator.");
+		Source.insertSource(Source.NETWORK_CODE, "Public distribution system.");
+		Source.insertSource(Source.SUBMETER_CODE, "Sub meter");
+		Source.insertSource(Source.GENERATOR_NETWORK_CODE,
+				"Generator connected directly to network.");
+		Source.insertSource(Source.GENERATOR_CODE, "Generator.");
+		Source.insertSource(Source.THIRD_PARTY_CODE, "Third party supply.");
+		Source.insertSource(Source.THIRD_PARTY_REVERSE_CODE,
+				"Third party supply with import going out of the site.");
 		GeneratorType.insertGeneratorType("chp", "Combined heat and power.");
 		GeneratorType.insertGeneratorType("lm", "Load management.");
 		GeneratorType.insertGeneratorType("turb", "Water turbine.");

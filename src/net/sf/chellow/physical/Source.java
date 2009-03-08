@@ -42,7 +42,9 @@ public class Source extends PersistentEntity implements Urlable {
 	static public final String GENERATOR_CODE = "gen";
 	static public final String GENERATOR_NETWORK_CODE = "gen-net";
 	static public final String SUBMETER_CODE = "sub";
-
+	static public final String THIRD_PARTY_CODE = "3rd-party";
+	static public final String THIRD_PARTY_REVERSE_CODE = "3rd-party-reverse";
+	
 	static public Source getSource(Long id) throws HttpException {
 		Source source = (Source) Hiber.session().get(Source.class, id);
 		if (source == null) {

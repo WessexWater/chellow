@@ -60,7 +60,11 @@ public class SiteGroup {
 		map.put("import-from-gen", importFromGen);
 		List<Double> exportToGen = new ArrayList<Double>();
 		map.put("export-to-gen", exportToGen);
-
+		List<Double> importFrom3rdParty = new ArrayList<Double>();
+		map.put("import-from-3rd-party", importFrom3rdParty);
+		List<Double> exportTo3rdParty = new ArrayList<Double>();
+		map.put("export-to-3rd-party", exportTo3rdParty);
+		
 		Calendar cal = HhEndDate.getCalendar();
 		for (long end = getFrom().getDate().getTime(); end <= getTo().getDate()
 				.getTime(); end = HhEndDate.getNext(cal, end)) {
@@ -68,6 +72,8 @@ public class SiteGroup {
 			exportToNet.add(0d);
 			importFromGen.add(0d);
 			exportToGen.add(0d);
+			importFrom3rdParty.add(0d);
+			exportTo3rdParty.add(0d);
 		}
 		Query query = Hiber
 				.session()
@@ -93,6 +99,18 @@ public class SiteGroup {
 						hhStreams.add(importFromGen);
 					} else {
 						hhStreams.add(exportToGen);
+					}
+				} else if (sourceCode.equals(Source.THIRD_PARTY_CODE)) {
+					if (isImport) {
+						hhStreams.add(importFrom3rdParty);
+					} else {
+						hhStreams.add(exportTo3rdParty);
+					}
+				} else if (sourceCode.equals(Source.THIRD_PARTY_REVERSE_CODE)) {
+					if (isImport) {
+						hhStreams.add(exportTo3rdParty);
+					} else {
+						hhStreams.add(importFrom3rdParty);
 					}
 				}
 				if (sourceCode.equals(Source.GENERATOR_NETWORK_CODE)) {
