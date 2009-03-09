@@ -169,7 +169,7 @@ public class Configuration extends PersistentEntity {
 	}
 
 	public long nextUserReportId() {
-		coreReportId += 2;
-		return coreReportId;
+		userReportId += 2;
+		return userReportId;
 	}
 }

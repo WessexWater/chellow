@@ -105,7 +105,7 @@ public class Report extends PersistentEntity {
 			throws HttpException {
 		Configuration configuration = Configuration.getConfiguration();
 		boolean isCore = name.startsWith("0 ");
-		
+
 		if (id == null) {
 			if (isCore) {
 				id = configuration.nextCoreReportId();
@@ -125,7 +125,13 @@ public class Report extends PersistentEntity {
 		}
 		boolean isOdd = id % 2 == 1;
 		if (isOdd != isCore) {
-			throw new UserException("The ids of core reports must be odd, those of user reports must be even.");
+			throw new UserException(
+					"The ids of core reports must be odd, those of user reports must be even. Report id "
+							+ id
+							+ ", Is Odd? "
+							+ isOdd
+							+ ", is core? "
+							+ isCore + ".");
 		}
 		setId(id);
 		update(name, script, template);
