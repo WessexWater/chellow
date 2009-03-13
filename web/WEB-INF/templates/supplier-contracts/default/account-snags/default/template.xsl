@@ -13,7 +13,7 @@
 				<title>
 					Chellow &gt; Supplier Contracts &gt;
 					<xsl:value-of
-						select="/source/account-snag/supplier-service/@name" />
+						select="/source/account-snag/account/supplier-contract/@name" />
 					&gt; Account Snags &gt;
 					<xsl:value-of select="/source/account-snag/@id" />
 				</title>
@@ -41,20 +41,20 @@
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/supplier-contracts/{/source/account-snag/supplier-contract/@id}/">
+						href="{/source/request/@context-path}/supplier-contracts/{/source/account-snag/account/supplier-contract/@id}/">
 						<xsl:value-of
-							select="/source/account-snag/supplier-contract/@name" />
+							select="/source/account-snag/account/supplier-contract/@name" />
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/supplier-contracts/{/source/account-snag/supplier-contract/@id}/account-snags/">
+						href="{/source/request/@context-path}/supplier-contracts/{/source/account-snag/account/supplier-contract/@id}/account-snags/">
 						<xsl:value-of select="'Account Snags'" />
 					</a>
 					&gt;
 					<xsl:value-of
 						select="concat(/source/account-snag/@id, ' [')" />
 					<a
-						href="{/source/request/@context-path}/reports/52/output/?snag-id={/source/account-snag/@id}">
+						href="{/source/request/@context-path}/reports/103/output/?snag-id={/source/account-snag/@id}">
 						<xsl:value-of select="'view'" />
 					</a>
 					<xsl:value-of select="']'" />
@@ -72,7 +72,7 @@
 						<th>Account</th>
 						<td>
 							<a
-								href="{/source/request/@context-path}/supplier-contracts/{/source/account-snag/supplier-contract/@id}/accounts/{/source/account-snag/account/@id}/">
+								href="{/source/request/@context-path}/supplier-contracts/{/source/account-snag/account/supplier-contract/@id}/accounts/{/source/account-snag/account/@id}/">
 								<xsl:value-of
 									select="/source/account-snag/account/@reference" />
 							</a>

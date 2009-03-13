@@ -116,13 +116,16 @@
 								<legend>
 									Add new supply generation
 								</legend>
-								<br/>
-								<label><xsl:value-of select="'Finish date '"/></label>
-								<input name="finish-date-year"
+								<br />
+								<label>
+									<xsl:value-of
+										select="'Start date '" />
+								</label>
+								<input name="start-date-year"
 									size="4">
 									<xsl:choose>
 										<xsl:when
-											test="/source/request/parameter[@name='finish-date-year']">
+											test="/source/request/parameter[@name='start-date-year']">
 											<xsl:attribute
 												name="value">
 												<xsl:value-of
@@ -139,15 +142,15 @@
 									</xsl:choose>
 								</input>
 								-
-								<select name="finish-date-month">
+								<select name="start-date-month">
 									<xsl:for-each
 										select="/source/months/month">
 										<option value="{@number}">
 											<xsl:choose>
 												<xsl:when
-													test="/source/request/parameter[@name='finish-date-month']">
+													test="/source/request/parameter[@name='start-date-month']">
 													<xsl:if
-														test="/source/request/parameter[@name='finish-date-month']/value/text() = number(@number)">
+														test="/source/request/parameter[@name='start-date-month']/value/text() = number(@number)">
 														<xsl:attribute
 															name="selected" />
 													</xsl:if>
@@ -166,15 +169,15 @@
 									</xsl:for-each>
 								</select>
 								-
-								<select name="finish-date-day">
+								<select name="start-date-day">
 									<xsl:for-each
 										select="/source/days/day">
 										<option value="{@number}">
 											<xsl:choose>
 												<xsl:when
-													test="/source/request/parameter[@name='finish-date-day']">
+													test="/source/request/parameter[@name='start-date-day']">
 													<xsl:if
-														test="/source/request/parameter[@name='finish-date-day']/value/text() = @number">
+														test="/source/request/parameter[@name='start-date-day']/value/text() = @number">
 														<xsl:attribute
 															name="selected" />
 													</xsl:if>

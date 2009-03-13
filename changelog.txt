@@ -1,3 +1,10 @@
+* Fixed bug where supply generations couldn't be deleted.
+
+* Fixed viewing of supplier account snags.
+
+
+250
+
 * Database now stores exact values for HH data, rather than storing it as binary numbers.
 
 * After this upgrade, all report ids will persist through upgrades. Core reports will have odd

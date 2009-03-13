@@ -7884,7 +7884,7 @@ source.appendChild(snag.toXml(doc, XmlTree('account', XmlTree('contract', XmlTre
                     </a>
                     &gt;
                     <a
-                        href="{/source/request/@context-path}/reports/89/output/?supplier-contract-id={/source/account-snag/account/supplier-contract/@id}">
+                        href="{/source/request/@context-path}/reports/101/output/?supplier-contract-id={/source/account-snag/account/supplier-contract/@id}">
                         <xsl:value-of select="'Account Snags'" />
                     </a>
                     &gt;
@@ -7999,7 +7999,7 @@ bill_snags_element = doc.createElement('bill-snags')
 source.appendChild(bill_snags_element)
 bill_snags_element.appendChild(contract.toXml(doc, XmlTree('party')))
 source.appendChild(bill_snags_element)
-for bill_snag in Hiber.session().createQuery("from BillSnag snag where snag.dateResolved is null and snag.contract = :contract order by snag.bill.id, snag.description").setEntity('contract', contract).list():
+for bill_snag in Hiber.session().createQuery("from BillSnag snag where snag.isIgnored is false and snag.bill.account.contract = :contract order by snag.bill.id, snag.description").setEntity('contract', contract).list():
     bill_snags_element.appendChild(bill_snag.toXml(doc, XmlTree('bill')))]]></value>
     <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
 <xsl:stylesheet version="1.0"
@@ -8011,7 +8011,7 @@ for bill_snag in Hiber.session().createQuery("from BillSnag snag where snag.date
         <html>
             <head>
                 <link rel="stylesheet" type="text/css"
-                    href="{/source/request/@context-path}/reports/10/output/" />
+                    href="{/source/request/@context-path}/reports/19/output/" />
                 <title>
                     Home &gt; Supplier Contracts &gt;
                     <xsl:value-of
@@ -8028,12 +8028,12 @@ for bill_snag in Hiber.session().createQuery("from BillSnag snag where snag.date
                     </a>
                     &gt;
                     <a
-                        href="{/source/request/@context-path}/reports/38/output/">
+                        href="{/source/request/@context-path}/reports/75/output/">
                         <xsl:value-of select="'Supplier Contracts'" />
                     </a>
                     &gt;
                     <a
-                        href="{/source/request/@context-path}/reports/39/output/?supplier-contract-id={/source/bill-snags/supplier-contract/@id}">
+                        href="{/source/request/@context-path}/reports/77/output/?supplier-contract-id={/source/bill-snags/supplier-contract/@id}">
                         <xsl:value-of
                             select="/source/bill-snags/supplier-contract/@name" />
                     </a>
@@ -8072,13 +8072,13 @@ for bill_snag in Hiber.session().createQuery("from BillSnag snag where snag.date
                             <tr>
                                 <td>
                                     <a
-                                        href="{/source/request/@context-path}/reports/54/output/?snag-id={@id}">
+                                        href="{/source/request/@context-path}/reports/107/output/?snag-id={@id}">
                                         <xsl:value-of select="@id" />
                                     </a>
                                 </td>
                                 <td>
                                     <a
-                                        href="{/source/request/@context-path}/reports/44/output/?bill-id={bill/@id}">
+                                        href="{/source/request/@context-path}/reports/87/output/?bill-id={bill/@id}">
                                         <xsl:value-of select="bill/@id" />
                                     </a>
                                 </td>
@@ -8131,7 +8131,7 @@ from net.sf.chellow.billing import BillSnag
 
 snag_id = inv.getLong('snag-id')
 snag = BillSnag.getBillSnag(snag_id)
-source.appendChild(snag.toXml(doc, XmlTree('contract', XmlTree('party')).put('bill', XmlTree('account'))))]]></value>
+source.appendChild(snag.toXml(doc, XmlTree('bill', XmlTree('account', XmlTree('contract', XmlTree('party'))))))]]></value>
     <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
 <xsl:stylesheet version="1.0"
     xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
@@ -8142,7 +8142,7 @@ source.appendChild(snag.toXml(doc, XmlTree('contract', XmlTree('party')).put('bi
         <html>
             <head>
                 <link rel="stylesheet" type="text/css"
-                    href="{/source/request/@context-path}/reports/10/output/" />
+                    href="{/source/request/@context-path}/reports/19/output/" />
                 <title>
                     Home &gt; Supplier Contracts &gt;
                     <xsl:value-of
@@ -8159,25 +8159,25 @@ source.appendChild(snag.toXml(doc, XmlTree('contract', XmlTree('party')).put('bi
                     </a>
                     &gt;
                     <a
-                        href="{/source/request/@context-path}/reports/38/output/?supplier-id={/source/bill-snag/supplier-contract/@id}">
+                        href="{/source/request/@context-path}/reports/75/output/">
                         <xsl:value-of select="'Supplier Contracts'" />
                     </a>
                     &gt;
                     <a
-                        href="{/source/request/@context-path}/reports/39/output/?supplier-contract-id={/source/bill-snag/supplier-contract/@id}">
+                        href="{/source/request/@context-path}/reports/77/output/?supplier-contract-id={/source/bill-snag/bill/account/supplier-contract/@id}">
                         <xsl:value-of
-                            select="/source/bill-snag/supplier-contract/@name" />
+                            select="/source/bill-snag/bill/account/supplier-contract/@name" />
                     </a>
                     &gt;
                     <a
-                        href="{/source/request/@context-path}/reports/45/output/?supplier-contract-id={/source/bill-snag/supplier-contract/@id}">
+                        href="{/source/request/@context-path}/reports/89/output/?supplier-contract-id={/source/bill-snag/bill/account/supplier-contract/@id}">
                         <xsl:value-of select="'Bill Snags'" />
                     </a>
                     &gt;
                     <xsl:value-of
                         select="concat(/source/bill-snag/@id, ' [')" />
                     <a
-                        href="{/source/request/@context-path}/supplier-contracts/{/source/bill-snag/supplier-contract/@id}/bill-snags/{/source/bill-snag/@id}/">
+                        href="{/source/request/@context-path}/supplier-contracts/{/source/bill-snag/bill/account/supplier-contract/@id}/bill-snags/{/source/bill-snag/@id}/">
                         <xsl:value-of select="'edit'" />
                     </a>
                     <xsl:value-of select="']'" />
@@ -8204,7 +8204,7 @@ source.appendChild(snag.toXml(doc, XmlTree('contract', XmlTree('party')).put('bi
                         <th>Bill</th>
                         <td>
                             <a
-                                href="{/source/request/@context-path}/reports/44/output/?bill-id={/source/bill-snag/bill/@id}">
+                                href="{/source/request/@context-path}/reports/87/output/?bill-id={/source/bill-snag/bill/@id}">
                                 <xsl:value-of
                                     select="/source/bill-snag/bill/@id" />
                             </a>
