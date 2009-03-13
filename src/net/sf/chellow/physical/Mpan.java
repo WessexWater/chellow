@@ -28,7 +28,6 @@ import java.util.Set;
 
 import net.sf.chellow.billing.Account;
 import net.sf.chellow.billing.Dso;
-// import net.sf.chellow.monad.Debug;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.InternalException;
@@ -385,12 +384,11 @@ public class Mpan extends PersistentEntity {
 	}
 
 	void delete() throws HttpException {
-		// check no invoices
 		if (((Long) Hiber.session().createQuery(
-				"from InvoiceMpan invoiceMpan where invoiceMpan.mpan = :mpan")
+				"select count(*) from RegisterRead read where read.mpan = :mpan")
 				.setEntity("mpan", this).uniqueResult()) > 0) {
 			throw new UserException(
-					"An MPAN can't be deleted if still has invoices attached.");
+					"An MPAN can't be deleted if it still has register reads attached.");
 		}
 	}
 

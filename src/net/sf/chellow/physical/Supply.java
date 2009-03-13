@@ -457,17 +457,12 @@ public class Supply extends PersistentEntity {
 		return mpanCore;
 	}
 
-	public SupplyGeneration insertGeneration(HhEndDate finishDate)
+	public SupplyGeneration insertGeneration(HhEndDate startDate)
 			throws HttpException {
-		if (finishDate != null
-				&& finishDate.getDate().before(
-						getGenerationFirst().getStartDate().getDate())) {
-			throw new UserException(
-					"You can't add a generation before the first generation.");
-		}
-		SupplyGeneration existingGeneration = getGeneration(finishDate);
+		SupplyGeneration existingGeneration = getGeneration(startDate);
 		if (existingGeneration == null) {
-			existingGeneration = getGenerationLast();
+			throw new UserException(
+					"You can't add a generation before the first generation, or after the last.");
 		}
 		Mpan existingImportMpan = existingGeneration.getImportMpan();
 		Mpan existingExportMpan = existingGeneration.getExportMpan();
@@ -480,7 +475,7 @@ public class Supply extends PersistentEntity {
 					siteSupplyGeneration.getIsPhysical());
 		}
 		if (existingImportMpan == null) {
-			newSupplyGeneration = insertGeneration(existingSiteMap, finishDate,
+			newSupplyGeneration = insertGeneration(existingSiteMap, startDate,
 					existingMeter.getSerialNumber(), null, null, null, null,
 					null, false, false, false, false, null, existingExportMpan
 							.toString(), existingExportMpan.getSsc(),
@@ -493,7 +488,7 @@ public class Supply extends PersistentEntity {
 							.getHasExportKvarh(), existingExportMpan
 							.getAgreedSupplyCapacity());
 		} else if (existingExportMpan == null) {
-			newSupplyGeneration = insertGeneration(existingSiteMap, finishDate,
+			newSupplyGeneration = insertGeneration(existingSiteMap, startDate,
 					existingMeter == null ? "" : existingMeter
 							.getSerialNumber(), existingImportMpan.toString(),
 					existingImportMpan.getSsc(), existingImportMpan
@@ -507,7 +502,7 @@ public class Supply extends PersistentEntity {
 							.getAgreedSupplyCapacity(), null, null, null, null,
 					null, false, false, false, false, null);
 		} else {
-			newSupplyGeneration = insertGeneration(existingSiteMap, finishDate,
+			newSupplyGeneration = insertGeneration(existingSiteMap, startDate,
 					existingMeter == null ? "" : existingMeter
 							.getSerialNumber(), existingImportMpan.toString(),
 					existingImportMpan.getSsc(), existingImportMpan
@@ -560,7 +555,7 @@ public class Supply extends PersistentEntity {
 	 * exportHasExportKvarh, exportAgreedSupplyCapacity, finishDate); }
 	 */
 	public SupplyGeneration insertGeneration(Map<Site, Boolean> siteMap,
-			HhEndDate finishDate, String meterSerialNumber,
+			HhEndDate startDate, String meterSerialNumber,
 			String importMpanStr, Ssc importSsc, GspGroup importGspGroup,
 			Account importHhdcAccount, Account importSupplierAccount,
 			Boolean importHasImportKwh, Boolean importHasImportKvarh,
@@ -571,10 +566,6 @@ public class Supply extends PersistentEntity {
 			Boolean exportHasImportKvarh, Boolean exportHasExportKwh,
 			Boolean exportHasExportKvarh, Integer exportAgreedSupplyCapacity)
 			throws HttpException {
-		if (getGenerationFinishing(finishDate) != null) {
-			throw new UserException(
-					"There's already a supply generation with this finish date.");
-		}
 		Meter meter = null;
 		if (meterSerialNumber.trim().length() != 0) {
 			meter = findMeter(meterSerialNumber);
@@ -583,22 +574,22 @@ public class Supply extends PersistentEntity {
 			}
 		}
 		SupplyGeneration supplyGeneration = null;
+		SupplyGeneration existingGeneration = null;
 		if (generations.isEmpty()) {
-			supplyGeneration = new SupplyGeneration(this,
-					finishDate == null ? HhEndDate.roundUp(new Date())
-							: finishDate, finishDate, meter);
+			supplyGeneration = new SupplyGeneration(this, startDate, null,
+					meter);
 			generations.add(supplyGeneration);
 		} else {
-			SupplyGeneration existingGeneration = getGeneration(finishDate);
+			existingGeneration = getGeneration(startDate);
 			if (existingGeneration == null) {
 				throw new UserException(
 						"You can't add a generation before the start of the supply.");
 			}
-			supplyGeneration = new SupplyGeneration(this, existingGeneration
-					.getStartDate(), finishDate, meter);
-			existingGeneration.internalUpdate(HhEndDate.getNext(finishDate),
-					existingGeneration.getFinishDate(), existingGeneration
-							.getMeter());
+			supplyGeneration = new SupplyGeneration(this, startDate,
+					existingGeneration.getFinishDate(), meter);
+			existingGeneration.internalUpdate(
+					existingGeneration.getStartDate(), startDate.getPrevious(),
+					existingGeneration.getMeter());
 			generations.add(supplyGeneration);
 		}
 		Hiber.flush();
@@ -614,6 +605,9 @@ public class Supply extends PersistentEntity {
 			supplyGeneration.attachSite(entry.getKey(), entry.getValue());
 		}
 		supplyGeneration.setMeter(meter);
+		if (existingGeneration != null) {
+		onSupplyGenerationChange(startDate, existingGeneration.getFinishDate());
+		}
 		return supplyGeneration;
 	}
 
@@ -989,7 +983,7 @@ public class Supply extends PersistentEntity {
 				"generatorType"));
 		source.appendChild(supplyElement);
 		for (Source supplySource : (List<Source>) Hiber.session().createQuery(
-		"from Source source order by source.code").list()) {
+				"from Source source order by source.code").list()) {
 			source.appendChild(supplySource.toXml(doc));
 		}
 		for (GeneratorType type : (List<GeneratorType>) Hiber.session()

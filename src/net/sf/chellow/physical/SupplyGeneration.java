@@ -1251,7 +1251,7 @@ public class SupplyGeneration extends PersistentEntity {
 			if (inv.hasParameter("delete")) {
 				supply.deleteGeneration(this);
 				Hiber.commit();
-				inv.sendSeeOther(supply.getUri());
+				inv.sendSeeOther(new SupplyGenerations(supply).getUri());
 			} else if (inv.hasParameter("attach")) {
 				String siteCode = inv.getString("site-code");
 				if (!inv.isValid()) {

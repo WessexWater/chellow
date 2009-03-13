@@ -233,17 +233,14 @@ public class Site extends PersistentEntity {
 		 */
 		Map<Site, Boolean> siteMap = new HashMap<Site, Boolean>();
 		siteMap.put(this, true);
-		SupplyGeneration supplyGeneration = supply.insertGeneration(siteMap,
-				null, meterSerialNumber, importMpanStr, importSsc,
-				importGspGroup, importHhdcAccount, importAccountSupplier,
-				importHasImportKwh, importHasImportKvarh, importHasExportKwh,
-				importHasExportKvarh, importAgreedSupplyCapacity,
-				exportMpanStr, exportSsc, exportGspGroup, exportHhdcAccount,
-				exportAccountSupplier, exportHasImportKwh,
-				exportHasImportKvarh, exportHasExportKwh, exportHasExportKvarh,
-				exportAgreedSupplyCapacity);
-		supplyGeneration.update(startDate, supplyGeneration.getFinishDate(),
-				supplyGeneration.getMeter());
+		supply.insertGeneration(siteMap, startDate, meterSerialNumber,
+				importMpanStr, importSsc, importGspGroup, importHhdcAccount,
+				importAccountSupplier, importHasImportKwh,
+				importHasImportKvarh, importHasExportKwh, importHasExportKvarh,
+				importAgreedSupplyCapacity, exportMpanStr, exportSsc,
+				exportGspGroup, exportHhdcAccount, exportAccountSupplier,
+				exportHasImportKwh, exportHasImportKvarh, exportHasExportKwh,
+				exportHasExportKvarh, exportAgreedSupplyCapacity);
 		Hiber.flush();
 		return supply;
 	}
@@ -264,7 +261,7 @@ public class Site extends PersistentEntity {
 			List<Double> exportToNet = map.get("export-to-net");
 			List<Double> importFromGen = map.get("import-from-gen");
 			List<Double> exportToGen = map.get("export-to-gen");
-
+	
 			// Debug.print("Got to vague midpoint. "
 			// + (System.currentTimeMillis() - now));
 			HhEndDate resolve1From = null;

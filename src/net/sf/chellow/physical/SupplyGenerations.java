@@ -22,11 +22,14 @@
 
 package net.sf.chellow.physical;
 
+import java.util.Date;
+
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.Invocation;
 import net.sf.chellow.monad.MonadUtils;
 import net.sf.chellow.monad.NotFoundException;
+import net.sf.chellow.monad.UserException;
 import net.sf.chellow.monad.XmlTree;
 import net.sf.chellow.monad.types.MonadDate;
 import net.sf.chellow.monad.types.MonadUri;
@@ -69,9 +72,12 @@ public class SupplyGenerations extends EntityList {
 	}
 
 	public void httpPost(Invocation inv) throws HttpException {
-		MonadDate finishDate = inv.getMonadDate("finish-date");
+		Date startDate = inv.getDate("start-date");
+		if (!inv.isValid()) {
+			throw new UserException(document());
+		}
 		SupplyGeneration supplyGeneration = supply.insertGeneration(HhEndDate
-				.roundDown(finishDate.getDate()));
+				.roundDown(startDate));
 		Hiber.commit();
 		inv.sendCreated(document(), supplyGeneration.getUri());
 	}
