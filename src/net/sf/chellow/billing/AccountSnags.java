@@ -64,7 +64,7 @@ public class AccountSnags extends EntityList {
 		for (AccountSnag snag : (List<AccountSnag>) Hiber
 				.session()
 				.createQuery(
-						"from AccountSnag snag where snag.dateResolved is null and snag.contract = :contract order by snag.account.reference, snag.description, snag.startDate.date")
+						"from AccountSnag snag where snag.isIgnored is false and snag.account.contract = :contract order by snag.account.reference, snag.description, snag.startDate.date")
 				.setEntity("contract", contract).setMaxResults(PAGE_SIZE)
 				.list()) {
 			snagsElement.appendChild(snag.toXml(doc, new XmlTree("account")));

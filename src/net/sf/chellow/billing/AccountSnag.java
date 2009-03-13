@@ -105,14 +105,14 @@ public class AccountSnag extends SnagDateBounded {
 	private Document document() throws HttpException {
 		Document doc = MonadUtils.newSourceDocument();
 		Element sourceElement = doc.getDocumentElement();
-		sourceElement.appendChild(toXml(doc, new XmlTree("contract",
-				new XmlTree("party")).put("account")));
+		sourceElement.appendChild(toXml(doc, new XmlTree("account",
+				new XmlTree("contract", new XmlTree("party")))));
 		return doc;
 	}
 
 	public MonadUri getUri() throws HttpException {
-		return account.getContract().getSnagsAccountInstance().getUri().resolve(
-				getUriId()).append("/");
+		return account.getContract().getSnagsAccountInstance().getUri()
+				.resolve(getUriId()).append("/");
 	}
 
 	/*

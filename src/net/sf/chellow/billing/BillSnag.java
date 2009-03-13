@@ -56,8 +56,6 @@ public class BillSnag extends Snag {
 		Hiber.session().delete(snag);
 	}
 
-	private SupplierContract contract;
-
 	private Bill bill;
 
 	public BillSnag() {
@@ -66,16 +64,7 @@ public class BillSnag extends Snag {
 	public BillSnag(String description, Bill bill)
 			throws HttpException {
 		super(description);
-		this.contract = SupplierContract.getSupplierContract(bill.getAccount().getContract().getId());
 		this.bill = bill;
-	}
-
-	public SupplierContract getContract() {
-		return contract;
-	}
-
-	public void setContract(Contract contract) {
-		this.contract = (SupplierContract) contract;
 	}
 
 	public Bill getBill() {
@@ -120,7 +109,7 @@ public class BillSnag extends Snag {
 	}
 
 	public MonadUri getUri() throws HttpException {
-		return getContract().getSnagsAccountInstance().getUri().resolve(
+		return bill.getAccount().getContract().getSnagsAccountInstance().getUri().resolve(
 				getUriId()).append("/");
 	}
 }
