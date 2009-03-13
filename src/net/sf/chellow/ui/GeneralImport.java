@@ -155,21 +155,32 @@ public class GeneralImport extends Thread implements Urlable, XmlDescriber {
 						long startProchh = System.currentTimeMillis();
 						// Debug.print("Type is hh-datum");
 						if (action.equals("insert")) {
-							// Debug.print("action is insert");
-							Character status = null;
-							String statusString = allValues[7].trim();
-							if (statusString.length() > 0) {
-								status = statusString.charAt(0);
+							String mpanCore = allValues[2];
+							boolean isImport = Boolean
+									.parseBoolean(allValues[4]);
+							boolean isKwh = Boolean.parseBoolean(allValues[5]);
+							HhEndDate endDate = new HhEndDate(allValues[3]);
+							String[] vals = allValues[6].split(",");
+							for (int i = 0; i < vals.length; i += 2) {
+								// Debug.print("action is insert");
+								String bigDecimal = vals[i];
+								if (bigDecimal.length() > 0) {
+									Character status = null;
+									String statusString = vals[i + 1].trim();
+									if (statusString.length() > 0) {
+										status = statusString.charAt(0);
+									}
+									hhData
+											.add(new HhDatumRaw(mpanCore,
+													isImport, isKwh, endDate,
+													new BigDecimal(bigDecimal),
+													status));
+								}
+								// Debug.print("size " + hhData.size());
+								endDate = endDate.getNext();
 							}
-							hhData.add(new HhDatumRaw(allValues[2], Boolean
-									.parseBoolean(allValues[4]), Boolean
-									.parseBoolean(allValues[5]), new HhEndDate(
-									allValues[3]), new BigDecimal(allValues[6]), status));
-							// Debug.print("size " + hhData.size());
-							if (hhData.size() > 1000) {
-								HhDatum.insert(hhData.iterator(), halt);
-								hhData.clear();
-							}
+							HhDatum.insert(hhData.iterator(), halt);
+							hhData.clear();
 						}
 						/*
 						 * else { HhDatum.generalImport(action, allValues); }

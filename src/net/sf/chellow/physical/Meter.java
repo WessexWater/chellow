@@ -23,7 +23,7 @@ public class Meter extends PersistentEntity {
 		setSerialNumber(serialNumber);
 	}
 
-	Supply getSupply() {
+	public Supply getSupply() {
 		return supply;
 	}
 
@@ -31,7 +31,7 @@ public class Meter extends PersistentEntity {
 		this.supply = supply;
 	}
 
-	String getSerialNumber() {
+	public String getSerialNumber() {
 		return serialNumber;
 	}
 
