@@ -114,6 +114,9 @@ public class SupplyGeneration extends PersistentEntity {
 				importMpanStr = existingImportMpan == null ? null
 						: existingImportMpan.toString();
 			}
+			if (importMpanStr.trim().length() == 0) {
+				importMpanStr = null;
+			}
 			if (importMpanStr != null) {
 				if (importSscCode.equals(GeneralImport.NO_CHANGE)) {
 					if (existingImportMpan == null) {
@@ -134,7 +137,7 @@ public class SupplyGeneration extends PersistentEntity {
 						importGspGroup = existingImportMpan.getGspGroup();
 					}
 				} else {
-					importGspGroup = GspGroup.getGspGroup(importSscCode);
+					importGspGroup = GspGroup.getGspGroup(importGspGroupCode);
 				}
 				if (importAgreedSupplyCapacityStr
 						.equals(GeneralImport.NO_CHANGE)) {
@@ -286,6 +289,9 @@ public class SupplyGeneration extends PersistentEntity {
 			if (exportMpanStr.equals(GeneralImport.NO_CHANGE)) {
 				exportMpanStr = existingExportMpan == null ? null
 						: existingExportMpan.toString();
+			}
+			if (exportMpanStr.trim().length() == 0) {
+				exportMpanStr = null;
 			}
 			Account exportHhdcAccount = null;
 			SupplierContract exportSupplierContract = null;

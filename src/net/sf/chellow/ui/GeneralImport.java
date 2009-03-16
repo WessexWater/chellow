@@ -160,7 +160,14 @@ public class GeneralImport extends Thread implements Urlable, XmlDescriber {
 									.parseBoolean(allValues[4]);
 							boolean isKwh = Boolean.parseBoolean(allValues[5]);
 							HhEndDate endDate = new HhEndDate(allValues[3]);
-							String[] vals = allValues[6].split(",");
+							String hhString = allValues[6].trim();
+							if (hhString.endsWith(",")) {
+								hhString = hhString + " ";
+							}
+							String[] vals = hhString.split(",");
+							if (vals.length % 2 != 0) {
+								throw new UserException("There must be an even number of values in the list of hh data.");
+							}
 							for (int i = 0; i < vals.length; i += 2) {
 								// Debug.print("action is insert");
 								String bigDecimal = vals[i];

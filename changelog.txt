@@ -2,6 +2,8 @@
 
 * Fixed viewing of supplier account snags.
 
+* Altered import format so that supply generation start date is given, rather than finish date.
+
 
 250
 
