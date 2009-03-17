@@ -141,7 +141,6 @@ public class StarkDf2HhConverter implements HhConverter {
 					HhEndDate endDate = new HhEndDate(dateFormat.parse(line
 							.substring(0, datePos).replace(",", " ")));
 					int valuePos = line.indexOf(',', datePos + 1);
-					Character status = null;
 					BigDecimal valueKw = null;
 
 					if (valuePos < 0) {
@@ -160,9 +159,9 @@ public class StarkDf2HhConverter implements HhConverter {
 							throw new UserException(
 									"Problem parsing the kW value: " + kwString);
 						}
-						String trimmedLine = line.trim();
-						status = trimmedLine.charAt(trimmedLine.length() - 1);
 					}
+					String trimmedLine = line.trim();
+					char status = trimmedLine.charAt(trimmedLine.length() - 1);
 
 					if (!core.trim().startsWith("99")
 							&& valueKw.doubleValue() * 10 % 2 == 1) {

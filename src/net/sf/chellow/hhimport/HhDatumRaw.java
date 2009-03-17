@@ -3,6 +3,9 @@ package net.sf.chellow.hhimport;
 import java.math.BigDecimal;
 
 import net.sf.chellow.monad.HttpException;
+import net.sf.chellow.monad.InternalException;
+import net.sf.chellow.monad.UserException;
+import net.sf.chellow.physical.HhDatum;
 import net.sf.chellow.physical.HhEndDate;
 
 public class HhDatumRaw {
@@ -16,7 +19,7 @@ public class HhDatumRaw {
 
 	private BigDecimal value;
 
-	private Character status;
+	private char status;
 
 	/*
 	 * public HhDatumRaw(String core, HhEndDate endDate, String isImport, String
@@ -30,13 +33,20 @@ public class HhDatumRaw {
 	 */
 
 	public HhDatumRaw(String core, boolean isImport, boolean isKwh,
-			HhEndDate endDate, BigDecimal value, Character status)
+			HhEndDate endDate, BigDecimal value, char status)
 			throws HttpException {
 		this.core = core;
 		this.isImport = isImport;
 		this.isKwh = isKwh;
+		if (endDate == null) {
+			throw new InternalException("The value 'endDate' must not be null.");
+		}
 		this.endDate = endDate;
 		this.value = value;
+		if (status != HhDatum.ESTIMATE && status != HhDatum.ACTUAL) {
+			throw new UserException(
+					"The status character must be E, A or null.");
+		}
 		this.status = status;
 	}
 
@@ -60,7 +70,7 @@ public class HhDatumRaw {
 		return value;
 	}
 
-	public Character getStatus() {
+	public char getStatus() {
 		return status;
 	}
 

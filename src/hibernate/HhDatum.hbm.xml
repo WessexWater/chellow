@@ -42,7 +42,7 @@
 		</component>
 		<property name="value" column="value" type="big_decimal"
 			not-null="true" />
-		<property name="status" column="status" type="character" />
+		<property name="status" column="status" type="character" not-null="true"/>
 	</class>
 </hibernate-mapping>
 

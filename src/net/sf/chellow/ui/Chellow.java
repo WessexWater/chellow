@@ -147,8 +147,8 @@ public class Chellow extends Monad implements Urlable {
 		UserRole role = user.getRole();
 		String roleCode = role.getCode();
 		if (roleCode.equals(UserRole.VIEWER)) {
-			if (pathInfo.startsWith("/reports/")
-					&& pathInfo.endsWith("/output/")
+			if (((pathInfo.startsWith("/reports/")
+					&& pathInfo.endsWith("/output/")) || pathInfo.startsWith("/logo/"))
 					&& (method.equals(HttpMethod.GET)
 					|| method.equals(HttpMethod.HEAD))) {
 				return;

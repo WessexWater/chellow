@@ -37,6 +37,7 @@ import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.UserException;
 import net.sf.chellow.monad.types.MonadDate;
+import net.sf.chellow.physical.HhDatum;
 import net.sf.chellow.physical.HhEndDate;
 
 import com.Ostermiller.util.CSVParser;
@@ -105,7 +106,8 @@ public class HhConverterBglobal implements HhConverter {
 					cal.setTime(date);
 					cal.add(Calendar.MINUTE, 30 * (hhIndex + 1));
 					datum = new HhDatumRaw(values[0], true, true,
-							new HhEndDate(cal.getTime()), new BigDecimal(values[hhIndex + 3]), null);
+							new HhEndDate(cal.getTime()), new BigDecimal(
+									values[hhIndex + 3]), HhDatum.ACTUAL);
 				} catch (NumberFormatException e) {
 					throw new UserException("Problem formatting value. "
 							+ e.getMessage());

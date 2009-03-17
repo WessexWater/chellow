@@ -1,6 +1,6 @@
 /*
  
- Copyright 2005-2008 Meniscus Systems Ltd
+ Copyright 2005-2009 Meniscus Systems Ltd
  
  This file is part of Chellow.
 
@@ -27,7 +27,6 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Timestamp;
-import java.sql.Types;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -592,7 +591,7 @@ public class Channel extends PersistentEntity {
 		HhEndDate prevEndDate = null;
 		int missing = 0;
 		BigDecimal originalDatumValue = new BigDecimal(0);
-		Character originalDatumStatus = null;
+		char originalDatumStatus = Character.UNASSIGNED;
 		Connection con = Hiber.session().connection();
 		PreparedStatement stmt;
 		try {
@@ -624,12 +623,7 @@ public class Channel extends PersistentEntity {
 					stmt.setTimestamp(2, new Timestamp(datumRaw.getEndDate()
 							.getDate().getTime()));
 					stmt.setBigDecimal(3, datumRaw.getValue());
-					Character status = datumRaw.getStatus();
-					if (status == null) {
-						stmt.setNull(4, Types.CHAR);
-					} else {
-						stmt.setString(4, datumRaw.getStatus().toString());
-					}
+					stmt.setString(4, Character.toString(datumRaw.getStatus()));
 					stmt.addBatch();
 					batchSize++;
 				} catch (SQLException e) {
@@ -648,8 +642,7 @@ public class Channel extends PersistentEntity {
 				 //Debug.print("Resolved missing: "
 				 //+ (System.currentTimeMillis() - now));
 			} else if (datumRaw.getValue() != datum.getValue()
-					|| (datumRaw.getStatus() == null ? datum.getStatus() != null
-							: !datumRaw.getStatus().equals(datum.getStatus()))) {
+					|| datumRaw.getStatus() != datum.getStatus()) {
 				 //Debug.print("About to update datum: " + datum + " with " + datumRaw + " "
 				 //+ (System.currentTimeMillis() - now));
 				originalDatumValue = datum.getValue();
@@ -672,13 +665,13 @@ public class Channel extends PersistentEntity {
 					deleteSnag(ChannelSnag.SNAG_NEGATIVE, datumRaw
 							.getEndDate());
 				}
-				if (!HhDatum.ACTUAL.equals(datumRaw.getStatus())) {
+				if (HhDatum.ACTUAL != datumRaw.getStatus()) {
 					if (notActualFrom == null) {
 						notActualFrom = datumRaw.getEndDate();
 					}
 					notActualTo = datumRaw.getEndDate();
 				} else if (altered
-						&& !originalDatumStatus.equals(HhDatum.ACTUAL)) {
+						&& originalDatumStatus != HhDatum.ACTUAL) {
 					deleteSnag(ChannelSnag.SNAG_NOT_ACTUAL, datumRaw
 							.getEndDate());
 				}

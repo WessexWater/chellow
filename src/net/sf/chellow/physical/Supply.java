@@ -857,7 +857,7 @@ public class Supply extends PersistentEntity {
 									.addChannelSnag(ChannelSnag.SNAG_NEGATIVE,
 											endDate, endDate);
 						}
-						if (!datum.getStatus().equals(HhDatum.ACTUAL)) {
+						if (datum.getStatus() != HhDatum.ACTUAL) {
 							targetChannel.addChannelSnag(
 									ChannelSnag.SNAG_NOT_ACTUAL, endDate,
 									endDate);

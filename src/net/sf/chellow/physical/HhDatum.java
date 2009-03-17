@@ -32,7 +32,6 @@ import java.util.List;
 import net.sf.chellow.hhimport.HhDatumRaw;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
-import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Invocation;
 import net.sf.chellow.monad.MonadMessage;
 import net.sf.chellow.monad.MonadUtils;
@@ -47,8 +46,9 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 public class HhDatum extends PersistentEntity {
-	public static final Character ACTUAL = 'A';
-	public static final Character ESTIMATE = 'E';
+	public static final char ACTUAL = 'A';
+
+	public static final char ESTIMATE = 'E';
 
 	/*
 	 * static private String getCsvField(String fieldName, String[] values, int
@@ -163,19 +163,16 @@ public class HhDatum extends PersistentEntity {
 
 	private BigDecimal value;
 
-	private Character status;
+	private char status;
 
 	public HhDatum() {
 	}
 
 	public HhDatum(Channel channel, HhDatumRaw datumRaw) throws HttpException {
 		setChannel(channel);
-		HhEndDate endDate = datumRaw.getEndDate();
-		if (endDate == null) {
-			throw new InternalException("The value 'endDate' must not be null.");
-		}
-		setEndDate(endDate);
-		update(datumRaw.getValue(), datumRaw.getStatus());
+		setEndDate(datumRaw.getEndDate());
+		setValue(datumRaw.getValue());
+		setStatus(datumRaw.getStatus());
 	}
 
 	public Channel getChannel() {
@@ -202,22 +199,18 @@ public class HhDatum extends PersistentEntity {
 		this.value = value;
 	}
 
-	public Character getStatus() {
+	public char getStatus() {
 		return status;
 	}
 
-	void setStatus(Character status) {
+	void setStatus(char status) {
 		this.status = status;
 	}
 
-	public void update(BigDecimal value, Character status) throws HttpException {
-		this.value = value;
-		if (status != null
-				&& !(status.equals(ESTIMATE) || status.equals(ACTUAL))) {
-			throw new UserException(
-					"The status character must be E, A or null.");
-		}
-		this.status = status;
+	public void update(BigDecimal value, char status) throws HttpException {
+		new HhDatumRaw("", false, false, endDate, value, status);
+		setValue(value);
+		setStatus(status);
 	}
 
 	public Element toXml(Document doc) throws HttpException {
@@ -225,9 +218,7 @@ public class HhDatum extends PersistentEntity {
 
 		element.appendChild(endDate.toXml(doc));
 		element.setAttribute("value", value.toString());
-		if (status != null) {
-			element.setAttribute("status", Character.toString(status));
-		}
+		element.setAttribute("status", Character.toString(status));
 		return element;
 	}
 

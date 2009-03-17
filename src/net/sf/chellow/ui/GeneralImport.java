@@ -296,6 +296,10 @@ public class GeneralImport extends Thread implements Urlable, XmlDescriber {
 						"From header import process", e);
 			}
 		} catch (Throwable e) {
+			if (csvElement != null) {
+				csvElement.setAttribute("number", String.valueOf(lineNumber));
+				source.appendChild(csvElement);
+			}
 			errors.add(new MonadMessage("Programmer Exception: "
 					+ HttpException.getStackTraceString(e)));
 			ChellowLogger.getLogger().log(Level.SEVERE,

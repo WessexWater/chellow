@@ -113,8 +113,7 @@ public class SupplyGeneration extends PersistentEntity {
 			if (importMpanStr.equals(GeneralImport.NO_CHANGE)) {
 				importMpanStr = existingImportMpan == null ? null
 						: existingImportMpan.toString();
-			}
-			if (importMpanStr.trim().length() == 0) {
+			} else if (importMpanStr.trim().length() == 0) {
 				importMpanStr = null;
 			}
 			if (importMpanStr != null) {
@@ -289,8 +288,7 @@ public class SupplyGeneration extends PersistentEntity {
 			if (exportMpanStr.equals(GeneralImport.NO_CHANGE)) {
 				exportMpanStr = existingExportMpan == null ? null
 						: existingExportMpan.toString();
-			}
-			if (exportMpanStr.trim().length() == 0) {
+			} else if (exportMpanStr.trim().length() == 0) {
 				exportMpanStr = null;
 			}
 			Account exportHhdcAccount = null;

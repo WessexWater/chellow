@@ -4,6 +4,8 @@
 
 * Altered import format so that supply generation start date is given, rather than finish date.
 
+* Now an hh datum status can't be null.
+
 
 250
 
