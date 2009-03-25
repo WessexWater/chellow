@@ -66,19 +66,19 @@
         </ul>
         <h3>CSV Downloads</h3>
         <ul>
-          <li><a href="{/source/request/@context-path}/reports/33/output/">Electricity Supply Details
-            </a>
+          <li><a href="{/source/request/@context-path}/reports/157/output/">Supplies Snapshot</a>
+          </li>
+          <li><a href="{/source/request/@context-path}/reports/147/output/">Supplies Period</a>
           </li>
           <li><a href="{/source/request/@context-path}/reports/145/output/">HH data, all sites, 1 year</a> (WARNING: Long load time)
-            
           </li>
           <li><a href="{/source/request/@context-path}/reports/57/output/">Sites Period
             </a>
           </li>
-          <li><a href="{/source/request/@context-path}/reports/41/output/">TRIAD Data Quality
+          <li><a href="{/source/request/@context-path}/reports/159/output/">Monthly Sites Period
             </a>
           </li>
-          <li><a href="{/source/request/@context-path}/reports/147/output/">Supplies Period
+          <li><a href="{/source/request/@context-path}/reports/41/output/">TRIAD Data Quality
             </a>
           </li>
         </ul>
@@ -2257,7 +2257,7 @@ os.close()]]></value>
     <value>insert</value>
     <value>report</value>
     <value>23</value>
-    <value>0 Generation Graph</value>
+    <value>0 Site Generation Graph</value>
     <value><![CDATA[from net.sf.chellow.monad import Hiber, UserException
 from net.sf.chellow.physical import HhEndDate, HhDatum, Site
 from net.sf.chellow.monad.types import MonadDate
@@ -2266,7 +2266,7 @@ from javax.imageio import ImageIO
 from java.awt import Color, Font
 import math
 from java.sql import Timestamp, ResultSet
-from java.text import DateFormat
+from java.text import SimpleDateFormat
 from java.lang import System
 from java.util import GregorianCalendar, TimeZone, Locale, Calendar, Date
 
@@ -2372,9 +2372,9 @@ if rs.next():
             if (not isImport and sourceCode == 'gen') or (isImport and sourceCode == 'gen-net'):
                 parasiticValue = parasiticValue + hhChannelValue
             supplyList.append([supplyName, sourceCode, isImport, hhChannelValue, supply_id])
-            if (isImport and sourceCode == '3rd-party') or (not isImport and sourceCode != '3rd-party-reverse'):
+            if (isImport and sourceCode == '3rd-party') or (not isImport and sourceCode == '3rd-party-reverse'):
                 third_party_import = third_party_import + hhChannelValue
-            if (not isImport and sourceCode == '3rd-party') or (isImport and sourceCode != '3rd-party-reverse'):
+            if (not isImport and sourceCode == '3rd-party') or (isImport and sourceCode == '3rd-party-reverse'):
                 third_party_export = third_party_export + hhChannelValue
             if rs.next():
                 sourceCode = rs.getString("code")
@@ -2467,10 +2467,10 @@ if len(resultData) > 0:
     xAxisGenerated = int(graphTopGenerated + maxOverallScale * scaleFactorOverall)
     xAxisUsed = int(graphTopUsed + maxOverallScale * scaleFactorOverall)
     xAxisDisplaced = int(graphTopDisplaced + maxOverallScale * scaleFactorOverall)
-    monthDateFormat = DateFormat.getDateInstance(DateFormat.LONG, Locale.UK)
-    monthDateFormat.applyLocalizedPattern("MMMMMM")
-    yearDateFormat = DateFormat.getDateInstance(DateFormat.LONG, Locale.UK)
-    yearDateFormat.applyLocalizedPattern("yyyy")
+    month_format = SimpleDateFormat("MMMMMM")
+    month_format.setCalendar(cal)
+    year_format = SimpleDateFormat("yyyy")
+    year_format.setCalendar(cal)
     generated_supplies = {}
     imported_supplies = {}
     exported_supplies = {}
@@ -2537,7 +2537,7 @@ if len(resultData) > 0:
             graphics.fillRect(graphLeft + i, graphTopUsed + maxHeight, 1, 5)
             graphics.fillRect(graphLeft + i, graphTopDisplaced + maxHeight, 1, 5)
             if day == 15:
-                graphics.drawString(monthDateFormat.format(cal.getTime()), graphLeft + i + 16, ((maxHeight + 22) * 5) + 50 + minUsed + minDisplaced + minParasitic)
+                graphics.drawString(month_format.format(cal.getTime()), graphLeft + i + 16, ((maxHeight + 22) * 5) + 50 + minUsed + minDisplaced + minParasitic)
                 monthPoints.append(i)
     graphics.setColor(Color.BLACK)
     graphics.fillRect(graphLeft, graphTopExported, 1, maxHeight)
@@ -2606,7 +2606,7 @@ if len(resultData) > 0:
     title = "Electricity generation at site " + site.getCode() + " " + site.getName() + " for " + str(months) + " month"
     if months > 1:
         title = title + "s"
-    title = title + " ending " + monthDateFormat.format(Date(finishDate.getTime() - 1)) + " " + yearDateFormat.format(Date(finishDate.getTime() - 1))
+    title = title + " up to and including " + month_format.format(Date(finishDate.getTime() - 1)) + " " + year_format.format(Date(finishDate.getTime() - 1))
     graphics.drawString(title, 30, 20)
     graphics.drawString("Imported", 10, graphTopImported + 10)
     graphics.drawString("Exported", 10, graphTopExported + 10)
@@ -3514,7 +3514,9 @@ source.appendChild(MonadDate().toXml(doc))]]></value>
     <value>33</value>
     <value>0 CSV Supplies Snapshot</value>
     <value><![CDATA[from net.sf.chellow.monad import Hiber
-from net.sf.chellow.physical import ReadType
+from net.sf.chellow.monad.types import MonadDate
+from net.sf.chellow.physical import ReadType, HhEndDate
+from java.util import Calendar
 
 def mpan_fields(mpan):
     NON_ESTIMATE_READ_TYPES = [ReadType.TYPE_CHANGE_OF_SUPPLIER, ReadType.TYPE_CUSTOMER, ReadType.TYPE_FINAL, ReadType.TYPE_INITIAL, ReadType.TYPE_DC_MANUAL, ReadType.TYPE_ROUTINE, ReadType.TYPE_SPECIAL, ReadType.TYPE_CHANGE_OF_TENANCY]
@@ -3548,12 +3550,24 @@ def mpan_fields(mpan):
             fields['last_read_date'] = read.getPresentDate().toString()
     return fields
 
+year = inv.getInteger('year')
+month = inv.getInteger('month')
+if not inv.isValid():
+    raise UserException()
+cal = MonadDate.getCalendar()
+cal.clear()
+cal.set(Calendar.YEAR, year)
+cal.set(Calendar.MONTH, month - 1)
+cal.set(Calendar.DAY_OF_MONTH, 1)
+cal.add(Calendar.MONTH, 1)
+cal.add(Calendar.MINUTE, -30)
+date = cal.getTime()
 inv.getResponse().setContentType('text/csv')
 inv.getResponse().addHeader('Content-Disposition', 'attachment; filename="report.csv"')
 pw = inv.getResponse().getWriter()
 
-pw.println("Physical Site Id, Physical Site Name, Other Site Ids, Other Site Names, Supply Id, Source, DNO Name, Voltage Level, Import MPAN core, Import Agreed Supply Capacity (kVA), Import LLFC Code, Import LLFC Description,  Import Last Read, Export MPAN core, Export Agreed Supply Capacity (kVA), Export LLFC Code, Export LLFC Description,  Export Last Read")
-for supply_generation in Hiber.session().createQuery("from SupplyGeneration generation where generation.finishDate.date is null order by generation.supply.id").list():
+pw.println("Date,Physical Site Id, Physical Site Name, Other Site Ids, Other Site Names, Supply Id, Source, DNO Name, Voltage Level, Import MPAN core, Import Agreed Supply Capacity (kVA), Import LLFC Code, Import LLFC Description,  Import Last Read, Export MPAN core, Export Agreed Supply Capacity (kVA), Export LLFC Code, Export LLFC Description,  Export Last Read")
+for supply_generation in Hiber.session().createQuery("from SupplyGeneration generation where generation.startDate.date <= :date and (generation.finishDate.date is null or generation.finishDate.date >= :date) order by generation.supply.id").setTimestamp('date', date).list():
     site_codes = ''
     site_names = ''
     for site_supply_generation in supply_generation.getSiteSupplyGenerations():
@@ -3569,7 +3583,7 @@ for supply_generation in Hiber.session().createQuery("from SupplyGeneration gene
     mpan = supply_generation.getMpans()[0]
     import_fields = mpan_fields(supply_generation.getImportMpan())
     export_fields = mpan_fields(supply_generation.getExportMpan())
-    pw.print('"' + physical_site.getCode() + '","' + physical_site.getName() + '","' + site_codes + '","' + site_names + '",' + str(supply.getId()) + ',' + supply.getSource().getCode() + ',"' + mpan.getCore().getDso().getName() + '",' + mpan.getLlfc().getVoltageLevel().getCode())
+    pw.print(HhEndDate(date).toString() + ',"' + physical_site.getCode() + '","' + physical_site.getName() + '","' + site_codes + '","' + site_names + '",' + str(supply.getId()) + ',' + supply.getSource().getCode() + ',"' + mpan.getCore().getDso().getName() + '",' + mpan.getLlfc().getVoltageLevel().getCode())
     pw.print(',' + import_fields['mpan_core'] + ",")
     pw.print(import_fields['agreed_sc'])
     pw.print("," + import_fields['llfc_code'])
@@ -10932,6 +10946,294 @@ while supplies.next():
 supplies.close()
 pw.println('</csv>')
 pw.flush()
+pw.close()]]></value>
+    <value><![CDATA[]]></value>
+  </line>
+  <line>
+    <value>insert</value>
+    <value>report</value>
+    <value>157</value>
+    <value>0 CSV Supplies Snapshot Selector</value>
+    <value><![CDATA[from java.util import GregorianCalendar, TimeZone, Locale, Calendar
+from net.sf.chellow.monad.types import MonadDate
+
+cal = GregorianCalendar(TimeZone.getTimeZone("GMT"), Locale.UK)
+cal.add(Calendar.MONTH, -1)
+source.appendChild(MonadDate(cal.getTime()).toXml(doc))
+source.appendChild(MonadDate.getMonthsXml(doc))]]></value>
+    <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
+<xsl:stylesheet version="1.0"
+    xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+    <xsl:output method="xml" encoding="US-ASCII"
+        doctype-public="-//W3C//DTD XHTML 1.1//EN"
+        doctype-system="http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd"
+        indent="yes" />
+    <xsl:template match="/">
+        <html>
+            <head>
+                <link rel="stylesheet" type="text/css"
+                    href="{/source/request/@context-path}/reports/19/output/" />
+
+                <title>Chellow &gt; CSV Supplies Snapshot</title>
+            </head>
+            <body>
+                <p>
+                    <a
+                        href="{/source/request/@context-path}/reports/1/output/">
+                        <xsl:value-of select="'Home'" />
+                    </a>
+                    &gt;
+                    <xsl:value-of select="'CSV Supplies Snapshot'" />
+                </p>
+                  <xsl:if test="//message">
+                    <ul>
+                        <xsl:for-each select="//message">
+                            <li>
+                                <xsl:value-of select="@description" />
+                            </li>
+                        </xsl:for-each>
+                    </ul>
+                </xsl:if>
+                <form action="{/source/request/@context-path}/reports/33/output/">
+                    <fieldset>
+                        <legend>Supply level information</legend>
+<br/>
+<fieldset><legend>For the month</legend>
+                        <input name="year" value="{/source/date/@year}" maxlength="4" size="4"/><xsl:value-of select="' - '"/>
+                        <select name="month">
+                            <xsl:for-each select="/source/months/month">
+                                <option value="{@number}">
+                                    <xsl:if test="@number=/source/date/@month">
+                                        <xsl:attribute name="selected">selected</xsl:attribute>
+                                    </xsl:if>
+                                    <xsl:value-of select="@number"/>
+                                </option>
+                            </xsl:for-each>
+                        </select>
+</fieldset>
+<br/>
+                        <input type="submit" value="Download"/>
+                    </fieldset>
+                </form>
+            </body>
+        </html>
+    </xsl:template>
+</xsl:stylesheet>]]></value>
+  </line>
+  <line>
+    <value>insert</value>
+    <value>report</value>
+    <value>159</value>
+    <value>0 CSV Monthly Sites Period Selector</value>
+    <value><![CDATA[from java.util import GregorianCalendar, TimeZone, Locale, Calendar
+from net.sf.chellow.monad.types import MonadDate
+
+cal = GregorianCalendar(TimeZone.getTimeZone("GMT"), Locale.UK)
+cal.add(Calendar.MONTH, -1)
+source.appendChild(MonadDate(cal.getTime()).toXml(doc))
+source.appendChild(MonadDate.getMonthsXml(doc))]]></value>
+    <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
+<xsl:stylesheet version="1.0"
+    xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+    <xsl:output method="xml" encoding="US-ASCII"
+        doctype-public="-//W3C//DTD XHTML 1.1//EN"
+        doctype-system="http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd"
+        indent="yes" />
+    <xsl:template match="/">
+        <html>
+            <head>
+                <link rel="stylesheet" type="text/css"
+                    href="{/source/request/@context-path}/style/" />
+
+                <title>Chellow &gt; CSV Monthly Sites Period</title>
+            </head>
+            <body>
+                <p>
+                    <a
+                        href="{/source/request/@context-path}/reports/1/output/">
+                        <xsl:value-of select="'Home'" />
+                    </a>
+                    &gt;
+                    <xsl:value-of select="'CSV Monthly Sites Period'" />
+                </p>
+                  <xsl:if test="//message">
+                    <ul>
+                        <xsl:for-each select="//message">
+                            <li>
+                                <xsl:value-of select="@description" />
+                            </li>
+                        </xsl:for-each>
+                    </ul>
+                </xsl:if>
+                <form action="{/source/request/@context-path}/reports/161/output/">
+                    <fieldset>
+                        <legend>Download</legend>
+<br/>
+                        <xsl:value-of select="'For '"/>
+                        <input name="months" maxlength="2" size="2">
+                          <xsl:attribute name="value">
+                            <xsl:choose>
+                              <xsl:when test="/source/request/parameter[@name='months']">
+                                <xsl:value-of select="/source/request/parameter[@name='months']/value"/>
+                              </xsl:when>
+                              <xsl:otherwise>
+                                <xsl:value-of select="'1'"/>
+                              </xsl:otherwise>
+                            </xsl:choose>
+                          </xsl:attribute>
+                        </input>
+<xsl:value-of select="' month(s) finishing at the end of '"/>
+                        <input name="year" value="{/source/date/@year}" maxlength="4" size="4"/><xsl:value-of select="' - '"/>
+                        <select name="month">
+                            <xsl:for-each select="/source/months/month">
+                                <option value="{@number}">
+                                    <xsl:if test="@number=/source/date/@month">
+                                        <xsl:attribute name="selected">selected</xsl:attribute>
+                                    </xsl:if>
+                                    <xsl:value-of select="@number"/>
+                                </option>
+                            </xsl:for-each>
+                        </select>
+                        <input type="submit" value="Download"/>
+                    </fieldset>
+                </form>
+            </body>
+        </html>
+    </xsl:template>
+</xsl:stylesheet>]]></value>
+  </line>
+  <line>
+    <value>insert</value>
+    <value>report</value>
+    <value>161</value>
+    <value>0 CSV Monthly Sites Period</value>
+    <value><![CDATA[from net.sf.chellow.monad import Hiber, UserException
+from net.sf.chellow.monad.types import MonadDate
+from java.sql import Timestamp, ResultSet
+from java.util import GregorianCalendar, Calendar, TimeZone, Locale, Date
+from net.sf.chellow.physical import HhEndDate
+from java.text import SimpleDateFormat, DecimalFormat
+
+year = inv.getInteger("year")
+month = inv.getInteger("month")
+months = inv.getInteger("months")
+
+cal = GregorianCalendar(TimeZone.getTimeZone("GMT"), Locale.UK)
+cal.clear()
+cal.set(Calendar.YEAR, year)
+cal.set(Calendar.MONTH, month - 1)
+cal.add(Calendar.MONTH, 1)
+finish_date = HhEndDate(cal.getTime())
+cal.add(Calendar.MONTH, -1 * months)
+cal.add(Calendar.MINUTE, 30)
+start_date = HhEndDate(cal.getTime())
+
+inv.getResponse().setContentType("text/csv")
+inv.getResponse().setHeader('Content-Disposition', 'filename=output.csv;')
+pw = inv.getResponse().getWriter()
+pw.print("Site Id, Site Name, Associated Site Ids, Sources, Generator Types")
+month_format = SimpleDateFormat("yyyy-MM")
+month_format.setCalendar(cal)
+for i in range(months):
+    pw.print("," + month_format.format(cal.getTime()) + ",,,,,")
+    cal.add(Calendar.MONTH, 1)
+pw.print("\n,,,,")
+for i in range(months):
+    pw.print(",Imported kWh, Displaced kWh, Exported kWh, Used kWh, Parasitic kWh, Generated kWh")
+pw.print("\n")
+pw.flush()
+sites = Hiber.session().createQuery("from Site site order by site.code").scroll()
+kwh_format = DecimalFormat('#0')
+query = Hiber.session().createQuery("select sum(datum.value) from HhDatum datum where datum.channel.supplyGeneration = :supplyGeneration and datum.channel.isImport is :isImport and datum.channel.isKwh is true and datum.channel.supplyGeneration.supply.source.code in (:sources) and datum.endDate.date >= :startDate and datum.endDate <= :finishDate")
+while sites.next():
+    months_data = []
+    site = sites.get(0)
+    site_code = site.getCode()
+    associates = []
+    sources = []
+    generator_types = []
+    has_physical = False
+    cal.setTime(start_date.getDate())
+    for i in range(months):
+        month_start = cal.getTime()
+        cal.set(Calendar.MINUTE, 0)
+        cal.add(Calendar.MONTH, 1)
+        month_finish = cal.getTime()
+        month_data = {}
+        months_data.append(month_data)
+
+        site_supply_generations = Hiber.session().createQuery("from SiteSupplyGeneration siteSupplyGeneration where siteSupplyGeneration.site = :site and siteSupplyGeneration.isPhysical is true and siteSupplyGeneration.supplyGeneration.supply.source.code != 'sub' and siteSupplyGeneration.supplyGeneration.startDate.date <= :finishDate and (siteSupplyGeneration.supplyGeneration.finishDate is null or siteSupplyGeneration.supplyGeneration.finishDate.date >= :startDate)").setEntity('site', site).setTimestamp('startDate', month_start).setTimestamp('finishDate', month_finish).scroll()
+        month_data['import_from_net'] = 0
+        month_data['export_to_net'] = 0
+        month_data['import_from_gen'] = 0
+        month_data['export_to_gen'] = 0
+        while site_supply_generations.next():
+            has_physical = True
+            site_supply_generation = site_supply_generations.get(0)
+            supply_generation = site_supply_generation.getSupplyGeneration()
+            for ss_gen in supply_generation.getSiteSupplyGenerations():
+                ss_gen_site_code = ss_gen.getSite().getCode()
+                if ss_gen.getId() != site_supply_generation.getId() and ss_gen_site_code != site_code and ss_gen_site_code not in associates:
+                    associates.append(ss_gen_site_code)
+                sup = ss_gen.getSupplyGeneration().getSupply()
+                ss_gen_source = sup.getSource().getCode()
+                if ss_gen_source not in sources:
+                    sources.append(ss_gen_source)
+                if sup.getGeneratorType() is not None:
+                    ss_gen_gtype = sup.getGeneratorType().getCode()
+                    if ss_gen_gtype not in generator_types:
+                        generator_types.append(ss_gen_gtype)
+            result = query.setEntity('supplyGeneration', supply_generation).setTimestamp('startDate', month_start).setTimestamp('finishDate', month_finish).setBoolean('isImport', True).setParameterList('sources', ['net', 'gen-net']).uniqueResult()
+            if result is not None:
+                month_data['import_from_net'] = month_data['import_from_net'] + result.doubleValue()
+            result = query.setBoolean('isImport', False).uniqueResult()
+            if result is not None:
+                month_data['export_to_net'] = month_data['export_to_net'] + result.doubleValue()
+            result = query.setParameterList('sources', ['gen']).uniqueResult()
+            if result is not None:
+                month_data['export_to_gen'] = month_data['export_to_gen'] + result.doubleValue()
+            result = query.setParameterList('sources', ['gen-net']).uniqueResult()
+            if result is not None:
+                month_data['import_from_gen'] = month_data['import_from_gen'] + result.doubleValue()
+            result = query.setBoolean('isImport', True).uniqueResult()
+            if result is not None:
+                month_data['export_to_gen'] = month_data['export_to_gen'] + result.doubleValue()
+            result = query.setParameterList('sources', ['gen']).uniqueResult()
+            if result is not None:
+                month_data['import_from_gen'] = month_data['import_from_gen'] + result.doubleValue()
+        site_supply_generations.close()
+        month_data['displaced'] = month_data['import_from_gen'] - month_data['export_to_net'] - month_data['export_to_gen']
+        month_data['used'] = month_data['displaced'] + month_data['import_from_net']
+        cal.setTime(month_start)
+        cal.add(Calendar.MONTH, 1)
+    if has_physical:
+        associate_str = ''
+        for associate in associates:
+            associate_str = associate_str + associate + ', '
+        sources.sort()
+        sources_str = ''
+        for source in sources:
+            sources_str = sources_str + source + ', '
+        generator_types.sort()
+        generator_types_str = ''
+        for generator_type in generator_types:
+            generator_types_str = generator_types_str + generator_type + ', '
+        pw.print('"' + site_code + '","')
+        pw.print(site.getName() + '","')
+        pw.print(associate_str[:-2] + '","')
+        pw.print(sources_str[:-2] + '","')
+        pw.print(generator_types_str[:-2] + '"')
+        for month_data in months_data:
+            pw.print(',' + kwh_format.format(month_data['import_from_net']))
+            pw.print(',' + kwh_format.format(month_data['displaced']) + ',')
+            pw.print(kwh_format.format(month_data['export_to_net']) + ',')
+            pw.print(kwh_format.format(month_data['used']) + ',')
+            pw.print(kwh_format.format(month_data['export_to_gen']) + ',')
+            pw.print(kwh_format.format(month_data['import_from_gen']))
+        pw.print("\n")
+    pw.flush()
+    Hiber.session().clear()
+sites.close()
 pw.close()]]></value>
     <value><![CDATA[]]></value>
   </line>

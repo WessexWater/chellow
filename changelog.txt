@@ -1,3 +1,12 @@
+* HH data now hop to the appropriate supply generation when the generations are altered.
+
+* Fixed BGlobal missing-data import bug.
+
+* Mended broken link to view world from edit world.
+
+
+262
+
 * Fixed bug where supply generations couldn't be deleted.
 
 * Fixed viewing of supplier account snags.

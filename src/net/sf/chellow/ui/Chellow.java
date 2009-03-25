@@ -50,8 +50,6 @@ import net.sf.chellow.physical.Users;
 public class Chellow extends Monad implements Urlable {
 	private static final long serialVersionUID = 1L;
 
-	// static private final HttpMethod[] ALLOWED_METHODS = { HttpMethod.GET };
-
 	static public final MonadUri ROOT_URI;
 
 	static public final Sources SOURCES_INSTANCE = new Sources();
@@ -63,27 +61,45 @@ public class Chellow extends Monad implements Urlable {
 	static public final Pcs PROFILE_CLASSES_INSTANCE = new Pcs();
 
 	static public final Mtcs MTCS_INSTANCE = new Mtcs();
+
 	static public final Tprs TPRS_INSTANCE = new Tprs();
+
 	static public final Sscs SSCS_INSTANCE = new Sscs();
 
 	public static final HhdcContracts HHDC_CONTRACTS_INSTANCE = new HhdcContracts();
+
 	public static final MopContracts MOP_CONTRACTS_INSTANCE = new MopContracts();
+
 	public static final SupplierContracts SUPPLIER_CONTRACTS_INSTANCE = new SupplierContracts();
 
 	public static final Participants PARTICIPANTS_INSTANCE = new Participants();
+
 	public static final MarketRoles MARKET_ROLES_INSTANCE = new MarketRoles();
+
 	public static final Dsos DSOS_INSTANCE = new Dsos();
+
 	public static final NonCoreContracts NON_CORE_SERVICES_INSTANCE = new NonCoreContracts();
+
 	static public final MeterTypes METER_TYPES_INSTANCE = new MeterTypes();
+
 	static public final MeterPaymentTypes MTC_PAYMENT_TYPES_INSTANCE = new MeterPaymentTypes();
+
 	static public final ReadTypes READ_TYPES_INSTANCE = new ReadTypes();
+
 	static public final Reports REPORTS_INSTANCE = new Reports();
+
 	static public final Supplies SUPPLIES_INSTANCE = new Supplies();
+
 	static public final Sites SITES_INSTANCE = new Sites();
+
 	static public final GeneralImports GENERAL_IMPORT_PROCESSES = new GeneralImports();
+
 	static public final GspGroups GSP_GROUPS_INSTANCE = new GspGroups();
+
 	static public final UserRoles USER_ROLES_INSTANCE = new UserRoles();
+
 	static public final SiteSnags SITE_SNAGS_INSTANCE = new SiteSnags();
+
 	static public final GeneratorTypes GENERATOR_TYPES_INSTANCE = new GeneratorTypes();
 
 	static {
@@ -147,10 +163,12 @@ public class Chellow extends Monad implements Urlable {
 		UserRole role = user.getRole();
 		String roleCode = role.getCode();
 		if (roleCode.equals(UserRole.VIEWER)) {
-			if (((pathInfo.startsWith("/reports/")
-					&& pathInfo.endsWith("/output/")) || pathInfo.startsWith("/logo/"))
-					&& (method.equals(HttpMethod.GET)
-					|| method.equals(HttpMethod.HEAD))) {
+			if (((pathInfo.startsWith("/reports/") && pathInfo
+					.endsWith("/output/"))
+					|| pathInfo.startsWith("/logo/") || pathInfo
+					.startsWith("/style/"))
+					&& (method.equals(HttpMethod.GET) || method
+							.equals(HttpMethod.HEAD))) {
 				return;
 			}
 		} else if (roleCode.equals(UserRole.EDITOR)) {

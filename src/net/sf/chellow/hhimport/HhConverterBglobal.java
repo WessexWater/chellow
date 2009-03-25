@@ -32,7 +32,6 @@ import java.util.Date;
 import java.util.Locale;
 import java.util.TimeZone;
 
-import net.sf.chellow.monad.Debug;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.UserException;
@@ -100,14 +99,17 @@ public class HhConverterBglobal implements HhConverter {
 				}
 				hhIndex = 0;
 			}
-			if (values != null) {
+			while (values != null && datum == null) {
 				try {
 					Date date = dateFormat.parse(values[2]);
 					cal.setTime(date);
 					cal.add(Calendar.MINUTE, 30 * (hhIndex + 1));
-					datum = new HhDatumRaw(values[0], true, true,
-							new HhEndDate(cal.getTime()), new BigDecimal(
-									values[hhIndex + 3]), HhDatum.ACTUAL);
+					String hhValue = values[hhIndex + 3].trim();
+					if (hhValue.length() > 0) {
+						datum = new HhDatumRaw(values[0], true, true,
+								new HhEndDate(cal.getTime()), new BigDecimal(
+										hhValue), HhDatum.ACTUAL);
+					}
 				} catch (NumberFormatException e) {
 					throw new UserException("Problem formatting value. "
 							+ e.getMessage());
@@ -115,10 +117,10 @@ public class HhConverterBglobal implements HhConverter {
 					throw new UserException("Problem parsing date. "
 							+ e.getMessage());
 				}
+				hhIndex++;
 			}
-			hhIndex++;
 			datumNext = datum;
-			Debug.print("returning " + this.datum);
+			// Debug.print("returning " + this.datum);
 			return this.datum;
 		} catch (IOException e) {
 			throw new RuntimeException(e);

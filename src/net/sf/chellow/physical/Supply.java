@@ -606,7 +606,8 @@ public class Supply extends PersistentEntity {
 		}
 		supplyGeneration.setMeter(meter);
 		if (existingGeneration != null) {
-		onSupplyGenerationChange(startDate, existingGeneration.getFinishDate());
+			onSupplyGenerationChange(startDate, supplyGeneration
+					.getFinishDate());
 		}
 		return supplyGeneration;
 	}
