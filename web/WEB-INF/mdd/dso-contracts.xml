@@ -518,11 +518,11 @@ def totalElement(account, startDate, finishDate):
         <value><![CDATA[main]]></value>
         <value><![CDATA[2000-01-01T00:30Z]]></value>
         <value><![CDATA[]]></value>
-        <value><![CDATA[from net.sf.chellow.billing import BillElement
+        <value><![CDATA[from net.sf.chellow.billing import VirtualBill, NonCoreContract
 from java.util import GregorianCalendar, TimeZone, Locale, Calendar
 
 def totalElement(account, startDate, finishDate):
-    totalElement = BillElement("total", 103, "Dso cost")
+    totalElement = VirtualBill("total", 103, "Dso cost")
     return totalElement
 
 class LlfCalculator:
@@ -591,82 +591,58 @@ class LlfCalculator:
                 else:
                     return rate_script.getRate('other_lv_sub')
 
-def llf_calculator(voltage_level, is_substation):
-    return LlfCalculator(voltage_level, is_substation)]]></value>
-        <value><![CDATA[def winter_weekday_peak_hv():
+def calculator(voltage_level, is_substation):
+    return LlfCalculator(voltage_level, is_substation)
 
+def triad_gsp(triad_kws, date, voltage_level, is_substation):
+    calc = calculator(voltage_level, is_substation)
+    dates = NonCoreContract.getNonCoreContract('TRIAD').callFunction('triad_dates', [date])
+    gsp_kw = 0
+    for i in range(3):
+        gsp_kw = gsp_kw + triad_kws[i] * calc.llf(dates[i])
+    return gsp_kw / 3
+
+def triad_gbp(triad_gsp_kw, date):
+    rate_script = contract.rateScript(date)
+    return triad_gsp_kw * rate_script.getRate('triad_rate')
+]]></value>
+        <value><![CDATA[def winter_weekday_peak_hv():
     return 1.057
 
-
-
 def winter_weekday_day_hv():
-
     return 1.051
 
-
-
 def night_hv():
-
     return 1.040
 
-
-
 def other_hv():
-
     return 1.045
 
-
-
 def winter_weekday_peak_lv_sub():
-
     return 1.068
 
-
-
 def winter_weekday_day_lv_sub():
-
     return 1.064
-
-
 
 def night_lv_sub():
-
     return 1.059
 
-
-
 def other_lv_sub():
-
     return 1.060
 
-
-
 def winter_weekday_peak_lv():
-
     return 1.074
 
-
-
 def winter_weekday_day_lv():
-
     return 1.069
 
-
-
 def night_lv():
-
     return 1.064
 
-
-
 def other_lv():
-
     return 1.065
 
-
-
 def triad():
-
     return 23.77056]]></value>
     </line>
 
@@ -678,79 +654,42 @@ def triad():
         <value><![CDATA[2008-04-01T00:30Z]]></value>
         <value><![CDATA[]]></value>
         <value><![CDATA[def winter_weekday_peak_hv():
-
     return 1.057
 
-
-
 def winter_weekday_day_hv():
-
     return 1.051
 
-
-
 def night_hv():
-
     return 1.040
 
-
-
 def other_hv():
-
     return 1.045
 
-
-
 def winter_weekday_peak_lv_sub():
-
     return 1.068
 
-
-
 def winter_weekday_day_lv_sub():
-
     return 1.064
-
-
 
 def night_lv_sub():
-
     return 1.059
 
-
-
 def other_lv_sub():
-
     return 1.060
 
-
-
 def winter_weekday_peak_lv():
-
     return 1.074
 
-
-
 def winter_weekday_day_lv():
-
     return 1.069
 
-
-
 def night_lv():
-
     return 1.064
 
-
-
 def other_lv():
-
     return 1.065
 
-
-
-def triad():
-
+def triad_rate():
     return 25.212997]]></value>
     </line>
 

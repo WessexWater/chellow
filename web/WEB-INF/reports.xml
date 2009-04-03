@@ -4009,43 +4009,80 @@ snags_element.setAttribute("site-count", str(sites))
     <value>41</value>
     <value>0 CSV TRIAD Data Quality</value>
     <value><![CDATA[from net.sf.chellow.monad import Hiber
+from net.sf.chellow.monad.types import MonadDate
 from net.sf.chellow.physical import HhEndDate, SupplyGeneration
+from java.util import Calendar
+from net.sf.chellow.billing import NonCoreContract
 
-#TRIAD_DATES = [HhEndDate("2006-12-20T17:30Z"), HhEndDate("2007-01-23T17:30Z"), HhEndDate("2007-02-08T18:00Z")]
-
-TRIAD_DATES = [HhEndDate("2007-11-26T17:30Z"), HhEndDate("2007-12-17T17:30Z"), HhEndDate("2008-01-03T17:30Z")]
-
-def triad_status(query, triad_number, is_import):
-    datum = query.setTimestamp('triadDate', TRIAD_DATES[triad_number].getDate()).setBoolean('isImport', is_import).uniqueResult()
-    if datum is None:
-        return 'No data'
-    else:
-        return str(datum.getStatus())
+def triad_csv(query, triad_dates, is_import, dso_contract, voltage_level, is_substation):
+    ret = ''
+    msp_kw = 0
+    triad_values = []
+    for triad_date in triad_dates:
+        datum = query.setTimestamp('triadDate', triad_date.getDate()).setBoolean('isImport', is_import).uniqueResult()
+        if datum is None:
+            ret = ret + 'No data, No data,'
+            triad_values.append(0)
+        else:
+            datum_msp_kw = datum.getValue().doubleValue() * 2
+            msp_kw = msp_kw + datum_msp_kw
+            ret = ret + str(round(datum_msp_kw, 2)) + ',' + str(datum.getStatus()) + ','
+            triad_values.append(datum_msp_kw)
+    msp_kw = msp_kw / 3
+    triad_gsp = dso_contract.callFunction('triad_gsp', [triad_values, triad_dates[0], voltage_level, is_substation])
+    ret = ret + str(round(triad_gsp, 2)) + ','
+    return ret[:-1]
 
 inv.getResponse().setContentType("text/csv")
+inv.getResponse().setHeader('Content-Disposition', 'filename=output.csv;')
 pw = inv.getResponse().getWriter()
-pw.println("Supply Id, Source, Import MPAN Core, Import Status 1, Import Status 2, Import Status 3, Export MPAN Core, Export Status 1, Export Status 2, Export Status 3")
+year = inv.getInteger('year')
+if not inv.isValid():
+    raise UserException()
+cal = MonadDate.getCalendar()
+cal.clear()
+cal.set(Calendar.YEAR, year)
+cal.set(Calendar.MONTH, Calendar.APRIL)
+year_finish = cal.getTime()
+cal.add(Calendar.YEAR, -1)
+cal.add(Calendar.MINUTE, 30)
+year_start = cal.getTime()
+
 triad_query = Hiber.session().createQuery("select datum from HhDatum datum where datum.channel.supplyGeneration.supply = :supply and datum.channel.isKwh is true and datum.channel.isImport is :isImport and datum.endDate.date = :triadDate")
 
-generations = Hiber.session().createQuery("from SupplyGeneration generation where generation.finishDate.date is null and generation.supply.source.code != 'sub'").scroll()
-while generations.next():
-    generation = generations.get(0)
-    supply = generation.getSupply()
+triad_contract = NonCoreContract.getNonCoreContract('TRIAD')
+triad_dates = triad_contract.callFunction('triad_dates', [HhEndDate(year_start)])
+pw.println(',,Import,,,,,,,,,Export')
+pw.println(',,,' + triad_dates[0].toString() + ',,' + triad_dates[1].toString() + ',,' + triad_dates[2].toString() + ',,,,,' + triad_dates[0].toString() + ',,' + triad_dates[1].toString() + ',,' + triad_dates[2].toString())
+pw.println("Supply Id, Source, MPAN Core, kW, Status, kW, Status, kW, Status, GSP kW, GBP, MPAN Core, kW, Status, kW, Status, kW, Status, GSP kW, GBP")
+pw.flush()
+
+supplies = Hiber.session().createQuery("select distinct generation.supply from SupplyGeneration generation where generation.startDate.date <= :yearFinish and (generation.finishDate.date is null or generation.finishDate.date >= :yearStart) and generation.supply.source.code != 'sub'").setTimestamp('yearStart', year_start).setTimestamp('yearFinish', year_finish).scroll()
+while supplies.next():
+    supply = supplies.get(0)
     triad_query.setEntity('supply', supply)
-    import_mpan = generation.getImportMpan()
+
+    first_generation = supply.getGenerations(HhEndDate(year_start), HhEndDate(year_finish)).get(0)
+    
+    import_mpan = first_generation.getImportMpan()
     if import_mpan is None:
         import_mpan_str = 'None'
     else:
         import_mpan_str = import_mpan.getCore().toString()
-    export_mpan = generation.getExportMpan()
+    export_mpan = first_generation.getExportMpan()
     if export_mpan is None:
         export_mpan_str = 'None'
     else:
         export_mpan_str = export_mpan.getCore().toString()
-    pw.println(str(supply.getId()) + "," + supply.getSource().getCode() + "," + import_mpan_str + "," + triad_status(triad_query, 0, True) + "," + triad_status(triad_query, 1, True) + "," + triad_status(triad_query, 2, True) + "," + export_mpan_str + "," + triad_status(triad_query, 0, False) + "," + triad_status(triad_query, 1, False) + "," + triad_status(triad_query, 2, False))
+    dso = first_generation.getDso()
+    an_llfc = first_generation.getMpans()[0].getLlfc()
+    voltage_level = an_llfc.getVoltageLevel().getCode()
+    is_substation = an_llfc.getIsSubstation()
+    dso_contract = dso.findContract('main')
+    pw.println(str(supply.getId()) + "," + supply.getSource().getCode() + "," + import_mpan_str + "," + triad_csv(triad_query, triad_dates, True, dso_contract, voltage_level, is_substation) + "," + export_mpan_str + "," + triad_csv(triad_query, triad_dates, False, dso_contract, voltage_level, is_substation))
     pw.flush()
     Hiber().session().clear()
-generations.close()
+supplies.close()
 pw.close()]]></value>
     <value><![CDATA[]]></value>
   </line>
@@ -10702,7 +10739,7 @@ pw.close()]]></value>
                 <ul>
                     <li>
                         <a
-                            href="{/source/request/@context-path}/reports/76/output/">DSO Contract Export
+                            href="{/source/request/@context-path}/reports/151/output/">DSO Contract Export
                         </a>
                     </li>
                                         <li>
@@ -11135,14 +11172,15 @@ pw.print("Site Id, Site Name, Associated Site Ids, Sources, Generator Types")
 month_format = SimpleDateFormat("yyyy-MM")
 month_format.setCalendar(cal)
 for i in range(months):
-    pw.print("," + month_format.format(cal.getTime()) + ",,,,,")
+    pw.print("," + month_format.format(cal.getTime()) + ",,,,,,,")
     cal.add(Calendar.MONTH, 1)
 pw.print("\n,,,,")
 for i in range(months):
-    pw.print(",Imported kWh, Displaced kWh, Exported kWh, Used kWh, Parasitic kWh, Generated kWh")
+    pw.print(",Imported kWh, Displaced kWh, Exported kWh, Used kWh, Parasitic kWh, Generated kWh, 3rd Party Import kWh, 3rd Party Export kWh")
 pw.print("\n")
 pw.flush()
 sites = Hiber.session().createQuery("from Site site order by site.code").scroll()
+#sites = Hiber.session().createQuery("from Site site where site.id = 2057 order by site.code").scroll()
 kwh_format = DecimalFormat('#0')
 query = Hiber.session().createQuery("select sum(datum.value) from HhDatum datum where datum.channel.supplyGeneration = :supplyGeneration and datum.channel.isImport is :isImport and datum.channel.isKwh is true and datum.channel.supplyGeneration.supply.source.code in (:sources) and datum.endDate.date >= :startDate and datum.endDate <= :finishDate")
 while sites.next():
@@ -11167,6 +11205,8 @@ while sites.next():
         month_data['export_to_net'] = 0
         month_data['import_from_gen'] = 0
         month_data['export_to_gen'] = 0
+        month_data['import_from_3rd_party'] = 0
+        month_data['export_to_3rd_party'] = 0
         while site_supply_generations.next():
             has_physical = True
             site_supply_generation = site_supply_generations.get(0)
@@ -11201,9 +11241,21 @@ while sites.next():
             result = query.setParameterList('sources', ['gen']).uniqueResult()
             if result is not None:
                 month_data['import_from_gen'] = month_data['import_from_gen'] + result.doubleValue()
+            result = query.setParameterList('sources', ['3rd-party']).setBoolean('isImport', True).uniqueResult()
+            if result is not None:
+                month_data['import_from_3rd_party'] = month_data['import_from_3rd_party'] + result.doubleValue()
+            result = query.setBoolean('isImport', False).uniqueResult()
+            if result is not None:
+                month_data['export_to_3rd_party'] = month_data['export_to_3rd_party'] + result.doubleValue()
+            result = query.setParameterList('sources', ['3rd-party-reverse']).setBoolean('isImport', True).uniqueResult()
+            if result is not None:
+                month_data['export_to_3rd_party'] = month_data['export_to_3rd_party'] + result.doubleValue()
+            result = query.setBoolean('isImport', False).uniqueResult()
+            if result is not None:
+                month_data['import_from_3rd_party'] = month_data['import_from_3rd_party'] + result.doubleValue()
         site_supply_generations.close()
         month_data['displaced'] = month_data['import_from_gen'] - month_data['export_to_net'] - month_data['export_to_gen']
-        month_data['used'] = month_data['displaced'] + month_data['import_from_net']
+        month_data['used'] = month_data['displaced'] + month_data['import_from_net'] + month_data['import_from_3rd_party'] - month_data['export_to_3rd_party']
         cal.setTime(month_start)
         cal.add(Calendar.MONTH, 1)
     if has_physical:
@@ -11229,7 +11281,9 @@ while sites.next():
             pw.print(kwh_format.format(month_data['export_to_net']) + ',')
             pw.print(kwh_format.format(month_data['used']) + ',')
             pw.print(kwh_format.format(month_data['export_to_gen']) + ',')
-            pw.print(kwh_format.format(month_data['import_from_gen']))
+            pw.print(kwh_format.format(month_data['import_from_gen']) + ',')
+            pw.print(kwh_format.format(month_data['import_from_3rd_party']) + ',')
+            pw.print(kwh_format.format(month_data['export_to_3rd_party']))
         pw.print("\n")
     pw.flush()
     Hiber.session().clear()

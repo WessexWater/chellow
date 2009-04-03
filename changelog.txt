@@ -1,3 +1,5 @@
+* Mended broken link to view world from supply world.
+
 * HH data now hop to the appropriate supply generation when the generations are altered.
 
 * Fixed BGlobal missing-data import bug.
