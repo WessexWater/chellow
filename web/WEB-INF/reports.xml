@@ -10501,7 +10501,7 @@ source.appendChild(MonadDate.getMonthsXml(doc))]]></value>
                         </xsl:for-each>
                     </ul>
                 </xsl:if>
-                <form action="{/source/request/@context-path}/reports/75/output/">
+                <form action="{/source/request/@context-path}/reports/149/output/">
                     <fieldset>
                         <legend>Supply level information</legend>
 <br/>
@@ -10555,11 +10555,11 @@ def hh_summary(query, kvarh_at_md_query, is_import):
     sum = 0
     non_actual = 0
     date_at_md = None
-    kvarh_at_md = 0
+    kvarh_at_md = None
     hh_data = query.setBoolean('isImport', is_import).scroll()
     kva_at_md_query.setBoolean('isImport', is_import)
     while hh_data.next():
-        hh_value = hh_data.get(0)
+        hh_value = hh_data.get(0).doubleValue()
         hh_status = hh_data.get(1)
         if hh_value > md:
             md = hh_value
@@ -10573,7 +10573,7 @@ def hh_summary(query, kvarh_at_md_query, is_import):
     if kvarh_at_md is None:
         kva_at_md = 'None'
     else:
-        kva_at_md = str(round(((kvarh_at_md * 2)**2 + kw_at_md**2)**0.5))
+        kva_at_md = str(round(((kvarh_at_md.doubleValue() * 2)**2 + kw_at_md**2)**0.5))
     return kw_at_md, sum, non_actual, date_at_md, kva_at_md
     
 inv.getResponse().setContentType("text/csv")
