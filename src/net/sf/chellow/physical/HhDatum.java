@@ -126,7 +126,7 @@ public class HhDatum extends PersistentEntity {
 		if (!data.isEmpty()) {
 			channel.addHhData(data);
 		}
-		// Hiber.close();
+		Hiber.close();
 	}
 
 	/*

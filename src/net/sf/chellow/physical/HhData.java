@@ -1,11 +1,13 @@
 package net.sf.chellow.physical;
 
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.GregorianCalendar;
-import java.util.Locale;
-import java.util.TimeZone;
+import java.util.List;
 
+import net.sf.chellow.hhimport.HhDatumRaw;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.Invocation;
@@ -67,13 +69,16 @@ public class HhData extends EntityList {
 		supplyGenerationElement.appendChild(supplyElement);
 		source.appendChild(MonadDate.getMonthsXml(doc));
 		source.appendChild(MonadDate.getDaysXml(doc));
-		Calendar cal = GregorianCalendar.getInstance(TimeZone
-				.getTimeZone("GMT"), Locale.UK);
-		cal.setLenient(false);
+		source.appendChild(MonadDate.getHoursXml(doc));
+		Calendar cal = MonadDate.getCalendar();
 		HhEndDate generationStartDate = channel.getSupplyGeneration()
 				.getStartDate();
 		HhEndDate generationFinishDate = channel.getSupplyGeneration()
 				.getFinishDate();
+		HhEndDate defaultDate = generationFinishDate;
+		if (defaultDate == null) {
+			defaultDate = HhEndDate.roundDown(new Date());
+		}
 		if (inv.hasParameter("year")) {
 			int year = inv.getInteger("year");
 			int month = inv.getInteger("month");
@@ -83,7 +88,7 @@ public class HhData extends EntityList {
 			cal.set(Calendar.YEAR, year);
 			cal.set(Calendar.MONTH, month - 1);
 		} else {
-			cal.setTime(generationStartDate.getDate());
+			cal.setTime(defaultDate.getDate());
 		}
 		cal.set(Calendar.DAY_OF_MONTH, 1);
 		cal.set(Calendar.HOUR, 0);
@@ -94,10 +99,9 @@ public class HhData extends EntityList {
 		try {
 			startDate = cal.getTime();
 		} catch (IllegalArgumentException e) {
-			throw new UserException(doc, "Invalid date. "
-					+ e.getMessage());
+			throw new UserException(doc, "Invalid date. " + e.getMessage());
 		}
-		source.appendChild(new MonadDate(startDate).toXml(doc));
+		source.appendChild(defaultDate.toXml(doc));
 		cal.add(Calendar.MONTH, 1);
 		cal.add(Calendar.MINUTE, -30);
 		Date finishDate = cal.getTime();
@@ -121,26 +125,50 @@ public class HhData extends EntityList {
 	}
 
 	public void httpPost(Invocation inv) throws HttpException {
-		// delete hh data
-		Date deleteFrom = inv.getDate("delete-from");
-		int days = inv.getInteger("days");
-		try {
-			Calendar cal = MonadDate.getCalendar();
-			cal.setTime(deleteFrom);
-			cal.add(Calendar.DAY_OF_MONTH, days);
-			HhEndDate to = new HhEndDate(cal.getTime()).getPrevious();
-			channel.deleteData(new HhEndDate(deleteFrom).getNext(), to);
-			Hiber.commit();
-		} catch (HttpException e) {
-			e.setDocument(doc(inv));
-			throw e;
+		if (inv.hasParameter("delete")) {
+			Date deleteFrom = inv.getDate("delete-from");
+			int days = inv.getInteger("days");
+			try {
+				Calendar cal = MonadDate.getCalendar();
+				cal.setTime(deleteFrom);
+				cal.add(Calendar.DAY_OF_MONTH, days);
+				HhEndDate to = new HhEndDate(cal.getTime()).getPrevious();
+				channel.deleteData(new HhEndDate(deleteFrom).getNext(), to);
+				Hiber.commit();
+			} catch (HttpException e) {
+				e.setDocument(doc(inv));
+				throw e;
+			}
+			Document doc = doc(inv);
+			Element docElement = doc.getDocumentElement();
+			docElement.appendChild(new MonadMessage(
+					"HH data deleted successfully.").toXml(doc));
+			inv.sendOk(doc);
+		} else if (inv.hasParameter("insert")) {
+			Date endDate = inv.getDateTime("end");
+			BigDecimal value = inv.getBigDecimal("value");
+			Character status = inv.getCharacter("status");
+			if (!inv.isValid()) {
+				throw new UserException(doc(inv));
+			}
+			HhEndDate hhEndDate = new HhEndDate(endDate);
+			if (Hiber
+					.session()
+					.createQuery(
+							"from HhDatum datum where datum.channel = :channel and datum.endDate.date = :endDate").setEntity("channel", channel).setTimestamp("endDate", hhEndDate.getDate())
+					.uniqueResult() != null) {
+				throw new UserException(doc(inv),
+						"There's already an HH datum with this time.");
+			}
+			List<HhDatumRaw> data = new ArrayList<HhDatumRaw>();
+			data.add(new HhDatumRaw(channel.getSupplyGeneration().getMpans()
+					.iterator().next().getCore().toString(), channel
+					.getIsImport(), channel.getIsKwh(), hhEndDate,
+					value, status));
+			HhDatum.insert(data.iterator(), Arrays
+					.asList(new Boolean[] { Boolean.FALSE }));
 		}
-		Document doc = doc(inv);
-		Element docElement = doc.getDocumentElement();
-		docElement
-				.appendChild(new MonadMessage("HH data deleted successfully.")
-						.toXml(doc));
-		inv.sendOk(doc);
+		inv.sendOk(doc(inv));
 	}
 
 	public HhDatum getChild(UriPathElement uriId) throws HttpException {

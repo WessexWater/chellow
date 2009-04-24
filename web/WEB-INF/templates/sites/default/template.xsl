@@ -115,6 +115,7 @@
 							<tr>
 								<th>Chellow Id</th>
 								<th>Supply</th>
+								<th>Supply Source</th>
 								<th>Import MPAN core</th>
 								<th>Export MPAN core</th>
 								<th>From</th>
@@ -135,6 +136,10 @@
 											<xsl:value-of
 												select="supply/@id" />
 										</a>
+									</td>
+									<td>
+											<xsl:value-of
+												select="supply/source/@code" />
 									</td>
 									<td>
 										<xsl:if

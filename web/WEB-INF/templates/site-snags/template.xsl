@@ -47,6 +47,7 @@
 							<th>Snag Type</th>
 							<th>Start</th>
 							<th>Finish</th>
+							<th>Ignored?</th>
 						</tr>
 					</thead>
 					<tbody>
@@ -76,6 +77,11 @@
 									<xsl:value-of
 										select="concat(hh-end-date[@label='finish']/@year, '-', hh-end-date[@label='finish']/@month, '-', hh-end-date[@label='finish']/@day, 'T', hh-end-date[@label='finish']/@hour, ':', hh-end-date[@label='finish']/@minute, 'Z')" />
 								</td>
+								<td>
+									<xsl:value-of
+										select="@is-ignored" />
+								</td>
+								
 							</tr>
 						</xsl:for-each>
 					</tbody>

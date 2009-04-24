@@ -1,6 +1,6 @@
 /*
  
- Copyright 2005 Meniscus Systems Ltd
+ Copyright 2005, 2009 Meniscus Systems Ltd
  
  This file is part of Chellow.
 
@@ -251,6 +251,22 @@ public class Invocation {
 		} else {
 			return date.getDate();
 		}
+	}
+
+	public Date getDateTime(String baseName) throws HttpException {
+		Integer year = getInteger(baseName + "-year");
+		Integer month = getInteger(baseName + "-month");
+		Integer day = getInteger(baseName + "-day");
+		Integer hour = getInteger(baseName + "-hour");
+		Integer minute = getInteger(baseName + "-minute");
+		Date date = null;
+		if (isValid()) {
+			MonadDate mDate = new MonadDate(year, month, day, hour, minute);
+			if (isValid()) {
+				date = mDate.getDate();
+			}
+		}
+		return date;
 	}
 
 	public MonadDate getMonadDate(String baseName) throws InternalException {

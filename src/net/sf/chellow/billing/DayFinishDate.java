@@ -3,16 +3,13 @@ package net.sf.chellow.billing;
 import java.util.Calendar;
 import java.util.Date;
 
+import net.sf.chellow.monad.HttpException;
+import net.sf.chellow.monad.InternalException;
+import net.sf.chellow.monad.UserException;
+import net.sf.chellow.physical.HhEndDate;
+
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-
-import net.sf.chellow.monad.InternalException;
-import net.sf.chellow.monad.HttpException;
-import net.sf.chellow.monad.UserException;
-
-import net.sf.chellow.monad.types.MonadDay;
-import net.sf.chellow.monad.types.MonadMonth;
-import net.sf.chellow.physical.HhEndDate;
 
 public class DayFinishDate extends HhEndDate {
 	public static DayFinishDate getNext(DayFinishDate date) throws HttpException {
@@ -79,7 +76,7 @@ public class DayFinishDate extends HhEndDate {
 		super(label, year, month, day);
 	}
 
-	public DayFinishDate(int year, MonadMonth month, MonadDay day)
+	public DayFinishDate(int year, int month, int day)
 			throws HttpException {
 		super(year, month, day);
 	}

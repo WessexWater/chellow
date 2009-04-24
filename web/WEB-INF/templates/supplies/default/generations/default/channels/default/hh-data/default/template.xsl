@@ -164,45 +164,24 @@
 									Value
 									<input name="value">
 										<xsl:attribute name="value">
-									<xsl:choose>
-										<xsl:when
+											<xsl:choose>
+												<xsl:when
 													test="/source/request/parameter[@name='value']">
-												<xsl:value-of
+													<xsl:value-of
 														select="/source/request/parameter[@name='value']/value/text()" />
-										</xsl:when>
-										<xsl:otherwise>
-												<xsl:value-of
+												</xsl:when>
+												<xsl:otherwise>
+													<xsl:value-of
 														select="/source/hh-datum/@value" />
-										</xsl:otherwise>
-									</xsl:choose>
-									</xsl:attribute>
+												</xsl:otherwise>
+											</xsl:choose>
+										</xsl:attribute>
 									</input>
 								</label>
 								<br />
 								<label>
 									Status
 									<select name="status">
-										<option value="A">
-											<xsl:choose>
-												<xsl:when
-													test="/source/request/parameter[@name='status']">
-
-													<xsl:if
-														test="/source/request/parameter[@name='status']/value/text() = 'A'">
-														<xsl:attribute
-															name="selected" />
-													</xsl:if>
-												</xsl:when>
-												<xsl:otherwise>
-													<xsl:if
-														test="/source/hh-datum/@status = 'A'">
-														<xsl:attribute
-															name="selected" />
-													</xsl:if>
-												</xsl:otherwise>
-											</xsl:choose>
-											Actual
-										</option>
 										<option value="E">
 											<xsl:choose>
 												<xsl:when
@@ -224,26 +203,26 @@
 											</xsl:choose>
 											Estimate
 										</option>
-										<option value="">
+										<option value="A">
 											<xsl:choose>
 												<xsl:when
 													test="/source/request/parameter[@name='status']">
 
 													<xsl:if
-														test="/source/request/parameter[@name='status']/value/text() = ''">
+														test="/source/request/parameter[@name='status']/value/text() = 'A'">
 														<xsl:attribute
 															name="selected" />
 													</xsl:if>
 												</xsl:when>
 												<xsl:otherwise>
 													<xsl:if
-														test="not(/source/hh-datum/@status)">
+														test="/source/hh-datum/@status = 'A'">
 														<xsl:attribute
 															name="selected" />
 													</xsl:if>
 												</xsl:otherwise>
 											</xsl:choose>
-											None
+											Actual
 										</option>
 									</select>
 								</label>

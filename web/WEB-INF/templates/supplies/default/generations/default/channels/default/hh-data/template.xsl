@@ -154,24 +154,19 @@
 								<legend>Month</legend>
 								<input size="4" maxlength="4"
 									name="year">
-									<xsl:choose>
-										<xsl:when
-											test="/source/request/parameter[@name='year']">
-
-											<xsl:attribute
-												name="value">
+									<xsl:attribute name="value">
+										<xsl:choose>
+											<xsl:when
+												test="/source/request/parameter[@name='year']">
 												<xsl:value-of
 													select="/source/request/parameter[@name='year']/value/text()" />
-											</xsl:attribute>
-										</xsl:when>
-										<xsl:otherwise>
-											<xsl:attribute
-												name="value">
+											</xsl:when>
+											<xsl:otherwise>
 												<xsl:value-of
-													select="/source/date/@year" />
-											</xsl:attribute>
-										</xsl:otherwise>
-									</xsl:choose>
+													select="/source/hh-end-date/@year" />
+											</xsl:otherwise>
+										</xsl:choose>
+									</xsl:attribute>
 								</input>
 								-
 								<select name="month">
@@ -181,7 +176,6 @@
 											<xsl:choose>
 												<xsl:when
 													test="/source/request/parameter[@name='month']">
-
 													<xsl:if
 														test="/source/request/parameter[@name='month']/value/text() = number(@number)">
 
@@ -191,7 +185,7 @@
 												</xsl:when>
 												<xsl:otherwise>
 													<xsl:if
-														test="/source/date/@month = @number">
+														test="/source/hh-end-date/@month = @number">
 														<xsl:attribute
 															name="selected" />
 													</xsl:if>
@@ -275,26 +269,20 @@
 									<legend>From</legend>
 									<input name="delete-from-year"
 										maxlength="4" size="4">
-										<xsl:choose>
-											<xsl:when
-												test="/source/request/parameter[@name='delete-from-year']">
-
-												<xsl:attribute
-													name="value">
+										<xsl:attribute name="value">
+											<xsl:choose>
+												<xsl:when
+													test="/source/request/parameter[@name='delete-from-year']">
 													<xsl:value-of
 														select="/source/request/parameter[@name='delete-from-year']/value/text()" />
-												</xsl:attribute>
-											</xsl:when>
-											<xsl:otherwise>
-												<xsl:attribute
-													name="value">
+												</xsl:when>
+												<xsl:otherwise>
 													<xsl:value-of
-														select="/source/date/@year" />
-												</xsl:attribute>
-											</xsl:otherwise>
-										</xsl:choose>
+														select="/source/hh-end-date/@year" />
+												</xsl:otherwise>
+											</xsl:choose>
+										</xsl:attribute>
 									</input>
-
 									-
 									<select name="delete-from-month">
 										<xsl:for-each
@@ -313,7 +301,7 @@
 													</xsl:when>
 													<xsl:otherwise>
 														<xsl:if
-															test="/source/date/@month = @number">
+															test="/source/hh-end-date/@month = @number">
 															<xsl:attribute
 																name="selected" />
 														</xsl:if>
@@ -344,7 +332,7 @@
 													</xsl:when>
 													<xsl:otherwise>
 														<xsl:if
-															test="/source/date/@day = @number">
+															test="/source/hh-end-date/@day = @number">
 															<xsl:attribute
 																name="selected" />
 														</xsl:if>
@@ -380,13 +368,218 @@
 								</label>
 								<br />
 								<br />
-								<input type="submit" value="Delete" />
+								<input type="submit" name="delete"
+									value="Delete" />
 								<xsl:value-of select="' '" />
 								<input type="reset" value="Reset" />
 							</fieldset>
 						</form>
 					</xsl:otherwise>
 				</xsl:choose>
+				<br />
+				<form action="." method="post">
+					<fieldset>
+						<legend>Insert HH datum</legend>
+						<input size="4" maxlength="4" name="end-year">
+							<xsl:choose>
+								<xsl:when
+									test="/source/request/parameter[@name='end-year']">
+
+									<xsl:attribute name="value">
+										<xsl:value-of
+											select="/source/request/parameter[@name='end-year']/value/text()" />
+									</xsl:attribute>
+								</xsl:when>
+								<xsl:otherwise>
+									<xsl:attribute name="value">
+										<xsl:value-of
+											select="/source/hh-end-date/@year" />
+									</xsl:attribute>
+								</xsl:otherwise>
+							</xsl:choose>
+						</input>
+						<xsl:value-of select="'-'" />
+						<select name="end-month">
+							<xsl:for-each
+								select="/source/months/month">
+								<option value="{@number}">
+									<xsl:choose>
+										<xsl:when
+											test="/source/request/parameter[@name='end-month']">
+											<xsl:if
+												test="/source/request/parameter[@name='end-month']/value/text() = number(@number)">
+												<xsl:attribute
+													name="selected" />
+											</xsl:if>
+										</xsl:when>
+										<xsl:otherwise>
+											<xsl:if
+												test="/source/hh-end-date/@month = @number">
+												<xsl:attribute
+													name="selected" />
+											</xsl:if>
+										</xsl:otherwise>
+									</xsl:choose>
+									<xsl:value-of select="@number" />
+								</option>
+							</xsl:for-each>
+						</select>
+						<xsl:value-of select="'-'" />
+						<select name="end-day">
+							<xsl:for-each select="/source/days/day">
+								<option value="{@number}">
+									<xsl:choose>
+										<xsl:when
+											test="/source/request/parameter[@name='end-day']">
+
+											<xsl:if
+												test="/source/request/parameter[@name='end-day']/value/text() = number(@number)">
+												<xsl:attribute
+													name="selected" />
+											</xsl:if>
+										</xsl:when>
+										<xsl:otherwise>
+											<xsl:if
+												test="/source/hh-end-date/@day = @number">
+												<xsl:attribute
+													name="selected" />
+											</xsl:if>
+										</xsl:otherwise>
+									</xsl:choose>
+									<xsl:value-of select="@number" />
+								</option>
+							</xsl:for-each>
+						</select>
+						<xsl:value-of select="' '" />
+						<select name="end-hour">
+							<xsl:for-each select="/source/hours/hour">
+								<option value="{@number}">
+									<xsl:choose>
+										<xsl:when
+											test="/source/request/parameter[@name='end-hour']">
+
+											<xsl:if
+												test="/source/request/parameter[@name='end-hour']/value/text() = number(@number)">
+												<xsl:attribute
+													name="selected" />
+											</xsl:if>
+										</xsl:when>
+										<xsl:otherwise>
+											<xsl:if
+												test="/source/hh-end-date/@hour = @number">
+												<xsl:attribute
+													name="selected" />
+											</xsl:if>
+										</xsl:otherwise>
+									</xsl:choose>
+									<xsl:value-of select="@number" />
+								</option>
+							</xsl:for-each>
+						</select>
+						<xsl:value-of select="':'" />
+						<select name="end-minute">
+							<option value="0">
+								<xsl:choose>
+									<xsl:when
+										test="/source/request/parameter[@name='end-minute']">
+										<xsl:if
+											test="/source/request/parameter[@name='end-minute']/value/text() = '00'">
+											<xsl:attribute
+												name="selected" />
+										</xsl:if>
+									</xsl:when>
+									<xsl:otherwise>
+										<xsl:if
+											test="/source/hh-end-date/@minute = @number">
+											<xsl:attribute
+												name="selected" />
+										</xsl:if>
+									</xsl:otherwise>
+								</xsl:choose>
+								<xsl:value-of select="'00'" />
+							</option>
+							<option value="30">
+								<xsl:choose>
+									<xsl:when
+										test="/source/request/parameter[@name='end-minute']">
+										<xsl:if
+											test="/source/request/parameter[@name='end-minute']/value/text() = '00'">
+											<xsl:attribute
+												name="selected" />
+										</xsl:if>
+									</xsl:when>
+									<xsl:otherwise>
+										<xsl:if
+											test="/source/hh-end-date/@minute = '30'">
+											<xsl:attribute
+												name="selected" />
+										</xsl:if>
+									</xsl:otherwise>
+								</xsl:choose>
+								<xsl:value-of select="'30'" />
+							</option>
+						</select>
+						<xsl:value-of select="' Z'"/>
+						<br />
+						<br />
+						<label>
+							<xsl:value-of select="'Value '" />
+							<input size="4" maxlength="4"
+								name="value">
+								<xsl:attribute name="value">
+									<xsl:choose>
+										<xsl:when
+											test="/source/request/parameter[@name='value']">
+											<xsl:value-of
+												select="/source/request/parameter[@name='value']/value/text()" />
+										</xsl:when>
+										<xsl:otherwise>
+											<xsl:value-of select="'0'" />
+										</xsl:otherwise>
+									</xsl:choose>
+								</xsl:attribute>
+							</input>
+						</label>
+						<br />
+						<br />
+						<label>
+							<xsl:value-of select="'Status '" />
+							<select name="status">
+								<option value="E">
+									<xsl:choose>
+										<xsl:when
+											test="/source/request/parameter[@name='status']">
+											<xsl:if
+												test="/source/request/parameter[@name='status']/value/text() = 'E'">
+												<xsl:attribute
+													name="selected" />
+											</xsl:if>
+										</xsl:when>
+										<xsl:otherwise>
+											<xsl:attribute
+												name="selected" />
+										</xsl:otherwise>
+									</xsl:choose>
+									<xsl:value-of select="'E'" />
+								</option>
+								<option value="A">
+									<xsl:if
+										test="/source/request/parameter[@name='status'] and /source/request/parameter[@name='status']/value/text() = 'A'">
+										<xsl:attribute name="selected" />
+									</xsl:if>
+									<xsl:value-of select="'A'" />
+								</option>
+							</select>
+						</label>
+						<br />
+						<br />
+						<xsl:value-of select="' '" />
+						<input type="submit" name="insert"
+							value="Insert" />
+						<xsl:value-of select="' '" />
+						<input type="reset" value="Reset" />
+					</fieldset>
+				</form>
 			</body>
 		</html>
 	</xsl:template>

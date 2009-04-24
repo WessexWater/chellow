@@ -330,19 +330,19 @@ public class Site extends PersistentEntity {
 				previousEndDate = hhEndDate;
 				hhEndDate = hhEndDate.getNext();
 			}
-			if (snag1To != null && snag1To.equals(previousEndDate)) {
+			if (snag1To != null) {
 				group.addSiteSnag(SiteGroup.EXPORT_NET_GT_IMPORT_GEN,
 						snag1From, snag1To);
 			}
-			if (resolve1To != null && resolve1To.equals(previousEndDate)) {
+			if (resolve1To != null) {
 				group.deleteHhdcSnag(SiteGroup.EXPORT_NET_GT_IMPORT_GEN,
 						resolve1From, resolve1To);
 			}
-			if (snag2To != null && snag2To.equals(previousEndDate)) {
+			if (snag2To != null) {
 				group.addSiteSnag(SiteGroup.EXPORT_GEN_GT_IMPORT, snag2From,
 						snag2To);
 			}
-			if (resolve2To != null && resolve2To.equals(previousEndDate)) {
+			if (resolve2To != null) {
 				group.deleteHhdcSnag(SiteGroup.EXPORT_GEN_GT_IMPORT,
 						resolve2From, resolve2To);
 			}

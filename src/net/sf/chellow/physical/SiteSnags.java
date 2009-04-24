@@ -58,7 +58,7 @@ public class SiteSnags extends EntityList {
 		for (SiteSnag snag : (List<SiteSnag>) Hiber
 				.session()
 				.createQuery(
-						"from SiteSnag snag where snag.isIgnored = false order by snag.site.code, snag.description, snag.startDate.date")
+						"from SiteSnag snag order by snag.startDate.date desc, snag.site.code, snag.description")
 				.setMaxResults(PAGE_SIZE)
 				.list()) {
 			snagsElement.appendChild(snag.toXml(doc, new XmlTree("site")));

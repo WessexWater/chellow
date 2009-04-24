@@ -1,6 +1,6 @@
 /*
  
- Copyright 2005-2007 Meniscus Systems Ltd
+ Copyright 2005-2007, 2009 Meniscus Systems Ltd
  
  This file is part of Chellow.
 
@@ -66,18 +66,22 @@ public class MonadDate extends MonadObject {
 		return cal.getTime();
 	}
 
-	/*
-	 * public static Element toXML(MonadDate date, Document doc) throws
-	 * ProgrammerException, UserException { Element element =
-	 * doc.createElement(date.getTypeName());
-	 * 
-	 * element.setAttribute("year", date.getYear());
-	 * element.setAttribute("month", date.getMonth());
-	 * element.setAttribute("day", date.getDay()); element.setAttribute("hour",
-	 * date.getHour()); element.setAttribute("minute", date.getMinute()); if
-	 * (date.getLabel() != null) { element.setAttribute("label",
-	 * date.getLabel()); } return element; }
-	 */
+	public static Element getHoursXml(Document doc) {
+		Element monthsElement = doc.createElement("hours");
+
+		for (int i = 0; i < 24; i++) {
+			Element month = doc.createElement("hour");
+			StringBuffer number = new StringBuffer(Integer.toString(i));
+
+			if (i < 10) {
+				number.insert(0, "0");
+			}
+			month.setAttribute("number", number.toString());
+			monthsElement.appendChild(month);
+		}
+		return monthsElement;
+	}
+
 	public static Element toXML(Date date, String label, Document doc)
 			throws InternalException {
 		return toXML(date, label, doc, "date");
@@ -111,14 +115,6 @@ public class MonadDate extends MonadObject {
 
 	private Date date;
 
-	/*
-	 * private MonadInteger monadYear;
-	 * 
-	 * private MonadMonth monadMonth;
-	 * 
-	 * private MonadDay monadDay;
-	 */
-	// protected Calendar cal = getCalendar();
 	public MonadDate() throws HttpException {
 		update(new Date());
 	}
@@ -147,20 +143,30 @@ public class MonadDate extends MonadObject {
 		update(year, month, day);
 	}
 
-	public MonadDate(int year, MonadMonth month, MonadDay day)
-			throws HttpException {
-		update(year, month, day);
+	public MonadDate(String label, String year, String month, String day,
+			String hour, String minute) throws HttpException {
+		setLabel(label);
+		update(year, month, day, hour, minute);
 	}
 
+	public MonadDate(int year, int month, int day) throws HttpException {
+		update(year, month, day);
+	}
+	public MonadDate(int year, int month, int day, int hour, int minute) throws HttpException {
+		update(year, month, day, hour, minute);
+	}
 	protected void update(String year, String month, String day)
 			throws HttpException {
-		update(new MonadInteger("year", year).getInteger(), new MonadMonth(
-				month), new MonadDay(day));
+		update(new MonadInteger("year", year).getInteger(), new MonadInteger(
+				month).getInteger(), new MonadInteger(day).getInteger());
 	}
 
-	public void initLast(int year, MonadMonth month, MonadDay day)
-			throws HttpException {
-		update(year, month, day);
+	protected void update(String year, String month, String day, String hour,
+			String minute) throws HttpException {
+		update(new MonadInteger("year", year).getInteger(), new MonadInteger(
+				month).getInteger(), new MonadInteger(day).getInteger(),
+				new MonadInteger(hour).getInteger(), new MonadInteger(minute)
+						.getInteger());
 	}
 
 	public void update(String dateStr) throws HttpException {
@@ -185,13 +191,23 @@ public class MonadDate extends MonadObject {
 		this.date = date;
 	}
 
-	public void update(int year, MonadMonth month, MonadDay day)
+	public void update(int year, int month, int day) throws HttpException {
+		Calendar cal = getCalendar();
+		cal.clear();
+		try {
+			cal.set(year, month - 1, day);
+			update(cal.getTime());
+		} catch (IllegalArgumentException e) {
+			throw new UserException("Invalid date.");
+		}
+	}
+
+	public void update(int year, int month, int day, int hour, int minute)
 			throws HttpException {
 		Calendar cal = getCalendar();
 		cal.clear();
 		try {
-			cal.set(year, month.getInteger().intValue() - 1, day.getInteger()
-					.intValue());
+			cal.set(year, month - 1, day, hour, minute);
 			update(cal.getTime());
 		} catch (IllegalArgumentException e) {
 			throw new UserException("Invalid date.");
@@ -214,17 +230,6 @@ public class MonadDate extends MonadObject {
 		return toXML(date, getLabel(), doc);
 	}
 
-	/*
-	 * public String getYear() { return sdYear.format(date); }
-	 * 
-	 * public String getMonth() { return sdMonth.format(date); }
-	 * 
-	 * public String getDay() { return sdDay.format(date); }
-	 * 
-	 * public String getHour() { return sdHour.format(date); }
-	 * 
-	 * public String getMinute() { return sdMinute.format(date); }
-	 */
 	public static Element getMonthsXml(Document doc) {
 		Element monthsElement = doc.createElement("months");
 

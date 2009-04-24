@@ -37,8 +37,10 @@ public class Report extends PersistentEntity {
 		if (action.equals("insert")) {
 			String script = GeneralImport.addField(csvElement, "Script",
 					values, 2);
-			String template = GeneralImport.addField(csvElement, "Template",
-					values, 3);
+			String template = null;
+			if (values.length > 3) {
+				GeneralImport.addField(csvElement, "Template", values, 3);
+			}
 			Report.insertReport(id, name, script, template);
 		} else if (action.equals("update")) {
 			/*

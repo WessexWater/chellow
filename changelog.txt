@@ -1,3 +1,7 @@
+* Added a way to insert an HH datum using a web form.
+
+* In the edit world, all site snags are now shown, not just the un-ignored ones.
+
 * Mended broken link to view world from supply world.
 
 * HH data now hop to the appropriate supply generation when the generations are altered.

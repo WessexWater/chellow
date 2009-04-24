@@ -249,7 +249,7 @@ tabindex="1" />
     <value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree, UserException
 from net.sf.chellow.monad.types import MonadDate
 from java.util import GregorianCalendar, Calendar, TimeZone, Locale, Date
-from net.sf.chellow.physical import Site
+from net.sf.chellow.physical import Site, HhEndDate
 
 site_id = inv.getLong("site-id")
 if not inv.isValid():
@@ -272,7 +272,13 @@ cal = GregorianCalendar(TimeZone.getTimeZone("GMT"), Locale.UK)
 cal.add(Calendar.DAY_OF_MONTH, -1)
 yesterday = MonadDate(cal.getTime())
 yesterday.setLabel('yesterday')
-source.appendChild(yesterday.toXml(doc))]]></value>
+source.appendChild(yesterday.toXml(doc))
+now = HhEndDate.roundDown(Date())
+group_element = doc.createElement('group')
+source.appendChild(group_element)
+for group_site in site.groups(now, now, False)[0].getSites():
+    if group_site.getId() != site.getId():
+        group_element.appendChild(group_site.toXml(doc))]]></value>
     <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
 <xsl:stylesheet version="1.0"
     xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
@@ -327,6 +333,15 @@ source.appendChild(yesterday.toXml(doc))]]></value>
                         </td>
                     </tr>
                 </table>
+                <br/>
+                <xsl:if test="/source/groups/site">
+                <table><caption>Other sites in this group</caption>
+                <tr><th>Chellow Id</th><th>Code</th><th>Name</th></tr>
+                <xsl:for-each select="/source/groups/site">
+                  <tr><td><a href="{/source/request/@context-path}/sites/{@id}/"><xsl:value-of select="@id" /></a></td><td><xsl:value-of select="@code" /></td><td><xsl:value-of select="@name" /></td></tr>
+                </xsl:for-each>
+                </table>
+                </xsl:if>
                 <br/>
                 <table>
                     <caption>Supplies that power this site</caption>
@@ -831,7 +846,7 @@ source.appendChild(inv.requestXml(doc))]]></value>
                                 </option>
                             </xsl:for-each>
                         </select>
-                        <xsl:value-of select="' months finishing in '" />
+                        <xsl:value-of select="' months finishing at the end of '" />
                         <input size="4" length="4"
                             name="finish-date-year" value="{/source/@finish-date-year}" />
                         <xsl:value-of select="' - '" />
@@ -3492,7 +3507,7 @@ from net.sf.chellow.monad.types import MonadDate
 from net.sf.chellow.physical import ReadType, HhEndDate
 from java.util import Calendar
 
-def mpan_fields(mpan):
+def mpan_fields(mpan, date, is_import):
     NON_ESTIMATE_READ_TYPES = [ReadType.TYPE_CHANGE_OF_SUPPLIER, ReadType.TYPE_CUSTOMER, ReadType.TYPE_FINAL, ReadType.TYPE_INITIAL, ReadType.TYPE_DC_MANUAL, ReadType.TYPE_ROUTINE, ReadType.TYPE_SPECIAL, ReadType.TYPE_CHANGE_OF_TENANCY]
     fields = {}
     if mpan == None:
@@ -3501,12 +3516,19 @@ def mpan_fields(mpan):
         fields['llfc_code'] = ' '
         fields['llfc_description'] = ' '
         fields['last_read_date'] = ' '
+        fields['mandatory_hh'] = ''
+        fields['pc_code'] = ''
+        fields['mtc_code'] = ''
     else:
         fields['mpan_core'] = mpan.getCore().toString()
         fields['agreed_sc'] = str(mpan.getAgreedSupplyCapacity())
         llfc = mpan.getLlfc()
         fields['llfc_code'] = llfc.codeAsString()
         fields['llfc_description'] = llfc.getDescription()
+        pc = mpan.getPc()
+        fields['pc_code'] = pc.codeAsString()
+        mtc = mpan.getMtc()
+        fields['mtc_code'] = mtc.codeAsString()
         i = 0
         found = False
         reads = Hiber.session().createQuery("from RegisterRead read where read.mpan = :mpan order by read.presentDate.date").setEntity('mpan', mpan).list()
@@ -3522,6 +3544,29 @@ def mpan_fields(mpan):
         fields['last_read_date'] = 'None'
         if found:
             fields['last_read_date'] = read.getPresentDate().toString()
+        cal = MonadDate.getCalendar()
+        cal.setTime(date)
+        month_mds = []
+        mand_query = Hiber.session().createQuery("select max(datum.value) from HhDatum datum where datum.channel.supplyGeneration.supply = :supply and datum.channel.isKwh is true and datum.channel.isImport = :isImport and datum.endDate.date >= :startDate and datum.endDate <= :finishDate").setEntity('supply', mpan.getSupplyGeneration().getSupply()).setBoolean('isImport', is_import)
+        for i in range(12):
+            mand_query.setTimestamp('finishDate', cal.getTime())
+            cal.add(Calendar.MONTH, -1)
+            cal.add(Calendar.MINUTE, 30)
+            month_md = mand_query.setTimestamp('startDate', cal.getTime()).uniqueResult()
+            cal.add(Calendar.MINUTE, -30)
+            if month_md is not None:
+                month_mds.append(month_md.doubleValue() * 2)
+        month_mds.sort()
+        num_months = min(len(month_mds), 3)
+        avg_months = 0
+        for month_md in month_mds[-1 * num_months:]:
+            avg_months = avg_months + month_md
+        if num_months > 0:
+            avg_months = avg_months / num_months
+        if avg_months > 100:
+            fields['mandatory_hh'] = 'Yes'
+        else:
+            fields['mandatory_hh'] = 'No' 
     return fields
 
 year = inv.getInteger('year')
@@ -3534,14 +3579,13 @@ cal.set(Calendar.YEAR, year)
 cal.set(Calendar.MONTH, month - 1)
 cal.set(Calendar.DAY_OF_MONTH, 1)
 cal.add(Calendar.MONTH, 1)
-cal.add(Calendar.MINUTE, -30)
 date = cal.getTime()
 inv.getResponse().setContentType('text/csv')
 inv.getResponse().addHeader('Content-Disposition', 'attachment; filename="report.csv"')
 pw = inv.getResponse().getWriter()
 
-pw.println("Date,Physical Site Id, Physical Site Name, Other Site Ids, Other Site Names, Supply Id, Source, Generator Type, DNO Name, Voltage Level, Import MPAN core, Import Agreed Supply Capacity (kVA), Import LLFC Code, Import LLFC Description,  Import Last Read, Export MPAN core, Export Agreed Supply Capacity (kVA), Export LLFC Code, Export LLFC Description,  Export Last Read")
-for supply_generation in Hiber.session().createQuery("from SupplyGeneration generation where generation.startDate.date <= :date and (generation.finishDate.date is null or generation.finishDate.date >= :date) order by generation.supply.id").setTimestamp('date', date).list():
+pw.println("Date,Physical Site Id, Physical Site Name, Other Site Ids, Other Site Names, Supply Id, Source, Generator Type, DNO Name, Voltage Level, Import MPAN core, Import Agreed Supply Capacity (kVA), Import PC, Import MTC, Import LLFC Code, Import LLFC Description,  Import Last Read, Import Mandatory HH, Export MPAN core, Export Agreed Supply Capacity (kVA), Export PC, Export MTC,  Export LLFC Code, Export LLFC Description,  Export Last Read, Export Mandatory HH")
+for supply_generation in Hiber.session().createQuery("from SupplyGeneration generation where generation.startDate.date <= :date and (generation.finishDate.date is null or generation.finishDate.date >= :date)  order by generation.supply.id").setTimestamp('date', date).list():
     site_codes = ''
     site_names = ''
     for site_supply_generation in supply_generation.getSiteSupplyGenerations():
@@ -3555,8 +3599,8 @@ for supply_generation in Hiber.session().createQuery("from SupplyGeneration gene
     site_names = site_names[:-2]
     supply = supply_generation.getSupply()
     mpan = supply_generation.getMpans()[0]
-    import_fields = mpan_fields(supply_generation.getImportMpan())
-    export_fields = mpan_fields(supply_generation.getExportMpan())
+    import_fields = mpan_fields(supply_generation.getImportMpan(), date, True)
+    export_fields = mpan_fields(supply_generation.getExportMpan(), date, False)
     generator_type = supply.getGeneratorType()
     if generator_type is None:
         generator_type = ''
@@ -3565,9 +3609,11 @@ for supply_generation in Hiber.session().createQuery("from SupplyGeneration gene
     pw.print(HhEndDate(date).toString() + ',"' + physical_site.getCode() + '","' + physical_site.getName() + '","' + site_codes + '","' + site_names + '",' + str(supply.getId()) + ',' + supply.getSource().getCode() + ',' + generator_type + ',"' + mpan.getCore().getDso().getName() + '",' + mpan.getLlfc().getVoltageLevel().getCode())
     pw.print(',' + import_fields['mpan_core'] + ",")
     pw.print(import_fields['agreed_sc'])
+    pw.print(',' + import_fields['pc_code'])
+    pw.print(',' + import_fields['mtc_code'])
     pw.print("," + import_fields['llfc_code'])
-    pw.print("," + import_fields['llfc_description'] + "," + import_fields['last_read_date'] + ',')
-    pw.println(export_fields['mpan_core'] + "," + export_fields['agreed_sc'] + "," + export_fields['llfc_code'] + "," + export_fields['llfc_description'] + "," + export_fields['last_read_date'])
+    pw.print("," + import_fields['llfc_description'] + "," + import_fields['last_read_date'] + ',' + import_fields['mandatory_hh'] + ',')
+    pw.println(export_fields['mpan_core'] + "," + export_fields['agreed_sc'] + "," + export_fields['pc_code'] + ',' + export_fields['mtc_code'] + ',' + export_fields['llfc_code'] + "," + export_fields['llfc_description'] + "," + export_fields['last_read_date'] + ',' + import_fields['mandatory_hh'])
     pw.flush()
 pw.close()]]></value>
     <value><![CDATA[]]></value>
@@ -5032,7 +5078,7 @@ for mt in Hiber.session().createQuery("select mtc from Mtc mtc left outer join m
         <html>
             <head>
                 <link rel="stylesheet" type="text/css"
-                    href="{/source/request/@context-path}/reports/10/output/" />
+                    href="{/source/request/@context-path}/reports/19/output/" />
                 <title>Home &gt; MTCs</title>
             </head>
             <body>
@@ -5071,7 +5117,7 @@ for mt in Hiber.session().createQuery("select mtc from Mtc mtc left outer join m
                             <tr>
                                 <td>
                                     <a
-                                        href="{/source/request/@context-path}/reports/32/output/?mtc-id={@id}">
+                                        href="{/source/request/@context-path}/reports/63/output/?mtc-id={@id}">
                                         <xsl:value-of select="@id" />
                                     </a>
                                 </td>
@@ -5082,7 +5128,7 @@ for mt in Hiber.session().createQuery("select mtc from Mtc mtc left outer join m
                                     <xsl:choose>
                                         <xsl:when test="dso">
                                             <a
-                                                href="{/source/request/@context-path}/reports/24/output/?provider-id={provider/@id}">
+                                                href="{/source/request/@context-path}/reports/139/output/?dso-id={dso/@id}">
                                                 <xsl:value-of
                                                     select="dso/@code" />
                                             </a>
@@ -5096,7 +5142,7 @@ for mt in Hiber.session().createQuery("select mtc from Mtc mtc left outer join m
                                     <xsl:value-of select="@description" />
                                 </td>
                                 <td>
-                                    <a href="{/source/request/@context-path}/reports/66/output/?type-id={meter-type/@id}">
+                                    <a href="{/source/request/@context-path}/reports/131/output/?type-id={meter-type/@id}">
                                                 <xsl:value-of
                                                     select="meter-type/@code" />
                                             </a>
@@ -5134,7 +5180,7 @@ source.appendChild(mtc.toXml(doc, XmlTree('meterType').put('paymentType').put('d
         <html>
             <head>
                 <link rel="stylesheet" type="text/css"
-                    href="{/source/request/@context-path}/reports/10/output/" />
+                    href="{/source/request/@context-path}/reports/19/output/" />
                 <title>
                     Home &gt; MTCs &gt;
                     <xsl:value-of select="/source/mtc/@code" />
@@ -5148,7 +5194,7 @@ source.appendChild(mtc.toXml(doc, XmlTree('meterType').put('paymentType').put('d
                     </a>
                     &gt;
                     <a
-                        href="{/source/request/@context-path}/reports/31/output/">
+                        href="{/source/request/@context-path}/reports/61/output/">
                         <xsl:value-of select="'MTCs'" />
                     </a>
                     &gt;
@@ -5183,7 +5229,7 @@ source.appendChild(mtc.toXml(doc, XmlTree('meterType').put('paymentType').put('d
                             <xsl:choose>
                                 <xsl:when test="/source/mtc/dso">
                                     <a
-                                        href="{/source/request/@context-path}/providers/{/source/mtc/provider/@id}/">
+                                        href="{/source/request/@context-path}/reports/139/output/?dso-id={/source/mtc/dso/@id}">
                                         <xsl:value-of
                                             select="/source/mtc/dso/@code" />
                                     </a>
@@ -5254,7 +5300,7 @@ source.appendChild(mtc.toXml(doc, XmlTree('meterType').put('paymentType').put('d
                         <th>Meter Type</th>
                         <td>
                             <a
-                                href="{/source/request/@context-path}/reports/65/output/?type-id={/source/mtc/meter-type/@id}">
+                                href="{/source/request/@context-path}/reports/131/output/?type-id={/source/mtc/meter-type/@id}">
                                 <xsl:value-of
                                     select="/source/mtc/meter-type/@description" />
                             </a>
@@ -5264,7 +5310,7 @@ source.appendChild(mtc.toXml(doc, XmlTree('meterType').put('paymentType').put('d
                         <th>Payment Type</th>
                         <td>
                             <a
-                                href="{/source/request/@context-path}/reports/68/output/?type-id={/source/mtc/meter-payment-type/@id}">
+                                href="{/source/request/@context-path}/reports/135/output/?type-id={/source/mtc/meter-payment-type/@id}">
                                 <xsl:value-of
                                     select="/source/mtc/meter-payment-type/@description" />
                             </a>
@@ -7439,7 +7485,7 @@ for tpr in Hiber.session().createQuery("from Tpr tpr order by tpr.code").list():
                     <xsl:for-each select="/source/tprs/tpr">
                         <li>
                             <a
-                                href="{/source/request/@context-path}/reports/49/output/?tpr-id={@id}">
+                                href="{/source/request/@context-path}/reports/97/output/?tpr-id={@id}">
                                 <xsl:value-of select="@code" />
                             </a>
                         </li>
@@ -7485,7 +7531,7 @@ source.appendChild(tpr.toXml(doc, XmlTree("measurementRequirements", XmlTree("ss
                     </a>
                     &gt;
                     <a
-                        href="{/source/request/@context-path}/reports/48/output/">
+                        href="{/source/request/@context-path}/reports/95/output/">
                         <xsl:value-of select="'TPRs'" />
                     </a>
                     &gt;
@@ -7598,7 +7644,7 @@ source.appendChild(tpr.toXml(doc, XmlTree("measurementRequirements", XmlTree("ss
                         select="/source/tpr/measurement-requirement/ssc">
                         <li>
                             <a
-                                href="{/source/request/@context-path}/reports/64/output/?ssc-id={@id}">
+                                href="{/source/request/@context-path}/reports/127/output/?ssc-id={@id}">
                                 <xsl:value-of select="@code"></xsl:value-of>
                             </a>
                         </li>
@@ -9700,7 +9746,7 @@ for type in Hiber.session().createQuery("from MeterType type order by type.code"
         <html>
             <head>
                 <link rel="stylesheet" type="text/css"
-                    href="{/source/request/@context-path}/reports/10/output/" />
+                    href="{/source/request/@context-path}/reports/19/output/" />
                 <title>
                     <xsl:value-of select="'Home'" />
                     &gt; Meter Types
@@ -9740,7 +9786,7 @@ for type in Hiber.session().createQuery("from MeterType type order by type.code"
                             <tr>
                                 <td>
                                     <a
-                                        href="{/source/request/@context-path}/reports/66/output/?type-id={@id}">
+                                        href="{/source/request/@context-path}/reports/131/output/?type-id={@id}">
                                         <xsl:value-of select="@id" />
                                     </a>
                                 </td>
@@ -9781,7 +9827,7 @@ source.appendChild(type.toXml(doc))]]></value>
         <html>
             <head>
                 <link rel="stylesheet" type="text/css"
-                    href="{/source/request/@context-path}/reports/10/output/" />
+                    href="{/source/request/@context-path}/reports/19/output/" />
                 <title>
                     Home &gt; Meter Types &gt;
                     <xsl:value-of
@@ -9796,7 +9842,7 @@ source.appendChild(type.toXml(doc))]]></value>
                     </a>
                     &gt;
                     <a
-                        href="{/source/request/@context-path}/reports/65/output/">
+                        href="{/source/request/@context-path}/reports/129/output/">
                         <xsl:value-of select="'Meter Types'" />
                     </a>
                     &gt;
@@ -9862,7 +9908,7 @@ for type in Hiber.session().createQuery("from MeterPaymentType type order by typ
         <html>
             <head>
                 <link rel="stylesheet" type="text/css"
-                    href="{/source/request/@context-path}/reports/10/output/" />
+                    href="{/source/request/@context-path}/reports/19/output/" />
                 <title>
                     Home &gt; Meter Payment Types
                 </title>
@@ -9901,7 +9947,7 @@ for type in Hiber.session().createQuery("from MeterPaymentType type order by typ
                             <tr>
                                 <td>
                                     <a
-                                        href="{/source/request/@context-path}/reports/68/output/?type-id={@id}">
+                                        href="{/source/request/@context-path}/reports/135/output/?type-id={@id}">
                                         <xsl:value-of select="@id" />
                                     </a>
                                 </td>
@@ -9941,7 +9987,7 @@ source.appendChild(type.toXml(doc))]]></value>
         <html>
             <head>
                 <link rel="stylesheet" type="text/css"
-                    href="{/source/request/@context-path}/reports/10/output/" />
+                    href="{/source/request/@context-path}/reports/19/output/" />
                 <title>
                     Home &gt; Meter Payment Types &gt;
                     <xsl:value-of
@@ -9956,7 +10002,7 @@ source.appendChild(type.toXml(doc))]]></value>
                     </a>
                     &gt;
                     <a
-                        href="{/source/request/@context-path}/reports/67/output/">
+                        href="{/source/request/@context-path}/reports/133/output/">
                         <xsl:value-of select="'Meter Payment Types'" />
                     </a>
                     &gt;
@@ -11019,7 +11065,7 @@ source.appendChild(MonadDate.getMonthsXml(doc))]]></value>
                     <fieldset>
                         <legend>Supply level information</legend>
 <br/>
-<fieldset><legend>For the month</legend>
+<fieldset><legend>For the end of</legend>
                         <input name="year" value="{/source/date/@year}" maxlength="4" size="4"/><xsl:value-of select="' - '"/>
                         <select name="month">
                             <xsl:for-each select="/source/months/month">
