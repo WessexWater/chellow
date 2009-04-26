@@ -1,6 +1,6 @@
 /*
  
- Copyright 2005-2008 Meniscus Systems Ltd
+ Copyright 2005-2009 Meniscus Systems Ltd
  
  This file is part of Chellow.
 
@@ -447,10 +447,10 @@ public class SupplyGeneration extends PersistentEntity {
 					values, 0);
 			Site site = Site.getSite(siteCode);
 			Supply supply = null;
-			String finishDateStr = GeneralImport.addField(csvElement,
-					"Finish date", values, 1);
-			HhEndDate finishDate = finishDateStr.length() == 0 ? null
-					: new HhEndDate(finishDateStr);
+			String startDateStr = GeneralImport.addField(csvElement,
+					"Start date", values, 1);
+			HhEndDate startDate = startDateStr.length() == 0 ? null
+					: new HhEndDate(startDateStr);
 			String meterSerialNumber = GeneralImport.addField(csvElement,
 					"Meter Serial Number", values, 2);
 			String importMpanStr = GeneralImport.addField(csvElement,
@@ -603,7 +603,7 @@ public class SupplyGeneration extends PersistentEntity {
 			}
 			Map<Site, Boolean> siteMap = new HashMap<Site, Boolean>();
 			siteMap.put(site, true);
-			supply.insertGeneration(siteMap, finishDate, meterSerialNumber,
+			supply.insertGeneration(siteMap, startDate, meterSerialNumber,
 					importMpanStr, importSsc, importGspGroup,
 					importHhdcAccount, importSupplierAccount,
 					importHasImportKwh, importHasImportKvarh,

@@ -273,9 +273,6 @@
 					<li>
 						<a href="channel-snags/">Channel Snags</a>
 					</li>
-					<li>
-						<a href="site-snags/">Site Snags</a>
-					</li>
 					<xsl:if
 						test="/source/hhdc-contract/@has-automatic-hh-data-importer='true'">
 						<li>

@@ -46,47 +46,62 @@
 					<xsl:value-of select="']'" />
 				</p>
 				<br />
-				<ul>
-					<li>
-						Date Created:
-						<xsl:value-of
-							select="concat(/source/site-snag/date[@label='created']/@year, '-', /source/site-snag/date[@label='created']/@month, '-', /source/site-snag/date[@label='created']/@day)" />
-					</li>
-					<li>
-						Ignored?:
-						<xsl:value-of
-							select="/source/site-snag/@is-ignored" />
-					</li>
-					<li>
-						Description:
-						<xsl:value-of
-							select="/source/site-snag/@description" />
-					</li>
-					<li>
-						Progress:
-						<xsl:value-of
-							select="/source/site-snag/@progress" />
-					</li>
-
-					<li>
-						<a
-							href="{/source/request/@context-path}/sites/{/source/site-snag/site/@id}/">
-							Site
-						</a>
-					</li>
-					<li>
-						Start Date:
-						<xsl:value-of
-							select="concat(/source/site-snag/hh-end-date[@label='start']/@year, '-', /source/site-snag/hh-end-date[@label='start']/@month, '-', /source/site-snag/hh-end-date[@label='start']/@day)" />
-					</li>
-					<li>
-						Finish Date:
-						<xsl:value-of
-							select="concat(/source/site-snag/hh-end-date[@label='finish']/@year, '-', /source/site-snag/hh-end-date[@label='finish']/@month, '-', /source/site-snag/hh-end-date[@label='finish']/@day)" />
-					</li>
-				</ul>
+				<table>
+					<tr>
+						<th>Date Created</th>
+						<td>
+							<xsl:value-of
+								select="concat(/source/site-snag/date[@label='created']/@year, '-', /source/site-snag/date[@label='created']/@month, '-', /source/site-snag/date[@label='created']/@day)" />
+						</td>
+					</tr>
+					<tr>
+						<th>Ignored?</th>
+						<td>
+							<xsl:value-of
+								select="/source/site-snag/@is-ignored" />
+						</td>
+					</tr>
+					<tr>
+						<th>Description</th>
+						<td>
+							<xsl:value-of
+								select="/source/site-snag/@description" />
+						</td>
+					</tr>
+					<tr>
+						<th>Progress</th>
+						<td>
+							<xsl:value-of
+								select="/source/site-snag/@progress" />
+						</td>
+					</tr>
+					<tr>
+						<th>Site</th>
+						<td>
+							<a
+								href="{/source/request/@context-path}/sites/{/source/site-snag/site/@id}/">
+								Site
+							</a>
+						</td>
+					</tr>
+					<tr>
+						<th>Start Date</th>
+						<td>
+							<xsl:value-of
+								select="concat(/source/site-snag/hh-end-date[@label='start']/@year, '-', /source/site-snag/hh-end-date[@label='start']/@month, '-', /source/site-snag/hh-end-date[@label='start']/@day)" />
+						</td>
+					</tr>
+					<tr>
+						<th>Finish Date</th>
+						<td>
+							<xsl:value-of
+								select="concat(/source/site-snag/hh-end-date[@label='finish']/@year, '-', /source/site-snag/hh-end-date[@label='finish']/@month, '-', /source/site-snag/hh-end-date[@label='finish']/@day, ' ', /source/site-snag/hh-end-date[@label='finish']/@hour, ':', /source/site-snag/hh-end-date[@label='finish']/@minute, ' Z')" />
+						</td>
+					</tr>
+				</table>
 				<xsl:if
 					test="not(/source/site-snag/date[@label='resolved']) or (/source/site-snag/date[@label='resolved'] and /source/site-snag/@is-ignored='true')">
+					<br/>
 					<form action="." method="post">
 						<fieldset>
 							<legend>Update snag</legend>

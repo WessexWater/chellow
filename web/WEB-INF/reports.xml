@@ -10778,6 +10778,11 @@ pw.close()]]></value>
                             Configuration
                         </a>
                     </li>
+                    <li>
+                        <a
+                            href="{/source/request/@context-path}/reports/165/output/">DB Consistency Check
+                        </a>
+                    </li>
                 </ul>
             </body>
         </html>
@@ -11441,5 +11446,48 @@ for bill in Hiber.session().createQuery("from Bill bill where bill.account = :ac
         </html>
     </xsl:template>
 </xsl:stylesheet>]]></value>
+  </line>
+  <line>
+    <value>insert</value>
+    <value>report</value>
+    <value>165</value>
+    <value>0 Admin: DB Consistency Check</value>
+    <value><![CDATA[from net.sf.chellow.monad import UserException, Hiber
+from net.sf.chellow.monad.types import MonadDate
+from java.text import SimpleDateFormat
+from java.util import Locale, Calendar, TimeZone, GregorianCalendar
+from net.sf.chellow.physical import MpanCore, SiteGroup
+
+inv.getResponse().setContentType('text/plain')
+pw = inv.getResponse().getWriter()
+pw.println("Checking for the 100 most recent bogus site snags...")
+summary = []
+for site_snag in Hiber.session().createQuery("from SiteSnag snag order by snag.finishDate.date desc").setMaxResults(100).list():
+    pw.println("Checking site snag " + str(site_snag.getId()))
+    site = site_snag.getSite()
+    description = site_snag.getDescription()
+    groups = site.groups(site_snag.getStartDate(), site_snag.getFinishDate(), False)
+    for group in groups:
+        hh_data = group.hhData()
+        import_from_net = hh_data.get('import-from-net')
+        export_to_net = hh_data.get('export-to-net')
+        import_from_gen = hh_data.get('import-from-gen')
+        export_to_gen = hh_data.get('export-to-gen')
+        for i in range(len(import_from_net)):
+            if description == SiteGroup.EXPORT_NET_GT_IMPORT_GEN:
+                if export_to_net[i] <= import_from_gen[i]:
+                    msg = "Bogus dude! Snag " + str(site_snag.getId()) + " num supplies " + str(group.getSupplies().size()) + " site " + str(site.getId()) + " " + site.getName() + " Export to net " + str(export_to_net[i]) + " is less than or equal to import from gen " + str(import_from_gen[i]) + " from " + site_snag.getStartDate().toString() + " to " + site_snag.getFinishDate().toString()
+                    pw.println(msg)
+                    summary.append(msg)
+                else:
+                    pw.println("Genuine")
+            elif description == SiteGroup.EXPORT_GEN_GT_IMPORT:
+                pass
+            else:
+                summary.append("Description not recognized.")
+for line in summary:
+    pw.println(line)
+pw.close()]]></value>
+    <value><![CDATA[]]></value>
   </line>
 </csv>

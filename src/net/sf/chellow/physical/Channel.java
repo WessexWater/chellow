@@ -641,7 +641,7 @@ public class Channel extends PersistentEntity {
 				deleteMissingTo = datumRaw.getEndDate();
 				 //Debug.print("Resolved missing: "
 				 //+ (System.currentTimeMillis() - now));
-			} else if (datumRaw.getValue() != datum.getValue()
+			} else if (datumRaw.getValue().doubleValue() != datum.getValue().doubleValue()
 					|| datumRaw.getStatus() != datum.getStatus()) {
 				 //Debug.print("About to update datum: " + datum + " with " + datumRaw + " "
 				 //+ (System.currentTimeMillis() - now));

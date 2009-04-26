@@ -1,3 +1,5 @@
+* Fixed bug where site snag check skipped every other half hour.
+
 * Added a way to insert an HH datum using a web form.
 
 * In the edit world, all site snags are now shown, not just the un-ignored ones.
