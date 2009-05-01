@@ -1,3 +1,8 @@
+* Fixed rounding bug in generation graph.
+
+
+268
+
 * Fixed bug where site snag check skipped every other half hour.
 
 * Added a way to insert an HH datum using a web form.

@@ -334,11 +334,11 @@ for group_site in site.groups(now, now, False)[0].getSites():
                     </tr>
                 </table>
                 <br/>
-                <xsl:if test="/source/groups/site">
+                <xsl:if test="/source/group/site">
                 <table><caption>Other sites in this group</caption>
                 <tr><th>Chellow Id</th><th>Code</th><th>Name</th></tr>
-                <xsl:for-each select="/source/groups/site">
-                  <tr><td><a href="{/source/request/@context-path}/sites/{@id}/"><xsl:value-of select="@id" /></a></td><td><xsl:value-of select="@code" /></td><td><xsl:value-of select="@name" /></td></tr>
+                <xsl:for-each select="/source/group/site">
+                  <tr><td><a href="{/source/request/@context-path}/reports/5/output/?site-id={@id}"><xsl:value-of select="@id" /></a></td><td><xsl:value-of select="@code" /></td><td><xsl:value-of select="@name" /></td></tr>
                 </xsl:for-each>
                 </table>
                 </xsl:if>
@@ -2279,7 +2279,7 @@ os.close()]]></value>
     <value>insert</value>
     <value>report</value>
     <value>23</value>
-    <value>0 Site Generation Graph</value>
+    <value>0 Generation Graph</value>
     <value><![CDATA[from net.sf.chellow.monad import Hiber, UserException
 from net.sf.chellow.physical import HhEndDate, HhDatum, Site
 from net.sf.chellow.monad.types import MonadDate
@@ -2292,7 +2292,7 @@ from java.text import SimpleDateFormat
 from java.lang import System
 from java.util import GregorianCalendar, TimeZone, Locale, Calendar, Date
 
-colour_list = [Color.BLUE, Color.GREEN, Color.RED, Color.YELLOW, Color.MAGENTA, Color.CYAN, Color.PINK]
+colour_list = [Color.BLUE, Color.GREEN, Color.RED, Color.YELLOW, Color.MAGENTA, Color.CYAN, Color.PINK, Color.ORANGE]
 
 def set_colour(graphics, supplies, id, name, source_code):
     if not id in supplies:
@@ -2510,12 +2510,12 @@ if len(resultData) > 0:
         hour = cal.get(Calendar.HOUR_OF_DAY)
         minute = cal.get(Calendar.MINUTE)
         graphics.setColor(Color.BLUE)
-        usedHeight = int(usedValue * scaleFactorOverall)
+        usedHeight = int(round(usedValue * scaleFactorOverall))
         if usedHeight < 0:
             graphics.fillRect(graphLeft + i, xAxisUsed, 1, abs(usedHeight))
         else:
             graphics.fillRect(graphLeft + i, xAxisUsed - usedHeight, 1, usedHeight)
-        displacedHeight = int(displacedValue * scaleFactorOverall)
+        displacedHeight = int(round(displacedValue * scaleFactorOverall))
         if displacedHeight < 0:
             graphics.fillRect(graphLeft + i, xAxisDisplaced, 1, abs(displacedHeight))
         else:
@@ -2530,7 +2530,7 @@ if len(resultData) > 0:
             isImport = j[2]
             value = j[3]
             id = j[4]
-            height = int(value * scaleFactorOverall)
+            height = int(round(value * scaleFactorOverall))
             if source in ('net', 'gen-net') and not isImport:
                 set_colour(graphics, exported_supplies, id, name, source)
                 exportedTotal = exportedTotal + height
@@ -2717,12 +2717,12 @@ for group in Site.getSite(site.getId()).groups(startDate, finishDate, True):
             monthElement.setAttribute("has-site-snags", "true")
         '''
         hhElement.appendChild(hhDate.toXml(doc))
-        hhElement.setAttribute("exported-kwh", str(round(exported_kwh, 1)))
-        hhElement.setAttribute("imported-kwh", str(round(imported_kwh, 1)))
-        hhElement.setAttribute("generated-kwh", str(round(generated_kwh, 1)))
-        hhElement.setAttribute("parasitic-kwh", str(round(parasitic_kwh, 1)))
-        hhElement.setAttribute("displaced-kwh", str(round(displaced_kwh, 1)))
-        hhElement.setAttribute("used-kwh", str(round(used_kwh, 1)))
+        hhElement.setAttribute("exported-kwh", str(exported_kwh))
+        hhElement.setAttribute("imported-kwh", str(imported_kwh))
+        hhElement.setAttribute("generated-kwh", str(generated_kwh))
+        hhElement.setAttribute("parasitic-kwh", str(parasitic_kwh))
+        hhElement.setAttribute("displaced-kwh", str(displaced_kwh))
+        hhElement.setAttribute("used-kwh", str(used_kwh))
         hhDate = hhDate.getNext()]]></value>
     <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
 <xsl:stylesheet version="1.0"
@@ -3723,7 +3723,7 @@ snag_count = Hiber.session().createQuery("select count(distinct snag) from Chann
 
 snags = Hiber.session().createQuery("select distinct snag, siteSupplyGeneration.site.code, snag.startDate.date, snag.channel.id from ChannelSnag snag join snag.channel.supplyGeneration.siteSupplyGenerations siteSupplyGeneration where snag.isIgnored is false and snag.contract = :contract order by siteSupplyGeneration.site.code, snag.startDate.date, snag.channel.id").setEntity('contract', contract).scroll()
 i = 0
-while snags.next() and i < 100:
+while snags.next() and i < 200:
     snags_element.appendChild(snags.get(0).toXml(doc, XmlTree('channel', XmlTree('supplyGeneration', XmlTree('supply').put('siteSupplyGenerations', XmlTree('site')).put("mpans", XmlTree("core", XmlTree("dso")))))))
     i = i + 1
 
@@ -3861,7 +3861,7 @@ snags_element.setAttribute("pending-site-count", str(totalSites - activeSites))]
                                             kWh
                                         </xsl:when>
                                         <xsl:otherwise>
-                                            kVAr
+                                            kVArh
                                         </xsl:otherwise>
                                     </xsl:choose>
                                 </td>
@@ -4015,16 +4015,7 @@ snags_element.setAttribute("site-count", str(sites))
         </html>
     </xsl:template>
     <xsl:template match="hh-end-date">
-        <xsl:value-of select="@year" />
-        -
-        <xsl:value-of select="@month" />
-        -
-        <xsl:value-of select="@day" />
-        <xsl:text></xsl:text>
-        <xsl:value-of select="@hour" />
-        :
-        <xsl:value-of select="@minute" />
-        <xsl:text>Z</xsl:text>
+        <xsl:value-of select="concat(@year, '-', @month, '-', @day, ' ', @hour, ':',@minute, ' Z')" />
     </xsl:template>
 </xsl:stylesheet>]]></value>
   </line>
@@ -8547,7 +8538,7 @@ if len(mpans) > 0:
                 <ul>
                     <li>
                         <a
-                            href="{/source/request/@context-path}/reports/163/output/?account-id={/source/account/@id}">
+                            href="{/source/request/@context-path}/reports/85/output/?account-id={/source/account/@id}">
                             Bills
                         </a>
                     </li>
@@ -10769,7 +10760,7 @@ pw.close()]]></value>
                 <ul>
                     <li>
                         <a
-                            href="{/source/request/@context-path}/reports/151/output/">DSO Contract Export
+                            href="{/source/request/@context-path}/reports/76/output/">DSO Contract Export
                         </a>
                     </li>
                                         <li>

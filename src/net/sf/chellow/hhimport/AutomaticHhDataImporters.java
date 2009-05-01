@@ -38,7 +38,9 @@ public class AutomaticHhDataImporters extends TimerTask {
 	private Logger logger = Logger.getLogger("net.sf.chellow");
 
 	private final Map<Long, AutomaticHhDataImporter> importers = new HashMap<Long, AutomaticHhDataImporter>();
-
+	
+	private boolean running;
+	
 	public InternalException getProgrammerException() {
 		return programmerException;
 	}
@@ -68,8 +70,20 @@ public class AutomaticHhDataImporters extends TimerTask {
 		return importer;
 	}
 
-	@SuppressWarnings("unchecked")
+	public boolean isRunning() {
+		return running;
+	}
+
 	public void run() {
+		if (running) {
+			return;
+		} 
+		run2();
+	}
+
+	@SuppressWarnings("unchecked")
+	public synchronized void run2() {
+		running = true;
 		try {
 			for (Entry<Long, AutomaticHhDataImporter> importerEntry : importers
 					.entrySet()) {
@@ -89,6 +103,8 @@ public class AutomaticHhDataImporters extends TimerTask {
 			throw new RuntimeException(e);
 		} catch (HttpException e) {
 			throw new RuntimeException(e);
+		} finally {
+			running = false;
 		}
 	}
 }

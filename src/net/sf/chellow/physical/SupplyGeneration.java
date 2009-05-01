@@ -823,6 +823,31 @@ public class SupplyGeneration extends PersistentEntity {
 			throw new UserException(document(),
 					"A supply generation must have at least one MPAN.");
 		}
+		SupplyGeneration previousGeneration = supply
+				.getGenerationPrevious(this);
+		if (previousGeneration != null) {
+			boolean isOverlap = false;
+			if (importMpan != null) {
+				Mpan prevImportMpan = previousGeneration.getImportMpan();
+				if (prevImportMpan != null
+						&& importMpan.getCore()
+								.equals(prevImportMpan.getCore())) {
+					isOverlap = true;
+				}
+			}
+			if (!isOverlap && exportMpan != null) {
+				Mpan prevExportMpan = previousGeneration.getExportMpan();
+				if (prevExportMpan != null
+						&& exportMpan.getCore()
+								.equals(prevExportMpan.getCore())) {
+					isOverlap = true;
+				}
+			}
+			if (!isOverlap) {
+				throw new UserException(
+						"MPAN cores can't change without an overlapping period.");
+			}
+		}
 		if (importMpan != null) {
 			if (!importMpan.getLlfc().getIsImport()) {
 				throw new UserException(document(),
@@ -883,7 +908,8 @@ public class SupplyGeneration extends PersistentEntity {
 		}
 		Hiber.flush();
 		HhdcContract hhdcContract = getHhdcContract();
-		if (originalHhdcContract != null && !originalHhdcContract.equals(hhdcContract)) {
+		if (originalHhdcContract != null
+				&& !originalHhdcContract.equals(hhdcContract)) {
 			ScrollableResults channelSnags = Hiber
 					.session()
 					.createQuery(

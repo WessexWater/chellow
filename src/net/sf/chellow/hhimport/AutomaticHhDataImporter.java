@@ -47,6 +47,8 @@ public class AutomaticHhDataImporter implements Urlable, XmlDescriber, Runnable 
 	}
 
 	private HhDataImportProcess hhImporter;
+	
+	private FTPClient ftp;
 
 	private List<MonadMessage> messages = Collections
 			.synchronizedList(new ArrayList<MonadMessage>());
@@ -80,8 +82,6 @@ public class AutomaticHhDataImporter implements Urlable, XmlDescriber, Runnable 
 			return;
 		}
 		thread = Thread.currentThread();
-
-		FTPClient ftp = null;
 		try {
 			HhdcContract contract = HhdcContract.getHhdcContract(contractId);
 			// Debug.print("About to set state property3");
@@ -204,6 +204,8 @@ public class AutomaticHhDataImporter implements Urlable, XmlDescriber, Runnable 
 				}
 				Hiber.close();
 			}
+			ftp.logout();
+			log("Logged out.");
 		} catch (UserException e) {
 			try {
 				log(e.getMessage());
@@ -234,9 +236,8 @@ public class AutomaticHhDataImporter implements Urlable, XmlDescriber, Runnable 
 			thread = null;
 			if (ftp != null && ftp.isConnected()) {
 				try {
-					ftp.logout();
 					ftp.disconnect();
-					log("Logged out.");
+					log("Disconnected.");
 				} catch (IOException ioe) {
 					// do nothing
 				} catch (InternalException e) {
@@ -281,21 +282,6 @@ public class AutomaticHhDataImporter implements Urlable, XmlDescriber, Runnable 
 	}
 
 	public void httpGet(Invocation inv) throws HttpException {
-		/*
-		Document doc = MonadUtils.newSourceDocument();
-		Element source = doc.getDocumentElement();
-		Element importerElement = toXml(doc);
-		source.appendChild(importerElement);
-		importerElement.appendChild(getContract().toXml(doc,
-				new XmlTree("party")));
-		for (MonadMessage message : getLog()) {
-			importerElement.appendChild(message.toXml(doc));
-		}
-		if (hhImporter != null) {
-			importerElement.appendChild(new MonadMessage(hhImporter.status())
-					.toXml(doc));
-		}
-		*/
 		inv.sendOk(document());
 	}
 
@@ -307,6 +293,13 @@ public class AutomaticHhDataImporter implements Urlable, XmlDescriber, Runnable 
 		if (inv.hasParameter("interrupt")) {
 			if (thread != null && thread.isAlive()) {
 				thread.interrupt();
+				if (ftp != null && ftp.isConnected()) {
+					try {
+						ftp.disconnect();
+					} catch (IOException e) {
+						// nothing
+					}
+				}
 				inv.sendOk(document());
 			} else {
 				throw new UserException(document(),
@@ -317,7 +310,11 @@ public class AutomaticHhDataImporter implements Urlable, XmlDescriber, Runnable 
 				throw new UserException(document(),
 						"This import is already running.");
 			}
-			new Thread(this).start();
+			if (AutomaticHhDataImporters.getImportersInstance().isRunning()) {
+				throw new UserException(document(),
+						"Another import is running.");
+			}
+			AutomaticHhDataImporters.getImportersInstance().run();
 			inv.sendOk(document());
 		}
 	}
