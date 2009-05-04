@@ -75,15 +75,22 @@ public class AutomaticHhDataImporters extends TimerTask {
 	}
 
 	public void run() {
-		if (running) {
-			return;
+		if (canRun()) {
+			run2();
 		} 
-		run2();
+	}
+	
+	public synchronized boolean canRun() {
+		if (running) {
+			return false;
+		} else {
+			running = true;
+			return true;
+		}
 	}
 
 	@SuppressWarnings("unchecked")
-	public synchronized void run2() {
-		running = true;
+	public void run2() {
 		try {
 			for (Entry<Long, AutomaticHhDataImporter> importerEntry : importers
 					.entrySet()) {

@@ -47,7 +47,7 @@ public class AutomaticHhDataImporter implements Urlable, XmlDescriber, Runnable 
 	}
 
 	private HhDataImportProcess hhImporter;
-	
+
 	private FTPClient ftp;
 
 	private List<MonadMessage> messages = Collections
@@ -267,6 +267,8 @@ public class AutomaticHhDataImporter implements Urlable, XmlDescriber, Runnable 
 			importerElement.appendChild(new MonadMessage(hhImporter.status())
 					.toXml(doc));
 		}
+		source.setAttribute("an-import-running", AutomaticHhDataImporters
+				.getImportersInstance().isRunning() ? "true" : "false");
 		String threadStatus = null;
 		if (thread == null) {
 			threadStatus = "null";
@@ -276,6 +278,14 @@ public class AutomaticHhDataImporter implements Urlable, XmlDescriber, Runnable 
 			} else {
 				threadStatus = "dead";
 			}
+			source.setAttribute("thread-state", thread.getState().toString());
+			Element stackTrace = doc.createElement("stack-trace");
+			source.appendChild(stackTrace);
+			StringBuilder trace = new StringBuilder();
+			for (StackTraceElement traceElement : thread.getStackTrace()) {
+				trace.append(traceElement.toString());
+			}
+			stackTrace.setTextContent(trace.toString());
 		}
 		source.setAttribute("thread-status", threadStatus);
 		return doc;

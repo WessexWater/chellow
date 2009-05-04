@@ -10627,7 +10627,7 @@ query = Hiber.session().createQuery("select datum.value, datum.status, datum.end
 kva_at_md_query = Hiber.session().createQuery("select datum.value from HhDatum datum where datum.channel.supplyGeneration.supply = :supply and datum.channel.isImport is :isImport and datum.channel.isKwh is false and datum.endDate.date = :mdDate")
 
 pw.println("Supply Id, Supply Name, Source, Generator Type, Site Ids, Site Names, From, To, Import MPAN Core, Import Total kWh, Import Non-actual kWh, Import MD / kW, Import MD Date, Import MD / kVA, Export MPAN Core, Export Total kWh, Export Non-actual kWh, Export MD / kW, Export MD Date, Export MD / kVA")
-supplies = Hiber.session().createQuery("select generation.supply from SupplyGeneration generation where (generation.finishDate.date is null or generation.finishDate.date >= :startDate) and generation.startDate.date <= :finishDate order by generation.supply.id").setTimestamp('startDate', start_date.getDate()).setTimestamp('finishDate', finish_date.getDate()).scroll()
+supplies = Hiber.session().createQuery("select distinct generation.supply, generation.supply.id from SupplyGeneration generation where (generation.finishDate.date is null or generation.finishDate.date >= :startDate) and generation.startDate.date <= :finishDate order by generation.supply.id").setTimestamp('startDate', start_date.getDate()).setTimestamp('finishDate', finish_date.getDate()).scroll()
 while supplies.next():
     supply = supplies.get(0)
     site_codes = ''
@@ -10659,6 +10659,7 @@ while supplies.next():
     pw.println(str(supply.getId()) + ',"' + supply.getName() + '",' + supply.getSource().getCode() + ',"' + generator_type + '","' + site_codes + '","' + site_names + '",' + start_date.toString() + "," + finish_date.toString() + "," + import_mpan_core_str + "," + str(round(import_result[1])) + ',' + str(round(import_result[2])) + "," + str(round(import_result[0])) + "," + str(import_result[3]) + "," + import_result[4] + "," + export_mpan_core_str + "," + str(round(export_result[1])) + ',' + str(round(export_result[2])) + "," + str(round(export_result[0])) + "," + str(export_result[3]) + "," + export_result[4])
     pw.flush()
     Hiber.session().clear()
+supplies.close()
 pw.close()]]></value>
     <value><![CDATA[]]></value>
   </line>

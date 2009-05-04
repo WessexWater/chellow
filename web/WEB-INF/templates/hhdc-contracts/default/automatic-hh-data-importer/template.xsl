@@ -39,11 +39,34 @@
 					</a>
 					&gt; Automatic HH Data Downloader
 				</p>
-				<p>
-					Status:
-					<xsl:value-of
-						select="concat(' ', /source/@thread-status)" />
-				</p>
+				<table>
+					<tr>
+						<th>Is any import running?</th>
+						<td>
+							<xsl:choose>
+								<xsl:when
+									test="/source/@an-import-running='true'">
+									Yes
+								</xsl:when>
+								<xsl:otherwise>No</xsl:otherwise>
+							</xsl:choose>
+						</td>
+					</tr>
+					<tr>
+						<th>Status of this particular import</th>
+						<td>
+							<xsl:value-of
+								select="/source/@thread-status" />
+						</td>
+					</tr>
+					<tr>
+						<th>Stack trace of this particular import</th>
+						<td>
+							<xsl:value-of
+								select="/source/stack-trace/text()" />
+						</td>
+					</tr>
+				</table>
 				<p>
 					<a href=".">Refresh page</a>
 				</p>
