@@ -23,7 +23,7 @@ public class AutomaticHhDataImporters extends TimerTask {
 			throws InternalException {
 		if (importersInstance == null) {
 			importersInstance = new AutomaticHhDataImporters();
-			timer = new Timer(true);
+			timer = new Timer("HH Data Importer Timer", true);
 			timer.schedule(importersInstance, 0, 60 * 60 * 1000);
 		}
 		return importersInstance;

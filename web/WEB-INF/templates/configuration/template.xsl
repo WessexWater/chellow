@@ -34,28 +34,6 @@
 					<xsl:value-of
 						select="/source/configuration/@version" />
 				</p>
-				<table style="text-align: right">
-					<caption>JVM memory (bytes)</caption>
-					<tr>
-						<th>Max</th>
-						<td>
-							<xsl:value-of select="/source/@max-memory" />
-						</td>
-					</tr>
-					<tr>
-						<th>Total</th>
-						<td>
-							<xsl:value-of
-								select="/source/@total-memory" />
-						</td>
-					</tr>
-					<tr>
-						<th>Free</th>
-						<td>
-							<xsl:value-of select="/source/@free-memory" />
-						</td>
-					</tr>
-				</table>
 				<br/>
 				<form action="." method="post">
 					<fieldset>
