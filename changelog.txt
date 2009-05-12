@@ -1,3 +1,14 @@
+* Raw HH datum values used to be rounded to 2 sig figs, now arbitrary precision.
+
+* Fixed importing bug in BGlobal importer where lines ending in ',' failed.
+
+* Can now change the start and finish dates for HHDC rate scripts.
+
+* Changed so that it's not possible to have more than one thread executing the imports at a
+    time.
+
+* Added a more detailed system page.
+
 * Fixed rounding bug in generation graph.
 
 

@@ -49,7 +49,7 @@ public class HhConverterBglobal implements HhConverter {
 
 	private HhDatumRaw datumNext = null;
 
-	private int hhIndex = 48;
+	private int hhIndex = 0;
 
 	private String[] values = null;
 
@@ -64,6 +64,7 @@ public class HhConverterBglobal implements HhConverter {
 		shredder.setCommentStart("#;!");
 		shredder.setEscapes("nrtf", "\n\r\t\f");
 		try {
+			values = getLine();
 			next();
 		} catch (RuntimeException e) {
 			if (e.getCause() != null) {
@@ -76,6 +77,8 @@ public class HhConverterBglobal implements HhConverter {
 			} else {
 				throw e;
 			}
+		} catch (IOException e) {
+			throw new InternalException(e);
 		}
 	}
 
@@ -87,41 +90,47 @@ public class HhConverterBglobal implements HhConverter {
 		throw new UnsupportedOperationException();
 	}
 
+	private String[] getLine() throws IOException, HttpException {
+		String[] line = shredder.getLine();
+		if (line != null && line.length < 51) {
+			throw new UserException(
+					"There must be fields for MPAN Core, Meter Serial Number, Date and the 48 HH values.");
+		}
+		return line;
+	}
+
 	public HhDatumRaw next() {
 		HhDatumRaw datum = null;
 		this.datum = datumNext;
 		try {
-			if (hhIndex > 47) {
-				values = shredder.getLine();
-				if (values != null && values.length < 51) {
-					throw new UserException(
-							"There must be fields for MPAN Core, Meter Serial Number, Date and the 48 HH values.");
+			while (datum == null && values != null) {
+				//Debug.print("inf first while loop");
+
+				if (hhIndex > 47) {
+					values = getLine();
+					hhIndex = 0;
 				}
-				hhIndex = 0;
-			}
-			while (values != null && datum == null) {
-				try {
-					Date date = dateFormat.parse(values[2]);
-					cal.setTime(date);
-					cal.add(Calendar.MINUTE, 30 * (hhIndex + 1));
-					String hhValue = values[hhIndex + 3].trim();
-					if (hhValue.length() > 0) {
-						datum = new HhDatumRaw(values[0], true, true,
-								new HhEndDate(cal.getTime()), new BigDecimal(
-										hhValue), HhDatum.ACTUAL);
+				while (values != null && hhIndex + 3 < values.length && datum == null) {
+					try {
+						Date date = dateFormat.parse(values[2]);
+						cal.setTime(date);
+						cal.add(Calendar.MINUTE, 30 * (hhIndex + 1));
+						String hhValue = values[hhIndex + 3].trim();
+						if (hhValue.length() > 0) {
+							datum = new HhDatumRaw(values[0], true, true,
+									new HhEndDate(cal.getTime()),
+									new BigDecimal(hhValue), HhDatum.ACTUAL);
+						}
+					} catch (NumberFormatException e) {
+						throw new UserException("Problem formatting value. "
+								+ e.getMessage());
+					} catch (ParseException e) {
+						throw new UserException("Problem parsing date. "
+								+ e.getMessage());
 					}
-				} catch (NumberFormatException e) {
-					throw new UserException("Problem formatting value. "
-							+ e.getMessage());
-				} catch (ParseException e) {
-					throw new UserException("Problem parsing date. "
-							+ e.getMessage());
+					hhIndex++;
 				}
-				hhIndex++;
 			}
-			datumNext = datum;
-			// Debug.print("returning " + this.datum);
-			return this.datum;
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		} catch (InternalException e) {
@@ -136,6 +145,8 @@ public class HhConverterBglobal implements HhConverter {
 				throw new RuntimeException(e1);
 			}
 		}
+		datumNext = datum;
+		return this.datum;
 	}
 
 	public int lastLineNumber() {

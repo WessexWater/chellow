@@ -335,6 +335,8 @@ public class HhdcContract extends Contract {
 					.findImporter(this);
 		} else if (Accounts.URI_ID.equals(uriId)) {
 			return new Accounts(this);
+		} else if (RateScripts.URI_ID.equals(uriId)) {
+			return new RateScripts(this);
 		} else {
 			return null;
 		}

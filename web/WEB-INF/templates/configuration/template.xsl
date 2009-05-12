@@ -29,11 +29,6 @@
 						</xsl:for-each>
 					</ul>
 				</xsl:if>
-				<p>
-					Version
-					<xsl:value-of
-						select="/source/configuration/@version" />
-				</p>
 				<br/>
 				<form action="." method="post">
 					<fieldset>

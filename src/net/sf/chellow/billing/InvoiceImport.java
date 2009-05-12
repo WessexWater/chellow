@@ -199,12 +199,12 @@ public class InvoiceImport extends Thread implements Urlable, XmlDescriber {
 			}
 			Account.checkAllMissingFromLatest();
 		} catch (InternalException e) {
-			messages.add("ProgrammerException : " + e.getMessage());
+			messages.add("ProgrammerException : " + HttpException.getStackTraceString(e));
 			throw new RuntimeException(e);
 		} catch (HttpException e) {
 			messages.add(e.getMessage());
 		} catch (Throwable e) {
-			messages.add("Throwable " + e.getMessage());
+			messages.add("Throwable " + HttpException.getStackTraceString(e));
 			ChellowLogger.getLogger().logp(Level.SEVERE,
 					"HhDataImportProcessor", "run",
 					"Problem in run method " + e.getMessage(), e);

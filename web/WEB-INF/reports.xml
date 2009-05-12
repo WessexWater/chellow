@@ -8836,7 +8836,6 @@ source.appendChild(contract.toXml(doc, XmlTree('party', XmlTree('participant')).
                     </tbody>
                 </table>
                 <br />
-                <!--
                     <table>
                     <caption>Rate Scripts</caption>
                     <thead>
@@ -8852,7 +8851,7 @@ source.appendChild(contract.toXml(doc, XmlTree('party', XmlTree('participant')).
                     <tr>
                     <td>
                     <a
-                    href="{/source/request/@context-path}/reports/79/output/?hhdc-rate-script-id={@id}">
+                    href="{/source/request/@context-path}/reports/173/output/?rate-script-id={@id}">
                     <xsl:value-of select="@id" />
                     </a>
                     </td>
@@ -8876,7 +8875,6 @@ source.appendChild(contract.toXml(doc, XmlTree('party', XmlTree('participant')).
                     </xsl:for-each>
                     </tbody>
                     </table>
-                -->
                 <ul>
                     <!--
                         <li>
@@ -8911,13 +8909,11 @@ source.appendChild(contract.toXml(doc, XmlTree('party', XmlTree('participant')).
                         </a>
                     </li>
                 </ul>
-                <!--
                     <h2>Script</h2>
                     <pre>
                     <xsl:value-of
                     select="/source/hhdc-contract/@charge-script" />
                     </pre>
-                -->
             </body>
         </html>
     </xsl:template>
@@ -10777,7 +10773,7 @@ pw.close()]]></value>
                     </li>
                     <li>
                         <a
-                            href="{/source/request/@context-path}/reports/171/output/">Status</a>
+                            href="{/source/request/@context-path}/reports/171/output/">System</a>
                     </li>
                 </ul>
             </body>
@@ -11679,11 +11675,11 @@ pw.close()]]></value>
     <value>insert</value>
     <value>report</value>
     <value>171</value>
-    <value>0 Admin Status</value>
+    <value>0 Admin System</value>
     <value><![CDATA[from java.text import DecimalFormat
 from java.lang import Runtime, System, Thread
-from java.io import StringWriter
-from net.sf.chellow.monad import Hiber
+from java.io import StringWriter, InputStreamReader
+from net.sf.chellow.monad import Hiber, Monad
 
 df = DecimalFormat("###,###,###,###,##0")
 runtime = Runtime.getRuntime()
@@ -11696,19 +11692,29 @@ source.appendChild(props)
 sw = StringWriter()
 System.getProperties().store(sw, None)
 props.setTextContent(sw.toString())
-for trace in Thread.getAllStackTraces().entrySet():
-    trace_element = doc.createElement('trace')
-    source.appendChild(trace_element)
-    thread = trace.getKey()
-    trace_content = str(thread.getId()) + " " + thread.getName() + "\r"
-    for trace_item in trace.getValue():
-        trace_content = trace_content + trace_item.toString() + "\r"
-    trace_element.setTextContent(trace_content)
+for entry in Thread.getAllStackTraces().entrySet():
+    thread_element = doc.createElement('thread')
+    source.appendChild(thread_element)
+    thread = entry.getKey()
+    trace = ''
+    for trace_item in entry.getValue():
+        trace = trace + trace_item.toString() + "\r"
+    thread_element.setTextContent(trace)
+    thread_element.setAttribute('id', str(thread.getId()))
+    thread_element.setAttribute('name', thread.getName())
+    thread_element.setAttribute('status', thread.getState().toString())
 db_metadata = Hiber.session().connection().getMetaData()
 source.setAttribute("db-product-name", db_metadata.getDatabaseProductName())
 source.setAttribute("db-product-version", db_metadata.getDatabaseProductVersion())
 source.setAttribute("db-driver-name", db_metadata.getDriverName())
-source.setAttribute("db-driver-version", db_metadata.getDriverVersion())]]></value>
+source.setAttribute("db-driver-version", db_metadata.getDriverVersion())
+istream = InputStreamReader(Monad.getContext().getResource("/WEB-INF/VERSION").openStream(), "UTF-8")
+c = istream.read()
+sr = StringWriter()
+while c != -1:
+    sr.write(c)
+    c = istream.read()
+source.setAttribute("chellow-version", sr.toString())]]></value>
     <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
 <xsl:stylesheet version="1.0"
     xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
@@ -11722,7 +11728,7 @@ source.setAttribute("db-driver-version", db_metadata.getDriverVersion())]]></val
                 <link rel="stylesheet" type="text/css"
                     href="{/source/request/@context-path}/reports/19/output/" />
 
-                <title>Chellow &gt; Admin &gt; Status</title>
+                <title>Chellow &gt; Admin &gt; System</title>
             </head>
             <body>
                 <p>
@@ -11736,7 +11742,7 @@ source.setAttribute("db-driver-version", db_metadata.getDriverVersion())]]></val
                         <xsl:value-of select="'Admin'" />
                     </a>
                     &gt;
-                    <xsl:value-of select="'Status'" />
+                    <xsl:value-of select="'System'" />
                 </p>
                   <xsl:if test="//message">
                     <ul>
@@ -11747,6 +11753,9 @@ source.setAttribute("db-driver-version", db_metadata.getDriverVersion())]]></val
                         </xsl:for-each>
                     </ul>
                 </xsl:if>
+<p>Chellow Version
+                    <xsl:value-of
+                        select="/source/@chellow-version" /></p>
                 <table style="text-align: right">
                     <caption>JVM memory (bytes)</caption>
                     <tr>
@@ -11771,13 +11780,15 @@ source.setAttribute("db-driver-version", db_metadata.getDriverVersion())]]></val
                 </table>
                 <p>Available Processors: <xsl:value-of select="/source/@available-processors"/></p>
 
-<h4>Stack Traces Of All Live Threads</h4>
+<br/>
 
-<ul>
-<xsl:for-each select="/source/trace">
-<li><pre><xsl:value-of select="."/></pre></li>
+<table><caption>All Live Threads</caption>
+<tr><th>Id</th><th>Name</th><th>Status</th><th>Stack Trace</th>
+</tr>
+<xsl:for-each select="/source/thread">
+<tr><td><xsl:value-of select="@id"/></td><td><xsl:value-of select="@name"/></td><td><xsl:value-of select="@status"/></td><td><pre><xsl:value-of select="."/></pre></td></tr>
 </xsl:for-each>
-</ul>
+</table>
 
 <h4>Java System Properties</h4>
 
@@ -11791,6 +11802,112 @@ source.setAttribute("db-driver-version", db_metadata.getDriverVersion())]]></val
 <tr><th>Driver Name</th><td><xsl:value-of select="/source/@db-driver-name"/></td></tr>
 <tr><th>Driver Version</th><td><xsl:value-of select="/source/@db-driver-version"/></td></tr>
 </table>
+            </body>
+        </html>
+    </xsl:template>
+</xsl:stylesheet>]]></value>
+  </line>
+  <line>
+    <value>insert</value>
+    <value>report</value>
+    <value>173</value>
+    <value>0 HHDC Contract Rate Script</value>
+    <value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree
+from net.sf.chellow.billing import RateScript
+
+script_id = inv.getLong('rate-script-id')
+script = RateScript.getRateScript(script_id)
+source.appendChild(script.toXml(doc, XmlTree('contract', XmlTree('party'))))]]></value>
+    <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
+<xsl:stylesheet version="1.0"
+    xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+    <xsl:output method="html" encoding="US-ASCII"
+        doctype-public="-//W3C//DTD HTML 4.01//EN"
+        doctype-system="http://www.w3.org/TR/html4/strict.dtd" indent="yes" />
+    <xsl:template match="/">
+        <html>
+            <head>
+                <link rel="stylesheet" type="text/css"
+                    href="{/source/request/@context-path}/reports/19/output/" />
+                <title>
+                    Home &gt; HHDC Contracts &gt;
+                    <xsl:value-of
+                        select="/source/rate-script/hhdc-contract/@name" />
+                    &gt; Rate Script
+                    <xsl:value-of select="/source/rate-script/@id" />
+                </title>
+            </head>
+            <body>
+                <p>
+                    <a
+                        href="{/source/request/@context-path}/reports/1/output/">
+                        <xsl:value-of select="'Home'" />
+                    </a>
+                    &gt;
+                    <a
+                        href="{/source/request/@context-path}/reports/113/output/">
+                        <xsl:value-of select="'HHDC Contracts'" />
+                    </a>
+                    &gt;
+                    <a
+                        href="{/source/request/@context-path}/reports/115/output/?hhdc-contract-id={/source/rate-script/hhdc-contract/@id}">
+                        <xsl:value-of
+                            select="/source/rate-script/hhdc-contract/@name" />
+                    </a>
+                    &gt; Rate Script
+                    <xsl:value-of
+                        select="concat(/source/rate-script/@id, ' [')" />
+                    <a
+                        href="{/source/request/@context-path}/hhdc-contracts/{/source/rate-script/hhdc-contract/@id}/rate-scripts/{/source/rate-script/@id}/">
+                        <xsl:value-of select="'edit'" />
+                    </a>
+                    <xsl:value-of select="']'" />
+                </p>
+                <br />
+                <xsl:if test="//message">
+                    <ul>
+                        <xsl:for-each select="//message">
+                            <li>
+                                <xsl:value-of select="@description" />
+                            </li>
+                        </xsl:for-each>
+                    </ul>
+                </xsl:if>
+                <table>
+                    <tr>
+                        <th>Chellow Id</th>
+                        <td>
+                            <xsl:value-of
+                                select="/source/rate-script/@id" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Start Date</th>
+                        <td>
+                            <xsl:value-of
+                                select="concat(/source/rate-script/hh-end-date[@label='start']/@year, '-', /source/rate-script/hh-end-date[@label='start']/@month, '-', /source/rate-script/hh-end-date[@label='start']/@day)" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Finish Date</th>
+                        <td>
+                            <xsl:choose>
+                                <xsl:when
+                                    test="/source/rate-script/hh-end-date[@label='finish']">
+                                    <xsl:value-of
+                                        select="concat(/source/rate-script/hh-end-date[@label='finish']/@year, '-', /source/rate-script/hh-end-date[@label='finish']/@month, '-', /source/rate-script/hh-end-date[@label='finish']/@day)" />
+                                </xsl:when>
+                                <xsl:otherwise>Ongoing</xsl:otherwise>
+                            </xsl:choose>
+                        </td>
+                    </tr>
+                </table>
+
+                <h2>Script</h2>
+
+                <pre>
+                    <xsl:value-of select="/source/rate-script/@script" />
+                </pre>
             </body>
         </html>
     </xsl:template>

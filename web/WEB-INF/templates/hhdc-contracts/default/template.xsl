@@ -273,6 +273,9 @@
 					<li>
 						<a href="channel-snags/">Channel Snags</a>
 					</li>
+					<li>
+						<a href="rate-scripts/">Rate Scripts</a>
+					</li>
 					<xsl:if
 						test="/source/hhdc-contract/@has-automatic-hh-data-importer='true'">
 						<li>
