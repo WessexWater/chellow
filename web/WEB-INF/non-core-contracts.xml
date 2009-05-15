@@ -1,33 +1,35 @@
 <?xml version="1.0"?>
 <csv>
-  <line>
-    <value>action</value>
-    <value>type</value>
-  </line>
-  <line>
-    <value><![CDATA[insert]]></value>
-    <value><![CDATA[non-core-contract]]></value>
-    <value><![CDATA[POOL]]></value>
-    <value><![CDATA[ccl]]></value>
-    <value><![CDATA[2008-02-27T00:30Z]]></value>
-    <value><![CDATA[]]></value>
-    <value><![CDATA[def ccl_gbp(hh_value, date):
+    <line>
+        <value><![CDATA[Action]]></value>
+        <value><![CDATA[Type]]></value>
+    </line>
+    <line>
+        <value><![CDATA[insert]]></value>
+        <value><![CDATA[non-core-contract]]></value>
+        <value><![CDATA[POOL]]></value>
+
+        <value><![CDATA[ccl]]></value>
+        <value><![CDATA[2008-02-27T00:30Z]]></value>
+        <value><![CDATA[]]></value>
+        <value><![CDATA[def ccl_gbp(hh_value, date):
     return hh_value * contract.rateScript(date).getRate('ccl_rate')]]></value>
-    <value><![CDATA[def ccl_rate():
+        <value><![CDATA[def ccl_rate():
     return 0.004560]]></value>
-  </line>
-  <line>
-    <value><![CDATA[insert]]></value>
-    <value><![CDATA[non-core-contract]]></value>
-    <value><![CDATA[POOL]]></value>
-    <value><![CDATA[TRIAD]]></value>
-    <value><![CDATA[2005-01-01T00:30Z]]></value>
-    <value><![CDATA[]]></value>
-    <value><![CDATA[from net.sf.chellow.billing import BillElement
+    </line>
+    <line>
+        <value><![CDATA[insert]]></value>
+        <value><![CDATA[non-core-contract]]></value>
+
+        <value><![CDATA[POOL]]></value>
+        <value><![CDATA[TRIAD]]></value>
+        <value><![CDATA[2005-01-01T00:30Z]]></value>
+        <value><![CDATA[]]></value>
+        <value><![CDATA[from net.sf.chellow.billing import VirtualBill, NonCoreContract
 from net.sf.chellow.physical import HhEndDate
 
 def totalElement(account, startDate, finishDate):
-    totalElement = BillElement("total", 103, "Dso cost")
+    totalElement = VirtualBill("total", 103, "Dso cost")
     return totalElement
 
 def triad_dates(date):
@@ -66,10 +68,51 @@ def supplyElement(supply, start_date, finish_date, is_import):
     supply_element = BillElement("supply total", total_cost, "Sum of triad elements")
     for triad_element in triad_elements:
         supply_element.addSubElement(triad_element)
-    return supply_element]]></value>
-    <value><![CDATA[from net.sf.chellow.physical import HhEndDate
+    return supply_element
+
+def triad(dso_contract, triad_kws, date, voltage_level, is_substation):
+    result = {}
+    calc = dso_contract.callFunction('calculator', [voltage_level, is_substation])
+    dates = NonCoreContract.getNonCoreContract('TRIAD').callFunction('triad_dates', [date])
+    total_gsp_kw = 0
+    for i in range(3):
+        if calc is None:
+            llf = None
+            gsp_kw = None
+        else:
+            llf = calc.llf(dates[i])
+            if triad_kws[i] is None:
+                gsp_kw = None
+            else:
+                gsp_kw = triad_kws[i] * llf
+                total_gsp_kw = total_gsp_kw + gsp_kw               
+        result['t' + str(i + 1) + '-msp-kw'] = triad_kws[i]
+        result['t' + str(i + 1) + '-llf'] = llf
+        result['t' + str(i + 1) + '-gsp-kw'] = gsp_kw
+    if calc is None:
+        total_gsp_kw = None
+        total_gbp = None
+    else:
+        total_gsp_kw = total_gsp_kw / 3
+        rate_script = calc.find_rate_script(date)
+        total_gbp = total_gsp_kw * rate_script.getRate('triad')
+    result['total-gsp-kw'] = total_gsp_kw
+    result['total-gbp'] = total_gbp
+    return result]]></value>
+        <value><![CDATA[from net.sf.chellow.physical import HhEndDate
 
 def triad_dates():
     return [HhEndDate("2007-11-26T17:30Z"), HhEndDate("2007-12-17T17:30Z"), HhEndDate("2008-01-03T17:30Z")]]]></value>
-  </line>
+    </line>
+    <line>
+        <value><![CDATA[insert]]></value>
+
+        <value><![CDATA[non-core-contract-rate-script]]></value>
+        <value><![CDATA[TRIAD]]></value>
+        <value><![CDATA[2008-04-03T00:30Z]]></value>
+        <value><![CDATA[from net.sf.chellow.physical import HhEndDate
+
+def triad_dates():
+    return [HhEndDate("2008-12-01T17:30Z"), HhEndDate("2008-12-15T17:30Z"), HhEndDate("2009-01-06T17:30Z")]]]></value>
+    </line>
 </csv>

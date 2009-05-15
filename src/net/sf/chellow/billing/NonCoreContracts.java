@@ -21,16 +21,11 @@
 
 package net.sf.chellow.billing;
 
-import java.io.IOException;
-import java.io.PrintWriter;
 import java.util.Date;
 import java.util.List;
 
-import javax.servlet.http.HttpServletResponse;
-
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
-import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Invocation;
 import net.sf.chellow.monad.MonadUtils;
 import net.sf.chellow.monad.NotFoundException;
@@ -41,8 +36,7 @@ import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
 import net.sf.chellow.physical.EntityList;
 import net.sf.chellow.physical.HhEndDate;
-import net.sf.chellow.ui.GeneralImport;
-import org.hibernate.ScrollableResults;
+
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -112,66 +106,7 @@ public class NonCoreContracts extends EntityList {
 
 	@SuppressWarnings("unchecked")
 	public void httpGet(Invocation inv) throws HttpException {
-		if (inv.hasParameter("view")) {
-			inv.getResponse().setStatus(HttpServletResponse.SC_OK);
-			inv.getResponse().setContentType("text/plain");
-			inv.getResponse().setHeader("Content-Disposition",
-					"filename=non-core-contracts.xml;");
-			PrintWriter pw = null;
-			try {
-				pw = inv.getResponse().getWriter();
-			} catch (IOException e) {
-				throw new InternalException(e);
-			}
-			pw.println("<?xml version=\"1.0\"?>");
-			pw.println("<csv>");
-			pw.println("  <line>");
-			pw.println("    <value>action</value>");
-			pw.println("    <value>type</value>");
-			pw.println("  </line>");
-			pw.flush();
-			for (NonCoreContract contract : (List<NonCoreContract>) Hiber
-					.session()
-					.createQuery(
-							"from NonCoreContract contract order by contract.name")
-					.list()) {
-				HhEndDate finishDate = contract.getFinishRateScript()
-						.getFinishDate();
-				GeneralImport
-						.printXmlLine(pw,
-								new String[] {
-										"insert",
-										"non-core-contract",
-										contract.getParty().getParticipant()
-												.getCode(),
-										contract.getName(),
-										contract.getStartRateScript()
-												.getStartDate().toString(),
-										finishDate == null ? "" : finishDate
-												.toString(),
-										contract.getChargeScript(),
-										contract.getStartRateScript()
-												.getScript() });
-				ScrollableResults scripts = Hiber
-						.session()
-						.createQuery(
-								"from RateScript script where script.contract = :contract order by script.startDate.date")
-						.setEntity("contract", contract).scroll();
-				scripts.next();
-				while (scripts.next()) {
-					RateScript script = (RateScript) scripts.get(0);
-					GeneralImport.printXmlLine(pw, new String[] { "insert",
-							"non-core-contract-rate-script",
-							contract.getName(),
-							script.getStartDate().toString(),
-							script.getScript() });
-				}
-			}
-			pw.println("</csv>");
-			pw.close();
-		} else {
-			inv.sendOk(document());
-		}
+		inv.sendOk(document());
 	}
 
 	public NonCoreContract getChild(UriPathElement uriId) throws HttpException {

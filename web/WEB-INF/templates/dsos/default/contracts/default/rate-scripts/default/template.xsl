@@ -143,6 +143,7 @@
 									</option>
 								</xsl:for-each>
 							</select>
+							<xsl:value-of select="' 00:30 Z'"/>
 						</fieldset>
 						<br />
 						<fieldset>
@@ -270,6 +271,7 @@
 									</option>
 								</xsl:for-each>
 							</select>
+							<xsl:value-of select="' 00:00 Z'"/>
 						</fieldset>
 						<br />
 						<br />

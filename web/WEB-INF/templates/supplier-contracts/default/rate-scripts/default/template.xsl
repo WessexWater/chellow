@@ -158,6 +158,7 @@
 										</xsl:for-each>
 									</select>
 								</fieldset>
+								<xsl:value-of select="concat(/source/rate-script/hh-end-date[@label='start']/@hour, ':', /source/rate-script/hh-end-date[@label='start']/@minute, ' Z')"/>
 								<br />
 								<fieldset>
 									<legend>Finish date</legend>
@@ -288,6 +289,7 @@
 										</xsl:for-each>
 									</select>
 								</fieldset>
+								<xsl:value-of select="concat(/source/rate-script/hh-end-date[@label='finish']/@hour, ':', /source/rate-script/hh-end-date[@label='finish']/@minute, ' Z')"/>
 								<br />
 								<br />
 								Script

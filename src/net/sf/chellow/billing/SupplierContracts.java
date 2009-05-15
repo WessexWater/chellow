@@ -75,7 +75,7 @@ public class SupplierContracts extends EntityList {
 		}
 		Provider provider = Provider.getProvider(providerId);
 		SupplierContract contract = SupplierContract.insertSupplierContract(
-				provider, name, HhEndDate.roundDown(startDate), null, "", "");
+				provider, name, HhEndDate.roundDown(startDate).getNext(), null, "", "");
 		Hiber.commit();
 		inv.sendCreated(document(), contract.getUri());
 	}

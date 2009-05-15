@@ -77,7 +77,7 @@ public class HhdcContracts extends EntityList {
 		}
 		Provider provider = Provider.getProvider(providerId);
 		HhdcContract contract = HhdcContract.insertHhdcContract(provider, name,
-				HhEndDate.roundDown(startDate), null, "",
+				HhEndDate.roundDown(startDate).getNext(), null, "",
 				frequency, lag, importerProperties, "");
 		Hiber.commit();
 		inv.sendCreated(document(), contract.getUri());

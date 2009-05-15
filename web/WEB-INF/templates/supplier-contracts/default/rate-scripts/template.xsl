@@ -188,6 +188,7 @@
 										</xsl:for-each>
 									</select>
 								</fieldset>
+								<xsl:value-of select="' 00:30 Z'"/>
 								<br />
 								Script
 								<br />

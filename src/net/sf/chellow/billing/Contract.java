@@ -340,7 +340,7 @@ public abstract class Contract extends PersistentEntity implements
 				&& startDate.getDate().after(
 						rateScript.getFinishDate().getDate())) {
 			throw new UserException(
-					"The start date is after the last rate script.");
+					"For the contract " + getId() + " called "+ getName() + ", the start date " + startDate + " is after the last rate script.");
 		}
 		HhEndDate finishDate = rateScript.getStartDate().getPrevious();
 		for (int i = 0; i < rateScripts.size(); i++) {

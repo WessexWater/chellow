@@ -34,7 +34,6 @@ import java.util.Set;
 import net.sf.chellow.billing.Account;
 import net.sf.chellow.billing.HhdcContract;
 import net.sf.chellow.billing.SupplierContract;
-import net.sf.chellow.monad.Debug;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.InternalException;
@@ -258,8 +257,6 @@ public class Site extends PersistentEntity {
 			List<Double> importFromGen = map.get("import-from-gen");
 			List<Double> exportToGen = map.get("export-to-gen");
 
-			// Debug.print("Got to vague midpoint. "
-			// + (System.currentTimeMillis() - now));
 			HhEndDate resolve1From = null;
 			HhEndDate resolve1To = null;
 			HhEndDate snag1From = null;
@@ -273,35 +270,23 @@ public class Site extends PersistentEntity {
 			HhEndDate hhEndDate = group.getFrom();
 			while (!hhEndDate.getDate().after(group.getTo().getDate())) {
 				if (exportToNet.get(i) > importFromGen.get(i)) {
-					Debug.print("For site " + getId() + " exp to net "
-							+ exportToNet.get(i) + " > " + importFromGen.get(i)
-							+ " " + hhEndDate);
 					if (snag1From == null) {
 						snag1From = hhEndDate;
 					}
 					snag1To = hhEndDate;
 				} else {
-					Debug.print("For site " + getId() + " exp to net "
-							+ exportToNet.get(i) + " <= "
-							+ importFromGen.get(i) + " " + hhEndDate);
 					if (resolve1From == null) {
 						resolve1From = hhEndDate;
 					}
 					resolve1To = hhEndDate;
 				}
 				if (snag1To != null && (snag1To.equals(previousEndDate))) {
-					Debug.print("For site " + getId()
-							+ " exp to net (adding snag) " + snag1From + " to "
-							+ snag1To);
 					group.addSiteSnag(SiteGroup.EXPORT_NET_GT_IMPORT_GEN,
 							snag1From, snag1To);
 					snag1From = null;
 					snag1To = null;
 				}
 				if (resolve1To != null && resolve1To.equals(previousEndDate)) {
-					Debug.print("For site " + getId()
-							+ " exp to net (deleting snag) " + resolve1From
-							+ " to " + resolve1To);
 					group.deleteHhdcSnag(SiteGroup.EXPORT_NET_GT_IMPORT_GEN,
 							resolve1From, resolve1To);
 					resolve1From = null;
@@ -336,16 +321,10 @@ public class Site extends PersistentEntity {
 				hhEndDate = hhEndDate.getNext();
 			}
 			if (snag1To != null) {
-				Debug.print("For site " + getId()
-						+ " exp to net (adding snag end) " + snag1From + " to "
-						+ snag1To);
 				group.addSiteSnag(SiteGroup.EXPORT_NET_GT_IMPORT_GEN,
 						snag1From, snag1To);
 			}
 			if (resolve1To != null) {
-				Debug.print("For site " + getId()
-						+ " exp to net (deleting snag end) " + resolve1From
-						+ " to " + resolve1To);
 				group.deleteHhdcSnag(SiteGroup.EXPORT_NET_GT_IMPORT_GEN,
 						resolve1From, resolve1To);
 			}

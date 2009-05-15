@@ -4023,31 +4023,30 @@ snags_element.setAttribute("site-count", str(sites))
     <value>insert</value>
     <value>report</value>
     <value>41</value>
-    <value>0 CSV TRIAD Data Quality</value>
-    <value><![CDATA[from net.sf.chellow.monad import Hiber
+    <value>0 CSV TRIAD</value>
+    <value><![CDATA[from net.sf.chellow.monad import Hiber, UserException
 from net.sf.chellow.monad.types import MonadDate
 from net.sf.chellow.physical import HhEndDate, SupplyGeneration
 from java.util import Calendar
 from net.sf.chellow.billing import NonCoreContract
 
-def triad_csv(query, triad_dates, is_import, dso_contract, voltage_level, is_substation):
+def triad_csv(triad_contract, query, triad_dates, is_import, dso_contract, voltage_level, is_substation, year_finish):
     ret = ''
-    msp_kw = 0
     triad_values = []
+    triad_statuses = []
     for triad_date in triad_dates:
         datum = query.setTimestamp('triadDate', triad_date.getDate()).setBoolean('isImport', is_import).uniqueResult()
         if datum is None:
-            ret = ret + 'No data, No data,'
-            triad_values.append(0)
+            triad_values.append(None)
+            triad_statuses.append(None)
         else:
-            datum_msp_kw = datum.getValue().doubleValue() * 2
-            msp_kw = msp_kw + datum_msp_kw
-            ret = ret + str(round(datum_msp_kw, 2)) + ',' + str(datum.getStatus()) + ','
-            triad_values.append(datum_msp_kw)
-    msp_kw = msp_kw / 3
-    triad_gsp = dso_contract.callFunction('triad_gsp', [triad_values, triad_dates[0], voltage_level, is_substation])
-    ret = ret + str(round(triad_gsp, 2)) + ','
-    return ret[:-1]
+            triad_values.append(datum.getValue().doubleValue() * 2)
+            triad_statuses.append(datum.getStatus())
+    t_dict = triad_contract.callFunction('triad', [dso_contract, triad_values, triad_dates[0], voltage_level, is_substation])
+    for i in range(1,4):
+        ret = ret + str(t_dict['t' + str(i) + '-msp-kw']) + ',' + str(triad_statuses[i - 1]) + ',' + str(t_dict['t' + str(i) + '-llf']) + ',' + str(t_dict['t' + str(i) + '-gsp-kw']) + ','
+    ret = ret + str(t_dict['total-gsp-kw']) + ',' + str(t_dict['total-gbp'])
+    return ret
 
 inv.getResponse().setContentType("text/csv")
 inv.getResponse().setHeader('Content-Disposition', 'filename=output.csv;')
@@ -4059,26 +4058,27 @@ cal = MonadDate.getCalendar()
 cal.clear()
 cal.set(Calendar.YEAR, year)
 cal.set(Calendar.MONTH, Calendar.APRIL)
-year_finish = cal.getTime()
+year_finish = HhEndDate(cal.getTime())
 cal.add(Calendar.YEAR, -1)
 cal.add(Calendar.MINUTE, 30)
-year_start = cal.getTime()
+year_start = HhEndDate(cal.getTime())
 
 triad_query = Hiber.session().createQuery("select datum from HhDatum datum where datum.channel.supplyGeneration.supply = :supply and datum.channel.isKwh is true and datum.channel.isImport is :isImport and datum.endDate.date = :triadDate")
 
 triad_contract = NonCoreContract.getNonCoreContract('TRIAD')
-triad_dates = triad_contract.callFunction('triad_dates', [HhEndDate(year_start)])
-pw.println(',,Import,,,,,,,,,Export')
-pw.println(',,,' + triad_dates[0].toString() + ',,' + triad_dates[1].toString() + ',,' + triad_dates[2].toString() + ',,,,,' + triad_dates[0].toString() + ',,' + triad_dates[1].toString() + ',,' + triad_dates[2].toString())
-pw.println("Supply Id, Source, MPAN Core, kW, Status, kW, Status, kW, Status, GSP kW, GBP, MPAN Core, kW, Status, kW, Status, kW, Status, GSP kW, GBP")
+triad_dates = triad_contract.callFunction('triad_dates', [year_finish])
+pw.println(',,Import,,,,,,,,,,,,,,,Export')
+pw.println(',,,' + triad_dates[0].toString() + ',,,,' + triad_dates[1].toString() + ',,,,' + triad_dates[2].toString() + ',,,,Total,,,' + triad_dates[0].toString() + ',,,,' + triad_dates[1].toString() + ',,,,' + triad_dates[2].toString() + ',,,,Total')
+pw.println("Supply Id, Source, MPAN Core, MSP kW, Status, LLF, GSP kW, MSP kW, Status, LLF, GSP kW, MSP kW, Status, LLF, GSP kW, GSP kW, GBP, MPAN Core, MSP kW, Status, LLF, GSP kW, MSP kW, Status, LLF, GSP kW, MSP kW, Status, LLF, GSP kW, GSP kW, GBP")
 pw.flush()
-
-supplies = Hiber.session().createQuery("select distinct generation.supply from SupplyGeneration generation where generation.startDate.date <= :yearFinish and (generation.finishDate.date is null or generation.finishDate.date >= :yearStart) and generation.supply.source.code != 'sub'").setTimestamp('yearStart', year_start).setTimestamp('yearFinish', year_finish).scroll()
+supplies = Hiber.session().createQuery("select distinct generation.supply, generation.supply.id from SupplyGeneration generation where generation.startDate.date <= :yearFinish and (generation.finishDate.date is null or generation.finishDate.date >= :yearStart) and generation.supply.source.code != 'sub' order by generation.supply.id").setTimestamp('yearStart', year_start.getDate()).setTimestamp('yearFinish', year_finish.getDate()).scroll()
+#supplies.last()
+#supplies.previous()
 while supplies.next():
     supply = supplies.get(0)
     triad_query.setEntity('supply', supply)
 
-    first_generation = supply.getGenerations(HhEndDate(year_start), HhEndDate(year_finish)).get(0)
+    first_generation = supply.getGenerations(year_start, year_finish).get(0)
     
     import_mpan = first_generation.getImportMpan()
     if import_mpan is None:
@@ -4095,7 +4095,7 @@ while supplies.next():
     voltage_level = an_llfc.getVoltageLevel().getCode()
     is_substation = an_llfc.getIsSubstation()
     dso_contract = dso.findContract('main')
-    pw.println(str(supply.getId()) + "," + supply.getSource().getCode() + "," + import_mpan_str + "," + triad_csv(triad_query, triad_dates, True, dso_contract, voltage_level, is_substation) + "," + export_mpan_str + "," + triad_csv(triad_query, triad_dates, False, dso_contract, voltage_level, is_substation))
+    pw.println(str(supply.getId()) + "," + supply.getSource().getCode() + "," + import_mpan_str + "," + triad_csv(triad_contract, triad_query, triad_dates, True, dso_contract, voltage_level, is_substation, year_finish) + "," + export_mpan_str + "," + triad_csv(triad_contract, triad_query, triad_dates, False, dso_contract, voltage_level, is_substation, year_finish))
     pw.flush()
     Hiber().session().clear()
 supplies.close()
@@ -5378,7 +5378,7 @@ contracts_element.appendChild(dso.toXml(doc))]]></value>
         <html>
             <head>
                 <link rel="stylesheet" type="text/css"
-                    href="{/source/request/@context-path}/reports/10/output/" />
+                    href="{/source/request/@context-path}/reports/19/output/" />
                 <title>
                     Home &gt; DSOs &gt;
                     <xsl:value-of select="/source/dso-contract/dso/@code" />
@@ -5394,12 +5394,12 @@ contracts_element.appendChild(dso.toXml(doc))]]></value>
                     </a>
                     &gt;
                     <a
-                        href="{/source/request/@context-path}/reports/69/output/">
+                        href="{/source/request/@context-path}/reports/137/output/">
                         <xsl:value-of select="'DSOs'" />
                     </a>
                     &gt;
                     <a
-                        href="{/source/request/@context-path}/reports/70/output/?dso-id={/source/dso-contracts/dso/@id}">
+                        href="{/source/request/@context-path}/reports/139/output/?dso-id={/source/dso-contracts/dso/@id}">
                         <xsl:value-of
                             select="/source/dso-contracts/dso/@code" />
                     </a>
@@ -5430,7 +5430,7 @@ contracts_element.appendChild(dso.toXml(doc))]]></value>
                             <tr>
                                 <td>
                                     <a
-                                        href="{/source/request/@context-path}/reports/34/output/?dso-contract-id={@id}">
+                                        href="{/source/request/@context-path}/reports/67/output/?dso-contract-id={@id}">
                                         <xsl:value-of select="@id" />
                                     </a>
                                 </td>
@@ -5486,7 +5486,7 @@ for rate_script in contract.getRateScripts():
         <html>
             <head>
                 <link rel="stylesheet" type="text/css"
-                    href="{/source/request/@context-path}/reports/10/output/" />
+                    href="{/source/request/@context-path}/reports/19/output/" />
                 <title>
                     Home &gt; DSOs &gt;
                     <xsl:value-of
@@ -5503,22 +5503,27 @@ for rate_script in contract.getRateScripts():
                     </a>
                     &gt;
                     <a
-                        href="{/source/request/@context-path}/reports/69/output/">
+                        href="{/source/request/@context-path}/reports/137/output/">
                         <xsl:value-of select="'DSOs'" />
                     </a>
                     &gt;
                     <a
-                        href="{/source/request/@context-path}/reports/70/output/?dso-id={/source/dso-contract/dso/@id}">
+                        href="{/source/request/@context-path}/reports/139/output/?dso-id={/source/dso-contract/dso/@id}">
                         <xsl:value-of
                             select="/source/dso-contract/dso/@code" />
                     </a>
                     &gt;
                     <a
-                        href="{/source/request/@context-path}/reports/33/output/?dso-id={/source/dso-contract/dso/@id}">
+                        href="{/source/request/@context-path}/reports/65/output/?dso-id={/source/dso-contract/dso/@id}">
                         <xsl:value-of select="'Contracts'" />
                     </a>
                     &gt;
-                    <xsl:value-of select="/source/dso-contract/@name" />
+                    <xsl:value-of select="concat(/source/dso-contract/@name, ' [')" />
+                    <a
+                        href="{/source/request/@context-path}/dsos/{/source/dso-contract/dso/@id}/contracts/{/source/dso-contract/@id}/">
+                        <xsl:value-of select="'edit'" />
+                    </a>
+                    <xsl:value-of select="']'" />
                 </p>
                 <br />
                 <xsl:if test="//message">
@@ -5581,7 +5586,7 @@ for rate_script in contract.getRateScripts():
                 <h2>Script</h2>
                 <pre>
                     <xsl:value-of
-                        select="/source/dso-contract/rate-script/@script" />
+                        select="/source/dso-contract/@charge-script" />
                 </pre>
 
                 <h2>Rate Scripts</h2>
@@ -5600,7 +5605,7 @@ for rate_script in contract.getRateScripts():
                             <tr>
                                 <td>
                                     <a
-                                        href="{/source/request/@context-path}/reports/35/output/?dso-rate-script-id={@id}">
+                                        href="{/source/request/@context-path}/reports/69/output/?dso-rate-script-id={@id}">
                                         <xsl:value-of select="@id" />
                                     </a>
                                 </td>
@@ -5650,7 +5655,7 @@ source.appendChild(script.toXml(doc, XmlTree('contract', XmlTree('party'))))]]><
         <html>
             <head>
                 <link rel="stylesheet" type="text/css"
-                    href="{/source/request/@context-path}/reports/10/output/" />
+                    href="{/source/request/@context-path}/reports/19/output/" />
                 <title>
                     Home &gt; DSOs &gt;
                     <xsl:value-of
@@ -5670,28 +5675,33 @@ source.appendChild(script.toXml(doc, XmlTree('contract', XmlTree('party'))))]]><
                     </a>
                     &gt;
                     <a
-                        href="{/source/request/@context-path}/reports/69/output/">
+                        href="{/source/request/@context-path}/reports/137/output/">
                         <xsl:value-of select="'DSOs'" />
                     </a>
                     &gt;
                     <a
-                        href="{/source/request/@context-path}/reports/70/output/?dso-id={/source/rate-script/dso-contract/dso/@id}">
+                        href="{/source/request/@context-path}/reports/139/output/?dso-id={/source/rate-script/dso-contract/dso/@id}">
                         <xsl:value-of
                             select="/source/rate-script/dso-contract/dso/@code" />
                     </a>
                     &gt;
                     <a
-                        href="{/source/request/@context-path}/reports/33/output/?dso-id={/source/rate-script/dso-contract/dso/@id}">
+                        href="{/source/request/@context-path}/reports/65/output/?dso-id={/source/rate-script/dso-contract/dso/@id}">
                         <xsl:value-of select="'Contracts'" />
                     </a>
                     &gt;
                     <a
-                        href="{/source/request/@context-path}/reports/34/output/?dso-contract-id={/source/rate-script/dso-contract/@id}">
+                        href="{/source/request/@context-path}/reports/67/output/?dso-contract-id={/source/rate-script/dso-contract/@id}">
                         <xsl:value-of
                             select="/source/rate-script/dso-contract/@name" />
                     </a>
                     &gt; Rate Script
-                    <xsl:value-of select="/source/rate-script/@id" />
+                    <xsl:value-of select="concat(/source/rate-script/@id, ' [')" />
+                    <a
+                        href="{/source/request/@context-path}/dsos/{/source/rate-script/dso-contract/dso/@id}/contracts/{/source/rate-script/dso-contract/@id}/rate-scripts/{/source/rate-script/@id}/">
+                        <xsl:value-of select="'edit'" />
+                    </a>
+                    <xsl:value-of select="']'" />
                 </p>
                 <br />
                 <xsl:if test="//message">
@@ -10400,7 +10410,7 @@ source.appendChild(type.toXml(doc))]]></value>
     <value>insert</value>
     <value>report</value>
     <value>145</value>
-    <value>0 CSV 1 Year, All sites, HH data</value>
+    <value>0 Free</value>
     <value><![CDATA[from net.sf.chellow.monad import Hiber
 from java.util import Calendar, GregorianCalendar, TimeZone, Locale
 from java.text import DateFormat
@@ -10705,7 +10715,7 @@ while contracts.next():
     print_line(pw, ['insert', 'dso-contract', contract.getParty().getCode(), contract_name, start_rate_script.getStartDate(), rate_scripts[len(rate_scripts) - 1].getFinishDate(), contract.getChargeScript(), start_rate_script.getScript()])
     for i in range(1, len(rate_scripts)):
         rate_script = rate_scripts[i]
-        print_line(pw, ['insert', 'dso-contract-rate-script', contract.getParty().getCode(), contract.getName(), rate_script.getStartDate(), rate_script.getFinishDate(), rate_script.getScript()])
+        print_line(pw, ['insert', 'dso-contract-rate-script', contract.getParty().getCode(), contract.getName(), rate_script.getStartDate(), rate_script.getScript()])
 Hiber.session().clear()
 contracts.close()
 pw.println('</csv>')
@@ -10760,7 +10770,11 @@ pw.close()]]></value>
                             href="{/source/request/@context-path}/reports/151/output/">DSO Contract Export
                         </a>
                     </li>
-                                        <li>
+<li>
+                        <a
+                            href="{/source/request/@context-path}/reports/177/output/">Non-core Contract Export</a>
+                    </li>
+                    <li>
                         <a
                             href="{/source/request/@context-path}/configuration/">
                             Configuration
@@ -11675,7 +11689,7 @@ pw.close()]]></value>
     <value>insert</value>
     <value>report</value>
     <value>171</value>
-    <value>0 Admin System</value>
+    <value>0 Admin: System</value>
     <value><![CDATA[from java.text import DecimalFormat
 from java.lang import Runtime, System, Thread
 from java.io import StringWriter, InputStreamReader
@@ -11912,5 +11926,132 @@ source.appendChild(script.toXml(doc, XmlTree('contract', XmlTree('party'))))]]><
         </html>
     </xsl:template>
 </xsl:stylesheet>]]></value>
+  </line>
+  <line>
+    <value>insert</value>
+    <value>report</value>
+    <value>175</value>
+    <value>0 CSV TRIAD Selector</value>
+    <value><![CDATA[from java.util import GregorianCalendar, TimeZone, Locale, Calendar
+from net.sf.chellow.monad.types import MonadDate
+
+cal = GregorianCalendar(TimeZone.getTimeZone("GMT"), Locale.UK)
+cal.add(Calendar.MONTH, -1)
+years_element = doc.createElement('years')
+source.appendChild(years_element)
+for year in range(10):
+    year_element = doc.createElement('year')
+    years_element.appendChild(year_element)
+    year_element.setAttribute('last-year', str(cal.get(Calendar.YEAR) - 1))
+    year_element.setAttribute('year', str(cal.get(Calendar.YEAR)))
+    cal.add(Calendar.YEAR, -1)]]></value>
+    <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
+<xsl:stylesheet version="1.0"
+    xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+    <xsl:output method="xml" encoding="US-ASCII"
+        doctype-public="-//W3C//DTD XHTML 1.1//EN"
+        doctype-system="http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd"
+        indent="yes" />
+    <xsl:template match="/">
+        <html>
+            <head>
+                <link rel="stylesheet" type="text/css"
+                    href="{/source/request/@context-path}/style/" />
+
+                <title>Chellow &gt; CSV TRIAD</title>
+            </head>
+            <body>
+                <p>
+                    <a
+                        href="{/source/request/@context-path}/reports/1/output/">
+                        <xsl:value-of select="'Home'" />
+                    </a>
+                    &gt;
+                    <xsl:value-of select="'CSV TRIAD'" />
+                </p>
+                  <xsl:if test="//message">
+                    <ul>
+                        <xsl:for-each select="//message">
+                            <li>
+                                <xsl:value-of select="@description" />
+                            </li>
+                        </xsl:for-each>
+                    </ul>
+                </xsl:if>
+                <form action="{/source/request/@context-path}/reports/41/output/">
+                    <fieldset>
+                        <legend>Download TRIAD CSV</legend>
+                        <br/>
+                        <xsl:value-of select="'For '"/>
+                        <select name="year">
+                            <xsl:for-each select="/source/years/year">
+                                <option value="{@year}">
+                                    <xsl:value-of select="concat(@last-year, ' / ', @year)"/>
+                                </option>
+                            </xsl:for-each>
+                        </select>
+<xsl:value-of select="' '"/>
+                        <input type="submit" value="Download"/>
+                        <input type="reset" value="Reset"/>
+                    </fieldset>
+                </form>
+            </body>
+        </html>
+    </xsl:template>
+</xsl:stylesheet>]]></value>
+  </line>
+  <line>
+    <value>insert</value>
+    <value>report</value>
+    <value>177</value>
+    <value>0 Admin: Non-core Contract Export</value>
+    <value><![CDATA[from net.sf.chellow.monad import Hiber, UserException, MonadUtils
+from net.sf.chellow.monad.types import UriPathElement
+from java.util import GregorianCalendar, TimeZone, Locale, Calendar
+from net.sf.chellow.physical import HhEndDate
+from java.text import DateFormat
+from java.io import OutputStreamWriter, PrintWriter
+from java.security import MessageDigest
+from com.Ostermiller.util import Base64
+import java.lang.String
+
+def print_line(pw, values):
+    pw.println('    <line>')
+    for value in values:
+        if value is None:
+            value = ''
+        else:
+            value = str(value)
+        pw.println('        <value>&lt;![CDATA[' + value + ']]&gt;</value>')
+    pw.println('    </line>')
+
+inv.getResponse().setContentType('text/xml')
+inv.getResponse().setHeader('Content-Disposition', 'attachment; filename=output.xml;')
+pw = inv.getResponse().getWriter()
+
+pw.println('<?xml version="1.0"?>')
+pw.flush()
+pw.println('<csv>')
+print_line(pw, ['Action', 'Type'])
+
+
+# DSO Contracts
+
+contracts = Hiber.session().createQuery("from NonCoreContract contract order by contract.name").scroll()
+while contracts.next():
+    contract = contracts.get(0)
+    contract_name = contract.getName()
+    rate_scripts = Hiber.session().createQuery("from RateScript script where script.contract = :contract order by script.startDate.date").setEntity('contract', contract).list()
+    start_rate_script = rate_scripts[0]
+    print_line(pw, ['insert', 'non-core-contract', contract.getParty().getParticipant().getCode(), contract_name, start_rate_script.getStartDate(), rate_scripts[len(rate_scripts) - 1].getFinishDate(), contract.getChargeScript(), start_rate_script.getScript()])
+    for i in range(1, len(rate_scripts)):
+        rate_script = rate_scripts[i]
+        print_line(pw, ['insert', 'non-core-contract-rate-script', contract_name, rate_script.getStartDate(), rate_script.getScript()])
+Hiber.session().clear()
+contracts.close()
+pw.println('</csv>')
+pw.flush()
+pw.close()]]></value>
+    <value><![CDATA[]]></value>
   </line>
 </csv>

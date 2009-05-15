@@ -1,3 +1,7 @@
+* Now shows hour and minute for the start and finish of rate scripts for HHDC, Supplier and DSO contract.
+
+* Fixed various incorrect links in DSO area in view world.
+
 * Raw HH datum values used to be rounded to 2 sig figs, now arbitrary precision.
 
 * Fixed importing bug in BGlobal importer where lines ending in ',' failed.
