@@ -611,7 +611,7 @@ public class Site extends PersistentEntity {
 					}
 				}
 				Supply supply = insertSupply(source, generatorType, name,
-						new HhEndDate(startDate), null, meterSerialNumber,
+						new HhEndDate(startDate).getNext(), null, meterSerialNumber,
 						importMpanStr, importSsc, importGspGroup,
 						importHhdcAccount, importSupplierAccount,
 						importHhdcAccount == null ? false : true,

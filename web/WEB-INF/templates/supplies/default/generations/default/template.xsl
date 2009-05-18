@@ -424,7 +424,7 @@
 													</xsl:attribute>
 												</xsl:when>
 												<xsl:when
-													test="/source/request/@method='get' and /source/supply-generation/mpan[llfc/@is-import='true']">
+													test="/source/supply-generation/mpan[llfc/@is-import='true']">
 													<xsl:attribute
 														name="checked">
 														<xsl:value-of
@@ -635,7 +635,7 @@
 													</xsl:attribute>
 												</xsl:when>
 												<xsl:when
-													test="/source/request/@method='get' and /source/supply-generation/mpan[llfc/@is-import='true']/@has-import-kwh='true'">
+													test="/source/supply-generation/mpan[llfc/@is-import='true']/@has-import-kwh='true'">
 													<xsl:attribute
 														name="checked">
 														<xsl:value-of
@@ -660,7 +660,7 @@
 													</xsl:attribute>
 												</xsl:when>
 												<xsl:when
-													test="/source/request/@method='get' and /source/supply-generation/mpan[llfc/@is-import='true']/@has-import-kvarh='true'">
+													test="/source/supply-generation/mpan[llfc/@is-import='true']/@has-import-kvarh='true'">
 													<xsl:attribute
 														name="checked">
 														<xsl:value-of
@@ -685,7 +685,7 @@
 													</xsl:attribute>
 												</xsl:when>
 												<xsl:when
-													test="/source/request/@method='get' and /source/supply-generation/mpan[llfc/@is-import='true']/@has-export-kwh='true'">
+													test="/source/supply-generation/mpan[llfc/@is-import='true']/@has-export-kwh='true'">
 													<xsl:attribute
 														name="checked">
 														<xsl:value-of
@@ -711,7 +711,7 @@
 													</xsl:attribute>
 												</xsl:when>
 												<xsl:when
-													test="/source/request/@method='get' and /source/supply-generation/mpan[llfc/@is-import='true']/@has-export-kvarh='true'">
+													test="/source/supply-generation/mpan[llfc/@is-import='true']/@has-export-kvarh='true'">
 													<xsl:attribute
 														name="checked">
 														<xsl:value-of
@@ -1071,7 +1071,7 @@
 													</xsl:attribute>
 												</xsl:when>
 												<xsl:when
-													test="/source/request/@method='get' and /source/supply-generation/mpan[llfc/@is-import='false']">
+													test="/source/supply-generation/mpan[llfc/@is-import='false']">
 													<xsl:attribute
 														name="checked">
 														<xsl:value-of
@@ -1281,7 +1281,7 @@
 													</xsl:attribute>
 												</xsl:when>
 												<xsl:when
-													test="/source/request/@method='get' and /source/supply-generation/mpan[llfc/@is-import='false']/@has-import-kwh='true'">
+													test="/source/supply-generation/mpan[llfc/@is-import='false']/@has-import-kwh='true'">
 													<xsl:attribute
 														name="checked">
 														<xsl:value-of
@@ -1306,7 +1306,7 @@
 													</xsl:attribute>
 												</xsl:when>
 												<xsl:when
-													test="/source/request/@method='get' and /source/supply-generation/mpan[llfc/@is-import='false']/@has-import-kvarh='true'">
+													test="/source/supply-generation/mpan[llfc/@is-import='false']/@has-import-kvarh='true'">
 													<xsl:attribute
 														name="checked">
 														<xsl:value-of
@@ -1332,7 +1332,7 @@
 													</xsl:attribute>
 												</xsl:when>
 												<xsl:when
-													test="/source/request/@method='get' and /source/supply-generation/mpan[llfc/@is-import='false']/@has-export-kwh='true'">
+													test="/source/supply-generation/mpan[llfc/@is-import='false']/@has-export-kwh='true'">
 													<xsl:attribute
 														name="checked">
 														<xsl:value-of
@@ -1358,7 +1358,7 @@
 													</xsl:attribute>
 												</xsl:when>
 												<xsl:when
-													test="/source/request/@method='get' and /source/supply-generation/mpan[llfc/@is-import='false']/@has-export-kvarh='true'">
+													test="/source/supply-generation/mpan[llfc/@is-import='false']/@has-export-kvarh='true'">
 													<xsl:attribute
 														name="checked">
 														<xsl:value-of

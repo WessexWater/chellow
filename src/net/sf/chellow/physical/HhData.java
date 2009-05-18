@@ -65,7 +65,7 @@ public class HhData extends EntityList {
 	}
 
 	public MonadUri getUri() throws HttpException {
-		return channel.getUri().resolve(getUriId());
+		return channel.getUri().resolve(getUriId()).append("/");
 	}
 
 	@SuppressWarnings("unchecked")
@@ -152,8 +152,8 @@ public class HhData extends EntityList {
 				Calendar cal = MonadDate.getCalendar();
 				cal.setTime(deleteFrom);
 				cal.add(Calendar.DAY_OF_MONTH, days);
-				HhEndDate to = new HhEndDate(cal.getTime()).getPrevious();
-				channel.deleteData(new HhEndDate(deleteFrom).getNext(), to);
+				channel.deleteData(new HhEndDate(deleteFrom).getNext(),
+						new HhEndDate(cal.getTime()));
 				Hiber.commit();
 			} catch (HttpException e) {
 				e.setDocument(doc(inv));
@@ -175,20 +175,21 @@ public class HhData extends EntityList {
 			if (Hiber
 					.session()
 					.createQuery(
-							"from HhDatum datum where datum.channel = :channel and datum.endDate.date = :endDate").setEntity("channel", channel).setTimestamp("endDate", hhEndDate.getDate())
-					.uniqueResult() != null) {
+							"from HhDatum datum where datum.channel = :channel and datum.endDate.date = :endDate")
+					.setEntity("channel", channel).setTimestamp("endDate",
+							hhEndDate.getDate()).uniqueResult() != null) {
 				throw new UserException(doc(inv),
 						"There's already an HH datum with this time.");
 			}
 			List<HhDatumRaw> data = new ArrayList<HhDatumRaw>();
 			data.add(new HhDatumRaw(channel.getSupplyGeneration().getMpans()
 					.iterator().next().getCore().toString(), channel
-					.getIsImport(), channel.getIsKwh(), hhEndDate,
-					value, status));
+					.getIsImport(), channel.getIsKwh(), hhEndDate, value,
+					status));
 			HhDatum.insert(data.iterator(), Arrays
 					.asList(new Boolean[] { Boolean.FALSE }));
+			inv.sendOk(doc(inv));
 		}
-		inv.sendOk(doc(inv));
 	}
 
 	public HhDatum getChild(UriPathElement uriId) throws HttpException {

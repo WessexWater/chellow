@@ -81,7 +81,7 @@
 						<td>Start Date</td>
 						<td>
 							<xsl:value-of
-								select="concat(/source/hh-data/channel/supply-generation/hh-end-date[@label='start']/@year, '-', /source/hh-data/channel/supply-generation/hh-end-date[@label='start']/@month, '-', /source/hh-data/channel/supply-generation/hh-end-date[@label='start']/@day, ' ', /source/hh-data/channel/supply-generation/hh-end-date[@label='start']/@hour, ':', /source/hh-data/channel/supply-generation/hh-end-date[@label='start']/@minute)" />
+								select="concat(/source/hh-data/channel/supply-generation/hh-end-date[@label='start']/@year, '-', /source/hh-data/channel/supply-generation/hh-end-date[@label='start']/@month, '-', /source/hh-data/channel/supply-generation/hh-end-date[@label='start']/@day, ' ', /source/hh-data/channel/supply-generation/hh-end-date[@label='start']/@hour, ':', /source/hh-data/channel/supply-generation/hh-end-date[@label='start']/@minute, ' Z')" />
 						</td>
 					</tr>
 					<tr>
@@ -91,7 +91,7 @@
 								<xsl:when
 									test="/source/hh-data/channel/supply-generation/hh-end-date[@label='finish']">
 									<xsl:value-of
-										select="concat(/source/hh-data/channel/supply-generation/hh-end-date[@label='finish']/@year, '-', /source/hh-data/channel/supply-generation/hh-end-date[@label='finish']/@month, '-', /source/hh-data/channel/supply-generation/hh-end-date[@label='finish']/@day, ' ', /source/hh-data/channel/supply-generation/hh-end-date[@label='finish']/@hour, ':', /source/hh-data/channel/supply-generation/hh-end-date[@label='finish']/@minute)" />
+										select="concat(/source/hh-data/channel/supply-generation/hh-end-date[@label='finish']/@year, '-', /source/hh-data/channel/supply-generation/hh-end-date[@label='finish']/@month, '-', /source/hh-data/channel/supply-generation/hh-end-date[@label='finish']/@day, ' ', /source/hh-data/channel/supply-generation/hh-end-date[@label='finish']/@hour, ':', /source/hh-data/channel/supply-generation/hh-end-date[@label='finish']/@minute, ' Z')" />
 								</xsl:when>
 								<xsl:otherwise>Ongoing</xsl:otherwise>
 							</xsl:choose>
@@ -344,6 +344,7 @@
 											</option>
 										</xsl:for-each>
 									</select>
+									<xsl:value-of select="' 00:30 Z'" />
 								</fieldset>
 								<br />
 								<label>
@@ -519,7 +520,7 @@
 								<xsl:value-of select="'30'" />
 							</option>
 						</select>
-						<xsl:value-of select="' Z'"/>
+						<xsl:value-of select="' Z'" />
 						<br />
 						<br />
 						<label>

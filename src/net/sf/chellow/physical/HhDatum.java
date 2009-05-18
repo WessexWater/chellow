@@ -253,8 +253,8 @@ public class HhDatum extends PersistentEntity {
 		if (inv.hasParameter("delete")) {
 			try {
 				channel.deleteData(endDate, endDate);
-				inv.sendFound(channel.getUri());
 				Hiber.commit();
+				inv.sendSeeOther(channel.getHhDataInstance().getUri());
 			} catch (HttpException e) {
 				e.setDocument(document(null));
 				throw e;

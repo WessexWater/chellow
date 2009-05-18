@@ -55,7 +55,7 @@ public class Channels extends EntityList {
 	}
 
 	public MonadUri getUri() throws HttpException {
-		return generation.getUri().resolve(getUriId());
+		return generation.getUri().resolve(getUriId()).append("/");
 	}
 
 	@SuppressWarnings("unchecked")

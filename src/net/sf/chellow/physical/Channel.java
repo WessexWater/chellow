@@ -403,7 +403,7 @@ public class Channel extends PersistentEntity {
 
 	public MonadUri getUri() throws HttpException {
 		return supplyGeneration.getChannelsInstance().getUri().resolve(
-				getUriId());
+				getUriId()).append("/");
 	}
 
 	public String toString() {

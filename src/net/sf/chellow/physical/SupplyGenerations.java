@@ -76,7 +76,7 @@ public class SupplyGenerations extends EntityList {
 			throw new UserException(document());
 		}
 		SupplyGeneration supplyGeneration = supply.insertGeneration(HhEndDate
-				.roundDown(startDate));
+				.roundDown(startDate).getNext());
 		Hiber.commit();
 		inv.sendCreated(document(), supplyGeneration.getUri());
 	}

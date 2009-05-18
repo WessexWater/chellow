@@ -1467,7 +1467,7 @@ public class SupplyGeneration extends PersistentEntity {
 						meter = supply.insertMeter(meterSerialNumber);
 					}
 				}
-				update(new HhEndDate(startDate), finishDate == null ? null
+				update(new HhEndDate(startDate).getNext(), finishDate == null ? null
 						: new HhEndDate(finishDate), meter);
 				Hiber.commit();
 				inv.sendOk(document());

@@ -1,3 +1,7 @@
+* Supply generations now start from the HH ending 00:30.
+
+* Bug id 2780333 deleting a day of HH data now doesn't miss out the last half-hour.
+
 * Now shows hour and minute for the start and finish of rate scripts for HHDC, Supplier and DSO contract.
 
 * Fixed various incorrect links in DSO area in view world.

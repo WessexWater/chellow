@@ -709,6 +709,14 @@ public class Supply extends PersistentEntity {
 			throw new UserException(
 					"The only way to delete the last generation is to delete the entire supply.");
 		}
+		if (((Long) Hiber
+				.session()
+				.createQuery(
+						"select count(*) from HhDatum datum where datum.channel.supplyGeneration = :generation")
+				.setEntity("generation", generation).uniqueResult()) > 0) {
+			throw new UserException(
+					"One can't delete a supply generation if there are still data attached to it.");
+		}
 		SupplyGeneration previousGeneration = getGenerationPrevious(generation);
 		SupplyGeneration nextGeneration = getGenerationNext(generation);
 		getGenerations().remove(generation);

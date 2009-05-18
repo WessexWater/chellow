@@ -195,6 +195,7 @@
 										</option>
 									</xsl:for-each>
 								</select>
+								<xsl:value-of select="' 00:30 Z'" />
 								<br />
 								<br />
 								<input type="submit" value="Add" />

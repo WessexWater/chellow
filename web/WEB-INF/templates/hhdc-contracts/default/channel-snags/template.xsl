@@ -84,10 +84,10 @@
 									<xsl:choose>
 										<xsl:when
 											test="channel/@is-import='true'">
-											import
+											<xsl:value-of select="'import'"/>
 										</xsl:when>
 										<xsl:otherwise>
-											export
+											<xsl:value-of select="'export'"/>
 										</xsl:otherwise>
 									</xsl:choose>
 								</td>
@@ -95,10 +95,10 @@
 									<xsl:choose>
 										<xsl:when
 											test="channel/@is-kwh='true'">
-											kWh
+											<xsl:value-of select="'kWh'"/>
 										</xsl:when>
 										<xsl:otherwise>
-											kVArh
+											<xsl:value-of select="'kVArh'"/>
 										</xsl:otherwise>
 									</xsl:choose>
 								</td>
