@@ -10858,7 +10858,7 @@ def print_line(pw, values):
             value = ''
         else:
             value = str(value)
-        pw.println('        <value>&lt;![CDATA[' + value + ']]&gt;</value>')
+        pw.println('        <value><' + '![CDATA[' + value + ']]' + '></value>')
     pw.println('    </line>')
 
 
@@ -10868,11 +10868,12 @@ sout = inv.getResponse().getOutputStream()
 zout = ZipOutputStream(sout)
 pw = PrintWriter(OutputStreamWriter(zout, 'UTF-8'))
 zout.putNextEntry(ZipEntry('out.xml'))
+
 #inv.getResponse().setContentType('text/xml')
 #inv.getResponse().setHeader('Content-Disposition', 'attachment; filename=output.xml;')
 #pw = inv.getResponse().getWriter()
 
-pw.println('<?xml version="1.0"?>')
+pw.println('<' + '?xml version="1.0"?>')
 pw.flush()
 pw.println('<csv>')
 print_line(pw, ['Action', 'Type'])
@@ -10945,8 +10946,9 @@ contracts.close()
 
 # Supplies
 
-sc_lookup = {'net': ('net', ''), 'sub': ('sub', ''), 'chp-net': ('gen-net', 'chp'), 'chp': ('gen', 'chp'), 'lm': ('gen', 'lm'), 'turb': ('gen', 'turb')}
 supplies = Hiber.session().createQuery("from Supply supply order by supply.id").scroll()
+#supplies.last()
+#supplies.previous()
 while supplies.next():
     supply = supplies.get(0) 
     supplyGenerations = Hiber.session().createQuery('from SupplyGeneration generation where generation.supply = :supply order by generation.startDate.date').setEntity('supply', supply).list()
@@ -10954,27 +10956,37 @@ while supplies.next():
     last_generation = supplyGenerations[len(supplyGenerations) - 1]
     physical_site = Hiber.session().createQuery("select siteSupplyGeneration.site from SiteSupplyGeneration siteSupplyGeneration where siteSupplyGeneration.supplyGeneration = :supplyGeneration and siteSupplyGeneration.isPhysical is true").setEntity('supplyGeneration', last_generation).uniqueResult()
     site_code = physical_site.getCode()
-    sc_list = sc_lookup[supply.getSource().getCode()]
     supply_name = supply.getName()
     start_date = first_generation.getStartDate().toString()
+    finish_date = last_generation.getFinishDate()
+    if finish_date is None:
+        finish_date = ''
+    else:
+        finish_date = finish_date.toString()
     meter = last_generation.getMeter()
     if meter is None:
         meter_serial_number = ''
     else:
         meter_serial_number = meter.getSerialNumber()
-    values = ['insert', 'supply', site_code, sc_list[0], sc_list[1], supply_name, start_date, meter_serial_number]
-    values = values + mpan_fields(last_generation.getImportMpan())
-    values = values + mpan_fields(last_generation.getExportMpan())
+    source = supply.getSource().getCode()
+    generator_type = supply.getGeneratorType()
+    if generator_type is None:
+        generator_type = ''
+    else:
+        generator_type = generator_type.getCode()
+    values = ['insert', 'supply', site_code, source, generator_type, supply_name, start_date, finish_date, meter_serial_number]
+    values = values + mpan_fields(first_generation.getImportMpan())
+    values = values + mpan_fields(first_generation.getExportMpan())
     print_line(pw, values)
-    generations = Hiber.session().createQuery("from SupplyGeneration generation where generation.supply = :supply order by generation.startDate.date desc").setEntity('supply', supply).scroll()
+    generations = Hiber.session().createQuery("from SupplyGeneration generation where generation.supply = :supply order by generation.startDate.date").setEntity('supply', supply).scroll()
     generations.next()
     while generations.next():
         generation = generations.get(0)
         physical_site = Hiber.session().createQuery("select siteSupplyGeneration.site from SiteSupplyGeneration siteSupplyGeneration where siteSupplyGeneration.supplyGeneration = :supplyGeneration and siteSupplyGeneration.isPhysical is true").setEntity('supplyGeneration', last_generation).uniqueResult()
         site_code = physical_site.getCode()
-        finish_date = generation.getFinishDate()
+        start_date = generation.getStartDate()
         meter_serial_number = ''
-        values = ['insert', 'supply-generation', site_code, finish_date, meter_serial_number]
+        values = ['insert', 'supply-generation', site_code, start_date, meter_serial_number]
         values = values + mpan_fields(generation.getImportMpan())
         values = values + mpan_fields(generation.getExportMpan())
         print_line(pw, values)
@@ -10988,12 +11000,12 @@ while supplies.next():
             site_supply_generation = site_supply_generations.get(0)
             print_line(pw, ['insert', 'site-supply-generation', site_supply_generation.getSite().getCode(), generation.getMpans()[0].getCore(), start_date, 'false'])
         site_supply_generations.close()
-        query = "select datum.endDate, datum.value, datum.status from HhDatum datum where datum.channel = :channel and datum.endDate.date >= :startDate"
+        query = "select datum.endDate, datum.value, datum.status from HhDatum datum where datum.channel.supplyGeneration.supply = :supply and datum.channel.isImport = :isImport and datum.channel.isKwh = :isKwh and datum.endDate.date >= :startDate"
         if finish_date is None:
             hh_data_q = Hiber.session().createQuery(query + " order by datum.endDate.date").setTimestamp('startDate', start_date.getDate())
         else:
             hh_data_q = Hiber.session().createQuery(query + " and datum.endDate.date <= :finishDate  order by datum.endDate.date").setTimestamp('finishDate', finish_date.getDate())
-        hh_data_q.setTimestamp('startDate', start_date.getDate())
+        hh_data_q.setTimestamp('startDate', start_date.getDate()).setEntity('supply', supply)
         mpan_core_str = generation.getMpans()[0].getCore().toString()
         channels = Hiber.session().createQuery("from Channel channel where channel.supplyGeneration = :supplyGeneration").setEntity('supplyGeneration', generation).scroll()
         while channels.next():
@@ -11006,18 +11018,36 @@ while supplies.next():
                 is_kwh = 'true'
             else:
                 is_kwh = 'false'
-            hh_data_q.setEntity('channel', channel)
-
+            # start
+            hh_data_q.setBoolean('isImport', channel.getIsImport()).setBoolean('isKwh', channel.getIsKwh())
             hh_data = hh_data_q.scroll()
+            hh_str = ''
+            prev_end_date = None
+            count = 0
             while hh_data.next():
-                pw.println('    <line>')
+                end_date = hh_data.get(0)
+                if prev_end_date is None or not prev_end_date.getNext().getDate().equals(end_date.getDate()) or count > 1000:
+                    if prev_end_date is not None:
+                        pw.println('</value>')
+                        pw.println('    </line>')
+                    pw.println('    <line>')
+                    for value in ['insert', 'hh-datum', mpan_core_str, str(end_date), is_import, is_kwh]:
+                        pw.println('        <value>' + value + '</value>')
+                    pw.print('        <value>')
+                    count = 0
+                else:
+                    pw.print(',')
                 status = hh_data.get(2)
                 if status is None:
                     status = ''
-                for value in ['insert', 'hh-datum', mpan_core_str, str(hh_data.get(0)), is_import, is_kwh, str(round(hh_data.get(1), 1)), status]:
-                    pw.println('        <value>' + value + '</value>')
+                pw.print(str(hh_data.get(1)) + ',' + status)
+                prev_end_date = end_date
+                count = count + 1
+            if prev_end_date is not None:
+                pw.println('</value>')
                 pw.println('    </line>')
             hh_data.close()
+            # finish
         channels.close()
     generations.close()
     Hiber.session().clear()
