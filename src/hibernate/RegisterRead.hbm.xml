@@ -36,6 +36,10 @@
 		<many-to-one name="invoice"
 			class="net.sf.chellow.billing.Invoice" column="invoice_id"
 			not-null="true" foreign-key="fkey_invoice__register_read" />
+		<property name="coefficient" type="big_decimal"
+			not-null="true">
+			<column name="coefficient" sql-type="numeric" />
+		</property>
 		<many-to-one name="tpr" class="Tpr" column="tpr_id"
 			not-null="true" foreign-key="fkey_tpr__register_read" />
 		<component name="presentDate"
@@ -45,8 +49,10 @@
 					sql-type="timestamp with time zone" />
 			</property>
 		</component>
-		<property type="float" name="presentValue"
-			column="present_value" not-null="true" />
+		<property name="presentValue" type="big_decimal"
+			not-null="true">
+			<column name="present_value" sql-type="numeric" />
+		</property>
 		<many-to-one name="presentType" class="ReadType"
 			column="present_type_id" not-null="true"
 			foreign-key="fkey_present_type__register_read" />
@@ -57,8 +63,10 @@
 					sql-type="timestamp with time zone" />
 			</property>
 		</component>
-		<property type="float" name="previousValue"
-			column="previous_value" not-null="true" />
+		<property name="previousValue" type="big_decimal"
+			not-null="true">
+			<column name="previous_value" sql-type="numeric" />
+		</property>
 		<many-to-one name="previousType" class="ReadType"
 			column="previous_type_id" not-null="true"
 			foreign-key="fkey_previous_type__register_read" />

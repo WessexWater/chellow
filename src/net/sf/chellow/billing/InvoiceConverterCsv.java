@@ -23,6 +23,7 @@ package net.sf.chellow.billing;
 
 import java.io.IOException;
 import java.io.Reader;
+import java.math.BigDecimal;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -111,27 +112,26 @@ public class InvoiceConverterCsv implements InvoiceConverter {
 					Set<RegisterReadRaw> reads = new HashSet<RegisterReadRaw>();
 					for (int i = 9; i < values.length; i += 11) {
 						reads.add(new RegisterReadRaw(MpanCore
-								.getMpanCore(values[i]), Float
-								.parseFloat(values[i + 1]), values[i + 2],
-								Units.getUnits(values[i + 3]), Integer
-										.parseInt(values[i + 4]),
-								new DayFinishDate(values[i + 5]), Float
-										.parseFloat(values[i + 6]), ReadType
-										.getReadType(values[i + 7]),
-								new DayFinishDate(values[i + 8]), Float
-										.parseFloat(values[i + 9]), ReadType
+								.getMpanCore(values[i]), new BigDecimal(
+								values[i + 1]), values[i + 2], Units
+								.getUnits(values[i + 3]), Integer
+								.parseInt(values[i + 4]), new DayFinishDate(
+								values[i + 5]), new BigDecimal(values[i + 6]),
+								ReadType.getReadType(values[i + 7]),
+								new DayFinishDate(values[i + 8]),
+								new BigDecimal(values[i + 9]), ReadType
 										.getReadType(values[i + 10])));
 					}
 					Set<String> mpanStrings = new HashSet<String>();
-					for (String mpanStr: values[2].split(",")) {
-					mpanStrings.add(mpanStr);
+					for (String mpanStr : values[2].split(",")) {
+						mpanStrings.add(mpanStr);
 					}
 					rawBills.add(new InvoiceRaw(invoiceTypeMap.get(values[0]),
 							values[1], mpanStrings, values[3],
 							new DayStartDate(values[4]), new DayStartDate(
 									values[5]).getNext(), new DayFinishDate(
-									values[6]), Double.parseDouble(values[7]),
-							Double.parseDouble(values[8]), reads));
+									values[6]), new BigDecimal(values[7]),
+							new BigDecimal(values[8]), reads));
 				}
 				shredder.close();
 			} catch (NumberFormatException e) {

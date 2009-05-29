@@ -73,9 +73,9 @@
 													test="/source/request/parameter[@name='provider-id']/value = @id">
 													<xsl:attribute
 														name="selected">
-																<xsl:value-of
+														<xsl:value-of
 															select="'selected'" />
-															</xsl:attribute>
+													</xsl:attribute>
 												</xsl:if>
 												<xsl:value-of
 													select="concat(participant/@code, ' : ', @name)" />
@@ -83,6 +83,7 @@
 										</xsl:for-each>
 									</select>
 								</label>
+								<br />
 								<br />
 								<label>
 									<xsl:value-of select="'Name '" />
@@ -175,8 +176,8 @@
 											</option>
 										</xsl:for-each>
 									</select>
+									<xsl:value-of select="' 00:30 Z'" />
 								</fieldset>
-								<xsl:value-of select="' 00:30 Z'"/>
 								<br />
 								<br />
 								<input type="submit" value="Add" />

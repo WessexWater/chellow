@@ -73,7 +73,6 @@
 									<th>Chellow Id</th>
 									<th>Bill</th>
 									<th>Date Created</th>
-									<th>Date Resolved</th>
 									<th>Is Ignored?</th>
 									<th>Description</th>
 								</tr>
@@ -98,18 +97,6 @@
 										<td>
 											<xsl:value-of
 												select="concat(date[@label='created']/@year, '-', date[@label='created']/@month, '-', date[@label='created']/@day)" />
-										</td>
-										<td>
-											<xsl:choose>
-												<xsl:when
-													test="hh-end-date[@label='resolved']">
-													<xsl:value-of
-														select="concat(hh-end-date[@label='resolved']/@year, '-', hh-end-date[@label='resolved']/@month, '-', hh-end-date[@label='resolved']/@day)" />
-												</xsl:when>
-												<xsl:otherwise>
-													Unresolved
-												</xsl:otherwise>
-											</xsl:choose>
 										</td>
 										<td>
 											<xsl:choose>

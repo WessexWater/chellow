@@ -60,8 +60,7 @@ public class BillSnag extends Snag {
 	public BillSnag() {
 	}
 
-	public BillSnag(String description, Bill bill)
-			throws HttpException {
+	public BillSnag(String description, Bill bill) throws HttpException {
 		super(description);
 		this.bill = bill;
 	}
@@ -101,14 +100,13 @@ public class BillSnag extends Snag {
 	private Document document() throws HttpException {
 		Document doc = MonadUtils.newSourceDocument();
 		Element sourceElement = doc.getDocumentElement();
-		sourceElement.appendChild(toXml(doc, new XmlTree("contract",
-				new XmlTree("party")).put(
-				"bill", new XmlTree("account"))));
+		sourceElement.appendChild(toXml(doc, new XmlTree("bill", new XmlTree(
+				"account", new XmlTree("contract", new XmlTree("party"))))));
 		return doc;
 	}
 
 	public MonadUri getUri() throws HttpException {
-		return bill.getAccount().getContract().getSnagsAccountInstance().getUri().resolve(
-				getUriId()).append("/");
+		return bill.getAccount().getContract().getSnagsAccountInstance()
+				.getUri().resolve(getUriId()).append("/");
 	}
 }

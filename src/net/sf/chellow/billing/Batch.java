@@ -200,19 +200,22 @@ public class Batch extends PersistentEntity {
 		 */
 		Account account = getContract().getAccount(
 				rawInvoice.getAccountReference());
-		Set<String> accountMpanStrings = new HashSet<String>();
-		for (Mpan mpan : account.getMpans(invoice.getStartDate(), invoice
-				.getFinishDate())) {
-			accountMpanStrings.add(mpan.toString());
-		}
-		if (!Mpan.isEqual(accountMpanStrings, rawInvoice.getMpanStrings())) {
-			throw new UserException("Problem with account '" + reference
-					+ "' invoice '" + invoice.getReference()
-					+ "' from the half-hour ending " + invoice.getStartDate()
-					+ " to the half-hour ending " + invoice.getFinishDate()
-					+ ". This invoice has MPANs " + rawInvoice.getMpanStrings()
-					+ " but the account in Chellow has MPANs '"
-					+ accountMpanStrings + "'.");
+		if (!rawInvoice.getMpanStrings().isEmpty()) {
+			Set<String> accountMpanStrings = new HashSet<String>();
+			for (Mpan mpan : account.getMpans(invoice.getStartDate(), invoice
+					.getFinishDate())) {
+				accountMpanStrings.add(mpan.toString());
+			}
+			if (!Mpan.isEqual(accountMpanStrings, rawInvoice.getMpanStrings())) {
+				throw new UserException("Problem with account '" + reference
+						+ "' invoice '" + invoice.getReference()
+						+ "' from the half-hour ending "
+						+ invoice.getStartDate() + " to the half-hour ending "
+						+ invoice.getFinishDate() + ". This invoice has MPANs "
+						+ rawInvoice.getMpanStrings()
+						+ " but the account in Chellow has MPANs '"
+						+ accountMpanStrings + "'.");
+			}
 		}
 		Hiber.flush();
 		account.attach(invoice);

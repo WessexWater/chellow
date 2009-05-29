@@ -21,12 +21,11 @@
 
 package net.sf.chellow.billing;
 
+import java.math.BigDecimal;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
-import net.sf.chellow.monad.DeployerException;
-import net.sf.chellow.monad.DesignerException;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.InternalException;
@@ -37,7 +36,6 @@ import net.sf.chellow.monad.Urlable;
 import net.sf.chellow.monad.UserException;
 import net.sf.chellow.monad.XmlTree;
 import net.sf.chellow.monad.types.MonadDate;
-import net.sf.chellow.monad.types.MonadDouble;
 import net.sf.chellow.monad.types.MonadInteger;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
@@ -75,9 +73,9 @@ public class Invoice extends PersistentEntity implements Urlable {
 
 	private DayFinishDate finishDate;
 
-	private double net;
+	private BigDecimal net;
 
-	private double vat;
+	private BigDecimal vat;
 
 	private String reference;
 
@@ -153,19 +151,19 @@ public class Invoice extends PersistentEntity implements Urlable {
 		this.finishDate = finishDate;
 	}
 
-	public double getNet() {
+	public BigDecimal getNet() {
 		return net;
 	}
 
-	void setNet(double net) {
+	void setNet(BigDecimal net) {
 		this.net = net;
 	}
 
-	public double getVat() {
+	public BigDecimal getVat() {
 		return vat;
 	}
 
-	void setVat(double vat) {
+	void setVat(BigDecimal vat) {
 		this.vat = vat;
 	}
 
@@ -214,7 +212,7 @@ public class Invoice extends PersistentEntity implements Urlable {
 	}
 
 	private void internalUpdate(DayStartDate issueDate, DayStartDate startDate,
-			DayFinishDate finishDate, double net, double vat, int status)
+			DayFinishDate finishDate, BigDecimal net, BigDecimal vat, int status)
 			throws HttpException {
 		setIssueDate(issueDate);
 		if (startDate.getDate().after(finishDate.getDate())) {
@@ -233,8 +231,8 @@ public class Invoice extends PersistentEntity implements Urlable {
 	}
 
 	public void update(Account account, DayStartDate issueDate,
-			DayStartDate startDate, DayFinishDate finishDate, double net,
-			double vat, int status) throws HttpException {
+			DayStartDate startDate, DayFinishDate finishDate, BigDecimal net,
+			BigDecimal vat, int status) throws HttpException {
 		internalUpdate(issueDate, startDate, finishDate, net, vat, status);
 		bill.detach(this);
 		account.attach(this);
@@ -248,16 +246,15 @@ public class Invoice extends PersistentEntity implements Urlable {
 		element.appendChild(startDate.toXml(doc));
 		finishDate.setLabel("finish");
 		element.appendChild(finishDate.toXml(doc));
-		element.setAttributeNode(MonadDouble.toXml(doc, "net", net));
-		element.setAttributeNode(MonadDouble.toXml(doc, "vat", vat));
+		element.setAttribute("net", net.toString());
+		element.setAttribute("vat", vat.toString());
 		element.setAttribute("reference", reference);
 		// element.setAttribute("account-reference", accountReference);
 		element.setAttributeNode(MonadInteger.toXml(doc, "status", status));
 		return element;
 	}
 
-	public void httpPost(Invocation inv) throws InternalException,
-			HttpException, DesignerException, DeployerException {
+	public void httpPost(Invocation inv) throws HttpException {
 		if (inv.hasParameter("delete")) {
 			delete();
 			Hiber.commit();
@@ -267,8 +264,8 @@ public class Invoice extends PersistentEntity implements Urlable {
 			Date issueDate = inv.getDate("issue-date");
 			Date startDate = inv.getDate("start-date");
 			Date finishDate = inv.getDate("finish-date");
-			Double net = inv.getDouble("net");
-			Double vat = inv.getDouble("vat");
+			BigDecimal net = inv.getBigDecimal("net");
+			BigDecimal vat = inv.getBigDecimal("vat");
 			Integer status = inv.getInteger("status");
 			if (!inv.isValid()) {
 				throw new UserException(document());

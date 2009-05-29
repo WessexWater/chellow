@@ -54,7 +54,7 @@
 					<xsl:value-of
 						select="concat(/source/batch/@reference, ' [')" />
 					<a
-						href="{/source/request/@context-path}/reports/46/output/?batch-id={/source/batch/@id}">
+						href="{/source/request/@context-path}/reports/91/output/?batch-id={/source/batch/@id}">
 						<xsl:value-of select="'view'" />
 					</a>
 					<xsl:value-of select="']'" />

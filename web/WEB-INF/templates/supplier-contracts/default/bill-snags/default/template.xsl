@@ -40,20 +40,20 @@
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/supplier-contracts/{/source/bill-snag/supplier-contract/@id}/">
+						href="{/source/request/@context-path}/supplier-contracts/{/source/bill-snag/bill/account/supplier-contract/@id}/">
 						<xsl:value-of
-							select="/source/bill-snag/supplier-contract/@name" />
+							select="/source/bill-snag/bill/account/supplier-contract/@name" />
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/supplier-contracts/{/source/bill-snag/supplier-contract/@id}/bill-snags/">
+						href="{/source/request/@context-path}/supplier-contracts/{/source/bill-snag/bill/account/supplier-contract/@id}/bill-snags/">
 						<xsl:value-of select="'Bill Snags'" />
 					</a>
 					&gt;
 					<xsl:value-of
 						select="concat(/source/bill-snag/@id, ' [')" />
 					<a
-						href="{/source/request/@context-path}/reports/54/output/?snag-id={/source/bill-snag/@id}">
+						href="{/source/request/@context-path}/reports/107/output/?snag-id={/source/bill-snag/@id}">
 						<xsl:value-of select="'view'" />
 					</a>
 					<xsl:value-of select="']'" />
@@ -72,7 +72,7 @@
 						<th>Bill</th>
 						<td>
 							<a
-								href="{/source/request/@context-path}/supplier-contracts/{/source/bill-snag/supplier-contract/@id}/accounts/{/source/bill-snag/bill/account/@id}/bills/{/source/bill-snag/bill/@id}/">
+								href="{/source/request/@context-path}/supplier-contracts/{/source/bill-snag/bill/account/supplier-contract/@id}/accounts/{/source/bill-snag/bill/account/@id}/bills/{/source/bill-snag/bill/@id}/">
 								<xsl:value-of
 									select="/source/bill-snag/bill/@id" />
 							</a>
@@ -85,21 +85,6 @@
 								select="concat(/source/bill-snag/date[@label='created']/@year, '-', /source/bill-snag/date[@label='created']/@month, '-', /source/bill-snag/date[@label='created']/@day)" />
 						</td>
 
-					</tr>
-					<tr>
-						<th>Date Resolved</th>
-						<td>
-							<xsl:choose>
-								<xsl:when
-									test="/source/bill-snag/date[@label='resolved']">
-									<xsl:value-of
-										select="concat(/source/bill-snag/date[@label='resolved']/@year, '-', /source/bill-snag/date[@label='resolved']/@month, '-', /source/bill-snag/date[@label='resolved']/@day)" />
-								</xsl:when>
-								<xsl:otherwise>
-									Unresolved
-								</xsl:otherwise>
-							</xsl:choose>
-						</td>
 					</tr>
 					<tr>
 						<th>Is Ignored?</th>

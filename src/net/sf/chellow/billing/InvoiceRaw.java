@@ -21,6 +21,7 @@
 
 package net.sf.chellow.billing;
 
+import java.math.BigDecimal;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -42,22 +43,23 @@ public class InvoiceRaw extends MonadObject {
 
 	private DayFinishDate finishDate;
 
-	private double net;
+	private BigDecimal net;
 
-	private double vat;
+	private BigDecimal vat;
 
 	private String accountReference;
 
 	private String reference;
 
-	private Set<String> mpanStrings = new HashSet<String>();
+	private Set<String> mpanStrings;
 
 	private Set<RegisterReadRaw> reads = new HashSet<RegisterReadRaw>();
 
-	public InvoiceRaw(InvoiceType type, String accountReference, Set<String> mpanStrings,
-			String reference, DayStartDate issueDate, DayStartDate startDate,
-			DayFinishDate finishDate, double net, double vat,
-			Set<RegisterReadRaw> registerReads) throws HttpException {
+	public InvoiceRaw(InvoiceType type, String accountReference,
+			Set<String> mpanStrings, String reference, DayStartDate issueDate,
+			DayStartDate startDate, DayFinishDate finishDate, BigDecimal net,
+			BigDecimal vat, Set<RegisterReadRaw> registerReads)
+			throws HttpException {
 		this.type = type;
 		if (issueDate == null) {
 			throw new InternalException("The issue date can't be null.");
@@ -74,24 +76,25 @@ public class InvoiceRaw extends MonadObject {
 		this.net = net;
 		this.vat = vat;
 		if (reference == null) {
-			throw new UserException("The invoiceText parameter is required.");
+			throw new InternalException(
+					"The invoiceText parameter is required.");
 		}
 		this.reference = reference;
 		if (accountReference == null) {
-			throw new UserException("The accountReference parameter is required.");
+			throw new UserException(
+					"The accountReference parameter is required.");
 		}
 		this.accountReference = accountReference;
 		/*
-		for (String mpanStr : mpanText.split(",")) {
-			try {
-				mpans.add(new MpanRaw(mpanStr));
-			} catch (HttpException e) {
-				throw new UserException("While parsing the MPAN string '"
-						+ mpanText + "' I encountered difficulties with '"
-						+ mpanStr + "'. " + e.getMessage());
-			}
+		 * for (String mpanStr : mpanText.split(",")) { try { mpans.add(new
+		 * MpanRaw(mpanStr)); } catch (HttpException e) { throw new
+		 * UserException("While parsing the MPAN string '" + mpanText + "' I
+		 * encountered difficulties with '" + mpanStr + "'. " + e.getMessage()); } }
+		 */
+		if (mpanStrings == null) {
+			throw new InternalException(
+					"The mpanStrings parameter must not be null.");
 		}
-		*/
 		this.mpanStrings = mpanStrings;
 		if (registerReads != null) {
 			this.reads = registerReads;
@@ -118,11 +121,11 @@ public class InvoiceRaw extends MonadObject {
 		return finishDate;
 	}
 
-	public double getNet() {
+	public BigDecimal getNet() {
 		return net;
 	}
 
-	public double getVat() {
+	public BigDecimal getVat() {
 		return vat;
 	}
 
@@ -147,15 +150,16 @@ public class InvoiceRaw extends MonadObject {
 		element.appendChild(startDate.toXml(doc));
 		finishDate.setLabel("finish");
 		element.appendChild(finishDate.toXml(doc));
-		element.setAttribute("net", Double.toString(net));
-		element.setAttribute("vat", Double.toString(vat));
+		element.setAttribute("net", net.toString());
+		element.setAttribute("vat", vat.toString());
 		element.setAttribute("account-reference", accountReference);
 		StringBuilder mpans = new StringBuilder();
 		for (String mpan : mpanStrings) {
 			mpans.append(mpan + ", ");
 		}
 		if (mpans.length() > 0) {
-			element.setAttribute("mpans", mpans.substring(0, mpans.length() - 2));
+			element.setAttribute("mpans", mpans
+					.substring(0, mpans.length() - 2));
 		} else {
 			element.setAttribute("mpans", mpans.toString());
 		}

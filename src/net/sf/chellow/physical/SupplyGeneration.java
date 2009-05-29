@@ -908,7 +908,7 @@ public class SupplyGeneration extends PersistentEntity {
 		Hiber.flush();
 		HhdcContract hhdcContract = getHhdcContract();
 		if (originalHhdcContract != null
-				&& !originalHhdcContract.equals(hhdcContract)) {
+				&& !originalHhdcContract.equals(hhdcContract) && hhdcContract != null) {
 			ScrollableResults channelSnags = Hiber
 					.session()
 					.createQuery(
@@ -977,13 +977,6 @@ public class SupplyGeneration extends PersistentEntity {
 		this.meter = meter;
 	}
 
-	/*
-	 * public Account getHhdcAccount(boolean isImport, boolean isKwh) throws
-	 * HttpException { Account account = null; if (importMpan != null) { account =
-	 * importMpan.getHhdcAccount(isImport, isKwh); } if (account == null &&
-	 * exportMpan != null) { account = exportMpan.getHhdcAccount(isImport,
-	 * isKwh); } return account; }
-	 */
 	public HhdcContract getHhdcContract() throws HttpException {
 		for (Mpan mpan : getMpans()) {
 			if (mpan.getHhdcAccount() != null) {
@@ -1366,23 +1359,24 @@ public class SupplyGeneration extends PersistentEntity {
 							|| importHasExportKwh || importHasExportKvarh) {
 						String importHhdcContractName = inv
 								.getString("import-hhdc-contract-name");
+						importHhdcContractName = importHhdcContractName.trim();
 						if (importHhdcContractName.length() != 0) {
 							importHhdcContract = HhdcContract
 									.getHhdcContract(importHhdcContractName);
 							String importHhdcAccountReference = inv
 									.getString("import-hhdc-account-reference");
 							importHhdcAccount = importHhdcContract
-									.getAccount(importHhdcAccountReference);
+									.getAccount(importHhdcAccountReference.trim());
 						}
 					}
 					String importSupplierContractName = inv
 							.getString("import-supplier-contract-name");
 					importSupplierContract = SupplierContract
-							.getSupplierContract(importSupplierContractName);
+							.getSupplierContract(importSupplierContractName.trim());
 					String importSupplierAccountReference = inv
 							.getString("import-supplier-account-reference");
 					importSupplierAccount = importSupplierContract
-							.getAccount(importSupplierAccountReference);
+							.getAccount(importSupplierAccountReference.trim());
 				}
 				String exportMpanStr = null;
 				Ssc exportSsc = null;
@@ -1432,23 +1426,24 @@ public class SupplyGeneration extends PersistentEntity {
 							|| exportHasExportKwh || exportHasExportKvarh) {
 						String exportHhdcContractName = inv
 								.getString("export-hhdc-contract-name");
+						exportHhdcContractName.trim();
 						if (exportHhdcContractName.length() != 0) {
 							exportHhdcContract = HhdcContract
 									.getHhdcContract(exportHhdcContractName);
 							String exportHhdcAccountReference = inv
 									.getString("export-hhdc-account-reference");
 							exportHhdcAccount = exportHhdcContract
-									.getAccount(exportHhdcAccountReference);
+									.getAccount(exportHhdcAccountReference.trim());
 						}
 					}
 					String exportSupplierContractName = inv
 							.getString("export-supplier-contract-name");
 					exportSupplierContract = SupplierContract
-							.getSupplierContract(exportSupplierContractName);
+							.getSupplierContract(exportSupplierContractName.trim());
 					String exportSupplierAccountReference = inv
 							.getString("export-supplier-account-reference");
 					exportSupplierAccount = exportSupplierContract
-							.getAccount(exportSupplierAccountReference);
+							.getAccount(exportSupplierAccountReference.trim());
 				}
 				addOrUpdateMpans(importMpanStr, importSsc, importGspGroup,
 						importHhdcAccount, importSupplierAccount,

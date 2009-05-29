@@ -566,10 +566,12 @@ public class Site extends PersistentEntity {
 						importSsc = Ssc.getSsc(importSscCode);
 					}
 					importGspGroup = GspGroup.getGspGroup(importGspGroupId);
+					if (importHhdcContractName.trim().length() > 0) {
 					importHhdcContract = HhdcContract
 							.getHhdcContract(importHhdcContractName);
 					importHhdcAccount = importHhdcContract
-							.getAccount(importHhdcAccountReference);
+					.getAccount(importHhdcAccountReference);
+					}
 					importSupplierContract = SupplierContract
 							.getSupplierContract(importSupplierContractName);
 					importSupplierAccount = importSupplierContract
@@ -589,14 +591,17 @@ public class Site extends PersistentEntity {
 				Account exportSupplierAccount = null;
 				Integer exportAgreedSupplyCapacity = null;
 				if (exportMpanStr.trim().length() > 0) {
+					HhdcContract exportHhdcContract = null;
 					if (exportSscCode.trim().length() > 0) {
 						exportSsc = Ssc.getSsc(exportSscCode);
 					}
 					exportGspGroup = GspGroup.getGspGroup(exportGspGroupId);
-					HhdcContract exportHhdcContract = HhdcContract
+					if (exportHhdcContractName.trim().length() > 0) {
+					exportHhdcContract = HhdcContract
 							.getHhdcContract(exportHhdcContractName);
 					exportHhdcAccount = exportHhdcContract
 							.getAccount(exportHhdcAccountReference);
+					}
 					SupplierContract exportSupplierContract = SupplierContract
 							.getSupplierContract(exportSupplierContractName);
 					exportSupplierAccount = exportSupplierContract

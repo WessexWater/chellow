@@ -20,6 +20,8 @@
  *******************************************************************************/
 package net.sf.chellow.physical;
 
+import java.math.BigDecimal;
+
 import net.sf.chellow.billing.DayFinishDate;
 import net.sf.chellow.billing.Invoice;
 import net.sf.chellow.monad.Hiber;
@@ -44,7 +46,7 @@ public class RegisterRead extends PersistentEntity {
 
 	private Invoice invoice;
 
-	private float coefficient;
+	private BigDecimal coefficient;
 
 	private Units units;
 
@@ -52,13 +54,13 @@ public class RegisterRead extends PersistentEntity {
 
 	private DayFinishDate previousDate;
 
-	private float previousValue;
+	private BigDecimal previousValue;
 
 	private ReadType previousType;
 
 	private DayFinishDate presentDate;
 
-	private float presentValue;
+	private BigDecimal presentValue;
 
 	private ReadType presentType;
 
@@ -119,11 +121,11 @@ public class RegisterRead extends PersistentEntity {
 		this.invoice = invoice;
 	}
 
-	float getCoefficient() {
+	BigDecimal getCoefficient() {
 		return coefficient;
 	}
 
-	void setCoefficient(float coefficient) {
+	void setCoefficient(BigDecimal coefficient) {
 		this.coefficient = coefficient;
 	}
 
@@ -151,11 +153,11 @@ public class RegisterRead extends PersistentEntity {
 		this.previousDate = previousDate;
 	}
 
-	float getPreviousValue() {
+	BigDecimal getPreviousValue() {
 		return previousValue;
 	}
 
-	void setPreviousValue(float previousValue) {
+	void setPreviousValue(BigDecimal previousValue) {
 		this.previousValue = previousValue;
 	}
 
@@ -175,11 +177,11 @@ public class RegisterRead extends PersistentEntity {
 		this.presentDate = presentDate;
 	}
 
-	public float getpresentValue() {
+	public BigDecimal getpresentValue() {
 		return presentValue;
 	}
 
-	void setpresentValue(float presentValue) {
+	void setpresentValue(BigDecimal presentValue) {
 		this.presentValue = presentValue;
 	}
 
@@ -238,16 +240,16 @@ public class RegisterRead extends PersistentEntity {
 
 	public Node toXml(Document doc) throws HttpException {
 		Element element = super.toXml(doc, "register-read");
-		element.setAttribute("coefficient", Float.toString(coefficient));
+		element.setAttribute("coefficient", coefficient.toString());
 		element.setAttribute("units", units.toString());
 		previousDate.setLabel("previous");
 		element.appendChild(previousDate.toXml(doc));
-		element.setAttribute("previous-value", Float.toString(previousValue));
+		element.setAttribute("previous-value", previousValue.toString());
 		previousType.setLabel("previous");
 		element.appendChild(previousType.toXml(doc));
 		presentDate.setLabel("present");
 		element.appendChild(presentDate.toXml(doc));
-		element.setAttribute("present-value", Float.toString(presentValue));
+		element.setAttribute("present-value", presentValue.toString());
 		presentType.setLabel("present");
 		element.appendChild(presentType.toXml(doc));
 		return element;

@@ -21,6 +21,7 @@
 
 package net.sf.chellow.billing;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -64,9 +65,9 @@ public class Bill extends PersistentEntity {
 
 	// private boolean isFinishFuzzy;
 
-	private double net; // Excluding rejected invoices
+	private BigDecimal net; // Excluding rejected invoices
 
-	private double vat; // Excluding rejected invoices
+	private BigDecimal vat; // Excluding rejected invoices
 
 	private Set<Invoice> invoices;
 
@@ -147,8 +148,8 @@ public class Bill extends PersistentEntity {
 		HhEndDate oldFinishDate = getFinishDate();
 		DayFinishDate finishDate = null;
 		// boolean isFinishFuzzy = false;
-		double net = 0;
-		double vat = 0;
+		BigDecimal net = new BigDecimal(0);
+		BigDecimal vat = new BigDecimal(0);
 		for (Invoice invoice : invoices) {
 			if (startDate == null
 					|| invoice.getStartDate().getDate().before(
@@ -166,8 +167,8 @@ public class Bill extends PersistentEntity {
 				// isFinishFuzzy = true;
 				// }
 			}
-			net += invoice.getNet();
-			vat += invoice.getVat();
+			net = net.add(invoice.getNet());
+			vat = vat.add(invoice.getVat());
 		}
 		setStartDate(startDate);
 		// setIsStartFuzzy(isStartFuzzy);
@@ -223,19 +224,19 @@ public class Bill extends PersistentEntity {
 	 * protected void setIsFinishFuzzy(boolean isFinishFuzzy) {
 	 * this.isFinishFuzzy = isFinishFuzzy; }
 	 */
-	public double getNet() {
+	public BigDecimal getNet() {
 		return net;
 	}
 
-	void setNet(double net) {
+	void setNet(BigDecimal net) {
 		this.net = net;
 	}
 
-	public double getVat() {
+	public BigDecimal getVat() {
 		return vat;
 	}
 
-	void setVat(double vat) {
+	void setVat(BigDecimal vat) {
 		this.vat = vat;
 	}
 
@@ -245,8 +246,8 @@ public class Bill extends PersistentEntity {
 		element.appendChild(startDate.toXml(doc));
 		finishDate.setLabel("finish");
 		element.appendChild(finishDate.toXml(doc));
-		element.setAttribute("net", Double.toString(net));
-		element.setAttribute("vat", Double.toString(vat));
+		element.setAttribute("net", net.toString());
+		element.setAttribute("vat", vat.toString());
 		return element;
 	}
 
@@ -309,7 +310,7 @@ public class Bill extends PersistentEntity {
 						"from Invoice invoice where invoice.bill = :bill and invoice.status <> :rejected")
 				.setEntity("bill", this).setInteger("rejected",
 						Invoice.REJECTED).list()) {
-			nonRejectedCost += invoice.getNet() + invoice.getVat();
+			nonRejectedCost += invoice.getNet().doubleValue() + invoice.getVat().doubleValue();
 		}
 		return nonRejectedCost;
 	}

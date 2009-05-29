@@ -64,7 +64,8 @@ public class InvoiceImport extends Thread implements Urlable, XmlDescriber {
 		CONVERTERS = new HashMap<String, Class<? extends InvoiceConverter>>();
 		CONVERTERS.put("mm", InvoiceConverterMm.class);
 		CONVERTERS.put("csv", InvoiceConverterCsv.class);
-		CONVERTERS.put("edi", InvoiceConverterEdi.class);
+		CONVERTERS.put("bgb.edi", InvoiceConverterBgbEdi.class);
+		CONVERTERS.put("sse.edi", InvoiceConverterSseEdi.class);
 	}
 	private boolean halt = false;
 
@@ -128,7 +129,7 @@ public class InvoiceImport extends Thread implements Urlable, XmlDescriber {
 				throw new InternalException(e);
 			}
 		}
-		int locationOfDot = fileName.lastIndexOf(".");
+		int locationOfDot = fileName.indexOf(".");
 		if (locationOfDot == -1 || locationOfDot == fileName.length() - 1) {
 			throw new UserException(
 					"The file name must have an extension (eg. '.zip')");
@@ -142,7 +143,7 @@ public class InvoiceImport extends Thread implements Urlable, XmlDescriber {
 				recognizedExtensions.append(" " + allowedExtension);
 			}
 			throw new UserException(
-					"The extension of the filename '"
+					"The extension '" + extension + "' of the filename '"
 							+ fileName
 							+ "' is not one of the recognized extensions; "
 							+ recognizedExtensions

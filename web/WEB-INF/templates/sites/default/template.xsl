@@ -390,7 +390,7 @@
 											select="'Supplier Account Reference '" />
 										<input
 											name="import-supplier-account-reference"
-											value="{/source/request/parameter[@name = 'import-hhdc-account-reference']/value}" />
+											value="{/source/request/parameter[@name = 'import-supplier-account-reference']/value}" />
 									</label>
 								</fieldset>
 								<br />

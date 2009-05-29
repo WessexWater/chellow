@@ -24,21 +24,20 @@ package net.sf.chellow.billing;
 import java.io.IOException;
 import java.io.LineNumberReader;
 import java.io.Reader;
+import java.math.BigDecimal;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 import java.util.Set;
 import java.util.TimeZone;
 
 import net.sf.chellow.monad.Hiber;
-import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.HttpException;
+import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.UserException;
 import net.sf.chellow.physical.HhEndDate;
 
@@ -59,8 +58,6 @@ public class InvoiceConverterMm implements InvoiceConverter {
 		Hiber.flush();
 		if (rawBills.isEmpty()) {
 			String line;
-			List<List<Object>> billFields = new ArrayList<List<Object>>();
-			Map<String, Set<String>> mpanLookup = new HashMap<String, Set<String>>();
 			dateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
 			try {
 				line = lreader.readLine();
@@ -68,30 +65,27 @@ public class InvoiceConverterMm implements InvoiceConverter {
 				DayFinishDate finishDate = null;
 				String accountReference = null;
 				String invoiceNumber = null;
-				String recordType = null;
-				double net = 0;
-				double vat = 0;
-				// String mpanText = null;
+				BigDecimal net = new BigDecimal(0);
+				BigDecimal vat = new BigDecimal(0);
+				Set<String> mpanStrings = null;
 				while (line != null) {
-					recordType = getRecordType(line);
-					if (!recordType.equals("0000")
-							&& !recordType.equals("0050")
-							&& !recordType.equals("0051")) {
+					String recordType = getRecordType(line);
+					if (recordType.equals("0100")) {
 						accountReference = getAccountReference(line);
 						invoiceNumber = getInvoiceNumber(line);
+						startDate = null;
+						finishDate = null;
+						net = new BigDecimal(0);
+						vat = new BigDecimal(0);
+						mpanStrings = new HashSet<String>();
 					}
 					if (recordType.equals("1460")) {
-						net += Double.parseDouble(line.substring(67, 79)) / 100;
-						vat += Double.parseDouble(line.substring(85, 97)) / 100;
+						net = net.add(new BigDecimal(line.substring(67, 79))
+								.divide(new BigDecimal(100)));
+						vat = vat.add(new BigDecimal(line.substring(85, 97))
+								.divide(new BigDecimal(100)));
 					}
 					if (recordType.equals("0461")) {
-						Set<String> mpanStrings = mpanLookup
-								.get(accountReference);
-						if (mpanStrings == null) {
-							mpanLookup.put(accountReference,
-									new HashSet<String>());
-							mpanStrings = mpanLookup.get(accountReference);
-						}
 						mpanStrings.add(line.substring(148, 156)
 								+ line.substring(135, 148));
 					}
@@ -114,65 +108,21 @@ public class InvoiceConverterMm implements InvoiceConverter {
 											+ e.getMessage() + "'.");
 						}
 					}
-					line = lreader.readLine();
-					if (!recordType.equals("0000")
-							&& !recordType.equals("0050")
-							&& !recordType.equals("0051")) {
-						String accountReferenceNext = line == null ? null
-								: getAccountReference(line);
-						String invoiceNumberNext = line == null ? null
-								: getInvoiceNumber(line);
-						if (!accountReference.equals(accountReferenceNext)
-								|| !invoiceNumber.equals(invoiceNumberNext)) {
-							List<Object> fields = new ArrayList<Object>();
-							fields.add(accountReference);
-							fields.add(invoiceNumber);
-							fields.add(startDate);
-							fields.add(finishDate);
-							fields.add(net);
-							fields.add(vat);
-							billFields.add(fields);
-							/*
-							 * if (mpanLookup.get(accountReference) == null) {
-							 * mpanLookup.put(accountReference, mpanText); }
-							 */
-							accountReference = null;
-							invoiceNumber = null;
-							startDate = null;
-							finishDate = null;
-							recordType = null;
-							net = 0;
-							vat = 0;
-						}
+					if (recordType.equals("1500")) {
+						rawBills.add(new InvoiceRaw(InvoiceType.NORMAL,
+								accountReference, mpanStrings, invoiceNumber,
+								startDate, startDate, finishDate, net, vat,
+								null));
 					}
+					line = lreader.readLine();
 				}
 				lreader.close();
 				Hiber.flush();
 			} catch (IOException e) {
 				throw new UserException("Can't read EDF Energy mm file.");
 			}
-			for (List<Object> fields : billFields) {
-				try {
-					rawBills.add(new InvoiceRaw(InvoiceType.NORMAL,
-							(String) fields.get(0), mpanLookup
-									.get((String) fields.get(0)),
-							(String) fields.get(2), (DayStartDate) fields
-									.get(3), (DayStartDate) fields.get(3),
-							(DayFinishDate) fields.get(4), (Double) fields
-									.get(5), (Double) fields.get(6), null));
-				} catch (HttpException e) {
-					throw new UserException(
-							"I'm having trouble parsing the file. The problem seems to be with the bill with account number '"
-									+ (String) fields.get(0)
-									+ "' and invoice number '"
-									+ (String) fields.get(2)
-									+ "'. "
-									+ e.getMessage());
-				}
-			}
 		}
 		return rawBills;
-
 	}
 
 	private String getRecordType(String line) {

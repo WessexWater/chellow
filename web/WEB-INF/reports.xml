@@ -11509,6 +11509,7 @@ for site_snag in Hiber.session().createQuery("from SiteSnag snag order by snag.f
     description = site_snag.getDescription()
     groups = site.groups(site_snag.getStartDate(), site_snag.getFinishDate(), False)
     for group in groups:
+        pw.println('Checking group')
         hh_data = group.hhData()
         import_from_net = hh_data.get('import-from-net')
         export_to_net = hh_data.get('export-to-net')
@@ -11526,6 +11527,8 @@ for site_snag in Hiber.session().createQuery("from SiteSnag snag order by snag.f
                 pass
             else:
                 summary.append("Description not recognized.")
+pw.println('')
+pw.println('Summary')
 for line in summary:
     pw.println(line)
 pw.close()]]></value>

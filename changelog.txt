@@ -1,3 +1,16 @@
+* Now stores meter readings and coefficients as BigDecimal, so as not to lose any precision.
+
+* Fixed bugs with EDF electronic bill imports.
+
+* Can now add a supply that doesn't have a HHDC.
+
+* Can now remove an HHDC from a supply.
+
+* When updating a supply generation, now trims whitespace from contract and account names.
+
+
+280
+
 * Supply generations now start from the HH ending 00:30.
 
 * Bug id 2780333 deleting a day of HH data now doesn't miss out the last half-hour.

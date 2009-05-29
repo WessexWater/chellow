@@ -20,6 +20,8 @@
  *******************************************************************************/
 package net.sf.chellow.physical;
 
+import java.math.BigDecimal;
+
 import net.sf.chellow.billing.DayFinishDate;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.InternalException;
@@ -35,27 +37,27 @@ public class RegisterReadRaw extends MonadObject {
 
 	private int tpr;
 
-	private float coefficient;
+	private BigDecimal coefficient;
 
 	private Units units;
 
 	private DayFinishDate previousDate;
 
-	private float previousValue;
+	private BigDecimal previousValue;
 
 	private ReadType previousType;
 
 	private DayFinishDate presentDate;
 
-	private float presentValue;
+	private BigDecimal presentValue;
 
 	private ReadType presentType;
 
-	public RegisterReadRaw(MpanCore mpanCore, float coefficient,
+	public RegisterReadRaw(MpanCore mpanCore, BigDecimal coefficient,
 			String meterSerialNumber, Units units, int tpr,
-			DayFinishDate previousDate, float previousValue,
+			DayFinishDate previousDate, BigDecimal previousValue,
 			ReadType previousType, DayFinishDate presentDate,
-			float presentValue, ReadType presentType) throws InternalException {
+			BigDecimal presentValue, ReadType presentType) throws InternalException {
 		if (mpanCore == null) {
 			throw new InternalException("mpan raw argument can't be null.");
 		}
@@ -76,7 +78,7 @@ public class RegisterReadRaw extends MonadObject {
 		return mpanCore;
 	}
 
-	public float getCoefficient() {
+	public BigDecimal getCoefficient() {
 		return coefficient;
 	}
 
@@ -96,7 +98,7 @@ public class RegisterReadRaw extends MonadObject {
 		return previousDate;
 	}
 
-	public float getPreviousValue() {
+	public BigDecimal getPreviousValue() {
 		return previousValue;
 	}
 
@@ -108,7 +110,7 @@ public class RegisterReadRaw extends MonadObject {
 		return presentDate;
 	}
 
-	public float getPresentValue() {
+	public BigDecimal getPresentValue() {
 		return presentValue;
 	}
 
@@ -119,18 +121,18 @@ public class RegisterReadRaw extends MonadObject {
 	public Element toXml(Document doc) throws HttpException {
 		Element element = doc.createElement("register-read-raw");
 		element.setAttribute("mpan-core", mpanCore.toString());
-		element.setAttribute("coefficient", Float.toString(coefficient));
+		element.setAttribute("coefficient", coefficient.toString());
 		element.setAttribute("meter-serial-number", meterSerialNumber);
 		element.setAttribute("units", Units.name(units));
 		element.setAttribute("tpr", Integer.toString(tpr));
 		previousDate.setLabel("previous");
 		element.appendChild(previousDate.toXml(doc));
-		element.setAttribute("previous-value", Float.toString(previousValue));
+		element.setAttribute("previous-value", previousValue.toString());
 		previousType.setLabel("previous");
 		element.appendChild(previousType.toXml(doc));
 		presentDate.setLabel("present");
 		element.appendChild(presentDate.toXml(doc));
-		element.setAttribute("present-value", Float.toString(presentValue));
+		element.setAttribute("present-value", presentValue.toString());
 		presentType.setLabel("present");
 		element.appendChild(presentType.toXml(doc));
 		return element;
