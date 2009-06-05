@@ -344,7 +344,8 @@ public class AutomaticHhDataImporter implements Urlable, XmlDescriber, Runnable 
 				throw new UserException(document(),
 						"Another import is running.");
 			}
-			new Thread(AutomaticHhDataImporters.getImportersInstance(), "Ad hoc hh import");
+			new Thread(AutomaticHhDataImporters.getImportersInstance(),
+					"Ad hoc hh import").start();
 			inv.sendOk(document());
 		}
 	}

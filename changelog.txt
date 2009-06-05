@@ -1,3 +1,5 @@
+* Import Now button now works.
+
 * Now stores meter readings and coefficients as BigDecimal, so as not to lose any precision.
 
 * Fixed bugs with EDF electronic bill imports.
