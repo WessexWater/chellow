@@ -1,3 +1,21 @@
+* Bulk update of supply generations now work for meter serial number as {no change}
+
+* Added a check that for HH, SSC is null, and for NHH, SSC is not null.
+
+* Colours on generation graph stay consistent for difference invocations at different times. 
+
+* User with party viewer role can now be added.
+
+* Fixed bug where in edit world, supply generation didn't display PC correctly.
+
+* Added bulk report update, and report that will export in the right format.
+
+* Included configuration properties in export / import.
+
+* Fixed memory leak where results set wasn't closed in Group.hhData().
+
+* Added a timeout to automatic ftp downloads.
+
 * Import Now button now works.
 
 * Now stores meter readings and coefficients as BigDecimal, so as not to lose any precision.
