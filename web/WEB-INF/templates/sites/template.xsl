@@ -83,7 +83,7 @@
 								<label>
 									Name
 									<xsl:value-of select="' '" />
-									<input name="name"
+									<input name="name" length="100"
 										value="{/source/request/parameter[@name='name']/value}" />
 								</label>
 								<br />

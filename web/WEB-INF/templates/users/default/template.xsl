@@ -115,8 +115,21 @@
 								<label>
 									<xsl:value-of
 										select="'Participant Code '" />
-									<input name="participant-code"
-										value="{/source/request/parameter[@name = 'participant-code']/value}" />
+									<input name="participant-code">
+										<xsl:attribute name="value">
+											<xsl:choose>
+												<xsl:when
+													test="/source/request/parameter[@name='participant-code']">
+													<xsl:value-of
+														select="/source/request/parameter[@name='participant-code']/value" />
+												</xsl:when>
+												<xsl:otherwise>
+													<xsl:value-of
+														select="/source/user/provider/participant/@code | /source/user/dso/participant/@code"/>
+												</xsl:otherwise>
+											</xsl:choose>
+										</xsl:attribute>
+									</input>
 								</label>
 								<br />
 								<label>
@@ -125,14 +138,23 @@
 										<xsl:for-each
 											select="/source/market-role">
 											<option value="{@id}">
-												<xsl:if
-													test="/source/request/parameter[@name='market-role-id']/value = @id">
-													<xsl:attribute
-														name="selected">
-																<xsl:value-of
-															select="'selected'" />
-															</xsl:attribute>
-												</xsl:if>
+												<xsl:choose>
+													<xsl:when
+														test="/source/request/parameter[@name='market-role-id']">
+														<xsl:if
+															test="/source/request/parameter[@name='market-role-id']/value/text() = @id">
+															<xsl:attribute
+																name="selected" />
+														</xsl:if>
+													</xsl:when>
+													<xsl:otherwise>
+														<xsl:if
+															test="(/source/user/provider/market-role/@id = @id) or (/source/user/dso/market-role/@id = @id)">
+															<xsl:attribute
+																name="selected" />
+														</xsl:if>
+													</xsl:otherwise>
+													</xsl:choose>
 												<xsl:value-of
 													select="concat(@code, ' : ', @description)" />
 											</option>

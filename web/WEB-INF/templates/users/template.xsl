@@ -90,7 +90,7 @@
 								<br />
 								<label>
 									Email Address
-									<input name="email-address" value="/source/request/parameter[@name='email-address']/value/text()" />
+									<input name="email-address" value="{/source/request/parameter[@name='email-address']/value/text()}" />
 								</label>
 								<br />
 								<label>
