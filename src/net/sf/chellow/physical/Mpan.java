@@ -319,6 +319,14 @@ public class Mpan extends PersistentEntity {
 		setPc(pc);
 		setMtc(mtc);
 		setLlfc(llfc);
+		if (pc.getCode() == 0 && ssc != null) {
+			throw new UserException(
+					"A supply with Profile Class 00 can't have a Standard Settlement Configuration.");
+		}
+		if (pc.getCode() > 0 && ssc == null) {
+			throw new UserException(
+					"A NHH supply must have a Standard Settlement Configuration.");
+		}
 		setSsc(ssc);
 		setGspGroup(gspGroup);
 		setCore(mpanCore);
@@ -343,8 +351,8 @@ public class Mpan extends PersistentEntity {
 		setHasExportKwh(hasExportKwh);
 		setHasExportKvarh(hasExportKvarh);
 		setAgreedSupplyCapacity(agreedSupplyCapacity);
-		//Debug.print("calling onmpanchange 66");
-		//supplyGeneration.onMpanChange();
+		// Debug.print("calling onmpanchange 66");
+		// supplyGeneration.onMpanChange();
 	}
 
 	public String toString() {
@@ -383,8 +391,10 @@ public class Mpan extends PersistentEntity {
 	}
 
 	void delete() throws HttpException {
-		if (((Long) Hiber.session().createQuery(
-				"select count(*) from RegisterRead read where read.mpan = :mpan")
+		if (((Long) Hiber
+				.session()
+				.createQuery(
+						"select count(*) from RegisterRead read where read.mpan = :mpan")
 				.setEntity("mpan", this).uniqueResult()) > 0) {
 			throw new UserException(
 					"An MPAN can't be deleted if it still has register reads attached.");

@@ -84,7 +84,7 @@ public class SiteGroup {
 		map.put("import-from-3rd-party", importFrom3rdParty);
 		List<Double> exportTo3rdParty = new ArrayList<Double>();
 		map.put("export-to-3rd-party", exportTo3rdParty);
-		
+
 		Calendar cal = HhEndDate.getCalendar();
 		for (long end = getFrom().getDate().getTime(); end <= getTo().getDate()
 				.getTime(); end = HhEndDate.getNext(cal, end)) {
@@ -142,24 +142,30 @@ public class SiteGroup {
 				}
 				query.setBoolean("isImport", isImport);
 				ScrollableResults hhData = query.scroll();
-				if (!hhData.next()) {
-					continue;
-				}
-				int i = 0;
-				long datumEndDate = hhData.getDate(0).getTime();
-				double datumValue = hhData.getBigDecimal(1).doubleValue();
-				for (long end = getFrom().getDate().getTime(); end <= getTo()
-						.getDate().getTime(); end = HhEndDate.getNext(cal, end)) {
-					if (datumEndDate == end) {
-						for (List<Double> hhStream : hhStreams) {
-							hhStream.set(i, hhStream.get(i) + datumValue);
-						}
-						if (hhData.next()) {
-							datumEndDate = hhData.getDate(0).getTime();
-							datumValue = hhData.getBigDecimal(1).doubleValue();
-						}
+				try {
+					if (!hhData.next()) {
+						continue;
 					}
-					i++;
+					int i = 0;
+					long datumEndDate = hhData.getDate(0).getTime();
+					double datumValue = hhData.getBigDecimal(1).doubleValue();
+					for (long end = getFrom().getDate().getTime(); end <= getTo()
+							.getDate().getTime(); end = HhEndDate.getNext(cal,
+							end)) {
+						if (datumEndDate == end) {
+							for (List<Double> hhStream : hhStreams) {
+								hhStream.set(i, hhStream.get(i) + datumValue);
+							}
+							if (hhData.next()) {
+								datumEndDate = hhData.getDate(0).getTime();
+								datumValue = hhData.getBigDecimal(1)
+										.doubleValue();
+							}
+						}
+						i++;
+					}
+				} finally {
+					hhData.close();
 				}
 			}
 		}

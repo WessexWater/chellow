@@ -124,6 +124,7 @@ public class AutomaticHhDataImporter implements Urlable, XmlDescriber, Runnable 
 			}
 
 			ftp = new FTPClient();
+			ftp.setDataTimeout(1000 * 60);
 			int reply;
 			ftp.connect(hostName);
 			log("Connecting to ftp server at " + hostName + ".");

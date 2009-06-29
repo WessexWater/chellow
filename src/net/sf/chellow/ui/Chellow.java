@@ -199,7 +199,7 @@ public class Chellow extends Monad implements Urlable {
 				Party party = user.getParty();
 				char marketRoleCode = party.getRole().getCode();
 				if (marketRoleCode == MarketRole.HHDC) {
-					if (pathInfo.startsWith("/hhdc-contracts/" + party.getId())) {
+					if ((pathInfo + "?" + inv.getRequest().getQueryString()).equals("/reports/37/output/?hhdc-contract-id=" + party.getId())) {
 						return;
 					}
 				} else if (marketRoleCode == MarketRole.SUPPLIER) {
@@ -208,8 +208,6 @@ public class Chellow extends Monad implements Urlable {
 						return;
 					}
 				}
-			} else {
-				return;
 			}
 		}
 		if (inv.getUser() == null) {

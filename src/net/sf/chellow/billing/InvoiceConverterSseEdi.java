@@ -50,9 +50,9 @@ public class InvoiceConverterSseEdi implements InvoiceConverter {
 
 	private static final Map<String, InvoiceType> invoiceTypeMap = Collections
 			.synchronizedMap(new HashMap<String, InvoiceType>());
-	
+
 	private static final Map<String, Integer> tModMap = Collections
-	.synchronizedMap(new HashMap<String, Integer>());
+			.synchronizedMap(new HashMap<String, Integer>());
 
 	static {
 		readTypeMap.put(0, ReadType.TYPE_ROUTINE);
@@ -68,7 +68,7 @@ public class InvoiceConverterSseEdi implements InvoiceConverter {
 		invoiceTypeMap.put("P", InvoiceType.PREPAID);
 		invoiceTypeMap.put("O", InvoiceType.INFORMATION);
 		invoiceTypeMap.put("W", InvoiceType.WITHDRAWAL);
-		
+
 		tModMap.put("URQ1", 1);
 	}
 
@@ -102,7 +102,8 @@ public class InvoiceConverterSseEdi implements InvoiceConverter {
 			while (line != null) {
 				EdiSegment segment = null;
 				if (line.endsWith("'")) {
-					segment = new EdiSegment(line.substring(0, line.length() - 1), readTypeMap);
+					segment = new EdiSegment(line.substring(0,
+							line.length() - 1), readTypeMap);
 				} else {
 					throw new UserException(
 							"This parser expects one segment per line.");
@@ -173,18 +174,26 @@ public class InvoiceConverterSseEdi implements InvoiceConverter {
 						EdiElement adjf = segment.getElements().get(12);
 						ReadType presentReadType = prrd.getReadType(1);
 						ReadType previousReadType = prrd.getReadType(3);
-						BigDecimal coefficient = new BigDecimal(adjf.getInt(1)).divide(new BigDecimal(100000));
-						BigDecimal presentReadingValue = new BigDecimal(prrd.getInt(0)).divide(new BigDecimal(1000));
-						BigDecimal previousReadingValue = new BigDecimal(prrd.getInt(2)).divide(new BigDecimal(1000));
+						BigDecimal coefficient = new BigDecimal(adjf.getInt(1))
+								.divide(new BigDecimal(100000));
+						BigDecimal presentReadingValue = new BigDecimal(prrd
+								.getInt(0)).divide(new BigDecimal(1000));
+						BigDecimal previousReadingValue = new BigDecimal(prrd
+								.getInt(2)).divide(new BigDecimal(1000));
 						String meterSerialNumber = mtnr.getString(0);
 						MpanCore mpanCore = MpanCore.getMpanCore(mloc
 								.getString(0).substring(0, 13));
 						String tmodStr = tmod.getString(0);
-						Integer tpr = null; 
+						Integer tpr;
 						try {
-						tpr = Integer.parseInt(tmodStr);
+							tpr = Integer.parseInt(tmodStr);
 						} catch (NumberFormatException e) {
 							tpr = tModMap.get(tmodStr);
+							if (tpr == null) {
+								throw new UserException(
+										"Don't recognize the TPR code '"
+												+ tmodStr + "'.");
+							}
 						}
 						reads.add(new LocalRegisterReadRaw(mpanCore,
 								coefficient, meterSerialNumber, Units.KWH, tpr,
@@ -252,8 +261,6 @@ public class InvoiceConverterSseEdi implements InvoiceConverter {
 		return "Reached line " + lreader.getLineNumber() + ".";
 	}
 
-
-
 	private class LocalRegisterReadRaw {
 		private MpanCore mpanCore;
 
@@ -280,7 +287,7 @@ public class InvoiceConverterSseEdi implements InvoiceConverter {
 		private ReadType currentType;
 
 		public LocalRegisterReadRaw(MpanCore mpanCore, BigDecimal coefficient,
-				String meterSerialNumber, Units units, int tpr,
+				String meterSerialNumber, Units units, Integer tpr,
 				boolean isImport, DayFinishDate previousDate,
 				BigDecimal previousValue, ReadType previousType,
 				DayFinishDate currentDate, BigDecimal currentValue,
@@ -289,6 +296,9 @@ public class InvoiceConverterSseEdi implements InvoiceConverter {
 			this.coefficient = coefficient;
 			this.meterSerialNumber = meterSerialNumber;
 			this.units = units;
+			if (tpr == null) {
+				throw new InternalException("TPR cannot be null.");
+			}
 			this.tpr = tpr;
 			this.isImport = isImport;
 			this.previousDate = previousDate;

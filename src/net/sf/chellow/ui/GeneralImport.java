@@ -60,6 +60,7 @@ import net.sf.chellow.monad.XmlDescriber;
 import net.sf.chellow.monad.XmlTree;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
+import net.sf.chellow.physical.Configuration;
 import net.sf.chellow.physical.HhDatum;
 import net.sf.chellow.physical.HhEndDate;
 import net.sf.chellow.physical.Site;
@@ -276,6 +277,8 @@ public class GeneralImport extends Thread implements Urlable, XmlDescriber {
 						DsoContract.generalImport(action, values, csvElement);
 					} else if (type.equals("dso-contract-rate-script")) {
 						RateScript.generalImportDso(action, values, csvElement);
+					} else if (type.equals("configuration")) {
+						Configuration.generalImport(action, values, csvElement);
 					} else {
 						throw new UserException("The type " + type
 								+ " isn't recognized.");
@@ -337,7 +340,7 @@ public class GeneralImport extends Thread implements Urlable, XmlDescriber {
 			throw new UserException("Another field called " + name
 					+ " needs to be added on the end.");
 		}
-		String value = values[index];
+		String value = values[index].trim();
 		Document doc = csvElement.getOwnerDocument();
 		Element field = doc.createElement("Field");
 		csvElement.appendChild(field);

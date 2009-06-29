@@ -54,7 +54,9 @@ import org.w3c.dom.Element;
 @SuppressWarnings("serial")
 public class HhdcContract extends Contract {
 	static public final String GENERAL_IMPORT_NAME = "hhdc-contract";
+
 	static public final String FREQUENCY_DAILY = "daily";
+
 	static public final String FREQUENCY_MONTHLY = "monthly";
 
 	static public void generalImport(String action, String[] values,
@@ -147,6 +149,7 @@ public class HhdcContract extends Contract {
 	private int lag;
 
 	private String properties;
+
 	private String state;
 
 	public HhdcContract() {
@@ -351,14 +354,15 @@ public class HhdcContract extends Contract {
 		element.setAttribute("frequency", frequency);
 		element.setAttribute("lag", Integer.toString(lag));
 		element.setAttribute("has-automatic-hh-data-importer",
-				AutomaticHhDataImporters.getImportersInstance()
-						.findImporter(this) == null ? "false" : "true");
+				AutomaticHhDataImporters.getImportersInstance().findImporter(
+						this) == null ? "false" : "true");
 		element.setAttribute("properties", properties);
 		element.setAttribute("state", state);
 		return element;
 	}
 
-	public void setStateProperty(String name, String value) throws HttpException {
+	public void setStateProperty(String name, String value)
+			throws HttpException {
 		Properties properties = new Properties();
 		try {
 			properties.load(new StringReader(getState()));

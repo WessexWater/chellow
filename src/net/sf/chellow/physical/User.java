@@ -269,7 +269,8 @@ public class User extends PersistentEntity {
 	private Document document(String message) throws HttpException {
 		Document doc = MonadUtils.newSourceDocument();
 		Element source = doc.getDocumentElement();
-		source.appendChild(toXml(doc, new XmlTree("party").put("role")));
+		source.appendChild(toXml(doc, new XmlTree("party", new XmlTree(
+				"participant").put("role")).put("role")));
 		for (MarketRole role : (List<MarketRole>) Hiber.session().createQuery(
 				"from MarketRole role order by role.code").list()) {
 			source.appendChild(role.toXml(doc));

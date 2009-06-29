@@ -51,10 +51,6 @@ public class Pc extends PersistentEntity {
 		return pc;
 	}
 
-	/*
-	 * static public Pc getPc(int code) throws HttpException { return getPc(new
-	 * PcCode(code)); }
-	 */
 	static public Pc getPc(String code) throws HttpException {
 		Pc profileClass = findPc(Integer.parseInt(code));
 		if (profileClass == null) {

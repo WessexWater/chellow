@@ -38,8 +38,10 @@
 		</component>
 		<property type="string" name="passwordDigest"
 			column="password_digest" not-null="true" />
-				<many-to-one name="role" class="UserRole" column="role_id"
+		<many-to-one name="role" class="UserRole" column="role_id"
 			not-null="true" foreign-key="fkey_user__user_role" />
+		<many-to-one name="party" class="net.sf.chellow.billing.Party"
+			column="party_id" foreign-key="fkey_user__party" />
 	</class>
 </hibernate-mapping>
 

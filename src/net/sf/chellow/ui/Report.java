@@ -50,26 +50,22 @@ public class Report extends PersistentEntity {
 			Element csvElement) throws HttpException {
 		String idString = GeneralImport.addField(csvElement, "Id", values, 0);
 		Long id = null;
-		if (idString.trim().length() > 0) {
-			id = new Long(idString);
-		}
 		String name = GeneralImport.addField(csvElement, "Name", values, 1);
+		String script = GeneralImport.addField(csvElement, "Script",
+				values, 2);
+		String template = null;
+		if (values.length > 3) {
+			template = GeneralImport.addField(csvElement, "Template",
+					values, 3);
+		}
 		if (action.equals("insert")) {
-			String script = GeneralImport.addField(csvElement, "Script",
-					values, 2);
-			String template = null;
-			if (values.length > 3) {
-				template = GeneralImport.addField(csvElement, "Template",
-						values, 3);
+			if (idString.trim().length() > 0) {
+				id = new Long(idString);
 			}
 			Report.insertReport(id, name, script, template);
 		} else if (action.equals("update")) {
-			/*
-			 * String script = values[3];
-			 * csvElement.appendChild(getField("Script", script)); String
-			 * template = values[4]; csvElement.appendChild(getField("Template",
-			 * template)); Report report = Report.getReport(name);
-			 */
+			Report report = Report.getReport(id);
+			report.update(name, script, template);
 		}
 	}
 
