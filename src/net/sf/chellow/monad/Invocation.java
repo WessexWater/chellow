@@ -903,13 +903,13 @@ public class Invocation {
 			this(typeName, label);
 			this.message = message;
 		}
-
+/*
 		public MonadInstantiationException(String typeName, String label,
 				String messageCode, String parameterName, String parameterValue) {
 			this(typeName, label, new MonadMessage(messageCode,
 					new VFParameter(parameterName, parameterValue)));
 		}
-
+*/
 		public MonadInstantiationException(String typeName, String label) {
 			this.typeName = typeName;
 			this.label = label;
@@ -919,11 +919,11 @@ public class Invocation {
 				String messageCode) {
 			this(typeName, label, new MonadMessage(messageCode));
 		}
-
+/*
 		public MonadMessage getVFMessage() {
 			return message;
 		}
-
+*/
 		public String getMessage() {
 			return message.getDescription();
 		}
@@ -944,7 +944,7 @@ public class Invocation {
 			}
 			return element;
 		}
-
+/*
 		public String getLabel() {
 			return label;
 		}
@@ -952,7 +952,7 @@ public class Invocation {
 		public void setLabel(String label) {
 			this.label = label;
 		}
-
+*/
 		public Node toXml(Document doc, XmlTree tree) throws HttpException {
 			return toXml(doc);
 		}

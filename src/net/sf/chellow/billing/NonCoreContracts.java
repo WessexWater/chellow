@@ -40,7 +40,6 @@ import net.sf.chellow.physical.HhEndDate;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-@SuppressWarnings("serial")
 public class NonCoreContracts extends EntityList {
 	public static final UriPathElement URI_ID;
 
@@ -104,7 +103,6 @@ public class NonCoreContracts extends EntityList {
 		return doc;
 	}
 
-	@SuppressWarnings("unchecked")
 	public void httpGet(Invocation inv) throws HttpException {
 		inv.sendOk(document());
 	}

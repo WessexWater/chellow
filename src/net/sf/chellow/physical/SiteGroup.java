@@ -69,7 +69,6 @@ public class SiteGroup {
 		return supplies;
 	}
 
-	@SuppressWarnings("unchecked")
 	public Map<String, List<Double>> hhData() throws HttpException {
 		Map<String, List<Double>> map = new HashMap<String, List<Double>>();
 		List<Double> importFromNet = new ArrayList<Double>();
@@ -178,7 +177,6 @@ public class SiteGroup {
 				finishDate);
 	}
 
-	@SuppressWarnings("unchecked")
 	public void deleteHhdcSnag(String description, HhEndDate startDate,
 			HhEndDate finishDate) throws HttpException {
 		SnagDateBounded.deleteSiteSnag(sites.get(0), description, startDate,

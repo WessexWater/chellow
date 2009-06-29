@@ -199,7 +199,6 @@ public class ClockInterval extends PersistentEntity {
 		throw new MethodNotAllowedException();
 	}
 
-	@SuppressWarnings("unchecked")
 	public void httpGet(Invocation inv) throws HttpException {
 		Document doc = MonadUtils.newSourceDocument();
 		Element source = doc.getDocumentElement();

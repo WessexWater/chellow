@@ -158,7 +158,6 @@ public class Tpr extends PersistentEntity {
 		// TODO Auto-generated method stub
 	}
 
-	@SuppressWarnings("unchecked")
 	public void httpGet(Invocation inv) throws HttpException {
 		Document doc = MonadUtils.newSourceDocument();
 		Element source = doc.getDocumentElement();

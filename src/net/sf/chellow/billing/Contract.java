@@ -49,7 +49,6 @@ import org.python.core.PyException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-@SuppressWarnings("serial")
 public abstract class Contract extends PersistentEntity implements
 		Comparable<Contract> {
 
@@ -134,7 +133,6 @@ public abstract class Contract extends PersistentEntity implements
 		setChargeScript(chargeScript);
 	}
 
-	@SuppressWarnings("unchecked")
 	public void update(String name, String chargeScript) throws HttpException {
 		internalUpdate(name, chargeScript);
 		onUpdate();
@@ -396,7 +394,6 @@ public abstract class Contract extends PersistentEntity implements
 						from.getDate()).setTimestamp("to", to.getDate()).list();
 	}
 
-	@SuppressWarnings("unchecked")
 	public RateScript rateScript(HhEndDate date) {
 		return (RateScript) Hiber
 				.session()

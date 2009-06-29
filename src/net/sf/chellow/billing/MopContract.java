@@ -36,7 +36,6 @@ import net.sf.chellow.ui.Chellow;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-@SuppressWarnings("serial")
 public class MopContract extends Contract {
 	static public MopContract insertMopContract(Provider provider, String name,
 			HhEndDate startDate, HhEndDate finishDate, String chargeScript, String rateScript)

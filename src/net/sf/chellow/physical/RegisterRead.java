@@ -223,7 +223,6 @@ public class RegisterRead extends PersistentEntity {
 		Hiber.session().delete(this);
 	}
 
-	@SuppressWarnings("unchecked")
 	private Document document() throws HttpException {
 		Document doc = MonadUtils.newSourceDocument();
 		Element source = doc.getDocumentElement();

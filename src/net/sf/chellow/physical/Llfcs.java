@@ -44,7 +44,6 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
-@SuppressWarnings("serial")
 public class Llfcs implements Urlable, XmlDescriber {
 	public static final UriPathElement URI_ID;
 

@@ -62,6 +62,11 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 public abstract class Monad extends HttpServlet implements Urlable {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+
 	static private String contextPath;
 
 	static private Urlable urlableRoot;
@@ -406,7 +411,6 @@ public abstract class Monad extends HttpServlet implements Urlable {
 		return is;
 	}
 
-	@SuppressWarnings("unchecked")
 	static public void returnStream(Document doc, String templatePath,
 			String templateName, Result result) throws HttpException {
 		if (templatePath != null && templateName != null) {
@@ -470,7 +474,6 @@ public abstract class Monad extends HttpServlet implements Urlable {
 		}
 	}
 
-	@SuppressWarnings("unchecked")
 	static public void returnStream(Document doc, Source templateSource,
 			Result result) throws HttpException {
 		try {

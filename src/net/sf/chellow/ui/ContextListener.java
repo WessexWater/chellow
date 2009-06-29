@@ -78,7 +78,6 @@ public class ContextListener implements ServletContextListener {
 
 	private Logger logger = Logger.getLogger("net.sf.chellow");
 
-	@SuppressWarnings("unchecked")
 	public void contextInitialized(ServletContextEvent event) {
 		context = event.getServletContext();
 		Monad.setContext(context);

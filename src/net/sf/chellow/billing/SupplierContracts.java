@@ -43,7 +43,6 @@ import net.sf.chellow.ui.Chellow;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-@SuppressWarnings("serial")
 public class SupplierContracts extends EntityList {
 	public static final UriPathElement URI_ID;
 

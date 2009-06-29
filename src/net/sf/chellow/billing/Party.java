@@ -184,7 +184,6 @@ public abstract class Party extends PersistentEntity {
 	 * for '" + getName() + "' with the reference '" + accountText + "'."); }
 	 * return account; }
 	 */
-	@SuppressWarnings("unchecked")
 	/*
 	 * abstract public List<SupplyGeneration> supplyGenerations(Account
 	 * account);

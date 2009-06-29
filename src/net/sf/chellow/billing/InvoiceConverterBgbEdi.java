@@ -321,7 +321,7 @@ public class InvoiceConverterBgbEdi implements InvoiceConverter {
 
 		private int tpr;
 
-		private boolean isImport;
+		//private boolean isImport;
 
 		private DayFinishDate previousDate;
 
@@ -346,7 +346,7 @@ public class InvoiceConverterBgbEdi implements InvoiceConverter {
 			this.meterSerialNumber = meterSerialNumber;
 			this.units = units;
 			this.tpr = tpr;
-			this.isImport = isImport;
+			//this.isImport = isImport;
 			this.previousDate = previousDate;
 			this.previousValue = previousValue;
 			this.previousType = previousType;
@@ -374,11 +374,11 @@ public class InvoiceConverterBgbEdi implements InvoiceConverter {
 		public int getTpr() {
 			return tpr;
 		}
-
+/*
 		public boolean getIsImport() {
 			return isImport;
 		}
-
+*/
 		public DayFinishDate getPreviousDate() {
 			return previousDate;
 		}

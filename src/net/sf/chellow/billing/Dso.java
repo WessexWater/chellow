@@ -52,7 +52,6 @@ public class Dso extends Party {
 		return dso;
 	}
 
-	@SuppressWarnings("unchecked")
 	static public Dso getDso(Participant participant) throws HttpException {
 		Dso dso = (Dso) Hiber
 				.session()
@@ -168,7 +167,6 @@ public class Dso extends Party {
 				.uniqueResult();
 	}
 
-	@SuppressWarnings("unchecked")
 	@Override
 	public void httpGet(Invocation inv) throws HttpException {
 		Document doc = MonadUtils.newSourceDocument();

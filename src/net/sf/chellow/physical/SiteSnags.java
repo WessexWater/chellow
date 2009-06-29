@@ -64,7 +64,6 @@ public class SiteSnags extends EntityList {
 		return Chellow.ROOT_URI.resolve(getUriId()).append("/");
 	}
 
-	@SuppressWarnings("unchecked")
 	public void httpGet(Invocation inv) throws HttpException {
 		inv.sendOk(document());
 	}
@@ -89,7 +88,6 @@ public class SiteSnags extends EntityList {
 		return doc;
 	}
 
-	@SuppressWarnings("unchecked")
 	public void httpPost(Invocation inv) throws HttpException {
 		if (inv.hasParameter("ignore")) {
 			Date ignoreDate = inv.getDate("ignore-date");

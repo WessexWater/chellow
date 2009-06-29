@@ -45,7 +45,6 @@ import net.sf.chellow.ui.GeneralImport;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-@SuppressWarnings("serial")
 public class SupplierContract extends Contract {
 	static public void generalImport(String action, String[] values,
 			Element csvElement) throws HttpException {

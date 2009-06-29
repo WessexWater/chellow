@@ -51,7 +51,6 @@ import net.sf.chellow.ui.GeneralImport;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-@SuppressWarnings("serial")
 public class HhdcContract extends Contract {
 	static public final String GENERAL_IMPORT_NAME = "hhdc-contract";
 
@@ -223,7 +222,6 @@ public class HhdcContract extends Contract {
 		setProperties(properties);
 	}
 
-	@SuppressWarnings("unchecked")
 	public void update(String name, String chargeScript, String frequency,
 			int lag, String importerProperties) throws HttpException {
 		intrinsicUpdate(name, chargeScript, frequency, lag, importerProperties);

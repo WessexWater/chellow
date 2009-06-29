@@ -39,7 +39,6 @@ import net.sf.chellow.physical.EntityList;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-@SuppressWarnings("serial")
 public class Invoices extends EntityList {
 	public static final UriPathElement URI_ID;
 

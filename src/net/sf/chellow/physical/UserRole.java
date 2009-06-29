@@ -126,7 +126,6 @@ public class UserRole extends PersistentEntity {
 		return document(null);
 	}
 
-	@SuppressWarnings("unchecked")
 	private Document document(String message) throws HttpException {
 		Document doc = MonadUtils.newSourceDocument();
 		Element source = doc.getDocumentElement();

@@ -88,7 +88,6 @@ public class Users extends EntityList {
 		}
 	}
 
-	@SuppressWarnings("unchecked")
 	public void httpGet(Invocation inv) throws HttpException {
 		inv.sendOk(document());
 	}

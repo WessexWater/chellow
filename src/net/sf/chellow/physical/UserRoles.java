@@ -53,7 +53,6 @@ public class UserRoles extends EntityList {
 		return Chellow.ROOT_URI.resolve(getUriId()).append("/");
 	}
 
-	@SuppressWarnings("unchecked")
 	public void httpGet(Invocation inv) throws HttpException {
 		inv.sendOk(document());
 	}

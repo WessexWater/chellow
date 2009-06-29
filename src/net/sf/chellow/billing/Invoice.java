@@ -92,7 +92,6 @@ public class Invoice extends PersistentEntity implements Urlable {
 	public Invoice() {
 	}
 
-	@SuppressWarnings("unchecked")
 	public Invoice(Batch batch, InvoiceRaw invoiceRaw) throws HttpException {
 		setBatch(batch);
 		setBill(null);
@@ -334,7 +333,6 @@ public class Invoice extends PersistentEntity implements Urlable {
 		return read;
 	}
 
-	@SuppressWarnings("unchecked")
 	public void delete() throws HttpException {
 		bill.detach(this);
 		reads.clear();

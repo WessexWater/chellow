@@ -455,11 +455,11 @@ public class Mpan extends PersistentEntity {
 		public String toString() {
 			return pcCode + " " + mtcCode + " " + llfcCode + " " + mpanCore;
 		}
-
+/*
 		public String toStringNoSpaces() {
 			return toString().replace(" ", "");
 		}
-
+*/
 		/*
 		 * public boolean equals(Object obj) { boolean isEqual = false; if (obj
 		 * instanceof MpanRaw) { MpanRaw mpan = (MpanRaw) obj; isEqual =

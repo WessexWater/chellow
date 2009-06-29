@@ -1,3 +1,5 @@
+* Fixed bug where resolving a snag wouldn't create two new ones if needed.
+
 * Bulk update of supply generations now work for meter serial number as {no change}
 
 * Added a check that for HH, SSC is null, and for NHH, SSC is not null.

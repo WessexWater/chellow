@@ -58,7 +58,6 @@ public class Channels extends EntityList {
 		return generation.getUri().resolve(getUriId()).append("/");
 	}
 
-	@SuppressWarnings("unchecked")
 	public void httpGet(Invocation inv) throws HttpException {
 		Document doc = MonadUtils.newSourceDocument();
 		Element source = doc.getDocumentElement();

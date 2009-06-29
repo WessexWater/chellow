@@ -68,12 +68,10 @@ public class HhData extends EntityList {
 		return channel.getUri().resolve(getUriId()).append("/");
 	}
 
-	@SuppressWarnings("unchecked")
 	public void httpGet(Invocation inv) throws HttpException {
 		inv.sendOk(doc(inv));
 	}
 
-	@SuppressWarnings("unchecked")
 	private Document doc(Invocation inv) throws HttpException {
 		Document doc = MonadUtils.newSourceDocument();
 		Element source = doc.getDocumentElement();

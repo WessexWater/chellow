@@ -36,7 +36,6 @@ import net.sf.chellow.physical.EntityList;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-@SuppressWarnings("serial")
 public class Bills extends EntityList {
 	public static final UriPathElement URI_ID;
 

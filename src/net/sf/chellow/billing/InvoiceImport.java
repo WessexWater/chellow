@@ -182,7 +182,6 @@ public class InvoiceImport extends Thread implements Urlable, XmlDescriber {
 		}
 	}
 
-	@SuppressWarnings("unchecked")
 	public void run() {
 		try {
 			List<InvoiceRaw> rawInvoices = converter.getRawInvoices();

@@ -74,7 +74,6 @@ public class Bill extends PersistentEntity {
 	public Bill() {
 	}
 
-	@SuppressWarnings("unchecked")
 	public Bill(Account account) throws InternalException {
 		setAccount(account);
 	}

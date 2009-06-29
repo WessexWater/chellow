@@ -88,7 +88,6 @@ public class ChannelSnags extends EntityList {
 		inv.sendOk(doc);
 	}
 
-	@SuppressWarnings("unchecked")
 	public void httpPost(Invocation inv) throws HttpException {
 		if (inv.hasParameter("ignore")) {
 			MonadDate ignoreDate = inv.getMonadDate("ignore-date");

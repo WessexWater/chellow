@@ -72,11 +72,6 @@ public abstract class SnagDateBounded extends Snag {
 		}
 	}
 
-	/*
-	 * public void resolve(boolean isIgnored) throws ProgrammerException,
-	 * UserException { setDateResolved(new MonadDate());
-	 * setIsIgnored(isIgnored); }
-	 */
 	public void update() {
 	}
 
@@ -121,7 +116,6 @@ public abstract class SnagDateBounded extends Snag {
 		return "Start date: " + startDate + " Finish date: " + finishDate;
 	}
 
-	@SuppressWarnings("unchecked")
 	private static void addSnagDateBounded(SnagToAdd snagToAdd)
 			throws HttpException {
 		SnagDateBounded background = snagToAdd.newSnag();
@@ -165,14 +159,6 @@ public abstract class SnagDateBounded extends Snag {
 			background.setFinishDate(snagToAdd.getFinishDate());
 			snagToAdd.insertSnag(background);
 		}
-		/*
-		 * for (SnagDateBounded snag : snagToAdd.getCoveredSnags()) { if
-		 * (snagToAdd.getIsResolved()) { if (snag.getDateResolved() == null) {
-		 * snag.resolve(false); } else if (snag.getIsIgnored() == true) {
-		 * snag.setIsIgnored(false); } } else if (snag.getDateResolved() != null &&
-		 * !snag.getIsIgnored()) { snag.deResolve(); }
-		 * snag.setContract(snagToAdd.getContract()); }
-		 */
 		SnagDateBounded previousSnag = null;
 		for (SnagDateBounded snag : snagToAdd.getCoveredSnags(snagToAdd
 				.getStartDate().getPrevious(), snagToAdd.getFinishDate()
@@ -191,27 +177,26 @@ public abstract class SnagDateBounded extends Snag {
 		}
 	}
 
-	@SuppressWarnings("unchecked")
 	private static void deleteSnagDateBounded(SnagToAdd snagToAdd)
 			throws HttpException {
 		for (SnagDateBounded snag : snagToAdd.getCoveredSnags()) {
-			boolean trimmed = false;
-			if (snag.getFinishDate().getDate().after(
-					snagToAdd.getFinishDate().getDate())) {
-				snag.setStartDate(HhEndDate.getNext(snagToAdd.getFinishDate()));
-				trimmed = true;
-				Hiber.flush();
-			}
-			if (snag.getStartDate().getDate().before(
-					snagToAdd.getStartDate().getDate())) {
-				snag.setFinishDate(HhEndDate.getPrevious(snagToAdd
-						.getStartDate()));
-				trimmed = true;
-				Hiber.flush();
-			}
-			if (!trimmed) {
+			boolean outLeft = snag.getStartDate().getDate().before(
+					snagToAdd.getStartDate().getDate());
+			boolean outRight = snag.getFinishDate().getDate().after(
+					snagToAdd.getFinishDate().getDate());
+			if (outLeft && outRight) {
+				SnagDateBounded outerSnag = snag.copy();
+				snag.setFinishDate(snagToAdd.getStartDate().getPrevious());
+				outerSnag.setStartDate(snagToAdd.getFinishDate().getNext());
+				snagToAdd.insertSnag(outerSnag);
+			} else if (outLeft) {
+				snag.setFinishDate(snagToAdd.getStartDate().getPrevious());
+			} else if (outRight) {
+				snag.setStartDate(snagToAdd.getFinishDate().getNext());
+			} else {
 				snagToAdd.deleteSnag(snag);
 			}
+			Hiber.flush();
 		}
 	}
 
@@ -342,7 +327,6 @@ public abstract class SnagDateBounded extends Snag {
 			ChannelSnag.deleteChannelSnag(channelSnag);
 		}
 
-		@SuppressWarnings("unchecked")
 		public List<ChannelSnag> getCoveredSnags() {
 			return getCoveredSnags(startDate, finishDate);
 		}
@@ -409,7 +393,6 @@ public abstract class SnagDateBounded extends Snag {
 			snagSite.delete();
 		}
 
-		@SuppressWarnings("unchecked")
 		public List<SiteSnag> getCoveredSnags() {
 			return getCoveredSnags(startDate, finishDate);
 		}
@@ -485,7 +468,6 @@ public abstract class SnagDateBounded extends Snag {
 			AccountSnag.deleteAccountSnag((AccountSnag) snag);
 		}
 
-		@SuppressWarnings("unchecked")
 		public List<AccountSnag> getCoveredSnags() {
 			return getCoveredSnags(startDate, finishDate);
 		}

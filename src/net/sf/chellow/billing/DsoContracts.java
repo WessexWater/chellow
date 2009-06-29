@@ -39,7 +39,6 @@ import net.sf.chellow.physical.HhEndDate;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-@SuppressWarnings("serial")
 public class DsoContracts extends EntityList {
 	public static final UriPathElement URI_ID;
 

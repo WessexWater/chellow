@@ -47,7 +47,6 @@ import net.sf.chellow.ui.GeneralImport;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-@SuppressWarnings("serial")
 public class NonCoreContract extends Contract {
 	public static NonCoreContract getNonCoreContract(String name)
 			throws HttpException {
@@ -146,7 +145,6 @@ public class NonCoreContract extends Contract {
 		return nonCore;
 	}
 
-	@SuppressWarnings("unchecked")
 	public void update(String name, String chargeScript) throws HttpException {
 		super.update(name, chargeScript);
 		Hiber.flush();

@@ -170,7 +170,6 @@ public class Batch extends PersistentEntity {
 		return new InvoiceImports(this);
 	}
 
-	@SuppressWarnings("unchecked")
 	Invoice insertInvoice(InvoiceRaw rawInvoice) throws HttpException {
 		Invoice invoice = new Invoice(this, rawInvoice);
 		Hiber.session().save(invoice);

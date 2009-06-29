@@ -46,7 +46,6 @@ import net.sf.chellow.ui.GeneralImport;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-@SuppressWarnings("serial")
 public class DsoContract extends Contract {
 	public static DsoContract getDsoContract(Long id) throws HttpException {
 		DsoContract contract = findDsoContract(id);

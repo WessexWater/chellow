@@ -272,7 +272,7 @@ public class InvoiceConverterSseEdi implements InvoiceConverter {
 
 		private int tpr;
 
-		private boolean isImport;
+		//private boolean isImport;
 
 		private DayFinishDate previousDate;
 
@@ -300,7 +300,7 @@ public class InvoiceConverterSseEdi implements InvoiceConverter {
 				throw new InternalException("TPR cannot be null.");
 			}
 			this.tpr = tpr;
-			this.isImport = isImport;
+			//this.isImport = isImport;
 			this.previousDate = previousDate;
 			this.previousValue = previousValue;
 			this.previousType = previousType;
@@ -328,11 +328,11 @@ public class InvoiceConverterSseEdi implements InvoiceConverter {
 		public int getTpr() {
 			return tpr;
 		}
-
+/*
 		public boolean getIsImport() {
 			return isImport;
 		}
-
+*/
 		public DayFinishDate getPreviousDate() {
 			return previousDate;
 		}
