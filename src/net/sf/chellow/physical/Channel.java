@@ -145,7 +145,7 @@ public class Channel extends PersistentEntity {
 		SnagDateBounded
 				.addChannelSnag(this, description, startDate, finishDate);
 	}
-
+	
 	void deleteSnag(String description, HhEndDate startDate,
 			HhEndDate finishDate) throws HttpException {
 		SnagDateBounded.deleteChannelSnag(this, description, startDate,
@@ -530,10 +530,9 @@ public class Channel extends PersistentEntity {
 					deleteMissingFrom = datumRaw.getEndDate();
 				}
 				deleteMissingTo = datumRaw.getEndDate();
-				// Debug.print("Resolved missing: "
-				// + (System.currentTimeMillis() - now));
-			} else if (datumRaw.getValue().doubleValue() != datum.getValue()
-					.doubleValue()
+				 //Debug.print("Resolved missing: "
+				 //+ (System.currentTimeMillis() - now));
+			} else if (datumRaw.getValue().doubleValue() != datum.getValue().doubleValue()
 					|| datumRaw.getStatus() != datum.getStatus()) {
 				// Debug.print("About to update datum: " + datum + " with " +
 				// datumRaw + " "
@@ -562,18 +561,19 @@ public class Channel extends PersistentEntity {
 						notActualFrom = datumRaw.getEndDate();
 					}
 					notActualTo = datumRaw.getEndDate();
-				} else if (altered && originalDatumStatus != HhDatum.ACTUAL) {
-					deleteSnag(ChannelSnag.SNAG_NOT_ACTUAL, datumRaw
+				} else if (altered
+						&& originalDatumStatus != HhDatum.ACTUAL) {
+					deleteSnag(ChannelSnag.SNAG_ESTIMATED, datumRaw
 							.getEndDate());
 				}
 			}
 			if (lastAdditionDate != null
 					&& (lastAdditionDate.equals(prevEndDate) || batchSize > 100)) {
-				// Debug.print("About to execute batch "
-				// + (System.currentTimeMillis() - now));
+				 //Debug.print("About to execute batch "
+				 //+ (System.currentTimeMillis() - now));
 				try {
 					stmt.executeBatch();
-					// Debug.print("Added  lines.");
+					 //Debug.print("Added  lines.");
 					batchSize = 0;
 				} catch (SQLException e) {
 					throw new InternalException(e);
@@ -581,39 +581,40 @@ public class Channel extends PersistentEntity {
 				lastAdditionDate = null;
 			}
 			if (siteCheckTo != null && siteCheckTo.equals(prevEndDate)) {
-				// Debug.print("About to do site check: "
-				// + (System.currentTimeMillis() - now));
+				 //Debug.print("About to do site check: "
+				 //+ (System.currentTimeMillis() - now));
 				siteCheck(siteCheckFrom, siteCheckTo);
 				siteCheckFrom = null;
 				siteCheckTo = null;
-				// Debug.print("Finished site check: "
+				 //Debug.print("Finished site check: "
 				// + (System.currentTimeMillis() - now));
 			}
 			if (notActualTo != null && notActualTo.equals(prevEndDate)) {
-				// Debug.print("Started not actual: "
-				// + (System.currentTimeMillis() - now));
-				addChannelSnag(ChannelSnag.SNAG_NOT_ACTUAL, notActualFrom,
+				 //Debug.print("Started not actual: "
+				 //+ (System.currentTimeMillis() - now));
+				addChannelSnag(ChannelSnag.SNAG_ESTIMATED, notActualFrom,
 						notActualTo);
-				// Debug.print("Finished not actual: "
-				// + (System.currentTimeMillis() - now));
+				 //Debug.print("Finished not actual: "
+				 //+ (System.currentTimeMillis() - now));
 				notActualFrom = null;
 				notActualTo = null;
 			}
-			if (deleteMissingTo != null && deleteMissingTo.equals(prevEndDate)) {
-				// Debug.print("Starting resolvedMissing: "
-				// + (System.currentTimeMillis() - now));
+			if (deleteMissingTo != null
+					&& deleteMissingTo.equals(prevEndDate)) {
+				 //Debug.print("Starting resolvedMissing: "
+				 //+ (System.currentTimeMillis() - now));
 				deleteSnag(ChannelSnag.SNAG_MISSING, deleteMissingFrom,
 						deleteMissingTo);
 				deleteMissingFrom = null;
 				deleteMissingTo = null;
-				// Debug.print("Finished resolveMissing: "
-				// + (System.currentTimeMillis() - now));
+				 //Debug.print("Finished resolveMissing: "
+				 //+ (System.currentTimeMillis() - now));
 			}
 			prevEndDate = datumRaw.getEndDate();
 		}
 		if (lastAdditionDate != null && lastAdditionDate.equals(prevEndDate)) {
-			// Debug.print("About to execute batch 2: "
-			// + (System.currentTimeMillis() - now));
+			 //Debug.print("About to execute batch 2: "
+			 //+ (System.currentTimeMillis() - now));
 			try {
 				stmt.executeBatch();
 			} catch (SQLException e) {
@@ -622,30 +623,30 @@ public class Channel extends PersistentEntity {
 			lastAdditionDate = null;
 		}
 		if (siteCheckTo != null && siteCheckTo.equals(prevEndDate)) {
-			// Debug.print("About to start site thing 2: "
-			// + (System.currentTimeMillis() - now));
+			 //Debug.print("About to start site thing 2: "
+			 //+ (System.currentTimeMillis() - now));
 			siteCheck(siteCheckFrom, siteCheckTo);
-			// Debug.print("About to finish site thing 2: "
-			// + (System.currentTimeMillis() - now));
+			 //Debug.print("About to finish site thing 2: "
+			 //+ (System.currentTimeMillis() - now));
 		}
 		if (notActualTo != null && notActualTo.equals(prevEndDate)) {
-			// Debug.print("About to start not actual 2: "
-			// + (System.currentTimeMillis() - now));
-			addChannelSnag(ChannelSnag.SNAG_NOT_ACTUAL, notActualFrom,
+			 //Debug.print("About to start not actual 2: "
+			 //+ (System.currentTimeMillis() - now));
+			addChannelSnag(ChannelSnag.SNAG_ESTIMATED, notActualFrom,
 					notActualTo);
-			// Debug.print("About to finsih not actual 2: "
-			// + (System.currentTimeMillis() - now));
+			 //Debug.print("About to finsih not actual 2: "
+			 //+ (System.currentTimeMillis() - now));
 		}
 		if (deleteMissingTo != null && deleteMissingTo.equals(prevEndDate)) {
-			// Debug.print("About to start resolvem 2: "
-			// + (System.currentTimeMillis() - now));
+			 //Debug.print("About to start resolvem 2: "
+			 //+ (System.currentTimeMillis() - now));
 			deleteSnag(ChannelSnag.SNAG_MISSING, deleteMissingFrom,
 					deleteMissingTo);
-			// Debug.print("About to finish resolvem 2: "
-			// + (System.currentTimeMillis() - now));
+			 //Debug.print("About to finish resolvem 2: "
+			 //+ (System.currentTimeMillis() - now));
 		}
 		// Debug.print("Finished method 2: " + (System.currentTimeMillis() -
-		// now));
+		 //now));
 	}
 
 	@SuppressWarnings("unchecked")
@@ -662,7 +663,7 @@ public class Channel extends PersistentEntity {
 			deleteSnag(ChannelSnag.SNAG_MISSING, startDate, finishDate);
 			deleteSnag(ChannelSnag.SNAG_DATA_IGNORED, startDate, finishDate);
 			deleteSnag(ChannelSnag.SNAG_NEGATIVE, startDate, finishDate);
-			deleteSnag(ChannelSnag.SNAG_NOT_ACTUAL, startDate, finishDate);
+			deleteSnag(ChannelSnag.SNAG_ESTIMATED, startDate, finishDate);
 		}
 		if (supplyGeneration.getFinishDate() != null) {
 			snags = (List<ChannelSnag>) Hiber
@@ -678,7 +679,7 @@ public class Channel extends PersistentEntity {
 				deleteSnag(ChannelSnag.SNAG_MISSING, startDate, finishDate);
 				deleteSnag(ChannelSnag.SNAG_DATA_IGNORED, startDate, finishDate);
 				deleteSnag(ChannelSnag.SNAG_NEGATIVE, startDate, finishDate);
-				deleteSnag(ChannelSnag.SNAG_NOT_ACTUAL, startDate, finishDate);
+				deleteSnag(ChannelSnag.SNAG_ESTIMATED, startDate, finishDate);
 			}
 		}
 	}

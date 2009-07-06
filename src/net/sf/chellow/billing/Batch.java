@@ -68,7 +68,7 @@ public class Batch extends PersistentEntity {
 	public Batch() {
 	}
 
-	public Batch(Contract contract, String reference) {
+	public Batch(Contract contract, String reference) throws HttpException {
 		setContract(contract);
 		update(reference);
 	}
@@ -89,7 +89,10 @@ public class Batch extends PersistentEntity {
 		this.reference = reference;
 	}
 
-	public void update(String reference) {
+	public void update(String reference) throws HttpException {
+		if (reference.trim().length() == 0) {
+			throw new UserException("The batch reference can't be blank.");
+		}
 		setReference(reference);
 	}
 

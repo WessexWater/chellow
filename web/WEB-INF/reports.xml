@@ -3545,7 +3545,7 @@ def mpan_fields(mpan, date, is_import):
         if ssc is None:
             ssc_code = ''
         else:
-            ssc_code = ssc.codeAsString()
+            ssc_code = str(ssc.getCode())
         pc = mpan.getPc()
         pc_code_str = pc.codeAsString()
         mtc = mpan.getMtc()
@@ -3589,7 +3589,10 @@ def mpan_fields(mpan, date, is_import):
         else:
             mandatory_hh = 'No'
         hhdc_account = mpan.getHhdcAccount()
-        if hhdc_account is not None:
+        if hhdc_account is None:
+            hhdc_account_reference = ''
+            hhdc_contract_name = ''
+        else:
             hhdc_account_reference = hhdc_account.getReference()
             hhdc_contract_name = hhdc_account.getContract().getName()
         supplier_account = mpan.getSupplierAccount()
@@ -3614,7 +3617,7 @@ inv.getResponse().addHeader('Content-Disposition', 'attachment; filename="report
 pw = inv.getResponse().getWriter()
 
 pw.println("Date,Physical Site Id, Physical Site Name, Other Site Ids, Other Site Names, Supply Id, Source, Generator Type, DNO Name, Voltage Level, Import MPAN core, Import Agreed Supply Capacity (kVA), Import PC, Import MTC, Import LLFC Code, Import LLFC Description, Import SSC, Import HHDC Contract, Import HHDC Account, Import Supplier Contract, Import Supplier Account, Import Last Read, Import Mandatory HH, Export MPAN core, Export Agreed Supply Capacity (kVA), Export PC, Export MTC,  Export LLFC Code, Export LLFC Description, Export SSC, Export HHDC Contract, Export HHDC Account, Export Supplier Contract, Export Supplier Account, Export Last Read, Export Mandatory HH")
-for supply_generation in Hiber.session().createQuery("from SupplyGeneration generation where generation.startDate.date <= :date and (generation.finishDate.date is null or generation.finishDate.date >= :date)  order by generation.supply.id").setTimestamp('date', date).list():
+for supply_generation in Hiber.session().createQuery("from SupplyGeneration generation where generation.startDate.date <= :date and (generation.finishDate.date is null or generation.finishDate.date >= :date) order by generation.supply.id").setTimestamp('date', date).list():
     site_codes = ''
     site_names = ''
     for site_supply_generation in supply_generation.getSiteSupplyGenerations():

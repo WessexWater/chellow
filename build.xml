@@ -649,7 +649,11 @@
 		<copy todir="${build.home}/WEB-INF/mdd">
 			<fileset dir="${web.home}/WEB-INF/${mdd.dir}" />
 		</copy>
+		<!--
 		<exec dir="${basedir}" executable="svnversion" output="${build.home}/WEB-INF/VERSION" />
+		-->
+		<echo message="289" file="${build.home}/WEB-INF/VERSION" />
+				
 
 		<!-- Copy external dependencies as required -->
 		<!-- *** CUSTOMIZE HERE AS REQUIRED BY YOUR APPLICATION *** -->

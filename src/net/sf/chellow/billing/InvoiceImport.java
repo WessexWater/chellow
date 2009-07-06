@@ -108,8 +108,8 @@ public class InvoiceImport extends Thread implements Urlable, XmlDescriber {
 		/*
 		 * if (!fileName.endsWith(".mm") && !fileName.endsWith(".zip") &&
 		 * !fileName.endsWith(".csv")) { throw UserException
-		 * .newInvalidParameter("The extension of the filename '" + fileName + "'
-		 * is not one of the recognized extensions; 'zip', 'mm', 'csv'."); }
+		 * .newInvalidParameter("The extension of the filename '" + fileName +
+		 * "' is not one of the recognized extensions; 'zip', 'mm', 'csv'."); }
 		 */
 		if (fileName.endsWith(".zip")) {
 			ZipInputStream zin;
@@ -143,7 +143,9 @@ public class InvoiceImport extends Thread implements Urlable, XmlDescriber {
 				recognizedExtensions.append(" " + allowedExtension);
 			}
 			throw new UserException(
-					"The extension '" + extension + "' of the filename '"
+					"The extension '"
+							+ extension
+							+ "' of the filename '"
 							+ fileName
 							+ "' is not one of the recognized extensions; "
 							+ recognizedExtensions
@@ -153,8 +155,8 @@ public class InvoiceImport extends Thread implements Urlable, XmlDescriber {
 		 * if (fileName.endsWith(".mm")) { converterClass =
 		 * InvoiceConverterMm.class; } else if (fileName.endsWith(".csv")) {
 		 * converterClass = InvoiceConverterCsv.class; } else { throw
-		 * UserException .newInvalidParameter("The extension of the filename '" +
-		 * fileName + "' is not one of the recognized extensions; '.mm'."); }
+		 * UserException .newInvalidParameter("The extension of the filename '"
+		 * + fileName + "' is not one of the recognized extensions; '.mm'."); }
 		 */
 		try {
 			converter = converterClass.getConstructor(
@@ -210,6 +212,7 @@ public class InvoiceImport extends Thread implements Urlable, XmlDescriber {
 					Hiber.flush();
 				}
 			}
+			Account.checkAllMissingFromLatest();
 			if (failedInvoices.isEmpty()) {
 				messages
 						.add("All the invoices have been successfully loaded and attached to the batch.");
@@ -217,9 +220,9 @@ public class InvoiceImport extends Thread implements Urlable, XmlDescriber {
 				messages
 						.add("The import has finished, but not all invoices were successfully loaded.");
 			}
-			Account.checkAllMissingFromLatest();
 		} catch (InternalException e) {
-			messages.add("ProgrammerException : " + HttpException.getStackTraceString(e));
+			messages.add("ProgrammerException : "
+					+ HttpException.getStackTraceString(e));
 			throw new RuntimeException(e);
 		} catch (HttpException e) {
 			messages.add(e.getMessage());
@@ -273,11 +276,17 @@ public class InvoiceImport extends Thread implements Urlable, XmlDescriber {
 		Element importElement = doc.createElement("invoice-import");
 		boolean isAlive = this.isAlive();
 		importElement.setAttribute("id", getUriId().toString());
-		importElement.setAttribute("progress",
-				successfulInvoices == null ? converter.getProgress()
-						: "There have been " + successfulInvoices.size()
-								+ " successful imports, and "
-								+ failedInvoices.size() + " failures.");
+		importElement
+				.setAttribute(
+						"progress",
+						successfulInvoices == null ? converter.getProgress()
+								: "There have been "
+										+ successfulInvoices.size()
+										+ " successful imports, and "
+										+ failedInvoices.size()
+										+ " failures."
+										+ (isAlive ? "The thread is still alive."
+												: ""));
 		if (!isAlive && successfulInvoices != null) {
 			Element failedElement = doc.createElement("failed-invoices");
 			importElement.appendChild(failedElement);

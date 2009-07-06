@@ -45,8 +45,23 @@
 						</xsl:for-each>
 					</ul>
 				</xsl:if>
-				<br />
-
+				<ul>
+					<li>
+						<a href="batches/">Batches</a>
+					</li>
+					<li>
+						<a href="rate-scripts/">Rate Scripts</a>
+					</li>
+					<li>
+						<a href="accounts/">Accounts</a>
+					</li>
+					<li>
+						<a href="account-snags/">Account Snags</a>
+					</li>
+					<li>
+						<a href="bill-snags/">Bill Snags</a>
+					</li>
+				</ul>
 				<form action="." method="post">
 					<fieldset>
 						<legend>Update contract</legend>
@@ -168,23 +183,6 @@
 						<input type="submit" value="Delete" />
 					</fieldset>
 				</form>
-				<ul>
-					<li>
-						<a href="batches/">Batches</a>
-					</li>
-					<li>
-						<a href="rate-scripts/">Rate Scripts</a>
-					</li>
-					<li>
-						<a href="accounts/">Accounts</a>
-					</li>
-					<li>
-						<a href="account-snags/">Account Snags</a>
-					</li>
-					<li>
-						<a href="bill-snags/">Bill Snags</a>
-					</li>
-				</ul>
 			</body>
 		</html>
 	</xsl:template>

@@ -13,7 +13,10 @@
         <value><![CDATA[2008-02-27T00:30Z]]></value>
         <value><![CDATA[]]></value>
         <value><![CDATA[def ccl_gbp(hh_value, date):
-    return hh_value * contract.rateScript(date).getRate('ccl_rate')]]></value>
+    return hh_value * contract.rateScript(date).getRate('ccl_rate')
+
+def is_ccl_month(kwh):
+    return kwh > 999]]></value>
         <value><![CDATA[def ccl_rate():
     return 0.004560]]></value>
     </line>
@@ -72,16 +75,15 @@ def supplyElement(supply, start_date, finish_date, is_import):
 
 def triad(dso_contract, triad_kws, date, voltage_level, is_substation):
     result = {}
+    calc = dso_contract.callFunction('calculator', [voltage_level, is_substation])
     dates = NonCoreContract.getNonCoreContract('TRIAD').callFunction('triad_dates', [date])
-    calc = dso_contract.callFunction('calculator', [voltage_level, is_substation, dates[0]])
     total_gsp_kw = 0
     for i in range(3):
         if calc is None:
             llf = None
             gsp_kw = None
         else:
-            calc.set_time(dates[i])
-            llf = calc.llf()
+            llf = calc.llf(dates[i])
             if triad_kws[i] is None:
                 gsp_kw = None
             else:
@@ -95,7 +97,8 @@ def triad(dso_contract, triad_kws, date, voltage_level, is_substation):
         total_gbp = None
     else:
         total_gsp_kw = total_gsp_kw / 3
-        total_gbp = total_gsp_kw * calc.get_rate('triad')
+        rate_script = calc.find_rate_script(date)
+        total_gbp = total_gsp_kw * rate_script.getRate('triad')
     result['total-gsp-kw'] = total_gsp_kw
     result['total-gbp'] = total_gbp
     return result]]></value>

@@ -81,13 +81,13 @@
 						<form action="." method="post">
 							<fieldset>
 								<legend>Add a batch</legend>
+								<br />
 								<label>
 									<xsl:value-of select="'Reference '" />
 									<input name="reference"
 										value="{/source/request/parameter[@name = 'reference']/value}" />
 								</label>
-								<br />
-								<br />
+								<xsl:value-of select="' '"/>
 								<input type="submit" value="Add" />
 								<input type="reset" value="Reset" />
 							</fieldset>

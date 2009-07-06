@@ -41,17 +41,6 @@ public class HhDatumRaw {
 
 	private char status;
 
-	/*
-	 * public HhDatumRaw(String core, HhEndDate endDate, String isImport, String
-	 * isKwh, String value, String statusStr) throws HttpException { Character
-	 * status = null; if (statusStr != null) { statusStr = statusStr.trim(); int
-	 * statusLen = statusStr.length(); if (statusLen == 1) { status =
-	 * statusStr.charAt(0); } else if (statusLen > 1) { throw new UserException(
-	 * "The status must be blank or a single character."); } } init(core,
-	 * Boolean.parseBoolean(isImport), Boolean.parseBoolean(isKwh), new
-	 * HhEndDate(endDateStr), Float.parseFloat(value), status); }
-	 */
-
 	public HhDatumRaw(String core, boolean isImport, boolean isKwh,
 			HhEndDate endDate, BigDecimal value, char status)
 			throws HttpException {
@@ -65,7 +54,7 @@ public class HhDatumRaw {
 		this.value = value;
 		if (status != HhDatum.ESTIMATE && status != HhDatum.ACTUAL) {
 			throw new UserException(
-					"The status character must be E, A or null.");
+					"The status character must be E or A.");
 		}
 		this.status = status;
 	}

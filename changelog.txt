@@ -1,3 +1,8 @@
+* Changed channel snag description from 'Not actual' to 'Estimated'.
+
+
+289
+
 * Fixed bug where resolving a snag wouldn't create two new ones if needed.
 
 * Bulk update of supply generations now work for meter serial number as {no change}

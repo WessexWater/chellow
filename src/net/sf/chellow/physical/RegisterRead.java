@@ -264,7 +264,7 @@ public class RegisterRead extends PersistentEntity {
 		RegisterRead read = (RegisterRead) Hiber
 				.session()
 				.createQuery(
-						"from RegisterRead read where read.mpan.mpanCore = :mpanCore and read.presentDate.date = :readDate")
+						"from RegisterRead read where read.mpan.core = :mpanCore and read.presentDate.date = :readDate")
 				.setEntity("mpanCore", getMpan().getCore()).setDate(
 						"readDate", getPreviousDate().getDate()).uniqueResult();
 		if (read == null) {

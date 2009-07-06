@@ -70,6 +70,9 @@ public class InvoiceConverterSseEdi implements InvoiceConverter {
 		invoiceTypeMap.put("W", InvoiceType.WITHDRAWAL);
 
 		tModMap.put("URQ1", 1);
+		tModMap.put("Z012", 1);
+		tModMap.put("URQD", 1);
+		tModMap.put("SG1U", 1);
 	}
 
 	private LineNumberReader lreader;

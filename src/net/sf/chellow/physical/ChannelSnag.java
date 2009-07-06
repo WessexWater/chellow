@@ -21,6 +21,7 @@
 
 package net.sf.chellow.physical;
 
+import net.sf.chellow.billing.HhdcContract;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.InternalException;
@@ -40,7 +41,7 @@ public class ChannelSnag extends SnagDateBounded {
 
 	public static final String SNAG_NOT_ACTUAL = "Not actual reads.";
 
-	public static final String SNAG_MISSING = "Missing.";
+	public static final String SNAG_MISSING = "Missing";
 
 	public static final String SNAG_DATA_IGNORED = "Data ignored.";
 

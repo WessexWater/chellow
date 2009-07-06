@@ -24,7 +24,6 @@ package net.sf.chellow.monad;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.StringWriter;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -52,7 +51,6 @@ import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.URIResolver;
 import javax.xml.transform.dom.DOMSource;
-import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 
 import net.sf.chellow.monad.types.MonadUri;
@@ -93,24 +91,8 @@ public abstract class Monad extends HttpServlet implements Urlable {
 
 	static private final String CONFIG_PREFIX = "/WEB-INF/templates";
 
-	static private final String DEBUG_FILE_NAME = "debug";
-
 	protected Class<Invocation> invocationClass;
 
-	// protected static final int PERMISSION_SESSION = 1;
-
-	// private static final Class[] invocationConstructorTypes = {
-	// HttpServletRequest.class, HttpServletResponse.class, String.class };
-
-	// private Class<Object>[] ARG_TYPES = new Class[1];
-
-	/*
-	 * private Map<String, List<DesignerMethodFilter>> designerMethods = new
-	 * HashMap<String, List<DesignerMethodFilter>>();
-	 * 
-	 * private Class thisClass;
-	 */
-	// private Constructor invocationConstructor;
 	static private ServletContext context;
 
 	static private File CONFIG_DIR = null;
@@ -119,8 +101,6 @@ public abstract class Monad extends HttpServlet implements Urlable {
 
 	static protected Logger logger = Logger
 			.getLogger("uk.org.tlocke.theelected");
-
-	// private HibernateUtil hibernateUtil = null;
 
 	static public ServletContext getContext() {
 		return context;
@@ -175,34 +155,8 @@ public abstract class Monad extends HttpServlet implements Urlable {
 	public void init(ServletConfig conf) throws ServletException {
 		super.init(conf);
 		context = conf.getServletContext();
-		/*
-		 * try { invocationConstructor = invocationClass
-		 * .getConstructor(invocationConstructorTypes); } catch
-		 * (NoSuchMethodException e) { logger.logp(Level.SEVERE,
-		 * "uk.org.tlocke.monad.Monad", "init", "Can't initialize servlet", e);
-		 * throw new ServletException(e.getMessage()); }
-		 */
 	}
 
-	/*
-	 * protected void addDesignerMethod(String name) throws ProgrammerException {
-	 * addDesignerMethod(name, new DesignerMethodFilter[0]); }
-	 * 
-	 * protected void addDesignerMethod(String name, DesignerMethodFilter[]
-	 * filters) throws ProgrammerException { List<DesignerMethodFilter>
-	 * filterList = Arrays.asList(filters);
-	 * 
-	 * try { thisClass.getDeclaredMethod(name, ARG_TYPES); } catch
-	 * (NoSuchMethodException e) { Method[] methods =
-	 * thisClass.getDeclaredMethods(); StringBuffer buf = new StringBuffer();
-	 * 
-	 * for (int i = 0; i < methods.length; i += 1) { buf.append("\n" +
-	 * methods[i]); } buf.append("\narg types"); for (int i = 0; i <
-	 * ARG_TYPES.length; i += 1) { buf.append("\n" + ARG_TYPES[i]); } throw new
-	 * ProgrammerException("A method of this name doesn't " + "exist: " +
-	 * e.getMessage() + buf + "arg types"); } designerMethods.put(name,
-	 * filterList); }
-	 */
 	protected abstract void checkPermissions(Invocation inv)
 			throws HttpException;
 
@@ -305,23 +259,6 @@ public abstract class Monad extends HttpServlet implements Urlable {
 		}
 	}
 
-	/*
-	 * static public void setConfigDir(File configDir) { Monad.CONFIG_DIR =
-	 * configDir; }
-	 */
-	/*
-	 * static public URL getConfigResource(MonadUri uri) throws HttpException {
-	 * URL url = getConfigFile(uri); if (url == null) { url = getConfigUrl(uri); }
-	 * return url; }
-	 */
-	/*
-	 * static public URL getConfigFile(MonadUri uri) throws HttpException { URL
-	 * url = null; try { MonadUri uriNew = getConfigFile(new MonadUri("/"),
-	 * uri.toString() .substring(1).split("/"), 0); if (uriNew != null) { url =
-	 * new File(CONFIG_DIR.toString() + File.separator +
-	 * uriNew.toString()).toURI().toURL(); } return url; } catch
-	 * (MalformedURLException e) { throw new InternalException(e); } }
-	 */
 	static public URL getConfigUrl(MonadUri uri) throws HttpException {
 		URL url = null;
 		try {
@@ -360,28 +297,6 @@ public abstract class Monad extends HttpServlet implements Urlable {
 		return newUri;
 	}
 
-	/*
-	 * static public MonadUri getConfigFile(MonadUri uri, String[] elements, int
-	 * position) throws HttpException { List<String> fileElements =
-	 * getConfigFileElements(uri); MonadUri newUri = null; if
-	 * (fileElements.contains(elements[position])) { newUri =
-	 * uri.resolve(elements[position]); if (position < elements.length - 1) {
-	 * newUri = newUri.append("/"); newUri = getConfigFile(newUri, elements,
-	 * position + 1); } } if (newUri == null &&
-	 * fileElements.contains("default")) { newUri = uri.append("default/"); if
-	 * (position < elements.length - 1) { newUri = getConfigFile(newUri,
-	 * elements, position + 1); } } return newUri; }
-	 */
-	/*
-	 * @SuppressWarnings("unchecked") static public List<String>
-	 * getConfigFileElements(MonadUri uri) throws InternalException { List<String>
-	 * urlElements = new ArrayList<String>(); if (Monad.getConfigDir() != null) {
-	 * File urlsPath = new File(Monad.getConfigDir().toString() +
-	 * uri.toString().replace("/", File.separator)); String[] files =
-	 * urlsPath.list(); if (files != null) { for (String file : files) {
-	 * urlElements.add(file); } } } return urlElements; }
-	 */
-
 	@SuppressWarnings("unchecked")
 	static public List<String> getConfigUrlElements(MonadUri uri) {
 		List<String> urlElements = new ArrayList<String>();
@@ -419,54 +334,6 @@ public abstract class Monad extends HttpServlet implements Urlable {
 				throw new DesignerException("The resource '" + templatePath
 						+ " : " + templateName
 						+ "' is needed but does not exist.");
-			}
-			InputStream debugIs = getConfigIs(templatePath, DEBUG_FILE_NAME);
-			if (debugIs != null) {
-				try {
-					StringWriter sr = new StringWriter();
-					TransformerFactory tf = TransformerFactory.newInstance();
-					tf.setURIResolver(new ElectedURIResolver());
-					Transformer transformer;
-
-					transformer = tf.newTransformer();
-					transformer.setOutputProperty(OutputKeys.INDENT, "yes");
-					// transformer.setOutputProperty(
-					// "{http://xml.apache.org/xslt}indent-amount", "2");
-					transformer.transform(new DOMSource(doc), new StreamResult(
-							sr));
-					logger.logp(Level.INFO, "uk.org.tlocke.monad.Monad",
-							"returnStream", sr.toString());
-				} catch (TransformerConfigurationException e) {
-					Throwable throwable = e.getCause();
-					throw new UserException("Problem transforming template '"
-							+ templatePath
-							+ " : "
-							+ templateName
-							+ " "
-							+ e.getMessageAndLocation()
-							+ e.getMessage()
-							+ e.getLocationAsString()
-							+ " "
-							+ e.getLocator()
-							+ (throwable == null ? "" : " Problem type : "
-									+ throwable.getClass().getName()
-									+ " Message: " + throwable.getMessage()));
-				} catch (TransformerException e) {
-					throw new UserException("Problem transforming template '"
-							+ templatePath
-							+ " : "
-							+ templateName
-							+ "'. "
-							+ e.getMessageAndLocation()
-							+ " "
-							+ " Problem type : "
-							+ e.getCause().getClass().getName()
-							+ " Message: "
-							+ e.getException().getMessage()
-							+ "Stack trace: "
-							+ HttpException.getStackTraceString(e
-									.getException()) + e);
-				}
 			}
 			returnStream(doc, new StreamSource(templateIs), result);
 		} else {

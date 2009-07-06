@@ -114,7 +114,7 @@ public class InvoiceImports implements Urlable {
 			batchImports = imports.get(batch.getId());
 			batchImports.put(Long.parseLong(importare.getUriId().toString()),
 					importare);
-			inv.sendCreated(document(), importare.getUri());
+			inv.sendSeeOther(importare.getUri());
 		} catch (HttpException e) {
 			e.setDocument(document());
 			throw e;

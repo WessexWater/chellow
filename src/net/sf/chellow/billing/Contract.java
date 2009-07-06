@@ -432,7 +432,7 @@ public abstract class Contract extends PersistentEntity implements
 		return contract;
 	}
 
-	public Batch insertBatch(String reference) {
+	public Batch insertBatch(String reference) throws HttpException {
 		Batch batch = new Batch(this, reference);
 		Hiber.session().save(batch);
 		return batch;

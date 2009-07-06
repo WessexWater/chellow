@@ -128,34 +128,6 @@ public class HhDatum extends PersistentEntity {
 		Hiber.close();
 	}
 
-	/*
-	 * static public HhDatumRaw generalImportRaw(String[] values) throws
-	 * HttpException { String mpanCoreStr = getCsvField("MPAN Core", values, 2);
-	 * String date = getCsvField("Date", values, 3); String isImport =
-	 * getCsvField("Is Import?", values, 4); String isKwh = getCsvField("Is
-	 * Kwh?", values, 5); String value = getCsvField("Value", values, 6); String
-	 * status = getCsvField("Status", values, 7); return new
-	 * HhDatumRaw(mpanCoreStr, isImport, isKwh, date, value, status); }
-	 */
-
-	/*
-	 * static public void generalImport(String action, String[] values) throws
-	 * HttpException { String mpanCoreStr = getCsvField("MPAN Core", values, 2);
-	 * MpanCore mpanCore = MpanCore.getMpanCore(mpanCoreStr); String dateStr =
-	 * getCsvField("Date", values, 3); HhEndDate date = new HhEndDate(dateStr);
-	 * Supply supply = mpanCore.getSupply(); SupplyGeneration supplyGeneration =
-	 * supply.getGeneration(date); String isImportStr = getCsvField("Is
-	 * Import?", values, 4); boolean isImport =
-	 * Boolean.parseBoolean(isImportStr); String isKwhStr = getCsvField("Is
-	 * Kwh?", values, 5); boolean isKwh = Boolean.parseBoolean(isKwhStr);
-	 * Channel channel = supplyGeneration.getChannel(isImport, isKwh); if
-	 * (action.equals("insert")) { String valueStr = getCsvField("Value",
-	 * values, 6); float value = Float.parseFloat(valueStr); String statusStr =
-	 * getCsvField("Status", values, 7); HhDatumRaw datumRaw = new
-	 * HhDatumRaw(mpanCoreStr, isImport, isKwh, date, value, status); List<HhDatumRaw>
-	 * dataRaw = new ArrayList<HhDatumRaw>(); dataRaw.add(datumRaw);
-	 * channel.addHhData(supplyGeneration.getHhdcContract(), dataRaw); } }
-	 */
 	private Channel channel;
 
 	private HhEndDate endDate;

@@ -702,11 +702,9 @@ public class Invocation {
 
 	private void returnPage(Document doc, String templatePath,
 			String templateName) throws HttpException {
-		/*
-		 * if ("image/svg+xml".equals(getResponse().getContentType())) {
-		 * returnSvgPage(doc, templatePath, templateName); } else {
-		 * returnStandardPage(doc, templatePath, templateName); }
-		 */
+		if (hasParameter("view")) {
+			templatePath = null;
+		}
 		if (doc == null) {
 			doc = MonadUtils.newSourceDocument();
 		}
@@ -885,10 +883,6 @@ public class Invocation {
 
 		private MonadMessage message = null;
 
-		// private List<MonadInstantiationException>
-		// monadInstantiationExceptions = new
-		// ArrayList<MonadInstantiationException>();
-
 		private String typeName;
 
 		private String label;
@@ -903,13 +897,7 @@ public class Invocation {
 			this(typeName, label);
 			this.message = message;
 		}
-/*
-		public MonadInstantiationException(String typeName, String label,
-				String messageCode, String parameterName, String parameterValue) {
-			this(typeName, label, new MonadMessage(messageCode,
-					new VFParameter(parameterName, parameterValue)));
-		}
-*/
+
 		public MonadInstantiationException(String typeName, String label) {
 			this.typeName = typeName;
 			this.label = label;
@@ -919,19 +907,11 @@ public class Invocation {
 				String messageCode) {
 			this(typeName, label, new MonadMessage(messageCode));
 		}
-/*
-		public MonadMessage getVFMessage() {
-			return message;
-		}
-*/
+
 		public String getMessage() {
 			return message.getDescription();
 		}
 
-		/*
-		 * public void addChild(MonadInstantiationException e) {
-		 * monadInstantiationExceptions.add(e); }
-		 */
 		public Node toXml(Document doc) throws HttpException {
 			Element element = doc.createElement(typeName);
 
@@ -944,15 +924,7 @@ public class Invocation {
 			}
 			return element;
 		}
-/*
-		public String getLabel() {
-			return label;
-		}
 
-		public void setLabel(String label) {
-			this.label = label;
-		}
-*/
 		public Node toXml(Document doc, XmlTree tree) throws HttpException {
 			return toXml(doc);
 		}

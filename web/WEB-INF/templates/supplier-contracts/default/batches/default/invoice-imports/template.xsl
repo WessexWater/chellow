@@ -72,7 +72,7 @@
 								<xsl:value-of
 									select="'new invoice import'" />
 							</a>
-							has been successfully created.
+							has started.
 						</p>
 					</xsl:when>
 					<xsl:otherwise>
