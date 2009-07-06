@@ -29,6 +29,8 @@
 		</id>
 		<many-to-one name="supply" class="Supply" column="supply_id"
 			not-null="true" foreign-key="fkey_supply_generation_supply" />
+		<many-to-one name="gspGroup" class="GspGroup" column="gsp_group_id"
+			foreign-key="fkey_supply_generation__gsp_group" />
 		<many-to-one name="meter" class="Meter" column="meter_id"
 			foreign-key="fkey_supply_generation_meter" />
 		<set name="siteSupplyGenerations" inverse="true" cascade="all,delete-orphan"

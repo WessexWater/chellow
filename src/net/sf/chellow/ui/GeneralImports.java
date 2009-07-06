@@ -107,7 +107,7 @@ public class GeneralImports implements Urlable, XmlDescriber {
 			throw e;
 		}
 		process.start();
-		inv.sendCreated(document(), process.getUri());
+		inv.sendSeeOther(process.getUri());
 	}
 
 	public Urlable getChild(UriPathElement urlId) throws HttpException {

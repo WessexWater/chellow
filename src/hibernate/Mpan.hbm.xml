@@ -42,21 +42,11 @@
 			not-null="true" foreign-key="fkey_mpan_llfc" />
 		<many-to-one name="ssc" class="Ssc" column="ssc_id"
 			foreign-key="fkey_mpan_ssc" />
-		<many-to-one name="gspGroup" class="GspGroup" column="gsp_group_id"
-			foreign-key="fkey_mpan_gsp_group" />
 		<many-to-one name="core" class="MpanCore" column="core_id"
 			not-null="true" foreign-key="fkey_mpan__core" />
 		<many-to-one name="supplierAccount"
 			class="net.sf.chellow.billing.Account" column="supplier_account_id"
 			foreign-key="fkey_mpan_supplier_account" />
-		<property type="boolean" name="hasImportKwh"
-			column="has_import_kwh" not-null="true" />
-		<property type="boolean" name="hasImportKvarh"
-			column="has_import_kvarh" not-null="true" />
-		<property type="boolean" name="hasExportKwh"
-			column="has_export_kwh" not-null="true" />
-		<property type="boolean" name="hasExportKvarh"
-			column="has_export_kvarh" not-null="true" />
 		<property name="agreedSupplyCapacity"
 			column="agreed_supply_capacity" not-null="true" />
 	</class>

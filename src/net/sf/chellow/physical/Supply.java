@@ -66,9 +66,9 @@ public class Supply extends PersistentEntity {
 			Site site = Site.getSite(siteCode);
 			String sourceCode = GeneralImport.addField(csvElement,
 					"Source Code", values, 1);
+			Source source = Source.getSource(sourceCode);
 			String generatorTypeCode = GeneralImport.addField(csvElement,
 					"Generator Type", values, 2);
-			Source source = Source.getSource(sourceCode);
 			GeneratorType generatorType = null;
 			if (source.getCode().equals(Source.GENERATOR_CODE)
 					|| source.getCode().equals(Source.GENERATOR_NETWORK_CODE)) {
@@ -86,39 +86,43 @@ public class Supply extends PersistentEntity {
 			HhEndDate finishDate = finishDateStr.trim().length() > 0 ? HhEndDate
 					.roundUp(new MonadDate(finishDateStr).getDate())
 					: null;
+			String gspGroupCode = GeneralImport.addField(csvElement,
+					"GSP Group", values, 6);
+			GspGroup gspGroup = GspGroup.getGspGroup(gspGroupCode);
+			String hasImportKwhStr = GeneralImport.addField(csvElement,
+					"Has import kWh", values, 7);
+			boolean hasImportKwh = Boolean.parseBoolean(hasImportKwhStr);
+			String hasImportKvarhStr = GeneralImport.addField(csvElement,
+					"Has import kVArh", values, 8);
+			boolean hasImportKvarh = Boolean.parseBoolean(hasImportKvarhStr);
+			String hasExportKwhStr = GeneralImport.addField(csvElement,
+					"Has export kWh", values, 9);
+			boolean hasExportKwh = Boolean.parseBoolean(hasExportKwhStr);
+			String hasExportKvarhStr = GeneralImport.addField(csvElement,
+					"Has export kVArh", values, 10);
+			boolean hasExportKvarh = Boolean.parseBoolean(hasExportKvarhStr);
+			String hhdcContractName = GeneralImport.addField(csvElement,
+					"HHDC Contract", values, 11);
+			HhdcContract hhdcContract = hhdcContractName.length() == 0 ? null
+					: HhdcContract.getHhdcContract(hhdcContractName);
+			String hhdcAccountReference = GeneralImport.addField(csvElement,
+					"HHDC Account", values, 12);
+			Account hhdcAccount = null;
+			if (hhdcContract != null) {
+				hhdcAccount = hhdcContract.getAccount(hhdcAccountReference);
+			}
 			String meterSerialNumber = GeneralImport.addField(csvElement,
-					"Meter Serial Number", values, 6);
+					"Meter Serial Number", values, 13);
 			String importMpanStr = GeneralImport.addField(csvElement,
-					"Import MPAN", values, 7);
+					"Import MPAN", values, 14);
 			Integer importAgreedSupplyCapacity = null;
-			Boolean importHasImportKwh = null;
-			Boolean importHasImportKvarh = null;
-			Boolean importHasExportKwh = null;
-			Boolean importHasExportKvarh = null;
-			HhdcContract importHhdcContract = null;
-			Account importHhdcAccount = null;
 			SupplierContract importSupplierContract = null;
 			Account importSupplierAccount = null;
 			Ssc importSsc = null;
-			GspGroup importGspGroup = null;
 			String importSscCode = GeneralImport.addField(csvElement,
-					"Import SSC", values, 8);
-			String importGspGroupCode = GeneralImport.addField(csvElement,
-					"Import GSP Group", values, 9);
+					"Import SSC", values, 15);
 			String importAgreedSupplyCapacityStr = GeneralImport.addField(
-					csvElement, "Import Agreed Supply Capacity", values, 10);
-			String importHasImportKwhStr = GeneralImport.addField(csvElement,
-					"Import has import kWh", values, 11);
-			String importHasImportKvarhStr = GeneralImport.addField(csvElement,
-					"Import has import kVArh", values, 12);
-			String importHasExportKwhStr = GeneralImport.addField(csvElement,
-					"Import has export kWh", values, 13);
-			String importHasExportKvarhStr = GeneralImport.addField(csvElement,
-					"Import has export kVArh", values, 14);
-			String importHhdcContractName = GeneralImport.addField(csvElement,
-					"Import HHDC Contract", values, 15);
-			String importHhdcAccountReference = GeneralImport.addField(
-					csvElement, "Import HHDC Account", values, 16);
+					csvElement, "Import Agreed Supply Capacity", values, 16);
 			String importSupplierContractName = GeneralImport.addField(
 					csvElement, "Import supplier contract name", values, 17);
 			String importSupplierAccountReference = GeneralImport
@@ -127,7 +131,6 @@ public class Supply extends PersistentEntity {
 			if (importMpanStr != null && importMpanStr.length() != 0) {
 				importSsc = importSscCode.trim().length() == 0 ? null : Ssc
 						.getSsc(importSscCode);
-				importGspGroup = GspGroup.getGspGroup(importGspGroupCode);
 				try {
 					importAgreedSupplyCapacity = new Integer(
 							importAgreedSupplyCapacityStr);
@@ -136,36 +139,15 @@ public class Supply extends PersistentEntity {
 							"The import supply capacity must be an integer."
 									+ e.getMessage());
 				}
-				importHasImportKwh = Boolean
-						.parseBoolean(importHasImportKwhStr);
-				importHasImportKvarh = Boolean
-						.parseBoolean(importHasImportKvarhStr);
-				importHasExportKwh = Boolean
-						.parseBoolean(importHasExportKwhStr);
-				importHasExportKvarh = Boolean
-						.parseBoolean(importHasExportKvarhStr);
-				importHhdcContract = importHhdcContractName.trim().length() == 0 ? null
-						: HhdcContract.getHhdcContract(importHhdcContractName);
-				if (importHhdcContract != null) {
-					importHhdcAccount = importHhdcContract
-							.getAccount(importHhdcAccountReference);
-				}
 				importSupplierContract = SupplierContract
 						.getSupplierContract(importSupplierContractName);
 				importSupplierAccount = importSupplierContract
 						.getAccount(importSupplierAccountReference);
 			}
-			HhdcContract exportHhdcContract = null;
-			Account exportHhdcAccount = null;
 			SupplierContract exportSupplierContract = null;
 			Account exportAccountSupplier = null;
 			Integer exportAgreedSupplyCapacity = null;
-			Boolean exportHasImportKwh = null;
-			Boolean exportHasImportKvarh = null;
-			Boolean exportHasExportKwh = null;
-			Boolean exportHasExportKvarh = null;
 			Ssc exportSsc = null;
-			GspGroup exportGspGroup = null;
 			String exportMpanStr = GeneralImport.addField(csvElement,
 					"Export MPAN", values, 19);
 			if (exportMpanStr != null && exportMpanStr.trim().length() != 0) {
@@ -173,28 +155,9 @@ public class Supply extends PersistentEntity {
 						"Export SSC", values, 20);
 				exportSsc = exportSscCode.trim().length() == 0 ? null : Ssc
 						.getSsc(exportSscCode);
-				String exportGspGroupCode = GeneralImport.addField(csvElement,
-						"Export GSP Group", values, 21);
-				exportGspGroup = GspGroup.getGspGroup(exportGspGroupCode);
 				String exportAgreedSupplyCapacityStr = GeneralImport
 						.addField(csvElement, "Export Agreed Supply Capacity",
-								values, 22);
-				String exportHasImportKwhStr = GeneralImport.addField(
-						csvElement, "Export is import kWh", values, 23);
-				exportHasImportKwh = Boolean
-						.parseBoolean(exportHasImportKwhStr);
-				String exportHasImportKvarhStr = GeneralImport.addField(
-						csvElement, "Export is import kVArh", values, 24);
-				exportHasImportKvarh = Boolean
-						.parseBoolean(exportHasImportKvarhStr);
-				String exportHasExportKwhStr = GeneralImport.addField(
-						csvElement, "Export is export kWh", values, 25);
-				exportHasExportKwh = Boolean
-						.parseBoolean(exportHasExportKwhStr);
-				String exportHasExportKvarhStr = GeneralImport.addField(
-						csvElement, "Export is export kVArh", values, 26);
-				exportHasExportKvarh = Boolean
-						.parseBoolean(exportHasExportKvarhStr);
+								values, 21);
 				try {
 					exportAgreedSupplyCapacity = new Integer(
 							exportAgreedSupplyCapacityStr);
@@ -203,36 +166,23 @@ public class Supply extends PersistentEntity {
 							"The export agreed supply capacity must be an integer."
 									+ e.getMessage());
 				}
-				String exportHhdcContractName = GeneralImport.addField(
-						csvElement, "Export HHDC contract", values, 27);
-				exportHhdcContract = exportHhdcContractName.length() == 0 ? null
-						: HhdcContract.getHhdcContract(exportHhdcContractName);
-				if (exportHhdcContract != null) {
-					String exportHhdcAccountReference = GeneralImport.addField(
-							csvElement, "Export HHDC account", values, 28);
-					exportHhdcAccount = exportHhdcContract
-							.getAccount(exportHhdcAccountReference);
-				}
 				String exportSupplierContractName = GeneralImport
 						.addField(csvElement, "Export supplier contract name",
-								values, 29);
+								values, 22);
 				exportSupplierContract = SupplierContract
 						.getSupplierContract(exportSupplierContractName);
 				String exportSupplierAccountReference = GeneralImport.addField(
 						csvElement, "Export supplier account reference",
-						values, 30);
+						values, 23);
 				exportAccountSupplier = exportSupplierContract
 						.getAccount(exportSupplierAccountReference);
 			}
 			site.insertSupply(source, generatorType, supplyName, startDate,
-					finishDate, meterSerialNumber, importMpanStr, importSsc,
-					importGspGroup, importHhdcAccount, importSupplierAccount,
-					importHasImportKwh, importHasImportKvarh,
-					importHasExportKwh, importHasExportKvarh,
-					importAgreedSupplyCapacity, exportMpanStr, exportSsc,
-					exportGspGroup, exportHhdcAccount, exportAccountSupplier,
-					exportHasImportKwh, exportHasImportKvarh,
-					exportHasExportKwh, exportHasExportKvarh,
+					finishDate, gspGroup, hasImportKwh, hasImportKvarh,
+					hasExportKwh, hasExportKvarh, hhdcAccount,
+					meterSerialNumber, importMpanStr, importSsc,
+					importSupplierAccount, importAgreedSupplyCapacity,
+					exportMpanStr, exportSsc, exportAccountSupplier,
 					exportAgreedSupplyCapacity);
 		} else if (action.equals("update")) {
 			if (values.length < 5) {
@@ -361,8 +311,8 @@ public class Supply extends PersistentEntity {
 	/*
 	 * public boolean hasMpanCoreRaw(MpanCoreRaw mpanCoreRaw) throws
 	 * HttpException { boolean hasMpanCoreRaw = false; for (MpanCore mpanCore :
-	 * mpanCores) { if (mpanCore.getCore().equals(mpanCoreRaw)) { hasMpanCoreRaw =
-	 * true; break; } } return hasMpanCoreRaw; }
+	 * mpanCores) { if (mpanCore.getCore().equals(mpanCoreRaw)) { hasMpanCoreRaw
+	 * = true; break; } } return hasMpanCoreRaw; }
 	 */
 	public MpanCore addMpanCore(String mpanCore) throws HttpException {
 		MpanCore core = new MpanCore(this, mpanCore);
@@ -480,61 +430,53 @@ public class Supply extends PersistentEntity {
 		}
 		if (existingImportMpan == null) {
 			newSupplyGeneration = insertGeneration(existingSiteMap, startDate,
-					existingMeter.getSerialNumber(), null, null, null, null,
-					null, false, false, false, false, null, existingExportMpan
-							.toString(), existingExportMpan.getSsc(),
-					existingExportMpan.getGspGroup(), existingExportMpan
-							.getHhdcAccount(), existingExportMpan
-							.getSupplierAccount(), existingExportMpan
-							.getHasImportKwh(), existingExportMpan
-							.getHasImportKvarh(), existingExportMpan
-							.getHasExportKwh(), existingExportMpan
-							.getHasExportKvarh(), existingExportMpan
+					existingGeneration.getGspGroup(), existingGeneration
+							.getChannel(true, true) != null, existingGeneration
+							.getChannel(true, false) != null,
+					existingGeneration.getChannel(false, true) != null,
+					existingGeneration.getChannel(false, false) != null,
+					existingGeneration.getHhdcAccount(), existingMeter
+							.getSerialNumber(), null, null, null, null,
+					existingExportMpan.toString(), existingExportMpan.getSsc(),
+					existingExportMpan.getSupplierAccount(), existingExportMpan
 							.getAgreedSupplyCapacity());
 		} else if (existingExportMpan == null) {
 			newSupplyGeneration = insertGeneration(existingSiteMap, startDate,
+					existingGeneration.getGspGroup(), existingGeneration
+							.getChannel(true, true) != null, existingGeneration
+							.getChannel(true, false) != null,
+					existingGeneration.getChannel(false, true) != null,
+					existingGeneration.getChannel(false, false) != null,
+					existingGeneration.getHhdcAccount(),
 					existingMeter == null ? "" : existingMeter
 							.getSerialNumber(), existingImportMpan.toString(),
 					existingImportMpan.getSsc(), existingImportMpan
-							.getGspGroup(),
-					existingImportMpan.getHhdcAccount(), existingImportMpan
 							.getSupplierAccount(), existingImportMpan
-							.getHasImportKwh(), existingImportMpan
-							.getHasImportKvarh(), existingImportMpan
-							.getHasExportKwh(), existingImportMpan
-							.getHasExportKvarh(), existingImportMpan
-							.getAgreedSupplyCapacity(), null, null, null, null,
-					null, false, false, false, false, null);
+							.getAgreedSupplyCapacity(), null, null, null, null);
 		} else {
 			newSupplyGeneration = insertGeneration(existingSiteMap, startDate,
+					existingGeneration.getGspGroup(), existingGeneration
+							.getChannel(true, true) != null, existingGeneration
+							.getChannel(true, false) != null,
+					existingGeneration.getChannel(false, true) != null,
+					existingGeneration.getChannel(false, false) != null,
+					existingGeneration.getHhdcAccount(),
 					existingMeter == null ? "" : existingMeter
 							.getSerialNumber(), existingImportMpan.toString(),
 					existingImportMpan.getSsc(), existingImportMpan
-							.getGspGroup(),
-					existingImportMpan.getHhdcAccount(), existingImportMpan
 							.getSupplierAccount(), existingImportMpan
-							.getHasImportKwh(), existingImportMpan
-							.getHasImportKvarh(), existingImportMpan
-							.getHasExportKwh(), existingImportMpan
-							.getHasExportKvarh(), existingImportMpan
 							.getAgreedSupplyCapacity(), existingExportMpan
 							.toString(), existingExportMpan.getSsc(),
-					existingExportMpan.getGspGroup(), existingExportMpan
-							.getHhdcAccount(), existingExportMpan
-							.getSupplierAccount(), existingExportMpan
-							.getHasImportKwh(), existingExportMpan
-							.getHasImportKvarh(), existingExportMpan
-							.getHasExportKwh(), existingExportMpan
-							.getHasExportKvarh(), existingExportMpan
+					existingExportMpan.getSupplierAccount(), existingExportMpan
 							.getAgreedSupplyCapacity());
 		}
 		return newSupplyGeneration;
 	}
 
 	/*
-	 * public SupplyGeneration addGeneration(Map<Site, Boolean>
-	 * existingSiteMap, Meter meter, MpanRaw importMpanRaw, Ssc importSsc,
-	 * Account importHhdceAccount, Account importSupplierAccount, boolean
+	 * public SupplyGeneration addGeneration(Map<Site, Boolean> existingSiteMap,
+	 * Meter meter, MpanRaw importMpanRaw, Ssc importSsc, Account
+	 * importHhdceAccount, Account importSupplierAccount, boolean
 	 * importHasImportKwh, boolean importHasImportKvarh, boolean
 	 * importHasExportKwh, boolean importHasExportKvarh, Integer
 	 * importAgreedSupplyCapacity, MpanRaw exportMpanRaw, Ssc exportSsc, Account
@@ -543,8 +485,8 @@ public class Supply extends PersistentEntity {
 	 * exportHasExportKwh, boolean exportHasExportKvarh, Integer
 	 * exportAgreedSupplyCapacity, HhEndDate finishDate) throws HttpException {
 	 * Organization organization = existingSiteMap.keySet().iterator().next()
-	 * .getOrganization(); MpanTop importMpanTop = importMpanRaw == null ? null :
-	 * importMpanRaw .getMpanTop(importSsc, finishDate == null ? new Date() :
+	 * .getOrganization(); MpanTop importMpanTop = importMpanRaw == null ? null
+	 * : importMpanRaw .getMpanTop(importSsc, finishDate == null ? new Date() :
 	 * finishDate.getDate()); MpanCore importMpanCore = importMpanRaw == null ?
 	 * null : importMpanRaw .getMpanCore(organization); MpanTop exportMpanTop =
 	 * exportMpanRaw == null ? null : exportMpanRaw .getMpanTop(exportSsc,
@@ -559,17 +501,13 @@ public class Supply extends PersistentEntity {
 	 * exportHasExportKvarh, exportAgreedSupplyCapacity, finishDate); }
 	 */
 	public SupplyGeneration insertGeneration(Map<Site, Boolean> siteMap,
-			HhEndDate startDate, String meterSerialNumber,
-			String importMpanStr, Ssc importSsc, GspGroup importGspGroup,
-			Account importHhdcAccount, Account importSupplierAccount,
-			Boolean importHasImportKwh, Boolean importHasImportKvarh,
-			Boolean importHasExportKwh, Boolean importHasExportKvarh,
-			Integer importAgreedSupplyCapacity, String exportMpanStr,
-			Ssc exportSsc, GspGroup exportGspGroup, Account exportHhdcAccount,
-			Account exportSupplierAccount, Boolean exportHasImportKwh,
-			Boolean exportHasImportKvarh, Boolean exportHasExportKwh,
-			Boolean exportHasExportKvarh, Integer exportAgreedSupplyCapacity)
-			throws HttpException {
+			HhEndDate startDate, GspGroup gspGroup, boolean hasImportKwh,
+			boolean hasImportKvarh, boolean hasExportKwh,
+			boolean hasExportKvarh, Account hhdcAccount,
+			String meterSerialNumber, String importMpanStr, Ssc importSsc,
+			Account importSupplierAccount, Integer importAgreedSupplyCapacity,
+			String exportMpanStr, Ssc exportSsc, Account exportSupplierAccount,
+			Integer exportAgreedSupplyCapacity) throws HttpException {
 		Meter meter = null;
 		if (meterSerialNumber.trim().length() != 0) {
 			meter = findMeter(meterSerialNumber);
@@ -581,7 +519,8 @@ public class Supply extends PersistentEntity {
 		SupplyGeneration existingGeneration = null;
 		if (generations.isEmpty()) {
 			supplyGeneration = new SupplyGeneration(this, startDate, null,
-					meter);
+					gspGroup, hasImportKwh, hasImportKvarh, hasExportKwh,
+					hasExportKvarh, hhdcAccount, meter);
 			generations.add(supplyGeneration);
 		} else {
 			existingGeneration = getGeneration(startDate);
@@ -590,20 +529,23 @@ public class Supply extends PersistentEntity {
 						"You can't add a generation before the start of the supply.");
 			}
 			supplyGeneration = new SupplyGeneration(this, startDate,
-					existingGeneration.getFinishDate(), meter);
+					existingGeneration.getFinishDate(), gspGroup, hasImportKwh,
+					hasImportKvarh, hasExportKwh, hasExportKvarh, hhdcAccount,
+					meter);
 			existingGeneration.internalUpdate(
 					existingGeneration.getStartDate(), startDate.getPrevious(),
-					existingGeneration.getMeter());
+					existingGeneration.getGspGroup(), existingGeneration
+							.getChannel(true, true) != null, existingGeneration
+							.getChannel(true, false) != null,
+					existingGeneration.getChannel(false, true) != null,
+					existingGeneration.getChannel(false, false) != null,
+					hhdcAccount, existingGeneration.getMeter());
 			generations.add(supplyGeneration);
 		}
 		Hiber.flush();
 		supplyGeneration.addOrUpdateMpans(importMpanStr, importSsc,
-				importGspGroup, importHhdcAccount, importSupplierAccount,
-				importHasImportKwh, importHasImportKvarh, importHasExportKwh,
-				importHasExportKvarh, importAgreedSupplyCapacity,
-				exportMpanStr, exportSsc, exportGspGroup, exportHhdcAccount,
-				exportSupplierAccount, exportHasImportKwh,
-				exportHasImportKvarh, exportHasExportKwh, exportHasExportKvarh,
+				importSupplierAccount, importAgreedSupplyCapacity,
+				exportMpanStr, exportSsc, exportSupplierAccount,
 				exportAgreedSupplyCapacity);
 		for (Map.Entry<Site, Boolean> entry : siteMap.entrySet()) {
 			supplyGeneration.attachSite(entry.getKey(), entry.getValue());
@@ -631,20 +573,19 @@ public class Supply extends PersistentEntity {
 	 * (generation.getFinishDate() == null) { HhdcContract latestHhdcContract =
 	 * generation.getHhdcContract(); if (latestHhdcContract == null) { finish =
 	 * HhEndDate.roundDown(new Date()); } else { finish =
-	 * HhEndDate.roundDown(new Date(System .currentTimeMillis() - 1000 * 60 * 60 *
-	 * 24 * latestHhdcContract.getLag())); Calendar cal =
+	 * HhEndDate.roundDown(new Date(System .currentTimeMillis() - 1000 * 60 * 60
+	 * * 24 * latestHhdcContract.getLag())); Calendar cal =
 	 * MonadDate.getCalendar(); cal.clear(); cal.setTime(finish.getDate());
 	 * cal.set(Calendar.MILLISECOND, 0); cal.set(Calendar.SECOND, 0);
 	 * cal.set(Calendar.MINUTE, 0); cal.set(Calendar.HOUR_OF_DAY, 0); if
 	 * (latestHhdcContract.getFrequency().equals( ContractFrequency.DAILY)) {
 	 * finish = new HhEndDate(cal.getTime()); } else if
 	 * (latestHhdcContract.getFrequency().equals( ContractFrequency.MONTHLY)) {
-	 * cal.set(Calendar.DAY_OF_MONTH, 1); finish = new HhEndDate(cal.getTime()); }
-	 * else { throw new InternalException("Frequency not recognized."); } } }
+	 * cal.set(Calendar.DAY_OF_MONTH, 1); finish = new HhEndDate(cal.getTime());
+	 * } else { throw new InternalException("Frequency not recognized."); } } }
 	 * else { finish = generation.getFinishDate(); } if (lastSnagDate != null) {
 	 * finish = finish.getDate().after(lastSnagDate.getDate()) ? finish :
 	 * lastSnagDate; } return finish; }
-	 * 
 	 */
 
 	public void checkForMissing(HhEndDate from, HhEndDate to)
@@ -724,10 +665,22 @@ public class Supply extends PersistentEntity {
 		Hiber.session().delete(generation);
 		if (previousGeneration == null) {
 			nextGeneration.update(generation.getStartDate(), nextGeneration
-					.getFinishDate(), nextGeneration.getMeter());
+					.getFinishDate(), nextGeneration.getGspGroup(),
+					nextGeneration.getChannel(true, true) != null,
+					nextGeneration.getChannel(true, false) != null,
+					nextGeneration.getChannel(false, true) != null,
+					nextGeneration.getChannel(false, false) != null,
+					nextGeneration.getHhdcAccount(), nextGeneration.getMeter());
 		} else {
 			previousGeneration.update(previousGeneration.getStartDate(),
-					generation.getFinishDate(), previousGeneration.getMeter());
+					generation.getFinishDate(), previousGeneration
+							.getGspGroup(), previousGeneration.getChannel(true,
+							true) != null, previousGeneration.getChannel(true,
+							false) != null, previousGeneration.getChannel(
+							false, true) != null, previousGeneration
+							.getChannel(false, false) != null,
+					previousGeneration.getHhdcAccount(), previousGeneration
+							.getMeter());
 		}
 		onSupplyGenerationChange(generation.getStartDate(), generation
 				.getFinishDate());
@@ -755,19 +708,20 @@ public class Supply extends PersistentEntity {
 		 * supplyFinishDate).uniqueResult()) > 0) { throw new UserException(
 		 * "There are half-hourly data after the end of the updated supply."); }
 		 * Query query = Hiber .session() .createQuery( "select count(*) from
-		 * HhDatum datum where datum.channel = :channel and datum.endDate.date >=
-		 * :startDate and datum.endDate.date <= :finishDate"); for
+		 * HhDatum datum where datum.channel = :channel and datum.endDate.date
+		 * >= :startDate and datum.endDate.date <= :finishDate"); for
 		 * (SupplyGeneration generation : getGenerations(from, to)) { for
 		 * (Channel channel : generation.getChannels()) { if
 		 * (generation.getHhdcContract() == null) { HhEndDate
 		 * generationFinishDate = generation .getFinishDate(); if
 		 * (generationFinishDate == null) { if (((Long) Hiber .session()
-		 * .createQuery( "select count(*) from HhDatum datum where datum.channel =
-		 * :channel and datum.endDate.date >= :startDate") .setEntity("channel",
-		 * channel) .setTimestamp("startDate",
-		 * generation.getStartDate().getDate()) .uniqueResult()) > 0) { throw
-		 * new UserException( "There are half-hourly data in " + channel + " and
-		 * generation " + generation + " without a contract with the updated
+		 * .createQuery( "select count(*) from HhDatum datum where datum.channel
+		 * = :channel and datum.endDate.date >=
+		 * :startDate") .setEntity("channel", channel)
+		 * .setTimestamp("startDate", generation.getStartDate().getDate())
+		 * .uniqueResult()) > 0) { throw new UserException(
+		 * "There are half-hourly data in " + channel + " and generation
+		 * " + generation + " without a contract with the updated
 		 * supply."); } } else { if (((Long) query .setEntity("channel",
 		 * channel) .setTimestamp("startDate",
 		 * generation.getStartDate().getDate()) .setTimestamp( "finishDate",
@@ -791,10 +745,10 @@ public class Supply extends PersistentEntity {
 		 * getGenerations(from, to)) { for (Channel channel :
 		 * generation.getChannels()) { HhdcContract hhdcContract =
 		 * generation.getHhdcContract(); HhEndDate generationFinishDate =
-		 * generation.getFinishDate(); for (ChannelSnag snag : (List<ChannelSnag>)
-		 * (generationFinishDate == null ? Hiber .session() .createQuery( "from
-		 * ChannelSnag snag where snag.channel = :channel and
-		 * snag.finishDate.date >= :startDate") .setEntity("channel",
+		 * generation.getFinishDate(); for (ChannelSnag snag :
+		 * (List<ChannelSnag>) (generationFinishDate == null ? Hiber .session()
+		 * .createQuery( "from ChannelSnag snag where snag.channel = :channel
+		 * and snag.finishDate.date >= :startDate") .setEntity("channel",
 		 * channel).setTimestamp( "startDate",
 		 * generation.getStartDate().getDate()).list() : Hiber .session()
 		 * .createQuery( "from ChannelSnag snag where snag.channel = :channel
@@ -802,8 +756,8 @@ public class Supply extends PersistentEntity {
 		 * :finishDate") .setEntity("channel", channel)
 		 * .setTimestamp("startDate", generation.getStartDate().getDate())
 		 * .setTimestamp( "finishDate", generation.getFinishDate()
-		 * .getDate()).list())) { if (!snag.getContract().equals(hhdcContract)) {
-		 * snag.resolve(false); } } } } checkForMissing(from, to); }
+		 * .getDate()).list())) { if (!snag.getContract().equals(hhdcContract))
+		 * { snag.resolve(false); } } } } checkForMissing(from, to); }
 		 */
 		// HH data
 		if (from.getDate().before(supplyStartDate)
@@ -1063,8 +1017,8 @@ public class Supply extends PersistentEntity {
 	}
 
 	/*
-	 * public void httpPostSupplyGeneration(Invocation inv) throws HttpException {
-	 * Boolean isOngoing = inv.getBoolean("isOngoing"); HhEndDate finishDate =
+	 * public void httpPostSupplyGeneration(Invocation inv) throws HttpException
+	 * { Boolean isOngoing = inv.getBoolean("isOngoing"); HhEndDate finishDate =
 	 * null; if (!isOngoing) { finishDate =
 	 * HhEndDate.roundDown(inv.getDate("finishDate")); }
 	 * insertGeneration(finishDate); Hiber.commit(); inv.sendOk(document()); }
@@ -1097,9 +1051,9 @@ public class Supply extends PersistentEntity {
 	 * if (getGeneration(from) == null) { throw new UserException("HH data has
 	 * been ignored from " + dataRaw.toString() + " to " + to + "."); } if
 	 * (getGeneration(to) == null) { throw new UserException("HH data has been
-	 * ignored from " + dataRaw.toString() + " to " + to + "."); } List<SupplyGeneration>
-	 * supplyGenerations = getGenerations(from, to); for (SupplyGeneration
-	 * generation : supplyGenerations) { Channel channel =
+	 * ignored from " + dataRaw.toString() + " to " + to + "."); }
+	 * List<SupplyGeneration> supplyGenerations = getGenerations(from, to); for
+	 * (SupplyGeneration generation : supplyGenerations) { Channel channel =
 	 * generation.getChannel(isImport, isKwh); HhdcContract actualHhdcContract =
 	 * generation.getHhdcContract(); if (channel == null) { throw new
 	 * UserException("HH data has been ignored from " + dataRaw.toString() + "
@@ -1117,8 +1071,8 @@ public class Supply extends PersistentEntity {
 	 * channel).setTimestamp("startDate",
 	 * generation.getStartDate().getDate()).setTimestamp( "finishDate",
 	 * generation.getFinishDate().getDate()) .list(); if (data.isEmpty()) {
-	 * checkForMissingFromLatest(from.getPrevious()); } HhEndDate siteCheckFrom =
-	 * null; HhEndDate siteCheckTo = null; HhEndDate notActualFrom = null;
+	 * checkForMissingFromLatest(from.getPrevious()); } HhEndDate siteCheckFrom
+	 * = null; HhEndDate siteCheckTo = null; HhEndDate notActualFrom = null;
 	 * HhEndDate notActualTo = null; HhEndDate resolveMissingFrom = null;
 	 * HhEndDate resolveMissingTo = null; HhEndDate prevEndDate = null; int
 	 * missing = 0; // Debug.print("Starting to go through each hh: " // +
@@ -1151,18 +1105,18 @@ public class Supply extends PersistentEntity {
 	 * datumRaw.getEndDate(), false); } else if (altered &&
 	 * originalDatum.getValue() < 0) {
 	 * channel.resolveSnag(ChannelSnag.SNAG_NEGATIVE, datumRaw .getEndDate()); }
-	 * if (!HhDatumRaw.ACTUAL.equals(datumRaw.getStatus())) { if (notActualFrom ==
-	 * null) { notActualFrom = datumRaw.getEndDate(); } notActualTo =
+	 * if (!HhDatumRaw.ACTUAL.equals(datumRaw.getStatus())) { if (notActualFrom
+	 * == null) { notActualFrom = datumRaw.getEndDate(); } notActualTo =
 	 * datumRaw.getEndDate(); } else if (altered &&
 	 * !originalDatum.getStatus().equals( HhDatumRaw.ACTUAL)) {
-	 * channel.resolveSnag(ChannelSnag.SNAG_NOT_ACTUAL, datumRaw.getEndDate()); } }
-	 * if (siteCheckTo != null && siteCheckTo.equals(prevEndDate)) { //
+	 * channel.resolveSnag(ChannelSnag.SNAG_NOT_ACTUAL, datumRaw.getEndDate());
+	 * } } if (siteCheckTo != null && siteCheckTo.equals(prevEndDate)) { //
 	 * Debug.print("About to do site check: " // + (System.currentTimeMillis() -
 	 * now)); channel.siteCheck(siteCheckFrom, siteCheckTo); siteCheckFrom =
 	 * null; siteCheckTo = null; // Debug.print("Finished site check: " // +
 	 * (System.currentTimeMillis() - now)); } if (notActualTo != null &&
-	 * notActualTo.equals(prevEndDate)) { // Debug.print("Started not actual: " // +
-	 * (System.currentTimeMillis() - now));
+	 * notActualTo.equals(prevEndDate)) { // Debug.print("Started not actual: "
+	 * // + (System.currentTimeMillis() - now));
 	 * channel.addChannelSnag(ChannelSnag.SNAG_NOT_ACTUAL, notActualFrom,
 	 * notActualTo, false); // notActualSnag(notActualFrom, notActualTo, //
 	 * supplyGenerations); // Debug.print("Finished not actual: " // +
@@ -1172,9 +1126,9 @@ public class Supply extends PersistentEntity {
 	 * resolvedMissing: " // + (System.currentTimeMillis() - now));
 	 * channel.resolveSnag(ChannelSnag.SNAG_MISSING, resolveMissingFrom,
 	 * resolveMissingTo); resolveMissingFrom = null; resolveMissingTo = null; //
-	 * Debug.print("Finished resolveMissing: " // + (System.currentTimeMillis() -
-	 * now)); } prevEndDate = datumRaw.getEndDate(); } if (siteCheckTo != null &&
-	 * siteCheckTo.equals(prevEndDate)) { // Debug.print("About to start site
+	 * Debug.print("Finished resolveMissing: " // + (System.currentTimeMillis()
+	 * - now)); } prevEndDate = datumRaw.getEndDate(); } if (siteCheckTo != null
+	 * && siteCheckTo.equals(prevEndDate)) { // Debug.print("About to start site
 	 * thing: " // + (System.currentTimeMillis() - now));
 	 * channel.siteCheck(siteCheckFrom, siteCheckTo); // Debug.print("About to
 	 * finish site thing: " // + (System.currentTimeMillis() - now)); } if
@@ -1182,16 +1136,15 @@ public class Supply extends PersistentEntity {
 	 * Debug.print("About to start not actual: " // +
 	 * (System.currentTimeMillis() - now));
 	 * channel.addChannelSnag(ChannelSnag.SNAG_NOT_ACTUAL, notActualFrom,
-	 * notActualTo, false); // channel.notActualSnag(notActualFrom, notActualTo, //
-	 * supplyGenerations); // Debug.print("About to finsih not actual: " // +
+	 * notActualTo, false); // channel.notActualSnag(notActualFrom, notActualTo,
+	 * // supplyGenerations); // Debug.print("About to finsih not actual: " // +
 	 * (System.currentTimeMillis() - now)); } if (resolveMissingTo != null &&
 	 * resolveMissingTo.equals(prevEndDate)) { // Debug.print("About to start
 	 * resolvem: " // + (System.currentTimeMillis() - now));
 	 * channel.resolveSnag(ChannelSnag.SNAG_MISSING, resolveMissingFrom,
 	 * resolveMissingTo); // Debug.print("About to finish resolvem: " // +
-	 * (System.currentTimeMillis() - now)); } // Debug.print("Finished method: " +
-	 * (System.currentTimeMillis() - // now)); } }
-	 * 
+	 * (System.currentTimeMillis() - now)); } // Debug.print("Finished method: "
+	 * + (System.currentTimeMillis() - // now)); } }
 	 */
 	/*
 	 * @SuppressWarnings("unchecked") public void addHhData(HhdcContract
@@ -1206,9 +1159,9 @@ public class Supply extends PersistentEntity {
 	 * if (getGeneration(from) == null) { throw new UserException("HH data has
 	 * been ignored from " + dataRaw.toString() + " to " + to + "."); } if
 	 * (getGeneration(to) == null) { throw new UserException("HH data has been
-	 * ignored from " + dataRaw.toString() + " to " + to + "."); } List<SupplyGeneration>
-	 * supplyGenerations = getGenerations(from, to); for (SupplyGeneration
-	 * generation : supplyGenerations) { Channel channel =
+	 * ignored from " + dataRaw.toString() + " to " + to + "."); }
+	 * List<SupplyGeneration> supplyGenerations = getGenerations(from, to); for
+	 * (SupplyGeneration generation : supplyGenerations) { Channel channel =
 	 * generation.getChannel(isImport, isKwh); HhdcContract actualHhdcContract =
 	 * generation.getHhdcContract(); if (channel == null) { throw new
 	 * UserException("HH data has been ignored from " + dataRaw.toString() + "
@@ -1227,10 +1180,6 @@ public class Supply extends PersistentEntity {
 	 * generation.getStartDate().getDate()).setTimestamp( "finishDate",
 	 * generation.getFinishDate().getDate()) .list(); if (data.isEmpty()) {
 	 * checkForMissingFromLatest(from.getPrevious()); }
-	 * 
-	 * 
-	 * 
-	 * 
 	 */
 
 	/*
@@ -1239,8 +1188,8 @@ public class Supply extends PersistentEntity {
 	 * getGeneration(from); Channel channel =
 	 * supplyGeneration.getChannel(isImport, isKwh); if (supplyGeneration ==
 	 * null) { throw new UserException("HH data has been ignored from " +
-	 * dataRaw.toString() + " to " + to + "."); } if (getGeneration(to) == null) {
-	 * throw new UserException("HH data has been ignored from " +
+	 * dataRaw.toString() + " to " + to + "."); } if (getGeneration(to) == null)
+	 * { throw new UserException("HH data has been ignored from " +
 	 * dataRaw.toString() + " to " + to + "."); } HhEndDate siteCheckFrom =
 	 * null; HhEndDate siteCheckTo = null; HhEndDate notActualFrom = null;
 	 * HhEndDate notActualTo = null; HhEndDate resolveMissingFrom = null;
@@ -1275,19 +1224,20 @@ public class Supply extends PersistentEntity {
 	 * datumRaw.getEndDate(), false); } else if (altered &&
 	 * originalDatum.getValue() < 0) {
 	 * channel.resolveSnag(ChannelSnag.SNAG_NEGATIVE, datumRaw .getEndDate()); }
-	 * if (!HhDatumRaw.ACTUAL.equals(datumRaw.getStatus())) { if (notActualFrom ==
-	 * null) { notActualFrom = datumRaw.getEndDate(); } notActualTo =
+	 * if (!HhDatumRaw.ACTUAL.equals(datumRaw.getStatus())) { if (notActualFrom
+	 * == null) { notActualFrom = datumRaw.getEndDate(); } notActualTo =
 	 * datumRaw.getEndDate(); } else if (altered &&
 	 * !originalDatum.getStatus().equals( HhDatumRaw.ACTUAL)) {
-	 * channel.resolveSnag(ChannelSnag.SNAG_NOT_ACTUAL, datumRaw.getEndDate()); } }
-	 * if (siteCheckTo != null && siteCheckTo.equals(prevEndDate) ||
-	 * channel.equals(prevChannel)) { // Debug.print("About to do site check: " // +
-	 * (System.currentTimeMillis() - now)); channel.siteCheck(siteCheckFrom,
-	 * siteCheckTo); siteCheckFrom = null; siteCheckTo = null; //
-	 * Debug.print("Finished site check: " // + (System.currentTimeMillis() -
-	 * now)); } if (notActualTo != null && notActualTo.equals(prevEndDate)) { //
-	 * Debug.print("Started not actual: " // + (System.currentTimeMillis() -
-	 * now)); channel.addChannelSnag(ChannelSnag.SNAG_NOT_ACTUAL, notActualFrom,
+	 * channel.resolveSnag(ChannelSnag.SNAG_NOT_ACTUAL, datumRaw.getEndDate());
+	 * } } if (siteCheckTo != null && siteCheckTo.equals(prevEndDate) ||
+	 * channel.equals(prevChannel)) { // Debug.print("About to do site check: "
+	 * // + (System.currentTimeMillis() - now));
+	 * channel.siteCheck(siteCheckFrom, siteCheckTo); siteCheckFrom = null;
+	 * siteCheckTo = null; // Debug.print("Finished site check: " // +
+	 * (System.currentTimeMillis() - now)); } if (notActualTo != null &&
+	 * notActualTo.equals(prevEndDate)) { // Debug.print("Started not actual: "
+	 * // + (System.currentTimeMillis() - now));
+	 * channel.addChannelSnag(ChannelSnag.SNAG_NOT_ACTUAL, notActualFrom,
 	 * notActualTo, false); // notActualSnag(notActualFrom, notActualTo, //
 	 * supplyGenerations); // Debug.print("Finished not actual: " // +
 	 * (System.currentTimeMillis() - now)); notActualFrom = null; notActualTo =
@@ -1296,9 +1246,9 @@ public class Supply extends PersistentEntity {
 	 * resolvedMissing: " // + (System.currentTimeMillis() - now));
 	 * channel.resolveSnag(ChannelSnag.SNAG_MISSING, resolveMissingFrom,
 	 * resolveMissingTo); resolveMissingFrom = null; resolveMissingTo = null; //
-	 * Debug.print("Finished resolveMissing: " // + (System.currentTimeMillis() -
-	 * now)); } prevEndDate = datumRaw.getEndDate(); } if (siteCheckTo != null &&
-	 * siteCheckTo.equals(prevEndDate)) { // Debug.print("About to start site
+	 * Debug.print("Finished resolveMissing: " // + (System.currentTimeMillis()
+	 * - now)); } prevEndDate = datumRaw.getEndDate(); } if (siteCheckTo != null
+	 * && siteCheckTo.equals(prevEndDate)) { // Debug.print("About to start site
 	 * thing: " // + (System.currentTimeMillis() - now));
 	 * channel.siteCheck(siteCheckFrom, siteCheckTo); // Debug.print("About to
 	 * finish site thing: " // + (System.currentTimeMillis() - now)); } if
@@ -1306,15 +1256,15 @@ public class Supply extends PersistentEntity {
 	 * Debug.print("About to start not actual: " // +
 	 * (System.currentTimeMillis() - now));
 	 * channel.addChannelSnag(ChannelSnag.SNAG_NOT_ACTUAL, notActualFrom,
-	 * notActualTo, false); // channel.notActualSnag(notActualFrom, notActualTo, //
-	 * supplyGenerations); // Debug.print("About to finsih not actual: " // +
+	 * notActualTo, false); // channel.notActualSnag(notActualFrom, notActualTo,
+	 * // supplyGenerations); // Debug.print("About to finsih not actual: " // +
 	 * (System.currentTimeMillis() - now)); } if (resolveMissingTo != null &&
 	 * resolveMissingTo.equals(prevEndDate)) { // Debug.print("About to start
 	 * resolvem: " // + (System.currentTimeMillis() - now));
 	 * channel.resolveSnag(ChannelSnag.SNAG_MISSING, resolveMissingFrom,
 	 * resolveMissingTo); // Debug.print("About to finish resolvem: " // +
-	 * (System.currentTimeMillis() - now)); } // Debug.print("Finished method: " +
-	 * (System.currentTimeMillis() - // now)); } }
+	 * (System.currentTimeMillis() - now)); } // Debug.print("Finished method: "
+	 * + (System.currentTimeMillis() - // now)); } }
 	 */
 
 	public boolean equals(Object obj) {
@@ -1408,8 +1358,8 @@ public class Supply extends PersistentEntity {
 	}
 	/*
 	 * @SuppressWarnings("unchecked") public List<HhDatum> getHhData(boolean
-	 * isImport, boolean isKwh, HhEndDate from, HhEndDate to) { return (List<HhDatum>)
-	 * Hiber .session() .createQuery( "from HhDatum datum where
+	 * isImport, boolean isKwh, HhEndDate from, HhEndDate to) { return
+	 * (List<HhDatum>) Hiber .session() .createQuery( "from HhDatum datum where
 	 * datum.channel.supplyGeneration.supply = :supply and
 	 * datum.channel.isImport = :isImport and datum.channel.isKwh = :isKwh and
 	 * datum.endDate.date >= :from and datum.endDate.date <= :to order by

@@ -378,8 +378,8 @@ public class Channel extends PersistentEntity {
 				.uniqueResult();
 		HhEndDate finish = null;
 		if (supplyGeneration.getFinishDate() == null) {
-			HhdcContract latestHhdcContract = supplyGeneration
-					.getHhdcContract();
+			HhdcContract latestHhdcContract = HhdcContract.getHhdcContract(supplyGeneration.getHhdcAccount()
+					.getContract().getId());
 			finish = HhEndDate.roundDown(new Date(System.currentTimeMillis()
 					- 1000 * 60 * 60 * 24 * latestHhdcContract.getLag()));
 			Calendar cal = MonadDate.getCalendar();

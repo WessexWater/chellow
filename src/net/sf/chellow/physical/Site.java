@@ -194,15 +194,11 @@ public class Site extends PersistentEntity {
 
 	public Supply insertSupply(Source source, GeneratorType generatorType,
 			String supplyName, HhEndDate startDate, HhEndDate finishDate,
+			GspGroup gspGroup, boolean hasImportKwh, boolean hasImportKvarh,
+			boolean hasExportKwh, boolean hasExportKvarh, Account hhdcAccount,
 			String meterSerialNumber, String importMpanStr, Ssc importSsc,
-			GspGroup importGspGroup, Account importHhdcAccount,
-			Account importAccountSupplier, Boolean importHasImportKwh,
-			Boolean importHasImportKvarh, Boolean importHasExportKwh,
-			Boolean importHasExportKvarh, Integer importAgreedSupplyCapacity,
-			String exportMpanStr, Ssc exportSsc, GspGroup exportGspGroup,
-			Account exportHhdcAccount, Account exportAccountSupplier,
-			Boolean exportHasImportKwh, Boolean exportHasImportKvarh,
-			Boolean exportHasExportKwh, Boolean exportHasExportKvarh,
+			Account importAccountSupplier, Integer importAgreedSupplyCapacity,
+			String exportMpanStr, Ssc exportSsc, Account exportAccountSupplier,
 			Integer exportAgreedSupplyCapacity) throws HttpException {
 		Supply supply = new Supply(supplyName, source, generatorType);
 		try {
@@ -226,16 +222,17 @@ public class Site extends PersistentEntity {
 		Map<Site, Boolean> siteMap = new HashMap<Site, Boolean>();
 		siteMap.put(this, true);
 		SupplyGeneration generation = supply.insertGeneration(siteMap,
-				startDate, meterSerialNumber, importMpanStr, importSsc,
-				importGspGroup, importHhdcAccount, importAccountSupplier,
-				importHasImportKwh, importHasImportKvarh, importHasExportKwh,
-				importHasExportKvarh, importAgreedSupplyCapacity,
-				exportMpanStr, exportSsc, exportGspGroup, exportHhdcAccount,
-				exportAccountSupplier, exportHasImportKwh,
-				exportHasImportKvarh, exportHasExportKwh, exportHasExportKvarh,
-				exportAgreedSupplyCapacity);
+				startDate, gspGroup, hasImportKwh, hasImportKvarh,
+				hasExportKwh, hasExportKvarh, hhdcAccount, meterSerialNumber,
+				importMpanStr, importSsc, importAccountSupplier,
+				importAgreedSupplyCapacity, exportMpanStr, exportSsc,
+				exportAccountSupplier, exportAgreedSupplyCapacity);
 		generation.update(generation.getStartDate(), finishDate, generation
-				.getMeter());
+				.getGspGroup(), generation.getChannel(true, true) != null,
+				generation.getChannel(true, false) != null, generation
+						.getChannel(false, true) != null, generation
+						.getChannel(false, false) != null, generation
+						.getHhdcAccount(), generation.getMeter());
 		Hiber.flush();
 		return supply;
 	}
@@ -516,14 +513,13 @@ public class Site extends PersistentEntity {
 			try {
 				String name = inv.getString("name");
 				Long sourceId = inv.getLong("source-id");
+				Long gspGroupId = inv.getLong("gsp-group-id");
+				String hhdcContractName = inv.getString("hhdc-contract-name");
+				String hhdcAccountReference = inv
+						.getString("hhdc-account-reference");
 				String meterSerialNumber = inv.getString("meter-serial-number");
 				String importMpanStr = inv.getString("import-mpan");
 				String importSscCode = inv.getString("import-ssc-code");
-				Long importGspGroupId = inv.getLong("import-gsp-group-id");
-				String importHhdcContractName = inv
-						.getString("import-hhdc-contract-name");
-				String importHhdcAccountReference = inv
-						.getString("import-hhdc-account-reference");
 				String importSupplierContractName = inv
 						.getString("import-supplier-contract-name");
 				String importSupplierAccountReference = inv
@@ -532,11 +528,6 @@ public class Site extends PersistentEntity {
 						.getString("import-agreed-supply-capacity");
 				String exportMpanStr = inv.getString("export-mpan");
 				String exportSscCode = inv.getString("export-ssc-code");
-				Long exportGspGroupId = inv.getLong("export-gsp-group-id");
-				String exportHhdcContractName = inv
-						.getString("export-hhdc-contract-name");
-				String exportHhdcAccountReference = inv
-						.getString("export-hhdc-account-reference");
 				String exportSupplierContractName = inv
 						.getString("export-supplier-contract-name");
 				String exportSupplierAccountReference = inv
@@ -554,23 +545,21 @@ public class Site extends PersistentEntity {
 					generatorType = GeneratorType
 							.getGeneratorType(generatorTypeId);
 				}
+				GspGroup gspGroup = GspGroup.getGspGroup(gspGroupId);
+				HhdcContract hhdcContract = null;
+				Account hhdcAccount = null;
+				if (hhdcContractName.length() > 0) {
+					hhdcContract = HhdcContract
+							.getHhdcContract(hhdcContractName);
+					hhdcAccount = hhdcContract.getAccount(hhdcAccountReference);
+				}
 				Ssc importSsc = null;
-				GspGroup importGspGroup = null;
-				HhdcContract importHhdcContract = null;
-				Account importHhdcAccount = null;
 				SupplierContract importSupplierContract = null;
 				Account importSupplierAccount = null;
 				Integer importAgreedSupplyCapacity = null;
 				if (importMpanStr.trim().length() > 0) {
 					if (importSscCode.trim().length() > 0) {
 						importSsc = Ssc.getSsc(importSscCode);
-					}
-					importGspGroup = GspGroup.getGspGroup(importGspGroupId);
-					if (importHhdcContractName.trim().length() > 0) {
-					importHhdcContract = HhdcContract
-							.getHhdcContract(importHhdcContractName);
-					importHhdcAccount = importHhdcContract
-					.getAccount(importHhdcAccountReference);
 					}
 					importSupplierContract = SupplierContract
 							.getSupplierContract(importSupplierContractName);
@@ -586,21 +575,11 @@ public class Site extends PersistentEntity {
 					}
 				}
 				Ssc exportSsc = null;
-				GspGroup exportGspGroup = null;
-				Account exportHhdcAccount = null;
 				Account exportSupplierAccount = null;
 				Integer exportAgreedSupplyCapacity = null;
 				if (exportMpanStr.trim().length() > 0) {
-					HhdcContract exportHhdcContract = null;
 					if (exportSscCode.trim().length() > 0) {
 						exportSsc = Ssc.getSsc(exportSscCode);
-					}
-					exportGspGroup = GspGroup.getGspGroup(exportGspGroupId);
-					if (exportHhdcContractName.trim().length() > 0) {
-					exportHhdcContract = HhdcContract
-							.getHhdcContract(exportHhdcContractName);
-					exportHhdcAccount = exportHhdcContract
-							.getAccount(exportHhdcAccountReference);
 					}
 					SupplierContract exportSupplierContract = SupplierContract
 							.getSupplierContract(exportSupplierContractName);
@@ -616,18 +595,13 @@ public class Site extends PersistentEntity {
 					}
 				}
 				Supply supply = insertSupply(source, generatorType, name,
-						new HhEndDate(startDate).getNext(), null, meterSerialNumber,
-						importMpanStr, importSsc, importGspGroup,
-						importHhdcAccount, importSupplierAccount,
-						importHhdcAccount == null ? false : true,
-						importHhdcAccount == null ? false : true, false,
-						importHhdcAccount == null ? false : true,
-						importAgreedSupplyCapacity, exportMpanStr, exportSsc,
-						exportGspGroup, exportHhdcAccount,
-						exportSupplierAccount, false,
-						exportHhdcAccount == null ? false : true,
-						exportHhdcAccount == null ? false : true,
-						exportHhdcAccount == null ? false : true,
+						new HhEndDate(startDate).getNext(), null, gspGroup,
+						hhdcAccount == null ? false : true,
+						hhdcAccount == null ? false : true, false,
+						hhdcAccount == null ? false : true, hhdcAccount,
+						meterSerialNumber, importMpanStr, importSsc,
+						importSupplierAccount, importAgreedSupplyCapacity,
+						exportMpanStr, exportSsc, exportSupplierAccount,
 						exportAgreedSupplyCapacity);
 				Hiber.commit();
 				inv.sendCreated(supply.getUri());

@@ -21,7 +21,6 @@
 
 package net.sf.chellow.physical;
 
-import net.sf.chellow.billing.HhdcContract;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.InternalException;
@@ -37,13 +36,13 @@ import org.w3c.dom.Element;
 public class ChannelSnag extends SnagDateBounded {
 	public static final long SNAG_CHECK_LEAD_TIME = 1000 * 60 * 60 * 24 * 5;
 
-	public static final String SNAG_NEGATIVE = "Negative values.";
+	public static final String SNAG_NEGATIVE = "Negative values";
 
-	public static final String SNAG_NOT_ACTUAL = "Not actual reads.";
+	public static final String SNAG_ESTIMATED = "Estimated";
 
 	public static final String SNAG_MISSING = "Missing";
 
-	public static final String SNAG_DATA_IGNORED = "Data ignored.";
+	public static final String SNAG_DATA_IGNORED = "Data ignored";
 
 	public static void insertChannelSnag(ChannelSnag snag) {
 		Hiber.session().save(snag);

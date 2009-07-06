@@ -317,13 +317,13 @@ public class Account extends PersistentEntity {
 
 	void deleteSnag(String description, HhEndDate startDate,
 			HhEndDate finishDate) throws HttpException {
-		SnagDateBounded.deleteAccountSnag(contract, this, description,
+		SnagDateBounded.deleteAccountSnag(this, description,
 				startDate, finishDate);
 	}
 
 	void addSnag(String description, HhEndDate startDate, HhEndDate finishDate)
 			throws HttpException {
-		SnagDateBounded.addAccountSnag(contract, this, description, startDate,
+		SnagDateBounded.addAccountSnag(this, description, startDate,
 				finishDate);
 	}
 
