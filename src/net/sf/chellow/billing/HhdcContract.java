@@ -41,7 +41,6 @@ import net.sf.chellow.monad.UserException;
 import net.sf.chellow.monad.XmlTree;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
-import net.sf.chellow.physical.ChannelSnags;
 import net.sf.chellow.physical.HhEndDate;
 import net.sf.chellow.physical.MarketRole;
 import net.sf.chellow.physical.Mpan;
@@ -328,8 +327,6 @@ public class HhdcContract extends Contract {
 	public Urlable getChild(UriPathElement uriId) throws HttpException {
 		if (HhDataImportProcesses.URI_ID.equals(uriId)) {
 			return getHhDataImportProcessesInstance();
-		} else if (ChannelSnags.URI_ID.equals(uriId)) {
-			return getChannelSnagsInstance();
 		} else if (AutomaticHhDataImporter.URI_ID.equals(uriId)) {
 			return AutomaticHhDataImporters.getImportersInstance()
 					.findImporter(this);
@@ -340,10 +337,6 @@ public class HhdcContract extends Contract {
 		} else {
 			return null;
 		}
-	}
-
-	public ChannelSnags getChannelSnagsInstance() {
-		return new ChannelSnags(this);
 	}
 
 	public Element toXml(Document doc) throws HttpException {

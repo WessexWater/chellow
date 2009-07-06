@@ -316,14 +316,14 @@ public class Account extends PersistentEntity {
 
 	void deleteSnag(String description, HhEndDate startDate,
 			HhEndDate finishDate) throws HttpException {
-		SnagDateBounded.deleteAccountSnag(contract, this, description,
-				startDate, finishDate);
+		SnagDateBounded.deleteAccountSnag(this, description, startDate,
+				finishDate);
 	}
 
 	void addSnag(String description, HhEndDate startDate, HhEndDate finishDate)
 			throws HttpException {
-		SnagDateBounded.addAccountSnag(contract, this, description, startDate,
-				finishDate);
+		SnagDateBounded
+				.addAccountSnag(this, description, startDate, finishDate);
 	}
 
 	Bills billsInstance() {
@@ -375,8 +375,8 @@ public class Account extends PersistentEntity {
 		 * 
 		 * for (InvoiceMpan invoiceMpan : invoice.getInvoiceMpans()) {
 		 * invoiceMpans.add(invoiceMpan.getMpan()); } if
-		 * (!accountMpans.equals(new ArrayList<Mpan>(invoiceMpans))) { throw
-		 * new UserException("Problem with account '" + reference + "' invoice '" +
+		 * (!accountMpans.equals(new ArrayList<Mpan>(invoiceMpans))) { throw new
+		 * UserException("Problem with account '" + reference + "' invoice '" +
 		 * invoice.getReference() + "' from the half-hour ending " +
 		 * invoice.getStartDate() + " to the half-hour ending " +
 		 * invoice.getFinishDate() + ". This bill has MPANs " + invoiceMpans + "

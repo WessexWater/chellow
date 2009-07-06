@@ -38,8 +38,6 @@
 		</property>
 		<property name="description" column="description" type="string"
 			not-null="true" />
-		<property name="progress" column="progress" type="string"
-			not-null="true" />
 		<property name="isIgnored" type="boolean" not-null="true">
 			<column name="is_ignored" default="false" />
 		</property>

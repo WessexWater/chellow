@@ -21,7 +21,6 @@
 
 package net.sf.chellow.physical;
 
-import net.sf.chellow.billing.HhdcContract;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.InternalException;
@@ -65,17 +64,14 @@ public class ChannelSnag extends SnagDateBounded {
 
 	private Channel channel;
 
-	private HhdcContract contract;
-
 	public ChannelSnag() {
 	}
 
-	public ChannelSnag(String description, HhdcContract contract,
+	public ChannelSnag(String description,
 			Channel channel, HhEndDate startDate, HhEndDate finishDate)
 			throws HttpException {
 		super(description, startDate, finishDate);
 		this.channel = channel;
-		this.contract = contract;
 	}
 
 	public Channel getChannel() {
@@ -84,14 +80,6 @@ public class ChannelSnag extends SnagDateBounded {
 
 	void setChannel(Channel channel) {
 		this.channel = channel;
-	}
-	
-	public HhdcContract getContract() {
-		return contract;
-	}
-
-	void setContract(HhdcContract contract) {
-		this.contract = contract;
 	}
 
 	public void update() {
@@ -113,10 +101,6 @@ public class ChannelSnag extends SnagDateBounded {
 		return cloned;
 	}
 
-	public String toString() {
-		return super.toString() + " Contract: " + getContract();
-	}
-
 	public void httpGet(Invocation inv) throws HttpException {
 		inv.sendOk(document());
 	}
@@ -131,18 +115,14 @@ public class ChannelSnag extends SnagDateBounded {
 	}
 
 	public MonadUri getUri() throws HttpException {
-		return getContract().getChannelSnagsInstance().getUri().resolve(
+		return getChannel().snagsInstance().getUri().resolve(
 				getUriId()).append("/");
 	}
 
-	protected boolean isCombinable(SnagDateBounded snag) throws HttpException {
+	protected boolean isCombinable(ChannelSnag snag) throws HttpException {
 		if (!super.isCombinable(snag)) {
 			return false;
 		}
-		if (!(snag instanceof ChannelSnag)) {
-			return false;
-		}
-		ChannelSnag channelSnag = (ChannelSnag) snag;
-		return getContract().equals(channelSnag.getContract());
+		return getChannel().equals(snag.getChannel());
 	}
 }

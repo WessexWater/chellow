@@ -46,12 +46,6 @@
 			foreign-key="fkey_mpan_gsp_group" />
 		<many-to-one name="core" class="MpanCore" column="core_id"
 			not-null="true" foreign-key="fkey_mpan__core" />
-		<many-to-one name="mopAccount"
-			class="net.sf.chellow.billing.Account" column="mop_account_id"
-			foreign-key="fkey_mpan_mop_account" />
-		<many-to-one name="hhdcAccount"
-			class="net.sf.chellow.billing.Account" column="hhdc_account_id"
-			foreign-key="fkey_mpan_hhdc_account" />
 		<many-to-one name="supplierAccount"
 			class="net.sf.chellow.billing.Account" column="supplier_account_id"
 			foreign-key="fkey_mpan_supplier_account" />

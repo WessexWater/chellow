@@ -25,8 +25,6 @@ import java.util.List;
 
 import net.sf.chellow.billing.Account;
 import net.sf.chellow.billing.AccountSnag;
-import net.sf.chellow.billing.Contract;
-import net.sf.chellow.billing.HhdcContract;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.HttpException;
@@ -200,18 +198,16 @@ public abstract class SnagDateBounded extends Snag {
 		}
 	}
 
-	public static void deleteAccountSnag(Contract contract, Account account,
-			String description, HhEndDate startDate, HhEndDate finishDate)
-			throws HttpException {
-		deleteSnagDateBounded(new AccountSnagToAdd(contract, account,
-				description, startDate, finishDate));
+	public static void deleteAccountSnag(Account account, String description,
+			HhEndDate startDate, HhEndDate finishDate) throws HttpException {
+		deleteSnagDateBounded(new AccountSnagToAdd(account, description,
+				startDate, finishDate));
 	}
 
-	public static void deleteChannelSnag(HhdcContract contract,
-			Channel channel, String description, HhEndDate startDate,
-			HhEndDate finishDate) throws HttpException {
-		deleteSnagDateBounded(new ChannelSnagToAdd(contract, channel,
-				description, startDate, finishDate));
+	public static void deleteChannelSnag(Channel channel, String description,
+			HhEndDate startDate, HhEndDate finishDate) throws HttpException {
+		deleteSnagDateBounded(new ChannelSnagToAdd(channel, description,
+				startDate, finishDate));
 	}
 
 	public static void deleteSiteSnag(Site site, String description,
@@ -220,11 +216,10 @@ public abstract class SnagDateBounded extends Snag {
 				finishDate));
 	}
 
-	public static void addChannelSnag(HhdcContract hhdcContract,
-			Channel channel, String description, HhEndDate startDate,
-			HhEndDate finishDate) throws HttpException {
-		addSnagDateBounded(new ChannelSnagToAdd(hhdcContract, channel,
-				description, startDate, finishDate));
+	public static void addChannelSnag(Channel channel, String description,
+			HhEndDate startDate, HhEndDate finishDate) throws HttpException {
+		addSnagDateBounded(new ChannelSnagToAdd(channel, description,
+				startDate, finishDate));
 	}
 
 	public static void addSiteSnag(Site site, String description,
@@ -233,10 +228,9 @@ public abstract class SnagDateBounded extends Snag {
 				finishDate));
 	}
 
-	public static void addAccountSnag(Contract contract, Account account,
-			String description, HhEndDate startDate, HhEndDate finishDate)
-			throws HttpException {
-		addSnagDateBounded(new AccountSnagToAdd(contract, account, description,
+	public static void addAccountSnag(Account account, String description,
+			HhEndDate startDate, HhEndDate finishDate) throws HttpException {
+		addSnagDateBounded(new AccountSnagToAdd(account, description,
 				startDate, finishDate));
 	}
 
@@ -258,14 +252,10 @@ public abstract class SnagDateBounded extends Snag {
 
 		public void insertSnag(SnagDateBounded snag);
 
-		public Contract getContract();
-
 		public void deleteSnag(SnagDateBounded snag);
 	}
 
 	private static class ChannelSnagToAdd implements SnagToAdd {
-		private HhdcContract contract;
-
 		private Channel channel;
 
 		private String description;
@@ -274,9 +264,8 @@ public abstract class SnagDateBounded extends Snag {
 
 		private HhEndDate finishDate;
 
-		public ChannelSnagToAdd(HhdcContract contract, Channel channel,
-				String description, HhEndDate startDate, HhEndDate finishDate) {
-			this.contract = contract;
+		public ChannelSnagToAdd(Channel channel, String description,
+				HhEndDate startDate, HhEndDate finishDate) {
 			this.channel = channel;
 			this.description = description;
 			this.startDate = startDate;
@@ -299,8 +288,7 @@ public abstract class SnagDateBounded extends Snag {
 		}
 
 		public SnagDateBounded newSnag() throws HttpException {
-			return new ChannelSnag(description, contract, channel, startDate,
-					finishDate);
+			return new ChannelSnag(description, channel, startDate, finishDate);
 		}
 
 		public void insertSnag(SnagDateBounded snag) {
@@ -314,12 +302,7 @@ public abstract class SnagDateBounded extends Snag {
 
 		public SnagDateBounded newSnag(HhEndDate startDate, HhEndDate finishDate)
 				throws HttpException {
-			return new ChannelSnag(description, contract, channel, startDate,
-					finishDate);
-		}
-
-		public HhdcContract getContract() {
-			return contract;
+			return new ChannelSnag(description, channel, startDate, finishDate);
 		}
 
 		public void deleteSnag(SnagDateBounded snag) {
@@ -404,15 +387,9 @@ public abstract class SnagDateBounded extends Snag {
 					finishDate.getDate()).setTimestamp("startDate",
 					startDate.getDate()).list();
 		}
-
-		public Contract getContract() {
-			return null;
-		}
 	}
 
 	private static class AccountSnagToAdd implements SnagToAdd {
-		private Contract contract;
-
 		private Account account;
 
 		private String description;
@@ -423,9 +400,8 @@ public abstract class SnagDateBounded extends Snag {
 
 		private Query query;
 
-		public AccountSnagToAdd(Contract contract, Account account,
-				String description, HhEndDate startDate, HhEndDate finishDate) {
-			this.contract = contract;
+		public AccountSnagToAdd(Account account, String description,
+				HhEndDate startDate, HhEndDate finishDate) {
 			this.account = account;
 			this.description = description;
 			this.startDate = startDate;
@@ -458,10 +434,6 @@ public abstract class SnagDateBounded extends Snag {
 		public SnagDateBounded newSnag(HhEndDate startDate, HhEndDate finishDate)
 				throws HttpException {
 			return new AccountSnag(description, account, startDate, finishDate);
-		}
-
-		public Contract getContract() {
-			return contract;
 		}
 
 		public void deleteSnag(SnagDateBounded snag) {

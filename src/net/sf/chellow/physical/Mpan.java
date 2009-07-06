@@ -71,10 +71,6 @@ public class Mpan extends PersistentEntity {
 		return new MpanRaw(mpan).getMpanCore();
 	}
 
-	/*
-	 * static public String canonicalize(String mpanStr) throws HttpException {
-	 * return new MpanRaw(mpanStr).toString(); }
-	 */
 	static public boolean isEqual(Set<String> mpans1, Set<String> mpans2)
 			throws HttpException {
 		Set<MpanRaw> mpansRaw1 = new HashSet<MpanRaw>();
@@ -98,23 +94,9 @@ public class Mpan extends PersistentEntity {
 
 	private Ssc ssc;
 
-	private GspGroup gspGroup;
-
 	private MpanCore core;
-
-	private Account hhdcAccount;
-
+	
 	private Account supplierAccount;
-
-	private Account mopAccount;
-
-	private boolean hasImportKwh;
-
-	private boolean hasImportKvarh;
-
-	private boolean hasExportKwh;
-
-	private boolean hasExportKvarh;
 
 	private int agreedSupplyCapacity;
 
@@ -122,13 +104,11 @@ public class Mpan extends PersistentEntity {
 	}
 
 	Mpan(SupplyGeneration supplyGeneration, String mpanStr, Ssc ssc,
-			GspGroup gspGroup, Account hhdcAccount, Account supplierAccount,
-			boolean hasImportKwh, boolean hasImportKvarh, boolean hasExportKwh,
-			boolean hasExportKvarh, int agreedSupplyCapacity)
+			Account supplierAccount,
+			int agreedSupplyCapacity)
 			throws HttpException {
 		this.supplyGeneration = supplyGeneration;
-		update(mpanStr, ssc, gspGroup, hhdcAccount, supplierAccount,
-				hasImportKwh, hasImportKvarh, hasExportKwh, hasExportKvarh,
+		update(mpanStr, ssc, supplierAccount,
 				agreedSupplyCapacity);
 	}
 
@@ -180,30 +160,6 @@ public class Mpan extends PersistentEntity {
 		this.ssc = ssc;
 	}
 
-	public GspGroup getGspGroup() {
-		return gspGroup;
-	}
-
-	void setGspGroup(GspGroup gspGroup) {
-		this.gspGroup = gspGroup;
-	}
-
-	public Account getMopAccount() {
-		return mopAccount;
-	}
-
-	void setMopAccount(Account mopAccount) {
-		this.mopAccount = mopAccount;
-	}
-
-	public Account getHhdcAccount() {
-		return hhdcAccount;
-	}
-
-	void setHhdcAccount(Account hhdcAccount) {
-		this.hhdcAccount = hhdcAccount;
-	}
-
 	public Account getSupplierAccount() {
 		return supplierAccount;
 	}
@@ -212,37 +168,6 @@ public class Mpan extends PersistentEntity {
 		this.supplierAccount = supplierAccount;
 	}
 
-	public boolean getHasImportKwh() {
-		return hasImportKwh;
-	}
-
-	protected void setHasImportKwh(boolean hasImportKwh) {
-		this.hasImportKwh = hasImportKwh;
-	}
-
-	public boolean getHasImportKvarh() {
-		return hasImportKvarh;
-	}
-
-	protected void setHasImportKvarh(boolean hasImportKvarh) {
-		this.hasImportKvarh = hasImportKvarh;
-	}
-
-	public boolean getHasExportKwh() {
-		return hasExportKwh;
-	}
-
-	protected void setHasExportKwh(boolean hasExportKwh) {
-		this.hasExportKwh = hasExportKwh;
-	}
-
-	public boolean getHasExportKvarh() {
-		return hasExportKvarh;
-	}
-
-	protected void setHasExportKvarh(boolean hasExportKvarh) {
-		this.hasExportKvarh = hasExportKvarh;
-	}
 
 	public int getAgreedSupplyCapacity() {
 		return agreedSupplyCapacity;
@@ -251,7 +176,7 @@ public class Mpan extends PersistentEntity {
 	protected void setAgreedSupplyCapacity(int agreedSupplyCapacity) {
 		this.agreedSupplyCapacity = agreedSupplyCapacity;
 	}
-
+/*
 	public boolean hasChannel(boolean isImport, boolean isKwh) {
 		if (isImport) {
 			if (isKwh) {
@@ -267,24 +192,9 @@ public class Mpan extends PersistentEntity {
 			}
 		}
 	}
-
-	public void update(String mpan, Ssc ssc, GspGroup gspGroup,
-			Account hhdcAccount, Account supplierAccount, Boolean hasImportKwh,
-			Boolean hasImportKvarh, Boolean hasExportKwh,
-			Boolean hasExportKvarh, Integer agreedSupplyCapacity)
+*/
+	public void update(String mpan, Ssc ssc, Account supplierAccount, Integer agreedSupplyCapacity)
 			throws HttpException {
-		if (hasImportKwh == null) {
-			throw new InternalException("hasImportKwh can't be null");
-		}
-		if (hasImportKvarh == null) {
-			throw new InternalException("hasImportKvarh can't be null");
-		}
-		if (hasExportKwh == null) {
-			throw new InternalException("hasExportKwh can't be null");
-		}
-		if (hasExportKvarh == null) {
-			throw new InternalException("hasExportKvarh can't be null");
-		}
 		if (agreedSupplyCapacity == null) {
 			throw new InternalException("agreedSupplyCapacity can't be null");
 		}
@@ -328,28 +238,11 @@ public class Mpan extends PersistentEntity {
 					"A NHH supply must have a Standard Settlement Configuration.");
 		}
 		setSsc(ssc);
-		setGspGroup(gspGroup);
 		setCore(mpanCore);
-		if (hhdcAccount == null
-				&& (hasImportKwh == true || hasImportKvarh == true
-						|| hasExportKwh == true || hasExportKvarh == true)) {
-			throw new UserException(
-					"If an MPAN doesn't have an HHDC account, then it can't collect data on any channels.");
-		}
-		if (hhdcAccount != null
-				&& (!hasImportKwh && !hasImportKvarh && !hasExportKwh && !hasExportKvarh)) {
-			throw new UserException(
-					"If there's a HHDC account, surely there must be some data to collect?");
-		}
-		setHhdcAccount(hhdcAccount);
 		if (supplierAccount == null) {
 			throw new UserException("An MPAN must have a supplier account.");
 		}
 		setSupplierAccount(supplierAccount);
-		setHasImportKwh(hasImportKwh);
-		setHasImportKvarh(hasImportKvarh);
-		setHasExportKwh(hasExportKwh);
-		setHasExportKvarh(hasExportKvarh);
 		setAgreedSupplyCapacity(agreedSupplyCapacity);
 		// Debug.print("calling onmpanchange 66");
 		// supplyGeneration.onMpanChange();
@@ -362,12 +255,6 @@ public class Mpan extends PersistentEntity {
 
 	public Element toXml(Document doc) throws HttpException {
 		Element element = super.toXml(doc, "mpan");
-		element.setAttribute("has-import-kwh", Boolean.toString(hasImportKwh));
-		element.setAttribute("has-import-kvarh", Boolean
-				.toString(hasImportKvarh));
-		element.setAttribute("has-export-kwh", Boolean.toString(hasExportKwh));
-		element.setAttribute("has-export-kvarh", Boolean
-				.toString(hasExportKvarh));
 		element.setAttribute("agreed-supply-capacity", Integer
 				.toString(agreedSupplyCapacity));
 		element.setAttribute("mpan", pc.toXml(doc).getTextContent() + " "

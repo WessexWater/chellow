@@ -47,7 +47,6 @@ import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
 import net.sf.chellow.ui.GeneralImport;
 
-import org.hibernate.ScrollableResults;
 import org.hibernate.exception.ConstraintViolationException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -73,42 +72,95 @@ public class SupplyGeneration extends PersistentEntity {
 					"Start date", values, 2);
 			String finishDateStr = GeneralImport.addField(csvElement,
 					"Finish date", values, 3);
+
+			GspGroup gspGroup = null;
+			String gspGroupCode = GeneralImport.addField(csvElement,
+					"GSP Group", values, 5);
+			if (gspGroupCode.equals(GeneralImport.NO_CHANGE)) {
+				gspGroup = supplyGeneration.getGspGroup();
+			} else {
+				gspGroup = GspGroup.getGspGroup(gspGroupCode);
+			}
 			String meterSerialNumber = GeneralImport.addField(csvElement,
 					"Meter Serial Number", values, 4);
 			Meter meter = null;
-			if (meterSerialNumber.length() != 0) {
+			if (meterSerialNumber.equals(GeneralImport.NO_CHANGE)) {
+				meter = supplyGeneration
+				.getMeter();
+			}
+			else if (meterSerialNumber.length() != 0) {
 				meter = supply.findMeter(meterSerialNumber);
 				if (meter == null) {
 					meter = supply.insertMeter(meterSerialNumber);
 				}
 			}
+			String hasImportKwhStr = GeneralImport.addField(
+					csvElement, "Has import kWh?", values, 9);
+			boolean hasImportKwh = hasImportKwhStr
+					.equals(GeneralImport.NO_CHANGE) ? supplyGeneration.getHasImportKwh()
+					: Boolean.parseBoolean(hasImportKwhStr);
+			String hasImportKvarhStr = GeneralImport.addField(
+					csvElement, "Has import kVArh?", values, 10);
+			boolean hasImportKvarh = hasImportKvarhStr
+					.equals(GeneralImport.NO_CHANGE) ? supplyGeneration.getHasImportKvarh()
+					: Boolean.parseBoolean(hasImportKvarhStr);
+			String hasExportKwhStr = GeneralImport.addField(
+					csvElement, "Has export kWh?", values, 11);
+			boolean hasExportKwh = hasExportKwhStr
+					.equals(GeneralImport.NO_CHANGE) ? supplyGeneration.getHasExportKwh()
+					: Boolean.parseBoolean(hasExportKwhStr);
+			String hasExportKvarhStr = GeneralImport.addField(
+					csvElement, "Has export kVArh?", values, 12);
+			boolean hasExportKvarh = hasExportKvarhStr
+					.equals(GeneralImport.NO_CHANGE) ? supplyGeneration.getHasExportKvarh()
+					: Boolean.parseBoolean(hasExportKvarhStr);
+					HhdcContract hhdcContract = null;
+					Account hhdcAccount = null;
+				String hhdcContractName = GeneralImport.addField(
+						csvElement, "HHDC Contract", values, 13);
+				if (hhdcContractName.equals(GeneralImport.NO_CHANGE)) {
+					Account account = supplyGeneration.getHhdcAccount();
+					if (account == null) {
+						throw new UserException(
+								"There isn't an existing HHDC contract");
+					}
+					hhdcContract = HhdcContract
+							.getHhdcContract(account.getContract().getId());
+				} else if (hhdcContractName.length() > 0) {
+					hhdcContract = HhdcContract
+							.getHhdcContract(hhdcContractName);
+				}
+				String hhdcAccountReference = GeneralImport.addField(
+						csvElement, "HHDC account reference",
+						values, 14);
+				if (hhdcAccountReference
+						.equals(GeneralImport.NO_CHANGE)) {
+					hhdcAccount = supplyGeneration.getHhdcAccount();
+					if (hhdcAccount == null) {
+						throw new UserException(
+								"There isn't an existing HHDC account");
+					}
+				} else if (hhdcAccountReference.length() > 0) {
+					hhdcAccount = hhdcContract
+							.getAccount(hhdcAccountReference);
+				}
 			supplyGeneration.update(startDateStr
 					.equals(GeneralImport.NO_CHANGE) ? supplyGeneration
 					.getStartDate() : new HhEndDate("start", startDateStr),
 					finishDateStr.length() == 0 ? null : (finishDateStr
 							.equals(GeneralImport.NO_CHANGE) ? supplyGeneration
 							.getFinishDate() : new HhEndDate("finish",
-							finishDateStr)), meterSerialNumber
-							.equals(GeneralImport.NO_CHANGE) ? supplyGeneration
-							.getMeter() : meter);
+							finishDateStr)), gspGroup, hasImportKwh, hasImportKvarh, hasExportKwh, hasExportKvarh, hhdcAccount, meter);
 			String importMpanStr = GeneralImport.addField(csvElement,
 					"Import MPAN", values, 5);
-			boolean importHasImportKwh = false;
-			boolean importHasImportKvarh = false;
-			boolean importHasExportKwh = false;
-			boolean importHasExportKvarh = false;
+			
 			String importSscCode = GeneralImport.addField(csvElement,
 					"Import SSC", values, 6);
 			Ssc importSsc = null;
-			String importGspGroupCode = GeneralImport.addField(csvElement,
-					"Import GSP Group", values, 7);
-			GspGroup importGspGroup = null;
 			String importAgreedSupplyCapacityStr = GeneralImport.addField(
 					csvElement, "Import Agreed Supply Capacity", values, 8);
 			Integer importAgreedSupplyCapacity = null;
 			Mpan existingImportMpan = supplyGeneration.getImportMpan();
-			HhdcContract importHhdcContract = null;
-			Account importHhdcAccount = null;
 			SupplierContract importSupplierContract = null;
 			Account importSupplierAccount = null;
 			if (importMpanStr.equals(GeneralImport.NO_CHANGE)) {
@@ -129,16 +181,6 @@ public class SupplyGeneration extends PersistentEntity {
 					importSsc = importSscCode.length() == 0 ? null : Ssc
 							.getSsc(importSscCode);
 				}
-				if (importGspGroupCode.equals(GeneralImport.NO_CHANGE)) {
-					if (existingImportMpan == null) {
-						throw new UserException(
-								"There isn't an existing import MPAN.");
-					} else {
-						importGspGroup = existingImportMpan.getGspGroup();
-					}
-				} else {
-					importGspGroup = GspGroup.getGspGroup(importGspGroupCode);
-				}
 				if (importAgreedSupplyCapacityStr
 						.equals(GeneralImport.NO_CHANGE)) {
 					if (existingImportMpan == null) {
@@ -156,80 +198,6 @@ public class SupplyGeneration extends PersistentEntity {
 						throw new UserException(
 								"The import agreed supply capacity must be an integer. "
 										+ e.getMessage());
-					}
-				}
-				String importHasImportKwhStr = GeneralImport.addField(
-						csvElement, "Import is import kWh", values, 9);
-				importHasImportKwh = importHasImportKwhStr
-						.equals(GeneralImport.NO_CHANGE) ? existingImportMpan == null ? false
-						: existingImportMpan.getHasImportKwh()
-						: Boolean.parseBoolean(importHasImportKwhStr);
-				String importHasImportKvarhStr = GeneralImport.addField(
-						csvElement, "Import is import kVArh", values, 10);
-				importHasImportKvarh = importHasImportKvarhStr
-						.equals(GeneralImport.NO_CHANGE) ? existingImportMpan == null ? false
-						: existingImportMpan.getHasImportKvarh()
-						: Boolean.parseBoolean(importHasImportKvarhStr);
-				String importHasExportKwhStr = GeneralImport.addField(
-						csvElement, "Import is export kWh", values, 11);
-				importHasExportKwh = importHasExportKwhStr
-						.equals(GeneralImport.NO_CHANGE) ? existingImportMpan == null ? false
-						: existingImportMpan.getHasExportKwh()
-						: Boolean.parseBoolean(importHasExportKwhStr);
-				String importHasExportKvarhStr = GeneralImport.addField(
-						csvElement, "Import is export kVArh", values, 12);
-				importHasExportKvarh = importHasExportKvarhStr
-						.equals(GeneralImport.NO_CHANGE) ? existingImportMpan == null ? false
-						: existingImportMpan.getHasExportKvarh()
-						: Boolean.parseBoolean(importHasExportKvarhStr);
-				if (importHasImportKwh || importHasImportKvarh
-						|| importHasExportKwh || importHasExportKvarh) {
-					/*
-					 * String importHhdceStr = values[13];
-					 * csvElement.appendChild(getField("Import DCE",
-					 * importHhdceStr)); if (importHhdceStr.equals(NO_CHANGE)) {
-					 * if (existingImportMpan.getHhdceContract() == null) {
-					 * throw new UserException( "There isn't an existing DCE
-					 * contract"); } else { importHhdce = existingImportMpan
-					 * .getHhdceContract().getProvider(); } } else { importHhdce =
-					 * Provider.getProvider( importHhdceStr, MarketRole.HHDC); }
-					 */
-					String importHhdcContractName = GeneralImport.addField(
-							csvElement, "Import HHDC Contract", values, 13);
-					if (importHhdcContractName.equals(GeneralImport.NO_CHANGE)) {
-						if (existingImportMpan == null) {
-							throw new UserException(
-									"There isn't an existing HHDC contract");
-						}
-						Account account = existingImportMpan.getHhdcAccount();
-						if (account == null) {
-							throw new UserException(
-									"There isn't an existing HHDC contract");
-						}
-						importHhdcContract = HhdcContract
-								.getHhdcContract(account.getContract().getId());
-					} else {
-						importHhdcContract = HhdcContract
-								.getHhdcContract(importHhdcContractName);
-					}
-					String importHhdcAccountReference = GeneralImport.addField(
-							csvElement, "Import HHDC account reference",
-							values, 14);
-					if (importHhdcAccountReference
-							.equals(GeneralImport.NO_CHANGE)) {
-						if (existingImportMpan == null) {
-							throw new UserException(
-									"There isn't an existing import HHDC account");
-						}
-						Account account = existingImportMpan.getHhdcAccount();
-						if (account == null) {
-							throw new UserException(
-									"There isn't an existing HHDC account");
-						}
-						importHhdcAccount = account;
-					} else {
-						importHhdcAccount = importHhdcContract
-								.getAccount(importHhdcAccountReference);
 					}
 				}
 				String importContractSupplierName = GeneralImport.addField(
@@ -273,11 +241,6 @@ public class SupplyGeneration extends PersistentEntity {
 			String exportMpanStr = GeneralImport.addField(csvElement,
 					"Eport MPAN", values, 17);
 			Ssc exportSsc = null;
-			GspGroup exportGspGroup = null;
-			boolean exportHasImportKwh = false;
-			boolean exportHasImportKvarh = false;
-			boolean exportHasExportKwh = false;
-			boolean exportHasExportKvarh = false;
 			Mpan existingExportMpan = supplyGeneration.getExportMpan();
 			Integer exportAgreedSupplyCapacity = null;
 			if (exportMpanStr.equals(GeneralImport.NO_CHANGE)) {
@@ -286,7 +249,6 @@ public class SupplyGeneration extends PersistentEntity {
 			} else if (exportMpanStr.trim().length() == 0) {
 				exportMpanStr = null;
 			}
-			Account exportHhdcAccount = null;
 			SupplierContract exportSupplierContract = null;
 			Account exportAccountSupplier = null;
 			if (exportMpanStr != null) {
@@ -302,18 +264,6 @@ public class SupplyGeneration extends PersistentEntity {
 				} else {
 					exportSsc = exportSscCode.length() == 0 ? null : Ssc
 							.getSsc(exportSscCode);
-				}
-				String exportGspGroupCode = GeneralImport.addField(csvElement,
-						"Export GSP Group", values, 19);
-				if (exportGspGroupCode.equals(GeneralImport.NO_CHANGE)) {
-					if (existingExportMpan == null) {
-						throw new UserException(
-								"There isn't an existing export MPAN.");
-					} else {
-						exportGspGroup = existingExportMpan.getGspGroup();
-					}
-				} else {
-					exportGspGroup = GspGroup.getGspGroup(exportGspGroupCode);
 				}
 				String exportAgreedSupplyCapacityStr = GeneralImport
 						.addField(csvElement, "Export Agreed Supply Capacity",
@@ -335,71 +285,6 @@ public class SupplyGeneration extends PersistentEntity {
 						throw new UserException(
 								"The export supply capacity must be an integer. "
 										+ e.getMessage());
-					}
-				}
-				String exportHasImportKwhStr = GeneralImport.addField(
-						csvElement, "Export is import kWh", values, 21);
-				exportHasImportKwh = exportHasImportKwhStr
-						.equals(GeneralImport.NO_CHANGE) ? existingExportMpan == null ? false
-						: existingExportMpan.getHasImportKwh()
-						: Boolean.parseBoolean(exportHasImportKwhStr);
-				String exportHasImportKvarhStr = GeneralImport.addField(
-						csvElement, "Export is import kVArh", values, 22);
-				exportHasImportKvarh = exportHasImportKvarhStr
-						.equals(GeneralImport.NO_CHANGE) ? existingExportMpan == null ? false
-						: existingExportMpan.getHasImportKvarh()
-						: Boolean.parseBoolean(exportHasImportKvarhStr);
-				String exportHasExportKwhStr = GeneralImport.addField(
-						csvElement, "Export is export kWh", values, 23);
-				exportHasExportKwh = exportHasExportKwhStr
-						.equals(GeneralImport.NO_CHANGE) ? existingExportMpan == null ? false
-						: existingExportMpan.getHasExportKwh()
-						: Boolean.parseBoolean(exportHasExportKwhStr);
-				String exportHasExportKvarhStr = GeneralImport.addField(
-						csvElement, "Export is export kVArh", values, 24);
-				exportHasExportKvarh = exportHasExportKvarhStr
-						.equals(GeneralImport.NO_CHANGE) ? existingExportMpan == null ? false
-						: existingExportMpan.getHasExportKvarh()
-						: Boolean.parseBoolean(exportHasExportKvarhStr);
-				HhdcContract exportHhdcContract = null;
-				if (exportHasImportKwh || exportHasImportKvarh
-						|| exportHasExportKwh || exportHasExportKvarh) {
-					String exportHhdcContractName = GeneralImport
-							.addField(csvElement, "Export HHDC Contract Name",
-									values, 25);
-					if (exportHhdcContractName.equals(GeneralImport.NO_CHANGE)) {
-						if (existingExportMpan == null) {
-							throw new UserException(
-									"There isn't an existing export HHDC contract.");
-						}
-						Account account = existingExportMpan.getHhdcAccount();
-						if (account == null) {
-							throw new UserException(
-									"There isn't an existing export HHDC contract.");
-						}
-						exportHhdcContract = HhdcContract
-								.getHhdcContract(account.getContract().getId());
-					} else {
-						exportHhdcContract = HhdcContract
-								.getHhdcContract(exportHhdcContractName);
-					}
-					String exportHhdcAccountReference = GeneralImport.addField(
-							csvElement, "Export HHDC account", values, 26);
-					if (exportHhdcAccountReference
-							.equals(GeneralImport.NO_CHANGE)) {
-						if (existingExportMpan == null) {
-							throw new UserException(
-									"There isn't an existing export supplier account.");
-						}
-						Account account = existingExportMpan.getHhdcAccount();
-						if (account == null) {
-							throw new UserException(
-									"There isn't an existing export supplier account.");
-						}
-						exportHhdcAccount = existingExportMpan.getHhdcAccount();
-					} else {
-						exportHhdcAccount = exportHhdcContract
-								.getAccount(exportHhdcAccountReference);
 					}
 				}
 				String exportContractSupplierName = GeneralImport.addField(
@@ -436,13 +321,9 @@ public class SupplyGeneration extends PersistentEntity {
 				}
 			}
 			supplyGeneration.addOrUpdateMpans(importMpanStr, importSsc,
-					importGspGroup, importHhdcAccount, importSupplierAccount,
-					importHasImportKwh, importHasImportKvarh,
-					importHasExportKwh, importHasExportKvarh,
+					importSupplierAccount,
 					importAgreedSupplyCapacity, exportMpanStr, exportSsc,
-					exportGspGroup, exportHhdcAccount, exportAccountSupplier,
-					exportHasImportKwh, exportHasImportKvarh,
-					exportHasExportKwh, exportHasExportKvarh,
+				exportAccountSupplier,
 					exportAgreedSupplyCapacity);
 		} else if (action.equals("insert")) {
 			String siteCode = GeneralImport.addField(csvElement, "Site Code",
@@ -636,6 +517,21 @@ public class SupplyGeneration extends PersistentEntity {
 	private HhEndDate startDate;
 
 	private HhEndDate finishDate;
+	private GspGroup gspGroup;
+	private Account mopAccount;
+	private Meter meter;
+	
+	private Account hhdcAccount;
+	
+	private boolean hasImportKwh;
+
+	private boolean hasImportKvarh;
+
+	private boolean hasExportKwh;
+
+	private boolean hasExportKvarh;
+	
+	private Set<Channel> channels;
 
 	private Mpan importMpan;
 
@@ -643,20 +539,16 @@ public class SupplyGeneration extends PersistentEntity {
 
 	private Set<Mpan> mpans;
 
-	private Meter meter;
-
-	private Set<Channel> channels;
-
 	SupplyGeneration() {
 	}
 
-	SupplyGeneration(Supply supply, HhEndDate startDate, HhEndDate finishDate,
-			Meter meter) throws HttpException {
+	SupplyGeneration(Supply supply, HhEndDate startDate, HhEndDate finishDate, GspGroup gspGroup,
+			boolean hasImportKwh, boolean hasImportKvarh, boolean hasExportKwh, boolean hasExportKvarh,Account hhdcAccount,  Meter meter) throws HttpException {
 		setChannels(new HashSet<Channel>());
 		setSupply(supply);
 		setSiteSupplyGenerations(new HashSet<SiteSupplyGeneration>());
 		setMpans(new HashSet<Mpan>());
-		internalUpdate(startDate, finishDate, meter);
+		internalUpdate(startDate, finishDate, gspGroup, hasImportKwh, hasImportKvarh, hasExportKwh, hasExportKvarh, hhdcAccount, meter);
 	}
 
 	void setSupply(Supply supply) {
@@ -690,6 +582,61 @@ public class SupplyGeneration extends PersistentEntity {
 
 	void setFinishDate(HhEndDate finishDate) {
 		this.finishDate = finishDate;
+	}
+	
+	public Account getMopAccount() {
+		return mopAccount;
+	}
+
+	void setMopAccount(Account mopAccount) {
+		this.mopAccount = mopAccount;
+	}
+
+	public Account getHhdcAccount() {
+		return hhdcAccount;
+	}
+
+	void setHhdcAccount(Account hhdcAccount) {
+		this.hhdcAccount = hhdcAccount;
+	}
+
+	public GspGroup getGspGroup() {
+		return gspGroup;
+	}
+
+	void setGspGroup(GspGroup gspGroup) {
+		this.gspGroup = gspGroup;
+	}
+	public boolean getHasImportKwh() {
+		return hasImportKwh;
+	}
+
+	protected void setHasImportKwh(boolean hasImportKwh) {
+		this.hasImportKwh = hasImportKwh;
+	}
+
+	public boolean getHasImportKvarh() {
+		return hasImportKvarh;
+	}
+
+	protected void setHasImportKvarh(boolean hasImportKvarh) {
+		this.hasImportKvarh = hasImportKvarh;
+	}
+
+	public boolean getHasExportKwh() {
+		return hasExportKwh;
+	}
+
+	protected void setHasExportKwh(boolean hasExportKwh) {
+		this.hasExportKwh = hasExportKwh;
+	}
+
+	public boolean getHasExportKvarh() {
+		return hasExportKvarh;
+	}
+
+	protected void setHasExportKvarh(boolean hasExportKvarh) {
+		this.hasExportKvarh = hasExportKvarh;
 	}
 
 	public Mpan getImportMpan() {
@@ -769,23 +716,13 @@ public class SupplyGeneration extends PersistentEntity {
 	}
 
 	public void addOrUpdateMpans(String importMpanStr, Ssc importSsc,
-			GspGroup importGspGroup, Account importHhdcAccount,
-			Account importSupplierAccount, Boolean importHasImportKwh,
-			Boolean importHasImportKvarh, Boolean importHasExportKwh,
-			Boolean importHasExportKvarh, Integer importAgreedSupplyCapacity,
-			String exportMpanStr, Ssc exportSsc, GspGroup exportGspGroup,
-			Account exportHhdcAccount, Account exportSupplierAccount,
-			Boolean exportHasImportKwh, Boolean exportHasImportKvarh,
-			Boolean exportHasExportKwh, Boolean exportHasExportKvarh,
+			Account importSupplierAccount, Integer importAgreedSupplyCapacity,
+			String exportMpanStr, Ssc exportSsc, Account exportSupplierAccount,
 			Integer exportAgreedSupplyCapacity) throws HttpException {
-		HhdcContract originalHhdcContract = getHhdcContract();
 		if (importMpan == null) {
 			if (importMpanStr != null && importMpanStr.length() != 0) {
 				setImportMpan(new Mpan(this, importMpanStr, importSsc,
-						importGspGroup, importHhdcAccount,
-						importSupplierAccount, importHasImportKwh,
-						importHasImportKvarh, importHasExportKwh,
-						importHasExportKvarh, importAgreedSupplyCapacity));
+						importSupplierAccount, importAgreedSupplyCapacity));
 				mpans.add(getImportMpan());
 			}
 		} else {
@@ -793,20 +730,14 @@ public class SupplyGeneration extends PersistentEntity {
 				mpans.remove(importMpan);
 				setImportMpan(null);
 			} else {
-				importMpan.update(importMpanStr, importSsc, importGspGroup,
-						importHhdcAccount, importSupplierAccount,
-						importHasImportKwh, importHasImportKvarh,
-						importHasExportKwh, importHasExportKvarh,
+				importMpan.update(importMpanStr, importSsc, importSupplierAccount,
 						importAgreedSupplyCapacity);
 			}
 		}
 		if (exportMpan == null) {
 			if (exportMpanStr != null && exportMpanStr.length() != 0) {
 				setExportMpan(new Mpan(this, exportMpanStr, exportSsc,
-						exportGspGroup, exportHhdcAccount,
-						exportSupplierAccount, exportHasImportKwh,
-						exportHasImportKvarh, exportHasExportKwh,
-						exportHasExportKvarh, exportAgreedSupplyCapacity));
+						exportSupplierAccount, exportAgreedSupplyCapacity));
 				mpans.add(getExportMpan());
 			}
 		} else {
@@ -814,10 +745,7 @@ public class SupplyGeneration extends PersistentEntity {
 				mpans.remove(exportMpan);
 				setExportMpan(null);
 			} else {
-				exportMpan.update(exportMpanStr, exportSsc, exportGspGroup,
-						exportHhdcAccount, exportSupplierAccount,
-						exportHasImportKwh, exportHasImportKvarh,
-						exportHasExportKwh, exportHasExportKvarh,
+				exportMpan.update(exportMpanStr, exportSsc, exportSupplierAccount,
 						exportAgreedSupplyCapacity);
 			}
 		}
@@ -868,13 +796,6 @@ public class SupplyGeneration extends PersistentEntity {
 			}
 		}
 		if (importMpan != null && exportMpan != null) {
-			if (importHhdcAccount != null
-					&& exportHhdcAccount != null
-					&& !importHhdcAccount.getContract().getId().equals(
-							exportHhdcAccount.getContract().getId())) {
-				throw new UserException(
-						"The HHDC for the import and export MPANs must be the same.");
-			}
 			if (!importMpan.getCore().getDso().equals(
 					exportMpan.getCore().getDso())) {
 				throw new UserException(
@@ -909,30 +830,32 @@ public class SupplyGeneration extends PersistentEntity {
 			}
 		}
 		Hiber.flush();
-		HhdcContract hhdcContract = getHhdcContract();
-		if (originalHhdcContract != null
-				&& !originalHhdcContract.equals(hhdcContract)
-				&& hhdcContract != null) {
-			ScrollableResults channelSnags = Hiber
-					.session()
-					.createQuery(
-							"from ChannelSnag snag where snag.channel.supplyGeneration = :supplyGeneration and snag.startDate.date >= :startDate and (snag.channel.supplyGeneration.finishDate.date is null or snag.finishDate.date <= :finishDate)")
-					.setEntity("supplyGeneration", this).setTimestamp(
-							"startDate", startDate.getDate()).setTimestamp(
-							"finishDate",
-							finishDate == null ? null : finishDate.getDate())
-					.scroll();
-			while (channelSnags.next()) {
-				((ChannelSnag) channelSnags.get(0)).setContract(hhdcContract);
-			}
-			channelSnags.close();
-		}
 		// more optimization possible here, doesn't necessarily need to check
 		// data.
-		synchronizeChannel(true, true);
-		synchronizeChannel(true, false);
-		synchronizeChannel(false, true);
-		synchronizeChannel(false, false);
+		for (boolean isImport : new boolean[] {true, false}) {
+			for (boolean isKwh : new boolean[] {true, false}) {
+				boolean hasChannel = false;
+				if (isImport) {
+					if (isKwh) {
+						hasChannel = hasImportKwh;
+					} else {
+						hasChannel = hasImportKvarh;
+					}
+				} else {
+					if (isKwh) {
+						hasChannel = hasExportKwh;
+					} else {
+						hasChannel = hasExportKvarh;
+					}
+				}
+				if (hasChannel && getChannel(isImport, isKwh) == null) {
+					insertChannel(isImport, isKwh);
+				}
+				if (!hasChannel && getChannel(isImport, isKwh) != null) {
+					deleteChannel(isImport, isKwh);
+				}		
+			}	
+		}
 		// Debug.print("starting onsupgen change. 99");
 		Hiber.flush();
 		checkMpanRelationship();
@@ -940,23 +863,7 @@ public class SupplyGeneration extends PersistentEntity {
 		checkForMissing(getStartDate(), getFinishDate());
 		// Debug.print("finished add or update.");
 	}
-
-	private void synchronizeChannel(boolean isImport, boolean isKwh)
-			throws HttpException {
-		boolean importHasChannel = importMpan == null ? false : importMpan
-				.hasChannel(isImport, isKwh);
-		boolean exportHasChannel = exportMpan == null ? false : exportMpan
-				.hasChannel(isImport, isKwh);
-		if ((importHasChannel || exportHasChannel)
-				&& getChannel(isImport, isKwh) == null) {
-			insertChannel(isImport, isKwh);
-		}
-		if (!importHasChannel && !exportHasChannel
-				&& getChannel(isImport, isKwh) != null) {
-			deleteChannel(isImport, isKwh);
-		}
-	}
-
+	
 	public Mpan getExportMpan() {
 		return exportMpan;
 	}
@@ -981,16 +888,7 @@ public class SupplyGeneration extends PersistentEntity {
 		this.meter = meter;
 	}
 
-	public HhdcContract getHhdcContract() throws HttpException {
-		for (Mpan mpan : getMpans()) {
-			if (mpan.getHhdcAccount() != null) {
-				return HhdcContract.getHhdcContract(mpan.getHhdcAccount()
-						.getContract().getId());
-			}
-		}
-		return null;
-	}
-
+/*
 	public MpanCore getMpanCore(boolean isImport, boolean isKwh)
 			throws HttpException {
 		MpanCore mpanCore = null;
@@ -1003,7 +901,7 @@ public class SupplyGeneration extends PersistentEntity {
 		}
 		return mpanCore;
 	}
-
+*/
 	public Channel getChannel(boolean isImport, boolean isKwh) {
 		for (Channel candidateChannel : channels) {
 			if (candidateChannel.getIsImport() == isImport
@@ -1015,7 +913,7 @@ public class SupplyGeneration extends PersistentEntity {
 	}
 
 	public void internalUpdate(HhEndDate startDate, HhEndDate finishDate,
-			Meter meter) throws HttpException {
+			GspGroup gspGroup, boolean hasImportKwh, boolean hasImportKvarh, boolean hasExportKwh, boolean hasExportKvarh, Account hhdcAccount, Meter meter) throws HttpException {
 		if (finishDate != null
 				&& startDate.getDate().after(finishDate.getDate())) {
 			throw new UserException(
@@ -1026,6 +924,24 @@ public class SupplyGeneration extends PersistentEntity {
 		}
 		setStartDate(startDate);
 		setFinishDate(finishDate);
+		setGspGroup(gspGroup);
+		setHasImportKwh(hasImportKwh);
+		setHasImportKvarh(hasImportKvarh);
+		setHasExportKwh(hasExportKwh);
+		setHasExportKvarh(hasExportKvarh);
+		if (hhdcAccount == null
+				&& (hasImportKwh || hasImportKvarh || hasExportKwh || hasExportKvarh)) {
+			throw new UserException(
+					"If a Supply Generation doesn't have an HHDC account, then it can't collect data on any channels.");
+		}
+		/*
+		if (hhdcAccount != null
+				&& (!hasImportKwh && !hasImportKvarh && !hasExportKwh && !hasExportKvarh)) {
+			throw new UserException(
+					"If there's a HHDC account, surely there must be some data to collect?");
+		}
+		*/
+		setHhdcAccount(hhdcAccount);
 		setMeter(meter);
 		// resolve any snags channel snags outside range
 		for (Channel channel : channels) {
@@ -1054,7 +970,7 @@ public class SupplyGeneration extends PersistentEntity {
 	}
 
 	private void checkMpanRelationship() throws HttpException {
-		HhdcContract hhdcContract = getHhdcContract();
+		HhdcContract hhdcContract = HhdcContract.getHhdcContract(hhdcAccount.getContract().getId());
 		if (hhdcContract != null) {
 			HhEndDate hhdcContractStartDate = hhdcContract.getStartRateScript()
 					.getStartDate();
@@ -1097,7 +1013,7 @@ public class SupplyGeneration extends PersistentEntity {
 		}
 	}
 
-	public void update(HhEndDate startDate, HhEndDate finishDate, Meter meter)
+	public void update(HhEndDate startDate, HhEndDate finishDate, GspGroup gspGroup, boolean hasImportKwh, boolean hasImportKvarh, boolean hasExportKwh, boolean hasExportKvarh,Account hhdcAccount, Meter meter)
 			throws HttpException {
 		HhEndDate originalStartDate = getStartDate();
 		HhEndDate originalFinishDate = getFinishDate();
@@ -1115,7 +1031,7 @@ public class SupplyGeneration extends PersistentEntity {
 						"The start date must be after the start date of the previous generation.");
 			}
 			previousSupplyGeneration.internalUpdate(previousSupplyGeneration
-					.getStartDate(), startDate.getPrevious(), meter);
+					.getStartDate(), startDate.getPrevious(), previousSupplyGeneration.getGspGroup(), previousSupplyGeneration.getHasImportKwh(), previousSupplyGeneration.getHasImportKvarh(), previousSupplyGeneration.getHasExportKwh(), previousSupplyGeneration.getHasExportKvarh(), previousSupplyGeneration.getHhdcAccount(), previousSupplyGeneration.getMeter());
 		}
 		SupplyGeneration nextSupplyGeneration = supply.getGenerationNext(this);
 		if (nextSupplyGeneration != null) {
@@ -1130,10 +1046,10 @@ public class SupplyGeneration extends PersistentEntity {
 						"The finish date must be before the finish date of the next generation.");
 			}
 			nextSupplyGeneration.internalUpdate(finishDate.getNext(),
-					nextSupplyGeneration.getFinishDate(), nextSupplyGeneration
+					nextSupplyGeneration.getFinishDate(), nextSupplyGeneration.getGspGroup(), nextSupplyGeneration.getHasImportKwh(), nextSupplyGeneration.getHasImportKvarh(), nextSupplyGeneration.getHasExportKwh(), nextSupplyGeneration.getHasExportKvarh(), nextSupplyGeneration.getHhdcAccount(), nextSupplyGeneration
 							.getMeter());
 		}
-		internalUpdate(startDate, finishDate, meter);
+		internalUpdate(startDate, finishDate, gspGroup, hasImportKwh, hasImportKvarh, hasExportKwh, hasExportKvarh, hhdcAccount,  meter);
 		Hiber.flush();
 		checkMpanRelationship();
 		HhEndDate checkFinishDate = originalStartDate;
@@ -1178,18 +1094,7 @@ public class SupplyGeneration extends PersistentEntity {
 		return element;
 	}
 
-	Channel insertChannel(boolean isImport, boolean isKwh) throws HttpException {
-		boolean hasAccount = false;
-		for (Mpan mpan : getMpans()) {
-			if (mpan.getHhdcAccount() != null) {
-				hasAccount = true;
-				break;
-			}
-		}
-		if (!hasAccount) {
-			throw new UserException(
-					"You can't add a hh data channel to a supply generation if neither of the MPANs has an HHDC account.");
-		}
+	private Channel insertChannel(boolean isImport, boolean isKwh) throws HttpException {
 		Channel channel = new Channel(this, isImport, isKwh);
 		try {
 			Hiber.session().save(channel);
@@ -1306,25 +1211,43 @@ public class SupplyGeneration extends PersistentEntity {
 				Hiber.commit();
 				inv.sendOk(document());
 			} else {
-				String importMpanStr = null;
-				Ssc importSsc = null;
-				GspGroup importGspGroup = null;
-				Integer importAgreedSupplyCapacity = null;
 				Date startDate = inv.getDate("start-date");
-				Date finishDate = null;
-				String meterSerialNumber = inv.getString("meter-serial-number");
-				HhdcContract importHhdcContract = null;
-				Account importHhdcAccount = null;
+				Long gspGroupId = inv.getLong("gsp-group-id");
+				boolean hasImportKwh = inv
+				.getBoolean("has-import-kwh");
+		boolean hasImportKvarh = inv
+				.getBoolean("has-import-kvarh");
+		boolean hasExportKwh = inv
+				.getBoolean("has-export-kwh");
+		boolean hasExportKvarh = inv
+				.getBoolean("has-export-kvarh");
+		String meterSerialNumber = inv.getString("meter-serial-number");
+
+		Date finishDate = null;
+		String importMpanStr = null;
+		Ssc importSsc = null;
+		GspGroup gspGroup = GspGroup.getGspGroup(gspGroupId);
+				Integer importAgreedSupplyCapacity = null;
+				HhdcContract hhdcContract = null;
+				Account hhdcAccount = null;
 				SupplierContract importSupplierContract = null;
 				Account importSupplierAccount = null;
-				boolean importHasImportKwh = false;
-				boolean importHasImportKvarh = false;
-				boolean importHasExportKwh = false;
-				boolean importHasExportKvarh = false;
 				boolean isEnded = inv.getBoolean("is-ended");
 				if (isEnded) {
 					finishDate = inv.getDate("finish-date");
 				}
+				String hhdcContractName = inv
+				.getString("hhdc-contract-name");
+		hhdcContractName = hhdcContractName.trim();
+		if (hhdcContractName.length() != 0) {
+			hhdcContract = HhdcContract
+					.getHhdcContract(hhdcContractName);
+			String hhdcAccountReference = inv
+					.getString("hhdc-account-reference");
+			hhdcAccount = hhdcContract
+					.getAccount(hhdcAccountReference
+							.trim());
+		}
 				boolean hasImportMpan = inv.getBoolean("has-import-mpan");
 
 				if (hasImportMpan) {
@@ -1335,7 +1258,7 @@ public class SupplyGeneration extends PersistentEntity {
 							.getString("import-llfc-code");
 					String importMtcCode = inv.getString("import-mtc-code");
 					String importSscCode = inv.getString("import-ssc-code");
-					Long importGspGroupId = inv.getLong("import-gsp-group-id");
+					
 					if (!inv.isValid()) {
 						throw new UserException(document());
 					}
@@ -1343,36 +1266,14 @@ public class SupplyGeneration extends PersistentEntity {
 					if (importSscCode.trim().length() > 0) {
 						importSsc = Ssc.getSsc(importSscCode);
 					}
-					importGspGroup = GspGroup.getGspGroup(importGspGroupId);
+					
 					importMpanStr = importPc.codeAsString() + importMtcCode
 							+ importLlfcCodeStr + importMpanCoreStr;
 					importAgreedSupplyCapacity = inv
 							.getInteger("import-agreed-supply-capacity");
-					importHasImportKwh = inv
-							.getBoolean("import-has-import-kwh");
-					importHasImportKvarh = inv
-							.getBoolean("import-has-import-kvarh");
-					importHasExportKwh = inv
-							.getBoolean("import-has-export-kwh");
-					importHasExportKvarh = inv
-							.getBoolean("import-has-export-kvarh");
+					
 					if (!inv.isValid()) {
 						throw new UserException();
-					}
-					if (importHasImportKwh || importHasImportKvarh
-							|| importHasExportKwh || importHasExportKvarh) {
-						String importHhdcContractName = inv
-								.getString("import-hhdc-contract-name");
-						importHhdcContractName = importHhdcContractName.trim();
-						if (importHhdcContractName.length() != 0) {
-							importHhdcContract = HhdcContract
-									.getHhdcContract(importHhdcContractName);
-							String importHhdcAccountReference = inv
-									.getString("import-hhdc-account-reference");
-							importHhdcAccount = importHhdcContract
-									.getAccount(importHhdcAccountReference
-											.trim());
-						}
 					}
 					String importSupplierContractName = inv
 							.getString("import-supplier-contract-name");
@@ -1386,16 +1287,9 @@ public class SupplyGeneration extends PersistentEntity {
 				}
 				String exportMpanStr = null;
 				Ssc exportSsc = null;
-				GspGroup exportGspGroup = null;
 				Integer exportAgreedSupplyCapacity = null;
-				Account exportHhdcAccount = null;
-				HhdcContract exportHhdcContract = null;
 				Account exportSupplierAccount = null;
 				SupplierContract exportSupplierContract = null;
-				boolean exportHasImportKwh = false;
-				boolean exportHasImportKvarh = false;
-				boolean exportHasExportKwh = false;
-				boolean exportHasExportKvarh = false;
 				boolean hasExportMpan = inv.getBoolean("has-export-mpan");
 				if (hasExportMpan) {
 					String exportMpanCoreStr = inv
@@ -1410,38 +1304,13 @@ public class SupplyGeneration extends PersistentEntity {
 					if (exportSscCode.trim().length() > 0) {
 						exportSsc = Ssc.getSsc(exportSscCode);
 					}
-					Long exportGspGroupId = inv.getLong("export-gsp-group-id");
 					Pc exportPc = Pc.getPc(exportPcId);
 					exportMpanStr = exportPc.codeAsString() + exportMtcCode
 							+ llfcCodeStr + exportMpanCoreStr;
-					exportGspGroup = GspGroup.getGspGroup(exportGspGroupId);
 					exportAgreedSupplyCapacity = inv
 							.getInteger("export-agreed-supply-capacity");
-					exportHasImportKwh = inv
-							.getBoolean("export-has-import-kwh");
-					exportHasImportKvarh = inv
-							.getBoolean("export-has-import-kvarh");
-					exportHasExportKwh = inv
-							.getBoolean("export-has-export-kwh");
-					exportHasExportKvarh = inv
-							.getBoolean("export-has-export-kvarh");
 					if (!inv.isValid()) {
 						throw new UserException();
-					}
-					if (exportHasImportKwh || exportHasImportKvarh
-							|| exportHasExportKwh || exportHasExportKvarh) {
-						String exportHhdcContractName = inv
-								.getString("export-hhdc-contract-name");
-						exportHhdcContractName.trim();
-						if (exportHhdcContractName.length() != 0) {
-							exportHhdcContract = HhdcContract
-									.getHhdcContract(exportHhdcContractName);
-							String exportHhdcAccountReference = inv
-									.getString("export-hhdc-account-reference");
-							exportHhdcAccount = exportHhdcContract
-									.getAccount(exportHhdcAccountReference
-											.trim());
-						}
 					}
 					String exportSupplierContractName = inv
 							.getString("export-supplier-contract-name");
@@ -1453,15 +1322,9 @@ public class SupplyGeneration extends PersistentEntity {
 					exportSupplierAccount = exportSupplierContract
 							.getAccount(exportSupplierAccountReference.trim());
 				}
-				addOrUpdateMpans(importMpanStr, importSsc, importGspGroup,
-						importHhdcAccount, importSupplierAccount,
-						importHasImportKwh, importHasImportKvarh,
-						importHasExportKwh, importHasExportKvarh,
+				addOrUpdateMpans(importMpanStr, importSsc, importSupplierAccount,
 						importAgreedSupplyCapacity, exportMpanStr, exportSsc,
-						exportGspGroup, exportHhdcAccount,
-						exportSupplierAccount, exportHasImportKwh,
-						exportHasImportKvarh, exportHasExportKwh,
-						exportHasExportKvarh, exportAgreedSupplyCapacity);
+						exportSupplierAccount, exportAgreedSupplyCapacity);
 				Meter meter = null;
 				if (meterSerialNumber != null
 						&& meterSerialNumber.length() != 0) {
@@ -1472,7 +1335,7 @@ public class SupplyGeneration extends PersistentEntity {
 				}
 				update(new HhEndDate(startDate).getNext(),
 						finishDate == null ? null : new HhEndDate(finishDate),
-						meter);
+						gspGroup, hasImportKwh, hasImportKvarh, hasExportKwh, hasExportKvarh, hhdcAccount, meter);
 				Hiber.commit();
 				inv.sendOk(document());
 			}

@@ -23,7 +23,6 @@ package net.sf.chellow.physical;
 
 import java.util.List;
 
-import net.sf.chellow.billing.HhdcContract;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.Invocation;
@@ -52,10 +51,10 @@ public class ChannelSnags extends EntityList {
 		}
 	}
 
-	HhdcContract hhdcContract;
+	Channel channel;
 
-	public ChannelSnags(HhdcContract hhdcContract) {
-		this.hhdcContract = hhdcContract;
+	public ChannelSnags(Channel channel) {
+		this.channel = channel;
 	}
 
 	public UriPathElement getUriId() {
@@ -63,7 +62,7 @@ public class ChannelSnags extends EntityList {
 	}
 
 	public MonadUri getUri() throws HttpException {
-		return hhdcContract.getUri().resolve(getUriId()).append("/");
+		return channel.getUri().resolve(getUriId()).append("/");
 	}
 
 	@SuppressWarnings("unchecked")
@@ -72,12 +71,12 @@ public class ChannelSnags extends EntityList {
 		Element source = doc.getDocumentElement();
 		Element snagsElement = toXml(doc);
 		source.appendChild(snagsElement);
-		snagsElement.appendChild(hhdcContract.toXml(doc, new XmlTree("party")));
+		snagsElement.appendChild(channel.toXml(doc, new XmlTree("party")));
 		for (ChannelSnag snag : (List<ChannelSnag>) Hiber
 				.session()
 				.createQuery(
-						"from ChannelSnag snag where snag.contract = :contract order by snag.channel.supplyGeneration.supply.id, snag.channel.supplyGeneration.id, snag.channel.isImport, snag.channel.isKwh, snag.description, snag.startDate.date")
-				.setEntity("contract", hhdcContract).setMaxResults(PAGE_SIZE)
+						"from ChannelSnag snag where snag.channel = :channel order snag.description, snag.startDate.date")
+				.setEntity("channel", channel).setMaxResults(PAGE_SIZE)
 				.list()) {
 			snagsElement.appendChild(snag.toXml(doc, new XmlTree("channel",
 					new XmlTree("supplyGeneration", new XmlTree("supply")))));
@@ -94,8 +93,8 @@ public class ChannelSnags extends EntityList {
 			ScrollableResults snags = Hiber
 					.session()
 					.createQuery(
-							"from ChannelSnag snag where snag.contract = :contract and snag.finishDate < :ignoreDate")
-					.setEntity("contract", hhdcContract).setTimestamp(
+							"from ChannelSnag snag where snag.channel = :channel and snag.finishDate < :ignoreDate")
+					.setEntity("channel", channel).setTimestamp(
 							"ignoreDate", ignoreDate.getDate()).scroll(
 							ScrollMode.FORWARD_ONLY);
 			while (snags.next()) {

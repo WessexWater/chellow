@@ -56,8 +56,6 @@ public abstract class Snag extends PersistentEntity implements Cloneable,
 
 	private String description;
 
-	private String progress;
-
 	public Snag() {
 	}
 
@@ -65,7 +63,6 @@ public abstract class Snag extends PersistentEntity implements Cloneable,
 		setDateCreated(new Date());
 		this.description = description;
 		this.isIgnored = false;
-		this.progress = "";
 	}
 
 	public Date getDateCreated() {
@@ -93,14 +90,6 @@ public abstract class Snag extends PersistentEntity implements Cloneable,
 		this.description = description;
 	}
 
-	public String getProgress() {
-		return progress;
-	}
-
-	void setProgress(String progress) {
-		this.progress = progress;
-	}
-
 	public void update() {
 	}
 
@@ -108,7 +97,6 @@ public abstract class Snag extends PersistentEntity implements Cloneable,
 		Element element = super.toXml(doc, elementName);
 		element.appendChild(MonadDate.toXML(dateCreated, "created", doc));
 		element.setAttribute("is-ignored", Boolean.toString(isIgnored));
-		element.setAttribute("progress", progress);
 		element.setAttribute("description", description);
 		return element;
 	}
