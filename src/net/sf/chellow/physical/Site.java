@@ -194,11 +194,10 @@ public class Site extends PersistentEntity {
 
 	public Supply insertSupply(Source source, GeneratorType generatorType,
 			String supplyName, HhEndDate startDate, HhEndDate finishDate,
-			GspGroup gspGroup, boolean hasImportKwh, boolean hasImportKvarh,
-			boolean hasExportKwh, boolean hasExportKvarh, Account hhdcAccount,
-			String meterSerialNumber, String importMpanStr, Ssc importSsc,
-			Account importAccountSupplier, Integer importAgreedSupplyCapacity,
-			String exportMpanStr, Ssc exportSsc, Account exportAccountSupplier,
+			GspGroup gspGroup, Account hhdcAccount, String meterSerialNumber,
+			String importMpanStr, Ssc importSsc, Account importAccountSupplier,
+			Integer importAgreedSupplyCapacity, String exportMpanStr,
+			Ssc exportSsc, Account exportAccountSupplier,
 			Integer exportAgreedSupplyCapacity) throws HttpException {
 		Supply supply = new Supply(supplyName, source, generatorType);
 		try {
@@ -222,17 +221,13 @@ public class Site extends PersistentEntity {
 		Map<Site, Boolean> siteMap = new HashMap<Site, Boolean>();
 		siteMap.put(this, true);
 		SupplyGeneration generation = supply.insertGeneration(siteMap,
-				startDate, gspGroup, hasImportKwh, hasImportKvarh,
-				hasExportKwh, hasExportKvarh, hhdcAccount, meterSerialNumber,
+				startDate, gspGroup, hhdcAccount, meterSerialNumber,
 				importMpanStr, importSsc, importAccountSupplier,
 				importAgreedSupplyCapacity, exportMpanStr, exportSsc,
 				exportAccountSupplier, exportAgreedSupplyCapacity);
 		generation.update(generation.getStartDate(), finishDate, generation
-				.getGspGroup(), generation.getChannel(true, true) != null,
-				generation.getChannel(true, false) != null, generation
-						.getChannel(false, true) != null, generation
-						.getChannel(false, false) != null, generation
-						.getHhdcAccount(), generation.getMeter());
+				.getGspGroup(), generation.getHhdcAccount(), generation
+				.getMeter());
 		Hiber.flush();
 		return supply;
 	}
@@ -596,15 +591,19 @@ public class Site extends PersistentEntity {
 				}
 				Supply supply = insertSupply(source, generatorType, name,
 						new HhEndDate(startDate).getNext(), null, gspGroup,
-						hhdcAccount == null ? false : true,
-						hhdcAccount == null ? false : true, false,
-						hhdcAccount == null ? false : true, hhdcAccount,
-						meterSerialNumber, importMpanStr, importSsc,
-						importSupplierAccount, importAgreedSupplyCapacity,
-						exportMpanStr, exportSsc, exportSupplierAccount,
-						exportAgreedSupplyCapacity);
+						hhdcAccount, meterSerialNumber, importMpanStr,
+						importSsc, importSupplierAccount,
+						importAgreedSupplyCapacity, exportMpanStr, exportSsc,
+						exportSupplierAccount, exportAgreedSupplyCapacity);
+				Hiber.flush();
+				if (hhdcAccount != null) {
+					SupplyGeneration generation = supply.getGenerationFirst();
+					generation.insertChannel(true, true);
+					generation.insertChannel(true, false);
+					generation.insertChannel(false, false);
+				}
 				Hiber.commit();
-				inv.sendCreated(supply.getUri());
+				inv.sendSeeOther(supply.getUri());
 			} catch (HttpException e) {
 				e.setDocument(document());
 				throw e;

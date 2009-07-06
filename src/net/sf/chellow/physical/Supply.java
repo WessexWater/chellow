@@ -177,13 +177,26 @@ public class Supply extends PersistentEntity {
 				exportAccountSupplier = exportSupplierContract
 						.getAccount(exportSupplierAccountReference);
 			}
-			site.insertSupply(source, generatorType, supplyName, startDate,
-					finishDate, gspGroup, hasImportKwh, hasImportKvarh,
-					hasExportKwh, hasExportKvarh, hhdcAccount,
+			Supply supply = site.insertSupply(source, generatorType,
+					supplyName, startDate, finishDate, gspGroup, hhdcAccount,
 					meterSerialNumber, importMpanStr, importSsc,
 					importSupplierAccount, importAgreedSupplyCapacity,
 					exportMpanStr, exportSsc, exportAccountSupplier,
 					exportAgreedSupplyCapacity);
+			Hiber.flush();
+			SupplyGeneration generation = supply.getGenerationFirst();
+			if (hasImportKwh) {
+				generation.insertChannel(true, true);
+			}
+			if (hasImportKvarh) {
+				generation.insertChannel(true, false);
+			}
+			if (hasExportKwh) {
+				generation.insertChannel(false, true);
+			}
+			if (hasExportKvarh) {
+				generation.insertChannel(false, false);
+			}
 		} else if (action.equals("update")) {
 			if (values.length < 5) {
 				throw new UserException(
@@ -308,12 +321,6 @@ public class Supply extends PersistentEntity {
 		this.meters = meters;
 	}
 
-	/*
-	 * public boolean hasMpanCoreRaw(MpanCoreRaw mpanCoreRaw) throws
-	 * HttpException { boolean hasMpanCoreRaw = false; for (MpanCore mpanCore :
-	 * mpanCores) { if (mpanCore.getCore().equals(mpanCoreRaw)) { hasMpanCoreRaw
-	 * = true; break; } } return hasMpanCoreRaw; }
-	 */
 	public MpanCore addMpanCore(String mpanCore) throws HttpException {
 		MpanCore core = new MpanCore(this, mpanCore);
 		try {
@@ -431,79 +438,40 @@ public class Supply extends PersistentEntity {
 		if (existingImportMpan == null) {
 			newSupplyGeneration = insertGeneration(existingSiteMap, startDate,
 					existingGeneration.getGspGroup(), existingGeneration
-							.getChannel(true, true) != null, existingGeneration
-							.getChannel(true, false) != null,
-					existingGeneration.getChannel(false, true) != null,
-					existingGeneration.getChannel(false, false) != null,
-					existingGeneration.getHhdcAccount(), existingMeter
-							.getSerialNumber(), null, null, null, null,
-					existingExportMpan.toString(), existingExportMpan.getSsc(),
-					existingExportMpan.getSupplierAccount(), existingExportMpan
+							.getHhdcAccount(), existingMeter.getSerialNumber(),
+					null, null, null, null, existingExportMpan.toString(),
+					existingExportMpan.getSsc(), existingExportMpan
+							.getSupplierAccount(), existingExportMpan
 							.getAgreedSupplyCapacity());
 		} else if (existingExportMpan == null) {
 			newSupplyGeneration = insertGeneration(existingSiteMap, startDate,
 					existingGeneration.getGspGroup(), existingGeneration
-							.getChannel(true, true) != null, existingGeneration
-							.getChannel(true, false) != null,
-					existingGeneration.getChannel(false, true) != null,
-					existingGeneration.getChannel(false, false) != null,
-					existingGeneration.getHhdcAccount(),
-					existingMeter == null ? "" : existingMeter
-							.getSerialNumber(), existingImportMpan.toString(),
-					existingImportMpan.getSsc(), existingImportMpan
-							.getSupplierAccount(), existingImportMpan
+							.getHhdcAccount(), existingMeter == null ? ""
+							: existingMeter.getSerialNumber(),
+					existingImportMpan.toString(), existingImportMpan.getSsc(),
+					existingImportMpan.getSupplierAccount(), existingImportMpan
 							.getAgreedSupplyCapacity(), null, null, null, null);
 		} else {
 			newSupplyGeneration = insertGeneration(existingSiteMap, startDate,
 					existingGeneration.getGspGroup(), existingGeneration
-							.getChannel(true, true) != null, existingGeneration
-							.getChannel(true, false) != null,
-					existingGeneration.getChannel(false, true) != null,
-					existingGeneration.getChannel(false, false) != null,
-					existingGeneration.getHhdcAccount(),
-					existingMeter == null ? "" : existingMeter
-							.getSerialNumber(), existingImportMpan.toString(),
-					existingImportMpan.getSsc(), existingImportMpan
-							.getSupplierAccount(), existingImportMpan
+							.getHhdcAccount(), existingMeter == null ? ""
+							: existingMeter.getSerialNumber(),
+					existingImportMpan.toString(), existingImportMpan.getSsc(),
+					existingImportMpan.getSupplierAccount(), existingImportMpan
 							.getAgreedSupplyCapacity(), existingExportMpan
 							.toString(), existingExportMpan.getSsc(),
 					existingExportMpan.getSupplierAccount(), existingExportMpan
 							.getAgreedSupplyCapacity());
 		}
+		for (Channel existingChannel : existingGeneration.getChannels()) {
+			newSupplyGeneration.insertChannel(existingChannel.getIsImport(),
+					existingChannel.getIsKwh());
+		}
 		return newSupplyGeneration;
 	}
 
-	/*
-	 * public SupplyGeneration addGeneration(Map<Site, Boolean> existingSiteMap,
-	 * Meter meter, MpanRaw importMpanRaw, Ssc importSsc, Account
-	 * importHhdceAccount, Account importSupplierAccount, boolean
-	 * importHasImportKwh, boolean importHasImportKvarh, boolean
-	 * importHasExportKwh, boolean importHasExportKvarh, Integer
-	 * importAgreedSupplyCapacity, MpanRaw exportMpanRaw, Ssc exportSsc, Account
-	 * exportHhdceAccount, Account exportSupplierAccount, boolean
-	 * exportHasImportKwh, boolean exportHasImportKvarh, boolean
-	 * exportHasExportKwh, boolean exportHasExportKvarh, Integer
-	 * exportAgreedSupplyCapacity, HhEndDate finishDate) throws HttpException {
-	 * Organization organization = existingSiteMap.keySet().iterator().next()
-	 * .getOrganization(); MpanTop importMpanTop = importMpanRaw == null ? null
-	 * : importMpanRaw .getMpanTop(importSsc, finishDate == null ? new Date() :
-	 * finishDate.getDate()); MpanCore importMpanCore = importMpanRaw == null ?
-	 * null : importMpanRaw .getMpanCore(organization); MpanTop exportMpanTop =
-	 * exportMpanRaw == null ? null : exportMpanRaw .getMpanTop(exportSsc,
-	 * finishDate == null ? new Date() : finishDate.getDate()); MpanCore
-	 * exportMpanCore = exportMpanRaw == null ? null : exportMpanRaw
-	 * .getMpanCore(organization); return addGeneration(existingSiteMap, meter,
-	 * importMpanTop, importMpanCore, importHhdceAccount, importSupplierAccount,
-	 * importHasImportKwh, importHasImportKvarh, importHasExportKwh,
-	 * importHasExportKvarh, importAgreedSupplyCapacity, exportMpanTop,
-	 * exportMpanCore, exportHhdceAccount, exportSupplierAccount,
-	 * exportHasImportKwh, exportHasImportKvarh, exportHasExportKwh,
-	 * exportHasExportKvarh, exportAgreedSupplyCapacity, finishDate); }
-	 */
 	public SupplyGeneration insertGeneration(Map<Site, Boolean> siteMap,
-			HhEndDate startDate, GspGroup gspGroup, boolean hasImportKwh,
-			boolean hasImportKvarh, boolean hasExportKwh,
-			boolean hasExportKvarh, Account hhdcAccount,
+			HhEndDate startDate, GspGroup gspGroup, Account hhdcAccount,
 			String meterSerialNumber, String importMpanStr, Ssc importSsc,
 			Account importSupplierAccount, Integer importAgreedSupplyCapacity,
 			String exportMpanStr, Ssc exportSsc, Account exportSupplierAccount,
@@ -519,8 +487,7 @@ public class Supply extends PersistentEntity {
 		SupplyGeneration existingGeneration = null;
 		if (generations.isEmpty()) {
 			supplyGeneration = new SupplyGeneration(this, startDate, null,
-					gspGroup, hasImportKwh, hasImportKvarh, hasExportKwh,
-					hasExportKvarh, hhdcAccount, meter);
+					gspGroup, hhdcAccount, meter);
 			generations.add(supplyGeneration);
 		} else {
 			existingGeneration = getGeneration(startDate);
@@ -529,17 +496,12 @@ public class Supply extends PersistentEntity {
 						"You can't add a generation before the start of the supply.");
 			}
 			supplyGeneration = new SupplyGeneration(this, startDate,
-					existingGeneration.getFinishDate(), gspGroup, hasImportKwh,
-					hasImportKvarh, hasExportKwh, hasExportKvarh, hhdcAccount,
+					existingGeneration.getFinishDate(), gspGroup, hhdcAccount,
 					meter);
 			existingGeneration.internalUpdate(
 					existingGeneration.getStartDate(), startDate.getPrevious(),
-					existingGeneration.getGspGroup(), existingGeneration
-							.getChannel(true, true) != null, existingGeneration
-							.getChannel(true, false) != null,
-					existingGeneration.getChannel(false, true) != null,
-					existingGeneration.getChannel(false, false) != null,
-					hhdcAccount, existingGeneration.getMeter());
+					existingGeneration.getGspGroup(), hhdcAccount,
+					existingGeneration.getMeter());
 			generations.add(supplyGeneration);
 		}
 		Hiber.flush();
@@ -623,7 +585,6 @@ public class Supply extends PersistentEntity {
 	}
 
 	public SupplyGeneration getGenerationFirst() {
-		// return generations.iterator().next();
 		return (SupplyGeneration) Hiber
 				.session()
 				.createQuery(
@@ -666,19 +627,11 @@ public class Supply extends PersistentEntity {
 		if (previousGeneration == null) {
 			nextGeneration.update(generation.getStartDate(), nextGeneration
 					.getFinishDate(), nextGeneration.getGspGroup(),
-					nextGeneration.getChannel(true, true) != null,
-					nextGeneration.getChannel(true, false) != null,
-					nextGeneration.getChannel(false, true) != null,
-					nextGeneration.getChannel(false, false) != null,
 					nextGeneration.getHhdcAccount(), nextGeneration.getMeter());
 		} else {
 			previousGeneration.update(previousGeneration.getStartDate(),
 					generation.getFinishDate(), previousGeneration
-							.getGspGroup(), previousGeneration.getChannel(true,
-							true) != null, previousGeneration.getChannel(true,
-							false) != null, previousGeneration.getChannel(
-							false, true) != null, previousGeneration
-							.getChannel(false, false) != null,
+							.getGspGroup(),
 					previousGeneration.getHhdcAccount(), previousGeneration
 							.getMeter());
 		}
