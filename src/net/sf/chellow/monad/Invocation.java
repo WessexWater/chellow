@@ -159,8 +159,8 @@ public class Invocation {
 	 * throws DeployerException, ProgrammerException { MonadProperties
 	 * properties = MonadProperties.newInstance(); File sitesDirectory =
 	 * properties.getSitesDirectory(); File templateDirectory = new
-	 * File(properties.getSitesDirectory(), req.getServerName() + File.separator +
-	 * "templates");
+	 * File(properties.getSitesDirectory(), req.getServerName() + File.separator
+	 * + "templates");
 	 * 
 	 * if (sitesDirectory == null) { sitesUrl =
 	 * context.getResource("/WEB-INF/sites/"
@@ -702,7 +702,7 @@ public class Invocation {
 
 	private void returnPage(Document doc, String templatePath,
 			String templateName) throws HttpException {
-		if (hasParameter("view")) {
+		if (hasParameter("view") && getString("view").equals("xml")) {
 			templatePath = null;
 		}
 		if (doc == null) {
@@ -781,8 +781,8 @@ public class Invocation {
 	 * if (source == null) { throw new ProgrammerException( "There is no child
 	 * element for " + " a document requiring the template 'template'. Request
 	 * URL: " + getRequest().getRequestURL().toString() + "?" +
-	 * getRequest().getQueryString()); } // source.appendChild(requestXml(doc)); //
-	 * source.appendChild(responseXml(doc)); //
+	 * getRequest().getQueryString()); } // source.appendChild(requestXml(doc));
+	 * // source.appendChild(responseXml(doc)); //
 	 * getResponse().setContentType("text/html;charset=us-ascii");
 	 * res.setContentType("image/png"); res.setDateHeader("Date",
 	 * System.currentTimeMillis()); res.setHeader("Cache-Control", "no-cache");

@@ -3179,7 +3179,7 @@ supply_generation_id = inv.getLong("supply-generation-id")
 if not inv.isValid():
     raise UserException()
 supply_generation = SupplyGeneration.getSupplyGeneration(supply_generation_id)
-source.appendChild(supply_generation.toXml(doc, XmlTree("mpans", XmlTree("core").put("mtc").put('llfc', XmlTree('voltageLevel')).put('pc').put('ssc').put('gspGroup').put('hhdcAccount', XmlTree('contract', XmlTree('party'))).put('supplierAccount', XmlTree('contract', XmlTree('party')))).put('supply', XmlTree('source')).put('siteSupplyGenerations', XmlTree('site'))))
+source.appendChild(supply_generation.toXml(doc, XmlTree("mpans", XmlTree("core").put("mtc").put('llfc', XmlTree('voltageLevel')).put('pc').put('ssc').put('supplierAccount', XmlTree('contract', XmlTree('party')))).put('channels').put('gspGroup').put('hhdcAccount', XmlTree('contract', XmlTree('party'))).put('supply', XmlTree('source')).put('siteSupplyGenerations', XmlTree('site'))))
 source.appendChild(MonadDate().toXml(doc))]]></value>
     <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
 <xsl:stylesheet version="1.0"
@@ -3293,17 +3293,16 @@ source.appendChild(MonadDate().toXml(doc))]]></value>
                             select="concat('Source: ', /source/supply-generation/supply/source/@code, ' - ', /source/supply-generation/supply/source/@name)" />
                     </li>
                 </ul>
-                <h3>Generation</h3>
 
-                <ul>
-                    <li>
-                        From:
-                        <xsl:value-of
-                            select="concat(/source/supply-generation/hh-end-date[@label='start']/@year, '-', /source/supply-generation/hh-end-date[@label='start']/@month, '-', /source/supply-generation/hh-end-date[@label='start']/@day)" />
-                    </li>
-                    <li>
-                        To:
-                        <xsl:choose>
+                <table><caption>Generation</caption>
+                    <tr>
+                        <th>From</th>
+                        <td><xsl:value-of
+                            select="concat(/source/supply-generation/hh-end-date[@label='start']/@year, '-', /source/supply-generation/hh-end-date[@label='start']/@month, '-', /source/supply-generation/hh-end-date[@label='start']/@day)" /></td>
+                    </tr>
+                    <tr>
+                        <th>To</th>
+                        <td><xsl:choose>
                             <xsl:when
                                 test="/source/supply-generation/hh-end-date[@label='finish']">
                                 <xsl:value-of
@@ -3311,9 +3310,60 @@ source.appendChild(MonadDate().toXml(doc))]]></value>
                             </xsl:when>
                             <xsl:otherwise>Ongoing</xsl:otherwise>
                         </xsl:choose>
-                    </li>
-                </ul>
-
+                        </td>
+                    </tr>
+                        <tr>
+                            <th>GSP Group</th>
+                            <td>
+                                <xsl:value-of
+                                    select="concat(/source/supply-generation/gsp-group/@code, ' - ', /source/supply-generation/gsp-group/@description)" />
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>Channels</th>
+                            <td>
+                                <ul>
+                                  <xsl:for-each select="/source/supply-generation/channel">
+                                  <li>
+                                    <xsl:choose>
+                                    <xsl:when test="@is-import='true'">
+                                    Import
+                                    </xsl:when>
+                                    <xsl:otherwise>
+                                    Export
+                                    </xsl:otherwise>
+                                    </xsl:choose>
+                                    <xsl:choose>
+                                    <xsl:when test="@is-kwh='true'">
+                                    kWh
+                                    </xsl:when>
+                                    <xsl:otherwise>
+                                    kVArh
+                                    </xsl:otherwise>
+                                    </xsl:choose>
+                                  </li>
+                                  </xsl:for-each>
+                                </ul>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>HHDC Account</th>
+                            <td>
+                                <a
+                                    href="{/source/request/@context-path}/reports/111/output/?account-id={/source/supply-generation/account[hhdc-contract]/@id}">
+                                    <xsl:value-of
+                                        select="/source/supply-generation/account[hhdc-contract]/@reference" />
+                                </a>
+                                <xsl:value-of select="' &gt; '" />
+                                <a
+                                    href="{/source/request/@context-path}/reports/115/output/?hhdc-contract-id={/source/supply-generation/account/hhdc-contract/@id}">
+                                    <xsl:value-of
+                                        select="/source/supply-generation/account/hhdc-contract/@name" />
+                                </a>
+                            </td>
+                        </tr>
+                </table>
+                <br/>
                 <table>
                     <caption>MPANs</caption>
                     <thead>
@@ -3380,17 +3430,6 @@ source.appendChild(MonadDate().toXml(doc))]]></value>
                             </td>
                         </tr>
                         <tr>
-                            <th>GSP Group</th>
-                            <td>
-                                <xsl:value-of
-                                    select="concat(/source/supply-generation/mpan[llfc/@is-import='true']/gsp-group/@code, ' - ', /source/supply-generation/mpan[llfc/@is-import='true']/gsp-group/@description)" />
-                            </td>
-                            <td>
-                                <xsl:value-of
-                                    select="concat(/source/supply-generation/mpan[llfc/@is-import='false']/gsp-group/@code, ' - ', /source/supply-generation/mpan[llfc/@is-import='false']/gsp-group/@description)" />
-                            </td>
-                        </tr>
-                        <tr>
                             <th>Agreed Supply Capacity</th>
                             <td>
                                 <xsl:value-of
@@ -3399,78 +3438,6 @@ source.appendChild(MonadDate().toXml(doc))]]></value>
                             <td>
                                 <xsl:value-of
                                     select="/source/supply-generation/mpan[llfc/@is-import='false']/@agreed-supply-capacity" />
-                            </td>
-                        </tr>
-                        <tr>
-                            <th>Channels</th>
-                            <td>
-                                <ul>
-                                    <xsl:if
-                                        test="/source/supply-generation/mpan[llfc/@is-import='true']/@has-import-kwh='true'">
-                                        <li>Import kWh</li>
-                                    </xsl:if>
-                                    <xsl:if
-                                        test="/source/supply-generation/mpan[llfc/@is-import='true']/@has-import-kvarh='true'">
-                                        <li>Import kVArh</li>
-                                    </xsl:if>
-                                    <xsl:if
-                                        test="/source/supply-generation/mpan[llfc/@is-import='true']/@has-export-kwh='true'">
-                                        <li>Export kWh</li>
-                                    </xsl:if>
-                                    <xsl:if
-                                        test="/source/supply-generation/mpan[llfc/@is-import='true']/@has-export-kvarh='true'">
-                                        <li>Export kVArh</li>
-                                    </xsl:if>
-                                </ul>
-                            </td>
-                            <td>
-                                <ul>
-                                    <xsl:if
-                                        test="/source/supply-generation/mpan[llfc/@is-import='false']/@has-import-kwh='true'">
-                                        <li>Import kWh</li>
-                                    </xsl:if>
-                                    <xsl:if
-                                        test="/source/supply-generation/mpan[llfc/@is-import='false']/@has-import-kvarh='true'">
-                                        <li>Import kVArh</li>
-                                    </xsl:if>
-                                    <xsl:if
-                                        test="/source/supply-generation/mpan[llfc/@is-import='false']/@has-export-kwh='true'">
-                                        <li>Export kWh</li>
-                                    </xsl:if>
-                                    <xsl:if
-                                        test="/source/supply-generation/mpan[llfc/@is-import='false']/@has-export-kvarh='true'">
-                                        <li>Export kVArh</li>
-                                    </xsl:if>
-                                </ul>
-                            </td>
-                        </tr>
-                        <tr>
-                            <th>HHDC Account</th>
-                            <td>
-                                <a
-                                    href="{/source/request/@context-path}/reports/111/output/?account-id={/source/supply-generation/mpan[llfc/@is-import='true']/account[hhdc-contract]/@id}">
-                                    <xsl:value-of
-                                        select="/source/supply-generation/mpan[llfc/@is-import='true']/account[hhdc-contract]/@reference" />
-                                </a>
-                                <xsl:value-of select="' &gt; '" />
-                                <a
-                                    href="{/source/request/@context-path}/reports/115/output/?hhdc-contract-id={/source/supply-generation/mpan[llfc/@is-import='true']/account/hhdc-contract/@id}">
-                                    <xsl:value-of
-                                        select="/source/supply-generation/mpan[llfc/@is-import='true']/account/hhdc-contract/@name" />
-                                </a>
-                            </td>
-                            <td>
-                                <a
-                                    href="{/source/request/@context-path}/reports/111/output/?account-id={/source/supply-generation/mpan[llfc/@is-import='false']/account[hhdc-contract]/@id}">
-                                    <xsl:value-of
-                                        select="/source/supply-generation/mpan[llfc/@is-import='false']/account[hhdc-contract]/@reference" />
-                                </a>
-                                <xsl:value-of select="' &gt; '" />
-                                <a
-                                    href="{/source/request/@context-path}/reports/115/output/?hhdc-contract-id={/source/supply-generation/mpan[llfc/@is-import='false']/account/hhdc-contract/@id}">
-                                    <xsl:value-of
-                                        select="/source/supply-generation/mpan[llfc/@is-import='false']/account/hhdc-contract/@name" />
-                                </a>
                             </td>
                         </tr>
                         <tr>
