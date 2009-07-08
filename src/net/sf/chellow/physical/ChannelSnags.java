@@ -33,8 +33,6 @@ import net.sf.chellow.monad.types.MonadDate;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
 
-import org.hibernate.ScrollMode;
-import org.hibernate.ScrollableResults;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -85,27 +83,6 @@ public class ChannelSnags extends EntityList {
 		source.appendChild(MonadDate.getDaysXml(doc));
 		source.appendChild(new MonadDate().toXml(doc));
 		inv.sendOk(doc);
-	}
-
-	public void httpPost(Invocation inv) throws HttpException {
-		if (inv.hasParameter("ignore")) {
-			MonadDate ignoreDate = inv.getMonadDate("ignore-date");
-			ScrollableResults snags = Hiber
-					.session()
-					.createQuery(
-							"from ChannelSnag snag where snag.channel = :channel and snag.finishDate < :ignoreDate")
-					.setEntity("channel", channel).setTimestamp("ignoreDate",
-							ignoreDate.getDate()).scroll(
-							ScrollMode.FORWARD_ONLY);
-			while (snags.next()) {
-				ChannelSnag snag = (ChannelSnag) snags.get(0);
-				snag.setIsIgnored(true);
-				Hiber.session().flush();
-				Hiber.session().clear();
-			}
-			Hiber.commit();
-			inv.sendSeeOther(getUri());
-		}
 	}
 
 	public Urlable getChild(UriPathElement urlId) throws HttpException {

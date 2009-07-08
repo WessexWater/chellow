@@ -10,7 +10,6 @@
 			<head>
 				<link rel="stylesheet" type="text/css"
 					href="{/source/request/@context-path}/style/" />
-
 				<title>
 					Chellow &gt; Supplies &gt;
 					<xsl:value-of

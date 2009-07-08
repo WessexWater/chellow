@@ -24,12 +24,13 @@ package net.sf.chellow.billing;
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.util.Date;
 import java.util.List;
 import java.util.Properties;
 
-import net.sf.chellow.hhimport.HhDataImportProcesses;
 import net.sf.chellow.hhimport.AutomaticHhDataImporter;
 import net.sf.chellow.hhimport.AutomaticHhDataImporters;
+import net.sf.chellow.hhimport.HhDataImportProcesses;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.InternalException;
@@ -41,12 +42,15 @@ import net.sf.chellow.monad.UserException;
 import net.sf.chellow.monad.XmlTree;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
+import net.sf.chellow.physical.ChannelSnag;
 import net.sf.chellow.physical.HhEndDate;
 import net.sf.chellow.physical.MarketRole;
 import net.sf.chellow.physical.Mpan;
 import net.sf.chellow.ui.Chellow;
 import net.sf.chellow.ui.GeneralImport;
 
+import org.hibernate.ScrollMode;
+import org.hibernate.ScrollableResults;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -271,6 +275,22 @@ public class HhdcContract extends Contract {
 			Element source = doc.getDocumentElement();
 			source.setAttribute("state", state);
 			inv.sendOk(doc);
+		} else if (inv.hasParameter("ignore-snags")) {
+			Date ignoreDate = inv.getDate("ignore-date");
+			ScrollableResults snags = Hiber
+					.session()
+					.createQuery(
+							"from ChannelSnag snag where snag.channel.supplyGeneration.hhdcAccount.contract.id = :contractId and snag.finishDate < :ignoreDate")
+					.setLong("contractId", getId()).setTimestamp("ignoreDate",
+							ignoreDate).scroll(ScrollMode.FORWARD_ONLY);
+			while (snags.next()) {
+				ChannelSnag snag = (ChannelSnag) snags.get(0);
+				snag.setIsIgnored(true);
+				Hiber.session().flush();
+				Hiber.session().clear();
+			}
+			Hiber.commit();
+			inv.sendSeeOther(getUri());
 		} else {
 			String name = inv.getString("name");
 			String chargeScript = inv.getString("charge-script");
