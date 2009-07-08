@@ -23,9 +23,9 @@ package net.sf.chellow.physical;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.Invocation;
-import net.sf.chellow.monad.MethodNotAllowedException;
 import net.sf.chellow.monad.MonadUtils;
 import net.sf.chellow.monad.Urlable;
+import net.sf.chellow.monad.UserException;
 import net.sf.chellow.monad.XmlTree;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
@@ -59,6 +59,10 @@ public class Channels extends EntityList {
 	}
 
 	public void httpGet(Invocation inv) throws HttpException {
+		inv.sendOk(document());
+	}
+	
+	private Document document() throws HttpException {
 		Document doc = MonadUtils.newSourceDocument();
 		Element source = doc.getDocumentElement();
 		Element channelsElement = toXml(doc);
@@ -67,13 +71,20 @@ public class Channels extends EntityList {
 		for (Channel channel : generation.getChannels()) {
 			channelsElement.appendChild(channel.toXml(doc));
 		}
-		inv.sendOk(doc);
+		return doc;
 	}
 
 	public void httpPost(Invocation inv) throws HttpException {
-		throw new MethodNotAllowedException();
+		Boolean isImport = inv.getBoolean("is-import");
+		Boolean isKwh = inv.getBoolean("is-kwh");
+		if (!inv.isValid()) {
+			throw new UserException(document());
+		}
+		Channel channel = generation.insertChannel(isImport, isKwh);
+		Hiber.commit();
+		inv.sendSeeOther(channel.getUri());
 	}
-
+	
 	public Urlable getChild(UriPathElement uriId) throws HttpException {
 		return (Channel) Hiber
 				.session()

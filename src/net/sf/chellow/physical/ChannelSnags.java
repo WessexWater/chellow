@@ -45,7 +45,7 @@ public class ChannelSnags extends EntityList {
 
 	static {
 		try {
-			URI_ID = new UriPathElement("channel-snags");
+			URI_ID = new UriPathElement("snags");
 		} catch (HttpException e) {
 			throw new RuntimeException(e);
 		}
@@ -71,15 +71,15 @@ public class ChannelSnags extends EntityList {
 		Element source = doc.getDocumentElement();
 		Element snagsElement = toXml(doc);
 		source.appendChild(snagsElement);
-		snagsElement.appendChild(channel.toXml(doc, new XmlTree("party")));
+		snagsElement.appendChild(channel.toXml(doc, new XmlTree(
+				"supplyGeneration", new XmlTree("supply").put("hhdcAccount",
+						new XmlTree("contract")))));
 		for (ChannelSnag snag : (List<ChannelSnag>) Hiber
 				.session()
 				.createQuery(
-						"from ChannelSnag snag where snag.channel = :channel order snag.description, snag.startDate.date")
-				.setEntity("channel", channel).setMaxResults(PAGE_SIZE)
-				.list()) {
-			snagsElement.appendChild(snag.toXml(doc, new XmlTree("channel",
-					new XmlTree("supplyGeneration", new XmlTree("supply")))));
+						"from ChannelSnag snag where snag.channel = :channel order by snag.description, snag.startDate.date")
+				.setEntity("channel", channel).setMaxResults(PAGE_SIZE).list()) {
+			snagsElement.appendChild(snag.toXml(doc));
 		}
 		source.appendChild(MonadDate.getMonthsXml(doc));
 		source.appendChild(MonadDate.getDaysXml(doc));
@@ -94,8 +94,8 @@ public class ChannelSnags extends EntityList {
 					.session()
 					.createQuery(
 							"from ChannelSnag snag where snag.channel = :channel and snag.finishDate < :ignoreDate")
-					.setEntity("channel", channel).setTimestamp(
-							"ignoreDate", ignoreDate.getDate()).scroll(
+					.setEntity("channel", channel).setTimestamp("ignoreDate",
+							ignoreDate.getDate()).scroll(
 							ScrollMode.FORWARD_ONLY);
 			while (snags.next()) {
 				ChannelSnag snag = (ChannelSnag) snags.get(0);

@@ -2,8 +2,8 @@
 <xsl:stylesheet version="1.0"
 	xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
 	<xsl:output method="html" encoding="US-ASCII"
-		doctype-public="-//W3C//DTD HTML 4.01//EN"
-		doctype-system="http://www.w3.org/TR/html4/strict.dtd" indent="yes" />
+		doctype-public="-//W3C//DTD HTML 4.01//EN" doctype-system="http://www.w3.org/TR/html4/strict.dtd"
+		indent="yes" />
 	<xsl:template match="/">
 		<html>
 			<head>
@@ -11,11 +11,9 @@
 					href="{/source/request/@context-path}/style/" />
 				<title>
 					Chellow &gt; Supplies &gt;
-					<xsl:value-of
-						select="/source/channels/supply-generation/supply/@id" />
+					<xsl:value-of select="/source/channels/supply-generation/supply/@id" />
 					&gt; Generations &gt;
-					<xsl:value-of
-						select="/source/channels/supply-generation/@id" />
+					<xsl:value-of select="/source/channels/supply-generation/@id" />
 					&gt; Channels
 				</title>
 			</head>
@@ -31,20 +29,17 @@
 				</xsl:if>
 				<p>
 					<a href="{/source/request/@context-path}/">
-						<img
-							src="{/source/request/@context-path}/logo/" />
+						<img src="{/source/request/@context-path}/logo/" />
 						<span class="logo">Chellow</span>
 					</a>
 					&gt;
-					<a
-						href="{/source/request/@context-path}/supplies/">
+					<a href="{/source/request/@context-path}/supplies/">
 						<xsl:value-of select="'Supplies'" />
 					</a>
 					&gt;
 					<a
 						href="{/source/request/@context-path}/supplies/{/source/channels/supply-generation/supply/@id}/">
-						<xsl:value-of
-							select="/source/channels/supply-generation/supply/@id" />
+						<xsl:value-of select="/source/channels/supply-generation/supply/@id" />
 					</a>
 					&gt;
 					<a
@@ -54,8 +49,7 @@
 					&gt;
 					<a
 						href="{/source/request/@context-path}/supplies/{/source/channels/supply-generation/supply/@id}/generations/{/source/channels/supply-generation/@id}">
-						<xsl:value-of
-							select="/source/channels/supply-generation/@id" />
+						<xsl:value-of select="/source/channels/supply-generation/@id" />
 					</a>
 					&gt; Channels
 				</p>
@@ -68,8 +62,7 @@
 						</tr>
 					</thead>
 					<tbody>
-						<xsl:for-each
-							select="/source/channels/channel">
+						<xsl:for-each select="/source/channels/channel">
 							<tr>
 								<td>
 									<a href="{@id}/">
@@ -78,8 +71,7 @@
 								</td>
 								<td>
 									<xsl:choose>
-										<xsl:when
-											test="@is-import='true'">
+										<xsl:when test="@is-import='true'">
 											import
 										</xsl:when>
 										<xsl:otherwise>
@@ -89,8 +81,7 @@
 								</td>
 								<td>
 									<xsl:choose>
-										<xsl:when
-											test="@is-kwh='true'">
+										<xsl:when test="@is-kwh='true'">
 											kWh
 										</xsl:when>
 										<xsl:otherwise>
@@ -102,6 +93,51 @@
 						</xsl:for-each>
 					</tbody>
 				</table>
+				<br />
+				<form method="post" action=".">
+					<fieldset>
+						<legend>
+							Add New Channel
+								</legend>
+						<br />
+						<select name="is-import">
+							<option value="true">
+								<xsl:if
+									test="/source/request/parameter[@name='is-import']/value = 'true'">
+									<xsl:attribute name="selected" />
+								</xsl:if>
+								<xsl:value-of select="'Import'" />
+							</option>
+							<option value="false">
+								<xsl:if
+									test="/source/request/parameter[@name='is-import']/value = 'false'">
+									<xsl:attribute name="selected" />
+								</xsl:if>
+								<xsl:value-of select="'Export'" />
+							</option>
+						</select>
+						<xsl:value-of select="' '" />
+						<select name="is-kwh">
+							<option value="true">
+								<xsl:if
+									test="/source/request/parameter[@name='is-kwh']/value = 'true'">
+									<xsl:attribute name="selected" />
+								</xsl:if>
+								<xsl:value-of select="'kWh'" />
+							</option>
+							<option value="false">
+								<xsl:if
+									test="/source/request/parameter[@name='is-kwh']/value = 'false'">
+									<xsl:attribute name="selected" />
+								</xsl:if>
+								<xsl:value-of select="'kVArh'" />
+							</option>
+						</select>
+						<xsl:value-of select="' '" />
+						<input type="submit" value="Add" />
+						<input type="reset" value="Reset" />
+					</fieldset>
+				</form>
 			</body>
 		</html>
 	</xsl:template>

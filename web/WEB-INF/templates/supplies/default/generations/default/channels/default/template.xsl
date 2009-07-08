@@ -60,37 +60,66 @@
 						</xsl:for-each>
 					</ul>
 				</xsl:if>
-				<br />
-				<ul>
-					<li>
-						<xsl:choose>
-							<xsl:when test="/source/channel/@is-import='true'">
-								Import
-							</xsl:when>
-							<xsl:otherwise>
-								Export
-							</xsl:otherwise>
-						</xsl:choose>
-					</li>
-					<li>
-						<xsl:choose>
-							<xsl:when test="/source/channel/@is-kwh='true'">
-								kWh
-							</xsl:when>
-							<xsl:otherwise>
-								kVArh
-							</xsl:otherwise>
-						</xsl:choose>
-					</li>
-				</ul>
-				<ul>
-					<li>
-						<a href="hh-data/">HH Data</a>
-					</li>
-					<li>
-						<a href="snags/">Snags</a>
-					</li>
-				</ul>
+				<xsl:choose>
+					<xsl:when
+						test="/source/request/@method='get' and /source/request/parameter[@name='view']/value='confirm-delete'">
+						<form method="post" action=".">
+							<fieldset>
+								<legend>
+									Are you sure you want to delete this
+									channel?
+								</legend>
+								<input type="submit" name="delete" value="Delete" />
+							</fieldset>
+						</form>
+						<p>
+							<a href=".">Cancel</a>
+						</p>
+					</xsl:when>
+					<xsl:otherwise>
+						<br />
+						<ul>
+							<li>
+								<xsl:choose>
+									<xsl:when test="/source/channel/@is-import='true'">
+										Import
+									</xsl:when>
+									<xsl:otherwise>
+										Export
+									</xsl:otherwise>
+								</xsl:choose>
+							</li>
+							<li>
+								<xsl:choose>
+									<xsl:when test="/source/channel/@is-kwh='true'">
+										kWh
+									</xsl:when>
+									<xsl:otherwise>
+										kVArh
+									</xsl:otherwise>
+								</xsl:choose>
+							</li>
+						</ul>
+						<br />
+						<form action=".">
+							<fieldset>
+								<legend>
+									Delete this channel
+								</legend>
+								<input type="hidden" name="view" value="confirm-delete" />
+								<input type="submit" value="Delete" />
+							</fieldset>
+						</form>
+						<ul>
+							<li>
+								<a href="hh-data/">HH Data</a>
+							</li>
+							<li>
+								<a href="snags/">Snags</a>
+							</li>
+						</ul>
+					</xsl:otherwise>
+				</xsl:choose>
 			</body>
 		</html>
 	</xsl:template>

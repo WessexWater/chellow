@@ -66,13 +66,14 @@
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/supplies/{/source/channel-snags/channel/supply-generation/supply/@id}/generations/{/source/channel-snags/channel/supply-generation/@id}/channels/{/source/hh-data/channel/@id}/">
+						href="{/source/request/@context-path}/supplies/{/source/channel-snags/channel/supply-generation/supply/@id}/generations/{/source/channel-snags/channel/supply-generation/@id}/channels/{/source/channel-snags/channel/@id}/">
 						<xsl:value-of
 							select="/source/channel-snags/channel/@id" />
 					</a>
-					<xsl:value-of select="'Channel Snags ['" />
+					&gt;
+					<xsl:value-of select="'Snags ['" />
 					<a
-						href="{/source/request/@context-path}/reports/37/output/?hhdc-contract-id={/source/channel-snags/channel/supply-generation/hhdc-contract/@id}">
+						href="{/source/request/@context-path}/reports/37/output/?hhdc-contract-id={/source/channel-snags/channel/supply-generation/account/hhdc-contract/@id}">
 						<xsl:value-of select="'view'" />
 					</a>
 					<xsl:value-of select="']'" />

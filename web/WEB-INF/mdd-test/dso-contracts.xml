@@ -9,9 +9,9 @@
         <value><![CDATA[dso-contract]]></value>
         <value><![CDATA[22]]></value>
         <value><![CDATA[main]]></value>
-
         <value><![CDATA[2000-01-01T00:30Z]]></value>
         <value><![CDATA[]]></value>
+
         <value><![CDATA[from net.sf.chellow.billing import VirtualBill, NonCoreContract
 from java.util import GregorianCalendar, TimeZone, Locale, Calendar
 
@@ -175,9 +175,9 @@ def triad():
         <value><![CDATA[insert]]></value>
         <value><![CDATA[dso-contract-rate-script]]></value>
         <value><![CDATA[22]]></value>
-
         <value><![CDATA[main]]></value>
         <value><![CDATA[2007-04-01T00:30Z]]></value>
+
         <value><![CDATA[def winter_weekday_peak_hv():
     return 1.057
 
@@ -222,7 +222,6 @@ def triad():
         <value><![CDATA[dso-contract-rate-script]]></value>
         <value><![CDATA[22]]></value>
         <value><![CDATA[main]]></value>
-
         <value><![CDATA[2008-04-01T00:30Z]]></value>
         <value><![CDATA[def winter_weekday_peak_hv():
     return 1.058
@@ -262,22 +261,68 @@ def other_lv():
 
 def triad():
     return 25.212997]]></value>
+
+    </line>
+    <line>
+        <value><![CDATA[insert]]></value>
+        <value><![CDATA[dso-contract-rate-script]]></value>
+        <value><![CDATA[22]]></value>
+        <value><![CDATA[main]]></value>
+        <value><![CDATA[2009-04-01T00:30Z]]></value>
+        <value><![CDATA[def winter_weekday_peak_hv():
+    return 1.058
+
+def winter_weekday_day_hv():
+    return 1.051
+
+def night_hv():
+    return 1.041
+
+def other_hv():
+    return 1.046
+
+def winter_weekday_peak_lv_sub():
+    return 1.070
+
+def winter_weekday_day_lv_sub():
+    return 1.066
+
+def night_lv_sub():
+    return 1.060
+
+def other_lv_sub():
+    return 1.062
+
+def winter_weekday_peak_lv():
+    return 1.079
+
+def winter_weekday_day_lv():
+    return 1.073
+
+def night_lv():
+    return 1.067
+
+def other_lv():
+    return 1.069
+
+def triad():
+    return 25.631634]]></value>
     </line>
     <line>
         <value><![CDATA[insert]]></value>
         <value><![CDATA[dso-contract]]></value>
         <value><![CDATA[99]]></value>
-
         <value><![CDATA[main]]></value>
         <value><![CDATA[2000-01-01T00:30Z]]></value>
         <value><![CDATA[]]></value>
+
         <value><![CDATA[from net.sf.chellow.billing import VirtualBill
 
 def totalElement(account, startDate, finishDate):
     totalElement = VirtualBill("total", 103, "Dso cost")
     return totalElement
 
-def calculator(voltage_level, is_substation, date):
+def calculator(voltage_level, is_substation):
     return None]]></value>
         <value><![CDATA[import sys
 import net.sf.chellow.billing

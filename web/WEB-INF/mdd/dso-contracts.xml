@@ -120,69 +120,60 @@ def totalElement(account, startDate, finishDate):
     return totalElement
 
 class LlfCalculator:
-    def __init__(self, voltage_level, is_substation, date):
+    def __init__(self, voltage_level, is_substation):
         self.cal = GregorianCalendar(TimeZone.getTimeZone("GMT"), Locale.UK)
         self.cal_ct = GregorianCalendar(TimeZone.getTimeZone("Europe/London"), Locale.UK)
         self.voltage_level = voltage_level
         self.is_substation = is_substation
         self.rate_script = None
-        self.set_time(date)
-        
-    def get_rate(self, name):
-        return self.rate_engine.invokeFunction(name, [])
 
-    def set_time(self, date):
-        self.date = date
-        self.cal.setTime(self.date.getDate())
-        self.year = self.cal.get(Calendar.YEAR)
-        self.month = self.cal.get(Calendar.MONTH)
-        self.day = self.cal.get(Calendar.DAY_OF_MONTH)
-        self.day_of_week = self.cal.get(Calendar.DAY_OF_WEEK)
-        self.hour = self.cal.get(Calendar.HOUR_OF_DAY)
-        self.minute = self.cal.get(Calendar.MINUTE)
-        self.decimal_hour = self.hour + self.minute / 60
-        self.cal_ct.setTime(date.getDate())
-        self.year_ct = self.cal_ct.get(Calendar.YEAR)
-        self.month_ct = self.cal_ct.get(Calendar.MONTH)
-        self.day_ct = self.cal_ct.get(Calendar.DAY_OF_MONTH)
-        self.day_of_week_ct = self.cal_ct.get(Calendar.DAY_OF_WEEK)
-        self.hour_ct = self.cal_ct.get(Calendar.HOUR_OF_DAY)
-        self.minute_ct = self.cal_ct.get(Calendar.MINUTE)
-        self.decimal_hour_ct = self.hour_ct + self.minute_ct / 60
+    def find_rate_script(self, date):
         if self.rate_script == None or self.rate_script.getStartDate().getDate().after(date.getDate()) or (self.rate_script.getFinishDate() is not None and self.rate_script.getFinishDate().getDate().before(date.getDate())):
             self.rate_script = contract.rateScripts(date, date)[0]
-            self.rate_engine = self.rate_script.invocableEngine()
+        return self.rate_script 
 
-    def llf(self):
+    def llf(self, date, year = None, month = None, day = None, day_of_week = None, hour = None, minute = None, decimal_hour = None, year_ct = None, month_ct = None, day_ct = None, day_of_week_ct = None, hour_ct = None, minute_ct = None, decimal_hour_ct = None):
+        if year is None:
+            self.cal.setTime(date.getDate())
+            self.year = self.cal.get(Calendar.YEAR)
+            self.month = self.cal.get(Calendar.MONTH)
+            self.day = self.cal.get(Calendar.DAY_OF_MONTH)
+            self.day_of_week = self.cal.get(Calendar.DAY_OF_WEEK)
+            self.hour = self.cal.get(Calendar.HOUR_OF_DAY)
+            self.minute = self.cal.get(Calendar.MINUTE)
+            self.decimal_hour = self.hour + self.minute / 60
+            self.cal_ct.setTime(date.getDate())
+            self.year_ct = self.cal_ct.get(Calendar.YEAR)
+            self.month_ct = self.cal_ct.get(Calendar.MONTH)
+            self.day_ct = self.cal_ct.get(Calendar.DAY_OF_MONTH)
+            self.day_of_week_ct = self.cal_ct.get(Calendar.DAY_OF_WEEK)
+            self.hour_ct = self.cal_ct.get(Calendar.HOUR_OF_DAY)
+            self.minute_ct = self.cal_ct.get(Calendar.MINUTE)
+            self.decimal_hour_ct = self.hour_ct + self.minute_ct / 60            
+        rate_script = self.find_rate_script(date)
         if self.decimal_hour_ct >= 1 and self.decimal_hour_ct <= 7.5:
             if self.voltage_level == "HV":
-                return self.get_rate('night_hv')
+                return rate_script.getRate('night_hv')
             elif self.voltage_level == "LV":
-                return self.get_rate('night_lv')
+                return rate_script.getRate('night_lv')
         elif self.day_of_week < 7 and self.day_of_week > 1 and self.decimal_hour_ct > 16 and self.decimal_hour_ct <= 19 and (self.month_ct > 10 or self.month_ct < 3):
             if self.voltage_level == "HV":
-                return self.get_rate('peak_hv')
+                return rate_script.getRate('peak_hv')
             elif self.voltage_level == "LV":
-                return self.get_rate('peak_lv')
+                return rate_script.getRate('peak_lv')
         elif self.day_of_week < 7 and self.day_of_week > 1 and ((self.decimal_hour_ct >= 7.5 and self.decimal_hour_ct <= 16) or (self.decimal_hour_ct >= 19 and self.decimal_hour_ct <= 20)) and (self.month_ct > 10 or self.month_ct < 3):
             if self.voltage_level == "HV":
-                return self.get_rate('winter_weekday_hv')
+                return rate_script.getRate('winter_weekday_hv')
             elif self.voltage_level == "LV":
-                return self.get_rate('winter_weekday_lv')
+                return rate_script.getRate('winter_weekday_lv')
         else:
             if self.voltage_level == "HV":
-                return self.get_rate('other_hv')
+                return rate_script.getRate('other_hv')
             if self.voltage_level == "LV":
-                return self.get_rate('other_lv')
+                return rate_script.getRate('other_lv')
 
-    def is_duos_day(self):
-        if self.decimal_hour_ct > 0.5 and self.decimal_hour_ct <= 7.5:
-            return True
-        else:
-            return False
-                
-def calculator(voltage_level, is_substation, date):
-    return LlfCalculator(voltage_level, is_substation, date)]]></value>
+def calculator(voltage_level, is_substation):
+    return LlfCalculator(voltage_level, is_substation)]]></value>
         <value><![CDATA[def night_hv():
     return 1.012
 
@@ -278,6 +269,40 @@ def triad():
     <line>
 
         <value><![CDATA[insert]]></value>
+        <value><![CDATA[dso-contract-rate-script]]></value>
+        <value><![CDATA[14]]></value>
+        <value><![CDATA[main]]></value>
+        <value><![CDATA[2009-04-01T00:30Z]]></value>
+        <value><![CDATA[def night_hv():
+    return 1.012
+
+def night_lv():
+    return 1.042
+
+def peak_hv():
+    return 1.037
+
+def peak_lv():
+    return 1.104
+
+def winter_weekday_hv():
+    return 1.032
+
+def winter_weekday_lv():
+    return 1.095
+
+def other_hv():
+    return 1.029
+
+def other_lv():
+    return 1.070
+
+def triad():
+    return 20.526611]]></value>
+    </line>
+    <line>
+        <value><![CDATA[insert]]></value>
+
         <value><![CDATA[dso-contract]]></value>
         <value><![CDATA[15]]></value>
         <value><![CDATA[main]]></value>
@@ -300,8 +325,8 @@ def totalElement(account, startDate, finishDate):
     totalElement = net.sf.chellow.billing.BillElement("total", 103, "Dso cost")
     return totalElement]]></value>
     </line>
-
     <line>
+
         <value><![CDATA[insert]]></value>
         <value><![CDATA[dso-contract]]></value>
         <value><![CDATA[16]]></value>
@@ -324,8 +349,8 @@ import net.sf.chellow.physical
 def totalElement(account, startDate, finishDate):
     totalElement = net.sf.chellow.billing.BillElement("total", 103, "Dso cost")
     return totalElement]]></value>
-
     </line>
+
     <line>
         <value><![CDATA[insert]]></value>
         <value><![CDATA[dso-contract]]></value>
@@ -341,7 +366,6 @@ import net.sf.chellow.physical
 def totalElement(account, startDate, finishDate):
     totalElement = net.sf.chellow.billing.BillElement("total", 103, "Dso cost")
     return totalElement]]></value>
-
         <value><![CDATA[import sys
 import net.sf.chellow.billing
 import net.sf.chellow.monad.ui
@@ -350,6 +374,7 @@ import net.sf.chellow.physical
 def totalElement(account, startDate, finishDate):
     totalElement = net.sf.chellow.billing.BillElement("total", 103, "Dso cost")
     return totalElement]]></value>
+
     </line>
     <line>
         <value><![CDATA[insert]]></value>
@@ -358,7 +383,6 @@ def totalElement(account, startDate, finishDate):
         <value><![CDATA[main]]></value>
         <value><![CDATA[2000-01-01T00:30Z]]></value>
         <value><![CDATA[]]></value>
-
         <value><![CDATA[import sys
 import net.sf.chellow.billing
 import net.sf.chellow.monad.ui
@@ -367,6 +391,7 @@ import net.sf.chellow.physical
 def totalElement(account, startDate, finishDate):
     totalElement = net.sf.chellow.billing.BillElement("total", 103, "Dso cost")
     return totalElement]]></value>
+
         <value><![CDATA[import sys
 import net.sf.chellow.billing
 import net.sf.chellow.monad.ui
@@ -382,8 +407,8 @@ def totalElement(account, startDate, finishDate):
         <value><![CDATA[19]]></value>
         <value><![CDATA[main]]></value>
         <value><![CDATA[2000-01-01T00:30Z]]></value>
-
         <value><![CDATA[]]></value>
+
         <value><![CDATA[import sys
 import net.sf.chellow.billing
 import net.sf.chellow.monad.ui
@@ -406,8 +431,8 @@ def totalElement(account, startDate, finishDate):
         <value><![CDATA[dso-contract]]></value>
         <value><![CDATA[20]]></value>
         <value><![CDATA[main]]></value>
-
         <value><![CDATA[2000-01-01T00:30Z]]></value>
+
         <value><![CDATA[]]></value>
         <value><![CDATA[from net.sf.chellow.billing import VirtualBill, NonCoreContract
 from java.util import GregorianCalendar, TimeZone, Locale, Calendar
@@ -512,8 +537,8 @@ def triad():
         <value><![CDATA[insert]]></value>
         <value><![CDATA[dso-contract-rate-script]]></value>
         <value><![CDATA[20]]></value>
-
         <value><![CDATA[main]]></value>
+
         <value><![CDATA[2007-04-01T00:30Z]]></value>
         <value><![CDATA[def night_hv():
     return 1.032
@@ -547,8 +572,8 @@ def triad():
         <value><![CDATA[dso-contract-rate-script]]></value>
         <value><![CDATA[20]]></value>
         <value><![CDATA[main]]></value>
-
         <value><![CDATA[2008-04-01T00:30Z]]></value>
+
         <value><![CDATA[def night_hv():
     return 1.033
 
@@ -578,11 +603,44 @@ def triad():
     </line>
     <line>
         <value><![CDATA[insert]]></value>
+        <value><![CDATA[dso-contract-rate-script]]></value>
+        <value><![CDATA[20]]></value>
+        <value><![CDATA[main]]></value>
+        <value><![CDATA[2009-04-01T00:30Z]]></value>
+        <value><![CDATA[def night_hv():
+    return 1.029
+
+def night_lv():
+    return 1.074
+
+def peak_hv():
+    return 1.043
+
+def peak_lv():
+    return 1.093
+
+def winter_weekday_hv():
+    return 1.039
+
+def winter_weekday_lv():
+    return 1.087
+
+def other_hv():
+    return 1.034
+
+def other_lv():
+    return 1.078
+
+def triad():
+    return 24.471461]]></value>
+
+    </line>
+    <line>
+        <value><![CDATA[insert]]></value>
         <value><![CDATA[dso-contract]]></value>
         <value><![CDATA[21]]></value>
         <value><![CDATA[main]]></value>
         <value><![CDATA[2000-01-01T00:30Z]]></value>
-
         <value><![CDATA[]]></value>
         <value><![CDATA[import sys
 import net.sf.chellow.billing
@@ -592,6 +650,7 @@ import net.sf.chellow.physical
 def totalElement(account, startDate, finishDate):
     totalElement = net.sf.chellow.billing.BillElement("total", 103, "Dso cost")
     return totalElement]]></value>
+
         <value><![CDATA[import sys
 import net.sf.chellow.billing
 import net.sf.chellow.monad.ui
@@ -606,9 +665,9 @@ def totalElement(account, startDate, finishDate):
         <value><![CDATA[dso-contract]]></value>
         <value><![CDATA[22]]></value>
         <value><![CDATA[main]]></value>
-
         <value><![CDATA[2000-01-01T00:30Z]]></value>
         <value><![CDATA[]]></value>
+
         <value><![CDATA[from net.sf.chellow.billing import VirtualBill, NonCoreContract
 from java.util import GregorianCalendar, TimeZone, Locale, Calendar
 
@@ -772,9 +831,9 @@ def triad():
         <value><![CDATA[insert]]></value>
         <value><![CDATA[dso-contract-rate-script]]></value>
         <value><![CDATA[22]]></value>
-
         <value><![CDATA[main]]></value>
         <value><![CDATA[2007-04-01T00:30Z]]></value>
+
         <value><![CDATA[def winter_weekday_peak_hv():
     return 1.057
 
@@ -819,7 +878,6 @@ def triad():
         <value><![CDATA[dso-contract-rate-script]]></value>
         <value><![CDATA[22]]></value>
         <value><![CDATA[main]]></value>
-
         <value><![CDATA[2008-04-01T00:30Z]]></value>
         <value><![CDATA[def winter_weekday_peak_hv():
     return 1.058
@@ -859,14 +917,60 @@ def other_lv():
 
 def triad():
     return 25.212997]]></value>
+
     </line>
+    <line>
+        <value><![CDATA[insert]]></value>
+        <value><![CDATA[dso-contract-rate-script]]></value>
+        <value><![CDATA[22]]></value>
+        <value><![CDATA[main]]></value>
+        <value><![CDATA[2009-04-01T00:30Z]]></value>
+        <value><![CDATA[def winter_weekday_peak_hv():
+    return 1.058
+
+def winter_weekday_day_hv():
+    return 1.051
+
+def night_hv():
+    return 1.041
+
+def other_hv():
+    return 1.046
+
+def winter_weekday_peak_lv_sub():
+    return 1.070
+
+def winter_weekday_day_lv_sub():
+    return 1.066
+
+def night_lv_sub():
+    return 1.060
+
+def other_lv_sub():
+    return 1.062
+
+def winter_weekday_peak_lv():
+    return 1.079
+
+def winter_weekday_day_lv():
+    return 1.073
+
+def night_lv():
+    return 1.067
+
+def other_lv():
+    return 1.069
+
+def triad():
+    return 25.631634]]></value>
+    </line>
+
     <line>
         <value><![CDATA[insert]]></value>
         <value><![CDATA[dso-contract]]></value>
         <value><![CDATA[23]]></value>
         <value><![CDATA[main]]></value>
         <value><![CDATA[2000-01-01T00:30Z]]></value>
-
         <value><![CDATA[]]></value>
         <value><![CDATA[import sys
 import net.sf.chellow.billing
@@ -884,13 +988,13 @@ import net.sf.chellow.physical
 def totalElement(account, startDate, finishDate):
     totalElement = net.sf.chellow.billing.BillElement("total", 103, "Dso cost")
     return totalElement]]></value>
+
     </line>
     <line>
         <value><![CDATA[insert]]></value>
         <value><![CDATA[dso-contract]]></value>
         <value><![CDATA[24]]></value>
         <value><![CDATA[main]]></value>
-
         <value><![CDATA[2000-01-01T00:30Z]]></value>
         <value><![CDATA[]]></value>
         <value><![CDATA[import sys
@@ -901,6 +1005,7 @@ import net.sf.chellow.physical
 def totalElement(account, startDate, finishDate):
     totalElement = net.sf.chellow.billing.BillElement("total", 103, "Dso cost")
     return totalElement]]></value>
+
         <value><![CDATA[import sys
 import net.sf.chellow.billing
 import net.sf.chellow.monad.ui
@@ -914,17 +1019,17 @@ def totalElement(account, startDate, finishDate):
         <value><![CDATA[insert]]></value>
         <value><![CDATA[dso-contract]]></value>
         <value><![CDATA[99]]></value>
-
         <value><![CDATA[main]]></value>
         <value><![CDATA[2000-01-01T00:30Z]]></value>
         <value><![CDATA[]]></value>
+
         <value><![CDATA[from net.sf.chellow.billing import VirtualBill
 
 def totalElement(account, startDate, finishDate):
     totalElement = VirtualBill("total", 103, "Dso cost")
     return totalElement
 
-def calculator(voltage_level, is_substation, date):
+def calculator(voltage_level, is_substation):
     return None]]></value>
         <value><![CDATA[import sys
 import net.sf.chellow.billing
