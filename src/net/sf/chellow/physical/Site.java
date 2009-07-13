@@ -199,7 +199,7 @@ public class Site extends PersistentEntity {
 			Integer importAgreedSupplyCapacity, String exportMpanStr,
 			Ssc exportSsc, Account exportAccountSupplier,
 			Integer exportAgreedSupplyCapacity) throws HttpException {
-		Supply supply = new Supply(supplyName, source, generatorType);
+		Supply supply = new Supply(supplyName, source, generatorType, gspGroup);
 		try {
 			Hiber.session().save(supply);
 			Hiber.flush();
@@ -221,13 +221,12 @@ public class Site extends PersistentEntity {
 		Map<Site, Boolean> siteMap = new HashMap<Site, Boolean>();
 		siteMap.put(this, true);
 		SupplyGeneration generation = supply.insertGeneration(siteMap,
-				startDate, gspGroup, hhdcAccount, meterSerialNumber,
+				startDate, hhdcAccount, meterSerialNumber,
 				importMpanStr, importSsc, importAccountSupplier,
 				importAgreedSupplyCapacity, exportMpanStr, exportSsc,
 				exportAccountSupplier, exportAgreedSupplyCapacity);
-		generation.update(generation.getStartDate(), finishDate, generation
-				.getGspGroup(), generation.getHhdcAccount(), generation
-				.getMeter());
+		generation.update(generation.getStartDate(), finishDate, generation.getHhdcAccount(), generation
+				.getMeter(), generation.getPc());
 		Hiber.flush();
 		return supply;
 	}

@@ -71,6 +71,10 @@ public class Mpan extends PersistentEntity {
 		return new MpanRaw(mpan).getMpanCore();
 	}
 
+	static public Pc pc(String mpan) throws HttpException {
+		return Pc.getPc(new MpanRaw(mpan).getPcCode());
+	}
+
 	static public boolean isEqual(Set<String> mpans1, Set<String> mpans2)
 			throws HttpException {
 		Set<MpanRaw> mpansRaw1 = new HashSet<MpanRaw>();
@@ -86,8 +90,6 @@ public class Mpan extends PersistentEntity {
 
 	private SupplyGeneration supplyGeneration;
 
-	private Pc pc;
-
 	private Mtc mtc;
 
 	private Llfc llfc;
@@ -95,7 +97,7 @@ public class Mpan extends PersistentEntity {
 	private Ssc ssc;
 
 	private MpanCore core;
-	
+
 	private Account supplierAccount;
 
 	private int agreedSupplyCapacity;
@@ -104,12 +106,10 @@ public class Mpan extends PersistentEntity {
 	}
 
 	Mpan(SupplyGeneration supplyGeneration, String mpanStr, Ssc ssc,
-			Account supplierAccount,
-			int agreedSupplyCapacity)
+			Account supplierAccount, int agreedSupplyCapacity)
 			throws HttpException {
 		this.supplyGeneration = supplyGeneration;
-		update(mpanStr, ssc, supplierAccount,
-				agreedSupplyCapacity);
+		update(mpanStr, ssc, supplierAccount, agreedSupplyCapacity);
 	}
 
 	public SupplyGeneration getSupplyGeneration() {
@@ -118,14 +118,6 @@ public class Mpan extends PersistentEntity {
 
 	protected void setSupplyGeneration(SupplyGeneration supplyGeneration) {
 		this.supplyGeneration = supplyGeneration;
-	}
-
-	public Pc getPc() {
-		return pc;
-	}
-
-	void setPc(Pc pc) {
-		this.pc = pc;
 	}
 
 	public Mtc getMtc() {
@@ -168,7 +160,6 @@ public class Mpan extends PersistentEntity {
 		this.supplierAccount = supplierAccount;
 	}
 
-
 	public int getAgreedSupplyCapacity() {
 		return agreedSupplyCapacity;
 	}
@@ -176,25 +167,9 @@ public class Mpan extends PersistentEntity {
 	protected void setAgreedSupplyCapacity(int agreedSupplyCapacity) {
 		this.agreedSupplyCapacity = agreedSupplyCapacity;
 	}
-/*
-	public boolean hasChannel(boolean isImport, boolean isKwh) {
-		if (isImport) {
-			if (isKwh) {
-				return hasImportKwh;
-			} else {
-				return hasImportKvarh;
-			}
-		} else {
-			if (isKwh) {
-				return hasExportKwh;
-			} else {
-				return hasExportKvarh;
-			}
-		}
-	}
-*/
-	public void update(String mpan, Ssc ssc, Account supplierAccount, Integer agreedSupplyCapacity)
-			throws HttpException {
+
+	public void update(String mpan, Ssc ssc, Account supplierAccount,
+			Integer agreedSupplyCapacity) throws HttpException {
 		if (agreedSupplyCapacity == null) {
 			throw new InternalException("agreedSupplyCapacity can't be null");
 		}
@@ -206,6 +181,10 @@ public class Mpan extends PersistentEntity {
 		}
 		Dso dso = mpanCore.getDso();
 		Pc pc = Pc.getPc(mpanRaw.getPcCode());
+		if (!pc.equals(supplyGeneration.getPc())) {
+			throw new UserException(
+					"The Profile Class of the MPAN must match that of the supply generation.");
+		}
 		Llfc llfc = dso.getLlfc(mpanRaw.getLlfcCode());
 		Mtc mtc = Mtc.getMtc(dso, mpanRaw.getMtcCode());
 		if (!mpanCore.getSupply().equals(supplyGeneration.getSupply())) {
@@ -226,7 +205,6 @@ public class Mpan extends PersistentEntity {
 							+ llfc
 							+ " which has IsImport " + llfc.getIsImport() + ".");
 		}
-		setPc(pc);
 		setMtc(mtc);
 		setLlfc(llfc);
 		if (pc.getCode() == 0 && ssc != null) {
@@ -244,12 +222,10 @@ public class Mpan extends PersistentEntity {
 		}
 		setSupplierAccount(supplierAccount);
 		setAgreedSupplyCapacity(agreedSupplyCapacity);
-		// Debug.print("calling onmpanchange 66");
-		// supplyGeneration.onMpanChange();
 	}
 
 	public String toString() {
-		return pc.codeAsString() + " " + mtc.codeAsString() + " "
+		return supplyGeneration.getPc().codeAsString() + " " + mtc.codeAsString() + " "
 				+ llfc.codeAsString() + " " + core;
 	}
 
@@ -257,7 +233,7 @@ public class Mpan extends PersistentEntity {
 		Element element = super.toXml(doc, "mpan");
 		element.setAttribute("agreed-supply-capacity", Integer
 				.toString(agreedSupplyCapacity));
-		element.setAttribute("mpan", pc.toXml(doc).getTextContent() + " "
+		element.setAttribute("mpan", supplyGeneration.getPc().toXml(doc).getTextContent() + " "
 				+ mtc.toXml(doc).getTextContent() + " "
 				+ llfc.toXml(doc).getTextContent() + " " + core.toString());
 		return element;
@@ -342,11 +318,11 @@ public class Mpan extends PersistentEntity {
 		public String toString() {
 			return pcCode + " " + mtcCode + " " + llfcCode + " " + mpanCore;
 		}
-/*
-		public String toStringNoSpaces() {
-			return toString().replace(" ", "");
-		}
-*/
+
+		/*
+		 * public String toStringNoSpaces() { return toString().replace(" ",
+		 * ""); }
+		 */
 		/*
 		 * public boolean equals(Object obj) { boolean isEqual = false; if (obj
 		 * instanceof MpanRaw) { MpanRaw mpan = (MpanRaw) obj; isEqual =

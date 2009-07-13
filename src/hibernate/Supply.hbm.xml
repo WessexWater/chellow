@@ -36,6 +36,8 @@
 			not-null="true" foreign-key="fkey_supply_source" />
 		<many-to-one name="generatorType" class="GeneratorType" column="generator_type_id"
 			foreign-key="fkey_supply_generator_type" />
+		<many-to-one name="gspGroup" class="GspGroup" column="gsp_group_id"
+			foreign-key="fkey_supply_generation__gsp_group" />
 		<set name="generations" inverse="true"
 			cascade="all,delete-orphan" order-by="start_date desc">
 			<key column="supply_id" />

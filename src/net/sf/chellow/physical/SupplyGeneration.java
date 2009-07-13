@@ -72,15 +72,6 @@ public class SupplyGeneration extends PersistentEntity {
 					"Start date", values, 2);
 			String finishDateStr = GeneralImport.addField(csvElement,
 					"Finish date", values, 3);
-
-			GspGroup gspGroup = null;
-			String gspGroupCode = GeneralImport.addField(csvElement,
-					"GSP Group", values, 5);
-			if (gspGroupCode.equals(GeneralImport.NO_CHANGE)) {
-				gspGroup = supplyGeneration.getGspGroup();
-			} else {
-				gspGroup = GspGroup.getGspGroup(gspGroupCode);
-			}
 			String meterSerialNumber = GeneralImport.addField(csvElement,
 					"Meter Serial Number", values, 4);
 			Meter meter = null;
@@ -91,6 +82,13 @@ public class SupplyGeneration extends PersistentEntity {
 				if (meter == null) {
 					meter = supply.insertMeter(meterSerialNumber);
 				}
+			}
+			String pcCode = GeneralImport.addField(csvElement, "Profile Class", values, 5);
+			Pc pc = null;
+			if (pcCode.equals(GeneralImport.NO_CHANGE)) {
+				pc = supplyGeneration.getPc(); 
+			} else {
+				pc = Pc.getPc(pcCode);
 			}
 			String hasImportKwhStr = GeneralImport.addField(csvElement,
 					"Has import kWh?", values, 9);
@@ -148,7 +146,7 @@ public class SupplyGeneration extends PersistentEntity {
 					finishDateStr.length() == 0 ? null : (finishDateStr
 							.equals(GeneralImport.NO_CHANGE) ? supplyGeneration
 							.getFinishDate() : new HhEndDate("finish",
-							finishDateStr)), gspGroup, hhdcAccount, meter);
+							finishDateStr)), hhdcAccount, meter, pc);
 			for (boolean isImport : new boolean[] { true, false }) {
 				for (boolean isKwh : new boolean[] { true, false }) {
 					boolean hasChannel;
@@ -357,9 +355,6 @@ public class SupplyGeneration extends PersistentEntity {
 					"Start date", values, 1);
 			HhEndDate startDate = startDateStr.length() == 0 ? null
 					: new HhEndDate(startDateStr);
-			String gspGroupCode = GeneralImport.addField(csvElement,
-					"GSP Group", values, 5);
-			GspGroup gspGroup = GspGroup.getGspGroup(gspGroupCode);
 			String hasImportKwhStr = GeneralImport.addField(csvElement,
 					"Has import kWh", values, 7);
 			boolean hasImportKwh = Boolean.parseBoolean(hasImportKwhStr);
@@ -459,8 +454,8 @@ public class SupplyGeneration extends PersistentEntity {
 			Map<Site, Boolean> siteMap = new HashMap<Site, Boolean>();
 			siteMap.put(site, true);
 			SupplyGeneration generation = supply.insertGeneration(siteMap,
-					startDate, gspGroup, hhdcAccount, meterSerialNumber,
-					importMpanStr, importSsc, importSupplierAccount,
+					startDate, hhdcAccount, meterSerialNumber, importMpanStr,
+					importSsc, importSupplierAccount,
 					importAgreedSupplyCapacity, exportMpanStr, exportSsc,
 					exportSupplierAccount, exportAgreedSupplyCapacity);
 			for (boolean isImport : new boolean[] { true, false }) {
@@ -505,31 +500,29 @@ public class SupplyGeneration extends PersistentEntity {
 	private HhEndDate startDate;
 
 	private HhEndDate finishDate;
-	private GspGroup gspGroup;
 	private Account mopAccount;
 	private Meter meter;
 
 	private Account hhdcAccount;
-
-	private Set<Channel> channels;
+	private Pc pc;
 
 	private Mpan importMpan;
 
 	private Mpan exportMpan;
 
 	private Set<Mpan> mpans;
+	private Set<Channel> channels;
 
 	SupplyGeneration() {
 	}
 
 	SupplyGeneration(Supply supply, HhEndDate startDate, HhEndDate finishDate,
-			GspGroup gspGroup, Account hhdcAccount, Meter meter)
-			throws HttpException {
+			Account hhdcAccount, Meter meter) throws HttpException {
 		setChannels(new HashSet<Channel>());
 		setSupply(supply);
 		setSiteSupplyGenerations(new HashSet<SiteSupplyGeneration>());
 		setMpans(new HashSet<Mpan>());
-		internalUpdate(startDate, finishDate, gspGroup, hhdcAccount, meter);
+		internalUpdate(startDate, finishDate, hhdcAccount, meter, Pc.getPc("00"));
 	}
 
 	void setSupply(Supply supply) {
@@ -581,12 +574,12 @@ public class SupplyGeneration extends PersistentEntity {
 		this.hhdcAccount = hhdcAccount;
 	}
 
-	public GspGroup getGspGroup() {
-		return gspGroup;
+	public Pc getPc() {
+		return pc;
 	}
 
-	void setGspGroup(GspGroup gspGroup) {
-		this.gspGroup = gspGroup;
+	void setPc(Pc pc) {
+		this.pc = pc;
 	}
 
 	public Mpan getImportMpan() {
@@ -669,6 +662,8 @@ public class SupplyGeneration extends PersistentEntity {
 			Account importSupplierAccount, Integer importAgreedSupplyCapacity,
 			String exportMpanStr, Ssc exportSsc, Account exportSupplierAccount,
 			Integer exportAgreedSupplyCapacity) throws HttpException {
+		Pc importPc = null;
+		Pc exportPc = null;
 		if (importMpan == null) {
 			if (importMpanStr != null && importMpanStr.length() != 0) {
 				setImportMpan(new Mpan(this, importMpanStr, importSsc,
@@ -734,6 +729,7 @@ public class SupplyGeneration extends PersistentEntity {
 						"The import line loss factor '" + importMpan.getLlfc()
 								+ "' says that the MPAN is actually export.");
 			}
+			importPc = Mpan.pc(importMpanStr);
 		}
 		if (exportMpan != null) {
 			if (exportMpan.getLlfc().getIsImport()) {
@@ -744,6 +740,7 @@ public class SupplyGeneration extends PersistentEntity {
 								+ exportMpan.getLlfc()
 								+ "' says that the MPAN is actually import.");
 			}
+			exportPc = Mpan.pc(exportMpanStr);
 		}
 		if (importMpan != null && exportMpan != null) {
 			if (!importMpan.getCore().getDso().equals(
@@ -755,6 +752,9 @@ public class SupplyGeneration extends PersistentEntity {
 					exportMpan.getLlfc().getVoltageLevel())) {
 				throw new UserException(
 						"The voltage level indicated by the Line Loss Factor must be the same for both the MPANs.");
+			}
+			if (!importPc.equals(exportPc)) {
+				throw new UserException("The Profile Classes of both MPANs must be the same.");
 			}
 		}
 		Dso dso = getDso();
@@ -779,6 +779,11 @@ public class SupplyGeneration extends PersistentEntity {
 									+ " can only be 520, 550 or 580.");
 				}
 			}
+		}
+		if (importPc == null) {
+			setPc(exportPc);
+		} else {
+			setPc(importPc);
 		}
 		Hiber.flush();
 		// more optimization possible here, doesn't necessarily need to check
@@ -815,13 +820,6 @@ public class SupplyGeneration extends PersistentEntity {
 		this.meter = meter;
 	}
 
-	/*
-	 * public MpanCore getMpanCore(boolean isImport, boolean isKwh) throws
-	 * HttpException { MpanCore mpanCore = null; if (importMpan != null &&
-	 * importMpan.getHhdcAccount() != null) { mpanCore = importMpan.getCore(); }
-	 * if (mpanCore == null && exportMpan != null && exportMpan.getHhdcAccount()
-	 * != null) { mpanCore = exportMpan.getCore(); } return mpanCore; }
-	 */
 	public Channel getChannel(boolean isImport, boolean isKwh) {
 		for (Channel candidateChannel : channels) {
 			if (candidateChannel.getIsImport() == isImport
@@ -833,8 +831,7 @@ public class SupplyGeneration extends PersistentEntity {
 	}
 
 	public void internalUpdate(HhEndDate startDate, HhEndDate finishDate,
-			GspGroup gspGroup, Account hhdcAccount, Meter meter)
-			throws HttpException {
+			Account hhdcAccount, Meter meter, Pc pc) throws HttpException {
 		if (finishDate != null
 				&& startDate.getDate().after(finishDate.getDate())) {
 			throw new UserException(
@@ -845,14 +842,13 @@ public class SupplyGeneration extends PersistentEntity {
 		}
 		setStartDate(startDate);
 		setFinishDate(finishDate);
-		setGspGroup(gspGroup);
 		if (hhdcAccount == null && !channels.isEmpty()) {
 			throw new UserException(
 					"Can't remove the HHDC account while there are still channels there.");
 		}
 		setHhdcAccount(hhdcAccount);
 		setMeter(meter);
-
+		setPc(pc);
 		// resolve any snags channel snags outside range
 		for (Channel channel : channels) {
 			channel.onSupplyGenerationChange();
@@ -925,8 +921,7 @@ public class SupplyGeneration extends PersistentEntity {
 	}
 
 	public void update(HhEndDate startDate, HhEndDate finishDate,
-			GspGroup gspGroup, Account hhdcAccount, Meter meter)
-			throws HttpException {
+			Account hhdcAccount, Meter meter, Pc pc) throws HttpException {
 		HhEndDate originalStartDate = getStartDate();
 		HhEndDate originalFinishDate = getFinishDate();
 		if (startDate.equals(originalStartDate)
@@ -944,9 +939,8 @@ public class SupplyGeneration extends PersistentEntity {
 			}
 			previousSupplyGeneration.internalUpdate(previousSupplyGeneration
 					.getStartDate(), startDate.getPrevious(),
-					previousSupplyGeneration.getGspGroup(),
 					previousSupplyGeneration.getHhdcAccount(),
-					previousSupplyGeneration.getMeter());
+					previousSupplyGeneration.getMeter(), previousSupplyGeneration.getPc());
 		}
 		SupplyGeneration nextSupplyGeneration = supply.getGenerationNext(this);
 		if (nextSupplyGeneration != null) {
@@ -962,10 +956,9 @@ public class SupplyGeneration extends PersistentEntity {
 			}
 			nextSupplyGeneration.internalUpdate(finishDate.getNext(),
 					nextSupplyGeneration.getFinishDate(), nextSupplyGeneration
-							.getGspGroup(), nextSupplyGeneration
-							.getHhdcAccount(), nextSupplyGeneration.getMeter());
+							.getHhdcAccount(), nextSupplyGeneration.getMeter(), nextSupplyGeneration.getPc());
 		}
-		internalUpdate(startDate, finishDate, gspGroup, hhdcAccount, meter);
+		internalUpdate(startDate, finishDate, hhdcAccount, meter, pc);
 		Hiber.flush();
 		checkMpanRelationship();
 		HhEndDate checkFinishDate = originalStartDate;
@@ -1035,13 +1028,13 @@ public class SupplyGeneration extends PersistentEntity {
 		Element source = doc.getDocumentElement();
 		Element generationElement = (Element) toXml(doc, new XmlTree(
 				"siteSupplyGenerations", new XmlTree("site")).put("meter").put(
-				"supply", new XmlTree("source")).put("gspGroup").put("hhdcAccount",
-						new XmlTree("contract", new XmlTree("party"))));
+				"supply", new XmlTree("source")).put("gspGroup").put(
+				"hhdcAccount", new XmlTree("contract", new XmlTree("party"))));
 		source.appendChild(generationElement);
 		for (Mpan mpan : mpans) {
 			Element mpanElement = (Element) mpan.toXml(doc, new XmlTree("core")
-					.put("mtc").put("pc").put("llfc").put("ssc")
-					.put("supplierAccount",
+					.put("mtc").put("pc").put("llfc").put("ssc").put(
+							"supplierAccount",
 							new XmlTree("contract", new XmlTree("party"))));
 			generationElement.appendChild(mpanElement);
 			for (RegisterRead read : (List<RegisterRead>) Hiber.session()
@@ -1129,16 +1122,15 @@ public class SupplyGeneration extends PersistentEntity {
 				inv.sendOk(document());
 			} else {
 				Date startDate = inv.getDate("start-date");
-				Long gspGroupId = inv.getLong("gsp-group-id");
 				String hhdcContractName = inv.getString("hhdc-contract-name");
 				String meterSerialNumber = inv.getString("meter-serial-number");
-                if (!inv.isValid()) {
-                	throw new UserException();
-                }
+				Long pcId = inv.getLong("pc-id");
+				if (!inv.isValid()) {
+					throw new UserException();
+				}
 				Date finishDate = null;
 				String importMpanStr = null;
 				Ssc importSsc = null;
-				GspGroup gspGroup = GspGroup.getGspGroup(gspGroupId);
 				Integer importAgreedSupplyCapacity = null;
 				HhdcContract hhdcContract = null;
 				Account hhdcAccount = null;
@@ -1157,12 +1149,13 @@ public class SupplyGeneration extends PersistentEntity {
 					hhdcAccount = hhdcContract.getAccount(hhdcAccountReference
 							.trim());
 				}
+				Pc pc = Pc.getPc(pcId);
+
 				boolean hasImportMpan = inv.getBoolean("has-import-mpan");
 
 				if (hasImportMpan) {
 					String importMpanCoreStr = inv
 							.getString("import-mpan-core");
-					Long importPcId = inv.getLong("import-pc-id");
 					String importLlfcCodeStr = inv
 							.getString("import-llfc-code");
 					String importMtcCode = inv.getString("import-mtc-code");
@@ -1171,12 +1164,11 @@ public class SupplyGeneration extends PersistentEntity {
 					if (!inv.isValid()) {
 						throw new UserException(document());
 					}
-					Pc importPc = Pc.getPc(importPcId);
 					if (importSscCode.trim().length() > 0) {
 						importSsc = Ssc.getSsc(importSscCode);
 					}
 
-					importMpanStr = importPc.codeAsString() + importMtcCode
+					importMpanStr = getPc().codeAsString() + importMtcCode
 							+ importLlfcCodeStr + importMpanCoreStr;
 					importAgreedSupplyCapacity = inv
 							.getInteger("import-agreed-supply-capacity");
@@ -1203,7 +1195,6 @@ public class SupplyGeneration extends PersistentEntity {
 				if (hasExportMpan) {
 					String exportMpanCoreStr = inv
 							.getString("export-mpan-core");
-					Long exportPcId = inv.getLong("export-pc-id");
 					String llfcCodeStr = inv.getString("export-llfc-code");
 					String exportMtcCode = inv.getString("export-mtc-code");
 					String exportSscCode = inv.getString("export-ssc-code");
@@ -1213,8 +1204,7 @@ public class SupplyGeneration extends PersistentEntity {
 					if (exportSscCode.trim().length() > 0) {
 						exportSsc = Ssc.getSsc(exportSscCode);
 					}
-					Pc exportPc = Pc.getPc(exportPcId);
-					exportMpanStr = exportPc.codeAsString() + exportMtcCode
+					exportMpanStr = getPc().codeAsString() + exportMtcCode
 							+ llfcCodeStr + exportMpanCoreStr;
 					exportAgreedSupplyCapacity = inv
 							.getInteger("export-agreed-supply-capacity");
@@ -1245,7 +1235,7 @@ public class SupplyGeneration extends PersistentEntity {
 				}
 				update(new HhEndDate(startDate).getNext(),
 						finishDate == null ? null : new HhEndDate(finishDate),
-						gspGroup, hhdcAccount, meter);
+						hhdcAccount, meter, pc);
 				Hiber.commit();
 				inv.sendOk(document());
 			}

@@ -269,8 +269,7 @@ public class Account extends PersistentEntity {
 		}
 		if (to == null) {
 			int frequency = 1;
-			int profileClass = supplyGenerations.get(0).getMpans().iterator()
-					.next().getPc().getCode();
+			int profileClass = supplyGenerations.get(0).getPc().getCode();
 			if (profileClass < 5 && profileClass > 1) {
 				frequency = 3;
 			}
