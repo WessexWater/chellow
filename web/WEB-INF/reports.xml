@@ -4967,7 +4967,7 @@ start_date = HhEndDate(cal.getTime())
 inv.getResponse().setContentType("text/csv")
 inv.getResponse().setHeader('Content-Disposition', 'filename=output.csv;')
 pw = inv.getResponse().getWriter()
-pw.println("Site Id, Site Name, Associated Site Ids, Sources, Generator Types, From, To, Imported kWh, Displaced kWh, Exported kWh, Used kWh, Parasitic kWh, Generated kWh")
+pw.println("Site Id, Site Name, Associated Site Ids, Sources, Generator Types, From, To, Imported kWh, Displaced kWh, Exported kWh, Used kWh, Parasitic kWh, Generated kWh,Meter Type")
 pw.flush()
 sites = Hiber.session().createQuery("from Site site order by site.code").scroll()
 while sites.next():
@@ -4983,10 +4983,15 @@ while sites.next():
     export_to_net = 0
     import_from_gen = 0
     export_to_gen = 0
+    metering_type = 'nhh'
     while site_supply_generations.next():
         has_physical = True
         site_supply_generation = site_supply_generations.get(0)
         supply_generation = site_supply_generation.getSupplyGeneration()
+        if metering_type == 'nhh' and supply_generation.getChannels().size() > 0:
+            metering_type = 'amr'
+        if supply_generation.getMpans()[0].getPc().getCode() == 0:
+            metering_type = 'hh'
         for ss_gen in supply_generation.getSiteSupplyGenerations():
             ss_gen_site_code = ss_gen.getSite().getCode()
             if ss_gen.getId() != site_supply_generation.getId() and ss_gen_site_code != site_code and ss_gen_site_code not in associates:
@@ -5043,7 +5048,7 @@ while sites.next():
         pw.print(str(round(export_to_net)) + ',')
         pw.print(str(round(used)) + ',')
         pw.print(str(round(export_to_gen)) + ',')
-        pw.print(str(round(import_from_gen)) + '\n')
+        pw.print(str(round(import_from_gen)) + ',' + metering_type + '\n')
     pw.flush()
     Hiber.session().clear()
 sites.close()
