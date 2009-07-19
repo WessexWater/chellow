@@ -338,30 +338,6 @@
 											select="concat(' ', /source/supply-generation/hh-end-date[@label='finish']/@hour, ':', /source/supply-generation/hh-end-date[@label='finish']/@minute, 'Z')" />
 									</xsl:if>
 								</fieldset>
-								<br />
-								<label>
-									<xsl:value-of select="'GSP Group '" />
-									<select name="gsp-group-id">
-										<xsl:for-each select="/source/gsp-group">
-											<option value="{@id}">
-												<xsl:choose>
-													<xsl:when test="/source/request/parameter[@name='gsp-group-id']">
-														<xsl:if
-															test="@id = /source/request/parameter[@name='gsp-group-id']/value">
-															<xsl:attribute name="selected" />
-														</xsl:if>
-													</xsl:when>
-													<xsl:otherwise>
-														<xsl:if test="@id = /source/supply-generation/gsp-group/@id">
-															<xsl:attribute name="selected" />
-														</xsl:if>
-													</xsl:otherwise>
-												</xsl:choose>
-												<xsl:value-of select="concat(@code, ' ', @description)" />
-											</option>
-										</xsl:for-each>
-									</select>
-								</label>
 								<br/>
 								<label>
 									HHDC Contract
@@ -426,6 +402,33 @@
 									</input>
 								</label>
 								<br />
+																	<label>
+										<xsl:value-of select="'Profile Class '" />
+										<select name="pc-id">
+											<xsl:for-each select="/source/pc">
+												<option value="{@id}">
+													<xsl:choose>
+														<xsl:when
+															test="/source/request/parameter[@name='pc-id']">
+															<xsl:if
+																test="@id = /source/request/parameter[@name='pc-id']/value">
+																<xsl:attribute name="selected" />
+															</xsl:if>
+														</xsl:when>
+														<xsl:otherwise>
+															<xsl:if
+																test="@id = /source/supply-generation/pc/@id">
+																<xsl:attribute name="selected" />
+															</xsl:if>
+														</xsl:otherwise>
+													</xsl:choose>
+													<xsl:value-of select="concat(@code, ' - ', @description)" />
+												</option>
+											</xsl:for-each>
+										</select>
+
+									</label>
+									<br />
 								<br />
 								<fieldset>
 									<legend>Import MPAN</legend>
@@ -449,33 +452,6 @@
 										</input>
 									</label>
 									<br />
-									<br />
-									<label>
-										<xsl:value-of select="'Profile Class '" />
-										<select name="import-pc-id">
-											<xsl:for-each select="/source/pc">
-												<option value="{@id}">
-													<xsl:choose>
-														<xsl:when
-															test="/source/request/parameter[@name='import-pc-id']">
-															<xsl:if
-																test="@id = /source/request/parameter[@name='import-pc-id']/value">
-																<xsl:attribute name="selected" />
-															</xsl:if>
-														</xsl:when>
-														<xsl:otherwise>
-															<xsl:if
-																test="@id = /source/supply-generation/mpan[llfc/@is-import='true']/pc/@id">
-																<xsl:attribute name="selected" />
-															</xsl:if>
-														</xsl:otherwise>
-													</xsl:choose>
-													<xsl:value-of select="concat(@code, ' - ', @description)" />
-												</option>
-											</xsl:for-each>
-										</select>
-
-									</label>
 									<br />
 									<label>
 										<xsl:value-of select="'Meter Timeswitch Class '" />
@@ -800,33 +776,6 @@
 										</input>
 									</label>
 									<br />
-									<br />
-									<label>
-										<xsl:value-of select="'Profile Class '" />
-										<select name="export-pc-id">
-											<xsl:for-each select="/source/pc">
-												<option value="{@id}">
-													<xsl:choose>
-														<xsl:when
-															test="/source/request/parameter[@name='export-pc-id']">
-															<xsl:if
-																test="@id = /source/request/parameter[@name='export-pc-id']/value">
-																<xsl:attribute name="selected" />
-															</xsl:if>
-														</xsl:when>
-														<xsl:otherwise>
-															<xsl:if
-																test="@id = /source/supply-generation/mpan[llfc/@is-import='false']/pc/@id">
-																<xsl:attribute name="selected" />
-															</xsl:if>
-														</xsl:otherwise>
-													</xsl:choose>
-													<xsl:value-of select="concat(@code, ' - ', @description)" />
-												</option>
-											</xsl:for-each>
-										</select>
-
-									</label>
 									<br />
 									<label>
 										<xsl:value-of select="'Meter Timeswitch Class '" />

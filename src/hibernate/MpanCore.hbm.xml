@@ -2,27 +2,21 @@
 <!DOCTYPE hibernate-mapping PUBLIC
       "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
           "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
-<!-- 
-	
-	Copyright 2005-2008 Meniscus Systems Ltd
-	
-	This file is part of Chellow.
-	
-	Chellow is free software; you can redistribute it and/or modify
-	it under the terms of the GNU General Public License as published by
-	the Free Software Foundation; either version 2 of the License, or
-	(at your option) any later version.
-	
-	Chellow is distributed in the hope that it will be useful,
-	but WITHOUT ANY WARRANTY; without even the implied warranty of
-	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-	GNU General Public License for more details.
-	
-	You should have received a copy of the GNU General Public License
-	along with Chellow; if not, write to the Free Software
-	Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-	
--->
+	<!--
+
+		Copyright 2005-2008 Meniscus Systems Ltd This file is part of Chellow.
+
+		Chellow is free software; you can redistribute it and/or modify it
+		under the terms of the GNU General Public License as published by the
+		Free Software Foundation; either version 2 of the License, or (at your
+		option) any later version. Chellow is distributed in the hope that it
+		will be useful, but WITHOUT ANY WARRANTY; without even the implied
+		warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See
+		the GNU General Public License for more details. You should have
+		received a copy of the GNU General Public License along with Chellow;
+		if not, write to the Free Software Foundation, Inc., 51 Franklin St,
+		Fifth Floor, Boston, MA 02110-1301 USA
+	-->
 
 <hibernate-mapping package="net.sf.chellow.physical">
 	<class name="MpanCore" table="mpan_core">
@@ -34,18 +28,10 @@
 		<many-to-one name="supply" class="Supply" column="supply_id"
 			not-null="true" foreign-key="fkey_mpan_core_supply" />
 		<many-to-one name="dso" class="net.sf.chellow.billing.Dso"
-			column="dso_id" unique-key="mpan_core" not-null="true"
-			foreign-key="fkey_mpan_core_dso" />
+			column="dso_id" unique-key="mpan_core" not-null="true" foreign-key="fkey_mpan_core_dso" />
 		<property type="string" name="uniquePart" column="unique_part"
 			not-null="true" unique-key="mpan_core" />
-		<property type="character" name="checkDigit"
-			column="check_digit" not-null="true" unique-key="mpan_core" />
-		<!--				
-			<set name="mpans" inverse="true" lazy="true"
-			cascade="all,delete-orphan">
-			<key column="mpan_core_id" />
-			<one-to-many class="Mpan" />
-			</set>
-		-->
+		<property type="character" name="checkDigit" column="check_digit"
+			not-null="true" unique-key="mpan_core" />
 	</class>
 </hibernate-mapping>

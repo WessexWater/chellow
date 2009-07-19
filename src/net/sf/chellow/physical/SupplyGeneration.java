@@ -505,7 +505,6 @@ public class SupplyGeneration extends PersistentEntity {
 
 	private Account hhdcAccount;
 	private Pc pc;
-
 	private Mpan importMpan;
 
 	private Mpan exportMpan;
@@ -1027,13 +1026,13 @@ public class SupplyGeneration extends PersistentEntity {
 		Document doc = MonadUtils.newSourceDocument();
 		Element source = doc.getDocumentElement();
 		Element generationElement = (Element) toXml(doc, new XmlTree(
-				"siteSupplyGenerations", new XmlTree("site")).put("meter").put(
-				"supply", new XmlTree("source")).put("gspGroup").put(
+				"siteSupplyGenerations", new XmlTree("site")).put("pc").put("meter").put(
+				"supply", new XmlTree("source").put("gspGroup")).put(
 				"hhdcAccount", new XmlTree("contract", new XmlTree("party"))));
 		source.appendChild(generationElement);
 		for (Mpan mpan : mpans) {
 			Element mpanElement = (Element) mpan.toXml(doc, new XmlTree("core")
-					.put("mtc").put("pc").put("llfc").put("ssc").put(
+					.put("mtc").put("llfc").put("ssc").put(
 							"supplierAccount",
 							new XmlTree("contract", new XmlTree("party"))));
 			generationElement.appendChild(mpanElement);
@@ -1045,36 +1044,13 @@ public class SupplyGeneration extends PersistentEntity {
 						new XmlTree("batch", new XmlTree("contract",
 								new XmlTree("party"))))));
 			}
-			/*
-			 * for (InvoiceMpan invoiceMpan : (List<InvoiceMpan>) Hiber
-			 * .session() .createQuery( "from InvoiceMpan invoiceMpan where
-			 * invoiceMpan.mpan = :mpan") .setEntity("mpan", mpan).list()) {
-			 * mpanElement.appendChild(invoiceMpan.toXml(doc, new XmlTree(
-			 * "invoice", new XmlTree("batch", new XmlTree("service", new
-			 * XmlTree("provider")))))); }
-			 */
 		}
-		// Organization organization = organization();
-		/*
-		 * for (Dce dce : (List<Dce>) Hiber.session().createQuery( "from Dce dce
-		 * where dce.organization = :organization") .setEntity("organization",
-		 * organization).list()) { Element dceElement = dce.toXml(doc);
-		 * source.appendChild(dceElement); for (HhdcContract dceService :
-		 * (List<HhdcContract>) Hiber .session() .createQuery(
-		 * "from DceService service where service.provider = :dce")
-		 * .setEntity("dce", dce).list()) {
-		 * dceElement.appendChild(dceService.toXml(doc)); } }
-		 */
 		source.appendChild(MonadDate.getMonthsXml(doc));
 		source.appendChild(MonadDate.getDaysXml(doc));
 		source.appendChild(new MonadDate().toXml(doc));
 		for (Pc pc : (List<Pc>) Hiber.session().createQuery(
 				"from Pc pc order by pc.code").list()) {
 			source.appendChild(pc.toXml(doc));
-		}
-		for (GspGroup group : (List<GspGroup>) Hiber.session().createQuery(
-				"from GspGroup group order by group.code").list()) {
-			source.appendChild(group.toXml(doc));
 		}
 		return doc;
 	}

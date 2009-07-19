@@ -2,27 +2,21 @@
 <!DOCTYPE hibernate-mapping PUBLIC
       "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
           "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
-<!-- 
-	
-	Copyright 2005-2008 Meniscus Systems Ltd
-	
-	This file is part of Chellow.
-	
-	Chellow is free software; you can redistribute it and/or modify
-	it under the terms of the GNU General Public License as published by
-	the Free Software Foundation; either version 2 of the License, or
-	(at your option) any later version.
-	
-	Chellow is distributed in the hope that it will be useful,
-	but WITHOUT ANY WARRANTY; without even the implied warranty of
-	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-	GNU General Public License for more details.
-	
-	You should have received a copy of the GNU General Public License
-	along with Chellow; if not, write to the Free Software
-	Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-	
--->
+	<!--
+
+		Copyright 2005-2008 Meniscus Systems Ltd This file is part of Chellow.
+
+		Chellow is free software; you can redistribute it and/or modify it
+		under the terms of the GNU General Public License as published by the
+		Free Software Foundation; either version 2 of the License, or (at your
+		option) any later version. Chellow is distributed in the hope that it
+		will be useful, but WITHOUT ANY WARRANTY; without even the implied
+		warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See
+		the GNU General Public License for more details. You should have
+		received a copy of the GNU General Public License along with Chellow;
+		if not, write to the Free Software Foundation, Inc., 51 Franklin St,
+		Fifth Floor, Boston, MA 02110-1301 USA
+	-->
 
 <hibernate-mapping package="net.sf.chellow.physical">
 	<class name="Mpan" table="mpan">
@@ -32,10 +26,7 @@
 			</generator>
 		</id>
 		<many-to-one name="supplyGeneration" class="SupplyGeneration"
-			column="supply_generation_id" not-null="true"
-			foreign-key="fkey_mpan_supply_generation" />
-		<many-to-one name="pc" class="Pc" column="pc_id" not-null="true"
-			foreign-key="fkey_mpan__pc" />
+			column="supply_generation_id" not-null="true" foreign-key="fkey_mpan_supply_generation" />
 		<many-to-one name="mtc" class="Mtc" column="mtc_id"
 			not-null="true" foreign-key="fkey_mpan_mtc" />
 		<many-to-one name="llfc" class="Llfc" column="llfc_id"
@@ -44,10 +35,9 @@
 			foreign-key="fkey_mpan_ssc" />
 		<many-to-one name="core" class="MpanCore" column="core_id"
 			not-null="true" foreign-key="fkey_mpan__core" />
-		<many-to-one name="supplierAccount"
-			class="net.sf.chellow.billing.Account" column="supplier_account_id"
-			foreign-key="fkey_mpan_supplier_account" />
-		<property name="agreedSupplyCapacity"
-			column="agreed_supply_capacity" not-null="true" />
+		<many-to-one name="supplierAccount" class="net.sf.chellow.billing.Account"
+			column="supplier_account_id" foreign-key="fkey_mpan_supplier_account" />
+		<property name="agreedSupplyCapacity" column="agreed_supply_capacity"
+			not-null="true" />
 	</class>
 </hibernate-mapping>

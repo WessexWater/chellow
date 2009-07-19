@@ -90,11 +90,11 @@ public class SupplyGenerations extends EntityList {
 		Element source = doc.getDocumentElement();
 		Element generationsElement = toXml(doc);
 		source.appendChild(generationsElement);
-		generationsElement.appendChild(supply.toXml(doc));
+		generationsElement.appendChild(supply.toXml(doc, new XmlTree("gspGroup")));
 		for (SupplyGeneration supplyGeneration : supply.getGenerations()) {
 			generationsElement.appendChild(supplyGeneration.toXml(doc,
-					new XmlTree("mpans", new XmlTree("core").put("pc").put(
-							"llfc").put("mtc")).put("gspGroup")));
+					new XmlTree("mpans", new XmlTree("core").put(
+							"llfc").put("mtc")).put("pc")));
 		}
 		source.appendChild(new MonadDate().toXml(doc));
 		source.appendChild(MonadDate.getMonthsXml(doc));

@@ -75,17 +75,17 @@ public class Supply extends PersistentEntity {
 				generatorType = GeneratorType
 						.getGeneratorType(generatorTypeCode);
 			}
-			String gspGroupCode = GeneralImport.addField(csvElement,
-					"GSP Group", values, 5);
-			GspGroup gspGroup = GspGroup.getGspGroup(gspGroupCode);
 			String supplyName = GeneralImport.addField(csvElement,
 					"Supply Name", values, 3);
+			String gspGroupCode = GeneralImport.addField(csvElement,
+					"GSP Group", values, 4);
+			GspGroup gspGroup = GspGroup.getGspGroup(gspGroupCode);
 			String startDateStr = GeneralImport.addField(csvElement,
-					"Start date", values, 4);
+					"Start date", values, 5);
 			HhEndDate startDate = HhEndDate.roundUp(new MonadDate(startDateStr)
 					.getDate());
 			String finishDateStr = GeneralImport.addField(csvElement,
-					"Finish date", values, 5);
+					"Finish date", values, 6);
 			HhEndDate finishDate = finishDateStr.trim().length() > 0 ? HhEndDate
 					.roundUp(new MonadDate(finishDateStr).getDate())
 					: null;
@@ -461,7 +461,7 @@ public class Supply extends PersistentEntity {
 			newSupplyGeneration = insertGeneration(existingSiteMap, startDate,
 					existingGeneration.getHhdcAccount(),
 					existingMeter == null ? "" : existingMeter
-							.getSerialNumber(),existingImportMpan.toString(),
+							.getSerialNumber(), existingImportMpan.toString(),
 					existingImportMpan.getSsc(), existingImportMpan
 							.getSupplierAccount(), existingImportMpan
 							.getAgreedSupplyCapacity(), null, null, null, null);
@@ -513,7 +513,8 @@ public class Supply extends PersistentEntity {
 					existingGeneration.getFinishDate(), hhdcAccount, meter);
 			existingGeneration.internalUpdate(
 					existingGeneration.getStartDate(), startDate.getPrevious(),
-					existingGeneration.getHhdcAccount(), existingGeneration.getMeter(), existingGeneration.getPc());
+					existingGeneration.getHhdcAccount(), existingGeneration
+							.getMeter(), existingGeneration.getPc());
 			generations.add(supplyGeneration);
 		}
 		Hiber.flush();
@@ -600,7 +601,8 @@ public class Supply extends PersistentEntity {
 		} else {
 			previousGeneration.update(previousGeneration.getStartDate(),
 					generation.getFinishDate(), previousGeneration
-							.getHhdcAccount(), previousGeneration.getMeter(), previousGeneration.getPc());
+							.getHhdcAccount(), previousGeneration.getMeter(),
+					previousGeneration.getPc());
 		}
 		onSupplyGenerationChange(generation.getStartDate(), generation
 				.getFinishDate());
@@ -788,7 +790,7 @@ public class Supply extends PersistentEntity {
 		Element supplyElement = (Element) toXml(doc, new XmlTree("generations",
 				new XmlTree("mpans", new XmlTree("core").put("llfc",
 						new XmlTree("voltageLevel")))).put("source").put(
-				"generatorType"));
+				"generatorType").put("gspGroup"));
 		source.appendChild(supplyElement);
 		for (Source supplySource : (List<Source>) Hiber.session().createQuery(
 				"from Source source order by source.code").list()) {
@@ -802,6 +804,11 @@ public class Supply extends PersistentEntity {
 		source.appendChild(MonadDate.getMonthsXml(doc));
 		source.appendChild(MonadDate.getDaysXml(doc));
 		source.appendChild(new MonadDate().toXml(doc));
+		for (GspGroup group : (List<GspGroup>) Hiber.session().createQuery(
+				"from GspGroup group order by group.code").list()) {
+			source.appendChild(group.toXml(doc));
+		}
+
 		return doc;
 	}
 
