@@ -165,7 +165,6 @@ public class HhDataImportProcess extends Thread implements Urlable,
 		}
 	}
 
-	@SuppressWarnings("unchecked")
 	public void run() {
 		try {
 			HhDatum.insert(converter, halt);
@@ -205,6 +204,7 @@ public class HhDataImportProcess extends Thread implements Urlable,
 			 */
 			Hiber.close();
 			// check hh data - supply level
+			/*
 			supplyGenerations = (List<SupplyGeneration>) Hiber
 					.session()
 					.createQuery(
@@ -217,6 +217,7 @@ public class HhDataImportProcess extends Thread implements Urlable,
 						.checkForMissingFromLatest(null);
 				Hiber.close();
 			}
+			*/
 		} catch (InternalException e) {
 			messages.add("ProgrammerException : "
 					+ HttpException.getStackTraceString(e));

@@ -530,16 +530,18 @@ public class Supply extends PersistentEntity {
 			onSupplyGenerationChange(startDate, supplyGeneration
 					.getFinishDate());
 		}
+		Hiber.flush();
+		
 		return supplyGeneration;
 	}
-
+/*
 	public void checkForMissing(HhEndDate from, HhEndDate to)
 			throws HttpException {
 		for (SupplyGeneration supplyGeneration : getGenerations(from, to)) {
 			supplyGeneration.checkForMissing(from, to);
 		}
 	}
-
+*/
 	public Source getSource() {
 		return source;
 	}
@@ -676,14 +678,15 @@ public class Supply extends PersistentEntity {
 						datum.setChannel(targetChannel);
 						if (datum.getValue().doubleValue() < 0) {
 							targetChannel
-									.addChannelSnag(ChannelSnag.SNAG_NEGATIVE,
+									.addSnag(ChannelSnag.SNAG_NEGATIVE,
 											endDate, endDate);
 						}
 						if (datum.getStatus() != HhDatum.ACTUAL) {
-							targetChannel.addChannelSnag(
+							targetChannel.addSnag(
 									ChannelSnag.SNAG_ESTIMATED, endDate,
 									endDate);
 						}
+					    targetChannel.deleteSnag(ChannelSnag.SNAG_MISSING, endDate, endDate);
 						// channel.resolveSnag(ChannelSnag.SNAG_NEGATIVE,
 						// endDate);
 						// channel.resolveSnag(ChannelSnag.SNAG_NOT_ACTUAL,
@@ -694,9 +697,7 @@ public class Supply extends PersistentEntity {
 					hhData.close();
 				}
 			}
-
-		}
-		checkForMissing(from, to);
+		//checkForMissing(from, to);
 		// Register reads
 		if (from.getDate().before(supplyStartDate)
 				&& ((Long) Hiber
@@ -718,7 +719,6 @@ public class Supply extends PersistentEntity {
 			throw new UserException(
 					"There are register reads after the end of the updated supply.");
 		}
-		for (SupplyGeneration generation : getGenerations(from, to)) {
 			for (RegisterRead read : (List<RegisterRead>) Hiber
 					.session()
 					.createQuery(
@@ -867,21 +867,6 @@ public class Supply extends PersistentEntity {
 		return new SupplyGenerations(this);
 	}
 
-	/*
-	 * public void httpPostSupplyGeneration(Invocation inv) throws HttpException
-	 * { Boolean isOngoing = inv.getBoolean("isOngoing"); HhEndDate finishDate =
-	 * null; if (!isOngoing) { finishDate =
-	 * HhEndDate.roundDown(inv.getDate("finishDate")); }
-	 * insertGeneration(finishDate); Hiber.commit(); inv.sendOk(document()); }
-	 */
-	/*
-	 * public Channel getChannel(UriPathElement urlId) throws HttpException {
-	 * Channel channel = (Channel) Hiber .session() .createQuery( "from Channel
-	 * channel where channel.supply = :supply and channel.id = :channelId")
-	 * .setEntity("supply", this).setLong("channelId",
-	 * Long.parseLong(urlId.getString())).uniqueResult(); if (channel == null) {
-	 * throw new NotFoundException(); } return channel; }
-	 */
 	public Urlable getChild(UriPathElement uriId) throws HttpException {
 		if (SupplyGenerations.URI_ID.equals(uriId)) {
 			return new SupplyGenerations(this);

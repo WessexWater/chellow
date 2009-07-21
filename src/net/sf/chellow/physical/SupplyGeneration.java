@@ -791,7 +791,7 @@ public class SupplyGeneration extends PersistentEntity {
 		Hiber.flush();
 		checkMpanRelationship();
 		// Debug.print("checked relationsip.");
-		checkForMissing(getStartDate(), getFinishDate());
+		//checkForMissing(getStartDate(), getFinishDate());
 		// Debug.print("finished add or update.");
 	}
 
@@ -1014,6 +1014,7 @@ public class SupplyGeneration extends PersistentEntity {
 					+ isImport + " and kWh: " + isKwh + ".");
 		}
 		channels.add(channel);
+		channel.addSnag(ChannelSnag.SNAG_MISSING, getStartDate(), getFinishDate());
 		return channel;
 	}
 
@@ -1280,7 +1281,7 @@ public class SupplyGeneration extends PersistentEntity {
 		channels.remove(channel);
 		Hiber.session().flush();
 	}
-
+/*
 	public void checkForMissing(HhEndDate from, HhEndDate to)
 			throws HttpException {
 		for (Channel channel : channels) {
@@ -1293,4 +1294,5 @@ public class SupplyGeneration extends PersistentEntity {
 			channel.checkForMissingFromLatest(to);
 		}
 	}
+*/
 }
