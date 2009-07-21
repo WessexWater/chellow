@@ -309,17 +309,6 @@ public class Mpan extends PersistentEntity {
 			return pcCode + " " + mtcCode + " " + llfcCode + " " + mpanCore;
 		}
 
-		/*
-		 * public String toStringNoSpaces() { return toString().replace(" ",
-		 * ""); }
-		 */
-		/*
-		 * public boolean equals(Object obj) { boolean isEqual = false; if (obj
-		 * instanceof MpanRaw) { MpanRaw mpan = (MpanRaw) obj; isEqual =
-		 * getPc().equals(mpan.getPc()) && getMtc().equals(mpan.getMtc()) &&
-		 * getLlfc().equals(mpan.getLlfc()) &&
-		 * getMpanCore().equals(mpan.getMpanCore()); } return isEqual; }
-		 */
 		public boolean equals(Object obj) {
 			return toString().equals(obj.toString());
 		}
