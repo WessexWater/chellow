@@ -83,7 +83,8 @@ public abstract class SnagDateBounded extends Snag {
 
 	public void update(HhEndDate startDate, HhEndDate finishDate)
 			throws InternalException {
-		if (startDate.getDate().after(finishDate.getDate())) {
+		if (finishDate != null
+				&& startDate.getDate().after(finishDate.getDate())) {
 			throw new InternalException(
 					"Start date can't be after finish date.");
 		}
@@ -95,7 +96,9 @@ public abstract class SnagDateBounded extends Snag {
 		Element element = super.toXml(doc, elementName);
 
 		element.appendChild(startDate.toXml(doc));
-		element.appendChild(finishDate.toXml(doc));
+		if (finishDate != null) {
+			element.appendChild(finishDate.toXml(doc));
+		}
 		return element;
 	}
 
@@ -140,7 +143,6 @@ public abstract class SnagDateBounded extends Snag {
 				background
 						.setStartDate(HhEndDate.getNext(snag.getFinishDate()));
 			}
-			// snag.setContract(snagToAdd.getContract());
 			if (background.getStartDate().getDate().before(
 					snag.getStartDate().getDate())) {
 				background.setFinishDate(snag.getStartDate().getPrevious());
@@ -152,15 +154,15 @@ public abstract class SnagDateBounded extends Snag {
 				background.setStartDate(snag.getFinishDate().getNext());
 			}
 		}
-		if (!background.getStartDate().getDate().after(
-				snagToAdd.getFinishDate().getDate())) {
+		if (!background.getStartDate().after(snagToAdd.getFinishDate())) {
 			background.setFinishDate(snagToAdd.getFinishDate());
 			snagToAdd.insertSnag(background);
 		}
 		SnagDateBounded previousSnag = null;
 		for (SnagDateBounded snag : snagToAdd.getCoveredSnags(snagToAdd
-				.getStartDate().getPrevious(), snagToAdd.getFinishDate()
-				.getNext())) {
+				.getStartDate().getPrevious(),
+				snagToAdd.getFinishDate() == null ? null : snagToAdd
+						.getFinishDate().getNext())) {
 			boolean combinable = false;
 			if (previousSnag != null) {
 				combinable = previousSnag.isCombinable(snag);
@@ -276,17 +278,6 @@ public abstract class SnagDateBounded extends Snag {
 			return finishDate;
 		}
 
-		private Query getQuery() {
-			return Hiber
-					.session()
-					.createQuery(
-							"from ChannelSnag snag where snag.channel = :channel and snag.startDate.date <= :finishDate and snag.finishDate.date >= :startDate and snag.description = :description order by snag.startDate.date")
-					.setEntity("channel", channel).setTimestamp("finishDate",
-							finishDate.getDate()).setTimestamp("startDate",
-							startDate.getDate()).setString("description",
-							description);
-		}
-
 		public SnagDateBounded newSnag() throws HttpException {
 			return new ChannelSnag(description, channel, startDate, finishDate);
 		}
@@ -317,11 +308,23 @@ public abstract class SnagDateBounded extends Snag {
 		@SuppressWarnings("unchecked")
 		public List<ChannelSnag> getCoveredSnags(HhEndDate startDate,
 				HhEndDate finishDate) {
-			return (List<ChannelSnag>) getQuery().setTimestamp("startDate",
-					startDate.getDate()).setTimestamp("finishDate",
-					finishDate.getDate()).list();
+			Query query = null;
+			if (finishDate == null) {
+				query = Hiber
+						.session()
+						.createQuery(
+								"from ChannelSnag snag where snag.channel = :channel and snag.finishDate.date >= :startDate and snag.description = :description order by snag.startDate.date");
+			} else {
+				query = Hiber
+						.session()
+						.createQuery(
+								"from ChannelSnag snag where snag.channel = :channel and snag.startDate.date <= :finishDate and snag.finishDate.date >= :startDate and snag.description = :description order by snag.startDate.date")
+						.setTimestamp("finishDate", finishDate.getDate());
+			}
+			return (List<ChannelSnag>) query.setTimestamp("startDate",
+					startDate.getDate()).setEntity("channel", channel)
+					.setString("description", description).list();
 		}
-
 	}
 
 	private static class SiteSnagToAdd implements SnagToAdd {

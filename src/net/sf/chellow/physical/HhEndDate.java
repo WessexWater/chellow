@@ -156,5 +156,20 @@ public class HhEndDate extends MonadDate {
 	public Element toXml(Document doc) throws InternalException {
 		return toXML(getDate(), getLabel(), doc, "hh-end-date");
 	}
-
+    
+	boolean after(HhEndDate date) {
+		if (date == null) {
+			return false;
+		} else {
+			return getDate().after(date.getDate());
+		}
+	}
+	
+	boolean before(HhEndDate date) {
+		if (date == null) {
+			return true;
+		} else {
+			return getDate().before(date.getDate());
+		}
+	}
 }

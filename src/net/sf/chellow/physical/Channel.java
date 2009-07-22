@@ -195,167 +195,96 @@ public class Channel extends PersistentEntity {
 				+ " is kWh: " + getIsKwh();
 	}
 
-	
-	
-
-	
-/*	
-	public void checkForMissing(HhEndDate from, HhEndDate to)
-			throws HttpException {
-		if (from == null) {
-			from = supplyGeneration.getStartDate();
-		}
-		if (from.getDate().before(supplyGeneration.getStartDate().getDate())) {
-			deleteSnag(ChannelSnag.SNAG_MISSING, from, supplyGeneration
-					.getStartDate().getPrevious());
-			from = supplyGeneration.getStartDate();
-		}
-		if (to == null) {
-			to = getCheckToDate();
-		}
-		Calendar cal = MonadDate.getCalendar();
-		HhEndDate generationEndDate = supplyGeneration.getFinishDate();
-		if (generationEndDate != null
-				&& to.getDate().after(generationEndDate.getDate())) {
-			deleteSnag(ChannelSnag.SNAG_MISSING, generationEndDate.getNext(),
-					to);
-			to = generationEndDate;
-		}
-		if (from.getDate().after(to.getDate())) {
-			return;
-		}
-		Query query = Hiber
-				.session()
-				.createQuery(
-						"select count(*) from HhDatum datum where datum.channel = :channel and datum.endDate.date >= :startDate and datum.endDate.date <= :finishDate")
-				.setEntity("channel", this);
-		HhEndDate spanStartDate = from;
-		HhEndDate spanFinishDate = to;
-		boolean finished = false;
-		while (!finished) {
-			long present = (Long) query.setTimestamp("startDate",
-					spanStartDate.getDate()).setTimestamp("finishDate",
-					spanFinishDate.getDate()).uniqueResult();
-			if (present == 0) {
-				// Debug.print("Adding a snag.");
-				addChannelSnag(ChannelSnag.SNAG_MISSING, spanStartDate,
-						spanFinishDate);
-				spanStartDate = HhEndDate.getNext(spanFinishDate);
-				spanFinishDate = to;
-				if (spanStartDate.getDate().after(spanFinishDate.getDate())) {
-					finished = true;
-				}
-			} else {
-				long shouldBe = (long) (spanFinishDate.getDate().getTime()
-						- spanStartDate.getDate().getTime() + 1000 * 60 * 30)
-						/ (1000 * 60 * 30);
-				if (present == shouldBe) {
-					spanStartDate = HhEndDate.getNext(spanFinishDate);
-					spanFinishDate = to;
-					if (spanStartDate.getDate().after(spanFinishDate.getDate())) {
-						finished = true;
-					}
-				} else {
-					spanFinishDate = new HhEndDate(new Date(HhEndDate
-							.roundDown(cal,
-									spanStartDate.getDate().getTime()
-											+ (spanFinishDate.getDate()
-													.getTime() - spanStartDate
-													.getDate().getTime()) / 2)));
-				}
-			}
-		}
-	}
-*/
 	/*
-	private HhEndDate getCheckToDate() throws HttpException {
-		HhEndDate lastSnagDate = (HhEndDate) Hiber
-				.session()
-				.createQuery(
-						"select snag.finishDate from ChannelSnag snag where snag.channel = :channel and snag.channel.isKwh = :isKwh and snag.channel.isImport = :isImport and snag.description = :snagDescription order by snag.finishDate.date desc")
-				.setEntity("channel", this).setBoolean("isKwh", isKwh)
-				.setBoolean("isImport", isImport).setString("snagDescription",
-						ChannelSnag.SNAG_MISSING).setMaxResults(1)
-				.uniqueResult();
-		HhEndDate finish = null;
-		if (supplyGeneration.getFinishDate() == null) {
-			HhdcContract latestHhdcContract = HhdcContract
-					.getHhdcContract(supplyGeneration.getHhdcAccount()
-							.getContract().getId());
-			finish = HhEndDate.roundDown(new Date(System.currentTimeMillis()
-					- 1000 * 60 * 60 * 24 * latestHhdcContract.getLag()));
-			Calendar cal = MonadDate.getCalendar();
-			cal.clear();
-			cal.setTime(finish.getDate());
-			cal.set(Calendar.MILLISECOND, 0);
-			cal.set(Calendar.SECOND, 0);
-			cal.set(Calendar.MINUTE, 0);
-			cal.set(Calendar.HOUR_OF_DAY, 0);
-			if (latestHhdcContract.getFrequency().equals(
-					HhdcContract.FREQUENCY_DAILY)) {
-				finish = new HhEndDate(cal.getTime());
-			} else if (latestHhdcContract.getFrequency().equals(
-					HhdcContract.FREQUENCY_MONTHLY)) {
-				cal.set(Calendar.DAY_OF_MONTH, 1);
-				finish = new HhEndDate(cal.getTime());
-			} else {
-				throw new InternalException("Frequency not recognized.");
-			}
-		} else {
-			finish = supplyGeneration.getFinishDate();
-		}
-		if (lastSnagDate != null) {
-			finish = finish.getDate().after(lastSnagDate.getDate()) ? finish
-					: lastSnagDate;
-		}
-		return finish;
-	}
-	*/
-/*
-	public void checkForMissingFromLatest(HhEndDate to) throws HttpException {
-		/*
-		 * if (to == null) { to = getCheckToDate(); if (to == null) { return; }
-		 * }
-		 */
+	 * public void checkForMissing(HhEndDate from, HhEndDate to) throws
+	 * HttpException { if (from == null) { from =
+	 * supplyGeneration.getStartDate(); } if
+	 * (from.getDate().before(supplyGeneration.getStartDate().getDate())) {
+	 * deleteSnag(ChannelSnag.SNAG_MISSING, from, supplyGeneration
+	 * .getStartDate().getPrevious()); from = supplyGeneration.getStartDate(); }
+	 * if (to == null) { to = getCheckToDate(); } Calendar cal =
+	 * MonadDate.getCalendar(); HhEndDate generationEndDate =
+	 * supplyGeneration.getFinishDate(); if (generationEndDate != null &&
+	 * to.getDate().after(generationEndDate.getDate())) {
+	 * deleteSnag(ChannelSnag.SNAG_MISSING, generationEndDate.getNext(), to); to
+	 * = generationEndDate; } if (from.getDate().after(to.getDate())) { return;
+	 * } Query query = Hiber .session() .createQuery(
+	 * "select count(*) from HhDatum datum where datum.channel = :channel and datum.endDate.date >= :startDate and datum.endDate.date <= :finishDate"
+	 * ) .setEntity("channel", this); HhEndDate spanStartDate = from; HhEndDate
+	 * spanFinishDate = to; boolean finished = false; while (!finished) { long
+	 * present = (Long) query.setTimestamp("startDate",
+	 * spanStartDate.getDate()).setTimestamp("finishDate",
+	 * spanFinishDate.getDate()).uniqueResult(); if (present == 0) { //
+	 * Debug.print("Adding a snag."); addChannelSnag(ChannelSnag.SNAG_MISSING,
+	 * spanStartDate, spanFinishDate); spanStartDate =
+	 * HhEndDate.getNext(spanFinishDate); spanFinishDate = to; if
+	 * (spanStartDate.getDate().after(spanFinishDate.getDate())) { finished =
+	 * true; } } else { long shouldBe = (long)
+	 * (spanFinishDate.getDate().getTime() - spanStartDate.getDate().getTime() +
+	 * 1000 * 60 * 30) / (1000 * 60 * 30); if (present == shouldBe) {
+	 * spanStartDate = HhEndDate.getNext(spanFinishDate); spanFinishDate = to;
+	 * if (spanStartDate.getDate().after(spanFinishDate.getDate())) { finished =
+	 * true; } } else { spanFinishDate = new HhEndDate(new Date(HhEndDate
+	 * .roundDown(cal, spanStartDate.getDate().getTime() +
+	 * (spanFinishDate.getDate() .getTime() - spanStartDate
+	 * .getDate().getTime()) / 2))); } } } }
+	 */
 	/*
-		Date latestDatumDate = (Date) Hiber
-				.session()
-				.createQuery(
-						"select max(datum.endDate.date) from HhDatum datum where datum.channel = :channel")
-				.setEntity("channel", this).uniqueResult();
-		Date latestMissingDate = (Date) Hiber
-				.session()
-				.createQuery(
-						"select max(snag.finishDate.date) from ChannelSnag snag where snag.channel = :channel and snag.description = :description")
-				.setEntity("channel", this).setString("description",
-						ChannelSnag.SNAG_MISSING).uniqueResult();
-		HhEndDate latestPresentDate;
-		if (latestDatumDate == null) {
-			if (latestMissingDate == null) {
-				latestPresentDate = supplyGeneration.getStartDate();
-			} else {
-				latestPresentDate = new HhEndDate(latestMissingDate);
-			}
-		} else {
-			if (latestMissingDate == null) {
-				latestPresentDate = new HhEndDate(latestDatumDate);
-			} else {
-				latestPresentDate = new HhEndDate(latestMissingDate).getDate()
-						.after(new HhEndDate(latestDatumDate).getDate()) ? new HhEndDate(
-						latestMissingDate)
-						: new HhEndDate(latestDatumDate);
-			}
-		}
-		*/
-		/*
-		 * latestPresentDate = latestPresentDate.getNext(); if
-		 * (!latestPresentDate.getDate().after(to.getDate())) {
-		 * checkForMissing(latestPresentDate, to); }
-		 */
+	 * private HhEndDate getCheckToDate() throws HttpException { HhEndDate
+	 * lastSnagDate = (HhEndDate) Hiber .session() .createQuery(
+	 * "select snag.finishDate from ChannelSnag snag where snag.channel = :channel and snag.channel.isKwh = :isKwh and snag.channel.isImport = :isImport and snag.description = :snagDescription order by snag.finishDate.date desc"
+	 * ) .setEntity("channel", this).setBoolean("isKwh", isKwh)
+	 * .setBoolean("isImport", isImport).setString("snagDescription",
+	 * ChannelSnag.SNAG_MISSING).setMaxResults(1) .uniqueResult(); HhEndDate
+	 * finish = null; if (supplyGeneration.getFinishDate() == null) {
+	 * HhdcContract latestHhdcContract = HhdcContract
+	 * .getHhdcContract(supplyGeneration.getHhdcAccount()
+	 * .getContract().getId()); finish = HhEndDate.roundDown(new
+	 * Date(System.currentTimeMillis() - 1000 * 60 * 60 * 24 *
+	 * latestHhdcContract.getLag())); Calendar cal = MonadDate.getCalendar();
+	 * cal.clear(); cal.setTime(finish.getDate()); cal.set(Calendar.MILLISECOND,
+	 * 0); cal.set(Calendar.SECOND, 0); cal.set(Calendar.MINUTE, 0);
+	 * cal.set(Calendar.HOUR_OF_DAY, 0); if
+	 * (latestHhdcContract.getFrequency().equals( HhdcContract.FREQUENCY_DAILY))
+	 * { finish = new HhEndDate(cal.getTime()); } else if
+	 * (latestHhdcContract.getFrequency().equals(
+	 * HhdcContract.FREQUENCY_MONTHLY)) { cal.set(Calendar.DAY_OF_MONTH, 1);
+	 * finish = new HhEndDate(cal.getTime()); } else { throw new
+	 * InternalException("Frequency not recognized."); } } else { finish =
+	 * supplyGeneration.getFinishDate(); } if (lastSnagDate != null) { finish =
+	 * finish.getDate().after(lastSnagDate.getDate()) ? finish : lastSnagDate; }
+	 * return finish; }
+	 */
 	/*
-		checkForMissing(latestPresentDate.getNext(), to);
-	}
-	*/
+	 * public void checkForMissingFromLatest(HhEndDate to) throws HttpException
+	 * { /* if (to == null) { to = getCheckToDate(); if (to == null) { return; }
+	 * }
+	 */
+	/*
+	 * Date latestDatumDate = (Date) Hiber .session() .createQuery(
+	 * "select max(datum.endDate.date) from HhDatum datum where datum.channel = :channel"
+	 * ) .setEntity("channel", this).uniqueResult(); Date latestMissingDate =
+	 * (Date) Hiber .session() .createQuery(
+	 * "select max(snag.finishDate.date) from ChannelSnag snag where snag.channel = :channel and snag.description = :description"
+	 * ) .setEntity("channel", this).setString("description",
+	 * ChannelSnag.SNAG_MISSING).uniqueResult(); HhEndDate latestPresentDate; if
+	 * (latestDatumDate == null) { if (latestMissingDate == null) {
+	 * latestPresentDate = supplyGeneration.getStartDate(); } else {
+	 * latestPresentDate = new HhEndDate(latestMissingDate); } } else { if
+	 * (latestMissingDate == null) { latestPresentDate = new
+	 * HhEndDate(latestDatumDate); } else { latestPresentDate = new
+	 * HhEndDate(latestMissingDate).getDate() .after(new
+	 * HhEndDate(latestDatumDate).getDate()) ? new HhEndDate( latestMissingDate)
+	 * : new HhEndDate(latestDatumDate); } }
+	 */
+	/*
+	 * latestPresentDate = latestPresentDate.getNext(); if
+	 * (!latestPresentDate.getDate().after(to.getDate())) {
+	 * checkForMissing(latestPresentDate, to); }
+	 */
+	/*
+	 * checkForMissing(latestPresentDate.getNext(), to); }
+	 */
 
 	@SuppressWarnings( { "unchecked", "deprecation" })
 	public void addHhData(List<HhDatumRaw> dataRaw) throws HttpException {
@@ -373,11 +302,11 @@ public class Channel extends PersistentEntity {
 						firstRawDatum.getEndDate().getDate()).setTimestamp(
 						"finishDate", lastRawDatum.getEndDate().getDate())
 				.list();
-		//if (data.isEmpty()) {
-			// Debug.print("Starting to check for missing from latest: "
-			// + (System.currentTimeMillis() - now));
-		//	checkForMissingFromLatest(firstRawDatum.getEndDate().getPrevious());
-		//}
+		// if (data.isEmpty()) {
+		// Debug.print("Starting to check for missing from latest: "
+		// + (System.currentTimeMillis() - now));
+		// checkForMissingFromLatest(firstRawDatum.getEndDate().getPrevious());
+		// }
 		HhEndDate siteCheckFrom = null;
 		HhEndDate siteCheckTo = null;
 		HhEndDate notActualFrom = null;
@@ -459,8 +388,8 @@ public class Channel extends PersistentEntity {
 				}
 				siteCheckTo = datumRaw.getEndDate();
 				if (datumRaw.getValue().doubleValue() < 0) {
-					addSnag(ChannelSnag.SNAG_NEGATIVE, datumRaw
-							.getEndDate(), datumRaw.getEndDate());
+					addSnag(ChannelSnag.SNAG_NEGATIVE, datumRaw.getEndDate(),
+							datumRaw.getEndDate());
 				} else if (altered && originalDatumValue.doubleValue() < 0) {
 					deleteSnag(ChannelSnag.SNAG_NEGATIVE, datumRaw.getEndDate());
 				}
@@ -499,8 +428,7 @@ public class Channel extends PersistentEntity {
 			if (notActualTo != null && notActualTo.equals(prevEndDate)) {
 				// Debug.print("Started not actual: "
 				// + (System.currentTimeMillis() - now));
-				addSnag(ChannelSnag.SNAG_ESTIMATED, notActualFrom,
-						notActualTo);
+				addSnag(ChannelSnag.SNAG_ESTIMATED, notActualFrom, notActualTo);
 				// Debug.print("Finished not actual: "
 				// + (System.currentTimeMillis() - now));
 				notActualFrom = null;
@@ -538,8 +466,7 @@ public class Channel extends PersistentEntity {
 		if (notActualTo != null && notActualTo.equals(prevEndDate)) {
 			// Debug.print("About to start not actual 2: "
 			// + (System.currentTimeMillis() - now));
-			addSnag(ChannelSnag.SNAG_ESTIMATED, notActualFrom,
-					notActualTo);
+			addSnag(ChannelSnag.SNAG_ESTIMATED, notActualFrom, notActualTo);
 			// Debug.print("About to finsih not actual 2: "
 			// + (System.currentTimeMillis() - now));
 		}
@@ -588,17 +515,31 @@ public class Channel extends PersistentEntity {
 				deleteSnag(ChannelSnag.SNAG_ESTIMATED, startDate, finishDate);
 			}
 		}
-		//find date of first datum
-		HhDatum firstDatum = (HhDatum) Hiber.session().createQuery("from HhDatum datum where datum.channel = :channel order by datum.endDate.date").setEntity("contract", this).setMaxResults(1).uniqueResult();
+		// find date of first datum
+		HhDatum firstDatum = (HhDatum) Hiber
+				.session()
+				.createQuery(
+						"from HhDatum datum where datum.channel = :channel order by datum.endDate.date")
+				.setEntity("channel", this).setMaxResults(1).uniqueResult();
 		if (firstDatum == null) {
-			addSnag(ChannelSnag.SNAG_MISSING, supplyGeneration.getStartDate(), supplyGeneration.getFinishDate());
+			addSnag(ChannelSnag.SNAG_MISSING, supplyGeneration.getStartDate(),
+					supplyGeneration.getFinishDate());
 		} else {
-			if (firstDatum.getEndDate().getDate().after(supplyGeneration.getStartDate().getDate())){
-			addSnag(ChannelSnag.SNAG_MISSING, supplyGeneration.getStartDate(), firstDatum.getEndDate().getPrevious());
+			if (firstDatum.getEndDate().getDate().after(
+					supplyGeneration.getStartDate().getDate())) {
+				addSnag(ChannelSnag.SNAG_MISSING, supplyGeneration
+						.getStartDate(), firstDatum.getEndDate().getPrevious());
 			}
-			HhDatum lastDatum = (HhDatum) Hiber.session().createQuery("from HhDatum datum where datum.channel = :channel order by datum.endDate.date desc").setEntity("contract", this).setMaxResults(1).uniqueResult();
-			if (supplyGeneration.getFinishDate() == null || lastDatum.getEndDate().getDate().before(supplyGeneration.getFinishDate().getDate())) {
-				addSnag(ChannelSnag.SNAG_MISSING, lastDatum.getEndDate().getNext(), supplyGeneration.getFinishDate());
+			HhDatum lastDatum = (HhDatum) Hiber
+					.session()
+					.createQuery(
+							"from HhDatum datum where datum.channel = :channel order by datum.endDate.date desc")
+					.setEntity("channel", this).setMaxResults(1).uniqueResult();
+			if (supplyGeneration.getFinishDate() == null
+					|| lastDatum.getEndDate().getDate().before(
+							supplyGeneration.getFinishDate().getDate())) {
+				addSnag(ChannelSnag.SNAG_MISSING, lastDatum.getEndDate()
+						.getNext(), supplyGeneration.getFinishDate());
 			}
 		}
 	}

@@ -168,40 +168,6 @@ public class HhDataImportProcess extends Thread implements Urlable,
 	public void run() {
 		try {
 			HhDatum.insert(converter, halt);
-			/*
-			 * HhDatumRaw datum = converter.next(); String mpanCoreStr =
-			 * datum.getMpanCore(); MpanCore mpanCore =
-			 * MpanCore.getMpanCore(mpanCoreStr); SupplyGeneration generation =
-			 * mpanCore .getSupply().getGeneration(datum.getEndDate());
-			 * 
-			 * if (generation == null) { throw new UserException("HH datum has
-			 * been ignored: " + datum.toString() + "."); } Channel channel =
-			 * generation.getChannel(datum.getIsImport(), datum .getIsKwh());
-			 * HhEndDate genFinishDate = generation.getFinishDate(); List<HhDatumRaw>
-			 * data = new ArrayList<HhDatumRaw>(); data.add(datum); HhDatumRaw
-			 * firstDatum = datum; if (!converter.hasNext()) { batchSize =
-			 * data.size(); try { channel.addHhData(data); } catch
-			 * (UserException e) { messages.add(e.getMessage()); } } while
-			 * (!shouldHalt() && converter.hasNext()) { try { datum =
-			 * converter.next(); } catch (RuntimeException e) { if (e.getCause() !=
-			 * null) { throw e.getCause(); } else { throw e; } } if (data.size() >
-			 * 100 || !(mpanCoreStr.equals(datum.getMpanCore()) &&
-			 * datum.getIsImport() == firstDatum .getIsImport() &&
-			 * datum.getIsKwh() == firstDatum.getIsKwh() && datum
-			 * .getEndDate().getDate().equals( data.get(data.size() -
-			 * 1).getEndDate() .getNext().getDate())) || (genFinishDate != null &&
-			 * genFinishDate.getDate() .before(datum.getEndDate().getDate()))) {
-			 * batchSize = data.size(); try { channel.addHhData(data); } catch
-			 * (UserException e) { messages.add(e.getMessage()); }
-			 * Hiber.close(); data.clear(); mpanCoreStr = datum.getMpanCore();
-			 * mpanCore = MpanCore.getMpanCore(mpanCoreStr); generation =
-			 * mpanCore.getSupply() .getGeneration(datum.getEndDate()); if
-			 * (generation == null) { throw new UserException("HH datum has been
-			 * ignored: " + datum.toString() + "."); } channel =
-			 * generation.getChannel(datum.getIsImport(), datum .getIsKwh());
-			 * genFinishDate = generation.getFinishDate(); } data.add(datum); }
-			 * if (!data.isEmpty()) { channel.addHhData(data); }
-			 */
 			Hiber.close();
 			// check hh data - supply level
 			/*
