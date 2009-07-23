@@ -3695,6 +3695,7 @@ source.appendChild(group.toXml(doc))]]></value>
 from java.util import Date
 from java.lang import System
 from net.sf.chellow.billing import HhdcContract
+from net.sf.chellow.physical import HhEndDate
 
 contract_id = inv.getLong('hhdc-contract-id')
 if not inv.isValid():
@@ -3710,7 +3711,7 @@ i = 0
 prev_snag = None
 while snags.next() and i < 200:
     snag = snags.get(0)
-    if prev_snag is None or not snag.getChannel().getSupplyGeneration().equals(prev_snag.getChannel().getSupplyGeneration()) or not snag.getStartDate().equals(prev_snag.getStartDate()) or not snag.getFinishDate().equals(prev_snag.getFinishDate()) or snag.getDescription() != prev_snag.getDescription():
+    if prev_snag is None or not snag.getChannel().getSupplyGeneration().equals(prev_snag.getChannel().getSupplyGeneration()) or not snag.getStartDate().equals(prev_snag.getStartDate()) or not HhEndDate.isEqual(snag.getFinishDate(), prev_snag.getFinishDate()) or snag.getDescription() != prev_snag.getDescription():
         snag_group_element = doc.createElement('snag-group')
         source.appendChild(snag_group_element)
     snag_group_element.appendChild(snag.toXml(doc, XmlTree('channel', XmlTree('supplyGeneration', XmlTree('supply').put('siteSupplyGenerations', XmlTree('site')).put("mpans", XmlTree("core", XmlTree("dso")))))))
@@ -3811,7 +3812,7 @@ source.setAttribute("pending-site-count", str(totalSites - activeSites))]]></val
                                       </a>
                                       <xsl:value-of select="' ['" />
                                       <a
-                                        href="{/source/request/@context-path}/hhdc-contracts/{/source/hhdc-contract/@id}/channel-snags/{@id}/">
+                                        href="{/source/request/@context-path}/supplies/{channel/supply-generation/supply/@id}/generations/{channel/supply-generation/@id}/channels/{channel/@id}/snags/{@id}/">
                                           <xsl:value-of select="'edit'" />
                                       </a>
                                       <xsl:value-of select="']'" />
@@ -3877,8 +3878,15 @@ source.setAttribute("pending-site-count", str(totalSites - activeSites))]]></val
                                         select="channel-snag[position() = 1]/hh-end-date[@label='start']" />
                                     <br />
                                     Finish
+                                    <xsl:choose>
+                                    <xsl:when test="channel-snag[position() = 1]/hh-end-date[@label='finish']">
                                     <xsl:apply-templates
                                         select="channel-snag[position() = 1]/hh-end-date[@label='finish']" />
+                                    </xsl:when>
+                                    <xsl:otherwise>
+                                         Ongoing
+                                    </xsl:otherwise>
+                                    </xsl:choose>
                                 </td>
                             </tr>
                         </xsl:for-each>
@@ -8941,7 +8949,7 @@ from net.sf.chellow.physical import ChannelSnag
 
 snag_id = inv.getLong('snag-id')
 snag = ChannelSnag.getChannelSnag(snag_id)
-source.appendChild(snag.toXml(doc, XmlTree("contract").put("channel", XmlTree("supplyGeneration", XmlTree('supply')))))]]></value>
+source.appendChild(snag.toXml(doc, XmlTree("channel", XmlTree("supplyGeneration", XmlTree('supply').put('hhdcAccount', XmlTree('contract'))))))]]></value>
     <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
 <xsl:stylesheet version="1.0"
     xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
@@ -8956,7 +8964,7 @@ source.appendChild(snag.toXml(doc, XmlTree("contract").put("channel", XmlTree("s
                 <title>
                     Home &gt; HHDC Contracts &gt;
                     <xsl:value-of
-                        select="/source/channel-snag/hhdc-contract/@name" />
+                        select="/source/channel-snag/channel/supply-generation/account/hhdc-contract/@name" />
                     &gt; Channel Snags &gt;
                     <xsl:value-of select="/source/channel-snag/@id" />
                 </title>
@@ -8975,20 +8983,20 @@ source.appendChild(snag.toXml(doc, XmlTree("contract").put("channel", XmlTree("s
                     </a>
                     &gt;
                     <a
-                        href="{/source/request/@context-path}/reports/115/output/?hhdc-contract-id={/source/channel-snag/hhdc-contract/@id}">
+                        href="{/source/request/@context-path}/reports/115/output/?hhdc-contract-id={/source/channel-snag/channel/supply-generation/account/hhdc-contract/@id}">
                         <xsl:value-of
-                            select="/source/channel-snag/hhdc-contract/@name" />
+                            select="/source/channel-snag/channel/supply-generation/account/hhdc-contract/@name" />
                     </a>
                     &gt;
                     <a
-                        href="{/source/request/@context-path}/reports/37/output/?hhdc-contract-id={/source/channel-snag/hhdc-contract/@id}">
+                        href="{/source/request/@context-path}/reports/37/output/?hhdc-contract-id={/source/channel-snag/channel/supply-generation/account/hhdc-contract/@id}">
                         <xsl:value-of select="'Channel Snags'" />
                     </a>
                     &gt;
                     <xsl:value-of
                         select="concat(/source/channel-snag/@id, ' [')" />
                     <a
-                        href="{/source/request/@context-path}/hhdc-contracts/{/source/channel-snag/hhdc-contract/@id}/channel-snags/{/source/channel-snag/@id}/">
+                        href="{/source/request/@context-path}/supplies/{/source/channel-snag/channel/supply-generation/supply/@id}/generations/{/source/channel-snag/channel/supply-generation/@id}/channels/{/source/channel-snag/channel/@id}/snags/{/source/channel-snag/@id}/">
                         <xsl:value-of select="'edit'" />
                     </a>
                     <xsl:value-of select="']'" />
@@ -9021,21 +9029,6 @@ source.appendChild(snag.toXml(doc, XmlTree("contract").put("channel", XmlTree("s
                             </td>
                         </tr>
                         <tr>
-                            <th>Date Resolved</th>
-                            <td>
-                                <xsl:choose>
-                                    <xsl:when
-                                        test="/source/channel-snag/date[@label='resolved']">
-                                        <xsl:value-of
-                                            select="concat(/source/channel-snag/date[@label='resolved']/@year, '-', /source/channel-snag/date[@label='resolved']/@month, '-', /source/channel-snag/date[@label='resolved']/@day, 'T', /source/channel-snag/date[@label='resolved']/@hour, ':', /source/channel-snag/date[@label='resolved']/@minute, 'Z')" />
-                                    </xsl:when>
-                                    <xsl:otherwise>
-                                        Unresolved
-                                    </xsl:otherwise>
-                                </xsl:choose>
-                            </td>
-                        </tr>
-                        <tr>
                             <th>Ignored?</th>
                             <td>
                                 <xsl:choose>
@@ -9054,13 +9047,6 @@ source.appendChild(snag.toXml(doc, XmlTree("contract").put("channel", XmlTree("s
                             <td>
                                 <xsl:value-of
                                     select="/source/channel-snag/@description" />
-                            </td>
-                        </tr>
-                        <tr>
-                            <th>Progress</th>
-                            <td>
-                                <xsl:value-of
-                                    select="/source/channel-snag/@progress" />
                             </td>
                         </tr>
                         <tr>
@@ -9099,8 +9085,15 @@ source.appendChild(snag.toXml(doc, XmlTree("contract").put("channel", XmlTree("s
                         <tr>
                             <th>Finish Date:</th>
                             <td>
+                                <xsl:choose>
+                                <xsl:when test="/source/channel-snag/hh-end-date[@label='finish']">
                                 <xsl:value-of
                                     select="concat(/source/channel-snag/hh-end-date[@label='finish']/@year, '-', /source/channel-snag/hh-end-date[@label='finish']/@month, '-', /source/channel-snag/hh-end-date[@label='finish']/@day, 'T', /source/channel-snag/hh-end-date[@label='finish']/@hour, ':', /source/channel-snag/hh-end-date[@label='finish']/@minute, 'Z')" />
+                                 </xsl:when>
+                                 <xsl:otherwise>
+                                     Ongoing
+                                 </xsl:otherwise>
+                                 </xsl:choose>
                             </td>
                         </tr>
                     </tbody>

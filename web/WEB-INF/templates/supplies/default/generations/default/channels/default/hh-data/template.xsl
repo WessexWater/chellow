@@ -479,7 +479,7 @@
 						</select>
 						<xsl:value-of select="':'" />
 						<select name="end-minute">
-							<option value="0">
+							<option value="00">
 								<xsl:choose>
 									<xsl:when
 										test="/source/request/parameter[@name='end-minute']">
@@ -504,7 +504,7 @@
 									<xsl:when
 										test="/source/request/parameter[@name='end-minute']">
 										<xsl:if
-											test="/source/request/parameter[@name='end-minute']/value/text() = '00'">
+											test="/source/request/parameter[@name='end-minute']/value/text() = '30'">
 											<xsl:attribute
 												name="selected" />
 										</xsl:if>

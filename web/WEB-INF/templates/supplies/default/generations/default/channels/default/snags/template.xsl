@@ -129,8 +129,15 @@
 										select="concat(hh-end-date[@label='start']/@year, '-', hh-end-date[@label='start']/@month, '-', hh-end-date[@label='start']/@day, 'T', hh-end-date[@label='start']/@hour, ':', hh-end-date[@label='start']/@minute, 'Z')" />
 								</td>
 								<td>
-									<xsl:value-of
-										select="concat(hh-end-date[@label='finish']/@year, '-', hh-end-date[@label='finish']/@month, '-', hh-end-date[@label='finish']/@day, 'T', hh-end-date[@label='finish']/@hour, ':', hh-end-date[@label='finish']/@minute, 'Z')" />
+									<xsl:choose>
+										<xsl:when test="hh-end-date[@label='finish']">
+											<xsl:value-of
+												select="concat(hh-end-date[@label='finish']/@year, '-', hh-end-date[@label='finish']/@month, '-', hh-end-date[@label='finish']/@day, 'T', hh-end-date[@label='finish']/@hour, ':', hh-end-date[@label='finish']/@minute, 'Z')" />
+										</xsl:when>
+										<xsl:otherwise>
+											Ongoing
+										</xsl:otherwise>
+									</xsl:choose>
 								</td>
 							</tr>
 						</xsl:for-each>

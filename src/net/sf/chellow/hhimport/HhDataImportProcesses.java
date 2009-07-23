@@ -155,7 +155,7 @@ public class HhDataImportProcesses extends EntityList {
 			contractProcesses = processes.get(contract.getId());
 			contractProcesses.put(Long.parseLong(hhImportProcess.getUriId()
 					.toString()), hhImportProcess);
-			inv.sendCreated(document(), hhImportProcess.getUri());
+			inv.sendSeeOther(hhImportProcess.getUri());
 		} catch (HttpException e) {
 			e.setDocument(document());
 			throw e;

@@ -25,6 +25,7 @@ import java.util.List;
 
 import net.sf.chellow.billing.Account;
 import net.sf.chellow.billing.AccountSnag;
+import net.sf.chellow.monad.Debug;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.HttpException;
@@ -121,11 +122,10 @@ public abstract class SnagDateBounded extends Snag {
 			throws HttpException {
 		SnagDateBounded background = snagToAdd.newSnag();
 		for (SnagDateBounded snag : snagToAdd.getCoveredSnags()) {
-			if (snag.getFinishDate().getDate().after(
-					snagToAdd.getFinishDate().getDate())) {
+			if (HhEndDate.isAfter(snag.getFinishDate(), snagToAdd
+					.getFinishDate())) {
 				SnagDateBounded outerSnag = snag.copy();
-				outerSnag.setStartDate(HhEndDate.getNext(snagToAdd
-						.getFinishDate()));
+				outerSnag.setStartDate(snagToAdd.getFinishDate().getNext());
 				snag.setFinishDate(snagToAdd.getFinishDate());
 				snagToAdd.insertSnag(outerSnag);
 				Hiber.flush();
@@ -179,12 +179,15 @@ public abstract class SnagDateBounded extends Snag {
 
 	private static void deleteSnagDateBounded(SnagToAdd snagToAdd)
 			throws HttpException {
+		Debug.print("Delete snag date bounded. " + snagToAdd.toString());
 		for (SnagDateBounded snag : snagToAdd.getCoveredSnags()) {
-			boolean outLeft = snag.getStartDate().getDate().before(
-					snagToAdd.getStartDate().getDate());
-			boolean outRight = snag.getFinishDate().getDate().after(
-					snagToAdd.getFinishDate().getDate());
+			Debug.print("Covered snag " + snag.toString());
+			boolean outLeft = snag.getStartDate().before(
+					snagToAdd.getStartDate());
+			boolean outRight = HhEndDate.isAfter(snag.getFinishDate(),
+					snagToAdd.getFinishDate());
 			if (outLeft && outRight) {
+				Debug.print("Outleft and outright.");
 				SnagDateBounded outerSnag = snag.copy();
 				snag.setFinishDate(snagToAdd.getStartDate().getPrevious());
 				outerSnag.setStartDate(snagToAdd.getFinishDate().getNext());
@@ -194,6 +197,7 @@ public abstract class SnagDateBounded extends Snag {
 			} else if (outRight) {
 				snag.setStartDate(snagToAdd.getFinishDate().getNext());
 			} else {
+				Debug.print("About to delete snag.");
 				snagToAdd.deleteSnag(snag);
 			}
 			Hiber.flush();
@@ -308,17 +312,18 @@ public abstract class SnagDateBounded extends Snag {
 		@SuppressWarnings("unchecked")
 		public List<ChannelSnag> getCoveredSnags(HhEndDate startDate,
 				HhEndDate finishDate) {
+			Debug.print("Get covered snags. From " + startDate + " " + finishDate);
 			Query query = null;
 			if (finishDate == null) {
 				query = Hiber
 						.session()
 						.createQuery(
-								"from ChannelSnag snag where snag.channel = :channel and snag.finishDate.date >= :startDate and snag.description = :description order by snag.startDate.date");
+								"from ChannelSnag snag where snag.channel = :channel and (snag.finishDate.date is null or snag.finishDate.date >= :startDate) and snag.description = :description order by snag.startDate.date");
 			} else {
 				query = Hiber
 						.session()
 						.createQuery(
-								"from ChannelSnag snag where snag.channel = :channel and snag.startDate.date <= :finishDate and snag.finishDate.date >= :startDate and snag.description = :description order by snag.startDate.date")
+								"from ChannelSnag snag where snag.channel = :channel and snag.startDate.date <= :finishDate and (snag.finishDate.date is null or snag.finishDate.date >= :startDate) and snag.description = :description order by snag.startDate.date")
 						.setTimestamp("finishDate", finishDate.getDate());
 			}
 			return (List<ChannelSnag>) query.setTimestamp("startDate",
