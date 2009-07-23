@@ -67,9 +67,7 @@ public class HhdcContracts extends EntityList {
 	public void httpPost(Invocation inv) throws HttpException {
 		Long providerId = inv.getLong("provider-id");
 		String name = inv.getString("name");
-		String frequency = inv.getString("frequency");
 		Date startDate = inv.getDate("start-date");
-		Integer lag = inv.getInteger("lag");
 		String importerProperties = inv.toString();
 		if (!inv.isValid()) {
 			throw new UserException(document());
@@ -77,9 +75,9 @@ public class HhdcContracts extends EntityList {
 		Provider provider = Provider.getProvider(providerId);
 		HhdcContract contract = HhdcContract.insertHhdcContract(provider, name,
 				HhEndDate.roundDown(startDate).getNext(), null, "",
-				frequency, lag, importerProperties, "");
+				importerProperties, "");
 		Hiber.commit();
-		inv.sendCreated(document(), contract.getUri());
+		inv.sendSeeOther(contract.getUri());
 	}
 
 	@SuppressWarnings("unchecked")

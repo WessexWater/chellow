@@ -88,62 +88,6 @@
 							</input>
 						</label>
 						<br />
-						<label>
-							Frequency with which the data arrives
-							<select name="frequency">
-								<option value="daily">
-									<xsl:choose>
-										<xsl:when test="/source/request/parameter[@name = 'frequency']">
-											<xsl:if
-												test="/source/request/parameter[@name = 'frequency']/Value = 'daily'">
-												<xsl:attribute name="selected" />
-											</xsl:if>
-										</xsl:when>
-										<xsl:otherwise>
-											<xsl:if test="/source/hhdc-contract/@frequency = 'daily'">
-												<xsl:attribute name="selected" />
-											</xsl:if>
-										</xsl:otherwise>
-									</xsl:choose>
-									Daily
-								</option>
-								<option value="monthly">
-									<xsl:choose>
-										<xsl:when test="/source/request/parameter[@name = 'frequency']">
-											<xsl:if
-												test="/source/request/parameter[@name = 'frequency']/Value = 'monthly'">
-												<xsl:attribute name="selected" />
-											</xsl:if>
-										</xsl:when>
-										<xsl:otherwise>
-											<xsl:if test="/source/hhdc-contract/@frequency = 'monthly'">
-												<xsl:attribute name="selected" />
-											</xsl:if>
-										</xsl:otherwise>
-									</xsl:choose>
-									Monthly
-								</option>
-							</select>
-						</label>
-						<br />
-						<label>
-							Lag (number of days behind that the data is
-							delivered)
-							<input name="lag">
-								<xsl:attribute name="value">
-									<xsl:choose>
-										<xsl:when test="/source/request/parameter[@name = 'lag']">
-											<xsl:value-of
-									select="/source/request/parameter[@name = 'lag']/value" />
-										</xsl:when>
-										<xsl:otherwise>
-											<xsl:value-of select="/source/hhdc-contract/@lag" />
-										</xsl:otherwise>
-									</xsl:choose>
-								</xsl:attribute>
-							</input>
-						</label>
-						<br />
 						<br />
 						Charge script
 						<br />
@@ -235,9 +179,6 @@
 					</li>
 					<li>
 						<a href="hh-data-imports/">HH data imports</a>
-					</li>
-					<li>
-						<a href="channel-snags/">Channel Snags</a>
 					</li>
 					<li>
 						<a href="rate-scripts/">Rate Scripts</a>

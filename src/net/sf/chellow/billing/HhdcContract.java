@@ -82,34 +82,28 @@ public class HhdcContract extends Contract {
 			if (finishDateStr.length() > 0) {
 				finishDate = new HhEndDate(finishDateStr);
 			}
-			String frequency = GeneralImport.addField(csvElement, "Frequency",
-					values, 4);
-			String lagStr = GeneralImport
-					.addField(csvElement, "Lag", values, 5);
-			int lag = Integer.parseInt(lagStr);
 			String chargeScript = GeneralImport.addField(csvElement,
-					"Charge Script", values, 6);
+					"Charge Script", values, 4);
 			String properties = GeneralImport.addField(csvElement,
-					"Properties", values, 7);
+					"Properties", values, 5);
 			String rateScript = GeneralImport.addField(csvElement,
-					"Rate Script", values, 8);
+					"Rate Script", values, 6);
 			insertHhdcContract(provider, name, startDate, finishDate,
-					chargeScript, frequency, lag, properties, rateScript);
+					chargeScript, properties, rateScript);
 		}
 	}
 
 	static public HhdcContract insertHhdcContract(Provider provider,
 			String name, HhEndDate startDate, HhEndDate finishDate,
-			String chargeScript, String frequency, int lag,
-			String importerProperties, String rateScript) throws HttpException {
+			String chargeScript, String importerProperties, String rateScript)
+			throws HttpException {
 		HhdcContract existing = findHhdcContract(name);
 		if (existing != null) {
 			throw new UserException(
 					"There's already a HHDC contract with the name " + name);
 		}
 		HhdcContract contract = new HhdcContract(provider, name, startDate,
-				finishDate, chargeScript, frequency, lag, importerProperties,
-				rateScript);
+				finishDate, chargeScript, importerProperties, rateScript);
 		Hiber.session().save(contract);
 		Hiber.flush();
 		return contract;
@@ -146,10 +140,6 @@ public class HhdcContract extends Contract {
 
 	private Provider hhdc;
 
-	private String frequency;
-
-	private int lag;
-
 	private String properties;
 
 	private String state;
@@ -158,15 +148,15 @@ public class HhdcContract extends Contract {
 	}
 
 	public HhdcContract(Provider hhdc, String name, HhEndDate startDate,
-			HhEndDate finishDate, String chargeScript, String frequency,
-			int lag, String properties, String rateScript) throws HttpException {
+			HhEndDate finishDate, String chargeScript, String properties,
+			String rateScript) throws HttpException {
 		super(name, startDate, finishDate, chargeScript, rateScript);
 		if (hhdc.getRole().getCode() != MarketRole.HHDC) {
 			throw new UserException("The provider must have the HHDC role.");
 		}
 		setParty(hhdc);
 		setState("");
-		intrinsicUpdate(name, chargeScript, frequency, lag, properties);
+		intrinsicUpdate(name, chargeScript, properties);
 	}
 
 	void setParty(Provider hhdc) {
@@ -175,22 +165,6 @@ public class HhdcContract extends Contract {
 
 	public Provider getParty() {
 		return hhdc;
-	}
-
-	public String getFrequency() {
-		return frequency;
-	}
-
-	void setFrequency(String frequency) {
-		this.frequency = frequency;
-	}
-
-	public int getLag() {
-		return lag;
-	}
-
-	void setLag(int lag) {
-		this.lag = lag;
 	}
 
 	public String getProperties() {
@@ -210,27 +184,18 @@ public class HhdcContract extends Contract {
 	}
 
 	private void intrinsicUpdate(String name, String chargeScript,
-			String frequency, int lag, String properties) throws HttpException {
+			String properties) throws HttpException {
 		super.internalUpdate(name, chargeScript);
-		if (!(FREQUENCY_DAILY.equals(frequency) || FREQUENCY_MONTHLY
-				.equals(frequency))) {
-			throw new UserException("The frequency must be " + FREQUENCY_DAILY
-					+ " or " + FREQUENCY_MONTHLY);
-		}
-		setFrequency(frequency);
-		setLag(lag);
 		if (properties == null) {
 			throw new InternalException("Properties can't be null.");
 		}
 		setProperties(properties);
 	}
 
-	public void update(String name, String chargeScript, String frequency,
-			int lag, String importerProperties) throws HttpException {
-		intrinsicUpdate(name, chargeScript, frequency, lag, importerProperties);
+	public void update(String name, String chargeScript,
+			String importerProperties) throws HttpException {
+		intrinsicUpdate(name, chargeScript, importerProperties);
 		onUpdate();
-		// test if new dates agree with supply generation dates.
-
 	}
 
 	@SuppressWarnings("unchecked")
@@ -294,8 +259,6 @@ public class HhdcContract extends Contract {
 		} else {
 			String name = inv.getString("name");
 			String chargeScript = inv.getString("charge-script");
-			String frequency = inv.getString("frequency");
-			int lag = inv.getInteger("lag");
 			String properties = inv.getString("properties");
 			if (!inv.isValid()) {
 				throw new UserException(document());
@@ -303,7 +266,7 @@ public class HhdcContract extends Contract {
 			chargeScript = chargeScript.replace("\r", "").replace("\t", "    ");
 			properties = properties.replace("\r", "").replace("\t", "    ");
 			try {
-				update(name, chargeScript, frequency, lag, properties);
+				update(name, chargeScript, properties);
 			} catch (UserException e) {
 				Document doc = document();
 				Element source = doc.getDocumentElement();
@@ -362,8 +325,6 @@ public class HhdcContract extends Contract {
 	public Element toXml(Document doc) throws HttpException {
 		Element element = super.toXml(doc, "hhdc-contract");
 
-		element.setAttribute("frequency", frequency);
-		element.setAttribute("lag", Integer.toString(lag));
 		element.setAttribute("has-automatic-hh-data-importer",
 				AutomaticHhDataImporters.getImportersInstance().findImporter(
 						this) == null ? "false" : "true");

@@ -1,3 +1,11 @@
+* Missing bill snags now exist for the whole period of the supply generation.
+
+* HH data missing snags now exist for the whole period of the supply generation.
+
+* Channel snags are no longer directly attached to a contract.
+
+* Removed 'lag' and 'frequency' attributes of HhdcContract.
+
 * Changed channel snag description from 'Not actual' to 'Estimated'.
 
 

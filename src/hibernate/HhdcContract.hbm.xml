@@ -31,10 +31,6 @@
 			foreign-key="fkey_hhdc_contract_contract" />
 		<many-to-one name="party" class="Provider" column="provider_id"
 			foreign-key="fkey_hhdc_contract_provider" not-null="true" />
-		<property name="frequency" column="frequency" type="string"
-			not-null="true" />
-		<property name="lag" column="lag" type="integer"
-			not-null="true" />
 		<property name="properties" column="properties" type="string"
 			not-null="true" />
 		<property name="state" column="state" type="string"
