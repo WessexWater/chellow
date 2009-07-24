@@ -180,10 +180,10 @@ public class Mpan extends PersistentEntity {
 		}
 		Dso dso = mpanCore.getDso();
 		Pc pc = Pc.getPc(mpanRaw.getPcCode());
-		if (!pc.equals(supplyGeneration.getPc())) {
-			throw new UserException(
-					"The Profile Class of the MPAN must match that of the supply generation.");
-		}
+		//if (!pc.equals(supplyGeneration.getPc())) {
+		//	throw new UserException(
+		//			"The Profile Class of the MPAN must match that of the supply generation.");
+		//}
 		setMtc(Mtc.getMtc(dso, mpanRaw.getMtcCode()));
 		Llfc llfc = dso.getLlfc(mpanRaw.getLlfcCode());
 		if (!mpanCore.getSupply().equals(supplyGeneration.getSupply())) {

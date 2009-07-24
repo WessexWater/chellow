@@ -78,7 +78,7 @@ public class Batches extends EntityList {
 		}
 		Batch batch = contract.insertBatch(reference);
 		Hiber.commit();
-		inv.sendCreated(document(), batch.getUri());
+		inv.sendSeeOther(batch.getUri());
 	}
 
 	public void httpGet(Invocation inv) throws HttpException {

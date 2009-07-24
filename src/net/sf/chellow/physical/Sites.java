@@ -74,7 +74,7 @@ public class Sites extends EntityList {
 		}
 		Site site = Site.insertSite(code, name);
 		Hiber.commit();
-		inv.sendCreated(site.getUri());
+		inv.sendSeeOther(site.getUri());
 	}
 
 	@SuppressWarnings("unchecked")

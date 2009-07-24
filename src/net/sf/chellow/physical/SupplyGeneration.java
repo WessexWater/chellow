@@ -83,10 +83,11 @@ public class SupplyGeneration extends PersistentEntity {
 					meter = supply.insertMeter(meterSerialNumber);
 				}
 			}
-			String pcCode = GeneralImport.addField(csvElement, "Profile Class", values, 5);
+			String pcCode = GeneralImport.addField(csvElement, "Profile Class",
+					values, 5);
 			Pc pc = null;
 			if (pcCode.equals(GeneralImport.NO_CHANGE)) {
-				pc = supplyGeneration.getPc(); 
+				pc = supplyGeneration.getPc();
 			} else {
 				pc = Pc.getPc(pcCode);
 			}
@@ -474,8 +475,11 @@ public class SupplyGeneration extends PersistentEntity {
 							hasChannel = hasExportKvarh;
 						}
 					}
-					if (hasChannel) {
+					Channel channel = generation.getChannel(isImport, isKwh);
+					if (hasChannel && channel == null) {
 						generation.insertChannel(isImport, isKwh);
+					} else if (!hasChannel && channel != null) {
+						generation.deleteChannel(isImport, isKwh);
 					}
 				}
 			}
@@ -521,7 +525,8 @@ public class SupplyGeneration extends PersistentEntity {
 		setSupply(supply);
 		setSiteSupplyGenerations(new HashSet<SiteSupplyGeneration>());
 		setMpans(new HashSet<Mpan>());
-		internalUpdate(startDate, finishDate, hhdcAccount, meter, Pc.getPc("00"));
+		internalUpdate(startDate, finishDate, hhdcAccount, meter, Pc
+				.getPc("00"));
 	}
 
 	void setSupply(Supply supply) {
@@ -753,7 +758,8 @@ public class SupplyGeneration extends PersistentEntity {
 						"The voltage level indicated by the Line Loss Factor must be the same for both the MPANs.");
 			}
 			if (!importPc.equals(exportPc)) {
-				throw new UserException("The Profile Classes of both MPANs must be the same.");
+				throw new UserException(
+						"The Profile Classes of both MPANs must be the same.");
 			}
 		}
 		Dso dso = getDso();
@@ -791,7 +797,7 @@ public class SupplyGeneration extends PersistentEntity {
 		Hiber.flush();
 		checkMpanRelationship();
 		// Debug.print("checked relationsip.");
-		//checkForMissing(getStartDate(), getFinishDate());
+		// checkForMissing(getStartDate(), getFinishDate());
 		// Debug.print("finished add or update.");
 	}
 
@@ -875,9 +881,9 @@ public class SupplyGeneration extends PersistentEntity {
 	}
 
 	private void checkMpanRelationship() throws HttpException {
-		HhdcContract hhdcContract = HhdcContract.getHhdcContract(hhdcAccount
-				.getContract().getId());
-		if (hhdcContract != null) {
+		if (hhdcAccount != null) {
+			HhdcContract hhdcContract = HhdcContract
+					.getHhdcContract(hhdcAccount.getContract().getId());
 			HhEndDate hhdcContractStartDate = hhdcContract.getStartRateScript()
 					.getStartDate();
 			if (hhdcContractStartDate.getDate().after(getStartDate().getDate())) {
@@ -939,7 +945,8 @@ public class SupplyGeneration extends PersistentEntity {
 			previousSupplyGeneration.internalUpdate(previousSupplyGeneration
 					.getStartDate(), startDate.getPrevious(),
 					previousSupplyGeneration.getHhdcAccount(),
-					previousSupplyGeneration.getMeter(), previousSupplyGeneration.getPc());
+					previousSupplyGeneration.getMeter(),
+					previousSupplyGeneration.getPc());
 		}
 		SupplyGeneration nextSupplyGeneration = supply.getGenerationNext(this);
 		if (nextSupplyGeneration != null) {
@@ -955,7 +962,8 @@ public class SupplyGeneration extends PersistentEntity {
 			}
 			nextSupplyGeneration.internalUpdate(finishDate.getNext(),
 					nextSupplyGeneration.getFinishDate(), nextSupplyGeneration
-							.getHhdcAccount(), nextSupplyGeneration.getMeter(), nextSupplyGeneration.getPc());
+							.getHhdcAccount(), nextSupplyGeneration.getMeter(),
+					nextSupplyGeneration.getPc());
 		}
 		internalUpdate(startDate, finishDate, hhdcAccount, meter, pc);
 		Hiber.flush();
@@ -1014,7 +1022,8 @@ public class SupplyGeneration extends PersistentEntity {
 					+ isImport + " and kWh: " + isKwh + ".");
 		}
 		channels.add(channel);
-		channel.addSnag(ChannelSnag.SNAG_MISSING, getStartDate(), getFinishDate());
+		channel.addSnag(ChannelSnag.SNAG_MISSING, getStartDate(),
+				getFinishDate());
 		return channel;
 	}
 
@@ -1027,14 +1036,14 @@ public class SupplyGeneration extends PersistentEntity {
 		Document doc = MonadUtils.newSourceDocument();
 		Element source = doc.getDocumentElement();
 		Element generationElement = (Element) toXml(doc, new XmlTree(
-				"siteSupplyGenerations", new XmlTree("site")).put("pc").put("meter").put(
-				"supply", new XmlTree("source").put("gspGroup")).put(
-				"hhdcAccount", new XmlTree("contract", new XmlTree("party"))));
+				"siteSupplyGenerations", new XmlTree("site")).put("pc").put(
+				"meter").put("supply", new XmlTree("source").put("gspGroup"))
+				.put("hhdcAccount",
+						new XmlTree("contract", new XmlTree("party"))));
 		source.appendChild(generationElement);
 		for (Mpan mpan : mpans) {
 			Element mpanElement = (Element) mpan.toXml(doc, new XmlTree("core")
-					.put("mtc").put("llfc").put("ssc").put(
-							"supplierAccount",
+					.put("mtc").put("llfc").put("ssc").put("supplierAccount",
 							new XmlTree("contract", new XmlTree("party"))));
 			generationElement.appendChild(mpanElement);
 			for (RegisterRead read : (List<RegisterRead>) Hiber.session()
@@ -1281,18 +1290,13 @@ public class SupplyGeneration extends PersistentEntity {
 		channels.remove(channel);
 		Hiber.session().flush();
 	}
-/*
-	public void checkForMissing(HhEndDate from, HhEndDate to)
-			throws HttpException {
-		for (Channel channel : channels) {
-			channel.checkForMissing(from, to);
-		}
-	}
-
-	public void checkForMissingFromLatest(HhEndDate to) throws HttpException {
-		for (Channel channel : channels) {
-			channel.checkForMissingFromLatest(to);
-		}
-	}
-*/
+	/*
+	 * public void checkForMissing(HhEndDate from, HhEndDate to) throws
+	 * HttpException { for (Channel channel : channels) {
+	 * channel.checkForMissing(from, to); } }
+	 * 
+	 * public void checkForMissingFromLatest(HhEndDate to) throws HttpException
+	 * { for (Channel channel : channels) {
+	 * channel.checkForMissingFromLatest(to); } }
+	 */
 }

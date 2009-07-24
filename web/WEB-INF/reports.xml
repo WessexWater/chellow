@@ -8804,34 +8804,6 @@ source.appendChild(contract.toXml(doc, XmlTree('party', XmlTree('participant')).
                             </td>
                         </tr>
                         <tr>
-                            <th>
-                                Frequency with which the data arrives
-                            </th>
-                            <td>
-                                <xsl:choose>
-                                    <xsl:when
-                                        test="/source/hhdc-contract/@frequency = '0'">
-                                        <xsl:value-of select="'Daily'" />
-                                    </xsl:when>
-                                    <xsl:when
-                                        test="/source/hhdc-contract/@frequency = '1'">
-                                        <xsl:value-of
-                                            select="'Monthly'" />
-                                    </xsl:when>
-                                </xsl:choose>
-                            </td>
-                        </tr>
-                        <tr>
-                            <th>
-                                Lag (number of days behind that the data
-                                is delivered)
-                            </th>
-                            <td>
-                                <xsl:value-of
-                                    select="/source/hhdc-contract/@lag" />
-                            </td>
-                        </tr>
-                        <tr>
                             <th>Start Date</th>
                             <td>
                                 <xsl:value-of
@@ -10580,12 +10552,10 @@ from java.sql import Timestamp, ResultSet
 def mpan_bit(query, kvarh_at_md_query, is_import, hh_count_query, num_hh, generation):
     mpan = generation.getMpan(is_import)
     mpan_core_str = ''
-    pc_str = ''
     mtc_str = ''
     llfc_str = ''
     sc_str = ''
     if mpan is not None:
-        pc_str = mpan.getPc().codeAsString()
         mtc_str = mpan.getMtc().codeAsString()
         llfc_str = mpan.getLlfc().codeAsString()
         mpan_core_str = mpan.getCore().toString()
@@ -10616,7 +10586,7 @@ def mpan_bit(query, kvarh_at_md_query, is_import, hh_count_query, num_hh, genera
     else:
         kva_at_md = str(round(((kvarh_at_md.doubleValue() * 2)**2 + kw_at_md**2)**0.5))
     num_bad = str(num_hh - hh_count_query.setBoolean('isImport', is_import).uniqueResult() + num_na)
-    return pc_str + ',' + mtc_str + ',' + llfc_str + ',' + mpan_core_str + ',' + sc_str + ',' + str(round(sum)) + ',' + str(round(non_actual)) + ',' + str(round(kw_at_md)) + ',' + str(date_at_md) + ',' + str(kva_at_md) + ',' + str(num_bad)
+    return mtc_str + ',' + llfc_str + ',' + mpan_core_str + ',' + sc_str + ',' + str(round(sum)) + ',' + str(round(non_actual)) + ',' + str(round(kw_at_md)) + ',' + str(date_at_md) + ',' + str(kva_at_md) + ',' + str(num_bad)
     
 inv.getResponse().setContentType("text/csv")
 inv.getResponse().setHeader('Content-Disposition', 'filename=output.csv;')
@@ -10670,7 +10640,7 @@ while supplies.next():
         generator_type = ''
     else:
         generator_type = generator_type.getCode()
-    pw.println(str(supply.getId()) + ',"' + supply.getName() + '",' + supply.getSource().getCode() + ',"' + generator_type + '","' + site_codes + '","' + site_names + '",' + start_date.toString() + "," + finish_date.toString() + "," + mpan_bit(query, kva_at_md_query, True, hh_count_query, num_hh, generation) + "," + mpan_bit(query, kva_at_md_query, False, hh_count_query, num_hh, generation))
+    pw.println(str(supply.getId()) + ',"' + supply.getName() + '",' + supply.getSource().getCode() + ',"' + generator_type + '","' + site_codes + '","' + site_names + '",' + start_date.toString() + "," + finish_date.toString() + "," + generation.getPc().codeAsString() + "," + mpan_bit(query, kva_at_md_query, True, hh_count_query, num_hh, generation) + "," + mpan_bit(query, kva_at_md_query, False, hh_count_query, num_hh, generation))
     pw.flush()
     Hiber.session().clear()
 supplies.close()

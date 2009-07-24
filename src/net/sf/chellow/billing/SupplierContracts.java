@@ -76,7 +76,7 @@ public class SupplierContracts extends EntityList {
 		SupplierContract contract = SupplierContract.insertSupplierContract(
 				provider, name, HhEndDate.roundDown(startDate).getNext(), null, "", "");
 		Hiber.commit();
-		inv.sendCreated(document(), contract.getUri());
+		inv.sendSeeOther(contract.getUri());
 	}
 
 	@SuppressWarnings("unchecked")

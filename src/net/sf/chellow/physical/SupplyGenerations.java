@@ -78,7 +78,7 @@ public class SupplyGenerations extends EntityList {
 		SupplyGeneration supplyGeneration = supply.insertGeneration(HhEndDate
 				.roundDown(startDate).getNext());
 		Hiber.commit();
-		inv.sendCreated(document(), supplyGeneration.getUri());
+		inv.sendSeeOther(supplyGeneration.getUri());
 	}
 
 	public void httpGet(Invocation inv) throws HttpException {

@@ -212,7 +212,7 @@ public class InvoiceImport extends Thread implements Urlable, XmlDescriber {
 					Hiber.flush();
 				}
 			}
-			Account.checkAllMissingFromLatest();
+			//Account.checkAllMissingFromLatest();
 			if (failedInvoices.isEmpty()) {
 				messages
 						.add("All the invoices have been successfully loaded and attached to the batch.");

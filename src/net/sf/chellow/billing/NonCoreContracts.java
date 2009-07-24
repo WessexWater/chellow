@@ -73,7 +73,7 @@ public class NonCoreContracts extends EntityList {
 		NonCoreContract contract = NonCoreContract.insertNonCoreContract(
 				provider, name, HhEndDate.roundDown(startDate), null, "", "");
 		Hiber.commit();
-		inv.sendCreated(document(), contract.getUri());
+		inv.sendSeeOther(contract.getUri());
 	}
 
 	@SuppressWarnings("unchecked")

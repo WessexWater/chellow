@@ -21,11 +21,7 @@
 
 package net.sf.chellow.billing;
 
-import java.util.Calendar;
-import java.util.GregorianCalendar;
 import java.util.List;
-import java.util.Locale;
-import java.util.TimeZone;
 
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
@@ -43,7 +39,6 @@ import net.sf.chellow.physical.MarketRole;
 import net.sf.chellow.physical.Mpan;
 import net.sf.chellow.physical.PersistentEntity;
 import net.sf.chellow.physical.SnagDateBounded;
-import net.sf.chellow.physical.SupplyGeneration;
 import net.sf.chellow.ui.GeneralImport;
 
 import org.w3c.dom.Document;
@@ -110,7 +105,7 @@ public class Account extends PersistentEntity {
 	public static Account findAccount(Long id) throws HttpException {
 		return (Account) Hiber.session().get(Account.class, id);
 	}
-
+/*
 	@SuppressWarnings("unchecked")
 	public static void checkAllMissingFromLatest() throws HttpException {
 		for (Account account : (List<Account>) Hiber
@@ -122,7 +117,7 @@ public class Account extends PersistentEntity {
 			Hiber.commit();
 		}
 	}
-
+*/
 	private Contract contract;
 
 	private String reference;
@@ -223,11 +218,12 @@ public class Account extends PersistentEntity {
 			throw new NotFoundException();
 		}
 	}
-
+/*
 	public void checkMissingFromLatest() throws HttpException {
 		checkMissingFromLatest(null);
 	}
-
+*/
+/*
 	@SuppressWarnings("unchecked")
 	public void checkMissingFromLatest(HhEndDate to) throws HttpException {
 		List<Bill> bills = (List<Bill>) Hiber
@@ -252,7 +248,8 @@ public class Account extends PersistentEntity {
 		}
 		checkMissing(from, to);
 	}
-
+*/
+	/*
 	@SuppressWarnings("unchecked")
 	void checkMissing(HhEndDate from, HhEndDate to) throws HttpException {
 		List<SupplyGeneration> supplyGenerations = Hiber
@@ -313,7 +310,7 @@ public class Account extends PersistentEntity {
 			addSnag(AccountSnag.MISSING_BILL, gapStart, to);
 		}
 	}
-
+*/
 	void deleteSnag(String description, HhEndDate startDate,
 			HhEndDate finishDate) throws HttpException {
 		SnagDateBounded.deleteAccountSnag(this, description,
@@ -387,7 +384,8 @@ public class Account extends PersistentEntity {
 			Hiber.session().save(bill);
 		}
 		bill.attach(invoice);
-		checkMissing(bill.getStartDate(), bill.getFinishDate());
+		deleteSnag(AccountSnag.MISSING_BILL, bill.getStartDate(), bill.getFinishDate());
+		//checkMissing(bill.getStartDate(), bill.getFinishDate());
 	}
 
 	@SuppressWarnings("unchecked")
@@ -428,8 +426,9 @@ public class Account extends PersistentEntity {
 			throw new InternalException(
 					"This bill doesn't belong to this account.");
 		} else {
-			Hiber.session().delete(bill);
+			Hiber.session().delete(foundBill);
 		}
-		checkMissing(foundBill.getStartDate(), foundBill.getFinishDate());
+		addSnag(AccountSnag.MISSING_BILL, foundBill.getStartDate(), foundBill.getFinishDate());
+		// checkMissing(foundBill.getStartDate(), foundBill.getFinishDate());
 	}
 }

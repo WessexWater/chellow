@@ -302,11 +302,6 @@ public class Channel extends PersistentEntity {
 						firstRawDatum.getEndDate().getDate()).setTimestamp(
 						"finishDate", lastRawDatum.getEndDate().getDate())
 				.list();
-		// if (data.isEmpty()) {
-		// Debug.print("Starting to check for missing from latest: "
-		// + (System.currentTimeMillis() - now));
-		// checkForMissingFromLatest(firstRawDatum.getEndDate().getPrevious());
-		// }
 		HhEndDate siteCheckFrom = null;
 		HhEndDate siteCheckTo = null;
 		HhEndDate notActualFrom = null;

@@ -68,7 +68,7 @@ public class Accounts extends EntityList {
 		}
 		Account account = contract.insertAccount(reference);
 		Hiber.commit();
-		inv.sendCreated(document(), account.getUri());
+		inv.sendSeeOther(account.getUri());
 	}
 
 	public void httpGet(Invocation inv) throws HttpException {

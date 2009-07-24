@@ -39,7 +39,6 @@ import net.sf.chellow.monad.XmlTree;
 import net.sf.chellow.monad.types.MonadDate;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
-import net.sf.chellow.physical.HhEndDate;
 import net.sf.chellow.physical.PersistentEntity;
 
 import org.w3c.dom.Document;
@@ -105,35 +104,37 @@ public class Bill extends PersistentEntity {
 
 	@SuppressWarnings("unchecked")
 	public void detach(Invoice invoice) throws HttpException {
-		HhEndDate billStart = getStartDate();
-		HhEndDate billFinish = getFinishDate();
-		Account account = getAccount();
+		account.addSnag(AccountSnag.MISSING_BILL, getStartDate(), getFinishDate());
+		//HhEndDate billStart = getStartDate();
+		//HhEndDate billFinish = getFinishDate();
+		//Account account = getAccount();
 
 		invoices.remove(invoice);
 		invoice.setBill(null);
 		Hiber.flush();
+		for (BillSnag snag : (List<BillSnag>) Hiber.session().createQuery(
+		"from BillSnag snag where snag.bill = :bill").setEntity(
+		"bill", this).list()) {
+			Hiber.session().delete(snag);
+			Hiber.flush();
+		}
 		if (invoices.isEmpty()) {
-			for (BillSnag snag : (List<BillSnag>) Hiber.session().createQuery(
-					"from BillSnag snag where snag.bill = :bill").setEntity(
-					"bill", this).list()) {
-				Hiber.session().delete(snag);
-				Hiber.flush();
-			}
 			Hiber.session().delete(this);
 			Hiber.flush();
-		} else if (getInvoices().size() > 1) {
-			List<Invoice> invoices = new ArrayList<Invoice>(getInvoices());
-			invoices.remove(0);
-			for (Invoice invoiceToRemove : invoices) {
-				getInvoices().remove(invoiceToRemove);
+		} else {
+			List<Invoice> tempInvoices = new ArrayList<Invoice>();
+			for (Invoice tempInvoice : invoices) {
+				tempInvoices.add(tempInvoice);
 			}
-			for (Invoice invoiceToAttach : invoices) {
+			for (Invoice invoiceToRemove : tempInvoices) {
+				invoices.remove(invoiceToRemove);
+			}
+			for (Invoice invoiceToAttach : tempInvoices) {
 				getAccount().attach(invoiceToAttach);
 			}
-		} else {
-			setSummary();
 		}
-		account.checkMissing(billStart, billFinish);
+
+		//account.checkMissing(billStart, billFinish);
 	}
 
 	private void setSummary() throws HttpException {
@@ -141,10 +142,10 @@ public class Bill extends PersistentEntity {
 			account.deleteSnag(AccountSnag.MISSING_BILL, getStartDate(),
 					getFinishDate());
 		}
-		HhEndDate oldStartDate = getStartDate();
+		//HhEndDate oldStartDate = getStartDate();
 		DayStartDate startDate = null;
 		// boolean isStartFuzzy = false;
-		HhEndDate oldFinishDate = getFinishDate();
+		//HhEndDate oldFinishDate = getFinishDate();
 		DayFinishDate finishDate = null;
 		// boolean isFinishFuzzy = false;
 		BigDecimal net = new BigDecimal(0);
@@ -176,9 +177,9 @@ public class Bill extends PersistentEntity {
 		setNet(net);
 		setVat(vat);
 		check();
-		if (getStartDate() != null) {
-			getAccount().checkMissing(oldStartDate, oldFinishDate);
-		}
+		//if (getStartDate() != null) {
+		//	getAccount().checkMissing(oldStartDate, oldFinishDate);
+		// }
 	}
 
 	public void check() throws HttpException {

@@ -80,7 +80,7 @@ public class Users extends EntityList {
 			User user = User
 					.insertUser(emailAddress, password, null, role, party);
 			Hiber.commit();
-			inv.sendCreated(user.getUri());
+			inv.sendSeeOther(user.getUri());
 		} catch (HttpException e) {
 			Hiber.rollBack();
 			e.setDocument(document());

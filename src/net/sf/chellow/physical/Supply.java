@@ -148,34 +148,38 @@ public class Supply extends PersistentEntity {
 			Account exportAccountSupplier = null;
 			Integer exportAgreedSupplyCapacity = null;
 			Ssc exportSsc = null;
-			String exportMpanStr = GeneralImport.addField(csvElement,
-					"Export MPAN", values, 19);
-			if (exportMpanStr != null && exportMpanStr.trim().length() != 0) {
-				String exportSscCode = GeneralImport.addField(csvElement,
-						"Export SSC", values, 20);
-				exportSsc = exportSscCode.trim().length() == 0 ? null : Ssc
-						.getSsc(exportSscCode);
-				String exportAgreedSupplyCapacityStr = GeneralImport
-						.addField(csvElement, "Export Agreed Supply Capacity",
-								values, 21);
-				try {
-					exportAgreedSupplyCapacity = new Integer(
-							exportAgreedSupplyCapacityStr);
-				} catch (NumberFormatException e) {
-					throw new UserException(
-							"The export agreed supply capacity must be an integer."
-									+ e.getMessage());
+			String exportMpanStr = null;
+			if (values.length > 19) {
+				exportMpanStr = GeneralImport.addField(csvElement,
+						"Export MPAN", values, 19);
+				if (exportMpanStr != null && exportMpanStr.trim().length() != 0) {
+					String exportSscCode = GeneralImport.addField(csvElement,
+							"Export SSC", values, 20);
+					exportSsc = exportSscCode.trim().length() == 0 ? null : Ssc
+							.getSsc(exportSscCode);
+					String exportAgreedSupplyCapacityStr = GeneralImport
+							.addField(csvElement,
+									"Export Agreed Supply Capacity", values, 21);
+					try {
+						exportAgreedSupplyCapacity = new Integer(
+								exportAgreedSupplyCapacityStr);
+					} catch (NumberFormatException e) {
+						throw new UserException(
+								"The export agreed supply capacity must be an integer."
+										+ e.getMessage());
+					}
+					String exportSupplierContractName = GeneralImport.addField(
+							csvElement, "Export supplier contract name",
+							values, 22);
+					exportSupplierContract = SupplierContract
+							.getSupplierContract(exportSupplierContractName);
+					String exportSupplierAccountReference = GeneralImport
+							.addField(csvElement,
+									"Export supplier account reference",
+									values, 23);
+					exportAccountSupplier = exportSupplierContract
+							.getAccount(exportSupplierAccountReference);
 				}
-				String exportSupplierContractName = GeneralImport
-						.addField(csvElement, "Export supplier contract name",
-								values, 22);
-				exportSupplierContract = SupplierContract
-						.getSupplierContract(exportSupplierContractName);
-				String exportSupplierAccountReference = GeneralImport.addField(
-						csvElement, "Export supplier account reference",
-						values, 23);
-				exportAccountSupplier = exportSupplierContract
-						.getAccount(exportSupplierAccountReference);
 			}
 			Supply supply = site.insertSupply(source, generatorType,
 					supplyName, startDate, finishDate, gspGroup, hhdcAccount,
@@ -477,10 +481,6 @@ public class Supply extends PersistentEntity {
 					existingExportMpan.getSupplierAccount(), existingExportMpan
 							.getAgreedSupplyCapacity());
 		}
-		for (Channel existingChannel : existingGeneration.getChannels()) {
-			newSupplyGeneration.insertChannel(existingChannel.getIsImport(),
-					existingChannel.getIsKwh());
-		}
 		return newSupplyGeneration;
 	}
 
@@ -527,21 +527,17 @@ public class Supply extends PersistentEntity {
 		}
 		supplyGeneration.setMeter(meter);
 		if (existingGeneration != null) {
+			for (Channel existingChannel : existingGeneration.getChannels()) {
+				supplyGeneration.insertChannel(existingChannel.getIsImport(),
+						existingChannel.getIsKwh());
+			}
 			onSupplyGenerationChange(startDate, supplyGeneration
 					.getFinishDate());
 		}
 		Hiber.flush();
-		
 		return supplyGeneration;
 	}
-/*
-	public void checkForMissing(HhEndDate from, HhEndDate to)
-			throws HttpException {
-		for (SupplyGeneration supplyGeneration : getGenerations(from, to)) {
-			supplyGeneration.checkForMissing(from, to);
-		}
-	}
-*/
+
 	public Source getSource() {
 		return source;
 	}
@@ -677,16 +673,15 @@ public class Supply extends PersistentEntity {
 						HhEndDate endDate = datum.getEndDate();
 						datum.setChannel(targetChannel);
 						if (datum.getValue().doubleValue() < 0) {
-							targetChannel
-									.addSnag(ChannelSnag.SNAG_NEGATIVE,
-											endDate, endDate);
+							targetChannel.addSnag(ChannelSnag.SNAG_NEGATIVE,
+									endDate, endDate);
 						}
 						if (datum.getStatus() != HhDatum.ACTUAL) {
-							targetChannel.addSnag(
-									ChannelSnag.SNAG_ESTIMATED, endDate,
-									endDate);
+							targetChannel.addSnag(ChannelSnag.SNAG_ESTIMATED,
+									endDate, endDate);
 						}
-					    targetChannel.deleteSnag(ChannelSnag.SNAG_MISSING, endDate, endDate);
+						targetChannel.deleteSnag(ChannelSnag.SNAG_MISSING,
+								endDate, endDate);
 						// channel.resolveSnag(ChannelSnag.SNAG_NEGATIVE,
 						// endDate);
 						// channel.resolveSnag(ChannelSnag.SNAG_NOT_ACTUAL,
@@ -697,28 +692,28 @@ public class Supply extends PersistentEntity {
 					hhData.close();
 				}
 			}
-		//checkForMissing(from, to);
-		// Register reads
-		if (from.getDate().before(supplyStartDate)
-				&& ((Long) Hiber
-						.session()
-						.createQuery(
-								"select count(*) from RegisterRead read where read.mpan.supplyGeneration.supply  = :supply and read.presentDate.date < :date")
-						.setEntity("supply", this).setTimestamp("date",
-								supplyStartDate).uniqueResult()) > 0) {
-			throw new UserException(
-					"There are register reads before the start of the updated supply.");
-		}
-		if (supplyFinishDate != null
-				&& ((Long) Hiber
-						.session()
-						.createQuery(
-								"select count(*) from RegisterRead read where read.mpan.supplyGeneration.supply  = :supply and read.presentDate.date > :date")
-						.setEntity("supply", this).setTimestamp("date",
-								supplyFinishDate).uniqueResult()) > 0) {
-			throw new UserException(
-					"There are register reads after the end of the updated supply.");
-		}
+			// checkForMissing(from, to);
+			// Register reads
+			if (from.getDate().before(supplyStartDate)
+					&& ((Long) Hiber
+							.session()
+							.createQuery(
+									"select count(*) from RegisterRead read where read.mpan.supplyGeneration.supply  = :supply and read.presentDate.date < :date")
+							.setEntity("supply", this).setTimestamp("date",
+									supplyStartDate).uniqueResult()) > 0) {
+				throw new UserException(
+						"There are register reads before the start of the updated supply.");
+			}
+			if (supplyFinishDate != null
+					&& ((Long) Hiber
+							.session()
+							.createQuery(
+									"select count(*) from RegisterRead read where read.mpan.supplyGeneration.supply  = :supply and read.presentDate.date > :date")
+							.setEntity("supply", this).setTimestamp("date",
+									supplyFinishDate).uniqueResult()) > 0) {
+				throw new UserException(
+						"There are register reads after the end of the updated supply.");
+			}
 			for (RegisterRead read : (List<RegisterRead>) Hiber
 					.session()
 					.createQuery(

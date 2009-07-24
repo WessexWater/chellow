@@ -23,7 +23,6 @@ package net.sf.chellow.physical;
 import java.util.Calendar;
 import java.util.Date;
 
-import net.sf.chellow.monad.Debug;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.UserException;
@@ -52,13 +51,7 @@ public class HhEndDate extends MonadDate {
 		return roundUp(cal, date + 1);
 	}
 	
-	public static void hello() {
-		Debug.print("hello");
-	}
-	
 	public static boolean isEqual(HhEndDate date1, HhEndDate date2) {
-		Debug.print("Calling equals ");
-		Debug.print("Comparing " + date1 + " and " + date2);
 		if (date1 == null) {
 			if (date2 == null) {
 				return true;
