@@ -1,3 +1,5 @@
+* Good error message if report inserted that has same name as existing report.
+
 * Missing bill snags now exist for the whole period of the supply generation.
 
 * HH data missing snags now exist for the whole period of the supply generation.

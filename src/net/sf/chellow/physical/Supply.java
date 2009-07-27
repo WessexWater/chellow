@@ -30,6 +30,8 @@ import java.util.Map;
 import java.util.Set;
 
 import net.sf.chellow.billing.Account;
+import net.sf.chellow.billing.AccountSnag;
+import net.sf.chellow.billing.Bill;
 import net.sf.chellow.billing.HhdcContract;
 import net.sf.chellow.billing.SupplierContract;
 import net.sf.chellow.monad.Hiber;
@@ -736,7 +738,79 @@ public class Supply extends PersistentEntity {
 					read.setMpan(targetMpan);
 				}
 			}
+
+			// checkMpanRelationship
+			if (generation.getHhdcAccount() != null) {
+				HhdcContract hhdcContract = HhdcContract
+						.getHhdcContract(generation.getHhdcAccount()
+								.getContract().getId());
+				HhEndDate hhdcContractStartDate = hhdcContract
+						.getStartRateScript().getStartDate();
+				if (hhdcContractStartDate.getDate().after(
+						generation.getStartDate().getDate())) {
+					throw new UserException(
+							"The HHDC contract starts after the supply generation.");
+				}
+				HhEndDate hhdcContractFinishDate = hhdcContract
+						.getFinishRateScript().getFinishDate();
+				if (hhdcContractFinishDate != null
+						&& (generation.getFinishDate() == null || hhdcContractFinishDate
+								.getDate().before(
+										generation.getStartDate().getDate()))) {
+					throw new UserException("The HHDC contract "
+							+ hhdcContract.getId()
+							+ " finishes before the supply generation.");
+				}
+			}
+			for (Mpan mpan : generation.getMpans()) {
+				SupplierContract supplierContract = SupplierContract
+						.getSupplierContract(mpan.getSupplierAccount()
+								.getContract().getId());
+				HhEndDate supplierContractStartDate = supplierContract
+						.getStartRateScript().getStartDate();
+				if (supplierContractStartDate.getDate().after(
+						generation.getStartDate().getDate())) {
+					throw new UserException(
+							"The supplier contract starts after the supply generation.");
+				}
+				HhEndDate supplierContractFinishDate = supplierContract
+						.getFinishRateScript().getFinishDate();
+				if (generation.getFinishDate() == null
+						&& supplierContractFinishDate != null
+						|| supplierContractFinishDate != null
+						&& generation.getFinishDate() != null
+						&& supplierContractFinishDate.getDate().before(
+								generation.getStartDate().getDate())) {
+					throw new UserException(
+							"The supplier contract finishes before the supply generation.");
+				}
+			}
+
+			// update missing bill account snags
+			Account hhdcAccount = generation.getHhdcAccount();
+			if (hhdcAccount != null) {
+				hhdcAccount.addSnag(AccountSnag.MISSING_BILL, generation
+						.getStartDate(), generation.getFinishDate());
+				for (Bill bill : (List<Bill>) Hiber.session().createQuery(
+						"from Bill bill where bill.account = :account")
+						.setEntity("account", hhdcAccount).list()) {
+					hhdcAccount.deleteSnag(AccountSnag.MISSING_BILL, bill
+							.getStartDate(), bill.getFinishDate());
+				}
+			}
+			for (Mpan mpan : generation.getMpans()) {
+				Account supplierAccount = mpan.getSupplierAccount();
+				supplierAccount.addSnag(AccountSnag.MISSING_BILL, generation
+						.getStartDate(), generation.getFinishDate());
+				for (Bill bill : (List<Bill>) Hiber.session().createQuery(
+						"from Bill bill where bill.account = :account")
+						.setEntity("account", supplierAccount).list()) {
+					supplierAccount.deleteSnag(AccountSnag.MISSING_BILL, bill
+							.getStartDate(), bill.getFinishDate());
+				}
+			}
 		}
+
 		// check doesn't have superfluous meters
 		List<Meter> metersToRemove = new ArrayList<Meter>();
 		for (Meter meter : meters) {

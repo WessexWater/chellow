@@ -129,31 +129,39 @@ public abstract class SnagDateBounded extends Snag {
 				snagToAdd.insertSnag(outerSnag);
 				Hiber.flush();
 			}
-			if (snag.getStartDate().getDate().before(
-					snagToAdd.getStartDate().getDate())) {
+			if (snag.getStartDate().before(snagToAdd.getStartDate())) {
 				SnagDateBounded outerSnag = snag.copy();
-				outerSnag.setFinishDate(HhEndDate.getPrevious(snagToAdd
-						.getStartDate()));
+				outerSnag.setFinishDate(snagToAdd.getStartDate().getPrevious());
 				snag.setStartDate(snagToAdd.getStartDate());
 				snagToAdd.insertSnag(outerSnag);
 				Hiber.flush();
-				background.setFinishDate(HhEndDate
-						.getNext(snag.getFinishDate()));
-				background
-						.setStartDate(HhEndDate.getNext(snag.getFinishDate()));
+				if (snag.getFinishDate() == null) {
+					background = null;
+				} else {
+					background.setFinishDate(snag.getFinishDate().getNext());
+					background.setStartDate(snag.getFinishDate().getNext());
+				}
 			}
-			if (background.getStartDate().getDate().before(
-					snag.getStartDate().getDate())) {
-				background.setFinishDate(snag.getStartDate().getPrevious());
-				snagToAdd.insertSnag(background);
-				background = snagToAdd.newSnag(snag.getFinishDate().getNext(),
-						snag.getFinishDate().getNext());
-			} else {
-				background.setFinishDate(snag.getFinishDate().getNext());
-				background.setStartDate(snag.getFinishDate().getNext());
+			if (background != null) {
+				if (background.getStartDate().before(snag.getStartDate())) {
+					background.setFinishDate(snag.getStartDate().getPrevious());
+					snagToAdd.insertSnag(background);
+					if (snag.getFinishDate() == null) {
+						background = null;
+					} else {
+						background = snagToAdd.newSnag(snag.getFinishDate()
+								.getNext(), snag.getFinishDate().getNext());
+					}
+				} else if (snag.getFinishDate() == null) {
+					background = null;
+				} else {
+					background.setFinishDate(snag.getFinishDate().getNext());
+					background.setStartDate(snag.getFinishDate().getNext());
+				}
 			}
 		}
-		if (!background.getStartDate().after(snagToAdd.getFinishDate())) {
+		if (background != null
+				&& !background.getStartDate().after(snagToAdd.getFinishDate())) {
 			background.setFinishDate(snagToAdd.getFinishDate());
 			snagToAdd.insertSnag(background);
 		}
@@ -400,20 +408,12 @@ public abstract class SnagDateBounded extends Snag {
 
 		private HhEndDate finishDate;
 
-		private Query query;
-
 		public AccountSnagToAdd(Account account, String description,
 				HhEndDate startDate, HhEndDate finishDate) {
 			this.account = account;
 			this.description = description;
 			this.startDate = startDate;
 			this.finishDate = finishDate;
-			query = Hiber
-					.session()
-					.createQuery(
-							"from AccountSnag snag where snag.account = :account and snag.startDate.date <= :finishDate and snag.finishDate.date >= :startDate and snag.description = :description order by snag.startDate.date")
-					.setEntity("account", account).setString("description",
-							description.toString());
 		}
 
 		public HhEndDate getFinishDate() {
@@ -449,9 +449,22 @@ public abstract class SnagDateBounded extends Snag {
 		@SuppressWarnings("unchecked")
 		public List<AccountSnag> getCoveredSnags(HhEndDate startDate,
 				HhEndDate finishDate) {
-			return (List<AccountSnag>) query.setTimestamp("finishDate",
-					finishDate.getDate()).setTimestamp("startDate",
-					startDate.getDate()).list();
+			Query query = null;
+			if (finishDate == null) {
+				query = Hiber
+						.session()
+						.createQuery(
+								"from AccountSnag snag where snag.account = :account and (snag.finishDate.date is null or snag.finishDate.date >= :startDate) and snag.description = :description order by snag.startDate.date");
+			} else {
+				query = Hiber
+						.session()
+						.createQuery(
+								"from AccountSnag snag where snag.account = :account and snag.startDate.date <= :finishDate and (snag.finishDate.date is null or snag.finishDate.date >= :startDate) and snag.description = :description order by snag.startDate.date")
+						.setTimestamp("finishDate", finishDate.getDate());
+			}
+			return (List<AccountSnag>) query.setTimestamp("startDate",
+					startDate.getDate()).setEntity("account", account)
+					.setString("description", description).list();
 		}
 	}
 

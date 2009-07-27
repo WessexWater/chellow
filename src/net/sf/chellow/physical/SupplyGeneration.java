@@ -795,7 +795,7 @@ public class SupplyGeneration extends PersistentEntity {
 		// data.
 		// Debug.print("starting onsupgen change. 99");
 		Hiber.flush();
-		checkMpanRelationship();
+		supply.onSupplyGenerationChange(startDate, finishDate);
 		// Debug.print("checked relationsip.");
 		// checkForMissing(getStartDate(), getFinishDate());
 		// Debug.print("finished add or update.");
@@ -880,51 +880,6 @@ public class SupplyGeneration extends PersistentEntity {
 		}
 	}
 
-	private void checkMpanRelationship() throws HttpException {
-		if (hhdcAccount != null) {
-			HhdcContract hhdcContract = HhdcContract
-					.getHhdcContract(hhdcAccount.getContract().getId());
-			HhEndDate hhdcContractStartDate = hhdcContract.getStartRateScript()
-					.getStartDate();
-			if (hhdcContractStartDate.getDate().after(getStartDate().getDate())) {
-				throw new UserException(
-						"The HHDC contract starts after the supply generation.");
-			}
-			HhEndDate hhdcContractFinishDate = hhdcContract
-					.getFinishRateScript().getFinishDate();
-			if (hhdcContractFinishDate != null
-					&& (finishDate == null || hhdcContractFinishDate.getDate()
-							.before(getStartDate().getDate()))) {
-				throw new UserException("The HHDC contract "
-						+ hhdcContract.getId()
-						+ " finishes before the supply generation.");
-			}
-		}
-		for (Mpan mpan : mpans) {
-			SupplierContract supplierContract = SupplierContract
-					.getSupplierContract(mpan.getSupplierAccount()
-							.getContract().getId());
-			HhEndDate supplierContractStartDate = supplierContract
-					.getStartRateScript().getStartDate();
-			if (supplierContractStartDate.getDate().after(
-					getStartDate().getDate())) {
-				throw new UserException(
-						"The supplier contract starts after the supply generation.");
-			}
-			HhEndDate supplierContractFinishDate = supplierContract
-					.getFinishRateScript().getFinishDate();
-			if (finishDate == null
-					&& supplierContractFinishDate != null
-					|| supplierContractFinishDate != null
-					&& finishDate != null
-					&& supplierContractFinishDate.getDate().before(
-							getStartDate().getDate())) {
-				throw new UserException(
-						"The supplier contract finishes before the supply generation.");
-			}
-		}
-	}
-
 	public void update(HhEndDate startDate, HhEndDate finishDate,
 			Account hhdcAccount, Meter meter, Pc pc) throws HttpException {
 		HhEndDate originalStartDate = getStartDate();
@@ -967,7 +922,7 @@ public class SupplyGeneration extends PersistentEntity {
 		}
 		internalUpdate(startDate, finishDate, hhdcAccount, meter, pc);
 		Hiber.flush();
-		checkMpanRelationship();
+		//checkMpanRelationship();
 		HhEndDate checkFinishDate = originalStartDate;
 		if (originalFinishDate != null && finishDate != null) {
 			if (!originalFinishDate.getDate().equals(finishDate)) {

@@ -41,6 +41,7 @@ import net.sf.chellow.monad.types.UriPathElement;
 import net.sf.chellow.physical.Configuration;
 import net.sf.chellow.physical.PersistentEntity;
 
+import org.hibernate.exception.ConstraintViolationException;
 import org.python.util.PythonInterpreter;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -106,8 +107,13 @@ public class Report extends PersistentEntity {
 	public static Report insertReport(Long id, String name, String script,
 			String template) throws HttpException {
 		Report report = new Report(id, name, script, template);
+		try {
 		Hiber.session().save(report);
 		Hiber.flush();
+		} catch (ConstraintViolationException e) {
+			Hiber.rollBack();
+			throw new UserException("There's already a report with that name.");
+		}
 		return report;
 	}
 
