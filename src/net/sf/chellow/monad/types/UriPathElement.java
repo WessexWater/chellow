@@ -69,4 +69,8 @@ public class UriPathElement extends MonadUri {
 	public UriPathElement resolve(UriPathElement uri) throws InternalException, HttpException {
 			return new UriPathElement(toUri().resolve(uri.toUri()).toString());
 	}
+	
+	public Long toLong() {
+		return Long.parseLong(toString());
+	}
 }

@@ -40,6 +40,7 @@ import net.sf.chellow.monad.NotFoundException;
 import net.sf.chellow.monad.Urlable;
 import net.sf.chellow.monad.UserException;
 import net.sf.chellow.monad.XmlTree;
+import net.sf.chellow.monad.types.MonadDate;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
 import net.sf.chellow.physical.ChannelSnag;
@@ -296,6 +297,9 @@ public class HhdcContract extends Contract {
 				.setCharacter("roleCode", MarketRole.HHDC).list()) {
 			source.appendChild(party.toXml(doc, new XmlTree("participant")));
 		}
+		source.appendChild(new MonadDate().toXml(doc));
+		source.appendChild(MonadDate.getMonthsXml(doc));
+		source.appendChild(MonadDate.getDaysXml(doc));
 		return doc;
 	}
 

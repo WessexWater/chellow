@@ -197,7 +197,7 @@
 					<fieldset>
 						<legend>Ignore all snags before</legend>
 						<br />
-						<input name="ignore-date-year">
+						<input name="ignore-date-year" size="4" maxlength="4">
 							<xsl:choose>
 								<xsl:when test="/source/request/parameter[@name='ignore-date-year']">
 
@@ -222,10 +222,8 @@
 									<xsl:choose>
 										<xsl:when
 											test="/source/request/parameter[@name='ignore-date-month']">
-
 											<xsl:if
 												test="/source/request/parameter[@name='ignore-date-month']/value/text() = number(@number)">
-
 												<xsl:attribute name="selected" />
 											</xsl:if>
 										</xsl:when>
@@ -235,22 +233,18 @@
 											</xsl:if>
 										</xsl:otherwise>
 									</xsl:choose>
-
 									<xsl:value-of select="@number" />
 								</option>
 							</xsl:for-each>
 						</select>
-
 						-
 						<select name="ignore-date-day">
 							<xsl:for-each select="/source/days/day">
 								<option value="{@number}">
 									<xsl:choose>
 										<xsl:when test="/source/request/parameter[@name='ignore-date-day']">
-
 											<xsl:if
 												test="/source/request/parameter[@name='ignore-date-day']/value/text() = @number">
-
 												<xsl:attribute name="selected" />
 											</xsl:if>
 										</xsl:when>
@@ -260,7 +254,6 @@
 											</xsl:if>
 										</xsl:otherwise>
 									</xsl:choose>
-
 									<xsl:value-of select="@number" />
 								</option>
 							</xsl:for-each>

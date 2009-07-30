@@ -69,13 +69,6 @@
 						</td>
 					</tr>
 					<tr>
-						<th>Progress</th>
-						<td>
-							<xsl:value-of
-								select="/source/site-snag/@progress" />
-						</td>
-					</tr>
-					<tr>
 						<th>Site</th>
 						<td>
 							<a
@@ -88,7 +81,7 @@
 						<th>Start Date</th>
 						<td>
 							<xsl:value-of
-								select="concat(/source/site-snag/hh-end-date[@label='start']/@year, '-', /source/site-snag/hh-end-date[@label='start']/@month, '-', /source/site-snag/hh-end-date[@label='start']/@day)" />
+								select="concat(/source/site-snag/hh-end-date[@label='start']/@year, '-', /source/site-snag/hh-end-date[@label='start']/@month, '-', /source/site-snag/hh-end-date[@label='start']/@day, ' ', /source/site-snag/hh-end-date[@label='start']/@hour, ':', /source/site-snag/hh-end-date[@label='start']/@minute, ' Z')" />
 						</td>
 					</tr>
 					<tr>

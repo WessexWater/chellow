@@ -111,7 +111,7 @@ public class SiteSnags extends EntityList {
 	}
 
 	public Urlable getChild(UriPathElement urlId) throws HttpException {
-		return Snag.getSnag(urlId.getString());
+		return SiteSnag.getSiteSnag(urlId.toLong());
 	}
 
 	public MonadUri getMonadUri() throws InternalException {
