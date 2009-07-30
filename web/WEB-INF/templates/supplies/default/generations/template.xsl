@@ -150,7 +150,7 @@
 												<xsl:when
 													test="/source/request/parameter[@name='start-date-month']">
 													<xsl:if
-														test="/source/request/parameter[@name='start-date-month']/value/text() = number(@number)">
+														test="/source/request/parameter[@name='start-date-month']/value/text() = @number">
 														<xsl:attribute
 															name="selected" />
 													</xsl:if>

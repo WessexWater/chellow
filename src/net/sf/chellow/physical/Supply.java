@@ -34,6 +34,7 @@ import net.sf.chellow.billing.AccountSnag;
 import net.sf.chellow.billing.Bill;
 import net.sf.chellow.billing.HhdcContract;
 import net.sf.chellow.billing.SupplierContract;
+import net.sf.chellow.monad.Debug;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.InternalException;
@@ -492,6 +493,7 @@ public class Supply extends PersistentEntity {
 			Integer importAgreedSupplyCapacity, String exportMpanStr,
 			Ssc exportSsc, Account exportSupplierAccount,
 			Integer exportAgreedSupplyCapacity) throws HttpException {
+		Debug.print("inserting new genertaion");
 		Meter meter = null;
 		if (meterSerialNumber.trim().length() != 0) {
 			meter = findMeter(meterSerialNumber);
@@ -502,10 +504,12 @@ public class Supply extends PersistentEntity {
 		SupplyGeneration supplyGeneration = null;
 		SupplyGeneration existingGeneration = null;
 		if (generations.isEmpty()) {
+			Debug.print("Empty.");
 			supplyGeneration = new SupplyGeneration(this, startDate, null,
 					hhdcAccount, meter);
 			generations.add(supplyGeneration);
 		} else {
+			Debug.print("Not empty.");
 			existingGeneration = getGeneration(startDate);
 			if (existingGeneration == null) {
 				throw new UserException(
@@ -513,26 +517,62 @@ public class Supply extends PersistentEntity {
 			}
 			supplyGeneration = new SupplyGeneration(this, startDate,
 					existingGeneration.getFinishDate(), hhdcAccount, meter);
+			String existingImportMpanStr = null;
+			Ssc existingImportSsc = null;
+			Account existingImportSupplierAccount = null;
+			Integer existingImportAgreedSupplyCapacity = null;
+			String existingExportMpanStr = null;
+			Ssc existingExportSsc = null;
+			Account existingExportSupplierAccount = null;
+			Integer existingExportAgreedSupplyCapacity = null;
+			if (existingGeneration.getImportMpan() != null) {
+				Mpan eMpan = existingGeneration.getImportMpan();
+				existingImportMpanStr = eMpan.toString();
+				existingImportSsc = eMpan.getSsc();
+				existingImportSupplierAccount = eMpan.getSupplierAccount();
+				existingImportAgreedSupplyCapacity = eMpan
+						.getAgreedSupplyCapacity();
+			}
+			if (existingGeneration.getExportMpan() != null) {
+				Mpan eMpan = existingGeneration.getExportMpan();
+				existingExportMpanStr = eMpan.toString();
+				existingExportSsc = eMpan.getSsc();
+				existingExportSupplierAccount = eMpan.getSupplierAccount();
+				existingExportAgreedSupplyCapacity = eMpan
+						.getAgreedSupplyCapacity();
+			}
 			existingGeneration.internalUpdate(
 					existingGeneration.getStartDate(), startDate.getPrevious(),
 					existingGeneration.getHhdcAccount(), existingGeneration
-							.getMeter(), existingGeneration.getPc());
+							.getMeter(), existingImportMpanStr,
+					existingImportSsc, existingImportSupplierAccount,
+					existingImportAgreedSupplyCapacity, existingExportMpanStr,
+					existingExportSsc, existingExportSupplierAccount,
+					existingExportAgreedSupplyCapacity);
 			generations.add(supplyGeneration);
 		}
 		Hiber.flush();
-		supplyGeneration.addOrUpdateMpans(importMpanStr, importSsc,
-				importSupplierAccount, importAgreedSupplyCapacity,
-				exportMpanStr, exportSsc, exportSupplierAccount,
-				exportAgreedSupplyCapacity);
+		supplyGeneration.internalUpdate(supplyGeneration.getStartDate(),
+				supplyGeneration.getFinishDate(), supplyGeneration
+						.getHhdcAccount(), supplyGeneration.getMeter(),
+				importMpanStr, importSsc, importSupplierAccount,
+				importAgreedSupplyCapacity, exportMpanStr, exportSsc,
+				exportSupplierAccount, exportAgreedSupplyCapacity);
 		for (Map.Entry<Site, Boolean> entry : siteMap.entrySet()) {
 			supplyGeneration.attachSite(entry.getKey(), entry.getValue());
 		}
+		Debug.print("Existing generation is " + existingGeneration);
 		supplyGeneration.setMeter(meter);
 		if (existingGeneration != null) {
+			Debug.print("There is an existing generation.");
 			for (Channel existingChannel : existingGeneration.getChannels()) {
 				supplyGeneration.insertChannel(existingChannel.getIsImport(),
 						existingChannel.getIsKwh());
+				Debug.print("Inserting channel."
+						+ existingChannel.getIsImport() + " "
+						+ existingChannel.getIsKwh());
 			}
+			Hiber.flush();
 			onSupplyGenerationChange(startDate, supplyGeneration
 					.getFinishDate());
 		}
@@ -597,12 +637,11 @@ public class Supply extends PersistentEntity {
 		if (previousGeneration == null) {
 			nextGeneration.update(generation.getStartDate(), nextGeneration
 					.getFinishDate(), nextGeneration.getHhdcAccount(),
-					nextGeneration.getMeter(), nextGeneration.getPc());
+					nextGeneration.getMeter());
 		} else {
 			previousGeneration.update(previousGeneration.getStartDate(),
 					generation.getFinishDate(), previousGeneration
-							.getHhdcAccount(), previousGeneration.getMeter(),
-					previousGeneration.getPc());
+							.getHhdcAccount(), previousGeneration.getMeter());
 		}
 		onSupplyGenerationChange(generation.getStartDate(), generation
 				.getFinishDate());
@@ -666,7 +705,15 @@ public class Supply extends PersistentEntity {
 						if (targetChannel == null) {
 							throw new UserException(
 									"There is no channel for the HH datum: "
-											+ datum.toString() + " to move to.");
+											+ datum.toString()
+											+ " is import? "
+											+ isImport
+											+ " is kWh? "
+											+ isKwh
+											+ " to move to in the generation starting "
+											+ generation.getStartDate()
+											+ ", finishing "
+											+ generation.getFinishDate() + ".");
 						}
 					}
 					hhData.beforeFirst();

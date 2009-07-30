@@ -72,13 +72,22 @@ public class SupplyGenerations extends EntityList {
 
 	public void httpPost(Invocation inv) throws HttpException {
 		Date startDate = inv.getDate("start-date");
+		Document doc = document();
 		if (!inv.isValid()) {
-			throw new UserException(document());
+			throw new UserException(doc);
 		}
-		SupplyGeneration supplyGeneration = supply.insertGeneration(HhEndDate
-				.roundDown(startDate).getNext());
-		Hiber.commit();
+		SupplyGeneration supplyGeneration = null;
+		try {
+			supplyGeneration = supply.insertGeneration(HhEndDate.roundDown(
+					startDate).getNext());
+			Hiber.commit();
+		} catch (UserException e) {
+			Hiber.rollBack();
+			e.setDocument(doc);
+			throw e;
+		}
 		inv.sendSeeOther(supplyGeneration.getUri());
+
 	}
 
 	public void httpGet(Invocation inv) throws HttpException {
@@ -90,11 +99,12 @@ public class SupplyGenerations extends EntityList {
 		Element source = doc.getDocumentElement();
 		Element generationsElement = toXml(doc);
 		source.appendChild(generationsElement);
-		generationsElement.appendChild(supply.toXml(doc, new XmlTree("gspGroup")));
+		generationsElement.appendChild(supply.toXml(doc,
+				new XmlTree("gspGroup")));
 		for (SupplyGeneration supplyGeneration : supply.getGenerations()) {
 			generationsElement.appendChild(supplyGeneration.toXml(doc,
-					new XmlTree("mpans", new XmlTree("core").put(
-							"llfc").put("mtc")).put("pc")));
+					new XmlTree("mpans", new XmlTree("core").put("llfc").put(
+							"mtc")).put("pc")));
 		}
 		source.appendChild(new MonadDate().toXml(doc));
 		source.appendChild(MonadDate.getMonthsXml(doc));

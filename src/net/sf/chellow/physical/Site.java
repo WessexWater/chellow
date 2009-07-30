@@ -226,7 +226,7 @@ public class Site extends PersistentEntity {
 				importAgreedSupplyCapacity, exportMpanStr, exportSsc,
 				exportAccountSupplier, exportAgreedSupplyCapacity);
 		generation.update(generation.getStartDate(), finishDate, generation.getHhdcAccount(), generation
-				.getMeter(), generation.getPc());
+				.getMeter());
 		Hiber.flush();
 		return supply;
 	}
