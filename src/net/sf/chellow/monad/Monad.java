@@ -200,7 +200,7 @@ public abstract class Monad extends HttpServlet implements Urlable {
 					}
 				}
 			} catch (ForbiddenException e) {
-				inv.sendForbidden();
+				inv.sendForbidden(e.getMessage());
 			} catch (MovedPermanentlyException e) {
 				inv.sendMovedPermanently(e.getLocation());
 			} catch (NotFoundException e) {

@@ -613,9 +613,9 @@ public class Invocation {
 		sendOk(doc, templatePath, "template.xsl");
 	}
 
-	public void sendForbidden() throws InternalException {
+	public void sendForbidden(String message) throws InternalException {
 		try {
-			res.sendError(HttpServletResponse.SC_FORBIDDEN);
+			res.sendError(HttpServletResponse.SC_FORBIDDEN, message);
 		} catch (IOException e) {
 			throw new InternalException(e);
 		}
@@ -677,13 +677,15 @@ public class Invocation {
 
 	public User getUser() throws HttpException {
 		String authHeader = req.getHeader("Authorization");
-
+		Debug.print("auth header " + authHeader);
 		if (authHeader == null || !authHeader.startsWith("Basic")) {
 			return null;
 		}
 		String[] usernameAndPassword = Base64.decode(authHeader.substring(6))
 				.split(":");
+		Debug.print("password " + Base64.decode(authHeader.substring(6)));
 		if (usernameAndPassword == null || usernameAndPassword.length != 2) {
+			Debug.print("something wrong");
 			return null;
 			// throw new BadRequestException(
 			// "The Authorization header must contain a base64 encoded string

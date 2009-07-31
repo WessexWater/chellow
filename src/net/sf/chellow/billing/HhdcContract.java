@@ -46,7 +46,7 @@ import net.sf.chellow.monad.types.UriPathElement;
 import net.sf.chellow.physical.ChannelSnag;
 import net.sf.chellow.physical.HhEndDate;
 import net.sf.chellow.physical.MarketRole;
-import net.sf.chellow.physical.Mpan;
+import net.sf.chellow.physical.SupplyGeneration;
 import net.sf.chellow.ui.Chellow;
 import net.sf.chellow.ui.GeneralImport;
 
@@ -202,10 +202,10 @@ public class HhdcContract extends Contract {
 	@SuppressWarnings("unchecked")
 	void onUpdate() throws HttpException {
 		super.onUpdate();
-		for (Mpan mpan : (List<Mpan>) Hiber
+		for (SupplyGeneration generation : (List<SupplyGeneration>) Hiber
 				.session()
 				.createQuery(
-						"from Mpan mpan where mpan.hhdcAccount.contract = :hhdcContract and mpan.supplyGeneration.startDate.date < :startDate or (mpan.supplyGeneration.finishDate.date is not null and (:finishDate is not null or mpan.supplyGeneration.finishDate.date > :finishDate))")
+						"from SupplyGeneration generation where generation.hhdcAccount.contract = :hhdcContract and generation.startDate.date < :startDate or (generation.finishDate.date is not null and (:finishDate is not null or generation.finishDate.date > :finishDate))")
 				.setEntity("hhdcContract", this).setTimestamp("startDate",
 						getStartDate().getDate()).setTimestamp(
 						"finishDate",
@@ -213,8 +213,8 @@ public class HhdcContract extends Contract {
 								.getDate()).list()) {
 			throw new UserException(
 					"The supply '"
-							+ mpan.getSupplyGeneration().getSupply().getId()
-							+ "' has an MPAN with this contract that covers a time outside this contract.");
+							+ generation.getSupply().getId()
+							+ "' has a generation with this contract that covers a time outside this contract.");
 		}
 	}
 

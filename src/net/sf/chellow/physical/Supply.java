@@ -731,17 +731,12 @@ public class Supply extends PersistentEntity {
 						}
 						targetChannel.deleteSnag(ChannelSnag.SNAG_MISSING,
 								endDate, endDate);
-						// channel.resolveSnag(ChannelSnag.SNAG_NEGATIVE,
-						// endDate);
-						// channel.resolveSnag(ChannelSnag.SNAG_NOT_ACTUAL,
-						// endDate);
 						Hiber.flush();
 						Hiber.session().evict(datum);
 					}
 					hhData.close();
 				}
 			}
-			// checkForMissing(from, to);
 			// Register reads
 			if (from.getDate().before(supplyStartDate)
 					&& ((Long) Hiber

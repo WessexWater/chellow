@@ -656,77 +656,6 @@ public class SupplyGeneration extends PersistentEntity {
 		Hiber.flush();
 	}
 
-	/*
-	 * public void addOrUpdateMpans(String importMpanStr, Ssc importSsc, Account
-	 * importSupplierAccount, Integer importAgreedSupplyCapacity, String
-	 * exportMpanStr, Ssc exportSsc, Account exportSupplierAccount, Integer
-	 * exportAgreedSupplyCapacity) throws HttpException { Pc importPc = null; Pc
-	 * exportPc = null; if (importMpan == null) { if (importMpanStr != null &&
-	 * importMpanStr.length() != 0) { setImportMpan(new Mpan(this,
-	 * importMpanStr, importSsc, importSupplierAccount,
-	 * importAgreedSupplyCapacity)); mpans.add(getImportMpan()); } } else { if
-	 * (importMpanStr == null || importMpanStr.length() == 0) {
-	 * mpans.remove(importMpan); setImportMpan(null); } else {
-	 * importMpan.update(importMpanStr, importSsc, importSupplierAccount,
-	 * importAgreedSupplyCapacity); } } if (exportMpan == null) { if
-	 * (exportMpanStr != null && exportMpanStr.length() != 0) {
-	 * setExportMpan(new Mpan(this, exportMpanStr, exportSsc,
-	 * exportSupplierAccount, exportAgreedSupplyCapacity));
-	 * mpans.add(getExportMpan()); } } else { if (exportMpanStr == null ||
-	 * exportMpanStr.length() == 0) { mpans.remove(exportMpan);
-	 * setExportMpan(null); } else { exportMpan.update(exportMpanStr, exportSsc,
-	 * exportSupplierAccount, exportAgreedSupplyCapacity); } } if (importMpan ==
-	 * null && exportMpan == null) { throw new UserException(document(),
-	 * "A supply generation must have at least one MPAN."); } SupplyGeneration
-	 * previousGeneration = supply .getGenerationPrevious(this); if
-	 * (previousGeneration != null) { boolean isOverlap = false; if (importMpan
-	 * != null) { Mpan prevImportMpan = previousGeneration.getImportMpan(); if
-	 * (prevImportMpan != null && importMpan.getCore()
-	 * .equals(prevImportMpan.getCore())) { isOverlap = true; } } if (!isOverlap
-	 * && exportMpan != null) { Mpan prevExportMpan =
-	 * previousGeneration.getExportMpan(); if (prevExportMpan != null &&
-	 * exportMpan.getCore() .equals(prevExportMpan.getCore())) { isOverlap =
-	 * true; } } if (!isOverlap) { throw new UserException(
-	 * "MPAN cores can't change without an overlapping period."); } } if
-	 * (importMpan != null) { if (!importMpan.getLlfc().getIsImport()) { throw
-	 * new UserException(document(), "The import line loss factor '" +
-	 * importMpan.getLlfc() + "' says that the MPAN is actually export."); }
-	 * importPc = Mpan.pc(importMpanStr); } if (exportMpan != null) { if
-	 * (exportMpan.getLlfc().getIsImport()) { throw new UserException(
-	 * "Problem with the export MPAN with core '" + exportMpan.getCore() +
-	 * "'. The Line Loss Factor '" + exportMpan.getLlfc() +
-	 * "' says that the MPAN is actually import."); } exportPc =
-	 * Mpan.pc(exportMpanStr); } if (importMpan != null && exportMpan != null) {
-	 * if (!importMpan.getCore().getDso().equals(
-	 * exportMpan.getCore().getDso())) { throw new UserException(
-	 * "Two MPANs on the same supply generation must have the same DSO."); } if
-	 * (!importMpan.getLlfc().getVoltageLevel().equals(
-	 * exportMpan.getLlfc().getVoltageLevel())) { throw new UserException(
-	 * "The voltage level indicated by the Line Loss Factor must be the same for both the MPANs."
-	 * ); } if (!importPc.equals(exportPc)) { throw new UserException(
-	 * "The Profile Classes of both MPANs must be the same."); } } Dso dso =
-	 * getDso(); if (dso != null && dso.getCode().equals("22")) { /* if
-	 * (importMpan != null) { LineLossFactorCode code =
-	 * importLineLossFactor.getCode(); if ((code.equals(new
-	 * LineLossFactorCode("520")) || code.equals(new LineLossFactorCode("550"))
-	 * || code .equals(new LineLossFactorCode("580"))) && getExportMpan() ==
-	 * null) { throw UserException .newOk("The Line Loss Factor of the import
-	 * MPAN says that there should be an export MPAN, but there isn't one."); }
-	 * }
-	 */
-	/*
-	 * if (getExportMpan() != null && getImportMpan() != null) { int code =
-	 * getImportMpan().getLlfc().getCode(); if (code != 520 && code != 550 &&
-	 * code != 580) { throw new UserException(
-	 * "The DSO is 22, there's an export MPAN and the Line Loss Factor of the import MPAN "
-	 * + getImportMpan() + " can only be 520, 550 or 580."); } } } if (importPc
-	 * == null) { setPc(exportPc); } else { setPc(importPc); } Hiber.flush(); //
-	 * more optimization possible here, doesn't necessarily need to check //
-	 * data. // Debug.print("starting onsupgen change. 99"); Hiber.flush();
-	 * supply.onSupplyGenerationChange(startDate, finishDate); //
-	 * Debug.print("checked relationsip."); // checkForMissing(getStartDate(),
-	 * getFinishDate()); // Debug.print("finished add or update."); }
-	 */
 	public Mpan getExportMpan() {
 		return exportMpan;
 	}
@@ -813,7 +742,6 @@ public class SupplyGeneration extends PersistentEntity {
 		}
 		setHhdcAccount(hhdcAccount);
 		setMeter(meter);
-		// setPc(pc);
 		// resolve any snags channel snags outside range
 		for (Channel channel : channels) {
 			channel.onSupplyGenerationChange();
