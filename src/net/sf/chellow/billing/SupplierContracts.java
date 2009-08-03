@@ -38,6 +38,7 @@ import net.sf.chellow.monad.types.UriPathElement;
 import net.sf.chellow.physical.EntityList;
 import net.sf.chellow.physical.HhEndDate;
 import net.sf.chellow.physical.MarketRole;
+import net.sf.chellow.physical.Participant;
 import net.sf.chellow.ui.Chellow;
 
 import org.w3c.dom.Document;
@@ -66,15 +67,15 @@ public class SupplierContracts extends EntityList {
 	}
 
 	public void httpPost(Invocation inv) throws HttpException {
-		Long providerId = inv.getLong("provider-id");
+		Long participantId = inv.getLong("participant-id");
 		String name = inv.getString("name");
 		Date startDate = inv.getDate("start-date");
 		if (!inv.isValid()) {
 			throw new UserException(document());
 		}
-		Provider provider = Provider.getProvider(providerId);
 		SupplierContract contract = SupplierContract.insertSupplierContract(
-				provider, name, HhEndDate.roundDown(startDate).getNext(), null, "", "");
+				Participant.getParticipant(participantId), name, HhEndDate
+						.roundDown(startDate).getNext(), null, "", "");
 		Hiber.commit();
 		inv.sendSeeOther(contract.getUri());
 	}
@@ -129,9 +130,9 @@ public class SupplierContracts extends EntityList {
 	}
 
 	/*
-	 * public List<SupplyGeneration> supplyGenerations(Account account) {
-	 * return Hiber .session() .createQuery( "select mpan.supplyGeneration from
-	 * Mpan mpan where mpan.supplierAccount = :account order by
+	 * public List<SupplyGeneration> supplyGenerations(Account account) { return
+	 * Hiber .session() .createQuery( "select mpan.supplyGeneration from Mpan
+	 * mpan where mpan.supplierAccount = :account order by
 	 * mpan.supplyGeneration.startDate.date") .setEntity("account",
 	 * account).list(); }
 	 */

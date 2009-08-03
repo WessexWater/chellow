@@ -65,12 +65,12 @@
 								<legend>Add a contract</legend>
 								<label>
 									Supplier
-									<select name="provider-id">
+									<select name="participant-id">
 										<xsl:for-each
 											select="/source/provider">
-											<option value="{@id}">
+											<option value="{participant/@id}">
 												<xsl:if
-													test="/source/request/parameter[@name='provider-id']/value = @id">
+													test="/source/request/parameter[@name='participant-id']/value = participant/@id">
 													<xsl:attribute
 														name="selected">
 														<xsl:value-of
@@ -78,7 +78,7 @@
 													</xsl:attribute>
 												</xsl:if>
 												<xsl:value-of
-													select="concat(participant/@code, ' : ', @name)" />
+													select="concat(participant/@code, ' : ', participant/@name, ' : ', @name)" />
 											</option>
 										</xsl:for-each>
 									</select>

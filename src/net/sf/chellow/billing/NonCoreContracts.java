@@ -36,6 +36,7 @@ import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
 import net.sf.chellow.physical.EntityList;
 import net.sf.chellow.physical.HhEndDate;
+import net.sf.chellow.physical.Participant;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -63,15 +64,15 @@ public class NonCoreContracts extends EntityList {
 	}
 
 	public void httpPost(Invocation inv) throws HttpException {
-		Long providerId = inv.getLong("provider-id");
+		Long participantId = inv.getLong("participant-id");
 		String name = inv.getString("name");
 		Date startDate = inv.getDate("start-date");
 		if (!inv.isValid()) {
 			throw new UserException(document());
 		}
-		Provider provider = Provider.getProvider(providerId);
 		NonCoreContract contract = NonCoreContract.insertNonCoreContract(
-				provider, name, HhEndDate.roundDown(startDate), null, "", "");
+				Participant.getParticipant(participantId), name, HhEndDate
+						.roundDown(startDate), null, "", "");
 		Hiber.commit();
 		inv.sendSeeOther(contract.getUri());
 	}

@@ -42,6 +42,7 @@ import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
 import net.sf.chellow.physical.HhEndDate;
 import net.sf.chellow.physical.MarketRole;
+import net.sf.chellow.physical.Participant;
 import net.sf.chellow.ui.Chellow;
 import net.sf.chellow.ui.GeneralImport;
 import org.w3c.dom.Document;
@@ -70,8 +71,8 @@ public class NonCoreContract extends Contract {
 		if (action.equals("insert")) {
 			String participantCode = GeneralImport.addField(csvElement,
 					"Participant Code", values, 0);
-			Provider provider = Provider.getProvider(participantCode,
-					MarketRole.NON_CORE_ROLE);
+			Participant participant = Participant
+					.getParticipant(participantCode);
 			String name = GeneralImport.addField(csvElement, "Name", values, 1);
 			String startDateStr = GeneralImport.addField(csvElement,
 					"Start Date", values, 2);
@@ -84,7 +85,7 @@ public class NonCoreContract extends Contract {
 					"Charge Script", values, 4);
 			String rateScript = GeneralImport.addField(csvElement,
 					"Rate Script", values, 5);
-			NonCoreContract.insertNonCoreContract(provider, name, startDate,
+			NonCoreContract.insertNonCoreContract(participant, name, startDate,
 					finishDate, chargeScript, rateScript);
 		} else if (action.equals("update")) {
 			/*
@@ -114,10 +115,11 @@ public class NonCoreContract extends Contract {
 		}
 	}
 
-	static public NonCoreContract insertNonCoreContract(Provider provider,
-			String name, HhEndDate startDate, HhEndDate finishDate,
-			String chargeScript, String rateScript) throws HttpException {
-		NonCoreContract service = new NonCoreContract(provider, name,
+	static public NonCoreContract insertNonCoreContract(
+			Participant participant, String name, HhEndDate startDate,
+			HhEndDate finishDate, String chargeScript, String rateScript)
+			throws HttpException {
+		NonCoreContract service = new NonCoreContract(participant, name,
 				startDate, finishDate, chargeScript, rateScript);
 		Hiber.session().save(service);
 		Hiber.session().flush();
@@ -129,11 +131,12 @@ public class NonCoreContract extends Contract {
 	public NonCoreContract() {
 	}
 
-	public NonCoreContract(Provider nonCore, String name, HhEndDate startDate,
-			HhEndDate finishDate, String chargeScript, String rateScript)
-			throws HttpException {
+	public NonCoreContract(Participant participant, String name,
+			HhEndDate startDate, HhEndDate finishDate, String chargeScript,
+			String rateScript) throws HttpException {
 		super(name, startDate, finishDate, chargeScript, rateScript);
-		setParty(nonCore);
+		setParty(Provider.getProvider(participant, MarketRole
+				.getMarketRole(MarketRole.NON_CORE_ROLE)));
 		internalUpdate(name, chargeScript);
 	}
 
@@ -201,10 +204,19 @@ public class NonCoreContract extends Contract {
 		}
 	}
 
+	@SuppressWarnings("unchecked")
 	private Document document() throws HttpException {
 		Document doc = MonadUtils.newSourceDocument();
 		Element source = doc.getDocumentElement();
-		source.appendChild(toXml(doc, new XmlTree("party")));
+		source.appendChild(toXml(doc, new XmlTree("party", new XmlTree(
+				"participant"))));
+		for (Provider provider : (List<Provider>) Hiber
+				.session()
+				.createQuery(
+						"from Provider provider where provider.role.code = :roleCode order by provider.name")
+				.setCharacter("roleCode", MarketRole.NON_CORE_ROLE).list()) {
+			source.appendChild(provider.toXml(doc, new XmlTree("participant")));
+		}
 		source.appendChild(MonadDate.getMonthsXml(doc));
 		source.appendChild(MonadDate.getDaysXml(doc));
 		source.appendChild(new MonadDate().toXml(doc));

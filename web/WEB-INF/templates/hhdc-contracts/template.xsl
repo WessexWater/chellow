@@ -50,16 +50,17 @@
 						<br />
 						<label>
 							HHDC
-							<select name="provider-id">
+							<select name="participant-id">
 								<xsl:for-each select="/source/provider">
-									<option value="{@id}">
+									<option value="{participant/@id}">
 										<xsl:if
-											test="/source/request/parameter[@name='provider-id']/value = @id">
+											test="/source/request/parameter[@name='participant-id']/value = @id">
 											<xsl:attribute name="selected">
 																<xsl:value-of select="'selected'" />
 															</xsl:attribute>
 										</xsl:if>
-										<xsl:value-of select="concat(participant/@code, ' : ', @name)" />
+										<xsl:value-of
+											select="concat(participant/@code, ' : ', participant/@name, ' : ', @name)" />
 									</option>
 								</xsl:for-each>
 							</select>

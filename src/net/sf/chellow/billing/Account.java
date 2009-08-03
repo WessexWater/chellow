@@ -105,19 +105,7 @@ public class Account extends PersistentEntity {
 	public static Account findAccount(Long id) throws HttpException {
 		return (Account) Hiber.session().get(Account.class, id);
 	}
-/*
-	@SuppressWarnings("unchecked")
-	public static void checkAllMissingFromLatest() throws HttpException {
-		for (Account account : (List<Account>) Hiber
-				.session()
-				.createQuery(
-						"select distinct mpan.supplierAccount from Mpan mpan where mpan.supplyGeneration.finishDate.date is null")
-				.list()) {
-			account.checkMissingFromLatest();
-			Hiber.commit();
-		}
-	}
-*/
+
 	private Contract contract;
 
 	private String reference;
@@ -147,7 +135,7 @@ public class Account extends PersistentEntity {
 	}
 
 	public void update(String reference) {
-		setReference(reference);
+		setReference(reference.trim());
 	}
 
 	public Element toXml(Document doc) throws HttpException {
@@ -218,99 +206,7 @@ public class Account extends PersistentEntity {
 			throw new NotFoundException();
 		}
 	}
-/*
-	public void checkMissingFromLatest() throws HttpException {
-		checkMissingFromLatest(null);
-	}
-*/
-/*
-	@SuppressWarnings("unchecked")
-	public void checkMissingFromLatest(HhEndDate to) throws HttpException {
-		List<Bill> bills = (List<Bill>) Hiber
-				.session()
-				.createQuery(
-						"from Bill bill where bill.account = :account order by bill.finishDate.date desc")
-				.setEntity("account", this).list();
-		Bill latestBill = null;
-		if (bills != null && !bills.isEmpty()) {
-			latestBill = bills.get(0);
-		}
-		HhEndDate from = latestBill == null ? null : latestBill.getFinishDate();
-		AccountSnag accountSnag = (AccountSnag) Hiber
-				.session()
-				.createQuery(
-						"from AccountSnag snag where snag.account = :account order by snag.finishDate.date desc")
-				.setEntity("account", this).setMaxResults(1).uniqueResult();
-		if (accountSnag != null
-				&& (from == null || accountSnag.getFinishDate().getDate()
-						.after(from.getDate()))) {
-			from = accountSnag.getFinishDate();
-		}
-		checkMissing(from, to);
-	}
-*/
-	/*
-	@SuppressWarnings("unchecked")
-	void checkMissing(HhEndDate from, HhEndDate to) throws HttpException {
-		List<SupplyGeneration> supplyGenerations = Hiber
-				.session()
-				.createQuery(
-						"select mpan.supplyGeneration from Mpan mpan where mpan.supplierAccount = :account order by mpan.supplyGeneration.startDate.date")
-				.setEntity("account", this).list();
 
-		if (supplyGenerations.isEmpty()) {
-			return;
-		}
-		if (from == null) {
-			from = supplyGenerations.get(0).getStartDate();
-		}
-		if (to == null) {
-			int frequency = 1;
-			int profileClass = supplyGenerations.get(0).getPc().getCode();
-			if (profileClass < 5 && profileClass > 1) {
-				frequency = 3;
-			}
-			Calendar cal = GregorianCalendar.getInstance(TimeZone
-					.getTimeZone("GMT"), Locale.UK);
-			cal.set(Calendar.MILLISECOND, 0);
-			cal.set(Calendar.SECOND, 0);
-			cal.set(Calendar.MINUTE, 0);
-			cal.set(Calendar.HOUR_OF_DAY, 0);
-			cal.set(Calendar.DAY_OF_MONTH, 1);
-			cal.add(Calendar.MONTH, -frequency);
-			to = new HhEndDate(cal.getTime());
-			HhEndDate lastGenerationFinishDate = supplyGenerations.get(
-					supplyGenerations.size() - 1).getFinishDate();
-			if (lastGenerationFinishDate != null
-					&& lastGenerationFinishDate.getDate().before(to.getDate())) {
-				to = lastGenerationFinishDate;
-			}
-		}
-		if (from.getDate().after(to.getDate())) {
-			return;
-		}
-		List<Bill> bills = (List<Bill>) Hiber
-				.session()
-				.createQuery(
-						"from Bill bill where bill.account = :account and bill.startDate.date <= :to and bill.finishDate.date >= :from order by bill.finishDate.date")
-				.setEntity("account", this).setTimestamp("to", to.getDate())
-				.setTimestamp("from", from.getDate()).list();
-		HhEndDate gapStart = from;
-		for (int i = 0; i < bills.size(); i++) {
-			Bill bill = bills.get(i);
-			if (bill.getStartDate().getDate().after(gapStart.getDate())) {
-				addSnag(AccountSnag.MISSING_BILL, gapStart, bill.getStartDate()
-						.getPrevious());
-			}
-			deleteSnag(AccountSnag.MISSING_BILL, bill.getStartDate(), bill
-					.getFinishDate());
-			gapStart = bill.getFinishDate().getNext();
-		}
-		if (!gapStart.getDate().after(to.getDate())) {
-			addSnag(AccountSnag.MISSING_BILL, gapStart, to);
-		}
-	}
-*/
 	public void deleteSnag(String description, HhEndDate startDate,
 			HhEndDate finishDate) throws HttpException {
 		SnagDateBounded.deleteAccountSnag(this, description,

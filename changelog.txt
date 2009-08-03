@@ -1,3 +1,7 @@
+* Trims whitespace from contract and account names.
+
+* Fixed permissions for party viewer. 
+
 * Good error message if report inserted that has same name as existing report.
 
 * Missing bill snags now exist for the whole period of the supply generation.

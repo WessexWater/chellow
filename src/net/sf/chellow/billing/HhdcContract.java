@@ -46,6 +46,7 @@ import net.sf.chellow.monad.types.UriPathElement;
 import net.sf.chellow.physical.ChannelSnag;
 import net.sf.chellow.physical.HhEndDate;
 import net.sf.chellow.physical.MarketRole;
+import net.sf.chellow.physical.Participant;
 import net.sf.chellow.physical.SupplyGeneration;
 import net.sf.chellow.ui.Chellow;
 import net.sf.chellow.ui.GeneralImport;
@@ -69,8 +70,7 @@ public class HhdcContract extends Contract {
 		}
 		String participantCode = GeneralImport.addField(csvElement,
 				"Participant Code", values, 0);
-		Provider provider = Provider.getProvider(participantCode,
-				MarketRole.HHDC);
+		Participant participant = Participant.getParticipant(participantCode);
 		String name = GeneralImport.addField(csvElement, "Name", values, 1);
 
 		if (action.equals("insert")) {
@@ -89,12 +89,12 @@ public class HhdcContract extends Contract {
 					"Properties", values, 5);
 			String rateScript = GeneralImport.addField(csvElement,
 					"Rate Script", values, 6);
-			insertHhdcContract(provider, name, startDate, finishDate,
+			insertHhdcContract(participant, name, startDate, finishDate,
 					chargeScript, properties, rateScript);
 		}
 	}
 
-	static public HhdcContract insertHhdcContract(Provider provider,
+	static public HhdcContract insertHhdcContract(Participant participant,
 			String name, HhEndDate startDate, HhEndDate finishDate,
 			String chargeScript, String importerProperties, String rateScript)
 			throws HttpException {
@@ -103,7 +103,7 @@ public class HhdcContract extends Contract {
 			throw new UserException(
 					"There's already a HHDC contract with the name " + name);
 		}
-		HhdcContract contract = new HhdcContract(provider, name, startDate,
+		HhdcContract contract = new HhdcContract(participant, name, startDate,
 				finishDate, chargeScript, importerProperties, rateScript);
 		Hiber.session().save(contract);
 		Hiber.flush();
@@ -148,16 +148,17 @@ public class HhdcContract extends Contract {
 	public HhdcContract() {
 	}
 
-	public HhdcContract(Provider hhdc, String name, HhEndDate startDate,
-			HhEndDate finishDate, String chargeScript, String properties,
-			String rateScript) throws HttpException {
+	public HhdcContract(Participant participant, String name,
+			HhEndDate startDate, HhEndDate finishDate, String chargeScript,
+			String properties, String rateScript) throws HttpException {
 		super(name, startDate, finishDate, chargeScript, rateScript);
-		if (hhdc.getRole().getCode() != MarketRole.HHDC) {
-			throw new UserException("The provider must have the HHDC role.");
-		}
-		setParty(hhdc);
+		/*
+		 * if (hhdc.getRole().getCode() != MarketRole.HHDC) { throw new
+		 * UserException("The provider must have the HHDC role."); }
+		 * setParty(hhdc);
+		 */
 		setState("");
-		intrinsicUpdate(name, chargeScript, properties);
+		intrinsicUpdate(participant, name, chargeScript, properties);
 	}
 
 	void setParty(Provider hhdc) {
@@ -184,18 +185,21 @@ public class HhdcContract extends Contract {
 		this.state = state;
 	}
 
-	private void intrinsicUpdate(String name, String chargeScript,
-			String properties) throws HttpException {
+	private void intrinsicUpdate(Participant participant, String name,
+			String chargeScript, String properties) throws HttpException {
 		super.internalUpdate(name, chargeScript);
+		setParty(Provider.getProvider(participant, MarketRole
+				.getMarketRole(MarketRole.HHDC)));
 		if (properties == null) {
 			throw new InternalException("Properties can't be null.");
 		}
 		setProperties(properties);
 	}
 
-	public void update(String name, String chargeScript,
-			String importerProperties) throws HttpException {
-		intrinsicUpdate(name, chargeScript, importerProperties);
+	public void update(Participant participant, String name,
+			String chargeScript, String importerProperties)
+			throws HttpException {
+		intrinsicUpdate(participant, name, chargeScript, importerProperties);
 		onUpdate();
 	}
 
@@ -258,6 +262,7 @@ public class HhdcContract extends Contract {
 			Hiber.commit();
 			inv.sendSeeOther(getUri());
 		} else {
+			Long participantId = inv.getLong("participant-id");
 			String name = inv.getString("name");
 			String chargeScript = inv.getString("charge-script");
 			String properties = inv.getString("properties");
@@ -267,7 +272,8 @@ public class HhdcContract extends Contract {
 			chargeScript = chargeScript.replace("\r", "").replace("\t", "    ");
 			properties = properties.replace("\r", "").replace("\t", "    ");
 			try {
-				update(name, chargeScript, properties);
+				update(Participant.getParticipant(participantId), name,
+						chargeScript, properties);
 			} catch (UserException e) {
 				Document doc = document();
 				Element source = doc.getDocumentElement();
@@ -289,7 +295,8 @@ public class HhdcContract extends Contract {
 	protected Document document() throws HttpException {
 		Document doc = MonadUtils.newSourceDocument();
 		Element source = doc.getDocumentElement();
-		source.appendChild(toXml(doc, new XmlTree("party")));
+		source.appendChild(toXml(doc, new XmlTree("party", new XmlTree(
+				"participant"))));
 		for (Party party : (List<Party>) Hiber
 				.session()
 				.createQuery(

@@ -37,6 +37,7 @@ import net.sf.chellow.monad.types.UriPathElement;
 import net.sf.chellow.physical.EntityList;
 import net.sf.chellow.physical.HhEndDate;
 import net.sf.chellow.physical.MarketRole;
+import net.sf.chellow.physical.Participant;
 import net.sf.chellow.ui.Chellow;
 
 import org.w3c.dom.Document;
@@ -65,17 +66,16 @@ public class HhdcContracts extends EntityList {
 	}
 
 	public void httpPost(Invocation inv) throws HttpException {
-		Long providerId = inv.getLong("provider-id");
+		Long participantId = inv.getLong("participant-id");
 		String name = inv.getString("name");
 		Date startDate = inv.getDate("start-date");
 		String importerProperties = inv.toString();
 		if (!inv.isValid()) {
 			throw new UserException(document());
 		}
-		Provider provider = Provider.getProvider(providerId);
-		HhdcContract contract = HhdcContract.insertHhdcContract(provider, name,
-				HhEndDate.roundDown(startDate).getNext(), null, "",
-				importerProperties, "");
+		HhdcContract contract = HhdcContract.insertHhdcContract(Participant
+				.getParticipant(participantId), name, HhEndDate.roundDown(
+				startDate).getNext(), null, "", importerProperties, "");
 		Hiber.commit();
 		inv.sendSeeOther(contract.getUri());
 	}

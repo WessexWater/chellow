@@ -118,9 +118,7 @@
                     </li>
                     <li>
                         <a
-                            href="{/source/request/@context-path}/reports/134/output/">
-                            Meter Payment Types
-                        </a>
+                            href="{/source/request/@context-path}/reports/133/output/"><xsl:value-of select="'Meter Payment Types'"/></a>
                     </li>
                     <li>
                         <a
@@ -3486,7 +3484,7 @@ from net.sf.chellow.monad.types import MonadDate
 from net.sf.chellow.physical import ReadType, HhEndDate
 from java.util import Calendar
 
-def mpan_fields(mpan, date, is_import):
+def mpan_fields(mpan, date, is_import, mand_query, metering_type):
     NON_ESTIMATE_READ_TYPES = [ReadType.TYPE_CHANGE_OF_SUPPLIER, ReadType.TYPE_CUSTOMER, ReadType.TYPE_FINAL, ReadType.TYPE_INITIAL, ReadType.TYPE_DC_MANUAL, ReadType.TYPE_ROUTINE, ReadType.TYPE_SPECIAL, ReadType.TYPE_CHANGE_OF_TENANCY]
     if mpan is None:
         mpan_core_str = ''
@@ -3534,27 +3532,27 @@ def mpan_fields(mpan, date, is_import):
             last_read_date_str = read.getPresentDate().toString()
         cal = MonadDate.getCalendar()
         cal.setTime(date)
-        month_mds = []
-        mand_query = Hiber.session().createQuery("select max(datum.value) from HhDatum datum where datum.channel.supplyGeneration.supply = :supply and datum.channel.isKwh is true and datum.channel.isImport = :isImport and datum.endDate.date >= :startDate and datum.endDate <= :finishDate").setEntity('supply', mpan.getSupplyGeneration().getSupply()).setBoolean('isImport', is_import)
-        for i in range(12):
-            mand_query.setTimestamp('finishDate', cal.getTime())
-            cal.add(Calendar.MONTH, -1)
-            cal.add(Calendar.MINUTE, 30)
-            month_md = mand_query.setTimestamp('startDate', cal.getTime()).uniqueResult()
-            cal.add(Calendar.MINUTE, -30)
-            if month_md is not None:
-                month_mds.append(month_md.doubleValue() * 2)
-        month_mds.sort()
-        num_months = min(len(month_mds), 3)
-        avg_months = 0
-        for month_md in month_mds[-1 * num_months:]:
-            avg_months = avg_months + month_md
-        if num_months > 0:
-            avg_months = avg_months / num_months
-        if avg_months > 100:
-            mandatory_hh = 'Yes'
-        else:
-            mandatory_hh = 'No'
+        mandatory_hh = 'No'
+        if metering_type != 'nhh':
+            month_mds = []
+            mand_query.setBoolean('isImport', is_import)
+            for i in range(12):
+                mand_query.setTimestamp('finishDate', cal.getTime())
+                cal.add(Calendar.MONTH, -1)
+                cal.add(Calendar.MINUTE, 30)
+                month_md = mand_query.setTimestamp('startDate', cal.getTime()).uniqueResult()
+                cal.add(Calendar.MINUTE, -30)
+                if month_md is not None:
+                    month_mds.append(month_md.doubleValue() * 2)
+            month_mds.sort()
+            num_months = min(len(month_mds), 3)
+            avg_months = 0
+            for month_md in month_mds[-1 * num_months:]:
+                avg_months = avg_months + month_md
+            if num_months > 0:
+                avg_months = avg_months / num_months
+            if avg_months > 100:
+                mandatory_hh = 'Yes'
         hhdc_account = mpan.getHhdcAccount()
         if hhdc_account is None:
             hhdc_account_reference = ''
@@ -3583,8 +3581,12 @@ inv.getResponse().setContentType('text/csv')
 inv.getResponse().addHeader('Content-Disposition', 'attachment; filename="report.csv"')
 pw = inv.getResponse().getWriter()
 
-pw.println("Date,Physical Site Id, Physical Site Name, Other Site Ids, Other Site Names, Supply Id, Source, Generator Type, DNO Name, Voltage Level, Import MPAN core, Import Agreed Supply Capacity (kVA), Import PC, Import MTC, Import LLFC Code, Import LLFC Description, Import SSC, Import HHDC Contract, Import HHDC Account, Import Supplier Contract, Import Supplier Account, Import Last Read, Import Mandatory HH, Export MPAN core, Export Agreed Supply Capacity (kVA), Export PC, Export MTC,  Export LLFC Code, Export LLFC Description, Export SSC, Export HHDC Contract, Export HHDC Account, Export Supplier Contract, Export Supplier Account, Export Last Read, Export Mandatory HH")
-for supply_generation in Hiber.session().createQuery("from SupplyGeneration generation where generation.startDate.date <= :date and (generation.finishDate.date is null or generation.finishDate.date >= :date) order by generation.supply.id").setTimestamp('date', date).list():
+pw.println("Date,Physical Site Id, Physical Site Name, Other Site Ids, Other Site Names, Supply Id, Source, Generator Type, DNO Name, Voltage Level, Metering Type, Import MPAN core, Import Agreed Supply Capacity (kVA), Import PC, Import MTC, Import LLFC Code, Import LLFC Description, Import SSC, Import HHDC Contract, Import HHDC Account, Import Supplier Contract, Import Supplier Account, Import Last Read, Import Mandatory HH, Export MPAN core, Export Agreed Supply Capacity (kVA), Export PC, Export MTC,  Export LLFC Code, Export LLFC Description, Export SSC, Export HHDC Contract, Export HHDC Account, Export Supplier Contract, Export Supplier Account, Export Last Read, Export Mandatory HH")
+pw.flush()
+mand_query = Hiber.session().createQuery("select max(datum.value) from HhDatum datum where datum.channel.supplyGeneration.supply = :supply and datum.channel.isKwh is true and datum.channel.isImport = :isImport and datum.endDate.date >= :startDate and datum.endDate <= :finishDate")
+supply_generations = Hiber.session().createQuery("from SupplyGeneration generation where generation.startDate.date <= :date and (generation.finishDate.date is null or generation.finishDate.date >= :date) order by generation.supply.id").setTimestamp('date', date).scroll()
+while supply_generations.next():
+    supply_generation = supply_generations.get(0)
     site_codes = ''
     site_names = ''
     for site_supply_generation in supply_generation.getSiteSupplyGenerations():
@@ -3603,8 +3605,17 @@ for supply_generation in Hiber.session().createQuery("from SupplyGeneration gene
         generator_type = ''
     else:
         generator_type = generator_type.getCode()
-    pw.println(HhEndDate(date).toString() + ',"' + physical_site.getCode() + '","' + physical_site.getName() + '","' + site_codes + '","' + site_names + '",' + str(supply.getId()) + ',' + supply.getSource().getCode() + ',' + generator_type + ',"' + mpan.getCore().getDso().getName() + '",' + mpan.getLlfc().getVoltageLevel().getCode() + mpan_fields(supply_generation.getImportMpan(), date, True) + mpan_fields(supply_generation.getExportMpan(), date, False))
+    if supply_generation.getMpans()[0].getPc().getCode() == 0:
+        metering_type = 'hh'
+    elif supply_generation.getChannels().size() > 0:
+        metering_type = 'amr'
+    else:
+        metering_type = 'nhh'
+    mand_query.setEntity('supply', supply)
+    pw.println(HhEndDate(date).toString() + ',"' + physical_site.getCode() + '","' + physical_site.getName() + '","' + site_codes + '","' + site_names + '",' + str(supply.getId()) + ',' + supply.getSource().getCode() + ',' + generator_type + ',"' + mpan.getCore().getDso().getName() + '",' + mpan.getLlfc().getVoltageLevel().getCode() + ',' + metering_type + mpan_fields(supply_generation.getImportMpan(), date, True, mand_query, metering_type) + mpan_fields(supply_generation.getExportMpan(), date, False, mand_query, metering_type))
+    Hiber.session().clear()
     pw.flush()
+supply_generations.close()
 pw.close()]]></value>
     <value><![CDATA[]]></value>
   </line>
@@ -4499,7 +4510,7 @@ llfcs_element.appendChild(dso.toXml(doc))]]></value>
         <html>
             <head>
                 <link rel="stylesheet" type="text/css"
-                    href="{/source/request/@context-path}/reports/10/output/" />
+                    href="{/source/request/@context-path}/reports/19/output/" />
                 <title>
                     Home &gt; DSOs &gt;
                     <xsl:value-of
@@ -11656,18 +11667,20 @@ elif measurement_class == 'nhh':
 else:
     raise UserException("I don't recognize the measurement class.")
 
-inv.getResponse().setContentType('application/zip')
-inv.getResponse().setHeader('Content-Disposition', 'filename=output.zip;')
-sout = inv.getResponse().getOutputStream()
-zout = ZipOutputStream(sout)
-pw = PrintWriter(OutputStreamWriter(zout, 'UTF-8'))
+#inv.getResponse().setContentType('application/zip')
+#inv.getResponse().setHeader('Content-Disposition', 'filename=output.zip;')
+#sout = inv.getResponse().getOutputStream()
+#zout = ZipOutputStream(sout)
+#pw = PrintWriter(OutputStreamWriter(zout, 'UTF-8'))
 
-#inv.getResponse().setContentType('text/csv')
-#inv.getResponse().addHeader('Content-Disposition', 'attachment; filename="report.csv"')
-#pw = inv.getResponse().getWriter()
+inv.getResponse().setContentType('text/csv')
+inv.getResponse().addHeader('Content-Disposition', 'attachment; filename="report.csv"')
+pw = inv.getResponse().getWriter()
 
 
 supplies = Hiber.session().createQuery("select distinct generation.supply from SupplyGeneration generation join generation.mpans mpan where (generation.finishDate.date is null or generation.finishDate.date > :finishDate)" + clause).setTimestamp("finishDate", finishDate).scroll()
+
+hh_data_query = Hiber.session().createQuery("select datum.value, datum.endDate.date from HhDatum datum where datum.channel.supplyGeneration.supply = :supply and datum.endDate.date >= :startDate and datum.endDate.date <= :finishDate and datum.channel.isImport is true and datum.channel.isKwh is true order by datum.endDate.date").setTimestamp("startDate", startDate).setTimestamp("finishDate", finishDate)
 
 while supplies.next():
     supply = supplies.get(0)
@@ -11676,28 +11689,27 @@ while supplies.next():
         mpanCoreStr = "NA"
     else:
         mpanCoreStr = generation.getImportMpan().getCore().toString()
-    zout.putNextEntry(ZipEntry(mpanCoreStr + '_' + str(supply.getId()) + '.csv'))
+    #zout.putNextEntry(ZipEntry(mpanCoreStr + '_' + str(supply.getId()) + '.csv'))
     pw.print("MPAN Core,Date,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48")
     currentDate = HhEndDate.roundUp(startDate)
-    hhData = Hiber.session().createQuery("select datum.value, datum.endDate.date from HhDatum datum where datum.channel.supplyGeneration.supply = :supply and datum.endDate.date >= :startDate and datum.endDate.date <= :finishDate and datum.channel.isImport is true and datum.channel.isKwh is true order by datum.endDate.date").setEntity("supply", supply).setTimestamp("startDate", startDate).setTimestamp("finishDate", finishDate).list()
+    hhData = hh_data_query.setEntity("supply", supply).scroll()
     datumEndDate = None
     datumValue = None
-    hh_data_count = 0
     while not currentDate.getDate().after(finishDate):
         cal.setTime(currentDate.getDate())
         if cal.get(Calendar.HOUR_OF_DAY) == 0 and cal.get(Calendar.MINUTE) == 30:
             pw.print("\r\n" + mpanCoreStr + "," + dateFormat.format(currentDate.getDate()))
         pw.print(",")
-        if (datumEndDate == None or datumEndDate.before(currentDate.getDate())) and hh_data_count < len(hhData):
-            row = hhData[hh_data_count]
-            hh_data_count = hh_data_count + 1
-            datumValue = row[0].doubleValue()
-            datumEndDate = row[1]
+        if (datumEndDate == None or datumEndDate.before(currentDate.getDate())) and hhData.next():
+            datumValue = hhData.get(0).toString()
+            datumEndDate = hhData.get(1)
         if datumEndDate is not None and datumEndDate.getTime() == currentDate.getDate().getTime():
-            pw.print(str(round(datumValue,1)))
+            pw.print(datumValue)
         currentDate = currentDate.getNext()
+    hhData.close()
     Hiber.session().clear()
     pw.flush()
+supplies.close()
 pw.close()]]></value>
     <value><![CDATA[]]></value>
   </line>

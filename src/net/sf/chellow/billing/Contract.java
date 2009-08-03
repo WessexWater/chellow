@@ -129,7 +129,7 @@ public abstract class Contract extends PersistentEntity implements
 
 	protected void internalUpdate(String name, String chargeScript)
 			throws HttpException {
-		setName(name);
+		setName(name.trim());
 		setChargeScript(chargeScript);
 	}
 

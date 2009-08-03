@@ -38,6 +38,7 @@ import net.sf.chellow.monad.types.UriPathElement;
 import net.sf.chellow.physical.HhEndDate;
 import net.sf.chellow.physical.MarketRole;
 import net.sf.chellow.physical.Mpan;
+import net.sf.chellow.physical.Participant;
 import net.sf.chellow.physical.Snag;
 import net.sf.chellow.ui.Chellow;
 import net.sf.chellow.ui.GeneralImport;
@@ -50,8 +51,7 @@ public class SupplierContract extends Contract {
 			Element csvElement) throws HttpException {
 		String participantCode = GeneralImport.addField(csvElement,
 				"Participant Code", values, 0);
-		Provider provider = Provider.getProvider(participantCode,
-				MarketRole.SUPPLIER);
+		Participant participant = Participant.getParticipant(participantCode);
 		String name = GeneralImport.addField(csvElement, "Name", values, 1);
 
 		if (action.equals("insert")) {
@@ -68,15 +68,16 @@ public class SupplierContract extends Contract {
 					"Charge Script", values, 4);
 			String rateScript = GeneralImport.addField(csvElement,
 					"Rate Script", values, 5);
-			insertSupplierContract(provider, name, startDate, finishDate,
+			insertSupplierContract(participant, name, startDate, finishDate,
 					chargeScript, rateScript);
 		}
 	}
 
-	static public SupplierContract insertSupplierContract(Provider provider,
-			String name, HhEndDate startDate, HhEndDate finishDate,
-			String chargeScript, String rateScript) throws HttpException {
-		SupplierContract contract = new SupplierContract(provider, name,
+	static public SupplierContract insertSupplierContract(
+			Participant participant, String name, HhEndDate startDate,
+			HhEndDate finishDate, String chargeScript, String rateScript)
+			throws HttpException {
+		SupplierContract contract = new SupplierContract(participant, name,
 				startDate, finishDate, chargeScript, rateScript);
 		Hiber.session().save(contract);
 		Hiber.flush();
@@ -117,15 +118,11 @@ public class SupplierContract extends Contract {
 	public SupplierContract() {
 	}
 
-	public SupplierContract(Provider supplier, String name,
-			HhEndDate startDate, HhEndDate finishDate, String chargeScript, String rateScript)
-			throws HttpException {
+	public SupplierContract(Participant participant, String name,
+			HhEndDate startDate, HhEndDate finishDate, String chargeScript,
+			String rateScript) throws HttpException {
 		super(name, startDate, finishDate, chargeScript, rateScript);
-		if (supplier.getRole().getCode() != MarketRole.SUPPLIER) {
-			throw new UserException(
-					"The provider must have the role of supplier.");
-		}
-		setParty(supplier);
+		internalUpdate(participant, name, chargeScript);
 	}
 
 	void setParty(Provider supplier) {
@@ -136,8 +133,11 @@ public class SupplierContract extends Contract {
 		return supplier;
 	}
 
-	public void update(String name, String chargeScript) throws HttpException {
-		super.update(name, chargeScript);
+	public void internalUpdate(Participant participant, String name,
+			String chargeScript) throws HttpException {
+		setParty(Provider.getProvider(participant, MarketRole
+				.getMarketRole(MarketRole.SUPPLIER)));
+		super.internalUpdate(name, chargeScript);
 	}
 
 	public boolean equals(Object obj) {
@@ -219,17 +219,14 @@ public class SupplierContract extends Contract {
 	private Document document() throws HttpException {
 		Document doc = MonadUtils.newSourceDocument();
 		Element source = doc.getDocumentElement();
-		Element contractElement = (Element) toXml(doc, new XmlTree("party"));
-		source.appendChild(contractElement);
+		source.appendChild((Element) toXml(doc, new XmlTree("party",
+				new XmlTree("participant"))));
 		for (Provider provider : (List<Provider>) Hiber
 				.session()
 				.createQuery(
 						"from Provider provider where provider.role.code = :roleCode order by provider.name")
 				.setCharacter("roleCode", MarketRole.SUPPLIER).list()) {
 			source.appendChild(provider.toXml(doc, new XmlTree("participant")));
-		}
-		for (RateScript script : getRateScripts()) {
-			contractElement.appendChild(script.toXml(doc));
 		}
 		source.appendChild(new MonadDate().toXml(doc));
 		source.appendChild(MonadDate.getMonthsXml(doc));
