@@ -77,7 +77,7 @@
           </tr>
           <tr><th>TRIAD</th><td><a href="{/source/request/@context-path}/reports/175/output/">Download</a></td><td><a href="{/source/request/@context-path}/reports/179/output/">Download</a></td>
           </tr>
-          <tr><th>Monthly Period</th><td><a href="{/source/request/@context-path}/reports/159/output/">Download</a></td><td></td></tr>
+          <tr><th>Monthly Period</th><td></td><td><a href="{/source/request/@context-path}/reports/159/output/">Download</a></td></tr>
         </table>
 
         <h3>Industry Info</h3>
@@ -118,7 +118,9 @@
                     </li>
                     <li>
                         <a
-                            href="{/source/request/@context-path}/reports/133/output/"><xsl:value-of select="'Meter Payment Types'"/></a>
+                            href="{/source/request/@context-path}/reports/133/output/">
+                            Meter Payment Types
+                        </a>
                     </li>
                     <li>
                         <a
@@ -11128,7 +11130,7 @@ source.appendChild(MonadDate.getMonthsXml(doc))]]></value>
     <value>insert</value>
     <value>report</value>
     <value>159</value>
-    <value>0 CSV Monthly Sites Period Selector</value>
+    <value>0 CSV  Sites Monthly Period Selector</value>
     <value><![CDATA[from java.util import GregorianCalendar, TimeZone, Locale, Calendar
 from net.sf.chellow.monad.types import MonadDate
 
@@ -11210,7 +11212,7 @@ source.appendChild(MonadDate.getMonthsXml(doc))]]></value>
     <value>insert</value>
     <value>report</value>
     <value>161</value>
-    <value>0 CSV Monthly Sites Period</value>
+    <value>0 CSV Sites Monthly Period</value>
     <value><![CDATA[from net.sf.chellow.monad import Hiber, UserException
 from net.sf.chellow.monad.types import MonadDate
 from java.sql import Timestamp, ResultSet

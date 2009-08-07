@@ -725,7 +725,7 @@ public class SupplyGeneration extends PersistentEntity {
 			Ssc exportSsc, Account exportSupplierAccount,
 			Integer exportAgreedSupplyCapacity) throws HttpException {
 		SupplyGeneration previousGeneration = supply
-		.getGenerationPrevious(this);
+				.getGenerationPrevious(this);
 		if (finishDate != null
 				&& startDate.getDate().after(finishDate.getDate())) {
 			throw new UserException(
@@ -928,12 +928,10 @@ public class SupplyGeneration extends PersistentEntity {
 		HhEndDate originalStartDate = getStartDate();
 		HhEndDate originalFinishDate = getFinishDate();
 		/*
-		if (startDate.equals(originalStartDate)
-				&& ((finishDate != null && originalFinishDate != null && finishDate
-						.equals(originalFinishDate)) || (finishDate == null && originalFinishDate == null))) {
-			return;
-		}
-		*/
+		 * if (startDate.equals(originalStartDate) && ((finishDate != null &&
+		 * originalFinishDate != null && finishDate .equals(originalFinishDate))
+		 * || (finishDate == null && originalFinishDate == null))) { return; }
+		 */
 		SupplyGeneration previousSupplyGeneration = supply
 				.getGenerationPrevious(this);
 		if (previousSupplyGeneration != null) {
@@ -963,11 +961,10 @@ public class SupplyGeneration extends PersistentEntity {
 					nextSupplyGeneration.getFinishDate(), nextSupplyGeneration
 							.getHhdcAccount(), nextSupplyGeneration.getMeter());
 		}
-		internalUpdate(startDate, finishDate, hhdcAccount, meter, importMpanStr,
-				importSsc, importSupplierAccount,
-				importAgreedSupplyCapacity, exportMpanStr,
-				exportSsc, exportSupplierAccount,
-				exportAgreedSupplyCapacity);
+		internalUpdate(startDate, finishDate, hhdcAccount, meter,
+				importMpanStr, importSsc, importSupplierAccount,
+				importAgreedSupplyCapacity, exportMpanStr, exportSsc,
+				exportSupplierAccount, exportAgreedSupplyCapacity);
 		Hiber.flush();
 		HhEndDate checkFinishDate = originalStartDate;
 		if (originalFinishDate != null && finishDate != null) {
@@ -1063,6 +1060,23 @@ public class SupplyGeneration extends PersistentEntity {
 				"from Pc pc order by pc.code").list()) {
 			source.appendChild(pc.toXml(doc));
 		}
+		for (GspGroup group : (List<GspGroup>) Hiber.session().createQuery(
+				"from GspGroup group order by group.code").list()) {
+			source.appendChild(group.toXml(doc));
+		}
+		for (HhdcContract contract : (List<HhdcContract>) Hiber.session()
+				.createQuery(
+						"from HhdcContract contract order by contract.name")
+				.list()) {
+			source.appendChild(contract.toXml(doc));
+		}
+		for (SupplierContract contract : (List<SupplierContract>) Hiber
+				.session()
+				.createQuery(
+						"from SupplierContract contract order by contract.name")
+				.list()) {
+			source.appendChild(contract.toXml(doc));
+		}
 		return doc;
 	}
 
@@ -1109,7 +1123,7 @@ public class SupplyGeneration extends PersistentEntity {
 				inv.sendOk(document());
 			} else {
 				Date startDate = inv.getDate("start-date");
-				String hhdcContractName = inv.getString("hhdc-contract-name");
+				Long hhdcContractId = inv.getLong("hhdc-contract-id");
 				String meterSerialNumber = inv.getString("meter-serial-number");
 				Long pcId = inv.getLong("pc-id");
 				if (!inv.isValid()) {
@@ -1127,10 +1141,8 @@ public class SupplyGeneration extends PersistentEntity {
 				if (isEnded) {
 					finishDate = inv.getDate("finish-date");
 				}
-				hhdcContractName = hhdcContractName.trim();
-				if (hhdcContractName.length() != 0) {
-					hhdcContract = HhdcContract
-							.getHhdcContract(hhdcContractName);
+				if (hhdcContractId != null) {
+					hhdcContract = HhdcContract.getHhdcContract(hhdcContractId);
 					String hhdcAccountReference = inv
 							.getString("hhdc-account-reference");
 					hhdcAccount = hhdcContract.getAccount(hhdcAccountReference
@@ -1162,11 +1174,10 @@ public class SupplyGeneration extends PersistentEntity {
 					if (!inv.isValid()) {
 						throw new UserException();
 					}
-					String importSupplierContractName = inv
-							.getString("import-supplier-contract-name");
+					Long importSupplierContractId = inv
+							.getLong("import-supplier-contract-id");
 					importSupplierContract = SupplierContract
-							.getSupplierContract(importSupplierContractName
-									.trim());
+							.getSupplierContract(importSupplierContractId);
 					String importSupplierAccountReference = inv
 							.getString("import-supplier-account-reference");
 					importSupplierAccount = importSupplierContract
@@ -1197,11 +1208,10 @@ public class SupplyGeneration extends PersistentEntity {
 					if (!inv.isValid()) {
 						throw new UserException();
 					}
-					String exportSupplierContractName = inv
-							.getString("export-supplier-contract-name");
+					Long exportSupplierContractId = inv
+							.getLong("export-supplier-contract-id");
 					exportSupplierContract = SupplierContract
-							.getSupplierContract(exportSupplierContractName
-									.trim());
+							.getSupplierContract(exportSupplierContractId);
 					String exportSupplierAccountReference = inv
 							.getString("export-supplier-account-reference");
 					exportSupplierAccount = exportSupplierContract

@@ -271,13 +271,13 @@ public class User extends PersistentEntity {
 		Element source = doc.getDocumentElement();
 		source.appendChild(toXml(doc, new XmlTree("party", new XmlTree(
 				"participant").put("role")).put("role")));
-		for (MarketRole role : (List<MarketRole>) Hiber.session().createQuery(
-				"from MarketRole role order by role.code").list()) {
-			source.appendChild(role.toXml(doc));
-		}
-		for (UserRole role : (List<UserRole>) Hiber.session().createQuery(
-				"from UserRole role order by role.code").list()) {
-			source.appendChild(role.toXml(doc));
+		for (Party party : (List<Party>) Hiber
+				.session()
+				.createQuery(
+						"from Party party order by party.role.code, party.participant.code")
+				.list()) {
+			source.appendChild(party.toXml(doc, new XmlTree("participant")
+					.put("role")));
 		}
 		if (message != null) {
 			source.appendChild(new MonadMessage(message).toXml(doc));
@@ -320,12 +320,9 @@ public class User extends PersistentEntity {
 			}
 			Party party = null;
 			if (userRole.getCode().equals(UserRole.PARTY_VIEWER)) {
-				String participantCode = inv.getString("participant-code");
-				Long marketRoleId = inv.getLong("market-role-id");
+				Long partyId = inv.getLong("party-id");
 
-				party = Party.getParty(Participant
-						.getParticipant(participantCode), MarketRole
-						.getMarketRole(marketRoleId));
+				party = Party.getParty(partyId);
 			}
 			update(emailAddress, null, getPasswordDigest(), userRole, party);
 			Hiber.commit();

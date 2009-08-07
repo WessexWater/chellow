@@ -71,14 +71,14 @@ public class Users extends EntityList {
 		try {
 			Party party = null;
 			if (role.getCode().equals(UserRole.PARTY_VIEWER)) {
-				String participantCode = inv.getString("participant-code");
-				Long marketRoleId = inv.getLong("market-role-id");
-
-				party = Party.getParty(Participant.getParticipant(participantCode), MarketRole
-						.getMarketRole(marketRoleId));
+				Long partyId = inv.getLong("party-id");
+				if (!inv.isValid()) {
+					throw new UserException(document());
+				}
+				party = Party.getParty(partyId);
 			}
-			User user = User
-					.insertUser(emailAddress, password, null, role, party);
+			User user = User.insertUser(emailAddress, password, null, role,
+					party);
 			Hiber.commit();
 			inv.sendSeeOther(user.getUri());
 		} catch (HttpException e) {
@@ -102,14 +102,14 @@ public class Users extends EntityList {
 				"from User user").list()) {
 			usersElement.appendChild(user.toXml(doc, new XmlTree("role")));
 		}
-		for (MarketRole role : (List<MarketRole>) Hiber.session().createQuery(
-				"from MarketRole role").list()) {
-			source.appendChild(role.toXml(doc));
+		for (Party party : (List<Party>) Hiber
+				.session()
+				.createQuery(
+						"from Party party order by party.role.code, party.participant.code")
+				.list()) {
+			source.appendChild(party.toXml(doc, new XmlTree("participant")
+					.put("role")));
 		}
-		for (UserRole role : (List<UserRole>) Hiber.session().createQuery(
-		"from UserRole role").list()) {
-	source.appendChild(role.toXml(doc));
-}
 		return doc;
 	}
 

@@ -842,6 +842,17 @@ public class Supply extends PersistentEntity {
 			}
 			for (Mpan mpan : generation.getMpans()) {
 				Account supplierAccount = mpan.getSupplierAccount();
+				
+				Query query = null;
+				if (generation.getFinishDate() == null) {
+					query = Hiber.session().createQuery("select count(*) from SupplyGeneration generation where generation.finishDate.date is not null and generation.finishDate.date >= :startDate and generation.startDate.date != :startDate");
+				} else {
+					query = Hiber.session().createQuery("select count(*) from SupplyGeneration generation where generation.startDate.date <= :finishDate and (generation.finishDate.date is null or (generation.finishDate.date >= :startDate and generation.finishDate.date != :finishDate)) and generation.startDate.date != :startDate").setTimestamp("finishDate", generation.getFinishDate().getDate());
+				}
+				if (((Long) query.setTimestamp("startDate", generation.getStartDate().getDate()).uniqueResult()) > 0) {
+					throw new UserException("If two supplies are on the same account at the same time, their supply generations must have the same start and finish dates.");
+				}
+				
 				supplierAccount.addSnag(AccountSnag.MISSING_BILL, generation
 						.getStartDate(), generation.getFinishDate());
 				for (Bill bill : (List<Bill>) Hiber.session().createQuery(

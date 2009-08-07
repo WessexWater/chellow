@@ -1,3 +1,12 @@
+* GSP group is now a property of the supply rather than the MPAN.
+
+* HHDC contract, HHDC account are now a property of the supply generation rather
+    than the MPAN.
+
+* Added drop-down lists for selecting HHDC and Supplier contracts.
+
+* Improved UI for user role / party viewer.
+
 * Trims whitespace from contract and account names.
 
 * Fixed permissions for party viewer. 

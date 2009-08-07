@@ -36,7 +36,6 @@ import net.sf.chellow.billing.NonCoreContracts;
 import net.sf.chellow.billing.Party;
 import net.sf.chellow.billing.Providers;
 import net.sf.chellow.billing.SupplierContracts;
-import net.sf.chellow.monad.Debug;
 import net.sf.chellow.monad.ForbiddenException;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.Invocation;
@@ -171,7 +170,6 @@ public class Chellow extends Monad implements Urlable {
 	}
 
 	protected void checkPermissions(Invocation inv) throws HttpException {
-		Debug.print("here -5");
 		HttpMethod method = inv.getMethod();
 		String pathInfo = inv.getRequest().getPathInfo();
 		if (method.equals(HttpMethod.GET)
@@ -179,7 +177,6 @@ public class Chellow extends Monad implements Urlable {
 						.startsWith("/style/"))) {
 			return;
 		}
-		Debug.print("here -4");
 		User user = inv.getUser();
 		if (user == null) {
 			user = ImplicitUserSource.getUser(inv);
@@ -187,10 +184,8 @@ public class Chellow extends Monad implements Urlable {
 		if (user == null) {
 			throw new UnauthorizedException();
 		}
-		Debug.print("here -4.5");
 		UserRole role = user.getRole();
 		String roleCode = role.getCode();
-		Debug.print("got here -3");
 		if (roleCode.equals(UserRole.VIEWER)) {
 			if (pathInfo.startsWith("/reports/")
 					&& pathInfo.endsWith("/output/")
@@ -201,24 +196,21 @@ public class Chellow extends Monad implements Urlable {
 		} else if (roleCode.equals(UserRole.EDITOR)) {
 			return;
 		} else if (roleCode.equals(UserRole.PARTY_VIEWER)) {
-			Debug.print("got here -2");
 			if (method.equals(HttpMethod.GET) || method.equals(HttpMethod.HEAD)) {
-				Debug.print("got here -1");
 				Party party = user.getParty();
 				char marketRoleCode = party.getRole().getCode();
 				if (marketRoleCode == MarketRole.HHDC) {
-					Debug.print("got here");
 					Long hhdcContractId = inv.getLong("hhdc-contract-id");
 					if (!inv.isValid()) {
-						throw new ForbiddenException("Need the parameter hhdc-contract-id.");
+						throw new ForbiddenException(
+								"Need the parameter hhdc-contract-id.");
 					}
-					Debug.print("got here2");
 					HhdcContract hhdcContract = HhdcContract
 							.getHhdcContract(hhdcContractId);
 					if (!hhdcContract.getParty().equals(party)) {
-						throw new ForbiddenException("The party associated with the contract you're trying to view doesn't match your party.");
+						throw new ForbiddenException(
+								"The party associated with the contract you're trying to view doesn't match your party.");
 					}
-					Debug.print("got here3");
 					if ((pathInfo + "?" + inv.getRequest().getQueryString())
 							.equals("/reports/37/output/?hhdc-contract-id="
 									+ hhdcContract.getId())) {

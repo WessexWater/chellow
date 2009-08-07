@@ -44,6 +44,15 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 public abstract class Party extends PersistentEntity {
+	static public Party getParty(Long id) throws HttpException {
+		Party party = (Party) Hiber.session().get(Party.class, id);
+		if (party == null) {
+			throw new NotFoundException("The Party with id " + id
+					+ " could not be found.");
+		}
+		return party;
+	}
+
 	static public Party getParty(String participantCode, char roleCode)
 			throws HttpException {
 		return getParty(Participant.getParticipant(participantCode), MarketRole

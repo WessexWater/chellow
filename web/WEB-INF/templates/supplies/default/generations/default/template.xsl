@@ -338,24 +338,35 @@
 											select="concat(' ', /source/supply-generation/hh-end-date[@label='finish']/@hour, ':', /source/supply-generation/hh-end-date[@label='finish']/@minute, 'Z')" />
 									</xsl:if>
 								</fieldset>
-								<br/>
+								<br />
+								<br />
 								<label>
-									HHDC Contract
-									<input name="hhdc-contract-name">
-										<xsl:attribute name="value">
+									<xsl:value-of select="'HHDC Contract '" />
+									<select name="hhdc-contract-id">
+										<option value="null">
+											<xsl:value-of select="'None'" />
+										</option>
+										<xsl:for-each select="/source/hhdc-contract">
+											<option value="{@id}">
 												<xsl:choose>
 													<xsl:when
-											test="/source/request/parameter[@name='hhdc-contract-name']">
-														<xsl:value-of
-											select="/source/request/parameter[@name='hhdc-contract-name']/value" />
+														test="/source/request/parameter[@name='hhdc-contract-id']">
+														<xsl:if
+															test="@id = /source/request/parameter[@name='hhdc-contract-id']/value">
+															<xsl:attribute name="selected" />
+														</xsl:if>
 													</xsl:when>
 													<xsl:otherwise>
-														<xsl:value-of
-											select="/source/supply-generation/account/hhdc-contract/@name" />
+														<xsl:if
+															test="@id = /source/supply-generation/account/hhdc-contract/@id">
+															<xsl:attribute name="selected" />
+														</xsl:if>
 													</xsl:otherwise>
 												</xsl:choose>
-											</xsl:attribute>
-									</input>
+												<xsl:value-of select="@name" />
+											</option>
+										</xsl:for-each>
+									</select>
 								</label>
 								<xsl:value-of select="' '" />
 								<a
@@ -402,33 +413,31 @@
 									</input>
 								</label>
 								<br />
-																	<label>
-										<xsl:value-of select="'Profile Class '" />
-										<select name="pc-id">
-											<xsl:for-each select="/source/pc">
-												<option value="{@id}">
-													<xsl:choose>
-														<xsl:when
-															test="/source/request/parameter[@name='pc-id']">
-															<xsl:if
-																test="@id = /source/request/parameter[@name='pc-id']/value">
-																<xsl:attribute name="selected" />
-															</xsl:if>
-														</xsl:when>
-														<xsl:otherwise>
-															<xsl:if
-																test="@id = /source/supply-generation/pc/@id">
-																<xsl:attribute name="selected" />
-															</xsl:if>
-														</xsl:otherwise>
-													</xsl:choose>
-													<xsl:value-of select="concat(@code, ' - ', @description)" />
-												</option>
-											</xsl:for-each>
-										</select>
+								<label>
+									<xsl:value-of select="'Profile Class '" />
+									<select name="pc-id">
+										<xsl:for-each select="/source/pc">
+											<option value="{@id}">
+												<xsl:choose>
+													<xsl:when test="/source/request/parameter[@name='pc-id']">
+														<xsl:if
+															test="@id = /source/request/parameter[@name='pc-id']/value">
+															<xsl:attribute name="selected" />
+														</xsl:if>
+													</xsl:when>
+													<xsl:otherwise>
+														<xsl:if test="@id = /source/supply-generation/pc/@id">
+															<xsl:attribute name="selected" />
+														</xsl:if>
+													</xsl:otherwise>
+												</xsl:choose>
+												<xsl:value-of select="concat(@code, ' - ', @description)" />
+											</option>
+										</xsl:for-each>
+									</select>
 
-									</label>
-									<br />
+								</label>
+								<br />
 								<br />
 								<fieldset>
 									<legend>Import MPAN</legend>
@@ -567,22 +576,29 @@
 									<br />
 									<br />
 									<label>
-										Supplier Contract
-										<input name="import-supplier-contract-name">
-											<xsl:attribute name="value">
-												<xsl:choose>
-													<xsl:when
-												test="/source/request/parameter[@name='import-supplier-contract-name']">
-														<xsl:value-of
-												select="/source/request/parameter[@name='import-supplier-contract-name']/value" />
-													</xsl:when>
-													<xsl:otherwise>
-														<xsl:value-of
-												select="/source/supply-generation/mpan[llfc/@is-import='true']/account/supplier-contract/@name" />
-													</xsl:otherwise>
-												</xsl:choose>
-											</xsl:attribute>
-										</input>
+										<xsl:value-of select="'Supplier Contract '" />
+										<select name="import-supplier-contract-id">
+											<xsl:for-each select="/source/supplier-contract">
+												<option value="{@id}">
+													<xsl:choose>
+														<xsl:when
+															test="/source/request/parameter[@name='import-supplier-contract-id']">
+															<xsl:if
+																test="@id = /source/request/parameter[@name='import-supplier-contract-id']/value">
+																<xsl:attribute name="selected" />
+															</xsl:if>
+														</xsl:when>
+														<xsl:otherwise>
+															<xsl:if
+																test="@id = /source/supply-generation/mpan[llfc/@is-import='true']/account/supplier-contract/@id">
+																<xsl:attribute name="selected" />
+															</xsl:if>
+														</xsl:otherwise>
+													</xsl:choose>
+													<xsl:value-of select="@name" />
+												</option>
+											</xsl:for-each>
+										</select>
 									</label>
 									<br />
 									<label>
@@ -887,22 +903,29 @@
 									<br />
 									<br />
 									<label>
-										Supplier Contract
-										<input name="export-supplier-contract-name">
-											<xsl:attribute name="value">
-												<xsl:choose>
-													<xsl:when
-												test="/source/request/parameter[@name='export-supplier-contract-name']">
-														<xsl:value-of
-												select="/source/request/parameter[@name='export-supplier-contract-name']/value" />
-													</xsl:when>
-													<xsl:otherwise>
-														<xsl:value-of
-												select="/source/supply-generation/mpan[llfc/@is-import='false']/account/supplier-contract/@name" />
-													</xsl:otherwise>
-												</xsl:choose>
-											</xsl:attribute>
-										</input>
+										<xsl:value-of select="'Supplier Contract '" />
+										<select name="export-supplier-contract-id">
+											<xsl:for-each select="/source/supplier-contract">
+												<option value="{@id}">
+													<xsl:choose>
+														<xsl:when
+															test="/source/request/parameter[@name='export-supplier-contract-id']">
+															<xsl:if
+																test="@id = /source/request/parameter[@name='export-supplier-contract-id']/value">
+																<xsl:attribute name="selected" />
+															</xsl:if>
+														</xsl:when>
+														<xsl:otherwise>
+															<xsl:if
+																test="@id = /source/supply-generation/mpan[llfc/@is-import='false']/account/supplier-contract/@id">
+																<xsl:attribute name="selected" />
+															</xsl:if>
+														</xsl:otherwise>
+													</xsl:choose>
+													<xsl:value-of select="@name" />
+												</option>
+											</xsl:for-each>
+										</select>
 									</label>
 									<br />
 									<label>

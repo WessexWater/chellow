@@ -214,8 +214,7 @@ public class Invocation {
 		return getValidatable(clazz, parameterNames, null, label);
 	}
 
-	public MonadLong getMonadLongNull(String parameterName)
-			throws InternalException {
+	public Long getLong(String parameterName) throws InternalException {
 		MonadLong monadLong = null;
 		HttpParameter parameter = null;
 		try {
@@ -230,7 +229,7 @@ public class Invocation {
 			instantiationExceptions.add(new MonadInstantiationException(
 					Long.class.getName(), parameterName, e));
 		}
-		return monadLong;
+		return monadLong == null ? null : monadLong.getLong();
 	}
 
 	public boolean getBoolean(String parameterName) throws InternalException {
@@ -277,12 +276,6 @@ public class Invocation {
 	public GeoPoint getGeoPoint(String baseName) throws InternalException {
 		return getValidatable(GeoPoint.class, new String[] {
 				baseName + "-latitude", baseName + "-longitude" }, baseName);
-	}
-
-	public Long getLong(String parameterNameString) throws InternalException {
-		MonadLong monadLong = getValidatable(MonadLong.class,
-				parameterNameString);
-		return monadLong == null ? null : monadLong.getLong();
 	}
 
 	public Integer getInteger(String parameterNameString)
@@ -677,7 +670,6 @@ public class Invocation {
 
 	public User getUser() throws HttpException {
 		String authHeader = req.getHeader("Authorization");
-		Debug.print("auth header " + authHeader);
 		if (authHeader == null || !authHeader.startsWith("Basic")) {
 			return null;
 		}
@@ -685,7 +677,6 @@ public class Invocation {
 				.split(":");
 		Debug.print("password " + Base64.decode(authHeader.substring(6)));
 		if (usernameAndPassword == null || usernameAndPassword.length != 2) {
-			Debug.print("something wrong");
 			return null;
 			// throw new BadRequestException(
 			// "The Authorization header must contain a base64 encoded string

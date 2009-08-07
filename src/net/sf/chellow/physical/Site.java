@@ -221,12 +221,12 @@ public class Site extends PersistentEntity {
 		Map<Site, Boolean> siteMap = new HashMap<Site, Boolean>();
 		siteMap.put(this, true);
 		SupplyGeneration generation = supply.insertGeneration(siteMap,
-				startDate, hhdcAccount, meterSerialNumber,
-				importMpanStr, importSsc, importAccountSupplier,
-				importAgreedSupplyCapacity, exportMpanStr, exportSsc,
-				exportAccountSupplier, exportAgreedSupplyCapacity);
-		generation.update(generation.getStartDate(), finishDate, generation.getHhdcAccount(), generation
-				.getMeter());
+				startDate, hhdcAccount, meterSerialNumber, importMpanStr,
+				importSsc, importAccountSupplier, importAgreedSupplyCapacity,
+				exportMpanStr, exportSsc, exportAccountSupplier,
+				exportAgreedSupplyCapacity);
+		generation.update(generation.getStartDate(), finishDate, generation
+				.getHhdcAccount(), generation.getMeter());
 		Hiber.flush();
 		return supply;
 	}
@@ -475,6 +475,19 @@ public class Site extends PersistentEntity {
 				"from GspGroup group order by group.code").list()) {
 			docElem.appendChild(group.toXml(doc));
 		}
+		for (HhdcContract contract : (List<HhdcContract>) Hiber.session()
+				.createQuery(
+						"from HhdcContract contract order by contract.name")
+				.list()) {
+			docElem.appendChild(contract.toXml(doc));
+		}
+		for (SupplierContract contract : (List<SupplierContract>) Hiber
+				.session()
+				.createQuery(
+						"from SupplierContract contract order by contract.name")
+				.list()) {
+			docElem.appendChild(contract.toXml(doc));
+		}
 		docElem.appendChild(MonadDate.getMonthsXml(doc));
 		docElem.appendChild(MonadDate.getDaysXml(doc));
 		docElem.appendChild(new MonadDate().toXml(doc));
@@ -508,22 +521,22 @@ public class Site extends PersistentEntity {
 				String name = inv.getString("name");
 				Long sourceId = inv.getLong("source-id");
 				Long gspGroupId = inv.getLong("gsp-group-id");
-				String hhdcContractName = inv.getString("hhdc-contract-name");
+				Long hhdcContractId = inv.getLong("hhdc-contract-id");
 				String hhdcAccountReference = inv
 						.getString("hhdc-account-reference");
 				String meterSerialNumber = inv.getString("meter-serial-number");
 				String importMpanStr = inv.getString("import-mpan");
 				String importSscCode = inv.getString("import-ssc-code");
-				String importSupplierContractName = inv
-						.getString("import-supplier-contract-name");
+				Long importSupplierContractId = inv
+						.getLong("import-supplier-contract-id");
 				String importSupplierAccountReference = inv
 						.getString("import-supplier-account-reference");
 				String importAgreedSupplyCapacityStr = inv
 						.getString("import-agreed-supply-capacity");
 				String exportMpanStr = inv.getString("export-mpan");
 				String exportSscCode = inv.getString("export-ssc-code");
-				String exportSupplierContractName = inv
-						.getString("export-supplier-contract-name");
+				Long exportSupplierContractId = inv
+						.getLong("export-supplier-contract-id");
 				String exportSupplierAccountReference = inv
 						.getString("export-supplier-account-reference");
 				String exportAgreedSupplyCapacityStr = inv
@@ -542,9 +555,8 @@ public class Site extends PersistentEntity {
 				GspGroup gspGroup = GspGroup.getGspGroup(gspGroupId);
 				HhdcContract hhdcContract = null;
 				Account hhdcAccount = null;
-				if (hhdcContractName.length() > 0) {
-					hhdcContract = HhdcContract
-							.getHhdcContract(hhdcContractName);
+				if (hhdcContractId != null) {
+					hhdcContract = HhdcContract.getHhdcContract(hhdcContractId);
 					hhdcAccount = hhdcContract.getAccount(hhdcAccountReference);
 				}
 				Ssc importSsc = null;
@@ -556,7 +568,7 @@ public class Site extends PersistentEntity {
 						importSsc = Ssc.getSsc(importSscCode);
 					}
 					importSupplierContract = SupplierContract
-							.getSupplierContract(importSupplierContractName);
+							.getSupplierContract(importSupplierContractId);
 					importSupplierAccount = importSupplierContract
 							.getAccount(importSupplierAccountReference);
 					try {
@@ -576,7 +588,7 @@ public class Site extends PersistentEntity {
 						exportSsc = Ssc.getSsc(exportSscCode);
 					}
 					SupplierContract exportSupplierContract = SupplierContract
-							.getSupplierContract(exportSupplierContractName);
+							.getSupplierContract(exportSupplierContractId);
 					exportSupplierAccount = exportSupplierContract
 							.getAccount(exportSupplierAccountReference);
 					try {

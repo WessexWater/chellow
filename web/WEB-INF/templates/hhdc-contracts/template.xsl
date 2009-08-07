@@ -37,7 +37,7 @@
 				<ul>
 					<xsl:for-each select="/source/hhdc-contracts/hhdc-contract">
 						<li>
-							<a href="{@id}">
+							<a href="{@id}/">
 								<xsl:value-of select="@name" />
 							</a>
 						</li>
