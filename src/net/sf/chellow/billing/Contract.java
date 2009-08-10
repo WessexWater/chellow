@@ -474,6 +474,7 @@ public abstract class Contract extends PersistentEntity implements
 	}
 
 	public Account insertAccount(String reference) throws HttpException {
+		reference = reference.trim();
 		Account account = new Account(this, reference);
 		try {
 			Hiber.session().save(account);

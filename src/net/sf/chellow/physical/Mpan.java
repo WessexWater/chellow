@@ -27,6 +27,7 @@ import java.util.Set;
 
 import net.sf.chellow.billing.Account;
 import net.sf.chellow.billing.Dso;
+import net.sf.chellow.billing.SupplierContract;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.InternalException;
@@ -105,10 +106,11 @@ public class Mpan extends PersistentEntity {
 	}
 
 	Mpan(SupplyGeneration supplyGeneration, String mpanStr, Ssc ssc,
-			Account supplierAccount, int agreedSupplyCapacity)
-			throws HttpException {
+			SupplierContract supplierContract, String supplierAccountReference,
+			int agreedSupplyCapacity) throws HttpException {
 		this.supplyGeneration = supplyGeneration;
-		update(mpanStr, ssc, supplierAccount, agreedSupplyCapacity);
+		update(mpanStr, ssc, supplierContract, supplierAccountReference,
+				agreedSupplyCapacity);
 	}
 
 	public SupplyGeneration getSupplyGeneration() {
@@ -118,7 +120,7 @@ public class Mpan extends PersistentEntity {
 	protected void setSupplyGeneration(SupplyGeneration supplyGeneration) {
 		this.supplyGeneration = supplyGeneration;
 	}
-	
+
 	public Mtc getMtc() {
 		return mtc;
 	}
@@ -167,8 +169,15 @@ public class Mpan extends PersistentEntity {
 		this.agreedSupplyCapacity = agreedSupplyCapacity;
 	}
 
-	public void update(String mpan, Ssc ssc, Account supplierAccount,
-			Integer agreedSupplyCapacity) throws HttpException {
+	public void update(String mpan, Ssc ssc, SupplierContract supplierContract,
+			String supplierAccountReference, Integer agreedSupplyCapacity)
+			throws HttpException {
+		Account supplierAccount = supplierContract
+				.findAccount(supplierAccountReference);
+		if (supplierAccount == null) {
+			supplierAccount = supplierContract
+					.insertAccount(supplierAccountReference);
+		}
 		if (agreedSupplyCapacity == null) {
 			throw new InternalException("agreedSupplyCapacity can't be null");
 		}
@@ -180,10 +189,10 @@ public class Mpan extends PersistentEntity {
 		}
 		Dso dso = mpanCore.getDso();
 		Pc pc = Pc.getPc(mpanRaw.getPcCode());
-		//if (!pc.equals(supplyGeneration.getPc())) {
-		//	throw new UserException(
-		//			"The Profile Class of the MPAN must match that of the supply generation.");
-		//}
+		// if (!pc.equals(supplyGeneration.getPc())) {
+		// throw new UserException(
+		// "The Profile Class of the MPAN must match that of the supply generation.");
+		// }
 		setMtc(Mtc.getMtc(dso, mpanRaw.getMtcCode()));
 		Llfc llfc = dso.getLlfc(mpanRaw.getLlfcCode());
 		if (!mpanCore.getSupply().equals(supplyGeneration.getSupply())) {
@@ -224,8 +233,7 @@ public class Mpan extends PersistentEntity {
 
 	public String toString() {
 		return supplyGeneration.getPc().codeAsString() + " "
-				+ mtc.codeAsString() + " "
-				+ llfc.codeAsString() + " " + core;
+				+ mtc.codeAsString() + " " + llfc.codeAsString() + " " + core;
 	}
 
 	public Element toXml(Document doc) throws HttpException {
@@ -237,9 +245,7 @@ public class Mpan extends PersistentEntity {
 				+ " "
 				+ mtc.toXml(doc).getTextContent()
 				+ " "
-				+ llfc.toXml(doc).getTextContent()
-				+ " "
-				+ core.toString());
+				+ llfc.toXml(doc).getTextContent() + " " + core.toString());
 		return element;
 	}
 

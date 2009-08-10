@@ -1,3 +1,5 @@
+* Accounts are now automatically created and destroyed, like meters.
+
 * GSP group is now a property of the supply rather than the MPAN.
 
 * HHDC contract, HHDC account are now a property of the supply generation rather

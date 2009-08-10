@@ -119,7 +119,7 @@
                     <li>
                         <a
                             href="{/source/request/@context-path}/reports/133/output/">
-                            Meter Payment Types
+                            <xsl:value-of select="'Meter Payment Types'"/>
                         </a>
                     </li>
                     <li>
