@@ -281,21 +281,4 @@ public class SupplierContract extends Contract {
 		Element element = super.toXml(doc, "supplier-contract");
 		return element;
 	}
-
-	public void deleteAccount(Account account) throws HttpException {
-		if (account.getContract().getParty().getRole().getCode() != MarketRole.SUPPLIER) {
-			throw new InternalException(
-					"The account isn't attached to this contract.");
-		}
-		if (((Long) Hiber
-				.session()
-				.createQuery(
-						"select count(*) from Mpan mpan where mpan.supplierAccount = :supplierAccount")
-				.setEntity("supplierAccount", account).uniqueResult()) > 0) {
-			throw new UserException(
-					"An account can't be deleted if there are still MPANs attached to it.");
-		}
-		Hiber.session().delete(account);
-		Hiber.flush();
-	}
 }

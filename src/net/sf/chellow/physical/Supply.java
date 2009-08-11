@@ -109,17 +109,12 @@ public class Supply extends PersistentEntity {
 					: HhdcContract.getHhdcContract(hhdcContractName);
 			String hhdcAccountReference = GeneralImport.addField(csvElement,
 					"HHDC Account", values, 12);
-			Account hhdcAccount = null;
-			if (hhdcContract != null) {
-				hhdcAccount = hhdcContract.getAccount(hhdcAccountReference);
-			}
 			String meterSerialNumber = GeneralImport.addField(csvElement,
 					"Meter Serial Number", values, 13);
 			String importMpanStr = GeneralImport.addField(csvElement,
 					"Import MPAN", values, 14);
 			Integer importAgreedSupplyCapacity = null;
 			SupplierContract importSupplierContract = null;
-			Account importSupplierAccount = null;
 			Ssc importSsc = null;
 			String importSscCode = GeneralImport.addField(csvElement,
 					"Import SSC", values, 15);
@@ -143,14 +138,12 @@ public class Supply extends PersistentEntity {
 				}
 				importSupplierContract = SupplierContract
 						.getSupplierContract(importSupplierContractName);
-				importSupplierAccount = importSupplierContract
-						.getAccount(importSupplierAccountReference);
 			}
 			SupplierContract exportSupplierContract = null;
-			Account exportAccountSupplier = null;
 			Integer exportAgreedSupplyCapacity = null;
 			Ssc exportSsc = null;
 			String exportMpanStr = null;
+			String exportSupplierAccountReference = null;
 			if (values.length > 19) {
 				exportMpanStr = GeneralImport.addField(csvElement,
 						"Export MPAN", values, 19);
@@ -175,19 +168,17 @@ public class Supply extends PersistentEntity {
 							values, 22);
 					exportSupplierContract = SupplierContract
 							.getSupplierContract(exportSupplierContractName);
-					String exportSupplierAccountReference = GeneralImport
+					exportSupplierAccountReference = GeneralImport
 							.addField(csvElement,
 									"Export supplier account reference",
 									values, 23);
-					exportAccountSupplier = exportSupplierContract
-							.getAccount(exportSupplierAccountReference);
 				}
 			}
 			Supply supply = site.insertSupply(source, generatorType,
-					supplyName, startDate, finishDate, gspGroup, hhdcAccount,
+					supplyName, startDate, finishDate, gspGroup, hhdcContract, hhdcAccountReference,
 					meterSerialNumber, importMpanStr, importSsc,
-					importSupplierAccount, importAgreedSupplyCapacity,
-					exportMpanStr, exportSsc, exportAccountSupplier,
+					importSupplierContract, importSupplierAccountReference, importAgreedSupplyCapacity,
+					exportMpanStr, exportSsc, exportSupplierContract, exportSupplierAccountReference,
 					exportAgreedSupplyCapacity);
 			Hiber.flush();
 			SupplyGeneration generation = supply.getGenerationFirst();

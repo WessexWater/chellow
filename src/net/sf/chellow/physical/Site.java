@@ -31,7 +31,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import net.sf.chellow.billing.Account;
 import net.sf.chellow.billing.HhdcContract;
 import net.sf.chellow.billing.SupplierContract;
 import net.sf.chellow.monad.Hiber;
@@ -194,10 +193,10 @@ public class Site extends PersistentEntity {
 
 	public Supply insertSupply(Source source, GeneratorType generatorType,
 			String supplyName, HhEndDate startDate, HhEndDate finishDate,
-			GspGroup gspGroup, Account hhdcAccount, String meterSerialNumber,
-			String importMpanStr, Ssc importSsc, Account importAccountSupplier,
+			GspGroup gspGroup, HhdcContract hhdcContract, String hhdcAccountReference, String meterSerialNumber,
+			String importMpanStr, Ssc importSsc, SupplierContract importSupplierContract, String importSupplierAccountReference,
 			Integer importAgreedSupplyCapacity, String exportMpanStr,
-			Ssc exportSsc, Account exportAccountSupplier,
+			Ssc exportSsc, SupplierContract exportSupplierContract, String exportSupplierAccountReference,
 			Integer exportAgreedSupplyCapacity) throws HttpException {
 		Supply supply = new Supply(supplyName, source, generatorType, gspGroup);
 		try {
@@ -221,9 +220,9 @@ public class Site extends PersistentEntity {
 		Map<Site, Boolean> siteMap = new HashMap<Site, Boolean>();
 		siteMap.put(this, true);
 		SupplyGeneration generation = supply.insertGeneration(siteMap,
-				startDate, hhdcAccount, meterSerialNumber, importMpanStr,
-				importSsc, importAccountSupplier, importAgreedSupplyCapacity,
-				exportMpanStr, exportSsc, exportAccountSupplier,
+				startDate, hhdcContract, hhdcAccountReference, meterSerialNumber, importMpanStr,
+				importSsc, importSupplierContract, importSupplierAccountReference, importAgreedSupplyCapacity,
+				exportMpanStr, exportSsc, exportSupplierContract, exportSupplierAccountReference,
 				exportAgreedSupplyCapacity);
 		generation.update(generation.getStartDate(), finishDate, generation
 				.getHhdcAccount(), generation.getMeter());
@@ -554,14 +553,11 @@ public class Site extends PersistentEntity {
 				}
 				GspGroup gspGroup = GspGroup.getGspGroup(gspGroupId);
 				HhdcContract hhdcContract = null;
-				Account hhdcAccount = null;
 				if (hhdcContractId != null) {
 					hhdcContract = HhdcContract.getHhdcContract(hhdcContractId);
-					hhdcAccount = hhdcContract.getAccount(hhdcAccountReference);
 				}
 				Ssc importSsc = null;
 				SupplierContract importSupplierContract = null;
-				Account importSupplierAccount = null;
 				Integer importAgreedSupplyCapacity = null;
 				if (importMpanStr.trim().length() > 0) {
 					if (importSscCode.trim().length() > 0) {
@@ -569,8 +565,6 @@ public class Site extends PersistentEntity {
 					}
 					importSupplierContract = SupplierContract
 							.getSupplierContract(importSupplierContractId);
-					importSupplierAccount = importSupplierContract
-							.getAccount(importSupplierAccountReference);
 					try {
 						importAgreedSupplyCapacity = new Integer(
 								importAgreedSupplyCapacityStr);
@@ -580,17 +574,15 @@ public class Site extends PersistentEntity {
 										+ e.getMessage());
 					}
 				}
+				SupplierContract exportSupplierContract = null;
 				Ssc exportSsc = null;
-				Account exportSupplierAccount = null;
 				Integer exportAgreedSupplyCapacity = null;
 				if (exportMpanStr.trim().length() > 0) {
 					if (exportSscCode.trim().length() > 0) {
 						exportSsc = Ssc.getSsc(exportSscCode);
 					}
-					SupplierContract exportSupplierContract = SupplierContract
+					exportSupplierContract = SupplierContract
 							.getSupplierContract(exportSupplierContractId);
-					exportSupplierAccount = exportSupplierContract
-							.getAccount(exportSupplierAccountReference);
 					try {
 						exportAgreedSupplyCapacity = new Integer(
 								exportAgreedSupplyCapacityStr);
@@ -602,12 +594,12 @@ public class Site extends PersistentEntity {
 				}
 				Supply supply = insertSupply(source, generatorType, name,
 						new HhEndDate(startDate).getNext(), null, gspGroup,
-						hhdcAccount, meterSerialNumber, importMpanStr,
-						importSsc, importSupplierAccount,
-						importAgreedSupplyCapacity, exportMpanStr, exportSsc,
-						exportSupplierAccount, exportAgreedSupplyCapacity);
+						hhdcContract, hhdcAccountReference, meterSerialNumber, importMpanStr,
+						importSsc, importSupplierContract, importSupplierAccountReference,
+						importAgreedSupplyCapacity, exportMpanStr, exportSsc, exportSupplierContract,
+						exportSupplierAccountReference, exportAgreedSupplyCapacity);
 				Hiber.flush();
-				if (hhdcAccount != null) {
+				if (hhdcContract != null) {
 					SupplyGeneration generation = supply.getGenerationFirst();
 					generation.insertChannel(true, true);
 					generation.insertChannel(true, false);

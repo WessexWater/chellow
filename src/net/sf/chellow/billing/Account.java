@@ -45,6 +45,20 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 public class Account extends PersistentEntity {
+	/*
+	 * public static void generalImportHhdc(String action, String[] values,
+	 * Element csvElement) throws HttpException { String hhdcContractName =
+	 * GeneralImport.addField(csvElement, "Contract", values, 0); HhdcContract
+	 * hhdcContract = HhdcContract .getHhdcContract(hhdcContractName); String
+	 * hhdcAccountReference = GeneralImport.addField(csvElement, "Reference",
+	 * values, 1); if (action.equals("insert")) {
+	 * hhdcContract.insertAccount(hhdcAccountReference); } else { Account
+	 * hhdcAccount = hhdcContract.getAccount(hhdcAccountReference); if
+	 * (action.equals("delete")) { hhdcContract.deleteAccount(hhdcAccount); }
+	 * else if (action.equals("update")) { String newReference =
+	 * GeneralImport.addField(csvElement, "New Reference", values, 2);
+	 * hhdcAccount.update(newReference); } } }
+	 */
 	public static void generalImportHhdc(String action, String[] values,
 			Element csvElement) throws HttpException {
 		String hhdcContractName = GeneralImport.addField(csvElement,
@@ -53,17 +67,14 @@ public class Account extends PersistentEntity {
 				.getHhdcContract(hhdcContractName);
 		String hhdcAccountReference = GeneralImport.addField(csvElement,
 				"Reference", values, 1);
-		if (action.equals("insert")) {
-			hhdcContract.insertAccount(hhdcAccountReference);
+		Account hhdcAccount = hhdcContract.getAccount(hhdcAccountReference);
+		if (action.equals("update")) {
+			String newReference = GeneralImport.addField(csvElement,
+					"New Reference", values, 2);
+			hhdcAccount.update(newReference);
 		} else {
-			Account hhdcAccount = hhdcContract.getAccount(hhdcAccountReference);
-			if (action.equals("delete")) {
-				hhdcContract.deleteAccount(hhdcAccount);
-			} else if (action.equals("update")) {
-				String newReference = GeneralImport.addField(csvElement,
-						"New Reference", values, 2);
-				hhdcAccount.update(newReference);
-			}
+			throw new UserException("The action '" + action
+					+ "' isn't recognized.");
 		}
 	}
 
@@ -209,14 +220,14 @@ public class Account extends PersistentEntity {
 
 	public void deleteSnag(String description, HhEndDate startDate,
 			HhEndDate finishDate) throws HttpException {
-		SnagDateBounded.deleteAccountSnag(this, description,
-				startDate, finishDate);
+		SnagDateBounded.deleteAccountSnag(this, description, startDate,
+				finishDate);
 	}
 
-	public void addSnag(String description, HhEndDate startDate, HhEndDate finishDate)
-			throws HttpException {
-		SnagDateBounded.addAccountSnag(this, description, startDate,
-				finishDate);
+	public void addSnag(String description, HhEndDate startDate,
+			HhEndDate finishDate) throws HttpException {
+		SnagDateBounded
+				.addAccountSnag(this, description, startDate, finishDate);
 	}
 
 	Bills billsInstance() {
@@ -268,8 +279,8 @@ public class Account extends PersistentEntity {
 		 * 
 		 * for (InvoiceMpan invoiceMpan : invoice.getInvoiceMpans()) {
 		 * invoiceMpans.add(invoiceMpan.getMpan()); } if
-		 * (!accountMpans.equals(new ArrayList<Mpan>(invoiceMpans))) { throw
-		 * new UserException("Problem with account '" + reference + "' invoice '" +
+		 * (!accountMpans.equals(new ArrayList<Mpan>(invoiceMpans))) { throw new
+		 * UserException("Problem with account '" + reference + "' invoice '" +
 		 * invoice.getReference() + "' from the half-hour ending " +
 		 * invoice.getStartDate() + " to the half-hour ending " +
 		 * invoice.getFinishDate() + ". This bill has MPANs " + invoiceMpans + "
@@ -280,8 +291,9 @@ public class Account extends PersistentEntity {
 			Hiber.session().save(bill);
 		}
 		bill.attach(invoice);
-		deleteSnag(AccountSnag.MISSING_BILL, bill.getStartDate(), bill.getFinishDate());
-		//checkMissing(bill.getStartDate(), bill.getFinishDate());
+		deleteSnag(AccountSnag.MISSING_BILL, bill.getStartDate(), bill
+				.getFinishDate());
+		// checkMissing(bill.getStartDate(), bill.getFinishDate());
 	}
 
 	@SuppressWarnings("unchecked")
@@ -324,7 +336,8 @@ public class Account extends PersistentEntity {
 		} else {
 			Hiber.session().delete(foundBill);
 		}
-		addSnag(AccountSnag.MISSING_BILL, foundBill.getStartDate(), foundBill.getFinishDate());
+		addSnag(AccountSnag.MISSING_BILL, foundBill.getStartDate(), foundBill
+				.getFinishDate());
 		// checkMissing(foundBill.getStartDate(), foundBill.getFinishDate());
 	}
 }
