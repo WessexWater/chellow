@@ -725,6 +725,7 @@ public class SupplyGeneration extends PersistentEntity {
 				exportSupplierAccountReference, exportAgreedSupplyCapacity);
 	}
 
+	@SuppressWarnings("unchecked")
 	public void internalUpdate(HhEndDate startDate, HhEndDate finishDate,
 			Account hhdcAccount, Meter meter, String importMpanStr,
 			Ssc importSsc, SupplierContract importSupplierContract,
@@ -733,30 +734,71 @@ public class SupplyGeneration extends PersistentEntity {
 			Ssc exportSsc, SupplierContract exportSupplierContract,
 			String exportSupplierAccountReference,
 			Integer exportAgreedSupplyCapacity) throws HttpException {
-		List<Bill> originalBills = (List<Bill>) Hiber.session().createQuery("from Bill bill where ").list();
-		
 		Account originalHhdcAccount = this.hhdcAccount;
-		SupplyGeneration previousGeneration = supply
-				.getGenerationPrevious(this);
-		Long originalConcurrentGenerations = null;
-		HhEndDate originalStartDate = startDate;
-		HhEndDate originalFinishDate = finishDate;
-		Long originalNumBills = null;
-		if (originalHhdcAccount != null) {
-			originalConcurrentGenerations = (Long) Hiber
+		HhEndDate originalStartDate = this.startDate;
+		HhEndDate originalFinishDate = this.finishDate;
+		List<Bill> originalHhdcBills = null;
+		if (originalHhdcAccount == null) {
+			originalHhdcBills = new ArrayList<Bill>();
+		} else if (((Long) Hiber
 				.session()
 				.createQuery(
 						"select count(*) from SupplyGeneration generation where generation.hhdcAccount = :hhdcAccount and generation.startDate.date = :startDate")
-				.setTimestamp("startDate", originalStartDate.getDate()).setEntity("hhdcAccount", originalHhdcAccount).uniqueResult();
-		
-		Query originalNumBillsQuery = null;
-		if (finishDate == null) {
-			originalNumBillsQuery = Hiber.session().createQuery("from count(*) from Bill bill where bill.account = :account and bill.startDate.date >= :generationsStart");
+				.setTimestamp("startDate", originalStartDate.getDate())
+				.setEntity("hhdcAccount", originalHhdcAccount).uniqueResult()) > 1) {
+			originalHhdcBills = new ArrayList<Bill>();
 		} else {
-			originalNumBillsQuery = Hiber.session().createQuery("from count(*) from Bill bill where bill.account = :account and bill.startDate.date >= :generationsStart and bill.startDate.date <= :generationFinish").setTimestamp("generationFinish", originalFinishDate.getDate());				
+			Query originalBillsQuery = null;
+			if (originalFinishDate == null) {
+				originalBillsQuery = Hiber
+						.session()
+						.createQuery(
+								"from Bill bill where bill.account = :account and bill.startDate.date >= :startDate");
+			} else {
+				originalBillsQuery = Hiber
+						.session()
+						.createQuery(
+								"from Bill bill where bill.account = :account and bill.startDate.date >= :startDate and bill.startDate.date <= :finishDate")
+						.setTimestamp("finishDate",
+								originalFinishDate.getDate());
+			}
+			originalHhdcBills = (List<Bill>) originalBillsQuery.setEntity(
+					"account", originalHhdcAccount).setTimestamp("startDate",
+					originalStartDate.getDate()).list();
 		}
-		originalNumBills = (Long) originalNumBillsQuery.setEntity("account", originalHhdcAccount).setTimestamp("generationStart", originalStartDate.getDate()).uniqueResult();
+		
+		
+		List<Bill> originalImportSupplierBills = null;
+		if (originalHhdcAccount == null) {
+			originalHhdcBills = new ArrayList<Bill>();
+		} else if (((Long) Hiber
+				.session()
+				.createQuery(
+						"select count(*) from SupplyGeneration generation where generation.hhdcAccount = :hhdcAccount and generation.startDate.date = :startDate")
+				.setTimestamp("startDate", originalStartDate.getDate())
+				.setEntity("hhdcAccount", originalHhdcAccount).uniqueResult()) > 1) {
+			originalHhdcBills = new ArrayList<Bill>();
+		} else {
+			Query originalBillsQuery = null;
+			if (originalFinishDate == null) {
+				originalBillsQuery = Hiber
+						.session()
+						.createQuery(
+								"from Bill bill where bill.account = :account and bill.startDate.date >= :startDate");
+			} else {
+				originalBillsQuery = Hiber
+						.session()
+						.createQuery(
+								"from Bill bill where bill.account = :account and bill.startDate.date >= :startDate and bill.startDate.date <= :finishDate")
+						.setTimestamp("finishDate",
+								originalFinishDate.getDate());
+			}
+			originalHhdcBills = (List<Bill>) originalBillsQuery.setEntity(
+					"account", originalHhdcAccount).setTimestamp("startDate",
+					originalStartDate.getDate()).list();
 		}
+		SupplyGeneration previousGeneration = supply
+				.getGenerationPrevious(this);
 		if (finishDate != null
 				&& startDate.getDate().after(finishDate.getDate())) {
 			throw new UserException(
@@ -904,43 +946,59 @@ public class SupplyGeneration extends PersistentEntity {
 		} else {
 			setPc(importPc);
 		}
-		
-		// move bills if necessary
-		if (originalHhdcAccount != null && originalConcurrentGenerations == 1) {
-			if (hhdcAccount == null) {
-				if (originalNumBills > 0) {
-				throw new UserException("There are HHDC bills associated with this supply generation, so you can't remove the HHDC account.");
-				}
-			} else {
-			Query numBillsQuery = null;
-			if (finishDate == null) {
-				numBillsQuery = Hiber.session().createQuery("from count(*) from Bill bill where bill.account = :account and bill.startDate.date >= :generationsStart");
-			} else {
-				numBillsQuery = Hiber.session().createQuery("from count(*) from Bill bill where bill.account = :account and bill.startDate.date >= :generationsStart and bill.startDate.date <= :generationFinish").setTimestamp("generationFinish", finishDate.getDate());				
-			}
-			Long numBills = (Long) numBillsQuery.uniqueResult(); 
-			if (numBills < originalNumBills) {
-				throw new UserException("");
-			}
-			
-			&& ((Long) Hiber.session().createQuery("count(*) from Bill bill where bill.account = :account and bill.startDate.date ")) {
-				if (finishDate == null) {
-				Hiber.session().createQuery("update Bill bill set bill.account = : where bill.account = :account and bill.startDate.date >= :generationStart").setEntity("account", originalHhdcAccount).setTimestamp("generationStart", startDate.getDate()).executeUpdate();
-				} else {
-					Hiber.session().createQuery("update Bill bill where bill.account = :account and bill.startDate.date >= :generationStart and bill.startDate.date <= :generationFinish").setEntity("account", originalHhdcAccount).setTimestamp("generationStart", startDate.getDate()).setTimestamp("generationFinish", finishDate.getDate()).executeUpdate();		
-				}
-			}
 
-		// check if we can delete the old account
-		if (originalHhdcAccount != null
-					&& !originalHhdcAccount.equals(hhdcAccount) && ((Long) Hiber
+		// move bills if necessary
+		if (originalHhdcBills.size() > 0
+				&& !originalHhdcAccount.equals(hhdcAccount)) {
+			if (hhdcAccount == null) {
+				throw new UserException(
+						"There are HHDC bills associated with this supply generation, so you can't remove the HHDC account.");
+			} else {
+				Query billUpdateQuery = null;
+				if (finishDate == null) {
+					billUpdateQuery = Hiber
+							.session()
+							.createQuery(
+									"update Bill bill set bill.account = : where bill.account = :account and bill.startDate.date >= :generationStart");
+				} else {
+					billUpdateQuery = Hiber
+							.session()
+							.createQuery(
+									"update Bill bill where bill.account = :account and bill.startDate.date >= :generationStart and bill.startDate.date <= :generationFinish")
+							.setTimestamp("generationFinish",
+									finishDate.getDate());
+				}
+				billUpdateQuery.setEntity("account", originalHhdcAccount)
+						.setTimestamp("generationStart", startDate.getDate())
+						.executeUpdate();
+			}
+		}
+		Hiber.flush();
+		for (Bill bill : originalHhdcBills) {
+			if (((Long) Hiber
 					.session()
 					.createQuery(
-							"select count(*) from SupplyGeneration generation where generation.hhdcAccount = :hhdcAccount")
-					.setEntity("supplierAccount", originalHhdcAccount).uniqueResult()) == 0) {
-				Hiber.session().delete(originalHhdcAccount);
-				Hiber.flush();
+							"count(*) from SupplyGeneration generation where generation.hhdcAccount = :hhdcAccount and (generation.finishDate.date is null or :startDate <= generation.finishDate.date) and :startDate >= generation.startDate.date")
+					.setEntity("hhdcAccount", bill.getAccount()).setTimestamp(
+							"start", bill.getStartDate().getDate())
+					.uniqueResult()) == 0) {
+				throw new UserException(
+						"The bill "
+								+ bill
+								+ " has been left stranded without a supply generation attached to it.");
 			}
+		}
+		// check if we can delete the old account
+		if (originalHhdcAccount != null
+				&& !originalHhdcAccount.equals(hhdcAccount)
+				&& ((Long) Hiber
+						.session()
+						.createQuery(
+								"select count(*) from SupplyGeneration generation where generation.hhdcAccount = :hhdcAccount")
+						.setEntity("supplierAccount", originalHhdcAccount)
+						.uniqueResult()) == 0) {
+			Hiber.session().delete(originalHhdcAccount);
+			Hiber.flush();
 		}
 	}
 

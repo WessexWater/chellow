@@ -233,7 +233,7 @@ public class Mpan extends PersistentEntity {
 		
 		if (!originalSupplierAccount.equals(supplierAccount)) {
 			
-			move the bills!!!
+			//move the bills!!!
 			
 			
 			if (((Long) Hiber
