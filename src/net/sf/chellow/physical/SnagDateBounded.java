@@ -29,7 +29,9 @@ import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.HttpException;
 
+import org.hibernate.Criteria;
 import org.hibernate.Query;
+import org.hibernate.criterion.Restrictions;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -449,8 +451,10 @@ public abstract class SnagDateBounded extends Snag {
 		@SuppressWarnings("unchecked")
 		public List<AccountSnag> getCoveredSnags(HhEndDate startDate,
 				HhEndDate finishDate) {
-			Query query = null;
-			if (finishDate == null) {
+			Criteria crit = Hiber.session().createCriteria(AccountSnag.class);
+			crit.add(Restrictions.eq("account", account));
+			if (startDate != null) {
+				crit.add(Restrictions.or(Restrictions.isNull("finishDate.date"), Restrictions.))
 				query = Hiber
 						.session()
 						.createQuery(

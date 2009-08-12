@@ -675,7 +675,6 @@ public class Invocation {
 		}
 		String[] usernameAndPassword = Base64.decode(authHeader.substring(6))
 				.split(":");
-		Debug.print("password " + Base64.decode(authHeader.substring(6)));
 		if (usernameAndPassword == null || usernameAndPassword.length != 2) {
 			return null;
 			// throw new BadRequestException(

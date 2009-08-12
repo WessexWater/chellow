@@ -168,18 +168,18 @@ public class Supply extends PersistentEntity {
 							values, 22);
 					exportSupplierContract = SupplierContract
 							.getSupplierContract(exportSupplierContractName);
-					exportSupplierAccountReference = GeneralImport
-							.addField(csvElement,
-									"Export supplier account reference",
-									values, 23);
+					exportSupplierAccountReference = GeneralImport.addField(
+							csvElement, "Export supplier account reference",
+							values, 23);
 				}
 			}
 			Supply supply = site.insertSupply(source, generatorType,
-					supplyName, startDate, finishDate, gspGroup, hhdcContract, hhdcAccountReference,
-					meterSerialNumber, importMpanStr, importSsc,
-					importSupplierContract, importSupplierAccountReference, importAgreedSupplyCapacity,
-					exportMpanStr, exportSsc, exportSupplierContract, exportSupplierAccountReference,
-					exportAgreedSupplyCapacity);
+					supplyName, startDate, finishDate, gspGroup, hhdcContract,
+					hhdcAccountReference, meterSerialNumber, importMpanStr,
+					importSsc, importSupplierContract,
+					importSupplierAccountReference, importAgreedSupplyCapacity,
+					exportMpanStr, exportSsc, exportSupplierContract,
+					exportSupplierAccountReference, exportAgreedSupplyCapacity);
 			Hiber.flush();
 			SupplyGeneration generation = supply.getGenerationFirst();
 			if (hasImportKwh) {
@@ -441,11 +441,12 @@ public class Supply extends PersistentEntity {
 		Account existingHhdcAccount = existingGeneration.getHhdcAccount();
 		String existingHhdcAccountReference = null;
 		if (existingHhdcAccount != null) {
+			existingHhdcContract = HhdcContract
+					.getHhdcContract(existingHhdcAccount.getContract().getId());
 			existingHhdcAccountReference = existingHhdcAccount.getReference();
 		}
 		Mpan existingImportMpan = existingGeneration.getImportMpan();
 		Mpan existingExportMpan = existingGeneration.getExportMpan();
-		SupplyGeneration newSupplyGeneration;
 		Map<Site, Boolean> existingSiteMap = new HashMap<Site, Boolean>();
 		Meter existingMeter = existingGeneration.getMeter();
 		for (SiteSupplyGeneration siteSupplyGeneration : existingGeneration
@@ -453,11 +454,17 @@ public class Supply extends PersistentEntity {
 			existingSiteMap.put(siteSupplyGeneration.getSite(),
 					siteSupplyGeneration.getIsPhysical());
 		}
+		String existingImportMpanStr = null;
+		String existingExportMpanStr = null;
 		SupplierContract existingImportSupplierContract = null;
 		String existingImportSupplierAccountReference = null;
 		SupplierContract existingExportSupplierContract = null;
 		String existingExportSupplierAccountReference = null;
-		if (existingImportMpan == null) {
+		Ssc existingImportSsc = null;
+		Ssc existingExportSsc = null;
+		Integer existingImportSupplyCapacity = null;
+		Integer existingExportSupplyCapacity = null;
+		if (existingExportMpan != null) {
 			Account existingExportSupplierAccount = existingExportMpan
 					.getSupplierAccount();
 			existingExportSupplierContract = SupplierContract
@@ -465,16 +472,12 @@ public class Supply extends PersistentEntity {
 							.getContract().getId());
 			existingExportSupplierAccountReference = existingExportSupplierAccount
 					.getReference();
-			newSupplyGeneration = insertGeneration(existingSiteMap, startDate,
-					existingHhdcContract, existingHhdcAccountReference,
-					existingMeter.getSerialNumber(), null, null, null, null,
-					null, existingExportMpan.toString(), existingExportMpan
-							.getSsc(),
-					SupplierContract.getSupplierContract(existingExportMpan
-							.getSupplierAccount().getContract().getId()),
-					existingExportMpan.getSupplierAccount().getReference(),
-					existingExportMpan.getAgreedSupplyCapacity());
-		} else if (existingExportMpan == null) {
+			existingExportMpanStr = existingExportMpan.toString();
+			existingExportSsc = existingExportMpan.getSsc();
+			existingExportSupplyCapacity = existingExportMpan
+					.getAgreedSupplyCapacity();
+		} else if (existingImportMpan != null) {
+			existingImportMpanStr = existingImportMpan.toString();
 			Account existingImportSupplierAccount = existingImportMpan
 					.getSupplierAccount();
 			existingImportSupplierContract = SupplierContract
@@ -482,30 +485,20 @@ public class Supply extends PersistentEntity {
 							.getContract().getId());
 			existingImportSupplierAccountReference = existingImportSupplierAccount
 					.getReference();
-			newSupplyGeneration = insertGeneration(existingSiteMap, startDate,
-					existingHhdcContract, existingHhdcAccountReference,
-					existingMeter == null ? "" : existingMeter
-							.getSerialNumber(), existingImportMpan.toString(),
-					existingImportMpan.getSsc(),
-					existingImportSupplierContract,
-					existingImportSupplierAccountReference, existingImportMpan
-							.getAgreedSupplyCapacity(), null, null, null, null,
-					null);
-		} else {
-			newSupplyGeneration = insertGeneration(existingSiteMap, startDate,
-					existingHhdcContract, existingHhdcAccountReference,
-					existingMeter == null ? "" : existingMeter
-							.getSerialNumber(), existingImportMpan.toString(),
-					existingImportMpan.getSsc(),
-					existingImportSupplierContract,
-					existingImportSupplierAccountReference, existingImportMpan
-							.getAgreedSupplyCapacity(), existingExportMpan
-							.toString(), existingExportMpan.getSsc(),
-					existingExportSupplierContract,
-					existingExportSupplierAccountReference, existingExportMpan
-							.getAgreedSupplyCapacity());
+			existingImportSsc = existingImportMpan.getSsc();
+			existingImportSupplyCapacity = existingImportMpan
+					.getAgreedSupplyCapacity();
 		}
-		return newSupplyGeneration;
+		return insertGeneration(existingSiteMap, startDate,
+				existingHhdcContract, existingHhdcAccountReference,
+				existingMeter == null ? "" : existingMeter.getSerialNumber(),
+				existingImportMpanStr, existingImportSsc,
+				existingImportSupplierContract,
+				existingImportSupplierAccountReference,
+				existingImportSupplyCapacity, existingExportMpanStr,
+				existingExportSsc, existingExportSupplierContract,
+				existingExportSupplierAccountReference,
+				existingExportSupplyCapacity);
 	}
 
 	public SupplyGeneration insertGeneration(Map<Site, Boolean> siteMap,
@@ -525,9 +518,12 @@ public class Supply extends PersistentEntity {
 				meter = insertMeter(meterSerialNumber);
 			}
 		}
-		Account hhdcAccount = hhdcContract.findAccount(hhdcAccountReference);
-		if (hhdcAccount == null) {
-			hhdcAccount = hhdcContract.insertAccount(hhdcAccountReference);
+		Account hhdcAccount = null;
+		if (hhdcContract != null) {
+			hhdcAccount = hhdcContract.findAccount(hhdcAccountReference);
+			if (hhdcAccount == null) {
+				hhdcAccount = hhdcContract.insertAccount(hhdcAccountReference);
+			}
 		}
 		SupplyGeneration supplyGeneration = null;
 		SupplyGeneration existingGeneration = null;
@@ -545,18 +541,28 @@ public class Supply extends PersistentEntity {
 					existingGeneration.getFinishDate(), hhdcAccount, meter);
 			existingGeneration.internalUpdate(
 					existingGeneration.getStartDate(), startDate.getPrevious(),
-					existingGeneration.getHhdcAccount(), existingGeneration
+					existingGeneration.getHhdcAccount() == null ? null
+							: HhdcContract.getHhdcContract(existingGeneration
+									.getHhdcAccount().getContract().getId()),
+					existingGeneration.getHhdcAccount() == null ? null
+							: existingGeneration.getHhdcAccount()
+									.getReference(), existingGeneration
 							.getMeter());
 			generations.add(supplyGeneration);
 		}
 		Hiber.flush();
 		supplyGeneration.internalUpdate(supplyGeneration.getStartDate(),
 				supplyGeneration.getFinishDate(), supplyGeneration
-						.getHhdcAccount(), supplyGeneration.getMeter(),
-				importMpanStr, importSsc, importSupplierContract,
-				importSupplierAccountReference, importAgreedSupplyCapacity,
-				exportMpanStr, exportSsc, exportSupplierContract,
-				exportSupplierAccountReference, exportAgreedSupplyCapacity);
+						.getHhdcAccount() == null ? null : HhdcContract
+						.getHhdcContract(supplyGeneration.getHhdcAccount()
+								.getContract().getId()), supplyGeneration
+						.getHhdcAccount() == null ? null : supplyGeneration
+						.getHhdcAccount().getReference(), supplyGeneration
+						.getMeter(), importMpanStr, importSsc,
+				importSupplierContract, importSupplierAccountReference,
+				importAgreedSupplyCapacity, exportMpanStr, exportSsc,
+				exportSupplierContract, exportSupplierAccountReference,
+				exportAgreedSupplyCapacity);
 		for (Map.Entry<Site, Boolean> entry : siteMap.entrySet()) {
 			supplyGeneration.attachSite(entry.getKey(), entry.getValue());
 		}
@@ -630,12 +636,10 @@ public class Supply extends PersistentEntity {
 		Hiber.session().delete(generation);
 		if (previousGeneration == null) {
 			nextGeneration.update(generation.getStartDate(), nextGeneration
-					.getFinishDate(), nextGeneration.getHhdcAccount(),
-					nextGeneration.getMeter());
+					.getFinishDate());
 		} else {
 			previousGeneration.update(previousGeneration.getStartDate(),
-					generation.getFinishDate(), previousGeneration
-							.getHhdcAccount(), previousGeneration.getMeter());
+					generation.getFinishDate());
 		}
 		onSupplyGenerationChange(generation.getStartDate(), generation
 				.getFinishDate());

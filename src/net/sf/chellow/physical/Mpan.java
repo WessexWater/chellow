@@ -172,7 +172,6 @@ public class Mpan extends PersistentEntity {
 	public void update(String mpan, Ssc ssc, SupplierContract supplierContract,
 			String supplierAccountReference, Integer agreedSupplyCapacity)
 			throws HttpException {
-		Account originalSupplierAccount = supplierAccount;
 		Account supplierAccount = supplierContract
 				.findAccount(supplierAccountReference);
 		if (supplierAccount == null) {
@@ -230,22 +229,6 @@ public class Mpan extends PersistentEntity {
 		}
 		setSupplierAccount(supplierAccount);
 		setAgreedSupplyCapacity(agreedSupplyCapacity);
-		
-		if (!originalSupplierAccount.equals(supplierAccount)) {
-			
-			//move the bills!!!
-			
-			
-			if (((Long) Hiber
-					.session()
-					.createQuery(
-							"select count(*) from Mpan mpan where mpan.supplierAccount = :supplierAccount")
-					.setEntity("supplierAccount", originalSupplierAccount)
-					.uniqueResult()) > 0) {
-				Hiber.session().delete(originalSupplierAccount);
-				Hiber.flush();
-			}
-		}
 	}
 
 	public String toString() {

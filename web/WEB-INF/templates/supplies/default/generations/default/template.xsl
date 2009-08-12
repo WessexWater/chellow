@@ -393,6 +393,11 @@
 											</xsl:attribute>
 									</input>
 								</label>
+								<xsl:value-of select="' '" />
+								<a
+									href="{/source/request/@context-path}/hhdc-contracts/{/source/supply-generation/account/hhdc-contract/@id}/accounts/{/source/supply-generation/account/@id}/">
+									<xsl:value-of select="/source/supply-generation/account/@reference" />
+								</a>
 								<br />
 								<label>
 									<xsl:value-of select="'Meter Serial Number '" />
