@@ -132,15 +132,6 @@ public class GeneralImport extends Thread implements Urlable, XmlDescriber {
 			throw new InternalException(e);
 		}
 		digester = new Digester(reader, extension);
-		String[] titles = digester.getLine();
-
-		if (titles.length < 2
-				|| !titles[0].trim().toLowerCase().equals("action")
-				|| !titles[1].trim().toLowerCase().equals("type")) {
-			throw new UserException(
-					"The first line of the CSV must contain the titles "
-							+ "'Action, Type'.");
-		}
 	}
 
 	private synchronized void halt() {
@@ -174,7 +165,6 @@ public class GeneralImport extends Thread implements Urlable, XmlDescriber {
 				if (type.equals("hh-datum")) {
 					try {
 						long startProchh = System.currentTimeMillis();
-						// Debug.print("Type is hh-datum");
 						if (action.equals("insert")) {
 							String mpanCore = allValues[2];
 							boolean isImport = Boolean
@@ -190,7 +180,6 @@ public class GeneralImport extends Thread implements Urlable, XmlDescriber {
 								throw new UserException("There must be an even number of values in the list of hh data.");
 							}
 							for (int i = 0; i < vals.length; i += 2) {
-								// Debug.print("action is insert");
 								String bigDecimal = vals[i];
 								if (bigDecimal.length() > 0) {
 									Character status = null;
@@ -204,15 +193,11 @@ public class GeneralImport extends Thread implements Urlable, XmlDescriber {
 													new BigDecimal(bigDecimal),
 													status));
 								}
-								// Debug.print("size " + hhData.size());
 								endDate = endDate.getNext();
 							}
 							HhDatum.insert(hhData.iterator(), halt);
 							hhData.clear();
 						}
-						/*
-						 * else { HhDatum.generalImport(action, allValues); }
-						 */
 						totalHhTime = totalHhTime + System.currentTimeMillis()
 								- startProchh;
 					} catch (UserException e) {
@@ -288,9 +273,7 @@ public class GeneralImport extends Thread implements Urlable, XmlDescriber {
 				Hiber.close();
 				allValues = digester.getLine();
 			}
-
 			if (!hhData.isEmpty()) {
-				// Debug.print("not empty, so adding.");
 				HhDatum.insert(hhData.iterator(), halt);
 				Hiber.close();
 			}
@@ -331,7 +314,6 @@ public class GeneralImport extends Thread implements Urlable, XmlDescriber {
 			Hiber.rollBack();
 			Hiber.close();
 		}
-		// Debug.print("TotalTimeHH " + totalHhTime);
 	}
 
 	public static String addField(Element csvElement, String name,
@@ -410,7 +392,7 @@ public class GeneralImport extends Thread implements Urlable, XmlDescriber {
 		Digester(Reader reader, String extension) throws HttpException {
 			if (extension.equals("csv")) {
 				shredder = new CSVParser(reader);
-				shredder.setCommentStart("#;!");
+				shredder.setCommentStart("#");
 				shredder.setEscapes("nrtf", "\n\r\t\f");
 
 			} else if (extension.equals("xml")) {
@@ -425,15 +407,6 @@ public class GeneralImport extends Thread implements Urlable, XmlDescriber {
 						+ "' but only csv or xml is recognized.");
 			}
 		}
-
-		/*
-		 * public int getLineNumber() throws HttpException { return lineNumber;
-		 * 
-		 * if (shredder == null) { try { return
-		 * r.peek().getLocation().getLineNumber(); } catch (XMLStreamException
-		 * e) { throw new InternalException(e); } } else { return
-		 * shredder.getLastLineNumber(); } }
-		 */
 
 		public String[] getLine() throws HttpException {
 			if (shredder == null) {

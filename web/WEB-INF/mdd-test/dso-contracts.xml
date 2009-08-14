@@ -1,10 +1,6 @@
 <?xml version="1.0"?>
 <csv>
     <line>
-        <value><![CDATA[Action]]></value>
-        <value><![CDATA[Type]]></value>
-    </line>
-    <line>
         <value><![CDATA[insert]]></value>
         <value><![CDATA[dso-contract]]></value>
         <value><![CDATA[22]]></value>

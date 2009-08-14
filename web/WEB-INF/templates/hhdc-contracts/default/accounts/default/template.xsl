@@ -113,7 +113,7 @@
 								<a href="bills/">Bills</a>
 							</li>
 						</ul>
-
+<xsl:if test="/source/account/mpan">
 						<h2>MPANs</h2>
 
 						<ul>
@@ -125,6 +125,20 @@
 									<a
 										href="{/source/request/@context-path}/supplies/{supply-generation/supply/@id}/generations/{supply-generation/@id}/">
 										Supply Generation
+									</a>
+								</li>
+							</xsl:for-each>
+						</ul>
+						</xsl:if>
+						<h2>Supply Generations</h2>
+
+						<ul>
+							<xsl:for-each
+								select="/source/account/supply-generation">
+								<li>
+									<a
+										href="{/source/request/@context-path}/supplies/{supply/@id}/generations/{@id}/">
+										<xsl:value-of select="@id"/>
 									</a>
 								</li>
 							</xsl:for-each>

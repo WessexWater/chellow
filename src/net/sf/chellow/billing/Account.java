@@ -39,36 +39,23 @@ import net.sf.chellow.physical.MarketRole;
 import net.sf.chellow.physical.Mpan;
 import net.sf.chellow.physical.PersistentEntity;
 import net.sf.chellow.physical.SnagDateBounded;
+import net.sf.chellow.physical.SupplyGeneration;
 import net.sf.chellow.ui.GeneralImport;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 public class Account extends PersistentEntity {
-	/*
-	 * public static void generalImportHhdc(String action, String[] values,
-	 * Element csvElement) throws HttpException { String hhdcContractName =
-	 * GeneralImport.addField(csvElement, "Contract", values, 0); HhdcContract
-	 * hhdcContract = HhdcContract .getHhdcContract(hhdcContractName); String
-	 * hhdcAccountReference = GeneralImport.addField(csvElement, "Reference",
-	 * values, 1); if (action.equals("insert")) {
-	 * hhdcContract.insertAccount(hhdcAccountReference); } else { Account
-	 * hhdcAccount = hhdcContract.getAccount(hhdcAccountReference); if
-	 * (action.equals("delete")) { hhdcContract.deleteAccount(hhdcAccount); }
-	 * else if (action.equals("update")) { String newReference =
-	 * GeneralImport.addField(csvElement, "New Reference", values, 2);
-	 * hhdcAccount.update(newReference); } } }
-	 */
 	public static void generalImportHhdc(String action, String[] values,
 			Element csvElement) throws HttpException {
-		String hhdcContractName = GeneralImport.addField(csvElement,
-				"Contract", values, 0);
-		HhdcContract hhdcContract = HhdcContract
-				.getHhdcContract(hhdcContractName);
-		String hhdcAccountReference = GeneralImport.addField(csvElement,
-				"Reference", values, 1);
-		Account hhdcAccount = hhdcContract.getAccount(hhdcAccountReference);
 		if (action.equals("update")) {
+			String hhdcContractName = GeneralImport.addField(csvElement,
+					"Contract", values, 0);
+			HhdcContract hhdcContract = HhdcContract
+					.getHhdcContract(hhdcContractName);
+			String hhdcAccountReference = GeneralImport.addField(csvElement,
+					"Reference", values, 1);
+			Account hhdcAccount = hhdcContract.getAccount(hhdcAccountReference);
 			String newReference = GeneralImport.addField(csvElement,
 					"New Reference", values, 2);
 			hhdcAccount.update(newReference);
@@ -80,27 +67,21 @@ public class Account extends PersistentEntity {
 
 	public static void generalImportSupplier(String action, String[] values,
 			Element csvElement) throws HttpException {
-		if (values.length < 2) {
-			throw new UserException("There aren't enough fields in this row");
-		}
-		String supplierContractName = GeneralImport.addField(csvElement,
-				"Contract", values, 0);
-		SupplierContract supplierContract = SupplierContract
-				.getSupplierContract(supplierContractName);
-		String supplierAccountReference = GeneralImport.addField(csvElement,
-				"Reference", values, 1);
-		if (action.equals("insert")) {
-			supplierContract.insertAccount(supplierAccountReference);
-		} else {
+		if (action.equals("update")) {
+			String supplierContractName = GeneralImport.addField(csvElement,
+					"Contract", values, 0);
+			SupplierContract supplierContract = SupplierContract
+					.getSupplierContract(supplierContractName);
+			String supplierAccountReference = GeneralImport.addField(
+					csvElement, "Reference", values, 1);
 			Account supplierAccount = supplierContract
 					.getAccount(supplierAccountReference);
-			if (action.equals("delete")) {
-				supplierContract.deleteAccount(supplierAccount);
-			} else if (action.equals("update")) {
-				String newReference = GeneralImport.addField(csvElement,
-						"New Reference", values, 2);
-				supplierAccount.update(newReference);
-			}
+			String newReference = GeneralImport.addField(csvElement,
+					"New Reference", values, 2);
+			supplierAccount.update(newReference);
+		} else {
+			throw new UserException("The action '" + action
+					+ "' isn't recognized.");
 		}
 	}
 
@@ -191,6 +172,14 @@ public class Account extends PersistentEntity {
 					"supplyGeneration", new XmlTree("supply")).put("pc").put(
 					"mtc").put("llfc").put("core")));
 		}
+		for (SupplyGeneration generation : (List<SupplyGeneration>) Hiber
+				.session()
+				.createQuery(
+						"from SupplyGeneration generation where generation.hhdcAccount = :account")
+				.setEntity("account", this).list()) {
+			accountElement.appendChild(generation.toXml(doc, new XmlTree(
+					"supply")));
+		}
 		for (Bill bill : (List<Bill>) Hiber
 				.session()
 				.createQuery(
@@ -222,6 +211,20 @@ public class Account extends PersistentEntity {
 			HhEndDate finishDate) throws HttpException {
 		SnagDateBounded.deleteAccountSnag(this, description, startDate,
 				finishDate);
+	}
+
+	public void deleteSnag(String description, HhEndDate finishDate)
+			throws HttpException {
+		AccountSnag firstSnag = (AccountSnag) Hiber
+				.session()
+				.createQuery(
+						"from AccountSnag snag where snag.account = :account order by snag.startDate.date")
+				.setEntity("account", this).setMaxResults(1).uniqueResult();
+		if (firstSnag == null) {
+			return;
+		}
+		SnagDateBounded.deleteAccountSnag(this, description, firstSnag
+				.getStartDate(), finishDate);
 	}
 
 	public void addSnag(String description, HhEndDate startDate,

@@ -91,24 +91,24 @@ public class Supply extends PersistentEntity {
 			HhEndDate finishDate = finishDateStr.trim().length() > 0 ? HhEndDate
 					.roundUp(new MonadDate(finishDateStr).getDate())
 					: null;
-			String hasImportKwhStr = GeneralImport.addField(csvElement,
-					"Has import kWh", values, 7);
-			boolean hasImportKwh = Boolean.parseBoolean(hasImportKwhStr);
-			String hasImportKvarhStr = GeneralImport.addField(csvElement,
-					"Has import kVArh", values, 8);
-			boolean hasImportKvarh = Boolean.parseBoolean(hasImportKvarhStr);
-			String hasExportKwhStr = GeneralImport.addField(csvElement,
-					"Has export kWh", values, 9);
-			boolean hasExportKwh = Boolean.parseBoolean(hasExportKwhStr);
-			String hasExportKvarhStr = GeneralImport.addField(csvElement,
-					"Has export kVArh", values, 10);
-			boolean hasExportKvarh = Boolean.parseBoolean(hasExportKvarhStr);
 			String hhdcContractName = GeneralImport.addField(csvElement,
-					"HHDC Contract", values, 11);
+					"HHDC Contract", values, 7);
 			HhdcContract hhdcContract = hhdcContractName.length() == 0 ? null
 					: HhdcContract.getHhdcContract(hhdcContractName);
 			String hhdcAccountReference = GeneralImport.addField(csvElement,
-					"HHDC Account", values, 12);
+					"HHDC Account", values, 8);
+			String hasImportKwhStr = GeneralImport.addField(csvElement,
+					"Has HH import kWh", values, 9);
+			boolean hasImportKwh = Boolean.parseBoolean(hasImportKwhStr);
+			String hasImportKvarhStr = GeneralImport.addField(csvElement,
+					"Has HH import kVArh", values, 10);
+			boolean hasImportKvarh = Boolean.parseBoolean(hasImportKvarhStr);
+			String hasExportKwhStr = GeneralImport.addField(csvElement,
+					"Has HH export kWh", values, 11);
+			boolean hasExportKwh = Boolean.parseBoolean(hasExportKwhStr);
+			String hasExportKvarhStr = GeneralImport.addField(csvElement,
+					"Has HH export kVArh", values, 12);
+			boolean hasExportKvarh = Boolean.parseBoolean(hasExportKvarhStr);
 			String meterSerialNumber = GeneralImport.addField(csvElement,
 					"Meter Serial Number", values, 13);
 			String importMpanStr = GeneralImport.addField(csvElement,

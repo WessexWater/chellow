@@ -86,33 +86,9 @@ public class SupplyGeneration extends PersistentEntity {
 					meter = supply.insertMeter(meterSerialNumber);
 				}
 			}
-			String hasImportKwhStr = GeneralImport.addField(csvElement,
-					"Has import kWh?", values, 5);
-			boolean hasImportKwh = hasImportKwhStr
-					.equals(GeneralImport.NO_CHANGE) ? supplyGeneration
-					.getChannel(true, true) != null : Boolean
-					.parseBoolean(hasImportKwhStr);
-			String hasImportKvarhStr = GeneralImport.addField(csvElement,
-					"Has import kVArh?", values, 6);
-			boolean hasImportKvarh = hasImportKvarhStr
-					.equals(GeneralImport.NO_CHANGE) ? supplyGeneration
-					.getChannel(true, false) != null : Boolean
-					.parseBoolean(hasImportKvarhStr);
-			String hasExportKwhStr = GeneralImport.addField(csvElement,
-					"Has export kWh?", values, 7);
-			boolean hasExportKwh = hasExportKwhStr
-					.equals(GeneralImport.NO_CHANGE) ? supplyGeneration
-					.getChannel(false, true) != null : Boolean
-					.parseBoolean(hasExportKwhStr);
-			String hasExportKvarhStr = GeneralImport.addField(csvElement,
-					"Has export kVArh?", values, 8);
-			boolean hasExportKvarh = hasExportKvarhStr
-					.equals(GeneralImport.NO_CHANGE) ? supplyGeneration
-					.getChannel(false, false) != null : Boolean
-					.parseBoolean(hasExportKvarhStr);
 			HhdcContract hhdcContract = null;
 			String hhdcContractName = GeneralImport.addField(csvElement,
-					"HHDC Contract", values, 9);
+					"HHDC Contract", values, 5);
 			if (hhdcContractName.equals(GeneralImport.NO_CHANGE)) {
 				Account account = supplyGeneration.getHhdcAccount();
 				if (account == null) {
@@ -125,7 +101,7 @@ public class SupplyGeneration extends PersistentEntity {
 				hhdcContract = HhdcContract.getHhdcContract(hhdcContractName);
 			}
 			String hhdcAccountReference = GeneralImport.addField(csvElement,
-					"HHDC account reference", values, 10);
+					"HHDC account reference", values, 6);
 			if (hhdcAccountReference.equals(GeneralImport.NO_CHANGE)) {
 				Account hhdcAccount = supplyGeneration.getHhdcAccount();
 				if (hhdcAccount == null) {
@@ -134,6 +110,30 @@ public class SupplyGeneration extends PersistentEntity {
 				}
 				hhdcAccountReference = hhdcAccount.getReference();
 			}
+			String hasImportKwhStr = GeneralImport.addField(csvElement,
+					"Has HH import kWh?", values, 7);
+			boolean hasImportKwh = hasImportKwhStr
+					.equals(GeneralImport.NO_CHANGE) ? supplyGeneration
+					.getChannel(true, true) != null : Boolean
+					.parseBoolean(hasImportKwhStr);
+			String hasImportKvarhStr = GeneralImport.addField(csvElement,
+					"Has HH import kVArh?", values, 8);
+			boolean hasImportKvarh = hasImportKvarhStr
+					.equals(GeneralImport.NO_CHANGE) ? supplyGeneration
+					.getChannel(true, false) != null : Boolean
+					.parseBoolean(hasImportKvarhStr);
+			String hasExportKwhStr = GeneralImport.addField(csvElement,
+					"Has HH export kWh?", values, 9);
+			boolean hasExportKwh = hasExportKwhStr
+					.equals(GeneralImport.NO_CHANGE) ? supplyGeneration
+					.getChannel(false, true) != null : Boolean
+					.parseBoolean(hasExportKwhStr);
+			String hasExportKvarhStr = GeneralImport.addField(csvElement,
+					"Has HH export kVArh?", values, 10);
+			boolean hasExportKvarh = hasExportKvarhStr
+					.equals(GeneralImport.NO_CHANGE) ? supplyGeneration
+					.getChannel(false, false) != null : Boolean
+					.parseBoolean(hasExportKvarhStr);
 			for (boolean isImport : new boolean[] { true, false }) {
 				for (boolean isKwh : new boolean[] { true, false }) {
 					boolean hasChannel;
@@ -162,16 +162,11 @@ public class SupplyGeneration extends PersistentEntity {
 			}
 			String importMpanStr = GeneralImport.addField(csvElement,
 					"Import MPAN", values, 11);
-
-			String importSscCode = GeneralImport.addField(csvElement,
-					"Import SSC", values, 12);
 			Ssc importSsc = null;
-			String importAgreedSupplyCapacityStr = GeneralImport.addField(
-					csvElement, "Import Agreed Supply Capacity", values, 13);
 			Integer importAgreedSupplyCapacity = null;
-			Mpan existingImportMpan = supplyGeneration.getImportMpan();
 			SupplierContract importSupplierContract = null;
 			String importSupplierAccountReference = null;
+			Mpan existingImportMpan = supplyGeneration.getImportMpan();
 			if (importMpanStr.equals(GeneralImport.NO_CHANGE)) {
 				importMpanStr = existingImportMpan == null ? null
 						: existingImportMpan.toString();
@@ -179,6 +174,8 @@ public class SupplyGeneration extends PersistentEntity {
 				importMpanStr = null;
 			}
 			if (importMpanStr != null) {
+				String importSscCode = GeneralImport.addField(csvElement,
+						"Import SSC", values, 12);
 				if (importSscCode.equals(GeneralImport.NO_CHANGE)) {
 					if (existingImportMpan == null) {
 						throw new UserException(
@@ -190,6 +187,9 @@ public class SupplyGeneration extends PersistentEntity {
 					importSsc = importSscCode.length() == 0 ? null : Ssc
 							.getSsc(importSscCode);
 				}
+				String importAgreedSupplyCapacityStr = GeneralImport
+						.addField(csvElement, "Import Agreed Supply Capacity",
+								values, 13);
 				if (importAgreedSupplyCapacityStr
 						.equals(GeneralImport.NO_CHANGE)) {
 					if (existingImportMpan == null) {
@@ -209,9 +209,9 @@ public class SupplyGeneration extends PersistentEntity {
 										+ e.getMessage());
 					}
 				}
-				String importContractSupplierName = GeneralImport.addField(
+				String importSupplierContractName = GeneralImport.addField(
 						csvElement, "Import Supplier Contract", values, 14);
-				if (importContractSupplierName.equals(GeneralImport.NO_CHANGE)) {
+				if (importSupplierContractName.equals(GeneralImport.NO_CHANGE)) {
 					if (existingImportMpan == null) {
 						throw new UserException(
 								"There isn't an existing import supplier.");
@@ -225,7 +225,7 @@ public class SupplyGeneration extends PersistentEntity {
 							.getSupplierContract(account.getContract().getId());
 				} else {
 					importSupplierContract = SupplierContract
-							.getSupplierContract(importContractSupplierName);
+							.getSupplierContract(importSupplierContractName);
 				}
 				importSupplierAccountReference = GeneralImport.addField(
 						csvElement, "Import Supplier Account Reference",
@@ -344,45 +344,43 @@ public class SupplyGeneration extends PersistentEntity {
 					"Start date", values, 1);
 			HhEndDate startDate = startDateStr.length() == 0 ? null
 					: new HhEndDate(startDateStr);
-			String hasImportKwhStr = GeneralImport.addField(csvElement,
-					"Has import kWh", values, 7);
-			boolean hasImportKwh = Boolean.parseBoolean(hasImportKwhStr);
-			String hasImportKvarhStr = GeneralImport.addField(csvElement,
-					"Has import kVArh", values, 8);
-			boolean hasImportKvarh = Boolean.parseBoolean(hasImportKvarhStr);
-			String hasExportKwhStr = GeneralImport.addField(csvElement,
-					"Has export kWh", values, 9);
-			Boolean hasExportKwh = Boolean.parseBoolean(hasExportKwhStr);
-			String hasExportKvarhStr = GeneralImport.addField(csvElement,
-					"Has export kVArh", values, 10);
-			Boolean hasExportKvarh = Boolean.parseBoolean(hasExportKvarhStr);
 			String hhdcContractName = GeneralImport.addField(csvElement,
-					"HHDC Contract", values, 11);
+					"HHDC Contract", values, 2);
 			HhdcContract hhdcContract = null;
-			String hhdcAccountReference = null;
+			String hhdcAccountReference = GeneralImport.addField(csvElement,
+					"HHDC Account Reference", values, 3);
 			if (hhdcContractName.length() > 0) {
 				hhdcContract = HhdcContract.getHhdcContract(hhdcContractName);
-				hhdcAccountReference = GeneralImport.addField(csvElement,
-						"HHDC account reference", values, 12);
 			}
+			String hasImportKwhStr = GeneralImport.addField(csvElement,
+					"Has HH import kWh", values, 4);
+			boolean hasImportKwh = Boolean.parseBoolean(hasImportKwhStr);
+			String hasImportKvarhStr = GeneralImport.addField(csvElement,
+					"Has HH import kVArh", values, 5);
+			boolean hasImportKvarh = Boolean.parseBoolean(hasImportKvarhStr);
+			String hasExportKwhStr = GeneralImport.addField(csvElement,
+					"Has HH export kWh", values, 6);
+			Boolean hasExportKwh = Boolean.parseBoolean(hasExportKwhStr);
+			String hasExportKvarhStr = GeneralImport.addField(csvElement,
+					"Has HH export kVArh", values, 7);
+			Boolean hasExportKvarh = Boolean.parseBoolean(hasExportKvarhStr);
 			String meterSerialNumber = GeneralImport.addField(csvElement,
-					"Meter Serial Number", values, 2);
+					"Meter Serial Number", values, 8);
 			String importMpanStr = GeneralImport.addField(csvElement,
-					"Import MPAN", values, 3);
+					"Import MPAN", values, 9);
 			SupplierContract importSupplierContract = null;
 			String importSupplierAccountReference = null;
 			Ssc importSsc = null;
 			Integer importAgreedSupplyCapacity = null;
+			String importSscCode = GeneralImport.addField(csvElement,
+					"Import SSC", values, 10);
+			String importAgreedSupplyCapacityStr = GeneralImport.addField(
+					csvElement, "Import Agreed Supply Capacity", values, 11);
+			String importContractSupplierName = GeneralImport.addField(
+					csvElement, "Import Supplier Contract", values, 12);
+			importSupplierAccountReference = GeneralImport.addField(csvElement,
+					"Import Supplier Account Reference", values, 13);
 			if (importMpanStr.length() > 0) {
-				String importSscCode = GeneralImport.addField(csvElement,
-						"Import SSC", values, 4);
-				String importAgreedSupplyCapacityStr = GeneralImport.addField(
-						csvElement, "Import Agreed Supply Capacity", values, 6);
-				String importContractSupplierName = GeneralImport.addField(
-						csvElement, "Import Supplier Contract", values, 13);
-				importSupplierAccountReference = GeneralImport.addField(
-						csvElement, "Import Supplier Account Reference",
-						values, 14);
 				MpanCore mpanCore = MpanCore.findMpanCore(Mpan
 						.getCore(importMpanStr));
 				if (mpanCore != null) {
@@ -402,7 +400,7 @@ public class SupplyGeneration extends PersistentEntity {
 						.getSupplierContract(importContractSupplierName);
 			}
 			String exportMpanStr = GeneralImport.addField(csvElement,
-					"Eport MPAN", values, 15);
+					"Eport MPAN", values, 14);
 			Integer exportAgreedSupplyCapacity = null;
 			Ssc exportSsc = null;
 			SupplierContract exportSupplierContract = null;
@@ -410,14 +408,14 @@ public class SupplyGeneration extends PersistentEntity {
 
 			if (exportMpanStr.length() > 0) {
 				String exportSscCode = GeneralImport.addField(csvElement,
-						"Export SSC", values, 16);
+						"Export SSC", values, 15);
 				String exportAgreedSupplyCapacityStr = GeneralImport
 						.addField(csvElement, "Export Agreed Supply Capacity",
-								values, 18);
+								values, 16);
 				String exportContractSupplierName = GeneralImport.addField(
-						csvElement, "Export Supplier Contract", values, 25);
+						csvElement, "Export Supplier Contract", values, 17);
 				exportSupplierAccountReference = GeneralImport.addField(
-						csvElement, "Export Supplier Account", values, 26);
+						csvElement, "Export Supplier Account", values, 18);
 				if (supply == null) {
 					supply = MpanCore.getMpanCore(Mpan.getCore(exportMpanStr))
 							.getSupply();
@@ -1055,7 +1053,7 @@ public class SupplyGeneration extends PersistentEntity {
 								"select count(*) from SupplyGeneration generation where generation.hhdcAccount = :hhdcAccount")
 						.setEntity("hhdcAccount", originalHhdcAccount)
 						.uniqueResult()) == 0) {
-			originalHhdcAccount.deleteSnag(AccountSnag.MISSING_BILL, null, null);
+			originalHhdcAccount.deleteSnag(AccountSnag.MISSING_BILL, null);
 			Hiber.session().delete(originalHhdcAccount);
 			Hiber.flush();
 		}
@@ -1104,7 +1102,7 @@ public class SupplyGeneration extends PersistentEntity {
 		}
 		// check if we can delete the old import supplier account
 		if (origImportSupplierAccount != null
-				&& !originalHhdcAccount.equals(importMpan == null ? null
+				&& !origImportSupplierAccount.equals(importMpan == null ? null
 						: importMpan.getSupplierAccount())
 				&& ((Long) Hiber
 						.session()

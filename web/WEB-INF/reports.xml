@@ -1,10 +1,6 @@
 <?xml version="1.0"?>
 <csv>
   <line>
-    <value>action</value>
-    <value>type</value>
-  </line>
-  <line>
     <value>insert</value>
     <value>report</value>
     <value>1</value>
@@ -8462,11 +8458,9 @@ for account in Hiber.session().createQuery("from Account account where account.c
     <value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree, UserException
 from net.sf.chellow.billing import Account
 
-def create_item_element(doc, mpan, finish_generation):
+def create_item_element(doc, start_generation, finish_generation):
     item_element = doc.createElement('item')
     account_element.appendChild(item_element)
-    item_element.appendChild(mpan.getCore().toXml(doc))
-    start_generation = mpan.getSupplyGeneration()
     start_generation.setLabel('start')
     item_element.appendChild(start_generation.toXml(doc))
     finish_generation.setLabel('finish')
@@ -8478,19 +8472,19 @@ account = Account.getAccount(account_id)
 account_element = account.toXml(doc, XmlTree('contract'))
 source.appendChild(account_element)
 
-mpans = Hiber.session().createQuery("from Mpan mpan where mpan.hhdcAccount = :account order by mpan.core, mpan.supplyGeneration.startDate.date").setEntity('account', account).list()
-if len(mpans) > 0:
-    current_mpan = mpans[0]
-    finish_generation = current_mpan.getSupplyGeneration()
-    for i in range(1, len(mpans)):
-        mpan = mpans[i]
-        if current_mpan.getCore().equals(mpan.getCore()) and finish_generation.getFinishDate().getNext().getDate().equals(mpan.getSupplyGeneration().getStartDate().getDate()):
-            finish_generation = mpan.getSupplyGeneration()
+generations = Hiber.session().createQuery("from SupplyGeneration generation where generation.hhdcAccount = :account order by generation.supply.id, generation.startDate.date").setEntity('account', account).list()
+if len(generations) > 0:
+    current_generation = generations[0]
+    finish_generation = current_generation
+    for i in range(1, len(generations)):
+        generation = generations[i]
+        if finish_generation.getFinishDate() is not None and finish_generation.getFinishDate().getNext().equals(generation.getStartDate()):
+            finish_generation = generation
         else:
-            account_element.appendChild(create_item_element(doc, current_mpan, finish_generation))
-            current_mpan = mpan
-            finish_generation = current_mpan.getSupplyGeneration()
-    account_element.appendChild(create_item_element(doc, current_mpan, finish_generation))]]></value>
+            account_element.appendChild(create_item_element(doc, current_generation, finish_generation))
+            current_generation = generation
+            finish_generation = current_generation
+    account_element.appendChild(create_item_element(doc, current_generation, finish_generation))]]></value>
     <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
 <xsl:stylesheet version="1.0"
     xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
@@ -8581,12 +8575,8 @@ if len(mpans) > 0:
                 </ul>
 
                 <table>
-                    <caption>MPANs</caption>
+                    <caption>Supply Generations</caption>
                     <thead>
-                        <tr>
-                            <th rowspan="2">MPAN Core</th>
-                            <th colspan="2">Supply Generations</th>
-                        </tr>
                         <tr>
                             <th>From</th>
                             <th>To</th>
@@ -8596,21 +8586,17 @@ if len(mpans) > 0:
                         <xsl:for-each select="/source/account/item">
                             <tr>
                                 <td>
-                                    <xsl:value-of
-                                        select="mpan-core/@core" />
-                                </td>
-                                <td>
                                     <a
                                         href="{/source/request/@context-path}/reports/31/output/?supply-generation-id={supply-generation[@label='start']/@id}">
                                         <xsl:value-of
-                                            select="'Supply Generation'" />
+                                            select="supply-generation[@label='start']/@id" />
                                     </a>
                                 </td>
                                 <td>
                                     <a
                                         href="{/source/request/@context-path}/reports/31/output/?supply-generation-id={supply-generation[@label='finish']/@id}">
                                         <xsl:value-of
-                                            select="'Supply Generation'" />
+                                            select="supply-generation[@label='finish']/@id" />
                                     </a>
                                 </td>
                             </tr>
@@ -10695,7 +10681,6 @@ pw = inv.getResponse().getWriter()
 pw.println('<?xml version="1.0"?>')
 pw.flush()
 pw.println('<csv>')
-print_line(pw, ['Action', 'Type'])
 
 
 # DSO Contracts

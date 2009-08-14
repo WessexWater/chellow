@@ -25,6 +25,7 @@ import java.util.List;
 
 import net.sf.chellow.billing.Account;
 import net.sf.chellow.billing.AccountSnag;
+import net.sf.chellow.monad.Debug;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.HttpException;
@@ -451,14 +452,22 @@ public abstract class SnagDateBounded extends Snag {
 		@SuppressWarnings("unchecked")
 		public List<AccountSnag> getCoveredSnags(HhEndDate startDate,
 				HhEndDate finishDate) {
-			Criteria crit = Hiber.session().createCriteria(AccountSnag.class);
-			crit.add(Restrictions.eq("account", account));
+			Criteria crit = Hiber.session().createCriteria(AccountSnag.class).add(Restrictions.eq("account", account)).add(Restrictions.eq("description", description));
 			if (startDate != null) {
-				crit.add(Restrictions.or(Restrictions.isNull("finishDate.date"), Restrictions.))
-				query = Hiber
-						.session()
-						.createQuery(
-								"from AccountSnag snag where snag.account = :account and (snag.finishDate.date is null or snag.finishDate.date >= :startDate) and snag.description = :description order by snag.startDate.date");
+				crit.add(Restrictions.or(
+						Restrictions.isNull("finishDate.date"), Restrictions
+								.ge("finishDate.date", startDate.getDate())));
+				Debug.print("startDate not null.");
+			}
+			if (finishDate != null) {
+				crit.add(Restrictions.le("startDate.date", finishDate.getDate()));
+			}
+/*
+			Query query = Hiber
+					.session()
+					.createQuery(
+							"from AccountSnag snag where snag.account = :account and (snag.finishDate.date is null or snag.finishDate.date >= :startDate) and snag.description = :description order by snag.startDate.date");
+			if (true) {
 			} else {
 				query = Hiber
 						.session()
@@ -469,12 +478,14 @@ public abstract class SnagDateBounded extends Snag {
 			return (List<AccountSnag>) query.setTimestamp("startDate",
 					startDate.getDate()).setEntity("account", account)
 					.setString("description", description).list();
+*/
+			Debug.print("seems to have done it okay");
+			return (List<AccountSnag>) crit.list();
 		}
 	}
 
 	protected boolean isCombinable(SnagDateBounded snag) throws HttpException {
-		return getFinishDate().getDate().getTime() == snag.getStartDate()
-				.getPrevious().getDate().getTime()
+		return snag.getStartDate().getPrevious().equals(getFinishDate())
 				&& getIsIgnored() == snag.getIsIgnored();
 	}
 }

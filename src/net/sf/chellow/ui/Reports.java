@@ -89,10 +89,6 @@ public class Reports extends EntityList {
 			}
 			pw.println("<?xml version=\"1.0\"?>");
 			pw.println("<csv>");
-			pw.println("  <line>");
-			pw.println("    <value>action</value>");
-			pw.println("    <value>type</value>");
-			pw.println("  </line>");
 			pw.flush();
 			for (Report report : (List<Report>) Hiber
 					.session()
