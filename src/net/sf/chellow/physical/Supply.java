@@ -806,21 +806,13 @@ public class Supply extends PersistentEntity {
 				SupplierContract supplierContract = SupplierContract
 						.getSupplierContract(mpan.getSupplierAccount()
 								.getContract().getId());
-				HhEndDate supplierContractStartDate = supplierContract
-						.getStartRateScript().getStartDate();
-				if (supplierContractStartDate.getDate().after(
-						generation.getStartDate().getDate())) {
+				if (supplierContract.getStartRateScript().getStartDate().after(
+						generation.getStartDate())) {
 					throw new UserException(
 							"The supplier contract starts after the supply generation.");
 				}
-				HhEndDate supplierContractFinishDate = supplierContract
-						.getFinishRateScript().getFinishDate();
-				if (generation.getFinishDate() == null
-						&& supplierContractFinishDate != null
-						|| supplierContractFinishDate != null
-						&& generation.getFinishDate() != null
-						&& supplierContractFinishDate.getDate().before(
-								generation.getStartDate().getDate())) {
+				if (HhEndDate.isBefore(supplierContract.getFinishRateScript()
+						.getFinishDate(), generation.getFinishDate())) {
 					throw new UserException(
 							"The supplier contract finishes before the supply generation.");
 				}

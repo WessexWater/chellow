@@ -160,8 +160,7 @@ public abstract class Contract extends PersistentEntity implements
 		}
 		getRateScripts().remove(rateScript);
 		Hiber.flush();
-		onUpdate(rateScript.getStartDate(), rateScript
-				.getFinishDate());
+		onUpdate(rateScript.getStartDate(), rateScript.getFinishDate());
 	}
 
 	protected HhEndDate getStartDate() {
@@ -174,6 +173,14 @@ public abstract class Contract extends PersistentEntity implements
 
 	@SuppressWarnings("unchecked")
 	void onUpdate(HhEndDate from, HhEndDate to) throws HttpException {
+		List<RateScript> scripts = (List<RateScript>) Hiber
+				.session()
+				.createQuery(
+						"from RateScript script where script.contract.id = :contractId order by script.startDate.date")
+				.setLong("contractId", getId()).list();
+		setStartRateScript(scripts.get(0));
+		setFinishRateScript(scripts.get(scripts.size() - 1));
+
 		if (from == null) {
 			from = getStartDate();
 		}
@@ -198,13 +205,8 @@ public abstract class Contract extends PersistentEntity implements
 		Element element = super.toXml(doc, elementName);
 
 		element.setAttribute("name", name);
-		// startRateScript.setLabel("start");
-		// element.appendChild(startRateScript.toXml(doc));
-		// finishRateScript.setLabel("finish");
-		// element.appendChild(finishRateScript.toXml(doc));
 		if (chargeScript != null) {
-			element.setAttribute("charge-script", chargeScript
-					.replace("\r", "").replace("\t", "    "));
+			element.setAttribute("charge-script", chargeScript);
 		}
 		return element;
 	}
@@ -266,15 +268,6 @@ public abstract class Contract extends PersistentEntity implements
 		return bill;
 	}
 
-	/*
-	 * public Invocable invocableEngine(String chargeScript) throws
-	 * HttpException { ScriptEngineManager engineMgr = new
-	 * ScriptEngineManager(); ScriptEngine scriptEngine =
-	 * engineMgr.getEngineByName("jython"); Invocable invocableEngine = null;
-	 * try { scriptEngine.eval(chargeScript); scriptEngine.put("service", this);
-	 * invocableEngine = (Invocable) scriptEngine; } catch (ScriptException e) {
-	 * throw new UserException(e.getMessage()); } return invocableEngine; }
-	 */
 	public VirtualBill billElement(Account account, HhEndDate from, HhEndDate to)
 			throws HttpException {
 		return virtualBill("total", account, from, to);
@@ -337,8 +330,9 @@ public abstract class Contract extends PersistentEntity implements
 		if (rateScript.getFinishDate() != null
 				&& startDate.getDate().after(
 						rateScript.getFinishDate().getDate())) {
-			throw new UserException(
-					"For the contract " + getId() + " called "+ getName() + ", the start date " + startDate + " is after the last rate script.");
+			throw new UserException("For the contract " + getId() + " called "
+					+ getName() + ", the start date " + startDate
+					+ " is after the last rate script.");
 		}
 		HhEndDate finishDate = rateScript.getStartDate().getPrevious();
 		for (int i = 0; i < rateScripts.size(); i++) {
@@ -367,8 +361,7 @@ public abstract class Contract extends PersistentEntity implements
 				script);
 		getRateScripts().add(newRateScript);
 		Hiber.flush();
-		onUpdate(newRateScript.getStartDate(), newRateScript
-				.getFinishDate());
+		onUpdate(newRateScript.getStartDate(), newRateScript.getFinishDate());
 		return newRateScript;
 	}
 

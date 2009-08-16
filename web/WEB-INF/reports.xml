@@ -3638,7 +3638,7 @@ source.appendChild(group.toXml(doc))]]></value>
         <html>
             <head>
                 <link rel="stylesheet" type="text/css"
-                    href="{/source/request/@context-path}/reports/10/output/" />
+                    href="{/source/request/@context-path}/reports/19/output/" />
                 <title>
                     Home &gt; GSP Groups &gt;
                     <xsl:value-of
@@ -3653,7 +3653,7 @@ source.appendChild(group.toXml(doc))]]></value>
                     </a>
                     &gt;
                     <a
-                        href="{/source/request/@context-path}/reports/22/output/">
+                        href="{/source/request/@context-path}/reports/43/output/">
                         <xsl:value-of select="'GSP Groups'" />
                     </a>
                     &gt;
@@ -4144,7 +4144,7 @@ for group in Hiber.session().createQuery("from GspGroup group order by group.cod
         <html>
             <head>
                 <link rel="stylesheet" type="text/css"
-                    href="{/source/request/@context-path}/reports/10/output/" />
+                    href="{/source/request/@context-path}/reports/19/output/" />
                 <title>
                     <xsl:value-of select="'Home'" />
                     &gt; GSP Groups
@@ -4184,7 +4184,7 @@ for group in Hiber.session().createQuery("from GspGroup group order by group.cod
                             <tr>
                                 <td>
                                     <a
-                                        href="{/source/request/@context-path}/reports/18/output/?gsp-group-id={@id}">
+                                        href="{/source/request/@context-path}/reports/35/output/?gsp-group-id={@id}">
                                         <xsl:value-of select="@id" />
                                     </a>
                                 </td>
@@ -10236,7 +10236,7 @@ for type in Hiber.session().createQuery("from ReadType type order by type.code")
         <html>
             <head>
                 <link rel="stylesheet" type="text/css"
-                    href="{/source/request/@context-path}/reports/10/output/" />
+                    href="{/source/request/@context-path}/reports/19/output/" />
                 <title>
                     Home &gt; Read Types
                 </title>
@@ -10275,7 +10275,7 @@ for type in Hiber.session().createQuery("from ReadType type order by type.code")
                             <tr>
                                 <td>
                                     <a
-                                        href="{/source/request/@context-path}/reports/72/output/?type-id={@id}">
+                                        href="{/source/request/@context-path}/reports/143/output/?type-id={@id}">
                                         <xsl:value-of select="@id" />
                                     </a>
                                 </td>
@@ -10315,7 +10315,7 @@ source.appendChild(type.toXml(doc))]]></value>
         <html>
             <head>
                 <link rel="stylesheet" type="text/css"
-                    href="{/source/request/@context-path}/reports/10/output/" />
+                    href="{/source/request/@context-path}/reports/19/output/" />
                 <title>
                     Home &gt; Read Types &gt;
                     <xsl:value-of
@@ -10330,7 +10330,7 @@ source.appendChild(type.toXml(doc))]]></value>
                     </a>
                     &gt;
                     <a
-                        href="{/source/request/@context-path}/reports/71/output/">
+                        href="{/source/request/@context-path}/reports/141/output/">
                         <xsl:value-of select="'Read Types'" />
                     </a>
                     &gt;

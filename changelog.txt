@@ -1,3 +1,7 @@
+* Fixed bug 2837768 where there was a problem deleting rate scripts.
+
+* On supplies page in edit world, the link to the view world now works.
+
 * Got rid of mandatory title line at the top of general import files. Instead any line beginning
     with a # is a comment line.
 

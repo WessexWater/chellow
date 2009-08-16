@@ -261,16 +261,15 @@ public class RateScript extends PersistentEntity {
 	}
 
 	public void httpPost(Invocation inv) throws HttpException {
-		String script = inv.getString("script");
-		script = script.replace("\r", "").replace("\t", "    ");
-
 		if (inv.hasParameter("test")) {
+			String script = inv.getString("script");
 			Date startDate = inv.getDate("start-date");
 			Date finishDate = null;
 			boolean hasFinished = inv.getBoolean("has-finished");
 			if (!inv.isValid()) {
 				throw new UserException(document());
 			}
+			script = script.replace("\r", "").replace("\t", "    ");
 			if (hasFinished) {
 				finishDate = inv.getDate("finish-date");
 				if (!inv.isValid()) {
@@ -291,16 +290,24 @@ public class RateScript extends PersistentEntity {
 			source.appendChild(bill.getVirtualBill().toXml(doc));
 			inv.sendOk(doc);
 		} else if (inv.hasParameter("delete")) {
+			try {
 			contract.delete(this);
 			Hiber.commit();
+			} catch (UserException e) {
+				Hiber.rollBack();
+				e.setDocument(document());
+				throw e;
+			}
 			inv.sendFound(contract.rateScriptsInstance().getUri());
 		} else {
+			String script = inv.getString("script");
 			Date startDate = inv.getDate("start-date");
 			Date finishDate = null;
 			boolean hasFinished = inv.getBoolean("has-finished");
 			if (!inv.isValid()) {
 				throw new UserException(document());
 			}
+			script = script.replace("\r", "").replace("\t", "    ");
 			if (hasFinished) {
 				finishDate = inv.getDate("finish-date");
 				if (!inv.isValid()) {

@@ -932,6 +932,12 @@
 											</xsl:for-each>
 										</select>
 									</label>
+									<xsl:value-of select="' '"/>
+									<a
+										href="{/source/request/@context-path}/supplier-contracts/{/source/supply-generation/mpan[llfc/@is-import='false']/account/supplier-contract/@id}">
+										<xsl:value-of
+											select="/source/supply-generation/mpan[llfc/@is-import='false']/account/supplier-contract/@name" />
+									</a>
 									<br />
 									<label>
 										Supplier Account

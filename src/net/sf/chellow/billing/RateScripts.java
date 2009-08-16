@@ -83,7 +83,7 @@ public class RateScripts extends EntityList {
 					.roundDown(startDate).getNext(), "");
 			Hiber.commit();
 			Hiber.flush();
-			inv.sendCreated(document(), rateScript.getUri());
+			inv.sendSeeOther(rateScript.getUri());
 		} catch (HttpException e) {
 			Hiber.rollBack();
 			e.setDocument(document());

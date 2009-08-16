@@ -25,7 +25,7 @@
 					&gt;
 					<a
 						href="{/source/request/@context-path}/supplier-contracts/">
-						Supplier Contracts
+						<xsl:value-of select="'Supplier Contracts'"/>
 					</a>
 					&gt;
 					<xsl:value-of
