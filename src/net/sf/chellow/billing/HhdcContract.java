@@ -59,10 +59,6 @@ import org.w3c.dom.Element;
 public class HhdcContract extends Contract {
 	static public final String GENERAL_IMPORT_NAME = "hhdc-contract";
 
-	static public final String FREQUENCY_DAILY = "daily";
-
-	static public final String FREQUENCY_MONTHLY = "monthly";
-
 	static public void generalImport(String action, String[] values,
 			Element csvElement) throws HttpException {
 		if (values.length < 8) {
@@ -152,11 +148,6 @@ public class HhdcContract extends Contract {
 			HhEndDate startDate, HhEndDate finishDate, String chargeScript,
 			String properties, String rateScript) throws HttpException {
 		super(name, startDate, finishDate, chargeScript, rateScript);
-		/*
-		 * if (hhdc.getRole().getCode() != MarketRole.HHDC) { throw new
-		 * UserException("The provider must have the HHDC role."); }
-		 * setParty(hhdc);
-		 */
 		setState("");
 		intrinsicUpdate(participant, name, chargeScript, properties);
 	}
@@ -239,6 +230,7 @@ public class HhdcContract extends Contract {
 	public void httpPost(Invocation inv) throws HttpException {
 		if (inv.hasParameter("update-state")) {
 			String state = inv.getString("state");
+			state = state.replace("\r", "").replace("\t", "    ");
 			setState(state);
 			Hiber.commit();
 			Document doc = document();

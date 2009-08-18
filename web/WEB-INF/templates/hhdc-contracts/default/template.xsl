@@ -168,6 +168,7 @@
 						<input type="reset" value="Reset" />
 					</fieldset>
 				</form>
+				<br/>
 				<form action=".">
 					<fieldset>
 						<legend>Delete this contract</legend>

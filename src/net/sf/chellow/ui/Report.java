@@ -52,12 +52,11 @@ public class Report extends PersistentEntity {
 		String idString = GeneralImport.addField(csvElement, "Id", values, 0);
 		Long id = null;
 		String name = GeneralImport.addField(csvElement, "Name", values, 1);
-		String script = GeneralImport.addField(csvElement, "Script",
-				values, 2);
+		String script = GeneralImport.addField(csvElement, "Script", values, 2);
 		String template = null;
 		if (values.length > 3) {
-			template = GeneralImport.addField(csvElement, "Template",
-					values, 3);
+			template = GeneralImport
+					.addField(csvElement, "Template", values, 3);
 		}
 		if (action.equals("insert")) {
 			if (idString.trim().length() > 0) {
@@ -108,8 +107,8 @@ public class Report extends PersistentEntity {
 			String template) throws HttpException {
 		Report report = new Report(id, name, script, template);
 		try {
-		Hiber.session().save(report);
-		Hiber.flush();
+			Hiber.session().save(report);
+			Hiber.flush();
 		} catch (ConstraintViolationException e) {
 			Hiber.rollBack();
 			throw new UserException("There's already a report with that name.");
@@ -144,7 +143,7 @@ public class Report extends PersistentEntity {
 				}
 			} else {
 				if (id > configuration.getUserReportId()) {
-					id = configuration.nextUserReportId();
+					configuration.setUserReportId(id);
 				}
 			}
 		}
