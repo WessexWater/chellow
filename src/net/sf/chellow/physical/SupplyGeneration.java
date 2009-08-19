@@ -335,6 +335,21 @@ public class SupplyGeneration extends PersistentEntity {
 					importAgreedSupplyCapacity, exportMpanStr, exportSsc,
 					exportSupplierContract, exportSupplierAccountReference,
 					exportAgreedSupplyCapacity);
+		} else if (action.equals("delete")) {
+			String mpanCoreStr = GeneralImport.addField(csvElement,
+					"MPAN Core", values, 0);
+			MpanCore mpanCore = MpanCore.getMpanCore(mpanCoreStr);
+			Supply supply = mpanCore.getSupply();
+			String dateStr = GeneralImport.addField(csvElement, "Date", values,
+					1);
+
+			SupplyGeneration supplyGeneration = supply.getGeneration(dateStr
+					.length() == 0 ? null : new HhEndDate(dateStr));
+			if (supplyGeneration == null) {
+				throw new UserException(
+						"There isn't a generation at this date.");
+			}
+			supply.deleteGeneration(supplyGeneration);
 		} else if (action.equals("insert")) {
 			String siteCode = GeneralImport.addField(csvElement, "Site Code",
 					values, 0);

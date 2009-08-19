@@ -1,3 +1,5 @@
+* Added bulk delete of supply generations.
+
 * Fixed user report numbering bug on importing.
 
 * Fixed bug where first and last rate scripts weren't updated when rate scripts were changed.
