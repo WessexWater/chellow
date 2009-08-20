@@ -34,6 +34,7 @@ import net.sf.chellow.billing.AccountSnag;
 import net.sf.chellow.billing.Bill;
 import net.sf.chellow.billing.HhdcContract;
 import net.sf.chellow.billing.SupplierContract;
+import net.sf.chellow.monad.Debug;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.InternalException;
@@ -54,7 +55,6 @@ import net.sf.chellow.ui.GeneralImport;
 import org.hibernate.Criteria;
 import org.hibernate.Query;
 import org.hibernate.ScrollableResults;
-import org.hibernate.criterion.Projections;
 import org.hibernate.criterion.Restrictions;
 import org.hibernate.exception.ConstraintViolationException;
 import org.w3c.dom.Document;
@@ -822,6 +822,7 @@ public class Supply extends PersistentEntity {
 			// update missing bill account snags
 			Account hhdcAccount = generation.getHhdcAccount();
 			if (hhdcAccount != null) {
+				Debug.print("Supply " + getId() + " generation " + generation.getId());
 				hhdcAccount.addSnag(AccountSnag.MISSING_BILL, generation
 						.getStartDate(), generation.getFinishDate());
 				for (Bill bill : (List<Bill>) Hiber.session().createQuery(
@@ -833,22 +834,19 @@ public class Supply extends PersistentEntity {
 			}
 			for (Mpan mpan : generation.getMpans()) {
 				Account supplierAccount = mpan.getSupplierAccount();
-                Criteria crit = Hiber.session().createCriteria(Mpan.class).setProjection(Projections.rowCount()).add(Restrictions.eq("supplierAccount", supplierAccount));
-                if (generation.getFinishDate() == null) {
-                	crit.add(Restrictions.isNotNull("supplyGeneration.finishDate")).add(Restrictions.ge("supplyGeneration.finishDate.date", generation.getStartDate().getDate()))
-                	 mpan.supplyGeneration.finishDate.date is not null and mpan.supplyGeneration.finishDate.date >= :startDate and mpan.supplyGeneration.startDate.date != :startDate
-                }
+				/*
+
 				Query query = null;
 				if (generation.getFinishDate() == null) {
 					query = Hiber
 							.session()
 							.createQuery(
-									"select count(*) from Mpan mpan where mpan.supplierAccount = :account and mpan.supplyGeneration.finishDate.date is not null and mpan.supplyGeneration.finishDate.date >= :startDate and mpan.supplyGeneration.startDate.date != :startDate");
+									"select count(*) from Mpan mpan where mpan.supplierAccount = :account and (mpan.supplyGeneration.finishDate.date is null or mpan.supplyGeneration.finishDate.date >= :startDate) and not (mpan.supplyGeneration.finishDate is null and mpan.supplyGeneration.startDate.date = :startDate)");
 				} else {
 					query = Hiber
 							.session()
 							.createQuery(
-									"select count(*) from Mpan mpan where mpan.supplierAccount = :account and mpan.supplyGeneration.startDate.date <= :finishDate and (mpan.supplyGeneration.finishDate.date is null or (mpan.supplyGeneration.finishDate.date >= :startDate and mpan.supplyGeneration.finishDate.date != :finishDate)) and mpan.supplyGeneration.startDate.date != :startDate")
+									"select count(*) from Mpan mpan where mpan.supplierAccount = :account and mpan.supplyGeneration.startDate.date <= :finishDate and (mpan.supplyGeneration.finishDate.date is null or mpan.supplyGeneration.finishDate.date >= :startDate) and not (mpan.supplyGeneration.finishDate.date = :finishDate and mpan.supplyGeneration.startDate.date = :startDate)")
 							.setTimestamp("finishDate",
 									generation.getFinishDate().getDate());
 				}
@@ -858,7 +856,7 @@ public class Supply extends PersistentEntity {
 					throw new UserException(
 							"If two supplies are on the same account at the same time, their supply generations must have the same start and finish dates.");
 				}
-
+*/
 				supplierAccount.addSnag(AccountSnag.MISSING_BILL, generation
 						.getStartDate(), generation.getFinishDate());
 				for (Bill bill : (List<Bill>) Hiber.session().createQuery(

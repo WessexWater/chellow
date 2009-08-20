@@ -169,7 +169,7 @@ public class Account extends PersistentEntity {
 				"from Mpan mpan where mpan.supplierAccount = :account")
 				.setEntity("account", this).list()) {
 			accountElement.appendChild(mpan.toXml(doc, new XmlTree(
-					"supplyGeneration", new XmlTree("supply")).put("pc").put(
+					"supplyGeneration", new XmlTree("supply").put("pc")).put(
 					"mtc").put("llfc").put("core")));
 		}
 		for (SupplyGeneration generation : (List<SupplyGeneration>) Hiber

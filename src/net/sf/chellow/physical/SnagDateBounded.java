@@ -136,7 +136,7 @@ public abstract class SnagDateBounded extends Snag {
 				outerSnag.setFinishDate(snagToAdd.getStartDate().getPrevious());
 				snag.setStartDate(snagToAdd.getStartDate());
 				snagToAdd.insertSnag(outerSnag);
-				Hiber.flush();
+				//Hiber.flush();
 				if (snag.getFinishDate() == null) {
 					background = null;
 				}
