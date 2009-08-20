@@ -39,7 +39,6 @@ import net.sf.chellow.monad.types.MonadDate;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
 
-import org.hibernate.ScrollableResults;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -72,6 +71,7 @@ public class HhData extends EntityList {
 		inv.sendOk(doc(inv));
 	}
 
+	@SuppressWarnings("unchecked")
 	private Document doc(Invocation inv) throws HttpException {
 		Document doc = MonadUtils.newSourceDocument();
 		Element source = doc.getDocumentElement();
@@ -129,14 +129,12 @@ public class HhData extends EntityList {
 			throw new UserException(doc,
 					"This month doesn't overlap with the generation.");
 		}
-		ScrollableResults hhData = Hiber
+		for (HhDatum datum : (List<HhDatum>) Hiber
 				.session()
 				.createQuery(
 						"from HhDatum datum where datum.channel = :channel and datum.endDate.date >= :from and datum.endDate.date <= :to order by datum.endDate.date")
 				.setEntity("channel", channel).setDate("from", startDate)
-				.setDate("to", finishDate).scroll();
-		while (hhData.next()) {
-			HhDatum datum = (HhDatum) hhData.get(0);
+				.setDate("to", finishDate).list()) {
 			hhDataElement.appendChild(datum.toXml(doc));
 		}
 		return doc;
