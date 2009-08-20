@@ -139,7 +139,8 @@ public abstract class SnagDateBounded extends Snag {
 				Hiber.flush();
 				if (snag.getFinishDate() == null) {
 					background = null;
-				} else {
+				}
+				if (background != null) {
 					background.setFinishDate(snag.getFinishDate().getNext());
 					background.setStartDate(snag.getFinishDate().getNext());
 				}

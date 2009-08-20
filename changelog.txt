@@ -1,3 +1,6 @@
+* In a db export, now stores HHDC contract state, so downloading of files will
+    resume from where they left off.
+
 * Added bulk delete of supply generations.
 
 * Fixed user report numbering bug on importing.

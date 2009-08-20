@@ -83,16 +83,18 @@ public class HhdcContract extends Contract {
 					"Charge Script", values, 4);
 			String properties = GeneralImport.addField(csvElement,
 					"Properties", values, 5);
+			String state = GeneralImport.addField(csvElement,
+					"State", values, 6);
 			String rateScript = GeneralImport.addField(csvElement,
-					"Rate Script", values, 6);
+					"Rate Script", values, 7);
 			insertHhdcContract(participant, name, startDate, finishDate,
-					chargeScript, properties, rateScript);
+					chargeScript, properties, state, rateScript);
 		}
 	}
 
 	static public HhdcContract insertHhdcContract(Participant participant,
 			String name, HhEndDate startDate, HhEndDate finishDate,
-			String chargeScript, String importerProperties, String rateScript)
+			String chargeScript, String importerProperties, String state, String rateScript)
 			throws HttpException {
 		HhdcContract existing = findHhdcContract(name);
 		if (existing != null) {
@@ -100,7 +102,7 @@ public class HhdcContract extends Contract {
 					"There's already a HHDC contract with the name " + name);
 		}
 		HhdcContract contract = new HhdcContract(participant, name, startDate,
-				finishDate, chargeScript, importerProperties, rateScript);
+				finishDate, chargeScript, importerProperties, state, rateScript);
 		Hiber.session().save(contract);
 		Hiber.flush();
 		return contract;
@@ -146,9 +148,9 @@ public class HhdcContract extends Contract {
 
 	public HhdcContract(Participant participant, String name,
 			HhEndDate startDate, HhEndDate finishDate, String chargeScript,
-			String properties, String rateScript) throws HttpException {
+			String properties, String state, String rateScript) throws HttpException {
 		super(name, startDate, finishDate, chargeScript, rateScript);
-		setState("");
+		setState(state);
 		intrinsicUpdate(participant, name, chargeScript, properties);
 	}
 

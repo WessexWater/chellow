@@ -54,6 +54,7 @@ import net.sf.chellow.ui.GeneralImport;
 import org.hibernate.Criteria;
 import org.hibernate.Query;
 import org.hibernate.ScrollableResults;
+import org.hibernate.criterion.Projections;
 import org.hibernate.criterion.Restrictions;
 import org.hibernate.exception.ConstraintViolationException;
 import org.w3c.dom.Document;
@@ -832,7 +833,11 @@ public class Supply extends PersistentEntity {
 			}
 			for (Mpan mpan : generation.getMpans()) {
 				Account supplierAccount = mpan.getSupplierAccount();
-
+                Criteria crit = Hiber.session().createCriteria(Mpan.class).setProjection(Projections.rowCount()).add(Restrictions.eq("supplierAccount", supplierAccount));
+                if (generation.getFinishDate() == null) {
+                	crit.add(Restrictions.isNotNull("supplyGeneration.finishDate")).add(Restrictions.ge("supplyGeneration.finishDate.date", generation.getStartDate().getDate()))
+                	 mpan.supplyGeneration.finishDate.date is not null and mpan.supplyGeneration.finishDate.date >= :startDate and mpan.supplyGeneration.startDate.date != :startDate
+                }
 				Query query = null;
 				if (generation.getFinishDate() == null) {
 					query = Hiber

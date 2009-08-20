@@ -59,10 +59,6 @@ public class MpanCore extends PersistentEntity {
 				raw.getUniquePart()).uniqueResult();
 	}
 
-	/*
-	 * static public MpanCore getMpanCore(MonadLong id) throws
-	 * ProgrammerException { return getMpanCore(id.getLong()); }
-	 */
 	private Supply supply;
 
 	private Dso dso;
@@ -71,21 +67,13 @@ public class MpanCore extends PersistentEntity {
 
 	private char checkDigit;
 
-	// private Set<Mpan> mpans;
-
 	public MpanCore() {
 	}
 
 	public MpanCore(Supply supply, String core) throws HttpException {
 		setSupply(supply);
-		// setMpans(new HashSet<Mpan>());
 		update(core);
 	}
-
-	/*
-	 * public MpanCore(Dso dso, MpanUniquePart uniquePart, CheckDigit
-	 * checkDigit) throws HttpException { init(dso, uniquePart, checkDigit); }
-	 */
 
 	public void update(String core) throws HttpException {
 		MpanCoreRaw coreRaw = new MpanCoreRaw(core);
@@ -131,11 +119,6 @@ public class MpanCore extends PersistentEntity {
 				+ checkDigit);
 	}
 
-	/*
-	 * public Set<Mpan> getMpans() { return mpans; }
-	 * 
-	 * void setMpans(Set<Mpan> mpans) { this.mpans = mpans; }
-	 */
 	public boolean equals(Object object) {
 		boolean isEqual = false;
 		if (object instanceof MpanCore) {
@@ -212,10 +195,6 @@ public class MpanCore extends PersistentEntity {
 			this.checkDigit = checkDigit;
 		}
 
-		/*
-		 * public MpanCoreRaw(String dsoCode, MpanUniquePart uniquePart, CheckDigit
-		 * checkDigit) throws HttpException { init(dsoCode, uniquePart, checkDigit); }
-		 */
 		public Dso getDso() {
 			return dso;
 		}
