@@ -92,6 +92,10 @@
 							select="concat('VAT ', /source/bill/@vat)" />
 					</li>
 				</ul>
+				
+				<ul>
+				<li><a href="snags/">Snags</a></li>
+				</ul>
 
 				<table>
 					<caption>Invoices</caption>

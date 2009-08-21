@@ -55,9 +55,6 @@
 					<li>
 						<a href="accounts/">Accounts</a>
 					</li>
-					<li>
-						<a href="bill-snags/">Bill Snags</a>
-					</li>
 				</ul>
 				<form action="." method="post">
 					<fieldset>

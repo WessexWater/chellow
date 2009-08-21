@@ -822,7 +822,7 @@ public class Supply extends PersistentEntity {
 			// update missing bill account snags
 			Account hhdcAccount = generation.getHhdcAccount();
 			if (hhdcAccount != null) {
-				Debug.print("Supply " + getId() + " generation " + generation.getId());
+				Debug.print("Adding HHDC account snag Supply " + getId() + " generation " + generation.getId());
 				hhdcAccount.addSnag(AccountSnag.MISSING_BILL, generation
 						.getStartDate(), generation.getFinishDate());
 				for (Bill bill : (List<Bill>) Hiber.session().createQuery(

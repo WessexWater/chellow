@@ -41,13 +41,11 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 public class BillSnags extends EntityList {
-	static private final int PAGE_SIZE = 20;
-
 	public static final UriPathElement URI_ID;
 
 	static {
 		try {
-			URI_ID = new UriPathElement("bill-snags");
+			URI_ID = new UriPathElement("snags");
 		} catch (HttpException e) {
 			throw new RuntimeException(e);
 		}
@@ -77,12 +75,12 @@ public class BillSnags extends EntityList {
 		Element source = doc.getDocumentElement();
 		Element snagsElement = toXml(doc);
 		source.appendChild(snagsElement);
-		snagsElement.appendChild(bill.toXml(doc, new XmlTree("party")));
+		snagsElement.appendChild(bill.toXml(doc, new XmlTree("account", new XmlTree("contract", new XmlTree("party")))));
 		for (BillSnag snag : (List<BillSnag>) Hiber
 				.session()
 				.createQuery(
 						"from BillSnag snag where snag.isIgnored is false and snag.bill.account.contract = :contract order by snag.bill.id, snag.description, snag.bill.startDate.date")
-				.setEntity("contract", bill).setMaxResults(PAGE_SIZE)
+				.setEntity("contract", bill)
 				.list()) {
 			snagsElement.appendChild(snag.toXml(doc, new XmlTree("bill",
 					new XmlTree("account"))));
