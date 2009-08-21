@@ -628,7 +628,7 @@
 									<a
 										href="{/source/request/@context-path}/supplier-contracts/{/source/supply-generation/mpan[llfc/@is-import='true']/account/supplier-contract/@id}/accounts/{/source/supply-generation/mpan[llfc/@is-import='true']/account[supplier-contract]/@id}/">
 										<xsl:value-of
-											select="/source/supply-generation/mpan[llfc/@is-import='import']/account[supplier-contract]/@reference" />
+											select="/source/supply-generation/mpan[llfc/@is-import='true']/account[supplier-contract]/@reference" />
 									</a>
 									<br />
 									<br />

@@ -56,9 +56,6 @@
 						<a href="accounts/">Accounts</a>
 					</li>
 					<li>
-						<a href="account-snags/">Account Snags</a>
-					</li>
-					<li>
 						<a href="bill-snags/">Bill Snags</a>
 					</li>
 				</ul>

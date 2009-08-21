@@ -25,13 +25,12 @@ import java.util.List;
 
 import net.sf.chellow.billing.Account;
 import net.sf.chellow.billing.AccountSnag;
+import net.sf.chellow.monad.Debug;
 import net.sf.chellow.monad.Hiber;
-import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.HttpException;
+import net.sf.chellow.monad.InternalException;
 
-import org.hibernate.Criteria;
 import org.hibernate.Query;
-import org.hibernate.criterion.Restrictions;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -45,7 +44,7 @@ public abstract class SnagDateBounded extends Snag {
 	}
 
 	public SnagDateBounded(String description, HhEndDate startDate,
-			HhEndDate finishDate) throws InternalException, HttpException {
+			HhEndDate finishDate) throws HttpException {
 		super(description);
 		update(startDate, finishDate);
 	}
@@ -136,7 +135,7 @@ public abstract class SnagDateBounded extends Snag {
 				outerSnag.setFinishDate(snagToAdd.getStartDate().getPrevious());
 				snag.setStartDate(snagToAdd.getStartDate());
 				snagToAdd.insertSnag(outerSnag);
-				//Hiber.flush();
+				// Hiber.flush();
 				if (snag.getFinishDate() == null) {
 					background = null;
 				}
@@ -452,16 +451,30 @@ public abstract class SnagDateBounded extends Snag {
 		@SuppressWarnings("unchecked")
 		public List<AccountSnag> getCoveredSnags(HhEndDate startDate,
 				HhEndDate finishDate) {
-			Criteria crit = Hiber.session().createCriteria(AccountSnag.class).add(Restrictions.eq("account", account)).add(Restrictions.eq("description", description));
+			Query query = null;
+			if (finishDate == null) {
+				query = Hiber.session().createQuery("from AccountSnag snag where snag.account = :account and snag.description = :description and (snag.finishDate.date is null or snag.finishDate.date >= :startDate)");
+			} else {
+				query = Hiber.session().createQuery("from AccountSnag snag where snag.account = :account and snag.description = :description and (snag.finishDate.date is null or snag.finishDate.date >= :startDate) and snag.startDate.date <= :finishDate").setTimestamp("finishDate", finishDate.getDate());
+			}
+			/*
+			Criteria crit = Hiber.session().createCriteria(AccountSnag.class)
+					.add(Restrictions.eq("account", account)).add(
+							Restrictions.eq("description", description));
 			if (startDate != null) {
 				crit.add(Restrictions.or(
 						Restrictions.isNull("finishDate.date"), Restrictions
 								.ge("finishDate.date", startDate.getDate())));
 			}
 			if (finishDate != null) {
-				crit.add(Restrictions.le("startDate.date", finishDate.getDate()));
+				crit.add(Restrictions
+						.le("startDate.date", finishDate.getDate()));
 			}
-			return (List<AccountSnag>) crit.list();
+			List<AccountSnag> snags = (List<AccountSnag>) crit.list();
+			*/
+			List<AccountSnag> snags = (List<AccountSnag>) query.setEntity("account", account).setString("description", description).setTimestamp("startDate", startDate.getDate()).list();
+			Debug.print(" " + snags.size());
+			return snags;
 		}
 	}
 

@@ -106,7 +106,7 @@ public class BillSnag extends Snag {
 	}
 
 	public MonadUri getUri() throws HttpException {
-		return bill.getAccount().getContract().getSnagsAccountInstance()
+		return new BillSnags(bill)
 				.getUri().resolve(getUriId()).append("/");
 	}
 }

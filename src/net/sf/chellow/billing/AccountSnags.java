@@ -42,22 +42,20 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 public class AccountSnags extends EntityList {
-	static private final int PAGE_SIZE = 20;
-
 	public static final UriPathElement URI_ID;
 
 	static {
 		try {
-			URI_ID = new UriPathElement("account-snags");
+			URI_ID = new UriPathElement("snags");
 		} catch (HttpException e) {
 			throw new RuntimeException(e);
 		}
 	}
 
-	private Contract contract;
+	private Account account;
 
-	public AccountSnags(Contract contract) {
-		this.contract = contract;
+	public AccountSnags(Account account) {
+		this.account = account;
 	}
 
 	public UriPathElement getUriId() {
@@ -65,7 +63,7 @@ public class AccountSnags extends EntityList {
 	}
 
 	public MonadUri getUri() throws HttpException {
-		return contract.getUri().resolve(getUriId()).append("/");
+		return account.getUri().resolve(getUriId()).append("/");
 	}
 
 	public void httpGet(Invocation inv) throws HttpException {
@@ -78,16 +76,15 @@ public class AccountSnags extends EntityList {
 		Element source = doc.getDocumentElement();
 		Element snagsElement = toXml(doc);
 		source.appendChild(snagsElement);
-		if (contract instanceof SupplierContract) {
-			snagsElement.appendChild(contract.toXml(doc, new XmlTree("party")));
-		}
+		snagsElement.appendChild(account.toXml(doc, new XmlTree("contract",
+				new XmlTree("party"))));
+
 		for (AccountSnag snag : (List<AccountSnag>) Hiber
 				.session()
 				.createQuery(
-						"from AccountSnag snag where snag.isIgnored is false and snag.account.contract = :contract order by snag.account.reference, snag.description, snag.startDate.date")
-				.setEntity("contract", contract).setMaxResults(PAGE_SIZE)
-				.list()) {
-			snagsElement.appendChild(snag.toXml(doc, new XmlTree("account")));
+						"from AccountSnag snag where snag.account = :account order by snag.account.reference, snag.description, snag.startDate.date")
+				.setEntity("account", account).list()) {
+			snagsElement.appendChild(snag.toXml(doc));
 		}
 		source.appendChild(MonadDate.getMonthsXml(doc));
 		source.appendChild(MonadDate.getDaysXml(doc));
@@ -103,7 +100,7 @@ public class AccountSnags extends EntityList {
 					.session()
 					.createQuery(
 							"from AccountSnag snag where snag.contract = :contract and snag.finishDate < :ignoreDate")
-					.setEntity("contract", contract).setTimestamp("ignoreDate",
+					.setEntity("contract", account).setTimestamp("ignoreDate",
 							ignoreDate.getDate()).scroll(
 							ScrollMode.FORWARD_ONLY);
 			while (snags.next()) {

@@ -480,10 +480,6 @@ public abstract class Contract extends PersistentEntity implements
 		return account;
 	}
 
-	public AccountSnags getSnagsAccountInstance() {
-		return new AccountSnags(this);
-	}
-
 	public Account getAccount(String reference) throws HttpException {
 		Account account = findAccount(reference);
 		if (account == null) {

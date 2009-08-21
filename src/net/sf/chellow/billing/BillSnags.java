@@ -53,10 +53,10 @@ public class BillSnags extends EntityList {
 		}
 	}
 
-	private Contract contract;
+	private Bill bill;
 
-	public BillSnags(Contract contract) {
-		this.contract = contract;
+	public BillSnags(Bill bill) {
+		this.bill = bill;
 	}
 
 	public UriPathElement getUriId() {
@@ -64,7 +64,7 @@ public class BillSnags extends EntityList {
 	}
 
 	public MonadUri getUri() throws HttpException {
-		return contract.getUri().resolve(getUriId()).append("/");
+		return bill.getUri().resolve(getUriId()).append("/");
 	}
 
 	public void httpGet(Invocation inv) throws HttpException {
@@ -77,12 +77,12 @@ public class BillSnags extends EntityList {
 		Element source = doc.getDocumentElement();
 		Element snagsElement = toXml(doc);
 		source.appendChild(snagsElement);
-		snagsElement.appendChild(contract.toXml(doc, new XmlTree("party")));
+		snagsElement.appendChild(bill.toXml(doc, new XmlTree("party")));
 		for (BillSnag snag : (List<BillSnag>) Hiber
 				.session()
 				.createQuery(
 						"from BillSnag snag where snag.isIgnored is false and snag.bill.account.contract = :contract order by snag.bill.id, snag.description, snag.bill.startDate.date")
-				.setEntity("contract", contract).setMaxResults(PAGE_SIZE)
+				.setEntity("contract", bill).setMaxResults(PAGE_SIZE)
 				.list()) {
 			snagsElement.appendChild(snag.toXml(doc, new XmlTree("bill",
 					new XmlTree("account"))));
@@ -101,7 +101,7 @@ public class BillSnags extends EntityList {
 					.session()
 					.createQuery(
 							"from BillSnag snag where snag.contract = :contract and snag.finishDate < :ignoreDate")
-					.setEntity("contract", contract).setTimestamp("ignoreDate",
+					.setEntity("contract", bill).setTimestamp("ignoreDate",
 							ignoreDate.getDate()).scroll(
 							ScrollMode.FORWARD_ONLY);
 			while (snags.next()) {

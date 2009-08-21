@@ -201,7 +201,9 @@ public class Account extends PersistentEntity {
 
 	public Urlable getChild(UriPathElement uriId) throws HttpException {
 		if (Bills.URI_ID.equals(uriId)) {
-			return billsInstance();
+			return new Bills(this);
+		} else if (AccountSnags.URI_ID.equals(uriId)){
+			return new AccountSnags(this);
 		} else {
 			throw new NotFoundException();
 		}
@@ -231,10 +233,6 @@ public class Account extends PersistentEntity {
 			HhEndDate finishDate) throws HttpException {
 		SnagDateBounded
 				.addAccountSnag(this, description, startDate, finishDate);
-	}
-
-	Bills billsInstance() {
-		return new Bills(this);
 	}
 
 	@SuppressWarnings("unchecked")

@@ -110,15 +110,7 @@ public class AccountSnag extends SnagDateBounded {
 	}
 
 	public MonadUri getUri() throws HttpException {
-		return account.getContract().getSnagsAccountInstance().getUri()
+		return new AccountSnags(account).getUri()
 				.resolve(getUriId()).append("/");
 	}
-
-	/*
-	 * public boolean isCombinable(SnagDateBounded snag) throws
-	 * ProgrammerException, UserException { Bill incomingBill = ((AccountSnag)
-	 * snag).getBill(); return super.isCombinable(snag) && ((incomingBill ==
-	 * null && getBill() == null) || (incomingBill != null && incomingBill
-	 * .equals(getBill()))); }
-	 */
 }

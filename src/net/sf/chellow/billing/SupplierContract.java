@@ -262,10 +262,6 @@ public class SupplierContract extends Contract {
 			return new RateScripts(this);
 		} else if (Accounts.URI_ID.equals(uriId)) {
 			return new Accounts(this);
-		} else if (AccountSnags.URI_ID.equals(uriId)) {
-			return new AccountSnags(this);
-		} else if (BillSnags.URI_ID.equals(uriId)) {
-			return new BillSnags(this);
 		} else {
 			throw new NotFoundException();
 		}

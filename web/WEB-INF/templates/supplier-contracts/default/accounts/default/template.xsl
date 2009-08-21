@@ -113,6 +113,9 @@
 							<li>
 								<a href="bills/">Bills</a>
 							</li>
+							<li>
+								<a href="snags/">Snags</a>
+							</li>
 						</ul>
 
 						<h2>MPANs</h2>

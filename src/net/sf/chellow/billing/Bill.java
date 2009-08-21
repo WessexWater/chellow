@@ -276,18 +276,16 @@ public class Bill extends PersistentEntity {
 	}
 
 	public MonadUri getUri() throws HttpException {
-		return account.billsInstance().getUri().resolve(getUriId()).append("/");
+		return new Bills(account).getUri().resolve(getUriId()).append("/");
 	}
 
 	public Urlable getChild(UriPathElement uriId) throws HttpException {
+		 if (BillSnags.URI_ID.equals(uriId)) {
+				return new BillSnags(this);
+		 } else {
 		throw new NotFoundException();
+		 }
 	}
-
-	/*
-	 * BillElement getElement(String name, String chargeScript) throws
-	 * UserException, ProgrammerException { return service.billElement(name,
-	 * chargeScript, account, startDate, finishDate); }
-	 */
 
 	VirtualBill getVirtualBill() throws HttpException {
 		return account.getContract().virtualBill("total", account, startDate,
