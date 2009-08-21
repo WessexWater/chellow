@@ -8,7 +8,7 @@
 		<html>
 			<head>
 				<link rel="stylesheet" type="text/css"
-					href="{/source/request/@context-path}/style/" />
+					 href="{/source/request/@context-path}/style/" />
 
 				<title>
 					Chellow &gt; Supplier Contracts &gt;
