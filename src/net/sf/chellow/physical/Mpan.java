@@ -340,12 +340,6 @@ public class Mpan extends PersistentEntity {
 				.getFinishDate());
 		// checkMissing(foundBill.getStartDate(), foundBill.getFinishDate());
 	}
-	public void addSnag(String description, HhEndDate startDate,
-			HhEndDate finishDate) throws HttpException {
-		SnagDateBounded
-				.addMpanSnag(this, description, startDate, finishDate);
-	}
-
 	
 	static private class MpanRaw {
 		private String pcCode;

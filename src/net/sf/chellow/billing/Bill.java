@@ -97,7 +97,7 @@ public class Bill extends PersistentEntity {
 
 	@SuppressWarnings("unchecked")
 	public void detach(Invoice invoice) throws HttpException {
-		mpan.addSnag(MpanSnag.MISSING_BILL, getStartDate(), getFinishDate());
+		mpan.addSnag(SupplySnag.MISSING_BILL, getStartDate(), getFinishDate());
 		invoices.remove(invoice);
 		invoice.setBill(null);
 		Hiber.flush();
@@ -128,7 +128,7 @@ public class Bill extends PersistentEntity {
 
 	private void setSummary() throws HttpException {
 		if (getStartDate() != null) {
-			mpan.deleteSnag(MpanSnag.MISSING_BILL, getStartDate(),
+			mpan.deleteSnag(SupplySnag.MISSING_BILL, getStartDate(),
 					getFinishDate());
 		}
 		//HhEndDate oldStartDate = getStartDate();

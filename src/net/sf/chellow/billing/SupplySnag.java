@@ -30,17 +30,20 @@ import net.sf.chellow.monad.NotFoundException;
 import net.sf.chellow.monad.XmlTree;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.physical.HhEndDate;
-import net.sf.chellow.physical.Mpan;
 import net.sf.chellow.physical.SnagDateBounded;
+import net.sf.chellow.physical.Supply;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-public class MpanSnag extends SnagDateBounded {
-	public static final String MISSING_BILL = "Missing bill.";
+public class SupplySnag extends SnagDateBounded {
+	public static final String MISSING_HHDC_BILL = "Missing HHDC bill.";
+	public static final String MISSING_MOP_BILL = "Missing MOP bill.";
+	public static final String MISSING_IMPORT_SUPPLIER_BILL = "Missing import supplier bill.";
+	public static final String MISSING_EXPORT_SUPPLIER_BILL = "Missing export supplier bill.";
 
-	public static MpanSnag getAccountSnag(Long id) throws HttpException {
-		MpanSnag snag = (MpanSnag) Hiber.session().get(MpanSnag.class,
+	public static SupplySnag getAccountSnag(Long id) throws HttpException {
+		SupplySnag snag = (SupplySnag) Hiber.session().get(SupplySnag.class,
 				id);
 		if (snag == null) {
 			throw new NotFoundException();
@@ -48,31 +51,31 @@ public class MpanSnag extends SnagDateBounded {
 		return snag;
 	}
 
-	public static void insertSnagAccount(MpanSnag snag) {
+	public static void insertSnagAccount(SupplySnag snag) {
 		Hiber.session().save(snag);
 	}
 
-	public static void deleteAccountSnag(MpanSnag snag) {
+	public static void deleteAccountSnag(SupplySnag snag) {
 		Hiber.session().delete(snag);
 	}
 
-	private Mpan mpan;
+	private Supply supply;
 
-	public MpanSnag() {
+	public SupplySnag() {
 	}
 
-	public MpanSnag(String description, Mpan mpan,
+	public SupplySnag(String description, Supply supply,
 			HhEndDate startDate, HhEndDate finishDate) throws HttpException {
 		super(description, startDate, finishDate);
-		this.mpan = mpan;
+		this.supply = supply;
 	}
 
-	public Mpan getMpan() {
-		return mpan;
+	public Supply getSupply() {
+		return supply;
 	}
 
-	void setMpan(Mpan mpan) {
-		this.mpan = mpan;
+	void setSupply(Supply supply) {
+		this.supply = supply;
 	}
 
 	public void update() {
@@ -83,10 +86,10 @@ public class MpanSnag extends SnagDateBounded {
 		return element;
 	}
 
-	public MpanSnag copy() throws InternalException {
-		MpanSnag cloned;
+	public SupplySnag copy() throws InternalException {
+		SupplySnag cloned;
 		try {
-			cloned = (MpanSnag) super.clone();
+			cloned = (SupplySnag) super.clone();
 		} catch (CloneNotSupportedException e) {
 			throw new InternalException(e);
 		}
@@ -111,7 +114,7 @@ public class MpanSnag extends SnagDateBounded {
 	}
 
 	public MonadUri getUri() throws HttpException {
-		return new MpanSnags(mpan).getUri()
+		return new SupplySnags(supply).getUri()
 				.resolve(getUriId()).append("/");
 	}
 }

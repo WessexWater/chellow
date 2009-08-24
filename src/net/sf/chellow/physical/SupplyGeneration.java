@@ -29,11 +29,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import net.sf.chellow.billing.Account;
-import net.sf.chellow.billing.MpanSnag;
 import net.sf.chellow.billing.Bill;
 import net.sf.chellow.billing.Dso;
 import net.sf.chellow.billing.HhdcContract;
+import net.sf.chellow.billing.MopContract;
+import net.sf.chellow.billing.SupplySnag;
 import net.sf.chellow.billing.SupplierContract;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
@@ -90,25 +90,22 @@ public class SupplyGeneration extends PersistentEntity {
 			String hhdcContractName = GeneralImport.addField(csvElement,
 					"HHDC Contract", values, 5);
 			if (hhdcContractName.equals(GeneralImport.NO_CHANGE)) {
-				Account account = supplyGeneration.getHhdcAccount();
-				if (account == null) {
+				hhdcContract = supplyGeneration.getHhdcContract();
+				if (hhdcContract == null) {
 					throw new UserException(
 							"There isn't an existing HHDC contract");
 				}
-				hhdcContract = HhdcContract.getHhdcContract(account
-						.getContract().getId());
 			} else if (hhdcContractName.length() > 0) {
 				hhdcContract = HhdcContract.getHhdcContract(hhdcContractName);
 			}
-			String hhdcAccountReference = GeneralImport.addField(csvElement,
-					"HHDC account reference", values, 6);
-			if (hhdcAccountReference.equals(GeneralImport.NO_CHANGE)) {
-				Account hhdcAccount = supplyGeneration.getHhdcAccount();
+			String hhdcAccount = GeneralImport.addField(csvElement,
+					"HHDC account", values, 6);
+			if (hhdcAccount.equals(GeneralImport.NO_CHANGE)) {
+				hhdcAccount = supplyGeneration.getHhdcAccount();
 				if (hhdcAccount == null) {
 					throw new UserException(
 							"There isn't an existing HHDC account");
 				}
-				hhdcAccountReference = hhdcAccount.getReference();
 			}
 			String hasImportKwhStr = GeneralImport.addField(csvElement,
 					"Has HH import kWh?", values, 7);
@@ -165,7 +162,7 @@ public class SupplyGeneration extends PersistentEntity {
 			Ssc importSsc = null;
 			Integer importAgreedSupplyCapacity = null;
 			SupplierContract importSupplierContract = null;
-			String importSupplierAccountReference = null;
+			String importSupplierAccount = null;
 			Mpan existingImportMpan = supplyGeneration.getImportMpan();
 			if (importMpanStr.equals(GeneralImport.NO_CHANGE)) {
 				importMpanStr = existingImportMpan == null ? null
@@ -216,32 +213,21 @@ public class SupplyGeneration extends PersistentEntity {
 						throw new UserException(
 								"There isn't an existing import supplier.");
 					}
-					Account account = existingImportMpan.getSupplierAccount();
-					if (account == null) {
-						throw new UserException(
-								"There isn't an existing import supplier.");
-					}
-					importSupplierContract = SupplierContract
-							.getSupplierContract(account.getContract().getId());
+					importSupplierContract = existingImportMpan.getSupplierContract();
 				} else {
 					importSupplierContract = SupplierContract
 							.getSupplierContract(importSupplierContractName);
 				}
-				importSupplierAccountReference = GeneralImport.addField(
-						csvElement, "Import Supplier Account Reference",
+				importSupplierAccount = GeneralImport.addField(
+						csvElement, "Import Supplier Account",
 						values, 15);
-				if (importSupplierAccountReference
+				if (importSupplierAccount
 						.equals(GeneralImport.NO_CHANGE)) {
 					if (existingImportMpan == null) {
 						throw new UserException(
 								"There isn't an existing import supplier account.");
 					}
-					Account account = existingImportMpan.getSupplierAccount();
-					if (account == null) {
-						throw new UserException(
-								"There isn't an existing import supplier account.");
-					}
-					importSupplierAccountReference = account.getReference();
+					importSupplierAccount = existingImportMpan.getSupplierAccount();
 				}
 			}
 			String exportMpanStr = GeneralImport.addField(csvElement,
@@ -256,7 +242,7 @@ public class SupplyGeneration extends PersistentEntity {
 				exportMpanStr = null;
 			}
 			SupplierContract exportSupplierContract = null;
-			String exportSupplierAccountReference = null;
+			String exportSupplierAccount = null;
 			if (exportMpanStr != null) {
 				String exportSscCode = GeneralImport.addField(csvElement,
 						"Export SSC", values, 17);
@@ -300,27 +286,21 @@ public class SupplyGeneration extends PersistentEntity {
 						throw new UserException(
 								"There isn't an existing export supplier contract.");
 					}
-					Account account = existingExportMpan.getSupplierAccount();
-					if (account == null) {
-						throw new UserException(
-								"There isn't an existing export supplier contract.");
-					}
-					exportSupplierContract = SupplierContract
-							.getSupplierContract(account.getContract().getId());
+					exportSupplierContract = existingExportMpan.getSupplierContract();
 				} else {
 					exportSupplierContract = SupplierContract
 							.getSupplierContract(exportSupplierContractName);
 				}
-				exportSupplierAccountReference = GeneralImport.addField(
+				exportSupplierAccount = GeneralImport.addField(
 						csvElement, "Export Supplier Account", values, 20);
-				if (exportSupplierAccountReference
+				if (exportSupplierAccount
 						.equals(GeneralImport.NO_CHANGE)) {
 					if (existingExportMpan == null) {
 						throw new UserException(
-								"There isn't an existing export supplier.");
+								"There isn't an existing export MPAN.");
 					}
-					exportSupplierAccountReference = existingExportMpan
-							.getSupplierAccount().getReference();
+					exportSupplierAccount = existingExportMpan
+							.getSupplierAccount();
 				}
 			}
 			supplyGeneration.update(startDateStr
@@ -330,10 +310,10 @@ public class SupplyGeneration extends PersistentEntity {
 							.equals(GeneralImport.NO_CHANGE) ? supplyGeneration
 							.getFinishDate() : new HhEndDate("finish",
 							finishDateStr)), hhdcContract,
-					hhdcAccountReference, meter, importMpanStr, importSsc,
-					importSupplierContract, importSupplierAccountReference,
+					hhdcAccount, meter, importMpanStr, importSsc,
+					importSupplierContract, importSupplierAccount,
 					importAgreedSupplyCapacity, exportMpanStr, exportSsc,
-					exportSupplierContract, exportSupplierAccountReference,
+					exportSupplierContract, exportSupplierAccount,
 					exportAgreedSupplyCapacity);
 		} else if (action.equals("delete")) {
 			String mpanCoreStr = GeneralImport.addField(csvElement,
@@ -502,10 +482,12 @@ public class SupplyGeneration extends PersistentEntity {
 	private HhEndDate startDate;
 
 	private HhEndDate finishDate;
-	private Account mopAccount;
+	private MopContract mopContract;
+	private String mopAccount;
 	private Meter meter;
 
-	private Account hhdcAccount;
+	private HhdcContract hhdcContract;
+	private String hhdcAccount;
 	private Pc pc;
 	private Mpan importMpan;
 
@@ -517,8 +499,8 @@ public class SupplyGeneration extends PersistentEntity {
 	SupplyGeneration() {
 	}
 
-	SupplyGeneration(Supply supply, HhEndDate startDate, HhEndDate finishDate,
-			Account hhdcAccount, Meter meter) throws HttpException {
+	SupplyGeneration(Supply supply, HhEndDate startDate, HhEndDate finishDate, HhdcContract hhdcContract,
+			String hhdcAccount, Meter meter) throws HttpException {
 		setChannels(new HashSet<Channel>());
 		setSupply(supply);
 		setSiteSupplyGenerations(new HashSet<SiteSupplyGeneration>());
@@ -526,6 +508,7 @@ public class SupplyGeneration extends PersistentEntity {
 		setPc(Pc.getPc("00"));
 		setStartDate(startDate);
 		setFinishDate(finishDate);
+		setHhdcContract(hhdcContract);
 		setHhdcAccount(hhdcAccount);
 		setMeter(meter);
 	}
@@ -563,19 +546,35 @@ public class SupplyGeneration extends PersistentEntity {
 		this.finishDate = finishDate;
 	}
 
-	public Account getMopAccount() {
+	public MopContract getMopContract() {
+		return mopContract;
+	}
+
+	void setMopContract(MopContract mopContract) {
+		this.mopContract = mopContract;
+	}
+	
+	public String getMopAccount() {
 		return mopAccount;
 	}
 
-	void setMopAccount(Account mopAccount) {
+	void setMopAccount(String mopAccount) {
 		this.mopAccount = mopAccount;
 	}
 
-	public Account getHhdcAccount() {
+	public HhdcContract getHhdcContract() {
+		return hhdcContract;
+	}
+
+	void setHhdcContract(HhdcContract hhdcContract) {
+		this.hhdcContract = hhdcContract;
+	}
+	
+	public String getHhdcAccount() {
 		return hhdcAccount;
 	}
 
-	void setHhdcAccount(Account hhdcAccount) {
+	void setHhdcAccount(String hhdcAccount) {
 		this.hhdcAccount = hhdcAccount;
 	}
 
@@ -698,51 +697,43 @@ public class SupplyGeneration extends PersistentEntity {
 	}
 
 	public void internalUpdate(HhEndDate startDate, HhEndDate finishDate,
-			HhdcContract hhdcContract, String hhdcAccountReference, Meter meter)
+			HhdcContract hhdcContract, String hhdcAccount, Meter meter)
 			throws HttpException {
 		String importMpanStr = null;
 		Ssc importSsc = null;
 		SupplierContract importSupplierContract = null;
-		String importSupplierAccountReference = null;
+		String importSupplierAccount = null;
 		Integer importAgreedSupplyCapacity = null;
 		String exportMpanStr = null;
 		Ssc exportSsc = null;
 		SupplierContract exportSupplierContract = null;
-		String exportSupplierAccountReference = null;
+		String exportSupplierAccount = null;
 		Integer exportAgreedSupplyCapacity = null;
 		if (importMpan != null) {
 			importMpanStr = importMpan.toString();
 			importSsc = importMpan.getSsc();
-			Account importSupplierAccount = importMpan.getSupplierAccount();
-			importSupplierContract = SupplierContract
-					.getSupplierContract(importSupplierAccount.getContract()
-							.getId());
-			importSupplierAccountReference = importSupplierAccount
-					.getReference();
+			importSupplierAccount = importMpan.getSupplierAccount();
+			importSupplierContract = importMpan.getSupplierContract();
 			importAgreedSupplyCapacity = importMpan.getAgreedSupplyCapacity();
 		}
 		if (exportMpan != null) {
 			exportMpanStr = exportMpan.toString();
 			exportSsc = exportMpan.getSsc();
-			Account exportSupplierAccount = exportMpan.getSupplierAccount();
-			exportSupplierContract = SupplierContract
-					.getSupplierContract(exportSupplierAccount.getContract()
-							.getId());
-			exportSupplierAccountReference = exportSupplierAccount
-					.getReference();
+			exportSupplierAccount = exportMpan.getSupplierAccount();
+			exportSupplierContract = exportMpan.getSupplierContract();
 			exportAgreedSupplyCapacity = exportMpan.getAgreedSupplyCapacity();
 		}
 		internalUpdate(startDate, finishDate, hhdcContract,
-				hhdcAccountReference, meter, importMpanStr, importSsc,
-				importSupplierContract, importSupplierAccountReference,
+				hhdcAccount, meter, importMpanStr, importSsc,
+				importSupplierContract, importSupplierAccount,
 				importAgreedSupplyCapacity, exportMpanStr, exportSsc,
-				exportSupplierContract, exportSupplierAccountReference,
+				exportSupplierContract, exportSupplierAccount,
 				exportAgreedSupplyCapacity);
 	}
 
 	@SuppressWarnings("unchecked")
 	public void internalUpdate(HhEndDate startDate, HhEndDate finishDate,
-			HhdcContract hhdcContract, String hhdcAccountReference,
+			HhdcContract hhdcContract, String hhdcAccount,
 			Meter meter, String importMpanStr, Ssc importSsc,
 			SupplierContract importSupplierContract,
 			String importSupplierAccountReference,
@@ -751,16 +742,16 @@ public class SupplyGeneration extends PersistentEntity {
 			String exportSupplierAccountReference,
 			Integer exportAgreedSupplyCapacity) throws HttpException {
 		Mpan origImportMpan = getImportMpan();
-		Account origImportSupplierAccount = null;
+		String origImportSupplierAccount = null;
 		if (origImportMpan != null) {
 			origImportSupplierAccount = origImportMpan.getSupplierAccount();
 		}
 		Mpan origExportMpan = getExportMpan();
-		Account origExportSupplierAccount = null;
+		String origExportSupplierAccount = null;
 		if (origExportMpan != null) {
 			origExportSupplierAccount = origExportMpan.getSupplierAccount();
 		}
-		Account originalHhdcAccount = this.hhdcAccount;
+		String originalHhdcAccount = this.hhdcAccount;
 		HhEndDate originalStartDate = this.startDate;
 		HhEndDate originalFinishDate = this.finishDate;
 		List<Bill> originalHhdcBills = null;
@@ -869,13 +860,16 @@ public class SupplyGeneration extends PersistentEntity {
 		}
 		setStartDate(startDate);
 		setFinishDate(finishDate);
+			setHhdcContract(hhdcContract);
 		if (hhdcContract == null) {
 			setHhdcAccount(null);
 		} else {
-			Account hhdcAccount = hhdcContract
-					.findAccount(hhdcAccountReference);
 			if (hhdcAccount == null) {
-				hhdcAccount = hhdcContract.insertAccount(hhdcAccountReference);
+				throw new UserException("If there's a HHDC contract, there must be an account reference.");
+			}
+			hhdcAccount = hhdcAccount.trim();
+			if (hhdcAccount.length() == 0) {
+				throw new UserException("If there's a HHDC contract, there must be an account reference.");
 			}
 			setHhdcAccount(hhdcAccount);
 		}
@@ -883,7 +877,6 @@ public class SupplyGeneration extends PersistentEntity {
 			throw new UserException(
 					"Can't remove the HHDC account while there are still channels there.");
 		}
-		setHhdcAccount(hhdcAccount);
 		setMeter(meter);
 		// resolve any snags channel snags outside range
 		for (Channel channel : channels) {
@@ -1068,7 +1061,7 @@ public class SupplyGeneration extends PersistentEntity {
 								"select count(*) from SupplyGeneration generation where generation.hhdcAccount = :hhdcAccount")
 						.setEntity("hhdcAccount", originalHhdcAccount)
 						.uniqueResult()) == 0) {
-			originalHhdcAccount.deleteSnag(MpanSnag.MISSING_BILL, null);
+			originalHhdcAccount.deleteSnag(SupplySnag.MISSING_HHDC_BILL, null);
 			Hiber.session().delete(originalHhdcAccount);
 			Hiber.flush();
 		}

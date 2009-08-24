@@ -41,10 +41,10 @@ import net.sf.chellow.monad.types.UriPathElement;
 import net.sf.chellow.physical.HhEndDate;
 import net.sf.chellow.physical.PersistentEntity;
 import net.sf.chellow.physical.Snag;
+import net.sf.chellow.physical.Supply;
 
 import org.hibernate.Criteria;
 import org.hibernate.criterion.Restrictions;
-import org.hibernate.exception.ConstraintViolationException;
 import org.python.core.PyException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -244,12 +244,12 @@ public abstract class Contract extends PersistentEntity implements
 		return "Contract id " + getId() + " name " + getName();
 	}
 
-	public VirtualBill virtualBill(String name, Account account,
+	public VirtualBill virtualBill(String name, Supply supply,
 			HhEndDate from, HhEndDate to) throws HttpException {
 		VirtualBill bill = null;
 
 		try {
-			Object[] args = { account, from, to };
+			Object[] args = { supply, from, to };
 			bill = (VirtualBill) engine().invokeFunction(name + "VirtualBill",
 					args);
 		} catch (ScriptException e) {
@@ -266,16 +266,6 @@ public abstract class Contract extends PersistentEntity implements
 			}
 		}
 		return bill;
-	}
-
-	public VirtualBill billElement(Account account, HhEndDate from, HhEndDate to)
-			throws HttpException {
-		return virtualBill("total", account, from, to);
-	}
-
-	public VirtualBill billElement(String name, Account account,
-			HhEndDate from, HhEndDate to) throws HttpException {
-		return virtualBill(name, account, from, to);
 	}
 
 	public RateScript getPreviousRateScript(RateScript script)
@@ -431,6 +421,7 @@ public abstract class Contract extends PersistentEntity implements
 		return batch;
 	}
 
+	/*
 	@SuppressWarnings("unchecked")
 	public void deleteAccount(Account account) throws HttpException {
 		if (!account.getContract().equals(this)) {
@@ -461,11 +452,14 @@ public abstract class Contract extends PersistentEntity implements
 		Hiber.session().delete(account);
 		Hiber.flush();
 	}
-
+*/
+	/*
 	public Accounts accountsInstance() {
 		return new Accounts(this);
 	}
+	*/
 
+	/*
 	public Account insertAccount(String reference) throws HttpException {
 		reference = reference.trim();
 		Account account = new Account(this, reference);
@@ -479,7 +473,9 @@ public abstract class Contract extends PersistentEntity implements
 		}
 		return account;
 	}
-
+*/
+	
+	/*
 	public Account getAccount(String reference) throws HttpException {
 		Account account = findAccount(reference);
 		if (account == null) {
@@ -488,7 +484,9 @@ public abstract class Contract extends PersistentEntity implements
 		}
 		return account;
 	}
+	*/
 
+	/*
 	public Account findAccount(String reference) throws HttpException {
 		return (Account) Hiber
 				.session()
@@ -497,7 +495,7 @@ public abstract class Contract extends PersistentEntity implements
 				.setEntity("contract", this).setString("reference", reference)
 				.uniqueResult();
 	}
-
+*/
 	public Batches batchesInstance() {
 		return new Batches(this);
 	}

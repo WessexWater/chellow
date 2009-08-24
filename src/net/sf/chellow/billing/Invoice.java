@@ -95,9 +95,9 @@ public class Invoice extends PersistentEntity implements Urlable {
 	public Invoice(Batch batch, InvoiceRaw invoiceRaw) throws HttpException {
 		setBatch(batch);
 		setBill(null);
-		internalUpdate(invoiceRaw.getIssueDate(), invoiceRaw.getStartDate(),
-				invoiceRaw.getFinishDate(), invoiceRaw.getNet(), invoiceRaw
-						.getVat(), PENDING);
+		update(invoiceRaw.getIssueDate(), invoiceRaw.getStartDate(), invoiceRaw
+				.getFinishDate(), invoiceRaw.getNet(), invoiceRaw.getVat(),
+				PENDING);
 		setReference(invoiceRaw.getReference());
 		// setAccountText(invoiceRaw.getAccountText());
 		// invoiceMpans = new HashSet<InvoiceMpan>();
@@ -210,7 +210,7 @@ public class Invoice extends PersistentEntity implements Urlable {
 		return reads;
 	}
 
-	private void internalUpdate(DayStartDate issueDate, DayStartDate startDate,
+	public void update(DayStartDate issueDate, DayStartDate startDate,
 			DayFinishDate finishDate, BigDecimal net, BigDecimal vat, int status)
 			throws HttpException {
 		setIssueDate(issueDate);
@@ -229,13 +229,12 @@ public class Invoice extends PersistentEntity implements Urlable {
 		setStatus(status);
 	}
 
-	public void update(Account account, DayStartDate issueDate,
-			DayStartDate startDate, DayFinishDate finishDate, BigDecimal net,
-			BigDecimal vat, int status) throws HttpException {
-		internalUpdate(issueDate, startDate, finishDate, net, vat, status);
-		bill.detach(this);
-		account.attach(this);
-	}
+	/*
+	 * public void update(DayStartDate issueDate, DayStartDate startDate,
+	 * DayFinishDate finishDate, BigDecimal net, BigDecimal vat, int status)
+	 * throws HttpException { internalUpdate(issueDate, startDate, finishDate,
+	 * net, vat, status); bill.detach(this); account.attach(this); }
+	 */
 
 	public Element toXml(Document doc) throws HttpException {
 		Element element = super.toXml(doc, "invoice");
@@ -259,7 +258,7 @@ public class Invoice extends PersistentEntity implements Urlable {
 			Hiber.commit();
 			inv.sendSeeOther(batch.invoicesInstance().getUri());
 		} else {
-			String accountReference = inv.getString("account-reference");
+			// String accountReference = inv.getString("account-reference");
 			Date issueDate = inv.getDate("issue-date");
 			Date startDate = inv.getDate("start-date");
 			Date finishDate = inv.getDate("finish-date");
@@ -269,10 +268,8 @@ public class Invoice extends PersistentEntity implements Urlable {
 			if (!inv.isValid()) {
 				throw new UserException(document());
 			}
-			update(batch.getContract().getAccount(accountReference),
-					new DayStartDate(issueDate), new DayStartDate(startDate)
-							.getNext(), new DayFinishDate(finishDate), net,
-					vat, status);
+			update(new DayStartDate(issueDate), new DayStartDate(startDate)
+					.getNext(), new DayFinishDate(finishDate), net, vat, status);
 			Hiber.commit();
 			inv.sendOk(document());
 		}
@@ -289,8 +286,8 @@ public class Invoice extends PersistentEntity implements Urlable {
 		source.appendChild(MonadDate.getDaysXml(doc));
 		for (RegisterRead read : reads) {
 			invoiceElement.appendChild(read.toXml(doc, new XmlTree("mpan",
-					new XmlTree("core").put("supplyGeneration",
-							new XmlTree("supply")))));
+					new XmlTree("core").put("supplyGeneration", new XmlTree(
+							"supply")))));
 		}
 		/*
 		 * for (InvoiceMpan invoiceMpan : invoiceMpans) {
