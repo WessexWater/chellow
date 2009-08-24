@@ -32,6 +32,7 @@ import net.sf.chellow.monad.XmlTree;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
 import net.sf.chellow.physical.EntityList;
+import net.sf.chellow.physical.Mpan;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -47,18 +48,18 @@ public class Bills extends EntityList {
 		}
 	}
 
-	private Account account;
+	private Mpan mpan;
 
-	public Bills(Account account) {
-		setAccount(account);
+	public Bills(Mpan mpan) {
+		setMpan(mpan);
 	}
 
-	public Account getAccount() {
-		return account;
+	public Mpan getMpan() {
+		return mpan;
 	}
 
-	void setAccount(Account account) {
-		this.account = account;
+	void setMpan(Mpan mpan) {
+		this.mpan = mpan;
 	}
 
 	public UriPathElement getUrlId() {
@@ -66,7 +67,7 @@ public class Bills extends EntityList {
 	}
 
 	public MonadUri getUri() throws HttpException {
-		return account.getUri().resolve(getUrlId()).append("/");
+		return mpan.getUri().resolve(getUrlId()).append("/");
 	}
 
 	public void httpGet(Invocation inv) throws HttpException {
@@ -79,12 +80,12 @@ public class Bills extends EntityList {
 		Element source = doc.getDocumentElement();
 		Element billsElement = toXml(doc);
 		source.appendChild(billsElement);
-		billsElement.appendChild(account.toXml(doc, new XmlTree("contract", new XmlTree("party"))));
+		billsElement.appendChild(mpan.toXml(doc, new XmlTree("contract", new XmlTree("party"))));
 		for (Bill bill : (List<Bill>) Hiber
 				.session()
 				.createQuery(
 						"from Bill bill where bill.account = :account order by bill.startDate.date")
-				.setEntity("account", account).list()) {
+				.setEntity("account", mpan).list()) {
 			billsElement.appendChild(bill.toXml(doc, new XmlTree("account")));
 		}
 		return doc;
@@ -95,7 +96,7 @@ public class Bills extends EntityList {
 				.session()
 				.createQuery(
 						"from Bill bill where bill.account = :account and bill.id = :billId")
-				.setEntity("account", account).setLong("billId",
+				.setEntity("account", mpan).setLong("billId",
 						Long.parseLong(uriId.getString())).uniqueResult();
 		if (bill == null) {
 			throw new NotFoundException();

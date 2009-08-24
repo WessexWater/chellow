@@ -41,7 +41,6 @@ import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.events.XMLEvent;
 
-import net.sf.chellow.billing.Account;
 import net.sf.chellow.billing.DsoContract;
 import net.sf.chellow.billing.HhdcContract;
 import net.sf.chellow.billing.NonCoreContract;
@@ -232,11 +231,6 @@ public class GeneralImport extends Thread implements Urlable, XmlDescriber {
 					} else if (type.equals("supply-generation")) {
 						SupplyGeneration.generalImport(action, values,
 								csvElement);
-					} else if (type.equals("supplier-account")) {
-						Account.generalImportSupplier(action, values,
-								csvElement);
-					} else if (type.equals("hhdc-account")) {
-						Account.generalImportHhdc(action, values, csvElement);
 					} else if (type.equals("report")) {
 						Report.generalImport(action, values, csvElement);
 					} else if (type.equals("hhdc-contract")) {

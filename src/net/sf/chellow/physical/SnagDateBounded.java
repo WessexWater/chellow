@@ -23,8 +23,7 @@ package net.sf.chellow.physical;
 
 import java.util.List;
 
-import net.sf.chellow.billing.Account;
-import net.sf.chellow.billing.AccountSnag;
+import net.sf.chellow.billing.MpanSnag;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.InternalException;
@@ -208,9 +207,9 @@ public abstract class SnagDateBounded extends Snag {
 		}
 	}
 
-	public static void deleteAccountSnag(Account account, String description,
+	public static void deleteMpanSnag(Mpan mpan, String description,
 			HhEndDate startDate, HhEndDate finishDate) throws HttpException {
-		deleteSnagDateBounded(new AccountSnagToAdd(account, description,
+		deleteSnagDateBounded(new MpanSnagToAdd(mpan, description,
 				startDate, finishDate));
 	}
 
@@ -238,9 +237,9 @@ public abstract class SnagDateBounded extends Snag {
 				finishDate));
 	}
 
-	public static void addAccountSnag(Account account, String description,
+	public static void addMpanSnag(Mpan mpan, String description,
 			HhEndDate startDate, HhEndDate finishDate) throws HttpException {
-		addSnagDateBounded(new AccountSnagToAdd(account, description,
+		addSnagDateBounded(new MpanSnagToAdd(mpan, description,
 				startDate, finishDate));
 	}
 
@@ -400,8 +399,8 @@ public abstract class SnagDateBounded extends Snag {
 		}
 	}
 
-	private static class AccountSnagToAdd implements SnagToAdd {
-		private Account account;
+	private static class MpanSnagToAdd implements SnagToAdd {
+		private Mpan mpan;
 
 		private String description;
 
@@ -409,9 +408,9 @@ public abstract class SnagDateBounded extends Snag {
 
 		private HhEndDate finishDate;
 
-		public AccountSnagToAdd(Account account, String description,
+		public MpanSnagToAdd(Mpan mpan, String description,
 				HhEndDate startDate, HhEndDate finishDate) {
-			this.account = account;
+			this.mpan = mpan;
 			this.description = description;
 			this.startDate = startDate;
 			this.finishDate = finishDate;
@@ -422,12 +421,12 @@ public abstract class SnagDateBounded extends Snag {
 		}
 
 		public SnagDateBounded newSnag() throws HttpException {
-			return new AccountSnag(description, account, startDate, finishDate);
+			return new MpanSnag(description, mpan, startDate, finishDate);
 		}
 
 		public void insertSnag(SnagDateBounded snag) {
-			AccountSnag accountSnag = (AccountSnag) snag;
-			AccountSnag.insertSnagAccount(accountSnag);
+			MpanSnag accountSnag = (MpanSnag) snag;
+			MpanSnag.insertSnagAccount(accountSnag);
 		}
 
 		public HhEndDate getStartDate() {
@@ -436,19 +435,19 @@ public abstract class SnagDateBounded extends Snag {
 
 		public SnagDateBounded newSnag(HhEndDate startDate, HhEndDate finishDate)
 				throws HttpException {
-			return new AccountSnag(description, account, startDate, finishDate);
+			return new MpanSnag(description, mpan, startDate, finishDate);
 		}
 
 		public void deleteSnag(SnagDateBounded snag) {
-			AccountSnag.deleteAccountSnag((AccountSnag) snag);
+			MpanSnag.deleteAccountSnag((MpanSnag) snag);
 		}
 
-		public List<AccountSnag> getCoveredSnags() {
+		public List<MpanSnag> getCoveredSnags() {
 			return getCoveredSnags(startDate, finishDate);
 		}
 
 		@SuppressWarnings("unchecked")
-		public List<AccountSnag> getCoveredSnags(HhEndDate startDate,
+		public List<MpanSnag> getCoveredSnags(HhEndDate startDate,
 				HhEndDate finishDate) {
 			Query query = null;
 			if (finishDate == null) {
@@ -463,13 +462,13 @@ public abstract class SnagDateBounded extends Snag {
 								"from AccountSnag snag where snag.account = :account and snag.description = :description and (snag.finishDate.date is null or snag.finishDate.date >= :startDate) and snag.startDate.date <= :finishDate order by snag.startDate.date")
 						.setTimestamp("finishDate", finishDate.getDate());
 			}
-			return (List<AccountSnag>) query.setEntity("account", account)
+			return (List<MpanSnag>) query.setEntity("account", mpan)
 					.setString("description", description).setTimestamp(
 							"startDate", startDate.getDate()).list();
 		}
 
 		public String toString() {
-			return "Account " + account.getId() + " description " + description
+			return "Account " + mpan.getId() + " description " + description
 					+ " start " + startDate + " finish " + finishDate;
 		}
 	}

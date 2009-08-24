@@ -25,8 +25,11 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import net.sf.chellow.billing.Account;
+import net.sf.chellow.billing.Bill;
 import net.sf.chellow.billing.Dso;
+import net.sf.chellow.billing.Invoice;
+import net.sf.chellow.billing.InvoiceRaw;
+import net.sf.chellow.billing.MpanSnag;
 import net.sf.chellow.billing.SupplierContract;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
@@ -98,7 +101,9 @@ public class Mpan extends PersistentEntity {
 
 	private MpanCore core;
 
-	private Account supplierAccount;
+	private SupplierContract supplierContract;
+	
+	private String supplierAccount;
 
 	private int agreedSupplyCapacity;
 
@@ -153,14 +158,23 @@ public class Mpan extends PersistentEntity {
 		this.ssc = ssc;
 	}
 
-	public Account getSupplierAccount() {
+	public SupplierContract getSupplierContract() {
+		return supplierContract;
+	}
+
+	void setSupplierContract(SupplierContract supplierContract) {
+		this.supplierContract = supplierContract;
+	}
+
+	public String getSupplierAccount() {
 		return supplierAccount;
 	}
 
-	void setSupplierAccount(Account supplierAccount) {
+	void setSupplierAccount(String supplierAccount) {
 		this.supplierAccount = supplierAccount;
 	}
 
+	
 	public int getAgreedSupplyCapacity() {
 		return agreedSupplyCapacity;
 	}
@@ -170,14 +184,8 @@ public class Mpan extends PersistentEntity {
 	}
 
 	public void update(String mpan, Ssc ssc, SupplierContract supplierContract,
-			String supplierAccountReference, Integer agreedSupplyCapacity)
+			String supplierAccount, Integer agreedSupplyCapacity)
 			throws HttpException {
-		Account supplierAccount = supplierContract
-				.findAccount(supplierAccountReference);
-		if (supplierAccount == null) {
-			supplierAccount = supplierContract
-					.insertAccount(supplierAccountReference);
-		}
 		if (agreedSupplyCapacity == null) {
 			throw new InternalException("agreedSupplyCapacity can't be null");
 		}
@@ -273,7 +281,72 @@ public class Mpan extends PersistentEntity {
 					"An MPAN can't be deleted if it still has register reads attached.");
 		}
 	}
+	
+	@SuppressWarnings("unchecked")
+	public Invoice attach(Invoice invoice) {
+		Bill bill = combineBills(invoice.getStartDate(), invoice
+				.getFinishDate());
+		if (bill == null) {
+			bill = new Bill(this);
+			Hiber.session().save(bill);
+		}
+		bill.attach(invoice);
+		deleteSnag(AccountSnag.MISSING_BILL, bill.getStartDate(), bill
+				.getFinishDate());
+	}	
+	}
+	
+	@SuppressWarnings("unchecked")
+	private Bill combineBills(HhEndDate start, HhEndDate finish)
+			throws HttpException {
+		List<Bill> bills = (List<Bill>) Hiber
+				.session()
+				.createQuery(
+						"from Bill bill where bill.account = :account and bill.startDate.date <= :finishDate and bill.finishDate.date >= :startDate")
+				.setEntity("account", this).setTimestamp("startDate",
+						start.getDate()).setTimestamp("finishDate",
+						finish.getDate()).list();
+		if (bills.isEmpty()) {
+			return null;
+		} else {
+			Bill firstBill = bills.get(0);
+			for (int i = 1; i < bills.size(); i++) {
+				Bill bill = bills.get(i);
+				for (Invoice invoice : bill.getInvoices()) {
+					firstBill.attach(invoice);
+					bill.detach(invoice);
+				}
+				delete(bill);
+			}
+			Hiber.flush();
+			return firstBill;
+		}
+	}
+	
+	void delete(Bill bill) throws HttpException {
+		Bill foundBill = (Bill) Hiber
+				.session()
+				.createQuery(
+						"from Bill bill where bill.account = :account and bill.id = :billId")
+				.setEntity("account", this).setLong("billId", bill.getId())
+				.uniqueResult();
+		if (foundBill == null) {
+			throw new InternalException(
+					"This bill doesn't belong to this account.");
+		} else {
+			Hiber.session().delete(foundBill);
+		}
+		addSnag(MpanSnag.MISSING_BILL, foundBill.getStartDate(), foundBill
+				.getFinishDate());
+		// checkMissing(foundBill.getStartDate(), foundBill.getFinishDate());
+	}
+	public void addSnag(String description, HhEndDate startDate,
+			HhEndDate finishDate) throws HttpException {
+		SnagDateBounded
+				.addMpanSnag(this, description, startDate, finishDate);
+	}
 
+	
 	static private class MpanRaw {
 		private String pcCode;
 

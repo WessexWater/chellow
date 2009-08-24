@@ -30,16 +30,17 @@ import net.sf.chellow.monad.NotFoundException;
 import net.sf.chellow.monad.XmlTree;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.physical.HhEndDate;
+import net.sf.chellow.physical.Mpan;
 import net.sf.chellow.physical.SnagDateBounded;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-public class AccountSnag extends SnagDateBounded {
+public class MpanSnag extends SnagDateBounded {
 	public static final String MISSING_BILL = "Missing bill.";
 
-	public static AccountSnag getAccountSnag(Long id) throws HttpException {
-		AccountSnag snag = (AccountSnag) Hiber.session().get(AccountSnag.class,
+	public static MpanSnag getAccountSnag(Long id) throws HttpException {
+		MpanSnag snag = (MpanSnag) Hiber.session().get(MpanSnag.class,
 				id);
 		if (snag == null) {
 			throw new NotFoundException();
@@ -47,31 +48,31 @@ public class AccountSnag extends SnagDateBounded {
 		return snag;
 	}
 
-	public static void insertSnagAccount(AccountSnag snag) {
+	public static void insertSnagAccount(MpanSnag snag) {
 		Hiber.session().save(snag);
 	}
 
-	public static void deleteAccountSnag(AccountSnag snag) {
+	public static void deleteAccountSnag(MpanSnag snag) {
 		Hiber.session().delete(snag);
 	}
 
-	private Account account;
+	private Mpan mpan;
 
-	public AccountSnag() {
+	public MpanSnag() {
 	}
 
-	public AccountSnag(String description, Account account,
+	public MpanSnag(String description, Mpan mpan,
 			HhEndDate startDate, HhEndDate finishDate) throws HttpException {
 		super(description, startDate, finishDate);
-		this.account = account;
+		this.mpan = mpan;
 	}
 
-	public Account getAccount() {
-		return account;
+	public Mpan getMpan() {
+		return mpan;
 	}
 
-	void setAccount(Account account) {
-		this.account = account;
+	void setMpan(Mpan mpan) {
+		this.mpan = mpan;
 	}
 
 	public void update() {
@@ -82,10 +83,10 @@ public class AccountSnag extends SnagDateBounded {
 		return element;
 	}
 
-	public AccountSnag copy() throws InternalException {
-		AccountSnag cloned;
+	public MpanSnag copy() throws InternalException {
+		MpanSnag cloned;
 		try {
-			cloned = (AccountSnag) super.clone();
+			cloned = (MpanSnag) super.clone();
 		} catch (CloneNotSupportedException e) {
 			throw new InternalException(e);
 		}
@@ -110,7 +111,7 @@ public class AccountSnag extends SnagDateBounded {
 	}
 
 	public MonadUri getUri() throws HttpException {
-		return new AccountSnags(account).getUri()
+		return new MpanSnags(mpan).getUri()
 				.resolve(getUriId()).append("/");
 	}
 }

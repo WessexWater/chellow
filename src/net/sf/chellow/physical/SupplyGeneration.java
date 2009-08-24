@@ -30,7 +30,7 @@ import java.util.Map;
 import java.util.Set;
 
 import net.sf.chellow.billing.Account;
-import net.sf.chellow.billing.AccountSnag;
+import net.sf.chellow.billing.MpanSnag;
 import net.sf.chellow.billing.Bill;
 import net.sf.chellow.billing.Dso;
 import net.sf.chellow.billing.HhdcContract;
@@ -1049,7 +1049,7 @@ public class SupplyGeneration extends PersistentEntity {
 					.session()
 					.createQuery(
 							"count(*) from SupplyGeneration generation where generation.hhdcAccount = :hhdcAccount and (generation.finishDate.date is null or :startDate <= generation.finishDate.date) and :startDate >= generation.startDate.date")
-					.setEntity("hhdcAccount", bill.getAccount()).setTimestamp(
+					.setEntity("hhdcAccount", bill.getMpan()).setTimestamp(
 							"start", bill.getStartDate().getDate())
 					.uniqueResult()) == 0) {
 				throw new UserException(
@@ -1068,7 +1068,7 @@ public class SupplyGeneration extends PersistentEntity {
 								"select count(*) from SupplyGeneration generation where generation.hhdcAccount = :hhdcAccount")
 						.setEntity("hhdcAccount", originalHhdcAccount)
 						.uniqueResult()) == 0) {
-			originalHhdcAccount.deleteSnag(AccountSnag.MISSING_BILL, null);
+			originalHhdcAccount.deleteSnag(MpanSnag.MISSING_BILL, null);
 			Hiber.session().delete(originalHhdcAccount);
 			Hiber.flush();
 		}
@@ -1106,7 +1106,7 @@ public class SupplyGeneration extends PersistentEntity {
 					.session()
 					.createQuery(
 							"count(*) from Mpan mpan where mpan.supplierAccount = :supplierAccount and (generation.finishDate.date is null or :startDate <= generation.finishDate.date) and :startDate >= generation.startDate.date")
-					.setEntity("supplierAccount", bill.getAccount())
+					.setEntity("supplierAccount", bill.getMpan())
 					.setTimestamp("start", bill.getStartDate().getDate())
 					.uniqueResult()) == 0) {
 				throw new UserException(
@@ -1161,7 +1161,7 @@ public class SupplyGeneration extends PersistentEntity {
 					.session()
 					.createQuery(
 							"count(*) from SupplyGeneration generation where generation.hhdcAccount = :hhdcAccount and (generation.finishDate.date is null or :startDate <= generation.finishDate.date) and :startDate >= generation.startDate.date")
-					.setEntity("hhdcAccount", bill.getAccount()).setTimestamp(
+					.setEntity("hhdcAccount", bill.getMpan()).setTimestamp(
 							"start", bill.getStartDate().getDate())
 					.uniqueResult()) == 0) {
 				throw new UserException(

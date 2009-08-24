@@ -34,6 +34,7 @@ import net.sf.chellow.monad.types.MonadDate;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
 import net.sf.chellow.physical.EntityList;
+import net.sf.chellow.physical.Mpan;
 import net.sf.chellow.physical.Snag;
 
 import org.hibernate.ScrollMode;
@@ -41,7 +42,7 @@ import org.hibernate.ScrollableResults;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-public class AccountSnags extends EntityList {
+public class MpanSnags extends EntityList {
 	public static final UriPathElement URI_ID;
 
 	static {
@@ -52,10 +53,10 @@ public class AccountSnags extends EntityList {
 		}
 	}
 
-	private Account account;
+	private Mpan mpan;
 
-	public AccountSnags(Account account) {
-		this.account = account;
+	public MpanSnags(Mpan mpan) {
+		this.mpan = mpan;
 	}
 
 	public UriPathElement getUriId() {
@@ -63,7 +64,7 @@ public class AccountSnags extends EntityList {
 	}
 
 	public MonadUri getUri() throws HttpException {
-		return account.getUri().resolve(getUriId()).append("/");
+		return mpan.getUri().resolve(getUriId()).append("/");
 	}
 
 	public void httpGet(Invocation inv) throws HttpException {
@@ -76,14 +77,14 @@ public class AccountSnags extends EntityList {
 		Element source = doc.getDocumentElement();
 		Element snagsElement = toXml(doc);
 		source.appendChild(snagsElement);
-		snagsElement.appendChild(account.toXml(doc, new XmlTree("contract",
+		snagsElement.appendChild(mpan.toXml(doc, new XmlTree("contract",
 				new XmlTree("party"))));
 
-		for (AccountSnag snag : (List<AccountSnag>) Hiber
+		for (MpanSnag snag : (List<MpanSnag>) Hiber
 				.session()
 				.createQuery(
 						"from AccountSnag snag where snag.account = :account order by snag.account.reference, snag.description, snag.startDate.date")
-				.setEntity("account", account).list()) {
+				.setEntity("account", mpan).list()) {
 			snagsElement.appendChild(snag.toXml(doc));
 		}
 		source.appendChild(MonadDate.getMonthsXml(doc));
@@ -100,11 +101,11 @@ public class AccountSnags extends EntityList {
 					.session()
 					.createQuery(
 							"from AccountSnag snag where snag.contract = :contract and snag.finishDate < :ignoreDate")
-					.setEntity("contract", account).setTimestamp("ignoreDate",
+					.setEntity("contract", mpan).setTimestamp("ignoreDate",
 							ignoreDate.getDate()).scroll(
 							ScrollMode.FORWARD_ONLY);
 			while (snags.next()) {
-				AccountSnag snag = (AccountSnag) snags.get(0);
+				MpanSnag snag = (MpanSnag) snags.get(0);
 				snag.setIsIgnored(true);
 				Hiber.session().flush();
 				Hiber.session().clear();

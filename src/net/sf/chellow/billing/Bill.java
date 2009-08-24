@@ -39,6 +39,7 @@ import net.sf.chellow.monad.XmlTree;
 import net.sf.chellow.monad.types.MonadDate;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
+import net.sf.chellow.physical.Mpan;
 import net.sf.chellow.physical.PersistentEntity;
 
 import org.w3c.dom.Document;
@@ -54,7 +55,7 @@ public class Bill extends PersistentEntity {
 		return bill;
 	}
 
-	private Account account;
+	private Mpan mpan;
 
 	private DayStartDate startDate; // Excluding rejected invoices
 
@@ -73,26 +74,18 @@ public class Bill extends PersistentEntity {
 	public Bill() {
 	}
 
-	public Bill(Account account) throws InternalException {
-		setAccount(account);
+	public Bill(Mpan mpan) throws InternalException {
+		setMpan(mpan);
 	}
 
 	void setInvoices(Set<Invoice> invoices) {
 		this.invoices = invoices;
 	}
 
-	Set<Invoice> getInvoices() {
+	public Set<Invoice> getInvoices() {
 		return invoices;
 	}
 
-	/*
-	 * public Invoice insertInvoice(Batch batch, InvoiceRaw invoiceRaw) throws
-	 * UserException, ProgrammerException { if
-	 * (batch.getService().equals(getService())) { throw new
-	 * ProgrammerException( "The batch must be of the same service as the
-	 * bill."); } Invoice invoice = new Invoice(batch, this, invoiceRaw);
-	 * attach(invoice); return invoice; }
-	 */
 	public void attach(Invoice invoice) throws HttpException {
 		invoice.setBill(this);
 		if (invoices == null) {
@@ -104,11 +97,7 @@ public class Bill extends PersistentEntity {
 
 	@SuppressWarnings("unchecked")
 	public void detach(Invoice invoice) throws HttpException {
-		account.addSnag(AccountSnag.MISSING_BILL, getStartDate(), getFinishDate());
-		//HhEndDate billStart = getStartDate();
-		//HhEndDate billFinish = getFinishDate();
-		//Account account = getAccount();
-
+		mpan.addSnag(MpanSnag.MISSING_BILL, getStartDate(), getFinishDate());
 		invoices.remove(invoice);
 		invoice.setBill(null);
 		Hiber.flush();
@@ -130,7 +119,7 @@ public class Bill extends PersistentEntity {
 				invoices.remove(invoiceToRemove);
 			}
 			for (Invoice invoiceToAttach : tempInvoices) {
-				getAccount().attach(invoiceToAttach);
+				getMpan().attach(invoiceToAttach);
 			}
 		}
 
@@ -139,7 +128,7 @@ public class Bill extends PersistentEntity {
 
 	private void setSummary() throws HttpException {
 		if (getStartDate() != null) {
-			account.deleteSnag(AccountSnag.MISSING_BILL, getStartDate(),
+			mpan.deleteSnag(MpanSnag.MISSING_BILL, getStartDate(),
 					getFinishDate());
 		}
 		//HhEndDate oldStartDate = getStartDate();
@@ -188,12 +177,12 @@ public class Bill extends PersistentEntity {
 		}
 	}
 
-	public Account getAccount() {
-		return account;
+	public Mpan getMpan() {
+		return mpan;
 	}
 
-	public void setAccount(Account account) {
-		this.account = account;
+	public void setMpan(Mpan mpan) {
+		this.mpan = mpan;
 	}
 
 	public DayStartDate getStartDate() {
@@ -276,7 +265,7 @@ public class Bill extends PersistentEntity {
 	}
 
 	public MonadUri getUri() throws HttpException {
-		return new Bills(account).getUri().resolve(getUriId()).append("/");
+		return new Bills(mpan).getUri().resolve(getUriId()).append("/");
 	}
 
 	public Urlable getChild(UriPathElement uriId) throws HttpException {
@@ -288,7 +277,7 @@ public class Bill extends PersistentEntity {
 	}
 
 	VirtualBill getVirtualBill() throws HttpException {
-		return account.getContract().virtualBill("total", account, startDate,
+		return mpan.getContract().virtualBill("total", mpan, startDate,
 				finishDate);
 	}
 

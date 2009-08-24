@@ -133,7 +133,7 @@ public class InvoiceRaw extends MonadObject {
 		return reference;
 	}
 
-	public String getAccountReference() {
+	public String getAccount() {
 		return accountReference;
 	}
 

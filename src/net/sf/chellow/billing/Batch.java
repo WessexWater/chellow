@@ -21,6 +21,8 @@
 
 package net.sf.chellow.billing;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -173,6 +175,7 @@ public class Batch extends PersistentEntity {
 		return new InvoiceImports(this);
 	}
 
+	@SuppressWarnings("unchecked")
 	Invoice insertInvoice(InvoiceRaw rawInvoice) throws HttpException {
 		Invoice invoice = new Invoice(this, rawInvoice);
 		Hiber.session().save(invoice);
@@ -200,27 +203,35 @@ public class Batch extends PersistentEntity {
 		 * rawInvoice.getFinishDate() + "."); }
 		 * //invoice.insertInvoiceMpan(candidateMpans.get(0)); }
 		 */
-		Account account = getContract().getAccount(
-				rawInvoice.getAccountReference());
+		
+		// primary mpan
+		List<String> mpanList = new ArrayList<String>(rawInvoice.getMpanStrings());
+		Collections.sort(mpanList);
+		String candidateMpan = mpanList.get(0);
+		List<Mpan> mpans = Mpan.getMpans(candidateMpan, rawInvoice.getFinishDate(), rawInvoice.getFinishDate());
+		if (mpans.isEmpty()) {
+			throw new UserException("There isn't an MPAN " + candidateMpan + " at the date " + rawInvoice.getFinishDate());
+		}
+		Mpan primaryMpan = mpans.get(0);
+		if (rawInvoice.getAccount().equals(primaryMpan.getSupplierAccount())) {
+			throw new UserException("The account reference doesn't match the MPAN's account reference.");
+		}
 		if (!rawInvoice.getMpanStrings().isEmpty()) {
-			Set<String> accountMpanStrings = new HashSet<String>();
-			for (Mpan mpan : account.getMpans(invoice.getStartDate(), invoice
-					.getFinishDate())) {
-				accountMpanStrings.add(mpan.toString());
+			Set<String> mpanStrings = new HashSet<String>();
+			for (Mpan mpan : (List<Mpan>) Hiber.session().createQuery("from Mpan mpan where mpan.supplierAccount = :account and mpan.supplyGeneration.startDate.date <= :invoiceFinish and (mpan.supplyGeneration.finishDate.date is null or mpan.supplyGeneration.finishDate.date >= :invoiceDate)").setString("account", rawInvoice.getAccount()).setTimestamp("invoiceFinish", invoice.getFinishDate().getDate()).list()) {
+				mpanStrings.add(mpan.toString());
 			}
-			if (!Mpan.isEqual(accountMpanStrings, rawInvoice.getMpanStrings())) {
-				throw new UserException("Problem with account '" + reference
-						+ "' invoice '" + invoice.getReference()
-						+ "' from the half-hour ending "
-						+ invoice.getStartDate() + " to the half-hour ending "
-						+ invoice.getFinishDate() + ". This invoice has MPANs "
+			if (!Mpan.isEqual(mpanStrings, rawInvoice.getMpanStrings())) {
+				throw new UserException("Problem with account '" + primaryMpan.getSupplierAccount()
+						+ "' invoice '" + rawInvoice.getReference()
+						+ " to the half-hour ending "
+						+ rawInvoice.getFinishDate() + ". This invoice has MPANs "
 						+ rawInvoice.getMpanStrings()
 						+ " but the account in Chellow has MPANs '"
-						+ accountMpanStrings + "'.");
+						+ mpanStrings + "'.");
 			}
 		}
 		Hiber.flush();
-		account.attach(invoice);
-		return invoice;
+		return primaryMpan.attach(invoice);
 	}
 }

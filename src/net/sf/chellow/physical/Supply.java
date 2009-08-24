@@ -30,7 +30,7 @@ import java.util.Map;
 import java.util.Set;
 
 import net.sf.chellow.billing.Account;
-import net.sf.chellow.billing.AccountSnag;
+import net.sf.chellow.billing.MpanSnag;
 import net.sf.chellow.billing.Bill;
 import net.sf.chellow.billing.HhdcContract;
 import net.sf.chellow.billing.SupplierContract;
@@ -823,12 +823,12 @@ public class Supply extends PersistentEntity {
 			Account hhdcAccount = generation.getHhdcAccount();
 			if (hhdcAccount != null) {
 				Debug.print("Adding HHDC account snag Supply " + getId() + " generation " + generation.getId());
-				hhdcAccount.addSnag(AccountSnag.MISSING_BILL, generation
+				hhdcAccount.addSnag(MpanSnag.MISSING_BILL, generation
 						.getStartDate(), generation.getFinishDate());
 				for (Bill bill : (List<Bill>) Hiber.session().createQuery(
 						"from Bill bill where bill.account = :account")
 						.setEntity("account", hhdcAccount).list()) {
-					hhdcAccount.deleteSnag(AccountSnag.MISSING_BILL, bill
+					hhdcAccount.deleteSnag(MpanSnag.MISSING_BILL, bill
 							.getStartDate(), bill.getFinishDate());
 				}
 			}
@@ -857,12 +857,12 @@ public class Supply extends PersistentEntity {
 							"If two supplies are on the same account at the same time, their supply generations must have the same start and finish dates.");
 				}
 */
-				supplierAccount.addSnag(AccountSnag.MISSING_BILL, generation
+				supplierAccount.addSnag(MpanSnag.MISSING_BILL, generation
 						.getStartDate(), generation.getFinishDate());
 				for (Bill bill : (List<Bill>) Hiber.session().createQuery(
 						"from Bill bill where bill.account = :account")
 						.setEntity("account", supplierAccount).list()) {
-					supplierAccount.deleteSnag(AccountSnag.MISSING_BILL, bill
+					supplierAccount.deleteSnag(MpanSnag.MISSING_BILL, bill
 							.getStartDate(), bill.getFinishDate());
 				}
 			}

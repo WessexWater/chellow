@@ -451,7 +451,7 @@ public abstract class Contract extends PersistentEntity implements
 			throw new UserException(
 					"Can't delete this account as there are still MPANs attached to it.");
 		}
-		for (AccountSnag snag : (List<AccountSnag>) Hiber.session()
+		for (MpanSnag snag : (List<MpanSnag>) Hiber.session()
 				.createQuery(
 						"from AccountSnag snag where snag.account = :account")
 				.setEntity("account", account).list()) {
