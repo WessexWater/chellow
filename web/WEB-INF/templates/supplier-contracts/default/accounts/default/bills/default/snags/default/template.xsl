@@ -2,8 +2,8 @@
 <xsl:stylesheet version="1.0"
 	xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
 	<xsl:output method="html" encoding="US-ASCII"
-		doctype-public="-//W3C//DTD HTML 4.01//EN"
-		doctype-system="http://www.w3.org/TR/html4/strict.dtd" indent="yes" />
+		doctype-public="-//W3C//DTD HTML 4.01//EN" doctype-system="http://www.w3.org/TR/html4/strict.dtd"
+		indent="yes" />
 	<xsl:template match="/">
 		<html>
 			<head>
@@ -12,7 +12,11 @@
 				<title>
 					Chellow &gt; Supplier Contracts &gt;
 					<xsl:value-of
-						select="/source/bill-snag/supplier-contract/@name" />
+						select="/source/bill-snag/bill/account/supplier-contract/@name" />
+					&gt; Accounts &gt;
+					<xsl:value-of select="/source/bill-snag/bill/account/@reference" />
+					&gt; Bills &gt;
+					<xsl:value-of select="/source/bill-snag/bill/@id" />
 					&gt; Bill Snags &gt;
 					<xsl:value-of select="/source/bill-snag/@id" />
 				</title>
@@ -29,13 +33,11 @@
 				</xsl:if>
 				<p>
 					<a href="{/source/request/@context-path}/">
-						<img
-							src="{/source/request/@context-path}/logo/" />
+						<img src="{/source/request/@context-path}/logo/" />
 						<span class="logo">Chellow</span>
 					</a>
 					&gt;
-					<a
-						href="{/source/request/@context-path}/supplier-contracts/">
+					<a href="{/source/request/@context-path}/supplier-contracts/">
 						<xsl:value-of select="'Supplier Contracts'" />
 					</a>
 					&gt;
@@ -46,12 +48,33 @@
 					</a>
 					&gt;
 					<a
+						href="{/source/request/@context-path}/supplier-contracts/{/source/bill-snag/bill/account/supplier-contract/@id}/accounts/">
+						<xsl:value-of select="'Accounts'" />
+					</a>
+					&gt;
+					<a
+						href="{/source/request/@context-path}/supplier-contracts/{/source/bill-snag/bill/account/supplier-contract/@id}/accounts/{/source/bill-snag/bill/account/@id}/">
+						<xsl:value-of
+							select="/source/bill-snag/bill/account/@reference" />
+					</a>
+					&gt;
+					<a
+						href="{/source/request/@context-path}/supplier-contracts/{/source/bill-snag/bill/account/supplier-contract/@id}/accounts/{/source/bill-snag/bill/account/@id}/bills/">
+						<xsl:value-of select="'Bills'" />
+					</a>
+					&gt;
+					<a
+						href="{/source/request/@context-path}/supplier-contracts/{/source/bill-snag/bill/account/supplier-contract/@id}/accounts/{/source/bill-snag/bill/account/@id}/bills/{/source/bill-snag/bill/@id}/">
+						<xsl:value-of
+							select="/source/bill-snag/bill/@id" />
+					</a>
+					&gt;
+					<a
 						href="{/source/request/@context-path}/supplier-contracts/{/source/bill-snag/bill/account/supplier-contract/@id}/bill-snags/">
 						<xsl:value-of select="'Bill Snags'" />
 					</a>
 					&gt;
-					<xsl:value-of
-						select="concat(/source/bill-snag/@id, ' [')" />
+					<xsl:value-of select="concat(/source/bill-snag/@id, ' [')" />
 					<a
 						href="{/source/request/@context-path}/reports/107/output/?snag-id={/source/bill-snag/@id}">
 						<xsl:value-of select="'view'" />
@@ -64,8 +87,7 @@
 					<tr>
 						<th>Chellow Id</th>
 						<td>
-							<xsl:value-of
-								select="/source/bill-snag/@id" />
+							<xsl:value-of select="/source/bill-snag/@id" />
 						</td>
 					</tr>
 					<tr>
@@ -73,8 +95,7 @@
 						<td>
 							<a
 								href="{/source/request/@context-path}/supplier-contracts/{/source/bill-snag/bill/account/supplier-contract/@id}/accounts/{/source/bill-snag/bill/account/@id}/bills/{/source/bill-snag/bill/@id}/">
-								<xsl:value-of
-									select="/source/bill-snag/bill/@id" />
+								<xsl:value-of select="/source/bill-snag/bill/@id" />
 							</a>
 						</td>
 					</tr>
@@ -90,19 +111,19 @@
 						<th>Is Ignored?</th>
 						<td>
 							<xsl:choose>
-								<xsl:when
-									test="/source/bill-snag/@is-ignored = 'true'">
+								<xsl:when test="/source/bill-snag/@is-ignored = 'true'">
 									Yes
 								</xsl:when>
-								<xsl:otherwise>No</xsl:otherwise>
+								<xsl:otherwise>
+									No
+								</xsl:otherwise>
 							</xsl:choose>
 						</td>
 					</tr>
 					<tr>
 						<th>Description</th>
 						<td>
-							<xsl:value-of
-								select="/source/bill-snag/@description" />
+							<xsl:value-of select="/source/bill-snag/@description" />
 						</td>
 					</tr>
 				</table>
