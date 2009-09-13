@@ -75,7 +75,6 @@
 		<mapping resource="hibernate/DsoContract.hbm.xml" />
 		<mapping resource="hibernate/Dso.hbm.xml" />
 		<mapping resource="hibernate/Tpr.hbm.xml" />
-		<mapping resource="hibernate/TprLine.hbm.xml" />
 		<mapping resource="hibernate/Meter.hbm.xml" />
 		<mapping resource="hibernate/RegisterRead.hbm.xml" />
 		<mapping resource="hibernate/Ssc.hbm.xml" />
