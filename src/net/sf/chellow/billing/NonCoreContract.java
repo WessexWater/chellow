@@ -243,4 +243,10 @@ public class NonCoreContract extends Contract {
 		Element element = super.toXml(doc, "non-core-contract");
 		return element;
 	}
+
+	@Override
+	public String missingBillSnagDescription() {
+		// TODO Auto-generated method stub
+		return null;
+	}
 }

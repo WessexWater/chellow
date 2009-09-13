@@ -36,8 +36,10 @@ import org.w3c.dom.Element;
 
 public class BillSnag extends Snag {
 	public static final String INCORRECT_BILL = "Incorrect";
+	
+	public static final String DUPLICATE_BILL = "Duplicate";
 
-	// public static final String CALCULATION_ERROR = "Calculation error";
+	public static final String PREVIOUS_READ = "Previous Read";
 
 	static public BillSnag getBillSnag(Long id) throws HttpException {
 		BillSnag snag = (BillSnag) Hiber.session().get(BillSnag.class, id);
@@ -45,10 +47,6 @@ public class BillSnag extends Snag {
 			throw new NotFoundException();
 		}
 		return snag;
-	}
-
-	public static void insertBillSnag(BillSnag snag) {
-		Hiber.session().save(snag);
 	}
 
 	public static void deleteBillSnag(BillSnag snag) {

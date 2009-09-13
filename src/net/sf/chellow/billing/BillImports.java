@@ -39,7 +39,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
-public class InvoiceImports implements Urlable {
+public class BillImports implements Urlable {
 	static public final MonadUri URI_ID;
 
 	static private long processSerial = 0;
@@ -56,7 +56,7 @@ public class InvoiceImports implements Urlable {
 
 	private Batch batch;
 
-	public InvoiceImports(Batch batch) {
+	public BillImports(Batch batch) {
 		this.batch = batch;
 	}
 

@@ -22,8 +22,9 @@ package net.sf.chellow.physical;
 
 import java.math.BigDecimal;
 
+import net.sf.chellow.billing.BillSnag;
 import net.sf.chellow.billing.DayFinishDate;
-import net.sf.chellow.billing.Invoice;
+import net.sf.chellow.billing.Bill;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.InternalException;
@@ -31,7 +32,6 @@ import net.sf.chellow.monad.Invocation;
 import net.sf.chellow.monad.MonadMessage;
 import net.sf.chellow.monad.MonadUtils;
 import net.sf.chellow.monad.Urlable;
-import net.sf.chellow.monad.UserException;
 import net.sf.chellow.monad.XmlTree;
 import net.sf.chellow.monad.types.MonadDate;
 import net.sf.chellow.monad.types.MonadUri;
@@ -42,9 +42,9 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
 public class RegisterRead extends PersistentEntity {
-	private Mpan mpan;
+	private Meter meter;
 
-	private Invoice invoice;
+	private Bill bill;
 
 	private BigDecimal coefficient;
 
@@ -67,12 +67,12 @@ public class RegisterRead extends PersistentEntity {
 	RegisterRead() {
 	}
 
-	public RegisterRead(Invoice invoice, RegisterReadRaw rawRead)
+	public RegisterRead(Bill bill, RegisterReadRaw rawRead)
 			throws HttpException {
-		if (invoice == null) {
+		if (bill == null) {
 			throw new InternalException("The invoice must not be null.");
 		}
-		setInvoice(invoice);
+		setBill(bill);
 		setTpr(Tpr.getTpr(rawRead.getTpr()));
 		setCoefficient(rawRead.getCoefficient());
 		setUnits(rawRead.getUnits());
@@ -82,43 +82,35 @@ public class RegisterRead extends PersistentEntity {
 		setPresentDate(rawRead.getPresentDate());
 		setpresentValue(rawRead.getPresentValue());
 		setpresentType(rawRead.getPresentType());
+		setMeter(rawRead.getMeter());
 
-		MpanCore mpanCore = rawRead.getMpanCore();
-		Supply supply = mpanCore.getSupply();
-		SupplyGeneration supplyGeneration = supply.getGeneration(rawRead
-				.getPresentDate());
-		Mpan importMpan = supplyGeneration.getImportMpan();
-		Mpan exportMpan = supplyGeneration.getExportMpan();
-		if (importMpan != null
-				&& importMpan.getCore().equals(mpanCore)) {
-			setMpan(importMpan);
-		} else if (exportMpan != null
-				&& exportMpan.getCore().equals(mpanCore)) {
-			setMpan(exportMpan);
-		} else {
-			throw new UserException("For the supply " + getId()
-					+ " neither the import MPAN core " + importMpan
-					+ " or the export MPAN core " + exportMpan
-					+ " match the register read MPAN core " + mpanCore
-					+ ".");
+		if (previousType.getCode() != ReadType.TYPE_INITIAL) {
+			RegisterRead read = (RegisterRead) Hiber
+					.session()
+					.createQuery(
+							"from RegisterRead read where read.meter = :meter and read.presentDate.date = :readDate")
+					.setEntity("meter", getMeter()).setDate("readDate",
+							getPreviousDate().getDate()).uniqueResult();
+			if (read == null) {
+				bill.addSnag(BillSnag.PREVIOUS_READ);
+			}
 		}
-		precedingRead();
 	}
 
-	public Mpan getMpan() {
-		return mpan;
+	public Meter getMeter() {
+		return meter;
 	}
 
-	void setMpan(Mpan mpan) {
-		this.mpan = mpan;
+	void setMeter(Meter meter) {
+		this.meter = meter;
 	}
 
-	public Invoice getInvoice() {
-		return invoice;
+	public Bill getBill() {
+		return bill;
 	}
 
-	void setInvoice(Invoice invoice) {
-		this.invoice = invoice;
+	void setBill(Bill bill) {
+		this.bill = bill;
 	}
 
 	BigDecimal getCoefficient() {
@@ -255,22 +247,5 @@ public class RegisterRead extends PersistentEntity {
 	}
 
 	public void attach() {
-	}
-
-	private RegisterRead precedingRead() throws HttpException {
-		if (previousType.getCode() == ReadType.TYPE_INITIAL) {
-			return null;
-		}
-		RegisterRead read = (RegisterRead) Hiber
-				.session()
-				.createQuery(
-						"from RegisterRead read where read.mpan.core = :mpanCore and read.presentDate.date = :readDate")
-				.setEntity("mpanCore", getMpan().getCore()).setDate(
-						"readDate", getPreviousDate().getDate()).uniqueResult();
-		if (read == null) {
-			throw new UserException(
-					"There isn't a preceding read for this read.");
-		}
-		return read;
 	}
 }

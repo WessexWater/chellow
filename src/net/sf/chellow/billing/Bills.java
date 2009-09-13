@@ -23,8 +23,11 @@ package net.sf.chellow.billing;
 
 import java.util.List;
 
+import net.sf.chellow.monad.DeployerException;
+import net.sf.chellow.monad.DesignerException;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
+import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Invocation;
 import net.sf.chellow.monad.MonadUtils;
 import net.sf.chellow.monad.NotFoundException;
@@ -32,7 +35,6 @@ import net.sf.chellow.monad.XmlTree;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
 import net.sf.chellow.physical.EntityList;
-import net.sf.chellow.physical.Mpan;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -42,24 +44,24 @@ public class Bills extends EntityList {
 
 	static {
 		try {
-			URI_ID = new UriPathElement("bills");
+			URI_ID = new UriPathElement("invoices");
 		} catch (HttpException e) {
 			throw new RuntimeException(e);
 		}
 	}
 
-	private Mpan mpan;
+	private Batch batch;
 
-	public Bills(Mpan mpan) {
-		setMpan(mpan);
+	public Bills(Batch batch) {
+		setBatch(batch);
 	}
 
-	public Mpan getMpan() {
-		return mpan;
+	public Batch getBatch() {
+		return batch;
 	}
 
-	void setMpan(Mpan mpan) {
-		this.mpan = mpan;
+	void setBatch(Batch batch) {
+		this.batch = batch;
 	}
 
 	public UriPathElement getUrlId() {
@@ -67,7 +69,11 @@ public class Bills extends EntityList {
 	}
 
 	public MonadUri getUri() throws HttpException {
-		return mpan.getUri().resolve(getUrlId()).append("/");
+		return batch.getUri().resolve(getUrlId()).append("/");
+	}
+
+	public void httpPost(Invocation inv) throws InternalException,
+			HttpException, DesignerException, DeployerException {
 	}
 
 	public void httpGet(Invocation inv) throws HttpException {
@@ -78,40 +84,36 @@ public class Bills extends EntityList {
 	private Document document() throws HttpException {
 		Document doc = MonadUtils.newSourceDocument();
 		Element source = doc.getDocumentElement();
-		Element billsElement = toXml(doc);
-		source.appendChild(billsElement);
-		billsElement.appendChild(mpan.toXml(doc, new XmlTree("contract", new XmlTree("party"))));
-		for (Bill bill : (List<Bill>) Hiber
+		Element invoicesElement = toXml(doc);
+		source.appendChild(invoicesElement);
+		invoicesElement.appendChild(batch.toXml(doc, new XmlTree("contract",
+						new XmlTree("party"))));
+		for (Bill invoice : (List<Bill>) Hiber
 				.session()
 				.createQuery(
-						"from Bill bill where bill.account = :account order by bill.startDate.date")
-				.setEntity("account", mpan).list()) {
-			billsElement.appendChild(bill.toXml(doc, new XmlTree("account")));
+						"from Invoice invoice where invoice.batch = :batch order by invoice.bill.account.reference")
+				.setEntity("batch", batch).list()) {
+			invoicesElement.appendChild(invoice.toXml(doc, new XmlTree("bill",
+							new XmlTree("account"))));
 		}
 		return doc;
 	}
 
 	public Bill getChild(UriPathElement uriId) throws HttpException {
-		Bill bill = (Bill) Hiber
+		Bill invoice = (Bill) Hiber
 				.session()
 				.createQuery(
-						"from Bill bill where bill.account = :account and bill.id = :billId")
-				.setEntity("account", mpan).setLong("billId",
+						"from Invoice invoice where invoice.batch = :batch and invoice.id = :invoiceId")
+				.setEntity("batch", batch).setLong("invoiceId",
 						Long.parseLong(uriId.getString())).uniqueResult();
-		if (bill == null) {
+		if (invoice == null) {
 			throw new NotFoundException();
 		}
-		return bill;
+		return invoice;
 	}
 
 	public Element toXml(Document doc) throws HttpException {
-		Element billsElement = doc.createElement("bills");
+		Element billsElement = doc.createElement("invoices");
 		return billsElement;
-	}
-
-	@Override
-	public void httpPost(Invocation inv) throws HttpException {
-		// TODO Auto-generated method stub
-		
 	}
 }

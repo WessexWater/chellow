@@ -33,11 +33,10 @@ import net.sf.chellow.billing.Bill;
 import net.sf.chellow.billing.Dso;
 import net.sf.chellow.billing.HhdcContract;
 import net.sf.chellow.billing.MopContract;
-import net.sf.chellow.billing.SupplySnag;
 import net.sf.chellow.billing.SupplierContract;
+import net.sf.chellow.monad.Debug;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
-import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Invocation;
 import net.sf.chellow.monad.MonadUtils;
 import net.sf.chellow.monad.NotFoundException;
@@ -49,7 +48,11 @@ import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
 import net.sf.chellow.ui.GeneralImport;
 
+import org.hibernate.Criteria;
 import org.hibernate.Query;
+import org.hibernate.ScrollableResults;
+import org.hibernate.criterion.Order;
+import org.hibernate.criterion.Restrictions;
 import org.hibernate.exception.ConstraintViolationException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -213,21 +216,21 @@ public class SupplyGeneration extends PersistentEntity {
 						throw new UserException(
 								"There isn't an existing import supplier.");
 					}
-					importSupplierContract = existingImportMpan.getSupplierContract();
+					importSupplierContract = existingImportMpan
+							.getSupplierContract();
 				} else {
 					importSupplierContract = SupplierContract
 							.getSupplierContract(importSupplierContractName);
 				}
-				importSupplierAccount = GeneralImport.addField(
-						csvElement, "Import Supplier Account",
-						values, 15);
-				if (importSupplierAccount
-						.equals(GeneralImport.NO_CHANGE)) {
+				importSupplierAccount = GeneralImport.addField(csvElement,
+						"Import Supplier Account", values, 15);
+				if (importSupplierAccount.equals(GeneralImport.NO_CHANGE)) {
 					if (existingImportMpan == null) {
 						throw new UserException(
 								"There isn't an existing import supplier account.");
 					}
-					importSupplierAccount = existingImportMpan.getSupplierAccount();
+					importSupplierAccount = existingImportMpan
+							.getSupplierAccount();
 				}
 			}
 			String exportMpanStr = GeneralImport.addField(csvElement,
@@ -286,15 +289,15 @@ public class SupplyGeneration extends PersistentEntity {
 						throw new UserException(
 								"There isn't an existing export supplier contract.");
 					}
-					exportSupplierContract = existingExportMpan.getSupplierContract();
+					exportSupplierContract = existingExportMpan
+							.getSupplierContract();
 				} else {
 					exportSupplierContract = SupplierContract
 							.getSupplierContract(exportSupplierContractName);
 				}
-				exportSupplierAccount = GeneralImport.addField(
-						csvElement, "Export Supplier Account", values, 20);
-				if (exportSupplierAccount
-						.equals(GeneralImport.NO_CHANGE)) {
+				exportSupplierAccount = GeneralImport.addField(csvElement,
+						"Export Supplier Account", values, 20);
+				if (exportSupplierAccount.equals(GeneralImport.NO_CHANGE)) {
 					if (existingExportMpan == null) {
 						throw new UserException(
 								"There isn't an existing export MPAN.");
@@ -309,12 +312,11 @@ public class SupplyGeneration extends PersistentEntity {
 					finishDateStr.length() == 0 ? null : (finishDateStr
 							.equals(GeneralImport.NO_CHANGE) ? supplyGeneration
 							.getFinishDate() : new HhEndDate("finish",
-							finishDateStr)), hhdcContract,
-					hhdcAccount, meter, importMpanStr, importSsc,
-					importSupplierContract, importSupplierAccount,
-					importAgreedSupplyCapacity, exportMpanStr, exportSsc,
-					exportSupplierContract, exportSupplierAccount,
-					exportAgreedSupplyCapacity);
+							finishDateStr)), hhdcContract, hhdcAccount, meter,
+					importMpanStr, importSsc, importSupplierContract,
+					importSupplierAccount, importAgreedSupplyCapacity,
+					exportMpanStr, exportSsc, exportSupplierContract,
+					exportSupplierAccount, exportAgreedSupplyCapacity);
 		} else if (action.equals("delete")) {
 			String mpanCoreStr = GeneralImport.addField(csvElement,
 					"MPAN Core", values, 0);
@@ -499,8 +501,9 @@ public class SupplyGeneration extends PersistentEntity {
 	SupplyGeneration() {
 	}
 
-	SupplyGeneration(Supply supply, HhEndDate startDate, HhEndDate finishDate, HhdcContract hhdcContract,
-			String hhdcAccount, Meter meter) throws HttpException {
+	SupplyGeneration(Supply supply, HhEndDate startDate, HhEndDate finishDate,
+			HhdcContract hhdcContract, String hhdcAccount, Meter meter)
+			throws HttpException {
 		setChannels(new HashSet<Channel>());
 		setSupply(supply);
 		setSiteSupplyGenerations(new HashSet<SiteSupplyGeneration>());
@@ -553,7 +556,7 @@ public class SupplyGeneration extends PersistentEntity {
 	void setMopContract(MopContract mopContract) {
 		this.mopContract = mopContract;
 	}
-	
+
 	public String getMopAccount() {
 		return mopAccount;
 	}
@@ -569,7 +572,7 @@ public class SupplyGeneration extends PersistentEntity {
 	void setHhdcContract(HhdcContract hhdcContract) {
 		this.hhdcContract = hhdcContract;
 	}
-	
+
 	public String getHhdcAccount() {
 		return hhdcAccount;
 	}
@@ -696,7 +699,7 @@ public class SupplyGeneration extends PersistentEntity {
 		return null;
 	}
 
-	public void internalUpdate(HhEndDate startDate, HhEndDate finishDate,
+	public void update(HhEndDate startDate, HhEndDate finishDate,
 			HhdcContract hhdcContract, String hhdcAccount, Meter meter)
 			throws HttpException {
 		String importMpanStr = null;
@@ -723,174 +726,332 @@ public class SupplyGeneration extends PersistentEntity {
 			exportSupplierContract = exportMpan.getSupplierContract();
 			exportAgreedSupplyCapacity = exportMpan.getAgreedSupplyCapacity();
 		}
-		internalUpdate(startDate, finishDate, hhdcContract,
-				hhdcAccount, meter, importMpanStr, importSsc,
-				importSupplierContract, importSupplierAccount,
-				importAgreedSupplyCapacity, exportMpanStr, exportSsc,
-				exportSupplierContract, exportSupplierAccount,
-				exportAgreedSupplyCapacity);
+		update(startDate, finishDate, hhdcContract, hhdcAccount, meter,
+				importMpanStr, importSsc, importSupplierContract,
+				importSupplierAccount, importAgreedSupplyCapacity,
+				exportMpanStr, exportSsc, exportSupplierContract,
+				exportSupplierAccount, exportAgreedSupplyCapacity);
 	}
 
+	/*
+	 * @SuppressWarnings("unchecked") public void internalUpdate(HhEndDate
+	 * startDate, HhEndDate finishDate, HhdcContract hhdcContract, String
+	 * hhdcAccount, Meter meter, String importMpanStr, Ssc importSsc,
+	 * SupplierContract importSupplierContract, String importSupplierAccount,
+	 * Integer importAgreedSupplyCapacity, String exportMpanStr, Ssc exportSsc,
+	 * SupplierContract exportSupplierContract, String exportSupplierAccount,
+	 * Integer exportAgreedSupplyCapacity) throws HttpException { Mpan
+	 * origImportMpan = getImportMpan(); String origImportSupplierAccount =
+	 * null; if (origImportMpan != null) { origImportSupplierAccount =
+	 * origImportMpan.getSupplierAccount(); } Mpan origExportMpan =
+	 * getExportMpan(); String origExportSupplierAccount = null; if
+	 * (origExportMpan != null) { origExportSupplierAccount =
+	 * origExportMpan.getSupplierAccount(); } String originalHhdcAccount =
+	 * this.hhdcAccount; HhEndDate originalStartDate = this.startDate; HhEndDate
+	 * originalFinishDate = this.finishDate; List<Bill> originalHhdcBills =
+	 * null; if (originalHhdcAccount == null) { originalHhdcBills = new
+	 * ArrayList<Bill>(); } else if (((Long) Hiber .session() .createQuery(
+	 * "select count(*) from SupplyGeneration generation where generation.hhdcAccount = :hhdcAccount and generation.startDate.date = :startDate"
+	 * ) .setTimestamp("startDate", originalStartDate.getDate())
+	 * .setEntity("hhdcAccount", originalHhdcAccount).uniqueResult()) > 1) {
+	 * originalHhdcBills = new ArrayList<Bill>(); } else { Query
+	 * originalBillsQuery = null; if (originalFinishDate == null) {
+	 * originalBillsQuery = Hiber .session() .createQuery(
+	 * "from Bill bill where bill.account = :account and bill.startDate.date >= :startDate"
+	 * ); } else { originalBillsQuery = Hiber .session() .createQuery(
+	 * "from Bill bill where bill.account = :account and bill.startDate.date >= :startDate and bill.startDate.date <= :finishDate"
+	 * ) .setTimestamp("finishDate", originalFinishDate.getDate()); }
+	 * originalHhdcBills = (List<Bill>) originalBillsQuery.setEntity( "account",
+	 * originalHhdcAccount).setTimestamp("startDate",
+	 * originalStartDate.getDate()).list(); } List<Bill> origImportSupplierBills
+	 * = null; if (origImportSupplierAccount == null) { origImportSupplierBills
+	 * = new ArrayList<Bill>(); } else if (((Long) Hiber .session()
+	 * .createQuery(
+	 * "select count(*) from SupplyGeneration generation where generation.importMpan is not null and generation.importMpan.supplierAccount = :supplierAccount and generation.startDate.date = :startDate"
+	 * ) .setTimestamp("startDate", originalStartDate.getDate())
+	 * .setEntity("supplierAccount", origImportSupplierAccount) .uniqueResult())
+	 * > 1) { origImportSupplierBills = new ArrayList<Bill>(); } else { Query
+	 * originalBillsQuery = null; if (originalFinishDate == null) {
+	 * originalBillsQuery = Hiber .session() .createQuery(
+	 * "from Bill bill where bill.account = :account and bill.startDate.date >= :startDate"
+	 * ); } else { originalBillsQuery = Hiber .session() .createQuery(
+	 * "from Bill bill where bill.account = :account and bill.startDate.date >= :startDate and bill.startDate.date <= :finishDate"
+	 * ) .setTimestamp("finishDate", originalFinishDate.getDate()); }
+	 * origImportSupplierBills = (List<Bill>) originalBillsQuery
+	 * .setEntity("account", origImportSupplierAccount)
+	 * .setTimestamp("startDate", originalStartDate.getDate()) .list(); }
+	 * 
+	 * List<Bill> origExportSupplierBills = null; if (origExportSupplierAccount
+	 * == null) { origExportSupplierBills = new ArrayList<Bill>(); } else if
+	 * (((Long) Hiber .session() .createQuery(
+	 * "select count(*) from SupplyGeneration generation where generation.exportMpan is not null and generation.importMpan.supplierAccount = :supplierAccount and generation.startDate.date = :startDate"
+	 * ) .setTimestamp("startDate", originalStartDate.getDate())
+	 * .setEntity("supplierAccount", origExportSupplierAccount) .uniqueResult())
+	 * > 1) { origExportSupplierBills = new ArrayList<Bill>(); } else { Query
+	 * originalBillsQuery = null; if (originalFinishDate == null) {
+	 * originalBillsQuery = Hiber .session() .createQuery(
+	 * "from Bill bill where bill.account = :account and bill.startDate.date >= :startDate"
+	 * ); } else { originalBillsQuery = Hiber .session() .createQuery(
+	 * "from Bill bill where bill.account = :account and bill.startDate.date >= :startDate and bill.startDate.date <= :finishDate"
+	 * ) .setTimestamp("finishDate", originalFinishDate.getDate()); }
+	 * origExportSupplierBills = (List<Bill>) originalBillsQuery
+	 * .setEntity("account", origExportSupplierAccount)
+	 * .setTimestamp("startDate", originalStartDate.getDate()) .list(); }
+	 * 
+	 * SupplyGeneration previousGeneration = supply
+	 * .getGenerationPrevious(this); if (finishDate != null &&
+	 * startDate.getDate().after(finishDate.getDate())) { throw new
+	 * UserException(
+	 * "The generation start date can't be after the finish date."); } if
+	 * (startDate == null) { throw new
+	 * InternalException("start date can't be null."); }
+	 * setStartDate(startDate); setFinishDate(finishDate);
+	 * setHhdcContract(hhdcContract); if (hhdcContract == null) {
+	 * setHhdcAccount(null); } else { if (hhdcAccount == null) { throw new
+	 * UserException
+	 * ("If there's a HHDC contract, there must be an account reference."); }
+	 * hhdcAccount = hhdcAccount.trim(); if (hhdcAccount.length() == 0) { throw
+	 * newUserException(
+	 * "If there's a HHDC contract, there must be an account reference."); }
+	 * setHhdcAccount(hhdcAccount); } if (hhdcAccount == null &&
+	 * !channels.isEmpty()) { throw new UserException(
+	 * "Can't remove the HHDC account while there are still channels there."); }
+	 * setMeter(meter); // resolve any snags channel snags outside range for
+	 * (Channel channel : channels) { channel.onSupplyGenerationChange(); }
+	 * 
+	 * Pc importPc = null; Pc exportPc = null; if (importMpan == null) { if
+	 * (importMpanStr != null && importMpanStr.length() != 0) {
+	 * setImportMpan(new Mpan(this, importMpanStr, importSsc,
+	 * importSupplierContract, importSupplierAccount,
+	 * importAgreedSupplyCapacity)); mpans.add(getImportMpan()); } } else { if
+	 * (importMpanStr == null || importMpanStr.length() == 0) {
+	 * mpans.remove(importMpan); setImportMpan(null); } else {
+	 * importMpan.update(importMpanStr, importSsc, importSupplierContract,
+	 * importSupplierAccount, importAgreedSupplyCapacity); } } if (exportMpan ==
+	 * null) { if (exportMpanStr != null && exportMpanStr.length() != 0) {
+	 * setExportMpan(new Mpan(this, exportMpanStr, exportSsc,
+	 * exportSupplierContract, exportSupplierAccount,
+	 * exportAgreedSupplyCapacity)); mpans.add(getExportMpan()); } } else { if
+	 * (exportMpanStr == null || exportMpanStr.length() == 0) {
+	 * mpans.remove(exportMpan); setExportMpan(null); } else {
+	 * exportMpan.update(exportMpanStr, exportSsc, exportSupplierContract,
+	 * exportSupplierAccount, exportAgreedSupplyCapacity); } } if (importMpan ==
+	 * null && exportMpan == null) { throw new UserException(document(),
+	 * "A supply generation must have at least one MPAN."); } if
+	 * (previousGeneration != null) { boolean isOverlap = false; if (importMpan
+	 * != null) { Mpan prevImportMpan = previousGeneration.getImportMpan(); if
+	 * (prevImportMpan != null && importMpan.getCore()
+	 * .equals(prevImportMpan.getCore())) { isOverlap = true; } } if (!isOverlap
+	 * && exportMpan != null) { Mpan prevExportMpan =
+	 * previousGeneration.getExportMpan(); if (prevExportMpan != null &&
+	 * exportMpan.getCore() .equals(prevExportMpan.getCore())) { isOverlap =
+	 * true; } } if (!isOverlap) { throw new UserException(
+	 * "MPAN cores can't change without an overlapping period."); } } if
+	 * (importMpan != null) { if (!importMpan.getLlfc().getIsImport()) { throw
+	 * new UserException(document(), "The import line loss factor '" +
+	 * importMpan.getLlfc() + "' says that the MPAN is actually export."); }
+	 * importPc = Mpan.pc(importMpanStr); } if (exportMpan != null) { if
+	 * (exportMpan.getLlfc().getIsImport()) { throw new UserException(
+	 * "Problem with the export MPAN with core '" + exportMpan.getCore() +
+	 * "'. The Line Loss Factor '" + exportMpan.getLlfc() +
+	 * "' says that the MPAN is actually import."); } exportPc =
+	 * Mpan.pc(exportMpanStr); } if (importMpan != null && exportMpan != null) {
+	 * if (!importMpan.getCore().getDso().equals(
+	 * exportMpan.getCore().getDso())) { throw new UserException(
+	 * "Two MPANs on the same supply generation must have the same DSO."); } if
+	 * (!importMpan.getLlfc().getVoltageLevel().equals(
+	 * exportMpan.getLlfc().getVoltageLevel())) { throw new UserException(
+	 * "The voltage level indicated by the Line Loss Factor must be the same for both the MPANs."
+	 * ); } if (!importPc.equals(exportPc)) { throw new UserException(
+	 * "The Profile Classes of both MPANs must be the same."); } } Dso dso =
+	 * getDso(); if (dso != null && dso.getCode().equals("22")) {
+	 * 
+	 * if (importMpan != null) { LineLossFactorCode code =
+	 * importLineLossFactor.getCode(); if ((code.equals(new
+	 * LineLossFactorCode("520")) || code.equals(new LineLossFactorCode("550"))
+	 * || code .equals(new LineLossFactorCode("580"))) && getExportMpan() ==
+	 * null) { throw UserException .newOk("The Line Loss Factor of the import
+	 * MPAN says that there should be an export MPAN, but there isn't one."); }
+	 * }
+	 * 
+	 * 
+	 * if (getExportMpan() != null && getImportMpan() != null) { int code =
+	 * getImportMpan().getLlfc().getCode(); if (code != 520 && code != 550 &&
+	 * code != 580) { throw new UserException(
+	 * "The DSO is 22, there's an export MPAN and the Line Loss Factor of the import MPAN "
+	 * + getImportMpan() + " can only be 520, 550 or 580."); } } } if (importPc
+	 * == null) { setPc(exportPc); } else { setPc(importPc); }
+	 * 
+	 * // move hhdc bills if necessary if (originalHhdcBills.size() > 0 &&
+	 * !originalHhdcAccount.equals(hhdcAccount)) { if (hhdcAccount == null) {
+	 * throw new UserException(
+	 * "There are HHDC bills associated with this supply generation, so you can't remove the HHDC account."
+	 * ); } else { Query billUpdateQuery = null; if (finishDate == null) {
+	 * billUpdateQuery = Hiber .session() .createQuery(
+	 * "update Bill bill set bill.account = : where bill.account = :account and bill.startDate.date >= :generationStart"
+	 * ); } else { billUpdateQuery = Hiber .session() .createQuery(
+	 * "update Bill bill where bill.account = :account and bill.startDate.date >= :generationStart and bill.startDate.date <= :generationFinish"
+	 * ) .setTimestamp("generationFinish", finishDate.getDate()); }
+	 * billUpdateQuery.setEntity("account", originalHhdcAccount)
+	 * .setTimestamp("generationStart", startDate.getDate()) .executeUpdate(); }
+	 * } Hiber.flush(); for (Bill bill : originalHhdcBills) { if (((Long) Hiber
+	 * .session() .createQuery(
+	 * "count(*) from SupplyGeneration generation where generation.hhdcAccount = :hhdcAccount and (generation.finishDate.date is null or :startDate <= generation.finishDate.date) and :startDate >= generation.startDate.date"
+	 * ) .setEntity("hhdcAccount", bill.getMpan()).setTimestamp( "start",
+	 * bill.getStartDate().getDate()) .uniqueResult()) == 0) { throw new
+	 * UserException( "The bill " + bill +
+	 * " has been left stranded without a supply generation attached to it."); }
+	 * } Hiber.flush(); // check if we can delete the old hhdc account if
+	 * (originalHhdcAccount != null && !originalHhdcAccount.equals(hhdcAccount)
+	 * && ((Long) Hiber .session() .createQuery(
+	 * "select count(*) from SupplyGeneration generation where generation.hhdcAccount = :hhdcAccount"
+	 * ) .setEntity("hhdcAccount", originalHhdcAccount) .uniqueResult()) == 0) {
+	 * originalHhdcAccount.deleteSnag(SupplySnag.MISSING_HHDC_BILL, null);
+	 * Hiber.session().delete(originalHhdcAccount); Hiber.flush(); }
+	 * 
+	 * // move import supplier bills if necessary if
+	 * (origImportSupplierBills.size() > 0 &&
+	 * !origImportSupplierAccount.equals(importMpan == null ? null :
+	 * importMpan.getSupplierAccount())) { if (importMpan == null) { throw new
+	 * UserException(
+	 * "There are Supplier bills associated with the import MPAN of this supply generation, so you can't remove the import MPAN."
+	 * ); } else { Query billUpdateQuery = null; if (finishDate == null) {
+	 * billUpdateQuery = Hiber .session() .createQuery(
+	 * "update Bill bill set bill.account = : where bill.account = :account and bill.startDate.date >= :generationStart"
+	 * ); } else { billUpdateQuery = Hiber .session() .createQuery(
+	 * "update Bill bill where bill.account = :account and bill.startDate.date >= :generationStart and bill.startDate.date <= :generationFinish"
+	 * ) .setTimestamp("generationFinish", finishDate.getDate()); }
+	 * billUpdateQuery.setEntity("account", origImportSupplierAccount)
+	 * .setTimestamp("generationStart", startDate.getDate()) .executeUpdate(); }
+	 * } Hiber.flush(); for (Bill bill : originalHhdcBills) { if (((Long) Hiber
+	 * .session() .createQuery(
+	 * "count(*) from Mpan mpan where mpan.supplierAccount = :supplierAccount and (generation.finishDate.date is null or :startDate <= generation.finishDate.date) and :startDate >= generation.startDate.date"
+	 * ) .setEntity("supplierAccount", bill.getMpan()) .setTimestamp("start",
+	 * bill.getStartDate().getDate()) .uniqueResult()) == 0) { throw new
+	 * UserException( "The bill " + bill +
+	 * " has been left stranded without an MPAN attached to it."); } } // check
+	 * if we can delete the old import supplier account if
+	 * (origImportSupplierAccount != null &&
+	 * !origImportSupplierAccount.equals(importMpan == null ? null :
+	 * importMpan.getSupplierAccount()) && ((Long) Hiber .session()
+	 * .createQuery(
+	 * "select count(*) from Mpan mpan where mpan.supplierAccount = :supplierAccount"
+	 * ) .setEntity("supplierAccount", origImportSupplierAccount)
+	 * .uniqueResult()) == 0) {
+	 * Hiber.session().delete(origImportSupplierAccount); Hiber.flush(); }
+	 * 
+	 * // move export supplier bills if necessary if
+	 * (origExportSupplierBills.size() > 0 &&
+	 * !originalHhdcAccount.equals(hhdcAccount)) { if (hhdcAccount == null) {
+	 * throw new UserException(
+	 * "There are HHDC bills associated with this supply generation, so you can't remove the HHDC account."
+	 * ); } else { Query billUpdateQuery = null; if (finishDate == null) {
+	 * billUpdateQuery = Hiber .session() .createQuery(
+	 * "update Bill bill set bill.account = : where bill.account = :account and bill.startDate.date >= :generationStart"
+	 * ); } else { billUpdateQuery = Hiber .session() .createQuery(
+	 * "update Bill bill where bill.account = :account and bill.startDate.date >= :generationStart and bill.startDate.date <= :generationFinish"
+	 * ) .setTimestamp("generationFinish", finishDate.getDate()); }
+	 * billUpdateQuery.setEntity("account", originalHhdcAccount)
+	 * .setTimestamp("generationStart", startDate.getDate()) .executeUpdate(); }
+	 * } Hiber.flush(); for (Bill bill : originalHhdcBills) { if (((Long) Hiber
+	 * .session() .createQuery(
+	 * "count(*) from SupplyGeneration generation where generation.hhdcAccount = :hhdcAccount and (generation.finishDate.date is null or :startDate <= generation.finishDate.date) and :startDate >= generation.startDate.date"
+	 * ) .setEntity("hhdcAccount", bill.getMpan()).setTimestamp( "start",
+	 * bill.getStartDate().getDate()) .uniqueResult()) == 0) { throw new
+	 * UserException( "The bill " + bill +
+	 * " has been left stranded without a supply generation attached to it."); }
+	 * } // check if we can delete the old export supplier account if
+	 * (origExportSupplierAccount != null &&
+	 * !origExportSupplierAccount.equals(importMpan == null ? null :
+	 * importMpan.getSupplierAccount()) && ((Long) Hiber .session()
+	 * .createQuery(
+	 * "select count(*) from Mpan mpan where mpan.supplierAccount = :supplierAccount"
+	 * ) .setEntity("supplierAccount", origExportSupplierAccount)
+	 * .uniqueResult()) == 0) {
+	 * Hiber.session().delete(origExportSupplierAccount); Hiber.flush(); } }
+	 */
+	void delete() throws HttpException {
+		List<SiteSupplyGeneration> ssGens = new ArrayList<SiteSupplyGeneration>();
+		for (SiteSupplyGeneration ssGen : siteSupplyGenerations) {
+			ssGens.add(ssGen);
+		}
+		for (SiteSupplyGeneration ssGen : ssGens) {
+			siteSupplyGenerations.remove(ssGen);
+			Hiber.flush();
+			ssGen.getSite().detachSiteSupplyGeneration(ssGen);
+			Hiber.flush();
+		}
+		List<Channel> ssChannels = new ArrayList<Channel>();
+		for (Channel channel : channels) {
+			ssChannels.add(channel);
+		}
+		for (Channel channel : ssChannels) {
+			deleteChannel(channel.getIsImport(), channel.getIsKwh());
+		}
+	}
+
+	public void update(HhEndDate startDate, HhEndDate finishDate)
+			throws HttpException {
+		if (startDate.equals(this.startDate)
+				&& HhEndDate.isEqual(finishDate, this.finishDate)) {
+			return;
+		} else {
+			update(startDate, finishDate, hhdcContract, hhdcAccount, meter);
+		}
+	}
+
+	/*
+	 * public void update(HhEndDate startDate, HhEndDate finishDate,
+	 * HhdcContract hhdcContract, String hhdcAccount, Meter meter) throws
+	 * HttpException { String importMpanStr = null; Ssc importSsc = null;
+	 * SupplierContract importSupplierContract = null; String
+	 * importSupplierAccount = null; Integer importAgreedSupplyCapacity = null;
+	 * String exportMpanStr = null; Ssc exportSsc = null; SupplierContract
+	 * exportSupplierContract = null; String exportSupplierAccount = null;
+	 * Integer exportAgreedSupplyCapacity = null; if (importMpan != null) {
+	 * importMpanStr = importMpan.toString(); importSsc = importMpan.getSsc();
+	 * importSupplierContract = importMpan.getSupplierContract();
+	 * importSupplierAccount = importMpan.getSupplierAccount();
+	 * importAgreedSupplyCapacity = importMpan.getAgreedSupplyCapacity(); } if
+	 * (exportMpan != null) { exportMpanStr = exportMpan.toString(); exportSsc =
+	 * exportMpan.getSsc(); exportSupplierContract =
+	 * exportMpan.getSupplierContract(); exportSupplierAccount =
+	 * exportMpan.getSupplierAccount(); exportAgreedSupplyCapacity =
+	 * exportMpan.getAgreedSupplyCapacity(); } update(startDate, finishDate,
+	 * hhdcContract, hhdcAccount, meter, importMpanStr, importSsc,
+	 * importSupplierContract, importSupplierAccount,
+	 * importAgreedSupplyCapacity, exportMpanStr, exportSsc,
+	 * exportSupplierContract, exportSupplierAccount,
+	 * exportAgreedSupplyCapacity); }
+	 */
 	@SuppressWarnings("unchecked")
-	public void internalUpdate(HhEndDate startDate, HhEndDate finishDate,
-			HhdcContract hhdcContract, String hhdcAccount,
-			Meter meter, String importMpanStr, Ssc importSsc,
+	public void update(HhEndDate startDate, HhEndDate finishDate,
+			HhdcContract hhdcContract, String hhdcAccount, Meter meter,
+			String importMpanStr, Ssc importSsc,
 			SupplierContract importSupplierContract,
-			String importSupplierAccountReference,
-			Integer importAgreedSupplyCapacity, String exportMpanStr,
-			Ssc exportSsc, SupplierContract exportSupplierContract,
-			String exportSupplierAccountReference,
-			Integer exportAgreedSupplyCapacity) throws HttpException {
-		Mpan origImportMpan = getImportMpan();
-		String origImportSupplierAccount = null;
-		if (origImportMpan != null) {
-			origImportSupplierAccount = origImportMpan.getSupplierAccount();
-		}
-		Mpan origExportMpan = getExportMpan();
-		String origExportSupplierAccount = null;
-		if (origExportMpan != null) {
-			origExportSupplierAccount = origExportMpan.getSupplierAccount();
-		}
-		String originalHhdcAccount = this.hhdcAccount;
-		HhEndDate originalStartDate = this.startDate;
-		HhEndDate originalFinishDate = this.finishDate;
-		List<Bill> originalHhdcBills = null;
-		if (originalHhdcAccount == null) {
-			originalHhdcBills = new ArrayList<Bill>();
-		} else if (((Long) Hiber
-				.session()
-				.createQuery(
-						"select count(*) from SupplyGeneration generation where generation.hhdcAccount = :hhdcAccount and generation.startDate.date = :startDate")
-				.setTimestamp("startDate", originalStartDate.getDate())
-				.setEntity("hhdcAccount", originalHhdcAccount).uniqueResult()) > 1) {
-			originalHhdcBills = new ArrayList<Bill>();
-		} else {
-			Query originalBillsQuery = null;
-			if (originalFinishDate == null) {
-				originalBillsQuery = Hiber
-						.session()
-						.createQuery(
-								"from Bill bill where bill.account = :account and bill.startDate.date >= :startDate");
-			} else {
-				originalBillsQuery = Hiber
-						.session()
-						.createQuery(
-								"from Bill bill where bill.account = :account and bill.startDate.date >= :startDate and bill.startDate.date <= :finishDate")
-						.setTimestamp("finishDate",
-								originalFinishDate.getDate());
-			}
-			originalHhdcBills = (List<Bill>) originalBillsQuery.setEntity(
-					"account", originalHhdcAccount).setTimestamp("startDate",
-					originalStartDate.getDate()).list();
-		}
-
-		List<Bill> origImportSupplierBills = null;
-		if (origImportSupplierAccount == null) {
-			origImportSupplierBills = new ArrayList<Bill>();
-		} else if (((Long) Hiber
-				.session()
-				.createQuery(
-						"select count(*) from SupplyGeneration generation where generation.importMpan is not null and generation.importMpan.supplierAccount = :supplierAccount and generation.startDate.date = :startDate")
-				.setTimestamp("startDate", originalStartDate.getDate())
-				.setEntity("supplierAccount", origImportSupplierAccount)
-				.uniqueResult()) > 1) {
-			origImportSupplierBills = new ArrayList<Bill>();
-		} else {
-			Query originalBillsQuery = null;
-			if (originalFinishDate == null) {
-				originalBillsQuery = Hiber
-						.session()
-						.createQuery(
-								"from Bill bill where bill.account = :account and bill.startDate.date >= :startDate");
-			} else {
-				originalBillsQuery = Hiber
-						.session()
-						.createQuery(
-								"from Bill bill where bill.account = :account and bill.startDate.date >= :startDate and bill.startDate.date <= :finishDate")
-						.setTimestamp("finishDate",
-								originalFinishDate.getDate());
-			}
-			origImportSupplierBills = (List<Bill>) originalBillsQuery
-					.setEntity("account", origImportSupplierAccount)
-					.setTimestamp("startDate", originalStartDate.getDate())
-					.list();
-		}
-
-		List<Bill> origExportSupplierBills = null;
-		if (origExportSupplierAccount == null) {
-			origExportSupplierBills = new ArrayList<Bill>();
-		} else if (((Long) Hiber
-				.session()
-				.createQuery(
-						"select count(*) from SupplyGeneration generation where generation.exportMpan is not null and generation.importMpan.supplierAccount = :supplierAccount and generation.startDate.date = :startDate")
-				.setTimestamp("startDate", originalStartDate.getDate())
-				.setEntity("supplierAccount", origExportSupplierAccount)
-				.uniqueResult()) > 1) {
-			origExportSupplierBills = new ArrayList<Bill>();
-		} else {
-			Query originalBillsQuery = null;
-			if (originalFinishDate == null) {
-				originalBillsQuery = Hiber
-						.session()
-						.createQuery(
-								"from Bill bill where bill.account = :account and bill.startDate.date >= :startDate");
-			} else {
-				originalBillsQuery = Hiber
-						.session()
-						.createQuery(
-								"from Bill bill where bill.account = :account and bill.startDate.date >= :startDate and bill.startDate.date <= :finishDate")
-						.setTimestamp("finishDate",
-								originalFinishDate.getDate());
-			}
-			origExportSupplierBills = (List<Bill>) originalBillsQuery
-					.setEntity("account", origExportSupplierAccount)
-					.setTimestamp("startDate", originalStartDate.getDate())
-					.list();
-		}
-
-		SupplyGeneration previousGeneration = supply
-				.getGenerationPrevious(this);
-		if (finishDate != null
-				&& startDate.getDate().after(finishDate.getDate())) {
+			String importSupplierAccount, Integer importAgreedSupplyCapacity,
+			String exportMpanStr, Ssc exportSsc,
+			SupplierContract exportSupplierContract,
+			String exportSupplierAccount, Integer exportAgreedSupplyCapacity)
+			throws HttpException {
+		if (startDate.after(finishDate)) {
 			throw new UserException(
 					"The generation start date can't be after the finish date.");
 		}
-		if (startDate == null) {
-			throw new InternalException("start date can't be null.");
-		}
-		setStartDate(startDate);
-		setFinishDate(finishDate);
-			setHhdcContract(hhdcContract);
-		if (hhdcContract == null) {
-			setHhdcAccount(null);
-		} else {
-			if (hhdcAccount == null) {
-				throw new UserException("If there's a HHDC contract, there must be an account reference.");
-			}
-			hhdcAccount = hhdcAccount.trim();
-			if (hhdcAccount.length() == 0) {
-				throw new UserException("If there's a HHDC contract, there must be an account reference.");
-			}
-			setHhdcAccount(hhdcAccount);
-		}
-		if (hhdcAccount == null && !channels.isEmpty()) {
-			throw new UserException(
-					"Can't remove the HHDC account while there are still channels there.");
-		}
-		setMeter(meter);
-		// resolve any snags channel snags outside range
-		for (Channel channel : channels) {
-			channel.onSupplyGenerationChange();
-		}
-
 		Pc importPc = null;
 		Pc exportPc = null;
 		if (importMpan == null) {
 			if (importMpanStr != null && importMpanStr.length() != 0) {
-				setImportMpan(new Mpan(this, importMpanStr, importSsc,
-						importSupplierContract, importSupplierAccountReference,
-						importAgreedSupplyCapacity));
+				Hiber.flush();
+				Mpan te = new Mpan(this, importMpanStr, importSsc,
+						importSupplierContract, importSupplierAccount,
+						importAgreedSupplyCapacity);
+				Hiber.session().save(te);
+				Hiber.flush();
+				setImportMpan(te);
+				Hiber.flush();
 				mpans.add(getImportMpan());
+				Hiber.flush();
 			}
 		} else {
 			if (importMpanStr == null || importMpanStr.length() == 0) {
@@ -898,14 +1059,15 @@ public class SupplyGeneration extends PersistentEntity {
 				setImportMpan(null);
 			} else {
 				importMpan.update(importMpanStr, importSsc,
-						importSupplierContract, importSupplierAccountReference,
+						importSupplierContract, importSupplierAccount,
 						importAgreedSupplyCapacity);
 			}
 		}
+		Hiber.flush();
 		if (exportMpan == null) {
 			if (exportMpanStr != null && exportMpanStr.length() != 0) {
 				setExportMpan(new Mpan(this, exportMpanStr, exportSsc,
-						exportSupplierContract, exportSupplierAccountReference,
+						exportSupplierContract, exportSupplierAccount,
 						exportAgreedSupplyCapacity));
 				mpans.add(getExportMpan());
 			}
@@ -915,36 +1077,13 @@ public class SupplyGeneration extends PersistentEntity {
 				setExportMpan(null);
 			} else {
 				exportMpan.update(exportMpanStr, exportSsc,
-						exportSupplierContract, exportSupplierAccountReference,
+						exportSupplierContract, exportSupplierAccount,
 						exportAgreedSupplyCapacity);
 			}
 		}
 		if (importMpan == null && exportMpan == null) {
 			throw new UserException(document(),
 					"A supply generation must have at least one MPAN.");
-		}
-		if (previousGeneration != null) {
-			boolean isOverlap = false;
-			if (importMpan != null) {
-				Mpan prevImportMpan = previousGeneration.getImportMpan();
-				if (prevImportMpan != null
-						&& importMpan.getCore()
-								.equals(prevImportMpan.getCore())) {
-					isOverlap = true;
-				}
-			}
-			if (!isOverlap && exportMpan != null) {
-				Mpan prevExportMpan = previousGeneration.getExportMpan();
-				if (prevExportMpan != null
-						&& exportMpan.getCore()
-								.equals(prevExportMpan.getCore())) {
-					isOverlap = true;
-				}
-			}
-			if (!isOverlap) {
-				throw new UserException(
-						"MPAN cores can't change without an overlapping period.");
-			}
 		}
 		if (importMpan != null) {
 			if (!importMpan.getLlfc().getIsImport()) {
@@ -982,7 +1121,7 @@ public class SupplyGeneration extends PersistentEntity {
 			}
 		}
 		Dso dso = getDso();
-		if (dso != null && dso.getCode().equals("22")) {
+		if (dso.getCode().equals("22")) {
 			/*
 			 * if (importMpan != null) { LineLossFactorCode code =
 			 * importLineLossFactor.getCode(); if ((code.equals(new
@@ -1009,320 +1148,332 @@ public class SupplyGeneration extends PersistentEntity {
 		} else {
 			setPc(importPc);
 		}
-
-		// move hhdc bills if necessary
-		if (originalHhdcBills.size() > 0
-				&& !originalHhdcAccount.equals(hhdcAccount)) {
-			if (hhdcAccount == null) {
-				throw new UserException(
-						"There are HHDC bills associated with this supply generation, so you can't remove the HHDC account.");
-			} else {
-				Query billUpdateQuery = null;
-				if (finishDate == null) {
-					billUpdateQuery = Hiber
-							.session()
-							.createQuery(
-									"update Bill bill set bill.account = : where bill.account = :account and bill.startDate.date >= :generationStart");
-				} else {
-					billUpdateQuery = Hiber
-							.session()
-							.createQuery(
-									"update Bill bill where bill.account = :account and bill.startDate.date >= :generationStart and bill.startDate.date <= :generationFinish")
-							.setTimestamp("generationFinish",
-									finishDate.getDate());
-				}
-				billUpdateQuery.setEntity("account", originalHhdcAccount)
-						.setTimestamp("generationStart", startDate.getDate())
-						.executeUpdate();
-			}
-		}
-		Hiber.flush();
-		for (Bill bill : originalHhdcBills) {
+		SupplyGeneration previousGeneration = supply
+				.getGenerationPrevious(this);
+		if (previousGeneration == null) {
 			if (((Long) Hiber
 					.session()
 					.createQuery(
-							"count(*) from SupplyGeneration generation where generation.hhdcAccount = :hhdcAccount and (generation.finishDate.date is null or :startDate <= generation.finishDate.date) and :startDate >= generation.startDate.date")
-					.setEntity("hhdcAccount", bill.getMpan()).setTimestamp(
-							"start", bill.getStartDate().getDate())
-					.uniqueResult()) == 0) {
+							"select count(*) from HhDatum datum where datum.channel.supplyGeneration.supply  = :supply and datum.endDate.date < :date")
+					.setEntity("supply", this).setTimestamp("date",
+							startDate.getDate()).uniqueResult()) > 0) {
 				throw new UserException(
-						"The bill "
-								+ bill
-								+ " has been left stranded without a supply generation attached to it.");
+						"There are HH data before the start of the updated supply.");
 			}
-		}
-		Hiber.flush();
-		// check if we can delete the old hhdc account
-		if (originalHhdcAccount != null
-				&& !originalHhdcAccount.equals(hhdcAccount)
-				&& ((Long) Hiber
-						.session()
-						.createQuery(
-								"select count(*) from SupplyGeneration generation where generation.hhdcAccount = :hhdcAccount")
-						.setEntity("hhdcAccount", originalHhdcAccount)
-						.uniqueResult()) == 0) {
-			originalHhdcAccount.deleteSnag(SupplySnag.MISSING_HHDC_BILL, null);
-			Hiber.session().delete(originalHhdcAccount);
-			Hiber.flush();
-		}
-
-		// move import supplier bills if necessary
-		if (origImportSupplierBills.size() > 0
-				&& !origImportSupplierAccount.equals(importMpan == null ? null
-						: importMpan.getSupplierAccount())) {
-			if (importMpan == null) {
-				throw new UserException(
-						"There are Supplier bills associated with the import MPAN of this supply generation, so you can't remove the import MPAN.");
-			} else {
-				Query billUpdateQuery = null;
-				if (finishDate == null) {
-					billUpdateQuery = Hiber
-							.session()
-							.createQuery(
-									"update Bill bill set bill.account = : where bill.account = :account and bill.startDate.date >= :generationStart");
-				} else {
-					billUpdateQuery = Hiber
-							.session()
-							.createQuery(
-									"update Bill bill where bill.account = :account and bill.startDate.date >= :generationStart and bill.startDate.date <= :generationFinish")
-							.setTimestamp("generationFinish",
-									finishDate.getDate());
-				}
-				billUpdateQuery.setEntity("account", origImportSupplierAccount)
-						.setTimestamp("generationStart", startDate.getDate())
-						.executeUpdate();
-			}
-		}
-		Hiber.flush();
-		for (Bill bill : originalHhdcBills) {
+			/*
+			 * if (((Long) Hiber .session() .createQuery(
+			 * "select count(*) from RegisterRead read where read.mpan.supplyGeneration.supply  = :supply and read.presentDate.date < :date"
+			 * ) .setEntity("supply", supply).setTimestamp("date",
+			 * startDate.getDate()).uniqueResult()) > 0) { throw new
+			 * UserException(
+			 * "There are register reads before the start of the updated supply."
+			 * ); }
+			 */
 			if (((Long) Hiber
 					.session()
 					.createQuery(
-							"count(*) from Mpan mpan where mpan.supplierAccount = :supplierAccount and (generation.finishDate.date is null or :startDate <= generation.finishDate.date) and :startDate >= generation.startDate.date")
-					.setEntity("supplierAccount", bill.getMpan())
-					.setTimestamp("start", bill.getStartDate().getDate())
-					.uniqueResult()) == 0) {
+							"select count(*) from Bill bill where bill.supply  = :supply and bill.startDate.date < :date")
+					.setEntity("supply", supply).setTimestamp("date",
+							startDate.getDate()).uniqueResult()) > 0) {
 				throw new UserException(
-						"The bill "
-								+ bill
-								+ " has been left stranded without an MPAN attached to it.");
+						"There are bills before the start of the updated supply.");
+			}
+
+		} else {
+			boolean isOverlap = false;
+			if (importMpan != null) {
+				Debug.print("Import MPAN is " + importMpan.toString());
+				Mpan prevImportMpan = previousGeneration.getImportMpan();
+				Debug.print("Previous Import mpan " + prevImportMpan);
+				if (prevImportMpan != null
+						&& importMpan.getCore()
+								.equals(prevImportMpan.getCore())) {
+					isOverlap = true;
+				}
+			}
+			if (!isOverlap && exportMpan != null) {
+				Mpan prevExportMpan = previousGeneration.getExportMpan();
+				if (prevExportMpan != null
+						&& exportMpan.getCore()
+								.equals(prevExportMpan.getCore())) {
+					isOverlap = true;
+				}
+			}
+			if (!isOverlap) {
+				throw new UserException(
+						"MPAN cores can't change without an overlapping period.");
 			}
 		}
-		// check if we can delete the old import supplier account
-		if (origImportSupplierAccount != null
-				&& !origImportSupplierAccount.equals(importMpan == null ? null
-						: importMpan.getSupplierAccount())
-				&& ((Long) Hiber
-						.session()
-						.createQuery(
-								"select count(*) from Mpan mpan where mpan.supplierAccount = :supplierAccount")
-						.setEntity("supplierAccount", origImportSupplierAccount)
-						.uniqueResult()) == 0) {
-			Hiber.session().delete(origImportSupplierAccount);
-			Hiber.flush();
-		}
-
-		// move export supplier bills if necessary
-		if (origExportSupplierBills.size() > 0
-				&& !originalHhdcAccount.equals(hhdcAccount)) {
-			if (hhdcAccount == null) {
+		SupplyGeneration nextGeneration = supply.getGenerationNext(this);
+		if (nextGeneration == null) {
+			if (finishDate != null
+					&& ((Long) Hiber
+							.session()
+							.createQuery(
+									"select count(*) from HhDatum datum where datum.channel.supplyGeneration.supply  = :supply and datum.endDate.date > :date")
+							.setEntity("supply", this).setTimestamp("date",
+									finishDate.getDate()).uniqueResult()) > 0) {
 				throw new UserException(
-						"There are HHDC bills associated with this supply generation, so you can't remove the HHDC account.");
-			} else {
-				Query billUpdateQuery = null;
-				if (finishDate == null) {
-					billUpdateQuery = Hiber
+						"There are HH data after the end of the updated supply.");
+			}
+			/*
+			if (finishDate != null
+					&& ((Long) Hiber
 							.session()
 							.createQuery(
-									"update Bill bill set bill.account = : where bill.account = :account and bill.startDate.date >= :generationStart");
-				} else {
-					billUpdateQuery = Hiber
+									"select count(*) from RegisterRead read where read.mpan.supplyGeneration.supply  = :supply and read.presentDate.date > :date")
+							.setEntity("supply", supply).setTimestamp("date",
+									finishDate.getDate()).uniqueResult()) > 0) {
+				throw new UserException(
+						"There are register reads after the end of the updated supply.");
+			}
+			*/
+			if (finishDate != null
+					&& ((Long) Hiber
 							.session()
 							.createQuery(
-									"update Bill bill where bill.account = :account and bill.startDate.date >= :generationStart and bill.startDate.date <= :generationFinish")
-							.setTimestamp("generationFinish",
-									finishDate.getDate());
+									"select count(*) from Bill bill where bill.supply  = :supply and bill.startDate.date > :date")
+							.setEntity("supply", supply).setTimestamp("date",
+									finishDate.getDate()).uniqueResult()) > 0) {
+				throw new UserException(
+						"There are bills after the end of the updated supply.");
+			}
+		} else {
+			boolean isOverlap = false;
+			if (importMpan != null) {
+				Mpan nextImportMpan = nextGeneration.getImportMpan();
+				if (nextImportMpan != null
+						&& importMpan.getCore()
+								.equals(nextImportMpan.getCore())) {
+					isOverlap = true;
 				}
-				billUpdateQuery.setEntity("account", originalHhdcAccount)
-						.setTimestamp("generationStart", startDate.getDate())
-						.executeUpdate();
+			}
+			if (!isOverlap && exportMpan != null) {
+				Mpan nextExportMpan = nextGeneration.getExportMpan();
+				if (nextExportMpan != null
+						&& exportMpan.getCore()
+								.equals(nextExportMpan.getCore())) {
+					isOverlap = true;
+				}
+			}
+			if (!isOverlap) {
+				throw new UserException(
+						"MPAN cores can't change without an overlapping period.");
+			}
+
+		}
+		setStartDate(startDate);
+		setFinishDate(finishDate);
+		if (hhdcContract == null) {
+			hhdcAccount = null;
+			if (!channels.isEmpty()) {
+				throw new UserException(
+						"Can't remove the HHDC account while there are still channels there.");
+			}
+		} else {
+			hhdcAccount = hhdcAccount == null ? null : hhdcAccount.trim();
+			if (hhdcAccount == null || hhdcAccount.length() == 0) {
+				throw new UserException(
+						"If there's a HHDC contract, there must be an account reference.");
+			}
+			HhEndDate hhdcContractStartDate = hhdcContract.getStartRateScript()
+					.getStartDate();
+			if (hhdcContractStartDate.after(startDate)) {
+				throw new UserException(
+						"The HHDC contract starts after the supply generation.");
+			}
+			HhEndDate hhdcContractFinishDate = hhdcContract
+					.getFinishRateScript().getFinishDate();
+			if (HhEndDate.isBefore(hhdcContractFinishDate, finishDate)) {
+				throw new UserException("The HHDC contract "
+						+ hhdcContract.getId()
+						+ " finishes before the supply generation.");
+			}
+			Criteria crit = Hiber.session().createCriteria(Bill.class).add(
+					Restrictions.eq("supply", supply)).add(
+					Restrictions.ge("finishDate.date", startDate.getDate()))
+					.createAlias("batch", "bt").add(
+					Restrictions.eq("bt.contract.id", hhdcContract.getId()))
+					.addOrder(Order.asc("startDate.date"));
+			if (finishDate != null) {
+				crit.add(Restrictions
+						.le("startDate.date", finishDate.getDate()));
+			}
+			Bill firstHhdcBill = (Bill) crit.uniqueResult();
+			if (firstHhdcBill == null) {
+				supply.addSnag(hhdcContract, SupplySnag.MISSING_BILL,
+						getStartDate(), getFinishDate());
+			} else {
+				if (firstHhdcBill.getStartDate().after(getStartDate())) {
+					supply.addSnag(hhdcContract, SupplySnag.MISSING_BILL,
+							getStartDate(), firstHhdcBill.getStartDate()
+									.getPrevious());
+				}
 			}
 		}
 		Hiber.flush();
-		for (Bill bill : originalHhdcBills) {
-			if (((Long) Hiber
-					.session()
-					.createQuery(
-							"count(*) from SupplyGeneration generation where generation.hhdcAccount = :hhdcAccount and (generation.finishDate.date is null or :startDate <= generation.finishDate.date) and :startDate >= generation.startDate.date")
-					.setEntity("hhdcAccount", bill.getMpan()).setTimestamp(
-							"start", bill.getStartDate().getDate())
-					.uniqueResult()) == 0) {
-				throw new UserException(
-						"The bill "
-								+ bill
-								+ " has been left stranded without a supply generation attached to it.");
-			}
-		}
-		// check if we can delete the old export supplier account
-		if (origExportSupplierAccount != null
-				&& !origExportSupplierAccount.equals(importMpan == null ? null
-						: importMpan.getSupplierAccount())
-				&& ((Long) Hiber
-						.session()
-						.createQuery(
-								"select count(*) from Mpan mpan where mpan.supplierAccount = :supplierAccount")
-						.setEntity("supplierAccount", origExportSupplierAccount)
-						.uniqueResult()) == 0) {
-			Hiber.session().delete(origExportSupplierAccount);
-			Hiber.flush();
-		}
-	}
-
-	void delete() throws HttpException {
-		List<SiteSupplyGeneration> ssGens = new ArrayList<SiteSupplyGeneration>();
-		for (SiteSupplyGeneration ssGen : siteSupplyGenerations) {
-			ssGens.add(ssGen);
-		}
-		for (SiteSupplyGeneration ssGen : ssGens) {
-			siteSupplyGenerations.remove(ssGen);
-			Hiber.flush();
-			ssGen.getSite().detachSiteSupplyGeneration(ssGen);
-			Hiber.flush();
-		}
-		List<Channel> ssChannels = new ArrayList<Channel>();
+		setHhdcAccount(hhdcAccount);
+		setHhdcContract(hhdcContract);
+		setMeter(meter);
 		for (Channel channel : channels) {
-			ssChannels.add(channel);
+			channel.onSupplyGenerationChange();
 		}
-		for (Channel channel : ssChannels) {
-			deleteChannel(channel.getIsImport(), channel.getIsKwh());
-		}
-	}
 
-	public void update(HhEndDate startDate, HhEndDate finishDate)
-			throws HttpException {
-		update(startDate, finishDate, hhdcAccount == null ? null : HhdcContract
-				.getHhdcContract(hhdcAccount.getContract().getId()),
-				hhdcAccount == null ? null : hhdcAccount.getReference(), meter);
-	}
-
-	public void update(HhEndDate startDate, HhEndDate finishDate,
-			HhdcContract hhdcContract, String hhdcAccountReference, Meter meter)
-			throws HttpException {
-		String importMpanStr = null;
-		Ssc importSsc = null;
-		SupplierContract importSupplierContract = null;
-		String importSupplierAccountReference = null;
-		Integer importAgreedSupplyCapacity = null;
-		String exportMpanStr = null;
-		Ssc exportSsc = null;
-		SupplierContract exportSupplierContract = null;
-		String exportSupplierAccountReference = null;
-		Integer exportAgreedSupplyCapacity = null;
 		if (importMpan != null) {
-			importMpanStr = importMpan.toString();
-			importSsc = importMpan.getSsc();
-			Account importSupplierAccount = importMpan.getSupplierAccount();
-			importSupplierContract = SupplierContract
-					.getSupplierContract(importSupplierAccount.getContract()
-							.getId());
-			importSupplierAccountReference = importSupplierAccount
-					.getReference();
-			importAgreedSupplyCapacity = importMpan.getAgreedSupplyCapacity();
+			Criteria impCrit = Hiber.session().createCriteria(Bill.class).add(
+					Restrictions.eq("supply", supply)).add(
+					Restrictions
+							.ge("finishDate.date", getStartDate().getDate()))
+					.createAlias("batch", "bt").add(
+							Restrictions.eq("bt.contract.id", importMpan
+									.getSupplierContract().getId())).addOrder(
+							Order.asc("startDate.date"));
+			if (finishDate != null) {
+				impCrit.add(Restrictions.le("startDate.date", finishDate
+						.getDate()));
+			}
+			Bill firstImpSupBill = (Bill) impCrit.uniqueResult();
+			if (firstImpSupBill == null) {
+				supply.addSnag(importMpan.getSupplierContract(),
+						SupplySnag.MISSING_BILL, getStartDate(),
+						getFinishDate());
+			} else {
+				if (firstImpSupBill.getStartDate().after(getStartDate())) {
+					supply.addSnag(importMpan.getSupplierContract(),
+							SupplySnag.MISSING_BILL, getStartDate(),
+							firstImpSupBill.getStartDate().getPrevious());
+				}
+			}
 		}
 		if (exportMpan != null) {
-			exportMpanStr = exportMpan.toString();
-			exportSsc = exportMpan.getSsc();
-			Account exportSupplierAccount = exportMpan.getSupplierAccount();
-			exportSupplierContract = SupplierContract
-					.getSupplierContract(exportSupplierAccount.getContract()
-							.getId());
-			exportSupplierAccountReference = exportSupplierAccount
-					.getReference();
-			exportAgreedSupplyCapacity = exportMpan.getAgreedSupplyCapacity();
-		}
-		update(startDate, finishDate, hhdcContract, hhdcAccountReference,
-				meter, importMpanStr, importSsc, importSupplierContract,
-				importSupplierAccountReference, importAgreedSupplyCapacity,
-				exportMpanStr, exportSsc, exportSupplierContract,
-				exportSupplierAccountReference, exportAgreedSupplyCapacity);
-	}
-
-	public void update(HhEndDate startDate, HhEndDate finishDate,
-			HhdcContract hhdcContract, String hhdcAccountReference,
-			Meter meter, String importMpanStr, Ssc importSsc,
-			SupplierContract importSupplierContract,
-			String importSupplierAccountReference,
-			Integer importAgreedSupplyCapacity, String exportMpanStr,
-			Ssc exportSsc, SupplierContract exportSupplierContract,
-			String exportSupplierAccountReference,
-			Integer exportAgreedSupplyCapacity) throws HttpException {
-		HhEndDate originalStartDate = getStartDate();
-		HhEndDate originalFinishDate = getFinishDate();
-		/*
-		 * if (startDate.equals(originalStartDate) && ((finishDate != null &&
-		 * originalFinishDate != null && finishDate .equals(originalFinishDate))
-		 * || (finishDate == null && originalFinishDate == null))) { return; }
-		 */
-		SupplyGeneration previousSupplyGeneration = supply
-				.getGenerationPrevious(this);
-		if (previousSupplyGeneration != null) {
-			if (!previousSupplyGeneration.getStartDate().getDate().before(
-					startDate.getDate())) {
-				throw new UserException(
-						"The start date must be after the start date of the previous generation.");
+			Criteria expCrit = Hiber.session().createCriteria(Bill.class).add(
+					Restrictions.eq("supply", supply)).createAlias("batch", "bt").add(
+					Restrictions.eq("bt.contract.id", exportMpan
+							.getSupplierContract().getId())).add(
+					Restrictions
+							.ge("finishDate.date", getStartDate().getDate()))
+					.addOrder(Order.asc("startDate.date"));
+			if (finishDate != null) {
+				expCrit.add(Restrictions.le("startDate.date", finishDate
+						.getDate()));
 			}
-			Account previousHhdcAccount = previousSupplyGeneration
-					.getHhdcAccount();
-			previousSupplyGeneration.internalUpdate(previousSupplyGeneration
-					.getStartDate(), startDate.getPrevious(),
-					previousHhdcAccount == null ? null : HhdcContract
-							.getHhdcContract(previousHhdcAccount.getContract()
-									.getId()),
-					previousHhdcAccount == null ? null : previousHhdcAccount
-							.getReference(), previousSupplyGeneration
-							.getMeter());
-		}
-		SupplyGeneration nextSupplyGeneration = supply.getGenerationNext(this);
-		if (nextSupplyGeneration != null) {
-			if (finishDate == null) {
-				throw new UserException(
-						"The finish date must be before the finish date of the next generation.");
+			Bill firstExpSupBill = (Bill) expCrit.uniqueResult();
+			if (firstExpSupBill == null) {
+				supply.addSnag(exportMpan.getSupplierContract(),
+						SupplySnag.MISSING_BILL, getStartDate(),
+						getFinishDate());
+			} else {
+				if (firstExpSupBill.getStartDate().after(getStartDate())) {
+					supply.addSnag(exportMpan.getSupplierContract(),
+							SupplySnag.MISSING_BILL, getStartDate(),
+							firstExpSupBill.getStartDate().getPrevious());
+				}
 			}
-			if (nextSupplyGeneration.getFinishDate() != null
-					&& !finishDate.getDate().before(
-							nextSupplyGeneration.getFinishDate().getDate())) {
-				throw new UserException(
-						"The finish date must be before the finish date of the next generation.");
-			}
-			Account nextHhdcAccount = nextSupplyGeneration.getHhdcAccount();
-			nextSupplyGeneration.internalUpdate(finishDate.getNext(),
-					nextSupplyGeneration.getFinishDate(),
-					nextHhdcAccount == null ? null : HhdcContract
-							.getHhdcContract(nextHhdcAccount.getContract()
-									.getId()), nextHhdcAccount == null ? null
-							: nextHhdcAccount.getReference(),
-					nextSupplyGeneration.getMeter());
 		}
-		internalUpdate(startDate, finishDate, hhdcContract,
-				hhdcAccountReference, meter, importMpanStr, importSsc,
-				importSupplierContract, importSupplierAccountReference,
-				importAgreedSupplyCapacity, exportMpanStr, exportSsc,
-				exportSupplierContract, exportSupplierAccountReference,
-				exportAgreedSupplyCapacity);
+		if (previousGeneration != null) {
+			previousGeneration.update(previousGeneration.getStartDate(),
+					startDate.getPrevious());
+		}
+		if (nextGeneration != null) {
+			nextGeneration.update(finishDate.getNext(), nextGeneration
+					.getFinishDate());
+		}
+		Criteria billsCrit = Hiber.session().createCriteria(Bill.class).add(
+				Restrictions.eq("supply", getSupply())).add(
+				Restrictions.ge("finishDate.date", getStartDate().getDate()));
+		if (getFinishDate() != null) {
+			billsCrit.add(Restrictions.le("startDate.date", finishDate
+					.getDate()));
+		}
+		for (Bill bill : (List<Bill>) billsCrit.list()) {
+			bill.virtualEqualsActual();
+		}
+		for (Boolean isImport : new Boolean[] { true, false }) {
+			for (Boolean isKwh : new Boolean[] { true, false }) {
+				Channel targetChannel = getChannel(isImport, isKwh);
+				Query query = Hiber
+						.session()
+						.createQuery(
+								"from HhDatum datum where datum.channel.supplyGeneration.supply = :supply and datum.channel.isImport = :isImport and datum.channel.isKwh = :isKwh and datum.endDate.date >= :from"
+										+ (finishDate == null ? ""
+												: " and datum.endDate.date <= :to")
+										+ (targetChannel == null ? ""
+												: " and datum.channel != :targetChannel"))
+						.setEntity("supply", supply).setBoolean("isImport",
+								isImport).setBoolean("isKwh", isKwh)
+						.setTimestamp("from", startDate.getDate());
+				if (finishDate != null) {
+					query.setTimestamp("to", finishDate.getDate());
+				}
+				if (targetChannel != null) {
+					query.setEntity("targetChannel", targetChannel);
+				}
+				ScrollableResults hhData = query.scroll();
+				HhDatum datum = null;
+				if (hhData.next()) {
+					datum = (HhDatum) hhData.get(0);
+					if (targetChannel == null) {
+						throw new UserException(
+								"There is no channel for the HH datum: "
+										+ datum.toString()
+										+ " is import? "
+										+ isImport
+										+ " is kWh? "
+										+ isKwh
+										+ " to move to in the generation starting "
+										+ startDate + ", finishing "
+										+ finishDate + ".");
+					}
+				}
+				hhData.beforeFirst();
+				while (hhData.next()) {
+					datum = (HhDatum) hhData.get(0);
+					HhEndDate endDate = datum.getEndDate();
+					datum.setChannel(targetChannel);
+					if (datum.getValue().doubleValue() < 0) {
+						targetChannel.addSnag(ChannelSnag.SNAG_NEGATIVE,
+								endDate, endDate);
+					}
+					if (datum.getStatus() != HhDatum.ACTUAL) {
+						targetChannel.addSnag(ChannelSnag.SNAG_ESTIMATED,
+								endDate, endDate);
+					}
+					targetChannel.deleteSnag(ChannelSnag.SNAG_MISSING, endDate,
+							endDate);
+					Hiber.flush();
+					Hiber.session().evict(datum);
+				}
+				hhData.close();
+			}
+		}
+		for (Mpan mpan : mpans) {
+			SupplierContract supplierContract = mpan.getSupplierContract();
+			if (supplierContract.getStartRateScript().getStartDate().after(
+					startDate)) {
+				throw new UserException(
+						"The supplier contract starts after the supply generation.");
+			}
+			if (HhEndDate.isBefore(supplierContract.getFinishRateScript()
+					.getFinishDate(), finishDate)) {
+				throw new UserException(
+						"The supplier contract finishes before the supply generation.");
+			}
+		}
+		// check doesn't have superfluous meters
+		List<Meter> metersToRemove = new ArrayList<Meter>();
+		for (Meter meterToCheck : supply.getMeters()) {
+			if ((Long) Hiber
+					.session()
+					.createQuery(
+							"select count(*) from SupplyGeneration generation where generation.meter = :meter")
+					.setEntity("meter", meterToCheck).uniqueResult() == 0) {
+				metersToRemove.add(meterToCheck);
+			}
+		}
+		for (Meter meterToRemove : metersToRemove) {
+			supply.getMeters().remove(meterToRemove);
+		}
 		Hiber.flush();
-		HhEndDate checkFinishDate = originalStartDate;
-		if (originalFinishDate != null && finishDate != null) {
-			if (!originalFinishDate.getDate().equals(finishDate)) {
-				checkFinishDate = finishDate.getDate().after(
-						originalFinishDate.getDate()) ? finishDate
-						: originalFinishDate;
-			}
-		} else if (originalFinishDate == null || finishDate == null) {
-			checkFinishDate = null;
-		}
-		supply.onSupplyGenerationChange(startDate.getDate().before(
-				originalStartDate.getDate()) ? startDate : originalStartDate,
-				checkFinishDate);
 	}
 
 	public int compareTo(Object obj) {
@@ -1345,6 +1496,9 @@ public class SupplyGeneration extends PersistentEntity {
 		if (finishDate != null) {
 			finishDate.setLabel("finish");
 			element.appendChild(finishDate.toXml(doc));
+		}
+		if (hhdcAccount != null) {
+			element.setAttribute("hhdc-account", hhdcAccount);
 		}
 		return element;
 	}
@@ -1380,14 +1534,14 @@ public class SupplyGeneration extends PersistentEntity {
 		Element generationElement = (Element) toXml(doc, new XmlTree(
 				"siteSupplyGenerations", new XmlTree("site")).put("pc").put(
 				"meter").put("supply", new XmlTree("source").put("gspGroup"))
-				.put("hhdcAccount",
-						new XmlTree("contract", new XmlTree("party"))));
+				.put("hhdcContract", new XmlTree("party")));
 		source.appendChild(generationElement);
 		for (Mpan mpan : mpans) {
 			Element mpanElement = (Element) mpan.toXml(doc, new XmlTree("core")
-					.put("mtc").put("llfc").put("ssc").put("supplierAccount",
-							new XmlTree("contract", new XmlTree("party"))));
+					.put("mtc").put("llfc").put("ssc").put("supplierContract",
+							new XmlTree("party")));
 			generationElement.appendChild(mpanElement);
+			/*
 			for (RegisterRead read : (List<RegisterRead>) Hiber.session()
 					.createQuery(
 							"from RegisterRead read where read.mpan = :mpan")
@@ -1396,6 +1550,7 @@ public class SupplyGeneration extends PersistentEntity {
 						new XmlTree("batch", new XmlTree("contract",
 								new XmlTree("party"))))));
 			}
+			*/
 		}
 		source.appendChild(MonadDate.getMonthsXml(doc));
 		source.appendChild(MonadDate.getDaysXml(doc));
@@ -1639,13 +1794,4 @@ public class SupplyGeneration extends PersistentEntity {
 		channels.remove(channel);
 		Hiber.session().flush();
 	}
-	/*
-	 * public void checkForMissing(HhEndDate from, HhEndDate to) throws
-	 * HttpException { for (Channel channel : channels) {
-	 * channel.checkForMissing(from, to); } }
-	 * 
-	 * public void checkForMissingFromLatest(HhEndDate to) throws HttpException
-	 * { for (Channel channel : channels) {
-	 * channel.checkForMissingFromLatest(to); } }
-	 */
 }

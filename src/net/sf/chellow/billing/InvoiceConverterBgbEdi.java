@@ -38,6 +38,7 @@ import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.UserException;
 import net.sf.chellow.physical.HhEndDate;
+import net.sf.chellow.physical.Meter;
 import net.sf.chellow.physical.MpanCore;
 import net.sf.chellow.physical.ReadType;
 import net.sf.chellow.physical.RegisterReadRaw;
@@ -47,8 +48,8 @@ public class InvoiceConverterBgbEdi implements InvoiceConverter {
 	private static final Map<Integer, Character> readTypeMap = Collections
 			.synchronizedMap(new HashMap<Integer, Character>());
 
-	private static final Map<String, InvoiceType> invoiceTypeMap = Collections
-			.synchronizedMap(new HashMap<String, InvoiceType>());
+	private static final Map<String, BillType> invoiceTypeMap = Collections
+			.synchronizedMap(new HashMap<String, BillType>());
 
 	static {
 		readTypeMap.put(0, ReadType.TYPE_ROUTINE);
@@ -60,26 +61,26 @@ public class InvoiceConverterBgbEdi implements InvoiceConverter {
 		readTypeMap.put(6, ReadType.TYPE_ROUTINE);
 		readTypeMap.put(7, ReadType.TYPE_INITIAL);
 
-		invoiceTypeMap.put("A", InvoiceType.AMENDED);
-		invoiceTypeMap.put("F", InvoiceType.FINAL);
-		invoiceTypeMap.put("N", InvoiceType.NORMAL);
-		invoiceTypeMap.put("I", InvoiceType.INTEREST);
-		invoiceTypeMap.put("R", InvoiceType.RECONCILIATION);
-		invoiceTypeMap.put("P", InvoiceType.PREPAID);
-		invoiceTypeMap.put("O", InvoiceType.INFORMATION);
-		invoiceTypeMap.put("W", InvoiceType.WITHDRAWAL);
+		invoiceTypeMap.put("A", BillType.AMENDED);
+		invoiceTypeMap.put("F", BillType.FINAL);
+		invoiceTypeMap.put("N", BillType.NORMAL);
+		invoiceTypeMap.put("I", BillType.INTEREST);
+		invoiceTypeMap.put("R", BillType.RECONCILIATION);
+		invoiceTypeMap.put("P", BillType.PREPAID);
+		invoiceTypeMap.put("O", BillType.INFORMATION);
+		invoiceTypeMap.put("W", BillType.WITHDRAWAL);
 	}
 
 	private LineNumberReader lreader;
 
-	private List<InvoiceRaw> rawInvoices = new ArrayList<InvoiceRaw>();
+	private List<RawBill> rawInvoices = new ArrayList<RawBill>();
 
 	public InvoiceConverterBgbEdi(Reader reader) throws HttpException,
 			InternalException {
 		lreader = new LineNumberReader(reader);
 	}
 
-	public List<InvoiceRaw> getRawInvoices() throws HttpException,
+	public List<RawBill> getRawInvoices() throws HttpException,
 			InternalException {
 		Hiber.flush();
 		String line;
@@ -100,7 +101,8 @@ public class InvoiceConverterBgbEdi implements InvoiceConverter {
 			while (line != null) {
 				EdiSegment segment = null;
 				if (line.endsWith("'")) {
-					segment = new EdiSegment(line.substring(0, line.length() - 1), readTypeMap);
+					segment = new EdiSegment(line.substring(0,
+							line.length() - 1), readTypeMap);
 				} else {
 					throw new UserException(
 							"This parser expects one segment per line.");
@@ -173,19 +175,24 @@ public class InvoiceConverterBgbEdi implements InvoiceConverter {
 							EdiElement adjf = segment.getElements().get(12);
 							ReadType presentReadType = prrd.getReadType(1);
 							ReadType previousReadType = prrd.getReadType(3);
-							BigDecimal coefficient = new BigDecimal(adjf.getInt(1)).divide(new BigDecimal(100000));
-							BigDecimal presentReadingValue = new BigDecimal(prrd.getInt(0)).divide(new BigDecimal(1000));
-							BigDecimal previousReadingValue = new BigDecimal(prrd.getInt(2)).divide(new BigDecimal(1000));
+							BigDecimal coefficient = new BigDecimal(adjf
+									.getInt(1)).divide(new BigDecimal(100000));
+							BigDecimal presentReadingValue = new BigDecimal(
+									prrd.getInt(0))
+									.divide(new BigDecimal(1000));
+							BigDecimal previousReadingValue = new BigDecimal(
+									prrd.getInt(2))
+									.divide(new BigDecimal(1000));
 							String meterSerialNumber = mtnr.getString(0);
-							MpanCore mpanCore = MpanCore.getMpanCore(mloc
-									.getString(0));
+							Meter meter = MpanCore.getMpanCore(
+									mloc.getString(0)).getSupply().findMeter(
+									meterSerialNumber);
 							int tpr = tmod.getInt(0);
-							reads.add(new LocalRegisterReadRaw(mpanCore,
-									coefficient, meterSerialNumber, Units.KWH,
-									tpr, true, previousReadDate,
-									previousReadingValue, previousReadType,
-									registerFinishDate, presentReadingValue,
-									presentReadType));
+							reads.add(new LocalRegisterReadRaw(meter,
+									coefficient, Units.KWH, tpr,
+									previousReadDate, previousReadingValue,
+									previousReadType, registerFinishDate,
+									presentReadingValue, presentReadType));
 						}
 					}
 				}
@@ -194,18 +201,18 @@ public class InvoiceConverterBgbEdi implements InvoiceConverter {
 						Set<RegisterReadRaw> registerReads = new HashSet<RegisterReadRaw>();
 						for (LocalRegisterReadRaw read : reads) {
 							registerReads.add(new RegisterReadRaw(read
-									.getMpanCore(), read.getCoefficient(), read
-									.getMeterSerialNumber(), read.getUnits(),
-									read.getTpr(), read.getPreviousDate(), read
-											.getPreviousValue(), read
+									.getMeter(), read.getCoefficient(), read
+									.getUnits(), read.getTpr(), read
+									.getPreviousDate(),
+									read.getPreviousValue(), read
 											.getPreviousType(), read
 											.getCurrentDate(), read
 											.getCurrentValue(), read
 											.getCurrentType()));
 						}
-						InvoiceType invoiceType = invoiceTypeMap
+						BillType invoiceType = invoiceTypeMap
 								.get(invoiceTypeCode);
-						InvoiceRaw invoiceRaw = new InvoiceRaw(invoiceType,
+						RawBill invoiceRaw = new RawBill(invoiceType,
 								accountReference, mpanStrings, invoiceNumber,
 								issueDate, startDate, finishDate, net, vat,
 								registerReads);
@@ -229,47 +236,7 @@ public class InvoiceConverterBgbEdi implements InvoiceConverter {
 					EdiElement uvtt = segment.getElements().get(6);
 					vat = uvtt.getBigDecimal();
 				}
-				/*
-				 * recordType = getRecordType(line); if
-				 * (!recordType.equals("0000") && !recordType.equals("0050") &&
-				 * !recordType.equals("0051")) { accountReference =
-				 * getAccountReference(line); invoiceNumber =
-				 * getInvoiceNumber(line); } if (recordType.equals("1460")) {
-				 * net += Double.parseDouble(line.substring(67, 79)) / 100; vat +=
-				 * Double.parseDouble(line.substring(85, 97)) / 100; } if
-				 * (recordType.equals("0461")) { String mpanStr; mpanStr = new
-				 * MpanRaw(line.substring(148, 156) + line.substring(135,
-				 * 148)).toString(); if (mpanText == null) { mpanText = mpanStr; }
-				 * else if (mpanText.indexOf(mpanStr) == -1) { mpanText =
-				 * mpanText + ", " + mpanStr; } } if (recordType.equals("0101")) {
-				 * try { startDate = new HhEndDate(dateFormat.parse(line
-				 * .substring(66, 74))).getNext(); } catch (ParseException e) {
-				 * throw UserException .newInvalidParameter("Can't parse the
-				 * start date: '" + e.getMessage() + "'."); } try { finishDate =
-				 * new HhEndDate(dateFormat.parse(line .substring(74, 82))); }
-				 * catch (ParseException e) { throw UserException
-				 * .newInvalidParameter("Can't parse the finish date: '" +
-				 * e.getMessage() + "'."); } }
-				 */
 				line = lreader.readLine();
-				/*
-				 * if (!recordType.equals("0000") && !recordType.equals("0050") &&
-				 * !recordType.equals("0051")) { String accountReferenceNext =
-				 * line == null ? null : getAccountReference(line); String
-				 * invoiceNumberNext = line == null ? null :
-				 * getInvoiceNumber(line); if
-				 * (!accountReference.equals(accountReferenceNext) ||
-				 * !invoiceNumber.equals(invoiceNumberNext)) { List<Object>
-				 * fields = new ArrayList<Object>();
-				 * fields.add(accountReference); fields.add(mpanText);
-				 * fields.add(invoiceNumber); fields.add(startDate);
-				 * fields.add(finishDate); fields.add(net); fields.add(vat);
-				 * billFields.add(fields); if (mpanLookup.get(accountReference) ==
-				 * null) { mpanLookup.put(accountReference, mpanText); }
-				 * accountReference = null; mpanText = null; invoiceNumber =
-				 * null; startDate = null; finishDate = null; recordType = null;
-				 * net = 0; vat = 0; } }
-				 */
 			}
 			lreader.close();
 			Hiber.flush();
@@ -280,48 +247,21 @@ public class InvoiceConverterBgbEdi implements InvoiceConverter {
 					+ lreader.getLineNumber() + " of the EDI file. "
 					+ e.getMessage());
 		}
-		/*
-		 * for (List<Object> fields : billFields) { try {
-		 * 
-		 * rawBills.add(new InvoiceRaw((String) fields.get(0), fields .get(1) ==
-		 * null ? mpanLookup .get((String) fields.get(0)) : (String)
-		 * fields.get(1), (String) fields.get(2), (HhEndDate) fields.get(3),
-		 * false, (HhEndDate) fields.get(4), false, (Double) fields.get(5),
-		 * (Double) fields.get(6))); } catch (UserException e) { throw
-		 * UserException .newInvalidParameter("I'm having trouble parsing the
-		 * file. The problem seems to be with the bill with account number '" +
-		 * (String) fields.get(0) + "' and invoice number '" + (String)
-		 * fields.get(2) + "'. " + e.getMessage()); } }
-		 */
 		return rawInvoices;
 	}
 
-	/*
-	 * private String getRecordType(String line) { return line.substring(62,
-	 * 66); }
-	 * 
-	 * private String getAccountReference(String line) { return
-	 * line.substring(33, 41); }
-	 * 
-	 * private String getInvoiceNumber(String line) { return line.substring(41,
-	 * 46); }
-	 */
 	public String getProgress() {
 		return "Reached line " + lreader.getLineNumber() + " of first passs.";
 	}
 
 	private class LocalRegisterReadRaw {
-		private MpanCore mpanCore;
-
 		private BigDecimal coefficient;
 
-		private String meterSerialNumber;
+		private Meter meter;
 
 		private Units units;
 
 		private int tpr;
-
-		//private boolean isImport;
 
 		private DayFinishDate previousDate;
 
@@ -335,18 +275,15 @@ public class InvoiceConverterBgbEdi implements InvoiceConverter {
 
 		private ReadType currentType;
 
-		public LocalRegisterReadRaw(MpanCore mpanCore, BigDecimal coefficient,
-				String meterSerialNumber, Units units, int tpr,
-				boolean isImport, DayFinishDate previousDate,
+		public LocalRegisterReadRaw(Meter meter, BigDecimal coefficient,
+				Units units, int tpr, DayFinishDate previousDate,
 				BigDecimal previousValue, ReadType previousType,
 				DayFinishDate currentDate, BigDecimal currentValue,
 				ReadType currentType) throws InternalException {
-			this.mpanCore = mpanCore;
+			this.meter = meter;
 			this.coefficient = coefficient;
-			this.meterSerialNumber = meterSerialNumber;
 			this.units = units;
 			this.tpr = tpr;
-			//this.isImport = isImport;
 			this.previousDate = previousDate;
 			this.previousValue = previousValue;
 			this.previousType = previousType;
@@ -355,16 +292,12 @@ public class InvoiceConverterBgbEdi implements InvoiceConverter {
 			this.currentType = currentType;
 		}
 
-		public MpanCore getMpanCore() {
-			return mpanCore;
+		public Meter getMeter() {
+			return meter;
 		}
 
 		public BigDecimal getCoefficient() {
 			return coefficient;
-		}
-
-		public String getMeterSerialNumber() {
-			return meterSerialNumber;
 		}
 
 		public Units getUnits() {
@@ -374,11 +307,7 @@ public class InvoiceConverterBgbEdi implements InvoiceConverter {
 		public int getTpr() {
 			return tpr;
 		}
-/*
-		public boolean getIsImport() {
-			return isImport;
-		}
-*/
+
 		public DayFinishDate getPreviousDate() {
 			return previousDate;
 		}

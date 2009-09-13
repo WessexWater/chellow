@@ -46,14 +46,14 @@ public class InvoiceConverterMm implements InvoiceConverter {
 
 	private DateFormat dateFormat = new SimpleDateFormat("yyyyMMdd", Locale.UK);
 
-	private List<InvoiceRaw> rawBills = new ArrayList<InvoiceRaw>();
+	private List<RawBill> rawBills = new ArrayList<RawBill>();
 
 	public InvoiceConverterMm(Reader reader) throws HttpException,
 			InternalException {
 		lreader = new LineNumberReader(reader);
 	}
 
-	public List<InvoiceRaw> getRawInvoices() throws HttpException,
+	public List<RawBill> getRawInvoices() throws HttpException,
 			InternalException {
 		Hiber.flush();
 		if (rawBills.isEmpty()) {
@@ -109,7 +109,7 @@ public class InvoiceConverterMm implements InvoiceConverter {
 						}
 					}
 					if (recordType.equals("1500")) {
-						rawBills.add(new InvoiceRaw(InvoiceType.NORMAL,
+						rawBills.add(new RawBill(BillType.NORMAL,
 								accountReference, mpanStrings, invoiceNumber,
 								startDate, startDate, finishDate, net, vat,
 								null));

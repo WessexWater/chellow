@@ -34,8 +34,8 @@ import net.sf.chellow.physical.RegisterReadRaw;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-public class InvoiceRaw extends MonadObject {
-	private InvoiceType type;
+public class RawBill extends MonadObject {
+	private BillType type;
 
 	private DayStartDate issueDate;
 
@@ -55,7 +55,7 @@ public class InvoiceRaw extends MonadObject {
 
 	private Set<RegisterReadRaw> reads = new HashSet<RegisterReadRaw>();
 
-	public InvoiceRaw(InvoiceType type, String accountReference,
+	public RawBill(BillType type, String accountReference,
 			Set<String> mpanStrings, String reference, DayStartDate issueDate,
 			DayStartDate startDate, DayFinishDate finishDate, BigDecimal net,
 			BigDecimal vat, Set<RegisterReadRaw> registerReads)
@@ -101,7 +101,7 @@ public class InvoiceRaw extends MonadObject {
 		}
 	}
 
-	public InvoiceType getType() {
+	public BillType getType() {
 		return type;
 	}
 

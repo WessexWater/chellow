@@ -23,7 +23,7 @@ package net.sf.chellow.physical;
 
 import java.util.List;
 
-import net.sf.chellow.billing.SupplySnag;
+import net.sf.chellow.billing.Contract;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.InternalException;
@@ -207,9 +207,9 @@ public abstract class SnagDateBounded extends Snag {
 		}
 	}
 
-	public static void deleteSupplySnag(Supply supply, String description,
+	public static void deleteSupplySnag(Supply supply, Contract contract, String description,
 			HhEndDate startDate, HhEndDate finishDate) throws HttpException {
-		deleteSnagDateBounded(new SupplySnagToAdd(supply, description,
+		deleteSnagDateBounded(new SupplySnagToAdd(supply, contract, description,
 				startDate, finishDate));
 	}
 
@@ -237,9 +237,9 @@ public abstract class SnagDateBounded extends Snag {
 				finishDate));
 	}
 
-	public static void addSupplySnag(Supply supply, String description,
+	public static void addSupplySnag(Supply supply, Contract contract, String description,
 			HhEndDate startDate, HhEndDate finishDate) throws HttpException {
-		addSnagDateBounded(new SupplySnagToAdd(supply, description,
+		addSnagDateBounded(new SupplySnagToAdd(supply, contract, description,
 				startDate, finishDate));
 	}
 
@@ -401,6 +401,8 @@ public abstract class SnagDateBounded extends Snag {
 
 	private static class SupplySnagToAdd implements SnagToAdd {
 		private Supply supply;
+		
+		private Contract contract;
 
 		private String description;
 
@@ -408,9 +410,10 @@ public abstract class SnagDateBounded extends Snag {
 
 		private HhEndDate finishDate;
 
-		public SupplySnagToAdd(Supply supply, String description,
+		public SupplySnagToAdd(Supply supply, Contract contract, String description,
 				HhEndDate startDate, HhEndDate finishDate) {
 			this.supply = supply;
+			this.contract = contract;
 			this.description = description;
 			this.startDate = startDate;
 			this.finishDate = finishDate;
@@ -421,12 +424,12 @@ public abstract class SnagDateBounded extends Snag {
 		}
 
 		public SnagDateBounded newSnag() throws HttpException {
-			return new SupplySnag(description, supply, startDate, finishDate);
+			return new SupplySnag(supply, contract,description, startDate, finishDate);
 		}
 
 		public void insertSnag(SnagDateBounded snag) {
-			SupplySnag accountSnag = (SupplySnag) snag;
-			SupplySnag.insertSnagAccount(accountSnag);
+			SupplySnag supplySnag = (SupplySnag) snag;
+			SupplySnag.insertSupplySnag(supplySnag);
 		}
 
 		public HhEndDate getStartDate() {
@@ -435,7 +438,7 @@ public abstract class SnagDateBounded extends Snag {
 
 		public SnagDateBounded newSnag(HhEndDate startDate, HhEndDate finishDate)
 				throws HttpException {
-			return new SupplySnag(description, supply, startDate, finishDate);
+			return new SupplySnag(supply, contract,description,  startDate, finishDate);
 		}
 
 		public void deleteSnag(SnagDateBounded snag) {
@@ -454,15 +457,15 @@ public abstract class SnagDateBounded extends Snag {
 				query = Hiber
 						.session()
 						.createQuery(
-								"from AccountSnag snag where snag.account = :account and snag.description = :description and (snag.finishDate.date is null or snag.finishDate.date >= :startDate) order by snag.startDate.date");
+								"from SupplySnag snag where snag.supply = :supply and snag.description = :description and (snag.finishDate.date is null or snag.finishDate.date >= :startDate) order by snag.startDate.date");
 			} else {
 				query = Hiber
 						.session()
 						.createQuery(
-								"from AccountSnag snag where snag.account = :account and snag.description = :description and (snag.finishDate.date is null or snag.finishDate.date >= :startDate) and snag.startDate.date <= :finishDate order by snag.startDate.date")
+								"from SupplySnag snag where snag.supply = :supply and snag.description = :description and (snag.finishDate.date is null or snag.finishDate.date >= :startDate) and snag.startDate.date <= :finishDate order by snag.startDate.date")
 						.setTimestamp("finishDate", finishDate.getDate());
 			}
-			return (List<SupplySnag>) query.setEntity("account", supply)
+			return (List<SupplySnag>) query.setEntity("supply", supply)
 					.setString("description", description).setTimestamp(
 							"startDate", startDate.getDate()).list();
 		}

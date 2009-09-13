@@ -19,8 +19,9 @@
  *  
  *******************************************************************************/
 
-package net.sf.chellow.billing;
+package net.sf.chellow.physical;
 
+import net.sf.chellow.billing.Contract;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.InternalException;
@@ -29,20 +30,20 @@ import net.sf.chellow.monad.MonadUtils;
 import net.sf.chellow.monad.NotFoundException;
 import net.sf.chellow.monad.XmlTree;
 import net.sf.chellow.monad.types.MonadUri;
-import net.sf.chellow.physical.HhEndDate;
-import net.sf.chellow.physical.SnagDateBounded;
-import net.sf.chellow.physical.Supply;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 public class SupplySnag extends SnagDateBounded {
+	public static final String MISSING_BILL = "Missing bill.";
+	
+	/*
 	public static final String MISSING_HHDC_BILL = "Missing HHDC bill.";
 	public static final String MISSING_MOP_BILL = "Missing MOP bill.";
 	public static final String MISSING_IMPORT_SUPPLIER_BILL = "Missing import supplier bill.";
 	public static final String MISSING_EXPORT_SUPPLIER_BILL = "Missing export supplier bill.";
-
-	public static SupplySnag getAccountSnag(Long id) throws HttpException {
+*/
+	public static SupplySnag getSupplySnag(Long id) throws HttpException {
 		SupplySnag snag = (SupplySnag) Hiber.session().get(SupplySnag.class,
 				id);
 		if (snag == null) {
@@ -51,7 +52,7 @@ public class SupplySnag extends SnagDateBounded {
 		return snag;
 	}
 
-	public static void insertSnagAccount(SupplySnag snag) {
+	public static void insertSupplySnag(SupplySnag snag) {
 		Hiber.session().save(snag);
 	}
 
@@ -60,14 +61,15 @@ public class SupplySnag extends SnagDateBounded {
 	}
 
 	private Supply supply;
-
+private Contract contract;
 	public SupplySnag() {
 	}
 
-	public SupplySnag(String description, Supply supply,
+	public SupplySnag(Supply supply, Contract contract,String description, 
 			HhEndDate startDate, HhEndDate finishDate) throws HttpException {
 		super(description, startDate, finishDate);
 		this.supply = supply;
+		this.contract = contract;
 	}
 
 	public Supply getSupply() {
@@ -78,6 +80,14 @@ public class SupplySnag extends SnagDateBounded {
 		this.supply = supply;
 	}
 
+	public Contract getContract() {
+		return contract;
+	}
+
+	void setContract(Contract contract) {
+		this.contract = contract;
+	}
+	
 	public void update() {
 	}
 

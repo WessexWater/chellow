@@ -131,4 +131,9 @@ public class MopContract extends Contract {
 		Element element = super.toXml(doc, "mop-contract");
 		return element;
 	}
+
+	@Override
+	public String missingBillSnagDescription() {
+		return "Missing MOP bill.";
+	}
 }

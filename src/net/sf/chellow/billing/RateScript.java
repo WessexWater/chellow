@@ -287,7 +287,7 @@ public class RateScript extends PersistentEntity {
 					HhEndDate.roundDown(startDate).getNext(),
 					finishDate == null ? null : HhEndDate.roundDown(finishDate),
 					script);
-			source.appendChild(bill.getVirtualBill().toXml(doc));
+			source.appendChild(bill.virtualBillXml(doc));
 			inv.sendOk(doc);
 		} else if (inv.hasParameter("delete")) {
 			try {

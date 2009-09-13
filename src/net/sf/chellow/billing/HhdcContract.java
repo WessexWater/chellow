@@ -189,20 +189,15 @@ public class HhdcContract extends Contract {
 		setProperties(properties);
 	}
 
+	@SuppressWarnings("unchecked")
 	public void update(Participant participant, String name,
 			String chargeScript, String importerProperties)
 			throws HttpException {
 		intrinsicUpdate(participant, name, chargeScript, importerProperties);
-		onUpdate();
-	}
-
-	@SuppressWarnings("unchecked")
-	void onUpdate() throws HttpException {
-		super.onUpdate();
 		for (SupplyGeneration generation : (List<SupplyGeneration>) Hiber
 				.session()
 				.createQuery(
-						"from SupplyGeneration generation where generation.hhdcAccount.contract = :hhdcContract and generation.startDate.date < :startDate or (generation.finishDate.date is not null and (:finishDate is not null or generation.finishDate.date > :finishDate))")
+						"from SupplyGeneration generation where generation.hhdcContract = :hhdcContract and generation.startDate.date < :startDate or (generation.finishDate.date is not null and (:finishDate is not null or generation.finishDate.date > :finishDate))")
 				.setEntity("hhdcContract", this).setTimestamp("startDate",
 						getStartDate().getDate()).setTimestamp(
 						"finishDate",
@@ -318,8 +313,6 @@ public class HhdcContract extends Contract {
 		} else if (AutomaticHhDataImporter.URI_ID.equals(uriId)) {
 			return AutomaticHhDataImporters.getImportersInstance()
 					.findImporter(this);
-		} else if (Accounts.URI_ID.equals(uriId)) {
-			return new Accounts(this);
 		} else if (RateScripts.URI_ID.equals(uriId)) {
 			return new RateScripts(this);
 		} else {
@@ -370,5 +363,10 @@ public class HhdcContract extends Contract {
 			throw new InternalException(e);
 		}
 		return properties.getProperty(name);
+	}
+
+	@Override
+	public String missingBillSnagDescription() {
+		return "Missing HHDC bill.";
 	}
 }

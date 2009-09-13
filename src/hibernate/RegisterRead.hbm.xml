@@ -31,11 +31,11 @@
 				<param name="sequence">register_read_id_sequence</param>
 			</generator>
 		</id>
-		<many-to-one name="mpan" class="Mpan" column="mpan_id"
-			not-null="true" foreign-key="fkey_mpan__register_read" />
-		<many-to-one name="invoice"
-			class="net.sf.chellow.billing.Invoice" column="invoice_id"
-			not-null="true" foreign-key="fkey_invoice__register_read" />
+		<many-to-one name="meter" class="Meter" column="meter_id"
+			not-null="true" foreign-key="fkey_meter__register_read" />
+		<many-to-one name="bill"
+			class="net.sf.chellow.billing.Bill" column="bill_id"
+			not-null="true" foreign-key="fkey_bill__register_read" />
 		<property name="coefficient" type="big_decimal"
 			not-null="true">
 			<column name="coefficient" sql-type="numeric" />
@@ -75,4 +75,3 @@
 		</component>
 	</class>
 </hibernate-mapping>
-

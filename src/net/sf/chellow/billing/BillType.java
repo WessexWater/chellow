@@ -27,39 +27,39 @@ import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.UserException;
 import net.sf.chellow.monad.types.MonadObject;
 
-public class InvoiceType extends MonadObject {
-	public static final InvoiceType AMENDED;
+public class BillType extends MonadObject {
+	public static final BillType AMENDED;
 
-	public static final InvoiceType FINAL;
+	public static final BillType FINAL;
 
-	public static final InvoiceType NORMAL;
+	public static final BillType NORMAL;
 
-	public static final InvoiceType INTEREST;
+	public static final BillType INTEREST;
 
-	public static final InvoiceType RECONCILIATION;
+	public static final BillType RECONCILIATION;
 
-	public static final InvoiceType PREPAID;
+	public static final BillType PREPAID;
 
-	public static final InvoiceType INFORMATION;
+	public static final BillType INFORMATION;
 
-	public static final InvoiceType WITHDRAWAL;
+	public static final BillType WITHDRAWAL;
 
 	static {
 		try {
-			AMENDED = new InvoiceType(0);
-			FINAL = new InvoiceType(1);
-			NORMAL = new InvoiceType(2);
-			INTEREST = new InvoiceType(3);
-			RECONCILIATION = new InvoiceType(4);
-			PREPAID = new InvoiceType(5);
-			INFORMATION = new InvoiceType(6);
-			WITHDRAWAL = new InvoiceType(7);
+			AMENDED = new BillType(0);
+			FINAL = new BillType(1);
+			NORMAL = new BillType(2);
+			INTEREST = new BillType(3);
+			RECONCILIATION = new BillType(4);
+			PREPAID = new BillType(5);
+			INFORMATION = new BillType(6);
+			WITHDRAWAL = new BillType(7);
 		} catch (HttpException e) {
 			throw new RuntimeException(e.getMessage());
 		}
 	}
 
-	public static InvoiceType getType(int intValue) throws HttpException,
+	public static BillType getType(int intValue) throws HttpException,
 			InternalException {
 		switch (intValue) {
 		case 0:
@@ -84,7 +84,7 @@ public class InvoiceType extends MonadObject {
 		}
 	}
 
-	public static String name(InvoiceType type) throws HttpException,
+	public static String name(BillType type) throws HttpException,
 			InternalException {
 		switch (type.getInt()) {
 		case 0:
@@ -108,7 +108,7 @@ public class InvoiceType extends MonadObject {
 		}
 	}
 
-	public static InvoiceType getType(String name) throws HttpException,
+	public static BillType getType(String name) throws HttpException,
 			InternalException {
 		name = name.trim().toLowerCase();
 		if (name.equals("amended")) {
@@ -134,10 +134,10 @@ public class InvoiceType extends MonadObject {
 
 	private int intValue;
 
-	InvoiceType() {
+	BillType() {
 	}
 
-	private InvoiceType(int intValue) throws HttpException {
+	private BillType(int intValue) throws HttpException {
 		if (intValue < 0) {
 			throw new UserException("The int value can't be negative.");
 		}
@@ -157,8 +157,8 @@ public class InvoiceType extends MonadObject {
 
 	public boolean equals(Object obj) {
 		boolean isEqual = false;
-		if (obj instanceof InvoiceType) {
-			InvoiceType toCompare = (InvoiceType) obj;
+		if (obj instanceof BillType) {
+			BillType toCompare = (BillType) obj;
 			if (toCompare.getInt() == getInt()) {
 				isEqual = true;
 			}

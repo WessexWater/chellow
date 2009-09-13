@@ -19,7 +19,7 @@
  *  
  *******************************************************************************/
 
-package net.sf.chellow.billing;
+package net.sf.chellow.physical;
 
 import java.util.List;
 
@@ -33,9 +33,6 @@ import net.sf.chellow.monad.XmlTree;
 import net.sf.chellow.monad.types.MonadDate;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
-import net.sf.chellow.physical.EntityList;
-import net.sf.chellow.physical.Snag;
-import net.sf.chellow.physical.Supply;
 
 import org.hibernate.ScrollMode;
 import org.hibernate.ScrollableResults;

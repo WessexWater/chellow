@@ -20,9 +20,11 @@
  *******************************************************************************/
 package net.sf.chellow.physical;
 
+import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Invocation;
+import net.sf.chellow.monad.NotFoundException;
 import net.sf.chellow.monad.Urlable;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
@@ -31,6 +33,14 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 public class Meter extends PersistentEntity {
+	static public Meter getMeter(String meterSerialNumber) throws HttpException {
+		Meter meter = (Meter) Hiber.session().createQuery("from Meter meter where meter.serialNumber = :meterSerialNumber").setString("meterSerialNumber", meterSerialNumber).uniqueResult();
+		if (meter == null) {
+			throw new NotFoundException("The meter cannot be found.");
+		}
+		return meter;
+	}
+	
 	private Supply supply;
 
 	private String serialNumber;

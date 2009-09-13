@@ -31,9 +31,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 public class RegisterReadRaw extends MonadObject {
-	private MpanCore mpanCore;
-
-	private String meterSerialNumber;
+	private Meter meter;
 
 	private int tpr;
 
@@ -53,17 +51,13 @@ public class RegisterReadRaw extends MonadObject {
 
 	private ReadType presentType;
 
-	public RegisterReadRaw(MpanCore mpanCore, BigDecimal coefficient,
-			String meterSerialNumber, Units units, int tpr,
+	public RegisterReadRaw(Meter meter, BigDecimal coefficient,
+			Units units, int tpr,
 			DayFinishDate previousDate, BigDecimal previousValue,
 			ReadType previousType, DayFinishDate presentDate,
 			BigDecimal presentValue, ReadType presentType) throws InternalException {
-		if (mpanCore == null) {
-			throw new InternalException("mpan raw argument can't be null.");
-		}
-		this.mpanCore = mpanCore;
 		this.coefficient = coefficient;
-		this.meterSerialNumber = meterSerialNumber;
+		this.meter = meter;
 		this.units = units;
 		this.tpr = tpr;
 		this.previousDate = previousDate;
@@ -74,16 +68,12 @@ public class RegisterReadRaw extends MonadObject {
 		this.presentType = presentType;
 	}
 
-	public MpanCore getMpanCore() {
-		return mpanCore;
-	}
-
 	public BigDecimal getCoefficient() {
 		return coefficient;
 	}
 
-	public String getMeterSerialNumber() {
-		return meterSerialNumber;
+	public Meter getMeter() {
+		return meter;
 	}
 
 	public Units getUnits() {
@@ -120,9 +110,7 @@ public class RegisterReadRaw extends MonadObject {
 
 	public Element toXml(Document doc) throws HttpException {
 		Element element = doc.createElement("register-read-raw");
-		element.setAttribute("mpan-core", mpanCore.toString());
 		element.setAttribute("coefficient", coefficient.toString());
-		element.setAttribute("meter-serial-number", meterSerialNumber);
 		element.setAttribute("units", Units.name(units));
 		element.setAttribute("tpr", Integer.toString(tpr));
 		previousDate.setLabel("previous");

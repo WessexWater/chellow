@@ -193,7 +193,7 @@ public class HhEndDate extends MonadDate {
 		return toXML(getDate(), getLabel(), doc, "hh-end-date");
 	}
     
-	boolean after(HhEndDate date) {
+	public boolean after(HhEndDate date) {
 		if (date == null) {
 			return false;
 		} else {
@@ -201,7 +201,7 @@ public class HhEndDate extends MonadDate {
 		}
 	}
 	
-	boolean before(HhEndDate date) {
+	public boolean before(HhEndDate date) {
 		if (date == null) {
 			return true;
 		} else {

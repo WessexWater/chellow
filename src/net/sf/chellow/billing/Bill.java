@@ -22,14 +22,15 @@
 package net.sf.chellow.billing;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.Map.Entry;
 
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
-import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Invocation;
 import net.sf.chellow.monad.MonadUtils;
 import net.sf.chellow.monad.NotFoundException;
@@ -39,14 +40,18 @@ import net.sf.chellow.monad.XmlTree;
 import net.sf.chellow.monad.types.MonadDate;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
-import net.sf.chellow.physical.Mpan;
+import net.sf.chellow.physical.HhEndDate;
 import net.sf.chellow.physical.PersistentEntity;
+import net.sf.chellow.physical.RegisterRead;
+import net.sf.chellow.physical.RegisterReadRaw;
+import net.sf.chellow.physical.RegisterReads;
+import net.sf.chellow.physical.Supply;
+import net.sf.chellow.physical.SupplySnag;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import org.w3c.dom.Node;
 
-public class Bill extends PersistentEntity {
+public class Bill extends PersistentEntity implements Urlable {
 	public static Bill getBill(Long id) throws HttpException {
 		Bill bill = (Bill) Hiber.session().get(Bill.class, id);
 		if (bill == null) {
@@ -55,134 +60,68 @@ public class Bill extends PersistentEntity {
 		return bill;
 	}
 
-	private Mpan mpan;
+	private Batch batch;
 
-	private DayStartDate startDate; // Excluding rejected invoices
+	private Supply supply;
 
-	// private boolean isStartFuzzy;
+	private DayStartDate issueDate;
 
-	private DayFinishDate finishDate; // Excluding rejected invoices
+	private DayStartDate startDate;
 
-	// private boolean isFinishFuzzy;
+	private DayFinishDate finishDate;
 
-	private BigDecimal net; // Excluding rejected invoices
+	private BigDecimal net;
 
-	private BigDecimal vat; // Excluding rejected invoices
+	private BigDecimal vat;
 
-	private Set<Invoice> invoices;
+	private String reference;
+
+	private Boolean isPaid; // Null is pending, false is rejected.
+
+	private BillType type;
+
+	private boolean isCancelledOut;
+
+	private Set<RegisterRead> reads;
 
 	public Bill() {
 	}
 
-	public Bill(Mpan mpan) throws InternalException {
-		setMpan(mpan);
-	}
-
-	void setInvoices(Set<Invoice> invoices) {
-		this.invoices = invoices;
-	}
-
-	public Set<Invoice> getInvoices() {
-		return invoices;
-	}
-
-	public void attach(Invoice invoice) throws HttpException {
-		invoice.setBill(this);
-		if (invoices == null) {
-			invoices = new HashSet<Invoice>();
-		}
-		invoices.add(invoice);
-		setSummary();
-	}
-
-	@SuppressWarnings("unchecked")
-	public void detach(Invoice invoice) throws HttpException {
-		mpan.addSnag(SupplySnag.MISSING_BILL, getStartDate(), getFinishDate());
-		invoices.remove(invoice);
-		invoice.setBill(null);
-		Hiber.flush();
-		for (BillSnag snag : (List<BillSnag>) Hiber.session().createQuery(
-		"from BillSnag snag where snag.bill = :bill").setEntity(
-		"bill", this).list()) {
-			Hiber.session().delete(snag);
-			Hiber.flush();
-		}
-		if (invoices.isEmpty()) {
-			Hiber.session().delete(this);
-			Hiber.flush();
-		} else {
-			List<Invoice> tempInvoices = new ArrayList<Invoice>();
-			for (Invoice tempInvoice : invoices) {
-				tempInvoices.add(tempInvoice);
-			}
-			for (Invoice invoiceToRemove : tempInvoices) {
-				invoices.remove(invoiceToRemove);
-			}
-			for (Invoice invoiceToAttach : tempInvoices) {
-				getMpan().attach(invoiceToAttach);
-			}
-		}
-
-		//account.checkMissing(billStart, billFinish);
-	}
-
-	private void setSummary() throws HttpException {
-		if (getStartDate() != null) {
-			mpan.deleteSnag(SupplySnag.MISSING_BILL, getStartDate(),
-					getFinishDate());
-		}
-		//HhEndDate oldStartDate = getStartDate();
-		DayStartDate startDate = null;
-		// boolean isStartFuzzy = false;
-		//HhEndDate oldFinishDate = getFinishDate();
-		DayFinishDate finishDate = null;
-		// boolean isFinishFuzzy = false;
-		BigDecimal net = new BigDecimal(0);
-		BigDecimal vat = new BigDecimal(0);
-		for (Invoice invoice : invoices) {
-			if (startDate == null
-					|| invoice.getStartDate().getDate().before(
-							startDate.getDate())) {
-				startDate = invoice.getStartDate();
-				// if (invoice.getIsStartFuzzy()) {
-				// isStartFuzzy = true;
-				// }
-			}
-			if (finishDate == null
-					|| invoice.getFinishDate().getDate().before(
-							finishDate.getDate())) {
-				finishDate = invoice.getFinishDate();
-				// if (invoice.getIsFinishFuzzy()) {
-				// isFinishFuzzy = true;
-				// }
-			}
-			net = net.add(invoice.getNet());
-			vat = vat.add(invoice.getVat());
-		}
-		setStartDate(startDate);
-		// setIsStartFuzzy(isStartFuzzy);
-		setFinishDate(finishDate);
-		// setIsFinishFuzzy(isFinishFuzzy);
-		setNet(net);
-		setVat(vat);
-		check();
-		//if (getStartDate() != null) {
-		//	getAccount().checkMissing(oldStartDate, oldFinishDate);
-		// }
-	}
-
-	public void check() throws HttpException {
-		if (getVirtualBill().getCost() != nonRejectedCost()) {
-			addSnag();
+	public Bill(Batch batch, Supply supply, RawBill invoiceRaw)
+			throws HttpException {
+		setBatch(batch);
+		setSupply(supply);
+		update(invoiceRaw.getIssueDate(), invoiceRaw.getStartDate(), invoiceRaw
+				.getFinishDate(), invoiceRaw.getNet(), invoiceRaw.getVat(),
+				null, false);
+		setReference(invoiceRaw.getReference());
+		for (RegisterReadRaw rawRead : invoiceRaw.getRegisterReads()) {
+			insertRead(rawRead);
 		}
 	}
 
-	public Mpan getMpan() {
-		return mpan;
+	public Batch getBatch() {
+		return batch;
 	}
 
-	public void setMpan(Mpan mpan) {
-		this.mpan = mpan;
+	public void setBatch(Batch batch) {
+		this.batch = batch;
+	}
+
+	public Supply getSupply() {
+		return supply;
+	}
+
+	public void setSupply(Supply supply) {
+		this.supply = supply;
+	}
+
+	public DayStartDate getIssueDate() {
+		return issueDate;
+	}
+
+	protected void setIssueDate(DayStartDate issueDate) {
+		this.issueDate = issueDate;
 	}
 
 	public DayStartDate getStartDate() {
@@ -193,12 +132,6 @@ public class Bill extends PersistentEntity {
 		this.startDate = startDate;
 	}
 
-	/*
-	 * public boolean getIsStartFuzzy() { return isStartFuzzy; }
-	 * 
-	 * protected void setIsStartFuzzy(boolean isStartFuzzy) { this.isStartFuzzy =
-	 * isStartFuzzy; }
-	 */
 	public DayFinishDate getFinishDate() {
 		return finishDate;
 	}
@@ -207,12 +140,6 @@ public class Bill extends PersistentEntity {
 		this.finishDate = finishDate;
 	}
 
-	/*
-	 * public boolean getIsFinishFuzzy() { return isFinishFuzzy; }
-	 * 
-	 * protected void setIsFinishFuzzy(boolean isFinishFuzzy) {
-	 * this.isFinishFuzzy = isFinishFuzzy; }
-	 */
 	public BigDecimal getNet() {
 		return net;
 	}
@@ -229,34 +156,122 @@ public class Bill extends PersistentEntity {
 		this.vat = vat;
 	}
 
-	public Node toXml(Document doc) throws HttpException {
-		Element element = super.toXml(doc, "bill");
+	public String getReference() {
+		return reference;
+	}
+
+	public void setReference(String reference) {
+		this.reference = reference;
+	}
+
+	public Boolean getIsPaid() {
+		return isPaid;
+	}
+
+	public void setIsPaid(Boolean isPaid) {
+		this.isPaid = isPaid;
+	}
+
+	public BillType getType() {
+		return type;
+	}
+
+	public void setType(BillType type) {
+		this.type = type;
+	}
+
+	public boolean getIsCancelledOut() {
+		return isCancelledOut;
+	}
+
+	public void setIsCancelledOut(boolean isCancelledOut) {
+		this.isCancelledOut = isCancelledOut;
+	}
+
+	void setReads(Set<RegisterRead> reads) {
+		this.reads = reads;
+	}
+
+	public Set<RegisterRead> getReads() {
+		return reads;
+	}
+
+	public void update(DayStartDate issueDate, DayStartDate startDate,
+			DayFinishDate finishDate, BigDecimal net, BigDecimal vat,
+			Boolean isPaid, boolean isCancelledOut) throws HttpException {
+		setIssueDate(issueDate);
+		if (startDate.getDate().after(finishDate.getDate())) {
+			throw new UserException(
+					"The bill start date can't be after the finish date.");
+		}
+		setStartDate(startDate);
+		setFinishDate(finishDate);
+		setNet(net);
+		setVat(vat);
+		setIsPaid(isPaid);
+		setIsCancelledOut(isCancelledOut);
+		virtualEqualsActual();
+	}
+
+	public Element toXml(Document doc) throws HttpException {
+		Element element = super.toXml(doc, "invoice");
+		issueDate.setLabel("issue");
+		element.appendChild(issueDate.toXml(doc));
 		startDate.setLabel("start");
 		element.appendChild(startDate.toXml(doc));
 		finishDate.setLabel("finish");
 		element.appendChild(finishDate.toXml(doc));
 		element.setAttribute("net", net.toString());
 		element.setAttribute("vat", vat.toString());
+		element.setAttribute("reference", reference);
+		if (isPaid != null) {
+			element.setAttribute("is-paid", Boolean.toString(isPaid));
+		}
+		element.setAttribute("is-cancelled-out", Boolean
+				.toString(isCancelledOut));
 		return element;
 	}
 
-	@SuppressWarnings("unchecked")
+	public void httpPost(Invocation inv) throws HttpException {
+		if (inv.hasParameter("delete")) {
+			delete();
+			Hiber.commit();
+			inv.sendSeeOther(batch.billsInstance().getUri());
+		} else {
+			// String accountReference = inv.getString("account-reference");
+			Date issueDate = inv.getDate("issue-date");
+			Date startDate = inv.getDate("start-date");
+			Date finishDate = inv.getDate("finish-date");
+			BigDecimal net = inv.getBigDecimal("net");
+			BigDecimal vat = inv.getBigDecimal("vat");
+			Boolean isPaid = inv.getBoolean("isPaid");
+			Boolean isCancelledOut = inv.getBoolean("isCancelledOut");
+
+			if (!inv.isValid()) {
+				throw new UserException(document());
+			}
+			update(new DayStartDate(issueDate), new DayStartDate(startDate)
+					.getNext(), new DayFinishDate(finishDate), net, vat,
+					isPaid, isCancelledOut);
+			Hiber.commit();
+			inv.sendOk(document());
+		}
+	}
+
 	private Document document() throws HttpException {
 		Document doc = MonadUtils.newSourceDocument();
 		Element source = doc.getDocumentElement();
-		Element billElement = (Element) toXml(doc, new XmlTree("account",
-				new XmlTree("contract", new XmlTree("party"))));
-		source.appendChild(billElement);
-		for (Invoice invoice : (List<Invoice>) Hiber
-				.session()
-				.createQuery(
-						"from Invoice invoice where invoice.bill = :bill order by invoice.startDate.date")
-				.setEntity("bill", this).list()) {
-			billElement.appendChild(invoice.toXml(doc, new XmlTree("batch",
-					new XmlTree("contract"))));
-		}
+		Element invoiceElement = (Element) toXml(doc, new XmlTree("batch",
+				new XmlTree("contract", new XmlTree("party"))).put("bill",
+				new XmlTree("account")));
+		source.appendChild(invoiceElement);
 		source.appendChild(MonadDate.getMonthsXml(doc));
 		source.appendChild(MonadDate.getDaysXml(doc));
+		for (RegisterRead read : reads) {
+			invoiceElement.appendChild(read.toXml(doc, new XmlTree("mpan",
+					new XmlTree("core").put("supplyGeneration", new XmlTree(
+							"supply")))));
+		}
 		return doc;
 	}
 
@@ -265,56 +280,97 @@ public class Bill extends PersistentEntity {
 	}
 
 	public MonadUri getUri() throws HttpException {
-		return new Bills(mpan).getUri().resolve(getUriId()).append("/");
+		return batch.billsInstance().getUri().resolve(getUriId()).append("/");
 	}
 
 	public Urlable getChild(UriPathElement uriId) throws HttpException {
-		 if (BillSnags.URI_ID.equals(uriId)) {
-				return new BillSnags(this);
-		 } else {
-		throw new NotFoundException();
-		 }
+		if (RegisterReads.URI_ID.equals(uriId)) {
+			return registerReadsInstance();
+		} else {
+			throw new NotFoundException();
+		}
 	}
 
-	VirtualBill getVirtualBill() throws HttpException {
-		return mpan.getContract().virtualBill("total", mpan, startDate,
-				finishDate);
+	public RegisterReads registerReadsInstance() {
+		return new RegisterReads(this);
 	}
 
-	/*
-	 * double calculatedCost() throws UserException, ProgrammerException {
-	 * Service service = (Service) Hiber .session() .createQuery( "select
-	 * distinct invoice.batch.service from Invoice invoice where invoice.bill =
-	 * :bill") .setEntity("bill", this).uniqueResult(); BillElement billElement =
-	 * return billElement.getCost(); }
-	 */
+	public RegisterRead insertRead(RegisterReadRaw rawRead)
+			throws HttpException {
+		RegisterRead read = new RegisterRead(this, rawRead);
+		if (reads == null) {
+			reads = new HashSet<RegisterRead>();
+		}
+		reads.add(read);
+		Hiber.flush();
+		read.attach();
+		return read;
+	}
+
 	@SuppressWarnings("unchecked")
-	double nonRejectedCost() {
-		double nonRejectedCost = 0;
-		for (Invoice invoice : (List<Invoice>) Hiber
+	public void delete() throws HttpException {
+		// Check missing bills...
+		HhEndDate snagStart = startDate;
+		if (!isCancelledOut) {
+			for (Bill bill : (List<Bill>) Hiber
+					.session()
+					.createQuery(
+							"from Bill bill where bill.batch.contract.id = :contractId and bill.isCancelledOut is false and bill.startDate.date <= :finishDate and bill.finishDate.date >= :startDate order by bill.startDate.date")
+					.setLong("contractId", batch.getContract().getId())
+					.setTimestamp("startDate", startDate.getDate())
+					.setTimestamp("finishDate", finishDate.getDate()).list()) {
+				if (bill.getStartDate().after(snagStart)) {
+					supply.addSnag(batch.getContract(),
+							SupplySnag.MISSING_BILL, startDate, finishDate);
+					snagStart = bill.getFinishDate().getNext();
+				}
+			}
+			if (!snagStart.after(getFinishDate())) {
+				supply.addSnag(batch.getContract(), SupplySnag.MISSING_BILL,
+						startDate, finishDate);
+			}
+		}
+		reads.clear();
+		Hiber.flush();
+		Hiber.session().delete(this);
+		Hiber.flush();
+	}
+
+	public BillSnag addSnag(String description) throws HttpException {
+		BillSnag snag = (BillSnag) Hiber
 				.session()
 				.createQuery(
-						"from Invoice invoice where invoice.bill = :bill and invoice.status <> :rejected")
-				.setEntity("bill", this).setInteger("rejected",
-						Invoice.REJECTED).list()) {
-			nonRejectedCost += invoice.getNet().doubleValue() + invoice.getVat().doubleValue();
-		}
-		return nonRejectedCost;
-	}
-
-	void update() {
-
-	}
-
-	private BillSnag addSnag() throws HttpException {
-		BillSnag snag = (BillSnag) Hiber.session().createQuery(
-				"from BillSnag snag where snag.bill = :bill").setEntity("bill",
-				this).uniqueResult();
-
+						"from BillSnag snag where snag.bill = :bill and snag.description = :description")
+				.setEntity("bill", this).setString("description", description)
+				.uniqueResult();
 		if (snag == null) {
-			BillSnag
-					.insertBillSnag(new BillSnag(BillSnag.INCORRECT_BILL, this));
+			snag = new BillSnag(description, this);
+			Hiber.session().save(snag);
 		}
 		return snag;
+	}
+
+	@SuppressWarnings("unchecked")
+	public Map<String, ?> virtualBill() throws HttpException {
+		return (Map<String, ?>) batch.getContract().callFunction(
+				"virtual_bill", new Object[] { supply, startDate, finishDate });
+	}
+
+	public void virtualEqualsActual() throws HttpException {
+		Map<String, ?> vBill = virtualBill();
+		Double vNet = (Double) vBill.get("net-gbp");
+		Double vGross = (Double) vBill.get("gross-gbp");
+		if (!vNet.equals(net.doubleValue())
+				|| !vGross.equals(vat.doubleValue())) {
+			addSnag(BillSnag.INCORRECT_BILL);
+		}
+	}
+
+	public Element virtualBillXml(Document doc) throws HttpException {
+		Element vElement = doc.createElement("virtual-bill");
+		for (Entry<String, ?> entry : virtualBill().entrySet()) {
+			vElement.setAttribute(entry.getKey(), entry.getValue().toString());
+		}
+		return vElement;
 	}
 }

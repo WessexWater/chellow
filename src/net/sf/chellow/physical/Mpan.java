@@ -25,11 +25,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import net.sf.chellow.billing.Bill;
 import net.sf.chellow.billing.Dso;
-import net.sf.chellow.billing.Invoice;
-import net.sf.chellow.billing.InvoiceRaw;
-import net.sf.chellow.billing.MpanSnag;
 import net.sf.chellow.billing.SupplierContract;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
@@ -64,8 +60,8 @@ public class Mpan extends PersistentEntity {
 		return (List<Mpan>) Hiber
 				.session()
 				.createQuery(
-						"from Mpan mpan where mpan.core = :core and mpan.supplyGeneration in (:supplyGenerations) and mpan.top.pc = :pc and mpan.top.mtc = :mtc and mpan.top.llfc = :llfc")
-				.setEntity("pc", Pc.getPc(raw.getPcCode())).setEntity("mtc",
+						"from Mpan mpan where mpan.core = :core and mpan.supplyGeneration in (:supplyGenerations) and mpan.supplyGeneration.pc = :pc and mpan.mtc = :mtc and mpan.llfc = :llfc")
+				.setEntity("core", core).setEntity("pc", Pc.getPc(raw.getPcCode())).setEntity("mtc",
 						Mtc.getMtc(dso, raw.getMtcCode())).setEntity("llfc",
 						dso.getLlfc(raw.getLlfcCode())).setParameterList(
 						"supplyGenerations", supplyGenerations).list();
@@ -111,10 +107,10 @@ public class Mpan extends PersistentEntity {
 	}
 
 	Mpan(SupplyGeneration supplyGeneration, String mpanStr, Ssc ssc,
-			SupplierContract supplierContract, String supplierAccountReference,
+			SupplierContract supplierContract, String supplierAccount,
 			int agreedSupplyCapacity) throws HttpException {
 		this.supplyGeneration = supplyGeneration;
-		update(mpanStr, ssc, supplierContract, supplierAccountReference,
+		update(mpanStr, ssc, supplierContract, supplierAccount,
 				agreedSupplyCapacity);
 	}
 
@@ -235,6 +231,13 @@ public class Mpan extends PersistentEntity {
 		if (supplierAccount == null) {
 			throw new UserException("An MPAN must have a supplier account.");
 		}
+		if (supplierContract == null) {
+			throw new UserException("An MPAN must have a supplier contract.");
+		}
+		setSupplierContract(supplierContract);
+		if (supplierAccount == null) {
+			throw new UserException("An MPAN must have a supplier account.");
+		}
 		setSupplierAccount(supplierAccount);
 		setAgreedSupplyCapacity(agreedSupplyCapacity);
 	}
@@ -282,64 +285,6 @@ public class Mpan extends PersistentEntity {
 		}
 	}
 	
-	@SuppressWarnings("unchecked")
-	public Invoice attach(Invoice invoice) {
-		Bill bill = combineBills(invoice.getStartDate(), invoice
-				.getFinishDate());
-		if (bill == null) {
-			bill = new Bill(this);
-			Hiber.session().save(bill);
-		}
-		bill.attach(invoice);
-		deleteSnag(AccountSnag.MISSING_BILL, bill.getStartDate(), bill
-				.getFinishDate());
-	}	
-	}
-	
-	@SuppressWarnings("unchecked")
-	private Bill combineBills(HhEndDate start, HhEndDate finish)
-			throws HttpException {
-		List<Bill> bills = (List<Bill>) Hiber
-				.session()
-				.createQuery(
-						"from Bill bill where bill.account = :account and bill.startDate.date <= :finishDate and bill.finishDate.date >= :startDate")
-				.setEntity("account", this).setTimestamp("startDate",
-						start.getDate()).setTimestamp("finishDate",
-						finish.getDate()).list();
-		if (bills.isEmpty()) {
-			return null;
-		} else {
-			Bill firstBill = bills.get(0);
-			for (int i = 1; i < bills.size(); i++) {
-				Bill bill = bills.get(i);
-				for (Invoice invoice : bill.getInvoices()) {
-					firstBill.attach(invoice);
-					bill.detach(invoice);
-				}
-				delete(bill);
-			}
-			Hiber.flush();
-			return firstBill;
-		}
-	}
-	
-	void delete(Bill bill) throws HttpException {
-		Bill foundBill = (Bill) Hiber
-				.session()
-				.createQuery(
-						"from Bill bill where bill.account = :account and bill.id = :billId")
-				.setEntity("account", this).setLong("billId", bill.getId())
-				.uniqueResult();
-		if (foundBill == null) {
-			throw new InternalException(
-					"This bill doesn't belong to this account.");
-		} else {
-			Hiber.session().delete(foundBill);
-		}
-		addSnag(MpanSnag.MISSING_BILL, foundBill.getStartDate(), foundBill
-				.getFinishDate());
-		// checkMissing(foundBill.getStartDate(), foundBill.getFinishDate());
-	}
 	
 	static private class MpanRaw {
 		private String pcCode;

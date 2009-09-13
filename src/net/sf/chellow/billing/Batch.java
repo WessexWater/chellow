@@ -21,8 +21,6 @@
 
 package net.sf.chellow.billing;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -38,8 +36,12 @@ import net.sf.chellow.monad.UserException;
 import net.sf.chellow.monad.XmlTree;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
+import net.sf.chellow.physical.HhEndDate;
 import net.sf.chellow.physical.Mpan;
 import net.sf.chellow.physical.PersistentEntity;
+import net.sf.chellow.physical.Supply;
+import net.sf.chellow.physical.SupplyGeneration;
+import net.sf.chellow.physical.SupplySnag;
 
 import org.hibernate.HibernateException;
 import org.w3c.dom.Document;
@@ -127,7 +129,7 @@ public class Batch extends PersistentEntity {
 
 	@SuppressWarnings("unchecked")
 	private void delete() throws HttpException {
-		for (Invoice invoice : (List<Invoice>) Hiber.session().createQuery(
+		for (Bill invoice : (List<Bill>) Hiber.session().createQuery(
 				"from Invoice invoice where invoice.batch = :batch").setEntity(
 				"batch", this).list()) {
 			invoice.delete();
@@ -153,10 +155,10 @@ public class Batch extends PersistentEntity {
 	}
 
 	public Urlable getChild(UriPathElement uriId) throws HttpException {
-		if (InvoiceImports.URI_ID.equals(uriId)) {
-			return invoiceImportsInstance();
-		} else if (Invoices.URI_ID.equals(uriId)) {
-			return invoicesInstance();
+		if (BillImports.URI_ID.equals(uriId)) {
+			return billImportsInstance();
+		} else if (Bills.URI_ID.equals(uriId)) {
+			return billsInstance();
 		} else {
 			throw new NotFoundException();
 		}
@@ -167,71 +169,110 @@ public class Batch extends PersistentEntity {
 		inv.sendOk();
 	}
 
-	public Invoices invoicesInstance() {
-		return new Invoices(this);
+	public Bills billsInstance() {
+		return new Bills(this);
 	}
 
-	public InvoiceImports invoiceImportsInstance() {
-		return new InvoiceImports(this);
+	public BillImports billImportsInstance() {
+		return new BillImports(this);
 	}
 
 	@SuppressWarnings("unchecked")
-	Invoice insertInvoice(InvoiceRaw rawInvoice) throws HttpException {
-		Invoice invoice = new Invoice(this, rawInvoice);
-		Hiber.session().save(invoice);
-		Hiber.flush();
+	Bill insertBill(RawBill rawBill) throws HttpException {
 		/*
-		 * for (MpanRaw rawMpan : rawInvoice.getMpans()) { MpanCore mpanCore =
-		 * MpanCore.getMpanCore(rawMpan .getMpanCoreRaw()); List<Mpan>
-		 * candidateMpans = (List<Mpan>) Hiber .session() .createQuery( "from
-		 * Mpan mpan where mpan.mpanCore = :mpanCore and mpan.mpanTop.pc = :pc
-		 * and mpan.mpanTop.mtc = :mtc and mpan.mpanTop.llfc = :llfc and
-		 * mpan.supplyGeneration.startDate.date <= :finishDate and
-		 * (mpan.supplyGeneration.finishDate.date is null or
-		 * mpan.supplyGeneration.finishDate.date >= :startDate) order by
-		 * mpan.supplyGeneration.startDate.date desc") .setEntity("mpanCore",
-		 * mpanCore).setEntity("pc", rawMpan.getPc()).setEntity("mtc",
-		 * rawMpan.getMtc()) .setEntity("llfc", rawMpan.getLlfc()).setTimestamp(
-		 * "finishDate", rawInvoice.getFinishDate().getDate())
-		 * .setTimestamp("startDate",
-		 * rawInvoice.getStartDate().getDate()).list(); if
-		 * (candidateMpans.isEmpty()) { throw new UserException("Problem with
-		 * invoice '" + rawInvoice.getReference() + ". The invoice needs to be
-		 * attached to the MPANs " + rawInvoice.getMpanText() + " but the MPAN " +
-		 * rawMpan + " cannot be found between " + " the half-hour ending " +
-		 * rawInvoice.getStartDate() + " and the half-hour ending " +
-		 * rawInvoice.getFinishDate() + "."); }
-		 * //invoice.insertInvoiceMpan(candidateMpans.get(0)); }
+		 * List<String> mpanList = new
+		 * ArrayList<String>(rawBill.getMpanStrings());
+		 * Collections.sort(mpanList); String candidateMpan = mpanList.get(0);
+		 * List<Mpan> mpans = Mpan.getMpans(candidateMpan,
+		 * rawBill.getFinishDate(), rawBill.getFinishDate()); if
+		 * (mpans.isEmpty()) { throw new UserException("There isn't an MPAN " +
+		 * candidateMpan + " at the date " + rawBill.getFinishDate()); } Mpan
+		 * primaryMpan = mpans.get(0); if
+		 * (rawBill.getAccount().equals(primaryMpan.getSupplierAccount())) {
+		 * throw new UserException(
+		 * "The account reference doesn't match the MPAN's account reference.");
+		 * }
 		 */
-		
-		// primary mpan
-		List<String> mpanList = new ArrayList<String>(rawInvoice.getMpanStrings());
-		Collections.sort(mpanList);
-		String candidateMpan = mpanList.get(0);
-		List<Mpan> mpans = Mpan.getMpans(candidateMpan, rawInvoice.getFinishDate(), rawInvoice.getFinishDate());
-		if (mpans.isEmpty()) {
-			throw new UserException("There isn't an MPAN " + candidateMpan + " at the date " + rawInvoice.getFinishDate());
-		}
-		Mpan primaryMpan = mpans.get(0);
-		if (rawInvoice.getAccount().equals(primaryMpan.getSupplierAccount())) {
-			throw new UserException("The account reference doesn't match the MPAN's account reference.");
-		}
-		if (!rawInvoice.getMpanStrings().isEmpty()) {
+		List<Mpan> mpanList = (List<Mpan>) Hiber
+				.session()
+				.createQuery(
+						"from Mpan mpan where mpan.supplierAccount = :account and mpan.supplyGeneration.startDate.date <= :billFinish and (mpan.supplyGeneration.finishDate.date is null or mpan.supplyGeneration.finishDate.date >= :billStart) order by mpan.core.dso.code, mpan.core.uniquePart")
+				.setString("account", rawBill.getAccount()).setTimestamp(
+						"billStart", rawBill.getStartDate().getDate())
+				.setTimestamp("billFinish", rawBill.getFinishDate().getDate()).list();
+if (mpanList.isEmpty()) {
+	throw new UserException("There are no MPANs that match.");
+}
+		if (!rawBill.getMpanStrings().isEmpty()) {
 			Set<String> mpanStrings = new HashSet<String>();
-			for (Mpan mpan : (List<Mpan>) Hiber.session().createQuery("from Mpan mpan where mpan.supplierAccount = :account and mpan.supplyGeneration.startDate.date <= :invoiceFinish and (mpan.supplyGeneration.finishDate.date is null or mpan.supplyGeneration.finishDate.date >= :invoiceDate)").setString("account", rawInvoice.getAccount()).setTimestamp("invoiceFinish", invoice.getFinishDate().getDate()).list()) {
+			for (Mpan mpan : mpanList) {
 				mpanStrings.add(mpan.toString());
 			}
-			if (!Mpan.isEqual(mpanStrings, rawInvoice.getMpanStrings())) {
-				throw new UserException("Problem with account '" + primaryMpan.getSupplierAccount()
-						+ "' invoice '" + rawInvoice.getReference()
-						+ " to the half-hour ending "
-						+ rawInvoice.getFinishDate() + ". This invoice has MPANs "
-						+ rawInvoice.getMpanStrings()
+			if (mpanStrings.isEmpty()) {
+				throw new UserException("Can't find any MPANS.");
+			}
+			if (!Mpan.isEqual(mpanStrings, rawBill.getMpanStrings())) {
+				throw new UserException("Problem with account '"
+						+ rawBill.getAccount() + "' invoice '"
+						+ rawBill.getReference() + " to the half-hour ending "
+						+ rawBill.getFinishDate() + ". This invoice has MPANs "
+						+ rawBill.getMpanStrings()
 						+ " but the account in Chellow has MPANs '"
 						+ mpanStrings + "'.");
 			}
 		}
+
 		Hiber.flush();
-		return primaryMpan.attach(invoice);
+		Supply supply = mpanList.get(0).getSupplyGeneration().getSupply();
+		Bill bill = new Bill(this, supply, rawBill);
+		Hiber.session().save(bill);
+		Hiber.flush();
+		List<SupplyGeneration> generations = supply.getGenerations(bill
+				.getStartDate(), bill.getFinishDate());
+		// what about withdrawn????? Cancel them by hand!!!!!!!!!
+
+		// Check for duplicate bills
+		List<Bill> duplicateBills = (List<Bill>) Hiber
+				.session()
+				.createQuery(
+						"from Bill bill where bill.supply = :supply and bill.contract.id = :contractId and bill.isCancelledOut is false and bill.startDate.date <= :finishDate and bill.finishDate.date >= :startDate")
+				.setEntity("supply", supply).setLong("contractId",
+						contract.getId()).setTimestamp("startDate",
+						bill.getStartDate().getDate()).setTimestamp(
+						"finishDate", bill.getFinishDate().getDate()).list();
+		if (duplicateBills.size() > 1) {
+			bill.addSnag(BillSnag.DUPLICATE_BILL);
+		}
+		// what about missing bill snags??????
+		for (SupplyGeneration generation : generations) {
+			HhEndDate st = generation.getStartDate()
+					.before(bill.getStartDate()) ? bill.getStartDate()
+					: generation.getStartDate();
+			HhEndDate fn = bill.getFinishDate().before(
+					generation.getFinishDate()) ? bill.getFinishDate()
+					: generation.getFinishDate();
+			HhdcContract hhdcContract = generation.getHhdcContract();
+			if (hhdcContract != null
+					&& hhdcContract.getId() == contract.getId()) {
+				supply
+						.deleteSnag(hhdcContract, SupplySnag.MISSING_BILL, st,
+								fn);
+			}
+			Mpan importMpan = generation.getImportMpan();
+			if (importMpan != null
+					&& importMpan.getSupplierContract().getId().equals(
+							contract.getId())) {
+				supply.deleteSnag(importMpan.getSupplierContract(),
+						SupplySnag.MISSING_BILL, st, fn);
+			}
+			Mpan exportMpan = generation.getExportMpan();
+			if (exportMpan != null
+					&& exportMpan.getSupplierContract().getId().equals(
+							contract.getId())) {
+				supply.deleteSnag(exportMpan.getSupplierContract(),
+						SupplySnag.MISSING_BILL, st, fn);
+			}
+		}
+		return bill;
 	}
 }

@@ -24,6 +24,7 @@ package net.sf.chellow.billing;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import javax.script.Invocable;
@@ -193,7 +194,7 @@ public abstract class Contract extends PersistentEntity implements
 			criteria.add(Restrictions.le("startDate.date", to.getDate()));
 		}
 		for (Bill bill : (List<Bill>) criteria.list()) {
-			bill.check();
+			bill.virtualEqualsActual();
 		}
 	}
 
@@ -244,13 +245,14 @@ public abstract class Contract extends PersistentEntity implements
 		return "Contract id " + getId() + " name " + getName();
 	}
 
-	public VirtualBill virtualBill(String name, Supply supply,
+	@SuppressWarnings("unchecked")
+	public Map<String, Double> virtualBill(Supply supply,
 			HhEndDate from, HhEndDate to) throws HttpException {
-		VirtualBill bill = null;
+		Map<String, Double> bill = null;
 
 		try {
 			Object[] args = { supply, from, to };
-			bill = (VirtualBill) engine().invokeFunction(name + "VirtualBill",
+			bill = (Map<String,Double>) engine().invokeFunction("virtual_bill",
 					args);
 		} catch (ScriptException e) {
 			throw new UserException(e.getMessage());
@@ -501,4 +503,6 @@ public abstract class Contract extends PersistentEntity implements
 	}
 
 	public abstract Party getParty();
+	
+	public abstract String missingBillSnagDescription();
 }

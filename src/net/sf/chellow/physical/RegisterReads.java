@@ -23,7 +23,7 @@ package net.sf.chellow.physical;
 
 import java.util.List;
 
-import net.sf.chellow.billing.Invoice;
+import net.sf.chellow.billing.Bill;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.Invocation;
@@ -47,9 +47,9 @@ public class RegisterReads extends EntityList {
 		}
 	}
 
-	private Invoice invoice;
+	private Bill invoice;
 
-	public RegisterReads(Invoice invoice) {
+	public RegisterReads(Bill invoice) {
 		this.invoice = invoice;
 	}
 

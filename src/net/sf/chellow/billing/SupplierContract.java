@@ -40,6 +40,7 @@ import net.sf.chellow.physical.MarketRole;
 import net.sf.chellow.physical.Mpan;
 import net.sf.chellow.physical.Participant;
 import net.sf.chellow.physical.Snag;
+import net.sf.chellow.physical.SupplierContractType;
 import net.sf.chellow.ui.Chellow;
 import net.sf.chellow.ui.GeneralImport;
 
@@ -86,7 +87,7 @@ public class SupplierContract extends Contract {
 
 	public static SupplierContract getSupplierContract(Long id)
 			throws HttpException {
-		SupplierContract service = findSupplierService(id);
+		SupplierContract service = findSupplierContract(id);
 		if (service == null) {
 			throw new UserException(
 					"There isn't a supplier service with that id.");
@@ -94,7 +95,7 @@ public class SupplierContract extends Contract {
 		return service;
 	}
 
-	public static SupplierContract findSupplierService(Long id) {
+	public static SupplierContract findSupplierContract(Long id) {
 		return (SupplierContract) Hiber.session().get(SupplierContract.class,
 				id);
 	}
@@ -115,6 +116,8 @@ public class SupplierContract extends Contract {
 
 	Provider supplier;
 
+	SupplierContractType type;
+
 	public SupplierContract() {
 	}
 
@@ -131,6 +134,14 @@ public class SupplierContract extends Contract {
 
 	public Provider getParty() {
 		return supplier;
+	}
+
+	void setType(SupplierContractType type) {
+		this.type = type;
+	}
+
+	public SupplierContractType getType() {
+		return type;
 	}
 
 	public void internalUpdate(Participant participant, String name,
@@ -168,7 +179,7 @@ public class SupplierContract extends Contract {
 				Document doc = document();
 				Element source = doc.getDocumentElement();
 				update(getName(), chargeScript);
-				source.appendChild(bill.getVirtualBill().toXml(doc));
+				source.appendChild(bill.virtualBillXml(doc));
 				inv.sendOk(doc);
 			} catch (HttpException e) {
 				e.setDocument(document());
@@ -191,8 +202,8 @@ public class SupplierContract extends Contract {
 		List<Mpan> mpansOutside = Hiber
 				.session()
 				.createQuery(
-						"from Mpan mpan where mpan.supplierAccount.contract.id = :contractId and mpan.supplyGeneration.startDate.date < :startDate and (mpan.supplyGeneration.finishDate.date is null or mpan.supplyGeneration.finishDate > :finishDate) order by mpan.supplyGeneration.startDate.date desc")
-				.setLong("contractId", this.getId()).setTimestamp("startDate",
+						"from Mpan mpan where mpan.supplierContract = :contract and mpan.supplyGeneration.startDate.date < :startDate and (mpan.supplyGeneration.finishDate.date is null or mpan.supplyGeneration.finishDate > :finishDate) order by mpan.supplyGeneration.startDate.date desc")
+				.setEntity("contract", this).setTimestamp("startDate",
 						getStartDate().getDate()).setTimestamp(
 						"finishDate",
 						getFinishDate() == null ? null : getFinishDate()
@@ -203,10 +214,10 @@ public class SupplierContract extends Contract {
 							+ mpansOutside.get(0).getCore()
 							+ " and "
 							+ mpansOutside.get(mpansOutside.size() - 1)
-									.getCore() + " use this service"
+									.getCore() + " use this contract"
 							: "An MPAN with core "
 									+ mpansOutside.get(0).getCore()
-									+ " uses this service and lies outside "
+									+ " uses this contract and lies outside "
 									+ startDate
 									+ " to "
 									+ (finishDate == null ? "ongoing"
@@ -260,8 +271,6 @@ public class SupplierContract extends Contract {
 			return new Batches(this);
 		} else if (RateScripts.URI_ID.equals(uriId)) {
 			return new RateScripts(this);
-		} else if (Accounts.URI_ID.equals(uriId)) {
-			return new Accounts(this);
 		} else {
 			throw new NotFoundException();
 		}
@@ -276,5 +285,9 @@ public class SupplierContract extends Contract {
 	public Element toXml(Document doc) throws HttpException {
 		Element element = super.toXml(doc, "supplier-contract");
 		return element;
+	}
+
+	public String missingBillSnagDescription() {
+		return "Missing supplier bill.";
 	}
 }

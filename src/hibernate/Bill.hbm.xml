@@ -2,27 +2,21 @@
 <!DOCTYPE hibernate-mapping PUBLIC
       "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
           "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
-<!-- 
-	
-	Copyright 2007-2008 Meniscus Systems Ltd
-	
-	This file is part of Chellow.
-	
-	Chellow is free software; you can redistribute it and/or modify
-	it under the terms of the GNU General Public License as published by
-	the Free Software Foundation; either version 2 of the License, or
-	(at your option) any later version.
-	
-	Chellow is distributed in the hope that it will be useful,
-	but WITHOUT ANY WARRANTY; without even the implied warranty of
-	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-	GNU General Public License for more details.
-	
-	You should have received a copy of the GNU General Public License
-	along with Chellow; if not, write to the Free Software
-	Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-	
--->
+	<!--
+
+		Copyright 2007 Meniscus Systems Ltd This file is part of Chellow.
+
+		Chellow is free software; you can redistribute it and/or modify it
+		under the terms of the GNU General Public License as published by the
+		Free Software Foundation; either version 2 of the License, or (at your
+		option) any later version. Chellow is distributed in the hope that it
+		will be useful, but WITHOUT ANY WARRANTY; without even the implied
+		warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See
+		the GNU General Public License for more details. You should have
+		received a copy of the GNU General Public License along with Chellow;
+		if not, write to the Free Software Foundation, Inc., 51 Franklin St,
+		Fifth Floor, Boston, MA 02110-1301 USA
+	-->
 
 <hibernate-mapping package="net.sf.chellow.billing">
 	<class name="Bill" table="bill" lazy="true">
@@ -31,22 +25,23 @@
 				<param name="sequence">bill_id_sequence</param>
 			</generator>
 		</id>
-		<many-to-one name="account" class="Account" column="account_id"
-			foreign-key="fkey_bill_account" />
-		<!-- 
-		<many-to-one name="contract" class="Contract" column="contract_id"
-			foreign-key="fkey_bill_contract" />
-		-->
+		<many-to-one name="batch" class="Batch" column="batch_id"
+			foreign-key="fkey_bill_batch" />
+		<many-to-one name="supply" class="net.sf.chellow.physical.Supply"
+			column="supply_id" foreign-key="fkey_bill_supply" />
+		<component name="issueDate" class="DayStartDate">
+			<property type="timestamp" name="date">
+				<column name="issue_date" sql-type="timestamp with time zone" />
+			</property>
+		</component>
 		<component name="startDate" class="DayStartDate">
 			<property type="timestamp" name="date">
-				<column name="start_date"
-					sql-type="timestamp with time zone" />
+				<column name="start_date" sql-type="timestamp with time zone" />
 			</property>
 		</component>
 		<component name="finishDate" class="DayFinishDate">
 			<property type="timestamp" name="date">
-				<column name="finish_date"
-					sql-type="timestamp with time zone" />
+				<column name="finish_date" sql-type="timestamp with time zone" />
 			</property>
 		</component>
 		<property name="net" type="big_decimal" not-null="true">
@@ -55,9 +50,15 @@
 		<property name="vat" type="big_decimal" not-null="true">
 			<column name="vat" sql-type="numeric" />
 		</property>
-		<set name="invoices" inverse="true">
+		<property type="string" name="reference" column="reference"
+			not-null="true" />
+		<property type="boolean" name="isPaid" column="is_paid"
+			not-null="true" />
+		<property type="boolean" name="isCancelledOut" column="is_cancelled_out" />
+		<set name="reads" inverse="true" lazy="true" cascade="all,delete-orphan">
 			<key column="bill_id" />
-			<one-to-many class="Invoice" />
+			<one-to-many class="net.sf.chellow.physical.RegisterRead" />
 		</set>
 	</class>
 </hibernate-mapping>
+

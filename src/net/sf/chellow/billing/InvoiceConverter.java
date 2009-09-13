@@ -27,7 +27,7 @@ import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.HttpException;
 
 public interface InvoiceConverter {
-	public List<InvoiceRaw> getRawInvoices() throws HttpException, InternalException;
+	public List<RawBill> getRawInvoices() throws HttpException, InternalException;
 
 	public String getProgress();
 }

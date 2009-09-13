@@ -40,7 +40,7 @@ import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.UserException;
-import net.sf.chellow.physical.MpanCore;
+import net.sf.chellow.physical.Meter;
 import net.sf.chellow.physical.ReadType;
 import net.sf.chellow.physical.RegisterReadRaw;
 import net.sf.chellow.physical.Units;
@@ -48,18 +48,18 @@ import net.sf.chellow.physical.Units;
 import com.Ostermiller.util.CSVParser;
 
 public class InvoiceConverterCsv implements InvoiceConverter {
-	private static final Map<String, InvoiceType> invoiceTypeMap = Collections
-			.synchronizedMap(new HashMap<String, InvoiceType>());
+	private static final Map<String, BillType> invoiceTypeMap = Collections
+			.synchronizedMap(new HashMap<String, BillType>());
 
 	static {
-		invoiceTypeMap.put("A", InvoiceType.AMENDED);
-		invoiceTypeMap.put("F", InvoiceType.FINAL);
-		invoiceTypeMap.put("N", InvoiceType.NORMAL);
-		invoiceTypeMap.put("I", InvoiceType.INTEREST);
-		invoiceTypeMap.put("R", InvoiceType.RECONCILIATION);
-		invoiceTypeMap.put("P", InvoiceType.PREPAID);
-		invoiceTypeMap.put("O", InvoiceType.INFORMATION);
-		invoiceTypeMap.put("W", InvoiceType.WITHDRAWAL);
+		invoiceTypeMap.put("A", BillType.AMENDED);
+		invoiceTypeMap.put("F", BillType.FINAL);
+		invoiceTypeMap.put("N", BillType.NORMAL);
+		invoiceTypeMap.put("I", BillType.INTEREST);
+		invoiceTypeMap.put("R", BillType.RECONCILIATION);
+		invoiceTypeMap.put("P", BillType.PREPAID);
+		invoiceTypeMap.put("O", BillType.INFORMATION);
+		invoiceTypeMap.put("W", BillType.WITHDRAWAL);
 	}
 
 	private CSVParser shredder;
@@ -67,7 +67,7 @@ public class InvoiceConverterCsv implements InvoiceConverter {
 	private DateFormat dateFormat = new SimpleDateFormat("yyyy'-'MM'-'dd",
 			Locale.UK);
 
-	private List<InvoiceRaw> rawBills = new ArrayList<InvoiceRaw>();
+	private List<RawBill> rawBills = new ArrayList<RawBill>();
 
 	public InvoiceConverterCsv(Reader reader) throws HttpException,
 			InternalException {
@@ -97,7 +97,7 @@ public class InvoiceConverterCsv implements InvoiceConverter {
 		dateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
 	}
 
-	public List<InvoiceRaw> getRawInvoices() throws HttpException,
+	public List<RawBill> getRawInvoices() throws HttpException,
 			InternalException {
 		if (rawBills.isEmpty()) {
 			try {
@@ -111,22 +111,21 @@ public class InvoiceConverterCsv implements InvoiceConverter {
 					}
 					Set<RegisterReadRaw> reads = new HashSet<RegisterReadRaw>();
 					for (int i = 9; i < values.length; i += 11) {
-						reads.add(new RegisterReadRaw(MpanCore
-								.getMpanCore(values[i]), new BigDecimal(
-								values[i + 1]), values[i + 2], Units
-								.getUnits(values[i + 3]), Integer
-								.parseInt(values[i + 4]), new DayFinishDate(
-								values[i + 5]), new BigDecimal(values[i + 6]),
-								ReadType.getReadType(values[i + 7]),
-								new DayFinishDate(values[i + 8]),
-								new BigDecimal(values[i + 9]), ReadType
-										.getReadType(values[i + 10])));
+						reads.add(new RegisterReadRaw(Meter.getMeter(values[i]), new BigDecimal(
+								values[i + 1]), Units
+								.getUnits(values[i + 2]), Integer
+								.parseInt(values[i + 3]), new DayFinishDate(
+								values[i + 4]), new BigDecimal(values[i + 5]),
+								ReadType.getReadType(values[i + 6]),
+								new DayFinishDate(values[i + 7]),
+								new BigDecimal(values[i + 8]), ReadType
+										.getReadType(values[i + 9])));
 					}
 					Set<String> mpanStrings = new HashSet<String>();
 					for (String mpanStr : values[2].split(",")) {
 						mpanStrings.add(mpanStr);
 					}
-					rawBills.add(new InvoiceRaw(invoiceTypeMap.get(values[0]),
+					rawBills.add(new RawBill(invoiceTypeMap.get(values[0]),
 							values[1], mpanStrings, values[3],
 							new DayStartDate(values[4]), new DayStartDate(
 									values[5]).getNext(), new DayFinishDate(

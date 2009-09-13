@@ -69,9 +69,9 @@ public class ChannelSnags extends EntityList {
 		Element source = doc.getDocumentElement();
 		Element snagsElement = toXml(doc);
 		source.appendChild(snagsElement);
-		snagsElement.appendChild(channel.toXml(doc, new XmlTree(
-				"supplyGeneration", new XmlTree("supply").put("hhdcAccount",
-						new XmlTree("contract")))));
+		snagsElement
+				.appendChild(channel.toXml(doc, new XmlTree("supplyGeneration",
+						new XmlTree("supply").put("hhdcContract"))));
 		for (ChannelSnag snag : (List<ChannelSnag>) Hiber
 				.session()
 				.createQuery(

@@ -72,9 +72,9 @@ public class InvoiceImport extends Thread implements Urlable, XmlDescriber {
 	private List<String> messages = Collections
 			.synchronizedList(new ArrayList<String>());
 
-	private List<Map<InvoiceRaw, String>> failedInvoices = Collections
-			.synchronizedList(new ArrayList<Map<InvoiceRaw, String>>());
-	private List<InvoiceRaw> successfulInvoices = null;
+	private List<Map<RawBill, String>> failedInvoices = Collections
+			.synchronizedList(new ArrayList<Map<RawBill, String>>());
+	private List<RawBill> successfulInvoices = null;
 
 	private InvoiceConverter converter;
 
@@ -186,12 +186,12 @@ public class InvoiceImport extends Thread implements Urlable, XmlDescriber {
 
 	public void run() {
 		try {
-			List<InvoiceRaw> rawInvoices = converter.getRawInvoices();
+			List<RawBill> rawInvoices = converter.getRawInvoices();
 			Batch batch = getBatch();
 			Hiber.flush();
 			successfulInvoices = Collections
-					.synchronizedList(new ArrayList<InvoiceRaw>());
-			for (InvoiceRaw rawInvoice : rawInvoices) {
+					.synchronizedList(new ArrayList<RawBill>());
+			for (RawBill rawInvoice : rawInvoices) {
 				Hiber.flush();
 				if (shouldHalt()) {
 					throw new UserException(
@@ -199,13 +199,13 @@ public class InvoiceImport extends Thread implements Urlable, XmlDescriber {
 				}
 				try {
 					Hiber.flush();
-					batch.insertInvoice(rawInvoice);
+					batch.insertBill(rawInvoice);
 					Hiber.commit();
 					Hiber.flush();
 					successfulInvoices.add(rawInvoice);
 				} catch (HttpException e) {
 					Hiber.flush();
-					Map<InvoiceRaw, String> invoiceMap = new HashMap<InvoiceRaw, String>();
+					Map<RawBill, String> invoiceMap = new HashMap<RawBill, String>();
 					invoiceMap.put(rawInvoice, e.getMessage());
 					failedInvoices.add(invoiceMap);
 					Hiber.rollBack();
@@ -254,7 +254,7 @@ public class InvoiceImport extends Thread implements Urlable, XmlDescriber {
 	}
 
 	public MonadUri getUri() throws HttpException {
-		return getBatch().invoiceImportsInstance().getUri().resolve(getUriId())
+		return getBatch().billImportsInstance().getUri().resolve(getUriId())
 				.append("/");
 	}
 
@@ -293,8 +293,8 @@ public class InvoiceImport extends Thread implements Urlable, XmlDescriber {
 			Element successfulElement = doc
 					.createElement("successful-invoices");
 			importElement.appendChild(successfulElement);
-			for (Map<InvoiceRaw, String> invoiceMap : failedInvoices) {
-				for (Entry<InvoiceRaw, String> entry : invoiceMap.entrySet()) {
+			for (Map<RawBill, String> invoiceMap : failedInvoices) {
+				for (Entry<RawBill, String> entry : invoiceMap.entrySet()) {
 					Element invoiceRawElement = (Element) entry.getKey().toXml(
 							doc, new XmlTree("registerReads"));
 					failedElement.appendChild(invoiceRawElement);
@@ -302,7 +302,7 @@ public class InvoiceImport extends Thread implements Urlable, XmlDescriber {
 							.getValue()).toXml(doc));
 				}
 			}
-			for (InvoiceRaw invoiceRaw : successfulInvoices) {
+			for (RawBill invoiceRaw : successfulInvoices) {
 				successfulElement.appendChild(invoiceRaw.toXml(doc,
 						new XmlTree("registerReads")));
 			}

@@ -195,4 +195,10 @@ public class DsoContract extends Contract {
 	public Element toXml(Document doc) throws HttpException {
 		return super.toXml(doc, "dso-contract");
 	}
+
+	@Override
+	public String missingBillSnagDescription() {
+		// TODO Auto-generated method stub
+		return null;
+	}
 }

@@ -39,6 +39,7 @@ import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.UserException;
 import net.sf.chellow.physical.HhEndDate;
+import net.sf.chellow.physical.Meter;
 import net.sf.chellow.physical.MpanCore;
 import net.sf.chellow.physical.ReadType;
 import net.sf.chellow.physical.RegisterReadRaw;
@@ -48,8 +49,8 @@ public class InvoiceConverterSseEdi implements InvoiceConverter {
 	private static final Map<Integer, Character> readTypeMap = Collections
 			.synchronizedMap(new HashMap<Integer, Character>());
 
-	private static final Map<String, InvoiceType> invoiceTypeMap = Collections
-			.synchronizedMap(new HashMap<String, InvoiceType>());
+	private static final Map<String, BillType> invoiceTypeMap = Collections
+			.synchronizedMap(new HashMap<String, BillType>());
 
 	private static final Map<String, Integer> tModMap = Collections
 			.synchronizedMap(new HashMap<String, Integer>());
@@ -60,14 +61,14 @@ public class InvoiceConverterSseEdi implements InvoiceConverter {
 		readTypeMap.put(4, ReadType.TYPE_CUSTOMER);
 		readTypeMap.put(9, ReadType.TYPE_ROUTINE);
 
-		invoiceTypeMap.put("A", InvoiceType.AMENDED);
-		invoiceTypeMap.put("F", InvoiceType.FINAL);
-		invoiceTypeMap.put("N", InvoiceType.NORMAL);
-		invoiceTypeMap.put("I", InvoiceType.INTEREST);
-		invoiceTypeMap.put("R", InvoiceType.RECONCILIATION);
-		invoiceTypeMap.put("P", InvoiceType.PREPAID);
-		invoiceTypeMap.put("O", InvoiceType.INFORMATION);
-		invoiceTypeMap.put("W", InvoiceType.WITHDRAWAL);
+		invoiceTypeMap.put("A", BillType.AMENDED);
+		invoiceTypeMap.put("F", BillType.FINAL);
+		invoiceTypeMap.put("N", BillType.NORMAL);
+		invoiceTypeMap.put("I", BillType.INTEREST);
+		invoiceTypeMap.put("R", BillType.RECONCILIATION);
+		invoiceTypeMap.put("P", BillType.PREPAID);
+		invoiceTypeMap.put("O", BillType.INFORMATION);
+		invoiceTypeMap.put("W", BillType.WITHDRAWAL);
 
 		tModMap.put("URQ1", 1);
 		tModMap.put("Z012", 1);
@@ -77,14 +78,14 @@ public class InvoiceConverterSseEdi implements InvoiceConverter {
 
 	private LineNumberReader lreader;
 
-	private List<InvoiceRaw> rawInvoices = new ArrayList<InvoiceRaw>();
+	private List<RawBill> rawInvoices = new ArrayList<RawBill>();
 
 	public InvoiceConverterSseEdi(Reader reader) throws HttpException,
 			InternalException {
 		lreader = new LineNumberReader(reader);
 	}
 
-	public List<InvoiceRaw> getRawInvoices() throws HttpException,
+	public List<RawBill> getRawInvoices() throws HttpException,
 			InternalException {
 		Hiber.flush();
 		String line = null;
@@ -198,9 +199,9 @@ public class InvoiceConverterSseEdi implements InvoiceConverter {
 												+ tmodStr + "'.");
 							}
 						}
-						reads.add(new LocalRegisterReadRaw(mpanCore,
-								coefficient, meterSerialNumber, Units.KWH, tpr,
-								true, previousReadDate, previousReadingValue,
+						reads.add(new LocalRegisterReadRaw(mpanCore.getSupply().findMeter(meterSerialNumber),
+								coefficient, Units.KWH, tpr,
+								 previousReadDate, previousReadingValue,
 								previousReadType, registerFinishDate,
 								presentReadingValue, presentReadType));
 					}
@@ -210,8 +211,8 @@ public class InvoiceConverterSseEdi implements InvoiceConverter {
 						Set<RegisterReadRaw> registerReads = new HashSet<RegisterReadRaw>();
 						for (LocalRegisterReadRaw read : reads) {
 							registerReads.add(new RegisterReadRaw(read
-									.getMpanCore(), read.getCoefficient(), read
-									.getMeterSerialNumber(), read.getUnits(),
+									.getMeter(), read.getCoefficient()
+									, read.getUnits(),
 									read.getTpr(), read.getPreviousDate(), read
 											.getPreviousValue(), read
 											.getPreviousType(), read
@@ -219,9 +220,9 @@ public class InvoiceConverterSseEdi implements InvoiceConverter {
 											.getCurrentValue(), read
 											.getCurrentType()));
 						}
-						InvoiceType invoiceType = invoiceTypeMap
+						BillType invoiceType = invoiceTypeMap
 								.get(invoiceTypeCode);
-						InvoiceRaw invoiceRaw = new InvoiceRaw(invoiceType,
+						RawBill invoiceRaw = new RawBill(invoiceType,
 								accountReference, mpanStrings, invoiceNumber,
 								issueDate, startDate, finishDate, net, vat,
 								registerReads);
@@ -265,17 +266,13 @@ public class InvoiceConverterSseEdi implements InvoiceConverter {
 	}
 
 	private class LocalRegisterReadRaw {
-		private MpanCore mpanCore;
+		private Meter meter;
 
 		private BigDecimal coefficient;
-
-		private String meterSerialNumber;
 
 		private Units units;
 
 		private int tpr;
-
-		//private boolean isImport;
 
 		private DayFinishDate previousDate;
 
@@ -289,21 +286,19 @@ public class InvoiceConverterSseEdi implements InvoiceConverter {
 
 		private ReadType currentType;
 
-		public LocalRegisterReadRaw(MpanCore mpanCore, BigDecimal coefficient,
-				String meterSerialNumber, Units units, Integer tpr,
-				boolean isImport, DayFinishDate previousDate,
+		public LocalRegisterReadRaw(Meter meter, BigDecimal coefficient,
+				 Units units, Integer tpr,
+				DayFinishDate previousDate,
 				BigDecimal previousValue, ReadType previousType,
 				DayFinishDate currentDate, BigDecimal currentValue,
 				ReadType currentType) throws InternalException {
-			this.mpanCore = mpanCore;
+			this.meter = meter;
 			this.coefficient = coefficient;
-			this.meterSerialNumber = meterSerialNumber;
 			this.units = units;
 			if (tpr == null) {
 				throw new InternalException("TPR cannot be null.");
 			}
 			this.tpr = tpr;
-			//this.isImport = isImport;
 			this.previousDate = previousDate;
 			this.previousValue = previousValue;
 			this.previousType = previousType;
@@ -312,16 +307,12 @@ public class InvoiceConverterSseEdi implements InvoiceConverter {
 			this.currentType = currentType;
 		}
 
-		public MpanCore getMpanCore() {
-			return mpanCore;
+		public Meter getMeter() {
+			return meter;
 		}
 
 		public BigDecimal getCoefficient() {
 			return coefficient;
-		}
-
-		public String getMeterSerialNumber() {
-			return meterSerialNumber;
 		}
 
 		public Units getUnits() {
@@ -331,11 +322,7 @@ public class InvoiceConverterSseEdi implements InvoiceConverter {
 		public int getTpr() {
 			return tpr;
 		}
-/*
-		public boolean getIsImport() {
-			return isImport;
-		}
-*/
+
 		public DayFinishDate getPreviousDate() {
 			return previousDate;
 		}

@@ -35,8 +35,11 @@
 			foreign-key="fkey_mpan_ssc" />
 		<many-to-one name="core" class="MpanCore" column="core_id"
 			not-null="true" foreign-key="fkey_mpan__core" />
-		<many-to-one name="supplierAccount" class="net.sf.chellow.billing.Account"
-			column="supplier_account_id" foreign-key="fkey_mpan_supplier_account" />
+		<many-to-one name="supplierContract"
+			class="net.sf.chellow.billing.SupplierContract" column="supplier_contract_id"
+			foreign-key="fkey_mpan_supplier_contract" />
+		<property type="string" name="supplierAccount" column="supplier_account"
+			not-null="true" />
 		<property name="agreedSupplyCapacity" column="agreed_supply_capacity"
 			not-null="true" />
 	</class>
