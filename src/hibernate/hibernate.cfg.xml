@@ -63,7 +63,6 @@
 		<mapping resource="hibernate/User.hbm.xml" />
 		<mapping resource="hibernate/Provider.hbm.xml" />
 		<mapping resource="hibernate/SupplierContract.hbm.xml" />
-		<mapping resource="hibernate/Account.hbm.xml" />
 		<mapping resource="hibernate/MopContract.hbm.xml" />
 		<mapping resource="hibernate/HhdcContract.hbm.xml" />
 		<mapping resource="hibernate/NonCoreContract.hbm.xml" />

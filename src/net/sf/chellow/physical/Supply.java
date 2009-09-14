@@ -432,7 +432,8 @@ public class Supply extends PersistentEntity {
 			throw new UserException(
 					"You can't add a generation before the first generation, or after the last.");
 		}
-		HhdcContract existingHhdcContract = existingGeneration.getHhdcContract();
+		HhdcContract existingHhdcContract = existingGeneration
+				.getHhdcContract();
 		String existingHhdcAccount = existingGeneration.getHhdcAccount();
 		Mpan existingImportMpan = existingGeneration.getImportMpan();
 		Mpan existingExportMpan = existingGeneration.getExportMpan();
@@ -454,7 +455,8 @@ public class Supply extends PersistentEntity {
 		Integer existingImportSupplyCapacity = null;
 		Integer existingExportSupplyCapacity = null;
 		if (existingExportMpan != null) {
-			existingExportSupplierContract = existingExportMpan.getSupplierContract();
+			existingExportSupplierContract = existingExportMpan
+					.getSupplierContract();
 			existingExportSupplierAccount = existingExportMpan
 					.getSupplierAccount();
 			existingExportMpanStr = existingExportMpan.toString();
@@ -466,7 +468,7 @@ public class Supply extends PersistentEntity {
 			existingImportSupplierAccount = existingImportMpan
 					.getSupplierAccount();
 			existingImportSupplierContract = existingImportMpan
-							.getSupplierContract();
+					.getSupplierContract();
 			existingImportSsc = existingImportMpan.getSsc();
 			existingImportSupplyCapacity = existingImportMpan
 					.getAgreedSupplyCapacity();
@@ -475,24 +477,21 @@ public class Supply extends PersistentEntity {
 				existingHhdcContract, existingHhdcAccount,
 				existingMeter == null ? "" : existingMeter.getSerialNumber(),
 				existingImportMpanStr, existingImportSsc,
-				existingImportSupplierContract,
-				existingImportSupplierAccount,
+				existingImportSupplierContract, existingImportSupplierAccount,
 				existingImportSupplyCapacity, existingExportMpanStr,
 				existingExportSsc, existingExportSupplierContract,
-				existingExportSupplierAccount,
-				existingExportSupplyCapacity);
+				existingExportSupplierAccount, existingExportSupplyCapacity);
 	}
 
 	public SupplyGeneration insertGeneration(Map<Site, Boolean> siteMap,
-			HhEndDate startDate, HhdcContract hhdcContract,
-			String hhdcAccount, String meterSerialNumber,
-			String importMpanStr, Ssc importSsc,
+			HhEndDate startDate, HhdcContract hhdcContract, String hhdcAccount,
+			String meterSerialNumber, String importMpanStr, Ssc importSsc,
 			SupplierContract importSupplierContract,
-			String importSupplierAccount,
-			Integer importAgreedSupplyCapacity, String exportMpanStr,
-			Ssc exportSsc, SupplierContract exportSupplierContract,
-			String exportSupplierAccount,
-			Integer exportAgreedSupplyCapacity) throws HttpException {
+			String importSupplierAccount, Integer importAgreedSupplyCapacity,
+			String exportMpanStr, Ssc exportSsc,
+			SupplierContract exportSupplierContract,
+			String exportSupplierAccount, Integer exportAgreedSupplyCapacity)
+			throws HttpException {
 		Meter meter = null;
 		if (meterSerialNumber.trim().length() != 0) {
 			meter = findMeter(meterSerialNumber);
@@ -503,8 +502,8 @@ public class Supply extends PersistentEntity {
 		SupplyGeneration supplyGeneration = null;
 		SupplyGeneration existingGeneration = null;
 		if (generations.isEmpty()) {
-			supplyGeneration = new SupplyGeneration(this, startDate, null, hhdcContract,
-					hhdcAccount, meter);
+			supplyGeneration = new SupplyGeneration(this, startDate, null,
+					hhdcContract, hhdcAccount, meter);
 			Hiber.flush();
 			generations.add(supplyGeneration);
 			Hiber.flush();
@@ -515,19 +514,19 @@ public class Supply extends PersistentEntity {
 						"You can't add a generation before the start of the supply.");
 			}
 			supplyGeneration = new SupplyGeneration(this, startDate,
-					existingGeneration.getFinishDate(), hhdcContract, hhdcAccount, meter);
+					existingGeneration.getFinishDate(), hhdcContract,
+					hhdcAccount, meter);
 			Hiber.flush();
-			existingGeneration.update(
-					existingGeneration.getStartDate(), startDate.getPrevious());
+			existingGeneration.update(existingGeneration.getStartDate(),
+					startDate.getPrevious());
 			generations.add(supplyGeneration);
 			Hiber.flush();
 		}
 		Hiber.flush();
 		supplyGeneration.update(supplyGeneration.getStartDate(),
 				supplyGeneration.getFinishDate(), supplyGeneration
-						.getHhdcContract(), supplyGeneration
-						.getHhdcAccount(), supplyGeneration
-						.getMeter(), importMpanStr, importSsc,
+						.getHhdcContract(), supplyGeneration.getHhdcAccount(),
+				supplyGeneration.getMeter(), importMpanStr, importSsc,
 				importSupplierContract, importSupplierAccount,
 				importAgreedSupplyCapacity, exportMpanStr, exportSsc,
 				exportSupplierContract, exportSupplierAccount,
@@ -542,8 +541,8 @@ public class Supply extends PersistentEntity {
 						existingChannel.getIsKwh());
 			}
 			Hiber.flush();
-			//onSupplyGenerationChange(startDate, supplyGeneration
-			//		.getFinishDate());
+			// onSupplyGenerationChange(startDate, supplyGeneration
+			// .getFinishDate());
 		}
 		Hiber.flush();
 		return supplyGeneration;
@@ -599,19 +598,6 @@ public class Supply extends PersistentEntity {
 			throw new UserException(
 					"One can't delete a supply generation if there are still data attached to it.");
 		}
-		if ((Long) Hiber.session().createQuery(
-		"select count(*) from Bill bill where bill.mpan.supplyGeneration = :generation")
-		.setEntity("generation", generation).uniqueResult() > 0) {
-	throw new UserException(
-			"Can't delete this supply generation as there are still bills attached to it.");
-}
-for (SupplySnag snag : (List<SupplySnag>) Hiber.session()
-		.createQuery(
-				"from MpanSnag snag where snag.mpan.supplyGeneration = :generation")
-		.setEntity("generation", generation).list()) {
-	Hiber.session().delete(snag);
-	Hiber.flush();
-}
 		SupplyGeneration previousGeneration = getGenerationPrevious(generation);
 		SupplyGeneration nextGeneration = getGenerationNext(generation);
 		getGenerations().remove(generation);
@@ -625,10 +611,10 @@ for (SupplySnag snag : (List<SupplySnag>) Hiber.session()
 					generation.getFinishDate());
 		}
 		Hiber.flush();
-		//onSupplyGenerationChange(generation.getStartDate(), generation
-		//		.getFinishDate());
+		// onSupplyGenerationChange(generation.getStartDate(), generation
+		// .getFinishDate());
 	}
-	
+
 	public SupplyGeneration getGenerationPrevious(SupplyGeneration generation)
 			throws HttpException {
 		return (SupplyGeneration) Hiber
@@ -639,7 +625,7 @@ for (SupplySnag snag : (List<SupplySnag>) Hiber.session()
 						generation.getStartDate().getPrevious().getDate())
 				.uniqueResult();
 	}
-	
+
 	void delete(Bill bill) throws HttpException {
 		Bill foundBill = (Bill) Hiber
 				.session()
@@ -651,13 +637,15 @@ for (SupplySnag snag : (List<SupplySnag>) Hiber.session()
 			throw new InternalException(
 					"This bill isn't attached to this supply.");
 		}
-	Hiber.session().delete(foundBill);
-		addSnag(foundBill.getBatch().getContract(), SupplySnag.MISSING_BILL, foundBill.getStartDate(), foundBill
-				.getFinishDate());
+		Hiber.session().delete(foundBill);
+		addSnag(foundBill.getBatch().getContract(), SupplySnag.MISSING_BILL,
+				foundBill.getStartDate(), foundBill.getFinishDate());
 	}
 
-	public void deleteSnag(Contract contract, String description, HhEndDate startDate, HhEndDate finishDate) throws HttpException {
-		SnagDateBounded.deleteSupplySnag(this, contract, description, startDate, finishDate);
+	public void deleteSnag(Contract contract, String description,
+			HhEndDate startDate, HhEndDate finishDate) throws HttpException {
+		SnagDateBounded.deleteSupplySnag(this, contract, description,
+				startDate, finishDate);
 	}
 
 	public SupplyGeneration getGenerationNext(SupplyGeneration generation)
@@ -852,10 +840,10 @@ for (SupplySnag snag : (List<SupplySnag>) Hiber.session()
 			generation.getChannel(false, true).siteCheck(from, to);
 		}
 	}
-	
-	public void addSnag(Contract contract, String description, HhEndDate startDate,
-			HhEndDate finishDate) throws HttpException {
-		SnagDateBounded
-				.addSupplySnag(this, contract, description, startDate, finishDate);
+
+	public void addSnag(Contract contract, String description,
+			HhEndDate startDate, HhEndDate finishDate) throws HttpException {
+		SnagDateBounded.addSupplySnag(this, contract, description, startDate,
+				finishDate);
 	}
 }

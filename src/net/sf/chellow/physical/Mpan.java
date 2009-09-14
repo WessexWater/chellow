@@ -273,18 +273,6 @@ public class Mpan extends PersistentEntity {
 
 	public void httpPost(Invocation inv) throws HttpException {
 	}
-
-	void delete() throws HttpException {
-		if (((Long) Hiber
-				.session()
-				.createQuery(
-						"select count(*) from RegisterRead read where read.mpan = :mpan")
-				.setEntity("mpan", this).uniqueResult()) > 0) {
-			throw new UserException(
-					"An MPAN can't be deleted if it still has register reads attached.");
-		}
-	}
-	
 	
 	static private class MpanRaw {
 		private String pcCode;

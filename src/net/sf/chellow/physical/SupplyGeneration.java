@@ -52,6 +52,7 @@ import org.hibernate.Criteria;
 import org.hibernate.Query;
 import org.hibernate.ScrollableResults;
 import org.hibernate.criterion.Order;
+import org.hibernate.criterion.Projections;
 import org.hibernate.criterion.Restrictions;
 import org.hibernate.exception.ConstraintViolationException;
 import org.w3c.dom.Document;
@@ -988,6 +989,22 @@ public class SupplyGeneration extends PersistentEntity {
 		for (Channel channel : ssChannels) {
 			deleteChannel(channel.getIsImport(), channel.getIsKwh());
 		}
+		Criteria crit = Hiber.session().createCriteria(RegisterRead.class).createAlias("meter", "mtr").add(Restrictions.eq("mtr.supply", supply)).add(Restrictions.ge("presentDate.date", startDate.getDate()));
+	if (finishDate != null) {
+		crit.add(Restrictions.le("presentDate", finishDate.getDate()));
+	}
+	
+	check if generation can cope with register reads.
+	if (((Long) crit.setProjection(Projections.count("*")).uniqueResult()) > 0) {
+		throw new UserException(
+		"An MPAN can't be deleted if it still has register reads attached.");
+	}
+			if (((Long) Hiber
+					.session()
+					.createQuery(
+							"select count(*) from RegisterRead read where read.meter.supply = :supply and read.presentDate.date >= :startDate")
+					.setEntity("mpan", this).uniqueResult()) > 0) {
+			}
 	}
 
 	public void update(HhEndDate startDate, HhEndDate finishDate)

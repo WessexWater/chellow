@@ -87,17 +87,17 @@ public class Bill extends PersistentEntity implements Urlable {
 	public Bill() {
 	}
 
-	public Bill(Batch batch, Supply supply, RawBill invoiceRaw)
+	public Bill(Batch batch, Supply supply)
 			throws HttpException {
 		setBatch(batch);
 		setSupply(supply);
-		update(invoiceRaw.getIssueDate(), invoiceRaw.getStartDate(), invoiceRaw
-				.getFinishDate(), invoiceRaw.getNet(), invoiceRaw.getVat(),
-				null, false);
-		setReference(invoiceRaw.getReference());
-		for (RegisterReadRaw rawRead : invoiceRaw.getRegisterReads()) {
-			insertRead(rawRead);
-		}
+		setReference("Default Reference");
+		setType(BillType.INFORMATION);
+		setNet(new BigDecimal(0));
+		setVat(new BigDecimal(0));
+		setStartDate(new DayStartDate());
+		setFinishDate(new DayFinishDate());
+		setIsCancelledOut(false);
 	}
 
 	public Batch getBatch() {
@@ -196,9 +196,10 @@ public class Bill extends PersistentEntity implements Urlable {
 		return reads;
 	}
 
-	public void update(DayStartDate issueDate, DayStartDate startDate,
+	public void update(String reference, DayStartDate issueDate, DayStartDate startDate,
 			DayFinishDate finishDate, BigDecimal net, BigDecimal vat,
 			Boolean isPaid, boolean isCancelledOut) throws HttpException {
+		setReference(reference);
 		setIssueDate(issueDate);
 		if (startDate.getDate().after(finishDate.getDate())) {
 			throw new UserException(
@@ -238,7 +239,7 @@ public class Bill extends PersistentEntity implements Urlable {
 			Hiber.commit();
 			inv.sendSeeOther(batch.billsInstance().getUri());
 		} else {
-			// String accountReference = inv.getString("account-reference");
+			String reference = inv.getString("reference");
 			Date issueDate = inv.getDate("issue-date");
 			Date startDate = inv.getDate("start-date");
 			Date finishDate = inv.getDate("finish-date");
@@ -250,7 +251,7 @@ public class Bill extends PersistentEntity implements Urlable {
 			if (!inv.isValid()) {
 				throw new UserException(document());
 			}
-			update(new DayStartDate(issueDate), new DayStartDate(startDate)
+			update(reference, new DayStartDate(issueDate), new DayStartDate(startDate)
 					.getNext(), new DayFinishDate(finishDate), net, vat,
 					isPaid, isCancelledOut);
 			Hiber.commit();

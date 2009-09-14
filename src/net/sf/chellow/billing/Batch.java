@@ -39,6 +39,7 @@ import net.sf.chellow.monad.types.UriPathElement;
 import net.sf.chellow.physical.HhEndDate;
 import net.sf.chellow.physical.Mpan;
 import net.sf.chellow.physical.PersistentEntity;
+import net.sf.chellow.physical.RegisterReadRaw;
 import net.sf.chellow.physical.Supply;
 import net.sf.chellow.physical.SupplyGeneration;
 import net.sf.chellow.physical.SupplySnag;
@@ -199,10 +200,11 @@ public class Batch extends PersistentEntity {
 						"from Mpan mpan where mpan.supplierAccount = :account and mpan.supplyGeneration.startDate.date <= :billFinish and (mpan.supplyGeneration.finishDate.date is null or mpan.supplyGeneration.finishDate.date >= :billStart) order by mpan.core.dso.code, mpan.core.uniquePart")
 				.setString("account", rawBill.getAccount()).setTimestamp(
 						"billStart", rawBill.getStartDate().getDate())
-				.setTimestamp("billFinish", rawBill.getFinishDate().getDate()).list();
-if (mpanList.isEmpty()) {
-	throw new UserException("There are no MPANs that match.");
-}
+				.setTimestamp("billFinish", rawBill.getFinishDate().getDate())
+				.list();
+		if (mpanList.isEmpty()) {
+			throw new UserException("There are no MPANs that match.");
+		}
 		if (!rawBill.getMpanStrings().isEmpty()) {
 			Set<String> mpanStrings = new HashSet<String>();
 			for (Mpan mpan : mpanList) {
@@ -224,9 +226,16 @@ if (mpanList.isEmpty()) {
 
 		Hiber.flush();
 		Supply supply = mpanList.get(0).getSupplyGeneration().getSupply();
-		Bill bill = new Bill(this, supply, rawBill);
+		Bill bill = new Bill(this, supply);
 		Hiber.session().save(bill);
 		Hiber.flush();
+		bill.update(rawBill.getReference(), rawBill.getIssueDate(), rawBill
+				.getStartDate(), rawBill.getFinishDate(), rawBill.getNet(),
+				rawBill.getVat(), null, false);
+		for (RegisterReadRaw rawRead : rawBill.getRegisterReads()) {
+			bill.insertRead(rawRead);
+		}
+		;
 		List<SupplyGeneration> generations = supply.getGenerations(bill
 				.getStartDate(), bill.getFinishDate());
 		// what about withdrawn????? Cancel them by hand!!!!!!!!!
@@ -235,7 +244,7 @@ if (mpanList.isEmpty()) {
 		List<Bill> duplicateBills = (List<Bill>) Hiber
 				.session()
 				.createQuery(
-						"from Bill bill where bill.supply = :supply and bill.contract.id = :contractId and bill.isCancelledOut is false and bill.startDate.date <= :finishDate and bill.finishDate.date >= :startDate")
+						"from Bill bill where bill.supply = :supply and bill.batch.contract.id = :contractId and bill.isCancelledOut is false and bill.startDate.date <= :finishDate and bill.finishDate.date >= :startDate")
 				.setEntity("supply", supply).setLong("contractId",
 						contract.getId()).setTimestamp("startDate",
 						bill.getStartDate().getDate()).setTimestamp(
