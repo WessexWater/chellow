@@ -52,7 +52,6 @@ import org.hibernate.Criteria;
 import org.hibernate.Query;
 import org.hibernate.ScrollableResults;
 import org.hibernate.criterion.Order;
-import org.hibernate.criterion.Projections;
 import org.hibernate.criterion.Restrictions;
 import org.hibernate.exception.ConstraintViolationException;
 import org.w3c.dom.Document;
@@ -993,18 +992,6 @@ public class SupplyGeneration extends PersistentEntity {
 	if (finishDate != null) {
 		crit.add(Restrictions.le("presentDate", finishDate.getDate()));
 	}
-	
-	check if generation can cope with register reads.
-	if (((Long) crit.setProjection(Projections.count("*")).uniqueResult()) > 0) {
-		throw new UserException(
-		"An MPAN can't be deleted if it still has register reads attached.");
-	}
-			if (((Long) Hiber
-					.session()
-					.createQuery(
-							"select count(*) from RegisterRead read where read.meter.supply = :supply and read.presentDate.date >= :startDate")
-					.setEntity("mpan", this).uniqueResult()) > 0) {
-			}
 	}
 
 	public void update(HhEndDate startDate, HhEndDate finishDate)
@@ -1017,30 +1004,6 @@ public class SupplyGeneration extends PersistentEntity {
 		}
 	}
 
-	/*
-	 * public void update(HhEndDate startDate, HhEndDate finishDate,
-	 * HhdcContract hhdcContract, String hhdcAccount, Meter meter) throws
-	 * HttpException { String importMpanStr = null; Ssc importSsc = null;
-	 * SupplierContract importSupplierContract = null; String
-	 * importSupplierAccount = null; Integer importAgreedSupplyCapacity = null;
-	 * String exportMpanStr = null; Ssc exportSsc = null; SupplierContract
-	 * exportSupplierContract = null; String exportSupplierAccount = null;
-	 * Integer exportAgreedSupplyCapacity = null; if (importMpan != null) {
-	 * importMpanStr = importMpan.toString(); importSsc = importMpan.getSsc();
-	 * importSupplierContract = importMpan.getSupplierContract();
-	 * importSupplierAccount = importMpan.getSupplierAccount();
-	 * importAgreedSupplyCapacity = importMpan.getAgreedSupplyCapacity(); } if
-	 * (exportMpan != null) { exportMpanStr = exportMpan.toString(); exportSsc =
-	 * exportMpan.getSsc(); exportSupplierContract =
-	 * exportMpan.getSupplierContract(); exportSupplierAccount =
-	 * exportMpan.getSupplierAccount(); exportAgreedSupplyCapacity =
-	 * exportMpan.getAgreedSupplyCapacity(); } update(startDate, finishDate,
-	 * hhdcContract, hhdcAccount, meter, importMpanStr, importSsc,
-	 * importSupplierContract, importSupplierAccount,
-	 * importAgreedSupplyCapacity, exportMpanStr, exportSsc,
-	 * exportSupplierContract, exportSupplierAccount,
-	 * exportAgreedSupplyCapacity); }
-	 */
 	@SuppressWarnings("unchecked")
 	public void update(HhEndDate startDate, HhEndDate finishDate,
 			HhdcContract hhdcContract, String hhdcAccount, Meter meter,
@@ -1177,15 +1140,15 @@ public class SupplyGeneration extends PersistentEntity {
 				throw new UserException(
 						"There are HH data before the start of the updated supply.");
 			}
-			/*
-			 * if (((Long) Hiber .session() .createQuery(
-			 * "select count(*) from RegisterRead read where read.mpan.supplyGeneration.supply  = :supply and read.presentDate.date < :date"
-			 * ) .setEntity("supply", supply).setTimestamp("date",
-			 * startDate.getDate()).uniqueResult()) > 0) { throw new
-			 * UserException(
-			 * "There are register reads before the start of the updated supply."
-			 * ); }
-			 */
+			if (((Long) Hiber
+					.session()
+					.createQuery(
+							"select count(*) from RegisterRead read where read.meter.supply  = :supply and read.presentDate.date < :date")
+					.setEntity("supply", supply).setTimestamp("date",
+							startDate.getDate()).uniqueResult()) > 0) {
+				throw new UserException(
+						"There are register reads before the start of the updated supply.");
+			}
 			if (((Long) Hiber
 					.session()
 					.createQuery(
@@ -1233,18 +1196,17 @@ public class SupplyGeneration extends PersistentEntity {
 				throw new UserException(
 						"There are HH data after the end of the updated supply.");
 			}
-			/*
+
 			if (finishDate != null
 					&& ((Long) Hiber
 							.session()
 							.createQuery(
-									"select count(*) from RegisterRead read where read.mpan.supplyGeneration.supply  = :supply and read.presentDate.date > :date")
+									"select count(*) from RegisterRead read where read.meter.supply  = :supply and read.presentDate.date > :date")
 							.setEntity("supply", supply).setTimestamp("date",
 									finishDate.getDate()).uniqueResult()) > 0) {
 				throw new UserException(
 						"There are register reads after the end of the updated supply.");
 			}
-			*/
 			if (finishDate != null
 					&& ((Long) Hiber
 							.session()
@@ -1310,8 +1272,9 @@ public class SupplyGeneration extends PersistentEntity {
 					Restrictions.eq("supply", supply)).add(
 					Restrictions.ge("finishDate.date", startDate.getDate()))
 					.createAlias("batch", "bt").add(
-					Restrictions.eq("bt.contract.id", hhdcContract.getId()))
-					.addOrder(Order.asc("startDate.date"));
+							Restrictions.eq("bt.contract.id", hhdcContract
+									.getId())).addOrder(
+							Order.asc("startDate.date"));
 			if (finishDate != null) {
 				crit.add(Restrictions
 						.le("startDate.date", finishDate.getDate()));
@@ -1364,7 +1327,8 @@ public class SupplyGeneration extends PersistentEntity {
 		}
 		if (exportMpan != null) {
 			Criteria expCrit = Hiber.session().createCriteria(Bill.class).add(
-					Restrictions.eq("supply", supply)).createAlias("batch", "bt").add(
+					Restrictions.eq("supply", supply)).createAlias("batch",
+					"bt").add(
 					Restrictions.eq("bt.contract.id", exportMpan
 							.getSupplierContract().getId())).add(
 					Restrictions
@@ -1559,15 +1523,13 @@ public class SupplyGeneration extends PersistentEntity {
 							new XmlTree("party")));
 			generationElement.appendChild(mpanElement);
 			/*
-			for (RegisterRead read : (List<RegisterRead>) Hiber.session()
-					.createQuery(
-							"from RegisterRead read where read.mpan = :mpan")
-					.setEntity("mpan", mpan).list()) {
-				mpanElement.appendChild(read.toXml(doc, new XmlTree("invoice",
-						new XmlTree("batch", new XmlTree("contract",
-								new XmlTree("party"))))));
-			}
-			*/
+			 * for (RegisterRead read : (List<RegisterRead>) Hiber.session()
+			 * .createQuery( "from RegisterRead read where read.mpan = :mpan")
+			 * .setEntity("mpan", mpan).list()) {
+			 * mpanElement.appendChild(read.toXml(doc, new XmlTree("invoice",
+			 * new XmlTree("batch", new XmlTree("contract", new
+			 * XmlTree("party")))))); }
+			 */
 		}
 		source.appendChild(MonadDate.getMonthsXml(doc));
 		source.appendChild(MonadDate.getDaysXml(doc));
@@ -1594,13 +1556,6 @@ public class SupplyGeneration extends PersistentEntity {
 			source.appendChild(contract.toXml(doc));
 		}
 		return doc;
-	}
-
-	void deleteMpans() throws HttpException {
-		for (Mpan mpan : mpans) {
-			mpan.delete();
-		}
-		mpans.clear();
 	}
 
 	public void httpPost(Invocation inv) throws HttpException {

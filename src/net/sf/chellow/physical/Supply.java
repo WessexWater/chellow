@@ -583,7 +583,6 @@ public class Supply extends PersistentEntity {
 		}
 	}
 
-	@SuppressWarnings("unchecked")
 	public void deleteGeneration(SupplyGeneration generation)
 			throws HttpException {
 		if (getGenerations().size() == 1) {
@@ -601,7 +600,6 @@ public class Supply extends PersistentEntity {
 		SupplyGeneration previousGeneration = getGenerationPrevious(generation);
 		SupplyGeneration nextGeneration = getGenerationNext(generation);
 		getGenerations().remove(generation);
-		generation.deleteMpans();
 		Hiber.session().delete(generation);
 		if (previousGeneration == null) {
 			nextGeneration.update(generation.getStartDate(), nextGeneration
@@ -698,7 +696,7 @@ public class Supply extends PersistentEntity {
 				Element source = doc.getDocumentElement();
 
 				source.appendChild(toXml(doc));
-				delete(this);
+				delete();
 				Hiber.commit();
 				source.appendChild(new MonadMessage(
 						"Supply deleted successfully.").toXml(doc));
@@ -783,39 +781,22 @@ public class Supply extends PersistentEntity {
 	}
 
 	@SuppressWarnings("unchecked")
-	public void delete(Supply supply) throws HttpException {
+	public void delete() throws HttpException {
+				if (((Long) Hiber
+						.session()
+						.createQuery(
+								"select count(*) from RegisterRead read where read.meter.supply = :supply and read.presentDate.date >= :startDate")
+						.setEntity("mpan", this).uniqueResult()) > 0) {
+					throw new UserException("Can't delete a supply if there are still meter readings attached to its meters.");
+				}
 		if ((Long) Hiber
 				.session()
 				.createQuery(
-						"select count(invoice) from Invoice invoice, Mpan mpan where invoice.bill.account = mpan.supplierAccount and mpan.supplyGeneration.supply = :supply")
+						"select count(bill) from Bill bill where bill.supply = :supply")
 				.setEntity("supply", this).uniqueResult() > 0) {
 			throw new UserException(
-					"One can't delete a supply if there are still invoices associated with supplier accounts referred to by its MPANs.");
+					"One can't delete a supply if there are still bills attached to it.");
 		}
-		if ((Long) Hiber
-				.session()
-				.createQuery(
-						"select count(invoice) from Invoice invoice, Mpan mpan where invoice.bill.account = mpan.hhdcAccount and mpan.supplyGeneration.supply = :supply")
-				.setEntity("supply", this).uniqueResult() > 0) {
-			throw new UserException(
-					"One can't delete a supply if there are still invoices associated with hhdc accounts referred to by its MPANs.");
-		}
-		if ((Long) Hiber
-				.session()
-				.createQuery(
-						"select count(invoice) from Invoice invoice, Mpan mpan where invoice.bill.account = mpan.mopAccount and mpan.supplyGeneration.supply = :supply")
-				.setEntity("supply", this).uniqueResult() > 0) {
-			throw new UserException(
-					"One can't delete a supply if there are still invoices associated with MOP accounts referred to by its MPANs.");
-		}
-
-		/*
-		 * long reads = (Long) Hiber .session() .createQuery( "select count(*)
-		 * from RegisterRead read where read.mpan.supplyGeneration.supply =
-		 * :supply") .setEntity("supply", this).uniqueResult(); if (reads > 0) {
-		 * throw UserException .newInvalidParameter("One can't delete a supply
-		 * if there are still register reads attached to its MPANs."); }
-		 */
 		for (SupplyGeneration generation : getGenerations()) {
 			generation.delete();
 		}
