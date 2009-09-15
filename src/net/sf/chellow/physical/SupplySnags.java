@@ -74,15 +74,14 @@ public class SupplySnags extends EntityList {
 		Element source = doc.getDocumentElement();
 		Element snagsElement = toXml(doc);
 		source.appendChild(snagsElement);
-		snagsElement.appendChild(supply.toXml(doc, new XmlTree("contract",
-				new XmlTree("party"))));
-
+		snagsElement.appendChild(supply.toXml(doc));
 		for (SupplySnag snag : (List<SupplySnag>) Hiber
 				.session()
 				.createQuery(
-						"from AccountSnag snag where snag.account = :account order by snag.account.reference, snag.description, snag.startDate.date")
-				.setEntity("account", supply).list()) {
-			snagsElement.appendChild(snag.toXml(doc));
+						"from SupplySnag snag where snag.supply = :supply order by snag.startDate.date desc, snag.description")
+				.setEntity("supply", supply).list()) {
+			snagsElement.appendChild(snag.toXml(doc, new XmlTree("contract",
+					new XmlTree("party"))));
 		}
 		source.appendChild(MonadDate.getMonthsXml(doc));
 		source.appendChild(MonadDate.getDaysXml(doc));
@@ -122,6 +121,6 @@ public class SupplySnags extends EntityList {
 	}
 
 	public Element toXml(Document doc) throws HttpException {
-		return doc.createElement("account-snags");
+		return doc.createElement("supply-snags");
 	}
 }

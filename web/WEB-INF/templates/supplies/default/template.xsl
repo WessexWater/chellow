@@ -175,6 +175,9 @@
 							<li>
 								<a href="generations/">Generations</a>
 							</li>
+							<li>
+								<a href="snags/">Snags</a>
+							</li>
 						</ul>
 					</xsl:otherwise>
 				</xsl:choose>

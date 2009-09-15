@@ -743,10 +743,16 @@ public class Supply extends PersistentEntity {
 	public SupplyGenerations getSupplyGenerationsInstance() {
 		return new SupplyGenerations(this);
 	}
+	
+	public SupplySnags getSupplySnagsInstance() {
+		return new SupplySnags(this);
+	}
 
 	public Urlable getChild(UriPathElement uriId) throws HttpException {
 		if (SupplyGenerations.URI_ID.equals(uriId)) {
-			return new SupplyGenerations(this);
+			return getSupplyGenerationsInstance();
+		} else if (SupplySnags.URI_ID.equals(uriId)) {
+			return getSupplySnagsInstance();
 		} else {
 			throw new NotFoundException();
 		}

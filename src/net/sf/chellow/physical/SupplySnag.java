@@ -92,7 +92,7 @@ private Contract contract;
 	}
 
 	public Element toXml(Document doc) throws HttpException {
-		Element element = super.toXml(doc, "account-snag");
+		Element element = super.toXml(doc, "supply-snag");
 		return element;
 	}
 
