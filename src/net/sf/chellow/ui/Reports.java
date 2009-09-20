@@ -132,7 +132,7 @@ public class Reports extends EntityList {
 	}
 
 	public Urlable getChild(UriPathElement uriId) throws HttpException {
-		return Report.getReport(Long.parseLong(uriId.toString()));
+		return Report.getReport(new Long(uriId.toString()));
 	}
 
 	public Element toXml(Document doc) throws HttpException {

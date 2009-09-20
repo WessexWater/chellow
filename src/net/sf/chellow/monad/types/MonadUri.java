@@ -21,6 +21,7 @@
 
 package net.sf.chellow.monad.types;
 
+import java.math.BigInteger;
 import java.net.URI;
 import java.net.URISyntaxException;
 
@@ -70,6 +71,10 @@ public class MonadUri extends MonadString {
 	}
 
 	public MonadUri resolve(Long uri) throws HttpException {
+		return resolve(new MonadUri(uri.toString()));
+	}
+	
+	public MonadUri resolve(BigInteger uri) throws HttpException {
 		return resolve(new MonadUri(uri.toString()));
 	}
 

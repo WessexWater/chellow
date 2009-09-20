@@ -466,12 +466,40 @@ for group_site in site.groups(now, now, False)[0].getSites():
     <value>0 Supply</value>
     <value><![CDATA[from net.sf.chellow.monad import Hiber, UserException, XmlTree
 from net.sf.chellow.monad.types import MonadDate
+from net.sf.chellow.physical import Supply
+from net.sf.chellow.billing import Bill
+from java.lang import Class, Long
+from java.math import BigInteger
+from org.hibernate.criterion import Restrictions
+
+def bills_list(doc, element_name, contract, generation):
+    bills_element = doc.createElement(element_name)
+    crit = Hiber.session().createCriteria(Class.forName('net.sf.chellow.billing.Bill')).createAlias('batch', 'bt').add(Restrictions.eq('bt.contract.id', Long(contract.getId()))).add(Restrictions.ge('startDate.date', generation.getStartDate().getDate()))
+
+    finish_date = generation.getFinishDate()
+    if finish_date is not None:
+        crit.add(Restrictions.le('startDate.date', generation.getFinishDate().getDate()))
+    for bill in crit.list():
+        bills_element.appendChild(bill.toXml(doc))
+    return bills_element
 
 supply_id = inv.getLong("supply-id")
 if not inv.isValid():
     raise UserException()
-supply = Hiber.session().createQuery("select supply from Supply supply join supply.generations generation join generation.siteSupplyGenerations siteSupplyGeneration where supply.id = :supplyId").setLong("supplyId", supply_id).uniqueResult() 
-source.appendChild(supply.toXml(doc, XmlTree("source").put("generations", XmlTree("mpans", XmlTree("core").put("mtc").put("llfc", XmlTree("voltageLevel")).put("supplierAccount", XmlTree('contract'))).put('hhdcAccount', XmlTree("contract", XmlTree("party"))).put("pc")).put("mpanCores")))
+supply = Supply.getSupply(supply_id)
+supply_element = supply.toXml(doc, XmlTree("source").put("mpanCores"))
+for generation in supply.getGenerations():
+    generation_element = generation.toXml(doc, XmlTree("mpans", XmlTree("core").put("mtc").put("llfc", XmlTree("voltageLevel")).put('supplierContract')).put("hhdcContract", XmlTree("party")).put("pc"))
+    supply_element.appendChild(generation_element)
+    import_mpan = generation.getImportMpan()
+    if import_mpan is not None:
+        supply_element.appendChild(bills_list(doc, 'import-bills', import_mpan.getSupplierContract(), generation))
+    export_mpan = generation.getExportMpan()
+    if export_mpan is not None:
+        supply_element.appendChild(bills_list(doc, 'export-bills', export_mpan.getSupplierContract(), generation))
+    hhdc_contract = generation.getHhdcContract()
+    if hhdc_contract is not None:
+        supply_element.appendChild(bills_list(doc, 'hhdc-bills', hhdc_contract, generation))
 source.appendChild(MonadDate().toXml(doc))]]></value>
     <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
 <xsl:stylesheet version="1.0"

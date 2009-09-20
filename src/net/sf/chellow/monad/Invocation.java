@@ -27,6 +27,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -294,6 +295,14 @@ public class Invocation {
 	public BigDecimal getBigDecimal(String paramName) throws InternalException {
 		if (hasParameter(paramName)) {
 			return new BigDecimal(getString(paramName));
+		} else {
+			return null;
+		}
+	}
+	
+	public BigInteger getBigInteger(String paramName) throws InternalException {
+		if (hasParameter(paramName)) {
+			return new BigInteger(getString(paramName));
 		} else {
 			return null;
 		}

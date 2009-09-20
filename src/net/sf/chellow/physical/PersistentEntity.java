@@ -47,7 +47,7 @@ public abstract class PersistentEntity extends MonadObject implements Urlable {
 	}
 
 	public UriPathElement getUriId() throws HttpException {
-		return new UriPathElement(Long.toString(id));
+		return new UriPathElement(id.toString());
 	}
 
 	public Element toXml(Document doc, String elementName) throws HttpException {
