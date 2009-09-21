@@ -3743,9 +3743,9 @@ if not inv.isValid():
 contract = HhdcContract.getHhdcContract(contract_id)
 source.appendChild(contract.toXml(doc, XmlTree('party'))) 
 
-snag_count = Hiber.session().createQuery("select count(distinct snag) from ChannelSnag snag join snag.channel.supplyGeneration.siteSupplyGenerations siteSupplyGeneration where snag.isIgnored is false and snag.channel.supplyGeneration.hhdcAccount.contract = :contract and snag.startDate.date < :activeDate").setEntity('contract', contract).setTimestamp("activeDate",Date(System.currentTimeMillis()-(5*24*60*60*1000))).uniqueResult()
+snag_count = Hiber.session().createQuery("select count(distinct snag) from ChannelSnag snag join snag.channel.supplyGeneration.siteSupplyGenerations siteSupplyGeneration where snag.isIgnored is false and snag.channel.supplyGeneration.hhdcContract = :contract and snag.startDate.date < :activeDate").setEntity('contract', contract).setTimestamp("activeDate",Date(System.currentTimeMillis()-(5*24*60*60*1000))).uniqueResult()
 
-snags = Hiber.session().createQuery("select distinct snag, siteSupplyGeneration.site.code, snag.startDate.date, snag.channel.id from ChannelSnag snag join snag.channel.supplyGeneration.siteSupplyGenerations siteSupplyGeneration where snag.isIgnored is false and snag.channel.supplyGeneration.hhdcAccount.contract = :contract and snag.startDate.date < :activeDate order by siteSupplyGeneration.site.code, snag.startDate.date, snag.channel.id").setEntity('contract', contract).setTimestamp("activeDate",Date(System.currentTimeMillis()-(5*24*60*60*1000))).scroll()
+snags = Hiber.session().createQuery("select distinct snag, siteSupplyGeneration.site.code, snag.startDate.date, snag.channel.id from ChannelSnag snag join snag.channel.supplyGeneration.siteSupplyGenerations siteSupplyGeneration where snag.isIgnored is false and snag.channel.supplyGeneration.hhdcContract = :contract and snag.startDate.date < :activeDate order by siteSupplyGeneration.site.code, snag.startDate.date, snag.channel.id").setEntity('contract', contract).setTimestamp("activeDate",Date(System.currentTimeMillis()-(5*24*60*60*1000))).scroll()
 
 i = 0
 prev_snag = None
@@ -3759,9 +3759,9 @@ while snags.next() and i < 200:
     i = i + 1
 snags.close()
 
-activeSites = Hiber.session().createQuery("select count(distinct siteSupplyGeneration.site) from ChannelSnag snag join snag.channel.supplyGeneration.siteSupplyGenerations siteSupplyGeneration where snag.isIgnored is false and snag.channel.supplyGeneration.hhdcAccount.contract = :contract and snag.startDate.date < :activeDate").setEntity('contract', contract).setTimestamp("activeDate",Date(System.currentTimeMillis()-(5*24*60*60*1000))).uniqueResult()
+activeSites = Hiber.session().createQuery("select count(distinct siteSupplyGeneration.site) from ChannelSnag snag join snag.channel.supplyGeneration.siteSupplyGenerations siteSupplyGeneration where snag.isIgnored is false and snag.channel.supplyGeneration.hhdcContract = :contract and snag.startDate.date < :activeDate").setEntity('contract', contract).setTimestamp("activeDate",Date(System.currentTimeMillis()-(5*24*60*60*1000))).uniqueResult()
 
-totalSites = Hiber.session().createQuery("select count(distinct siteSupplyGeneration.site) from ChannelSnag snag join snag.channel.supplyGeneration.siteSupplyGenerations siteSupplyGeneration where snag.isIgnored is false and snag.channel.supplyGeneration.hhdcAccount.contract = :contract").setEntity('contract', contract).uniqueResult()
+totalSites = Hiber.session().createQuery("select count(distinct siteSupplyGeneration.site) from ChannelSnag snag join snag.channel.supplyGeneration.siteSupplyGenerations siteSupplyGeneration where snag.isIgnored is false and snag.channel.supplyGeneration.hhdcContract = :contract").setEntity('contract', contract).uniqueResult()
 
 source.setAttribute("snag-count", str(snag_count))
 source.setAttribute("site-count", str(activeSites))
