@@ -97,7 +97,7 @@ public class ReportOutput implements Urlable, XmlDescriber {
 	}
 
 	public void httpPost(Invocation inv) throws HttpException {
-		throw new MethodNotAllowedException();
+		httpGet(inv);
 	}
 
 	public void httpDelete(Invocation inv) throws HttpException {
