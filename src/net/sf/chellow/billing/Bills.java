@@ -44,7 +44,7 @@ public class Bills extends EntityList {
 
 	static {
 		try {
-			URI_ID = new UriPathElement("invoices");
+			URI_ID = new UriPathElement("bills");
 		} catch (HttpException e) {
 			throw new RuntimeException(e);
 		}
@@ -84,36 +84,35 @@ public class Bills extends EntityList {
 	private Document document() throws HttpException {
 		Document doc = MonadUtils.newSourceDocument();
 		Element source = doc.getDocumentElement();
-		Element invoicesElement = toXml(doc);
-		source.appendChild(invoicesElement);
-		invoicesElement.appendChild(batch.toXml(doc, new XmlTree("contract",
-						new XmlTree("party"))));
-		for (Bill invoice : (List<Bill>) Hiber
+		Element billsElement = toXml(doc);
+		source.appendChild(billsElement);
+		billsElement.appendChild(batch.toXml(doc, new XmlTree("contract",
+				new XmlTree("party"))));
+		for (Bill bill : (List<Bill>) Hiber
 				.session()
 				.createQuery(
-						"from Invoice invoice where invoice.batch = :batch order by invoice.bill.account.reference")
+						"from Bill bill where bill.batch = :batch order by bill.startDate.date desc")
 				.setEntity("batch", batch).list()) {
-			invoicesElement.appendChild(invoice.toXml(doc, new XmlTree("bill",
-							new XmlTree("account"))));
+			billsElement.appendChild(bill.toXml(doc, new XmlTree("supply")));
 		}
 		return doc;
 	}
 
 	public Bill getChild(UriPathElement uriId) throws HttpException {
-		Bill invoice = (Bill) Hiber
+		Bill bill = (Bill) Hiber
 				.session()
 				.createQuery(
-						"from Invoice invoice where invoice.batch = :batch and invoice.id = :invoiceId")
-				.setEntity("batch", batch).setLong("invoiceId",
+						"from Bill bill where bill.batch = :batch and bill.id = :billId")
+				.setEntity("batch", batch).setLong("billId",
 						Long.parseLong(uriId.getString())).uniqueResult();
-		if (invoice == null) {
+		if (bill == null) {
 			throw new NotFoundException();
 		}
-		return invoice;
+		return bill;
 	}
 
 	public Element toXml(Document doc) throws HttpException {
-		Element billsElement = doc.createElement("invoices");
+		Element billsElement = doc.createElement("bills");
 		return billsElement;
 	}
 }

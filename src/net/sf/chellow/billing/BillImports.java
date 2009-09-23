@@ -44,11 +44,11 @@ public class BillImports implements Urlable {
 
 	static private long processSerial = 0;
 
-	static private final Map<Long, Map<Long, InvoiceImport>> imports = new HashMap<Long, Map<Long, InvoiceImport>>();
+	static private final Map<Long, Map<Long, BillImport>> imports = new HashMap<Long, Map<Long, BillImport>>();
 
 	static {
 		try {
-			URI_ID = new MonadUri("invoice-imports");
+			URI_ID = new MonadUri("bill-imports");
 		} catch (HttpException e) {
 			throw new RuntimeException(e);
 		}
@@ -65,11 +65,11 @@ public class BillImports implements Urlable {
 	}
 
 	public Urlable getChild(UriPathElement uriId) throws HttpException {
-		Map<Long, InvoiceImport> batchImports = imports.get(batch.getId());
+		Map<Long, BillImport> batchImports = imports.get(batch.getId());
 		if (batchImports == null) {
 			throw new NotFoundException();
 		}
-		InvoiceImport billImport = batchImports.get(Long.parseLong(uriId
+		BillImport billImport = batchImports.get(Long.parseLong(uriId
 				.toString()));
 		if (billImport == null) {
 			throw new NotFoundException();
@@ -88,9 +88,9 @@ public class BillImports implements Urlable {
 		source.appendChild(billImportsElement);
 		billImportsElement.appendChild(batch.toXml(doc, new XmlTree("contract",
 				new XmlTree("party"))));
-		Map<Long, InvoiceImport> batchImports = imports.get(batch.getId());
+		Map<Long, BillImport> batchImports = imports.get(batch.getId());
 		if (batchImports != null) {
-			for (InvoiceImport billImport : batchImports.values()) {
+			for (BillImport billImport : batchImports.values()) {
 				billImportsElement.appendChild(billImport.toXml(doc));
 			}
 		}
@@ -103,13 +103,13 @@ public class BillImports implements Urlable {
 			throw new UserException(document());
 		}
 		try {
-			InvoiceImport importare = new InvoiceImport(batch.getId(),
+			BillImport importare = new BillImport(batch.getId(),
 					processSerial++, fileItem);
 			importare.start();
 
-			Map<Long, InvoiceImport> batchImports = imports.get(batch.getId());
+			Map<Long, BillImport> batchImports = imports.get(batch.getId());
 			if (batchImports == null) {
-				imports.put(batch.getId(), new HashMap<Long, InvoiceImport>());
+				imports.put(batch.getId(), new HashMap<Long, BillImport>());
 			}
 			batchImports = imports.get(batch.getId());
 			batchImports.put(Long.parseLong(importare.getUriId().toString()),
@@ -126,7 +126,7 @@ public class BillImports implements Urlable {
 	}
 
 	public Element toXML(Document doc) throws HttpException {
-		return doc.createElement("invoice-imports");
+		return doc.createElement("bill-imports");
 	}
 
 	public Node getXML(XmlTree tree, Document doc) throws HttpException {

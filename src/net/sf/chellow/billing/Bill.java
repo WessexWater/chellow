@@ -31,6 +31,7 @@ import java.util.Map.Entry;
 
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
+import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Invocation;
 import net.sf.chellow.monad.MonadUtils;
 import net.sf.chellow.monad.NotFoundException;
@@ -78,7 +79,7 @@ public class Bill extends PersistentEntity implements Urlable {
 
 	private Boolean isPaid; // Null is pending, false is rejected.
 
-	private BillType type;
+	private String type;
 
 	private boolean isCancelledOut;
 
@@ -87,12 +88,11 @@ public class Bill extends PersistentEntity implements Urlable {
 	public Bill() {
 	}
 
-	public Bill(Batch batch, Supply supply)
-			throws HttpException {
+	public Bill(Batch batch, Supply supply) throws HttpException {
 		setBatch(batch);
 		setSupply(supply);
 		setReference("Default Reference");
-		setType(BillType.INFORMATION);
+		setType("");
 		setNet(new BigDecimal(0));
 		setVat(new BigDecimal(0));
 		setStartDate(new DayStartDate());
@@ -172,11 +172,11 @@ public class Bill extends PersistentEntity implements Urlable {
 		this.isPaid = isPaid;
 	}
 
-	public BillType getType() {
+	public String getType() {
 		return type;
 	}
 
-	public void setType(BillType type) {
+	public void setType(String type) {
 		this.type = type;
 	}
 
@@ -196,9 +196,10 @@ public class Bill extends PersistentEntity implements Urlable {
 		return reads;
 	}
 
-	public void update(String reference, DayStartDate issueDate, DayStartDate startDate,
-			DayFinishDate finishDate, BigDecimal net, BigDecimal vat,
-			Boolean isPaid, boolean isCancelledOut) throws HttpException {
+	public void update(String reference, DayStartDate issueDate,
+			DayStartDate startDate, DayFinishDate finishDate, BigDecimal net,
+			BigDecimal vat, String type, Boolean isPaid,
+			boolean isCancelledOut) throws HttpException {
 		setReference(reference);
 		setIssueDate(issueDate);
 		if (startDate.getDate().after(finishDate.getDate())) {
@@ -209,13 +210,17 @@ public class Bill extends PersistentEntity implements Urlable {
 		setFinishDate(finishDate);
 		setNet(net);
 		setVat(vat);
+		if (type == null) {
+			throw new InternalException("Type can't be null.");
+		}
+		setType(type);
 		setIsPaid(isPaid);
 		setIsCancelledOut(isCancelledOut);
 		virtualEqualsActual();
 	}
 
 	public Element toXml(Document doc) throws HttpException {
-		Element element = super.toXml(doc, "invoice");
+		Element element = super.toXml(doc, "bill");
 		issueDate.setLabel("issue");
 		element.appendChild(issueDate.toXml(doc));
 		startDate.setLabel("start");
@@ -230,6 +235,7 @@ public class Bill extends PersistentEntity implements Urlable {
 		}
 		element.setAttribute("is-cancelled-out", Boolean
 				.toString(isCancelledOut));
+		element.setAttribute("type", type);
 		return element;
 	}
 
@@ -245,15 +251,16 @@ public class Bill extends PersistentEntity implements Urlable {
 			Date finishDate = inv.getDate("finish-date");
 			BigDecimal net = inv.getBigDecimal("net");
 			BigDecimal vat = inv.getBigDecimal("vat");
+			String type = inv.getString("type");
 			Boolean isPaid = inv.getBoolean("isPaid");
 			Boolean isCancelledOut = inv.getBoolean("isCancelledOut");
 
 			if (!inv.isValid()) {
 				throw new UserException(document());
 			}
-			update(reference, new DayStartDate(issueDate), new DayStartDate(startDate)
-					.getNext(), new DayFinishDate(finishDate), net, vat,
-					isPaid, isCancelledOut);
+			update(reference, new DayStartDate(issueDate), new DayStartDate(
+					startDate).getNext(), new DayFinishDate(finishDate), net,
+					vat, type, isPaid, isCancelledOut);
 			Hiber.commit();
 			inv.sendOk(document());
 		}
@@ -262,17 +269,12 @@ public class Bill extends PersistentEntity implements Urlable {
 	private Document document() throws HttpException {
 		Document doc = MonadUtils.newSourceDocument();
 		Element source = doc.getDocumentElement();
-		Element invoiceElement = (Element) toXml(doc, new XmlTree("batch",
-				new XmlTree("contract", new XmlTree("party"))).put("bill",
-				new XmlTree("account")));
-		source.appendChild(invoiceElement);
+		Element billElement = (Element) toXml(doc, new XmlTree("batch",
+				new XmlTree("contract", new XmlTree("party"))).put("reads",
+				new XmlTree("meter", new XmlTree("supply"))));
+		source.appendChild(billElement);
 		source.appendChild(MonadDate.getMonthsXml(doc));
 		source.appendChild(MonadDate.getDaysXml(doc));
-		for (RegisterRead read : reads) {
-			invoiceElement.appendChild(read.toXml(doc, new XmlTree("mpan",
-					new XmlTree("core").put("supplyGeneration", new XmlTree(
-							"supply")))));
-		}
 		return doc;
 	}
 

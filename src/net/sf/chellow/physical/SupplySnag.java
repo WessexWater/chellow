@@ -36,16 +36,10 @@ import org.w3c.dom.Element;
 
 public class SupplySnag extends SnagDateBounded {
 	public static final String MISSING_BILL = "Missing bill.";
-	
-	/*
-	public static final String MISSING_HHDC_BILL = "Missing HHDC bill.";
-	public static final String MISSING_MOP_BILL = "Missing MOP bill.";
-	public static final String MISSING_IMPORT_SUPPLIER_BILL = "Missing import supplier bill.";
-	public static final String MISSING_EXPORT_SUPPLIER_BILL = "Missing export supplier bill.";
-*/
+
 	public static SupplySnag getSupplySnag(Long id) throws HttpException {
-		SupplySnag snag = (SupplySnag) Hiber.session().get(SupplySnag.class,
-				id);
+		SupplySnag snag = (SupplySnag) Hiber.session()
+				.get(SupplySnag.class, id);
 		if (snag == null) {
 			throw new NotFoundException();
 		}
@@ -61,11 +55,12 @@ public class SupplySnag extends SnagDateBounded {
 	}
 
 	private Supply supply;
-private Contract contract;
+	private Contract contract;
+
 	public SupplySnag() {
 	}
 
-	public SupplySnag(Supply supply, Contract contract,String description, 
+	public SupplySnag(Supply supply, Contract contract, String description,
 			HhEndDate startDate, HhEndDate finishDate) throws HttpException {
 		super(description, startDate, finishDate);
 		this.supply = supply;
@@ -87,7 +82,7 @@ private Contract contract;
 	void setContract(Contract contract) {
 		this.contract = contract;
 	}
-	
+
 	public void update() {
 	}
 
@@ -124,7 +119,6 @@ private Contract contract;
 	}
 
 	public MonadUri getUri() throws HttpException {
-		return new SupplySnags(supply).getUri()
-				.resolve(getUriId()).append("/");
+		return new SupplySnags(supply).getUri().resolve(getUriId()).append("/");
 	}
 }

@@ -41,19 +41,19 @@ import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.UserException;
 import net.sf.chellow.physical.HhEndDate;
 
-public class InvoiceConverterMm implements InvoiceConverter {
+public class BillConverterMm implements BillConverter {
 	private LineNumberReader lreader;
 
 	private DateFormat dateFormat = new SimpleDateFormat("yyyyMMdd", Locale.UK);
 
 	private List<RawBill> rawBills = new ArrayList<RawBill>();
 
-	public InvoiceConverterMm(Reader reader) throws HttpException,
+	public BillConverterMm(Reader reader) throws HttpException,
 			InternalException {
 		lreader = new LineNumberReader(reader);
 	}
 
-	public List<RawBill> getRawInvoices() throws HttpException,
+	public List<RawBill> getRawBills() throws HttpException,
 			InternalException {
 		Hiber.flush();
 		if (rawBills.isEmpty()) {
@@ -109,7 +109,7 @@ public class InvoiceConverterMm implements InvoiceConverter {
 						}
 					}
 					if (recordType.equals("1500")) {
-						rawBills.add(new RawBill(BillType.NORMAL,
+						rawBills.add(new RawBill("NORMAL",
 								accountReference, mpanStrings, invoiceNumber,
 								startDate, startDate, finishDate, net, vat,
 								null));

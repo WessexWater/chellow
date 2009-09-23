@@ -47,10 +47,10 @@ public class RegisterReads extends EntityList {
 		}
 	}
 
-	private Bill invoice;
+	private Bill bill;
 
-	public RegisterReads(Bill invoice) {
-		this.invoice = invoice;
+	public RegisterReads(Bill bill) {
+		this.bill = bill;
 	}
 
 	public UriPathElement getUrlId() {
@@ -58,7 +58,7 @@ public class RegisterReads extends EntityList {
 	}
 
 	public MonadUri getUri() throws HttpException {
-		return invoice.getUri().resolve(getUrlId()).append("/");
+		return bill.getUri().resolve(getUrlId()).append("/");
 	}
 
 	public void httpPost(Invocation inv) throws HttpException {
@@ -78,8 +78,8 @@ public class RegisterReads extends EntityList {
 		RegisterRead read = (RegisterRead) Hiber
 				.session()
 				.createQuery(
-						"from RegisterRead read where read.invoice = :invoice and read.id = :readId")
-				.setEntity("invoice", invoice).setLong("readId",
+						"from RegisterRead read where read.bill = :bill and read.id = :readId")
+				.setEntity("bill", bill).setLong("readId",
 						Long.parseLong(uriId.getString())).uniqueResult();
 		if (read == null) {
 			throw new NotFoundException();
@@ -98,14 +98,13 @@ public class RegisterReads extends EntityList {
 		Element source = doc.getDocumentElement();
 		Element readsElement = toXml(doc);
 		source.appendChild(readsElement);
-		readsElement.appendChild(invoice.toXml(doc, new XmlTree("batch",
-				new XmlTree("contract", new XmlTree("provider")
-						.put("organization")))));
+		readsElement.appendChild(bill.toXml(doc, new XmlTree("batch",
+				new XmlTree("contract", new XmlTree("party")))));
 		for (RegisterRead read : (List<RegisterRead>) Hiber
 				.session()
 				.createQuery(
-						"from RegisterRead read where read.invoice = :invoice order by read.presentDate.date, read.id")
-				.setEntity("invoice", invoice).list()) {
+						"from RegisterRead read where read.bill = :bill order by read.presentDate.date, read.id")
+				.setEntity("bill", bill).list()) {
 			readsElement.appendChild(read.toXml(doc, new XmlTree("mpan",
 					new XmlTree("mpanCore").put("supplyGeneration",
 							new XmlTree("supply"))).put("tpr")));

@@ -2,8 +2,8 @@
 <xsl:stylesheet version="1.0"
 	xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
 	<xsl:output method="html" encoding="US-ASCII"
-		doctype-public="-//W3C//DTD HTML 4.01//EN"
-		doctype-system="http://www.w3.org/TR/html4/strict.dtd" indent="yes" />
+		doctype-public="-//W3C//DTD HTML 4.01//EN" doctype-system="http://www.w3.org/TR/html4/strict.dtd"
+		indent="yes" />
 	<xsl:template match="/">
 		<html>
 			<head>
@@ -11,12 +11,10 @@
 					href="{/source/request/@context-path}/style/" />
 				<title>
 					Chellow &gt; Supplier Contracts &gt;
-					<xsl:value-of
-						select="/source/bills/account/supplier-contract/@name" />
-					&gt; Accounts &gt;
-					<xsl:value-of
-						select="/source/bills/account/@reference" />
-					&gt; Bills &gt;
+					<xsl:value-of select="/source/bills/batch/supplier-contract/@name" />
+					&gt; Batches &gt;
+					<xsl:value-of select="/source/bills/batch/@name" />
+					&gt; bills
 				</title>
 			</head>
 			<body>
@@ -31,43 +29,37 @@
 				</xsl:if>
 				<p>
 					<a href="{/source/request/@context-path}/">
-						<img
-							src="{/source/request/@context-path}/logo/" />
+						<img src="{/source/request/@context-path}/logo/" />
 						<span class="logo">Chellow</span>
 					</a>
 					&gt;
-					<a
-						href="{/source/request/@context-path}/supplier-contracts/">
+					<a href="{/source/request/@context-path}/supplier-contracts/">
 						<xsl:value-of select="'Supplier Contracts'" />
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/supplier-contracts/{/source/bills/account/supplier-contract/@id}/">
-						<xsl:value-of
-							select="/source/bills/account/supplier-contract/@name" />
+						href="{/source/request/@context-path}/supplier-contracts/{/source/bills/batch/supplier-contract/@id}/">
+						<xsl:value-of select="/source/bills/batch/supplier-contract/@name" />
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/supplier-contracts/{/source/bills/account/supplier-contract/@id}/accounts/">
-						<xsl:value-of select="'Accounts'" />
+						href="{/source/request/@context-path}/supplier-contracts/{/source/bills/batch/supplier-contract/@id}/batches/">
+						<xsl:value-of select="'Batches'" />
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/supplier-contracts/{/source/bills/account/supplier-contract/@id}/accounts/{/source/bills/account/@id}/">
-						<xsl:value-of
-							select="/source/bills/account/@reference" />
+						href="{/source/request/@context-path}/supplier-contracts/{/source/bills/batch/supplier-contract/@id}/batches/{/source/bills/batch/@id}/">
+						<xsl:value-of select="/source/bills/batch/@reference" />
 					</a>
 					&gt;
 					<xsl:value-of select="'Bills'" />
 				</p>
 				<br />
 				<xsl:choose>
-					<xsl:when
-						test="/source/response/@status-code = '201'">
+					<xsl:when test="/source/response/@status-code = '201'">
 						<p>
 							The
-							<a
-								href="{/source/response/header[@name = 'Location']/@value}">
+							<a href="{/source/response/header[@name = 'Location']/@value}">
 								<xsl:value-of select="'new bill'" />
 							</a>
 							has been successfully created.
@@ -79,21 +71,26 @@
 							<thead>
 								<tr>
 									<th>Chellow Id</th>
+									<th>Reference</th>
 									<th>From</th>
 									<th>To</th>
 									<th>Net</th>
 									<th>VAT</th>
+									<th>Type</th>
+									<th>Is Cancelled Out?</th>
+									<th>Status</th>
 								</tr>
 							</thead>
 							<tbody>
-								<xsl:for-each
-									select="/source/bills/bill">
+								<xsl:for-each select="/source/bills/bill">
 									<tr>
 										<td>
 											<a href="{@id}/">
-												<xsl:value-of
-													select="@id" />
+												<xsl:value-of select="@id" />
 											</a>
+										</td>
+										<td>
+											<xsl:value-of select="@reference" />
 										</td>
 										<td>
 											<xsl:value-of
@@ -108,6 +105,27 @@
 										</td>
 										<td>
 											<xsl:value-of select="@vat" />
+										</td>
+										<td>
+											<xsl:value-of select="@type" />
+										</td>
+										<td>
+											<xsl:if test="@is-cancelled-out='true'">
+												Cancelled Out
+											</xsl:if>
+										</td>
+										<td>
+											<xsl:choose>
+												<xsl:when test="not(@is-paid)">
+													Pending
+												</xsl:when>
+												<xsl:when test="@is-paid='true'">
+													Paid
+												</xsl:when>
+												<xsl:when test="@is-paid='false'">
+													Rejected
+												</xsl:when>
+											</xsl:choose>
 										</td>
 									</tr>
 								</xsl:for-each>

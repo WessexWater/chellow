@@ -25,6 +25,8 @@
 		<key column="snag_id" foreign-key="fkey_supply_snag_snag" />
 		<many-to-one name="supply" class="Supply" column="supply_id"
 			not-null="true" foreign-key="fkey_snag_supply" />
+		<many-to-one name="contract" class="net.sf.chellow.billing.Contract" column="contract_id"
+			not-null="true" foreign-key="fkey_snag_contract" />
 		<component name="startDate" class="HhEndDate">
 			<property name="date" type="timestamp" not-null="true"
 				index="start_date_idx">

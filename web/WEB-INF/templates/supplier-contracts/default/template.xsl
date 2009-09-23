@@ -52,9 +52,6 @@
 					<li>
 						<a href="rate-scripts/">Rate Scripts</a>
 					</li>
-					<li>
-						<a href="accounts/">Accounts</a>
-					</li>
 				</ul>
 				<form action="." method="post">
 					<fieldset>

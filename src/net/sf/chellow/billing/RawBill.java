@@ -35,7 +35,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 public class RawBill extends MonadObject {
-	private BillType type;
+	private String type;
 
 	private DayStartDate issueDate;
 
@@ -55,7 +55,7 @@ public class RawBill extends MonadObject {
 
 	private Set<RegisterReadRaw> reads = new HashSet<RegisterReadRaw>();
 
-	public RawBill(BillType type, String accountReference,
+	public RawBill(String type, String accountReference,
 			Set<String> mpanStrings, String reference, DayStartDate issueDate,
 			DayStartDate startDate, DayFinishDate finishDate, BigDecimal net,
 			BigDecimal vat, Set<RegisterReadRaw> registerReads)
@@ -89,7 +89,8 @@ public class RawBill extends MonadObject {
 		 * for (String mpanStr : mpanText.split(",")) { try { mpans.add(new
 		 * MpanRaw(mpanStr)); } catch (HttpException e) { throw new
 		 * UserException("While parsing the MPAN string '" + mpanText + "' I
-		 * encountered difficulties with '" + mpanStr + "'. " + e.getMessage()); } }
+		 * encountered difficulties with '" + mpanStr + "'. " + e.getMessage());
+		 * } }
 		 */
 		if (mpanStrings == null) {
 			throw new InternalException(
@@ -101,7 +102,7 @@ public class RawBill extends MonadObject {
 		}
 	}
 
-	public BillType getType() {
+	public String getType() {
 		return type;
 	}
 

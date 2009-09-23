@@ -470,17 +470,27 @@ from net.sf.chellow.physical import Supply
 from net.sf.chellow.billing import Bill
 from java.lang import Class, Long
 from java.math import BigInteger
-from org.hibernate.criterion import Restrictions
+from org.hibernate.criterion import Restrictions, Order
 
-def bills_list(doc, element_name, contract, generation):
-    bills_element = doc.createElement(element_name)
-    crit = Hiber.session().createCriteria(Class.forName('net.sf.chellow.billing.Bill')).createAlias('batch', 'bt').add(Restrictions.eq('bt.contract.id', Long(contract.getId()))).add(Restrictions.ge('startDate.date', generation.getStartDate().getDate()))
+def bills_list(parent_element, element_name, contract, generation):
+    bills_element = parent_element.getOwnerDocument().createElement(element_name)
+    parent_element.appendChild(bills_element)
+    bills_crit = Hiber.session().createCriteria(Class.forName('net.sf.chellow.billing.Bill')).createAlias('batch', 'bt').add(Restrictions.eq('bt.contract.id', Long(contract.getId()))).add(Restrictions.ge('startDate.date', generation.getStartDate().getDate())).addOrder(Order.asc('startDate.date'))
+    snags_crit = Hiber.session().createCriteria(Class.forName('net.sf.chellow.physical.SupplySnag')).add(Restrictions.eq('contract.id', Long(contract.getId()))).add(Restrictions.eq('supply', generation.getSupply())).add(Restrictions.ge('startDate.date', generation.getStartDate().getDate())).addOrder(Order.asc('startDate.date'))
 
     finish_date = generation.getFinishDate()
     if finish_date is not None:
-        crit.add(Restrictions.le('startDate.date', generation.getFinishDate().getDate()))
-    for bill in crit.list():
-        bills_element.appendChild(bill.toXml(doc))
+        bills_crit.add(Restrictions.le('startDate.date', generation.getFinishDate().getDate()))
+        snags_crit.add(Restrictions.le('startDate.date', generation.getFinishDate().getDate()))
+    bill_dict = {}
+    bill_list = bills_crit.list()
+    bill_list.addAll(snags_crit.list())
+    for bill in bill_list:
+        bill_dict[bill.getStartDate().getDate().getTime()] = bill
+    bill_keys = bill_dict.keys()
+    bill_keys.sort()
+    for key in bill_keys:
+        bills_element.appendChild(bill_dict[key].toXml(doc))
     return bills_element
 
 supply_id = inv.getLong("supply-id")
@@ -488,45 +498,53 @@ if not inv.isValid():
     raise UserException()
 supply = Supply.getSupply(supply_id)
 supply_element = supply.toXml(doc, XmlTree("source").put("mpanCores"))
+source.appendChild(supply_element)
 for generation in supply.getGenerations():
-    generation_element = generation.toXml(doc, XmlTree("mpans", XmlTree("core").put("mtc").put("llfc", XmlTree("voltageLevel")).put('supplierContract')).put("hhdcContract", XmlTree("party")).put("pc"))
+    generation_element = generation.toXml(doc, XmlTree("mpans", XmlTree("core").put("mtc").put("llfc", XmlTree("voltageLevel")).put('supplierContract')).put("hhdcContract", XmlTree("party")).put("pc").put("siteSupplyGenerations", XmlTree('site')))
     supply_element.appendChild(generation_element)
     import_mpan = generation.getImportMpan()
     if import_mpan is not None:
-        supply_element.appendChild(bills_list(doc, 'import-bills', import_mpan.getSupplierContract(), generation))
+        bills_list(generation_element, 'import-bills', import_mpan.getSupplierContract(), generation)
     export_mpan = generation.getExportMpan()
     if export_mpan is not None:
-        supply_element.appendChild(bills_list(doc, 'export-bills', export_mpan.getSupplierContract(), generation))
+        bills_list(generation_element, 'export-bills', export_mpan.getSupplierContract(), generation)
     hhdc_contract = generation.getHhdcContract()
     if hhdc_contract is not None:
-        supply_element.appendChild(bills_list(doc, 'hhdc-bills', hhdc_contract, generation))
+        bills_list(generation_element, 'hhdc-bills', hhdc_contract, generation)
 source.appendChild(MonadDate().toXml(doc))]]></value>
     <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
 <xsl:stylesheet version="1.0"
     xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
     <xsl:output method="html" encoding="US-ASCII"
-        doctype-public="-//W3C//DTD HTML 4.01//EN"
-        doctype-system="http://www.w3.org/TR/html4/strict.dtd" indent="yes" />
-  <xsl:template match="/">
-    <html>
-      <head>
-        <link rel="stylesheet" type="text/css" href="{/source/request/@context-path}/reports/19/output/" />
-        <title>
-          Home &gt; Supplies &gt; <xsl:value-of select="/source/supply/@id" />
-        </title>
-      </head>
-      <body>
-        <p>
-          <a href="{/source/request/@context-path}/reports/1/output/">
-    <xsl:value-of select="'Home'" /></a> &gt;
-          <a href="{/source/request/@context-path}/reports/99/output/">
-        <xsl:value-of select="'Supplies'" />
-        </a> &gt;  <xsl:value-of select="concat(/source/supply/@id, ' [')" />
-        <a href="{/source/request/@context-path}/supplies/{/source/supply/@id}/">
-        <xsl:value-of select="'edit'" /></a>
-    <xsl:value-of select="']'" />
-        </p>
-          <xsl:if test="//message">
+        doctype-public="-//W3C//DTD HTML 4.01//EN" doctype-system="http://www.w3.org/TR/html4/strict.dtd"
+        indent="yes" />
+    <xsl:template match="/">
+        <html>
+            <head>
+                <link rel="stylesheet" type="text/css"
+                    href="{/source/request/@context-path}/reports/19/output/" />
+                <title>
+                    Home &gt; Supplies &gt;
+                    <xsl:value-of select="/source/supply/@id" />
+                </title>
+            </head>
+            <body>
+                <p>
+                    <a href="{/source/request/@context-path}/reports/1/output/">
+                        <xsl:value-of select="'Home'" />
+                    </a>
+                    &gt;
+                    <a href="{/source/request/@context-path}/reports/99/output/">
+                        <xsl:value-of select="'Supplies'" />
+                    </a>
+                    &gt;
+                    <xsl:value-of select="concat(/source/supply/@id, ' [')" />
+                    <a href="{/source/request/@context-path}/supplies/{/source/supply/@id}/">
+                        <xsl:value-of select="'edit'" />
+                    </a>
+                    <xsl:value-of select="']'" />
+                </p>
+                <xsl:if test="//message">
                     <ul>
                         <xsl:for-each select="//message">
                             <li>
@@ -537,8 +555,7 @@ source.appendChild(MonadDate().toXml(doc))]]></value>
                 </xsl:if>
                 <ul>
                     <li>
-                        <xsl:value-of
-                            select="concat('Name: ', /source/supply/@name)" />
+                        <xsl:value-of select="concat('Name: ', /source/supply/@name)" />
                     </li>
                     <li>
                         <xsl:value-of
@@ -553,21 +570,23 @@ source.appendChild(MonadDate().toXml(doc))]]></value>
                             <th rowspan="2">Id</th>
                             <th rowspan="2">From</th>
                             <th rowspan="2">To</th>
-                            <th colspan="3">Import</th>
-                            <th colspan="3">Export</th>
+                            <th rowspan="2">Sites</th>
+                            <th colspan="4">Import</th>
+                            <th colspan="4">Export</th>
                         </tr>
                         <tr>
                             <th>MPAN</th>
                             <th>kVA</th>
                             <th>Supplier Account</th>
+                            <th>Bills</th>
                             <th>MPAN</th>
                             <th>kVA</th>
                             <th>Supplier Account</th>
+                            <th>Bills</th>
                         </tr>
                     </thead>
-                    <tbody>
-                        <xsl:for-each
-                            select="/source/supply/supply-generation">
+                    <xsl:for-each select="/source/supply/supply-generation">
+                        <tbody>
                             <tr>
                                 <td>
                                     <a
@@ -581,8 +600,7 @@ source.appendChild(MonadDate().toXml(doc))]]></value>
                                 </td>
                                 <td>
                                     <xsl:choose>
-                                        <xsl:when
-                                            test="hh-end-date[@label='finish']">
+                                        <xsl:when test="hh-end-date[@label='finish']">
                                             <xsl:value-of
                                                 select="concat(hh-end-date[@label='finish']/@year, '-', hh-end-date[@label='finish']/@month, '-', hh-end-date[@label='finish']/@day)" />
                                         </xsl:when>
@@ -590,6 +608,19 @@ source.appendChild(MonadDate().toXml(doc))]]></value>
                                             Ongoing
                                         </xsl:otherwise>
                                     </xsl:choose>
+                                </td>
+                                <td>
+                                    <ul>
+                                        <xsl:for-each select="site-supply-generation/site">
+                                            <li>
+                                                <a
+                                                    href="{/source/request/@context-path}/reports/5/output/?site-id={@id}">
+                                                    <xsl:value-of select="@code" />
+                                                </a>
+                                                <xsl:value-of select="concat(' ', @name)" />
+                                            </li>
+                                        </xsl:for-each>
+                                    </ul>
                                 </td>
                                 <td>
                                     <xsl:value-of
@@ -607,6 +638,16 @@ source.appendChild(MonadDate().toXml(doc))]]></value>
                                     </a>
                                 </td>
                                 <td>
+                                    <ul>
+                                        <xsl:for-each select="import-bills/*">
+                                            <li>
+                                                <xsl:value-of select="@id" />
+                                                ggggg
+                                            </li>
+                                        </xsl:for-each>
+                                    </ul>
+                                </td>
+                                <td>
                                     <xsl:value-of
                                         select="concat(mpan[llfc/@is-import='false']/pc/@code, ' ', mpan[llfc/@is-import='false']/mtc/@code, ' ', mpan[llfc/@is-import='false']/llfc/@code, ' ', mpan[llfc/@is-import='false']/mpan-core/@core)" />
                                 </td>
@@ -622,8 +663,74 @@ source.appendChild(MonadDate().toXml(doc))]]></value>
                                     </a>
                                 </td>
                             </tr>
-                        </xsl:for-each>
-                    </tbody>
+                        </tbody>
+                        <thead>
+                            <tr>
+                                <th colspan="15">Import Bills</th>
+                            </tr>
+                            <tr>
+                                <th>Edit</th>
+                                <th>Reference</th>
+                                <th>From</th>
+                                <th>To</th>
+                                <th>Net</th>
+                                <th>VAT</th>
+                                <th>Type</th>
+                                <th>Is Cancelled Out?</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <xsl:for-each select="import-bills/*">
+                                <tr>
+                                    <td>
+                                        <a
+                                            href="{/source/request/@context-path}/supplier-contracts/{batch/supplier-contract/@id}/batches/{batch/@id}/bills/{@id}/">
+                                            <xsl:value-of select="'edit'" />
+                                        </a>
+                                    </td>
+                                    <td>
+                                        <xsl:value-of select="@reference" />
+                                    </td>
+                                    <td>
+                                        <xsl:value-of
+                                            select="concat(day-start-date/@year, '-', day-start-date/@month, '-', day-start-date/@day)" />
+                                    </td>
+                                    <td>
+                                        <xsl:value-of
+                                            select="concat(day-finish-date/@year, '-', day-finish-date/@month, '-', day-finish-date/@day)" />
+                                    </td>
+                                    <td>
+                                        <xsl:value-of select="@net" />
+                                    </td>
+                                    <td>
+                                        <xsl:value-of select="@vat" />
+                                    </td>
+                                    <td>
+                                        <xsl:value-of select="@type" />
+                                    </td>
+                                    <td>
+                                        <xsl:if test="@is-cancelled-out='true'">
+                                            Cancelled Out
+                                        </xsl:if>
+                                    </td>
+                                    <td>
+                                        <xsl:choose>
+                                            <xsl:when test="not(@is-paid)">
+                                                Pending
+                                            </xsl:when>
+                                            <xsl:when test="@is-paid='true'">
+                                                Paid
+                                            </xsl:when>
+                                            <xsl:when test="@is-paid='false'">
+                                                Rejected
+                                            </xsl:when>
+                                        </xsl:choose>
+                                    </td>
+                                </tr>
+                            </xsl:for-each>
+                        </tbody>
+                    </xsl:for-each>
                 </table>
                 <ul>
                     <li>
@@ -646,8 +753,8 @@ source.appendChild(MonadDate().toXml(doc))]]></value>
                     </li>
                 </ul>
             </body>
-   </html>
-  </xsl:template>
+        </html>
+    </xsl:template>
 </xsl:stylesheet>]]></value>
   </line>
   <line>

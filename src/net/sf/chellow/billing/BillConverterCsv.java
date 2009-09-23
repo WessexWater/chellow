@@ -47,19 +47,19 @@ import net.sf.chellow.physical.Units;
 
 import com.Ostermiller.util.CSVParser;
 
-public class InvoiceConverterCsv implements InvoiceConverter {
-	private static final Map<String, BillType> invoiceTypeMap = Collections
-			.synchronizedMap(new HashMap<String, BillType>());
+public class BillConverterCsv implements BillConverter {
+	private static final Map<String, String> billTypeMap = Collections
+			.synchronizedMap(new HashMap<String, String>());
 
 	static {
-		invoiceTypeMap.put("A", BillType.AMENDED);
-		invoiceTypeMap.put("F", BillType.FINAL);
-		invoiceTypeMap.put("N", BillType.NORMAL);
-		invoiceTypeMap.put("I", BillType.INTEREST);
-		invoiceTypeMap.put("R", BillType.RECONCILIATION);
-		invoiceTypeMap.put("P", BillType.PREPAID);
-		invoiceTypeMap.put("O", BillType.INFORMATION);
-		invoiceTypeMap.put("W", BillType.WITHDRAWAL);
+		billTypeMap.put("A", "AMENDED");
+		billTypeMap.put("F", "FINAL");
+		billTypeMap.put("N", "NORMAL");
+		billTypeMap.put("I", "INTEREST");
+		billTypeMap.put("R", "RECONCILIATION");
+		billTypeMap.put("P", "PREPAID");
+		billTypeMap.put("O", "INFORMATION");
+		billTypeMap.put("W", "WITHDRAWAL");
 	}
 
 	private CSVParser shredder;
@@ -69,7 +69,7 @@ public class InvoiceConverterCsv implements InvoiceConverter {
 
 	private List<RawBill> rawBills = new ArrayList<RawBill>();
 
-	public InvoiceConverterCsv(Reader reader) throws HttpException,
+	public BillConverterCsv(Reader reader) throws HttpException,
 			InternalException {
 		try {
 			shredder = new CSVParser(reader);
@@ -97,7 +97,7 @@ public class InvoiceConverterCsv implements InvoiceConverter {
 		dateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
 	}
 
-	public List<RawBill> getRawInvoices() throws HttpException,
+	public List<RawBill> getRawBills() throws HttpException,
 			InternalException {
 		if (rawBills.isEmpty()) {
 			try {
@@ -125,7 +125,7 @@ public class InvoiceConverterCsv implements InvoiceConverter {
 					for (String mpanStr : values[2].split(",")) {
 						mpanStrings.add(mpanStr);
 					}
-					rawBills.add(new RawBill(invoiceTypeMap.get(values[0]),
+					rawBills.add(new RawBill(billTypeMap.get(values[0]),
 							values[1], mpanStrings, values[3],
 							new DayStartDate(values[4]), new DayStartDate(
 									values[5]).getNext(), new DayFinishDate(

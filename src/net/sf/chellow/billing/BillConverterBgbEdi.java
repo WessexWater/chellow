@@ -33,7 +33,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import net.sf.chellow.monad.Debug;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.InternalException;
@@ -45,50 +44,46 @@ import net.sf.chellow.physical.ReadType;
 import net.sf.chellow.physical.RegisterReadRaw;
 import net.sf.chellow.physical.Units;
 
-public class InvoiceConverterSseEdi implements InvoiceConverter {
+public class BillConverterBgbEdi implements BillConverter {
 	private static final Map<Integer, Character> readTypeMap = Collections
 			.synchronizedMap(new HashMap<Integer, Character>());
 
-	private static final Map<String, BillType> invoiceTypeMap = Collections
-			.synchronizedMap(new HashMap<String, BillType>());
-
-	private static final Map<String, Integer> tModMap = Collections
-			.synchronizedMap(new HashMap<String, Integer>());
+	private static final Map<String, String> billTypeMap = Collections
+			.synchronizedMap(new HashMap<String, String>());
 
 	static {
 		readTypeMap.put(0, ReadType.TYPE_ROUTINE);
+		readTypeMap.put(1, ReadType.TYPE_ESTIMATE);
 		readTypeMap.put(2, ReadType.TYPE_ESTIMATE);
+		readTypeMap.put(3, ReadType.TYPE_ROUTINE);
 		readTypeMap.put(4, ReadType.TYPE_CUSTOMER);
-		readTypeMap.put(9, ReadType.TYPE_ROUTINE);
+		readTypeMap.put(5, ReadType.TYPE_ROUTINE);
+		readTypeMap.put(6, ReadType.TYPE_ROUTINE);
+		readTypeMap.put(7, ReadType.TYPE_INITIAL);
 
-		invoiceTypeMap.put("A", BillType.AMENDED);
-		invoiceTypeMap.put("F", BillType.FINAL);
-		invoiceTypeMap.put("N", BillType.NORMAL);
-		invoiceTypeMap.put("I", BillType.INTEREST);
-		invoiceTypeMap.put("R", BillType.RECONCILIATION);
-		invoiceTypeMap.put("P", BillType.PREPAID);
-		invoiceTypeMap.put("O", BillType.INFORMATION);
-		invoiceTypeMap.put("W", BillType.WITHDRAWAL);
-
-		tModMap.put("URQ1", 1);
-		tModMap.put("Z012", 1);
-		tModMap.put("URQD", 1);
-		tModMap.put("SG1U", 1);
+		billTypeMap.put("A", "AMENDED");
+		billTypeMap.put("F", "FINAL");
+		billTypeMap.put("N", "NORMAL");
+		billTypeMap.put("I", "INTEREST");
+		billTypeMap.put("R", "RECONCILIATION");
+		billTypeMap.put("P", "PREPAID");
+		billTypeMap.put("O", "INFORMATION");
+		billTypeMap.put("W", "WITHDRAWAL");
 	}
 
 	private LineNumberReader lreader;
 
-	private List<RawBill> rawInvoices = new ArrayList<RawBill>();
+	private List<RawBill> rawBills = new ArrayList<RawBill>();
 
-	public InvoiceConverterSseEdi(Reader reader) throws HttpException,
+	public BillConverterBgbEdi(Reader reader) throws HttpException,
 			InternalException {
 		lreader = new LineNumberReader(reader);
 	}
 
-	public List<RawBill> getRawInvoices() throws HttpException,
+	public List<RawBill> getRawBills() throws HttpException,
 			InternalException {
 		Hiber.flush();
-		String line = null;
+		String line;
 		try {
 			line = lreader.readLine();
 			Set<String> mpanStrings = null;
@@ -101,7 +96,7 @@ public class InvoiceConverterSseEdi implements InvoiceConverter {
 			BigDecimal vat = null;
 			String messageType = null;
 			Set<LocalRegisterReadRaw> reads = null;
-			String invoiceTypeCode = null;
+			String billTypeCode = null;
 
 			while (line != null) {
 				EdiSegment segment = null;
@@ -123,7 +118,7 @@ public class InvoiceConverterSseEdi implements InvoiceConverter {
 					EdiElement btcd = segment.getElements().get(5);
 
 					invoiceNumber = invn.getComponents().get(0);
-					invoiceTypeCode = btcd.toString();
+					billTypeCode = btcd.toString();
 					issueDate = new DayStartDate(ivdt.getDate(0).getNext()
 							.getDate());
 				}
@@ -140,15 +135,18 @@ public class InvoiceConverterSseEdi implements InvoiceConverter {
 						net = new BigDecimal(0);
 						vat = new BigDecimal(0);
 						reads = new HashSet<LocalRegisterReadRaw>();
-						invoiceTypeCode = null;
+						billTypeCode = null;
 						mpanStrings = new HashSet<String>();
 					}
 				}
 				if (code.equals("CCD")) {
 					EdiElement ccde = segment.getElements().get(1);
 					String consumptionChargeIndicator = ccde.getString(0);
-					if (consumptionChargeIndicator.equals("1")
-							|| consumptionChargeIndicator.equals("2")) {
+					String chargeType = ccde.getString(2);
+					if (!consumptionChargeIndicator.equals("5")
+							&& (chargeType.equals("7")
+									|| chargeType.equals("8") || chargeType
+									.equals("9"))) {
 						HhEndDate previousHhReadDate = segment.getElements()
 								.get(7).getDate(0);
 						DayStartDate registerStartDate = new DayStartDate(
@@ -156,11 +154,9 @@ public class InvoiceConverterSseEdi implements InvoiceConverter {
 								.getNext();
 						DayFinishDate previousReadDate = new DayFinishDate(
 								previousHhReadDate).getNext();
-						Debug.print("start date " + startDate);
 						if (startDate == null
 								|| startDate.getDate().after(
 										registerStartDate.getDate())) {
-							Debug.print("register date " + registerStartDate);
 							startDate = registerStartDate;
 						}
 						DayFinishDate registerFinishDate = new DayFinishDate(
@@ -171,39 +167,33 @@ public class InvoiceConverterSseEdi implements InvoiceConverter {
 										registerFinishDate.getDate())) {
 							finishDate = registerFinishDate;
 						}
-						EdiElement tmod = segment.getElements().get(3);
-						EdiElement mtnr = segment.getElements().get(4);
-						EdiElement mloc = segment.getElements().get(5);
-						EdiElement prrd = segment.getElements().get(9);
-						EdiElement adjf = segment.getElements().get(12);
-						ReadType presentReadType = prrd.getReadType(1);
-						ReadType previousReadType = prrd.getReadType(3);
-						BigDecimal coefficient = new BigDecimal(adjf.getInt(1))
-								.divide(new BigDecimal(100000));
-						BigDecimal presentReadingValue = new BigDecimal(prrd
-								.getInt(0)).divide(new BigDecimal(1000));
-						BigDecimal previousReadingValue = new BigDecimal(prrd
-								.getInt(2)).divide(new BigDecimal(1000));
-						String meterSerialNumber = mtnr.getString(0);
-						MpanCore mpanCore = MpanCore.getMpanCore(mloc
-								.getString(0).substring(0, 13));
-						String tmodStr = tmod.getString(0);
-						Integer tpr;
-						try {
-							tpr = Integer.parseInt(tmodStr);
-						} catch (NumberFormatException e) {
-							tpr = tModMap.get(tmodStr);
-							if (tpr == null) {
-								throw new UserException(
-										"Don't recognize the TPR code '"
-												+ tmodStr + "'.");
-							}
+						if (chargeType.equals("7")) {
+							EdiElement tmod = segment.getElements().get(3);
+							EdiElement mtnr = segment.getElements().get(4);
+							EdiElement mloc = segment.getElements().get(5);
+							EdiElement prrd = segment.getElements().get(9);
+							EdiElement adjf = segment.getElements().get(12);
+							ReadType presentReadType = prrd.getReadType(1);
+							ReadType previousReadType = prrd.getReadType(3);
+							BigDecimal coefficient = new BigDecimal(adjf
+									.getInt(1)).divide(new BigDecimal(100000));
+							BigDecimal presentReadingValue = new BigDecimal(
+									prrd.getInt(0))
+									.divide(new BigDecimal(1000));
+							BigDecimal previousReadingValue = new BigDecimal(
+									prrd.getInt(2))
+									.divide(new BigDecimal(1000));
+							String meterSerialNumber = mtnr.getString(0);
+							Meter meter = MpanCore.getMpanCore(
+									mloc.getString(0)).getSupply().findMeter(
+									meterSerialNumber);
+							int tpr = tmod.getInt(0);
+							reads.add(new LocalRegisterReadRaw(meter,
+									coefficient, Units.KWH, tpr,
+									previousReadDate, previousReadingValue,
+									previousReadType, registerFinishDate,
+									presentReadingValue, presentReadType));
 						}
-						reads.add(new LocalRegisterReadRaw(mpanCore.getSupply().findMeter(meterSerialNumber),
-								coefficient, Units.KWH, tpr,
-								 previousReadDate, previousReadingValue,
-								previousReadType, registerFinishDate,
-								presentReadingValue, presentReadType));
 					}
 				}
 				if (code.equals("MTR")) {
@@ -211,22 +201,22 @@ public class InvoiceConverterSseEdi implements InvoiceConverter {
 						Set<RegisterReadRaw> registerReads = new HashSet<RegisterReadRaw>();
 						for (LocalRegisterReadRaw read : reads) {
 							registerReads.add(new RegisterReadRaw(read
-									.getMeter(), read.getCoefficient()
-									, read.getUnits(),
-									read.getTpr(), read.getPreviousDate(), read
-											.getPreviousValue(), read
+									.getMeter(), read.getCoefficient(), read
+									.getUnits(), read.getTpr(), read
+									.getPreviousDate(),
+									read.getPreviousValue(), read
 											.getPreviousType(), read
 											.getCurrentDate(), read
 											.getCurrentValue(), read
 											.getCurrentType()));
 						}
-						BillType invoiceType = invoiceTypeMap
-								.get(invoiceTypeCode);
-						RawBill invoiceRaw = new RawBill(invoiceType,
+						String billType = billTypeMap
+								.get(billTypeCode);
+						RawBill billRaw = new RawBill(billType,
 								accountReference, mpanStrings, invoiceNumber,
 								issueDate, startDate, finishDate, net, vat,
 								registerReads);
-						rawInvoices.add(invoiceRaw);
+						rawBills.add(billRaw);
 					}
 				}
 				if (code.equals("MAN")) {
@@ -252,23 +242,22 @@ public class InvoiceConverterSseEdi implements InvoiceConverter {
 			Hiber.flush();
 		} catch (IOException e) {
 			throw new UserException("Can't read EDF Energy mm file.");
-		} catch (Throwable e) {
-			throw new UserException("Problem at line number "
-					+ lreader.getLineNumber() + "\n" + line
-					+ "\n of the EDI file.\n"
-					+ HttpException.getStackTraceString(e));
+		} catch (HttpException e) {
+			throw new UserException("Problem at line "
+					+ lreader.getLineNumber() + " of the EDI file. "
+					+ e.getMessage());
 		}
-		return rawInvoices;
+		return rawBills;
 	}
 
 	public String getProgress() {
-		return "Reached line " + lreader.getLineNumber() + ".";
+		return "Reached line " + lreader.getLineNumber() + " of first passs.";
 	}
 
 	private class LocalRegisterReadRaw {
-		private Meter meter;
-
 		private BigDecimal coefficient;
+
+		private Meter meter;
 
 		private Units units;
 
@@ -287,17 +276,13 @@ public class InvoiceConverterSseEdi implements InvoiceConverter {
 		private ReadType currentType;
 
 		public LocalRegisterReadRaw(Meter meter, BigDecimal coefficient,
-				 Units units, Integer tpr,
-				DayFinishDate previousDate,
+				Units units, int tpr, DayFinishDate previousDate,
 				BigDecimal previousValue, ReadType previousType,
 				DayFinishDate currentDate, BigDecimal currentValue,
 				ReadType currentType) throws InternalException {
 			this.meter = meter;
 			this.coefficient = coefficient;
 			this.units = units;
-			if (tpr == null) {
-				throw new InternalException("TPR cannot be null.");
-			}
 			this.tpr = tpr;
 			this.previousDate = previousDate;
 			this.previousValue = previousValue;

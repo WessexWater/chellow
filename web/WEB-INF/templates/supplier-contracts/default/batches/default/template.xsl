@@ -68,7 +68,7 @@
 								<legend>Delete</legend>
 								<p>
 									Are you sure you want to delete this
-									batch and all its invoices?
+									batch and all its bills?
 								</p>
 								<input type="submit" name="delete"
 									value="Delete" />
@@ -118,12 +118,12 @@
 						</form>
 						<ul>
 							<li>
-								<a href="invoice-imports/">
-									Invoice imports
+								<a href="bill-imports/">
+									Bill Imports
 								</a>
 							</li>
 							<li>
-								<a href="invoices/">Invoices</a>
+								<a href="bills/">Bills</a>
 							</li>
 						</ul>
 					</xsl:otherwise>

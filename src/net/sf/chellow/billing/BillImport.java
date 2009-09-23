@@ -57,32 +57,32 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
-public class InvoiceImport extends Thread implements Urlable, XmlDescriber {
-	private static final Map<String, Class<? extends InvoiceConverter>> CONVERTERS;
+public class BillImport extends Thread implements Urlable, XmlDescriber {
+	private static final Map<String, Class<? extends BillConverter>> CONVERTERS;
 
 	static {
-		CONVERTERS = new HashMap<String, Class<? extends InvoiceConverter>>();
-		CONVERTERS.put("mm", InvoiceConverterMm.class);
-		CONVERTERS.put("csv", InvoiceConverterCsv.class);
-		CONVERTERS.put("bgb.edi", InvoiceConverterBgbEdi.class);
-		CONVERTERS.put("sse.edi", InvoiceConverterSseEdi.class);
+		CONVERTERS = new HashMap<String, Class<? extends BillConverter>>();
+		CONVERTERS.put("mm", BillConverterMm.class);
+		CONVERTERS.put("csv", BillConverterCsv.class);
+		CONVERTERS.put("bgb.edi", BillConverterBgbEdi.class);
+		CONVERTERS.put("sse.edi", BillConverterSseEdi.class);
 	}
 	private boolean halt = false;
 
 	private List<String> messages = Collections
 			.synchronizedList(new ArrayList<String>());
 
-	private List<Map<RawBill, String>> failedInvoices = Collections
+	private List<Map<RawBill, String>> failedBills = Collections
 			.synchronizedList(new ArrayList<Map<RawBill, String>>());
-	private List<RawBill> successfulInvoices = null;
+	private List<RawBill> successfulBills = null;
 
-	private InvoiceConverter converter;
+	private BillConverter converter;
 
 	private Long id;
 
 	private Long batchId;
 
-	public InvoiceImport(Long batchId, Long id, FileItem item)
+	public BillImport(Long batchId, Long id, FileItem item)
 			throws HttpException {
 		try {
 			initialize(batchId, id, item.getInputStream(), item.getName(), item
@@ -92,8 +92,8 @@ public class InvoiceImport extends Thread implements Urlable, XmlDescriber {
 		}
 	}
 
-	public InvoiceImport(Long batchId, Long id, InputStream is,
-			String fileName, long fileSize) throws HttpException {
+	public BillImport(Long batchId, Long id, InputStream is, String fileName,
+			long fileSize) throws HttpException {
 		initialize(batchId, id, is, fileName, fileSize);
 	}
 
@@ -135,7 +135,7 @@ public class InvoiceImport extends Thread implements Urlable, XmlDescriber {
 					"The file name must have an extension (eg. '.zip')");
 		}
 		String extension = fileName.substring(locationOfDot + 1);
-		Class<? extends InvoiceConverter> converterClass = CONVERTERS
+		Class<? extends BillConverter> converterClass = CONVERTERS
 				.get(extension);
 		if (converterClass == null) {
 			StringBuilder recognizedExtensions = new StringBuilder();
@@ -151,13 +151,6 @@ public class InvoiceImport extends Thread implements Urlable, XmlDescriber {
 							+ recognizedExtensions
 							+ " and it is not a '.zip' file containing a file with one of the recognized extensions.");
 		}
-		/*
-		 * if (fileName.endsWith(".mm")) { converterClass =
-		 * InvoiceConverterMm.class; } else if (fileName.endsWith(".csv")) {
-		 * converterClass = InvoiceConverterCsv.class; } else { throw
-		 * UserException .newInvalidParameter("The extension of the filename '"
-		 * + fileName + "' is not one of the recognized extensions; '.mm'."); }
-		 */
 		try {
 			converter = converterClass.getConstructor(
 					new Class<?>[] { Reader.class }).newInstance(
@@ -186,12 +179,12 @@ public class InvoiceImport extends Thread implements Urlable, XmlDescriber {
 
 	public void run() {
 		try {
-			List<RawBill> rawInvoices = converter.getRawInvoices();
+			List<RawBill> rawBills = converter.getRawBills();
 			Batch batch = getBatch();
 			Hiber.flush();
-			successfulInvoices = Collections
+			successfulBills = Collections
 					.synchronizedList(new ArrayList<RawBill>());
-			for (RawBill rawInvoice : rawInvoices) {
+			for (RawBill rawBill : rawBills) {
 				Hiber.flush();
 				if (shouldHalt()) {
 					throw new UserException(
@@ -199,26 +192,26 @@ public class InvoiceImport extends Thread implements Urlable, XmlDescriber {
 				}
 				try {
 					Hiber.flush();
-					batch.insertBill(rawInvoice);
+					batch.insertBill(rawBill);
 					Hiber.commit();
 					Hiber.flush();
-					successfulInvoices.add(rawInvoice);
+					successfulBills.add(rawBill);
 				} catch (HttpException e) {
 					Hiber.flush();
-					Map<RawBill, String> invoiceMap = new HashMap<RawBill, String>();
-					invoiceMap.put(rawInvoice, e.getMessage());
-					failedInvoices.add(invoiceMap);
+					Map<RawBill, String> billMap = new HashMap<RawBill, String>();
+					billMap.put(rawBill, e.getMessage());
+					failedBills.add(billMap);
 					Hiber.rollBack();
 					Hiber.flush();
 				}
 			}
-			//Account.checkAllMissingFromLatest();
-			if (failedInvoices.isEmpty()) {
+			// Account.checkAllMissingFromLatest();
+			if (failedBills.isEmpty()) {
 				messages
-						.add("All the invoices have been successfully loaded and attached to the batch.");
+						.add("All the bills have been successfully loaded and attached to the batch.");
 			} else {
 				messages
-						.add("The import has finished, but not all invoices were successfully loaded.");
+						.add("The import has finished, but not all bills were successfully loaded.");
 			}
 		} catch (InternalException e) {
 			messages.add("ProgrammerException : "
@@ -273,38 +266,32 @@ public class InvoiceImport extends Thread implements Urlable, XmlDescriber {
 	}
 
 	public Element toXml(Document doc) throws HttpException {
-		Element importElement = doc.createElement("invoice-import");
+		Element importElement = doc.createElement("bill-import");
 		boolean isAlive = this.isAlive();
 		importElement.setAttribute("id", getUriId().toString());
 		importElement
-				.setAttribute(
-						"progress",
-						successfulInvoices == null ? converter.getProgress()
-								: "There have been "
-										+ successfulInvoices.size()
-										+ " successful imports, and "
-										+ failedInvoices.size()
-										+ " failures."
-										+ (isAlive ? "The thread is still alive."
-												: ""));
-		if (!isAlive && successfulInvoices != null) {
-			Element failedElement = doc.createElement("failed-invoices");
+				.setAttribute("progress", successfulBills == null ? converter
+						.getProgress() : "There have been "
+						+ successfulBills.size() + " successful imports, and "
+						+ failedBills.size() + " failures."
+						+ (isAlive ? "The thread is still alive." : ""));
+		if (!isAlive && successfulBills != null) {
+			Element failedElement = doc.createElement("failed-bills");
 			importElement.appendChild(failedElement);
-			Element successfulElement = doc
-					.createElement("successful-invoices");
+			Element successfulElement = doc.createElement("successful-bills");
 			importElement.appendChild(successfulElement);
-			for (Map<RawBill, String> invoiceMap : failedInvoices) {
-				for (Entry<RawBill, String> entry : invoiceMap.entrySet()) {
-					Element invoiceRawElement = (Element) entry.getKey().toXml(
+			for (Map<RawBill, String> billMap : failedBills) {
+				for (Entry<RawBill, String> entry : billMap.entrySet()) {
+					Element billRawElement = (Element) entry.getKey().toXml(
 							doc, new XmlTree("registerReads"));
-					failedElement.appendChild(invoiceRawElement);
-					invoiceRawElement.appendChild(new MonadMessage(entry
+					failedElement.appendChild(billRawElement);
+					billRawElement.appendChild(new MonadMessage(entry
 							.getValue()).toXml(doc));
 				}
 			}
-			for (RawBill invoiceRaw : successfulInvoices) {
-				successfulElement.appendChild(invoiceRaw.toXml(doc,
-						new XmlTree("registerReads")));
+			for (RawBill billRaw : successfulBills) {
+				successfulElement.appendChild(billRaw.toXml(doc, new XmlTree(
+						"registerReads")));
 			}
 		}
 		for (String message : messages) {
