@@ -562,9 +562,9 @@ source.appendChild(MonadDate().toXml(doc))]]></value>
                             select="concat('Source: ', /source/supply/source/@code, ' - ', /source/supply/source/@name)" />
                     </li>
                 </ul>
-
+              <xsl:for-each select="/source/supply/supply-generation">
                 <table>
-                    <caption>Generations</caption>
+                    <caption>Generation</caption>
                     <thead>
                         <tr>
                             <th rowspan="2">Id</th>
@@ -585,7 +585,6 @@ source.appendChild(MonadDate().toXml(doc))]]></value>
                             <th>Bills</th>
                         </tr>
                     </thead>
-                    <xsl:for-each select="/source/supply/supply-generation">
                         <tbody>
                             <tr>
                                 <td>
@@ -664,9 +663,12 @@ source.appendChild(MonadDate().toXml(doc))]]></value>
                                 </td>
                             </tr>
                         </tbody>
+                      </table>
+<br/>
+                      <table><caption>Bills</caption>
                         <thead>
                             <tr>
-                                <th colspan="15">Import Bills</th>
+                                <th colspan="15">Import</th>
                             </tr>
                             <tr>
                                 <th>Edit</th>
@@ -683,6 +685,8 @@ source.appendChild(MonadDate().toXml(doc))]]></value>
                         <tbody>
                             <xsl:for-each select="import-bills/*">
                                 <tr>
+                                <xsl:choose>
+                                <xsl:when test="name()='bill'">
                                     <td>
                                         <a
                                             href="{/source/request/@context-path}/supplier-contracts/{batch/supplier-contract/@id}/batches/{batch/@id}/bills/{@id}/">
@@ -727,11 +731,40 @@ source.appendChild(MonadDate().toXml(doc))]]></value>
                                             </xsl:when>
                                         </xsl:choose>
                                     </td>
+                                </xsl:when>
+                                <xsl:otherwise>
+                                                                    <td>
+                                        <a
+                                            href="{/source/request/@context-path}/supplies/{supply/@id}/snags/{@id}/">
+                                            <xsl:value-of select="'edit'" />
+                                        </a>
+                                    </td>
+                                    <td>
+                                        <xsl:value-of select="@description" />
+                                    </td>
+                                    <td>
+                                        <xsl:value-of
+                                            select="concat(hh-end-date[@label='start']/@year, '-', hh-end-date[@label='start']/@month, '-', hh-end-date[@label='start']/@day)" />
+                                    </td>
+                                    <td>
+                                      <xsl:choose>
+                                      <xsl:when test="hh-end-date[@label='finish']">
+                                        <xsl:value-of
+                                            select="concat(hh-end-date[@label='finish']/@year, '-', hh-end-date[@label='finish']/@month, '-', hh-end-date[@label='finish']/@day)" />
+                                      </xsl:when>
+                                      <xsl:otherwise>
+                                      Ongoing
+                                      </xsl:otherwise>
+                                      </xsl:choose>
+                                    </td>
+                                    <td colspan="5"></td>
+                                </xsl:otherwise>
+                                </xsl:choose>
                                 </tr>
                             </xsl:for-each>
                         </tbody>
-                    </xsl:for-each>
                 </table>
+</xsl:for-each>
                 <ul>
                     <li>
                         kWh, kVA, MD etc. by month:
