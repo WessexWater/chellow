@@ -421,22 +421,14 @@
 							</fieldset>
 						</form>
 						<br />
-						<h4>
-							<a href="reads/">Register Reads</a>
-						</h4>
-						<h4>MPANs</h4>
-						<xsl:if test="/source/bill/bill-mpan">
-							<ul>
-								<xsl:for-each select="/source/bill/bill-mpan">
-									<li>
-										<a
-											href="{/source/request/@context-path}/orgs/{/source/bill/batch/supplier-contract/org/@id}/supplies/{mpan/supply-generation/supply/@id}/generations/{mpan/supply-generation/@id}/">
-											<xsl:value-of select="mpan/@mpan" />
-										</a>
-									</li>
-								</xsl:for-each>
-							</ul>
-						</xsl:if>
+						<ul>
+							<li>
+								<a href="reads/">Register Reads</a>
+							</li>
+							<li>
+								<a href="snags/">Snags</a>
+							</li>
+						</ul>
 					</xsl:otherwise>
 				</xsl:choose>
 			</body>

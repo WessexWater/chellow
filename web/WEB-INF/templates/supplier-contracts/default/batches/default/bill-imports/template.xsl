@@ -12,11 +12,11 @@
 				<title>
 					Chellow &gt; Supplier Contracts &gt;
 					<xsl:value-of
-						select="/source/invoice-imports/batch/supplier-contract/@name" />
+						select="/source/bill-imports/batch/supplier-contract/@name" />
 					&gt; Batches &gt;
 					<xsl:value-of
-						select="/source/invoice-imports/batch/@reference" />
-					&gt; Invoice Imports
+						select="/source/bill-imports/batch/@reference" />
+					&gt; Bill Imports
 				</title>
 			</head>
 
@@ -34,23 +34,23 @@
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/supplier-contracts/{/source/invoice-imports/batch/supplier-contract/@id}/">
+						href="{/source/request/@context-path}/supplier-contracts/{/source/bill-imports/batch/supplier-contract/@id}/">
 						<xsl:value-of
-							select="/source/invoice-imports/batch/supplier-contract/@name" />
+							select="/source/bill-imports/batch/supplier-contract/@name" />
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/supplier-contracts/{/source/invoice-imports/batch/supplier-contract/@id}/batches/">
+						href="{/source/request/@context-path}/supplier-contracts/{/source/bill-imports/batch/supplier-contract/@id}/batches/">
 						<xsl:value-of select="'Batches'" />
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/supplier-contracts/{/source/invoice-imports/batch/supplier-contract/@id}/batches/{/source/invoice-imports/batch/@id}/">
+						href="{/source/request/@context-path}/supplier-contracts/{/source/bill-imports/batch/supplier-contract/@id}/batches/{/source/bill-imports/batch/@id}/">
 						<xsl:value-of
-							select="/source/invoice-imports/batch/@reference" />
+							select="/source/bill-imports/batch/@reference" />
 					</a>
 					&gt;
-					<xsl:value-of select="'Invoice Imports'" />
+					<xsl:value-of select="'Bill Imports'" />
 				</p>
 				<xsl:if test="/source/message">
 					<ul>
@@ -70,7 +70,7 @@
 							<a
 								href="{/source/response/header[@name = 'Location']/@value}">
 								<xsl:value-of
-									select="'new invoice import'" />
+									select="'new bill import'" />
 							</a>
 							has started.
 						</p>
@@ -78,7 +78,7 @@
 					<xsl:otherwise>
 						<ul>
 							<xsl:for-each
-								select="/source/invoice-imports/invoice-import">
+								select="/source/bill-imports/bill-import">
 								<li>
 									<a href="{@id}/">
 										<xsl:value-of select="@id" />
@@ -89,7 +89,7 @@
 						<form enctype="multipart/form-data" action="."
 							method="post">
 							<fieldset>
-								<legend>Import invoices</legend>
+								<legend>Import Bills</legend>
 								<br />
 								<label>
 									<a

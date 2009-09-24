@@ -17,12 +17,12 @@
 				<title>
 					Chellow &gt; Supplier Contracts &gt;
 					<xsl:value-of
-						select="/source/invoice-import/batch/supplier-contract/@name" />
+						select="/source/bill-import/batch/supplier-contract/@name" />
 					&gt; Batches &gt;
 					<xsl:value-of
-						select="/source/invoice-import/batch/@reference" />
-					&gt; Invoice Imports &gt;
-					<xsl:value-of select="/source/invoice-import/@id" />
+						select="/source/bill-import/batch/@reference" />
+					&gt; Bill Imports &gt;
+					<xsl:value-of select="/source/bill-import/@id" />
 				</title>
 			</head>
 			<body>
@@ -39,34 +39,34 @@
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/supplier-contracts/{/source/invoice-import/batch/supplier-contract/@id}/">
+						href="{/source/request/@context-path}/supplier-contracts/{/source/bill-import/batch/supplier-contract/@id}/">
 						<xsl:value-of
-							select="/source/invoice-import/batch/supplier-contract/@name" />
+							select="/source/bill-import/batch/supplier-contract/@name" />
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/supplier-contracts/{/source/invoice-import/batch/supplier-contract/@id}/batches/">
+						href="{/source/request/@context-path}/supplier-contracts/{/source/bill-import/batch/supplier-contract/@id}/batches/">
 						<xsl:value-of select="'Batches'" />
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/supplier-contracts/{/source/invoice-import/batch/supplier-contract/@id}/batches/{/source/invoice-import/batch/@id}/">
+						href="{/source/request/@context-path}/supplier-contracts/{/source/bill-import/batch/supplier-contract/@id}/batches/{/source/bill-import/batch/@id}/">
 						<xsl:value-of
-							select="/source/invoice-import/batch/@reference" />
+							select="/source/bill-import/batch/@reference" />
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/supplier-contracts/{/source/invoice-import/batch/supplier-contract/@id}/batches/{/source/invoice-import/batch/@id}/invoice-imports/">
-						<xsl:value-of select="'Invoice Imports'" />
+						href="{/source/request/@context-path}/supplier-contracts/{/source/bill-import/batch/supplier-contract/@id}/batches/{/source/bill-import/batch/@id}/bill-imports/">
+						<xsl:value-of select="'Bill Imports'" />
 					</a>
 					&gt;
-					<xsl:value-of select="/source/invoice-import/@id" />
+					<xsl:value-of select="/source/bill-import/@id" />
 				</p>
 				<br />
-				<xsl:if test="//message[not(../../invoice-raw)]">
+				<xsl:if test="//message[not(../../raw-bill)]">
 					<ul>
 						<xsl:for-each
-							select="//message[not(../../invoice-raw)]">
+							select="//message[not(../../raw-bill)]">
 							<li>
 								<xsl:value-of select="@description" />
 							</li>
@@ -75,12 +75,12 @@
 				</xsl:if>
 				<p>
 					<xsl:value-of
-						select="/source/invoice-import/@progress" />
+						select="/source/bill-import/@progress" />
 				</p>
 				<xsl:if
-					test="/source/invoice-import/failed-invoices/invoice-raw">
+					test="/source/bill-import/failed-bills/raw-bill">
 					<table>
-						<caption>Invoices that failed to load</caption>
+						<caption>Bills that failed to load</caption>
 						<thead>
 							<tr>
 								<th>Problem</th>
@@ -141,7 +141,7 @@
 						</thead>
 						<tbody>
 							<xsl:for-each
-								select="/source/invoice-import/failed-invoices/invoice-raw">
+								select="/source/bill-import/failed-bills/raw-bill">
 								<tr>
 									<td>
 										<xsl:value-of
@@ -228,7 +228,7 @@
 						</tbody>
 					</table>
 					<!--
-						<h2>Failed invoices in CSV format</h2>
+						<h2>Failed bills in CSV format</h2>
 						
 						<code>
 						Reference, Account Reference, MPAN Text, Issue
@@ -267,7 +267,7 @@
 						Date, R8 Present Value, R8 Present Type,
 						<br />
 						<xsl:for-each
-						select="/source/invoice-import/failed-invoices/invoice-raw">
+						select="/source/bill-import/failed-bills/raw-bill">
 						<xsl:value-of
 						select="concat(@reference, ', ', @account-reference, ', &quot;', @mpan-text, '&quot;', ', ', day-start-date[@label='issue']/@year, '-', day-start-date[@label='issue']/@month, '-', day-start-date[@label='issue']/@day, ', ', day-start-date[@label='start']/@year, '-', day-start-date[@label='start']/@month, '-', day-start-date[@label='start']/@day, ', ', day-finish-date[@label='finish']/@year, '-', day-finish-date[@label='finish']/@month, '-', day-finish-date[@label='finish']/@day, ', ', @net, ', ', @vat)" />
 						<xsl:for-each select="register-read-raw">
@@ -280,12 +280,12 @@
 					-->
 				</xsl:if>
 				<xsl:if
-					test="/source/invoice-import/successful-invoices/invoice-raw">
+					test="/source/bill-import/successful-bills/raw-bill">
 					<br />
 					<br />
 					<table>
 						<caption>
-							Invoices that loaded successfully
+							Bills that loaded successfully
 						</caption>
 						<thead>
 							<tr>
@@ -297,6 +297,7 @@
 								<th>Finish Date</th>
 								<th>Net</th>
 								<th>VAT</th>
+								<th>Type</th>
 								<th>R1 MPAN</th>
 								<th>R1 Meter Serial Number</th>
 								<th>R1 TPR</th>
@@ -345,7 +346,7 @@
 						</thead>
 						<tbody>
 							<xsl:for-each
-								select="/source/invoice-import/successful-invoices/invoice-raw">
+								select="/source/bill-import/successful-bills/raw-bill">
 								<tr>
 									<td>
 										<xsl:value-of
@@ -376,6 +377,9 @@
 									</td>
 									<td>
 										<xsl:value-of select="@vat" />
+									</td>
+									<td>
+										<xsl:value-of select="@type" />
 									</td>
 									<xsl:for-each
 										select="register-read-raw">

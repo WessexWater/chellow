@@ -118,7 +118,7 @@ public class BillConverterBgbEdi implements BillConverter {
 					EdiElement btcd = segment.getElements().get(5);
 
 					invoiceNumber = invn.getComponents().get(0);
-					billTypeCode = btcd.toString();
+					billTypeCode = btcd.getComponents().get(0);
 					issueDate = new DayStartDate(ivdt.getDate(0).getNext()
 							.getDate());
 				}

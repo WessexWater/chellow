@@ -497,7 +497,7 @@ supply_id = inv.getLong("supply-id")
 if not inv.isValid():
     raise UserException()
 supply = Supply.getSupply(supply_id)
-supply_element = supply.toXml(doc, XmlTree("source").put("mpanCores"))
+supply_element = supply.toXml(doc, XmlTree("source").put("mpanCores").put("gspGroup").put("generatorType"))
 source.appendChild(supply_element)
 for generation in supply.getGenerations():
     generation_element = generation.toXml(doc, XmlTree("mpans", XmlTree("core").put("mtc").put("llfc", XmlTree("voltageLevel")).put('supplierContract')).put("hhdcContract", XmlTree("party")).put("pc").put("siteSupplyGenerations", XmlTree('site')))
@@ -553,45 +553,70 @@ source.appendChild(MonadDate().toXml(doc))]]></value>
                         </xsl:for-each>
                     </ul>
                 </xsl:if>
-                <ul>
-                    <li>
-                        <xsl:value-of select="concat('Name: ', /source/supply/@name)" />
-                    </li>
-                    <li>
+                <table>
+                  <tr>
+                    <th>Name</th>
+                    <td>
+                        <xsl:value-of select="/source/supply/@name" />
+                    </td>
+                  </tr>
+                  <tr>
+                        <th>Source</th>
+                        <td>
                         <xsl:value-of
-                            select="concat('Source: ', /source/supply/source/@code, ' - ', /source/supply/source/@name)" />
-                    </li>
-                </ul>
+                            select="concat(/source/supply/source/@code, ' - ', /source/supply/source/@name)" /><xsl:if test="/source/supply/source/@code='gen'"><xsl:value-of select="concat(' (', /source/supply/generator-type/@code, ' ', /source/supply/generator-type/@name, ')')"/>
+</xsl:if>
+                        </td>
+                    </tr>
+                   <tr>
+                      <th>GSP Group</th>
+                      <td>
+                        <xsl:value-of select="concat(/source/supply/gsp-group/@code, ' ', /source/supply/gsp-group/@description)" />
+                      </td>
+                    </tr>
+                </table>
+<br/>
               <xsl:for-each select="/source/supply/supply-generation">
                 <table>
                     <caption>Generation</caption>
                     <thead>
                         <tr>
-                            <th rowspan="2">Id</th>
-                            <th rowspan="2">From</th>
-                            <th rowspan="2">To</th>
-                            <th rowspan="2">Sites</th>
-                            <th colspan="4">Import</th>
-                            <th colspan="4">Export</th>
+                            <th rowspan="3">Edit</th>
+                            <th rowspan="3">From</th>
+                            <th rowspan="3">To</th>
+                            <th rowspan="3">Sites</th>
+                            <th rowspan="3">PC</th>
+                            <th rowspan="3">MSID</th>
+                            <th rowspan="2" colspan="2">HHDC</th>
+                            <th colspan="5">Import</th>
+                            <th colspan="5">Export</th>
                         </tr>
                         <tr>
-                            <th>MPAN</th>
-                            <th>kVA</th>
-                            <th>Supplier Account</th>
-                            <th>Bills</th>
-                            <th>MPAN</th>
-                            <th>kVA</th>
-                            <th>Supplier Account</th>
-                            <th>Bills</th>
+                            <th rowspan="2">MPAN</th>
+                            <th rowspan="2">kVA</th>
+                            <th rowspan="2">SSC</th>
+                            <th colspan="2">Supplier</th>
+                            <th rowspan="2">MPAN</th>
+                            <th rowspan="2">kVA</th>
+                            <th rowspan="2">SSC</th>
+                            <th colspan="2">Supplier</th>
+                        </tr>
+                            <th>Contract</th>
+                            <th>Account</th>
+                            <th>Contract</th>
+                            <th>Account</th>
+                            <th>Contract</th>
+                            <th>Account</th>
+                        <tr>
                         </tr>
                     </thead>
                         <tbody>
                             <tr>
-                                <td>
+                                <td><xsl:value-of select="'['"/>
                                     <a
-                                        href="{/source/request/@context-path}/reports/31/output/?supply-generation-id={@id}">
-                                        <xsl:value-of select="@id" />
-                                    </a>
+                                        href="{/source/request/@context-path}/supplies/{/source/supply/@id}/generations/{@id}/">
+                                        <xsl:value-of select="'edit'" />
+                                    </a><xsl:value-of select="']'"/>
                                 </td>
                                 <td>
                                     <xsl:value-of
@@ -621,6 +646,26 @@ source.appendChild(MonadDate().toXml(doc))]]></value>
                                         </xsl:for-each>
                                     </ul>
                                 </td>
+<td>
+ <a
+                                        href="{/source/request/@context-path}/reports/55/output/?pc-id={pc/@id}">
+                                    <xsl:value-of
+                                        select="pc/@code" /></a>
+                                </td>
+<td>
+                                    <xsl:value-of
+                                        select="meter/@serial-number" />
+                                </td>
+<td>
+ <a
+                                        href="{/source/request/@context-path}/reports/115/output/?hhdc-contract-id={hhdc-contract/@id}">
+                                    <xsl:value-of
+                                        select="hhdc-contract/@id" /></a>
+                                </td>
+ <td>
+                               <xsl:value-of
+                                        select="@hhdc-account" />
+                                </td>
                                 <td>
                                     <xsl:value-of
                                         select="concat(mpan[llfc/@is-import='true']/pc/@code, ' ', mpan[llfc/@is-import='true']/mtc/@code, ' ', mpan[llfc/@is-import='true']/llfc/@code, ' ', mpan[llfc/@is-import='true']/mpan-core/@core)" />
@@ -629,22 +674,22 @@ source.appendChild(MonadDate().toXml(doc))]]></value>
                                     <xsl:value-of
                                         select="mpan[llfc/@is-import='true']/@agreed-supply-capacity" />
                                 </td>
-                                <td>
-                                    <a
-                                        href="{/source/request/@context-path}/reports/83/output/?account-id={mpan[llfc/@is-import='true']/account[supplier-contract]/@id}">
-                                        <xsl:value-of
-                                            select="mpan[llfc/@is-import='true']/account[supplier-contract]/@reference" />
-                                    </a>
+<td>
+ <a
+                                        href="{/source/request/@context-path}/reports/127/output/?ssc-id={mpan[llfc/@is-import='true']/ssc/@id}">
+                                    <xsl:value-of
+                                        select="mpan[llfc/@is-import='true']/ssc/@code" /></a>
                                 </td>
                                 <td>
-                                    <ul>
-                                        <xsl:for-each select="import-bills/*">
-                                            <li>
-                                                <xsl:value-of select="@id" />
-                                                ggggg
-                                            </li>
-                                        </xsl:for-each>
-                                    </ul>
+                                    <a
+                                        href="{/source/request/@context-path}/reports/77/output/?supplier-contract-id={mpan[llfc/@is-import='true']/supplier-contract/@id}">
+                                        <xsl:value-of
+                                            select="mpan[llfc/@is-import='true']/supplier-contract/@name" />
+                                    </a>
+</td>
+<td>
+                                        <xsl:value-of
+                                            select="mpan[llfc/@is-import='true']/@supplier-account" />
                                 </td>
                                 <td>
                                     <xsl:value-of
@@ -654,12 +699,23 @@ source.appendChild(MonadDate().toXml(doc))]]></value>
                                     <xsl:value-of
                                         select="mpan[llfc/@is-import='false']/@agreed-supply-capacity" />
                                 </td>
+<td>
+ <a
+                                        href="{/source/request/@context-path}/reports/127/output/?ssc-id={mpan[llfc/@is-import='false']/ssc/@id}">
+                                    <xsl:value-of
+                                        select="mpan[llfc/@is-import='false']/ssc/@code" /></a>
+                                </td>
                                 <td>
                                     <a
-                                        href="{/source/request/@context-path}/reports/83/output/?account-id={mpan[llfc/@is-import='false']/account[supplier-contract]/@id}">
+                                        href="{/source/request/@context-path}/reports/77/output/?supplier-contract-id={mpan[llfc/@is-import='false']/supplier-contract/@id}">
                                         <xsl:value-of
-                                            select="mpan[llfc/@is-import='false']/account[supplier-contract]/@reference" />
+                                            select="mpan[llfc/@is-import='false']/supplier-contract/@name" />
                                     </a>
+</td>
+
+<td>
+                                        <xsl:value-of
+                                            select="mpan[llfc/@is-import='false']/@supplier-account" />
                                 </td>
                             </tr>
                         </tbody>
@@ -672,6 +728,7 @@ source.appendChild(MonadDate().toXml(doc))]]></value>
                             </tr>
                             <tr>
                                 <th>Edit</th>
+                                <th>Batch</th>
                                 <th>Reference</th>
                                 <th>From</th>
                                 <th>To</th>
@@ -687,11 +744,16 @@ source.appendChild(MonadDate().toXml(doc))]]></value>
                                 <tr>
                                 <xsl:choose>
                                 <xsl:when test="name()='bill'">
-                                    <td>
+                                    <td><xsl:value-of select="'['"/>
                                         <a
                                             href="{/source/request/@context-path}/supplier-contracts/{batch/supplier-contract/@id}/batches/{batch/@id}/bills/{@id}/">
                                             <xsl:value-of select="'edit'" />
-                                        </a>
+                                        </a><xsl:value-of select="']'"/>
+                                    </td>
+<td>
+                                        <a
+                                            href="{/source/request/@context-path}/reports//?batch-id={batch/@id}">
+                                            <xsl:value-of select="batch/@reference" />
                                     </td>
                                     <td>
                                         <xsl:value-of select="@reference" />

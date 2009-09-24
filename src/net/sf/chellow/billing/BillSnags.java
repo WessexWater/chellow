@@ -75,15 +75,14 @@ public class BillSnags extends EntityList {
 		Element source = doc.getDocumentElement();
 		Element snagsElement = toXml(doc);
 		source.appendChild(snagsElement);
-		snagsElement.appendChild(bill.toXml(doc, new XmlTree("account", new XmlTree("contract", new XmlTree("party")))));
+		snagsElement.appendChild(bill.toXml(doc, new XmlTree("batch",
+				new XmlTree("contract", new XmlTree("party"))).put("supply")));
 		for (BillSnag snag : (List<BillSnag>) Hiber
 				.session()
 				.createQuery(
-						"from BillSnag snag where snag.isIgnored is false and snag.bill.account.contract = :contract order by snag.bill.id, snag.description, snag.bill.startDate.date")
-				.setEntity("contract", bill)
-				.list()) {
-			snagsElement.appendChild(snag.toXml(doc, new XmlTree("bill",
-					new XmlTree("account"))));
+						"from BillSnag snag where snag.isIgnored is false and snag.bill = :bill order by snag.description, snag.bill.startDate.date")
+				.setEntity("bill", bill).list()) {
+			snagsElement.appendChild(snag.toXml(doc));
 		}
 		source.appendChild(MonadDate.getMonthsXml(doc));
 		source.appendChild(MonadDate.getDaysXml(doc));

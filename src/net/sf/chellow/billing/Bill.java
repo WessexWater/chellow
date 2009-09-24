@@ -289,6 +289,8 @@ public class Bill extends PersistentEntity implements Urlable {
 	public Urlable getChild(UriPathElement uriId) throws HttpException {
 		if (RegisterReads.URI_ID.equals(uriId)) {
 			return registerReadsInstance();
+		} else if (BillSnags.URI_ID.equals(uriId)) {
+			return new BillSnags(this);
 		} else {
 			throw new NotFoundException();
 		}

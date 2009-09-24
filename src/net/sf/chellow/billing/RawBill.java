@@ -60,6 +60,9 @@ public class RawBill extends MonadObject {
 			DayStartDate startDate, DayFinishDate finishDate, BigDecimal net,
 			BigDecimal vat, Set<RegisterReadRaw> registerReads)
 			throws HttpException {
+		if (type == null) {
+			throw new InternalException("The type can't be null.");
+		}
 		this.type = type;
 		if (issueDate == null) {
 			throw new InternalException("The issue date can't be null.");
@@ -77,7 +80,7 @@ public class RawBill extends MonadObject {
 		this.vat = vat;
 		if (reference == null) {
 			throw new InternalException(
-					"The invoiceText parameter is required.");
+					"The bill reference parameter is required.");
 		}
 		this.reference = reference;
 		if (accountReference == null) {
@@ -85,13 +88,6 @@ public class RawBill extends MonadObject {
 					"The accountReference parameter is required.");
 		}
 		this.accountReference = accountReference;
-		/*
-		 * for (String mpanStr : mpanText.split(",")) { try { mpans.add(new
-		 * MpanRaw(mpanStr)); } catch (HttpException e) { throw new
-		 * UserException("While parsing the MPAN string '" + mpanText + "' I
-		 * encountered difficulties with '" + mpanStr + "'. " + e.getMessage());
-		 * } }
-		 */
 		if (mpanStrings == null) {
 			throw new InternalException(
 					"The mpanStrings parameter must not be null.");
@@ -143,7 +139,7 @@ public class RawBill extends MonadObject {
 	}
 
 	public Element toXml(Document doc) throws InternalException {
-		Element element = doc.createElement("invoice-raw");
+		Element element = doc.createElement("raw-bill");
 		element.setAttribute("reference", reference);
 		issueDate.setLabel("issue");
 		element.appendChild(issueDate.toXml(doc));
@@ -153,6 +149,7 @@ public class RawBill extends MonadObject {
 		element.appendChild(finishDate.toXml(doc));
 		element.setAttribute("net", net.toString());
 		element.setAttribute("vat", vat.toString());
+		element.setAttribute("type", type);
 		element.setAttribute("account-reference", accountReference);
 		StringBuilder mpans = new StringBuilder();
 		for (String mpan : mpanStrings) {

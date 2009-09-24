@@ -257,6 +257,7 @@ public class Mpan extends PersistentEntity {
 				+ mtc.toXml(doc).getTextContent()
 				+ " "
 				+ llfc.toXml(doc).getTextContent() + " " + core.toString());
+		element.setAttribute("supplier-account", supplierAccount);
 		return element;
 	}
 
