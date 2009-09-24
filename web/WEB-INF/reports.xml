@@ -483,14 +483,14 @@ def bills_list(parent_element, element_name, contract, generation):
         bills_crit.add(Restrictions.le('startDate.date', generation.getFinishDate().getDate()))
         snags_crit.add(Restrictions.le('startDate.date', generation.getFinishDate().getDate()))
     bill_dict = {}
-    bill_list = bills_crit.list()
-    bill_list.addAll(snags_crit.list())
-    for bill in bill_list:
-        bill_dict[bill.getStartDate().getDate().getTime()] = bill
+    for bill in bills_crit.list():
+        bill_dict[bill.getStartDate().getDate().getTime()] = bill.toXml(doc, XmlTree('batch', XmlTree('contract')))
+    for snag in snags_crit.list():
+        bill_dict[snag.getStartDate().getDate().getTime()] = snag.toXml(doc)
     bill_keys = bill_dict.keys()
     bill_keys.sort()
     for key in bill_keys:
-        bills_element.appendChild(bill_dict[key].toXml(doc))
+        bills_element.appendChild(bill_dict[key])
     return bills_element
 
 supply_id = inv.getLong("supply-id")
@@ -728,10 +728,10 @@ source.appendChild(MonadDate().toXml(doc))]]></value>
                             </tr>
                             <tr>
                                 <th>Edit</th>
-                                <th>Batch</th>
-                                <th>Reference</th>
                                 <th>From</th>
                                 <th>To</th>
+                                <th>Batch</th>
+                                <th>Reference</th>
                                 <th>Net</th>
                                 <th>VAT</th>
                                 <th>Type</th>
@@ -750,23 +750,23 @@ source.appendChild(MonadDate().toXml(doc))]]></value>
                                             <xsl:value-of select="'edit'" />
                                         </a><xsl:value-of select="']'"/>
                                     </td>
+                                    <td>
+                                        <xsl:value-of
+                                            select="concat(day-start-date[@label='start']/@year, '-', day-start-date[@label='start']/@month, '-', day-start-date[@label='start']/@day)" />
+                                    </td>
+                                    <td>
+                                        <xsl:value-of
+                                            select="concat(day-finish-date[@label='finish']/@year, '-', day-finish-date[@label='finish']/@month, '-', day-finish-date[@label='finish']/@day)" />
+                                    </td>
 <td>
                                         <a
                                             href="{/source/request/@context-path}/reports//?batch-id={batch/@id}">
-                                            <xsl:value-of select="batch/@reference" />
+                                            <xsl:value-of select="batch/@reference" /></a>
                                     </td>
                                     <td>
                                         <xsl:value-of select="@reference" />
                                     </td>
-                                    <td>
-                                        <xsl:value-of
-                                            select="concat(day-start-date/@year, '-', day-start-date/@month, '-', day-start-date/@day)" />
-                                    </td>
-                                    <td>
-                                        <xsl:value-of
-                                            select="concat(day-finish-date/@year, '-', day-finish-date/@month, '-', day-finish-date/@day)" />
-                                    </td>
-                                    <td>
+                                   <td>
                                         <xsl:value-of select="@net" />
                                     </td>
                                     <td>
@@ -796,13 +796,10 @@ source.appendChild(MonadDate().toXml(doc))]]></value>
                                 </xsl:when>
                                 <xsl:otherwise>
                                                                     <td>
-                                        <a
+                                        <xsl:value-of select="'['" /><a
                                             href="{/source/request/@context-path}/supplies/{supply/@id}/snags/{@id}/">
                                             <xsl:value-of select="'edit'" />
-                                        </a>
-                                    </td>
-                                    <td>
-                                        <xsl:value-of select="@description" />
+                                        </a><xsl:value-of select="']'" />
                                     </td>
                                     <td>
                                         <xsl:value-of
@@ -819,7 +816,9 @@ source.appendChild(MonadDate().toXml(doc))]]></value>
                                       </xsl:otherwise>
                                       </xsl:choose>
                                     </td>
-                                    <td colspan="5"></td>
+                                    <td colspan="7">
+                                        <xsl:value-of select="@description" />
+                                    </td>
                                 </xsl:otherwise>
                                 </xsl:choose>
                                 </tr>
