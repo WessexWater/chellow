@@ -776,9 +776,14 @@ source.appendChild(MonadDate().toXml(doc))]]></value>
                                         <xsl:value-of select="@type" />
                                     </td>
                                     <td>
-                                        <xsl:if test="@is-cancelled-out='true'">
-                                            Cancelled Out
-                                        </xsl:if>
+                                        <xsl:choose>
+                                        <xsl:when test="@is-cancelled-out='true'">
+                                            Yes
+                                        </xsl:when>
+                                        <xsl:otherwise>
+                                          No
+                                        </xsl:otherwise>
+                                        </xsl:choose>
                                     </td>
                                     <td>
                                         <xsl:choose>
@@ -797,7 +802,7 @@ source.appendChild(MonadDate().toXml(doc))]]></value>
                                 <xsl:otherwise>
                                                                     <td>
                                         <xsl:value-of select="'['" /><a
-                                            href="{/source/request/@context-path}/supplies/{supply/@id}/snags/{@id}/">
+                                            href="{/source/request/@context-path}/supplies/{/source/supply/@id}/snags/{@id}/">
                                             <xsl:value-of select="'edit'" />
                                         </a><xsl:value-of select="']'" />
                                     </td>
@@ -6346,7 +6351,7 @@ contract_element = contract.toXml(doc, XmlTree('party'))
 source.appendChild(contract_element)
 for rate_script in contract.getRateScripts():
     contract_element.appendChild(rate_script.toXml(doc))
-for account in Hiber.session().createQuery("from Account account where account.contract = :contract order by account.reference").setEntity('contract', contract).list():
+for account in Hiber.session().createQuery("from Batch batch where batch.contract = :contract order by batch.reference").setEntity('contract', contract).list():
     contract_element.appendChild(account.toXml(doc))]]></value>
     <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
 <xsl:stylesheet version="1.0"
@@ -6398,13 +6403,6 @@ for account in Hiber.session().createQuery("from Account account where account.c
                 </xsl:if>
                 <table>
                     <tbody>
-                        <tr>
-                            <th>Chellow Id</th>
-                            <td>
-                                <xsl:value-of
-                                    select="/source/supplier-contract/@id" />
-                            </td>
-                        </tr>
                         <tr>
                             <th>Name</th>
                             <td>
@@ -6494,26 +6492,8 @@ for account in Hiber.session().createQuery("from Account account where account.c
                             Batches
                         </a>
                     </li>
-                                        <li>
-                        <a
-                            href="{/source/request/@context-path}/reports/81/output/?supplier-contract-id={/source/supplier-contract/@id}">
-                            Accounts
-                        </a>
-                    </li>
-                    
-                    <li>
-                        <a
-                            href="{/source/request/@context-path}/reports/101/output/?supplier-contract-id={/source/supplier-contract/@id}">
-                            Account Snags
-                        </a>
-                    </li>
-                    <li>
-                        <a
-                            href="{/source/request/@context-path}/reports/105/output/?supplier-contract-id={/source/supplier-contract/@id}">
-                            Bill Snags
-                        </a>
-                    </li>
                 </ul>
+
                 <h2>Script</h2>
                 <pre>
                     <xsl:value-of
@@ -7267,7 +7247,6 @@ for batch in Hiber.session().createQuery("from Batch batch where batch.contract 
                     <caption>Batches</caption>
                     <thead>
                         <tr>
-                            <th>Chellow Id</th>
                             <th>Reference</th>
                         </tr>
                     </thead>
@@ -7277,11 +7256,8 @@ for batch in Hiber.session().createQuery("from Batch batch where batch.contract 
                                 <td>
                                     <a
                                         href="{/source/request/@context-path}/reports/91/output/?batch-id={@id}">
-                                        <xsl:value-of select="@id" />
+                                        <xsl:value-of select="@reference" />
                                     </a>
-                                </td>
-                                <td>
-                                    <xsl:value-of select="@reference" />
                                 </td>
                             </tr>
                         </xsl:for-each>
@@ -7304,8 +7280,8 @@ batch_id = inv.getLong('batch-id')
 batch = Batch.getBatch(batch_id)
 batch_element = batch.toXml(doc, XmlTree('contract', XmlTree('party')))
 source.appendChild(batch_element)
-for invoice in Hiber.session().createQuery("from Invoice invoice where invoice.batch = :batch order by invoice.bill.account.reference").setEntity("batch", batch).list():
-    batch_element.appendChild(invoice.toXml(doc, XmlTree("bill", XmlTree("account"))))]]></value>
+for bill in Hiber.session().createQuery("from Bill bill where bill.batch = :batch order by bill.reference").setEntity("batch", batch).list():
+    batch_element.appendChild(bill.toXml(doc, XmlTree("supply")))]]></value>
     <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
 <xsl:stylesheet version="1.0"
     xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
@@ -7368,12 +7344,17 @@ for invoice in Hiber.session().createQuery("from Invoice invoice where invoice.b
                     </ul>
                 </xsl:if>
                 <table>
-                    <caption>Invoices</caption>
+                  <tr>
+                    <th>Reference</th>
+                    <td><xsl:value-of select="/source/batch/@reference"/></td>
+                  </tr>
+                </table>
+                <br/>
+                <table>
+                    <caption>Bills</caption>
                     <thead>
                         <tr>
-                            <th>Chellow Id</th>
                             <th>Reference</th>
-                            <th>Bill</th>
                             <th>From</th>
                             <th>To</th>
                             <th>Net</th>
@@ -7382,28 +7363,13 @@ for invoice in Hiber.session().createQuery("from Invoice invoice where invoice.b
                         </tr>
                     </thead>
                     <tbody>
-                        <xsl:for-each select="/source/batch/invoice">
+                        <xsl:for-each select="/source/batch/bill">
                             <tr>
                                 <td>
-                                    <a
-                                        href="{/source/request/@context-path}/reports/93/output/?invoice-id={@id}">
-                                        <xsl:value-of select="@id" />
-                                    </a>
-                                </td>
-                                <td>
+<a
+                                        href="{/source/request/@context-path}/reports/7/output/?supply-id={supply/@id}">
                                     <xsl:value-of select="@reference" />
-                                </td>
-                                <td>
-                                    <a
-                                        href="{/source/request/@context-path}/reports/87/output/?bill-id={bill/@id}">
-                                        <xsl:value-of select="bill/@id" />
-                                    </a>
-                                    <xsl:value-of select="' &gt; '" />
-                                    <a
-                                        href="{/source/request/@context-path}/reports/83/output/?account-id={bill/account/@id}">
-                                        <xsl:value-of
-                                            select="bill/account/@reference" />
-                                    </a>
+ </a>
                                 </td>
                                 <td>
                                     <xsl:value-of
@@ -7421,15 +7387,15 @@ for invoice in Hiber.session().createQuery("from Invoice invoice where invoice.b
                                 </td>
                                 <td>
                                     <xsl:choose>
-                                        <xsl:when test="@status='0'">
-                                            Pending
-                                        </xsl:when>
-                                        <xsl:when test="@status='1'">
+                                        <xsl:when test="@is-paid='true'">
                                             Paid
                                         </xsl:when>
-                                        <xsl:when test="@status='2'">
+                                        <xsl:when test="@is-paid='false'">
                                             Rejected
                                         </xsl:when>
+                                        <xsl:otherwise>
+                                            Pending
+                                        </xsl:otherwise>
                                     </xsl:choose>
                                 </td>
                             </tr>

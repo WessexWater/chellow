@@ -29,6 +29,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Map.Entry;
 
+import net.sf.chellow.monad.Debug;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.InternalException;
@@ -198,8 +199,8 @@ public class Bill extends PersistentEntity implements Urlable {
 
 	public void update(String reference, DayStartDate issueDate,
 			DayStartDate startDate, DayFinishDate finishDate, BigDecimal net,
-			BigDecimal vat, String type, Boolean isPaid,
-			boolean isCancelledOut) throws HttpException {
+			BigDecimal vat, String type, Boolean isPaid, boolean isCancelledOut)
+			throws HttpException {
 		setReference(reference);
 		setIssueDate(issueDate);
 		if (startDate.getDate().after(finishDate.getDate())) {
@@ -271,7 +272,7 @@ public class Bill extends PersistentEntity implements Urlable {
 		Element source = doc.getDocumentElement();
 		Element billElement = (Element) toXml(doc, new XmlTree("batch",
 				new XmlTree("contract", new XmlTree("party"))).put("reads",
-				new XmlTree("meter", new XmlTree("supply"))));
+				new XmlTree("meter")).put("supply"));
 		source.appendChild(billElement);
 		source.appendChild(MonadDate.getMonthsXml(doc));
 		source.appendChild(MonadDate.getDaysXml(doc));
@@ -314,7 +315,15 @@ public class Bill extends PersistentEntity implements Urlable {
 
 	@SuppressWarnings("unchecked")
 	public void delete() throws HttpException {
-		// Check missing bills...
+		// delete bill snags
+		Hiber.session().createQuery(
+				"delete from BillSnag snag where snag.bill = :bill").setEntity(
+				"bill", this).executeUpdate();
+		reads.clear();
+		Hiber.flush();
+		Hiber.session().delete(this);
+		Hiber.flush();
+		Debug.print("potentially adding snag");
 		HhEndDate snagStart = startDate;
 		if (!isCancelledOut) {
 			for (Bill bill : (List<Bill>) Hiber
@@ -325,19 +334,18 @@ public class Bill extends PersistentEntity implements Urlable {
 					.setTimestamp("startDate", startDate.getDate())
 					.setTimestamp("finishDate", finishDate.getDate()).list()) {
 				if (bill.getStartDate().after(snagStart)) {
+					Debug.print(" adding snag 1");
 					supply.addSnag(batch.getContract(),
 							SupplySnag.MISSING_BILL, startDate, finishDate);
 					snagStart = bill.getFinishDate().getNext();
 				}
 			}
-			if (!snagStart.after(getFinishDate())) {
+			if (!snagStart.after(finishDate)) {
+				Debug.print("adding snag 2 contract " + batch.getContract().getId());
 				supply.addSnag(batch.getContract(), SupplySnag.MISSING_BILL,
 						startDate, finishDate);
 			}
 		}
-		reads.clear();
-		Hiber.flush();
-		Hiber.session().delete(this);
 		Hiber.flush();
 	}
 

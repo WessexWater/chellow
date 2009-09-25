@@ -25,6 +25,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import net.sf.chellow.monad.Debug;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.InternalException;
@@ -130,10 +131,10 @@ public class Batch extends PersistentEntity {
 
 	@SuppressWarnings("unchecked")
 	private void delete() throws HttpException {
-		for (Bill invoice : (List<Bill>) Hiber.session().createQuery(
-				"from Invoice invoice where invoice.batch = :batch").setEntity(
-				"batch", this).list()) {
-			invoice.delete();
+		for (Bill bill : (List<Bill>) Hiber.session().createQuery(
+				"from Bill bill where bill.batch = :batch").setEntity("batch",
+				this).list()) {
+			bill.delete();
 		}
 		Hiber.session().delete(this);
 	}
@@ -180,20 +181,6 @@ public class Batch extends PersistentEntity {
 
 	@SuppressWarnings("unchecked")
 	Bill insertBill(RawBill rawBill) throws HttpException {
-		/*
-		 * List<String> mpanList = new
-		 * ArrayList<String>(rawBill.getMpanStrings());
-		 * Collections.sort(mpanList); String candidateMpan = mpanList.get(0);
-		 * List<Mpan> mpans = Mpan.getMpans(candidateMpan,
-		 * rawBill.getFinishDate(), rawBill.getFinishDate()); if
-		 * (mpans.isEmpty()) { throw new UserException("There isn't an MPAN " +
-		 * candidateMpan + " at the date " + rawBill.getFinishDate()); } Mpan
-		 * primaryMpan = mpans.get(0); if
-		 * (rawBill.getAccount().equals(primaryMpan.getSupplierAccount())) {
-		 * throw new UserException(
-		 * "The account reference doesn't match the MPAN's account reference.");
-		 * }
-		 */
 		List<Mpan> mpanList = (List<Mpan>) Hiber
 				.session()
 				.createQuery(
@@ -271,6 +258,7 @@ public class Batch extends PersistentEntity {
 			if (importMpan != null
 					&& importMpan.getSupplierContract().getId().equals(
 							contract.getId())) {
+				Debug.print("Deleting snag from " + st + " to " + fn);
 				supply.deleteSnag(importMpan.getSupplierContract(),
 						SupplySnag.MISSING_BILL, st, fn);
 			}

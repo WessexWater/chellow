@@ -13,7 +13,7 @@
 					Chellow &gt; Supplier Contracts &gt;
 					<xsl:value-of select="/source/bill/batch/supplier-contract/@name" />
 					&gt; Batches &gt;
-					<xsl:value-of select="/source/bill/batch/@name" />
+					<xsl:value-of select="/source/bill/batch/@reference" />
 					&gt; Bills &gt;
 					<xsl:value-of select="/source/bill/@id" />
 				</title>
@@ -51,7 +51,7 @@
 					&gt;
 					<xsl:value-of select="concat(/source/bill/@id, ' [')" />
 					<a
-						href="{/source/request/@context-path}/reports/47/output/?bill-id={/source/bill/@id}">
+						href="{/source/request/@context-path}/reports/7/output/?supply-id={/source/bill/supply/@id}">
 						<xsl:value-of select="'view'" />
 					</a>
 					<xsl:value-of select="']'" />

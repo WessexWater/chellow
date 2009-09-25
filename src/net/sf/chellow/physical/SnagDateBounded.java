@@ -457,15 +457,15 @@ public abstract class SnagDateBounded extends Snag {
 				query = Hiber
 						.session()
 						.createQuery(
-								"from SupplySnag snag where snag.supply = :supply and snag.description = :description and (snag.finishDate.date is null or snag.finishDate.date >= :startDate) order by snag.startDate.date");
+								"from SupplySnag snag where snag.supply = :supply and snag.contract = :contract and snag.description = :description and (snag.finishDate.date is null or snag.finishDate.date >= :startDate) order by snag.startDate.date");
 			} else {
 				query = Hiber
 						.session()
 						.createQuery(
-								"from SupplySnag snag where snag.supply = :supply and snag.description = :description and (snag.finishDate.date is null or snag.finishDate.date >= :startDate) and snag.startDate.date <= :finishDate order by snag.startDate.date")
+								"from SupplySnag snag where snag.supply = :supply and snag.contract = :contract and snag.description = :description and (snag.finishDate.date is null or snag.finishDate.date >= :startDate) and snag.startDate.date <= :finishDate order by snag.startDate.date")
 						.setTimestamp("finishDate", finishDate.getDate());
 			}
-			return (List<SupplySnag>) query.setEntity("supply", supply)
+			return (List<SupplySnag>) query.setEntity("supply", supply).setEntity("contract", contract)
 					.setString("description", description).setTimestamp(
 							"startDate", startDate.getDate()).list();
 		}

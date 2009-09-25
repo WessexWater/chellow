@@ -113,8 +113,8 @@ public class SupplySnag extends SnagDateBounded {
 	private Document document() throws HttpException {
 		Document doc = MonadUtils.newSourceDocument();
 		Element sourceElement = doc.getDocumentElement();
-		sourceElement.appendChild(toXml(doc, new XmlTree("account",
-				new XmlTree("contract", new XmlTree("party")))));
+		sourceElement.appendChild(toXml(doc, new XmlTree("contract",
+				new XmlTree("party")).put("supply")));
 		return doc;
 	}
 
