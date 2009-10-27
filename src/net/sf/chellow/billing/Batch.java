@@ -258,7 +258,7 @@ public class Batch extends PersistentEntity {
 			if (importMpan != null
 					&& importMpan.getSupplierContract().getId().equals(
 							contract.getId())) {
-				Debug.print("Deleting snag from " + st + " to " + fn);
+				Debug.print("Deleting snag from " + st + " to " + fn + " sup con " + importMpan.getSupplierContract().toString());
 				supply.deleteSnag(importMpan.getSupplierContract(),
 						SupplySnag.MISSING_BILL, st, fn);
 			}

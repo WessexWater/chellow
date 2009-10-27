@@ -199,7 +199,13 @@ public class BillImport extends Thread implements Urlable, XmlDescriber {
 				} catch (HttpException e) {
 					Hiber.flush();
 					Map<RawBill, String> billMap = new HashMap<RawBill, String>();
-					billMap.put(rawBill, e.getMessage());
+					String message = null;
+					if (e instanceof InternalException) {
+						message = e.getStackTraceString();
+					} else {
+						message = e.getMessage();
+					}
+					billMap.put(rawBill, message);
 					failedBills.add(billMap);
 					Hiber.rollBack();
 					Hiber.flush();

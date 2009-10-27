@@ -23,7 +23,6 @@ package net.sf.chellow.physical;
 import java.math.BigDecimal;
 
 import net.sf.chellow.billing.BillSnag;
-import net.sf.chellow.billing.DayFinishDate;
 import net.sf.chellow.billing.Bill;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
@@ -52,13 +51,13 @@ public class RegisterRead extends PersistentEntity {
 
 	private Tpr tpr;
 
-	private DayFinishDate previousDate;
+	private HhEndDate previousDate;
 
 	private BigDecimal previousValue;
 
 	private ReadType previousType;
 
-	private DayFinishDate presentDate;
+	private HhEndDate presentDate;
 
 	private BigDecimal presentValue;
 
@@ -137,11 +136,11 @@ public class RegisterRead extends PersistentEntity {
 		this.tpr = tpr;
 	}
 
-	DayFinishDate getPreviousDate() {
+	HhEndDate getPreviousDate() {
 		return previousDate;
 	}
 
-	void setPreviousDate(DayFinishDate previousDate) {
+	void setPreviousDate(HhEndDate previousDate) {
 		this.previousDate = previousDate;
 	}
 
@@ -161,11 +160,11 @@ public class RegisterRead extends PersistentEntity {
 		this.previousType = previousType;
 	}
 
-	public DayFinishDate getPresentDate() {
+	public HhEndDate getPresentDate() {
 		return presentDate;
 	}
 
-	void setPresentDate(DayFinishDate presentDate) {
+	void setPresentDate(HhEndDate presentDate) {
 		this.presentDate = presentDate;
 	}
 

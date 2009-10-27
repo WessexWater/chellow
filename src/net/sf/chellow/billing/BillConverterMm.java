@@ -53,16 +53,15 @@ public class BillConverterMm implements BillConverter {
 		lreader = new LineNumberReader(reader);
 	}
 
-	public List<RawBill> getRawBills() throws HttpException,
-			InternalException {
+	public List<RawBill> getRawBills() throws HttpException {
 		Hiber.flush();
 		if (rawBills.isEmpty()) {
 			String line;
 			dateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
 			try {
 				line = lreader.readLine();
-				DayStartDate startDate = null;
-				DayFinishDate finishDate = null;
+				HhEndDate startDate = null;
+				HhEndDate finishDate = null;
 				String accountReference = null;
 				String invoiceNumber = null;
 				BigDecimal net = new BigDecimal(0);
@@ -91,28 +90,33 @@ public class BillConverterMm implements BillConverter {
 					}
 					if (recordType.equals("0101")) {
 						try {
-							startDate = new DayStartDate(new HhEndDate(
-									dateFormat.parse(line.substring(66, 74)))
-									.getNext().getDate()).getNext();
+							startDate = new HhEndDate(dateFormat.parse(line
+									.substring(66, 74)));
 						} catch (ParseException e) {
 							throw new UserException(
 									"Can't parse the start date: '"
 											+ e.getMessage() + "'.");
+						} catch (UserException e) {
+							throw new UserException("Problem with start date. "
+									+ e.getMessage());
 						}
 						try {
-							finishDate = new DayFinishDate(dateFormat
-									.parse(line.substring(74, 82)));
+							finishDate = new HhEndDate(dateFormat.parse(line
+									.substring(74, 82)));
 						} catch (ParseException e) {
 							throw new UserException(
 									"Can't parse the finish date: '"
 											+ e.getMessage() + "'.");
+						} catch (UserException e) {
+							throw new UserException("Problem with finish date. "
+									+ e.getMessage());
 						}
 					}
 					if (recordType.equals("1500")) {
-						rawBills.add(new RawBill("NORMAL",
-								accountReference, mpanStrings, invoiceNumber,
-								startDate, startDate, finishDate, net, vat,
-								null));
+						rawBills.add(new RawBill("NORMAL", accountReference,
+								mpanStrings, invoiceNumber,
+								startDate.getDate(), startDate, finishDate,
+								net, vat, null));
 					}
 					line = lreader.readLine();
 				}

@@ -516,10 +516,10 @@ public class Supply extends PersistentEntity {
 			supplyGeneration = new SupplyGeneration(this, startDate,
 					existingGeneration.getFinishDate(), hhdcContract,
 					hhdcAccount, meter);
+			generations.add(supplyGeneration);
 			Hiber.flush();
 			existingGeneration.update(existingGeneration.getStartDate(),
 					startDate.getPrevious());
-			generations.add(supplyGeneration);
 			Hiber.flush();
 		}
 		Hiber.flush();
@@ -832,5 +832,9 @@ public class Supply extends PersistentEntity {
 			HhEndDate startDate, HhEndDate finishDate) throws HttpException {
 		SnagDateBounded.addSupplySnag(this, contract, description, startDate,
 				finishDate);
+	}
+	
+	public String toString() {
+	    return "Supply id " + getId();	
 	}
 }

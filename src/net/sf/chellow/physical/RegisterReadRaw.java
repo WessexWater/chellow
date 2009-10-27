@@ -22,7 +22,6 @@ package net.sf.chellow.physical;
 
 import java.math.BigDecimal;
 
-import net.sf.chellow.billing.DayFinishDate;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.types.MonadObject;
@@ -39,13 +38,13 @@ public class RegisterReadRaw extends MonadObject {
 
 	private Units units;
 
-	private DayFinishDate previousDate;
+	private HhEndDate previousDate;
 
 	private BigDecimal previousValue;
 
 	private ReadType previousType;
 
-	private DayFinishDate presentDate;
+	private HhEndDate presentDate;
 
 	private BigDecimal presentValue;
 
@@ -53,8 +52,8 @@ public class RegisterReadRaw extends MonadObject {
 
 	public RegisterReadRaw(Meter meter, BigDecimal coefficient,
 			Units units, int tpr,
-			DayFinishDate previousDate, BigDecimal previousValue,
-			ReadType previousType, DayFinishDate presentDate,
+			HhEndDate previousDate, BigDecimal previousValue,
+			ReadType previousType, HhEndDate presentDate,
 			BigDecimal presentValue, ReadType presentType) throws InternalException {
 		this.coefficient = coefficient;
 		this.meter = meter;
@@ -84,7 +83,7 @@ public class RegisterReadRaw extends MonadObject {
 		return tpr;
 	}
 
-	public DayFinishDate getPreviousDate() {
+	public HhEndDate getPreviousDate() {
 		return previousDate;
 	}
 
@@ -96,7 +95,7 @@ public class RegisterReadRaw extends MonadObject {
 		return previousType;
 	}
 
-	public DayFinishDate getPresentDate() {
+	public HhEndDate getPresentDate() {
 		return presentDate;
 	}
 

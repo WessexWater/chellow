@@ -1194,7 +1194,7 @@ public class SupplyGeneration extends PersistentEntity {
 							.setEntity("supply", this).setTimestamp("date",
 									finishDate.getDate()).uniqueResult()) > 0) {
 				throw new UserException(
-						"There are HH data after the end of the updated supply.");
+						"There are HH data after " + finishDate + ", the end of the updated supply.");
 			}
 
 			if (finishDate != null

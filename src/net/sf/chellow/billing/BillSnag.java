@@ -36,7 +36,7 @@ import org.w3c.dom.Element;
 
 public class BillSnag extends Snag {
 	public static final String INCORRECT_BILL = "Incorrect";
-	
+
 	public static final String DUPLICATE_BILL = "Duplicate";
 
 	public static final String PREVIOUS_READ = "Previous Read";
@@ -99,12 +99,11 @@ public class BillSnag extends Snag {
 		Document doc = MonadUtils.newSourceDocument();
 		Element sourceElement = doc.getDocumentElement();
 		sourceElement.appendChild(toXml(doc, new XmlTree("bill", new XmlTree(
-				"account", new XmlTree("contract", new XmlTree("party"))))));
+				"batch", new XmlTree("contract", new XmlTree("party"))))));
 		return doc;
 	}
 
 	public MonadUri getUri() throws HttpException {
-		return new BillSnags(bill)
-				.getUri().resolve(getUriId()).append("/");
+		return new BillSnags(bill).getUri().resolve(getUriId()).append("/");
 	}
 }

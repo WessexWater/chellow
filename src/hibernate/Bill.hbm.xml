@@ -4,18 +4,18 @@
           "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
 	<!--
 
-		Copyright 2007 Meniscus Systems Ltd This file is part of Chellow.
-
-		Chellow is free software; you can redistribute it and/or modify it
-		under the terms of the GNU General Public License as published by the
-		Free Software Foundation; either version 2 of the License, or (at your
-		option) any later version. Chellow is distributed in the hope that it
-		will be useful, but WITHOUT ANY WARRANTY; without even the implied
-		warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See
-		the GNU General Public License for more details. You should have
-		received a copy of the GNU General Public License along with Chellow;
-		if not, write to the Free Software Foundation, Inc., 51 Franklin St,
-		Fifth Floor, Boston, MA 02110-1301 USA
+		Copyright 2005, 2009 Wessex Water Limited This file is part of
+		Chellow. Chellow is free software; you can redistribute it and/or
+		modify it under the terms of the GNU General Public License as
+		published by the Free Software Foundation; either version 2 of the
+		License, or (at your option) any later version. Chellow is distributed
+		in the hope that it will be useful, but WITHOUT ANY WARRANTY; without
+		even the implied warranty of MERCHANTABILITY or FITNESS FOR A
+		PARTICULAR PURPOSE. See the GNU General Public License for more
+		details. You should have received a copy of the GNU General Public
+		License along with Chellow; if not, write to the Free Software
+		Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301
+		USA
 	-->
 
 <hibernate-mapping package="net.sf.chellow.billing">
@@ -29,17 +29,15 @@
 			foreign-key="fkey_bill_batch" />
 		<many-to-one name="supply" class="net.sf.chellow.physical.Supply"
 			column="supply_id" foreign-key="fkey_bill_supply" />
-		<component name="issueDate" class="DayStartDate">
-			<property type="timestamp" name="date">
-				<column name="issue_date" sql-type="timestamp with time zone" />
-			</property>
-		</component>
-		<component name="startDate" class="DayStartDate">
+		<property name="issueDate" type="timestamp" not-null="true">
+			<column name="issue_date" sql-type="timestamp with time zone" />
+		</property>
+		<component name="startDate" class="net.sf.chellow.physical.HhEndDate">
 			<property type="timestamp" name="date">
 				<column name="start_date" sql-type="timestamp with time zone" />
 			</property>
 		</component>
-		<component name="finishDate" class="DayFinishDate">
+		<component name="finishDate" class="net.sf.chellow.physical.HhEndDate">
 			<property type="timestamp" name="date">
 				<column name="finish_date" sql-type="timestamp with time zone" />
 			</property>

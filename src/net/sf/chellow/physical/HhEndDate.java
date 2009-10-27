@@ -67,7 +67,7 @@ public class HhEndDate extends MonadDate {
 		}
 	}
 
-	static boolean isAfter(HhEndDate date1, HhEndDate date2) {
+	public static boolean isAfter(HhEndDate date1, HhEndDate date2) {
 		if (date1 == null) {
 			if (date2 == null) {
 				return false;
@@ -79,7 +79,7 @@ public class HhEndDate extends MonadDate {
 		}
 	}
 	
-	static boolean isBefore(HhEndDate date1, HhEndDate date2) {
+	public static boolean isBefore(HhEndDate date1, HhEndDate date2) {
 		if (date1 == null) {
 			return false;
 		} else {

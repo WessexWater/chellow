@@ -43,7 +43,7 @@
 		<many-to-one name="tpr" class="Tpr" column="tpr_id"
 			not-null="true" foreign-key="fkey_tpr__register_read" />
 		<component name="presentDate"
-			class="net.sf.chellow.billing.DayFinishDate">
+			class="HhEndDate">
 			<property name="date" type="timestamp" not-null="true">
 				<column name="present_date"
 					sql-type="timestamp with time zone" />
@@ -57,7 +57,7 @@
 			column="present_type_id" not-null="true"
 			foreign-key="fkey_present_type__register_read" />
 		<component name="previousDate"
-			class="net.sf.chellow.billing.DayFinishDate">
+			class="HhEndDate">
 			<property name="date" type="timestamp" not-null="true">
 				<column name="previous_date"
 					sql-type="timestamp with time zone" />

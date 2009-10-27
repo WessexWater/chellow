@@ -8,12 +8,11 @@
 		<html>
 			<head>
 				<link rel="stylesheet" type="text/css"
-					 href="{/source/request/@context-path}/style/" />
+					href="{/source/request/@context-path}/style/" />
 
 				<title>
 					Chellow &gt; Supplies &gt;
-					<xsl:value-of
-						select="/source/supply-snag/supply/@id" />
+					<xsl:value-of select="/source/supply-snag/supply/@id" />
 					&gt; Snags &gt;
 					<xsl:value-of select="/source/supply-snag/@id" />
 				</title>
@@ -40,8 +39,7 @@
 					&gt;
 					<a
 						href="{/source/request/@context-path}/supplies/{/source/supply-snag/supply/@id}/">
-						<xsl:value-of
-							select="/source/supply-snag/supply/@id" />
+						<xsl:value-of select="/source/supply-snag/supply/@id" />
 					</a>
 					&gt;
 					<a
@@ -69,6 +67,18 @@
 						<td>
 							<xsl:value-of
 								select="concat(' ', /source/supply-snag/hh-end-date[@label='start']/@year, '-', /source/supply-snag/hh-end-date[@label='start']/@month, '-', /source/supply-snag/hh-end-date[@label='start']/@day)" />
+						</td>
+					</tr>
+					<tr>
+						<th>Contract</th>
+						<td>
+							<xsl:choose>
+								<xsl:when test="/source/supply-snag/supplier-contract">
+									<a
+										href="{/source/request/@context-path}/supplier-contracts/{/source/supply-snag/supplier-contract/@id}/">
+									<xsl:value-of select="/source/supply-snag/supplier-contract/@name" /></a>
+								</xsl:when>
+							</xsl:choose>
 						</td>
 					</tr>
 					<tr>

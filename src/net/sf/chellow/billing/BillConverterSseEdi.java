@@ -91,9 +91,9 @@ public class BillConverterSseEdi implements BillConverter {
 		try {
 			line = lreader.readLine();
 			Set<String> mpanStrings = null;
-			DayStartDate issueDate = null;
-			DayStartDate startDate = null;
-			DayFinishDate finishDate = null;
+			HhEndDate issueDate = null;
+			HhEndDate startDate = null;
+			HhEndDate finishDate = null;
 			String accountReference = null;
 			String invoiceNumber = null;
 			BigDecimal net = null;
@@ -123,7 +123,7 @@ public class BillConverterSseEdi implements BillConverter {
 
 					invoiceNumber = invn.getComponents().get(0);
 					billTypeCode = btcd.toString();
-					issueDate = new DayStartDate(ivdt.getDate(0).getNext()
+					issueDate = new HhEndDate(ivdt.getDate(0).getNext()
 							.getDate());
 				}
 				if (code.equals("MHD")) {
@@ -150,11 +150,11 @@ public class BillConverterSseEdi implements BillConverter {
 							|| consumptionChargeIndicator.equals("2")) {
 						HhEndDate previousHhReadDate = segment.getElements()
 								.get(7).getDate(0);
-						DayStartDate registerStartDate = new DayStartDate(
+						HhEndDate registerStartDate = new HhEndDate(
 								previousHhReadDate.getNext().getDate())
 								.getNext();
-						DayFinishDate previousReadDate = new DayFinishDate(
-								previousHhReadDate).getNext();
+						HhEndDate previousReadDate =
+								previousHhReadDate;
 						Debug.print("start date " + startDate);
 						if (startDate == null
 								|| startDate.getDate().after(
@@ -162,9 +162,8 @@ public class BillConverterSseEdi implements BillConverter {
 							Debug.print("register date " + registerStartDate);
 							startDate = registerStartDate;
 						}
-						DayFinishDate registerFinishDate = new DayFinishDate(
-								segment.getElements().get(6).getDate(0))
-								.getNext();
+						HhEndDate registerFinishDate =
+								segment.getElements().get(6).getDate(0);
 						if (finishDate == null
 								|| finishDate.getDate().before(
 										registerFinishDate.getDate())) {
@@ -223,7 +222,7 @@ public class BillConverterSseEdi implements BillConverter {
 						String billType = billTypeMap.get(billTypeCode);
 						RawBill billRaw = new RawBill(billType,
 								accountReference, mpanStrings, invoiceNumber,
-								issueDate, startDate, finishDate, net, vat,
+								issueDate.getDate(), startDate, finishDate, net, vat,
 								registerReads);
 						rawInvoices.add(billRaw);
 					}
@@ -273,22 +272,22 @@ public class BillConverterSseEdi implements BillConverter {
 
 		private int tpr;
 
-		private DayFinishDate previousDate;
+		private HhEndDate previousDate;
 
 		private BigDecimal previousValue;
 
 		private ReadType previousType;
 
-		private DayFinishDate currentDate;
+		private HhEndDate currentDate;
 
 		private BigDecimal currentValue;
 
 		private ReadType currentType;
 
 		public LocalRegisterReadRaw(Meter meter, BigDecimal coefficient,
-				Units units, Integer tpr, DayFinishDate previousDate,
+				Units units, Integer tpr, HhEndDate previousDate,
 				BigDecimal previousValue, ReadType previousType,
-				DayFinishDate currentDate, BigDecimal currentValue,
+				HhEndDate currentDate, BigDecimal currentValue,
 				ReadType currentType) throws InternalException {
 			this.meter = meter;
 			this.coefficient = coefficient;
@@ -321,7 +320,7 @@ public class BillConverterSseEdi implements BillConverter {
 			return tpr;
 		}
 
-		public DayFinishDate getPreviousDate() {
+		public HhEndDate getPreviousDate() {
 			return previousDate;
 		}
 
@@ -333,7 +332,7 @@ public class BillConverterSseEdi implements BillConverter {
 			return previousType;
 		}
 
-		public DayFinishDate getCurrentDate() {
+		public HhEndDate getCurrentDate() {
 			return currentDate;
 		}
 

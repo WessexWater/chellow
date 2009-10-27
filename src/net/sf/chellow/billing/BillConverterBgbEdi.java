@@ -27,6 +27,7 @@ import java.io.Reader;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -87,9 +88,9 @@ public class BillConverterBgbEdi implements BillConverter {
 		try {
 			line = lreader.readLine();
 			Set<String> mpanStrings = null;
-			DayStartDate issueDate = null;
-			DayStartDate startDate = null;
-			DayFinishDate finishDate = null;
+			Date issueDate = null;
+			HhEndDate startDate = null;
+			HhEndDate finishDate = null;
 			String accountReference = null;
 			String invoiceNumber = null;
 			BigDecimal net = null;
@@ -119,8 +120,7 @@ public class BillConverterBgbEdi implements BillConverter {
 
 					invoiceNumber = invn.getComponents().get(0);
 					billTypeCode = btcd.getComponents().get(0);
-					issueDate = new DayStartDate(ivdt.getDate(0).getNext()
-							.getDate());
+					issueDate = ivdt.getDate(0).getDate();
 				}
 				if (code.equals("MHD")) {
 					EdiElement type = segment.getElements().get(1);
@@ -147,21 +147,13 @@ public class BillConverterBgbEdi implements BillConverter {
 							&& (chargeType.equals("7")
 									|| chargeType.equals("8") || chargeType
 									.equals("9"))) {
-						HhEndDate previousHhReadDate = segment.getElements()
+						HhEndDate previousReadDate = segment.getElements()
 								.get(7).getDate(0);
-						DayStartDate registerStartDate = new DayStartDate(
-								previousHhReadDate.getNext().getDate())
-								.getNext();
-						DayFinishDate previousReadDate = new DayFinishDate(
-								previousHhReadDate).getNext();
-						if (startDate == null
-								|| startDate.getDate().after(
-										registerStartDate.getDate())) {
-							startDate = registerStartDate;
+						if (HhEndDate.isAfter(startDate, previousReadDate)) {
+							startDate = previousReadDate;
 						}
-						DayFinishDate registerFinishDate = new DayFinishDate(
-								segment.getElements().get(6).getDate(0))
-								.getNext();
+						HhEndDate registerFinishDate =
+								segment.getElements().get(6).getDate(0);
 						if (finishDate == null
 								|| finishDate.getDate().before(
 										registerFinishDate.getDate())) {
@@ -263,22 +255,22 @@ public class BillConverterBgbEdi implements BillConverter {
 
 		private int tpr;
 
-		private DayFinishDate previousDate;
+		private HhEndDate previousDate;
 
 		private BigDecimal previousValue;
 
 		private ReadType previousType;
 
-		private DayFinishDate currentDate;
+		private HhEndDate currentDate;
 
 		private BigDecimal currentValue;
 
 		private ReadType currentType;
 
 		public LocalRegisterReadRaw(Meter meter, BigDecimal coefficient,
-				Units units, int tpr, DayFinishDate previousDate,
+				Units units, int tpr, HhEndDate previousDate,
 				BigDecimal previousValue, ReadType previousType,
-				DayFinishDate currentDate, BigDecimal currentValue,
+				HhEndDate currentDate, BigDecimal currentValue,
 				ReadType currentType) throws InternalException {
 			this.meter = meter;
 			this.coefficient = coefficient;
@@ -308,7 +300,7 @@ public class BillConverterBgbEdi implements BillConverter {
 			return tpr;
 		}
 
-		public DayFinishDate getPreviousDate() {
+		public HhEndDate getPreviousDate() {
 			return previousDate;
 		}
 
@@ -320,7 +312,7 @@ public class BillConverterBgbEdi implements BillConverter {
 			return previousType;
 		}
 
-		public DayFinishDate getCurrentDate() {
+		public HhEndDate getCurrentDate() {
 			return currentDate;
 		}
 

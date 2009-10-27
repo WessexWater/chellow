@@ -120,7 +120,7 @@
 											<xsl:otherwise>
 												<xsl:attribute name="value">
 											<xsl:value-of
-													select="/source/bill/day-start-date[@label='issue']/@year" />
+													select="/source/bill/date[@label='issue']/@year" />
 										</xsl:attribute>
 											</xsl:otherwise>
 										</xsl:choose>
@@ -139,7 +139,7 @@
 													</xsl:when>
 													<xsl:otherwise>
 														<xsl:if
-															test="/source/bill/day-start-date[@label='issue']/@month = @number">
+															test="/source/bill/date[@label='issue']/@month = @number">
 															<xsl:attribute name="selected" />
 														</xsl:if>
 													</xsl:otherwise>
@@ -162,7 +162,7 @@
 													</xsl:when>
 													<xsl:otherwise>
 														<xsl:if
-															test="/source/bill/day-start-date[@label='issue']/@day = @number">
+															test="/source/bill/date[@label='issue']/@day = @number">
 															<xsl:attribute name="selected" />
 														</xsl:if>
 													</xsl:otherwise>
@@ -186,7 +186,7 @@
 											</xsl:when>
 											<xsl:otherwise>
 												<xsl:attribute name="value">
-											<xsl:value-of select="/source/bill/day-start-date/@year" />
+											<xsl:value-of select="/source/bill/hh-end-date[@label='start']/@year" />
 										</xsl:attribute>
 											</xsl:otherwise>
 										</xsl:choose>
@@ -204,7 +204,7 @@
 														</xsl:if>
 													</xsl:when>
 													<xsl:otherwise>
-														<xsl:if test="/source/bill/day-start-date/@month = @number">
+														<xsl:if test="/source/bill/hh-end-date[@label='start']/@month = @number">
 															<xsl:attribute name="selected" />
 														</xsl:if>
 													</xsl:otherwise>
@@ -226,7 +226,7 @@
 														</xsl:if>
 													</xsl:when>
 													<xsl:otherwise>
-														<xsl:if test="/source/bill/day-start-date/@day = @number">
+														<xsl:if test="/source/bill/hh-end-date[@label='start']/@day = @number">
 															<xsl:attribute name="selected" />
 														</xsl:if>
 													</xsl:otherwise>
@@ -247,8 +247,8 @@
 											<xsl:value-of
 											select="/source/request/parameter[@name='finish-date-year']/value/text()" />
 										</xsl:when>
-										<xsl:when test="/source/bill/day-finish-date">
-											<xsl:value-of select="/source/bill/day-finish-date/@year" />
+										<xsl:when test="/source/bill/hh-end-date[@label='finish']">
+											<xsl:value-of select="/source/bill/hh-end-date[@label='finish']/@year" />
 										</xsl:when>
 										<xsl:otherwise>
 											<xsl:value-of select="/source/date/@year" />
@@ -270,8 +270,8 @@
 															<xsl:attribute name="selected" />
 														</xsl:if>
 													</xsl:when>
-													<xsl:when test="/source/bill/day-finish-date">
-														<xsl:if test="/source/bill/day-finish-date/@month = @number">
+													<xsl:when test="/source/bill/hh-end-date[@label='finish']">
+														<xsl:if test="/source/bill/hh-end-date[@label='finish']/@month = @number">
 															<xsl:attribute name="selected" />
 														</xsl:if>
 													</xsl:when>
@@ -281,7 +281,6 @@
 														</xsl:if>
 													</xsl:otherwise>
 												</xsl:choose>
-
 												<xsl:value-of select="@number" />
 											</option>
 										</xsl:for-each>
@@ -300,8 +299,8 @@
 															<xsl:attribute name="selected" />
 														</xsl:if>
 													</xsl:when>
-													<xsl:when test="/source/bill/day-finish-date">
-														<xsl:if test="/source/bill/day-finish-date/@day = @number">
+													<xsl:when test="/source/bill/hh-end-date[@label='finish']">
+														<xsl:if test="/source/bill/hh-end-date[@label='finish']/@day = @number">
 															<xsl:attribute name="selected" />
 														</xsl:if>
 													</xsl:when>
@@ -311,7 +310,6 @@
 														</xsl:if>
 													</xsl:otherwise>
 												</xsl:choose>
-
 												<xsl:value-of select="@number" />
 											</option>
 										</xsl:for-each>

@@ -22,13 +22,16 @@
 package net.sf.chellow.billing;
 
 import java.math.BigDecimal;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.UserException;
+import net.sf.chellow.monad.types.MonadDate;
 import net.sf.chellow.monad.types.MonadObject;
+import net.sf.chellow.physical.HhEndDate;
 import net.sf.chellow.physical.RegisterReadRaw;
 
 import org.w3c.dom.Document;
@@ -37,11 +40,11 @@ import org.w3c.dom.Element;
 public class RawBill extends MonadObject {
 	private String type;
 
-	private DayStartDate issueDate;
+	private Date issueDate;
 
-	private DayStartDate startDate;
+	private HhEndDate startDate;
 
-	private DayFinishDate finishDate;
+	private HhEndDate finishDate;
 
 	private BigDecimal net;
 
@@ -56,8 +59,8 @@ public class RawBill extends MonadObject {
 	private Set<RegisterReadRaw> reads = new HashSet<RegisterReadRaw>();
 
 	public RawBill(String type, String accountReference,
-			Set<String> mpanStrings, String reference, DayStartDate issueDate,
-			DayStartDate startDate, DayFinishDate finishDate, BigDecimal net,
+			Set<String> mpanStrings, String reference, Date issueDate,
+			HhEndDate startDate, HhEndDate finishDate, BigDecimal net,
 			BigDecimal vat, Set<RegisterReadRaw> registerReads)
 			throws HttpException {
 		if (type == null) {
@@ -106,15 +109,15 @@ public class RawBill extends MonadObject {
 		return mpanStrings;
 	}
 
-	public DayStartDate getIssueDate() {
+	public Date getIssueDate() {
 		return issueDate;
 	}
 
-	public DayStartDate getStartDate() {
+	public HhEndDate getStartDate() {
 		return startDate;
 	}
 
-	public DayFinishDate getFinishDate() {
+	public HhEndDate getFinishDate() {
 		return finishDate;
 	}
 
@@ -138,11 +141,10 @@ public class RawBill extends MonadObject {
 		return reads;
 	}
 
-	public Element toXml(Document doc) throws InternalException {
+	public Element toXml(Document doc) throws HttpException {
 		Element element = doc.createElement("raw-bill");
 		element.setAttribute("reference", reference);
-		issueDate.setLabel("issue");
-		element.appendChild(issueDate.toXml(doc));
+		element.appendChild(new MonadDate("issue", issueDate).toXml(doc));
 		startDate.setLabel("start");
 		element.appendChild(startDate.toXml(doc));
 		finishDate.setLabel("finish");
