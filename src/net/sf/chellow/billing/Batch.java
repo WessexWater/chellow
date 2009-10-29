@@ -237,7 +237,7 @@ public class Batch extends PersistentEntity {
 						bill.getStartDate().getDate()).setTimestamp(
 						"finishDate", bill.getFinishDate().getDate()).list();
 		if (duplicateBills.size() > 1) {
-			bill.addSnag(BillSnag.DUPLICATE_BILL);
+			bill.insertSnag(BillSnag.DUPLICATE_BILL);
 		}
 		// what about missing bill snags??????
 		for (SupplyGeneration generation : generations) {

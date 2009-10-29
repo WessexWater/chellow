@@ -178,7 +178,7 @@
 				</form>
 				<ul>
 					<li>
-						<a href="accounts/">Accounts</a>
+						<a href="batches/">Batches</a>
 					</li>
 					<li>
 						<a href="hh-data-imports/">HH data imports</a>

@@ -228,9 +228,6 @@ public class Mpan extends PersistentEntity {
 		}
 		setSsc(ssc);
 		setCore(mpanCore);
-		if (supplierAccount == null) {
-			throw new UserException("An MPAN must have a supplier account.");
-		}
 		if (supplierContract == null) {
 			throw new UserException("An MPAN must have a supplier contract.");
 		}

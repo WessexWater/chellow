@@ -91,7 +91,7 @@ public class RegisterRead extends PersistentEntity {
 					.setEntity("meter", getMeter()).setDate("readDate",
 							getPreviousDate().getDate()).uniqueResult();
 			if (read == null) {
-				bill.addSnag(BillSnag.PREVIOUS_READ);
+				bill.insertSnag(BillSnag.PREVIOUS_READ);
 			}
 		}
 	}

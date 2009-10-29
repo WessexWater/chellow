@@ -85,6 +85,8 @@ public class Bill extends PersistentEntity implements Urlable {
 	private boolean isCancelledOut;
 
 	private Set<RegisterRead> reads;
+	
+	private Set<BillSnag> snags;
 
 	public Bill() {
 	}
@@ -197,6 +199,14 @@ public class Bill extends PersistentEntity implements Urlable {
 		return reads;
 	}
 
+	void setSnags(Set<BillSnag> snags) {
+		this.snags = snags;
+	}
+
+	public Set<BillSnag> getSnags() {
+		return snags;
+	}
+	
 	public void update(String reference, Date issueDate, HhEndDate startDate,
 			HhEndDate finishDate, BigDecimal net, BigDecimal vat, String type,
 			Boolean isPaid, boolean isCancelledOut) throws HttpException {
@@ -348,7 +358,7 @@ public class Bill extends PersistentEntity implements Urlable {
 		Hiber.flush();
 	}
 
-	public BillSnag addSnag(String description) throws HttpException {
+	public BillSnag insertSnag(String description) throws HttpException {
 		BillSnag snag = (BillSnag) Hiber
 				.session()
 				.createQuery(
@@ -356,8 +366,12 @@ public class Bill extends PersistentEntity implements Urlable {
 				.setEntity("bill", this).setString("description", description)
 				.uniqueResult();
 		if (snag == null) {
+			if (snags == null) {
+				snags = new HashSet<BillSnag>();
+			}
 			snag = new BillSnag(description, this);
-			Hiber.session().save(snag);
+			snags.add(snag);
+			Hiber.flush();
 		}
 		return snag;
 	}
@@ -374,7 +388,7 @@ public class Bill extends PersistentEntity implements Urlable {
 		Double vGross = (Double) vBill.get("gross-gbp");
 		if (!vNet.equals(net.doubleValue())
 				|| !vGross.equals(vat.doubleValue())) {
-			addSnag(BillSnag.INCORRECT_BILL);
+			insertSnag(BillSnag.INCORRECT_BILL);
 		}
 	}
 

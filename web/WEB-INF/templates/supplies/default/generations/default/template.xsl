@@ -608,28 +608,22 @@
 									<br />
 									<label>
 										Supplier Account
-										<input name="import-supplier-account-reference">
+										<input name="import-supplier-account">
 											<xsl:attribute name="value">
 												<xsl:choose>
 													<xsl:when
-												test="/source/request/parameter[@name='import-supplier-account-reference']">
+												test="/source/request/parameter[@name='import-supplier-account']">
 														<xsl:value-of
-												select="/source/request/parameter[@name='import-supplier-account-reference']/value" />
+												select="/source/request/parameter[@name='import-supplier-account']/value" />
 													</xsl:when>
 													<xsl:otherwise>
 														<xsl:value-of
-												select="/source/supply-generation/mpan[llfc/@is-import='true']/account[supplier-contract]/@reference" />
+												select="/source/supply-generation/mpan[llfc/@is-import='true']/@supplier-account" />
 													</xsl:otherwise>
 												</xsl:choose>
 											</xsl:attribute>
 										</input>
 									</label>
-									<xsl:value-of select="' '" />
-									<a
-										href="{/source/request/@context-path}/supplier-contracts/{/source/supply-generation/mpan[llfc/@is-import='true']/account/supplier-contract/@id}/accounts/{/source/supply-generation/mpan[llfc/@is-import='true']/account[supplier-contract]/@id}/">
-										<xsl:value-of
-											select="/source/supply-generation/mpan[llfc/@is-import='true']/account[supplier-contract]/@reference" />
-									</a>
 									<br />
 									<br />
 									<br />

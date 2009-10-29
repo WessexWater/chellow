@@ -18,7 +18,6 @@
                              image files), including the WEB-INF subdirectory
                              and its configuration file contents.
 
-     $Id: build.xml,v 1.61 2008/03/26 18:03:34 meniscus9 Exp $
 -->
 
 

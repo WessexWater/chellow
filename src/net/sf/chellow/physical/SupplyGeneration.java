@@ -1128,8 +1128,10 @@ public class SupplyGeneration extends PersistentEntity {
 		} else {
 			setPc(importPc);
 		}
-		SupplyGeneration previousGeneration = supply
+		SupplyGeneration previousGeneration = (SupplyGeneration) Hiber.session().createQuery("from SupplyGeneration generation where generation.supply = :supply and generation.startDate.date < :startDate order by generation.startDate.date").setEntity("supply", supply).setTimestamp("startDate", startDate.getDate()).setMaxResults(1).uniqueResult();
+/*		SupplyGeneration previousGeneration = supply
 				.getGenerationPrevious(this);
+*/
 		if (previousGeneration == null) {
 			if (((Long) Hiber
 					.session()
@@ -1162,9 +1164,7 @@ public class SupplyGeneration extends PersistentEntity {
 		} else {
 			boolean isOverlap = false;
 			if (importMpan != null) {
-				Debug.print("Import MPAN is " + importMpan.toString());
 				Mpan prevImportMpan = previousGeneration.getImportMpan();
-				Debug.print("Previous Import mpan " + prevImportMpan);
 				if (prevImportMpan != null
 						&& importMpan.getCore()
 								.equals(prevImportMpan.getCore())) {
@@ -1184,7 +1184,15 @@ public class SupplyGeneration extends PersistentEntity {
 						"MPAN cores can't change without an overlapping period.");
 			}
 		}
+		setStartDate(startDate);
+		setFinishDate(finishDate);
 		SupplyGeneration nextGeneration = supply.getGenerationNext(this);
+		Debug.print("starting to loop through start " + getStartDate() + " finish " + getFinishDate());
+		for (SupplyGeneration sg : (List<SupplyGeneration>) Hiber.session().createQuery("from SupplyGeneration sg where sg.supply = :supply").setEntity("supply", supply).list()) {
+			Debug.print("Supply Generation : " + sg.getId() + " sg.startDate " + sg.getStartDate()
+					+ " sg.finishDate " + sg.getFinishDate());
+		}
+		Debug.print("finished loop through");
 		if (nextGeneration == null) {
 			if (finishDate != null
 					&& ((Long) Hiber
@@ -1219,8 +1227,10 @@ public class SupplyGeneration extends PersistentEntity {
 			}
 		} else {
 			boolean isOverlap = false;
+			Debug.print("Import mpan " + importMpan + " export mpan " + exportMpan);
 			if (importMpan != null) {
 				Mpan nextImportMpan = nextGeneration.getImportMpan();
+				Debug.print("next import mpan " + nextImportMpan);
 				if (nextImportMpan != null
 						&& importMpan.getCore()
 								.equals(nextImportMpan.getCore())) {
@@ -1229,6 +1239,7 @@ public class SupplyGeneration extends PersistentEntity {
 			}
 			if (!isOverlap && exportMpan != null) {
 				Mpan nextExportMpan = nextGeneration.getExportMpan();
+				Debug.print("next export mpan " + nextExportMpan);
 				if (nextExportMpan != null
 						&& exportMpan.getCore()
 								.equals(nextExportMpan.getCore())) {
@@ -1241,8 +1252,6 @@ public class SupplyGeneration extends PersistentEntity {
 			}
 
 		}
-		setStartDate(startDate);
-		setFinishDate(finishDate);
 		if (hhdcContract == null) {
 			hhdcAccount = null;
 			if (!channels.isEmpty()) {
@@ -1369,9 +1378,19 @@ public class SupplyGeneration extends PersistentEntity {
 		for (Bill bill : (List<Bill>) billsCrit.list()) {
 			bill.virtualEqualsActual();
 		}
+		for (Channel channel : channels) {
+			Debug.print("Channel is " + channel.getIsImport() + " " + channel.getIsKwh());
+		}
+		// See if we have to move hh data from one generation to the other
 		for (Boolean isImport : new Boolean[] { true, false }) {
 			for (Boolean isKwh : new Boolean[] { true, false }) {
+				Debug.print("IsImport " + isImport + " " + isKwh);
 				Channel targetChannel = getChannel(isImport, isKwh);
+				if (targetChannel == null) {
+					Debug.print("target channel null");
+				} else {
+				Debug.print("loop Channel is " + targetChannel.getIsImport() + " " + targetChannel.getIsKwh());
+				}
 				Query query = Hiber
 						.session()
 						.createQuery(
@@ -1394,6 +1413,7 @@ public class SupplyGeneration extends PersistentEntity {
 				if (hhData.next()) {
 					datum = (HhDatum) hhData.get(0);
 					if (targetChannel == null) {
+						Debug.print("Problem with " + datum);
 						throw new UserException(
 								"There is no channel for the HH datum: "
 										+ datum.toString()
@@ -1606,16 +1626,16 @@ public class SupplyGeneration extends PersistentEntity {
 				Integer importAgreedSupplyCapacity = null;
 				HhdcContract hhdcContract = null;
 				SupplierContract importSupplierContract = null;
-				String importSupplierAccountReference = null;
+				String importSupplierAccount = null;
 				boolean isEnded = inv.getBoolean("is-ended");
 				if (isEnded) {
 					finishDate = inv.getDate("finish-date");
 				}
-				String hhdcAccountReference = null;
+				String hhdcAccount = null;
 				if (hhdcContractId != null) {
 					hhdcContract = HhdcContract.getHhdcContract(hhdcContractId);
-					hhdcAccountReference = inv
-							.getString("hhdc-account-reference");
+					hhdcAccount = inv
+							.getString("hhdc-account");
 				}
 				Pc pc = Pc.getPc(pcId);
 				boolean hasImportMpan = inv.getBoolean("has-import-mpan");
@@ -1647,13 +1667,13 @@ public class SupplyGeneration extends PersistentEntity {
 							.getLong("import-supplier-contract-id");
 					importSupplierContract = SupplierContract
 							.getSupplierContract(importSupplierContractId);
-					importSupplierAccountReference = inv
-							.getString("import-supplier-account-reference");
+					importSupplierAccount = inv
+							.getString("import-supplier-account");
 				}
 				String exportMpanStr = null;
 				Ssc exportSsc = null;
 				Integer exportAgreedSupplyCapacity = null;
-				String exportSupplierAccountReference = null;
+				String exportSupplierAccount = null;
 				SupplierContract exportSupplierContract = null;
 				boolean hasExportMpan = inv.getBoolean("has-export-mpan");
 				if (hasExportMpan) {
@@ -1679,8 +1699,8 @@ public class SupplyGeneration extends PersistentEntity {
 							.getLong("export-supplier-contract-id");
 					exportSupplierContract = SupplierContract
 							.getSupplierContract(exportSupplierContractId);
-					exportSupplierAccountReference = inv
-							.getString("export-supplier-account-reference");
+					exportSupplierAccount = inv
+							.getString("export-supplier-account");
 				}
 				Meter meter = null;
 				if (meterSerialNumber != null
@@ -1692,11 +1712,11 @@ public class SupplyGeneration extends PersistentEntity {
 				}
 				update(new HhEndDate(startDate).getNext(),
 						finishDate == null ? null : new HhEndDate(finishDate),
-						hhdcContract, hhdcAccountReference, meter,
+						hhdcContract, hhdcAccount, meter,
 						importMpanStr, importSsc, importSupplierContract,
-						importSupplierAccountReference,
+						importSupplierAccount,
 						importAgreedSupplyCapacity, exportMpanStr, exportSsc,
-						exportSupplierContract, exportSupplierAccountReference,
+						exportSupplierContract, exportSupplierAccount,
 						exportAgreedSupplyCapacity);
 				Hiber.commit();
 				inv.sendOk(document());

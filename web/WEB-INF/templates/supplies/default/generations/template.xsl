@@ -13,7 +13,7 @@
 					Chellow &gt; Supplies &gt;
 					<xsl:value-of
 						select="/source/supply-generations/supply/@id" />
-					&gt; Generations &gt;
+					&gt; Generations
 				</title>
 			</head>
 			<body>

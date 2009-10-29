@@ -507,6 +507,14 @@ public class Supply extends PersistentEntity {
 			Hiber.flush();
 			generations.add(supplyGeneration);
 			Hiber.flush();
+			supplyGeneration.update(supplyGeneration.getStartDate(),
+					supplyGeneration.getFinishDate(), supplyGeneration
+							.getHhdcContract(), supplyGeneration.getHhdcAccount(),
+					supplyGeneration.getMeter(), importMpanStr, importSsc,
+					importSupplierContract, importSupplierAccount,
+					importAgreedSupplyCapacity, exportMpanStr, exportSsc,
+					exportSupplierContract, exportSupplierAccount,
+					exportAgreedSupplyCapacity);
 		} else {
 			existingGeneration = getGeneration(startDate);
 			if (existingGeneration == null) {
@@ -518,32 +526,28 @@ public class Supply extends PersistentEntity {
 					hhdcAccount, meter);
 			generations.add(supplyGeneration);
 			Hiber.flush();
+			for (Channel channel : existingGeneration.getChannels()) {
+				supplyGeneration.insertChannel(channel.getIsImport(), channel.getIsKwh());
+			}
+			Hiber.flush();
+			supplyGeneration.update(supplyGeneration.getStartDate(),
+					supplyGeneration.getFinishDate(), supplyGeneration
+							.getHhdcContract(), supplyGeneration.getHhdcAccount(),
+					supplyGeneration.getMeter(), importMpanStr, importSsc,
+					importSupplierContract, importSupplierAccount,
+					importAgreedSupplyCapacity, exportMpanStr, exportSsc,
+					exportSupplierContract, exportSupplierAccount,
+					exportAgreedSupplyCapacity);
+			Hiber.flush();
 			existingGeneration.update(existingGeneration.getStartDate(),
 					startDate.getPrevious());
 			Hiber.flush();
 		}
 		Hiber.flush();
-		supplyGeneration.update(supplyGeneration.getStartDate(),
-				supplyGeneration.getFinishDate(), supplyGeneration
-						.getHhdcContract(), supplyGeneration.getHhdcAccount(),
-				supplyGeneration.getMeter(), importMpanStr, importSsc,
-				importSupplierContract, importSupplierAccount,
-				importAgreedSupplyCapacity, exportMpanStr, exportSsc,
-				exportSupplierContract, exportSupplierAccount,
-				exportAgreedSupplyCapacity);
 		for (Map.Entry<Site, Boolean> entry : siteMap.entrySet()) {
 			supplyGeneration.attachSite(entry.getKey(), entry.getValue());
 		}
 		supplyGeneration.setMeter(meter);
-		if (existingGeneration != null) {
-			for (Channel existingChannel : existingGeneration.getChannels()) {
-				supplyGeneration.insertChannel(existingChannel.getIsImport(),
-						existingChannel.getIsKwh());
-			}
-			Hiber.flush();
-			// onSupplyGenerationChange(startDate, supplyGeneration
-			// .getFinishDate());
-		}
 		Hiber.flush();
 		return supplyGeneration;
 	}
@@ -592,10 +596,10 @@ public class Supply extends PersistentEntity {
 		if (((Long) Hiber
 				.session()
 				.createQuery(
-						"select count(*) from HhDatum datum where datum.channel.supplyGeneration = :generation")
+						"select count(*) from Channel channel where channel.supplyGeneration = :generation")
 				.setEntity("generation", generation).uniqueResult()) > 0) {
 			throw new UserException(
-					"One can't delete a supply generation if there are still data attached to it.");
+					"One can't delete a supply generation if there are still channels attached to it.");
 		}
 		SupplyGeneration previousGeneration = getGenerationPrevious(generation);
 		SupplyGeneration nextGeneration = getGenerationNext(generation);
