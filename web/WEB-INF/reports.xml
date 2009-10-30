@@ -308,12 +308,6 @@ for group_site in site.groups(now, now, False)[0].getSites():
                 </xsl:if>
                 <table>
                     <tr>
-                        <th>Chellow Id</th>
-                        <td>
-                            <xsl:value-of select="/source/site/@id" />
-                        </td>
-                    </tr>
-                    <tr>
                         <th>Code</th>
                         <td>
                             <xsl:value-of select="/source/site/@code" />
@@ -340,7 +334,6 @@ for group_site in site.groups(now, now, False)[0].getSites():
                     <caption>Supplies that power this site</caption>
                     <thead>
                         <tr>
-                            <th>Chellow Id</th>
                             <th>Name</th>
                             <th>From</th>
                             <th>To</th>
@@ -357,11 +350,8 @@ for group_site in site.groups(now, now, False)[0].getSites():
                                 <td>
                                     <a
                                         href="{/source/request/@context-path}/reports/7/output/?supply-id={@id}">
-                                        <xsl:value-of select="@id" />
+                                        <xsl:value-of select="@name" />
                                     </a>
-                                </td>
-                                <td>
-                                    <xsl:value-of select="@name" />
                                 </td>
                                 <td>
                                     <xsl:value-of
@@ -593,6 +583,7 @@ source.appendChild(MonadDate().toXml(doc))]]></value>
                             <th rowspan="3">PC</th>
                             <th rowspan="3">MSID</th>
                             <th rowspan="2" colspan="2">HHDC</th>
+                            <th rowspan="3">Channels</th>
                             <th colspan="5">Import</th>
                             <th colspan="5">Export</th>
                         </tr>
@@ -665,11 +656,13 @@ source.appendChild(MonadDate().toXml(doc))]]></value>
  <a
                                         href="{/source/request/@context-path}/reports/115/output/?hhdc-contract-id={hhdc-contract/@id}">
                                     <xsl:value-of
-                                        select="hhdc-contract/@id" /></a>
+                                        select="hhdc-contract/@name" /></a>
                                 </td>
  <td>
                                <xsl:value-of
                                         select="@hhdc-account" />
+                                </td>
+                                <td>
                                 </td>
                                 <td>
                                     <xsl:value-of
@@ -4032,7 +4025,7 @@ source.setAttribute("pending-site-count", str(totalSites - activeSites))]]></val
                     &gt;
                     <xsl:value-of select="'Channel Snags ['" />
                     <a
-                        href="{/source/request/@context-path}/hhdc-contracts/{/source/hhdc-contract/@id}/channel-snags/">
+                        href="{/source/request/@context-path}/hhdc-contracts/{/source/hhdc-contract/@id}/">
                         <xsl:value-of select="'edit'" />
                     </a>
                     <xsl:value-of select="']'" />
@@ -8932,12 +8925,6 @@ source.appendChild(contract.toXml(doc, XmlTree('party', XmlTree('participant')).
                 </xsl:if>
                 <table>
                     <tbody>
-                        <tr>
-                            <th>Chellow Id</th>
-                            <td>
-                                <xsl:value-of
-                                    select="/source/hhdc-contract/@id" />
-                            </td>
                             <tr>
                                 <th>Provider</th>
                                 <td>
@@ -8948,7 +8935,6 @@ source.appendChild(contract.toXml(doc, XmlTree('party', XmlTree('participant')).
                                     </a>
                                 </td>
                             </tr>
-                        </tr>
                         <tr>
                             <th>Name</th>
                             <td>
@@ -8985,7 +8971,7 @@ source.appendChild(contract.toXml(doc, XmlTree('party', XmlTree('participant')).
                     <caption>Rate Scripts</caption>
                     <thead>
                     <tr>
-                    <th>Chellow Id</th>
+                    <th></th>
                     <th>From</th>
                     <th>To</th>
                     </tr>
@@ -8997,7 +8983,7 @@ source.appendChild(contract.toXml(doc, XmlTree('party', XmlTree('participant')).
                     <td>
                     <a
                     href="{/source/request/@context-path}/reports/173/output/?rate-script-id={@id}">
-                    <xsl:value-of select="@id" />
+                    <xsl:value-of select="'view'" />
                     </a>
                     </td>
                     <td>
@@ -9031,7 +9017,7 @@ source.appendChild(contract.toXml(doc, XmlTree('party', XmlTree('participant')).
                         <li>
                         <a
                         href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/99/screen/output/?hhdc-contract-id={/source/hhdc-contract/@id}">
-                        Account Snags
+                        Supply Snags
                         </a>
                         </li>
                         <li>
@@ -9041,12 +9027,6 @@ source.appendChild(contract.toXml(doc, XmlTree('party', XmlTree('participant')).
                         </a>
                         </li>
                     -->
-                    <li>
-                        <a
-                            href="{/source/request/@context-path}/reports/109/output/?hhdc-contract-id={/source/hhdc-contract/@id}">
-                            Accounts
-                        </a>
-                    </li>
                     <li>
                         <a
                             href="{/source/request/@context-path}/reports/37/output/?hhdc-contract-id={/source/hhdc-contract/@id}">
@@ -9068,13 +9048,13 @@ source.appendChild(contract.toXml(doc, XmlTree('party', XmlTree('participant')).
     <value>insert</value>
     <value>report</value>
     <value>117</value>
-    <value>0 HHDC Contract Channel Snag</value>
+    <value>0 Channel Snag</value>
     <value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree, UserException
 from net.sf.chellow.physical import ChannelSnag
 
 snag_id = inv.getLong('snag-id')
 snag = ChannelSnag.getChannelSnag(snag_id)
-source.appendChild(snag.toXml(doc, XmlTree("channel", XmlTree("supplyGeneration", XmlTree('supply').put('hhdcAccount', XmlTree('contract'))))))]]></value>
+source.appendChild(snag.toXml(doc, XmlTree("channel", XmlTree("supplyGeneration", XmlTree('supply')))))]]></value>
     <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
 <xsl:stylesheet version="1.0"
     xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
@@ -11985,13 +11965,6 @@ source.appendChild(script.toXml(doc, XmlTree('contract', XmlTree('party'))))]]><
                     </ul>
                 </xsl:if>
                 <table>
-                    <tr>
-                        <th>Chellow Id</th>
-                        <td>
-                            <xsl:value-of
-                                select="/source/rate-script/@id" />
-                        </td>
-                    </tr>
                     <tr>
                         <th>Start Date</th>
                         <td>
