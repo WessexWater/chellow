@@ -24,7 +24,6 @@ package net.sf.chellow.physical;
 import java.util.List;
 
 import net.sf.chellow.billing.Contract;
-import net.sf.chellow.monad.Debug;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.InternalException;
@@ -121,7 +120,7 @@ public abstract class SnagDateBounded extends Snag {
 			throws HttpException {
 		SnagDateBounded background = snagToAdd.newSnag();
 		for (SnagDateBounded snag : snagToAdd.getCoveredSnags()) {
-			Debug.print("snag in covered snag is : " + snag.toString());
+			//Debug.print("snag in covered snag is : " + snag.toString());
 			if (HhEndDate.isAfter(snag.getFinishDate(), snagToAdd
 					.getFinishDate())) {
 				SnagDateBounded outerSnag = snag.copy();
@@ -189,22 +188,22 @@ public abstract class SnagDateBounded extends Snag {
 	private static void deleteSnagDateBounded(SnagToAdd snagToDelete)
 			throws HttpException {
 		for (SnagDateBounded snag : snagToDelete.getCoveredSnags()) {
-			Debug.print("snag " + snag.toString());
-			Debug.print("snagToDelete " + snagToDelete.toString());
+			//Debug.print("snag " + snag.toString());
+			//Debug.print("snagToDelete " + snagToDelete.toString());
 			boolean outLeft = snag.getStartDate().before(
 					snagToDelete.getStartDate());
-			Debug.print("Outleft " + outLeft);
+			//Debug.print("Outleft " + outLeft);
 			boolean outRight = HhEndDate.isAfter(snag.getFinishDate(),
 					snagToDelete.getFinishDate());
-			Debug.print("Outright " + outRight);
+			//Debug.print("Outright " + outRight);
 			if (outLeft && outRight) {
-				Debug.print("Outright && outleft");
+				//Debug.print("Outright && outleft");
 				SnagDateBounded outerSnag = snag.copy();
 				snag.setFinishDate(snagToDelete.getStartDate().getPrevious());
 				outerSnag.setStartDate(snagToDelete.getFinishDate().getNext());
 				snagToDelete.insertSnag(outerSnag);
-				Debug.print("snag is " + snag);
-				Debug.print("outer snag" + outerSnag);
+				//Debug.print("snag is " + snag);
+				//Debug.print("outer snag" + outerSnag);
 			} else if (outLeft) {
 				snag.setFinishDate(snagToDelete.getStartDate().getPrevious());
 			} else if (outRight) {
@@ -465,26 +464,26 @@ public abstract class SnagDateBounded extends Snag {
 		@SuppressWarnings("unchecked")
 		public List<SupplySnag> getCoveredSnags(HhEndDate startDate,
 				HhEndDate finishDate) {
-			Debug.print("Getting covered snags.");
+			//Debug.print("Getting covered snags.");
 			Query query = null;
 			if (finishDate == null) {
-				Debug.print("finish date is null");
+				//Debug.print("finish date is null");
 				query = Hiber
 						.session()
 						.createQuery(
 								"from SupplySnag snag where snag.supply = :supply and snag.contract = :contract and snag.description = :description and (snag.finishDate.date is null or snag.finishDate.date >= :startDate) order by snag.startDate.date");
 			} else {
-			    Debug.print("finish date isn't null, in fact it's " + finishDate + " supply is " + supply + " contract " + contract);
+			    //Debug.print("finish date isn't null, in fact it's " + finishDate + " supply is " + supply + " contract " + contract);
 				query = Hiber
 						.session()
 						.createQuery(
 								"from SupplySnag snag where snag.supply = :supply and snag.contract = :contract and snag.description = :description and (snag.finishDate.date is null or snag.finishDate.date >= :startDate) and snag.startDate.date <= :finishDate order by snag.startDate.date")
 						.setTimestamp("finishDate", finishDate.getDate());
 			}
-			Debug.print(" list size " + query.setEntity("supply", supply)
-					.setEntity("contract", contract).setString("description",
-							description).setTimestamp("startDate",
-							startDate.getDate()).list().size());
+			//Debug.print(" list size " + query.setEntity("supply", supply)
+			//		.setEntity("contract", contract).setString("description",
+			//				description).setTimestamp("startDate",
+			//				startDate.getDate()).list().size());
 			return (List<SupplySnag>) query.setEntity("supply", supply)
 					.setEntity("contract", contract).setString("description",
 							description).setTimestamp("startDate",

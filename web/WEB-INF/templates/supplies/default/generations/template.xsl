@@ -30,7 +30,13 @@
 						href="{/source/request/@context-path}/supplies/{/source/supply-generations/supply/@id}/">
 						<xsl:value-of select="/source/supply-generations/supply/@id" />
 					</a>
-					&gt; Generations
+					&gt;
+					<xsl:value-of select="'Generations ['" />
+					<a
+						href="{/source/request/@context-path}/reports/7/output/?supply-id={/source/supply-generations/supply/@id}">
+						<xsl:value-of select="'view'" />
+					</a>
+					<xsl:value-of select="']'" />
 				</p>
 				<br />
 				<xsl:if test="//message">

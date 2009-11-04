@@ -492,6 +492,11 @@ source.appendChild(supply_element)
 for generation in supply.getGenerations():
     generation_element = generation.toXml(doc, XmlTree("siteSupplyGenerations", XmlTree('site')).put('pc').put("hhdcContract", XmlTree("party")))
     supply_element.appendChild(generation_element)
+    for channel in generation.getChannels():
+        channel_element = channel.toXml(doc)
+        generation_element.appendChild(channel_element)
+        for snag in Hiber.session().createQuery("from ChannelSnag snag where snag.channel = :channel order by snag.startDate.date").setEntity('channel', channel).list():
+            channel_element.appendChild(snag.toXml(doc))
     for mpan in generation.getMpans():
         mpan_element = mpan.toXml(doc, XmlTree("core").put("mtc").put("llfc", XmlTree("voltageLevel")).put('supplierContract'))
         generation_element.appendChild(mpan_element)
@@ -663,6 +668,45 @@ source.appendChild(MonadDate().toXml(doc))]]></value>
                                         select="@hhdc-account" />
                                 </td>
                                 <td>
+<xsl:if test="channel">
+<ul>
+<xsl:for-each select="channel">
+<li><xsl:choose>
+<xsl:when test="@is-import='true'">
+Import
+</xsl:when>
+<xsl:otherwise>
+Export
+</xsl:otherwise>
+</xsl:choose>
+<xsl:value-of select="' '"/>
+<xsl:choose>
+<xsl:when test="@is-kwh='true'">
+kWh
+</xsl:when>
+<xsl:otherwise>
+kVArh
+</xsl:otherwise>
+</xsl:choose>
+<xsl:if test="channel-snag">
+<xsl:value-of select="' ('"/>
+<xsl:for-each select="channel-snag">
+<xsl:value-of select="concat(@description, ' ', hh-end-date[@label='start']/@year, '-', hh-end-date[@label='start']/@month, '-',  hh-end-date[@label='start']/@day, ' ', hh-end-date[@label='start']/@hour, ':', hh-end-date[@label='start']/@minute, ' to ')"/>
+<xsl:choose>
+<xsl:when test="hh-end-date[@label='finish']">
+<xsl:value-of select="concat(hh-end-date[@label='finish']/@year, '-', hh-end-date[@label='finish']/@month, '-',  hh-end-date[@label='finish']/@day, ' ', hh-end-date[@label='finish']/@hour, ':', hh-end-date[@label='finish']/@minute, ', ')"/>
+</xsl:when>
+<xsl:otherwise>
+<xsl:value-of select="'ongoing'"/>
+</xsl:otherwise>
+</xsl:choose>
+</xsl:for-each>
+<xsl:value-of select="')'"/>
+</xsl:if>
+</li>
+</xsl:for-each>
+</ul>
+</xsl:if>
                                 </td>
                                 <td>
                                     <xsl:value-of
@@ -850,6 +894,7 @@ source.appendChild(MonadDate().toXml(doc))]]></value>
                             </xsl:for-each>
                         </tbody>
                 </table>
+<br/>
 </xsl:for-each>
                 <ul>
                     <li>

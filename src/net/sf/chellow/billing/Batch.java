@@ -25,7 +25,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import net.sf.chellow.monad.Debug;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.InternalException;
@@ -258,7 +257,7 @@ public class Batch extends PersistentEntity {
 			if (importMpan != null
 					&& importMpan.getSupplierContract().getId().equals(
 							contract.getId())) {
-				Debug.print("Deleting snag from " + st + " to " + fn + " sup con " + importMpan.getSupplierContract().toString());
+				//Debug.print("Deleting snag from " + st + " to " + fn + " sup con " + importMpan.getSupplierContract().toString());
 				supply.deleteSnag(importMpan.getSupplierContract(),
 						SupplySnag.MISSING_BILL, st, fn);
 			}

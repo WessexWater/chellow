@@ -69,13 +69,13 @@ public class HhdcContracts extends EntityList {
 		Long participantId = inv.getLong("participant-id");
 		String name = inv.getString("name");
 		Date startDate = inv.getDate("start-date");
-		String importerProperties = inv.toString();
+		String properties = inv.getString("properties");
 		if (!inv.isValid()) {
 			throw new UserException(document());
 		}
 		HhdcContract contract = HhdcContract.insertHhdcContract(Participant
 				.getParticipant(participantId), name, HhEndDate.roundDown(
-				startDate).getNext(), null, "", importerProperties, "", "");
+				startDate).getNext(), null, "", properties, "", "");
 		Hiber.commit();
 		inv.sendSeeOther(contract.getUri());
 	}
