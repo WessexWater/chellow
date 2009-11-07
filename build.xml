@@ -119,7 +119,7 @@
 	<property name="javalib.home" value="${user.home}/java" />
 	<!-- Requires Imprimatur from http://imprimatur.sourceforge.net/ -->
 
-	<property name="imprimatur.jar" value="${javalib.home}\imprimatur-015\imprimatur.jar" />
+	<property name="imprimatur.jar" value="${javalib.home}\imprimatur-016\imprimatur.jar" />
 	<property name="test.home" value="${basedir}/test" />
 
 	<!-- ================== Custom Ant Task Definitions ======================= -->
@@ -372,10 +372,10 @@
 
 -->
 
-	<target name="install" depends="compile" description="Install application to servlet container">
+	<target name="install" depends="dist" description="Install application to servlet container">
 
-		<deploy url="${manager.url}" username="${manager.username}" password="${manager.password}" path="${app.path}" localWar="file://${build.home}" />
-
+		<!-- <deploy url="${manager.url}" username="${manager.username}" password="${manager.password}" path="${app.path}" localWar="file://${build.home}" /> -->
+		<deploy url="${manager.url}" username="${manager.username}" password="${manager.password}" path="${app.path}" war="file://${dist.home}/chellow.war" />
 	</target>
 	<!--
 	<target name="one-test">
@@ -668,8 +668,8 @@
 		<!--
 		<copy todir="${build.home}/WEB-INF/lib" file="/usr/share/java/commons-dbcp-1.2.1.jar"/>
 		-->
-		<copy todir="${build.home}/WEB-INF/lib" file="${javalib.home}/slf4j-1.5.2/slf4j-jdk14-1.5.2.jar" />
-		<copy todir="${build.home}/WEB-INF/lib" file="${javalib.home}/javamail-1.4.1/mail.jar" />
+		<copy todir="${build.home}/WEB-INF/lib" file="${javalib.home}/slf4j-1.5.8/slf4j-jdk14-1.5.8.jar" />
+		<copy todir="${build.home}/WEB-INF/lib" file="${javalib.home}/javamail-1.4.2/mail.jar" />
 
 		<copy todir="${build.home}/WEB-INF/lib" file="${javalib.home}/hibernate-distribution-3.3.2.GA/hibernate3.jar">
 			<fileset dir="${javalib.home}/hibernate-distribution-3.3.2.GA/lib/required" />
@@ -682,8 +682,8 @@
 		<copy todir="${build.home}/WEB-INF/lib" file="${javalib.home}/commons-net-2.0/commons-net-2.0.jar" />
 		<copy todir="${build.home}/WEB-INF/lib" file="${javalib.home}/jakarta-oro-2.0.8/jakarta-oro-2.0.8.jar" />
 		<copy todir="${build.home}/WEB-INF/lib" file="${javalib.home}/commons-httpclient-3.1/commons-httpclient-3.1.jar" />
-		<copy todir="${build.home}/WEB-INF/lib" file="${javalib.home}/commons-codec-1.3/commons-codec-1.3.jar" />
-		<copy todir="${build.home}/WEB-INF/lib" file="${javalib.home}/jython-2.5.1rc2/jython.jar" />
+		<copy todir="${build.home}/WEB-INF/lib" file="${javalib.home}/commons-codec-1.4/commons-codec-1.4.jar" />
+		<copy todir="${build.home}/WEB-INF/lib" file="${javalib.home}/jython-2.5.1/jython.jar" />
 		<!--
 		<copy todir="${build.home}/WEB-INF/lib" file="${javalib.home}/jsr223-engines/jython/build/jython-engine.jar" />
 		<copy todir="${build.home}/WEB-INF/lib" file="${javalib.home}/batik-1.6/lib/batik-transcoder.jar" />

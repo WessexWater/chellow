@@ -2,12 +2,12 @@
 <classpath>
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry kind="var" path="JAVA_LIB_HOME/javamail-1.4.1/mail.jar"/>
+	<classpathentry kind="var" path="JAVA_LIB_HOME/javamail-1.4.2/mail.jar"/>
 	<classpathentry kind="var" path="JAVA_LIB_HOME/ostermillerutils_1_07_00.jar"/>
-	<classpathentry kind="var" path="JAVA_LIB_HOME/hibernate-distribution-3.3.1.GA/hibernate3.jar"/>
+	<classpathentry kind="var" path="JAVA_LIB_HOME/hibernate-distribution-3.3.2.GA/hibernate3.jar"/>
 	<classpathentry kind="var" path="TOMCAT_COMMON/lib/servlet-api.jar"/>
 	<classpathentry kind="var" path="JAVA_LIB_HOME/commons-fileupload-1.2.1/lib/commons-fileupload-1.2.1.jar"/>
-	<classpathentry kind="var" path="JAVA_LIB_HOME/jython2.2.1/jython.jar"/>
+	<classpathentry kind="var" path="JAVA_LIB_HOME/jython-2.5.1/jython.jar"/>
 	<classpathentry kind="var" path="JAVA_LIB_HOME/commons-net-2.0/commons-net-2.0.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
