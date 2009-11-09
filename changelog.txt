@@ -1,3 +1,8 @@
+* Fixed bugs on supply generation edit page.
+
+
+346
+
 * In a db export, now stores HHDC contract state, so downloading of files will
     resume from where they left off.
 

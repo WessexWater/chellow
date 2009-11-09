@@ -3468,7 +3468,7 @@ pw.close()]]></value>
     <value>insert</value>
     <value>report</value>
     <value>31</value>
-    <value>0 Supply Generation</value>
+    <value>0 Free 7</value>
     <value><![CDATA[from net.sf.chellow.monad import Hiber, UserException, XmlTree
 from net.sf.chellow.monad.types import MonadDate
 from net.sf.chellow.physical import SupplyGeneration

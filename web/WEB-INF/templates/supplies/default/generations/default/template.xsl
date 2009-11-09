@@ -39,7 +39,7 @@
 					&gt;
 					<xsl:value-of select="concat(/source/supply-generation/@id, ' [')" />
 					<a
-						href="{/source/request/@context-path}/reports/31/output/?supply-generation-id={/source/supply-generation/@id}">
+						href="{/source/request/@context-path}/reports/7/output/?supply-id={/source/supply-generation/supply/@id}">
 						<xsl:value-of select="'view'" />
 					</a>
 					<xsl:value-of select="']'" />
@@ -358,7 +358,7 @@
 													</xsl:when>
 													<xsl:otherwise>
 														<xsl:if
-															test="@id = /source/supply-generation/account/hhdc-contract/@id">
+															test="@id = /source/supply-generation/hhdc-contract/@id">
 															<xsl:attribute name="selected" />
 														</xsl:if>
 													</xsl:otherwise>
@@ -370,34 +370,28 @@
 								</label>
 								<xsl:value-of select="' '" />
 								<a
-									href="{/source/request/@context-path}/hhdc-contracts/{/source/supply-generation/account/hhdc-contract/@id}/">
-									<xsl:value-of
-										select="/source/supply-generation/account/hhdc-contract/@name" />
+									href="{/source/request/@context-path}/hhdc-contracts/{/source/supply-generation/hhdc-contract/@id}/">
+									<xsl:value-of select="/source/supply-generation/hhdc-contract/@name" />
 								</a>
 								<br />
 								<label>
 									HHDC Account
-									<input name="hhdc-account-reference">
+									<input name="hhdc-account">
 										<xsl:attribute name="value">
 												<xsl:choose>
 													<xsl:when
-											test="/source/request/parameter[@name='hhdc-account-reference']">
+											test="/source/request/parameter[@name='hhdc-account']">
 														<xsl:value-of
-											select="/source/request/parameter[@name='hhdc-account-reference']/value" />
+											select="/source/request/parameter[@name='hhdc-account']/value" />
 													</xsl:when>
 													<xsl:otherwise>
-														<xsl:value-of
-											select="/source/supply-generation/account[hhdc-contract]/@reference" />
+														<xsl:value-of select="/source/supply-generation/@hhdc-account" />
 													</xsl:otherwise>
 												</xsl:choose>
 											</xsl:attribute>
 									</input>
 								</label>
 								<xsl:value-of select="' '" />
-								<a
-									href="{/source/request/@context-path}/hhdc-contracts/{/source/supply-generation/account/hhdc-contract/@id}/accounts/{/source/supply-generation/account/@id}/">
-									<xsl:value-of select="/source/supply-generation/account/@reference" />
-								</a>
 								<br />
 								<label>
 									<xsl:value-of select="'Meter Serial Number '" />
@@ -926,7 +920,7 @@
 											</xsl:for-each>
 										</select>
 									</label>
-									<xsl:value-of select="' '"/>
+									<xsl:value-of select="' '" />
 									<a
 										href="{/source/request/@context-path}/supplier-contracts/{/source/supply-generation/mpan[llfc/@is-import='false']/account/supplier-contract/@id}">
 										<xsl:value-of
@@ -935,28 +929,22 @@
 									<br />
 									<label>
 										Supplier Account
-										<input name="export-supplier-account-reference">
+										<input name="export-supplier-account">
 											<xsl:attribute name="value">
 												<xsl:choose>
 													<xsl:when
-												test="/source/request/parameter[@name='export-supplier-account-reference']">
+												test="/source/request/parameter[@name='export-supplier-account']">
 														<xsl:value-of
-												select="/source/request/parameter[@name='export-supplier-account-reference']/value" />
+												select="/source/request/parameter[@name='export-supplier-account']/value" />
 													</xsl:when>
 													<xsl:otherwise>
 														<xsl:value-of
-												select="/source/supply-generation/mpan[llfc/@is-import='false']/account[supplier-contract]/@reference" />
+												select="/source/supply-generation/mpan[llfc/@is-import='false']/@supplier-account" />
 													</xsl:otherwise>
 												</xsl:choose>
 											</xsl:attribute>
 										</input>
 									</label>
-									<xsl:value-of select="' '" />
-									<a
-										href="{/source/request/@context-path}/supplier-contracts/{/source/supply-generation/mpan[llfc/@is-import='false']/account/supplier-contract/@id}/accounts/{/source/supply-generation/mpan[llfc/@is-import='true']/account[supplier-contract]/@id}/">
-										<xsl:value-of
-											select="/source/supply-generation/mpan[llfc/@is-import='false']/account[supplier-contract]/@reference" />
-									</a>
 									<br />
 									<br />
 									<table>

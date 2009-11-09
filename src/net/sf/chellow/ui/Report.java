@@ -25,6 +25,10 @@ import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.util.List;
 
+import javax.script.Invocable;
+import javax.script.ScriptEngine;
+import javax.script.ScriptEngineManager;
+import javax.script.ScriptException;
 import javax.servlet.ServletContext;
 
 import net.sf.chellow.monad.Hiber;
@@ -42,6 +46,7 @@ import net.sf.chellow.physical.Configuration;
 import net.sf.chellow.physical.PersistentEntity;
 
 import org.hibernate.exception.ConstraintViolationException;
+import org.python.core.PyException;
 import org.python.util.PythonInterpreter;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -202,6 +207,29 @@ public class Report extends PersistentEntity {
 		} else {
 			throw new NotFoundException();
 		}
+	}
+
+	public Object callFunction(String functionName, Object[] args)
+			throws HttpException {
+		Object result = null;
+		ScriptEngineManager manager = new ScriptEngineManager();
+		ScriptEngine engine = manager.getEngineByName("jython");
+		try {
+			result = ((Invocable) engine).invokeFunction(functionName, args);
+		} catch (ScriptException e) {
+			throw new UserException(e.getMessage());
+		} catch (NoSuchMethodException e) {
+			throw new UserException("The charge script " + getUri()
+					+ " has no such method: " + e.getMessage());
+		} catch (PyException e) {
+			Object obj = e.value.__tojava__(HttpException.class);
+			if (obj instanceof HttpException) {
+				throw (HttpException) obj;
+			} else {
+				throw new UserException(e.toString());
+			}
+		}
+		return result;
 	}
 
 	public void run(Invocation inv, Document doc) throws HttpException {
