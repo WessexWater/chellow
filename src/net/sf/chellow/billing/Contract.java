@@ -21,6 +21,7 @@
 
 package net.sf.chellow.billing;
 
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -46,7 +47,10 @@ import net.sf.chellow.physical.Supply;
 
 import org.hibernate.Criteria;
 import org.hibernate.criterion.Restrictions;
+import org.python.core.Py;
 import org.python.core.PyException;
+import org.python.core.PyObject;
+import org.python.util.PythonInterpreter;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -246,14 +250,14 @@ public abstract class Contract extends PersistentEntity implements
 	}
 
 	@SuppressWarnings("unchecked")
-	public Map<String, Double> virtualBill(Supply supply,
-			HhEndDate from, HhEndDate to) throws HttpException {
+	public Map<String, Double> virtualBill(Supply supply, HhEndDate from,
+			HhEndDate to) throws HttpException {
 		Map<String, Double> bill = null;
 
 		try {
 			Object[] args = { supply, from, to };
-			bill = (Map<String,Double>) engine().invokeFunction("virtual_bill",
-					args);
+			bill = (Map<String, Double>) engine().invokeFunction(
+					"virtual_bill", args);
 		} catch (ScriptException e) {
 			throw new UserException(e.getMessage());
 		} catch (NoSuchMethodException e) {
@@ -387,7 +391,31 @@ public abstract class Contract extends PersistentEntity implements
 				.setEntity("contract", this).setTimestamp("date",
 						date.getDate()).uniqueResult();
 	}
-
+	
+	public Object callFunction(String name, Object... args) throws HttpException {
+		PythonInterpreter interp = new PythonInterpreter();
+		StringWriter out = new StringWriter();
+		interp.setOut(out);
+		StringWriter err = new StringWriter();
+		interp.setErr(err);
+		interp.set("contract", this);
+		try {
+			interp.exec(chargeScript);
+		} catch (Throwable e) {
+			throw new UserException(e.getMessage() + " " + out.toString() + " " + err.toString() + " "
+					);
+		}
+try {
+    PyObject function = interp.get(name);
+    if (function == null) {
+        throw new UserException("There isn't a function called " + name);
+    }
+    return function.__call__(Py.javas2pys(args)).__tojava__(Object.class);
+} catch (PyException pye) {
+    throw new UserException(HttpException.getStackTraceString(pye));
+}
+}
+	/*
 	public Object callFunction(String functionName, Object[] args)
 			throws HttpException {
 		Object result = null;
@@ -396,8 +424,12 @@ public abstract class Contract extends PersistentEntity implements
 		} catch (ScriptException e) {
 			throw new UserException(e.getMessage());
 		} catch (NoSuchMethodException e) {
-			throw new UserException("The charge script " + getUri()
-					+ " has no such method: " + e.getMessage());
+			String message = "Problem calling the function: " + functionName
+					+ " of charge script " + getUri() + " with arguments ";
+			for (Object obj : args) {
+				message = message + ", " + obj.toString();
+			}
+			throw new UserException(message + " with message " + HttpException.getStackTraceString(e));
 		} catch (PyException e) {
 			Object obj = e.value.__tojava__(HttpException.class);
 			if (obj instanceof HttpException) {
@@ -408,7 +440,7 @@ public abstract class Contract extends PersistentEntity implements
 		}
 		return result;
 	}
-
+*/
 	public static Contract getContract(Long id) throws HttpException {
 		Contract contract = (Contract) Hiber.session().get(Contract.class, id);
 		if (contract == null) {
@@ -424,85 +456,56 @@ public abstract class Contract extends PersistentEntity implements
 	}
 
 	/*
-	@SuppressWarnings("unchecked")
-	public void deleteAccount(Account account) throws HttpException {
-		if (!account.getContract().equals(this)) {
-			throw new UserException(
-					"The account isn't attached to this contract.");
-		}
-		if ((Long) Hiber.session().createQuery(
-				"select count(*) from Bill bill where bill.account = :account")
-				.setEntity("account", account).uniqueResult() > 0) {
-			throw new UserException(
-					"Can't delete this account as there are still bills attached to it.");
-		}
-		if ((Long) Hiber
-				.session()
-				.createQuery(
-						"select count(*) from Mpan mpan where mpan.supplierAccount.id = :accountId")
-				.setLong("accountId", account.getId()).uniqueResult() > 0) {
-			throw new UserException(
-					"Can't delete this account as there are still MPANs attached to it.");
-		}
-		for (MpanSnag snag : (List<MpanSnag>) Hiber.session()
-				.createQuery(
-						"from AccountSnag snag where snag.account = :account")
-				.setEntity("account", account).list()) {
-			Hiber.session().delete(snag);
-			Hiber.flush();
-		}
-		Hiber.session().delete(account);
-		Hiber.flush();
-	}
-*/
+	 * @SuppressWarnings("unchecked") public void deleteAccount(Account account)
+	 * throws HttpException { if (!account.getContract().equals(this)) { throw
+	 * new UserException( "The account isn't attached to this contract."); } if
+	 * ((Long) Hiber.session().createQuery(
+	 * "select count(*) from Bill bill where bill.account = :account")
+	 * .setEntity("account", account).uniqueResult() > 0) { throw new
+	 * UserException(
+	 * "Can't delete this account as there are still bills attached to it."); }
+	 * if ((Long) Hiber .session() .createQuery(
+	 * "select count(*) from Mpan mpan where mpan.supplierAccount.id = :accountId"
+	 * ) .setLong("accountId", account.getId()).uniqueResult() > 0) { throw new
+	 * UserException(
+	 * "Can't delete this account as there are still MPANs attached to it."); }
+	 * for (MpanSnag snag : (List<MpanSnag>) Hiber.session() .createQuery(
+	 * "from AccountSnag snag where snag.account = :account")
+	 * .setEntity("account", account).list()) { Hiber.session().delete(snag);
+	 * Hiber.flush(); } Hiber.session().delete(account); Hiber.flush(); }
+	 */
 	/*
-	public Accounts accountsInstance() {
-		return new Accounts(this);
-	}
-	*/
+	 * public Accounts accountsInstance() { return new Accounts(this); }
+	 */
 
 	/*
-	public Account insertAccount(String reference) throws HttpException {
-		reference = reference.trim();
-		Account account = new Account(this, reference);
-		try {
-			Hiber.session().save(account);
-			Hiber.flush();
-		} catch (ConstraintViolationException e) {
-			throw new UserException(
-					"There's already an account with the reference, '"
-							+ reference + "' attached to this provider.");
-		}
-		return account;
-	}
-*/
-	
-	/*
-	public Account getAccount(String reference) throws HttpException {
-		Account account = findAccount(reference);
-		if (account == null) {
-			throw new NotFoundException("The account '" + reference
-					+ "' can't be found.");
-		}
-		return account;
-	}
-	*/
+	 * public Account insertAccount(String reference) throws HttpException {
+	 * reference = reference.trim(); Account account = new Account(this,
+	 * reference); try { Hiber.session().save(account); Hiber.flush(); } catch
+	 * (ConstraintViolationException e) { throw new UserException(
+	 * "There's already an account with the reference, '" + reference +
+	 * "' attached to this provider."); } return account; }
+	 */
 
 	/*
-	public Account findAccount(String reference) throws HttpException {
-		return (Account) Hiber
-				.session()
-				.createQuery(
-						"from Account account where account.contract = :contract and account.reference = :reference")
-				.setEntity("contract", this).setString("reference", reference)
-				.uniqueResult();
-	}
-*/
+	 * public Account getAccount(String reference) throws HttpException {
+	 * Account account = findAccount(reference); if (account == null) { throw
+	 * new NotFoundException("The account '" + reference + "' can't be found.");
+	 * } return account; }
+	 */
+
+	/*
+	 * public Account findAccount(String reference) throws HttpException {
+	 * return (Account) Hiber .session() .createQuery(
+	 * "from Account account where account.contract = :contract and account.reference = :reference"
+	 * ) .setEntity("contract", this).setString("reference", reference)
+	 * .uniqueResult(); }
+	 */
 	public Batches batchesInstance() {
 		return new Batches(this);
 	}
 
 	public abstract Party getParty();
-	
+
 	public abstract String missingBillSnagDescription();
 }

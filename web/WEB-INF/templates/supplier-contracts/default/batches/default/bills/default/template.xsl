@@ -88,6 +88,10 @@
 							<fieldset>
 								<legend>Update This Bill</legend>
 								<br />
+								<p>
+									<a
+										href="{/source/request/@context-path}/supplies/{/source/bill/supply/@id}/">Supply</a>
+								</p>
 								<label>
 									<xsl:value-of select="'Reference '" />
 									<input name="reference">
@@ -119,8 +123,7 @@
 											</xsl:when>
 											<xsl:otherwise>
 												<xsl:attribute name="value">
-											<xsl:value-of
-													select="/source/bill/date[@label='issue']/@year" />
+											<xsl:value-of select="/source/bill/date[@label='issue']/@year" />
 										</xsl:attribute>
 											</xsl:otherwise>
 										</xsl:choose>
@@ -161,8 +164,7 @@
 														</xsl:if>
 													</xsl:when>
 													<xsl:otherwise>
-														<xsl:if
-															test="/source/bill/date[@label='issue']/@day = @number">
+														<xsl:if test="/source/bill/date[@label='issue']/@day = @number">
 															<xsl:attribute name="selected" />
 														</xsl:if>
 													</xsl:otherwise>
@@ -186,7 +188,8 @@
 											</xsl:when>
 											<xsl:otherwise>
 												<xsl:attribute name="value">
-											<xsl:value-of select="/source/bill/hh-end-date[@label='start']/@year" />
+											<xsl:value-of
+													select="/source/bill/hh-end-date[@label='start']/@year" />
 										</xsl:attribute>
 											</xsl:otherwise>
 										</xsl:choose>
@@ -204,7 +207,8 @@
 														</xsl:if>
 													</xsl:when>
 													<xsl:otherwise>
-														<xsl:if test="/source/bill/hh-end-date[@label='start']/@month = @number">
+														<xsl:if
+															test="/source/bill/hh-end-date[@label='start']/@month = @number">
 															<xsl:attribute name="selected" />
 														</xsl:if>
 													</xsl:otherwise>
@@ -226,7 +230,8 @@
 														</xsl:if>
 													</xsl:when>
 													<xsl:otherwise>
-														<xsl:if test="/source/bill/hh-end-date[@label='start']/@day = @number">
+														<xsl:if
+															test="/source/bill/hh-end-date[@label='start']/@day = @number">
 															<xsl:attribute name="selected" />
 														</xsl:if>
 													</xsl:otherwise>
@@ -248,7 +253,8 @@
 											select="/source/request/parameter[@name='finish-date-year']/value/text()" />
 										</xsl:when>
 										<xsl:when test="/source/bill/hh-end-date[@label='finish']">
-											<xsl:value-of select="/source/bill/hh-end-date[@label='finish']/@year" />
+											<xsl:value-of
+											select="/source/bill/hh-end-date[@label='finish']/@year" />
 										</xsl:when>
 										<xsl:otherwise>
 											<xsl:value-of select="/source/date/@year" />
@@ -271,7 +277,8 @@
 														</xsl:if>
 													</xsl:when>
 													<xsl:when test="/source/bill/hh-end-date[@label='finish']">
-														<xsl:if test="/source/bill/hh-end-date[@label='finish']/@month = @number">
+														<xsl:if
+															test="/source/bill/hh-end-date[@label='finish']/@month = @number">
 															<xsl:attribute name="selected" />
 														</xsl:if>
 													</xsl:when>
@@ -300,7 +307,8 @@
 														</xsl:if>
 													</xsl:when>
 													<xsl:when test="/source/bill/hh-end-date[@label='finish']">
-														<xsl:if test="/source/bill/hh-end-date[@label='finish']/@day = @number">
+														<xsl:if
+															test="/source/bill/hh-end-date[@label='finish']/@day = @number">
 															<xsl:attribute name="selected" />
 														</xsl:if>
 													</xsl:when>

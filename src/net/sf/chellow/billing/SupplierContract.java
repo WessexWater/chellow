@@ -190,9 +190,14 @@ public class SupplierContract extends Contract {
 			if (!inv.isValid()) {
 				throw new UserException(document());
 			}
-			update(name, chargeScript);
-			Hiber.commit();
-			inv.sendOk(document());
+			try {
+				update(name, chargeScript);
+				Hiber.commit();
+				inv.sendOk(document());
+			} catch (HttpException e) {
+				e.setDocument(document());
+				throw e;
+			}
 		}
 	}
 

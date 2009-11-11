@@ -651,7 +651,7 @@
 		<!--
 		<exec dir="${basedir}" executable="svnversion" output="${build.home}/WEB-INF/VERSION" />
 		-->
-		<echo message="" file="${build.home}/WEB-INF/VERSION" />
+		<echo message="348" file="${build.home}/WEB-INF/VERSION" />
 				
 
 		<!-- Copy external dependencies as required -->

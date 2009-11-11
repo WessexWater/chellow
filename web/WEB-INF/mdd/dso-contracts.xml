@@ -1,6 +1,10 @@
 <?xml version="1.0"?>
 <csv>
     <line>
+        <value><![CDATA[Action]]></value>
+        <value><![CDATA[Type]]></value>
+    </line>
+    <line>
         <value><![CDATA[insert]]></value>
         <value><![CDATA[dso-contract]]></value>
         <value><![CDATA[10]]></value>
@@ -15,7 +19,6 @@ import net.sf.chellow.physical
 def totalElement(account, startDate, finishDate):
     totalElement = net.sf.chellow.billing.BillElement("total", 103, "Dso cost")
     return totalElement]]></value>
-
         <value><![CDATA[import sys
 import net.sf.chellow.billing
 import net.sf.chellow.monad.ui
@@ -32,7 +35,6 @@ def totalElement(account, startDate, finishDate):
         <value><![CDATA[main]]></value>
         <value><![CDATA[2000-01-01T00:30Z]]></value>
         <value><![CDATA[]]></value>
-
         <value><![CDATA[import sys
 import net.sf.chellow.billing
 import net.sf.chellow.monad.ui
@@ -56,7 +58,6 @@ def totalElement(account, startDate, finishDate):
         <value><![CDATA[12]]></value>
         <value><![CDATA[main]]></value>
         <value><![CDATA[2000-01-01T00:30Z]]></value>
-
         <value><![CDATA[]]></value>
         <value><![CDATA[import sys
 import net.sf.chellow.billing
@@ -80,7 +81,6 @@ def totalElement(account, startDate, finishDate):
         <value><![CDATA[dso-contract]]></value>
         <value><![CDATA[13]]></value>
         <value><![CDATA[main]]></value>
-
         <value><![CDATA[2000-01-01T00:30Z]]></value>
         <value><![CDATA[]]></value>
         <value><![CDATA[import sys
@@ -104,16 +104,11 @@ def totalElement(account, startDate, finishDate):
         <value><![CDATA[insert]]></value>
         <value><![CDATA[dso-contract]]></value>
         <value><![CDATA[14]]></value>
-
         <value><![CDATA[main]]></value>
         <value><![CDATA[2000-01-01T00:30Z]]></value>
         <value><![CDATA[]]></value>
-        <value><![CDATA[from net.sf.chellow.billing import VirtualBill, NonCoreContract
+        <value><![CDATA[from net.sf.chellow.billing import NonCoreContract
 from java.util import GregorianCalendar, TimeZone, Locale, Calendar
-
-def totalElement(account, startDate, finishDate):
-    totalElement = VirtualBill("total", 103, "Dso cost")
-    return totalElement
 
 class LlfCalculator:
     def __init__(self, voltage_level, is_substation, date):
@@ -133,7 +128,7 @@ class LlfCalculator:
         self.day_of_week = self.cal.get(Calendar.DAY_OF_WEEK)
         self.hour = self.cal.get(Calendar.HOUR_OF_DAY)
         self.minute = self.cal.get(Calendar.MINUTE)
-        self.decimal_hour = self.hour + self.minute / 60
+        self.decimal_hour = self.hour + float(self.minute) / float(60)
         self.cal_ct.setTime(date.getDate())
         self.year_ct = self.cal_ct.get(Calendar.YEAR)
         self.month_ct = self.cal_ct.get(Calendar.MONTH)
@@ -141,7 +136,7 @@ class LlfCalculator:
         self.day_of_week_ct = self.cal_ct.get(Calendar.DAY_OF_WEEK)
         self.hour_ct = self.cal_ct.get(Calendar.HOUR_OF_DAY)
         self.minute_ct = self.cal_ct.get(Calendar.MINUTE)
-        self.decimal_hour_ct = self.hour_ct + self.minute_ct / 60
+        self.decimal_hour_ct = self.hour_ct + float(self.minute_ct) / float(60)
         if self.rate_script == None or self.rate_script.getStartDate().getDate().after(date.getDate()) or (self.rate_script.getFinishDate() is not None and self.rate_script.getFinishDate().getDate().before(date.getDate())):
             self.rate_script = contract.rateScripts(date, date)[0]
             self.rate_engine = self.rate_script.invocableEngine()
@@ -170,6 +165,40 @@ class LlfCalculator:
                 return self.get_rate('other_hv')
             if self.voltage_level == "LV":
                 return self.get_rate('other_lv')
+
+    def is_duos_day(self):
+        if self.decimal_hour_ct > 0.5 and self.decimal_hour_ct <= 7.5:
+            return False
+        else:
+            return True
+
+    def duos_hh(self, kwh):
+        duos = {}
+        if self.is_duos_day():
+            duos['day-kwh'] = kwh
+            duos['night-kwh'] = 0
+        else:
+            duos['night-kwh'] = kwh
+            duos['day-kwh'] = 0
+        duos['day-gbp'] = duos['day-kwh'] * self.get_rate('duos_day_' + self.voltage_level.lower() + '_gbp_per_kwh')
+        duos['night-gbp'] = duos['night-kwh'] * self.get_rate('duos_night_' + self.voltage_level.lower() + '_gbp_per_kwh')
+        return duos
+
+def get_rate(name, date):
+    return contract.rateScripts(date, date)[0].invocableEngine().invokeFunction(name, [])
+
+def duos_monthly(voltage_level, is_substation, month_kwh, month_kvarh, date, availability, year_md_kva_095, month_md_kva, month_md_kva_imp, days_in_month):
+    duos = {}
+    duos['reactive-gbp'] = max(0, month_kvarh - month_kwh / 3) * get_rate('reactive_' + voltage_level.lower() + '_gbp_per_kvarh', date)
+    duos['reactive-working'] = ''
+
+    availability_rate = get_rate('availability_' + voltage_level.lower() + '_gbp_per_kva_per_month', date)
+    billed_avail = max(availability, month_md_kva)
+    duos['availability-gbp'] = availability_rate * billed_avail
+    duos['availability-working'] = ' (billed_avail ' + str(billed_avail) + ' rate ' + str(availability_rate) + ')'
+
+    duos['standing-gbp'] = get_rate('standing_' + voltage_level.lower() + '_gbp_per_month', date)
+    return duos
 
 def calculator(voltage_level, is_substation, date):
     return LlfCalculator(voltage_level, is_substation, date)]]></value>
@@ -200,7 +229,6 @@ def other_lv():
     <line>
         <value><![CDATA[insert]]></value>
         <value><![CDATA[dso-contract-rate-script]]></value>
-
         <value><![CDATA[14]]></value>
         <value><![CDATA[main]]></value>
         <value><![CDATA[2007-04-01T00:30Z]]></value>
@@ -235,7 +263,6 @@ def triad():
         <value><![CDATA[insert]]></value>
         <value><![CDATA[dso-contract-rate-script]]></value>
         <value><![CDATA[14]]></value>
-
         <value><![CDATA[main]]></value>
         <value><![CDATA[2008-04-01T00:30Z]]></value>
         <value><![CDATA[def night_hv():
@@ -270,7 +297,6 @@ def triad():
         <value><![CDATA[dso-contract-rate-script]]></value>
         <value><![CDATA[14]]></value>
         <value><![CDATA[main]]></value>
-
         <value><![CDATA[2009-04-01T00:30Z]]></value>
         <value><![CDATA[def night_hv():
     return 1.012
@@ -297,7 +323,37 @@ def other_lv():
     return 1.070
 
 def triad():
-    return 20.526611]]></value>
+    return 20.526611
+
+def duos_day_hv_gbp_per_kwh():
+    return 0.0008
+
+def duos_night_hv_gbp_per_kwh():
+    return 0.0004
+
+def standing_hv_gbp_per_month():
+    return 137.1792
+
+def availability_hv_gbp_per_kva_per_month():
+    return 1.3900
+
+def reactive_hv_gbp_per_kvarh():
+    return 0.0012
+
+def duos_day_lv_gbp_per_kwh():
+    return 0.0014
+
+def duos_night_lv_gbp_per_kwh():
+    return 0.0006
+
+def standing_lv_gbp_per_month():
+    return 51.4042
+
+def availability_lv_gbp_per_kva_per_month():
+    return 1.7307
+
+def reactive_lv_gbp_per_kvarh():
+    return 0.0024]]></value>
     </line>
     <line>
         <value><![CDATA[insert]]></value>
@@ -305,7 +361,6 @@ def triad():
         <value><![CDATA[15]]></value>
         <value><![CDATA[main]]></value>
         <value><![CDATA[2000-01-01T00:30Z]]></value>
-
         <value><![CDATA[]]></value>
         <value><![CDATA[import sys
 import net.sf.chellow.billing
@@ -329,7 +384,6 @@ def totalElement(account, startDate, finishDate):
         <value><![CDATA[dso-contract]]></value>
         <value><![CDATA[16]]></value>
         <value><![CDATA[main]]></value>
-
         <value><![CDATA[2000-01-01T00:30Z]]></value>
         <value><![CDATA[]]></value>
         <value><![CDATA[import sys
@@ -353,7 +407,6 @@ def totalElement(account, startDate, finishDate):
         <value><![CDATA[insert]]></value>
         <value><![CDATA[dso-contract]]></value>
         <value><![CDATA[17]]></value>
-
         <value><![CDATA[main]]></value>
         <value><![CDATA[2000-01-01T00:30Z]]></value>
         <value><![CDATA[]]></value>
@@ -377,7 +430,6 @@ def totalElement(account, startDate, finishDate):
     <line>
         <value><![CDATA[insert]]></value>
         <value><![CDATA[dso-contract]]></value>
-
         <value><![CDATA[18]]></value>
         <value><![CDATA[main]]></value>
         <value><![CDATA[2000-01-01T00:30Z]]></value>
@@ -401,7 +453,6 @@ def totalElement(account, startDate, finishDate):
     </line>
     <line>
         <value><![CDATA[insert]]></value>
-
         <value><![CDATA[dso-contract]]></value>
         <value><![CDATA[19]]></value>
         <value><![CDATA[main]]></value>
@@ -425,20 +476,15 @@ def totalElement(account, startDate, finishDate):
     return totalElement]]></value>
     </line>
     <line>
-
         <value><![CDATA[insert]]></value>
         <value><![CDATA[dso-contract]]></value>
         <value><![CDATA[20]]></value>
         <value><![CDATA[main]]></value>
         <value><![CDATA[2000-01-01T00:30Z]]></value>
         <value><![CDATA[]]></value>
-        <value><![CDATA[from net.sf.chellow.billing import VirtualBill, NonCoreContract
+        <value><![CDATA[from net.sf.chellow.billing import NonCoreContract
 from java.util import GregorianCalendar, TimeZone, Locale, Calendar
 from net.sf.chellow.monad import UserException
-
-def totalElement(account, startDate, finishDate):
-    totalElement = VirtualBill("total", 103, "Dso cost")
-    return totalElement
 
 class LlfCalculator:
     def __init__(self, voltage_level, is_substation, date):
@@ -461,7 +507,7 @@ class LlfCalculator:
         self.day_of_week = self.cal.get(Calendar.DAY_OF_WEEK)
         self.hour = self.cal.get(Calendar.HOUR_OF_DAY)
         self.minute = self.cal.get(Calendar.MINUTE)
-        self.decimal_hour = self.hour + self.minute / 60
+        self.decimal_hour = float(self.hour) + float(self.minute) / 60
         self.cal_ct.setTime(date.getDate())
         self.year_ct = self.cal_ct.get(Calendar.YEAR)
         self.month_ct = self.cal_ct.get(Calendar.MONTH)
@@ -502,6 +548,59 @@ class LlfCalculator:
         else:
             return True
 
+    def duos_hh(self, kwh):
+        duos = {}
+        if self.is_duos_day():
+            duos['day-kwh'] = kwh
+            duos['night-kwh'] = 0
+        else:
+            duos['night-kwh'] = kwh
+            duos['day-kwh'] = 0
+        duos['day-gbp'] = duos['day-kwh'] * self.get_rate('duos_day_' + self.voltage_level.lower() + '_gbp_per_kwh')
+        duos['night-gbp'] = duos['night-kwh'] * self.get_rate('duos_night_' + self.voltage_level.lower() + '_gbp_per_kwh')
+        return duos
+
+def get_rate(name, date):
+    return contract.rateScripts(date, date)[0].invocableEngine().invokeFunction(name, [])
+
+def avail_step(avail, step):
+    return (int(avail / step) + 1) * step
+
+def duos_monthly(voltage_level, is_substation, month_kwh, month_kvarh, date, availability, year_md_kva_095, month_md_kva, month_md_kva_imp, days_in_month):
+    duos = {}
+    duos['reactive-gbp'] = max(0, month_kvarh - month_kwh / 3) * get_rate('reactive_' + voltage_level.lower() + '_gbp_per_kvarh', date)
+    duos['reactive-working'] = ''
+    billed_avail = max(availability, year_md_kva_095)
+
+    if billed_avail < 70:
+        pass
+    elif billed_avail < 100:
+        billed_avail = avail_step(billed_avail, 5)
+    elif billed_avail < 250:
+        billed_avail = avail_step(billed_avail, 10)
+    elif billed_avail < 500:
+        billed_avail = avail_step(billed_avail, 25)
+    elif billed_avail < 1000:
+        billed_avail = avail_step(billed_avail, 50)
+    else:
+        billed_avail = avail_step(billed_avail, 100)
+
+    if voltage_level == 'LV':
+        avail_rate = get_rate('availability_' + voltage_level.lower() + '_le_200_gbp_per_kva_per_month', date)
+        duos['availability-gbp'] = min(200, billed_avail) * avail_rate
+        duos['availability-working'] = ' [min(200, billed_avail:' + str(billed_avail) + ') * avail_rate:' + str(avail_rate)
+        if billed_avail > 200:
+            avail_rate = get_rate('availability_' + voltage_level.lower() + '_gt_200_gbp_per_kva_per_month', date)
+            duos['availability-gbp'] = duos['availability-gbp'] + (billed_avail - 200) * avail_rate
+            duos['availability-working'] = duos['availability-working'] + ' + (billed_avail:' + str(billed_avail) + ' - 200) * avail_rate:' + str(avail_rate)
+    else:
+        avail_rate = get_rate('availability_' + voltage_level.lower() + '_gbp_per_kva_per_month', date)
+        duos['availability-gbp'] = billed_avail * avail_rate
+        duos['availability-working'] = ' [billed_avail:' + str(billed_avail) + ' * avail_rate:' + str(avail_rate) + '] '
+    duos['availability-working'] = duos['availability-working'] + ']'
+    duos['standing-gbp'] = get_rate('standing_' + voltage_level.lower()+ '_gbp_per_month', date)
+    return duos
+
 def calculator(voltage_level, is_substation, date):
     return LlfCalculator(voltage_level, is_substation, date)]]></value>
         <value><![CDATA[def night_hv():
@@ -531,7 +630,6 @@ def other_lv():
 def triad():
     return 21.100281]]></value>
     </line>
-
     <line>
         <value><![CDATA[insert]]></value>
         <value><![CDATA[dso-contract-rate-script]]></value>
@@ -566,7 +664,6 @@ def triad():
     return 21.100281]]></value>
     </line>
     <line>
-
         <value><![CDATA[insert]]></value>
         <value><![CDATA[dso-contract-rate-script]]></value>
         <value><![CDATA[20]]></value>
@@ -601,7 +698,6 @@ def triad():
     </line>
     <line>
         <value><![CDATA[insert]]></value>
-
         <value><![CDATA[dso-contract-rate-script]]></value>
         <value><![CDATA[20]]></value>
         <value><![CDATA[main]]></value>
@@ -631,12 +727,44 @@ def other_lv():
     return 1.078
 
 def triad():
-    return 24.471461]]></value>
+    return 24.471461
+
+def duos_day_hv_gbp_per_kwh():
+    return 0.00464
+
+def duos_night_hv_gbp_per_kwh():
+    return 0.00116
+
+def standing_hv_gbp_per_month():
+    return 105.18
+
+def availability_hv_gbp_per_kva_per_month():
+    return 0.92
+
+def reactive_hv_gbp_per_kvarh():
+    return 0
+
+def duos_day_lv_gbp_per_kwh():
+    return 0.00649
+
+def duos_night_lv_gbp_per_kwh():
+    return 0.00126
+
+def standing_lv_gbp_per_month():
+    return 15.97
+
+def availability_lv_le_200_gbp_per_kva_per_month():
+    return 1.13
+
+def availability_lv_gt_200_gbp_per_kva_per_month():
+    return 1
+
+def reactive_lv_gbp_per_kvarh():
+    return 0.0]]></value>
     </line>
     <line>
         <value><![CDATA[insert]]></value>
         <value><![CDATA[dso-contract]]></value>
-
         <value><![CDATA[21]]></value>
         <value><![CDATA[main]]></value>
         <value><![CDATA[2000-01-01T00:30Z]]></value>
@@ -660,18 +788,13 @@ def totalElement(account, startDate, finishDate):
     </line>
     <line>
         <value><![CDATA[insert]]></value>
-
         <value><![CDATA[dso-contract]]></value>
         <value><![CDATA[22]]></value>
         <value><![CDATA[main]]></value>
         <value><![CDATA[2000-01-01T00:30Z]]></value>
         <value><![CDATA[]]></value>
-        <value><![CDATA[from net.sf.chellow.billing import VirtualBill, NonCoreContract
+        <value><![CDATA[from net.sf.chellow.billing import NonCoreContract
 from java.util import GregorianCalendar, TimeZone, Locale, Calendar
-
-def totalElement(account, startDate, finishDate):
-    totalElement = VirtualBill("total", 103, "Dso cost")
-    return totalElement
 
 class LlfCalculator:
     def __init__(self, voltage_level, is_substation, date):
@@ -694,7 +817,7 @@ class LlfCalculator:
         self.day_of_week = self.cal.get(Calendar.DAY_OF_WEEK)
         self.hour = self.cal.get(Calendar.HOUR_OF_DAY)
         self.minute = self.cal.get(Calendar.MINUTE)
-        self.decimal_hour = self.hour + self.minute / 60
+        self.decimal_hour = self.hour + float(self.minute) / float(60)
         self.cal_ct.setTime(date.getDate())
         self.year_ct = self.cal_ct.get(Calendar.YEAR)
         self.month_ct = self.cal_ct.get(Calendar.MONTH)
@@ -702,7 +825,7 @@ class LlfCalculator:
         self.day_of_week_ct = self.cal_ct.get(Calendar.DAY_OF_WEEK)
         self.hour_ct = self.cal_ct.get(Calendar.HOUR_OF_DAY)
         self.minute_ct = self.cal_ct.get(Calendar.MINUTE)
-        self.decimal_hour_ct = self.hour_ct + self.minute_ct / 60
+        self.decimal_hour_ct = self.hour_ct + float(self.minute_ct) / float(60)
         if self.rate_script == None or self.rate_script.getStartDate().getDate().after(self.date.getDate()) or (self.rate_script.getFinishDate() is not None and self.rate_script.getFinishDate().getDate().before(self.date.getDate())):
             self.rate_script = contract.rateScripts(self.date, self.date)[0]
             self.rate_engine = self.rate_script.invocableEngine()
@@ -747,6 +870,51 @@ class LlfCalculator:
         else:
             return True
 
+    def duos_hh(self, kwh):
+        duos = {}
+
+        if self.voltage_level == 'HV':
+            substation = ''
+        else:
+            if self.is_substation:
+                substation = '_sub'
+            else:
+                substation = '_net'
+
+        if self.is_duos_day():
+            duos['day-kwh'] = kwh
+            duos['night-kwh'] = 0
+        else:
+            duos['night-kwh'] = kwh
+            duos['day-kwh'] = 0
+        duos['day-gbp'] = duos['day-kwh'] * self.get_rate('duos_day_' + self.voltage_level.lower() + substation + '_gbp_per_kwh')
+        duos['night-gbp'] = duos['night-kwh'] * self.get_rate('duos_night_' + self.voltage_level.lower() + substation + '_gbp_per_kwh')
+        return duos
+
+def get_rate(name, date):
+    return contract.rateScripts(date, date)[0].invocableEngine().invokeFunction(name, [])
+
+def duos_monthly(voltage_level, is_substation, month_kwh, month_kvarh, date, availability, year_md_kva_095, month_md_kva, month_md_kva_imp, days_in_month):
+    duos = {}
+    if voltage_level == 'HV':
+        substation = ''
+    else:
+        if is_substation:
+            substation = '_sub'
+        else:
+            substation = '_net'
+    reactive_rate = get_rate('duos_reactive_' + voltage_level.lower() + substation + '_gbp_per_kvarh', date)
+    duos['reactive-gbp'] = max(0, month_kvarh - month_kwh / 2) * reactive_rate
+    duos['reactive-working'] = ' [rate:' + str(reactive_rate) + ' * max(0, kvarh:' + str(month_kvarh) + ' - month_kwh:' + str(month_kwh) + ' / 2)] '
+
+    billed_avail = max(month_md_kva_imp, availability)
+    availability_rate = get_rate('availability_' + voltage_level.lower() + substation + '_gbp_per_kva_per_day', date)
+    duos['availability-gbp'] = availability_rate * billed_avail * days_in_month
+    duos['availability-working'] = '[max(month_md_kva:' + str(month_md_kva) + ', availability:' + str(availability) + ' * rate:' + str(availability_rate) + ' * days:' + str(days_in_month) + '] '
+
+    duos['standing-gbp'] = get_rate('standing_' + voltage_level.lower() + substation + '_gbp_per_month', date)
+    return duos
+
 def calculator(voltage_level, is_substation, date):
     return LlfCalculator(voltage_level, is_substation, date)]]></value>
         <value><![CDATA[def winter_weekday_peak_hv():
@@ -826,7 +994,6 @@ def triad():
     return 23.77056]]></value>
     </line>
     <line>
-
         <value><![CDATA[insert]]></value>
         <value><![CDATA[dso-contract-rate-script]]></value>
         <value><![CDATA[22]]></value>
@@ -873,7 +1040,6 @@ def triad():
     </line>
     <line>
         <value><![CDATA[insert]]></value>
-
         <value><![CDATA[dso-contract-rate-script]]></value>
         <value><![CDATA[22]]></value>
         <value><![CDATA[main]]></value>
@@ -920,7 +1086,6 @@ def triad():
     <line>
         <value><![CDATA[insert]]></value>
         <value><![CDATA[dso-contract-rate-script]]></value>
-
         <value><![CDATA[22]]></value>
         <value><![CDATA[main]]></value>
         <value><![CDATA[2009-04-01T00:30Z]]></value>
@@ -961,13 +1126,57 @@ def other_lv():
     return 1.069
 
 def triad():
-    return 25.631634]]></value>
+    return 25.631634
+
+def duos_day_hv_gbp_per_kwh():
+    return 0.0047
+
+def duos_night_hv_gbp_per_kwh():
+    return 0.0014
+
+def standing_hv_gbp_per_month():
+    return 0
+
+def availability_hv_gbp_per_kva_per_day():
+    return 0.0387
+
+def duos_reactive_hv_gbp_per_kvarh():
+    return 0.0023
+
+def duos_day_lv_net_gbp_per_kwh():
+    return 0.0127
+
+def duos_night_lv_net_gbp_per_kwh():
+    return 0.0045
+
+def standing_lv_net_gbp_per_month():
+    return 0
+
+def availability_lv_net_gbp_per_kva_per_day():
+    return 0.039
+
+def duos_reactive_lv_net_gbp_per_kvarh():
+    return 0.0042
+
+def duos_day_lv_sub_gbp_per_kwh():
+    return 0.0081
+
+def duos_night_lv_sub_gbp_per_kwh():
+    return 0.0028
+
+def standing_lv_sub_gbp_per_month():
+    return 0
+
+def availability_lv_sub_gbp_per_kva_per_day():
+    return 0.0389
+
+def duos_reactive_lv_sub_gbp_per_kvarh():
+    return 0.0033]]></value>
     </line>
     <line>
         <value><![CDATA[insert]]></value>
         <value><![CDATA[dso-contract]]></value>
         <value><![CDATA[23]]></value>
-
         <value><![CDATA[main]]></value>
         <value><![CDATA[2000-01-01T00:30Z]]></value>
         <value><![CDATA[]]></value>
@@ -991,7 +1200,6 @@ def totalElement(account, startDate, finishDate):
     <line>
         <value><![CDATA[insert]]></value>
         <value><![CDATA[dso-contract]]></value>
-
         <value><![CDATA[24]]></value>
         <value><![CDATA[main]]></value>
         <value><![CDATA[2000-01-01T00:30Z]]></value>
@@ -1015,7 +1223,6 @@ def totalElement(account, startDate, finishDate):
     </line>
     <line>
         <value><![CDATA[insert]]></value>
-
         <value><![CDATA[dso-contract]]></value>
         <value><![CDATA[99]]></value>
         <value><![CDATA[main]]></value>
@@ -1039,4 +1246,3 @@ def totalElement(account, startDate, finishDate):
     return totalElement]]></value>
     </line>
 </csv>
-

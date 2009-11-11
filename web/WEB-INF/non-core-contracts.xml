@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <csv>
-   <line>
+    <line>
         <value><![CDATA[insert]]></value>
         <value><![CDATA[non-core-contract]]></value>
         <value><![CDATA[POOL]]></value>
@@ -11,8 +11,17 @@
         <value><![CDATA[def ccl_gbp(hh_value, date):
     return hh_value * contract.rateScript(date).getRate('ccl_rate')
 
-def is_ccl_month(kwh):
-    return kwh > 999]]></value>
+def is_ccl_month(is_green, kwh):
+    return not is_green and kwh > 999
+
+def ccl_month_gbp(is_green, month_kwh, month_end):
+    ccl = {}
+    if is_ccl_month(is_green, month_kwh):
+        ccl['kwh'] = month_kwh
+    else:
+        ccl['kwh'] = 0
+    ccl['gbp'] = ccl_gbp(ccl['kwh'], month_end)
+    return ccl]]></value>
         <value><![CDATA[def ccl_rate():
     return 0.004560]]></value>
     </line>
@@ -35,6 +44,8 @@ def is_ccl_month(kwh):
         <value><![CDATA[]]></value>
         <value><![CDATA[from net.sf.chellow.billing import VirtualBill, NonCoreContract
 from net.sf.chellow.physical import HhEndDate
+from net.sf.chellow.monad.types import MonadDate
+from java.util import Calendar
 
 def totalElement(account, startDate, finishDate):
     totalElement = VirtualBill("total", 103, "Dso cost")
@@ -78,18 +89,21 @@ def supplyElement(supply, start_date, finish_date, is_import):
         supply_element.addSubElement(triad_element)
     return supply_element
 
-def triad(dso_contract, triad_kws, date, voltage_level, is_substation):
+def triad(dso_contract, triad_kws, date, voltage_level, is_substation, years_ahead=0):
     result = {}
     calc = dso_contract.callFunction('calculator', [voltage_level, is_substation, date])
     triad_rate = calc.get_rate('triad')
     dates = NonCoreContract.getNonCoreContract('TRIAD').callFunction('triad_dates', [date])
     total_gsp_kw = 0
+    cal = MonadDate.getCalendar()
     for i in range(3):
         if calc is None:
             llf = None
             gsp_kw = None
         else:
-            calc.set_time(dates[i])
+            cal.setTime(dates[i].getDate())
+            cal.add(Calendar.YEAR, years_ahead)
+            calc.set_time(HhEndDate(cal.getTime()))
             llf = calc.llf()
             if triad_kws[i] is None:
                 gsp_kw = None
@@ -104,7 +118,10 @@ def triad(dso_contract, triad_kws, date, voltage_level, is_substation):
         total_gbp = None
     else:
         total_gsp_kw = total_gsp_kw / 3
-        total_gbp = total_gsp_kw * triad_rate
+        cal.setTime(date.getDate())
+        cal.add(Calendar.YEAR, years_ahead)
+        calc.set_time(HhEndDate(cal.getTime()))
+        total_gbp = total_gsp_kw * calc.get_rate('triad')
     result['total-gsp-kw'] = total_gsp_kw
     result['total-gbp'] = total_gbp
     return result]]></value>
@@ -118,7 +135,7 @@ def triad_dates():
         <value><![CDATA[non-core-contract-rate-script]]></value>
         <value><![CDATA[TRIAD]]></value>
 
-        <value><![CDATA[2008-04-03T00:30Z]]></value>
+        <value><![CDATA[2008-04-01T00:30Z]]></value>
         <value><![CDATA[from net.sf.chellow.physical import HhEndDate
 
 def triad_dates():
@@ -135,4 +152,15 @@ def triad_dates():
     return [HhEndDate("2008-12-01T17:30Z"), HhEndDate("2008-12-15T17:30Z"), HhEndDate("2009-01-06T17:30Z")]]]></value>
 
     </line>
+    <line>
+        <value><![CDATA[insert]]></value>
+        <value><![CDATA[non-core-contract-rate-script]]></value>
+        <value><![CDATA[TRIAD]]></value>
+        <value><![CDATA[2010-04-01T00:30Z]]></value>
+        <value><![CDATA[from net.sf.chellow.physical import HhEndDate
+
+def triad_dates():
+    return [HhEndDate("2008-12-01T17:30Z"), HhEndDate("2008-12-15T17:30Z"), HhEndDate("2009-01-06T17:30Z")]]]></value>
+    </line>
 </csv>
+

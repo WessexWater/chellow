@@ -474,13 +474,20 @@ def bills_list(parent_element, element_name, contract, generation):
         snags_crit.add(Restrictions.le('startDate.date', generation.getFinishDate().getDate()))
     bill_dict = {}
     for bill in bills_crit.list():
-        bill_dict[bill.getStartDate().getDate().getTime()] = bill.toXml(doc, XmlTree('batch', XmlTree('contract')))
+        key = bill.getStartDate().getDate().getTime()
+        if not bill_dict.has_key(key):
+            bill_dict[key] = []
+        bill_dict[key].append(bill.toXml(doc, XmlTree('batch', XmlTree('contract')).put('snags')))
     for snag in snags_crit.list():
-        bill_dict[snag.getStartDate().getDate().getTime()] = snag.toXml(doc)
+        key = snag.getStartDate().getDate().getTime()
+        if not bill_dict.has_key(key):
+            bill_dict[key] = []
+        bill_dict[key].append(snag.toXml(doc))
     bill_keys = bill_dict.keys()
     bill_keys.sort()
     for key in bill_keys:
-        bills_element.appendChild(bill_dict[key])
+        for elem in bill_dict[key]:
+            bills_element.appendChild(elem)
     return bills_element
 
 supply_id = inv.getLong("supply-id")
@@ -885,7 +892,7 @@ kVArh
                                       </xsl:otherwise>
                                       </xsl:choose>
                                     </td>
-                                    <td colspan="7">
+                                    <td colspan="8">
                                         <xsl:value-of select="@description" />
                                     </td>
                                 </xsl:otherwise>
@@ -6492,6 +6499,12 @@ for account in Hiber.session().createQuery("from Batch batch where batch.contrac
                             Batches
                         </a>
                     </li>
+                    <li>
+                        <a
+                            href="{/source/request/@context-path}/reports/105/output/?supplier-contract-id={/source/supplier-contract/@id}">
+                            Snags
+                        </a>
+                    </li>
                 </ul>
 
                 <h2>Script</h2>
@@ -7373,11 +7386,11 @@ for bill in Hiber.session().createQuery("from Bill bill where bill.batch = :batc
                                 </td>
                                 <td>
                                     <xsl:value-of
-                                        select="concat(day-start-date/@year, '-', day-start-date/@month, '-', day-start-date/@day)" />
+                                        select="concat(hh-end-date[@label='start']/@year, '-', hh-end-date[@label='start']/@month, '-', hh-end-date[@label='start']/@day, ' ', hh-end-date[@label='start']/@hour, ':', hh-end-date[@label='start']/@minute)" />
                                 </td>
                                 <td>
                                     <xsl:value-of
-                                        select="concat(day-finish-date/@year, '-', day-finish-date/@month, '-', day-finish-date/@day)" />
+                                        select="concat(hh-end-date[@label='finish']/@year, '-', hh-end-date[@label='finish']/@month, '-', hh-end-date[@label='finish']/@day, ' ', hh-end-date[@label='finish']/@hour, ':', hh-end-date[@label='finish']/@minute)" />
                                 </td>
                                 <td>
                                     <xsl:value-of select="@net" />
@@ -8287,8 +8300,13 @@ bill_snags_element = doc.createElement('bill-snags')
 source.appendChild(bill_snags_element)
 bill_snags_element.appendChild(contract.toXml(doc, XmlTree('party')))
 source.appendChild(bill_snags_element)
-for bill_snag in Hiber.session().createQuery("from BillSnag snag where snag.isIgnored is false and snag.bill.account.contract = :contract order by snag.bill.id, snag.description").setEntity('contract', contract).list():
-    bill_snags_element.appendChild(bill_snag.toXml(doc, XmlTree('bill')))]]></value>
+for bill_snag in Hiber.session().createQuery("from BillSnag snag where snag.isIgnored is false and snag.bill.batch.contract = :contract order by snag.bill.id, snag.description").setEntity('contract', contract).list():
+    bill_snags_element.appendChild(bill_snag.toXml(doc, XmlTree('bill', XmlTree('supply'))))
+
+missing_bill_snags_element = doc.createElement('missing-bill-snags')
+source.appendChild(missing_bill_snags_element)
+for snag in Hiber.session().createQuery("from SupplySnag snag where snag.contract = :contract order by snag.supply.id").setEntity('contract', contract).list():
+    missing_bill_snags_element.appendChild(snag.toXml(doc, XmlTree('supply')))]]></value>
     <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
 <xsl:stylesheet version="1.0"
     xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
@@ -8326,9 +8344,9 @@ for bill_snag in Hiber.session().createQuery("from BillSnag snag where snag.isIg
                             select="/source/bill-snags/supplier-contract/@name" />
                     </a>
                     &gt;
-                    <xsl:value-of select="'Bill Snags ['" />
+                    <xsl:value-of select="'Snags ['" />
                     <a
-                        href="{/source/request/@context-path}/supplier-contracts/{/source/bill-snags/supplier-contract/@id}/bill-snags/">
+                        href="{/source/request/@context-path}/supplier-contracts/{/source/bill-snags/supplier-contract/@id}/">
                         <xsl:value-of select="'edit'" />
                     </a>
                     <xsl:value-of select="']'" />
@@ -8343,13 +8361,11 @@ for bill_snag in Hiber.session().createQuery("from BillSnag snag where snag.isIg
                         </xsl:for-each>
                     </ul>
                 </xsl:if>
-                <table>
+                <table><caption>Bill Snags</caption>
                     <thead>
                         <tr>
-                            <th>Chellow Id</th>
                             <th>Bill</th>
                             <th>Date Created</th>
-                            <th>Date Resolved</th>
                             <th>Is Ignored?</th>
                             <th>Description</th>
                         </tr>
@@ -8360,13 +8376,7 @@ for bill_snag in Hiber.session().createQuery("from BillSnag snag where snag.isIg
                             <tr>
                                 <td>
                                     <a
-                                        href="{/source/request/@context-path}/reports/107/output/?snag-id={@id}">
-                                        <xsl:value-of select="@id" />
-                                    </a>
-                                </td>
-                                <td>
-                                    <a
-                                        href="{/source/request/@context-path}/reports/87/output/?bill-id={bill/@id}">
+                                        href="{/source/request/@context-path}/reports/7/output/?supply-id={bill/supply/@id}">
                                         <xsl:value-of select="bill/@id" />
                                     </a>
                                 </td>
@@ -8377,13 +8387,58 @@ for bill_snag in Hiber.session().createQuery("from BillSnag snag where snag.isIg
                                 <td>
                                     <xsl:choose>
                                         <xsl:when
-                                            test="hh-end-date[@label='resolved']">
-                                            <xsl:value-of
-                                                select="concat(hh-end-date[@label='resolved']/@year, '-', hh-end-date[@label='resolved']/@month, '-', hh-end-date[@label='resolved']/@day)" />
+                                            test="@is-ignored = 'true'">
+                                            Yes
                                         </xsl:when>
                                         <xsl:otherwise>
-                                            Unresolved
+                                            No
                                         </xsl:otherwise>
+                                    </xsl:choose>
+                                </td>
+                                <td>
+                                    <xsl:value-of select="@description" />
+                                </td>
+                            </tr>
+                        </xsl:for-each>
+                    </tbody>
+                </table>
+<br/>
+                <table><caption>Missing-Bill Snags</caption>
+                    <thead>
+                        <tr>
+                            <th>Supply</th>
+                            <th>Date Created</th>
+                            <th>From</th>
+                            <th>To</th>
+                            <th>Is Ignored?</th>
+                            <th>Description</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <xsl:for-each
+                            select="/source/missing-bill-snags/supply-snag">
+                            <tr>
+                                <td>
+                                    <a
+                                        href="{/source/request/@context-path}/reports/7/output/?supply-id={supply/@id}">
+                                        <xsl:value-of select="supply/@id" />
+                                    </a>
+                                </td>
+                                <td>
+                                    <xsl:value-of
+                                        select="concat(date[@label='created']/@year, '-', date[@label='created']/@month, '-', date[@label='created']/@day)" />
+                                </td>
+                                <td>
+                                    <xsl:value-of select="concat(hh-end-date[@label='start']/@year, '-', hh-end-date[@label='start']/@month, '-', hh-end-date[@label='start']/@day, ' ', hh-end-date[@label='start']/@hour, ':', hh-end-date[@label='start']/@minute)" />
+                                </td>
+                                <td>
+                                    <xsl:choose>
+                                    <xsl:when test="hh-end-date[@label='finish']">
+                                    <xsl:value-of select="concat(hh-end-date[@label='finish']/@year, '-', hh-end-date[@label='finish']/@month, '-', hh-end-date[@label='finish']/@day, ' ', hh-end-date[@label='finish']/@hour, ':', hh-end-date[@label='finish']/@minute)" />
+                                    </xsl:when>
+                                    <xsl:otherwise>
+                                        Ongoing
+                                    </xsl:otherwise>
                                     </xsl:choose>
                                 </td>
                                 <td>
@@ -8413,7 +8468,7 @@ for bill_snag in Hiber.session().createQuery("from BillSnag snag where snag.isIg
     <value>insert</value>
     <value>report</value>
     <value>107</value>
-    <value>0 Supplier Contract Bill Snag</value>
+    <value>0 Free 8</value>
     <value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree, UserException
 from net.sf.chellow.billing import BillSnag
 
@@ -12147,7 +12202,6 @@ pw = inv.getResponse().getWriter()
 pw.println('<?xml version="1.0"?>')
 pw.flush()
 pw.println('<csv>')
-print_line(pw, ['Action', 'Type'])
 
 
 # DSO Contracts
