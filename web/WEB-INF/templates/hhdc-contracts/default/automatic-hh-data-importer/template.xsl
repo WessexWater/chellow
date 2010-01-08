@@ -60,6 +60,14 @@
 						</td>
 					</tr>
 					<tr>
+						<th>Is this particular import locked?</th>
+						<td>
+							<xsl:value-of
+								select="/source/@is-locked" />
+						</td>
+					</tr>
+					
+					<tr>
 						<th>Stack trace of this particular import</th>
 						<td>
 							<xsl:value-of

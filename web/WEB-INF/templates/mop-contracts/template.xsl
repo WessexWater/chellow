@@ -2,28 +2,28 @@
 <xsl:stylesheet version="1.0"
 	xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
 	<xsl:output method="html" encoding="US-ASCII"
-		doctype-public="-//W3C//DTD HTML 4.01//EN"
-		doctype-system="http://www.w3.org/TR/html4/strict.dtd" indent="yes" />
-
+		doctype-public="-//W3C//DTD HTML 4.01//EN" doctype-system="http://www.w3.org/TR/html4/strict.dtd"
+		indent="yes" />
 	<xsl:template match="/">
 		<html>
 			<head>
 				<link rel="stylesheet" type="text/css"
 					href="{/source/request/@context-path}/style/" />
-
-				<title>
-					Chellow &gt; Organizations &gt;
-					<xsl:value-of
-						select="/source/contracts-mop/mop/org/@name" />
-					&gt; MOPs &gt;
-					<xsl:value-of
-						select="/source/contracts-mop/mop/@name" />
-					&gt; Contracts
-				</title>
-
+				<title>Chellow &gt; MOp Contracts</title>
 			</head>
-
 			<body>
+				<p>
+					<a href="{/source/request/@context-path}/">
+						<img src="{/source/request/@context-path}/logo/" />
+						<span class="logo">Chellow</span>
+					</a>
+					&gt;
+					<xsl:value-of select="'MOp Contracts ['" />
+					<a href="{/source/request/@context-path}/reports/113/output/">
+						<xsl:value-of select="'view'" />
+					</a>
+					<xsl:value-of select="']'" />
+				</p>
 				<xsl:if test="//message">
 					<ul>
 						<xsl:for-each select="//message">
@@ -33,53 +33,11 @@
 						</xsl:for-each>
 					</ul>
 				</xsl:if>
-
-				<p>
-					<a href="{/source/request/@context-path}/">
-						<img
-							src="{/source/request/@context-path}/logo/" />
-						<span class="logo">Chellow</span>
-					</a>
-					&gt;
-					<a href="{/source/request/@context-path}/orgs/">
-						<xsl:value-of select="'Organizations'" />
-					</a>
-					&gt;
-					<a
-						href="{/source/request/@context-path}/orgs/{/source/contracts-mop/mop/org/@id}/">
-						<xsl:value-of
-							select="/source/contracts-mop/mop/org/@name" />
-					</a>
-					&gt;
-					<a
-						href="{/source/request/@context-path}/orgs/{/source/contracts-mop/mop/org/@id}/mops/">
-						MOPs
-					</a>
-					&gt;
-					<a
-						href="{/source/request/@context-path}/orgs/{/source/contracts-mop/mop/org/@id}/mops/{/source/contracts-mop/mop/@id}/">
-						<xsl:value-of
-							select="/source/contracts-mop/mop/@name" />
-					</a>
-					&gt; Contracts
-				</p>
 				<br />
-				<xsl:choose>
-				<xsl:when test="/source/response/@status-code = '201'">
-					<p>
-						The
-						<a
-							href="{/source/request/@context-path}{/source/response/header[@name = 'Location']/@value}">
-							new contract
-						</a>
-						has been successfully created.
-					</p>
-				</xsl:when>
-				<xsl:otherwise>
 				<ul>
-					<xsl:for-each select="/source/contracts/contract">
+					<xsl:for-each select="/source/mop-contracts/mop-contract">
 						<li>
-							<a href="{@id}">
+							<a href="{@id}/">
 								<xsl:value-of select="@name" />
 							</a>
 						</li>
@@ -89,6 +47,26 @@
 				<form action="." method="post">
 					<fieldset>
 						<legend>Add a contract</legend>
+						<br />
+						<label>
+	MOp
+							<select name="participant-id">
+								<xsl:for-each select="/source/provider">
+									<option value="{participant/@id}">
+										<xsl:if
+											test="/source/request/parameter[@name='participant-id']/value = @id">
+											<xsl:attribute name="selected">
+																<xsl:value-of select="'selected'" />
+															</xsl:attribute>
+										</xsl:if>
+										<xsl:value-of
+											select="concat(participant/@code, ' : ', participant/@name, ' : ', @name)" />
+									</option>
+								</xsl:for-each>
+							</select>
+						</label>
+						<br />
+						<br />
 						<label>
 							<xsl:value-of select="'Name '" />
 							<input name="name"
@@ -96,12 +74,81 @@
 						</label>
 						<br />
 						<br />
+						<fieldset>
+							<legend>Start Date</legend>
+							<input name="start-date-year" maxlength="4" size="4">
+								<xsl:attribute name="value">
+											<xsl:choose>
+												<xsl:when
+									test="/source/request/parameter[@name='start-date-year']">
+													<xsl:value-of
+									select="/source/request/parameter[@name='start-date-year']/value" />
+												</xsl:when>
+												<xsl:otherwise>
+													<xsl:value-of select="/source/date/@year" />
+												</xsl:otherwise>
+											</xsl:choose>
+										</xsl:attribute>
+							</input>
+							<xsl:value-of select="' - '" />
+							<select name="start-date-month">
+								<xsl:for-each select="/source/months/month">
+									<option value="{@number}">
+										<xsl:choose>
+											<xsl:when
+												test="/source/request/parameter[@name='start-date-month']">
+												<xsl:if
+													test="/source/request/parameter[@name='start-date-month']/value = @number">
+													<xsl:attribute name="selected">
+																<xsl:value-of select="'selected'" />
+															</xsl:attribute>
+												</xsl:if>
+											</xsl:when>
+											<xsl:otherwise>
+												<xsl:if test="/source/date/@month = @number">
+													<xsl:attribute name="selected">
+																<xsl:value-of select="'selected'" />
+															</xsl:attribute>
+												</xsl:if>
+											</xsl:otherwise>
+										</xsl:choose>
+										<xsl:value-of select="@number" />
+									</option>
+								</xsl:for-each>
+							</select>
+							<xsl:value-of select="' - '" />
+							<select name="start-date-day">
+								<xsl:for-each select="/source/days/day">
+									<option value="{@number}">
+										<xsl:choose>
+											<xsl:when test="/source/request/parameter[@name='start-date-day']">
+												<xsl:if
+													test="/source/request/parameter[@name='start-date-day']/value = @number">
+													<xsl:attribute name="selected">
+																<xsl:value-of select="'selected'" />
+															</xsl:attribute>
+												</xsl:if>
+											</xsl:when>
+											<xsl:otherwise>
+												<xsl:if test="/source/date/@day = @number">
+													<xsl:attribute name="selected">
+																<xsl:value-of select="'selected'" />
+															</xsl:attribute>
+												</xsl:if>
+											</xsl:otherwise>
+										</xsl:choose>
+										<xsl:value-of select="@number" />
+									</option>
+								</xsl:for-each>
+							</select>
+							<xsl:value-of select="' 00:30 Z'" />
+						</fieldset>
+						<br />
+						<br />
 						<input type="submit" value="Add" />
 						<input type="reset" value="Reset" />
 					</fieldset>
 				</form>
-				</xsl:otherwise>
-				</xsl:choose>
 			</body>
 		</html>
 	</xsl:template>

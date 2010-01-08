@@ -30,11 +30,14 @@ import net.sf.chellow.monad.Invocation;
 import net.sf.chellow.monad.MonadUtils;
 import net.sf.chellow.monad.NotFoundException;
 import net.sf.chellow.monad.UserException;
+import net.sf.chellow.monad.XmlTree;
+import net.sf.chellow.monad.types.MonadDate;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
 import net.sf.chellow.physical.EntityList;
 import net.sf.chellow.physical.HhEndDate;
 import net.sf.chellow.physical.MarketRole;
+import net.sf.chellow.physical.Participant;
 import net.sf.chellow.ui.Chellow;
 
 import org.w3c.dom.Document;
@@ -45,7 +48,7 @@ public class MopContracts extends EntityList {
 
 	static {
 		try {
-			URI_ID = new UriPathElement("services");
+			URI_ID = new UriPathElement("mop-contracts");
 		} catch (HttpException e) {
 			throw new RuntimeException(e);
 		}
@@ -63,18 +66,17 @@ public class MopContracts extends EntityList {
 	}
 
 	public void httpPost(Invocation inv) throws HttpException {
-		String mopCode = inv.getString("mop-code");
+		Long participantId = inv.getLong("participant-id");
 		String name = inv.getString("name");
 		Date startDate = inv.getDate("start-date");
-		String chargeScript = inv.getString("charge-script");
 		if (!inv.isValid()) {
 			throw new UserException(document());
 		}
-		Provider mop = Provider.getProvider(mopCode, MarketRole.MOP);
-		MopContract contract = MopContract.insertMopContract(mop, name,
-				HhEndDate.roundDown(startDate), null, chargeScript, "");
+		MopContract contract = MopContract.insertMopContract(Participant
+				.getParticipant(participantId), name, HhEndDate.roundDown(
+				startDate).getNext(), null, "", "");
 		Hiber.commit();
-		inv.sendCreated(contract.getUri());
+		inv.sendSeeOther(contract.getUri());
 	}
 
 	@SuppressWarnings("unchecked")
@@ -83,13 +85,23 @@ public class MopContracts extends EntityList {
 		Element source = doc.getDocumentElement();
 		Element contractsElement = toXml(doc);
 		source.appendChild(contractsElement);
-		for (HhdcContract contract : (List<HhdcContract>) Hiber
+		for (MopContract contract : (List<MopContract>) Hiber.session()
+				.createQuery(
+						"from MopContract contract order by contract.name")
+				.list()) {
+			contractsElement.appendChild(contract.toXml(doc, new XmlTree(
+					"party")));
+		}
+		for (Provider provider : (List<Provider>) Hiber
 				.session()
 				.createQuery(
-						"from MopContract contract where contract order by contract.name")
-				.list()) {
-			contractsElement.appendChild(contract.toXml(doc));
+						"from Provider provider where provider.role.code = :roleCode order by provider.participant.code")
+				.setCharacter("roleCode", MarketRole.MOP).list()) {
+			source.appendChild(provider.toXml(doc, new XmlTree("participant")));
 		}
+		source.appendChild(MonadDate.getMonthsXml(doc));
+		source.appendChild(MonadDate.getDaysXml(doc));
+		source.appendChild(new MonadDate().toXml(doc));
 		return doc;
 	}
 
@@ -109,7 +121,7 @@ public class MopContracts extends EntityList {
 	}
 
 	public Element toXml(Document doc) throws HttpException {
-		Element contractsElement = doc.createElement("mop-services");
+		Element contractsElement = doc.createElement("mop-contracts");
 		return contractsElement;
 	}
 }

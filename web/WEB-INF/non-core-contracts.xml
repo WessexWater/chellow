@@ -4,7 +4,6 @@
         <value><![CDATA[insert]]></value>
         <value><![CDATA[non-core-contract]]></value>
         <value><![CDATA[POOL]]></value>
-
         <value><![CDATA[ccl]]></value>
         <value><![CDATA[2008-02-27T00:30Z]]></value>
         <value><![CDATA[]]></value>
@@ -14,21 +13,23 @@
 def is_ccl_month(is_green, kwh):
     return not is_green and kwh > 999
 
-def ccl_month_gbp(is_green, month_kwh, month_end):
-    ccl = {}
-    if is_ccl_month(is_green, month_kwh):
-        ccl['kwh'] = month_kwh
-    else:
-        ccl['kwh'] = 0
-    ccl['gbp'] = ccl_gbp(ccl['kwh'], month_end)
-    return ccl]]></value>
+def ccl_month_gbp(bill, data_source, month_data, pw):
+    bill.setdefault('ccl-kwh', 0)
+    bill.setdefault('ccl-gbp', 0)
+    if 'sum-kwh' not in month_data:
+        data_source.sum_md(month_data, pw)
+    month_kwh = month_data['sum-kwh']
+    if month_kwh is None:
+        month_kwh = 0
+    if is_ccl_month(month_data['is-green'], month_kwh):
+        bill['ccl-kwh'] += month_kwh
+        bill['ccl-gbp'] += ccl_gbp(month_kwh, month_data['finish'])]]></value>
         <value><![CDATA[def ccl_rate():
     return 0.004560]]></value>
     </line>
     <line>
         <value><![CDATA[insert]]></value>
         <value><![CDATA[non-core-contract-rate-script]]></value>
-
         <value><![CDATA[ccl]]></value>
         <value><![CDATA[2009-04-01T00:30Z]]></value>
         <value><![CDATA[def ccl_rate():
@@ -38,8 +39,318 @@ def ccl_month_gbp(is_green, month_kwh, month_end):
         <value><![CDATA[insert]]></value>
         <value><![CDATA[non-core-contract]]></value>
         <value><![CDATA[POOL]]></value>
-        <value><![CDATA[TRIAD]]></value>
+        <value><![CDATA[computer]]></value>
+        <value><![CDATA[2009-11-27T00:00Z]]></value>
+        <value><![CDATA[]]></value>
+        <value><![CDATA[from net.sf.chellow.billing import NonCoreContract
+from java.util import GregorianCalendar, TimeZone, Locale, Calendar
+from net.sf.chellow.monad import UserException, Hiber
+from java.sql import Timestamp, ResultSet
+from java.lang import System
 
+def hdc_gbp(self, gsp_kwh):
+    return gsp_kwh * self.get_hdc_rate('hdc_gbp_per_kwh')
+
+def hh_list(date):
+    utc_cal = GregorianCalendar(TimeZone.getTimeZone("GMT"), Locale.UK)
+    ct_cal = GregorianCalendar(TimeZone.getTimeZone("Europe/London"), Locale.UK)
+    utc_cal.setTime(date.getDate())
+    ct_cal.setTime(date.getDate())
+    return [{'msp-kwh': 0, 'end-date': date.getDate(), 'ct-day': ct_cal.get(5), 'utc-month': utc_cal.get(2), 'utc-day': utc_cal.get(5), 'utc-decimal-hour': utc_cal.get(11) + float(utc_cal.get(12)) / 60, 'ct-month': ct_cal.get(2), 'ct-decimal-hour': ct_cal.get(11) + ct_cal.get(12) / 60, 'ct-day-of-week': ct_cal.get(7), 'utc-day-of-week': utc_cal.get(7)}]
+
+
+def computer(voltage_level, is_substation, date, dso_contract):
+    DsoComputer = dso_contract.callFunction('computer_class', [Computer])
+    return DsoComputer(voltage_level, is_substation, date)
+
+class DataSource:
+    def __init__(self, generation, site=None):
+        self.generation = generation
+        self.site = site
+
+    def sum_md(self, month_data, pw, is_kwh=True):
+        if self.site is None:
+            result = Hiber.session().createQuery("select sum(datum.value), max(datum.value) from HhDatum datum where datum.channel.supplyGeneration = :generation and datum.channel.isKwh = :isKwh and datum.channel.isImport is true and datum.endDate.date >= :startDate and datum.endDate.date <= :finishDate").setEntity("generation", self.generation).setBoolean('isKwh', is_kwh).setTimestamp("startDate", month_data['start'].getDate()).setTimestamp("finishDate", month_data['finish'].getDate()).uniqueResult()
+        else:
+            result = Hiber.session().createQuery("select sum(datum.value), max(datum.value) from HhDatum datum join datum.channel.supplyGeneration.siteSupplyGenerations siteSupplyGeneration where siteSupplyGeneration.site = :site and siteSupplyGeneration.isPhysical is true and datum.channel.isKwh = :isKwh and datum.channel.supplyGeneration.supply.source.code != 'sub' and datum.endDate.date >= :startDate and datum.endDate.date <= :finishDate").setEntity('site', self.site).setBoolean('isKwh', is_kwh).setTimestamp("startDate", month_data['start'].getDate()).setTimestamp("finishDate", month_data['finish'].getDate()).uniqueResult()
+        if is_kwh:
+            month_data['sum-kwh'] = result[0]
+            if month_data['sum-kwh'] is not None:
+                month_data['sum-kwh'] = month_data['sum-kwh'].doubleValue()
+            month_data['md-kw'] = result[1]
+            if month_data['md-kw'] is not None:
+                month_data['md-kw'] = month_data['md-kw'].doubleValue() * 2
+        else:
+            month_data['sum-kvarh'] = result[0]
+            if month_data['sum-kvarh'] is not None:
+                month_data['sum-kvarh'] = month_data['sum-kvarh'].doubleValue()
+            month_data['md-kvar'] = result[1]
+            if month_data['md-kvar'] is not None:
+                month_data['md-kvar'] = month_data['md-kvar'].doubleValue() * 2
+
+    def hh_list(self, start, finish, pw, is_kwh=True):
+        hh_data = []
+        utc_cal = GregorianCalendar(TimeZone.getTimeZone("GMT"), Locale.UK)
+        ct_cal = GregorianCalendar(TimeZone.getTimeZone("Europe/London"), Locale.UK)
+        if self.site is None:
+            con = Hiber.session().connection()
+            stmt = con.prepareStatement("select hh_datum.value, hh_datum.end_date from hh_datum, channel where hh_datum.channel_id = channel.id and channel.supply_generation_id = ? and channel.is_kwh = ? and channel.is_import = TRUE and hh_datum.end_date >= ? and hh_datum.end_date <= ? order by hh_datum.end_date", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.CLOSE_CURSORS_AT_COMMIT)
+        
+            stmt.setLong(1, self.generation.getId())
+            stmt.setBoolean(2, is_kwh)
+            stmt.setTimestamp(3, Timestamp(start.getDate().getTime()))
+            stmt.setTimestamp(4, Timestamp(finish.getDate().getTime()))
+            #stmt.setFetchSize(100)
+            rs = stmt.executeQuery()
+            while rs.next():
+                end_date = rs.getTimestamp('end_date')
+                utc_cal.setTime(end_date)
+                ct_cal.setTime(end_date)
+                hh_data.append({'msp-kwh': rs.getBigDecimal('value').doubleValue(), 'end-date': end_date, 'ct-day': ct_cal.get(5), 'utc-month': utc_cal.get(2), 'utc-day': utc_cal.get(5), 'utc-decimal-hour': utc_cal.get(11) + float(utc_cal.get(12)) / 60, 'ct-month': ct_cal.get(2), 'ct-decimal-hour': ct_cal.get(11) + ct_cal.get(12) / 60, 'ct-day-of-week': ct_cal.get(7), 'utc-day-of-week': utc_cal.get(7)})
+            rs.close()
+        else:
+            hh_end_date = start
+            data = Hiber.session().createQuery("select datum.channel.isImport, datum.value, datum.endDate.date from HhDatum datum join datum.channel.supplyGeneration.siteSupplyGenerations siteSupplyGeneration where siteSupplyGeneration.site = :site and siteSupplyGeneration.isPhysical is true and datum.channel.isKwh = :isKwh and datum.channel.supplyGeneration.supply.source.code != 'sub' and not (datum.channel.supplyGeneration.supply.source.code = 'gen-net' and datum.channel.isImport is False) and datum.endDate.date >= :startDate and datum.endDate.date <= :finishDate order by datum.endDate").setEntity('site', self.site).setBoolean('isKwh', is_kwh).setTimestamp("startDate", start.getDate()).setTimestamp("finishDate", finish.getDate()).scroll()
+            has_next = data.next()
+            while not hh_end_date.getDate().after(finish.getDate()):
+                kwh = 0
+                while has_next and (data.get(2).getTime() == hh_end_date.getDate().getTime()):
+                    if data.get(0):
+                        kwh += data.get(1).doubleValue()
+                    else:
+                        kwh -= data.get(1).doubleValue()
+                    has_next = data.next()
+
+                ct_cal.setTime(hh_end_date.getDate())
+                utc_cal.setTime(hh_end_date.getDate())
+                hh_data.append({'msp-kwh': kwh, 'end-date': hh_end_date.getDate(), 'ct-day': ct_cal.get(5), 'utc-month': utc_cal.get(2), 'utc-day': utc_cal.get(5), 'utc-decimal-hour': utc_cal.get(11) + float(utc_cal.get(12)) / 60, 'ct-month': ct_cal.get(2), 'ct-decimal-hour': ct_cal.get(11) + ct_cal.get(12) / 60, 'ct-day-of-week': ct_cal.get(7), 'utc-day-of-week': utc_cal.get(7)})
+                hh_end_date = hh_end_date.getNext()
+            data.close()
+
+        if len(hh_data) == 0:
+             return hh_list(start)
+        return hh_data
+
+    def md_kva(self, month_data, pw):
+        #timing = System.currentTimeMillis()
+        #pw.println("starting md kva " + str(System.currentTimeMillis() - timing))
+        if self.site is None:
+            data = Hiber.session().createQuery("select datum.endDate.date, datum.channel.isKwh, datum.channel.isImport, datum.value from HhDatum datum where datum.channel.supplyGeneration = :generation and datum.endDate.date >= :start and datum.endDate.date <= :finish and (datum.channel.isKwh is false or datum.channel.isImport is true) order by datum.endDate.date").setEntity("generation", self.generation).setTimestamp("start", month_data['start'].getDate()).setTimestamp("finish", month_data['finish'].getDate()).scroll()
+            prev_date = None
+            kw = 0
+            imp_kvar = 0
+            exp_kvar = 0
+            max_kva = 0
+            max_kva_imp = 0
+            while data.next():
+                date = data.get(0)
+                if not date.equals(prev_date):
+                    max_kva = max(max_kva, (kw ** 2 + (imp_kvar + exp_kvar) ** 2) ** 0.5)
+                    max_kva_imp = max(max_kva_imp, (kw ** 2 + imp_kvar ** 2) ** 0.5)
+                    kw = 0
+                    imp_kvar = 0
+                    exp_kvar = 0
+                is_kwh = data.get(1)
+                is_import = data.get(2)
+                rate = data.get(3).doubleValue() * 2
+                if is_kwh and is_import:
+                    kw += rate
+                if not is_kwh:
+                    if is_import:
+                        imp_kvar += rate
+                    else:
+                        exp_kvar += rate
+                prev_date = date
+            data.close()
+            month_data['md-kva'] = int(round(max_kva))
+            month_data['md-kva-imp'] = int(round(max_kva_imp))
+        else:
+            #pw.println("starting site level kva " + str(System.currentTimeMillis() - timing))
+            con = Hiber.session().connection()
+            stmt = con.prepareStatement("select hh_datum.end_date, channel.is_kwh, channel.is_import, hh_datum.value from hh_datum, channel, supply_generation, site_supply_generation, supply, source where hh_datum.channel_id = channel.id and channel.supply_generation_id = supply_generation.id and site_supply_generation.supply_generation_id = supply_generation.id and supply_generation.supply_id = supply.id and supply.source_id = source.id and site_supply_generation.is_physical is true and source.code != 'sub' and not (source.code = 'gen-net' and channel.is_import is false) and site_supply_generation.site_id = ? and hh_datum.end_date >= ? and hh_datum.end_date <= ? order by hh_datum.end_date", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.CLOSE_CURSORS_AT_COMMIT)
+            stmt.setLong(1, self.site.getId())
+            stmt.setTimestamp(2, Timestamp(month_data['start'].getDate().getTime()))
+            stmt.setTimestamp(3, Timestamp(month_data['finish'].getDate().getTime()))
+            rs = stmt.executeQuery()
+            #pw.println("executed query " + str(System.currentTimeMillis() - timing))
+            prev_date = None
+            sum_kwh = 0
+            md_kw = 0
+            sum_kvarh = 0
+            md_kvar = 0
+            kw = 0
+            kvar = 0
+            imp_kvar = 0
+            exp_kvar = 0
+            max_kva = 0
+            max_kva_imp = 0
+            while rs.next():
+                date = rs.getDate(1)
+                if not date.equals(prev_date):
+                    max_kva = max(max_kva, (kw ** 2 + (imp_kvar + exp_kvar) ** 2) ** 0.5)
+                    max_kva_imp = max(max_kva_imp, (kw ** 2 + imp_kvar ** 2) ** 0.5)
+                    md_kw = max(md_kw, kw)
+                    md_kvar = max(md_kvar, imp_kvar)
+                    kw = 0
+                    kvar = 0
+                    imp_kvar = 0
+                    exp_kvar = 0
+                is_kwh = rs.getBoolean('is_kwh')
+                is_import = rs.getBoolean('is_import')
+                hh_value = rs.getDouble('value')
+                hh_rate = hh_value * 2
+                continue
+                if is_kwh and is_import:
+                    kw += hh_rate
+                    sum_kwh += hh_value
+                if not is_kwh:
+                    if is_import:
+                        imp_kvar += hh_rate
+                        sum_kvarh += hh_value
+                    else:
+                        exp_kvar += hh_rate
+                prev_date = date
+            rs.close()
+            month_data['md-kva'] = int(round(max_kva))
+            month_data['md-kva-imp'] = int(round(max_kva_imp))
+            month_data['md-kvar'] = md_kvar
+            month_data['sum-kvarh'] = sum_kvarh
+            month_data['md-kw'] = md_kw
+            month_data['sum-kwh'] = sum_kwh
+            #pw.println("finished kva function " + str(System.currentTimeMillis() - timing))
+
+def dso_contracts(dso, start_date, finish_date, pw):
+    return Hiber.session().createQuery("select distinct contract from DsoContract contract join contract.rateScripts script where contract.party.code = :dsoCode and contract.name like 'main%' and script.startDate.date <= :finishDate and (script.finishDate.date is null or script.finishDate.date >= :startDate)").setString('dsoCode', dso).setTimestamp('startDate', start_date).setTimestamp('finishDate', finish_date).list()
+
+def dso_hh(dso, bill, hh_list, llfc, voltage_level, is_substation, pw):
+    for dso_contract in dso_contracts(dso, hh_list[0]['end-date'], hh_list[-1]['end-date'], pw):
+        dso_contract.callFunction('hh', [bill, hh_list, llfc, voltage_level, is_substation, pw])
+
+def data_source(generation, site=None):
+    return DataSource(generation, site)
+
+def laf(dso_code, date, llfc, voltage_level, is_substation, pw):
+    hhs = hh_list(date)
+    dso_contracts(dso_code, date.getDate(), date.getDate(), pw)[0].callFunction('hh', [{}, hhs, llfc, voltage_level, is_substation, pw])
+    return hhs[0]['laf']
+
+# old stuff
+
+class Computer:
+    def __init__(self, voltage_level, is_substation, date, dso_contract):
+        self.utc_cal = GregorianCalendar(TimeZone.getTimeZone("GMT"), Locale.UK)
+        self.ct_cal = GregorianCalendar(TimeZone.getTimeZone("Europe/London"), Locale.UK)
+        self.voltage_level = voltage_level
+        self.is_substation = is_substation
+
+        self.dso_rate_script = None
+        self.dso_contract = dso_contract
+        self.dso_rate_script = self.dso_contract.rateScripts(date, date)[0]
+        self.dso_rate_engine = self.dso_rate_script.invocableEngine()
+        self.dso_rate_cache = {}
+        self.dso_rate_script_start = self.dso_rate_script.getStartDate().getDate().getTime()
+        if self.dso_rate_script.getFinishDate() is None:
+            self.dso_rate_script_finish = date.getDate().getTime() + 1000 * 60 * 60 * 24 * 365
+        else:
+            self.dso_rate_script_finish = self.dso_rate_script.getFinishDate().getDate().getTime()
+
+        self.hdc_contract = NonCoreContract.getNonCoreContract('hdc')
+        self.hdc_rate_script = self.hdc_contract.rateScripts(date, date)[0]
+        self.hdc_rate_engine = self.hdc_rate_script.invocableEngine()
+        self.set_time(date)
+
+    def get_dso_rate(self, name):
+        try:
+            return self.dso_rate_cache[name]
+        except:
+            return self.dso_rate_cache.setdefault(name, self.dso_rate_engine.invokeFunction(name, []))
+
+    def get_hdc_rate(self, name):
+        return self.hdc_rate_engine.invokeFunction(name, [])
+
+    '''
+APRIL 3 
+AUGUST 7 
+DAY_OF_MONTH 5 
+DAY_OF_WEEK 7 
+DECEMBER 11 
+FEBRUARY 1 
+FRIDAY 6 
+HOUR_OF_DAY 11 
+JANUARY 0 
+JULY 6 
+JUNE 5 
+MARCH 2 
+MAY 4 
+MINUTE 12 
+MONDAY 2 
+MONTH 2 
+NOVEMBER 10 
+OCTOBER 9 
+SATURDAY 7 
+SEPTEMBER 8 
+SUNDAY 1 
+THURSDAY 5 
+TUESDAY 3 
+WEDNESDAY 4 
+YEAR 1 
+    '''
+
+    def set_time(self, date):
+        self.utc_cal.setTime(date.getDate())
+        self.ct_cal.setTime(date.getDate())
+        self.ct_day = self.ct_cal.get(5)
+        self.utc_month = self.utc_cal.get(2)
+        self.utc_day = self.utc_cal.get(5)
+        self.utc_decimal_hour = self.utc_cal.get(11) + float(self.utc_cal.get(12)) / 60
+        self.ct_month = self.ct_cal.get(2)
+        self.ct_decimal_hour = self.ct_cal.get(11) + self.ct_cal.get(12) / 60
+        self.ct_day_of_week = self.ct_cal.get(7)
+        self.utc_day_of_week = self.utc_cal.get(7)
+        if not self.dso_rate_script_start <= date.getDate().getTime() < self.dso_rate_script_finish:
+            self.dso_rate_script = self.dso_contract.rateScripts(date, date)[0]
+            self.dso_rate_script_start = self.dso_rate_script.getStartDate().getDate().getTime()
+            if self.dso_rate_script.getFinishDate() is None:
+                self.dso_rate_script_finish = date.getDate().getTime() + 1000 * 60 * 60 * 24 * 365
+            else:
+                self.dso_rate_script_finish = self.dso_rate_script.getFinishDate().getDate().getTime()
+            self.dso_rate_engine = self.dso_rate_script.invocableEngine()
+            self.dso_rate_cache = {}
+            llfc_group = get_dso_rate('llfc_groups', date).get(llfc, llfc)
+            try:
+                self.tariff = get_rate('duos_tariffs', date)['llfc(' + llfc_group + ')-pc(0)']
+            except:
+                raise UserException('The tariff for the llfc ' + llfc + ' cannot be found.')
+        
+        if self.hdc_rate_script.getStartDate().getDate().after(date.getDate()) or (self.hdc_rate_script.getFinishDate() is not None and self.hdc_rate_script.getFinishDate().getDate().before(date.getDate())):
+            self.hdc_rate_script = self.hdc_contract.rateScripts(date, date)[0]
+            self.hdc_rate_engine = self.hdc_rate_script.invocableEngine()
+
+    def hdc_gbp(self, gsp_kwh):
+        return gsp_kwh * self.get_hdc_rate('hdc_gbp_per_kwh')
+
+def computer(voltage_level, is_substation, date, dso_contract):
+    DsoComputer = dso_contract.callFunction('computer_class', [Computer])
+    return DsoComputer(voltage_level, is_substation, date)]]></value>
+        <value><![CDATA[]]></value>
+    </line>
+    <line>
+        <value><![CDATA[insert]]></value>
+        <value><![CDATA[non-core-contract]]></value>
+        <value><![CDATA[POOL]]></value>
+        <value><![CDATA[hdc]]></value>
+        <value><![CDATA[2000-11-26T00:30Z]]></value>
+        <value><![CDATA[]]></value>
+        <value><![CDATA[def hdc_gbp(hh_value, date):
+    return hh_value * contract.rateScript(date).getRate('hdc_gbp_per_kwh')]]></value>
+        <value><![CDATA[def hdc_gbp_per_kwh():
+    return 0.00016456]]></value>
+    </line>
+    <line>
+        <value><![CDATA[insert]]></value>
+        <value><![CDATA[non-core-contract]]></value>
+        <value><![CDATA[POOL]]></value>
+        <value><![CDATA[TRIAD]]></value>
         <value><![CDATA[2005-01-01T00:30Z]]></value>
         <value><![CDATA[]]></value>
         <value><![CDATA[from net.sf.chellow.billing import VirtualBill, NonCoreContract
@@ -47,81 +358,82 @@ from net.sf.chellow.physical import HhEndDate
 from net.sf.chellow.monad.types import MonadDate
 from java.util import Calendar
 
-def totalElement(account, startDate, finishDate):
-    totalElement = VirtualBill("total", 103, "Dso cost")
-    return totalElement
 
-def triad_dates(date):
+def get_triad_dates(date):
     rate_script = contract.rateScript(date)
     return rate_script.getRate('triad_dates')
 
-def supplyElement(supply, start_date, finish_date, is_import):
-    channel = supply.getChannel(is_import, true)
-    total_cost = 0
-    triad_elements = []
-    cal = GregorianCalendar.getInstance(TimeZone.getTimeZone("GMT"), Locale.UK)
-    cal.setTime(start_date.getDate())
-    cal.set(Calendar.Month, 2)
-    cal.set(Calendar.DAY_OF_MONTH, 1)
-    cal.set(Calendar.HOUR_OF_DAY, 0)
-    cal.set(Calendar.MINUTE, 30)
-    if cal.getTime().before(start_date.getDate()):
-        cal.add(Calendar.YEAR, 1)
-    while not cal.getTime().after(finish_date.getDate()):
-        dates = triad_dates(cal.getField(Calendar.YEAR))
-        total_msp_kw = 0 
-        cost = 0
-        supplyGeneration = supply.getGeneration(cal.getTime())
-        dso = supplyGeneration.getDso()
-        voltage_level = supplyGeneration.getMpans().iterator().next().getLineLossFactor().getVoltageLevel()
-        triad_date_working = ''
-        for date in dates:
-            hh_datum = Hiber.session().createQuery("from HhDatum datum where datum.channel = :channel and datum.endDate.date = :endDate").setEntity('channel', channel).setTimestamp('endDate', date.getDate()).uniqueResult()
-            datum_kw = hh_datum.getValue()
-            total_msp_kw = total_msp_kw + datum_kw
-            triad_date_working = triad_date_working + '(' + datum_kw + ' kW status: ' + hh_datum.getStatus() + ') '
-        average_msp_kw = total_msp_kw / 3
-        llf = dso.getService('main').callFunction('llf', [voltageLevel, isSubstation, date, year, month, day, dayOfWeek, hour, minute, yearCt, monthCt, dayCt, dayOfWeekCt, hourCt, minuteCt])
-        #triad_elements.append(BillElement('triad ' + HhEndDate(cal.getTime()).toString(), cost, 'Cost ' + cost ' GBP = Rate ' rate + ' (GBP / kW) * Average GSP ' + average_gsp_kw + ' (kW) where Average GSP ' + gsp_kw + ' (kW) = LLF ' + llf + ' * Average MSP ' + average_msp_kw + ' (kW) where Average MSP ' + average_msp_kw + ' (kW) = Total MSP ' + total_msp_kw + ' (kW) / 3 where Total MSP ' + total_msp_kw + ' (kW) = ' + triad_date_working))
-        cal.add(Calendar.YEAR, 1)
-    supply_element = BillElement("supply total", total_cost, "Sum of triad elements")
-    for triad_element in triad_elements:
-        supply_element.addSubElement(triad_element)
-    return supply_element
+def triad(bill, dso_code, dso_contract, supplier_contract, month_begin, month_end, data_source, mpan_core_str, llfc, voltage_level, is_substation, pw, years_ahead=0):
+    bill.setdefault('triad-working', '')
+    bill.setdefault('triad-gbp', 0)
 
-def triad(dso_contract, triad_kws, date, voltage_level, is_substation, years_ahead=0):
+    utc_cal = MonadDate.getCalendar()
+    utc_cal.setTime(month_begin)
+    month_num = utc_cal.get(Calendar.MONTH)
+    utc_cal.add(Calendar.YEAR, -1)
+    year_ago = utc_cal.getTime()
+    est_triad_kws = []
+
+    triad_dates = get_triad_dates(HhEndDate(year_ago))
+
+    for t_date in triad_dates:
+        hhs = data_source.hh_list(t_date, t_date, pw)
+        est_triad_kws.append(data_source.hh_list(t_date, t_date, pw)[0]['msp-kwh'] * 2)
+    if triad_dates[2].getDate().before(data_source.generation.getSupply().getGenerationFirst().getStartDate().getDate()):
+        triad_estimates = supplier_contract.rateScript(HhEndDate(month_begin)).getRate('triad_estimates')
+        if mpan_core_str not in triad_estimates:
+             raise Exception('The MPAN core ' + mpan_core_str + ' cannot be found in the list of triad estimates in the rate script.')
+        est_triad_kw = triad_estimates[mpan_core_str]
+        est_triad_kws = [est_triad_kw, est_triad_kw, est_triad_kw]
+
+    est_triad = triad_calc(dso_code, dso_contract, est_triad_kws, HhEndDate(year_ago), llfc.codeAsString(), voltage_level, pw, is_substation, 1)
+
+    bill['triad-working'] += ' (estimate: ' + str(est_triad['total-gsp-kw'] / 12) + ' kw at gsp from {'
+    for i in range(1, 4):
+        bill['triad-working'] += str(est_triad['t' + str(i) + '-msp-kw']) + ' msp kW ' + str(est_triad['t' + str(i) + '-llf']) + ' llf ' + str(est_triad['t' + str(i) + '-gsp-kw']) + ' gsp kW ' + str(HhEndDate(month_begin))
+    bill['triad-working'] += '})'
+    est_triad_gbp = est_triad['total-gbp'] / 12
+    bill['triad-gbp'] += est_triad_gbp
+
+    if month_num == Calendar.MARCH:
+        triad_kws = []
+        for t_date in get_triad_dates(HhEndDate(month_begin)):
+            triad_kws.append(data_source.hh_list(t_date, t_date, pw)[0]['msp-kwh'])
+        triad = triad_calc(dso_code, dso_contract, triad_kws, HhEndDate(month_begin), llfc.codeAsString(), voltage_level, is_substation, pw)
+        utc_cal.setTime(month_end)
+        sup_gen = data_source.generation.getSupply().getGeneration(HhEndDate(utc_cal.getTime()))
+        est_months = 0
+        while sup_gen is not None and sup_gen.getImportMpan() is not None and sup_gen.getImportMpan().getSupplierAccount().getContract().getId() == contract.getId() and utc_cal.getTime().after(year_ago) :
+            est_months += 1
+            utc_cal.add(Calendar.MONTH, -1)
+            sup_gen = supply.getGeneration(HhEndDate(utc_cal.getTime()))
+        bill['triad-gbp'] += triad['total-gbp'] - est_triad_gbp * est_months
+
+def triad_calc(dso_code, dso_contract, triad_kws, date, llfc, voltage_level, is_substation, pw, years_ahead=0):
     result = {}
-    calc = dso_contract.callFunction('calculator', [voltage_level, is_substation, date])
-    triad_rate = calc.get_rate('triad')
-    dates = NonCoreContract.getNonCoreContract('TRIAD').callFunction('triad_dates', [date])
+    computer = NonCoreContract.getNonCoreContract('computer')
+    #comp = NonCoreContract.getNonCoreContract('computer').callFunction('computer', [voltage_level, is_substation, date, dso_contract])
+    #triad_rate = comp.get_dso_rate('triad')
+    dates = get_triad_dates(date)
     total_gsp_kw = 0
     cal = MonadDate.getCalendar()
     for i in range(3):
-        if calc is None:
-            llf = None
+        cal.setTime(dates[i].getDate())
+        cal.add(Calendar.YEAR, years_ahead)
+        #comp.set_time(HhEndDate(cal.getTime()))
+        llf = computer.callFunction('laf', [dso_code, HhEndDate(cal.getTime()), llfc, voltage_level, is_substation, pw])
+        if triad_kws[i] is None:
             gsp_kw = None
         else:
-            cal.setTime(dates[i].getDate())
-            cal.add(Calendar.YEAR, years_ahead)
-            calc.set_time(HhEndDate(cal.getTime()))
-            llf = calc.llf()
-            if triad_kws[i] is None:
-                gsp_kw = None
-            else:
-                gsp_kw = triad_kws[i] * llf
-                total_gsp_kw = total_gsp_kw + gsp_kw               
+            gsp_kw = triad_kws[i] * llf
+            total_gsp_kw += gsp_kw               
         result['t' + str(i + 1) + '-msp-kw'] = triad_kws[i]
         result['t' + str(i + 1) + '-llf'] = llf
         result['t' + str(i + 1) + '-gsp-kw'] = gsp_kw
-    if calc is None:
-        total_gsp_kw = None
-        total_gbp = None
-    else:
-        total_gsp_kw = total_gsp_kw / 3
-        cal.setTime(date.getDate())
-        cal.add(Calendar.YEAR, years_ahead)
-        calc.set_time(HhEndDate(cal.getTime()))
-        total_gbp = total_gsp_kw * calc.get_rate('triad')
+    total_gsp_kw /= 3
+    cal.setTime(date.getDate())
+    cal.add(Calendar.YEAR, years_ahead)
+    total_gbp = total_gsp_kw * dso_contract.callFunction('get_rate', ['triad', HhEndDate(cal.getTime())])
     result['total-gsp-kw'] = total_gsp_kw
     result['total-gbp'] = total_gbp
     return result]]></value>
@@ -134,7 +446,6 @@ def triad_dates():
         <value><![CDATA[insert]]></value>
         <value><![CDATA[non-core-contract-rate-script]]></value>
         <value><![CDATA[TRIAD]]></value>
-
         <value><![CDATA[2008-04-01T00:30Z]]></value>
         <value><![CDATA[from net.sf.chellow.physical import HhEndDate
 
@@ -150,7 +461,6 @@ def triad_dates():
 
 def triad_dates():
     return [HhEndDate("2008-12-01T17:30Z"), HhEndDate("2008-12-15T17:30Z"), HhEndDate("2009-01-06T17:30Z")]]]></value>
-
     </line>
     <line>
         <value><![CDATA[insert]]></value>
@@ -163,4 +473,3 @@ def triad_dates():
     return [HhEndDate("2008-12-01T17:30Z"), HhEndDate("2008-12-15T17:30Z"), HhEndDate("2009-01-06T17:30Z")]]]></value>
     </line>
 </csv>
-

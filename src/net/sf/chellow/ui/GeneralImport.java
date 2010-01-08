@@ -59,6 +59,7 @@ import net.sf.chellow.monad.XmlDescriber;
 import net.sf.chellow.monad.XmlTree;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
+import net.sf.chellow.physical.ChannelSnag;
 import net.sf.chellow.physical.Configuration;
 import net.sf.chellow.physical.HhDatum;
 import net.sf.chellow.physical.HhEndDate;
@@ -258,6 +259,8 @@ public class GeneralImport extends Thread implements Urlable, XmlDescriber {
 						RateScript.generalImportDso(action, values, csvElement);
 					} else if (type.equals("configuration")) {
 						Configuration.generalImport(action, values, csvElement);
+					} else if (type.equals("channel-snag-ignore")) {
+						ChannelSnag.generalImport(action, values, csvElement);
 					} else {
 						throw new UserException("The type " + type
 								+ " isn't recognized.");

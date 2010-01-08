@@ -33,7 +33,6 @@ import java.util.TimeZone;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.UserException;
-import net.sf.chellow.physical.HhDatum;
 import net.sf.chellow.physical.HhEndDate;
 import com.Ostermiller.util.CSVParser;
 
@@ -100,9 +99,9 @@ public class StarkCsvHhConverter implements HhConverter {
 		try {
 			String[] values = shredder.getLine();
 			if (values != null) {
-				if (values.length < 5) {
+				if (values.length < 6) {
 					throw new UserException(
-							"There must be fields for 'MPAN core', 'Imp / Exp', 'Units', 'Time' and 'Value'.");
+							"There must be fields for 'MPAN core', 'Imp / Exp', 'Units', 'Time', 'Value' and 'Status'.");
 				}
 				String core = values[0];
 				boolean isImport = values[1].equals("0");
@@ -117,14 +116,8 @@ public class StarkCsvHhConverter implements HhConverter {
 				}
 				HhEndDate endDate = new HhEndDate(dateFormat.parse(values[3]));
 				BigDecimal value = new BigDecimal(values[4]);
-				Character status = null;
-				if (values.length > 5) {
-					if (values[5].equals("65")) {
-						status = HhDatum.ACTUAL;
-					} else {
-						status = HhDatum.ESTIMATE;
-					}
-				}
+				Character status = new Character((char) new Double(values[5]
+						.trim()).intValue());
 				datum = new HhDatumRaw(core, isImport, isKwh, endDate, value,
 						status);
 			}

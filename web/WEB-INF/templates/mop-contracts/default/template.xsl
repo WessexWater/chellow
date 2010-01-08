@@ -2,28 +2,36 @@
 <xsl:stylesheet version="1.0"
 	xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
 	<xsl:output method="html" encoding="US-ASCII"
-		doctype-public="-//W3C//DTD HTML 4.01//EN"
-		doctype-system="http://www.w3.org/TR/html4/strict.dtd" indent="yes" />
-
+		doctype-public="-//W3C//DTD HTML 4.01//EN" doctype-system="http://www.w3.org/TR/html4/strict.dtd"
+		indent="yes" />
 	<xsl:template match="/">
 		<html>
 			<head>
 				<link rel="stylesheet" type="text/css"
 					href="{/source/request/@context-path}/style/" />
-
 				<title>
-					Chellow &gt; Organizations &gt;
-					<xsl:value-of
-						select="/source/contract-mop/mop/org/@name" />
-					&gt; MOPs &gt;
-					<xsl:value-of select="/source/contract-mop/mop/@name" />
-					&gt; Contracts &gt;
-					<xsl:value-of select="/source/contract-mop/@name" />
+					Chellow &gt; MOp Contracts &gt;
+					<xsl:value-of select="/source/mop-contract/@name" />
 				</title>
-
 			</head>
-
 			<body>
+				<p>
+					<a href="{/source/request/@context-path}/">
+						<img src="{/source/request/@context-path}/logo/" />
+						<span class="logo">Chellow</span>
+					</a>
+					&gt;
+					<a href="{/source/request/@context-path}/mop-contracts/">
+						<xsl:value-of select="'MOp Contracts'" />
+					</a>
+					&gt;
+					<xsl:value-of select="concat(/source/mop-contract/@name, ' [')" />
+					<a
+						href="{/source/request/@context-path}/reports/115/output/?mop-contract-id={/source/mop-contract/@id}">
+						<xsl:value-of select="'view'" />
+					</a>
+					<xsl:value-of select="']'" />
+				</p>
 				<xsl:if test="//message">
 					<ul>
 						<xsl:for-each select="//message">
@@ -33,57 +41,49 @@
 						</xsl:for-each>
 					</ul>
 				</xsl:if>
-
-				<p>
-					<a href="{/source/request/@context-path}/">
-						<img
-							src="{/source/request/@context-path}/logo/" />
-						<span class="logo">Chellow</span>
-					</a>
-					&gt;
-					<a href="{/source/request/@context-path}/orgs/">
-						<xsl:value-of select="'Organizations'" />
-					</a>
-					&gt;
-					<a
-						href="{/source/request/@context-path}/orgs/{/source/contract-mop/mop/org/@id}/">
-						<xsl:value-of
-							select="/source/contract-mop/mop/org/@name" />
-					</a>
-					&gt;
-					<a
-						href="{/source/request/@context-path}/orgs/{/source/contract-mop/mop/org/@id}/mops/">
-						MOPs
-					</a>
-					&gt;
-					<a
-						href="{/source/request/@context-path}/orgs/{/source/contract-mop/mop/org/@id}/mops/{/source/contract-mop/mop/@id}">
-						<xsl:value-of
-							select="/source/contract-mop/mop/@name" />
-					</a>
-					&gt;
-					<a href="..">Contracts</a>
-					&gt;
-					<xsl:value-of select="/source/contract-mop/@name" />
-				</p>
 				<br />
 
 				<form action="." method="post">
 					<fieldset>
-						<legend>Update contract</legend>
+						<legend>Update Contract</legend>
+						<label>
+							MOp
+							<select name="participant-id">
+								<xsl:for-each select="/source/provider">
+									<option value="{participant/@id}">
+										<xsl:choose>
+											<xsl:when test="/source/request/parameter[@name='participant-id']">
+												<xsl:if
+													test="/source/request/parameter[@name='participant-id']/value/text() = participant/@id">
+													<xsl:attribute name="selected" />
+												</xsl:if>
+											</xsl:when>
+											<xsl:otherwise>
+												<xsl:if
+													test="/source/mop-contract/provider/participant/@id = participant/@id">
+													<xsl:attribute name="selected" />
+												</xsl:if>
+											</xsl:otherwise>
+										</xsl:choose>
+										<xsl:value-of
+											select="concat(participant/@code, ' : ', participant/@name, ' : ', @name)" />
+									</option>
+								</xsl:for-each>
+							</select>
+						</label>
+						<br />
+						<br />
 						<label>
 							<xsl:value-of select="'Name '" />
 							<input name="name">
 								<xsl:attribute name="value">
 									<xsl:choose>
-										<xsl:when
-											test="/source/request/parameter[@name = 'name']/value">
+										<xsl:when test="/source/request/parameter[@name = 'name']/value">
 											<xsl:value-of
-												select="/source/request/parameter[@name = 'name']/value" />
+									select="/source/request/parameter[@name = 'name']/value" />
 										</xsl:when>
 										<xsl:otherwise>
-											<xsl:value-of
-												select="/source/contract-mop/@name" />
+											<xsl:value-of select="/source/mop-contract/@name" />
 										</xsl:otherwise>
 									</xsl:choose>
 								</xsl:attribute>
@@ -91,17 +91,41 @@
 						</label>
 						<br />
 						<br />
+						Charge script
+						<br />
+						<textarea name="charge-script" rows="40" cols="80">
+							<xsl:choose>
+								<xsl:when test="/source/request/parameter[@name='charge-script']">
+									<xsl:value-of select="/source/@charge-script" />
+								</xsl:when>
+								<xsl:otherwise>
+									<xsl:value-of select="/source/mop-contract/@charge-script" />
+								</xsl:otherwise>
+							</xsl:choose>
+						</textarea>
+						<br />
+						<br />
 						<input type="submit" value="Update" />
 						<input type="reset" value="Reset" />
 					</fieldset>
 				</form>
-
-				<form action="?view=confirm-delete">
+				<br />
+				<br/>
+				<form action=".">
 					<fieldset>
 						<legend>Delete this contract</legend>
+						<input type="hidden" name="view" value="confirm-delete" />
 						<input type="submit" value="Delete" />
 					</fieldset>
 				</form>
+				<ul>
+					<li>
+						<a href="batches/">Batches</a>
+					</li>
+					<li>
+						<a href="rate-scripts/">Rate Scripts</a>
+					</li>
+				</ul>
 			</body>
 		</html>
 	</xsl:template>

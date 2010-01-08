@@ -21,6 +21,8 @@
 
 package net.sf.chellow.physical;
 
+import java.util.List;
+
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.InternalException;
@@ -29,6 +31,7 @@ import net.sf.chellow.monad.MonadUtils;
 import net.sf.chellow.monad.NotFoundException;
 import net.sf.chellow.monad.XmlTree;
 import net.sf.chellow.monad.types.MonadUri;
+import net.sf.chellow.ui.GeneralImport;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -62,14 +65,50 @@ public class ChannelSnag extends SnagDateBounded {
 		return snag;
 	}
 
+	@SuppressWarnings("unchecked")
+	public static void generalImport(String action, String[] values,
+			Element csvElement) throws HttpException {
+		if (action.equals("insert")) {
+			String mpanCoreStr = GeneralImport.addField(csvElement,
+					"MPAN Core", values, 0);
+			MpanCore mpanCore = MpanCore.getMpanCore(mpanCoreStr);
+			String isImportStr = GeneralImport.addField(csvElement,
+					"Is Import?", values, 1);
+			boolean isImport = Boolean.parseBoolean(isImportStr);
+			String isKwhStr = GeneralImport.addField(csvElement, "Is Kwh?",
+					values, 2);
+			boolean isKwh = Boolean.parseBoolean(isKwhStr);
+			String startStr = GeneralImport.addField(csvElement, "From",
+					values, 3);
+			HhEndDate startDate = new HhEndDate(startStr);
+			String finishStr = GeneralImport.addField(csvElement, "To", values,
+					4);
+			HhEndDate finishDate = new HhEndDate(finishStr);
+			for (SupplyGeneration generation : mpanCore.getSupply()
+					.getGenerations(startDate, finishDate)) {
+				for (ChannelSnag snag : (List<ChannelSnag>) Hiber
+						.session()
+						.createQuery(
+								"from ChannelSnag snag where snag.channel.supplyGeneration = :generation and snag.channel.isImport = :isImport and snag.channel.isKwh = :isKwh and snag.isIgnored is false and snag.startDate.date >= :startDate and snag.finishDate <= :finishDate")
+						.setEntity("generation", generation).setBoolean(
+								"isImport", isImport)
+						.setBoolean("isKwh", isKwh).setTimestamp("startDate",
+								startDate.getDate()).setTimestamp("finishDate",
+								finishDate.getDate()).list()) {
+					snag.setIsIgnored(true);
+				}
+			}
+		} else if (action.equals("update")) {
+		}
+	}
+
 	private Channel channel;
 
 	public ChannelSnag() {
 	}
 
-	public ChannelSnag(String description,
-			Channel channel, HhEndDate startDate, HhEndDate finishDate)
-			throws HttpException {
+	public ChannelSnag(String description, Channel channel,
+			HhEndDate startDate, HhEndDate finishDate) throws HttpException {
 		super(description, startDate, finishDate);
 		this.channel = channel;
 	}
@@ -108,14 +147,14 @@ public class ChannelSnag extends SnagDateBounded {
 	private Document document() throws HttpException {
 		Document doc = MonadUtils.newSourceDocument();
 		Element sourceElement = doc.getDocumentElement();
-		sourceElement.appendChild(toXml(doc, new XmlTree("channel", new XmlTree(
-				"supplyGeneration", new XmlTree("supply")))));
+		sourceElement.appendChild(toXml(doc, new XmlTree("channel",
+				new XmlTree("supplyGeneration", new XmlTree("supply")))));
 		return doc;
 	}
 
 	public MonadUri getUri() throws HttpException {
-		return getChannel().snagsInstance().getUri().resolve(
-				getUriId()).append("/");
+		return getChannel().snagsInstance().getUri().resolve(getUriId())
+				.append("/");
 	}
 
 	protected boolean isCombinable(ChannelSnag snag) throws HttpException {

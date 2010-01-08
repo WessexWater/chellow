@@ -26,6 +26,7 @@ import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.Map.Entry;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -58,9 +59,9 @@ public class AutomaticHhDataImporters extends TimerTask {
 	private Logger logger = Logger.getLogger("net.sf.chellow");
 
 	private final Map<Long, AutomaticHhDataImporter> importers = new HashMap<Long, AutomaticHhDataImporter>();
-	
-	private boolean running;
-	
+
+	private ReentrantLock lock = new ReentrantLock();
+
 	public InternalException getProgrammerException() {
 		return programmerException;
 	}
@@ -90,48 +91,36 @@ public class AutomaticHhDataImporters extends TimerTask {
 		return importer;
 	}
 
-	public boolean isRunning() {
-		return running;
-	}
-
-	public void run() {
-		if (canRun()) {
-			run2();
-		} 
-	}
-	
-	public synchronized boolean canRun() {
-		if (running) {
-			return false;
-		} else {
-			running = true;
-			return true;
-		}
+	public boolean isLocked() {
+		return lock.isLocked();
 	}
 
 	@SuppressWarnings("unchecked")
-	public void run2() {
-		try {
-			for (Entry<Long, AutomaticHhDataImporter> importerEntry : importers
-					.entrySet()) {
-				if (HhdcContract.findHhdcContract(importerEntry.getKey()) == null) {
-					importers.remove(importerEntry.getKey());
+	public void run() {
+		if (lock.tryLock()) {
+			try {
+				for (Entry<Long, AutomaticHhDataImporter> importerEntry : importers
+						.entrySet()) {
+					if (HhdcContract.findHhdcContract(importerEntry.getKey()) == null) {
+						importers.remove(importerEntry.getKey());
+					}
 				}
+				for (HhdcContract contract : (List<HhdcContract>) Hiber
+						.session().createQuery("from HhdcContract contract")
+						.list()) {
+					findImporter(contract);
+				}
+				for (AutomaticHhDataImporter importer : importers.values()) {
+					importer.run();
+				}
+				Hiber.close();
+			} catch (InternalException e) {
+				throw new RuntimeException(e);
+			} catch (HttpException e) {
+				throw new RuntimeException(e);
+			} finally {
+				lock.unlock();
 			}
-			for (HhdcContract contract : (List<HhdcContract>) Hiber.session()
-					.createQuery("from HhdcContract contract").list()) {
-				findImporter(contract);
-			}
-			for (AutomaticHhDataImporter importer : importers.values()) {
-				importer.run();
-			}
-			Hiber.close();
-		} catch (InternalException e) {
-			throw new RuntimeException(e);
-		} catch (HttpException e) {
-			throw new RuntimeException(e);
-		} finally {
-			running = false;
 		}
 	}
 }

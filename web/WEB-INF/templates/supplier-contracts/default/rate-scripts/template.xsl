@@ -33,7 +33,7 @@
 					&gt;
 					<xsl:value-of select="'Rate Scripts ['" />
 					<a
-						href="{/source/request/@context-path}/reports/39/output/?supplier-contract-id={/source/rate-scripts/supplier-contract/@id}">
+						href="{/source/request/@context-path}/reports/77/output/?supplier-contract-id={/source/rate-scripts/supplier-contract/@id}">
 						<xsl:value-of select="'view'" />
 					</a>
 					<xsl:value-of select="']'" />
@@ -152,13 +152,6 @@
 							</select>
 							<xsl:value-of select="' 00:30 Z'" />
 						</fieldset>
-						<br />
-						Script
-						<br />
-						<textarea name="script" rows="40" cols="80">
-							<xsl:value-of
-								select="translate(/source/request/parameter[@name='script']/value, '&#xD;','')" />
-						</textarea>
 						<br />
 						<br />
 						<input type="submit" value="Add" />

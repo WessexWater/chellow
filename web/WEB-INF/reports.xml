@@ -7890,8 +7890,8 @@ source.appendChild(tpr.toXml(doc, XmlTree("measurementRequirements", XmlTree("ss
 if inv.hasParameter("search-pattern"):
     pattern = inv.getString("search-pattern")
     pattern = pattern.replace(" ", "")
-    for result in Hiber.session().createQuery("select distinct mpanCore, mpanCore.dso.code, mpanCore.uniquePart, mpanCore.checkDigit from MpanCore mpanCore where lower(mpanCore.dso.code || mpanCore.uniquePart || mpanCore.checkDigit) like lower(:term) order by mpanCore.dso.code, mpanCore.uniquePart, mpanCore.checkDigit").setString("term", "%" + pattern + "%").setMaxResults(50).list():
-        source.appendChild(result[0].toXml(doc, XmlTree("supply").put("dso")))]]></value>
+    for result in Hiber.session().createQuery("select distinct mpan.supplyGeneration, mpan.core.dso.code, mpan.core.uniquePart, mpan.core.checkDigit from Mpan mpan where lower(mpan.core.dso.code || mpan.core.uniquePart || mpan.core.checkDigit || mpan.supplierAccount || mpan.supplyGeneration.hhdcAccount) like lower(:term) order by mpan.core.dso.code, mpan.core.uniquePart, mpan.core.checkDigit").setString("term", "%" + pattern + "%").setMaxResults(50).list():
+        source.appendChild(result[0].toXml(doc, XmlTree("supply").put('meter').put('hhdcContract').put('pc').put('mpans', XmlTree('mtc').put('llfc').put('core').put('supplierContract'))))]]></value>
     <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
 <xsl:stylesheet version="1.0"
     xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
@@ -7936,7 +7936,7 @@ if inv.hasParameter("search-pattern"):
                     </ul>
                 </xsl:if>
                 <form action=".">
-                    <fieldset><legend>Search by MPAN core</legend>
+                    <fieldset><legend>Search for supply generations by MPAN core, account number or meter serial number</legend>
                         <input name="search-pattern"
                             value="{/source/request/parameter[@name='search-pattern']/value}" />
                         <xsl:value-of select="' '" />
@@ -7944,34 +7944,100 @@ if inv.hasParameter("search-pattern"):
                     </fieldset>
                 </form>
                 <xsl:choose>
-                    <xsl:when test="/source/mpan-core">
+                    <xsl:when test="/source/supply-generation">
                         <p>
-                            Only the first 50 supplies of the search
+                            Only the first 50 supply generations of the search
                             results are shown.
                         </p>
                         <table>
                             <caption>
-                                Supplies
+                                Supply Generations
                             </caption>
                             <tr>
-                                <th>MPAN Core</th>
-                                <th>Supply</th>
+                                <th rowspan="3">View</th>
+                                <th rowspan="3">Meter Serial Number</th>
+                                <th colspan="2">HHDC</th>
+                                <th colspan="3">Import</th>
+                                <th colspan="3">Export</th>
                             </tr>
+                            <tr>
+                                <th rowspan="2">Contract</th>
+                                <th rowspan="2">Account</th>
+                                <th rowspan="2">Mpan</th>
+                                <th colspan="2">Supplier</th>
+                                <th rowspan="2">Mpan</th>
+                                <th colspan="2">Supplier</th>
+                            </tr>
+                            <tr>
+                                <th>Contract</th>
+                                <th>Account</th> 
+                                <th>Contract</th>
+                                <th>Account</th> 
+                           </tr>
                             <xsl:for-each
-                                select="/source/mpan-core">
+                                select="/source/supply-generation">
                                 <tr>
-                                    <td>
-                                        <code>
-                                            <xsl:value-of
-                                                select="@core" />
-                                        </code>
-                                    </td>
                                     <td>
                                         <a
                                             href="{/source/request/@context-path}/reports/7/output/?supply-id={supply/@id}">
                                             <xsl:value-of
-                                                select="supply/@id" />
+                                                select="'view'" />
                                         </a>
+                                    </td>
+                                    <td>
+                                        <xsl:value-of
+                                            select="meter/@serial" />
+                                    </td>
+                                    <td>
+                                        <a
+                                            href="{/source/request/@context-path}/reports/115/output/?hhdc-contract-id={hhdc-contract/@id}">
+                                        <xsl:value-of
+                                            select="hhdc-contract/@name" />
+                                        </a>
+                                    </td>
+                                    <td>
+                                        <xsl:value-of
+                                            select="@hhdc-account" />
+                                    </td>
+                                    <td>
+                                      <xsl:if test="mpan/llfc/@is-import='true'">
+                                        <xsl:value-of
+                                            select="concat(pc/@code, ' ', mpan[llfc/@is-import='true']/mtc/@code, ' ', mpan/llfc[@is-import='true']/@code, ' ', mpan[llfc/@is-import='true']/mpan-core/@core)" />
+                                      </xsl:if>
+                                    </td>
+                                    <td>
+                                      <xsl:if test="mpan/llfc/@is-import='true'">
+                                         <a href="{/source/request/@context-path}/reports/77/output/?supplier-contract-id={mpan[llfc/@is-import='true']/supplier-contract/@id}">
+                                        <xsl:value-of
+                                            select="mpan[llfc/@is-import='true']/supplier-contract/@name" />
+                                         </a>
+                                      </xsl:if>
+                                    </td>
+                                    <td>
+                                      <xsl:if test="mpan/llfc/@is-import='true'">
+                                        <xsl:value-of
+                                            select="mpan[llfc/@is-import='true']/@supplier-account" />
+                                      </xsl:if>
+                                    </td>
+                                    <td>
+                                      <xsl:if test="mpan/llfc/@is-import='false'">
+                                        <xsl:value-of
+                                            select="concat(pc/@code, ' ', mpan[llfc/@is-import='false']/mtc/@code, ' ', mpan/llfc[@is-import='false']/@code, ' ', mpan[llfc/@is-import='false']/mpan-core/@core)" />
+                                      </xsl:if>
+                                    </td>
+                                    <td>
+                                      <xsl:if test="mpan/llfc/@is-import='false'">
+                                         <a href="{/source/request/@context-path}/reports/77/output/?supplier-contract-id={mpan[llfc/@is-import='false']/supplier-contract/@id}">
+                                        <xsl:value-of
+                                            select="mpan[llfc/@is-import='false']/supplier-contract/@name" />
+                                         </a>
+                                      </xsl:if>
+                                    </td>
+<td>
+                                      <xsl:if test="mpan/llfc/@is-import='false'">
+                                        <xsl:value-of
+                                            select="mpan[llfc/@is-import='false']/@supplier-account" />
+                                      </xsl:if>
                                     </td>
                                 </tr>
                             </xsl:for-each>

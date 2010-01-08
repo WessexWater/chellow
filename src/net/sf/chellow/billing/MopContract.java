@@ -21,6 +21,8 @@
 
 package net.sf.chellow.billing;
 
+import java.util.List;
+
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.Invocation;
@@ -28,23 +30,42 @@ import net.sf.chellow.monad.MonadUtils;
 import net.sf.chellow.monad.Urlable;
 import net.sf.chellow.monad.UserException;
 import net.sf.chellow.monad.XmlTree;
+import net.sf.chellow.monad.types.MonadDate;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
 import net.sf.chellow.physical.HhEndDate;
+import net.sf.chellow.physical.MarketRole;
+import net.sf.chellow.physical.Participant;
+import net.sf.chellow.physical.SupplyGeneration;
 import net.sf.chellow.ui.Chellow;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 public class MopContract extends Contract {
-	static public MopContract insertMopContract(Provider provider, String name,
-			HhEndDate startDate, HhEndDate finishDate, String chargeScript, String rateScript)
-			throws HttpException {
-		MopContract contract = new MopContract(provider, name, startDate,
+	static public MopContract insertMopContract(Participant participant,
+			String name, HhEndDate startDate, HhEndDate finishDate,
+			String chargeScript, String rateScript) throws HttpException {
+		MopContract existing = findMopContract(name);
+		if (existing != null) {
+			throw new UserException(
+					"There's already a HHDC contract with the name " + name);
+		}
+		MopContract contract = new MopContract(participant, name, startDate,
 				finishDate, chargeScript, rateScript);
 		Hiber.session().save(contract);
 		Hiber.flush();
 		return contract;
+	}
+
+	public static MopContract findMopContract(String name) throws HttpException {
+		return (MopContract) Hiber.session().createQuery(
+				"from MopContract contract where contract.name = :name")
+				.setString("name", name).uniqueResult();
+	}
+
+	public static MopContract findMopContract(Long id) throws HttpException {
+		return (MopContract) Hiber.session().get(MopContract.class, id);
 	}
 
 	public static MopContract getMopService(Long id) throws HttpException {
@@ -62,10 +83,18 @@ public class MopContract extends Contract {
 	public MopContract() {
 	}
 
-	public MopContract(Provider mop, String name, HhEndDate startDate,
-			HhEndDate finishDate, String chargeScript, String rateScript) throws HttpException {
+	public MopContract(Participant participant, String name,
+			HhEndDate startDate, HhEndDate finishDate, String chargeScript,
+			String rateScript) throws HttpException {
 		super(name, startDate, finishDate, chargeScript, rateScript);
-		setParty(mop);
+		intrinsicUpdate(participant, name, chargeScript);
+	}
+
+	private void intrinsicUpdate(Participant participant, String name,
+			String chargeScript) throws HttpException {
+		super.internalUpdate(name, chargeScript);
+		setParty(Provider.getProvider(participant, MarketRole
+				.getMarketRole(MarketRole.MOP)));
 	}
 
 	public Provider getParty() {
@@ -90,22 +119,67 @@ public class MopContract extends Contract {
 				.append("/");
 	}
 
+	@SuppressWarnings("unchecked")
+	public void update(Participant participant, String name, String chargeScript)
+			throws HttpException {
+		intrinsicUpdate(participant, name, chargeScript);
+		for (SupplyGeneration generation : (List<SupplyGeneration>) Hiber
+				.session()
+				.createQuery(
+						"from SupplyGeneration generation where generation.mopContract = :mopContract and generation.startDate.date < :startDate or (generation.finishDate.date is not null and (:finishDate is not null or generation.finishDate.date > :finishDate))")
+				.setEntity("mopContract", this).setTimestamp("startDate",
+						getStartDate().getDate()).setTimestamp(
+						"finishDate",
+						getFinishDate() == null ? null : getFinishDate()
+								.getDate()).list()) {
+			throw new UserException(
+					"The supply '"
+							+ generation.getSupply().getId()
+							+ "' has a generation with this contract that covers a time outside this contract.");
+		}
+	}
+
 	public void httpPost(Invocation inv) throws HttpException {
+		Long participantId = inv.getLong("participant-id");
 		String name = inv.getString("name");
 		String chargeScript = inv.getString("charge-script");
 		if (!inv.isValid()) {
 			throw new UserException(document());
 		}
-		update(name, chargeScript);
+		chargeScript = chargeScript.replace("\r", "").replace("\t", "    ");
+		try {
+			update(Participant.getParticipant(participantId), name,
+					chargeScript);
+		} catch (UserException e) {
+			Document doc = document();
+			Element source = doc.getDocumentElement();
+			source.setAttribute("charge-script", chargeScript);
+			e.setDocument(doc);
+			throw e;
+		}
 		Hiber.commit();
-		inv.sendOk(document());
+		Document doc = document();
+		Element source = doc.getDocumentElement();
+		source.setAttribute("charge-script", chargeScript);
+		inv.sendOk(doc);
 	}
 
-	private Document document() throws HttpException {
+	@SuppressWarnings("unchecked")
+	protected Document document() throws HttpException {
 		Document doc = MonadUtils.newSourceDocument();
 		Element source = doc.getDocumentElement();
-		source.appendChild(toXml(doc, new XmlTree("supplier")
-				.put("organization")));
+		source.appendChild(toXml(doc, new XmlTree("party", new XmlTree(
+				"participant"))));
+		for (Party party : (List<Party>) Hiber
+				.session()
+				.createQuery(
+						"from Party party where party.role.code = :roleCode order by party.participant.code")
+				.setCharacter("roleCode", MarketRole.MOP).list()) {
+			source.appendChild(party.toXml(doc, new XmlTree("participant")));
+		}
+		source.appendChild(new MonadDate().toXml(doc));
+		source.appendChild(MonadDate.getMonthsXml(doc));
+		source.appendChild(MonadDate.getDaysXml(doc));
 		return doc;
 	}
 
@@ -123,8 +197,13 @@ public class MopContract extends Contract {
 	}
 
 	public Urlable getChild(UriPathElement uriId) throws HttpException {
-		// TODO Auto-generated method stub
-		return null;
+		if (RateScripts.URI_ID.equals(uriId)) {
+			return new RateScripts(this);
+		} else if (Batches.URI_ID.equals(uriId)) {
+			return new Batches(this);
+		} else {
+			return null;
+		}
 	}
 
 	public Element toXml(Document doc) throws HttpException {

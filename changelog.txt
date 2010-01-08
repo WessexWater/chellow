@@ -1,3 +1,15 @@
+* Can now import snag ignorals, so upgrade won't forget ignored status of channel snags.
+* Removed empty link to HHDC Contract on generation edit page, if there
+    isn't an HHDC Contract.
+* Used re-entrant lock for controlling access to automatic imports. simpler code.
+* Removed unnecessary 'supplierContractType' attribute of SupplierContract. 
+* Added search on msid and account number.
+* Fixed bug 2898420, link from supplier contract rate scripts edit world to view world.
+* Fixed bug 2902488 where status values with a decimal point were taken to be estimates.
+
+
+349
+
 * Fixed bug where an error on the supply generation page wouldn't display properly.
 * Improved error reporting for Python scripts called from Java.
 * Now exports non-core contracts in the correct csv xml format.

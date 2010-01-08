@@ -40,7 +40,6 @@ import net.sf.chellow.physical.MarketRole;
 import net.sf.chellow.physical.Mpan;
 import net.sf.chellow.physical.Participant;
 import net.sf.chellow.physical.Snag;
-import net.sf.chellow.physical.SupplierContractType;
 import net.sf.chellow.ui.Chellow;
 import net.sf.chellow.ui.GeneralImport;
 
@@ -116,8 +115,6 @@ public class SupplierContract extends Contract {
 
 	Provider supplier;
 
-	SupplierContractType type;
-
 	public SupplierContract() {
 	}
 
@@ -134,14 +131,6 @@ public class SupplierContract extends Contract {
 
 	public Provider getParty() {
 		return supplier;
-	}
-
-	void setType(SupplierContractType type) {
-		this.type = type;
-	}
-
-	public SupplierContractType getType() {
-		return type;
 	}
 
 	public void internalUpdate(Participant participant, String name,

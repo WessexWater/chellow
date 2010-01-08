@@ -368,11 +368,13 @@
 										</xsl:for-each>
 									</select>
 								</label>
-								<xsl:value-of select="' '" />
-								<a
-									href="{/source/request/@context-path}/hhdc-contracts/{/source/supply-generation/hhdc-contract/@id}/">
-									<xsl:value-of select="/source/supply-generation/hhdc-contract/@name" />
-								</a>
+								<xsl:if test="/source/supply-generation/hhdc-contract">
+									<xsl:value-of select="' '" />
+									<a
+										href="{/source/request/@context-path}/hhdc-contracts/{/source/supply-generation/hhdc-contract/@id}/">
+										<xsl:value-of select="/source/supply-generation/hhdc-contract/@name" />
+									</a>
+								</xsl:if>
 								<br />
 								<label>
 									HHDC Account
