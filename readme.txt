@@ -315,7 +315,7 @@ snags = Hiber.session().createQuery("from ChannelSnag snag where snag.isIgnored 
 while snags.next():
     snag = snags.get(0)
     channel = snag.getChannel()
-    print_line(pw, ['insert', 'channel-snag-ignore', channel.getSupplyGeneration().getMpans()[0].getCore().toString(), Boolean.toString(channel.getIsImport()), Boolean.toString(channel.getIsKwh()), snag.getStartDate(), snag.getFinishDate()])
+    print_line(pw, ['insert', 'channel-snag-ignore', channel.getSupplyGeneration().getMpans()[0].getCore().toString(), Boolean(channel.getIsImport()), Boolean(channel.getIsKwh()), snag.getStartDate(), snag.getFinishDate()])
     Hiber.session().clear()
 snags.close()
 
