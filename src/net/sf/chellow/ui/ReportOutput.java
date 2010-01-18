@@ -112,23 +112,4 @@ public class ReportOutput implements Urlable, XmlDescriber {
 	public Node toXml(Document doc, XmlTree tree) throws HttpException {
 		return null;
 	}
-	/*
-	 * 
-	 * public void run(Invocation inv, Document doc) throws InternalException,
-	 * DesignerException, HttpException { /* PythonInterpreter interp = new
-	 * PythonInterpreter(); Element source = doc.getDocumentElement();
-	 * interp.set("doc", doc); interp.set("source", source);
-	 * interp.set("organization", report.getReports().getOrganization());
-	 * interp.set("inv", inv); StringWriter out = new StringWriter();
-	 * interp.setOut(out); StringWriter err = new StringWriter();
-	 * interp.setErr(err); try { interp.execfile(reportScript.getInputStream()); }
-	 * catch (PyException e) { inv.getResponse().setContentType("text/html");
-	 * Object obj = e.value.__tojava__(UserException.class); if (obj instanceof
-	 * UserException) { throw (UserException) obj; } else { throw
-	 * UserException.newInvalidParameter(e.toString()); } } if
-	 * (out.toString().length() > 0) { source.appendChild(new
-	 * VFMessage(out.toString()).toXML(doc)); } if (err.toString().length() > 0) {
-	 * source.appendChild(new VFMessage(err.toString()).toXML(doc)); }
-	 *  }
-	 */
 }

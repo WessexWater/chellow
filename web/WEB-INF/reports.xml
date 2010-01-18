@@ -443,6 +443,8 @@ for group_site in site.groups(now, now, False)[0].getSites():
           </li>
           <li><a href="{/source/request/@context-path}/reports/27/output/?site-id={/source/site/@id}"><xsl:value-of select="'Bulk hh data download'" /></a>
           </li>
+ <li><a href="{/source/request/@context-path}/reports/111/output/?site-id={/source/site/@id}"><xsl:value-of select="'Virtual Bills'" /></a>
+          </li>
         </ul>
       </body>
     </html>
@@ -5274,7 +5276,7 @@ while sites.next():
         supply_generation = site_supply_generation.getSupplyGeneration()
         if metering_type == 'nhh' and supply_generation.getChannels().size() > 0:
             metering_type = 'amr'
-        if supply_generation.getMpans()[0].getPc().getCode() == 0:
+        if supply_generation.getPc().getCode() == 0:
             metering_type = 'hh'
         for ss_gen in supply_generation.getSiteSupplyGenerations():
             ss_gen_site_code = ss_gen.getSite().getCode()
@@ -6293,7 +6295,6 @@ for contract in Hiber.session().createQuery("from SupplierContract contract orde
                 <table>
                     <thead>
                         <tr>
-                            <th>Chellow Id</th>
                             <th>Name</th>
                             <th>Start Date</th>
                             <th>Finish Date</th>
@@ -6304,13 +6305,9 @@ for contract in Hiber.session().createQuery("from SupplierContract contract orde
                             select="/source/contracts/supplier-contract">
                             <tr>
                                 <td>
-                                    <a
-                                        href="{/source/request/@context-path}/reports/77/output/?supplier-contract-id={@id}">
-                                        <xsl:value-of select="@id" />
-                                    </a>
-                                </td>
-                                <td>
+<a href="{/source/request/@context-path}/reports/77/output/?supplier-contract-id={@id}">
                                     <xsl:value-of select="@name" />
+</a>
                                 </td>
                                 <td>
                                     <xsl:value-of
@@ -6456,7 +6453,7 @@ for account in Hiber.session().createQuery("from Batch batch where batch.contrac
                     <caption>Rate Scripts</caption>
                     <thead>
                         <tr>
-                            <th>Chellow Id</th>
+                            <th></th>
                             <th>From</th>
                             <th>To</th>
                         </tr>
@@ -6468,7 +6465,7 @@ for account in Hiber.session().createQuery("from Batch batch where batch.contrac
                                 <td>
                                     <a
                                         href="{/source/request/@context-path}/reports/79/output/?rate-script-id={@id}">
-                                        <xsl:value-of select="@id" />
+                                        <xsl:value-of select="'view'" />
                                     </a>
                                 </td>
                                 <td>
@@ -6503,6 +6500,12 @@ for account in Hiber.session().createQuery("from Batch batch where batch.contrac
                         <a
                             href="{/source/request/@context-path}/reports/105/output/?supplier-contract-id={/source/supplier-contract/@id}">
                             Snags
+                        </a>
+                    </li>
+<li>
+                        <a
+                            href="{/source/request/@context-path}/reports/85/output/?supplier-contract-id={/source/supplier-contract/@id}">
+                            Virtual Bills
                         </a>
                     </li>
                 </ul>
@@ -6892,37 +6895,37 @@ if len(mpans) > 0:
     <value>insert</value>
     <value>report</value>
     <value>85</value>
-    <value>0 Supplier Bills</value>
+    <value>0 Supplier Contract Virtual Bill Selector</value>
     <value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree, UserException
-from net.sf.chellow.billing import Account
+from net.sf.chellow.billing import SupplierContract
+from java.util import GregorianCalendar, TimeZone, Locale, Calendar
+from net.sf.chellow.monad.types import MonadDate
 
-account_id = inv.getLong('account-id')
-account = Account.getAccount(account_id)
-bills_element = doc.createElement('bills')
-source.appendChild(bills_element)
-bills_element.appendChild(account.toXml(doc, XmlTree('contract')))
-for bill in Hiber.session().createQuery("from Bill bill where bill.account = :account order by bill.startDate.date").setEntity('account', account).list():
-    bills_element.appendChild(bill.toXml(doc))]]></value>
+contract_id = inv.getLong('supplier-contract-id')
+contract = SupplierContract.getSupplierContract(contract_id)
+source.appendChild(contract.toXml(doc))
+cal = GregorianCalendar(TimeZone.getTimeZone("GMT"), Locale.UK)
+cal.add(Calendar.MONTH, -1)
+source.appendChild(MonadDate(cal.getTime()).toXml(doc))
+source.appendChild(MonadDate.getMonthsXml(doc))]]></value>
     <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
 <xsl:stylesheet version="1.0"
     xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
     <xsl:output method="html" encoding="US-ASCII"
         doctype-public="-//W3C//DTD HTML 4.01//EN"
         doctype-system="http://www.w3.org/TR/html4/strict.dtd" indent="yes" />
-
     <xsl:template match="/">
         <html>
             <head>
                 <link rel="stylesheet" type="text/css"
                     href="{/source/request/@context-path}/reports/19/output/" />
+
                 <title>
                     Home &gt; Supplier Contracts &gt;
                     <xsl:value-of
-                        select="/source/bills/account/supplier-contract/@name" />
-                    &gt; Accounts &gt;
-                    <xsl:value-of
-                        select="/source/bills/account/@reference" />
-                    &gt; Bills
+                        select="/source/batch/supplier-contract/@name" />
+                    &gt; Batches &gt;
+                    <xsl:value-of select="/source/batch/@reference" />
                 </title>
             </head>
             <body>
@@ -6938,23 +6941,12 @@ for bill in Hiber.session().createQuery("from Bill bill where bill.account = :ac
                     </a>
                     &gt;
                     <a
-                        href="{/source/request/@context-path}/reports/77/output/?supplier-contract-id={/source/bills/account/supplier-contract/@id}">
+                        href="{/source/request/@context-path}/reports/77/output/?supplier-contract-id={/source/supplier-contract/@id}">
                         <xsl:value-of
-                            select="/source/bills/account/supplier-contract/@name" />
+                            select="/source/supplier-contract/@name" />
                     </a>
                     &gt;
-                    <a
-                        href="{/source/request/@context-path}/reports/81/output/?supplier-contract-id={/source/bills/account/supplier-contract/@id}">
-                        <xsl:value-of select="'Accounts'" />
-                    </a>
-                    &gt;
-                    <a
-                        href="{/source/request/@context-path}/reports/83/output/?account-id={/source/bills/account/@id}">
-                        <xsl:value-of
-                            select="/source/bills/account/@reference" />
-                    </a>
-                    &gt;
-                    <xsl:value-of select="'Bills'" />
+                    Virtual Bills
                 </p>
                 <br />
                 <xsl:if test="//message">
@@ -6966,44 +6958,74 @@ for bill in Hiber.session().createQuery("from Bill bill where bill.account = :ac
                         </xsl:for-each>
                     </ul>
                 </xsl:if>
-                <table>
-                    <caption>Bills</caption>
-                    <thead>
-                        <tr>
-                            <th>Id</th>
-                            <th>From</th>
-                            <th>To</th>
-                            <th>Net</th>
-                            <th>VAT</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <xsl:for-each select="/source/bills/bill">
-                            <tr>
-                                <td>
-                                    <a
-                                        href="{/source/request/@context-path}/reports/87/output/?bill-id={@id}">
-                                        <xsl:value-of select="@id" />
-                                    </a>
-                                </td>
-                                <td>
-                                    <xsl:value-of
-                                        select="concat(day-start-date/@year, '-', day-start-date/@month, '-', day-start-date/@day)" />
-                                </td>
-                                <td>
-                                    <xsl:value-of
-                                        select="concat(day-finish-date/@year, '-', day-finish-date/@month, '-', day-finish-date/@day)" />
-                                </td>
-                                <td>
-                                    <xsl:value-of select="@net" />
-                                </td>
-                                <td>
-                                    <xsl:value-of select="@vat" />
-                                </td>
-                            </tr>
-                        </xsl:for-each>
-                    </tbody>
-                </table>
+                <form action="{/source/request/@context-path}/reports/87/output/">
+                    <fieldset>
+                        <input type="hidden" name="contract-id" value="{/source/supplier-contract/@id}"/>
+                        <legend>Download Supply Level Virtual Bills</legend>
+<br/>
+<xsl:value-of select="'For MPAN core '"/>
+<input name="mpan-core" value="" maxlength="30" size="30" />
+<xsl:value-of select="' for '"/>
+<select name="supply-polarity">
+                                <option value="import">
+                                    Import
+                                </option>
+                                <option value="export">
+                                    Export
+                                </option>
+                        </select>
+<xsl:value-of select="' and '"/>
+<select name="source-code">
+ <option value="net">
+                                    Network
+                                </option>                                <option value="3rd-party">
+                  Third Party     
+                                </option>
+                        </select>
+<xsl:value-of select="' for '"/>
+<input name="months" value="1" maxlength="2" size="2" />
+<xsl:value-of select="' month(s) until the end of '"/>
+                        <input name="end-year" value="{/source/date/@year}" maxlength="4" size="4" /><xsl:value-of select="' - '"/>
+                        <select name="end-month">
+                            <xsl:for-each select="/source/months/month">
+                                <option value="{@number}">
+                                    <xsl:if test="@number=/source/date/@month">
+                                        <xsl:attribute name="selected">selected</xsl:attribute>
+                                    </xsl:if>
+                                    <xsl:value-of select="@number"/>
+                                </option>
+                            </xsl:for-each>
+                        </select>
+<xsl:value-of select="' '"/>
+                        <input type="submit" value="Download"/>
+                    </fieldset>
+                </form>
+                <br/>
+                <form action="{/source/request/@context-path}/reports/87/output/">
+                    <fieldset>
+                        <input type="hidden" name="contract-id" value="{/source/supplier-contract/@id}"/>
+                        <legend>Download Displaced Virtual Bills</legend>
+<br/>
+<xsl:value-of select="'For site code '"/>
+<input name="site-code" value="" maxlength="30" size="30" />
+<xsl:value-of select="' for '"/>
+<input name="months" value="1" maxlength="2" size="2" />
+<xsl:value-of select="' month(s) until the end of '"/>
+                        <input name="end-year" value="{/source/date/@year}" maxlength="4" size="4" /><xsl:value-of select="' - '"/>
+                        <select name="end-month">
+                            <xsl:for-each select="/source/months/month">
+                                <option value="{@number}">
+                                    <xsl:if test="@number=/source/date/@month">
+                                        <xsl:attribute name="selected">selected</xsl:attribute>
+                                    </xsl:if>
+                                    <xsl:value-of select="@number"/>
+                                </option>
+                            </xsl:for-each>
+                        </select>
+<xsl:value-of select="' '"/>
+                        <input type="submit" value="Download"/>
+                    </fieldset>
+                </form>
             </body>
         </html>
     </xsl:template>
@@ -7013,179 +7035,86 @@ for bill in Hiber.session().createQuery("from Bill bill where bill.account = :ac
     <value>insert</value>
     <value>report</value>
     <value>87</value>
-    <value>0 Supplier Bill</value>
-    <value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree, UserException
-from net.sf.chellow.billing import Bill
+    <value>0 Supplier Contract Virtual Bills</value>
+    <value><![CDATA[from net.sf.chellow.monad import Hiber
+from java.util import GregorianCalendar, TimeZone, Locale, Calendar
+from net.sf.chellow.physical import MpanCore, HhEndDate, Supply
+from net.sf.chellow.billing import SupplierContract
+from java.text import DecimalFormat
+from java.lang import System
 
-bill_id = inv.getLong('bill-id')
-bill = Bill.getBill(bill_id)
-bill_element = bill.toXml(doc, XmlTree('account', XmlTree('contract', XmlTree('party'))))
-source.appendChild(bill_element)
-for invoice in Hiber.session().createQuery("from Invoice invoice where invoice.bill = :bill order by invoice.startDate.date").setEntity('bill', bill).list():
-    bill_element.appendChild(invoice.toXml(doc, XmlTree('batch', XmlTree('contract'))))]]></value>
-    <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
-<xsl:stylesheet version="1.0"
-    xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
-    <xsl:output method="html" encoding="US-ASCII"
-        doctype-public="-//W3C//DTD HTML 4.01//EN"
-        doctype-system="http://www.w3.org/TR/html4/strict.dtd" indent="yes" />
-    <xsl:template match="/">
-        <html>
-            <head>
-                <link rel="stylesheet" type="text/css"
-                    href="{/source/request/@context-path}/reports/10/output/" />
-                <title>
-                    Home &gt; Supplier Contracts &gt;
-                    <xsl:value-of
-                        select="/source/bill/account/supplier-contract/@name" />
-                    &gt; Accounts &gt;
-                    <xsl:value-of
-                        select="/source/bill/account/@reference" />
-                    &gt; Bills &gt;
-                    <xsl:value-of select="/source/bill/@id" />
-                </title>
-            </head>
-            <body>
-                <p>
-                    <a
-                        href="{/source/request/@context-path}/reports/1/output/">
-                        <xsl:value-of
-                            select="'Home'" />
-                    </a>
-                    &gt;
-                    <a
-                        href="{/source/request/@context-path}/reports/38/output/">
-                        <xsl:value-of select="'Supplier Contracts'" />
-                    </a>
-                    &gt;
-                    <a
-                        href="{/source/request/@context-path}/reports/39/output/?supplier-contract-id={/source/bill/account/supplier-contract/@id}">
-                        <xsl:value-of
-                            select="/source/bill/account/supplier-contract/@name" />
-                    </a>
-                    &gt;
-                    <a
-                        href="{/source/request/@context-path}/reports/41/output/?supplier-contract-id={/source/bill/account/supplier-contract/@id}">
-                        <xsl:value-of select="'Accounts'" />
-                    </a>
-                    &gt;
-                    <a
-                        href="{/source/request/@context-path}/reports/42/output/?account-id={/source/bill/account/@id}">
-                        <xsl:value-of
-                            select="/source/bill/account/@reference" />
-                    </a>
-                    &gt;
-                    <a
-                        href="{/source/request/@context-path}/reports/43/output/?account-id={/source/bill/account/@id}">
-                        <xsl:value-of select="'Bills'" />
-                    </a>
-                    &gt;
-                    <xsl:value-of
-                        select="concat(/source/bill/@id, ' [')" />
-                    <a
-                        href="{/source/request/@context-path}/supplier-contracts/{/source/bill/account/supplier-contract/@id}/accounts/{/source/bill/account/@id}/bills/{/source/bill/@id}/">
-                        <xsl:value-of select="'edit'" />
-                    </a>
-                    <xsl:value-of select="']'" />
-                </p>
-                <br />
-                <xsl:if test="//message">
-                    <ul>
-                        <xsl:for-each select="//message">
-                            <li>
-                                <xsl:value-of select="@description" />
-                            </li>
-                        </xsl:for-each>
-                    </ul>
-                </xsl:if>
-                <ul>
-                    <li>
-                        <xsl:value-of
-                            select="concat('From ', /source/bill/day-start-date/@year, '-', /source/bill/day-start-date/@month, '-', /source/bill/day-start-date/@day)" />
-                    </li>
-                    <li>
-                        <xsl:value-of
-                            select="concat('To ', /source/bill/day-finish-date/@year, '-', /source/bill/day-finish-date/@month, '-', /source/bill/day-finish-date/@day)" />
-                    </li>
-                    <li>
-                        <xsl:value-of
-                            select="concat('Net ', /source/bill/@net)" />
-                    </li>
-                    <li>
-                        <xsl:value-of
-                            select="concat('VAT ', /source/bill/@vat)" />
-                    </li>
-                </ul>
+end_year = inv.getInteger('end-year')
+end_month = inv.getInteger('end-month')
+months = inv.getInteger('months')
+contract_id = inv.getLong('contract-id')
+mpan_core_str = inv.getString('mpan-core')
 
-                <table>
-                    <caption>Invoices</caption>
-                    <thead>
-                        <tr>
-                            <th>Chellow Id</th>
-                            <th>Reference</th>
-                            <th>Batch</th>
-                            <th>From</th>
-                            <th>To</th>
-                            <th>Net</th>
-                            <th>VAT</th>
-                            <th>Status</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <xsl:for-each select="/source/bill/invoice">
-                            <tr>
-                                <td>
-                                    <a
-                                        href="{/source/request/@context-path}/reports/47/output/?invoice-id={@id}">
-                                        <xsl:value-of select="@id" />
-                                    </a>
-                                </td>
-                                <td>
-                                    <xsl:value-of
-                                        select="@reference" />
-                                </td>
-                                <td>
-                                    <a
-                                        href="{/source/request/@context-path}/reports/46/output/?batch-id={batch/@id}">
-                                        <xsl:value-of
-                                            select="batch/@reference" />
-                                    </a>
-                                </td>
-                                <td>
-                                    <xsl:value-of
-                                        select="concat(day-start-date/@year, '-', day-start-date/@month, '-', day-start-date/@day)" />
-                                </td>
-                                <td>
-                                    <xsl:value-of
-                                        select="concat(day-finish-date/@year, '-', day-finish-date/@month, '-', day-finish-date/@day)" />
-                                </td>
-                                <td>
-                                    <xsl:value-of select="@net" />
-                                </td>
-                                <td>
-                                    <xsl:value-of select="@vat" />
-                                </td>
-                                <td>
-                                    <xsl:choose>
-                                        <xsl:when test="@status='0'">
-                                            Pending
-                                        </xsl:when>
-                                        <xsl:when test="@status='1'">
-                                            Paid
-                                        </xsl:when>
-                                        <xsl:when test="@status='2'">
-                                            Rejected
-                                        </xsl:when>
-                                    </xsl:choose>
-                                </td>
-                            </tr>
-                        </xsl:for-each>
-                    </tbody>
-                </table>
-            </body>
-        </html>
-    </xsl:template>
-</xsl:stylesheet>]]></value>
+if not inv.isValid():
+    raise UserException()
+inv.getResponse().setContentType("text/csv")
+inv.getResponse().addHeader('Content-Disposition', 'attachment; filename="output.csv"')
+pw = inv.getResponse().getWriter()
+
+contract = SupplierContract.getSupplierContract(contract_id)
+ct_cal = GregorianCalendar(TimeZone.getTimeZone("Europe/London"), Locale.UK)
+
+utc_cal = GregorianCalendar(TimeZone.getTimeZone("GMT"), Locale.UK)
+utc_cal.clear()
+utc_cal.set(Calendar.YEAR, end_year)
+utc_cal.set(Calendar.MONTH, end_month - 1)
+utc_cal.add(Calendar.MONTH, 1)
+finish_date = utc_cal.getTime()
+utc_cal.add(Calendar.MINUTE, 30)
+utc_cal.add(Calendar.MONTH, -1 * months)
+start_date = utc_cal.getTime()
+
+kwh_formatter = DecimalFormat("#,###")
+gbp_formatter = DecimalFormat("#,##0.00")
+
+def kwh_format(kwh):
+    return '"' + kwh_formatter.format(kwh) + '"'
+
+def gbp_format(gbp):
+    return '"' + gbp_formatter.format(gbp) + '"'
+
+if len(mpan_core_str.strip()) == 0:
+    query = Hiber.session().createQuery("select distinct generation from SupplyGeneration generation where generation.importMpan is not null and generation.importMpan.supplierContract = :contract and generation.startDate.date <= :finishDate and (generation.finishDate is null or generation.finishDate.date >= :startDate)")
+else:
+    mpan_core = MpanCore.getMpanCore(mpan_core_str)
+    supply = mpan_core.getSupply()
+    query = Hiber.session().createQuery("select distinct generation from SupplyGeneration generation where generation.supply = :supply and generation.importMpan is not null and generation.importMpan.supplierContract = :contract and generation.startDate.date <= :finishDate and (generation.finishDate is null or generation.finishDate.date >= :startDate)").setEntity('supply', supply)
+
+generations = query.setEntity('contract', contract).setTimestamp('startDate', start_date).setTimestamp('finishDate', finish_date).scroll()
+
+while generations.next():
+    timing = System.currentTimeMillis()
+    #pw.println("starting gen "  + str(System.currentTimeMillis() - timing))
+    generation = generations.get(0)
+    if generation.getStartDate().getDate().after(start_date):
+        chunk_start = generation.getStartDate()
+    else:
+        chunk_start = HhEndDate(start_date)
+    if generation.getFinishDate() is not None and finish_date.after(generation.getFinishDate().getDate()):
+        chunk_finish = generation.getFinishDate()
+    else:
+        chunk_finish = HhEndDate(finish_date)
+    mpan = generation.getImportMpan()
+    bill = contract.callFunction('virtual_bill', [generation, chunk_start, chunk_finish, pw])
+    keys = bill.keys()
+    keys.sort()
+    pw.print('MPAN Core,From,To')
+    for k in keys:
+        pw.print(',"' + k + '"')
+    pw.println('')
+    pw.print(mpan.getCore().toString() + ',' + chunk_start.toString() + ',' + chunk_finish.toString())
+    for k in keys:
+        pw.print(',"' + str(bill[k]) + '"')
+    pw.println('')
+    pw.flush()
+    Hiber.session().clear()
+generations.close()
+pw.close()]]></value>
+    <value><![CDATA[]]></value>
   </line>
   <line>
     <value>insert</value>
@@ -8764,155 +8693,86 @@ for account in Hiber.session().createQuery("from Account account where account.c
     <value>insert</value>
     <value>report</value>
     <value>111</value>
-    <value>0 Free 1</value>
-    <value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree, UserException
-from net.sf.chellow.billing import Account
+    <value>0 Site CSV Monthly Period Selector</value>
+    <value><![CDATA[from java.util import GregorianCalendar, TimeZone, Locale, Calendar
+from net.sf.chellow.monad.types import MonadDate
+from net.sf.chellow.physical import Site
 
-def create_item_element(doc, start_generation, finish_generation):
-    item_element = doc.createElement('item')
-    account_element.appendChild(item_element)
-    start_generation.setLabel('start')
-    item_element.appendChild(start_generation.toXml(doc))
-    finish_generation.setLabel('finish')
-    item_element.appendChild(finish_generation.toXml(doc))
-    return item_element
+site_id = inv.getLong('site-id')
+if not inv.isValid():
+    raise UserException()
 
-account_id = inv.getLong('account-id')
-account = Account.getAccount(account_id)
-account_element = account.toXml(doc, XmlTree('contract'))
-source.appendChild(account_element)
-
-generations = Hiber.session().createQuery("from SupplyGeneration generation where generation.hhdcAccount = :account order by generation.supply.id, generation.startDate.date").setEntity('account', account).list()
-if len(generations) > 0:
-    current_generation = generations[0]
-    finish_generation = current_generation
-    for i in range(1, len(generations)):
-        generation = generations[i]
-        if finish_generation.getFinishDate() is not None and finish_generation.getFinishDate().getNext().equals(generation.getStartDate()):
-            finish_generation = generation
-        else:
-            account_element.appendChild(create_item_element(doc, current_generation, finish_generation))
-            current_generation = generation
-            finish_generation = current_generation
-    account_element.appendChild(create_item_element(doc, current_generation, finish_generation))]]></value>
+site = Site.getSite(site_id)
+source.appendChild(site.toXml(doc))
+cal = GregorianCalendar(TimeZone.getTimeZone("GMT"), Locale.UK)
+cal.add(Calendar.MONTH, -1)
+source.appendChild(MonadDate(cal.getTime()).toXml(doc))
+source.appendChild(MonadDate.getMonthsXml(doc))]]></value>
     <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
 <xsl:stylesheet version="1.0"
     xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
-    <xsl:output method="html" encoding="US-ASCII"
-        doctype-public="-//W3C//DTD HTML 4.01//EN"
-        doctype-system="http://www.w3.org/TR/html4/strict.dtd" indent="yes" />
-    <xsl:template match="/">
-        <html>
-            <head>
-                <link rel="stylesheet" type="text/css"
-                    href="{/source/request/@context-path}/reports/19/output/" />
-                <title>
-                    Home &gt; HHDC Contracts &gt;
-                    <xsl:value-of
-                        select="/source/account/hhdc-contract/@name" />
-                    &gt; Account:
-                    <xsl:value-of select="/source/account/@reference" />
-                </title>
-            </head>
-            <body>
-                <p>
-                    <a
-                        href="{/source/request/@context-path}/reports/1/output/">
-                        <xsl:value-of
-                            select="'Home'" />
+  <xsl:output method="xml" encoding="US-ASCII"
+    doctype-public="-//W3C//DTD XHTML 1.1//EN"
+    doctype-system="http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd"
+    indent="yes" />
+  <xsl:template match="/">
+    <html>
+      <head>
+        <link rel="stylesheet" type="text/css"
+            href="{/source/request/@context-path}/reports/19/output/" />
+        <title>Home &gt; Sites &gt;
+            <xsl:value-of select="/source/site/@name" /> &gt; Virtual Bills
+        </title>
+      </head>
+      <body>
+        <p>
+          <a href="{/source/request/@context-path}/reports/1/output/">
+                        <xsl:value-of select="'Home'" />
+                    </a>
+          &gt;
+          <a href="{/source/request/@context-path}/reports/3/output/">
+            <xsl:value-of select="'Sites'" />
                     </a>
                     &gt;
                     <a
-                        href="{/source/request/@context-path}/reports/113/output/">
-                        <xsl:value-of select="'HHDC Contracts'" />
+                        href="{/source/request/@context-path}/reports/5/output/?site-id={/source/site/@id}">
+                        <xsl:value-of select="/source/site/@name" />
                     </a>
-                    &gt;
-                    <a
-                        href="{/source/request/@context-path}/reports/115/output/?hhdc-contract-id={/source/account/hhdc-contract/@id}">
-                        <xsl:value-of
-                            select="/source/account/hhdc-contract/@name" />
-                    </a>
-                    &gt;
-                    <a
-                        href="{/source/request/@context-path}/reports/109/output/?hhdc-contract-id={/source/account/hhdc-contract/@id}">
-                        <xsl:value-of select="'Accounts'" />
-                    </a>
-                    &gt;
-                    <xsl:value-of
-                        select="concat(/source/account/@reference , ' [')" />
-                    <a
-                        href="{/source/request/@context-path}/hhdc-contracts/{/source/account/hhdc-contract/@id}/accounts/{/source/account/@id}/">
-                        <xsl:value-of select="'edit'" />
-                    </a>
-                    <xsl:value-of select="']'" />
+                    &gt; Virtual Bills
                 </p>
-                <br />
                 <xsl:if test="//message">
                     <ul>
                         <xsl:for-each select="//message">
+
                             <li>
                                 <xsl:value-of select="@description" />
                             </li>
                         </xsl:for-each>
                     </ul>
                 </xsl:if>
-                <table>
-                    <tbody>
-                        <tr>
-                            <th>Chellow Id</th>
-                            <td>
-                                <xsl:value-of
-                                    select="/source/account/@id" />
-                            </td>
-                        </tr>
-                        <tr>
-                            <th>Reference</th>
-                            <td>
-                                <xsl:value-of
-                                    select="/source/account/@reference" />
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
 
-                <ul>
-                    <li>
-                        <a
-                            href="{/source/request/@context-path}/reports/85/output/?account-id={/source/account/@id}">
-                            Bills
-                        </a>
-                    </li>
-                </ul>
-
-                <table>
-                    <caption>Supply Generations</caption>
-                    <thead>
-                        <tr>
-                            <th>From</th>
-                            <th>To</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <xsl:for-each select="/source/account/item">
-                            <tr>
-                                <td>
-                                    <a
-                                        href="{/source/request/@context-path}/reports/31/output/?supply-generation-id={supply-generation[@label='start']/@id}">
-                                        <xsl:value-of
-                                            select="supply-generation[@label='start']/@id" />
-                                    </a>
-                                </td>
-                                <td>
-                                    <a
-                                        href="{/source/request/@context-path}/reports/31/output/?supply-generation-id={supply-generation[@label='finish']/@id}">
-                                        <xsl:value-of
-                                            select="supply-generation[@label='finish']/@id" />
-                                    </a>
-                                </td>
-                            </tr>
-                        </xsl:for-each>
-                    </tbody>
-                </table>
+               <form action="{/source/request/@context-path}/reports/161/output/">
+                    <fieldset>
+<input type="hidden" name="site-code" value="{/source/site/@code}" />
+                        <legend>Download Virtual Bills</legend>
+<br/>
+<xsl:value-of select="'For '"/>
+<input name="months" value="1" maxlength="2" size="2" />
+<xsl:value-of select="' month(s) until the end of '"/>
+                        <input name="year" value="{/source/date/@year}" maxlength="4" size="4" /><xsl:value-of select="' - '"/>
+                        <select name="month">
+                            <xsl:for-each select="/source/months/month">
+                                <option value="{@number}">
+                                    <xsl:if test="@number=/source/date/@month">
+                                        <xsl:attribute name="selected">selected</xsl:attribute>
+                                    </xsl:if>
+                                    <xsl:value-of select="@number"/>
+                                </option>
+                            </xsl:for-each>
+                        </select>
+                        <input type="submit" value="Download"/>
+                    </fieldset>
+                </form>
             </body>
         </html>
     </xsl:template>
@@ -11386,6 +11246,7 @@ source.appendChild(MonadDate.getMonthsXml(doc))]]></value>
                 </xsl:if>
                 <form action="{/source/request/@context-path}/reports/161/output/">
                     <fieldset>
+                        <input type="hidden" name="site-code" value=""/>
                         <legend>Download</legend>
 <br/>
                         <xsl:value-of select="'For '"/>
@@ -11436,6 +11297,12 @@ from java.text import SimpleDateFormat, DecimalFormat
 year = inv.getInteger("year")
 month = inv.getInteger("month")
 months = inv.getInteger("months")
+site_code = inv.getString('site-code')
+
+if not inv.isValid():
+    raise UserException()
+
+site_code = site_code.strip()
 
 cal = GregorianCalendar(TimeZone.getTimeZone("GMT"), Locale.UK)
 cal.clear()
@@ -11461,8 +11328,12 @@ for i in range(months):
     pw.print(",Imported kWh, Displaced kWh, Exported kWh, Used kWh, Parasitic kWh, Generated kWh, 3rd Party Import kWh, 3rd Party Export kWh")
 pw.print("\n")
 pw.flush()
-sites = Hiber.session().createQuery("from Site site order by site.code").scroll()
-#sites = Hiber.session().createQuery("from Site site where site.id = 2057 order by site.code").scroll()
+
+if len(site_code) == 0:
+    sites_query = Hiber.session().createQuery("from Site site order by site.code")
+else:
+    sites_query = Hiber.session().createQuery("from Site site where site.code = :siteCode order by site.code").setString('siteCode', site_code)
+sites = sites_query.scroll()
 kwh_format = DecimalFormat('#0')
 query = Hiber.session().createQuery("select sum(datum.value) from HhDatum datum where datum.channel.supplyGeneration = :supplyGeneration and datum.channel.isImport is :isImport and datum.channel.isKwh is true and datum.channel.supplyGeneration.supply.source.code in (:sources) and datum.endDate.date >= :startDate and datum.endDate <= :finishDate")
 while sites.next():

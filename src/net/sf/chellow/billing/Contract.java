@@ -21,7 +21,6 @@
 
 package net.sf.chellow.billing;
 
-import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -140,6 +139,7 @@ public abstract class Contract extends PersistentEntity implements
 
 	public void update(String name, String chargeScript) throws HttpException {
 		internalUpdate(name, chargeScript);
+		Hiber.flush();
 		onUpdate();
 	}
 
@@ -197,7 +197,8 @@ public abstract class Contract extends PersistentEntity implements
 		if (to != null) {
 			criteria.add(Restrictions.le("startDate.date", to.getDate()));
 		}
-		for (Bill bill : (List<Bill>) criteria.list()) {
+		for (Bill bill : (List<Bill>) criteria.createCriteria("batch").add(
+				Restrictions.eq("contract", this)).list()) {
 			bill.virtualEqualsActual();
 		}
 	}
@@ -391,45 +392,17 @@ public abstract class Contract extends PersistentEntity implements
 				.setEntity("contract", this).setTimestamp("date",
 						date.getDate()).uniqueResult();
 	}
-	
-	public Object callFunction(String name, Object... args) throws HttpException {
+
+	public Object callFunction(String name, Object... args)
+			throws HttpException {
 		PythonInterpreter interp = new PythonInterpreter();
-		StringWriter out = new StringWriter();
-		interp.setOut(out);
-		StringWriter err = new StringWriter();
-		interp.setErr(err);
+		// StringWriter out = new StringWriter();
+		// interp.setOut(out);
+		// StringWriter err = new StringWriter();
+		// interp.setErr(err);
 		interp.set("contract", this);
 		try {
 			interp.exec(chargeScript);
-		} catch (Throwable e) {
-			throw new UserException(e.getMessage() + " " + out.toString() + " " + err.toString() + " "
-					);
-		}
-try {
-    PyObject function = interp.get(name);
-    if (function == null) {
-        throw new UserException("There isn't a function called " + name);
-    }
-    return function.__call__(Py.javas2pys(args)).__tojava__(Object.class);
-} catch (PyException pye) {
-    throw new UserException(HttpException.getStackTraceString(pye));
-}
-}
-	/*
-	public Object callFunction(String functionName, Object[] args)
-			throws HttpException {
-		Object result = null;
-		try {
-			result = engine().invokeFunction(functionName, args);
-		} catch (ScriptException e) {
-			throw new UserException(e.getMessage());
-		} catch (NoSuchMethodException e) {
-			String message = "Problem calling the function: " + functionName
-					+ " of charge script " + getUri() + " with arguments ";
-			for (Object obj : args) {
-				message = message + ", " + obj.toString();
-			}
-			throw new UserException(message + " with message " + HttpException.getStackTraceString(e));
 		} catch (PyException e) {
 			Object obj = e.value.__tojava__(HttpException.class);
 			if (obj instanceof HttpException) {
@@ -437,10 +410,37 @@ try {
 			} else {
 				throw new UserException(e.toString());
 			}
+		} catch (Throwable e) {
+			throw new UserException(e.getMessage());
+			// + " " + out.toString() + " "
+			// + err.toString() + " ");
 		}
-		return result;
+		try {
+			PyObject function = interp.get(name);
+			if (function == null) {
+				throw new UserException("There isn't a function called " + name);
+			}
+			return function.__call__(Py.javas2pys(args)).__tojava__(
+					Object.class);
+		} catch (PyException pye) {
+			throw new UserException(HttpException.getStackTraceString(pye));
+		}
 	}
-*/
+
+	/*
+	 * public Object callFunction(String functionName, Object[] args) throws
+	 * HttpException { Object result = null; try { result =
+	 * engine().invokeFunction(functionName, args); } catch (ScriptException e)
+	 * { throw new UserException(e.getMessage()); } catch (NoSuchMethodException
+	 * e) { String message = "Problem calling the function: " + functionName +
+	 * " of charge script " + getUri() + " with arguments "; for (Object obj :
+	 * args) { message = message + ", " + obj.toString(); } throw new
+	 * UserException(message + " with message " +
+	 * HttpException.getStackTraceString(e)); } catch (PyException e) { Object
+	 * obj = e.value.__tojava__(HttpException.class); if (obj instanceof
+	 * HttpException) { throw (HttpException) obj; } else { throw new
+	 * UserException(e.toString()); } } return result; }
+	 */
 	public static Contract getContract(Long id) throws HttpException {
 		Contract contract = (Contract) Hiber.session().get(Contract.class, id);
 		if (contract == null) {

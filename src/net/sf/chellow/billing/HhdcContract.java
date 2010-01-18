@@ -61,9 +61,6 @@ public class HhdcContract extends Contract {
 
 	static public void generalImport(String action, String[] values,
 			Element csvElement) throws HttpException {
-		if (values.length < 8) {
-			throw new UserException("There aren't enough fields in this row");
-		}
 		String participantCode = GeneralImport.addField(csvElement,
 				"Participant Code", values, 0);
 		Participant participant = Participant.getParticipant(participantCode);
@@ -83,8 +80,8 @@ public class HhdcContract extends Contract {
 					"Charge Script", values, 4);
 			String properties = GeneralImport.addField(csvElement,
 					"Properties", values, 5);
-			String state = GeneralImport.addField(csvElement,
-					"State", values, 6);
+			String state = GeneralImport.addField(csvElement, "State", values,
+					6);
 			String rateScript = GeneralImport.addField(csvElement,
 					"Rate Script", values, 7);
 			insertHhdcContract(participant, name, startDate, finishDate,
@@ -94,8 +91,8 @@ public class HhdcContract extends Contract {
 
 	static public HhdcContract insertHhdcContract(Participant participant,
 			String name, HhEndDate startDate, HhEndDate finishDate,
-			String chargeScript, String importerProperties, String state, String rateScript)
-			throws HttpException {
+			String chargeScript, String importerProperties, String state,
+			String rateScript) throws HttpException {
 		HhdcContract existing = findHhdcContract(name);
 		if (existing != null) {
 			throw new UserException(
@@ -148,7 +145,8 @@ public class HhdcContract extends Contract {
 
 	public HhdcContract(Participant participant, String name,
 			HhEndDate startDate, HhEndDate finishDate, String chargeScript,
-			String properties, String state, String rateScript) throws HttpException {
+			String properties, String state, String rateScript)
+			throws HttpException {
 		super(name, startDate, finishDate, chargeScript, rateScript);
 		setState(state);
 		intrinsicUpdate(participant, name, chargeScript, properties);
@@ -239,8 +237,8 @@ public class HhdcContract extends Contract {
 			ScrollableResults snags = Hiber
 					.session()
 					.createQuery(
-							"from ChannelSnag snag where snag.channel.supplyGeneration.hhdcAccount.contract.id = :contractId and snag.finishDate < :ignoreDate")
-					.setLong("contractId", getId()).setTimestamp("ignoreDate",
+							"from ChannelSnag snag where snag.channel.supplyGeneration.hhdcContract = :contract and snag.finishDate < :ignoreDate")
+					.setEntity("contract", this).setTimestamp("ignoreDate",
 							ignoreDate).scroll(ScrollMode.FORWARD_ONLY);
 			while (snags.next()) {
 				ChannelSnag snag = (ChannelSnag) snags.get(0);
@@ -249,7 +247,7 @@ public class HhdcContract extends Contract {
 				Hiber.session().clear();
 			}
 			Hiber.commit();
-			inv.sendSeeOther(getUri());
+			inv.sendOk(document());
 		} else {
 			Long participantId = inv.getLong("participant-id");
 			String name = inv.getString("name");

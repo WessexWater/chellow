@@ -143,8 +143,10 @@ def month(bill, month_data, data_source, llfc, voltage_level, is_substation, ava
     bill['reactive-gbp'] = max(0, month_data['sum-kvarh'] - month_data['sum-kwh'] / 3) * tariff['reactive-gbp-per-kvarh']
 
     availability_rate = tariff['availability-gbp-per-kva-per-day']
-    
-    month_md_kva = data_source.md_kva(month_data['start'], month_data['finish'], pw)['md-kva']
+    if 'md-kva' not in month_data:
+        data_source.md_kva(month_data, pw)
+
+    month_md_kva = month_data['md-kva']
 
     billed_avail = max(availability, month_md_kva)
     bill['duos-availability-gbp'] += availability_rate * billed_avail
@@ -1320,8 +1322,7 @@ def laf(date, llfc, voltage_level, is_substation, pw):
     computer = NonCoreContract.getNonCoreContract('computer')
     hh_list = computer.callFunction('hh_list', [date]) 
     hh({}, hh_list, llfc, voltage_level, is_substation, pw)
-    return hh_list[0]['laf']
-  ]]></value>
+    return hh_list[0]['laf']]]></value>
         <value><![CDATA[def winter_weekday_peak_hv():
 
     return 1.057
@@ -1654,7 +1655,7 @@ def tariffs():
             'capacity-gbp-per-kva-per-day': 0.038700,
             'day-gbp-per-kwh': 0.004700,
             'night-gbp-per-kwh': 0.001400,
-            'reactive-gbp-per-kvarh': 0.2300},
+            'reactive-gbp-per-kvarh': 0.002300},
         '520': {
             'capacity-gbp-per-kva-per-day': 0.038700,
             'day-gbp-per-kwh': 0.004700,

@@ -129,7 +129,7 @@ while contracts.next():
     contract = contracts.get(0)
     rate_scripts = Hiber.session().createQuery("from RateScript script where script.contract.id = :contractId order by script.startDate.date").setLong('contractId', contract.getId()).list()
     start_rate_script = rate_scripts[0]
-    print_line(pw, ['insert', 'hhdc-contract', contract.getParty().getParticipant().getCode(), contract.getName(), start_rate_script.getStartDate(), start_rate_script.getFinishDate(), contract.getChargeScript(), start_rate_script.getScript(), contract.getProperties(), contract.getState()])
+    print_line(pw, ['insert', 'hhdc-contract', contract.getParty().getParticipant().getCode(), contract.getName(), start_rate_script.getStartDate(), start_rate_script.getFinishDate(), contract.getChargeScript(), contract.getProperties(), contract.getState(), start_rate_script.getScript()])
     if len(rate_scripts) > 1:
         for rate_script in rate_scripts[1:]:
             print_line(pw, ['insert', 'hhdc-contract-rate-script', contract.getName(), rate_script.getStartDate(), rate_script.getFinishDate(), rate_script.getScript()])

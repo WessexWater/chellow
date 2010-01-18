@@ -379,7 +379,7 @@ public class Bill extends PersistentEntity implements Urlable {
 	@SuppressWarnings("unchecked")
 	public Map<String, ?> virtualBill() throws HttpException {
 		return (Map<String, ?>) batch.getContract().callFunction(
-				"virtual_bill", new Object[] { supply, startDate, finishDate });
+				"virtual_bill", new Object[] { supply, startDate, finishDate, null });
 	}
 
 	public void virtualEqualsActual() throws HttpException {

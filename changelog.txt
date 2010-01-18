@@ -1,3 +1,11 @@
+* Now fields are the right way round when importing HHDC contracts.
+* Made a first attempt at integrating virtual bills with the rest of the UI.
+* Python script compilation errors give better messages.
+* Fixed bug where bulk snag ignore didn't work.
+
+
+351
+
 * Can now import snag ignorals, so upgrade won't forget ignored status of channel snags.
 * Removed empty link to HHDC Contract on generation edit page, if there
     isn't an HHDC Contract.

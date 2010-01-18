@@ -252,12 +252,14 @@ public class Report extends PersistentEntity {
 			 * UserException(e.toString()); }
 			 */
 		} catch (Throwable e) {
+			/*
 			if (out.toString().length() > 0) {
 				source.appendChild(new MonadMessage(out.toString()).toXml(doc));
 			}
 			if (err.toString().length() > 0) {
 				source.appendChild(new MonadMessage(err.toString()).toXml(doc));
 			}
+			*/
 			throw new UserException(e.getMessage() + " "
 					+ HttpException.getStackTraceString(e));
 		}
