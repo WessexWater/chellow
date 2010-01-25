@@ -104,158 +104,302 @@ def totalElement(account, startDate, finishDate):
         <value><![CDATA[2000-01-01T00:30Z]]></value>
         <value><![CDATA[]]></value>
         <value><![CDATA[from net.sf.chellow.billing import NonCoreContract
+
 from java.util import GregorianCalendar, TimeZone, Locale, Calendar
+
 from net.sf.chellow.physical import HhEndDate
 
+
+
 def get_rate(name, date):
+
     return contract.rateScripts(date, date)[0].invocableEngine().invokeFunction(name, [])
 
+
+
 def duos_monthly(voltage_level, is_substation, month_kwh, month_kvarh, date, availability, month_md_kva):
+
     duos = {}
+
     duos['reactive-gbp'] = max(0, month_kvarh - month_kwh / 3) * get_rate('reactive_' + voltage_level.lower() + '_gbp_per_kvarh', date)
+
     duos['reactive-working'] = ''
 
+
+
     availability_rate = get_rate('availability_' + voltage_level.lower() + '_gbp_per_kva_per_month', date)
+
     billed_avail = max(availability, month_md_kva)
+
     duos['availability-gbp'] = availability_rate * billed_avail
+
     duos['availability-working'] = ' (billed_avail ' + str(billed_avail) + ' rate ' + str(availability_rate) + ')'
 
+
+
     duos['standing-gbp'] = get_rate('standing_' + voltage_level.lower() + '_gbp_per_month', date)
+
     return duos
 
 
+
+
+
 def month(bill, month_data, data_source, llfc, voltage_level, is_substation, availability, pw):
-    bill.setdefault('duos-reactive-gbp', 0)
+
     bill.setdefault('duos-reactive-working', '')
+
     bill.setdefault('duos-standing-gbp', 0)
+
     bill.setdefault('duos-availability-gbp', 0)
+
     bill.setdefault('duos-availability-working', '')
-    bill.setdefault('duos-standing-gbp', 0)
+
+
 
     rate_script = contract.rateScript(month_data['finish'])
+
     tariff = rate_script.getRate('tariffs')[llfc]
 
+
+
     if 'sum-kvarh' not in month_data:
+
         data_source.sum_md(month_data, pw, False)
+
     if 'sum-kwh' not in month_data:
+
         data_source.sum_md(month_data, pw)
 
-    bill['reactive-gbp'] = max(0, month_data['sum-kvarh'] - month_data['sum-kwh'] / 3) * tariff['reactive-gbp-per-kvarh']
+
+
+    bill['duos-reactive-gbp'] = max(0, month_data['sum-kvarh'] - month_data['sum-kwh'] / 3) * tariff['reactive-gbp-per-kvarh']
+
+
 
     availability_rate = tariff['availability-gbp-per-kva-per-day']
+
     if 'md-kva' not in month_data:
+
         data_source.md_kva(month_data, pw)
+
+
 
     month_md_kva = month_data['md-kva']
 
+
+
     billed_avail = max(availability, month_md_kva)
+
     bill['duos-availability-gbp'] += availability_rate * billed_avail
+
     bill['duos-availability-working'] += ' (billed_avail ' + str(billed_avail) + ' rate ' + str(availability_rate) + ')'
+
+
 
     bill['duos-standing-gbp'] += tariff['fixed-gbp-per-day']
 
 
+
+
+
 def computer_class(comp_cls):
+
     class DsoComputer(comp_cls):
+
         def __init__(self, voltage_level, is_substation, date):
+
             comp_cls.__init__(self, voltage_level, is_substation, date, contract)
+
             self.duos_day_rate_key = 'duos_day_' + self.voltage_level.lower() + '_gbp_per_kwh'
+
             self.duos_night_rate_key = 'duos_night_' + self.voltage_level.lower() + '_gbp_per_kwh'
+
             self.llf_slot_names = ['night', 'peak', 'winter_weekday', 'other']
+
             self.llf_slot_keys = {}
+
             for llf_slot_name in self.llf_slot_names:
+
                 self.llf_slot_keys[llf_slot_name] = llf_slot_name + '_' + self.voltage_level.lower()
 
+
+
         def duos_hh(self, bill, kwh):
+
             if 0.5 < self.ct_decimal_hour <= 7.5:
+
                 bill['duos-night-kwh'] += kwh
+
                 bill['duos-night-gbp'] += kwh * self.get_dso_rate(self.duos_day_rate_key)
+
             else:
+
                 bill['duos-day-kwh'] += kwh
+
                 bill['duos-night-gbp'] += kwh * self.get_dso_rate(self.duos_night_rate_key)
 
+
+
         def llf(self):
+
             if 1 <= self.ct_decimal_hour <= 7.5:
+
                 return self.get_dso_rate(self.llf_slot_keys['night'])
+
             elif 7 > self.ct_day_of_week > 1 and self.ct_decimal_hour > 16 and self.ct_decimal_hour <= 19 and (self.ct_month > 10 or self.ct_month < 3):
+
                 return self.get_dso_rate(self.llf_slot_keys['peak'])
+
             elif 7 > self.ct_day_of_week > 1 and (7.5 <= self.ct_decimal_hour <= 16 or 19 <= self.ct_decimal_hour <= 20) and (self.ct_month > 10 or self.ct_month < 3):
+
                 return self.get_dso_rate(self.llf_slot_keys['winter_weekday'])
+
             else:
+
                 return self.get_dso_rate(self.llf_slot_keys['other'])
+
+
 
     return DsoComputer
 
+
+
 def hh(bill, hh_list, llfc, voltage_level, is_substation, pw):
+
     bill['duos-night-kwh'] = 0
+
     bill['duos-night-gbp'] = 0
+
     bill['duos-day-kwh'] = 0
+
     bill['duos-day-gbp'] = 0
 
+
+
     rate_script = contract.rateScript(HhEndDate(hh_list[0]['end-date']))
+
     rate_script_finish = rate_script.getFinishDate()
+
     tariff = rate_script.getRate('tariffs')[llfc]
+
     lafs = rate_script.getRate('lafs')[voltage_level.lower()]
 
-    for i in range(len(hh_list)):
-        hh = hh_list[i]
+
+
+    for hh in hh_list:
+
         if rate_script_finish is not None and hh['end-date'].after(rate_script_finish):
-            rate_script = get_rate_script(HhEndDate(hh_list[i]['end-date']))
-            if rate_script is None:
-                return hh_list[i:]
+
+            rate_script = get_rate_script(HhEndDate(hh['end-date']))
+
             rate_script_finish = rate_script.getFinishDate()
+
             tariff = rate_script.getRate('tariffs')[llfc]
+
             lafs = rate_script.getRate('lafs')[voltage_level.lower()]
 
+
+
         if 0.5 < hh['ct-decimal-hour'] <= 7.5:
+
             bill['duos-night-kwh'] += hh['msp-kwh']
+
             bill['duos-night-gbp'] += hh['msp-kwh'] * tariff['day-gbp-per-kwh']
+
         else:
+
             bill['duos-day-kwh'] += hh['msp-kwh']
+
             bill['duos-night-gbp'] += hh['msp-kwh'] * tariff['night-gbp-per-kwh']
 
+
+
         if 1 <= hh['ct-decimal-hour'] <= 7.5:
+
             slot = 'night'
+
         elif 7 > hh['ct-day-of-week'] > 1 and hh['ct-decimal-hour'] > 16 and hh['ct-decimal-hour'] <= 19 and (hh['ct-month'] > 10 or hh['ct-month'] < 3):
+
             slot = 'winter-weekday-peak'
+
         elif 7 > hh['ct-day-of-week'] > 1 and (7.5 <= hh['ct-decimal-hour'] <= 16 or 19 <= hh['ct-decimal-hour'] <= 20) and (hh['ct-month'] > 10 or hh['ct-month'] < 3):
+
             slot = 'winter-weekday-day'
+
         else:
+
             slot = 'other'
 
+
+
         hh['laf'] = lafs[slot]
+
         hh['gsp-kwh'] = hh['msp-kwh'] * hh['laf']
+
+
 
 # old
 
+
+
 def computer_class(comp_cls):
+
     class DsoComputer(comp_cls):
+
         def __init__(self, voltage_level, is_substation, date):
+
             comp_cls.__init__(self, voltage_level, is_substation, date, contract)
+
             self.duos_day_rate_key = 'duos_day_' + self.voltage_level.lower() + '_gbp_per_kwh'
+
             self.duos_night_rate_key = 'duos_night_' + self.voltage_level.lower() + '_gbp_per_kwh'
+
             self.llf_slot_names = ['night', 'peak', 'winter_weekday', 'other']
+
             self.llf_slot_keys = {}
+
             for llf_slot_name in self.llf_slot_names:
+
                 self.llf_slot_keys[llf_slot_name] = llf_slot_name + '_' + self.voltage_level.lower()
 
+
+
         def duos_hh(self, bill, kwh):
+
             if 0.5 < self.ct_decimal_hour <= 7.5:
+
                 bill['duos-night-kwh'] += kwh
+
                 bill['duos-night-gbp'] += kwh * self.get_dso_rate(self.duos_day_rate_key)
+
             else:
+
                 bill['duos-day-kwh'] += kwh
+
                 bill['duos-night-gbp'] += kwh * self.get_dso_rate(self.duos_night_rate_key)
 
+
+
         def llf(self):
+
             if 1 <= self.ct_decimal_hour <= 7.5:
+
                 return self.get_dso_rate(self.llf_slot_keys['night'])
+
             elif 7 > self.ct_day_of_week > 1 and self.ct_decimal_hour > 16 and self.ct_decimal_hour <= 19 and (self.ct_month > 10 or self.ct_month < 3):
+
                 return self.get_dso_rate(self.llf_slot_keys['peak'])
+
             elif 7 > self.ct_day_of_week > 1 and (7.5 <= self.ct_decimal_hour <= 16 or 19 <= self.ct_decimal_hour <= 20) and (self.ct_month > 10 or self.ct_month < 3):
+
                 return self.get_dso_rate(self.llf_slot_keys['winter_weekday'])
+
             else:
+
                 return self.get_dso_rate(self.llf_slot_keys['other'])
+
+
 
     return DsoComputer]]></value>
         <value><![CDATA[def night_hv():
@@ -591,278 +735,555 @@ def totalElement(account, startDate, finishDate):
         <value><![CDATA[2000-01-01T00:30Z]]></value>
         <value><![CDATA[]]></value>
         <value><![CDATA[from net.sf.chellow.billing import NonCoreContract
+
 from java.util import GregorianCalendar, TimeZone, Locale, Calendar
+
 from net.sf.chellow.monad import UserException, Hiber
+
 from net.sf.chellow.physical import HhEndDate
+
 from net.sf.chellow.monad.types import MonadDate
+
 from java.lang import System
 
+
+
 def year_md_095(data_source, finish, pw):
+
     if data_source.site is None:
+
         return year_md_095_supply(data_source.generation.getSupply(), finish, pw)
+
     else:
+
         return year_md_095_site(data_source, finish, pw)
 
+
+
 def year_md_095_supply(supply, finish, pw):
+
     md_kva = 0
+
     cal = MonadDate.getCalendar()
+
     cal.setTime(finish)
+
     cal.add(Calendar.MONTH, -11)
+
     month_finish = cal.getTime()
+
     working = ''
+
     month_kwh_query = Hiber.session().createQuery("select sum(datum.value), max(datum.value) from HhDatum datum where datum.channel.supplyGeneration.supply = :supply and datum.endDate.date >= :start and datum.endDate.date <= :finish and datum.channel.isKwh is true and datum.channel.isImport is true").setEntity("supply", supply)
+
+
 
     month_kvarh_query = Hiber.session().createQuery("select sum(datum.value) from HhDatum datum where datum.channel.supplyGeneration.supply = :supply and datum.endDate.date >= :start and datum.endDate.date <= :finish and datum.channel.isKwh is false and datum.channel.isImport is true").setEntity("supply", supply)
 
+
+
     while not month_finish.after(finish):
+
         cal.setTime(month_finish)
+
         cal.add(Calendar.MONTH, -1)
+
         cal.add(Calendar.MINUTE, 30)
+
         month_start = cal.getTime()        
+
         month_kwh_result = month_kwh_query.setTimestamp("start", month_start).setTimestamp("finish", month_finish).uniqueResult()
 
+
+
         if month_kwh_result[0] is not None:
+
             month_md_kw = month_kwh_result[1].doubleValue() * 2
+
             month_kwh = month_kwh_result[0].doubleValue()
+
             month_kvarh = month_kvarh_query.setTimestamp("start", month_start).setTimestamp("finish", month_finish).uniqueResult()
+
             if month_kvarh is None:
+
                 pf = 0.95
+
             else:
+
                 month_kvarh = month_kvarh.doubleValue()
+
                 if month_kwh == 0 and month_kvarh == 0:
+
                     pf = 1
+
                 else:
+
                     pf = month_kwh / (month_kwh ** 2 + month_kvarh ** 2) ** 0.5
+
             month_kva = month_md_kw / pf
+
             working += ' | month starting ' + str(month_start) + ' md kw ' + str(month_md_kw) + ' kva ' + str(month_kva)
 
+
+
             md_kva = max(md_kva, month_kva)
+
         cal.setTime(month_finish)
+
         cal.add(Calendar.MONTH, 1)
+
         month_finish = cal.getTime()
+
     return md_kva, working
 
+
+
 def year_md_095_site(data_source, finish, pw):
+
     timing = System.currentTimeMillis()
+
     #pw.println("starting 095 " + str(System.currentTimeMillis() - timing))    
+
     md_kva = 0
+
     cal = MonadDate.getCalendar()
+
     cal.setTime(finish)
+
     cal.add(Calendar.MONTH, -12)
+
     month_finish = cal.getTime()
 
+
+
     while not month_finish.after(finish):
+
         cal.setTime(month_finish)
+
         cal.add(Calendar.MONTH, -1)
+
         cal.add(Calendar.MINUTE, 30)
+
         month_start = cal.getTime()
+
         month_data = {'start': HhEndDate(month_start), 'finish': HhEndDate(month_finish)}
+
         data_source.sum_md(month_data, pw)
+
         if month_data['sum-kwh'] is None:
+
             month_md_kw = 0
+
             month_kwh = 0
+
         else:
+
             month_md_kw = month_data['md-kw']
+
             month_kwh = month_data['sum-kwh']
 
+
+
         data_source.sum_md(month_data, pw, False)
+
         if month_data['sum-kvarh'] is not None:
+
             month_kvarh = month_data['sum-kvarh']
 
+
+
         if month_kvarh == 0:
+
             month_kva = month_md_kw / 0.95
+
         else:
+
             if month_kwh == 0 and month_kvarh == 0:
+
                 pf = 1
+
             else:
+
                 pf = month_kwh / (month_kwh ** 2 + month_kvarh ** 2) ** 0.5
+
             month_kva = month_md_kw / pf
+
         md_kva = max(md_kva, month_kva)
+
         cal.setTime(month_finish)
+
         cal.add(Calendar.MONTH, 1)
+
         month_finish = cal.getTime()
+
     return md_kva, ''
 
 
+
+
+
 def get_rate(name, date):
+
     return contract.rateScripts(date, date)[0].invocableEngine().invokeFunction(name, [])
 
+
+
 #below threshold in kVA, blocks in kVA are used
+
 threshold_blocks = [(15, 15), (100, 5), (250, 10), (500, 25), (1000, 50), (None, 100)]
 
+
+
 def duos_monthly(bill, llfc, month_kwh, month_kvarh, date, availability, year_md_kva_095, pw):
+
     llfc_groups = get_rate('llfc_groups', date)
+
     try:
+
         llfc_group = get_rate('llfc_groups', date)[llfc]
+
     except:
+
         raise UserException("Can't find the llfc group for the llfc " + llfc + ".")
+
     tariff = get_rate('duos_tariffs', date)['llfc(' + llfc_group + ')-pc(0)']
+
     if tariff is None:
+
         raise UserException('The tariff for the llfc ' + llfc + ' cannot be found.')
+
     billed_avail = max(availability, year_md_kva_095[0])
+
     bill['duos-availability-working'] += year_md_kva_095[1] + ' max(availability:' + str(availability) + ', year_md_kva_095:' + str(year_md_kva_095[0]) + '):' + str(billed_avail)
+
     for threshold, block in threshold_blocks:
+
         if threshold is None or billed_avail < threshold:
+
             billed_avail = (int(billed_avail / block) + 1) * block
+
             break
+
     bill['duos-availability-working'] += ' billed_avail:' + str(billed_avail)
+
     le_200_avail_rate = tariff['capacity-<=200-gbp-per-kva-per-month']
+
     bill['duos-availability-gbp'] += min(200, billed_avail) * le_200_avail_rate 
+
     bill['duos-availability-working'] += ' [min(200, billed_avail:' + str(billed_avail) + ') * avail_rate:' + str(le_200_avail_rate)
+
     if billed_avail > 200:
+
         gt_200_avail_rate = tariff['capacity->200-gbp-per-kva-per-month']
+
         bill['duos-availability-gbp'] += (billed_avail - 200) * gt_200_avail_rate
+
         bill['duos-availability-working'] += ' + (billed_avail:' + str(billed_avail) + ' - 200) * avail_rate:' + str(gt_200_avail_rate)
+
     bill['duos-availability-working'] += ']'
+
+
 
     bill['duos-standing-gbp'] += tariff['fixed-gbp-per-month']
 
 
+
+
+
 def computer_class(comp_cls):
+
     class DsoComputer(comp_cls):
+
         def __init__(self, llfc, voltage_level, is_substation, date):
+
             comp_cls.__init__(self, llf, voltage_level, is_substation, date, contract)   
+
             self.duos_day_rate_key = 'duos_day_' + self.voltage_level.lower() + '_gbp_per_kwh'
+
             self.duos_night_rate_key = 'duos_night_' + self.voltage_level.lower() + '_gbp_per_kwh'
+
             self.llf_slot_names = ['night', 'peak', 'winter_weekday', 'other']
+
             self.llf_slot_keys = {}
+
             for llf_slot_name in self.llf_slot_names:
+
                 self.llf_slot_keys[llf_slot_name] = llf_slot_name + '_' + self.voltage_level.lower()
+
+
 
         # return (is-day?, kwh, gbp)
 
+
+
         def duos_hh(self, bill, kwh):
+
             if 0.5 <= self.ct_decimal_hour <= 7.5:
+
                 bill['duos-night-kwh'] += kwh
+
                 bill['duos-night-gbp'] += kwh * self.get_dso_rate(self.duos_night_rate_key)
+
             else:
+
                 bill['duos-day-kwh'] += kwh
+
                 bill['duos-day-gbp'] += kwh * self.get_dso_rate(self.duos_day_rate_key)
 
+
+
         def llf(self):
+
             if 0.5 < self.ct_decimal_hour <= 7.5:
+
                 return self.get_dso_rate(self.llf_slot_keys['night'])
+
             elif Calendar.SATURDAY > self.ct_day_of_week > Calendar.SUNDAY and 16 < self.ct_decimal_hour <= 19 and (self.ct_month > Calendar.OCTOBER or self.ct_month < Calendar.MARCH):
+
                 return self.get_dso_rate(self.llf_slot_keys['peak'])
+
             elif 7 > self.ct_day_of_week > 1 and (7.5 < self.ct_decimal_hour <= 16 or 19 < self.ct_decimal_hour <= 20) and (self.ct_month > 10 or self.ct_month < 3):
+
                 return self.get_dso_rate(self.llf_slot_keys['winter_weekday'])
+
             else:
+
                 return self.get_dso_rate(self.llf_slot_keys['other'])
+
     return DsoComputer
 
+
+
 def hh(bill, hh_list, llfc, voltage_level, is_substation, pw):
+
     bill['duos-night-kwh'] = 0
+
     bill['duos-night-gbp'] = 0
+
     bill['duos-day-kwh'] = 0
+
     bill['duos-day-gbp'] = 0
 
+
+
     rate_script = contract.rateScript(HhEndDate(hh_list[0]['end-date']))
+
     rate_script_finish = rate_script.getFinishDate()
+
     llfc_groups = get_rate('llfc_groups', HhEndDate(hh_list[0]['end-date']))
+
     try:
+
         llfc_group = llfc_groups[llfc]
+
     except:
+
         raise UserException("Can't find the llfc group for the llfc " + llfc + " in the 20 rate script from hh.")
+
     tariff = rate_script.getRate('duos_tariffs')['llfc(' + llfc_group + ')-pc(0)']
+
     if tariff is None:
+
         raise UserException('The tariff for the llfc ' + llfc + ' cannot be found.')
+
+
 
     lafs = rate_script.getRate('lafs')[voltage_level.lower()]
 
-    for i in range(len(hh_list)):
-        hh = hh_list[i]
+
+
+    for hh in hh_list:
+
         if rate_script_finish is not None and hh['end-date'].after(rate_script_finish):
+
             rate_script = contract.rateScript(HhEndDate(hh_list[0]['end-date']))
+
             rate_script_finish = rate_script.getFinishDate()
 
+
+
             try:
-                llfc_group = get_rate('llfc_groups', HhEndDate(hh_list[i]['end-date']))[llfc]
+
+                llfc_group = get_rate('llfc_groups', HhEndDate(hh['end-date']))[llfc]
+
             except:
+
                 raise UserException("Can't find the llfc group for the llfc " + llfc + ".")
+
             tariff = get_rate('duos_tariffs', date)['llfc(' + llfc_group + ')-pc(0)']
+
             if tariff is None:
+
                 raise UserException('The tariff for the llfc ' + llfc + ' cannot be found.')
 
+
+
             lafs = rate_script.getRate('lafs')[voltage_level.lower()]
+
         if 0.5 <= hh['ct-decimal-hour'] <= 7.5 and 'night-gbp-per-kwh' in tariff:
+
             bill['duos-night-kwh'] += hh['msp-kwh']
+
             bill['duos-night-gbp'] += hh['msp-kwh'] * tariff['night-gbp-per-kwh']
+
         else:
+
             bill['duos-day-kwh'] += hh['msp-kwh']
+
             bill['duos-day-gbp'] += hh['msp-kwh'] * tariff['day-gbp-per-kwh']
 
+
+
         if 0.5 < hh['ct-decimal-hour'] <= 7.5:
+
             slot_name = 'night'
+
         elif Calendar.SATURDAY > hh['ct-day-of-week'] > Calendar.SUNDAY and 16 < hh['ct-decimal-hour'] <= 19 and (hh['ct-month'] > Calendar.OCTOBER or hh['ct-month'] < Calendar.MARCH):
+
             slot_name = 'peak'
+
         elif 7 > hh['ct-day-of-week'] > 1 and (7.5 < hh['ct-decimal-hour'] <= 16 or 19 < hh['ct-decimal-hour'] <= 20) and (hh['ct-month'] > 10 or hh['ct-month'] < 3):
+
             slot_name = 'winter-weekday'
+
         else:
+
             slot_name = 'other'
+
         hh['laf'] = lafs[slot_name]
+
         hh['gsp-kwh'] = hh['laf'] * hh['msp-kwh']
 
+
+
 def month(bill, month_data, data_source, llfc, voltage_level, is_substation, availability, pw):
+
+    bill.setdefault('duos-reactive-gbp', 0)
+
+    bill.setdefault('duos-reactive-working', '')
+
+
+
     llfc_groups = get_rate('llfc_groups', month_data['finish'])
+
     try:
+
         llfc_group = llfc_groups[llfc]
+
     except:
+
         raise UserException("Can't find the llfc group for the llfc " + llfc + ".")
+
     tariff = get_rate('duos_tariffs', month_data['finish'])['llfc(' + llfc_group + ')-pc(0)']
+
     if tariff is None:
+
         raise UserException('The tariff for the llfc ' + llfc + ' cannot be found.')
+
     year_md_kva_095 = year_md_095(data_source, month_data['finish'].getDate(), pw)
+
     billed_avail = max(availability, year_md_kva_095[0])
+
     bill.setdefault('duos-availability-working', '')
+
     bill.setdefault('duos-availability-gbp', 0)
+
     bill['duos-availability-working'] += year_md_kva_095[1] + ' max(availability:' + str(availability) + ', year_md_kva_095:' + str(year_md_kva_095[0]) + '):' + str(billed_avail)
+
     for threshold, block in threshold_blocks:
+
         if threshold is None or billed_avail < threshold:
+
             billed_avail = (int(billed_avail / block) + 1) * block
+
             break
+
     bill['duos-availability-working'] += ' billed_avail:' + str(billed_avail)
+
     le_200_avail_rate = tariff['capacity-<=200-gbp-per-kva-per-month']
+
     bill['duos-availability-gbp'] += min(200, billed_avail) * le_200_avail_rate 
+
     bill['duos-availability-working'] += ' [min(200, billed_avail:' + str(billed_avail) + ') * avail_rate:' + str(le_200_avail_rate)
+
     if billed_avail > 200:
+
         gt_200_avail_rate = tariff['capacity->200-gbp-per-kva-per-month']
+
         bill['duos-availability-gbp'] += (billed_avail - 200) * gt_200_avail_rate
+
         bill['duos-availability-working'] += ' + (billed_avail:' + str(billed_avail) + ' - 200) * avail_rate:' + str(gt_200_avail_rate)
+
     bill['duos-availability-working'] += ']'
 
+
+
     bill.setdefault('duos-standing-gbp', 0)
+
     bill['duos-standing-gbp'] += tariff['fixed-gbp-per-month']
 
+
+
 def computer_class(comp_cls):
+
     class DsoComputer(comp_cls):
+
         def __init__(self, voltage_level, is_substation, date):
+
             comp_cls.__init__(self, voltage_level, is_substation, date, contract)
+
             self.duos_day_rate_key = 'duos_day_' + self.voltage_level.lower() + '_gbp_per_kwh'
+
             self.duos_night_rate_key = 'duos_night_' + self.voltage_level.lower() + '_gbp_per_kwh'
+
             self.llf_slot_names = ['night', 'peak', 'winter_weekday', 'other']
+
             self.llf_slot_keys = {}
+
             for llf_slot_name in self.llf_slot_names:
+
                 self.llf_slot_keys[llf_slot_name] = llf_slot_name + '_' + self.voltage_level.lower()
+
+
 
         # return (is-day?, kwh, gbp)
 
+
+
         def duos_hh(self, bill, kwh):
+
             if 0.5 <= self.ct_decimal_hour <= 7.5:
+
                 bill['duos-night-kwh'] += kwh
+
                 bill['duos-night-gbp'] += kwh * self.get_dso_rate(self.duos_night_rate_key)
+
             else:
+
                 bill['duos-day-kwh'] += kwh
+
                 bill['duos-day-gbp'] += kwh * self.get_dso_rate(self.duos_day_rate_key)
 
+
+
         def llf(self):
+
             if 0.5 < self.ct_decimal_hour <= 7.5:
+
                 return self.get_dso_rate(self.llf_slot_keys['night'])
+
             elif Calendar.SATURDAY > self.ct_day_of_week > Calendar.SUNDAY and 16 < self.ct_decimal_hour <= 19 and (self.ct_month > Calendar.OCTOBER or self.ct_month < Calendar.MARCH):
+
                 return self.get_dso_rate(self.llf_slot_keys['peak'])
+
             elif 7 > self.ct_day_of_week > 1 and (7.5 < self.ct_decimal_hour <= 16 or 19 < self.ct_decimal_hour <= 20) and (self.ct_month > 10 or self.ct_month < 3):
+
                 return self.get_dso_rate(self.llf_slot_keys['winter_weekday'])
+
             else:
+
                 return self.get_dso_rate(self.llf_slot_keys['other'])
+
     return DsoComputer]]></value>
         <value><![CDATA[def night_hv():
     return 1.032
@@ -1120,209 +1541,324 @@ def totalElement(account, startDate, finishDate):
         <value><![CDATA[2000-01-01T00:30Z]]></value>
         <value><![CDATA[]]></value>
         <value><![CDATA[from net.sf.chellow.billing import NonCoreContract
+
 from java.util import GregorianCalendar, TimeZone, Locale, Calendar
+
 from net.sf.chellow.monad import UserException
+
 from net.sf.chellow.physical import HhEndDate
+
 from java.lang import System
 
+
+
 def get_rate(name, date):
+
     return contract.rateScripts(date, date)[0].invocableEngine().invokeFunction(name, [])
 
+
+
 def get_rate_script(date):
+
     return contract.rateScripts(date, date)[0]
 
+
+
 def hh(bill, hh_list, llfc, voltage_level, is_substation, pw):
+
     bill['duos-night-kwh'] = 0
+
     bill['duos-night-gbp'] = 0
+
     bill['duos-day-kwh'] = 0
+
     bill['duos-day-gbp'] = 0
 
+
+
     if voltage_level == 'HV':
+
         substation = ''
+
     else:
+
         if is_substation:
+
             substation = '-sub'
+
         else:
+
             substation = '-net'
+
     vl_key = voltage_level.lower() + substation
+
     rate_script = contract.rateScript(HhEndDate(hh_list[0]['end-date']))
+
     rate_script_finish = rate_script.getFinishDate()
+
     tariff = rate_script.getRate('tariffs')[llfc]
+
     lafs = rate_script.getRate('lafs')[vl_key]
 
-    for i in range(len(hh_list)):
-        hh = hh_list[i]
+
+
+    for hh in hh_list:
+
         if rate_script_finish is not None and hh['end-date'].after(rate_script_finish.getDate()):
-            rate_script = get_rate_script(HhEndDate(hh_list[i]['end-date']))
+
+            rate_script = get_rate_script(HhEndDate(hh['end-date']))
+
             if rate_script is None:
+
                 return hh_list[i:]
+
             rate_script_finish = rate_script.getFinishDate()
+
             tariff = rate_script.getRate('tariffs')[llfc]
+
             lafs = rate_script.getRate('lafs')[vl_key]
 
+
+
         if 6.5 < hh['ct-decimal-hour'] <= 23.5:
+
             bill['duos-day-kwh'] += hh['msp-kwh']
+
             bill['duos-day-gbp'] += hh['msp-kwh'] * tariff['day-gbp-per-kwh']
+
         else:
+
             bill['duos-night-kwh'] += hh['msp-kwh']
+
             bill['duos-night-gbp'] += hh['msp-kwh'] * tariff['night-gbp-per-kwh']
+
         
+
         if 6.5 < hh['ct-decimal-hour'] <= 23.5:
+
             slot_name = 'night'
+
         elif 7 > hh['ct-day-of-week'] > 1 and 16 < hh['ct-decimal-hour'] <= 19 and (hh['ct-month'] > 10 or hh['ct-month'] < 3):
+
             slot_name = 'winter-weekday-peak'
+
         elif 7 > hh['ct-day-of-week'] > 1 and 6.5 < hh['ct-decimal-hour'] <= 16 and (hh['ct-month'] > 10 or hh['ct-month'] < 3):
+
             slot_name = 'winter-weekday-day'
+
         else:
+
             slot_name = 'other'
+
         hh['laf'] = lafs[slot_name]
+
         hh['gsp-kwh'] = hh['laf'] * hh['msp-kwh']
 
+
+
 def laf(date, llfc, voltage_level, is_substation, pw):
+
     computer = NonCoreContract.getNonCoreContract('computer')
+
     hh_list = computer.callFunction('hh_list', [date]) 
+
     hh({}, hh_list, llfc, voltage_level, is_substation, pw)
+
     return hh_list[0]['laf']
 
+
+
 def month(bill, month_data, data_source, llfc, voltage_level, is_substation, availability, pw):
+
     timing = System.currentTimeMillis()
+
     #pw.println("starting month " + str(System.currentTimeMillis() - timing))    
+
     rate_script = contract.rateScript(month_data['finish'])
+
     tariff = rate_script.getRate('tariffs')[llfc]
+
     reactive_rate = tariff['reactive-gbp-per-kvarh']
 
+
+
     #pw.println("about to do sum md kva " + str(System.currentTimeMillis() - timing))    
+
     data_source.md_kva(month_data, pw)
+
     #pw.println("done sum md kva " + str(System.currentTimeMillis() - timing))    
+
     
+
     bill.setdefault('duos-reactive-gbp', 0)
+
     bill.setdefault('duos-reactive-working', '')
+
+
+
+    bill.setdefault('duos-standing-gbp', 0)
+
+
+
     if 'sum-kvarh' not in month_data:
+
         data_source.sum_md(month_data, pw, False)
+
     month_kvarh = month_data['sum-kvarh']
+
     if month_kvarh is None:
+
         month_kvarh = 0
+
     if 'sum-kwh' not in month_data:
+
         #pw.println("about to do sum md kwh " + str(System.currentTimeMillis() - timing))    
+
         data_source.sum_md(month_data, pw)
+
         #pw.println("done sum md kwh " + str(System.currentTimeMillis() - timing))    
 
+
+
     month_kwh = month_data['sum-kwh']
+
     if month_kwh is None:
+
         month_kwh = 0
+
     bill['duos-reactive-gbp'] += max(0, month_kvarh - month_kwh / 2) * reactive_rate
+
     bill['duos-reactive-working'] += ' [rate:' + str(reactive_rate) + ' * max(0, kvarh:' + str(month_kvarh) + ' - month_kwh:' + str(month_kwh) + ' / 2)] '
 
+
+
     bill.setdefault('duos-availability-gbp', 0)
+
     bill.setdefault('duos-availability-working', '')
 
+
+
     month_md_kva_imp = month_data['md-kva-imp']
+
     billed_avail = max(month_md_kva_imp, availability)
+
     availability_rate = tariff['capacity-gbp-per-kva-per-day']
+
     utc_cal = GregorianCalendar(TimeZone.getTimeZone("GMT"), Locale.UK)
+
     utc_cal.setTime(month_data['finish'].getDate())
+
     utc_cal.add(Calendar.MINUTE, -1)
+
     days_in_month = utc_cal.get(Calendar.DAY_OF_MONTH)
 
+
+
     bill['duos-availability-gbp'] += availability_rate * billed_avail * days_in_month
+
     bill['duos-availability-working'] += '[max(month_md_kva_imp:' + str(month_md_kva_imp) + ', availability:' + str(availability) + ' * rate:' + str(availability_rate) + ' * days:' + str(days_in_month) + '] '
+
     #pw.println("finished month " + str(System.currentTimeMillis() - timing))  
 
+
+
 #old
+
 def computer_class(comp_cls):
+
     class DsoComputer(comp_cls):
+
         def __init__(self, voltage_level, is_substation, date):
+
             comp_cls.__init__(self, voltage_level, is_substation, date, contract)
+
             if self.voltage_level == 'HV':
+
                 substation = ''
+
             else:
+
                 if self.is_substation:
+
                     substation = '_sub'
+
                 else:
+
                     substation = '_net'
+
             self.duos_day_rate_key = 'duos_day_' + self.voltage_level.lower() + substation + '_gbp_per_kwh'
+
             self.duos_night_rate_key = 'duos_night_' + self.voltage_level.lower() + substation + '_gbp_per_kwh'
+
             
+
             llf_slot_names = ['night', 'winter_weekday_peak', 'winter_weekday_day', 'other']
+
             self.llf_slot_keys = {}
+
             for llf_slot_name in llf_slot_names:
+
                 self.llf_slot_keys[llf_slot_name] = llf_slot_name + '_' + self.voltage_level.lower() + substation
+
         
+
         def llf(self):
+
             if self.ct_decimal_hour > 23.5 or self.ct_decimal_hour <= 6.5:
+
                 slot_name = 'night'
+
             elif 7 > self.ct_day_of_week > 1 and 16 < self.ct_decimal_hour <= 19 and (self.ct_month > 10 or self.ct_month < 3):
+
                 slot_name = 'winter_weekday_peak'
+
             elif 7 > self.ct_day_of_week > 1 and 6.5 < self.ct_decimal_hour <= 16 and (self.ct_month > 10 or self.ct_month <3):
+
                 slot_name = 'winter_weekday_day'
+
             else:
+
                 slot_name = 'other'
+
             return self.get_dso_rate(self.llf_slot_keys[slot_name])
 
+
+
         def duos_hh(self, bill, kwh):
+
             if self.ct_decimal_hour > 23.5 or self.ct_decimal_hour <= 6.5:
+
                 bill['duos-night-kwh'] += kwh
+
                 bill['duos-night-gbp'] += kwh * self.get_dso_rate(self.duos_night_rate_key)
+
             else:
+
                 bill['duos-day-kwh'] += kwh
+
                 bill['duos-day-gbp'] += kwh * self.get_dso_rate(self.duos_day_rate_key)
+
     return DsoComputer
 
+
+
 def get_rate_script(date):
+
     return contract.rateScripts(date, date)[0]
 
-def hh(bill, hh_list, llfc, voltage_level, is_substation, pw):
-    bill['duos-night-kwh'] = 0
-    bill['duos-night-gbp'] = 0
-    bill['duos-day-kwh'] = 0
-    bill['duos-day-gbp'] = 0
 
-    if voltage_level == 'HV':
-        substation = ''
-    else:
-        if is_substation:
-            substation = '-sub'
-        else:
-            substation = '-net'
-    vl_key = voltage_level.lower() + substation
-    rate_script = contract.rateScript(HhEndDate(hh_list[0]['end-date']))
-    rate_script_finish = rate_script.getFinishDate()
-    tariff = rate_script.getRate('tariffs')[llfc]
-    lafs = rate_script.getRate('lafs')[vl_key]
-
-    for i in range(len(hh_list)):
-        hh = hh_list[i]
-        if rate_script_finish is not None and hh['end-date'].after(rate_script_finish):
-            rate_script = get_rate_script(HhEndDate(hh_list[i]['end-date']))
-            if rate_script is None:
-                return hh_list[i:]
-            rate_script_finish = rate_script.getFinishDate()
-            tariff = rate_script.getRate('tariffs')[llfc]
-            lafs = rate_script.getRate('lafs')[vl_key]
-
-        if 6.5 < hh['ct-decimal-hour'] <= 23.5:
-            bill['duos-day-kwh'] += hh['msp-kwh']
-            bill['duos-day-gbp'] += hh['msp-kwh'] * tariff['day-gbp-per-kwh']
-        else:
-            bill['duos-night-kwh'] += hh['msp-kwh']
-            bill['duos-night-gbp'] += hh['msp-kwh'] * tariff['night-gbp-per-kwh']
-        
-        if hh['ct-decimal-hour'] > 23.5 or hh['ct-decimal-hour'] <= 6.5:
-            slot_name = 'night'
-        elif 7 > hh['ct-day-of-week'] > 1 and 16 < hh['ct-decimal-hour'] <= 19 and (hh['ct-month'] > 10 or hh['ct-month'] < 3):
-            slot_name = 'winter-weekday-peak'
-        elif 7 > hh['ct-day-of-week'] > 1 and 6.5 < hh['ct-decimal-hour'] <= 16 and (hh['ct-month'] > 10 or hh['ct-month'] < 3):
-            slot_name = 'winter-weekday-day'
-        else:
-            slot_name = 'other'
-        hh['laf'] = lafs[slot_name]
-        hh['gsp-kwh'] = hh['laf'] * hh['msp-kwh']
 
 def laf(date, llfc, voltage_level, is_substation, pw):
+
     computer = NonCoreContract.getNonCoreContract('computer')
+
     hh_list = computer.callFunction('hh_list', [date]) 
+
     hh({}, hh_list, llfc, voltage_level, is_substation, pw)
-    return hh_list[0]['laf']]]></value>
+
+    return hh_list[0]['laf']
+
+  ]]></value>
         <value><![CDATA[def winter_weekday_peak_hv():
 
     return 1.057

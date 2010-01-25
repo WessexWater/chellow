@@ -155,6 +155,7 @@ public class DsoContract extends Contract {
 			if (!inv.isValid()) {
 				throw new UserException(document());
 			}
+			chargeScript = chargeScript.replace("\r", "").replace("\t", "    ");
 			try {
 				update(name, chargeScript);
 			} catch (HttpException e) {

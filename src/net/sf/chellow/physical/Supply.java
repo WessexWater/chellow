@@ -500,7 +500,7 @@ public class Supply extends PersistentEntity {
 		SupplyGeneration previousGeneration = (SupplyGeneration) Hiber
 				.session()
 				.createQuery(
-						"from SupplyGeneration generation where generation.supply = :supply and generation.startDate.date < :startDate order by generation.startDate.date")
+						"from SupplyGeneration generation where generation.supply = :supply and generation.startDate.date < :startDate order by generation.startDate.date desc")
 				.setEntity("supply", this).setTimestamp("startDate",
 						generation.getStartDate().getDate()).setMaxResults(1)
 				.uniqueResult();
@@ -530,7 +530,7 @@ public class Supply extends PersistentEntity {
 			SupplierContract exportSupplierContract,
 			String exportSupplierAccount, Integer exportAgreedSupplyCapacity)
 			throws HttpException {
-		Debug.print("Inserting a generation.");
+		//Debug.print("Inserting a generation.");
 		// SupplyGeneration gen2 = (SupplyGeneration)
 		// Hiber.session().get(SupplyGeneration.class, 2L);
 		// Debug.print("Generation." + gen2.getId() + " " + gen2.getStartDate()
@@ -560,7 +560,7 @@ public class Supply extends PersistentEntity {
 					exportSupplierAccount, exportAgreedSupplyCapacity);
 		} else {
 			existingGeneration = getGeneration(startDate);
-			Debug.print("Existing generation " + existingGeneration.getId());
+			//Debug.print("Existing generation " + existingGeneration.getId());
 			if (existingGeneration == null) {
 				throw new UserException(
 						"You can't add a generation before the start of the supply.");
@@ -584,15 +584,9 @@ public class Supply extends PersistentEntity {
 					exportMpanStr, exportSsc, exportSupplierContract,
 					exportSupplierAccount, exportAgreedSupplyCapacity);
 			Hiber.flush();
-			Debug.print("Updating existing generation "
-					+ existingGeneration.getStartDate() + " "
-					+ startDate.getPrevious());
 			existingGeneration.update(existingGeneration.getStartDate(),
 					startDate.getPrevious());
 			Hiber.flush();
-			Debug.print("Updated existing generation "
-					+ existingGeneration.getStartDate() + " "
-					+ existingGeneration.getFinishDate());
 		}
 		Hiber.flush();
 		for (Map.Entry<Site, Boolean> entry : siteMap.entrySet()) {

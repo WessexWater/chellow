@@ -1,3 +1,10 @@
+* Fixed bug 2939399 where an updated supply generation date wouldn't always update the
+    previous supply generation.
+* Fixed bug 2934887 where CR characters weren't stripped out of script for non-core contracts.
+
+
+353
+
 * Now fields are the right way round when importing HHDC contracts.
 * Made a first attempt at integrating virtual bills with the rest of the UI.
 * Python script compilation errors give better messages.
