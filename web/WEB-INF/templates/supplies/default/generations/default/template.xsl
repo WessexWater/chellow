@@ -591,7 +591,7 @@
 														</xsl:when>
 														<xsl:otherwise>
 															<xsl:if
-																test="@id = /source/supply-generation/mpan[llfc/@is-import='true']/account/supplier-contract/@id">
+																test="@id = /source/supply-generation/mpan[llfc/@is-import='true']/supplier-contract/@id">
 																<xsl:attribute name="selected" />
 															</xsl:if>
 														</xsl:otherwise>

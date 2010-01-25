@@ -31,7 +31,6 @@ import net.sf.chellow.billing.Bill;
 import net.sf.chellow.billing.Contract;
 import net.sf.chellow.billing.HhdcContract;
 import net.sf.chellow.billing.SupplierContract;
-import net.sf.chellow.monad.Debug;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.InternalException;
@@ -594,7 +593,6 @@ public class Supply extends PersistentEntity {
 		}
 		supplyGeneration.setMeter(meter);
 		Hiber.flush();
-		Debug.print("Finished inserting generation.");
 		return supplyGeneration;
 	}
 
