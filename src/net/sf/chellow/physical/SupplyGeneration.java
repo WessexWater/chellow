@@ -1065,11 +1065,11 @@ public class SupplyGeneration extends PersistentEntity {
 		setHhdcAccount(hhdcAccount);
 		setHhdcContract(hhdcContract);
 		setMeter(meter);
-		//Hiber.flush();
+		Hiber.flush();
 		for (Channel channel : channels) {
 			channel.onSupplyGenerationChange();
 		}
-		//Hiber.flush();
+		Hiber.flush();
 		if (importMpan != null) {
 			Criteria impCrit = Hiber.session().createCriteria(Bill.class).add(
 					Restrictions.eq("supply", supply)).add(
