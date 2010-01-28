@@ -21,12 +21,18 @@
 
 package net.sf.chellow.monad;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.logging.Logger;
+
+import net.sf.chellow.monad.types.MonadDate;
 
 public class Debug {
     private static Logger debug = Logger.getLogger("");
     
     public static void print(String string) {
-    	debug.severe(string);
+    	SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS ");
+    	dateFormat.setCalendar(MonadDate.getCalendar());
+    	debug.severe(dateFormat.format(new Date()) + string);
     }
 }

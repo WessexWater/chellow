@@ -1,3 +1,10 @@
+* Bug 2941590. Message 'There are HH data before the start of the updated supply',
+    given unreliably.
+* Supplies snapshot report now works.
+
+
+355
+
 * Now displays correct supplier contract when editing supply generation.
 * Fixed bug 2939399 where an updated supply generation date wouldn't always update the
     previous supply generation.

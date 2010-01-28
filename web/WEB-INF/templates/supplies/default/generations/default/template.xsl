@@ -545,12 +545,15 @@
 											</xsl:attribute>
 										</input>
 									</label>
-									<xsl:value-of select="' '" />
-									<a
-										href="{/source/request/@context-path}/sscs/{/source/supply-generation/mpan[llfc/@is-import='true']/ssc/@id}/">
-										<xsl:value-of
-											select="concat(/source/supply-generation/mpan[llfc/@is-import='true']/ssc/@code, ' - ', /source/supply-generation/mpan[llfc/@is-import='true']/ssc/@description)" />
-									</a>
+									<xsl:if
+										test="/source/supply-generation/mpan[llfc/@is-import='true']/ssc">
+										<xsl:value-of select="' '" />
+										<a
+											href="{/source/request/@context-path}/sscs/{/source/supply-generation/mpan[llfc/@is-import='true']/ssc/@id}/">
+											<xsl:value-of
+												select="concat(/source/supply-generation/mpan[llfc/@is-import='true']/ssc/@code, ' - ', /source/supply-generation/mpan[llfc/@is-import='true']/ssc/@description)" />
+										</a>
+									</xsl:if>
 									<br />
 									<br />
 									<br />
@@ -869,8 +872,11 @@
 											</xsl:attribute>
 										</input>
 									</label>
-									<xsl:value-of
-										select="concat(' ', /source/supply-generation/mpan[llfc/@is-import='false']/ssc/@description)" />
+									<xsl:if
+										test="/source/supply-generation/mpan[llfc/@is-import='false']/ssc">
+										<xsl:value-of
+											select="concat(' ', /source/supply-generation/mpan[llfc/@is-import='false']/ssc/@description)" />
+									</xsl:if>
 									<br />
 									<br />
 									<br />

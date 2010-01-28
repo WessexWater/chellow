@@ -529,11 +529,6 @@ public class Supply extends PersistentEntity {
 			SupplierContract exportSupplierContract,
 			String exportSupplierAccount, Integer exportAgreedSupplyCapacity)
 			throws HttpException {
-		//Debug.print("Inserting a generation.");
-		// SupplyGeneration gen2 = (SupplyGeneration)
-		// Hiber.session().get(SupplyGeneration.class, 2L);
-		// Debug.print("Generation." + gen2.getId() + " " + gen2.getStartDate()
-		// + " " + gen2.getFinishDate());
 		Meter meter = null;
 		if (meterSerialNumber.trim().length() != 0) {
 			meter = findMeter(meterSerialNumber);
@@ -559,7 +554,6 @@ public class Supply extends PersistentEntity {
 					exportSupplierAccount, exportAgreedSupplyCapacity);
 		} else {
 			existingGeneration = getGeneration(startDate);
-			//Debug.print("Existing generation " + existingGeneration.getId());
 			if (existingGeneration == null) {
 				throw new UserException(
 						"You can't add a generation before the start of the supply.");

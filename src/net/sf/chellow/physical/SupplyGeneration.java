@@ -903,16 +903,12 @@ public class SupplyGeneration extends PersistentEntity {
 						"from SupplyGeneration generation where generation.supply = :supply and generation.startDate.date < :startDate order by generation.startDate.date")
 				.setEntity("supply", supply).setTimestamp("startDate",
 						startDate.getDate()).setMaxResults(1).uniqueResult();
-		/*
-		 * SupplyGeneration previousGeneration = supply
-		 * .getGenerationPrevious(this);
-		 */
 		if (previousGeneration == null) {
 			if (((Long) Hiber
 					.session()
 					.createQuery(
 							"select count(*) from HhDatum datum where datum.channel.supplyGeneration.supply  = :supply and datum.endDate.date < :date")
-					.setEntity("supply", this).setTimestamp("date",
+					.setEntity("supply", supply).setTimestamp("date",
 							startDate.getDate()).uniqueResult()) > 0) {
 				throw new UserException(
 						"There are HH data before the start of the updated supply.");
@@ -968,7 +964,7 @@ public class SupplyGeneration extends PersistentEntity {
 							.session()
 							.createQuery(
 									"select count(*) from HhDatum datum where datum.channel.supplyGeneration.supply  = :supply and datum.endDate.date > :date")
-							.setEntity("supply", this).setTimestamp("date",
+							.setEntity("supply", supply).setTimestamp("date",
 									finishDate.getDate()).uniqueResult()) > 0) {
 				throw new UserException("There are HH data after " + finishDate
 						+ ", the end of the updated supply.");
@@ -1069,10 +1065,11 @@ public class SupplyGeneration extends PersistentEntity {
 		setHhdcAccount(hhdcAccount);
 		setHhdcContract(hhdcContract);
 		setMeter(meter);
+		//Hiber.flush();
 		for (Channel channel : channels) {
 			channel.onSupplyGenerationChange();
 		}
-
+		//Hiber.flush();
 		if (importMpan != null) {
 			Criteria impCrit = Hiber.session().createCriteria(Bill.class).add(
 					Restrictions.eq("supply", supply)).add(
@@ -1135,21 +1132,10 @@ public class SupplyGeneration extends PersistentEntity {
 		for (Bill bill : (List<Bill>) billsCrit.list()) {
 			bill.virtualEqualsActual();
 		}
-		// for (Channel channel : channels) {
-		// Debug.print("Channel is " + channel.getIsImport() + " " +
-		// channel.getIsKwh());
-		// }
 		// See if we have to move hh data from one generation to the other
 		for (Boolean isImport : new Boolean[] { true, false }) {
 			for (Boolean isKwh : new Boolean[] { true, false }) {
-				// Debug.print("IsImport " + isImport + " " + isKwh);
 				Channel targetChannel = getChannel(isImport, isKwh);
-				// if (targetChannel == null) {
-				// Debug.print("target channel null");
-				// } else {
-				// Debug.print("loop Channel is " + targetChannel.getIsImport()
-				// + " " + targetChannel.getIsKwh());
-				// }
 				Query query = Hiber
 						.session()
 						.createQuery(
@@ -1172,7 +1158,6 @@ public class SupplyGeneration extends PersistentEntity {
 				if (hhData.next()) {
 					datum = (HhDatum) hhData.get(0);
 					if (targetChannel == null) {
-						// Debug.print("Problem with " + datum);
 						throw new UserException(
 								"There is no channel for the HH datum: "
 										+ datum.toString()
