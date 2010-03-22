@@ -377,14 +377,8 @@
 		<!-- <deploy url="${manager.url}" username="${manager.username}" password="${manager.password}" path="${app.path}" localWar="file://${build.home}" /> -->
 		<deploy url="${manager.url}" username="${manager.username}" password="${manager.password}" path="${app.path}" war="file://${dist.home}/chellow.war" />
 	</target>
-	<!--
-	<target name="one-test">
-		<antcall target="performTest">
-			<param name="test.id" value="05" />
-		</antcall>
-	</target>
--->
-	<target name="reset-db" depends="compile">
+
+	<target name="reset-db" description="Drop existing db and create a fresh new one.">
 		<exec osfamily="windows" executable="C:\Program Files\PostgreSQL\8.3\bin\dropdb">
 			<arg line="-U postgres chellow" />
 		</exec>
@@ -398,171 +392,9 @@
 		<exec osfamily="unix" executable="createdb" failonerror="true">
 			<arg line="-U postgres -T template0 chellow" />
 		</exec>
-
-		<!--
-		<exec executable="C:\Program Files\PostgreSQL\8.1\bin\pg_restore" failonerror="true">
-								<arg line='-U postgres "C:\Documents and Settings\Tony Locke\My Documents\chellow_back\chellow_back.pgdump" -d chellow' />
-						</exec>
--->
 	</target>
 
-	<!--
-	<target name="reset-db" depends="compile">
-		<exec executable="dropdb">
-			<arg line="chellow" />
-		</exec>
-		<exec executable="createdb" failonerror="true">
-			<arg line="-T template0 chellow" />
-		</exec>
-		<exec executable="psql" failonerror="true">
-			<arg line='-f /home/tlocke/temp/chellow.pgdump2006-08-18 chellow' />
-		</exec>
-	</target>
--->
-	<target name="setup-test" depends="compile" description="Tests the application">
-		<antcall target="reset-db" />
-		<antcall target="install" />
-		<!--
-		<copy file="${test.home}/imprimatur.pre.xml" tofile="${test.home}/imprimatur.xml" />
-		<replace file="${test.home}/imprimatur.xml" token="@@test.port@@" value="${test.port}" />
-		<java jar="${imprimatur.jar}" fork="true" failonerror="true">
-			<arg value="${test.home}/imprimatur.xml" />
-		</java>
-		-->
-		<!--
-		<java jar="${imprimatur.jar}" fork="true" failonerror="true">
-					<arg value="${test.home}/${test.id}/imprimatur.xml" />
-				</java>
-		<antcall target="performTest">
-			<param name="test.id" value="01" />
-		</antcall>
-		<antcall target="performTest">
-			<param name="test.id" value="02" />
-		</antcall>
-		<antcall target="performTest">
-			<param name="test.id" value="03" />
-		</antcall>
-		<antcall target="performTest">
-			<param name="test.id" value="04" />
-		</antcall>
-		<antcall target="performTest">
-			<param name="test.id" value="05" />
-		</antcall>
-		<antcall target="performDbTest">
-			<param name="test.id" value="06" />
-		</antcall>
-		<antcall target="performTest">
-			<param name="test.id" value="07" />
-		</antcall>
-		-->
-	</target>
-	<!--
-	<target name="performTest">
-		<antcall target="remove" />
-		<exec executable="${catalina.home}/bin/shutdown.sh">
-			<env key="JAVA_HOME" value="${java.home}" />
-		</exec>
-		<sleep milliseconds="1000" />
-		<exec executable="${catalina.home}/bin/startup.sh">
-			<env key="JAVA_HOME" value="${java.home}" />
-			<env key="CATALINA_OPTS" value="-server" />
-				<env key="CATALINA_OPTS" value="-server -Xmx32M -Dcom.sun.management.jmxremote -Xdebug -Xrunjdwp:transport=dt_socket,address=8000,server=y,suspend=n" /> 
-	
-		</exec>
-		<waitfor>
-			<and>
-				<http url="http://localhost:8080/" />
-			</and>
-		</waitfor>
-		<exec executable="dropdb">
-			<env key="PGPORT" value="30103" />
-			<arg line="-p 30103" />
-			<arg value="chellow" />
-		</exec>
 
-		<exec executable="createdb" failonerror="true">
-			<env key="PGPORT" value="30103" />
-
-			<arg line="-p 30103 -T template0" />
-
-			<arg value="chellow" />
-		</exec>
-
-		<antcall target="install" />
-		<echo message="Doing test ${test.id}" />
-		<java jar="${imprimatur.jar}" fork="true" failonerror="true">
-			<arg value="${test.home}/${test.id}/imprimatur.xml" />
-		</java>
-	</target>
--->
-
-	<!--
-	<target name="performDbTest">
-		<antcall target="remove" />
-		<exec executable="${catalina.home}/bin/shutdown.sh">
-			<env key="JAVA_HOME" value="${java.home}" />
-		</exec>
-		<sleep milliseconds="1000" />
-		<exec executable="${catalina.home}/bin/startup.sh">
-			<env key="JAVA_HOME" value="${java.home}" />
-			<env key="CATALINA_OPTS" value="-server -Xmx32M -Dcom.sun.management.jmxremote -Xdebug -Xrunjdwp:transport=dt_socket,address=8000,server=y,suspend=n" />
-		</exec>
-		<waitfor>
-			<and>
-				<http url="http://localhost:8080/" />
-			</and>
-		</waitfor>
-		<exec executable="dropdb">
-			<env key="PGPORT" value="30103" />
-			<arg line="-p 30103" />
-			<arg value="chellow" />
-		</exec>
-
-		<exec executable="createdb" failonerror="true">
-			<env key="PGPORT" value="30103" />
-
-			<arg line="-p 30103 -T template0" />
-
-			<arg value="chellow" />
-		</exec>
-
-		<exec executable="psql" failonerror="true">
-			<env key="PGPORT" value="30103" />
-
-			<arg line="chellow -p 30103 -q file ${test.home}/${test.id}/chellow.pgdump" />
-		</exec>
-
-		<antcall target="install" />
-		<echo message="Doing test ${test.id}" />
-		<java jar="${imprimatur.jar}" fork="true" failonerror="true">
-			<arg value="${test.home}/${test.id}/imprimatur.xml" />
-		</java>
-	</target>
-	-->
-	<!--
-	<target name="oldTest" depends="compile" description="Tests the application">
-		<exec executable="dropdb">
-			<env key="PGPORT" value="30103" />
-			<arg line="-p 30103" />
-			<arg value="chellow" />
-		</exec>
-
-		<exec executable="createdb" failonerror="true">
-			<env key="PGPORT" value="30103" />
-
-			<arg line="-p 30103 -T template0" />
-
-			<arg value="chellow" />
-		</exec>
-
-		<antcall target="install" />
-
-		<java jar="${imprimatur.jar}" fork="true" failonerror="true">
-			<arg value="${test.home}/imprimatur.xml" />
-		</java>
-
-	</target>
-	-->
 	<!-- ==================== Javadoc Target ================================== -->
 
 	<!--
@@ -602,9 +434,7 @@
 
 	</target>
 
-	<target name="short-test" description="Short Test">
-		<property name="mdd.dir" value="mdd-test" />
-		<antcall target="compile" />
+	<target name="test" description="Test">
 		<antcall target="reset-db" />
 		<antcall target="install" />
 		<copy file="${test.home}/imprimatur.pre.xml" tofile="${test.home}/imprimatur.xml" />
@@ -634,39 +464,20 @@
 		<mkdir dir="${build.home}/WEB-INF" />
 		<mkdir dir="${build.home}/WEB-INF/classes" />
 
-		<condition property="mdd.dir" value="mdd">
-			<not>
-				<isset property="mdd.dir" />
-			</not>
-		</condition>
-		<echo message="${mdd.dir}" />
 		<!-- Copy static content of this web application -->
 		<copy todir="${build.home}">
-			<fileset dir="${web.home}" excludes="WEB-INF/mdd/** WEB-INF/mdd-test/**" />
+			<fileset dir="${web.home}" />
 		</copy>
 
-		<copy todir="${build.home}/WEB-INF/mdd">
-			<fileset dir="${web.home}/WEB-INF/${mdd.dir}" />
-		</copy>
 		<exec dir="${basedir}" executable="svnversion" output="${build.home}/WEB-INF/VERSION" />
-	    <!--
-		<echo message="348" file="${build.home}/WEB-INF/VERSION" />
-		-->	
 
 		<!-- Copy external dependencies as required -->
 		<!-- *** CUSTOMIZE HERE AS REQUIRED BY YOUR APPLICATION *** -->
 		<mkdir dir="${build.home}/WEB-INF/lib" />
-		<!--
-    <copy todir="${build.home}/WEB-INF/lib" file="${foo.jar}"/>
--->
 
 		<!-- Copy static files from external dependencies as needed -->
 		<!-- *** CUSTOMIZE HERE AS REQUIRED BY YOUR APPLICATION *** -->
-		<!--
--->
-		<!--
-		<copy todir="${build.home}/WEB-INF/lib" file="/usr/share/java/commons-dbcp-1.2.1.jar"/>
-		-->
+		
 		<copy todir="${build.home}/WEB-INF/lib" file="${javalib.home}/slf4j-1.5.8/slf4j-jdk14-1.5.8.jar" />
 		<copy todir="${build.home}/WEB-INF/lib" file="${javalib.home}/javamail-1.4.3/mail.jar" />
 
@@ -683,27 +494,6 @@
 		<copy todir="${build.home}/WEB-INF/lib" file="${javalib.home}/commons-httpclient-3.1/commons-httpclient-3.1.jar" />
 		<copy todir="${build.home}/WEB-INF/lib" file="${javalib.home}/commons-codec-1.4/commons-codec-1.4.jar" />
 		<copy todir="${build.home}/WEB-INF/lib" file="${javalib.home}/jython-2.5.1/jython.jar" />
-		<!--
-		<copy todir="${build.home}/WEB-INF/lib" file="${javalib.home}/jsr223-engines/jython/build/jython-engine.jar" />
-		<copy todir="${build.home}/WEB-INF/lib" file="${javalib.home}/batik-1.6/lib/batik-transcoder.jar" />
-		<copy todir="${build.home}/WEB-INF/lib" file="${javalib.home}/batik-1.6/lib/batik-dom.jar" />
-		<copy todir="${build.home}/WEB-INF/lib" file="${javalib.home}/batik-1.6/lib/batik-bridge.jar" />
-		<copy todir="${build.home}/WEB-INF/lib" file="${javalib.home}/batik-1.6/lib/batik-gvt.jar" />
-		<copy todir="${build.home}/WEB-INF/lib" file="${javalib.home}/batik-1.6/lib/batik-svg-dom.jar" />		
-		<copy todir="${build.home}/WEB-INF/lib" file="${javalib.home}/batik-1.6/lib/batik-util.jar" />		
-		<copy todir="${build.home}/WEB-INF/lib" file="${javalib.home}/batik-1.6/lib/batik-css.jar" />		
-		<copy todir="${build.home}/WEB-INF/lib" file="${javalib.home}/batik-1.6/lib/xerces_2_5_0.jar" />
-		<copy todir="${build.home}/WEB-INF/lib" file="${javalib.home}/batik-1.6/lib/batik-ext.jar" />	
-		<copy todir="${build.home}/WEB-INF/lib" file="${javalib.home}/batik-1.6/lib/batik-xml.jar" />	
-		<copy todir="${build.home}/WEB-INF/lib" file="${javalib.home}/batik-1.6/lib/batik-script.jar" />
-		<copy todir="${build.home}/WEB-INF/lib" file="${javalib.home}/batik-1.6/lib/batik-awt-util.jar" />
-		<copy todir="${build.home}/WEB-INF/lib" file="${javalib.home}/batik-1.6/lib/batik-parser.jar" />
-		-->
-
-		<!--
-		<copy todir="${build.home}/WEB-INF/lib" file="/usr/share/java/xalan2.jar" />
-		<copy todir="${build.home}/WEB-INF/lib" file="/usr/share/java/serializer.jar" />
-		-->
 	</target>
 
 	<!-- ==================== Reload Target =================================== -->

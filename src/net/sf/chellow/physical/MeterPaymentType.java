@@ -23,9 +23,6 @@ package net.sf.chellow.physical;
 
 import java.util.Date;
 
-import javax.servlet.ServletContext;
-
-import net.sf.chellow.monad.Debug;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.Invocation;
@@ -69,22 +66,6 @@ public class MeterPaymentType extends PersistentEntity {
 					"There is no meter timeswitch class payment type with that id.");
 		}
 		return type;
-	}
-
-	static public void loadFromCsv(ServletContext sc) throws HttpException {
-		Debug.print("Starting to add MTC Payment Types.");
-		Mdd mdd = new Mdd(sc, "MtcPaymentType", new String[] {
-				"MTC Payment Type Id", "MTC Payment Type Description",
-				"Effective From Settlement Date {MPT}",
-				"Effective To Settlement Date {MPT}" });
-		for (String[] values = mdd.getLine(); values != null; values = mdd
-				.getLine()) {
-			Hiber.session().save(
-					new MeterPaymentType(values[0], values[1], mdd
-							.toDate(values[2]), mdd.toDate(values[3])));
-			Hiber.close();
-		}
-		Debug.print("Finished adding MTC Payment Types.");
 	}
 
 	private String code;

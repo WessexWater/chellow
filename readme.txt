@@ -19,7 +19,8 @@ Apache Tomcat 6
 Installation
 ------------
 1. Create an SQL database called chellow.
-2. In your servlet container, configure a JNDI JDBC datasource called jdbc/chellow.
+2. In your Tomcat, configure a JNDI JDBC datasource called jdbc/chellow. See the
+    file context.xml in the same directory as this file.
 3. Deploy the file chellow.war on your servlet container.
 
 

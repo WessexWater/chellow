@@ -23,9 +23,6 @@ package net.sf.chellow.physical;
 import java.util.HashSet;
 import java.util.Set;
 
-import javax.servlet.ServletContext;
-
-import net.sf.chellow.monad.Debug;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.InternalException;
@@ -65,21 +62,6 @@ public class Tpr extends PersistentEntity {
 			throw new NotFoundException();
 		}
 		return tpr;
-	}
-
-	static public void loadFromCsv(ServletContext sc) throws HttpException {
-		Debug.print("Starting to add TPRs.");
-		Mdd mdd = new Mdd(sc, "TimePatternRegime", new String[] {
-				"Time Pattern Regime Id", "Tele-switch/Clock Indicator",
-				"GMT Indicator" });
-		for (String[] values = mdd.getLine(); values != null; values = mdd
-				.getLine()) {
-			Hiber.session().save(
-					new Tpr(values[0], values[1].equals("S"), values[2]
-							.equals("Y")));
-			Hiber.close();
-		}
-		Debug.print("Finished adding TPRs.");
 	}
 
 	private String code;

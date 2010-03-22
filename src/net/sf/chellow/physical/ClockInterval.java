@@ -20,9 +20,6 @@
  *******************************************************************************/
 package net.sf.chellow.physical;
 
-import javax.servlet.ServletContext;
-
-import net.sf.chellow.monad.Debug;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.InternalException;
@@ -49,32 +46,6 @@ public class ClockInterval extends PersistentEntity {
 		return interval;
 	}
 
-	static public void loadFromCsv(ServletContext sc) throws HttpException {
-		Debug.print("Starting to add Clock Intervals.");
-		Mdd mdd = new Mdd(sc, "ClockInterval",
-				new String[] { "Time Pattern Regime Id", "Day of the Week Id",
-						"Start Day", "Start Month", "End Day", "End Month",
-						"Start Time", "End Time" });
-		String tprCode = null;
-		Tpr tpr = null;
-		for (String[] values = mdd.getLine(); values != null; values = mdd
-				.getLine()) {
-			String newTprCode = values[0];
-			if (!newTprCode.equals(tprCode)) {
-				tpr = Tpr.getTpr(newTprCode);
-				tprCode = newTprCode;
-			}
-			tpr.insertClockInterval(Integer.parseInt(values[1]), Integer
-					.parseInt(values[2]), Integer.parseInt(values[3]), Integer
-					.parseInt(values[4]), Integer.parseInt(values[5]), Integer
-					.parseInt(values[6].substring(0, 2)), Integer
-					.parseInt(values[6].substring(3)), Integer
-					.parseInt(values[7].substring(0, 2)), Integer
-					.parseInt(values[7].substring(3)));
-			Hiber.close();
-		}
-		Debug.print("Finished adding Clock Intervals.");
-	}
 
 	private Tpr tpr;
 	private int dayOfWeek;

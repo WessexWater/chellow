@@ -23,9 +23,6 @@ package net.sf.chellow.billing;
 
 import java.util.Date;
 
-import javax.servlet.ServletContext;
-
-import net.sf.chellow.monad.Debug;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.Invocation;
@@ -36,7 +33,6 @@ import net.sf.chellow.monad.XmlTree;
 import net.sf.chellow.monad.types.MonadDate;
 import net.sf.chellow.monad.types.UriPathElement;
 import net.sf.chellow.physical.MarketRole;
-import net.sf.chellow.physical.Mdd;
 import net.sf.chellow.physical.Participant;
 import net.sf.chellow.physical.PersistentEntity;
 
@@ -77,37 +73,6 @@ public abstract class Party extends PersistentEntity {
 			throw new NotFoundException();
 		}
 		return party;
-	}
-
-	static public void loadFromCsv(ServletContext sc) throws HttpException {
-		Debug.print("Starting to add Parties.");
-		Mdd mdd = new Mdd(sc, "MarketParticipantRole", new String[] {
-				"Market Participant Id", "Market Participant Role Code",
-				"Effective From Date {MPR}", "Effective To Date {MPR}",
-				"Address Line 1", "Address Line 2", "Address Line 3",
-				"Address Line 4", "Address Line 5", "Address Line 6",
-				"Address Line 7", "Address Line 8", "Address Line 9",
-				"Post Code", "Distributor Short Code" });
-		for (String[] values = mdd.getLine(); values != null; values = mdd
-				.getLine()) {
-			Participant participant = Participant.getParticipant(values[0]);
-			MarketRole role = MarketRole.getMarketRole(values[1].charAt(0));
-			Date validFrom = mdd.toDate(values[2]);
-			Date validTo = mdd.toDate(values[3]);
-			char roleCode = role.getCode();
-			if (roleCode == MarketRole.DISTRIBUTOR) {
-				Dso dso = new Dso(values[4], participant, validFrom, validTo,
-						values[14]);
-				Hiber.session().save(dso);
-				Hiber.close();
-			} else {
-				Provider provider = new Provider(values[4], participant,
-						roleCode, validFrom, validTo);
-				Hiber.session().save(provider);
-				Hiber.close();
-			}
-		}
-		Debug.print("Finished adding Providers.");
 	}
 
 	private String name;

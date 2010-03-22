@@ -21,9 +21,6 @@
 
 package net.sf.chellow.physical;
 
-import javax.servlet.ServletContext;
-
-import net.sf.chellow.monad.Debug;
 import net.sf.chellow.monad.DeployerException;
 import net.sf.chellow.monad.DesignerException;
 import net.sf.chellow.monad.Hiber;
@@ -53,19 +50,6 @@ public class MeasurementRequirement extends PersistentEntity {
 		return requirement;
 	}
 
-	static public void loadFromCsv(ServletContext sc) throws HttpException {
-		Debug.print("Starting to add Measurement Requirements.");
-		Mdd mdd = new Mdd(sc, "MeasurementRequirement", new String[] {
-				"Standard Settlement Configuration Id",
-				"Time Pattern Regime Id" });
-		for (String[] values = mdd.getLine(); values != null; values = mdd
-				.getLine()) {
-			Ssc ssc = Ssc.getSsc(values[0]);
-			ssc.insertMeasurementRequirement(Tpr.getTpr(values[1]));
-			Hiber.close();
-		}
-		Debug.print("Finished adding Measurement Requirements.");
-	}
 
 	private Ssc ssc;
 

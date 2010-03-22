@@ -24,9 +24,6 @@ import java.text.DecimalFormat;
 import java.util.Date;
 import java.util.Set;
 
-import javax.servlet.ServletContext;
-
-import net.sf.chellow.monad.Debug;
 import net.sf.chellow.monad.DeployerException;
 import net.sf.chellow.monad.DesignerException;
 import net.sf.chellow.monad.Hiber;
@@ -68,25 +65,6 @@ public class Ssc extends PersistentEntity {
 			throw new UserException("There isn't an SSC with id: " + id + ".");
 		}
 		return ssc;
-	}
-
-	static public void loadFromCsv(ServletContext sc) throws HttpException {
-		Debug.print("Starting to add SSCs.");
-		Mdd mdd = new Mdd(sc, "StandardSettlementConfiguration", new String[] {
-				"Standard Settlement Configuration Id",
-				"Effective From Settlement Date {SSC}",
-				"Effective To Settlement Date {SSC}",
-				"Standard Settlement Configuration Desc",
-				"Standard Settlement Configuraton Type", "Teleswitch User Id",
-				"Teleswitch Group Id" });
-		for (String[] values = mdd.getLine(); values != null; values = mdd
-				.getLine()) {
-			Ssc ssc = new Ssc(values[0], mdd.toDate(values[1]), mdd
-					.toDate(values[2]), values[3], values[4].equals("I"));
-			Hiber.session().save(ssc);
-			Hiber.close();
-		}
-		Debug.print("Finished adding SSCs.");
 	}
 
 	private int code;

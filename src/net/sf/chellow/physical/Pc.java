@@ -23,9 +23,6 @@ package net.sf.chellow.physical;
 
 import java.text.DecimalFormat;
 
-import javax.servlet.ServletContext;
-
-import net.sf.chellow.monad.Debug;
 import net.sf.chellow.monad.DeployerException;
 import net.sf.chellow.monad.DesignerException;
 import net.sf.chellow.monad.Hiber;
@@ -63,20 +60,6 @@ public class Pc extends PersistentEntity {
 		return (Pc) Hiber.session().createQuery(
 				"from Pc pc where pc.code = :code").setInteger("code",
 				code).uniqueResult();
-	}
-
-	static public void loadFromCsv(ServletContext sc) throws HttpException {
-		Debug.print("Starting to add PCs");
-		Mdd mdd = new Mdd(sc, "ProfileClass", new String[] {
-				"Profile Class Id", "Effective From Settlement Date {PCLA}",
-				"Profile Class Description", "Switched Load Profile Class Ind",
-				"Effective To Settlement Date {PCLA}" });
-		for (String[] values = mdd.getLine(); values != null; values = mdd
-				.getLine()) {
-			Hiber.session().save(new Pc(values[0], values[2]));
-			Hiber.close();
-		}
-		Debug.print("Added PCs.");
 	}
 
 	private int code;

@@ -20,6 +20,9 @@
  *******************************************************************************/
 package net.sf.chellow.ui;
 
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.MalformedURLException;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -37,7 +40,6 @@ import javax.sql.DataSource;
 
 import net.sf.chellow.billing.DsoContract;
 import net.sf.chellow.billing.NonCoreContract;
-import net.sf.chellow.billing.Provider;
 import net.sf.chellow.hhimport.AutomaticHhDataImporters;
 import net.sf.chellow.monad.Debug;
 import net.sf.chellow.monad.Hiber;
@@ -48,27 +50,17 @@ import net.sf.chellow.monad.MonadContextParameters;
 import net.sf.chellow.monad.MonadFormatter;
 import net.sf.chellow.monad.MonadHandler;
 import net.sf.chellow.monad.types.EmailAddress;
-import net.sf.chellow.physical.ClockInterval;
 import net.sf.chellow.physical.Configuration;
 import net.sf.chellow.physical.GeneratorType;
-import net.sf.chellow.physical.GspGroup;
-import net.sf.chellow.physical.Llfc;
-import net.sf.chellow.physical.MarketRole;
-import net.sf.chellow.physical.MeasurementRequirement;
-import net.sf.chellow.physical.MeterPaymentType;
-import net.sf.chellow.physical.MeterType;
-import net.sf.chellow.physical.Mtc;
-import net.sf.chellow.physical.Participant;
-import net.sf.chellow.physical.Pc;
-import net.sf.chellow.physical.ReadType;
 import net.sf.chellow.physical.Source;
-import net.sf.chellow.physical.Ssc;
-import net.sf.chellow.physical.Tpr;
 import net.sf.chellow.physical.User;
 import net.sf.chellow.physical.UserRole;
 import net.sf.chellow.physical.VoltageLevel;
 
+import org.apache.commons.dbcp.DelegatingConnection;
 import org.hibernate.tool.hbm2ddl.SchemaUpdate;
+import org.postgresql.copy.CopyManager;
+import org.postgresql.core.BaseConnection;
 import org.python.util.PythonInterpreter;
 
 public class ContextListener implements ServletContextListener {
@@ -102,6 +94,7 @@ public class ContextListener implements ServletContextListener {
 				throw new Exception("Data source not found!");
 			}
 			Connection con = ds.getConnection();
+
 			Statement stmt = con.createStatement();
 
 			// Find if DB has been created
@@ -141,8 +134,9 @@ public class ContextListener implements ServletContextListener {
 		 * exception.printStackTrace(); } throw new ProgrammerException("Errors
 		 * in schema generation."); }
 		 */
+		Statement stmt = null;
 		try {
-			Statement stmt = con.createStatement();
+			stmt = con.createStatement();
 			stmt
 					.execute("ALTER TABLE contract ALTER COLUMN charge_script TYPE text;");
 			stmt
@@ -168,28 +162,58 @@ public class ContextListener implements ServletContextListener {
 					.execute("CREATE UNIQUE INDEX channel_date ON hh_datum (channel_id, end_date);");
 			stmt.execute("ALTER TABLE report ALTER COLUMN script TYPE text;");
 			stmt.execute("ALTER TABLE report ALTER COLUMN template TYPE text;");
-
 		} catch (SQLException e) {
 			throw new InternalException(e);
+		} finally {
+			try {
+				stmt.close();
+			} catch (SQLException e) {
+				throw new InternalException(e);
+			}
 		}
 		Configuration.getConfiguration();
 		Hiber.close();
-		GspGroup.loadFromCsv(context);
-		ReadType.loadFromCsv(context);
-		Pc.loadFromCsv(context);
-		MarketRole.loadFromCsv(context);
-		Participant.loadFromCsv(context);
-		Provider.loadFromCsv(context);
-		DsoContract.loadFromCsv(context);
+
 		VoltageLevel.insertVoltageLevels();
-		Llfc.loadFromCsv(context);
-		MeterType.loadFromCsv(context);
-		MeterPaymentType.loadFromCsv(context);
-		Mtc.loadFromCsv(context);
-		Tpr.loadFromCsv(context);
-		ClockInterval.loadFromCsv(context);
-		Ssc.loadFromCsv(context);
-		MeasurementRequirement.loadFromCsv(context);
+
+		try {
+			Debug.print("Starting to load MDD.");
+			BaseConnection baseConnection = (BaseConnection) ((DelegatingConnection) con)
+					.getInnermostDelegate();
+			CopyManager cm = new CopyManager(baseConnection);
+			String[][] mddArray = { { "gsp_group", "GSP_Group" },
+					{ "read_type", "read_type" }, { "pc", "Profile_Class" },
+					{ "market_role", "Market_Role" },
+					{ "participant", "Market_Participant" },
+					{ "party", "Market_Participant_Role-party" },
+					{ "provider", "Market_Participant_Role-provider" },
+					{ "dso", "Market_Participant_Role-dso" },
+					{ "llfc", "Line_Loss_Factor_Class" },
+					{ "meter_type", "MTC_Meter_Type" },
+					{ "meter_payment_type", "MTC_Payment_Type" },
+					{ "mtc", "Meter_Timeswitch_Class" },
+					{ "tpr", "Time_Pattern_Regime" },
+					{ "clock_interval", "Clock_Interval" },
+					{ "ssc", "Standard_Settlement_Configuration" },
+					{ "measurement_requirement", "Measurement_Requirement" } };
+			for (String[] impArray : mddArray) {
+				cm.copyIn("COPY " + impArray[0] + " FROM STDIN CSV HEADER",
+						context.getResource(
+								"/WEB-INF/mdd/" + impArray[1] + ".csv")
+								.openStream());
+			}
+			Debug.print("Finished loading MDD.");
+		} catch (SQLException e) {
+			throw new InternalException(e);
+		} catch (UnsupportedEncodingException e) {
+			throw new InternalException(e);
+		} catch (MalformedURLException e) {
+			throw new InternalException(e);
+		} catch (IOException e) {
+			throw new InternalException(e);
+		}
+
+		DsoContract.loadFromCsv(context);
 		Report.loadReports(context);
 		NonCoreContract.loadNonCoreContracts(context);
 		Hiber.flush();
@@ -213,182 +237,4 @@ public class ContextListener implements ServletContextListener {
 		GeneratorType.insertGeneratorType("turb", "Water turbine.");
 		Hiber.commit();
 	}
-	/*
-	 * @SuppressWarnings("unchecked") private void upgrade11to12(Connection con)
-	 * throws HttpException { try { Statement stmt = con.createStatement(); stmt
-	 * .execute("COMMENT ON SCHEMA public IS 'Standard public schema'");
-	 * stmt.execute("drop LANGUAGE plpgsql");
-	 * 
-	 * 
-	 * 
-	 * stmt.execute("delete * from account"); stmt.execute("alter table account
-	 * drop organization_id"); stmt.execute("alter table account drop
-	 * provider_id"); stmt.execute("alter table account add contract_id bigint
-	 * not null");
-	 * 
-	 * stmt.execute("alter table account_snag rename service_id to
-	 * contract_id");
-	 * 
-	 * stmt.execute("alter table batch rename service_id to contract_id");
-	 * 
-	 * stmt.execute("alter table bill drop service_id");
-	 * 
-	 * stmt.execute("alter table bill_snag rename service_id to
-	 * supplier_contract_id");
-	 * 
-	 * ResultSet srs = stmt.executeQuery("select supply.id as supply_id from
-	 * supply"); long supply_id; while (srs.next()) { supply_id =
-	 * srs.getLong("supply_id"); ResultSet sgrs = stmt.executeQuery("select
-	 * supply_generation_id as supply_generation_id,
-	 * supply_generation.start_date, supply_generation.finish_date"); }
-	 * PreparedStatement siteSupplyGenerationInsert = con
-	 * .prepareStatement("insert into site_supply_generation (id, site_id,
-	 * supply_generation_id, is_physical) values (?, ?, ?, ?)"); long
-	 * siteSupplyGenerationId = 1; while (srs.next()) { long siteId =
-	 * srs.getLong("site_id"); long supplyGenerationId =
-	 * srs.getLong("supply_generation_id"); boolean isPhysical =
-	 * srs.getBoolean("is_physical"); siteSupplyGenerationInsert.setLong(1,
-	 * siteSupplyGenerationId); siteSupplyGenerationInsert.setLong(2, siteId);
-	 * siteSupplyGenerationInsert.setLong(3, supplyGenerationId);
-	 * siteSupplyGenerationInsert.setBoolean(4, isPhysical);
-	 * siteSupplyGenerationInsert.execute(); siteSupplyGenerationId++; }
-	 * srs.close(); /* stmt .execute("update meter_timeswitch set description =
-	 * 'HH Code 5 and above (with Comms)', is_unmetered = false where code =
-	 * '845'"); stmt .execute("update meter_timeswitch set description = 'HH
-	 * Code 5 and above (without Comms)', is_unmetered = false where code =
-	 * '846'"); stmt .execute("update meter_timeswitch set description = 'HH
-	 * Code 6 A (with Comms)', is_unmetered = false where code = '847'"); stmt
-	 * .execute("update meter_timeswitch set description = 'HH Code 6 B (with
-	 * Comms)', is_unmetered = false where code = '848'"); stmt .execute("update
-	 * meter_timeswitch set description = 'HH Code 6 C (with Comms)',
-	 * is_unmetered = false where code = '849'"); stmt .execute("update
-	 * meter_timeswitch set description = 'HH Code 6 D (with Comms)',
-	 * is_unmetered = false where code = '850'"); stmt .execute("update
-	 * meter_timeswitch set description = 'HH Code 6 A (without Comms)',
-	 * is_unmetered = false where code = '851'"); stmt .execute("update
-	 * meter_timeswitch set description = 'HH Code 6 B (without Comms)',
-	 * is_unmetered = false where code = '852'"); stmt .execute("update
-	 * meter_timeswitch set description = 'HH Code 6 C (without Comms)',
-	 * is_unmetered = false where code = '853'"); stmt .execute("update
-	 * meter_timeswitch set description = 'HH Code 6 D (without Comms)',
-	 * is_unmetered = false where code = '854'"); stmt .execute("update
-	 * meter_timeswitch set description = 'HH Code 7 (with Comms)', is_unmetered =
-	 * false where code = '855'"); stmt .execute("update meter_timeswitch set
-	 * description = 'HH Code 7 (without Comms)', is_unmetered = false where
-	 * code = '856'");
-	 */
-	/*
-	 * stmt .execute("CREATE TABLE site_supply_generation (id bigint NOT NULL,
-	 * supply_generation_id bigint NOT NULL, site_id bigint NOT NULL,
-	 * is_physical boolean NOT NULL);"); stmt .execute("CREATE SEQUENCE
-	 * site_supply_generation_id_sequence INCREMENT BY 1 NO MAXVALUE NO MINVALUE
-	 * CACHE 1;"); stmt .execute("ALTER TABLE ONLY site_supply_generation ADD
-	 * CONSTRAINT site_supply_generation_pkey PRIMARY KEY (id);"); stmt
-	 * .execute("ALTER TABLE ONLY site_supply_generation ADD CONSTRAINT
-	 * fkey_site_supply_generation_site FOREIGN KEY (site_id) REFERENCES
-	 * site(id);"); stmt .execute("ALTER TABLE ONLY site_supply_generation ADD
-	 * CONSTRAINT fkey_site_supply_generation_supply_generation FOREIGN KEY
-	 * (supply_generation_id) REFERENCES supply_generation(id);"); ResultSet srs =
-	 * stmt .executeQuery("select site_supply.site_id as site_id,
-	 * supply_generation.id as supply_generation_id, site_supply.is_physical as
-	 * is_physical from site_supply, supply_generation where
-	 * site_supply.supply_id = supply_generation.supply_id"); PreparedStatement
-	 * siteSupplyGenerationInsert = con .prepareStatement("insert into
-	 * site_supply_generation (id, site_id, supply_generation_id, is_physical)
-	 * values (?, ?, ?, ?)"); long siteSupplyGenerationId = 1; while
-	 * (srs.next()) { long siteId = srs.getLong("site_id"); long
-	 * supplyGenerationId = srs.getLong("supply_generation_id"); boolean
-	 * isPhysical = srs.getBoolean("is_physical");
-	 * siteSupplyGenerationInsert.setLong(1, siteSupplyGenerationId);
-	 * siteSupplyGenerationInsert.setLong(2, siteId);
-	 * siteSupplyGenerationInsert.setLong(3, supplyGenerationId);
-	 * siteSupplyGenerationInsert.setBoolean(4, isPhysical);
-	 * siteSupplyGenerationInsert.execute(); siteSupplyGenerationId++; }
-	 * srs.close(); stmt.execute("drop table site_supply"); stmt.execute("drop
-	 * sequence site_supply_id_sequence"); stmt .executeQuery("select
-	 * setval('site_supply_generation_id_sequence', max(id)) from
-	 * site_supply_generation"); stmt.close();
-	 */
-	/*
-	 * } catch (SQLException e) { e.printStackTrace(); } Debug.print("Finished
-	 * upgrading."); // dataDelta(con); }
-	 */
-	/*
-	 * private void upgrade09to10(Connection con) throws ProgrammerException {
-	 * try { Statement stmt = con.createStatement(); stmt .execute("CREATE TABLE
-	 * site_supply_generation (id bigint NOT NULL, supply_generation_id bigint
-	 * NOT NULL, site_id bigint NOT NULL, is_physical boolean NOT NULL);"); stmt
-	 * .execute("CREATE SEQUENCE site_supply_generation_id_sequence INCREMENT BY
-	 * 1 NO MAXVALUE NO MINVALUE CACHE 1;"); stmt .execute("ALTER TABLE ONLY
-	 * site_supply_generation ADD CONSTRAINT site_supply_generation_pkey PRIMARY
-	 * KEY (id);"); stmt .execute("ALTER TABLE ONLY site_supply_generation ADD
-	 * CONSTRAINT fkey_site_supply_generation_site FOREIGN KEY (site_id)
-	 * REFERENCES site(id);"); stmt .execute("ALTER TABLE ONLY
-	 * site_supply_generation ADD CONSTRAINT
-	 * fkey_site_supply_generation_supply_generation FOREIGN KEY
-	 * (supply_generation_id) REFERENCES supply_generation(id);"); ResultSet srs =
-	 * stmt .executeQuery("select site_supply.site_id as site_id,
-	 * supply_generation.id as supply_generation_id, site_supply.is_physical as
-	 * is_physical from site_supply, supply_generation where
-	 * site_supply.supply_id = supply_generation.supply_id"); PreparedStatement
-	 * siteSupplyGenerationInsert = con .prepareStatement("insert into
-	 * site_supply_generation (id, site_id, supply_generation_id, is_physical)
-	 * values (?, ?, ?, ?)"); long siteSupplyGenerationId = 1; while
-	 * (srs.next()) { long siteId = srs.getLong("site_id"); long
-	 * supplyGenerationId = srs.getLong("supply_generation_id"); boolean
-	 * isPhysical = srs.getBoolean("is_physical");
-	 * siteSupplyGenerationInsert.setLong(1, siteSupplyGenerationId);
-	 * siteSupplyGenerationInsert.setLong(2, siteId);
-	 * siteSupplyGenerationInsert.setLong(3, supplyGenerationId);
-	 * siteSupplyGenerationInsert.setBoolean(4, isPhysical);
-	 * siteSupplyGenerationInsert.execute(); siteSupplyGenerationId++; }
-	 * srs.close(); stmt.execute("drop table site_supply"); stmt.execute("drop
-	 * sequence site_supply_id_sequence"); stmt .executeQuery("select
-	 * setval('site_supply_generation_id_sequence', max(id)) from
-	 * site_supply_generation"); stmt.close(); } catch (SQLException e) {
-	 * e.printStackTrace(); } Debug .print("Finished first part of upgrading,
-	 * going on to initialize database..."); initializeDatabase(con); }
-	 */
-	/*
-	 * private void upgrade08to09(Connection con) { // remove hhdce id in mpan
-	 * table // in mpan table add the following boolean fields dceImportKwh, //
-	 * dceImportKvarh;, dceExportKwh;, dceExportKvarh; // in mpan table add a
-	 * reference to contract try { Statement stmt = con.createStatement(); stmt
-	 * .execute("ALTER TABLE main.mpan ADD COLUMN contract_id bigint references
-	 * main.contract (id);"); stmt .execute("update main.mpan set contract_id =
-	 * (select contract_id from main.hhdce_channels where id =
-	 * main.mpan.hhdce_channels_id)");
-	 * 
-	 * stmt .execute("ALTER TABLE main.mpan ADD COLUMN has_import_kwh
-	 * boolean;"); stmt .execute("ALTER TABLE main.mpan ADD COLUMN
-	 * has_import_kvarh boolean;"); stmt .execute("ALTER TABLE main.mpan ADD
-	 * COLUMN has_export_kwh boolean;"); stmt .execute("ALTER TABLE main.mpan
-	 * ADD COLUMN has_export_kvarh boolean;");
-	 * 
-	 * stmt .execute("update main.mpan set has_import_kwh = (select
-	 * is_import_kwh from main.hhdce_channels where id =
-	 * main.mpan.hhdce_channels_id)"); stmt .execute("update main.mpan set
-	 * has_import_kwh = false where has_import_kwh is null");
-	 * 
-	 * stmt .execute("update main.mpan set has_import_kvarh = (select
-	 * is_import_kvarh from main.hhdce_channels where id =
-	 * main.mpan.hhdce_channels_id)"); stmt .execute("update main.mpan set
-	 * has_import_kvarh = false where has_import_kvarh is null");
-	 * 
-	 * stmt .execute("update main.mpan set has_export_kwh = (select
-	 * is_export_kwh from main.hhdce_channels where id =
-	 * main.mpan.hhdce_channels_id)"); stmt .execute("update main.mpan set
-	 * has_export_kwh = false where has_export_kwh is null");
-	 * 
-	 * stmt .execute("update main.mpan set has_export_kvarh = (select
-	 * is_export_kvarh from main.hhdce_channels where id =
-	 * main.mpan.hhdce_channels_id)"); stmt .execute("update main.mpan set
-	 * has_export_kvarh = false where has_export_kvarh is null");
-	 * 
-	 * stmt .execute("ALTER TABLE main.mpan drop COLUMN hhdce_channels_id;");
-	 * stmt.execute("ALTER TABLE main.mpan drop COLUMN mpan_id;");
-	 * stmt.execute("ALTER TABLE main.site add COLUMN name varchar(250);");
-	 * stmt.execute("drop table hhdce_channels cascade;");
-	 * DatabaseVersion.setDatabaseVersion(9); } catch (SQLException e) { } }
-	 */
 }

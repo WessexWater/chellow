@@ -39,7 +39,7 @@
 					&gt;
 					<xsl:value-of select="concat(/source/rate-script/@id, ' [')" />
 					<a
-						href="{/source/request/@context-path}/reports/40/output/?rate-script-id={/source/rate-script/@id}">
+						href="{/source/request/@context-path}/reports/79/output/?rate-script-id={/source/rate-script/@id}">
 						<xsl:value-of select="'view'" />
 					</a>
 					<xsl:value-of select="']'" />

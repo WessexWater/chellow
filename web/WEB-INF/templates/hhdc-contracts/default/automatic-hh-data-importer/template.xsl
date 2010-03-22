@@ -41,7 +41,7 @@
 				</p>
 				<table>
 					<tr>
-						<th>Is any import running?</th>
+						<th>Is it running the automatic import section of code?</th>
 						<td>
 							<xsl:choose>
 								<xsl:when

@@ -28,7 +28,7 @@
 				<ul>
 					<li>
 						<a href="{/source/request/@context-path}/reports/1/output/">
-							Viewer's Home
+							Viewers' Home
 						</a>
 					</li>
 

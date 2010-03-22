@@ -77,7 +77,8 @@ public class AutomaticHhDataImporter implements Urlable, XmlDescriber, Runnable 
 	private Long contractId;
 
 	private ReentrantLock lock = new ReentrantLock();
-private Thread thread = null;
+	private Thread thread = null;
+
 	public AutomaticHhDataImporter(HhdcContract contract) throws HttpException {
 		contractId = contract.getId();
 	}
@@ -282,7 +283,8 @@ private Thread thread = null;
 			}
 		} else {
 			try {
-				throw new RuntimeException(new UserException("This import is locked."));
+				throw new RuntimeException(new UserException(
+						"This import is locked."));
 			} catch (InternalException e) {
 				throw new RuntimeException(e);
 			}
@@ -300,7 +302,7 @@ private Thread thread = null;
 		source.appendChild(importerElement);
 		importerElement.appendChild(getContract().toXml(doc,
 				new XmlTree("party")));
-		for (MonadMessage message : getLog()) {
+		for (MonadMessage message : getLog().toArray(new MonadMessage[0])) {
 			importerElement.appendChild(message.toXml(doc));
 		}
 		if (hhImporter != null) {

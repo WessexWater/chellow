@@ -147,9 +147,16 @@ public abstract class Contract extends PersistentEntity implements
 		onUpdate(null, null);
 	}
 
+	@SuppressWarnings("unchecked")
 	public void delete() throws HttpException {
-		onUpdate(startRateScript.getStartDate(), finishRateScript
-				.getFinishDate());
+		for (RateScript script: (List<RateScript>) Hiber
+		.session()
+		.createQuery(
+				"from RateScript script where script.contract.id = :contractId order by script.startDate.date")
+		.setLong("contractId", getId()).list()) {
+			Hiber.session().delete(script);
+		}
+		Hiber.session().delete(this);
 	}
 
 	public void delete(RateScript rateScript) throws HttpException {

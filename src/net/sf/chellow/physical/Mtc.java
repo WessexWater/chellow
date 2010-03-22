@@ -24,10 +24,7 @@ package net.sf.chellow.physical;
 import java.text.DecimalFormat;
 import java.util.Date;
 
-import javax.servlet.ServletContext;
-
 import net.sf.chellow.billing.Dso;
-import net.sf.chellow.monad.Debug;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.Invocation;
@@ -98,101 +95,6 @@ public class Mtc extends PersistentEntity {
 		Hiber.session().save(mtc);
 		Hiber.flush();
 		return mtc;
-	}
-
-	static public void loadFromCsv(ServletContext sc) throws HttpException {
-		Debug.print("Starting to add MTCs.");
-		Mdd mdd = new Mdd(sc, "MeterTimeswitchClass", new String[] {
-				"Meter Timeswitch Class Id",
-				"Effective From Settlement Date {MTC}",
-				"Effective To Settlement Date {MTC}",
-				"Meter Timeswitch Class Description",
-				"MTC Common Code Indicator",
-				"MTC Related Metering System Indicator", "MTC Meter Type Id",
-				"MTC Payment Type Id", "MTC Communication Indicator",
-				"MTC Type Indicator", "MTC TPR Count" });
-		for (String[] values = mdd.getLine(); values != null; values = mdd
-				.getLine()) {
-			if (values[4].equals("T")) {
-				String code = values[0];
-				String description = values[3];
-				Boolean hasComms = null;
-				if (values[8].equals("Y")) {
-					hasComms = Boolean.TRUE;
-				} else if (values[8].equals("N")) {
-					hasComms = Boolean.FALSE;
-				}
-				Boolean isHh = null;
-				Integer tprCount = null;
-				if (values[9].equals("H")) {
-					isHh = Boolean.TRUE;
-				} else if (values[9].equals("N")) {
-					isHh = Boolean.FALSE;
-					tprCount = Integer.parseInt(values[10]);
-				}
-				Date validFrom = mdd.toDate(values[1]);
-				Date validTo = mdd.toDate(values[2]);
-				MeterType meterType = MeterType.getMtcMeterType(values[6]);
-				MeterPaymentType paymentType = MeterPaymentType
-						.getMtcPaymentType(values[7]);
-				boolean hasRelatedMetering = values[5].equals("T");
-				Mtc mtc = Mtc.insertMtc(null, code, description,
-						hasRelatedMetering, hasComms, isHh, meterType,
-						paymentType, tprCount, validFrom, validTo);
-				Hiber.session().save(mtc);
-				Hiber.close();
-			}
-		}
-		Debug.print("Finishing common MTC and starting to add MTCs in PES Area.");
-		mdd = new Mdd(sc, "MtcInPesArea", new String[] {
-				"Meter Timeswitch Class Id",
-				"Effective From Settlement Date {MTC}",
-				"Market Participant Id",
-				"Effective From Settlement Date {MTCPA}",
-				"Effective To Settlement Date {MTCPA}",
-				"Meter Timeswitch Class Description", "MTC Meter Type Id",
-				"MTC Payment Type Id", "MTC Communication Indicator",
-				"MTC Type Indicator", "MTC TPR Count" });
-		Dso dso = null;
-		String oldParticipantCode = null;
-		for (String[] values = mdd.getLine(); values != null; values = mdd
-				.getLine()) {
-			String codeStr = values[0];
-			int code = Integer.parseInt(values[0]);
-			if (Mtc.hasDso(code)) {
-				String participantCode = values[2];
-				if (!participantCode.equals(oldParticipantCode)) {
-					dso = Dso.getDso(Participant.getParticipant(participantCode));
-					oldParticipantCode = participantCode;
-				}
-				String description = values[5];
-				Boolean hasComms = null;
-				if (values[8].equals("Y")) {
-					hasComms = Boolean.TRUE;
-				} else if (values[8].equals("N")) {
-					hasComms = Boolean.FALSE;
-				}
-				Boolean isHh = null;
-				Integer tprCount = null;
-				if (values[9].equals("H")) {
-					isHh = Boolean.TRUE;
-				} else if (values[9].equals("N")) {
-					isHh = Boolean.FALSE;
-					tprCount = Integer.parseInt(values[10]);
-				}
-				Date validFrom = mdd.toDate(values[3]);
-				Date validTo = mdd.toDate(values[4]);
-				MeterType meterType = MeterType.getMtcMeterType(values[6]);
-				MeterPaymentType paymentType = MeterPaymentType
-						.getMtcPaymentType(values[7]);
-				Mtc mtc = Mtc.insertMtc(dso, codeStr, description, false,
-						hasComms, isHh, meterType, paymentType, tprCount,
-						validFrom, validTo);
-				Hiber.session().save(mtc);
-				Hiber.close();
-			}
-		}
-		Debug.print("Finished adding MTCs.");
 	}
 
 	private Dso dso;

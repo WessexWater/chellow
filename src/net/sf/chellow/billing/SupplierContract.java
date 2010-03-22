@@ -155,10 +155,9 @@ public class SupplierContract extends Contract {
 	}
 
 	public void httpPost(Invocation inv) throws HttpException {
-		String chargeScript = inv.getString("charge-script");
-		chargeScript = chargeScript.replace("\r", "").replace("\t", "    ");
-
 		if (inv.hasParameter("test")) {
+			String chargeScript = inv.getString("charge-script");
+			chargeScript = chargeScript.replace("\r", "").replace("\t", "    ");
 			Long billId = inv.getLong("bill-id");
 			if (!inv.isValid()) {
 				throw new UserException(document());
@@ -174,7 +173,19 @@ public class SupplierContract extends Contract {
 				e.setDocument(document());
 				throw e;
 			}
+		} else if (inv.hasParameter("delete")) {
+			try {
+				delete();
+			} catch (HttpException e) {
+				e.setDocument(document());
+				throw e;
+			}
+			Hiber.commit();
+			inv.sendSeeOther(Chellow.SUPPLIER_CONTRACTS_INSTANCE.getUri());
 		} else {
+			String chargeScript = inv.getString("charge-script");
+			chargeScript = chargeScript.replace("\r", "").replace("\t", "    ");
+
 			String name = inv.getString("name");
 			if (!inv.isValid()) {
 				throw new UserException(document());

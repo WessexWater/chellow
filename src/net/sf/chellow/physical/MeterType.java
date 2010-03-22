@@ -23,9 +23,6 @@ package net.sf.chellow.physical;
 
 import java.util.Date;
 
-import javax.servlet.ServletContext;
-
-import net.sf.chellow.monad.Debug;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.Invocation;
@@ -65,22 +62,6 @@ public class MeterType extends PersistentEntity {
 					"There is no meter timeswitch class meter type with that id.");
 		}
 		return type;
-	}
-
-	static public void loadFromCsv(ServletContext sc) throws HttpException {
-		Debug.print("Starting to add Meter Types.");
-		Mdd mdd = new Mdd(sc, "MtcMeterType", new String[] {
-				"MTC Meter Type Id", "MTC Meter Type Description",
-				"Effective From Settlement Date {MMT}",
-				"Effective To Settlement Date {MMT}" });
-		for (String[] values = mdd.getLine(); values != null; values = mdd
-				.getLine()) {
-			Hiber.session().save(
-					new MeterType(values[0], values[1], mdd.toDate(values[2]),
-							mdd.toDate(values[3])));
-			Hiber.close();
-		}
-		Debug.print("Finished adding Meter Types.");
 	}
 
 	private String code;

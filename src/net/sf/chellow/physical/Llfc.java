@@ -25,11 +25,8 @@ import java.text.DecimalFormat;
 import java.util.Date;
 import java.util.List;
 
-import javax.servlet.ServletContext;
-
 import net.sf.chellow.billing.Dso;
 import net.sf.chellow.billing.Provider;
-import net.sf.chellow.monad.Debug;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.InternalException;
@@ -86,57 +83,6 @@ public class Llfc extends PersistentEntity {
 		} catch (HibernateException e) {
 			throw new InternalException(e);
 		}
-	}
-
-	static public void loadFromCsv(ServletContext sc) throws HttpException {
-		long startTime = System.currentTimeMillis();
-		Debug.print("Starting to add LLFCs.");
-		try {
-			Mdd mdd = new Mdd(sc, "LineLossFactorClass", new String[] {
-					"Market Participant Id", "Market Participant Role Code",
-					"Effective From Date {MPR}", "Line Loss Factor Class Id",
-					"Effective From Settlement Date {LLFC}",
-					"Line Loss Factor Class Description",
-					"MS Specific LLF Class Indicator",
-					"Effective To Settlement Date {LLFC}" });
-			String oldParticipantCode = null;
-			Dso dso = null;
-			for (String[] values = mdd.getLine(); values != null; values = mdd
-					.getLine()) {
-				String participantCode = values[0];
-				if (!participantCode.equals(oldParticipantCode)) {
-					dso = Dso.getDso(Participant
-							.getParticipant(participantCode));
-					oldParticipantCode = participantCode;
-				}
-				String description = values[5];
-				VoltageLevel vLevel = null;
-				if (description.contains(VoltageLevel.EHV)) {
-					vLevel = VoltageLevel.getVoltageLevel(VoltageLevel.EHV);
-				} else if (description.contains(VoltageLevel.HV)) {
-					vLevel = VoltageLevel.getVoltageLevel(VoltageLevel.HV);
-				} else {
-					vLevel = VoltageLevel.getVoltageLevel(VoltageLevel.LV);
-				}
-				boolean isSubstation = description.contains("S/S")
-						|| description.contains("sub")
-						|| description.contains("Substation");
-				String indicator = values[6];
-				boolean isImport = indicator.equals("A")
-						|| indicator.equals("B");
-				Date validFrom = mdd.toDate(values[4]);
-				Date validTo = mdd.toDate(values[7]);
-				Hiber.session().save(
-						new Llfc(dso, Integer.parseInt(values[3]), description,
-								vLevel, isSubstation, isImport, validFrom,
-								validTo));
-				Hiber.close();
-			}
-		} catch (NumberFormatException e) {
-			throw new InternalException(e);
-		}
-		Debug.print("Finished adding LLFCs. "
-				+ (System.currentTimeMillis() - startTime));
 	}
 
 	private Dso dso;

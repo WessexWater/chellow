@@ -19,7 +19,7 @@
 					</a>
 					&gt;
 					<xsl:value-of select="'Supplier Contracts ['" />
-					<a href="{/source/request/@context-path}/reports/38/output/">
+					<a href="{/source/request/@context-path}/reports/75/output/">
 						<xsl:value-of select="'view'" />
 					</a>
 					<xsl:value-of select="']'" />

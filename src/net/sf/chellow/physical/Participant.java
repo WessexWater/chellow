@@ -20,10 +20,7 @@
  *******************************************************************************/
 package net.sf.chellow.physical;
 
-import javax.servlet.ServletContext;
-
 import net.sf.chellow.billing.Provider;
-import net.sf.chellow.monad.Debug;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.Invocation;
@@ -59,19 +56,6 @@ public class Participant extends PersistentEntity {
 		return participant;
 	}
 
-	static public void loadFromCsv(ServletContext sc) throws HttpException {
-		Debug.print("Starting to add Participants.");
-		Mdd mdd = new Mdd(sc, "MarketParticipant", new String[] {
-				"Market Participant Id", "Market Participant Name",
-				"Pool Member Id" });
-		for (String[] values = mdd.getLine(); values != null; values = mdd
-				.getLine()) {
-			Participant participant = new Participant(values[0], values[1]);
-			Hiber.session().save(participant);
-			Hiber.close();
-		}
-		Debug.print("Finished adding Participants.");
-	}
 
 	private String code;
 	private String name;

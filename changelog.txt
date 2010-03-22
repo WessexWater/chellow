@@ -1,3 +1,16 @@
+* Fixed bug 2961802 which turned out to be just a mis-labelling of the 'running
+    automatic importer' status message, so no automated test for it.
+* Fixed bug where messages from an HH import could be iterated by one thread while being
+    modified by another.
+* Fixed bug 2961832, 'can't deleted supplier contracts', can now also delete
+    HHDC contracts.
+* Deleted code for GenDelta and UseDelta. These were never used, so should have
+    no effect.
+* Speeded up loading of MDD data. This has meant we can get rid of the mdd-test data.
+
+
+357
+
 * Bug 2941590. Message 'There are HH data before the start of the updated supply',
     given unreliably.
 * Supplies snapshot report now works.

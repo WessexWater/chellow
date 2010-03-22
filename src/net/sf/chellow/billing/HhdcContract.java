@@ -248,6 +248,15 @@ public class HhdcContract extends Contract {
 			}
 			Hiber.commit();
 			inv.sendOk(document());
+		} else if (inv.hasParameter("delete")) {
+			try {
+				delete();
+			} catch (HttpException e) {
+				e.setDocument(document());
+				throw e;
+			}
+			Hiber.commit();
+			inv.sendSeeOther(Chellow.HHDC_CONTRACTS_INSTANCE.getUri());
 		} else {
 			Long participantId = inv.getLong("participant-id");
 			String name = inv.getString("name");

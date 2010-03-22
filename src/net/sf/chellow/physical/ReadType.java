@@ -20,9 +20,6 @@
  *******************************************************************************/
 package net.sf.chellow.physical;
 
-import javax.servlet.ServletContext;
-
-import net.sf.chellow.monad.Debug;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.Invocation;
@@ -82,18 +79,6 @@ public class ReadType extends PersistentEntity {
 			throw new UserException("The read type can only be a single character.");
 		}
 		return getReadType(code.charAt(0));
-	}
-	static public void loadFromCsv(ServletContext sc) throws HttpException {
-		Debug.print("Starting to add read types.");
-		Mdd mdd = new Mdd(sc, "ReadType", new String[] {
-				"Code", "Description" });
-		for (String[] values = mdd.getLine(); values != null; values = mdd
-				.getLine()) {
-			ReadType type = new ReadType(values[0].charAt(0), values[1]);
-			Hiber.session().save(type);
-			Hiber.close();
-		}
-		Debug.print("Finished adding read types.");
 	}
 
 	private char code;

@@ -20,9 +20,6 @@
  *******************************************************************************/
 package net.sf.chellow.physical;
 
-import javax.servlet.ServletContext;
-
-import net.sf.chellow.monad.Debug;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.Invocation;
@@ -69,19 +66,6 @@ public class MarketRole extends PersistentEntity {
 			throw new NotFoundException();
 		}
 		return marketRole;
-	}
-
-	static public void loadFromCsv(ServletContext sc) throws HttpException {
-		Debug.print("Starting to add Market Roles.");
-		Mdd mdd = new Mdd(sc, "MarketRole", new String[] {
-				"Market Participant Role Code", "Market Role Description" });
-		for (String[] values = mdd.getLine(); values != null; values = mdd
-				.getLine()) {
-			MarketRole role = new MarketRole(values[0].charAt(0), values[1]);
-			Hiber.session().save(role);
-			Hiber.close();
-		}
-		Debug.print("Finished adding Market Roles.");
 	}
 
 	private char code;

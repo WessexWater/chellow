@@ -21,9 +21,6 @@
 
 package net.sf.chellow.physical;
 
-import javax.servlet.ServletContext;
-
-import net.sf.chellow.monad.Debug;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.Invocation;
@@ -57,19 +54,6 @@ public class GspGroup extends PersistentEntity {
 					"There isn't a GSP group with the code " + code + ".");
 		}
 		return group;
-	}
-
-	static public void loadFromCsv(ServletContext sc) throws HttpException {
-		Debug.print("Starting to add Gsp groups.");
-		Mdd mdd = new Mdd(sc, "GspGroup", new String[] { "GSP Group Id",
-				"GSP Group Name" });
-		for (String[] values = mdd.getLine(); values != null; values = mdd
-				.getLine()) {
-			GspGroup group = new GspGroup(values[0], values[1]);
-			Hiber.session().save(group);
-			Hiber.close();
-		}
-		Debug.print("Finished adding GSP groups.");
 	}
 
 	private String code;

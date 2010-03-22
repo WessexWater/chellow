@@ -9,5 +9,7 @@
 	<classpathentry kind="var" path="JAVA_LIB_HOME/commons-fileupload-1.2.1/lib/commons-fileupload-1.2.1.jar"/>
 	<classpathentry kind="var" path="JAVA_LIB_HOME/jython-2.5.1/jython.jar"/>
 	<classpathentry kind="var" path="JAVA_LIB_HOME/commons-net-2.0/commons-net-2.0.jar"/>
+	<classpathentry kind="var" path="JAVA_LIB_HOME/postgresql-8.4-701.jdbc4.jar"/>
+	<classpathentry kind="var" path="TOMCAT_COMMON/lib/commons-dbcp.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
