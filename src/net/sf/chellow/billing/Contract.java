@@ -64,8 +64,6 @@ public abstract class Contract extends PersistentEntity implements
 		return service;
 	}
 
-	// private Party party;
-
 	private String name;
 
 	private RateScript startRateScript;
@@ -134,6 +132,13 @@ public abstract class Contract extends PersistentEntity implements
 	protected void internalUpdate(String name, String chargeScript)
 			throws HttpException {
 		setName(name.trim());
+		PythonInterpreter interp = new PythonInterpreter();
+		interp.set("contract", this);
+		try {
+			interp.compile(chargeScript);
+		} catch (Throwable e) {
+			throw new UserException(HttpException.getStackTraceString(e));
+		}
 		setChargeScript(chargeScript);
 	}
 
@@ -149,11 +154,11 @@ public abstract class Contract extends PersistentEntity implements
 
 	@SuppressWarnings("unchecked")
 	public void delete() throws HttpException {
-		for (RateScript script: (List<RateScript>) Hiber
-		.session()
-		.createQuery(
-				"from RateScript script where script.contract.id = :contractId order by script.startDate.date")
-		.setLong("contractId", getId()).list()) {
+		for (RateScript script : (List<RateScript>) Hiber
+				.session()
+				.createQuery(
+						"from RateScript script where script.contract.id = :contractId order by script.startDate.date")
+				.setLong("contractId", getId()).list()) {
 			Hiber.session().delete(script);
 		}
 		Hiber.session().delete(this);
@@ -171,7 +176,7 @@ public abstract class Contract extends PersistentEntity implements
 					"You can only delete the first and last rate scripts.");
 		}
 		getRateScripts().remove(rateScript);
-		Hiber.flush();
+		// Hiber.flush();
 		onUpdate(rateScript.getStartDate(), rateScript.getFinishDate());
 	}
 
@@ -185,13 +190,9 @@ public abstract class Contract extends PersistentEntity implements
 
 	@SuppressWarnings("unchecked")
 	void onUpdate(HhEndDate from, HhEndDate to) throws HttpException {
-		List<RateScript> scripts = (List<RateScript>) Hiber
-				.session()
-				.createQuery(
-						"from RateScript script where script.contract.id = :contractId order by script.startDate.date")
-				.setLong("contractId", getId()).list();
-		setStartRateScript(scripts.get(0));
-		setFinishRateScript(scripts.get(scripts.size() - 1));
+		RateScript[] scripts = rateScripts.toArray(new RateScript[0]);
+		setStartRateScript(scripts[0]);
+		setFinishRateScript(scripts[scripts.length - 1]);
 
 		if (from == null) {
 			from = getStartDate();
@@ -434,20 +435,6 @@ public abstract class Contract extends PersistentEntity implements
 		}
 	}
 
-	/*
-	 * public Object callFunction(String functionName, Object[] args) throws
-	 * HttpException { Object result = null; try { result =
-	 * engine().invokeFunction(functionName, args); } catch (ScriptException e)
-	 * { throw new UserException(e.getMessage()); } catch (NoSuchMethodException
-	 * e) { String message = "Problem calling the function: " + functionName +
-	 * " of charge script " + getUri() + " with arguments "; for (Object obj :
-	 * args) { message = message + ", " + obj.toString(); } throw new
-	 * UserException(message + " with message " +
-	 * HttpException.getStackTraceString(e)); } catch (PyException e) { Object
-	 * obj = e.value.__tojava__(HttpException.class); if (obj instanceof
-	 * HttpException) { throw (HttpException) obj; } else { throw new
-	 * UserException(e.toString()); } } return result; }
-	 */
 	public static Contract getContract(Long id) throws HttpException {
 		Contract contract = (Contract) Hiber.session().get(Contract.class, id);
 		if (contract == null) {
@@ -462,52 +449,6 @@ public abstract class Contract extends PersistentEntity implements
 		return batch;
 	}
 
-	/*
-	 * @SuppressWarnings("unchecked") public void deleteAccount(Account account)
-	 * throws HttpException { if (!account.getContract().equals(this)) { throw
-	 * new UserException( "The account isn't attached to this contract."); } if
-	 * ((Long) Hiber.session().createQuery(
-	 * "select count(*) from Bill bill where bill.account = :account")
-	 * .setEntity("account", account).uniqueResult() > 0) { throw new
-	 * UserException(
-	 * "Can't delete this account as there are still bills attached to it."); }
-	 * if ((Long) Hiber .session() .createQuery(
-	 * "select count(*) from Mpan mpan where mpan.supplierAccount.id = :accountId"
-	 * ) .setLong("accountId", account.getId()).uniqueResult() > 0) { throw new
-	 * UserException(
-	 * "Can't delete this account as there are still MPANs attached to it."); }
-	 * for (MpanSnag snag : (List<MpanSnag>) Hiber.session() .createQuery(
-	 * "from AccountSnag snag where snag.account = :account")
-	 * .setEntity("account", account).list()) { Hiber.session().delete(snag);
-	 * Hiber.flush(); } Hiber.session().delete(account); Hiber.flush(); }
-	 */
-	/*
-	 * public Accounts accountsInstance() { return new Accounts(this); }
-	 */
-
-	/*
-	 * public Account insertAccount(String reference) throws HttpException {
-	 * reference = reference.trim(); Account account = new Account(this,
-	 * reference); try { Hiber.session().save(account); Hiber.flush(); } catch
-	 * (ConstraintViolationException e) { throw new UserException(
-	 * "There's already an account with the reference, '" + reference +
-	 * "' attached to this provider."); } return account; }
-	 */
-
-	/*
-	 * public Account getAccount(String reference) throws HttpException {
-	 * Account account = findAccount(reference); if (account == null) { throw
-	 * new NotFoundException("The account '" + reference + "' can't be found.");
-	 * } return account; }
-	 */
-
-	/*
-	 * public Account findAccount(String reference) throws HttpException {
-	 * return (Account) Hiber .session() .createQuery(
-	 * "from Account account where account.contract = :contract and account.reference = :reference"
-	 * ) .setEntity("contract", this).setString("reference", reference)
-	 * .uniqueResult(); }
-	 */
 	public Batches batchesInstance() {
 		return new Batches(this);
 	}

@@ -186,7 +186,7 @@ public class NonCoreContract extends Contract {
 		if (inv.hasParameter("delete")) {
 			delete();
 			Hiber.commit();
-			inv.sendFound(Chellow.NON_CORE_SERVICES_INSTANCE.getUri());
+			inv.sendSeeOther(Chellow.NON_CORE_SERVICES_INSTANCE.getUri());
 		} else {
 			String name = inv.getString("name");
 			String chargeScript = inv.getString("charge-script");

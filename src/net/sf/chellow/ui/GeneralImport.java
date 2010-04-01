@@ -177,7 +177,13 @@ public class GeneralImport extends Thread implements Urlable, XmlDescriber {
 							}
 							String[] vals = hhString.split(",");
 							if (vals.length % 2 != 0) {
-								throw new UserException("There must be an even number of values in the list of hh data.");
+								StringBuilder valsBuilder = new StringBuilder();
+								for (String val : vals) {
+									valsBuilder.append(val + " ");
+								}
+								throw new UserException(
+										"There must be an even number of values in the list of hh data. This list is "
+												+ valsBuilder + ".");
 							}
 							for (int i = 0; i < vals.length; i += 2) {
 								String bigDecimal = vals[i];

@@ -91,7 +91,7 @@ public class DsoContract extends Contract {
 	public static void loadFromCsv(ServletContext context) throws HttpException {
 		try {
 			GeneralImport process = new GeneralImport(null, context
-					.getResource("/WEB-INF/mdd/dso-contracts.xml").openStream(), "xml");
+					.getResource("/WEB-INF/dso-contracts.xml").openStream(), "xml");
 			process.run();
 			List<MonadMessage> errors = process.getErrors();
 			if (!errors.isEmpty()) {

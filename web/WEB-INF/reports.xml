@@ -3508,308 +3508,51 @@ pw.close()]]></value>
     <value>insert</value>
     <value>report</value>
     <value>31</value>
-    <value>0 Free 7</value>
-    <value><![CDATA[from net.sf.chellow.monad import Hiber, UserException, XmlTree
-from net.sf.chellow.monad.types import MonadDate
-from net.sf.chellow.physical import SupplyGeneration
+    <value>0 Admin: HHDC Contract Export</value>
+    <value><![CDATA[from net.sf.chellow.monad import Hiber, UserException, MonadUtils
+from net.sf.chellow.monad.types import UriPathElement
+from java.util import GregorianCalendar, TimeZone, Locale, Calendar
+from net.sf.chellow.physical import HhEndDate
+from java.text import DateFormat
+from java.io import OutputStreamWriter, PrintWriter
+from java.security import MessageDigest
+from com.Ostermiller.util import Base64
+import java.lang.String
 
-supply_generation_id = inv.getLong("supply-generation-id")
-if not inv.isValid():
-    raise UserException()
-supply_generation = SupplyGeneration.getSupplyGeneration(supply_generation_id)
-source.appendChild(supply_generation.toXml(doc, XmlTree("mpans", XmlTree("core").put("mtc").put('llfc', XmlTree('voltageLevel')).put('ssc').put('supplierAccount', XmlTree('contract', XmlTree('party')))).put('channels').put('pc').put('hhdcAccount', XmlTree('contract', XmlTree('party'))).put('supply', XmlTree('source').put('gspGroup')).put('siteSupplyGenerations', XmlTree('site'))))
-source.appendChild(MonadDate().toXml(doc))]]></value>
-    <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
-<xsl:stylesheet version="1.0"
-    xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
-    <xsl:output method="html" encoding="US-ASCII"
-        doctype-public="-//W3C//DTD HTML 4.01//EN"
-        doctype-system="http://www.w3.org/TR/html4/strict.dtd" indent="yes" />
-    <xsl:template match="/">
-        <html>
-            <head>
-                <link rel="stylesheet" type="text/css"
-                    href="{/source/request/@context-path}/reports/19/output/" />
-                <title>
-                    Home &gt; Sites &gt; Supply:
-                    <xsl:value-of
-                        select="/source/supply-generation/supply/@name" />
-                    &gt; Generation:
-                    <xsl:value-of
-                        select="/source/supply-generation/@id" />
-                </title>
-            </head>
-            <body>
-                <p>
-                    <a
-                        href="{/source/request/@context-path}/reports/1/output/">
-                        <xsl:value-of select="'Home'" />
-                    </a>
-                    &gt;
-                    <a
-                        href="{/source/request/@context-path}/reports/99/output/">
-                        <xsl:value-of select="'Supplies'" />
-                    </a>
-                    &gt;
-                    <a
-                        href="{/source/request/@context-path}/reports/7/output/?supply-id={/source/supply-generation/supply/@id}">
-                        <xsl:value-of
-                            select="/source/supply-generation/supply/@id" />
-                    </a>
-                    &gt;
-                    <xsl:value-of
-                        select="concat('Generation: ', /source/supply-generation/@id, ' [')" />
-                    <a
-                        href="{/source/request/@context-path}/supplies/{/source/supply-generation/supply/@id}/generations/{/source/supply-generation/@id}/">
-                        <xsl:value-of select="'edit'" />
-                    </a>
-                    <xsl:value-of select="']'" />
-                </p>
-                <xsl:if test="//message">
-                    <ul>
-                        <xsl:for-each select="//message">
+def print_line(pw, values):
+    pw.println('    <line>')
+    for value in values:
+        if value is None:
+            value = ''
+        else:
+            value = str(value)
+        pw.println('        <value>&lt;![CDATA[' + value + ']]&gt;</value>')
+    pw.println('    </line>')
 
-                            <li>
-                                <xsl:value-of select="@description" />
-                            </li>
-                        </xsl:for-each>
-                    </ul>
-                </xsl:if>
-                <table>
-                    <caption>
-                        Sites
-                    </caption>
-                    <thead>
-                        <tr>
-                            <th>Code</th>
-                            <th>Name</th>
-                            <xsl:if
-                                test="count(/source/supply-generation/site-supply-generation) &gt; 1">
-                                <th></th>
-                            </xsl:if>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <xsl:for-each
-                            select="/source/supply-generation/site-supply-generation">
-                            <tr>
-                                <td>
-                                    <a
-                                        href="{/source/request/@context-path}/reports/5/output/?site-id={site/@id}">
-                                        <xsl:value-of
-                                            select="site/@code" />
-                                    </a>
-                                </td>
-                                <td>
-                                    <xsl:value-of select="site/@name" />
-                                </td>
-                                <xsl:if
-                                    test="count(/source/supply-generation/site-supply-generation) &gt; 1">
-                                    <td>
-                                        <xsl:if
-                                            test="@is-physical='true'">
-                                            Located here
-                                        </xsl:if>
-                                    </td>
-                                </xsl:if>
-                            </tr>
-                        </xsl:for-each>
-                    </tbody>
-                </table>
-                <br/>
-                <table><caption>Supply</caption>
-                    <tr><th>
-                      Name</th>
-                        <td><a
-                            href="{/source/request/@context-path}/reports/7/output/?supply-id={/source/supply-generation/supply/@id}">
-                            <xsl:value-of
-                                select="/source/supply-generation/supply/@name" />
-                        </a></td>
-                    </tr>
-                    <tr>
-                        <th>Source</th>
-                        <td><xsl:value-of select="concat(/source/supply-generation/supply/source/@code, ' - ', /source/supply-generation/supply/source/@name)" />
-                        </td>
-                    </tr>
-                       <tr>
-                            <th>GSP Group</th>
-                            <td>
-                                <xsl:value-of
-                                    select="concat(/source/supply-generation/supply/gsp-group/@code, ' - ', /source/supply-generation/supply/gsp-group/@description)" />
-                            </td>
-                        </tr>
-                </table>
-<br/>
-                <table><caption>Generation</caption>
-                    <tr>
-                        <th>From</th>
-                        <td><xsl:value-of
-                            select="concat(/source/supply-generation/hh-end-date[@label='start']/@year, '-', /source/supply-generation/hh-end-date[@label='start']/@month, '-', /source/supply-generation/hh-end-date[@label='start']/@day)" /></td>
-                    </tr>
-                    <tr>
-                        <th>To</th>
-                        <td><xsl:choose>
-                            <xsl:when
-                                test="/source/supply-generation/hh-end-date[@label='finish']">
-                                <xsl:value-of
-                                    select="concat(/source/supply-generation/hh-end-date[@label='finish']/@year, '-', /source/supply-generation/hh-end-date[@label='finish']/@month, '-', /source/supply-generation/hh-end-date[@label='finish']/@day)" />
-                            </xsl:when>
-                            <xsl:otherwise>Ongoing</xsl:otherwise>
-                        </xsl:choose>
-                        </td>
-                    </tr>
-                         <tr>
-                            <th>Channels</th>
-                            <td>
-                                <ul>
-                                  <xsl:for-each select="/source/supply-generation/channel">
-                                  <li>
-                                    <xsl:choose>
-                                    <xsl:when test="@is-import='true'">
-                                    Import
-                                    </xsl:when>
-                                    <xsl:otherwise>
-                                    Export
-                                    </xsl:otherwise>
-                                    </xsl:choose>
-                                    <xsl:choose>
-                                    <xsl:when test="@is-kwh='true'">
-                                    kWh
-                                    </xsl:when>
-                                    <xsl:otherwise>
-                                    kVArh
-                                    </xsl:otherwise>
-                                    </xsl:choose>
-                                  </li>
-                                  </xsl:for-each>
-                                </ul>
-                            </td>
-                        </tr>
-                        <tr>
-                            <th>HHDC Account</th>
-                            <td>
-                                <a
-                                    href="{/source/request/@context-path}/reports/111/output/?account-id={/source/supply-generation/account[hhdc-contract]/@id}">
-                                    <xsl:value-of
-                                        select="/source/supply-generation/account[hhdc-contract]/@reference" />
-                                </a>
-                                <xsl:value-of select="' &gt; '" />
-                                <a
-                                    href="{/source/request/@context-path}/reports/115/output/?hhdc-contract-id={/source/supply-generation/account/hhdc-contract/@id}">
-                                    <xsl:value-of
-                                        select="/source/supply-generation/account/hhdc-contract/@name" />
-                                </a>
-                            </td>
-                        </tr>
-                        <tr>
-                            <th>Profile Class</th>
-                            <td>
-                                <xsl:value-of
-                                    select="concat(/source/supply-generation/pc/@code, ' - ', /source/supply-generation/pc/@description)" />
-                            </td>
-                        </tr>
-                </table>
-                <br/>
-                <table>
-                    <caption>MPANs</caption>
-                    <thead>
-                        <tr>
-                            <th></th>
-                            <th>Import</th>
-                            <th>Export</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <th>Meter Timeswitch Class</th>
-                            <td>
-                                <xsl:value-of
-                                    select="concat(/source/supply-generation/mpan[llfc/@is-import='true']/mtc/@code, ' - ', /source/supply-generation/mpan[llfc/@is-import='true']/mtc/@description)" />
-                            </td>
-                            <td>
-                                <xsl:value-of
-                                    select="concat(/source/supply-generation/mpan[llfc/@is-import='false']/mtc/@code, ' - ', /source/supply-generation/mpan[llfc/@is-import='false']/mtc/@description)" />
-                            </td>
-                        </tr>
-                        <tr>
-                            <th>Line Loss Factor Class</th>
-                            <td>
-                                <xsl:value-of
-                                    select="concat(/source/supply-generation/mpan[llfc/@is-import='true']/llfc/@code, ' - ', /source/supply-generation/mpan[llfc/@is-import='true']/llfc/@description)" />
-                            </td>
-                            <td>
-                                <xsl:value-of
-                                    select="concat(/source/supply-generation/mpan[llfc/@is-import='false']/llfc/@code, ' - ', /source/supply-generation/mpan[llfc/@is-import='false']/llfc/@description)" />
-                            </td>
-                        </tr>
-                        <tr>
-                            <th>MPAN Core</th>
-                            <td>
-                                <xsl:value-of
-                                    select="/source/supply-generation/mpan[llfc/@is-import='true']/mpan-core/@core" />
-                            </td>
-                            <td>
-                                <xsl:value-of
-                                    select="/source/supply-generation/mpan[llfc/@is-import='false']/mpan-core/@core" />
-                            </td>
-                        </tr>
-                        <tr>
-                            <th>SSC</th>
-                            <td>
-                                <xsl:value-of
-                                    select="concat(/source/supply-generation/mpan[llfc/@is-import='true']/ssc/@code, ' - ', /source/supply-generation/mpan[llfc/@is-import='true']/ssc/@description)" />
-                            </td>
-                            <td>
-                                <xsl:value-of
-                                    select="concat(/source/supply-generation/mpan[llfc/@is-import='false']/ssc/@code, ' - ', /source/supply-generation/mpan[llfc/@is-import='false']/ssc/@description)" />
-                            </td>
-                        </tr>
-                        <tr>
-                            <th>Agreed Supply Capacity</th>
-                            <td>
-                                <xsl:value-of
-                                    select="/source/supply-generation/mpan[llfc/@is-import='true']/@agreed-supply-capacity" />
-                            </td>
-                            <td>
-                                <xsl:value-of
-                                    select="/source/supply-generation/mpan[llfc/@is-import='false']/@agreed-supply-capacity" />
-                            </td>
-                        </tr>
-                        <tr>
-                            <th>Supplier Account</th>
-                            <td>
-                                <a
-                                    href="{/source/request/@context-path}/reports/83/output/?account-id={/source/supply-generation/mpan[llfc/@is-import='true']/account[supplier-contract]/@id}">
-                                    <xsl:value-of
-                                        select="/source/supply-generation/mpan[llfc/@is-import='true']/account[supplier-contract]/@reference" />
-                                </a>
-                                <xsl:value-of select="' &gt; '" />
-                                <a
-                                    href="{/source/request/@context-path}/reports/77/output/?supplier-contract-id={/source/supply-generation/mpan[llfc/@is-import='true']/account/supplier-contract/@id}">
-                                    <xsl:value-of
-                                        select="/source/supply-generation/mpan[llfc/@is-import='true']/account/supplier-contract/@name" />
-                                </a>
-                            </td>
-                            <td>
-                                <a
-                                    href="{/source/request/@context-path}/reports/83/output/?account-id={/source/supply-generation/mpan[llfc/@is-import='false']/account[supplier-contract]/@id}">
-                                    <xsl:value-of
-                                        select="/source/supply-generation/mpan[llfc/@is-import='false']/account[supplier-contract]/@reference" />
-                                </a>
-                                <xsl:value-of select="' &gt; '" />
-                                <a
-                                    href="{/source/request/@context-path}/reports/77/output/?supplier-contract-id={/source/supply-generation/mpan[llfc/@is-import='false']/account/supplier-contract/@id}">
-                                    <xsl:value-of
-                                        select="/source/supply-generation/mpan[llfc/@is-import='false']/account/supplier-contract/@name" />
-                                </a>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </body>
-        </html>
-    </xsl:template>
-</xsl:stylesheet>]]></value>
+inv.getResponse().setContentType('text/xml')
+inv.getResponse().setHeader('Content-Disposition', 'attachment; filename=output.xml;')
+pw = inv.getResponse().getWriter()
+
+pw.println('<?xml version="1.0"?>')
+pw.flush()
+pw.println('<csv>')
+
+contracts = Hiber.session().createQuery("from SupplierContract contract order by contract.name").scroll()
+while contracts.next():
+    contract = contracts.get(0)
+    contract_name = contract.getName()
+    rate_scripts = Hiber.session().createQuery("from RateScript script where script.contract.id = :contractId order by script.startDate.date").setLong('contractId', contract.getId()).list()
+    start_rate_script = rate_scripts[0]
+    print_line(pw, ['insert', 'supplier-contract', contract_name, start_rate_script.getStartDate(), rate_scripts[len(rate_scripts) - 1].getFinishDate(), contract.getChargeScript(), start_rate_script.getScript()])
+    for i in range(1, len(rate_scripts)):
+        rate_script = rate_scripts[i]
+        print_line(pw, ['insert', 'supplier-contract-rate-script', contract.getName(), rate_script.getStartDate(), rate_script.getScript()])
+Hiber.session().clear()
+contracts.close()
+pw.println('</csv>')
+pw.flush()
+pw.close()]]></value>
+    <value><![CDATA[]]></value>
   </line>
   <line>
     <value>insert</value>
@@ -4383,34 +4126,23 @@ snags_element.setAttribute("site-count", str(sites))]]></value>
     <value>0 CSV TRIAD</value>
     <value><![CDATA[from net.sf.chellow.monad import Hiber, UserException
 from net.sf.chellow.monad.types import MonadDate
-from net.sf.chellow.physical import HhEndDate, SupplyGeneration
+from net.sf.chellow.physical import HhEndDate, SupplyGeneration, MpanCore
 from java.util import Calendar
-from net.sf.chellow.billing import NonCoreContract
+from net.sf.chellow.billing import NonCoreContract, Dso
 
-def triad_csv(triad_contract, query, triad_dates, is_import, dso_contract, voltage_level, is_substation, year_finish):
-    ret = ''
-    triad_values = []
-    triad_statuses = []
-    for triad_date in triad_dates:
-        datum = query.setTimestamp('triadDate', triad_date.getDate()).setBoolean('isImport', is_import).uniqueResult()
-        if datum is None:
-            triad_values.append(None)
-            triad_statuses.append(None)
-        else:
-            triad_values.append(datum.getValue().doubleValue() * 2)
-            triad_statuses.append(datum.getStatus())
-    t_dict = triad_contract.callFunction('triad', [dso_contract, triad_values, triad_dates[0], voltage_level, is_substation])
-    for i in range(1,4):
-        ret = ret + str(t_dict['t' + str(i) + '-msp-kw']) + ',' + str(triad_statuses[i - 1]) + ',' + str(t_dict['t' + str(i) + '-llf']) + ',' + str(t_dict['t' + str(i) + '-gsp-kw']) + ','
-    ret = ret + str(t_dict['total-gsp-kw']) + ',' + str(t_dict['total-gbp'])
-    return ret
+computer = NonCoreContract.getNonCoreContract('computer')
+comterp = computer.callFunction('create_comterp', [])
 
 inv.getResponse().setContentType("text/csv")
 inv.getResponse().setHeader('Content-Disposition', 'filename=output.csv;')
-pw = inv.getResponse().getWriter()
 year = inv.getInteger('year')
+pattern = inv.getString('pattern')
 if not inv.isValid():
     raise UserException()
+pattern = pattern.strip()
+
+pw = inv.getResponse().getWriter()
+
 cal = MonadDate.getCalendar()
 cal.clear()
 cal.set(Calendar.YEAR, year)
@@ -4419,49 +4151,75 @@ year_finish = HhEndDate(cal.getTime())
 cal.add(Calendar.YEAR, -1)
 cal.add(Calendar.MINUTE, 30)
 year_start = HhEndDate(cal.getTime())
-
-triad_query = Hiber.session().createQuery("select datum from HhDatum datum where datum.channel.supplyGeneration.supply = :supply and datum.channel.isKwh is true and datum.channel.isImport is :isImport and datum.endDate.date = :triadDate")
+cal.add(Calendar.MONTH, 11)
+march_start = HhEndDate(cal.getTime())
 
 triad_contract = NonCoreContract.getNonCoreContract('TRIAD')
-triad_dates = triad_contract.callFunction('triad_dates', [year_finish])
-pw.println(',,Import,,,,,,,,,,,,,,,Export')
-pw.println(',,,' + triad_dates[0].toString() + ',,,,' + triad_dates[1].toString() + ',,,,' + triad_dates[2].toString() + ',,,,Total,,,' + triad_dates[0].toString() + ',,,,' + triad_dates[1].toString() + ',,,,' + triad_dates[2].toString() + ',,,,Total')
-pw.println("Site Code, Site Name, Supply Name, Source, Generator Type, MPAN Core, MSP kW, Status, LLF, GSP kW, MSP kW, Status, LLF, GSP kW, MSP kW, Status, LLF, GSP kW, GSP kW, GBP, MPAN Core, MSP kW, Status, LLF, GSP kW, MSP kW, Status, LLF, GSP kW, MSP kW, Status, LLF, GSP kW, GSP kW, GBP")
-pw.flush()
-supplies = Hiber.session().createQuery("select distinct generation.supply, generation.supply.id from SupplyGeneration generation where generation.startDate.date <= :yearFinish and (generation.finishDate.date is null or generation.finishDate.date >= :yearStart) and generation.supply.source.code != 'sub' order by generation.supply.id").setTimestamp('yearStart', year_start.getDate()).setTimestamp('yearFinish', year_finish.getDate()).scroll()
-#supplies.last()
-#supplies.previous()
-while supplies.next():
-    supply = supplies.get(0)
-    triad_query.setEntity('supply', supply)
 
-    first_generation = supply.getGenerations(year_start, year_finish).get(0)
-    
-    import_mpan = first_generation.getImportMpan()
+def triad_csv(supply_source):
+    # T1 Date, T1 MSP kW, T1 Status, T1 LAF, T1 GSP kW, T2 Date, T2 MSP kW, T2 Status, T2 LAF, T2 GSP kW, T3 Date, T3 MSP kW, T3 Status, T3 LAF, T3 GSP kW, GSP kW, GBP
+    if supply_source is None:
+        return ['' for item in range(15)]
+
+    dso_contract = comterp.get('dso_contracts')(supply_source.dso_code, year_finish, year_finish, pw)[0]
+    bill = {}
+    supply_source.contract_function(triad_contract, 'triad')(bill, dso_contract, march_start, year_finish, supply_source)
+    values = [supply_source.id]
+    for i in range(3):
+        triad_prefix = 'triad-annual-' + str(i)
+        values.append(bill[triad_prefix + '-date'])
+        values.append(bill[triad_prefix + '-msp-kw'])
+        values.append(bill[triad_prefix + '-status'])
+        values.append(bill[triad_prefix + '-laf'])
+        values.append(bill[triad_prefix + '-gsp-kw'])
+
+    values.append(bill['triad-annual-gsp-kw'])
+    values.append(bill['triad-annual-gbp'])
+    return values
+
+
+pw.println("Site Code, Site Name, Supply Name, Source, Generator Type, Import MPAN Core, Import T1 Date, Import T1 MSP kW, Import T1 Status, Import T1 LAF, Import T1 GSP kW, Import T2 Date, Import T2 MSP kW, Import T2 Status, Import T2 LAF, Import T2 GSP kW, Import T3 Date, Import T3 MSP kW, Import T3 Status, Import T3 LAF, Import T3 GSP kW, Import GSP kW, Import GBP, Export MPAN Core, Export T1 Date, Export T1 MSP kW, Export T1 Status, Export T1 LAF, Export T1 GSP kW, Export T2 Date, Export T2 MSP kW, Export T2 Status, Export T2 LAF, Export T2 GSP kW, Export T3 Date, Export T3 MSP kW, Export T3 Status, Export T3 LAF, Export T3 GSP kW, Export GSP kW, Export GBP")
+pw.flush()
+
+forecast_date = comterp.get('forecast_date')()
+
+if len(pattern) > 0:
+    mpan_core = MpanCore.getMpanCore(pattern)
+    generations = Hiber.session().createQuery("from SupplyGeneration generation where generation.startDate.date <= :yearFinish and (generation.finishDate.date is null or generation.finishDate.date >= :yearFinish) and generation.supply.source.code != 'sub' and generation.supply = :supply").setEntity('supply', mpan_core.getSupply()).setTimestamp('yearFinish', year_finish.getDate()).scroll()
+else:
+    generations = Hiber.session().createQuery("from SupplyGeneration generation where generation.startDate.date <= :yearFinish and (generation.finishDate.date is null or generation.finishDate.date >= :yearFinish) and generation.supply.source.code != 'sub' order by generation.supply.id").setTimestamp('yearFinish', year_finish.getDate()).scroll()
+
+while generations.next():
+    generation = generations.get(0)
+    site = Hiber.session().createQuery("select siteSupGen.site from SiteSupplyGeneration siteSupGen where siteSupGen.supplyGeneration = :generation and siteSupGen.isPhysical is true").setEntity('generation', generation).uniqueResult()
+    supply = generation.getSupply()
+    pw.print(site.getCode() + ',"' + site.getName() + '","' + supply.getName() + '",' + supply.getSource().getCode())
+    pw.flush()
+
+    import_mpan = generation.getImportMpan()
     if import_mpan is None:
-        import_mpan_str = 'None'
+        import_supply_source = None
     else:
-        import_mpan_str = import_mpan.getCore().toString()
-    export_mpan = first_generation.getExportMpan()
+        import_supply_source = comterp.get('supply_source')(forecast_date, comterp, pw)
+        import_supply_source.init_from_mpan(year_finish, year_finish, import_mpan)
+    export_mpan = generation.getExportMpan()
     if export_mpan is None:
-        export_mpan_str = 'None'
+        export_supply_source = None
     else:
-        export_mpan_str = export_mpan.getCore().toString()
-    dso = first_generation.getDso()
-    an_llfc = first_generation.getMpans()[0].getLlfc()
-    voltage_level = an_llfc.getVoltageLevel().getCode()
-    is_substation = an_llfc.getIsSubstation()
-    dso_contract = dso.findContract('main')
-    site = Hiber.session().createQuery("select siteSupGen.site from SiteSupplyGeneration siteSupGen where siteSupGen.supplyGeneration = :supplyGeneration and siteSupGen.isPhysical is true").setEntity('supplyGeneration', first_generation).uniqueResult()
-    generation_type = supply.getGeneratorType()
-    if generation_type is None:
+        export_supply_source = comterp.get('supply_source')(forecast_date, comterp, pw)
+        export_supply_source.init_from_mpan(year_finish, year_finish, export_mpan)
+
+    gen_type = supply.getGeneratorType()
+    if gen_type is None:
         gen_type = ''
     else:
-        gen_type = generation_type.getCode()
-    pw.println(site.getCode() + ',"' + site.getName() + '","' + supply.getName() + '",' + supply.getSource().getCode() + ',' + gen_type + "," + import_mpan_str + "," + triad_csv(triad_contract, triad_query, triad_dates, True, dso_contract, voltage_level, is_substation, year_finish) + "," + export_mpan_str + "," + triad_csv(triad_contract, triad_query, triad_dates, False, dso_contract, voltage_level, is_substation, year_finish))
+        gen_type = gen_type.getCode()
+
+    for value in [gen_type] + triad_csv(import_supply_source) + triad_csv(export_supply_source):
+        pw.print("," + str(value))
     pw.flush()
     Hiber().session().clear()
-supplies.close()
+generations.close()
 pw.close()]]></value>
     <value><![CDATA[]]></value>
   </line>
@@ -6697,20 +6455,43 @@ comterp = computer.callFunction('create_comterp', [])
 
 forecast_date = comterp.get('forecast_date')()
 
-pw.print('MPAN Core, Start Date, Finish Date')
+pw.print('Import MPAN Core, Export MPAN Core, Start Date, Finish Date')
+bill_titles = comterp.get('contract_function')(contract, 'virtual_bill_titles')()
+for title in bill_titles:
+    pw.print(',' + title)
 pw.println('')
+pw.flush()
 
 generations = Hiber.session().createQuery("select distinct generation from SupplyGeneration generation where (generation.finishDate.date is null or generation.finishDate.date >= :startDate) and generation.startDate.date <= :finishDate and generation.hhdcContract = :contract order by generation.supply.id").setEntity('contract', contract).setTimestamp('startDate', start_date.getDate()).setTimestamp('finishDate', finish_date.getDate()).scroll()
 while generations.next():
     generation = generations.get(0)
-    mpan = generation.getMpans().iterator().next()
+    import_mpan = generation.getImportMpan()
+    if import_mpan is None:
+        import_mpan_core_str = ''
+    else:
+        mpan = import_mpan
+        import_mpan_core_str = import_mpan.getCore().toString()
+
+    export_mpan = generation.getExportMpan()
+    if export_mpan is None:
+        export_mpan_core_str = ''
+    else:
+        mpan = export_mpan
+        export_mpan_core_str = export_mpan.getCore().toString()
+
     supply_source = comterp.get('supply_source')(forecast_date, comterp, pw)
     supply_source.init_from_mpan(start_date, finish_date, mpan)
     bill = supply_source.contract_function(contract, 'virtual_bill')(supply_source)
     
-    pw.print(mpan.getCore().toString() + ',' + str(start_date) + ',' + str(finish_date))
-    for k, v in bill.iteritems():
-        pw.print(',' + str(k) + ',' + str(v))
+    pw.print(import_mpan_core_str + ',' + export_mpan_core_str + ',' + str(start_date) + ',' + str(finish_date) + ',')
+    for title in bill_titles:
+        pw.print('"' + str(bill.get(title, '')) + '",')
+        if title in bill:
+            del bill[title]
+    keys = bill.keys()
+    keys.sort()
+    for k in keys:
+        pw.print(',"' + k + '","' + str(bill[k]) + '"')
     pw.println('')
     pw.flush()
     Hiber.session().clear()
@@ -7944,149 +7725,51 @@ if inv.hasParameter("search-pattern"):
     <value>insert</value>
     <value>report</value>
     <value>101</value>
-    <value>0 Free 6</value>
-    <value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree, UserException
-from net.sf.chellow.billing import SupplierContract
+    <value>0 Admin: Supplier Contract Export</value>
+    <value><![CDATA[from net.sf.chellow.monad import Hiber, UserException, MonadUtils
+from net.sf.chellow.monad.types import UriPathElement
+from java.util import GregorianCalendar, TimeZone, Locale, Calendar
+from net.sf.chellow.physical import HhEndDate
+from java.text import DateFormat
+from java.io import OutputStreamWriter, PrintWriter
+from java.security import MessageDigest
+from com.Ostermiller.util import Base64
+import java.lang.String
 
-contract_id = inv.getLong('supplier-contract-id')
-contract = SupplierContract.getSupplierContract(contract_id)
-account_snags_element = doc.createElement('account-snags')
-source.appendChild(account_snags_element)
-account_snags_element.appendChild(contract.toXml(doc, XmlTree('party')))
-source.appendChild(account_snags_element)
-for account_snag in Hiber.session().createQuery("from AccountSnag snag where snag.isIgnored is false and snag.account.contract = :contract order by snag.account.reference, snag.description, snag.startDate.date").setEntity('contract', contract).list():
-    account_snags_element.appendChild(account_snag.toXml(doc, XmlTree('account')))]]></value>
-    <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
-<xsl:stylesheet version="1.0"
-    xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
-    <xsl:output method="html" encoding="US-ASCII"
-        doctype-public="-//W3C//DTD HTML 4.01//EN"
-        doctype-system="http://www.w3.org/TR/html4/strict.dtd" indent="yes" />
-    <xsl:template match="/">
-        <html>
-            <head>
-                <link rel="stylesheet" type="text/css"
-                    href="{/source/request/@context-path}/reports/19/output/" />
+def print_line(pw, values):
+    pw.println('    <line>')
+    for value in values:
+        if value is None:
+            value = ''
+        else:
+            value = str(value)
+        pw.println('        <value>&lt;![CDATA[' + value + ']]&gt;</value>')
+    pw.println('    </line>')
 
-                <title>
-                    Home &gt; Supplier Contracts &gt;
-                    <xsl:value-of
-                        select="/source/account-snags/supplier-contract/@name" />
-                    &gt; Account Snags
-                </title>
-            </head>
-            <body>
-                <p>
-                    <a
-                        href="{/source/request/@context-path}/reports/1/output/">
-                        <xsl:value-of
-                            select="'Home'" />
-                    </a>
-                    &gt;
-                    <a
-                        href="{/source/request/@context-path}/reports/75/output/">
-                        <xsl:value-of select="'Supplier Contracts'" />
-                    </a>
-                    &gt;
-                    <a
-                        href="{/source/request/@context-path}/reports/77/output/?supplier-contract-id={/source/account-snags/supplier-contract/@id}">
-                        <xsl:value-of
-                            select="/source/account-snags/supplier-contract/@name" />
-                    </a>
-                    &gt;
-                    <xsl:value-of select="'Account Snags ['" />
-                    <a
-                        href="{/source/request/@context-path}/supplier-contracts/{/source/account-snags/supplier-contract/@id}/account-snags/">
-                        <xsl:value-of select="'edit'" />
-                    </a>
-                    <xsl:value-of select="']'" />
-                </p>
-                <br />
-                <xsl:if test="//message">
-                    <ul>
-                        <xsl:for-each select="//message">
-                            <li>
-                                <xsl:value-of select="@description" />
-                            </li>
-                        </xsl:for-each>
-                    </ul>
-                </xsl:if>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Chellow Id</th>
-                            <th>Account</th>
-                            <th>Start Date</th>
-                            <th>Finish Date</th>
-                            <th>Date Created</th>
-                            <th>Date Resolved</th>
-                            <th>Is Ignored?</th>
-                            <th>Description</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <xsl:for-each
-                            select="/source/account-snags/account-snag">
-                            <tr>
-                                <td>
-                                    <a
-                                        href="{/source/request/@context-path}/reports/103/output/?snag-id={@id}">
-                                        <xsl:value-of select="@id" />
-                                    </a>
-                                </td>
-                                <td>
-                                    <a
-                                        href="{/source/request/@context-path}/reports/83/output/?account-id={account/@id}">
-                                        <xsl:value-of
-                                            select="account/@reference" />
-                                    </a>
-                                </td>
-                                <td>
-                                    <xsl:value-of
-                                        select="concat(hh-end-date[@label='start']/@year, '-', hh-end-date[@label='start']/@month, '-', hh-end-date[@label='start']/@day)" />
-                                </td>
-                                <td>
-                                    <xsl:value-of
-                                        select="concat(hh-end-date[@label='finish']/@year, '-', hh-end-date[@label='finish']/@month, '-', hh-end-date[@label='finish']/@day)" />
-                                </td>
-                                <td>
-                                    <xsl:value-of
-                                        select="concat(date[@label='created']/@year, '-', date[@label='created']/@month, '-', date[@label='created']/@day)" />
-                                </td>
-                                <td>
-                                    <xsl:choose>
-                                        <xsl:when
-                                            test="hh-end-date[@label='resolved']">
-                                            <xsl:value-of
-                                                select="concat(hh-end-date[@label='resolved']/@year, '-', hh-end-date[@label='resolved']/@month, '-', hh-end-date[@label='resolved']/@day)" />
-                                        </xsl:when>
-                                        <xsl:otherwise>
-                                            Unresolved
-                                        </xsl:otherwise>
-                                    </xsl:choose>
-                                </td>
-                                <td>
-                                    <xsl:choose>
-                                        <xsl:when
-                                            test="@is-ignored = 'true'">
-                                            Yes
-                                        </xsl:when>
-                                        <xsl:otherwise>
-                                            No
-                                        </xsl:otherwise>
-                                    </xsl:choose>
-                                </td>
-                                <td>
-                                    <xsl:value-of select="@description" />
-                                </td>
-                            </tr>
-                        </xsl:for-each>
-                    </tbody>
-                </table>
-            </body>
-        </html>
-    </xsl:template>
-</xsl:stylesheet>]]></value>
+inv.getResponse().setContentType('text/xml')
+inv.getResponse().setHeader('Content-Disposition', 'attachment; filename=output.xml;')
+pw = inv.getResponse().getWriter()
+
+pw.println('<?xml version="1.0"?>')
+pw.flush()
+pw.println('<csv>')
+
+contracts = Hiber.session().createQuery("from SupplierContract contract order by contract.name").scroll()
+while contracts.next():
+    contract = contracts.get(0)
+    contract_name = contract.getName()
+    rate_scripts = Hiber.session().createQuery("from RateScript script where script.contract.id = :contractId order by script.startDate.date").setLong('contractId', contract.getId()).list()
+    start_rate_script = rate_scripts[0]
+    print_line(pw, ['insert', 'supplier-contract', contract_name, start_rate_script.getStartDate(), rate_scripts[len(rate_scripts) - 1].getFinishDate(), contract.getChargeScript(), start_rate_script.getScript()])
+    for i in range(1, len(rate_scripts)):
+        rate_script = rate_scripts[i]
+        print_line(pw, ['insert', 'supplier-contract-rate-script', contract.getName(), rate_script.getStartDate(), rate_script.getScript()])
+Hiber.session().clear()
+contracts.close()
+pw.println('</csv>')
+pw.flush()
+pw.close()]]></value>
+    <value><![CDATA[]]></value>
   </line>
   <line>
     <value>insert</value>
@@ -10722,6 +10405,14 @@ pw.close()]]></value>
                     </li>
                     <li>
                         <a
+                            href="{/source/request/@context-path}/reports/101/output/">Supplier Contract Export</a>
+                    </li>
+                    <li>
+                        <a
+                            href="{/source/request/@context-path}/reports/31/output/">HHDC Contract Export</a>
+                    </li>
+                    <li>
+                        <a
                             href="{/source/request/@context-path}/configuration/">
                             Configuration
                         </a>
@@ -12079,7 +11770,8 @@ for year in range(10):
                     <fieldset>
                         <legend>Download Supplies TRIAD CSV</legend>
                         <br/>
-                        <xsl:value-of select="'For '"/>
+                        <xsl:value-of select="'For MPAN core '"/><input name="pattern"/>
+                        <xsl:value-of select="' for '"/>
                         <select name="year">
                             <xsl:for-each select="/source/years/year">
                                 <option value="{@year}">

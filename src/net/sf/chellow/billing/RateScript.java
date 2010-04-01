@@ -44,6 +44,7 @@ import net.sf.chellow.physical.PersistentEntity;
 import net.sf.chellow.ui.GeneralImport;
 
 import org.python.core.PyException;
+import org.python.util.PythonInterpreter;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -179,6 +180,12 @@ public class RateScript extends PersistentEntity {
 			throw new UserException(
 					"The start date can't be after the finish date");
 		}
+		PythonInterpreter interp = new PythonInterpreter();
+		try {
+			interp.compile(script);
+		} catch (Throwable e) {
+			throw new UserException(HttpException.getStackTraceString(e));
+		}
 		setScript(script);
 	}
 
@@ -298,7 +305,7 @@ public class RateScript extends PersistentEntity {
 				e.setDocument(document());
 				throw e;
 			}
-			inv.sendFound(contract.rateScriptsInstance().getUri());
+			inv.sendSeeOther(contract.rateScriptsInstance().getUri());
 		} else {
 			String script = inv.getString("script");
 			Date startDate = inv.getDate("start-date");

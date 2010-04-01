@@ -347,7 +347,7 @@ class SiteSource(DataSource):
             ct_cal = GregorianCalendar(TimeZone.getTimeZone("Europe/London"), Locale.UK)
             utc_cal.setTime(self.finish_date.getDate())
             ct_cal.setTime(self.finish_date.getDate())
-            hh_data.append({'hist-import-net-kwh': 0, 'hist-import-net-kvarh': 0, 'hist-export-net-kwh': 0, 'hist-export-net-kvarh': 0, 'hist-import-gen-kwh': 0, 'hist-export-gen-kwh': 0, 'hist-import-3rd-party-kwh': 0, 'hist-export-3rd-party-kwh': 0, 'hist-kwh': 0, 'msp-kwh': 0, 'msp-kw': 0, 'export-net-kwh': 0, 'import-gen-kwh': 0, 'export-gen-kwh': 0, 'hist-used-kwh': 0, 'hist-kvarh': 0, 'imp-msp-kvarh': 0, 'imp-msp-kvar': 0, 'exp-msp-kvarh': 0, 'exp-msp-kvar': 0, 'used-kwh': 0, 'import-net-kwh': 0, 'change-kwh': 0, 'import-3rd-party-kwh': 0, 'export-3rd-party-kwh': 0, 'end-date': self.finish_date.getDate(), 'ct-day': ct_cal.get(5), 'utc-month': utc_cal.get(2), 'utc-day': utc_cal.get(5), 'utc-decimal-hour': utc_cal.get(11) + float(utc_cal.get(12)) / 60, 'ct-month': ct_cal.get(2), 'ct-decimal-hour': ct_cal.get(11) + ct_cal.get(12) / 60, 'ct-day-of-week': ct_cal.get(7), 'utc-day-of-week': utc_cal.get(7)})
+            hh_data.append({'status': 'E', 'hist-import-net-kwh': 0, 'hist-import-net-kvarh': 0, 'hist-export-net-kwh': 0, 'hist-export-net-kvarh': 0, 'hist-import-gen-kwh': 0, 'hist-export-gen-kwh': 0, 'hist-import-3rd-party-kwh': 0, 'hist-export-3rd-party-kwh': 0, 'hist-kwh': 0, 'msp-kwh': 0, 'msp-kw': 0, 'export-net-kwh': 0, 'import-gen-kwh': 0, 'export-gen-kwh': 0, 'hist-used-kwh': 0, 'hist-kvarh': 0, 'imp-msp-kvarh': 0, 'imp-msp-kvar': 0, 'exp-msp-kvarh': 0, 'exp-msp-kvar': 0, 'used-kwh': 0, 'import-net-kwh': 0, 'change-kwh': 0, 'import-3rd-party-kwh': 0, 'export-3rd-party-kwh': 0, 'end-date': self.finish_date.getDate(), 'ct-day': ct_cal.get(5), 'utc-month': utc_cal.get(2), 'utc-day': utc_cal.get(5), 'utc-decimal-hour': utc_cal.get(11) + float(utc_cal.get(12)) / 60, 'ct-month': ct_cal.get(2), 'ct-decimal-hour': ct_cal.get(11) + ct_cal.get(12) / 60, 'ct-day-of-week': ct_cal.get(7), 'utc-day-of-week': utc_cal.get(7)})
 
         if self.is_displaced and self.pc_code == '00' and self.is_import:
             summary['dso-bill'] = {}
@@ -542,27 +542,31 @@ class SupplySource(DataSource):
             mpan_core = MpanCore.getMpanCore(self.id)
             supply = mpan_core.getSupply()
             con = Hiber.session().connection()
-            stmt = con.prepareStatement("select sum(case when channel.is_kwh then hh_datum.value else 0 end) as imp_kwh, sum(case when not channel.is_kwh and channel.is_import then hh_datum.value else 0 end) as imp_kvarh, sum(case when not channel.is_kwh and not channel.is_import then hh_datum.value else 0  end) as exp_kvarh, hh_datum.end_date from hh_datum, channel, supply_generation where hh_datum.channel_id = channel.id and channel.supply_generation_id = supply_generation.id and supply_generation.supply_id = ? and (channel.is_import = ? or channel.is_kwh = FALSE) and hh_datum.end_date >= ? and hh_datum.end_date <= ? group by hh_datum.end_date order by hh_datum.end_date", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.CLOSE_CURSORS_AT_COMMIT)
+            if self.is_import:
+                hql = "select sum(case when channel.is_kwh then hh_datum.value else 0 end) as kwh, max(case when channel.is_kwh then hh_datum.status else '' end) as status, sum(case when not channel.is_kwh and channel.is_import then hh_datum.value else 0 end) as imp_kvarh, sum(case when not channel.is_kwh and not channel.is_import then hh_datum.value else 0  end) as exp_kvarh, hh_datum.end_date from hh_datum, channel, supply_generation where hh_datum.channel_id = channel.id and channel.supply_generation_id = supply_generation.id and supply_generation.supply_id = ? and (channel.is_import = TRUE or channel.is_kwh = FALSE) and hh_datum.end_date >= ? and hh_datum.end_date <= ? group by hh_datum.end_date order by hh_datum.end_date"
+            else:
+                hql = "select sum(case when channel.is_kwh then hh_datum.value else 0 end) as kwh, max(case when not channel.is_import and channel.is_kwh then hh_datum.status else '' end) as status, sum(case when not channel.is_kwh and channel.is_import then hh_datum.value else 0 end) as imp_kvarh, sum(case when not channel.is_kwh and not channel.is_import then hh_datum.value else 0  end) as exp_kvarh, hh_datum.end_date from hh_datum, channel, supply_generation where hh_datum.channel_id = channel.id and channel.supply_generation_id = supply_generation.id and supply_generation.supply_id = ? and (channel.is_import = FALSE or channel.is_kwh = FALSE) and hh_datum.end_date >= ? and hh_datum.end_date <= ? group by hh_datum.end_date order by hh_datum.end_date"
+            stmt = con.prepareStatement(hql, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.CLOSE_CURSORS_AT_COMMIT)
             stmt.setLong(1, supply.getId())
-            stmt.setBoolean(2, self.is_import)
-            stmt.setTimestamp(3, Timestamp(history_start.getDate().getTime()))
-            stmt.setTimestamp(4, Timestamp(history_finish.getDate().getTime()))
+            stmt.setTimestamp(2, Timestamp(history_start.getDate().getTime()))
+            stmt.setTimestamp(3, Timestamp(history_finish.getDate().getTime()))
             #stmt.setFetchSize(100)
             rs = stmt.executeQuery()
             #self.pw.println("whole data: starting loop " + str(System.currentTimeMillis() - timing))
             year_advance = -1 * year_adjustment
             while rs.next():
                 end_date = rs.getTimestamp('end_date')
-                imp_kwh = rs.getBigDecimal('imp_kwh').doubleValue()
+                msp_kwh = rs.getBigDecimal('kwh').doubleValue()
                 imp_kvarh = rs.getBigDecimal('imp_kvarh').doubleValue()
                 exp_kvarh = rs.getBigDecimal('exp_kvarh').doubleValue()
+                status = rs.getString('status')
 
                 utc_cal.setTime(end_date)
                 ct_cal.setTime(end_date)
                 utc_cal.add(Calendar.YEAR, year_advance)
                 ct_cal.add(Calendar.YEAR, year_advance)
 
-                data_hh.append({'imp-msp-kvarh': imp_kvarh, 'imp-msp-kvar': imp_kvarh * 2, 'exp-msp-kvarh': exp_kvarh, 'exp-msp-kvar': exp_kvarh * 2, 'msp-kw': imp_kwh * 2, 'msp-kwh': imp_kwh, 'change-kwh': change_kwh, 'hist-kwh': imp_kwh, 'end-date': utc_cal.getTime(), 'ct-day': ct_cal.get(5), 'utc-month': utc_cal.get(2), 'utc-day': utc_cal.get(5), 'utc-decimal-hour': utc_cal.get(11) + float(utc_cal.get(12)) / 60, 'ct-month': ct_cal.get(2), 'ct-decimal-hour': ct_cal.get(11) + float(ct_cal.get(12)) / 60, 'ct-day-of-week': ct_cal.get(7), 'utc-day-of-week': utc_cal.get(7)})
+                data_hh.append({'status': status, 'imp-msp-kvarh': imp_kvarh, 'imp-msp-kvar': imp_kvarh * 2, 'exp-msp-kvarh': exp_kvarh, 'exp-msp-kvar': exp_kvarh * 2, 'msp-kw': msp_kwh * 2, 'msp-kwh': msp_kwh, 'change-kwh': change_kwh, 'hist-kwh': msp_kwh, 'end-date': utc_cal.getTime(), 'ct-day': ct_cal.get(5), 'utc-month': utc_cal.get(2), 'utc-day': utc_cal.get(5), 'utc-decimal-hour': utc_cal.get(11) + float(utc_cal.get(12)) / 60, 'ct-month': ct_cal.get(2), 'ct-decimal-hour': ct_cal.get(11) + float(ct_cal.get(12)) / 60, 'ct-day-of-week': ct_cal.get(7), 'utc-day-of-week': utc_cal.get(7)})
 
             rs.close()
             stmt.close()
@@ -573,7 +577,7 @@ class SupplySource(DataSource):
             ct_cal = GregorianCalendar(TimeZone.getTimeZone("Europe/London"), Locale.UK)
             utc_cal.setTime(self.finish_date.getDate())
             ct_cal.setTime(self.finish_date.getDate())
-            data_hh.append({'used-kwh': 0, 'hist-kwh': 0, 'msp-kwh': 0, 'msp-kw': 0, 'imp-msp-kvarh': 0, 'imp-msp-kvar': 0, 'exp-msp-kvarh': 0, 'end-date': self.finish_date.getDate(), 'ct-day': ct_cal.get(5), 'utc-month': utc_cal.get(2), 'utc-day': utc_cal.get(5), 'utc-decimal-hour': utc_cal.get(11) + float(utc_cal.get(12)) / 60, 'ct-month': ct_cal.get(2), 'ct-decimal-hour': ct_cal.get(11) + ct_cal.get(12) / 60, 'ct-day-of-week': ct_cal.get(7), 'utc-day-of-week': utc_cal.get(7)})
+            data_hh.append({'status': 'E', 'used-kwh': 0, 'hist-kwh': 0, 'msp-kwh': 0, 'msp-kw': 0, 'imp-msp-kvarh': 0, 'imp-msp-kvar': 0, 'exp-msp-kvarh': 0, 'end-date': finish_date.getDate(), 'ct-day': ct_cal.get(5), 'utc-month': utc_cal.get(2), 'utc-day': utc_cal.get(5), 'utc-decimal-hour': utc_cal.get(11) + float(utc_cal.get(12)) / 60, 'ct-month': ct_cal.get(2), 'ct-decimal-hour': ct_cal.get(11) + ct_cal.get(12) / 60, 'ct-day-of-week': ct_cal.get(7), 'utc-day-of-week': utc_cal.get(7)})
 
         for name in ['msp-kwh', 'hist-kwh', 'imp-msp-kvarh', 'exp-msp-kvarh']:
             datum_list = [datum[name] for datum in data_hh]
@@ -581,7 +585,7 @@ class SupplySource(DataSource):
             summary['max-' + name] = max(datum_list)
 
         #self.pw.println("whole data: starting dso hh " + str(System.currentTimeMillis() - timing))
-        if self.pc_code == '00' and self.is_import:
+        if self.pc_code == '00':
             summary['dso-bill'] = {}
             self.dso_hh(summary['dso-bill'], data_hh)
         #self.pw.println("finished create whole data " + str(System.currentTimeMillis() - timing))
@@ -590,8 +594,8 @@ class SupplySource(DataSource):
 
 
 
-def dso_contracts(dso, start_date, finish_date, pw):
-    return Hiber.session().createQuery("select distinct contract from DsoContract contract join contract.rateScripts script where contract.party.code = :dsoCode and contract.name like 'main%' and script.startDate.date <= :finishDate and (script.finishDate.date is null or script.finishDate.date >= :startDate)").setString('dsoCode', dso).setTimestamp('startDate', start_date.getDate()).setTimestamp('finishDate', finish_date.getDate()).list()
+def dso_contracts(dso_code, start_date, finish_date, pw):
+    return Hiber.session().createQuery("select distinct contract from DsoContract contract join contract.rateScripts script where contract.party.code = :dsoCode and contract.name like 'main%' and script.startDate.date <= :finishDate and (script.finishDate.date is null or script.finishDate.date >= :startDate)").setString('dsoCode', dso_code).setTimestamp('startDate', start_date.getDate()).setTimestamp('finishDate', finish_date.getDate()).list()
 
 
 def site_source(site, start_date, finish_date, forecast_date, comterp, pw):
@@ -683,6 +687,7 @@ def triad(bill, dso_contract, month_begin, month_end, data_source):
         triad_dates.append(HhEndDate(utc_cal.getTime()))
     #data_source.pw.println("triad dates " + str(triad_dates))
     est_triad_kws = [data_source.create_whole_data(t_date, t_date, financial_year_start)['data'][0] for t_date in triad_dates]
+
     #pw.println("finished getting data " + str(System.currentTimeMillis() - timing))
     if data_source.site_id is None and (data_source.is_new or triad_dates[2].before(MpanCore.getMpanCore(data_source.id).getSupply().getGenerationFirst().getStartDate())):
         triad_rate_script = NonCoreContract.getNonCoreContract("TRIAD Estimates").rateScript(month_begin)
@@ -691,33 +696,50 @@ def triad(bill, dso_contract, month_begin, month_end, data_source):
              raise Exception('The id ' + data_source.id + ' cannot be found in the list of triad estimates in the rate script.')
         est_triad_kw = triad_estimates[data_source.id]
         est_triad_kws = [{'gsp-kw': est_triad_kw, 'msp-kw': est_triad_kw, 'laf': 1, 'end-date': tdate.getDate()} for tdate in triad_dates]
-
+    
     est_triad = triad_calc(dso_contract, est_triad_kws, financial_year_start, data_source)
 
-    bill['triad-working'] += ' (estimate: ' + str(est_triad['total-gsp-kw'] / 12) + ' kw at gsp from {' + est_triad['working'] + '})'
     est_triad_gbp = est_triad['total-gbp'] / 12
     bill['triad-gbp'] += est_triad_gbp
+    bill['triad-working'] += ' (estimate: ' + str(est_triad['total-gsp-kw'] / 12) + ' kw and ' + str(est_triad_gbp) + ' GBP at gsp from {' + est_triad['working'] + '})'
 
     if month_num == Calendar.MARCH and not data_source.is_new:
+        #T1 Date, T1 MSP kW, T1 Status, T1 LAF, T1 GSP kW, T2 Date, T2 MSP kW, T2 Status, T2 LAF, T2 GSP kW, T3 Date, T3 MSP kW, T3 Status, T3 LAF, T3 GSP kW, GSP kW, GBP
         #data_source.pw.println('t dates ' + str(get_triad_dates(month_begin, data_source)))
         triad_kws = [data_source.create_whole_data(t_date, t_date, data_source.forecast_date)['data'][0] for t_date in get_triad_dates(month_begin, data_source)]
+
+        for i in range(len(triad_kws)):
+            triad_hh = triad_kws[i]
+            triad_prefix = 'triad-annual-' + str(i)
+            bill[triad_prefix + '-date'] = HhEndDate(triad_hh['end-date'])
+            bill[triad_prefix + '-msp-kw'] = triad_hh['msp-kw']
+            bill[triad_prefix + '-status'] = triad_hh['status']
+            bill[triad_prefix + '-laf'] = triad_hh['laf']
+            bill[triad_prefix + '-gsp-kw'] = triad_hh['gsp-kw']
+
         triad = triad_calc(dso_contract, triad_kws, financial_year_start, data_source)
+        bill['triad-annual-gbp'] = triad['total-gbp']
+        bill['triad-annual-gsp-kw'] = triad['total-gsp-kw']
+
         utc_cal.setTime(month_end.getDate())
-        sup_gen = MpanCore.getMpanCore(data_source.id).getSupply().getGeneration(HhEndDate(utc_cal.getTime()))
+        sup = MpanCore.getMpanCore(data_source.id).getSupply()
+        sup_gen = sup.getGeneration(HhEndDate(utc_cal.getTime()))
         est_months = 0
-        while sup_gen is not None and sup_gen.getImportMpan() is not None and sup_gen.getImportMpan().getSupplierContract().getId() == contract.getId() and utc_cal.getTime().after(year_ago) :
+        while sup_gen is not None and utc_cal.getTime().after(financial_year_start.getDate()) :
             est_months += 1
             utc_cal.add(Calendar.MONTH, -1)
-            sup_gen = supply.getGeneration(HhEndDate(utc_cal.getTime()))
+            sup_gen = sup.getGeneration(HhEndDate(utc_cal.getTime()))
+        est_total = est_triad_gbp * est_months
         bill['triad-gbp'] += triad['total-gbp'] - est_triad_gbp * est_months
     #data_source.pw.println("finished triad " + str(System.currentTimeMillis() - timing))
+        bill['triad-working'] += ' march GBP:' + str(triad['total-gbp']) + ' - total estimates ' + str(est_total) + ' for ' + str(est_months) + ' estimated months'
 
 
 def triad_calc(dso_contract, triad_data, financial_year_start, data_source):
     result = {'working': '', 'total-gsp-kw': 0}
     for datum in triad_data:
         result['total-gsp-kw'] += datum['gsp-kw']
-        result['working'] += str(datum['msp-kw']) + ' msp kW ' + str(datum['laf']) + ' laf ' + str(datum['gsp-kw']) + ' gsp kW ' + str(HhEndDate(datum['end-date']))
+        result['working'] += ' ' + str(datum['msp-kw']) + ' msp kW ' + str(datum['laf']) + ' laf ' + str(datum['gsp-kw']) + ' gsp kW ' + str(HhEndDate(datum['end-date']))
     result['total-gsp-kw'] /= 3
     result['total-gbp'] = result['total-gsp-kw'] * data_source.rate(data_source.contract_function(dso_contract, 'get_rate_script')(financial_year_start), 'triad')
     return result]]></value>
@@ -760,8 +782,8 @@ def triad_dates():
         <value><![CDATA[insert]]></value>
         <value><![CDATA[non-core-contract]]></value>
         <value><![CDATA[POOL]]></value>
-        <value><![CDATA[VAT]]></value>
-        <value><![CDATA[2000-01-03T00:00Z]]></value>
+        <value><![CDATA[vat]]></value>
+        <value><![CDATA[2010-03-25T00:00Z]]></value>
         <value><![CDATA[]]></value>
         <value><![CDATA[]]></value>
         <value><![CDATA[]]></value>

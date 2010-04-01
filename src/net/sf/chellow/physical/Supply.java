@@ -463,7 +463,8 @@ public class Supply extends PersistentEntity {
 			existingExportSsc = existingExportMpan.getSsc();
 			existingExportSupplyCapacity = existingExportMpan
 					.getAgreedSupplyCapacity();
-		} else if (existingImportMpan != null) {
+		}
+		if (existingImportMpan != null) {
 			existingImportMpanStr = existingImportMpan.toString();
 			existingImportSupplierAccount = existingImportMpan
 					.getSupplierAccount();

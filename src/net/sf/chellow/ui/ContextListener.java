@@ -175,6 +175,25 @@ public class ContextListener implements ServletContextListener {
 		Hiber.close();
 
 		VoltageLevel.insertVoltageLevels();
+		UserRole.insertUserRole(UserRole.EDITOR);
+		UserRole.insertUserRole(UserRole.PARTY_VIEWER);
+		UserRole.insertUserRole(UserRole.VIEWER);
+		User.insertUser(new EmailAddress("administrator@localhost"),
+				"administrator", null, UserRole.getUserRole(UserRole.EDITOR),
+				null);
+		Hiber.commit();
+		Source.insertSource(Source.NETWORK_CODE, "Public distribution system.");
+		Source.insertSource(Source.SUBMETER_CODE, "Sub meter");
+		Source.insertSource(Source.GENERATOR_NETWORK_CODE,
+				"Generator connected directly to network.");
+		Source.insertSource(Source.GENERATOR_CODE, "Generator.");
+		Source.insertSource(Source.THIRD_PARTY_CODE, "Third party supply.");
+		Source.insertSource(Source.THIRD_PARTY_REVERSE_CODE,
+				"Third party supply with import going out of the site.");
+		GeneratorType.insertGeneratorType("chp", "Combined heat and power.");
+		GeneratorType.insertGeneratorType("lm", "Load management.");
+		GeneratorType.insertGeneratorType("turb", "Water turbine.");
+		Hiber.commit();
 
 		try {
 			Debug.print("Starting to load MDD.");
@@ -217,24 +236,5 @@ public class ContextListener implements ServletContextListener {
 		Report.loadReports(context);
 		NonCoreContract.loadNonCoreContracts(context);
 		Hiber.flush();
-		UserRole.insertUserRole(UserRole.EDITOR);
-		UserRole.insertUserRole(UserRole.PARTY_VIEWER);
-		UserRole.insertUserRole(UserRole.VIEWER);
-		User.insertUser(new EmailAddress("administrator@localhost"),
-				"administrator", null, UserRole.getUserRole(UserRole.EDITOR),
-				null);
-		Hiber.commit();
-		Source.insertSource(Source.NETWORK_CODE, "Public distribution system.");
-		Source.insertSource(Source.SUBMETER_CODE, "Sub meter");
-		Source.insertSource(Source.GENERATOR_NETWORK_CODE,
-				"Generator connected directly to network.");
-		Source.insertSource(Source.GENERATOR_CODE, "Generator.");
-		Source.insertSource(Source.THIRD_PARTY_CODE, "Third party supply.");
-		Source.insertSource(Source.THIRD_PARTY_REVERSE_CODE,
-				"Third party supply with import going out of the site.");
-		GeneratorType.insertGeneratorType("chp", "Combined heat and power.");
-		GeneratorType.insertGeneratorType("lm", "Load management.");
-		GeneratorType.insertGeneratorType("turb", "Water turbine.");
-		Hiber.commit();
 	}
 }

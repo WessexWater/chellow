@@ -136,6 +136,8 @@ def month(bill, whole_data, data_source):
         billed_avail = max(availability, md_kva)
         bill['duos-availability-gbp'] += availability_rate * billed_avail
         bill['duos-availability-working'] += ' (billed_avail ' + str(billed_avail) + ' rate ' + str(availability_rate) + ')'
+        bill['duos-availability-agreed-kva'] = data_source.availability
+        bill['duos-availability-billed-kva'] = billed_avail
 
     bill['duos-standing-gbp'] += tariff['fixed-gbp-per-day']
 
@@ -736,6 +738,8 @@ def month(bill, whole_data, data_source):
         billed_avail = max(data_source.availability, year_md_kva_095[0])
         bill.setdefault('duos-availability-working', '')
         bill.setdefault('duos-availability-gbp', 0)
+        bill['duos-availability-agreed-kva'] = data_source.availability
+        bill['duos-availability-billed-kva'] = billed_avail
 
         bill['duos-availability-working'] += year_md_kva_095[1] + ' max(availability:' + str(data_source.availability) + ', year_md_kva_095:' + str(year_md_kva_095[0]) + '):' + str(billed_avail)
 
@@ -948,38 +952,38 @@ def duos_tariffs():
             'capacity-<=200-gbp-per-kva-per-month': 1.13,
             'capacity->200-gbp-per-kva-per-month': 1.00,
             'excess-capacity-gbp-per-kva-per-month': 0.45},
-'llfc(453,470)-pc(00)': {
-    'fixed-gbp-per-month': 15.97,
-    'day-gbp-per-kwh': 0.00649,
-    'night-gbp-per-kwh': 0.00126,
-    'capacity-<=200-gbp-per-kva-per-month': 1.13,
-    'capacity->200-gbp-per-kva-per-month': 1.00,
-    'excess-capacity-gbp-per-kva-per-month': 0.45},
-'llfc(658,476)-pc(00)': {
-    'fixed-gbp-per-month': 105.18,
-    'day-gbp-per-kwh': 0.00464,
-    'night-gbp-per-kwh': 0.00116,
-    'capacity-<=200-gbp-per-kva-per-month': 0.92,
-    'capacity->200-gbp-per-kva-per-month': 0.92,
-    'excess-capacity-gbp-per-kva-per-month': 0.43},
-'llfc(605)-pc(05-08)': {
-    'fixed-gbp-per-month': 107.80,
-    'day-gbp-per-kwh':  0.00406,
-    'capacity-<=200-gbp-per-kva-per-month': 0.92,
-    'capacity->200-gbp-per-kva-per-month': 0.92,
-    'excess-capacity-gbp-per-kva-per-month': 0.43,},
-'llfc(450)-pc(00)': {
-    'fixed-gbp-per-month': 159.7,
-    'day-gbp-per-kwh':   0.00544,
-    'capacity-<=200-gbp-per-kva-per-month': 0.92,
-    'capacity->200-gbp-per-kva-per-month': 0.92,
-    'excess-capacity-gbp-per-kva-per-month': 0.43,},
-'llfc(655)-pc(00)': {
-    'fixed-gbp-per-month': 105.18,
-    'day-gbp-per-kwh': 0.00406,
-    'capacity-<=200-gbp-per-kva-per-month': 0.92,
-    'capacity->200-gbp-per-kva-per-month': 0.92,
-    'excess-capacity-gbp-per-kva-per-month': 0.43,}}
+        'llfc(453,470)-pc(00)': {
+            'fixed-gbp-per-month': 15.97,
+            'day-gbp-per-kwh': 0.00649,
+            'night-gbp-per-kwh': 0.00126,
+            'capacity-<=200-gbp-per-kva-per-month': 1.13,
+            'capacity->200-gbp-per-kva-per-month': 1.00,
+            'excess-capacity-gbp-per-kva-per-month': 0.45},
+        'llfc(658,476)-pc(00)': {
+            'fixed-gbp-per-month': 105.18,
+            'day-gbp-per-kwh': 0.00464,
+            'night-gbp-per-kwh': 0.00116,
+            'capacity-<=200-gbp-per-kva-per-month': 0.92,
+            'capacity->200-gbp-per-kva-per-month': 0.92,
+            'excess-capacity-gbp-per-kva-per-month': 0.43},
+        'llfc(605)-pc(05-08)': {
+            'fixed-gbp-per-month': 107.80,
+            'day-gbp-per-kwh':  0.00406,
+            'capacity-<=200-gbp-per-kva-per-month': 0.92,
+            'capacity->200-gbp-per-kva-per-month': 0.92,
+            'excess-capacity-gbp-per-kva-per-month': 0.43,},
+        'llfc(450)-pc(00)': {
+            'fixed-gbp-per-month': 15.97,
+            'day-gbp-per-kwh':   0.00544,
+            'capacity-<=200-gbp-per-kva-per-month': 1.13,
+            'capacity->200-gbp-per-kva-per-month': 1.00,
+            'excess-capacity-gbp-per-kva-per-month': 0.45,},
+        'llfc(655)-pc(00)': {
+            'fixed-gbp-per-month': 105.18,
+            'day-gbp-per-kwh': 0.00406,
+            'capacity-<=200-gbp-per-kva-per-month': 0.92,
+            'capacity->200-gbp-per-kva-per-month': 0.92,
+            'excess-capacity-gbp-per-kva-per-month': 0.43,}}
 
 def lafs():
     return {
@@ -992,52 +996,95 @@ def lafs():
             'peak': 1.093,
             'winter-weekday': 1.087,
             'other': 1.078,
-            'night': 1.074}}
+            'night': 1.074}}]]></value>
+    </line>
+    <line>
+        <value><![CDATA[insert]]></value>
+        <value><![CDATA[dso-contract-rate-script]]></value>
+        <value><![CDATA[20]]></value>
+        <value><![CDATA[main]]></value>
+        <value><![CDATA[2009-10-01T00:30Z]]></value>
+        <value><![CDATA[def triad():
+    return 24.471461
 
-# old stuff
+def llfc_groups():
+    return {
+        '127': '127,473',
+        '473': '127,473',
+        '453': '453,470',
+        '658': '658,476',
+        '476': '658,476',
+        '401': '401,475',
+        '475': '401,475'}
 
-def peak_hv():
-    return 1.043
-def winter_weekday_hv():
-    return 1.039
-def other_hv():
-    return 1.034
-def night_hv():
-    return 1.029
-def peak_lv():
-    return 1.093
-def winter_weekday_lv():
-    return 1.087
-def other_lv():
-    return 1.078
-def night_lv():
-    return 1.074
+def duos_tariffs():
+    return {
+        'llfc(126)-pc(03)': {
+            'fixed-gbp-per-day': 0.0562,
+            'day-gbp-per-kwh': 0.01645},
+        'llfc(127,473)-pc(03)': {
+            'fixed-gbp-per-day': 0.0808,
+            'day-gbp-per-kwh': 0.01645},
+        'llfc(129)-pc(04)': {
+            'fixed-gbp-per-day': 0.0632,
+            'day-gbp-per-kwh': 0.01737,
+            'night-gbp-per-kwh': 0.00197},
+        'llfc(130)-pc(04)': {
+            'fixed-gbp-per-day': 0.0758,
+            'day-gbp-per-kwh': 0.01737,
+            'night-gbp-per-kwh': 0.00197},
+        'llfc(401,475)-pc(05-08)': {
+            'fixed-gbp-per-month': 18.58,
+            'day-gbp-per-kwh': 0.00649,
+            'night-gbp-per-kwh': 0.00126,
+            'capacity-<=200-gbp-per-kva-per-month': 1.13,
+            'capacity->200-gbp-per-kva-per-month': 1.00,
+            'excess-capacity-gbp-per-kva-per-month': 0.45},
+        'llfc(453,470)-pc(00)': {
+            'fixed-gbp-per-month': 15.97,
+            'day-gbp-per-kwh': 0.00649,
+            'night-gbp-per-kwh': 0.00126,
+            'capacity-<=200-gbp-per-kva-per-month': 1.13,
+            'capacity->200-gbp-per-kva-per-month': 1.00,
+            'excess-capacity-gbp-per-kva-per-month': 0.45},
+        'llfc(658,476)-pc(00)': {
+            'fixed-gbp-per-month': 105.18,
+            'day-gbp-per-kwh': 0.00464,
+            'night-gbp-per-kwh': 0.00116,
+            'capacity-<=200-gbp-per-kva-per-month': 0.92,
+            'capacity->200-gbp-per-kva-per-month': 0.92,
+            'excess-capacity-gbp-per-kva-per-month': 0.43},
+        'llfc(605)-pc(05-08)': {
+            'fixed-gbp-per-month': 107.80,
+            'day-gbp-per-kwh':  0.00406,
+            'capacity-<=200-gbp-per-kva-per-month': 0.92,
+            'capacity->200-gbp-per-kva-per-month': 0.92,
+            'excess-capacity-gbp-per-kva-per-month': 0.43,},
+        'llfc(450)-pc(00)': {
+            'fixed-gbp-per-month': 15.97,
+            'day-gbp-per-kwh':   0.00544,
+            'capacity-<=200-gbp-per-kva-per-month': 1.13,
+            'capacity->200-gbp-per-kva-per-month': 1.00,
+            'excess-capacity-gbp-per-kva-per-month': 0.45,},
+        'llfc(655)-pc(00)': {
+            'fixed-gbp-per-month': 105.18,
+            'day-gbp-per-kwh': 0.00406,
+            'capacity-<=200-gbp-per-kva-per-month': 0.92,
+            'capacity->200-gbp-per-kva-per-month': 0.92,
+            'excess-capacity-gbp-per-kva-per-month': 0.43,}}
 
-
-def duos_fixed_lv_gbp_per_month():
-    return 15.97
-def duos_day_lv_gbp_per_kwh():
-    return 0.00649
-def duos_night_lv_gbp_per_kwh():
-    return 0.00126
-def duos_capacity_le200_lv_gbp_per_kva_per_month():
-    return 1.13
-def duos_capacity_gt200_lv_gbp_per_kva_per_month():
-    return 1.00
-def duos_excess_capacity_lv_gbp_per_kva_per_month():
-    return 0.45
-def duos_fixed_hv_gbp_per_month():
-   return 105.18
-def duos_day_hv_gbp_per_kwh():
-   return 0.00464
-def duos_night_hv_gbp_per_kwh():
-   return 0.00116
-def duos_capacity_le200_hv_gbp_per_kva_per_month():
-   return 0.92
-def duos_capacity_gt200_hv_gbp_per_kva_per_month():
-   return 0.92
-def duos_excess_capacity_hv_gbp_per_kva_per_month():
-   return 0.43]]></value>
+def lafs():
+    return {
+        'hv': {
+            'peak': 1.043,
+            'winter-weekday': 1.039,
+            'other': 1.034,
+            'night': 1.029},
+        'lv': {
+            'peak': 1.093,
+            'winter-weekday': 1.087,
+            'other': 1.078,
+            'night': 1.074}}]]></value>
     </line>
     <line>
         <value><![CDATA[insert]]></value>
@@ -1089,11 +1136,6 @@ def hh(bill, hh_list, data_source):
     is_substation = data_source.is_substation
     llfc_code = data_source.llfc_code
 
-    bill['duos-night-kwh'] = 0
-    bill['duos-night-gbp'] = 0
-    bill['duos-day-kwh'] = 0
-    bill['duos-day-gbp'] = 0
-
     if voltage_level_code == 'HV':
         substation = ''
     else:
@@ -1118,14 +1160,23 @@ def hh(bill, hh_list, data_source):
                     head_list = head_list[:i]
                     break
 
-        for hh in head_list:
-            if 6.5 < hh['ct-decimal-hour'] <= 23.5:
-                bill['duos-day-kwh'] += hh['msp-kwh']
-                bill['duos-day-gbp'] += hh['msp-kwh'] * tariff['day-gbp-per-kwh']
-            else:
-                bill['duos-night-kwh'] += hh['msp-kwh']
-                bill['duos-night-gbp'] += hh['msp-kwh'] * tariff['night-gbp-per-kwh']
+        if data_source.is_import:
+            bill['duos-night-kwh'] = 0
+            bill['duos-night-gbp'] = 0
+            bill['duos-day-kwh'] = 0
+            bill['duos-day-gbp'] = 0
 
+            day_rate = tariff['day-gbp-per-kwh']
+            night_rate = tariff['night-gbp-per-kwh']
+            for hh in head_list:
+                if 6.5 < hh['ct-decimal-hour'] <= 23.5:
+                    bill['duos-day-kwh'] += hh['msp-kwh']
+                    bill['duos-day-gbp'] += hh['msp-kwh'] * day_rate
+                else:
+                    bill['duos-night-kwh'] += hh['msp-kwh']
+                    bill['duos-night-gbp'] += hh['msp-kwh'] * night_rate
+
+        for hh in head_list:
             if 6.5 >= hh['ct-decimal-hour']:
                 slot_name = 'night'
             elif 7 > hh['ct-day-of-week'] > 1 and 16 < hh['ct-decimal-hour'] <= 19 and (hh['ct-month'] > 10 or hh['ct-month'] < 3):
@@ -1163,6 +1214,8 @@ def month(bill, whole_data, data_source):
         bill.setdefault('duos-availability-working', '')
 
         billed_avail = max(md_kva, data_source.availability)
+        bill['duos-availability-agreed-kva'] = data_source.availability
+        bill['duos-availability-billed-kva'] = billed_avail
 
         availability_rate = tariff['capacity-gbp-per-kva-per-day']
 
@@ -1529,7 +1582,10 @@ def tariffs():
         <value><![CDATA[22]]></value>
         <value><![CDATA[main]]></value>
         <value><![CDATA[2009-08-01T00:30Z]]></value>
-        <value><![CDATA[def lafs():
+        <value><![CDATA[def triad():
+    return 25.631634
+
+def lafs():
     return {
         'hv': {
             'winter-weekday-peak': 1.058,
@@ -1565,6 +1621,8 @@ def tariffs():
             'day-gbp-per-kwh': 0.004700,
             'night-gbp-per-kwh': 0.001400,
             'reactive-gbp-per-kvarh': 0.002300},
+        '521': {
+            'capacity-gbp-per-kva-per-day': 0.018600},
         '540': {
             'capacity-gbp-per-kva-per-day': 0.038900,
             'day-gbp-per-kwh': 0.008100,

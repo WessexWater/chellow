@@ -7,6 +7,12 @@
 * Deleted code for GenDelta and UseDelta. These were never used, so should have
     no effect.
 * Speeded up loading of MDD data. This has meant we can get rid of the mdd-test data.
+* Now doesn't do a check to see if the date range for LLFCs are valid for the generation.
+* Fixed bug 2976529 where a rate script couldn't be deleted.
+* Fixed bug 2979978 where a new generation created from a generation with
+    export and import MPANs, wouldn't have the import MPAN.  
+* Gives an error if a report, contract or rate script won't compile when a save
+    is attempted.
 
 
 357

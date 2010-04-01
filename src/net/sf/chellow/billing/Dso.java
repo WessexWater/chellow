@@ -125,15 +125,13 @@ public class Dso extends Party {
 	}
 
 	public Llfc getLlfc(String code) throws HttpException {
-		Llfc llfc = (Llfc) Hiber
-				.session()
-				.createQuery(
-						"from Llfc llfc where llfc.dso = :dso and llfc.code = :code and llfc.validTo is null")
+		Llfc llfc = (Llfc) Hiber.session().createQuery(
+				"from Llfc llfc where llfc.dso = :dso and llfc.code = :code")
 				.setEntity("dso", this).setInteger("code",
 						Integer.parseInt(code)).uniqueResult();
 		if (llfc == null) {
-			throw new UserException("There is no ongoing LLFC with the code "
-					+ code + " associated with this DNO.");
+			throw new UserException("There is no LLFC with the code " + code
+					+ " associated with the DSO " + getCode() + ".");
 		}
 		return llfc;
 	}
