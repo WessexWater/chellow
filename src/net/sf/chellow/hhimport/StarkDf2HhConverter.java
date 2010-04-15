@@ -33,7 +33,7 @@ import java.util.TimeZone;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.UserException;
-import net.sf.chellow.physical.HhEndDate;
+import net.sf.chellow.physical.HhStartDate;
 
 public class StarkDf2HhConverter implements HhConverter {
 	static private final BigDecimal BIG_DECIMAL_2 = new BigDecimal("2");
@@ -137,8 +137,8 @@ public class StarkDf2HhConverter implements HhConverter {
 								+ lastLineNumber() + ". '" + line
 								+ "'. Can't find the second comma.");
 					}
-					HhEndDate endDate = new HhEndDate(dateFormat.parse(line
-							.substring(0, datePos).replace(",", " ")));
+					HhStartDate startDate = new HhStartDate(dateFormat.parse(line
+							.substring(0, datePos).replace(",", " "))).getPrevious();
 					int valuePos = line.indexOf(',', datePos + 1);
 					BigDecimal valueKw = null;
 
@@ -171,7 +171,7 @@ public class StarkDf2HhConverter implements HhConverter {
 										+ line
 										+ "'. For a settlement MPAN the last digit of the value must be even. If it isn't it means that the data is probably kWh rather than kW.");
 					}
-					datum = new HhDatumRaw(core, isImport, isKwh, endDate,
+					datum = new HhDatumRaw(core, isImport, isKwh, startDate,
 							valueKw.divide(BIG_DECIMAL_2), status);
 					// Debug.print("Datum is " + datum);
 				}

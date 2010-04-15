@@ -78,8 +78,8 @@ public class SupplyGenerations extends EntityList {
 		}
 		SupplyGeneration supplyGeneration = null;
 		try {
-			supplyGeneration = supply.insertGeneration(HhEndDate.roundDown(
-					startDate).getNext());
+			supplyGeneration = supply.insertGeneration(HhStartDate
+					.roundDown(startDate));
 			Hiber.commit();
 		} catch (UserException e) {
 			Hiber.rollBack();

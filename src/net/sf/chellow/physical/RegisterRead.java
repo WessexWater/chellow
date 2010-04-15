@@ -51,13 +51,13 @@ public class RegisterRead extends PersistentEntity {
 
 	private Tpr tpr;
 
-	private HhEndDate previousDate;
+	private HhStartDate previousDate;
 
 	private BigDecimal previousValue;
 
 	private ReadType previousType;
 
-	private HhEndDate presentDate;
+	private HhStartDate presentDate;
 
 	private BigDecimal presentValue;
 
@@ -136,11 +136,11 @@ public class RegisterRead extends PersistentEntity {
 		this.tpr = tpr;
 	}
 
-	HhEndDate getPreviousDate() {
+	HhStartDate getPreviousDate() {
 		return previousDate;
 	}
 
-	void setPreviousDate(HhEndDate previousDate) {
+	void setPreviousDate(HhStartDate previousDate) {
 		this.previousDate = previousDate;
 	}
 
@@ -160,11 +160,11 @@ public class RegisterRead extends PersistentEntity {
 		this.previousType = previousType;
 	}
 
-	public HhEndDate getPresentDate() {
+	public HhStartDate getPresentDate() {
 		return presentDate;
 	}
 
-	void setPresentDate(HhEndDate presentDate) {
+	void setPresentDate(HhStartDate presentDate) {
 		this.presentDate = presentDate;
 	}
 

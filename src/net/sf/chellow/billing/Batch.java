@@ -36,7 +36,7 @@ import net.sf.chellow.monad.UserException;
 import net.sf.chellow.monad.XmlTree;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
-import net.sf.chellow.physical.HhEndDate;
+import net.sf.chellow.physical.HhStartDate;
 import net.sf.chellow.physical.Mpan;
 import net.sf.chellow.physical.PersistentEntity;
 import net.sf.chellow.physical.RegisterReadRaw;
@@ -240,10 +240,10 @@ public class Batch extends PersistentEntity {
 		}
 		// what about missing bill snags??????
 		for (SupplyGeneration generation : generations) {
-			HhEndDate st = generation.getStartDate()
+			HhStartDate st = generation.getStartDate()
 					.before(bill.getStartDate()) ? bill.getStartDate()
 					: generation.getStartDate();
-			HhEndDate fn = bill.getFinishDate().before(
+			HhStartDate fn = bill.getFinishDate().before(
 					generation.getFinishDate()) ? bill.getFinishDate()
 					: generation.getFinishDate();
 			HhdcContract hhdcContract = generation.getHhdcContract();

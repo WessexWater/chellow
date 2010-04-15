@@ -104,16 +104,16 @@
 						<th>Start Date</th>
 						<td>
 							<xsl:value-of
-								select="concat(/source/channel-snag/hh-end-date[@label='start']/@year, '-', /source/channel-snag/hh-end-date[@label='start']/@month, '-', /source/channel-snag/hh-end-date[@label='start']/@day, 'T', /source/channel-snag/hh-end-date[@label='start']/@hour, ':', /source/channel-snag/hh-end-date[@label='start']/@minute, 'Z')" />
+								select="concat(/source/channel-snag/hh-start-date[@label='start']/@year, '-', /source/channel-snag/hh-start-date[@label='start']/@month, '-', /source/channel-snag/hh-start-date[@label='start']/@day, 'T', /source/channel-snag/hh-start-date[@label='start']/@hour, ':', /source/channel-snag/hh-start-date[@label='start']/@minute, 'Z')" />
 						</td>
 					</tr>
 					<tr>
 						<th>Finish Date</th>
 						<td>
 							<xsl:choose>
-							<xsl:when test="source/channel-snag/hh-end-date[@label='finish']">
+							<xsl:when test="source/channel-snag/hh-start-date[@label='finish']">
 								<xsl:value-of
-									select="concat(/source/channel-snag/hh-end-date[@label='finish']/@year, '-', /source/channel-snag/hh-end-date[@label='finish']/@month, '-', /source/channel-snag/hh-end-date[@label='finish']/@day, 'T', /source/channel-snag/hh-end-date[@label='finish']/@hour, ':', /source/channel-snag/hh-end-date[@label='finish']/@minute, 'Z')" />
+									select="concat(/source/channel-snag/hh-start-date[@label='finish']/@year, '-', /source/channel-snag/hh-start-date[@label='finish']/@month, '-', /source/channel-snag/hh-start-date[@label='finish']/@day, 'T', /source/channel-snag/hh-start-date[@label='finish']/@hour, ':', /source/channel-snag/hh-start-date[@label='finish']/@minute, 'Z')" />
 									</xsl:when>
 							<xsl:otherwise>Ongoing</xsl:otherwise>
 							</xsl:choose>

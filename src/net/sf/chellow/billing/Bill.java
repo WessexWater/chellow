@@ -42,7 +42,7 @@ import net.sf.chellow.monad.XmlTree;
 import net.sf.chellow.monad.types.MonadDate;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
-import net.sf.chellow.physical.HhEndDate;
+import net.sf.chellow.physical.HhStartDate;
 import net.sf.chellow.physical.PersistentEntity;
 import net.sf.chellow.physical.RegisterRead;
 import net.sf.chellow.physical.RegisterReadRaw;
@@ -68,9 +68,9 @@ public class Bill extends PersistentEntity implements Urlable {
 
 	private Date issueDate;
 
-	private HhEndDate startDate;
+	private HhStartDate startDate;
 
-	private HhEndDate finishDate;
+	private HhStartDate finishDate;
 
 	private BigDecimal net;
 
@@ -98,8 +98,8 @@ public class Bill extends PersistentEntity implements Urlable {
 		setType("");
 		setNet(new BigDecimal(0));
 		setVat(new BigDecimal(0));
-		setStartDate(HhEndDate.roundDown(new Date()));
-		setFinishDate(HhEndDate.roundDown(new Date()));
+		setStartDate(HhStartDate.roundDown(new Date()));
+		setFinishDate(HhStartDate.roundDown(new Date()));
 		setIsCancelledOut(false);
 	}
 
@@ -127,19 +127,19 @@ public class Bill extends PersistentEntity implements Urlable {
 		this.issueDate = issueDate;
 	}
 
-	public HhEndDate getStartDate() {
+	public HhStartDate getStartDate() {
 		return startDate;
 	}
 
-	protected void setStartDate(HhEndDate startDate) {
+	protected void setStartDate(HhStartDate startDate) {
 		this.startDate = startDate;
 	}
 
-	public HhEndDate getFinishDate() {
+	public HhStartDate getFinishDate() {
 		return finishDate;
 	}
 
-	protected void setFinishDate(HhEndDate finishDate) {
+	protected void setFinishDate(HhStartDate finishDate) {
 		this.finishDate = finishDate;
 	}
 
@@ -207,8 +207,8 @@ public class Bill extends PersistentEntity implements Urlable {
 		return snags;
 	}
 	
-	public void update(String reference, Date issueDate, HhEndDate startDate,
-			HhEndDate finishDate, BigDecimal net, BigDecimal vat, String type,
+	public void update(String reference, Date issueDate, HhStartDate startDate,
+			HhStartDate finishDate, BigDecimal net, BigDecimal vat, String type,
 			Boolean isPaid, boolean isCancelledOut) throws HttpException {
 		setReference(reference);
 		setIssueDate(issueDate);
@@ -267,8 +267,8 @@ public class Bill extends PersistentEntity implements Urlable {
 			if (!inv.isValid()) {
 				throw new UserException(document());
 			}
-			update(reference, issueDate, new HhEndDate(startDate).getNext(),
-					new HhEndDate(finishDate), net, vat, type, isPaid,
+			update(reference, issueDate, new HhStartDate(startDate).getNext(),
+					new HhStartDate(finishDate), net, vat, type, isPaid,
 					isCancelledOut);
 			Hiber.commit();
 			inv.sendOk(document());
@@ -332,7 +332,7 @@ public class Bill extends PersistentEntity implements Urlable {
 		Hiber.session().delete(this);
 		Hiber.flush();
 		Debug.print("potentially adding snag");
-		HhEndDate snagStart = startDate;
+		HhStartDate snagStart = startDate;
 		if (!isCancelledOut) {
 			for (Bill bill : (List<Bill>) Hiber
 					.session()

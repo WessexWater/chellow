@@ -38,7 +38,7 @@ import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.UserException;
-import net.sf.chellow.physical.HhEndDate;
+import net.sf.chellow.physical.HhStartDate;
 import net.sf.chellow.physical.Meter;
 import net.sf.chellow.physical.MpanCore;
 import net.sf.chellow.physical.ReadType;
@@ -89,8 +89,8 @@ public class BillConverterBgbEdi implements BillConverter {
 			line = lreader.readLine();
 			Set<String> mpanStrings = null;
 			Date issueDate = null;
-			HhEndDate startDate = null;
-			HhEndDate finishDate = null;
+			HhStartDate startDate = null;
+			HhStartDate finishDate = null;
 			String accountReference = null;
 			String invoiceNumber = null;
 			BigDecimal net = null;
@@ -147,12 +147,12 @@ public class BillConverterBgbEdi implements BillConverter {
 							&& (chargeType.equals("7")
 									|| chargeType.equals("8") || chargeType
 									.equals("9"))) {
-						HhEndDate previousReadDate = segment.getElements()
+						HhStartDate previousReadDate = segment.getElements()
 								.get(7).getDate(0);
-						if (HhEndDate.isAfter(startDate, previousReadDate)) {
+						if (HhStartDate.isAfter(startDate, previousReadDate)) {
 							startDate = previousReadDate;
 						}
-						HhEndDate registerFinishDate =
+						HhStartDate registerFinishDate =
 								segment.getElements().get(6).getDate(0);
 						if (finishDate == null
 								|| finishDate.getDate().before(
@@ -255,22 +255,22 @@ public class BillConverterBgbEdi implements BillConverter {
 
 		private int tpr;
 
-		private HhEndDate previousDate;
+		private HhStartDate previousDate;
 
 		private BigDecimal previousValue;
 
 		private ReadType previousType;
 
-		private HhEndDate currentDate;
+		private HhStartDate currentDate;
 
 		private BigDecimal currentValue;
 
 		private ReadType currentType;
 
 		public LocalRegisterReadRaw(Meter meter, BigDecimal coefficient,
-				Units units, int tpr, HhEndDate previousDate,
+				Units units, int tpr, HhStartDate previousDate,
 				BigDecimal previousValue, ReadType previousType,
-				HhEndDate currentDate, BigDecimal currentValue,
+				HhStartDate currentDate, BigDecimal currentValue,
 				ReadType currentType) throws InternalException {
 			this.meter = meter;
 			this.coefficient = coefficient;
@@ -300,7 +300,7 @@ public class BillConverterBgbEdi implements BillConverter {
 			return tpr;
 		}
 
-		public HhEndDate getPreviousDate() {
+		public HhStartDate getPreviousDate() {
 			return previousDate;
 		}
 
@@ -312,7 +312,7 @@ public class BillConverterBgbEdi implements BillConverter {
 			return previousType;
 		}
 
-		public HhEndDate getCurrentDate() {
+		public HhStartDate getCurrentDate() {
 			return currentDate;
 		}
 

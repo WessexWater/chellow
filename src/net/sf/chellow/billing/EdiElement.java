@@ -13,7 +13,7 @@ import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.UserException;
 import net.sf.chellow.monad.types.MonadDate;
-import net.sf.chellow.physical.HhEndDate;
+import net.sf.chellow.physical.HhStartDate;
 import net.sf.chellow.physical.ReadType;
 
 public class EdiElement {
@@ -38,12 +38,12 @@ public class EdiElement {
 		return components;
 	}
 
-	public HhEndDate getDate(int index) throws InternalException,
+	public HhStartDate getDate(int index) throws InternalException,
 			HttpException {
 		DateFormat dateFormat = new SimpleDateFormat("yyMMdd", Locale.UK);
 		dateFormat.setCalendar(MonadDate.getCalendar());
 		try {
-			return new HhEndDate(dateFormat.parse(components.get(index)));
+			return new HhStartDate(dateFormat.parse(components.get(index)));
 		} catch (ParseException e) {
 			throw new UserException("Expected component " + index
 					+ " of element " + this.index + " of segment '"

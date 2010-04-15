@@ -39,7 +39,7 @@ import net.sf.chellow.monad.NotFoundException;
 import net.sf.chellow.monad.Urlable;
 import net.sf.chellow.monad.UserException;
 import net.sf.chellow.monad.types.UriPathElement;
-import net.sf.chellow.physical.HhEndDate;
+import net.sf.chellow.physical.HhStartDate;
 import net.sf.chellow.physical.PersistentEntity;
 import net.sf.chellow.physical.Snag;
 import net.sf.chellow.physical.Supply;
@@ -77,7 +77,7 @@ public abstract class Contract extends PersistentEntity implements
 	public Contract() {
 	}
 
-	public Contract(String name, HhEndDate startDate, HhEndDate finishDate,
+	public Contract(String name, HhStartDate startDate, HhStartDate finishDate,
 			String chargeScript, String rateScriptStr) throws HttpException {
 		// setParty(party);
 		rateScripts = new HashSet<RateScript>();
@@ -180,16 +180,16 @@ public abstract class Contract extends PersistentEntity implements
 		onUpdate(rateScript.getStartDate(), rateScript.getFinishDate());
 	}
 
-	protected HhEndDate getStartDate() {
+	protected HhStartDate getStartDate() {
 		return getStartRateScript().getStartDate();
 	}
 
-	protected HhEndDate getFinishDate() {
+	protected HhStartDate getFinishDate() {
 		return getFinishRateScript().getFinishDate();
 	}
 
 	@SuppressWarnings("unchecked")
-	void onUpdate(HhEndDate from, HhEndDate to) throws HttpException {
+	void onUpdate(HhStartDate from, HhStartDate to) throws HttpException {
 		RateScript[] scripts = rateScripts.toArray(new RateScript[0]);
 		setStartRateScript(scripts[0]);
 		setFinishRateScript(scripts[scripts.length - 1]);
@@ -259,8 +259,8 @@ public abstract class Contract extends PersistentEntity implements
 	}
 
 	@SuppressWarnings("unchecked")
-	public Map<String, Double> virtualBill(Supply supply, HhEndDate from,
-			HhEndDate to) throws HttpException {
+	public Map<String, Double> virtualBill(Supply supply, HhStartDate from,
+			HhStartDate to) throws HttpException {
 		Map<String, Double> bill = null;
 
 		try {
@@ -324,7 +324,7 @@ public abstract class Contract extends PersistentEntity implements
 	}
 
 	@SuppressWarnings("unchecked")
-	public RateScript insertRateScript(HhEndDate startDate, String script)
+	public RateScript insertRateScript(HhStartDate startDate, String script)
 			throws HttpException {
 		List<RateScript> rateScripts = (List<RateScript>) Hiber
 				.session()
@@ -339,7 +339,7 @@ public abstract class Contract extends PersistentEntity implements
 					+ getName() + ", the start date " + startDate
 					+ " is after the last rate script.");
 		}
-		HhEndDate finishDate = rateScript.getStartDate().getPrevious();
+		HhStartDate finishDate = rateScript.getStartDate().getPrevious();
 		for (int i = 0; i < rateScripts.size(); i++) {
 			rateScript = rateScripts.get(i);
 			if (!startDate.getDate()
@@ -383,7 +383,7 @@ public abstract class Contract extends PersistentEntity implements
 	}
 
 	@SuppressWarnings("unchecked")
-	public List<RateScript> rateScripts(HhEndDate from, HhEndDate to) {
+	public List<RateScript> rateScripts(HhStartDate from, HhStartDate to) {
 		return Hiber
 				.session()
 				.createQuery(
@@ -392,7 +392,7 @@ public abstract class Contract extends PersistentEntity implements
 						from.getDate()).setTimestamp("to", to.getDate()).list();
 	}
 
-	public RateScript rateScript(HhEndDate date) {
+	public RateScript rateScript(HhStartDate date) {
 		return (RateScript) Hiber
 				.session()
 				.createQuery(

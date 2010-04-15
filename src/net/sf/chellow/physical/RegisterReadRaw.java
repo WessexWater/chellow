@@ -38,13 +38,13 @@ public class RegisterReadRaw extends MonadObject {
 
 	private Units units;
 
-	private HhEndDate previousDate;
+	private HhStartDate previousDate;
 
 	private BigDecimal previousValue;
 
 	private ReadType previousType;
 
-	private HhEndDate presentDate;
+	private HhStartDate presentDate;
 
 	private BigDecimal presentValue;
 
@@ -52,8 +52,8 @@ public class RegisterReadRaw extends MonadObject {
 
 	public RegisterReadRaw(Meter meter, BigDecimal coefficient,
 			Units units, int tpr,
-			HhEndDate previousDate, BigDecimal previousValue,
-			ReadType previousType, HhEndDate presentDate,
+			HhStartDate previousDate, BigDecimal previousValue,
+			ReadType previousType, HhStartDate presentDate,
 			BigDecimal presentValue, ReadType presentType) throws InternalException {
 		this.coefficient = coefficient;
 		this.meter = meter;
@@ -83,7 +83,7 @@ public class RegisterReadRaw extends MonadObject {
 		return tpr;
 	}
 
-	public HhEndDate getPreviousDate() {
+	public HhStartDate getPreviousDate() {
 		return previousDate;
 	}
 
@@ -95,7 +95,7 @@ public class RegisterReadRaw extends MonadObject {
 		return previousType;
 	}
 
-	public HhEndDate getPresentDate() {
+	public HhStartDate getPresentDate() {
 		return presentDate;
 	}
 

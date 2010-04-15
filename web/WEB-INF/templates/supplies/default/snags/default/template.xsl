@@ -66,7 +66,7 @@
 						<th>Start Date</th>
 						<td>
 							<xsl:value-of
-								select="concat(' ', /source/supply-snag/hh-end-date[@label='start']/@year, '-', /source/supply-snag/hh-end-date[@label='start']/@month, '-', /source/supply-snag/hh-end-date[@label='start']/@day)" />
+								select="concat(' ', /source/supply-snag/hh-start-date[@label='start']/@year, '-', /source/supply-snag/hh-start-date[@label='start']/@month, '-', /source/supply-snag/hh-start-date[@label='start']/@day)" />
 						</td>
 					</tr>
 					<tr>
@@ -85,9 +85,9 @@
 						<th>Finish Date</th>
 						<td>
 							<xsl:choose>
-								<xsl:when test="/source/supply-snag/hh-end-date[@label='finish']">
+								<xsl:when test="/source/supply-snag/hh-start-date[@label='finish']">
 									<xsl:value-of
-										select="concat(' ', /source/supply-snag/hh-end-date[@label='finish']/@year, '-', /source/supply-snag/hh-end-date[@label='finish']/@month, '-', /source/supply-snag/hh-end-date[@label='finish']/@day)" />
+										select="concat(' ', /source/supply-snag/hh-start-date[@label='finish']/@year, '-', /source/supply-snag/hh-start-date[@label='finish']/@month, '-', /source/supply-snag/hh-start-date[@label='finish']/@day)" />
 								</xsl:when>
 								<xsl:otherwise>
 									Ongoing

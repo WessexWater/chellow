@@ -61,13 +61,13 @@ public class HhDatum extends PersistentEntity {
 		if (!rawData.hasNext()) {
 			return;
 		}
-		Calendar cal = HhEndDate.getCalendar();
+		Calendar cal = HhStartDate.getCalendar();
 		HhDatumRaw datum = rawData.next();
 		String mpanCoreStr = datum.getMpanCore();
 		MpanCore mpanCore = MpanCore.getMpanCore(mpanCoreStr);
 		SupplyGeneration generation = mpanCore.getSupply().getGeneration(
-				datum.getEndDate());
-		long previousDate = datum.getEndDate().getDate().getTime();
+				datum.getStartDate());
+		long previousDate = datum.getStartDate().getDate().getTime();
 		boolean isImport = datum.getIsImport();
 		boolean isKwh = datum.getIsKwh();
 		if (generation == null) {
@@ -79,7 +79,7 @@ public class HhDatum extends PersistentEntity {
 			throw new UserException("There is no channel for the datum: "
 					+ datum.toString() + ".");
 		}
-		HhEndDate genFinishDate = generation.getFinishDate();
+		HhStartDate genFinishDate = generation.getFinishDate();
 		List<HhDatumRaw> data = new ArrayList<HhDatumRaw>();
 		data.add(datum);
 		// HhDatumRaw firstDatum = datum;
@@ -89,14 +89,14 @@ public class HhDatum extends PersistentEntity {
 		}
 		while (rawData.hasNext() && !halt.get(0)) {
 			datum = rawData.next();
-			Date endDate = datum.getEndDate().getDate();
+			Date startDate = datum.getStartDate().getDate();
 			if (data.size() > 1000
 					|| !(mpanCoreStr.equals(datum.getMpanCore())
 							&& datum.getIsImport() == isImport
-							&& datum.getIsKwh() == isKwh && endDate.getTime() == HhEndDate
+							&& datum.getIsKwh() == isKwh && startDate.getTime() == HhStartDate
 							.getNext(cal, previousDate))
 					|| (genFinishDate != null && genFinishDate.getDate()
-							.before(endDate))) {
+							.before(startDate))) {
 				// batchSize = data.size();
 				channel.addHhData(data);
 				Hiber.close();
@@ -104,7 +104,7 @@ public class HhDatum extends PersistentEntity {
 				mpanCoreStr = datum.getMpanCore();
 				mpanCore = MpanCore.getMpanCore(mpanCoreStr);
 				generation = mpanCore.getSupply().getGeneration(
-						datum.getEndDate());
+						datum.getStartDate());
 				if (generation == null) {
 					throw new UserException("HH datum has been ignored: "
 							+ datum.toString() + ".");
@@ -120,7 +120,7 @@ public class HhDatum extends PersistentEntity {
 				genFinishDate = generation.getFinishDate();
 			}
 			data.add(datum);
-			previousDate = endDate.getTime();
+			previousDate = startDate.getTime();
 		}
 		if (!data.isEmpty()) {
 			channel.addHhData(data);
@@ -130,7 +130,7 @@ public class HhDatum extends PersistentEntity {
 
 	private Channel channel;
 
-	private HhEndDate endDate;
+	private HhStartDate startDate;
 
 	private BigDecimal value;
 
@@ -141,7 +141,7 @@ public class HhDatum extends PersistentEntity {
 
 	public HhDatum(Channel channel, HhDatumRaw datumRaw) throws HttpException {
 		setChannel(channel);
-		setEndDate(datumRaw.getEndDate());
+		setStartDate(datumRaw.getStartDate());
 		setValue(datumRaw.getValue());
 		setStatus(datumRaw.getStatus());
 	}
@@ -154,12 +154,12 @@ public class HhDatum extends PersistentEntity {
 		this.channel = channel;
 	}
 
-	public HhEndDate getEndDate() {
-		return endDate;
+	public HhStartDate getStartDate() {
+		return startDate;
 	}
 
-	void setEndDate(HhEndDate endDate) {
-		this.endDate = endDate;
+	void setStartDate(HhStartDate startDate) {
+		this.startDate = startDate;
 	}
 
 	public BigDecimal getValue() {
@@ -179,7 +179,7 @@ public class HhDatum extends PersistentEntity {
 	}
 
 	public void update(BigDecimal value, char status) throws HttpException {
-		new HhDatumRaw("", false, false, endDate, value, status);
+		new HhDatumRaw("", false, false, startDate, value, status);
 		setValue(value);
 		setStatus(status);
 	}
@@ -187,14 +187,14 @@ public class HhDatum extends PersistentEntity {
 	public Element toXml(Document doc) throws HttpException {
 		Element element = super.toXml(doc, "hh-datum");
 
-		element.appendChild(endDate.toXml(doc));
+		element.appendChild(startDate.toXml(doc));
 		element.setAttribute("value", value.toString());
 		element.setAttribute("status", Character.toString(status));
 		return element;
 	}
 
 	public String toString() {
-		return "End date " + endDate + ", Value " + value + ", Status "
+		return "End date " + startDate + ", Value " + value + ", Status "
 				+ status;
 	}
 
@@ -224,7 +224,7 @@ public class HhDatum extends PersistentEntity {
 	public void httpPost(Invocation inv) throws HttpException {
 		if (inv.hasParameter("delete")) {
 			try {
-				channel.deleteData(endDate, endDate);
+				channel.deleteData(startDate, startDate);
 				Hiber.commit();
 				inv.sendSeeOther(channel.getHhDataInstance().getUri());
 			} catch (HttpException e) {
@@ -241,7 +241,7 @@ public class HhDatum extends PersistentEntity {
 				List<HhDatumRaw> dataRaw = new ArrayList<HhDatumRaw>();
 				dataRaw.add(new HhDatumRaw(channel.getSupplyGeneration()
 						.getMpans().iterator().next().getCore().toString(),
-						channel.getIsImport(), channel.getIsKwh(), endDate,
+						channel.getIsImport(), channel.getIsKwh(), startDate,
 						value, status));
 				channel.addHhData(dataRaw);
 				Hiber.commit();

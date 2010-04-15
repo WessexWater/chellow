@@ -33,9 +33,9 @@
 		</id>
 		<many-to-one name="channel" class="Channel" column="channel_id"
 			foreign-key="fkey_hh_datum_channel" />
-		<component name="endDate" class="HhEndDate">
+		<component name="startDate" class="HhStartDate">
 			<property name="date" type="timestamp" not-null="true">
-				<column name="end_date"
+				<column name="start_date"
 					sql-type="timestamp with time zone" />
 			</property>
 		</component>
@@ -46,4 +46,3 @@
 			not-null="true" />
 	</class>
 </hibernate-mapping>
-

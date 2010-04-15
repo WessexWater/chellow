@@ -69,7 +69,7 @@
 								<label>
 									Name
 									<xsl:value-of select="' '" />
-									<input name="name" value="{/source/site/@name}" />
+									<input size="40" name="name" value="{/source/site/@name}" />
 								</label>
 								<br />
 								<label>
@@ -132,13 +132,13 @@
 									</td>
 									<td>
 										<xsl:value-of
-											select="concat(hh-end-date[@label='start']/@year, '-', hh-end-date[@label='start']/@month, '-', hh-end-date[@label='start']/@day, ' ', hh-end-date[@label='start']/@hour, ':', hh-end-date[@label='start']/@minute, 'Z')" />
+											select="concat(hh-start-date[@label='start']/@year, '-', hh-start-date[@label='start']/@month, '-', hh-start-date[@label='start']/@day, ' ', hh-start-date[@label='start']/@hour, ':', hh-start-date[@label='start']/@minute, 'Z')" />
 									</td>
 									<td>
 										<xsl:choose>
-											<xsl:when test="hh-end-date[@label='finish']">
+											<xsl:when test="hh-start-date[@label='finish']">
 												<xsl:value-of
-													select="concat(hh-end-date[@label='finish']/@year, '-', hh-end-date[@label='finish']/@month, '-', hh-end-date[@label='finish']/@day, ' ', hh-end-date[@label='finish']/@hour, ':', hh-end-date[@label='finish']/@minute, 'Z')" />
+													select="concat(hh-start-date[@label='finish']/@year, '-', hh-start-date[@label='finish']/@month, '-', hh-start-date[@label='finish']/@day, ' ', hh-start-date[@label='finish']/@hour, ':', hh-start-date[@label='finish']/@minute, 'Z')" />
 											</xsl:when>
 											<xsl:otherwise>
 												Ongoing

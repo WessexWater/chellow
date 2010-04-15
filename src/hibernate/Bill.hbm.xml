@@ -32,12 +32,12 @@
 		<property name="issueDate" type="timestamp" not-null="true">
 			<column name="issue_date" sql-type="timestamp with time zone" />
 		</property>
-		<component name="startDate" class="net.sf.chellow.physical.HhEndDate">
+		<component name="startDate" class="net.sf.chellow.physical.HhStartDate">
 			<property type="timestamp" name="date">
 				<column name="start_date" sql-type="timestamp with time zone" />
 			</property>
 		</component>
-		<component name="finishDate" class="net.sf.chellow.physical.HhEndDate">
+		<component name="finishDate" class="net.sf.chellow.physical.HhStartDate">
 			<property type="timestamp" name="date">
 				<column name="finish_date" sql-type="timestamp with time zone" />
 			</property>

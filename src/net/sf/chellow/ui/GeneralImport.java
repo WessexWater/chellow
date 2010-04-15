@@ -62,7 +62,7 @@ import net.sf.chellow.monad.types.UriPathElement;
 import net.sf.chellow.physical.ChannelSnag;
 import net.sf.chellow.physical.Configuration;
 import net.sf.chellow.physical.HhDatum;
-import net.sf.chellow.physical.HhEndDate;
+import net.sf.chellow.physical.HhStartDate;
 import net.sf.chellow.physical.Site;
 import net.sf.chellow.physical.SiteSupplyGeneration;
 import net.sf.chellow.physical.Supply;
@@ -170,7 +170,7 @@ public class GeneralImport extends Thread implements Urlable, XmlDescriber {
 							boolean isImport = Boolean
 									.parseBoolean(allValues[4]);
 							boolean isKwh = Boolean.parseBoolean(allValues[5]);
-							HhEndDate endDate = new HhEndDate(allValues[3]);
+							HhStartDate startDate = new HhStartDate(allValues[3]);
 							String hhString = allValues[6].trim();
 							if (hhString.endsWith(",")) {
 								hhString = hhString + " ";
@@ -195,11 +195,11 @@ public class GeneralImport extends Thread implements Urlable, XmlDescriber {
 									}
 									hhData
 											.add(new HhDatumRaw(mpanCore,
-													isImport, isKwh, endDate,
+													isImport, isKwh, startDate,
 													new BigDecimal(bigDecimal),
 													status));
 								}
-								endDate = endDate.getNext();
+								startDate = startDate.getNext();
 							}
 							HhDatum.insert(hhData.iterator(), halt);
 							hhData.clear();

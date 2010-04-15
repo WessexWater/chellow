@@ -38,7 +38,7 @@ import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.UserException;
-import net.sf.chellow.physical.HhEndDate;
+import net.sf.chellow.physical.HhStartDate;
 import net.sf.chellow.physical.Meter;
 import net.sf.chellow.physical.MpanCore;
 import net.sf.chellow.physical.ReadType;
@@ -91,9 +91,9 @@ public class BillConverterSseEdi implements BillConverter {
 		try {
 			line = lreader.readLine();
 			Set<String> mpanStrings = null;
-			HhEndDate issueDate = null;
-			HhEndDate startDate = null;
-			HhEndDate finishDate = null;
+			HhStartDate issueDate = null;
+			HhStartDate startDate = null;
+			HhStartDate finishDate = null;
 			String accountReference = null;
 			String invoiceNumber = null;
 			BigDecimal net = null;
@@ -123,7 +123,7 @@ public class BillConverterSseEdi implements BillConverter {
 
 					invoiceNumber = invn.getComponents().get(0);
 					billTypeCode = btcd.toString();
-					issueDate = new HhEndDate(ivdt.getDate(0).getNext()
+					issueDate = new HhStartDate(ivdt.getDate(0).getNext()
 							.getDate());
 				}
 				if (code.equals("MHD")) {
@@ -148,12 +148,12 @@ public class BillConverterSseEdi implements BillConverter {
 					String consumptionChargeIndicator = ccde.getString(0);
 					if (consumptionChargeIndicator.equals("1")
 							|| consumptionChargeIndicator.equals("2")) {
-						HhEndDate previousHhReadDate = segment.getElements()
+						HhStartDate previousHhReadDate = segment.getElements()
 								.get(7).getDate(0);
-						HhEndDate registerStartDate = new HhEndDate(
+						HhStartDate registerStartDate = new HhStartDate(
 								previousHhReadDate.getNext().getDate())
 								.getNext();
-						HhEndDate previousReadDate =
+						HhStartDate previousReadDate =
 								previousHhReadDate;
 						Debug.print("start date " + startDate);
 						if (startDate == null
@@ -162,7 +162,7 @@ public class BillConverterSseEdi implements BillConverter {
 							Debug.print("register date " + registerStartDate);
 							startDate = registerStartDate;
 						}
-						HhEndDate registerFinishDate =
+						HhStartDate registerFinishDate =
 								segment.getElements().get(6).getDate(0);
 						if (finishDate == null
 								|| finishDate.getDate().before(
@@ -272,22 +272,22 @@ public class BillConverterSseEdi implements BillConverter {
 
 		private int tpr;
 
-		private HhEndDate previousDate;
+		private HhStartDate previousDate;
 
 		private BigDecimal previousValue;
 
 		private ReadType previousType;
 
-		private HhEndDate currentDate;
+		private HhStartDate currentDate;
 
 		private BigDecimal currentValue;
 
 		private ReadType currentType;
 
 		public LocalRegisterReadRaw(Meter meter, BigDecimal coefficient,
-				Units units, Integer tpr, HhEndDate previousDate,
+				Units units, Integer tpr, HhStartDate previousDate,
 				BigDecimal previousValue, ReadType previousType,
-				HhEndDate currentDate, BigDecimal currentValue,
+				HhStartDate currentDate, BigDecimal currentValue,
 				ReadType currentType) throws InternalException {
 			this.meter = meter;
 			this.coefficient = coefficient;
@@ -320,7 +320,7 @@ public class BillConverterSseEdi implements BillConverter {
 			return tpr;
 		}
 
-		public HhEndDate getPreviousDate() {
+		public HhStartDate getPreviousDate() {
 			return previousDate;
 		}
 
@@ -332,7 +332,7 @@ public class BillConverterSseEdi implements BillConverter {
 			return previousType;
 		}
 
-		public HhEndDate getCurrentDate() {
+		public HhStartDate getCurrentDate() {
 			return currentDate;
 		}
 

@@ -89,7 +89,7 @@
 											<xsl:otherwise>
 												<xsl:attribute name="value">
 													<xsl:value-of
-													select="/source/rate-script/hh-end-date[@label='start']/@year" />
+													select="/source/rate-script/hh-start-date[@label='start']/@year" />
 												</xsl:attribute>
 											</xsl:otherwise>
 										</xsl:choose>
@@ -108,7 +108,7 @@
 													</xsl:when>
 													<xsl:otherwise>
 														<xsl:if
-															test="/source/rate-script/hh-end-date[@label='start']/@month = @number">
+															test="/source/rate-script/hh-start-date[@label='start']/@month = @number">
 															<xsl:attribute name="selected" />
 														</xsl:if>
 													</xsl:otherwise>
@@ -131,7 +131,7 @@
 													</xsl:when>
 													<xsl:otherwise>
 														<xsl:if
-															test="/source/rate-script/hh-end-date[@label='start']/@day = @number">
+															test="/source/rate-script/hh-start-date[@label='start']/@day = @number">
 															<xsl:attribute name="selected" />
 														</xsl:if>
 													</xsl:otherwise>
@@ -141,7 +141,7 @@
 										</xsl:for-each>
 									</select>
 									<xsl:value-of
-										select="concat(' ', /source/rate-script/hh-end-date[@label='start']/@hour, ':', /source/rate-script/hh-end-date[@label='start']/@minute, ' Z')" />
+										select="concat(' ', /source/rate-script/hh-start-date[@label='start']/@hour, ':', /source/rate-script/hh-start-date[@label='start']/@minute, ' Z')" />
 								</fieldset>
 								<br />
 								<fieldset>
@@ -158,7 +158,7 @@
 													</xsl:if>
 												</xsl:when>
 												<xsl:otherwise>
-													<xsl:if test="/source/rate-script/hh-end-date[@label='finish']">
+													<xsl:if test="/source/rate-script/hh-start-date[@label='finish']">
 														<xsl:attribute name="checked">
 															checked
 														</xsl:attribute>
@@ -177,9 +177,9 @@
 											select="/source/request/parameter[@name='finish-date-year']/value/text()" />
 												</xsl:when>
 												<xsl:when
-											test="/source/rate-script/hh-end-date[@label='finish']">
+											test="/source/rate-script/hh-start-date[@label='finish']">
 													<xsl:value-of
-											select="/source/rate-script/hh-end-date[@label='finish']/@year" />
+											select="/source/rate-script/hh-start-date[@label='finish']/@year" />
 												</xsl:when>
 												<xsl:otherwise>
 													<xsl:value-of select="/source/date/@year" />
@@ -203,9 +203,9 @@
 														</xsl:if>
 													</xsl:when>
 													<xsl:when
-														test="/source/rate-script/hh-end-date[@label='finish']">
+														test="/source/rate-script/hh-start-date[@label='finish']">
 														<xsl:if
-															test="/source/rate-script/hh-end-date[@label='finish']/@month = @number">
+															test="/source/rate-script/hh-start-date[@label='finish']/@month = @number">
 															<xsl:attribute name="selected" />
 														</xsl:if>
 													</xsl:when>
@@ -236,9 +236,9 @@
 														</xsl:if>
 													</xsl:when>
 													<xsl:when
-														test="/source/rate-script/hh-end-date[@label='finish']">
+														test="/source/rate-script/hh-start-date[@label='finish']">
 														<xsl:if
-															test="/source/rate-script/hh-end-date[@label='finish']/@day = @number">
+															test="/source/rate-script/hh-start-date[@label='finish']/@day = @number">
 															<xsl:attribute name="selected" />
 														</xsl:if>
 													</xsl:when>
@@ -253,9 +253,9 @@
 										</xsl:for-each>
 									</select>
 									<xsl:choose>
-										<xsl:when test="/source/rate-script/hh-end-date[@label='finish']">
+										<xsl:when test="/source/rate-script/hh-start-date[@label='finish']">
 											<xsl:value-of
-												select="concat(' ', /source/rate-script/hh-end-date[@label='finish']/@hour, ':', /source/rate-script/hh-end-date[@label='finish']/@minute, ' Z')" />
+												select="concat(' ', /source/rate-script/hh-start-date[@label='finish']/@hour, ':', /source/rate-script/hh-start-date[@label='finish']/@minute, ' Z')" />
 										</xsl:when>
 										<xsl:otherwise>
 											<xsl:value-of select="' 00:30 Z'" />

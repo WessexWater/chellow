@@ -36,7 +36,7 @@ import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.UserException;
 import net.sf.chellow.monad.types.MonadDate;
 import net.sf.chellow.physical.HhDatum;
-import net.sf.chellow.physical.HhEndDate;
+import net.sf.chellow.physical.HhStartDate;
 
 import com.Ostermiller.util.CSVParser;
 
@@ -103,21 +103,22 @@ public class HhConverterBglobal implements HhConverter {
 		this.datum = datumNext;
 		try {
 			while (datum == null && values != null) {
-				//Debug.print("inf first while loop");
+				// Debug.print("inf first while loop");
 
 				if (hhIndex > 47) {
 					values = getLine();
 					hhIndex = 0;
 				}
-				while (values != null && hhIndex + 3 < values.length && datum == null) {
+				while (values != null && hhIndex + 3 < values.length
+						&& datum == null) {
 					try {
 						Date date = dateFormat.parse(values[2]);
 						cal.setTime(date);
-						cal.add(Calendar.MINUTE, 30 * (hhIndex + 1));
+						cal.add(Calendar.MINUTE, 30 * hhIndex);
 						String hhValue = values[hhIndex + 3].trim();
 						if (hhValue.length() > 0) {
 							datum = new HhDatumRaw(values[0], true, true,
-									new HhEndDate(cal.getTime()),
+									new HhStartDate(cal.getTime()),
 									new BigDecimal(hhValue), HhDatum.ACTUAL);
 						}
 					} catch (NumberFormatException e) {

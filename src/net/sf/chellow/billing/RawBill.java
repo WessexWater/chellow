@@ -31,7 +31,7 @@ import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.UserException;
 import net.sf.chellow.monad.types.MonadDate;
 import net.sf.chellow.monad.types.MonadObject;
-import net.sf.chellow.physical.HhEndDate;
+import net.sf.chellow.physical.HhStartDate;
 import net.sf.chellow.physical.RegisterReadRaw;
 
 import org.w3c.dom.Document;
@@ -42,9 +42,9 @@ public class RawBill extends MonadObject {
 
 	private Date issueDate;
 
-	private HhEndDate startDate;
+	private HhStartDate startDate;
 
-	private HhEndDate finishDate;
+	private HhStartDate finishDate;
 
 	private BigDecimal net;
 
@@ -60,7 +60,7 @@ public class RawBill extends MonadObject {
 
 	public RawBill(String type, String accountReference,
 			Set<String> mpanStrings, String reference, Date issueDate,
-			HhEndDate startDate, HhEndDate finishDate, BigDecimal net,
+			HhStartDate startDate, HhStartDate finishDate, BigDecimal net,
 			BigDecimal vat, Set<RegisterReadRaw> registerReads)
 			throws HttpException {
 		if (type == null) {
@@ -113,11 +113,11 @@ public class RawBill extends MonadObject {
 		return issueDate;
 	}
 
-	public HhEndDate getStartDate() {
+	public HhStartDate getStartDate() {
 		return startDate;
 	}
 
-	public HhEndDate getFinishDate() {
+	public HhStartDate getFinishDate() {
 		return finishDate;
 	}
 

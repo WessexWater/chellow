@@ -33,7 +33,7 @@ import net.sf.chellow.monad.XmlTree;
 import net.sf.chellow.monad.types.MonadDate;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
-import net.sf.chellow.physical.HhEndDate;
+import net.sf.chellow.physical.HhStartDate;
 import net.sf.chellow.physical.MarketRole;
 import net.sf.chellow.physical.Participant;
 import net.sf.chellow.physical.SupplyGeneration;
@@ -44,7 +44,7 @@ import org.w3c.dom.Element;
 
 public class MopContract extends Contract {
 	static public MopContract insertMopContract(Participant participant,
-			String name, HhEndDate startDate, HhEndDate finishDate,
+			String name, HhStartDate startDate, HhStartDate finishDate,
 			String chargeScript, String rateScript) throws HttpException {
 		MopContract existing = findMopContract(name);
 		if (existing != null) {
@@ -84,7 +84,7 @@ public class MopContract extends Contract {
 	}
 
 	public MopContract(Participant participant, String name,
-			HhEndDate startDate, HhEndDate finishDate, String chargeScript,
+			HhStartDate startDate, HhStartDate finishDate, String chargeScript,
 			String rateScript) throws HttpException {
 		super(name, startDate, finishDate, chargeScript, rateScript);
 		intrinsicUpdate(participant, name, chargeScript);

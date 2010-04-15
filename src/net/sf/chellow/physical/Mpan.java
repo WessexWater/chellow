@@ -50,8 +50,8 @@ public class Mpan extends PersistentEntity {
 	}
 
 	@SuppressWarnings("unchecked")
-	static public List<Mpan> getMpans(String mpanStr, HhEndDate from,
-			HhEndDate to) throws HttpException {
+	static public List<Mpan> getMpans(String mpanStr, HhStartDate from,
+			HhStartDate to) throws HttpException {
 		MpanRaw raw = new MpanRaw(mpanStr);
 		MpanCore core = MpanCore.getMpanCore(raw.getMpanCore());
 		List<SupplyGeneration> supplyGenerations = core.getSupply()

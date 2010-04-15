@@ -151,11 +151,11 @@
 									</td>
 									<td>
 										<xsl:value-of
-											select="concat(hh-end-date[@label='start']/@year, '-', hh-end-date[@label='start']/@month, '-', hh-end-date[@label='start']/@day)" />
+											select="concat(hh-start-date[@label='start']/@year, '-', hh-start-date[@label='start']/@month, '-', hh-start-date[@label='start']/@day)" />
 									</td>
 									<td>
 										<xsl:value-of
-											select="concat(hh-end-date[@label='finish']/@year, '-', hh-end-date[@label='finish']/@month, '-', hh-end-date[@label='finish']/@day)" />
+											select="concat(hh-start-date[@label='finish']/@year, '-', hh-start-date[@label='finish']/@month, '-', hh-start-date[@label='finish']/@day)" />
 									</td>
 									<td>
 										<xsl:value-of select="@net" />
@@ -335,11 +335,11 @@
 									</td>
 									<td>
 										<xsl:value-of
-											select="concat(hh-end-date[@label='start']/@year, '-', hh-end-date[@label='start']/@month, '-', hh-end-date[@label='start']/@day)" />
+											select="concat(hh-start-date[@label='start']/@year, '-', hh-start-date[@label='start']/@month, '-', hh-start-date[@label='start']/@day)" />
 									</td>
 									<td>
 										<xsl:value-of
-											select="concat(hh-end-date[@label='finish']/@year, '-', hh-end-date[@label='finish']/@month, '-', hh-end-date[@label='finish']/@day)" />
+											select="concat(hh-start-date[@label='finish']/@year, '-', hh-start-date[@label='finish']/@month, '-', hh-start-date[@label='finish']/@day)" />
 									</td>
 									<td>
 										<xsl:value-of select="@net" />

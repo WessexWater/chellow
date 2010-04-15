@@ -73,11 +73,6 @@
 								<input type="reset" value="Reset" />
 							</fieldset>
 						</form>
-						<p>
-							<a href="?view=csv">
-								Download all reports in a CSV XML file.
-							</a>
-						</p>
 					</xsl:otherwise>
 				</xsl:choose>
 			</body>

@@ -41,7 +41,7 @@ import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.UserException;
 import net.sf.chellow.monad.types.MonadDate;
-import net.sf.chellow.physical.HhEndDate;
+import net.sf.chellow.physical.HhStartDate;
 import net.sf.chellow.physical.Meter;
 import net.sf.chellow.physical.ReadType;
 import net.sf.chellow.physical.RegisterReadRaw;
@@ -116,10 +116,10 @@ public class BillConverterCsv implements BillConverter {
 						reads.add(new RegisterReadRaw(Meter.getMeter(values[i]), new BigDecimal(
 								values[i + 1]), Units
 								.getUnits(values[i + 2]), Integer
-								.parseInt(values[i + 3]), new HhEndDate(
+								.parseInt(values[i + 3]), new HhStartDate(
 								values[i + 4]), new BigDecimal(values[i + 5]),
 								ReadType.getReadType(values[i + 6]),
-								new HhEndDate(values[i + 7]),
+								new HhStartDate(values[i + 7]),
 								new BigDecimal(values[i + 8]), ReadType
 										.getReadType(values[i + 9])));
 					}
@@ -129,8 +129,8 @@ public class BillConverterCsv implements BillConverter {
 					}
 					rawBills.add(new RawBill(billTypeMap.get(values[0]),
 							values[1], mpanStrings, values[3],
-							new MonadDate(values[4]).getDate(), new HhEndDate(
-									values[5]), new HhEndDate(
+							new MonadDate(values[4]).getDate(), new HhStartDate(
+									values[5]), new HhStartDate(
 									values[6]), new BigDecimal(values[7]),
 							new BigDecimal(values[8]), reads));
 				}

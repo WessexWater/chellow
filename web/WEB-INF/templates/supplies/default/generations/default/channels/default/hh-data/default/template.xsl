@@ -87,7 +87,7 @@
 						<td>Start Date</td>
 						<td>
 							<xsl:value-of
-								select="concat(/source/hh-datum/channel/supply-generation/hh-end-date[@label='start']/@year, '-', /source/hh-datum/channel/supply-generation/hh-end-date[@label='start']/@month, '-', /source/hh-datum/channel/supply-generation/hh-end-date[@label='start']/@day, ' ', /source/hh-datum/channel/supply-generation/hh-end-date[@label='start']/@hour, ':', /source/hh-datum/channel/supply-generation/hh-end-date[@label='start']/@minute)" />
+								select="concat(/source/hh-datum/channel/supply-generation/hh-start-date[@label='start']/@year, '-', /source/hh-datum/channel/supply-generation/hh-start-date[@label='start']/@month, '-', /source/hh-datum/channel/supply-generation/hh-start-date[@label='start']/@day, ' ', /source/hh-datum/channel/supply-generation/hh-start-date[@label='start']/@hour, ':', /source/hh-datum/channel/supply-generation/hh-start-date[@label='start']/@minute)" />
 						</td>
 					</tr>
 					<tr>
@@ -95,9 +95,9 @@
 						<td>
 							<xsl:choose>
 								<xsl:when
-									test="/source/hh-datum/channel/supply-generation/hh-end-date[@label='finish']">
+									test="/source/hh-datum/channel/supply-generation/hh-start-date[@label='finish']">
 									<xsl:value-of
-										select="concat(/source/hh-datum/channel/supply-generation/hh-end-date[@label='finish']/@year, '-', /source/hh-datum/channel/supply-generation/hh-end-date[@label='finish']/@month, '-', /source/hh-datum/channel/supply-generation/hh-end-date[@label='finish']/@day, ' ', /source/hh-datum/channel/supply-generation/hh-end-date[@label='finish']/@hour, ':', /source/hh-datum/channel/supply-generation/hh-end-date[@label='finish']/@minute)" />
+										select="concat(/source/hh-datum/channel/supply-generation/hh-start-date[@label='finish']/@year, '-', /source/hh-datum/channel/supply-generation/hh-start-date[@label='finish']/@month, '-', /source/hh-datum/channel/supply-generation/hh-start-date[@label='finish']/@day, ' ', /source/hh-datum/channel/supply-generation/hh-start-date[@label='finish']/@hour, ':', /source/hh-datum/channel/supply-generation/hh-start-date[@label='finish']/@minute)" />
 								</xsl:when>
 								<xsl:otherwise>Ongoing</xsl:otherwise>
 							</xsl:choose>
@@ -151,7 +151,7 @@
 								<th>Date</th>
 								<td>
 									<xsl:value-of
-										select="concat(/source/hh-datum/hh-end-date/@year, '-', /source/hh-datum/hh-end-date/@month, '-', /source/hh-datum/hh-end-date/@day, ' ', /source/hh-datum/hh-end-date/@hour, ':', /source/hh-datum/hh-end-date/@minute)" />
+										select="concat(/source/hh-datum/hh-start-date/@year, '-', /source/hh-datum/hh-start-date/@month, '-', /source/hh-datum/hh-start-date/@day, ' ', /source/hh-datum/hh-start-date/@hour, ':', /source/hh-datum/hh-start-date/@minute)" />
 								</td>
 							</tr>
 						</table>

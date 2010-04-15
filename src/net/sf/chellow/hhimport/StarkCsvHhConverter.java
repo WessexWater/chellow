@@ -33,7 +33,7 @@ import java.util.TimeZone;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.UserException;
-import net.sf.chellow.physical.HhEndDate;
+import net.sf.chellow.physical.HhStartDate;
 import com.Ostermiller.util.CSVParser;
 
 public class StarkCsvHhConverter implements HhConverter {
@@ -114,11 +114,11 @@ public class StarkCsvHhConverter implements HhConverter {
 					throw new UserException(
 							"The 'Units' field must be 'kWh' or 'kVArh'");
 				}
-				HhEndDate endDate = new HhEndDate(dateFormat.parse(values[3]));
+				HhStartDate startDate = new HhStartDate(dateFormat.parse(values[3])).getPrevious();
 				BigDecimal value = new BigDecimal(values[4]);
 				Character status = new Character((char) new Double(values[5]
 						.trim()).intValue());
-				datum = new HhDatumRaw(core, isImport, isKwh, endDate, value,
+				datum = new HhDatumRaw(core, isImport, isKwh, startDate, value,
 						status);
 			}
 			datumNext = datum;

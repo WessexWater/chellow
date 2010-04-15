@@ -79,11 +79,11 @@ public class Supply extends PersistentEntity {
 			GspGroup gspGroup = GspGroup.getGspGroup(gspGroupCode);
 			String startDateStr = GeneralImport.addField(csvElement,
 					"Start date", values, 5);
-			HhEndDate startDate = HhEndDate.roundUp(new MonadDate(startDateStr)
+			HhStartDate startDate = HhStartDate.roundUp(new MonadDate(startDateStr)
 					.getDate());
 			String finishDateStr = GeneralImport.addField(csvElement,
 					"Finish date", values, 6);
-			HhEndDate finishDate = finishDateStr.trim().length() > 0 ? HhEndDate
+			HhStartDate finishDate = finishDateStr.trim().length() > 0 ? HhStartDate
 					.roundUp(new MonadDate(finishDateStr).getDate())
 					: null;
 			String hhdcContractName = GeneralImport.addField(csvElement,
@@ -377,7 +377,7 @@ public class Supply extends PersistentEntity {
 				.setLong("id", getId()).setMaxResults(1).list().get(0);
 	}
 
-	public SupplyGeneration getGenerationFinishing(HhEndDate finishDate) {
+	public SupplyGeneration getGenerationFinishing(HhStartDate finishDate) {
 		Criteria criteria = Hiber.session().createCriteria(
 				SupplyGeneration.class);
 		if (finishDate == null) {
@@ -391,7 +391,7 @@ public class Supply extends PersistentEntity {
 	}
 
 	@SuppressWarnings("unchecked")
-	public List<SupplyGeneration> getGenerations(HhEndDate from, HhEndDate to) {
+	public List<SupplyGeneration> getGenerations(HhStartDate from, HhStartDate to) {
 		List<SupplyGeneration> generations = null;
 		if (to == null) {
 			generations = (List<SupplyGeneration>) Hiber
@@ -425,7 +425,7 @@ public class Supply extends PersistentEntity {
 		return mpanCore;
 	}
 
-	public SupplyGeneration insertGeneration(HhEndDate startDate)
+	public SupplyGeneration insertGeneration(HhStartDate startDate)
 			throws HttpException {
 		SupplyGeneration existingGeneration = getGeneration(startDate);
 		if (existingGeneration == null) {
@@ -484,8 +484,8 @@ public class Supply extends PersistentEntity {
 				existingExportSupplierAccount, existingExportSupplyCapacity);
 	}
 
-	public void updateGeneration(SupplyGeneration generation, HhEndDate start,
-			HhEndDate finish) throws HttpException {
+	public void updateGeneration(SupplyGeneration generation, HhStartDate start,
+			HhStartDate finish) throws HttpException {
 		generation = (SupplyGeneration) Hiber
 				.session()
 				.createQuery(
@@ -522,7 +522,7 @@ public class Supply extends PersistentEntity {
 	}
 
 	public SupplyGeneration insertGeneration(Map<Site, Boolean> siteMap,
-			HhEndDate startDate, HhdcContract hhdcContract, String hhdcAccount,
+			HhStartDate startDate, HhdcContract hhdcContract, String hhdcAccount,
 			String meterSerialNumber, String importMpanStr, Ssc importSsc,
 			SupplierContract importSupplierContract,
 			String importSupplierAccount, Integer importAgreedSupplyCapacity,
@@ -613,7 +613,7 @@ public class Supply extends PersistentEntity {
 				.setEntity("supply", this).setMaxResults(1).uniqueResult();
 	}
 
-	public SupplyGeneration getGeneration(HhEndDate date) {
+	public SupplyGeneration getGeneration(HhStartDate date) {
 		if (date == null) {
 			return getGenerationFinishing(null);
 		} else {
@@ -684,7 +684,7 @@ public class Supply extends PersistentEntity {
 	}
 
 	public void deleteSnag(Contract contract, String description,
-			HhEndDate startDate, HhEndDate finishDate) throws HttpException {
+			HhStartDate startDate, HhStartDate finishDate) throws HttpException {
 		SnagDateBounded.deleteSupplySnag(this, contract, description,
 				startDate, finishDate);
 	}
@@ -864,7 +864,7 @@ public class Supply extends PersistentEntity {
 		Hiber.flush();
 	}
 
-	public void siteCheck(HhEndDate from, HhEndDate to) throws HttpException {
+	public void siteCheck(HhStartDate from, HhStartDate to) throws HttpException {
 		// long now = System.currentTimeMillis();
 		for (SupplyGeneration generation : generations) {
 			generation.getChannel(true, true).siteCheck(from, to);
@@ -873,7 +873,7 @@ public class Supply extends PersistentEntity {
 	}
 
 	public void addSnag(Contract contract, String description,
-			HhEndDate startDate, HhEndDate finishDate) throws HttpException {
+			HhStartDate startDate, HhStartDate finishDate) throws HttpException {
 		SnagDateBounded.addSupplySnag(this, contract, description, startDate,
 				finishDate);
 	}

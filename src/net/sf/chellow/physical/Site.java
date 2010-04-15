@@ -192,7 +192,7 @@ public class Site extends PersistentEntity {
 	}
 
 	public Supply insertSupply(Source source, GeneratorType generatorType,
-			String supplyName, HhEndDate startDate, HhEndDate finishDate,
+			String supplyName, HhStartDate startDate, HhStartDate finishDate,
 			GspGroup gspGroup, HhdcContract hhdcContract, String hhdcAccountReference, String meterSerialNumber,
 			String importMpanStr, Ssc importSsc, SupplierContract importSupplierContract, String importSupplierAccountReference,
 			Integer importAgreedSupplyCapacity, String exportMpanStr,
@@ -229,7 +229,7 @@ public class Site extends PersistentEntity {
 		return supply;
 	}
 
-	public void hhCheck(HhEndDate from, HhEndDate to) throws HttpException {
+	public void hhCheck(HhStartDate from, HhStartDate to) throws HttpException {
 		// Calendar cal = GregorianCalendar.getInstance(TimeZone
 		// .getTimeZone("GMT"), Locale.UK);
 		for (SiteGroup group : groups(from, to, false)) {
@@ -246,36 +246,36 @@ public class Site extends PersistentEntity {
 			List<Double> importFromGen = map.get("import-from-gen");
 			List<Double> exportToGen = map.get("export-to-gen");
 
-			HhEndDate resolve1From = null;
-			HhEndDate resolve1To = null;
-			HhEndDate snag1From = null;
-			HhEndDate snag1To = null;
-			HhEndDate resolve2From = null;
-			HhEndDate resolve2To = null;
-			HhEndDate snag2From = null;
-			HhEndDate snag2To = null;
+			HhStartDate resolve1From = null;
+			HhStartDate resolve1To = null;
+			HhStartDate snag1From = null;
+			HhStartDate snag1To = null;
+			HhStartDate resolve2From = null;
+			HhStartDate resolve2To = null;
+			HhStartDate snag2From = null;
+			HhStartDate snag2To = null;
 			int i = 0;
-			HhEndDate previousEndDate = null;
-			HhEndDate hhEndDate = group.getFrom();
-			while (!hhEndDate.getDate().after(group.getTo().getDate())) {
+			HhStartDate previousStartDate = null;
+			HhStartDate hhStartDate = group.getFrom();
+			while (!hhStartDate.getDate().after(group.getTo().getDate())) {
 				if (exportToNet.get(i) > importFromGen.get(i)) {
 					if (snag1From == null) {
-						snag1From = hhEndDate;
+						snag1From = hhStartDate;
 					}
-					snag1To = hhEndDate;
+					snag1To = hhStartDate;
 				} else {
 					if (resolve1From == null) {
-						resolve1From = hhEndDate;
+						resolve1From = hhStartDate;
 					}
-					resolve1To = hhEndDate;
+					resolve1To = hhStartDate;
 				}
-				if (snag1To != null && (snag1To.equals(previousEndDate))) {
+				if (snag1To != null && (snag1To.equals(previousStartDate))) {
 					group.addSiteSnag(SiteGroup.EXPORT_NET_GT_IMPORT_GEN,
 							snag1From, snag1To);
 					snag1From = null;
 					snag1To = null;
 				}
-				if (resolve1To != null && resolve1To.equals(previousEndDate)) {
+				if (resolve1To != null && resolve1To.equals(previousStartDate)) {
 					group.deleteHhdcSnag(SiteGroup.EXPORT_NET_GT_IMPORT_GEN,
 							resolve1From, resolve1To);
 					resolve1From = null;
@@ -284,30 +284,30 @@ public class Site extends PersistentEntity {
 				if (exportToGen.get(i) > importFromNet.get(i)
 						+ importFromGen.get(i)) {
 					if (snag2From == null) {
-						snag2From = hhEndDate;
+						snag2From = hhStartDate;
 					}
-					snag2To = hhEndDate;
+					snag2To = hhStartDate;
 				} else {
 					if (resolve2From == null) {
-						resolve2From = hhEndDate;
+						resolve2From = hhStartDate;
 					}
-					resolve2To = hhEndDate;
+					resolve2To = hhStartDate;
 				}
-				if (snag2To != null && snag2To.equals(previousEndDate)) {
+				if (snag2To != null && snag2To.equals(previousStartDate)) {
 					group.addSiteSnag(SiteGroup.EXPORT_GEN_GT_IMPORT,
 							snag2From, snag2To);
 					snag2From = null;
 					snag2To = null;
 				}
-				if (resolve2To != null && resolve2To.equals(previousEndDate)) {
+				if (resolve2To != null && resolve2To.equals(previousStartDate)) {
 					group.deleteHhdcSnag(SiteGroup.EXPORT_GEN_GT_IMPORT,
 							resolve2From, resolve2To);
 					resolve2From = null;
 					resolve2To = null;
 				}
 				i++;
-				previousEndDate = hhEndDate;
-				hhEndDate = hhEndDate.getNext();
+				previousStartDate = hhStartDate;
+				hhStartDate = hhStartDate.getNext();
 			}
 			if (snag1To != null) {
 				group.addSiteSnag(SiteGroup.EXPORT_NET_GT_IMPORT_GEN,
@@ -328,11 +328,11 @@ public class Site extends PersistentEntity {
 		}
 	}
 
-	public List<SiteGroup> groups(HhEndDate from, HhEndDate to,
+	public List<SiteGroup> groups(HhStartDate from, HhStartDate to,
 			boolean primaryOnly) throws HttpException {
 		List<SiteGroup> groups = new ArrayList<SiteGroup>();
-		HhEndDate checkFrom = from;
-		HhEndDate checkTo = to;
+		HhStartDate checkFrom = from;
+		HhStartDate checkTo = to;
 		while (!checkFrom.getDate().after(to.getDate())) {
 			List<Site> sites = new ArrayList<Site>();
 			List<Supply> supplies = new ArrayList<Supply>();
@@ -354,7 +354,7 @@ public class Site extends PersistentEntity {
 				checkFrom = checkTo.getNext();
 				checkTo = to;
 			} else {
-				checkTo = HhEndDate
+				checkTo = HhStartDate
 						.roundDown(new Date(
 								(long) Math.floor(((double) (checkTo.getDate()
 										.getTime() - checkFrom.getDate()
@@ -368,7 +368,7 @@ public class Site extends PersistentEntity {
 	// given period.
 	@SuppressWarnings("unchecked")
 	private boolean walkGroup(List<Site> groupSites,
-			List<Supply> groupSupplies, HhEndDate from, HhEndDate to) {
+			List<Supply> groupSupplies, HhStartDate from, HhStartDate to) {
 		// Debug.print("Started walking group");
 		Site newSite = groupSites.get(groupSites.size() - 1);
 		for (Supply candidateSupply : (List<Supply>) Hiber
@@ -592,7 +592,7 @@ public class Site extends PersistentEntity {
 					}
 				}
 				Supply supply = insertSupply(source, generatorType, name,
-						new HhEndDate(startDate).getNext(), null, gspGroup,
+						new HhStartDate(startDate).getNext(), null, gspGroup,
 						hhdcContract, hhdcAccountReference, meterSerialNumber, importMpanStr,
 						importSsc, importSupplierContract, importSupplierAccountReference,
 						importAgreedSupplyCapacity, exportMpanStr, exportSsc, exportSupplierContract,

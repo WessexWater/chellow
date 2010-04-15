@@ -83,11 +83,11 @@
 								</td>
 								<td>
 									<xsl:value-of
-										select="concat(hh-end-date/@year, '-', hh-end-date/@month, '-', hh-end-date/@day)" />
+										select="concat(hh-start-date/@year, '-', hh-start-date/@month, '-', hh-start-date/@day)" />
 								</td>
 								<td>
 									<xsl:value-of
-										select="concat(hh-end-date/@year, '-', hh-end-date/@month, '-', hh-end-date/@day)" />
+										select="concat(hh-start-date/@year, '-', hh-start-date/@month, '-', hh-start-date/@day)" />
 								</td>
 								<td>
 									<xsl:value-of select="@net" />

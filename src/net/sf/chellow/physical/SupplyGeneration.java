@@ -22,6 +22,7 @@
 package net.sf.chellow.physical;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -68,7 +69,7 @@ public class SupplyGeneration extends PersistentEntity {
 					1);
 
 			SupplyGeneration supplyGeneration = supply.getGeneration(dateStr
-					.length() == 0 ? null : new HhEndDate(dateStr));
+					.length() == 0 ? null : new HhStartDate(dateStr));
 			if (supplyGeneration == null) {
 				throw new UserException(
 						"There isn't a generation at this date.");
@@ -307,10 +308,10 @@ public class SupplyGeneration extends PersistentEntity {
 			}
 			supply.updateGeneration(supplyGeneration, startDateStr
 					.equals(GeneralImport.NO_CHANGE) ? supplyGeneration
-					.getStartDate() : new HhEndDate("start", startDateStr),
+					.getStartDate() : new HhStartDate("start", startDateStr),
 					finishDateStr.length() == 0 ? null : (finishDateStr
 							.equals(GeneralImport.NO_CHANGE) ? supplyGeneration
-							.getFinishDate() : new HhEndDate("finish",
+							.getFinishDate() : new HhStartDate("finish",
 							finishDateStr)));
 			supplyGeneration.update(supplyGeneration.getStartDate(),
 					supplyGeneration.getFinishDate(), hhdcContract,
@@ -328,7 +329,7 @@ public class SupplyGeneration extends PersistentEntity {
 					1);
 
 			SupplyGeneration supplyGeneration = supply.getGeneration(dateStr
-					.length() == 0 ? null : new HhEndDate(dateStr));
+					.length() == 0 ? null : new HhStartDate(dateStr));
 			if (supplyGeneration == null) {
 				throw new UserException(
 						"There isn't a generation at this date.");
@@ -341,8 +342,8 @@ public class SupplyGeneration extends PersistentEntity {
 			Supply supply = null;
 			String startDateStr = GeneralImport.addField(csvElement,
 					"Start date", values, 1);
-			HhEndDate startDate = startDateStr.length() == 0 ? null
-					: new HhEndDate(startDateStr);
+			HhStartDate startDate = startDateStr.length() == 0 ? null
+					: new HhStartDate(startDateStr);
 			String hhdcContractName = GeneralImport.addField(csvElement,
 					"HHDC Contract", values, 2);
 			HhdcContract hhdcContract = null;
@@ -483,9 +484,9 @@ public class SupplyGeneration extends PersistentEntity {
 
 	private Set<SiteSupplyGeneration> siteSupplyGenerations;
 
-	private HhEndDate startDate;
+	private HhStartDate startDate;
 
-	private HhEndDate finishDate;
+	private HhStartDate finishDate;
 	private MopContract mopContract;
 	private String mopAccount;
 	private Meter meter;
@@ -503,9 +504,9 @@ public class SupplyGeneration extends PersistentEntity {
 	SupplyGeneration() {
 	}
 
-	SupplyGeneration(Supply supply, HhEndDate startDate, HhEndDate finishDate,
-			HhdcContract hhdcContract, String hhdcAccount, Meter meter)
-			throws HttpException {
+	SupplyGeneration(Supply supply, HhStartDate startDate,
+			HhStartDate finishDate, HhdcContract hhdcContract,
+			String hhdcAccount, Meter meter) throws HttpException {
 		setChannels(new HashSet<Channel>());
 		setSupply(supply);
 		setSiteSupplyGenerations(new HashSet<SiteSupplyGeneration>());
@@ -535,19 +536,19 @@ public class SupplyGeneration extends PersistentEntity {
 		this.siteSupplyGenerations = siteSupplyGenerations;
 	}
 
-	public HhEndDate getStartDate() {
+	public HhStartDate getStartDate() {
 		return startDate;
 	}
 
-	void setStartDate(HhEndDate startDate) {
+	void setStartDate(HhStartDate startDate) {
 		this.startDate = startDate;
 	}
 
-	public HhEndDate getFinishDate() {
+	public HhStartDate getFinishDate() {
 		return finishDate;
 	}
 
-	void setFinishDate(HhEndDate finishDate) {
+	void setFinishDate(HhStartDate finishDate) {
 		this.finishDate = finishDate;
 	}
 
@@ -701,7 +702,7 @@ public class SupplyGeneration extends PersistentEntity {
 		return null;
 	}
 
-	public void update(HhEndDate startDate, HhEndDate finishDate,
+	public void update(HhStartDate startDate, HhStartDate finishDate,
 			HhdcContract hhdcContract, String hhdcAccount, Meter meter)
 			throws HttpException {
 		String importMpanStr = null;
@@ -763,10 +764,10 @@ public class SupplyGeneration extends PersistentEntity {
 		}
 	}
 
-	public void update(HhEndDate startDate, HhEndDate finishDate)
+	public void update(HhStartDate startDate, HhStartDate finishDate)
 			throws HttpException {
 		if (startDate.equals(this.startDate)
-				&& HhEndDate.isEqual(finishDate, this.finishDate)) {
+				&& HhStartDate.isEqual(finishDate, this.finishDate)) {
 			return;
 		} else {
 			update(startDate, finishDate, hhdcContract, hhdcAccount, meter);
@@ -774,7 +775,7 @@ public class SupplyGeneration extends PersistentEntity {
 	}
 
 	@SuppressWarnings("unchecked")
-	public void update(HhEndDate startDate, HhEndDate finishDate,
+	public void update(HhStartDate startDate, HhStartDate finishDate,
 			HhdcContract hhdcContract, String hhdcAccount, Meter meter,
 			String importMpanStr, Ssc importSsc,
 			SupplierContract importSupplierContract,
@@ -907,7 +908,7 @@ public class SupplyGeneration extends PersistentEntity {
 			if (((Long) Hiber
 					.session()
 					.createQuery(
-							"select count(*) from HhDatum datum where datum.channel.supplyGeneration.supply  = :supply and datum.endDate.date < :date")
+							"select count(*) from HhDatum datum where datum.channel.supplyGeneration.supply  = :supply and datum.startDate.date < :date")
 					.setEntity("supply", supply).setTimestamp("date",
 							startDate.getDate()).uniqueResult()) > 0) {
 				throw new UserException(
@@ -963,7 +964,7 @@ public class SupplyGeneration extends PersistentEntity {
 					&& ((Long) Hiber
 							.session()
 							.createQuery(
-									"select count(*) from HhDatum datum where datum.channel.supplyGeneration.supply  = :supply and datum.endDate.date > :date")
+									"select count(*) from HhDatum datum where datum.channel.supplyGeneration.supply  = :supply and datum.startDate.date > :date")
 							.setEntity("supply", supply).setTimestamp("date",
 									finishDate.getDate()).uniqueResult()) > 0) {
 				throw new UserException("There are HH data after " + finishDate
@@ -1025,15 +1026,15 @@ public class SupplyGeneration extends PersistentEntity {
 				throw new UserException(
 						"If there's a HHDC contract, there must be an account reference.");
 			}
-			HhEndDate hhdcContractStartDate = hhdcContract.getStartRateScript()
-					.getStartDate();
+			HhStartDate hhdcContractStartDate = hhdcContract
+					.getStartRateScript().getStartDate();
 			if (hhdcContractStartDate.after(startDate)) {
 				throw new UserException(
 						"The HHDC contract starts after the supply generation.");
 			}
-			HhEndDate hhdcContractFinishDate = hhdcContract
+			HhStartDate hhdcContractFinishDate = hhdcContract
 					.getFinishRateScript().getFinishDate();
-			if (HhEndDate.isBefore(hhdcContractFinishDate, finishDate)) {
+			if (HhStartDate.isBefore(hhdcContractFinishDate, finishDate)) {
 				throw new UserException("The HHDC contract "
 						+ hhdcContract.getId()
 						+ " finishes before the supply generation.");
@@ -1139,9 +1140,9 @@ public class SupplyGeneration extends PersistentEntity {
 				Query query = Hiber
 						.session()
 						.createQuery(
-								"from HhDatum datum where datum.channel.supplyGeneration.supply = :supply and datum.channel.isImport = :isImport and datum.channel.isKwh = :isKwh and datum.endDate.date >= :from"
+								"from HhDatum datum where datum.channel.supplyGeneration.supply = :supply and datum.channel.isImport = :isImport and datum.channel.isKwh = :isKwh and datum.startDate.date >= :from"
 										+ (finishDate == null ? ""
-												: " and datum.endDate.date <= :to")
+												: " and datum.startDate.date <= :to")
 										+ (targetChannel == null ? ""
 												: " and datum.channel != :targetChannel"))
 						.setEntity("supply", supply).setBoolean("isImport",
@@ -1173,18 +1174,18 @@ public class SupplyGeneration extends PersistentEntity {
 				hhData.beforeFirst();
 				while (hhData.next()) {
 					datum = (HhDatum) hhData.get(0);
-					HhEndDate endDate = datum.getEndDate();
+					HhStartDate hhStartDate = datum.getStartDate();
 					datum.setChannel(targetChannel);
 					if (datum.getValue().doubleValue() < 0) {
 						targetChannel.addSnag(ChannelSnag.SNAG_NEGATIVE,
-								endDate, endDate);
+								hhStartDate, hhStartDate);
 					}
 					if (datum.getStatus() != HhDatum.ACTUAL) {
 						targetChannel.addSnag(ChannelSnag.SNAG_ESTIMATED,
-								endDate, endDate);
+								hhStartDate, hhStartDate);
 					}
-					targetChannel.deleteSnag(ChannelSnag.SNAG_MISSING, endDate,
-							endDate);
+					targetChannel.deleteSnag(ChannelSnag.SNAG_MISSING,
+							hhStartDate, hhStartDate);
 					Hiber.flush();
 					Hiber.session().evict(datum);
 				}
@@ -1198,7 +1199,7 @@ public class SupplyGeneration extends PersistentEntity {
 				throw new UserException(
 						"The supplier contract starts after the supply generation.");
 			}
-			if (HhEndDate.isBefore(supplierContract.getFinishRateScript()
+			if (HhStartDate.isBefore(supplierContract.getFinishRateScript()
 					.getFinishDate(), finishDate)) {
 				throw new UserException(
 						"The supplier contract finishes before the supply generation.");
@@ -1364,7 +1365,7 @@ public class SupplyGeneration extends PersistentEntity {
 				if (!inv.isValid()) {
 					throw new UserException();
 				}
-				Date finishDate = null;
+				HhStartDate finishDate = null;
 				String importMpanStr = null;
 				Ssc importSsc = null;
 				Integer importAgreedSupplyCapacity = null;
@@ -1373,7 +1374,11 @@ public class SupplyGeneration extends PersistentEntity {
 				String importSupplierAccount = null;
 				boolean isEnded = inv.getBoolean("is-ended");
 				if (isEnded) {
-					finishDate = inv.getDate("finish-date");
+					Date finishDateRaw = inv.getDate("finish-date");
+					Calendar cal = MonadDate.getCalendar();
+					cal.setTime(finishDateRaw);
+					cal.add(Calendar.DAY_OF_MONTH, 1);
+					finishDate = new HhStartDate(cal.getTime()).getPrevious();
 				}
 				String hhdcAccount = null;
 				if (hhdcContractId != null) {
@@ -1453,9 +1458,8 @@ public class SupplyGeneration extends PersistentEntity {
 						meter = supply.insertMeter(meterSerialNumber);
 					}
 				}
-				supply.updateGeneration(this, new HhEndDate(startDate)
-						.getNext(), finishDate == null ? null : new HhEndDate(
-						finishDate));
+				supply.updateGeneration(this, new HhStartDate(startDate),
+						finishDate);
 				Hiber.flush();
 				update(getStartDate(), getFinishDate(), hhdcContract,
 						hhdcAccount, meter, importMpanStr, importSsc,

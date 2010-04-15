@@ -39,7 +39,7 @@ import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.UserException;
-import net.sf.chellow.physical.HhEndDate;
+import net.sf.chellow.physical.HhStartDate;
 
 public class BillConverterMm implements BillConverter {
 	private LineNumberReader lreader;
@@ -60,8 +60,8 @@ public class BillConverterMm implements BillConverter {
 			dateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
 			try {
 				line = lreader.readLine();
-				HhEndDate startDate = null;
-				HhEndDate finishDate = null;
+				HhStartDate startDate = null;
+				HhStartDate finishDate = null;
 				String accountReference = null;
 				String invoiceNumber = null;
 				BigDecimal net = new BigDecimal(0);
@@ -90,7 +90,7 @@ public class BillConverterMm implements BillConverter {
 					}
 					if (recordType.equals("0101")) {
 						try {
-							startDate = new HhEndDate(dateFormat.parse(line
+							startDate = new HhStartDate(dateFormat.parse(line
 									.substring(66, 74)));
 						} catch (ParseException e) {
 							throw new UserException(
@@ -101,7 +101,7 @@ public class BillConverterMm implements BillConverter {
 									+ e.getMessage());
 						}
 						try {
-							finishDate = new HhEndDate(dateFormat.parse(line
+							finishDate = new HhStartDate(dateFormat.parse(line
 									.substring(74, 82)));
 						} catch (ParseException e) {
 							throw new UserException(

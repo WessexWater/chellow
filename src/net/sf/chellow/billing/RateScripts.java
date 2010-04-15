@@ -35,7 +35,7 @@ import net.sf.chellow.monad.types.MonadDate;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
 import net.sf.chellow.physical.EntityList;
-import net.sf.chellow.physical.HhEndDate;
+import net.sf.chellow.physical.HhStartDate;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -79,8 +79,8 @@ public class RateScripts extends EntityList {
 			throw new UserException(document());
 		}
 		try {
-			RateScript rateScript = contract.insertRateScript(HhEndDate
-					.roundDown(startDate).getNext(), "");
+			RateScript rateScript = contract.insertRateScript(HhStartDate
+					.roundDown(startDate), "");
 			Hiber.commit();
 			Hiber.flush();
 			inv.sendSeeOther(rateScript.getUri());

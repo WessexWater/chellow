@@ -40,7 +40,7 @@ import net.sf.chellow.monad.XmlTree;
 import net.sf.chellow.monad.types.MonadDate;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
-import net.sf.chellow.physical.HhEndDate;
+import net.sf.chellow.physical.HhStartDate;
 import net.sf.chellow.physical.MarketRole;
 import net.sf.chellow.physical.Participant;
 import net.sf.chellow.ui.Chellow;
@@ -76,11 +76,11 @@ public class NonCoreContract extends Contract {
 			String name = GeneralImport.addField(csvElement, "Name", values, 1);
 			String startDateStr = GeneralImport.addField(csvElement,
 					"Start Date", values, 2);
-			HhEndDate startDate = new HhEndDate(startDateStr);
+			HhStartDate startDate = new HhStartDate(startDateStr);
 			String finishDateStr = GeneralImport.addField(csvElement,
 					"Finish Date", values, 3);
-			HhEndDate finishDate = finishDateStr.trim().length() == 0 ? null
-					: new HhEndDate(finishDateStr);
+			HhStartDate finishDate = finishDateStr.trim().length() == 0 ? null
+					: new HhStartDate(finishDateStr);
 			String chargeScript = GeneralImport.addField(csvElement,
 					"Charge Script", values, 4);
 			String rateScript = GeneralImport.addField(csvElement,
@@ -116,8 +116,8 @@ public class NonCoreContract extends Contract {
 	}
 
 	static public NonCoreContract insertNonCoreContract(
-			Participant participant, String name, HhEndDate startDate,
-			HhEndDate finishDate, String chargeScript, String rateScript)
+			Participant participant, String name, HhStartDate startDate,
+			HhStartDate finishDate, String chargeScript, String rateScript)
 			throws HttpException {
 		NonCoreContract service = new NonCoreContract(participant, name,
 				startDate, finishDate, chargeScript, rateScript);
@@ -132,7 +132,7 @@ public class NonCoreContract extends Contract {
 	}
 
 	public NonCoreContract(Participant participant, String name,
-			HhEndDate startDate, HhEndDate finishDate, String chargeScript,
+			HhStartDate startDate, HhStartDate finishDate, String chargeScript,
 			String rateScript) throws HttpException {
 		super(name, startDate, finishDate, chargeScript, rateScript);
 		setParty(Provider.getProvider(participant, MarketRole

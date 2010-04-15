@@ -81,14 +81,14 @@
 						<th>Start Date</th>
 						<td>
 							<xsl:value-of
-								select="concat(/source/site-snag/hh-end-date[@label='start']/@year, '-', /source/site-snag/hh-end-date[@label='start']/@month, '-', /source/site-snag/hh-end-date[@label='start']/@day, ' ', /source/site-snag/hh-end-date[@label='start']/@hour, ':', /source/site-snag/hh-end-date[@label='start']/@minute, ' Z')" />
+								select="concat(/source/site-snag/hh-start-date[@label='start']/@year, '-', /source/site-snag/hh-start-date[@label='start']/@month, '-', /source/site-snag/hh-start-date[@label='start']/@day, ' ', /source/site-snag/hh-start-date[@label='start']/@hour, ':', /source/site-snag/hh-start-date[@label='start']/@minute, ' Z')" />
 						</td>
 					</tr>
 					<tr>
 						<th>Finish Date</th>
 						<td>
 							<xsl:value-of
-								select="concat(/source/site-snag/hh-end-date[@label='finish']/@year, '-', /source/site-snag/hh-end-date[@label='finish']/@month, '-', /source/site-snag/hh-end-date[@label='finish']/@day, ' ', /source/site-snag/hh-end-date[@label='finish']/@hour, ':', /source/site-snag/hh-end-date[@label='finish']/@minute, ' Z')" />
+								select="concat(/source/site-snag/hh-start-date[@label='finish']/@year, '-', /source/site-snag/hh-start-date[@label='finish']/@month, '-', /source/site-snag/hh-start-date[@label='finish']/@day, ' ', /source/site-snag/hh-start-date[@label='finish']/@hour, ':', /source/site-snag/hh-start-date[@label='finish']/@minute, ' Z')" />
 						</td>
 					</tr>
 				</table>

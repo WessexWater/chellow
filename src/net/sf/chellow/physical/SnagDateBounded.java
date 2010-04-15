@@ -34,35 +34,35 @@ import org.w3c.dom.Element;
 
 public abstract class SnagDateBounded extends Snag {
 
-	private HhEndDate startDate;
+	private HhStartDate startDate;
 
-	private HhEndDate finishDate;
+	private HhStartDate finishDate;
 
 	public SnagDateBounded() {
 	}
 
-	public SnagDateBounded(String description, HhEndDate startDate,
-			HhEndDate finishDate) throws HttpException {
+	public SnagDateBounded(String description, HhStartDate startDate,
+			HhStartDate finishDate) throws HttpException {
 		super(description);
 		update(startDate, finishDate);
 	}
 
-	public HhEndDate getStartDate() {
+	public HhStartDate getStartDate() {
 		return startDate;
 	}
 
-	void setStartDate(HhEndDate startDate) {
+	void setStartDate(HhStartDate startDate) {
 		this.startDate = startDate;
 		if (startDate != null) {
 			startDate.setLabel("start");
 		}
 	}
 
-	public HhEndDate getFinishDate() {
+	public HhStartDate getFinishDate() {
 		return finishDate;
 	}
 
-	void setFinishDate(HhEndDate finishDate) {
+	void setFinishDate(HhStartDate finishDate) {
 		this.finishDate = finishDate;
 		if (finishDate != null) {
 			finishDate.setLabel("finish");
@@ -72,15 +72,15 @@ public abstract class SnagDateBounded extends Snag {
 	public void update() {
 	}
 
-	public void updateStartDate(HhEndDate startDate) throws InternalException {
+	public void updateStartDate(HhStartDate startDate) throws InternalException {
 		update(startDate, finishDate);
 	}
 
-	public void updateFinishDate(HhEndDate finishDate) throws InternalException {
+	public void updateFinishDate(HhStartDate finishDate) throws InternalException {
 		update(startDate, finishDate);
 	}
 
-	public void update(HhEndDate startDate, HhEndDate finishDate)
+	public void update(HhStartDate startDate, HhStartDate finishDate)
 			throws InternalException {
 		if (finishDate != null
 				&& startDate.getDate().after(finishDate.getDate())) {
@@ -121,7 +121,7 @@ public abstract class SnagDateBounded extends Snag {
 		SnagDateBounded background = snagToAdd.newSnag();
 		for (SnagDateBounded snag : snagToAdd.getCoveredSnags()) {
 			//Debug.print("snag in covered snag is : " + snag.toString());
-			if (HhEndDate.isAfter(snag.getFinishDate(), snagToAdd
+			if (HhStartDate.isAfter(snag.getFinishDate(), snagToAdd
 					.getFinishDate())) {
 				SnagDateBounded outerSnag = snag.copy();
 				outerSnag.setStartDate(snagToAdd.getFinishDate().getNext());
@@ -193,7 +193,7 @@ public abstract class SnagDateBounded extends Snag {
 			boolean outLeft = snag.getStartDate().before(
 					snagToDelete.getStartDate());
 			//Debug.print("Outleft " + outLeft);
-			boolean outRight = HhEndDate.isAfter(snag.getFinishDate(),
+			boolean outRight = HhStartDate.isAfter(snag.getFinishDate(),
 					snagToDelete.getFinishDate());
 			//Debug.print("Outright " + outRight);
 			if (outLeft && outRight) {
@@ -216,38 +216,38 @@ public abstract class SnagDateBounded extends Snag {
 	}
 
 	public static void deleteSupplySnag(Supply supply, Contract contract,
-			String description, HhEndDate startDate, HhEndDate finishDate)
+			String description, HhStartDate startDate, HhStartDate finishDate)
 			throws HttpException {
 		deleteSnagDateBounded(new SupplySnagToAdd(supply, contract,
 				description, startDate, finishDate));
 	}
 
 	public static void deleteChannelSnag(Channel channel, String description,
-			HhEndDate startDate, HhEndDate finishDate) throws HttpException {
+			HhStartDate startDate, HhStartDate finishDate) throws HttpException {
 		deleteSnagDateBounded(new ChannelSnagToAdd(channel, description,
 				startDate, finishDate));
 	}
 
 	public static void deleteSiteSnag(Site site, String description,
-			HhEndDate startDate, HhEndDate finishDate) throws HttpException {
+			HhStartDate startDate, HhStartDate finishDate) throws HttpException {
 		deleteSnagDateBounded(new SiteSnagToAdd(site, description, startDate,
 				finishDate));
 	}
 
 	public static void addChannelSnag(Channel channel, String description,
-			HhEndDate startDate, HhEndDate finishDate) throws HttpException {
+			HhStartDate startDate, HhStartDate finishDate) throws HttpException {
 		addSnagDateBounded(new ChannelSnagToAdd(channel, description,
 				startDate, finishDate));
 	}
 
 	public static void addSiteSnag(Site site, String description,
-			HhEndDate startDate, HhEndDate finishDate) throws HttpException {
+			HhStartDate startDate, HhStartDate finishDate) throws HttpException {
 		addSnagDateBounded(new SiteSnagToAdd(site, description, startDate,
 				finishDate));
 	}
 
 	public static void addSupplySnag(Supply supply, Contract contract,
-			String description, HhEndDate startDate, HhEndDate finishDate)
+			String description, HhStartDate startDate, HhStartDate finishDate)
 			throws HttpException {
 		addSnagDateBounded(new SupplySnagToAdd(supply, contract, description,
 				startDate, finishDate));
@@ -257,17 +257,17 @@ public abstract class SnagDateBounded extends Snag {
 		public List<? extends SnagDateBounded> getCoveredSnags();
 
 		public List<? extends SnagDateBounded> getCoveredSnags(
-				HhEndDate startDate, HhEndDate finishDate);
+				HhStartDate startDate, HhStartDate finishDate);
 
 		public SnagDateBounded newSnag() throws InternalException,
 				HttpException;
 
-		public SnagDateBounded newSnag(HhEndDate startDate, HhEndDate finishDate)
+		public SnagDateBounded newSnag(HhStartDate startDate, HhStartDate finishDate)
 				throws InternalException, HttpException;
 
-		public HhEndDate getStartDate();
+		public HhStartDate getStartDate();
 
-		public HhEndDate getFinishDate();
+		public HhStartDate getFinishDate();
 
 		public void insertSnag(SnagDateBounded snag);
 
@@ -279,19 +279,19 @@ public abstract class SnagDateBounded extends Snag {
 
 		private String description;
 
-		private HhEndDate startDate;
+		private HhStartDate startDate;
 
-		private HhEndDate finishDate;
+		private HhStartDate finishDate;
 
 		public ChannelSnagToAdd(Channel channel, String description,
-				HhEndDate startDate, HhEndDate finishDate) {
+				HhStartDate startDate, HhStartDate finishDate) {
 			this.channel = channel;
 			this.description = description;
 			this.startDate = startDate;
 			this.finishDate = finishDate;
 		}
 
-		public HhEndDate getFinishDate() {
+		public HhStartDate getFinishDate() {
 			return finishDate;
 		}
 
@@ -304,11 +304,11 @@ public abstract class SnagDateBounded extends Snag {
 			ChannelSnag.insertChannelSnag(channelSnag);
 		}
 
-		public HhEndDate getStartDate() {
+		public HhStartDate getStartDate() {
 			return startDate;
 		}
 
-		public SnagDateBounded newSnag(HhEndDate startDate, HhEndDate finishDate)
+		public SnagDateBounded newSnag(HhStartDate startDate, HhStartDate finishDate)
 				throws HttpException {
 			return new ChannelSnag(description, channel, startDate, finishDate);
 		}
@@ -323,8 +323,8 @@ public abstract class SnagDateBounded extends Snag {
 		}
 
 		@SuppressWarnings("unchecked")
-		public List<ChannelSnag> getCoveredSnags(HhEndDate startDate,
-				HhEndDate finishDate) {
+		public List<ChannelSnag> getCoveredSnags(HhStartDate startDate,
+				HhStartDate finishDate) {
 			Query query = null;
 			if (finishDate == null) {
 				query = Hiber
@@ -349,14 +349,14 @@ public abstract class SnagDateBounded extends Snag {
 
 		private String description;
 
-		private HhEndDate startDate;
+		private HhStartDate startDate;
 
-		private HhEndDate finishDate;
+		private HhStartDate finishDate;
 
 		private Query query;
 
 		public SiteSnagToAdd(Site site, String description,
-				HhEndDate startDate, HhEndDate finishDate) {
+				HhStartDate startDate, HhStartDate finishDate) {
 			this.site = site;
 			this.description = description;
 			this.startDate = startDate;
@@ -369,7 +369,7 @@ public abstract class SnagDateBounded extends Snag {
 							description.toString());
 		}
 
-		public HhEndDate getFinishDate() {
+		public HhStartDate getFinishDate() {
 			return finishDate;
 		}
 
@@ -382,11 +382,11 @@ public abstract class SnagDateBounded extends Snag {
 			SiteSnag.insertSiteSnag(snagSite);
 		}
 
-		public HhEndDate getStartDate() {
+		public HhStartDate getStartDate() {
 			return startDate;
 		}
 
-		public SnagDateBounded newSnag(HhEndDate startDate, HhEndDate finishDate)
+		public SnagDateBounded newSnag(HhStartDate startDate, HhStartDate finishDate)
 				throws HttpException {
 			return new SiteSnag(description, site, startDate, finishDate);
 		}
@@ -401,8 +401,8 @@ public abstract class SnagDateBounded extends Snag {
 		}
 
 		@SuppressWarnings("unchecked")
-		public List<SiteSnag> getCoveredSnags(HhEndDate startDate,
-				HhEndDate finishDate) {
+		public List<SiteSnag> getCoveredSnags(HhStartDate startDate,
+				HhStartDate finishDate) {
 			return (List<SiteSnag>) query.setTimestamp("finishDate",
 					finishDate.getDate()).setTimestamp("startDate",
 					startDate.getDate()).list();
@@ -416,12 +416,12 @@ public abstract class SnagDateBounded extends Snag {
 
 		private String description;
 
-		private HhEndDate startDate;
+		private HhStartDate startDate;
 
-		private HhEndDate finishDate;
+		private HhStartDate finishDate;
 
 		public SupplySnagToAdd(Supply supply, Contract contract,
-				String description, HhEndDate startDate, HhEndDate finishDate) {
+				String description, HhStartDate startDate, HhStartDate finishDate) {
 			this.supply = supply;
 			this.contract = contract;
 			this.description = description;
@@ -429,7 +429,7 @@ public abstract class SnagDateBounded extends Snag {
 			this.finishDate = finishDate;
 		}
 
-		public HhEndDate getFinishDate() {
+		public HhStartDate getFinishDate() {
 			return finishDate;
 		}
 
@@ -443,11 +443,11 @@ public abstract class SnagDateBounded extends Snag {
 			SupplySnag.insertSupplySnag(supplySnag);
 		}
 
-		public HhEndDate getStartDate() {
+		public HhStartDate getStartDate() {
 			return startDate;
 		}
 
-		public SnagDateBounded newSnag(HhEndDate startDate, HhEndDate finishDate)
+		public SnagDateBounded newSnag(HhStartDate startDate, HhStartDate finishDate)
 				throws HttpException {
 			return new SupplySnag(supply, contract, description, startDate,
 					finishDate);
@@ -462,8 +462,8 @@ public abstract class SnagDateBounded extends Snag {
 		}
 
 		@SuppressWarnings("unchecked")
-		public List<SupplySnag> getCoveredSnags(HhEndDate startDate,
-				HhEndDate finishDate) {
+		public List<SupplySnag> getCoveredSnags(HhStartDate startDate,
+				HhStartDate finishDate) {
 			//Debug.print("Getting covered snags.");
 			Query query = null;
 			if (finishDate == null) {

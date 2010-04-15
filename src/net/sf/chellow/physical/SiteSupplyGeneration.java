@@ -45,7 +45,7 @@ public class SiteSupplyGeneration extends PersistentEntity {
 		String mpanCoreStr = GeneralImport.addField(csvElement, "MPAN Core", values, 1);
 		MpanCore mpanCore = MpanCore.getMpanCore(mpanCoreStr);
 		String startDateStr = GeneralImport.addField(csvElement, "Generation Start Date", values, 2);
-		HhEndDate startDate = new HhEndDate(startDateStr);
+		HhStartDate startDate = new HhStartDate(startDateStr);
 		SupplyGeneration supplyGeneration = mpanCore.getSupply().getGeneration(startDate);
 		if (action.equals("insert")) {
 			String isLocationStr = GeneralImport.addField(csvElement,

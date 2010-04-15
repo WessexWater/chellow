@@ -61,7 +61,7 @@ public class SupplySnag extends SnagDateBounded {
 	}
 
 	public SupplySnag(Supply supply, Contract contract, String description,
-			HhEndDate startDate, HhEndDate finishDate) throws HttpException {
+			HhStartDate startDate, HhStartDate finishDate) throws HttpException {
 		super(description, startDate, finishDate);
 		this.supply = supply;
 		this.contract = contract;

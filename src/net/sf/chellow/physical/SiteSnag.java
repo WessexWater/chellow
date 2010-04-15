@@ -54,7 +54,7 @@ public class SiteSnag extends SnagDateBounded {
 	}
 
 	public SiteSnag(String description, Site site,
-			HhEndDate startDate, HhEndDate finishDate) throws HttpException {
+			HhStartDate startDate, HhStartDate finishDate) throws HttpException {
 		super(description, startDate, finishDate);
 		this.site = site;
 	}

@@ -36,7 +36,7 @@ import net.sf.chellow.monad.types.MonadDate;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
 import net.sf.chellow.physical.EntityList;
-import net.sf.chellow.physical.HhEndDate;
+import net.sf.chellow.physical.HhStartDate;
 import net.sf.chellow.physical.MarketRole;
 import net.sf.chellow.physical.Participant;
 import net.sf.chellow.ui.Chellow;
@@ -74,7 +74,7 @@ public class SupplierContracts extends EntityList {
 			throw new UserException(document());
 		}
 		SupplierContract contract = SupplierContract.insertSupplierContract(
-				Participant.getParticipant(participantId), name, HhEndDate
+				Participant.getParticipant(participantId), name, HhStartDate
 						.roundDown(startDate).getNext(), null, "", "");
 		Hiber.commit();
 		inv.sendSeeOther(contract.getUri());

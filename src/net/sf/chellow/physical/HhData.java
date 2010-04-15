@@ -89,13 +89,13 @@ public class HhData extends EntityList {
 		source.appendChild(MonadDate.getDaysXml(doc));
 		source.appendChild(MonadDate.getHoursXml(doc));
 		Calendar cal = MonadDate.getCalendar();
-		HhEndDate generationStartDate = channel.getSupplyGeneration()
+		HhStartDate generationStartDate = channel.getSupplyGeneration()
 				.getStartDate();
-		HhEndDate generationFinishDate = channel.getSupplyGeneration()
+		HhStartDate generationFinishDate = channel.getSupplyGeneration()
 				.getFinishDate();
-		HhEndDate defaultDate = generationFinishDate;
+		HhStartDate defaultDate = generationFinishDate;
 		if (defaultDate == null) {
-			defaultDate = HhEndDate.roundDown(new Date());
+			defaultDate = HhStartDate.roundDown(new Date());
 		}
 		if (inv.hasParameter("year")) {
 			int year = inv.getInteger("year");
@@ -132,7 +132,7 @@ public class HhData extends EntityList {
 		for (HhDatum datum : (List<HhDatum>) Hiber
 				.session()
 				.createQuery(
-						"from HhDatum datum where datum.channel = :channel and datum.endDate.date >= :from and datum.endDate.date <= :to order by datum.endDate.date")
+						"from HhDatum datum where datum.channel = :channel and datum.startDate.date >= :from and datum.startDate.date <= :to order by datum.startDate.date")
 				.setEntity("channel", channel).setDate("from", startDate)
 				.setDate("to", finishDate).list()) {
 			hhDataElement.appendChild(datum.toXml(doc));
@@ -148,8 +148,8 @@ public class HhData extends EntityList {
 				Calendar cal = MonadDate.getCalendar();
 				cal.setTime(deleteFrom);
 				cal.add(Calendar.DAY_OF_MONTH, days);
-				channel.deleteData(new HhEndDate(deleteFrom).getNext(),
-						new HhEndDate(cal.getTime()));
+				channel.deleteData(new HhStartDate(deleteFrom),
+						new HhStartDate(cal.getTime()).getPrevious());
 				Hiber.commit();
 			} catch (HttpException e) {
 				e.setDocument(doc(inv));
@@ -161,26 +161,26 @@ public class HhData extends EntityList {
 					"HH data deleted successfully.").toXml(doc));
 			inv.sendOk(doc);
 		} else if (inv.hasParameter("insert")) {
-			Date endDate = inv.getDateTime("end");
+			Date startDate = inv.getDateTime("start-date");
 			BigDecimal value = inv.getBigDecimal("value");
 			Character status = inv.getCharacter("status");
 			if (!inv.isValid()) {
 				throw new UserException(doc(inv));
 			}
-			HhEndDate hhEndDate = new HhEndDate(endDate);
+			HhStartDate hhStartDate = new HhStartDate(startDate);
 			if (Hiber
 					.session()
 					.createQuery(
-							"from HhDatum datum where datum.channel = :channel and datum.endDate.date = :endDate")
-					.setEntity("channel", channel).setTimestamp("endDate",
-							hhEndDate.getDate()).uniqueResult() != null) {
+							"from HhDatum datum where datum.channel = :channel and datum.startDate.date = :startDate")
+					.setEntity("channel", channel).setTimestamp("startDate",
+							hhStartDate.getDate()).uniqueResult() != null) {
 				throw new UserException(doc(inv),
 						"There's already an HH datum with this time.");
 			}
 			List<HhDatumRaw> data = new ArrayList<HhDatumRaw>();
 			data.add(new HhDatumRaw(channel.getSupplyGeneration().getMpans()
 					.iterator().next().getCore().toString(), channel
-					.getIsImport(), channel.getIsKwh(), hhEndDate, value,
+					.getIsImport(), channel.getIsKwh(), hhStartDate, value,
 					status));
 			HhDatum.insert(data.iterator(), Arrays
 					.asList(new Boolean[] { Boolean.FALSE }));

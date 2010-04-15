@@ -33,7 +33,7 @@ import net.sf.chellow.monad.UserException;
 import net.sf.chellow.monad.XmlTree;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
-import net.sf.chellow.physical.HhEndDate;
+import net.sf.chellow.physical.HhStartDate;
 import net.sf.chellow.physical.Llfc;
 import net.sf.chellow.physical.Llfcs;
 import net.sf.chellow.physical.MarketRole;
@@ -140,8 +140,8 @@ public class Dso extends Party {
 		return new DsoContracts(this);
 	}
 
-	public DsoContract insertContract(String name, HhEndDate startDate,
-			HhEndDate finishDate, String chargeScript, String rateScript)
+	public DsoContract insertContract(String name, HhStartDate startDate,
+			HhStartDate finishDate, String chargeScript, String rateScript)
 			throws HttpException {
 		DsoContract contract = findContract(name);
 		if (contract == null) {

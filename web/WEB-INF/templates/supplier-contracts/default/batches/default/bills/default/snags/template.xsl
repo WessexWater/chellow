@@ -109,9 +109,9 @@
 
 								<td>
 									<xsl:choose>
-										<xsl:when test="hh-end-date[@label='resolved']">
+										<xsl:when test="hh-start-date[@label='resolved']">
 											<xsl:value-of
-												select="concat(hh-end-date[@label='resolved']/@year, '-', hh-end-date[@label='resolved']/@month, '-', hh-end-date[@label='resolved']/@day)" />
+												select="concat(hh-start-date[@label='resolved']/@year, '-', hh-start-date[@label='resolved']/@month, '-', hh-start-date[@label='resolved']/@day)" />
 										</xsl:when>
 										<xsl:otherwise>
 											Unresolved

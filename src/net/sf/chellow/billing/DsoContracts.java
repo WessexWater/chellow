@@ -34,7 +34,7 @@ import net.sf.chellow.monad.types.MonadDate;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
 import net.sf.chellow.physical.EntityList;
-import net.sf.chellow.physical.HhEndDate;
+import net.sf.chellow.physical.HhStartDate;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -75,8 +75,8 @@ public class DsoContracts extends EntityList {
 		if (inv.hasParameter("has-finished")) {
 			finishDate = inv.getDate("finish-date");
 		}
-		DsoContract contract = dso.insertContract(name, HhEndDate
-				.roundDown(startDate).getNext(), finishDate == null ? null : HhEndDate
+		DsoContract contract = dso.insertContract(name, HhStartDate
+				.roundDown(startDate).getNext(), finishDate == null ? null : HhStartDate
 				.roundDown(finishDate), chargeScript, "");
 		Hiber.commit();
 		inv.sendCreated(document(), contract.getUri());

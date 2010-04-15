@@ -133,11 +133,11 @@
 
 										<td>
 											<xsl:value-of
-												select="concat(hh-end-date[@label='start']/@year, '-', hh-end-date[@label='start']/@month, '-', hh-end-date[@label='start']/@day)" />
+												select="concat(hh-start-date[@label='start']/@year, '-', hh-start-date[@label='start']/@month, '-', hh-start-date[@label='start']/@day)" />
 										</td>
 										<td>
 											<xsl:value-of
-												select="concat(hh-end-date[@label='finish']/@year, '-', hh-end-date[@label='finish']/@month, '-', hh-end-date[@label='finish']/@day)" />
+												select="concat(hh-start-date[@label='finish']/@year, '-', hh-start-date[@label='finish']/@month, '-', hh-start-date[@label='finish']/@day)" />
 										</td>
 										<td>
 											<xsl:value-of select="@net" />
@@ -162,7 +162,7 @@
 							<xsl:for-each
 								select="/source/invoice-import/invoice-raw">
 								<xsl:value-of
-									select="concat(@account-text, ', &quot;', @mpan-text, '&quot;', ', ', @invoice-text, ', ', hh-end-date[@label='start']/@year, '-', hh-end-date[@label='start']/@month, '-', hh-end-date[@label='start']/@day, ', ', hh-end-date[@label='finish']/@year, '-', hh-end-date[@label='finish']/@month, '-', hh-end-date[@label='finish']/@day, ', ', @net, ', ', @vat)" />
+									select="concat(@account-text, ', &quot;', @mpan-text, '&quot;', ', ', @invoice-text, ', ', hh-start-date[@label='start']/@year, '-', hh-start-date[@label='start']/@month, '-', hh-start-date[@label='start']/@day, ', ', hh-start-date[@label='finish']/@year, '-', hh-start-date[@label='finish']/@month, '-', hh-start-date[@label='finish']/@day, ', ', @net, ', ', @vat)" />
 								<br />
 							</xsl:for-each>
 						</code>

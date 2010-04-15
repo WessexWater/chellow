@@ -167,7 +167,7 @@
 											<xsl:otherwise>
 												<xsl:attribute name="value">
 													<xsl:value-of
-													select="/source/supply-generation/hh-end-date[@label='start']/@year" />
+													select="/source/supply-generation/hh-start-date[@label='start']/@year" />
 												</xsl:attribute>
 											</xsl:otherwise>
 										</xsl:choose>
@@ -186,7 +186,7 @@
 													</xsl:when>
 													<xsl:otherwise>
 														<xsl:if
-															test="/source/supply-generation/hh-end-date[@label='start']/@month = @number">
+															test="/source/supply-generation/hh-start-date[@label='start']/@month = @number">
 															<xsl:attribute name="selected" />
 														</xsl:if>
 													</xsl:otherwise>
@@ -209,7 +209,7 @@
 													</xsl:when>
 													<xsl:otherwise>
 														<xsl:if
-															test="/source/supply-generation/hh-end-date[@label='start']/@day = @number">
+															test="/source/supply-generation/hh-start-date[@label='start']/@day = @number">
 															<xsl:attribute name="selected" />
 														</xsl:if>
 													</xsl:otherwise>
@@ -219,7 +219,7 @@
 										</xsl:for-each>
 									</select>
 									<xsl:value-of
-										select="concat(' ', /source/supply-generation/hh-end-date[@label='start']/@hour, ':', /source/supply-generation/hh-end-date[@label='start']/@minute, 'Z')" />
+										select="concat(' ', /source/supply-generation/hh-start-date[@label='start']/@hour, ':', /source/supply-generation/hh-start-date[@label='start']/@minute, 'Z')" />
 								</fieldset>
 								<br />
 								<fieldset>
@@ -237,7 +237,7 @@
 												</xsl:when>
 												<xsl:otherwise>
 													<xsl:if
-														test="/source/supply-generation/hh-end-date[@label='finish']">
+														test="/source/supply-generation/hh-start-date[@label='finish']">
 														<xsl:attribute name="checked">
 															checked
 														</xsl:attribute>
@@ -256,9 +256,9 @@
 											select="/source/request/parameter[@name='finish-date-year']/value/text()" />
 												</xsl:when>
 												<xsl:when
-											test="/source/supply-generation/hh-end-date[@label='finish']">
+											test="/source/supply-generation/hh-start-date[@label='finish']">
 													<xsl:value-of
-											select="/source/supply-generation/hh-end-date[@label='finish']/@year" />
+											select="/source/supply-generation/hh-start-date[@label='finish']/@year" />
 												</xsl:when>
 												<xsl:otherwise>
 													<xsl:value-of select="/source/date/@year" />
@@ -282,9 +282,9 @@
 														</xsl:if>
 													</xsl:when>
 													<xsl:when
-														test="/source/supply-generation/hh-end-date[@label='finish']">
+														test="/source/supply-generation/hh-start-date[@label='finish']">
 														<xsl:if
-															test="/source/supply-generation/hh-end-date[@label='finish']/@month = @number">
+															test="/source/supply-generation/hh-start-date[@label='finish']/@month = @number">
 															<xsl:attribute name="selected" />
 														</xsl:if>
 													</xsl:when>
@@ -315,9 +315,9 @@
 														</xsl:if>
 													</xsl:when>
 													<xsl:when
-														test="/source/supply-generation/hh-end-date[@label='finish']">
+														test="/source/supply-generation/hh-start-date[@label='finish']">
 														<xsl:if
-															test="/source/supply-generation/hh-end-date[@label='finish']/@day = @number">
+															test="/source/supply-generation/hh-start-date[@label='finish']/@day = @number">
 															<xsl:attribute name="selected" />
 														</xsl:if>
 													</xsl:when>
@@ -333,9 +333,9 @@
 										</xsl:for-each>
 									</select>
 									<xsl:if
-										test="/source/supply-generation/hh-end-date[@label='finish']">
+										test="/source/supply-generation/hh-start-date[@label='finish']">
 										<xsl:value-of
-											select="concat(' ', /source/supply-generation/hh-end-date[@label='finish']/@hour, ':', /source/supply-generation/hh-end-date[@label='finish']/@minute, 'Z')" />
+											select="concat(' ', /source/supply-generation/hh-start-date[@label='finish']/@hour, ':', /source/supply-generation/hh-start-date[@label='finish']/@minute, 'Z')" />
 									</xsl:if>
 								</fieldset>
 								<br />

@@ -32,7 +32,7 @@ import java.util.TimeZone;
 import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.UserException;
-import net.sf.chellow.physical.HhEndDate;
+import net.sf.chellow.physical.HhStartDate;
 
 import com.Ostermiller.util.CSVParser;
 
@@ -108,7 +108,7 @@ public class HhConverterCsvSimple implements HhConverter {
 			if (values.length > 5) {
 				status = values[5].trim().charAt(0);
 			}
-			datum = new HhDatumRaw(values[0], Boolean.parseBoolean(values[1]), Boolean.parseBoolean(values[2]), new HhEndDate(values[3]),
+			datum = new HhDatumRaw(values[0], Boolean.parseBoolean(values[1]), Boolean.parseBoolean(values[2]), new HhStartDate(values[3]),
 					new BigDecimal(values[4]), status);
 			datumNext = datum;
 			return this.datum;

@@ -40,7 +40,7 @@ import net.sf.chellow.monad.XmlTree;
 import net.sf.chellow.monad.types.MonadDate;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
-import net.sf.chellow.physical.HhEndDate;
+import net.sf.chellow.physical.HhStartDate;
 import net.sf.chellow.ui.GeneralImport;
 
 import org.w3c.dom.Document;
@@ -72,12 +72,12 @@ public class DsoContract extends Contract {
 		if (action.equals("insert")) {
 			String startDateStr = GeneralImport.addField(csvElement,
 					"Start Date", values, 2);
-			HhEndDate startDate = new HhEndDate(startDateStr);
+			HhStartDate startDate = new HhStartDate(startDateStr);
 			String finishDateStr = GeneralImport.addField(csvElement,
 					"Finish Date", values, 3);
-			HhEndDate finishDate = null;
+			HhStartDate finishDate = null;
 			if (finishDateStr.length() > 0) {
-				finishDate = new HhEndDate(finishDateStr);
+				finishDate = new HhStartDate(finishDateStr);
 			}
 			String chargeScript = GeneralImport.addField(csvElement,
 					"Charge Script", values, 4);
@@ -109,8 +109,8 @@ public class DsoContract extends Contract {
 	public DsoContract() {
 	}
 
-	public DsoContract(Dso dso, String name, HhEndDate startDate,
-			HhEndDate finishDate, String chargeScript, String rateScript)
+	public DsoContract(Dso dso, String name, HhStartDate startDate,
+			HhStartDate finishDate, String chargeScript, String rateScript)
 			throws HttpException {
 		super(name, startDate, finishDate, chargeScript, rateScript);
 		setParty(dso);

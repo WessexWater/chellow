@@ -20,14 +20,10 @@
  *******************************************************************************/
 package net.sf.chellow.ui;
 
-import java.io.IOException;
-import java.io.PrintWriter;
 import java.util.List;
-import javax.servlet.http.HttpServletResponse;
 
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
-import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Invocation;
 import net.sf.chellow.monad.MonadUtils;
 import net.sf.chellow.monad.Urlable;
@@ -74,49 +70,8 @@ public class Reports extends EntityList {
 		return Chellow.getUrlableRoot().getUri().resolve(URI_ID).append("/");
 	}
 
-	@SuppressWarnings("unchecked")
 	public void httpGet(Invocation inv) throws HttpException {
-		if (inv.hasParameter("view")) {
-			inv.getResponse().setStatus(HttpServletResponse.SC_OK);
-			inv.getResponse().setContentType("text/plain");
-			inv.getResponse().setHeader("Content-Disposition",
-					"filename=reports.xml;");
-			PrintWriter pw = null;
-			try {
-				pw = inv.getResponse().getWriter();
-			} catch (IOException e) {
-				throw new InternalException(e);
-			}
-			pw.println("<?xml version=\"1.0\"?>");
-			pw.println("<csv>");
-			pw.flush();
-			for (Report report : (List<Report>) Hiber
-					.session()
-					.createQuery(
-							"from Report report where report.name like '0 %' order by report.id")
-					.list()) {
-				pw.println("  <line>");
-				pw.println("    <value>insert</value>");
-				pw.println("    <value>report</value>");
-				pw.println("    <value>" + report.getId() + "</value>");
-				pw.println("    <value>" + report.getName() + "</value>");
-				pw.println("    <value><![CDATA["
-						+ report.getScript().replace("<![CDATA[",
-								"&lt;![CDATA[").replace("]]>", "]]&gt;")
-						+ "]]></value>");
-				pw.print("    <value><![CDATA[");
-				if (report.getTemplate() != null) {
-					pw.print(report.getTemplate().replace("<![CDATA[",
-							"&lt;![CDATA[").replace("]]>", "]]&gt;"));
-				}
-				pw.println("]]></value>");
-				pw.println("  </line>");
-			}
-			pw.println("</csv>");
-			pw.close();
-		} else {
-			inv.sendOk(document());
-		}
+		inv.sendOk(document());
 	}
 
 	public void httpPost(Invocation inv) throws HttpException {

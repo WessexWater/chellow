@@ -26,7 +26,7 @@ import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.UserException;
 import net.sf.chellow.physical.HhDatum;
-import net.sf.chellow.physical.HhEndDate;
+import net.sf.chellow.physical.HhStartDate;
 
 public class HhDatumRaw {
 	private String core;
@@ -35,22 +35,22 @@ public class HhDatumRaw {
 
 	private boolean isKwh;
 
-	private HhEndDate endDate;
+	private HhStartDate startDate;
 
 	private BigDecimal value;
 
 	private char status;
 
 	public HhDatumRaw(String core, boolean isImport, boolean isKwh,
-			HhEndDate endDate, BigDecimal value, char status)
+			HhStartDate startDate, BigDecimal value, char status)
 			throws HttpException {
 		this.core = core;
 		this.isImport = isImport;
 		this.isKwh = isKwh;
-		if (endDate == null) {
-			throw new InternalException("The value 'endDate' must not be null.");
+		if (startDate == null) {
+			throw new InternalException("The value 'startDate' must not be null.");
 		}
-		this.endDate = endDate;
+		this.startDate = startDate;
 		this.value = value;
 		if (status != HhDatum.ESTIMATE && status != HhDatum.ACTUAL) {
 			throw new UserException(
@@ -71,8 +71,8 @@ public class HhDatumRaw {
 		return isKwh;
 	}
 
-	public HhEndDate getEndDate() {
-		return endDate;
+	public HhStartDate getStartDate() {
+		return startDate;
 	}
 
 	public BigDecimal getValue() {
@@ -85,7 +85,7 @@ public class HhDatumRaw {
 
 	public String toString() {
 		return "MPAN core: " + core + ", Is import? " + isImport + ", Is Kwh? "
-				+ isKwh + ", End date " + endDate + ", Value " + value
+				+ isKwh + ", End date " + startDate + ", Value " + value
 				+ ", Status " + status;
 	}
 }

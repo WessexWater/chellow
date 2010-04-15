@@ -32,14 +32,14 @@
 		</id>
 		<many-to-one name="contract" class="Contract" column="contract_id" foreign-key="fkey_rate_script_contract"/>
 		<component name="startDate"
-			class="net.sf.chellow.physical.HhEndDate">
+			class="net.sf.chellow.physical.HhStartDate">
 			<property type="timestamp" name="date">
 				<column name="start_date"
 					sql-type="timestamp with time zone" not-null="true" />
 			</property>
 		</component>
 		<component name="finishDate"
-			class="net.sf.chellow.physical.HhEndDate">
+			class="net.sf.chellow.physical.HhStartDate">
 			<property type="timestamp" name="date">
 				<column name="finish_date"
 					sql-type="timestamp with time zone" />

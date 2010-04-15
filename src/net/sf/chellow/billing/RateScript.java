@@ -21,6 +21,7 @@
 
 package net.sf.chellow.billing;
 
+import java.util.Calendar;
 import java.util.Date;
 
 import javax.script.Invocable;
@@ -39,7 +40,7 @@ import net.sf.chellow.monad.XmlTree;
 import net.sf.chellow.monad.types.MonadDate;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
-import net.sf.chellow.physical.HhEndDate;
+import net.sf.chellow.physical.HhStartDate;
 import net.sf.chellow.physical.PersistentEntity;
 import net.sf.chellow.ui.GeneralImport;
 
@@ -57,7 +58,7 @@ public class RateScript extends PersistentEntity {
 			HhdcContract contract = HhdcContract.getHhdcContract(contractName);
 			String startDateStr = GeneralImport.addField(csvElement,
 					"Start Date", values, 1);
-			HhEndDate startDate = new HhEndDate(startDateStr);
+			HhStartDate startDate = new HhStartDate(startDateStr);
 			String script = GeneralImport.addField(csvElement, "Script",
 					values, 2);
 			contract.insertRateScript(startDate, script);
@@ -68,22 +69,22 @@ public class RateScript extends PersistentEntity {
 	public static void generalImportDso(String action, String[] values,
 			Element csvElement) throws HttpException {
 		if (action.equals("insert")) {
-			String dsoCode = GeneralImport.addField(csvElement,
-					"Dso Code", values, 0);
+			String dsoCode = GeneralImport.addField(csvElement, "Dso Code",
+					values, 0);
 			Dso dso = Dso.getDso(dsoCode);
 			String contractName = GeneralImport.addField(csvElement,
 					"Contract Name", values, 1);
 			DsoContract contract = dso.getContract(contractName);
 			String startDateStr = GeneralImport.addField(csvElement,
 					"Start Date", values, 2);
-			HhEndDate startDate = new HhEndDate(startDateStr);
+			HhStartDate startDate = new HhStartDate(startDateStr);
 			String script = GeneralImport.addField(csvElement, "Script",
 					values, 3);
 			contract.insertRateScript(startDate, script);
 		} else if (action.equals("update")) {
 		}
 	}
-	
+
 	public static void generalImportSupplier(String action, String[] values,
 			Element csvElement) throws HttpException {
 		if (action.equals("insert")) {
@@ -93,7 +94,7 @@ public class RateScript extends PersistentEntity {
 					.getSupplierContract(contractName);
 			String startDateStr = GeneralImport.addField(csvElement,
 					"Start Date", values, 1);
-			HhEndDate startDate = new HhEndDate(startDateStr);
+			HhStartDate startDate = new HhStartDate(startDateStr);
 			String script = GeneralImport.addField(csvElement, "Script",
 					values, 2);
 			contract.insertRateScript(startDate, script);
@@ -110,7 +111,7 @@ public class RateScript extends PersistentEntity {
 					.getNonCoreContract(contractName);
 			String startDateStr = GeneralImport.addField(csvElement,
 					"Start Date", values, 1);
-			HhEndDate startDate = new HhEndDate(startDateStr);
+			HhStartDate startDate = new HhStartDate(startDateStr);
 			String script = GeneralImport.addField(csvElement, "Script",
 					values, 2);
 			contract.insertRateScript(startDate, script);
@@ -124,17 +125,17 @@ public class RateScript extends PersistentEntity {
 
 	private Contract contract;
 
-	private HhEndDate startDate;
+	private HhStartDate startDate;
 
-	private HhEndDate finishDate;
+	private HhStartDate finishDate;
 
 	private String script;
 
 	public RateScript() {
 	}
 
-	public RateScript(Contract contract, HhEndDate startDate,
-			HhEndDate finishDate, String script) throws HttpException {
+	public RateScript(Contract contract, HhStartDate startDate,
+			HhStartDate finishDate, String script) throws HttpException {
 		setContract(contract);
 		internalUpdate(startDate, finishDate, script);
 	}
@@ -147,19 +148,19 @@ public class RateScript extends PersistentEntity {
 		this.contract = contract;
 	}
 
-	public HhEndDate getStartDate() {
+	public HhStartDate getStartDate() {
 		return startDate;
 	}
 
-	void setStartDate(HhEndDate startDate) {
+	void setStartDate(HhStartDate startDate) {
 		this.startDate = startDate;
 	}
 
-	public HhEndDate getFinishDate() {
+	public HhStartDate getFinishDate() {
 		return finishDate;
 	}
 
-	void setFinishDate(HhEndDate finishDate) {
+	void setFinishDate(HhStartDate finishDate) {
 		this.finishDate = finishDate;
 	}
 
@@ -171,8 +172,8 @@ public class RateScript extends PersistentEntity {
 		this.script = script;
 	}
 
-	void internalUpdate(HhEndDate startDate, HhEndDate finishDate, String script)
-			throws HttpException {
+	void internalUpdate(HhStartDate startDate, HhStartDate finishDate,
+			String script) throws HttpException {
 		setStartDate(startDate);
 		setFinishDate(finishDate);
 		if (finishDate != null
@@ -189,10 +190,10 @@ public class RateScript extends PersistentEntity {
 		setScript(script);
 	}
 
-	public void update(HhEndDate startDate, HhEndDate finishDate, String script)
-			throws HttpException {
-		HhEndDate originalStartDate = getStartDate();
-		HhEndDate originalFinishDate = getFinishDate();
+	public void update(HhStartDate startDate, HhStartDate finishDate,
+			String script) throws HttpException {
+		HhStartDate originalStartDate = getStartDate();
+		HhStartDate originalFinishDate = getFinishDate();
 		RateScript previousRateScript = contract.getPreviousRateScript(this);
 		RateScript nextRateScript = contract.getNextRateScript(this);
 
@@ -222,7 +223,7 @@ public class RateScript extends PersistentEntity {
 					.getFinishDate(), nextRateScript.getScript());
 		}
 		Hiber.flush();
-		HhEndDate checkFinishDate = null;
+		HhStartDate checkFinishDate = null;
 		if (originalFinishDate == null) {
 			checkFinishDate = getFinishDate();
 		} else if (finishDate != null) {
@@ -230,7 +231,7 @@ public class RateScript extends PersistentEntity {
 					originalFinishDate.getDate()) ? finishDate
 					: originalFinishDate;
 		}
-		HhEndDate checkStartDate = null;
+		HhStartDate checkStartDate = null;
 		if (originalStartDate == null) {
 			checkStartDate = getStartDate();
 		} else {
@@ -290,16 +291,15 @@ public class RateScript extends PersistentEntity {
 			Bill bill = Bill.getBill(billId);
 			Document doc = document();
 			Element source = doc.getDocumentElement();
-			update(
-					HhEndDate.roundDown(startDate).getNext(),
-					finishDate == null ? null : HhEndDate.roundDown(finishDate),
-					script);
+			update(HhStartDate.roundDown(startDate).getNext(),
+					finishDate == null ? null : HhStartDate
+							.roundDown(finishDate), script);
 			source.appendChild(bill.virtualBillXml(doc));
 			inv.sendOk(doc);
 		} else if (inv.hasParameter("delete")) {
 			try {
-			contract.delete(this);
-			Hiber.commit();
+				contract.delete(this);
+				Hiber.commit();
 			} catch (UserException e) {
 				Hiber.rollBack();
 				e.setDocument(document());
@@ -309,22 +309,24 @@ public class RateScript extends PersistentEntity {
 		} else {
 			String script = inv.getString("script");
 			Date startDate = inv.getDate("start-date");
-			Date finishDate = null;
+			HhStartDate finishDate = null;
 			boolean hasFinished = inv.getBoolean("has-finished");
 			if (!inv.isValid()) {
 				throw new UserException(document());
 			}
 			script = script.replace("\r", "").replace("\t", "    ");
 			if (hasFinished) {
-				finishDate = inv.getDate("finish-date");
+				Date finishDateRaw = inv.getDate("finish-date");
 				if (!inv.isValid()) {
 					throw new UserException(document());
 				}
+				Calendar cal = MonadDate.getCalendar();
+				cal.setTime(finishDateRaw);
+				cal.add(Calendar.DAY_OF_MONTH, 1);
+				finishDate = HhStartDate.roundDown(cal.getTime()).getPrevious();
 			}
 			try {
-				update(HhEndDate.roundDown(startDate).getNext(),
-						finishDate == null ? null : HhEndDate
-								.roundDown(finishDate), script);
+				update(HhStartDate.roundDown(startDate), finishDate, script);
 			} catch (HttpException e) {
 				e.setDocument(document());
 				throw e;

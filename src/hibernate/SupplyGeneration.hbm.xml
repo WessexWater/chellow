@@ -51,12 +51,12 @@
 			foreign-key="fkey_supply_generation_import_mpan" />
 		<many-to-one name="exportMpan" class="Mpan" column="export_mpan_id"
 			foreign-key="fkey_supply_generation_export_mpan" />
-		<component name="startDate" class="HhEndDate">
+		<component name="startDate" class="HhStartDate">
 			<property type="timestamp" name="date">
 				<column name="start_date" sql-type="timestamp with time zone" />
 			</property>
 		</component>
-		<component name="finishDate" class="HhEndDate">
+		<component name="finishDate" class="HhStartDate">
 			<property type="timestamp" name="date">
 				<column name="finish_date" sql-type="timestamp with time zone" />
 			</property>

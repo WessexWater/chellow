@@ -81,7 +81,7 @@
 						<td>Start Date</td>
 						<td>
 							<xsl:value-of
-								select="concat(/source/hh-data/channel/supply-generation/hh-end-date[@label='start']/@year, '-', /source/hh-data/channel/supply-generation/hh-end-date[@label='start']/@month, '-', /source/hh-data/channel/supply-generation/hh-end-date[@label='start']/@day, ' ', /source/hh-data/channel/supply-generation/hh-end-date[@label='start']/@hour, ':', /source/hh-data/channel/supply-generation/hh-end-date[@label='start']/@minute, ' Z')" />
+								select="concat(/source/hh-data/channel/supply-generation/hh-start-date[@label='start']/@year, '-', /source/hh-data/channel/supply-generation/hh-start-date[@label='start']/@month, '-', /source/hh-data/channel/supply-generation/hh-start-date[@label='start']/@day, ' ', /source/hh-data/channel/supply-generation/hh-start-date[@label='start']/@hour, ':', /source/hh-data/channel/supply-generation/hh-start-date[@label='start']/@minute, ' Z')" />
 						</td>
 					</tr>
 					<tr>
@@ -89,9 +89,9 @@
 						<td>
 							<xsl:choose>
 								<xsl:when
-									test="/source/hh-data/channel/supply-generation/hh-end-date[@label='finish']">
+									test="/source/hh-data/channel/supply-generation/hh-start-date[@label='finish']">
 									<xsl:value-of
-										select="concat(/source/hh-data/channel/supply-generation/hh-end-date[@label='finish']/@year, '-', /source/hh-data/channel/supply-generation/hh-end-date[@label='finish']/@month, '-', /source/hh-data/channel/supply-generation/hh-end-date[@label='finish']/@day, ' ', /source/hh-data/channel/supply-generation/hh-end-date[@label='finish']/@hour, ':', /source/hh-data/channel/supply-generation/hh-end-date[@label='finish']/@minute, ' Z')" />
+										select="concat(/source/hh-data/channel/supply-generation/hh-start-date[@label='finish']/@year, '-', /source/hh-data/channel/supply-generation/hh-start-date[@label='finish']/@month, '-', /source/hh-data/channel/supply-generation/hh-start-date[@label='finish']/@day, ' ', /source/hh-data/channel/supply-generation/hh-start-date[@label='finish']/@hour, ':', /source/hh-data/channel/supply-generation/hh-start-date[@label='finish']/@minute, ' Z')" />
 								</xsl:when>
 								<xsl:otherwise>Ongoing</xsl:otherwise>
 							</xsl:choose>
@@ -163,7 +163,7 @@
 											</xsl:when>
 											<xsl:otherwise>
 												<xsl:value-of
-													select="/source/hh-end-date/@year" />
+													select="/source/hh-start-date/@year" />
 											</xsl:otherwise>
 										</xsl:choose>
 									</xsl:attribute>
@@ -185,7 +185,7 @@
 												</xsl:when>
 												<xsl:otherwise>
 													<xsl:if
-														test="/source/hh-end-date/@month = @number">
+														test="/source/hh-start-date/@month = @number">
 														<xsl:attribute
 															name="selected" />
 													</xsl:if>
@@ -245,7 +245,7 @@
 										</td>
 										<td>
 											<xsl:value-of
-												select="concat(hh-end-date/@year, '-', hh-end-date/@month, '-', hh-end-date/@day, 'T', hh-end-date/@hour, ':', hh-end-date/@minute, 'Z')" />
+												select="concat(hh-start-date/@year, '-', hh-start-date/@month, '-', hh-start-date/@day, 'T', hh-start-date/@hour, ':', hh-start-date/@minute, 'Z')" />
 										</td>
 										<td>
 											<xsl:value-of
@@ -278,7 +278,7 @@
 												</xsl:when>
 												<xsl:otherwise>
 													<xsl:value-of
-														select="/source/hh-end-date/@year" />
+														select="/source/hh-start-date/@year" />
 												</xsl:otherwise>
 											</xsl:choose>
 										</xsl:attribute>
@@ -301,7 +301,7 @@
 													</xsl:when>
 													<xsl:otherwise>
 														<xsl:if
-															test="/source/hh-end-date/@month = @number">
+															test="/source/hh-start-date/@month = @number">
 															<xsl:attribute
 																name="selected" />
 														</xsl:if>
@@ -332,7 +332,7 @@
 													</xsl:when>
 													<xsl:otherwise>
 														<xsl:if
-															test="/source/hh-end-date/@day = @number">
+															test="/source/hh-start-date/@day = @number">
 															<xsl:attribute
 																name="selected" />
 														</xsl:if>
@@ -394,7 +394,7 @@
 								<xsl:otherwise>
 									<xsl:attribute name="value">
 										<xsl:value-of
-											select="/source/hh-end-date/@year" />
+											select="/source/hh-start-date/@year" />
 									</xsl:attribute>
 								</xsl:otherwise>
 							</xsl:choose>
@@ -415,7 +415,7 @@
 										</xsl:when>
 										<xsl:otherwise>
 											<xsl:if
-												test="/source/hh-end-date/@month = @number">
+												test="/source/hh-start-date/@month = @number">
 												<xsl:attribute
 													name="selected" />
 											</xsl:if>
@@ -441,7 +441,7 @@
 										</xsl:when>
 										<xsl:otherwise>
 											<xsl:if
-												test="/source/hh-end-date/@day = @number">
+												test="/source/hh-start-date/@day = @number">
 												<xsl:attribute
 													name="selected" />
 											</xsl:if>
@@ -467,7 +467,7 @@
 										</xsl:when>
 										<xsl:otherwise>
 											<xsl:if
-												test="/source/hh-end-date/@hour = @number">
+												test="/source/hh-start-date/@hour = @number">
 												<xsl:attribute
 													name="selected" />
 											</xsl:if>
@@ -491,7 +491,7 @@
 									</xsl:when>
 									<xsl:otherwise>
 										<xsl:if
-											test="/source/hh-end-date/@minute = @number">
+											test="/source/hh-start-date/@minute = @number">
 											<xsl:attribute
 												name="selected" />
 										</xsl:if>
@@ -511,7 +511,7 @@
 									</xsl:when>
 									<xsl:otherwise>
 										<xsl:if
-											test="/source/hh-end-date/@minute = '30'">
+											test="/source/hh-start-date/@minute = '30'">
 											<xsl:attribute
 												name="selected" />
 										</xsl:if>

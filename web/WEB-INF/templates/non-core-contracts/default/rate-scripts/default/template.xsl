@@ -72,7 +72,7 @@
 									<xsl:otherwise>
 										<xsl:attribute name="value">
 											<xsl:value-of
-												select="/source/rate-script/hh-end-date[@label='start']/@year" />
+												select="/source/rate-script/hh-start-date[@label='start']/@year" />
 										</xsl:attribute>
 									</xsl:otherwise>
 								</xsl:choose>
@@ -93,7 +93,7 @@
 											</xsl:when>
 											<xsl:otherwise>
 												<xsl:if
-													test="/source/rate-script/hh-end-date[@label='start']/@month = @number">
+													test="/source/rate-script/hh-start-date[@label='start']/@month = @number">
 													<xsl:attribute
 														name="selected" />
 												</xsl:if>
@@ -119,7 +119,7 @@
 											</xsl:when>
 											<xsl:otherwise>
 												<xsl:if
-													test="/source/rate-script/hh-end-date[@label='start']/@day = @number">
+													test="/source/rate-script/hh-start-date[@label='start']/@day = @number">
 													<xsl:attribute
 														name="selected" />
 												</xsl:if>
@@ -150,7 +150,7 @@
 										</xsl:when>
 										<xsl:otherwise>
 											<xsl:if
-												test="/source/rate-script/hh-end-date[@label='finish']">
+												test="/source/rate-script/hh-start-date[@label='finish']">
 												<xsl:attribute
 													name="checked">
 													checked
@@ -170,9 +170,9 @@
 												select="/source/request/parameter[@name='finish-date-year']/value/text()" />
 										</xsl:when>
 										<xsl:when
-											test="/source/rate-script/hh-end-date[@label='finish']">
+											test="/source/rate-script/hh-start-date[@label='finish']">
 											<xsl:value-of
-												select="/source/rate-script/hh-end-date[@label='finish']/@year" />
+												select="/source/rate-script/hh-start-date[@label='finish']/@year" />
 										</xsl:when>
 										<xsl:otherwise>
 											<xsl:value-of
@@ -199,9 +199,9 @@
 												</xsl:if>
 											</xsl:when>
 											<xsl:when
-												test="/source/rate-script/hh-end-date[@label='finish']">
+												test="/source/rate-script/hh-start-date[@label='finish']">
 												<xsl:if
-													test="/source/rate-script/hh-end-date[@label='finish']/@month = @number">
+													test="/source/rate-script/hh-start-date[@label='finish']/@month = @number">
 													<xsl:attribute
 														name="selected" />
 												</xsl:if>
@@ -237,9 +237,9 @@
 												</xsl:if>
 											</xsl:when>
 											<xsl:when
-												test="/source/rate-script/hh-end-date[@label='finish']">
+												test="/source/rate-script/hh-start-date[@label='finish']">
 												<xsl:if
-													test="/source/rate-script/hh-end-date[@label='finish']/@day = @number">
+													test="/source/rate-script/hh-start-date[@label='finish']/@day = @number">
 													<xsl:attribute
 														name="selected" />
 												</xsl:if>

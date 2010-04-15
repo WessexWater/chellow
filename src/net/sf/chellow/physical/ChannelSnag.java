@@ -80,10 +80,10 @@ public class ChannelSnag extends SnagDateBounded {
 			boolean isKwh = Boolean.parseBoolean(isKwhStr);
 			String startStr = GeneralImport.addField(csvElement, "From",
 					values, 3);
-			HhEndDate startDate = new HhEndDate(startStr);
+			HhStartDate startDate = new HhStartDate(startStr);
 			String finishStr = GeneralImport.addField(csvElement, "To", values,
 					4);
-			HhEndDate finishDate = new HhEndDate(finishStr);
+			HhStartDate finishDate = new HhStartDate(finishStr);
 			for (SupplyGeneration generation : mpanCore.getSupply()
 					.getGenerations(startDate, finishDate)) {
 				for (ChannelSnag snag : (List<ChannelSnag>) Hiber
@@ -108,7 +108,7 @@ public class ChannelSnag extends SnagDateBounded {
 	}
 
 	public ChannelSnag(String description, Channel channel,
-			HhEndDate startDate, HhEndDate finishDate) throws HttpException {
+			HhStartDate startDate, HhStartDate finishDate) throws HttpException {
 		super(description, startDate, finishDate);
 		this.channel = channel;
 	}

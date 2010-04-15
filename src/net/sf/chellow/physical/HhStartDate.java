@@ -31,27 +31,27 @@ import net.sf.chellow.monad.types.MonadDate;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-public class HhEndDate extends MonadDate {
-	public static HhEndDate getNext(HhEndDate date) throws HttpException {
-		return new HhEndDate(new Date(getNext(getCalendar(), date.getDate()
+public class HhStartDate extends MonadDate {
+	public static HhStartDate getNext(HhStartDate date) throws HttpException {
+		return new HhStartDate(new Date(getNext(getCalendar(), date.getDate()
 				.getTime())));
 	}
 
-	public static HhEndDate getPrevious(HhEndDate date)
+	public static HhStartDate getPrevious(HhStartDate date)
 			throws HttpException {
-		return new HhEndDate(new Date(getPrevious(getCalendar(), date.getDate()
+		return new HhStartDate(new Date(getPrevious(getCalendar(), date.getDate()
 				.getTime())));
 	}
 
-	public static HhEndDate roundUp(Date date) throws HttpException {
-		return new HhEndDate(new Date(roundUp(getCalendar(), date.getTime())));
+	public static HhStartDate roundUp(Date date) throws HttpException {
+		return new HhStartDate(new Date(roundUp(getCalendar(), date.getTime())));
 	}
 
 	public static long getNext(Calendar cal, long date) {
 		return roundUp(cal, date + 1);
 	}
 	
-	public static boolean isEqual(HhEndDate date1, HhEndDate date2) {
+	public static boolean isEqual(HhStartDate date1, HhStartDate date2) {
 		if (date1 == null) {
 			if (date2 == null) {
 				return true;
@@ -67,7 +67,7 @@ public class HhEndDate extends MonadDate {
 		}
 	}
 
-	public static boolean isAfter(HhEndDate date1, HhEndDate date2) {
+	public static boolean isAfter(HhStartDate date1, HhStartDate date2) {
 		if (date1 == null) {
 			if (date2 == null) {
 				return false;
@@ -79,7 +79,7 @@ public class HhEndDate extends MonadDate {
 		}
 	}
 	
-	public static boolean isBefore(HhEndDate date1, HhEndDate date2) {
+	public static boolean isBefore(HhStartDate date1, HhStartDate date2) {
 		if (date1 == null) {
 			return false;
 		} else {
@@ -108,8 +108,8 @@ public class HhEndDate extends MonadDate {
 		return cal.getTimeInMillis();
 	}
 
-	public static HhEndDate roundDown(Date date) throws HttpException {
-		return new HhEndDate(new Date(roundDown(getCalendar(), date.getTime())));
+	public static HhStartDate roundDown(Date date) throws HttpException {
+		return new HhStartDate(new Date(roundDown(getCalendar(), date.getTime())));
 	}
 
 	public static long getPrevious(Calendar cal, long date) {
@@ -130,29 +130,29 @@ public class HhEndDate extends MonadDate {
 		return cal.getTimeInMillis();
 	}
 
-	HhEndDate() throws HttpException {
+	HhStartDate() throws HttpException {
 		super(new Date(0));
 	}
 
-	public HhEndDate(Date date) throws HttpException {
+	public HhStartDate(Date date) throws HttpException {
 		super(date);
 	}
 
-	public HhEndDate(String label, String year, String month, String day)
+	public HhStartDate(String label, String year, String month, String day)
 			throws HttpException {
 		super(label, year, month, day);
 	}
 
-	public HhEndDate(int year, int month, int day)
+	public HhStartDate(int year, int month, int day)
 			throws HttpException {
 		super(year, month, day);
 	}
 
-	public HhEndDate(String dateStr) throws HttpException {
+	public HhStartDate(String dateStr) throws HttpException {
 		super(dateStr);
 	}
 
-	public HhEndDate(String label, String dateStr) throws HttpException {
+	public HhStartDate(String label, String dateStr) throws HttpException {
 		super(label, dateStr);
 	}
 
@@ -181,19 +181,19 @@ public class HhEndDate extends MonadDate {
 		super.update(cal.getTime());
 	}
 
-	public HhEndDate getPrevious() throws HttpException {
+	public HhStartDate getPrevious() throws HttpException {
 		return getPrevious(this);
 	}
 
-	public HhEndDate getNext() throws HttpException {
+	public HhStartDate getNext() throws HttpException {
 		return getNext(this);
 	}
 
 	public Element toXml(Document doc) throws InternalException {
-		return toXML(getDate(), getLabel(), doc, "hh-end-date");
+		return toXML(getDate(), getLabel(), doc, "hh-start-date");
 	}
     
-	public boolean after(HhEndDate date) {
+	public boolean after(HhStartDate date) {
 		if (date == null) {
 			return false;
 		} else {
@@ -201,7 +201,7 @@ public class HhEndDate extends MonadDate {
 		}
 	}
 	
-	public boolean before(HhEndDate date) {
+	public boolean before(HhStartDate date) {
 		if (date == null) {
 			return true;
 		} else {
