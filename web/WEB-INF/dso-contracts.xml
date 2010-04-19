@@ -1416,6 +1416,10 @@ def tariffs():
             'day-gbp-per-kwh': 0.0039,
             'night-gbp-per-kwh': 0.0012,
             'reactive-gbp-per-kvarh': 0.0023},
+        '521': {
+            'capacity-gbp-per-kva-per-day': 0.0174,
+            'day-gbp-per-kwh': 0,
+            'night-gbp-per-kwh': 0},
         '540': {
             'capacity-gbp-per-kva-per-day': 0.0368,
             'day-gbp-per-kwh': 0.0073,
@@ -1435,7 +1439,11 @@ def tariffs():
             'capacity-gbp-per-kva-per-day': 0.0358,
             'day-gbp-per-kwh': 0.0115,
             'night-gbp-per-kwh': 0.0038,
-            'reactive-gbp-per-kvarh': 0.0042}}]]></value>
+            'reactive-gbp-per-kvarh': 0.0042},
+        '581': {
+            'capacity-gbp-per-kva-per-day': 0.0167,
+            'day-gbp-per-kwh': 0,
+            'night-gbp-per-kwh': 0}}]]></value>
     </line>
     <line>
         <value><![CDATA[insert]]></value>

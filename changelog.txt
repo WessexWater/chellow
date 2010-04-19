@@ -1,3 +1,5 @@
+* Now hh data are stored by start date rather than end date. This makes billing
+    scripts less complicated.
 * Fixed bug 2961802 which turned out to be just a mis-labelling of the 'running
     automatic importer' status message, so no automated test for it.
 * Fixed bug where messages from an HH import could be iterated by one thread while being

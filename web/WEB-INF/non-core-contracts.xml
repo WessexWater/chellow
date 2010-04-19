@@ -306,12 +306,12 @@ class SiteSource(DataSource):
         for group in site.groups(summary['hist-start'], summary['hist-finish'], True):
             hh_start_date = summary['hist-start']
             hh_streams = group.hhData()
-            import_net = hh_streams['import-from-net']
-            export_net = hh_streams['export-to-net']
-            import_gen = hh_streams['import-from-gen']
-            export_gen = hh_streams['export-to-gen']
-            import_3rd_party = hh_streams['import-from-3rd-party']
-            export_3rd_party = hh_streams['export-to-3rd-party']
+            import_net = hh_streams['import-net']
+            export_net = hh_streams['export-net']
+            import_gen = hh_streams['import-gen']
+            export_gen = hh_streams['export-gen']
+            import_3rd_party = hh_streams['import-3rd-party']
+            export_3rd_party = hh_streams['export-3rd-party']
 
             for i in range(len(import_net)):
                 ct_cal.setTime(hh_start_date.getDate())

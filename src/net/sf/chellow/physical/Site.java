@@ -241,10 +241,10 @@ public class Site extends PersistentEntity {
 			// + (System.currentTimeMillis() - now));
 			Map<String, List<Double>> map = group.hhData();
 
-			List<Double> importFromNet = map.get("import-from-net");
-			List<Double> exportToNet = map.get("export-to-net");
-			List<Double> importFromGen = map.get("import-from-gen");
-			List<Double> exportToGen = map.get("export-to-gen");
+			List<Double> importFromNet = map.get("import-net");
+			List<Double> exportToNet = map.get("export-net");
+			List<Double> importFromGen = map.get("import-gen");
+			List<Double> exportToGen = map.get("export-gen");
 
 			HhStartDate resolve1From = null;
 			HhStartDate resolve1To = null;
