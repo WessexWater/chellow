@@ -1,3 +1,9 @@
+* Updated installation instruction to cope with difference between Ubuntu and
+    Windows Tomcat installations.
+
+
+361
+
 * Now hh data are stored by start date rather than end date. This makes billing
     scripts less complicated.
 * Fixed bug 2961802 which turned out to be just a mis-labelling of the 'running
