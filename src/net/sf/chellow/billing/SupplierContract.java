@@ -49,38 +49,45 @@ import org.w3c.dom.Element;
 public class SupplierContract extends Contract {
 	static public void generalImport(String action, String[] values,
 			Element csvElement) throws HttpException {
-		String participantCode = GeneralImport.addField(csvElement,
-				"Participant Code", values, 0);
-		Participant participant = Participant.getParticipant(participantCode);
-		String name = GeneralImport.addField(csvElement, "Name", values, 1);
-
 		if (action.equals("insert")) {
+			String idStr = GeneralImport.addField(csvElement, "Id", values, 0);
+			Long id = null;
+			if (idStr.length() > 0) {
+				id = new Long(idStr);
+			}
+			String participantCode = GeneralImport.addField(csvElement,
+					"Participant Code", values, 1);
+			Participant participant = Participant
+					.getParticipant(participantCode);
+			String name = GeneralImport.addField(csvElement, "Name", values, 2);
+
 			String startDateStr = GeneralImport.addField(csvElement,
-					"Start Date", values, 2);
+					"Start Date", values, 3);
 			HhStartDate startDate = new HhStartDate(startDateStr);
 			String finishDateStr = GeneralImport.addField(csvElement,
-					"Finish Date", values, 3);
+					"Finish Date", values, 4);
 			HhStartDate finishDate = null;
 			if (finishDateStr.length() > 0) {
 				finishDate = new HhStartDate(finishDateStr);
 			}
 			String chargeScript = GeneralImport.addField(csvElement,
-					"Charge Script", values, 4);
+					"Charge Script", values, 5);
 			String rateScript = GeneralImport.addField(csvElement,
-					"Rate Script", values, 5);
-			insertSupplierContract(participant, name, startDate, finishDate,
-					chargeScript, rateScript);
+					"Rate Script", values, 6);
+			insertSupplierContract(id, participant, name, startDate,
+					finishDate, chargeScript, rateScript);
 		}
 	}
 
-	static public SupplierContract insertSupplierContract(
+	static public SupplierContract insertSupplierContract(Long id,
 			Participant participant, String name, HhStartDate startDate,
 			HhStartDate finishDate, String chargeScript, String rateScript)
 			throws HttpException {
-		SupplierContract contract = new SupplierContract(participant, name,
-				startDate, finishDate, chargeScript, rateScript);
+		SupplierContract contract = new SupplierContract(id, participant, name,
+				startDate, finishDate, chargeScript);
 		Hiber.session().save(contract);
 		Hiber.flush();
+		contract.insertFirstRateScript(startDate, finishDate, rateScript);
 		return contract;
 	}
 
@@ -118,10 +125,9 @@ public class SupplierContract extends Contract {
 	public SupplierContract() {
 	}
 
-	public SupplierContract(Participant participant, String name,
-			HhStartDate startDate, HhStartDate finishDate, String chargeScript,
-			String rateScript) throws HttpException {
-		super(name, startDate, finishDate, chargeScript, rateScript);
+	public SupplierContract(Long id, Participant participant, String name,
+			HhStartDate startDate, HhStartDate finishDate, String chargeScript) throws HttpException {
+		super(id, Boolean.FALSE, name, startDate, finishDate, chargeScript);
 		internalUpdate(participant, name, chargeScript);
 	}
 

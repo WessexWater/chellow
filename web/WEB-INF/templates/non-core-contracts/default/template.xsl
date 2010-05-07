@@ -55,6 +55,10 @@
 						</p>
 					</xsl:when>
 					<xsl:otherwise>
+						<p>
+							Is Core?
+							<xsl:value-of select="/source/non-core-contract/@is-core" />
+						</p>
 						<form action="." method="post">
 							<fieldset>
 								<legend>Update Contract</legend>

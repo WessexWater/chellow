@@ -2,8 +2,8 @@
 <xsl:stylesheet version="1.0"
 	xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
 	<xsl:output method="html" encoding="US-ASCII"
-		doctype-public="-//W3C//DTD HTML 4.01//EN"
-		doctype-system="http://www.w3.org/TR/html4/strict.dtd" indent="yes" />
+		doctype-public="-//W3C//DTD HTML 4.01//EN" doctype-system="http://www.w3.org/TR/html4/strict.dtd"
+		indent="yes" />
 	<xsl:template match="/">
 		<html>
 			<head>
@@ -17,13 +17,11 @@
 			<body>
 				<p>
 					<a href="{/source/request/@context-path}/">
-						<img
-							src="{/source/request/@context-path}/logo/" />
+						<img src="{/source/request/@context-path}/logo/" />
 						<span class="logo">Chellow</span>
 					</a>
 					&gt;
-					<a
-						href="{/source/request/@context-path}/reports/">
+					<a href="{/source/request/@context-path}/reports/">
 						<xsl:value-of select="'Reports'" />
 					</a>
 					&gt;
@@ -47,8 +45,7 @@
 									Are you sure you want to delete this
 									report?
 								</legend>
-								<input type="submit" name="delete"
-									value="Delete" />
+								<input type="submit" name="delete" value="Delete" />
 							</fieldset>
 						</form>
 						<p>
@@ -64,6 +61,10 @@
 								<a href="xml-output/">XML Output</a>
 							</li>
 						</ul>
+						<p>
+							Is Core?
+							<xsl:value-of select="/source/report/@is-core" />
+						</p>
 						<form method="post" action=".">
 							<fieldset>
 								<legend>Update Report</legend>
@@ -72,14 +73,12 @@
 									<input name="name" size="100">
 										<xsl:attribute name="value">
 									<xsl:choose>
-										<xsl:when
-													test="/source/request/parameter[@name = 'name']/value">
+										<xsl:when test="/source/request/parameter[@name = 'name']/value">
 											<xsl:value-of
-														select="/source/request/parameter[@name = 'name']/value" />
+											select="/source/request/parameter[@name = 'name']/value" />
 										</xsl:when>
 										<xsl:otherwise>
-											<xsl:value-of
-														select="/source/report/@name" />
+											<xsl:value-of select="/source/report/@name" />
 										</xsl:otherwise>
 									</xsl:choose>
 								</xsl:attribute>
@@ -89,17 +88,13 @@
 								<br />
 								<label>Script</label>
 								<br />
-								<textarea name="script" cols="80"
-									rows="50">
+								<textarea name="script" cols="80" rows="50">
 									<xsl:choose>
-										<xsl:when
-											test="/source/request/parameter[@name = 'script']/value">
-											<xsl:value-of
-												select="/source/script/text()" />
+										<xsl:when test="/source/request/parameter[@name = 'script']/value">
+											<xsl:value-of select="/source/script/text()" />
 										</xsl:when>
 										<xsl:otherwise>
-											<xsl:value-of
-												select="/source/report/script/text()" />
+											<xsl:value-of select="/source/report/script/text()" />
 										</xsl:otherwise>
 									</xsl:choose>
 								</textarea>
@@ -107,17 +102,14 @@
 								<br />
 								<label>Template</label>
 								<br />
-								<textarea name="template" cols="80"
-									rows="50">
+								<textarea name="template" cols="80" rows="50">
 									<xsl:choose>
 										<xsl:when
 											test="/source/request/parameter[@name = 'template']/value">
-											<xsl:value-of
-												select="/source/template/text()" />
+											<xsl:value-of select="/source/template/text()" />
 										</xsl:when>
 										<xsl:otherwise>
-											<xsl:value-of
-												select="/source/report/template/text()" />
+											<xsl:value-of select="/source/report/template/text()" />
 										</xsl:otherwise>
 									</xsl:choose>
 								</textarea>
@@ -131,8 +123,7 @@
 						<form action=".">
 							<fieldset>
 								<legend>Delete this report</legend>
-								<input type="hidden" name="view"
-									value="confirm-delete" />
+								<input type="hidden" name="view" value="confirm-delete" />
 								<input type="submit" value="Delete" />
 							</fieldset>
 						</form>

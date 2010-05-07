@@ -61,37 +61,43 @@ public class DsoContract extends Contract {
 
 	static public void generalImport(String action, String[] values,
 			Element csvElement) throws HttpException {
-		if (values.length < 6) {
-			throw new UserException("There aren't enough fields in this row");
-		}
-		String dsoCode = GeneralImport.addField(csvElement,
-				"DSO Code", values, 0);
-		Dso dso = Dso.getDso(dsoCode);
-		String name = GeneralImport.addField(csvElement, "Name", values, 1);
-
 		if (action.equals("insert")) {
+
+			String dsoCode = GeneralImport.addField(csvElement, "DSO Code",
+					values, 0);
+			Dso dso = Dso.getDso(dsoCode);
+			String idStr = GeneralImport.addField(csvElement, "Id", values, 1);
+			
+			Long id = null;
+			if (idStr.length() > 0) {
+				id = new Long(idStr);
+			}
+			
+			String name = GeneralImport.addField(csvElement, "Name", values, 2);
+
 			String startDateStr = GeneralImport.addField(csvElement,
-					"Start Date", values, 2);
+					"Start Date", values, 3);
 			HhStartDate startDate = new HhStartDate(startDateStr);
 			String finishDateStr = GeneralImport.addField(csvElement,
-					"Finish Date", values, 3);
+					"Finish Date", values, 4);
 			HhStartDate finishDate = null;
 			if (finishDateStr.length() > 0) {
 				finishDate = new HhStartDate(finishDateStr);
 			}
 			String chargeScript = GeneralImport.addField(csvElement,
-					"Charge Script", values, 4);
+					"Charge Script", values, 5);
 			String rateScript = GeneralImport.addField(csvElement,
-					"Rate Script", values, 5);
-			dso.insertContract(name, startDate, finishDate, chargeScript,
+					"Rate Script", values, 6);
+			dso.insertContract(id, name, startDate, finishDate, chargeScript,
 					rateScript);
 		}
 	}
-	
+
 	public static void loadFromCsv(ServletContext context) throws HttpException {
 		try {
 			GeneralImport process = new GeneralImport(null, context
-					.getResource("/WEB-INF/dso-contracts.xml").openStream(), "xml");
+					.getResource("/WEB-INF/dso-contracts.xml").openStream(),
+					"xml");
 			process.run();
 			List<MonadMessage> errors = process.getErrors();
 			if (!errors.isEmpty()) {
@@ -109,10 +115,10 @@ public class DsoContract extends Contract {
 	public DsoContract() {
 	}
 
-	public DsoContract(Dso dso, String name, HhStartDate startDate,
-			HhStartDate finishDate, String chargeScript, String rateScript)
+	public DsoContract(Dso dso, Long id, String name, HhStartDate startDate,
+			HhStartDate finishDate, String chargeScript)
 			throws HttpException {
-		super(name, startDate, finishDate, chargeScript, rateScript);
+		super(id, Boolean.TRUE, name, startDate, finishDate, chargeScript);
 		setParty(dso);
 		internalUpdate(name, chargeScript);
 	}

@@ -69,24 +69,35 @@ public class NonCoreContract extends Contract {
 	public static void generalImport(String action, String[] values,
 			Element csvElement) throws HttpException {
 		if (action.equals("insert")) {
+			String idStr = GeneralImport.addField(csvElement, "Id", values, 0);
+			Long id = null;
+			if (idStr.length() > 0) {
+				id = new Long(idStr);
+			}
+			String isCoreStr = GeneralImport.addField(csvElement, "Is Core?",
+					values, 1);
+			Boolean isCore = null;
+			if (id == null) {
+				isCore = new Boolean(isCoreStr);
+			}
 			String participantCode = GeneralImport.addField(csvElement,
-					"Participant Code", values, 0);
+					"Participant Code", values, 2);
 			Participant participant = Participant
 					.getParticipant(participantCode);
-			String name = GeneralImport.addField(csvElement, "Name", values, 1);
+			String name = GeneralImport.addField(csvElement, "Name", values, 3);
 			String startDateStr = GeneralImport.addField(csvElement,
-					"Start Date", values, 2);
+					"Start Date", values, 4);
 			HhStartDate startDate = new HhStartDate(startDateStr);
 			String finishDateStr = GeneralImport.addField(csvElement,
-					"Finish Date", values, 3);
+					"Finish Date", values, 5);
 			HhStartDate finishDate = finishDateStr.trim().length() == 0 ? null
 					: new HhStartDate(finishDateStr);
 			String chargeScript = GeneralImport.addField(csvElement,
-					"Charge Script", values, 4);
+					"Charge Script", values, 6);
 			String rateScript = GeneralImport.addField(csvElement,
-					"Rate Script", values, 5);
-			NonCoreContract.insertNonCoreContract(participant, name, startDate,
-					finishDate, chargeScript, rateScript);
+					"Rate Script", values, 7);
+			NonCoreContract.insertNonCoreContract(id, isCore, participant,
+					name, startDate, finishDate, chargeScript, rateScript);
 		} else if (action.equals("update")) {
 			/*
 			 * String script = values[3];
@@ -115,15 +126,16 @@ public class NonCoreContract extends Contract {
 		}
 	}
 
-	static public NonCoreContract insertNonCoreContract(
-			Participant participant, String name, HhStartDate startDate,
-			HhStartDate finishDate, String chargeScript, String rateScript)
-			throws HttpException {
-		NonCoreContract service = new NonCoreContract(participant, name,
-				startDate, finishDate, chargeScript, rateScript);
-		Hiber.session().save(service);
+	static public NonCoreContract insertNonCoreContract(Long id,
+			Boolean isCore, Participant participant, String name,
+			HhStartDate startDate, HhStartDate finishDate, String chargeScript,
+			String rateScript) throws HttpException {
+		NonCoreContract contract = new NonCoreContract(id, isCore, participant,
+				name, startDate, finishDate, chargeScript);
+		Hiber.session().save(contract);
 		Hiber.session().flush();
-		return service;
+		contract.insertFirstRateScript(startDate, finishDate, rateScript);
+		return contract;
 	}
 
 	private Provider nonCore;
@@ -131,10 +143,10 @@ public class NonCoreContract extends Contract {
 	public NonCoreContract() {
 	}
 
-	public NonCoreContract(Participant participant, String name,
-			HhStartDate startDate, HhStartDate finishDate, String chargeScript,
-			String rateScript) throws HttpException {
-		super(name, startDate, finishDate, chargeScript, rateScript);
+	public NonCoreContract(Long id, Boolean isCore, Participant participant,
+			String name, HhStartDate startDate, HhStartDate finishDate,
+			String chargeScript) throws HttpException {
+		super(id, isCore, name, startDate, finishDate, chargeScript);
 		setParty(Provider.getProvider(participant, MarketRole
 				.getMarketRole(MarketRole.NON_CORE_ROLE)));
 		internalUpdate(name, chargeScript);

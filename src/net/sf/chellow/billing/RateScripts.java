@@ -79,7 +79,7 @@ public class RateScripts extends EntityList {
 			throw new UserException(document());
 		}
 		try {
-			RateScript rateScript = contract.insertRateScript(HhStartDate
+			RateScript rateScript = contract.insertRateScript(null, HhStartDate
 					.roundDown(startDate), "");
 			Hiber.commit();
 			Hiber.flush();

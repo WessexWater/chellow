@@ -1,3 +1,7 @@
+* The ids of contracts and rate scripts should never change.
+* Used the concept of core and non-core reports and used them for contracts.
+* Corrected bug where TRIAD was always calculated with a daily rate rather it being an
+    option.
 * Updated installation instruction to cope with difference between Ubuntu and
     Windows Tomcat installations.
 

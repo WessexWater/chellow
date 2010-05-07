@@ -22,7 +22,6 @@
 package net.sf.chellow.billing;
 
 import java.util.Date;
-
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.Invocation;
@@ -140,19 +139,20 @@ public class Dso extends Party {
 		return new DsoContracts(this);
 	}
 
-	public DsoContract insertContract(String name, HhStartDate startDate,
-			HhStartDate finishDate, String chargeScript, String rateScript)
-			throws HttpException {
+	public DsoContract insertContract(Long id, String name,
+			HhStartDate startDate, HhStartDate finishDate, String chargeScript,
+			String rateScript) throws HttpException {
 		DsoContract contract = findContract(name);
 		if (contract == null) {
-			contract = new DsoContract(this, name, startDate, finishDate,
-					chargeScript, rateScript);
+			contract = new DsoContract(this, id, name, startDate, finishDate,
+					chargeScript);
 		} else {
 			throw new UserException(
-					"There is already a DSO service with this name.");
+					"There is already a DSO contract with this name.");
 		}
 		Hiber.session().save(contract);
 		Hiber.flush();
+		contract.insertFirstRateScript(startDate, finishDate, rateScript);
 		return contract;
 	}
 

@@ -34,6 +34,7 @@
 					<thead>
 						<tr>
 							<th>Chellow Id</th>
+							<th>Is Core?</th>
 							<th>Name</th>
 						</tr>
 					</thead>
@@ -46,6 +47,9 @@
 									</a>
 								</td>
 								<td>
+									<xsl:value-of select="@is-core" />
+								</td>
+								<td>
 									<xsl:value-of select="@name" />
 								</td>
 							</tr>
@@ -56,6 +60,17 @@
 				<form action="." method="post">
 					<fieldset>
 						<legend>Add a contract</legend>
+						<br />
+						<label>
+							Is Core?
+							<input type="checkbox" name="is-core" value="true">
+								<xsl:if test="/source/request/parameter[@name='is-core']">
+									<xsl:attribute name="checked">
+						<xsl:value-of select="true" />
+						</xsl:attribute>
+								</xsl:if>
+							</input>
+						</label>
 						<br />
 						<label>
 							Non-core Provider

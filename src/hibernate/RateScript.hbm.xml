@@ -26,9 +26,7 @@
 <hibernate-mapping package="net.sf.chellow.billing">
 	<class name="RateScript" table="rate_script" lazy="true">
 		<id name="id">
-			<generator class="sequence">
-				<param name="sequence">rate_script_id_sequence</param>
-			</generator>
+			<generator class="assigned" />
 		</id>
 		<many-to-one name="contract" class="Contract" column="contract_id" foreign-key="fkey_rate_script_contract"/>
 		<component name="startDate"

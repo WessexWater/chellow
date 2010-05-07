@@ -61,35 +61,42 @@ public class HhdcContract extends Contract {
 
 	static public void generalImport(String action, String[] values,
 			Element csvElement) throws HttpException {
-		String participantCode = GeneralImport.addField(csvElement,
-				"Participant Code", values, 0);
-		Participant participant = Participant.getParticipant(participantCode);
-		String name = GeneralImport.addField(csvElement, "Name", values, 1);
-
 		if (action.equals("insert")) {
+			String idStr = GeneralImport.addField(csvElement,
+					"Id", values, 0);
+			Long id = null;
+			if (idStr.length() > 0) {
+				id = new Long(idStr);
+			}
+
+			String participantCode = GeneralImport.addField(csvElement,
+					"Participant Code", values, 1);
+			Participant participant = Participant.getParticipant(participantCode);
+			String name = GeneralImport.addField(csvElement, "Name", values, 2);
+
 			String startDateStr = GeneralImport.addField(csvElement,
-					"Start Date", values, 2);
+					"Start Date", values, 3);
 			HhStartDate startDate = new HhStartDate(startDateStr);
 			String finishDateStr = GeneralImport.addField(csvElement,
-					"Finish Date", values, 3);
+					"Finish Date", values, 4);
 			HhStartDate finishDate = null;
 			if (finishDateStr.length() > 0) {
 				finishDate = new HhStartDate(finishDateStr);
 			}
 			String chargeScript = GeneralImport.addField(csvElement,
-					"Charge Script", values, 4);
+					"Charge Script", values, 5);
 			String properties = GeneralImport.addField(csvElement,
-					"Properties", values, 5);
+					"Properties", values, 6);
 			String state = GeneralImport.addField(csvElement, "State", values,
-					6);
+					7);
 			String rateScript = GeneralImport.addField(csvElement,
-					"Rate Script", values, 7);
-			insertHhdcContract(participant, name, startDate, finishDate,
+					"Rate Script", values, 8);
+			insertHhdcContract(id, participant, name, startDate, finishDate,
 					chargeScript, properties, state, rateScript);
 		}
 	}
 
-	static public HhdcContract insertHhdcContract(Participant participant,
+	static public HhdcContract insertHhdcContract(Long id, Participant participant,
 			String name, HhStartDate startDate, HhStartDate finishDate,
 			String chargeScript, String importerProperties, String state,
 			String rateScript) throws HttpException {
@@ -98,10 +105,11 @@ public class HhdcContract extends Contract {
 			throw new UserException(
 					"There's already a HHDC contract with the name " + name);
 		}
-		HhdcContract contract = new HhdcContract(participant, name, startDate,
-				finishDate, chargeScript, importerProperties, state, rateScript);
+		HhdcContract contract = new HhdcContract(id, participant, name, startDate,
+				finishDate, chargeScript, importerProperties, state);
 		Hiber.session().save(contract);
 		Hiber.flush();
+		contract.insertFirstRateScript(startDate, finishDate, rateScript);
 		return contract;
 	}
 
@@ -143,11 +151,11 @@ public class HhdcContract extends Contract {
 	public HhdcContract() {
 	}
 
-	public HhdcContract(Participant participant, String name,
+	public HhdcContract(Long id, Participant participant, String name,
 			HhStartDate startDate, HhStartDate finishDate, String chargeScript,
-			String properties, String state, String rateScript)
+			String properties, String state)
 			throws HttpException {
-		super(name, startDate, finishDate, chargeScript, rateScript);
+		super(id, Boolean.FALSE, name, startDate, finishDate, chargeScript);
 		setState(state);
 		intrinsicUpdate(participant, name, chargeScript, properties);
 	}

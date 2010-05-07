@@ -40,6 +40,7 @@ import net.sf.chellow.monad.XmlTree;
 import net.sf.chellow.monad.types.MonadDate;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
+import net.sf.chellow.physical.Configuration;
 import net.sf.chellow.physical.HhStartDate;
 import net.sf.chellow.physical.PersistentEntity;
 import net.sf.chellow.ui.GeneralImport;
@@ -56,12 +57,17 @@ public class RateScript extends PersistentEntity {
 			String contractName = GeneralImport.addField(csvElement,
 					"Contract Name", values, 0);
 			HhdcContract contract = HhdcContract.getHhdcContract(contractName);
+			String idStr = GeneralImport.addField(csvElement, "Id", values, 1);
+			Long id = null;
+			if (idStr.length() > 0) {
+				id = new Long(idStr);
+			}
 			String startDateStr = GeneralImport.addField(csvElement,
-					"Start Date", values, 1);
+					"Start Date", values, 2);
 			HhStartDate startDate = new HhStartDate(startDateStr);
 			String script = GeneralImport.addField(csvElement, "Script",
-					values, 2);
-			contract.insertRateScript(startDate, script);
+					values, 3);
+			contract.insertRateScript(id, startDate, script);
 		} else if (action.equals("update")) {
 		}
 	}
@@ -75,12 +81,17 @@ public class RateScript extends PersistentEntity {
 			String contractName = GeneralImport.addField(csvElement,
 					"Contract Name", values, 1);
 			DsoContract contract = dso.getContract(contractName);
+			String idStr = GeneralImport.addField(csvElement, "Id", values, 2);
+			Long id = null;
+			if (idStr.length() > 0) {
+				id = new Long(idStr);
+			}
 			String startDateStr = GeneralImport.addField(csvElement,
-					"Start Date", values, 2);
+					"Start Date", values, 3);
 			HhStartDate startDate = new HhStartDate(startDateStr);
 			String script = GeneralImport.addField(csvElement, "Script",
-					values, 3);
-			contract.insertRateScript(startDate, script);
+					values, 4);
+			contract.insertRateScript(id, startDate, script);
 		} else if (action.equals("update")) {
 		}
 	}
@@ -92,12 +103,17 @@ public class RateScript extends PersistentEntity {
 					"Contract Name", values, 0);
 			SupplierContract contract = SupplierContract
 					.getSupplierContract(contractName);
+			String idStr = GeneralImport.addField(csvElement, "Id", values, 1);
+			Long id = null;
+			if (idStr.length() > 0) {
+				id = new Long(idStr);
+			}
 			String startDateStr = GeneralImport.addField(csvElement,
-					"Start Date", values, 1);
+					"Start Date", values, 2);
 			HhStartDate startDate = new HhStartDate(startDateStr);
 			String script = GeneralImport.addField(csvElement, "Script",
-					values, 2);
-			contract.insertRateScript(startDate, script);
+					values, 3);
+			contract.insertRateScript(id, startDate, script);
 		} else if (action.equals("update")) {
 		}
 	}
@@ -109,12 +125,17 @@ public class RateScript extends PersistentEntity {
 					"Contract Name", values, 0);
 			NonCoreContract contract = NonCoreContract
 					.getNonCoreContract(contractName);
+			String idStr = GeneralImport.addField(csvElement, "Id", values, 1);
+			Long id = null;
+			if (idStr.length() > 0) {
+				id = new Long(idStr);
+			}
 			String startDateStr = GeneralImport.addField(csvElement,
-					"Start Date", values, 1);
+					"Start Date", values, 2);
 			HhStartDate startDate = new HhStartDate(startDateStr);
 			String script = GeneralImport.addField(csvElement, "Script",
-					values, 2);
-			contract.insertRateScript(startDate, script);
+					values, 3);
+			contract.insertRateScript(id, startDate, script);
 		} else if (action.equals("update")) {
 		}
 	}
@@ -134,8 +155,28 @@ public class RateScript extends PersistentEntity {
 	public RateScript() {
 	}
 
-	public RateScript(Contract contract, HhStartDate startDate,
+	public RateScript(Contract contract, Long id, HhStartDate startDate,
 			HhStartDate finishDate, String script) throws HttpException {
+		Configuration configuration = Configuration.getConfiguration();
+
+		if (id == null) {
+			if (contract.isCore()) {
+				id = configuration.nextCoreRateScriptId();
+			} else {
+				id = configuration.nextUserRateScriptId();
+			}
+		} else {
+			if (contract.isCore()) {
+				if (id > configuration.getCoreRateScriptId()) {
+					configuration.setCoreRateScriptId(id);
+				}
+			} else {
+				if (id > configuration.getUserRateScriptId()) {
+					configuration.setUserRateScriptId(id);
+				}
+			}
+		}
+		setId(id);
 		setContract(contract);
 		internalUpdate(startDate, finishDate, script);
 	}

@@ -75,7 +75,7 @@ public class DsoContracts extends EntityList {
 		if (inv.hasParameter("has-finished")) {
 			finishDate = inv.getDate("finish-date");
 		}
-		DsoContract contract = dso.insertContract(name, HhStartDate
+		DsoContract contract = dso.insertContract(null, name, HhStartDate
 				.roundDown(startDate).getNext(), finishDate == null ? null : HhStartDate
 				.roundDown(finishDate), chargeScript, "");
 		Hiber.commit();

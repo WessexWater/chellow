@@ -73,7 +73,7 @@ public class SupplierContracts extends EntityList {
 		if (!inv.isValid()) {
 			throw new UserException(document());
 		}
-		SupplierContract contract = SupplierContract.insertSupplierContract(
+		SupplierContract contract = SupplierContract.insertSupplierContract(null,
 				Participant.getParticipant(participantId), name, HhStartDate
 						.roundDown(startDate).getNext(), null, "", "");
 		Hiber.commit();

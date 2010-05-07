@@ -49,21 +49,37 @@ import org.w3c.dom.Element;
 public class Report extends PersistentEntity {
 	public static void generalImport(String action, String[] values,
 			Element csvElement) throws HttpException {
-		String idString = GeneralImport.addField(csvElement, "Id", values, 0);
-		Long id = null;
-		String name = GeneralImport.addField(csvElement, "Name", values, 1);
-		String script = GeneralImport.addField(csvElement, "Script", values, 2);
-		String template = null;
-		if (values.length > 3) {
-			template = GeneralImport
-					.addField(csvElement, "Template", values, 3);
-		}
 		if (action.equals("insert")) {
-			if (idString.trim().length() > 0) {
+			String idString = GeneralImport.addField(csvElement, "Id", values,
+					0);
+			Long id = null;
+			if (idString.length() > 0) {
 				id = new Long(idString);
 			}
-			Report.insertReport(id, name, script, template);
+			String isCoreStr = GeneralImport.addField(csvElement, "Is Core?",
+					values, 1);
+			boolean isCore = Boolean.parseBoolean(isCoreStr);
+			String name = GeneralImport.addField(csvElement, "Name", values, 2);
+			String script = GeneralImport.addField(csvElement, "Script",
+					values, 3);
+			String template = null;
+			if (values.length > 4) {
+				template = GeneralImport.addField(csvElement, "Template",
+						values, 4);
+			}
+			Report.insertReport(id, isCore, name, script, template);
 		} else if (action.equals("update")) {
+			String idString = GeneralImport.addField(csvElement, "Id", values,
+					0);
+			Long id = new Long(idString);
+			String name = GeneralImport.addField(csvElement, "Name", values, 1);
+			String script = GeneralImport.addField(csvElement, "Script",
+					values, 2);
+			String template = null;
+			if (values.length > 3) {
+				template = GeneralImport.addField(csvElement, "Template",
+						values, 3);
+			}
 			Report report = Report.getReport(id);
 			report.update(name, script, template);
 		}
@@ -103,9 +119,9 @@ public class Report extends PersistentEntity {
 		}
 	}
 
-	public static Report insertReport(Long id, String name, String script,
-			String template) throws HttpException {
-		Report report = new Report(id, name, script, template);
+	public static Report insertReport(Long id, boolean isCore, String name,
+			String script, String template) throws HttpException {
+		Report report = new Report(id, isCore, name, script, template);
 		try {
 			Hiber.session().save(report);
 			Hiber.flush();
@@ -125,10 +141,9 @@ public class Report extends PersistentEntity {
 	public Report() {
 	}
 
-	public Report(Long id, String name, String script, String template)
-			throws HttpException {
+	public Report(Long id, boolean isCore, String name, String script,
+			String template) throws HttpException {
 		Configuration configuration = Configuration.getConfiguration();
-		boolean isCore = name.startsWith("0 ");
 
 		if (id == null) {
 			if (isCore) {
@@ -301,6 +316,8 @@ public class Report extends PersistentEntity {
 
 	public Element toXml(Document doc) throws HttpException {
 		Element element = super.toXml(doc, "report");
+		element.setAttribute("is-core", new Boolean(getId() % 2 == 1)
+				.toString());
 		element.setAttribute("name", name);
 		Element scriptElement = doc.createElement("script");
 		element.appendChild(scriptElement);

@@ -34,5 +34,9 @@
 			column="properties" />
 		<property type="long" column="core_report_id" name="coreReportId"/>
 		<property type="long" column="user_report_id" name="userReportId"/>
+		<property type="long" column="core_contract_id" name="coreContractId"/>
+		<property type="long" column="user_contract_id" name="userContractId"/>
+		<property type="long" column="core_rate_script_id" name="coreRateScriptId"/>
+		<property type="long" column="user_rate_script_id" name="userRateScriptId"/>
 	</class>
 </hibernate-mapping>

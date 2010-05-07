@@ -56,7 +56,7 @@ public class Reports extends EntityList {
 
 		source.appendChild(reportsElement);
 		for (Report report : (List<Report>) Hiber.session().createQuery(
-				"from Report report order by report.name").list()) {
+				"from Report report order by mod(report.id, 2) desc, report.name").list()) {
 			reportsElement.appendChild(report.toXml(doc));
 		}
 		return doc;
@@ -75,9 +75,10 @@ public class Reports extends EntityList {
 	}
 
 	public void httpPost(Invocation inv) throws HttpException {
+		boolean isCore = inv.getBoolean("is-core");
 		String name = inv.getString("name");
 		try {
-			Report report = Report.insertReport(null, name, "", null);
+			Report report = Report.insertReport(null, isCore, name, "", null);
 			Hiber.commit();
 			inv.sendSeeOther(report.getUri());
 		} catch (HttpException e) {

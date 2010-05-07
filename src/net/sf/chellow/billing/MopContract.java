@@ -43,7 +43,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 public class MopContract extends Contract {
-	static public MopContract insertMopContract(Participant participant,
+	static public MopContract insertMopContract(Long id, Participant participant,
 			String name, HhStartDate startDate, HhStartDate finishDate,
 			String chargeScript, String rateScript) throws HttpException {
 		MopContract existing = findMopContract(name);
@@ -51,10 +51,11 @@ public class MopContract extends Contract {
 			throw new UserException(
 					"There's already a HHDC contract with the name " + name);
 		}
-		MopContract contract = new MopContract(participant, name, startDate,
-				finishDate, chargeScript, rateScript);
+		MopContract contract = new MopContract(id, participant, name, startDate,
+				finishDate, chargeScript);
 		Hiber.session().save(contract);
 		Hiber.flush();
+		contract.insertFirstRateScript(startDate, finishDate, rateScript);
 		return contract;
 	}
 
@@ -83,10 +84,9 @@ public class MopContract extends Contract {
 	public MopContract() {
 	}
 
-	public MopContract(Participant participant, String name,
-			HhStartDate startDate, HhStartDate finishDate, String chargeScript,
-			String rateScript) throws HttpException {
-		super(name, startDate, finishDate, chargeScript, rateScript);
+	public MopContract(Long id, Participant participant, String name,
+			HhStartDate startDate, HhStartDate finishDate, String chargeScript) throws HttpException {
+		super(id, Boolean.FALSE, name, startDate, finishDate, chargeScript);
 		intrinsicUpdate(participant, name, chargeScript);
 	}
 

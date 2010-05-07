@@ -71,16 +71,25 @@ public class Configuration extends PersistentEntity {
 			Element csvElement) throws HttpException {
 		if (action.equals("insert")) {
 		} else if (action.equals("update")) {
-			String properties = GeneralImport.addField(csvElement, "Properties", values, 0);
+			String properties = GeneralImport.addField(csvElement,
+					"Properties", values, 0);
 			getConfiguration().update(properties);
 		}
 	}
-	
+
 	private String properties;
 
 	private long coreReportId;
 
 	private long userReportId;
+
+	private long coreContractId;
+
+	private long userContractId;
+
+	private long coreRateScriptId;
+
+	private long userRateScriptId;
 
 	public Configuration() {
 	}
@@ -89,6 +98,10 @@ public class Configuration extends PersistentEntity {
 		setProperties(properties);
 		setCoreReportId(1);
 		setUserReportId(0);
+		setCoreContractId(-1);
+		setUserContractId(-2);
+		setCoreRateScriptId(-1);
+		setUserRateScriptId(-2);
 	}
 
 	public String getProperties() {
@@ -113,6 +126,38 @@ public class Configuration extends PersistentEntity {
 
 	public void setUserReportId(long id) {
 		userReportId = id;
+	}
+
+	public long getCoreContractId() {
+		return coreContractId;
+	}
+
+	public void setCoreContractId(long id) {
+		coreContractId = id;
+	}
+
+	public long getUserContractId() {
+		return userContractId;
+	}
+
+	public void setUserContractId(long id) {
+		userContractId = id;
+	}
+
+	public long getCoreRateScriptId() {
+		return coreRateScriptId;
+	}
+
+	public void setCoreRateScriptId(long id) {
+		coreRateScriptId = id;
+	}
+
+	public long getUserRateScriptId() {
+		return userRateScriptId;
+	}
+
+	public void setUserRateScriptId(long id) {
+		userRateScriptId = id;
 	}
 
 	public MonadUri getUri() {
@@ -201,5 +246,25 @@ public class Configuration extends PersistentEntity {
 	public long nextUserReportId() {
 		userReportId += 2;
 		return userReportId;
+	}
+
+	public long nextCoreContractId() {
+		coreContractId += 2;
+		return coreContractId;
+	}
+
+	public long nextUserContractId() {
+		userContractId += 2;
+		return userContractId;
+	}
+
+	public long nextCoreRateScriptId() {
+		coreRateScriptId += 2;
+		return coreRateScriptId;
+	}
+
+	public long nextUserRateScriptId() {
+		userRateScriptId += 2;
+		return userRateScriptId;
 	}
 }

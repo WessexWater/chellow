@@ -39,6 +39,7 @@ import net.sf.chellow.monad.NotFoundException;
 import net.sf.chellow.monad.Urlable;
 import net.sf.chellow.monad.UserException;
 import net.sf.chellow.monad.types.UriPathElement;
+import net.sf.chellow.physical.Configuration;
 import net.sf.chellow.physical.HhStartDate;
 import net.sf.chellow.physical.PersistentEntity;
 import net.sf.chellow.physical.Snag;
@@ -77,15 +78,30 @@ public abstract class Contract extends PersistentEntity implements
 	public Contract() {
 	}
 
-	public Contract(String name, HhStartDate startDate, HhStartDate finishDate,
-			String chargeScript, String rateScriptStr) throws HttpException {
-		// setParty(party);
-		rateScripts = new HashSet<RateScript>();
-		RateScript rateScript = new RateScript(this, startDate, finishDate,
-				rateScriptStr);
-		rateScripts.add(rateScript);
-		setStartRateScript(rateScript);
-		setFinishRateScript(rateScript);
+	public Contract(Long id, Boolean isCore, String name,
+			HhStartDate startDate, HhStartDate finishDate, String chargeScript)
+			throws HttpException {
+		Configuration configuration = Configuration.getConfiguration();
+
+		if (id == null) {
+			if (isCore) {
+				id = configuration.nextCoreContractId();
+			} else {
+				id = configuration.nextUserContractId();
+			}
+		} else {
+			isCore = id % 2 == 1;
+			if (isCore) {
+				if (id > configuration.getCoreContractId()) {
+					configuration.setCoreContractId(id);
+				}
+			} else {
+				if (id > configuration.getUserContractId()) {
+					configuration.setUserContractId(id);
+				}
+			}
+		}
+		setId(id);
 		internalUpdate(name, chargeScript);
 	}
 
@@ -217,7 +233,8 @@ public abstract class Contract extends PersistentEntity implements
 
 	public Element toXml(Document doc, String elementName) throws HttpException {
 		Element element = super.toXml(doc, elementName);
-
+		element.setAttribute("is-core", new Boolean(getId() % 2 == 1)
+				.toString());
 		element.setAttribute("name", name);
 		if (chargeScript != null) {
 			element.setAttribute("charge-script", chargeScript);
@@ -323,9 +340,22 @@ public abstract class Contract extends PersistentEntity implements
 		// return invocableEngine(getChargeScript());
 	}
 
+	public RateScript insertFirstRateScript(HhStartDate startDate,
+			HhStartDate finishDate, String rateScriptStr) throws HttpException {
+		setRateScripts(new HashSet<RateScript>());
+		RateScript rateScript = new RateScript(this, null, startDate,
+				finishDate, rateScriptStr);
+		Hiber.session().save(rateScript);
+		rateScripts.add(rateScript);
+		Hiber.flush();
+		setStartRateScript(rateScript);
+		setFinishRateScript(rateScript);
+		return rateScript;
+	}
+
 	@SuppressWarnings("unchecked")
-	public RateScript insertRateScript(HhStartDate startDate, String script)
-			throws HttpException {
+	public RateScript insertRateScript(Long id, HhStartDate startDate,
+			String script) throws HttpException {
 		List<RateScript> rateScripts = (List<RateScript>) Hiber
 				.session()
 				.createQuery(
@@ -360,7 +390,7 @@ public abstract class Contract extends PersistentEntity implements
 				rateScript.setFinishDate(startDate.getPrevious());
 			}
 		}
-		RateScript newRateScript = new RateScript(this,
+		RateScript newRateScript = new RateScript(this, id,
 				startDate == null ? rateScripts.get(rateScripts.size())
 						.getFinishDate().getNext() : startDate, finishDate,
 				script);
@@ -447,6 +477,10 @@ public abstract class Contract extends PersistentEntity implements
 		Batch batch = new Batch(this, reference);
 		Hiber.session().save(batch);
 		return batch;
+	}
+
+	public boolean isCore() {
+		return getId() % 2 == 1;
 	}
 
 	public Batches batchesInstance() {

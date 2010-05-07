@@ -72,7 +72,7 @@ public class HhdcContracts extends EntityList {
 		if (!inv.isValid()) {
 			throw new UserException(document());
 		}
-		HhdcContract contract = HhdcContract.insertHhdcContract(Participant
+		HhdcContract contract = HhdcContract.insertHhdcContract(null, Participant
 				.getParticipant(participantId), name, HhStartDate.roundDown(
 				startDate).getNext(), null, "", "", "", "");
 		Hiber.commit();

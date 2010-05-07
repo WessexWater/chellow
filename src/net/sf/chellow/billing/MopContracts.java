@@ -72,7 +72,7 @@ public class MopContracts extends EntityList {
 		if (!inv.isValid()) {
 			throw new UserException(document());
 		}
-		MopContract contract = MopContract.insertMopContract(Participant
+		MopContract contract = MopContract.insertMopContract(null, Participant
 				.getParticipant(participantId), name, HhStartDate.roundDown(
 				startDate).getNext(), null, "", "");
 		Hiber.commit();

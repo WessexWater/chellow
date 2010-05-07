@@ -65,12 +65,13 @@ public class NonCoreContracts extends EntityList {
 
 	public void httpPost(Invocation inv) throws HttpException {
 		Long participantId = inv.getLong("participant-id");
+		Boolean isCore = inv.getBoolean("is-core");
 		String name = inv.getString("name");
 		Date startDate = inv.getDate("start-date");
 		if (!inv.isValid()) {
 			throw new UserException(document());
 		}
-		NonCoreContract contract = NonCoreContract.insertNonCoreContract(
+		NonCoreContract contract = NonCoreContract.insertNonCoreContract(null, isCore,
 				Participant.getParticipant(participantId), name, HhStartDate
 						.roundDown(startDate), null, "", "");
 		Hiber.commit();

@@ -292,10 +292,6 @@
 									<xsl:value-of select="' '" />
 									<input type="submit" value="Test without saving" />
 								</fieldset>
-								<br />
-								<br />
-								<input type="submit" value="Update" />
-								<input type="reset" value="Reset" />
 							</fieldset>
 						</form>
 						<br/>
