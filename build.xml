@@ -346,7 +346,6 @@
 
 		<!-- Copy additional files to ${dist.home} as necessary -->
 		<copy todir="${dist.home}" file="${basedir}/readme.txt" />
-		<copy todir="${dist.home}" file="${basedir}/changelog.txt" />
 		<copy todir="${dist.home}" file="${basedir}/context.xml" />
 	</target>
 
