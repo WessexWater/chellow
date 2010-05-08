@@ -2,7 +2,7 @@ Chellow
 =======
 
 Web site: http://chellow.wikispaces.com/
-
+Change Log: http://chellow.svn.sourceforge.net/viewvc/chellow/trunk/?view=log
 
 License
 -------
