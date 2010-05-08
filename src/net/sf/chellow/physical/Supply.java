@@ -268,6 +268,10 @@ public class Supply extends PersistentEntity {
 		if (name == null) {
 			throw new InternalException("The supply name " + "cannot be null.");
 		}
+		name = name.trim();
+		if (name.length() == 0) {
+			throw new UserException("The supply name can't be blank.");
+		}
 		setName(name);
 		setSource(source);
 		if ((source.getCode().equals(Source.GENERATOR_CODE) || source.getCode()
