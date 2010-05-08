@@ -33,6 +33,7 @@ import net.sf.chellow.monad.XmlTree;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.ui.GeneralImport;
 
+import org.hibernate.Query;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -78,23 +79,38 @@ public class ChannelSnag extends SnagDateBounded {
 			String isKwhStr = GeneralImport.addField(csvElement, "Is Kwh?",
 					values, 2);
 			boolean isKwh = Boolean.parseBoolean(isKwhStr);
+			String snagDescription = GeneralImport.addField(csvElement,
+					"Snag Description", values, 3);
 			String startStr = GeneralImport.addField(csvElement, "From",
-					values, 3);
+					values, 4);
 			HhStartDate startDate = new HhStartDate(startStr);
 			String finishStr = GeneralImport.addField(csvElement, "To", values,
-					4);
-			HhStartDate finishDate = new HhStartDate(finishStr);
+					5);
+			HhStartDate finishDate = null;
+			if (finishStr.length() > 0) {
+				finishDate = new HhStartDate(finishStr);
+			}
 			for (SupplyGeneration generation : mpanCore.getSupply()
 					.getGenerations(startDate, finishDate)) {
-				for (ChannelSnag snag : (List<ChannelSnag>) Hiber
-						.session()
-						.createQuery(
-								"from ChannelSnag snag where snag.channel.supplyGeneration = :generation and snag.channel.isImport = :isImport and snag.channel.isKwh = :isKwh and snag.isIgnored is false and snag.startDate.date >= :startDate and snag.finishDate <= :finishDate")
+				Query channelQuery = null;
+				if (finishDate == null) {
+					channelQuery = Hiber
+							.session()
+							.createQuery(
+									"from ChannelSnag snag where snag.channel.supplyGeneration = :generation and snag.channel.isImport = :isImport and snag.channel.isKwh = :isKwh and snag.isIgnored is false and snag.description = :description and (snag.finishDate is null or snag.finishDate.date >= :startDate)");
+				} else {
+					channelQuery = Hiber
+							.session()
+							.createQuery(
+									"from ChannelSnag snag where snag.channel.supplyGeneration = :generation and snag.channel.isImport = :isImport and snag.channel.isKwh = :isKwh and snag.isIgnored is false and snag.description = :description and snag.startDate.date <= :finishDate and (snag.finishDate is null or snag.finishDate.date >= :startDate")
+							.setTimestamp("finishDate", finishDate.getDate());
+				}
+				for (ChannelSnag snag : (List<ChannelSnag>) channelQuery
 						.setEntity("generation", generation).setBoolean(
 								"isImport", isImport)
-						.setBoolean("isKwh", isKwh).setTimestamp("startDate",
-								startDate.getDate()).setTimestamp("finishDate",
-								finishDate.getDate()).list()) {
+						.setBoolean("isKwh", isKwh).setString("description",
+								snagDescription).setTimestamp("startDate",
+								startDate.getDate()).list()) {
 					snag.setIsIgnored(true);
 				}
 			}

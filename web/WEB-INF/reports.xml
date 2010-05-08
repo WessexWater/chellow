@@ -3618,7 +3618,8 @@ has_supplies = inv.getBoolean('has-supplies')
 has_hh_data = inv.getBoolean('has-hh-data')
 has_users = inv.getBoolean('has-users')
 has_configuration = inv.getBoolean('has-configuration')
-has_channel_snag_ignorals = inv.getBoolean('has-channel-snag-ignorals')
+has_channel_snag_ignores = inv.getBoolean('has-channel-snag-ignores')
+has_site_snag_ignores = inv.getBoolean('has-site-snag-ignores')
 
 if not inv.isValid():
     raise UserException()
@@ -3873,7 +3874,7 @@ if has_supplies and not is_core:
     supplies.close()
 
 
-if has_channel_snag_ignorals and not is_core:
+if has_channel_snag_ignores and not is_core:
     timing = System.currentTimeMillis()
     #pw.println('about to start ' + str(System.currentTimeMillis() - timing))
     snags = Hiber.session().createQuery("from ChannelSnag snag where snag.isIgnored is true").scroll()
@@ -3881,7 +3882,16 @@ if has_channel_snag_ignorals and not is_core:
     while snags.next():
         snag = snags.get(0)
         channel = snag.getChannel()
-        print_line(pw, ['insert', 'channel-snag-ignore', channel.getSupplyGeneration().getMpans().iterator().next().getCore().toString(), Boolean(channel.getIsImport()), Boolean(channel.getIsKwh()), snag.getStartDate(), snag.getFinishDate()])
+        print_line(pw, ['insert', 'channel-snag-ignore', channel.getSupplyGeneration().getMpans().iterator().next().getCore().toString(), Boolean(channel.getIsImport()), Boolean(channel.getIsKwh()), snag.getDescription(), snag.getStartDate(), snag.getFinishDate()])
+        Hiber.session().clear()
+    snags.close()
+
+
+if has_site_snag_ignores and not is_core:
+    snags = Hiber.session().createQuery("from SiteSnag snag where snag.isIgnored is true").scroll()
+    while snags.next():
+        snag = snags.get(0)
+        print_line(pw, ['insert', 'site-snag-ignore', snag.getSite().getCode(), snag.getDescription(), snag.getStartDate(), snag.getFinishDate()])
         Hiber.session().clear()
     snags.close()
 
@@ -10951,6 +10961,14 @@ source.appendChild(MonadDate.getDaysXml(doc))]]></value>
   <tr>
     <td>Configuration</td>
     <td><input type="checkbox" name="has-configuration" value="true"/></td>
+  </tr>
+  <tr>
+    <td>Channel Snag Ignores</td>
+    <td><input type="checkbox" name="has-channel-snag-ignores" value="true"/></td>
+  </tr>
+  <tr>
+    <td>Site Snag Ignores</td>
+    <td><input type="checkbox" name="has-site-snag-ignores" value="true"/></td>
   </tr>
 </table>
     <br/>

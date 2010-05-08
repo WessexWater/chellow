@@ -64,6 +64,7 @@ import net.sf.chellow.physical.Configuration;
 import net.sf.chellow.physical.HhDatum;
 import net.sf.chellow.physical.HhStartDate;
 import net.sf.chellow.physical.Site;
+import net.sf.chellow.physical.SiteSnag;
 import net.sf.chellow.physical.SiteSupplyGeneration;
 import net.sf.chellow.physical.Supply;
 import net.sf.chellow.physical.SupplyGeneration;
@@ -267,6 +268,8 @@ public class GeneralImport extends Thread implements Urlable, XmlDescriber {
 						Configuration.generalImport(action, values, csvElement);
 					} else if (type.equals("channel-snag-ignore")) {
 						ChannelSnag.generalImport(action, values, csvElement);
+					} else if (type.equals("site-snag-ignore")) {
+						SiteSnag.generalImport(action, values, csvElement);
 					} else {
 						throw new UserException("The type " + type
 								+ " isn't recognized.");
