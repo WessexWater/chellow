@@ -161,7 +161,7 @@ public class HhData extends EntityList {
 					"HH data deleted successfully.").toXml(doc));
 			inv.sendOk(doc);
 		} else if (inv.hasParameter("insert")) {
-			Date startDate = inv.getDateTime("start-date");
+			Date startDate = inv.getDateTime("start");
 			BigDecimal value = inv.getBigDecimal("value");
 			Character status = inv.getCharacter("status");
 			if (!inv.isValid()) {

@@ -256,8 +256,8 @@ public class Bill extends PersistentEntity implements Urlable {
 		} else {
 			String reference = inv.getString("reference");
 			Date issueDate = inv.getDate("issue-date");
-			Date startDate = inv.getDate("start-date");
-			Date finishDate = inv.getDate("finish-date");
+			Date startDate = inv.getDate("start");
+			Date finishDate = inv.getDate("finish");
 			BigDecimal net = inv.getBigDecimal("net");
 			BigDecimal vat = inv.getBigDecimal("vat");
 			String type = inv.getString("type");

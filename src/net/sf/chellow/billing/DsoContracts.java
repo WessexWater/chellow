@@ -66,20 +66,15 @@ public class DsoContracts extends EntityList {
 
 	public void httpPost(Invocation inv) throws HttpException {
 		String name = inv.getString("name");
-		Date startDate = inv.getDate("start-date");
-		String chargeScript = inv.getString("charge-script");
+		Date startDate = inv.getDate("start");
+
 		if (!inv.isValid()) {
 			throw new UserException(document());
 		}
-		Date finishDate = null;
-		if (inv.hasParameter("has-finished")) {
-			finishDate = inv.getDate("finish-date");
-		}
-		DsoContract contract = dso.insertContract(null, name, HhStartDate
-				.roundDown(startDate).getNext(), finishDate == null ? null : HhStartDate
-				.roundDown(finishDate), chargeScript, "");
+		DsoContract contract = dso.insertContract(null, name, new HhStartDate(
+				startDate), null, "", "");
 		Hiber.commit();
-		inv.sendCreated(document(), contract.getUri());
+		inv.sendSeeOther(contract.getUri());
 	}
 
 	@SuppressWarnings("unchecked")

@@ -994,9 +994,9 @@ site = Site.getSite(site_id)
 source.appendChild(site.toXml(doc))
 cal = MonadDate.getCalendar()
 
-if inv.hasParameter("finish-date-year") and inv.hasParameter("finish-date-month"):
-    year = inv.getInteger("finish-date-year")
-    month = inv.getInteger("finish-date-month")
+if inv.hasParameter("finish-year") and inv.hasParameter("finish-month"):
+    year = inv.getInteger("finish-year")
+    month = inv.getInteger("finish-month")
 else:
     year = cal.get(Calendar.YEAR)
     month = cal.get(Calendar.MONTH) + 1
@@ -1008,8 +1008,8 @@ for i in range(12):
     monthElement = doc.createElement("month")
     source.appendChild(monthElement)
     monthElement.setAttribute("value", str(i + 1))
-source.setAttribute("finish-date-year", str(year))
-source.setAttribute("finish-date-month", str(month))
+source.setAttribute("finish-year", str(year))
+source.setAttribute("finish-month", str(month))
 source.setAttribute("months", str(months))]]></value>
         <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
 <xsl:stylesheet version="1.0"
@@ -1051,7 +1051,7 @@ source.setAttribute("months", str(months))]]></value>
                 </xsl:if>
                 <p>
                     <img
-                        src="{/source/request/@context-path}/reports/21/output/?site-id={/source/site/@id}&amp;finish-date-year={/source/@finish-date-year}&amp;finish-date-month={/source/@finish-date-month}&amp;months={/source/@months}" />
+                        src="{/source/request/@context-path}/reports/21/output/?site-id={/source/site/@id}&amp;finish-year={/source/@finish-year}&amp;finish-month={/source/@finish-month}&amp;months={/source/@months}" />
                 </p>
                 <form action=".">
                     <fieldset>
@@ -1073,13 +1073,13 @@ source.setAttribute("months", str(months))]]></value>
                         </select>
                         <xsl:value-of select="' months finishing in '" />
                         <input size="4" length="4"
-                            name="finish-date-year" value="{/source/@finish-date-year}" />
+                            name="finish-year" value="{/source/@finish-year}" />
                         <xsl:value-of select="' - '" />
-                        <select name="finish-date-month">
+                        <select name="finish-month">
                             <xsl:for-each select="/source/month">
                                 <option>
                                     <xsl:if
-                                        test="number(/source/@finish-date-month) = number(@value)">
+                                        test="number(/source/@finish-month) = number(@value)">
                                         <xsl:attribute name="selected">selected</xsl:attribute>
                                     </xsl:if>
                                     <xsl:value-of select="@value" />
@@ -1110,13 +1110,13 @@ site_id = inv.getLong("site-id")
 site = Site.getSite(site_id)
 source.appendChild(site.toXml(doc))
 cal = MonadDate.getCalendar()
-if inv.hasParameter("finish-date-year"):
-    year = inv.getInteger("finish-date-year")
+if inv.hasParameter("finish-year"):
+    year = inv.getInteger("finish-year")
 else:
     year = cal.get(Calendar.YEAR)
-source.setAttribute("finish-date-year", str(year))
-if inv.hasParameter("finish-date-month"):
-    month = inv.getInteger("finish-date-month")
+source.setAttribute("finish-year", str(year))
+if inv.hasParameter("finish-month"):
+    month = inv.getInteger("finish-month")
 else:
     month = cal.get(Calendar.MONTH) + 1
 if inv.hasParameter("months"):
@@ -1127,8 +1127,8 @@ for i in range(12):
     monthElement = doc.createElement("month")
     source.appendChild(monthElement)
     monthElement.setAttribute("value", str(i + 1))
-source.setAttribute("finish-date-year", str(year))
-source.setAttribute("finish-date-month", str(month))
+source.setAttribute("finish-year", str(year))
+source.setAttribute("finish-month", str(month))
 source.setAttribute("months", str(months))
 source.appendChild(inv.requestXml(doc))]]></value>
         <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
@@ -1176,7 +1176,7 @@ source.appendChild(inv.requestXml(doc))]]></value>
 
                 <p>
                     <img
-                        src="{/source/request/@context-path}/reports/23/output/?site-id={/source/site/@id}&amp;finish-date-year={/source/@finish-date-year}&amp;finish-date-month={/source/@finish-date-month}&amp;months={/source/@months}" />
+                        src="{/source/request/@context-path}/reports/23/output/?site-id={/source/site/@id}&amp;finish-year={/source/@finish-year}&amp;finish-month={/source/@finish-month}&amp;months={/source/@months}" />
                 </p>
                 <form action=".">
                     <fieldset>
@@ -1198,13 +1198,13 @@ source.appendChild(inv.requestXml(doc))]]></value>
                         </select>
                         <xsl:value-of select="' months finishing at the end of '" />
                         <input size="4" length="4"
-                            name="finish-date-year" value="{/source/@finish-date-year}" />
+                            name="finish-year" value="{/source/@finish-year}" />
                         <xsl:value-of select="' - '" />
-                        <select name="finish-date-month">
+                        <select name="finish-month">
                             <xsl:for-each select="/source/month">
                                 <option>
                                     <xsl:if
-                                        test="number(/source/@finish-date-month) = number(@value)">
+                                        test="number(/source/@finish-month) = number(@value)">
                                         <xsl:attribute
                                             name="selected">selected</xsl:attribute>
                                     </xsl:if>
@@ -1238,11 +1238,11 @@ from net.sf.chellow.physical import Site
 
 site_id = inv.getLong("site-id")
 cal = GregorianCalendar(TimeZone.getTimeZone("GMT"), Locale.UK)
-if inv.hasParameter("finish-date-year"):
-    year = inv.getInteger("finish-date-year")
+if inv.hasParameter("finish-year"):
+    year = inv.getInteger("finish-year")
     cal.set(Calendar.YEAR, year)
-if inv.hasParameter("finish-date-month"):
-    month = inv.getInteger("finish-date-month")
+if inv.hasParameter("finish-month"):
+    month = inv.getInteger("finish-month")
     cal.set(Calendar.MONTH, month - 1)
 for i in range(12):
     month_element = doc.createElement("month-in-year")
@@ -1261,8 +1261,8 @@ cal.add(Calendar.MONTH, 1)
 cal.add(Calendar.MINUTE, -30)
 finish_date = HhStartDate(cal.getTime())
 
-source.setAttribute("finish-date-year", str(cal.get(Calendar.YEAR)))
-source.setAttribute("finish-date-month", str(cal.get(Calendar.MONTH) + 1))
+source.setAttribute("finish-year", str(cal.get(Calendar.YEAR)))
+source.setAttribute("finish-month", str(cal.get(Calendar.MONTH) + 1))
 cal.add(Calendar.MINUTE, 30)
 cal.add(Calendar.MONTH, -12)
 start_date = HhStartDate(cal.getTime())
@@ -1560,14 +1560,14 @@ if rs.next():
                         <xsl:value-of
                             select="'For 12 months finishing at the end of '" />
                         <input size="4" length="4"
-                            name="finish-date-year" value="{/source/@finish-date-year}" />
+                            name="finish-year" value="{/source/@finish-year}" />
                         <xsl:value-of select="' - '" />
-                        <select name="finish-date-month">
+                        <select name="finish-month">
                             <xsl:for-each
                                 select="/source/month-in-year">
                                 <option>
                                     <xsl:if
-                                        test="number(/source/@finish-date-month) = number(@value)">
+                                        test="number(/source/@finish-month) = number(@value)">
                                         <xsl:attribute
                                             name="selected">selected</xsl:attribute>
                                     </xsl:if>
@@ -1869,7 +1869,7 @@ if rs.next():
                                         test="@has-site-snags = 'true'">
                                         See
                                         <a
-                                            href="{/source/request/@context-path}/reports/11/output/?site-id={/source/site/@id}&amp;months=1&amp;finish-date-year={hh-start-date[@label='start']/@year}&amp;finish-date-month={hh-start-date[@label='start']/@month}">
+                                            href="{/source/request/@context-path}/reports/11/output/?site-id={/source/site/@id}&amp;months=1&amp;finish-year={hh-start-date[@label='start']/@year}&amp;finish-month={hh-start-date[@label='start']/@month}">
                                             generation graph
                                         </a>
                                         for errors.
@@ -2474,8 +2474,8 @@ from net.sf.chellow.physical import HhStartDate, HhDatum, Site
 start = System.currentTimeMillis()
 inv.getResponse().setContentType("image/png")
 site_id = inv.getLong("site-id")
-finishDateYear = inv.getInteger("finish-date-year")
-finishDateMonth = inv.getInteger("finish-date-month")
+finishDateYear = inv.getInteger("finish-year")
+finishDateMonth = inv.getInteger("finish-month")
 months = inv.getInteger("months")
 if not inv.isValid():
     raise UserException()
@@ -2693,8 +2693,8 @@ def minimum_scale(min_scale, max_scale):
 start = System.currentTimeMillis()
 inv.getResponse().setContentType("image/png")
 site_id = inv.getLong("site-id")
-finishDateYear = inv.getInteger("finish-date-year")
-finishDateMonth = inv.getInteger("finish-date-month")
+finishDateYear = inv.getInteger("finish-year")
+finishDateMonth = inv.getInteger("finish-month")
 months = inv.getInteger("months")
 if not inv.isValid():
     raise UserException()
@@ -3282,7 +3282,7 @@ for group in Site.getSite(site.getId()).groups(startDate, finishDate, True):
                                     test="@has-site-snags = 'true'">
                                     See
                                     <a
-                                    href="{/source/request/@context-path}/orgs/1/reports/5/screen/output/?site-id={/source/site/@id}&amp;months=1&amp;finish-date-year={hh-start-date[@label='start']/@year}&amp;finish-date-month={hh-start-date[@label='start']/@month}">
+                                    href="{/source/request/@context-path}/orgs/1/reports/5/screen/output/?site-id={/source/site/@id}&amp;months=1&amp;finish-year={hh-start-date[@label='start']/@year}&amp;finish-month={hh-start-date[@label='start']/@month}">
                                     generation graph
                                     </a>
                                     for errors.

@@ -71,7 +71,7 @@ public class SupplyGenerations extends EntityList {
 	}
 
 	public void httpPost(Invocation inv) throws HttpException {
-		Date startDate = inv.getDate("start-date");
+		Date startDate = inv.getDate("start");
 		Document doc = document();
 		if (!inv.isValid()) {
 			throw new UserException(doc);

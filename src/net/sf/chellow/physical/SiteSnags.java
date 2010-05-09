@@ -90,7 +90,7 @@ public class SiteSnags extends EntityList {
 
 	public void httpPost(Invocation inv) throws HttpException {
 		if (inv.hasParameter("ignore")) {
-			Date ignoreDate = inv.getDate("ignore-date");
+			Date ignoreDate = inv.getDate("ignore");
 
 			ScrollableResults snags = Hiber
 					.session()

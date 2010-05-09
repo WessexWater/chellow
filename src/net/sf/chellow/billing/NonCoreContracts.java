@@ -67,7 +67,7 @@ public class NonCoreContracts extends EntityList {
 		Long participantId = inv.getLong("participant-id");
 		Boolean isCore = inv.getBoolean("is-core");
 		String name = inv.getString("name");
-		Date startDate = inv.getDate("start-date");
+		Date startDate = inv.getDate("start");
 		if (!inv.isValid()) {
 			throw new UserException(document());
 		}

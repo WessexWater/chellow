@@ -69,7 +69,7 @@ public class SupplierContracts extends EntityList {
 	public void httpPost(Invocation inv) throws HttpException {
 		Long participantId = inv.getLong("participant-id");
 		String name = inv.getString("name");
-		Date startDate = inv.getDate("start-date");
+		Date startDate = inv.getDate("start");
 		if (!inv.isValid()) {
 			throw new UserException(document());
 		}

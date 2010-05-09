@@ -74,7 +74,7 @@ public class RateScripts extends EntityList {
 	}
 
 	public void httpPost(Invocation inv) throws HttpException {
-		Date startDate = inv.getDate("start-date");
+		Date startDate = inv.getDate("start");
 		if (!inv.isValid()) {
 			throw new UserException(document());
 		}

@@ -1358,7 +1358,7 @@ public class SupplyGeneration extends PersistentEntity {
 				Hiber.commit();
 				inv.sendOk(document());
 			} else {
-				Date startDate = inv.getDate("start-date");
+				Date startDate = inv.getDate("start");
 				Long hhdcContractId = inv.getLong("hhdc-contract-id");
 				String meterSerialNumber = inv.getString("meter-serial-number");
 				Long pcId = inv.getLong("pc-id");
@@ -1374,7 +1374,7 @@ public class SupplyGeneration extends PersistentEntity {
 				String importSupplierAccount = null;
 				boolean isEnded = inv.getBoolean("is-ended");
 				if (isEnded) {
-					Date finishDateRaw = inv.getDate("finish-date");
+					Date finishDateRaw = inv.getDate("finish");
 					Calendar cal = MonadDate.getCalendar();
 					cal.setTime(finishDateRaw);
 					cal.add(Calendar.DAY_OF_MONTH, 1);

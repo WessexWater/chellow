@@ -74,13 +74,13 @@
 								</td>
 								<td>
 									<xsl:value-of
-										select="concat(hh-start-date[@label='start']/@year, '-', hh-start-date[@label='start']/@month, '-', hh-start-date[@label='start']/@day, ' ', hh-start-date[@label='start']/@hour, ':', hh-start-date[@label='start']/@minute)" />
+										select="concat(hh-start-date[@label='start']/@year, '-', hh-start-date[@label='start']/@month, '-', hh-start-date[@label='start']/@day, ' ', hh-start-date[@label='start']/@hour, ':', hh-start-date[@label='start']/@minute, ' Z')" />
 								</td>
 								<td>
 									<xsl:choose>
 										<xsl:when test="hh-start-date[@label='finish']">
 											<xsl:value-of
-												select="concat(hh-start-date[@label='finish']/@year, '-', hh-start-date[@label='finish']/@month, '-', hh-start-date[@label='finish']/@day, ' ', hh-start-date[@label='finish']/@hour, ':', hh-start-date[@label='finish']/@minute)" />
+												select="concat(hh-start-date[@label='finish']/@year, '-', hh-start-date[@label='finish']/@month, '-', hh-start-date[@label='finish']/@day, ' ', hh-start-date[@label='finish']/@hour, ':', hh-start-date[@label='finish']/@minute, ' Z')" />
 										</xsl:when>
 										<xsl:otherwise>
 											Ongoing
@@ -98,12 +98,12 @@
 						<br />
 						<fieldset>
 							<legend>Start Date</legend>
-							<input name="start-date-year" size="4">
+							<input name="start-year" size="4">
 								<xsl:choose>
-									<xsl:when test="/source/request/parameter[@name='start-date-year']">
+									<xsl:when test="/source/request/parameter[@name='start-year']">
 										<xsl:attribute name="value">
 													<xsl:value-of
-											select="/source/request/parameter[@name='start-date-year']/value/text()" />
+											select="/source/request/parameter[@name='start-year']/value/text()" />
 												</xsl:attribute>
 									</xsl:when>
 									<xsl:otherwise>
@@ -114,14 +114,14 @@
 								</xsl:choose>
 							</input>
 							-
-							<select name="start-date-month">
+							<select name="start-month">
 								<xsl:for-each select="/source/months/month">
 									<option value="{@number}">
 										<xsl:choose>
 											<xsl:when
-												test="/source/request/parameter[@name='start-date-month']">
+												test="/source/request/parameter[@name='start-month']">
 												<xsl:if
-													test="/source/request/parameter[@name='start-date-month']/value/text() = number(@number)">
+													test="/source/request/parameter[@name='start-month']/value/text() = number(@number)">
 													<xsl:attribute name="selected" />
 												</xsl:if>
 											</xsl:when>
@@ -136,13 +136,13 @@
 								</xsl:for-each>
 							</select>
 							-
-							<select name="start-date-day">
+							<select name="start-day">
 								<xsl:for-each select="/source/days/day">
 									<option value="{@number}">
 										<xsl:choose>
-											<xsl:when test="/source/request/parameter[@name='start-date-day']">
+											<xsl:when test="/source/request/parameter[@name='start-day']">
 												<xsl:if
-													test="/source/request/parameter[@name='start-date-day']/value/text() = @number">
+													test="/source/request/parameter[@name='start-day']/value/text() = @number">
 													<xsl:attribute name="selected" />
 												</xsl:if>
 											</xsl:when>

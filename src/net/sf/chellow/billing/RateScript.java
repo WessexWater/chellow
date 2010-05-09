@@ -312,7 +312,7 @@ public class RateScript extends PersistentEntity {
 	public void httpPost(Invocation inv) throws HttpException {
 		if (inv.hasParameter("test")) {
 			String script = inv.getString("script");
-			Date startDate = inv.getDate("start-date");
+			Date startDate = inv.getDate("start");
 			Date finishDate = null;
 			boolean hasFinished = inv.getBoolean("has-finished");
 			if (!inv.isValid()) {
@@ -320,7 +320,7 @@ public class RateScript extends PersistentEntity {
 			}
 			script = script.replace("\r", "").replace("\t", "    ");
 			if (hasFinished) {
-				finishDate = inv.getDate("finish-date");
+				finishDate = inv.getDate("finish");
 				if (!inv.isValid()) {
 					throw new UserException(document());
 				}
@@ -349,7 +349,7 @@ public class RateScript extends PersistentEntity {
 			inv.sendSeeOther(contract.rateScriptsInstance().getUri());
 		} else {
 			String script = inv.getString("script");
-			Date startDate = inv.getDate("start-date");
+			Date startDate = inv.getDate("start");
 			HhStartDate finishDate = null;
 			boolean hasFinished = inv.getBoolean("has-finished");
 			if (!inv.isValid()) {
@@ -357,7 +357,7 @@ public class RateScript extends PersistentEntity {
 			}
 			script = script.replace("\r", "").replace("\t", "    ");
 			if (hasFinished) {
-				Date finishDateRaw = inv.getDate("finish-date");
+				Date finishDateRaw = inv.getDate("finish");
 				if (!inv.isValid()) {
 					throw new UserException(document());
 				}

@@ -180,13 +180,13 @@
 								<br />
 								<fieldset>
 									<legend>Start Date</legend>
-									<input name="start-date-year" maxlength="4" size="4">
+									<input name="start-year" maxlength="4" size="4">
 										<xsl:attribute name="value">
 											<xsl:choose>
 												<xsl:when
-											test="/source/request/parameter[@name='start-date-year']">
+											test="/source/request/parameter[@name='start-year']">
 													<xsl:value-of
-											select="/source/request/parameter[@name='start-date-year']/value" />
+											select="/source/request/parameter[@name='start-year']/value" />
 												</xsl:when>
 												<xsl:otherwise>
 													<xsl:value-of select="/source/date/@year" />
@@ -195,14 +195,14 @@
 										</xsl:attribute>
 									</input>
 									<xsl:value-of select="' - '" />
-									<select name="start-date-month">
+									<select name="start-month">
 										<xsl:for-each select="/source/months/month">
 											<option value="{@number}">
 												<xsl:choose>
 													<xsl:when
-														test="/source/request/parameter[@name='start-date-month']">
+														test="/source/request/parameter[@name='start-month']">
 														<xsl:if
-															test="/source/request/parameter[@name='start-date-month']/value = @number">
+															test="/source/request/parameter[@name='start-month']/value = @number">
 															<xsl:attribute name="selected">
 																<xsl:value-of select="'selected'" />
 															</xsl:attribute>
@@ -221,14 +221,14 @@
 										</xsl:for-each>
 									</select>
 									<xsl:value-of select="' - '" />
-									<select name="start-date-day">
+									<select name="start-day">
 										<xsl:for-each select="/source/days/day">
 											<option value="{@number}">
 												<xsl:choose>
 													<xsl:when
-														test="/source/request/parameter[@name='start-date-day']">
+														test="/source/request/parameter[@name='start-day']">
 														<xsl:if
-															test="/source/request/parameter[@name='start-date-day']/value = @number">
+															test="/source/request/parameter[@name='start-day']/value = @number">
 															<xsl:attribute name="selected">
 																<xsl:value-of select="'selected'" />
 															</xsl:attribute>

@@ -539,7 +539,7 @@ public class Site extends PersistentEntity {
 						.getString("export-supplier-account-reference");
 				String exportAgreedSupplyCapacityStr = inv
 						.getString("export-agreed-supply-capacity");
-				Date startDate = inv.getDate("start-date");
+				Date startDate = inv.getDate("start");
 				if (!inv.isValid()) {
 					throw new UserException();
 				}
