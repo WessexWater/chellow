@@ -21,14 +21,10 @@ Installation
 1. Create a PostgreSQL database called chellow.
 
 2. In your Tomcat, configure a JNDI JDBC datasource called jdbc/chellow.
-    a) Copy context.xml in the same directory as this file.
+    a) Copy context.xml from the same directory as this file, and update with your own settings.
     b) Install the JDBC driver from
           http://jdbc.postgresql.org/download/postgresql-8.4-701.jdbc4.jar
           in the /lib/ directory.
-    c) Install commons-dbcp-1.2.1.jar from
-         http://archive.apache.org/dist/commons/dbcp/binaries/commons-dbcp-1.1.zip
-    d) Install commons-pool-1.4.jar from
-         http://archive.apache.org/dist/commons/pool/binaries/commons-pool-1.4.zip
          
 3. Deploy the file chellow.war on your servlet container.
 

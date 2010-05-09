@@ -41,6 +41,5 @@
 	<Resource name="jdbc/chellow" auth="Container" type="javax.sql.DataSource"
 		username="postgres" password="hello" driverClassName="org.postgresql.Driver"
 		url="jdbc:postgresql://localhost:5432/chellow" maxActive="8" maxIdle="4"
-		accessToUnderlyingConnectionAllowed="true"
-		factory="org.apache.commons.dbcp.BasicDataSourceFactory" />
+		accessToUnderlyingConnectionAllowed="true" />
 </Context>

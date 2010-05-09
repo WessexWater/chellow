@@ -22,6 +22,7 @@ package net.sf.chellow.ui;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.lang.reflect.InvocationTargetException;
 import java.net.MalformedURLException;
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -57,7 +58,6 @@ import net.sf.chellow.physical.User;
 import net.sf.chellow.physical.UserRole;
 import net.sf.chellow.physical.VoltageLevel;
 
-import org.apache.commons.dbcp.DelegatingConnection;
 import org.hibernate.tool.hbm2ddl.SchemaUpdate;
 import org.postgresql.copy.CopyManager;
 import org.postgresql.core.BaseConnection;
@@ -197,8 +197,27 @@ public class ContextListener implements ServletContextListener {
 
 		try {
 			Debug.print("Starting to load MDD.");
-			BaseConnection baseConnection = (BaseConnection) ((DelegatingConnection) con)
-					.getInnermostDelegate();
+			Class<?> delegatorClass = null;
+
+			for (String className : new String[] {
+					"org.apache.commons.dbcp.DelegatingConnection",
+					"org.apache.tomcat.dbcp.dbcp.DelegatingConnection" }) {
+				try {
+					Class<?> candidateClass = Class.forName(className);
+					Debug.print("Class exists "
+							+ candidateClass.getCanonicalName());
+					if (candidateClass.isInstance(con)) {
+						Debug.print("Connection class is an instance of "
+								+ candidateClass.getCanonicalName());
+						delegatorClass = candidateClass;
+						break;
+					}
+				} catch (ClassNotFoundException e) {
+				}
+			}
+			BaseConnection baseConnection = (BaseConnection) delegatorClass
+					.getMethod("getInnermostDelegate").invoke(con);
+
 			CopyManager cm = new CopyManager(baseConnection);
 			String[][] mddArray = { { "gsp_group", "GSP_Group" },
 					{ "read_type", "read_type" }, { "pc", "Profile_Class" },
@@ -229,6 +248,16 @@ public class ContextListener implements ServletContextListener {
 		} catch (MalformedURLException e) {
 			throw new InternalException(e);
 		} catch (IOException e) {
+			throw new InternalException(e);
+		} catch (IllegalArgumentException e) {
+			throw new InternalException(e);
+		} catch (SecurityException e) {
+			throw new InternalException(e);
+		} catch (IllegalAccessException e) {
+			throw new InternalException(e);
+		} catch (InvocationTargetException e) {
+			throw new InternalException(e);
+		} catch (NoSuchMethodException e) {
 			throw new InternalException(e);
 		}
 
