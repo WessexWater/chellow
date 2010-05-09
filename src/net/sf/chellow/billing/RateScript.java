@@ -264,23 +264,10 @@ public class RateScript extends PersistentEntity {
 					.getFinishDate(), nextRateScript.getScript());
 		}
 		Hiber.flush();
-		HhStartDate checkFinishDate = null;
-		if (originalFinishDate == null) {
-			checkFinishDate = getFinishDate();
-		} else if (finishDate != null) {
-			checkFinishDate = finishDate.getDate().after(
-					originalFinishDate.getDate()) ? finishDate
-					: originalFinishDate;
-		}
-		HhStartDate checkStartDate = null;
-		if (originalStartDate == null) {
-			checkStartDate = getStartDate();
-		} else {
-			checkStartDate = startDate.getDate().before(
-					originalStartDate.getDate()) ? startDate
-					: originalStartDate;
-		}
-		contract.onUpdate(checkStartDate, checkFinishDate);
+		contract.onUpdate(
+				originalStartDate.before(startDate) ? originalStartDate
+						: startDate, HhStartDate.isAfter(originalFinishDate,
+						finishDate) ? originalFinishDate : finishDate);
 	}
 
 	public Element toXml(Document doc) throws HttpException {

@@ -11315,8 +11315,6 @@ month = inv.getInteger("end-month")
 months = inv.getInteger("months")
 search_term = inv.getString('site-code')
 
-timing = System.currentTimeMillis()
-
 if not inv.isValid():
     raise UserException()
 
@@ -11361,13 +11359,13 @@ class SiteCallable(Callable):
         #self.pw.flush()
 
     def call(self):
-        timing = System.currentTimeMillis()
         site = Site.getSite(self.site_id)
         site_code = site.getCode()
         associates = []
         sources = []
         generator_types = []
         metering_type = 'nhh'
+        problem = ''
         month_data = {'import-net-gbp': 0, 'export-net-gbp': 0, 'import-gen-gbp': 0, 'export-gen-gbp': 0, 'import-3rd-party-gbp': 0, 'export-3rd-party-gbp': 0, 'displaced-gbp': 0, 'used-gbp': 0}
 
         has_displaced = False
@@ -11389,7 +11387,7 @@ class SiteCallable(Callable):
                         elif cand_gen.getChannels().size() > 0:
                             metering_type = 'amr'
 
-        #pw.println("starting site ds " + str(System.currentTimeMillis() - timing))        
+        #pw.println("starting site ds " + str(System.currentTimeMillis() - timing))
 
         for group in site.groups(self.month_start, self.month_finish, True):
             for supply in group.getSupplies():
@@ -11429,13 +11427,17 @@ class SiteCallable(Callable):
                         #pw.println("starting init from mpan " + str(System.currentTimeMillis() - timing))
                         supply_source.init_from_mpan(self.month_start, self.month_finish, import_mpan)
                         #pw.println("finished init from mpan " + str(System.currentTimeMillis() - timing))
-
-                        v_bill = comterp.get('contract_function')(supplier_contract, 'import_virtual_bill')(supply_source)
+                        import_vb_function = comterp.get('contract_function')(supplier_contract, 'import_virtual_bill')
+                        if import_vb_function is None:
+                            problem += "Can't find the import_virtual_bill function in the supplier contract. "
+                        else:
+                            v_bill = import_vb_function(supply_source)
                         #pw.println("finishing vbill " + str(System.currentTimeMillis() - timing))
 
-                        if 'net-gbp' not in v_bill:
-                             raise Exception('For the supply ' + import_mpan.toString() + ' the virtual bill ' + str(v_bill) + ' from the contract ' + supplier_contract.getName() + ' does not contain the net-gbp key.')
-                        month_data['import-net-gbp'] += v_bill['net-gbp']
+                            if 'net-gbp' in v_bill:
+                                month_data['import-net-gbp'] += v_bill['net-gbp']
+                            else:
+                                problem += 'For the supply ' + import_mpan.toString() + ' the virtual bill ' + str(v_bill) + ' from the contract ' + supplier_contract.getName() + ' does not contain the net-gbp key.'
                         hhdc_contract = supply_generation.getHhdcContract()
                         if hhdc_contract is not None:
                             hhdc_bill = comterp.get('contract_function')(hhdc_contract, 'virtual_bill')(supply_source)
@@ -11480,14 +11482,14 @@ class SiteCallable(Callable):
         for generator_type in generator_types:
             generator_types_str += generator_type + ', '
         Hiber.close()
-        result = [associate_str[:-2], sources_str[:-2], generator_types_str[:-2], month_format.format(Date(month_finish.getDate().getTime() - 1)), kwh_format(month_data['import-net-kwh']), kwh_format(month_data['displaced-kwh']), kwh_format(month_data['export-net-kwh']), kwh_format(month_data['used-kwh']), kwh_format(month_data['export-gen-kwh']), kwh_format(month_data['import-gen-kwh']), kwh_format(month_data['import-3rd-party-kwh']), kwh_format(month_data['export-3rd-party-kwh']),  gbp_format(month_data['import-net-gbp']), gbp_format(month_data['displaced-gbp']), 0, gbp_format(month_data['used-gbp']), gbp_format(month_data['import-3rd-party-gbp']), metering_type]
+        result = [associate_str[:-2], sources_str[:-2], generator_types_str[:-2], month_format.format(Date(month_finish.getDate().getTime() - 1)), kwh_format(month_data['import-net-kwh']), kwh_format(month_data['displaced-kwh']), kwh_format(month_data['export-net-kwh']), kwh_format(month_data['used-kwh']), kwh_format(month_data['export-gen-kwh']), kwh_format(month_data['import-gen-kwh']), kwh_format(month_data['import-3rd-party-kwh']), kwh_format(month_data['export-3rd-party-kwh']),  gbp_format(month_data['import-net-gbp']), gbp_format(month_data['displaced-gbp']), 0, gbp_format(month_data['used-gbp']), gbp_format(month_data['import-3rd-party-gbp']), metering_type, problem]
         #pw.println("Finished call method " + str(System.currentTimeMillis() - timing))
         return result
 
 inv.getResponse().setContentType("text/csv")
 inv.getResponse().setHeader('Content-Disposition', 'filename=output.csv;')
 pw = inv.getResponse().getWriter()
-pw.println("Site Id, Site Name, Associated Site Ids, Sources, Generator Types, Month,Imported kWh, Displaced kWh, Exported kWh, Used kWh, Parasitic kWh, Generated kWh, 3rd Party Import kWh, 3rd Party Export kWh, Imported GBP, Displaced GBP, Exported GBP, Used GBP, 3rd Party Import GBP, Metering Type, Duration ms")
+pw.println("Site Id,Site Name,Associated Site Ids,Sources,Generator Types,Month,Imported kWh,Displaced kWh,Exported kWh,Used kWh,Parasitic kWh,Generated kWh,3rd Party Import kWh,3rd Party Export kWh,Imported GBP,Displaced GBP,Exported GBP,Used GBP,3rd Party Import GBP,Metering Type,Problem")
 pw.flush()
 
 month_format = SimpleDateFormat("yyyy-MM-dd")
@@ -11537,7 +11539,6 @@ for site in sites:
     #pw.println("starting site " + str(System.currentTimeMillis() - timing))
 
     for i in range(months):
-        timing = System.currentTimeMillis()
         cal.setTime(start_date.getDate())
         cal.add(Calendar.MONTH, i)
         month_start = HhStartDate(cal.getTime())
@@ -11547,7 +11548,7 @@ for site in sites:
         pw.print('"' + site.getCode() + '","' + site.getName() + '",')
         for value in SiteCallable(site.getId(), month_start, month_finish, forecast_date, pw).call():
             pw.print('"' + str(value) + '",')
-        pw.println(str(System.currentTimeMillis() - timing))
+        pw.println('')
         pw.flush()
     #pw.println("finishing site " + str(System.currentTimeMillis() - timing))
 pw.close()]]></value>

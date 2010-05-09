@@ -842,6 +842,11 @@ public class SupplyGeneration extends PersistentEntity {
 								+ "' says that the MPAN is actually export.");
 			}
 			importPc = Mpan.pc(importMpanStr);
+			if (supply.getSource().getCode().equals(Source.NETWORK_CODE)
+					&& importMpan.getCore().getDso().getCode().equals("99")) {
+				throw new UserException(
+						"A network supply can't have a 99 import MPAN.");
+			}
 		}
 		if (exportMpan != null) {
 			if (exportMpan.getLlfc().getIsImport()) {

@@ -185,14 +185,20 @@ public abstract class Contract extends PersistentEntity implements
 		if (rateScriptList.size() < 2) {
 			throw new UserException("You can't delete the last rate script.");
 		}
-		if (!rateScriptList.get(0).equals(rateScript)
-				&& !rateScriptList.get(rateScriptList.size() - 1).equals(
+		if (rateScriptList.get(0).equals(rateScript)) {
+			rateScriptList.get(1).setStartDate(rateScript.getStartDate());
+			setStartRateScript(rateScriptList.get(1));
+			rateScripts.remove(rateScript);
+		} else if (rateScriptList.get(rateScriptList.size() - 1).equals(
 						rateScript)) {
+			rateScriptList.get(rateScriptList.size() - 2).setFinishDate(rateScript.getFinishDate());
+			setFinishRateScript(rateScriptList.get(rateScriptList.size() - 2));
+			rateScripts.remove(rateScript);
+		} else {
 			throw new UserException(
 					"You can only delete the first and last rate scripts.");
 		}
-		getRateScripts().remove(rateScript);
-		// Hiber.flush();
+		Hiber.flush();
 		onUpdate(rateScript.getStartDate(), rateScript.getFinishDate());
 	}
 
@@ -206,10 +212,6 @@ public abstract class Contract extends PersistentEntity implements
 
 	@SuppressWarnings("unchecked")
 	void onUpdate(HhStartDate from, HhStartDate to) throws HttpException {
-		RateScript[] scripts = rateScripts.toArray(new RateScript[0]);
-		setStartRateScript(scripts[0]);
-		setFinishRateScript(scripts[scripts.length - 1]);
-
 		if (from == null) {
 			from = getStartDate();
 		}
@@ -395,6 +397,9 @@ public abstract class Contract extends PersistentEntity implements
 						.getFinishDate().getNext() : startDate, finishDate,
 				script);
 		getRateScripts().add(newRateScript);
+		RateScript[] scripts = getRateScripts().toArray(new RateScript[0]);
+		setStartRateScript(scripts[0]);
+		setFinishRateScript(scripts[scripts.length - 1]);
 		Hiber.flush();
 		onUpdate(newRateScript.getStartDate(), newRateScript.getFinishDate());
 		return newRateScript;

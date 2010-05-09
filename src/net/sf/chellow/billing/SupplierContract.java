@@ -43,6 +43,7 @@ import net.sf.chellow.physical.Snag;
 import net.sf.chellow.ui.Chellow;
 import net.sf.chellow.ui.GeneralImport;
 
+import org.hibernate.Query;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -126,7 +127,8 @@ public class SupplierContract extends Contract {
 	}
 
 	public SupplierContract(Long id, Participant participant, String name,
-			HhStartDate startDate, HhStartDate finishDate, String chargeScript) throws HttpException {
+			HhStartDate startDate, HhStartDate finishDate, String chargeScript)
+			throws HttpException {
 		super(id, Boolean.FALSE, name, startDate, finishDate, chargeScript);
 		internalUpdate(participant, name, chargeScript);
 	}
@@ -210,15 +212,22 @@ public class SupplierContract extends Contract {
 	@SuppressWarnings("unchecked")
 	void onUpdate(HhStartDate startDate, HhStartDate finishDate)
 			throws HttpException {
-		List<Mpan> mpansOutside = Hiber
-				.session()
-				.createQuery(
-						"from Mpan mpan where mpan.supplierContract = :contract and mpan.supplyGeneration.startDate.date < :startDate and (mpan.supplyGeneration.finishDate.date is null or mpan.supplyGeneration.finishDate > :finishDate) order by mpan.supplyGeneration.startDate.date desc")
-				.setEntity("contract", this).setTimestamp("startDate",
-						getStartDate().getDate()).setTimestamp(
-						"finishDate",
-						getFinishDate() == null ? null : getFinishDate()
-								.getDate()).list();
+		//Debug.print("Checking on update from " + startDate + " to " + finishDate);
+		Query query = null;
+		if (getFinishDate() == null) {
+			query = Hiber
+					.session()
+					.createQuery(
+							"from Mpan mpan where mpan.supplierContract = :contract and mpan.supplyGeneration.startDate.date < :startDate order by mpan.supplyGeneration.startDate.date desc");
+		} else {
+			query = Hiber
+					.session()
+					.createQuery(
+							"from Mpan mpan where mpan.supplierContract = :contract and (mpan.supplyGeneration.startDate.date < :startDate or (mpan.supplyGeneration.finishDate is null or mpan.supplyGeneration.finishDate.date > :finishDate)) order by mpan.supplyGeneration.startDate.date desc")
+					.setTimestamp("finishDate", getFinishDate().getDate());
+		}
+		List<Mpan> mpansOutside = query.setEntity("contract", this)
+				.setTimestamp("startDate", getStartDate().getDate()).list();
 		if (!mpansOutside.isEmpty()) {
 			throw new UserException(document(),
 					mpansOutside.size() > 1 ? "The MPANs with cores "
