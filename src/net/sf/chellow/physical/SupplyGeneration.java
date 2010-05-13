@@ -233,77 +233,81 @@ public class SupplyGeneration extends PersistentEntity {
 							.getSupplierAccount();
 				}
 			}
-			String exportMpanStr = GeneralImport.addField(csvElement,
-					"Eport MPAN", values, 16);
+			String exportMpanStr = null;
 			Ssc exportSsc = null;
-			Mpan existingExportMpan = supplyGeneration.getExportMpan();
-			Integer exportAgreedSupplyCapacity = null;
-			if (exportMpanStr.equals(GeneralImport.NO_CHANGE)) {
-				exportMpanStr = existingExportMpan == null ? null
-						: existingExportMpan.toString();
-			} else if (exportMpanStr.trim().length() == 0) {
-				exportMpanStr = null;
-			}
 			SupplierContract exportSupplierContract = null;
 			String exportSupplierAccount = null;
-			if (exportMpanStr != null) {
-				String exportSscCode = GeneralImport.addField(csvElement,
-						"Export SSC", values, 17);
-				if (exportSscCode.equals(GeneralImport.NO_CHANGE)) {
-					if (existingExportMpan == null) {
-						throw new UserException(
-								"There isn't an existing export MPAN.");
+			Integer exportAgreedSupplyCapacity = null;
+			if (values.length > 16) {
+				exportMpanStr = GeneralImport.addField(csvElement,
+						"Eport MPAN", values, 16);
+				Mpan existingExportMpan = supplyGeneration.getExportMpan();
+				if (exportMpanStr.equals(GeneralImport.NO_CHANGE)) {
+					exportMpanStr = existingExportMpan == null ? null
+							: existingExportMpan.toString();
+				} else if (exportMpanStr.trim().length() == 0) {
+					exportMpanStr = null;
+				}
+				if (exportMpanStr != null) {
+					String exportSscCode = GeneralImport.addField(csvElement,
+							"Export SSC", values, 17);
+					if (exportSscCode.equals(GeneralImport.NO_CHANGE)) {
+						if (existingExportMpan == null) {
+							throw new UserException(
+									"There isn't an existing export MPAN.");
+						} else {
+							exportSsc = existingExportMpan.getSsc();
+						}
 					} else {
-						exportSsc = existingExportMpan.getSsc();
+						exportSsc = exportSscCode.length() == 0 ? null : Ssc
+								.getSsc(exportSscCode);
 					}
-				} else {
-					exportSsc = exportSscCode.length() == 0 ? null : Ssc
-							.getSsc(exportSscCode);
-				}
-				String exportAgreedSupplyCapacityStr = GeneralImport
-						.addField(csvElement, "Export Agreed Supply Capacity",
-								values, 18);
-				if (exportAgreedSupplyCapacityStr
-						.equals(GeneralImport.NO_CHANGE)) {
-					if (existingExportMpan == null) {
-						throw new UserException(
-								"There isn't an existing export MPAN.");
+					String exportAgreedSupplyCapacityStr = GeneralImport
+							.addField(csvElement,
+									"Export Agreed Supply Capacity", values, 18);
+					if (exportAgreedSupplyCapacityStr
+							.equals(GeneralImport.NO_CHANGE)) {
+						if (existingExportMpan == null) {
+							throw new UserException(
+									"There isn't an existing export MPAN.");
+						} else {
+							exportAgreedSupplyCapacity = existingExportMpan
+									.getAgreedSupplyCapacity();
+						}
 					} else {
-						exportAgreedSupplyCapacity = existingExportMpan
-								.getAgreedSupplyCapacity();
+						try {
+							exportAgreedSupplyCapacity = new Integer(
+									exportAgreedSupplyCapacityStr);
+						} catch (NumberFormatException e) {
+							throw new UserException(
+									"The export supply capacity must be an integer. "
+											+ e.getMessage());
+						}
 					}
-				} else {
-					try {
-						exportAgreedSupplyCapacity = new Integer(
-								exportAgreedSupplyCapacityStr);
-					} catch (NumberFormatException e) {
-						throw new UserException(
-								"The export supply capacity must be an integer. "
-										+ e.getMessage());
+					String exportSupplierContractName = GeneralImport.addField(
+							csvElement, "Export Supplier Contract", values, 19);
+					if (exportSupplierContractName
+							.equals(GeneralImport.NO_CHANGE)) {
+						if (existingExportMpan == null) {
+							throw new UserException(
+									"There isn't an existing export supplier contract.");
+						}
+						exportSupplierContract = existingExportMpan
+								.getSupplierContract();
+					} else {
+						exportSupplierContract = SupplierContract
+								.getSupplierContract(exportSupplierContractName);
 					}
-				}
-				String exportSupplierContractName = GeneralImport.addField(
-						csvElement, "Export Supplier Contract", values, 19);
-				if (exportSupplierContractName.equals(GeneralImport.NO_CHANGE)) {
-					if (existingExportMpan == null) {
-						throw new UserException(
-								"There isn't an existing export supplier contract.");
+					exportSupplierAccount = GeneralImport.addField(csvElement,
+							"Export Supplier Account", values, 20);
+					if (exportSupplierAccount.equals(GeneralImport.NO_CHANGE)) {
+						if (existingExportMpan == null) {
+							throw new UserException(
+									"There isn't an existing export MPAN.");
+						}
+						exportSupplierAccount = existingExportMpan
+								.getSupplierAccount();
 					}
-					exportSupplierContract = existingExportMpan
-							.getSupplierContract();
-				} else {
-					exportSupplierContract = SupplierContract
-							.getSupplierContract(exportSupplierContractName);
-				}
-				exportSupplierAccount = GeneralImport.addField(csvElement,
-						"Export Supplier Account", values, 20);
-				if (exportSupplierAccount.equals(GeneralImport.NO_CHANGE)) {
-					if (existingExportMpan == null) {
-						throw new UserException(
-								"There isn't an existing export MPAN.");
-					}
-					exportSupplierAccount = existingExportMpan
-							.getSupplierAccount();
 				}
 			}
 			supply.updateGeneration(supplyGeneration, startDateStr
@@ -399,39 +403,44 @@ public class SupplyGeneration extends PersistentEntity {
 				importSupplierContract = SupplierContract
 						.getSupplierContract(importContractSupplierName);
 			}
-			String exportMpanStr = GeneralImport.addField(csvElement,
-					"Eport MPAN", values, 14);
-			Integer exportAgreedSupplyCapacity = null;
+
+			String exportMpanStr = null;
 			Ssc exportSsc = null;
 			SupplierContract exportSupplierContract = null;
 			String exportSupplierAccountReference = null;
+			Integer exportAgreedSupplyCapacity = null;
 
-			if (exportMpanStr.length() > 0) {
-				String exportSscCode = GeneralImport.addField(csvElement,
-						"Export SSC", values, 15);
-				String exportAgreedSupplyCapacityStr = GeneralImport
-						.addField(csvElement, "Export Agreed Supply Capacity",
-								values, 16);
-				String exportContractSupplierName = GeneralImport.addField(
-						csvElement, "Export Supplier Contract", values, 17);
-				exportSupplierAccountReference = GeneralImport.addField(
-						csvElement, "Export Supplier Account", values, 18);
-				if (supply == null) {
-					supply = MpanCore.getMpanCore(Mpan.getCore(exportMpanStr))
-							.getSupply();
+			if (values.length > 14) {
+				exportMpanStr = GeneralImport.addField(csvElement,
+						"Eport MPAN", values, 14);
+
+				if (exportMpanStr.length() > 0) {
+					String exportSscCode = GeneralImport.addField(csvElement,
+							"Export SSC", values, 15);
+					String exportAgreedSupplyCapacityStr = GeneralImport
+							.addField(csvElement,
+									"Export Agreed Supply Capacity", values, 16);
+					String exportContractSupplierName = GeneralImport.addField(
+							csvElement, "Export Supplier Contract", values, 17);
+					exportSupplierAccountReference = GeneralImport.addField(
+							csvElement, "Export Supplier Account", values, 18);
+					if (supply == null) {
+						supply = MpanCore.getMpanCore(
+								Mpan.getCore(exportMpanStr)).getSupply();
+					}
+					exportSsc = exportSscCode.length() == 0 ? null : Ssc
+							.getSsc(exportSscCode);
+					try {
+						exportAgreedSupplyCapacity = new Integer(
+								exportAgreedSupplyCapacityStr);
+					} catch (NumberFormatException e) {
+						throw new UserException(
+								"The export supply capacity must be an integer. "
+										+ e.getMessage());
+					}
+					exportSupplierContract = SupplierContract
+							.getSupplierContract(exportContractSupplierName);
 				}
-				exportSsc = exportSscCode.length() == 0 ? null : Ssc
-						.getSsc(exportSscCode);
-				try {
-					exportAgreedSupplyCapacity = new Integer(
-							exportAgreedSupplyCapacityStr);
-				} catch (NumberFormatException e) {
-					throw new UserException(
-							"The export supply capacity must be an integer. "
-									+ e.getMessage());
-				}
-				exportSupplierContract = SupplierContract
-						.getSupplierContract(exportContractSupplierName);
 			}
 			Map<Site, Boolean> siteMap = new HashMap<Site, Boolean>();
 			siteMap.put(site, true);

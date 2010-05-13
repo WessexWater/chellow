@@ -10636,11 +10636,28 @@ source.appendChild(MonadDate.getDaysXml(doc))]]></value>
         <value><![CDATA[CSV Supplies Duration Selector]]></value>
         <value><![CDATA[from java.util import GregorianCalendar, TimeZone, Locale, Calendar
 from net.sf.chellow.monad.types import MonadDate
+from net.sf.chellow.physical import HhStartDate
 
 cal = GregorianCalendar(TimeZone.getTimeZone("GMT"), Locale.UK)
+cal.set(Calendar.DAY_OF_MONTH, 1)
+cal.set(Calendar.HOUR_OF_DAY, 0)
+cal.set(Calendar.MINUTE, 0)
+cal.set(Calendar.SECOND, 0)
+cal.set(Calendar.MILLISECOND, 0)
+cal.add(Calendar.MINUTE, -30)
+finish_date = HhStartDate(cal.getTime())
+finish_date.setLabel('finish')
+source.appendChild(finish_date.toXml(doc))
+
+cal.add(Calendar.MINUTE, 30)
 cal.add(Calendar.MONTH, -1)
-source.appendChild(MonadDate(cal.getTime()).toXml(doc))
-source.appendChild(MonadDate.getMonthsXml(doc))]]></value>
+start_date = HhStartDate(cal.getTime())
+start_date.setLabel('start')
+source.appendChild(start_date.toXml(doc))
+
+source.appendChild(MonadDate.getMonthsXml(doc))
+source.appendChild(MonadDate.getDaysXml(doc))
+source.appendChild(MonadDate.getHoursXml(doc))]]></value>
         <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
 <xsl:stylesheet version="1.0"
     xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
@@ -10678,34 +10695,69 @@ source.appendChild(MonadDate.getMonthsXml(doc))]]></value>
                     <fieldset>
                         <legend>Download</legend>
 <br/>
-<p><xsl:value-of select="' For MPAN Core '"/>
-<input name="mpan-core" value="" maxlength="30" size="30" />
-
-<xsl:value-of select="' for '"/>
-                        <input name="months" maxlength="2" size="2">
-                          <xsl:attribute name="value">
-                            <xsl:choose>
-                              <xsl:when test="/source/request/parameter[@name='months']">
-                                <xsl:value-of select="/source/request/parameter[@name='months']/value"/>
-                              </xsl:when>
-                              <xsl:otherwise>
-                                <xsl:value-of select="'1'"/>
-                              </xsl:otherwise>
-                            </xsl:choose>
-                          </xsl:attribute>
-                        </input>
-                        <xsl:value-of select="' month(s) finishing at the end of '"/>
-<input name="end-year" value="{/source/date/@year}" maxlength="4" size="4"/><xsl:value-of select="' - '"/>
-                        <select name="end-month">
+<p><xsl:value-of select="'From '"/>
+<input name="start-year" value="{/source/hh-start-date[@label='start']/@year}" maxlength="4" size="4"/><xsl:value-of select="'-'"/>
+                        <select name="start-month">
                             <xsl:for-each select="/source/months/month">
                                 <option value="{@number}">
-                                    <xsl:if test="@number=/source/date/@month">
+                                    <xsl:if test="@number=/source/hh-start-date[@label='start']/@month">
                                         <xsl:attribute name="selected">selected</xsl:attribute>
                                     </xsl:if>
                                     <xsl:value-of select="@number"/>
                                 </option>
                             </xsl:for-each>
-                        </select>
+                        </select><xsl:value-of select="'-'"/>
+                        <select name="start-day">
+                            <xsl:for-each select="/source/days/day">
+                                <option value="{@number}">
+                                    <xsl:if test="@number=/source/hh-start-date[@label='start']/@day">
+                                        <xsl:attribute name="selected">selected</xsl:attribute>
+                                    </xsl:if>
+                                    <xsl:value-of select="@number"/>
+                                </option>
+                            </xsl:for-each>
+                        </select><xsl:value-of select="' '"/>
+                        <select name="start-hour">
+                            <xsl:for-each select="/source/hours/hour">
+                                <option value="{@number}">
+                                    <xsl:if test="@number=/source/hh-start-date[@label='start']/@hour">
+                                        <xsl:attribute name="selected">selected</xsl:attribute>
+                                    </xsl:if>
+                                    <xsl:value-of select="@number"/>
+                                </option>
+                            </xsl:for-each>
+                        </select><xsl:value-of select="':00 to '"/>
+<input name="finish-year" value="{/source/hh-start-date[@label='finish']/@year}" maxlength="4" size="4"/><xsl:value-of select="'-'"/>
+                        <select name="finish-month">
+                            <xsl:for-each select="/source/months/month">
+                                <option value="{@number}">
+                                    <xsl:if test="@number=/source/hh-start-date[@label='finish']/@month">
+                                        <xsl:attribute name="selected">selected</xsl:attribute>
+                                    </xsl:if>
+                                    <xsl:value-of select="@number"/>
+                                </option>
+                            </xsl:for-each>
+                        </select><xsl:value-of select="'-'"/>
+                        <select name="finish-day">
+                            <xsl:for-each select="/source/days/day">
+                                <option value="{@number}">
+                                    <xsl:if test="@number=/source/hh-start-date[@label='finish']/@day">
+                                        <xsl:attribute name="selected">selected</xsl:attribute>
+                                    </xsl:if>
+                                    <xsl:value-of select="@number"/>
+                                </option>
+                            </xsl:for-each>
+                        </select><xsl:value-of select="' '"/>
+                        <select name="finish-hour">
+                            <xsl:for-each select="/source/hours/hour">
+                                <option value="{@number}">
+                                    <xsl:if test="@number=/source/hh-start-date[@label='finish']/@hour">
+                                        <xsl:attribute name="selected">selected</xsl:attribute>
+                                    </xsl:if>
+                                    <xsl:value-of select="@number"/>
+                                </option>
+                            </xsl:for-each>
+                        </select><xsl:value-of select="':30 '"/>
                     <input type="submit" value="Download"/>
 </p>
                     </fieldset>
@@ -10725,18 +10777,33 @@ source.appendChild(MonadDate.getMonthsXml(doc))]]></value>
 from java.util import GregorianCalendar, TimeZone, Locale, Calendar
 from net.sf.chellow.physical import HhStartDate, Supply
 from java.sql import Timestamp, ResultSet
+from org.python.util import PythonInterpreter
+from net.sf.chellow.billing import NonCoreContract
 
-def mpan_bit(query, kvarh_at_md_query, is_import, hh_count_query, num_hh, generation):
+computer = NonCoreContract.getNonCoreContract('computer')
+comterp = PythonInterpreter()
+comterp.exec(computer.getChargeScript())
+forecast_date = comterp.get('forecast_date')()
+
+def mpan_bit(query, kvarh_at_md_query, is_import, hh_count_query, num_hh, generation, comterp, forecast_date, start_date, finish_date):
     mpan = generation.getMpan(is_import)
     mpan_core_str = ''
     mtc_str = ''
     llfc_str = ''
     sc_str = ''
+    supplier_contract_name = ''
+    gsp_kwh = ''
     if mpan is not None:
+        supplier_contract_name = mpan.getSupplierContract().getName()
         mtc_str = mpan.getMtc().codeAsString()
-        llfc_str = mpan.getLlfc().codeAsString()
+        llfc = mpan.getLlfc()
+        llfc_str = llfc.codeAsString()
         mpan_core_str = mpan.getCore().toString()
         sc_str = str(mpan.getAgreedSupplyCapacity())
+        if llfc.getIsImport() and generation.getPc().getCode() == 0:
+            supply_source = comterp.get('supply_source')(forecast_date, comterp, pw)
+            supply_source.init_from_mpan(start_date, finish_date, mpan)
+            gsp_kwh = str(round(supply_source.summary['sum-gsp-kwh']))
     md = 0
     sum = 0
     non_actual = 0
@@ -10763,34 +10830,47 @@ def mpan_bit(query, kvarh_at_md_query, is_import, hh_count_query, num_hh, genera
     else:
         kva_at_md = str(round(((kvarh_at_md.doubleValue() * 2)**2 + kw_at_md**2)**0.5))
     num_bad = str(num_hh - hh_count_query.setBoolean('isImport', is_import).uniqueResult() + num_na)
-    return mtc_str + ',' + llfc_str + ',' + mpan_core_str + ',' + sc_str + ',' + str(round(sum)) + ',' + str(round(non_actual)) + ',' + str(round(kw_at_md)) + ',' + str(date_at_md) + ',' + str(kva_at_md) + ',' + str(num_bad)
+        
+    return mtc_str + ',' + llfc_str + ',' + mpan_core_str + ',' + sc_str + ',' + supplier_contract_name + ',' + str(round(sum)) + ',' + str(round(non_actual)) + ',' + gsp_kwh + ',' + str(round(kw_at_md)) + ',' + str(date_at_md) + ',' + str(kva_at_md) + ',' + str(num_bad)
     
 inv.getResponse().setContentType("text/csv")
 inv.getResponse().setHeader('Content-Disposition', 'filename=output.csv;')
 pw = inv.getResponse().getWriter()
-end_year = inv.getInteger("end-year")
-end_month = inv.getInteger("end-month")
-months = inv.getInteger("months")
-search_term = inv.getString('mpan-core')
+
+start_year = inv.getInteger("start-year")
+start_month = inv.getInteger("start-month")
+start_day = inv.getInteger("start-day")
+start_hour = inv.getInteger("start-hour")
+
+finish_year = inv.getInteger("finish-year")
+finish_month = inv.getInteger("finish-month")
+finish_day = inv.getInteger("finish-day")
+finish_hour = inv.getInteger("finish-hour")
+
 if not inv.isValid():
     raise UserException()
+
 cal = GregorianCalendar(TimeZone.getTimeZone("GMT"), Locale.UK)
+
 cal.clear()
-cal.set(Calendar.YEAR, end_year)
-cal.set(Calendar.MONTH, end_month - 1)
-cal.set(Calendar.DAY_OF_MONTH, 1)
-cal.set(Calendar.HOUR_OF_DAY, 0)
+cal.set(Calendar.YEAR, start_year)
+cal.set(Calendar.MONTH, start_month - 1)
+cal.set(Calendar.DAY_OF_MONTH, start_day)
+cal.set(Calendar.HOUR_OF_DAY, start_hour)
 cal.set(Calendar.MINUTE, 0)
 cal.set(Calendar.SECOND, 0)
 cal.set(Calendar.MILLISECOND, 0)
-cal.add(Calendar.MONTH, 1)
-cal.add(Calendar.MINUTE, -30)
-finish_date = HhStartDate(cal.getTime())
-cal.add(Calendar.MINUTE, 30)
-cal.add(Calendar.MONTH, months * -1)
 start_date = HhStartDate(cal.getTime())
 
-search_term = search_term.strip()
+cal.clear()
+cal.set(Calendar.YEAR, finish_year)
+cal.set(Calendar.MONTH, finish_month - 1)
+cal.set(Calendar.DAY_OF_MONTH, finish_day)
+cal.set(Calendar.HOUR_OF_DAY, finish_hour)
+cal.set(Calendar.MINUTE, 30)
+cal.set(Calendar.SECOND, 0)
+cal.set(Calendar.MILLISECOND, 0)
+finish_date = HhStartDate(cal.getTime())
 
 query = Hiber.session().createQuery("select datum.value, datum.status, datum.startDate from HhDatum datum where datum.channel.supplyGeneration.supply = :supply and datum.channel.isImport is :isImport and datum.channel.isKwh is true and datum.startDate.date >= :startDate and datum.startDate.date <= :finishDate").setTimestamp('startDate', start_date.getDate()).setTimestamp('finishDate', finish_date.getDate())
 
@@ -10800,10 +10880,11 @@ hh_count_query = Hiber.session().createQuery("select count(*) from HhDatum datum
 
 num_hh = round((finish_date.getDate().getTime() - start_date.getPrevious().getDate().getTime()) / (30 * 60 * 1000))
 
-pw.println("Supply Id, Supply Name, Source, Generator Type, Site Ids, Site Names, From, To, PC, Import MTC, Import LLFC, Import MPAN Core, Import Supply Capacity, Import Total kWh, Import Non-actual kWh, Import MD / kW, Import MD Date, Import MD / kVA, Import Bad HHs, Export MTC, Export LLFC, Export MPAN Core, Export Supply Capacity, Export Total kWh, Export Non-actual kWh, Export MD / kW, Export MD Date, Export MD / kVA, Export Bad HHs")
+pw.println("Supply Id, Supply Name, Source, Generator Type, Site Ids, Site Names, From, To, PC, Import MTC, Import LLFC, Import MPAN Core, Import Supply Capacity,Import Supplier,Import Total MSP kWh, Import Non-actual MSP kWh, Import Total GSP kWh,Import MD / kW, Import MD Date, Import MD / kVA, Import Bad HHs, Export MTC, Export LLFC, Export MPAN Core, Export Supply Capacity,Export Supplier,Export Total MSP kWh, Export Non-actual MSP kWh,Export GSP kWh, Export MD / kW, Export MD Date, Export MD / kVA, Export Bad HHs")
 
-if len(search_term) > 0:
-    supplies_query = Hiber.session().createQuery("select distinct generation.supply, generation.supply.id from SupplyGeneration generation where (generation.finishDate.date is null or generation.finishDate.date >= :startDate) and generation.startDate.date <= :finishDate order by generation.supply.id").setEntity('supply', MpanCore.getMpanCore(search_term).getSupply())
+if inv.hasParameter('mpan-core'):
+    mpan_core_str = inv.getString('mpan-core')
+    supplies_query = Hiber.session().createQuery("select distinct generation.supply, generation.supply.id from SupplyGeneration generation where (generation.finishDate.date is null or generation.finishDate.date >= :startDate) and generation.startDate.date <= :finishDate order by generation.supply.id").setEntity('supply', MpanCore.getMpanCore(mpan_core_str).getSupply())
 else:
     supplies_query = Hiber.session().createQuery("select distinct generation.supply, generation.supply.id from SupplyGeneration generation where (generation.finishDate.date is null or generation.finishDate.date >= :startDate) and generation.startDate.date <= :finishDate order by generation.supply.id")
 
@@ -10829,7 +10910,9 @@ while supplies.next():
         generator_type = ''
     else:
         generator_type = generator_type.getCode()
-    pw.println(str(supply.getId()) + ',"' + supply.getName() + '",' + supply.getSource().getCode() + ',"' + generator_type + '","' + site_codes + '","' + site_names + '",' + start_date.toString() + "," + finish_date.toString() + "," + generation.getPc().codeAsString() + "," + mpan_bit(query, kva_at_md_query, True, hh_count_query, num_hh, generation) + "," + mpan_bit(query, kva_at_md_query, False, hh_count_query, num_hh, generation))
+    pw.print(str(supply.getId()) + ',"' + supply.getName() + '",' + supply.getSource().getCode() + ',"' + generator_type + '","' + site_codes + '","' + site_names + '",' + start_date.toString() + "," + finish_date.toString() + "," + generation.getPc().codeAsString() + ",")
+    pw.flush()
+    pw.println(mpan_bit(query, kva_at_md_query, True, hh_count_query, num_hh, generation,comterp, forecast_date, start_date, finish_date) + "," + mpan_bit(query, kva_at_md_query, False, hh_count_query, num_hh, generation,comterp, forecast_date, start_date, finish_date))
     pw.flush()
     Hiber.session().clear()
 supplies.close()
@@ -10956,7 +11039,7 @@ source.appendChild(MonadDate.getDaysXml(doc))]]></value>
   </tr>
   <tr>
     <td>Users</td>
-    <td><input type="checkbox" name="has-users" value="true" checked="true"/></td>
+    <td><input type="checkbox" name="has-users" value="true" /></td>
   </tr>
   <tr>
     <td>Configuration</td>
@@ -12286,7 +12369,7 @@ comterp.exec(computer.getChargeScript())
 inv.getResponse().setContentType("text/csv")
 inv.getResponse().setHeader('Content-Disposition', 'filename=output.csv;')
 pw = inv.getResponse().getWriter()
-pw.println("Supply Id,Supply Name,Source,Generator Type,Month,Imported kWh,Exported kWh,Metering Type,Import MPAN Core, Export MPAN Core," + str(System.currentTimeMillis()))
+pw.println("Supply Id,Supply Name,Source,Generator Type,Month,PC,Site Id, Site Name, Metering Type,Import MPAN Core,Imported Total kWh,Import Estimated kWh,Export MPAN Core,Export Total kWh,Export Estimated kWh")
 pw.flush()
 
 month_format = SimpleDateFormat("yyyy-MM-dd")
@@ -12299,6 +12382,11 @@ else:
     supplies_query = Hiber.session().createQuery("select distinct generation.supply from SupplyGeneration generation where generation.supply = :supply and generation.startDate.date <= :finishDate and (generation.finishDate is null or generation.finishDate.date >= :startDate)").setEntity('supply', supply)
 
 kwh_query = Hiber.session().createQuery("select sum(datum.value) from HhDatum datum where datum.channel.supplyGeneration.supply = :supply and datum.channel.isKwh is true and datum.channel.isImport = :isImport and datum.startDate.date >= :startDate and datum.startDate.date <= :finishDate")
+
+est_kwh_query = Hiber.session().createQuery("select sum(datum.value) from HhDatum datum where datum.status = 'E' and datum.channel.supplyGeneration.supply = :supply and datum.channel.isKwh is true and datum.channel.isImport = :isImport and datum.startDate.date >= :startDate and datum.startDate.date <= :finishDate")
+
+site_query = Hiber.session().createQuery("select ssgen.site from SiteSupplyGeneration ssgen where ssgen.supplyGeneration = :supplyGeneration and ssgen.isPhysical is true")
+
 
 forecast_date = comterp.get('forecast_date')()
 
@@ -12320,18 +12408,9 @@ for i in range(months):
             generator_type = ''
         else:
             generator_type = generator_type.getCode()
-        values = [supply.source.getCode(), generator_type, month_format.format(month_finish.getDate())]
-
-        kwh_query.setEntity('supply', supply).setTimestamp('startDate', month_start.getDate()).setTimestamp('finishDate', month_finish.getDate())
-        for polarity in [True, False]:
-            kwh_query.setBoolean('isImport', True)
-            kwh = kwh_query.uniqueResult()
-            if kwh is None:
-                values.append('0')
-            else:
-                values.append(kwh_format(kwh.doubleValue()))
 
         generation = supply.getGenerations(month_start, month_finish).get(0)
+
         pc_code = generation.getPc().codeAsString()
         if pc_code == '00':
             metering_type = 'hh'
@@ -12339,7 +12418,13 @@ for i in range(months):
             metering_type = 'amr'
         else:
             metering_type = 'nhh'
-        values.append(metering_type)
+
+        site = site_query.setEntity('supplyGeneration', generation).uniqueResult()
+
+        values = [supply.source.getCode(), generator_type, month_format.format(month_finish.getDate()), pc_code, site.getCode(), site.getName(), metering_type]
+
+        kwh_query.setEntity('supply', supply).setTimestamp('startDate', month_start.getDate()).setTimestamp('finishDate', month_finish.getDate())
+        est_kwh_query.setEntity('supply', supply).setTimestamp('startDate', month_start.getDate()).setTimestamp('finishDate', month_finish.getDate())
         for polarity in [True, False]:
             mpan = generation.getMpan(polarity)
             if mpan is None:
@@ -12347,9 +12432,22 @@ for i in range(months):
             else:
                 values.append(mpan.getCore())
 
+            kwh_query.setBoolean('isImport', polarity)
+            kwh = kwh_query.uniqueResult()
+            if kwh is None:
+                values.append('0')
+            else:
+                values.append(kwh_format(kwh.doubleValue()))
+            est_kwh_query.setBoolean('isImport', polarity)
+            est_kwh = est_kwh_query.uniqueResult()
+            if est_kwh is None:
+                values.append('0')
+            else:
+                values.append(kwh_format(est_kwh.doubleValue()))
+
         for value in values:
             pw.print('"' + str(value) + '",')
-        pw.println(str(System.currentTimeMillis()))
+        pw.println('')
         pw.flush()
         Hiber.session().clear()
     supplies.close()
