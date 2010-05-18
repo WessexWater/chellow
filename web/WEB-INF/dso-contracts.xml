@@ -903,9 +903,9 @@ def month(bill, whole_data, data_source):
         billed_avail = max(data_source.availability, year_md_kva_095)
         bill.setdefault('duos-availability-gbp', 0)
         bill['duos-availability-agreed-kva'] = data_source.availability
-        
+
         for threshold, block in threshold_blocks:
-            if threshold is None or billed_avail < threshold:
+            if threshold is None or billed_avail < threshold and (billed_avail % block > 0):
                 billed_avail = (int(billed_avail / block) + 1) * block
                 break
         bill['duos-availability-billed-kva'] = billed_avail
@@ -1394,18 +1394,66 @@ def lafs():
 
 def llfc_groups():
     return {
+        '001': '001,477,909',
+        '006': '006,478,910',
         '127': '127,473',
-        '473': '127,473',
-        '453': '453,470',
-        '658': '658,476',
-        '476': '658,476',
         '401': '401,475',
+        '453': '453,470',
+        '473': '127,473',
         '475': '401,475',
-        '909': '909,477',
-        '910': '910,478'}
+        '476': '658,476',
+        '477': '001,477,909',
+        '478': '006,478,910',
+        '658': '658,476',
+        '909': '001,477,909',
+        '910': '006,478,910'}
 
 def tariffs():
     return {
+        '001,477,909': {
+            'description': 'LV Generation Intermittent',
+            'unrestricted-gbp-per-kwh': -0.00754,
+            'gbp-per-kvarh': 0.00214},
+        '002': {
+            'description': 'LV Generation Non-Intermittent',
+            'red-gbp-per-kwh': -0.05021,
+            'amber-gbp-per-kwh': -0.01021,
+            'green-gbp-per-kwh': -0.00161,
+            'gbp-per-kvarh': 0.00214},
+        '003': {
+            'description': 'LV Sub Generation Intermittent',
+            'unrestricted-gbp-per-kwh': -0.00656,
+            'gbp-per-kvarh': 0.00199},
+        '004': {
+            'description': 'LV Sub Generation Non-Intermittent',
+            'red-gbp-per-kwh': -0.04521,
+            'amber-gbp-per-kwh': -0.00856,
+            'green-gbp-per-kwh': -0.00136,
+            'gbp-per-kvarh': 0.00199},
+        '005': {
+            'description': 'HV Generation Intermittent',
+            'gbp-per-mpan-per-day': 0.9868,
+            'unrestricted-gbp-per-kwh': -0.00393,
+            'gbp-per-kvarh': 0.00169},
+        '006,478,910': {
+            'description': 'HV Generation Non-Intermittent',
+            'gbp-per-mpan-per-day': 0.9868,
+            'red-gbp-per-kwh': -0.03226,
+            'amber-gbp-per-kwh': -0.00407,
+            'green-gbp-per-kwh': -0.00067,
+            'gbp-per-kvarh': 0.00169},
+        '007': {
+            'description': 'HV Sub Generation Intermittent',
+            'gbp-per-mpan-per-day': 0.9868,
+            'unrestricted-gbp-per-kwh': -0.00306,
+            'gbp-per-kvarh': 0.00082},
+        '008': {
+            'description': 'HV Sub Generation Non Intermittent',
+            'gbp-per-mpan-per-day': 0.9868,
+            'red-gbp-per-kwh': -0.02634,
+            'amber-gbp-per-kwh': -0.00295,
+            'green-gbp-per-kwh': -0.00046,
+            'gbp-per-kvarh': 0.00082},
         '453,470': {
             'description': 'LV HH Metered',
             'gbp-per-mpan-per-day': 0.0830,

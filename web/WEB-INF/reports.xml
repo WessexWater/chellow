@@ -12305,8 +12305,8 @@ source.appendChild(script.toXml(doc, XmlTree('contract', XmlTree('party'))))]]><
 from net.sf.chellow.monad.types import MonadDate
 
 cal = GregorianCalendar(TimeZone.getTimeZone("GMT"), Locale.UK)
-if cal.get(Calendar.MONTH) > Calendar.MARCH:
-    cal.add(Calendar.YEAR, 1)
+if cal.get(Calendar.MONTH) < Calendar.MARCH:
+    cal.add(Calendar.YEAR, -1)
 source.setAttribute('year', str(cal.get(Calendar.YEAR)))]]></value>
         <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
 <xsl:stylesheet version="1.0"
