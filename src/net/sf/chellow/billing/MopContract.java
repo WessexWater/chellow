@@ -69,9 +69,8 @@ public class MopContract extends Contract {
 		return (MopContract) Hiber.session().get(MopContract.class, id);
 	}
 
-	public static MopContract getMopService(Long id) throws HttpException {
-		MopContract contract = (MopContract) Hiber.session().get(
-				MopContract.class, id);
+	public static MopContract getMopContract(Long id) throws HttpException {
+		MopContract contract = findMopContract(id);
 		if (contract == null) {
 			throw new UserException(
 					"There isn't a meter operator contract with that id.");

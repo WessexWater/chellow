@@ -10,7 +10,7 @@
 				<link rel="stylesheet" type="text/css"
 					href="{/source/request/@context-path}/style/" />
 				<title>
-					Chellow &gt; MOp Contracts &gt;
+					Chellow &gt; MOP Contracts &gt;
 					<xsl:value-of select="/source/batches/mop-contract/@name" />
 					&gt;
 					<xsl:value-of select="'Batches'" />
@@ -33,7 +33,7 @@
 					</a>
 					&gt;
 					<a href="{/source/request/@context-path}/mop-contracts/">
-						<xsl:value-of select="'MOp Contracts'" />
+						<xsl:value-of select="'MOP Contracts'" />
 					</a>
 					&gt;
 					<a
@@ -43,7 +43,7 @@
 					&gt;
 					<xsl:value-of select="'Batches ['" />
 					<a
-						href="{/source/request/@context-path}/reports/89/output/?mop-contract-id={/source/batches/mop-contract/@id}">
+						href="{/source/request/@context-path}/reports/191/output/?mop-contract-id={/source/batches/mop-contract/@id}">
 						<xsl:value-of select="'view'" />
 					</a>
 					<xsl:value-of select="']'" />

@@ -9,7 +9,7 @@
 			<head>
 				<link rel="stylesheet" type="text/css"
 					href="{/source/request/@context-path}/style/" />
-				<title>Chellow &gt; MOp Contracts</title>
+				<title>Chellow &gt; MOP Contracts</title>
 			</head>
 			<body>
 				<p>
@@ -18,8 +18,8 @@
 						<span class="logo">Chellow</span>
 					</a>
 					&gt;
-					<xsl:value-of select="'MOp Contracts ['" />
-					<a href="{/source/request/@context-path}/reports/113/output/">
+					<xsl:value-of select="'MOP Contracts ['" />
+					<a href="{/source/request/@context-path}/reports/185/output/">
 						<xsl:value-of select="'view'" />
 					</a>
 					<xsl:value-of select="']'" />
@@ -49,7 +49,7 @@
 						<legend>Add a contract</legend>
 						<br />
 						<label>
-	MOp
+							MOP
 							<select name="participant-id">
 								<xsl:for-each select="/source/provider">
 									<option value="{participant/@id}">
@@ -79,8 +79,7 @@
 							<input name="start-year" maxlength="4" size="4">
 								<xsl:attribute name="value">
 											<xsl:choose>
-												<xsl:when
-									test="/source/request/parameter[@name='start-year']">
+												<xsl:when test="/source/request/parameter[@name='start-year']">
 													<xsl:value-of
 									select="/source/request/parameter[@name='start-year']/value" />
 												</xsl:when>
@@ -95,8 +94,7 @@
 								<xsl:for-each select="/source/months/month">
 									<option value="{@number}">
 										<xsl:choose>
-											<xsl:when
-												test="/source/request/parameter[@name='start-month']">
+											<xsl:when test="/source/request/parameter[@name='start-month']">
 												<xsl:if
 													test="/source/request/parameter[@name='start-month']/value = @number">
 													<xsl:attribute name="selected">

@@ -62,7 +62,7 @@
 							</li>
 							<li>
 								<a href="{/source/request/@context-path}/mop-contracts/">
-									MOp Contracts
+									MOP Contracts
 						</a>
 							</li>
 						</ul>

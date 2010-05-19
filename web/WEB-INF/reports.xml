@@ -4510,7 +4510,7 @@ snags_element.setAttribute("site-count", str(sites))]]></value>
         <value><![CDATA[report]]></value>
         <value><![CDATA[41]]></value>
         <value><![CDATA[true]]></value>
-        <value><![CDATA[CSV TRIAD]]></value>
+        <value><![CDATA[CSV Supplies TRIAD]]></value>
         <value><![CDATA[from net.sf.chellow.monad import Hiber, UserException
 from net.sf.chellow.monad.types import MonadDate
 from net.sf.chellow.physical import HhStartDate, SupplyGeneration, MpanCore
@@ -4792,6 +4792,9 @@ elif provider_role_code == MarketRole.SUPPLIER:
     query = Hiber.session().createQuery("from SupplierContract contract where contract.party = :party order by contract.party.name").setEntity('party', provider)
 elif provider_role_code == MarketRole.NON_CORE_ROLE:
     query = Hiber.session().createQuery("from NonCoreContract contract where contract.party = :party order by contract.party.name").setEntity('party', provider)
+elif provider_role_code == MarketRole.MOP:
+    query = Hiber.session().createQuery("from MopContract contract where contract.party = :party order by contract.party.name").setEntity('party', provider)
+
 if query != None:
     for contract in query.list():
         contract_element = contract.toXml(doc, XmlTree('rateScripts'))
@@ -4924,6 +4927,13 @@ if query != None:
                                             test="/source/provider/market-role/@code = 'X'">
                                             <a
                                                 href="{/source/request/@context-path}/reports/75/output/?contract-id={@id}">
+                                                <xsl:value-of select="@name" />
+                                            </a>
+                                        </xsl:when>
+                                        <xsl:when
+                                            test="/source/provider/market-role/@code = 'M'">
+                                            <a
+                                                href="{/source/request/@context-path}/reports/107/output/?mop-contract-id={@id}">
                                                 <xsl:value-of select="@name" />
                                             </a>
                                         </xsl:when>
@@ -8689,9 +8699,187 @@ for snag in Hiber.session().createQuery("from SupplySnag snag where snag.contrac
         <value><![CDATA[report]]></value>
         <value><![CDATA[107]]></value>
         <value><![CDATA[true]]></value>
-        <value><![CDATA[Free 8]]></value>
-        <value><![CDATA[]]></value>
-        <value><![CDATA[]]></value>
+        <value><![CDATA[MOP Contract]]></value>
+        <value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree, UserException
+from net.sf.chellow.billing import MopContract
+
+contract_id = inv.getLong('mop-contract-id')
+contract = MopContract.getMopContract(contract_id)
+source.appendChild(contract.toXml(doc, XmlTree('party', XmlTree('participant')).put('rateScripts')))]]></value>
+        <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
+<xsl:stylesheet version="1.0"
+    xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+    <xsl:output method="html" encoding="US-ASCII"
+        doctype-public="-//W3C//DTD HTML 4.01//EN"
+        doctype-system="http://www.w3.org/TR/html4/strict.dtd" indent="yes" />
+    <xsl:template match="/">
+        <html>
+            <head>
+                <link rel="stylesheet" type="text/css"
+                    href="{/source/request/@context-path}/reports/19/output/" />
+
+                <title>
+                    Home &gt; MOP Contracts &gt;
+                    <xsl:value-of select="/source/mop-contract/@name" />
+                </title>
+            </head>
+            <body>
+                <p>
+                    <a
+                        href="{/source/request/@context-path}/reports/1/output/">
+                        <xsl:value-of
+                            select="'Home'" />
+                    </a>
+                    &gt;
+                    <a
+                        href="{/source/request/@context-path}/reports/185/output/">
+                        <xsl:value-of select="'MOP Contracts'" />
+                    </a>
+                    &gt;
+                    <xsl:value-of
+                        select="concat(/source/mop-contract/@name, ' [')" />
+                    <a
+                        href="{/source/request/@context-path}/mop-contracts/{/source/mop-contract/@id}/">
+                        <xsl:value-of select="'edit'" />
+                    </a>
+                    <xsl:value-of select="']'" />
+                </p>
+                <br />
+                <xsl:if test="//message">
+                    <ul>
+                        <xsl:for-each select="//message">
+                            <li>
+                                <xsl:value-of select="@description" />
+                            </li>
+                        </xsl:for-each>
+                    </ul>
+                </xsl:if>
+                <table>
+                    <tbody>
+                            <tr>
+                                <th>Provider</th>
+                                <td>
+                                    <a
+                                        href="{/source/request/@context-path}/reports/47/output/?provider-id={/source/mop-contract/provider/@id}">
+                                        <xsl:value-of
+                                            select="/source/mop-contract/provider/@name" />
+                                    </a>
+                                </td>
+                            </tr>
+                        <tr>
+                            <th>Name</th>
+                            <td>
+                                <xsl:value-of
+                                    select="/source/mop-contract/@name" />
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>Start Date</th>
+                            <td>
+                                <xsl:value-of
+                                    select="concat(/source/mop-contract/rate-script[position()=1]/hh-start-date[@label='start']/@year, '-', /source/mop-contract/rate-script[position()=1]/hh-start-date[@label='start']/@month, '-', /source/mop-contract/rate-script[position()=1]/hh-start-date[@label='start']/@day)" />
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>Finish Date</th>
+                            <td>
+                                <xsl:choose>
+                                    <xsl:when
+                                        test="/source/mop-contract/rate-script[position()=last()]/hh-start-date[@label='finish']">
+                                        <xsl:value-of
+                                            select="concat(/source/mop-contract/rate-script[position()=last()]/hh-start-date[@label='finish']/@year, '-', /source/mop-contract/rate-script[position()=last()]/hh-start-date[@label='finish']/@month, '-', /source/mop-contract/rate-script[position()=last()]/hh-start-date[@label='finish']/@day)" />
+                                    </xsl:when>
+                                    <xsl:otherwise>
+                                        Ongoing
+                                    </xsl:otherwise>
+                                </xsl:choose>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                <br />
+                    <table>
+                    <caption>Rate Scripts</caption>
+                    <thead>
+                    <tr>
+                    <th></th>
+                    <th>From</th>
+                    <th>To</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <xsl:for-each
+                    select="/source/mop-contract/rate-script">
+                    <tr>
+                    <td>
+                    <a
+                    href="{/source/request/@context-path}/reports/173/output/?rate-script-id={@id}">
+                    <xsl:value-of select="'view'" />
+                    </a>
+                    </td>
+                    <td>
+                    <xsl:value-of
+                    select="concat(hh-start-date[@label='start']/@year, '-', hh-start-date[@label='start']/@month, '-', hh-start-date[@label='start']/@day)" />
+                    </td>
+                    <td>
+                    <xsl:choose>
+                    <xsl:when
+                    test="hh-start-date[@label='finish']">
+                    <xsl:value-of
+                    select="concat(hh-start-date[@label='finish']/@year, '-', hh-start-date[@label='finish']/@month, '-', hh-start-date[@label='finish']/@day)" />
+                    </xsl:when>
+                    <xsl:otherwise>
+                    Ongoing
+                    </xsl:otherwise>
+                    </xsl:choose>
+                    </td>
+                    </tr>
+                    </xsl:for-each>
+                    </tbody>
+                    </table>
+                <ul>
+                    <!--
+                        <li>
+                        <a
+                        href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/87/screen/output/?mop-contract-id={/source/mop-contract/@id}">
+                        Batches
+                        </a>
+                        </li>
+                        <li>
+                        <a
+                        href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/99/screen/output/?mop-contract-id={/source/mop-contract/@id}">
+                        Supply Snags
+                        </a>
+                        </li>
+                        <li>
+                        <a
+                        href="{/source/request/@context-path}/orgs/{/source/org/@id}/reports/103/screen/output/?service-id={/source/mop-contract/@id}">
+                        Bill Snags
+                        </a>
+                        </li>
+                    -->
+                    <li>
+                        <a
+                            href="{/source/request/@context-path}/reports/37/output/?mop-contract-id={/source/mop-contract/@id}">
+                            Channel Snags
+                        </a>
+                    </li>
+                    <li>
+                        <a
+                            href="{/source/request/@context-path}/reports/83/output/?mop-contract-id={/source/mop-contract/@id}">
+                            Virtual Bills
+                        </a>
+                    </li>
+                </ul>
+                    <h2>Script</h2>
+                    <pre>
+                    <xsl:value-of
+                    select="/source/mop-contract/@charge-script" />
+                    </pre>
+            </body>
+        </html>
+    </xsl:template>
+</xsl:stylesheet>]]></value>
     </line>
     <line>
         <value><![CDATA[insert]]></value>
@@ -12296,7 +12484,7 @@ source.appendChild(script.toXml(doc, XmlTree('contract', XmlTree('party'))))]]><
         <value><![CDATA[report]]></value>
         <value><![CDATA[175]]></value>
         <value><![CDATA[true]]></value>
-        <value><![CDATA[CSV TRIAD Selector]]></value>
+        <value><![CDATA[CSV Supplies TRIAD Selector]]></value>
         <value><![CDATA[from java.util import GregorianCalendar, TimeZone, Locale, Calendar
 from net.sf.chellow.monad.types import MonadDate
 
@@ -12784,9 +12972,108 @@ pw.close()]]></value>
         <value><![CDATA[report]]></value>
         <value><![CDATA[185]]></value>
         <value><![CDATA[true]]></value>
-        <value><![CDATA[Free 185]]></value>
-        <value><![CDATA[]]></value>
-        <value><![CDATA[]]></value>
+        <value><![CDATA[MOP Contracts]]></value>
+        <value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree
+
+contracts_element = doc.createElement('contracts')
+source.appendChild(contracts_element)
+for contract in Hiber.session().createQuery("from MopContract contract order by contract.startRateScript.startDate.date").list():
+    contract_element = contract.toXml(doc, XmlTree('party'))
+    contracts_element.appendChild(contract_element)
+    start_rate_script = contract.getStartRateScript()
+    start_rate_script.setLabel('start')
+    contract_element.appendChild(start_rate_script.toXml(doc))
+    finish_rate_script = contract.getFinishRateScript()
+    finish_rate_script.setLabel('finish')
+    contract_element.appendChild(finish_rate_script.toXml(doc))]]></value>
+        <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
+<xsl:stylesheet version="1.0"
+    xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+    <xsl:output method="html" encoding="US-ASCII"
+        doctype-public="-//W3C//DTD HTML 4.01//EN"
+        doctype-system="http://www.w3.org/TR/html4/strict.dtd" indent="yes" />
+    <xsl:template match="/">
+        <html>
+            <head>
+                <link rel="stylesheet" type="text/css"
+                    href="{/source/request/@context-path}/reports/19/output/" />
+                <title>
+                    Home &gt; MOP Contracts
+                </title>
+            </head>
+            <body>
+                <p>
+                    <a
+                        href="{/source/request/@context-path}/reports/1/output/">
+                        <xsl:value-of select="'Home'" />
+                    </a>
+                    &gt;
+                    <xsl:value-of select="'MOP Contracts ['" />
+                    <a
+                        href="{/source/request/@context-path}/mop-contracts/">
+                        <xsl:value-of select="'edit'" />
+                    </a>
+                    <xsl:value-of select="']'" />
+                </p>
+                <br />
+                <xsl:if test="//message">
+                    <ul>
+                        <xsl:for-each select="//message">
+                            <li>
+                                <xsl:value-of select="@description" />
+                            </li>
+                        </xsl:for-each>
+                    </ul>
+                </xsl:if>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Start Date</th>
+                            <th>Finish Date</th>
+                            <th>MOP</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <xsl:for-each
+                            select="/source/contracts/mop-contract">
+                            <tr>
+                                <td>
+<a href="{/source/request/@context-path}/reports/107/output/?mop-contract-id={@id}">
+                                    <xsl:value-of select="@name" />
+                                    </a>
+                                </td>
+                                <td>
+                                    <xsl:value-of
+                                        select="concat(rate-script[@label='start']/hh-start-date[@label='start']/@year, '-', rate-script[@label='start']/hh-start-date[@label='start']/@month, '-', rate-script[@label='start']/hh-start-date[@label='start']/@day)" />
+                                </td>
+                                <td>
+                                    <xsl:choose>
+                                        <xsl:when
+                                            test="rate-script[@label='finish']/hh-start-date[@label='finish']">
+                                            <xsl:value-of
+                                                select="concat(rate-script[@label='finish']/hh-start-date[@label='finish']/@year, '-', rate-script[@label='finish']/hh-start-date[@label='finish']/@month, '-', rate-script[@label='finish']/hh-start-date[@label='finish']/@day)" />
+                                        </xsl:when>
+                                        <xsl:otherwise>
+                                            Ongoing
+                                        </xsl:otherwise>
+                                    </xsl:choose>
+                                </td>
+                                <td>
+                                    <a
+                                        href="{/source/request/@context-path}/reports/47/output/?provider-id={provider/@id}">
+                                        <xsl:value-of
+                                            select="provider/@name" />
+                                    </a>
+                                </td>
+                            </tr>
+                        </xsl:for-each>
+                    </tbody>
+                </table>
+            </body>
+        </html>
+    </xsl:template>
+</xsl:stylesheet>]]></value>
     </line>
     <line>
         <value><![CDATA[insert]]></value>
@@ -13014,6 +13301,241 @@ source.appendChild(MonadDate.getMonthsXml(doc))]]></value>
                     <input type="submit" value="Download"/>
                     </fieldset>
                 </form>
+            </body>
+        </html>
+    </xsl:template>
+</xsl:stylesheet>]]></value>
+    </line>
+    <line>
+        <value><![CDATA[insert]]></value>
+        <value><![CDATA[report]]></value>
+        <value><![CDATA[191]]></value>
+        <value><![CDATA[true]]></value>
+        <value><![CDATA[MOP Contract Batches]]></value>
+        <value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree, UserException
+from net.sf.chellow.billing import MopContract
+
+contract_id = inv.getLong('mop-contract-id')
+contract = MopContract.getMopContract(contract_id)
+batches_element = doc.createElement('batches')
+source.appendChild(batches_element)
+batches_element.appendChild(contract.toXml(doc, XmlTree('party')))
+source.appendChild(batches_element)
+for batch in Hiber.session().createQuery("from Batch batch where batch.contract = :contract order by batch.reference").setEntity("contract", contract).list():
+    batches_element.appendChild(batch.toXml(doc))]]></value>
+        <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
+<xsl:stylesheet version="1.0"
+    xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+    <xsl:output method="html" encoding="US-ASCII"
+        doctype-public="-//W3C//DTD HTML 4.01//EN"
+        doctype-system="http://www.w3.org/TR/html4/strict.dtd" indent="yes" />
+    <xsl:template match="/">
+        <html>
+            <head>
+                <link rel="stylesheet" type="text/css"
+                    href="{/source/request/@context-path}/reports/19/output/" />
+                <title>
+                    Home &gt; MOP Contracts &gt;
+                    <xsl:value-of
+                        select="/source/batches/mop-contract/@name" />
+                    &gt; Batches
+                </title>
+            </head>
+            <body>
+                <p>
+                    <a
+                        href="{/source/request/@context-path}/reports/1/output/">
+                        <xsl:value-of select="'Home'" />
+                    </a>
+                    &gt;
+                    <a
+                        href="{/source/request/@context-path}/reports/185/output/?mop-id={/source/batches/mop-contract/@id}">
+                        <xsl:value-of select="'MOP Contracts'" />
+                    </a>
+                    &gt;
+                    <a
+                        href="{/source/request/@context-path}/reports/107/output/?mop-contract-id={/source/batches/mop-contract/@id}">
+                        <xsl:value-of
+                            select="/source/batches/mop-contract/@name" />
+                    </a>
+                    &gt;
+                    <xsl:value-of select="'Batches ['" />
+                    <a
+                        href="{/source/request/@context-path}/mop-contracts/{/source/batches/mop-contract/@id}/batches/">
+                        <xsl:value-of select="'edit'" />
+                    </a>
+                    <xsl:value-of select="']'" />
+                </p>
+                <br />
+                <xsl:if test="//message">
+                    <ul>
+                        <xsl:for-each select="//message">
+                            <li>
+                                <xsl:value-of select="@description" />
+                            </li>
+                        </xsl:for-each>
+                    </ul>
+                </xsl:if>
+                <table>
+                    <caption>Batches</caption>
+                    <thead>
+                        <tr>
+                            <th>Reference</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <xsl:for-each select="/source/batches/batch">
+                            <tr>
+                                <td>
+                                    <a
+                                        href="{/source/request/@context-path}/reports/193/output/?batch-id={@id}">
+                                        <xsl:value-of select="@reference" />
+                                    </a>
+                                </td>
+                            </tr>
+                        </xsl:for-each>
+                    </tbody>
+                </table>
+            </body>
+        </html>
+    </xsl:template>
+</xsl:stylesheet>]]></value>
+    </line>
+    <line>
+        <value><![CDATA[insert]]></value>
+        <value><![CDATA[report]]></value>
+        <value><![CDATA[193]]></value>
+        <value><![CDATA[true]]></value>
+        <value><![CDATA[MOP Contract Batch]]></value>
+        <value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree, UserException
+from net.sf.chellow.billing import Batch
+
+batch_id = inv.getLong('batch-id')
+batch = Batch.getBatch(batch_id)
+batch_element = batch.toXml(doc, XmlTree('contract', XmlTree('party')))
+source.appendChild(batch_element)
+for bill in Hiber.session().createQuery("from Bill bill where bill.batch = :batch order by bill.reference").setEntity("batch", batch).list():
+    batch_element.appendChild(bill.toXml(doc, XmlTree("supply")))]]></value>
+        <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
+<xsl:stylesheet version="1.0"
+    xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+    <xsl:output method="html" encoding="US-ASCII"
+        doctype-public="-//W3C//DTD HTML 4.01//EN"
+        doctype-system="http://www.w3.org/TR/html4/strict.dtd" indent="yes" />
+    <xsl:template match="/">
+        <html>
+            <head>
+                <link rel="stylesheet" type="text/css"
+                    href="{/source/request/@context-path}/reports/19/output/" />
+
+                <title>
+                    Home &gt; MOP Contracts &gt;
+                    <xsl:value-of
+                        select="/source/batch/mop-contract/@name" />
+                    &gt; Batches &gt;
+                    <xsl:value-of select="/source/batch/@reference" />
+                </title>
+            </head>
+            <body>
+                <p>
+                    <a
+                        href="{/source/request/@context-path}/reports/1/output/">
+                        <xsl:value-of select="'Home'" />
+                    </a>
+                    &gt;
+                    <a
+                        href="{/source/request/@context-path}/reports/185/output/">
+                        <xsl:value-of select="'MOP Contracts'" />
+                    </a>
+                    &gt;
+                    <a
+                        href="{/source/request/@context-path}/reports/107/output/?mop-contract-id={/source/batch/mop-contract/@id}">
+                        <xsl:value-of
+                            select="/source/batch/mop-contract/@name" />
+                    </a>
+                    &gt;
+                    <a
+                        href="{/source/request/@context-path}/reports/191/output/?mop-contract-id={/source/batch/mop-contract/@id}">
+                        <xsl:value-of select="'Batches'" />
+                    </a>
+                    &gt;
+                    <xsl:value-of
+                        select="concat(/source/batch/@reference, ' [')" />
+                    <a
+                        href="{/source/request/@context-path}/mop-contracts/{/source/batch/mop-contract/@id}/batches/{/source/batch/@id}/">
+                        <xsl:value-of select="'edit'" />
+                    </a>
+                    <xsl:value-of select="']'" />
+                </p>
+                <br />
+                <xsl:if test="//message">
+                    <ul>
+                        <xsl:for-each select="//message">
+                            <li>
+                                <xsl:value-of select="@description" />
+                            </li>
+                        </xsl:for-each>
+                    </ul>
+                </xsl:if>
+                <table>
+                  <tr>
+                    <th>Reference</th>
+                    <td><xsl:value-of select="/source/batch/@reference"/></td>
+                  </tr>
+                </table>
+                <br/>
+                <table>
+                    <caption>Bills</caption>
+                    <thead>
+                        <tr>
+                            <th>Reference</th>
+                            <th>From</th>
+                            <th>To</th>
+                            <th>Net</th>
+                            <th>VAT</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <xsl:for-each select="/source/batch/bill">
+                            <tr>
+                                <td>
+<a
+                                        href="{/source/request/@context-path}/reports/7/output/?supply-id={supply/@id}">
+                                    <xsl:value-of select="@reference" />
+ </a>
+                                </td>
+                                <td>
+                                    <xsl:value-of
+                                        select="concat(hh-start-date[@label='start']/@year, '-', hh-start-date[@label='start']/@month, '-', hh-start-date[@label='start']/@day, ' ', hh-start-date[@label='start']/@hour, ':', hh-start-date[@label='start']/@minute)" />
+                                </td>
+                                <td>
+                                    <xsl:value-of
+                                        select="concat(hh-start-date[@label='finish']/@year, '-', hh-start-date[@label='finish']/@month, '-', hh-start-date[@label='finish']/@day, ' ', hh-start-date[@label='finish']/@hour, ':', hh-start-date[@label='finish']/@minute)" />
+                                </td>
+                                <td>
+                                    <xsl:value-of select="@net" />
+                                </td>
+                                <td>
+                                    <xsl:value-of select="@vat" />
+                                </td>
+                                <td>
+                                    <xsl:choose>
+                                        <xsl:when test="@is-paid='true'">
+                                            Paid
+                                        </xsl:when>
+                                        <xsl:when test="@is-paid='false'">
+                                            Rejected
+                                        </xsl:when>
+                                        <xsl:otherwise>
+                                            Pending
+                                        </xsl:otherwise>
+                                    </xsl:choose>
+                                </td>
+                            </tr>
+                        </xsl:for-each>
+                    </tbody>
+                </table>
             </body>
         </html>
     </xsl:template>
