@@ -47,10 +47,5 @@
 			<key column="supply_id" />
 			<one-to-many class="MpanCore" />
 		</set>
-		<set name="meters" inverse="true" lazy="true"
-			cascade="all,delete-orphan">
-			<key column="supply_id" />
-			<one-to-many class="Meter" />
-		</set>
 	</class>
 </hibernate-mapping>

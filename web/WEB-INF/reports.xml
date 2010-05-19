@@ -4068,11 +4068,7 @@ while supply_generations.next():
         hhdc_account = supply_generation.getHhdcAccount()
     pc = supply_generation.getPc()
     pc_code_str = pc.codeAsString()
-    meter = supply_generation.getMeter()
-    if meter is None:
-        meter_serial_number = ''
-    else:
-        meter_serial_number = meter.getSerialNumber()
+    meter_serial_number = supply_generation.getMeterSerialNumber()
     import_values = mpan_fields(supply_generation.getImportMpan(), date, True, mand_query, metering_type)
     export_values = mpan_fields(supply_generation.getExportMpan(), date, False, mand_query, metering_type)
     channel_values = []

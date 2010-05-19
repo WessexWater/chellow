@@ -81,6 +81,8 @@ public class Bill extends PersistentEntity implements Urlable {
 	private Boolean isPaid; // Null is pending, false is rejected.
 
 	private String type;
+	
+	private String breakdown;
 
 	private boolean isCancelledOut;
 
@@ -96,6 +98,7 @@ public class Bill extends PersistentEntity implements Urlable {
 		setSupply(supply);
 		setReference("Default Reference");
 		setType("");
+		setBreakdown("");
 		setNet(new BigDecimal(0));
 		setVat(new BigDecimal(0));
 		setStartDate(HhStartDate.roundDown(new Date()));
@@ -183,6 +186,14 @@ public class Bill extends PersistentEntity implements Urlable {
 		this.type = type;
 	}
 
+	public String getBreakdown() {
+		return breakdown;
+	}
+
+	public void setBreakdown(String breakdown) {
+		this.breakdown = breakdown;
+	}
+	
 	public boolean getIsCancelledOut() {
 		return isCancelledOut;
 	}

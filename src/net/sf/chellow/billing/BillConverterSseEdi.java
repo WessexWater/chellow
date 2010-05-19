@@ -39,8 +39,6 @@ import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.UserException;
 import net.sf.chellow.physical.HhStartDate;
-import net.sf.chellow.physical.Meter;
-import net.sf.chellow.physical.MpanCore;
 import net.sf.chellow.physical.ReadType;
 import net.sf.chellow.physical.RegisterReadRaw;
 import net.sf.chellow.physical.Units;
@@ -183,8 +181,6 @@ public class BillConverterSseEdi implements BillConverter {
 						BigDecimal previousReadingValue = new BigDecimal(prrd
 								.getInt(2)).divide(new BigDecimal(1000));
 						String meterSerialNumber = mtnr.getString(0);
-						MpanCore mpanCore = MpanCore.getMpanCore(mloc
-								.getString(0).substring(0, 13));
 						String tmodStr = tmod.getString(0);
 						Integer tpr;
 						try {
@@ -197,8 +193,8 @@ public class BillConverterSseEdi implements BillConverter {
 												+ tmodStr + "'.");
 							}
 						}
-						reads.add(new LocalRegisterReadRaw(mpanCore.getSupply()
-								.findMeter(meterSerialNumber), coefficient,
+						reads.add(new LocalRegisterReadRaw(meterSerialNumber, mloc
+								.getString(0), coefficient,
 								Units.KWH, tpr, previousReadDate,
 								previousReadingValue, previousReadType,
 								registerFinishDate, presentReadingValue,
@@ -210,7 +206,7 @@ public class BillConverterSseEdi implements BillConverter {
 						Set<RegisterReadRaw> registerReads = new HashSet<RegisterReadRaw>();
 						for (LocalRegisterReadRaw read : reads) {
 							registerReads.add(new RegisterReadRaw(read
-									.getMeter(), read.getCoefficient(), read
+									.getMeterSerialNumber(), read.getMpanStr(), read.getCoefficient(), read
 									.getUnits(), read.getTpr(), read
 									.getPreviousDate(),
 									read.getPreviousValue(), read
@@ -264,7 +260,9 @@ public class BillConverterSseEdi implements BillConverter {
 	}
 
 	private class LocalRegisterReadRaw {
-		private Meter meter;
+		private String meterSerialNumber;
+		
+		private String mpanStr;
 
 		private BigDecimal coefficient;
 
@@ -284,12 +282,13 @@ public class BillConverterSseEdi implements BillConverter {
 
 		private ReadType currentType;
 
-		public LocalRegisterReadRaw(Meter meter, BigDecimal coefficient,
+		public LocalRegisterReadRaw(String meterSerialNumber, String mpanStr, BigDecimal coefficient,
 				Units units, Integer tpr, HhStartDate previousDate,
 				BigDecimal previousValue, ReadType previousType,
 				HhStartDate currentDate, BigDecimal currentValue,
 				ReadType currentType) throws InternalException {
-			this.meter = meter;
+			this.meterSerialNumber = meterSerialNumber;
+			this.mpanStr = mpanStr;
 			this.coefficient = coefficient;
 			this.units = units;
 			if (tpr == null) {
@@ -304,8 +303,12 @@ public class BillConverterSseEdi implements BillConverter {
 			this.currentType = currentType;
 		}
 
-		public Meter getMeter() {
-			return meter;
+		public String getMeterSerialNumber() {
+			return meterSerialNumber;
+		}
+
+		public String getMpanStr() {
+			return mpanStr;
 		}
 
 		public BigDecimal getCoefficient() {

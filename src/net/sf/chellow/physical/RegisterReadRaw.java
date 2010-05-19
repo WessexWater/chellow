@@ -30,7 +30,9 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 public class RegisterReadRaw extends MonadObject {
-	private Meter meter;
+	private String meterSerialNumber;
+	
+	private String mpanStr;
 
 	private int tpr;
 
@@ -50,13 +52,14 @@ public class RegisterReadRaw extends MonadObject {
 
 	private ReadType presentType;
 
-	public RegisterReadRaw(Meter meter, BigDecimal coefficient,
+	public RegisterReadRaw(String meterSerialNumber, String mpanStr, BigDecimal coefficient,
 			Units units, int tpr,
 			HhStartDate previousDate, BigDecimal previousValue,
 			ReadType previousType, HhStartDate presentDate,
 			BigDecimal presentValue, ReadType presentType) throws InternalException {
 		this.coefficient = coefficient;
-		this.meter = meter;
+		this.meterSerialNumber = meterSerialNumber;
+		this.mpanStr = mpanStr;
 		this.units = units;
 		this.tpr = tpr;
 		this.previousDate = previousDate;
@@ -70,9 +73,13 @@ public class RegisterReadRaw extends MonadObject {
 	public BigDecimal getCoefficient() {
 		return coefficient;
 	}
+	
+	public String getMpanStr() {
+		return mpanStr;
+	}
 
-	public Meter getMeter() {
-		return meter;
+	public String getMeterSerialNumber() {
+		return meterSerialNumber;
 	}
 
 	public Units getUnits() {

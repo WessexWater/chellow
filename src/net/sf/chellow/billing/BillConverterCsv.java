@@ -42,7 +42,6 @@ import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.UserException;
 import net.sf.chellow.monad.types.MonadDate;
 import net.sf.chellow.physical.HhStartDate;
-import net.sf.chellow.physical.Meter;
 import net.sf.chellow.physical.ReadType;
 import net.sf.chellow.physical.RegisterReadRaw;
 import net.sf.chellow.physical.Units;
@@ -99,8 +98,7 @@ public class BillConverterCsv implements BillConverter {
 		dateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
 	}
 
-	public List<RawBill> getRawBills() throws HttpException,
-			InternalException {
+	public List<RawBill> getRawBills() throws HttpException {
 		if (rawBills.isEmpty()) {
 			try {
 				for (String[] values = shredder.getLine(); values != null; values = shredder
@@ -113,15 +111,15 @@ public class BillConverterCsv implements BillConverter {
 					}
 					Set<RegisterReadRaw> reads = new HashSet<RegisterReadRaw>();
 					for (int i = 9; i < values.length; i += 11) {
-						reads.add(new RegisterReadRaw(Meter.getMeter(values[i]), new BigDecimal(
-								values[i + 1]), Units
-								.getUnits(values[i + 2]), Integer
-								.parseInt(values[i + 3]), new HhStartDate(
-								values[i + 4]), new BigDecimal(values[i + 5]),
-								ReadType.getReadType(values[i + 6]),
-								new HhStartDate(values[i + 7]),
-								new BigDecimal(values[i + 8]), ReadType
-										.getReadType(values[i + 9])));
+						reads.add(new RegisterReadRaw(values[i], values[i + 1], new BigDecimal(
+								values[i + 2]), Units
+								.getUnits(values[i + 3]), Integer
+								.parseInt(values[i + 4]), new HhStartDate(
+								values[i + 5]), new BigDecimal(values[i + 6]),
+								ReadType.getReadType(values[i + 7]),
+								new HhStartDate(values[i + 8]),
+								new BigDecimal(values[i + 9]), ReadType
+										.getReadType(values[i + 10])));
 					}
 					Set<String> mpanStrings = new HashSet<String>();
 					for (String mpanStr : values[2].split(",")) {

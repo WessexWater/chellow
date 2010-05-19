@@ -803,10 +803,6 @@ def year_md_095_site(data_source, finish, pw):
 def get_rate_script(date):
     return contract.rateScripts(date, date)[0]
 
-#below threshold in kVA, blocks in kVA are used
-
-threshold_blocks = [(15, 15), (100, 5), (250, 10), (500, 25), (1000, 50), (None, 100)]
-
 
 def hh(bill, hh_list, data_source):
     llfc_code = data_source.llfc_code
@@ -880,8 +876,6 @@ def hh(bill, hh_list, data_source):
         head_list = tail_list
 
 
-
-
 def month(bill, whole_data, data_source):
     bill.setdefault('duos-reactive-gbp', 0)
     
@@ -904,14 +898,15 @@ def month(bill, whole_data, data_source):
         bill.setdefault('duos-availability-gbp', 0)
         bill['duos-availability-agreed-kva'] = data_source.availability
 
-        for threshold, block in threshold_blocks:
-            if threshold is None or billed_avail < threshold and (billed_avail % block > 0):
-                billed_avail = (int(billed_avail / block) + 1) * block
+        for threshold, block in [(15, 15), (100, 5), (250, 10), (500, 25), (1000, 50), (None, 100)]:
+            if threshold is None or billed_avail < threshold:
+                if billed_avail % block > 0:
+                    billed_avail = (int(billed_avail / block) + 1) * block
                 break
         bill['duos-availability-billed-kva'] = billed_avail
         le_200_avail_rate = tariff['capacity-<=200-gbp-per-kva-per-month']
 
-        bill['duos-availability-gbp'] += min(200, billed_avail) * le_200_avail_rate 
+        bill['duos-availability-gbp'] += min(200, billed_avail) * le_200_avail_rate
 
         if billed_avail > 200:
             gt_200_avail_rate = tariff['capacity->200-gbp-per-kva-per-month']

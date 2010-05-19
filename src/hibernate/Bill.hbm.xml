@@ -51,6 +51,8 @@
 		<property name="type" type="string" column="type" not-null="true" />
 		<property type="string" name="reference" column="reference"
 			not-null="true" />
+		<property type="string" name="breakdown" column="breakdown"
+			not-null="true" />
 		<property type="boolean" name="isPaid" column="is_paid" />
 		<property type="boolean" name="isCancelledOut" column="is_cancelled_out"
 			not-null="true" />

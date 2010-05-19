@@ -30,8 +30,6 @@
 				<param name="sequence">register_read_id_sequence</param>
 			</generator>
 		</id>
-		<many-to-one name="meter" class="Meter" column="meter_id"
-			not-null="true" foreign-key="fkey_meter__register_read" />
 		<many-to-one name="bill"
 			class="net.sf.chellow.billing.Bill" column="bill_id"
 			not-null="true" foreign-key="fkey_bill__register_read" />
@@ -39,6 +37,7 @@
 			not-null="true">
 			<column name="coefficient" sql-type="numeric" />
 		</property>
+		<property name="meterSerialNumber" type="string" column="meter_serial_number" not-null="true" />
 		<many-to-one name="tpr" class="Tpr" column="tpr_id"
 			not-null="true" foreign-key="fkey_tpr__register_read" />
 		<component name="presentDate"

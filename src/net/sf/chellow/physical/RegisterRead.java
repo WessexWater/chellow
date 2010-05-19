@@ -41,7 +41,7 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
 public class RegisterRead extends PersistentEntity {
-	private Meter meter;
+	private String meterSerialNumber;
 
 	private Bill bill;
 
@@ -81,14 +81,14 @@ public class RegisterRead extends PersistentEntity {
 		setPresentDate(rawRead.getPresentDate());
 		setpresentValue(rawRead.getPresentValue());
 		setpresentType(rawRead.getPresentType());
-		setMeter(rawRead.getMeter());
+		setMeterSerialNumber(rawRead.getMeterSerialNumber());
 
 		if (previousType.getCode() != ReadType.TYPE_INITIAL) {
 			RegisterRead read = (RegisterRead) Hiber
 					.session()
 					.createQuery(
-							"from RegisterRead read where read.meter = :meter and read.presentDate.date = :readDate")
-					.setEntity("meter", getMeter()).setDate("readDate",
+							"from RegisterRead read where read.meterSerialNumber = :meterSerialNumber and read.presentDate.date = :readDate")
+					.setString("meterSerialNumber", getMeterSerialNumber()).setDate("readDate",
 							getPreviousDate().getDate()).uniqueResult();
 			if (read == null) {
 				bill.insertSnag(BillSnag.PREVIOUS_READ);
@@ -96,12 +96,12 @@ public class RegisterRead extends PersistentEntity {
 		}
 	}
 
-	public Meter getMeter() {
-		return meter;
+	public String getMeterSerialNumber() {
+		return meterSerialNumber;
 	}
 
-	void setMeter(Meter meter) {
-		this.meter = meter;
+	void setMeterSerialNumber(String meterSerialNumber) {
+		this.meterSerialNumber = meterSerialNumber;
 	}
 
 	public Bill getBill() {

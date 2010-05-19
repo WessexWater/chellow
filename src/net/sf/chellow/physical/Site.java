@@ -193,10 +193,13 @@ public class Site extends PersistentEntity {
 
 	public Supply insertSupply(Source source, GeneratorType generatorType,
 			String supplyName, HhStartDate startDate, HhStartDate finishDate,
-			GspGroup gspGroup, HhdcContract hhdcContract, String hhdcAccountReference, String meterSerialNumber,
-			String importMpanStr, Ssc importSsc, SupplierContract importSupplierContract, String importSupplierAccountReference,
-			Integer importAgreedSupplyCapacity, String exportMpanStr,
-			Ssc exportSsc, SupplierContract exportSupplierContract, String exportSupplierAccountReference,
+			GspGroup gspGroup, HhdcContract hhdcContract, String hhdcAccount,
+			String meterSerialNumber, String importMpanStr, Ssc importSsc,
+			SupplierContract importSupplierContract,
+			String importSupplierAccount, Integer importAgreedSupplyCapacity,
+			String exportMpanStr, Ssc exportSsc,
+			SupplierContract exportSupplierContract,
+			String exportSupplierAccountReference,
 			Integer exportAgreedSupplyCapacity) throws HttpException {
 		Supply supply = new Supply(supplyName, source, generatorType, gspGroup);
 		try {
@@ -220,10 +223,11 @@ public class Site extends PersistentEntity {
 		Map<Site, Boolean> siteMap = new HashMap<Site, Boolean>();
 		siteMap.put(this, true);
 		SupplyGeneration generation = supply.insertGeneration(siteMap,
-				startDate, hhdcContract, hhdcAccountReference, meterSerialNumber, importMpanStr,
-				importSsc, importSupplierContract, importSupplierAccountReference, importAgreedSupplyCapacity,
-				exportMpanStr, exportSsc, exportSupplierContract, exportSupplierAccountReference,
-				exportAgreedSupplyCapacity);
+				startDate, hhdcContract, hhdcAccount, meterSerialNumber,
+				importMpanStr, importSsc, importSupplierContract,
+				importSupplierAccount, importAgreedSupplyCapacity,
+				exportMpanStr, exportSsc, exportSupplierContract,
+				exportSupplierAccountReference, exportAgreedSupplyCapacity);
 		generation.update(generation.getStartDate(), finishDate);
 		Hiber.flush();
 		return supply;
@@ -593,10 +597,12 @@ public class Site extends PersistentEntity {
 				}
 				Supply supply = insertSupply(source, generatorType, name,
 						new HhStartDate(startDate).getNext(), null, gspGroup,
-						hhdcContract, hhdcAccountReference, meterSerialNumber, importMpanStr,
-						importSsc, importSupplierContract, importSupplierAccountReference,
-						importAgreedSupplyCapacity, exportMpanStr, exportSsc, exportSupplierContract,
-						exportSupplierAccountReference, exportAgreedSupplyCapacity);
+						hhdcContract, hhdcAccountReference, meterSerialNumber,
+						importMpanStr, importSsc, importSupplierContract,
+						importSupplierAccountReference,
+						importAgreedSupplyCapacity, exportMpanStr, exportSsc,
+						exportSupplierContract, exportSupplierAccountReference,
+						exportAgreedSupplyCapacity);
 				Hiber.flush();
 				if (hhdcContract != null) {
 					SupplyGeneration generation = supply.getGenerationFirst();

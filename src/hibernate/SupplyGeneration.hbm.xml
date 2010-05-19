@@ -34,8 +34,6 @@
 		</id>
 		<many-to-one name="supply" class="Supply" column="supply_id"
 			not-null="true" foreign-key="fkey_supply_generation_supply" />
-		<many-to-one name="meter" class="Meter" column="meter_id"
-			foreign-key="fkey_supply_generation_meter" />
 		<set name="siteSupplyGenerations" inverse="true" cascade="all,delete-orphan"
 			order-by="site_id">
 			<key column="supply_generation_id" />
@@ -63,6 +61,8 @@
 		</component>
 		<many-to-one name="pc" class="Pc" column="pc_id" not-null="true"
 			foreign-key="fkey_mpan__pc" />
+		<property type="string" name="meterSerialNumber" column="meter_serial_number"
+			not-null="true" />
 		<set name="mpans" inverse="true" lazy="true" cascade="all,delete-orphan">
 			<key column="supply_generation_id" />
 			<one-to-many class="Mpan" />

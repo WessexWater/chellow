@@ -79,8 +79,8 @@ public class Supply extends PersistentEntity {
 			GspGroup gspGroup = GspGroup.getGspGroup(gspGroupCode);
 			String startDateStr = GeneralImport.addField(csvElement,
 					"Start date", values, 5);
-			HhStartDate startDate = HhStartDate.roundUp(new MonadDate(startDateStr)
-					.getDate());
+			HhStartDate startDate = HhStartDate.roundUp(new MonadDate(
+					startDateStr).getDate());
 			String finishDateStr = GeneralImport.addField(csvElement,
 					"Finish date", values, 6);
 			HhStartDate finishDate = finishDateStr.trim().length() > 0 ? HhStartDate
@@ -90,7 +90,7 @@ public class Supply extends PersistentEntity {
 					"HHDC Contract", values, 7);
 			HhdcContract hhdcContract = hhdcContractName.length() == 0 ? null
 					: HhdcContract.getHhdcContract(hhdcContractName);
-			String hhdcAccountReference = GeneralImport.addField(csvElement,
+			String hhdcAccount = GeneralImport.addField(csvElement,
 					"HHDC Account", values, 8);
 			String hasImportKwhStr = GeneralImport.addField(csvElement,
 					"Has HH import kWh", values, 9);
@@ -104,7 +104,7 @@ public class Supply extends PersistentEntity {
 			String hasExportKvarhStr = GeneralImport.addField(csvElement,
 					"Has HH export kVArh", values, 12);
 			boolean hasExportKvarh = Boolean.parseBoolean(hasExportKvarhStr);
-			String meterSerialNumber = GeneralImport.addField(csvElement,
+			String  meterSerialNumber = GeneralImport.addField(csvElement,
 					"Meter Serial Number", values, 13);
 			String importMpanStr = GeneralImport.addField(csvElement,
 					"Import MPAN", values, 14);
@@ -117,7 +117,7 @@ public class Supply extends PersistentEntity {
 					csvElement, "Import Agreed Supply Capacity", values, 16);
 			String importSupplierContractName = GeneralImport.addField(
 					csvElement, "Import supplier contract name", values, 17);
-			String importSupplierAccountReference = GeneralImport
+			String importSupplierAccount = GeneralImport
 					.addField(csvElement, "Import supplier account reference",
 							values, 18);
 			if (importMpanStr != null && importMpanStr.length() != 0) {
@@ -138,7 +138,7 @@ public class Supply extends PersistentEntity {
 			Integer exportAgreedSupplyCapacity = null;
 			Ssc exportSsc = null;
 			String exportMpanStr = null;
-			String exportSupplierAccountReference = null;
+			String exportSupplierAccount = null;
 			if (values.length > 19) {
 				exportMpanStr = GeneralImport.addField(csvElement,
 						"Export MPAN", values, 19);
@@ -163,18 +163,18 @@ public class Supply extends PersistentEntity {
 							values, 22);
 					exportSupplierContract = SupplierContract
 							.getSupplierContract(exportSupplierContractName);
-					exportSupplierAccountReference = GeneralImport.addField(
-							csvElement, "Export supplier account reference",
+					exportSupplierAccount = GeneralImport.addField(
+							csvElement, "Export supplier account",
 							values, 23);
 				}
 			}
 			Supply supply = site.insertSupply(source, generatorType,
 					supplyName, startDate, finishDate, gspGroup, hhdcContract,
-					hhdcAccountReference, meterSerialNumber, importMpanStr,
+					hhdcAccount, meterSerialNumber, importMpanStr,
 					importSsc, importSupplierContract,
-					importSupplierAccountReference, importAgreedSupplyCapacity,
+					importSupplierAccount, importAgreedSupplyCapacity,
 					exportMpanStr, exportSsc, exportSupplierContract,
-					exportSupplierAccountReference, exportAgreedSupplyCapacity);
+					exportSupplierAccount, exportAgreedSupplyCapacity);
 			Hiber.flush();
 			SupplyGeneration generation = supply.getGenerationFirst();
 			if (hasImportKwh) {
@@ -250,8 +250,6 @@ public class Supply extends PersistentEntity {
 
 	private Set<MpanCore> mpanCores;
 
-	private Set<Meter> meters;
-
 	public Supply() {
 	}
 
@@ -260,7 +258,6 @@ public class Supply extends PersistentEntity {
 		setGenerations(new HashSet<SupplyGeneration>());
 		update(name, source, generatorType, gspGroup);
 		setMpanCores(new HashSet<MpanCore>());
-		setMeters(new HashSet<Meter>());
 	}
 
 	public void update(String name, Source source, GeneratorType generatorType,
@@ -324,14 +321,6 @@ public class Supply extends PersistentEntity {
 		this.mpanCores = mpanCores;
 	}
 
-	public Set<Meter> getMeters() {
-		return meters;
-	}
-
-	void setMeters(Set<Meter> meters) {
-		this.meters = meters;
-	}
-
 	public MpanCore addMpanCore(String mpanCore) throws HttpException {
 		MpanCore core = new MpanCore(this, mpanCore);
 		try {
@@ -342,18 +331,6 @@ public class Supply extends PersistentEntity {
 			throw new UserException("This MPAN core already exists.");
 		}
 		return core;
-	}
-
-	public Meter insertMeter(String meterSerialNumber) throws HttpException {
-		Meter meter = new Meter(this, meterSerialNumber);
-		try {
-			Hiber.session().save(meter);
-			meters.add(meter);
-			Hiber.flush();
-		} catch (ConstraintViolationException e) {
-			throw new UserException("This meter already exists.");
-		}
-		return meter;
 	}
 
 	public SupplyGeneration getGenerationOngoing() {
@@ -395,7 +372,8 @@ public class Supply extends PersistentEntity {
 	}
 
 	@SuppressWarnings("unchecked")
-	public List<SupplyGeneration> getGenerations(HhStartDate from, HhStartDate to) {
+	public List<SupplyGeneration> getGenerations(HhStartDate from,
+			HhStartDate to) {
 		List<SupplyGeneration> generations = null;
 		if (to == null) {
 			generations = (List<SupplyGeneration>) Hiber
@@ -439,10 +417,10 @@ public class Supply extends PersistentEntity {
 		HhdcContract existingHhdcContract = existingGeneration
 				.getHhdcContract();
 		String existingHhdcAccount = existingGeneration.getHhdcAccount();
+		String meterSerialNumber = existingGeneration.getMeterSerialNumber();
 		Mpan existingImportMpan = existingGeneration.getImportMpan();
 		Mpan existingExportMpan = existingGeneration.getExportMpan();
 		Map<Site, Boolean> existingSiteMap = new HashMap<Site, Boolean>();
-		Meter existingMeter = existingGeneration.getMeter();
 		for (SiteSupplyGeneration siteSupplyGeneration : existingGeneration
 				.getSiteSupplyGenerations()) {
 			existingSiteMap.put(siteSupplyGeneration.getSite(),
@@ -479,8 +457,7 @@ public class Supply extends PersistentEntity {
 					.getAgreedSupplyCapacity();
 		}
 		return insertGeneration(existingSiteMap, startDate,
-				existingHhdcContract, existingHhdcAccount,
-				existingMeter == null ? "" : existingMeter.getSerialNumber(),
+				existingHhdcContract, existingHhdcAccount, meterSerialNumber,
 				existingImportMpanStr, existingImportSsc,
 				existingImportSupplierContract, existingImportSupplierAccount,
 				existingImportSupplyCapacity, existingExportMpanStr,
@@ -488,8 +465,8 @@ public class Supply extends PersistentEntity {
 				existingExportSupplierAccount, existingExportSupplyCapacity);
 	}
 
-	public void updateGeneration(SupplyGeneration generation, HhStartDate start,
-			HhStartDate finish) throws HttpException {
+	public void updateGeneration(SupplyGeneration generation,
+			HhStartDate start, HhStartDate finish) throws HttpException {
 		generation = (SupplyGeneration) Hiber
 				.session()
 				.createQuery(
@@ -526,37 +503,30 @@ public class Supply extends PersistentEntity {
 	}
 
 	public SupplyGeneration insertGeneration(Map<Site, Boolean> siteMap,
-			HhStartDate startDate, HhdcContract hhdcContract, String hhdcAccount,
-			String meterSerialNumber, String importMpanStr, Ssc importSsc,
+			HhStartDate startDate, HhdcContract hhdcContract,
+			String hhdcAccount, String meterSerialNumber, String importMpanStr, Ssc importSsc,
 			SupplierContract importSupplierContract,
 			String importSupplierAccount, Integer importAgreedSupplyCapacity,
 			String exportMpanStr, Ssc exportSsc,
 			SupplierContract exportSupplierContract,
 			String exportSupplierAccount, Integer exportAgreedSupplyCapacity)
 			throws HttpException {
-		Meter meter = null;
-		if (meterSerialNumber.trim().length() != 0) {
-			meter = findMeter(meterSerialNumber);
-			if (meter == null) {
-				meter = insertMeter(meterSerialNumber);
-			}
-		}
 		SupplyGeneration supplyGeneration = null;
 		SupplyGeneration existingGeneration = null;
 		if (generations.isEmpty()) {
 			supplyGeneration = new SupplyGeneration(this, startDate, null,
-					hhdcContract, hhdcAccount, meter);
+					hhdcContract, hhdcAccount, meterSerialNumber);
 			Hiber.flush();
 			generations.add(supplyGeneration);
 			Hiber.flush();
 			supplyGeneration.update(supplyGeneration.getStartDate(),
 					supplyGeneration.getFinishDate(), supplyGeneration
 							.getHhdcContract(), supplyGeneration
-							.getHhdcAccount(), supplyGeneration.getMeter(),
-					importMpanStr, importSsc, importSupplierContract,
-					importSupplierAccount, importAgreedSupplyCapacity,
-					exportMpanStr, exportSsc, exportSupplierContract,
-					exportSupplierAccount, exportAgreedSupplyCapacity);
+							.getHhdcAccount(), importMpanStr, importSsc,
+					importSupplierContract, importSupplierAccount,
+					importAgreedSupplyCapacity, exportMpanStr, exportSsc,
+					exportSupplierContract, exportSupplierAccount,
+					exportAgreedSupplyCapacity);
 		} else {
 			existingGeneration = getGeneration(startDate);
 			if (existingGeneration == null) {
@@ -565,7 +535,7 @@ public class Supply extends PersistentEntity {
 			}
 			supplyGeneration = new SupplyGeneration(this, startDate,
 					existingGeneration.getFinishDate(), hhdcContract,
-					hhdcAccount, meter);
+					hhdcAccount, meterSerialNumber);
 			generations.add(supplyGeneration);
 			Hiber.flush();
 			for (Channel channel : existingGeneration.getChannels()) {
@@ -576,11 +546,11 @@ public class Supply extends PersistentEntity {
 			supplyGeneration.update(supplyGeneration.getStartDate(),
 					supplyGeneration.getFinishDate(), supplyGeneration
 							.getHhdcContract(), supplyGeneration
-							.getHhdcAccount(), supplyGeneration.getMeter(),
-					importMpanStr, importSsc, importSupplierContract,
-					importSupplierAccount, importAgreedSupplyCapacity,
-					exportMpanStr, exportSsc, exportSupplierContract,
-					exportSupplierAccount, exportAgreedSupplyCapacity);
+							.getHhdcAccount(), importMpanStr, importSsc,
+					importSupplierContract, importSupplierAccount,
+					importAgreedSupplyCapacity, exportMpanStr, exportSsc,
+					exportSupplierContract, exportSupplierAccount,
+					exportAgreedSupplyCapacity);
 			Hiber.flush();
 			existingGeneration.update(existingGeneration.getStartDate(),
 					startDate.getPrevious());
@@ -590,7 +560,6 @@ public class Supply extends PersistentEntity {
 		for (Map.Entry<Site, Boolean> entry : siteMap.entrySet()) {
 			supplyGeneration.attachSite(entry.getKey(), entry.getValue());
 		}
-		supplyGeneration.setMeter(meter);
 		Hiber.flush();
 		return supplyGeneration;
 	}
@@ -813,26 +782,6 @@ public class Supply extends PersistentEntity {
 		return isEqual;
 	}
 
-	public Meter findMeter(String meterSerialNumber) {
-		return (Meter) Hiber
-				.session()
-				.createQuery(
-						"from Meter meter where meter.supply = :supply and meter.serialNumber = :meterSerialNumber")
-				.setEntity("supply", this).setString("meterSerialNumber",
-						meterSerialNumber).uniqueResult();
-	}
-
-	Meter getMeter(String meterSerialNumber) throws HttpException,
-			InternalException {
-		Meter meter = findMeter(meterSerialNumber);
-		if (meter == null) {
-			throw new UserException("There isn't a meter with serial number "
-					+ meterSerialNumber + " attached to supply " + getId()
-					+ ".");
-		}
-		return meter;
-	}
-
 	@SuppressWarnings("unchecked")
 	public void delete() throws HttpException {
 		if (((Long) Hiber
@@ -868,7 +817,8 @@ public class Supply extends PersistentEntity {
 		Hiber.flush();
 	}
 
-	public void siteCheck(HhStartDate from, HhStartDate to) throws HttpException {
+	public void siteCheck(HhStartDate from, HhStartDate to)
+			throws HttpException {
 		// long now = System.currentTimeMillis();
 		for (SupplyGeneration generation : generations) {
 			generation.getChannel(true, true).siteCheck(from, to);

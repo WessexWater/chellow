@@ -39,8 +39,6 @@ import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.UserException;
 import net.sf.chellow.physical.HhStartDate;
-import net.sf.chellow.physical.Meter;
-import net.sf.chellow.physical.MpanCore;
 import net.sf.chellow.physical.ReadType;
 import net.sf.chellow.physical.RegisterReadRaw;
 import net.sf.chellow.physical.Units;
@@ -176,11 +174,8 @@ public class BillConverterBgbEdi implements BillConverter {
 									prrd.getInt(2))
 									.divide(new BigDecimal(1000));
 							String meterSerialNumber = mtnr.getString(0);
-							Meter meter = MpanCore.getMpanCore(
-									mloc.getString(0)).getSupply().findMeter(
-									meterSerialNumber);
 							int tpr = tmod.getInt(0);
-							reads.add(new LocalRegisterReadRaw(meter,
+							reads.add(new LocalRegisterReadRaw(meterSerialNumber, mloc.getString(0),
 									coefficient, Units.KWH, tpr,
 									previousReadDate, previousReadingValue,
 									previousReadType, registerFinishDate,
@@ -193,7 +188,7 @@ public class BillConverterBgbEdi implements BillConverter {
 						Set<RegisterReadRaw> registerReads = new HashSet<RegisterReadRaw>();
 						for (LocalRegisterReadRaw read : reads) {
 							registerReads.add(new RegisterReadRaw(read
-									.getMeter(), read.getCoefficient(), read
+									.getMeterSerialNumber(), read.getMpanStr(), read.getCoefficient(), read
 									.getUnits(), read.getTpr(), read
 									.getPreviousDate(),
 									read.getPreviousValue(), read
@@ -249,7 +244,9 @@ public class BillConverterBgbEdi implements BillConverter {
 	private class LocalRegisterReadRaw {
 		private BigDecimal coefficient;
 
-		private Meter meter;
+		private String meterSerialNumber;
+		
+		private String mpanStr;
 
 		private Units units;
 
@@ -267,12 +264,13 @@ public class BillConverterBgbEdi implements BillConverter {
 
 		private ReadType currentType;
 
-		public LocalRegisterReadRaw(Meter meter, BigDecimal coefficient,
+		public LocalRegisterReadRaw(String meterSerialNumber, String mpanStr, BigDecimal coefficient,
 				Units units, int tpr, HhStartDate previousDate,
 				BigDecimal previousValue, ReadType previousType,
 				HhStartDate currentDate, BigDecimal currentValue,
 				ReadType currentType) throws InternalException {
-			this.meter = meter;
+			this.meterSerialNumber = meterSerialNumber;
+			this.mpanStr = mpanStr;
 			this.coefficient = coefficient;
 			this.units = units;
 			this.tpr = tpr;
@@ -284,8 +282,12 @@ public class BillConverterBgbEdi implements BillConverter {
 			this.currentType = currentType;
 		}
 
-		public Meter getMeter() {
-			return meter;
+		public String getMeterSerialNumber() {
+			return meterSerialNumber;
+		}
+		
+		public String getMpanStr() {
+			return mpanStr;
 		}
 
 		public BigDecimal getCoefficient() {
