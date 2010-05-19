@@ -53,6 +53,7 @@ import net.sf.chellow.monad.MonadHandler;
 import net.sf.chellow.monad.types.EmailAddress;
 import net.sf.chellow.physical.Configuration;
 import net.sf.chellow.physical.GeneratorType;
+import net.sf.chellow.physical.ReadType;
 import net.sf.chellow.physical.Source;
 import net.sf.chellow.physical.User;
 import net.sf.chellow.physical.UserRole;
@@ -194,6 +195,23 @@ public class ContextListener implements ServletContextListener {
 		GeneratorType.insertGeneratorType("lm", "Load management.");
 		GeneratorType.insertGeneratorType("turb", "Water turbine.");
 		Hiber.commit();
+		ReadType.insertReadType('A', "Actual Change of Supplier Read");
+		ReadType.insertReadType('C', "Customer own read");
+		ReadType
+				.insertReadType('D',
+						"Deemed (Settlement Registers) or Estimated (Non-Settlement Registers)");
+		ReadType.insertReadType('F', "Final");
+		ReadType.insertReadType('I', "Initial");
+		ReadType.insertReadType('M', "MAR");
+		ReadType.insertReadType('O', "Old Supplier's Estimated CoS Reading");
+		ReadType.insertReadType('P', "Electronically collected via PPMIP");
+		ReadType.insertReadType('Q', "Meter Reading modified manually by DC");
+		ReadType.insertReadType('R', "Routine");
+		ReadType.insertReadType('S', "Special");
+		ReadType.insertReadType('T', "Proving Test Reading");
+		ReadType.insertReadType('W', "Withdrawn");
+		ReadType.insertReadType('Z', "Actual Change of Tenancy Read");
+		ReadType.insertReadType('E', "Estimate");
 
 		try {
 			Debug.print("Starting to load MDD.");
@@ -220,7 +238,7 @@ public class ContextListener implements ServletContextListener {
 
 			CopyManager cm = new CopyManager(baseConnection);
 			String[][] mddArray = { { "gsp_group", "GSP_Group" },
-					{ "read_type", "read_type" }, { "pc", "Profile_Class" },
+					{ "pc", "Profile_Class" },
 					{ "market_role", "Market_Role" },
 					{ "participant", "Market_Participant" },
 					{ "party", "Market_Participant_Role-party" },
@@ -260,7 +278,7 @@ public class ContextListener implements ServletContextListener {
 		} catch (NoSuchMethodException e) {
 			throw new InternalException(e);
 		}
-
+        Hiber.close();
 		DsoContract.loadFromCsv(context);
 		Report.loadReports(context);
 		NonCoreContract.loadNonCoreContracts(context);

@@ -80,6 +80,13 @@ public class ReadType extends PersistentEntity {
 		}
 		return getReadType(code.charAt(0));
 	}
+	
+	static public ReadType insertReadType(char code, String description) throws HttpException {
+		ReadType readType = new ReadType(code, description);
+		Hiber.session().save(readType);
+		Hiber.flush();
+		return readType;
+	}
 
 	private char code;
 	private String description;

@@ -55,9 +55,7 @@
 									</a>
 								</td>
 								<td>
-									<xsl:if test="party">
-										<xsl:value-of select="party/@name" />
-									</xsl:if>
+									<xsl:value-of select="concat(dso/@name, provider/@name)" />
 								</td>
 							</tr>
 						</xsl:for-each>
@@ -108,7 +106,7 @@
 								</input>
 								Viewer
 							</label>
-							<br/>
+							<br />
 							<label>
 								<input type="radio" name="user-role-id" value="2">
 									<xsl:if

@@ -1,506 +1,506 @@
-"Chellow Id","Market Participant Role Code Id","Market Participant Chellow Id","Address Line 1","Effective From Date {MPR}","Effective To Date {MPR}"
-1,3,2,"G4S Utility Services (UK) Ltd","19/12/2003",
-2,4,2,"G4S Utility Services (UK) Ltd","12/10/2007",
-3,6,2,"G4S Utility Services (UK) Ltd","29/10/1999",
-4,8,2,"G4S Utility Services (UK) Ltd","29/10/1999",
-5,17,2,"G4S Utility Services (UK) Ltd","12/10/2007",
-6,26,4,"Actaris UK Limited","20/02/2004",
-7,28,6,"11 Fenlock Court","03/05/2000","31/07/2003"
-8,29,8,"West Nash","05/06/2000",
-9,28,9,"33 Grosvenor Place","17/12/1999","19/01/2007"
-10,28,10,"33 Grosvenor Place","17/12/1999","09/02/2007"
-11,28,11,"33 Grosvenor Place","17/12/1999","17/11/2006"
-12,28,12,"33 Grosvenor Place","17/12/1999","09/02/2007"
-13,3,13,"ORSIS UK (Ltd)","02/09/2008",
-14,4,13,"Orsis UK (Ltd)","09/11/2007",
-15,28,14,"Oxford Centre for Innovation","05/11/2004","10/08/2007"
-16,28,16,"21 Tothill St.","03/05/2000","24/01/2003"
-17,28,18,"Barnett Way","03/05/2000","23/05/2003"
-18,28,19,"British Gas Trading Ltd","01/04/1996",
-19,28,21,"British Gas Trading Ltd","07/07/2000",
-20,3,22,"BGlobal Metering Limited","19/12/2003",
-21,4,22,"BGlobal Metering Limited","19/12/2003",
-22,6,22,"BGlobal Metering Limited","19/12/2003",
-23,8,22,"BGlobal Metering Limited","19/12/2003",
-24,17,22,"BGlobal Metering Limited","01/07/2006",
-25,28,24,"Electricity Plus Supply Ltd","05/11/2004",
-26,29,25,"Eggborough Power Ltd","28/03/2000",
-27,30,27,"1 Embankment Place","01/04/1996",
-28,4,28,"Ocean Park House","25/03/2005",
-29,17,28,"Connect Utilities Ltd","25/03/2005",
-30,28,29,"Welton Gathering Centre","01/04/1996","20/08/1999"
-31,11,30,"Logica UK Limited","01/04/1996",
-32,25,30,"Logica UK Limited","01/04/1996",
-33,17,31,"PO BOX 56","01/04/1996","07/12/2007"
-34,29,32,"C/o InterGen (UK) Ltd","11/08/2000",
-35,28,34,"Manor Court","19/11/1999","29/04/2005"
-36,28,35,"c/o E.ON UK plc","01/04/1996",
-37,28,36,"Cinergy House","28/03/2000","29/04/2005"
-38,29,37,"Cinergy House","05/06/2000","29/04/2005"
-39,28,41,"Candela Energy Supply Limited","18/11/2009",
-40,28,42,"Cherwell Energy ltd","05/11/2004",
-41,28,43,"c/o Gilmond Consulting Ltd","12/06/2009",
-42,28,46,"Reuben Power Supply Limited","01/01/2007",
-43,4,47,"Dummy ID for Customers","14/03/2003",
-44,29,48,"c/o Entergy Power Group","28/03/2000",
-45,5,49,"Siemens Metering Services","01/04/1996",
-46,7,49,"Siemens Metering Services","01/04/1996",
-47,17,49,"Siemens Metering Services","01/04/1996",
-48,7,50,"Chancery House","01/04/1996","07/12/2007"
-49,8,50,"Chancery House","01/04/1996","07/12/2007"
-50,29,51,"Windmill Hill Business Park","03/05/2000",
-51,29,54,"Wherstead Business Park","10/11/2000","09/03/2007"
-52,29,55,"Windmill Hill Business Park","20/08/1999",
-53,28,56,"Dual Energy Direct Limited","17/02/2010",
-54,13,57,"30 Millbank","01/04/1996",
-55,15,57,"30 Millbank","01/04/1996","04/06/2004"
-56,28,58,"BES Commercial Electricity Ltd","18/11/2009",
-57,3,128,"First Floor","01/09/2006",
-58,26,128,"First Floor","01/09/2006",
-59,28,129,"The Communication Building","21/01/2000","16/03/2001"
-60,28,130,"Templar House","03/05/2000","16/03/2001"
-61,1,131,"ESP Electricity Limited","02/09/2008",
-62,14,131,"ESP Electricity Ltd","22/12/2006",
-63,20,131,"ESP Electricity Ltd","01/04/2005",
-64,22,131,"ESP Electricity Ltd","01/04/2005",
-65,1,132,"EDF Energy Networks","29/01/1999",
-66,3,132,"EDF Energy Customer Field Services","18/11/2009",
-67,4,132,"EDF Energy Network (LPN) plc","17/04/2003",
-68,5,132,"Energy Services","01/04/1996","09/03/1999"
-69,6,132,"EDF Energy Customer Field Services","01/04/1996",
-70,7,132,"Energy Services","01/04/1996","09/03/1999"
-71,8,132,"EDF Energy Customer Field Services","01/04/1996",
-72,14,132,"EDF Energy Network (LPN) plc","01/04/1996",
-73,17,132,"EDF Energy Customer Field Services","01/04/1996",
-74,20,132,"EDF Energy Network (LPN) plc","01/04/1996",
-75,22,132,"EDF Energy Network (LPN) plc","01/04/1996",
-76,26,132,"Gadeon House","01/04/1996",
-77,27,132,"EDF Energy Customer Field Services","01/04/1996",
-78,28,132,"EDF Energy","01/04/1996",
-79,28,133,"Lumen Energy Supply Limited","18/11/2009",
-80,28,134,"MA Energy Ltd","19/08/2009",
-81,29,135,"Berkeley Centre","22/02/2002","07/12/2007"
-82,28,136,"P O Box 177","11/08/2000","16/03/2001"
-83,29,136,"P O Box 177","11/08/2000",
-84,1,137,"SP Manweb Plc","13/11/1998",
-85,2,137,"SP Dataserve Ltd","13/11/1998",
-86,4,137,"SP Manweb Plc","29/05/2003",
-87,6,137,"SP Dataserve Ltd","01/04/1996",
-88,8,137,"SP Dataserve Ltd","01/04/1996",
-89,13,137,"SP Manweb Plc","13/11/1998",
-90,14,137,"SP Manweb Plc.","01/04/1996",
-91,17,137,"SP Dataserve Ltd","01/04/1996",
-92,20,137,"SP Manweb Plc.","01/04/1996",
-93,22,137,"SP Manweb Plc","01/04/1996",
-94,26,137,"Scottish Power Energy Retail Ltd","13/11/1998",
-95,27,137,"SP Dataserve Ltd","01/04/1996",
-96,28,137,"Scottish Power Energy Retail Ltd","01/04/1996",
-97,28,138,"Temple Chambers","20/10/2000","04/03/2005"
-98,3,140,"E.ON UK Energy Services Limited","25/07/2003",
-99,3,141,"E.ON UK Energy Services Limited","25/07/2003",
-100,3,142,"Metering Services Ltd","25/07/2003",
-101,4,143,"Metering Services Ltd","29/05/2003",
-102,3,144,"E.ON UK Energy Services Limited","25/07/2003",
-103,28,145,"33 Grosvenor Place","17/12/1999","19/01/2007"
-104,1,146,"Midlands Electricity plc","09/11/1998",
-105,2,146,"Midlands Electricity plc","09/11/1998","02/12/2008"
-106,4,146,"E.ON UK Energy Services Limited","17/04/2003",
-107,5,146,"Midlands Electricity plc","01/04/1996","13/07/1999"
-108,5,146,"E.ON UK Energy Services Limited","09/08/2002",
-109,6,146,"E.ON UK Energy Services Limited","01/04/1996",
-110,7,146,"Midlands Electricity plc","01/04/1996","13/07/1999"
-111,7,146,"E.ON UK Energy Services Limited","09/08/2002",
-112,8,146,"E.ON UK Energy Services Limited","01/04/1996",
-113,14,146,"Midlands Electricity plc","09/11/1998",
-114,17,146,"E.ON UK Energy Services Limited","01/04/1996",
-115,20,146,"Midlands Electricity plc","01/04/1996",
-116,22,146,"Central Networks West Plc","01/04/1996",
-117,26,146,"National Power (Energy Co.) Limited","01/04/1996",
-118,27,146,"Midlands Electricity plc","09/11/1998",
-119,28,146,"NPOWER LTD","01/04/1996",
-120,29,146,"Midlands Electricity plc","09/11/1998",
-121,4,147,"Macquarie Leasing Limited","17/03/2010",
-122,3,149,"Avonbank","25/07/2003","05/04/2007"
-123,28,150,"MSCGI c/o Morgan Stanley & Co.  Int. Ltd","01/04/2006",
-124,4,151,"NPOWER LTD","25/07/2003",
-125,17,151,"NPOWER LTD","19/08/2009",
-126,28,151,"Npower Ltd","01/04/1996",
-127,1,152,"NORTHERN ELECTRIC DISTRIBUTION LIMITED","24/03/2006",
-128,4,152,"Northern Electric Distribution Ltd","17/04/2003",
-129,5,152,"NPower Northern Ltd","01/04/1996",
-130,6,152,"Npower Northern Ltd","01/04/1996",
-131,7,152,"Npower Northern Ltd","01/04/1996",
-132,8,152,"NPower Northern Ltd","01/04/1996",
-133,14,152,"Northern Electric Distribution Ltd","01/10/1998",
-134,17,152,"Northern Electric Distribution Ltd","01/04/1996",
-135,20,152,"Northern Electric Distribution Ltd","01/04/1996",
-136,22,152,"Northern Electric Distribution Ltd","01/04/1996",
-137,26,152,"Carliol House","01/10/1998",
-138,27,152,"Carliol House","01/10/1998",
-139,28,152,"Npower Northern Supply Ltd","01/04/1996",
-140,28,153,"British Energy Direct Limited","01/04/1996",
-141,29,153,"British Energy Generation Ltd","09/07/2004",
-142,24,157,"185 Park Street","01/04/1996",
-143,29,159,"Windmill Hill Business Park","28/03/2000",
-144,28,160,"Bridge House","01/04/1996","28/03/2000"
-145,1,161,"Electricity North West Limited","13/11/1998",
-146,2,161,"110 Wellington Rd","13/11/1998",
-147,4,161,"Dawson House","17/04/2003",
-148,6,161,"E.ON UK Energy Services Limited","01/04/1996",
-149,8,161,"E.ON UK Energy Services Limited","01/04/1996",
-150,14,161,"Lingley Green Avenue","13/11/1998",
-151,17,161,"United Utilities Plc","01/04/1996",
-152,20,161,"Manchester Rd","01/04/1996",
-153,22,161,"Electricity North West Limited","01/04/1996",
-154,26,161,"Manchester Rd","13/11/1998",
-155,27,161,"Hartington Road","13/11/1998",
-156,28,161,"E.ON Energy Ltd","01/04/1996",
-157,26,162,"INNOGY Plc","11/01/2008",
-158,29,162,"Windmill Hill Business Park","03/05/2000",
-159,29,163,"Windmill Hill Business Park","28/03/2000",
-160,28,164,"Nuclear Decommissioning Authority Ltd","01/04/1996",
-161,28,165,"British Gas Trading Ltd","25/07/2003",
-162,17,166,"OnStream","12/06/2009",
-163,3,167,"UMS Ltd (trading as OnStream)","22/12/2006",
-164,4,167,"UMS Ltd (trading as OnStream)","22/12/2006",
-165,6,167,"UMS Ltd (trading as OnStream)","14/01/2009",
-166,8,167,"UMS Ltd (trading as OnStream)","14/01/2009",
-167,17,167,"UMS Ltd (trading as OnStream)","22/12/2006",
-168,3,168,"35 Homer Road","18/11/2005",
-169,4,168,"35 Homer Road","23/05/2003",
-170,17,168,"Utility Metering Services Ltd","23/05/2003","17/03/2010"
-171,28,169,"OVO Energy","19/08/2009",
-172,28,170,"Opus Energy Limited","09/08/2002",
-173,22,195,"EDF Energy Network (SPN) plc","01/04/1996",
-174,26,195,"Gadeon House","23/04/1999",
-175,28,195,"EDF Energy","01/04/1996",
-176,28,196,"Sempra Energy Europe Limited","01/08/2006",
-177,17,197,"Scottish and Southern Energy PLC","28/07/2006","06/10/2006"
-178,11,198,"SESL","01/04/1996",
-179,12,198,"SESL","01/04/1996",
-180,29,198,"SESL","09/11/1998",
-181,28,199,"Downstream Procurement","01/04/1996","16/03/2001"
-182,3,200,"Siemens Metering Services","19/08/2009",
-183,4,200,"Siemens Energy Services Ltd","23/05/2003",
-184,6,200,"Siemens Metering Services","20/06/2003",
-185,8,200,"Siemens Metering Services","20/06/2003",
-186,17,200,"Siemens Metering Services","20/06/2003",
-187,26,200,"Hortonwood 30","19/10/2001",
-188,28,201,"342 Edinburgh Avenue","01/04/1996","16/03/2001"
-189,28,202,"SmartestEnergy Limited","14/11/2003",
-190,28,203,"SmartestEnergy Limited","18/01/2002",
-191,1,205,"Scottish And Southern Energy PLC","29/01/1999",
-192,2,205,"Scottish And Southern Energy PLC","29/01/1999",
-193,4,205,"Scottish And Southern Energy PLC","17/04/2003",
-194,5,205,"Southern Electric House","01/04/1996","09/03/1999"
-195,6,205,"Scottish And Southern Energy PLC","01/04/1996",
-196,7,205,"Southern Electric House","01/04/1996","09/03/1999"
-197,8,205,"Scottish And Southern Energy PLC","01/04/1996",
-198,14,205,"Scottish And Southern Energy PLC","01/04/1996",
-199,17,205,"Scottish And Southern Energy PLC","01/04/1996",
-200,20,205,"Scottish And Southern Energy PLC","01/04/1996",
-201,22,205,"Southern Electric Power Distribution Plc","01/04/1996",
-202,26,205,"Scottish And Southern Energy PLC","01/04/1996",
-203,27,205,"Scottish And Southern Energy PLC","01/04/1996",
-204,28,205,"Scottish And Southern Energy PLC","01/04/1996",
-205,1,206,"SP Distribution Ltd","13/11/1998",
-206,2,206,"SP Dataserve Ltd","13/11/1998",
-207,4,206,"SP Distribution Ltd","29/05/2003",
-208,5,206,"SP Dataserve Ltd","01/04/1996",
-209,6,206,"SP Dataserve Ltd","01/04/1996",
-210,7,206,"SP Dataserve Ltd","01/04/1996",
-211,8,206,"SP Dataserve Ltd","01/04/1996",
-212,9,206,"SP Energy Trading Ltd","01/04/1996",
-213,13,206,"SP Distribution Ltd","13/11/1998",
-214,14,206,"SP Distribution Ltd","01/04/1996",
-215,17,206,"SP Dataserve Ltd","01/04/1996",
-216,18,206,"SP Distribution Ltd","01/04/1996",
-217,19,206,"SP Distribution Ltd","01/04/1996",
-218,20,206,"SP Distribution Ltd","01/04/1996",
-219,21,206,"SP Distribution Ltd","01/04/1996",
-220,22,206,"SP Distribution Ltd","01/04/1996",
-221,24,206,"SP Transmission Ltd","01/04/1996",
-222,26,206,"Scottish Power Energy Retail Ltd","13/11/1998",
-223,27,206,"SP Dataserve Ltd","01/04/1996",
-224,28,206,"Scottish Power Energy Retail Ltd","01/04/1996",
-225,29,206,"1 Atlantic Quay","01/04/1996",
-226,28,207,"Spark Energy Supply Ltd","11/01/2008",
-227,3,208,"Stark Software","29/04/2005",
-228,5,208,"Stark Software International Ltd","20/07/2001",
-229,6,208,"Stark Software International","11/05/2009",
-230,7,208,"Stark Software International Ltd","20/07/2001",
-231,8,208,"Stark Software International","11/05/2009",
-232,30,209,"4-6 Church Walk","01/04/1996",
-233,1,210,"Western Power Distribution - South Wales","09/11/1998",
-234,2,210,"Western Power Distribution - South Wales","09/11/1998",
-235,4,210,"Western Power Distribution (South Wales)","17/04/2003","09/11/2007"
-236,6,210,"Western Power Distribution - South Wales","01/04/1996","28/02/2007"
-237,8,210,"Western Power Distribution - South Wales","01/04/1996","31/03/2004"
-238,14,210,"Western Power Distribution - South Wales","09/11/1998",
-239,17,210,"Western Power Distribution - South Wales","01/04/1996","07/09/2007"
-240,20,210,"Western Power Distribution - South Wales","01/04/1996",
-241,22,210,"Western Power Distribution - South Wales","01/04/1996",
-242,26,210,"Newport Road","09/11/1998",
-243,27,210,"Western Power Distribution - South Wales","09/11/1998",
-244,28,210,"Scottish & Southern Energy Plc","01/04/1996",
-245,1,211,"Western Power Distribution","01/10/1998",
-246,2,211,"Western Power Distribution","01/10/1998",
-247,3,211,"EDF Energy Customer Field Services","18/11/2009",
-248,4,211,"Western Power Distribution ( South West)","17/04/2003","09/11/2007"
-249,6,211,"EDF Energy Customer Field Services","01/04/1996",
-250,8,211,"EDF Energy Customer Field Services","01/04/1996",
-251,14,211,"Western Power Distribution","27/11/1998",
-252,17,211,"Western Power Distribution","01/04/1996",
-253,20,211,"Western Power Distribution","01/04/1996",
-254,22,211,"Western Power Distribution","01/04/1996",
-255,26,211,"Gadeon House","27/11/1998",
-256,27,211,"Gadeon House","27/11/1998",
-257,28,211,"EDF Energy","01/04/1996",
-258,28,214,"The Team Group of Companies UK Limited","20/02/2004",
-259,28,216,"Total Gas and Power Ltd","20/10/2000",
-260,28,217,"Power4All Limited","07/12/2007",
-261,3,218,"TruRead Limited","07/10/2008",
-262,3,219,"Utility Data Management Services","14/01/2009",
-263,5,219,"UDMS","05/04/2007",
-264,6,219,"UDMS","01/09/2006",
-265,7,219,"UDMS","05/04/2007",
-266,8,219,"Utility Data Management Services","14/01/2009",
-267,3,220,"Harston Mills Campus","10/02/2006",
-268,4,220,"17 High Street","19/09/2003",
-269,3,221,"Scorpio","01/09/2006",
-270,4,221,"IMServ Europe Ltd","01/08/2003",
-271,5,221,"IMServ Europe Ltd","01/04/1996",
-272,6,221,"IMServ Europe Ltd","01/05/2005",
-273,7,221,"IMServ Europe Ltd","01/04/1996",
-274,8,221,"IMServ Europe Ltd","01/05/2005",
-275,10,221,"Scorpio","01/04/1996",
-276,15,221,"IMServ Europe Ltd","05/06/2004",
-277,17,221,"IMServ Europe Ltd","01/05/2005",
-278,23,221,"Scorpio","01/04/1996",
-279,28,223,"The Havens","20/08/1999","10/12/2004"
-280,3,225,"PRI House","06/10/2006",
-281,4,225,"PRI House","17/11/2006",
-282,17,225,"Utilita Meter Operations Ltd","05/04/2007",
-283,26,225,"PRI House","06/10/2006",
-284,3,226,"Utility Partnership Ltd","12/10/2007",
-285,4,226,"Utility Partnership Ltd","01/04/2009",
-286,6,226,"Utility Partnership Ltd","11/03/2008",
-287,8,226,"Utility Partnership Ltd","11/03/2008",
-288,17,226,"Utility Partnership Ltd","01/04/2009",
-289,30,227,"9A Margaret Street","25/05/2001",
-290,4,228,"United Utilities","13/07/2007",
-291,4,229,"Meter Fit Ltd","23/05/2003",
-292,17,229,"United Utilities Networks Ltd","17/04/2003",
-293,28,230,"Volt Energy Supply Limited","18/11/2009",
-294,29,231,"Wherstead Business Park","10/11/2000",
-295,28,232,"33 Grosvenor Place","17/12/1999","19/01/2007"
-296,3,234,"Avonbank","20/06/2003","25/07/2003"
-297,4,235,"Western Power Distribution","19/03/2004",
-298,4,236,"Western Power Distribution (South West)","17/04/2003",
-299,4,237,"Western Power Distribution (South Wales)","17/04/2003",
-300,28,238,"16 Avon Reach","09/06/1999","14/01/2009"
-301,29,238,"16 Avon Reach","04/06/2004",
-302,28,239,"1 Atlantic Quay","01/04/1996","01/04/1999"
-303,28,240,"1 Atlantic Quay","01/04/1996","01/04/1999"
-304,1,241,"YORKSHIRE ELECTRICITY DISTRIBUTION PLC","24/03/2006",
-305,3,241,"Npower Yorkshire Ltd","19/12/2003",
-306,4,241,"Yorkshire Electricity Distribution PLC","17/04/2003",
-307,6,241,"Npower Yorkshire Ltd","01/04/1996",
-308,8,241,"Npower Yorkshire Ltd","01/04/1996",
-309,14,241,"Yorkshire Electricity Distribution PLC","01/04/1996",
-310,17,241,"Yorkshire Electricity Distribution PLC","01/04/1996",
-311,20,241,"Yorkshire Electricity Distribution PLC","01/04/1996",
-312,22,241,"Yorkshire Electricity Distribution PLC","01/04/1996",
-313,26,241,"Wetherby Road","01/04/1996",
-314,27,241,"Wetherby Road","01/04/1996",
-315,28,241,"NPOWER YORKSHIRE SUPPLY LTD","01/04/1996",
-316,28,242,"1 Atlantic Quay","01/04/1996","01/04/1999"
-317,28,243,"1 Atlantic Quay","01/04/1996","01/04/1999"
-318,28,244,"1 Atlantic Quay","01/04/1996","01/04/1999"
-319,28,245,"1 Atlantic Quay","01/04/1996","01/04/1999"
-320,28,246,"1 Atlantic Quay","01/04/1996","01/04/1999"
-321,28,247,"1 Atlantic Quay","01/04/1996","01/04/1999"
-322,28,248,"1 Atlantic Quay","01/04/1996","01/04/1999"
-323,28,249,"1 Atlantic Quay","01/04/1996","01/04/1999"
-324,28,250,"1 Atlantic Quay","01/04/1996","01/04/1999"
-325,28,251,"1 Atlantic Quay","01/04/1996","01/04/1999"
-326,28,252,"1 Atlantic Quay","01/04/1996","01/04/1999"
-327,28,253,"1 Atlantic Quay","01/04/1996","01/04/1999"
-328,28,254,"1 Atlantic Quay","01/04/1996","01/04/1999"
-329,28,255,"1 Atlantic Quay","01/04/1996","01/04/1999"
-330,28,256,"1 Atlantic Quay","01/04/1996","01/04/1999"
-331,28,257,"1 Atlantic Quay","01/04/1996","01/04/1999"
-332,28,258,"1 Atlantic Quay","01/04/1996","01/04/1999"
-333,28,259,"Inveralmond House","01/04/1996","01/04/1999"
-334,28,260,"Inveralmond House","01/04/1996","01/04/1999"
-335,28,261,"Inveralmond House","01/04/1996","01/04/1999"
-336,28,262,"Inveralmond House","01/04/1996","01/04/1999"
-337,28,263,"Inveralmond House","01/04/1996","01/04/1999"
-338,28,264,"Inveralmond House","01/04/1996","01/04/1999"
-339,28,265,"Inveralmond House","01/04/1996","01/04/1999"
-340,28,266,"Inveralmond House","01/04/1996","01/04/1999"
-341,28,267,"Inveralmond House","01/04/1996","01/04/1999"
-342,28,268,"Inveralmond House","01/04/1996","01/04/1999"
-343,28,269,"Inveralmond House","01/04/1996","01/04/1999"
-344,28,270,"Inveralmond  House","09/11/1998","01/04/1999"
-345,28,271,"Inveralmond House","01/04/1996","01/04/1999"
-346,28,272,"Inveralmond House","01/04/1996","01/04/1999"
-347,5,273,"Scorpio","07/07/2000",
-348,28,274,"Inveralmond House","01/04/1996","01/04/1999"
-349,6,275,"Dummy NHHDA for Eastern","01/04/1996","12/06/2009"
-350,6,276,"Dummy NHHDA for East Midlands","01/04/1996","12/06/2009"
-351,6,277,"Dummy NHHDA for London","01/04/1996","12/06/2009"
-352,6,278,"Dummy NHHDA for Manweb","01/04/1996","12/06/2009"
-353,6,279,"Dummy NHHDA for Midlands","01/04/1996","12/06/2009"
-354,6,280,"Dummy NHHDA for Northern","01/04/1996","12/06/2009"
-355,6,281,"Dummy NHHDA for Norweb","01/04/1996","12/06/2009"
-356,6,282,"Dummy NHHDA for Southern","01/04/1996","12/06/2009"
-357,6,283,"Dummy NHHDA for Seeboard","01/04/1996","12/06/2009"
-358,6,284,"Dummy NHHDA for SWALEC","01/04/1996","12/06/2009"
-359,6,285,"Dummy NHHDA for SWEB","01/04/1996","12/06/2009"
-360,6,286,"Dummy NHHDA for Yorkshire","01/04/1996","12/06/2009"
-361,28,59,"British Gas Trading Ltd","04/03/2005",
-362,28,60,"Energy Co2 Limited","04/03/2005",
-363,16,61,"C&C Group Holdings Ltd","10/02/2006",
-364,28,62,"Reuben Power Supply Limited","21/01/2000",
-365,28,63,"Renewable Energy Company Ltd","13/09/2002",
-366,4,64,"54 Bengeworth Road","17/04/2003",
-367,4,66,"EDF Energy Customer Field Service","28/06/2008",
-368,1,67,"EDF Energy (IDNO) Ltd","16/04/2009",
-369,14,67,"EDF Energy (IDNO) Ltd","16/04/2009",
-370,20,67,"EDF Energy (IDNO) Ltd","16/04/2009",
-371,22,67,"EDF Energy (IDNO) Ltd","16/04/2009",
-372,27,67,"EDF Energy Customer Field Services","16/04/2009",
-373,28,68,"Electricity Direct (UK)","01/04/1996",
-374,1,70,"EDF Energy Networks","01/04/1996",
-375,2,70,"Wherstead Park","01/04/1996",
-376,3,70,"Siemens Metering Services","30/04/2004",
-377,4,70,"EDF Energy Networks","17/04/2003",
-378,6,70,"Siemens Metering Services","01/04/1996",
-379,8,70,"Siemens Metering Services","01/04/1996",
-380,14,70,"EDF Energy Network (EPN) plc","01/04/1996",
-381,17,70,"EDF Energy Networks","01/04/1996",
-382,20,70,"EDF Energy Network (EPN) plc","01/04/1996",
-383,22,70,"EDF Energy Network (EPN) plc","01/04/1996",
-384,26,70,"Wherstead Park","01/04/1996",
-385,27,70,"Wherstead Park","01/04/1996",
-386,28,70,"E.ON Energy Ltd","01/04/1996",
-387,28,71,"E.ON Energy Ltd","17/08/1998",
-388,29,72,"Landsdowne House","20/08/1999",
-389,28,73,"Eledor Limited","22/11/2002","01/09/2006"
-390,1,75,"Central Networks East","09/11/1998",
-391,2,75,"Siemens Metering Services","09/11/1998",
-392,3,75,"Siemens Energy Services Ltd","30/04/2004",
-393,4,75,"E.ON UK Energy Services Limited","29/05/2003",
-394,6,75,"E.ON UK Energy Services Limited","01/04/1996",
-395,8,75,"E.ON UK Energy Services Limited","01/04/1996",
-396,14,75,"SFIC Management","09/11/1998",
-397,17,75,"E.ON UK Energy Services Limited","01/04/1996",
-398,20,75,"PES Registration Agent","01/04/1996",
-399,22,75,"Central Networks East Plc","01/04/1996",
-400,26,75,"Powergen Energy plc","09/03/1999",
-401,27,75,"Revenue Protection Service","09/11/1998",
-402,28,75,"E.ON Energy Ltd","01/04/1996",
-403,29,76,"Wherstead park","07/07/2000",
-404,28,78,"Energy Data Company Limited","10/12/2004",
-405,28,79,"Eneco Energy Trade BV","17/03/2010",
-406,3,80,"Energy Assets Ltd","09/03/2007",
-407,28,81,"British Gas Trading Ltd","01/04/1996",
-408,28,82,"4 Millbank","01/04/1996","16/03/2001"
-409,10,83,"The National Grid Company Building","01/04/1996",
-410,28,84,"Trafford Plaza","09/08/2002",
-411,28,85,"The Havens","01/04/1996","20/08/1999"
-412,23,86,"Fairham House","01/04/1996",
-413,4,87,"Westwood Way","01/07/2006",
-414,17,87,"Eon UK Energy Services Ltd","28/07/2006",
-415,28,88,"36 Park Road","17/10/2003","05/11/2004"
-416,1,90,"Electricity Network Company","05/02/2008",
-417,4,90,"Energy House","26/05/2006",
-418,14,90,"Energy House","26/05/2006",
-419,17,90,"Energy House","26/05/2006",
-420,20,90,"Energy House","26/05/2006",
-421,22,90,"The Electricity Network Company Ltd","26/05/2006",
-422,29,91,"Wilton","20/08/1999",
-423,28,96,"101, Wigmore Street,","03/05/2000","09/03/2007"
-424,28,97,"IPM Energy Retail Ltd","07/12/2007",
-425,28,98,"First Utility Ltd","01/12/2005",
-426,4,99,"19 South Audley Street","06/10/2006",
-427,29,100,"GUS Building","03/05/2000",
-428,28,101,"Utilita Electricity Limited","04/06/2004",
-429,28,102,"The Gas Light & Coke Company","16/02/2001","11/01/2008"
-430,28,103,"GAZPROM MARKETING & TRADING RETAIL LTD","16/04/2009",
-431,28,104,"42 Barnfield Place","11/08/2000","24/03/2006"
-432,1,105,"Energetics Electricity Ltd","22/12/2006",
-433,20,105,"Energetics Electricity Ltd","03/06/2005",
-434,22,105,"Energetics Electricity Ltd","03/06/2005",
-435,29,106,"Ventureforth House","11/08/2000",
-436,28,107,"Haven Power Limited","01/12/2006",
-437,28,109,"Inveralmond House","04/09/1998","23/05/2003"
-438,29,110,"Wherstead Business Park","10/11/2000","09/03/2007"
-439,28,111,"Haven Power Limited","17/02/2010",
-440,1,113,"Scottish Hydro-Electric Distribution Ltd","01/10/1997",
-441,4,113,"Inveralmond House","17/04/2003",
-442,5,113,"Scottish & Southern Metering","01/04/1996",
-443,6,113,"Scottish & Southern Metering Ltd","01/04/1996",
-444,7,113,"Scottish & Southern Energy Plc","01/04/1996",
-445,8,113,"Scottish & Southern Metering","01/04/1996",
-446,9,113,"Inveralmond House","01/10/1997",
-447,13,113,"Inveralmond House","01/10/1997",
-448,14,113,"Inveralmond House","01/10/1997",
-449,17,113,"Scottish and Southern Metering","01/04/1996",
-450,18,113,"Inveralmond House","01/10/1997",
-451,19,113,"Inveralmond House","01/10/1997",
-452,20,113,"Inveralmond House","01/04/1996",
-453,21,113,"Inveralmond House","01/10/1997",
-454,22,113,"Scottish Hydro-Electric Distribution Ltd","01/04/1996",
-455,24,113,"Inveralmond House","01/10/1997",
-456,26,113,"Grampian House","01/10/1997",
-457,27,113,"Emmock Road","01/10/1997",
-458,28,113,"Scottish & Southern Energy Plc","01/04/1996",
-459,29,113,"Inveralmond House","01/04/1996",
-460,29,114,"The Heath","20/08/1999",
-461,28,115,"5th Floor","07/07/2000","12/01/2001"
-462,28,116,"Scottish & Southern Energy Plc","01/09/1998",
-463,28,117,"INEOS Chlor Energy Ltd","01/04/1996",
-464,28,118,"NPOWER DIRECT LTD NHH","01/04/1996",
-465,28,120,"NPOWER DIRECT LTD HH","09/03/1999","01/09/2006"
-466,1,121,"Independent Power Networks","01/08/2004",
-467,14,121,"Ocean Park House","01/08/2004",
-468,20,121,"Ocean Park House","01/08/2004",
-469,22,121,"Independent Power Networks Ltd","01/08/2004",
-470,29,122,"Wherstead Business Park","10/11/2000","09/03/2007"
-471,3,127,"Lowri Beck Services Ltd","22/12/2006",
-472,4,127,"Lowri Beck Services Ltd","05/02/2008",
-473,6,127,"Lowri Beck Services Limited","11/01/2008",
-474,8,127,"Lowri Beck Services Ltd","05/02/2008",
-475,17,127,"Lowri Beck Services Limited","11/01/2008",
-476,29,171,"Westwood Way","28/03/2000",
-477,2,172,"Power Data Assoiates Ltd","10/02/2006",
-478,28,175,"E.ON Energy","01/04/1996",
-479,29,175,"53 New Broad Street","17/03/1999",
-480,2,176,"PLEXUS TECHNOLOGY LIMITED","13/07/2007",
-481,3,176,"PLEXUS TECHNOLOGY LIMITED","13/07/2007",
-482,4,176,"PLEXUS TECHNOLOGY LIMITED","13/07/2007",
-483,4,177,"Npower Yorkshire Ltd (MeterPlus)","23/05/2003",
-484,30,179,"338 Euston Road","01/04/1996",
-485,4,180,"PRI Ltd","29/04/2005",
-486,26,181,"PRI Ltd","29/04/2005",
-487,28,182,"Good Energy Ltd","24/01/2003",
-488,29,182,"Monkton Park Offices","01/04/2004",
-489,28,183,"The Royal Bank of Scotland","11/03/2008",
-490,28,185,"The Renewable Energy Company Ltd","01/04/1996",
-491,28,186,"12 Russell Grove","08/12/2000","16/03/2001"
-492,29,188,"Wherstead Business Park","10/11/2000",
-493,28,189,"GDF SUEZ Marketing Ltd","22/02/2002",
-494,17,190,"PO BOX 3","01/04/1996","14/11/2003"
-495,29,191,"Shoreham Power Station","03/05/2000",
-496,3,194,"Secus ltd","16/04/2009",
-497,1,195,"EDF Energy Networks","18/11/2005",
-498,3,195,"EDF Energy Customer Field Services","03/05/2000",
-499,4,195,"EDF Energy Networks","17/04/2003",
-500,6,195,"EDF Energy Customer Field Services","01/04/1996",
-501,8,195,"EDF Energy Customer Field Services","01/04/1996",
-502,14,195,"EDF Energy Network (SPN) plc","11/08/2000",
-503,17,195,"EDF Energy Customer Field Services","01/04/1996",
-504,20,195,"EDF Energy Network (SPN) plc","01/04/1996",
-505,22,47,"Dummy DSO 99","01/04/1996",
+Chellow Id,Market Participant Role Code Id,Market Participant Chellow Id,Address Line 1,Effective From Date {MPR},Effective To Date {MPR}
+1,3,2,G4S Utility Services (UK) Ltd,19/12/2003,
+2,4,2,G4S Utility Services (UK) Ltd,12/10/2007,
+3,6,2,G4S Utility Services (UK) Ltd,29/10/1999,
+4,8,2,G4S Utility Services (UK) Ltd,29/10/1999,
+5,17,2,G4S Utility Services (UK) Ltd,12/10/2007,
+6,26,4,Actaris UK Limited,20/02/2004,
+7,28,6,11 Fenlock Court,03/05/2000,31/07/2003
+8,29,8,West Nash,05/06/2000,
+9,28,9,33 Grosvenor Place,17/12/1999,19/01/2007
+10,28,10,33 Grosvenor Place,17/12/1999,09/02/2007
+11,28,11,33 Grosvenor Place,17/12/1999,17/11/2006
+12,28,12,33 Grosvenor Place,17/12/1999,09/02/2007
+13,3,13,ORSIS UK (Ltd),02/09/2008,
+14,4,13,Orsis UK (Ltd),09/11/2007,
+15,28,14,Oxford Centre for Innovation,05/11/2004,10/08/2007
+16,28,16,21 Tothill St.,03/05/2000,24/01/2003
+17,28,18,Barnett Way,03/05/2000,23/05/2003
+18,28,19,British Gas Trading Ltd,01/04/1996,
+19,28,21,British Gas Trading Ltd,07/07/2000,
+20,3,22,BGlobal Metering Limited,19/12/2003,
+21,4,22,BGlobal Metering Limited,19/12/2003,
+22,6,22,BGlobal Metering Limited,19/12/2003,
+23,8,22,BGlobal Metering Limited,19/12/2003,
+24,17,22,BGlobal Metering Limited,01/07/2006,
+25,28,24,Electricity Plus Supply Ltd,05/11/2004,
+26,29,25,Eggborough Power Ltd,28/03/2000,
+27,30,27,1 Embankment Place,01/04/1996,
+28,4,28,Ocean Park House,25/03/2005,
+29,26,128,First Floor,01/09/2006,
+30,28,129,The Communication Building,21/01/2000,16/03/2001
+31,28,130,Templar House,03/05/2000,16/03/2001
+32,1,131,ESP Electricity Limited,02/09/2008,
+33,14,131,ESP Electricity Ltd,22/12/2006,
+34,20,131,ESP Electricity Ltd,01/04/2005,
+35,22,131,ESP Electricity Ltd,01/04/2005,
+36,1,132,EDF Energy Networks,29/01/1999,
+37,3,132,EDF Energy Customer Field Services,18/11/2009,
+38,4,132,EDF Energy Network (LPN) plc,17/04/2003,
+39,5,132,Energy Services,01/04/1996,09/03/1999
+40,6,132,EDF Energy Customer Field Services,01/04/1996,
+41,7,132,Energy Services,01/04/1996,09/03/1999
+42,8,132,EDF Energy Customer Field Services,01/04/1996,
+43,14,132,EDF Energy Network (LPN) plc,01/04/1996,
+44,17,132,EDF Energy Customer Field Services,01/04/1996,
+45,20,132,EDF Energy Network (LPN) plc,01/04/1996,
+46,22,132,EDF Energy Network (LPN) plc,01/04/1996,
+47,26,132,Gadeon House,01/04/1996,
+48,27,132,EDF Energy Customer Field Services,01/04/1996,
+49,28,132,EDF Energy,01/04/1996,
+50,28,133,Lumen Energy Supply Limited,18/11/2009,
+51,28,134,MA Energy Ltd,19/08/2009,
+52,29,135,Berkeley Centre,22/02/2002,07/12/2007
+53,28,136,P O Box 177,11/08/2000,16/03/2001
+54,29,136,P O Box 177,11/08/2000,
+55,1,137,SP Manweb Plc,13/11/1998,
+56,2,137,SP Dataserve Ltd,13/11/1998,
+57,4,137,SP Manweb Plc,29/05/2003,
+58,6,137,SP Dataserve Ltd,01/04/1996,
+59,8,137,SP Dataserve Ltd,01/04/1996,
+60,13,137,SP Manweb Plc,13/11/1998,
+61,14,137,SP Manweb Plc.,01/04/1996,
+62,17,137,SP Dataserve Ltd,01/04/1996,
+63,20,137,SP Manweb Plc.,01/04/1996,
+64,22,137,SP Manweb Plc,01/04/1996,
+65,26,137,Scottish Power Energy Retail Ltd,13/11/1998,
+66,27,137,SP Dataserve Ltd,01/04/1996,
+67,28,137,Scottish Power Energy Retail Ltd,01/04/1996,
+68,28,138,Temple Chambers,20/10/2000,04/03/2005
+69,3,140,E.ON UK Energy Services Limited,25/07/2003,
+70,3,141,E.ON UK Energy Services Limited,25/07/2003,
+71,3,142,Metering Services Ltd,25/07/2003,
+72,4,143,Metering Services Ltd,29/05/2003,
+73,3,144,E.ON UK Energy Services Limited,25/07/2003,
+74,28,145,33 Grosvenor Place,17/12/1999,19/01/2007
+75,1,146,Midlands Electricity plc,09/11/1998,
+76,2,146,Midlands Electricity plc,09/11/1998,02/12/2008
+77,4,146,E.ON UK Energy Services Limited,17/04/2003,
+78,5,146,Midlands Electricity plc,01/04/1996,13/07/1999
+79,5,146,E.ON UK Energy Services Limited,09/08/2002,
+80,6,146,E.ON UK Energy Services Limited,01/04/1996,
+81,7,146,Midlands Electricity plc,01/04/1996,13/07/1999
+82,7,146,E.ON UK Energy Services Limited,09/08/2002,
+83,8,146,E.ON UK Energy Services Limited,01/04/1996,
+84,14,146,Midlands Electricity plc,09/11/1998,
+85,17,146,E.ON UK Energy Services Limited,01/04/1996,
+86,20,146,Midlands Electricity plc,01/04/1996,
+87,22,146,Central Networks West Plc,01/04/1996,
+88,26,146,National Power (Energy Co.) Limited,01/04/1996,
+89,27,146,Midlands Electricity plc,09/11/1998,
+90,28,146,NPOWER LTD,01/04/1996,
+91,29,146,Midlands Electricity plc,09/11/1998,
+92,4,147,Macquarie Leasing Limited,17/03/2010,
+93,3,149,Avonbank,25/07/2003,05/04/2007
+94,28,150,MSCGI c/o Morgan Stanley & Co.  Int. Ltd,01/04/2006,
+95,4,151,NPOWER LTD,25/07/2003,
+96,17,151,NPOWER LTD,19/08/2009,
+97,28,151,Npower Ltd,01/04/1996,
+98,1,152,NORTHERN ELECTRIC DISTRIBUTION LIMITED,24/03/2006,
+99,4,152,Northern Electric Distribution Ltd,17/04/2003,
+100,5,152,NPower Northern Ltd,01/04/1996,
+101,6,152,Npower Northern Ltd,01/04/1996,
+102,7,152,Npower Northern Ltd,01/04/1996,
+103,8,152,NPower Northern Ltd,01/04/1996,
+104,14,152,Northern Electric Distribution Ltd,01/10/1998,
+105,17,152,Northern Electric Distribution Ltd,01/04/1996,
+106,20,152,Northern Electric Distribution Ltd,01/04/1996,
+107,22,152,Northern Electric Distribution Ltd,01/04/1996,
+108,26,152,Carliol House,01/10/1998,
+109,27,152,Carliol House,01/10/1998,
+110,28,152,Npower Northern Supply Ltd,01/04/1996,
+111,28,153,British Energy Direct Limited,01/04/1996,
+112,29,153,British Energy Generation Ltd,09/07/2004,
+113,24,157,185 Park Street,01/04/1996,
+114,29,159,Windmill Hill Business Park,28/03/2000,
+115,28,160,Bridge House,01/04/1996,28/03/2000
+116,1,161,Electricity North West Limited,13/11/1998,
+117,2,161,U U Utility Solutions(E&CS) Ltd,13/11/1998,
+118,4,161,Electricity North West Limited,17/04/2003,
+119,6,161,E.ON UK Energy Services Limited,01/04/1996,
+120,8,161,E.ON UK Energy Services Limited,01/04/1996,
+121,14,161,United Utilities Electricity Services,13/11/1998,
+122,17,161,U U Utility Solutions(E&CS) Ltd,01/04/1996,
+123,20,161,Electricity North West Limited,01/04/1996,
+124,22,161,Electricity North West Limited,01/04/1996,
+125,26,161,Manchester Rd,13/11/1998,
+126,27,161,United Utilities Electricity Services,13/11/1998,
+127,28,161,E.ON Energy Ltd,01/04/1996,
+128,26,162,INNOGY Plc,11/01/2008,
+129,29,162,Windmill Hill Business Park,03/05/2000,
+130,29,163,Windmill Hill Business Park,28/03/2000,
+131,28,164,Nuclear Decommissioning Authority Ltd,01/04/1996,
+132,28,165,British Gas Trading Ltd,25/07/2003,
+133,17,166,OnStream,12/06/2009,
+134,3,167,UMS Ltd (trading as OnStream),22/12/2006,
+135,4,167,UMS Ltd (trading as OnStream),22/12/2006,
+136,6,167,UMS Ltd (trading as OnStream),14/01/2009,
+137,8,167,UMS Ltd (trading as OnStream),14/01/2009,
+138,17,167,UMS Ltd (trading as OnStream),22/12/2006,
+139,3,168,35 Homer Road,18/11/2005,
+140,4,168,35 Homer Road,23/05/2003,
+141,17,168,Utility Metering Services Ltd,23/05/2003,17/03/2010
+142,28,169,OVO Energy,19/08/2009,
+143,28,170,Opus Energy Limited,09/08/2002,
+144,29,171,Westwood Way,28/03/2000,
+145,2,172,Power Data Assoiates Ltd,10/02/2006,
+146,28,175,E.ON Energy,01/04/1996,
+147,29,175,53 New Broad Street,17/03/1999,
+148,2,176,PLEXUS TECHNOLOGY LIMITED,13/07/2007,
+149,3,176,PLEXUS TECHNOLOGY LIMITED,13/07/2007,
+150,4,176,PLEXUS TECHNOLOGY LIMITED,13/07/2007,
+151,4,177,Npower Yorkshire Ltd (MeterPlus),23/05/2003,
+152,30,179,338 Euston Road,01/04/1996,
+153,4,180,PRI Ltd,29/04/2005,
+154,26,181,PRI Ltd,29/04/2005,
+155,28,182,Good Energy Ltd,24/01/2003,
+156,29,182,Monkton Park Offices,01/04/2004,
+157,28,183,The Royal Bank of Scotland,11/03/2008,
+158,28,185,The Renewable Energy Company Ltd,01/04/1996,
+159,28,186,12 Russell Grove,08/12/2000,16/03/2001
+160,29,188,Wherstead Business Park,10/11/2000,
+161,28,189,GDF SUEZ Marketing Ltd,22/02/2002,
+162,17,190,PO BOX 3,01/04/1996,14/11/2003
+163,29,191,Shoreham Power Station,03/05/2000,
+164,3,194,Secus ltd,16/04/2009,
+165,1,195,EDF Energy Networks,18/11/2005,
+166,3,195,EDF Energy Customer Field Services,03/05/2000,
+167,4,195,EDF Energy Networks,17/04/2003,
+168,6,195,EDF Energy Customer Field Services,01/04/1996,
+169,8,195,EDF Energy Customer Field Services,01/04/1996,
+170,14,195,EDF Energy Network (SPN) plc,11/08/2000,
+171,17,195,EDF Energy Customer Field Services,01/04/1996,
+172,20,195,EDF Energy Network (SPN) plc,01/04/1996,
+173,22,195,EDF Energy Network (SPN) plc,01/04/1996,
+174,26,195,Gadeon House,23/04/1999,
+175,28,195,EDF Energy,01/04/1996,
+176,28,196,Sempra Energy Europe Limited,01/08/2006,
+177,17,197,Scottish and Southern Energy PLC,28/07/2006,06/10/2006
+178,11,198,SESL,01/04/1996,
+179,12,198,SESL,01/04/1996,
+180,29,198,SESL,09/11/1998,
+181,28,199,Downstream Procurement,01/04/1996,16/03/2001
+182,3,200,Siemens Metering Services,19/08/2009,
+183,4,200,Siemens Energy Services Ltd,23/05/2003,
+184,6,200,Siemens Metering Services,20/06/2003,
+185,8,200,Siemens Metering Services,20/06/2003,
+186,17,200,Siemens Metering Services,20/06/2003,
+187,26,200,Hortonwood 30,19/10/2001,
+188,28,201,342 Edinburgh Avenue,01/04/1996,16/03/2001
+189,28,202,SmartestEnergy Limited,14/11/2003,
+190,28,203,SmartestEnergy Limited,18/01/2002,
+191,1,205,Scottish And Southern Energy PLC,29/01/1999,
+192,2,205,Scottish And Southern Energy PLC,29/01/1999,
+193,4,205,Scottish And Southern Energy PLC,17/04/2003,
+194,5,205,Southern Electric House,01/04/1996,09/03/1999
+195,6,205,Scottish And Southern Energy PLC,01/04/1996,
+196,7,205,Southern Electric House,01/04/1996,09/03/1999
+197,8,205,Scottish And Southern Energy PLC,01/04/1996,
+198,14,205,Scottish And Southern Energy PLC,01/04/1996,
+199,17,205,Scottish And Southern Energy PLC,01/04/1996,
+200,20,205,Scottish And Southern Energy PLC,01/04/1996,
+201,22,205,Southern Electric Power Distribution Plc,01/04/1996,
+202,26,205,Scottish And Southern Energy PLC,01/04/1996,
+203,27,205,Scottish And Southern Energy PLC,01/04/1996,
+204,28,205,Scottish And Southern Energy PLC,01/04/1996,
+205,1,206,SP Distribution Ltd,13/11/1998,
+206,2,206,SP Dataserve Ltd,13/11/1998,
+207,4,206,SP Distribution Ltd,29/05/2003,
+208,5,206,SP Dataserve Ltd,01/04/1996,
+209,6,206,SP Dataserve Ltd,01/04/1996,
+210,7,206,SP Dataserve Ltd,01/04/1996,
+211,8,206,SP Dataserve Ltd,01/04/1996,
+212,9,206,SP Energy Trading Ltd,01/04/1996,
+213,13,206,SP Distribution Ltd,13/11/1998,
+214,14,206,SP Distribution Ltd,01/04/1996,
+215,17,206,SP Dataserve Ltd,01/04/1996,
+216,18,206,SP Distribution Ltd,01/04/1996,
+217,19,206,SP Distribution Ltd,01/04/1996,
+218,20,206,SP Distribution Ltd,01/04/1996,
+219,21,206,SP Distribution Ltd,01/04/1996,
+220,22,206,SP Distribution Ltd,01/04/1996,
+221,24,206,SP Transmission Ltd,01/04/1996,
+222,26,206,Scottish Power Energy Retail Ltd,13/11/1998,
+223,27,206,SP Dataserve Ltd,01/04/1996,
+224,28,206,Scottish Power Energy Retail Ltd,01/04/1996,
+225,29,206,1 Atlantic Quay,01/04/1996,
+226,28,207,Spark Energy Supply Ltd,11/01/2008,
+227,3,208,Stark Software,29/04/2005,
+228,5,208,Stark Software International Ltd,20/07/2001,
+229,6,208,Stark Software International,11/05/2009,
+230,7,208,Stark Software International Ltd,20/07/2001,
+231,8,208,Stark Software International,11/05/2009,
+232,30,209,4-6 Church Walk,01/04/1996,
+233,1,210,Western Power Distribution - South Wales,09/11/1998,
+234,2,210,Western Power Distribution - South Wales,09/11/1998,
+235,4,210,Western Power Distribution (South Wales),17/04/2003,09/11/2007
+236,6,210,Western Power Distribution - South Wales,01/04/1996,28/02/2007
+237,8,210,Western Power Distribution - South Wales,01/04/1996,31/03/2004
+238,14,210,Western Power Distribution - South Wales,09/11/1998,
+239,17,210,Western Power Distribution - South Wales,01/04/1996,07/09/2007
+240,20,210,Western Power Distribution - South Wales,01/04/1996,
+241,22,210,Western Power Distribution - South Wales,01/04/1996,
+242,26,210,Newport Road,09/11/1998,
+243,27,210,Western Power Distribution - South Wales,09/11/1998,
+244,28,210,Scottish & Southern Energy Plc,01/04/1996,
+245,1,211,Western Power Distribution,01/10/1998,
+246,2,211,Western Power Distribution,01/10/1998,
+247,3,211,EDF Energy Customer Field Services,18/11/2009,
+248,4,211,Western Power Distribution ( South West),17/04/2003,09/11/2007
+249,6,211,EDF Energy Customer Field Services,01/04/1996,
+250,8,211,EDF Energy Customer Field Services,01/04/1996,
+251,14,211,Western Power Distribution,27/11/1998,
+252,17,211,WPD Smart metering Ltd,01/04/1996,
+253,20,211,Western Power Distribution,01/04/1996,
+254,22,211,Western Power Distribution,01/04/1996,
+255,26,211,Gadeon House,27/11/1998,
+256,27,211,Gadeon House,27/11/1998,
+257,28,211,EDF Energy,01/04/1996,
+258,28,214,The Team Group of Companies UK Limited,20/02/2004,
+259,28,216,Total Gas and Power Ltd,20/10/2000,
+260,28,217,Power4All Limited,07/12/2007,
+261,3,218,TruRead Limited,07/10/2008,
+262,3,219,Utility Data Management Services,14/01/2009,
+263,5,219,UDMS,05/04/2007,
+264,6,219,UDMS,01/09/2006,
+265,7,219,UDMS,05/04/2007,
+266,8,219,Utility Data Management Services,14/01/2009,
+267,3,220,Harston Mills Campus,10/02/2006,
+268,4,220,17 High Street,19/09/2003,
+269,3,221,Scorpio,01/09/2006,
+270,4,221,IMServ Europe Ltd,01/08/2003,
+271,5,221,IMServ Europe Ltd,01/04/1996,
+272,6,221,IMServ Europe Ltd,01/05/2005,
+273,7,221,IMServ Europe Ltd,01/04/1996,
+274,8,221,IMServ Europe Ltd,01/05/2005,
+275,10,221,Scorpio,01/04/1996,
+276,15,221,IMServ Europe Ltd,05/06/2004,
+277,17,221,IMServ Europe Ltd,01/05/2005,
+278,23,221,Scorpio,01/04/1996,
+279,28,223,The Havens,20/08/1999,10/12/2004
+280,3,225,PRI House,06/10/2006,
+281,4,225,PRI House,17/11/2006,
+282,17,225,Utilita Meter Operations Ltd,05/04/2007,
+283,26,225,PRI House,06/10/2006,
+284,3,226,Utility Partnership Ltd,12/10/2007,
+285,4,226,Utility Partnership Ltd,01/04/2009,
+286,6,226,Utility Partnership Ltd,11/03/2008,
+287,8,226,Utility Partnership Ltd,11/03/2008,
+288,17,226,Utility Partnership Ltd,01/04/2009,
+289,30,227,9A Margaret Street,25/05/2001,
+290,4,228,United Utilities,13/07/2007,
+291,4,229,Meter Fit Ltd,23/05/2003,
+292,17,229,U U Utility Solutions(E&CS) Ltd,17/04/2003,
+293,28,230,Volt Energy Supply Limited,18/11/2009,
+294,29,231,Wherstead Business Park,10/11/2000,
+295,28,232,33 Grosvenor Place,17/12/1999,19/01/2007
+296,3,234,Avonbank,20/06/2003,25/07/2003
+297,4,235,Western Power Distribution,19/03/2004,
+298,4,236,Western Power Distribution (South West),17/04/2003,
+299,4,237,Western Power Distribution (South Wales),17/04/2003,
+300,28,238,16 Avon Reach,09/06/1999,14/01/2009
+301,29,238,16 Avon Reach,04/06/2004,
+302,28,239,1 Atlantic Quay,01/04/1996,01/04/1999
+303,28,240,1 Atlantic Quay,01/04/1996,01/04/1999
+304,1,241,YORKSHIRE ELECTRICITY DISTRIBUTION PLC,24/03/2006,
+305,3,241,Npower Yorkshire Ltd,19/12/2003,
+306,4,241,Yorkshire Electricity Distribution PLC,17/04/2003,
+307,6,241,Npower Yorkshire Ltd,01/04/1996,
+308,8,241,Npower Yorkshire Ltd,01/04/1996,
+309,14,241,Yorkshire Electricity Distribution PLC,01/04/1996,
+310,17,241,Yorkshire Electricity Distribution PLC,01/04/1996,
+311,20,241,Yorkshire Electricity Distribution PLC,01/04/1996,
+312,22,241,Yorkshire Electricity Distribution PLC,01/04/1996,
+313,26,241,Wetherby Road,01/04/1996,
+314,27,241,Wetherby Road,01/04/1996,
+315,28,241,NPOWER YORKSHIRE SUPPLY LTD,01/04/1996,
+316,28,242,1 Atlantic Quay,01/04/1996,01/04/1999
+317,6,282,Dummy NHHDA for Southern,01/04/1996,12/06/2009
+318,6,283,Dummy NHHDA for Seeboard,01/04/1996,12/06/2009
+319,6,284,Dummy NHHDA for SWALEC,01/04/1996,12/06/2009
+320,6,285,Dummy NHHDA for SWEB,01/04/1996,12/06/2009
+321,6,286,Dummy NHHDA for Yorkshire,01/04/1996,12/06/2009
+322,17,28,Connect Utilities Ltd,25/03/2005,
+323,28,29,Welton Gathering Centre,01/04/1996,20/08/1999
+324,11,30,Logica UK Limited,01/04/1996,
+325,25,30,Logica UK Limited,01/04/1996,
+326,17,31,PO BOX 56,01/04/1996,07/12/2007
+327,29,32,C/o InterGen (UK) Ltd,11/08/2000,
+328,28,34,Manor Court,19/11/1999,29/04/2005
+329,28,35,c/o E.ON UK plc,01/04/1996,
+330,28,36,Cinergy House,28/03/2000,29/04/2005
+331,29,37,Cinergy House,05/06/2000,29/04/2005
+332,28,41,Candela Energy Supply Limited,18/11/2009,
+333,28,42,Cherwell Energy ltd,05/11/2004,
+334,28,43,c/o Gilmond Consulting Ltd,12/06/2009,
+335,28,46,Reuben Power Supply Limited,01/01/2007,
+336,4,47,Dummy ID for Customers,14/03/2003,
+337,29,48,c/o Entergy Power Group,28/03/2000,
+338,5,49,Siemens Metering Services,01/04/1996,
+339,7,49,Siemens Metering Services,01/04/1996,
+340,17,49,Siemens Metering Services,01/04/1996,
+341,7,50,Chancery House,01/04/1996,07/12/2007
+342,8,50,Chancery House,01/04/1996,07/12/2007
+343,29,51,Windmill Hill Business Park,03/05/2000,
+344,29,54,Wherstead Business Park,10/11/2000,09/03/2007
+345,29,55,Windmill Hill Business Park,20/08/1999,
+346,28,56,Dual Energy Direct Limited,17/02/2010,
+347,13,57,30 Millbank,01/04/1996,
+348,15,57,30 Millbank,01/04/1996,04/06/2004
+349,28,58,BES Commercial Electricity Ltd,18/11/2009,
+350,28,59,British Gas Trading Ltd,04/03/2005,
+351,28,60,Energy Co2 Limited,04/03/2005,
+352,16,61,C&C Group Holdings Ltd,10/02/2006,
+353,28,62,Reuben Power Supply Limited,21/01/2000,
+354,28,63,Renewable Energy Company Ltd,13/09/2002,
+355,4,64,54 Bengeworth Road,17/04/2003,
+356,4,66,EDF Energy Customer Field Service,28/06/2008,
+357,1,67,EDF Energy (IDNO) Ltd,16/04/2009,
+358,14,67,EDF Energy (IDNO) Ltd,16/04/2009,
+359,20,67,EDF Energy (IDNO) Ltd,16/04/2009,
+360,22,67,EDF Energy (IDNO) Ltd,16/04/2009,
+361,27,67,EDF Energy Customer Field Services,16/04/2009,
+362,28,68,Electricity Direct (UK),01/04/1996,
+363,1,70,EDF Energy Networks,01/04/1996,
+364,2,70,Wherstead Park,01/04/1996,
+365,3,70,Siemens Metering Services,30/04/2004,
+366,4,70,EDF Energy Networks,17/04/2003,
+367,6,70,Siemens Metering Services,01/04/1996,
+368,8,70,Siemens Metering Services,01/04/1996,
+369,14,70,EDF Energy Network (EPN) plc,01/04/1996,
+370,17,70,EDF Energy Networks,01/04/1996,
+371,20,70,EDF Energy Network (EPN) plc,01/04/1996,
+372,22,70,EDF Energy Network (EPN) plc,01/04/1996,
+373,26,70,Wherstead Park,01/04/1996,
+374,27,70,Wherstead Park,01/04/1996,
+375,28,70,E.ON Energy Ltd,01/04/1996,
+376,28,71,E.ON Energy Ltd,17/08/1998,
+377,29,72,Landsdowne House,20/08/1999,
+378,28,73,Eledor Limited,22/11/2002,01/09/2006
+379,1,75,Central Networks East,09/11/1998,
+380,2,75,Siemens Metering Services,09/11/1998,
+381,3,75,Siemens Energy Services Ltd,30/04/2004,
+382,4,75,E.ON UK Energy Services Limited,29/05/2003,
+383,6,75,E.ON UK Energy Services Limited,01/04/1996,
+384,8,75,E.ON UK Energy Services Limited,01/04/1996,
+385,14,75,SFIC Management,09/11/1998,
+386,17,75,E.ON UK Energy Services Limited,01/04/1996,
+387,20,75,PES Registration Agent,01/04/1996,
+388,22,75,Central Networks East Plc,01/04/1996,
+389,26,75,Powergen Energy plc,09/03/1999,
+390,27,75,Revenue Protection Service,09/11/1998,
+391,28,75,E.ON Energy Ltd,01/04/1996,
+392,29,76,Wherstead park,07/07/2000,
+393,28,78,Energy Data Company Limited,10/12/2004,
+394,28,79,Eneco Energy Trade BV,17/03/2010,
+395,3,80,Energy Assets Ltd,09/03/2007,
+396,28,81,British Gas Trading Ltd,01/04/1996,
+397,28,82,4 Millbank,01/04/1996,16/03/2001
+398,10,83,The National Grid Company Building,01/04/1996,
+399,28,84,Trafford Plaza,09/08/2002,
+400,28,85,The Havens,01/04/1996,20/08/1999
+401,23,86,Fairham House,01/04/1996,
+402,4,87,Westwood Way,01/07/2006,
+403,17,87,Eon UK Energy Services Ltd,28/07/2006,
+404,28,88,36 Park Road,17/10/2003,05/11/2004
+405,1,90,Electricity Network Company,05/02/2008,
+406,4,90,Energy House,26/05/2006,
+407,14,90,Energy House,26/05/2006,
+408,17,90,Energy House,26/05/2006,
+409,20,90,Energy House,26/05/2006,
+410,22,90,The Electricity Network Company Ltd,26/05/2006,
+411,29,91,Wilton,20/08/1999,
+412,28,96,"101, Wigmore Street,",03/05/2000,09/03/2007
+413,28,97,IPM Energy Retail Ltd,07/12/2007,
+414,28,98,First Utility Ltd,01/12/2005,
+415,4,99,19 South Audley Street,06/10/2006,
+416,29,100,GUS Building,03/05/2000,
+417,28,101,Utilita Electricity Limited,04/06/2004,
+418,28,102,The Gas Light & Coke Company,16/02/2001,11/01/2008
+419,28,103,GAZPROM MARKETING & TRADING RETAIL LTD,16/04/2009,
+420,28,104,42 Barnfield Place,11/08/2000,24/03/2006
+421,1,105,Energetics Electricity Ltd,22/12/2006,
+422,20,105,Energetics Electricity Ltd,03/06/2005,
+423,22,105,Energetics Electricity Ltd,03/06/2005,
+424,29,106,Ventureforth House,11/08/2000,
+425,28,107,Haven Power Limited,01/12/2006,
+426,28,109,Inveralmond House,04/09/1998,23/05/2003
+427,29,110,Wherstead Business Park,10/11/2000,09/03/2007
+428,28,111,Haven Power Limited,17/02/2010,
+429,1,113,Scottish Hydro-Electric Distribution Ltd,01/10/1997,
+430,4,113,Inveralmond House,17/04/2003,
+431,5,113,Scottish & Southern Metering,01/04/1996,
+432,6,113,Scottish & Southern Metering Ltd,01/04/1996,
+433,7,113,Scottish & Southern Energy Plc,01/04/1996,
+434,8,113,Scottish & Southern Metering,01/04/1996,
+435,9,113,Inveralmond House,01/10/1997,
+436,13,113,Inveralmond House,01/10/1997,
+437,14,113,Inveralmond House,01/10/1997,
+438,17,113,Scottish and Southern Metering,01/04/1996,
+439,18,113,Inveralmond House,01/10/1997,
+440,19,113,Inveralmond House,01/10/1997,
+441,20,113,Inveralmond House,01/04/1996,
+442,21,113,Inveralmond House,01/10/1997,
+443,22,113,Scottish Hydro-Electric Distribution Ltd,01/04/1996,
+444,24,113,Inveralmond House,01/10/1997,
+445,26,113,Grampian House,01/10/1997,
+446,27,113,Emmock Road,01/10/1997,
+447,28,113,Scottish & Southern Energy Plc,01/04/1996,
+448,29,113,Inveralmond House,01/04/1996,
+449,29,114,The Heath,20/08/1999,
+450,28,115,5th Floor,07/07/2000,12/01/2001
+451,28,116,Scottish & Southern Energy Plc,01/09/1998,
+452,28,117,INEOS Chlor Energy Ltd,01/04/1996,
+453,28,118,NPOWER DIRECT LTD NHH,01/04/1996,
+454,28,120,NPOWER DIRECT LTD HH,09/03/1999,01/09/2006
+455,1,121,Independent Power Networks,01/08/2004,
+456,14,121,Ocean Park House,01/08/2004,
+457,20,121,Ocean Park House,01/08/2004,
+458,22,121,Independent Power Networks Ltd,01/08/2004,
+459,29,122,Wherstead Business Park,10/11/2000,09/03/2007
+460,3,127,Lowri Beck Services Ltd,22/12/2006,
+461,4,127,Lowri Beck Services Ltd,05/02/2008,
+462,6,127,Lowri Beck Services Limited,11/01/2008,
+463,8,127,Lowri Beck Services Ltd,05/02/2008,
+464,17,127,Lowri Beck Services Limited,11/01/2008,
+465,3,128,First Floor,01/09/2006,
+466,28,243,1 Atlantic Quay,01/04/1996,01/04/1999
+467,28,244,1 Atlantic Quay,01/04/1996,01/04/1999
+468,28,245,1 Atlantic Quay,01/04/1996,01/04/1999
+469,28,246,1 Atlantic Quay,01/04/1996,01/04/1999
+470,28,247,1 Atlantic Quay,01/04/1996,01/04/1999
+471,28,248,1 Atlantic Quay,01/04/1996,01/04/1999
+472,28,249,1 Atlantic Quay,01/04/1996,01/04/1999
+473,28,250,1 Atlantic Quay,01/04/1996,01/04/1999
+474,28,251,1 Atlantic Quay,01/04/1996,01/04/1999
+475,28,252,1 Atlantic Quay,01/04/1996,01/04/1999
+476,28,253,1 Atlantic Quay,01/04/1996,01/04/1999
+477,28,254,1 Atlantic Quay,01/04/1996,01/04/1999
+478,28,255,1 Atlantic Quay,01/04/1996,01/04/1999
+479,28,256,1 Atlantic Quay,01/04/1996,01/04/1999
+480,28,257,1 Atlantic Quay,01/04/1996,01/04/1999
+481,28,258,1 Atlantic Quay,01/04/1996,01/04/1999
+482,28,259,Inveralmond House,01/04/1996,01/04/1999
+483,28,260,Inveralmond House,01/04/1996,01/04/1999
+484,28,261,Inveralmond House,01/04/1996,01/04/1999
+485,28,262,Inveralmond House,01/04/1996,01/04/1999
+486,28,263,Inveralmond House,01/04/1996,01/04/1999
+487,28,264,Inveralmond House,01/04/1996,01/04/1999
+488,28,265,Inveralmond House,01/04/1996,01/04/1999
+489,28,266,Inveralmond House,01/04/1996,01/04/1999
+490,28,267,Inveralmond House,01/04/1996,01/04/1999
+491,28,268,Inveralmond House,01/04/1996,01/04/1999
+492,28,269,Inveralmond House,01/04/1996,01/04/1999
+493,28,270,Inveralmond  House,09/11/1998,01/04/1999
+494,28,271,Inveralmond House,01/04/1996,01/04/1999
+495,28,272,Inveralmond House,01/04/1996,01/04/1999
+496,5,273,Scorpio,07/07/2000,
+497,28,274,Inveralmond House,01/04/1996,01/04/1999
+498,6,275,Dummy NHHDA for Eastern,01/04/1996,12/06/2009
+499,6,276,Dummy NHHDA for East Midlands,01/04/1996,12/06/2009
+500,6,277,Dummy NHHDA for London,01/04/1996,12/06/2009
+501,6,278,Dummy NHHDA for Manweb,01/04/1996,12/06/2009
+502,6,279,Dummy NHHDA for Midlands,01/04/1996,12/06/2009
+503,6,280,Dummy NHHDA for Northern,01/04/1996,12/06/2009
+504,6,281,Dummy NHHDA for Norweb,01/04/1996,12/06/2009
+505,22,47,Dummy DSO 99,01/04/1996,

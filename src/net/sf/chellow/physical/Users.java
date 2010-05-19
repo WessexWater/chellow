@@ -100,7 +100,7 @@ public class Users extends EntityList {
 		source.appendChild(usersElement);
 		for (User user : (List<User>) Hiber.session().createQuery(
 				"from User user").list()) {
-			usersElement.appendChild(user.toXml(doc, new XmlTree("role")));
+			usersElement.appendChild(user.toXml(doc, new XmlTree("role").put("party")));
 		}
 		for (Party party : (List<Party>) Hiber
 				.session()
