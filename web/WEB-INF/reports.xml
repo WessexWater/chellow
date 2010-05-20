@@ -449,6 +449,7 @@ from net.sf.chellow.billing import Bill
 from java.lang import Class, Long
 from java.math import BigInteger
 from org.hibernate.criterion import Restrictions, Order
+from java.util import GregorianCalendar, TimeZone, Locale, Calendar
 
 def bills_list(parent_element, element_name, contract, generation):
     bills_element = parent_element.getOwnerDocument().createElement(element_name)
@@ -507,7 +508,11 @@ for generation in supply.getGenerations():
     if hhdc_contract is not None:
         bills_list(generation_element, 'hhdc-bills', hhdc_contract, generation)
 source.appendChild(MonadDate().toXml(doc))
-source.appendChild(MonadDate.getMonthsXml(doc))]]></value>
+source.appendChild(MonadDate.getMonthsXml(doc))
+cal = GregorianCalendar(TimeZone.getTimeZone("GMT"), Locale.UK)
+if cal.get(Calendar.MONTH) < Calendar.MARCH:
+    cal.add(Calendar.YEAR, -1)
+source.setAttribute('triad-year', str(cal.get(Calendar.YEAR)))]]></value>
         <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
 <xsl:stylesheet version="1.0"
     xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
@@ -981,6 +986,19 @@ source.appendChild(MonadDate.getMonthsXml(doc))]]></value>
                             </xsl:for-each>
                         </select>
                     <xsl:value-of select="' '"/><input type="submit" value="Download"/>
+                    </fieldset>
+                </form>
+                <br/>
+                <form action="{/source/request/@context-path}/reports/41/output/">
+                    <fieldset>
+                        <legend>Download Supplies TRIAD CSV</legend>
+                        <input type="hidden" name="supply-id" value="{/source/supply/@id}"/>
+                        <br/>
+                        <xsl:value-of select="'For financial year ending March '"/>
+                        <input name="year" value="{/source/@triad-year}" size="4" maxlength="4"/>
+<xsl:value-of select="' '"/>
+                        <input type="submit" value="Download"/>
+                        <input type="reset" value="Reset"/>
                     </fieldset>
                 </form>
             </body>
@@ -4513,7 +4531,7 @@ snags_element.setAttribute("site-count", str(sites))]]></value>
         <value><![CDATA[CSV Supplies TRIAD]]></value>
         <value><![CDATA[from net.sf.chellow.monad import Hiber, UserException
 from net.sf.chellow.monad.types import MonadDate
-from net.sf.chellow.physical import HhStartDate, SupplyGeneration, MpanCore
+from net.sf.chellow.physical import HhStartDate, SupplyGeneration, Supply
 from java.util import Calendar
 from net.sf.chellow.billing import NonCoreContract, Dso
 
@@ -4523,10 +4541,8 @@ comterp = computer.callFunction('create_comterp', [])
 inv.getResponse().setContentType("text/csv")
 inv.getResponse().setHeader('Content-Disposition', 'filename=output.csv;')
 year = inv.getInteger('year')
-pattern = inv.getString('pattern')
 if not inv.isValid():
     raise UserException()
-pattern = pattern.strip()
 
 pw = inv.getResponse().getWriter()
 
@@ -4572,9 +4588,9 @@ pw.flush()
 
 forecast_date = comterp.get('forecast_date')()
 
-if len(pattern) > 0:
-    mpan_core = MpanCore.getMpanCore(pattern)
-    generations = Hiber.session().createQuery("from SupplyGeneration generation where generation.startDate.date <= :yearFinish and (generation.finishDate.date is null or generation.finishDate.date >= :yearFinish) and generation.supply.source.code in ('net', 'gen-net') and generation.supply = :supply and generation.pc.code = 0").setEntity('supply', mpan_core.getSupply()).setTimestamp('yearFinish', year_finish.getDate()).scroll()
+if inv.hasParameter('supply-id'):
+    supply_id = inv.getLong('supply-id')
+    generations = Hiber.session().createQuery("from SupplyGeneration generation where generation.startDate.date <= :yearFinish and (generation.finishDate.date is null or generation.finishDate.date >= :yearFinish) and generation.supply.source.code in ('net', 'gen-net') and generation.supply = :supply and generation.pc.code = 0").setEntity('supply', Supply.getSupply(supply_id)).setTimestamp('yearFinish', year_finish.getDate()).scroll()
 else:
     generations = Hiber.session().createQuery("from SupplyGeneration generation where generation.startDate.date <= :yearFinish and (generation.finishDate.date is null or generation.finishDate.date >= :yearFinish) and generation.supply.source.code in ('net', 'gen-net') and generation.pc.code = 0 order by generation.supply.id").setTimestamp('yearFinish', year_finish.getDate()).scroll()
 
@@ -12529,8 +12545,7 @@ source.setAttribute('year', str(cal.get(Calendar.YEAR)))]]></value>
                     <fieldset>
                         <legend>Download Supplies TRIAD CSV</legend>
                         <br/>
-                        <xsl:value-of select="'For MPAN core '"/><input name="pattern"/>
-                        <xsl:value-of select="' for financial year ending March '"/>
+                        <xsl:value-of select="'For financial year ending March '"/>
                         <input name="year" value="{/source/@year}" size="4" maxlength="4"/>
 <xsl:value-of select="' '"/>
                         <input type="submit" value="Download"/>

@@ -2376,7 +2376,6 @@ def forecast_date():
     cal.set(Calendar.MILLISECOND, 0)
     cal.set(Calendar.SECOND, 0)
     cal.set(Calendar.MINUTE, 0)
-    cal.add(Calendar.MONTH, 1) # Temporarily say the future is here
     return HhStartDate(cal.getTime())
 
 
@@ -2494,68 +2493,9 @@ class SiteSource(DataSource):
         month_data = {}
         suffixes = ['-kwh', '-kw', '-kvarh', '-kvar', '-kva', '-kvah']
         is_forecast = finish_date.after(self.forecast_date)
-        if is_forecast:
-            diplaced_kwh = 0
-            exported_kwh = 0
-            has_gen = False
-            month_data['displaced-kwh'] = 0
-            month_data['exported-kwh'] = 0                
-            site = Site.getSite(self.site_id)
-            for gen_forecast in gen_forecasts:
-                if gen_forecast['site-code'] == self.site_code:
-                    month_data['displaced-kwh'] += gen_forecast['displaced-kwh']
-                    month_data['exported-kwh'] += gen_forecast['exported-kwh']
-            if 'operation-change-kwh' not in month_data:
-                cal = MonadDate.getCalendar()
-                for cons_type in cons_types:
-                    for suffix in suffixes:
-                        month_data[cons_type + suffix] = 0
-                for e_change in NonCoreContract.getNonCoreContract('EnergyChanges').rateScript(month_data['start']).getRate('energy_changes'):
-                    if e_change['id'] == self.site.getCode():
-                        for cons_type in cons_types:
-                            start_key = cons_type + '-start'
-                            if start_key in e_change:
-                                e_change_start = e_change[start_key]
-                                e_change_finish = e_change[cons_type + '-finish']
-                                if not e_change_start.isAfter(month_finish) and not e_change_finish.isBefore(month_start):
-                                    month_length = (month_finish.getDate().getTime() - month_start.getDate().getTime()) / 1000 / 60 / 60
-                                    e_change_length = float(min(e_change_finish.getDate().getTime(), month_finish.getDate().getTime()) - max(e_change_start.getDate().getTime(), month_start.getDate().getTime())) / 1000 / 60 / 60
-                                    change_kwh = e_change[cons_type + '-kw'] * e_change_length
-                                    change_kw = float(change_kwh) / month_length
-                                    month_data[cons_type + '-kw'] += change_kw
-                                    month_data[cons_type + '-kwh'] += change_kwh
-                                    change_kva = change_kw / 0.9
-                                    change_kvar = (change_kva ** 2 - change_kw ** 2) ** 0.5
-                                    month_data[cons_type + '-kvar'] = change_kvar
-                                    month_data[cons_type + '-kvarh'] = change_kvar * change_length
-                                    month_data[cons_type + '-kva'] = change_kva
-                                    month_data[cons_type + '-kvah'] = change_kva * change_length
-                                history_start = summary['hist-start']
-                                history_finish = summary['hist-finish']
-                                if not e_change_start.isAfter(history_finish) and not e_change_finish.isBefore(history_start):
-                                    e_change_length = float(min(e_change_finish.getDate().getTime(), history_finish.getDate().getTime()) - max(e_change_start.getDate().getTime(), history_start.getDate().getTime())) / 1000 / 60 / 60
-                                    month_data[cons_type + '-kw'] -= e_change[cons_type + '-kw']
-                                    month_data[cons_type + '-kwh'] -= e_change[cons_type + '-kw'] * e_change_length
-                                    change_kva = e_change_kw / 0.9
-                                    e_change_kvar = (change_kva ** 2 - e_change_kw ** 2) ** 0.5
-                                    month_data[cons_type + '-kvar'] = e_change_kvar
-                                    month_data[cons_type + '-kvarh'] = e_change_kvar * e_change_length
-                                    month_data[cons_type + '-kva'] = change_kva
-                                    month_data[cons_type + '-kvah'] = change_kva * e_change_length
-
-        for suffix in suffixes:
-            month_data['change' + suffix] = sum(month_data.get(cons_type + '-change' + suffix, 0) for cons_type in cons_types)
-
-
         hh_data = []
         utc_cal = GregorianCalendar(TimeZone.getTimeZone("GMT"), Locale.UK)
         ct_cal = GregorianCalendar(TimeZone.getTimeZone("Europe/London"), Locale.UK)
-        hh_divisor = (finish_date.getNext().getDate().getTime() - start_date.getDate().getTime()) * 1000 * 60 * 30
-        change_kwh = float(month_data['change-kwh']) / hh_divisor
-
-        if is_forecast:
-            forecast_displaced_kwh = float(month_data['displaced-kwh']) / hh_divisor
-            forecast_exported_kwh = float(month_data['exported-kwh']) / hh_divisor
 
         site = Site.getSite(self.site_id)
         for group in site.groups(summary['hist-start'], summary['hist-finish'], True):
@@ -2590,9 +2530,8 @@ class SiteSource(DataSource):
                 hh_values['imp-msp-kvarh'] = 0
                 hh_values['exp-msp-kvarh'] = 0
 
-                hh_values['used-kwh'] = hh_values['hist-used-kwh'] + change_kwh
+                hh_values['used-kwh'] = hh_values['hist-used-kwh']
                 hh_values['import-net-kwh'] = hh_values['used-kwh'] - hh_values['msp-kwh']
-                hh_values['change-kwh'] = change_kwh
                 hh_values['msp-kw'] = hh_values['msp-kwh'] * 2
                 hh_values['imp-msp-kvar'] = hh_values['imp-msp-kvarh'] * 2
                 hh_values['exp-msp-kvar'] = hh_values['exp-msp-kvarh'] * 2
@@ -2604,7 +2543,7 @@ class SiteSource(DataSource):
             ct_cal = GregorianCalendar(TimeZone.getTimeZone("Europe/London"), Locale.UK)
             utc_cal.setTime(self.finish_date.getDate())
             ct_cal.setTime(self.finish_date.getDate())
-            hh_data.append({'status': 'E', 'hist-start-date': history_finish.getDate(), 'status': 'E', 'hist-import-net-kwh': 0, 'hist-import-net-kvarh': 0, 'hist-export-net-kwh': 0, 'hist-export-net-kvarh': 0, 'hist-import-gen-kwh': 0, 'hist-export-gen-kwh': 0, 'hist-import-3rd-party-kwh': 0, 'hist-export-3rd-party-kwh': 0, 'hist-kwh': 0, 'msp-kwh': 0, 'msp-kw': 0, 'export-net-kwh': 0, 'import-gen-kwh': 0, 'export-gen-kwh': 0, 'hist-used-kwh': 0, 'hist-kvarh': 0, 'imp-msp-kvarh': 0, 'imp-msp-kvar': 0, 'exp-msp-kvarh': 0, 'exp-msp-kvar': 0, 'used-kwh': 0, 'import-net-kwh': 0, 'change-kwh': 0, 'import-3rd-party-kwh': 0, 'export-3rd-party-kwh': 0, 'start-date': self.finish_date.getDate(), 'ct-day': ct_cal.get(5), 'utc-month': utc_cal.get(2), 'utc-day': utc_cal.get(5), 'utc-decimal-hour': utc_cal.get(11) + float(utc_cal.get(12)) / 60, 'ct-month': ct_cal.get(2), 'ct-decimal-hour': ct_cal.get(11) + ct_cal.get(12) / 60, 'ct-day-of-week': ct_cal.get(7), 'utc-day-of-week': utc_cal.get(7)})
+            hh_data.append({'status': 'E', 'hist-start-date': history_finish.getDate(), 'status': 'E', 'hist-import-net-kwh': 0, 'hist-import-net-kvarh': 0, 'hist-export-net-kwh': 0, 'hist-export-net-kvarh': 0, 'hist-import-gen-kwh': 0, 'hist-export-gen-kwh': 0, 'hist-import-3rd-party-kwh': 0, 'hist-export-3rd-party-kwh': 0, 'hist-kwh': 0, 'msp-kwh': 0, 'msp-kw': 0, 'export-net-kwh': 0, 'import-gen-kwh': 0, 'export-gen-kwh': 0, 'hist-used-kwh': 0, 'hist-kvarh': 0, 'imp-msp-kvarh': 0, 'imp-msp-kvar': 0, 'exp-msp-kvarh': 0, 'exp-msp-kvar': 0, 'used-kwh': 0, 'import-net-kwh': 0, 'import-3rd-party-kwh': 0, 'export-3rd-party-kwh': 0, 'start-date': self.finish_date.getDate(), 'ct-day': ct_cal.get(5), 'utc-month': utc_cal.get(2), 'utc-day': utc_cal.get(5), 'utc-decimal-hour': utc_cal.get(11) + float(utc_cal.get(12)) / 60, 'ct-month': ct_cal.get(2), 'ct-decimal-hour': ct_cal.get(11) + ct_cal.get(12) / 60, 'ct-day-of-week': ct_cal.get(7), 'utc-day-of-week': utc_cal.get(7)})
         if self.is_displaced and self.pc_code == '00' and self.is_import:
             dso_contract = get_dso_contract(self.dso_code, HhStartDate(hh_data[0]['start-date']), self.pw)
             summary['dso-bill'] = {}
@@ -2673,21 +2612,6 @@ class SupplySource(DataSource):
         self.hh_data = self.whole_data['data']
 
 
-    def init_from_supply_e_change(self, month_start, month_finish, e_change):
-        self.site_id = None
-        self.id = e_change['id']
-        self.is_new = self.id.startswith('new ')
-        self.start_date = month_start
-        self.finish_date = month_finish
-        self.llfc_code = e_change['llfc']
-        self.dso_code = e_change['dso']
-        self.is_forecast = True
-        self.availability = e_change['availability']
-        self.whole_data = self.create_whole_data(self.start_date, self.finish_date)
-        self.summary = self.whole_data['summary']
-        self.hh_data = self.whole_data['data']
-
-
     def hh_list_month(self, month_start):
         cal = MonadDate.getCalendar()
         cal.setTime(month_start)
@@ -2723,123 +2647,45 @@ class SupplySource(DataSource):
 
         month_data = {}
         suffixes = ['-kwh', '-kw', '-kvarh', '-kvar', '-kva', '-kvah']
-        is_forecast = finish_date.after(forecast_date)
-        if False and is_forecast:
-            diplaced_kwh = 0
-            exported_kwh = 0
-            has_gen = False
-            for gen_forecast in gen_forecasts:
-                if gen_forecast['displaced-id'] == self.id:
-                    displaced_kwh += gen_forecast['displaced-kwh']
-                    site = Site.getSite(gen_forecast['site-id'])
-                    has_gen = True
-                elif gen_forecast['exported-id'] == self.id:
-                    exported_kwh += gen_forecast['exported-kwh']
-                    site = Site.getSite(gen_forecast['site-id'])
-                    has_gen = True
-            if has_gen:
-                hist_data_source = data_source(forecast_date)
-                hist_data_source.init_from_site(site, hist_start_date, hist_finish_date)
-                hist_m_data = hist_data_source.month_data(hist_start_date, hist_finish_date)
-                hist_data_source.sum_md(m_data)
-                future_data_source = data_source(forecast_date)
-                future_data_source.init_from_site(site)
-                future_m_data = future_data_source.month_data(start_date, finish_date)
-                future_data_source.sum_md(m_data)
-                if displaced_kwh > 0:
-                    month_data['operation-change-kwh'] = future_m_data['imported-kwh'] - hist_m_data['imported-kwh']
-                elif exported_kwh > 0:
-                    month_data['operation-change-kwh'] = future_m_data['exported-kwh'] - hist_m_data['exported-kwh']
-
-            if 'operation-change-kwh' not in month_data:
-                cal = MonadDate.getCalendar()
-                for cons_type in cons_types:
-                    for suffix in suffixes:
-                        month_data[cons_type + suffix] = 0
-                for e_change in NonCoreContract.getNonCoreContract('EnergyChanges').rateScript(month_data['start']).getRate('energy_changes'):
-                    if (self.site == None and e_change['id'] == self.generation['id']) or (self.site != None and e_change['id'] == self.site.getCode()):
-                        for cons_type in cons_types:
-                            start_key = cons_type + '-start'
-                            if start_key in e_change:
-                                e_change_start = e_change[start_key]
-                                e_change_finish = e_change[cons_type + '-finish']
-                                if not e_change_start.isAfter(month_finish) and not e_change_finish.isBefore(month_start):
-                                    month_length = (month_finish.getDate().getTime() - month_start.getDate().getTime()) / 1000 / 60 / 60
-                                    e_change_length = float(min(e_change_finish.getDate().getTime(), month_finish.getDate().getTime()) - max(e_change_start.getDate().getTime(), month_start.getDate().getTime())) / 1000 / 60 / 60
-                                    change_kwh = e_change[cons_type + '-kw'] * e_change_length
-                                    change_kw = float(change_kwh) / month_length
-                                    month_data[cons_type + '-kw'] += change_kw
-                                    month_data[cons_type + '-kwh'] += change_kwh
-                                    change_kva = change_kw / 0.9
-                                    change_kvar = (change_kva ** 2 - change_kw ** 2) ** 0.5
-                                    month_data[cons_type + '-kvar'] = change_kvar
-                                    month_data[cons_type + '-kvarh'] = change_kvar * change_length
-                                    month_data[cons_type + '-kva'] = change_kva
-                                    month_data[cons_type + '-kvah'] = change_kva * change_length
-                                history_start = summary['hist-start']
-                                history_finish = summary['hist-finish']
-                                if not e_change_start.isAfter(history_finish) and not e_change_finish.isBefore(history_start):
-                                    e_change_length = float(min(e_change_finish.getDate().getTime(), history_finish.getDate().getTime()) - max(e_change_start.getDate().getTime(), history_start.getDate().getTime())) / 1000 / 60 / 60
-                                    month_data[cons_type + '-kw'] -= e_change[cons_type + '-kw']
-                                    month_data[cons_type + '-kwh'] -= e_change[cons_type + '-kw'] * e_change_length
-                                    change_kva = e_change_kw / 0.9
-                                    e_change_kvar = (change_kva ** 2 - e_change_kw ** 2) ** 0.5
-                                    month_data[cons_type + '-kvar'] = e_change_kvar
-                                    month_data[cons_type + '-kvarh'] = e_change_kvar * e_change_length
-                                    month_data[cons_type + '-kva'] = change_kva
-                                    month_data[cons_type + '-kvah'] = change_kva * e_change_length
-
-        for suffix in suffixes:
-            month_data['change' + suffix] = sum(month_data.get(cons_type + '-change' + suffix, 0) for cons_type in cons_types)
 
         #pw.println("done setup " + str(System.currentTimeMillis() - timing))
 
         data_hh = []
         utc_cal = GregorianCalendar(TimeZone.getTimeZone("GMT"), Locale.UK)
         ct_cal = GregorianCalendar(TimeZone.getTimeZone("Europe/London"), Locale.UK)
-        hh_divisor = (finish_date.getNext().getDate().getTime() - start_date.getDate().getTime()) * 1000 * 60 * 30
-        change_kwh = float(month_data['change-kwh']) / hh_divisor
 
-        if self.is_new:
-            hh_date = self.start_date
-            while not hh_date.after(self.finish_date):
-                utc_cal.setTime(hh_date)
-                ct_cal.setTime(hh_date)
-                hh_data.append({'msp-kwh': change_kwh, 'change-kwh': change_kwh, 'hist-kwh': 0, 'start-date': hh_date.getDate(), 'ct-day': ct_cal.get(5), 'utc-month': utc_cal.get(2), 'utc-day': utc_cal.get(5), 'utc-decimal-hour': utc_cal.get(11) + float(utc_cal.get(12)) / 60, 'ct-month': ct_cal.get(2), 'ct-decimal-hour': ct_cal.get(11) + float(ct_cal.get(12)) / 60, 'ct-day-of-week': ct_cal.get(7), 'utc-day-of-week': utc_cal.get(7)})
-                hh_date = hh_date.next()
+        #self.pw.println("whole data: about to prepare query " +  str(System.currentTimeMillis() - timing))
+        mpan_core = MpanCore.getMpanCore(self.id)
+        supply = mpan_core.getSupply()
+        con = Hiber.session().connection()
+        if self.is_import:
+            hql = "select sum(case when channel.is_kwh then hh_datum.value else 0 end) as kwh, max(case when channel.is_kwh then hh_datum.status else '' end) as status, sum(case when not channel.is_kwh and channel.is_import then hh_datum.value else 0 end) as imp_kvarh, sum(case when not channel.is_kwh and not channel.is_import then hh_datum.value else 0  end) as exp_kvarh, hh_datum.start_date from hh_datum, channel, supply_generation where hh_datum.channel_id = channel.id and channel.supply_generation_id = supply_generation.id and supply_generation.supply_id = ? and (channel.is_import = TRUE or channel.is_kwh = FALSE) and hh_datum.start_date >= ? and hh_datum.start_date <= ? group by hh_datum.start_date order by hh_datum.start_date"
         else:
-            #self.pw.println("whole data: about to prepare query " +  str(System.currentTimeMillis() - timing))
-            mpan_core = MpanCore.getMpanCore(self.id)
-            supply = mpan_core.getSupply()
-            con = Hiber.session().connection()
-            if self.is_import:
-                hql = "select sum(case when channel.is_kwh then hh_datum.value else 0 end) as kwh, max(case when channel.is_kwh then hh_datum.status else '' end) as status, sum(case when not channel.is_kwh and channel.is_import then hh_datum.value else 0 end) as imp_kvarh, sum(case when not channel.is_kwh and not channel.is_import then hh_datum.value else 0  end) as exp_kvarh, hh_datum.start_date from hh_datum, channel, supply_generation where hh_datum.channel_id = channel.id and channel.supply_generation_id = supply_generation.id and supply_generation.supply_id = ? and (channel.is_import = TRUE or channel.is_kwh = FALSE) and hh_datum.start_date >= ? and hh_datum.start_date <= ? group by hh_datum.start_date order by hh_datum.start_date"
-            else:
-                hql = "select sum(case when channel.is_kwh then hh_datum.value else 0 end) as kwh, max(case when not channel.is_import and channel.is_kwh then hh_datum.status else '' end) as status, sum(case when not channel.is_kwh and channel.is_import then hh_datum.value else 0 end) as imp_kvarh, sum(case when not channel.is_kwh and not channel.is_import then hh_datum.value else 0  end) as exp_kvarh, hh_datum.start_date from hh_datum, channel, supply_generation where hh_datum.channel_id = channel.id and channel.supply_generation_id = supply_generation.id and supply_generation.supply_id = ? and (channel.is_import = FALSE or channel.is_kwh = FALSE) and hh_datum.start_date >= ? and hh_datum.start_date <= ? group by hh_datum.start_date order by hh_datum.start_date"
-            stmt = con.prepareStatement(hql, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.CLOSE_CURSORS_AT_COMMIT)
-            stmt.setLong(1, supply.getId())
-            stmt.setTimestamp(2, Timestamp(history_start.getDate().getTime()))
-            stmt.setTimestamp(3, Timestamp(history_finish.getDate().getTime()))
-            #stmt.setFetchSize(100)
-            rs = stmt.executeQuery()
-            #self.pw.println("whole data: starting loop " + str(System.currentTimeMillis() - timing))
-            year_advance = -1 * year_adjustment
-            while rs.next():
-                start_date = rs.getTimestamp('start_date')
-                msp_kwh = rs.getBigDecimal('kwh').doubleValue()
-                imp_kvarh = rs.getBigDecimal('imp_kvarh').doubleValue()
-                exp_kvarh = rs.getBigDecimal('exp_kvarh').doubleValue()
-                status = rs.getString('status')
+            hql = "select sum(case when channel.is_kwh then hh_datum.value else 0 end) as kwh, max(case when not channel.is_import and channel.is_kwh then hh_datum.status else '' end) as status, sum(case when not channel.is_kwh and channel.is_import then hh_datum.value else 0 end) as imp_kvarh, sum(case when not channel.is_kwh and not channel.is_import then hh_datum.value else 0  end) as exp_kvarh, hh_datum.start_date from hh_datum, channel, supply_generation where hh_datum.channel_id = channel.id and channel.supply_generation_id = supply_generation.id and supply_generation.supply_id = ? and (channel.is_import = FALSE or channel.is_kwh = FALSE) and hh_datum.start_date >= ? and hh_datum.start_date <= ? group by hh_datum.start_date order by hh_datum.start_date"
+        stmt = con.prepareStatement(hql, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.CLOSE_CURSORS_AT_COMMIT)
+        stmt.setLong(1, supply.getId())
+        stmt.setTimestamp(2, Timestamp(history_start.getDate().getTime()))
+        stmt.setTimestamp(3, Timestamp(history_finish.getDate().getTime()))
+        #stmt.setFetchSize(100)
+        rs = stmt.executeQuery()
+        #self.pw.println("whole data: starting loop " + str(System.currentTimeMillis() - timing))
+        year_advance = -1 * year_adjustment
+        while rs.next():
+            start_date = rs.getTimestamp('start_date')
+            msp_kwh = rs.getBigDecimal('kwh').doubleValue()
+            imp_kvarh = rs.getBigDecimal('imp_kvarh').doubleValue()
+            exp_kvarh = rs.getBigDecimal('exp_kvarh').doubleValue()
+            status = rs.getString('status')
 
-                utc_cal.setTime(start_date)
-                ct_cal.setTime(start_date)
-                utc_cal.add(Calendar.YEAR, year_advance)
-                ct_cal.add(Calendar.YEAR, year_advance)
+            utc_cal.setTime(start_date)
+            ct_cal.setTime(start_date)
+            utc_cal.add(Calendar.YEAR, year_advance)
+            ct_cal.add(Calendar.YEAR, year_advance)
 
-                data_hh.append({'status': status, 'imp-msp-kvarh': imp_kvarh, 'imp-msp-kvar': imp_kvarh * 2, 'exp-msp-kvarh': exp_kvarh, 'exp-msp-kvar': exp_kvarh * 2, 'msp-kw': msp_kwh * 2, 'msp-kwh': msp_kwh, 'change-kwh': change_kwh, 'hist-kwh': msp_kwh, 'hist-start-date': start_date, 'start-date': utc_cal.getTime(), 'ct-day': ct_cal.get(5), 'utc-month': utc_cal.get(2), 'utc-day': utc_cal.get(5), 'utc-decimal-hour': utc_cal.get(11) + float(utc_cal.get(12)) / 60, 'utc-year': utc_cal.get(Calendar.YEAR), 'utc-hour': utc_cal.get(Calendar.HOUR_OF_DAY), 'utc-minute': utc_cal.get(Calendar.MINUTE), 'ct-year': ct_cal.get(Calendar.YEAR), 'ct-month': ct_cal.get(2), 'ct-decimal-hour': ct_cal.get(11) + float(ct_cal.get(12)) / 60, 'ct-day-of-week': ct_cal.get(7), 'utc-day-of-week': utc_cal.get(7)})
+            data_hh.append({'status': status, 'imp-msp-kvarh': imp_kvarh, 'imp-msp-kvar': imp_kvarh * 2, 'exp-msp-kvarh': exp_kvarh, 'exp-msp-kvar': exp_kvarh * 2, 'msp-kw': msp_kwh * 2, 'msp-kwh': msp_kwh, 'hist-kwh': msp_kwh, 'hist-start-date': start_date, 'start-date': utc_cal.getTime(), 'ct-day': ct_cal.get(5), 'utc-month': utc_cal.get(2), 'utc-day': utc_cal.get(5), 'utc-decimal-hour': utc_cal.get(11) + float(utc_cal.get(12)) / 60, 'utc-year': utc_cal.get(Calendar.YEAR), 'utc-hour': utc_cal.get(Calendar.HOUR_OF_DAY), 'utc-minute': utc_cal.get(Calendar.MINUTE), 'ct-year': ct_cal.get(Calendar.YEAR), 'ct-month': ct_cal.get(2), 'ct-decimal-hour': ct_cal.get(11) + float(ct_cal.get(12)) / 60, 'ct-day-of-week': ct_cal.get(7), 'utc-day-of-week': utc_cal.get(7)})
 
-            rs.close()
-            stmt.close()
+        rs.close()
+        stmt.close()
 
         #self.pw.println("whole data: done looping " + str(System.currentTimeMillis() - timing))
         if len(data_hh) == 0:
@@ -3065,7 +2911,7 @@ def triad_dates():
         <value><![CDATA[from net.sf.chellow.physical import HhStartDate
 
 def triad_dates():
-    return [HhStartDate("2008-12-01T17:30Z"), HhStartDate("2008-12-15T17:30Z"), HhStartDate("2009-01-06T17:30Z")]]]></value>
+    return [HhStartDate("2011-01-07T17:00Z"), HhStartDate("2011-01-25T17:00Z"), HhStartDate("2010-12-15T17:00Z")]]]></value>
     </line>
     <line>
         <value><![CDATA[insert]]></value>
