@@ -45,8 +45,6 @@ import net.sf.chellow.physical.PersistentEntity;
 import net.sf.chellow.physical.Snag;
 import net.sf.chellow.physical.Supply;
 
-import org.hibernate.Criteria;
-import org.hibernate.criterion.Restrictions;
 import org.python.core.Py;
 import org.python.core.PyException;
 import org.python.core.PyObject;
@@ -210,24 +208,7 @@ public abstract class Contract extends PersistentEntity implements
 		return getFinishRateScript().getFinishDate();
 	}
 
-	@SuppressWarnings("unchecked")
-	void onUpdate(HhStartDate from, HhStartDate to) throws HttpException {
-		if (from == null) {
-			from = getStartDate();
-		}
-		if (to == null) {
-			to = getFinishDate();
-		}
-		Criteria criteria = Hiber.session().createCriteria(Bill.class).add(
-				Restrictions.ge("finishDate.date", from.getDate()));
-		if (to != null) {
-			criteria.add(Restrictions.le("startDate.date", to.getDate()));
-		}
-		for (Bill bill : (List<Bill>) criteria.createCriteria("batch").add(
-				Restrictions.eq("contract", this)).list()) {
-			bill.virtualEqualsActual();
-		}
-	}
+	abstract void onUpdate(HhStartDate from, HhStartDate to) throws HttpException;
 
 	public Element toXml(Document doc) throws HttpException {
 		return toXml(doc, "service");

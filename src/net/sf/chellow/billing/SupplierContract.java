@@ -94,12 +94,12 @@ public class SupplierContract extends Contract {
 
 	public static SupplierContract getSupplierContract(Long id)
 			throws HttpException {
-		SupplierContract service = findSupplierContract(id);
-		if (service == null) {
+		SupplierContract contract = findSupplierContract(id);
+		if (contract == null) {
 			throw new UserException(
-					"There isn't a supplier service with that id.");
+					"There isn't a supplier contract with that id.");
 		}
-		return service;
+		return contract;
 	}
 
 	public static SupplierContract findSupplierContract(Long id) {
@@ -163,25 +163,7 @@ public class SupplierContract extends Contract {
 	}
 
 	public void httpPost(Invocation inv) throws HttpException {
-		if (inv.hasParameter("test")) {
-			String chargeScript = inv.getString("charge-script");
-			chargeScript = chargeScript.replace("\r", "").replace("\t", "    ");
-			Long billId = inv.getLong("bill-id");
-			if (!inv.isValid()) {
-				throw new UserException(document());
-			}
-			try {
-				Bill bill = Bill.getBill(billId);
-				Document doc = document();
-				Element source = doc.getDocumentElement();
-				update(getName(), chargeScript);
-				source.appendChild(bill.virtualBillXml(doc));
-				inv.sendOk(doc);
-			} catch (HttpException e) {
-				e.setDocument(document());
-				throw e;
-			}
-		} else if (inv.hasParameter("delete")) {
+		if (inv.hasParameter("delete")) {
 			try {
 				delete();
 			} catch (HttpException e) {
@@ -212,7 +194,8 @@ public class SupplierContract extends Contract {
 	@SuppressWarnings("unchecked")
 	void onUpdate(HhStartDate startDate, HhStartDate finishDate)
 			throws HttpException {
-		//Debug.print("Checking on update from " + startDate + " to " + finishDate);
+		// Debug.print("Checking on update from " + startDate + " to " +
+		// finishDate);
 		Query query = null;
 		if (getFinishDate() == null) {
 			query = Hiber
@@ -243,7 +226,6 @@ public class SupplierContract extends Contract {
 									+ (finishDate == null ? "ongoing"
 											: finishDate + "."));
 		}
-		super.onUpdate(startDate, finishDate);
 	}
 
 	@SuppressWarnings("unchecked")

@@ -262,4 +262,10 @@ public class NonCoreContract extends Contract {
 		// TODO Auto-generated method stub
 		return null;
 	}
+
+	@Override
+	void onUpdate(HhStartDate from, HhStartDate to) throws HttpException {
+		// TODO Auto-generated method stub
+		
+	}
 }

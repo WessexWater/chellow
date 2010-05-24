@@ -48,7 +48,8 @@
 							<fieldset>
 								<legend>Delete</legend>
 								<p>
-									Are you sure you want to delete this contract and its rate scripts?
+									Are you sure you want to delete this contract and its rate
+									scripts?
 								</p>
 								<input type="submit" name="delete" value="Delete" />
 							</fieldset>
@@ -58,7 +59,6 @@
 						</p>
 					</xsl:when>
 					<xsl:otherwise>
-
 						<ul>
 							<li>
 								<a href="batches/">Batches</a>
@@ -136,33 +136,6 @@
 								<input type="reset" value="Reset" />
 								<br />
 								<br />
-								<fieldset>
-									<legend>Test</legend>
-									<label>
-										<xsl:value-of select="'Bill id '" />
-										<input name="bill-id">
-											<xsl:attribute name="value">
-										<xsl:choose>
-											<xsl:when test="/source/request/parameter[@name='bill-id']">
-												<xsl:value-of
-												select="/source/request/parameter[@name='bill-id']/value" />
-											</xsl:when>
-											<xsl:otherwise>
-												<xsl:value-of select="/source/supplier-contract/@bill-id" />
-											</xsl:otherwise>
-										</xsl:choose>
-									</xsl:attribute>
-										</input>
-									</label>
-									<xsl:value-of select="' '" />
-									<input type="submit" name="test" value="Test without saving" />
-									<br />
-									<xsl:if test="/source/request/parameter[@name='test']">
-										<xsl:call-template name="bill-element-template">
-											<xsl:with-param name="billElement" select="/source/bill-element" />
-										</xsl:call-template>
-									</xsl:if>
-								</fieldset>
 							</fieldset>
 						</form>
 						<br />
@@ -177,28 +150,5 @@
 				</xsl:choose>
 			</body>
 		</html>
-	</xsl:template>
-	<xsl:template name="bill-element-template">
-		<xsl:param name="billElement" />
-		<p>
-			<em>
-				<xsl:value-of select="$billElement/@name" />
-			</em>
-			:
-			<xsl:value-of select="$billElement/@cost" />
-		</p>
-		<p>
-			<xsl:value-of select="$billElement/@working" />
-		</p>
-		<xsl:if test="$billElement/bill-element">
-			<ul>
-				<xsl:for-each select="$billElement/bill-element">
-					<li>
-						<xsl:call-template name="bill-element-template" />
-						<xsl:with-param name="billElement" select="bill-element" />
-					</li>
-				</xsl:for-each>
-			</ul>
-		</xsl:if>
 	</xsl:template>
 </xsl:stylesheet>

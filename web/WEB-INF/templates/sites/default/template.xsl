@@ -272,6 +272,31 @@
 								<br />
 								<br />
 								<label>
+									<xsl:value-of select="'MOP Contract '" />
+									<select name="mop-contract-id">
+										<option value="null">
+											<xsl:value-of select="'None'" />
+										</option>
+										<xsl:for-each select="/source/mop-contract">
+											<option value="{@id}">
+												<xsl:if
+													test="@id = /source/request/parameter[@name='mop-contract-id']/value">
+													<xsl:attribute name="selected" />
+												</xsl:if>
+												<xsl:value-of select="@name" />
+											</option>
+										</xsl:for-each>
+									</select>
+								</label>
+								<br />
+								<br />
+								<label>
+									<xsl:value-of select="'MOP Account '" />
+									<input name="mop-account"
+										value="{/source/request/parameter[@name = 'mop-account']/value}" />
+								</label>
+								<br />
+								<label>
 									<xsl:value-of select="'HHDC Contract '" />
 									<select name="hhdc-contract-id">
 										<option value="null">
@@ -291,9 +316,9 @@
 								<br />
 								<br />
 								<label>
-									<xsl:value-of select="'HHDC Account Reference '" />
-									<input name="hhdc-account-reference"
-										value="{/source/request/parameter[@name = 'hhdc-account-reference']/value}" />
+									<xsl:value-of select="'HHDC Account '" />
+									<input name="hhdc-account"
+										value="{/source/request/parameter[@name = 'hhdc-account']/value}" />
 								</label>
 								<br />
 								<br />
@@ -334,9 +359,9 @@
 									</label>
 									<br />
 									<label>
-										<xsl:value-of select="'Supplier Account Reference '" />
-										<input name="import-supplier-account-reference"
-											value="{/source/request/parameter[@name = 'import-supplier-account-reference']/value}" />
+										<xsl:value-of select="'Supplier Account'" />
+										<input name="import-supplier-account"
+											value="{/source/request/parameter[@name = 'import-supplier-account']/value}" />
 									</label>
 								</fieldset>
 								<br />
@@ -376,9 +401,9 @@
 									</label>
 									<br />
 									<label>
-										<xsl:value-of select="'Supplier Account Reference '" />
-										<input name="export-supplier-account-reference"
-											value="{/source/request/parameter[@name = 'export-supplier-account-reference']/value}" />
+										<xsl:value-of select="'Supplier Account '" />
+										<input name="export-supplier-account"
+											value="{/source/request/parameter[@name = 'export-supplier-account']/value}" />
 									</label>
 								</fieldset>
 								<br />

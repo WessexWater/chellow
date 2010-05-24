@@ -35,10 +35,12 @@ import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
 import net.sf.chellow.physical.HhStartDate;
 import net.sf.chellow.physical.MarketRole;
+import net.sf.chellow.physical.Mpan;
 import net.sf.chellow.physical.Participant;
 import net.sf.chellow.physical.SupplyGeneration;
 import net.sf.chellow.ui.Chellow;
 
+import org.hibernate.Query;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -74,6 +76,15 @@ public class MopContract extends Contract {
 		if (contract == null) {
 			throw new UserException(
 					"There isn't a meter operator contract with that id.");
+		}
+		return contract;
+	}
+
+	public static MopContract getMopContract(String name) throws HttpException {
+		MopContract contract = findMopContract(name);
+		if (contract == null) {
+			throw new UserException(
+					"There isn't a meter operator contract with that name.");
 		}
 		return contract;
 	}
@@ -213,5 +224,40 @@ public class MopContract extends Contract {
 	@Override
 	public String missingBillSnagDescription() {
 		return "Missing MOP bill.";
+	}
+	
+	@SuppressWarnings("unchecked")
+	@Override
+	void onUpdate(HhStartDate startDate, HhStartDate finishDate) throws HttpException {
+		Query query = null;
+		if (getFinishDate() == null) {
+			query = Hiber
+					.session()
+					.createQuery(
+							"from Mpan mpan where mpan.mopContract = :contract and mpan.supplyGeneration.startDate.date < :startDate order by mpan.supplyGeneration.startDate.date desc");
+		} else {
+			query = Hiber
+					.session()
+					.createQuery(
+							"from Mpan mpan where mpan.mopContract = :contract and (mpan.supplyGeneration.startDate.date < :startDate or (mpan.supplyGeneration.finishDate is null or mpan.supplyGeneration.finishDate.date > :finishDate)) order by mpan.supplyGeneration.startDate.date desc")
+					.setTimestamp("finishDate", getFinishDate().getDate());
+		}
+		List<Mpan> mpansOutside = query.setEntity("contract", this)
+				.setTimestamp("startDate", getStartDate().getDate()).list();
+		if (!mpansOutside.isEmpty()) {
+			throw new UserException(document(),
+					mpansOutside.size() > 1 ? "The MPANs with cores "
+							+ mpansOutside.get(0).getCore()
+							+ " and "
+							+ mpansOutside.get(mpansOutside.size() - 1)
+									.getCore() + " use this contract"
+							: "An MPAN with core "
+									+ mpansOutside.get(0).getCore()
+									+ " uses this contract and lies outside "
+									+ startDate
+									+ " to "
+									+ (finishDate == null ? "ongoing"
+											: finishDate + "."));
+		}		
 	}
 }

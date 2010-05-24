@@ -125,27 +125,6 @@
 								<br />
 								<input type="submit" value="Update" />
 								<input type="reset" value="Reset" />
-								<br />
-								<br />
-								<fieldset>
-									<legend>Test</legend>
-									<label>
-										<xsl:value-of select="'Bill id '" />
-										<input name="bill-id">
-											<xsl:choose>
-												<xsl:when test="/source/request/parameter[@name='bill-id']">
-													<xsl:value-of
-														select="/source/request/parameter[@name='bill-id']/value" />
-												</xsl:when>
-												<xsl:otherwise>
-													<xsl:value-of select="/source/non-core-contract/@bill-id" />
-												</xsl:otherwise>
-											</xsl:choose>
-										</input>
-									</label>
-									<xsl:value-of select="' '" />
-									<input type="submit" value="Test without saving" />
-								</fieldset>
 							</fieldset>
 						</form>
 						<br />

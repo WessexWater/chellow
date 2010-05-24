@@ -157,8 +157,7 @@
 									<legend>Start date</legend>
 									<input name="start-year">
 										<xsl:choose>
-											<xsl:when
-												test="/source/request/parameter[@name='start-year']">
+											<xsl:when test="/source/request/parameter[@name='start-year']">
 												<xsl:attribute name="value">
 													<xsl:value-of
 													select="/source/request/parameter[@name='start-year']/value/text()" />
@@ -177,8 +176,7 @@
 										<xsl:for-each select="/source/months/month">
 											<option value="{@number}">
 												<xsl:choose>
-													<xsl:when
-														test="/source/request/parameter[@name='start-month']">
+													<xsl:when test="/source/request/parameter[@name='start-month']">
 														<xsl:if
 															test="/source/request/parameter[@name='start-month']/value/text() = number(@number)">
 															<xsl:attribute name="selected" />
@@ -200,8 +198,7 @@
 										<xsl:for-each select="/source/days/day">
 											<option value="{@number}">
 												<xsl:choose>
-													<xsl:when
-														test="/source/request/parameter[@name='start-day']">
+													<xsl:when test="/source/request/parameter[@name='start-day']">
 														<xsl:if
 															test="/source/request/parameter[@name='start-day']/value/text() = @number">
 															<xsl:attribute name="selected" />
@@ -250,8 +247,7 @@
 									<input name="finish-year">
 										<xsl:attribute name="value">
 											<xsl:choose>
-												<xsl:when
-											test="/source/request/parameter[@name='finish-year']">
+												<xsl:when test="/source/request/parameter[@name='finish-year']">
 													<xsl:value-of
 											select="/source/request/parameter[@name='finish-year']/value/text()" />
 												</xsl:when>
@@ -272,8 +268,7 @@
 										<xsl:for-each select="/source/months/month">
 											<option value="{@number}">
 												<xsl:choose>
-													<xsl:when
-														test="/source/request/parameter[@name='finish-month']">
+													<xsl:when test="/source/request/parameter[@name='finish-month']">
 
 														<xsl:if
 															test="/source/request/parameter[@name='finish-month']/value/text() = number(@number)">
@@ -305,8 +300,7 @@
 										<xsl:for-each select="/source/days/day">
 											<option value="{@number}">
 												<xsl:choose>
-													<xsl:when
-														test="/source/request/parameter[@name='finish-day']">
+													<xsl:when test="/source/request/parameter[@name='finish-day']">
 
 														<xsl:if
 															test="/source/request/parameter[@name='finish-day']/value/text() = @number">
@@ -340,6 +334,60 @@
 								</fieldset>
 								<br />
 								<br />
+								<label>
+									<xsl:value-of select="'MOP Contract '" />
+									<select name="mop-contract-id">
+										<option value="null">
+											<xsl:value-of select="'None'" />
+										</option>
+										<xsl:for-each select="/source/mop-contract">
+											<option value="{@id}">
+												<xsl:choose>
+													<xsl:when
+														test="/source/request/parameter[@name='mop-contract-id']">
+														<xsl:if
+															test="@id = /source/request/parameter[@name='mop-contract-id']/value">
+															<xsl:attribute name="selected" />
+														</xsl:if>
+													</xsl:when>
+													<xsl:otherwise>
+														<xsl:if test="@id = /source/supply-generation/mop-contract/@id">
+															<xsl:attribute name="selected" />
+														</xsl:if>
+													</xsl:otherwise>
+												</xsl:choose>
+												<xsl:value-of select="@name" />
+											</option>
+										</xsl:for-each>
+									</select>
+								</label>
+								<xsl:if test="/source/supply-generation/mop-contract">
+									<xsl:value-of select="' '" />
+									<a
+										href="{/source/request/@context-path}/mop-contracts/{/source/supply-generation/mop-contract/@id}/">
+										<xsl:value-of select="/source/supply-generation/mop-contract/@name" />
+									</a>
+								</xsl:if>
+								<br />
+								<label>
+									MOP Account
+									<input name="mop-account">
+										<xsl:attribute name="value">
+												<xsl:choose>
+													<xsl:when test="/source/request/parameter[@name='mop-account']">
+														<xsl:value-of
+											select="/source/request/parameter[@name='mop-account']/value" />
+													</xsl:when>
+													<xsl:otherwise>
+														<xsl:value-of select="/source/supply-generation/@mop-account" />
+													</xsl:otherwise>
+												</xsl:choose>
+											</xsl:attribute>
+									</input>
+								</label>
+								<xsl:value-of select="' '" />
+								<br />
+
 								<label>
 									<xsl:value-of select="'HHDC Contract '" />
 									<select name="hhdc-contract-id">

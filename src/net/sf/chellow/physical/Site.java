@@ -32,6 +32,7 @@ import java.util.Map;
 import java.util.Set;
 
 import net.sf.chellow.billing.HhdcContract;
+import net.sf.chellow.billing.MopContract;
 import net.sf.chellow.billing.SupplierContract;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
@@ -193,7 +194,7 @@ public class Site extends PersistentEntity {
 
 	public Supply insertSupply(Source source, GeneratorType generatorType,
 			String supplyName, HhStartDate startDate, HhStartDate finishDate,
-			GspGroup gspGroup, HhdcContract hhdcContract, String hhdcAccount,
+			GspGroup gspGroup, MopContract mopContract, String mopAccount,HhdcContract hhdcContract, String hhdcAccount,
 			String meterSerialNumber, String importMpanStr, Ssc importSsc,
 			SupplierContract importSupplierContract,
 			String importSupplierAccount, Integer importAgreedSupplyCapacity,
@@ -223,7 +224,7 @@ public class Site extends PersistentEntity {
 		Map<Site, Boolean> siteMap = new HashMap<Site, Boolean>();
 		siteMap.put(this, true);
 		SupplyGeneration generation = supply.insertGeneration(siteMap,
-				startDate, hhdcContract, hhdcAccount, meterSerialNumber,
+				startDate, mopContract, mopAccount, hhdcContract, hhdcAccount, meterSerialNumber,
 				importMpanStr, importSsc, importSupplierContract,
 				importSupplierAccount, importAgreedSupplyCapacity,
 				exportMpanStr, exportSsc, exportSupplierContract,
@@ -477,6 +478,12 @@ public class Site extends PersistentEntity {
 				"from GspGroup group order by group.code").list()) {
 			docElem.appendChild(group.toXml(doc));
 		}
+		for (MopContract contract : (List<MopContract>) Hiber.session()
+				.createQuery(
+						"from MopContract contract order by contract.name")
+				.list()) {
+			docElem.appendChild(contract.toXml(doc));
+		}
 		for (HhdcContract contract : (List<HhdcContract>) Hiber.session()
 				.createQuery(
 						"from HhdcContract contract order by contract.name")
@@ -523,24 +530,27 @@ public class Site extends PersistentEntity {
 				String name = inv.getString("name");
 				Long sourceId = inv.getLong("source-id");
 				Long gspGroupId = inv.getLong("gsp-group-id");
+				Long mopContractId = inv.getLong("mop-contract-id");
+				String mopAccount = inv
+						.getString("mop-account");
 				Long hhdcContractId = inv.getLong("hhdc-contract-id");
-				String hhdcAccountReference = inv
-						.getString("hhdc-account-reference");
+				String hhdcAccount = inv
+						.getString("hhdc-account");
 				String meterSerialNumber = inv.getString("meter-serial-number");
 				String importMpanStr = inv.getString("import-mpan");
 				String importSscCode = inv.getString("import-ssc-code");
 				Long importSupplierContractId = inv
 						.getLong("import-supplier-contract-id");
-				String importSupplierAccountReference = inv
-						.getString("import-supplier-account-reference");
+				String importSupplierAccount = inv
+						.getString("import-supplier-account");
 				String importAgreedSupplyCapacityStr = inv
 						.getString("import-agreed-supply-capacity");
 				String exportMpanStr = inv.getString("export-mpan");
 				String exportSscCode = inv.getString("export-ssc-code");
 				Long exportSupplierContractId = inv
 						.getLong("export-supplier-contract-id");
-				String exportSupplierAccountReference = inv
-						.getString("export-supplier-account-reference");
+				String exportSupplierAccount = inv
+						.getString("export-supplier-account");
 				String exportAgreedSupplyCapacityStr = inv
 						.getString("export-agreed-supply-capacity");
 				Date startDate = inv.getDate("start");
@@ -555,6 +565,10 @@ public class Site extends PersistentEntity {
 							.getGeneratorType(generatorTypeId);
 				}
 				GspGroup gspGroup = GspGroup.getGspGroup(gspGroupId);
+				MopContract mopContract = null;
+				if (mopContractId != null) {
+					mopContract = MopContract.getMopContract(mopContractId);
+				}
 				HhdcContract hhdcContract = null;
 				if (hhdcContractId != null) {
 					hhdcContract = HhdcContract.getHhdcContract(hhdcContractId);
@@ -596,12 +610,12 @@ public class Site extends PersistentEntity {
 					}
 				}
 				Supply supply = insertSupply(source, generatorType, name,
-						new HhStartDate(startDate).getNext(), null, gspGroup,
-						hhdcContract, hhdcAccountReference, meterSerialNumber,
+						new HhStartDate(startDate).getNext(), null, gspGroup,mopContract, mopAccount, 
+						hhdcContract, hhdcAccount, meterSerialNumber,
 						importMpanStr, importSsc, importSupplierContract,
-						importSupplierAccountReference,
+						importSupplierAccount,
 						importAgreedSupplyCapacity, exportMpanStr, exportSsc,
-						exportSupplierContract, exportSupplierAccountReference,
+						exportSupplierContract, exportSupplierAccount,
 						exportAgreedSupplyCapacity);
 				Hiber.flush();
 				if (hhdcContract != null) {
