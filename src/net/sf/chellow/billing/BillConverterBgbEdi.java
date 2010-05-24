@@ -43,7 +43,7 @@ import net.sf.chellow.physical.ReadType;
 import net.sf.chellow.physical.RegisterReadRaw;
 import net.sf.chellow.physical.Units;
 
-public class BillConverterBgbEdi implements BillConverter {
+public class BillConverterBgbEdi implements BillParser {
 	private static final Map<Integer, Character> readTypeMap = Collections
 			.synchronizedMap(new HashMap<Integer, Character>());
 

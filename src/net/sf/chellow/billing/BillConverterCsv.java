@@ -48,7 +48,7 @@ import net.sf.chellow.physical.Units;
 
 import com.Ostermiller.util.CSVParser;
 
-public class BillConverterCsv implements BillConverter {
+public class BillConverterCsv implements BillParser {
 	private static final Map<String, String> billTypeMap = Collections
 			.synchronizedMap(new HashMap<String, String>());
 

@@ -24,9 +24,7 @@ import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.Reader;
 import java.io.UnsupportedEncodingException;
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -53,15 +51,16 @@ import net.sf.chellow.monad.types.UriPathElement;
 import net.sf.chellow.ui.ChellowLogger;
 
 import org.apache.commons.fileupload.FileItem;
+import org.python.core.PyObject;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
 public class BillImport extends Thread implements Urlable, XmlDescriber {
-	private static final Map<String, Class<? extends BillConverter>> CONVERTERS;
+	private static final Map<String, Class<? extends BillParser>> CONVERTERS;
 
 	static {
-		CONVERTERS = new HashMap<String, Class<? extends BillConverter>>();
+		CONVERTERS = new HashMap<String, Class<? extends BillParser>>();
 		CONVERTERS.put("mm", BillConverterMm.class);
 		CONVERTERS.put("csv", BillConverterCsv.class);
 		CONVERTERS.put("bgb.edi", BillConverterBgbEdi.class);
@@ -76,7 +75,7 @@ public class BillImport extends Thread implements Urlable, XmlDescriber {
 			.synchronizedList(new ArrayList<Map<RawBill, String>>());
 	private List<RawBill> successfulBills = null;
 
-	private BillConverter converter;
+	private BillParser parser;
 
 	private Long id;
 
@@ -105,12 +104,6 @@ public class BillImport extends Thread implements Urlable, XmlDescriber {
 			throw new UserException(null, "File has zero length");
 		}
 		fileName = fileName.toLowerCase();
-		/*
-		 * if (!fileName.endsWith(".mm") && !fileName.endsWith(".zip") &&
-		 * !fileName.endsWith(".csv")) { throw UserException
-		 * .newInvalidParameter("The extension of the filename '" + fileName +
-		 * "' is not one of the recognized extensions; 'zip', 'mm', 'csv'."); }
-		 */
 		if (fileName.endsWith(".zip")) {
 			ZipInputStream zin;
 			try {
@@ -135,51 +128,18 @@ public class BillImport extends Thread implements Urlable, XmlDescriber {
 					"The file name must have an extension (eg. '.zip')");
 		}
 		String extension = fileName.substring(locationOfDot + 1);
-		Class<? extends BillConverter> converterClass = CONVERTERS
-				.get(extension);
-		if (converterClass == null) {
-			StringBuilder recognizedExtensions = new StringBuilder();
-			for (String allowedExtension : CONVERTERS.keySet()) {
-				recognizedExtensions.append(" " + allowedExtension);
-			}
-			throw new UserException(
-					"The extension '"
-							+ extension
-							+ "' of the filename '"
-							+ fileName
-							+ "' is not one of the recognized extensions; "
-							+ recognizedExtensions
-							+ " and it is not a '.zip' file containing a file with one of the recognized extensions.");
-		}
+		NonCoreContract parserContract = NonCoreContract.getNonCoreContract("bill-parser-" + extension);
 		try {
-			converter = converterClass.getConstructor(
-					new Class<?>[] { Reader.class }).newInstance(
-					new Object[] { new InputStreamReader(is, "UTF-8") });
-		} catch (IllegalArgumentException e) {
-			throw new InternalException(e);
-		} catch (SecurityException e) {
-			throw new InternalException(e);
+			parser = (BillParser) ((PyObject) parserContract.callFunction("get_bill_parser", new Object[] {new InputStreamReader(is, "UTF-8")})).__tojava__(BillParser.class);
 		} catch (UnsupportedEncodingException e) {
 			throw new InternalException(e);
-		} catch (InstantiationException e) {
-			throw new InternalException(e);
-		} catch (IllegalAccessException e) {
-			throw new InternalException(e);
-		} catch (InvocationTargetException e) {
-			Throwable cause = e.getCause();
-			if (cause instanceof HttpException) {
-				throw (HttpException) cause;
-			} else {
-				throw new InternalException(e);
-			}
-		} catch (NoSuchMethodException e) {
-			throw new InternalException(e);
 		}
+		
 	}
 
 	public void run() {
 		try {
-			List<RawBill> rawBills = converter.getRawBills();
+			List<RawBill> rawBills = parser.getRawBills();
 			Batch batch = getBatch();
 			Hiber.flush();
 			successfulBills = Collections
@@ -276,7 +236,7 @@ public class BillImport extends Thread implements Urlable, XmlDescriber {
 		boolean isAlive = this.isAlive();
 		importElement.setAttribute("id", getUriId().toString());
 		importElement
-				.setAttribute("progress", successfulBills == null ? converter
+				.setAttribute("progress", successfulBills == null ? parser
 						.getProgress() : "There have been "
 						+ successfulBills.size() + " successful imports, and "
 						+ failedBills.size() + " failures."

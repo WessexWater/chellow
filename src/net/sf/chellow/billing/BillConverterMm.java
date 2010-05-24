@@ -41,7 +41,7 @@ import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.UserException;
 import net.sf.chellow.physical.HhStartDate;
 
-public class BillConverterMm implements BillConverter {
+public class BillConverterMm implements BillParser {
 	private LineNumberReader lreader;
 
 	private DateFormat dateFormat = new SimpleDateFormat("yyyyMMdd", Locale.UK);

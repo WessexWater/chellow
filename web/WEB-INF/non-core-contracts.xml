@@ -62,105 +62,97 @@ class BillParser():
     def get_raw_bills():
         raw_bills = []
         Hiber.flush()
-        try:
-            code = self.parser.next_segment()
-            while code is not None:
-                if code == "CLO":
-                    cloc = self.parser.componenets(0, ['string', 'string'])
-                    account_reference = cloc[1]
-                elif code == "BCD":
-                    ivdt = self.parser.components(0, ['date'])
-                    issue_date = ivdt[0]
+        code = self.parser.next_segment()
+        while code is not None:
+            elements = self.parser.elements
+            if code == "CLO":
+                cloc = elements[0]
+                account_reference = cloc[1]
+            elif code == "BCD":
+                ivdt = elements[0]
+                issue_date = self.parser.to_date(ivdt[0])
 
-                    invn = self.parser.components(2, ['string'])
-                    invoice_number = invn[0]
+                invn = elements[2]
+                invoice_number = invn[0]
 
-                    btcd = self.parser.components(5, ['string'])
-                    bill_type_code = btcd[0]
-                elif code == "MHD":
-                    type = self.parser.componenets(1)
-                    message_type = type[0]
-                    if message_type == "UTLBIL":
-                        issue_date = None
-                        start_date = None
-                        finish_date = None
-                        account_reference = None
-                        invoice_number = None
-                        net = BigDecimal(0)
-                        vat = BigDecimal(0)
-                        reads = []
-                        bill_type_code = None
-                        mpan_strings = []
-                elif code == "CCD":
-                    ccde = self.parser.components(1, ['string'])
-                    consumption_charge_indicator = ccde[0]
+                btcd = elements[5]
+                bill_type_code = btcd[0]
+            elif code == "MHD":
+                type = elements[1]
+                message_type = type[0]
+                if message_type == "UTLBIL":
+                    issue_date = None
+                    start_date = None
+                    finish_date = None
+                    account_reference = None
+                    invoice_number = None
+                    net = BigDecimal(0)
+                    vat = BigDecimal(0)
+                    reads = []
+                    bill_type_code = None
+                    mpan_strings = []
+            elif code == "CCD":
+                ccde = elements[1]
+                consumption_charge_indicator = ccde[0]
 
-                    if consumption_charge_indicator in ["1", "2"]:
-                        previous_hh_read_date = self.parser.components(7, ['date'])[0]
-                        register_start_date = previous_hh_read_date.getNext()
-                        previous_read_date = previous_hh_read_date
+                if consumption_charge_indicator in ["1", "2"]:
+                    previous_hh_read_date = self.parser.to_date(elements[7][0])
+                    register_start_date = previous_hh_read_date.getNext()
+                    previous_read_date = previous_hh_read_date
 
-                    if HhStartDate.isAfter(start_date, registerStartDate):
-                        start_date = register_start_date
+                if HhStartDate.isAfter(start_date, registerStartDate):
+                    start_date = register_start_date
 
-                    register_finish_date = self.parser.components(6, ['date'])[0]
-                    if HhStartDate.isBefore(finish_date, register_finish_date):
-                        finish_date = register_finish_date
+                register_finish_date = self.parser.to_date(elements[6][0])
+                if HhStartDate.isBefore(finish_date, register_finish_date):
+                    finish_date = register_finish_date
 
-                    tmod = self.parser.components(3)
-                    mtnr = self.parser.components(4)
-                    mloc = self.parser.components(5)
+                tmod = elements[3]
+                mtnr = elements[4]
+                mloc = elements[5]
 
-                    prrd = self.parser.components(9, ['string', 'date', 'string', 'string'])
-                    present_read_type = prrd[1]
-                    previous_read_type = read_type_map[prrd[3]]
+                prrd = elements[9]
+                present_read_type = self.parser.to_date(prrd[1])
+                previous_read_type = read_type_map[prrd[3]]
 
-                    adjf = self.parser.components(12, ['string', 'int'])
-                    coefficient = BigDecimal(adjf[1]).divide(BigDecimal(100000))
-                    present_reading_value = BigDecimal(prrd.getInt(0)).divide(BigDecimal(1000))
-                    previous_reading_value = BigDecimal(prrd.getInt(2)).divide(BigDecimal(1000))
-                    meter_serial_number = mtnr.getString(0)
-                    tmodStr = tmod.getString(0)
-                    tpr = None
-                    try:
-                        tpr = Integer.parseInt(tmodStr)
-                    except NumberFormatException, e:
-                        tpr = tModMap.get(tmodStr)
-                        if tpr is None:
-                            raise UserException("Don't recognize the TPR code '" + tmodStr + "'.")
+                adjf = elements[12]
+                coefficient = BigDecimal(adjf[1]).divide(BigDecimal(100000))
+                present_reading_value = BigDecimal(prrd[0]).divide(BigDecimal(1000))
+                previous_reading_value = BigDecimal(prrd[2]).divide(BigDecimal(1000))
+                meter_serial_number = mtnr[0]
+                tmodStr = tmod[0]
+                tpr = None
+                try:
+                    tpr = Integer.parseInt(tmodStr)
+                except NumberFormatException, e:
+                    tpr = tModMap.get(tmodStr)
+                    if tpr is None:
+                        raise UserException("Don't recognize the TPR code '" + tmodStr + "'.")
 
-                    reads.add({'meter-serial-number': meter_serial_number, 'mpan': mloc.getString(0), 'coefficient': coefficient, 'units': Units.KWH, 'tpr': tpr, 'previous-date': previous_read_date, 'previous-value': previous_reading_value, 'previous-type': previous_read_type, 'present-date': register_finish_date, 'present-value': present_reading_value, 'present-type': present_read_type})
+                reads.add({'meter-serial-number': meter_serial_number, 'mpan': mloc[0], 'coefficient': coefficient, 'units': Units.KWH, 'tpr': tpr, 'previous-date': previous_read_date, 'previous-value': previous_reading_value, 'previous-type': previous_read_type, 'present-date': register_finish_date, 'present-value': present_reading_value, 'present-type': present_read_type})
+            elif code == "MTR":
+                if messageType.equals("UTLBIL"):
+                    register_reads = []
+                    for read in reads:
+                        register_reads.append(RegisterReadRaw(read['meter-serial-number'], read['mpan'], read['coefficient'], read['units'], read['tpr'], read['previous-date'], read['previous-value'], read['previous-type'], read['current-date'], read['current-value'], read['current-type']))
+                    bill_type = bill_types[bill_type_code]
+                    bill_raw = RawBill(bill_type, account_reference, mpan_strings, invoice_number, issue_date.getDate(), start_date, finish_date, net, vat, register_reads)
+                    raw_invoices.append(bill_raw)
+            elif code == "MAN":
+                madn = elements[2]
+                pc_code = "0" + madn[3]
+                mtc_code = madn[4]
+                llfc_code = madn[5]
 
-                if code == "MTR":
-                    if messageType.equals("UTLBIL"):
-                        register_reads = []
-                        for read in reads:
-                            register_reads.append(RegisterReadRaw(read.getMeterSerialNumber(), read.getMpanStr(), read.getCoefficient(), read.getUnits(), read.getTpr(), read.getPreviousDate(), read.getPreviousValue(), read.getPreviousType(), read.getCurrentDate(), read.getCurrentValue(), read.getCurrentType()))
-                        bill_type = bill_types[bill_type_code]
-                        bill_raw = RawBill(bill_type, account_reference, mpan_strings, invoice_number, issue_date.getDate(), start_date, finish_date, net, vat, register_reads)
-                        raw_invoices.append(bill_raw)
+                mpan_strings.append(pc_code + " " + mtc_code + " " + llfc_code + " " + madn[0] + " " + madn[1] + madn[2])
+            elif code == "VAT":
+                uvla = elements[5]
+                net = uvla.getBigDecimal()
+                uvtt = elements[6]
+                vat = uvtt.getBigDecimal()
 
-                if code == "MAN":
-                    madn = segment.getElements().get(2)
-                    pc_code = "0" + madn.getString(3)
-                    mtc_code = madn.getComponents().get(4)
-                    llfc_code = madn.getString(5)
-
-                    mpan_strings.append(pc_code + " " + mtc_code + " " + llfc_code + " " + madn.getComponents().get(0) + " " + madn.getComponents().get(1) + madn.getComponents().get(2))
-
-                if code == "VAT":
-                    uvla = segment.getElements().get(5)
-                    net = uvla.getBigDecimal()
-                    uvtt = segment.getElements().get(6)
-                    vat = uvtt.getBigDecimal()
-
-                line = lreader.readLine()
-            lreader.close()
-            Hiber.flush()
-        except IOException, e:
-            raise UserException("Can't read EDF Energy mm file.")
-        except Throwable, e:
-            raise UserException("Problem at line number " + lreader.getLineNumber() + "\n" + line + "\n of the EDI file.\n" + HttpException.getStackTraceString(e))
+        self.parser.close()
+        Hiber.flush()
         return raw_invoices
 
 
@@ -2882,38 +2874,43 @@ class EdiParser():
             return None
         if line[-1] != "'":
             raise UserException("This parser expects one segment per line.")
-        self.segment = [element.split(':') for element in line[4:-1].split("+")]
+        self.elements = [element.split(':') for element in line[4:-1].split("+")]
         return line[:3]
 
 
     def big_decimal(element_index):
-        comps = self.segment[element_index]
-        result = BigDecimal(self.segment[element_index][0])
+        comps = self.elements[element_index]
+        result = BigDecimal(self.elements[element_index][0])
         if len(comps) > 1 and comps[-1] == "R":
             result = result.multiply(BigDecimal("-1"))
         return result
 
 
     def string_element(element_index):
-        return self.segment[element_index]
+        return self.elements[element_index]
 
 
-    def components(element_index, types):
-        result = []
-        element = self.segment[element_index]
-        for comp, type, index in zip(element.split(':'), types, range(len(types))):
-            if type == 'string':
-                result.append(comp)
-            elif type == 'date':
-                try:
-                    result.append(HhStartDate(dateFormat.parse(comp)))
-                except ParseException, e:
-                    raise UserException("Expected component " + str(index) + " of element '" + element + "' (" + str(element_index) + ") of segment '"    + self.segment + "' to be a date. " + e.getMessage())
-            elif type == 'int':
-                try:
-                    append(Integer.parseInt(comp))
-                except NumberFormatException, e:
-                    raise UserException("Expected component " + str(index) + " of element '" + element + "' (" + str(element_index) + ") of segment '" + self.segment + "' to be an integer. " + e.getMessage())]]></value>
+    def to_date(component):
+        try:
+            return HhStartDate(dateFormat.parse(component))
+        except ParseException, e:
+            raise UserException("Couldn't parse " + component + " as a date. " + e.getMessage())
+
+
+    def to_int(component):
+        try:
+            return Integer.parseInt(component)
+        except NumberFormatException, e:
+            raise UserException("Couldn't parse " + component + " as an integer. " + e.getMessage())
+
+
+    def close():
+        try:
+            self.lreader.close()
+        except IOException, e:
+            raise UserException("Can't read SSE EDI file.")
+        except Throwable, e:
+            raise UserException("Problem at line number " + self.lreader.getLineNumber() + "\n" + line + "\n of the EDI file.\n" + HttpException.getStackTraceString(e))]]></value>
         <value><![CDATA[]]></value>
     </line>
     <line>
