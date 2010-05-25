@@ -3802,12 +3802,13 @@ if has_dso_contracts and is_core:
 
 
 if has_non_core_contracts:
-    q = "from NonCoreContract contract where contract.name"
+    query = Hiber.session().createQuery("from NonCoreContract contract where mod(contract.id, 2) = :remainder order by contract.name")
     if is_core:
-        q += " not"
-    q += " in ('EnergyChanges', 'TRIAD Estimates') order by contract.name"
+        query.setInteger('remainder', 1)
+    else:
+        query.setInteger('remainder', 0)
 
-    contracts = Hiber.session().createQuery(q).scroll()
+    contracts = query.scroll()
     while contracts.next():
         contract = contracts.get(0)
         contract_name = contract.getName()
