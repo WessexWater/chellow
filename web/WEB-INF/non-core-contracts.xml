@@ -34,6 +34,78 @@ def hh(bill, supply_source):
     <line>
         <value><![CDATA[insert]]></value>
         <value><![CDATA[non-core-contract]]></value>
+        <value><![CDATA[55]]></value>
+        <value><![CDATA[]]></value>
+        <value><![CDATA[CALB]]></value>
+        <value><![CDATA[bill-parser-mm]]></value>
+        <value><![CDATA[2010-05-25T00:00Z]]></value>
+        <value><![CDATA[]]></value>
+        <value><![CDATA[from net.sf.chellow.billing import BillParser, RawBill
+from java.io import LineNumberReader, IOException
+from java.text import SimpleDateFormat, ParseException
+from java.util import TimeZone, Locale
+from net.sf.chellow.monad import Hiber, UserException
+from java.math import BigDecimal
+from net.sf.chellow.physical import HhStartDate
+
+
+class Parser(BillParser):
+    def __init__(self, reader):
+        self.lreader = LineNumberReader(reader)
+        self.date_format = SimpleDateFormat("yyyyMMdd", Locale.UK)
+        self.date_format.setTimeZone(TimeZone.getTimeZone("GMT"))
+
+
+    def getRawBills(self):
+        Hiber.flush()
+        raw_bills = []
+        try:
+            line = self.lreader.readLine()
+            while line != None:
+                record_type = line[62:66]
+                if record_type == "0100":
+                    account_reference = line[33:41]
+                    invoice_number = line[41:46]
+                    start_date = None
+                    finish_date = None
+                    net = BigDecimal(0)
+                    vat = BigDecimal(0)
+                    mpan_strings = []
+                elif record_type == "1460":
+                    net = net.add(BigDecimal(line[67:79]).divide(BigDecimal(100)))
+                    vat = vat.add(BigDecimal(line[85:97]).divide(BigDecimal(100)))
+                elif record_type == "0461":
+                    mpan_str = line[148:156] + line[135:148]
+                    if mpan_str not in mpan_strings:
+                        mpan_strings.append(mpan_str)
+                elif record_type == "0101":
+                    start_date = self.parse_date(line[66:74])
+                    finish_date = self.parse_date(line[74:82])
+                elif record_type == "1500":
+                    raw_bills.append(RawBill("NORMAL", account_reference, mpan_strings, invoice_number, start_date.getDate(), start_date, finish_date, net, vat, None))
+                line = self.lreader.readLine()
+            self.lreader.close();
+            Hiber.flush();
+        except IOException, e:
+            raise UserException("Can't read EDF Energy mm file.")
+
+        return raw_bills;
+
+
+    def parse_date(self, date_string):
+        try:
+            return HhStartDate(self.date_format.parse(date_string))
+        except ParseException, e:
+            raise UserException("Can't parse the date: '" + e.getMessage() + "'.")
+
+
+    def getProgress(self):
+        return "Reached line " + str(self.lreader.getLineNumber()) + " of first passs."]]></value>
+        <value><![CDATA[]]></value>
+    </line>
+    <line>
+        <value><![CDATA[insert]]></value>
+        <value><![CDATA[non-core-contract]]></value>
         <value><![CDATA[53]]></value>
         <value><![CDATA[]]></value>
         <value><![CDATA[CALB]]></value>

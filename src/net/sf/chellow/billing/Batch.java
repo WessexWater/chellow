@@ -21,9 +21,8 @@
 
 package net.sf.chellow.billing;
 
-import java.util.HashSet;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
@@ -192,7 +191,7 @@ public class Batch extends PersistentEntity {
 			throw new UserException("There are no MPANs that match.");
 		}
 		if (!rawBill.getMpanStrings().isEmpty()) {
-			Set<String> mpanStrings = new HashSet<String>();
+			List<String> mpanStrings = new ArrayList<String>();
 			for (Mpan mpan : mpanList) {
 				mpanStrings.add(mpan.toString());
 			}

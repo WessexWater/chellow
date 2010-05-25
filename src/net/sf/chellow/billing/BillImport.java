@@ -51,7 +51,9 @@ import net.sf.chellow.monad.types.UriPathElement;
 import net.sf.chellow.ui.ChellowLogger;
 
 import org.apache.commons.fileupload.FileItem;
+import org.python.core.PyJavaType;
 import org.python.core.PyObject;
+import org.python.util.PythonInterpreter;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -128,13 +130,19 @@ public class BillImport extends Thread implements Urlable, XmlDescriber {
 					"The file name must have an extension (eg. '.zip')");
 		}
 		String extension = fileName.substring(locationOfDot + 1);
-		NonCoreContract parserContract = NonCoreContract.getNonCoreContract("bill-parser-" + extension);
+		NonCoreContract parserContract = NonCoreContract
+				.getNonCoreContract("bill-parser-" + extension);
 		try {
-			parser = (BillParser) ((PyObject) parserContract.callFunction("get_bill_parser", new Object[] {new InputStreamReader(is, "UTF-8")})).__tojava__(BillParser.class);
+			PythonInterpreter interpreter = new PythonInterpreter();
+			interpreter.exec(parserContract.getChargeScript());
+			PyObject parserClass = interpreter.get("Parser");
+			parser = (BillParser) parserClass
+					.__call__(
+							PyJavaType.wrapJavaObject(new InputStreamReader(is,
+									"UTF-8"))).__tojava__(BillParser.class);
 		} catch (UnsupportedEncodingException e) {
 			throw new InternalException(e);
 		}
-		
 	}
 
 	public void run() {
@@ -171,7 +179,6 @@ public class BillImport extends Thread implements Urlable, XmlDescriber {
 					Hiber.flush();
 				}
 			}
-			// Account.checkAllMissingFromLatest();
 			if (failedBills.isEmpty()) {
 				messages
 						.add("All the bills have been successfully loaded and attached to the batch.");
@@ -235,12 +242,10 @@ public class BillImport extends Thread implements Urlable, XmlDescriber {
 		Element importElement = doc.createElement("bill-import");
 		boolean isAlive = this.isAlive();
 		importElement.setAttribute("id", getUriId().toString());
-		importElement
-				.setAttribute("progress", successfulBills == null ? parser
-						.getProgress() : "There have been "
-						+ successfulBills.size() + " successful imports, and "
-						+ failedBills.size() + " failures."
-						+ (isAlive ? "The thread is still alive." : ""));
+		importElement.setAttribute("progress", successfulBills == null ? parser
+				.getProgress() : "There have been " + successfulBills.size()
+				+ " successful imports, and " + failedBills.size()
+				+ " failures." + (isAlive ? "The thread is still alive." : ""));
 		if (!isAlive && successfulBills != null) {
 			Element failedElement = doc.createElement("failed-bills");
 			importElement.appendChild(failedElement);

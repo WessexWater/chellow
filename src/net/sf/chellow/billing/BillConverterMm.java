@@ -29,10 +29,8 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
-import java.util.Set;
 import java.util.TimeZone;
 
 import net.sf.chellow.monad.Hiber;
@@ -66,7 +64,7 @@ public class BillConverterMm implements BillParser {
 				String invoiceNumber = null;
 				BigDecimal net = new BigDecimal(0);
 				BigDecimal vat = new BigDecimal(0);
-				Set<String> mpanStrings = null;
+				List<String> mpanStrings = null;
 				while (line != null) {
 					String recordType = getRecordType(line);
 					if (recordType.equals("0100")) {
@@ -76,7 +74,7 @@ public class BillConverterMm implements BillParser {
 						finishDate = null;
 						net = new BigDecimal(0);
 						vat = new BigDecimal(0);
-						mpanStrings = new HashSet<String>();
+						mpanStrings = new ArrayList<String>();
 					}
 					if (recordType.equals("1460")) {
 						net = net.add(new BigDecimal(line.substring(67, 79))

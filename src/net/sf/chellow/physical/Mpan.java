@@ -21,9 +21,9 @@
 
 package net.sf.chellow.physical;
 
-import java.util.HashSet;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
-import java.util.Set;
 
 import net.sf.chellow.billing.Dso;
 import net.sf.chellow.billing.SupplierContract;
@@ -75,13 +75,15 @@ public class Mpan extends PersistentEntity {
 		return Pc.getPc(new MpanRaw(mpan).getPcCode());
 	}
 
-	static public boolean isEqual(Set<String> mpans1, Set<String> mpans2)
+	static public boolean isEqual(List<String> mpans1, List<String> mpans2)
 			throws HttpException {
-		Set<MpanRaw> mpansRaw1 = new HashSet<MpanRaw>();
+		List<MpanRaw> mpansRaw1 = new ArrayList<MpanRaw>();
+		Collections.sort(mpans1);
 		for (String mpan : mpans1) {
 			mpansRaw1.add(new MpanRaw(mpan));
 		}
-		Set<MpanRaw> mpansRaw2 = new HashSet<MpanRaw>();
+		List<MpanRaw> mpansRaw2 = new ArrayList<MpanRaw>();
+		Collections.sort(mpans2);
 		for (String mpan : mpans2) {
 			mpansRaw2.add(new MpanRaw(mpan));
 		}

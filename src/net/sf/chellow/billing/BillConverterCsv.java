@@ -121,7 +121,7 @@ public class BillConverterCsv implements BillParser {
 								new BigDecimal(values[i + 9]), ReadType
 										.getReadType(values[i + 10])));
 					}
-					Set<String> mpanStrings = new HashSet<String>();
+					List<String> mpanStrings = new ArrayList<String>();
 					for (String mpanStr : values[2].split(",")) {
 						mpanStrings.add(mpanStr);
 					}

@@ -88,7 +88,7 @@ public class BillConverterSseEdi implements BillParser {
 		String line = null;
 		try {
 			line = lreader.readLine();
-			Set<String> mpanStrings = null;
+			List<String> mpanStrings = null;
 			HhStartDate issueDate = null;
 			HhStartDate startDate = null;
 			HhStartDate finishDate = null;
@@ -138,7 +138,7 @@ public class BillConverterSseEdi implements BillParser {
 						vat = new BigDecimal(0);
 						reads = new HashSet<LocalRegisterReadRaw>();
 						billTypeCode = null;
-						mpanStrings = new HashSet<String>();
+						mpanStrings = new ArrayList<String>();
 					}
 				}
 				if (code.equals("CCD")) {

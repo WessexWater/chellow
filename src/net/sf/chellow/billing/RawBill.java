@@ -24,6 +24,7 @@ package net.sf.chellow.billing;
 import java.math.BigDecimal;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import net.sf.chellow.monad.HttpException;
@@ -54,12 +55,12 @@ public class RawBill extends MonadObject {
 
 	private String reference;
 
-	private Set<String> mpanStrings;
+	private List<String> mpanStrings;
 
 	private Set<RegisterReadRaw> reads = new HashSet<RegisterReadRaw>();
 
 	public RawBill(String type, String accountReference,
-			Set<String> mpanStrings, String reference, Date issueDate,
+			List<String> mpanStrings, String reference, Date issueDate,
 			HhStartDate startDate, HhStartDate finishDate, BigDecimal net,
 			BigDecimal vat, Set<RegisterReadRaw> registerReads)
 			throws HttpException {
@@ -105,7 +106,7 @@ public class RawBill extends MonadObject {
 		return type;
 	}
 
-	public Set<String> getMpanStrings() {
+	public List<String> getMpanStrings() {
 		return mpanStrings;
 	}
 
