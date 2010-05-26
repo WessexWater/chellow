@@ -29,7 +29,7 @@ import net.sf.chellow.monad.types.MonadObject;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-public class RegisterReadRaw extends MonadObject {
+public class RawRegisterRead extends MonadObject {
 	private String meterSerialNumber;
 	
 	private String mpanStr;
@@ -52,7 +52,7 @@ public class RegisterReadRaw extends MonadObject {
 
 	private ReadType presentType;
 
-	public RegisterReadRaw(String meterSerialNumber, String mpanStr, BigDecimal coefficient,
+	public RawRegisterRead(String meterSerialNumber, String mpanStr, BigDecimal coefficient,
 			Units units, int tpr,
 			HhStartDate previousDate, BigDecimal previousValue,
 			ReadType previousType, HhStartDate presentDate,

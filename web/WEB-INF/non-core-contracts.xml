@@ -41,7 +41,7 @@ def hh(bill, supply_source):
         <value><![CDATA[2010-05-25T00:00Z]]></value>
         <value><![CDATA[]]></value>
         <value><![CDATA[from net.sf.chellow.billing import BillParser, RawBill, NonCoreContract
-from net.sf.chellow.physical import ReadType, HhStartDate
+from net.sf.chellow.physical import ReadType, HhStartDate, Units, RawRegisterRead
 from org.python.util import PythonInterpreter
 from net.sf.chellow.monad import Hiber, UserException
 from java.math import BigDecimal
@@ -58,6 +58,7 @@ class Parser(BillParser):
         comterp = PythonInterpreter()
         comterp.exec(computer.getChargeScript())
         self.parser = comterp.get('get_edi_parser')(reader)
+        self.debug_str = ''
 
 
     def getRawBills(self):
@@ -99,7 +100,7 @@ class Parser(BillParser):
                 if HhStartDate.isAfter(start_date, previous_read_date):
                     start_date = previous_read_date
                 register_finish_date = self.parser.to_date(self.parser.elements[6][0])
-                if HhStartDate.isBefore(finish_date, register_finish_date):
+                if finish_date is None or finish_date.before(register_finish_date):
                     finish_date = register_finish_date
                 if charge_type == "7":
                     tmod = self.parser.elements[3]
@@ -114,12 +115,13 @@ class Parser(BillParser):
                     previous_read_value = BigDecimal(prrd[2]).divide(BigDecimal(1000))
                     meter_serial_number = mtnr[0]
                     tpr = self.parser.to_int(tmod[0])
-                    reads.append({'meter-serial-number': meter_serial_number, 'mpan': mloc[0], 'coefficient': coefficient, 'units': Units.KWH, 'tpr': tpr, 'previous-date': previous_read_date, 'previous-value': previous_read_value, 'previous-type': previous_read_type, 'present-date': register_finish_date, 'present-value': present_read_value, 'present-type': present_read_type})
+                    reads.append({'meter-serial-number': meter_serial_number, 'mpan': mloc[0], 'coefficient': coefficient, 'units': Units.KWH, 'tpr': tpr, 'previous-date': previous_read_date, 'previous-value': previous_read_value, 'previous-type': ReadType.getReadType(previous_read_type), 'present-date': register_finish_date, 'present-value': present_read_value, 'present-type': ReadType.getReadType(present_read_type)})
             elif code == "MTR":
                 if message_type == "UTLBIL":
                     register_reads = []
                     for read in reads:
-                        register_reads.append(RegisterReadRaw(read['meter-serial-number'], read['mpan'], read['coefficient'], read['units'], read['tpr'], read['previous-date'], read['previous-value'], read['previous-type'], read['present-date'], read['present-value'], read['current-type']))
+                        #self.debug_str += "  " + str(read['previous-type'])
+                        register_reads.append(RawRegisterRead(read['meter-serial-number'], read['mpan'], read['coefficient'], read['units'], read['tpr'], read['previous-date'], read['previous-value'], read['previous-type'], read['present-date'], read['present-value'], read['present-type']))
 
                     raw_bills.append(RawBill(bill_type, account_reference, mpan_strings, invoice_number, issue_date, start_date, finish_date, net, vat, register_reads))
             elif code == "MAN":
@@ -140,7 +142,59 @@ class Parser(BillParser):
         return raw_bills
 
     def getProgress(self):
-        return "Reached line " + str(self.parser.lreader.getLineNumber()) + " of first passs."]]></value>
+        return "Reached line " + str(self.parser.lreader.getLineNumber()) + " of first passs. " + self.debug_str]]></value>
+        <value><![CDATA[]]></value>
+    </line>
+    <line>
+        <value><![CDATA[insert]]></value>
+        <value><![CDATA[non-core-contract]]></value>
+        <value><![CDATA[59]]></value>
+        <value><![CDATA[]]></value>
+        <value><![CDATA[CALB]]></value>
+        <value><![CDATA[bill-parser-csv]]></value>
+        <value><![CDATA[2010-05-26T00:00Z]]></value>
+        <value><![CDATA[]]></value>
+        <value><![CDATA[from net.sf.chellow.billing import BillParser, RawBill
+from java.text import SimpleDateFormat
+from java.util import Locale, TimeZone
+from com.Ostermiller.util import CSVParser
+from net.sf.chellow.physical import ReadType, Units, HhStartDate, RawRegisterRead
+from java.math import BigDecimal
+from net.sf.chellow.monad.types import MonadDate
+from net.sf.chellow.monad import HttpException, UserException
+from java.lang import NumberFormatException
+from java.io import IOException
+
+
+class Parser(BillParser):
+    def __init__(self, reader):
+        date_format = SimpleDateFormat("yyyy'-'MM'-'dd", Locale.UK)
+        date_format.setTimeZone(TimeZone.getTimeZone("GMT"));
+
+        self.shredder = CSVParser(reader);
+        self.shredder.setCommentStart("#;!");
+        self.shredder.setEscapes("nrtf", "\n\r\t\f");
+        self.debug_str = ''
+
+
+    def getRawBills(self):
+        raw_bills = []
+        values = self.shredder.getLine()
+        while values != None:
+            if len(values) < 7:
+                raise UserException("Problem at line number " + self.shredder.getLastLineNumber() + "; there aren't enough fields, there should be 7")
+            reads = []
+            for i in range(9, len(values), 11):
+                reads.append(RawRegisterRead(values[i], values[i + 1], BigDecimal(values[i + 2]), Units.getUnits(values[i + 3]), Integer.parseInt(values[i + 4]), HhStartDate(values[i + 5]), BigDecimal(values[i + 6]), ReadType.getReadType(values[i + 7]), HhStartDate(values[i + 8]), BigDecimal(values[i + 9]), ReadType.getReadType(values[i + 10])))
+            mpan_strings = values[2].split(",")
+            raw_bills.append(RawBill(values[0], values[1], mpan_strings, values[3], MonadDate(values[4]).getDate(), HhStartDate(values[5]), HhStartDate(values[6]), BigDecimal(values[7]), BigDecimal(values[8]), reads))
+            values = self.shredder.getLine()
+        self.shredder.close()
+        return raw_bills
+
+
+    def getProgress(self):
+        return "Reached line " + str(self.shredder.getLastLineNumber()) + " of first passs. " + self.debug_str]]></value>
         <value><![CDATA[]]></value>
     </line>
     <line>
@@ -2646,6 +2700,7 @@ from java.lang import System, NumberFormatException, Integer
 from org.python.util import PythonInterpreter
 from java.io import LineNumberReader
 from java.text import SimpleDateFormat, ParseException
+from java.math import BigDecimal
 
 
 cons_types = ['construction', 'commissioning', 'operation']
@@ -3064,7 +3119,7 @@ class EdiParser():
         return line[:3]
 
 
-    def big_decimal(self, components):
+    def to_big_decimal(self, components):
         result = BigDecimal(components[0])
         if len(components) > 1 and components[-1] == "R":
             result = result.multiply(BigDecimal("-1"))

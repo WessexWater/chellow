@@ -33,7 +33,7 @@ import net.sf.chellow.monad.UserException;
 import net.sf.chellow.monad.types.MonadDate;
 import net.sf.chellow.monad.types.MonadObject;
 import net.sf.chellow.physical.HhStartDate;
-import net.sf.chellow.physical.RegisterReadRaw;
+import net.sf.chellow.physical.RawRegisterRead;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -57,12 +57,12 @@ public class RawBill extends MonadObject {
 
 	private List<String> mpanStrings;
 
-	private Set<RegisterReadRaw> reads = new HashSet<RegisterReadRaw>();
+	private Set<RawRegisterRead> reads = new HashSet<RawRegisterRead>();
 
 	public RawBill(String type, String accountReference,
 			List<String> mpanStrings, String reference, Date issueDate,
 			HhStartDate startDate, HhStartDate finishDate, BigDecimal net,
-			BigDecimal vat, Set<RegisterReadRaw> registerReads)
+			BigDecimal vat, List<RawRegisterRead> registerReads)
 			throws HttpException {
 		if (type == null) {
 			throw new InternalException("The type can't be null.");
@@ -98,7 +98,9 @@ public class RawBill extends MonadObject {
 		}
 		this.mpanStrings = mpanStrings;
 		if (registerReads != null) {
-			this.reads = registerReads;
+			for (RawRegisterRead read : registerReads) {
+				this.reads.add(read);
+			}
 		}
 	}
 
@@ -138,7 +140,7 @@ public class RawBill extends MonadObject {
 		return accountReference;
 	}
 
-	public Set<RegisterReadRaw> getRegisterReads() {
+	public Set<RawRegisterRead> getRegisterReads() {
 		return reads;
 	}
 

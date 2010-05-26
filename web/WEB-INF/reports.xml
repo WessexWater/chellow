@@ -11139,7 +11139,7 @@ def mpan_bit(query, kvarh_at_md_query, is_import, hh_count_query, num_hh, genera
             me_cal.add(Calendar.MONTH, 1)
             me_cal.add(Calendar.MINUTE, -30)
 
-            while not me_cal.getTime().after(finish_date.getDate()):
+            while not mb_cal.getTime().after(finish_date.getDate()):
                 month_begin = HhStartDate(mb_cal.getTime())
                 month_end = HhStartDate(me_cal.getTime())
                 mb_cal.add(Calendar.MONTH, 1)

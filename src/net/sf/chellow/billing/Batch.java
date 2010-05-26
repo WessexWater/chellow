@@ -38,7 +38,7 @@ import net.sf.chellow.monad.types.UriPathElement;
 import net.sf.chellow.physical.HhStartDate;
 import net.sf.chellow.physical.Mpan;
 import net.sf.chellow.physical.PersistentEntity;
-import net.sf.chellow.physical.RegisterReadRaw;
+import net.sf.chellow.physical.RawRegisterRead;
 import net.sf.chellow.physical.Supply;
 import net.sf.chellow.physical.SupplyGeneration;
 import net.sf.chellow.physical.SupplySnag;
@@ -217,7 +217,7 @@ public class Batch extends PersistentEntity {
 		bill.update(rawBill.getReference(), rawBill.getIssueDate(), rawBill
 				.getStartDate(), rawBill.getFinishDate(), rawBill.getNet(),
 				rawBill.getVat(), rawBill.getType(), null, false);
-		for (RegisterReadRaw rawRead : rawBill.getRegisterReads()) {
+		for (RawRegisterRead rawRead : rawBill.getRegisterReads()) {
 			bill.insertRead(rawRead);
 		}
 		;

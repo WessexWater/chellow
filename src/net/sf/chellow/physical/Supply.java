@@ -799,14 +799,6 @@ public class Supply extends PersistentEntity {
 
 	@SuppressWarnings("unchecked")
 	public void delete() throws HttpException {
-		if (((Long) Hiber
-				.session()
-				.createQuery(
-						"select count(*) from RegisterRead read where read.meter.supply = :supply and read.presentDate.date >= :startDate")
-				.setEntity("mpan", this).uniqueResult()) > 0) {
-			throw new UserException(
-					"Can't delete a supply if there are still meter readings attached to its meters.");
-		}
 		if ((Long) Hiber
 				.session()
 				.createQuery(
@@ -818,12 +810,9 @@ public class Supply extends PersistentEntity {
 		for (SupplyGeneration generation : getGenerations()) {
 			generation.delete();
 		}
-		// delete all the snags
-		for (ChannelSnag snag : (List<ChannelSnag>) Hiber
-				.session()
-				.createQuery(
-						"from ChannelSnag snag where snag.channel.supplyGeneration.supply = :supply")
-				.setEntity("supply", this).list()) {
+		for (SupplySnag snag : (List<SupplySnag>) Hiber.session().createQuery(
+				"from SupplySnag snag where snag.supply = :supply").setEntity(
+				"supply", this).list()) {
 			Hiber.session().delete(snag);
 			Hiber.flush();
 		}

@@ -45,7 +45,7 @@ import net.sf.chellow.monad.types.UriPathElement;
 import net.sf.chellow.physical.HhStartDate;
 import net.sf.chellow.physical.PersistentEntity;
 import net.sf.chellow.physical.RegisterRead;
-import net.sf.chellow.physical.RegisterReadRaw;
+import net.sf.chellow.physical.RawRegisterRead;
 import net.sf.chellow.physical.RegisterReads;
 import net.sf.chellow.physical.Supply;
 import net.sf.chellow.physical.SupplySnag;
@@ -320,7 +320,7 @@ public class Bill extends PersistentEntity implements Urlable {
 		return new RegisterReads(this);
 	}
 
-	public RegisterRead insertRead(RegisterReadRaw rawRead)
+	public RegisterRead insertRead(RawRegisterRead rawRead)
 			throws HttpException {
 		RegisterRead read = new RegisterRead(this, rawRead);
 		if (reads == null) {

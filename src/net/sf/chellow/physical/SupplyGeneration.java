@@ -768,12 +768,6 @@ public class SupplyGeneration extends PersistentEntity {
 		for (Channel channel : ssChannels) {
 			deleteChannel(channel.getIsImport(), channel.getIsKwh());
 		}
-		Criteria crit = Hiber.session().createCriteria(RegisterRead.class).add(
-				Restrictions.eq("supply", supply)).add(
-				Restrictions.ge("presentDate.date", startDate.getDate()));
-		if (finishDate != null) {
-			crit.add(Restrictions.le("presentDate", finishDate.getDate()));
-		}
 	}
 
 	public void update(HhStartDate startDate, HhStartDate finishDate)

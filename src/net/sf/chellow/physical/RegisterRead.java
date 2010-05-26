@@ -66,7 +66,7 @@ public class RegisterRead extends PersistentEntity {
 	RegisterRead() {
 	}
 
-	public RegisterRead(Bill bill, RegisterReadRaw rawRead)
+	public RegisterRead(Bill bill, RawRegisterRead rawRead)
 			throws HttpException {
 		if (bill == null) {
 			throw new InternalException("The invoice must not be null.");

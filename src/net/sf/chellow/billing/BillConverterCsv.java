@@ -29,11 +29,9 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Set;
 import java.util.TimeZone;
 
 import net.sf.chellow.monad.Hiber;
@@ -42,8 +40,8 @@ import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.UserException;
 import net.sf.chellow.monad.types.MonadDate;
 import net.sf.chellow.physical.HhStartDate;
+import net.sf.chellow.physical.RawRegisterRead;
 import net.sf.chellow.physical.ReadType;
-import net.sf.chellow.physical.RegisterReadRaw;
 import net.sf.chellow.physical.Units;
 
 import com.Ostermiller.util.CSVParser;
@@ -109,9 +107,9 @@ public class BillConverterCsv implements BillParser {
 										+ shredder.getLastLineNumber()
 										+ "; there aren't enough fields, there should be 7");
 					}
-					Set<RegisterReadRaw> reads = new HashSet<RegisterReadRaw>();
+					List<RawRegisterRead> reads = new ArrayList<RawRegisterRead>();
 					for (int i = 9; i < values.length; i += 11) {
-						reads.add(new RegisterReadRaw(values[i], values[i + 1], new BigDecimal(
+						reads.add(new RawRegisterRead(values[i], values[i + 1], new BigDecimal(
 								values[i + 2]), Units
 								.getUnits(values[i + 3]), Integer
 								.parseInt(values[i + 4]), new HhStartDate(

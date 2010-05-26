@@ -40,7 +40,7 @@ import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.UserException;
 import net.sf.chellow.physical.HhStartDate;
 import net.sf.chellow.physical.ReadType;
-import net.sf.chellow.physical.RegisterReadRaw;
+import net.sf.chellow.physical.RawRegisterRead;
 import net.sf.chellow.physical.Units;
 
 public class BillConverterBgbEdi implements BillParser {
@@ -185,9 +185,9 @@ public class BillConverterBgbEdi implements BillParser {
 				}
 				if (code.equals("MTR")) {
 					if (messageType.equals("UTLBIL")) {
-						Set<RegisterReadRaw> registerReads = new HashSet<RegisterReadRaw>();
+						List<RawRegisterRead> registerReads = new ArrayList<RawRegisterRead>();
 						for (LocalRegisterReadRaw read : reads) {
-							registerReads.add(new RegisterReadRaw(read
+							registerReads.add(new RawRegisterRead(read
 									.getMeterSerialNumber(), read.getMpanStr(), read.getCoefficient(), read
 									.getUnits(), read.getTpr(), read
 									.getPreviousDate(),
