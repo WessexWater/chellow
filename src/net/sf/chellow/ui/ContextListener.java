@@ -50,12 +50,10 @@ import net.sf.chellow.monad.Monad;
 import net.sf.chellow.monad.MonadContextParameters;
 import net.sf.chellow.monad.MonadFormatter;
 import net.sf.chellow.monad.MonadHandler;
-import net.sf.chellow.monad.types.EmailAddress;
 import net.sf.chellow.physical.Configuration;
 import net.sf.chellow.physical.GeneratorType;
 import net.sf.chellow.physical.ReadType;
 import net.sf.chellow.physical.Source;
-import net.sf.chellow.physical.User;
 import net.sf.chellow.physical.UserRole;
 import net.sf.chellow.physical.VoltageLevel;
 
@@ -179,9 +177,6 @@ public class ContextListener implements ServletContextListener {
 		UserRole.insertUserRole(UserRole.EDITOR);
 		UserRole.insertUserRole(UserRole.PARTY_VIEWER);
 		UserRole.insertUserRole(UserRole.VIEWER);
-		User.insertUser(new EmailAddress("administrator@localhost"),
-				"administrator", null, UserRole.getUserRole(UserRole.EDITOR),
-				null);
 		Hiber.commit();
 		Source.insertSource(Source.NETWORK_CODE, "Public distribution system.");
 		Source.insertSource(Source.SUBMETER_CODE, "Sub meter");

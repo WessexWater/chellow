@@ -21,6 +21,8 @@
 
 package net.sf.chellow.ui;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.Properties;
 import java.util.logging.Level;
 
@@ -37,7 +39,9 @@ import net.sf.chellow.billing.Party;
 import net.sf.chellow.billing.Providers;
 import net.sf.chellow.billing.SupplierContracts;
 import net.sf.chellow.monad.ForbiddenException;
+import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
+import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Invocation;
 import net.sf.chellow.monad.MethodNotAllowedException;
 import net.sf.chellow.monad.Monad;
@@ -172,16 +176,30 @@ public class Chellow extends Monad implements Urlable {
 	protected void checkPermissions(Invocation inv) throws HttpException {
 		HttpMethod method = inv.getMethod();
 		String pathInfo = inv.getRequest().getPathInfo();
-		if (method.equals(HttpMethod.GET)
-				&& (pathInfo.equals("/") || pathInfo.startsWith("/logo/") || pathInfo
-						.startsWith("/style/"))) {
-			return;
-		}
 		User user = inv.getUser();
 		if (user == null) {
 			user = ImplicitUserSource.getUser(inv);
 		}
 		if (user == null) {
+			try {
+				if (method.equals(HttpMethod.GET)
+						&& (pathInfo.equals("/")
+								|| pathInfo.startsWith("/logo/") || pathInfo
+								.startsWith("/style/"))) {
+					return;
+				}
+				Long userCount = (Long) Hiber.session().createQuery(
+						"select count(*) from User user").uniqueResult();
+				if (userCount == null
+						|| userCount == 0
+						&& InetAddress.getByName(
+								inv.getRequest().getRemoteAddr())
+								.isLoopbackAddress()) {
+					return;
+				}
+			} catch (UnknownHostException e) {
+				throw new InternalException(e);
+			}
 			throw new UnauthorizedException();
 		}
 		UserRole role = user.getRole();
