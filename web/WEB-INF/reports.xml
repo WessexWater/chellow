@@ -3826,11 +3826,7 @@ if has_users:
     users = Hiber.session().createQuery("from User user order by user.id").scroll()
     while users.next():
         user = users.get(0)
-        email_address = user.getEmailAddress().toString()
-        if email_address == 'administrator@localhost':
-            print_line(pw, ['update', 'user', 'administrator@localhost', '{no change}', '', user.getPasswordDigest(), user.getRole().getCode(), '', ''])
-        else:
-            print_line(pw, ['insert', 'user', user.getEmailAddress(), '', user.getPasswordDigest(), user.getRole().getCode(), '', ''])
+        print_line(pw, ['insert', 'user', user.getEmailAddress(), '', user.getPasswordDigest(), user.getRole().getCode(), '', ''])
     users.close()
 
 

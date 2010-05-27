@@ -64,8 +64,7 @@ public class HhdcContract extends Contract {
 	static public void generalImport(String action, String[] values,
 			Element csvElement) throws HttpException {
 		if (action.equals("insert")) {
-			String idStr = GeneralImport.addField(csvElement,
-					"Id", values, 0);
+			String idStr = GeneralImport.addField(csvElement, "Id", values, 0);
 			Long id = null;
 			if (idStr.length() > 0) {
 				id = new Long(idStr);
@@ -73,7 +72,8 @@ public class HhdcContract extends Contract {
 
 			String participantCode = GeneralImport.addField(csvElement,
 					"Participant Code", values, 1);
-			Participant participant = Participant.getParticipant(participantCode);
+			Participant participant = Participant
+					.getParticipant(participantCode);
 			String name = GeneralImport.addField(csvElement, "Name", values, 2);
 
 			String startDateStr = GeneralImport.addField(csvElement,
@@ -98,17 +98,18 @@ public class HhdcContract extends Contract {
 		}
 	}
 
-	static public HhdcContract insertHhdcContract(Long id, Participant participant,
-			String name, HhStartDate startDate, HhStartDate finishDate,
-			String chargeScript, String importerProperties, String state,
-			String rateScript) throws HttpException {
+	static public HhdcContract insertHhdcContract(Long id,
+			Participant participant, String name, HhStartDate startDate,
+			HhStartDate finishDate, String chargeScript,
+			String importerProperties, String state, String rateScript)
+			throws HttpException {
 		HhdcContract existing = findHhdcContract(name);
 		if (existing != null) {
 			throw new UserException(
 					"There's already a HHDC contract with the name " + name);
 		}
-		HhdcContract contract = new HhdcContract(id, participant, name, startDate,
-				finishDate, chargeScript, importerProperties, state);
+		HhdcContract contract = new HhdcContract(id, participant, name,
+				startDate, finishDate, chargeScript, importerProperties, state);
 		Hiber.session().save(contract);
 		Hiber.flush();
 		contract.insertFirstRateScript(startDate, finishDate, rateScript);
@@ -155,8 +156,7 @@ public class HhdcContract extends Contract {
 
 	public HhdcContract(Long id, Participant participant, String name,
 			HhStartDate startDate, HhStartDate finishDate, String chargeScript,
-			String properties, String state)
-			throws HttpException {
+			String properties, String state) throws HttpException {
 		super(id, Boolean.FALSE, name, startDate, finishDate, chargeScript);
 		setState(state);
 		intrinsicUpdate(participant, name, chargeScript, properties);
@@ -391,36 +391,38 @@ public class HhdcContract extends Contract {
 
 	@SuppressWarnings("unchecked")
 	@Override
-	void onUpdate(HhStartDate startDate, HhStartDate finishDate) throws HttpException {
+	void onUpdate(HhStartDate startDate, HhStartDate finishDate)
+			throws HttpException {
 		Query query = null;
 		if (getFinishDate() == null) {
 			query = Hiber
 					.session()
 					.createQuery(
-							"from Mpan mpan where mpan.hhdcContract = :contract and mpan.supplyGeneration.startDate.date < :startDate order by mpan.supplyGeneration.startDate.date desc");
+							"from Mpan mpan where mpan.supplyGeneration.hhdcContract = :contract and mpan.supplyGeneration.startDate.date < :startDate order by mpan.supplyGeneration.startDate.date desc");
 		} else {
 			query = Hiber
 					.session()
 					.createQuery(
-							"from Mpan mpan where mpan.hhdcContract = :contract and (mpan.supplyGeneration.startDate.date < :startDate or (mpan.supplyGeneration.finishDate is null or mpan.supplyGeneration.finishDate.date > :finishDate)) order by mpan.supplyGeneration.startDate.date desc")
+							"from Mpan mpan where mpan.supplyGeneration.hhdcContract = :contract and (mpan.supplyGeneration.startDate.date < :startDate or (mpan.supplyGeneration.finishDate is null or mpan.supplyGeneration.finishDate.date > :finishDate)) order by mpan.supplyGeneration.startDate.date desc")
 					.setTimestamp("finishDate", getFinishDate().getDate());
 		}
 		List<Mpan> mpansOutside = query.setEntity("contract", this)
 				.setTimestamp("startDate", getStartDate().getDate()).list();
 		if (!mpansOutside.isEmpty()) {
-			throw new UserException(document(),
-					mpansOutside.size() > 1 ? "The MPANs with cores "
+			throw new UserException(
+					document(),
+					mpansOutside.size() > 1 ? "The supply generations with MPAN cores "
 							+ mpansOutside.get(0).getCore()
 							+ " and "
 							+ mpansOutside.get(mpansOutside.size() - 1)
 									.getCore() + " use this contract"
-							: "An MPAN with core "
+							: "A supply generation with MPAN core "
 									+ mpansOutside.get(0).getCore()
 									+ " uses this contract and lies outside "
 									+ startDate
 									+ " to "
 									+ (finishDate == null ? "ongoing"
 											: finishDate + "."));
-		}		
+		}
 	}
 }
