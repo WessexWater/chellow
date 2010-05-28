@@ -291,7 +291,19 @@ group_element = doc.createElement('group')
 source.appendChild(group_element)
 for group_site in site.groups(now, now, False)[0].getSites():
     if group_site.getId() != site.getId():
-        group_element.appendChild(group_site.toXml(doc))]]></value>
+        group_element.appendChild(group_site.toXml(doc))
+
+cal.setTime(Date())
+cal.set(Calendar.DAY_OF_MONTH, 1)
+cal.set(Calendar.HOUR_OF_DAY, 0)
+cal.set(Calendar.MINUTE, 0)
+cal.set(Calendar.SECOND, 0)
+cal.set(Calendar.MILLISECOND, 0)
+cal.add(Calendar.MONTH, -1)
+start_prev_month = HhStartDate(cal.getTime())
+start_prev_month.setLabel('start-prev-month')
+source.appendChild(start_prev_month.toXml(doc))
+source.appendChild(MonadDate.getMonthsXml(doc))]]></value>
         <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
 <xsl:stylesheet version="1.0"
     xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
@@ -431,6 +443,31 @@ Ongoing
  <li><a href="{/source/request/@context-path}/reports/111/output/?site-id={/source/site/@id}"><xsl:value-of select="'Virtual Bills'" /></a>
           </li>
         </ul>
+<h3>CSV Downloads</h3>
+
+<form action="{/source/request/@context-path}/reports/109/output/">
+                    <fieldset>
+                        <input type="hidden" name="site-id" value="{/source/site/@id}"/>
+                        <legend>Displaced Virtual Bills</legend>
+<br/>
+<xsl:value-of select="'For '"/>
+<input name="months" value="1" maxlength="2" size="2" />
+<xsl:value-of select="' month(s) until the end of '"/>
+                        <input name="end-year" value="{/source/hh-start-date[@label='start-prev-month']/@year}" maxlength="4" size="4" /><xsl:value-of select="' - '"/>
+                        <select name="end-month">
+                            <xsl:for-each select="/source/months/month">
+                                <option value="{@number}">
+                                    <xsl:if test="@number=/source/hh-start-date[@label='start-prev-month']/@month">
+                                        <xsl:attribute name="selected">selected</xsl:attribute>
+                                    </xsl:if>
+                                    <xsl:value-of select="@number"/>
+                                </option>
+                            </xsl:for-each>
+                        </select>
+<xsl:value-of select="' '"/>
+                        <input type="submit" value="Download"/>
+                    </fieldset>
+                </form>
       </body>
     </html>
   </xsl:template>
@@ -8991,20 +9028,18 @@ source.appendChild(contract.toXml(doc, XmlTree('party', XmlTree('participant')).
         <value><![CDATA[109]]></value>
         <value><![CDATA[true]]></value>
         <value><![CDATA[Supplier Contract Displaced Virtual Bills]]></value>
-        <value><![CDATA[from net.sf.chellow.monad import Hiber
+        <value><![CDATA[from net.sf.chellow.monad import Hiber, UserException
 from java.util import GregorianCalendar, TimeZone, Locale, Calendar
-from net.sf.chellow.physical import MpanCore, HhStartDate, Supply
+from net.sf.chellow.physical import MpanCore, HhStartDate, Supply, Site
 from net.sf.chellow.billing import SupplierContract, NonCoreContract
 from java.text import DecimalFormat
 
 end_year = inv.getInteger('end-year')
 end_month = inv.getInteger('end-month')
 months = inv.getInteger('months')
-contract_id = inv.getLong('contract-id')
-site_code = inv.getString('site-code')
+
 if not inv.isValid():
     raise UserException()
-site_code = site_code.strip()
 
 inv.getResponse().setContentType("text/csv")
 inv.getResponse().addHeader('Content-Disposition', 'attachment; filename="output.csv"')
@@ -9022,27 +9057,31 @@ for title in bill_titles:
 pw.println('')
 pw.flush()
 
-calCt = GregorianCalendar(TimeZone.getTimeZone("Europe/London"), Locale.UK)
+cal = GregorianCalendar(TimeZone.getTimeZone("GMT"), Locale.UK)
+cal.set(Calendar.YEAR, end_year)
+cal.set(Calendar.MONTH, end_month - 1)
+cal.set(Calendar.DAY_OF_MONTH, 1)
+cal.set(Calendar.HOUR_OF_DAY, 0)
+cal.set(Calendar.MINUTE, 0)
+cal.set(Calendar.MILLISECOND, 0)
+cal.add(Calendar.MONTH, 1)
+cal.add(Calendar.MINUTE, -30)
+finish_date = HhStartDate(cal.getTime())
 
-calUtc = GregorianCalendar(TimeZone.getTimeZone("GMT"), Locale.UK)
-calUtc.clear()
-calUtc.set(Calendar.YEAR, end_year)
-calUtc.set(Calendar.MONTH, end_month - 1)
-calUtc.add(Calendar.MONTH, 1)
-finish_date = HhStartDate(calUtc.getTime())
-calUtc.add(Calendar.MINUTE, 30)
-calUtc.add(Calendar.MONTH, -1 * months)
-start_date = HhStartDate(calUtc.getTime())
+cal.add(Calendar.MINUTE, 30)
+cal.add(Calendar.MONTH, -1 * months)
+start_date = HhStartDate(cal.getTime())
 
 kwh_format = DecimalFormat("#,###")
 gbp_format = DecimalFormat("#,##0.00")
 
 forecast_date = comterp.get('forecast_date')()
 
-if len(site_code) == 0:
-    site_query = Hiber.session().createQuery("from Site site order by site.code")
+if inv.hasParameter('site-id'):
+    site_id = inv.getLong('site-id')
+    site_query = Hiber.session().createQuery("from Site site where site = :site").setEntity('site', Site.getSite(site_id))
 else:
-    site_query = Hiber.session().createQuery("from Site site where site.code = :siteCode order by site.code").setString('siteCode', site_code)
+    site_query = Hiber.session().createQuery("from Site site order by site.code")
 sites = site_query.scroll()
 while sites.next():
     site = sites.get(0)
