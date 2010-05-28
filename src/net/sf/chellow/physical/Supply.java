@@ -32,6 +32,7 @@ import net.sf.chellow.billing.Contract;
 import net.sf.chellow.billing.HhdcContract;
 import net.sf.chellow.billing.MopContract;
 import net.sf.chellow.billing.SupplierContract;
+import net.sf.chellow.monad.Debug;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.InternalException;
@@ -414,6 +415,7 @@ public class Supply extends PersistentEntity {
 
 	public SupplyGeneration insertGeneration(HhStartDate startDate)
 			throws HttpException {
+		Debug.print("starting supply.insertGeneration date " + System.currentTimeMillis());
 		SupplyGeneration existingGeneration = getGeneration(startDate);
 		if (existingGeneration == null) {
 			throw new UserException(
@@ -521,6 +523,7 @@ public class Supply extends PersistentEntity {
 			SupplierContract exportSupplierContract,
 			String exportSupplierAccount, Integer exportAgreedSupplyCapacity)
 			throws HttpException {
+		Debug.print("starting supply.insertGeneration lots " + System.currentTimeMillis());
 		SupplyGeneration supplyGeneration = null;
 		SupplyGeneration existingGeneration = null;
 		if (generations.isEmpty()) {
@@ -556,6 +559,7 @@ public class Supply extends PersistentEntity {
 						.getIsKwh());
 			}
 			Hiber.flush();
+			Debug.print("starting to update supply generation " + System.currentTimeMillis());
 			supplyGeneration.update(supplyGeneration.getStartDate(),
 					supplyGeneration.getFinishDate(), supplyGeneration
 							.getMopContract(),
@@ -567,6 +571,7 @@ public class Supply extends PersistentEntity {
 					exportSupplierContract, exportSupplierAccount,
 					exportAgreedSupplyCapacity);
 			Hiber.flush();
+			Debug.print("starting to update existing supply generation " + System.currentTimeMillis());
 			existingGeneration.update(existingGeneration.getStartDate(),
 					startDate.getPrevious());
 			Hiber.flush();

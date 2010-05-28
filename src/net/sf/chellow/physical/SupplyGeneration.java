@@ -21,6 +21,7 @@
 
 package net.sf.chellow.physical;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -35,6 +36,7 @@ import net.sf.chellow.billing.Dso;
 import net.sf.chellow.billing.HhdcContract;
 import net.sf.chellow.billing.MopContract;
 import net.sf.chellow.billing.SupplierContract;
+import net.sf.chellow.monad.Debug;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.Invocation;
@@ -781,7 +783,6 @@ public class SupplyGeneration extends PersistentEntity {
 		}
 	}
 
-	@SuppressWarnings("unchecked")
 	public void update(HhStartDate startDate, HhStartDate finishDate,
 			MopContract mopContract, String mopAccount,
 			HhdcContract hhdcContract, String hhdcAccount,
@@ -983,17 +984,6 @@ public class SupplyGeneration extends PersistentEntity {
 				throw new UserException("There are HH data after " + finishDate
 						+ ", the end of the updated supply.");
 			}
-
-			if (finishDate != null
-					&& ((Long) Hiber
-							.session()
-							.createQuery(
-									"select count(*) from RegisterRead read where read.bill.supply  = :supply and read.presentDate.date > :date")
-							.setEntity("supply", supply).setTimestamp("date",
-									finishDate.getDate()).uniqueResult()) > 0) {
-				throw new UserException(
-						"There are register reads after the end of the updated supply.");
-			}
 			if (finishDate != null
 					&& ((Long) Hiber
 							.session()
@@ -1135,16 +1125,7 @@ public class SupplyGeneration extends PersistentEntity {
 				}
 			}
 		}
-		Criteria billsCrit = Hiber.session().createCriteria(Bill.class).add(
-				Restrictions.eq("supply", getSupply())).add(
-				Restrictions.ge("finishDate.date", getStartDate().getDate()));
-		if (getFinishDate() != null) {
-			billsCrit.add(Restrictions.le("startDate.date", finishDate
-					.getDate()));
-		}
-		for (Bill bill : (List<Bill>) billsCrit.list()) {
-			bill.virtualEqualsActual();
-		}
+		Debug.print("About to move hh data from one generation to another.");
 		// See if we have to move hh data from one generation to the other
 		for (Boolean isImport : new Boolean[] { true, false }) {
 			for (Boolean isKwh : new Boolean[] { true, false }) {
@@ -1152,7 +1133,7 @@ public class SupplyGeneration extends PersistentEntity {
 				Query query = Hiber
 						.session()
 						.createQuery(
-								"from HhDatum datum where datum.channel.supplyGeneration.supply = :supply and datum.channel.isImport = :isImport and datum.channel.isKwh = :isKwh and datum.startDate.date >= :from"
+								"select datum.startDate, datum.value, datum.status from HhDatum datum where datum.channel.supplyGeneration.supply = :supply and datum.channel.isImport = :isImport and datum.channel.isKwh = :isKwh and datum.startDate.date >= :from"
 										+ (finishDate == null ? ""
 												: " and datum.startDate.date <= :to")
 										+ (targetChannel == null ? ""
@@ -1167,13 +1148,13 @@ public class SupplyGeneration extends PersistentEntity {
 					query.setEntity("targetChannel", targetChannel);
 				}
 				ScrollableResults hhData = query.scroll();
-				HhDatum datum = null;
+				HhStartDate groupStart = null;
 				if (hhData.next()) {
-					datum = (HhDatum) hhData.get(0);
+					groupStart = (HhStartDate) hhData.get(0);
 					if (targetChannel == null) {
 						throw new UserException(
-								"There is no channel for the HH datum: "
-										+ datum.toString()
+								"There is no channel for the HH datum starting: "
+										+ groupStart.toString()
 										+ " is import? "
 										+ isImport
 										+ " is kWh? "
@@ -1182,28 +1163,50 @@ public class SupplyGeneration extends PersistentEntity {
 										+ startDate + ", finishing "
 										+ finishDate + ".");
 					}
-				}
-				hhData.beforeFirst();
-				while (hhData.next()) {
-					datum = (HhDatum) hhData.get(0);
-					HhStartDate hhStartDate = datum.getStartDate();
-					datum.setChannel(targetChannel);
-					if (datum.getValue().doubleValue() < 0) {
-						targetChannel.addSnag(ChannelSnag.SNAG_NEGATIVE,
-								hhStartDate, hhStartDate);
+					Query channelUpdate = Hiber
+							.session()
+							.createSQLQuery(
+									"update hh_datum set channel_id = :targetChannelId from channel, supply_generation where hh_datum.start_date >= :startDate and channel.id = hh_datum.channel_id and supply_generation.id = channel.supply_generation_id and channel.is_import = :isImport and channel.is_kwh = :isKwh and supply_generation.supply_id = :supplyId"
+											+ (finishDate == null ? ""
+													: " and hh_datum.start_date <= :finishDate"))
+							.setLong("supplyId", supply.getId()).setBoolean(
+									"isImport", isImport).setBoolean("isKwh",
+									isKwh).setLong("targetChannelId",
+									targetChannel.getId()).setTimestamp(
+									"startDate", startDate.getDate());
+					if (finishDate != null) {
+						channelUpdate.setTimestamp("finishDate", finishDate
+								.getDate());
 					}
-					if (datum.getStatus() != HhDatum.ACTUAL) {
-						targetChannel.addSnag(ChannelSnag.SNAG_ESTIMATED,
-								hhStartDate, hhStartDate);
+					channelUpdate.executeUpdate();
+					HhStartDate groupFinish = groupStart;
+
+					hhData.beforeFirst();
+					while (hhData.next()) {
+						HhStartDate hhStartDate = (HhStartDate) hhData.get(0);
+						if (groupFinish.getNext().before(hhStartDate)) {
+							targetChannel.deleteSnag(ChannelSnag.SNAG_MISSING,
+									groupStart, groupFinish);
+							groupStart = groupFinish = hhStartDate;
+						} else {
+							groupFinish = hhStartDate;
+						}
+						if (((BigDecimal) hhData.get(1)).doubleValue() < 0) {
+							targetChannel.addSnag(ChannelSnag.SNAG_NEGATIVE,
+									hhStartDate, hhStartDate);
+						}
+						if ((Character) hhData.get(2) != HhDatum.ACTUAL) {
+							targetChannel.addSnag(ChannelSnag.SNAG_ESTIMATED,
+									hhStartDate, hhStartDate);
+						}
 					}
 					targetChannel.deleteSnag(ChannelSnag.SNAG_MISSING,
-							hhStartDate, hhStartDate);
-					Hiber.flush();
-					Hiber.session().evict(datum);
+							groupStart, groupFinish);
+					hhData.close();
 				}
-				// hhData.close();
 			}
 		}
+		Debug.print("finishing moving hh data");
 		Hiber.flush();
 		for (Mpan mpan : mpans) {
 			SupplierContract supplierContract = mpan.getSupplierContract();
@@ -1307,9 +1310,9 @@ public class SupplyGeneration extends PersistentEntity {
 				"from GspGroup group order by group.code").list()) {
 			source.appendChild(group.toXml(doc));
 		}
-		for (MopContract contract : (List<MopContract>) Hiber.session()
-				.createQuery(
-						"from MopContract contract order by contract.name")
+		for (MopContract contract : (List<MopContract>) Hiber
+				.session()
+				.createQuery("from MopContract contract order by contract.name")
 				.list()) {
 			source.appendChild(contract.toXml(doc));
 		}
