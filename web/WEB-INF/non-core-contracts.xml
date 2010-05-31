@@ -2838,16 +2838,6 @@ class SiteSource(DataSource):
         self.hh_data = self.whole_data['data']
 
 
-    '''
-    def hh_list_month(self, month_start):
-        cal = MonadDate.getCalendar()
-        cal.setTime(month_start)
-        cal.add(Calendar.MONTH, 1)
-        cal.add(Calendar.MINUTE, -30)
-        month_finish = HhStartDate(cal.getTime())
-        return self.hh_list(month_start, month_finish, pw)
-    '''
-
     def create_whole_data(self, start_date, finish_date, forecast_date):
         cal = MonadDate.getCalendar()
         cal.setTime(finish_date.getDate())
@@ -2859,8 +2849,15 @@ class SiteSource(DataSource):
         cal.setTime(start_date.getDate())
         cal.add(Calendar.YEAR, year_adjustment)
         history_start = HhStartDate(cal.getTime())
-        summary = {'start-date': start_date, 'finish-date': finish_date, 'is-forecast': not start_date.before(self.forecast_date), 'hist-start': history_start, 'hist-finish': history_finish, 'is-green': self.is_green}
-        month_data = {}
+        summary = {'start-date': start_date, 'finish-date': finish_date, 'is-forecast': not start_date.before(self.forecast_date), 'hist-start': history_start, 'hist-finish': history_finish, 'is-green': self.is_green, 'days': 0}
+
+        cal.setTime(start_date.getDate())
+        cal.set(Calendar.HOUR_OF_DAY, 0)
+        cal.set(Calendar.MINUTE, 0)
+        while not HhStartDate(cal.getTime()).after(finish_date):
+            summary['days'] += 1
+            cal.add(Calendar.DAY_OF_MONTH, 1)
+
         suffixes = ['-kwh', '-kw', '-kvarh', '-kvar', '-kva', '-kvah']
         is_forecast = finish_date.after(self.forecast_date)
         hh_data = []
@@ -2883,17 +2880,12 @@ class SiteSource(DataSource):
                 ct_cal.add(Calendar.YEAR, -1 * year_adjustment)
                 utc_cal.setTime(hh_start_date.getDate())
                 utc_cal.add(Calendar.YEAR, -1 * year_adjustment)
-                hh_values = {'status': 'E', 'hist-start-date': hh_start_date.getDate(), 'hist-import-net-kwh': import_net[i], 'hist-import-net-kvarh': 0, 'hist-export-net-kwh': export_net[i], 'hist-export-net-kvarh': 0, 'hist-import-gen-kwh': import_gen[i], 'hist-export-gen-kwh': export_gen[i], 'hist-import-3rd-party-kwh': import_3rd_party[i], 'hist-export-3rd-party-kwh': export_3rd_party[i], 'start-date': hh_start_date.getDate(), 'ct-day': ct_cal.get(5), 'utc-month': utc_cal.get(2), 'utc-day': utc_cal.get(5), 'utc-decimal-hour': utc_cal.get(11) + float(utc_cal.get(12)) / 60, 'ct-month': ct_cal.get(2), 'ct-decimal-hour': ct_cal.get(11) + ct_cal.get(12) / 60, 'ct-day-of-week': ct_cal.get(7), 'utc-day-of-week': utc_cal.get(7)}
+                hh_values = {'status': 'E', 'hist-start-date': hh_start_date.getDate(), 'hist-import-net-kwh': import_net[i], 'hist-import-net-kvarh': 0, 'hist-export-net-kwh': export_net[i], 'hist-export-net-kvarh': 0, 'hist-import-gen-kwh': import_gen[i], 'hist-export-gen-kwh': export_gen[i], 'hist-import-3rd-party-kwh': import_3rd_party[i], 'hist-export-3rd-party-kwh': export_3rd_party[i], 'start-date': hh_start_date.getDate(), 'ct-day': ct_cal.get(5), 'utc-year': utc_cal.get(Calendar.YEAR), 'utc-month': utc_cal.get(2), 'utc-day': utc_cal.get(5), 'utc-hour': utc_cal.get(Calendar.HOUR_OF_DAY), 'utc-decimal-hour': utc_cal.get(11) + float(utc_cal.get(12)) / 60, 'utc-minute': utc_cal.get(Calendar.MINUTE), 'ct-month': ct_cal.get(2), 'ct-decimal-hour': ct_cal.get(11) + ct_cal.get(12) / 60, 'ct-day-of-week': ct_cal.get(7), 'utc-day-of-week': utc_cal.get(7)}
                 hh_values['hist-kwh'] = hh_values['hist-import-gen-kwh'] - hh_values['hist-export-gen-kwh'] - hh_values['hist-export-net-kwh']
-                if is_forecast:
-                    hh_values['msp-kwh'] = forecast_displaced_kwh
-                    hh_values['export-net-kwh'] = forecast_exported_kwh
-                    hh_values['import-gen-kwh'] = forecast_displaced_kwh + forecast_exported_kwh
-                    hh_values['export-gen-kwh'] = 0
-                else:
-                    hh_values['msp-kwh'] = hh_values['hist-kwh']
-                    for lec_cat in lec_cats:
-                        hh_values[lec_cat + '-kwh'] = hh_values['hist-' + lec_cat + '-kwh']
+                
+                hh_values['msp-kwh'] = hh_values['hist-kwh']
+                for lec_cat in lec_cats:
+                    hh_values[lec_cat + '-kwh'] = hh_values['hist-' + lec_cat + '-kwh']
 
                 hh_values['hist-used-kwh'] = hh_values['hist-kwh'] + hh_values['hist-import-net-kwh']
                 hh_values['hist-imp-msp-kvarh'] = 0
@@ -3015,7 +3007,6 @@ class SupplySource(DataSource):
             summary['days'] += 1
             cal.add(Calendar.DAY_OF_MONTH, 1)
 
-        month_data = {}
         suffixes = ['-kwh', '-kw', '-kvarh', '-kvar', '-kva', '-kvah']
 
         #pw.println("done setup " + str(System.currentTimeMillis() - timing))
@@ -3146,7 +3137,25 @@ class EdiParser():
         except IOException, e:
             raise UserException("Can't read SSE EDI file.")
         except Throwable, e:
-            raise UserException("Problem at line number " + self.lreader.getLineNumber() + "\n" + line + "\n of the EDI file.\n" + HttpException.getStackTraceString(e))]]></value>
+            raise UserException("Problem at line number " + self.lreader.getLineNumber() + "\n" + line + "\n of the EDI file.\n" + HttpException.getStackTraceString(e))
+
+
+def displaced_mpan(site_group, start_date, finish_date):
+    has_displaced = False
+    mpans = {}
+    for supply in site_group.getSupplies():
+        source_code = supply.getSource().getCode()
+        if source_code in ['gen', 'gen-net']:
+            has_displaced = True
+        elif source_code in ['net', 'gen-net']:
+            for mpan in Hiber.session().createQuery("from Mpan mpan where mpan.llfc.isImport is true and mpan.supplyGeneration.pc.code = 0 and mpan.supplyGeneration.supply = :supply and mpan.supplyGeneration.startDate.date <= :finishDate and (mpan.supplyGeneration.finishDate is null or mpan.supplyGeneration.finishDate.date >= :startDate) order by mpan.supplyGeneration.startDate.date").setEntity('supply', supply).setTimestamp('startDate', start_date.getDate()).setTimestamp('finishDate', finish_date.getDate()).list():
+                mpans[mpan.getCore().toString()] = mpan
+    if has_displaced:
+        keys = mpans.keys()
+        keys.sort()
+        return mpans[keys[0]]
+    else:
+        return None]]></value>
         <value><![CDATA[]]></value>
     </line>
     <line>
