@@ -2827,7 +2827,7 @@ class SiteSource(DataSource):
         llfc = mpan.getLlfc()
         self.llfc_code = llfc.codeAsString()
         self.is_import = llfc.getIsImport()
-        self.id = mpan_core.toString()
+        self.mpan_core = mpan_core.toString()
         self.voltage_level_code = llfc.getVoltageLevel().getCode()
         self.is_substation = llfc.getIsSubstation()
         self.availability = mpan.getAgreedSupplyCapacity()
@@ -3147,7 +3147,7 @@ def displaced_mpan(site_group, start_date, finish_date):
         source_code = supply.getSource().getCode()
         if source_code in ['gen', 'gen-net']:
             has_displaced = True
-        elif source_code in ['net', 'gen-net']:
+        if source_code in ['net', 'gen-net']:
             for mpan in Hiber.session().createQuery("from Mpan mpan where mpan.llfc.isImport is true and mpan.supplyGeneration.pc.code = 0 and mpan.supplyGeneration.supply = :supply and mpan.supplyGeneration.startDate.date <= :finishDate and (mpan.supplyGeneration.finishDate is null or mpan.supplyGeneration.finishDate.date >= :startDate) order by mpan.supplyGeneration.startDate.date").setEntity('supply', supply).setTimestamp('startDate', start_date.getDate()).setTimestamp('finishDate', finish_date.getDate()).list():
                 mpans[mpan.getCore().toString()] = mpan
     if has_displaced:
