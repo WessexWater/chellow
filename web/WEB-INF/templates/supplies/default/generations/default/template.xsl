@@ -455,7 +455,7 @@
 												</xsl:when>
 												<xsl:otherwise>
 													<xsl:value-of
-											select="/source/supply-generation/meter/@serial-number" />
+											select="/source/supply-generation/@meter-serial-number" />
 												</xsl:otherwise>
 											</xsl:choose>
 										</xsl:attribute>

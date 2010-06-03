@@ -23,7 +23,6 @@ package net.sf.chellow.physical;
 
 import java.util.Date;
 
-import net.sf.chellow.monad.Debug;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.Invocation;
@@ -72,7 +71,6 @@ public class SupplyGenerations extends EntityList {
 	}
 
 	public void httpPost(Invocation inv) throws HttpException {
-		Debug.print("starting to add generation " + System.currentTimeMillis());
 		Date startDate = inv.getDate("start");
 		Document doc = document();
 		if (!inv.isValid()) {

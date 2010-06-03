@@ -36,7 +36,6 @@ import net.sf.chellow.billing.Dso;
 import net.sf.chellow.billing.HhdcContract;
 import net.sf.chellow.billing.MopContract;
 import net.sf.chellow.billing.SupplierContract;
-import net.sf.chellow.monad.Debug;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.Invocation;
@@ -1125,7 +1124,6 @@ public class SupplyGeneration extends PersistentEntity {
 				}
 			}
 		}
-		Debug.print("About to move hh data from one generation to another.");
 		// See if we have to move hh data from one generation to the other
 		for (Boolean isImport : new Boolean[] { true, false }) {
 			for (Boolean isKwh : new Boolean[] { true, false }) {
@@ -1206,7 +1204,6 @@ public class SupplyGeneration extends PersistentEntity {
 				}
 			}
 		}
-		Debug.print("finishing moving hh data");
 		Hiber.flush();
 		for (Mpan mpan : mpans) {
 			SupplierContract supplierContract = mpan.getSupplierContract();
@@ -1248,6 +1245,7 @@ public class SupplyGeneration extends PersistentEntity {
 		if (hhdcAccount != null) {
 			element.setAttribute("hhdc-account", hhdcAccount);
 		}
+		element.setAttribute("meter-serial-number", meterSerialNumber);
 		return element;
 	}
 

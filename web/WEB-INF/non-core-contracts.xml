@@ -280,43 +280,48 @@ class Parser(BillParser):
         <value><![CDATA[]]></value>
         <value><![CDATA[from java.io import LineNumberReader
 from org.python.util import PythonInterpreter
+from net.sf.chellow.physical import ReadType, HhStartDate, Units, RawRegisterRead
+from net.sf.chellow.billing import NonCoreContract, BillParser, RawBill
+from net.sf.chellow.monad import UserException, Hiber
+from java.math import BigDecimal
 
-read_type_map = {0: ReadType.TYPE_ROUTINE, 2: ReadType.TYPE_ESTIMATE, 4: ReadType.TYPE_CUSTOMER, 9: ReadType.TYPE_ROUTINE}
+read_type_map = {'00': ReadType.TYPE_ROUTINE, '02': ReadType.TYPE_ESTIMATE, '04': ReadType.TYPE_CUSTOMER, '09': ReadType.TYPE_ROUTINE}
 
 bill_types = {"A": "AMENDED", "F": "FINAL", "N": "NORMAL", "I": "INTEREST", "R": "RECONCILIATION", "P": "PREPAID", "O": "INFORMATION", "W": "WITHDRAWAL"}
 
-tmod_map = {"URQ1": 1, "Z012": 1, "URQD": 1, "SG1U": 1}
+tmod_map = {'0001': 2, 'A153': 3, 'A154': 1, 'CMACU': 20, 'CMACUF': 20, 'URQ1': 2, 'URC1': 2, 'DQ22': 3, 'EQ32': 4, 'NQ32': 6, 'NQ22': 1, 'NIQ2': 1, 'NIE7': 1, 'NAC2': 1, 'NDC2': 3, 'NNC2': 1, 'DAE7': 3, 'MNC2': 20, 'DAC2': 3, 'DAQ2': 3, 'D7P2': 3, 'N7P2': 1, 'WDQ3': 6, 'EWQ3': 4, 'MDC1': 20, 'MAC2': 20, 'OEC2': 2, 'OPAC': 2, '10': 2, 'Z012': 2, '39': 3, '0039': 3, '40': 3, '0040': 3, '43': 3, '0043': 3, '0071': 4, '71': 4, '72': 4, '73': 11, '80': 4, '080A': 4, '84': 2, '92': 9, '93': 9, '148': 6, '148A': 6, '151': 2, '0151': 2, '0044': 3, '0208': 1, '160': 1, 'U393': 2, '0160': 1, '0183': 6, '183': 6, '184': 6, '184A': 6, '187': 4, '187A': 4, '206': 1, '0206': 1, '208': 1, '210': 1, '0210': 1, '210E': 2, '210J': 1, '212': 2, '221B': 1, '0221': 1, '0221B': 1, '239': 10, '240': 10, '244': 11, '248': 7, '249': 7, '251': 8, '252': 8, '276': 6, '0276': 6, '277': 4, '0277': 4, '1059': 3, '1060': 1, '1071': 3, '1072': 1, '1073': 6, '1074': 4, '1075': 1, '1076': 6, '1077': 4, '1078': 3, '1079': 1, '1088': 2, '1139': 3, '1140': 1, '1141': 3, '1142': 1, '1149': 3, '1150': 1, '1151': 3, '1152': 1, '1153': 3, '1154': 1, '0249': 7, '0252': 8, '0240': 10, '0244': 11, '0092': 9, '210A': 1, 'MDM1': 20, 'MDM3': 20, 'NIM3': 1, 'OTM3': 9, 'P1M3': 7, 'P2M3': 8, 'W1M3': 10, 'W2M3': 11, '0153': 2, 'WQ42': 6, 'NQ42': 1, 'EQ42': 4, 'WDQ4': 6, 'EWQ4': 4, 'NIQ4': 1, 'URQD': 2, 'OPE3': 2, 'SG1U': 2, 'N179': 1, 'D179': 3, 'O212': 2, 'URM1': 2, 'D244': 3, 'N244': 1, 'DM22': 3, 'NM22': 1, 'MM22': 20, '0184': 6, '0072': 4}
 
-def get_bill_parser(reader):
-    return BillParser(reader)
-
-class BillParser():
-    def __init__(reader):
+class Parser(BillParser):
+    def __init__(self, reader):
         computer = NonCoreContract.getNonCoreContract('computer')
         comterp = PythonInterpreter()
         comterp.exec(computer.getChargeScript())
         self.parser = comterp.get('get_edi_parser')(reader)
+        self.debug_str = ''
 
-    def get_raw_bills():
+    def getRawBills(self):
+        #self.debug_str += 'starting to get raw bills'
         raw_bills = []
         Hiber.flush()
         code = self.parser.next_segment()
         while code is not None:
-            elements = self.parser.elements
-            if code == "CLO":
-                cloc = elements[0]
-                account_reference = cloc[1]
-            elif code == "BCD":
-                ivdt = elements[0]
+            if code == "BCD":
+                ivdt = self.parser.elements[0]
                 issue_date = self.parser.to_date(ivdt[0])
 
-                invn = elements[2]
+                invn = self.parser.elements[2]
                 invoice_number = invn[0]
+                account_reference = 'SA' + invoice_number[:-4]
 
-                btcd = elements[5]
+                btcd = self.parser.elements[5]
                 bill_type_code = btcd[0]
+
+                sumo = self.parser.elements[7]
+                start_date = self.parser.to_date(sumo[0])
+                finish_date = self.parser.to_date(sumo[1])
+
             elif code == "MHD":
-                type = elements[1]
+                type = self.parser.elements[1]
                 message_type = type[0]
                 if message_type == "UTLBIL":
                     issue_date = None
@@ -330,72 +335,60 @@ class BillParser():
                     bill_type_code = None
                     mpan_strings = []
             elif code == "CCD":
-                ccde = elements[1]
+                ccde = self.parser.elements[1]
                 consumption_charge_indicator = ccde[0]
 
                 if consumption_charge_indicator in ["1", "2"]:
-                    previous_hh_read_date = self.parser.to_date(elements[7][0])
-                    register_start_date = previous_hh_read_date.getNext()
-                    previous_read_date = previous_hh_read_date
+                    prdt = self.parser.elements[6]
+                    pvdt = self.parser.elements[7]
 
-                if HhStartDate.isAfter(start_date, registerStartDate):
-                    start_date = register_start_date
+                    previous_read_date = self.parser.to_date(prdt[0])
+                    present_read_date = self.parser.to_date(pvdt[0])
+               
+                    tmod = self.parser.elements[3]
+                    mtnr = self.parser.elements[4]
+                    mloc = self.parser.elements[5]
 
-                register_finish_date = self.parser.to_date(elements[6][0])
-                if HhStartDate.isBefore(finish_date, register_finish_date):
-                    finish_date = register_finish_date
+                    prrd = self.parser.elements[9]
+                    present_read_type = ReadType.getReadType(read_type_map[prrd[1]])
+                    previous_read_type = ReadType.getReadType(read_type_map[prrd[3]])
 
-                tmod = elements[3]
-                mtnr = elements[4]
-                mloc = elements[5]
+                    adjf = self.parser.elements[12]
+                    coefficient = BigDecimal(adjf[1]).divide(BigDecimal(100000))
+                    present_reading_value = BigDecimal(prrd[0]).divide(BigDecimal(1000))
+                    previous_reading_value = BigDecimal(prrd[2]).divide(BigDecimal(1000))
+                    meter_serial_number = mtnr[0]
+                    tpr = tmod_map[tmod[0]]
 
-                prrd = elements[9]
-                present_read_type = self.parser.to_date(prrd[1])
-                previous_read_type = read_type_map[prrd[3]]
-
-                adjf = elements[12]
-                coefficient = BigDecimal(adjf[1]).divide(BigDecimal(100000))
-                present_reading_value = BigDecimal(prrd[0]).divide(BigDecimal(1000))
-                previous_reading_value = BigDecimal(prrd[2]).divide(BigDecimal(1000))
-                meter_serial_number = mtnr[0]
-                tmodStr = tmod[0]
-                tpr = None
-                try:
-                    tpr = Integer.parseInt(tmodStr)
-                except NumberFormatException, e:
-                    tpr = tModMap.get(tmodStr)
-                    if tpr is None:
-                        raise UserException("Don't recognize the TPR code '" + tmodStr + "'.")
-
-                reads.add({'meter-serial-number': meter_serial_number, 'mpan': mloc[0], 'coefficient': coefficient, 'units': Units.KWH, 'tpr': tpr, 'previous-date': previous_read_date, 'previous-value': previous_reading_value, 'previous-type': previous_read_type, 'present-date': register_finish_date, 'present-value': present_reading_value, 'present-type': present_read_type})
+                    reads.append({'meter-serial-number': meter_serial_number, 'mpan': mloc[0], 'coefficient': coefficient, 'units': Units.KWH, 'tpr': tpr, 'previous-date': previous_read_date, 'previous-value': previous_reading_value, 'previous-type': previous_read_type, 'present-date': present_read_date, 'present-value': present_reading_value, 'present-type': present_read_type})
             elif code == "MTR":
-                if messageType.equals("UTLBIL"):
+                if message_type == "UTLBIL":
                     register_reads = []
                     for read in reads:
-                        register_reads.append(RegisterReadRaw(read['meter-serial-number'], read['mpan'], read['coefficient'], read['units'], read['tpr'], read['previous-date'], read['previous-value'], read['previous-type'], read['current-date'], read['current-value'], read['current-type']))
+                        register_reads.append(RawRegisterRead(read['meter-serial-number'], read['mpan'], read['coefficient'], read['units'], read['tpr'], read['previous-date'], read['previous-value'], read['previous-type'], read['present-date'], read['present-value'], read['present-type']))
                     bill_type = bill_types[bill_type_code]
                     bill_raw = RawBill(bill_type, account_reference, mpan_strings, invoice_number, issue_date.getDate(), start_date, finish_date, net, vat, register_reads)
-                    raw_invoices.append(bill_raw)
+                    raw_bills.append(bill_raw)
             elif code == "MAN":
-                madn = elements[2]
-                pc_code = "0" + madn[3]
+                madn = self.parser.elements[2]
+                pc_code = madn[3]
                 mtc_code = madn[4]
                 llfc_code = madn[5]
 
                 mpan_strings.append(pc_code + " " + mtc_code + " " + llfc_code + " " + madn[0] + " " + madn[1] + madn[2])
             elif code == "VAT":
-                uvla = elements[5]
-                net = uvla.getBigDecimal()
-                uvtt = elements[6]
-                vat = uvtt.getBigDecimal()
-
+                uvla = self.parser.elements[5]
+                net = self.parser.to_big_decimal(uvla[0])
+                uvtt = self.parser.elements[6]
+                vat = self.parser.to_big_decimal(uvtt[0])
+            code = self.parser.next_segment()
         self.parser.close()
         Hiber.flush()
-        return raw_invoices
+        return raw_bills
 
 
-    def get_progress():
-        return "Reached line " + self.lreader.getLineNumber() + "."]]></value>
+    def getProgress(self):
+        return "Reached line " + str(self.parser.lreader.getLineNumber()) + "." + self.debug_str]]></value>
         <value><![CDATA[]]></value>
     </line>
     <line>
@@ -2693,7 +2686,7 @@ def hh(bill, supply_source, hh_data):
         <value><![CDATA[from net.sf.chellow.billing import NonCoreContract
 from net.sf.chellow.physical import HhStartDate, MpanCore, Site
 from java.util import GregorianCalendar, TimeZone, Locale, Calendar, Date
-from net.sf.chellow.monad import UserException, Hiber
+from net.sf.chellow.monad import UserException, Hiber, InternalException
 from net.sf.chellow.monad.types import MonadDate
 from java.sql import Timestamp, ResultSet
 from java.lang import System, NumberFormatException, Integer
@@ -2865,29 +2858,71 @@ class SiteSource(DataSource):
         ct_cal = GregorianCalendar(TimeZone.getTimeZone("Europe/London"), Locale.UK)
 
         site = Site.getSite(self.site_id)
-        for group in site.groups(summary['hist-start'], summary['hist-finish'], True):
-            hh_start_date = summary['hist-start']
-            hh_streams = group.hhData()
-            import_net = hh_streams['import-net']
-            export_net = hh_streams['export-net']
-            import_gen = hh_streams['import-gen']
-            export_gen = hh_streams['export-gen']
-            import_3rd_party = hh_streams['import-3rd-party']
-            export_3rd_party = hh_streams['export-3rd-party']
+        con = Hiber.session().connection()
 
-            for i in range(len(import_net)):
-                ct_cal.setTime(hh_start_date.getDate())
+        for group in site.groups(summary['hist-start'], summary['hist-finish'], True):
+            supplies = group.getSupplies()
+            if len(supplies) == 0:
+                continue
+            hh_date = group.getFrom()
+            group_to = group.getTo()
+            supplies_sql = ','.join(str(supply.getId()) for supply in supplies)
+            stmt = con.prepareStatement("select hh_datum.value, hh_datum.start_date, hh_datum.status, channel.is_import, source.code from hh_datum, channel, supply_generation, supply, source where hh_datum.channel_id = channel.id and channel.supply_generation_id = supply_generation.id and supply_generation.supply_id = supply.id and supply.source_id = source.id and channel.is_kwh is true and hh_datum.start_date >= ? and hh_datum.start_date <= ? and supply.id in (" + supplies_sql + ") order by hh_datum.start_date", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.CLOSE_CURSORS_AT_COMMIT)
+            stmt.setTimestamp(1, Timestamp(group.getFrom().getDate().getTime()))
+            stmt.setTimestamp(2, Timestamp(group_to.getDate().getTime()))
+            stmt.setFetchSize(100)
+            rs = stmt.executeQuery()
+            if rs.next():
+                hh_value = rs.getFloat("value")
+                hh_start_date = rs.getTimestamp("start_date")
+                is_import = rs.getBoolean("is_import")
+                status = rs.getString("status")
+                source_code = rs.getString("code")
+            else:
+                continue
+            while not hh_date.after(group_to):
+                export_net_kwh = 0
+                import_net_kwh = 0
+                export_gen_kwh = 0
+                import_gen_kwh = 0
+                import_3rd_party_kwh = 0
+                export_3rd_party_kwh = 0                
+                while hh_start_date is not None and hh_start_date.getTime() == hh_date.getDate().getTime():
+                    if not is_import and source_code in ('net', 'gen-net'):
+                        export_net_kwh += hh_value
+                    if is_import and source_code in ('net', 'gen-net'):
+                        import_net_kwh += hh_value
+                    if (is_import and source_code == 'gen') or (not is_import and source_code == 'gen-net'):
+                        import_gen_kwh += hh_value
+                    if (not is_import and source_code == 'gen') or (is_import and source_code == 'gen-net'):
+                        export_gen_kwh += hh_value
+                    if (is_import and source_code == '3rd-party') or (not is_import and source_code == '3rd-party-reverse'):
+                        import_3rd_party_kwh += hh_value
+                    if (not is_import and source_code == '3rd-party') or (is_import and source_code == '3rd-party-reverse'):
+                        export_3rd_party_kwh += hh_value
+                    if rs.next():
+                        source_code = rs.getString("code")
+                        hh_value = rs.getFloat("value")
+                        hh_start_date = rs.getTimestamp("start_date")
+                        is_import = rs.getBoolean("is_import")
+                        status = rs.getString("status")
+                    else:
+                        hh_start_date = None
+
+                ct_cal.setTime(hh_date.getDate())
                 ct_cal.add(Calendar.YEAR, -1 * year_adjustment)
-                utc_cal.setTime(hh_start_date.getDate())
+                utc_cal.setTime(hh_date.getDate())
                 utc_cal.add(Calendar.YEAR, -1 * year_adjustment)
-                hh_values = {'status': 'E', 'hist-start-date': hh_start_date.getDate(), 'hist-import-net-kwh': import_net[i], 'hist-import-net-kvarh': 0, 'hist-export-net-kwh': export_net[i], 'hist-export-net-kvarh': 0, 'hist-import-gen-kwh': import_gen[i], 'hist-export-gen-kwh': export_gen[i], 'hist-import-3rd-party-kwh': import_3rd_party[i], 'hist-export-3rd-party-kwh': export_3rd_party[i], 'start-date': hh_start_date.getDate(), 'ct-day': ct_cal.get(5), 'utc-year': utc_cal.get(Calendar.YEAR), 'utc-month': utc_cal.get(2), 'utc-day': utc_cal.get(5), 'utc-hour': utc_cal.get(Calendar.HOUR_OF_DAY), 'utc-decimal-hour': utc_cal.get(11) + float(utc_cal.get(12)) / 60, 'utc-minute': utc_cal.get(Calendar.MINUTE), 'ct-month': ct_cal.get(2), 'ct-decimal-hour': ct_cal.get(11) + ct_cal.get(12) / 60, 'ct-day-of-week': ct_cal.get(7), 'utc-day-of-week': utc_cal.get(7)}
+                hh_values = {'status': 'E', 'hist-start-date': hh_date.getDate(), 'hist-import-net-kwh': import_net_kwh, 'hist-import-net-kvarh': 0, 'hist-export-net-kwh': export_net_kwh, 'hist-export-net-kvarh': 0, 'hist-import-gen-kwh': import_gen_kwh, 'hist-export-gen-kwh': export_gen_kwh, 'hist-import-3rd-party-kwh': import_3rd_party_kwh, 'hist-export-3rd-party-kwh': export_3rd_party_kwh, 'start-date': hh_date.getDate(), 'ct-day': ct_cal.get(5), 'utc-year': utc_cal.get(Calendar.YEAR), 'utc-month': utc_cal.get(2), 'utc-day': utc_cal.get(5), 'utc-hour': utc_cal.get(Calendar.HOUR_OF_DAY), 'utc-decimal-hour': utc_cal.get(11) + float(utc_cal.get(12)) / 60, 'utc-minute': utc_cal.get(Calendar.MINUTE), 'ct-month': ct_cal.get(2), 'ct-decimal-hour': ct_cal.get(11) + ct_cal.get(12) / 60, 'ct-day-of-week': ct_cal.get(7), 'utc-day-of-week': utc_cal.get(7)}
+                hh_values['hist-used-3rd-party-kwh'] = hh_values['hist-import-3rd-party-kwh'] - hh_values['hist-export-3rd-party-kwh']
+                hh_values['used-3rd-party-kwh'] = hh_values['hist-used-3rd-party-kwh']
                 hh_values['hist-kwh'] = hh_values['hist-import-gen-kwh'] - hh_values['hist-export-gen-kwh'] - hh_values['hist-export-net-kwh']
                 
                 hh_values['msp-kwh'] = hh_values['hist-kwh']
                 for lec_cat in lec_cats:
                     hh_values[lec_cat + '-kwh'] = hh_values['hist-' + lec_cat + '-kwh']
 
-                hh_values['hist-used-kwh'] = hh_values['hist-kwh'] + hh_values['hist-import-net-kwh']
+                hh_values['hist-used-kwh'] = hh_values['hist-kwh'] + hh_values['hist-import-net-kwh'] + hh_values['hist-used-3rd-party-kwh']
                 hh_values['hist-imp-msp-kvarh'] = 0
                 hh_values['imp-msp-kvarh'] = 0
                 hh_values['exp-msp-kvarh'] = 0
@@ -2897,15 +2932,18 @@ class SiteSource(DataSource):
                 hh_values['msp-kw'] = hh_values['msp-kwh'] * 2
                 hh_values['imp-msp-kvar'] = hh_values['imp-msp-kvarh'] * 2
                 hh_values['exp-msp-kvar'] = hh_values['exp-msp-kvarh'] * 2
-                hh_data.append(hh_values)
-                hh_start_date = hh_start_date.getNext()
 
+                hh_data.append(hh_values)
+                hh_date = hh_date.getNext()
+            rs.close()
+            stmt.close()
+        
         if len(hh_data) == 0:
             utc_cal = GregorianCalendar(TimeZone.getTimeZone("GMT"), Locale.UK)
             ct_cal = GregorianCalendar(TimeZone.getTimeZone("Europe/London"), Locale.UK)
             utc_cal.setTime(self.finish_date.getDate())
             ct_cal.setTime(self.finish_date.getDate())
-            hh_data.append({'status': 'E', 'hist-start-date': history_finish.getDate(), 'status': 'E', 'hist-import-net-kwh': 0, 'hist-import-net-kvarh': 0, 'hist-export-net-kwh': 0, 'hist-export-net-kvarh': 0, 'hist-import-gen-kwh': 0, 'hist-export-gen-kwh': 0, 'hist-import-3rd-party-kwh': 0, 'hist-export-3rd-party-kwh': 0, 'hist-kwh': 0, 'msp-kwh': 0, 'msp-kw': 0, 'export-net-kwh': 0, 'import-gen-kwh': 0, 'export-gen-kwh': 0, 'hist-used-kwh': 0, 'hist-kvarh': 0, 'imp-msp-kvarh': 0, 'imp-msp-kvar': 0, 'exp-msp-kvarh': 0, 'exp-msp-kvar': 0, 'used-kwh': 0, 'import-net-kwh': 0, 'import-3rd-party-kwh': 0, 'export-3rd-party-kwh': 0, 'start-date': self.finish_date.getDate(), 'ct-day': ct_cal.get(5), 'utc-month': utc_cal.get(2), 'utc-day': utc_cal.get(5), 'utc-decimal-hour': utc_cal.get(11) + float(utc_cal.get(12)) / 60, 'ct-month': ct_cal.get(2), 'ct-decimal-hour': ct_cal.get(11) + ct_cal.get(12) / 60, 'ct-day-of-week': ct_cal.get(7), 'utc-day-of-week': utc_cal.get(7)})
+            hh_data.append({'status': 'E', 'hist-start-date': history_finish.getDate(), 'status': 'E', 'hist-import-net-kwh': 0, 'hist-import-net-kvarh': 0, 'hist-export-net-kwh': 0, 'hist-export-net-kvarh': 0, 'hist-import-gen-kwh': 0, 'hist-export-gen-kwh': 0, 'hist-import-3rd-party-kwh': 0, 'hist-export-3rd-party-kwh': 0, 'hist-kwh': 0, 'msp-kwh': 0, 'msp-kw': 0, 'export-net-kwh': 0, 'import-gen-kwh': 0, 'export-gen-kwh': 0, 'hist-used-kwh': 0, 'hist-kvarh': 0, 'imp-msp-kvarh': 0, 'imp-msp-kvar': 0, 'exp-msp-kvarh': 0, 'exp-msp-kvar': 0, 'used-kwh': 0, 'import-net-kwh': 0, 'import-3rd-party-kwh': 0, 'export-3rd-party-kwh': 0, 'used-3rd-party-kwh': 0, 'start-date': self.finish_date.getDate(), 'ct-day': ct_cal.get(5), 'utc-month': utc_cal.get(2), 'utc-day': utc_cal.get(5), 'utc-decimal-hour': utc_cal.get(11) + float(utc_cal.get(12)) / 60, 'ct-month': ct_cal.get(2), 'ct-decimal-hour': ct_cal.get(11) + ct_cal.get(12) / 60, 'ct-day-of-week': ct_cal.get(7), 'utc-day-of-week': utc_cal.get(7)})
         if self.is_displaced and self.pc_code == '00' and self.is_import:
             dso_contract = get_dso_contract(self.dso_code, HhStartDate(hh_data[0]['start-date']), self.pw)
             summary['dso-bill'] = {}
@@ -2915,11 +2953,10 @@ class SiteSource(DataSource):
             summary['max-gsp-kwh'] = max(datum_list)
 
 
-        for name in ['used-kwh', 'hist-kwh', 'import-net-kwh', 'export-net-kwh', 'msp-kwh', 'imp-msp-kvarh', 'import-gen-kwh', 'export-gen-kwh', 'import-3rd-party-kwh', 'export-3rd-party-kwh']:
+        for name in ['used-kwh', 'hist-kwh', 'import-net-kwh', 'export-net-kwh', 'msp-kwh', 'imp-msp-kvarh', 'import-gen-kwh', 'export-gen-kwh', 'import-3rd-party-kwh', 'export-3rd-party-kwh', 'used-3rd-party-kwh']:
             datum_list = list(datum[name] for datum in hh_data)
             summary['sum-' + name] = sum(datum_list)
             summary['max-' + name] = max(datum_list)
-
         return {'summary': summary, 'data': hh_data}
 
 
@@ -3121,14 +3158,14 @@ class EdiParser():
         try:
             return HhStartDate(self.date_format.parse(component))
         except ParseException, e:
-            raise UserException("Couldn't parse " + component + " as a date. " + e.getMessage())
+            raise Exception("Couldn't parse " + component + " as a date. " + e.getMessage())
 
 
     def to_int(self, component):
         try:
             return Integer.parseInt(component)
         except NumberFormatException, e:
-            raise UserException("Couldn't parse " + component + " as an integer. " + e.getMessage())
+            raise Exception("Couldn't parse " + component + " as an integer. " + e.getMessage())
 
 
     def close(self):

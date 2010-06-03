@@ -25,9 +25,7 @@ import java.math.BigDecimal;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
-import java.util.Map.Entry;
 
 import net.sf.chellow.monad.Debug;
 import net.sf.chellow.monad.Hiber;
@@ -44,8 +42,8 @@ import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
 import net.sf.chellow.physical.HhStartDate;
 import net.sf.chellow.physical.PersistentEntity;
-import net.sf.chellow.physical.RegisterRead;
 import net.sf.chellow.physical.RawRegisterRead;
+import net.sf.chellow.physical.RegisterRead;
 import net.sf.chellow.physical.RegisterReads;
 import net.sf.chellow.physical.Supply;
 import net.sf.chellow.physical.SupplySnag;
@@ -237,7 +235,6 @@ public class Bill extends PersistentEntity implements Urlable {
 		setType(type);
 		setIsPaid(isPaid);
 		setIsCancelledOut(isCancelledOut);
-		virtualEqualsActual();
 	}
 
 	public Element toXml(Document doc) throws HttpException {
@@ -385,29 +382,5 @@ public class Bill extends PersistentEntity implements Urlable {
 			Hiber.flush();
 		}
 		return snag;
-	}
-
-	@SuppressWarnings("unchecked")
-	public Map<String, ?> virtualBill() throws HttpException {
-		return (Map<String, ?>) batch.getContract().callFunction(
-				"virtual_bill", new Object[] { supply, startDate, finishDate, null });
-	}
-
-	public void virtualEqualsActual() throws HttpException {
-		Map<String, ?> vBill = virtualBill();
-		Double vNet = (Double) vBill.get("net-gbp");
-		Double vGross = (Double) vBill.get("gross-gbp");
-		if (!vNet.equals(net.doubleValue())
-				|| !vGross.equals(vat.doubleValue())) {
-			insertSnag(BillSnag.INCORRECT_BILL);
-		}
-	}
-
-	public Element virtualBillXml(Document doc) throws HttpException {
-		Element vElement = doc.createElement("virtual-bill");
-		for (Entry<String, ?> entry : virtualBill().entrySet()) {
-			vElement.setAttribute(entry.getKey(), entry.getValue().toString());
-		}
-		return vElement;
 	}
 }

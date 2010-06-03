@@ -22,7 +22,6 @@ package net.sf.chellow.physical;
 
 import java.math.BigDecimal;
 
-import net.sf.chellow.billing.BillSnag;
 import net.sf.chellow.billing.Bill;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
@@ -82,7 +81,7 @@ public class RegisterRead extends PersistentEntity {
 		setpresentValue(rawRead.getPresentValue());
 		setpresentType(rawRead.getPresentType());
 		setMeterSerialNumber(rawRead.getMeterSerialNumber());
-
+        /*
 		if (previousType.getCode() != ReadType.TYPE_INITIAL) {
 			RegisterRead read = (RegisterRead) Hiber
 					.session()
@@ -94,6 +93,7 @@ public class RegisterRead extends PersistentEntity {
 				bill.insertSnag(BillSnag.PREVIOUS_READ);
 			}
 		}
+		*/
 	}
 
 	public String getMeterSerialNumber() {
