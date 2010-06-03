@@ -269,7 +269,7 @@ public class MonadDate extends MonadObject {
 		boolean isEqual = false;
 		if (obj instanceof MonadDate) {
 			Date dateToCompare = ((MonadDate) obj).getDate();
-			isEqual = getDate().equals(dateToCompare);
+			isEqual = getDate().getTime() == dateToCompare.getTime();
 		}
 		return isEqual;
 	}

@@ -62,7 +62,7 @@ public class HhStartDate extends MonadDate {
 			if (date2 == null) {
 				return false;
 			} else {
-				return date1.getDate().equals(date2.getDate());
+				return date1.getDate().getTime() == date2.getDate().getTime();
 			}
 		}
 	}
