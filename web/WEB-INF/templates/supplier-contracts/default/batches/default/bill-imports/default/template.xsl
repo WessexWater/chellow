@@ -163,9 +163,9 @@
 									<td>
 										<xsl:value-of select="@vat" />
 									</td>
-									<xsl:for-each select="register-read-raw">
+									<xsl:for-each select="raw-register-read">
 										<td>
-											<xsl:value-of select="@mpan-core" />
+											<xsl:value-of select="@mpan" />
 										</td>
 										<td>
 											<xsl:value-of select="@meter-serial-number" />
@@ -181,7 +181,7 @@
 										</td>
 										<td>
 											<xsl:value-of
-												select="concat(day-finish-date[@label='previous']/@year, '-', day-finish-date[@label='previous']/@month, '-', day-finish-date[@label='previous']/@day)" />
+												select="concat(hh-start-date[@label='previous']/@year, '-', hh-start-date[@label='previous']/@month, '-', hh-start-date[@label='previous']/@day)" />
 										</td>
 										<td>
 											<xsl:value-of select="@previous-value" />
@@ -191,7 +191,7 @@
 										</td>
 										<td>
 											<xsl:value-of
-												select="concat(day-finish-date[@label='present']/@year, '-', day-finish-date[@label='present']/@month, '-', day-finish-date[@label='present']/@day)" />
+												select="concat(hh-start-date[@label='present']/@year, '-', hh-start-date[@label='present']/@month, '-', hh-start-date[@label='present']/@day)" />
 										</td>
 										<td>
 											<xsl:value-of select="@present-value" />
@@ -237,18 +237,18 @@
 						day-start-date[@label='start']/@year, '-',
 						day-start-date[@label='start']/@month, '-',
 						day-start-date[@label='start']/@day, ', ',
-						day-finish-date[@label='finish']/@year, '-',
-						day-finish-date[@label='finish']/@month, '-',
-						day-finish-date[@label='finish']/@day, ', ', @net, ', ', @vat)" />
+						hh-start-date[@label='finish']/@year, '-',
+						hh-start-date[@label='finish']/@month, '-',
+						hh-start-date[@label='finish']/@day, ', ', @net, ', ', @vat)" />
 						<xsl:for-each select="register-read-raw"> <xsl:value-of
 						select="concat(', ', @mpan, ', ', @meter-serial-number, ', ',
 						@tpr, ', ', @coefficient, ', ', @units, ', ',
-						day-finish-date[@label='previous']/@year, '-',
-						day-finish-date[@label='previous']/@month, '-',
-						day-finish-date[@label='previous']/@day, ', ', @previous-value, ',
-						', @previous-type, ', ', day-finish-date[@label='present']/@year,
-						'-', day-finish-date[@label='present']/@month, '-',
-						day-finish-date[@label='present']/@day, ', ', @present-value, ',
+						hh-start-date[@label='previous']/@year, '-',
+						hh-start-date[@label='previous']/@month, '-',
+						hh-start-date[@label='previous']/@day, ', ', @previous-value, ',
+						', @previous-type, ', ', hh-start-date[@label='present']/@year,
+						'-', hh-start-date[@label='present']/@month, '-',
+						hh-start-date[@label='present']/@day, ', ', @present-value, ',
 						', @present-type)" /> </xsl:for-each> <br /> </xsl:for-each>
 						</code>
 					-->
@@ -350,9 +350,9 @@
 									<td>
 										<xsl:value-of select="@type" />
 									</td>
-									<xsl:for-each select="register-read-raw">
+									<xsl:for-each select="raw-register-read">
 										<td>
-											<xsl:value-of select="@mpan-core" />
+											<xsl:value-of select="@mpan" />
 										</td>
 										<td>
 											<xsl:value-of select="@meter-serial-number" />
@@ -368,23 +368,23 @@
 										</td>
 										<td>
 											<xsl:value-of
-												select="concat(day-finish-date[@label='previous']/@year, '-', day-finish-date[@label='previous']/@month, '-', day-finish-date[@label='previous']/@day)" />
+												select="concat(hh-start-date[@label='previous']/@year, '-', hh-start-date[@label='previous']/@month, '-', hh-start-date[@label='previous']/@day)" />
 										</td>
 										<td>
 											<xsl:value-of select="@previous-value" />
 										</td>
 										<td>
-											<xsl:value-of select="@previous-type" />
+											<xsl:value-of select="read-type[@label='previous']/@code" />
 										</td>
 										<td>
 											<xsl:value-of
-												select="concat(day-finish-date[@label='present']/@year, '-', day-finish-date[@label='present']/@month, '-', day-finish-date[@label='present']/@day)" />
+												select="concat(hh-start-date[@label='present']/@year, '-', hh-start-date[@label='present']/@month, '-', hh-start-date[@label='present']/@day)" />
 										</td>
 										<td>
 											<xsl:value-of select="@present-value" />
 										</td>
 										<td>
-											<xsl:value-of select="@present-type" />
+											<xsl:value-of select="read-type[@label='present']/@code" />
 										</td>
 									</xsl:for-each>
 								</tr>

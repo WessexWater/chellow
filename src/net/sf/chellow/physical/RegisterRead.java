@@ -42,6 +42,8 @@ import org.w3c.dom.Node;
 public class RegisterRead extends PersistentEntity {
 	private String meterSerialNumber;
 
+	private String mpanStr;
+
 	private Bill bill;
 
 	private BigDecimal coefficient;
@@ -81,19 +83,24 @@ public class RegisterRead extends PersistentEntity {
 		setpresentValue(rawRead.getPresentValue());
 		setpresentType(rawRead.getPresentType());
 		setMeterSerialNumber(rawRead.getMeterSerialNumber());
-        /*
-		if (previousType.getCode() != ReadType.TYPE_INITIAL) {
-			RegisterRead read = (RegisterRead) Hiber
-					.session()
-					.createQuery(
-							"from RegisterRead read where read.meterSerialNumber = :meterSerialNumber and read.presentDate.date = :readDate")
-					.setString("meterSerialNumber", getMeterSerialNumber()).setDate("readDate",
-							getPreviousDate().getDate()).uniqueResult();
-			if (read == null) {
-				bill.insertSnag(BillSnag.PREVIOUS_READ);
-			}
-		}
-		*/
+		setMpanStr(rawRead.getMpanStr());
+		/*
+		 * if (previousType.getCode() != ReadType.TYPE_INITIAL) { RegisterRead
+		 * read = (RegisterRead) Hiber .session() .createQuery(
+		 * "from RegisterRead read where read.meterSerialNumber = :meterSerialNumber and read.presentDate.date = :readDate"
+		 * ) .setString("meterSerialNumber",
+		 * getMeterSerialNumber()).setDate("readDate",
+		 * getPreviousDate().getDate()).uniqueResult(); if (read == null) {
+		 * bill.insertSnag(BillSnag.PREVIOUS_READ); } }
+		 */
+	}
+
+	public String getMpanStr() {
+		return mpanStr;
+	}
+
+	void setMpanStr(String mpanStr) {
+		this.mpanStr = mpanStr;
 	}
 
 	public String getMeterSerialNumber() {
@@ -242,6 +249,7 @@ public class RegisterRead extends PersistentEntity {
 		element.setAttribute("present-value", presentValue.toString());
 		presentType.setLabel("present");
 		element.appendChild(presentType.toXml(doc));
+		element.setAttribute("mpan-str", mpanStr);
 		return element;
 	}
 

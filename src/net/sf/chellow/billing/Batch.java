@@ -224,8 +224,9 @@ public class Batch extends PersistentEntity {
 		List<SupplyGeneration> generations = supply.getGenerations(bill
 				.getStartDate(), bill.getFinishDate());
 		// what about withdrawn????? Cancel them by hand!!!!!!!!!
-
+     
 		// Check for duplicate bills
+		/*
 		List<Bill> duplicateBills = (List<Bill>) Hiber
 				.session()
 				.createQuery(
@@ -237,6 +238,7 @@ public class Batch extends PersistentEntity {
 		if (duplicateBills.size() > 1) {
 			bill.insertSnag(BillSnag.DUPLICATE_BILL);
 		}
+		*/
 		// what about missing bill snags??????
 		for (SupplyGeneration generation : generations) {
 			HhStartDate st = generation.getStartDate()

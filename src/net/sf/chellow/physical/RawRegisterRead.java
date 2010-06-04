@@ -115,7 +115,7 @@ public class RawRegisterRead extends MonadObject {
 	}
 
 	public Element toXml(Document doc) throws HttpException {
-		Element element = doc.createElement("register-read-raw");
+		Element element = doc.createElement("raw-register-read");
 		element.setAttribute("coefficient", coefficient.toString());
 		element.setAttribute("units", Units.name(units));
 		element.setAttribute("tpr", Integer.toString(tpr));
@@ -129,6 +129,8 @@ public class RawRegisterRead extends MonadObject {
 		element.setAttribute("present-value", presentValue.toString());
 		presentType.setLabel("present");
 		element.appendChild(presentType.toXml(doc));
+		element.setAttribute("mpan", mpanStr);
+		element.setAttribute("meter-serial-number", meterSerialNumber);
 		return element;
 	}
 }

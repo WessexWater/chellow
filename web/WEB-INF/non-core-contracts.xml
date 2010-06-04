@@ -342,12 +342,15 @@ class Parser(BillParser):
                     prdt = self.parser.elements[6]
                     pvdt = self.parser.elements[7]
 
-                    previous_read_date = self.parser.to_date(prdt[0])
-                    present_read_date = self.parser.to_date(pvdt[0])
+                    present_read_date = self.parser.to_date(prdt[0])
+                    previous_read_date = self.parser.to_date(pvdt[0])
                
                     tmod = self.parser.elements[3]
                     mtnr = self.parser.elements[4]
                     mloc = self.parser.elements[5]
+
+                    mpan = mloc[0]
+                    mpan = mpan[13:15] + ' ' + mpan[15:18] + ' ' + mpan[18:] + ' ' + mpan[:2] + ' ' + mpan[2:6] + ' ' + mpan[6:10] + ' ' + mpan[10:13]
 
                     prrd = self.parser.elements[9]
                     present_read_type = ReadType.getReadType(read_type_map[prrd[1]])
@@ -355,12 +358,12 @@ class Parser(BillParser):
 
                     adjf = self.parser.elements[12]
                     coefficient = BigDecimal(adjf[1]).divide(BigDecimal(100000))
-                    present_reading_value = BigDecimal(prrd[0]).divide(BigDecimal(1000))
-                    previous_reading_value = BigDecimal(prrd[2]).divide(BigDecimal(1000))
+                    present_reading_value = BigDecimal(prrd[0])
+                    previous_reading_value = BigDecimal(prrd[2])
                     meter_serial_number = mtnr[0]
                     tpr = tmod_map[tmod[0]]
 
-                    reads.append({'meter-serial-number': meter_serial_number, 'mpan': mloc[0], 'coefficient': coefficient, 'units': Units.KWH, 'tpr': tpr, 'previous-date': previous_read_date, 'previous-value': previous_reading_value, 'previous-type': previous_read_type, 'present-date': present_read_date, 'present-value': present_reading_value, 'present-type': present_read_type})
+                    reads.append({'meter-serial-number': meter_serial_number, 'mpan': mpan, 'coefficient': coefficient, 'units': Units.KWH, 'tpr': tpr, 'previous-date': previous_read_date, 'previous-value': previous_reading_value, 'previous-type': previous_read_type, 'present-date': present_read_date, 'present-value': present_reading_value, 'present-type': present_read_type})
             elif code == "MTR":
                 if message_type == "UTLBIL":
                     register_reads = []
@@ -378,9 +381,9 @@ class Parser(BillParser):
                 mpan_strings.append(pc_code + " " + mtc_code + " " + llfc_code + " " + madn[0] + " " + madn[1] + madn[2])
             elif code == "VAT":
                 uvla = self.parser.elements[5]
-                net = self.parser.to_big_decimal(uvla[0])
+                net = net.add(self.parser.to_big_decimal(uvla).divide(BigDecimal('100')))
                 uvtt = self.parser.elements[6]
-                vat = self.parser.to_big_decimal(uvtt[0])
+                vat = vat.add(self.parser.to_big_decimal(uvtt).divide(BigDecimal('100')))
             code = self.parser.next_segment()
         self.parser.close()
         Hiber.flush()

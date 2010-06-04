@@ -105,9 +105,7 @@ public class RegisterReads extends EntityList {
 				.createQuery(
 						"from RegisterRead read where read.bill = :bill order by read.presentDate.date, read.id")
 				.setEntity("bill", bill).list()) {
-			readsElement.appendChild(read.toXml(doc, new XmlTree("mpan",
-					new XmlTree("mpanCore").put("supplyGeneration",
-							new XmlTree("supply"))).put("tpr")));
+			readsElement.appendChild(read.toXml(doc, new XmlTree("tpr")));
 		}
 		return doc;
 	}

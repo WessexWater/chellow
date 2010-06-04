@@ -38,6 +38,7 @@
 			<column name="coefficient" sql-type="numeric" />
 		</property>
 		<property name="meterSerialNumber" type="string" column="meter_serial_number" not-null="true" />
+		<property name="mpanStr" type="string" column="mpan_str" not-null="true" />
 		<many-to-one name="tpr" class="Tpr" column="tpr_id"
 			not-null="true" foreign-key="fkey_tpr__register_read" />
 		<component name="presentDate"

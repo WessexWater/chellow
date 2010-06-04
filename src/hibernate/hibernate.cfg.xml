@@ -68,7 +68,6 @@
 		<mapping resource="hibernate/Batch.hbm.xml" />
 		<mapping resource="hibernate/Bill.hbm.xml" />
 		<mapping resource="hibernate/SupplySnag.hbm.xml" />
-		<mapping resource="hibernate/BillSnag.hbm.xml" />
 		<mapping resource="hibernate/RateScript.hbm.xml" />
 		<mapping resource="hibernate/DsoContract.hbm.xml" />
 		<mapping resource="hibernate/Dso.hbm.xml" />

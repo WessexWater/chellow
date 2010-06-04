@@ -60,10 +60,6 @@
 			<key column="bill_id" />
 			<one-to-many class="net.sf.chellow.physical.RegisterRead" />
 		</set>
-		<set name="snags" inverse="true" lazy="true" cascade="all,delete-orphan">
-			<key column="bill_id" />
-			<one-to-many class="BillSnag" />
-		</set>
 	</class>
 </hibernate-mapping>
 

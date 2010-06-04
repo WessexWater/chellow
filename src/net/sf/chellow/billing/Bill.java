@@ -85,8 +85,6 @@ public class Bill extends PersistentEntity implements Urlable {
 	private boolean isCancelledOut;
 
 	private Set<RegisterRead> reads;
-	
-	private Set<BillSnag> snags;
 
 	public Bill() {
 	}
@@ -207,14 +205,6 @@ public class Bill extends PersistentEntity implements Urlable {
 	public Set<RegisterRead> getReads() {
 		return reads;
 	}
-
-	void setSnags(Set<BillSnag> snags) {
-		this.snags = snags;
-	}
-
-	public Set<BillSnag> getSnags() {
-		return snags;
-	}
 	
 	public void update(String reference, Date issueDate, HhStartDate startDate,
 			HhStartDate finishDate, BigDecimal net, BigDecimal vat, String type,
@@ -287,8 +277,7 @@ public class Bill extends PersistentEntity implements Urlable {
 		Document doc = MonadUtils.newSourceDocument();
 		Element source = doc.getDocumentElement();
 		Element billElement = (Element) toXml(doc, new XmlTree("batch",
-				new XmlTree("contract", new XmlTree("party"))).put("reads",
-				new XmlTree("meter")).put("supply"));
+				new XmlTree("contract", new XmlTree("party"))).put("reads").put("supply"));
 		source.appendChild(billElement);
 		source.appendChild(MonadDate.getMonthsXml(doc));
 		source.appendChild(MonadDate.getDaysXml(doc));
@@ -306,8 +295,6 @@ public class Bill extends PersistentEntity implements Urlable {
 	public Urlable getChild(UriPathElement uriId) throws HttpException {
 		if (RegisterReads.URI_ID.equals(uriId)) {
 			return registerReadsInstance();
-		} else if (BillSnags.URI_ID.equals(uriId)) {
-			return new BillSnags(this);
 		} else {
 			throw new NotFoundException();
 		}
@@ -331,10 +318,6 @@ public class Bill extends PersistentEntity implements Urlable {
 
 	@SuppressWarnings("unchecked")
 	public void delete() throws HttpException {
-		// delete bill snags
-		Hiber.session().createQuery(
-				"delete from BillSnag snag where snag.bill = :bill").setEntity(
-				"bill", this).executeUpdate();
 		reads.clear();
 		Hiber.flush();
 		Hiber.session().delete(this);
@@ -364,23 +347,5 @@ public class Bill extends PersistentEntity implements Urlable {
 			}
 		}
 		Hiber.flush();
-	}
-
-	public BillSnag insertSnag(String description) throws HttpException {
-		BillSnag snag = (BillSnag) Hiber
-				.session()
-				.createQuery(
-						"from BillSnag snag where snag.bill = :bill and snag.description = :description")
-				.setEntity("bill", this).setString("description", description)
-				.uniqueResult();
-		if (snag == null) {
-			if (snags == null) {
-				snags = new HashSet<BillSnag>();
-			}
-			snag = new BillSnag(description, this);
-			snags.add(snag);
-			Hiber.flush();
-		}
-		return snag;
 	}
 }
