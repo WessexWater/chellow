@@ -63,9 +63,11 @@
 							<th>Reference</th>
 							<th>From</th>
 							<th>To</th>
+							<th>kWh</th>
 							<th>Net</th>
 							<th>VAT</th>
 							<th>Type</th>
+							<th>Breakout</th>
 							<th>Is Cancelled Out?</th>
 							<th>Status</th>
 						</tr>
@@ -90,6 +92,9 @@
 										select="concat(hh-start-date/@year, '-', hh-start-date/@month, '-', hh-start-date/@day)" />
 								</td>
 								<td>
+									<xsl:value-of select="@kwh" />
+								</td>
+								<td>
 									<xsl:value-of select="@net" />
 								</td>
 								<td>
@@ -97,6 +102,9 @@
 								</td>
 								<td>
 									<xsl:value-of select="@type" />
+								</td>
+								<td>
+									<xsl:value-of select="@breakout" />
 								</td>
 								<td>
 									<xsl:if test="@is-cancelled-out='true'">

@@ -123,7 +123,7 @@ class Parser(BillParser):
                         #self.debug_str += "  " + str(read['previous-type'])
                         register_reads.append(RawRegisterRead(read['meter-serial-number'], read['mpan'], read['coefficient'], read['units'], read['tpr'], read['previous-date'], read['previous-value'], read['previous-type'], read['present-date'], read['present-value'], read['present-type']))
 
-                    raw_bills.append(RawBill(bill_type, account_reference, mpan_strings, invoice_number, issue_date, start_date, finish_date, net, vat, register_reads))
+                    raw_bills.append(RawBill(bill_type, account_reference, mpan_strings, invoice_number, issue_date, start_date, finish_date, BigDecimal(0), net, vat, '', register_reads))
             elif code == "MAN":
                 madn = self.parser.elements[2]
                 pc_code = "0" + madn[3]
@@ -248,7 +248,7 @@ class Parser(BillParser):
                     start_date = self.parse_date(line[66:74])
                     finish_date = self.parse_date(line[74:82])
                 elif record_type == "1500":
-                    raw_bills.append(RawBill("NORMAL", account_reference, mpan_strings, invoice_number, start_date.getDate(), start_date, finish_date, net, vat, None))
+                    raw_bills.append(RawBill("NORMAL", account_reference, mpan_strings, invoice_number, start_date.getDate(), start_date, finish_date, BigDecimal(0), net, vat, '', None))
                 line = self.lreader.readLine()
             self.lreader.close();
             Hiber.flush();
@@ -370,7 +370,7 @@ class Parser(BillParser):
                     for read in reads:
                         register_reads.append(RawRegisterRead(read['meter-serial-number'], read['mpan'], read['coefficient'], read['units'], read['tpr'], read['previous-date'], read['previous-value'], read['previous-type'], read['present-date'], read['present-value'], read['present-type']))
                     bill_type = bill_types[bill_type_code]
-                    bill_raw = RawBill(bill_type, account_reference, mpan_strings, invoice_number, issue_date.getDate(), start_date, finish_date, net, vat, register_reads)
+                    bill_raw = RawBill(bill_type, account_reference, mpan_strings, invoice_number, issue_date.getDate(), start_date, finish_date, BigDecimal(0), net, vat, '', register_reads)
                     raw_bills.append(bill_raw)
             elif code == "MAN":
                 madn = self.parser.elements[2]

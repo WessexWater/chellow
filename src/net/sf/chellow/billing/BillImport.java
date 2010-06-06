@@ -59,15 +59,6 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
 public class BillImport extends Thread implements Urlable, XmlDescriber {
-	private static final Map<String, Class<? extends BillParser>> CONVERTERS;
-
-	static {
-		CONVERTERS = new HashMap<String, Class<? extends BillParser>>();
-		CONVERTERS.put("mm", BillConverterMm.class);
-		CONVERTERS.put("csv", BillConverterCsv.class);
-		CONVERTERS.put("bgb.edi", BillConverterBgbEdi.class);
-		CONVERTERS.put("sse.edi", BillConverterSseEdi.class);
-	}
 	private boolean halt = false;
 
 	private List<String> messages = Collections

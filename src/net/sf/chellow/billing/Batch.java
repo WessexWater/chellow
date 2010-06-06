@@ -215,8 +215,8 @@ public class Batch extends PersistentEntity {
 		Hiber.session().save(bill);
 		Hiber.flush();
 		bill.update(rawBill.getReference(), rawBill.getIssueDate(), rawBill
-				.getStartDate(), rawBill.getFinishDate(), rawBill.getNet(),
-				rawBill.getVat(), rawBill.getType(), null, false);
+				.getStartDate(), rawBill.getFinishDate(), rawBill.getKwh(), rawBill.getNet(),
+				rawBill.getVat(), rawBill.getType(), null, false, rawBill.getBreakdown());
 		for (RawRegisterRead rawRead : rawBill.getRegisterReads()) {
 			bill.insertRead(rawRead);
 		}

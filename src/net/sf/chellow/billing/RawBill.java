@@ -47,6 +47,8 @@ public class RawBill extends MonadObject {
 
 	private HhStartDate finishDate;
 
+	private BigDecimal kwh;
+
 	private BigDecimal net;
 
 	private BigDecimal vat;
@@ -54,6 +56,8 @@ public class RawBill extends MonadObject {
 	private String accountReference;
 
 	private String reference;
+	
+	private String breakdown;
 
 	private List<String> mpanStrings;
 
@@ -61,8 +65,8 @@ public class RawBill extends MonadObject {
 
 	public RawBill(String type, String accountReference,
 			List<String> mpanStrings, String reference, Date issueDate,
-			HhStartDate startDate, HhStartDate finishDate, BigDecimal net,
-			BigDecimal vat, List<RawRegisterRead> registerReads)
+			HhStartDate startDate, HhStartDate finishDate, BigDecimal kwh, BigDecimal net,
+			BigDecimal vat, String breakdown, List<RawRegisterRead> registerReads)
 			throws HttpException {
 		if (type == null) {
 			throw new InternalException("The type can't be null.");
@@ -80,6 +84,7 @@ public class RawBill extends MonadObject {
 			throw new InternalException("The finish date can't be null.");
 		}
 		this.finishDate = finishDate;
+		this.kwh = kwh;
 		this.net = net;
 		this.vat = vat;
 		if (reference == null) {
@@ -96,6 +101,7 @@ public class RawBill extends MonadObject {
 			throw new InternalException(
 					"The mpanStrings parameter must not be null.");
 		}
+		this.breakdown = breakdown;
 		this.mpanStrings = mpanStrings;
 		if (registerReads != null) {
 			for (RawRegisterRead read : registerReads) {
@@ -123,7 +129,11 @@ public class RawBill extends MonadObject {
 	public HhStartDate getFinishDate() {
 		return finishDate;
 	}
-
+	
+	public BigDecimal getKwh() {
+		return kwh;
+	}
+	
 	public BigDecimal getNet() {
 		return net;
 	}
@@ -139,7 +149,11 @@ public class RawBill extends MonadObject {
 	public String getAccount() {
 		return accountReference;
 	}
-
+	
+	public String getBreakdown() {
+		return breakdown;
+	}
+	
 	public Set<RawRegisterRead> getRegisterReads() {
 		return reads;
 	}

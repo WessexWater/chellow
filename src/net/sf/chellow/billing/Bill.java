@@ -81,6 +81,8 @@ public class Bill extends PersistentEntity implements Urlable {
 	private String type;
 	
 	private String breakdown;
+	
+	private BigDecimal kwh;
 
 	private boolean isCancelledOut;
 
@@ -95,6 +97,7 @@ public class Bill extends PersistentEntity implements Urlable {
 		setReference("Default Reference");
 		setType("");
 		setBreakdown("");
+		setKwh(new BigDecimal(0));
 		setNet(new BigDecimal(0));
 		setVat(new BigDecimal(0));
 		setStartDate(HhStartDate.roundDown(new Date()));
@@ -197,6 +200,14 @@ public class Bill extends PersistentEntity implements Urlable {
 	public void setIsCancelledOut(boolean isCancelledOut) {
 		this.isCancelledOut = isCancelledOut;
 	}
+	
+	void setKwh(BigDecimal kwh) {
+		this.kwh = kwh;
+	}
+
+	public BigDecimal getKwh() {
+		return kwh;
+	}
 
 	void setReads(Set<RegisterRead> reads) {
 		this.reads = reads;
@@ -207,8 +218,8 @@ public class Bill extends PersistentEntity implements Urlable {
 	}
 	
 	public void update(String reference, Date issueDate, HhStartDate startDate,
-			HhStartDate finishDate, BigDecimal net, BigDecimal vat, String type,
-			Boolean isPaid, boolean isCancelledOut) throws HttpException {
+			HhStartDate finishDate, BigDecimal kwh, BigDecimal net, BigDecimal vat, String type,
+			Boolean isPaid, boolean isCancelledOut, String breakdown) throws HttpException {
 		setReference(reference);
 		setIssueDate(issueDate);
 		if (startDate.getDate().after(finishDate.getDate())) {
@@ -217,6 +228,10 @@ public class Bill extends PersistentEntity implements Urlable {
 		}
 		setStartDate(startDate);
 		setFinishDate(finishDate);
+		if (kwh == null) {
+			throw new InternalException("kwh can't be null.");
+		}
+		setKwh(kwh);
 		setNet(net);
 		setVat(vat);
 		if (type == null) {
@@ -225,6 +240,7 @@ public class Bill extends PersistentEntity implements Urlable {
 		setType(type);
 		setIsPaid(isPaid);
 		setIsCancelledOut(isCancelledOut);
+		setBreakdown(breakdown);
 	}
 
 	public Element toXml(Document doc) throws HttpException {
@@ -234,6 +250,7 @@ public class Bill extends PersistentEntity implements Urlable {
 		element.appendChild(startDate.toXml(doc));
 		finishDate.setLabel("finish");
 		element.appendChild(finishDate.toXml(doc));
+		element.setAttribute("kwh", kwh.toString());
 		element.setAttribute("net", net.toString());
 		element.setAttribute("vat", vat.toString());
 		element.setAttribute("reference", reference);
@@ -243,6 +260,7 @@ public class Bill extends PersistentEntity implements Urlable {
 		element.setAttribute("is-cancelled-out", Boolean
 				.toString(isCancelledOut));
 		element.setAttribute("type", type);
+		element.setAttribute("breakdown", breakdown);
 		return element;
 	}
 
@@ -256,18 +274,20 @@ public class Bill extends PersistentEntity implements Urlable {
 			Date issueDate = inv.getDate("issue-date");
 			Date startDate = inv.getDate("start");
 			Date finishDate = inv.getDate("finish");
+			BigDecimal kwh = inv.getBigDecimal("kwh");
 			BigDecimal net = inv.getBigDecimal("net");
 			BigDecimal vat = inv.getBigDecimal("vat");
 			String type = inv.getString("type");
 			Boolean isPaid = inv.getBoolean("isPaid");
 			Boolean isCancelledOut = inv.getBoolean("isCancelledOut");
-
+			String breakdown = inv.getString("breakdown");
+			
 			if (!inv.isValid()) {
 				throw new UserException(document());
 			}
 			update(reference, issueDate, new HhStartDate(startDate).getNext(),
-					new HhStartDate(finishDate), net, vat, type, isPaid,
-					isCancelledOut);
+					new HhStartDate(finishDate), kwh, net, vat, type, isPaid,
+					isCancelledOut, breakdown);
 			Hiber.commit();
 			inv.sendOk(document());
 		}

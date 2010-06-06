@@ -81,8 +81,11 @@
 								<th>Issue Date</th>
 								<th>Start Date</th>
 								<th>Finish Date</th>
+								<th>kWh</th>
 								<th>Net</th>
 								<th>VAT</th>
+								<th>Type</th>
+								<th>Breakdown</th>
 								<th>R1 MPAN</th>
 								<th>R1 Meter Serial Number</th>
 								<th>R1 TPR</th>
@@ -158,10 +161,19 @@
 											select="concat(hh-start-date[@label='finish']/@year, '-', hh-start-date[@label='finish']/@month, '-', hh-start-date[@label='finish']/@day)" />
 									</td>
 									<td>
+										<xsl:value-of select="@kwh" />
+									</td>
+									<td>
 										<xsl:value-of select="@net" />
 									</td>
 									<td>
 										<xsl:value-of select="@vat" />
+									</td>
+									<td>
+										<xsl:value-of select="@type" />
+									</td>
+									<td>
+										<xsl:value-of select="@breakdown" />
 									</td>
 									<xsl:for-each select="raw-register-read">
 										<td>
@@ -268,9 +280,11 @@
 								<th>Issue Date</th>
 								<th>Start Date</th>
 								<th>Finish Date</th>
+								<th>kWh</th>
 								<th>Net</th>
 								<th>VAT</th>
 								<th>Type</th>
+								<th>Breakdown</th>
 								<th>R1 MPAN</th>
 								<th>R1 Meter Serial Number</th>
 								<th>R1 TPR</th>
@@ -342,6 +356,9 @@
 											select="concat(hh-start-date[@label='finish']/@year, '-', hh-start-date[@label='finish']/@month, '-', hh-start-date[@label='finish']/@day)" />
 									</td>
 									<td>
+										<xsl:value-of select="@kwh" />
+									</td>
+									<td>
 										<xsl:value-of select="@net" />
 									</td>
 									<td>
@@ -349,6 +366,9 @@
 									</td>
 									<td>
 										<xsl:value-of select="@type" />
+									</td>
+									<td>
+										<xsl:value-of select="@breakdown" />
 									</td>
 									<xsl:for-each select="raw-register-read">
 										<td>

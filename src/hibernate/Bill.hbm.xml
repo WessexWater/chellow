@@ -49,6 +49,9 @@
 			<column name="vat" sql-type="numeric" />
 		</property>
 		<property name="type" type="string" column="type" not-null="true" />
+		<property name="kwh" type="big_decimal" not-null="true">
+			<column name="kwh" sql-type="numeric" />
+		</property>
 		<property type="string" name="reference" column="reference"
 			not-null="true" />
 		<property type="string" name="breakdown" column="breakdown"
