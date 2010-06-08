@@ -476,6 +476,12 @@ public class Site extends PersistentEntity {
 				"from Source source order by source.code").list()) {
 			docElem.appendChild(source.toXml(doc));
 		}
+		for (GeneratorType genType : (List<GeneratorType>) Hiber
+				.session()
+				.createQuery("from GeneratorType genType order by genType.code")
+				.list()) {
+			docElem.appendChild(genType.toXml(doc));
+		}
 		for (GspGroup group : (List<GspGroup>) Hiber.session().createQuery(
 				"from GspGroup group order by group.code").list()) {
 			docElem.appendChild(group.toXml(doc));

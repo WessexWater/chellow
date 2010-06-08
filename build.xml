@@ -120,7 +120,7 @@
 	<!-- Requires Imprimatur from http://imprimatur.sourceforge.net/ -->
 
 	<property name="imprimatur.jar" value="${javalib.home}\imprimatur-016\imprimatur.jar" />
-	<property name="test.home" value="${basedir}/test" />
+	<property name="test.home" value="${basedir}/qa" />
 
 	<!-- ================== Custom Ant Task Definitions ======================= -->
 

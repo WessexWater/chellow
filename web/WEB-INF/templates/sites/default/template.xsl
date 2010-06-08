@@ -172,6 +172,24 @@
 								<br />
 								<br />
 								<label>
+									Generator Type
+									<select name="generator-type-id">
+										<xsl:for-each select="/source/generator-type">
+											<option value="{@id}">
+												<xsl:if
+													test="/source/request/parameter[@name='generator-type-id']/value = @id">
+													<xsl:attribute name="selected">
+																<xsl:value-of select="'selected'" />
+															</xsl:attribute>
+												</xsl:if>
+												<xsl:value-of select="concat(@code, ' : ', @description)" />
+											</option>
+										</xsl:for-each>
+									</select>
+								</label>
+								<br />
+								<br />
+								<label>
 									<xsl:value-of select="'Name '" />
 									<input name="name"
 										value="{/source/request/parameter[@name = 'name']/value}" />
@@ -183,8 +201,7 @@
 									<input name="start-year" maxlength="4" size="4">
 										<xsl:attribute name="value">
 											<xsl:choose>
-												<xsl:when
-											test="/source/request/parameter[@name='start-year']">
+												<xsl:when test="/source/request/parameter[@name='start-year']">
 													<xsl:value-of
 											select="/source/request/parameter[@name='start-year']/value" />
 												</xsl:when>
@@ -199,8 +216,7 @@
 										<xsl:for-each select="/source/months/month">
 											<option value="{@number}">
 												<xsl:choose>
-													<xsl:when
-														test="/source/request/parameter[@name='start-month']">
+													<xsl:when test="/source/request/parameter[@name='start-month']">
 														<xsl:if
 															test="/source/request/parameter[@name='start-month']/value = @number">
 															<xsl:attribute name="selected">
@@ -225,8 +241,7 @@
 										<xsl:for-each select="/source/days/day">
 											<option value="{@number}">
 												<xsl:choose>
-													<xsl:when
-														test="/source/request/parameter[@name='start-day']">
+													<xsl:when test="/source/request/parameter[@name='start-day']">
 														<xsl:if
 															test="/source/request/parameter[@name='start-day']/value = @number">
 															<xsl:attribute name="selected">
@@ -342,7 +357,7 @@
 										<input name="import-agreed-supply-capacity"
 											value="{/source/request/parameter[@name = 'import-agreed-supply-capacity']/value}" />
 									</label>
-									<br /> 
+									<br />
 									<label>
 										<xsl:value-of select="'Supplier Contract '" />
 										<select name="import-supplier-contract-id">

@@ -8333,7 +8333,7 @@ if inv.hasParameter("search-pattern"):
         if supply_id == last_supply:
             continue
         last_supply = supply_id
-        source.appendChild(supply_generation.toXml(doc, XmlTree("supply").put('meter').put('hhdcContract').put('pc').put('mpans', XmlTree('mtc').put('llfc').put('core').put('supplierContract'))))]]></value>
+        source.appendChild(supply_generation.toXml(doc, XmlTree("supply").put('hhdcContract').put('pc').put('mpans', XmlTree('mtc').put('llfc').put('core').put('supplierContract'))))]]></value>
         <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
 <xsl:stylesheet version="1.0"
     xmlns:xsl="http://www.w3.org/1999/XSL/Transform">

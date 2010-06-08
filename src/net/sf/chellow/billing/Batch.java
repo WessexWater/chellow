@@ -182,9 +182,8 @@ public class Batch extends PersistentEntity {
 		List<Mpan> mpanList = (List<Mpan>) Hiber
 				.session()
 				.createQuery(
-						"from Mpan mpan where mpan.supplierAccount = :account and mpan.supplyGeneration.startDate.date <= :billFinish and (mpan.supplyGeneration.finishDate.date is null or mpan.supplyGeneration.finishDate.date >= :billStart) order by mpan.core.dso.code, mpan.core.uniquePart")
-				.setString("account", rawBill.getAccount()).setTimestamp(
-						"billStart", rawBill.getStartDate().getDate())
+						"from Mpan mpan where mpan.supplierAccount = :account and mpan.supplyGeneration.startDate.date <= :billFinish and (mpan.supplyGeneration.finishDate.date is null or mpan.supplyGeneration.finishDate.date >= :billFinish) order by mpan.core.dso.code, mpan.core.uniquePart")
+				.setString("account", rawBill.getAccount())
 				.setTimestamp("billFinish", rawBill.getFinishDate().getDate())
 				.list();
 		if (mpanList.isEmpty()) {

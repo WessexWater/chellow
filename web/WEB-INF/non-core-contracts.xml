@@ -2689,7 +2689,7 @@ def hh(bill, supply_source, hh_data):
         <value><![CDATA[from net.sf.chellow.billing import NonCoreContract
 from net.sf.chellow.physical import HhStartDate, MpanCore, Site
 from java.util import GregorianCalendar, TimeZone, Locale, Calendar, Date
-from net.sf.chellow.monad import UserException, Hiber, InternalException
+from net.sf.chellow.monad import UserException, Hiber
 from net.sf.chellow.monad.types import MonadDate
 from java.sql import Timestamp, ResultSet
 from java.lang import System, NumberFormatException, Integer
@@ -2749,23 +2749,30 @@ def import_data_sources(contract, search_term, month_start, month_finish, foreca
     search_term = search_term.strip()
     # is it a forecast?
     if month_finish.after(forecast_date):
-        import_data_sources_from_contract(contract, search_term, month_start, month_finish, forecast_date, comterp, pw)
+        selection_finish = forecast_date.getPrevious()
+        cal = MonadDate.getCalendar()
+        cal.setTime(forecast_date.getDate())
+        cal.add(Calendar.MONTH, -1)
+        selection_start = HhStartDate(cal.getTime())
     else:
-        if len(search_term) == 0:
-            query = Hiber.session().createQuery("select distinct generation from SupplyGeneration generation where generation.importMpan is not null and generation.importMpan.supplierContract = :contract and generation.startDate.date <= :finishDate and (generation.finishDate is null or generation.finishDate.date >= :startDate)")
-        else:
-            mpan_core = MpanCore.getMpanCore(search_term)
-            supply = mpan_core.getSupply()
-            query = Hiber.session().createQuery("select distinct generation from SupplyGeneration generation where generation.supply = :supply and generation.importMpan is not null and generation.importMpan.supplierContract = :contract and generation.startDate.date <= :finishDate and (generation.finishDate is null or generation.finishDate.date >= :startDate)").setEntity('supply', supply)
-        generations = query.setEntity('contract', contract).setTimestamp('startDate', month_start.getDate()).setTimestamp('finishDate', month_finish.getDate()).scroll()
-        while generations.next():
-            generation = generations.get(0)
-            mpan = generation.getImportMpan()
-            mpan_core = mpan.getCore()
-            mpan_core_str = str(mpan_core)
-            data_source = SupplySource(forecast_date, comterp, pw)
-            data_source.init_from_mpan(month_start, month_finish, mpan)
-            yield data_source
+        selection_start = month_start
+        selection_finish = month_finish
+
+    if len(search_term) == 0:
+        query = Hiber.session().createQuery("select distinct generation from SupplyGeneration generation where generation.importMpan is not null and generation.importMpan.supplierContract = :contract and generation.startDate.date <= :finishDate and (generation.finishDate is null or generation.finishDate.date >= :startDate)")
+    else:
+        mpan_core = MpanCore.getMpanCore(search_term)
+        supply = mpan_core.getSupply()
+        query = Hiber.session().createQuery("select distinct generation from SupplyGeneration generation where generation.supply = :supply and generation.importMpan is not null and generation.importMpan.supplierContract = :contract and generation.startDate.date <= :finishDate and (generation.finishDate is null or generation.finishDate.date >= :startDate)").setEntity('supply', supply)
+    generations = query.setEntity('contract', contract).setTimestamp('startDate', selection_start.getDate()).setTimestamp('finishDate', selection_finish.getDate()).scroll()
+    while generations.next():
+        generation = generations.get(0)
+        mpan = generation.getImportMpan()
+        mpan_core = mpan.getCore()
+        mpan_core_str = str(mpan_core)
+        data_source = SupplySource(forecast_date, comterp, pw)
+        data_source.init_from_mpan(month_start, month_finish, mpan)
+        yield data_source
 
 
 def hh_list(date):
@@ -3161,14 +3168,14 @@ class EdiParser():
         try:
             return HhStartDate(self.date_format.parse(component))
         except ParseException, e:
-            raise Exception("Couldn't parse " + component + " as a date. " + e.getMessage())
+            raise UserException("Couldn't parse " + component + " as a date. " + e.getMessage())
 
 
     def to_int(self, component):
         try:
             return Integer.parseInt(component)
         except NumberFormatException, e:
-            raise Exception("Couldn't parse " + component + " as an integer. " + e.getMessage())
+            raise UserException("Couldn't parse " + component + " as an integer. " + e.getMessage())
 
 
     def close(self):

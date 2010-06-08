@@ -53,7 +53,7 @@ public class Mpan extends PersistentEntity {
 	static public List<Mpan> getMpans(String mpanStr, HhStartDate from,
 			HhStartDate to) throws HttpException {
 		MpanRaw raw = new MpanRaw(mpanStr);
-		MpanCore core = MpanCore.getMpanCore(raw.getMpanCore());
+		MpanCore core = MpanCore.getMpanCore(raw.getCore());
 		List<SupplyGeneration> supplyGenerations = core.getSupply()
 				.getGenerations(from, to);
 		Dso dso = core.getDso();
@@ -61,18 +61,35 @@ public class Mpan extends PersistentEntity {
 				.session()
 				.createQuery(
 						"from Mpan mpan where mpan.core = :core and mpan.supplyGeneration in (:supplyGenerations) and mpan.supplyGeneration.pc = :pc and mpan.mtc = :mtc and mpan.llfc = :llfc")
-				.setEntity("core", core).setEntity("pc", Pc.getPc(raw.getPcCode())).setEntity("mtc",
+				.setEntity("core", core).setEntity("pc",
+						Pc.getPc(raw.getPcCode())).setEntity("mtc",
 						Mtc.getMtc(dso, raw.getMtcCode())).setEntity("llfc",
 						dso.getLlfc(raw.getLlfcCode())).setParameterList(
 						"supplyGenerations", supplyGenerations).list();
 	}
 
 	static public String getCore(String mpan) throws HttpException {
-		return new MpanRaw(mpan).getMpanCore();
+		return new MpanRaw(mpan).getCore();
 	}
 
 	static public Pc pc(String mpan) throws HttpException {
 		return Pc.getPc(new MpanRaw(mpan).getPcCode());
+	}
+
+	static public boolean haveEqualCores(List<String> mpans1,
+			List<String> mpans2) throws HttpException {
+		Collections.sort(mpans1);
+		List<String> cores1 = new ArrayList<String>();
+		for (String mpan : mpans1) {
+			cores1.add(new MpanRaw(mpan).getCore());
+		}
+
+		Collections.sort(mpans2);
+		List<String> cores2 = new ArrayList<String>();
+		for (String mpan : mpans2) {
+			cores2.add(new MpanRaw(mpan).getCore());
+		}
+		return cores1.equals(cores2);
 	}
 
 	static public boolean isEqual(List<String> mpans1, List<String> mpans2)
@@ -100,7 +117,7 @@ public class Mpan extends PersistentEntity {
 	private MpanCore core;
 
 	private SupplierContract supplierContract;
-	
+
 	private String supplierAccount;
 
 	private int agreedSupplyCapacity;
@@ -172,7 +189,6 @@ public class Mpan extends PersistentEntity {
 		this.supplierAccount = supplierAccount;
 	}
 
-	
 	public int getAgreedSupplyCapacity() {
 		return agreedSupplyCapacity;
 	}
@@ -188,14 +204,14 @@ public class Mpan extends PersistentEntity {
 			throw new InternalException("agreedSupplyCapacity can't be null");
 		}
 		MpanRaw mpanRaw = new MpanRaw(mpan);
-		MpanCore mpanCore = MpanCore.findMpanCore(mpanRaw.getMpanCore());
+		MpanCore mpanCore = MpanCore.findMpanCore(mpanRaw.getCore());
 		if (mpanCore == null) {
 			mpanCore = supplyGeneration.getSupply().addMpanCore(
-					mpanRaw.getMpanCore());
+					mpanRaw.getCore());
 		}
 		Dso dso = mpanCore.getDso();
 		Pc pc = Pc.getPc(mpanRaw.getPcCode());
-		
+
 		setMtc(Mtc.getMtc(dso, mpanRaw.getMtcCode()));
 		Llfc llfc = dso.getLlfc(mpanRaw.getLlfcCode());
 		if (!mpanCore.getSupply().equals(supplyGeneration.getSupply())) {
@@ -270,7 +286,7 @@ public class Mpan extends PersistentEntity {
 
 	public void httpPost(Invocation inv) throws HttpException {
 	}
-	
+
 	static private class MpanRaw {
 		private String pcCode;
 
@@ -304,7 +320,7 @@ public class Mpan extends PersistentEntity {
 			return llfcCode;
 		}
 
-		public String getMpanCore() {
+		public String getCore() {
 			return mpanCore;
 		}
 
@@ -318,7 +334,7 @@ public class Mpan extends PersistentEntity {
 
 		public int hashCode() {
 			return getPcCode().hashCode() + getMtcCode().hashCode()
-					+ getLlfcCode().hashCode() + getMpanCore().hashCode();
+					+ getLlfcCode().hashCode() + getCore().hashCode();
 		}
 	}
 }
