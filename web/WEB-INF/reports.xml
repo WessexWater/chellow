@@ -56,9 +56,6 @@
               <li><a href="{/source/request/@context-path}/reports/75/output/">Supplier
                   </a>
               </li>
-              <li><a href="{/source/request/@context-path}/reports/185/output/">MOP
-                  </a>
-              </li>
             </ul>
           </li>
           <li><a href="{/source/request/@context-path}/reports/39/output/">
@@ -889,13 +886,12 @@ source.appendChild(MonadDate.getHoursXml(doc))]]></value>
                                 <th>To</th>
                                 <th>Batch</th>
                                 <th>Reference</th>
-                                <th>kWh</th>
                                 <th>Net</th>
                                 <th>VAT</th>
                                 <th>Type</th>
                                 <th>Is Cancelled Out?</th>
                                 <th>Status</th>
-                                <th>Breakdown</th>
+                                
 
                             <th>1 MPAN</th>
                             <th>1 Coefficient</th>
@@ -971,10 +967,7 @@ source.appendChild(MonadDate.getHoursXml(doc))]]></value>
                                     <td>
                                         <xsl:value-of select="@reference" />
                                     </td>
-                                    <td>
-                                        <xsl:value-of select="@kwh" />
-                                    </td>
-                                    <td>
+                                   <td>
                                         <xsl:value-of select="@net" />
                                     </td>
                                     <td>
@@ -1006,9 +999,6 @@ source.appendChild(MonadDate.getHoursXml(doc))]]></value>
                                             </xsl:when>
                                         </xsl:choose>
                                     </td>
-                                    <td>
-                                        <xsl:value-of select="@breakdown" />
-                                    </td>
                                 </xsl:when>
                                 <xsl:otherwise>
                                                                     <td>
@@ -1032,7 +1022,7 @@ source.appendChild(MonadDate.getHoursXml(doc))]]></value>
                                       </xsl:otherwise>
                                       </xsl:choose>
                                     </td>
-                                    <td colspan="49">
+                                    <td colspan="48">
                                         <xsl:value-of select="@description" />
                                     </td>
                                 </xsl:otherwise>
@@ -3346,6 +3336,8 @@ from java.sql import Timestamp, ResultSet
 from java.util import GregorianCalendar, Calendar, TimeZone, Locale, Date
 from net.sf.chellow.physical import HhStartDate, Site
 
+debug_str = ''
+
 start = System.currentTimeMillis()
 siteCode = inv.getString("site-code")
 cal = GregorianCalendar(TimeZone.getTimeZone("GMT"), Locale.UK)
@@ -3410,8 +3402,8 @@ for group in Site.getSite(site.getId()).groups(start_date, finish_date, True):
         for sup_id in sup_ids:
             datum = doc.createElement("datum")
             hh_element.appendChild(datum)
-            #raise UserException('hh value ' + str(hh_value) + ' hh start date ' + str(hh_start_date) + ' hh_date ' + str(hh_date) + ' sup_id ' + str(sup_id) + ' supply_id ' + str(supply_id))
-            if hh_value is not None and hh_start_date.equals(hh_date) and sup_id == supply_id:
+            #debug_str += 'hh value ' + str(hh_value) + ' hh start date ' + str(hh_start_date) + ' hh_date ' + str(hh_date) + ' sup_id ' + str(sup_id) + ' supply_id ' + str(supply_id)
+            while hh_value is not None and hh_start_date.getDate().getTime() == hh_date.getDate().getTime() and sup_id == supply_id:
                 if is_import:
                     prefix = 'import'
                 else:
@@ -3450,7 +3442,8 @@ for group in Site.getSite(site.getId()).groups(start_date, finish_date, True):
         hh_element.setAttribute("parasitic-kwh", str(parasitic_kwh))
         hh_element.setAttribute("displaced-kwh", str(displaced_kwh))
         hh_element.setAttribute("used-kwh", str(used_kwh))
-        hh_date = hh_date.getNext()]]></value>
+        hh_date = hh_date.getNext()
+source.setAttribute('debug', debug_str)]]></value>
         <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
 <xsl:stylesheet version="1.0"
     xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
@@ -3512,6 +3505,7 @@ for group in Site.getSite(site.getId()).groups(start_date, finish_date, True):
                         </xsl:for-each>
                     </ul>
                 </xsl:if>
+                <xsl:value-of select="/source/@debug"/>
                 <form action=".">
                     <fieldset>
                         <legend>Show data</legend>
@@ -7799,13 +7793,11 @@ for bill in Hiber.session().createQuery("from Bill bill where bill.batch = :batc
                             <th>Reference</th>
                             <th>From</th>
                             <th>To</th>
-                            <th>kWh</th>
                             <th>Net</th>
                             <th>VAT</th>
                             <th>Type</th>
                             <th>Is Cancelled Out?</th>
                             <th>Status</th>
-                            <th>Breakdown</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -7824,9 +7816,6 @@ for bill in Hiber.session().createQuery("from Bill bill where bill.batch = :batc
                                 <td>
                                     <xsl:value-of
                                         select="concat(hh-start-date[@label='finish']/@year, '-', hh-start-date[@label='finish']/@month, '-', hh-start-date[@label='finish']/@day, ' ', hh-start-date[@label='finish']/@hour, ':', hh-start-date[@label='finish']/@minute)" />
-                                </td>
-                                <td>
-                                    <xsl:value-of select="@kwh" />
                                 </td>
                                 <td>
                                     <xsl:value-of select="@net" />
@@ -7854,9 +7843,6 @@ for bill in Hiber.session().createQuery("from Bill bill where bill.batch = :batc
                                             Pending
                                         </xsl:otherwise>
                                     </xsl:choose>
-                                </td>
-                                <td>
-                                  <xsl:value-of select="@breakdown" />
                                 </td>
                             </tr>
                         </xsl:for-each>
@@ -9448,7 +9434,7 @@ while bills.next():
         me_cal.add(Calendar.MINUTE, -30)
         generations.close()
 
-    pw.println(','.join('"' + str(value) + '"' for value in [batch.getReference(), mpan.getCore(), bill.getReference(), bill.getType(), bill.getBreakdown(), bill.getNet(), bill.getVat(), bill_start, bill_finish, bill.getIsCancelledOut(), covered_start, covered_finish, covered_bill_ids, covered_net, covered_vat, net_gbp, covered_net - net_gbp]))
+        pw.println(','.join('"' + str(value) + '"' for value in [batch.getReference(), mpan.getCore(), bill.getReference(), bill.getType(), bill.getBreakdown(), bill.getNet(), bill.getVat(), bill_start, bill_finish, bill.getIsCancelledOut(), covered_start, covered_finish, covered_bill_ids, covered_net, covered_vat, net_gbp, covered_net - net_gbp]))
     pw.flush()
     Hiber.session().clear()
 bills.close()
