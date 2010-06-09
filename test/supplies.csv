@@ -1,0 +1,8 @@
+"insert","supply","CH017","net","",1,_L,2003-08-03T00:00Z,,,,"HH contract",01,true,true,true,true,,"00 845 550 22 9205 6799 106",,450,"Half-hourlies 2007","11640077","00 845 581 22 0470 7514 535",,150,"Half-hourlies 2007","04"
+#"insert","supply","CI004","net","",1,_L,2003-08-03T00:00Z,,,,"Dynamat data",001,true,true,true,true,,"00 845 570 99 9813 2107 764",,430,"Half-hourlies 2007","01","00 845 581 99 3475 1614 212",,900,"Half-hourlies 2007","01"
+"insert","supply","CI004","net","",1,_L,2003-08-03T00:00Z,,,,"HH contract",01,true,true,true,true,,"00 845 580 22 9813 2107 763",,430,"Half-hourlies 2007","02","00 845 581 22 3475 1614 211",,900,"Half-hourlies 2007","03"
+"insert","supply","CI004","gen","chp",2,_L,2003-08-03T00:00Z,,,,"HH contract",01,false,true,true,true,,,,,,,"00 845 581 22 7907 4116 080",,600,"Half-hourlies 2007",01
+"insert","supply","CI005","net","",1,_L,2003-08-03T00:00Z,,,,"HH contract",01,true,true,true,true,,"00 845 520 22 6158 2968 220",,130,"Half-hourlies 2007","01","00 845 521 22 3479 7618 470",,20,"Half-hourlies 2007","01"
+"insert","supply","CI005","gen","chp",2,_L,2003-08-03T00:00Z,,,,"HH contract",01,true,true,false,true,,"00 845 570 22 0883 6932 301",,350,"Half-hourlies 2007","01"
+"insert","supply","CI017","net","",1,_L,2003-08-03T00:00Z,,,,"HH contract",01,true,true,false,true,,"00 845 570 22 6354 2983 570",,2300,"Half-hourlies 2007","14195532"
+"insert","supply","CH023","net","",1,_L,2003-08-03T00:00Z,,,,"HH contract",01,true,true,false,true,,"00 845 540 22 4862 4512 332",,230,"Half-hourlies 2007","11640077"
