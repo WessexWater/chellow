@@ -292,18 +292,6 @@
 								<br />
 								<input type="submit" value="Update" />
 								<input type="reset" value="Reset" />
-								<br />
-								<br />
-								<fieldset>
-									<legend>Test</legend>
-									<label>
-										<xsl:value-of select="'Bill id '" />
-										<input name="bill-id"
-											value="{/source/request/parameter[@name='bill-id']/value}" />
-									</label>
-									<xsl:value-of select="' '" />
-									<input type="submit" value="Test without saving" />
-								</fieldset>
 							</fieldset>
 						</form>
 						<br />

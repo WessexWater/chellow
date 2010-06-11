@@ -2,7 +2,7 @@
 <!DOCTYPE imprimatur PUBLIC 
     "-//Imprimatur DTD 007//EN"
     "http://imprimatur.sourceforge.net/imprimatur-007.dtd">
-<imprimatur port="@@test.port@@" hostname="localhost">
+<imprimatur port="8080" hostname="localhost">
 	<credentials username="watkins@example.com" password="alan" />
 	<!-- Users -->
 	<test-group>

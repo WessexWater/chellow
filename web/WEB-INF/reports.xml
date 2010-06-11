@@ -308,6 +308,12 @@ cal.add(Calendar.MONTH, -1)
 source.appendChild(MonadDate(cal.getTime()).toXml(doc))
 source.appendChild(MonadDate.getMonthsXml(doc))
 
+cal.setTime(now.getDate())
+cal.add(Calendar.DAY_OF_MONTH, -1)
+yesterday = MonadDate(cal.getTime())
+yesterday.setLabel('yesterday')
+source.appendChild(yesterday.toXml(doc))
+
 group_element = doc.createElement('group')
 source.appendChild(group_element)
 for group_site in site.groups(now, now, False)[0].getSites():
@@ -1548,14 +1554,17 @@ start_date = HhStartDate(cal.getTime())
 site = Site.getSite(site_id)
 source.appendChild(site.toXml(doc))
 supplies = Hiber.session().createQuery("select distinct supply from Supply supply join supply.generations supplyGeneration join supplyGeneration.siteSupplyGenerations siteSupplyGeneration where siteSupplyGeneration.site = :site and supply.source.code != 'sub'").setEntity('site', site).list()
-suppliesSQL = ''
-for supply in supplies:
-    suppliesSQL = suppliesSQL + str(supply.getId()) + ','
 con = Hiber.session().connection()
-stmt = con.prepareStatement("select hh_datum.value, hh_datum.start_date, hh_datum.status, channel.is_import, supply.name, source.code from hh_datum, channel, supply, supply_generation, source where hh_datum.channel_id = channel.id and channel.supply_generation_id = supply_generation.id and supply_generation.supply_id = supply.id and supply.source_id = source.id and channel.is_kwh is true and hh_datum.start_date >= ? and hh_datum.start_date <= ? and supply.id in (" + suppliesSQL[:-1] + ") order by hh_datum.start_date desc", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.CLOSE_CURSORS_AT_COMMIT)
-stmt.setTimestamp(1, Timestamp(start_date.getDate().getTime()))
-stmt.setTimestamp(2, Timestamp(finish_date.getDate().getTime()))
-stmt.setFetchSize(100)
+if len(supplies) == 0:
+    stmt = con.prepareStatement("select * from hh_datum where hh_datum.value = 0 and hh_datum.value = 1")
+else:
+    supplies_sql = ','.join(str(supply.getId()) for supply in supplies)
+
+    stmt = con.prepareStatement("select hh_datum.value, hh_datum.start_date, hh_datum.status, channel.is_import, supply.name, source.code from hh_datum, channel, supply, supply_generation, source where hh_datum.channel_id = channel.id and channel.supply_generation_id = supply_generation.id and supply_generation.supply_id = supply.id and supply.source_id = source.id and channel.is_kwh is true and hh_datum.start_date >= ? and hh_datum.start_date <= ? and supply.id in (" + supplies_sql + ") order by hh_datum.start_date desc", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.CLOSE_CURSORS_AT_COMMIT)
+    stmt.setTimestamp(1, Timestamp(start_date.getDate().getTime()))
+    stmt.setTimestamp(2, Timestamp(finish_date.getDate().getTime()))
+    stmt.setFetchSize(100)
+
 rs = stmt.executeQuery()
 hhDate = finish_date.getDate().getTime()
 maxExportedKw = 0
@@ -3641,11 +3650,27 @@ source.setAttribute('debug', debug_str)]]></value>
                                     </td>
                                 -->
                             <xsl:for-each select="datum">
-                            <td><xsl:value-of select="@import-kwh"/>
+                            <td>
+                              <xsl:choose>
+                              <xsl:when test="@import-kwh">
+                              <xsl:value-of select="@import-kwh"/>
+                              </xsl:when>
+                              <xsl:otherwise>
+                              Missing
+                              </xsl:otherwise>
+                              </xsl:choose>
                             </td>
                             <td><xsl:value-of select="@import-status"/>
                             </td>
-                            <td><xsl:value-of select="@export-kwh"/>
+                            <td>
+                              <xsl:choose>
+                              <xsl:when test="@export-kwh">
+                              <xsl:value-of select="@export-kwh"/>
+                              </xsl:when>
+                              <xsl:otherwise>
+                              Missing
+                              </xsl:otherwise>
+                              </xsl:choose>
                             </td>
                             <td><xsl:value-of select="@export-status"/>
                             </td>
