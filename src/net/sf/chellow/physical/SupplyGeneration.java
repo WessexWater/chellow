@@ -335,124 +335,233 @@ public class SupplyGeneration extends PersistentEntity {
 			}
 			supply.deleteGeneration(supplyGeneration);
 		} else if (action.equals("insert")) {
-			String siteCode = GeneralImport.addField(csvElement, "Site Code",
-					values, 0);
-			Site site = Site.getSite(siteCode);
-			Supply supply = null;
+			String mpanCoreStr = GeneralImport.addField(csvElement,
+					"MPAN Core", values, 0);
+			Supply supply = MpanCore.getMpanCore(mpanCoreStr).getSupply();
 			String startDateStr = GeneralImport.addField(csvElement,
 					"Start date", values, 1);
 			HhStartDate startDate = startDateStr.length() == 0 ? null
 					: new HhStartDate(startDateStr);
+			SupplyGeneration existingGeneration = supply
+					.getGeneration(startDate);
+
+			String siteCode = GeneralImport.addField(csvElement, "Site Code",
+					values, 0);
+
+			Map<Site, Boolean> siteMap = new HashMap<Site, Boolean>();
+			if (siteCode.equals(GeneralImport.NO_CHANGE)) {
+				for (SiteSupplyGeneration ssgen : existingGeneration
+						.getSiteSupplyGenerations()) {
+					siteMap.put(ssgen.getSite(), ssgen.getIsPhysical());
+				}
+			} else {
+				Site site = Site.getSite(siteCode);
+				siteMap.put(site, true);
+			}
+
 			String mopContractName = GeneralImport.addField(csvElement,
 					"MOP Contract", values, 2);
 			MopContract mopContract = null;
-			if (mopContractName.length() > 0) {
-				mopContract = MopContract.getMopContract(mopContractName);
+			if (mopContractName.equals(GeneralImport.NO_CHANGE)) {
+				mopContract = existingGeneration.getMopContract();
+			} else {
+				if (mopContractName.length() > 0) {
+					mopContract = MopContract.getMopContract(mopContractName);
+				}
 			}
 			String mopAccount = GeneralImport.addField(csvElement,
 					"MOP Account Reference", values, 3);
+			if (mopAccount.equals(GeneralImport.NO_CHANGE)) {
+				mopAccount = existingGeneration.getMopAccount();
+			}
+
 			String hhdcContractName = GeneralImport.addField(csvElement,
 					"HHDC Contract", values, 4);
 			HhdcContract hhdcContract = null;
-			if (hhdcContractName.length() > 0) {
-				hhdcContract = HhdcContract.getHhdcContract(hhdcContractName);
+			if (hhdcContractName.equals(GeneralImport.NO_CHANGE)) {
+				hhdcContract = existingGeneration.getHhdcContract();
+			} else {
+				if (hhdcContractName.length() > 0) {
+					hhdcContract = HhdcContract
+							.getHhdcContract(hhdcContractName);
+				}
 			}
 			String hhdcAccount = GeneralImport.addField(csvElement,
 					"HHDC Account Reference", values, 5);
+			if (hhdcAccount.equals(GeneralImport.NO_CHANGE)) {
+				hhdcAccount = existingGeneration.getHhdcAccount();
+			}
+
 			String hasImportKwhStr = GeneralImport.addField(csvElement,
 					"Has HH import kWh", values, 6);
-			boolean hasImportKwh = Boolean.parseBoolean(hasImportKwhStr);
+			boolean hasImportKwh = hasImportKwhStr
+					.equals(GeneralImport.NO_CHANGE) ? existingGeneration
+					.getChannel(true, true) != null : Boolean
+					.parseBoolean(hasImportKwhStr);
 			String hasImportKvarhStr = GeneralImport.addField(csvElement,
 					"Has HH import kVArh", values, 7);
-			boolean hasImportKvarh = Boolean.parseBoolean(hasImportKvarhStr);
+			boolean hasImportKvarh = hasImportKvarhStr
+					.equals(GeneralImport.NO_CHANGE) ? existingGeneration
+					.getChannel(true, false) != null : Boolean
+					.parseBoolean(hasImportKvarhStr);
 			String hasExportKwhStr = GeneralImport.addField(csvElement,
 					"Has HH export kWh", values, 8);
-			Boolean hasExportKwh = Boolean.parseBoolean(hasExportKwhStr);
+			boolean hasExportKwh = hasImportKwhStr
+					.equals(GeneralImport.NO_CHANGE) ? existingGeneration
+					.getChannel(false, true) != null : Boolean
+					.parseBoolean(hasExportKwhStr);
 			String hasExportKvarhStr = GeneralImport.addField(csvElement,
 					"Has HH export kVArh", values, 9);
-			Boolean hasExportKvarh = Boolean.parseBoolean(hasExportKvarhStr);
+			boolean hasExportKvarh = hasImportKwhStr
+					.equals(GeneralImport.NO_CHANGE) ? existingGeneration
+					.getChannel(false, false) != null : Boolean
+					.parseBoolean(hasExportKvarhStr);
+
 			String meterSerialNumber = GeneralImport.addField(csvElement,
 					"Meter Serial Number", values, 10);
+			if (meterSerialNumber.equals(GeneralImport.NO_CHANGE)) {
+				meterSerialNumber = existingGeneration.getMeterSerialNumber();
+			}
+
 			String importMpanStr = GeneralImport.addField(csvElement,
 					"Import MPAN", values, 11);
+			Mpan existingImportMpan = existingGeneration.getImportMpan();
+			if (importMpanStr.equals(GeneralImport.NO_CHANGE)) {
+				if (existingImportMpan == null) {
+					importMpanStr = "";
+				} else {
+					importMpanStr = existingImportMpan.toString();
+				}
+			}
+
 			SupplierContract importSupplierContract = null;
-			String importSupplierAccountReference = null;
+			String importSupplierAccount = null;
 			Ssc importSsc = null;
 			Integer importAgreedSupplyCapacity = null;
+
 			String importSscCode = GeneralImport.addField(csvElement,
 					"Import SSC", values, 12);
+
 			String importAgreedSupplyCapacityStr = GeneralImport.addField(
 					csvElement, "Import Agreed Supply Capacity", values, 13);
 			String importContractSupplierName = GeneralImport.addField(
 					csvElement, "Import Supplier Contract", values, 14);
-			importSupplierAccountReference = GeneralImport.addField(csvElement,
+			importSupplierAccount = GeneralImport.addField(csvElement,
 					"Import Supplier Account Reference", values, 15);
 			if (importMpanStr.length() > 0) {
-				MpanCore mpanCore = MpanCore.findMpanCore(Mpan
-						.getCore(importMpanStr));
-				if (mpanCore != null) {
-					supply = mpanCore.getSupply();
+				if (importSscCode.equals(GeneralImport.NO_CHANGE)) {
+					if (existingImportMpan != null) {
+						importSsc = existingImportMpan.getSsc();
+					}
+				} else if (importSscCode.length() > 0) {
+					importSsc = Ssc.getSsc(importSscCode);
 				}
-				importSsc = importSscCode.length() == 0 ? null : Ssc
-						.getSsc(importSscCode);
-				try {
-					importAgreedSupplyCapacity = Integer
-							.parseInt(importAgreedSupplyCapacityStr);
-				} catch (NumberFormatException e) {
-					throw new UserException(
-							"The import agreed supply capacity must be an integer. "
-									+ e.getMessage());
+
+				if (importAgreedSupplyCapacityStr
+						.equals(GeneralImport.NO_CHANGE)) {
+					if (existingImportMpan != null) {
+						importAgreedSupplyCapacity = existingImportMpan
+								.getAgreedSupplyCapacity();
+					}
+				} else {
+
+					try {
+						importAgreedSupplyCapacity = Integer
+								.parseInt(importAgreedSupplyCapacityStr);
+					} catch (NumberFormatException e) {
+						throw new UserException(
+								"The import agreed supply capacity must be an integer. "
+										+ e.getMessage());
+					}
 				}
-				importSupplierContract = SupplierContract
-						.getSupplierContract(importContractSupplierName);
+
+				if (importContractSupplierName.equals(GeneralImport.NO_CHANGE)) {
+					if (existingImportMpan != null) {
+						importSupplierContract = existingImportMpan
+								.getSupplierContract();
+					}
+				} else {
+					importSupplierContract = SupplierContract
+							.getSupplierContract(importContractSupplierName);
+				}
 			}
 
 			String exportMpanStr = null;
 			Ssc exportSsc = null;
 			SupplierContract exportSupplierContract = null;
-			String exportSupplierAccountReference = null;
+			String exportSupplierAccount = null;
 			Integer exportAgreedSupplyCapacity = null;
 
 			if (values.length > 1) {
+				Mpan existingExportMpan = existingGeneration.getExportMpan();
 				exportMpanStr = GeneralImport.addField(csvElement,
 						"Eport MPAN", values, 16);
+				if (exportMpanStr.equals(GeneralImport.NO_CHANGE)) {
+					if (existingExportMpan == null) {
+						exportMpanStr = "";
+					} else {
+						exportMpanStr = existingExportMpan.toString();
+					}
+				}
 
 				if (exportMpanStr.length() > 0) {
 					String exportSscCode = GeneralImport.addField(csvElement,
 							"Export SSC", values, 17);
+					if (exportSscCode.equals(GeneralImport.NO_CHANGE)) {
+						if (existingExportMpan != null) {
+							exportSsc = existingExportMpan.getSsc();
+						}
+					} else if (exportSscCode.length() > 0) {
+						exportSsc = Ssc.getSsc(exportSscCode);
+					}
 					String exportAgreedSupplyCapacityStr = GeneralImport
 							.addField(csvElement,
 									"Export Agreed Supply Capacity", values, 18);
-					String exportContractSupplierName = GeneralImport.addField(
+					if (exportAgreedSupplyCapacityStr
+							.equals(GeneralImport.NO_CHANGE)) {
+						if (existingExportMpan != null) {
+							exportAgreedSupplyCapacity = existingExportMpan
+									.getAgreedSupplyCapacity();
+						}
+					} else {
+						try {
+							exportAgreedSupplyCapacity = new Integer(
+									exportAgreedSupplyCapacityStr);
+						} catch (NumberFormatException e) {
+							throw new UserException(
+									"The export supply capacity must be an integer. "
+											+ e.getMessage());
+						}
+					}
+
+					String exportSupplierContractName = GeneralImport.addField(
 							csvElement, "Export Supplier Contract", values, 19);
-					exportSupplierAccountReference = GeneralImport.addField(
-							csvElement, "Export Supplier Account", values, 20);
-					if (supply == null) {
-						supply = MpanCore.getMpanCore(
-								Mpan.getCore(exportMpanStr)).getSupply();
+					if (exportSupplierContractName
+							.equals(GeneralImport.NO_CHANGE)) {
+						if (existingExportMpan != null) {
+							exportSupplierContract = existingExportMpan
+									.getSupplierContract();
+						}
+					} else {
+						exportSupplierContract = SupplierContract
+								.getSupplierContract(exportSupplierContractName);
 					}
-					exportSsc = exportSscCode.length() == 0 ? null : Ssc
-							.getSsc(exportSscCode);
-					try {
-						exportAgreedSupplyCapacity = new Integer(
-								exportAgreedSupplyCapacityStr);
-					} catch (NumberFormatException e) {
-						throw new UserException(
-								"The export supply capacity must be an integer. "
-										+ e.getMessage());
+					exportSupplierAccount = GeneralImport.addField(csvElement,
+							"Export Supplier Account", values, 20);
+					if (exportSupplierAccount.equals(GeneralImport.NO_CHANGE)) {
+						if (existingExportMpan != null) {
+							exportSupplierAccount = existingExportMpan
+									.getSupplierAccount();
+						}
 					}
-					exportSupplierContract = SupplierContract
-							.getSupplierContract(exportContractSupplierName);
 				}
 			}
-			Map<Site, Boolean> siteMap = new HashMap<Site, Boolean>();
-			siteMap.put(site, true);
 			SupplyGeneration generation = supply.insertGeneration(siteMap,
 					startDate, mopContract, mopAccount, hhdcContract,
 					hhdcAccount, meterSerialNumber, importMpanStr, importSsc,
-					importSupplierContract, importSupplierAccountReference,
+					importSupplierContract, importSupplierAccount,
 					importAgreedSupplyCapacity, exportMpanStr, exportSsc,
-					exportSupplierContract, exportSupplierAccountReference,
+					exportSupplierContract, exportSupplierAccount,
 					exportAgreedSupplyCapacity);
 			for (boolean isImport : new boolean[] { true, false }) {
 				for (boolean isKwh : new boolean[] { true, false }) {

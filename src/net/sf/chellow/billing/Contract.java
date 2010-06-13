@@ -193,8 +193,9 @@ public abstract class Contract extends PersistentEntity implements
 			setFinishRateScript(rateScriptList.get(rateScriptList.size() - 2));
 			rateScripts.remove(rateScript);
 		} else {
-			throw new UserException(
-					"You can only delete the first and last rate scripts.");
+			RateScript prevScript = getPreviousRateScript(rateScript);
+			prevScript.setFinishDate(rateScript.getFinishDate());
+			rateScripts.remove(rateScript);
 		}
 		Hiber.flush();
 		onUpdate(rateScript.getStartDate(), rateScript.getFinishDate());
