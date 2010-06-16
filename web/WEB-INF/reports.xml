@@ -11780,6 +11780,10 @@ source.appendChild(MonadDate.getDaysXml(doc))]]></value>
                         <a
                             href="{/source/request/@context-path}/reports/171/output/">System</a>
                     </li>
+                    <li>
+                        <a
+                            href="{/source/request/@context-path}/reports/195/output/">Comparison against ECOES</a>
+                    </li>
                 </ul>
             </body>
         </html>
@@ -12080,7 +12084,7 @@ def gbp_format(gbp):
 def kwh_format(gbp):
     return gbp_formatter.format(gbp)
 
-stream_names = ['import-net-kwh', 'export-net-kwh', 'import-gen-kwh', 'export-gen-kwh', 'import-3rd-party-kwh', 'export-3rd-party-kwh']
+stream_names = ['import-net', 'export-net', 'import-gen', 'export-gen', 'import-3rd-party', 'export-3rd-party', 'msp', 'used', 'used-3rd-party']
 
 
 comterp = PythonInterpreter()
@@ -12094,7 +12098,11 @@ def process_site(site_id, month_start, month_finish, forecast_date, pw):
     generator_types = []
     metering_type = 'nhh'
     problem = ''
-    month_data = {'import-net-gbp': 0, 'export-net-gbp': 0, 'import-gen-gbp': 0, 'export-gen-gbp': 0, 'used-3rd-party-gbp': 0, 'displaced-gbp': 0, 'used-gbp': 0}
+    month_data = {}
+
+    for stream_name in stream_names:
+        month_data[stream_name + '-kwh'] = 0
+        month_data[stream_name + '-gbp'] = 0
 
     has_3rd_party = False
     third_party_contracts = {}
@@ -12113,11 +12121,9 @@ def process_site(site_id, month_start, month_finish, forecast_date, pw):
                     elif cand_gen.getChannels().size() > 0:
                         metering_type = 'amr'
 
-    #pw.println("starting site ds " + str(System.currentTimeMillis() - timing))
-
     for group in site.groups(month_start, month_finish, True):
         if group.getFrom().after(start_date):
-            chunk_start = group.getStartDate()
+            chunk_start = group.getFrom()
         else:
             chunk_start = start_date
         if group.getTo().after(finish_date):
@@ -12177,7 +12183,7 @@ def process_site(site_id, month_start, month_finish, forecast_date, pw):
         if displaced_mpan != None:
             #pw.println("starting displaced " + str(System.currentTimeMillis() - timing))
             site_ds.init_from_mpan(displaced_mpan)
-            month_data['displaced-gbp'] += comterp.get('contract_function')(displaced_mpan.getSupplierContract(), 'displaced_virtual_bill')(site_ds)['net-gbp']
+            month_data['msp-gbp'] += comterp.get('contract_function')(displaced_mpan.getSupplierContract(), 'displaced_virtual_bill')(site_ds)['net-gbp']
 
             #pw.println("finishing displaced " + str(System.currentTimeMillis() - timing))
         elif has_3rd_party:
@@ -12189,11 +12195,11 @@ def process_site(site_id, month_start, month_finish, forecast_date, pw):
         else:
             site_ds.init_from_site()
 
-    month_data['used-gbp'] = month_data['import-net-gbp'] + month_data['displaced-gbp'] + month_data['used-3rd-party-gbp']
-    for stream_name in stream_names:
-        month_data[stream_name] = site_ds.summary['sum-' + stream_name]
-    month_data['displaced-kwh'] = site_ds.summary['sum-msp-kwh']
-    month_data['used-kwh'] = site_ds.summary['sum-used-kwh']
+        #pw.println("finishing site ds " + str(System.currentTimeMillis()))
+
+        month_data['used-gbp'] += month_data['import-net-gbp'] + month_data['msp-gbp'] + month_data['used-3rd-party-gbp']
+        for stream_name in stream_names:
+            month_data[stream_name + '-kwh'] += site_ds.summary['sum-' + stream_name + '-kwh']
 
     associate_str = ''
     for associate in associates:
@@ -12207,7 +12213,7 @@ def process_site(site_id, month_start, month_finish, forecast_date, pw):
     for generator_type in generator_types:
         generator_types_str += generator_type + ', '
     Hiber.close()
-    result = [associate_str[:-2], sources_str[:-2], generator_types_str[:-2], month_format.format(Date(month_finish.getDate().getTime() - 1)), kwh_format(month_data['import-net-kwh']), kwh_format(month_data['displaced-kwh']), kwh_format(month_data['export-net-kwh']), kwh_format(month_data['used-kwh']), kwh_format(month_data['export-gen-kwh']), kwh_format(month_data['import-gen-kwh']), kwh_format(month_data['import-3rd-party-kwh']), kwh_format(month_data['export-3rd-party-kwh']),  gbp_format(month_data['import-net-gbp']), gbp_format(month_data['displaced-gbp']), 0, gbp_format(month_data['used-gbp']), gbp_format(month_data['used-3rd-party-gbp']), metering_type, problem]
+    result = [associate_str[:-2], sources_str[:-2], generator_types_str[:-2], month_format.format(Date(month_finish.getDate().getTime() - 1)), kwh_format(month_data['import-net-kwh']), kwh_format(month_data['msp-kwh']), kwh_format(month_data['export-net-kwh']), kwh_format(month_data['used-kwh']), kwh_format(month_data['export-gen-kwh']), kwh_format(month_data['import-gen-kwh']), kwh_format(month_data['import-3rd-party-kwh']), kwh_format(month_data['export-3rd-party-kwh']),  gbp_format(month_data['import-net-gbp']), gbp_format(month_data['msp-gbp']), 0, gbp_format(month_data['used-gbp']), gbp_format(month_data['used-3rd-party-gbp']), metering_type, problem]
     #pw.println("Finished call method " + str(System.currentTimeMillis() - timing))
     return result
 
@@ -12230,7 +12236,7 @@ forecast_date = comterp.get('forecast_date')()
 sites = query.list()
 
 for site in sites:
-    #pw.println("starting site " + str(System.currentTimeMillis() - timing))
+    #pw.println("starting site " + str(System.currentTimeMillis()))
 
     for i in range(months):
         cal.setTime(start_date.getDate())
@@ -13937,5 +13943,78 @@ for bill in Hiber.session().createQuery("from Bill bill where bill.batch = :batc
         </html>
     </xsl:template>
 </xsl:stylesheet>]]></value>
+    </line>
+    <line>
+        <value><![CDATA[insert]]></value>
+        <value><![CDATA[report]]></value>
+        <value><![CDATA[195]]></value>
+        <value><![CDATA[true]]></value>
+        <value><![CDATA[ECOES Comparison]]></value>
+        <value><![CDATA[from org.apache.commons.httpclient import HttpClient
+from net.sf.chellow.monad import Hiber, UserException
+from java.lang import System, Integer, String
+from net.sf.chellow.monad.types import MonadDate
+from java.sql import Timestamp, ResultSet
+from java.util import GregorianCalendar, Calendar, TimeZone, Locale, Date
+from net.sf.chellow.physical import HhStartDate, Configuration
+from net.sf.chellow.billing import Batch, NonCoreContract
+from org.python.util import PythonInterpreter
+from org.apache.commons.httpclient import HttpClient, NameValuePair, UsernamePasswordCredentials
+from org.apache.commons.httpclient.auth import AuthScope
+from org.apache.commons.httpclient.methods import GetMethod, PostMethod
+from java.util import Properties
+from java.io import StringReader
+
+
+inv.getResponse().setContentType("text/csv")
+inv.getResponse().setHeader('Content-Disposition', 'filename=output.csv;')
+pw = inv.getResponse().getWriter()
+
+config = Configuration.getConfiguration()
+properties = Properties()
+properties.load(StringReader(config.getProperties()))
+
+proxy_host = properties.get('proxy.host')
+proxy_port = properties.get('proxy.port')
+proxy_user_name = properties.get('proxy.user.name')
+proxy_password = properties.get('proxy.password')
+user_name = properties.get('ecoes.user.name')
+password = properties.get('ecoes.password')
+
+client = HttpClient()
+
+if proxy_host is not None:
+    client.getParams().setAuthenticationPreemptive(True)
+    client.getHostConfiguration().setProxy(proxy_host, Integer.parseInt(proxy_port))
+    proxy_creds = UsernamePasswordCredentials(proxy_user_name, proxy_password)
+    client.getState().setProxyCredentials(AuthScope.ANY, proxy_creds)
+
+get_method = GetMethod('http://www.ecoes.co.uk/')
+pw.println('about to look at homepage')
+pw.flush()
+response_code = client.executeMethod(get_method)
+pw.println('response code ' + str(response_code))
+get_method.releaseConnection()
+
+pw.println('user name ' + user_name + ' password ' + password + ' proxy user ' + proxy_user_name + ' proxy password ' + proxy_password)
+pw.flush()
+post_method = PostMethod("http://www.ecoes.co.uk/login.asp")
+data = [NameValuePair("userName", user_name), NameValuePair("password", password), NameValuePair('beenHereBefore', '1'), NameValuePair('forceLogout', '0')]
+
+post_method.setRequestBody(data)
+response_code = client.executeMethod(post_method)
+#page_is = post_method.getResponseAsStream()
+pw.println('response code ' + str(response_code))
+headers = post_method.getResponseHeaders()
+for header in headers:
+    pw.println(header)
+response_body = post_method.getResponseBody()
+pw.println(String(response_body))
+post_method.releaseConnection()
+
+#result = urllib2.urlopen('http://www.ecoes.co.uk/saveportfolioMpans.asp?guid={321921A4-AA05-4B9A-84BE-193BC3219001}')
+
+pw.close()]]></value>
+        <value><![CDATA[]]></value>
     </line>
 </csv>

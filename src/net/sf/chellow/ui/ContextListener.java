@@ -207,7 +207,7 @@ public class ContextListener implements ServletContextListener {
 		ReadType.insertReadType('W', "Withdrawn");
 		ReadType.insertReadType('Z', "Actual Change of Tenancy Read");
 		ReadType.insertReadType('E', "Estimate");
-
+        Hiber.commit();
 		try {
 			Debug.print("Starting to load MDD.");
 			Class<?> delegatorClass = null;
