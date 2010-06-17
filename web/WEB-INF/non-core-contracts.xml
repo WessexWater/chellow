@@ -200,6 +200,59 @@ class Parser(BillParser):
     <line>
         <value><![CDATA[insert]]></value>
         <value><![CDATA[non-core-contract]]></value>
+        <value><![CDATA[63]]></value>
+        <value><![CDATA[]]></value>
+        <value><![CDATA[CALB]]></value>
+        <value><![CDATA[bill-parser-gdf.csv]]></value>
+        <value><![CDATA[2010-01-01T00:00Z]]></value>
+        <value><![CDATA[]]></value>
+        <value><![CDATA[from net.sf.chellow.billing import BillParser, RawBill
+from java.text import SimpleDateFormat
+from java.util import Locale, TimeZone
+from com.Ostermiller.util import CSVParser
+from net.sf.chellow.physical import ReadType, Units, HhStartDate, RawRegisterRead
+from java.math import BigDecimal
+from net.sf.chellow.monad.types import MonadDate
+from net.sf.chellow.monad import HttpException, UserException
+from java.lang import NumberFormatException
+from java.io import IOException
+
+
+class Parser(BillParser):
+    def __init__(self, reader):
+        self.shredder = CSVParser(reader)
+        self.shredder.setCommentStart("#;!")
+        self.shredder.setEscapes("nrtf", "\n\r\t\f")
+        self.debug_str = ''
+
+
+    def getRawBills(self):
+        date_format = SimpleDateFormat("dd'-'MMM'-'yy", Locale.UK)
+        date_format.setTimeZone(TimeZone.getTimeZone("GMT"))
+
+        raw_bills = []
+        values = self.shredder.getLine()
+        values = self.shredder.getLine()
+        while values != None:
+            self.debug_str += values[109] + ' ' + str(values)
+            mpan_strings = [values[16][1:]]
+            issue_date = date_format.parse(values[5])
+            bill_from = HhStartDate(date_format.parse(values[6]))
+            bill_to = HhStartDate(date_format.parse(values[7]))
+            kwh = BigDecimal(values[8])
+            raw_bills.append(RawBill('', values[3], mpan_strings, values[4], issue_date, bill_from, bill_to, kwh, BigDecimal(values[106]), BigDecimal(values[108]), '', []))
+            values = self.shredder.getLine()
+        self.shredder.close()
+        return raw_bills
+
+
+    def getProgress(self):
+        return "Reached line " + str(self.shredder.getLastLineNumber()) + " of first passs. " + self.debug_str]]></value>
+        <value><![CDATA[]]></value>
+    </line>
+    <line>
+        <value><![CDATA[insert]]></value>
+        <value><![CDATA[non-core-contract]]></value>
         <value><![CDATA[55]]></value>
         <value><![CDATA[]]></value>
         <value><![CDATA[CALB]]></value>
