@@ -1905,29 +1905,29 @@ def import_virtual_bill(supply_source):
 			<control name="start-year" value="2010" />
 			<control name="start-month" value="04" />
 			<control name="start-day" value="01" />
-			<regex pattern="/chellow/dsos/418/contracts/61/" />
+			<regex pattern="/chellow/dsos/418/contracts/63/" />
 			<response-code value="303" />
 		</request>
 
 		<!-- Check start time of rate script -->
-		<request path="/chellow/dsos/418/contracts/61/rate-scripts/127/">
+		<request path="/chellow/dsos/418/contracts/63/rate-scripts/135/">
 			<regex pattern="00:00 Z" />
 			<response-code value="200" />
 		</request>
 
 		<!-- Insert rate script -->
-		<request path="/chellow/dsos/418/contracts/61/rate-scripts/"
+		<request path="/chellow/dsos/418/contracts/63/rate-scripts/"
 			method="post">
 			<control name="start-year" value="2010" />
 			<control name="start-month" value="05" />
 			<control name="start-day" value="01" />
 
-			<regex pattern="/chellow/dsos/418/contracts/61/rate-scripts/129/" />
+			<regex pattern="/chellow/dsos/418/contracts/63/rate-scripts/137/" />
 			<response-code value="303" />
 		</request>
 
 		<!-- Delete rate script -->
-		<request path="/chellow/dsos/418/contracts/61/rate-scripts/129/"
+		<request path="/chellow/dsos/418/contracts/63/rate-scripts/137/"
 			method="post">
 			<control name="delete" value="Delete" />
 			<response-code value="303" />
