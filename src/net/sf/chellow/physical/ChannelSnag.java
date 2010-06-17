@@ -102,7 +102,7 @@ public class ChannelSnag extends SnagDateBounded {
 					channelQuery = Hiber
 							.session()
 							.createQuery(
-									"from ChannelSnag snag where snag.channel.supplyGeneration = :generation and snag.channel.isImport = :isImport and snag.channel.isKwh = :isKwh and snag.isIgnored is false and snag.description = :description and snag.startDate.date <= :finishDate and (snag.finishDate is null or snag.finishDate.date >= :startDate")
+									"from ChannelSnag snag where snag.channel.supplyGeneration = :generation and snag.channel.isImport = :isImport and snag.channel.isKwh = :isKwh and snag.isIgnored is false and snag.description = :description and snag.startDate.date <= :finishDate and (snag.finishDate is null or snag.finishDate.date >= :startDate)")
 							.setTimestamp("finishDate", finishDate.getDate());
 				}
 				for (ChannelSnag snag : (List<ChannelSnag>) channelQuery

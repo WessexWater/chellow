@@ -242,9 +242,9 @@ def virtual_bill(supply, startDate, finishDate, pw):
 		<request path="/chellow/non-core-contracts/" method="post">
 			<control name="participant-id" value="181" />
 			<control name="name" value="VAT" />
-			<control name="start-year" value="2000"/>
-			<control name="start-month" value="01"/>
-			<control name="start-day" value="03"/>
+			<control name="start-year" value="2000" />
+			<control name="start-month" value="01" />
+			<control name="start-day" value="03" />
 			<control name="charge-script">
 				<![CDATA[
 import sys
@@ -2146,6 +2146,62 @@ def import_virtual_bill(supply_source):
 		</request>
 		<request path="/chellow/reports/13/output/?site-id=8">
 			<response-code value="200" />
+		</request>
+	</test>
+	<test name="Check can import channel snag ignores okay.">
+		<request path="/chellow/general-imports/" method="post">
+			<control type="file" name="import-file" value="channel-snag-ignores.xml" />
+			<response-code value="303" />
+			<regex pattern="/chellow/general-imports/15/" />
+		</request>
+		<request path="/chellow/general-imports/15/">
+			<refresh />
+			<!-- Check it's loaded ok -->
+			<regex pattern="The file has been imported successfully" />
+			<response-code value="200" />
+		</request>
+	</test>
+	<test name="Check can import site snag ignores okay.">
+		<request path="/chellow/general-imports/" method="post">
+			<control type="file" name="import-file" value="site-snag-ignores.xml" />
+			<response-code value="303" />
+			<regex pattern="/chellow/general-imports/16/" />
+		</request>
+		<request path="/chellow/general-imports/16/">
+			<refresh />
+			<!-- Check it's loaded ok -->
+			<regex pattern="The file has been imported successfully" />
+			<response-code value="200" />
+		</request>
+	</test>
+		<test name="Create a supply, and then delete it.">
+		<request path="/chellow/sites/7/" method="post">
+			<control name="source-id" value="3" />
+			<control name="generator-type-id" value="2"/>
+			<control name="name" value="Supply H8" />
+			<control name="start-year" value="2010" />
+			<control name="start-month" value="05" />
+			<control name="start-day" value="26" />
+			<control name="meter-serial-number" value="" />
+			<control name="gsp-group-id" value="3" />
+			<control name="mop-contract-id" value="null" />
+			<control name="mop-account" value="" />
+			<control name="hhdc-contract-id" value="null" />
+			<control name="hhdc-account" value="" />
+			<control name="import-mpan" value="00 845 540 22 9879 0084 358" />
+			<control name="import-ssc-code" value="" />
+			<control name="import-agreed-supply-capacity" value="700" />
+			<control name="import-supplier-contract-id" value="4" />
+			<control name="import-supplier-account" value="d" />
+			<control name="export-mpan" value="" />
+			<control name="insert" value="Insert" />
+
+			<regex pattern="/chellow/supplies/14/" />
+			<response-code value="303" />
+		</request>
+		<request path="/chellow/supplies/14/" method="post">
+			<control name="delete" value="Delete" />
+			<response-code value="303" />
 		</request>
 	</test>
 </imprimatur>

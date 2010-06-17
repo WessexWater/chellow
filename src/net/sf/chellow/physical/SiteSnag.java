@@ -70,7 +70,7 @@ public class SiteSnag extends SnagDateBounded {
 			for (SiteSnag snag : (List<SiteSnag>) Hiber
 					.session()
 					.createQuery(
-							"from SiteSnag snag where snag.site = :site and snag.description = :description and snag.startDate.date <= :finishDate and (snag.finishDate is null or snag.finishDate.date >= :startDate")
+							"from SiteSnag snag where snag.site = :site and snag.description = :description and snag.startDate.date <= :finishDate and (snag.finishDate is null or snag.finishDate.date >= :startDate)")
 					.setEntity("site", site).setString("description",
 							snagDescription).setTimestamp("startDate",
 							startDate.getDate()).setTimestamp("finishDate",

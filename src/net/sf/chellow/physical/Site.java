@@ -551,7 +551,9 @@ public class Site extends PersistentEntity {
 				}
 				Source source = Source.getSource(sourceId);
 				GeneratorType generatorType = null;
-				if (source.getCode().equals(Source.GENERATOR_CODE)) {
+				if (source.getCode().equals(Source.GENERATOR_CODE)
+						|| source.getCode().equals(
+								Source.GENERATOR_NETWORK_CODE)) {
 					Long generatorTypeId = inv.getLong("generator-type-id");
 					generatorType = GeneratorType
 							.getGeneratorType(generatorTypeId);
