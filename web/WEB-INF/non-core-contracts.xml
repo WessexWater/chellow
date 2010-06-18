@@ -240,7 +240,7 @@ class Parser(BillParser):
             bill_from = HhStartDate(date_format.parse(values[6]))
             bill_to = HhStartDate(date_format.parse(values[7]))
             kwh = BigDecimal(values[8])
-            raw_bills.append(RawBill('', values[3], mpan_strings, values[4], issue_date, bill_from, bill_to, kwh, BigDecimal(values[106]), BigDecimal(values[108]), '', []))
+            raw_bills.append(RawBill('', values[3], [], values[4], issue_date, bill_from, bill_to, kwh, BigDecimal(values[106]), BigDecimal(values[108]), '', []))
             values = self.shredder.getLine()
         self.shredder.close()
         return raw_bills
@@ -6987,10 +6987,13 @@ def triad(bill, dso_contract, month_begin, month_end, data_source, rate_period='
     if data_source.site_id is None and (data_source.is_new or triad_dates[2].before(MpanCore.getMpanCore(data_source.id).getSupply().getGenerationFirst().getStartDate())):
         triad_rate_script = NonCoreContract.getNonCoreContract("TRIAD Estimates").rateScript(month_begin)
         triad_estimates = data_source.rate(triad_rate_script, 'triad_estimates')
-        if data_source.id not in triad_estimates:
-             raise Exception('The id ' + data_source.id + ' cannot be found in the list of triad estimates in the rate script.')
-        est_triad_kw = triad_estimates[data_source.id]
-        est_triad_kws = [{'gsp-kw': est_triad_kw, 'msp-kw': est_triad_kw, 'laf': 1, 'end-date': tdate.getDate()} for tdate in triad_dates]
+        if data_source.id in triad_estimates:
+            est_triad_kw = triad_estimates[data_source.id]
+        else:
+            est_triad_kw = 0.8 * data_source.summary['max-msp-kwh'] * 2
+        for est_datum in est_triad_kws:
+            est_datum['msp-kw'] = est_triad_kw
+            est_datum['gsp-kw'] = est_datum['msp-kw'] * est_datum['laf']
     
     triad_calc(bill, 'triad-estimate', dso_contract, est_triad_kws, financial_year_start, data_source)
 
