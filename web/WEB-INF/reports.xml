@@ -506,6 +506,20 @@ Ongoing
                         <input type="submit" value="Download"/>
                     </fieldset>
                 </form>
+                <br/>
+<form action="{/source/request/@context-path}/reports/181/output/">
+                    <fieldset>
+                    <input type="hidden" name="site-id" value="{/source/site/@id}" />
+                    
+                        <legend>Download TRIAD CSV</legend>
+                        <br/>
+                        <xsl:value-of select="'For financial year ending March '"/>
+                        <input name="year" value="{/source/date/@year}" size="4" maxlength="4"/>
+<xsl:value-of select="' '"/>
+                        <input type="submit" value="Download"/>
+                        <input type="reset" value="Reset"/>
+                    </fieldset>
+                </form>
       </body>
     </html>
   </xsl:template>
@@ -13095,15 +13109,9 @@ pw.close()]]></value>
 from net.sf.chellow.monad.types import MonadDate
 
 cal = GregorianCalendar(TimeZone.getTimeZone("GMT"), Locale.UK)
-cal.add(Calendar.MONTH, -1)
-years_element = doc.createElement('years')
-source.appendChild(years_element)
-for year in range(10):
-    year_element = doc.createElement('year')
-    years_element.appendChild(year_element)
-    year_element.setAttribute('last-year', str(cal.get(Calendar.YEAR) - 1))
-    year_element.setAttribute('year', str(cal.get(Calendar.YEAR)))
-    cal.add(Calendar.YEAR, -1)]]></value>
+if cal.get(Calendar.MONTH) < Calendar.MARCH:
+    cal.add(Calendar.YEAR, -1)
+source.setAttribute('year', str(cal.get(Calendar.YEAR)))]]></value>
         <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
 <xsl:stylesheet version="1.0"
     xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
@@ -13141,14 +13149,8 @@ for year in range(10):
                     <fieldset>
                         <legend>Download Sites TRIAD CSV</legend>
                         <br/>
-                        <xsl:value-of select="'For '"/>
-                        <select name="year">
-                            <xsl:for-each select="/source/years/year">
-                                <option value="{@year}">
-                                    <xsl:value-of select="concat(@last-year, ' / ', @year)"/>
-                                </option>
-                            </xsl:for-each>
-                        </select>
+                        <xsl:value-of select="'For financial year ending March '"/>
+                        <input name="year" value="{/source/@year}" size="4" maxlength="4"/>
 <xsl:value-of select="' '"/>
                         <input type="submit" value="Download"/>
                         <input type="reset" value="Reset"/>
@@ -13166,98 +13168,90 @@ for year in range(10):
         <value><![CDATA[true]]></value>
         <value><![CDATA[CSV Sites TRIAD]]></value>
         <value><![CDATA[from net.sf.chellow.monad import Hiber, UserException
-from java.util import GregorianCalendar, TimeZone, Locale, Calendar
-from net.sf.chellow.physical import HhStartDate, Site
-from java.text import SimpleDateFormat
-from java.lang import System
 from net.sf.chellow.monad.types import MonadDate
-from net.sf.chellow.billing import NonCoreContract
+from net.sf.chellow.physical import HhStartDate, SupplyGeneration, Supply
+from java.util import Calendar
+from net.sf.chellow.billing import NonCoreContract, Dso
+
+computer = NonCoreContract.getNonCoreContract('computer')
+comterp = computer.callFunction('create_comterp', [])
 
 inv.getResponse().setContentType("text/csv")
 inv.getResponse().setHeader('Content-Disposition', 'filename=output.csv;')
-pw = inv.getResponse().getWriter()
 year = inv.getInteger('year')
 if not inv.isValid():
     raise UserException()
+
+pw = inv.getResponse().getWriter()
+
 cal = MonadDate.getCalendar()
 cal.clear()
 cal.set(Calendar.YEAR, year)
 cal.set(Calendar.MONTH, Calendar.APRIL)
-year_finish = HhStartDate(cal.getTime())
-cal.add(Calendar.YEAR, -1)
+cal.set(Calendar.DAY_OF_MONTH, 1)
+cal.set(Calendar.HOUR_OF_DAY, 0)
+cal.set(Calendar.MINUTE, 0)
+cal.set(Calendar.SECOND, 0)
+cal.set(Calendar.MILLISECOND, 0)
+cal.add(Calendar.MINUTE, -30)
+march_finish = HhStartDate(cal.getTime())
+
 cal.add(Calendar.MINUTE, 30)
-year_start = HhStartDate(cal.getTime())
+cal.add(Calendar.MONTH, -1)
+march_start = HhStartDate(cal.getTime())
 
 triad_contract = NonCoreContract.getNonCoreContract('TRIAD')
-triad_dates = triad_contract.callFunction('triad_dates', [year_finish])
 
-pw.println("," + str(triad_dates[0]) + " " + str(triad_dates[1]) + " " + str(triad_dates[2]) + ",,Average GSP kW,,,,,,GBP")
-pw.println("Site Code,Site Name,Associated Sites,Import,Export,Generated,Displaced,Used,Parasitic,Import,Export,Generated,Displaced,Used,Parasitic")
+pw.println("Site Code, Site Name, Displaced TRIAD 1 Date, Displaced TRIAD 1 MSP kW, Displaced TRIAD LAF, Displaced TRIAD 1 GSP kW, Displaced TRIAD 2 Date, Displaced TRIAD 2 MSP kW, Displaced TRIAD 2 LAF, Displaced TRIAD 2 GSP kW, Displaced TRIAD 3 Date, Displaced TRIAD 3 MSP kW, Displaced TRIAD 3 LAF, Displaced TRIAD 3 GSP kW, Displaced GSP kW, Displaced Rate GBP / kW, GBP")
+pw.flush()
 
-for site in Hiber.session().createQuery("select distinct site from Site site join site.siteSupplyGenerations siteSupplyGeneration where siteSupplyGeneration.supplyGeneration.supply.source.code in ('gen', 'gen-net') and siteSupplyGeneration.supplyGeneration.startDate.date <= :finishDate and (siteSupplyGeneration.supplyGeneration.finishDate.date = null or siteSupplyGeneration.supplyGeneration.finishDate.date >= :startDate) order by site.code").setTimestamp('startDate', year_start.getDate()).setTimestamp('finishDate', year_finish.getDate()).list():
-    #pw.println('time 2 ' + str(System.currentTimeMillis() - t))
-    site = Site.getSite(site.getId())
-    for group in site.groups(year_start, year_finish, True):
-        sites = group.getSites()
-        site_code = sites[0].getCode()
-        site_name = sites[0].getName()
-        has_triad_est = False
-        associate_string = ''
-        for i in range(1, len(sites)):
-            associate_string = associate_string + sites[i].getCode() + ' '
-        supplies = group.getSupplies()
-        primary_supply = None
-        for supply in supplies:
-            source_code = supply.getSource().getCode()
-            generator_type = supply.getGeneratorType()
-            if generator_type is None:
-                generator_type = ''
-            else:
-                generator_type = generator_type.getCode()
-            if source_code in ['gen', 'gen-net'] and generator_type in ['lm', 'turb']:
-                has_triad_est = True
-            if primary_supply == None and source_code in ['net', 'gen-net']:
-                primary_supply = supply
-        primary_supply_generation = primary_supply.getGeneration(year_start)
-        for mpan in primary_supply_generation.getMpans():
-            if int(mpan.getCore().getDso().getCode()) < 24:
-                primary_mpan = mpan
-                break
-        is_substation = primary_mpan.getLlfc().getIsSubstation()
-        dso = primary_mpan.getCore().getDso()
-        dso_contract = dso.findContract('main')
-        voltage_level = primary_mpan.getLlfc().getVoltageLevel().getCode()
-        import_kws = []
-        export_kws = []
-        generated_kws = []
-        parasitic_kws = []
-        for triad_date in triad_dates:
-            t_groups = site.groups(triad_date, triad_date, True)
-            if len(t_groups) > 0:
-                stream_map = t_groups[0].hhData()
-                import_kws.append(stream_map['import-net'][0] / 2)
-                export_kws.append(stream_map['export-net'][0] / 2)
-                generated_kws.append(stream_map['import-gen'][0] / 2)
-                parasitic_kws.append(stream_map['export-gen'][0] / 2)
-        import_res = triad_contract.callFunction('triad', [dso_contract, import_kws, year_finish, voltage_level, is_substation])
-        export_res = triad_contract.callFunction('triad', [dso_contract, export_kws, year_finish, voltage_level, is_substation])
-        generated_res = triad_contract.callFunction('triad', [dso_contract, generated_kws, year_finish, voltage_level, is_substation])
-        parasitic_res = triad_contract.callFunction('triad', [dso_contract, parasitic_kws, year_finish, voltage_level, is_substation])
-        displaced_gsp_kw = generated_res['total-gsp-kw'] - export_res['total-gsp-kw'] - parasitic_res['total-gsp-kw']
-        displaced_gbp = generated_res['total-gbp'] - export_res['total-gbp'] - parasitic_res['total-gbp']
-        used_gsp_kw = displaced_gsp_kw + import_res['total-gsp-kw']
-        used_gbp = displaced_gbp + import_res['total-gbp']
-        pw.print('"' + site_code + '","' + site_name + '","')
-        pw.print(associate_string + '",')
-        pw.print(str(round(import_res['total-gsp-kw'], 2)) + ',')
-        pw.print(str(round(export_res['total-gsp-kw'], 2)) + ',' + str(round(generated_res['total-gsp-kw'], 2)))
-        pw.print(',' + str(round(displaced_gsp_kw, 2)) + ',' + str(round(used_gsp_kw, 2)))
-        pw.print(',' + str(round(parasitic_res['total-gsp-kw'], 2)) + ',' + str(round(import_res['total-gbp'], 2)))
-        pw.print(',' + str(round(export_res['total-gbp'], 2)) + ',' + str(round(generated_res['total-gbp'], 2)) + ',')
-        pw.print(str(round(displaced_gbp, 2)) + ',')
-        pw.println(str(round(used_gbp, 2)) + ',' + str(round(parasitic_res['total-gbp'], 2)))
+forecast_date = comterp.get('forecast_date')()
+
+if inv.hasParameter('site-id'):
+    site_id = inv.getLong('site-id')
+    site_query = Hiber.session().createQuery("from Site site where site = :site").setEntity('site', Site.getSite(site_id))
+else:
+    site_query = Hiber.session().createQuery("select distinct ssgen.site from SiteSupplyGeneration ssgen where ssgen.supplyGeneration.supply.source.code in ('gen', 'gen-net') order by ssgen.site.code")
+
+sites = site_query.scroll()
+while sites.next():
+    site = sites.get(0)
+    pw.print('"' + site.getCode() + '","' + site.getName() + '"')
+
+    for site_group in site.groups(march_start, march_finish, True):
+        if site_group.getFrom().after(march_start):
+            chunk_start = site_group.getStartDate()
+        else:
+            chunk_start = march_start
+        if not site_group.getTo().before(march_finish):
+            chunk_finish = march_finish
+        else:
+            continue
+
+        displaced_mpan = comterp.get('displaced_mpan')(site_group, chunk_start, chunk_finish)
+        if displaced_mpan is None:
+            continue
+
+        site_ds = comterp.get('site_source')(site, chunk_start, chunk_finish, forecast_date, comterp, pw)
+        site_ds.init_from_mpan(displaced_mpan)
+
+        dso_contract = comterp.get('get_dso_contract')(site_ds.dso_code, chunk_finish, pw)
+        bill = {}
+        site_ds.contract_function(triad_contract, 'triad')(bill, dso_contract, chunk_start, chunk_finish, site_ds)
+        values = []
+        for i in range(3):
+            triad_prefix = 'triad-actual-' + str(i)
+            for suffix in ['-date', '-msp-kw', '-laf', '-gsp-kw']:
+                values.append(bill[triad_prefix + suffix])
+
+        values += [bill['triad-actual-' + suf] for suf in ['gsp-kw', 'rate', 'gbp']]
+
+        for value in values:
+            pw.print("," + str(value))
+        pw.println('')
         pw.flush()
-    Hiber.session().clear()
+    Hiber().session().clear()
+sites.close()
 pw.close()]]></value>
         <value><![CDATA[]]></value>
     </line>
@@ -14012,7 +14006,7 @@ response_body = post_method.getResponseBody()
 pw.println(String(response_body))
 post_method.releaseConnection()
 
-#result = urllib2.urlopen('http://www.ecoes.co.uk/saveportfolioMpans.asp?guid={321921A4-AA05-4B9A-84BE-193BC3219001}')
+#result = urllib2.urlopen('http://www.ecoes.co.uk/saveportfolioMpans.asp?guid=')
 
 pw.close()]]></value>
         <value><![CDATA[]]></value>

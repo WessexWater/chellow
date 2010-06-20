@@ -21,7 +21,6 @@
 
 package net.sf.chellow.billing;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import net.sf.chellow.monad.Hiber;
@@ -179,70 +178,38 @@ public class Batch extends PersistentEntity {
 
 	@SuppressWarnings("unchecked")
 	Bill insertBill(RawBill rawBill) throws HttpException {
-		List<Mpan> mpanList = (List<Mpan>) Hiber
+		List<Supply> supplyList = (List<Supply>) Hiber
 				.session()
 				.createQuery(
-						"from Mpan mpan where mpan.supplierAccount = :account and mpan.supplyGeneration.startDate.date <= :billFinish and (mpan.supplyGeneration.finishDate.date is null or mpan.supplyGeneration.finishDate.date >= :billFinish) order by mpan.core.dso.code, mpan.core.uniquePart")
-				.setString("account", rawBill.getAccount())
-				.setTimestamp("billFinish", rawBill.getFinishDate().getDate())
-				.list();
-		if (mpanList.isEmpty()) {
-			throw new UserException("There are no MPANs that match.");
+						"select mpan.supplyGeneration.supply from Mpan mpan where ((mpan.supplierContract = :contract and mpan.supplierAccount = :account) or (mpan.supplyGeneration.hhdcContract = :contract and mpan.supplyGeneration.hhdcAccount = :account) or (mpan.supplyGeneration.mopContract = :contract and mpan.supplyGeneration.mopAccount = :account)) and mpan.supplyGeneration.startDate.date <= :billFinish and (mpan.supplyGeneration.finishDate.date is null or mpan.supplyGeneration.finishDate.date >= :billFinish) order by mpan.core.dso.code, mpan.core.uniquePart")
+				.setEntity("contract", getContract()).setString("account",
+						rawBill.getAccount()).setTimestamp("billFinish",
+						rawBill.getFinishDate().getDate()).list();
+		if (supplyList.isEmpty()) {
+			throw new UserException(
+					"Can't find a supply generation with this contract and account number.");
 		}
-		if (!rawBill.getMpanStrings().isEmpty()) {
-			List<String> mpanStrings = new ArrayList<String>();
-			for (Mpan mpan : mpanList) {
-				mpanStrings.add(mpan.toString());
-			}
-			if (mpanStrings.isEmpty()) {
-				throw new UserException("Can't find any MPANS.");
-			}
-			if (!Mpan.isEqual(mpanStrings, rawBill.getMpanStrings())) {
-				throw new UserException("Problem with account '"
-						+ rawBill.getAccount() + "' invoice '"
-						+ rawBill.getReference() + " to the half-hour ending "
-						+ rawBill.getFinishDate() + ". This invoice has MPANs "
-						+ rawBill.getMpanStrings()
-						+ " but the account in Chellow has MPANs '"
-						+ mpanStrings + "'.");
-			}
-		}
-
 		Hiber.flush();
-		Supply supply = mpanList.get(0).getSupplyGeneration().getSupply();
+		Supply supply = supplyList.get(0);
 		Bill bill = new Bill(this, supply);
 		Hiber.session().save(bill);
 		Hiber.flush();
 		bill.update(rawBill.getReference(), rawBill.getIssueDate(), rawBill
-				.getStartDate(), rawBill.getFinishDate(), rawBill.getKwh(), rawBill.getNet(),
-				rawBill.getVat(), rawBill.getType(), null, false, rawBill.getBreakdown());
+				.getStartDate(), rawBill.getFinishDate(), rawBill.getKwh(),
+				rawBill.getNet(), rawBill.getVat(), rawBill.getType(), null,
+				false, rawBill.getBreakdown());
 		for (RawRegisterRead rawRead : rawBill.getRegisterReads()) {
 			bill.insertRead(rawRead);
 		}
-		;
+
 		List<SupplyGeneration> generations = supply.getGenerations(bill
 				.getStartDate(), bill.getFinishDate());
-		// what about withdrawn????? Cancel them by hand!!!!!!!!!
-     
-		// Check for duplicate bills
-		/*
-		List<Bill> duplicateBills = (List<Bill>) Hiber
-				.session()
-				.createQuery(
-						"from Bill bill where bill.supply = :supply and bill.batch.contract.id = :contractId and bill.isCancelledOut is false and bill.startDate.date <= :finishDate and bill.finishDate.date >= :startDate")
-				.setEntity("supply", supply).setLong("contractId",
-						contract.getId()).setTimestamp("startDate",
-						bill.getStartDate().getDate()).setTimestamp(
-						"finishDate", bill.getFinishDate().getDate()).list();
-		if (duplicateBills.size() > 1) {
-			bill.insertSnag(BillSnag.DUPLICATE_BILL);
-		}
-		*/
+
 		// what about missing bill snags??????
 		for (SupplyGeneration generation : generations) {
-			HhStartDate st = generation.getStartDate()
-					.before(bill.getStartDate()) ? bill.getStartDate()
-					: generation.getStartDate();
+			HhStartDate st = generation.getStartDate().before(
+					bill.getStartDate()) ? bill.getStartDate() : generation
+					.getStartDate();
 			HhStartDate fn = bill.getFinishDate().before(
 					generation.getFinishDate()) ? bill.getFinishDate()
 					: generation.getFinishDate();
@@ -257,7 +224,8 @@ public class Batch extends PersistentEntity {
 			if (importMpan != null
 					&& importMpan.getSupplierContract().getId().equals(
 							contract.getId())) {
-				//Debug.print("Deleting snag from " + st + " to " + fn + " sup con " + importMpan.getSupplierContract().toString());
+				// Debug.print("Deleting snag from " + st + " to " + fn +
+				// " sup con " + importMpan.getSupplierContract().toString());
 				supply.deleteSnag(importMpan.getSupplierContract(),
 						SupplySnag.MISSING_BILL, st, fn);
 			}
