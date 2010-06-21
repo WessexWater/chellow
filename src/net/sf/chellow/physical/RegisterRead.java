@@ -80,8 +80,8 @@ public class RegisterRead extends PersistentEntity {
 		setPreviousValue(rawRead.getPreviousValue());
 		setPreviousType(rawRead.getPreviousType());
 		setPresentDate(rawRead.getPresentDate());
-		setpresentValue(rawRead.getPresentValue());
-		setpresentType(rawRead.getPresentType());
+		setPresentValue(rawRead.getPresentValue());
+		setPresentType(rawRead.getPresentType());
 		setMeterSerialNumber(rawRead.getMeterSerialNumber());
 		setMpanStr(rawRead.getMpanStr());
 		/*
@@ -143,7 +143,7 @@ public class RegisterRead extends PersistentEntity {
 		this.tpr = tpr;
 	}
 
-	HhStartDate getPreviousDate() {
+	public HhStartDate getPreviousDate() {
 		return previousDate;
 	}
 
@@ -151,7 +151,7 @@ public class RegisterRead extends PersistentEntity {
 		this.previousDate = previousDate;
 	}
 
-	BigDecimal getPreviousValue() {
+	public BigDecimal getPreviousValue() {
 		return previousValue;
 	}
 
@@ -175,19 +175,19 @@ public class RegisterRead extends PersistentEntity {
 		this.presentDate = presentDate;
 	}
 
-	public BigDecimal getpresentValue() {
+	public BigDecimal getPresentValue() {
 		return presentValue;
 	}
 
-	void setpresentValue(BigDecimal presentValue) {
+	void setPresentValue(BigDecimal presentValue) {
 		this.presentValue = presentValue;
 	}
 
-	public ReadType getpresentType() {
+	public ReadType getPresentType() {
 		return presentType;
 	}
 
-	void setpresentType(ReadType presentType) {
+	void setPresentType(ReadType presentType) {
 		this.presentType = presentType;
 	}
 

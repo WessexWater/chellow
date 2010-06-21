@@ -3460,7 +3460,7 @@ def hh(bill, supply_source, hh_data):
         <value><![CDATA[2009-11-27T00:00Z]]></value>
         <value><![CDATA[]]></value>
         <value><![CDATA[from net.sf.chellow.billing import NonCoreContract
-from net.sf.chellow.physical import HhStartDate, MpanCore, Site
+from net.sf.chellow.physical import HhStartDate, MpanCore, Site, ReadType
 from java.util import GregorianCalendar, TimeZone, Locale, Calendar, Date
 from net.sf.chellow.monad import UserException, Hiber
 from net.sf.chellow.monad.types import MonadDate
@@ -3841,40 +3841,120 @@ class SupplySource(DataSource):
         #self.pw.println("whole data: about to prepare query " +  str(System.currentTimeMillis() - timing))
         mpan_core = MpanCore.getMpanCore(self.id)
         supply = mpan_core.getSupply()
-        con = Hiber.session().connection()
-        if self.is_import:
-            hql = "select sum(case when channel.is_kwh then hh_datum.value else 0 end) as kwh, max(case when channel.is_kwh then hh_datum.status else '' end) as status, sum(case when not channel.is_kwh and channel.is_import then hh_datum.value else 0 end) as imp_kvarh, sum(case when not channel.is_kwh and not channel.is_import then hh_datum.value else 0  end) as exp_kvarh, hh_datum.start_date from hh_datum, channel, supply_generation where hh_datum.channel_id = channel.id and channel.supply_generation_id = supply_generation.id and supply_generation.supply_id = ? and (channel.is_import = TRUE or channel.is_kwh = FALSE) and hh_datum.start_date >= ? and hh_datum.start_date <= ? group by hh_datum.start_date order by hh_datum.start_date"
-        else:
-            hql = "select sum(case when channel.is_kwh then hh_datum.value else 0 end) as kwh, max(case when not channel.is_import and channel.is_kwh then hh_datum.status else '' end) as status, sum(case when not channel.is_kwh and channel.is_import then hh_datum.value else 0 end) as imp_kvarh, sum(case when not channel.is_kwh and not channel.is_import then hh_datum.value else 0  end) as exp_kvarh, hh_datum.start_date from hh_datum, channel, supply_generation where hh_datum.channel_id = channel.id and channel.supply_generation_id = supply_generation.id and supply_generation.supply_id = ? and (channel.is_import = FALSE or channel.is_kwh = FALSE) and hh_datum.start_date >= ? and hh_datum.start_date <= ? group by hh_datum.start_date order by hh_datum.start_date"
-        stmt = con.prepareStatement(hql, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.CLOSE_CURSORS_AT_COMMIT)
-        stmt.setLong(1, supply.getId())
-        stmt.setTimestamp(2, Timestamp(history_start.getDate().getTime()))
-        stmt.setTimestamp(3, Timestamp(history_finish.getDate().getTime()))
-        #stmt.setFetchSize(100)
-        rs = stmt.executeQuery()
-        #self.pw.println("whole data: starting loop " + str(System.currentTimeMillis() - timing))
+        generation = supply.getGeneration(start_date)
         year_advance = -1 * year_adjustment
-        while rs.next():
-            start_date = rs.getTimestamp('start_date')
-            msp_kwh = rs.getBigDecimal('kwh').doubleValue()
-            imp_kvarh = rs.getBigDecimal('imp_kvarh').doubleValue()
-            exp_kvarh = rs.getBigDecimal('exp_kvarh').doubleValue()
-            status = rs.getString('status')
 
-            utc_cal.setTime(start_date)
-            ct_cal.setTime(start_date)
-            utc_cal.add(Calendar.YEAR, year_advance)
-            ct_cal.add(Calendar.YEAR, year_advance)
+        if self.pc_code != '00' and len(generation.getChannels()) == 0:
+            # register reads!!!!!
+            bills = []
+            for cand_bill in Hiber.session().createQuery("from Bill bill where bill.supply = :supply and bill.batch.contract = :contract and bill.startDate.date <= :finishDate and bill.finishDate.date >= :searchStart order by bill.issueDate, bill.startDate.date").setEntity('supply', supply).setEntity('contract', generation.getImportMpan().getSupplierContract()).setTimestamp('searchStart', start_date.getDate()).setTimestamp('finishDate', finish_date.getDate()).list():
+                can_insert = True
+                for bill in bills:
+                    if not cand_bill.getStartDate().after(bill.getFinishDate()) and not cand_bill.getFinishDate().before(bill.getStartDate()):
+                        can_insert = False
+                        break
+                if can_insert:
+                    bills.append(cand_bill)
 
-            data_hh.append({'status': status, 'imp-msp-kvarh': imp_kvarh, 'imp-msp-kvar': imp_kvarh * 2, 'exp-msp-kvarh': exp_kvarh, 'exp-msp-kvar': exp_kvarh * 2, 'msp-kw': msp_kwh * 2, 'msp-kwh': msp_kwh, 'hist-kwh': msp_kwh, 'hist-start-date': start_date, 'start-date': utc_cal.getTime(), 'ct-day': ct_cal.get(5), 'utc-month': utc_cal.get(2), 'utc-day': utc_cal.get(5), 'utc-decimal-hour': utc_cal.get(11) + float(utc_cal.get(12)) / 60, 'utc-year': utc_cal.get(Calendar.YEAR), 'utc-hour': utc_cal.get(Calendar.HOUR_OF_DAY), 'utc-minute': utc_cal.get(Calendar.MINUTE), 'ct-year': ct_cal.get(Calendar.YEAR), 'ct-month': ct_cal.get(2), 'ct-decimal-hour': ct_cal.get(11) + float(ct_cal.get(12)) / 60, 'ct-day-of-week': ct_cal.get(7), 'utc-day-of-week': utc_cal.get(7)})
+            for bill in bills:
+                for read in Hiber.session().createQuery("select read.tpr, read.coefficient, read.previousDate, read.previousValue, read.previousType.code, read.presentDate, read.presentValue, read.presentType.code from RegisterRead read where read.bill = :bill order by read.presentDate.date").setEntity('bill', bill).list():
+                    tpr = read[0]
+                    coefficient = read[1].doubleValue()
+                    previous_date = read[2]
+                    previous_value = read[3].doubleValue()
+                    previous_type = read[4]
+                    present_date = read[5]
+                    present_value = read[6].doubleValue()
+                    present_type = read[7]
 
-        rs.close()
-        stmt.close()
+                    kwh = (present_value - previous_value) * coefficient
+                    if previous_date.before(start_date):
+                        chunk_start = start_date
+                    else:
+                        chunk_start = previous_date
+                    if present_date.after(finish_date):
+                        chunk_finish = finish_date
+                    else:
+                        chunk_finish = present_date
+
+                    chunk_milis = chunk_finish.getDate().getTime() - chunk_start.getDate().getTime()
+                    kwh = float(chunk_milis) / float(present_date.getDate().getTime() - previous_date.getDate().getTime()) * kwh
+                    kwh = kwh / chunk_milis * 30 * 60 * 60 * 1000
+                    days_of_week = {}
+                    for ci in Hiber.session().createQuery("select mod(ci.dayOfWeek, 7) + 1 as dayOfWeek, (ci.startMonth - 1) * 100 + ci.startDay as startMonth, ci.startHour + (ci.startMinute / 60.0) as startHourDec, (ci.endMonth - 1) * 100 + ci.endDay as endMonth, ci.endHour + (ci.endMinute / 60.0) as endHourDec from ClockInterval ci where ci.tpr = :tpr").setEntity('tpr', tpr).list():
+                        day_of_week = ci[0]
+                        start_month = ci[1]
+                        start_hour = ci[2]
+                        end_month = ci[3]
+                        end_hour = ci[4]
+                        if day_of_week not in days_of_week:
+                            days_of_week[day_of_week] = []
+                            days_of_week[day_of_week].append({'start-month': start_month, 'start-hour': start_hour, 'end-month': end_month, 'end-hour': end_hour})
+
+                    if tpr.getIsGmt():
+                        cal = utc_cal
+                        decimal_hour_key = 'utc-decimal-hour'
+                        day_of_week_key = 'utc-day-of-week'
+                        month_key = 'utc-month'
+                        day_of_month_key = 'utc-day'
+                    else:
+                        cal = ct_cal
+                        decimal_hour_key = 'ct-decimal-hour'
+                        day_of_week_key = 'ct-day-of-week'
+                        month_key = 'ct-month'
+                        day_of_month_key = 'ct-day'
+                    if present_type == previous_type == ReadType.TYPE_ROUTINE:
+                        status = 'A'
+                    else:
+                        status = 'E'
+                    hh_date = chunk_start
+                    while not hh_date.after(chunk_finish):
+                        utc_cal.setTime(hh_date.getDate())
+                        ct_cal.setTime(hh_date.getDate())
+                        utc_cal.add(Calendar.YEAR, year_advance)
+                        ct_cal.add(Calendar.YEAR, year_advance)
+
+                        decimal_hour = cal.get(11) + float(cal.get(12)) / 60
+                        fractional_month = cal.get(Calendar.MONTH) * 100 + cal.get(Calendar.DAY_OF_MONTH)
+                        for ci in days_of_week[cal.get(Calendar.DAY_OF_WEEK)]:
+                            if ((ci['start-hour'] < ci['end-hour'] and ci['start-hour'] <= decimal_hour < ci['end-hour']) or (ci['start-hour'] >= ci['end-hour'] and (ci['start-hour'] <= decimal_hour or decimal_hour < ci['end-hour']))) and ci['start-month'] <= fractional_month <= ci['end-month']:
+                                data_hh.append({'status': status, 'imp-msp-kvarh': 0, 'imp-msp-kvar': 0, 'exp-msp-kvarh': 0, 'exp-msp-kvar': 0, 'msp-kw': kwh * 2, 'msp-kwh': kwh, 'hist-kwh': kwh, 'hist-start-date': chunk_start, 'start-date': utc_cal.getTime(), 'ct-day': ct_cal.get(5), 'utc-month': utc_cal.get(2), 'utc-day': utc_cal.get(5), 'utc-decimal-hour': utc_cal.get(11) + float(utc_cal.get(12)) / 60, 'utc-year': utc_cal.get(Calendar.YEAR), 'utc-hour': utc_cal.get(Calendar.HOUR_OF_DAY), 'utc-minute': utc_cal.get(Calendar.MINUTE), 'ct-year': ct_cal.get(Calendar.YEAR), 'ct-month': ct_cal.get(2), 'ct-decimal-hour': ct_cal.get(11) + float(ct_cal.get(12)) / 60, 'ct-day-of-week': ct_cal.get(7), 'utc-day-of-week': utc_cal.get(7)})
+                                break
+
+                        hh_date = hh_date.getNext()
+        else:
+            con = Hiber.session().connection()
+            if self.is_import:
+                hql = "select sum(case when channel.is_kwh then hh_datum.value else 0 end) as kwh, max(case when channel.is_kwh then hh_datum.status else '' end) as status, sum(case when not channel.is_kwh and channel.is_import then hh_datum.value else 0 end) as imp_kvarh, sum(case when not channel.is_kwh and not channel.is_import then hh_datum.value else 0  end) as exp_kvarh, hh_datum.start_date from hh_datum, channel, supply_generation where hh_datum.channel_id = channel.id and channel.supply_generation_id = supply_generation.id and supply_generation.supply_id = ? and (channel.is_import = TRUE or channel.is_kwh = FALSE) and hh_datum.start_date >= ? and hh_datum.start_date <= ? group by hh_datum.start_date order by hh_datum.start_date"
+            else:
+                hql = "select sum(case when channel.is_kwh then hh_datum.value else 0 end) as kwh, max(case when not channel.is_import and channel.is_kwh then hh_datum.status else '' end) as status, sum(case when not channel.is_kwh and channel.is_import then hh_datum.value else 0 end) as imp_kvarh, sum(case when not channel.is_kwh and not channel.is_import then hh_datum.value else 0  end) as exp_kvarh, hh_datum.start_date from hh_datum, channel, supply_generation where hh_datum.channel_id = channel.id and channel.supply_generation_id = supply_generation.id and supply_generation.supply_id = ? and (channel.is_import = FALSE or channel.is_kwh = FALSE) and hh_datum.start_date >= ? and hh_datum.start_date <= ? group by hh_datum.start_date order by hh_datum.start_date"
+            stmt = con.prepareStatement(hql, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.CLOSE_CURSORS_AT_COMMIT)
+            stmt.setLong(1, supply.getId())
+            stmt.setTimestamp(2, Timestamp(history_start.getDate().getTime()))
+            stmt.setTimestamp(3, Timestamp(history_finish.getDate().getTime()))
+            #stmt.setFetchSize(100)
+            rs = stmt.executeQuery()
+            #self.pw.println("whole data: starting loop " + str(System.currentTimeMillis() - timing))
+            while rs.next():
+                start_date = rs.getTimestamp('start_date')
+                msp_kwh = rs.getBigDecimal('kwh').doubleValue()
+                imp_kvarh = rs.getBigDecimal('imp_kvarh').doubleValue()
+                exp_kvarh = rs.getBigDecimal('exp_kvarh').doubleValue()
+                status = rs.getString('status')
+
+                utc_cal.setTime(start_date)
+                ct_cal.setTime(start_date)
+                utc_cal.add(Calendar.YEAR, year_advance)
+                ct_cal.add(Calendar.YEAR, year_advance)
+
+                data_hh.append({'status': status, 'imp-msp-kvarh': imp_kvarh, 'imp-msp-kvar': imp_kvarh * 2, 'exp-msp-kvarh': exp_kvarh, 'exp-msp-kvar': exp_kvarh * 2, 'msp-kw': msp_kwh * 2, 'msp-kwh': msp_kwh, 'hist-kwh': msp_kwh, 'hist-start-date': start_date, 'start-date': utc_cal.getTime(), 'ct-day': ct_cal.get(5), 'utc-month': utc_cal.get(2), 'utc-day': utc_cal.get(5), 'utc-decimal-hour': utc_cal.get(11) + float(utc_cal.get(12)) / 60, 'utc-year': utc_cal.get(Calendar.YEAR), 'utc-hour': utc_cal.get(Calendar.HOUR_OF_DAY), 'utc-minute': utc_cal.get(Calendar.MINUTE), 'ct-year': ct_cal.get(Calendar.YEAR), 'ct-month': ct_cal.get(2), 'ct-decimal-hour': ct_cal.get(11) + float(ct_cal.get(12)) / 60, 'ct-day-of-week': ct_cal.get(7), 'utc-day-of-week': utc_cal.get(7)})
+
+            rs.close()
+            stmt.close()
+
 
         #self.pw.println("whole data: done looping " + str(System.currentTimeMillis() - timing))
         if len(data_hh) == 0:
-            utc_cal = GregorianCalendar(TimeZone.getTimeZone("GMT"), Locale.UK)
-            ct_cal = GregorianCalendar(TimeZone.getTimeZone("Europe/London"), Locale.UK)
             utc_cal.setTime(self.finish_date.getDate())
             ct_cal.setTime(self.finish_date.getDate())
             data_hh.append({'status': 'E', 'used-kwh': 0, 'hist-kwh': 0, 'msp-kwh': 0, 'gsp-kwh': 0, 'msp-kw': 0, 'imp-msp-kvarh': 0, 'imp-msp-kvar': 0, 'exp-msp-kvarh': 0, 'hist-start-date': history_finish.getDate(), 'start-date': finish_date.getDate(), 'ct-day': ct_cal.get(5), 'utc-month': utc_cal.get(2), 'utc-day': utc_cal.get(5), 'utc-decimal-hour': utc_cal.get(11) + float(utc_cal.get(12)) / 60, 'ct-month': ct_cal.get(2), 'ct-decimal-hour': ct_cal.get(11) + ct_cal.get(12) / 60, 'ct-day-of-week': ct_cal.get(7), 'utc-day-of-week': utc_cal.get(7), 'utc-year': utc_cal.get(Calendar.YEAR), 'utc-hour': utc_cal.get(Calendar.HOUR), 'utc-minute': utc_cal.get(Calendar.MINUTE)})
