@@ -3756,7 +3756,8 @@ class SupplySource(DataSource):
     def init_from_mpan(self, start_date, finish_date, mpan):
         self.site_id = None
         mpan_core = mpan.getCore()
-        self.id = mpan_core.toString()
+        self.mpan_core = mpan_core.toString()
+        self.id = self.mpan_core
         if start_date.after(finish_date):
             raise UserException('The start date is after the finish date.')
         self.start_date = start_date
@@ -6984,7 +6985,7 @@ def triad(bill, dso_contract, month_begin, month_end, data_source, rate_period='
     est_triad_kws = [data_source.create_whole_data(t_date, t_date, financial_year_start)['data'][0] for t_date in triad_dates]
 
     #pw.println("finished getting data " + str(System.currentTimeMillis() - timing))
-    if data_source.site_id is None and (data_source.is_new or triad_dates[2].before(MpanCore.getMpanCore(data_source.id).getSupply().getGenerationFirst().getStartDate())):
+    if data_source.site_id is None and (data_source.is_new or triad_dates[2].before(MpanCore.getMpanCore(data_source.mpan_core).getSupply().getGenerationFirst().getStartDate())):
         triad_rate_script = NonCoreContract.getNonCoreContract("TRIAD Estimates").rateScript(month_begin)
         triad_estimates = data_source.rate(triad_rate_script, 'triad_estimates')
         if data_source.id in triad_estimates:
@@ -7027,7 +7028,7 @@ def triad(bill, dso_contract, month_begin, month_end, data_source, rate_period='
         bill['triad-actual-gbp'] = bill['triad-actual-rate'] * bill['triad-actual-gsp-kw']
 
         utc_cal.setTime(month_end.getDate())
-        sup = MpanCore.getMpanCore(data_source.id).getSupply()
+        sup = MpanCore.getMpanCore(data_source.mpan_core).getSupply()
         sup_gen = sup.getGeneration(HhStartDate(utc_cal.getTime()))
         est_intervals = 0
         march_intervals = 0
