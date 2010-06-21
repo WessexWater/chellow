@@ -1058,7 +1058,7 @@ source.appendChild(MonadDate.getHoursXml(doc))]]></value>
                                 <xsl:value-of select="@units" />
                             </td>
                             <td>
-                                <a href="{/source/request/@context-path}/reports/97/output?tpr-id={tpr/@id}">
+                                <a href="{/source/request/@context-path}/reports/97/output/?tpr-id={tpr/@id}">
                                     <xsl:value-of select="tpr/@code" />
                                 </a>
                             </td>
@@ -9465,6 +9465,7 @@ while bills.next():
             if vbf is None:
                 raise UserException('The contract ' + contract.getName() + " doesn't have a function import_virtual_bill.")
             v_bill = vbf(data_source)
+            pw.println(str(v_bill))
             net_gbp += v_bill['net-gbp']
             #raise UserException('start date ' + str(data_source.start_date) + ' finish date ' + str(data_source.finish_date) + ' ' + str(bill))
         mb_cal.add(Calendar.MONTH, 1)
@@ -9473,7 +9474,7 @@ while bills.next():
         me_cal.add(Calendar.MINUTE, -30)
         generations.close()
 
-        pw.println(','.join('"' + str(value) + '"' for value in [batch.getReference(), mpan.getCore(), bill.getReference(), bill.getType(), bill.getBreakdown(), bill.getNet(), bill.getVat(), bill_start, bill_finish, bill.getIsCancelledOut(), covered_start, covered_finish, covered_bill_ids, covered_net, covered_vat, net_gbp, covered_net - net_gbp]))
+    pw.println(','.join('"' + str(value) + '"' for value in [batch.getReference(), mpan.getCore(), bill.getReference(), bill.getType(), bill.getBreakdown(), bill.getNet(), bill.getVat(), bill_start, bill_finish, bill.getIsCancelledOut(), covered_start, covered_finish, ','.join(str(id) for id in covered_bill_ids), covered_net, covered_vat, net_gbp, covered_net - net_gbp]))
     pw.flush()
     Hiber.session().clear()
 bills.close()

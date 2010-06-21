@@ -3845,7 +3845,6 @@ class SupplySource(DataSource):
         year_advance = -1 * year_adjustment
 
         if self.pc_code != '00' and len(generation.getChannels()) == 0:
-            # register reads!!!!!
             bills = []
             for cand_bill in Hiber.session().createQuery("from Bill bill where bill.supply = :supply and bill.batch.contract = :contract and bill.startDate.date <= :finishDate and bill.finishDate.date >= :searchStart order by bill.issueDate, bill.startDate.date").setEntity('supply', supply).setEntity('contract', generation.getImportMpan().getSupplierContract()).setTimestamp('searchStart', start_date.getDate()).setTimestamp('finishDate', finish_date.getDate()).list():
                 can_insert = True
@@ -3867,7 +3866,8 @@ class SupplySource(DataSource):
                     present_value = read[6].doubleValue()
                     present_type = read[7]
 
-                    kwh = (present_value - previous_value) * coefficient
+                    kwh = (present_value - previous_value) * coefficient / float(present_date.getDate().getTime() - previous_date.getDate().getTime()) * 30 * 60 * 1000
+                    self.pw.println(' kwh ' + str(kwh))
                     if previous_date.before(start_date):
                         chunk_start = start_date
                     else:
@@ -3877,9 +3877,6 @@ class SupplySource(DataSource):
                     else:
                         chunk_finish = present_date
 
-                    chunk_milis = chunk_finish.getDate().getTime() - chunk_start.getDate().getTime()
-                    kwh = float(chunk_milis) / float(present_date.getDate().getTime() - previous_date.getDate().getTime()) * kwh
-                    kwh = kwh / chunk_milis * 30 * 60 * 60 * 1000
                     days_of_week = {}
                     for ci in Hiber.session().createQuery("select mod(ci.dayOfWeek, 7) + 1 as dayOfWeek, (ci.startMonth - 1) * 100 + ci.startDay as startMonth, ci.startHour + (ci.startMinute / 60.0) as startHourDec, (ci.endMonth - 1) * 100 + ci.endDay as endMonth, ci.endHour + (ci.endMinute / 60.0) as endHourDec from ClockInterval ci where ci.tpr = :tpr").setEntity('tpr', tpr).list():
                         day_of_week = ci[0]
@@ -3954,6 +3951,7 @@ class SupplySource(DataSource):
 
 
         #self.pw.println("whole data: done looping " + str(System.currentTimeMillis() - timing))
+      
         if len(data_hh) == 0:
             utc_cal.setTime(self.finish_date.getDate())
             ct_cal.setTime(self.finish_date.getDate())

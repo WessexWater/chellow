@@ -2140,7 +2140,7 @@ def import_virtual_bill(supply_source):
 			<regex
 				pattern='Batch,MPAN Core, Reference, Type, Breakdown, Net GBP, VAT GBP, Start Date, Finish Date, Cancelled Out, Covered From, Covered To, Covered Bills, Covered Net, Covered VAT, Virtual Net, Error GBP' />
 			<regex
-				pattern='"07-008","22 1065 3921 534","3423760005","NORMAL","","36.16","1.8","2010-01-19T00:00Z","2010-04-20T00:00Z","False","2010-01-19T00:00Z","2010-04-20T00:00Z","\[7L\]","36.16","1.8","0.0","36.16"' />
+				pattern='"07-008","22 1065 3921 534","3423760005","NORMAL","","36.16","1.8","2010-01-19T00:00Z","2010-04-20T00:00Z","False","2010-01-19T00:00Z","2010-04-20T00:00Z","7","36.16","1.8","295.96875","-259.80875"' />
 			<response-code value="200" />
 		</request>
 	</test>
