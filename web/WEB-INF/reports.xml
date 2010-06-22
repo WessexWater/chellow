@@ -9465,7 +9465,7 @@ while bills.next():
             if vbf is None:
                 raise UserException('The contract ' + contract.getName() + " doesn't have a function import_virtual_bill.")
             v_bill = vbf(data_source)
-            pw.println(str(v_bill))
+            #pw.println(str(v_bill))
             net_gbp += v_bill['net-gbp']
             #raise UserException('start date ' + str(data_source.start_date) + ' finish date ' + str(data_source.finish_date) + ' ' + str(bill))
         mb_cal.add(Calendar.MONTH, 1)

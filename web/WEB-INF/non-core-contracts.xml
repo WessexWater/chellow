@@ -3866,18 +3866,20 @@ class SupplySource(DataSource):
                     present_value = read[6].doubleValue()
                     present_type = read[7]
 
-                    kwh = (present_value - previous_value) * coefficient / float(present_date.getDate().getTime() - previous_date.getDate().getTime()) * 30 * 60 * 1000
-                    self.pw.println(' kwh ' + str(kwh))
+                    kwh = (present_value - previous_value) * coefficient
+                    #self.pw.println(' kwh ' + str(kwh))
                     if previous_date.before(start_date):
                         chunk_start = start_date
                     else:
                         chunk_start = previous_date
+
                     if present_date.after(finish_date):
                         chunk_finish = finish_date
                     else:
                         chunk_finish = present_date
 
                     days_of_week = {}
+
                     for ci in Hiber.session().createQuery("select mod(ci.dayOfWeek, 7) + 1 as dayOfWeek, (ci.startMonth - 1) * 100 + ci.startDay as startMonth, ci.startHour + (ci.startMinute / 60.0) as startHourDec, (ci.endMonth - 1) * 100 + ci.endDay as endMonth, ci.endHour + (ci.endMinute / 60.0) as endHourDec from ClockInterval ci where ci.tpr = :tpr").setEntity('tpr', tpr).list():
                         day_of_week = ci[0]
                         start_month = ci[1]
@@ -3904,21 +3906,33 @@ class SupplySource(DataSource):
                         status = 'A'
                     else:
                         status = 'E'
-                    hh_date = chunk_start
-                    while not hh_date.after(chunk_finish):
-                        utc_cal.setTime(hh_date.getDate())
-                        ct_cal.setTime(hh_date.getDate())
-                        utc_cal.add(Calendar.YEAR, year_advance)
-                        ct_cal.add(Calendar.YEAR, year_advance)
+                    for pass_count in range(2):
+                        if pass_count == 0:
+                            hh_date = previous_date
+                            pass_finish = present_date
+                        else:
+                            hh_date = chunk_start
+                            pass_finish = chunk_finish
+                        #self.pw.println('pass start ' + str(hh_date) + ' pass finish ' + str(pass_finish))
+                        while not hh_date.after(pass_finish):
+                            utc_cal.setTime(hh_date.getDate())
+                            ct_cal.setTime(hh_date.getDate())
+                            utc_cal.add(Calendar.YEAR, year_advance)
+                            ct_cal.add(Calendar.YEAR, year_advance)
 
-                        decimal_hour = cal.get(11) + float(cal.get(12)) / 60
-                        fractional_month = cal.get(Calendar.MONTH) * 100 + cal.get(Calendar.DAY_OF_MONTH)
-                        for ci in days_of_week[cal.get(Calendar.DAY_OF_WEEK)]:
-                            if ((ci['start-hour'] < ci['end-hour'] and ci['start-hour'] <= decimal_hour < ci['end-hour']) or (ci['start-hour'] >= ci['end-hour'] and (ci['start-hour'] <= decimal_hour or decimal_hour < ci['end-hour']))) and ci['start-month'] <= fractional_month <= ci['end-month']:
-                                data_hh.append({'status': status, 'imp-msp-kvarh': 0, 'imp-msp-kvar': 0, 'exp-msp-kvarh': 0, 'exp-msp-kvar': 0, 'msp-kw': kwh * 2, 'msp-kwh': kwh, 'hist-kwh': kwh, 'hist-start-date': chunk_start, 'start-date': utc_cal.getTime(), 'ct-day': ct_cal.get(5), 'utc-month': utc_cal.get(2), 'utc-day': utc_cal.get(5), 'utc-decimal-hour': utc_cal.get(11) + float(utc_cal.get(12)) / 60, 'utc-year': utc_cal.get(Calendar.YEAR), 'utc-hour': utc_cal.get(Calendar.HOUR_OF_DAY), 'utc-minute': utc_cal.get(Calendar.MINUTE), 'ct-year': ct_cal.get(Calendar.YEAR), 'ct-month': ct_cal.get(2), 'ct-decimal-hour': ct_cal.get(11) + float(ct_cal.get(12)) / 60, 'ct-day-of-week': ct_cal.get(7), 'utc-day-of-week': utc_cal.get(7)})
-                                break
+                            decimal_hour = cal.get(11) + float(cal.get(12)) / 60
+                            fractional_month = cal.get(Calendar.MONTH) * 100 + cal.get(Calendar.DAY_OF_MONTH)
+                            for ci in days_of_week[cal.get(Calendar.DAY_OF_WEEK)]:
+                                if ((ci['start-hour'] < ci['end-hour'] and ci['start-hour'] <= decimal_hour < ci['end-hour']) or (ci['start-hour'] >= ci['end-hour'] and (ci['start-hour'] <= decimal_hour or decimal_hour < ci['end-hour']))) and ci['start-month'] <= fractional_month <= ci['end-month']:
+                                    data_hh.append({'status': status, 'imp-msp-kvarh': 0, 'imp-msp-kvar': 0, 'exp-msp-kvarh': 0, 'exp-msp-kvar': 0, 'msp-kw': kwh * 2, 'msp-kwh': kwh, 'hist-kwh': kwh, 'hist-start-date': chunk_start, 'start-date': utc_cal.getTime(), 'ct-day': ct_cal.get(5), 'utc-month': utc_cal.get(2), 'utc-day': utc_cal.get(5), 'utc-decimal-hour': utc_cal.get(11) + float(utc_cal.get(12)) / 60, 'utc-year': utc_cal.get(Calendar.YEAR), 'utc-hour': utc_cal.get(Calendar.HOUR_OF_DAY), 'utc-minute': utc_cal.get(Calendar.MINUTE), 'ct-year': ct_cal.get(Calendar.YEAR), 'ct-month': ct_cal.get(2), 'ct-decimal-hour': ct_cal.get(11) + float(ct_cal.get(12)) / 60, 'ct-day-of-week': ct_cal.get(7), 'utc-day-of-week': utc_cal.get(7)})
+                                    break
 
-                        hh_date = hh_date.getNext()
+                            hh_date = hh_date.getNext()
+                        #self.pw.println('pass count ' + str(pass_count) + '  len(data_hh) ' + str(len(data_hh)))
+                        if pass_count == 0 and len(data_hh) > 0:
+                            kwh = float(kwh) / float(len(data_hh))
+                            data_hh = []
+                        
         else:
             con = Hiber.session().connection()
             if self.is_import:
