@@ -73,7 +73,7 @@ public class RegisterRead extends PersistentEntity {
 			throw new InternalException("The invoice must not be null.");
 		}
 		setBill(bill);
-		setTpr(Tpr.getTpr(rawRead.getTpr()));
+		setTpr(rawRead.getTpr());
 		setCoefficient(rawRead.getCoefficient());
 		setUnits(rawRead.getUnits());
 		setPreviousDate(rawRead.getPreviousDate());

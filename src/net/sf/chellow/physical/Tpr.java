@@ -99,7 +99,7 @@ public class Tpr extends PersistentEntity {
 		this.measurementRequirements = measurementRequirements;
 	}
 
-	String getCode() {
+	public String getCode() {
 		return code;
 	}
 

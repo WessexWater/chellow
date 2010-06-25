@@ -34,7 +34,7 @@ public class RawRegisterRead extends MonadObject {
 	
 	private String mpanStr;
 
-	private int tpr;
+	private Tpr tpr;
 
 	private BigDecimal coefficient;
 
@@ -53,7 +53,7 @@ public class RawRegisterRead extends MonadObject {
 	private ReadType presentType;
 
 	public RawRegisterRead(String meterSerialNumber, String mpanStr, BigDecimal coefficient,
-			Units units, int tpr,
+			Units units, Tpr tpr,
 			HhStartDate previousDate, BigDecimal previousValue,
 			ReadType previousType, HhStartDate presentDate,
 			BigDecimal presentValue, ReadType presentType) throws InternalException {
@@ -86,7 +86,7 @@ public class RawRegisterRead extends MonadObject {
 		return units;
 	}
 
-	public int getTpr() {
+	public Tpr getTpr() {
 		return tpr;
 	}
 
@@ -118,7 +118,7 @@ public class RawRegisterRead extends MonadObject {
 		Element element = doc.createElement("raw-register-read");
 		element.setAttribute("coefficient", coefficient.toString());
 		element.setAttribute("units", Units.name(units));
-		element.setAttribute("tpr", Integer.toString(tpr));
+		element.appendChild(tpr.toXml(doc));
 		previousDate.setLabel("previous");
 		element.appendChild(previousDate.toXml(doc));
 		element.setAttribute("previous-value", previousValue.toString());

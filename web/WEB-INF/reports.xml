@@ -902,6 +902,7 @@ source.appendChild(MonadDate.getHoursXml(doc))]]></value>
                         <thead>
                             <tr>
                                 <th>Edit</th>
+                                <th>Check</th>
                                 <th>From</th>
                                 <th>To</th>
                                 <th>Batch</th>
@@ -972,16 +973,23 @@ source.appendChild(MonadDate.getHoursXml(doc))]]></value>
                                         </a><xsl:value-of select="']'"/>
                                     </td>
                                     <td>
-                                        <xsl:value-of
-                                            select="concat(hh-start-date[@label='start']/@year, '-', hh-start-date[@label='start']/@month, '-', hh-start-date[@label='start']/@day)" />
+                                        <form action="{/source/request/@context-path}/reports/111/output/"><fieldset>
+                  <input type="hidden" name="bill-id" value="{@id}"/>
+                  <input type="submit" name="check" value="Check"/>
+                  </fieldset>
+                                        </form>
                                     </td>
                                     <td>
                                         <xsl:value-of
-                                            select="concat(hh-start-date[@label='finish']/@year, '-', hh-start-date[@label='finish']/@month, '-', hh-start-date[@label='finish']/@day)" />
+                                            select="concat(hh-start-date[@label='start']/@year, '-', hh-start-date[@label='start']/@month, '-', hh-start-date[@label='start']/@day, ' ', hh-start-date[@label='start']/@hour, ':', hh-start-date[@label='start']/@minute)" />
+                                    </td>
+                                    <td>
+                                        <xsl:value-of
+                                            select="concat(hh-start-date[@label='finish']/@year, '-', hh-start-date[@label='finish']/@month, '-', hh-start-date[@label='finish']/@day, ' ', hh-start-date[@label='finish']/@hour, ':', hh-start-date[@label='finish']/@minute)" />
                                     </td>
 <td>
                                         <a
-                                            href="{/source/request/@context-path}/reports//?batch-id={batch/@id}">
+                                            href="{/source/request/@context-path}/reports/91/output/?batch-id={batch/@id}">
                                             <xsl:value-of select="batch/@reference" /></a>
                                     </td>
                                     <td>
@@ -1028,6 +1036,8 @@ source.appendChild(MonadDate.getHoursXml(doc))]]></value>
                                         </a><xsl:value-of select="']'" />
                                     </td>
                                     <td>
+                                    </td>
+                                    <td>
                                         <xsl:value-of
                                             select="concat(hh-start-date[@label='start']/@year, '-', hh-start-date[@label='start']/@month, '-', hh-start-date[@label='start']/@day)" />
                                     </td>
@@ -1042,7 +1052,7 @@ source.appendChild(MonadDate.getHoursXml(doc))]]></value>
                                       </xsl:otherwise>
                                       </xsl:choose>
                                     </td>
-                                    <td colspan="48">
+                                    <td colspan="49">
                                         <xsl:value-of select="@description" />
                                     </td>
                                 </xsl:otherwise>
@@ -8608,11 +8618,13 @@ forecast_date = comterp.get('forecast_date')()
 # Do months
 mb_cal = MonadDate.getCalendar()
 mb_cal.setTime(start_date.getDate())
+mb_cal.set(Calendar.DAY_OF_MONTH, 1)
 mb_cal.set(Calendar.HOUR_OF_DAY, 0)
 mb_cal.set(Calendar.MINUTE, 0)
 
 me_cal = MonadDate.getCalendar()
 me_cal.setTime(start_date.getDate())
+me_cal.set(Calendar.DAY_OF_MONTH, 1)
 me_cal.set(Calendar.HOUR_OF_DAY, 0)
 me_cal.set(Calendar.MINUTE, 0)
 me_cal.add(Calendar.MONTH, 1)
@@ -9384,17 +9396,14 @@ from net.sf.chellow.monad.types import MonadDate
 from java.sql import Timestamp, ResultSet
 from java.util import GregorianCalendar, Calendar, TimeZone, Locale, Date
 from net.sf.chellow.physical import HhStartDate
-from net.sf.chellow.billing import Batch, NonCoreContract
+from net.sf.chellow.billing import Batch, NonCoreContract, Bill
 from org.python.util import PythonInterpreter
 
-batch_id = inv.getLong("batch-id")
-if not inv.isValid():
-    raise UserException()
 
 inv.getResponse().setContentType("text/csv")
 inv.getResponse().setHeader('Content-Disposition', 'filename=output.csv;')
 pw = inv.getResponse().getWriter()
-pw.println("Batch,MPAN Core, Reference, Type, Breakdown, Net GBP, VAT GBP, Start Date, Finish Date, Cancelled Out, Covered From, Covered To, Covered Bills, Covered Net, Covered VAT, Virtual Net, Error GBP")
+pw.println("Batch,MPAN Core, Reference, Type, Breakdown, Net GBP, VAT GBP, Start Date, Finish Date, Cancelled Out, Covered From, Covered To, Covered Bills, Covered Net, Covered VAT, Virtual Net, Error GBP, Problem")
 pw.flush()
 
 computer = NonCoreContract.getNonCoreContract('computer')
@@ -9402,9 +9411,20 @@ comterp = PythonInterpreter()
 comterp.exec(computer.getChargeScript())
 forecast_date = comterp.get('forecast_date')()
 
-batch = Batch.getBatch(batch_id)
+if inv.hasParameter('batch-id'):
+    batch_id = inv.getLong("batch-id")
+    if not inv.isValid():
+        raise UserException()
+    batch = Batch.getBatch(batch_id)
+    bills = Hiber.session().createQuery("from Bill bill where bill.batch = :batch order by bill.reference").setEntity('batch', batch).scroll()
+elif inv.hasParameter('bill-id'):
+    bill_id = inv.getLong("bill-id")
+    if not inv.isValid():
+        raise UserException()
+    bill = Bill.getBill(bill_id)
+    bills = Hiber.session().createQuery("from Bill bill where bill = :bill").setEntity('bill', bill).scroll()
+    batch = bill.getBatch()
 
-bills = Hiber.session().createQuery("from Bill bill where bill.batch = :batch order by bill.reference").setEntity('batch', batch).scroll()
 while bills.next():
     bill = bills.get(0)
     bill_start = bill.getStartDate()
@@ -9439,6 +9459,7 @@ while bills.next():
     me_cal.add(Calendar.MINUTE, -30)
 
     net_gbp = 0
+    problem = ''
 
     while not mb_cal.getTime().after(covered_finish.getDate()):
         month_begin = HhStartDate(mb_cal.getTime())
@@ -9467,6 +9488,7 @@ while bills.next():
             v_bill = vbf(data_source)
             #pw.println(str(v_bill))
             net_gbp += v_bill['net-gbp']
+            problem += v_bill['problem']
             #raise UserException('start date ' + str(data_source.start_date) + ' finish date ' + str(data_source.finish_date) + ' ' + str(bill))
         mb_cal.add(Calendar.MONTH, 1)
         me_cal.add(Calendar.MINUTE, 30)
@@ -9474,7 +9496,7 @@ while bills.next():
         me_cal.add(Calendar.MINUTE, -30)
         generations.close()
 
-    pw.println(','.join('"' + str(value) + '"' for value in [batch.getReference(), mpan.getCore(), bill.getReference(), bill.getType(), bill.getBreakdown(), bill.getNet(), bill.getVat(), bill_start, bill_finish, bill.getIsCancelledOut(), covered_start, covered_finish, ','.join(str(id) for id in covered_bill_ids), covered_net, covered_vat, net_gbp, covered_net - net_gbp]))
+    pw.println(','.join('"' + str(value) + '"' for value in [batch.getReference(), mpan.getCore(), bill.getReference(), bill.getType(), bill.getBreakdown(), bill.getNet(), bill.getVat(), bill_start, bill_finish, bill.getIsCancelledOut(), covered_start, covered_finish, ','.join(str(id) for id in covered_bill_ids), covered_net, covered_vat, net_gbp, covered_net - net_gbp, problem]))
     pw.flush()
     Hiber.session().clear()
 bills.close()

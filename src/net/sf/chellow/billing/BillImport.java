@@ -151,10 +151,11 @@ public class BillImport extends Thread implements Urlable, XmlDescriber {
 				}
 				try {
 					Hiber.flush();
-					batch.insertBill(rawBill);
+					Bill bill = batch.insertBill(rawBill);
 					Hiber.commit();
 					Hiber.flush();
 					successfulBills.add(rawBill);
+					Hiber.session().evict(bill);
 				} catch (HttpException e) {
 					Hiber.flush();
 					Map<RawBill, String> billMap = new HashMap<RawBill, String>();

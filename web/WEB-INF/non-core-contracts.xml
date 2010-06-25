@@ -41,7 +41,7 @@ def hh(bill, supply_source):
         <value><![CDATA[2010-05-25T00:00Z]]></value>
         <value><![CDATA[]]></value>
         <value><![CDATA[from net.sf.chellow.billing import BillParser, RawBill, NonCoreContract
-from net.sf.chellow.physical import ReadType, HhStartDate, Units, RawRegisterRead
+from net.sf.chellow.physical import ReadType, HhStartDate, Units, RawRegisterRead, Tpr
 from org.python.util import PythonInterpreter
 from net.sf.chellow.monad import Hiber, UserException
 from java.math import BigDecimal
@@ -114,7 +114,8 @@ class Parser(BillParser):
                     present_read_value = BigDecimal(prrd[0]).divide(BigDecimal(1000))
                     previous_read_value = BigDecimal(prrd[2]).divide(BigDecimal(1000))
                     meter_serial_number = mtnr[0]
-                    tpr = self.parser.to_int(tmod[0])
+                    tpr_code = tmod[0]
+                    tpr = Tpr.getTpr('00000'[:-1 * len(tpr_code)] + tpr_code)
                     reads.append({'meter-serial-number': meter_serial_number, 'mpan': mloc[0], 'coefficient': coefficient, 'units': Units.KWH, 'tpr': tpr, 'previous-date': previous_read_date, 'previous-value': previous_read_value, 'previous-type': ReadType.getReadType(previous_read_type), 'present-date': register_finish_date, 'present-value': present_read_value, 'present-type': ReadType.getReadType(present_read_type)})
             elif code == "MTR":
                 if message_type == "UTLBIL":
@@ -333,16 +334,20 @@ class Parser(BillParser):
         <value><![CDATA[]]></value>
         <value><![CDATA[from java.io import LineNumberReader
 from org.python.util import PythonInterpreter
-from net.sf.chellow.physical import ReadType, HhStartDate, Units, RawRegisterRead
+from net.sf.chellow.physical import ReadType, HhStartDate, Units, RawRegisterRead, Tpr
 from net.sf.chellow.billing import NonCoreContract, BillParser, RawBill
 from net.sf.chellow.monad import UserException, Hiber
 from java.math import BigDecimal
+from net.sf.chellow.monad.types import MonadDate
+from java.util import Calendar
+
 
 read_type_map = {'00': ReadType.TYPE_ROUTINE, '02': ReadType.TYPE_ESTIMATE, '04': ReadType.TYPE_CUSTOMER, '09': ReadType.TYPE_ROUTINE}
 
 bill_types = {"A": "AMENDED", "F": "FINAL", "N": "NORMAL", "I": "INTEREST", "R": "RECONCILIATION", "P": "PREPAID", "O": "INFORMATION", "W": "WITHDRAWAL"}
 
-tmod_map = {'0001': 2, 'A153': 3, 'A154': 1, 'CMACU': 20, 'CMACUF': 20, 'URQ1': 2, 'URC1': 2, 'DQ22': 3, 'EQ32': 4, 'NQ32': 6, 'NQ22': 1, 'NIQ2': 1, 'NIE7': 1, 'NAC2': 1, 'NDC2': 3, 'NNC2': 1, 'DAE7': 3, 'MNC2': 20, 'DAC2': 3, 'DAQ2': 3, 'D7P2': 3, 'N7P2': 1, 'WDQ3': 6, 'EWQ3': 4, 'MDC1': 20, 'MAC2': 20, 'OEC2': 2, 'OPAC': 2, '10': 2, 'Z012': 2, '39': 3, '0039': 3, '40': 3, '0040': 3, '43': 3, '0043': 3, '0071': 4, '71': 4, '72': 4, '73': 11, '80': 4, '080A': 4, '84': 2, '92': 9, '93': 9, '148': 6, '148A': 6, '151': 2, '0151': 2, '0044': 3, '0208': 1, '160': 1, 'U393': 2, '0160': 1, '0183': 6, '183': 6, '184': 6, '184A': 6, '187': 4, '187A': 4, '206': 1, '0206': 1, '208': 1, '210': 1, '0210': 1, '210E': 2, '210J': 1, '212': 2, '221B': 1, '0221': 1, '0221B': 1, '239': 10, '240': 10, '244': 11, '248': 7, '249': 7, '251': 8, '252': 8, '276': 6, '0276': 6, '277': 4, '0277': 4, '1059': 3, '1060': 1, '1071': 3, '1072': 1, '1073': 6, '1074': 4, '1075': 1, '1076': 6, '1077': 4, '1078': 3, '1079': 1, '1088': 2, '1139': 3, '1140': 1, '1141': 3, '1142': 1, '1149': 3, '1150': 1, '1151': 3, '1152': 1, '1153': 3, '1154': 1, '0249': 7, '0252': 8, '0240': 10, '0244': 11, '0092': 9, '210A': 1, 'MDM1': 20, 'MDM3': 20, 'NIM3': 1, 'OTM3': 9, 'P1M3': 7, 'P2M3': 8, 'W1M3': 10, 'W2M3': 11, '0153': 2, 'WQ42': 6, 'NQ42': 1, 'EQ42': 4, 'WDQ4': 6, 'EWQ4': 4, 'NIQ4': 1, 'URQD': 2, 'OPE3': 2, 'SG1U': 2, 'N179': 1, 'D179': 3, 'O212': 2, 'URM1': 2, 'D244': 3, 'N244': 1, 'DM22': 3, 'NM22': 1, 'MM22': 20, '0184': 6, '0072': 4}
+#tmod_map = {'0001': 2, 'A153': 3, 'A154': 1, 'CMACU': 20, 'CMACUF': 20, 'URQ1': 1, 'URC1': '00001', 'DQ22': 3, 'EQ32': 4, 'NQ32': 6, 'NQ22': 1, 'NIQ2': 1, 'NIE7': 1, 'NAC2': 1, 'NDC2': 3, 'NNC2': 1, 'DAE7': 3, 'MNC2': 20, 'DAC2': 3, 'DAQ2': 3, 'D7P2': 3, 'N7P2': 1, 'WDQ3': 6, 'EWQ3': 4, 'MDC1': 20, 'MAC2': 20, 'OEC2': 2, 'OPAC': '00001', '10': '00001', 'Z012': 2, '39': 3, '0039': 3, '40': 3, '0040': 3, '43': 3, '0043': 3, '0071': 4, '71': 4, '72': 4, '73': 11, '80': 4, '080A': 4, '84': '00001', '92': 9, '93': 9, '148': 6, '148A': 6, '151': 2, '0151': 2, '0044': 3, '0208': 1, '160': 1, 'U393': 2, '0160': 1, '0183': 6, '183': 6, '184': 6, '184A': 6, '187': 4, '187A': 4, '206': 1, '0206': 1, '208': 1, '210': 1, '0210': 1, '210E': 2, '210J': 1, '212': 2, '221B': 1, '0221': 1, '0221B': 1, '239': 10, '240': 10, '244': 11, '248': 7, '249': 7, '251': 8, '252': 8, '276': 6, '0276': 6, '277': 4, '0277': 4, '1059': 3, '1060': 1, '1071': 3, '1072': 1, '1073': 6, '1074': 4, '1075': 1, '1076': 6, '1077': 4, '1078': 3, '1079': 1, '1088': 2, '1139': 3, '1140': 1, '1141': 3, '1142': 1, '1149': 3, '1150': 1, '1151': 3, '1152': 1, '1153': 3, '1154': 1, '0249': 7, '0252': 8, '0240': 10, '0244': 11, '0092': 9, '210A': 1, 'MDM1': 20, 'MDM3': 20, 'NIM3': 1, 'OTM3': 9, 'P1M3': 7, 'P2M3': 8, 'W1M3': 10, 'W2M3': 11, '0153': 2, 'WQ42': 6, 'NQ42': 1, 'EQ42': 4, 'WDQ4': 6, 'EWQ4': 4, 'NIQ4': 1, 'URQD': 2, 'OPE3': 2, 'SG1U': 2, 'N179': 1, 'D179': 3, 'O212': 2, 'URM1': 2, 'D244': 3, 'N244': 1, 'DM22': 3, 'NM22': 1, 'MM22': 20, '0184': 6, '0072': 4}
+tmod_map = {'0001': '00001', 'A153': 3, 'A154': 1, 'CMACU': 20, 'CMACUF': 20, 'URQ1': '00001', 'URC1': '00001', 'DQ22': 3, 'EQ32': 4, 'NQ32': 6, 'NQ22': 1, 'NIQ2': 1, 'NIE7': 1, 'NAC2': 1, 'NDC2': 3, 'NNC2': 1, 'DAE7': 3, 'MNC2': 20, 'DAC2': 3, 'DAQ2': 3, 'D7P2': 3, 'N7P2': 1, 'WDQ3': 6, 'EWQ3': 4, 'MDC1': 20, 'MAC2': 20, 'OEC2': 2, 'OPAC': '00001', '10': '00001', 'Z012': 2, '39': 3, '0039': 3, '40': 3, '0040': 3, '43': 3, '0043': 3, '0071': 4, '71': 4, '72': 4, '73': 11, '80': 4, '080A': 4, '84': '00001', '92': 9, '93': 9, '148': 6, '148A': 6, '151': 2, '0151': 2, '0044': 3, '0208': 1, '160': 1, 'U393': 2, '0160': 1, '0183': 6, '183': 6, '184': 6, '184A': 6, '187': 4, '187A': 4, '206': 1, '0206': 1, '208': 1, '210': 1, '0210': 1, '210E': 2, '210J': 1, '212': 2, '221B': 1, '0221': 1, '0221B': 1, '239': 10, '240': 10, '244': 11, '248': 7, '249': 7, '251': 8, '252': 8, '276': 6, '0276': 6, '277': 4, '0277': 4, '1059': 3, '1060': 1, '1071': 3, '1072': 1, '1073': 6, '1074': 4, '1075': 1, '1076': 6, '1077': 4, '1078': 3, '1079': 1, '1088': 2, '1139': 3, '1140': 1, '1141': 3, '1142': 1, '1149': 3, '1150': 1, '1151': 3, '1152': 1, '1153': 3, '1154': 1, '0249': 7, '0252': 8, '0240': 10, '0244': 11, '0092': 9, '210A': 1, 'MDM1': 20, 'MDM3': 20, 'NIM3': 1, 'OTM3': 9, 'P1M3': 7, 'P2M3': 8, 'W1M3': 10, 'W2M3': 11, '0153': 2, 'WQ42': 6, 'NQ42': 1, 'EQ42': 4, 'WDQ4': 6, 'EWQ4': 4, 'NIQ4': 1, 'URQD': 2, 'OPE3': 2, 'SG1U': 2, 'N179': 1, 'D179': 3, 'O212': 2, 'URM1': 2, 'D244': 3, 'N244': 1, 'DM22': 3, 'NM22': 1, 'MM22': 20, '0184': 6, '0072': 4}
 
 class Parser(BillParser):
     def __init__(self, reader):
@@ -351,6 +356,7 @@ class Parser(BillParser):
         comterp.exec(computer.getChargeScript())
         self.parser = comterp.get('get_edi_parser')(reader)
         self.debug_str = ''
+        self.cal = MonadDate.getCalendar()
 
     def getRawBills(self):
         #self.debug_str += 'starting to get raw bills'
@@ -372,6 +378,10 @@ class Parser(BillParser):
                 sumo = self.parser.elements[7]
                 start_date = self.parser.to_date(sumo[0])
                 finish_date = self.parser.to_date(sumo[1])
+                self.cal.setTime(finish_date.getDate())
+                self.cal.add(Calendar.DAY_OF_MONTH, 1)
+                self.cal.add(Calendar.MINUTE, -30)
+                finish_date = HhStartDate(self.cal.getTime())
 
             elif code == "MHD":
                 type = self.parser.elements[1]
@@ -396,7 +406,16 @@ class Parser(BillParser):
                     pvdt = self.parser.elements[7]
 
                     present_read_date = self.parser.to_date(prdt[0])
+                    self.cal.setTime(present_read_date.getDate())
+                    self.cal.add(Calendar.DAY_OF_MONTH, 1)
+                    self.cal.add(Calendar.MINUTE, -30)
+                    present_read_date = HhStartDate(self.cal.getTime())
+
                     previous_read_date = self.parser.to_date(pvdt[0])
+                    self.cal.setTime(previous_read_date.getDate())
+                    self.cal.add(Calendar.DAY_OF_MONTH, 1)
+                    self.cal.add(Calendar.MINUTE, -30)
+                    previous_read_date = HhStartDate(self.cal.getTime())
                
                     tmod = self.parser.elements[3]
                     mtnr = self.parser.elements[4]
@@ -414,7 +433,7 @@ class Parser(BillParser):
                     present_reading_value = BigDecimal(prrd[0])
                     previous_reading_value = BigDecimal(prrd[2])
                     meter_serial_number = mtnr[0]
-                    tpr = tmod_map[tmod[0]]
+                    tpr = Tpr.getTpr(tmod_map[tmod[0]])
 
                     reads.append({'meter-serial-number': meter_serial_number, 'mpan': mpan, 'coefficient': coefficient, 'units': Units.KWH, 'tpr': tpr, 'previous-date': previous_read_date, 'previous-value': previous_reading_value, 'previous-type': previous_read_type, 'present-date': present_read_date, 'present-value': present_reading_value, 'present-type': present_read_type})
             elif code == "MTR":
@@ -3627,7 +3646,7 @@ class SiteSource(DataSource):
         cal.setTime(start_date.getDate())
         cal.add(Calendar.YEAR, year_adjustment)
         history_start = HhStartDate(cal.getTime())
-        summary = {'start-date': start_date, 'finish-date': finish_date, 'is-forecast': not start_date.before(self.forecast_date), 'hist-start': history_start, 'hist-finish': history_finish, 'is-green': self.is_green, 'days': 0}
+        summary = {'start-date': start_date, 'finish-date': finish_date, 'is-forecast': not start_date.before(self.forecast_date), 'hist-start': history_start, 'hist-finish': history_finish, 'is-green': self.is_green, 'days': 0, 'problem': ''}
 
         cal.setTime(start_date.getDate())
         cal.set(Calendar.HOUR_OF_DAY, 0)
@@ -3776,6 +3795,8 @@ class SupplySource(DataSource):
         else:
             self.ssc_code = mpan.getSsc().codeAsString()
         self.pc_code = mpan.getSupplyGeneration().getPc().codeAsString()
+        
+        self.is_amr = self.pc_code != '00' and len(mpan.getSupplyGeneration().getChannels()) > 0
 
         if self.forecast_date.after(start_date):
             generation = mpan.getSupplyGeneration()
@@ -3821,7 +3842,7 @@ class SupplySource(DataSource):
         cal.add(Calendar.YEAR, year_adjustment)
         history_start = HhStartDate(cal.getTime())
 
-        summary = {'start-date': start_date, 'finish-date': finish_date, 'is-forecast': not start_date.before(forecast_date), 'hist-start': history_start, 'hist-finish': history_finish, 'days': 0}
+        summary = {'start-date': start_date, 'finish-date': finish_date, 'is-forecast': not start_date.before(forecast_date), 'hist-start': history_start, 'hist-finish': history_finish, 'days': 0, 'problem': ''}
 
         cal.setTime(start_date.getDate())
         cal.set(Calendar.HOUR_OF_DAY, 0)
@@ -3844,9 +3865,14 @@ class SupplySource(DataSource):
         generation = supply.getGeneration(start_date)
         year_advance = -1 * year_adjustment
 
-        if self.pc_code != '00' and len(generation.getChannels()) == 0:
+        if self.pc_code != '00' and generation is not None and len(generation.getChannels()) == 0:
+            if self.is_import:
+                mpan = generation.getImportMpan()
+            else:
+                mpan = generation.getExportMpan()
+            tpr_codes = Hiber.session().createQuery("select mr.tpr.code from MeasurementRequirement mr where mr.ssc = :ssc").setEntity('ssc', mpan.getSsc()).list()
             bills = []
-            for cand_bill in Hiber.session().createQuery("from Bill bill where bill.supply = :supply and bill.batch.contract = :contract and bill.startDate.date <= :finishDate and bill.finishDate.date >= :searchStart order by bill.issueDate, bill.startDate.date").setEntity('supply', supply).setEntity('contract', generation.getImportMpan().getSupplierContract()).setTimestamp('searchStart', start_date.getDate()).setTimestamp('finishDate', finish_date.getDate()).list():
+            for cand_bill in Hiber.session().createQuery("from Bill bill where bill.supply = :supply and bill.batch.contract = :contract and bill.startDate.date <= :finishDate and bill.finishDate.date >= :searchStart order by bill.issueDate, bill.startDate.date").setEntity('supply', supply).setEntity('contract', mpan.getSupplierContract()).setTimestamp('searchStart', start_date.getDate()).setTimestamp('finishDate', finish_date.getDate()).list():
                 can_insert = True
                 for bill in bills:
                     if not cand_bill.getStartDate().after(bill.getFinishDate()) and not cand_bill.getFinishDate().before(bill.getStartDate()):
@@ -3856,15 +3882,24 @@ class SupplySource(DataSource):
                     bills.append(cand_bill)
 
             for bill in bills:
-                for read in Hiber.session().createQuery("select read.tpr, read.coefficient, read.previousDate, read.previousValue, read.previousType.code, read.presentDate, read.presentValue, read.presentType.code from RegisterRead read where read.bill = :bill order by read.presentDate.date").setEntity('bill', bill).list():
+                for read in Hiber.session().createQuery("select read.tpr, read.tpr.code, read.coefficient, read.previousDate, read.previousValue, read.previousType.code, read.presentDate, read.presentValue, read.presentType.code from RegisterRead read where read.bill = :bill order by read.presentDate.date").setEntity('bill', bill).list():
                     tpr = read[0]
-                    coefficient = read[1].doubleValue()
-                    previous_date = read[2]
-                    previous_value = read[3].doubleValue()
-                    previous_type = read[4]
-                    present_date = read[5]
-                    present_value = read[6].doubleValue()
-                    present_type = read[7]
+                    tpr_code = read[1]
+                    if tpr_code not in tpr_codes:
+                        summary['problem'] += "The TPR " + tpr.codeAsString() + " from the register read does not match any of the TPRs associated with the MPAN. "
+
+                    coefficient = read[2].doubleValue()
+                    previous_date = read[3].getNext()
+                    previous_value = read[4].doubleValue()
+                    previous_type = read[5]
+                    present_date = read[6]
+                    present_value = read[7].doubleValue()
+                    present_type = read[8]
+                    
+                    if previous_date.before(bill.getStartDate()):
+                        summary['problem'] += "There's a read before the start of the bill!"
+                    if present_date.after(bill.getFinishDate()):
+                        summary['problem'] += "There's a read after the end of the bill!"
 
                     kwh = (present_value - previous_value) * coefficient
                     #self.pw.println(' kwh ' + str(kwh))
