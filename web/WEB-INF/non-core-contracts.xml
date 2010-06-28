@@ -182,13 +182,11 @@ class Parser(BillParser):
         raw_bills = []
         values = self.shredder.getLine()
         while values != None:
-            if len(values) < 7:
-                raise UserException("Problem at line number " + self.shredder.getLastLineNumber() + "; there aren't enough fields, there should be 7")
             reads = []
-            for i in range(9, len(values), 11):
+            for i in range(11, len(values), 11):
                 reads.append(RawRegisterRead(values[i], values[i + 1], BigDecimal(values[i + 2]), Units.getUnits(values[i + 3]), Integer.parseInt(values[i + 4]), HhStartDate(values[i + 5]), BigDecimal(values[i + 6]), ReadType.getReadType(values[i + 7]), HhStartDate(values[i + 8]), BigDecimal(values[i + 9]), ReadType.getReadType(values[i + 10])))
             mpan_strings = values[2].split(",")
-            raw_bills.append(RawBill(values[0], values[1], mpan_strings, values[3], MonadDate(values[4]).getDate(), HhStartDate(values[5]), HhStartDate(values[6]), BigDecimal(values[7]), BigDecimal(values[8]), reads))
+            raw_bills.append(RawBill(values[0], values[1], mpan_strings, values[3], MonadDate(values[4]).getDate(), HhStartDate(values[5]), HhStartDate(values[6]), BigDecimal(values[7]), BigDecimal(values[8]), BigDecimal(values[9]), values[9], reads))
             values = self.shredder.getLine()
         self.shredder.close()
         return raw_bills

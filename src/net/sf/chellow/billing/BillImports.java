@@ -22,6 +22,7 @@ package net.sf.chellow.billing;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.TreeMap;
 
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.Invocation;
@@ -110,10 +111,14 @@ public class BillImports implements Urlable {
 			Map<Long, BillImport> batchImports = imports.get(batch.getId());
 			if (batchImports == null) {
 				imports.put(batch.getId(), new HashMap<Long, BillImport>());
+				batchImports = imports.get(batch.getId());
 			}
-			batchImports = imports.get(batch.getId());
 			batchImports.put(Long.parseLong(importare.getUriId().toString()),
 					importare);
+			if (batchImports.size() > 20) {
+				TreeMap<Long, BillImport> sortedImports = new TreeMap<Long, BillImport>(batchImports);
+				batchImports.remove(sortedImports.firstKey());
+			}
 			inv.sendSeeOther(importare.getUri());
 		} catch (HttpException e) {
 			e.setDocument(document());

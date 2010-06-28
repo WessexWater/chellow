@@ -213,7 +213,7 @@ def virtual_bill(supply_source):
 			<control name="charge-script">
 				<![CDATA[
 def virtual_bill(supply, startDate, finishDate, pw):
-    return {'net-gbp': 0.0, 'vat-gbp':0.0, 'gross-gbp': 0.0}]]>
+    return {'net-gbp': 0.0, 'vat-gbp':0.0, 'gross-gbp': 0.0, 'problem': ''}]]>
 			</control>
 			<response-code value="200" />
 		</request>
@@ -1005,7 +1005,7 @@ def totalElement(account, startDate, finishDate):
 			<control name="charge-script">
 				<![CDATA[
 def virtual_bill(supply_source):
-    return {'net-gbp': 0.0, 'vat-gbp':0.0, 'gross-gbp': 0.0}]]>
+    return {'net-gbp': 0.0, 'vat-gbp':0.0, 'gross-gbp': 0.0, 'problem': ''}]]>
 			</control>
 		</request>
 
@@ -1149,13 +1149,19 @@ def virtual_bill(supply_source):
 	</test>
 	<test name="CSV import">
 		<request path="/chellow/supplier-contracts/4/batches/" method="post">
-			<control name="reference">06-004</control>
+			<control name="reference" value="06-004"/>
 			<response-code value="303" />
 		</request>
 		<request path="/chellow/supplier-contracts/4/batches/3/bill-imports/"
 			method="post">
 			<control type="file" name="file" value="bills.csv" />
 			<response-code value="303" />
+		</request>
+		<request path="/chellow/supplier-contracts/4/batches/3/bill-imports/2/">
+			<refresh />
+			<response-code value="200" />
+			<regex
+				pattern="All the bills have been successfully loaded and attached to the batch\." />
 		</request>
 	</test>
 	<test name="Check one is able to delete a generation ok">
@@ -1473,7 +1479,7 @@ from java.lang import System
 computer = NonCoreContract.getNonCoreContract('computer')
 
 def virtual_bill(supply, startDate, finishDate, pw):
-    return {'net-gbp': 0.0, 'vat-gbp':0.0, 'gross-gbp': 0.0}
+    return {'net-gbp': 0.0, 'vat-gbp':0.0, 'gross-gbp': 0.0, 'problem': ''}
 
 def import_virtual_bill_titles():
     return ['net-gbp', 'ccl-kwh', 'ccl-rate', 'ccl-gbp', 'data-collection-gbp', 'duos-availability-agreed-kva', 'duos-availability-billed-kva', 'duos-availability-rate', 'duos-availability-gbp', 'duos-day-kwh', 'duos-day-gbp', 'duos-night-kwh', 'duos-night-gbp', 'duos-reactive-rate', 'duos-reactive-gbp', 'duos-standing-gbp', 'settlement-gbp', 'night-msp-kwh', 'night-gsp-kwh', 'night-gbp', 'other-msp-kwh', 'other-gsp-kwh', 'other-gbp', 'summer-pk-msp-kwh', 'summer-pk-gsp-kwh', 'summer-pk-gbp', 'winter-low-pk-msp-kwh', 'winter-low-pk-gsp-kwh', 'winter-low-pk-gbp', 'winter-off-pk-msp-kwh', 'winter-off-pk-gsp-kwh', 'winter-off-pk-gbp', 'winter-pk-msp-kwh', 'winter-pk-gsp-kwh', 'winter-pk-gbp', 'bsuos-actual-gbp', 'triad-actual-0-date', 'triad-actual-0-msp-kw', 'triad-actual-0-status', 'triad-actual-0-laf', 'triad-actual-0-gsp-kw', 'triad-actual-1-date', 'triad-actual-1-msp-kw', 'triad-actual-1-status', 'triad-actual-1-laf', 'triad-actual-1-gsp-kw', 'triad-actual-2-date', 'triad-actual-2-msp-kw', 'triad-actual-2-status', 'triad-actual-2-laf', 'triad-actual-2-gsp-kw', 'triad-actual-gsp-kw', 'triad-actual-rate', 'triad-actual-gbp', 'triad-estimate-0-date', 'triad-estimate-0-msp-kw', 'triad-estimate-0-status', 'triad-estimate-0-laf', 'triad-estimate-0-gsp-kw', 'triad-estimate-1-date', 'triad-estimate-1-msp-kw', 'triad-estimate-1-status', 'triad-estimate-1-laf', 'triad-estimate-1-gsp-kw', 'triad-estimate-2-date', 'triad-estimate-2-msp-kw', 'triad-estimate-2-status', 'triad-estimate-2-laf', 'triad-estimate-2-gsp-kw', 'triad-estimate-gsp-kw', 'triad-estimate-rate', 'triad-estimate-months', 'triad-estimate-gbp', 'triad-all-estimates-months', 'triad-all-estimates-gbp']
@@ -1588,7 +1594,7 @@ def import_virtual_bill(supply_source):
     timing = System.currentTimeMillis()
     #supply_source.pw.println("starting impvbill " + str(System.currentTimeMillis() - timing))
 
-    bill = {'net-gbp': 0, 'data-collection-gbp': 0, 'settlement-gbp': 0}
+    bill = {'net-gbp': 0, 'data-collection-gbp': 0, 'settlement-gbp': 0, 'problem': ''}
 
     for slot_name in slot_names:
         slot_keys = slots[slot_name]
@@ -1940,8 +1946,7 @@ def import_virtual_bill(supply_source):
 		</request>
 	</test>
 	<test name="CSV Sites TRIAD">
-		<request
-			path="/chellow/reports/181/output/?site-id=1&amp;year=2010">
+		<request path="/chellow/reports/181/output/?site-id=1&amp;year=2010">
 			<response-code value="200" />
 		</request>
 	</test>
@@ -2074,7 +2079,7 @@ def import_virtual_bill(supply_source):
 				<![CDATA[
 def import_virtual_bill(supply_source):
     kwh = supply_source.summary['sum-msp-kwh']
-    return {'net-gbp': kwh * 0.1, 'kwh': kwh}]]>
+    return {'net-gbp': kwh * 0.1, 'kwh': kwh, 'problem': ''}]]>
 			</control>
 		</request>
 
@@ -2128,7 +2133,7 @@ def import_virtual_bill(supply_source):
 			<regex
 				pattern='&lt;th&gt;Reference&lt;/th&gt;&lt;th&gt;Account Reference&lt;/th&gt;&lt;th&gt;MPANs&lt;/th&gt;&lt;th&gt;Issue Date&lt;/th&gt;&lt;th&gt;Start Date&lt;/th&gt;&lt;th&gt;Finish Date&lt;/th&gt;&lt;th&gt;kWh&lt;/th&gt;&lt;th&gt;Net&lt;/th&gt;&lt;th&gt;VAT&lt;/th&gt;&lt;th&gt;Type&lt;/th&gt;&lt;th&gt;Breakdown&lt;/th&gt;&lt;th&gt;R1 MPAN&lt;/th&gt;&lt;th&gt;R1 Meter Serial Number&lt;/th&gt;&lt;th&gt;R1 TPR&lt;/th&gt;&lt;th&gt;R1 Coefficient&lt;/th&gt;&lt;th&gt;R1 Units&lt;/th&gt;&lt;th&gt;R1 Previous Read Date&lt;/th&gt;&lt;th&gt;R1 Previous Read Value&lt;/th&gt;&lt;th&gt;R1 Previous Read Type&lt;/th&gt;&lt;th&gt;R1 Present Read Date&lt;/th&gt;&lt;th&gt;R1 Present Read Value&lt;/th&gt;&lt;th&gt;R1 Present Read Type&lt;/th&gt;&lt;th&gt;R2 MPAN&lt;/th&gt;&lt;th&gt;R2 Meter Serial Number&lt;/th&gt;&lt;th&gt;R2 TPR&lt;/th&gt;&lt;th&gt;R2 Coefficient&lt;/th&gt;&lt;th&gt;R2 Units&lt;/th&gt;&lt;th&gt;R2 Previous Read Date&lt;/th&gt;&lt;th&gt;R2 Previous Read Value&lt;/th&gt;&lt;th&gt;R2 Previous Read Type&lt;/th&gt;&lt;th&gt;R2 Present Read Date&lt;/th&gt;&lt;th&gt;R2 Present Read Value&lt;/th&gt;&lt;th&gt;R2 Present Read Type&lt;/th&gt;&lt;th&gt;R3 MPAN&lt;/th&gt;&lt;th&gt;R3 Meter Serial Number&lt;/th&gt;&lt;th&gt;R3 TPR&lt;/th&gt;&lt;th&gt;R3 Coefficient&lt;/th&gt;&lt;th&gt;R3 Units&lt;/th&gt;&lt;th&gt;R3 Previous Read Date&lt;/th&gt;&lt;th&gt;R3 Previous Read Value&lt;/th&gt;&lt;th&gt;R3 Previous Read Type&lt;/th&gt;&lt;th&gt;R3 Present Read Date&lt;/th&gt;&lt;th&gt;R3 Present Read Value&lt;/th&gt;&lt;th&gt;R3 Present Read Type&lt;/th&gt;&lt;th&gt;R4 MPAN&lt;/th&gt;&lt;th&gt;R4 Meter Serial Number&lt;/th&gt;&lt;th&gt;R4 TPR&lt;/th&gt;&lt;th&gt;R4 Coefficient&lt;/th&gt;&lt;th&gt;R4 Units&lt;/th&gt;&lt;th&gt;R4 Previous Read Date&lt;/th&gt;&lt;th&gt;R4 Previous Read Value&lt;/th&gt;&lt;th&gt;R4 Previous Read Type&lt;/th&gt;&lt;th&gt;R4 Present Read Date&lt;/th&gt;&lt;th&gt;R4 Present Read Value&lt;/th&gt;&lt;th&gt;R4 Present Read Type&lt;/th&gt;' />
 			<regex
-				pattern='&lt;td&gt;3423760005&lt;/td&gt;&lt;td&gt;SA342376&lt;/td&gt;&lt;td&gt;03 801 110 22 10653921534&lt;/td&gt;&lt;td&gt;2010-05-12&lt;/td&gt;&lt;td&gt;2010-01-19&lt;/td&gt;&lt;td&gt;2010-04-20&lt;/td&gt;&lt;td&gt;&lt;/td&gt;&lt;td&gt;36.16&lt;/td&gt;&lt;td&gt;1.8&lt;/td&gt;&lt;td&gt;NORMAL&lt;/td&gt;&lt;td&gt;&lt;/td&gt;&lt;td&gt;03 801 110 22 1065 3921 534&lt;/td&gt;&lt;td&gt;K87D74429&lt;/td&gt;&lt;td&gt;2&lt;/td&gt;&lt;td&gt;1&lt;/td&gt;&lt;td&gt;kWh&lt;/td&gt;&lt;td&gt;2010-01-18&lt;/td&gt;&lt;td&gt;16963&lt;/td&gt;&lt;td&gt;E&lt;/td&gt;&lt;td&gt;2010-04-20&lt;/td&gt;&lt;td&gt;17216&lt;/td&gt;&lt;td&gt;E&lt;/td&gt;' />
+				pattern='&lt;td&gt;3423760005&lt;/td&gt;&lt;td&gt;SA342376&lt;/td&gt;&lt;td&gt;03 801 110 22 10653921534&lt;/td&gt;&lt;td&gt;2010-05-12&lt;/td&gt;&lt;td&gt;2010-01-19&lt;/td&gt;&lt;td&gt;2010-04-20&lt;/td&gt;&lt;td&gt;&lt;/td&gt;&lt;td&gt;36.16&lt;/td&gt;&lt;td&gt;1.8&lt;/td&gt;&lt;td&gt;NORMAL&lt;/td&gt;&lt;td&gt;&lt;/td&gt;&lt;td&gt;03 801 110 22 1065 3921 534&lt;/td&gt;&lt;td&gt;K87D74429&lt;/td&gt;&lt;td&gt;00001&lt;/td&gt;&lt;td&gt;1&lt;/td&gt;&lt;td&gt;kWh&lt;/td&gt;&lt;td&gt;2010-01-18&lt;/td&gt;&lt;td&gt;16963&lt;/td&gt;&lt;td&gt;E&lt;/td&gt;&lt;td&gt;2010-04-20&lt;/td&gt;&lt;td&gt;17216&lt;/td&gt;&lt;td&gt;E&lt;/td&gt;' />
 			<response-code value="200" />
 			<regex
 				pattern="All the bills have been successfully loaded and attached to the batch\." />
@@ -2141,7 +2146,7 @@ def import_virtual_bill(supply_source):
 			<regex
 				pattern='Batch,MPAN Core, Reference, Type, Breakdown, Net GBP, VAT GBP, Start Date, Finish Date, Cancelled Out, Covered From, Covered To, Covered Bills, Covered Net, Covered VAT, Virtual Net, Error GBP' />
 			<regex
-				pattern='"07-008","22 1065 3921 534","3423760005","NORMAL","","36.16","1.8","2010-01-19T00:00Z","2010-04-20T00:00Z","False","2010-01-19T00:00Z","2010-04-20T00:00Z","7","36.16","1.8","24.6976190476","11.4623809524"' />
+				pattern='"07-008","22 1065 3921 534","3423760005","NORMAL","","36.16","1.8","2010-01-19T00:00Z","2010-04-20T23:30Z","False","2010-01-19T00:00Z","2010-04-20T23:30Z","8","36.16","1.8","25.3","10.86",""' />
 			<response-code value="200" />
 		</request>
 	</test>

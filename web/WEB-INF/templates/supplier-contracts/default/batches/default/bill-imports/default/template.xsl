@@ -378,7 +378,7 @@
 											<xsl:value-of select="@meter-serial-number" />
 										</td>
 										<td>
-											<xsl:value-of select="@tpr" />
+											<xsl:value-of select="tpr/@code" />
 										</td>
 										<td>
 											<xsl:value-of select="@coefficient" />
