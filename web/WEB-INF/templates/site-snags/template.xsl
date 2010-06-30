@@ -2,8 +2,8 @@
 <xsl:stylesheet version="1.0"
 	xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
 	<xsl:output method="html" encoding="US-ASCII"
-		doctype-public="-//W3C//DTD HTML 4.01//EN"
-		doctype-system="http://www.w3.org/TR/html4/strict.dtd" indent="yes" />
+		doctype-public="-//W3C//DTD HTML 4.01//EN" doctype-system="http://www.w3.org/TR/html4/strict.dtd"
+		indent="yes" />
 	<xsl:template match="/">
 		<html>
 			<head>
@@ -26,14 +26,12 @@
 				</xsl:if>
 				<p>
 					<a href="{/source/request/@context-path}/">
-						<img
-							src="{/source/request/@context-path}/logo/" />
+						<img src="{/source/request/@context-path}/logo/" />
 						<span class="logo">Chellow</span>
 					</a>
 					&gt;
 					<xsl:value-of select="'Site Snags ['" />
-					<a
-						href="{/source/request/@context-path}/reports/39/output/">
+					<a href="{/source/request/@context-path}/reports/39/output/">
 						<xsl:value-of select="'view'" />
 					</a>
 					<xsl:value-of select="']'" />
@@ -51,8 +49,7 @@
 						</tr>
 					</thead>
 					<tbody>
-						<xsl:for-each
-							select="/source/site-snags/site-snag">
+						<xsl:for-each select="/source/site-snags/site-snag">
 							<tr>
 								<td>
 									<a href="{@id}/">
@@ -60,10 +57,8 @@
 									</a>
 								</td>
 								<td>
-									<a
-										href="{/source/request/@context-path}/sites/{site/@id}/">
-										<xsl:value-of
-											select="concat(site/@code, ' ', site/@name)" />
+									<a href="{/source/request/@context-path}/sites/{site/@id}/">
+										<xsl:value-of select="concat(site/@code, ' ', site/@name)" />
 									</a>
 								</td>
 								<td>
@@ -78,10 +73,9 @@
 										select="concat(hh-start-date[@label='finish']/@year, '-', hh-start-date[@label='finish']/@month, '-', hh-start-date[@label='finish']/@day, 'T', hh-start-date[@label='finish']/@hour, ':', hh-start-date[@label='finish']/@minute, 'Z')" />
 								</td>
 								<td>
-									<xsl:value-of
-										select="@is-ignored" />
+									<xsl:value-of select="@is-ignored" />
 								</td>
-								
+
 							</tr>
 						</xsl:for-each>
 					</tbody>
@@ -91,45 +85,38 @@
 					<fieldset>
 						<legend>Bulk ignore</legend>
 						<p>Ignore all snags before</p>
-						<input name="ignore-date-year">
+						<input name="ignore-year">
 							<xsl:choose>
-								<xsl:when
-									test="/source/request/parameter[@name='ignore-date-year']">
+								<xsl:when test="/source/request/parameter[@name='ignore-year']">
 
 									<xsl:attribute name="value">
 										<xsl:value-of
-											select="/source/request/parameter[@name='ignore-date-year']/value/text()" />
+										select="/source/request/parameter[@name='ignore-year']/value/text()" />
 									</xsl:attribute>
 								</xsl:when>
 								<xsl:otherwise>
 									<xsl:attribute name="value">
-										<xsl:value-of
-											select="/source/date/@year" />
+										<xsl:value-of select="/source/date/@year" />
 									</xsl:attribute>
 								</xsl:otherwise>
 							</xsl:choose>
 						</input>
 						-
-						<select name="ignore-date-month">
-							<xsl:for-each
-								select="/source/months/month">
+						<select name="ignore-month">
+							<xsl:for-each select="/source/months/month">
 								<option value="{@number}">
 									<xsl:choose>
-										<xsl:when
-											test="/source/request/parameter[@name='ignore-date-month']">
+										<xsl:when test="/source/request/parameter[@name='ignore-month']">
 
 											<xsl:if
-												test="/source/request/parameter[@name='ignore-date-month']/value/text() = number(@number)">
+												test="/source/request/parameter[@name='ignore-month']/value/text() = number(@number)">
 
-												<xsl:attribute
-													name="selected" />
+												<xsl:attribute name="selected" />
 											</xsl:if>
 										</xsl:when>
 										<xsl:otherwise>
-											<xsl:if
-												test="/source/date/@month = @number">
-												<xsl:attribute
-													name="selected" />
+											<xsl:if test="/source/date/@month = @number">
+												<xsl:attribute name="selected" />
 											</xsl:if>
 										</xsl:otherwise>
 									</xsl:choose>
@@ -139,25 +126,21 @@
 							</xsl:for-each>
 						</select>
 						-
-						<select name="ignore-date-day">
+						<select name="ignore-day">
 							<xsl:for-each select="/source/days/day">
 								<option value="{@number}">
 									<xsl:choose>
-										<xsl:when
-											test="/source/request/parameter[@name='ignore-date-day']">
+										<xsl:when test="/source/request/parameter[@name='ignore-day']">
 
 											<xsl:if
-												test="/source/request/parameter[@name='ignore-date-day']/value/text() = @number">
+												test="/source/request/parameter[@name='ignore-day']/value/text() = @number">
 
-												<xsl:attribute
-													name="selected" />
+												<xsl:attribute name="selected" />
 											</xsl:if>
 										</xsl:when>
 										<xsl:otherwise>
-											<xsl:if
-												test="/source/date/@day = @number">
-												<xsl:attribute
-													name="selected" />
+											<xsl:if test="/source/date/@day = @number">
+												<xsl:attribute name="selected" />
 											</xsl:if>
 										</xsl:otherwise>
 									</xsl:choose>
@@ -167,8 +150,7 @@
 							</xsl:for-each>
 						</select>
 						<xsl:value-of select="' '" />
-						<input type="submit" name="ignore"
-							value="Ignore" />
+						<input type="submit" name="ignore" value="Ignore" />
 						<input type="reset" value="Reset" />
 					</fieldset>
 				</form>

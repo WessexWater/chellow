@@ -862,6 +862,9 @@ def totalElement(account, startDate, finishDate):
 			-->
 			<regex
 				pattern='2005-10-30T01:00Z[\r\n]*&lt;/td&gt;&lt;td&gt;false&lt;/td&gt;[\r\n]*&lt;/tr&gt;[\r\n]*&lt;/tbody&gt;' />
+
+			<!-- Check that there's an 'ignore-year' parameter. -->
+			<regex pattern='name="ignore-year"' />
 			<response-code value="200" />
 		</request>
 	</test>
@@ -1149,7 +1152,7 @@ def virtual_bill(supply_source):
 	</test>
 	<test name="CSV import">
 		<request path="/chellow/supplier-contracts/4/batches/" method="post">
-			<control name="reference" value="06-004"/>
+			<control name="reference" value="06-004" />
 			<response-code value="303" />
 		</request>
 		<request path="/chellow/supplier-contracts/4/batches/3/bill-imports/"
@@ -1477,9 +1480,6 @@ from net.sf.chellow.monad.types import MonadDate
 from java.lang import System
 
 computer = NonCoreContract.getNonCoreContract('computer')
-
-def virtual_bill(supply, startDate, finishDate, pw):
-    return {'net-gbp': 0.0, 'vat-gbp':0.0, 'gross-gbp': 0.0, 'problem': ''}
 
 def import_virtual_bill_titles():
     return ['net-gbp', 'ccl-kwh', 'ccl-rate', 'ccl-gbp', 'data-collection-gbp', 'duos-availability-agreed-kva', 'duos-availability-billed-kva', 'duos-availability-rate', 'duos-availability-gbp', 'duos-day-kwh', 'duos-day-gbp', 'duos-night-kwh', 'duos-night-gbp', 'duos-reactive-rate', 'duos-reactive-gbp', 'duos-standing-gbp', 'settlement-gbp', 'night-msp-kwh', 'night-gsp-kwh', 'night-gbp', 'other-msp-kwh', 'other-gsp-kwh', 'other-gbp', 'summer-pk-msp-kwh', 'summer-pk-gsp-kwh', 'summer-pk-gbp', 'winter-low-pk-msp-kwh', 'winter-low-pk-gsp-kwh', 'winter-low-pk-gbp', 'winter-off-pk-msp-kwh', 'winter-off-pk-gsp-kwh', 'winter-off-pk-gbp', 'winter-pk-msp-kwh', 'winter-pk-gsp-kwh', 'winter-pk-gbp', 'bsuos-actual-gbp', 'triad-actual-0-date', 'triad-actual-0-msp-kw', 'triad-actual-0-status', 'triad-actual-0-laf', 'triad-actual-0-gsp-kw', 'triad-actual-1-date', 'triad-actual-1-msp-kw', 'triad-actual-1-status', 'triad-actual-1-laf', 'triad-actual-1-gsp-kw', 'triad-actual-2-date', 'triad-actual-2-msp-kw', 'triad-actual-2-status', 'triad-actual-2-laf', 'triad-actual-2-gsp-kw', 'triad-actual-gsp-kw', 'triad-actual-rate', 'triad-actual-gbp', 'triad-estimate-0-date', 'triad-estimate-0-msp-kw', 'triad-estimate-0-status', 'triad-estimate-0-laf', 'triad-estimate-0-gsp-kw', 'triad-estimate-1-date', 'triad-estimate-1-msp-kw', 'triad-estimate-1-status', 'triad-estimate-1-laf', 'triad-estimate-1-gsp-kw', 'triad-estimate-2-date', 'triad-estimate-2-msp-kw', 'triad-estimate-2-status', 'triad-estimate-2-laf', 'triad-estimate-2-gsp-kw', 'triad-estimate-gsp-kw', 'triad-estimate-rate', 'triad-estimate-months', 'triad-estimate-gbp', 'triad-all-estimates-months', 'triad-all-estimates-gbp']
@@ -2146,7 +2146,7 @@ def import_virtual_bill(supply_source):
 			<regex
 				pattern='Batch,MPAN Core, Reference, Type, Breakdown, Net GBP, VAT GBP, Start Date, Finish Date, Cancelled Out, Covered From, Covered To, Covered Bills, Covered Net, Covered VAT, Virtual Net, Error GBP' />
 			<regex
-				pattern='"07-008","22 1065 3921 534","3423760005","NORMAL","","36.16","1.8","2010-01-19T00:00Z","2010-04-20T23:30Z","False","2010-01-19T00:00Z","2010-04-20T23:30Z","8","36.16","1.8","25.3","10.86",""' />
+				pattern='"07-008","22 1065 3921 534","3423760005","NORMAL","","36.16","1.8","2010-01-19T00:00Z","2010-04-20T23:30Z","False","2010-01-19T00:00Z","2010-04-20T23:30Z","8","36.16","1.8","25.3","10.86","0","25.3","10.86",""' />
 			<response-code value="200" />
 		</request>
 	</test>
@@ -2238,6 +2238,16 @@ def import_virtual_bill(supply_source):
 			<response-code value="200" />
 			<regex
 				pattern="All the bills have been successfully loaded and attached to the batch\." />
+		</request>
+	</test>
+	<test name="Test displaced virtual bill.">
+		<request
+			path="/chellow/reports/109/output/?site-id=1&amp;months=1&amp;end-year=2010&amp;end-month=06">
+			<refresh />
+			<regex pattern='Site Code, Site Name,net-gbp' />
+			<regex
+				pattern='"CI004","Lower Treave","2.49","bsuos-actual-gbp","0.0","ccl-gbp","0","ccl-kwh","0","ccl-rate","0","duos-amber-gbp","0.0","duos-amber-kwh","0","duos-amber-rate","0.00961","duos-fixed-days","30","duos-fixed-gbp","2.49","duos-fixed-rate","0.083","duos-green-gbp","0.0","duos-green-kwh","0","duos-green-rate","0.00159","duos-reactive-gbp","0.0","duos-reactive-kvarh","0.0","duos-reactive-rate","0.00251","duos-red-gbp","0.0","duos-red-kwh","0","duos-red-rate","0.062","night-gbp","0.0","night-gsp-kwh","0","night-msp-kwh","0","other-gbp","0.0","other-gsp-kwh","0.0","other-msp-kwh","0","summer-pk-gbp","0.0","summer-pk-gsp-kwh","0","summer-pk-msp-kwh","0","triad-estimate-0-date","2010-01-07T17:00Z","triad-estimate-0-gsp-kw","0.0","triad-estimate-0-laf","1.077","triad-estimate-0-msp-kw","0","triad-estimate-0-status","E","triad-estimate-1-date","2010-01-25T17:00Z","triad-estimate-1-gsp-kw","0.0","triad-estimate-1-laf","1.077","triad-estimate-1-msp-kw","0","triad-estimate-1-status","E","triad-estimate-2-date","2009-12-15T17:00Z","triad-estimate-2-gsp-kw","0.0","triad-estimate-2-laf","1.077","triad-estimate-2-msp-kw","0","triad-estimate-2-status","E","triad-estimate-gbp","0.0","triad-estimate-gsp-kw","0.0","triad-estimate-months","1","triad-estimate-rate","25.49445","winter-low-pk-gbp","0.0","winter-low-pk-gsp-kwh","0","winter-low-pk-msp-kwh","0","winter-off-pk-gbp","0.0","winter-off-pk-gsp-kwh","0","winter-off-pk-msp-kwh","0","winter-pk-gbp","0.0","winter-pk-gsp-kwh","0","winter-pk-msp-kwh","0"' />
+			<response-code value="200" />
 		</request>
 	</test>
 </imprimatur>
