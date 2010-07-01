@@ -305,7 +305,9 @@ now = HhStartDate.roundDown(Date())
 cal = GregorianCalendar(TimeZone.getTimeZone("GMT"), Locale.UK)
 cal.setTime(now.getDate())
 cal.add(Calendar.MONTH, -1)
-source.appendChild(MonadDate(cal.getTime()).toXml(doc))
+last_month = MonadDate(cal.getTime())
+last_month.setLabel('last-month')
+source.appendChild(last_month.toXml(doc))
 source.appendChild(MonadDate.getMonthsXml(doc))
 
 cal.setTime(now.getDate())
@@ -468,11 +470,11 @@ Ongoing
 <xsl:value-of select="'For '"/>
 <input name="months" value="1" maxlength="2" size="2" />
 <xsl:value-of select="' month(s) until the end of '"/>
-                        <input name="end-year" value="{/source/date/@year}" maxlength="4" size="4" /><xsl:value-of select="' - '"/>
+                        <input name="end-year" value="{/source/date[@label='last-month']/@year}" maxlength="4" size="4" /><xsl:value-of select="' - '"/>
                         <select name="end-month">
                             <xsl:for-each select="/source/months/month">
                                 <option value="{@number}">
-                                    <xsl:if test="@number=/source/date/@month">
+                                    <xsl:if test="@number=/source/date[@label='last-month']/@month">
                                         <xsl:attribute name="selected">selected</xsl:attribute>
                                     </xsl:if>
                                     <xsl:value-of select="@number"/>
@@ -492,11 +494,11 @@ Ongoing
 <xsl:value-of select="'For '"/>
 <input name="months" value="1" maxlength="2" size="2" />
 <xsl:value-of select="' month(s) until the end of '"/>
-                        <input name="end-year" value="{/source/date/@year}" maxlength="4" size="4" /><xsl:value-of select="' - '"/>
+                        <input name="end-year" value="{/source/date[@label='last-month']/@year}" maxlength="4" size="4" /><xsl:value-of select="' - '"/>
                         <select name="end-month">
                             <xsl:for-each select="/source/months/month">
                                 <option value="{@number}">
-                                    <xsl:if test="@number=/source/date/@month">
+                                    <xsl:if test="@number=/source/date[@label='last-month']/@month">
                                         <xsl:attribute name="selected">selected</xsl:attribute>
                                     </xsl:if>
                                     <xsl:value-of select="@number"/>
@@ -901,63 +903,38 @@ source.appendChild(MonadDate.getHoursXml(doc))]]></value>
                       <table><caption>Import Bills</caption>
                         <thead>
                             <tr>
-                                <th>Edit</th>
-                                <th>Check</th>
-                                <th>From</th>
-                                <th>To</th>
-                                <th>Batch</th>
-                                <th>Reference</th>
-                                <th>Net</th>
-                                <th>VAT</th>
-                                <th>Type</th>
-                                <th>Is Cancelled Out?</th>
-                                <th>Status</th>
-                                
+                                <th rowspan="2">Edit</th>
+                                <th rowspan="2">Check</th>
+                                <th rowspan="2">From</th>
+                                <th rowspan="2">To</th>
+                                <th rowspan="2">Batch</th>
+                                <th rowspan="2">Reference</th>
+                                <th rowspan="2">Net</th>
+                                <th rowspan="2">VAT</th>
+                                <th rowspan="2">Type</th>
+                                <th rowspan="2">Cancelled</th>
+                                <th rowspan="2">Status</th>
+                                <th colspan="3">1</th>
+                                <th colspan="3">2</th>
+                                <th colspan="3">3</th>
+                                <th colspan="3">4</th>
+                            </tr>
+                            <tr>
+                            <th>TPR</th>
+                            <th>Previous</th>
+                            <th>Present</th>
 
-                            <th>1 MPAN</th>
-                            <th>1 Coefficient</th>
-                            <th>1 Units</th>
-                            <th>1 TPR</th>
-                            <th>1 Previous Date</th>
-                            <th>1 Previous Value</th>
-                            <th>1 Previous Type</th>
-                            <th>1 Present Date</th>
-                            <th>1 Present Value</th>
-                            <th>1 Present Type</th>
+                            <th>TPR</th>
+                            <th>Previous</th>
+                            <th>Present</th>
 
-                            <th>2 MPAN</th>
-                            <th>2 Coefficient</th>
-                            <th>2 Units</th>
-                            <th>2 TPR</th>
-                            <th>2 Previous Date</th>
-                            <th>2 Previous Value</th>
-                            <th>2 Previous Type</th>
-                            <th>2 Present Date</th>
-                            <th>2 Present Value</th>
-                            <th>2 Present Type</th>
+                            <th>TPR</th>
+                            <th>Previous</th>
+                            <th>Present</th>
 
-                            <th>3 MPAN</th>
-                            <th>3 Coefficient</th>
-                            <th>3 Units</th>
-                            <th>3 TPR</th>
-                            <th>3 Previous Date</th>
-                            <th>3 Previous Value</th>
-                            <th>3 Previous Type</th>
-                            <th>3 Present Date</th>
-                            <th>3 Present Value</th>
-                            <th>3 Present Type</th>
-
-                            <th>4 MPAN</th>
-                            <th>4 Coefficient</th>
-                            <th>4 Units</th>
-                            <th>4 TPR</th>
-                            <th>4 Previous Date</th>
-                            <th>4 Previous Value</th>
-                            <th>4 Previous Type</th>
-                            <th>4 Present Date</th>
-                            <th>4 Present Value</th>
-                            <th>4 Present Type</th>
-
+                            <th>TPR</th>
+                            <th>Previous</th>
+                            <th>Present</th>
 
                             </tr>
                         </thead>
@@ -973,10 +950,9 @@ source.appendChild(MonadDate.getHoursXml(doc))]]></value>
                                         </a><xsl:value-of select="']'"/>
                                     </td>
                                     <td>
-                                        <form action="{/source/request/@context-path}/reports/111/output/"><fieldset>
+                                        <form action="{/source/request/@context-path}/reports/111/output/">
                   <input type="hidden" name="bill-id" value="{@id}"/>
                   <input type="submit" name="check" value="Check"/>
-                  </fieldset>
                                         </form>
                                     </td>
                                     <td>
@@ -1027,6 +1003,30 @@ source.appendChild(MonadDate.getHoursXml(doc))]]></value>
                                             </xsl:when>
                                         </xsl:choose>
                                     </td>
+                                    <xsl:if test="register-read">
+                            <!--
+                            <td>
+                                <xsl:value-of select="register-read/@mpan-str" />
+                            </td>
+                            <td>
+                                <xsl:value-of select="register-read/@coefficient" />
+                            </td>
+                            <td>
+                                <xsl:value-of
+                                    select="concat(register-read/hh-start-date[@label='previous']/@year, '-', register-read/hh-start-date[@label='previous']/@month, '-', register-read/hh-start-date[@label='previous']/@day)" />
+                            </td>
+                            <td>
+                                <xsl:value-of select="register-read/read-type[@label='previous']/@code" />
+                            </td>
+                            <td>
+                                <xsl:value-of
+                                    select="concat(register-read/hh-start-date[@label='present']/@year, '-', register-read/hh-start-date[@label='present']/@month, '-', register-read/hh-start-date[@label='present']/@day)" />
+                            </td>
+                                  <td>
+                                      <xsl:value-of select="register-read/read-type[@label='present']/@code" />
+                                  </td>
+                            -->
+                                    </xsl:if>
                                 </xsl:when>
                                 <xsl:otherwise>
                                                                     <td>
@@ -1059,38 +1059,15 @@ source.appendChild(MonadDate.getHoursXml(doc))]]></value>
                                 </xsl:choose>
                       <xsl:for-each select="register-read">
                             <td>
-                                <xsl:value-of select="@mpan-str" />
-                            </td>
-                            <td>
-                                <xsl:value-of select="@coefficient" />
-                            </td>
-                            <td>
-                                <xsl:value-of select="@units" />
-                            </td>
-                            <td>
                                 <a href="{/source/request/@context-path}/reports/97/output/?tpr-id={tpr/@id}">
                                     <xsl:value-of select="tpr/@code" />
                                 </a>
                             </td>
                             <td>
-                                <xsl:value-of
-                                    select="concat(hh-start-date[@label='previous']/@year, '-', hh-start-date[@label='previous']/@month, '-', hh-start-date[@label='previous']/@day)" />
+                                <xsl:value-of select="concat(@previous-value, ' ', read-type[@label='previous']/@code)" />
                             </td>
                             <td>
-                                <xsl:value-of select="@previous-value" />
-                            </td>
-                            <td>
-                                <xsl:value-of select="read-type[@label='previous']/@code" />
-                            </td>
-                            <td>
-                                <xsl:value-of
-                                    select="concat(hh-start-date[@label='present']/@year, '-', hh-start-date[@label='present']/@month, '-', hh-start-date[@label='present']/@day)" />
-                            </td>
-                            <td>
-                                <xsl:value-of select="@present-value" />
-                            </td>
-                            <td>
-                                <xsl:value-of select="read-type[@label='present']/@code" />
+                                <xsl:value-of select="concat(@present-value, ' ', read-type[@label='present']/@code)" />
                             </td>
                     </xsl:for-each>
                                 </tr>

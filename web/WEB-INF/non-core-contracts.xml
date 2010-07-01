@@ -3880,7 +3880,8 @@ class SupplySource(DataSource):
                     bills.append(cand_bill)
 
             for bill in bills:
-                for read in Hiber.session().createQuery("select read.tpr, read.tpr.code, read.coefficient, read.previousDate, read.previousValue, read.previousType.code, read.presentDate, read.presentValue, read.presentType.code from RegisterRead read where read.bill = :bill order by read.presentDate.date").setEntity('bill', bill).list():
+                self.pw.write(' looking at bill ' + str(bill.getId()))
+                for read in Hiber.session().createQuery("select read.tpr, read.tpr.code, read.coefficient, read.previousDate, read.previousValue, read.previousType.code, read.presentDate, read.presentValue, read.presentType.code, read.id from RegisterRead read where read.bill = :bill order by read.presentDate.date").setEntity('bill', bill).list():
                     tpr = read[0]
                     tpr_code = read[1]
                     if tpr_code not in tpr_codes:
@@ -3893,6 +3894,11 @@ class SupplySource(DataSource):
                     present_date = read[6]
                     present_value = read[7].doubleValue()
                     present_type = read[8]
+
+                    if present_date.before(start_date) or previous_date.after(finish_date):
+                        continue
+
+                    self.pw.write(' read ' + str(read[9]))
                     
                     if previous_date.before(bill.getStartDate()):
                         summary['problem'] += "There's a read before the start of the bill!"
@@ -3900,7 +3906,7 @@ class SupplySource(DataSource):
                         summary['problem'] += "There's a read after the end of the bill!"
 
                     kwh = (present_value - previous_value) * coefficient
-                    #self.pw.write(' kwh ' + str(kwh))
+                    self.pw.write(' kwh ' + str(kwh))
                     if previous_date.before(start_date):
                         chunk_start = start_date
                     else:
@@ -4097,6 +4103,10 @@ def displaced_mpan(site_group, start_date, finish_date):
         if source_code in ['gen', 'gen-net']:
             has_displaced = True
         if source_code in ['net', 'gen-net']:
+            export_channels = Hiber.session().createQuery("select count(*) from Channel channel where channel.supplyGeneration.supply = :supply and channel.isImport is false and channel.isKwh is true and channel.supplyGeneration.startDate.date <= :finishDate and (channel.supplyGeneration.finishDate is null or channel.supplyGeneration.finishDate.date >= :startDate)").setEntity('supply', supply).setTimestamp('startDate', start_date.getDate()).setTimestamp('finishDate', finish_date.getDate()).uniqueResult()
+            if export_channels is not None and export_channels > 0:
+                has_displaced = True
+
             for mpan in Hiber.session().createQuery("from Mpan mpan where mpan.llfc.isImport is true and mpan.supplyGeneration.pc.code = 0 and mpan.supplyGeneration.supply = :supply and mpan.supplyGeneration.startDate.date <= :finishDate and (mpan.supplyGeneration.finishDate is null or mpan.supplyGeneration.finishDate.date >= :startDate) order by mpan.supplyGeneration.startDate.date").setEntity('supply', supply).setTimestamp('startDate', start_date.getDate()).setTimestamp('finishDate', finish_date.getDate()).list():
                 mpans[mpan.getCore().toString()] = mpan
     if has_displaced:

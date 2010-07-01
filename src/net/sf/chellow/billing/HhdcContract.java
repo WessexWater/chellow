@@ -43,7 +43,6 @@ import net.sf.chellow.monad.XmlTree;
 import net.sf.chellow.monad.types.MonadDate;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
-import net.sf.chellow.physical.ChannelSnag;
 import net.sf.chellow.physical.HhStartDate;
 import net.sf.chellow.physical.MarketRole;
 import net.sf.chellow.physical.Mpan;
@@ -53,8 +52,6 @@ import net.sf.chellow.ui.Chellow;
 import net.sf.chellow.ui.GeneralImport;
 
 import org.hibernate.Query;
-import org.hibernate.ScrollMode;
-import org.hibernate.ScrollableResults;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -243,19 +240,13 @@ public class HhdcContract extends Contract {
 			source.setAttribute("state", state);
 			inv.sendOk(doc);
 		} else if (inv.hasParameter("ignore-snags")) {
-			Date ignoreDate = inv.getDate("ignore-date");
-			ScrollableResults snags = Hiber
+			Date ignoreDate = inv.getDate("ignore");
+			Hiber
 					.session()
-					.createQuery(
-							"from ChannelSnag snag where snag.channel.supplyGeneration.hhdcContract = :contract and snag.finishDate < :ignoreDate")
-					.setEntity("contract", this).setTimestamp("ignoreDate",
-							ignoreDate).scroll(ScrollMode.FORWARD_ONLY);
-			while (snags.next()) {
-				ChannelSnag snag = (ChannelSnag) snags.get(0);
-				snag.setIsIgnored(true);
-				Hiber.session().flush();
-				Hiber.session().clear();
-			}
+					.createSQLQuery(
+							"update snag set is_ignored = true from channel_snag, channel, supply_generation where snag.id = channel_snag.snag_id and channel_snag.channel_id = channel.id and channel.supply_generation_id = supply_generation.id and supply_generation.hhdc_contract_id = :contractId and supply_generation.finish_date < :ignoreDate")
+					.setLong("contractId", getId()).setTimestamp("ignoreDate",
+							ignoreDate).executeUpdate();
 			Hiber.commit();
 			inv.sendOk(document());
 		} else if (inv.hasParameter("delete")) {

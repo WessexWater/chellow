@@ -219,14 +219,14 @@
 							<fieldset>
 								<legend>Ignore all snags before</legend>
 								<br />
-								<input name="ignore-date-year" size="4" maxlength="4">
+								<input name="ignore-year" size="4" maxlength="4">
 									<xsl:choose>
 										<xsl:when
-											test="/source/request/parameter[@name='ignore-date-year']">
+											test="/source/request/parameter[@name='ignore-year']">
 
 											<xsl:attribute name="value">
 										<xsl:value-of
-												select="/source/request/parameter[@name='ignore-date-year']/value/text()" />
+												select="/source/request/parameter[@name='ignore-year']/value/text()" />
 									</xsl:attribute>
 										</xsl:when>
 
@@ -239,14 +239,14 @@
 								</input>
 
 								-
-								<select name="ignore-date-month">
+								<select name="ignore-month">
 									<xsl:for-each select="/source/months/month">
 										<option value="{@number}">
 											<xsl:choose>
 												<xsl:when
-													test="/source/request/parameter[@name='ignore-date-month']">
+													test="/source/request/parameter[@name='ignore-month']">
 													<xsl:if
-														test="/source/request/parameter[@name='ignore-date-month']/value/text() = number(@number)">
+														test="/source/request/parameter[@name='ignore-month']/value/text() = number(@number)">
 														<xsl:attribute name="selected" />
 													</xsl:if>
 												</xsl:when>
@@ -261,14 +261,14 @@
 									</xsl:for-each>
 								</select>
 								-
-								<select name="ignore-date-day">
+								<select name="ignore-day">
 									<xsl:for-each select="/source/days/day">
 										<option value="{@number}">
 											<xsl:choose>
 												<xsl:when
-													test="/source/request/parameter[@name='ignore-date-day']">
+													test="/source/request/parameter[@name='ignore-day']">
 													<xsl:if
-														test="/source/request/parameter[@name='ignore-date-day']/value/text() = @number">
+														test="/source/request/parameter[@name='ignore-day']/value/text() = @number">
 														<xsl:attribute name="selected" />
 													</xsl:if>
 												</xsl:when>

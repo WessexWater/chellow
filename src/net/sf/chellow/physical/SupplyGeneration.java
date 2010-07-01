@@ -155,8 +155,14 @@ public class SupplyGeneration extends PersistentEntity {
 					}
 				}
 			}
+			String meterSerialNumber = GeneralImport.addField(csvElement,
+					"Meter Serial Number", values, 12);
+			if (meterSerialNumber.equals(GeneralImport.NO_CHANGE)) {
+				meterSerialNumber = supplyGeneration.getMeterSerialNumber();
+			}
+
 			String importMpanStr = GeneralImport.addField(csvElement,
-					"Import MPAN", values, 12);
+					"Import MPAN", values, 13);
 			Ssc importSsc = null;
 			Integer importAgreedSupplyCapacity = null;
 			SupplierContract importSupplierContract = null;
@@ -170,7 +176,7 @@ public class SupplyGeneration extends PersistentEntity {
 			}
 			if (importMpanStr != null) {
 				String importSscCode = GeneralImport.addField(csvElement,
-						"Import SSC", values, 13);
+						"Import SSC", values, 14);
 				if (importSscCode.equals(GeneralImport.NO_CHANGE)) {
 					if (existingImportMpan == null) {
 						throw new UserException(
@@ -184,7 +190,7 @@ public class SupplyGeneration extends PersistentEntity {
 				}
 				String importAgreedSupplyCapacityStr = GeneralImport
 						.addField(csvElement, "Import Agreed Supply Capacity",
-								values, 14);
+								values, 15);
 				if (importAgreedSupplyCapacityStr
 						.equals(GeneralImport.NO_CHANGE)) {
 					if (existingImportMpan == null) {
@@ -205,7 +211,7 @@ public class SupplyGeneration extends PersistentEntity {
 					}
 				}
 				String importSupplierContractName = GeneralImport.addField(
-						csvElement, "Import Supplier Contract", values, 15);
+						csvElement, "Import Supplier Contract", values, 16);
 				if (importSupplierContractName.equals(GeneralImport.NO_CHANGE)) {
 					if (existingImportMpan == null) {
 						throw new UserException(
@@ -218,7 +224,7 @@ public class SupplyGeneration extends PersistentEntity {
 							.getSupplierContract(importSupplierContractName);
 				}
 				importSupplierAccount = GeneralImport.addField(csvElement,
-						"Import Supplier Account", values, 16);
+						"Import Supplier Account", values, 17);
 				if (importSupplierAccount.equals(GeneralImport.NO_CHANGE)) {
 					if (existingImportMpan == null) {
 						throw new UserException(
@@ -235,7 +241,7 @@ public class SupplyGeneration extends PersistentEntity {
 			Integer exportAgreedSupplyCapacity = null;
 			if (values.length > 17) {
 				exportMpanStr = GeneralImport.addField(csvElement,
-						"Eport MPAN", values, 17);
+						"Eport MPAN", values, 18);
 				Mpan existingExportMpan = supplyGeneration.getExportMpan();
 				if (exportMpanStr.equals(GeneralImport.NO_CHANGE)) {
 					exportMpanStr = existingExportMpan == null ? null
@@ -245,7 +251,7 @@ public class SupplyGeneration extends PersistentEntity {
 				}
 				if (exportMpanStr != null) {
 					String exportSscCode = GeneralImport.addField(csvElement,
-							"Export SSC", values, 18);
+							"Export SSC", values, 19);
 					if (exportSscCode.equals(GeneralImport.NO_CHANGE)) {
 						if (existingExportMpan == null) {
 							throw new UserException(
@@ -259,7 +265,7 @@ public class SupplyGeneration extends PersistentEntity {
 					}
 					String exportAgreedSupplyCapacityStr = GeneralImport
 							.addField(csvElement,
-									"Export Agreed Supply Capacity", values, 19);
+									"Export Agreed Supply Capacity", values, 20);
 					if (exportAgreedSupplyCapacityStr
 							.equals(GeneralImport.NO_CHANGE)) {
 						if (existingExportMpan == null) {
@@ -280,7 +286,7 @@ public class SupplyGeneration extends PersistentEntity {
 						}
 					}
 					String exportSupplierContractName = GeneralImport.addField(
-							csvElement, "Export Supplier Contract", values, 20);
+							csvElement, "Export Supplier Contract", values, 21);
 					if (exportSupplierContractName
 							.equals(GeneralImport.NO_CHANGE)) {
 						if (existingExportMpan == null) {
@@ -294,7 +300,7 @@ public class SupplyGeneration extends PersistentEntity {
 								.getSupplierContract(exportSupplierContractName);
 					}
 					exportSupplierAccount = GeneralImport.addField(csvElement,
-							"Export Supplier Account", values, 21);
+							"Export Supplier Account", values, 22);
 					if (exportSupplierAccount.equals(GeneralImport.NO_CHANGE)) {
 						if (existingExportMpan == null) {
 							throw new UserException(
@@ -314,11 +320,11 @@ public class SupplyGeneration extends PersistentEntity {
 							finishDateStr)));
 			supplyGeneration.update(supplyGeneration.getStartDate(),
 					supplyGeneration.getFinishDate(), mopContract, mopAccount,
-					hhdcContract, hhdcAccount, importMpanStr, importSsc,
-					importSupplierContract, importSupplierAccount,
-					importAgreedSupplyCapacity, exportMpanStr, exportSsc,
-					exportSupplierContract, exportSupplierAccount,
-					exportAgreedSupplyCapacity);
+					hhdcContract, hhdcAccount, meterSerialNumber,
+					importMpanStr, importSsc, importSupplierContract,
+					importSupplierAccount, importAgreedSupplyCapacity,
+					exportMpanStr, exportSsc, exportSupplierContract,
+					exportSupplierAccount, exportAgreedSupplyCapacity);
 		} else if (action.equals("delete")) {
 			String mpanCoreStr = GeneralImport.addField(csvElement,
 					"MPAN Core", values, 0);
@@ -828,7 +834,8 @@ public class SupplyGeneration extends PersistentEntity {
 
 	public void update(HhStartDate startDate, HhStartDate finishDate,
 			MopContract mopContract, String mopAccount,
-			HhdcContract hhdcContract, String hhdcAccount) throws HttpException {
+			HhdcContract hhdcContract, String hhdcAccount,
+			String meterSerialNumber) throws HttpException {
 		String importMpanStr = null;
 		Ssc importSsc = null;
 		SupplierContract importSupplierContract = null;
@@ -854,10 +861,11 @@ public class SupplyGeneration extends PersistentEntity {
 			exportAgreedSupplyCapacity = exportMpan.getAgreedSupplyCapacity();
 		}
 		update(startDate, finishDate, mopContract, mopAccount, hhdcContract,
-				hhdcAccount, importMpanStr, importSsc, importSupplierContract,
-				importSupplierAccount, importAgreedSupplyCapacity,
-				exportMpanStr, exportSsc, exportSupplierContract,
-				exportSupplierAccount, exportAgreedSupplyCapacity);
+				hhdcAccount, meterSerialNumber, importMpanStr, importSsc,
+				importSupplierContract, importSupplierAccount,
+				importAgreedSupplyCapacity, exportMpanStr, exportSsc,
+				exportSupplierContract, exportSupplierAccount,
+				exportAgreedSupplyCapacity);
 	}
 
 	void delete() throws HttpException {
@@ -887,14 +895,14 @@ public class SupplyGeneration extends PersistentEntity {
 			return;
 		} else {
 			update(startDate, finishDate, mopContract, mopAccount,
-					hhdcContract, hhdcAccount);
+					hhdcContract, hhdcAccount, meterSerialNumber);
 		}
 	}
 
 	public void update(HhStartDate startDate, HhStartDate finishDate,
 			MopContract mopContract, String mopAccount,
 			HhdcContract hhdcContract, String hhdcAccount,
-			String importMpanStr, Ssc importSsc,
+			String meterSerialNumber, String importMpanStr, Ssc importSsc,
 			SupplierContract importSupplierContract,
 			String importSupplierAccount, Integer importAgreedSupplyCapacity,
 			String exportMpanStr, Ssc exportSsc,
@@ -905,6 +913,7 @@ public class SupplyGeneration extends PersistentEntity {
 			throw new UserException(
 					"The generation start date can't be after the finish date.");
 		}
+		setMeterSerialNumber(meterSerialNumber);
 		Pc importPc = null;
 		Pc exportPc = null;
 		if (importMpan == null) {
@@ -1478,6 +1487,7 @@ public class SupplyGeneration extends PersistentEntity {
 				Long mopContractId = inv.getLong("mop-contract-id");
 				Long hhdcContractId = inv.getLong("hhdc-contract-id");
 				Long pcId = inv.getLong("pc-id");
+				String meterSerialNumber = inv.getString("meter-serial-number");
 				if (!inv.isValid()) {
 					throw new UserException();
 				}
@@ -1576,11 +1586,12 @@ public class SupplyGeneration extends PersistentEntity {
 						finishDate);
 				Hiber.flush();
 				update(getStartDate(), getFinishDate(), mopContract,
-						mopAccount, hhdcContract, hhdcAccount, importMpanStr,
-						importSsc, importSupplierContract,
-						importSupplierAccount, importAgreedSupplyCapacity,
-						exportMpanStr, exportSsc, exportSupplierContract,
-						exportSupplierAccount, exportAgreedSupplyCapacity);
+						mopAccount, hhdcContract, hhdcAccount,
+						meterSerialNumber, importMpanStr, importSsc,
+						importSupplierContract, importSupplierAccount,
+						importAgreedSupplyCapacity, exportMpanStr, exportSsc,
+						exportSupplierContract, exportSupplierAccount,
+						exportAgreedSupplyCapacity);
 				Hiber.commit();
 				inv.sendOk(document());
 			}

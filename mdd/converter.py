@@ -25,7 +25,7 @@ for table in ["GSP_Group", "Market_Participant", "Market_Role", "MTC_Meter_Type"
                     elif table == 'Market_Participant':
                         converted.writerow([id] + [line[table_field] for table_field in range(2)])
                     elif table == 'Time_Pattern_Regime':
-                        if line[1] == "S":
+                        if line[1] == "C":
                             is_teleswitch = '0'
                         else:
                             is_teleswitch = '1'
