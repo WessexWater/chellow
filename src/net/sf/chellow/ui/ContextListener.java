@@ -161,6 +161,13 @@ public class ContextListener implements ServletContextListener {
 					.execute("CREATE UNIQUE INDEX channel_date ON hh_datum (channel_id, start_date);");
 			stmt.execute("ALTER TABLE report ALTER COLUMN script TYPE text;");
 			stmt.execute("ALTER TABLE report ALTER COLUMN template TYPE text;");
+			
+			stmt.execute("CREATE INDEX bill__start_date ON bill (start_date);");
+			stmt.execute("CREATE INDEX bill__finish_date ON bill (finish_date);");
+			stmt.execute("CREATE INDEX bill__issue_date ON bill (issue_date);");
+			stmt.execute("CREATE INDEX supply_snag__start_date ON supply_snag (start_date);");
+			stmt.execute("CREATE INDEX supply_snag__finish_date ON supply_snag (finish_date);");
+
 		} catch (SQLException e) {
 			throw new InternalException(e);
 		} finally {
