@@ -115,9 +115,20 @@ public class BillImports implements Urlable {
 			}
 			batchImports.put(Long.parseLong(importare.getUriId().toString()),
 					importare);
-			if (batchImports.size() > 20) {
-				TreeMap<Long, BillImport> sortedImports = new TreeMap<Long, BillImport>(batchImports);
-				batchImports.remove(sortedImports.firstKey());
+
+			TreeMap<Long, Long> sortedImports = new TreeMap<Long, Long>();
+			for (Map.Entry<Long, Map<Long, BillImport>> bImports : imports.entrySet()) {
+				for (Long importId : bImports.getValue().keySet()) {
+					sortedImports.put(importId, bImports.getKey());
+				}
+			}
+			if (sortedImports.size() > 20) {
+				Map.Entry<Long, Long> firstEntry = sortedImports.firstEntry();
+				batchImports = imports.get(firstEntry.getValue());
+				batchImports.remove(firstEntry.getKey());
+				if (batchImports.isEmpty()) {
+					imports.remove(firstEntry.getValue());
+				}
 			}
 			inv.sendSeeOther(importare.getUri());
 		} catch (HttpException e) {

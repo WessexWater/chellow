@@ -1916,7 +1916,7 @@ def import_virtual_bill(supply_source):
 		</request>
 
 		<!-- Check start time of rate script -->
-		<request path="/chellow/dsos/418/contracts/65/rate-scripts/135/">
+		<request path="/chellow/dsos/418/contracts/65/rate-scripts/151/">
 			<regex pattern="00:00 Z" />
 			<response-code value="200" />
 		</request>
@@ -1928,12 +1928,12 @@ def import_virtual_bill(supply_source):
 			<control name="start-month" value="05" />
 			<control name="start-day" value="01" />
 
-			<regex pattern="/chellow/dsos/418/contracts/65/rate-scripts/137/" />
+			<regex pattern="/chellow/dsos/418/contracts/65/rate-scripts/153/" />
 			<response-code value="303" />
 		</request>
 
 		<!-- Delete rate script -->
-		<request path="/chellow/dsos/418/contracts/65/rate-scripts/137/"
+		<request path="/chellow/dsos/418/contracts/65/rate-scripts/153/"
 			method="post">
 			<control name="delete" value="Delete" />
 			<response-code value="303" />
@@ -2077,6 +2077,10 @@ def import_virtual_bill(supply_source):
 			<control name="name" value="Non half-hourlies 2010" />
 			<control name="charge-script">
 				<![CDATA[
+def import_virtual_bill_titles():
+    return ['net-gbp']
+
+
 def import_virtual_bill(supply_source):
     kwh = supply_source.summary['sum-msp-kwh']
     return {'net-gbp': kwh * 0.1, 'kwh': kwh, 'problem': ''}]]>
@@ -2111,7 +2115,7 @@ def import_virtual_bill(supply_source):
 			<control name="import-ssc-code" value="0393" />
 			<control name="import-agreed-supply-capacity" value="30" />
 			<control name="import-supplier-contract-id" value="14" />
-			<control name="import-supplier-account" value="SA342376" />
+			<control name="import-supplier-account" value="SA342376000" />
 			<control name="has-export-mpan" value="false" />
 			<response-code value="200" />
 		</request>
@@ -2133,7 +2137,7 @@ def import_virtual_bill(supply_source):
 			<regex
 				pattern='&lt;th&gt;Reference&lt;/th&gt;&lt;th&gt;Account Reference&lt;/th&gt;&lt;th&gt;MPANs&lt;/th&gt;&lt;th&gt;Issue Date&lt;/th&gt;&lt;th&gt;Start Date&lt;/th&gt;&lt;th&gt;Finish Date&lt;/th&gt;&lt;th&gt;kWh&lt;/th&gt;&lt;th&gt;Net&lt;/th&gt;&lt;th&gt;VAT&lt;/th&gt;&lt;th&gt;Type&lt;/th&gt;&lt;th&gt;Breakdown&lt;/th&gt;&lt;th&gt;R1 MPAN&lt;/th&gt;&lt;th&gt;R1 Meter Serial Number&lt;/th&gt;&lt;th&gt;R1 TPR&lt;/th&gt;&lt;th&gt;R1 Coefficient&lt;/th&gt;&lt;th&gt;R1 Units&lt;/th&gt;&lt;th&gt;R1 Previous Read Date&lt;/th&gt;&lt;th&gt;R1 Previous Read Value&lt;/th&gt;&lt;th&gt;R1 Previous Read Type&lt;/th&gt;&lt;th&gt;R1 Present Read Date&lt;/th&gt;&lt;th&gt;R1 Present Read Value&lt;/th&gt;&lt;th&gt;R1 Present Read Type&lt;/th&gt;&lt;th&gt;R2 MPAN&lt;/th&gt;&lt;th&gt;R2 Meter Serial Number&lt;/th&gt;&lt;th&gt;R2 TPR&lt;/th&gt;&lt;th&gt;R2 Coefficient&lt;/th&gt;&lt;th&gt;R2 Units&lt;/th&gt;&lt;th&gt;R2 Previous Read Date&lt;/th&gt;&lt;th&gt;R2 Previous Read Value&lt;/th&gt;&lt;th&gt;R2 Previous Read Type&lt;/th&gt;&lt;th&gt;R2 Present Read Date&lt;/th&gt;&lt;th&gt;R2 Present Read Value&lt;/th&gt;&lt;th&gt;R2 Present Read Type&lt;/th&gt;&lt;th&gt;R3 MPAN&lt;/th&gt;&lt;th&gt;R3 Meter Serial Number&lt;/th&gt;&lt;th&gt;R3 TPR&lt;/th&gt;&lt;th&gt;R3 Coefficient&lt;/th&gt;&lt;th&gt;R3 Units&lt;/th&gt;&lt;th&gt;R3 Previous Read Date&lt;/th&gt;&lt;th&gt;R3 Previous Read Value&lt;/th&gt;&lt;th&gt;R3 Previous Read Type&lt;/th&gt;&lt;th&gt;R3 Present Read Date&lt;/th&gt;&lt;th&gt;R3 Present Read Value&lt;/th&gt;&lt;th&gt;R3 Present Read Type&lt;/th&gt;&lt;th&gt;R4 MPAN&lt;/th&gt;&lt;th&gt;R4 Meter Serial Number&lt;/th&gt;&lt;th&gt;R4 TPR&lt;/th&gt;&lt;th&gt;R4 Coefficient&lt;/th&gt;&lt;th&gt;R4 Units&lt;/th&gt;&lt;th&gt;R4 Previous Read Date&lt;/th&gt;&lt;th&gt;R4 Previous Read Value&lt;/th&gt;&lt;th&gt;R4 Previous Read Type&lt;/th&gt;&lt;th&gt;R4 Present Read Date&lt;/th&gt;&lt;th&gt;R4 Present Read Value&lt;/th&gt;&lt;th&gt;R4 Present Read Type&lt;/th&gt;' />
 			<regex
-				pattern='&lt;td&gt;3423760005&lt;/td&gt;&lt;td&gt;SA342376&lt;/td&gt;&lt;td&gt;03 801 110 22 10653921534&lt;/td&gt;&lt;td&gt;2010-05-12&lt;/td&gt;&lt;td&gt;2010-01-19&lt;/td&gt;&lt;td&gt;2010-04-20&lt;/td&gt;&lt;td&gt;&lt;/td&gt;&lt;td&gt;36.16&lt;/td&gt;&lt;td&gt;1.8&lt;/td&gt;&lt;td&gt;NORMAL&lt;/td&gt;&lt;td&gt;&lt;/td&gt;&lt;td&gt;03 801 110 22 1065 3921 534&lt;/td&gt;&lt;td&gt;K87D74429&lt;/td&gt;&lt;td&gt;00001&lt;/td&gt;&lt;td&gt;1&lt;/td&gt;&lt;td&gt;kWh&lt;/td&gt;&lt;td&gt;2010-01-18&lt;/td&gt;&lt;td&gt;16963&lt;/td&gt;&lt;td&gt;E&lt;/td&gt;&lt;td&gt;2010-04-20&lt;/td&gt;&lt;td&gt;17216&lt;/td&gt;&lt;td&gt;E&lt;/td&gt;' />
+				pattern='&lt;td&gt;3423760005&lt;/td&gt;&lt;td&gt;SA342376000&lt;/td&gt;&lt;td&gt;03 801 110 22 10653921534&lt;/td&gt;&lt;td&gt;2010-05-12&lt;/td&gt;&lt;td&gt;2010-01-19&lt;/td&gt;&lt;td&gt;2010-04-20&lt;/td&gt;&lt;td&gt;&lt;/td&gt;&lt;td&gt;36.16&lt;/td&gt;&lt;td&gt;1.8&lt;/td&gt;&lt;td&gt;NORMAL&lt;/td&gt;&lt;td&gt;&lt;/td&gt;&lt;td&gt;03 801 110 22 1065 3921 534&lt;/td&gt;&lt;td&gt;K87D74429&lt;/td&gt;&lt;td&gt;00001&lt;/td&gt;&lt;td&gt;1&lt;/td&gt;&lt;td&gt;kWh&lt;/td&gt;&lt;td&gt;2010-01-18&lt;/td&gt;&lt;td&gt;16963&lt;/td&gt;&lt;td&gt;E&lt;/td&gt;&lt;td&gt;2010-04-20&lt;/td&gt;&lt;td&gt;17216&lt;/td&gt;&lt;td&gt;E&lt;/td&gt;' />
 			<response-code value="200" />
 			<regex
 				pattern="All the bills have been successfully loaded and attached to the batch\." />
@@ -2144,7 +2148,7 @@ def import_virtual_bill(supply_source):
 		<request path="/chellow/reports/111/output/?batch-id=4">
 			<refresh />
 			<regex
-				pattern='Batch,MPAN Core, Reference, Type, Breakdown, Net GBP, VAT GBP, Start Date, Finish Date, Cancelled Out, Covered From, Covered To, Covered Bills, Covered Net, Covered VAT, Virtual Net, Error GBP' />
+				pattern='Batch,MPAN Core, Reference, Type, Breakdown, Net GBP, VAT GBP, Start Date, Finish Date, Cancelled Out, Covered From, Covered To, Covered Bills, Covered Net, Covered VAT, Virtual Net, Error GBP, Virtual Reconciliation GBP, Virtual Net - Reconciliation GBP, Error \+ Reconciliation GBP, Problem' />
 			<regex
 				pattern='"07-008","22 1065 3921 534","3423760005","NORMAL","","36.16","1.8","2010-01-19T00:00Z","2010-04-20T23:30Z","False","2010-01-19T00:00Z","2010-04-20T23:30Z","8","36.16","1.8","25.3","10.86","0","25.3","10.86",""' />
 			<response-code value="200" />

@@ -2,26 +2,20 @@
 <!DOCTYPE hibernate-mapping PUBLIC
       "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
           "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
-<!-- 
-	
-   Copyright (c) 2005, 2009 Wessex Water Services Limited
-   
-   This file is part of Chellow.
-  
-   Chellow is free software: you can redistribute it and/or modify
-   it under the terms of the GNU General Public License as published by
-   the Free Software Foundation, either version 3 of the License, or
-   (at your option) any later version.
-  
-   Chellow is distributed in the hope that it will be useful,
-   but WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-   GNU General Public License for more details.
-  
-   You should have received a copy of the GNU General Public License
-   along with Chellow.  If not, see <http://www.gnu.org/licenses/>.
-	
--->
+	<!--
+
+		Copyright (c) 2005, 2009 Wessex Water Services Limited This file is
+		part of Chellow. Chellow is free software: you can redistribute it
+		and/or modify it under the terms of the GNU General Public License as
+		published by the Free Software Foundation, either version 3 of the
+		License, or (at your option) any later version. Chellow is distributed
+		in the hope that it will be useful, but WITHOUT ANY WARRANTY; without
+		even the implied warranty of MERCHANTABILITY or FITNESS FOR A
+		PARTICULAR PURPOSE. See the GNU General Public License for more
+		details. You should have received a copy of the GNU General Public
+		License along with Chellow. If not, see
+		<http://www.gnu.org/licenses/>.
+	-->
 
 <hibernate-mapping package="net.sf.chellow.physical">
 	<class name="RegisterRead" table="register_read">
@@ -30,45 +24,37 @@
 				<param name="sequence">register_read_id_sequence</param>
 			</generator>
 		</id>
-		<many-to-one name="bill"
-			class="net.sf.chellow.billing.Bill" column="bill_id"
-			not-null="true" foreign-key="fkey_bill__register_read" />
-		<property name="coefficient" type="big_decimal"
-			not-null="true">
+		<many-to-one name="bill" class="net.sf.chellow.billing.Bill"
+			column="bill_id" not-null="true" foreign-key="fkey_bill__register_read" />
+		<property name="coefficient" type="big_decimal" not-null="true">
 			<column name="coefficient" sql-type="numeric" />
 		</property>
-		<property name="meterSerialNumber" type="string" column="meter_serial_number" not-null="true" />
-		<property name="mpanStr" type="string" column="mpan_str" not-null="true" />
+		<property name="meterSerialNumber" type="string" column="meter_serial_number"
+			not-null="true" />
+		<property name="mpanStr" type="string" column="mpan_str"
+			not-null="true" />
 		<many-to-one name="tpr" class="Tpr" column="tpr_id"
-			not-null="true" foreign-key="fkey_tpr__register_read" />
-		<component name="presentDate"
-			class="HhStartDate">
+			foreign-key="fkey_tpr__register_read" />
+		<component name="presentDate" class="HhStartDate">
 			<property name="date" type="timestamp" not-null="true">
-				<column name="present_date"
-					sql-type="timestamp with time zone" />
+				<column name="present_date" sql-type="timestamp with time zone" />
 			</property>
 		</component>
-		<property name="presentValue" type="big_decimal"
-			not-null="true">
+		<property name="presentValue" type="big_decimal" not-null="true">
 			<column name="present_value" sql-type="numeric" />
 		</property>
-		<many-to-one name="presentType" class="ReadType"
-			column="present_type_id" not-null="true"
-			foreign-key="fkey_present_type__register_read" />
-		<component name="previousDate"
-			class="HhStartDate">
+		<many-to-one name="presentType" class="ReadType" column="present_type_id"
+			not-null="true" foreign-key="fkey_present_type__register_read" />
+		<component name="previousDate" class="HhStartDate">
 			<property name="date" type="timestamp" not-null="true">
-				<column name="previous_date"
-					sql-type="timestamp with time zone" />
+				<column name="previous_date" sql-type="timestamp with time zone" />
 			</property>
 		</component>
-		<property name="previousValue" type="big_decimal"
-			not-null="true">
+		<property name="previousValue" type="big_decimal" not-null="true">
 			<column name="previous_value" sql-type="numeric" />
 		</property>
-		<many-to-one name="previousType" class="ReadType"
-			column="previous_type_id" not-null="true"
-			foreign-key="fkey_previous_type__register_read" />
+		<many-to-one name="previousType" class="ReadType" column="previous_type_id"
+			not-null="true" foreign-key="fkey_previous_type__register_read" />
 		<component name="units" class="Units">
 			<property name="int" column="units" />
 		</component>

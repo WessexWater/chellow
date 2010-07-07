@@ -109,7 +109,7 @@ public class Units extends MonadObject {
 		setInt(intValue);
 	}
 
-	int getInt() {
+	public int getInt() {
 		return intValue;
 	}
 
