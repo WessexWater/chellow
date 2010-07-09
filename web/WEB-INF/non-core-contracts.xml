@@ -4995,7 +4995,7 @@ from java.util import GregorianCalendar, TimeZone, Locale, Calendar, Date
 from net.sf.chellow.monad import UserException, Hiber
 from net.sf.chellow.monad.types import MonadDate
 from java.sql import Timestamp, ResultSet
-from java.lang import System, NumberFormatException, Integer
+from java.lang import System, NumberFormatException, Integer, Math
 from org.python.util import PythonInterpreter
 from java.io import LineNumberReader
 from java.text import SimpleDateFormat, ParseException
@@ -5419,8 +5419,13 @@ class SupplySource(DataSource):
                         summary['problem'] += "There's a read before the start of the bill!"
                     if present_date.after(bill.getFinishDate()):
                         summary['problem'] += "There's a read after the end of the bill!"
+                    advance = present_value - previous_value
+                    if advance < 0:
+                        summary['problem'] += "Clocked? "
+                        digits = int(Math.log10(previous_value)) + 1
+                        advance = 10 ** digits - previous_value + present_value
 
-                    kwh = (present_value - previous_value) * coefficient
+                    kwh = advance * coefficient
                     #self.pw.write(' kwh ' + str(kwh))
                     if previous_date.before(start_date):
                         chunk_start = start_date

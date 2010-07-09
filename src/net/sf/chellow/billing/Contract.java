@@ -45,6 +45,7 @@ import net.sf.chellow.physical.PersistentEntity;
 import net.sf.chellow.physical.Snag;
 import net.sf.chellow.physical.Supply;
 
+import org.hibernate.exception.ConstraintViolationException;
 import org.python.core.Py;
 import org.python.core.PyException;
 import org.python.core.PyObject;
@@ -188,8 +189,9 @@ public abstract class Contract extends PersistentEntity implements
 			setStartRateScript(rateScriptList.get(1));
 			rateScripts.remove(rateScript);
 		} else if (rateScriptList.get(rateScriptList.size() - 1).equals(
-						rateScript)) {
-			rateScriptList.get(rateScriptList.size() - 2).setFinishDate(rateScript.getFinishDate());
+				rateScript)) {
+			rateScriptList.get(rateScriptList.size() - 2).setFinishDate(
+					rateScript.getFinishDate());
 			setFinishRateScript(rateScriptList.get(rateScriptList.size() - 2));
 			rateScripts.remove(rateScript);
 		} else {
@@ -209,7 +211,8 @@ public abstract class Contract extends PersistentEntity implements
 		return getFinishRateScript().getFinishDate();
 	}
 
-	abstract void onUpdate(HhStartDate from, HhStartDate to) throws HttpException;
+	abstract void onUpdate(HhStartDate from, HhStartDate to)
+			throws HttpException;
 
 	public Element toXml(Document doc) throws HttpException {
 		return toXml(doc, "service");
@@ -462,7 +465,12 @@ public abstract class Contract extends PersistentEntity implements
 
 	public Batch insertBatch(String reference) throws HttpException {
 		Batch batch = new Batch(this, reference);
-		Hiber.session().save(batch);
+		try {
+			Hiber.session().save(batch);
+			Hiber.flush();
+		} catch (ConstraintViolationException e) {
+			throw new UserException("There's already a batch with that name.");
+		}
 		return batch;
 	}
 

@@ -240,7 +240,7 @@ def virtual_bill(supply, startDate, finishDate, pw):
 	<test name="Manipulate non-core contracts">
 		<!-- Create a new non-core contract -->
 		<request path="/chellow/non-core-contracts/" method="post">
-			<control name="participant-id" value="181" />
+			<control name="participant-id" value="185" />
 			<control name="name" value="VAT" />
 			<control name="start-year" value="2000" />
 			<control name="start-month" value="01" />
@@ -965,8 +965,15 @@ def totalElement(account, startDate, finishDate):
 	<test name="Batches">
 		<!-- Create a new batch -->
 		<request path="/chellow/supplier-contracts/4/batches/" method="post">
-			<control name="reference">04-003</control>
+			<control name="reference" value="04-003"/>
 			<response-code value="303" />
+		</request>
+		
+		<!-- Check it gives a good error message for a duplicate name -->
+				<request path="/chellow/supplier-contracts/4/batches/" method="post">
+			<control name="reference" value="04-003"/>
+			<regex pattern="There's already a batch with that name\."/>
+			<response-code value="418" />
 		</request>
 	</test>
 	<test name="Bill imports">
@@ -994,7 +1001,7 @@ def totalElement(account, startDate, finishDate):
 	<test name="Set up NHH">
 		<!-- Create a new supplier service -->
 		<request path="/chellow/supplier-contracts/" method="post">
-			<control name="participant-id" value="116" />
+			<control name="participant-id" value="117" /> <!-- HYDE -->
 			<control name="name" value="Non half-hourlies 2007" />
 			<control name="start-year">2000</control>
 			<control name="start-month">01</control>
@@ -1035,13 +1042,13 @@ def virtual_bill(supply_source):
 			<control name="reference" value="06-002" />
 			<response-code value="303" />
 		</request>
-		<request path="/chellow/supplier-contracts/8/batches/2/bill-imports/"
+		<request path="/chellow/supplier-contracts/8/batches/3/bill-imports/"
 			method="post">
 			<control type="file" name="file" value="bills.bgb.edi" />
 			<response-code value="303" />
-			<regex pattern="/supplier-contracts/8/batches/2/bill-imports/1/" />
+			<regex pattern="/supplier-contracts/8/batches/3/bill-imports/1/" />
 		</request>
-		<request path="/chellow/supplier-contracts/8/batches/2/bill-imports/1/">
+		<request path="/chellow/supplier-contracts/8/batches/3/bill-imports/1/">
 			<refresh />
 			<response-code value="200" />
 			<regex
@@ -1155,12 +1162,12 @@ def virtual_bill(supply_source):
 			<control name="reference" value="06-004" />
 			<response-code value="303" />
 		</request>
-		<request path="/chellow/supplier-contracts/4/batches/3/bill-imports/"
+		<request path="/chellow/supplier-contracts/4/batches/4/bill-imports/"
 			method="post">
 			<control type="file" name="file" value="bills.csv" />
 			<response-code value="303" />
 		</request>
-		<request path="/chellow/supplier-contracts/4/batches/3/bill-imports/2/">
+		<request path="/chellow/supplier-contracts/4/batches/4/bill-imports/2/">
 			<refresh />
 			<response-code value="200" />
 			<regex
@@ -1323,7 +1330,7 @@ def virtual_bill(supply_source):
 			<control name="email-address" value="mishka@localhost" />
 			<control name="password" value="fyodor" />
 			<control name="user-role-id" value="2" />
-			<control name="party-id" value="385" />
+			<control name="party-id" value="49" />
 			<response-code value="303" />
 			<regex pattern="/chellow/users/4/" />
 		</request>
@@ -1906,34 +1913,34 @@ def import_virtual_bill(supply_source):
 	</test>
 	<test name="Manipulate dso contracts">
 		<!-- Insert DSO contract -->
-		<request path="/chellow/dsos/418/contracts/" method="post">
+		<request path="/chellow/dsos/367/contracts/" method="post">
 			<control name="name" value="main 2010-04-01" />
 			<control name="start-year" value="2010" />
 			<control name="start-month" value="04" />
 			<control name="start-day" value="01" />
-			<regex pattern="/chellow/dsos/418/contracts/65/" />
+			<regex pattern="/chellow/dsos/367/contracts/65/" />
 			<response-code value="303" />
 		</request>
 
 		<!-- Check start time of rate script -->
-		<request path="/chellow/dsos/418/contracts/65/rate-scripts/151/">
+		<request path="/chellow/dsos/367/contracts/65/rate-scripts/151/">
 			<regex pattern="00:00 Z" />
 			<response-code value="200" />
 		</request>
 
 		<!-- Insert rate script -->
-		<request path="/chellow/dsos/418/contracts/65/rate-scripts/"
+		<request path="/chellow/dsos/367/contracts/65/rate-scripts/"
 			method="post">
 			<control name="start-year" value="2010" />
 			<control name="start-month" value="05" />
 			<control name="start-day" value="01" />
 
-			<regex pattern="/chellow/dsos/418/contracts/65/rate-scripts/153/" />
+			<regex pattern="/chellow/dsos/367/contracts/65/rate-scripts/153/" />
 			<response-code value="303" />
 		</request>
 
 		<!-- Delete rate script -->
-		<request path="/chellow/dsos/418/contracts/65/rate-scripts/153/"
+		<request path="/chellow/dsos/367/contracts/65/rate-scripts/153/"
 			method="post">
 			<control name="delete" value="Delete" />
 			<response-code value="303" />
@@ -2126,13 +2133,13 @@ def import_virtual_bill(supply_source):
 			<control name="reference" value="07-008" />
 			<response-code value="303" />
 		</request>
-		<request path="/chellow/supplier-contracts/14/batches/4/bill-imports/"
+		<request path="/chellow/supplier-contracts/14/batches/5/bill-imports/"
 			method="post">
 			<control type="file" name="file" value="bills.sse.edi" />
 			<response-code value="303" />
-			<regex pattern="/supplier-contracts/14/batches/4/bill-imports/3/" />
+			<regex pattern="/supplier-contracts/14/batches/5/bill-imports/3/" />
 		</request>
-		<request path="/chellow/supplier-contracts/14/batches/4/bill-imports/3/">
+		<request path="/chellow/supplier-contracts/14/batches/5/bill-imports/3/">
 			<refresh />
 			<regex
 				pattern='&lt;th&gt;Reference&lt;/th&gt;&lt;th&gt;Account Reference&lt;/th&gt;&lt;th&gt;MPANs&lt;/th&gt;&lt;th&gt;Issue Date&lt;/th&gt;&lt;th&gt;Start Date&lt;/th&gt;&lt;th&gt;Finish Date&lt;/th&gt;&lt;th&gt;kWh&lt;/th&gt;&lt;th&gt;Net&lt;/th&gt;&lt;th&gt;VAT&lt;/th&gt;&lt;th&gt;Type&lt;/th&gt;&lt;th&gt;Breakdown&lt;/th&gt;&lt;th&gt;R1 MPAN&lt;/th&gt;&lt;th&gt;R1 Meter Serial Number&lt;/th&gt;&lt;th&gt;R1 TPR&lt;/th&gt;&lt;th&gt;R1 Coefficient&lt;/th&gt;&lt;th&gt;R1 Units&lt;/th&gt;&lt;th&gt;R1 Previous Read Date&lt;/th&gt;&lt;th&gt;R1 Previous Read Value&lt;/th&gt;&lt;th&gt;R1 Previous Read Type&lt;/th&gt;&lt;th&gt;R1 Present Read Date&lt;/th&gt;&lt;th&gt;R1 Present Read Value&lt;/th&gt;&lt;th&gt;R1 Present Read Type&lt;/th&gt;&lt;th&gt;R2 MPAN&lt;/th&gt;&lt;th&gt;R2 Meter Serial Number&lt;/th&gt;&lt;th&gt;R2 TPR&lt;/th&gt;&lt;th&gt;R2 Coefficient&lt;/th&gt;&lt;th&gt;R2 Units&lt;/th&gt;&lt;th&gt;R2 Previous Read Date&lt;/th&gt;&lt;th&gt;R2 Previous Read Value&lt;/th&gt;&lt;th&gt;R2 Previous Read Type&lt;/th&gt;&lt;th&gt;R2 Present Read Date&lt;/th&gt;&lt;th&gt;R2 Present Read Value&lt;/th&gt;&lt;th&gt;R2 Present Read Type&lt;/th&gt;&lt;th&gt;R3 MPAN&lt;/th&gt;&lt;th&gt;R3 Meter Serial Number&lt;/th&gt;&lt;th&gt;R3 TPR&lt;/th&gt;&lt;th&gt;R3 Coefficient&lt;/th&gt;&lt;th&gt;R3 Units&lt;/th&gt;&lt;th&gt;R3 Previous Read Date&lt;/th&gt;&lt;th&gt;R3 Previous Read Value&lt;/th&gt;&lt;th&gt;R3 Previous Read Type&lt;/th&gt;&lt;th&gt;R3 Present Read Date&lt;/th&gt;&lt;th&gt;R3 Present Read Value&lt;/th&gt;&lt;th&gt;R3 Present Read Type&lt;/th&gt;&lt;th&gt;R4 MPAN&lt;/th&gt;&lt;th&gt;R4 Meter Serial Number&lt;/th&gt;&lt;th&gt;R4 TPR&lt;/th&gt;&lt;th&gt;R4 Coefficient&lt;/th&gt;&lt;th&gt;R4 Units&lt;/th&gt;&lt;th&gt;R4 Previous Read Date&lt;/th&gt;&lt;th&gt;R4 Previous Read Value&lt;/th&gt;&lt;th&gt;R4 Previous Read Type&lt;/th&gt;&lt;th&gt;R4 Present Read Date&lt;/th&gt;&lt;th&gt;R4 Present Read Value&lt;/th&gt;&lt;th&gt;R4 Present Read Type&lt;/th&gt;' />
@@ -2145,7 +2152,7 @@ def import_virtual_bill(supply_source):
 
 
 		<!-- Test the bill checking -->
-		<request path="/chellow/reports/111/output/?batch-id=4">
+		<request path="/chellow/reports/111/output/?batch-id=5">
 			<refresh />
 			<regex
 				pattern='Batch,MPAN Core, Reference, Type, Breakdown, Net GBP, VAT GBP, Start Date, Finish Date, Cancelled Out, Covered From, Covered To, Covered Bills, Covered Net, Covered VAT, Virtual Net, Error GBP, Virtual Reconciliation GBP, Virtual Net - Reconciliation GBP, Error \+ Reconciliation GBP, Problem' />
@@ -2227,13 +2234,13 @@ def import_virtual_bill(supply_source):
 			<control name="reference" value="008" />
 			<response-code value="303" />
 		</request>
-		<request path="/chellow/supplier-contracts/4/batches/5/bill-imports/"
+		<request path="/chellow/supplier-contracts/4/batches/6/bill-imports/"
 			method="post">
 			<control type="file" name="file" value="bills.gdf.csv" />
 			<response-code value="303" />
-			<regex pattern="/supplier-contracts/4/batches/5/bill-imports/4/" />
+			<regex pattern="/supplier-contracts/4/batches/6/bill-imports/4/" />
 		</request>
-		<request path="/chellow/supplier-contracts/4/batches/5/bill-imports/4/">
+		<request path="/chellow/supplier-contracts/4/batches/6/bill-imports/4/">
 			<refresh />
 			<regex
 				pattern='&lt;th&gt;Reference&lt;/th&gt;&lt;th&gt;Account Reference&lt;/th&gt;&lt;th&gt;MPANs&lt;/th&gt;&lt;th&gt;Issue Date&lt;/th&gt;&lt;th&gt;Start Date&lt;/th&gt;&lt;th&gt;Finish Date&lt;/th&gt;&lt;th&gt;kWh&lt;/th&gt;&lt;th&gt;Net&lt;/th&gt;&lt;th&gt;VAT&lt;/th&gt;&lt;th&gt;Type&lt;/th&gt;&lt;th&gt;Breakdown&lt;/th&gt;&lt;th&gt;R1 MPAN&lt;/th&gt;&lt;th&gt;R1 Meter Serial Number&lt;/th&gt;&lt;th&gt;R1 TPR&lt;/th&gt;&lt;th&gt;R1 Coefficient&lt;/th&gt;&lt;th&gt;R1 Units&lt;/th&gt;&lt;th&gt;R1 Previous Read Date&lt;/th&gt;&lt;th&gt;R1 Previous Read Value&lt;/th&gt;&lt;th&gt;R1 Previous Read Type&lt;/th&gt;&lt;th&gt;R1 Present Read Date&lt;/th&gt;&lt;th&gt;R1 Present Read Value&lt;/th&gt;&lt;th&gt;R1 Present Read Type&lt;/th&gt;&lt;th&gt;R2 MPAN&lt;/th&gt;&lt;th&gt;R2 Meter Serial Number&lt;/th&gt;&lt;th&gt;R2 TPR&lt;/th&gt;&lt;th&gt;R2 Coefficient&lt;/th&gt;&lt;th&gt;R2 Units&lt;/th&gt;&lt;th&gt;R2 Previous Read Date&lt;/th&gt;&lt;th&gt;R2 Previous Read Value&lt;/th&gt;&lt;th&gt;R2 Previous Read Type&lt;/th&gt;&lt;th&gt;R2 Present Read Date&lt;/th&gt;&lt;th&gt;R2 Present Read Value&lt;/th&gt;&lt;th&gt;R2 Present Read Type&lt;/th&gt;&lt;th&gt;R3 MPAN&lt;/th&gt;&lt;th&gt;R3 Meter Serial Number&lt;/th&gt;&lt;th&gt;R3 TPR&lt;/th&gt;&lt;th&gt;R3 Coefficient&lt;/th&gt;&lt;th&gt;R3 Units&lt;/th&gt;&lt;th&gt;R3 Previous Read Date&lt;/th&gt;&lt;th&gt;R3 Previous Read Value&lt;/th&gt;&lt;th&gt;R3 Previous Read Type&lt;/th&gt;&lt;th&gt;R3 Present Read Date&lt;/th&gt;&lt;th&gt;R3 Present Read Value&lt;/th&gt;&lt;th&gt;R3 Present Read Type&lt;/th&gt;&lt;th&gt;R4 MPAN&lt;/th&gt;&lt;th&gt;R4 Meter Serial Number&lt;/th&gt;&lt;th&gt;R4 TPR&lt;/th&gt;&lt;th&gt;R4 Coefficient&lt;/th&gt;&lt;th&gt;R4 Units&lt;/th&gt;&lt;th&gt;R4 Previous Read Date&lt;/th&gt;&lt;th&gt;R4 Previous Read Value&lt;/th&gt;&lt;th&gt;R4 Previous Read Type&lt;/th&gt;&lt;th&gt;R4 Present Read Date&lt;/th&gt;&lt;th&gt;R4 Present Read Value&lt;/th&gt;&lt;th&gt;R4 Present Read Type&lt;/th&gt;' />
@@ -2250,7 +2257,7 @@ def import_virtual_bill(supply_source):
 			<refresh />
 			<regex pattern='Site Code, Site Name,net-gbp' />
 			<regex
-				pattern='"CI004","Lower Treave","2.49","bsuos-actual-gbp","0.0","ccl-gbp","0","ccl-kwh","0","ccl-rate","0","duos-amber-gbp","0.0","duos-amber-kwh","0","duos-amber-rate","0.00961","duos-fixed-days","30","duos-fixed-gbp","2.49","duos-fixed-rate","0.083","duos-green-gbp","0.0","duos-green-kwh","0","duos-green-rate","0.00159","duos-reactive-gbp","0.0","duos-reactive-kvarh","0.0","duos-reactive-rate","0.00251","duos-red-gbp","0.0","duos-red-kwh","0","duos-red-rate","0.062","night-gbp","0.0","night-gsp-kwh","0","night-msp-kwh","0","other-gbp","0.0","other-gsp-kwh","0.0","other-msp-kwh","0","summer-pk-gbp","0.0","summer-pk-gsp-kwh","0","summer-pk-msp-kwh","0","triad-estimate-0-date","2010-01-07T17:00Z","triad-estimate-0-gsp-kw","0.0","triad-estimate-0-laf","1.077","triad-estimate-0-msp-kw","0","triad-estimate-0-status","E","triad-estimate-1-date","2010-01-25T17:00Z","triad-estimate-1-gsp-kw","0.0","triad-estimate-1-laf","1.077","triad-estimate-1-msp-kw","0","triad-estimate-1-status","E","triad-estimate-2-date","2009-12-15T17:00Z","triad-estimate-2-gsp-kw","0.0","triad-estimate-2-laf","1.077","triad-estimate-2-msp-kw","0","triad-estimate-2-status","E","triad-estimate-gbp","0.0","triad-estimate-gsp-kw","0.0","triad-estimate-months","1","triad-estimate-rate","25.49445","winter-low-pk-gbp","0.0","winter-low-pk-gsp-kwh","0","winter-low-pk-msp-kwh","0","winter-off-pk-gbp","0.0","winter-off-pk-gsp-kwh","0","winter-off-pk-msp-kwh","0","winter-pk-gbp","0.0","winter-pk-gsp-kwh","0","winter-pk-msp-kwh","0"' />
+				pattern='"CI004","Lower Treave","0.0","bsuos-actual-gbp","0.0","ccl-gbp","0","ccl-kwh","0","ccl-rate","0","duos-amber-gbp","0.0","duos-amber-kwh","0","duos-amber-rate","0.00961","duos-green-gbp","0.0","duos-green-kwh","0","duos-green-rate","0.00159","duos-reactive-gbp","0.0","duos-reactive-kvarh","0.0","duos-reactive-rate","0.00251","duos-red-gbp","0.0","duos-red-kwh","0","duos-red-rate","0.062","night-gbp","0.0","night-gsp-kwh","0","night-msp-kwh","0","other-gbp","0.0","other-gsp-kwh","0.0","other-msp-kwh","0","summer-pk-gbp","0.0","summer-pk-gsp-kwh","0","summer-pk-msp-kwh","0","triad-estimate-0-date","2010-01-07T17:00Z","triad-estimate-0-gsp-kw","0.0","triad-estimate-0-laf","1.077","triad-estimate-0-msp-kw","0","triad-estimate-0-status","E","triad-estimate-1-date","2010-01-25T17:00Z","triad-estimate-1-gsp-kw","0.0","triad-estimate-1-laf","1.077","triad-estimate-1-msp-kw","0","triad-estimate-1-status","E","triad-estimate-2-date","2009-12-15T17:00Z","triad-estimate-2-gsp-kw","0.0","triad-estimate-2-laf","1.077","triad-estimate-2-msp-kw","0","triad-estimate-2-status","E","triad-estimate-gbp","0.0","triad-estimate-gsp-kw","0.0","triad-estimate-months","1","triad-estimate-rate","25.49445","winter-low-pk-gbp","0.0","winter-low-pk-gsp-kwh","0","winter-low-pk-msp-kwh","0","winter-off-pk-gbp","0.0","winter-off-pk-gsp-kwh","0","winter-off-pk-msp-kwh","0","winter-pk-gbp","0.0","winter-pk-gsp-kwh","0","winter-pk-msp-kwh","0"' />
 			<response-code value="200" />
 		</request>
 	</test>

@@ -1303,7 +1303,7 @@ def hh(bill, hh_list, data_source):
             else:
                 if 16 < hh['ct-decimal-hour'] < 19:
                     band = 'red'
-                elif 9 < hh['ct-decimal-hour'] <= 20:
+                elif 9 <= hh['ct-decimal-hour'] <= 20:
                     band = 'amber'
                 else:
                     band = 'green'
@@ -1344,10 +1344,6 @@ def month(bill, whole_data, data_source):
         llfc_group = llfc_code
     tariff = data_source.rate(rate_script, 'tariffs')[llfc_group]
 
-    bill['duos-fixed-days'] = summary['days']
-    bill['duos-fixed-rate'] = tariff['gbp-per-mpan-per-day']
-    bill['duos-fixed-gbp'] = bill['duos-fixed-days'] * bill['duos-fixed-rate']
-
     if not data_source.is_displaced:
         md_kva = max((datum['msp-kw'] ** 2 + datum['imp-msp-kvar'] ** 2) ** 0.5 for datum in whole_data['data'])
         billed_avail = max(md_kva, data_source.availability)
@@ -1356,11 +1352,15 @@ def month(bill, whole_data, data_source):
         availability_rate = tariff['gbp-per-kva-per-day']
         bill['duos-availability-rate'] = availability_rate
         bill['duos-availability-gbp'] = availability_rate * billed_avail * summary['days']
+        bill['duos-fixed-days'] = summary['days']
+        bill['duos-fixed-rate'] = tariff['gbp-per-mpan-per-day']
+        bill['duos-fixed-gbp'] = bill['duos-fixed-days'] * bill['duos-fixed-rate']
 
-    reactive_rate = tariff['gbp-per-kvarh']
-    bill['duos-reactive-rate'] = reactive_rate
-    bill['duos-reactive-kvarh'] = sum(max(max(datum['imp-msp-kvarh'], datum['exp-msp-kvarh']) - (0.95 ** -2 -1) ** 0.5 * datum['msp-kwh'], 0) for datum in whole_data['data'])
-    bill['duos-reactive-gbp'] = bill['duos-reactive-rate'] * bill['duos-reactive-kvarh']]]></value>
+
+        reactive_rate = tariff['gbp-per-kvarh']
+        bill['duos-reactive-rate'] = reactive_rate
+        bill['duos-reactive-kvarh'] = sum(max(max(datum['imp-msp-kvarh'], datum['exp-msp-kvarh']) - (0.95 ** -2 -1) ** 0.5 * datum['msp-kwh'], 0) for datum in whole_data['data'])
+        bill['duos-reactive-gbp'] = bill['duos-reactive-rate'] * bill['duos-reactive-kvarh']]]></value>
         <value><![CDATA[def triad():
     return 25.494450
 

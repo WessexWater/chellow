@@ -43,6 +43,7 @@ import net.sf.chellow.physical.SupplyGeneration;
 import net.sf.chellow.physical.SupplySnag;
 
 import org.hibernate.HibernateException;
+import org.hibernate.ScrollableResults;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -110,11 +111,13 @@ public class Batch extends PersistentEntity {
 			try {
 				delete();
 			} catch (HttpException e) {
-				e.setDocument(document());
+				Batch batch = Batch.getBatch(getId());
+				e.setDocument(batch.document());
 				throw e;
 			}
 			Hiber.commit();
-			inv.sendSeeOther(contract.batchesInstance().getUri());
+			Batch batch = Batch.getBatch(getId());
+			inv.sendSeeOther(batch.getContract().batchesInstance().getUri());
 		} else {
 			String reference = inv.getString("reference");
 			if (!inv.isValid()) {
@@ -126,14 +129,19 @@ public class Batch extends PersistentEntity {
 		}
 	}
 
-	@SuppressWarnings("unchecked")
 	private void delete() throws HttpException {
-		for (Bill bill : (List<Bill>) Hiber.session().createQuery(
+		ScrollableResults bills = Hiber.session().createQuery(
 				"from Bill bill where bill.batch = :batch").setEntity("batch",
-				this).list()) {
+				this).scroll();
+		while (bills.next()) {
+			Bill bill = (Bill) bills.get(0);
 			bill.delete();
+			Hiber.flush();
+			Hiber.session().clear();
 		}
-		Hiber.session().delete(this);
+		bills.close();
+		Batch batch = Batch.getBatch(getId());
+		Hiber.session().delete(batch);
 	}
 
 	private Document document() throws HttpException {
