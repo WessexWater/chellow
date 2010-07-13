@@ -108,6 +108,7 @@ public class Batch extends PersistentEntity {
 
 	public void httpPost(Invocation inv) throws HttpException {
 		if (inv.hasParameter("delete")) {
+			Long contractId = getContract().getId();
 			try {
 				delete();
 			} catch (HttpException e) {
@@ -116,8 +117,8 @@ public class Batch extends PersistentEntity {
 				throw e;
 			}
 			Hiber.commit();
-			Batch batch = Batch.getBatch(getId());
-			inv.sendSeeOther(batch.getContract().batchesInstance().getUri());
+			inv.sendSeeOther(Contract.getContract(contractId).batchesInstance()
+					.getUri());
 		} else {
 			String reference = inv.getString("reference");
 			if (!inv.isValid()) {

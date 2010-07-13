@@ -27,7 +27,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import net.sf.chellow.monad.Debug;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.InternalException;
@@ -79,9 +78,9 @@ public class Bill extends PersistentEntity implements Urlable {
 	private Boolean isPaid; // Null is pending, false is rejected.
 
 	private String type;
-	
+
 	private String breakdown;
-	
+
 	private BigDecimal kwh;
 
 	private boolean isCancelledOut;
@@ -192,7 +191,7 @@ public class Bill extends PersistentEntity implements Urlable {
 	public void setBreakdown(String breakdown) {
 		this.breakdown = breakdown;
 	}
-	
+
 	public boolean getIsCancelledOut() {
 		return isCancelledOut;
 	}
@@ -200,7 +199,7 @@ public class Bill extends PersistentEntity implements Urlable {
 	public void setIsCancelledOut(boolean isCancelledOut) {
 		this.isCancelledOut = isCancelledOut;
 	}
-	
+
 	void setKwh(BigDecimal kwh) {
 		this.kwh = kwh;
 	}
@@ -216,10 +215,11 @@ public class Bill extends PersistentEntity implements Urlable {
 	public Set<RegisterRead> getReads() {
 		return reads;
 	}
-	
+
 	public void update(String reference, Date issueDate, HhStartDate startDate,
-			HhStartDate finishDate, BigDecimal kwh, BigDecimal net, BigDecimal vat, String type,
-			Boolean isPaid, boolean isCancelledOut, String breakdown) throws HttpException {
+			HhStartDate finishDate, BigDecimal kwh, BigDecimal net,
+			BigDecimal vat, String type, Boolean isPaid,
+			boolean isCancelledOut, String breakdown) throws HttpException {
 		setReference(reference);
 		setIssueDate(issueDate);
 		if (startDate.getDate().after(finishDate.getDate())) {
@@ -281,7 +281,7 @@ public class Bill extends PersistentEntity implements Urlable {
 			Boolean isPaid = inv.getBoolean("isPaid");
 			Boolean isCancelledOut = inv.getBoolean("isCancelledOut");
 			String breakdown = inv.getString("breakdown");
-			
+
 			if (!inv.isValid()) {
 				throw new UserException(document());
 			}
@@ -297,7 +297,8 @@ public class Bill extends PersistentEntity implements Urlable {
 		Document doc = MonadUtils.newSourceDocument();
 		Element source = doc.getDocumentElement();
 		Element billElement = (Element) toXml(doc, new XmlTree("batch",
-				new XmlTree("contract", new XmlTree("party"))).put("reads").put("supply"));
+				new XmlTree("contract", new XmlTree("party"))).put("reads")
+				.put("supply"));
 		source.appendChild(billElement);
 		source.appendChild(MonadDate.getMonthsXml(doc));
 		source.appendChild(MonadDate.getDaysXml(doc));
@@ -338,32 +339,28 @@ public class Bill extends PersistentEntity implements Urlable {
 
 	@SuppressWarnings("unchecked")
 	public void delete() throws HttpException {
-		reads.clear();
-		Hiber.flush();
 		Hiber.session().delete(this);
 		Hiber.flush();
-		Debug.print("potentially adding snag");
 		HhStartDate snagStart = startDate;
 		if (!isCancelledOut) {
 			for (Bill bill : (List<Bill>) Hiber
 					.session()
 					.createQuery(
-							"from Bill bill where bill.batch.contract.id = :contractId and bill.isCancelledOut is false and bill.startDate.date <= :finishDate and bill.finishDate.date >= :startDate order by bill.startDate.date")
+							"from Bill bill where bill.batch.contract.id = :contractId and bill.supply = :supply and bill.isCancelledOut is false and bill.startDate.date <= :finishDate and bill.finishDate.date >= :startDate order by bill.startDate.date")
 					.setLong("contractId", batch.getContract().getId())
-					.setTimestamp("startDate", startDate.getDate())
-					.setTimestamp("finishDate", finishDate.getDate()).list()) {
+					.setEntity("supply", getSupply()).setTimestamp("startDate",
+							startDate.getDate()).setTimestamp("finishDate",
+							finishDate.getDate()).list()) {
 				if (bill.getStartDate().after(snagStart)) {
-					Debug.print(" adding snag 1");
 					supply.addSnag(batch.getContract(),
-							SupplySnag.MISSING_BILL, startDate, finishDate);
+							SupplySnag.MISSING_BILL, snagStart, bill
+									.getStartDate().getPrevious());
 					snagStart = bill.getFinishDate().getNext();
 				}
 			}
 			if (!snagStart.after(finishDate)) {
-				Debug.print("adding snag 2 contract "
-						+ batch.getContract().getId());
 				supply.addSnag(batch.getContract(), SupplySnag.MISSING_BILL,
-						startDate, finishDate);
+						snagStart, finishDate);
 			}
 		}
 		Hiber.flush();
