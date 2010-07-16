@@ -165,9 +165,6 @@ public class ContextListener implements ServletContextListener {
 			stmt.execute("CREATE INDEX bill__start_date ON bill (start_date);");
 			stmt.execute("CREATE INDEX bill__finish_date ON bill (finish_date);");
 			stmt.execute("CREATE INDEX bill__issue_date ON bill (issue_date);");
-			stmt.execute("CREATE INDEX supply_snag__start_date ON supply_snag (start_date);");
-			stmt.execute("CREATE INDEX supply_snag__finish_date ON supply_snag (finish_date);");
-
 		} catch (SQLException e) {
 			throw new InternalException(e);
 		} finally {

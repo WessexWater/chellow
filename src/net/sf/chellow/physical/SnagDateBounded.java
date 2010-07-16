@@ -23,7 +23,6 @@ package net.sf.chellow.physical;
 
 import java.util.List;
 
-import net.sf.chellow.billing.Contract;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.InternalException;
@@ -215,13 +214,6 @@ public abstract class SnagDateBounded extends Snag {
 		}
 	}
 
-	public static void deleteSupplySnag(Supply supply, Contract contract,
-			String description, HhStartDate startDate, HhStartDate finishDate)
-			throws HttpException {
-		deleteSnagDateBounded(new SupplySnagToAdd(supply, contract,
-				description, startDate, finishDate));
-	}
-
 	public static void deleteChannelSnag(Channel channel, String description,
 			HhStartDate startDate, HhStartDate finishDate) throws HttpException {
 		deleteSnagDateBounded(new ChannelSnagToAdd(channel, description,
@@ -245,14 +237,7 @@ public abstract class SnagDateBounded extends Snag {
 		addSnagDateBounded(new SiteSnagToAdd(site, description, startDate,
 				finishDate));
 	}
-
-	public static void addSupplySnag(Supply supply, Contract contract,
-			String description, HhStartDate startDate, HhStartDate finishDate)
-			throws HttpException {
-		addSnagDateBounded(new SupplySnagToAdd(supply, contract, description,
-				startDate, finishDate));
-	}
-
+	
 	private static interface SnagToAdd {
 		public List<? extends SnagDateBounded> getCoveredSnags();
 
@@ -406,93 +391,6 @@ public abstract class SnagDateBounded extends Snag {
 			return (List<SiteSnag>) query.setTimestamp("finishDate",
 					finishDate.getDate()).setTimestamp("startDate",
 					startDate.getDate()).list();
-		}
-	}
-
-	private static class SupplySnagToAdd implements SnagToAdd {
-		private Supply supply;
-
-		private Contract contract;
-
-		private String description;
-
-		private HhStartDate startDate;
-
-		private HhStartDate finishDate;
-
-		public SupplySnagToAdd(Supply supply, Contract contract,
-				String description, HhStartDate startDate, HhStartDate finishDate) {
-			this.supply = supply;
-			this.contract = contract;
-			this.description = description;
-			this.startDate = startDate;
-			this.finishDate = finishDate;
-		}
-
-		public HhStartDate getFinishDate() {
-			return finishDate;
-		}
-
-		public SnagDateBounded newSnag() throws HttpException {
-			return new SupplySnag(supply, contract, description, startDate,
-					finishDate);
-		}
-
-		public void insertSnag(SnagDateBounded snag) {
-			SupplySnag supplySnag = (SupplySnag) snag;
-			SupplySnag.insertSupplySnag(supplySnag);
-		}
-
-		public HhStartDate getStartDate() {
-			return startDate;
-		}
-
-		public SnagDateBounded newSnag(HhStartDate startDate, HhStartDate finishDate)
-				throws HttpException {
-			return new SupplySnag(supply, contract, description, startDate,
-					finishDate);
-		}
-
-		public void deleteSnag(SnagDateBounded snag) {
-			SupplySnag.deleteAccountSnag((SupplySnag) snag);
-		}
-
-		public List<SupplySnag> getCoveredSnags() {
-			return getCoveredSnags(startDate, finishDate);
-		}
-
-		@SuppressWarnings("unchecked")
-		public List<SupplySnag> getCoveredSnags(HhStartDate startDate,
-				HhStartDate finishDate) {
-			//Debug.print("Getting covered snags.");
-			Query query = null;
-			if (finishDate == null) {
-				//Debug.print("finish date is null");
-				query = Hiber
-						.session()
-						.createQuery(
-								"from SupplySnag snag where snag.supply = :supply and snag.contract = :contract and snag.description = :description and (snag.finishDate.date is null or snag.finishDate.date >= :startDate) order by snag.startDate.date");
-			} else {
-			    //Debug.print("finish date isn't null, in fact it's " + finishDate + " supply is " + supply + " contract " + contract);
-				query = Hiber
-						.session()
-						.createQuery(
-								"from SupplySnag snag where snag.supply = :supply and snag.contract = :contract and snag.description = :description and (snag.finishDate.date is null or snag.finishDate.date >= :startDate) and snag.startDate.date <= :finishDate order by snag.startDate.date")
-						.setTimestamp("finishDate", finishDate.getDate());
-			}
-			//Debug.print(" list size " + query.setEntity("supply", supply)
-			//		.setEntity("contract", contract).setString("description",
-			//				description).setTimestamp("startDate",
-			//				startDate.getDate()).list().size());
-			return (List<SupplySnag>) query.setEntity("supply", supply)
-					.setEntity("contract", contract).setString("description",
-							description).setTimestamp("startDate",
-							startDate.getDate()).list();
-		}
-
-		public String toString() {
-			return "Account " + supply.getId() + " description " + description
-					+ " start " + startDate + " finish " + finishDate;
 		}
 	}
 

@@ -1484,7 +1484,7 @@ def tariffs():
             'red-gbp-per-kwh': 0.03745,
             'amber-gbp-per-kwh': 0.00343,
             'green-gbp-per-kwh': 0.00058,
-            'gbp-per-kvarh': 0.00188},
+            'gbp-per-kvarh': 0.00118},
         '655': {
             'description': 'HV HH Metered',
             'gbp-per-mpan-per-day': 0.7968,
@@ -1493,7 +1493,7 @@ def tariffs():
             'red-gbp-per-kwh': 0.03745,
             'amber-gbp-per-kwh': 0.00343,
             'green-gbp-per-kwh': 0.00058,
-            'gbp-per-kvarh': 0.00188},
+            'gbp-per-kvarh': 0.00118},
         '660': {
             'description': 'HVS HH Metered',
             'gbp-per-mpan-per-day': 1.3397,

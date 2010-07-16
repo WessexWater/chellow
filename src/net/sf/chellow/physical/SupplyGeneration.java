@@ -49,11 +49,8 @@ import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
 import net.sf.chellow.ui.GeneralImport;
 
-import org.hibernate.Criteria;
 import org.hibernate.Query;
 import org.hibernate.ScrollableResults;
-import org.hibernate.criterion.Order;
-import org.hibernate.criterion.Restrictions;
 import org.hibernate.exception.ConstraintViolationException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -352,7 +349,7 @@ public class SupplyGeneration extends PersistentEntity {
 					.getGeneration(startDate);
 
 			String siteCode = GeneralImport.addField(csvElement, "Site Code",
-					values, 0);
+					values, 2);
 
 			Map<Site, Boolean> siteMap = new HashMap<Site, Boolean>();
 			if (siteCode.equals(GeneralImport.NO_CHANGE)) {
@@ -366,7 +363,7 @@ public class SupplyGeneration extends PersistentEntity {
 			}
 
 			String mopContractName = GeneralImport.addField(csvElement,
-					"MOP Contract", values, 2);
+					"MOP Contract", values, 3);
 			MopContract mopContract = null;
 			if (mopContractName.equals(GeneralImport.NO_CHANGE)) {
 				mopContract = existingGeneration.getMopContract();
@@ -376,13 +373,13 @@ public class SupplyGeneration extends PersistentEntity {
 				}
 			}
 			String mopAccount = GeneralImport.addField(csvElement,
-					"MOP Account Reference", values, 3);
+					"MOP Account Reference", values, 4);
 			if (mopAccount.equals(GeneralImport.NO_CHANGE)) {
 				mopAccount = existingGeneration.getMopAccount();
 			}
 
 			String hhdcContractName = GeneralImport.addField(csvElement,
-					"HHDC Contract", values, 4);
+					"HHDC Contract", values, 5);
 			HhdcContract hhdcContract = null;
 			if (hhdcContractName.equals(GeneralImport.NO_CHANGE)) {
 				hhdcContract = existingGeneration.getHhdcContract();
@@ -393,44 +390,44 @@ public class SupplyGeneration extends PersistentEntity {
 				}
 			}
 			String hhdcAccount = GeneralImport.addField(csvElement,
-					"HHDC Account Reference", values, 5);
+					"HHDC Account Reference", values, 6);
 			if (hhdcAccount.equals(GeneralImport.NO_CHANGE)) {
 				hhdcAccount = existingGeneration.getHhdcAccount();
 			}
 
 			String hasImportKwhStr = GeneralImport.addField(csvElement,
-					"Has HH import kWh", values, 6);
+					"Has HH import kWh", values, 7);
 			boolean hasImportKwh = hasImportKwhStr
 					.equals(GeneralImport.NO_CHANGE) ? existingGeneration
 					.getChannel(true, true) != null : Boolean
 					.parseBoolean(hasImportKwhStr);
 			String hasImportKvarhStr = GeneralImport.addField(csvElement,
-					"Has HH import kVArh", values, 7);
+					"Has HH import kVArh", values, 8);
 			boolean hasImportKvarh = hasImportKvarhStr
 					.equals(GeneralImport.NO_CHANGE) ? existingGeneration
 					.getChannel(true, false) != null : Boolean
 					.parseBoolean(hasImportKvarhStr);
 			String hasExportKwhStr = GeneralImport.addField(csvElement,
-					"Has HH export kWh", values, 8);
+					"Has HH export kWh", values, 9);
 			boolean hasExportKwh = hasImportKwhStr
 					.equals(GeneralImport.NO_CHANGE) ? existingGeneration
 					.getChannel(false, true) != null : Boolean
 					.parseBoolean(hasExportKwhStr);
 			String hasExportKvarhStr = GeneralImport.addField(csvElement,
-					"Has HH export kVArh", values, 9);
+					"Has HH export kVArh", values, 10);
 			boolean hasExportKvarh = hasImportKwhStr
 					.equals(GeneralImport.NO_CHANGE) ? existingGeneration
 					.getChannel(false, false) != null : Boolean
 					.parseBoolean(hasExportKvarhStr);
 
 			String meterSerialNumber = GeneralImport.addField(csvElement,
-					"Meter Serial Number", values, 10);
+					"Meter Serial Number", values, 11);
 			if (meterSerialNumber.equals(GeneralImport.NO_CHANGE)) {
 				meterSerialNumber = existingGeneration.getMeterSerialNumber();
 			}
 
 			String importMpanStr = GeneralImport.addField(csvElement,
-					"Import MPAN", values, 11);
+					"Import MPAN", values, 12);
 			Mpan existingImportMpan = existingGeneration.getImportMpan();
 			if (importMpanStr.equals(GeneralImport.NO_CHANGE)) {
 				if (existingImportMpan == null) {
@@ -446,14 +443,14 @@ public class SupplyGeneration extends PersistentEntity {
 			Integer importAgreedSupplyCapacity = null;
 
 			String importSscCode = GeneralImport.addField(csvElement,
-					"Import SSC", values, 12);
+					"Import SSC", values, 13);
 
 			String importAgreedSupplyCapacityStr = GeneralImport.addField(
-					csvElement, "Import Agreed Supply Capacity", values, 13);
+					csvElement, "Import Agreed Supply Capacity", values, 14);
 			String importContractSupplierName = GeneralImport.addField(
-					csvElement, "Import Supplier Contract", values, 14);
+					csvElement, "Import Supplier Contract", values, 15);
 			importSupplierAccount = GeneralImport.addField(csvElement,
-					"Import Supplier Account Reference", values, 15);
+					"Import Supplier Account Reference", values, 16);
 			if (importMpanStr.length() > 0) {
 				if (importSscCode.equals(GeneralImport.NO_CHANGE)) {
 					if (existingImportMpan != null) {
@@ -498,10 +495,10 @@ public class SupplyGeneration extends PersistentEntity {
 			String exportSupplierAccount = null;
 			Integer exportAgreedSupplyCapacity = null;
 
-			if (values.length > 1) {
+			if (values.length > 17) {
 				Mpan existingExportMpan = existingGeneration.getExportMpan();
 				exportMpanStr = GeneralImport.addField(csvElement,
-						"Eport MPAN", values, 16);
+						"Export MPAN", values, 17);
 				if (exportMpanStr.equals(GeneralImport.NO_CHANGE)) {
 					if (existingExportMpan == null) {
 						exportMpanStr = "";
@@ -512,7 +509,7 @@ public class SupplyGeneration extends PersistentEntity {
 
 				if (exportMpanStr.length() > 0) {
 					String exportSscCode = GeneralImport.addField(csvElement,
-							"Export SSC", values, 17);
+							"Export SSC", values, 18);
 					if (exportSscCode.equals(GeneralImport.NO_CHANGE)) {
 						if (existingExportMpan != null) {
 							exportSsc = existingExportMpan.getSsc();
@@ -522,7 +519,7 @@ public class SupplyGeneration extends PersistentEntity {
 					}
 					String exportAgreedSupplyCapacityStr = GeneralImport
 							.addField(csvElement,
-									"Export Agreed Supply Capacity", values, 18);
+									"Export Agreed Supply Capacity", values, 19);
 					if (exportAgreedSupplyCapacityStr
 							.equals(GeneralImport.NO_CHANGE)) {
 						if (existingExportMpan != null) {
@@ -541,7 +538,7 @@ public class SupplyGeneration extends PersistentEntity {
 					}
 
 					String exportSupplierContractName = GeneralImport.addField(
-							csvElement, "Export Supplier Contract", values, 19);
+							csvElement, "Export Supplier Contract", values, 20);
 					if (exportSupplierContractName
 							.equals(GeneralImport.NO_CHANGE)) {
 						if (existingExportMpan != null) {
@@ -553,7 +550,7 @@ public class SupplyGeneration extends PersistentEntity {
 								.getSupplierContract(exportSupplierContractName);
 					}
 					exportSupplierAccount = GeneralImport.addField(csvElement,
-							"Export Supplier Account", values, 20);
+							"Export Supplier Account", values, 21);
 					if (exportSupplierAccount.equals(GeneralImport.NO_CHANGE)) {
 						if (existingExportMpan != null) {
 							exportSupplierAccount = existingExportMpan
@@ -899,6 +896,7 @@ public class SupplyGeneration extends PersistentEntity {
 		}
 	}
 
+	@SuppressWarnings("unchecked")
 	public void update(HhStartDate startDate, HhStartDate finishDate,
 			MopContract mopContract, String mopAccount,
 			HhdcContract hhdcContract, String hhdcAccount,
@@ -916,6 +914,7 @@ public class SupplyGeneration extends PersistentEntity {
 		setMeterSerialNumber(meterSerialNumber);
 		Pc importPc = null;
 		Pc exportPc = null;
+		List<Long> contractIds = new ArrayList<Long>();
 		if (importMpan == null) {
 			if (importMpanStr != null && importMpanStr.length() != 0) {
 				Hiber.flush();
@@ -962,6 +961,7 @@ public class SupplyGeneration extends PersistentEntity {
 					"A supply generation must have at least one MPAN.");
 		}
 		if (importMpan != null) {
+			contractIds.add(importMpan.getSupplierContract().getId());
 			if (!importMpan.getLlfc().getIsImport()) {
 				throw new UserException(document(),
 						"The import line loss factor '" + importMpan.getLlfc()
@@ -975,6 +975,7 @@ public class SupplyGeneration extends PersistentEntity {
 			}
 		}
 		if (exportMpan != null) {
+			contractIds.add(exportMpan.getSupplierContract().getId());
 			if (exportMpan.getLlfc().getIsImport()) {
 				throw new UserException(
 						"Problem with the export MPAN with core '"
@@ -1044,15 +1045,6 @@ public class SupplyGeneration extends PersistentEntity {
 							startDate.getDate()).uniqueResult()) > 0) {
 				throw new UserException(
 						"There are HH data before the start of the updated supply.");
-			}
-			if (((Long) Hiber
-					.session()
-					.createQuery(
-							"select count(*) from RegisterRead read where read.bill.supply  = :supply and read.presentDate.date < :date")
-					.setEntity("supply", supply).setTimestamp("date",
-							startDate.getDate()).uniqueResult()) > 0) {
-				throw new UserException(
-						"There are register reads before the start of the updated supply.");
 			}
 			if (((Long) Hiber
 					.session()
@@ -1134,6 +1126,7 @@ public class SupplyGeneration extends PersistentEntity {
 						"MPAN cores can't change without an overlapping period.");
 			}
 		}
+
 		if (hhdcContract == null) {
 			hhdcAccount = null;
 			if (!channels.isEmpty()) {
@@ -1141,6 +1134,7 @@ public class SupplyGeneration extends PersistentEntity {
 						"Can't remove the HHDC account while there are still channels there.");
 			}
 		} else {
+			contractIds.add(hhdcContract.getId());
 			hhdcAccount = hhdcAccount == null ? null : hhdcAccount.trim();
 			if (hhdcAccount == null || hhdcAccount.length() == 0) {
 				throw new UserException(
@@ -1159,88 +1153,51 @@ public class SupplyGeneration extends PersistentEntity {
 						+ hhdcContract.getId()
 						+ " finishes before the supply generation.");
 			}
-			Criteria crit = Hiber.session().createCriteria(Bill.class).add(
-					Restrictions.eq("supply", supply)).add(
-					Restrictions.ge("finishDate.date", startDate.getDate()))
-					.createAlias("batch", "bt").add(
-							Restrictions.eq("bt.contract.id", hhdcContract
-									.getId())).addOrder(
-							Order.asc("startDate.date"));
-			if (finishDate != null) {
-				crit.add(Restrictions
-						.le("startDate.date", finishDate.getDate()));
-			}
-			Bill firstHhdcBill = (Bill) crit.uniqueResult();
-			if (firstHhdcBill == null) {
-				supply.addSnag(hhdcContract, SupplySnag.MISSING_BILL,
-						getStartDate(), getFinishDate());
-			} else {
-				if (firstHhdcBill.getStartDate().after(getStartDate())) {
-					supply.addSnag(hhdcContract, SupplySnag.MISSING_BILL,
-							getStartDate(), firstHhdcBill.getStartDate()
-									.getPrevious());
-				}
-			}
 		}
 		Hiber.flush();
 		setHhdcAccount(hhdcAccount);
 		setHhdcContract(hhdcContract);
 		Hiber.flush();
+		
+		if (mopContract == null) {
+			mopAccount = null;
+		} else {
+			contractIds.add(mopContract.getId());
+			mopAccount = mopAccount == null ? null : mopAccount.trim();
+			if (mopAccount == null || mopAccount.length() == 0) {
+				throw new UserException(
+						"If there's a MOP contract, there must be an account reference.");
+			}
+			HhStartDate mopContractStartDate = mopContract
+					.getStartRateScript().getStartDate();
+			if (mopContractStartDate.after(startDate)) {
+				throw new UserException(
+						"The MOP contract starts after the supply generation.");
+			}
+			HhStartDate mopContractFinishDate = mopContract
+					.getFinishRateScript().getFinishDate();
+			if (HhStartDate.isBefore(mopContractFinishDate, finishDate)) {
+				throw new UserException("The MOP contract "
+						+ mopContract.getId()
+						+ " finishes before the supply generation.");
+			}
+		}
+		Hiber.flush();
+		setMopAccount(mopAccount);
+		setMopContract(mopContract);
+		Hiber.flush();
+
 		for (Channel channel : channels) {
 			channel.onSupplyGenerationChange();
 		}
 		Hiber.flush();
-		if (importMpan != null) {
-			Criteria impCrit = Hiber.session().createCriteria(Bill.class).add(
-					Restrictions.eq("supply", supply)).add(
-					Restrictions
-							.ge("finishDate.date", getStartDate().getDate()))
-					.createAlias("batch", "bt").add(
-							Restrictions.eq("bt.contract.id", importMpan
-									.getSupplierContract().getId())).addOrder(
-							Order.asc("startDate.date")).setMaxResults(1);
-			if (finishDate != null) {
-				impCrit.add(Restrictions.le("startDate.date", finishDate
-						.getDate()));
-			}
-			Bill firstImpSupBill = (Bill) impCrit.uniqueResult();
-			if (firstImpSupBill == null) {
-				supply.addSnag(importMpan.getSupplierContract(),
-						SupplySnag.MISSING_BILL, getStartDate(),
-						getFinishDate());
-			} else {
-				if (firstImpSupBill.getStartDate().after(getStartDate())) {
-					supply.addSnag(importMpan.getSupplierContract(),
-							SupplySnag.MISSING_BILL, getStartDate(),
-							firstImpSupBill.getStartDate().getPrevious());
-				}
-			}
+		Query billQuery = Hiber.session().createQuery("from Bill bill where bill.supply = :supply and " + (finishDate == null ? "" : "bill.startDate.date <= :finishDate and ") + " bill.finishDate.date >= :startDate and bill.batch.contract.id not in (:contractIds)").setEntity("supply", supply).setTimestamp("startDate", startDate.getDate()).setParameterList("contractIds", contractIds);
+		if (finishDate != null) {
+			billQuery.setTimestamp("finishDate", finishDate.getDate());
 		}
-		if (exportMpan != null) {
-			Criteria expCrit = Hiber.session().createCriteria(Bill.class).add(
-					Restrictions.eq("supply", supply)).createAlias("batch",
-					"bt").add(
-					Restrictions.eq("bt.contract.id", exportMpan
-							.getSupplierContract().getId())).add(
-					Restrictions
-							.ge("finishDate.date", getStartDate().getDate()))
-					.addOrder(Order.asc("startDate.date"));
-			if (finishDate != null) {
-				expCrit.add(Restrictions.le("startDate.date", finishDate
-						.getDate()));
-			}
-			Bill firstExpSupBill = (Bill) expCrit.uniqueResult();
-			if (firstExpSupBill == null) {
-				supply.addSnag(exportMpan.getSupplierContract(),
-						SupplySnag.MISSING_BILL, getStartDate(),
-						getFinishDate());
-			} else {
-				if (firstExpSupBill.getStartDate().after(getStartDate())) {
-					supply.addSnag(exportMpan.getSupplierContract(),
-							SupplySnag.MISSING_BILL, getStartDate(),
-							firstExpSupBill.getStartDate().getPrevious());
-				}
-			}
+		List<Bill> orphanBills = (List<Bill>) billQuery.list();
+		if (!orphanBills.isEmpty()) {
+			throw new UserException("There are some bills which wouldn't have the right contract, for example: " + orphanBills.get(0).getId() + ".");
 		}
 		// See if we have to move hh data from one generation to the other
 		for (Boolean isImport : new Boolean[] { true, false }) {

@@ -24,7 +24,6 @@ package net.sf.chellow.billing;
 import java.math.BigDecimal;
 import java.util.Date;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 import net.sf.chellow.monad.Hiber;
@@ -45,7 +44,6 @@ import net.sf.chellow.physical.RawRegisterRead;
 import net.sf.chellow.physical.RegisterRead;
 import net.sf.chellow.physical.RegisterReads;
 import net.sf.chellow.physical.Supply;
-import net.sf.chellow.physical.SupplySnag;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -337,32 +335,8 @@ public class Bill extends PersistentEntity implements Urlable {
 		return read;
 	}
 
-	@SuppressWarnings("unchecked")
 	public void delete() throws HttpException {
 		Hiber.session().delete(this);
-		Hiber.flush();
-		HhStartDate snagStart = startDate;
-		if (!isCancelledOut) {
-			for (Bill bill : (List<Bill>) Hiber
-					.session()
-					.createQuery(
-							"from Bill bill where bill.batch.contract.id = :contractId and bill.supply = :supply and bill.isCancelledOut is false and bill.startDate.date <= :finishDate and bill.finishDate.date >= :startDate order by bill.startDate.date")
-					.setLong("contractId", batch.getContract().getId())
-					.setEntity("supply", getSupply()).setTimestamp("startDate",
-							startDate.getDate()).setTimestamp("finishDate",
-							finishDate.getDate()).list()) {
-				if (bill.getStartDate().after(snagStart)) {
-					supply.addSnag(batch.getContract(),
-							SupplySnag.MISSING_BILL, snagStart, bill
-									.getStartDate().getPrevious());
-					snagStart = bill.getFinishDate().getNext();
-				}
-			}
-			if (!snagStart.after(finishDate)) {
-				supply.addSnag(batch.getContract(), SupplySnag.MISSING_BILL,
-						snagStart, finishDate);
-			}
-		}
 		Hiber.flush();
 	}
 }

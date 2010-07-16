@@ -34,13 +34,9 @@ import net.sf.chellow.monad.UserException;
 import net.sf.chellow.monad.XmlTree;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
-import net.sf.chellow.physical.HhStartDate;
-import net.sf.chellow.physical.Mpan;
 import net.sf.chellow.physical.PersistentEntity;
 import net.sf.chellow.physical.RawRegisterRead;
 import net.sf.chellow.physical.Supply;
-import net.sf.chellow.physical.SupplyGeneration;
-import net.sf.chellow.physical.SupplySnag;
 
 import org.hibernate.HibernateException;
 import org.hibernate.ScrollableResults;
@@ -190,10 +186,9 @@ public class Batch extends PersistentEntity {
 		List<Supply> supplyList = (List<Supply>) Hiber
 				.session()
 				.createQuery(
-						"select mpan.supplyGeneration.supply from Mpan mpan where ((mpan.supplierContract = :contract and mpan.supplierAccount = :account) or (mpan.supplyGeneration.hhdcContract = :contract and mpan.supplyGeneration.hhdcAccount = :account) or (mpan.supplyGeneration.mopContract = :contract and mpan.supplyGeneration.mopAccount = :account)) and mpan.supplyGeneration.startDate.date <= :billFinish and (mpan.supplyGeneration.finishDate.date is null or mpan.supplyGeneration.finishDate.date >= :billFinish) order by mpan.core.dso.code, mpan.core.uniquePart")
+						"select mpan.supplyGeneration.supply from Mpan mpan where ((mpan.supplierContract = :contract and mpan.supplierAccount = :account) or (mpan.supplyGeneration.hhdcContract = :contract and mpan.supplyGeneration.hhdcAccount = :account) or (mpan.supplyGeneration.mopContract = :contract and mpan.supplyGeneration.mopAccount = :account)) order by mpan.core.dso.code, mpan.core.uniquePart")
 				.setEntity("contract", getContract()).setString("account",
-						rawBill.getAccount()).setTimestamp("billFinish",
-						rawBill.getFinishDate().getDate()).list();
+						rawBill.getAccount()).list();
 		if (supplyList.isEmpty()) {
 			throw new UserException(
 					"Can't find a supply generation with this contract and account number.");
@@ -209,42 +204,6 @@ public class Batch extends PersistentEntity {
 				false, rawBill.getBreakdown());
 		for (RawRegisterRead rawRead : rawBill.getRegisterReads()) {
 			bill.insertRead(rawRead);
-		}
-
-		List<SupplyGeneration> generations = supply.getGenerations(bill
-				.getStartDate(), bill.getFinishDate());
-
-		// what about missing bill snags??????
-		for (SupplyGeneration generation : generations) {
-			HhStartDate st = generation.getStartDate().before(
-					bill.getStartDate()) ? bill.getStartDate() : generation
-					.getStartDate();
-			HhStartDate fn = bill.getFinishDate().before(
-					generation.getFinishDate()) ? bill.getFinishDate()
-					: generation.getFinishDate();
-			HhdcContract hhdcContract = generation.getHhdcContract();
-			if (hhdcContract != null
-					&& hhdcContract.getId() == contract.getId()) {
-				supply
-						.deleteSnag(hhdcContract, SupplySnag.MISSING_BILL, st,
-								fn);
-			}
-			Mpan importMpan = generation.getImportMpan();
-			if (importMpan != null
-					&& importMpan.getSupplierContract().getId().equals(
-							contract.getId())) {
-				// Debug.print("Deleting snag from " + st + " to " + fn +
-				// " sup con " + importMpan.getSupplierContract().toString());
-				supply.deleteSnag(importMpan.getSupplierContract(),
-						SupplySnag.MISSING_BILL, st, fn);
-			}
-			Mpan exportMpan = generation.getExportMpan();
-			if (exportMpan != null
-					&& exportMpan.getSupplierContract().getId().equals(
-							contract.getId())) {
-				supply.deleteSnag(exportMpan.getSupplierContract(),
-						SupplySnag.MISSING_BILL, st, fn);
-			}
 		}
 		return bill;
 	}

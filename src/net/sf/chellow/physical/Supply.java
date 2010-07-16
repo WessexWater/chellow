@@ -27,8 +27,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import net.sf.chellow.billing.Bill;
-import net.sf.chellow.billing.Contract;
 import net.sf.chellow.billing.HhdcContract;
 import net.sf.chellow.billing.MopContract;
 import net.sf.chellow.billing.SupplierContract;
@@ -657,28 +655,6 @@ public class Supply extends PersistentEntity {
 				.uniqueResult();
 	}
 
-	void delete(Bill bill) throws HttpException {
-		Bill foundBill = (Bill) Hiber
-				.session()
-				.createQuery(
-						"from Bill bill where bill.supply = :supply and bill.id = :billId")
-				.setEntity("supply", this).setLong("billId", bill.getId())
-				.uniqueResult();
-		if (foundBill == null) {
-			throw new InternalException(
-					"This bill isn't attached to this supply.");
-		}
-		Hiber.session().delete(foundBill);
-		addSnag(foundBill.getBatch().getContract(), SupplySnag.MISSING_BILL,
-				foundBill.getStartDate(), foundBill.getFinishDate());
-	}
-
-	public void deleteSnag(Contract contract, String description,
-			HhStartDate startDate, HhStartDate finishDate) throws HttpException {
-		SnagDateBounded.deleteSupplySnag(this, contract, description,
-				startDate, finishDate);
-	}
-
 	public SupplyGeneration getGenerationNext(SupplyGeneration generation)
 			throws HttpException {
 		if (generation.getFinishDate() == null) {
@@ -777,15 +753,9 @@ public class Supply extends PersistentEntity {
 		return new SupplyGenerations(this);
 	}
 
-	public SupplySnags getSupplySnagsInstance() {
-		return new SupplySnags(this);
-	}
-
 	public Urlable getChild(UriPathElement uriId) throws HttpException {
 		if (SupplyGenerations.URI_ID.equals(uriId)) {
 			return getSupplyGenerationsInstance();
-		} else if (SupplySnags.URI_ID.equals(uriId)) {
-			return getSupplySnagsInstance();
 		} else {
 			throw new NotFoundException();
 		}
@@ -799,7 +769,6 @@ public class Supply extends PersistentEntity {
 		return isEqual;
 	}
 
-	@SuppressWarnings("unchecked")
 	public void delete() throws HttpException {
 		if ((Long) Hiber
 				.session()
@@ -811,12 +780,6 @@ public class Supply extends PersistentEntity {
 		}
 		for (SupplyGeneration generation : getGenerations()) {
 			generation.delete();
-		}
-		for (SupplySnag snag : (List<SupplySnag>) Hiber.session().createQuery(
-				"from SupplySnag snag where snag.supply = :supply").setEntity(
-				"supply", this).list()) {
-			Hiber.session().delete(snag);
-			Hiber.flush();
 		}
 		mpanCores.clear();
 		Hiber.session().delete(this);
@@ -830,12 +793,6 @@ public class Supply extends PersistentEntity {
 			generation.getChannel(true, true).siteCheck(from, to);
 			generation.getChannel(false, true).siteCheck(from, to);
 		}
-	}
-
-	public void addSnag(Contract contract, String description,
-			HhStartDate startDate, HhStartDate finishDate) throws HttpException {
-		SnagDateBounded.addSupplySnag(this, contract, description, startDate,
-				finishDate);
 	}
 
 	public String toString() {

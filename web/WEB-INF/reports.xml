@@ -546,23 +546,16 @@ def bills_list(parent_element, element_name, contract, generation):
     bills_element = parent_element.getOwnerDocument().createElement(element_name)
     parent_element.appendChild(bills_element)
     bills_crit = Hiber.session().createCriteria(Class.forName('net.sf.chellow.billing.Bill')).createAlias('batch', 'bt').add(Restrictions.eq('bt.contract.id', Long(contract.getId()))).add(Restrictions.eq('supply', generation.getSupply())).add(Restrictions.ge('startDate.date', generation.getStartDate().getDate())).addOrder(Order.asc('startDate.date'))
-    snags_crit = Hiber.session().createCriteria(Class.forName('net.sf.chellow.physical.SupplySnag')).add(Restrictions.eq('contract.id', Long(contract.getId()))).add(Restrictions.eq('supply', generation.getSupply())).add(Restrictions.ge('startDate.date', generation.getStartDate().getDate())).add(Restrictions.eq('isIgnored', False)).addOrder(Order.asc('startDate.date'))
 
     finish_date = generation.getFinishDate()
     if finish_date is not None:
         bills_crit.add(Restrictions.le('startDate.date', generation.getFinishDate().getDate()))
-        snags_crit.add(Restrictions.le('startDate.date', generation.getFinishDate().getDate()))
     bill_dict = {}
     for bill in bills_crit.list():
         key = bill.getStartDate().getDate().getTime()
         if not bill_dict.has_key(key):
             bill_dict[key] = []
         bill_dict[key].append(bill.toXml(doc, XmlTree('batch', XmlTree('contract')).put('reads', XmlTree('tpr'))))
-    for snag in snags_crit.list():
-        key = snag.getStartDate().getDate().getTime()
-        if not bill_dict.has_key(key):
-            bill_dict[key] = []
-        bill_dict[key].append(snag.toXml(doc))
     bill_keys = bill_dict.keys()
     bill_keys.sort()
     for key in bill_keys:
@@ -941,8 +934,6 @@ source.appendChild(MonadDate.getHoursXml(doc))]]></value>
                         <tbody>
                             <xsl:for-each select="import-bills/*">
                                 <tr>
-                                <xsl:choose>
-                                <xsl:when test="name()='bill'">
                                     <td><xsl:value-of select="'['"/>
                                         <a
                                             href="{/source/request/@context-path}/supplier-contracts/{batch/supplier-contract/@id}/batches/{batch/@id}/bills/{@id}/">
@@ -1027,36 +1018,7 @@ source.appendChild(MonadDate.getHoursXml(doc))]]></value>
                                   </td>
                             -->
                                     </xsl:if>
-                                </xsl:when>
-                                <xsl:otherwise>
-                                                                    <td>
-                                        <xsl:value-of select="'['" /><a
-                                            href="{/source/request/@context-path}/supplies/{/source/supply/@id}/snags/{@id}/">
-                                            <xsl:value-of select="'edit'" />
-                                        </a><xsl:value-of select="']'" />
-                                    </td>
-                                    <td>
-                                    </td>
-                                    <td>
-                                        <xsl:value-of
-                                            select="concat(hh-start-date[@label='start']/@year, '-', hh-start-date[@label='start']/@month, '-', hh-start-date[@label='start']/@day)" />
-                                    </td>
-                                    <td>
-                                      <xsl:choose>
-                                      <xsl:when test="hh-start-date[@label='finish']">
-                                        <xsl:value-of
-                                            select="concat(hh-start-date[@label='finish']/@year, '-', hh-start-date[@label='finish']/@month, '-', hh-start-date[@label='finish']/@day)" />
-                                      </xsl:when>
-                                      <xsl:otherwise>
-                                      Ongoing
-                                      </xsl:otherwise>
-                                      </xsl:choose>
-                                    </td>
-                                    <td colspan="49">
-                                        <xsl:value-of select="@description" />
-                                    </td>
-                                </xsl:otherwise>
-                                </xsl:choose>
+                                
                       <xsl:for-each select="register-read">
                             <td>
                                 <a href="{/source/request/@context-path}/reports/97/output/?tpr-id={tpr/@id}">
@@ -9402,6 +9364,7 @@ elif inv.hasParameter('bill-id'):
     batch = bill.getBatch()
 
 while bills.next():
+    #pw.println('starting bill ' + str(System.currentTimeMillis()))
     bill = bills.get(0)
     bill_start = bill.getStartDate()
     bill_finish = bill.getFinishDate()
@@ -9455,6 +9418,8 @@ while bills.next():
 
         generations = Hiber.session().createQuery("select distinct generation from SupplyGeneration generation where generation.supply = :supply and generation.importMpan is not null and generation.startDate.date <= :finishDate and (generation.finishDate is null or generation.finishDate.date >= :startDate)").setEntity('supply', supply).setTimestamp('startDate', chunk_start.getDate()).setTimestamp('finishDate', chunk_finish.getDate()).scroll()
         while generations.next():
+            #pw.println('starting vbill ' + str(System.currentTimeMillis()))
+            
             generation = generations.get(0)
             mpan = generation.getImportMpan()
             contract = mpan.getSupplierContract()

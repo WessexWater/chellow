@@ -5344,8 +5344,7 @@ class SupplySource(DataSource):
 
 
     def create_whole_data(self, start_date, finish_date, forecast_date):
-        timing = System.currentTimeMillis()
-        #self.pw.println("starting create whole data start date " + str(start_date) + " finish date " + str(finish_date)  + str(System.currentTimeMillis() - timing))
+        #self.pw.println("starting create whole data start date " + str(start_date) + " finish date " + str(finish_date)  + str(System.currentTimeMillis()))
 
         cal = MonadDate.getCalendar()
         cal.setTime(finish_date.getDate())
@@ -5388,7 +5387,7 @@ class SupplySource(DataSource):
                 mpan = generation.getExportMpan()
             tpr_codes = Hiber.session().createQuery("select mr.tpr.code from MeasurementRequirement mr where mr.ssc = :ssc").setEntity('ssc', mpan.getSsc()).list()
             bills = []
-            for cand_bill in Hiber.session().createQuery("select distinct read.bill from RegisterRead read where read.bill.supply = :supply and read.bill.batch.contract = :contract and read.bill.startDate.date <= :finishDate and read.bill.finishDate.date >= :searchStart order by read.bill.issueDate desc, read.bill.startDate.date").setEntity('supply', supply).setEntity('contract', mpan.getSupplierContract()).setTimestamp('searchStart', start_date.getDate()).setTimestamp('finishDate', finish_date.getDate()).list():
+            for cand_bill in Hiber.session().createQuery("select distinct read.bill from RegisterRead read where read.bill.supply = :supply and read.bill.batch.contract = :contract and read.bill.startDate.date <= :finishDate and read.bill.finishDate.date >= :searchStart and read.bill.kwh >= 0 order by read.bill.issueDate desc, read.bill.startDate.date").setEntity('supply', supply).setEntity('contract', mpan.getSupplierContract()).setTimestamp('searchStart', start_date.getDate()).setTimestamp('finishDate', finish_date.getDate()).list():
                 can_insert = True
                 for bill in bills:
                     if not cand_bill.getStartDate().after(bill.getFinishDate()) and not cand_bill.getFinishDate().before(bill.getStartDate()):
@@ -5397,7 +5396,7 @@ class SupplySource(DataSource):
                 if can_insert:
                     bills.append(cand_bill)
 
-            for bill in bills:
+            for bill in bills:                
                 for read in Hiber.session().createQuery("select read.tpr, read.tpr.code, read.coefficient, read.previousDate, read.previousValue, read.previousType.code, read.presentDate, read.presentValue, read.presentType.code, read.id from RegisterRead read where read.bill = :bill and read.units.int = :units order by read.presentDate.date").setEntity('bill', bill).setInteger('units', 0).list():
                     tpr = read[0]
                     tpr_code = read[1]
@@ -5465,33 +5464,37 @@ class SupplySource(DataSource):
                         status = 'A'
                     else:
                         status = 'E'
-                    for pass_count in range(2):
-                        if pass_count == 0:
-                            hh_date = previous_date
-                            pass_finish = present_date
-                        else:
-                            hh_date = chunk_start
-                            pass_finish = chunk_finish
-                        #self.pw.write('pass start ' + str(hh_date) + ' pass finish ' + str(pass_finish))
-                        while not hh_date.after(pass_finish):
-                            utc_cal.setTime(hh_date.getDate())
-                            ct_cal.setTime(hh_date.getDate())
-                            utc_cal.add(Calendar.YEAR, year_advance)
-                            ct_cal.add(Calendar.YEAR, year_advance)
 
-                            decimal_hour = cal.get(11) + float(cal.get(12)) / 60
-                            fractional_month = cal.get(Calendar.MONTH) * 100 + cal.get(Calendar.DAY_OF_MONTH)
-                            for ci in days_of_week.get(cal.get(Calendar.DAY_OF_WEEK), []):
-                                if ((ci['start-hour'] < ci['end-hour'] and ci['start-hour'] <= decimal_hour < ci['end-hour']) or (ci['start-hour'] >= ci['end-hour'] and (ci['start-hour'] <= decimal_hour or decimal_hour < ci['end-hour']))) and ci['start-month'] <= fractional_month <= ci['end-month']:
-                                    data_hh.append({'status': status, 'imp-msp-kvarh': 0, 'imp-msp-kvar': 0, 'exp-msp-kvarh': 0, 'exp-msp-kvar': 0, 'msp-kw': kwh * 2, 'msp-kwh': kwh, 'hist-kwh': kwh, 'hist-start-date': chunk_start, 'start-date': utc_cal.getTime(), 'ct-day': ct_cal.get(5), 'utc-month': utc_cal.get(2), 'utc-day': utc_cal.get(5), 'utc-decimal-hour': utc_cal.get(11) + float(utc_cal.get(12)) / 60, 'utc-year': utc_cal.get(Calendar.YEAR), 'utc-hour': utc_cal.get(Calendar.HOUR_OF_DAY), 'utc-minute': utc_cal.get(Calendar.MINUTE), 'ct-year': ct_cal.get(Calendar.YEAR), 'ct-month': ct_cal.get(2), 'ct-decimal-hour': ct_cal.get(11) + float(ct_cal.get(12)) / 60, 'ct-day-of-week': ct_cal.get(7), 'utc-day-of-week': utc_cal.get(7)})
-                                    break
+                    hh_date = previous_date.getDate().getTime()
+                    pass_finish = present_date.getDate().getTime()
+                    hh_cal = MonadDate.getCalendar()
+                    num_hh = 0
+                    chunk_start_millis = chunk_start.getDate().getTime()
+                    chunk_finish_millis = chunk_finish.getDate().getTime()
 
-                            hh_date = hh_date.getNext()
-                        #self.pw.println('pass count ' + str(pass_count) + '  len(data_hh) ' + str(len(data_hh)))
-                        if pass_count == 0 and len(data_hh) > 0:
-                            kwh = float(kwh) / float(len(data_hh))
-                            data_hh = []
-                        
+                    while not hh_date > pass_finish:
+                        utc_cal.setTimeInMillis(hh_date)
+                        ct_cal.setTimeInMillis(hh_date)
+                        utc_cal.add(Calendar.YEAR, year_advance)
+                        ct_cal.add(Calendar.YEAR, year_advance)
+                        decimal_hour = cal.get(11) + float(cal.get(12)) / 60
+                        fractional_month = cal.get(Calendar.MONTH) * 100 + cal.get(Calendar.DAY_OF_MONTH)
+                        for ci in days_of_week.get(cal.get(Calendar.DAY_OF_WEEK), []):
+                            if ((ci['start-hour'] < ci['end-hour'] and ci['start-hour'] <= decimal_hour < ci['end-hour']) or (ci['start-hour'] >= ci['end-hour'] and (ci['start-hour'] <= decimal_hour or decimal_hour < ci['end-hour']))) and ci['start-month'] <= fractional_month <= ci['end-month']:
+                                num_hh += 1
+                                if chunk_start_millis <= hh_date <= chunk_finish_millis:
+                                    data_hh.append({'status': status, 'imp-msp-kvarh': 0, 'imp-msp-kvar': 0, 'exp-msp-kvarh': 0, 'exp-msp-kvar': 0, 'hist-start-date': chunk_start, 'start-date': utc_cal.getTime(), 'ct-day': ct_cal.get(5), 'utc-month': utc_cal.get(2), 'utc-day': utc_cal.get(5), 'utc-decimal-hour': utc_cal.get(11) + float(utc_cal.get(12)) / 60, 'utc-year': utc_cal.get(Calendar.YEAR), 'utc-hour': utc_cal.get(Calendar.HOUR_OF_DAY), 'utc-minute': utc_cal.get(Calendar.MINUTE), 'ct-year': ct_cal.get(Calendar.YEAR), 'ct-month': ct_cal.get(2), 'ct-decimal-hour': ct_cal.get(11) + float(ct_cal.get(12)) / 60, 'ct-day-of-week': ct_cal.get(7), 'utc-day-of-week': utc_cal.get(7)})
+                                break
+                        hh_date = HhStartDate.getNext(hh_cal, hh_date)
+                    #self.pw.println(str(System.currentTimeMillis()) + " finished inner loop ")
+
+                    #self.pw.println('pass count ' + str(pass_count) + '  len(data_hh) ' + str(len(data_hh)))
+
+                    if num_hh > 0:
+                        kwh = float(kwh) / float(num_hh)
+                        for datum in data_hh:
+                            datum.update({'msp-kw': kwh * 2, 'msp-kwh': kwh, 'hist-kwh': kwh})
+                    #self.pw.println(str(System.currentTimeMillis()) + " done bills ")    
         else:
             con = Hiber.session().connection()
             if self.is_import:
@@ -5523,7 +5526,7 @@ class SupplySource(DataSource):
             stmt.close()
 
 
-        #self.pw.println("whole data: done looping " + str(System.currentTimeMillis() - timing))
+        #self.pw.println(str(System.currentTimeMillis()) + " done looping")
       
         if len(data_hh) == 0:
             utc_cal.setTime(self.finish_date.getDate())
@@ -5531,8 +5534,9 @@ class SupplySource(DataSource):
             data_hh.append({'status': 'E', 'used-kwh': 0, 'hist-kwh': 0, 'msp-kwh': 0, 'gsp-kwh': 0, 'msp-kw': 0, 'imp-msp-kvarh': 0, 'imp-msp-kvar': 0, 'exp-msp-kvarh': 0, 'hist-start-date': history_finish.getDate(), 'start-date': finish_date.getDate(), 'ct-day': ct_cal.get(5), 'utc-month': utc_cal.get(2), 'utc-day': utc_cal.get(5), 'utc-decimal-hour': utc_cal.get(11) + float(utc_cal.get(12)) / 60, 'ct-month': ct_cal.get(2), 'ct-decimal-hour': ct_cal.get(11) + ct_cal.get(12) / 60, 'ct-day-of-week': ct_cal.get(7), 'utc-day-of-week': utc_cal.get(7), 'utc-year': utc_cal.get(Calendar.YEAR), 'utc-hour': utc_cal.get(Calendar.HOUR), 'utc-minute': utc_cal.get(Calendar.MINUTE)})
 
         #self.pw.println("whole data: starting dso hh " + str(System.currentTimeMillis() - timing))
-        dso_contract = get_dso_contract(self.dso_code, HhStartDate(data_hh[0]['start-date']), self.pw)
         if self.pc_code == '00':
+            dso_contract = get_dso_contract(self.dso_code, HhStartDate(data_hh[0]['start-date']), self.pw)
+
             summary['dso-bill'] = {}
             contract_function(dso_contract, 'hh')(summary['dso-bill'], data_hh, self)
             summary['sum-gsp-kwh'] = sum(datum['gsp-kwh'] for datum in data_hh)
@@ -5544,7 +5548,7 @@ class SupplySource(DataSource):
             summary['sum-' + name] = sum(datum_list)
             summary['max-' + name] = max(datum_list)
 
-        #self.pw.println("finished create whole data " + str(System.currentTimeMillis() - timing))
+        #self.pw.println("finished create whole data " + str(System.currentTimeMillis()))
 
         return {'summary': summary, 'data': data_hh}
 
