@@ -25,59 +25,40 @@ import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.Invocation;
 import net.sf.chellow.monad.MonadUtils;
 import net.sf.chellow.monad.NotFoundException;
-import net.sf.chellow.monad.UserException;
 import net.sf.chellow.monad.types.MonadUri;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-public class ReadType extends PersistentEntity {
-	public static final char TYPE_CHANGE_OF_SUPPLIER = 'A';
-
-	public static final char TYPE_CUSTOMER = 'C';
-
-	public static final char TYPE_DEEMED = 'D';
-
-	public static final char TYPE_FINAL = 'F';
-
-	public static final char TYPE_INITIAL = 'I';
-	public static final char TYPE_MAR = 'M';
-	public static final char TYPE_OLD_SUPPLIERS_ESTIMATED = 'O';
-	public static final char TYPE_PPMIP = 'P';
-	public static final char TYPE_DC_MANUAL = 'Q';
-	public static final char TYPE_ROUTINE = 'R';
-	public static final char TYPE_SPECIAL = 'S';
-	public static final char TYPE_TEST = 'T';
-	public static final char TYPE_WITHDRAWN = 'W';
-	public static final char TYPE_CHANGE_OF_TENANCY = 'Z';
-	public static final char TYPE_ESTIMATE = 'E';
+public class ReadType extends PersistentEntity {	
+	public static final String TYPE_NORMAL = "N";
+	public static final String TYPE_NORMAL_3RD_PARTY = "N3";
+	public static final String TYPE_CUSTOMER = "C";
+	public static final String TYPE_ESTIMATED = "E";
+	public static final String TYPE_ESTIMATED_3RD_PARTY = "E3";
+	public static final String TYPE_ESTIMATED_MANUAL = "EM";
+	public static final String TYPE_WITHDRAWN = "W";
+	public static final String TYPE_EXCHANGE = "X";
+	public static final String TYPE_COMPUTER = "CP";
+	public static final String TYPE_INFORMATION = "IF";
 
 	static public ReadType getReadType(Long id) throws HttpException {
 		ReadType readType = (ReadType) Hiber.session().get(ReadType.class, id);
 		if (readType == null) {
-			throw new NotFoundException();
+			throw new NotFoundException("The Read Type with id " + id + " can't be found.");
 		}
 		return readType;
 	}
 
-	static public ReadType getReadType(char code) throws HttpException {
-		ReadType type = (ReadType) Hiber.session().createQuery(
-				"from ReadType type where type.code = :code").setCharacter(
-				"code", code).uniqueResult();
-		if (type == null) {
-			throw new NotFoundException();
-		}
-		return type;
-	}
-
 	static public ReadType getReadType(String code) throws HttpException {
 		code = code.trim();
-		int length = code.length();
-		if (length > 1 || length < 1) {
-			throw new UserException(
-					"The read type can only be a single character.");
+		ReadType type = (ReadType) Hiber.session().createQuery(
+				"from ReadType type where type.code = :code").setString(
+				"code", code).uniqueResult();
+		if (type == null) {
+			throw new NotFoundException("The Read Type with code " + code + " can't be found.");
 		}
-		return getReadType(code.charAt(0));
+		return type;
 	}
 
 	static public ReadType insertReadType(String code, String description)

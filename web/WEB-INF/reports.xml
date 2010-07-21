@@ -4325,7 +4325,6 @@ from net.sf.chellow.physical import ReadType, HhStartDate
 from java.util import Calendar
 
 def mpan_fields(mpan, date, is_import, mand_query, metering_type):
-    NON_ESTIMATE_READ_TYPES = [ReadType.TYPE_CHANGE_OF_SUPPLIER, ReadType.TYPE_CUSTOMER, ReadType.TYPE_FINAL, ReadType.TYPE_INITIAL, ReadType.TYPE_DC_MANUAL, ReadType.TYPE_ROUTINE, ReadType.TYPE_SPECIAL, ReadType.TYPE_CHANGE_OF_TENANCY]
     avg_months = ''
     if mpan is None:
         mpan_core_str = ''
@@ -4352,6 +4351,7 @@ def mpan_fields(mpan, date, is_import, mand_query, metering_type):
         mtc = mpan.getMtc()
         mtc_code_str = mtc.codeAsString()
         '''
+        NON_ESTIMATE_READ_TYPES = [ReadType.TYPE_CHANGE_OF_SUPPLIER, ReadType.TYPE_CUSTOMER, ReadType.TYPE_FINAL, ReadType.TYPE_INITIAL, ReadType.TYPE_DC_MANUAL, ReadType.TYPE_ROUTINE, ReadType.TYPE_SPECIAL, ReadType.TYPE_CHANGE_OF_TENANCY]
         i = 0
         found = False
         reads = Hiber.session().createQuery("from RegisterRead read where read.supply = :supply order by read.presentDate.date").setEntity('supply', mpan).list()

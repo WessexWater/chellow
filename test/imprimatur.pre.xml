@@ -245,18 +245,6 @@ def virtual_bill(supply, startDate, finishDate, pw):
 			<control name="start-year" value="2000" />
 			<control name="start-month" value="01" />
 			<control name="start-day" value="03" />
-			<control name="charge-script">
-				<![CDATA[
-import sys
-import net.sf.chellow.billing
-import net.sf.chellow.monad.ui
-import net.sf.chellow.physical
-
-def totalElement(account, startDate, finishDate):
-    totalElement = net.sf.chellow.billing.BillElement("total", 22.3, "VAT cost")
-    return totalElement
-]]>
-			</control>
 			<regex pattern="/chellow/non-core-contracts/6/" />
 			<response-code value="303" />
 		</request>
@@ -1818,6 +1806,26 @@ def import_virtual_bill(supply_source):
 		</request>
 
 		<!-- Create the virtual bill -->
+		<request path="/chellow/non-core-contracts/" method="post">
+			<control name="participant-id" value="185" />
+			<control name="is-core" value="false" />
+			<control name="name" value="TRIAD Estimates" />
+			<control name="start-year" value="2000" />
+			<control name="start-month" value="01" />
+			<control name="start-day" value="03" />
+			<response-code value="303" />
+		</request>
+		<request path="/chellow/non-core-contracts/14/rate-scripts/16/" method="post">
+			<control name="start-year" value="2000" />
+			<control name="start-month" value="01" />
+			<control name="start-day" value="03" />
+			<control name="script">
+				<![CDATA[
+def triad_estimates():
+    return {}]]>
+			</control>
+			<response-code value="200" />
+		</request>
 		<request
 			path="/chellow/reports/87/output/?contract-id=4&amp;mpan-core=22+4862+4512+332&amp;supply-polarity=import&amp;months=1&amp;end-year=2009&amp;end-month=03">
 			<response-code value="200" />
@@ -2258,8 +2266,7 @@ def import_virtual_bill(supply_source):
 			<response-code value="200" />
 		</request>
 	</test>
-	<test
-		name="Check that a generation can be deleted.">
+	<test name="Check that a generation can be deleted.">
 		<request path="/chellow/supplies/2/generations/15/" method="post">
 			<control name="delete" value="Delete" />
 			<response-code value="303" />

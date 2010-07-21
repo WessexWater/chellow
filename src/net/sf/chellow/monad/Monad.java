@@ -163,7 +163,6 @@ public abstract class Monad extends HttpServlet implements Urlable {
 	@SuppressWarnings("unchecked")
 	public void service(HttpServletRequest req, HttpServletResponse res)
 			throws IOException, ServletException {
-		Debug.print("doing service");
 		contextPath = req.getContextPath();
 		Invocation inv = null;
 		try {
@@ -375,42 +374,7 @@ public abstract class Monad extends HttpServlet implements Urlable {
 		}
 	}
 
-	/*
-	 * @SuppressWarnings("unchecked") static public void returnStream(Document
-	 * doc, String templatePath, String templateName, Result result) throws
-	 * HttpException { TransformerFactory tf = TransformerFactory.newInstance();
-	 * InputStream templateIs = null; InputStream debugIs = null; Transformer
-	 * transformer; tf.setURIResolver(new ElectedURIResolver()); if
-	 * (templatePath != null && templateName != null) { templateIs =
-	 * getConfigIs(templatePath, templateName); if (templateIs == null) { throw
-	 * new DesignerException("The resource '" + templatePath + " : " +
-	 * templateName + "' is needed but does not exist."); } debugIs =
-	 * getConfigIs(templatePath, DEBUG_FILE_NAME); } try { if (debugIs != null) {
-	 * StringWriter sr = new StringWriter();
-	 * 
-	 * transformer = tf.newTransformer();
-	 * transformer.setOutputProperty(OutputKeys.INDENT, "yes"); //
-	 * transformer.setOutputProperty( //
-	 * "{http://xml.apache.org/xslt}indent-amount", "2");
-	 * transformer.transform(new DOMSource(doc), new StreamResult(sr));
-	 * logger.logp(Level.INFO, "uk.org.tlocke.monad.Monad", "returnStream",
-	 * sr.toString()); } transformer = templateIs == null ? tf.newTransformer() :
-	 * tf .newTransformer(new StreamSource(templateIs));
-	 * transformer.setOutputProperty(OutputKeys.INDENT, "yes");
-	 * transformer.transform(new DOMSource(doc), result); } catch
-	 * (TransformerConfigurationException e) { Throwable throwable =
-	 * e.getCause(); throw new UserException("Problem transforming template '" +
-	 * templatePath + " : " + templateName + " " + e.getMessageAndLocation() +
-	 * e.getMessage() + e.getLocationAsString() + " " + e.getLocator() +
-	 * (throwable == null ? "" : " Problem type : " +
-	 * throwable.getClass().getName() + " Message: " + throwable.getMessage())); }
-	 * catch (TransformerException e) { throw new UserException("Problem
-	 * transforming template '" + templatePath + " : " + templateName + "'. " +
-	 * e.getMessageAndLocation() + " " + " Problem type : " +
-	 * e.getCause().getClass().getName() + " Message: " +
-	 * e.getException().getMessage() + "Stack trace: " +
-	 * HttpException.getStackTraceString(e.getException()) + e); } }
-	 */
+	
 	static private class ElectedURIResolver implements URIResolver {
 		public Source resolve(String href, String base) {
 			Source source = null;

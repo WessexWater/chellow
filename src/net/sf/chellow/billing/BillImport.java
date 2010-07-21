@@ -183,7 +183,13 @@ public class BillImport extends Thread implements Urlable, XmlDescriber {
 					+ HttpException.getStackTraceString(e));
 			throw new RuntimeException(e);
 		} catch (HttpException e) {
-			messages.add(e.getMessage());
+			String msg = e.getMessage();
+			if (msg == null) {
+				messages.add("HttpException: "
+						+ HttpException.getStackTraceString(e));
+			} else {
+				messages.add(msg);
+			}
 		} catch (Throwable e) {
 			messages.add("Throwable " + HttpException.getStackTraceString(e));
 			ChellowLogger.getLogger().logp(Level.SEVERE,

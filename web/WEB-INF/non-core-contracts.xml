@@ -47,7 +47,7 @@ from net.sf.chellow.monad import Hiber, UserException
 from java.math import BigDecimal
 
 
-read_type_map = {'00': ReadType.TYPE_ROUTINE, '01': ReadType.TYPE_ESTIMATE, '02': ReadType.TYPE_ESTIMATE, '03': ReadType.TYPE_ROUTINE, '04': ReadType.TYPE_CUSTOMER, '05': ReadType.TYPE_ROUTINE, '06': ReadType.TYPE_ROUTINE, '07': ReadType.TYPE_INITIAL}
+read_type_map = {'00': 'N', '01': 'E', '02': 'E', '04': 'C', '06': 'X', '07': 'N'}
 
 bill_type_map = {"A": "AMENDED", "F": "FINAL", "N": "NORMAL", "I": "INTEREST", "R": "RECONCILIATION", "P": "PREPAID", "O": "INFORMATION", "W": "WITHDRAWAL"}
 
@@ -340,7 +340,7 @@ from net.sf.chellow.monad.types import MonadDate
 from java.util import Calendar
 
 
-read_type_map = {'00': ReadType.TYPE_ROUTINE, '02': ReadType.TYPE_ESTIMATE, '04': ReadType.TYPE_CUSTOMER, '09': ReadType.TYPE_ROUTINE}
+read_type_map = {'00': 'N', '09': 'N3', '04': 'C', '02': 'E', '11': 'E3', '01': 'EM', '03': 'W', '06': 'X', '05': 'CP', '12': 'IF'}
 
 bill_types = {"A": "AMENDED", "F": "FINAL", "N": "NORMAL", "I": "INTEREST", "R": "RECONCILIATION", "P": "PREPAID", "O": "INFORMATION", "W": "WITHDRAWAL"}
 

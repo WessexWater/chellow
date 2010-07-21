@@ -161,9 +161,10 @@ public class ContextListener implements ServletContextListener {
 					.execute("CREATE UNIQUE INDEX channel_date ON hh_datum (channel_id, start_date);");
 			stmt.execute("ALTER TABLE report ALTER COLUMN script TYPE text;");
 			stmt.execute("ALTER TABLE report ALTER COLUMN template TYPE text;");
-			
+
 			stmt.execute("CREATE INDEX bill__start_date ON bill (start_date);");
-			stmt.execute("CREATE INDEX bill__finish_date ON bill (finish_date);");
+			stmt
+					.execute("CREATE INDEX bill__finish_date ON bill (finish_date);");
 			stmt.execute("CREATE INDEX bill__issue_date ON bill (issue_date);");
 		} catch (SQLException e) {
 			throw new InternalException(e);
@@ -194,17 +195,18 @@ public class ContextListener implements ServletContextListener {
 		GeneratorType.insertGeneratorType("lm", "Load management.");
 		GeneratorType.insertGeneratorType("turb", "Water turbine.");
 		Hiber.commit();
-		ReadType.insertReadType("R", "Routine");
-		ReadType.insertReadType("R3", "Routine 3rd Party");
-		ReadType.insertReadType("RC", "Customer");
-		ReadType.insertReadType("E", "Estimated Computer");
-		ReadType.insertReadType("E3", "Estimated 3rd Party Computer");
+		
+		ReadType.insertReadType("N", "Normal");
+		ReadType.insertReadType("N3", "Normal 3rd Party");
+		ReadType.insertReadType("C", "Customer");
+		ReadType.insertReadType("E", "Estimated");
+		ReadType.insertReadType("E3", "Estimated 3rd Party");
 		ReadType.insertReadType("EM", "Estimated Manual");
 		ReadType.insertReadType("W", "Withdrawn");
-		ReadType.insertReadType("RX", "Exchange");
-		ReadType.insertReadType("RK", "Computer");
-		ReadType.insertReadType("IF", "Information");
-        Hiber.commit();
+		ReadType.insertReadType("X", "Exchange");
+		ReadType.insertReadType("CP", "Computer");
+		Hiber.commit();
+		
 		try {
 			Debug.print("Starting to load MDD.");
 			Class<?> delegatorClass = null;
@@ -270,7 +272,7 @@ public class ContextListener implements ServletContextListener {
 		} catch (NoSuchMethodException e) {
 			throw new InternalException(e);
 		}
-        Hiber.close();
+		Hiber.close();
 		DsoContract.loadFromCsv(context);
 		Report.loadReports(context);
 		NonCoreContract.loadNonCoreContracts(context);
