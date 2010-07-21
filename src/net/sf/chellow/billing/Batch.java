@@ -21,6 +21,8 @@
 
 package net.sf.chellow.billing;
 
+import java.math.BigDecimal;
+import java.util.Date;
 import java.util.List;
 
 import net.sf.chellow.monad.Hiber;
@@ -34,9 +36,11 @@ import net.sf.chellow.monad.UserException;
 import net.sf.chellow.monad.XmlTree;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
+import net.sf.chellow.physical.HhStartDate;
 import net.sf.chellow.physical.PersistentEntity;
 import net.sf.chellow.physical.RawRegisterRead;
 import net.sf.chellow.physical.Supply;
+import net.sf.chellow.ui.GeneralImport;
 
 import org.hibernate.HibernateException;
 import org.hibernate.ScrollableResults;
@@ -58,6 +62,32 @@ public class Batch extends PersistentEntity {
 			Hiber.flush();
 		} catch (HibernateException e) {
 			throw new InternalException(e);
+		}
+	}
+
+	public static void generalImport(String action, String[] values,
+			Element csvElement) throws HttpException {
+		if (action.equals("insert")) {
+			String roleName = GeneralImport.addField(csvElement, "Role Name",
+					values, 0);
+			String contractName = GeneralImport.addField(csvElement,
+					"Contract Name", values, 1);
+			Contract contract = null;
+
+			if (roleName.equals("hhdc")) {
+				contract = HhdcContract.getHhdcContract(contractName);
+			} else if (roleName.equals("supplier")) {
+				contract = SupplierContract.getSupplierContract(contractName);
+			} else if (roleName.equals("mop")) {
+				contract = MopContract.getMopContract(contractName);
+			} else {
+				throw new UserException(
+						"The role name must be one of hhdc, supplier or mop.");
+			}
+			String reference = GeneralImport.addField(csvElement, "Reference",
+					values, 2);
+			contract.insertBatch(reference);
+		} else if (action.equals("update")) {
 		}
 	}
 
@@ -181,30 +211,47 @@ public class Batch extends PersistentEntity {
 		return new BillImports(this);
 	}
 
+	public Bill insertBill(RawBill rawBill) throws HttpException {
+		Bill bill = this.insertBill(rawBill.getAccount(), rawBill
+				.getReference(), rawBill.getIssueDate(),
+				rawBill.getStartDate(), rawBill.getFinishDate(), rawBill
+						.getKwh(), rawBill.getNet(), rawBill.getVat(), rawBill
+						.getType(), rawBill.getBreakdown());
+		for (RawRegisterRead rawRead : rawBill.getRegisterReads()) {
+			bill.insertRead(rawRead);
+		}
+		return bill;
+	}
+
+	public Bill insertBill(Supply supply, String account, String reference, Date issueDate,
+			HhStartDate startDate, HhStartDate finishDate, BigDecimal kwh,
+			BigDecimal net, BigDecimal vat, String type, String breakdown)
+			throws HttpException {
+		Bill bill = new Bill(this, supply);
+		Hiber.session().save(bill);
+		Hiber.flush();
+		bill.update(account, reference, issueDate, startDate, finishDate, kwh, net, vat,
+				type, null, breakdown);
+		Hiber.flush();
+		return bill;
+	}
+
 	@SuppressWarnings("unchecked")
-	Bill insertBill(RawBill rawBill) throws HttpException {
+	public Bill insertBill(String account, String reference, Date issueDate,
+			HhStartDate startDate, HhStartDate finishDate, BigDecimal kwh,
+			BigDecimal net, BigDecimal vat, String type, String breakdown)
+			throws HttpException {
 		List<Supply> supplyList = (List<Supply>) Hiber
 				.session()
 				.createQuery(
 						"select mpan.supplyGeneration.supply from Mpan mpan where ((mpan.supplierContract = :contract and mpan.supplierAccount = :account) or (mpan.supplyGeneration.hhdcContract = :contract and mpan.supplyGeneration.hhdcAccount = :account) or (mpan.supplyGeneration.mopContract = :contract and mpan.supplyGeneration.mopAccount = :account)) order by mpan.core.dso.code, mpan.core.uniquePart")
 				.setEntity("contract", getContract()).setString("account",
-						rawBill.getAccount()).list();
+						account).list();
 		if (supplyList.isEmpty()) {
 			throw new UserException(
 					"Can't find a supply generation with this contract and account number.");
 		}
-		Hiber.flush();
-		Supply supply = supplyList.get(0);
-		Bill bill = new Bill(this, supply);
-		Hiber.session().save(bill);
-		Hiber.flush();
-		bill.update(rawBill.getReference(), rawBill.getIssueDate(), rawBill
-				.getStartDate(), rawBill.getFinishDate(), rawBill.getKwh(),
-				rawBill.getNet(), rawBill.getVat(), rawBill.getType(), null,
-				false, rawBill.getBreakdown());
-		for (RawRegisterRead rawRead : rawBill.getRegisterReads()) {
-			bill.insertRead(rawRead);
-		}
-		return bill;
+		return insertBill(supplyList.get(0), account, reference, issueDate, startDate,
+				finishDate, kwh, net, vat, type, breakdown);
 	}
 }

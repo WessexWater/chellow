@@ -41,6 +41,8 @@ import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.events.XMLEvent;
 
+import net.sf.chellow.billing.Batch;
+import net.sf.chellow.billing.Bill;
 import net.sf.chellow.billing.DsoContract;
 import net.sf.chellow.billing.HhdcContract;
 import net.sf.chellow.billing.NonCoreContract;
@@ -270,6 +272,10 @@ public class GeneralImport extends Thread implements Urlable, XmlDescriber {
 						ChannelSnag.generalImport(action, values, csvElement);
 					} else if (type.equals("site-snag-ignore")) {
 						SiteSnag.generalImport(action, values, csvElement);
+					} else if (type.equals("batch")) {
+						Batch.generalImport(action, values, csvElement);
+					} else if (type.equals("bill")) {
+						Bill.generalImport(action, values, csvElement);
 					} else {
 						throw new UserException("The type " + type
 								+ " isn't recognized.");

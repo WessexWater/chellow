@@ -37,7 +37,6 @@ import net.sf.chellow.monad.types.UriPathElement;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import org.w3c.dom.Node;
 
 public class Tpr extends PersistentEntity {
 	static public Tpr findTpr(String code) {
@@ -163,7 +162,7 @@ public class Tpr extends PersistentEntity {
 		return interval;
 	}
 
-	public Node toXml(Document doc) throws HttpException {
+	public Element toXml(Document doc) throws HttpException {
 		Element element = super.toXml(doc, "tpr");
 
 		element.setAttribute("code", code);
@@ -173,7 +172,6 @@ public class Tpr extends PersistentEntity {
 	}
 
 	public String toString() {
-		return "Code: " + code + " Is Teleswitch?: " + isTeleswitch
-				+ " Is GMT?: " + isGmt;
+		return code;
 	}
 }

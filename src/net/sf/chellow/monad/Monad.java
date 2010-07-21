@@ -163,6 +163,7 @@ public abstract class Monad extends HttpServlet implements Urlable {
 	@SuppressWarnings("unchecked")
 	public void service(HttpServletRequest req, HttpServletResponse res)
 			throws IOException, ServletException {
+		Debug.print("doing service");
 		contextPath = req.getContextPath();
 		Invocation inv = null;
 		try {

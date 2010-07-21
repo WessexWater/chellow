@@ -344,11 +344,7 @@ read_type_map = {'00': ReadType.TYPE_ROUTINE, '02': ReadType.TYPE_ESTIMATE, '04'
 
 bill_types = {"A": "AMENDED", "F": "FINAL", "N": "NORMAL", "I": "INTEREST", "R": "RECONCILIATION", "P": "PREPAID", "O": "INFORMATION", "W": "WITHDRAWAL"}
 
-tmod_map = {'0001': 1, 'URQ1': '00001', 'Z012': 1, '0210': 192, '0043': 39, 'DAQ2': 39, 'NIQ2': 192, 'NQ22': 192, 'DQ22': 39, 'D7P2': 39, 'N7P2': 192, 'MDC1': 1, 'URC1': 1, '0206': 188, '0040': 37, '1140': 192, '1139': 39, 'A154': 545, 'A153': 544, '0039': 39, '0221': 192, '210E': 192, '1150': 192, '1149': 39, '0153': 144, 'WQ42': 170, 'NQ42': 192, 'EQ42': 173, 'WDQ3': 39, 'EWQ3': 192, 'WDQ4': 467, 'EWQ4': 468, 'NIQ4': 469, 'EQ32': 68, 'NQ32': 170, '0276': 250, '0277': 251, '0160': 151, '1152': 543, '1151': 542, '1142': 533, '1141': 532, '0249': 218, '0252': 221, '0240': 226, '0244': 229, '0092': 88, '210A': 192, 'MAC2': 'md', 'DAC2': 37, 'NAC2': 188, 'NDC2': 37, 'NNC2': 188, 'MNC2': 'md', '148A': 139, '221B': 202, '080A':76, 'P1M3': 217, 'P2M3': 217, 'W1M3': 225, 'W2M3':228, 'OTM3': 89, 'NIM3': 190, 'MDM3': 'md', 'URQD': 1, 'OPE3': 480, 'OEC2': 176}
-
-'''
-, , , 'CMACU': 20, 'CMACUF': 20, , , , , , , 'NIE7': 1, , , , 'DAE7': 3, , , 'DAQ2': 3, , , , , , 'MAC2': 20, , 'OPAC': '00001', '10': '00001' '39': 3, , '40': 3, , '43': 3, , '0071': 4, '71': 4, '72': 4, '73': 11, '80': 4, , '84': '00001', '92': 9, '93': 9, '148': 6, , '151': 2, '0151': 2, '0044': 3, '0208': 1, '160': 1, 'U393': 2, , '0183': 6, '183': 6, '184': 6, '184A': 6, '187': 4, '187A': 4, '206': 1, , '208': 1, '210': 1, , , '210J': 1, '212': 2, , , '0221B': 1, '239': 10, '240': 10, '244': 11, '248': 7, '249': 7, '251': 8, '252': 8, '276': 6, , '277': 4, , '1059': 3, '1060': 1, '1071': 3, '1072': 1, '1073': 6, '1074': 4, '1075': 1, '1076': 6, '1077': 4, '1078': 3, '1079': 1, '1088': 2, , , , , , , , , '1153': 3, '1154': 1, , , , , , , 'MDM1': 20, , , , , , , , , , , , , , , , , 'SG1U': 2, 'N179': 1, 'D179': 3, 'O212': 2, 'URM1': 2, 'D244': 3, 'N244': 1, 'DM22': 3, 'NM22': 1, 'MM22': 20, '0184': 6, '0072': 4}
-'''
+tmod_map = {'0001': '00001', 'URQ1': '00001', 'Z012': '00001', '0210': '00210', '0043': '00043', 'DAQ2': '00043', 'NIQ2': '00210', 'NQ22': '00210', 'DQ22': '00043', 'D7P2': '00043', 'N7P2': '00210', 'MDC1': '00001', 'URC1': '00001', '0206': '00206', '0040': '00040', '1140': '00210', '1139': '00043', 'A154': '01154', 'A153': '01153', '0039': '00043', '0221': '00210', '210E': '00210', '1150': '00210', '1149': '00043', '0153': '00153', 'WQ42': '00184', 'NQ42': '00210', 'EQ42': '00187', 'WDQ3': '00043', 'EWQ3': '00210', 'WDQ4': '01075', 'EWQ4': '01076', 'NIQ4': '01077', 'EQ32': '00072', 'NQ32': '00184', '0276': '00276', '0277': '00277', '0160': '00160', '1152': '01152', '1151': '01151', '1142': '01142', '1141': '01141', '0249': '00240', '0252': '00244', '0240': '00249', '0244': '00252', '0092': '00092', '210A': '00210', 'MAC2': 'md', 'DAC2': '00040', 'NAC2': '00206', 'NDC2': '00040', 'NNC2': '00206', 'MNC2': 'md', '148A': '00148', '221B': '00221', '080A':'00080', 'P1M3': '00239', 'P2M3': '00239', 'W1M3': '00248', 'W2M3':'00251', 'OTM3': '00093', 'NIM3': '00208', 'MDM3': 'md', 'URQD': '00001', 'OPE3': '01088', 'OEC2': '00190', '184A': '00184', '210J': '00187', '187A': '00210', '0183': '00183', '0071': '00071', 'DAE7': '00043', 'NIE7': '00210', 'OPAC': '00010', 'MDM1': 'md', 'D179': '00039', 'N179': '00221', 'O212': '00212', '0151': '00151', 'SG1U': '00001', '0184': '00184', '0072': '00072', 'DM22': '00039', 'NM22': '00221', 'MM22': 'md', '0044':'00044' , '0208': '00208', 'URM1': '00001', '1043': '01043', '1042': '01042', 'U393': '00001', 'D244': '00040', 'N244': '00206', '24D4':'00040', '24N4':'00206'}
 
 class Parser(BillParser):
     def __init__(self, reader):
@@ -443,7 +439,7 @@ class Parser(BillParser):
                     tpr = tmod_map[tpr_code]
                     if tpr == 'md':
                         units = Units.KW
-                        tpr = 1
+                        tpr = None
                     else:
                         units = Units.KWH
                         kwh = kwh.add(self.parser.to_big_decimal(cons).divide(BigDecimal('1000')))
@@ -8644,16 +8640,20 @@ def triad(bill, dso_contract, month_begin, month_end, data_source, rate_period='
     est_triad_kws = [data_source.create_whole_data(t_date, t_date, financial_year_start)['data'][0] for t_date in triad_dates]
 
     #pw.println("finished getting data " + str(System.currentTimeMillis() - timing))
-    if data_source.site_id is None and (data_source.is_new or triad_dates[2].before(MpanCore.getMpanCore(data_source.mpan_core).getSupply().getGenerationFirst().getStartDate())):
-        triad_rate_script = NonCoreContract.getNonCoreContract("TRIAD Estimates").rateScript(month_begin)
-        triad_estimates = data_source.rate(triad_rate_script, 'triad_estimates')
-        if data_source.id in triad_estimates:
-            est_triad_kw = triad_estimates[data_source.id]
-        else:
-            est_triad_kw = 0.8 * data_source.summary['max-msp-kwh'] * 2
-        for est_datum in est_triad_kws:
-            est_datum['msp-kw'] = est_triad_kw
-            est_datum['gsp-kw'] = est_datum['msp-kw'] * est_datum['laf']
+    if data_source.site_id is None:
+        supply = MpanCore.getMpanCore(data_source.mpan_core).getSupply()
+        generations = [supply.getGeneration(triad_date) for triad_date in triad_dates]
+        generations = [generation for generation in generations if (generation is not None) and (generation.getPc().getCode() != 0) and(generation.getChannel(data_source.is_import, True) is not None)]
+        if len(generations) < 3:
+            triad_rate_script = NonCoreContract.getNonCoreContract("TRIAD Estimates").rateScript(month_begin)
+            triad_estimates = data_source.rate(triad_rate_script, 'triad_estimates')
+            if data_source.id in triad_estimates:
+                est_triad_kw = triad_estimates[data_source.id]
+            else:
+                est_triad_kw = 0.85 * data_source.summary['max-msp-kwh'] * 2
+            for est_datum in est_triad_kws:
+                est_datum['msp-kw'] = est_triad_kw
+                est_datum['gsp-kw'] = est_datum['msp-kw'] * est_datum['laf']
     
     triad_calc(bill, 'triad-estimate', dso_contract, est_triad_kws, financial_year_start, data_source)
 

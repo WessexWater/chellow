@@ -463,6 +463,20 @@ public abstract class Contract extends PersistentEntity implements
 		return contract;
 	}
 
+	public Batch getBatch(String reference) throws HttpException {
+		Batch batch = (Batch) Hiber
+				.session()
+				.createQuery(
+						"from Batch batch where batch.contract.id = :contractId and batch.reference = :reference")
+				.setLong("contractId", getId()).setString("reference",
+						reference).uniqueResult();
+		if (batch == null) {
+			throw new UserException("There isn't a batch attached to contract "
+					+ getId() + " with reference " + reference + ".");
+		}
+		return batch;
+	}
+
 	public Batch insertBatch(String reference) throws HttpException {
 		Batch batch = new Batch(this, reference);
 		try {

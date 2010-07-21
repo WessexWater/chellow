@@ -21,6 +21,7 @@
 
 package net.sf.chellow.physical;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -620,28 +621,26 @@ public class Supply extends PersistentEntity {
 			throw new UserException(
 					"The only way to delete the last generation is to delete the entire supply.");
 		}
-		if (((Long) Hiber
-				.session()
-				.createQuery(
-						"select count(*) from Channel channel where channel.supplyGeneration = :generation")
-				.setEntity("generation", generation).uniqueResult()) > 0) {
-			throw new UserException(
-					"One can't delete a supply generation if there are still channels attached to it.");
-		}
 		SupplyGeneration previousGeneration = getGenerationPrevious(generation);
 		SupplyGeneration nextGeneration = getGenerationNext(generation);
-		getGenerations().remove(generation);
-		Hiber.session().delete(generation);
-		if (previousGeneration == null) {
-			nextGeneration.update(generation.getStartDate(), nextGeneration
-					.getFinishDate());
-		} else {
+		if (previousGeneration != null) {
 			previousGeneration.update(previousGeneration.getStartDate(),
 					generation.getFinishDate());
+		} else {
+			nextGeneration.update(generation.getStartDate(), nextGeneration
+					.getFinishDate());
 		}
 		Hiber.flush();
-		// onSupplyGenerationChange(generation.getStartDate(), generation
-		// .getFinishDate());
+		List<Channel> tempChannels = new ArrayList<Channel>();
+		for (Channel channel : generation.getChannels()) {
+			tempChannels.add(channel);
+		}
+		for (Channel channel : tempChannels) {
+			generation.deleteChannel(channel.getIsImport(), channel.getIsKwh());
+		}
+		getGenerations().remove(generation);
+		Hiber.session().delete(generation);
+		Hiber.flush();
 	}
 
 	public SupplyGeneration getGenerationPrevious(SupplyGeneration generation)

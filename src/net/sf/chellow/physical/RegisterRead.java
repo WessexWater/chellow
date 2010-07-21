@@ -40,11 +40,11 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
 public class RegisterRead extends PersistentEntity {
+	private Bill bill;
+
 	private String meterSerialNumber;
 
 	private String mpanStr;
-
-	private Bill bill;
 
 	private BigDecimal coefficient;
 
@@ -67,32 +67,26 @@ public class RegisterRead extends PersistentEntity {
 	RegisterRead() {
 	}
 
-	public RegisterRead(Bill bill, RawRegisterRead rawRead)
-			throws HttpException {
+	public RegisterRead(Bill bill, Tpr tpr, BigDecimal coefficient,
+			Units units, String meterSerialNumber, String mpanStr,
+			HhStartDate previousDate, BigDecimal previousValue,
+			ReadType previousType, HhStartDate presentDate,
+			BigDecimal presentValue, ReadType presentType) throws HttpException {
 		if (bill == null) {
-			throw new InternalException("The invoice must not be null.");
+			throw new InternalException("The bill must not be null.");
 		}
 		setBill(bill);
-		setTpr(rawRead.getTpr());
-		setCoefficient(rawRead.getCoefficient());
-		setUnits(rawRead.getUnits());
-		setPreviousDate(rawRead.getPreviousDate());
-		setPreviousValue(rawRead.getPreviousValue());
-		setPreviousType(rawRead.getPreviousType());
-		setPresentDate(rawRead.getPresentDate());
-		setPresentValue(rawRead.getPresentValue());
-		setPresentType(rawRead.getPresentType());
-		setMeterSerialNumber(rawRead.getMeterSerialNumber());
-		setMpanStr(rawRead.getMpanStr());
-		/*
-		 * if (previousType.getCode() != ReadType.TYPE_INITIAL) { RegisterRead
-		 * read = (RegisterRead) Hiber .session() .createQuery(
-		 * "from RegisterRead read where read.meterSerialNumber = :meterSerialNumber and read.presentDate.date = :readDate"
-		 * ) .setString("meterSerialNumber",
-		 * getMeterSerialNumber()).setDate("readDate",
-		 * getPreviousDate().getDate()).uniqueResult(); if (read == null) {
-		 * bill.insertSnag(BillSnag.PREVIOUS_READ); } }
-		 */
+		setTpr(tpr);
+		setCoefficient(coefficient);
+		setUnits(units);
+		setPreviousDate(previousDate);
+		setPreviousValue(previousValue);
+		setPreviousType(previousType);
+		setPresentDate(presentDate);
+		setPresentValue(presentValue);
+		setPresentType(presentType);
+		setMeterSerialNumber(meterSerialNumber);
+		setMpanStr(mpanStr);
 	}
 
 	public String getMpanStr() {
@@ -119,7 +113,7 @@ public class RegisterRead extends PersistentEntity {
 		this.bill = bill;
 	}
 
-	BigDecimal getCoefficient() {
+	public BigDecimal getCoefficient() {
 		return coefficient;
 	}
 
@@ -127,7 +121,7 @@ public class RegisterRead extends PersistentEntity {
 		this.coefficient = coefficient;
 	}
 
-	Units getUnits() {
+	public Units getUnits() {
 		return units;
 	}
 

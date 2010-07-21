@@ -51,11 +51,9 @@ public class ReadType extends PersistentEntity {
 	public static final char TYPE_WITHDRAWN = 'W';
 	public static final char TYPE_CHANGE_OF_TENANCY = 'Z';
 	public static final char TYPE_ESTIMATE = 'E';
-	
 
 	static public ReadType getReadType(Long id) throws HttpException {
-		ReadType readType = (ReadType) Hiber.session().get(
-				ReadType.class, id);
+		ReadType readType = (ReadType) Hiber.session().get(ReadType.class, id);
 		if (readType == null) {
 			throw new NotFoundException();
 		}
@@ -76,34 +74,36 @@ public class ReadType extends PersistentEntity {
 		code = code.trim();
 		int length = code.length();
 		if (length > 1 || length < 1) {
-			throw new UserException("The read type can only be a single character.");
+			throw new UserException(
+					"The read type can only be a single character.");
 		}
 		return getReadType(code.charAt(0));
 	}
-	
-	static public ReadType insertReadType(char code, String description) throws HttpException {
+
+	static public ReadType insertReadType(String code, String description)
+			throws HttpException {
 		ReadType readType = new ReadType(code, description);
 		Hiber.session().save(readType);
 		Hiber.flush();
 		return readType;
 	}
 
-	private char code;
+	private String code;
 	private String description;
 
 	public ReadType() {
 	}
 
-	public ReadType(char code, String description) {
+	public ReadType(String code, String description) {
 		this.code = code;
 		this.description = description;
 	}
 
-	public char getCode() {
+	public String getCode() {
 		return code;
 	}
 
-	public void setCode(char code) {
+	public void setCode(String code) {
 		this.code = code;
 	}
 
@@ -135,5 +135,9 @@ public class ReadType extends PersistentEntity {
 		element.setAttribute("code", String.valueOf(code));
 		element.setAttribute("description", description);
 		return element;
+	}
+
+	public String toString() {
+		return code;
 	}
 }

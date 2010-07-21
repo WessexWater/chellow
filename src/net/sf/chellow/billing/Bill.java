@@ -22,8 +22,10 @@
 package net.sf.chellow.billing;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import net.sf.chellow.monad.Hiber;
@@ -39,16 +41,124 @@ import net.sf.chellow.monad.types.MonadDate;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
 import net.sf.chellow.physical.HhStartDate;
+import net.sf.chellow.physical.Mpan;
+import net.sf.chellow.physical.MpanCore;
 import net.sf.chellow.physical.PersistentEntity;
 import net.sf.chellow.physical.RawRegisterRead;
+import net.sf.chellow.physical.ReadType;
 import net.sf.chellow.physical.RegisterRead;
 import net.sf.chellow.physical.RegisterReads;
 import net.sf.chellow.physical.Supply;
+import net.sf.chellow.physical.SupplyGeneration;
+import net.sf.chellow.physical.Tpr;
+import net.sf.chellow.physical.Units;
+import net.sf.chellow.ui.GeneralImport;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 public class Bill extends PersistentEntity implements Urlable {
+	public static void generalImport(String action, String[] values,
+			Element csvElement) throws HttpException {
+		if (action.equals("insert")) {
+			String roleName = GeneralImport.addField(csvElement, "Role Name",
+					values, 0);
+			String contractName = GeneralImport.addField(csvElement,
+					"Contract Name", values, 1);
+
+			Contract contract = null;
+			if (roleName.equals("hhdc")) {
+				contract = HhdcContract.getHhdcContract(contractName);
+			} else if (roleName.equals("supplier")) {
+				contract = SupplierContract.getSupplierContract(contractName);
+			} else if (roleName.equals("mop")) {
+				contract = MopContract.getMopContract(contractName);
+			} else {
+				throw new UserException(
+						"The role name must be one of hhdc, supplier or mop.");
+			}
+			String batchReference = GeneralImport.addField(csvElement,
+					"Batch Reference", values, 2);
+
+			Batch batch = contract.getBatch(batchReference);
+			String mpanCoreStr = GeneralImport.addField(csvElement,
+					"Mpan Core", values, 3);
+			MpanCore mpanCore = MpanCore.getMpanCore(mpanCoreStr);
+			String issueDateStr = GeneralImport.addField(csvElement,
+					"Issue Date", values, 4);
+			Date issueDate = new MonadDate(issueDateStr).getDate();
+			String startDateStr = GeneralImport.addField(csvElement,
+					"Start Date", values, 5);
+			HhStartDate startDate = new HhStartDate(startDateStr);
+			String finishDateStr = GeneralImport.addField(csvElement,
+					"Finish Date", values, 6);
+			HhStartDate finishDate = new HhStartDate(finishDateStr);
+			String netStr = GeneralImport
+					.addField(csvElement, "Net", values, 7);
+			BigDecimal net = new BigDecimal(netStr);
+			String vatStr = GeneralImport
+					.addField(csvElement, "Vat", values, 8);
+			BigDecimal vat = new BigDecimal(vatStr);
+			String account = GeneralImport.addField(csvElement, "Reference",
+					values, 9);
+
+			String reference = GeneralImport.addField(csvElement, "Reference",
+					values, 10);
+			String type = GeneralImport
+					.addField(csvElement, "Type", values, 11);
+			String breakdown = GeneralImport.addField(csvElement, "Breakdown",
+					values, 12);
+
+			String kwhStr = GeneralImport.addField(csvElement, "kWh", values,
+					13);
+			BigDecimal kwh = new BigDecimal(kwhStr);
+
+			Bill bill = batch.insertBill(mpanCore.getSupply(), account, reference,
+					issueDate, startDate, finishDate, kwh, net, vat, type,
+					breakdown);
+			for (int i = 14; i < values.length; i += 11) {
+				String meterSerialNumber = GeneralImport.addField(csvElement,
+						"Meter Serial Number", values, i);
+				String mpanStr = GeneralImport.addField(csvElement, "MPAN",
+						values, i + 1);
+				String coefficientStr = GeneralImport.addField(csvElement,
+						"Coefficient", values, i + 2);
+				BigDecimal coefficient = new BigDecimal(coefficientStr);
+				String unitsStr = GeneralImport.addField(csvElement, "Units",
+						values, i + 3);
+				Units units = Units.getUnits(unitsStr);
+				String tprStr = GeneralImport.addField(csvElement, "TPR",
+						values, i + 4);
+				Tpr tpr = Tpr.getTpr(tprStr);
+				String previousDateStr = GeneralImport.addField(csvElement,
+						"Previous Date", values, i + 5);
+				HhStartDate previousDate = new HhStartDate(previousDateStr);
+				String previousValueStr = GeneralImport.addField(csvElement,
+						"Previous Value", values, i + 6);
+				BigDecimal previousValue = new BigDecimal(previousValueStr);
+
+				String previousTypeStr = GeneralImport.addField(csvElement,
+						"Previous Type", values, i + 7);
+				ReadType previousType = ReadType.getReadType(previousTypeStr);
+
+				String presentDateStr = GeneralImport.addField(csvElement,
+						"Present Date", values, i + 5);
+				HhStartDate presentDate = new HhStartDate(presentDateStr);
+				String presentValueStr = GeneralImport.addField(csvElement,
+						"Present Value", values, i + 6);
+				BigDecimal presentValue = new BigDecimal(presentValueStr);
+
+				String presentTypeStr = GeneralImport.addField(csvElement,
+						"Present Type", values, i + 7);
+				ReadType presentType = ReadType.getReadType(presentTypeStr);
+				bill.insertRead(tpr, coefficient, units, meterSerialNumber,
+						mpanStr, previousDate, previousValue, previousType,
+						presentDate, presentValue, presentType);
+			}
+		} else if (action.equals("update")) {
+		}
+	}
+
 	public static Bill getBill(Long id) throws HttpException {
 		Bill bill = (Bill) Hiber.session().get(Bill.class, id);
 		if (bill == null) {
@@ -71,6 +181,8 @@ public class Bill extends PersistentEntity implements Urlable {
 
 	private BigDecimal vat;
 
+	private String account;
+
 	private String reference;
 
 	private Boolean isPaid; // Null is pending, false is rejected.
@@ -81,8 +193,6 @@ public class Bill extends PersistentEntity implements Urlable {
 
 	private BigDecimal kwh;
 
-	private boolean isCancelledOut;
-
 	private Set<RegisterRead> reads;
 
 	public Bill() {
@@ -92,6 +202,7 @@ public class Bill extends PersistentEntity implements Urlable {
 		setBatch(batch);
 		setSupply(supply);
 		setReference("Default Reference");
+		setAccount("Default Account");
 		setType("");
 		setBreakdown("");
 		setKwh(new BigDecimal(0));
@@ -99,7 +210,6 @@ public class Bill extends PersistentEntity implements Urlable {
 		setVat(new BigDecimal(0));
 		setStartDate(HhStartDate.roundDown(new Date()));
 		setFinishDate(HhStartDate.roundDown(new Date()));
-		setIsCancelledOut(false);
 	}
 
 	public Batch getBatch() {
@@ -166,6 +276,14 @@ public class Bill extends PersistentEntity implements Urlable {
 		this.reference = reference;
 	}
 
+	public String getAccount() {
+		return account;
+	}
+
+	public void setAccount(String account) {
+		this.account = account;
+	}
+
 	public Boolean getIsPaid() {
 		return isPaid;
 	}
@@ -190,14 +308,6 @@ public class Bill extends PersistentEntity implements Urlable {
 		this.breakdown = breakdown;
 	}
 
-	public boolean getIsCancelledOut() {
-		return isCancelledOut;
-	}
-
-	public void setIsCancelledOut(boolean isCancelledOut) {
-		this.isCancelledOut = isCancelledOut;
-	}
-
 	void setKwh(BigDecimal kwh) {
 		this.kwh = kwh;
 	}
@@ -214,11 +324,29 @@ public class Bill extends PersistentEntity implements Urlable {
 		return reads;
 	}
 
-	public void update(String reference, Date issueDate, HhStartDate startDate,
-			HhStartDate finishDate, BigDecimal kwh, BigDecimal net,
-			BigDecimal vat, String type, Boolean isPaid,
-			boolean isCancelledOut, String breakdown) throws HttpException {
+	public void update(String account, String reference, Date issueDate,
+			HhStartDate startDate, HhStartDate finishDate, BigDecimal kwh,
+			BigDecimal net, BigDecimal vat, String type, Boolean isPaid,
+			String breakdown) throws HttpException {
+		for (SupplyGeneration generation : supply.getGenerations(startDate, finishDate)) {
+			List<Long> contractIds = new ArrayList<Long>();
+			HhdcContract hhdcContract = generation.getHhdcContract();
+			if (hhdcContract != null) {
+				contractIds.add(hhdcContract.getId());
+			}
+			MopContract mopContract = generation.getMopContract();
+			if (mopContract != null) {
+				contractIds.add(mopContract.getId());
+			}
+			for (Mpan mpan : generation.getMpans()) {
+				contractIds.add(mpan.getSupplierContract().getId());
+			}
+			if (!contractIds.contains(batch.getContract().getId())) {
+				throw new UserException("For the bill " + getId() + " of batch " + batch.getId() + " of contract " + batch.getContract().getId() + " there's no matching contract for one or more of the supply generation.");
+			}
+		}
 		setReference(reference);
+		setAccount(account);
 		setIssueDate(issueDate);
 		if (startDate.getDate().after(finishDate.getDate())) {
 			throw new UserException(
@@ -237,7 +365,6 @@ public class Bill extends PersistentEntity implements Urlable {
 		}
 		setType(type);
 		setIsPaid(isPaid);
-		setIsCancelledOut(isCancelledOut);
 		setBreakdown(breakdown);
 	}
 
@@ -255,8 +382,6 @@ public class Bill extends PersistentEntity implements Urlable {
 		if (isPaid != null) {
 			element.setAttribute("is-paid", Boolean.toString(isPaid));
 		}
-		element.setAttribute("is-cancelled-out", Boolean
-				.toString(isCancelledOut));
 		element.setAttribute("type", type);
 		element.setAttribute("breakdown", breakdown);
 		return element;
@@ -268,6 +393,7 @@ public class Bill extends PersistentEntity implements Urlable {
 			Hiber.commit();
 			inv.sendSeeOther(batch.billsInstance().getUri());
 		} else {
+			String account = inv.getString("account");
 			String reference = inv.getString("reference");
 			Date issueDate = inv.getDate("issue-date");
 			Date startDate = inv.getDate("start");
@@ -277,15 +403,14 @@ public class Bill extends PersistentEntity implements Urlable {
 			BigDecimal vat = inv.getBigDecimal("vat");
 			String type = inv.getString("type");
 			Boolean isPaid = inv.getBoolean("isPaid");
-			Boolean isCancelledOut = inv.getBoolean("isCancelledOut");
 			String breakdown = inv.getString("breakdown");
 
 			if (!inv.isValid()) {
 				throw new UserException(document());
 			}
-			update(reference, issueDate, new HhStartDate(startDate).getNext(),
+			update(account, reference, issueDate, new HhStartDate(startDate).getNext(),
 					new HhStartDate(finishDate), kwh, net, vat, type, isPaid,
-					isCancelledOut, breakdown);
+					breakdown);
 			Hiber.commit();
 			inv.sendOk(document());
 		}
@@ -323,9 +448,14 @@ public class Bill extends PersistentEntity implements Urlable {
 		return new RegisterReads(this);
 	}
 
-	public RegisterRead insertRead(RawRegisterRead rawRead)
-			throws HttpException {
-		RegisterRead read = new RegisterRead(this, rawRead);
+	public RegisterRead insertRead(Tpr tpr, BigDecimal coefficient,
+			Units units, String meterSerialNumber, String mpanStr,
+			HhStartDate previousDate, BigDecimal previousValue,
+			ReadType previousType, HhStartDate presentDate,
+			BigDecimal presentValue, ReadType presentType) throws HttpException {
+		RegisterRead read = new RegisterRead(this, tpr, coefficient, units,
+				meterSerialNumber, mpanStr, previousDate, previousValue,
+				previousType, presentDate, presentValue, presentType);
 		if (reads == null) {
 			reads = new HashSet<RegisterRead>();
 		}
@@ -333,6 +463,16 @@ public class Bill extends PersistentEntity implements Urlable {
 		Hiber.flush();
 		read.attach();
 		return read;
+	}
+
+	public RegisterRead insertRead(RawRegisterRead rawRead)
+			throws HttpException {
+		return insertRead(rawRead.getTpr(), rawRead.getCoefficient(), rawRead
+				.getUnits(), rawRead.getMeterSerialNumber(), rawRead
+				.getMpanStr(), rawRead.getPreviousDate(), rawRead
+				.getPreviousValue(), rawRead.getPreviousType(), rawRead
+				.getPresentDate(), rawRead.getPresentValue(), rawRead
+				.getPresentType());
 	}
 
 	public void delete() throws HttpException {

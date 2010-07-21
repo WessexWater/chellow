@@ -118,7 +118,9 @@ public class RawRegisterRead extends MonadObject {
 		Element element = doc.createElement("raw-register-read");
 		element.setAttribute("coefficient", coefficient.toString());
 		element.setAttribute("units", Units.name(units));
-		element.appendChild(tpr.toXml(doc));
+		if (tpr != null) {
+			element.appendChild(tpr.toXml(doc));
+		}
 		previousDate.setLabel("previous");
 		element.appendChild(previousDate.toXml(doc));
 		element.setAttribute("previous-value", previousValue.toString());
