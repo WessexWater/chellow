@@ -347,6 +347,10 @@ public class SupplyGeneration extends PersistentEntity {
 					: new HhStartDate(startDateStr);
 			SupplyGeneration existingGeneration = supply
 					.getGeneration(startDate);
+			if (existingGeneration == null) {
+				throw new UserException(
+						"The start date isn't within the supply.");
+			}
 
 			String siteCode = GeneralImport.addField(csvElement, "Site Code",
 					values, 2);
@@ -1158,7 +1162,7 @@ public class SupplyGeneration extends PersistentEntity {
 		setHhdcAccount(hhdcAccount);
 		setHhdcContract(hhdcContract);
 		Hiber.flush();
-		
+
 		if (mopContract == null) {
 			mopAccount = null;
 		} else {
@@ -1168,8 +1172,8 @@ public class SupplyGeneration extends PersistentEntity {
 				throw new UserException(
 						"If there's a MOP contract, there must be an account reference.");
 			}
-			HhStartDate mopContractStartDate = mopContract
-					.getStartRateScript().getStartDate();
+			HhStartDate mopContractStartDate = mopContract.getStartRateScript()
+					.getStartDate();
 			if (mopContractStartDate.after(startDate)) {
 				throw new UserException(
 						"The MOP contract starts after the supply generation.");
@@ -1191,13 +1195,24 @@ public class SupplyGeneration extends PersistentEntity {
 			channel.onSupplyGenerationChange();
 		}
 		Hiber.flush();
-		Query billQuery = Hiber.session().createQuery("from Bill bill where bill.supply = :supply and " + (finishDate == null ? "" : "bill.startDate.date <= :finishDate and ") + " bill.finishDate.date >= :startDate and bill.batch.contract.id not in (:contractIds)").setEntity("supply", supply).setTimestamp("startDate", startDate.getDate()).setParameterList("contractIds", contractIds);
+		Query billQuery = Hiber
+				.session()
+				.createQuery(
+						"from Bill bill where bill.supply = :supply and "
+								+ (finishDate == null ? ""
+										: "bill.startDate.date <= :finishDate and ")
+								+ " bill.finishDate.date >= :startDate and bill.batch.contract.id not in (:contractIds)")
+				.setEntity("supply", supply).setTimestamp("startDate",
+						startDate.getDate()).setParameterList("contractIds",
+						contractIds);
 		if (finishDate != null) {
 			billQuery.setTimestamp("finishDate", finishDate.getDate());
 		}
 		List<Bill> orphanBills = (List<Bill>) billQuery.list();
 		if (!orphanBills.isEmpty()) {
-			throw new UserException("There are some bills which wouldn't have the right contract, for example: " + orphanBills.get(0).getId() + ".");
+			throw new UserException(
+					"There are some bills which wouldn't have the right contract, for example: "
+							+ orphanBills.get(0).getId() + ".");
 		}
 		// See if we have to move hh data from one generation to the other
 		for (Boolean isImport : new Boolean[] { true, false }) {
