@@ -16,6 +16,7 @@ import net.sf.chellow.physical
 def totalElement(account, startDate, finishDate):
     totalElement = net.sf.chellow.billing.BillElement("total", 103, "Dso cost")
     return totalElement]]></value>
+        <value><![CDATA[1]]></value>
         <value><![CDATA[import sys
 import net.sf.chellow.billing
 import net.sf.chellow.monad.ui
@@ -41,6 +42,7 @@ import net.sf.chellow.physical
 def totalElement(account, startDate, finishDate):
     totalElement = net.sf.chellow.billing.BillElement("total", 103, "Dso cost")
     return totalElement]]></value>
+        <value><![CDATA[3]]></value>
         <value><![CDATA[import sys
 import net.sf.chellow.billing
 import net.sf.chellow.monad.ui
@@ -66,6 +68,7 @@ import net.sf.chellow.physical
 def totalElement(account, startDate, finishDate):
     totalElement = net.sf.chellow.billing.BillElement("total", 103, "Dso cost")
     return totalElement]]></value>
+        <value><![CDATA[5]]></value>
         <value><![CDATA[import sys
 import net.sf.chellow.billing
 import net.sf.chellow.monad.ui
@@ -91,6 +94,7 @@ import net.sf.chellow.physical
 def totalElement(account, startDate, finishDate):
     totalElement = net.sf.chellow.billing.BillElement("total", 103, "Dso cost")
     return totalElement]]></value>
+        <value><![CDATA[7]]></value>
         <value><![CDATA[import sys
 import net.sf.chellow.billing
 import net.sf.chellow.monad.ui
@@ -188,6 +192,7 @@ def hh(bill, hh_list, data_source):
             hh['gsp-kwh'] = hh['msp-kwh'] * hh['laf']
             hh['gsp-kw'] = hh['gsp-kwh'] * 2
         head_list = tail_list]]></value>
+        <value><![CDATA[9]]></value>
         <value><![CDATA[def night_hv():
     return 1.012
 
@@ -517,6 +522,7 @@ def month(bill, whole_data, data_source):
         bill['duos-reactive-rate'] = reactive_rate
         bill['duos-reactive-kvarh'] = sum(max(max(datum['imp-msp-kvarh'], datum['exp-msp-kvarh']) - (0.95 ** -2 -1) ** 0.5 * datum['msp-kwh'], 0) for datum in whole_data['data'])
         bill['duos-reactive-gbp'] = bill['duos-reactive-rate'] * bill['duos-reactive-kvarh']]]></value>
+        <value><![CDATA[17]]></value>
         <value><![CDATA[def triad():
     return 22.692635
 
@@ -588,6 +594,7 @@ import net.sf.chellow.physical
 def totalElement(account, startDate, finishDate):
     totalElement = net.sf.chellow.billing.BillElement("total", 103, "Dso cost")
     return totalElement]]></value>
+        <value><![CDATA[19]]></value>
         <value><![CDATA[import sys
 import net.sf.chellow.billing
 import net.sf.chellow.monad.ui
@@ -613,6 +620,7 @@ import net.sf.chellow.physical
 def totalElement(account, startDate, finishDate):
     totalElement = net.sf.chellow.billing.BillElement("total", 103, "Dso cost")
     return totalElement]]></value>
+        <value><![CDATA[21]]></value>
         <value><![CDATA[import sys
 import net.sf.chellow.billing
 import net.sf.chellow.monad.ui
@@ -638,6 +646,7 @@ import net.sf.chellow.physical
 def totalElement(account, startDate, finishDate):
     totalElement = net.sf.chellow.billing.BillElement("total", 103, "Dso cost")
     return totalElement]]></value>
+        <value><![CDATA[23]]></value>
         <value><![CDATA[import sys
 import net.sf.chellow.billing
 import net.sf.chellow.monad.ui
@@ -663,6 +672,7 @@ import net.sf.chellow.physical
 def totalElement(account, startDate, finishDate):
     totalElement = net.sf.chellow.billing.BillElement("total", 103, "Dso cost")
     return totalElement]]></value>
+        <value><![CDATA[25]]></value>
         <value><![CDATA[import sys
 import net.sf.chellow.billing
 import net.sf.chellow.monad.ui
@@ -688,6 +698,7 @@ import net.sf.chellow.physical
 def totalElement(account, startDate, finishDate):
     totalElement = net.sf.chellow.billing.BillElement("total", 103, "Dso cost")
     return totalElement]]></value>
+        <value><![CDATA[27]]></value>
         <value><![CDATA[import sys
 import net.sf.chellow.billing
 import net.sf.chellow.monad.ui
@@ -920,6 +931,7 @@ def month(bill, whole_data, data_source):
         utc_cal.setTime(summary['finish_date'].getPrevious().getDate())
         days_in_month = utc_cal.get(Calendar.DAY_OF_MONTH)
         bill['duos-standing-gbp'] += tariff['fixed-gbp-per-day'] * days_in_month]]></value>
+        <value><![CDATA[29]]></value>
         <value><![CDATA[def night_hv():
     return 1.032
 
@@ -1361,6 +1373,7 @@ def month(bill, whole_data, data_source):
         bill['duos-reactive-rate'] = reactive_rate
         bill['duos-reactive-kvarh'] = sum(max(max(datum['imp-msp-kvarh'], datum['exp-msp-kvarh']) - (0.95 ** -2 -1) ** 0.5 * datum['msp-kwh'], 0) for datum in whole_data['data'])
         bill['duos-reactive-gbp'] = bill['duos-reactive-rate'] * bill['duos-reactive-kvarh']]]></value>
+        <value><![CDATA[39]]></value>
         <value><![CDATA[def triad():
     return 25.494450
 
@@ -1520,6 +1533,7 @@ import net.sf.chellow.physical
 def totalElement(account, startDate, finishDate):
     totalElement = net.sf.chellow.billing.BillElement("total", 103, "Dso cost")
     return totalElement]]></value>
+        <value><![CDATA[41]]></value>
         <value><![CDATA[import sys
 import net.sf.chellow.billing
 import net.sf.chellow.monad.ui
@@ -1654,6 +1668,7 @@ def month(bill, whole_data, data_source):
         month_kwh = 0
 
     bill['duos-reactive-gbp'] += max(0, month_imp_kvarh - month_kwh / 2) * reactive_rate]]></value>
+        <value><![CDATA[43]]></value>
         <value><![CDATA[def winter_weekday_peak_hv():
 
     return 1.057
@@ -2178,6 +2193,7 @@ def month(bill, whole_data, data_source):
         bill['duos-reactive-rate'] = reactive_rate
         bill['duos-reactive-kvarh'] = sum(max(max(datum['imp-msp-kvarh'], datum['exp-msp-kvarh']) - (0.95 ** -2 -1) ** 0.5 * datum['msp-kwh'], 0) for datum in whole_data['data'])
         bill['duos-reactive-gbp'] = bill['duos-reactive-rate'] * bill['duos-reactive-kvarh']]]></value>
+        <value><![CDATA[53]]></value>
         <value><![CDATA[def triad():
     return 26.057832
 
@@ -2327,6 +2343,7 @@ import net.sf.chellow.physical
 def totalElement(account, startDate, finishDate):
     totalElement = net.sf.chellow.billing.BillElement("total", 103, "Dso cost")
     return totalElement]]></value>
+        <value><![CDATA[55]]></value>
         <value><![CDATA[import sys
 import net.sf.chellow.billing
 import net.sf.chellow.monad.ui
@@ -2352,6 +2369,7 @@ import net.sf.chellow.physical
 def totalElement(account, startDate, finishDate):
     totalElement = net.sf.chellow.billing.BillElement("total", 103, "Dso cost")
     return totalElement]]></value>
+        <value><![CDATA[57]]></value>
         <value><![CDATA[import sys
 import net.sf.chellow.billing
 import net.sf.chellow.monad.ui
@@ -2386,6 +2404,7 @@ def hh(bill, hh_list, data_source):
         hh['laf'] = 1
         hh['gsp-kwh'] = hh['laf'] * hh['msp-kwh']
         hh['gsp-kw'] = hh['gsp-kwh'] * 2]]></value>
+        <value><![CDATA[59]]></value>
         <value><![CDATA[import sys
 import net.sf.chellow.billing
 import net.sf.chellow.monad.ui

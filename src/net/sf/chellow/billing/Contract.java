@@ -327,10 +327,10 @@ public abstract class Contract extends PersistentEntity implements
 		// return invocableEngine(getChargeScript());
 	}
 
-	public RateScript insertFirstRateScript(HhStartDate startDate,
+	public RateScript insertFirstRateScript(Long id, HhStartDate startDate,
 			HhStartDate finishDate, String rateScriptStr) throws HttpException {
 		setRateScripts(new HashSet<RateScript>());
-		RateScript rateScript = new RateScript(this, null, startDate,
+		RateScript rateScript = new RateScript(this, id, startDate,
 				finishDate, rateScriptStr);
 		Hiber.session().save(rateScript);
 		rateScripts.add(rateScript);

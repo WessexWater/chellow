@@ -73,7 +73,7 @@ public class NonCoreContracts extends EntityList {
 		}
 		NonCoreContract contract = NonCoreContract.insertNonCoreContract(null, isCore,
 				Participant.getParticipant(participantId), name, HhStartDate
-						.roundDown(startDate), null, "", "");
+						.roundDown(startDate), null, "", null, "");
 		Hiber.commit();
 		inv.sendSeeOther(contract.getUri());
 	}

@@ -47,7 +47,7 @@ import org.w3c.dom.Element;
 public class MopContract extends Contract {
 	static public MopContract insertMopContract(Long id, Participant participant,
 			String name, HhStartDate startDate, HhStartDate finishDate,
-			String chargeScript, String rateScript) throws HttpException {
+			String chargeScript, Long rateScriptId, String rateScript) throws HttpException {
 		MopContract existing = findMopContract(name);
 		if (existing != null) {
 			throw new UserException(
@@ -57,7 +57,7 @@ public class MopContract extends Contract {
 				finishDate, chargeScript);
 		Hiber.session().save(contract);
 		Hiber.flush();
-		contract.insertFirstRateScript(startDate, finishDate, rateScript);
+		contract.insertFirstRateScript(rateScriptId, startDate, finishDate, rateScript);
 		return contract;
 	}
 

@@ -86,10 +86,16 @@ public class DsoContract extends Contract {
 			}
 			String chargeScript = GeneralImport.addField(csvElement,
 					"Charge Script", values, 5);
+
+			String rateScriptIdStr = GeneralImport.addField(csvElement,
+					"Rate Script Id", values, 6);
+			Long rateScriptId = rateScriptIdStr.length() > 0 ? new Long(
+					rateScriptIdStr) : null;
+
 			String rateScript = GeneralImport.addField(csvElement,
-					"Rate Script", values, 6);
+					"Rate Script", values, 7);
 			dso.insertContract(id, name, startDate, finishDate, chargeScript,
-					rateScript);
+					rateScriptId, rateScript);
 		}
 	}
 

@@ -205,6 +205,7 @@ public class ContextListener implements ServletContextListener {
 		ReadType.insertReadType("W", "Withdrawn");
 		ReadType.insertReadType("X", "Exchange");
 		ReadType.insertReadType("CP", "Computer");
+		ReadType.insertReadType("IF", "Information");
 		Hiber.commit();
 		
 		try {

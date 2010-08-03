@@ -74,7 +74,7 @@ public class HhdcContracts extends EntityList {
 		}
 		HhdcContract contract = HhdcContract.insertHhdcContract(null, Participant
 				.getParticipant(participantId), name, HhStartDate.roundDown(
-				startDate).getNext(), null, "", "", "", "");
+				startDate).getNext(), null, "", "", "", null, "");
 		Hiber.commit();
 		inv.sendSeeOther(contract.getUri());
 	}

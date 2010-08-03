@@ -141,7 +141,7 @@ public class Dso extends Party {
 
 	public DsoContract insertContract(Long id, String name,
 			HhStartDate startDate, HhStartDate finishDate, String chargeScript,
-			String rateScript) throws HttpException {
+			Long rateScriptId, String rateScript) throws HttpException {
 		DsoContract contract = findContract(name);
 		if (contract == null) {
 			contract = new DsoContract(this, id, name, startDate, finishDate,
@@ -152,7 +152,7 @@ public class Dso extends Party {
 		}
 		Hiber.session().save(contract);
 		Hiber.flush();
-		contract.insertFirstRateScript(startDate, finishDate, rateScript);
+		contract.insertFirstRateScript(rateScriptId, startDate, finishDate, rateScript);
 		return contract;
 	}
 

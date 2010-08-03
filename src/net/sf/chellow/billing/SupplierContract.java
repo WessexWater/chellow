@@ -73,22 +73,29 @@ public class SupplierContract extends Contract {
 			}
 			String chargeScript = GeneralImport.addField(csvElement,
 					"Charge Script", values, 5);
+			
+			String rateScriptIdStr = GeneralImport.addField(csvElement,
+					"Rate Script Id", values, 6);
+			Long rateScriptId = rateScriptIdStr.length() > 0 ? new Long(
+					rateScriptIdStr) : null;
+
 			String rateScript = GeneralImport.addField(csvElement,
-					"Rate Script", values, 6);
+					"Rate Script", values, 7);
+			
 			insertSupplierContract(id, participant, name, startDate,
-					finishDate, chargeScript, rateScript);
+					finishDate, chargeScript, rateScriptId, rateScript);
 		}
 	}
 
 	static public SupplierContract insertSupplierContract(Long id,
 			Participant participant, String name, HhStartDate startDate,
-			HhStartDate finishDate, String chargeScript, String rateScript)
+			HhStartDate finishDate, String chargeScript, Long rateScriptId, String rateScript)
 			throws HttpException {
 		SupplierContract contract = new SupplierContract(id, participant, name,
 				startDate, finishDate, chargeScript);
 		Hiber.session().save(contract);
 		Hiber.flush();
-		contract.insertFirstRateScript(startDate, finishDate, rateScript);
+		contract.insertFirstRateScript(rateScriptId, startDate, finishDate, rateScript);
 		return contract;
 	}
 

@@ -72,7 +72,7 @@ public class DsoContracts extends EntityList {
 			throw new UserException(document());
 		}
 		DsoContract contract = dso.insertContract(null, name, new HhStartDate(
-				startDate), null, "", "");
+				startDate), null, "", null, "");
 		Hiber.commit();
 		inv.sendSeeOther(contract.getUri());
 	}

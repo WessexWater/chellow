@@ -88,18 +88,24 @@ public class HhdcContract extends Contract {
 					"Properties", values, 6);
 			String state = GeneralImport.addField(csvElement, "State", values,
 					7);
+
+			String rateScriptIdStr = GeneralImport.addField(csvElement,
+					"Rate Script Id", values, 8);
+			Long rateScriptId = rateScriptIdStr.length() > 0 ? new Long(
+					rateScriptIdStr) : null;
+
 			String rateScript = GeneralImport.addField(csvElement,
-					"Rate Script", values, 8);
+					"Rate Script", values, 9);
 			insertHhdcContract(id, participant, name, startDate, finishDate,
-					chargeScript, properties, state, rateScript);
+					chargeScript, properties, state, rateScriptId, rateScript);
 		}
 	}
 
 	static public HhdcContract insertHhdcContract(Long id,
 			Participant participant, String name, HhStartDate startDate,
 			HhStartDate finishDate, String chargeScript,
-			String importerProperties, String state, String rateScript)
-			throws HttpException {
+			String importerProperties, String state, Long rateScriptId,
+			String rateScript) throws HttpException {
 		HhdcContract existing = findHhdcContract(name);
 		if (existing != null) {
 			throw new UserException(
@@ -109,7 +115,8 @@ public class HhdcContract extends Contract {
 				startDate, finishDate, chargeScript, importerProperties, state);
 		Hiber.session().save(contract);
 		Hiber.flush();
-		contract.insertFirstRateScript(startDate, finishDate, rateScript);
+		contract.insertFirstRateScript(rateScriptId, startDate, finishDate,
+				rateScript);
 		return contract;
 	}
 

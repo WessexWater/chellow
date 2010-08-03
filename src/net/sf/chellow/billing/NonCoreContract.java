@@ -94,10 +94,15 @@ public class NonCoreContract extends Contract {
 					: new HhStartDate(finishDateStr);
 			String chargeScript = GeneralImport.addField(csvElement,
 					"Charge Script", values, 6);
+			String rateScriptIdStr = GeneralImport.addField(csvElement,
+					"Rate Script Id", values, 7);
+			Long rateScriptId = rateScriptIdStr.length() > 0 ? new Long(
+					rateScriptIdStr) : null;
+
 			String rateScript = GeneralImport.addField(csvElement,
-					"Rate Script", values, 7);
+					"Rate Script", values, 8);
 			NonCoreContract.insertNonCoreContract(id, isCore, participant,
-					name, startDate, finishDate, chargeScript, rateScript);
+					name, startDate, finishDate, chargeScript, rateScriptId, rateScript);
 		} else if (action.equals("update")) {
 			/*
 			 * String script = values[3];
@@ -129,12 +134,12 @@ public class NonCoreContract extends Contract {
 	static public NonCoreContract insertNonCoreContract(Long id,
 			Boolean isCore, Participant participant, String name,
 			HhStartDate startDate, HhStartDate finishDate, String chargeScript,
-			String rateScript) throws HttpException {
+			Long rateScriptId, String rateScript) throws HttpException {
 		NonCoreContract contract = new NonCoreContract(id, isCore, participant,
 				name, startDate, finishDate, chargeScript);
 		Hiber.session().save(contract);
 		Hiber.session().flush();
-		contract.insertFirstRateScript(startDate, finishDate, rateScript);
+		contract.insertFirstRateScript(rateScriptId, startDate, finishDate, rateScript);
 		return contract;
 	}
 

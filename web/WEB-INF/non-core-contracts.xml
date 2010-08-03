@@ -19,6 +19,7 @@ def hh(bill, supply_source):
     bill['aahedc-msp-kwh'] = sum(datum['msp-kwh'] for datum in hh_data)
     bill['aahedc-rate'] = supply_source.comterp.get('rate')(rate_script, 'aahedc_gbp_per_gsp_kwh')
     bill['aahedc-gbp'] = bill['aahedc-gsp-kwh'] * bill['aahedc-rate']]]></value>
+        <value><![CDATA[61]]></value>
         <value><![CDATA[def aahedc_gbp_per_gsp_kwh():
     return 0.00016456]]></value>
     </line>
@@ -144,6 +145,7 @@ class Parser(BillParser):
 
     def getProgress(self):
         return "Reached line " + str(self.parser.lreader.getLineNumber()) + " of first passs. " + self.debug_str]]></value>
+        <value><![CDATA[109]]></value>
         <value><![CDATA[]]></value>
     </line>
     <line>
@@ -194,6 +196,7 @@ class Parser(BillParser):
 
     def getProgress(self):
         return "Reached line " + str(self.shredder.getLastLineNumber()) + " of first passs. " + self.debug_str]]></value>
+        <value><![CDATA[111]]></value>
         <value><![CDATA[]]></value>
     </line>
     <line>
@@ -247,6 +250,7 @@ class Parser(BillParser):
 
     def getProgress(self):
         return "Reached line " + str(self.shredder.getLastLineNumber()) + " of first passs. " + self.debug_str]]></value>
+        <value><![CDATA[113]]></value>
         <value><![CDATA[]]></value>
     </line>
     <line>
@@ -319,6 +323,7 @@ class Parser(BillParser):
 
     def getProgress(self):
         return "Reached line " + str(self.lreader.getLineNumber()) + " of first passs."]]></value>
+        <value><![CDATA[115]]></value>
         <value><![CDATA[]]></value>
     </line>
     <line>
@@ -474,6 +479,7 @@ class Parser(BillParser):
 
     def getProgress(self):
         return "Reached line " + str(self.parser.lreader.getLineNumber()) + "." + self.debug_str]]></value>
+        <value><![CDATA[117]]></value>
         <value><![CDATA[]]></value>
     </line>
     <line>
@@ -491,6 +497,7 @@ def hh(bill, supply_source, hh_data):
     rate_script = contract.rateScript(HhStartDate(hh_data[0]['start-date']))
     rates = supply_source.comterp.get('rate')(rate_script, 'rates')
     bill['bsuos-actual-gbp'] = sum(datum['gsp-kwh'] * rates.get(('%02d' % datum['utc-day']) + ' ' + ('%02d' % datum['utc-hour']) + ':' + ('%02d' % datum['utc-minute']) + ' Z', 0) for datum in hh_data)]]></value>
+        <value><![CDATA[119]]></value>
         <value><![CDATA[def rates():
     return {
 '2009-03-01 00:00 Z': 0.00034693,
@@ -4955,6 +4962,7 @@ def hh(bill, supply_source, hh_data):
 
         bill[prefix + '-kwh'] += month_kwh
         bill[prefix + '-gbp'] += month_kwh * rate]]></value>
+        <value><![CDATA[141]]></value>
         <value><![CDATA[def ccl_rate():
     return 0.004410]]></value>
     </line>
@@ -5636,6 +5644,7 @@ def displaced_mpan(site_group, start_date, finish_date):
         return mpans[keys[0]]
     else:
         return None]]></value>
+        <value><![CDATA[143]]></value>
         <value><![CDATA[]]></value>
     </line>
     <line>
@@ -5654,6 +5663,7 @@ def hh(data_source, hh_data):
     tlms = data_source.comterp.get('rate')(rate_script, 'tlms')
     for datum in hh_data:
         datum['nbp-kwh'] = datum['gsp-kwh'] * tlms.get(('%02d' % datum['utc-day']) + ' ' + ('%02d' % datum['utc-hour']) + ':' + ('%02d' % datum['utc-minute']) + ' Z', 0)]]></value>
+        <value><![CDATA[145]]></value>
         <value><![CDATA[def tlms():
     return {
 '01 00:00 Z': 1.0082451,
@@ -8633,20 +8643,22 @@ def triad(bill, dso_contract, month_begin, month_end, data_source, rate_period='
     financial_year_finish = HhStartDate(utc_cal.getTime())
 
     triad_dates = []
+    earliest_triad = None
     for dt in get_triad_dates(last_financial_year_start, data_source):
         utc_cal.setTime(dt.getDate())
         utc_cal.add(Calendar.YEAR, 1)
         triad_dates.append(HhStartDate(utc_cal.getTime()))
+        if earliest_triad is None or dt.before(earliest_triad):
+            earliest_triad = dt
+
     #data_source.pw.println("triad dates " + str(triad_dates))
     est_triad_kws = [data_source.create_whole_data(t_date, t_date, financial_year_start)['data'][0] for t_date in triad_dates]
 
     #pw.println("finished getting data " + str(System.currentTimeMillis() - timing))
     if data_source.site_id is None:
         supply = MpanCore.getMpanCore(data_source.mpan_core).getSupply()
-        generations = [supply.getGeneration(triad_date) for triad_date in triad_dates]
-        generations = [generation for generation in generations if (generation is not None) and (generation.getPc().getCode() == 0) and (generation.getChannel(data_source.is_import, True) is not None)]
-
-        if len(generations) < 3:
+        generation = supply.getGeneration(earliest_triad)
+        if generation is None or (generation.getPc().getCode() != 0) or generation.getChannel(data_source.is_import, True) is None:
             triad_rate_script = NonCoreContract.getNonCoreContract("TRIAD Estimates").rateScript(month_begin)
             triad_estimates = data_source.rate(triad_rate_script, 'triad_estimates')
             if data_source.id in triad_estimates:
@@ -8724,6 +8736,7 @@ def triad_calc(bill, prefix, dso_contract, triad_data, financial_year_start, dat
 
     bill[prefix + '-gsp-kw'] = gsp_kw / 3
     bill[prefix + '-rate'] = data_source.rate(dso_contract.rateScript(financial_year_start), 'triad')]]></value>
+        <value><![CDATA[147]]></value>
         <value><![CDATA[from net.sf.chellow.physical import HhStartDate
 
 def triad_dates():
@@ -8794,6 +8807,7 @@ def triad_dates():
         <value><![CDATA[2010-03-25T00:00Z]]></value>
         <value><![CDATA[]]></value>
         <value><![CDATA[]]></value>
+        <value><![CDATA[149]]></value>
         <value><![CDATA[]]></value>
     </line>
 </csv>

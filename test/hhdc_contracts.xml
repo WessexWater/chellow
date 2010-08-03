@@ -11,6 +11,7 @@
 		<value><![CDATA[charge = "script"]]></value>
 		<value><![CDATA[properties]]></value>
 		<value><![CDATA[state]]></value>
+		<value><![CDATA[]]></value>
 		<value><![CDATA[rate = "script"]]></value>
 	</line>
 </csv>

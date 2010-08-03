@@ -4024,7 +4024,7 @@ if has_dso_contracts and is_core:
         contract_name = contract.getName()
         rate_scripts = Hiber.session().createQuery("from RateScript script where script.contract.id = :contractId order by script.startDate.date").setLong('contractId', contract.getId()).list()
         start_rate_script = rate_scripts[0]
-        print_line(pw, ['insert', 'dso-contract', contract.getParty().getCode(), contract.getId(), contract_name, start_rate_script.getStartDate(), rate_scripts[len(rate_scripts) - 1].getFinishDate(), contract.getChargeScript(), start_rate_script.getScript()])
+        print_line(pw, ['insert', 'dso-contract', contract.getParty().getCode(), contract.getId(), contract_name, start_rate_script.getStartDate(), rate_scripts[len(rate_scripts) - 1].getFinishDate(), contract.getChargeScript(), start_rate_script.getId(), start_rate_script.getScript()])
         for i in range(1, len(rate_scripts)):
             rate_script = rate_scripts[i]
             print_line(pw, ['insert', 'dso-contract-rate-script', contract.getParty().getCode(), contract.getName(), rate_script.getId(), rate_script.getStartDate(), rate_script.getScript()])
@@ -4045,7 +4045,7 @@ if has_non_core_contracts:
         contract_name = contract.getName()
         rate_scripts = Hiber.session().createQuery("from RateScript script where script.contract = :contract order by script.startDate.date").setEntity('contract', contract).list()
         start_rate_script = rate_scripts[0]
-        print_line(pw, ['insert', 'non-core-contract', contract.getId(), None, contract.getParty().getParticipant().getCode(), contract_name, start_rate_script.getStartDate(), rate_scripts[len(rate_scripts) - 1].getFinishDate(), contract.getChargeScript(), start_rate_script.getScript()])
+        print_line(pw, ['insert', 'non-core-contract', contract.getId(), None, contract.getParty().getParticipant().getCode(), contract_name, start_rate_script.getStartDate(), rate_scripts[len(rate_scripts) - 1].getFinishDate(), contract.getChargeScript(), start_rate_script.getId(), start_rate_script.getScript()])
         for i in range(1, len(rate_scripts)):
             rate_script = rate_scripts[i]
             print_line(pw, ['insert', 'non-core-contract-rate-script', contract_name, rate_script.getId(), rate_script.getStartDate(), rate_script.getScript()])
@@ -4080,7 +4080,7 @@ if has_hhdc_contracts and not is_core:
         rate_scripts = Hiber.session().createQuery("from RateScript script where script.contract.id = :contractId order by script.startDate.date").setLong('contractId', contract.getId()).list()
         start_rate_script = contract.getStartRateScript()
         finish_rate_script = contract.getFinishRateScript()
-        print_line(pw, ['insert', 'hhdc-contract', contract.getId(), contract.getParty().getParticipant().getCode(), contract.getName(), start_rate_script.getStartDate(), finish_rate_script.getFinishDate(), contract.getChargeScript(), contract.getProperties(), contract.getState(), start_rate_script.getScript()])
+        print_line(pw, ['insert', 'hhdc-contract', contract.getId(), contract.getParty().getParticipant().getCode(), contract.getName(), start_rate_script.getStartDate(), finish_rate_script.getFinishDate(), contract.getChargeScript(), contract.getProperties(), contract.getState(), start_rate_script.getId(), start_rate_script.getScript()])
         if len(rate_scripts) > 1:
             for rate_script in rate_scripts[1:]:
                 print_line(pw, ['insert', 'hhdc-contract-rate-script', contract.getName(), rate_script.getId(), rate_script.getStartDate(), rate_script.getScript()])
@@ -4094,10 +4094,10 @@ if has_mop_contracts and not is_core:
         contract = contracts.get(0)
         rate_scripts = Hiber.session().createQuery("from RateScript script where script.contract.id = :contractId order by script.startDate.date").setLong('contractId', contract.getId()).list()
         start_rate_script = rate_scripts[0]
-        print_line(pw, ['insert', 'hhdc-contract', contract.getId(), contract.getParty().getParticipant().getCode(), contract.getName(), start_rate_script.getStartDate(), contract.getChargeScript(), contract.getProperties(), contract.getState(), start_rate_script.getScript()])
+        print_line(pw, ['insert', 'mop-contract', contract.getId(), contract.getParty().getParticipant().getCode(), contract.getName(), start_rate_script.getStartDate(), contract.getChargeScript(), contract.getProperties(), contract.getState(), start_rate_script.getScript()])
         if len(rate_scripts) > 1:
             for rate_script in rate_scripts[1:]:
-                print_line(pw, ['insert', 'hhdc-contract-rate-script', contract.getName(), rate_script.getId(), rate_script.getStartDate(), rate_script.getScript()])
+                print_line(pw, ['insert', 'mop-contract-rate-script', contract.getName(), rate_script.getId(), rate_script.getStartDate(), rate_script.getScript()])
         Hiber.session().clear()
     contracts.close()
 
@@ -4110,7 +4110,7 @@ if has_supplier_contracts and not is_core:
         rate_scripts = Hiber.session().createQuery("from RateScript script where script.contract.id = :contractId order by script.startDate.date").setLong('contractId', contract.getId()).list()
         start_rate_script = rate_scripts[0]
         finish_rate_script = rate_scripts[len(rate_scripts) - 1]
-        print_line(pw, ['insert', 'supplier-contract', contract.getId(), contract.getParty().getParticipant().getCode(), contract_name, start_rate_script.getStartDate(), finish_rate_script.getFinishDate(), contract.getChargeScript(), start_rate_script.getScript()])
+        print_line(pw, ['insert', 'supplier-contract', contract.getId(), contract.getParty().getParticipant().getCode(), contract_name, start_rate_script.getStartDate(), finish_rate_script.getFinishDate(), contract.getChargeScript(), start_rate_script.getId(), start_rate_script.getScript()])
         if len(rate_scripts) > 1:
             for i in range(1, len(rate_scripts)):
                 rate_script = rate_scripts[i]
@@ -9290,6 +9290,7 @@ from java.util import GregorianCalendar, TimeZone, Locale, Calendar
 from net.sf.chellow.physical import MpanCore, HhStartDate, Supply, Site
 from net.sf.chellow.billing import SupplierContract, NonCoreContract
 from java.text import DecimalFormat
+from java.sql import Timestamp, ResultSet
 
 end_year = inv.getInteger('end-year')
 end_month = inv.getInteger('end-month')
@@ -9305,7 +9306,7 @@ pw = inv.getResponse().getWriter()
 computer = NonCoreContract.getNonCoreContract('computer')
 comterp = computer.callFunction('create_comterp', [])
 
-pw.print('Site Code, Site Name')
+pw.print('Site Code,Site Name,Associated Site Ids,From,To,CHP kWh,LM kWh, Turbine kWh')
 
 cal = GregorianCalendar(TimeZone.getTimeZone("GMT"), Locale.UK)
 cal.set(Calendar.YEAR, end_year)
@@ -9366,7 +9367,71 @@ while sites.next():
         if contract is not None and not contract.equals(supplier_contract):
             continue
 
-        pw.print('"' + site.getCode() + '","' + site.getName() + '"')
+        pw.print('"' + site.getCode() + '","' + site.getName() + '","' + ','.join(str(a_site.getId()) for a_site in site_group.getSites() if not a_site.equals(site)) + '",' + str(chunk_start) + ',' + str(chunk_finish))
+
+
+
+
+
+        total_gen_breakdown = {}
+        con = Hiber.session().connection()
+        supplies_sql = ','.join(str(supply.getId()) for supply in site_group.getSupplies())
+        stmt = con.prepareStatement("select hh_datum.value, hh_datum.start_date, channel.is_import, source.code, generator_type.code as gen_type_code from hh_datum, channel, supply_generation, supply, source, generator_type where hh_datum.channel_id = channel.id and channel.supply_generation_id = supply_generation.id and supply_generation.supply_id = supply.id and supply.source_id = source.id and supply.generator_type_id = generator_type.id and channel.is_kwh is true and hh_datum.start_date >= ? and hh_datum.start_date <= ? and supply.id in (" + supplies_sql + ") order by hh_datum.start_date, supply.id", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.CLOSE_CURSORS_AT_COMMIT)
+        stmt.setTimestamp(1, Timestamp(chunk_start.getDate().getTime()))
+        stmt.setTimestamp(2, Timestamp(chunk_finish.getDate().getTime()))
+        stmt.setFetchSize(100)
+        rs = stmt.executeQuery()
+        if rs.next():
+            hh_data = []
+            hhChannelValue = rs.getFloat("value")
+            hhChannelStartDate = rs.getTimestamp("start_date")
+            isImport = rs.getBoolean("is_import")
+            source_code = rs.getString("code")
+            gen_type = rs.getString("gen_type_code")
+            finishDateMillis = finishDate.getTime()
+            cal = MonadDate.getCalendar()
+            while hhDate <= finishDateMillis:
+                gen_breakdown = {}
+                exported = parasitic = generated = 0
+                while hhChannelStartDate != None and hhChannelStartDate.getTime() == hhDate:
+                    if not isImport and source_code in ('net', 'gen-net'):
+                        exported += hhChannelValue
+                    if isImport and source_code in ('net', 'gen-net'):
+                        imported += hhChannelValue
+                    if (isImport and source_code == 'gen') or (not isImport and source_code == 'gen-net'):
+                        generated += hhChannelValue
+                        gen_breakdown[gen_type] = gen_breakdown.setdefault(gen_type, 0) + hhChannelValue
+
+                    if (not isImport and source_code == 'gen') or (isImport and source_code == 'gen-net'):
+                        datum['parasitic'] += hhChannelValue
+                        gen_breakdown[gen_type] = gen_breakdown.setdefault(gen_type, 0) - hhChannelValue
+
+                    if rs.next():
+                        source_code = rs.getString("code")
+                        supply_name = rs.getString("name")
+                        hhChannelValue = rs.getFloat("value")
+                        hhChannelStartDate = rs.getTimestamp("start_date")
+                        isImport = rs.getBoolean("is_import")
+                        status = rs.getString("status")
+                        supply_id = rs.getLong('id')
+                    else:
+                        hhChannelStartDate = None
+
+                displaced = generated - parasitic - exported
+                added_so_far = 0
+                for key in sorted(gen_breakdown.iterkeys()):
+                    kwh = gen_breakdown[key]
+                    if kwh + added_so_far > displaced:
+                        total_gen_breakdown[key] = total_gen_breakdown.setdefault(key, 0) + displaced - added_so_far
+                        break
+                    else:
+                        total_gen_breakdown[key] = total_gen_breakdown.setdefault(key, 0) + kwh
+                        added_so_far += kwh
+                    
+                hhDate = HhStartDate.getNext(cal, hhDate)
+        for title in ['chp', 'lm', 'turb']:
+            pw.print(',' + str(total_gen_breakdown.get(title, '')))
+
 
         site_ds = comterp.get('site_source')(site, chunk_start, chunk_finish, forecast_date, comterp, pw)
         site_ds.init_from_mpan(displaced_mpan)
@@ -9444,17 +9509,28 @@ while bills.next():
     covered_net = 0
     covered_vat = 0
     covered_primary_bill = None
-    for covered_bill in Hiber.session().createQuery("from Bill bill where bill.supply = :supply and bill.startDate.date <= :finishDate and bill.finishDate >= :startDate order by bill.issueDate desc").setEntity('supply', supply).setTimestamp('finishDate', bill_finish.getDate()).setTimestamp('startDate', bill_start.getDate()).list():
-        if covered_primary_bill is None and covered_bill.getReads() is not None and len(covered_bill.getReads()) > 0:
-            covered_primary_bill = covered_bill
-        if covered_bill.getStartDate().before(covered_start):
-            covered_start = covered_bill.getStartDate()
-        if covered_bill.getFinishDate().after(covered_finish):
-            covered_finish = covered_bill.getFinishDate()
+    enlarged = True
+    covered_query = Hiber.session().createQuery("from Bill bill where bill.supply = :supply and bill.startDate.date <= :finishDate and bill.finishDate >= :startDate order by bill.issueDate desc").setEntity('supply', supply)
+    while enlarged:
+        enlarged = False
+        for covered_bill in covered_query.setTimestamp('finishDate', covered_finish.getDate()).setTimestamp('startDate', covered_start.getDate()).list():
+            if covered_primary_bill is None and covered_bill.getReads() is not None and len(covered_bill.getReads()) > 0:
+                covered_primary_bill = covered_bill
+            if covered_bill.getStartDate().before(covered_start):
+                covered_start = covered_bill.getStartDate()
+                enlarged = True
+                break
+            if covered_bill.getFinishDate().after(covered_finish):
+                covered_finish = covered_bill.getFinishDate()
+                enlarged = True
+                break
+
+    for covered_bill in covered_query.setTimestamp('finishDate', covered_finish.getDate()).setTimestamp('startDate', covered_start.getDate()).list():
         covered_bill_ids.append(covered_bill.getId())
         covered_net += covered_bill.getNet().doubleValue()
         covered_vat += covered_bill.getVat().doubleValue()
-    
+
+
     mb_cal = MonadDate.getCalendar()
     mb_cal.setTime(covered_start.getDate())
     mb_cal.set(Calendar.DAY_OF_MONTH, 1)
