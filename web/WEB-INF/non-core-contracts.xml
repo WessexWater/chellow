@@ -161,11 +161,11 @@ class Parser(BillParser):
 from java.text import SimpleDateFormat
 from java.util import Locale, TimeZone
 from com.Ostermiller.util import CSVParser
-from net.sf.chellow.physical import ReadType, Units, HhStartDate, RawRegisterRead
+from net.sf.chellow.physical import ReadType, Units, HhStartDate, RawRegisterRead, Tpr
 from java.math import BigDecimal
 from net.sf.chellow.monad.types import MonadDate
 from net.sf.chellow.monad import HttpException, UserException
-from java.lang import NumberFormatException
+from java.lang import NumberFormatException, Integer
 from java.io import IOException
 
 
@@ -186,7 +186,7 @@ class Parser(BillParser):
         while values != None:
             reads = []
             for i in range(11, len(values), 11):
-                reads.append(RawRegisterRead(values[i], values[i + 1], BigDecimal(values[i + 2]), Units.getUnits(values[i + 3]), Integer.parseInt(values[i + 4]), HhStartDate(values[i + 5]), BigDecimal(values[i + 6]), ReadType.getReadType(values[i + 7]), HhStartDate(values[i + 8]), BigDecimal(values[i + 9]), ReadType.getReadType(values[i + 10])))
+                reads.append(RawRegisterRead(values[i], values[i + 1], BigDecimal(values[i + 2]), Units.getUnits(values[i + 3]), Tpr.getTpr(Integer.parseInt(values[i + 4])), HhStartDate(values[i + 5]), BigDecimal(values[i + 6]), ReadType.getReadType(values[i + 7]), HhStartDate(values[i + 8]), BigDecimal(values[i + 9]), ReadType.getReadType(values[i + 10])))
             mpan_strings = values[2].split(",")
             raw_bills.append(RawBill(values[0], values[1], mpan_strings, values[3], MonadDate(values[4]).getDate(), HhStartDate(values[5]), HhStartDate(values[6]), BigDecimal(values[7]), BigDecimal(values[8]), BigDecimal(values[9]), values[9], reads))
             values = self.shredder.getLine()
@@ -5048,9 +5048,10 @@ def create_comterp():
 def forecast_date():
     cal = MonadDate.getCalendar()
     cal.set(Calendar.DAY_OF_MONTH, 1)
-    cal.set(Calendar.MILLISECOND, 0)
-    cal.set(Calendar.SECOND, 0)
+    cal.set(Calendar.HOUR_OF_DAY, 0)
     cal.set(Calendar.MINUTE, 0)
+    cal.set(Calendar.SECOND, 0)
+    cal.set(Calendar.MILLISECOND, 0)
     return HhStartDate(cal.getTime())
 
 
@@ -5076,11 +5077,23 @@ def import_data_sources(contract, search_term, month_start, month_finish, foreca
     generations = query.setEntity('contract', contract).setTimestamp('startDate', selection_start.getDate()).setTimestamp('finishDate', selection_finish.getDate()).scroll()
     while generations.next():
         generation = generations.get(0)
+
+        gen_start = generation.getStartDate()
+        if month_start.before(gen_start):
+            chunk_start = gen_start
+        else:
+            chunk_start = month_start
+        gen_finish = generation.getFinishDate()
+        if month_finish.after(gen_finish):
+            chunk_finish = gen_finish
+        else:
+            chunk_finish = month_finish
+        
         mpan = generation.getImportMpan()
         mpan_core = mpan.getCore()
         mpan_core_str = str(mpan_core)
         data_source = SupplySource(forecast_date, comterp, pw)
-        data_source.init_from_mpan(month_start, month_finish, mpan)
+        data_source.init_from_mpan(chunk_start, chunk_finish, mpan)
         yield data_source
 
 

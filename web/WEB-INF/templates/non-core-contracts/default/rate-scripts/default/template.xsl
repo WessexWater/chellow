@@ -2,8 +2,8 @@
 <xsl:stylesheet version="1.0"
 	xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
 	<xsl:output method="html" encoding="US-ASCII"
-		doctype-public="-//W3C//DTD HTML 4.01//EN"
-		doctype-system="http://www.w3.org/TR/html4/strict.dtd" indent="yes" />
+		doctype-public="-//W3C//DTD HTML 4.01//EN" doctype-system="http://www.w3.org/TR/html4/strict.dtd"
+		indent="yes" />
 	<xsl:template match="/">
 		<html>
 			<head>
@@ -12,8 +12,7 @@
 
 				<title>
 					Chellow &gt; Non-core Contracts &gt;
-					<xsl:value-of
-						select="/source/rate-script/non-core-contract/@name" />
+					<xsl:value-of select="/source/rate-script/non-core-contract/@name" />
 					&gt; Rate Scripts &gt;
 					<xsl:value-of select="/source/rate-script/@id" />
 				</title>
@@ -21,20 +20,17 @@
 			<body>
 				<p>
 					<a href="{/source/request/@context-path}/">
-						<img
-							src="{/source/request/@context-path}/logo/" />
+						<img src="{/source/request/@context-path}/logo/" />
 						<span class="logo">Chellow</span>
 					</a>
 					&gt;
-					<a
-						href="{/source/request/@context-path}/non-core-contracts/">
+					<a href="{/source/request/@context-path}/non-core-contracts/">
 						<xsl:value-of select="'Non-core Contracts'" />
 					</a>
 					&gt;
 					<a
 						href="{/source/request/@context-path}/non-core-contracts/{/source/rate-script/non-core-contract/@id}/">
-						<xsl:value-of
-							select="/source/rate-script/non-core-contract/@name" />
+						<xsl:value-of select="/source/rate-script/non-core-contract/@name" />
 					</a>
 					&gt;
 					<a
@@ -62,40 +58,35 @@
 							<legend>Start date</legend>
 							<input name="start-year" size="4">
 								<xsl:choose>
-									<xsl:when
-										test="/source/request/parameter[@name='start-year']">
+									<xsl:when test="/source/request/parameter[@name='start-year']">
 										<xsl:attribute name="value">
 											<xsl:value-of
-												select="/source/request/parameter[@name='start-year']/value/text()" />
+											select="/source/request/parameter[@name='start-year']/value/text()" />
 										</xsl:attribute>
 									</xsl:when>
 									<xsl:otherwise>
 										<xsl:attribute name="value">
 											<xsl:value-of
-												select="/source/rate-script/hh-start-date[@label='start']/@year" />
+											select="/source/rate-script/hh-start-date[@label='start']/@year" />
 										</xsl:attribute>
 									</xsl:otherwise>
 								</xsl:choose>
 							</input>
 							-
 							<select name="start-month">
-								<xsl:for-each
-									select="/source/months/month">
+								<xsl:for-each select="/source/months/month">
 									<option value="{@number}">
 										<xsl:choose>
-											<xsl:when
-												test="/source/request/parameter[@name='start-month']">
+											<xsl:when test="/source/request/parameter[@name='start-month']">
 												<xsl:if
 													test="/source/request/parameter[@name='start-month']/value/text() = number(@number)">
-													<xsl:attribute
-														name="selected" />
+													<xsl:attribute name="selected" />
 												</xsl:if>
 											</xsl:when>
 											<xsl:otherwise>
 												<xsl:if
 													test="/source/rate-script/hh-start-date[@label='start']/@month = @number">
-													<xsl:attribute
-														name="selected" />
+													<xsl:attribute name="selected" />
 												</xsl:if>
 											</xsl:otherwise>
 										</xsl:choose>
@@ -105,23 +96,19 @@
 							</select>
 							-
 							<select name="start-day">
-								<xsl:for-each
-									select="/source/days/day">
+								<xsl:for-each select="/source/days/day">
 									<option value="{@number}">
 										<xsl:choose>
-											<xsl:when
-												test="/source/request/parameter[@name='start-day']">
+											<xsl:when test="/source/request/parameter[@name='start-day']">
 												<xsl:if
 													test="/source/request/parameter[@name='start-day']/value/text() = @number">
-													<xsl:attribute
-														name="selected" />
+													<xsl:attribute name="selected" />
 												</xsl:if>
 											</xsl:when>
 											<xsl:otherwise>
 												<xsl:if
 													test="/source/rate-script/hh-start-date[@label='start']/@day = @number">
-													<xsl:attribute
-														name="selected" />
+													<xsl:attribute name="selected" />
 												</xsl:if>
 											</xsl:otherwise>
 										</xsl:choose>
@@ -135,24 +122,18 @@
 							<legend>Finish date</legend>
 							<label>
 								Ended?
-								<input type="checkbox"
-									name="has-finished" value="true">
+								<input type="checkbox" name="has-finished" value="true">
 									<xsl:choose>
-										<xsl:when
-											test="/source/request/@method='post'">
-											<xsl:if
-												test="/source/request/parameter[@name='has-finished']">
-												<xsl:attribute
-													name="checked">
+										<xsl:when test="/source/request/@method='post'">
+											<xsl:if test="/source/request/parameter[@name='has-finished']">
+												<xsl:attribute name="checked">
 													checked
 												</xsl:attribute>
 											</xsl:if>
 										</xsl:when>
 										<xsl:otherwise>
-											<xsl:if
-												test="/source/rate-script/hh-start-date[@label='finish']">
-												<xsl:attribute
-													name="checked">
+											<xsl:if test="/source/rate-script/hh-start-date[@label='finish']">
+												<xsl:attribute name="checked">
 													checked
 												</xsl:attribute>
 											</xsl:if>
@@ -164,19 +145,17 @@
 							<input name="finish-year">
 								<xsl:attribute name="value" size="4">
 									<xsl:choose>
-										<xsl:when
-											test="/source/request/parameter[@name='finish-year']">
+										<xsl:when test="/source/request/parameter[@name='finish-year']">
 											<xsl:value-of
-												select="/source/request/parameter[@name='finish-year']/value/text()" />
+									select="/source/request/parameter[@name='finish-year']/value/text()" />
 										</xsl:when>
 										<xsl:when
-											test="/source/rate-script/hh-start-date[@label='finish']">
+									test="/source/rate-script/hh-start-date[@label='finish']">
 											<xsl:value-of
-												select="/source/rate-script/hh-start-date[@label='finish']/@year" />
+									select="/source/rate-script/hh-start-date[@label='finish']/@year" />
 										</xsl:when>
 										<xsl:otherwise>
-											<xsl:value-of
-												select="/source/date/@year" />
+											<xsl:value-of select="/source/date/@year" />
 										</xsl:otherwise>
 									</xsl:choose>
 								</xsl:attribute>
@@ -184,33 +163,27 @@
 
 							-
 							<select name="finish-month">
-								<xsl:for-each
-									select="/source/months/month">
+								<xsl:for-each select="/source/months/month">
 									<option value="{@number}">
 										<xsl:choose>
-											<xsl:when
-												test="/source/request/parameter[@name='finish-month']">
+											<xsl:when test="/source/request/parameter[@name='finish-month']">
 
 												<xsl:if
 													test="/source/request/parameter[@name='finish-month']/value/text() = number(@number)">
 
-													<xsl:attribute
-														name="selected" />
+													<xsl:attribute name="selected" />
 												</xsl:if>
 											</xsl:when>
 											<xsl:when
 												test="/source/rate-script/hh-start-date[@label='finish']">
 												<xsl:if
 													test="/source/rate-script/hh-start-date[@label='finish']/@month = @number">
-													<xsl:attribute
-														name="selected" />
+													<xsl:attribute name="selected" />
 												</xsl:if>
 											</xsl:when>
 											<xsl:otherwise>
-												<xsl:if
-													test="/source/date/@month = @number">
-													<xsl:attribute
-														name="selected" />
+												<xsl:if test="/source/date/@month = @number">
+													<xsl:attribute name="selected" />
 												</xsl:if>
 											</xsl:otherwise>
 										</xsl:choose>
@@ -222,33 +195,27 @@
 
 							-
 							<select name="finish-day">
-								<xsl:for-each
-									select="/source/days/day">
+								<xsl:for-each select="/source/days/day">
 									<option value="{@number}">
 										<xsl:choose>
-											<xsl:when
-												test="/source/request/parameter[@name='finish-day']">
+											<xsl:when test="/source/request/parameter[@name='finish-day']">
 
 												<xsl:if
 													test="/source/request/parameter[@name='finish-day']/value/text() = @number">
 
-													<xsl:attribute
-														name="selected" />
+													<xsl:attribute name="selected" />
 												</xsl:if>
 											</xsl:when>
 											<xsl:when
 												test="/source/rate-script/hh-start-date[@label='finish']">
 												<xsl:if
 													test="/source/rate-script/hh-start-date[@label='finish']/@day = @number">
-													<xsl:attribute
-														name="selected" />
+													<xsl:attribute name="selected" />
 												</xsl:if>
 											</xsl:when>
 											<xsl:otherwise>
-												<xsl:if
-													test="/source/date/@day = @number">
-													<xsl:attribute
-														name="selected" />
+												<xsl:if test="/source/date/@day = @number">
+													<xsl:attribute name="selected" />
 												</xsl:if>
 											</xsl:otherwise>
 										</xsl:choose>
@@ -263,14 +230,12 @@
 						<br />
 						<textarea name="script" rows="40" cols="80">
 							<xsl:choose>
-								<xsl:when
-									test="/source/request/parameter[@name='script']">
+								<xsl:when test="/source/request/parameter[@name='script']">
 									<xsl:value-of
 										select="translate(/source/request/parameter[@name='script']/value, '&#xD;','')" />
 								</xsl:when>
 								<xsl:otherwise>
-									<xsl:value-of
-										select="/source/rate-script/@script" />
+									<xsl:value-of select="/source/rate-script/@script" />
 								</xsl:otherwise>
 							</xsl:choose>
 						</textarea>
@@ -278,27 +243,13 @@
 						<br />
 						<input type="submit" value="Update" />
 						<input type="reset" value="Reset" />
-						<br />
-						<br />
-						<fieldset>
-							<legend>Test</legend>
-							<label>
-								<xsl:value-of select="'Bill id '" />
-								<input name="bill-id"
-									value="{/source/request/parameter[@name='bill-id']/value}" />
-							</label>
-							<xsl:value-of select="' '" />
-							<input type="submit"
-								value="Test without saving" />
-						</fieldset>
 					</fieldset>
 				</form>
 				<br />
 				<form action=".">
 					<fieldset>
 						<legend>Delete this Rate Script</legend>
-						<input type="hidden" name="view"
-							value="confirm-delete" />
+						<input type="hidden" name="view" value="confirm-delete" />
 						<input type="submit" value="Delete" />
 					</fieldset>
 				</form>

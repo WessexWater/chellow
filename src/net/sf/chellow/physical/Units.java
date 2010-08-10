@@ -75,7 +75,7 @@ public class Units extends MonadObject {
 		} else if (name.equals("kVA")) {
 			return KVA;
 		} else {
-			throw new UserException("There isn't a Units with this name.");
+			throw new UserException("There isn't a Units with the name " + name);
 		}
 	}
 

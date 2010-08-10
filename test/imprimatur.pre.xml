@@ -1002,6 +1002,10 @@ def totalElement(account, startDate, finishDate):
 			<control name="name">Non half-hourlies 2007</control>
 			<control name="charge-script">
 				<![CDATA[
+def import_virtual_bill_titles():
+    return ['net-gbp', 'vat-gbp', 'gross-gbp', 'problem']
+
+
 def virtual_bill(supply_source):
     return {'net-gbp': 0.0, 'vat-gbp':0.0, 'gross-gbp': 0.0, 'problem': ''}]]>
 			</control>
@@ -1954,6 +1958,7 @@ def triad_estimates():
 		</request>
 	</test>
 	<test name="CSV Sites Monthly Duration">
+	    <!-- See if it handles the case where there isn't an import virtual bill function. -->
 		<request
 			path="/chellow/reports/161/output/?site-code=CI017&amp;months=1&amp;end-year=2009&amp;end-month=04">
 			<response-code value="200" />
@@ -2151,9 +2156,9 @@ def import_virtual_bill(supply_source):
 		<request path="/chellow/reports/111/output/?batch-id=5">
 			<refresh />
 			<regex
-				pattern='Batch,MPAN Core, Reference, Type, Breakdown, Net GBP, VAT GBP, Start Date, Finish Date, Covered From, Covered To, Covered Bills, Covered Net, Covered VAT, Virtual Net, Error GBP, Virtual Reconciliation GBP, Virtual Net - Reconciliation GBP, Error \+ Reconciliation GBP, Problem' />
+				pattern='Batch,Reference, Type, Breakdown, Net GBP, VAT GBP, Start Date, Finish Date, MPAN Core, Covered From, Covered To, Covered Bills, Covered Net, Covered VAT, Virtual Net, Error GBP, Virtual Reconciliation GBP, Virtual Net - Reconciliation GBP, Error \+ Reconciliation GBP, Problem' />
 			<regex
-				pattern='"07-008","22 1065 3921 534","3423760005","NORMAL","","36.16","1.8","2010-01-19T00:00Z","2010-04-20T23:30Z","2010-01-19T00:00Z","2010-04-20T23:30Z","8","36.16","1.8","25.3","10.86","0","25.3","10.86",""' />
+				pattern='"07-008","3423760005","NORMAL","","36.16","1.8","2010-01-19T00:00Z","2010-04-20T23:30Z","22 1065 3921 534","2010-01-19T00:00Z","2010-04-20T23:30Z","8","36.16","1.8","25.3","10.86","0","25.3","10.86",""' />
 			<response-code value="200" />
 		</request>
 	</test>
@@ -2270,6 +2275,46 @@ def import_virtual_bill(supply_source):
 		<request path="/chellow/supplies/2/generations/15/" method="post">
 			<control name="delete" value="Delete" />
 			<response-code value="303" />
+		</request>
+	</test>
+	<test name="Check a contract virtual bill that crosses a generation boundary comes out correctly.">
+	<!-- Put in an import virtual bill function -->
+			<request path="/chellow/supplier-contracts/8/" method="post">
+			<control name="name">Non half-hourlies 2007</control>
+			<control name="charge-script">
+				<![CDATA[
+def import_virtual_bill_titles():
+    return ['net-gbp', 'vat-gbp', 'gross-gbp', 'problem']
+
+
+def import_virtual_bill(supply_source):
+    return {'net-gbp': 0.0, 'vat-gbp':0.0, 'gross-gbp': 0.0, 'problem': ''}]]>
+			</control>
+		</request>
+	<request
+			path="/chellow/reports/87/output/?contract-id=8&amp;mpan-core=22+9974+3438+105&amp;supply-polarity=import&amp;months=1&amp;end-year=2010&amp;end-month=04">
+			<response-code value="200" />
+			<regex
+				pattern="MPAN Core,Account,From,To,net-gbp,vat-gbp,gross-gbp,problem" />
+			<regex
+				pattern='"22 9974 3438 105","341665","2010-04-01T00:00Z","2010-04-13T23:30Z","0.0","0.0","0.0",""' />
+		</request>
+	</test>
+		<test name="NHH CSV import">
+		<request path="/chellow/supplier-contracts/16/batches/" method="post">
+			<control name="reference" value="07-002" />
+			<response-code value="303" />
+		</request>
+		<request path="/chellow/supplier-contracts/16/batches/7/bill-imports/"
+			method="post">
+			<control type="file" name="file" value="bills-nhh.csv" />
+			<response-code value="303" />
+		</request>
+		<request path="/chellow/supplier-contracts/16/batches/7/bill-imports/5/">
+			<refresh />
+			<response-code value="200" />
+			<regex
+				pattern="All the bills have been successfully loaded and attached to the batch\." />
 		</request>
 	</test>
 </imprimatur>
