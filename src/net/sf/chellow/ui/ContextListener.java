@@ -27,6 +27,8 @@ import java.net.MalformedURLException;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.Properties;
 import java.util.logging.FileHandler;
 import java.util.logging.Level;
@@ -51,6 +53,7 @@ import net.sf.chellow.monad.MonadContextParameters;
 import net.sf.chellow.monad.MonadFormatter;
 import net.sf.chellow.monad.MonadHandler;
 import net.sf.chellow.physical.Configuration;
+import net.sf.chellow.physical.Cop;
 import net.sf.chellow.physical.GeneratorType;
 import net.sf.chellow.physical.ReadType;
 import net.sf.chellow.physical.Source;
@@ -114,6 +117,10 @@ public class ContextListener implements ServletContextListener {
 			// postProps.setProperty("python.path", pythonPath);
 			PythonInterpreter.initialize(System.getProperties(), postProps,
 					new String[] {});
+
+			context.setAttribute("net.sf.chellow.request_map", Collections
+					.synchronizedMap(new HashMap<Long, String>()));
+
 		} catch (Throwable e) {
 			logger.logp(Level.SEVERE, "ContextListener", "contextInitialized",
 					"Can't initialize context. " + e.getMessage(), e);
@@ -195,7 +202,7 @@ public class ContextListener implements ServletContextListener {
 		GeneratorType.insertGeneratorType("lm", "Load management.");
 		GeneratorType.insertGeneratorType("turb", "Water turbine.");
 		Hiber.commit();
-		
+
 		ReadType.insertReadType("N", "Normal");
 		ReadType.insertReadType("N3", "Normal 3rd Party");
 		ReadType.insertReadType("C", "Customer");
@@ -207,7 +214,19 @@ public class ContextListener implements ServletContextListener {
 		ReadType.insertReadType("CP", "Computer");
 		ReadType.insertReadType("IF", "Information");
 		Hiber.commit();
-		
+
+		Cop.insertCop(Cop.COP_1, "CoP 1");
+		Cop.insertCop(Cop.COP_2, "CoP 2");
+		Cop.insertCop(Cop.COP_3, "CoP 3");
+		Cop.insertCop(Cop.COP_4, "CoP 4");
+		Cop.insertCop(Cop.COP_5, "CoP 5");
+		Cop.insertCop(Cop.COP_6A, "CoP 6a 20 day memory");
+		Cop.insertCop(Cop.COP_6B, "CoP 6b 100 day memory");
+		Cop.insertCop(Cop.COP_6C, "CoP 6c 250 day memory");
+		Cop.insertCop(Cop.COP_6D, "CoP 6d 450 day memory");
+		Cop.insertCop(Cop.COP_7, "CoP 7");
+		Hiber.commit();
+
 		try {
 			Debug.print("Starting to load MDD.");
 			Class<?> delegatorClass = null;

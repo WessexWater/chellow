@@ -622,6 +622,8 @@ public class SupplyGeneration extends PersistentEntity {
 	private String hhdcAccount;
 	private Pc pc;
 	private String meterSerialNumber;
+	private Mtc mtc;
+	private Cop cop;
 	private Mpan importMpan;
 
 	private Mpan exportMpan;
@@ -731,6 +733,14 @@ public class SupplyGeneration extends PersistentEntity {
 		this.pc = pc;
 	}
 
+	public Cop getCop() {
+		return cop;
+	}
+
+	void setCop(Cop cop) {
+		this.cop = cop;
+	}
+
 	public Mpan getImportMpan() {
 		return importMpan;
 	}
@@ -836,7 +846,7 @@ public class SupplyGeneration extends PersistentEntity {
 	public void update(HhStartDate startDate, HhStartDate finishDate,
 			MopContract mopContract, String mopAccount,
 			HhdcContract hhdcContract, String hhdcAccount,
-			String meterSerialNumber) throws HttpException {
+			String meterSerialNumber, Cop cop) throws HttpException {
 		String importMpanStr = null;
 		Ssc importSsc = null;
 		SupplierContract importSupplierContract = null;
@@ -862,7 +872,7 @@ public class SupplyGeneration extends PersistentEntity {
 			exportAgreedSupplyCapacity = exportMpan.getAgreedSupplyCapacity();
 		}
 		update(startDate, finishDate, mopContract, mopAccount, hhdcContract,
-				hhdcAccount, meterSerialNumber, importMpanStr, importSsc,
+				hhdcAccount, meterSerialNumber, cop, importMpanStr, importSsc,
 				importSupplierContract, importSupplierAccount,
 				importAgreedSupplyCapacity, exportMpanStr, exportSsc,
 				exportSupplierContract, exportSupplierAccount,
@@ -896,7 +906,7 @@ public class SupplyGeneration extends PersistentEntity {
 			return;
 		} else {
 			update(startDate, finishDate, mopContract, mopAccount,
-					hhdcContract, hhdcAccount, meterSerialNumber);
+					hhdcContract, hhdcAccount, meterSerialNumber, cop);
 		}
 	}
 
@@ -904,7 +914,7 @@ public class SupplyGeneration extends PersistentEntity {
 	public void update(HhStartDate startDate, HhStartDate finishDate,
 			MopContract mopContract, String mopAccount,
 			HhdcContract hhdcContract, String hhdcAccount,
-			String meterSerialNumber, String importMpanStr, Ssc importSsc,
+			String meterSerialNumber, Cop cop, String importMpanStr, Ssc importSsc,
 			SupplierContract importSupplierContract,
 			String importSupplierAccount, Integer importAgreedSupplyCapacity,
 			String exportMpanStr, Ssc exportSsc,
@@ -918,6 +928,10 @@ public class SupplyGeneration extends PersistentEntity {
 		setMeterSerialNumber(meterSerialNumber);
 		Pc importPc = null;
 		Pc exportPc = null;
+		
+		Mtc importMtc = null;
+		Mtc exportMtc = null;
+		
 		List<Long> contractIds = new ArrayList<Long>();
 		if (importMpan == null) {
 			if (importMpanStr != null && importMpanStr.length() != 0) {

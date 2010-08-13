@@ -108,7 +108,6 @@ public class Mpan extends PersistentEntity {
 	}
 
 	private SupplyGeneration supplyGeneration;
-	private Mtc mtc;
 
 	private Llfc llfc;
 

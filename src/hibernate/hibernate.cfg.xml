@@ -81,6 +81,7 @@
 		<mapping resource="hibernate/MeterPaymentType.hbm.xml" />
 		<mapping resource="hibernate/ClockInterval.hbm.xml" />
 		<mapping resource="hibernate/ReadType.hbm.xml" />
+		<mapping resource="hibernate/Cop.hbm.xml" />
 		<mapping resource="hibernate/Report.hbm.xml" />
 		<mapping resource="hibernate/GspGroup.hbm.xml" />
 		<mapping resource="hibernate/UserRole.hbm.xml" />

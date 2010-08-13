@@ -158,7 +158,7 @@ class Parser(BillParser):
         <value><![CDATA[2010-05-26T00:00Z]]></value>
         <value><![CDATA[]]></value>
         <value><![CDATA[from net.sf.chellow.billing import BillParser, RawBill
-from java.text import SimpleDateFormat
+from java.text import SimpleDateFormat, DecimalFormat
 from java.util import Locale, TimeZone
 from com.Ostermiller.util import CSVParser
 from net.sf.chellow.physical import ReadType, Units, HhStartDate, RawRegisterRead, Tpr
@@ -179,6 +179,8 @@ class Parser(BillParser):
         self.shredder.setEscapes("nrtf", "\n\r\t\f");
         self.debug_str = ''
 
+        self.formatter = DecimalFormat('00000')
+
 
     def getRawBills(self):
         raw_bills = []
@@ -186,7 +188,12 @@ class Parser(BillParser):
         while values != None:
             reads = []
             for i in range(11, len(values), 11):
-                reads.append(RawRegisterRead(values[i], values[i + 1], BigDecimal(values[i + 2]), Units.getUnits(values[i + 3]), Tpr.getTpr(Integer.parseInt(values[i + 4])), HhStartDate(values[i + 5]), BigDecimal(values[i + 6]), ReadType.getReadType(values[i + 7]), HhStartDate(values[i + 8]), BigDecimal(values[i + 9]), ReadType.getReadType(values[i + 10])))
+                tpr_str = values[i + 4].strip()
+                if len(tpr_str) == 0:
+                    tpr = None
+                else:
+                    tpr = Tpr.getTpr(self.formatter.format(Integer.parseInt(tpr_str)))
+                reads.append(RawRegisterRead(values[i], values[i + 1], BigDecimal(values[i + 2]), Units.getUnits(values[i + 3]), tpr, HhStartDate(values[i + 5]), BigDecimal(values[i + 6]), ReadType.getReadType(values[i + 7]), HhStartDate(values[i + 8]), BigDecimal(values[i + 9]), ReadType.getReadType(values[i + 10])))
             mpan_strings = values[2].split(",")
             raw_bills.append(RawBill(values[0], values[1], mpan_strings, values[3], MonadDate(values[4]).getDate(), HhStartDate(values[5]), HhStartDate(values[6]), BigDecimal(values[7]), BigDecimal(values[8]), BigDecimal(values[9]), values[9], reads))
             values = self.shredder.getLine()
@@ -5055,8 +5062,8 @@ def forecast_date():
     return HhStartDate(cal.getTime())
 
 
-def import_data_sources(contract, search_term, month_start, month_finish, forecast_date, comterp, pw):
-    search_term = search_term.strip()
+def import_data_sources(contract, supply, month_start, month_finish, forecast_date, comterp, pw):
+
     # is it a forecast?
     if month_finish.after(forecast_date):
         selection_finish = forecast_date.getPrevious()
@@ -5068,13 +5075,11 @@ def import_data_sources(contract, search_term, month_start, month_finish, foreca
         selection_start = month_start
         selection_finish = month_finish
 
-    if len(search_term) == 0:
-        query = Hiber.session().createQuery("select distinct generation from SupplyGeneration generation where generation.importMpan is not null and generation.importMpan.supplierContract = :contract and generation.startDate.date <= :finishDate and (generation.finishDate is null or generation.finishDate.date >= :startDate)")
+    if supply is None:
+        query = Hiber.session().createQuery("select distinct generation from SupplyGeneration generation where generation.importMpan is not null and generation.importMpan.supplierContract = :contract and generation.startDate.date <= :finishDate and (generation.finishDate is null or generation.finishDate.date >= :startDate)").setEntity('contract', contract)
     else:
-        mpan_core = MpanCore.getMpanCore(search_term)
-        supply = mpan_core.getSupply()
-        query = Hiber.session().createQuery("select distinct generation from SupplyGeneration generation where generation.supply = :supply and generation.importMpan is not null and generation.importMpan.supplierContract = :contract and generation.startDate.date <= :finishDate and (generation.finishDate is null or generation.finishDate.date >= :startDate)").setEntity('supply', supply)
-    generations = query.setEntity('contract', contract).setTimestamp('startDate', selection_start.getDate()).setTimestamp('finishDate', selection_finish.getDate()).scroll()
+        query = Hiber.session().createQuery("select distinct generation from SupplyGeneration generation where generation.supply = :supply and generation.importMpan is not null and generation.startDate.date <= :finishDate and (generation.finishDate is null or generation.finishDate.date >= :startDate)").setEntity('supply', supply)
+    generations = query.setTimestamp('startDate', selection_start.getDate()).setTimestamp('finishDate', selection_finish.getDate()).scroll()
     while generations.next():
         generation = generations.get(0)
 

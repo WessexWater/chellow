@@ -52,6 +52,7 @@ import net.sf.chellow.monad.Invocation.HttpMethod;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
 import net.sf.chellow.physical.Configuration;
+import net.sf.chellow.physical.Cops;
 import net.sf.chellow.physical.GeneratorTypes;
 import net.sf.chellow.physical.GspGroups;
 import net.sf.chellow.physical.MarketRole;
@@ -128,16 +129,14 @@ public class Chellow extends Monad implements Urlable {
 
 	static public final GeneratorTypes GENERATOR_TYPES_INSTANCE = new GeneratorTypes();
 
+	static public final Cops COPS_INSTANCE = new Cops();
+
 	static {
 		try {
 			ROOT_URI = new MonadUri("/");
 		} catch (HttpException e) {
 			throw new RuntimeException(e);
 		}
-		/*
-		 * try { GOVERNMENT_INSTANCE = Government.getGovernment(); } catch
-		 * (HttpException e) { throw new RuntimeException(e); }
-		 */
 	}
 
 	public Chellow() {
@@ -309,6 +308,8 @@ public class Chellow extends Monad implements Urlable {
 			return GENERATOR_TYPES_INSTANCE;
 		} else if (MopContracts.URI_ID.equals(uriId)) {
 			return MOP_CONTRACTS_INSTANCE;
+		} else if (Cops.URI_ID.equals(uriId)) {
+			return COPS_INSTANCE;
 		} else {
 			return null;
 		}

@@ -1831,7 +1831,7 @@ def triad_estimates():
 			<response-code value="200" />
 		</request>
 		<request
-			path="/chellow/reports/87/output/?contract-id=4&amp;mpan-core=22+4862+4512+332&amp;supply-polarity=import&amp;months=1&amp;end-year=2009&amp;end-month=03">
+			path="/chellow/reports/87/output/?supply-id=8&amp;supply-polarity=import&amp;months=1&amp;end-year=2009&amp;end-month=03">
 			<response-code value="200" />
 			<regex
 				pattern="MPAN Core,Account,From,To,net-gbp,ccl-kwh,ccl-rate,ccl-gbp,data-collection-gbp,duos-availability-agreed-kva,duos-availability-billed-kva,duos-availability-rate,duos-availability-gbp,duos-day-kwh,duos-day-gbp,duos-night-kwh,duos-night-gbp,duos-reactive-rate,duos-reactive-gbp,duos-standing-gbp,settlement-gbp,night-msp-kwh,night-gsp-kwh,night-gbp,other-msp-kwh,other-gsp-kwh,other-gbp,summer-pk-msp-kwh,summer-pk-gsp-kwh,summer-pk-gbp,winter-low-pk-msp-kwh,winter-low-pk-gsp-kwh,winter-low-pk-gbp,winter-off-pk-msp-kwh,winter-off-pk-gsp-kwh,winter-off-pk-gbp,winter-pk-msp-kwh,winter-pk-gsp-kwh,winter-pk-gbp,bsuos-actual-gbp,triad-actual-0-date,triad-actual-0-msp-kw,triad-actual-0-status,triad-actual-0-laf,triad-actual-0-gsp-kw,triad-actual-1-date,triad-actual-1-msp-kw,triad-actual-1-status,triad-actual-1-laf,triad-actual-1-gsp-kw,triad-actual-2-date,triad-actual-2-msp-kw,triad-actual-2-status,triad-actual-2-laf,triad-actual-2-gsp-kw,triad-actual-gsp-kw,triad-actual-rate,triad-actual-gbp,triad-estimate-0-date,triad-estimate-0-msp-kw,triad-estimate-0-status,triad-estimate-0-laf,triad-estimate-0-gsp-kw,triad-estimate-1-date,triad-estimate-1-msp-kw,triad-estimate-1-status,triad-estimate-1-laf,triad-estimate-1-gsp-kw,triad-estimate-2-date,triad-estimate-2-msp-kw,triad-estimate-2-status,triad-estimate-2-laf,triad-estimate-2-gsp-kw,triad-estimate-gsp-kw,triad-estimate-rate,triad-estimate-months,triad-estimate-gbp,triad-all-estimates-months,triad-all-estimates-gbp" />
@@ -2034,12 +2034,12 @@ def triad_estimates():
 			<response-code value="200" />
 		</request>
 		<request
-			path="/chellow/reports/87/output/?contract-id=4&amp;mpan-core=20+6354+2983+571&amp;supply-polarity=import&amp;months=1&amp;end-year=2009&amp;end-month=03">
+			path="/chellow/reports/87/output/?supply-id=7&amp;supply-polarity=import&amp;months=1&amp;end-year=2009&amp;end-month=03">
 			<response-code value="200" />
 			<regex
 				pattern="MPAN Core,Account,From,To,net-gbp,ccl-kwh,ccl-rate,ccl-gbp,data-collection-gbp,duos-availability-agreed-kva,duos-availability-billed-kva,duos-availability-rate,duos-availability-gbp,duos-day-kwh,duos-day-gbp,duos-night-kwh,duos-night-gbp,duos-reactive-rate,duos-reactive-gbp,duos-standing-gbp,settlement-gbp,night-msp-kwh,night-gsp-kwh,night-gbp,other-msp-kwh,other-gsp-kwh,other-gbp,summer-pk-msp-kwh,summer-pk-gsp-kwh,summer-pk-gbp,winter-low-pk-msp-kwh,winter-low-pk-gsp-kwh,winter-low-pk-gbp,winter-off-pk-msp-kwh,winter-off-pk-gsp-kwh,winter-off-pk-gbp,winter-pk-msp-kwh,winter-pk-gsp-kwh,winter-pk-gbp,bsuos-actual-gbp,triad-actual-0-date,triad-actual-0-msp-kw,triad-actual-0-status,triad-actual-0-laf,triad-actual-0-gsp-kw,triad-actual-1-date,triad-actual-1-msp-kw,triad-actual-1-status,triad-actual-1-laf,triad-actual-1-gsp-kw,triad-actual-2-date,triad-actual-2-msp-kw,triad-actual-2-status,triad-actual-2-laf,triad-actual-2-gsp-kw,triad-actual-gsp-kw,triad-actual-rate,triad-actual-gbp,triad-estimate-0-date,triad-estimate-0-msp-kw,triad-estimate-0-status,triad-estimate-0-laf,triad-estimate-0-gsp-kw,triad-estimate-1-date,triad-estimate-1-msp-kw,triad-estimate-1-status,triad-estimate-1-laf,triad-estimate-1-gsp-kw,triad-estimate-2-date,triad-estimate-2-msp-kw,triad-estimate-2-status,triad-estimate-2-laf,triad-estimate-2-gsp-kw,triad-estimate-gsp-kw,triad-estimate-rate,triad-estimate-months,triad-estimate-gbp,triad-all-estimates-months,triad-all-estimates-gbp" />
 			<regex
-				pattern='"20 6354 2983 571","14195532","2009-03-01T00:00Z","2009-03-31T23:30Z","2273.8","0","0","0","5.89","2300","2300","","2165.0","0","0.0","0","0","","0","14.91","88","0","0","0.0","0","0.0","0.0","0","0","0.0","0","0","0.0","0","0","0.0","0","0","0.0","0.0","2009-01-06T17:00Z","0","E","1.079","0.0","2008-12-01T17:00Z","0","E","1.079","0.0","2008-12-15T17:00Z","0","E","1.079","0.0","0.0","22.19481","0.0","2007-12-17T17:00Z","0","E","1.079","0.0","2008-01-03T17:00Z","0","E","1.079","0.0","2007-11-26T17:00Z","0","E","1.079","0.0","0.0","22.19481","1","0.0","12","-0.0",,"problem",""' />
+				pattern='"20 6354 2983 571","14195532","2009-03-01T00:00Z","2009-03-31T23:30Z","2273.8","0","0","0","5.89","2300","2300","","2165.0","0","0.0","0","0","","0","14.91","88","0","0","0.0","0","0.0","0.0","0","0","0.0","0","0","0.0","0","0","0.0","0","0","0.0","0.0","2009-01-06T17:00Z","0","E","1.079","0.0","2008-12-01T17:00Z","0","E","1.079","0.0","2008-12-15T17:00Z","0","E","1.079","0.0","0.0","22.19481","0.0","2007-12-17T17:00Z","0","E","1.079","0.0","2008-01-03T17:00Z","0","E","1.079","0.0","2007-11-26T17:00Z","0","E","1.079","0.0","0.0","22.19481","1","0.0","12","-0.0","problem",""' />
 		</request>
 	</test>
 	<test name="Create a supply, and then delete it.">
@@ -2090,8 +2090,8 @@ def import_virtual_bill_titles():
 
 
 def import_virtual_bill(supply_source):
-    kwh = supply_source.summary['sum-msp-kwh']
-    return {'net-gbp': kwh * 0.1, 'kwh': kwh, 'problem': ''}]]>
+    sum_msp_kwh = supply_source.summary['sum-msp-kwh']
+    return {'net-gbp': sum_msp_kwh * 0.1, 'sum-msp-kwh': sum_msp_kwh, 'problem': ''}]]>
 			</control>
 		</request>
 
@@ -2156,9 +2156,9 @@ def import_virtual_bill(supply_source):
 		<request path="/chellow/reports/111/output/?batch-id=5">
 			<refresh />
 			<regex
-				pattern='Batch,Reference, Type, Breakdown, Net GBP, VAT GBP, Start Date, Finish Date, MPAN Core, Covered From, Covered To, Covered Bills, Covered Net, Covered VAT, Virtual Net, Error GBP, Virtual Reconciliation GBP, Virtual Net - Reconciliation GBP, Error \+ Reconciliation GBP, Problem' />
+				pattern='Batch,Reference, Type, Breakdown, kWh, Net GBP, VAT GBP, Start Date, Finish Date, MPAN Core, Covered From, Covered To, Covered Bills, Covered kWh, Covered Net, Covered VAT, Virtual kWh, Virtual Net, Error GBP, Virtual Reconciliation GBP, Virtual Net - Reconciliation GBP, Error \+ Reconciliation GBP, Problem' />
 			<regex
-				pattern='"07-008","3423760005","NORMAL","","36.16","1.8","2010-01-19T00:00Z","2010-04-20T23:30Z","22 1065 3921 534","2010-01-19T00:00Z","2010-04-20T23:30Z","8","36.16","1.8","25.3","10.86","0","25.3","10.86",""' />
+				pattern='"07-008","3423760005","NORMAL","","253","36.16","1.8","2010-01-19T00:00Z","2010-04-20T23:30Z","22 1065 3921 534","2010-01-19T00:00Z","2010-04-20T23:30Z","8","253.0","36.16","1.8","253.0","25.3","10.86","0","25.3","10.86",""' />
 			<response-code value="200" />
 		</request>
 	</test>
@@ -2292,7 +2292,7 @@ def import_virtual_bill(supply_source):
 			</control>
 		</request>
 	<request
-			path="/chellow/reports/87/output/?contract-id=8&amp;mpan-core=22+9974+3438+105&amp;supply-polarity=import&amp;months=1&amp;end-year=2010&amp;end-month=04">
+			path="/chellow/reports/87/output/?supply-id=12&amp;supply-polarity=import&amp;months=1&amp;end-year=2010&amp;end-month=04">
 			<response-code value="200" />
 			<regex
 				pattern="MPAN Core,Account,From,To,net-gbp,vat-gbp,gross-gbp,problem" />

@@ -183,6 +183,11 @@
 							GSP Groups
 						</a>
 					</li>
+					<li>
+						<a href="{/source/request/@context-path}/cops/">
+							CoPs
+						</a>
+					</li>
 				</ul>
 			</body>
 		</html>

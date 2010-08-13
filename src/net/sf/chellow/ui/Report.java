@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.util.List;
+import java.util.Map;
 
 import javax.servlet.ServletContext;
 
@@ -36,6 +37,7 @@ import net.sf.chellow.monad.MonadUtils;
 import net.sf.chellow.monad.NotFoundException;
 import net.sf.chellow.monad.Urlable;
 import net.sf.chellow.monad.UserException;
+import net.sf.chellow.monad.types.MonadDate;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
 import net.sf.chellow.physical.Configuration;
@@ -226,6 +228,7 @@ public class Report extends PersistentEntity {
 		}
 	}
 
+	@SuppressWarnings("unchecked")
 	public void run(Invocation inv, Document doc) throws HttpException {
 		PythonInterpreter interp = new PythonInterpreter();
 		Element source = doc.getDocumentElement();
@@ -236,6 +239,17 @@ public class Report extends PersistentEntity {
 		interp.setOut(out);
 		StringWriter err = new StringWriter();
 		interp.setErr(err);
+
+		ServletContext ctx = inv.getMonad().getServletConfig()
+				.getServletContext();
+		Map<Long, String> request_map = (Map<Long, String>) ctx
+				.getAttribute("net.sf.chellow.request_map");
+		request_map.put(Thread.currentThread().getId(), inv.getRequest()
+				.getRequestURL().append(
+						'?' + inv.getRequest().getQueryString() + ' '
+								+ new MonadDate() + ' '
+								+ inv.getRequest().getRemoteAddr()).toString());
+
 		try {
 			interp.exec(script);
 			/*

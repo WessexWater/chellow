@@ -54,11 +54,11 @@ public class Tpr extends PersistentEntity {
 		return tpr;
 	}
 
-	static public Tpr getTpr(long id) throws NotFoundException,
-			InternalException {
+	static public Tpr getTpr(long id) throws HttpException {
 		Tpr tpr = (Tpr) Hiber.session().get(Tpr.class, id);
 		if (tpr == null) {
-			throw new NotFoundException();
+			throw new UserException("Can't find a TPR with id '" + id
+					+ "'.");
 		}
 		return tpr;
 	}

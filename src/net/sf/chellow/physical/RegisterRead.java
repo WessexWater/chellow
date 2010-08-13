@@ -30,6 +30,7 @@ import net.sf.chellow.monad.Invocation;
 import net.sf.chellow.monad.MonadMessage;
 import net.sf.chellow.monad.MonadUtils;
 import net.sf.chellow.monad.Urlable;
+import net.sf.chellow.monad.UserException;
 import net.sf.chellow.monad.XmlTree;
 import net.sf.chellow.monad.types.MonadDate;
 import net.sf.chellow.monad.types.MonadUri;
@@ -76,6 +77,9 @@ public class RegisterRead extends PersistentEntity {
 			throw new InternalException("The bill must not be null.");
 		}
 		setBill(bill);
+		if (tpr == null && units.equals(Units.KWH)) {
+			throw new UserException("If a register read is measuring kWh, there must be a TPR.");
+		}
 		setTpr(tpr);
 		setCoefficient(coefficient);
 		setUnits(units);
