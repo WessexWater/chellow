@@ -425,6 +425,7 @@ public class Supply extends PersistentEntity {
 		String existingMopAccount = existingGeneration.getMopAccount();
 
 		String meterSerialNumber = existingGeneration.getMeterSerialNumber();
+		Cop existingCop = existingGeneration.getCop();
 		Mpan existingImportMpan = existingGeneration.getImportMpan();
 		Mpan existingExportMpan = existingGeneration.getExportMpan();
 		Map<Site, Boolean> existingSiteMap = new HashMap<Site, Boolean>();
@@ -465,7 +466,7 @@ public class Supply extends PersistentEntity {
 		}
 		return insertGeneration(existingSiteMap, startDate,
 				existingMopContract, existingMopAccount, existingHhdcContract,
-				existingHhdcAccount, meterSerialNumber, existingImportMpanStr,
+				existingHhdcAccount, meterSerialNumber, existingCop, existingImportMpanStr,
 				existingImportSsc, existingImportSupplierContract,
 				existingImportSupplierAccount, existingImportSupplyCapacity,
 				existingExportMpanStr, existingExportSsc,
@@ -513,7 +514,7 @@ public class Supply extends PersistentEntity {
 	public SupplyGeneration insertGeneration(Map<Site, Boolean> siteMap,
 			HhStartDate startDate, MopContract mopContract, String mopAccount,
 			HhdcContract hhdcContract, String hhdcAccount,
-			String meterSerialNumber, String importMpanStr, Ssc importSsc,
+			String meterSerialNumber, Cop cop, String importMpanStr, Ssc importSsc,
 			SupplierContract importSupplierContract,
 			String importSupplierAccount, Integer importAgreedSupplyCapacity,
 			String exportMpanStr, Ssc exportSsc,
@@ -535,7 +536,7 @@ public class Supply extends PersistentEntity {
 					supplyGeneration.getMopAccount(), supplyGeneration
 							.getHhdcContract(), supplyGeneration
 							.getHhdcAccount(), supplyGeneration
-							.getMeterSerialNumber(), importMpanStr, importSsc,
+							.getMeterSerialNumber(), cop, importMpanStr, importSsc,
 					importSupplierContract, importSupplierAccount,
 					importAgreedSupplyCapacity, exportMpanStr, exportSsc,
 					exportSupplierContract, exportSupplierAccount,
@@ -562,7 +563,7 @@ public class Supply extends PersistentEntity {
 					supplyGeneration.getMopAccount(), supplyGeneration
 							.getHhdcContract(), supplyGeneration
 							.getHhdcAccount(), supplyGeneration
-							.getMeterSerialNumber(), importMpanStr, importSsc,
+							.getMeterSerialNumber(), cop, importMpanStr, importSsc,
 					importSupplierContract, importSupplierAccount,
 					importAgreedSupplyCapacity, exportMpanStr, exportSsc,
 					exportSupplierContract, exportSupplierAccount,

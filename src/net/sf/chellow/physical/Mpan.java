@@ -140,14 +140,6 @@ public class Mpan extends PersistentEntity {
 		this.supplyGeneration = supplyGeneration;
 	}
 
-	public Mtc getMtc() {
-		return mtc;
-	}
-
-	void setMtc(Mtc mtc) {
-		this.mtc = mtc;
-	}
-
 	public Llfc getLlfc() {
 		return llfc;
 	}
@@ -255,7 +247,7 @@ public class Mpan extends PersistentEntity {
 
 	public String toString() {
 		return supplyGeneration.getPc().codeAsString() + " "
-				+ mtc.codeAsString() + " " + llfc.codeAsString() + " " + core;
+				+ supplyGeneration.getMtc().codeAsString() + " " + llfc.codeAsString() + " " + core;
 	}
 
 	public Element toXml(Document doc) throws HttpException {
@@ -265,7 +257,7 @@ public class Mpan extends PersistentEntity {
 		element.setAttribute("mpan", supplyGeneration.getPc().toXml(doc)
 				.getTextContent()
 				+ " "
-				+ mtc.toXml(doc).getTextContent()
+				+ supplyGeneration.getMtc().toXml(doc).getTextContent()
 				+ " "
 				+ llfc.toXml(doc).getTextContent() + " " + core.toString());
 		element.setAttribute("supplier-account", supplierAccount);
