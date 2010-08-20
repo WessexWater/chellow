@@ -31,6 +31,7 @@ import java.util.List;
 import net.sf.chellow.hhimport.HhDatumRaw;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
+import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Invocation;
 import net.sf.chellow.monad.MonadMessage;
 import net.sf.chellow.monad.MonadUtils;
@@ -49,12 +50,7 @@ public class HhDatum extends PersistentEntity {
 
 	public static final char ESTIMATE = 'E';
 
-	/*
-	 * static private String getCsvField(String fieldName, String[] values, int
-	 * index) throws HttpException { if (index > values.length - 1) { throw new
-	 * UserException("Another field called " + fieldName + " needs to be added
-	 * on to " + values); } return values[index]; }
-	 */
+	public static final char PADDING = 'C';
 
 	static public void insert(Iterator<HhDatumRaw> rawData, List<Boolean> halt)
 			throws HttpException {
@@ -141,9 +137,13 @@ public class HhDatum extends PersistentEntity {
 
 	public HhDatum(Channel channel, HhDatumRaw datumRaw) throws HttpException {
 		setChannel(channel);
-		setStartDate(datumRaw.getStartDate());
-		setValue(datumRaw.getValue());
-		setStatus(datumRaw.getStatus());
+		HhStartDate startDate = datumRaw.getStartDate();
+		if (startDate == null) {
+			throw new InternalException(
+					"The value 'startDate' must not be null.");
+		}
+		setStartDate(startDate);
+		update(datumRaw.getValue(), datumRaw.getStatus());
 	}
 
 	public Channel getChannel() {
@@ -179,7 +179,9 @@ public class HhDatum extends PersistentEntity {
 	}
 
 	public void update(BigDecimal value, char status) throws HttpException {
-		new HhDatumRaw("", false, false, startDate, value, status);
+		if (status != ESTIMATE && status != ACTUAL && status != PADDING) {
+			throw new UserException("The status character must be E, A or C.");
+		}
 		setValue(value);
 		setStatus(status);
 	}

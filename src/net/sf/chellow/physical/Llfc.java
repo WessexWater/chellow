@@ -180,14 +180,9 @@ public class Llfc extends PersistentEntity {
 		this.validTo = to;
 	}
 
-	public String codeAsString() {
-		DecimalFormat llfcFormat = new DecimalFormat("000");
-		return llfcFormat.format(code);
-	}
-
 	public Element toXml(Document doc) throws HttpException {
 		Element element = super.toXml(doc, "llfc");
-		element.setAttribute("code", codeAsString());
+		element.setAttribute("code", toString());
 		element.setAttribute("description", description);
 		element.setAttribute("is-substation", Boolean.toString(isSubstation));
 		element.setAttribute("is-import", Boolean.toString(isImport));
@@ -225,6 +220,6 @@ public class Llfc extends PersistentEntity {
 	}
 
 	public String toString() {
-		return code + " - " + description + " (DSO " + (dso.getCode()) + ")";
+		return new DecimalFormat("000").format(code);
 	}
 }
