@@ -75,6 +75,18 @@ public class Mpan extends PersistentEntity {
 	static public Pc pc(String mpan) throws HttpException {
 		return Pc.getPc(new MpanRaw(mpan).getPcCode());
 	}
+	
+	static public Dso dso(String mpan) throws HttpException {
+		String core = getCore(mpan);
+		String dsoCode = core.substring(0, 2);
+		return Dso.getDso(dsoCode);
+	}
+	
+	static public Mtc mtc(String mpan) throws HttpException {
+		Dso dso = dso(mpan);
+		return Mtc.getMtc(dso, new MpanRaw(mpan).getMtcCode());
+	}
+
 
 	static public boolean haveEqualCores(List<String> mpans1,
 			List<String> mpans2) throws HttpException {
@@ -111,8 +123,6 @@ public class Mpan extends PersistentEntity {
 
 	private Llfc llfc;
 
-	private Ssc ssc;
-
 	private MpanCore core;
 
 	private SupplierContract supplierContract;
@@ -124,11 +134,11 @@ public class Mpan extends PersistentEntity {
 	Mpan() {
 	}
 
-	Mpan(SupplyGeneration supplyGeneration, String mpanStr, Ssc ssc,
+	Mpan(SupplyGeneration supplyGeneration, String llfcCode, String core,
 			SupplierContract supplierContract, String supplierAccount,
 			int agreedSupplyCapacity) throws HttpException {
 		this.supplyGeneration = supplyGeneration;
-		update(mpanStr, ssc, supplierContract, supplierAccount,
+		update(llfcCode, core, supplierContract, supplierAccount,
 				agreedSupplyCapacity);
 	}
 
@@ -139,6 +149,7 @@ public class Mpan extends PersistentEntity {
 	protected void setSupplyGeneration(SupplyGeneration supplyGeneration) {
 		this.supplyGeneration = supplyGeneration;
 	}
+
 
 	public Llfc getLlfc() {
 		return llfc;
@@ -154,14 +165,6 @@ public class Mpan extends PersistentEntity {
 
 	void setCore(MpanCore core) {
 		this.core = core;
-	}
-
-	public Ssc getSsc() {
-		return ssc;
-	}
-
-	void setSsc(Ssc ssc) {
-		this.ssc = ssc;
 	}
 
 	public SupplierContract getSupplierContract() {
@@ -188,28 +191,24 @@ public class Mpan extends PersistentEntity {
 		this.agreedSupplyCapacity = agreedSupplyCapacity;
 	}
 
-	public void update(String mpan, Ssc ssc, SupplierContract supplierContract,
+	public void update(String llfcCode, String core, SupplierContract supplierContract,
 			String supplierAccount, Integer agreedSupplyCapacity)
 			throws HttpException {
 		if (agreedSupplyCapacity == null) {
 			throw new InternalException("agreedSupplyCapacity can't be null");
 		}
-		MpanRaw mpanRaw = new MpanRaw(mpan);
-		MpanCore mpanCore = MpanCore.findMpanCore(mpanRaw.getCore());
+		MpanCore mpanCore = MpanCore.findMpanCore(core);
 		if (mpanCore == null) {
-			mpanCore = supplyGeneration.getSupply().addMpanCore(
-					mpanRaw.getCore());
+			mpanCore = supplyGeneration.getSupply().addMpanCore(core);
 		}
 		Dso dso = mpanCore.getDso();
-		Pc pc = Pc.getPc(mpanRaw.getPcCode());
+		Llfc llfc = dso.getLlfc(llfcCode);
 
-		setMtc(Mtc.getMtc(dso, mpanRaw.getMtcCode()));
-		Llfc llfc = dso.getLlfc(mpanRaw.getLlfcCode());
 		if (!mpanCore.getSupply().equals(supplyGeneration.getSupply())) {
 			throw new UserException(
 					"This MPAN core is already attached to another supply.");
 		}
-		if (!llfc.getDso().equals(mpanCore.getDso())) {
+		if (!llfc.getDso().equals(dso)) {
 			throw new UserException(
 					"The MPAN top line DSO doesn't match the MPAN core DSO.");
 		}
@@ -224,15 +223,7 @@ public class Mpan extends PersistentEntity {
 							+ " which has IsImport " + llfc.getIsImport() + ".");
 		}
 		setLlfc(llfc);
-		if (pc.getCode() == 0 && ssc != null) {
-			throw new UserException(
-					"A supply with Profile Class 00 can't have a Standard Settlement Configuration.");
-		}
-		if (pc.getCode() > 0 && ssc == null) {
-			throw new UserException(
-					"A NHH supply must have a Standard Settlement Configuration.");
-		}
-		setSsc(ssc);
+
 		setCore(mpanCore);
 		if (supplierContract == null) {
 			throw new UserException("An MPAN must have a supplier contract.");
@@ -246,8 +237,8 @@ public class Mpan extends PersistentEntity {
 	}
 
 	public String toString() {
-		return supplyGeneration.getPc().codeAsString() + " "
-				+ supplyGeneration.getMtc().codeAsString() + " " + llfc.codeAsString() + " " + core;
+		return supplyGeneration.getPc() + " "
+				+ supplyGeneration.getMtc() + " " + llfc + " " + core;
 	}
 
 	public Element toXml(Document doc) throws HttpException {
