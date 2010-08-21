@@ -99,12 +99,8 @@ public class Pc extends PersistentEntity {
 		setDescription(description);
 		Hiber.flush();
 	}
-
-	public String toString() {
-		return getCode() + " - " + getDescription();
-	}
 	
-	public String codeAsString() {
+	public String toString() {
 		DecimalFormat pcFormat = new DecimalFormat("00");
 		return pcFormat.format(code);
 	}
@@ -113,7 +109,7 @@ public class Pc extends PersistentEntity {
 		Element element = super.toXml(doc, "pc");
 		
 
-		element.setAttribute("code", codeAsString());
+		element.setAttribute("code", toString());
 		element.setAttribute("description", description);
 		return element;
 	}

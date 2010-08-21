@@ -484,8 +484,71 @@
 											</option>
 										</xsl:for-each>
 									</select>
-
 								</label>
+								<br />
+								<label>
+									<xsl:value-of select="'Meter Timeswitch Class '" />
+									<input name="mtc-code" size="3" maxlength="3">
+										<xsl:attribute name="value">
+												<xsl:choose>
+													<xsl:when test="/source/request/parameter[@name='mtc-code']">
+														<xsl:value-of
+											select="/source/request/parameter[@name='mtc-code']/value" />
+													</xsl:when>
+													<xsl:otherwise>
+														<xsl:value-of select="/source/supply-generation/mtc/@code" />
+													</xsl:otherwise>
+												</xsl:choose>
+											</xsl:attribute>
+									</input>
+								</label>
+								<xsl:value-of
+									select="concat(' ', /source/supply-generation/mtc/@description)" />
+
+								<br />
+								<label>
+									<xsl:value-of select="'CoP '" />
+									<select name="cop-id">
+										<xsl:for-each select="/source/cop">
+											<option value="{@id}">
+												<xsl:choose>
+													<xsl:when test="/source/request/parameter[@name='cop-id']">
+														<xsl:if
+															test="@id = /source/request/parameter[@name='cop-id']/value">
+															<xsl:attribute name="selected" />
+														</xsl:if>
+													</xsl:when>
+													<xsl:otherwise>
+														<xsl:if test="@id = /source/supply-generation/cop/@id">
+															<xsl:attribute name="selected" />
+														</xsl:if>
+													</xsl:otherwise>
+												</xsl:choose>
+												<xsl:value-of select="concat(@code, ' - ', @description)" />
+											</option>
+										</xsl:for-each>
+									</select>
+								</label>
+								<br />
+								<label>
+									<xsl:value-of select="'Standard Settlement Configuration '" />
+									<input name="ssc-code" size="4" maxlength="4">
+										<xsl:attribute name="value">
+												<xsl:choose>
+													<xsl:when test="/source/request/parameter[@name='ssc-code']">
+														<xsl:value-of
+											select="/source/request/parameter[@name='ssc-code']/value" />
+													</xsl:when>
+													<xsl:otherwise>
+														<xsl:value-of select="/source/supply-generation/ssc/@code" />
+													</xsl:otherwise>
+												</xsl:choose>
+											</xsl:attribute>
+									</input>
+								</label>
+								<xsl:value-of
+									select="concat(' ', /source/supply-generation/ssc/@description)" />
+
 								<br />
 								<br />
 								<fieldset>
@@ -510,28 +573,6 @@
 										</input>
 									</label>
 									<br />
-									<br />
-									<label>
-										<xsl:value-of select="'Meter Timeswitch Class '" />
-										<input name="import-mtc-code" size="3" maxlength="3">
-											<xsl:attribute name="value">
-												<xsl:choose>
-													<xsl:when
-												test="/source/request/parameter[@name='import-mtc-code']">
-														<xsl:value-of
-												select="/source/request/parameter[@name='import-mtc-code']/value" />
-													</xsl:when>
-													<xsl:otherwise>
-														<xsl:value-of
-												select="/source/supply-generation/mpan[llfc/@is-import='true']/mtc/@code" />
-													</xsl:otherwise>
-												</xsl:choose>
-											</xsl:attribute>
-										</input>
-									</label>
-									<xsl:value-of
-										select="concat(' ', /source/supply-generation/mpan[llfc/@is-import='true']/mtc/@description)" />
-
 									<br />
 									<label>
 										<xsl:value-of select="'Line Loss Factor Class '" />
@@ -573,36 +614,6 @@
 											</xsl:attribute>
 										</input>
 									</label>
-									<br />
-									<label>
-										<xsl:value-of select="'SSC '" />
-										<input name="import-ssc-code" size="16">
-											<xsl:attribute name="value">
-													<xsl:choose>
-														<xsl:when
-												test="/source/request/parameter[@name='import-ssc-code']">
-															<xsl:value-of
-												select="/source/request/parameter[@name='import-ssc-code']/value">
-															</xsl:value-of>
-														</xsl:when>
-														<xsl:otherwise>
-																<xsl:value-of
-												select="/source/supply-generation/mpan[llfc/@is-import='true']/ssc/@code" />
-														</xsl:otherwise>
-														</xsl:choose>
-											</xsl:attribute>
-										</input>
-									</label>
-									<xsl:if
-										test="/source/supply-generation/mpan[llfc/@is-import='true']/ssc">
-										<xsl:value-of select="' '" />
-										<a
-											href="{/source/request/@context-path}/sscs/{/source/supply-generation/mpan[llfc/@is-import='true']/ssc/@id}/">
-											<xsl:value-of
-												select="concat(/source/supply-generation/mpan[llfc/@is-import='true']/ssc/@code, ' - ', /source/supply-generation/mpan[llfc/@is-import='true']/ssc/@description)" />
-										</a>
-									</xsl:if>
-									<br />
 									<br />
 									<br />
 									<label>
@@ -839,26 +850,6 @@
 									</label>
 									<br />
 									<br />
-									<label>
-										<xsl:value-of select="'Meter Timeswitch Class '" />
-										<input name="export-mtc-code" size="3" maxlength="3">
-											<xsl:attribute name="value">
-												<xsl:choose>
-													<xsl:when
-												test="/source/request/parameter[@name='export-mtc-code']">
-														<xsl:value-of
-												select="/source/request/parameter[@name='export-mtc-code']/value" />
-													</xsl:when>
-													<xsl:otherwise>
-														<xsl:value-of
-												select="/source/supply-generation/mpan[llfc/@is-import='false']/mtc/@code" />
-													</xsl:otherwise>
-												</xsl:choose>
-											</xsl:attribute>
-										</input>
-									</label>
-									<xsl:value-of
-										select="concat(' ', /source/supply-generation/mpan[llfc/@is-import='false']/mtc/@description)" />
 									<br />
 									<label>
 										<xsl:value-of select="'Line Loss Factor Class '" />
@@ -900,31 +891,6 @@
 											</xsl:attribute>
 										</input>
 									</label>
-									<br />
-									<label>
-										<xsl:value-of select="'SSC '" />
-										<input name="export-ssc-code" size="16">
-											<xsl:attribute name="value">
-													<xsl:choose>
-														<xsl:when
-												test="/source/request/parameter[@name='export-ssc-code']">
-															<xsl:value-of
-												select="/source/request/parameter[@name='export-ssc-code']/value">
-															</xsl:value-of>
-														</xsl:when>
-														<xsl:otherwise>
-																<xsl:value-of
-												select="/source/supply-generation/mpan[llfc/@is-import='false']/ssc/@code" />
-														</xsl:otherwise>
-														</xsl:choose>
-											</xsl:attribute>
-										</input>
-									</label>
-									<xsl:if
-										test="/source/supply-generation/mpan[llfc/@is-import='false']/ssc">
-										<xsl:value-of
-											select="concat(' ', /source/supply-generation/mpan[llfc/@is-import='false']/ssc/@description)" />
-									</xsl:if>
 									<br />
 									<br />
 									<br />
@@ -1150,15 +1116,17 @@
 							</fieldset>
 						</form>
 						<br />
-						<form action=".">
-							<fieldset>
-								<legend>
-									Delete this supply generation
+						<xsl:if test="not(/source/@num-generations='1')">
+							<form action=".">
+								<fieldset>
+									<legend>
+										Delete this supply generation
 								</legend>
-								<input type="hidden" name="view" value="confirm-delete" />
-								<input type="submit" value="Delete" />
-							</fieldset>
-						</form>
+									<input type="hidden" name="view" value="confirm-delete" />
+									<input type="submit" value="Delete" />
+								</fieldset>
+							</form>
+						</xsl:if>
 						<ul>
 							<li>
 								<a href="channels/">Channels</a>

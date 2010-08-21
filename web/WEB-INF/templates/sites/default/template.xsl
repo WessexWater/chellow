@@ -304,12 +304,12 @@
 									</select>
 								</label>
 								<br />
-								<br />
 								<label>
 									<xsl:value-of select="'MOP Account '" />
 									<input name="mop-account"
 										value="{/source/request/parameter[@name = 'mop-account']/value}" />
 								</label>
+								<br />
 								<br />
 								<label>
 									<xsl:value-of select="'HHDC Contract '" />
@@ -329,7 +329,6 @@
 									</select>
 								</label>
 								<br />
-								<br />
 								<label>
 									<xsl:value-of select="'HHDC Account '" />
 									<input name="hhdc-account"
@@ -337,18 +336,61 @@
 								</label>
 								<br />
 								<br />
+								<label>
+									<xsl:value-of select="'Profile Class '" />
+									<select name="pc-id">
+										<xsl:for-each select="/source/pc">
+											<option value="{@id}">
+												<xsl:if
+													test="@id = /source/request/parameter[@name='pc-id']/value">
+													<xsl:attribute name="selected" />
+												</xsl:if>
+												<xsl:value-of select="concat(@code, ' ', @description)" />
+											</option>
+										</xsl:for-each>
+									</select>
+								</label>
+								<br />
+								<label>
+									<xsl:value-of select="'MTC '" />
+									<input name="mtc-code"
+										value="{/source/request/parameter[@name = 'mtc-code']/value}" />
+								</label>
+								<br />
+								<label>
+									<xsl:value-of select="'CoP '" />
+									<select name="cop-id">
+										<xsl:for-each select="/source/cop">
+											<option value="{@id}">
+												<xsl:if
+													test="@id = /source/request/parameter[@name='cop-id']/value">
+													<xsl:attribute name="selected" />
+												</xsl:if>
+												<xsl:value-of select="concat(@code, ' ', @description)" />
+											</option>
+										</xsl:for-each>
+									</select>
+								</label>
+								<br />
+								<label>
+									<xsl:value-of select="'SSC '" />
+									<input name="ssc-code"
+										value="{/source/request/parameter[@name = 'ssc-code']/value}" />
+								</label>
+								<br />
+								<br />
 								<fieldset>
 									<legend>Import</legend>
 									<label>
-										<xsl:value-of select="'Mpan '" />
-										<input name="import-mpan" size="35"
-											value="{/source/request/parameter[@name = 'import-mpan']/value}" />
+										<xsl:value-of select="'Mpan Core '" />
+										<input name="import-mpan-core" size="35"
+											value="{/source/request/parameter[@name = 'import-mpan-core']/value}" />
 									</label>
 									<br />
 									<label>
-										<xsl:value-of select="'SSC '" />
-										<input name="import-ssc-code"
-											value="{/source/request/parameter[@name = 'import-ssc-code']/value}" />
+										<xsl:value-of select="'LLFC '" />
+										<input name="import-llfc-code"
+											value="{/source/request/parameter[@name = 'import-llfc-code']/value}" />
 									</label>
 									<br />
 									<br />
@@ -383,15 +425,15 @@
 								<fieldset>
 									<legend>Export</legend>
 									<label>
-										<xsl:value-of select="'Mpan '" />
-										<input name="export-mpan" size="35"
-											value="{/source/request/parameter[@name = 'export-mpan']/value}" />
+										<xsl:value-of select="'Mpan Core '" />
+										<input name="export-mpan-core" size="35"
+											value="{/source/request/parameter[@name = 'export-mpan-core']/value}" />
 									</label>
 									<br />
 									<label>
-										<xsl:value-of select="'SSC '" />
-										<input name="export-ssc-code"
-											value="{/source/request/parameter[@name = 'export-ssc-code']/value}" />
+										<xsl:value-of select="'LLFC '" />
+										<input name="export-llfc-code"
+											value="{/source/request/parameter[@name = 'export-llfc-code']/value}" />
 									</label>
 									<br />
 									<label>

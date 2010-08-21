@@ -13,7 +13,7 @@ Requirements
 ------------
 PostgreSQL 8.4.2 with JDBC Driver PostgreSQL 8.4 JDBC4 (build 701)
 OpenJDK 6b16
-Apache Tomcat 6.0.20
+Apache Tomcat 6.0.20 (with default configuration)
 
 
 Installation

@@ -23,9 +23,6 @@ package net.sf.chellow.hhimport;
 import java.math.BigDecimal;
 
 import net.sf.chellow.monad.HttpException;
-import net.sf.chellow.monad.InternalException;
-import net.sf.chellow.monad.UserException;
-import net.sf.chellow.physical.HhDatum;
 import net.sf.chellow.physical.HhStartDate;
 
 public class HhDatumRaw {
@@ -47,15 +44,8 @@ public class HhDatumRaw {
 		this.core = core;
 		this.isImport = isImport;
 		this.isKwh = isKwh;
-		if (startDate == null) {
-			throw new InternalException("The value 'startDate' must not be null.");
-		}
 		this.startDate = startDate;
 		this.value = value;
-		if (status != HhDatum.ESTIMATE && status != HhDatum.ACTUAL) {
-			throw new UserException(
-					"The status character must be E or A.");
-		}
 		this.status = status;
 	}
 

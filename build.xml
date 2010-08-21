@@ -494,6 +494,7 @@
 		<copy todir="${build.home}/WEB-INF/lib" file="${javalib.home}/commons-httpclient-3.1/commons-httpclient-3.1.jar" />
 		<copy todir="${build.home}/WEB-INF/lib" file="${javalib.home}/commons-codec-1.4/commons-codec-1.4.jar" />
 		<copy todir="${build.home}/WEB-INF/lib" file="${javalib.home}/jython-2.5.1/jython.jar" />
+		<copy todir="${build.home}/WEB-INF/lib" file="${javalib.home}/javasysmon-0.3.2.jar" />
 		<copy todir="${build.home}/WEB-INF/lib">
 			<fileset dir="${javalib.home}/jython-2.5.1/Lib" />
 		</copy>

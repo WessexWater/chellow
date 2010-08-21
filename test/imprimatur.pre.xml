@@ -117,23 +117,23 @@
 	</test>
 	<test name="HHDC contracts">
 		<request path="/chellow/hhdc-contracts/" method="post">
-			<control name="participant-id" value="49" />
-			<control name="name">HH contract</control>
-			<control name="start-year">2000</control>
-			<control name="start-month">01</control>
-			<control name="start-day">03</control>
-			<control name="has-finished">false</control>
+			<control name="participant-id" value="132" />
+			<control name="name" value="HH contract" />
+			<control name="start-year" value="2000" />
+			<control name="start-month" value="01" />
+			<control name="start-day" value="03" />
+			<control name="has-finished" value="false" />
 			<response-code value="303" />
 			<regex pattern="/hhdc-contracts/0/" />
 		</request>
 		<!-- Update Contract -->
 		<request path="/chellow/hhdc-contracts/0/" method="post">
-			<control name="participant-id" value="49" />
-			<control name="name">HH contract</control>
-			<control name="start-year">2000</control>
-			<control name="start-month">01</control>
-			<control name="start-day">03</control>
-			<control name="has-finished">false</control>
+			<control name="participant-id" value="132" />
+			<control name="name" value="HH contract" />
+			<control name="start-year" value="2000" />
+			<control name="start-month" value="01" />
+			<control name="start-day" value="03" />
+			<control name="has-finished" value="false" />
 			<control name="charge-script"><![CDATA[
 def virtual_bill_titles():
     return ['net-gbp']
@@ -171,7 +171,7 @@ def virtual_bill(supply_source):
 	</test>
 	<test name="Check one can update the participant for an HHDC contract.">
 		<request path="/chellow/hhdc-contracts/2/" method="post">
-			<control name="participant-id" value="49" />
+			<control name="participant-id" value="132" />
 			<control name="name">Dynamat data</control>
 			<control name="start-year">2000</control>
 			<control name="start-month">01</control>
@@ -180,12 +180,12 @@ def virtual_bill(supply_source):
 			<control name="charge-script"></control>
 			<control name="properties"></control>
 			<response-code value="200" />
-			<regex pattern='option value="49" selected' />
+			<regex pattern='option value="132" selected' />
 		</request>
 		<!-- Check it's still there -->
 		<request path="/chellow/hhdc-contracts/2/">
 			<response-code value="200" />
-			<regex pattern='option value="49" selected' />
+			<regex pattern='option value="132" selected' />
 		</request>
 	</test>
 	<test name="Manipulate supplier contracts">
@@ -463,29 +463,31 @@ def totalElement(account, startDate, finishDate):
 			When a supply generation is ended, check that the snags are updated
 		-->
 		<request path="/chellow/supplies/6/generations/6/" method="post">
-			<control name="start-year">2003</control>
-			<control name="start-month">08</control>
-			<control name="start-day">03</control>
-			<control name="is-ended">true</control>
-			<control name="finish-year">2003</control>
-			<control name="finish-month">08</control>
+			<control name="start-year" value="2003" />
+			<control name="start-month" value="08" />
+			<control name="start-day" value="03" />
+			<control name="is-ended" value="true" />
+			<control name="finish-year" value="2003" />
+			<control name="finish-month" value="08" />
 			<control name="finish-day" value="13" />
 			<control name="gsp-group-id" value="11" />
 			<control name="mop-contract-id" value="null" />
 			<control name="hhdc-contract-id" value="0" />
 			<control name="hhdc-account">01</control>
 			<control name="meter-serial-number" value="" />
-			<control name="pc-id">9</control>
+			<control name="pc-id" value="9" />
+			<control name="mtc-code" value="845" />
+			<control name="cop-id" value="5" />
+			<control name="ssc-code" value="" />
 			<control name="has-import-mpan">true</control>
-			<control name="import-mtc-code">845</control>
 			<control name="import-llfc-code">570</control>
 			<control name="import-mpan-core">22 0883 6932 301</control>
-			<control name="import-ssc-code" value="" />
 			<control name="import-agreed-supply-capacity">350</control>
 			<control name="import-supplier-contract-id" value="4" />
 			<control name="import-supplier-account" value="01" />
-			<control name="has-export-mpan">false</control>
+			<control name="has-export-mpan" value="false" />
 			<response-code value="200" />
+
 			<!-- Check start day is correct -->
 			<regex pattern='option value="03" selected&gt;03&lt;/option&gt;' />
 			<!-- Check the end date is right -->
@@ -518,12 +520,13 @@ def totalElement(account, startDate, finishDate):
 			<control name="mop-contract-id" value="null" />
 			<control name="hhdc-contract-id" value="0" />
 			<control name="hhdc-account">001</control>
-			<control name="pc-id">9</control>
+			<control name="pc-id" value="9" />
+			<control name="mtc-code" value="845" />
+			<control name="cop-id" value="5" />
+			<control name="ssc-code" value="" />
 			<control name="has-import-mpan">true</control>
-			<control name="import-mtc-code">845</control>
 			<control name="import-llfc-code">570</control>
 			<control name="import-mpan-core">22 0883 6932 301</control>
-			<control name="import-ssc-code" value="" />
 			<control name="import-gsp-group-id" value="11" />
 			<control name="import-agreed-supply-capacity">430</control>
 			<control name="import-supplier-contract-id" value="4" />
@@ -545,8 +548,8 @@ def totalElement(account, startDate, finishDate):
 		<!-- Put it back to how it was -->
 		<request path="/chellow/supplies/6/generations/6/" method="post">
 			<control name="meter-serial-number" value="" />
-			<control name="start-year">2003</control>
-			<control name="start-month">08</control>
+			<control name="start-year" value="2003" />
+			<control name="start-month" value="08" />
 			<control name="start-day">03</control>
 			<control name="is-ended">false</control>
 			<control name="finish-year">2003</control>
@@ -555,12 +558,13 @@ def totalElement(account, startDate, finishDate):
 			<control name="mop-contract-id" value="null" />
 			<control name="hhdc-contract-id" value="0" />
 			<control name="hhdc-account">01</control>
-			<control name="pc-id">9</control>
+			<control name="pc-id" value="9" />
+			<control name="mtc-code" value="845" />
+			<control name="cop-id" value="5" />
+			<control name="ssc-code" value="" />
 			<control name="has-import-mpan">true</control>
-			<control name="import-mtc-code">845</control>
 			<control name="import-llfc-code">570</control>
 			<control name="import-mpan-core">22 0883 6932 301</control>
-			<control name="import-ssc-code" value="" />
 			<control name="import-agreed-supply-capacity">350</control>
 			<control name="import-supplier-contract-id" value="4" />
 			<control name="import-supplier-account" value="01" />
@@ -605,7 +609,7 @@ def totalElement(account, startDate, finishDate):
 		-->
 		<request path="/chellow/supplies/3/generations/9/" method="post">
 			<control name="meter-serial-number" value="" />
-			<control name="start-year">2006</control>
+			<control name="start-year" value="2006" />
 			<control name="start-month">07</control>
 			<control name="start-day">20</control>
 			<control name="is-ended">false</control>
@@ -615,21 +619,17 @@ def totalElement(account, startDate, finishDate):
 			<control name="mop-contract-id" value="null" />
 			<control name="hhdc-contract-id" value="0" />
 			<control name="hhdc-account">01</control>
-			<control name="pc-id">9</control>
-			<control name="has-import-mpan">true</control>
-			<control name="import-mtc-code">845</control>
+			<control name="pc-id" value="9" />
+			<control name="mtc-code" value="845" />
+			<control name="cop-id" value="5" />
+			<control name="ssc-code" value="" />
+			<control name="has-import-mpan" value="true" />
 			<control name="import-llfc-code">580</control>
 			<control name="import-mpan-core">2276930477695</control>
-			<control name="import-ssc-code" value="" />
-			<control name="import-gsp-group-id" value="11" />
 			<control name="import-agreed-supply-capacity">430</control>
-			<control name="import-has-import-kwh">true</control>
-			<control name="import-has-import-kvarh">true</control>
-			<control name="import-has-export-kwh">false</control>
-			<control name="import-has-export-kvarh">true</control>
 			<control name="import-supplier-contract-id" value="4" />
 			<control name="import-supplier-account" value="01" />
-			<control name="has-export-mpan">false</control>
+			<control name="has-export-mpan" value="false" />
 			<response-code value="418" />
 			<regex pattern="MPAN cores can't change without an overlapping period" />
 		</request>
@@ -979,13 +979,6 @@ def totalElement(account, startDate, finishDate):
 				pattern="All the bills have been successfully loaded and attached to the batch\." />
 		</request>
 	</test>
-	<test name="Check to make sure there aren't any duplicate mpans">
-		<request path="/chellow/supplies/?search-pattern=">
-			<response-code value="200" />
-			<regex
-				pattern='&lt;td&gt;&lt;code&gt;22 0470 7514 535&lt;/code&gt;&lt;/td&gt;&lt;td&gt;&lt;a href="/chellow/supplies/2/"&gt;2&lt;/a&gt;&lt;/td&gt;.*&lt;/tr&gt;.*&lt;tr&gt;.*&lt;td&gt;&lt;code&gt;22 0883 6932 301&lt;/code&gt;&lt;/td&gt;&lt;td&gt;&lt;a href="/chellow/supplies/6/"&gt;6&lt;/a&gt;&lt;/td&gt;.*&lt;/tr&gt;.*&lt;tr&gt;.*&lt;td&gt;&lt;code&gt;22 3479 7618 470&lt;/code&gt;&lt;/td&gt;&lt;td&gt;&lt;a href="/chellow/supplies/5/"&gt;5&lt;/a&gt;&lt;/td&gt;' />
-		</request>
-	</test>
 	<test name="Set up NHH">
 		<!-- Create a new supplier service -->
 		<request path="/chellow/supplier-contracts/" method="post">
@@ -1222,7 +1215,7 @@ def virtual_bill(supply_source):
 	<test name="Check no duplicate supplies in Supplies Duration report.">
 		<request
 			path="/chellow/reports/149/output/?start-year=2008&amp;start-month=07&amp;start-day=01&amp;start-hour=0&amp;finish-year=2008&amp;finish-month=07&amp;finish-day=31&amp;finish-hour=23">
-			<regex pattern='(2,"1",net,"","CH017",){1}' />
+			<regex pattern='("2","1","net","","CH017",){1}' />
 			<response-code value="200" />
 		</request>
 	</test>
@@ -1258,43 +1251,26 @@ def virtual_bill(supply_source):
 		<request path="/chellow/supplies/6/generations/6/" method="post">
 			<control name="meter-serial-number" value="" />
 			<control name="start-year" value="2003" />
-			<control name="start-month">08</control>
-			<control name="start-day">03</control>
-			<control name="is-ended">false</control>
-			<control name="finish-year">2003</control>
-			<control name="finish-month">08</control>
-			<control name="finish-day">14</control>
-			<control name="has-import-mpan">true</control>
-			<control name="import-pc-id">9</control>
-			<control name="import-mtc-code">845</control>
-			<control name="import-llfc-code">570</control>
+			<control name="start-month" value="08" />
+			<control name="start-day" value="03" />
+			<control name="is-ended" value="false" />
+			<control name="has-import-kwh" value="true" />
+			<control name="has-import-kvarh" value="false" />
+			<control name="has-export-kwh" value="false" />
+			<control name="has-export-kvarh" value="false" />
+			<control name="pc-id" value="9" />
+			<control name="mtc-code" value="845" />
+			<control name="cop-id" value="5" />
+			<control name="ssc-code" value="" />
+			<control name="has-import-mpan" value="true" />
+			<control name="import-llfc-code" value="570" />
 			<control name="import-mpan-core" value="22 0883 6932 301" />
-			<control name="import-ssc-code" value="" />
 			<control name="import-agreed-supply-capacity" value="30" />
-			<control name="import-has-import-kwh" value="false" />
-			<control name="import-has-import-kvarh" value="false" />
-			<control name="import-has-export-kwh" value="false" />
-			<control name="import-has-export-kvarh" value="false" />
 			<control name="import-hhdc-contract-name" value="" />
 			<control name="import-hhdc-account" value="" />
 			<control name="import-supplier-contract-name" value="Half-hourlies 2007" />
 			<control name="import-supplier-account" value="01" />
 			<control name="has-export-mpan" value="false" />
-			<control name="export-pc-id">9</control>
-			<control name="export-mtc-code">845</control>
-			<control name="export-llfc-code">581</control>
-			<control name="export-mpan-core">99 0000 4444 883</control>
-			<control name="export-ssc-code" value="" />
-			<control name="export-gsp-group-id" value="11" />
-			<control name="export-agreed-supply-capacity">200</control>
-			<control name="export-has-import-kwh">true</control>
-			<control name="export-has-import-kvarh">false</control>
-			<control name="export-has-export-kwh">false</control>
-			<control name="export-has-export-kvarh">false</control>
-			<control name="export-hhdc-contract-name" value="HH contract" />
-			<control name="export-hhdc-account">01</control>
-			<control name="export-supplier-contract-name" value="Non half-hourlies 2007" />
-			<control name="export-supplier-account" value="341664" />
 			<response-code value="418" />
 		</request>
 	</test>
@@ -1310,7 +1286,7 @@ def virtual_bill(supply_source):
 			<control name="email-address" value="mishka@localhost" />
 			<control name="password" value="fyodor" />
 			<control name="user-role-id" value="2" />
-			<control name="party-id" value="49" />
+			<control name="party-id" value="219" />
 			<response-code value="303" />
 			<regex pattern="/chellow/users/4/" />
 		</request>
@@ -1363,12 +1339,13 @@ def virtual_bill(supply_source):
 			<control name="hhdc-account" value="01" />
 			<control name="meter-serial-number" value="" />
 			<control name="pc-id" value="9" />
+			<control name="mtc-code" value="845" />
+			<control name="cop-id" value="5" />
+			<control name="ssc-code" value="" />
 			<control name="has-import-mpan" value="false" />
 			<control name="has-export-mpan" value="true" />
-			<control name="export-mtc-code" value="845" />
 			<control name="export-llfc-code" value="581" />
 			<control name="export-mpan-core" value="22 0470 7514 535" />
-			<control name="export-ssc-code" value="" />
 			<control name="export-agreed-supply-capacity" value="150" />
 			<control name="export-supplier-contract-id" value="4" />
 			<control name="export-supplier-account" value="010" />
@@ -1690,19 +1667,20 @@ def import_virtual_bill(supply_source):
 		<request path="/chellow/supplies/2/generations/17/" method="post">
 			<control name="start-year" value="2008" />
 			<control name="start-month" value="09" />
-			<control name="start-day">06</control>
+			<control name="start-day" value="06" />
 			<control name="is-ended" value="false" />
 			<control name="mop-contract-id" value="null" />
 			<control name="hhdc-contract-id" value="0" />
-			<control name="hhdc-account">01</control>
+			<control name="hhdc-account" value="01" />
 			<control name="meter-serial-number" value="" />
-			<control name="pc-id">9</control>
+			<control name="pc-id" value="9" />
+			<control name="mtc-code" value="845" />
+			<control name="cop-id" value="5" />
+			<control name="ssc-code" value="" />
 			<control name="has-import-mpan" value="false" />
 			<control name="has-export-mpan" value="true" />
-			<control name="export-mtc-code">845</control>
-			<control name="export-llfc-code">581</control>
-			<control name="export-mpan-core">22 0470 7514 535</control>
-			<control name="export-ssc-code" value="" />
+			<control name="export-llfc-code" value="581" />
+			<control name="export-mpan-core" value="22 0470 7514 535" />
 			<control name="export-agreed-supply-capacity" value="150" />
 			<control name="export-supplier-contract-id" value="4" />
 			<control name="export-supplier-account" value="010" />
@@ -1729,14 +1707,15 @@ def import_virtual_bill(supply_source):
 			<control name="is-ended" value="false" />
 			<control name="meter-serial-number" value="" />
 			<control name="pc-id" value="9" />
+			<control name="mtc-code" value="845" />
+			<control name="cop-id" value="5" />
+			<control name="ssc-code" value="" />
 			<control name="mop-contract-id" value="null" />
 			<control name="hhdc-contract-id" value="0" />
-			<control name="hhdc-account">01</control>
-			<control name="has-import-mpan">true</control>
-			<control name="import-mtc-code">845</control>
-			<control name="import-llfc-code">570</control>
+			<control name="hhdc-account" value="01" />
+			<control name="has-import-mpan" value="true" />
+			<control name="import-llfc-code" value="570" />
 			<control name="import-mpan-core" value="22 0883 6932 301" />
-			<control name="import-ssc-code" value="" />
 			<control name="import-agreed-supply-capacity" value="350" />
 			<control name="import-supplier-contract-id" value="4" />
 			<control name="import-supplier-account" value="01" />
@@ -1772,12 +1751,12 @@ def import_virtual_bill(supply_source):
 	<test name="Test deleting of HHDC contracts">
 		<!-- Create an HHDC contract -->
 		<request path="/chellow/hhdc-contracts/" method="post">
-			<control name="participant-id" value="49" />
+			<control name="participant-id" value="132" />
 			<control name="name" value="Siemens Contract" />
-			<control name="start-year">2000</control>
-			<control name="start-month">01</control>
-			<control name="start-day">03</control>
-			<control name="has-finished">false</control>
+			<control name="start-year" value="2000" />
+			<control name="start-month" value="01" />
+			<control name="start-day" value="03" />
+			<control name="has-finished" value="false" />
 			<control name="charge-script"></control>
 			<control name="properties" value=" " />
 			<response-code value="303" />
@@ -1819,7 +1798,8 @@ def import_virtual_bill(supply_source):
 			<control name="start-day" value="03" />
 			<response-code value="303" />
 		</request>
-		<request path="/chellow/non-core-contracts/14/rate-scripts/16/" method="post">
+		<request path="/chellow/non-core-contracts/14/rate-scripts/16/"
+			method="post">
 			<control name="start-year" value="2000" />
 			<control name="start-month" value="01" />
 			<control name="start-day" value="03" />
@@ -1908,7 +1888,7 @@ def triad_estimates():
 		<request
 			path="/chellow/reports/149/output/?start-year=2009&amp;start-month=03&amp;start-day=1&amp;start-hour=0&amp;finish-year=2009&amp;finish-month=03&amp;finish-day=31&amp;finish-hour=23">
 			<regex
-				pattern='8,"1",net,"","CH023","Treglisson",2009-03-01T00:00Z,2009-03-31T23:30Z,00,845,540,22 4862 4512 332,230,Half-hourlies 2007,148926.0,0.0,158288.0,400.0,2009-03-13T08:00Z,None,0.0,,,,,,0.0,0.0,,0.0,None,None,1488.0' />
+				pattern='"8","1","net","","CH023","Treglisson","2009-03-01T00:00Z","2009-03-31T23:30Z","00","845","5","",540,22 4862 4512 332,230,Half-hourlies 2007,148926.0,0.0,158288.0,400.0,2009-03-13T08:00Z,None,0.0,,,,,0.0,0.0,,0.0,None,None,1488.0' />
 		</request>
 	</test>
 	<test name="Manipulate dso contracts">
@@ -1958,7 +1938,10 @@ def triad_estimates():
 		</request>
 	</test>
 	<test name="CSV Sites Monthly Duration">
-	    <!-- See if it handles the case where there isn't an import virtual bill function. -->
+		<!--
+			See if it handles the case where there isn't an import virtual bill
+			function.
+		-->
 		<request
 			path="/chellow/reports/161/output/?site-code=CI017&amp;months=1&amp;end-year=2009&amp;end-month=04">
 			<response-code value="200" />
@@ -1988,11 +1971,12 @@ def triad_estimates():
 			<control name="hhdc-contract-id" value="null" />
 			<control name="meter-serial-number" value="K87D74429" />
 			<control name="pc-id" value="5" />
+			<control name="mtc-code" value="803" />
+			<control name="cop-id" value="5" />
+			<control name="ssc-code" value="0154" />
 			<control name="has-import-mpan" value="true" />
-			<control name="import-mtc-code" value="803" />
 			<control name="import-llfc-code" value="540" />
 			<control name="import-mpan-core" value="22 9974 3438 105" />
-			<control name="import-ssc-code" value="0154" />
 			<control name="import-agreed-supply-capacity" value="20" />
 			<control name="import-supplier-contract-id" value="8" />
 			<control name="import-supplier-account" value="341665" />
@@ -2015,19 +1999,16 @@ def triad_estimates():
 			<control name="start-day" value="03" />
 			<control name="is-ended" value="false" />
 			<control name="pc-id" value="9" />
+			<control name="mtc-code" value="845" />
+			<control name="cop-id" value="5" />
+			<control name="ssc-code" value="" />
 			<control name="mop-contract-id" value="null" />
 			<control name="hhdc-contract-id" value="0" />
 			<control name="hhdc-account" value="01" />
 			<control name="has-import-mpan" value="true" />
-			<control name="import-mtc-code" value="845" />
 			<control name="import-llfc-code" value="453" />
 			<control name="import-mpan-core" value="20 6354 2983 571" />
-			<control name="import-ssc-code" value="" />
 			<control name="import-agreed-supply-capacity" value="2300" />
-			<control name="import-has-import-kwh" value="true" />
-			<control name="import-has-import-kvarh" value="true" />
-			<control name="import-has-export-kwh" value="false" />
-			<control name="import-has-export-kvarh" value="true" />
 			<control name="import-supplier-contract-id" value="4" />
 			<control name="import-supplier-account" value="14195532" />
 			<control name="has-export-mpan" value="false" />
@@ -2055,12 +2036,16 @@ def triad_estimates():
 			<control name="mop-account" value="" />
 			<control name="hhdc-contract-id" value="null" />
 			<control name="hhdc-account" value="" />
-			<control name="import-mpan" value="00 845 540 22 9879 0084 358" />
-			<control name="import-ssc-code" value="" />
+			<control name="pc-id" value="9" />
+			<control name="mtc-code" value="845" />
+			<control name="cop-id" value="5" />
+			<control name="ssc-code" value="" />
+			<control name="import-mpan-core" value="22 9879 0084 358" />
+			<control name="import-llfc-code" value="540" />
 			<control name="import-agreed-supply-capacity" value="700" />
 			<control name="import-supplier-contract-id" value="4" />
 			<control name="import-supplier-account" value="d" />
-			<control name="export-mpan" value="" />
+			<control name="export-mpan-core" value="" />
 			<control name="insert" value="Insert" />
 
 			<regex pattern="/chellow/supplies/13/" />
@@ -2116,11 +2101,12 @@ def import_virtual_bill(supply_source):
 			<control name="hhdc-account" value="01" />
 			<control name="meter-serial-number" value="I02D89150" />
 			<control name="pc-id" value="3" />
+			<control name="mtc-code" value="801" />
+			<control name="cop-id" value="6" />
+			<control name="ssc-code" value="0393" />
 			<control name="has-import-mpan" value="true" />
-			<control name="import-mtc-code" value="801" />
 			<control name="import-llfc-code" value="110" />
 			<control name="import-mpan-core" value="22 1065 3921 534" />
-			<control name="import-ssc-code" value="0393" />
 			<control name="import-agreed-supply-capacity" value="30" />
 			<control name="import-supplier-contract-id" value="16" />
 			<control name="import-supplier-account" value="SA342376000" />
@@ -2213,12 +2199,16 @@ def import_virtual_bill(supply_source):
 			<control name="mop-account" value="" />
 			<control name="hhdc-contract-id" value="null" />
 			<control name="hhdc-account" value="" />
-			<control name="import-mpan" value="00 845 540 22 9879 0084 358" />
-			<control name="import-ssc-code" value="" />
+			<control name="pc-id" value="9" />
+			<control name="mtc-code" value="845" />
+			<control name="cop-id" value="5" />
+			<control name="ssc-code" value="" />
+			<control name="import-mpan-core" value="22 9879 0084 358" />
+			<control name="import-llfc-code" value="540" />
 			<control name="import-agreed-supply-capacity" value="700" />
 			<control name="import-supplier-contract-id" value="4" />
 			<control name="import-supplier-account" value="d" />
-			<control name="export-mpan" value="" />
+			<control name="export-mpan-core" value="" />
 			<control name="insert" value="Insert" />
 
 			<regex pattern="/chellow/supplies/14/" />
@@ -2256,7 +2246,8 @@ def import_virtual_bill(supply_source):
 		<request
 			path="/chellow/reports/109/output/?site-id=1&amp;months=1&amp;end-year=2010&amp;end-month=06">
 			<refresh />
-			<regex pattern='Site Code,Site Name,Associated Site Ids,From,To,CHP kWh,LM kWh, Turbine kWh,net-gbp' />
+			<regex
+				pattern='Site Code,Site Name,Associated Site Ids,From,To,CHP kWh,LM kWh, Turbine kWh,net-gbp' />
 			<regex
 				pattern='"CI004","Lower Treave","",2010-06-01T00:00Z,2010-06-30T23:30Z,,,,"0.0","bsuos-actual-gbp","0.0","ccl-gbp","0","ccl-kwh","0","ccl-rate","0","duos-amber-gbp","0.0","duos-amber-kwh","0","duos-amber-rate","0.00147","duos-green-gbp","0.0","duos-green-kwh","0","duos-green-rate","0.0013","duos-red-gbp","0.0","duos-red-kwh","0","duos-red-rate","0.16146","night-gbp","0.0","night-gsp-kwh","0","night-msp-kwh","0","other-gbp","0.0","other-gsp-kwh","0.0","other-msp-kwh","0","summer-pk-gbp","0.0","summer-pk-gsp-kwh","0","summer-pk-msp-kwh","0","triad-estimate-0-date","2010-01-07T17:00Z","triad-estimate-0-gsp-kw","0.0","triad-estimate-0-laf","1.067","triad-estimate-0-msp-kw","0","triad-estimate-0-status","E","triad-estimate-1-date","2010-01-25T17:00Z","triad-estimate-1-gsp-kw","0.0","triad-estimate-1-laf","1.067","triad-estimate-1-msp-kw","0","triad-estimate-1-status","E","triad-estimate-2-date","2009-12-15T17:00Z","triad-estimate-2-gsp-kw","0.0","triad-estimate-2-laf","1.067","triad-estimate-2-msp-kw","0","triad-estimate-2-status","E","triad-estimate-gbp","0.0","triad-estimate-gsp-kw","0.0","triad-estimate-months","1","triad-estimate-rate","26.057832","winter-low-pk-gbp","0.0","winter-low-pk-gsp-kwh","0","winter-low-pk-msp-kwh","0","winter-off-pk-gbp","0.0","winter-off-pk-gsp-kwh","0","winter-off-pk-msp-kwh","0","winter-pk-gbp","0.0","winter-pk-gsp-kwh","0","winter-pk-msp-kwh","0"' />
 			<response-code value="200" />
@@ -2277,9 +2268,10 @@ def import_virtual_bill(supply_source):
 			<response-code value="303" />
 		</request>
 	</test>
-	<test name="Check a contract virtual bill that crosses a generation boundary comes out correctly.">
-	<!-- Put in an import virtual bill function -->
-			<request path="/chellow/supplier-contracts/8/" method="post">
+	<test
+		name="Check a contract virtual bill that crosses a generation boundary comes out correctly.">
+		<!-- Put in an import virtual bill function -->
+		<request path="/chellow/supplier-contracts/8/" method="post">
 			<control name="name">Non half-hourlies 2007</control>
 			<control name="charge-script">
 				<![CDATA[
@@ -2291,17 +2283,17 @@ def import_virtual_bill(supply_source):
     return {'net-gbp': 0.0, 'vat-gbp':0.0, 'gross-gbp': 0.0, 'problem': ''}]]>
 			</control>
 		</request>
-	<request
+		<request
 			path="/chellow/reports/87/output/?supply-id=12&amp;supply-polarity=import&amp;months=1&amp;end-year=2010&amp;end-month=04">
 			<response-code value="200" />
-			<regex
-				pattern="MPAN Core,Account,From,To,net-gbp,vat-gbp,gross-gbp,problem" />
+			<regex pattern="MPAN Core,Account,From,To,net-gbp,vat-gbp,gross-gbp,problem" />
 			<regex
 				pattern='"22 9974 3438 105","341665","2010-04-01T00:00Z","2010-04-13T23:30Z","0.0","0.0","0.0",""' />
 		</request>
 	</test>
-		<test name="NHH CSV import">
-		<request path="/chellow/supplier-contracts/16/batches/" method="post">
+	<test name="NHH CSV import">
+		<request path="/chellow/supplier-contracts/16/batches/"
+			method="post">
 			<control name="reference" value="07-002" />
 			<response-code value="303" />
 		</request>
@@ -2315,6 +2307,16 @@ def import_virtual_bill(supply_source):
 			<response-code value="200" />
 			<regex
 				pattern="All the bills have been successfully loaded and attached to the batch\." />
+		</request>
+	</test>
+	<test name="Test viewers' search">
+		<request path="/chellow/reports/99/output/?search-pattern=">
+			<response-code value="200" />
+		</request>
+	</test>
+	<test name="Check can view a supply.">
+		<request path="/chellow/reports/7/output/?supply-id=3">
+			<response-code value="200" />
 		</request>
 	</test>
 </imprimatur>

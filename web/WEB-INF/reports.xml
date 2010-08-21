@@ -631,7 +631,7 @@ supply = Supply.getSupply(supply_id)
 supply_element = supply.toXml(doc, XmlTree("source").put("mpanCores").put("gspGroup").put("generatorType"))
 source.appendChild(supply_element)
 for generation in supply.getGenerations():
-    generation_element = generation.toXml(doc, XmlTree("siteSupplyGenerations", XmlTree('site')).put('pc').put("hhdcContract", XmlTree("party")))
+    generation_element = generation.toXml(doc, XmlTree("siteSupplyGenerations", XmlTree('site')).put('pc').put("mtc").put('ssc').put('cop').put("hhdcContract", XmlTree("party")))
     supply_element.appendChild(generation_element)
     for channel in generation.getChannels():
         channel_element = channel.toXml(doc)
@@ -640,11 +640,11 @@ for generation in supply.getGenerations():
             channel_element.appendChild(snag.toXml(doc))
 
     for mpan in generation.getMpans():
-        mpan_element = mpan.toXml(doc, XmlTree("core").put("mtc").put("llfc", XmlTree("voltageLevel")).put('supplierContract').put('ssc'))
+        mpan_element = mpan.toXml(doc, XmlTree("core").put("llfc", XmlTree("voltageLevel")).put('supplierContract'))
         generation_element.appendChild(mpan_element)
         for sup in Hiber.session().createQuery("select distinct mpan.supplyGeneration.supply from Mpan mpan where mpan.supplierAccount = :supplierAccount and mpan.supplyGeneration.supply <> :supply").setString('supplierAccount', mpan.getSupplierAccount()).setEntity('supply', supply).list():
             mpan_element.appendChild(sup.toXml(doc))
-    pc_code = generation.getPc().codeAsString()
+    pc_code = str(generation.getPc())
     for mpan in generation.getMpans():
         if mpan.getLlfc().getIsImport():
             name = 'import-bills'
@@ -751,9 +751,9 @@ source.setAttribute('debug', debug)]]></value>
                     <caption>Generation</caption>
                     <thead>
                         <tr>
-                            <th colspan="9"></th>
-                            <th colspan="7">Import</th>
-                            <th colspan="7">Export</th>
+                            <th colspan="12"></th>
+                            <th colspan="5">Import</th>
+                            <th colspan="5">Export</th>
 
                         </tr>
                         <tr>
@@ -763,27 +763,24 @@ source.setAttribute('debug', debug)]]></value>
                             <th rowspan="2">Sites</th>
                             <th rowspan="2">PC</th>
                             <th rowspan="2">MSID</th>
+                            <th rowspan="2">MTC</th>
+                            <th rowspan="2">CoP</th>
+                            <th rowspan="2">SSC</th>
                             <th rowspan="1" colspan="2">HHDC</th>
                             <th rowspan="2">Channels</th>
-                            <th colspan="3">MPAN</th>
+                            <th rowspan="2">LLFC</th>
+                            <th rowspan="2">MPAN Core</th>
                             <th rowspan="2">kVA</th>
-                            <th rowspan="2">SSC</th>
                             <th colspan="2">Supplier</th>
-                            <th colspan="3">MPAN</th>
+                            <th rowspan="2">LLFC</th>
+                            <th rowspan="2">MPAN Core</th>
                             <th rowspan="2">kVA</th>
-                            <th rowspan="2">SSC</th>
                             <th colspan="2">Supplier</th>
                         </tr>
                             <th>Contract</th>
                             <th>Account</th>
-                            <th>MTC</th>
-                            <th>LLFC</th>
-                            <th>Core</th>
                             <th>Contract</th>
                             <th>Account</th>
-                            <th>MTC</th>
-                            <th>LLFC</th>
-                            <th>Core</th>
                             <th>Contract</th>
                             <th>Account</th>
                         <tr>
@@ -820,19 +817,33 @@ source.setAttribute('debug', debug)]]></value>
                                                 </a>
                                         </xsl:for-each>
                                 </td>
-<td>
- <a
+                                <td>
+                                    <a
                                         href="{/source/request/@context-path}/reports/55/output/?pc-id={pc/@id}" title="{pc/@description}">
                                     <xsl:value-of
                                         select="pc/@code" /></a>
                                 </td>
-<td>
+                                <td>
                                     <xsl:value-of
                                         select="@meter-serial-number" />
                                 </td>
-<td>
- <a
-                                        href="{/source/request/@context-path}/reports/115/output/?hhdc-contract-id={hhdc-contract/@id}">
+                                <td>
+                                    <a href="{/source/request/@context-path}/reports/63/output/?mtc-id={mtc/@id}" title="{mtc/@description}">
+                                    <xsl:value-of
+                                        select="mtc/@code" /></a>
+                                </td>
+                                <td>
+                                    <a href="{/source/request/@context-path}/reports/197/output/?cop-id={cop/@id}" title="{cop/@description}">
+                                    <xsl:value-of
+                                        select="cop/@code" /></a>
+                                </td>
+                                <td>
+                                    <a href="{/source/request/@context-path}/reports/127/output/?ssc-id={ssc/@id}" title="{ssc/@description}">
+                                    <xsl:value-of
+                                        select="ssc/@code" /></a>
+                                </td>
+                                <td>
+                                    <a href="{/source/request/@context-path}/reports/115/output/?hhdc-contract-id={hhdc-contract/@id}">
                                     <xsl:value-of
                                         select="hhdc-contract/@name" /></a>
                                 </td>
@@ -871,10 +882,6 @@ source.setAttribute('debug', debug)]]></value>
 </ul>
 </xsl:if>
                                 </td>
-                                <td><a href="{/source/request/@context-path}/reports/63/output/?mtc-id={mpan[llfc/@is-import='true']/mtc/@id}" title="{mpan[llfc/@is-import='true']/mtc/@description}">
-                                    <xsl:value-of
-                                        select="mpan[llfc/@is-import='true']/mtc/@code" /></a>
-                                </td>
                                 <td>
                                     <a href="{/source/request/@context-path}/reports/51/output/?llfc-id={mpan/llfc[@is-import='true']/@id}" title="{mpan/llfc[@is-import='true']/@description}"><xsl:value-of select="mpan/llfc[@is-import='true']/@code" /></a>
                                 </td>
@@ -886,14 +893,6 @@ source.setAttribute('debug', debug)]]></value>
                                 <td>
                                     <xsl:value-of
                                         select="mpan[llfc/@is-import='true']/@agreed-supply-capacity" />
-                                </td>
-<td>
-<xsl:if test="mpan[llfc/@is-import='true']/ssc">
- <a
-                                        href="{/source/request/@context-path}/reports/127/output/?ssc-id={mpan[llfc/@is-import='true']/ssc/@id}" title="{mpan[llfc/@is-import='true']/ssc/@description}">
-                                    <xsl:value-of
-                                        select="mpan[llfc/@is-import='true']/ssc/@code" /></a>
-</xsl:if>
                                 </td>
                                 <td>
                                     <a
@@ -914,12 +913,7 @@ source.setAttribute('debug', debug)]]></value>
                                      </xsl:if>
                                 </td>
                                 <td>
-                                    <xsl:value-of
-                                        select="mpan[llfc/@is-import='false']/mtc/@code" />
-                                </td>
-                                <td>
-                                    <xsl:value-of
-                                        select="mpan[llfc/@is-import='false']/llfc/@code" />
+                                    <a href="{/source/request/@context-path}/reports/51/output/?llfc-id={mpan/llfc[@is-import='false']/@id}" title="{mpan/llfc[@is-import='false']/@description}"><xsl:value-of select="mpan/llfc[@is-import='false']/@code" /></a>
                                 </td>
                                 <td>
                                     <xsl:value-of
@@ -928,14 +922,6 @@ source.setAttribute('debug', debug)]]></value>
                                 <td>
                                     <xsl:value-of
                                         select="mpan[llfc/@is-import='false']/@agreed-supply-capacity" />
-                                </td>
-<td>
-<xsl:if test="mpan[llfc/@is-import='true']/ssc/@description">
- <a
-                                        href="{/source/request/@context-path}/reports/127/output/?ssc-id={mpan[llfc/@is-import='false']/ssc/@id}"  title="{mpan[llfc/@is-import='false']/ssc/@description}">
-                                    <xsl:value-of
-                                        select="mpan[llfc/@is-import='false']/ssc/@code" /></a>
-</xsl:if>
                                 </td>
                                 <td>
                                     <a
@@ -4441,25 +4427,17 @@ def mpan_fields(mpan, date, is_import, mand_query, metering_type):
         agreed_sc_str = ''
         llfc_code_str = ''
         llfc_description = ''
-        ssc_code = ''
         last_read_date_str = ''
         mandatory_hh = ''
-        mtc_code_str = ''
         supplier_account = ''
         supplier_contract_name = ''
     else:
         mpan_core_str = mpan.getCore().toString()
         agreed_sc_str = str(mpan.getAgreedSupplyCapacity())
         llfc = mpan.getLlfc()
-        llfc_code_str = llfc.codeAsString()
+        llfc_code_str = str(llfc)
         llfc_description = llfc.getDescription()
-        ssc = mpan.getSsc()
-        if ssc is None:
-            ssc_code = ''
-        else:
-            ssc_code = str(ssc.getCode())
-        mtc = mpan.getMtc()
-        mtc_code_str = mtc.codeAsString()
+
         '''
         NON_ESTIMATE_READ_TYPES = [ReadType.TYPE_CHANGE_OF_SUPPLIER, ReadType.TYPE_CUSTOMER, ReadType.TYPE_FINAL, ReadType.TYPE_INITIAL, ReadType.TYPE_DC_MANUAL, ReadType.TYPE_ROUTINE, ReadType.TYPE_SPECIAL, ReadType.TYPE_CHANGE_OF_TENANCY]
         i = 0
@@ -4505,7 +4483,7 @@ def mpan_fields(mpan, date, is_import, mand_query, metering_type):
         if supplier_contract is not None:
             supplier_account = mpan.getSupplierAccount()
             supplier_contract_name = supplier_contract.getName()
-    return [mpan_core_str, agreed_sc_str, mtc_code_str, llfc_code_str, llfc_description, ssc_code, supplier_contract_name, supplier_account, avg_months, mandatory_hh]
+    return [mpan_core_str, agreed_sc_str, llfc_code_str, llfc_description, supplier_contract_name, supplier_account, avg_months, mandatory_hh]
 
 year = inv.getInteger('year')
 month = inv.getInteger('month')
@@ -4522,7 +4500,7 @@ inv.getResponse().setContentType('text/csv')
 inv.getResponse().addHeader('Content-Disposition', 'attachment; filename="report.csv"')
 pw = inv.getResponse().getWriter()
 
-pw.println("Date,Physical Site Id, Physical Site Name, Other Site Ids, Other Site Names, Supply Id, Source, Generator Type, DNO Name, Voltage Level, Metering Type, Mandatory HH, PC, HHDC Contract, HHDC Account, Meter Serial Number, Has Import kWh?, Has Import kVArh?, Has Export kWh?, Has Export kVArh?, Import MPAN core, Import Agreed Supply Capacity (kVA), Import MTC, Import LLFC Code, Import LLFC Description, Import SSC, Import Supplier Contract, Import Supplier Account, Import Mandatory kWh, Export MPAN core, Export Agreed Supply Capacity (kVA), Export MTC,  Export LLFC Code, Export LLFC Description, Export SSC, Export Supplier Contract, Export Supplier Account, Export Mandatory kWh")
+pw.println("Date,Physical Site Id, Physical Site Name, Other Site Ids, Other Site Names, Supply Id, Source, Generator Type, DNO Name, Voltage Level, Metering Type, Mandatory HH, PC, MTC, CoP, SSC, HHDC Contract, HHDC Account, Meter Serial Number, Has Import kWh?, Has Import kVArh?, Has Export kWh?, Has Export kVArh?, Import MPAN core, Import Agreed Supply Capacity (kVA), Import LLFC Code, Import LLFC Description, Import Supplier Contract, Import Supplier Account, Import Mandatory kWh, Export MPAN core, Export Agreed Supply Capacity (kVA), Export LLFC Code, Export LLFC Description, Export Supplier Contract, Export Supplier Account, Export Mandatory kWh")
 pw.flush()
 mand_query = Hiber.session().createQuery("select max(datum.value) from HhDatum datum where datum.channel.supplyGeneration.supply = :supply and datum.channel.isKwh is true and datum.channel.isImport = :isImport and datum.startDate.date >= :startDate and datum.startDate <= :finishDate")
 supply_generations = Hiber.session().createQuery("from SupplyGeneration generation where generation.startDate.date <= :date and (generation.finishDate.date is null or generation.finishDate.date >= :date) order by generation.supply.id").setTimestamp('date', date).scroll()
@@ -4560,8 +4538,6 @@ while supply_generations.next():
     else:
         hhdc_contract_name = hhdc_contract.getName()
         hhdc_account = supply_generation.getHhdcAccount()
-    pc = supply_generation.getPc()
-    pc_code_str = pc.codeAsString()
     meter_serial_number = supply_generation.getMeterSerialNumber()
     import_values = mpan_fields(supply_generation.getImportMpan(), date, True, mand_query, metering_type)
     export_values = mpan_fields(supply_generation.getExportMpan(), date, False, mand_query, metering_type)
@@ -4576,10 +4552,14 @@ while supply_generations.next():
         mandatory_hh = 'yes'
     else:
         mandatory_hh = 'no'
-    values = [HhStartDate(date), physical_site.getCode(), physical_site.getName(), site_codes, site_names, supply.getId(), supply.getSource().getCode(), generator_type, mpan.getCore().getDso().getName(), mpan.getLlfc().getVoltageLevel().getCode(), metering_type, mandatory_hh, pc_code_str, hhdc_contract_name, hhdc_account, meter_serial_number] + channel_values + import_values[:-1] + export_values[:-1]
-    for value in values:
-        pw.print('"' + str(value) + '",')
-    pw.println('')
+    values = []
+    for value in [HhStartDate(date), physical_site.getCode(), physical_site.getName(), site_codes, site_names, supply.getId(), supply.getSource().getCode(), generator_type, mpan.getCore().getDso().getName(), mpan.getLlfc().getVoltageLevel().getCode(), metering_type, mandatory_hh, supply_generation.getPc(), supply_generation.getMtc(), supply_generation.getCop(), supply_generation.getSsc(), hhdc_contract_name, hhdc_account, meter_serial_number] + channel_values + import_values[:-1] + export_values[:-1]:
+        if value is None:
+           values.append('')
+        else:
+           values.append(value)
+
+    pw.println(','.join(('"' + str(value) + '"') for value in values))
     Hiber.session().clear()
     pw.flush()
 supply_generations.close()
@@ -8524,7 +8504,7 @@ if inv.hasParameter("search-pattern"):
         if supply_id == last_supply:
             continue
         last_supply = supply_id
-        source.appendChild(supply_generation.toXml(doc, XmlTree("supply").put('hhdcContract').put('pc').put('mpans', XmlTree('mtc').put('llfc').put('core').put('supplierContract'))))]]></value>
+        source.appendChild(supply_generation.toXml(doc, XmlTree("supply").put('hhdcContract').put('pc').put('mtc').put('mpans', XmlTree('llfc').put('core').put('supplierContract'))))]]></value>
         <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
 <xsl:stylesheet version="1.0"
     xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
@@ -11699,16 +11679,14 @@ forecast_date = HhStartDate.roundDown(Date(Long.MAX_VALUE))
 def mpan_bit(query, kvarh_at_md_query, is_import, hh_count_query, num_hh, generation, comterp, forecast_date, start_date, finish_date):
     mpan = generation.getMpan(is_import)
     mpan_core_str = ''
-    mtc_str = ''
     llfc_str = ''
     sc_str = ''
     supplier_contract_name = ''
     gsp_kwh = ''
     if mpan is not None:
         supplier_contract_name = mpan.getSupplierContract().getName()
-        mtc_str = mpan.getMtc().codeAsString()
         llfc = mpan.getLlfc()
-        llfc_str = llfc.codeAsString()
+        llfc_str = str(llfc)
         mpan_core_str = mpan.getCore().toString()
         sc_str = str(mpan.getAgreedSupplyCapacity())
         if llfc.getIsImport() and generation.getPc().getCode() == 0:
@@ -11772,7 +11750,7 @@ def mpan_bit(query, kvarh_at_md_query, is_import, hh_count_query, num_hh, genera
         kva_at_md = str(round(((kvarh_at_md.doubleValue() * 2)**2 + kw_at_md**2)**0.5))
     num_bad = str(num_hh - hh_count_query.setBoolean('isImport', is_import).uniqueResult() + num_na)
         
-    return mtc_str + ',' + llfc_str + ',' + mpan_core_str + ',' + sc_str + ',' + supplier_contract_name + ',' + str(round(sum)) + ',' + str(round(non_actual)) + ',' + gsp_kwh + ',' + str(round(kw_at_md)) + ',' + str(date_at_md) + ',' + str(kva_at_md) + ',' + str(num_bad)
+    return llfc_str + ',' + mpan_core_str + ',' + sc_str + ',' + supplier_contract_name + ',' + str(round(sum)) + ',' + str(round(non_actual)) + ',' + gsp_kwh + ',' + str(round(kw_at_md)) + ',' + str(date_at_md) + ',' + str(kva_at_md) + ',' + str(num_bad)
     
 inv.getResponse().setContentType("text/csv")
 inv.getResponse().setHeader('Content-Disposition', 'filename=output.csv;')
@@ -11821,7 +11799,7 @@ hh_count_query = Hiber.session().createQuery("select count(*) from HhDatum datum
 
 num_hh = round((finish_date.getDate().getTime() - start_date.getPrevious().getDate().getTime()) / (30 * 60 * 1000))
 
-pw.println("Supply Id, Supply Name, Source, Generator Type, Site Ids, Site Names, From, To, PC, Import MTC, Import LLFC, Import MPAN Core, Import Supply Capacity,Import Supplier,Import Total MSP kWh, Import Non-actual MSP kWh, Import Total GSP kWh,Import MD / kW, Import MD Date, Import MD / kVA, Import Bad HHs, Export MTC, Export LLFC, Export MPAN Core, Export Supply Capacity,Export Supplier,Export Total MSP kWh, Export Non-actual MSP kWh,Export GSP kWh, Export MD / kW, Export MD Date, Export MD / kVA, Export Bad HHs")
+pw.println("Supply Id, Supply Name, Source, Generator Type, Site Ids, Site Names, From, To, PC, MTC, CoP, SSC, Import MPAN Core, Import LLFC, Import Supply Capacity,Import Supplier,Import Total MSP kWh, Import Non-actual MSP kWh, Import Total GSP kWh,Import MD / kW, Import MD Date, Import MD / kVA, Import Bad HHs, Export MPAN Core, Export LLFC, Export Supply Capacity,Export Supplier,Export Total MSP kWh, Export Non-actual MSP kWh,Export GSP kWh, Export MD / kW, Export MD Date, Export MD / kVA, Export Bad HHs")
 
 if inv.hasParameter('supply-id'):
     supply_id = inv.getLong('supply-id')
@@ -11851,7 +11829,14 @@ while supplies.next():
         generator_type = ''
     else:
         generator_type = generator_type.getCode()
-    pw.print(str(supply.getId()) + ',"' + supply.getName() + '",' + supply.getSource().getCode() + ',"' + generator_type + '","' + site_codes + '","' + site_names + '",' + start_date.toString() + "," + finish_date.toString() + "," + generation.getPc().codeAsString() + ",")
+
+    ssc = generation.getSsc()
+    if ssc is None:
+        ssc_code = ''
+    else:
+        ssc_code = str(ssc)
+
+    pw.print(','.join(('"' + str(value) + '"') for value in [supply.getId(), supply.getName(), supply.getSource().getCode(), generator_type, site_codes, site_names, start_date, finish_date, generation.getPc(), generation.getMtc(), generation.getCop(), ssc_code]) + ',')
     pw.flush()
     pw.println(mpan_bit(query, kva_at_md_query, True, hh_count_query, num_hh, generation,comterp, forecast_date, start_date, finish_date) + "," + mpan_bit(query, kva_at_md_query, False, hh_count_query, num_hh, generation,comterp, forecast_date, start_date, finish_date))
     pw.flush()
@@ -12401,7 +12386,7 @@ def process_site(site_id, month_start, month_finish, forecast_date, pw):
             for cand_gen in cand_supply.getGenerations(month_start, month_finish):
                 imp_mpan = cand_gen.getImportMpan()
                 if imp_mpan is not None and metering_type != 'hh':
-                    if cand_gen.getPc().codeAsString() == '00':
+                    if str(cand_gen.getPc()) == '00':
                         metering_type = 'hh'
                     elif cand_gen.getChannels().size() > 0:
                         metering_type = 'amr'
@@ -13326,7 +13311,7 @@ for i in range(months):
 
         generation = supply.getGenerations(month_start, month_finish).get(0)
 
-        pc_code = generation.getPc().codeAsString()
+        pc_code = str(generation.getPc())
         if pc_code == '00':
             metering_type = 'hh'
         elif generation.getChannels().size() > 0:

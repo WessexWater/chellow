@@ -5155,13 +5155,13 @@ class SiteSource(DataSource):
         dso = mpan_core.getDso()
         self.dso_code = dso.getCode()
         llfc = mpan.getLlfc()
-        self.llfc_code = llfc.codeAsString()
+        self.llfc_code = str(llfc)
         self.is_import = llfc.getIsImport()
         self.mpan_core = mpan_core.toString()
         self.voltage_level_code = llfc.getVoltageLevel().getCode()
         self.is_substation = llfc.getIsSubstation()
         self.availability = mpan.getAgreedSupplyCapacity()
-        self.pc_code = mpan.getSupplyGeneration().getPc().codeAsString()
+        self.pc_code = str(mpan.getSupplyGeneration().getPc())
 
         self.whole_data = self.create_whole_data(self.start_date, self.finish_date, forecast_date)
         self.summary = self.whole_data['summary']
@@ -5321,7 +5321,7 @@ class SupplySource(DataSource):
         self.start_date = start_date
         self.finish_date = finish_date
         self.llfc = mpan.getLlfc()
-        self.llfc_code = self.llfc.codeAsString()
+        self.llfc_code = str(self.llfc)
         self.voltage_level = self.llfc.getVoltageLevel()
         self.voltage_level_code = self.voltage_level.getCode()
         self.is_substation = self.llfc.getIsSubstation()
@@ -5329,16 +5329,17 @@ class SupplySource(DataSource):
         self.availability = mpan.getAgreedSupplyCapacity()
         self.is_new = False
         self.supplier_account = mpan.getSupplierAccount()
-        if mpan.getSsc() is None:
+        generation = mpan.getSupplyGeneration()
+        if generation.getSsc() is None:
             self.ssc_code = None
         else:
-            self.ssc_code = mpan.getSsc().codeAsString()
-        self.pc_code = mpan.getSupplyGeneration().getPc().codeAsString()
+            self.ssc_code = str(generation.getSsc())
+            
+        self.pc_code = str(generation.getPc())
         
-        self.is_amr = self.pc_code != '00' and len(mpan.getSupplyGeneration().getChannels()) > 0
+        self.is_amr = self.pc_code != '00' and len(generation.getChannels()) > 0
 
         if self.forecast_date.after(start_date):
-            generation = mpan.getSupplyGeneration()
             if generation.getStartDate().after(start_date):
                 self.start_date = generation.getStartDate()
             else:
@@ -5408,7 +5409,7 @@ class SupplySource(DataSource):
                 mpan = generation.getImportMpan()
             else:
                 mpan = generation.getExportMpan()
-            tpr_codes = Hiber.session().createQuery("select mr.tpr.code from MeasurementRequirement mr where mr.ssc = :ssc").setEntity('ssc', mpan.getSsc()).list()
+            tpr_codes = Hiber.session().createQuery("select mr.tpr.code from MeasurementRequirement mr where mr.ssc = :ssc").setEntity('ssc', generation.getSsc()).list()
             bills = []
             for cand_bill in Hiber.session().createQuery("select distinct read.bill from RegisterRead read where read.bill.supply = :supply and read.bill.batch.contract = :contract and read.bill.startDate.date <= :finishDate and read.bill.finishDate.date >= :searchStart and read.bill.kwh >= 0 order by read.bill.issueDate desc, read.bill.startDate.date").setEntity('supply', supply).setEntity('contract', mpan.getSupplierContract()).setTimestamp('searchStart', start_date.getDate()).setTimestamp('finishDate', finish_date.getDate()).list():
                 can_insert = True

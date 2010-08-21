@@ -43,15 +43,20 @@ import org.w3c.dom.Node;
 public class Mtc extends PersistentEntity {
 	static public Mtc getMtc(Dso dso, String code)
 			throws HttpException {
-		return findMtc(dso, code, true);
+		Mtc mtc = findMtc(dso, code);
+		if (mtc == null) {
+			throw new UserException("There isn't a meter timeswitch with DSO '"
+					+ (dso == null ? dso : dso.getCode())
+					+ "' and Meter Timeswitch Code '" + code + "'");
+		}
+		return mtc;
 	}
 	
 	static public boolean hasDso(int code) {
 		return !((code > 499 && code < 510) || (code > 799 && code < 1000));
 	}
 
-	static public Mtc findMtc(Dso dso, String codeStr,
-			boolean throwException) throws HttpException {
+	static public Mtc findMtc(Dso dso, String codeStr) throws HttpException {
 		int code = Integer.parseInt(codeStr);
 		dso = hasDso(code) ? dso : null;
 		Mtc mtc = null;
@@ -67,11 +72,6 @@ public class Mtc extends PersistentEntity {
 					.createQuery(
 							"from Mtc as mtc where mtc.dso = :dso and mtc.code = :mtcCode")
 					.setEntity("dso", dso).setInteger("mtcCode", code).uniqueResult();
-		}
-		if (throwException && mtc == null) {
-			throw new UserException("There isn't a meter timeswitch with DSO '"
-					+ (dso == null ? dso : dso.getCode())
-					+ "' and Meter Timeswitch Code '" + code + "'");
 		}
 		return mtc;
 	}
@@ -219,20 +219,15 @@ public class Mtc extends PersistentEntity {
 	void setValidTo(Date to) {
 		this.validTo = to;
 	}
-
-	public String toString() {
-		return code + " - " + description + " (DSO "
-				+ (dso == null ? null : dso.getCode()) + ")";
-	}
 	
-	public String codeAsString() {
+	public String toString() {
 		DecimalFormat mtcFormat = new DecimalFormat("000");
 		return mtcFormat.format(code);		
 	}
 
 	public Node toXml(Document doc) throws HttpException {
 		Element element = super.toXml(doc, "mtc");
-		element.setAttribute("code", codeAsString());
+		element.setAttribute("code", toString());
 		element.setAttribute("description", description);
 		element.setAttribute("has-related-metering", Boolean
 				.toString(hasRelatedMetering));

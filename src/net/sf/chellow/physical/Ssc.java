@@ -161,15 +161,15 @@ public class Ssc extends PersistentEntity {
 	public void httpPost(Invocation inv) throws HttpException {
 		throw new MethodNotAllowedException();
 	}
-	
-	public String codeAsString() {
+
+	public String toString() {
 		return new DecimalFormat("0000").format(code);
 	}
 
 	public Element toXml(Document doc) throws HttpException {
 		Element element = super.toXml(doc, "ssc");
 
-		element.setAttribute("code", codeAsString());
+		element.setAttribute("code", toString());
 		element.setAttribute("is-import", Boolean.toString(isImport));
 		element.setAttribute("description", description);
 		MonadDate fromDate = new MonadDate(validFrom);
