@@ -34,6 +34,7 @@ import net.sf.chellow.billing.Dso;
 import net.sf.chellow.billing.HhdcContract;
 import net.sf.chellow.billing.MopContract;
 import net.sf.chellow.billing.SupplierContract;
+import net.sf.chellow.monad.Debug;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.Invocation;
@@ -331,9 +332,7 @@ public class SupplyGeneration extends PersistentEntity {
 					finishDateStr.length() == 0 ? null : (finishDateStr
 							.equals(GeneralImport.NO_CHANGE) ? supplyGeneration
 							.getFinishDate() : new HhStartDate("finish",
-							finishDateStr)));
-			supplyGeneration.update(supplyGeneration.getStartDate(),
-					supplyGeneration.getFinishDate(), mopContract, mopAccount,
+							finishDateStr)), mopContract, mopAccount,
 					hhdcContract, hhdcAccount, meterSerialNumber, pc, mtcCode,
 					cop, ssc, importMpanCoreStr, importLlfcCode,
 					importSupplierContract, importSupplierAccount,
@@ -998,6 +997,26 @@ public class SupplyGeneration extends PersistentEntity {
 			throw new UserException(
 					"The generation start date can't be after the finish date.");
 		}
+		SupplyGeneration previousGeneration = (SupplyGeneration) Hiber
+				.session()
+				.createQuery(
+						"from SupplyGeneration generation where generation.supply = :supply and generation != :generation and generation.startDate.date < :startDate order by generation.startDate.date desc")
+				.setEntity("supply", supply).setEntity("generation", this)
+				.setTimestamp("startDate", startDate.getDate())
+				.setMaxResults(1).uniqueResult();
+		SupplyGeneration nextGeneration = null;
+		Debug.print("Working on " + getId() + " start date " + getStartDate()
+				+ " finish Date " + getFinishDate());
+		if (finishDate != null) {
+			nextGeneration = (SupplyGeneration) Hiber
+					.session()
+					.createQuery(
+							"from SupplyGeneration generation where generation.supply = :supply and generation != :generation and generation.startDate.date > :startDate order by generation.startDate.date")
+					.setEntity("supply", supply).setEntity("generation", this)
+					.setTimestamp("startDate", startDate.getDate())
+					.setMaxResults(1).uniqueResult();
+		}
+
 		setMeterSerialNumber(meterSerialNumber);
 		setPc(pc);
 		setSsc(ssc);
@@ -1123,12 +1142,6 @@ public class SupplyGeneration extends PersistentEntity {
 				}
 			}
 		}
-		SupplyGeneration previousGeneration = (SupplyGeneration) Hiber
-				.session()
-				.createQuery(
-						"from SupplyGeneration generation where generation.supply = :supply and generation.startDate.date < :startDate order by generation.startDate.date")
-				.setEntity("supply", supply).setTimestamp("startDate",
-						startDate.getDate()).setMaxResults(1).uniqueResult();
 		if (previousGeneration == null) {
 			if (((Long) Hiber
 					.session()
@@ -1174,7 +1187,6 @@ public class SupplyGeneration extends PersistentEntity {
 		}
 		setStartDate(startDate);
 		setFinishDate(finishDate);
-		SupplyGeneration nextGeneration = supply.getGenerationNext(this);
 		if (nextGeneration == null) {
 			if (finishDate != null
 					&& ((Long) Hiber
@@ -1639,11 +1651,8 @@ public class SupplyGeneration extends PersistentEntity {
 							.getSupplierContract(exportSupplierContractId);
 				}
 				supply.updateGeneration(this, new HhStartDate(startDate),
-						finishDate);
-				Hiber.flush();
-				update(getStartDate(), getFinishDate(), mopContract,
-						mopAccount, hhdcContract, hhdcAccount,
-						meterSerialNumber, pc, mtcCode, cop, ssc,
+						finishDate, mopContract, mopAccount, hhdcContract,
+						hhdcAccount, meterSerialNumber, pc, mtcCode, cop, ssc,
 						importMpanCoreStr, importLlfcCode,
 						importSupplierContract, importSupplierAccount,
 						importAgreedSupplyCapacity, exportMpanCoreStr,

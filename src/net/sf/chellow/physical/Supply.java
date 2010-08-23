@@ -29,7 +29,6 @@ import java.util.Set;
 import net.sf.chellow.billing.HhdcContract;
 import net.sf.chellow.billing.MopContract;
 import net.sf.chellow.billing.SupplierContract;
-import net.sf.chellow.monad.Debug;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.InternalException;
@@ -424,63 +423,17 @@ public class Supply extends PersistentEntity {
 		return mpanCore;
 	}
 
-	/*
-	 * public SupplyGeneration insertGeneration(HhStartDate startDate) throws
-	 * HttpException { SupplyGeneration existingGeneration =
-	 * getGeneration(startDate); if (existingGeneration == null) { throw new
-	 * UserException(
-	 * "You can't add a generation before the first generation, or after the last."
-	 * ); } HhdcContract existingHhdcContract = existingGeneration
-	 * .getHhdcContract(); String existingHhdcAccount =
-	 * existingGeneration.getHhdcAccount(); MopContract existingMopContract =
-	 * existingGeneration.getMopContract(); String existingMopAccount =
-	 * existingGeneration.getMopAccount();
-	 * 
-	 * String existingMeterSerialNumber = existingGeneration
-	 * .getMeterSerialNumber(); Pc existingPc = existingGeneration.getPc();
-	 * String existingMtcCode = existingGeneration.getMtc().toString(); Cop
-	 * existingCop = existingGeneration.getCop(); Ssc existingSsc =
-	 * existingGeneration.getSsc();
-	 * 
-	 * Mpan existingImportMpan = existingGeneration.getImportMpan(); Mpan
-	 * existingExportMpan = existingGeneration.getExportMpan(); Map<Site,
-	 * Boolean> existingSiteMap = new HashMap<Site, Boolean>(); for
-	 * (SiteSupplyGeneration siteSupplyGeneration : existingGeneration
-	 * .getSiteSupplyGenerations()) {
-	 * existingSiteMap.put(siteSupplyGeneration.getSite(),
-	 * siteSupplyGeneration.getIsPhysical()); } String existingImportLlfcCode =
-	 * null; String existingImportMpanCoreStr = null; String
-	 * existingExportLlfcCode = null; String existingExportMpanCoreStr = null;
-	 * SupplierContract existingImportSupplierContract = null; String
-	 * existingImportSupplierAccount = null; SupplierContract
-	 * existingExportSupplierContract = null; String
-	 * existingExportSupplierAccount = null; Integer
-	 * existingImportSupplyCapacity = null; Integer existingExportSupplyCapacity
-	 * = null; if (existingExportMpan != null) { existingExportSupplierContract
-	 * = existingExportMpan .getSupplierContract();
-	 * existingExportSupplierAccount = existingExportMpan .getSupplierAccount();
-	 * existingExportLlfcCode = existingExportMpan.getLlfc().toString();
-	 * existingExportMpanCoreStr = existingExportMpan.getCore().toString();
-	 * existingExportSupplyCapacity = existingExportMpan
-	 * .getAgreedSupplyCapacity(); } if (existingImportMpan != null) {
-	 * existingImportLlfcCode = existingImportMpan.getLlfc().toString();
-	 * existingImportMpanCoreStr = existingImportMpan.getCore().toString();
-	 * existingImportSupplierAccount = existingImportMpan .getSupplierAccount();
-	 * existingImportSupplierContract = existingImportMpan
-	 * .getSupplierContract(); existingImportSupplyCapacity = existingImportMpan
-	 * .getAgreedSupplyCapacity(); } return insertGeneration(existingSiteMap,
-	 * startDate, existingMopContract, existingMopAccount, existingHhdcContract,
-	 * existingHhdcAccount, existingMeterSerialNumber, existingPc,
-	 * existingMtcCode, existingCop, existingSsc, existingImportMpanCoreStr,
-	 * existingImportLlfcCode, existingImportSupplierContract,
-	 * existingImportSupplierAccount, existingImportSupplyCapacity,
-	 * existingExportMpanCoreStr, existingExportLlfcCode,
-	 * existingExportSupplierContract, existingExportSupplierAccount,
-	 * existingExportSupplyCapacity); }
-	 */
 
 	public void updateGeneration(SupplyGeneration generation,
-			HhStartDate start, HhStartDate finish) throws HttpException {
+			HhStartDate start, HhStartDate finish, MopContract mopContract, String mopAccount,
+			HhdcContract hhdcContract, String hhdcAccount,
+			String meterSerialNumber, Pc pc, String mtcCode, Cop cop, Ssc ssc,
+			String importMpanCoreStr, String importLlfcCode,
+			SupplierContract importSupplierContract,
+			String importSupplierAccount, Integer importAgreedSupplyCapacity,
+			String exportMpanCoreStr, String exportLlfcCode,
+			SupplierContract exportSupplierContract,
+			String exportSupplierAccount, Integer exportAgreedSupplyCapacity) throws HttpException {
 		generation = (SupplyGeneration) Hiber
 				.session()
 				.createQuery(
@@ -491,7 +444,6 @@ public class Supply extends PersistentEntity {
 			throw new UserException(
 					"The generation doesn't belong to this supply.");
 		}
-		generation.update(start, finish);
 		SupplyGeneration previousGeneration = (SupplyGeneration) Hiber
 				.session()
 				.createQuery(
@@ -506,6 +458,15 @@ public class Supply extends PersistentEntity {
 				.setEntity("supply", this).setTimestamp("startDate",
 						generation.getStartDate().getDate()).setMaxResults(1)
 				.uniqueResult();
+		generation.update(start, finish, mopContract, mopAccount,
+				hhdcContract, hhdcAccount,
+				meterSerialNumber, pc,mtcCode, cop, ssc,
+				importMpanCoreStr, importLlfcCode,
+				importSupplierContract,
+				importSupplierAccount, importAgreedSupplyCapacity,
+				 exportMpanCoreStr, exportLlfcCode,
+				exportSupplierContract,
+				exportSupplierAccount, exportAgreedSupplyCapacity);
 		if (previousGeneration != null) {
 			previousGeneration.update(previousGeneration.getStartDate(), start
 					.getPrevious());
@@ -635,7 +596,6 @@ public class Supply extends PersistentEntity {
 		if (site != null) {
 			Set<SiteSupplyGeneration> siteSupplyGenerations = supplyGeneration
 					.getSiteSupplyGenerations();
-			Debug.print("Num ssgens 1" + siteSupplyGenerations.size());
 			List<Site> toDelete = new ArrayList<Site>();
 			for (SiteSupplyGeneration ssgen : siteSupplyGenerations) {
 				toDelete.add(ssgen.getSite());

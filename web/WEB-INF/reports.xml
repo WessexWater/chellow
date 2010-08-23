@@ -557,7 +557,7 @@ def bills_list(parent_element, element_name, contract, generation, mpan=None):
 
     if mpan is not None and pc_code != '00':
         tpr_codes = []
-        for tpr in Hiber.session().createQuery("select mr.tpr from MeasurementRequirement mr where mr.ssc = :ssc order by mr.tpr.code").setEntity('ssc', mpan.getSsc()).list():
+        for tpr in Hiber.session().createQuery("select mr.tpr from MeasurementRequirement mr where mr.ssc = :ssc order by mr.tpr.code").setEntity('ssc', generation.getSsc()).list():
             tpr_codes.append(tpr.getCode())
             bills_element.appendChild(tpr.toXml(doc))
         if pc_code in ['05', '06', '07', '08']:
