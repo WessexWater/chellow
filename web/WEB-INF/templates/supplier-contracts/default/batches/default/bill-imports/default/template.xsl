@@ -365,7 +365,7 @@
 										<xsl:value-of select="@vat" />
 									</td>
 									<td>
-										<xsl:value-of select="@type" />
+										<xsl:value-of select="bill-type/@code" />
 									</td>
 									<td>
 										<xsl:value-of select="@breakdown" />

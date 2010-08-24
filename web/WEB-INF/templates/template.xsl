@@ -188,6 +188,11 @@
 							CoPs
 						</a>
 					</li>
+					<li>
+						<a href="{/source/request/@context-path}/bill-types/">
+							Bill Types
+						</a>
+					</li>
 				</ul>
 			</body>
 		</html>

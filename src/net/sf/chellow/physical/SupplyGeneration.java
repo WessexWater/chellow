@@ -1,6 +1,6 @@
 /*******************************************************************************
  * 
- *  Copyright (c) 2005, 2009 Wessex Water Services Limited
+ *  Copyright (c) 2005, 2010 Wessex Water Services Limited
  *  
  *  This file is part of Chellow.
  * 
@@ -34,7 +34,6 @@ import net.sf.chellow.billing.Dso;
 import net.sf.chellow.billing.HhdcContract;
 import net.sf.chellow.billing.MopContract;
 import net.sf.chellow.billing.SupplierContract;
-import net.sf.chellow.monad.Debug;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.Invocation;
@@ -1005,8 +1004,6 @@ public class SupplyGeneration extends PersistentEntity {
 				.setTimestamp("startDate", startDate.getDate())
 				.setMaxResults(1).uniqueResult();
 		SupplyGeneration nextGeneration = null;
-		Debug.print("Working on " + getId() + " start date " + getStartDate()
-				+ " finish Date " + getFinishDate());
 		if (finishDate != null) {
 			nextGeneration = (SupplyGeneration) Hiber
 					.session()

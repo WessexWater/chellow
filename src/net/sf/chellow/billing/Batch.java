@@ -223,15 +223,15 @@ public class Batch extends PersistentEntity {
 		return bill;
 	}
 
-	public Bill insertBill(Supply supply, String account, String reference, Date issueDate,
-			HhStartDate startDate, HhStartDate finishDate, BigDecimal kwh,
-			BigDecimal net, BigDecimal vat, String type, String breakdown)
-			throws HttpException {
+	public Bill insertBill(Supply supply, String account, String reference,
+			Date issueDate, HhStartDate startDate, HhStartDate finishDate,
+			BigDecimal kwh, BigDecimal net, BigDecimal vat, BillType type,
+			String breakdown) throws HttpException {
 		Bill bill = new Bill(this, supply);
 		Hiber.session().save(bill);
 		Hiber.flush();
-		bill.update(account, reference, issueDate, startDate, finishDate, kwh, net, vat,
-				type, null, breakdown);
+		bill.update(account, reference, issueDate, startDate, finishDate, kwh,
+				net, vat, type, null, breakdown);
 		Hiber.flush();
 		return bill;
 	}
@@ -239,7 +239,7 @@ public class Batch extends PersistentEntity {
 	@SuppressWarnings("unchecked")
 	public Bill insertBill(String account, String reference, Date issueDate,
 			HhStartDate startDate, HhStartDate finishDate, BigDecimal kwh,
-			BigDecimal net, BigDecimal vat, String type, String breakdown)
+			BigDecimal net, BigDecimal vat, BillType type, String breakdown)
 			throws HttpException {
 		List<Supply> supplyList = (List<Supply>) Hiber
 				.session()
@@ -251,7 +251,7 @@ public class Batch extends PersistentEntity {
 			throw new UserException(
 					"Can't find a supply generation with this contract and account number.");
 		}
-		return insertBill(supplyList.get(0), account, reference, issueDate, startDate,
-				finishDate, kwh, net, vat, type, breakdown);
+		return insertBill(supplyList.get(0), account, reference, issueDate,
+				startDate, finishDate, kwh, net, vat, type, breakdown);
 	}
 }

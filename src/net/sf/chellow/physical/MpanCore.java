@@ -1,6 +1,6 @@
 /*******************************************************************************
  * 
- *  Copyright (c) 2005, 2009 Wessex Water Services Limited
+ *  Copyright (c) 2005, 2010 Wessex Water Services Limited
  *  
  *  This file is part of Chellow.
  * 
@@ -27,7 +27,6 @@ import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Invocation;
 import net.sf.chellow.monad.MethodNotAllowedException;
-import net.sf.chellow.monad.NotFoundException;
 import net.sf.chellow.monad.UserException;
 import net.sf.chellow.monad.types.MonadUri;
 
@@ -42,7 +41,7 @@ public class MpanCore extends PersistentEntity {
 	static public MpanCore getMpanCore(String core) throws HttpException {
 		MpanCore mpanCore = findMpanCore(core);
 		if (mpanCore == null) {
-			throw new NotFoundException("There isn't an MPAN with the core "
+			throw new UserException("There isn't an MPAN with the core "
 					+ core);
 		}
 		return mpanCore;

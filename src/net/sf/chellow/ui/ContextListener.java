@@ -41,6 +41,7 @@ import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 import javax.sql.DataSource;
 
+import net.sf.chellow.billing.BillType;
 import net.sf.chellow.billing.DsoContract;
 import net.sf.chellow.billing.NonCoreContract;
 import net.sf.chellow.hhimport.AutomaticHhDataImporters;
@@ -225,6 +226,11 @@ public class ContextListener implements ServletContextListener {
 		Cop.insertCop(Cop.COP_6C, "CoP 6c 250 day memory");
 		Cop.insertCop(Cop.COP_6D, "CoP 6d 450 day memory");
 		Cop.insertCop(Cop.COP_7, "CoP 7");
+		Hiber.commit();
+		
+		BillType.insertBillType("F", "Final");
+		BillType.insertBillType("N", "Normal");
+		BillType.insertBillType("W", "Withdrawn");
 		Hiber.commit();
 
 		try {

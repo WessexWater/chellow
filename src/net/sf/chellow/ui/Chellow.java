@@ -30,6 +30,7 @@ import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 
+import net.sf.chellow.billing.BillTypes;
 import net.sf.chellow.billing.Dsos;
 import net.sf.chellow.billing.HhdcContract;
 import net.sf.chellow.billing.HhdcContracts;
@@ -130,6 +131,8 @@ public class Chellow extends Monad implements Urlable {
 	static public final GeneratorTypes GENERATOR_TYPES_INSTANCE = new GeneratorTypes();
 
 	static public final Cops COPS_INSTANCE = new Cops();
+
+	static public final BillTypes BILL_TYPES_INSTANCE = new BillTypes();
 
 	static {
 		try {
@@ -310,6 +313,8 @@ public class Chellow extends Monad implements Urlable {
 			return MOP_CONTRACTS_INSTANCE;
 		} else if (Cops.URI_ID.equals(uriId)) {
 			return COPS_INSTANCE;
+		} else if (BillTypes.URI_ID.equals(uriId)) {
+			return BILL_TYPES_INSTANCE;
 		} else {
 			return null;
 		}

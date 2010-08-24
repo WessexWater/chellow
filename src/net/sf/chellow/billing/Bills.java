@@ -1,6 +1,6 @@
 /*******************************************************************************
  * 
- *  Copyright (c) 2005, 2009 Wessex Water Services Limited
+ *  Copyright (c) 2005, 2010 Wessex Water Services Limited
  *  
  *  This file is part of Chellow.
  * 
@@ -21,20 +21,23 @@
 
 package net.sf.chellow.billing;
 
+import java.math.BigDecimal;
+import java.util.Date;
 import java.util.List;
 
-import net.sf.chellow.monad.DeployerException;
-import net.sf.chellow.monad.DesignerException;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
-import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Invocation;
 import net.sf.chellow.monad.MonadUtils;
 import net.sf.chellow.monad.NotFoundException;
+import net.sf.chellow.monad.UserException;
 import net.sf.chellow.monad.XmlTree;
+import net.sf.chellow.monad.types.MonadDate;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
 import net.sf.chellow.physical.EntityList;
+import net.sf.chellow.physical.HhStartDate;
+import net.sf.chellow.physical.MpanCore;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -72,8 +75,33 @@ public class Bills extends EntityList {
 		return batch.getUri().resolve(getUrlId()).append("/");
 	}
 
-	public void httpPost(Invocation inv) throws InternalException,
-			HttpException, DesignerException, DeployerException {
+	public void httpPost(Invocation inv) throws HttpException {
+		String mpanCoreStr = inv.getString("mpan-core");
+		String account = inv.getString("account");
+		String reference = inv.getString("reference");
+		Date issueDate = inv.getDate("issue");
+		Date startDate = inv.getDate("start");
+		Date finishDate = inv.getDate("finish");
+		BigDecimal kwh = inv.getBigDecimal("kwh");
+		BigDecimal net = inv.getBigDecimal("net");
+		BigDecimal vat = inv.getBigDecimal("vat");
+		Long billTypeId = inv.getLong("bill-type-id");
+		String breakdown = inv.getString("breakdown");
+
+		if (!inv.isValid()) {
+			throw new UserException(document());
+		}
+		try {
+			batch.insertBill(MpanCore.getMpanCore(mpanCoreStr).getSupply(),
+					account, reference, issueDate, new HhStartDate(startDate),
+					new HhStartDate(finishDate), kwh, net, vat, BillType
+							.getBillType(billTypeId), breakdown);
+		} catch (UserException e) {
+			e.setDocument(document());
+			throw e;
+		}
+		Hiber.commit();
+		inv.sendOk(document());
 	}
 
 	public void httpGet(Invocation inv) throws HttpException {
@@ -93,8 +121,16 @@ public class Bills extends EntityList {
 				.createQuery(
 						"from Bill bill where bill.batch = :batch order by bill.startDate.date desc")
 				.setEntity("batch", batch).list()) {
-			billsElement.appendChild(bill.toXml(doc, new XmlTree("supply")));
+			billsElement.appendChild(bill.toXml(doc, new XmlTree("supply")
+					.put("type")));
 		}
+		for (BillType type : (List<BillType>) Hiber.session().createQuery(
+				"from BillType type order by type.code").list()) {
+			source.appendChild(type.toXml(doc));
+		}
+		source.appendChild(MonadDate.getMonthsXml(doc));
+		source.appendChild(MonadDate.getDaysXml(doc));
+		source.appendChild(new MonadDate().toXml(doc));
 		return doc;
 	}
 

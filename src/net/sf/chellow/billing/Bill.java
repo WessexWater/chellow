@@ -1,6 +1,6 @@
 /*******************************************************************************
  * 
- *  Copyright (c) 2005, 2009 Wessex Water Services Limited
+ *  Copyright (c) 2005, 2010 Wessex Water Services Limited
  *  
  *  This file is part of Chellow.
  * 
@@ -104,8 +104,10 @@ public class Bill extends PersistentEntity implements Urlable {
 
 			String reference = GeneralImport.addField(csvElement, "Reference",
 					values, 10);
-			String type = GeneralImport
-					.addField(csvElement, "Type", values, 11);
+			String typeCode = GeneralImport.addField(csvElement, "Type",
+					values, 11);
+			BillType type = BillType.getBillType(typeCode);
+
 			String breakdown = GeneralImport.addField(csvElement, "Breakdown",
 					values, 12);
 
@@ -113,9 +115,9 @@ public class Bill extends PersistentEntity implements Urlable {
 					13);
 			BigDecimal kwh = new BigDecimal(kwhStr);
 
-			Bill bill = batch.insertBill(mpanCore.getSupply(), account, reference,
-					issueDate, startDate, finishDate, kwh, net, vat, type,
-					breakdown);
+			Bill bill = batch.insertBill(mpanCore.getSupply(), account,
+					reference, issueDate, startDate, finishDate, kwh, net, vat,
+					type, breakdown);
 			for (int i = 14; i < values.length; i += 11) {
 				String meterSerialNumber = GeneralImport.addField(csvElement,
 						"Meter Serial Number", values, i);
@@ -187,7 +189,7 @@ public class Bill extends PersistentEntity implements Urlable {
 
 	private Boolean isPaid; // Null is pending, false is rejected.
 
-	private String type;
+	private BillType type;
 
 	private String breakdown;
 
@@ -203,7 +205,7 @@ public class Bill extends PersistentEntity implements Urlable {
 		setSupply(supply);
 		setReference("Default Reference");
 		setAccount("Default Account");
-		setType("");
+		setType(BillType.getBillType(BillType.TYPE_NORMAL));
 		setBreakdown("");
 		setKwh(new BigDecimal(0));
 		setNet(new BigDecimal(0));
@@ -292,11 +294,11 @@ public class Bill extends PersistentEntity implements Urlable {
 		this.isPaid = isPaid;
 	}
 
-	public String getType() {
+	public BillType getType() {
 		return type;
 	}
 
-	public void setType(String type) {
+	public void setType(BillType type) {
 		this.type = type;
 	}
 
@@ -326,9 +328,14 @@ public class Bill extends PersistentEntity implements Urlable {
 
 	public void update(String account, String reference, Date issueDate,
 			HhStartDate startDate, HhStartDate finishDate, BigDecimal kwh,
-			BigDecimal net, BigDecimal vat, String type, Boolean isPaid,
+			BigDecimal net, BigDecimal vat, BillType type, Boolean isPaid,
 			String breakdown) throws HttpException {
-		for (SupplyGeneration generation : supply.getGenerations(startDate, finishDate)) {
+		List<SupplyGeneration> generations = supply.getGenerations(startDate,
+				finishDate);
+		if (generations.isEmpty()) {
+			throw new UserException("The bill is before or after the supply.");
+		}
+		for (SupplyGeneration generation : generations) {
 			List<Long> contractIds = new ArrayList<Long>();
 			HhdcContract hhdcContract = generation.getHhdcContract();
 			if (hhdcContract != null) {
@@ -342,7 +349,14 @@ public class Bill extends PersistentEntity implements Urlable {
 				contractIds.add(mpan.getSupplierContract().getId());
 			}
 			if (!contractIds.contains(batch.getContract().getId())) {
-				throw new UserException("For the bill " + getId() + " of batch " + batch.getId() + " of contract " + batch.getContract().getId() + " there's no matching contract for one or more of the supply generation.");
+				throw new UserException(
+						"For the bill "
+								+ getId()
+								+ " of batch "
+								+ batch.getId()
+								+ " of contract "
+								+ batch.getContract().getId()
+								+ " there's no matching contract for one or more of the supply generations.");
 			}
 		}
 		setReference(reference);
@@ -382,7 +396,6 @@ public class Bill extends PersistentEntity implements Urlable {
 		if (isPaid != null) {
 			element.setAttribute("is-paid", Boolean.toString(isPaid));
 		}
-		element.setAttribute("type", type);
 		element.setAttribute("breakdown", breakdown);
 		return element;
 	}
@@ -401,16 +414,16 @@ public class Bill extends PersistentEntity implements Urlable {
 			BigDecimal kwh = inv.getBigDecimal("kwh");
 			BigDecimal net = inv.getBigDecimal("net");
 			BigDecimal vat = inv.getBigDecimal("vat");
-			String type = inv.getString("type");
+			Long typeId = inv.getLong("type-id");
 			Boolean isPaid = inv.getBoolean("isPaid");
 			String breakdown = inv.getString("breakdown");
 
 			if (!inv.isValid()) {
 				throw new UserException(document());
 			}
-			update(account, reference, issueDate, new HhStartDate(startDate).getNext(),
-					new HhStartDate(finishDate), kwh, net, vat, type, isPaid,
-					breakdown);
+			update(account, reference, issueDate, new HhStartDate(startDate)
+					.getNext(), new HhStartDate(finishDate), kwh, net, vat,
+					BillType.getBillType(typeId), isPaid, breakdown);
 			Hiber.commit();
 			inv.sendOk(document());
 		}

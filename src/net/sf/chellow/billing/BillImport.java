@@ -252,7 +252,7 @@ public class BillImport extends Thread implements Urlable, XmlDescriber {
 			for (Map<RawBill, String> billMap : failedBills) {
 				for (Entry<RawBill, String> entry : billMap.entrySet()) {
 					Element billRawElement = (Element) entry.getKey().toXml(
-							doc, new XmlTree("registerReads"));
+							doc, new XmlTree("registerReads").put("type"));
 					failedElement.appendChild(billRawElement);
 					billRawElement.appendChild(new MonadMessage(entry
 							.getValue()).toXml(doc));
@@ -260,7 +260,7 @@ public class BillImport extends Thread implements Urlable, XmlDescriber {
 			}
 			for (RawBill billRaw : successfulBills) {
 				successfulElement.appendChild(billRaw.toXml(doc, new XmlTree(
-						"registerReads")));
+						"registerReads").put("type")));
 			}
 		}
 		for (String message : messages) {

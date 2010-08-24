@@ -109,6 +109,23 @@
 									</input>
 								</label>
 								<br />
+								<label>
+									<xsl:value-of select="'Account '" />
+									<input name="account">
+										<xsl:attribute name="value">
+									<xsl:choose>
+										<xsl:when test="/source/request/parameters[@name='account']">
+											<xsl:value-of
+											select="/source/request/parameters[@name='account']/value" />
+										</xsl:when>
+										<xsl:otherwise>
+											<xsl:value-of select="/source/bill/@account" />
+										</xsl:otherwise>
+									</xsl:choose>
+								</xsl:attribute>
+									</input>
+								</label>
+								<br />
 								<br />
 								<fieldset>
 									<legend>Issue Date</legend>

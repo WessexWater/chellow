@@ -39,7 +39,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 public class RawBill extends MonadObject {
-	private String type;
+	private BillType type;
 
 	private Date issueDate;
 
@@ -63,7 +63,7 @@ public class RawBill extends MonadObject {
 
 	private Set<RawRegisterRead> reads = new HashSet<RawRegisterRead>();
 
-	public RawBill(String type, String accountReference,
+	public RawBill(BillType type, String accountReference,
 			List<String> mpanStrings, String reference, Date issueDate,
 			HhStartDate startDate, HhStartDate finishDate, BigDecimal kwh, BigDecimal net,
 			BigDecimal vat, String breakdown, List<RawRegisterRead> registerReads)
@@ -110,7 +110,7 @@ public class RawBill extends MonadObject {
 		}
 	}
 
-	public String getType() {
+	public BillType getType() {
 		return type;
 	}
 
@@ -169,7 +169,6 @@ public class RawBill extends MonadObject {
 		element.setAttribute("net", kwh.toString());
 		element.setAttribute("net", net.toString());
 		element.setAttribute("vat", vat.toString());
-		element.setAttribute("type", type);
 		element.setAttribute("account-reference", accountReference);
 		StringBuilder mpans = new StringBuilder();
 		for (String mpan : mpanStrings) {
