@@ -87,7 +87,6 @@
 						<form action="." method="post">
 							<fieldset>
 								<legend>Update This Bill</legend>
-								<br />
 								<p>
 									<a
 										href="{/source/request/@context-path}/supplies/{/source/bill/supply/@id}/">Supply</a>

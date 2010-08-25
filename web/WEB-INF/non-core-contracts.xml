@@ -5406,7 +5406,7 @@ class SupplySource(DataSource):
                 mpan = generation.getExportMpan()
             tpr_codes = Hiber.session().createQuery("select mr.tpr.code from MeasurementRequirement mr where mr.ssc = :ssc").setEntity('ssc', generation.getSsc()).list()
             bills = []
-            for cand_bill in Hiber.session().createQuery("select distinct read.bill from RegisterRead read where read.bill.supply = :supply and read.bill.batch.contract = :contract and read.bill.startDate.date <= :finishDate and read.bill.finishDate.date >= :searchStart and read.bill.kwh >= 0 order by read.bill.issueDate desc, read.bill.startDate.date").setEntity('supply', supply).setEntity('contract', mpan.getSupplierContract()).setTimestamp('searchStart', start_date.getDate()).setTimestamp('finishDate', finish_date.getDate()).list():
+            for cand_bill in Hiber.session().createQuery("select distinct read.bill from RegisterRead read where read.bill.supply = :supply and read.bill.batch.contract = :contract and read.bill.startDate.date <= :finishDate and read.bill.finishDate.date >= :searchStart and read.bill.type.code != 'W' order by read.bill.issueDate desc, read.bill.startDate.date").setEntity('supply', supply).setEntity('contract', mpan.getSupplierContract()).setTimestamp('searchStart', start_date.getDate()).setTimestamp('finishDate', finish_date.getDate()).list():
                 can_insert = True
                 for bill in bills:
                     if not cand_bill.getStartDate().after(bill.getFinishDate()) and not cand_bill.getFinishDate().before(bill.getStartDate()):

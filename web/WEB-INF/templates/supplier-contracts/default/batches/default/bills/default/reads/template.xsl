@@ -59,7 +59,12 @@
 						<xsl:value-of select="/source/register-reads/bill/@id" />
 					</a>
 					&gt;
-					<xsl:value-of select="'Reads'" />
+					<xsl:value-of select="'Reads ['" />
+					<a
+						href="{/source/request/@context-path}/reports/7/output/?supply-id={/source/register-reads/bill/supply/@id}">
+						<xsl:value-of select="'view'" />
+					</a>
+					<xsl:value-of select="']'" />
 				</p>
 				<xsl:if test="//message">
 					<ul>
@@ -74,17 +79,22 @@
 				<table>
 					<thead>
 						<tr>
-							<th>Chellow Id</th>
-							<th>MPAN</th>
-							<th>Coefficient</th>
-							<th>Units</th>
-							<th>TPR</th>
-							<th>Previous Date</th>
-							<th>Previous Value</th>
-							<th>Previous Type</th>
-							<th>Present Date</th>
-							<th>Present Value</th>
-							<th>Present Type</th>
+							<th rowspan="2">Chellow Id</th>
+							<th rowspan="2">MPAN</th>
+							<th rowspan="2">Coefficient</th>
+							<th rowspan="2">Units</th>
+							<th rowspan="2">TPR</th>
+							<th rowspan="2">Meter Serial Number</th>
+							<th colspan="3">Previous</th>
+							<th colspan="3">Present</th>
+						</tr>
+						<tr>
+							<th>Date</th>
+							<th>Value</th>
+							<th>Type</th>
+							<th>Date</th>
+							<th>Value</th>
+							<th>Type</th>
 						</tr>
 					</thead>
 					<xsl:for-each select="/source/register-reads/register-read">
@@ -109,6 +119,9 @@
 								</a>
 							</td>
 							<td>
+								<xsl:value-of select="@meter-serial-number" />
+							</td>
+							<td>
 								<xsl:value-of
 									select="concat(hh-start-date[@label='previous']/@year, '-', hh-start-date[@label='previous']/@month, '-', hh-start-date[@label='previous']/@day)" />
 							</td>
@@ -131,6 +144,303 @@
 						</tr>
 					</xsl:for-each>
 				</table>
+				<br />
+				<form action="." method="post">
+					<fieldset>
+						<legend>Add new register read</legend>
+						<br />
+						<label>
+							<xsl:value-of select="'MPAN '" />
+							<input name="mpan">
+								<xsl:attribute name="value">
+										<xsl:if test="/source/request/parameters[@name='mpan']">
+											<xsl:value-of
+									select="/source/request/parameters[@name='mpan']/value" />
+										</xsl:if>
+								</xsl:attribute>
+							</input>
+						</label>
+						<br />
+						<label>
+							<xsl:value-of select="'Coefficient '" />
+							<input name="coefficient">
+								<xsl:attribute name="value">
+									<xsl:choose>
+										<xsl:when test="/source/request/parameters[@name='coefficient']">
+											<xsl:value-of
+									select="/source/request/parameters[@name='coefficient']/value" />
+										</xsl:when>
+										<xsl:otherwise>
+											<xsl:value-of select="'1'" />
+										</xsl:otherwise>
+									</xsl:choose>
+								</xsl:attribute>
+							</input>
+
+						</label>
+						<br />
+						<label>
+							<xsl:value-of select="'Meter Serial Number '" />
+							<input name="meter-serial-number">
+								<xsl:attribute name="value">
+										<xsl:if
+									test="/source/request/parameters[@name='meter-serial-number']">
+											<xsl:value-of
+									select="/source/request/parameters[@name='meter-serial-number']/value" />
+										</xsl:if>
+								</xsl:attribute>
+							</input>
+						</label>
+						<br />
+						<label>
+							<xsl:value-of select="'Units '" />
+							<input name="units">
+								<xsl:attribute name="value">
+									<xsl:choose>
+										<xsl:when test="/source/request/parameters[@name='units']">
+											<xsl:value-of
+									select="/source/request/parameters[@name='units']/value" />
+										</xsl:when>
+										<xsl:otherwise>
+											<xsl:value-of select="'kWh'" />
+										</xsl:otherwise>
+									</xsl:choose>
+								</xsl:attribute>
+							</input>
+						</label>
+						<br />
+						<label>
+							<xsl:value-of select="'TPR '" />
+							<input name="tpr-code">
+								<xsl:attribute name="value" size="5" maxlength="5">
+									<xsl:choose>
+										<xsl:when test="/source/request/parameters[@name='tpr-code']">
+											<xsl:value-of
+									select="/source/request/parameters[@name='tpr-code']/value" />
+										</xsl:when>
+										<xsl:otherwise>
+											<xsl:value-of select="'00001'" />
+										</xsl:otherwise>
+									</xsl:choose>
+								</xsl:attribute>
+							</input>
+						</label>
+						<br />
+						<br />
+						<fieldset>
+							<legend>Previous Read</legend>
+							<fieldset>
+								<legend>Date</legend>
+								<input name="previous-year" size="4" maxlength="4">
+									<xsl:attribute name="value">
+									<xsl:choose>
+										<xsl:when test="/source/request/parameter[@name='previous-year']">
+											<xsl:value-of
+										select="/source/request/parameter[@name='previous-year']/value/text()" />
+										</xsl:when>
+										<xsl:otherwise>
+											<xsl:value-of select="/source/date/@year" />
+										</xsl:otherwise>
+									</xsl:choose>
+								</xsl:attribute>
+								</input>
+								-
+								<select name="previous-month">
+									<xsl:for-each select="/source/months/month">
+										<option value="{@number}">
+											<xsl:choose>
+												<xsl:when
+													test="/source/request/parameter[@name='previous-month']">
+													<xsl:if
+														test="/source/request/parameter[@name='previous-month']/value/text() = number(@number)">
+														<xsl:attribute name="selected" />
+													</xsl:if>
+												</xsl:when>
+												<xsl:otherwise>
+													<xsl:if test="/source/date/@month = @number">
+														<xsl:attribute name="selected" />
+													</xsl:if>
+												</xsl:otherwise>
+											</xsl:choose>
+											<xsl:value-of select="@number" />
+										</option>
+									</xsl:for-each>
+								</select>
+								-
+								<select name="previous-day">
+									<xsl:for-each select="/source/days/day">
+										<option value="{@number}">
+											<xsl:choose>
+												<xsl:when test="/source/request/parameter[@name='previous-day']">
+													<xsl:if
+														test="/source/request/parameter[@name='previous-day']/value/text() = @number">
+														<xsl:attribute name="selected" />
+													</xsl:if>
+												</xsl:when>
+												<xsl:otherwise>
+													<xsl:if test="/source/date/@day = @number">
+														<xsl:attribute name="selected" />
+													</xsl:if>
+												</xsl:otherwise>
+											</xsl:choose>
+											<xsl:value-of select="@number" />
+										</option>
+									</xsl:for-each>
+								</select>
+							</fieldset>
+							<br />
+							<label>
+								<xsl:value-of select="'Value '" />
+								<input name="previous-value">
+									<xsl:attribute name="value">
+									<xsl:choose>
+										<xsl:when
+										test="/source/request/parameters[@name='previous-value']">
+											<xsl:value-of
+										select="/source/request/parameters[@name='previous-value']/value" />
+										</xsl:when>
+										<xsl:otherwise>
+											<xsl:value-of select="'0'" />
+										</xsl:otherwise>
+									</xsl:choose>
+								</xsl:attribute>
+								</input>
+							</label>
+							<br />
+							<label>
+								<xsl:value-of select="'Type '" />
+								<select name="previous-type-id">
+									<xsl:for-each select="/source/read-type">
+										<option value="{@id}">
+											<xsl:choose>
+												<xsl:when test="/source/request/parameter[@name='previous-type']">
+													<xsl:if
+														test="/source/request/parameter[@name='previous-type']/value/text() = number(@id)">
+														<xsl:attribute name="selected" />
+													</xsl:if>
+												</xsl:when>
+												<xsl:otherwise>
+													<xsl:if test="@code = 'N'">
+														<xsl:attribute name="selected" />
+													</xsl:if>
+												</xsl:otherwise>
+											</xsl:choose>
+											<xsl:value-of select="concat(@code, ' ', @description)" />
+										</option>
+									</xsl:for-each>
+								</select>
+							</label>
+						</fieldset>
+						<br />
+						<br />
+						<fieldset>
+							<legend>Present Read</legend>
+							<fieldset>
+								<legend>Date</legend>
+								<input name="present-year" size="4" maxlength="4">
+									<xsl:attribute name="value">
+									<xsl:choose>
+										<xsl:when test="/source/request/parameter[@name='present-year']">
+											<xsl:value-of
+										select="/source/request/parameter[@name='present-year']/value/text()" />
+										</xsl:when>
+										<xsl:otherwise>
+											<xsl:value-of select="/source/date/@year" />
+										</xsl:otherwise>
+									</xsl:choose>
+								</xsl:attribute>
+								</input>
+								-
+								<select name="present-month">
+									<xsl:for-each select="/source/months/month">
+										<option value="{@number}">
+											<xsl:choose>
+												<xsl:when test="/source/request/parameter[@name='present-month']">
+													<xsl:if
+														test="/source/request/parameter[@name='present-month']/value/text() = number(@number)">
+														<xsl:attribute name="selected" />
+													</xsl:if>
+												</xsl:when>
+												<xsl:otherwise>
+													<xsl:if test="/source/date/@month = @number">
+														<xsl:attribute name="selected" />
+													</xsl:if>
+												</xsl:otherwise>
+											</xsl:choose>
+											<xsl:value-of select="@number" />
+										</option>
+									</xsl:for-each>
+								</select>
+								-
+								<select name="present-day">
+									<xsl:for-each select="/source/days/day">
+										<option value="{@number}">
+											<xsl:choose>
+												<xsl:when test="/source/request/parameter[@name='present-day']">
+													<xsl:if
+														test="/source/request/parameter[@name='present-day']/value/text() = @number">
+														<xsl:attribute name="selected" />
+													</xsl:if>
+												</xsl:when>
+												<xsl:otherwise>
+													<xsl:if test="/source/date/@day = @number">
+														<xsl:attribute name="selected" />
+													</xsl:if>
+												</xsl:otherwise>
+											</xsl:choose>
+											<xsl:value-of select="@number" />
+										</option>
+									</xsl:for-each>
+								</select>
+							</fieldset>
+							<br />
+							<label>
+								<xsl:value-of select="'Value '" />
+								<input name="present-value">
+									<xsl:attribute name="value">
+									<xsl:choose>
+										<xsl:when test="/source/request/parameters[@name='present-value']">
+											<xsl:value-of
+										select="/source/request/parameters[@name='present-value']/value" />
+										</xsl:when>
+										<xsl:otherwise>
+											<xsl:value-of select="'0'" />
+										</xsl:otherwise>
+									</xsl:choose>
+								</xsl:attribute>
+								</input>
+							</label>
+							<br />
+							<label>
+								<xsl:value-of select="'Type '" />
+								<select name="present-type-id">
+									<xsl:for-each select="/source/read-type">
+										<option value="{@id}">
+											<xsl:choose>
+												<xsl:when test="/source/request/parameter[@name='present-type']">
+													<xsl:if
+														test="/source/request/parameter[@name='present-type']/value/text() = number(@id)">
+														<xsl:attribute name="selected" />
+													</xsl:if>
+												</xsl:when>
+												<xsl:otherwise>
+													<xsl:if test="@code = 'N'">
+														<xsl:attribute name="selected" />
+													</xsl:if>
+												</xsl:otherwise>
+											</xsl:choose>
+											<xsl:value-of select="concat(@code, ' ', @description)" />
+										</option>
+									</xsl:for-each>
+								</select>
+							</label>
+						</fieldset>
+						<br />
+						<br />
+						<input type="submit" value="Update" />
+						<input type="reset" value="Reset" />
+					</fieldset>
+				</form>
 			</body>
 		</html>
 	</xsl:template>

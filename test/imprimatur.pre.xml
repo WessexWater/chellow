@@ -2350,8 +2350,29 @@ def import_virtual_bill(supply_source):
 			<response-code value="200" />
 		</request>
 	</test>
-		<test
-		name="A bill before the begining of a supply should be rejected.">
-		
+	<test name="A bill before the begining of a supply should be rejected.">
+		<request path="/chellow/supplier-contracts/4/batches/6/bills/"
+			method="post">
+			<control name="mpan-core" value="22 9813 2107 763" />
+			<control name="reference" value="test377588" />
+			<control name="issue-year" value="2000" />
+			<control name="issue-month" value="01" />
+			<control name="issue-day" value="13" />
+			<control name="start-year" value="2000" />
+			<control name="start-month" value="02" />
+			<control name="start-day" value="22" />
+			<control name="finish-year" value="2000" />
+			<control name="finish-month" value="03" />
+			<control name="finish-day" value="08" />
+			<control name="kwh" value="0" />
+			<control name="net" value="0" />
+			<control name="vat" value="0" />
+			<control name="account" value="" />
+			<control name="bill-type-id" value="1" />
+			<control name="breakdown" value="" />
+			<control name="status" value="0" />
+			
+			<response-code value="418" />
+		</request>
 	</test>
 </imprimatur>

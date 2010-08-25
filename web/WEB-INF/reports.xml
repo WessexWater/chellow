@@ -1079,8 +1079,8 @@ source.setAttribute('debug', debug)]]></value>
                                                     </td>
                                                     <td rowspan="{../@rows-high}">
  <a
-                                            href="{/source/request/@context-path}/reports/201/output/?bill-type-id={bill-type/@id}"
-                                            title="{bill-type/@description}">
+                                            href="{/source/request/@context-path}/reports/201/output/?bill-type-id={../bill-type/@id}"
+                                            title="{../bill-type/@description}">
                                                         <xsl:value-of select="../bill-type/@code" /></a>
                                                     </td>
                                                     <td rowspan="{../@rows-high}">

@@ -210,6 +210,7 @@ public class Bill extends PersistentEntity implements Urlable {
 		setKwh(new BigDecimal(0));
 		setNet(new BigDecimal(0));
 		setVat(new BigDecimal(0));
+		setIssueDate(new Date());
 		setStartDate(HhStartDate.roundDown(new Date()));
 		setFinishDate(HhStartDate.roundDown(new Date()));
 	}
@@ -361,6 +362,9 @@ public class Bill extends PersistentEntity implements Urlable {
 		}
 		setReference(reference);
 		setAccount(account);
+		if (issueDate == null) {
+			throw new InternalException("The issue date may not be null.");
+		}
 		setIssueDate(issueDate);
 		if (startDate.getDate().after(finishDate.getDate())) {
 			throw new UserException(

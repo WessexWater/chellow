@@ -21,6 +21,8 @@
 package net.sf.chellow.physical;
 
 import java.math.BigDecimal;
+import java.util.Date;
+import java.util.List;
 
 import net.sf.chellow.billing.Bill;
 import net.sf.chellow.monad.Hiber;
@@ -77,8 +79,19 @@ public class RegisterRead extends PersistentEntity {
 			throw new InternalException("The bill must not be null.");
 		}
 		setBill(bill);
+		update(tpr, coefficient, units, meterSerialNumber, mpanStr,
+				previousDate, previousValue, previousType, presentDate,
+				presentValue, presentType);
+	}
+
+	public void update(Tpr tpr, BigDecimal coefficient, Units units,
+			String meterSerialNumber, String mpanStr, HhStartDate previousDate,
+			BigDecimal previousValue, ReadType previousType,
+			HhStartDate presentDate, BigDecimal presentValue,
+			ReadType presentType) throws HttpException {
 		if (tpr == null && units.equals(Units.KWH)) {
-			throw new UserException("If a register read is measuring kWh, there must be a TPR.");
+			throw new UserException(
+					"If a register read is measuring kWh, there must be a TPR.");
 		}
 		setTpr(tpr);
 		setCoefficient(coefficient);
@@ -212,6 +225,29 @@ public class RegisterRead extends PersistentEntity {
 					"This register read has been successfully deleted.")
 					.toXml(doc));
 			inv.sendOk(doc);
+		} else {
+			String tprCode = inv.getString("tpr-code");
+			BigDecimal coefficient = inv.getBigDecimal("coefficient");
+			String units = inv.getString("units");
+			String meterSerialNumber = inv.getString("meter-serial-number");
+			String mpanStr = inv.getString("mpan");
+			Date previousDate = inv.getDate("previous");
+			BigDecimal previousValue = inv.getBigDecimal("previous-value");
+			Long previousTypeId = inv.getLong("previous-type-id");
+			Date presentDate = inv.getDate("present");
+			BigDecimal presentValue = inv.getBigDecimal("present-value");
+			Long presentTypeId = inv.getLong("present-type-id");
+
+			if (!inv.isValid()) {
+				throw new UserException(document());
+			}
+			update(Tpr.getTpr(tprCode), coefficient, Units.getUnits(units),
+					meterSerialNumber, mpanStr, new HhStartDate(previousDate),
+					previousValue, ReadType.getReadType(previousTypeId),
+					new HhStartDate(presentDate), presentValue, ReadType
+							.getReadType(presentTypeId));
+			Hiber.commit();
+			inv.sendOk(document());
 		}
 	}
 
@@ -219,17 +255,18 @@ public class RegisterRead extends PersistentEntity {
 		Hiber.session().delete(this);
 	}
 
+	@SuppressWarnings("unchecked")
 	private Document document() throws HttpException {
 		Document doc = MonadUtils.newSourceDocument();
 		Element source = doc.getDocumentElement();
-		source.appendChild(toXml(doc, new XmlTree("invoice", new XmlTree(
-				"batch", new XmlTree("contract", new XmlTree("provider")
-						.put("organization")))).put(
-				"mpan",
-				new XmlTree("supplyGeneration", new XmlTree("supply"))
-						.put("mpanRaw")).put("tpr")));
+		source.appendChild(toXml(doc, new XmlTree("bill", new XmlTree("batch",
+				new XmlTree("contract"))).put("tpr")));
 		source.appendChild(MonadDate.getMonthsXml(doc));
 		source.appendChild(MonadDate.getDaysXml(doc));
+		for (ReadType type : (List<ReadType>) Hiber.session().createQuery(
+				"from ReadType type order by type.code").list()) {
+			source.appendChild(type.toXml(doc));
+		}
 		return doc;
 	}
 
@@ -237,6 +274,7 @@ public class RegisterRead extends PersistentEntity {
 		Element element = super.toXml(doc, "register-read");
 		element.setAttribute("coefficient", coefficient.toString());
 		element.setAttribute("units", units.toString());
+		element.setAttribute("meter-serial-number", meterSerialNumber);
 		previousDate.setLabel("previous");
 		element.appendChild(previousDate.toXml(doc));
 		element.setAttribute("previous-value", previousValue.toString());

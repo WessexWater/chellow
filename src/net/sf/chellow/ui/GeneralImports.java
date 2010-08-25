@@ -93,11 +93,19 @@ public class GeneralImports implements Urlable, XmlDescriber {
 			long processId = processSerial++;
 			try {
 				String fileName = fileItem.getName();
-
+				int idx = fileName.indexOf(".");
+				if (idx == -1) {
+					throw new UserException(
+							"The file name must contain a '.' character.");
+				}
+				String extension = fileName.substring(idx + 1);
+				if (extension.length() != 3) {
+					throw new UserException("The file name extension '" + extension
+							+ "' must be 3 characters long.");
+				}
 				process = new GeneralImport(getUri().resolve(
 						new UriPathElement(Long.toString(processId))).append(
-						"/"), fileItem.getInputStream(), fileName
-						.substring(fileName.length() - 3));
+						"/"), fileItem.getInputStream(), extension);
 			} catch (IOException e) {
 				throw new InternalException(e);
 			}
