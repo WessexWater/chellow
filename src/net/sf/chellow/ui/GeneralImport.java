@@ -306,7 +306,6 @@ public class GeneralImport extends Thread implements Urlable, XmlDescriber {
 			// "There are errors that need to be corrected before "
 			// + "the file can be imported."));
 			if (csvElement != null) {
-				csvElement.setAttribute("number", String.valueOf(lineNumber));
 				source.appendChild(csvElement);
 			}
 			if (e instanceof InternalException) {
@@ -315,7 +314,6 @@ public class GeneralImport extends Thread implements Urlable, XmlDescriber {
 			}
 		} catch (Throwable e) {
 			if (csvElement != null) {
-				csvElement.setAttribute("number", String.valueOf(lineNumber));
 				source.appendChild(csvElement);
 			}
 			errors.add(new MonadMessage("Programmer Exception: "
@@ -323,6 +321,7 @@ public class GeneralImport extends Thread implements Urlable, XmlDescriber {
 			ChellowLogger.getLogger().log(Level.SEVERE,
 					"From header import process", e);
 		} finally {
+			source.setAttribute("line-number", String.valueOf(lineNumber));
 			Hiber.rollBack();
 			Hiber.close();
 		}

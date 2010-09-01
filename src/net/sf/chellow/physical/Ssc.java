@@ -1,6 +1,6 @@
 /*******************************************************************************
  * 
- *  Copyright (c) 2005, 2009 Wessex Water Services Limited
+ *  Copyright (c) 2005, 2010 Wessex Water Services Limited
  *  
  *  This file is part of Chellow.
  * 
@@ -54,7 +54,7 @@ public class Ssc extends PersistentEntity {
 			}
 			return ssc;
 		} catch (NumberFormatException e) {
-			throw new UserException("An SCC code must be an integer. "
+			throw new UserException("An SSC code must be an integer. "
 					+ e.getMessage());
 		}
 	}

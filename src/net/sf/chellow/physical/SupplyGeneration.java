@@ -465,12 +465,12 @@ public class SupplyGeneration extends PersistentEntity {
 			}
 
 			Ssc ssc = null;
-			String sscStr = GeneralImport.addField(csvElement,
+			String sscCode = GeneralImport.addField(csvElement,
 					"Standard Settlement Configuration", values, 15);
-			if (sscStr.equals(GeneralImport.NO_CHANGE)) {
+			if (sscCode.equals(GeneralImport.NO_CHANGE)) {
 				ssc = existingGeneration.getSsc();
-			} else {
-				ssc = Ssc.getSsc(sscStr);
+			} else if (sscCode.length() > 0) {
+				ssc = Ssc.getSsc(sscCode);
 			}
 
 			String importMpanCoreStr = GeneralImport.addField(csvElement,
@@ -570,7 +570,7 @@ public class SupplyGeneration extends PersistentEntity {
 
 					String exportAgreedSupplyCapacityStr = GeneralImport
 							.addField(csvElement,
-									"Export Agreed Supply Capacity", values, 22);
+									"Export Agreed Supply Capacity", values, 23);
 					if (exportAgreedSupplyCapacityStr
 							.equals(GeneralImport.NO_CHANGE)) {
 						if (existingExportMpan != null) {
@@ -589,7 +589,7 @@ public class SupplyGeneration extends PersistentEntity {
 					}
 
 					String exportSupplierContractName = GeneralImport.addField(
-							csvElement, "Export Supplier Contract", values, 23);
+							csvElement, "Export Supplier Contract", values, 24);
 					if (exportSupplierContractName
 							.equals(GeneralImport.NO_CHANGE)) {
 						if (existingExportMpan != null) {
@@ -601,7 +601,7 @@ public class SupplyGeneration extends PersistentEntity {
 								.getSupplierContract(exportSupplierContractName);
 					}
 					exportSupplierAccount = GeneralImport.addField(csvElement,
-							"Export Supplier Account", values, 24);
+							"Export Supplier Account", values, 25);
 					if (exportSupplierAccount.equals(GeneralImport.NO_CHANGE)) {
 						if (existingExportMpan != null) {
 							exportSupplierAccount = existingExportMpan

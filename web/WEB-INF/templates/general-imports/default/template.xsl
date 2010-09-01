@@ -2,8 +2,8 @@
 <xsl:stylesheet version="1.0"
 	xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
 	<xsl:output method="html" encoding="US-ASCII"
-		doctype-public="-//W3C//DTD HTML 4.01//EN"
-		doctype-system="http://www.w3.org/TR/html4/strict.dtd" indent="yes" />
+		doctype-public="-//W3C//DTD HTML 4.01//EN" doctype-system="http://www.w3.org/TR/html4/strict.dtd"
+		indent="yes" />
 
 	<xsl:template match="/">
 		<html>
@@ -11,8 +11,7 @@
 				<title>
 					Chellow
 					&gt; General Imports &gt;
-					<xsl:value-of
-						select="/source/general-import/@id" />
+					<xsl:value-of select="/source/general-import/@id" />
 				</title>
 
 				<link rel="stylesheet" type="text/css"
@@ -21,18 +20,15 @@
 			<body>
 				<p>
 					<a href="{/source/request/@context-path}/">
-						<img
-							src="{/source/request/@context-path}/logo/" />
+						<img src="{/source/request/@context-path}/logo/" />
 						<span class="logo">Chellow</span>
 					</a>
 					&gt;
-					<a
-						href="{/source/request/@context-path}/general-imports/">
+					<a href="{/source/request/@context-path}/general-imports/">
 						<xsl:value-of select="'General Imports'" />
 					</a>
 					&gt;
-					<xsl:value-of
-						select="/source/general-import/@id" />
+					<xsl:value-of select="/source/general-import/@id" />
 				</p>
 				<xsl:if test="//message">
 					<ul>
@@ -52,25 +48,18 @@
 						<tbody>
 							<xsl:for-each select="/source/csvLine">
 								<tr>
-									<th>Line number</th>
 									<th>Action</th>
 									<th>Type</th>
-									<xsl:for-each
-										select="Field[position() > 2]">
+									<xsl:for-each select="Field[position() &gt; 2]">
 										<th>
-											<xsl:value-of
-												select="@name" />
+											<xsl:value-of select="@name" />
 										</th>
 									</xsl:for-each>
 								</tr>
 								<tr>
-									<td>
-										<xsl:value-of select="@number" />
-									</td>
 									<xsl:for-each select="Field">
 										<td>
-											<xsl:value-of
-												select="text()" />
+											<xsl:value-of select="text()" />
 										</td>
 									</xsl:for-each>
 								</tr>
@@ -79,11 +68,16 @@
 					</table>
 				</xsl:if>
 
-				<xsl:if
-					test="/source/general-import/@progress">
+				<xsl:if test="/source/@line-number">
 					<p>
-						<xsl:value-of
-							select="/source/general-import/@progress" />
+						Stopped at line number
+						<xsl:value-of select="concat(/source/@line-number, '.')" />
+					</p>
+				</xsl:if>
+
+				<xsl:if test="/source/general-import/@progress">
+					<p>
+						<xsl:value-of select="/source/general-import/@progress" />
 					</p>
 					<p>Refresh the page to see latest progress.</p>
 

@@ -4172,32 +4172,29 @@ def mpan_fields(mpan):
         supplier_account = mpan.getSupplierAccount()
     return [mpan_str, ssc_code, supply_capacity, supplier_contract_name, supplier_account]
 
-def print_line(pw, values):
-    pw.println('    <line>')
-    for value in values:
-        if value is None:
-            value = ''
-        else:
-            value = str(value)
-        pw.println('        <value><' + '![CDATA[' + value + ']]' + '></value>')
-    pw.println('    </line>')
-    pw.flush()
-
 
 def print_batches(contract, role_name):
+    reads_query = Hiber.session().createQuery("select read.meterSerialNumber, read.mpanStr, read.coefficient, read.units, read.tpr.code, read.previousDate, read.previousValue, read.previousType.code, read.presentDate, read.presentValue, read.presentType.code from RegisterRead read where read.bill = :bill order by read.id")
+
+    range_11 = range(11)
+
+    bills_query = Hiber.session().createQuery("select bill from Bill bill where bill.batch = :batch order by bill.id")
+
     batches = Hiber.session().createQuery("from Batch batch where batch.contract.id = :contractId order by batch.id").setLong('contractId', contract.getId()).scroll()
     while batches.next():
         batch = batches.get(0)
-        print_line(pw, ['insert', 'batch', role_name, contract.getName(), batch.getReference()])
-        bills = Hiber.session().createQuery("from Bill bill where bill.batch = :batch order by bill.id").setEntity('batch', batch).scroll()
+        print_line(['insert', 'batch', role_name, contract.getName(), batch.getReference()])
+        bills = bills_query.setEntity('batch', batch).scroll()
         while bills.next():
             bill = bills.get(0)
-            values = ['insert', 'bill', role_name, contract.getName(), batch.getReference(), bill.getSupply().getGenerationLast().getMpans().iterator().next().getCore(), MonadDate(bill.getIssueDate()), bill.getStartDate(), bill.getFinishDate(), bill.getNet(), bill.getVat(), bill.getAccount(), bill.getReference(), bill.getType(), bill.getBreakdown(), bill.getKwh()]
-            reads = Hiber.session().createQuery("select read.meterSerialNumber, read.mpanStr, read.coefficient, read.units, read.tpr.code, read.previousDate, read.previousValue, read.previousType.code, read.presentDate, read.presentValue, read.presentType.code from RegisterRead read where read.bill = :bill order by read.id").setEntity('bill', bill).scroll()
+            values = ['insert', 'bill', role_name, contract.getName(), batch.getReference(), bill.getSupply().getMpanCores().iterator().next(), MonadDate(bill.getIssueDate()), bill.getStartDate(), bill.getFinishDate(), bill.getNet(), bill.getVat(), bill.getAccount(), bill.getReference(), bill.getType(), bill.getBreakdown(), bill.getKwh()]
+            reads = reads_query.setEntity('bill', bill).scroll()
             while reads.next():
-                for i in range(11):
-                    values.append(reads.get(i))
-            print_line(pw, values)
+                values += [reads.get(i) for i in range_11]
+            reads.close()
+            print_line(values)
+            Hiber.session().clear()
+        bills.close()
         Hiber.session().clear()
     batches.close()
 
@@ -4213,23 +4210,38 @@ inv.getResponse().setContentType('text/xml')
 inv.getResponse().setHeader('Content-Disposition', 'attachment; filename=output.xml;')
 pw = inv.getResponse().getWriter()
 
-is_core = inv.getBoolean('is-core')
-has_dso_contracts = inv.getBoolean('has-dso-contracts')    
-has_non_core_contracts = inv.getBoolean('has-non-core-contracts')
-has_reports = inv.getBoolean('has-reports')
-has_supplier_contracts = inv.getBoolean('has-supplier-contracts')
-has_hhdc_contracts = inv.getBoolean('has-hhdc-contracts')
-has_mop_contracts = inv.getBoolean('has-mop-contracts')
-has_sites = inv.getBoolean('has-sites')    
-has_supplies = inv.getBoolean('has-supplies')
-has_hh_data = inv.getBoolean('has-hh-data')
-has_users = inv.getBoolean('has-users')
-has_configuration = inv.getBoolean('has-configuration')
-has_channel_snag_ignores = inv.getBoolean('has-channel-snag-ignores')
-has_site_snag_ignores = inv.getBoolean('has-site-snag-ignores')
+def print_line(values):
+    pw.println('    <line>')
+    for value in values:
+        if value is None:
+            value = ''
+        else:
+            value = str(value)
+        pw.println('        <value><' + '![CDATA[' + value + ']]' + '></value>')
+    pw.println('    </line>')
+    pw.flush()
 
-if not inv.isValid():
-    raise UserException()
+if inv.hasParameter('is-core'):
+    is_core = inv.getBoolean('is-core')
+    has_dso_contracts = inv.getBoolean('has-dso-contracts')    
+    has_non_core_contracts = inv.getBoolean('has-non-core-contracts')
+    has_reports = inv.getBoolean('has-reports')
+    has_supplier_contracts = inv.getBoolean('has-supplier-contracts')
+    has_hhdc_contracts = inv.getBoolean('has-hhdc-contracts')
+    has_mop_contracts = inv.getBoolean('has-mop-contracts')
+    has_sites = inv.getBoolean('has-sites')    
+    has_supplies = inv.getBoolean('has-supplies')
+    has_hh_data = inv.getBoolean('has-hh-data')
+    has_users = inv.getBoolean('has-users')
+    has_configuration = inv.getBoolean('has-configuration')
+    has_channel_snag_ignores = inv.getBoolean('has-channel-snag-ignores')
+    has_site_snag_ignores = inv.getBoolean('has-site-snag-ignores')
+
+    if not inv.isValid():
+        raise UserException()
+else:
+    is_core = False
+    has_dso_contracts = has_non_core_contracts = has_reports = has_supplier_contracts = has_hhdc_contracts = has_mop_contracts = has_sites = has_supplies = has_hh_data = has_users = has_configuration = has_channel_snag_ignores = has_site_snag_ignores = True
 
 if has_supplies:
     mpan_core_str = inv.getString('mpan-core')
@@ -4252,7 +4264,7 @@ if has_reports:
         template = report.getTemplate()
         if template is not None:
             template = template.replace("<!" + "[CDATA[", "&" + "lt;![CDATA[").replace("]]" + ">", "]]" + "&" + "gt;")
-        print_line(pw, ['insert', 'report', str(report.getId()), is_core_str, report.getName(), report.getScript().replace("<!" + "[CDATA[", "&" + "lt;![CDATA[").replace("]]" + ">", "]]" + "&" + "gt;"), template])
+        print_line(['insert', 'report', str(report.getId()), is_core_str, report.getName(), report.getScript().replace("<!" + "[CDATA[", "&" + "lt;![CDATA[").replace("]]" + ">", "]]" + "&" + "gt;"), template])
     reports.close()
 
 if has_dso_contracts and is_core:
@@ -4262,10 +4274,10 @@ if has_dso_contracts and is_core:
         contract_name = contract.getName()
         rate_scripts = Hiber.session().createQuery("from RateScript script where script.contract.id = :contractId order by script.startDate.date").setLong('contractId', contract.getId()).list()
         start_rate_script = rate_scripts[0]
-        print_line(pw, ['insert', 'dso-contract', contract.getParty().getCode(), contract.getId(), contract_name, start_rate_script.getStartDate(), rate_scripts[len(rate_scripts) - 1].getFinishDate(), contract.getChargeScript(), start_rate_script.getId(), start_rate_script.getScript()])
+        print_line(['insert', 'dso-contract', contract.getParty().getCode(), contract.getId(), contract_name, start_rate_script.getStartDate(), rate_scripts[len(rate_scripts) - 1].getFinishDate(), contract.getChargeScript(), start_rate_script.getId(), start_rate_script.getScript()])
         for i in range(1, len(rate_scripts)):
             rate_script = rate_scripts[i]
-            print_line(pw, ['insert', 'dso-contract-rate-script', contract.getParty().getCode(), contract.getName(), rate_script.getId(), rate_script.getStartDate(), rate_script.getScript()])
+            print_line(['insert', 'dso-contract-rate-script', contract.getParty().getCode(), contract.getName(), rate_script.getId(), rate_script.getStartDate(), rate_script.getScript()])
     Hiber.session().clear()
     contracts.close()
 
@@ -4283,10 +4295,10 @@ if has_non_core_contracts:
         contract_name = contract.getName()
         rate_scripts = Hiber.session().createQuery("from RateScript script where script.contract = :contract order by script.startDate.date").setEntity('contract', contract).list()
         start_rate_script = rate_scripts[0]
-        print_line(pw, ['insert', 'non-core-contract', contract.getId(), None, contract.getParty().getParticipant().getCode(), contract_name, start_rate_script.getStartDate(), rate_scripts[len(rate_scripts) - 1].getFinishDate(), contract.getChargeScript(), start_rate_script.getId(), start_rate_script.getScript()])
+        print_line(['insert', 'non-core-contract', contract.getId(), None, contract.getParty().getParticipant().getCode(), contract_name, start_rate_script.getId(), start_rate_script.getStartDate(), rate_scripts[len(rate_scripts) - 1].getFinishDate(), contract.getChargeScript(), start_rate_script.getId(), start_rate_script.getScript()])
         for i in range(1, len(rate_scripts)):
             rate_script = rate_scripts[i]
-            print_line(pw, ['insert', 'non-core-contract-rate-script', contract_name, rate_script.getId(), rate_script.getStartDate(), rate_script.getScript()])
+            print_line(['insert', 'non-core-contract-rate-script', contract_name, rate_script.getId(), rate_script.getStartDate(), rate_script.getScript()])
     Hiber.session().clear()
     contracts.close()
 
@@ -4295,19 +4307,19 @@ if has_users:
     users = Hiber.session().createQuery("from User user order by user.id").scroll()
     while users.next():
         user = users.get(0)
-        print_line(pw, ['insert', 'user', user.getEmailAddress(), '', user.getPasswordDigest(), user.getRole().getCode(), '', ''])
+        print_line(['insert', 'user', user.getEmailAddress(), '', user.getPasswordDigest(), user.getRole().getCode(), '', ''])
     users.close()
 
 
 if has_configuration:
-    print_line(pw, ['update', 'configuration', Configuration.getConfiguration().getProperties()])
+    print_line(['update', 'configuration', Configuration.getConfiguration().getProperties()])
 
 
 if has_sites and not is_core:
     sites = Hiber.session().createQuery("from Site site order by site.id").scroll()
     while sites.next():
         site = sites.get(0)
-        print_line(pw, ['insert', 'site', site.getCode(), site.getName()])
+        print_line(['insert', 'site', site.getCode(), site.getName()])
     sites.close()
 
 
@@ -4318,10 +4330,10 @@ if has_hhdc_contracts and not is_core:
         rate_scripts = Hiber.session().createQuery("from RateScript script where script.contract.id = :contractId order by script.startDate.date").setLong('contractId', contract.getId()).list()
         start_rate_script = contract.getStartRateScript()
         finish_rate_script = contract.getFinishRateScript()
-        print_line(pw, ['insert', 'hhdc-contract', contract.getId(), contract.getParty().getParticipant().getCode(), contract.getName(), start_rate_script.getStartDate(), finish_rate_script.getFinishDate(), contract.getChargeScript(), contract.getProperties(), contract.getState(), start_rate_script.getId(), start_rate_script.getScript()])
+        print_line(['insert', 'hhdc-contract', contract.getId(), contract.getParty().getParticipant().getCode(), contract.getName(), start_rate_script.getId(), start_rate_script.getStartDate(), finish_rate_script.getFinishDate(), contract.getChargeScript(), contract.getProperties(), contract.getState(), start_rate_script.getId(), start_rate_script.getScript()])
         if len(rate_scripts) > 1:
             for rate_script in rate_scripts[1:]:
-                print_line(pw, ['insert', 'hhdc-contract-rate-script', contract.getName(), rate_script.getId(), rate_script.getStartDate(), rate_script.getScript()])
+                print_line(['insert', 'hhdc-contract-rate-script', contract.getName(), rate_script.getId(), rate_script.getStartDate(), rate_script.getScript()])
         Hiber.session().clear()
     contracts.close()
 
@@ -4332,10 +4344,10 @@ if has_mop_contracts and not is_core:
         contract = contracts.get(0)
         rate_scripts = Hiber.session().createQuery("from RateScript script where script.contract.id = :contractId order by script.startDate.date").setLong('contractId', contract.getId()).list()
         start_rate_script = rate_scripts[0]
-        print_line(pw, ['insert', 'mop-contract', contract.getId(), contract.getParty().getParticipant().getCode(), contract.getName(), start_rate_script.getStartDate(), contract.getChargeScript(), contract.getProperties(), contract.getState(), start_rate_script.getScript()])
+        print_line(['insert', 'mop-contract', contract.getId(), contract.getParty().getParticipant().getCode(), contract.getName(), start_rate_script.getStartDate(), contract.getChargeScript(), contract.getProperties(), contract.getState(), start_rate_script.getId(), start_rate_script.getScript()])
         if len(rate_scripts) > 1:
             for rate_script in rate_scripts[1:]:
-                print_line(pw, ['insert', 'mop-contract-rate-script', contract.getName(), rate_script.getId(), rate_script.getStartDate(), rate_script.getScript()])
+                print_line(['insert', 'mop-contract-rate-script', contract.getName(), rate_script.getId(), rate_script.getStartDate(), rate_script.getScript()])
         Hiber.session().clear()
     contracts.close()
 
@@ -4348,11 +4360,11 @@ if has_supplier_contracts and not is_core:
         rate_scripts = Hiber.session().createQuery("from RateScript script where script.contract.id = :contractId order by script.startDate.date").setLong('contractId', contract.getId()).list()
         start_rate_script = rate_scripts[0]
         finish_rate_script = rate_scripts[len(rate_scripts) - 1]
-        print_line(pw, ['insert', 'supplier-contract', contract.getId(), contract.getParty().getParticipant().getCode(), contract_name, start_rate_script.getStartDate(), finish_rate_script.getFinishDate(), contract.getChargeScript(), start_rate_script.getId(), start_rate_script.getScript()])
+        print_line(['insert', 'supplier-contract', contract.getId(), contract.getParty().getParticipant().getCode(), contract_name, start_rate_script.getStartDate(), finish_rate_script.getFinishDate(), contract.getChargeScript(), start_rate_script.getId(), start_rate_script.getScript()])
         if len(rate_scripts) > 1:
             for i in range(1, len(rate_scripts)):
                 rate_script = rate_scripts[i]
-                print_line(pw, ['insert', 'supplier-contract-rate-script', contract.getName(), rate_script.getId(), rate_script.getStartDate(), rate_script.getScript()])
+                print_line(['insert', 'supplier-contract-rate-script', contract.getName(), rate_script.getId(), rate_script.getStartDate(), rate_script.getScript()])
         Hiber.session().clear()
     contracts.close()
 
@@ -4406,7 +4418,7 @@ if has_supplies and not is_core:
         values.append(first_generation.getMeterSerialNumber())
         values = values + mpan_fields(first_generation.getImportMpan())
         values = values + mpan_fields(first_generation.getExportMpan())
-        print_line(pw, values)
+        print_line(values)
         generations = Hiber.session().createQuery("from SupplyGeneration generation where generation.supply = :supply order by generation.startDate.date").setEntity('supply', supply).scroll()
         generations.next()
         while generations.next():
@@ -4437,7 +4449,7 @@ if has_supplies and not is_core:
             values.append(generation.getMeterSerialNumber())
             values = values + mpan_fields(generation.getImportMpan())
             values = values + mpan_fields(generation.getExportMpan())
-            print_line(pw, values)
+            print_line(values)
         generations.beforeFirst()
         while generations.next():
             generation = generations.get(0)
@@ -4446,7 +4458,7 @@ if has_supplies and not is_core:
             site_supply_generations = Hiber.session().createQuery("from SiteSupplyGeneration siteSupplyGeneration where siteSupplyGeneration.supplyGeneration = :supplyGeneration and siteSupplyGeneration.isPhysical is false").setEntity('supplyGeneration', generation).scroll()
             while site_supply_generations.next():
                 site_supply_generation = site_supply_generations.get(0)
-                print_line(pw, ['insert', 'site-supply-generation', site_supply_generation.getSite().getCode(), first_generation.getMpans().iterator().next().getCore(), start_date, 'false'])
+                print_line(['insert', 'site-supply-generation', site_supply_generation.getSite().getCode(), first_generation.getMpans().iterator().next().getCore(), start_date, 'false'])
             site_supply_generations.close()
             query = "select datum.startDate, datum.value, datum.status from HhDatum datum where datum.channel.supplyGeneration.supply = :supply and datum.channel.isImport = :isImport and datum.channel.isKwh = :isKwh and datum.startDate.date >= :startDate"
             if finish_date is None:
@@ -4509,7 +4521,7 @@ if has_channel_snag_ignores and not is_core:
     while snags.next():
         snag = snags.get(0)
         channel = snag.getChannel()
-        print_line(pw, ['insert', 'channel-snag-ignore', channel.getSupplyGeneration().getMpans().iterator().next().getCore().toString(), Boolean(channel.getIsImport()), Boolean(channel.getIsKwh()), snag.getDescription(), snag.getStartDate(), snag.getFinishDate()])
+        print_line(['insert', 'channel-snag-ignore', channel.getSupplyGeneration().getMpans().iterator().next().getCore().toString(), Boolean(channel.getIsImport()), Boolean(channel.getIsKwh()), snag.getDescription(), snag.getStartDate(), snag.getFinishDate()])
         Hiber.session().clear()
     snags.close()
 
@@ -4518,7 +4530,7 @@ if has_site_snag_ignores and not is_core:
     snags = Hiber.session().createQuery("from SiteSnag snag where snag.isIgnored is true").scroll()
     while snags.next():
         snag = snags.get(0)
-        print_line(pw, ['insert', 'site-snag-ignore', snag.getSite().getCode(), snag.getDescription(), snag.getStartDate(), snag.getFinishDate()])
+        print_line(['insert', 'site-snag-ignore', snag.getSite().getCode(), snag.getDescription(), snag.getStartDate(), snag.getFinishDate()])
         Hiber.session().clear()
     snags.close()
 
