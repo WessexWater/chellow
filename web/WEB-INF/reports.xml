@@ -9607,7 +9607,7 @@ if inv.hasParameter('site-id'):
     bill_titles = ['net-gbp']
 elif inv.hasParameter('contract-id'):
     contract_id = inv.getLong('contract-id')
-    site_query = Hiber.session().createQuery("from Site site order by site.code")
+    site_query = Hiber.session().createQuery("select distinct ssgen.site from SiteSupplyGeneration ssgen join ssgen.supplyGeneration.mpans mpan where (ssgen.supplyGeneration.supply.source.code in ('gen', 'gen-net') or (ssgen.supplyGeneration.supply.source.code in ('net', 'gen-net') and mpan.llfc.isImport is false)) and ssgen.supplyGeneration.startDate.date <= :finishDate and (ssgen.supplyGeneration.finishDate is null or ssgen.supplyGeneration.finishDate.date >= :startDate) order by ssgen.site.code").setTimestamp('startDate', start_date.getDate()).setTimestamp('finishDate', finish_date.getDate())
     contract = SupplierContract.getSupplierContract(contract_id)
     bill_titles = comterp.get('contract_function')(contract, 'displaced_virtual_bill_titles')()
 else:

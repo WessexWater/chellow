@@ -87,7 +87,7 @@ public class HhStartDate extends MonadDate {
 		}
 	}
 
-	protected static long roundUp(Calendar cal, long date) {
+	public static long roundUp(Calendar cal, long date) {
 		cal.clear();
 		cal.setTimeInMillis(date);
 		if (cal.get(Calendar.MILLISECOND) > 0) {
