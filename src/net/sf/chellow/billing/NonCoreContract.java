@@ -61,8 +61,10 @@ public class NonCoreContract extends Contract {
 
 	public static NonCoreContract findNonCoreContract(String name)
 			throws HttpException {
-		return (NonCoreContract) Hiber.session().createQuery(
-				"from NonCoreContract contract where contract.name = :name")
+		return (NonCoreContract) Hiber
+				.session()
+				.createQuery(
+						"from NonCoreContract contract where contract.name = :name")
 				.setString("name", name).uniqueResult();
 	}
 
@@ -85,24 +87,24 @@ public class NonCoreContract extends Contract {
 			Participant participant = Participant
 					.getParticipant(participantCode);
 			String name = GeneralImport.addField(csvElement, "Name", values, 3);
-			String startDateStr = GeneralImport.addField(csvElement,
-					"Start Date", values, 4);
-			HhStartDate startDate = new HhStartDate(startDateStr);
-			String finishDateStr = GeneralImport.addField(csvElement,
-					"Finish Date", values, 5);
-			HhStartDate finishDate = finishDateStr.trim().length() == 0 ? null
-					: new HhStartDate(finishDateStr);
 			String chargeScript = GeneralImport.addField(csvElement,
-					"Charge Script", values, 6);
+					"Charge Script", values, 4);
 			String rateScriptIdStr = GeneralImport.addField(csvElement,
-					"Rate Script Id", values, 7);
+					"Rate Script Id", values, 5);
 			Long rateScriptId = rateScriptIdStr.length() > 0 ? new Long(
 					rateScriptIdStr) : null;
-
+			String startDateStr = GeneralImport.addField(csvElement,
+					"Start Date", values, 6);
+			HhStartDate startDate = new HhStartDate(startDateStr);
+			String finishDateStr = GeneralImport.addField(csvElement,
+					"Finish Date", values, 7);
+			HhStartDate finishDate = finishDateStr.trim().length() == 0 ? null
+					: new HhStartDate(finishDateStr);
 			String rateScript = GeneralImport.addField(csvElement,
 					"Rate Script", values, 8);
 			NonCoreContract.insertNonCoreContract(id, isCore, participant,
-					name, startDate, finishDate, chargeScript, rateScriptId, rateScript);
+					name, startDate, finishDate, chargeScript, rateScriptId,
+					rateScript);
 		} else if (action.equals("update")) {
 			/*
 			 * String script = values[3];
@@ -139,7 +141,8 @@ public class NonCoreContract extends Contract {
 				name, startDate, finishDate, chargeScript);
 		Hiber.session().save(contract);
 		Hiber.session().flush();
-		contract.insertFirstRateScript(rateScriptId, startDate, finishDate, rateScript);
+		contract.insertFirstRateScript(rateScriptId, startDate, finishDate,
+				rateScript);
 		return contract;
 	}
 
@@ -152,8 +155,8 @@ public class NonCoreContract extends Contract {
 			String name, HhStartDate startDate, HhStartDate finishDate,
 			String chargeScript) throws HttpException {
 		super(id, isCore, name, startDate, finishDate, chargeScript);
-		setParty(Provider.getProvider(participant, MarketRole
-				.getMarketRole(MarketRole.NON_CORE_ROLE)));
+		setParty(Provider.getProvider(participant,
+				MarketRole.getMarketRole(MarketRole.NON_CORE_ROLE)));
 		internalUpdate(name, chargeScript);
 	}
 
@@ -271,6 +274,6 @@ public class NonCoreContract extends Contract {
 	@Override
 	void onUpdate(HhStartDate from, HhStartDate to) throws HttpException {
 		// TODO Auto-generated method stub
-		
+
 	}
 }

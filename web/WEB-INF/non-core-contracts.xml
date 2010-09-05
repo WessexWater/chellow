@@ -7,9 +7,6 @@
         <value><![CDATA[]]></value>
         <value><![CDATA[POOL]]></value>
         <value><![CDATA[aahedc]]></value>
-        <value><![CDATA[61]]></value>
-        <value><![CDATA[2000-11-26T00:00Z]]></value>
-        <value><![CDATA[]]></value>
         <value><![CDATA[from net.sf.chellow.physical import HhStartDate
 
 def hh(bill, supply_source):
@@ -21,6 +18,8 @@ def hh(bill, supply_source):
     bill['aahedc-rate'] = supply_source.comterp.get('rate')(rate_script, 'aahedc_gbp_per_gsp_kwh')
     bill['aahedc-gbp'] = bill['aahedc-gsp-kwh'] * bill['aahedc-rate']]]></value>
         <value><![CDATA[61]]></value>
+        <value><![CDATA[2000-11-26T00:00Z]]></value>
+        <value><![CDATA[]]></value>
         <value><![CDATA[def aahedc_gbp_per_gsp_kwh():
     return 0.00016456]]></value>
     </line>
@@ -40,9 +39,6 @@ def hh(bill, supply_source):
         <value><![CDATA[]]></value>
         <value><![CDATA[CALB]]></value>
         <value><![CDATA[bill-parser-bgb.edi]]></value>
-        <value><![CDATA[109]]></value>
-        <value><![CDATA[2010-05-25T00:00Z]]></value>
-        <value><![CDATA[]]></value>
         <value><![CDATA[from net.sf.chellow.billing import BillParser, RawBill, NonCoreContract, BillType
 from net.sf.chellow.physical import ReadType, HhStartDate, Units, RawRegisterRead, Tpr
 from org.python.util import PythonInterpreter
@@ -145,6 +141,8 @@ class Parser(BillParser):
     def getProgress(self):
         return "Reached line " + str(self.parser.lreader.getLineNumber()) + " of first passs. " + self.debug_str]]></value>
         <value><![CDATA[109]]></value>
+        <value><![CDATA[2010-05-25T00:00Z]]></value>
+        <value><![CDATA[]]></value>
         <value><![CDATA[]]></value>
     </line>
     <line>
@@ -154,9 +152,6 @@ class Parser(BillParser):
         <value><![CDATA[]]></value>
         <value><![CDATA[CALB]]></value>
         <value><![CDATA[bill-parser-csv]]></value>
-        <value><![CDATA[111]]></value>
-        <value><![CDATA[2010-05-26T00:00Z]]></value>
-        <value><![CDATA[]]></value>
         <value><![CDATA[from net.sf.chellow.billing import BillParser, RawBill, BillType
 from java.text import SimpleDateFormat, DecimalFormat
 from java.util import Locale, TimeZone
@@ -204,6 +199,8 @@ class Parser(BillParser):
     def getProgress(self):
         return "Reached line " + str(self.shredder.getLastLineNumber()) + " of first passs. " + self.debug_str]]></value>
         <value><![CDATA[111]]></value>
+        <value><![CDATA[2010-05-26T00:00Z]]></value>
+        <value><![CDATA[]]></value>
         <value><![CDATA[]]></value>
     </line>
     <line>
@@ -213,9 +210,6 @@ class Parser(BillParser):
         <value><![CDATA[]]></value>
         <value><![CDATA[CALB]]></value>
         <value><![CDATA[bill-parser-gdf.csv]]></value>
-        <value><![CDATA[113]]></value>
-        <value><![CDATA[2010-01-01T00:00Z]]></value>
-        <value><![CDATA[]]></value>
         <value><![CDATA[from net.sf.chellow.billing import BillParser, RawBill, BillType
 from java.text import SimpleDateFormat
 from java.util import Locale, TimeZone
@@ -259,6 +253,8 @@ class Parser(BillParser):
     def getProgress(self):
         return "Reached line " + str(self.shredder.getLastLineNumber()) + " of first passs. " + self.debug_str]]></value>
         <value><![CDATA[113]]></value>
+        <value><![CDATA[2010-01-01T00:00Z]]></value>
+        <value><![CDATA[]]></value>
         <value><![CDATA[]]></value>
     </line>
     <line>
@@ -268,9 +264,6 @@ class Parser(BillParser):
         <value><![CDATA[]]></value>
         <value><![CDATA[CALB]]></value>
         <value><![CDATA[bill-parser-mm]]></value>
-        <value><![CDATA[115]]></value>
-        <value><![CDATA[2010-05-25T00:00Z]]></value>
-        <value><![CDATA[]]></value>
         <value><![CDATA[from net.sf.chellow.billing import BillParser, RawBill, BillType
 from java.io import LineNumberReader, IOException
 from java.text import SimpleDateFormat, ParseException
@@ -333,6 +326,8 @@ class Parser(BillParser):
     def getProgress(self):
         return "Reached line " + str(self.lreader.getLineNumber()) + " of first passs."]]></value>
         <value><![CDATA[115]]></value>
+        <value><![CDATA[2010-05-25T00:00Z]]></value>
+        <value><![CDATA[]]></value>
         <value><![CDATA[]]></value>
     </line>
     <line>
@@ -342,9 +337,6 @@ class Parser(BillParser):
         <value><![CDATA[]]></value>
         <value><![CDATA[CALB]]></value>
         <value><![CDATA[bill-parser-sse.edi]]></value>
-        <value><![CDATA[117]]></value>
-        <value><![CDATA[2010-05-24T00:00Z]]></value>
-        <value><![CDATA[]]></value>
         <value><![CDATA[from java.io import LineNumberReader
 from org.python.util import PythonInterpreter
 from net.sf.chellow.physical import ReadType, HhStartDate, Units, RawRegisterRead, Tpr
@@ -488,6 +480,8 @@ class Parser(BillParser):
     def getProgress(self):
         return "Reached line " + str(self.parser.lreader.getLineNumber()) + "." + self.debug_str]]></value>
         <value><![CDATA[117]]></value>
+        <value><![CDATA[2010-05-24T00:00Z]]></value>
+        <value><![CDATA[]]></value>
         <value><![CDATA[]]></value>
     </line>
     <line>
@@ -497,9 +491,6 @@ class Parser(BillParser):
         <value><![CDATA[]]></value>
         <value><![CDATA[CALB]]></value>
         <value><![CDATA[bsuos]]></value>
-        <value><![CDATA[119]]></value>
-        <value><![CDATA[2009-03-01T00:00Z]]></value>
-        <value><![CDATA[]]></value>
         <value><![CDATA[from net.sf.chellow.physical import HhStartDate
 
 def hh(bill, supply_source, hh_data):
@@ -507,6 +498,8 @@ def hh(bill, supply_source, hh_data):
     rates = supply_source.comterp.get('rate')(rate_script, 'rates')
     bill['bsuos-actual-gbp'] = sum(datum['gsp-kwh'] * rates.get(('%02d' % datum['utc-day']) + ' ' + ('%02d' % datum['utc-hour']) + ':' + ('%02d' % datum['utc-minute']) + ' Z', 0) for datum in hh_data)]]></value>
         <value><![CDATA[119]]></value>
+        <value><![CDATA[2009-03-01T00:00Z]]></value>
+        <value><![CDATA[]]></value>
         <value><![CDATA[def rates():
     return {
 '2009-03-01 00:00 Z': 0.00034693,
@@ -7895,9 +7888,6 @@ def hh(bill, supply_source, hh_data):
         <value><![CDATA[]]></value>
         <value><![CDATA[POOL]]></value>
         <value><![CDATA[ccl]]></value>
-        <value><![CDATA[141]]></value>
-        <value><![CDATA[2007-04-01T00:30Z]]></value>
-        <value><![CDATA[]]></value>
         <value><![CDATA[def ccl_month_gbp(bill, data_source, whole_data):
     bill.setdefault('ccl-kwh', 0)
     bill.setdefault('ccl-gbp', 0)
@@ -7919,6 +7909,8 @@ def hh(bill, supply_source, hh_data):
         bill[prefix + '-kwh'] += month_kwh
         bill[prefix + '-gbp'] += month_kwh * rate]]></value>
         <value><![CDATA[141]]></value>
+        <value><![CDATA[2007-04-01T00:30Z]]></value>
+        <value><![CDATA[]]></value>
         <value><![CDATA[def ccl_rate():
     return 0.004410]]></value>
     </line>
@@ -7947,9 +7939,6 @@ def hh(bill, supply_source, hh_data):
         <value><![CDATA[]]></value>
         <value><![CDATA[POOL]]></value>
         <value><![CDATA[computer]]></value>
-        <value><![CDATA[143]]></value>
-        <value><![CDATA[2009-11-27T00:00Z]]></value>
-        <value><![CDATA[]]></value>
         <value><![CDATA[from net.sf.chellow.billing import NonCoreContract
 from net.sf.chellow.physical import HhStartDate, MpanCore, Site, ReadType, Units
 from java.util import GregorianCalendar, TimeZone, Locale, Calendar, Date
@@ -8614,6 +8603,8 @@ def displaced_mpan(site_group, start_date, finish_date):
     else:
         return None]]></value>
         <value><![CDATA[143]]></value>
+        <value><![CDATA[2009-11-27T00:00Z]]></value>
+        <value><![CDATA[]]></value>
         <value><![CDATA[]]></value>
     </line>
     <line>
@@ -8623,9 +8614,6 @@ def displaced_mpan(site_group, start_date, finish_date):
         <value><![CDATA[]]></value>
         <value><![CDATA[CALB]]></value>
         <value><![CDATA[tlms]]></value>
-        <value><![CDATA[145]]></value>
-        <value><![CDATA[2000-04-01T00:00Z]]></value>
-        <value><![CDATA[]]></value>
         <value><![CDATA[from net.sf.chellow.physical import HhStartDate
 
 def hh(data_source, hh_data):
@@ -8634,6 +8622,8 @@ def hh(data_source, hh_data):
     for datum in hh_data:
         datum['nbp-kwh'] = datum['gsp-kwh'] * tlms.get(('%02d' % datum['utc-day']) + ' ' + ('%02d' % datum['utc-hour']) + ':' + ('%02d' % datum['utc-minute']) + ' Z', 0)]]></value>
         <value><![CDATA[145]]></value>
+        <value><![CDATA[2000-04-01T00:00Z]]></value>
+        <value><![CDATA[]]></value>
         <value><![CDATA[def tlms():
     return {
 '01 00:00 Z': 1.0082451,
@@ -11581,9 +11571,6 @@ def hh(data_source, hh_data):
         <value><![CDATA[]]></value>
         <value><![CDATA[POOL]]></value>
         <value><![CDATA[TRIAD]]></value>
-        <value><![CDATA[147]]></value>
-        <value><![CDATA[2005-04-01T00:00Z]]></value>
-        <value><![CDATA[]]></value>
         <value><![CDATA[from net.sf.chellow.billing import NonCoreContract
 from net.sf.chellow.physical import HhStartDate, MpanCore
 from net.sf.chellow.monad.types import MonadDate
@@ -11708,6 +11695,8 @@ def triad_calc(bill, prefix, dso_contract, triad_data, financial_year_start, dat
     bill[prefix + '-gsp-kw'] = gsp_kw / 3
     bill[prefix + '-rate'] = data_source.rate(dso_contract.rateScript(financial_year_start), 'triad')]]></value>
         <value><![CDATA[147]]></value>
+        <value><![CDATA[2005-04-01T00:00Z]]></value>
+        <value><![CDATA[]]></value>
         <value><![CDATA[from net.sf.chellow.physical import HhStartDate
 
 def triad_dates():
@@ -11775,11 +11764,10 @@ def triad_dates():
         <value><![CDATA[]]></value>
         <value><![CDATA[POOL]]></value>
         <value><![CDATA[vat]]></value>
+        <value><![CDATA[]]></value>
         <value><![CDATA[149]]></value>
         <value><![CDATA[2010-03-25T00:00Z]]></value>
         <value><![CDATA[]]></value>
-        <value><![CDATA[]]></value>
-        <value><![CDATA[149]]></value>
         <value><![CDATA[]]></value>
     </line>
 </csv>

@@ -96,9 +96,9 @@ public class Report extends PersistentEntity {
 	}
 
 	public static Report getReport(String name) throws HttpException {
-		Report report = (Report) Hiber.session().createQuery(
-				"from Report report where report.name = :name").setString(
-				"name", name).uniqueResult();
+		Report report = (Report) Hiber.session()
+				.createQuery("from Report report where report.name = :name")
+				.setString("name", name).uniqueResult();
 		if (report == null) {
 			throw new NotFoundException("Can't find the report '" + name + "'.");
 		}
@@ -243,29 +243,18 @@ public class Report extends PersistentEntity {
 		ServletContext ctx = inv.getMonad().getServletConfig()
 				.getServletContext();
 		Map<Long, String> request_map = (Map<Long, String>) ctx
-				.getAttribute("net.sf.chellow.request_map");
-		request_map.put(Thread.currentThread().getId(), inv.getRequest()
-				.getRequestURL().append(
-						'?' + inv.getRequest().getQueryString() + ' '
+				.getAttribute(ContextListener.CONTEXT_REQUEST_MAP);
+		request_map.put(
+				Thread.currentThread().getId(),
+				inv.getRequest()
+						.getRequestURL()
+						.append('?' + inv.getRequest().getQueryString() + ' '
 								+ new MonadDate() + ' '
 								+ inv.getRequest().getRemoteAddr()).toString());
 
 		try {
 			interp.exec(script);
-			/*
-			 * } catch (PyException e) {
-			 * inv.getResponse().setContentType("text/html"); Object obj =
-			 * e.value.__tojava__(HttpException.class); if (obj instanceof
-			 * HttpException) { throw (HttpException) obj; } else { throw new
-			 * UserException(e.toString()); }
-			 */
 		} catch (Throwable e) {
-			/*
-			 * if (out.toString().length() > 0) { source.appendChild(new
-			 * MonadMessage(out.toString()).toXml(doc)); } if
-			 * (err.toString().length() > 0) { source.appendChild(new
-			 * MonadMessage(err.toString()).toXml(doc)); }
-			 */
 			throw new UserException(e.getMessage() + " "
 					+ HttpException.getStackTraceString(e));
 		}
@@ -330,8 +319,8 @@ public class Report extends PersistentEntity {
 
 	public Element toXml(Document doc) throws HttpException {
 		Element element = super.toXml(doc, "report");
-		element.setAttribute("is-core", new Boolean(getId() % 2 == 1)
-				.toString());
+		element.setAttribute("is-core",
+				new Boolean(getId() % 2 == 1).toString());
 		element.setAttribute("name", name);
 		Element scriptElement = doc.createElement("script");
 		element.appendChild(scriptElement);

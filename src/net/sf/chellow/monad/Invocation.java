@@ -1,6 +1,6 @@
 /*******************************************************************************
  * 
- *  Copyright (c) 2005, 2009 Wessex Water Services Limited
+ *  Copyright (c) 2005, 2010 Wessex Water Services Limited
  *  
  *  This file is part of Chellow.
  * 
@@ -36,11 +36,10 @@ import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
@@ -154,19 +153,6 @@ public class Invocation {
 	public Monad getMonad() {
 		return monad;
 	}
-
-	/*
-	 * will implement when need site and case public File getTemplateDirectory()
-	 * throws DeployerException, ProgrammerException { MonadProperties
-	 * properties = MonadProperties.newInstance(); File sitesDirectory =
-	 * properties.getSitesDirectory(); File templateDirectory = new
-	 * File(properties.getSitesDirectory(), req.getServerName() + File.separator
-	 * + "templates");
-	 * 
-	 * if (sitesDirectory == null) { sitesUrl =
-	 * context.getResource("/WEB-INF/sites/"
-	 * UtilsBO.checkDirectory(templateDirectory); return templateDirectory; }
-	 */
 
 	public String[] getParameterValues(ParameterName paramName) {
 		String[] values = null;
@@ -299,7 +285,7 @@ public class Invocation {
 			return null;
 		}
 	}
-	
+
 	public BigInteger getBigInteger(String paramName) throws InternalException {
 		if (hasParameter(paramName)) {
 			return new BigInteger(getString(paramName));
@@ -443,8 +429,8 @@ public class Invocation {
 			headerElement.setAttribute("value", entry.getValue().toString());
 			responseElement.appendChild(headerElement);
 		}
-		responseElement.setAttribute("status-code", Integer
-				.toString(responseStatusCode));
+		responseElement.setAttribute("status-code",
+				Integer.toString(responseStatusCode));
 		return responseElement;
 	}
 
@@ -471,8 +457,7 @@ public class Invocation {
 		}
 		if (ServletFileUpload
 				.isMultipartContent(new ServletRequestContext(req))) {
-			for (Iterator it = multipartItems.iterator(); it.hasNext();) {
-				FileItem item = (FileItem) it.next();
+			for (FileItem item : multipartItems) {
 				requestElement.appendChild(new HttpParameter(new ParameterName(
 						item.getFieldName()), item.isFormField() ? item
 						.getString() : item.getName()).toXml(doc));
@@ -637,8 +622,8 @@ public class Invocation {
 	}
 
 	public void sendUnauthorized(String message) throws InternalException {
-		res.setHeader("WWW-Authenticate", "Basic realm=\""
-				+ monad.getRealmName() + "\"");
+		res.setHeader("WWW-Authenticate",
+				"Basic realm=\"" + monad.getRealmName() + "\"");
 		try {
 			res.sendError(HttpServletResponse.SC_UNAUTHORIZED, message);
 		} catch (IOException e) {
@@ -665,9 +650,9 @@ public class Invocation {
 
 	public void sendSeeOther(MonadUri uri) throws InternalException {
 		try {
-			URI locationUri = new URI(req.getScheme(), null, req
-					.getServerName(), req.getServerPort(), req.getContextPath()
-					+ uri.toString(), null, null);
+			URI locationUri = new URI(req.getScheme(), null,
+					req.getServerName(), req.getServerPort(),
+					req.getContextPath() + uri.toString(), null, null);
 			res.setHeader("Location", locationUri.toString());
 			res.sendError(HttpServletResponse.SC_SEE_OTHER);
 		} catch (IOException e) {

@@ -1,6 +1,6 @@
 /*******************************************************************************
  * 
- *  Copyright (c) 2005, 2009 Wessex Water Services Limited
+ *  Copyright (c) 2005, 2010 Wessex Water Services Limited
  *  
  *  This file is part of Chellow.
  * 
@@ -22,7 +22,6 @@
 package net.sf.chellow.monad.types;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -39,11 +38,11 @@ import org.w3c.dom.Node;
 public abstract class MonadObject implements MonadValidatable, XmlDescriber {
 	private String label = null;
 
-	//private String typeName = null;
+	// private String typeName = null;
 
 	public MonadObject(String typeName, String label) {
 		setLabel(label);
-		//this.typeName = typeName;
+		// this.typeName = typeName;
 	}
 
 	public MonadObject(String label) {
@@ -60,18 +59,13 @@ public abstract class MonadObject implements MonadValidatable, XmlDescriber {
 	public String getLabel() {
 		return label;
 	}
-/*
-	public String getTypeName() {
-		if (typeName == null) {
-			typeName = this.getClass().getSimpleName();
-		}
-		return typeName;
-	}
 
-	protected void setTypeName(String typeName) {
-		this.typeName = typeName;
-	}
-*/
+	/*
+	 * public String getTypeName() { if (typeName == null) { typeName =
+	 * this.getClass().getSimpleName(); } return typeName; }
+	 * 
+	 * protected void setTypeName(String typeName) { this.typeName = typeName; }
+	 */
 	public Node toXml(Document doc, String elementName) throws HttpException {
 		Element element = doc.createElement(elementName);
 
@@ -92,27 +86,24 @@ public abstract class MonadObject implements MonadValidatable, XmlDescriber {
 	public Node toXml(Document doc, XmlTree tree) throws HttpException {
 		Node node = toXml(doc);
 
-		for (Iterator<String> it = tree.keyIterator(); it.hasNext();) {
-			String methodBase = it.next();
+		for (String methodBase : tree.keySet()) {
 			XmlTree nestedTree = tree.get(methodBase);
 			String methodName = "get"
 					+ methodBase.substring(0, 1).toUpperCase()
 					+ methodBase.substring(1);
 
 			try {
-				Object obj = this.getClass().getMethod(methodName,
-						new Class<?>[] {}).invoke(this, new Object[] {});
+				Object obj = this.getClass()
+						.getMethod(methodName, new Class<?>[] {})
+						.invoke(this, new Object[] {});
 				if (obj != null) {
 					if (obj instanceof Set) {
 						for (XmlDescriber jt : ((Set<XmlDescriber>) obj)) {
-							node.appendChild(describerNode(doc,
-									jt, nestedTree));
+							node.appendChild(describerNode(doc, jt, nestedTree));
 						}
 					} else if (obj instanceof List) {
-						for (Iterator jt = ((List) obj).iterator(); jt
-								.hasNext();) {
-							node.appendChild(describerNode(doc,
-									(XmlDescriber) jt.next(), nestedTree));
+						for (XmlDescriber jt : ((List<XmlDescriber>) obj)) {
+							node.appendChild(describerNode(doc, jt, nestedTree));
 						}
 					} else {
 						Node newNode = describerNode(doc, (XmlDescriber) obj,

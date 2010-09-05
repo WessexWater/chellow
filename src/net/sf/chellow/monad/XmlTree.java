@@ -1,6 +1,6 @@
 /*******************************************************************************
  * 
- *  Copyright (c) 2005, 2009 Wessex Water Services Limited
+ *  Copyright (c) 2005, 2010 Wessex Water Services Limited
  *  
  *  This file is part of Chellow.
  * 
@@ -22,8 +22,8 @@
 package net.sf.chellow.monad;
 
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
 
 public class XmlTree {
 	private Map<String, XmlTree> map = new HashMap<String, XmlTree>();
@@ -31,6 +31,7 @@ public class XmlTree {
 	public XmlTree(String name, XmlTree tree) {
 		put(name, tree);
 	}
+	
 	public XmlTree(String name) {
 		put(name);
 	}
@@ -45,8 +46,8 @@ public class XmlTree {
 		return this;
 	}
 	
-	public Iterator<String> keyIterator() {
-		return map.keySet().iterator();
+	public Set<String> keySet() {
+		return map.keySet();
 	}
 	
 	public XmlTree get(String name) {

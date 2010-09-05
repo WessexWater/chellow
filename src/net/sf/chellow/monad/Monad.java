@@ -69,6 +69,9 @@ public abstract class Monad extends HttpServlet implements Urlable {
 
 	static private Urlable urlableRoot;
 
+	static private final Class<?>[] CLASS_ARRAY = new Class[] {
+			HttpServletRequest.class, HttpServletResponse.class, Monad.class };
+
 	static public String getContextPath() {
 		return contextPath;
 	}
@@ -160,16 +163,13 @@ public abstract class Monad extends HttpServlet implements Urlable {
 	protected abstract void checkPermissions(Invocation inv)
 			throws HttpException;
 
-	@SuppressWarnings("unchecked")
 	public void service(HttpServletRequest req, HttpServletResponse res)
 			throws IOException, ServletException {
 		contextPath = req.getContextPath();
 		Invocation inv = null;
 		try {
 			try {
-				Class[] classArray = new Class[] { HttpServletRequest.class,
-						HttpServletResponse.class, Monad.class };
-				inv = (Invocation) invocationClass.getConstructor(classArray)
+				inv = (Invocation) invocationClass.getConstructor(CLASS_ARRAY)
 						.newInstance(new Object[] { req, res, this });
 				String pathInfo = req.getPathInfo();
 				if (pathInfo != null && !pathInfo.endsWith("/")) {
@@ -374,7 +374,6 @@ public abstract class Monad extends HttpServlet implements Urlable {
 		}
 	}
 
-	
 	static private class ElectedURIResolver implements URIResolver {
 		public Source resolve(String href, String base) {
 			Source source = null;

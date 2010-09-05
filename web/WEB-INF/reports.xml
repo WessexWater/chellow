@@ -761,12 +761,6 @@ source.setAttribute('debug', debug)]]></value>
                         <caption>Generation</caption>
                         <thead>
                             <tr>
-                                <th colspan="12"></th>
-                                <th colspan="5">Import</th>
-                                <th colspan="5">Export</th>
-
-                            </tr>
-                            <tr>
                                 <th rowspan="2">Edit</th>
                                 <th rowspan="2">From</th>
                                 <th rowspan="2">To</th>
@@ -776,29 +770,23 @@ source.setAttribute('debug', debug)]]></value>
                                 <th rowspan="2">MTC</th>
                                 <th rowspan="2">CoP</th>
                                 <th rowspan="2">SSC</th>
-                                <th rowspan="1" colspan="2">HHDC</th>
+                                <th colspan="2">HHDC</th>
                                 <th rowspan="2">Channels</th>
                                 <th rowspan="2">LLFC</th>
                                 <th rowspan="2">MPAN Core</th>
                                 <th rowspan="2">kVA</th>
                                 <th colspan="2">Supplier</th>
-                                <th rowspan="2">LLFC</th>
-                                <th rowspan="2">MPAN Core</th>
-                                <th rowspan="2">kVA</th>
-                                <th colspan="2">Supplier</th>
                             </tr>
-                            <th>Contract</th>
-                            <th>Account</th>
-                            <th>Contract</th>
-                            <th>Account</th>
-                            <th>Contract</th>
-                            <th>Account</th>
                             <tr>
+                                <th>Contract</th>
+                                <th>Account</th>
+                                <th>Contract</th>
+                                <th>Account</th>
                             </tr>
                         </thead>
                         <tbody>
                             <tr>
-                                <td>
+                                <td rowspan="4">
                                     <xsl:value-of select="'['" />
                                     <a
                                         href="{/source/request/@context-path}/supplies/{/source/supply/@id}/generations/{@id}/">
@@ -806,11 +794,11 @@ source.setAttribute('debug', debug)]]></value>
                                     </a>
                                     <xsl:value-of select="']'" />
                                 </td>
-                                <td>
+                                <td rowspan="4">
                                     <xsl:value-of
                                         select="concat(hh-start-date[@label='start']/@year, '-', hh-start-date[@label='start']/@month, '-', hh-start-date[@label='start']/@day)" />
                                 </td>
-                                <td>
+                                <td rowspan="4">
                                     <xsl:choose>
                                         <xsl:when test="hh-start-date[@label='finish']">
                                             <xsl:value-of
@@ -821,7 +809,7 @@ source.setAttribute('debug', debug)]]></value>
                                         </xsl:otherwise>
                                     </xsl:choose>
                                 </td>
-                                <td>
+                                <td rowspan="4">
                                     <xsl:for-each select="site-supply-generation/site">
                                         <a
                                             href="{/source/request/@context-path}/reports/5/output/?site-id={@id}"
@@ -830,47 +818,47 @@ source.setAttribute('debug', debug)]]></value>
                                         </a>
                                     </xsl:for-each>
                                 </td>
-                                <td>
+                                <td rowspan="4">
                                     <a
                                         href="{/source/request/@context-path}/reports/55/output/?pc-id={pc/@id}"
                                         title="{pc/@description}">
                                         <xsl:value-of select="pc/@code" />
                                     </a>
                                 </td>
-                                <td>
+                                <td rowspan="4">
                                     <xsl:value-of select="@meter-serial-number" />
                                 </td>
-                                <td>
+                                <td rowspan="4">
                                     <a
                                         href="{/source/request/@context-path}/reports/63/output/?mtc-id={mtc/@id}"
                                         title="{mtc/@description}">
                                         <xsl:value-of select="mtc/@code" />
                                     </a>
                                 </td>
-                                <td>
+                                <td rowspan="4">
                                     <a
                                         href="{/source/request/@context-path}/reports/197/output/?cop-id={cop/@id}"
                                         title="{cop/@description}">
                                         <xsl:value-of select="cop/@code" />
                                     </a>
                                 </td>
-                                <td>
+                                <td rowspan="4">
                                     <a
                                         href="{/source/request/@context-path}/reports/127/output/?ssc-id={ssc/@id}"
                                         title="{ssc/@description}">
                                         <xsl:value-of select="ssc/@code" />
                                     </a>
                                 </td>
-                                <td>
+                                <td rowspan="4">
                                     <a
                                         href="{/source/request/@context-path}/reports/115/output/?hhdc-contract-id={hhdc-contract/@id}">
                                         <xsl:value-of select="hhdc-contract/@name" />
                                     </a>
                                 </td>
-                                <td>
+                                <td rowspan="4">
                                     <xsl:value-of select="@hhdc-account" />
                                 </td>
-                                <td>
+                                <td rowspan="4">
                                     <xsl:if test="channel">
                                         <ul>
                                             <xsl:for-each select="channel">
@@ -905,6 +893,9 @@ source.setAttribute('debug', debug)]]></value>
                                         </ul>
                                     </xsl:if>
                                 </td>
+                                <th colspan="5">Import</th>
+                              </tr>
+                              <tr>
                                 <td>
                                     <a
                                         href="{/source/request/@context-path}/reports/51/output/?llfc-id={mpan/llfc[@is-import='true']/@id}"
@@ -937,6 +928,11 @@ source.setAttribute('debug', debug)]]></value>
                                         <xsl:value-of select="')'" />
                                     </xsl:if>
                                 </td>
+                            </tr>
+                            <xsl:choose>
+                            <xsl:when test="mpan[llfc/@is-import='false']">
+                            <tr>
+                                <th colspan="5">Export</th>
                                 <td>
                                     <a
                                         href="{/source/request/@context-path}/reports/51/output/?llfc-id={mpan/llfc[@is-import='false']/@id}"
@@ -958,20 +954,32 @@ source.setAttribute('debug', debug)]]></value>
                                             select="mpan[llfc/@is-import='false']/supplier-contract/@name" />
                                     </a>
                                 </td>
-
                                 <td>
                                     <xsl:value-of select="mpan[llfc/@is-import='false']/@supplier-account" />
-                                    <xsl:if test="mpan/supply">
+                                    <xsl:choose>
+                                    <xsl:when test="mpan[llfc/@is-import='false']/supply">
                                         <xsl:value-of select="'('" />
                                         <xsl:for-each select="mpan/supply">
                                             <xsl:value-of select="concat(@id, ' ')" />
                                         </xsl:for-each>
                                         <xsl:value-of select="')'" />
-                                    </xsl:if>
+                                    </xsl:when>
+                                    <xsl:otherwise>
+                                      <xsl:value-of select="'jjjj '" />
+                                    </xsl:otherwise>
+                                    </xsl:choose>
                                 </td>
                             </tr>
+                            </xsl:when>
+                            <xsl:otherwise>
+                              <tr>
+                                  <td rowspan="2" colspan="5"></td>
+                              </tr>
+                            </xsl:otherwise>
+                            </xsl:choose>
                         </tbody>
                     </table>
+
                     <br />
                     <table>
                         <caption>Import Bills</caption>
@@ -4295,7 +4303,7 @@ if has_non_core_contracts:
         contract_name = contract.getName()
         rate_scripts = Hiber.session().createQuery("from RateScript script where script.contract = :contract order by script.startDate.date").setEntity('contract', contract).list()
         start_rate_script = rate_scripts[0]
-        print_line(['insert', 'non-core-contract', contract.getId(), None, contract.getParty().getParticipant().getCode(), contract_name, start_rate_script.getId(), start_rate_script.getStartDate(), rate_scripts[len(rate_scripts) - 1].getFinishDate(), contract.getChargeScript(), start_rate_script.getId(), start_rate_script.getScript()])
+        print_line(['insert', 'non-core-contract', contract.getId(), None, contract.getParty().getParticipant().getCode(), contract_name, contract.getChargeScript(), start_rate_script.getId(), start_rate_script.getStartDate(), rate_scripts[len(rate_scripts) - 1].getFinishDate(), start_rate_script.getScript()])
         for i in range(1, len(rate_scripts)):
             rate_script = rate_scripts[i]
             print_line(['insert', 'non-core-contract-rate-script', contract_name, rate_script.getId(), rate_script.getStartDate(), rate_script.getScript()])
@@ -13080,6 +13088,9 @@ pw.close()]]></value>
 from java.lang import Runtime, System, Thread
 from java.io import StringWriter, InputStreamReader
 from net.sf.chellow.monad import Hiber, Monad
+from java.lang.management import OperatingSystemMXBean, ManagementFactory
+from com.jezhumble.javasysmon import JavaSysMon
+from net.sf.chellow.ui import ContextListener
 
 df = DecimalFormat("###,###,###,###,##0")
 runtime = Runtime.getRuntime()
@@ -13087,11 +13098,29 @@ source.setAttribute("free-memory", df.format(runtime.freeMemory()))
 source.setAttribute("max-memory", df.format(runtime.maxMemory()))
 source.setAttribute("total-memory", df.format(runtime.totalMemory()))
 source.setAttribute("available-processors", str(runtime.availableProcessors()))
+
+source.setAttribute("system-load-average", str(ManagementFactory.getOperatingSystemMXBean().getSystemLoadAverage()))
+
+mon = JavaSysMon()
+source.setAttribute('cpu-frequency-in-hz', df.format(mon.cpuFrequencyInHz()))
+source.setAttribute('current-pid', df.format(mon.currentPid()))
+source.setAttribute('num-cpus', df.format(mon.numCpus()))
+source.setAttribute('os-name', mon.osName())
+source.setAttribute('uptime-in-seconds', df.format(mon.uptimeInSeconds()))
+cpu = mon.cpuTimes()
+source.setAttribute('idle-millis', df.format(cpu.getIdleMillis()))
+source.setAttribute('system-millis', df.format(cpu.getSystemMillis()))
+source.setAttribute('total-millis', df.format(cpu.getTotalMillis()))
+source.setAttribute('user-millis', df.format(cpu.getUserMillis()))
+
 props = doc.createElement('properties')
 source.appendChild(props)
 sw = StringWriter()
 System.getProperties().store(sw, None)
 props.setTextContent(sw.toString())
+
+req_map = dict([[entry.getKey(), entry.getValue()] for entry in inv.getMonad().getServletConfig().getServletContext().getAttribute(ContextListener.CONTEXT_REQUEST_MAP).entrySet()])
+
 for entry in Thread.getAllStackTraces().entrySet():
     thread_element = doc.createElement('thread')
     source.appendChild(thread_element)
@@ -13102,7 +13131,10 @@ for entry in Thread.getAllStackTraces().entrySet():
     thread_element.setTextContent(trace)
     thread_element.setAttribute('id', str(thread.getId()))
     thread_element.setAttribute('name', thread.getName())
+    thread_element.setAttribute('is-interrupted', str(thread.isInterrupted()))
     thread_element.setAttribute('status', thread.getState().toString())
+    thread_element.setAttribute('request', req_map.get(thread.getId()))
+
 db_metadata = Hiber.session().connection().getMetaData()
 source.setAttribute("db-product-name", db_metadata.getDatabaseProductName())
 source.setAttribute("db-product-version", db_metadata.getDatabaseProductVersion())
@@ -13178,15 +13210,71 @@ source.setAttribute("chellow-version", sr.toString())]]></value>
                         </td>
                     </tr>
                 </table>
-                <p>Available Processors: <xsl:value-of select="/source/@available-processors"/></p>
+                <br/>
+                <table>
+                <tr>
+                  <td>Available Processors</td>
+                  <td><xsl:value-of select="/source/@available-processors"/></td>
+                </tr>
+                <tr>
+                  <td>System Load Average</td>
+                  <td><xsl:value-of select="/source/@system-load-average"/></td>
+                </tr>
+                </table>
+<br/>
+    <table><caption>JavaSysMon</caption>
+      <tr>
+          <td>CPU Frequency (Hz)</td>
+          <td><xsl:value-of select="/source/@cpu-frequency-in-hz"/></td>
+      </tr>
+      <tr>
+          <td>Current PID</td>
+          <td><xsl:value-of select="/source/@current-pid"/></td>
+      </tr>
+      <tr>
+          <td>Number Of CPU cores</td>
+          <td><xsl:value-of select="/source/@num-cpus"/></td>
+      </tr>
+      <tr>
+          <td>OS Name</td>
+          <td><xsl:value-of select="/source/@os-name"/></td>
+      </tr>
+      <tr>
+          <td>Uptime (s)</td>
+          <td><xsl:value-of select="/source/@uptime-in-seconds"/></td>
+      </tr>
+      <tr>
+          <td>Idle ms</td>
+          <td><xsl:value-of select="/source/@idle-millis"/></td>
+      </tr>
+      <tr>
+          <td>System ms</td>
+          <td><xsl:value-of select="/source/@system-millis"/></td>
+      </tr>
+      <tr>
+          <td>Total ms</td>
+          <td><xsl:value-of select="/source/@total-millis"/></td>
+      </tr>
+      <tr>
+          <td>User ms</td>
+          <td><xsl:value-of select="/source/@user-millis"/></td>
+      </tr>
+    </table>
 
 <br/>
 
 <table><caption>All Live Threads</caption>
-<tr><th>Id</th><th>Name</th><th>Status</th><th>Stack Trace</th>
+<tr><th>Id</th><th>Name</th><th>Interrupted?</th><th>Status</th><th>Request</th><th>Stack Trace</th>
 </tr>
 <xsl:for-each select="/source/thread">
-<tr><td><xsl:value-of select="@id"/></td><td><xsl:value-of select="@name"/></td><td><xsl:value-of select="@status"/></td><td><pre><xsl:value-of select="."/></pre></td></tr>
+<tr>
+   <td><xsl:value-of select="@id"/></td>
+   <td><xsl:value-of select="@name"/></td>
+   <td><xsl:value-of select="@is-interrupted"/></td>
+   <td><xsl:value-of select="@status"/></td>
+   <td><xsl:value-of select="@request"/></td>
+   <td><pre><xsl:value-of select="."/></pre></td>
+</tr>
 </xsl:for-each>
 </table>
 
