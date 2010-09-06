@@ -164,10 +164,17 @@
 							<legend>Issue Date</legend>
 							<input name="issue-year" size="4" maxlength="4">
 								<xsl:attribute name="value">
-									<xsl:if test="/source/request/parameter[@name='issue-year']">
+								    <xsl:choose>
+									<xsl:when test="/source/request/parameter[@name='issue-year']">
 											<xsl:value-of
 									select="/source/request/parameter[@name='issue-year']/value/text()" />
-									</xsl:if>
+									</xsl:when>
+									<xsl:otherwise>
+										<xsl:attribute name="value">
+											<xsl:value-of select="/source/date/@year" />
+										</xsl:attribute>
+									</xsl:otherwise>
+									</xsl:choose>
 								</xsl:attribute>
 							</input>
 							-

@@ -331,12 +331,12 @@ public class Bill extends PersistentEntity implements Urlable {
 			HhStartDate startDate, HhStartDate finishDate, BigDecimal kwh,
 			BigDecimal net, BigDecimal vat, BillType type, Boolean isPaid,
 			String breakdown) throws HttpException {
-		List<SupplyGeneration> generations = supply.getGenerations(startDate,
-				finishDate);
-		if (generations.isEmpty()) {
+		if (supply.getGeneration(startDate) == null
+				|| supply.getGeneration(finishDate) == null) {
 			throw new UserException("The bill is before or after the supply.");
 		}
-		for (SupplyGeneration generation : generations) {
+		for (SupplyGeneration generation : supply.getGenerations(startDate,
+				finishDate)) {
 			List<Long> contractIds = new ArrayList<Long>();
 			HhdcContract hhdcContract = generation.getHhdcContract();
 			if (hhdcContract != null) {

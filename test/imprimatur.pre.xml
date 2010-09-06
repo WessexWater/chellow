@@ -300,8 +300,10 @@ def totalElement(account, startDate, finishDate):
 		</request>
 		<request path="/chellow/general-imports/4/">
 			<refresh />
-			<!-- check that it knows that the first line has a source code that is 
-				too long -->
+			<!--
+				check that it knows that the first line has a source code that is
+				too long
+			-->
 			<regex pattern="There's no source with the code 'netlong'" />
 			<response-code value="200" />
 		</request>
@@ -319,7 +321,9 @@ def totalElement(account, startDate, finishDate):
 			<response-code value="200" />
 		</request>
 
-		<!-- Check that it gives a sensible error message if a data is malformed -->
+		<!--
+			Check that it gives a sensible error message if a data is malformed
+		-->
 		<request path="/chellow/general-imports/" method="post">
 			<control type="file" name="import-file" value="supplies_date.csv" />
 			<regex pattern="/chellow/general-imports/6/" />
@@ -453,7 +457,9 @@ def totalElement(account, startDate, finishDate):
 			<response-code value="200" />
 		</request>
 
-		<!-- When a supply generation is ended, check that the snags are updated -->
+		<!--
+			When a supply generation is ended, check that the snags are updated
+		-->
 		<request path="/chellow/supplies/6/generations/6/" method="post">
 			<control name="start-year" value="2003" />
 			<control name="start-month" value="08" />
@@ -495,8 +501,10 @@ def totalElement(account, startDate, finishDate):
 				pattern='&lt;td&gt;Missing&lt;/td&gt;&lt;td&gt;2003-08-03T00:00Z&lt;/td&gt;&lt;td&gt;2003-08-13T23:30Z&lt;/td&gt;' />
 		</request>
 
-		<!-- Check that if the hhdc contract is changed, the hhdc contract of the 
-			snags change -->
+		<!--
+			Check that if the hhdc contract is changed, the hhdc contract of the
+			snags change
+		-->
 		<!-- Check the export supply capacity can be updated as well -->
 		<request path="/chellow/supplies/6/generations/6/" method="post">
 			<control name="meter-serial-number" value="" />
@@ -593,8 +601,10 @@ def totalElement(account, startDate, finishDate):
 			<response-code value="200" />
 		</request>
 
-		<!-- Check that we prevent mpan cores from changing without an overlapping 
-			period -->
+		<!--
+			Check that we prevent mpan cores from changing without an overlapping
+			period
+		-->
 		<request path="/chellow/supplies/3/generations/9/" method="post">
 			<control name="meter-serial-number" value="" />
 			<control name="start-year" value="2006" />
@@ -623,8 +633,10 @@ def totalElement(account, startDate, finishDate):
 		</request>
 	</test>
 	<test name="Import hh data">
-		<!-- Check it gives a sensible error message if the files doesn't start 
-			with #F2 -->
+		<!--
+			Check it gives a sensible error message if the files doesn't start
+			with #F2
+		-->
 		<request path="/chellow/hhdc-contracts/0/hh-data-imports/"
 			method="post">
 			<control type="file" name="import-file" value="no_hash.df2" />
@@ -641,7 +653,9 @@ def totalElement(account, startDate, finishDate):
 		</request>
 		<request path="/chellow/hhdc-contracts/0/hh-data-imports/1/">
 			<refresh />
-			<!-- Check it's loaded ok and has ignored the blank line and the #F2 line -->
+			<!--
+				Check it's loaded ok and has ignored the blank line and the #F2 line
+			-->
 			<regex pattern="The import has completed.*successfully." />
 			<response-code value="200" />
 		</request>
@@ -665,8 +679,10 @@ def totalElement(account, startDate, finishDate):
 		</request>
 	</test>
 	<test name="Detect if hh import still works if first hh datum is missing.">
-		<!-- This relies on the datum 15/11/2005,00:30,1.0,A being already loaded, 
-			with a gap before it. -->
+		<!--
+			This relies on the datum 15/11/2005,00:30,1.0,A being already loaded,
+			with a gap before it.
+		-->
 
 		<request path="/chellow/hhdc-contracts/0/hh-data-imports/"
 			method="post">
@@ -757,8 +773,10 @@ def totalElement(account, startDate, finishDate):
 		</request>
 	</test>
 	<test>
-		<!-- Check it gives a sensible error message if the comma after the value 
-			is missing -->
+		<!--
+			Check it gives a sensible error message if the comma after the value
+			is missing
+		-->
 		<request path="/chellow/hhdc-contracts/0/hh-data-imports/"
 			method="post">
 			<control type="file" name="import-file" value="hh_data_malformed.df2" />
@@ -766,7 +784,10 @@ def totalElement(account, startDate, finishDate):
 			<response-code value="418" />
 		</request>
 
-		<!-- Check it gives a sensible error message if the first mpan is malformed -->
+		<!--
+			Check it gives a sensible error message if the first mpan is
+			malformed
+		-->
 		<request path="/chellow/hhdc-contracts/0/hh-data-imports/"
 			method="post">
 			<control type="file" name="import-file" value="hh_data_bad_beginning.df2" />
@@ -821,8 +842,10 @@ def totalElement(account, startDate, finishDate):
 	<test name="Check site level snag">
 		<request path="/chellow/site-snags/">
 			<regex pattern='CI004' />
-			<!-- There's an hh where export to net is *less* than imported from generator, 
-				check this doesn't show up. -->
+			<!--
+				There's an hh where export to net is *less* than imported from
+				generator, check this doesn't show up.
+			-->
 			<regex
 				pattern='2005-10-30T01:00Z[\r\n]*&lt;/td&gt;&lt;td&gt;false&lt;/td&gt;[\r\n]*&lt;/tr&gt;[\r\n]*&lt;/tbody&gt;' />
 
@@ -837,9 +860,11 @@ def totalElement(account, startDate, finishDate):
 		</request>
 	</test>
 	<test name="Channel without data unchecked">
-		<!-- Check that for a supply with multiple generations, if a channel without 
-			any data is unchecked, it goes ahead without a user exception. This test 
-			needs some hh data loaded somewhere -->
+		<!--
+			Check that for a supply with multiple generations, if a channel
+			without any data is unchecked, it goes ahead without a user
+			exception. This test needs some hh data loaded somewhere
+		-->
 		<request path="/chellow/supplies/3/generations/9/channels/27/"
 			method="post">
 			<control name="delete">Delete</control>
@@ -854,8 +879,10 @@ def totalElement(account, startDate, finishDate):
 			<response-code value="303" />
 		</request>
 
-		<!-- Check it gives an error if the hhdc contract is removed from a supply 
-			generation that has data -->
+		<!--
+			Check it gives an error if the hhdc contract is removed from a supply
+			generation that has data
+		-->
 		<request path="/chellow/supplies/2/generations/2/" method="post">
 			<control name="start-year">2003</control>
 			<control name="start-month">08</control>
@@ -1178,8 +1205,11 @@ def virtual_bill(supply_source):
 			<response-code value="200" />
 		</request>
 	</test>
-	<!-- <test name="Check HHDC bills works."> <request path="/chellow/hhdc-contracts/5/accounts/4/bills/"> 
-		<response-code value="200" /> </request> </test> -->
+	<!--
+		<test name="Check HHDC bills works."> <request
+		path="/chellow/hhdc-contracts/5/accounts/4/bills/"> <response-code
+		value="200" /> </request> </test>
+	-->
 	<test name="Check no duplicate supplies in Supplies Duration report.">
 		<request
 			path="/chellow/reports/149/output/?start-year=2008&amp;start-month=07&amp;start-day=01&amp;start-hour=0&amp;finish-year=2008&amp;finish-month=07&amp;finish-day=31&amp;finish-hour=23">
@@ -1906,8 +1936,10 @@ def triad_estimates():
 		</request>
 	</test>
 	<test name="CSV Sites Monthly Duration">
-		<!-- See if it handles the case where there isn't an import virtual bill 
-			function. -->
+		<!--
+			See if it handles the case where there isn't an import virtual bill
+			function.
+		-->
 		<request
 			path="/chellow/reports/161/output/?site-code=CI017&amp;months=1&amp;end-year=2009&amp;end-month=04">
 			<response-code value="200" />
@@ -2328,6 +2360,33 @@ def import_virtual_bill(supply_source):
 			<control name="start-month" value="02" />
 			<control name="start-day" value="22" />
 			<control name="finish-year" value="2000" />
+			<control name="finish-month" value="03" />
+			<control name="finish-day" value="08" />
+			<control name="kwh" value="0" />
+			<control name="net" value="0" />
+			<control name="vat" value="0" />
+			<control name="account" value="" />
+			<control name="bill-type-id" value="1" />
+			<control name="breakdown" value="" />
+			<control name="status" value="0" />
+
+			<response-code value="418" />
+		</request>
+		<!--
+			What if it starts before the begining of the supply, but ends after
+			it?
+		-->
+		<request path="/chellow/supplier-contracts/4/batches/6/bills/"
+			method="post">
+			<control name="mpan-core" value="22 9813 2107 763" />
+			<control name="reference" value="test377588" />
+			<control name="issue-year" value="2000" />
+			<control name="issue-month" value="01" />
+			<control name="issue-day" value="13" />
+			<control name="start-year" value="2002" />
+			<control name="start-month" value="02" />
+			<control name="start-day" value="22" />
+			<control name="finish-year" value="2004" />
 			<control name="finish-month" value="03" />
 			<control name="finish-day" value="08" />
 			<control name="kwh" value="0" />
