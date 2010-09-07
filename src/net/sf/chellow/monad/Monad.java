@@ -69,9 +69,6 @@ public abstract class Monad extends HttpServlet implements Urlable {
 
 	static private Urlable urlableRoot;
 
-	static private final Class<?>[] CLASS_ARRAY = new Class[] {
-			HttpServletRequest.class, HttpServletResponse.class, Monad.class };
-
 	static public String getContextPath() {
 		return contextPath;
 	}
@@ -93,8 +90,6 @@ public abstract class Monad extends HttpServlet implements Urlable {
 	private String realmName;
 
 	static private final String CONFIG_PREFIX = "/WEB-INF/templates";
-
-	protected Class<Invocation> invocationClass;
 
 	static private ServletContext context;
 
@@ -123,16 +118,9 @@ public abstract class Monad extends HttpServlet implements Urlable {
 
 	public Monad() {
 		urlableRoot = this;
-		// thisClass = this.getClass();
-		invocationClass = getInvocationClass();
-		// ARG_TYPES[0] = invocationClass;
 		Handler consoleHandler = new ConsoleHandler();
 		consoleHandler.setFormatter(new MonadFormatter());
 		logger.addHandler(consoleHandler);
-	}
-
-	protected Class<Invocation> getInvocationClass() {
-		return Invocation.class;
 	}
 
 	public String getRealmName() {
@@ -158,6 +146,7 @@ public abstract class Monad extends HttpServlet implements Urlable {
 	public void init(ServletConfig conf) throws ServletException {
 		super.init(conf);
 		context = conf.getServletContext();
+		contextPath = context.getContextPath();
 	}
 
 	protected abstract void checkPermissions(Invocation inv)
@@ -165,12 +154,10 @@ public abstract class Monad extends HttpServlet implements Urlable {
 
 	public void service(HttpServletRequest req, HttpServletResponse res)
 			throws IOException, ServletException {
-		contextPath = req.getContextPath();
 		Invocation inv = null;
 		try {
 			try {
-				inv = (Invocation) invocationClass.getConstructor(CLASS_ARRAY)
-						.newInstance(new Object[] { req, res, this });
+				inv = new Invocation(req, res, this);
 				String pathInfo = req.getPathInfo();
 				if (pathInfo != null && !pathInfo.endsWith("/")) {
 					try {
