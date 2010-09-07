@@ -230,8 +230,8 @@ public class SupplierContract extends Contract {
 									+ " uses this contract and lies outside "
 									+ startDate
 									+ " to "
-									+ (finishDate == null ? "ongoing"
-											: finishDate + "."));
+									+ (getFinishDate() == null ? "ongoing"
+											: getFinishDate() + "."));
 		}
 	}
 

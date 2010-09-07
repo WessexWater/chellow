@@ -364,8 +364,14 @@ public class SupplyGeneration extends PersistentEntity {
 			SupplyGeneration existingGeneration = supply
 					.getGeneration(startDate);
 			if (existingGeneration == null) {
+				SupplyGeneration firstGeneration = supply.getGenerationFirst();
+				if (startDate.before(firstGeneration.getStartDate())) {
+					existingGeneration = firstGeneration;
+				}
+			}
+			if (existingGeneration == null) {
 				throw new UserException(
-						"The start date isn't within the supply.");
+						"The start date is after end of the supply.");
 			}
 
 			String siteCode = GeneralImport.addField(csvElement, "Site Code",
