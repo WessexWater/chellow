@@ -327,16 +327,15 @@ public class SupplyGeneration extends PersistentEntity {
 			}
 			supply.updateGeneration(supplyGeneration, startDateStr
 					.equals(GeneralImport.NO_CHANGE) ? supplyGeneration
-					.getStartDate() : new HhStartDate("start", startDateStr),
+					.getStartDate() : new HhStartDate(startDateStr),
 					finishDateStr.length() == 0 ? null : (finishDateStr
 							.equals(GeneralImport.NO_CHANGE) ? supplyGeneration
-							.getFinishDate() : new HhStartDate("finish",
-							finishDateStr)), mopContract, mopAccount,
-					hhdcContract, hhdcAccount, meterSerialNumber, pc, mtcCode,
-					cop, ssc, importMpanCoreStr, importLlfcCode,
-					importSupplierContract, importSupplierAccount,
-					importAgreedSupplyCapacity, exportMpanCoreStr,
-					exportLlfcCode, exportSupplierContract,
+							.getFinishDate() : new HhStartDate(finishDateStr)),
+					mopContract, mopAccount, hhdcContract, hhdcAccount,
+					meterSerialNumber, pc, mtcCode, cop, ssc,
+					importMpanCoreStr, importLlfcCode, importSupplierContract,
+					importSupplierAccount, importAgreedSupplyCapacity,
+					exportMpanCoreStr, exportLlfcCode, exportSupplierContract,
 					exportSupplierAccount, exportAgreedSupplyCapacity);
 		} else if (action.equals("delete")) {
 			String mpanCoreStr = GeneralImport.addField(csvElement,

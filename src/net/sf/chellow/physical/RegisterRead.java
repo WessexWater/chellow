@@ -242,9 +242,10 @@ public class RegisterRead extends PersistentEntity {
 				throw new UserException(document());
 			}
 			update(Tpr.getTpr(tprCode), coefficient, Units.getUnits(units),
-					meterSerialNumber, mpanStr, new HhStartDate(previousDate),
-					previousValue, ReadType.getReadType(previousTypeId),
-					new HhStartDate(presentDate), presentValue, ReadType
+					meterSerialNumber, mpanStr, new HhStartDate(
+							previousDate), previousValue, ReadType
+							.getReadType(previousTypeId), new HhStartDate(
+							presentDate), presentValue, ReadType
 							.getReadType(presentTypeId));
 			Hiber.commit();
 			inv.sendOk(document());

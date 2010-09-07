@@ -28,6 +28,7 @@ import java.util.Map;
 
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
+import net.sf.chellow.monad.types.MonadDate;
 
 import org.hibernate.Query;
 import org.hibernate.ScrollableResults;
@@ -84,7 +85,7 @@ public class SiteGroup {
 		List<Double> export3rdParty = new ArrayList<Double>();
 		map.put("export-3rd-party", export3rdParty);
 
-		Calendar cal = HhStartDate.getCalendar();
+		Calendar cal = MonadDate.getCalendar();
 		for (long end = getFrom().getDate().getTime(); end <= getTo().getDate()
 				.getTime(); end = HhStartDate.getNext(cal, end)) {
 			importNet.add(0d);

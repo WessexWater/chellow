@@ -1,6 +1,6 @@
 /*******************************************************************************
  * 
- *  Copyright (c) 2005, 2009 Wessex Water Services Limited
+ *  Copyright (c) 2005, 2010 Wessex Water Services Limited
  *  
  *  This file is part of Chellow.
  * 
@@ -20,37 +20,34 @@
  *******************************************************************************/
 package net.sf.chellow.physical;
 
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.Locale;
 
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.UserException;
 import net.sf.chellow.monad.types.MonadDate;
+import net.sf.chellow.monad.types.MonadObject;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-public class HhStartDate extends MonadDate {
-	public static HhStartDate getNext(HhStartDate date) throws HttpException {
-		return new HhStartDate(new Date(getNext(getCalendar(), date.getDate()
-				.getTime())));
-	}
-
-	public static HhStartDate getPrevious(HhStartDate date)
-			throws HttpException {
-		return new HhStartDate(new Date(getPrevious(getCalendar(), date.getDate()
-				.getTime())));
-	}
-
-	public static HhStartDate roundUp(Date date) throws HttpException {
-		return new HhStartDate(new Date(roundUp(getCalendar(), date.getTime())));
-	}
-
+public class HhStartDate extends MonadObject {
 	public static long getNext(Calendar cal, long date) {
 		return roundUp(cal, date + 1);
 	}
-	
+
+	public static long getPrevious(Calendar cal, long date) {
+		return roundDown(cal, date - 1);
+	}
+
+	public static HhStartDate roundUp(Date date) throws HttpException {
+		return new HhStartDate(new Date(roundUp(MonadDate.getCalendar(), date
+				.getTime())));
+	}
+
 	public static boolean isEqual(HhStartDate date1, HhStartDate date2) {
 		if (date1 == null) {
 			if (date2 == null) {
@@ -78,7 +75,7 @@ public class HhStartDate extends MonadDate {
 			return date1.after(date2);
 		}
 	}
-	
+
 	public static boolean isBefore(HhStartDate date1, HhStartDate date2) {
 		if (date1 == null) {
 			return false;
@@ -109,11 +106,8 @@ public class HhStartDate extends MonadDate {
 	}
 
 	public static HhStartDate roundDown(Date date) throws HttpException {
-		return new HhStartDate(new Date(roundDown(getCalendar(), date.getTime())));
-	}
-
-	public static long getPrevious(Calendar cal, long date) {
-		return roundDown(cal, date - 1);
+		return new HhStartDate(new Date(roundDown(MonadDate.getCalendar(), date
+				.getTime())));
 	}
 
 	public static long roundDown(Calendar cal, long date) {
@@ -130,38 +124,20 @@ public class HhStartDate extends MonadDate {
 		return cal.getTimeInMillis();
 	}
 
-	HhStartDate() throws HttpException {
-		super(new Date(0));
-	}
+	private Date date;
 
-	public HhStartDate(Date date) throws HttpException {
-		super(date);
-	}
-
-	public HhStartDate(String label, String year, String month, String day)
-			throws HttpException {
-		super(label, year, month, day);
-	}
-
-	public HhStartDate(int year, int month, int day)
-			throws HttpException {
-		super(year, month, day);
+	public HhStartDate() {
 	}
 
 	public HhStartDate(String dateStr) throws HttpException {
-		super(dateStr);
+		this(new MonadDate(dateStr).getDate());
 	}
 
-	public HhStartDate(String label, String dateStr) throws HttpException {
-		super(label, dateStr);
-	}
-
-	public void update(Date date) throws HttpException {
+	public HhStartDate(Date date) throws HttpException {
 		if (date == null) {
 			throw new InternalException("Date can't be null I'm afraid.");
 		}
-		Calendar cal = getCalendar();
-		cal.clear();
+		Calendar cal = MonadDate.getCalendar();
 		cal.setTime(date);
 		int minute = cal.get(Calendar.MINUTE);
 		int second = cal.get(Calendar.SECOND);
@@ -178,21 +154,54 @@ public class HhStartDate extends MonadDate {
 			throw new UserException("For the date " + date
 					+ ", the milliseconds must be 0.");
 		}
-		super.update(cal.getTime());
+		setDate(date);
+	}
+
+	public Date getDate() {
+		return date;
+	}
+
+	public void setDate(Date date) {
+		this.date = date;
 	}
 
 	public HhStartDate getPrevious() throws HttpException {
-		return getPrevious(this);
+		HhStartDate prev = new HhStartDate();
+		prev.setDate(new Date(getPrevious(MonadDate.getCalendar(), date
+				.getTime())));
+		return prev;
 	}
 
 	public HhStartDate getNext() throws HttpException {
-		return getNext(this);
+		HhStartDate next = new HhStartDate();
+		next
+				.setDate(new Date(getNext(MonadDate.getCalendar(), date
+						.getTime())));
+		return next;
 	}
 
-	public Element toXml(Document doc) throws InternalException {
-		return toXML(getDate(), getLabel(), doc, "hh-start-date");
+	public Element toXml(Document doc) throws HttpException {
+		Element element = (Element) super.toXml(doc, "hh-start-date");
+		Calendar cal = MonadDate.getCalendar();
+		SimpleDateFormat sdYear = new SimpleDateFormat("yyyy", Locale.UK);
+		sdYear.setCalendar(cal);
+		SimpleDateFormat sdMonth = new SimpleDateFormat("MM", Locale.UK);
+		sdMonth.setCalendar(cal);
+		SimpleDateFormat sdDay = new SimpleDateFormat("dd", Locale.UK);
+		sdDay.setCalendar(cal);
+		SimpleDateFormat sdHour = new SimpleDateFormat("HH", Locale.UK);
+		sdHour.setCalendar(cal);
+		SimpleDateFormat sdMinute = new SimpleDateFormat("mm", Locale.UK);
+		sdMinute.setCalendar(cal);
+		cal.setTime(date);
+		element.setAttribute("year", sdYear.format(date));
+		element.setAttribute("month", sdMonth.format(date));
+		element.setAttribute("day", sdDay.format(date));
+		element.setAttribute("hour", sdHour.format(date));
+		element.setAttribute("minute", sdMinute.format(date));
+		return element;
 	}
-    
+
 	public boolean after(HhStartDate date) {
 		if (date == null) {
 			return false;
@@ -200,12 +209,20 @@ public class HhStartDate extends MonadDate {
 			return getDate().after(date.getDate());
 		}
 	}
-	
+
 	public boolean before(HhStartDate date) {
 		if (date == null) {
 			return true;
 		} else {
 			return getDate().before(date.getDate());
 		}
+	}
+
+	public boolean equals(Object obj) {
+		return obj instanceof HhStartDate && isEqual((HhStartDate) obj, this);
+	}
+
+	public String toString() {
+		return MonadDate.sdIsoDateTime().format(date);
 	}
 }

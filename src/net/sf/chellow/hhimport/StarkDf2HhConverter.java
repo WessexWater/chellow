@@ -137,8 +137,8 @@ public class StarkDf2HhConverter implements HhConverter {
 								+ lastLineNumber() + ". '" + line
 								+ "'. Can't find the second comma.");
 					}
-					HhStartDate startDate = new HhStartDate(dateFormat.parse(line
-							.substring(0, datePos).replace(",", " "))).getPrevious();
+					HhStartDate startDate = new HhStartDate(dateFormat.parse(line.substring(
+							0, datePos).replace(",", " "))).getPrevious();
 					int valuePos = line.indexOf(',', datePos + 1);
 					BigDecimal valueKw = null;
 
@@ -151,7 +151,8 @@ public class StarkDf2HhConverter implements HhConverter {
 									"Problem parsing the kW value: " + kwString);
 						}
 					} else {
-						String kwString = line.substring(datePos + 1, valuePos).trim();
+						String kwString = line.substring(datePos + 1, valuePos)
+								.trim();
 						try {
 							valueKw = new BigDecimal(kwString);
 						} catch (NumberFormatException e) {

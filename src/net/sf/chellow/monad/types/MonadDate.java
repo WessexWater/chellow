@@ -1,6 +1,6 @@
 /*******************************************************************************
  * 
- *  Copyright (c) 2005, 2009 Wessex Water Services Limited
+ *  Copyright (c) 2005, 2010 Wessex Water Services Limited
  *  
  *  This file is part of Chellow.
  * 
@@ -37,13 +37,20 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 public class MonadDate extends MonadObject {
-	static private SimpleDateFormat sdIsoDate() {
+	static private Calendar calendar = new GregorianCalendar(TimeZone.getTimeZone("GMT"),
+			Locale.UK);
+	static {
+	calendar.setLenient(false);
+	calendar.clear();
+	}
+	
+	static public SimpleDateFormat sdIsoDate() {
 		SimpleDateFormat sdFormat = new SimpleDateFormat("yyyy-MM-dd");
 		sdFormat.setCalendar(getCalendar());
 		return sdFormat;
 	}
 
-	static private SimpleDateFormat sdIsoDateTime() {
+	static public SimpleDateFormat sdIsoDateTime() {
 		SimpleDateFormat sdFormat = new SimpleDateFormat(
 				"yyyy-MM-dd'T'HH:mm'Z'");
 		sdFormat.setCalendar(getCalendar());
@@ -51,16 +58,12 @@ public class MonadDate extends MonadObject {
 	}
 
 	static public Calendar getCalendar() {
-		Calendar calendar = new GregorianCalendar(TimeZone.getTimeZone("GMT"),
-				Locale.UK);
-		calendar.setLenient(false);
-		return calendar;
+		return (Calendar) calendar.clone();
 	}
 
 	static public Date intsToDate(int year, int month, int day) {
 		Calendar cal = getCalendar();
 
-		cal.clear();
 		cal.set(year, month - 1, day);
 		return cal.getTime();
 	}

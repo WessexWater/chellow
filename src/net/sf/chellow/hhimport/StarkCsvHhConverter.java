@@ -34,6 +34,7 @@ import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.UserException;
 import net.sf.chellow.physical.HhStartDate;
+
 import com.Ostermiller.util.CSVParser;
 
 public class StarkCsvHhConverter implements HhConverter {
@@ -114,7 +115,8 @@ public class StarkCsvHhConverter implements HhConverter {
 					throw new UserException(
 							"The 'Units' field must be 'kWh' or 'kVArh'");
 				}
-				HhStartDate startDate = new HhStartDate(dateFormat.parse(values[3])).getPrevious();
+				HhStartDate startDate = new HhStartDate(dateFormat
+						.parse(values[3])).getPrevious();
 				BigDecimal value = new BigDecimal(values[4]);
 				Character status = new Character((char) new Double(values[5]
 						.trim()).intValue());

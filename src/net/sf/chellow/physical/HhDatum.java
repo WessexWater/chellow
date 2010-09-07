@@ -39,6 +39,7 @@ import net.sf.chellow.monad.NotFoundException;
 import net.sf.chellow.monad.Urlable;
 import net.sf.chellow.monad.UserException;
 import net.sf.chellow.monad.XmlTree;
+import net.sf.chellow.monad.types.MonadDate;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
 
@@ -57,7 +58,7 @@ public class HhDatum extends PersistentEntity {
 		if (!rawData.hasNext()) {
 			return;
 		}
-		Calendar cal = HhStartDate.getCalendar();
+		Calendar cal = MonadDate.getCalendar();
 		HhDatumRaw datum = rawData.next();
 		String mpanCoreStr = datum.getMpanCore();
 		MpanCore mpanCore = MpanCore.getMpanCore(mpanCoreStr);
