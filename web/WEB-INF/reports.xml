@@ -386,9 +386,9 @@ source.setAttribute('debug', debug_str)]]></value>
                 <br/>
                 <xsl:if test="/source/group/site">
                 <table><caption>Other sites in this group</caption>
-                <tr><th>Chellow Id</th><th>Code</th><th>Name</th></tr>
+                <tr><th>Code</th><th>Name</th></tr>
                 <xsl:for-each select="/source/group/site">
-                  <tr><td><a href="{/source/request/@context-path}/reports/5/output/?site-id={@id}"><xsl:value-of select="@id" /></a></td><td><xsl:value-of select="@code" /></td><td><xsl:value-of select="@name" /></td></tr>
+                  <tr><td><a href="{/source/request/@context-path}/reports/5/output/?site-id={@id}"><xsl:value-of select="@code" /></a></td><td><xsl:value-of select="@name" /></td></tr>
                 </xsl:for-each>
                 </table>
                 </xsl:if>
@@ -4146,7 +4146,7 @@ pw.close()]]></value>
         <value><![CDATA[from net.sf.chellow.monad import Hiber, UserException, MonadUtils
 from net.sf.chellow.monad.types import UriPathElement, MonadDate
 from java.util import GregorianCalendar, TimeZone, Locale, Calendar
-from net.sf.chellow.physical import HhStartDate, Configuration
+from net.sf.chellow.physical import HhStartDate, Configuration, MpanCore
 from java.text import DateFormat
 from java.util.zip import ZipOutputStream, ZipEntry
 from java.io import OutputStreamWriter, PrintWriter
@@ -4158,9 +4158,10 @@ def mpan_fields(mpan):
     if mpan == None:
         return ['', '', '', '', '']
     else:
-        pcnum = mpan.getSupplyGeneration().getPc().getCode()
+        generation = mpan.getSupplyGeneration()
+        pcnum = generation.getPc().getCode()
         mpan_str = mpan.toString()
-        ssc = mpan.getSsc()
+        ssc = generation.getSsc()
 
         if pcnum == 0 and ssc is not None:
             raise Exception('error type 1 ' + mpan_str)
@@ -9557,11 +9558,12 @@ source.appendChild(contract.toXml(doc, XmlTree('party', XmlTree('participant')).
         <value><![CDATA[true]]></value>
         <value><![CDATA[Supplier Contract Displaced Virtual Bills]]></value>
         <value><![CDATA[from net.sf.chellow.monad import Hiber, UserException
-from java.util import GregorianCalendar, TimeZone, Locale, Calendar
+from java.util import GregorianCalendar, TimeZone, Locale, Calendar, Date
 from net.sf.chellow.physical import MpanCore, HhStartDate, Supply, Site
 from net.sf.chellow.billing import SupplierContract, NonCoreContract
 from java.text import DecimalFormat
 from java.sql import Timestamp, ResultSet
+from net.sf.chellow.monad.types import MonadDate
 
 end_year = inv.getInteger('end-year')
 end_month = inv.getInteger('end-month')
@@ -9577,7 +9579,7 @@ pw = inv.getResponse().getWriter()
 computer = NonCoreContract.getNonCoreContract('computer')
 comterp = computer.callFunction('create_comterp', [])
 
-pw.print('Site Code,Site Name,Associated Site Ids,From,To,CHP kWh,LM kWh, Turbine kWh')
+pw.print('Site Code,Site Name,Associated Site Ids,From,To,Gen Types,CHP kWh,LM kWh,Turbine kWh')
 
 cal = GregorianCalendar(TimeZone.getTimeZone("GMT"), Locale.UK)
 cal.set(Calendar.YEAR, end_year)
@@ -9607,13 +9609,15 @@ if inv.hasParameter('site-id'):
     bill_titles = ['net-gbp']
 elif inv.hasParameter('contract-id'):
     contract_id = inv.getLong('contract-id')
-    site_query = Hiber.session().createQuery("select distinct ssgen.site from SiteSupplyGeneration ssgen join ssgen.supplyGeneration.mpans mpan where (ssgen.supplyGeneration.supply.source.code in ('gen', 'gen-net') or (ssgen.supplyGeneration.supply.source.code in ('net', 'gen-net') and mpan.llfc.isImport is false)) and ssgen.supplyGeneration.startDate.date <= :finishDate and (ssgen.supplyGeneration.finishDate is null or ssgen.supplyGeneration.finishDate.date >= :startDate) order by ssgen.site.code").setTimestamp('startDate', start_date.getDate()).setTimestamp('finishDate', finish_date.getDate())
     contract = SupplierContract.getSupplierContract(contract_id)
+    site_query = Hiber.session().createQuery("select distinct ssgen.site from SiteSupplyGeneration ssgen where ((ssgen.supplyGeneration.finishDate is null or ssgen.supplyGeneration.finishDate.date >= :startDate) and ssgen.supplyGeneration.startDate <= :finishDate) and (ssgen.supplyGeneration.supply.source.code in ('gen', 'gen-net') or ssgen.supplyGeneration.exportMpan is not null) order by ssgen.site.code").setTimestamp('startDate', start_date.getDate()).setTimestamp('finishDate', finish_date.getDate())
     bill_titles = comterp.get('contract_function')(contract, 'displaced_virtual_bill_titles')()
 else:
     raise UserException("Need a site-id or supplier-id.")
 
 for title in bill_titles:
+    if title == 'total-msp-kwh':
+        title = 'total-displaced-msp-kwh'
     pw.print(',' + title)
 pw.println('')
 pw.flush()
@@ -9637,17 +9641,17 @@ while sites.next():
         supplier_contract = displaced_mpan.getSupplierContract()
         if contract is not None and not contract.equals(supplier_contract):
             continue
+        
+        linked_sites = ','.join(str(a_site.getCode()) for a_site in site_group.getSites() if not a_site.equals(site))
+        generator_types = ' '.join(sorted([supply.getGeneratorType().getCode() for supply in site_group.getSupplies() if supply.getGeneratorType() is not None]))
 
-        pw.print('"' + site.getCode() + '","' + site.getName() + '","' + ','.join(str(a_site.getId()) for a_site in site_group.getSites() if not a_site.equals(site)) + '",' + str(chunk_start) + ',' + str(chunk_finish))
-
-
-
-
+        pw.print(','.join('"' + value + '"' for value in [site.getCode(), site.getName(), linked_sites, str(chunk_start), str(chunk_finish), generator_types]))
 
         total_gen_breakdown = {}
         con = Hiber.session().connection()
         supplies_sql = ','.join(str(supply.getId()) for supply in site_group.getSupplies())
-        stmt = con.prepareStatement("select hh_datum.value, hh_datum.start_date, channel.is_import, source.code, generator_type.code as gen_type_code from hh_datum, channel, supply_generation, supply, source, generator_type where hh_datum.channel_id = channel.id and channel.supply_generation_id = supply_generation.id and supply_generation.supply_id = supply.id and supply.source_id = source.id and supply.generator_type_id = generator_type.id and channel.is_kwh is true and hh_datum.start_date >= ? and hh_datum.start_date <= ? and supply.id in (" + supplies_sql + ") order by hh_datum.start_date, supply.id", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.CLOSE_CURSORS_AT_COMMIT)
+
+        stmt = con.prepareStatement("select supply.id, hh_datum.value, hh_datum.start_date, channel.is_import, source.code, generator_type.code as gen_type_code from hh_datum, channel, source, supply_generation, supply left outer join generator_type on supply.generator_type_id = generator_type.id where hh_datum.channel_id = channel.id and channel.supply_generation_id = supply_generation.id and supply_generation.supply_id = supply.id and supply.source_id = source.id and channel.is_kwh is true and not (source.code = 'net' and channel.is_import is true) and hh_datum.start_date >= ? and hh_datum.start_date <= ? and supply.id in (" + supplies_sql + ") order by hh_datum.start_date, supply.id", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.CLOSE_CURSORS_AT_COMMIT)
         stmt.setTimestamp(1, Timestamp(chunk_start.getDate().getTime()))
         stmt.setTimestamp(2, Timestamp(chunk_finish.getDate().getTime()))
         stmt.setFetchSize(100)
@@ -9659,47 +9663,42 @@ while sites.next():
             isImport = rs.getBoolean("is_import")
             source_code = rs.getString("code")
             gen_type = rs.getString("gen_type_code")
-            finishDateMillis = finishDate.getTime()
+            finishDateMillis = finish_date.getDate().getTime()
+            hh_date = start_date.getDate().getTime()
             cal = MonadDate.getCalendar()
-            while hhDate <= finishDateMillis:
+            while hh_date <= finishDateMillis:
                 gen_breakdown = {}
-                exported = parasitic = generated = 0
-                while hhChannelStartDate != None and hhChannelStartDate.getTime() == hhDate:
+                exported = 0
+                while hhChannelStartDate != None and hhChannelStartDate.getTime() == hh_date:
                     if not isImport and source_code in ('net', 'gen-net'):
                         exported += hhChannelValue
-                    if isImport and source_code in ('net', 'gen-net'):
-                        imported += hhChannelValue
                     if (isImport and source_code == 'gen') or (not isImport and source_code == 'gen-net'):
-                        generated += hhChannelValue
                         gen_breakdown[gen_type] = gen_breakdown.setdefault(gen_type, 0) + hhChannelValue
 
                     if (not isImport and source_code == 'gen') or (isImport and source_code == 'gen-net'):
-                        datum['parasitic'] += hhChannelValue
                         gen_breakdown[gen_type] = gen_breakdown.setdefault(gen_type, 0) - hhChannelValue
 
                     if rs.next():
                         source_code = rs.getString("code")
-                        supply_name = rs.getString("name")
                         hhChannelValue = rs.getFloat("value")
                         hhChannelStartDate = rs.getTimestamp("start_date")
                         isImport = rs.getBoolean("is_import")
-                        status = rs.getString("status")
-                        supply_id = rs.getLong('id')
+                        gen_type = rs.getString("gen_type_code")
                     else:
                         hhChannelStartDate = None
 
-                displaced = generated - parasitic - exported
+                displaced = sum(gen_breakdown.itervalues()) - exported
                 added_so_far = 0
                 for key in sorted(gen_breakdown.iterkeys()):
                     kwh = gen_breakdown[key]
                     if kwh + added_so_far > displaced:
-                        total_gen_breakdown[key] = total_gen_breakdown.setdefault(key, 0) + displaced - added_so_far
+                        total_gen_breakdown[key] = total_gen_breakdown.get(key, 0) + displaced - added_so_far
                         break
                     else:
-                        total_gen_breakdown[key] = total_gen_breakdown.setdefault(key, 0) + kwh
+                        total_gen_breakdown[key] = total_gen_breakdown.get(key, 0) + kwh
                         added_so_far += kwh
                     
-                hhDate = HhStartDate.getNext(cal, hhDate)
+                hh_date = HhStartDate.getNext(cal, hh_date)
         for title in ['chp', 'lm', 'turb']:
             pw.print(',' + str(total_gen_breakdown.get(title, '')))
 
@@ -12111,7 +12110,7 @@ source.appendChild(MonadDate.getDaysXml(doc))]]></value>
   </tr>
   <tr>
     <td>Supplies</td>
-    <td><input type="checkbox" name="has-supplies" value="true"/><xsl:value-of select="' '"/><label>Supply Id<xsl:value-of select="' '"/><input name="mpan-core"/></label></td>
+    <td><input type="checkbox" name="has-supplies" value="true"/><xsl:value-of select="' '"/><label>MPAN Core<xsl:value-of select="' '"/><input name="mpan-core"/></label></td>
   </tr>
   <tr>
     <td>HH Data</td>
