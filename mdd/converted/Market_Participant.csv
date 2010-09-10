@@ -1,293 +1,294 @@
 Chellow Id,Market Participant Id,Market Participant Name
-1,ENCS,Energy Communications Ltd
-2,ENDC,Energy Data Company Limited
-3,ENEC,Eneco Energy Trade BV
-4,ENGY,Energy Assets Ltd
-5,ENRD,British Gas Trading
-6,ENRG,Evenlode Energy Limted
-7,ENRO,Enron Capital & Trade Resource
-8,EPFA,Electricity Pool Funds Admin
-9,EPHH,Economy Power Ltd
-10,ESCL,Energy Supply Contracts Ltd
-11,ESIS,Energy Settlements & Info Serv
-12,ESML,E.ON UK Energy Services Ltd
-13,ESPO,Essential Power Ltd
-14,ESQL,E-Squared Limited
-15,ETCL,Electricity Network Co
-16,ETOL,Enron Teeside Operations Ltd
-17,FGEN,Fibrogen Ltd
-18,FHPL,Fellside Heat and Power Ltd
-19,FIBR,Fibropower Ltd
-20,FIWL,Fibrowatt Limited
-21,FNRG,Farmoor Energy Limited
-22,FORT,Fortum Direct Ltd
-23,FOUR,IPM Energy Retail Ltd
-24,FRST,First Utility Limited
-25,FUAP,First Utility Ltd
-26,GCHP,Grangemouth CHP Limited
-27,GETW,Utilita Electricity Limited
-28,GLAC,The Gas Light & Coke Company
-29,GMTR,GAZPROM M & T RETAIL LTD
-30,GNRG,Garsington Energy Limited
-31,GREN,Greenwich Energy Trading Ltd
-32,GUCL,Energetics Electricity Ltd
-33,GYPL,Great Yarmouth Power Limited
-34,HAVE,Haven Power Limited
-35,HEEL,Hydro Electric Energy Ltd
-36,HELE,SSE Energy Limited
-37,HMAR,TXU Europe High Marnham Ltd
-38,HPOW,Haven Power Limited
-39,HUMB,Humber Power Ltd
-40,HYDE,Scottish Hydro Electric plc
-41,ICPL,ICI Chemicals and Polymers
-42,IMPH,Atlantic Energy UK PLC
-43,IMPO,Atlantic Electric & Gas Ltd
-44,IMPX,Impkemix Energy Ltd
-45,INDE,Independent Energy NHH
-46,INDQ,Indian Queens Power Ltd
-47,INDX,Independent Energy HH
-48,IPNL,Independent Power Networks Ltd
-49,IRON,TXU Europe Ironbridge Ltd
-50,KEAD,Keadby Generation
-51,KEPL,Keadby Power Ltd
-52,KNPL,Kingsnorth Power Ltd
-53,LAKE,Lakeland Power Ltd
-54,LBSL,Lowri Beck Services Ltd
-55,LCMG,LogicaCMG (UK) Ltd.
-56,LECL,London Energy Company Limited
-57,LENC,Lenco
-58,LENG,ESP Electricity Limited
-59,LOND,EDF Energy plc
-60,LUME,Lumen Energy Supply Limited
-61,MAEL,MA Energy Limited
-62,MAGX,Magnox Electric Plc
-63,MANP,Manx Electricity Authority
-64,MANW,MANWEB plc
-65,MAVE,Maverick Energy
-66,MEDP,Medway Power Ltd
-67,MEMD,Metering Services (MIDE Area)
-68,MEMW,Metering Services (MANW Area)
-69,MENW,Metering Services (NORW Area)
-70,MESL,Metering Services Ltd.
-71,MESS,Metering Services (SPOW Area)
-72,MFMP,Meter Fit
-73,MFXC,Meter Fit
-74,MGAS,Midlands Gas Ltd
-75,MIDE,Midlands Electricity plc
-76,MLLA,Macquarie Leasing Limited
-77,MOPL,Meter Operators Ltd
-78,MRSL,Meter Reading Services Ltd
-79,MSCG,Morgan Stanley Capital Grp Inc
-80,NATP,Npower Ltd
-81,NEEB,Northern Electric plc
-82,NELC,British Energy Generation Ltd
-83,NESL,Northern Energy Services Ltd
-84,AAUL,Alcan Aluminium Limited
-85,ACCU,G4S Utility Services (UK) Ltd
-86,ACEL,Accord Energy Ltd
-87,ACTA,ACTARIS UK LIMITED
-88,ADAP,Celtpower Ltd
-89,AEPD,AES NewEnergy Ltd
-90,AESB,AES Barry Ltd
-91,AFPL,AES Fifoots Point Ltd
-92,AGSS,amerada.co.uk Ltd
-93,AHEL,Severn Trent Energy Ltd
-94,AHGL,Amerada Hess Gas Ltd
-95,AMGD,Amerada Hess Gas (Dom)
-96,AMMR,Orsis UK (Ltd)
-97,ANRG,Abingdon Energy Limited
-98,APGL,Anglian Power Generators Ltd
-99,AQES,Aquila Energy Supplies Ltd
-100,BARK,Barking Power
-101,BERM,British Energy Retail Market
-102,BGAS,British Gas Trading Ltd
-103,BGPL,British Gas plc
-104,BIZZ,British Gas Trading Ltd
-105,BMET,BGlobal Metering Limited
-106,BNFL,British Nuclear Fuels plc
-107,BNRG,Electricity Plus Supply Ltd
-108,BORL,Eggborough Power Ltd
-109,CABH,Cabah Energy Limited
-110,CALB,Coopers & Lybrand
-111,CAML,Connect Utilities Limited
-112,CAND,Candecca Resources Limited
-113,CAPG,Logica UK Limited
-114,CDSL,Controls Devices & Systems Ltd
-115,CECO,Coryton Energy Company Ltd
-116,CENP,Midlands Power (UK) Ltd
-117,CESL,Commercial Electricity
-118,CGEN,Citigen (London) Ltd
-119,CGTL,Cinergy Global Trading
-120,CGUK,Cinergy Global Power (UK) Ltd
-121,CIDA,CIDA
-122,CIDB,CIDB
-123,CIDC,CIDC
-124,CNDL,Candela Energy Supply Limited
-125,CNRG,Cherwell Energy Limited
-126,COOP,Energy COOP Ltd
-127,CORB,Corby Power
-128,CROS,Crosfield Ltd
-129,CROW,Reuben Power Supply Limited
-130,CUST,Dummy ID for Customers
-131,DAMC,Damhead Creek Ltd
-132,DASL,Siemens Metering Ltd
-133,DDCL,Dataflex Design Communication
-134,DEES,Deeside Power Developmt Co Ltd
-135,DERW,Derwent Co. Generation Ltd
-136,DMOM,DrakMarn O&M Ltd
-137,DNRG,Donnington Energy Limited
-138,DRAK,TXU Europe Drakelow Ltd
-139,DRAX,AES Drax Power Limited
-140,DUAL,Dual Energy Direct Limited
-141,EASL,Electricity Assn Services Ltd
-142,EBES,BES Commercial Electricity Ltd
-143,ECOA,British Gas Trading Ltd
-144,ECOB,EnergyCo2 Ltd
-145,ECOE,ECOES SERVICE PROVIDER
-146,ECON,Economy Power
-147,ECOT,Renewable Energy Company Ltd
-148,ECSM,ECS Metering Services
-149,EDEF,EDF Production Transport
-150,EDFE,EDF Energy plc
-151,EDFI,EDF Energy Ltd
-152,EDIR,Electricity Direct Ltd
-153,EECL,Enfield Energy Centre Limited
-154,EELC,Eastern Electricity
-155,EENG,E.ON Energy Ltd
-156,EFPL,Edison First Power Ltd
-157,ELED,ELEDOR LIMITED
-158,ELME,Elm Energy & Recycling UK Ltd
-159,EMEB,East Midlands Electricity plc
-160,EMGE,TXU Europe Merchant Generation
-161,NGAS,NGC Ancillary Services
-162,NGCP,First Hydro Company
-163,NGCY,National Grid Company
-164,NGIB,NGC Interconnections Business
-165,NGTL,Killingholme Power Limited
-166,NHUK,Norsk Hydro UK Ltd
-167,NORW,NORWEB plc
-168,NPOW,INNOGY Plc
-169,NTWL,Nitrogen Two Ltd
-170,NUCE,Magnox Electric plc
-171,OGAS,ZEST4 Electricity Limited
-172,ONSA,OnStream
-173,ONSE,OnStream
-174,ONST,"UMSL, trading as OnStream"
-175,OVOE,OVO Electricity Limited
-176,OXPO,Opus Energy Limited
-177,PCHP,PowerGen Combined Heat & Power
-178,PDAL,Power Data Associates Ltd
-179,PETE,Peterborough Power Ltd
-180,PETX,Pentex (East Midlands) Ltd
-181,PGEN,Powergen
-182,PLEX,PLEXUS TECHNOLOGY LIMITED
-183,PLUS,MeterPlus
-184,POML,Powermet Ltd
-185,POOL,ELEXON Limited
-186,PRIM,PRI Ltd
-187,PRIP,PRI Ltd
-188,PURE,Good Energy Limited
-189,RBOS,Royal Bank of Scotland
-190,REGP,Regional Power Generators
-191,RENC,Renewable Energy Company
-192,RGAS,Regent Gas
-193,ROCK,Rocksavage Power Company Ltd
-194,RUGE,TXU Europe Rugeley Ltd
-195,RWED,GDF SUEZ Marketing Ltd
-196,SCHL,Schlumberger Industries Ltd
-197,SCPL,South Coast Power Limited
-198,SEAB,Seabank Power Limited
-199,SECL,Spalding Energy Company Ltd
-200,SECU,Secus Ltd
-201,SEEB,EDF Energy plc
-202,SEEL,Sempra Energy Europe Limited
-203,SEOA,Scottish & Southern Energy Plc
-204,SESL,Scottish Electricity Settlemen
-205,SHEL,Shell Power Ltd
-206,SIEM,Siemens Metering Services
-207,SLOU,Slough Energy Supplies Ltd
-208,SMAL,SmartestEnergy Limited
-209,SMAR,SmartestEnergy Limited
-210,SNCL,Stanor National Contracts Ltd
-211,SOUT,Southern Electric plc
-212,SPOW,Scottish Power plc
-213,SPRK,Spark Energy Supply Limited
-214,SSIL,Stark Software International
-215,STCL,St Clements Services
-216,SWAE,South Wales Electricity plc
-217,SWEB,EDF Energy plc
-218,SYSC,Syseca Ltd
-219,TCGP,The Challenge Group
-220,TEAM,The Team Group of Companies UK
-221,TESI,Teesside Power Ltd
-222,TGPL,TotalFinaElf Gas & Power
-223,TREX,Power4All
-224,TRUR,TruRead Limited
-225,UDMS,UtilityDataManagementServices
-226,UESL,Utility Energy Solutions Ltd
-227,UKDC,IMServ Europe Ltd
-228,UKEL,UK Electric Power Ltd
-229,UKEP,UK Electric Power
-230,UMLD,UML Ltd
-231,UMOL,Utilita Meter Operations Ltd
-232,UPLD,Utility Partnership Ltd
-233,UTLX,Utilyx Limited
-234,UUMO,United Utilities Networks Ltd
-235,UUNL,United Utilities Networks Ltd
-236,VOLT,Volt Energy Supply Limited
-237,WBUR,TXU Europe West Burton Ltd
-238,WGAS,Western Gas Ltd
-239,WINT,Winterton Power Ltd
-240,WPDR,Western Power Data Retriever
-241,WPRM,Western Power Remote Metering
-242,WPSW,Western Power Dist South West
-243,WPWA,Western Power Dist South Wales
-244,WREL,Utility Link Limited
-245,YBGA,SP British Gas Trading
-246,YEEL,SP Eastern Electricity
-247,YELG,Yorkshire Electricity Group
-248,YEME,SP East Midland Electricity
-249,YHYD,SP Hydro Electric
-250,YIND,SP Independent Energy (UK) Ltd
-251,YLON,SP London Electricity
-252,YMID,SP Midlands Electricity
-253,YNAT,SP National Power
-254,YNEE,SP Northern Electric
-255,YNEL,SP Nuclear Electric
-256,YNOR,SP NORWEB
-257,YNUC,SP Magnox Electric
-258,YPGE,SP PowerGen
-259,YSEE,SP SEEBOARD
-260,YSOU,SP Southern Electric
-261,YSPO,SP Scottish Power plc
-262,YSWA,SP South Wales Electricity
-263,YSWE,SP South Western Electricity
-264,YYEL,SP Yorkshire Electricity
-265,ZEEL,HE Eastern Electricity
-266,ZEME,HE East Midland Electricity
-267,ZHYD,HE Scottish Hydro Electric plc
-268,ZIND,HE Independent Energy (UK) Ltd
-269,ZLON,HE London Electricity
-270,ZMID,HE Midlands Electricity
-271,ZNAT,HE National Power
-272,ZNEE,HE Northern Electric
-273,ZNOR,HE NORWEB
-274,ZPGE,HE PowerGen
-275,ZSEE,HE SEEBOARD
-276,ZSOU,HE Southern Electric plc
-277,ZSPO,HE ScottishPower
-278,ZSWA,HE South Wales Electricity
-279,ZTAR,REA AGENT ONLY (IMServ Europe)
-280,ZYEL,HE Yorkshire Electricity
-281,ZZAA,Dummy NHHDA for Eastern
-282,ZZAB,Dummy NHHDA for East Midlands
-283,ZZAC,Dummy NHHDA for London
-284,ZZAD,Dummy NHHDA for Manweb
-285,ZZAE,Dummy NHHDA for Midlands
-286,ZZAF,Dummy NHHDA for Northern
-287,ZZAG,Dummy NHHDA for Norweb
-288,ZZAH,Dummy NHHDA for Southern
-289,ZZAJ,Dummy NHHDA for Seeboard
-290,ZZAK,Dummy NHHDA for SWALEC
-291,ZZAL,Dummy NHHDA for SWEB
-292,ZZAM,Dummy NHHDA for Yorkshire
+1,AAUL,Alcan Aluminium Limited
+2,ACCU,G4S Utility Services (UK) Ltd
+3,ACEL,Accord Energy Ltd
+4,ACTA,ACTARIS UK LIMITED
+5,ADAP,Celtpower Ltd
+6,AEPD,AES NewEnergy Ltd
+7,AESB,AES Barry Ltd
+8,AFPL,AES Fifoots Point Ltd
+9,AGSS,amerada.co.uk Ltd
+10,AHEL,Severn Trent Energy Ltd
+11,AHGL,Amerada Hess Gas Ltd
+12,AMGD,Amerada Hess Gas (Dom)
+13,AMMR,Orsis UK (Ltd)
+14,ANRG,Abingdon Energy Limited
+15,APGL,Anglian Power Generators Ltd
+16,AQES,Aquila Energy Supplies Ltd
+17,BARK,Barking Power
+18,BERM,British Energy Retail Market
+19,BGAS,British Gas Trading Ltd
+20,BGPL,British Gas plc
+21,BIZZ,British Gas Trading Ltd
+22,BMET,BGlobal Metering Limited
+23,BNFL,British Nuclear Fuels plc
+24,BNRG,Electricity Plus Supply Ltd
+25,BORL,Eggborough Power Ltd
+26,CABH,Cabah Energy Limited
+27,CALB,Coopers & Lybrand
+28,CAML,Connect Utilities Limited
+29,CAND,Candecca Resources Limited
+30,CAPG,Logica UK Limited
+31,CDSL,Controls Devices & Systems Ltd
+32,CECO,Coryton Energy Company Ltd
+33,CENP,Midlands Power (UK) Ltd
+34,CESL,Commercial Electricity
+35,CGEN,Citigen (London) Ltd
+36,CGTL,Cinergy Global Trading
+37,CGUK,Cinergy Global Power (UK) Ltd
+38,CIDA,CIDA
+39,CIDB,CIDB
+40,CIDC,CIDC
+41,CNDL,Candela Energy Supply Limited
+42,CNRG,Cherwell Energy Limited
+43,COOP,Energy COOP Ltd
+44,CORB,Corby Power
+45,CROS,Crosfield Ltd
+46,CROW,Reuben Power Supply Limited
+47,CUST,Dummy ID for Customers
+48,DAMC,Damhead Creek Ltd
+49,DASL,Siemens Metering Ltd
+50,DDCL,Dataflex Design Communication
+51,DEES,Deeside Power Developmt Co Ltd
+52,DERW,Derwent Co. Generation Ltd
+53,DMOM,DrakMarn O&M Ltd
+54,DNRG,Donnington Energy Limited
+55,DRAK,TXU Europe Drakelow Ltd
+56,DRAX,AES Drax Power Limited
+57,DUAL,Dual Energy Direct Limited
+58,EASL,Electricity Assn Services Ltd
+59,EBES,BES Commercial Electricity Ltd
+60,ECOA,British Gas Trading Ltd
+61,ECOB,EnergyCo2 Ltd
+62,ECOE,ECOES SERVICE PROVIDER
+63,ECON,Economy Power
+64,ECOT,Renewable Energy Company Ltd
+65,ECSM,ECS Metering Services
+66,EDEF,EDF Production Transport
+67,EDFE,EDF Energy plc
+68,EDFI,EDF Energy Ltd
+69,EDIR,Electricity Direct Ltd
+70,EECL,Enfield Energy Centre Limited
+71,EELC,Eastern Electricity
+72,EENG,E.ON Energy Ltd
+73,EFPL,Edison First Power Ltd
+74,ELED,ELEDOR LIMITED
+75,ELME,Elm Energy & Recycling UK Ltd
+76,EMEB,East Midlands Electricity plc
+77,EMGE,TXU Europe Merchant Generation
+78,ENCS,Energy Communications Ltd
+79,ENDC,Energy Data Company Limited
+80,ENEC,Eneco Energy Trade BV
+81,ENGY,Energy Assets Ltd
+82,ENRD,British Gas Trading
+83,ENRG,Evenlode Energy Limted
+84,ENRO,Enron Capital & Trade Resource
+85,EPFA,Electricity Pool Funds Admin
+86,EPHH,Economy Power Ltd
+87,ESCL,Energy Supply Contracts Ltd
+88,ESIS,Energy Settlements & Info Serv
+89,ESML,E.ON UK Energy Services Ltd
+90,ESPO,Essential Power Ltd
+91,ESQL,E-Squared Limited
+92,ETCL,Electricity Network Co
+93,ETOL,Enron Teeside Operations Ltd
+94,FGEN,Fibrogen Ltd
+95,FHPL,Fellside Heat and Power Ltd
+96,FIBR,Fibropower Ltd
+97,FIWL,Fibrowatt Limited
+98,FNRG,Farmoor Energy Limited
+99,FORT,Fortum Direct Ltd
+100,FOUR,IPM Energy Retail Ltd
+101,FRST,First Utility Limited
+102,FUAP,First Utility Ltd
+103,GCHP,Grangemouth CHP Limited
+104,GETW,Utilita Electricity Limited
+105,GLAC,The Gas Light & Coke Company
+106,GMTR,GAZPROM M & T RETAIL LTD
+107,GNRG,Garsington Energy Limited
+108,GREN,Greenwich Energy Trading Ltd
+109,GUCL,Energetics Electricity Ltd
+110,GYPL,Great Yarmouth Power Limited
+111,HAVE,Haven Power Limited
+112,HEEL,Hydro Electric Energy Ltd
+113,HELE,SSE Energy Limited
+114,HMAR,TXU Europe High Marnham Ltd
+115,HPOW,Haven Power Limited
+116,HUMB,Humber Power Ltd
+117,HYDE,Scottish Hydro Electric plc
+118,ICPL,ICI Chemicals and Polymers
+119,IMPH,Atlantic Energy UK PLC
+120,IMPO,Atlantic Electric & Gas Ltd
+121,IMPX,Impkemix Energy Ltd
+122,INDE,Independent Energy NHH
+123,INDQ,Indian Queens Power Ltd
+124,INDX,Independent Energy HH
+125,IPNL,Independent Power Networks Ltd
+126,IRON,TXU Europe Ironbridge Ltd
+127,KEAD,Keadby Generation
+128,KEPL,Keadby Power Ltd
+129,KNPL,Kingsnorth Power Ltd
+130,LAKE,Lakeland Power Ltd
+131,LBSL,Lowri Beck Services Ltd
+132,LCMG,LogicaCMG (UK) Ltd.
+133,LECL,London Energy Company Limited
+134,LENC,Lenco
+135,LENG,ESP Electricity Limited
+136,LOND,EDF Energy plc
+137,LUME,Lumen Energy Supply Limited
+138,MAEL,MA Energy Limited
+139,MAGX,Magnox Electric Plc
+140,MANP,Manx Electricity Authority
+141,MANW,MANWEB plc
+142,MAVE,Maverick Energy
+143,MEDP,Medway Power Ltd
+144,MEMD,Metering Services (MIDE Area)
+145,MEMW,Metering Services (MANW Area)
+146,MENW,Metering Services (NORW Area)
+147,MESL,Metering Services Ltd.
+148,MESS,Metering Services (SPOW Area)
+149,MFMP,Meter Fit
+150,MFXC,Meter Fit
+151,MGAS,Midlands Gas Ltd
+152,MIDE,Midlands Electricity plc
+153,MLBB,G4S Utility Services (UK) Ltd
+154,MLLA,Macquarie Leasing Limited
+155,MOPL,Meter Operators Ltd
+156,MRSL,Meter Reading Services Ltd
+157,MSCG,Morgan Stanley Capital Grp Inc
+158,NATP,Npower Ltd
+159,NEEB,Northern Electric plc
+160,NELC,British Energy Generation Ltd
+161,NESL,Northern Energy Services Ltd
+162,NGAS,NGC Ancillary Services
+163,NGCP,First Hydro Company
+164,NGCY,National Grid Company
+165,NGIB,NGC Interconnections Business
+166,NGTL,Killingholme Power Limited
+167,NHUK,Norsk Hydro UK Ltd
+168,NORW,NORWEB plc
+169,NPOW,INNOGY Plc
+170,NTWL,Nitrogen Two Ltd
+171,NUCE,Magnox Electric plc
+172,OGAS,ZEST4 Electricity Limited
+173,ONSA,OnStream
+174,ONSE,OnStream
+175,ONST,"UMSL, trading as OnStream"
+176,OVOE,OVO Electricity Limited
+177,OXPO,Opus Energy Limited
+178,PCHP,PowerGen Combined Heat & Power
+179,PDAL,Power Data Associates Ltd
+180,PETE,Peterborough Power Ltd
+181,PETX,Pentex (East Midlands) Ltd
+182,PGEN,Powergen
+183,PLEX,PLEXUS TECHNOLOGY LIMITED
+184,PLUS,MeterPlus
+185,POML,Powermet Ltd
+186,POOL,ELEXON Limited
+187,PRIM,PRI Ltd
+188,PRIP,PRI Ltd
+189,PURE,Good Energy Limited
+190,RBOS,Royal Bank of Scotland
+191,REGP,Regional Power Generators
+192,RENC,Renewable Energy Company
+193,RGAS,Regent Gas
+194,ROCK,Rocksavage Power Company Ltd
+195,RUGE,TXU Europe Rugeley Ltd
+196,RWED,GDF SUEZ Marketing Ltd
+197,SCHL,Schlumberger Industries Ltd
+198,SCPL,South Coast Power Limited
+199,SEAB,Seabank Power Limited
+200,SECL,Spalding Energy Company Ltd
+201,SECU,Secus Ltd
+202,SEEB,EDF Energy plc
+203,SEEL,Sempra Energy Europe Limited
+204,SEOA,Scottish & Southern Energy Plc
+205,SESL,Scottish Electricity Settlemen
+206,SHEL,Shell Power Ltd
+207,SIEM,Siemens Metering Services
+208,SLOU,Slough Energy Supplies Ltd
+209,SMAL,SmartestEnergy Limited
+210,SMAR,SmartestEnergy Limited
+211,SNCL,Stanor National Contracts Ltd
+212,SOUT,Southern Electric plc
+213,SPOW,Scottish Power plc
+214,SPRK,Spark Energy Supply Limited
+215,SSIL,Stark Software International
+216,STCL,St Clements Services
+217,SWAE,South Wales Electricity plc
+218,SWEB,EDF Energy plc
+219,SYSC,Syseca Ltd
+220,TCGP,The Challenge Group
+221,TEAM,The Team Group of Companies UK
+222,TESI,Teesside Power Ltd
+223,TGPL,TotalFinaElf Gas & Power
+224,TREX,Power4All
+225,TRUR,TruRead Limited
+226,UDMS,UtilityDataManagementServices
+227,UESL,Utility Energy Solutions Ltd
+228,UKDC,IMServ Europe Ltd
+229,UKEL,UK Electric Power Ltd
+230,UKEP,UK Electric Power
+231,UMLD,UML Ltd
+232,UMOL,Utilita Meter Operations Ltd
+233,UPLD,Utility Partnership Ltd
+234,UTLX,Utilyx Limited
+235,UUMO,United Utilities Networks Ltd
+236,UUNL,United Utilities Networks Ltd
+237,VOLT,Volt Energy Supply Limited
+238,WBUR,TXU Europe West Burton Ltd
+239,WGAS,Western Gas Ltd
+240,WINT,Winterton Power Ltd
+241,WPDR,Western Power Data Retriever
+242,WPRM,Western Power Remote Metering
+243,WPSW,Western Power Dist South West
+244,WPWA,Western Power Dist South Wales
+245,WREL,Utility Link Limited
+246,YBGA,SP British Gas Trading
+247,YEEL,SP Eastern Electricity
+248,YELG,Yorkshire Electricity Group
+249,YEME,SP East Midland Electricity
+250,YHYD,SP Hydro Electric
+251,YIND,SP Independent Energy (UK) Ltd
+252,YLON,SP London Electricity
+253,YMID,SP Midlands Electricity
+254,YNAT,SP National Power
+255,YNEE,SP Northern Electric
+256,YNEL,SP Nuclear Electric
+257,YNOR,SP NORWEB
+258,YNUC,SP Magnox Electric
+259,YPGE,SP PowerGen
+260,YSEE,SP SEEBOARD
+261,YSOU,SP Southern Electric
+262,YSPO,SP Scottish Power plc
+263,YSWA,SP South Wales Electricity
+264,YSWE,SP South Western Electricity
+265,YYEL,SP Yorkshire Electricity
+266,ZEEL,HE Eastern Electricity
+267,ZEME,HE East Midland Electricity
+268,ZHYD,HE Scottish Hydro Electric plc
+269,ZIND,HE Independent Energy (UK) Ltd
+270,ZLON,HE London Electricity
+271,ZMID,HE Midlands Electricity
+272,ZNAT,HE National Power
+273,ZNEE,HE Northern Electric
+274,ZNOR,HE NORWEB
+275,ZPGE,HE PowerGen
+276,ZSEE,HE SEEBOARD
+277,ZSOU,HE Southern Electric plc
+278,ZSPO,HE ScottishPower
+279,ZSWA,HE South Wales Electricity
+280,ZTAR,REA AGENT ONLY (IMServ Europe)
+281,ZYEL,HE Yorkshire Electricity
+282,ZZAA,Dummy NHHDA for Eastern
+283,ZZAB,Dummy NHHDA for East Midlands
+284,ZZAC,Dummy NHHDA for London
+285,ZZAD,Dummy NHHDA for Manweb
+286,ZZAE,Dummy NHHDA for Midlands
+287,ZZAF,Dummy NHHDA for Northern
+288,ZZAG,Dummy NHHDA for Norweb
+289,ZZAH,Dummy NHHDA for Southern
+290,ZZAJ,Dummy NHHDA for Seeboard
+291,ZZAK,Dummy NHHDA for SWALEC
+292,ZZAL,Dummy NHHDA for SWEB
+293,ZZAM,Dummy NHHDA for Yorkshire

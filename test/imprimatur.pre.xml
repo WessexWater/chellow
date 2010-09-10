@@ -110,14 +110,14 @@
 			<response-code value="200" />
 		</request>
 		<request path="/chellow/sites/" method="post">
-			<control name="code">CH017</control>
-			<control name="name">Parbola</control>
+			<control name="code" value="CH017" />
+			<control name="name" value="Parbola" />
 			<response-code value="303" />
 		</request>
 	</test>
 	<test name="HHDC contracts">
 		<request path="/chellow/hhdc-contracts/" method="post">
-			<control name="participant-id" value="132" />
+			<control name="participant-id" value="49" /> <!-- Siemens -->
 			<control name="name" value="HH contract" />
 			<control name="start-year" value="2000" />
 			<control name="start-month" value="01" />
@@ -128,7 +128,7 @@
 		</request>
 		<!-- Update Contract -->
 		<request path="/chellow/hhdc-contracts/0/" method="post">
-			<control name="participant-id" value="132" />
+			<control name="participant-id" value="49" />
 			<control name="name" value="HH contract" />
 			<control name="start-year" value="2000" />
 			<control name="start-month" value="01" />
@@ -171,7 +171,7 @@ def virtual_bill(supply_source):
 	</test>
 	<test name="Check one can update the participant for an HHDC contract.">
 		<request path="/chellow/hhdc-contracts/2/" method="post">
-			<control name="participant-id" value="132" />
+			<control name="participant-id" value="49" />
 			<control name="name" value="Dynamat data" />
 			<control name="start-year" value="2000" />
 			<control name="start-month" value="01" />
@@ -180,12 +180,12 @@ def virtual_bill(supply_source):
 			<control name="charge-script"></control>
 			<control name="properties"></control>
 			<response-code value="200" />
-			<regex pattern='option value="132" selected' />
+			<regex pattern='option value="49" selected' />
 		</request>
 		<!-- Check it's still there -->
 		<request path="/chellow/hhdc-contracts/2/">
 			<response-code value="200" />
-			<regex pattern='option value="132" selected' />
+			<regex pattern='option value="49" selected' />
 		</request>
 	</test>
 	<test name="Manipulate supplier contracts">
@@ -240,7 +240,7 @@ def virtual_bill(supply, startDate, finishDate, pw):
 	<test name="Manipulate non-core contracts">
 		<!-- Create a new non-core contract -->
 		<request path="/chellow/non-core-contracts/" method="post">
-			<control name="participant-id" value="185" />
+			<control name="participant-id" value="27" /> <!-- CALB -->
 			<control name="name" value="VAT" />
 			<control name="start-year" value="2000" />
 			<control name="start-month" value="01" />
@@ -249,11 +249,11 @@ def virtual_bill(supply, startDate, finishDate, pw):
 			<response-code value="303" />
 		</request>
 		<request path="/chellow/non-core-contracts/6/" method="post">
-			<control name="participant-id" value="181" />
+			<control name="participant-id" value="216" /> <!-- STCL -->
 			<control name="name" value="VAT 2" />
-			<control name="start-year">2000</control>
-			<control name="start-month">01</control>
-			<control name="start-day">03</control>
+			<control name="start-year" value="2000" />
+			<control name="start-month" value="01" />
+			<control name="start-day" value="03" />
 			<control name="charge-script"><![CDATA[import sys]]>&#13;<![CDATA[
 import net.sf.chellow.billing
 import net.sf.chellow.monad.ui
@@ -1284,7 +1284,7 @@ def virtual_bill(supply_source):
 			<control name="email-address" value="mishka@localhost" />
 			<control name="password" value="fyodor" />
 			<control name="user-role-id" value="2" />
-			<control name="party-id" value="219" />
+			<control name="party-id" value="49" />
 			<response-code value="303" />
 			<regex pattern="/chellow/users/4/" />
 		</request>
@@ -1725,7 +1725,7 @@ def import_virtual_bill(supply_source):
 	<test name="Test deleting of supplier contracts">
 		<!-- Create a new supplier contract -->
 		<request path="/chellow/supplier-contracts/" method="post">
-			<control name="participant-id" value="191" />
+			<control name="participant-id" value="196" /> <!-- RWED -->
 			<control name="name" value="GDF" />
 			<control name="start-year" value="2000" />
 			<control name="start-month" value="01" />
@@ -1749,7 +1749,7 @@ def import_virtual_bill(supply_source):
 	<test name="Test deleting of HHDC contracts">
 		<!-- Create an HHDC contract -->
 		<request path="/chellow/hhdc-contracts/" method="post">
-			<control name="participant-id" value="132" />
+			<control name="participant-id" value="49" />
 			<control name="name" value="Siemens Contract" />
 			<control name="start-year" value="2000" />
 			<control name="start-month" value="01" />
@@ -1788,7 +1788,7 @@ def import_virtual_bill(supply_source):
 
 		<!-- Create the virtual bill -->
 		<request path="/chellow/non-core-contracts/" method="post">
-			<control name="participant-id" value="185" />
+			<control name="participant-id" value="27" />
 			<control name="is-core" value="false" />
 			<control name="name" value="TRIAD Estimates" />
 			<control name="start-year" value="2000" />
@@ -1891,34 +1891,34 @@ def triad_estimates():
 	</test>
 	<test name="Manipulate dso contracts">
 		<!-- Insert DSO contract -->
-		<request path="/chellow/dsos/367/contracts/" method="post">
+		<request path="/chellow/dsos/363/contracts/" method="post"> <!-- Contract of DSO 10 -->
 			<control name="name" value="main 2010-04-01" />
 			<control name="start-year" value="2010" />
 			<control name="start-month" value="04" />
 			<control name="start-day" value="01" />
-			<regex pattern="/chellow/dsos/367/contracts/65/" />
+			<regex pattern="/chellow/dsos/363/contracts/65/" />
 			<response-code value="303" />
 		</request>
 
 		<!-- Check start time of rate script -->
-		<request path="/chellow/dsos/367/contracts/65/rate-scripts/159/">
+		<request path="/chellow/dsos/363/contracts/65/rate-scripts/159/">
 			<regex pattern="00:00 Z" />
 			<response-code value="200" />
 		</request>
 
 		<!-- Insert rate script -->
-		<request path="/chellow/dsos/367/contracts/65/rate-scripts/"
+		<request path="/chellow/dsos/363/contracts/65/rate-scripts/"
 			method="post">
 			<control name="start-year" value="2010" />
 			<control name="start-month" value="05" />
 			<control name="start-day" value="01" />
 
-			<regex pattern="/chellow/dsos/367/contracts/65/rate-scripts/161/" />
+			<regex pattern="/chellow/dsos/363/contracts/65/rate-scripts/161/" />
 			<response-code value="303" />
 		</request>
 
 		<!-- Delete rate script -->
-		<request path="/chellow/dsos/367/contracts/65/rate-scripts/161/"
+		<request path="/chellow/dsos/363/contracts/65/rate-scripts/161/"
 			method="post">
 			<control name="delete" value="Delete" />
 			<response-code value="303" />
