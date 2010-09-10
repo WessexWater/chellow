@@ -181,6 +181,21 @@ class Parser(BillParser):
         raw_bills = []
         values = self.shredder.getLine()
         while values != None:
+            bill_type = BillType.getBillType(values[0])
+            account_reference = values[1]
+            mpan_strings = values[2].split(",")
+            invoice_reference = values[3]
+            issue_date = MonadDate(values[4]).getDate()
+            start_date = HhStartDate(values[5])
+            finish_date = HhStartDate(values[6])
+            kwh = BigDecimal(values[7])
+            net = BigDecimal(values[8])
+            vat = BigDecimal(values[9])
+            breakdown = values[10]
+
+            while values[-1] == '' and len(values) > 11:
+                del values[-1]
+
             reads = []
             for i in range(11, len(values), 11):
                 tpr_str = values[i + 4].strip()
@@ -188,9 +203,16 @@ class Parser(BillParser):
                     tpr = None
                 else:
                     tpr = Tpr.getTpr(self.formatter.format(Integer.parseInt(tpr_str)))
-                reads.append(RawRegisterRead(values[i], values[i + 1], BigDecimal(values[i + 2]), Units.getUnits(values[i + 3]), tpr, HhStartDate(values[i + 5]), BigDecimal(values[i + 6]), ReadType.getReadType(values[i + 7]), HhStartDate(values[i + 8]), BigDecimal(values[i + 9]), ReadType.getReadType(values[i + 10])))
-            mpan_strings = values[2].split(",")
-            raw_bills.append(RawBill(BillType.getBillType(values[0]), values[1], mpan_strings, values[3], MonadDate(values[4]).getDate(), HhStartDate(values[5]), HhStartDate(values[6]), BigDecimal(values[7]), BigDecimal(values[8]), BigDecimal(values[9]), values[9], reads))
+                try:
+                    coefficient_index = i + 2
+                    coefficient_str = values[coefficient_index]
+                    coefficient = BigDecimal(coefficient_str)
+                except NumberFormatException:
+                    raise UserException("The coefficient '" + coefficient_str + "' cannot be formatted as a number. The coefficient is the " + str(coefficient_index) + " field of " + str(values) + ".")
+
+                reads.append(RawRegisterRead(values[i], values[i + 1], coefficient, Units.getUnits(values[i + 3]), tpr, HhStartDate(values[i + 5]), BigDecimal(values[i + 6]), ReadType.getReadType(values[i + 7]), HhStartDate(values[i + 8]), BigDecimal(values[i + 9]), ReadType.getReadType(values[i + 10])))
+            
+            raw_bills.append(RawBill(bill_type, account_reference, mpan_strings, invoice_reference, issue_date, start_date, finish_date, kwh, net, vat, breakdown, reads))
             values = self.shredder.getLine()
         self.shredder.close()
         return raw_bills
@@ -349,7 +371,7 @@ from java.util import Calendar
 
 read_type_map = {'00': 'N', '09': 'N3', '04': 'C', '02': 'E', '11': 'E3', '01': 'EM', '03': 'W', '06': 'X', '05': 'CP', '12': 'IF'}
 
-tmod_map = {'0001': '00001', 'URQ1': '00001', 'Z012': '00001', '0210': '00210', '0043': '00043', 'DAQ2': '00043', 'NIQ2': '00210', 'NQ22': '00210', 'DQ22': '00043', 'D7P2': '00043', 'N7P2': '00210', 'MDC1': '00001', 'URC1': '00001', '0206': '00206', '0040': '00040', '1140': '00210', '1139': '00043', 'A154': '01154', 'A153': '01153', '0039': '00043', '0221': '00210', '210E': '00210', '1150': '00210', '1149': '00043', '0153': '00153', 'WQ42': '00184', 'NQ42': '00210', 'EQ42': '00187', 'WDQ3': '00043', 'EWQ3': '00210', 'WDQ4': '01075', 'EWQ4': '01076', 'NIQ4': '01077', 'EQ32': '00072', 'NQ32': '00184', '0276': '00276', '0277': '00277', '0160': '00160', '1152': '01152', '1151': '01151', '1142': '01142', '1141': '01141', '0249': '00240', '0252': '00244', '0240': '00249', '0244': '00252', '0092': '00092', '210A': '00210', 'MAC2': 'md', 'DAC2': '00040', 'NAC2': '00206', 'NDC2': '00040', 'NNC2': '00206', 'MNC2': 'md', '148A': '00148', '221B': '00221', '080A':'00080', 'P1M3': '00239', 'P2M3': '00239', 'W1M3': '00248', 'W2M3':'00251', 'OTM3': '00093', 'NIM3': '00208', 'MDM3': 'md', 'URQD': '00001', 'OPE3': '01088', 'OEC2': '00190', '184A': '00184', '210J': '00187', '187A': '00210', '0183': '00183', '0071': '00071', 'DAE7': '00043', 'NIE7': '00210', 'OPAC': '00010', 'MDM1': 'md', 'D179': '00039', 'N179': '00221', 'O212': '00212', '0151': '00151', 'SG1U': '00001', '0184': '00184', '0072': '00072', 'DM22': '00039', 'NM22': '00221', 'MM22': 'md', '0044':'00044' , '0208': '00208', 'URM1': '00001', '1043': '01043', '1042': '01042', 'U393': '00001', 'D244': '00040', 'N244': '00206', '24D4':'00040', '24N4':'00206'}
+tmod_map = {'0001': '00001', 'URQ1': '00001', 'Z012': '00001', '0210': '00210', '0043': '00043', 'DAQ2': '00043', 'NIQ2': '00210', 'NQ22': '00210', 'DQ22': '00043', 'D7P2': '00043', 'N7P2': '00210', 'MDC1': '00001', 'URC1': '00001', '0206': '00206', '0040': '00040', '1140': '00210', '1139': '00043', 'A154': '01154', 'A153': '01153', '0039': '00043', '0221': '00210', '210E': '00210', '1150': '00210', '1149': '00043', '0153': '00153', 'WQ42': '00184', 'NQ42': '00210', 'EQ42': '00187', 'WDQ3': '00043', 'EWQ3': '00210', 'WDQ4': '01075', 'EWQ4': '01076', 'NIQ4': '01077', 'EQ32': '00072', 'NQ32': '00184', '0276': '00276', '0277': '00277', '0160': '00160', '1152': '01152', '1151': '01151', '1142': '01142', '1141': '01141', '0249': '00240', '0252': '00244', '0240': '00249', '0244': '00252', '0092': '00092', '210A': '00210', 'MAC2': 'md', 'DAC2': '00040', 'NAC2': '00206', 'NDC2': '00040', 'NNC2': '00206', 'MNC2': 'md', '148A': '00148', '221B': '00221', '080A':'00080', 'P1M3': '00239', 'P2M3': '00239', 'W1M3': '00248', 'W2M3':'00251', 'OTM3': '00093', 'NIM3': '00208', 'MDM3': 'md', 'URQD': '00001', 'OPE3': '01088', 'OEC2': '00190', '184A': '00184', '210J': '00187', '187A': '00210', '0183': '00183', '0071': '00071', 'DAE7': '00043', 'NIE7': '00210', 'OPAC': '00010', 'MDM1': 'md', 'D179': '00039', 'N179': '00221', 'O212': '00212', '0151': '00151', 'SG1U': '00001', '0184': '00184', '0072': '00072', 'DM22': '00039', 'NM22': '00221', 'MM22': 'md', '0044':'00044' , '0208': '00208', 'URM1': '00001', '1043': '01043', '1042': '01042', 'U393': '00001', 'D244': '00040', 'N244': '00206', '24D4': '00040', '24N4': '00206', 'OFX2': '00001'}
 
 class Parser(BillParser):
     def __init__(self, reader):

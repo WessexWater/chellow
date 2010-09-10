@@ -172,11 +172,11 @@ def virtual_bill(supply_source):
 	<test name="Check one can update the participant for an HHDC contract.">
 		<request path="/chellow/hhdc-contracts/2/" method="post">
 			<control name="participant-id" value="132" />
-			<control name="name">Dynamat data</control>
-			<control name="start-year">2000</control>
-			<control name="start-month">01</control>
-			<control name="start-day">03</control>
-			<control name="has-finished">false</control>
+			<control name="name" value="Dynamat data" />
+			<control name="start-year" value="2000" />
+			<control name="start-month" value="01" />
+			<control name="start-day" value="03" />
+			<control name="has-finished" value="false" />
 			<control name="charge-script"></control>
 			<control name="properties"></control>
 			<response-code value="200" />
@@ -2127,7 +2127,7 @@ def import_virtual_bill(supply_source):
 		<request path="/chellow/supplier-contracts/16/batches/5/bill-imports/3/">
 			<refresh />
 			<regex
-				pattern='&lt;th&gt;Reference&lt;/th&gt;&lt;th&gt;Account Reference&lt;/th&gt;&lt;th&gt;MPANs&lt;/th&gt;&lt;th&gt;Issue Date&lt;/th&gt;&lt;th&gt;Start Date&lt;/th&gt;&lt;th&gt;Finish Date&lt;/th&gt;&lt;th&gt;kWh&lt;/th&gt;&lt;th&gt;Net&lt;/th&gt;&lt;th&gt;VAT&lt;/th&gt;&lt;th&gt;Type&lt;/th&gt;&lt;th&gt;Breakdown&lt;/th&gt;&lt;th&gt;R1 MPAN&lt;/th&gt;&lt;th&gt;R1 Meter Serial Number&lt;/th&gt;&lt;th&gt;R1 TPR&lt;/th&gt;&lt;th&gt;R1 Coefficient&lt;/th&gt;&lt;th&gt;R1 Units&lt;/th&gt;&lt;th&gt;R1 Previous Read Date&lt;/th&gt;&lt;th&gt;R1 Previous Read Value&lt;/th&gt;&lt;th&gt;R1 Previous Read Type&lt;/th&gt;&lt;th&gt;R1 Present Read Date&lt;/th&gt;&lt;th&gt;R1 Present Read Value&lt;/th&gt;&lt;th&gt;R1 Present Read Type&lt;/th&gt;&lt;th&gt;R2 MPAN&lt;/th&gt;&lt;th&gt;R2 Meter Serial Number&lt;/th&gt;&lt;th&gt;R2 TPR&lt;/th&gt;&lt;th&gt;R2 Coefficient&lt;/th&gt;&lt;th&gt;R2 Units&lt;/th&gt;&lt;th&gt;R2 Previous Read Date&lt;/th&gt;&lt;th&gt;R2 Previous Read Value&lt;/th&gt;&lt;th&gt;R2 Previous Read Type&lt;/th&gt;&lt;th&gt;R2 Present Read Date&lt;/th&gt;&lt;th&gt;R2 Present Read Value&lt;/th&gt;&lt;th&gt;R2 Present Read Type&lt;/th&gt;&lt;th&gt;R3 MPAN&lt;/th&gt;&lt;th&gt;R3 Meter Serial Number&lt;/th&gt;&lt;th&gt;R3 TPR&lt;/th&gt;&lt;th&gt;R3 Coefficient&lt;/th&gt;&lt;th&gt;R3 Units&lt;/th&gt;&lt;th&gt;R3 Previous Read Date&lt;/th&gt;&lt;th&gt;R3 Previous Read Value&lt;/th&gt;&lt;th&gt;R3 Previous Read Type&lt;/th&gt;&lt;th&gt;R3 Present Read Date&lt;/th&gt;&lt;th&gt;R3 Present Read Value&lt;/th&gt;&lt;th&gt;R3 Present Read Type&lt;/th&gt;&lt;th&gt;R4 MPAN&lt;/th&gt;&lt;th&gt;R4 Meter Serial Number&lt;/th&gt;&lt;th&gt;R4 TPR&lt;/th&gt;&lt;th&gt;R4 Coefficient&lt;/th&gt;&lt;th&gt;R4 Units&lt;/th&gt;&lt;th&gt;R4 Previous Read Date&lt;/th&gt;&lt;th&gt;R4 Previous Read Value&lt;/th&gt;&lt;th&gt;R4 Previous Read Type&lt;/th&gt;&lt;th&gt;R4 Present Read Date&lt;/th&gt;&lt;th&gt;R4 Present Read Value&lt;/th&gt;&lt;th&gt;R4 Present Read Type&lt;/th&gt;' />
+				pattern='&lt;th&gt;Reference&lt;/th&gt;&lt;th&gt;Account Reference&lt;/th&gt;&lt;th&gt;MPANs&lt;/th&gt;&lt;th&gt;Issue Date&lt;/th&gt;&lt;th&gt;Start Date&lt;/th&gt;&lt;th&gt;Finish Date&lt;/th&gt;&lt;th&gt;kWh&lt;/th&gt;&lt;th&gt;Net&lt;/th&gt;&lt;th&gt;VAT&lt;/th&gt;&lt;th&gt;Type&lt;/th&gt;&lt;th&gt;Breakdown&lt;/th&gt;&lt;th&gt;R1 MPAN&lt;/th&gt;&lt;th&gt;R1 Meter Serial Number&lt;/th&gt;&lt;th&gt;R1 Coefficient&lt;/th&gt;&lt;th&gt;R1 Units&lt;/th&gt;&lt;th&gt;R1 TPR&lt;/th&gt;&lt;th&gt;R1 Previous Read Date&lt;/th&gt;&lt;th&gt;R1 Previous Read Value&lt;/th&gt;&lt;th&gt;R1 Previous Read Type&lt;/th&gt;&lt;th&gt;R1 Present Read Date&lt;/th&gt;&lt;th&gt;R1 Present Read Value&lt;/th&gt;&lt;th&gt;R1 Present Read Type&lt;/th&gt;&lt;th&gt;R2 MPAN&lt;/th&gt;&lt;th&gt;R2 Meter Serial Number&lt;/th&gt;&lt;th&gt;R2 Coefficient&lt;/th&gt;&lt;th&gt;R2 Units&lt;/th&gt;&lt;th&gt;R2 TPR&lt;/th&gt;&lt;th&gt;R2 Previous Read Date&lt;/th&gt;&lt;th&gt;R2 Previous Read Value&lt;/th&gt;&lt;th&gt;R2 Previous Read Type&lt;/th&gt;&lt;th&gt;R2 Present Read Date&lt;/th&gt;&lt;th&gt;R2 Present Read Value&lt;/th&gt;&lt;th&gt;R2 Present Read Type&lt;/th&gt;&lt;th&gt;R3 MPAN&lt;/th&gt;&lt;th&gt;R3 Meter Serial Number&lt;/th&gt;&lt;th&gt;R3 Coefficient&lt;/th&gt;&lt;th&gt;R3 Units&lt;/th&gt;&lt;th&gt;R3 TPR&lt;/th&gt;&lt;th&gt;R3 Previous Read Date&lt;/th&gt;&lt;th&gt;R3 Previous Read Value&lt;/th&gt;&lt;th&gt;R3 Previous Read Type&lt;/th&gt;&lt;th&gt;R3 Present Read Date&lt;/th&gt;&lt;th&gt;R3 Present Read Value&lt;/th&gt;&lt;th&gt;R3 Present Read Type&lt;/th&gt;&lt;th&gt;R4 MPAN&lt;/th&gt;&lt;th&gt;R4 Meter Serial Number&lt;/th&gt;&lt;th&gt;R4 Coefficient&lt;/th&gt;&lt;th&gt;R4 Units&lt;/th&gt;&lt;th&gt;R4 TPR&lt;/th&gt;&lt;th&gt;R4 Previous Read Date&lt;/th&gt;&lt;th&gt;R4 Previous Read Value&lt;/th&gt;&lt;th&gt;R4 Previous Read Type&lt;/th&gt;&lt;th&gt;R4 Present Read Date&lt;/th&gt;&lt;th&gt;R4 Present Read Value&lt;/th&gt;&lt;th&gt;R4 Present Read Type&lt;/th&gt;' />
 			<regex
 				pattern='&lt;td&gt;3423760005&lt;/td&gt;&lt;td&gt;SA342376000&lt;/td&gt;&lt;td&gt;03 801 110 22 10653921534&lt;/td&gt;&lt;td&gt;2010-05-12&lt;/td&gt;&lt;td&gt;2010-01-19&lt;/td&gt;&lt;td&gt;2010-04-20&lt;/td&gt;&lt;td&gt;&lt;/td&gt;&lt;td&gt;36.16&lt;/td&gt;&lt;td&gt;1.8&lt;/td&gt;&lt;td&gt;N&lt;/td&gt;&lt;td&gt;&lt;/td&gt;&lt;td&gt;03 801 110 22 1065 3921 534&lt;/td&gt;&lt;td&gt;K87D74429&lt;/td&gt;&lt;td&gt;00001&lt;/td&gt;&lt;td&gt;1&lt;/td&gt;&lt;td&gt;kWh&lt;/td&gt;&lt;td&gt;2010-01-18&lt;/td&gt;&lt;td&gt;16963&lt;/td&gt;&lt;td&gt;E&lt;/td&gt;&lt;td&gt;2010-04-20&lt;/td&gt;&lt;td&gt;17216&lt;/td&gt;&lt;td&gt;E&lt;/td&gt;' />
 			<response-code value="200" />
@@ -2232,7 +2232,7 @@ def import_virtual_bill(supply_source):
 		<request path="/chellow/supplier-contracts/4/batches/6/bill-imports/4/">
 			<refresh />
 			<regex
-				pattern='&lt;th&gt;Reference&lt;/th&gt;&lt;th&gt;Account Reference&lt;/th&gt;&lt;th&gt;MPANs&lt;/th&gt;&lt;th&gt;Issue Date&lt;/th&gt;&lt;th&gt;Start Date&lt;/th&gt;&lt;th&gt;Finish Date&lt;/th&gt;&lt;th&gt;kWh&lt;/th&gt;&lt;th&gt;Net&lt;/th&gt;&lt;th&gt;VAT&lt;/th&gt;&lt;th&gt;Type&lt;/th&gt;&lt;th&gt;Breakdown&lt;/th&gt;&lt;th&gt;R1 MPAN&lt;/th&gt;&lt;th&gt;R1 Meter Serial Number&lt;/th&gt;&lt;th&gt;R1 TPR&lt;/th&gt;&lt;th&gt;R1 Coefficient&lt;/th&gt;&lt;th&gt;R1 Units&lt;/th&gt;&lt;th&gt;R1 Previous Read Date&lt;/th&gt;&lt;th&gt;R1 Previous Read Value&lt;/th&gt;&lt;th&gt;R1 Previous Read Type&lt;/th&gt;&lt;th&gt;R1 Present Read Date&lt;/th&gt;&lt;th&gt;R1 Present Read Value&lt;/th&gt;&lt;th&gt;R1 Present Read Type&lt;/th&gt;&lt;th&gt;R2 MPAN&lt;/th&gt;&lt;th&gt;R2 Meter Serial Number&lt;/th&gt;&lt;th&gt;R2 TPR&lt;/th&gt;&lt;th&gt;R2 Coefficient&lt;/th&gt;&lt;th&gt;R2 Units&lt;/th&gt;&lt;th&gt;R2 Previous Read Date&lt;/th&gt;&lt;th&gt;R2 Previous Read Value&lt;/th&gt;&lt;th&gt;R2 Previous Read Type&lt;/th&gt;&lt;th&gt;R2 Present Read Date&lt;/th&gt;&lt;th&gt;R2 Present Read Value&lt;/th&gt;&lt;th&gt;R2 Present Read Type&lt;/th&gt;&lt;th&gt;R3 MPAN&lt;/th&gt;&lt;th&gt;R3 Meter Serial Number&lt;/th&gt;&lt;th&gt;R3 TPR&lt;/th&gt;&lt;th&gt;R3 Coefficient&lt;/th&gt;&lt;th&gt;R3 Units&lt;/th&gt;&lt;th&gt;R3 Previous Read Date&lt;/th&gt;&lt;th&gt;R3 Previous Read Value&lt;/th&gt;&lt;th&gt;R3 Previous Read Type&lt;/th&gt;&lt;th&gt;R3 Present Read Date&lt;/th&gt;&lt;th&gt;R3 Present Read Value&lt;/th&gt;&lt;th&gt;R3 Present Read Type&lt;/th&gt;&lt;th&gt;R4 MPAN&lt;/th&gt;&lt;th&gt;R4 Meter Serial Number&lt;/th&gt;&lt;th&gt;R4 TPR&lt;/th&gt;&lt;th&gt;R4 Coefficient&lt;/th&gt;&lt;th&gt;R4 Units&lt;/th&gt;&lt;th&gt;R4 Previous Read Date&lt;/th&gt;&lt;th&gt;R4 Previous Read Value&lt;/th&gt;&lt;th&gt;R4 Previous Read Type&lt;/th&gt;&lt;th&gt;R4 Present Read Date&lt;/th&gt;&lt;th&gt;R4 Present Read Value&lt;/th&gt;&lt;th&gt;R4 Present Read Type&lt;/th&gt;' />
+				pattern='&lt;th&gt;Reference&lt;/th&gt;&lt;th&gt;Account Reference&lt;/th&gt;&lt;th&gt;MPANs&lt;/th&gt;&lt;th&gt;Issue Date&lt;/th&gt;&lt;th&gt;Start Date&lt;/th&gt;&lt;th&gt;Finish Date&lt;/th&gt;&lt;th&gt;kWh&lt;/th&gt;&lt;th&gt;Net&lt;/th&gt;&lt;th&gt;VAT&lt;/th&gt;&lt;th&gt;Type&lt;/th&gt;&lt;th&gt;Breakdown&lt;/th&gt;&lt;th&gt;R1 MPAN&lt;/th&gt;&lt;th&gt;R1 Meter Serial Number&lt;/th&gt;&lt;th&gt;R1 Coefficient&lt;/th&gt;&lt;th&gt;R1 Units&lt;/th&gt;&lt;th&gt;R1 TPR&lt;/th&gt;&lt;th&gt;R1 Previous Read Date&lt;/th&gt;&lt;th&gt;R1 Previous Read Value&lt;/th&gt;&lt;th&gt;R1 Previous Read Type&lt;/th&gt;&lt;th&gt;R1 Present Read Date&lt;/th&gt;&lt;th&gt;R1 Present Read Value&lt;/th&gt;&lt;th&gt;R1 Present Read Type&lt;/th&gt;&lt;th&gt;R2 MPAN&lt;/th&gt;&lt;th&gt;R2 Meter Serial Number&lt;/th&gt;&lt;th&gt;R2 Coefficient&lt;/th&gt;&lt;th&gt;R2 Units&lt;/th&gt;&lt;th&gt;R2 TPR&lt;/th&gt;&lt;th&gt;R2 Previous Read Date&lt;/th&gt;&lt;th&gt;R2 Previous Read Value&lt;/th&gt;&lt;th&gt;R2 Previous Read Type&lt;/th&gt;&lt;th&gt;R2 Present Read Date&lt;/th&gt;&lt;th&gt;R2 Present Read Value&lt;/th&gt;&lt;th&gt;R2 Present Read Type&lt;/th&gt;&lt;th&gt;R3 MPAN&lt;/th&gt;&lt;th&gt;R3 Meter Serial Number&lt;/th&gt;&lt;th&gt;R3 Coefficient&lt;/th&gt;&lt;th&gt;R3 Units&lt;/th&gt;&lt;th&gt;R3 TPR&lt;/th&gt;&lt;th&gt;R3 Previous Read Date&lt;/th&gt;&lt;th&gt;R3 Previous Read Value&lt;/th&gt;&lt;th&gt;R3 Previous Read Type&lt;/th&gt;&lt;th&gt;R3 Present Read Date&lt;/th&gt;&lt;th&gt;R3 Present Read Value&lt;/th&gt;&lt;th&gt;R3 Present Read Type&lt;/th&gt;&lt;th&gt;R4 MPAN&lt;/th&gt;&lt;th&gt;R4 Meter Serial Number&lt;/th&gt;&lt;th&gt;R4 Coefficient&lt;/th&gt;&lt;th&gt;R4 Units&lt;/th&gt;&lt;th&gt;R4 TPR&lt;/th&gt;&lt;th&gt;R4 Previous Read Date&lt;/th&gt;&lt;th&gt;R4 Previous Read Value&lt;/th&gt;&lt;th&gt;R4 Previous Read Type&lt;/th&gt;&lt;th&gt;R4 Present Read Date&lt;/th&gt;&lt;th&gt;R4 Present Read Value&lt;/th&gt;&lt;th&gt;R4 Present Read Type&lt;/th&gt;' />
 			<regex
 				pattern='&lt;td&gt;KUH773&lt;/td&gt;&lt;td&gt;02&lt;/td&gt;&lt;td&gt;&lt;/td&gt;&lt;td&gt;2010-06-09&lt;/td&gt;&lt;td&gt;2010-05-01&lt;/td&gt;&lt;td&gt;2010-05-31&lt;/td&gt;&lt;td&gt;&lt;/td&gt;&lt;td&gt;2607.81&lt;/td&gt;&lt;td&gt;388.4&lt;/td&gt;&lt;td&gt;N&lt;/td&gt;&lt;td&gt;&lt;/td&gt;' />
 			<response-code value="200" />
@@ -2411,6 +2411,26 @@ def import_virtual_bill(supply_source):
 			<refresh />
 			<!-- Check it's loaded ok -->
 			<regex pattern="The file has been imported successfully" />
+			<response-code value="200" />
+		</request>
+	</test>
+	<test name="Check that the general import of register reads works.">
+		<request path="/chellow/general-imports/" method="post">
+			<control type="file" name="import-file" value="bills-general.csv" />
+			<response-code value="303" />
+			<regex pattern="/general-imports/18/" />
+		</request>
+		<request path="/chellow/general-imports/18/">
+			<refresh />
+			<!-- Check it's loaded ok -->
+			<regex pattern="The file has been imported successfully" />
+			<response-code value="200" />
+		</request>
+		<request path="/chellow/supplier-contracts/8/batches/3/bills/13/reads/">
+			<refresh />
+			<!-- Check it's loaded ok -->
+			<regex
+				pattern="&lt;td&gt;38992&lt;/td&gt;&lt;td&gt;E&lt;/td&gt;&lt;td&gt;2007-01-17&lt;/td&gt;&lt;td&gt;39000&lt;/td&gt;" />
 			<response-code value="200" />
 		</request>
 	</test>

@@ -88,9 +88,9 @@
 								<th>Breakdown</th>
 								<th>R1 MPAN</th>
 								<th>R1 Meter Serial Number</th>
-								<th>R1 TPR</th>
 								<th>R1 Coefficient</th>
 								<th>R1 Units</th>
+								<th>R1 TPR</th>
 								<th>R1 Previous Read Date</th>
 								<th>R1 Previous Read Value</th>
 								<th>R1 Previous Read Type</th>
@@ -99,9 +99,9 @@
 								<th>R1 Present Read Type</th>
 								<th>R2 MPAN</th>
 								<th>R2 Meter Serial Number</th>
-								<th>R2 TPR</th>
 								<th>R2 Coefficient</th>
 								<th>R2 Units</th>
+								<th>R2 TPR</th>
 								<th>R2 Previous Read Date</th>
 								<th>R2 Previous Read Value</th>
 								<th>R2 Previous Read Type</th>
@@ -110,9 +110,9 @@
 								<th>R2 Present Read Type</th>
 								<th>R3 MPAN</th>
 								<th>R3 Meter Serial Number</th>
-								<th>R3 TPR</th>
 								<th>R3 Coefficient</th>
 								<th>R3 Units</th>
+								<th>R3 TPR</th>
 								<th>R3 Previous Read Date</th>
 								<th>R3 Previous Read Value</th>
 								<th>R3 Previous Read Type</th>
@@ -121,9 +121,9 @@
 								<th>R3 Present Read Type</th>
 								<th>R4 MPAN</th>
 								<th>R4 Meter Serial Number</th>
-								<th>R4 TPR</th>
 								<th>R4 Coefficient</th>
 								<th>R4 Units</th>
+								<th>R4 TPR</th>
 								<th>R4 Previous Read Date</th>
 								<th>R4 Previous Read Value</th>
 								<th>R4 Previous Read Type</th>
@@ -183,13 +183,13 @@
 											<xsl:value-of select="@meter-serial-number" />
 										</td>
 										<td>
-											<xsl:value-of select="@tpr" />
-										</td>
-										<td>
 											<xsl:value-of select="@coefficient" />
 										</td>
 										<td>
 											<xsl:value-of select="@units" />
+										</td>
+										<td>
+											<xsl:value-of select="@tpr" />
 										</td>
 										<td>
 											<xsl:value-of
@@ -287,9 +287,9 @@
 								<th>Breakdown</th>
 								<th>R1 MPAN</th>
 								<th>R1 Meter Serial Number</th>
-								<th>R1 TPR</th>
 								<th>R1 Coefficient</th>
 								<th>R1 Units</th>
+								<th>R1 TPR</th>
 								<th>R1 Previous Read Date</th>
 								<th>R1 Previous Read Value</th>
 								<th>R1 Previous Read Type</th>
@@ -298,9 +298,9 @@
 								<th>R1 Present Read Type</th>
 								<th>R2 MPAN</th>
 								<th>R2 Meter Serial Number</th>
-								<th>R2 TPR</th>
 								<th>R2 Coefficient</th>
 								<th>R2 Units</th>
+								<th>R2 TPR</th>
 								<th>R2 Previous Read Date</th>
 								<th>R2 Previous Read Value</th>
 								<th>R2 Previous Read Type</th>
@@ -309,9 +309,9 @@
 								<th>R2 Present Read Type</th>
 								<th>R3 MPAN</th>
 								<th>R3 Meter Serial Number</th>
-								<th>R3 TPR</th>
 								<th>R3 Coefficient</th>
 								<th>R3 Units</th>
+								<th>R3 TPR</th>
 								<th>R3 Previous Read Date</th>
 								<th>R3 Previous Read Value</th>
 								<th>R3 Previous Read Type</th>
@@ -320,9 +320,9 @@
 								<th>R3 Present Read Type</th>
 								<th>R4 MPAN</th>
 								<th>R4 Meter Serial Number</th>
-								<th>R4 TPR</th>
 								<th>R4 Coefficient</th>
 								<th>R4 Units</th>
+								<th>R4 TPR</th>
 								<th>R4 Previous Read Date</th>
 								<th>R4 Previous Read Value</th>
 								<th>R4 Previous Read Type</th>

@@ -99,7 +99,7 @@ public class Bill extends PersistentEntity implements Urlable {
 			String vatStr = GeneralImport
 					.addField(csvElement, "Vat", values, 8);
 			BigDecimal vat = new BigDecimal(vatStr);
-			String account = GeneralImport.addField(csvElement, "Reference",
+			String account = GeneralImport.addField(csvElement, "Account Reference",
 					values, 9);
 
 			String reference = GeneralImport.addField(csvElement, "Reference",
@@ -144,14 +144,14 @@ public class Bill extends PersistentEntity implements Urlable {
 				ReadType previousType = ReadType.getReadType(previousTypeStr);
 
 				String presentDateStr = GeneralImport.addField(csvElement,
-						"Present Date", values, i + 5);
+						"Present Date", values, i + 8);
 				HhStartDate presentDate = new HhStartDate(presentDateStr);
 				String presentValueStr = GeneralImport.addField(csvElement,
-						"Present Value", values, i + 6);
+						"Present Value", values, i + 9);
 				BigDecimal presentValue = new BigDecimal(presentValueStr);
 
 				String presentTypeStr = GeneralImport.addField(csvElement,
-						"Present Type", values, i + 7);
+						"Present Type", values, i + 10);
 				ReadType presentType = ReadType.getReadType(presentTypeStr);
 				bill.insertRead(tpr, coefficient, units, meterSerialNumber,
 						mpanStr, previousDate, previousValue, previousType,

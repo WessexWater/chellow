@@ -7187,7 +7187,7 @@ for contract in Hiber.session().createQuery("from SupplierContract contract orde
         <value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree, UserException
 from net.sf.chellow.billing import SupplierContract
 from net.sf.chellow.monad.types import MonadDate
-from java.util import Calendar
+from java.util import Calendar, Date
 
 contract_id = inv.getLong('supplier-contract-id')
 contract = SupplierContract.getSupplierContract(contract_id)
@@ -7199,6 +7199,7 @@ for account in Hiber.session().createQuery("from Batch batch where batch.contrac
     contract_element.appendChild(account.toXml(doc))
 
 cal = MonadDate.getCalendar()
+cal.setTime(Date())
 cal.add(Calendar.MONTH, -1)
 source.appendChild(MonadDate(cal.getTime()).toXml(doc))
 source.appendChild(MonadDate.getMonthsXml(doc))]]></value>
@@ -7356,9 +7357,7 @@ source.appendChild(MonadDate.getMonthsXml(doc))]]></value>
                         <input type="hidden" name="contract-id" value="{/source/supplier-contract/@id}"/>
                         <legend>Download Supply Level Virtual Bills</legend>
 <br/>
-<xsl:value-of select="'For MPAN core '"/>
-<input name="mpan-core" value="" maxlength="30" size="30" />
-<xsl:value-of select="' for '"/>
+<xsl:value-of select="'For '"/>
 <select name="supply-polarity">
                                 <option value="import">
                                     Import
@@ -13085,6 +13084,10 @@ from java.lang.management import OperatingSystemMXBean, ManagementFactory
 from com.jezhumble.javasysmon import JavaSysMon
 from net.sf.chellow.ui import ContextListener
 
+interrupt_id = None
+if inv.hasParameter('interrupt'):
+    interrupt_id = inv.getLong('interrupt')
+
 df = DecimalFormat("###,###,###,###,##0")
 runtime = Runtime.getRuntime()
 source.setAttribute("free-memory", df.format(runtime.freeMemory()))
@@ -13112,12 +13115,16 @@ sw = StringWriter()
 System.getProperties().store(sw, None)
 props.setTextContent(sw.toString())
 
-req_map = dict([[entry.getKey(), entry.getValue()] for entry in inv.getMonad().getServletConfig().getServletContext().getAttribute(ContextListener.CONTEXT_REQUEST_MAP).entrySet()])
+req_map = dict([[entry.getKey(), entry.getValue()] for entry in inv.getMonad().getServletConfig().getServletContext().getAttribute('net.sf.chellow.request_map').entrySet()])
 
 for entry in Thread.getAllStackTraces().entrySet():
     thread_element = doc.createElement('thread')
     source.appendChild(thread_element)
     thread = entry.getKey()
+
+    if thread.getId() == interrupt_id:
+        thread.interrupt()
+
     trace = ''
     for trace_item in entry.getValue():
         trace = trace + trace_item.toString() + "\r"
