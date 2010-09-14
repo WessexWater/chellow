@@ -99,8 +99,8 @@ public class Bill extends PersistentEntity implements Urlable {
 			String vatStr = GeneralImport
 					.addField(csvElement, "Vat", values, 8);
 			BigDecimal vat = new BigDecimal(vatStr);
-			String account = GeneralImport.addField(csvElement, "Account Reference",
-					values, 9);
+			String account = GeneralImport.addField(csvElement,
+					"Account Reference", values, 9);
 
 			String reference = GeneralImport.addField(csvElement, "Reference",
 					values, 10);
@@ -433,15 +433,20 @@ public class Bill extends PersistentEntity implements Urlable {
 		}
 	}
 
+	@SuppressWarnings("unchecked")
 	private Document document() throws HttpException {
 		Document doc = MonadUtils.newSourceDocument();
 		Element source = doc.getDocumentElement();
 		Element billElement = (Element) toXml(doc, new XmlTree("batch",
-				new XmlTree("contract", new XmlTree("party"))).put("reads")
-				.put("supply"));
+				new XmlTree("contract", new XmlTree("party"))).put("type").put(
+				"reads").put("supply"));
 		source.appendChild(billElement);
 		source.appendChild(MonadDate.getMonthsXml(doc));
 		source.appendChild(MonadDate.getDaysXml(doc));
+		for (BillType type : (List<BillType>) Hiber.session().createQuery(
+				"from BillType type order by type.code").list()) {
+			source.appendChild(type.toXml(doc));
+		}
 		return doc;
 	}
 

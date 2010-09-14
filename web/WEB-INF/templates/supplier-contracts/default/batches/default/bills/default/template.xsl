@@ -387,19 +387,28 @@
 								<br />
 								<label>
 									<xsl:value-of select="'Type '" />
-									<input name="type">
-										<xsl:attribute name="value">
-									<xsl:choose>
-										<xsl:when test="/source/request/parameters[@name='type']">
-											<xsl:value-of
-											select="/source/request/parameters[@name='type']/value" />
-										</xsl:when>
-										<xsl:otherwise>
-											<xsl:value-of select="/source/bill/@type" />
-										</xsl:otherwise>
-									</xsl:choose>
-								</xsl:attribute>
-									</input>
+									<select name="type-id">
+										<xsl:for-each select="/source/bill-type">
+											<option value="{@id}">
+												<xsl:choose>
+													<xsl:when test="/source/request/parameter[@name='type-id']">
+
+														<xsl:if
+															test="/source/request/parameter[@name='type-id']/value/text() = @id">
+
+															<xsl:attribute name="selected" />
+														</xsl:if>
+													</xsl:when>
+													<xsl:otherwise>
+														<xsl:if test="/source/bill/bill-type/@id = @id">
+															<xsl:attribute name="selected" />
+														</xsl:if>
+													</xsl:otherwise>
+												</xsl:choose>
+												<xsl:value-of select="concat(@code, ' ', @description)" />
+											</option>
+										</xsl:for-each>
+									</select>
 								</label>
 								<br />
 								<label>

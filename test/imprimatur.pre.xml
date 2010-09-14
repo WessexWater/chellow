@@ -1896,29 +1896,29 @@ def triad_estimates():
 			<control name="start-year" value="2010" />
 			<control name="start-month" value="04" />
 			<control name="start-day" value="01" />
-			<regex pattern="/chellow/dsos/363/contracts/65/" />
+			<regex pattern="/chellow/dsos/363/contracts/69/" />
 			<response-code value="303" />
 		</request>
 
 		<!-- Check start time of rate script -->
-		<request path="/chellow/dsos/363/contracts/65/rate-scripts/159/">
+		<request path="/chellow/dsos/363/contracts/69/rate-scripts/211/">
 			<regex pattern="00:00 Z" />
 			<response-code value="200" />
 		</request>
 
 		<!-- Insert rate script -->
-		<request path="/chellow/dsos/363/contracts/65/rate-scripts/"
+		<request path="/chellow/dsos/363/contracts/69/rate-scripts/"
 			method="post">
 			<control name="start-year" value="2010" />
 			<control name="start-month" value="05" />
 			<control name="start-day" value="01" />
 
-			<regex pattern="/chellow/dsos/363/contracts/65/rate-scripts/161/" />
+			<regex pattern="/chellow/dsos/363/contracts/69/rate-scripts/213/" />
 			<response-code value="303" />
 		</request>
 
 		<!-- Delete rate script -->
-		<request path="/chellow/dsos/363/contracts/65/rate-scripts/161/"
+		<request path="/chellow/dsos/363/contracts/69/rate-scripts/213/"
 			method="post">
 			<control name="delete" value="Delete" />
 			<response-code value="303" />
@@ -1944,9 +1944,9 @@ def triad_estimates():
 			path="/chellow/reports/161/output/?site-code=CI017&amp;months=1&amp;end-year=2009&amp;end-month=04">
 			<response-code value="200" />
 			<regex
-				pattern='Site Id,Site Name,Associated Site Ids,Sources,Generator Types,Month,Imported kWh,Displaced kWh,Exported kWh,Used kWh,Parasitic kWh,Generated kWh,3rd Party Import kWh,3rd Party Export kWh,Imported GBP,Displaced GBP,Exported GBP,Used GBP,3rd Party Import GBP,Metering Type,Problem' />
+				pattern='Site Id,Site Name,Associated Site Ids,Sources,Generator Types,Month,Metered Imported kWh,Metered Displaced kWh,Metered Exported kWh,Metered Used kWh,Metered Parasitic kWh,Metered Generated kWh,Metered 3rd Party Import kWh,Metered 3rd Party Export kWh,Metered Imported GBP,Metered Displaced GBP,Metered Exported GBP,Metered Used GBP,Metered 3rd Party Import GBP,Billed Imported kWh,Billed Imported GBP,Metering Type,Problem' />
 			<regex
-				pattern='"CI017","Roselands","","net","","2009-04-30","0.00","0.00","0.00","0.00","0.00","0.00","0.00","0.00","2784.89","0.00","0","2784.89","0.00","hh","Can&apos;t find the import_virtual_bill function in the supplier contract. ",' />
+				pattern='"CI017","Roselands","","net","","2009-04-30","0.00","0.00","0.00","0.00","0.00","0.00","0.00","0.00","2784.89","0.00","0","2784.89","0.00","0.00","0.00","hh","Can&apos;t find the import_virtual_bill function in the supplier contract. ",' />
 		</request>
 	</test>
 	<test name="Site In View World">
@@ -2245,7 +2245,7 @@ def import_virtual_bill(supply_source):
 			path="/chellow/reports/109/output/?site-id=1&amp;months=1&amp;end-year=2010&amp;end-month=06">
 			<refresh />
 			<regex
-				pattern='Site Code,Site Name,Associated Site Ids,From,To,Gen Types,CHP kWh,LM kWh,Turbine kWh,net-gbp' />
+				pattern='Site Code,Site Name,Associated Site Ids,From,To,Gen Types,CHP kWh,LM kWh, Turbine kWh,net-gbp' />
 			<regex
 				pattern='"CI004","Lower Treave","","2010-06-01T00:00Z","2010-06-30T23:30Z","chp",,,,"0.0","bsuos-actual-gbp","0.0","ccl-gbp","0","ccl-kwh","0","ccl-rate","0","duos-amber-gbp","0.0","duos-amber-kwh","0","duos-amber-rate","0.00147","duos-green-gbp","0.0","duos-green-kwh","0","duos-green-rate","0.0013","duos-red-gbp","0.0","duos-red-kwh","0","duos-red-rate","0.16146","night-gbp","0.0","night-gsp-kwh","0","night-msp-kwh","0","other-gbp","0.0","other-gsp-kwh","0.0","other-msp-kwh","0","summer-pk-gbp","0.0","summer-pk-gsp-kwh","0","summer-pk-msp-kwh","0","triad-estimate-0-date","2010-01-07T17:00Z","triad-estimate-0-gsp-kw","0.0","triad-estimate-0-laf","1.067","triad-estimate-0-msp-kw","0","triad-estimate-0-status","E","triad-estimate-1-date","2010-01-25T17:00Z","triad-estimate-1-gsp-kw","0.0","triad-estimate-1-laf","1.067","triad-estimate-1-msp-kw","0","triad-estimate-1-status","E","triad-estimate-2-date","2009-12-15T17:00Z","triad-estimate-2-gsp-kw","0.0","triad-estimate-2-laf","1.067","triad-estimate-2-msp-kw","0","triad-estimate-2-status","E","triad-estimate-gbp","0.0","triad-estimate-gsp-kw","0.0","triad-estimate-months","1","triad-estimate-rate","26.057832","winter-low-pk-gbp","0.0","winter-low-pk-gsp-kwh","0","winter-low-pk-msp-kwh","0","winter-off-pk-gbp","0.0","winter-off-pk-gsp-kwh","0","winter-off-pk-msp-kwh","0","winter-pk-gbp","0.0","winter-pk-gsp-kwh","0","winter-pk-msp-kwh","0"' />
 			<response-code value="200" />
@@ -2440,6 +2440,13 @@ def import_virtual_bill(supply_source):
 			path="/chellow/reports/31/output/?is-core=false&amp;has-start=true&amp;year=2010&amp;month=01&amp;day=01&amp;has-supplies=true&amp;mpan-core=22 9205 6799 106">
 			<response-code value="200" />
 			<regex pattern="&lt;value&gt;&lt;!\[CDATA\[insert\]\]&gt;&lt;/value&gt;" />
+		</request>
+	</test>
+	<test name="Check the 'update bill' page.">
+		<request path="/chellow/supplier-contracts/16/batches/5/bills/8/">
+			<response-code value="200" />
+			<regex pattern="type-id" />
+			<regex pattern='&lt;option value="2" selected&gt;N Normal&lt;/option&gt;' />
 		</request>
 	</test>
 </imprimatur>

@@ -30,7 +30,7 @@ def hh(bill, supply_source):
         <value><![CDATA[107]]></value>
         <value><![CDATA[2010-04-01T00:00Z]]></value>
         <value><![CDATA[def aahedc_gbp_per_gsp_kwh():
-    return 0.00016265]]></value>
+    return 0.00016091]]></value>
     </line>
     <line>
         <value><![CDATA[insert]]></value>
@@ -7982,6 +7982,7 @@ interp_cache = {}
 rate_interp_cache = {}
 
 tlms_contract = NonCoreContract.getNonCoreContract('tlms')
+bank_holidays_contract = NonCoreContract.getNonCoreContract('bank-holidays')
 
 def contract_function(contract, func_name):
     contract_id = contract.getId()
@@ -8131,6 +8132,9 @@ class SiteSource(DataSource):
 
 
     def create_whole_data(self, start_date, finish_date, forecast_date):
+        bank_holidays_rate_script = bank_holidays_contract.rateScript(start_date)
+        bank_holidays = self.rate(bank_holidays_rate_script, 'days')
+
         cal = MonadDate.getCalendar()
         cal.setTime(finish_date.getDate())
         year_adjustment = 0
@@ -8212,7 +8216,10 @@ class SiteSource(DataSource):
                 ct_cal.add(Calendar.YEAR, -1 * year_adjustment)
                 utc_cal.setTime(hh_date.getDate())
                 utc_cal.add(Calendar.YEAR, -1 * year_adjustment)
-                hh_values = {'status': 'E', 'hist-start-date': hh_date.getDate(), 'hist-import-net-kwh': import_net_kwh, 'hist-import-net-kvarh': 0, 'hist-export-net-kwh': export_net_kwh, 'hist-export-net-kvarh': 0, 'hist-import-gen-kwh': import_gen_kwh, 'hist-export-gen-kwh': export_gen_kwh, 'hist-import-3rd-party-kwh': import_3rd_party_kwh, 'hist-export-3rd-party-kwh': export_3rd_party_kwh, 'start-date': hh_date.getDate(), 'ct-day': ct_cal.get(5), 'utc-year': utc_cal.get(Calendar.YEAR), 'utc-month': utc_cal.get(2), 'utc-day': utc_cal.get(5), 'utc-hour': utc_cal.get(Calendar.HOUR_OF_DAY), 'utc-decimal-hour': utc_cal.get(11) + float(utc_cal.get(12)) / 60, 'utc-minute': utc_cal.get(Calendar.MINUTE), 'ct-month': ct_cal.get(2), 'ct-decimal-hour': ct_cal.get(11) + ct_cal.get(12) / 60, 'ct-day-of-week': ct_cal.get(7), 'utc-day-of-week': utc_cal.get(7)}
+
+                utc_day = utc_cal.get(Calendar.DAY_OF_MONTH)
+
+                hh_values = {'status': 'E', 'hist-start-date': hh_date.getDate(), 'hist-import-net-kwh': import_net_kwh, 'hist-import-net-kvarh': 0, 'hist-export-net-kwh': export_net_kwh, 'hist-export-net-kvarh': 0, 'hist-import-gen-kwh': import_gen_kwh, 'hist-export-gen-kwh': export_gen_kwh, 'hist-import-3rd-party-kwh': import_3rd_party_kwh, 'hist-export-3rd-party-kwh': export_3rd_party_kwh, 'start-date': hh_date.getDate(), 'ct-day': ct_cal.get(5), 'utc-year': utc_cal.get(Calendar.YEAR), 'utc-month': utc_cal.get(2), 'utc-day': utc_day, 'utc-hour': utc_cal.get(Calendar.HOUR_OF_DAY), 'utc-decimal-hour': utc_cal.get(11) + float(utc_cal.get(12)) / 60, 'utc-minute': utc_cal.get(Calendar.MINUTE), 'ct-month': ct_cal.get(2), 'ct-decimal-hour': ct_cal.get(11) + ct_cal.get(12) / 60, 'ct-day-of-week': ct_cal.get(7), 'utc-day-of-week': utc_cal.get(7), 'utc-is-bank-holiday': utc_day in bank_holidays}
                 hh_values['hist-used-3rd-party-kwh'] = hh_values['hist-import-3rd-party-kwh'] - hh_values['hist-export-3rd-party-kwh']
                 hh_values['used-3rd-party-kwh'] = hh_values['hist-used-3rd-party-kwh']
                 hh_values['hist-kwh'] = hh_values['hist-import-gen-kwh'] - hh_values['hist-export-gen-kwh'] - hh_values['hist-export-net-kwh']
@@ -8242,7 +8249,8 @@ class SiteSource(DataSource):
             ct_cal = GregorianCalendar(TimeZone.getTimeZone("Europe/London"), Locale.UK)
             utc_cal.setTime(self.finish_date.getDate())
             ct_cal.setTime(self.finish_date.getDate())
-            hh_data.append({'status': 'E', 'hist-start-date': history_finish.getDate(), 'status': 'E', 'hist-import-net-kwh': 0, 'hist-import-net-kvarh': 0, 'hist-export-net-kwh': 0, 'hist-export-net-kvarh': 0, 'hist-import-gen-kwh': 0, 'hist-export-gen-kwh': 0, 'hist-import-3rd-party-kwh': 0, 'hist-export-3rd-party-kwh': 0, 'hist-kwh': 0, 'msp-kwh': 0, 'msp-kw': 0, 'export-net-kwh': 0, 'import-gen-kwh': 0, 'export-gen-kwh': 0, 'hist-used-kwh': 0, 'hist-kvarh': 0, 'imp-msp-kvarh': 0, 'imp-msp-kvar': 0, 'exp-msp-kvarh': 0, 'exp-msp-kvar': 0, 'used-kwh': 0, 'import-net-kwh': 0, 'import-3rd-party-kwh': 0, 'export-3rd-party-kwh': 0, 'used-3rd-party-kwh': 0, 'start-date': self.finish_date.getDate(), 'ct-day': ct_cal.get(5), 'utc-month': utc_cal.get(2), 'utc-day': utc_cal.get(5), 'utc-hour': utc_cal.get(Calendar.HOUR_OF_DAY), 'utc-decimal-hour': utc_cal.get(11) + float(utc_cal.get(12)) / 60, 'utc-minute': utc_cal.get(Calendar.MINUTE), 'ct-month': ct_cal.get(2), 'ct-decimal-hour': ct_cal.get(11) + ct_cal.get(12) / 60, 'ct-day-of-week': ct_cal.get(7), 'utc-day-of-week': utc_cal.get(7)})
+            utc_day = utc_cal.get(Calendar.DAY_OF_MONTH)
+            hh_data.append({'status': 'E', 'hist-start-date': history_finish.getDate(), 'status': 'E', 'hist-import-net-kwh': 0, 'hist-import-net-kvarh': 0, 'hist-export-net-kwh': 0, 'hist-export-net-kvarh': 0, 'hist-import-gen-kwh': 0, 'hist-export-gen-kwh': 0, 'hist-import-3rd-party-kwh': 0, 'hist-export-3rd-party-kwh': 0, 'hist-kwh': 0, 'msp-kwh': 0, 'msp-kw': 0, 'export-net-kwh': 0, 'import-gen-kwh': 0, 'export-gen-kwh': 0, 'hist-used-kwh': 0, 'hist-kvarh': 0, 'imp-msp-kvarh': 0, 'imp-msp-kvar': 0, 'exp-msp-kvarh': 0, 'exp-msp-kvar': 0, 'used-kwh': 0, 'import-net-kwh': 0, 'import-3rd-party-kwh': 0, 'export-3rd-party-kwh': 0, 'used-3rd-party-kwh': 0, 'start-date': self.finish_date.getDate(), 'ct-day': ct_cal.get(5), 'utc-month': utc_cal.get(2), 'utc-day': utc_day, 'utc-hour': utc_cal.get(Calendar.HOUR_OF_DAY), 'utc-decimal-hour': utc_cal.get(11) + float(utc_cal.get(12)) / 60, 'utc-minute': utc_cal.get(Calendar.MINUTE), 'ct-month': ct_cal.get(2), 'ct-decimal-hour': ct_cal.get(11) + ct_cal.get(12) / 60, 'ct-day-of-week': ct_cal.get(7), 'utc-day-of-week': utc_cal.get(7), 'utc-is-bank-holiday': utc_day in bank_holidays})
         if self.is_displaced and self.pc_code == '00' and self.is_import:
             dso_contract = get_dso_contract(self.dso_code, HhStartDate(hh_data[0]['start-date']), self.pw)
             summary['dso-bill'] = {}
@@ -8330,6 +8338,8 @@ class SupplySource(DataSource):
 
 
     def create_whole_data(self, start_date, finish_date, forecast_date):
+        bank_holidays_rate_script = bank_holidays_contract.rateScript(start_date)
+        bank_holidays = self.rate(bank_holidays_rate_script, 'days')
         #self.pw.println("starting create whole data start date " + str(start_date) + " finish date " + str(finish_date)  + str(System.currentTimeMillis()))
 
         cal = MonadDate.getCalendar()
@@ -8469,7 +8479,8 @@ class SupplySource(DataSource):
                             if ((ci['start-hour'] < ci['end-hour'] and ci['start-hour'] <= decimal_hour < ci['end-hour']) or (ci['start-hour'] >= ci['end-hour'] and (ci['start-hour'] <= decimal_hour or decimal_hour < ci['end-hour']))) and ci['start-month'] <= fractional_month <= ci['end-month']:
                                 num_hh += 1
                                 if chunk_start_millis <= hh_date <= chunk_finish_millis:
-                                    data_hh.append({'status': status, 'imp-msp-kvarh': 0, 'imp-msp-kvar': 0, 'exp-msp-kvarh': 0, 'exp-msp-kvar': 0, 'hist-start-date': chunk_start, 'start-date': utc_cal.getTime(), 'ct-day': ct_cal.get(5), 'utc-month': utc_cal.get(2), 'utc-day': utc_cal.get(5), 'utc-decimal-hour': utc_cal.get(11) + float(utc_cal.get(12)) / 60, 'utc-year': utc_cal.get(Calendar.YEAR), 'utc-hour': utc_cal.get(Calendar.HOUR_OF_DAY), 'utc-minute': utc_cal.get(Calendar.MINUTE), 'ct-year': ct_cal.get(Calendar.YEAR), 'ct-month': ct_cal.get(2), 'ct-decimal-hour': ct_cal.get(11) + float(ct_cal.get(12)) / 60, 'ct-day-of-week': ct_cal.get(7), 'utc-day-of-week': utc_cal.get(7)})
+                                    utc_day = utc_cal.get(Calendar.DAY_OF_MONTH)
+                                    data_hh.append({'status': status, 'imp-msp-kvarh': 0, 'imp-msp-kvar': 0, 'exp-msp-kvarh': 0, 'exp-msp-kvar': 0, 'hist-start-date': chunk_start, 'start-date': utc_cal.getTime(), 'ct-day': ct_cal.get(5), 'utc-month': utc_cal.get(2), 'utc-day': utc_day, 'utc-decimal-hour': utc_cal.get(11) + float(utc_cal.get(12)) / 60, 'utc-year': utc_cal.get(Calendar.YEAR), 'utc-hour': utc_cal.get(Calendar.HOUR_OF_DAY), 'utc-minute': utc_cal.get(Calendar.MINUTE), 'ct-year': ct_cal.get(Calendar.YEAR), 'ct-month': ct_cal.get(2), 'ct-decimal-hour': ct_cal.get(11) + float(ct_cal.get(12)) / 60, 'ct-day-of-week': ct_cal.get(7), 'utc-day-of-week': utc_cal.get(7), 'utc-is-bank-holiday': utc_day in bank_holidays})
                                 break
                         hh_date = HhStartDate.getNext(hh_cal, hh_date)
                     #self.pw.println(str(System.currentTimeMillis()) + " finished inner loop ")
@@ -8506,7 +8517,8 @@ class SupplySource(DataSource):
                 utc_cal.add(Calendar.YEAR, year_advance)
                 ct_cal.add(Calendar.YEAR, year_advance)
 
-                data_hh.append({'status': status, 'imp-msp-kvarh': imp_kvarh, 'imp-msp-kvar': imp_kvarh * 2, 'exp-msp-kvarh': exp_kvarh, 'exp-msp-kvar': exp_kvarh * 2, 'msp-kw': msp_kwh * 2, 'msp-kwh': msp_kwh, 'hist-kwh': msp_kwh, 'hist-start-date': start_date, 'start-date': utc_cal.getTime(), 'ct-day': ct_cal.get(5), 'utc-month': utc_cal.get(2), 'utc-day': utc_cal.get(5), 'utc-decimal-hour': utc_cal.get(11) + float(utc_cal.get(12)) / 60, 'utc-year': utc_cal.get(Calendar.YEAR), 'utc-hour': utc_cal.get(Calendar.HOUR_OF_DAY), 'utc-minute': utc_cal.get(Calendar.MINUTE), 'ct-year': ct_cal.get(Calendar.YEAR), 'ct-month': ct_cal.get(2), 'ct-decimal-hour': ct_cal.get(11) + float(ct_cal.get(12)) / 60, 'ct-day-of-week': ct_cal.get(7), 'utc-day-of-week': utc_cal.get(7)})
+                utc_day = utc_cal.get(Calendar.DAY_OF_MONTH)
+                data_hh.append({'status': status, 'imp-msp-kvarh': imp_kvarh, 'imp-msp-kvar': imp_kvarh * 2, 'exp-msp-kvarh': exp_kvarh, 'exp-msp-kvar': exp_kvarh * 2, 'msp-kw': msp_kwh * 2, 'msp-kwh': msp_kwh, 'hist-kwh': msp_kwh, 'hist-start-date': start_date, 'start-date': utc_cal.getTime(), 'ct-day': ct_cal.get(5), 'utc-month': utc_cal.get(2), 'utc-day': utc_day, 'utc-decimal-hour': utc_cal.get(11) + float(utc_cal.get(12)) / 60, 'utc-year': utc_cal.get(Calendar.YEAR), 'utc-hour': utc_cal.get(Calendar.HOUR_OF_DAY), 'utc-minute': utc_cal.get(Calendar.MINUTE), 'ct-year': ct_cal.get(Calendar.YEAR), 'ct-month': ct_cal.get(2), 'ct-decimal-hour': ct_cal.get(11) + float(ct_cal.get(12)) / 60, 'ct-day-of-week': ct_cal.get(7), 'utc-day-of-week': utc_cal.get(7), 'utc-is-bank-holiday': utc_day in bank_holidays})
 
             rs.close()
             stmt.close()
@@ -8517,7 +8529,8 @@ class SupplySource(DataSource):
         if len(data_hh) == 0:
             utc_cal.setTime(self.finish_date.getDate())
             ct_cal.setTime(self.finish_date.getDate())
-            data_hh.append({'status': 'E', 'used-kwh': 0, 'hist-kwh': 0, 'msp-kwh': 0, 'gsp-kwh': 0, 'msp-kw': 0, 'imp-msp-kvarh': 0, 'imp-msp-kvar': 0, 'exp-msp-kvarh': 0, 'hist-start-date': history_finish.getDate(), 'start-date': finish_date.getDate(), 'ct-day': ct_cal.get(5), 'utc-month': utc_cal.get(2), 'utc-day': utc_cal.get(5), 'utc-decimal-hour': utc_cal.get(11) + float(utc_cal.get(12)) / 60, 'ct-month': ct_cal.get(2), 'ct-decimal-hour': ct_cal.get(11) + ct_cal.get(12) / 60, 'ct-day-of-week': ct_cal.get(7), 'utc-day-of-week': utc_cal.get(7), 'utc-year': utc_cal.get(Calendar.YEAR), 'utc-hour': utc_cal.get(Calendar.HOUR), 'utc-minute': utc_cal.get(Calendar.MINUTE)})
+            utc_day = utc_cal.get(Calendar.DAY_OF_MONTH)
+            data_hh.append({'status': 'E', 'used-kwh': 0, 'hist-kwh': 0, 'msp-kwh': 0, 'gsp-kwh': 0, 'msp-kw': 0, 'imp-msp-kvarh': 0, 'imp-msp-kvar': 0, 'exp-msp-kvarh': 0, 'hist-start-date': history_finish.getDate(), 'start-date': finish_date.getDate(), 'ct-day': ct_cal.get(5), 'utc-month': utc_cal.get(2), 'utc-day': utc_day, 'utc-decimal-hour': utc_cal.get(11) + float(utc_cal.get(12)) / 60, 'ct-month': ct_cal.get(2), 'ct-decimal-hour': ct_cal.get(11) + ct_cal.get(12) / 60, 'ct-day-of-week': ct_cal.get(7), 'utc-day-of-week': utc_cal.get(7), 'utc-year': utc_cal.get(Calendar.YEAR), 'utc-hour': utc_cal.get(Calendar.HOUR), 'utc-minute': utc_cal.get(Calendar.MINUTE), 'utc-is-bank-holiday': utc_day in bank_holidays})
 
         #self.pw.println("whole data: starting dso hh " + str(System.currentTimeMillis() - timing))
         if self.pc_code == '00':
@@ -11792,5 +11805,226 @@ def triad_dates():
         <value><![CDATA[2010-03-25T00:00Z]]></value>
         <value><![CDATA[]]></value>
         <value><![CDATA[]]></value>
+    </line>
+        <line>
+        <value><![CDATA[insert]]></value>
+        <value><![CDATA[non-core-contract]]></value>
+        <value><![CDATA[67]]></value>
+        <value><![CDATA[]]></value>
+        <value><![CDATA[CALB]]></value>
+        <value><![CDATA[bank-holidays]]></value>
+        <value><![CDATA[]]></value>
+        <value><![CDATA[163]]></value>
+        <value><![CDATA[2006-01-01T00:00Z]]></value>
+        <value><![CDATA[]]></value>
+        <value><![CDATA[def days():
+    return []]]></value>
+    </line>
+    <line>
+        <value><![CDATA[insert]]></value>
+        <value><![CDATA[non-core-contract-rate-script]]></value>
+        <value><![CDATA[bank-holidays]]></value>
+        <value><![CDATA[165]]></value>
+        <value><![CDATA[2010-04-01T00:00Z]]></value>
+        <value><![CDATA[def days():
+    return [2, 5]]]></value>
+    </line>
+    <line>
+        <value><![CDATA[insert]]></value>
+        <value><![CDATA[non-core-contract-rate-script]]></value>
+        <value><![CDATA[bank-holidays]]></value>
+        <value><![CDATA[167]]></value>
+        <value><![CDATA[2010-05-01T00:00Z]]></value>
+        <value><![CDATA[def days():
+    return [3, 31]]]></value>
+    </line>
+    <line>
+        <value><![CDATA[insert]]></value>
+        <value><![CDATA[non-core-contract-rate-script]]></value>
+        <value><![CDATA[bank-holidays]]></value>
+        <value><![CDATA[169]]></value>
+        <value><![CDATA[2010-06-01T00:00Z]]></value>
+        <value><![CDATA[def days():
+    return []]]></value>
+    </line>
+    <line>
+        <value><![CDATA[insert]]></value>
+        <value><![CDATA[non-core-contract-rate-script]]></value>
+        <value><![CDATA[bank-holidays]]></value>
+        <value><![CDATA[171]]></value>
+        <value><![CDATA[2010-08-01T00:00Z]]></value>
+        <value><![CDATA[def days():
+    return [30]]]></value>
+    </line>
+    <line>
+        <value><![CDATA[insert]]></value>
+        <value><![CDATA[non-core-contract-rate-script]]></value>
+        <value><![CDATA[bank-holidays]]></value>
+        <value><![CDATA[173]]></value>
+        <value><![CDATA[2010-09-01T00:00Z]]></value>
+        <value><![CDATA[def days():
+    return []]]></value>
+    </line>
+    <line>
+        <value><![CDATA[insert]]></value>
+        <value><![CDATA[non-core-contract-rate-script]]></value>
+        <value><![CDATA[bank-holidays]]></value>
+        <value><![CDATA[175]]></value>
+        <value><![CDATA[2010-12-01T00:00Z]]></value>
+        <value><![CDATA[def days():
+    return [27, 28]]]></value>
+    </line>
+    <line>
+        <value><![CDATA[insert]]></value>
+        <value><![CDATA[non-core-contract-rate-script]]></value>
+        <value><![CDATA[bank-holidays]]></value>
+        <value><![CDATA[177]]></value>
+        <value><![CDATA[2011-01-01T00:00Z]]></value>
+        <value><![CDATA[def days():
+    return [3]]]></value>
+    </line>
+    <line>
+        <value><![CDATA[insert]]></value>
+        <value><![CDATA[non-core-contract-rate-script]]></value>
+        <value><![CDATA[bank-holidays]]></value>
+        <value><![CDATA[179]]></value>
+        <value><![CDATA[2011-02-01T00:00Z]]></value>
+        <value><![CDATA[def days():
+    return []]]></value>
+    </line>
+    <line>
+        <value><![CDATA[insert]]></value>
+        <value><![CDATA[non-core-contract-rate-script]]></value>
+        <value><![CDATA[bank-holidays]]></value>
+        <value><![CDATA[181]]></value>
+        <value><![CDATA[2011-04-01T00:00Z]]></value>
+        <value><![CDATA[def days():
+    return [22, 25]]]></value>
+    </line>
+    <line>
+        <value><![CDATA[insert]]></value>
+        <value><![CDATA[non-core-contract-rate-script]]></value>
+        <value><![CDATA[bank-holidays]]></value>
+        <value><![CDATA[183]]></value>
+        <value><![CDATA[2011-05-01T00:00Z]]></value>
+        <value><![CDATA[def days():
+    return [2, 30]]]></value>
+    </line>
+    <line>
+        <value><![CDATA[insert]]></value>
+        <value><![CDATA[non-core-contract-rate-script]]></value>
+        <value><![CDATA[bank-holidays]]></value>
+        <value><![CDATA[185]]></value>
+        <value><![CDATA[2011-06-01T00:00Z]]></value>
+        <value><![CDATA[def days():
+    return []]]></value>
+    </line>
+    <line>
+        <value><![CDATA[insert]]></value>
+        <value><![CDATA[non-core-contract-rate-script]]></value>
+        <value><![CDATA[bank-holidays]]></value>
+        <value><![CDATA[187]]></value>
+        <value><![CDATA[2011-08-01T00:00Z]]></value>
+        <value><![CDATA[def days():
+    return [29]]]></value>
+    </line>
+    <line>
+        <value><![CDATA[insert]]></value>
+        <value><![CDATA[non-core-contract-rate-script]]></value>
+        <value><![CDATA[bank-holidays]]></value>
+        <value><![CDATA[189]]></value>
+        <value><![CDATA[2011-09-01T00:00Z]]></value>
+        <value><![CDATA[def days():
+    return []]]></value>
+    </line>
+    <line>
+        <value><![CDATA[insert]]></value>
+        <value><![CDATA[non-core-contract-rate-script]]></value>
+        <value><![CDATA[bank-holidays]]></value>
+        <value><![CDATA[191]]></value>
+        <value><![CDATA[2011-12-01T00:00Z]]></value>
+        <value><![CDATA[def days():
+    return [26, 27]]]></value>
+    </line>
+    <line>
+        <value><![CDATA[insert]]></value>
+        <value><![CDATA[non-core-contract-rate-script]]></value>
+        <value><![CDATA[bank-holidays]]></value>
+        <value><![CDATA[193]]></value>
+        <value><![CDATA[2012-01-01T00:00Z]]></value>
+        <value><![CDATA[def days():
+    return [2]]]></value>
+    </line>
+    <line>
+        <value><![CDATA[insert]]></value>
+        <value><![CDATA[non-core-contract-rate-script]]></value>
+        <value><![CDATA[bank-holidays]]></value>
+        <value><![CDATA[195]]></value>
+        <value><![CDATA[2012-02-01T00:00Z]]></value>
+        <value><![CDATA[def days():
+    return []]]></value>
+    </line>
+    <line>
+        <value><![CDATA[insert]]></value>
+        <value><![CDATA[non-core-contract-rate-script]]></value>
+        <value><![CDATA[bank-holidays]]></value>
+        <value><![CDATA[197]]></value>
+        <value><![CDATA[2012-04-01T00:00Z]]></value>
+        <value><![CDATA[def days():
+    return [6, 9]]]></value>
+    </line>
+    <line>
+        <value><![CDATA[insert]]></value>
+        <value><![CDATA[non-core-contract-rate-script]]></value>
+        <value><![CDATA[bank-holidays]]></value>
+        <value><![CDATA[199]]></value>
+        <value><![CDATA[2012-05-01T00:00Z]]></value>
+        <value><![CDATA[def days():
+    return [1]]]></value>
+    </line>
+    <line>
+        <value><![CDATA[insert]]></value>
+        <value><![CDATA[non-core-contract-rate-script]]></value>
+        <value><![CDATA[bank-holidays]]></value>
+        <value><![CDATA[201]]></value>
+        <value><![CDATA[2012-06-01T00:00Z]]></value>
+        <value><![CDATA[def days():
+    return [4, 5]]]></value>
+    </line>
+    <line>
+        <value><![CDATA[insert]]></value>
+        <value><![CDATA[non-core-contract-rate-script]]></value>
+        <value><![CDATA[bank-holidays]]></value>
+        <value><![CDATA[203]]></value>
+        <value><![CDATA[2012-07-01T00:00Z]]></value>
+        <value><![CDATA[def days():
+    return []]]></value>
+    </line>
+    <line>
+        <value><![CDATA[insert]]></value>
+        <value><![CDATA[non-core-contract-rate-script]]></value>
+        <value><![CDATA[bank-holidays]]></value>
+        <value><![CDATA[205]]></value>
+        <value><![CDATA[2012-08-01T00:00Z]]></value>
+        <value><![CDATA[def days():
+    return [27]]]></value>
+    </line>
+    <line>
+        <value><![CDATA[insert]]></value>
+        <value><![CDATA[non-core-contract-rate-script]]></value>
+        <value><![CDATA[bank-holidays]]></value>
+        <value><![CDATA[207]]></value>
+        <value><![CDATA[2012-09-01T00:00Z]]></value>
+        <value><![CDATA[def days():
+    return []]]></value>
+    </line>
+    <line>
+        <value><![CDATA[insert]]></value>
+        <value><![CDATA[non-core-contract-rate-script]]></value>
+        <value><![CDATA[bank-holidays]]></value>
+        <value><![CDATA[209]]></value>
+        <value><![CDATA[2012-12-01T00:00Z]]></value>
+        <value><![CDATA[def days():
+    return [25, 26]]]></value>
     </line>
 </csv>

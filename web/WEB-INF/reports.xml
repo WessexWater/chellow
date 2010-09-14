@@ -9579,7 +9579,7 @@ pw = inv.getResponse().getWriter()
 computer = NonCoreContract.getNonCoreContract('computer')
 comterp = computer.callFunction('create_comterp', [])
 
-pw.print('Site Code,Site Name,Associated Site Ids,From,To,Gen Types,CHP kWh,LM kWh,Turbine kWh')
+pw.print('Site Code,Site Name,Associated Site Ids,From,To,Gen Types,CHP kWh,LM kWh, Turbine kWh')
 
 cal = GregorianCalendar(TimeZone.getTimeZone("GMT"), Locale.UK)
 cal.set(Calendar.YEAR, end_year)
@@ -12422,10 +12422,7 @@ source.appendChild(MonadDate.getMonthsXml(doc))]]></value>
                     <fieldset>
                         <legend>Download</legend>
 <br/>
-<p><xsl:value-of select="' For Site Code '"/>
-<input name="site-code" value="" maxlength="30" size="30" />
-
-<xsl:value-of select="' for '"/>
+<p><xsl:value-of select="'For '"/>
                         <input name="months" maxlength="2" size="2">
                           <xsl:attribute name="value">
                             <xsl:choose>
@@ -12478,12 +12475,15 @@ from org.python.util import PythonInterpreter
 year = inv.getInteger("end-year")
 month = inv.getInteger("end-month")
 months = inv.getInteger("months")
-search_term = inv.getString('site-code')
 
 if not inv.isValid():
     raise UserException()
 
-search_term = search_term.strip()
+if inv.hasParameter('site-code'):
+    search_term = inv.getString('site-code')
+    query = Hiber.session().createQuery("from Site site where site.code = :siteCode").setString('siteCode', search_term.strip())
+else:
+    query = Hiber.session().createQuery("from Site site order by site.code")
 
 computer = NonCoreContract.getNonCoreContract('computer')
 
@@ -12513,8 +12513,7 @@ stream_names = ['import-net', 'export-net', 'import-gen', 'export-gen', 'import-
 comterp = PythonInterpreter()
 comterp.exec(computer.getChargeScript())
 
-def process_site(site_id, month_start, month_finish, forecast_date, pw):
-    site = Site.getSite(site_id)
+def process_site(site, month_start, month_finish, forecast_date, pw):
     site_code = site.getCode()
     associates = []
     sources = []
@@ -12529,6 +12528,9 @@ def process_site(site_id, month_start, month_finish, forecast_date, pw):
 
     has_3rd_party = False
     third_party_contracts = {}
+    
+    billed_gbp = 0
+    billed_kwh = 0
 
     for group in site.groups(month_start, month_finish, False):
         for cand_site in group.getSites():
@@ -12554,6 +12556,9 @@ def process_site(site_id, month_start, month_finish, forecast_date, pw):
         else:
             chunk_finish = group.getTo()
 
+        chunk_start_millis = chunk_start.getDate().getTime()
+        chunk_finish_millis = chunk_finish.getDate().getTime()
+
         for supply in group.getSupplies():
             source_code = supply.getSource().getCode()
             if source_code not in sources:
@@ -12577,13 +12582,46 @@ def process_site(site_id, month_start, month_finish, forecast_date, pw):
                 # GBP
                 if import_mpan is None:
                     continue
+
+                if supply_generation.getStartDate().after(chunk_start):
+                    bill_start = supply_generation.getStartDate()
+                else:
+                    bill_start = chunk_start
+                if HhStartDate.isAfter(supply_generation.getFinishDate(), chunk_finish):
+                    bill_finish = chunk_finish
+                else:
+                    bill_finish = supply_generation.getFinishDate()
+
+                bill_start_millis = bill_start.getDate().getTime()
+                bill_finish_millis = bill_finish.getDate().getTime()
+
+                kwh_bills = []
+                for cand_bill in Hiber.session().createQuery("from Bill bill where bill.supply = :supply and bill.batch.contract = :contract and bill.startDate.date <= :finishDate and bill.finishDate.date >= :startDate and bill.type.code != 'W' order by bill.issueDate desc, bill.startDate.date").setEntity('supply', supply).setEntity('contract', import_mpan.getSupplierContract()).setTimestamp('startDate', bill_start.getDate()).setTimestamp('finishDate', bill_finish.getDate()).list():
+                    can_insert = True
+                    for kwh_bill in kwh_bills:
+                        if not cand_bill.getStartDate().after(kwh_bill.getFinishDate()) and not cand_bill.getFinishDate().before(kwh_bill.getStartDate()):
+                            can_insert = False
+                            break
+                    if can_insert:
+                        kwh_bills.append(cand_bill)
+                        bill_kwh = cand_bill.getKwh().doubleValue()
+                        cand_bill_start = cand_bill.getStartDate().getDate().getTime()
+                        cand_bill_finish = cand_bill.getFinishDate().getDate().getTime()
+                        rate = bill_kwh / (cand_bill_finish - cand_bill_start + (30 * 60 * 1000))
+                        #pw.println('rate ' + str(rate) + ' bill_kwh ' + str(bill_kwh) + ' cand_start ' + str(cand_bill.getStartDate()) + ' cand_finish ' + str(cand_bill.getFinishDate()) + ' length in millis ' + str(cand_bill_finish - cand_bill_start + (30 * 60 * 1000)) + ' length of overlap ' + str(min(cand_bill_finish, bill_finish_millis) - (max(cand_bill_start, bill_start_millis) + 30 * 60 * 1000)))
+                        overlap_length = min(cand_bill_finish, bill_finish_millis) - max(cand_bill_start, bill_start_millis) + 30 * 60 * 1000
+                        billed_kwh += overlap_length * rate
+
                 supplier_contract = import_mpan.getSupplierContract()
                 if source_code in ['net', 'gen-net']:
                     #pw.println("starting vbill " + str(System.currentTimeMillis() - timing))
                     supply_source = comterp.get('supply_source')(forecast_date, comterp, pw)
 
                     #pw.println("starting init from mpan " + str(System.currentTimeMillis() - timing))
-                    supply_source.init_from_mpan(chunk_start, chunk_finish, import_mpan)
+                    supply_source.init_from_mpan(bill_start, bill_finish, import_mpan)
+                    if supply_source.pc_code != '00' and not supply_source.is_amr:
+                        #pw.println('sum msp kwh ' + str(supply_source.summary['sum-msp-kwh']))
+                        month_data['import-net-kwh'] += supply_source.summary['sum-msp-kwh']
                     #pw.println("finished init from mpan " + str(System.currentTimeMillis() - timing))
                     import_vb_function = comterp.get('contract_function')(supplier_contract, 'import_virtual_bill')
                     if import_vb_function is None:
@@ -12600,6 +12638,14 @@ def process_site(site_id, month_start, month_finish, forecast_date, pw):
                     if hhdc_contract is not None:
                         hhdc_bill = comterp.get('contract_function')(hhdc_contract, 'virtual_bill')(supply_source)
                         month_data['import-net-gbp'] += hhdc_bill['net-gbp']
+
+            for gbp_bill in Hiber.session().createQuery("from Bill bill where bill.supply = :supply and bill.startDate.date <= :finishDate and bill.finishDate.date >= :startDate").setEntity('supply', supply).setTimestamp('startDate', chunk_start.getDate()).setTimestamp('finishDate', chunk_finish.getDate()).list():
+                bill_net = gbp_bill.getNet().doubleValue()
+                gbp_bill_start = gbp_bill.getStartDate().getDate().getTime()
+                gbp_bill_finish = gbp_bill.getFinishDate().getDate().getTime()
+                rate = bill_net / (gbp_bill_finish - gbp_bill_start + (30 * 60 * 1000))
+                overlap_length = min(gbp_bill_finish, chunk_finish_millis) - max(gbp_bill_start, chunk_start_millis)
+                billed_gbp += overlap_length * rate
 
         site_ds = comterp.get('site_source')(site, chunk_start, chunk_finish, forecast_date, comterp, pw)
         displaced_mpan = comterp.get('displaced_mpan')(group, chunk_start, chunk_finish)
@@ -12635,33 +12681,28 @@ def process_site(site_id, month_start, month_finish, forecast_date, pw):
     generator_types_str = ''
     for generator_type in generator_types:
         generator_types_str += generator_type + ', '
-    Hiber.close()
-    result = [associate_str[:-2], sources_str[:-2], generator_types_str[:-2], month_format.format(Date(month_finish.getDate().getTime() - 1)), kwh_format(month_data['import-net-kwh']), kwh_format(month_data['msp-kwh']), kwh_format(month_data['export-net-kwh']), kwh_format(month_data['used-kwh']), kwh_format(month_data['export-gen-kwh']), kwh_format(month_data['import-gen-kwh']), kwh_format(month_data['import-3rd-party-kwh']), kwh_format(month_data['export-3rd-party-kwh']),  gbp_format(month_data['import-net-gbp']), gbp_format(month_data['msp-gbp']), 0, gbp_format(month_data['used-gbp']), gbp_format(month_data['used-3rd-party-gbp']), metering_type, problem]
+    result = [associate_str[:-2], sources_str[:-2], generator_types_str[:-2], month_format.format(Date(month_finish.getDate().getTime() - 1)), kwh_format(month_data['import-net-kwh']), kwh_format(month_data['msp-kwh']), kwh_format(month_data['export-net-kwh']), kwh_format(month_data['used-kwh']), kwh_format(month_data['export-gen-kwh']), kwh_format(month_data['import-gen-kwh']), kwh_format(month_data['import-3rd-party-kwh']), kwh_format(month_data['export-3rd-party-kwh']),  gbp_format(month_data['import-net-gbp']), gbp_format(month_data['msp-gbp']), 0, gbp_format(month_data['used-gbp']), gbp_format(month_data['used-3rd-party-gbp']), kwh_format(billed_kwh),gbp_format(billed_gbp), metering_type, problem]
     #pw.println("Finished call method " + str(System.currentTimeMillis() - timing))
     return result
 
 inv.getResponse().setContentType("text/csv")
 inv.getResponse().setHeader('Content-Disposition', 'filename=output.csv;')
 pw = inv.getResponse().getWriter()
-pw.println("Site Id,Site Name,Associated Site Ids,Sources,Generator Types,Month,Imported kWh,Displaced kWh,Exported kWh,Used kWh,Parasitic kWh,Generated kWh,3rd Party Import kWh,3rd Party Export kWh,Imported GBP,Displaced GBP,Exported GBP,Used GBP,3rd Party Import GBP,Metering Type,Problem")
+pw.println("Site Id,Site Name,Associated Site Ids,Sources,Generator Types,Month,Metered Imported kWh,Metered Displaced kWh,Metered Exported kWh,Metered Used kWh,Metered Parasitic kWh,Metered Generated kWh,Metered 3rd Party Import kWh,Metered 3rd Party Export kWh,Metered Imported GBP,Metered Displaced GBP,Metered Exported GBP,Metered Used GBP,Metered 3rd Party Import GBP,Billed Imported kWh,Billed Imported GBP,Metering Type,Problem")
 pw.flush()
 
 month_format = SimpleDateFormat("yyyy-MM-dd")
 month_format.setCalendar(cal)
 
-if len(search_term) == 0:
-    query = Hiber.session().createQuery("from Site site order by site.code")
-else:
-    query = Hiber.session().createQuery("from Site site where site.code = :siteCode order by site.code").setString('siteCode', search_term)
-
 forecast_date = comterp.get('forecast_date')()
 
-sites = query.list()
+sites = query.scroll()
 
-for site in sites:
-    #pw.println("starting site " + str(System.currentTimeMillis()))
-
-    for i in range(months):
+for i in range(months):
+    sites.beforeFirst()
+    while sites.next():
+        #pw.println("starting site " + str(System.currentTimeMillis()))
+        site = sites.get(0)
         cal.setTime(start_date.getDate())
         cal.add(Calendar.MONTH, i)
         month_start = HhStartDate(cal.getTime())
@@ -12669,11 +12710,13 @@ for site in sites:
         cal.add(Calendar.MINUTE, -30)
         month_finish = HhStartDate(cal.getTime())
         pw.print('"' + site.getCode() + '","' + site.getName() + '",')
-        for value in process_site(site.getId(), month_start, month_finish, forecast_date, pw):
+        for value in process_site(site, month_start, month_finish, forecast_date, pw):
             pw.print('"' + str(value) + '",')
         pw.println('')
         pw.flush()
-    #pw.println("finishing site " + str(System.currentTimeMillis() - timing))
+        #pw.println("finishing site " + str(System.currentTimeMillis() - timing))
+        Hiber.session().clear()
+sites.close()
 pw.close()]]></value>
         <value><![CDATA[]]></value>
     </line>
