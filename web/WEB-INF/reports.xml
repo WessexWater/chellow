@@ -12535,7 +12535,7 @@ def process_site(site, month_start, month_finish, forecast_date, pw):
     for group in site.groups(month_start, month_finish, False):
         for cand_site in group.getSites():
             cand_site_code = cand_site.getCode()
-            if  cand_site_code != site_code and cand_site_code not in associates:
+            if cand_site_code != site_code and cand_site_code not in associates:
                 associates.append(cand_site_code)
         for cand_supply in group.getSupplies():
             for cand_gen in cand_supply.getGenerations(month_start, month_finish):
@@ -12614,21 +12614,21 @@ def process_site(site, month_start, month_finish, forecast_date, pw):
 
                 supplier_contract = import_mpan.getSupplierContract()
                 if source_code in ['net', 'gen-net']:
-                    #pw.println("starting vbill " + str(System.currentTimeMillis() - timing))
+                    #pw.println("starting vbill, " + str(System.currentTimeMillis()))
                     supply_source = comterp.get('supply_source')(forecast_date, comterp, pw)
 
-                    #pw.println("starting init from mpan " + str(System.currentTimeMillis() - timing))
+                    #pw.println("starting init from mpan, " + str(System.currentTimeMillis()))
                     supply_source.init_from_mpan(bill_start, bill_finish, import_mpan)
                     if supply_source.pc_code != '00' and not supply_source.is_amr:
                         #pw.println('sum msp kwh ' + str(supply_source.summary['sum-msp-kwh']))
                         month_data['import-net-kwh'] += supply_source.summary['sum-msp-kwh']
-                    #pw.println("finished init from mpan " + str(System.currentTimeMillis() - timing))
+                    #pw.println("finished init from mpan, " + str(System.currentTimeMillis()))
                     import_vb_function = comterp.get('contract_function')(supplier_contract, 'import_virtual_bill')
                     if import_vb_function is None:
                         problem += "Can't find the import_virtual_bill function in the supplier contract. "
                     else:
                         v_bill = import_vb_function(supply_source)
-                    #pw.println("finishing vbill " + str(System.currentTimeMillis() - timing))
+                        #pw.println("finishing vbill, " + str(System.currentTimeMillis()))
 
                         if 'net-gbp' in v_bill:
                             month_data['import-net-gbp'] += v_bill['net-gbp']
@@ -12644,17 +12644,56 @@ def process_site(site, month_start, month_finish, forecast_date, pw):
                 gbp_bill_start = gbp_bill.getStartDate().getDate().getTime()
                 gbp_bill_finish = gbp_bill.getFinishDate().getDate().getTime()
                 rate = bill_net / (gbp_bill_finish - gbp_bill_start + (30 * 60 * 1000))
-                overlap_length = min(gbp_bill_finish, chunk_finish_millis) - max(gbp_bill_start, chunk_start_millis)
+                overlap_length = min(gbp_bill_finish, chunk_finish_millis) + (30 * 60 * 1000) - max(gbp_bill_start, chunk_start_millis)
                 billed_gbp += overlap_length * rate
 
+
+
+
+
+            reads = []
+            bills_start = bills_finish = reads_start = reads_finish = chunk_start
+            while bills_start is not None and bills_finish is not None:
+                bills_to_add = []
+                if bills_finish is not None:
+                    bill_next = Hiber.session().createQuery("select distinct read.bill from Read read where read.bill.supply = :supply and read.bill.finishDate.date >= :billsFinish order by read.bill.startDate.date, read.bill.issueDate desc, read.bill.type.code").setResults(1).uniqueResult()
+                    if bill_next is None:
+                        bills_finish = None
+                    else:
+                        bills_finish = bill_next.getFinishDate().getNext()
+                        if not bill_next.getStartDate().after(bills_start):
+                            bills_start = bill_next.getStartDate().getPrevious()
+                        bills_to_add.append(bill_next)
+
+                if bills_start is not None:
+                    bill_previous = Hiber.session().createQuery("select distinct read.bill from Read read where read.bill.supply = :supply and read.bill.startDate.date <= :billsStart order by read.bill.finishDate.date desc, read.bill.issueDate desc, read.bill.type.code").setResults(1).uniqueResult()
+                    if bill_previous is None:
+                        bills_start = None
+                    else:
+                        bills_start = bill_previous.getStartDate().getPrevious()
+                        bills_to_add.append(bill_previous)
+
+                for bill in bills_to_add:
+                    for read in bill.getReads():
+                        if read.getPreviousType().getCode() in ['N', 'N3']:
+                            reads.append({'value': read.getPreviousValue().doubleValue() * read.getCoefficient().doubleValue(), 'date': read.getPreviousDate(), 'meter-serial-number': read.getMeterSerialNumber()})
+                            #if 
+
+                        if read.getPresentType().getCode() in ['N', 'N3']:
+                            reads.append({'value': read.getPresentValue().doubleValue() * read.getCoefficient().doubleValue(), 'date': read.getPresentDate(), 'meter-serial-number': read.getMeterSerialNumber()})
+
+
+
+        #pw.println("getting site ds, " + str(System.currentTimeMillis()))
         site_ds = comterp.get('site_source')(site, chunk_start, chunk_finish, forecast_date, comterp, pw)
         displaced_mpan = comterp.get('displaced_mpan')(group, chunk_start, chunk_finish)
         if displaced_mpan != None:
-            #pw.println("starting displaced " + str(System.currentTimeMillis() - timing))
+            #pw.println("starting displaced, " + str(System.currentTimeMillis()))
             site_ds.init_from_mpan(displaced_mpan)
+            #pw.println("done init from mpan, " + str(System.currentTimeMillis()))
             month_data['msp-gbp'] += comterp.get('contract_function')(displaced_mpan.getSupplierContract(), 'displaced_virtual_bill')(site_ds)['net-gbp']
 
-            #pw.println("finishing displaced " + str(System.currentTimeMillis() - timing))
+            #pw.println("finishing displaced, " + str(System.currentTimeMillis()))
         elif has_3rd_party:
             site_ds.init_from_site()
             keys = third_party_contracts.keys()
@@ -12682,7 +12721,7 @@ def process_site(site, month_start, month_finish, forecast_date, pw):
     for generator_type in generator_types:
         generator_types_str += generator_type + ', '
     result = [associate_str[:-2], sources_str[:-2], generator_types_str[:-2], month_format.format(Date(month_finish.getDate().getTime() - 1)), kwh_format(month_data['import-net-kwh']), kwh_format(month_data['msp-kwh']), kwh_format(month_data['export-net-kwh']), kwh_format(month_data['used-kwh']), kwh_format(month_data['export-gen-kwh']), kwh_format(month_data['import-gen-kwh']), kwh_format(month_data['import-3rd-party-kwh']), kwh_format(month_data['export-3rd-party-kwh']),  gbp_format(month_data['import-net-gbp']), gbp_format(month_data['msp-gbp']), 0, gbp_format(month_data['used-gbp']), gbp_format(month_data['used-3rd-party-gbp']), kwh_format(billed_kwh),gbp_format(billed_gbp), metering_type, problem]
-    #pw.println("Finished call method " + str(System.currentTimeMillis() - timing))
+    #pw.println("Finished call method " + str(System.currentTimeMillis()))
     return result
 
 inv.getResponse().setContentType("text/csv")
@@ -12697,11 +12736,10 @@ month_format.setCalendar(cal)
 forecast_date = comterp.get('forecast_date')()
 
 sites = query.scroll()
-
 for i in range(months):
     sites.beforeFirst()
     while sites.next():
-        #pw.println("starting site " + str(System.currentTimeMillis()))
+        #pw.println("starting site, " + str(System.currentTimeMillis()))
         site = sites.get(0)
         cal.setTime(start_date.getDate())
         cal.add(Calendar.MONTH, i)
@@ -12714,8 +12752,9 @@ for i in range(months):
             pw.print('"' + str(value) + '",')
         pw.println('')
         pw.flush()
-        #pw.println("finishing site " + str(System.currentTimeMillis() - timing))
+        #pw.println("finishing site, " + str(System.currentTimeMillis()))
         Hiber.session().clear()
+
 sites.close()
 pw.close()]]></value>
         <value><![CDATA[]]></value>
