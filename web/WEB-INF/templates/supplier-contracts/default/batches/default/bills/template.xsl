@@ -91,11 +91,11 @@
 								</td>
 								<td>
 									<xsl:value-of
-										select="concat(hh-start-date/@year, '-', hh-start-date/@month, '-', hh-start-date/@day)" />
+										select="concat(hh-start-date[@label='start']/@year, '-', hh-start-date[@label='start']/@month, '-', hh-start-date[@label='start']/@day)" />
 								</td>
 								<td>
 									<xsl:value-of
-										select="concat(hh-start-date/@year, '-', hh-start-date/@month, '-', hh-start-date/@day)" />
+										select="concat(hh-start-date[@label='finish']/@year, '-', hh-start-date[@label='finish']/@month, '-', hh-start-date[@label='finish']/@day)" />
 								</td>
 								<td>
 									<xsl:value-of select="@kwh" />

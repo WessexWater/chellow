@@ -1149,6 +1149,8 @@ def virtual_bill(supply_source):
 			method="post">
 			<control type="file" name="file" value="bills.csv" />
 			<response-code value="303" />
+			<regex
+				pattern="/chellow/supplier-contracts/4/batches/4/bill-imports/2/" />
 		</request>
 		<request path="/chellow/supplier-contracts/4/batches/4/bill-imports/2/">
 			<refresh />
@@ -1205,11 +1207,7 @@ def virtual_bill(supply_source):
 			<response-code value="200" />
 		</request>
 	</test>
-	<!--
-		<test name="Check HHDC bills works."> <request
-		path="/chellow/hhdc-contracts/5/accounts/4/bills/"> <response-code
-		value="200" /> </request> </test>
-	-->
+
 	<test name="Check no duplicate supplies in Supplies Duration report.">
 		<request
 			path="/chellow/reports/149/output/?start-year=2008&amp;start-month=07&amp;start-day=01&amp;start-hour=0&amp;finish-year=2008&amp;finish-month=07&amp;finish-day=31&amp;finish-hour=23">
@@ -1944,9 +1942,9 @@ def triad_estimates():
 			path="/chellow/reports/161/output/?site-code=CI017&amp;months=1&amp;end-year=2009&amp;end-month=04">
 			<response-code value="200" />
 			<regex
-				pattern='Site Id,Site Name,Associated Site Ids,Sources,Generator Types,Month,Metered Imported kWh,Metered Displaced kWh,Metered Exported kWh,Metered Used kWh,Metered Parasitic kWh,Metered Generated kWh,Metered 3rd Party Import kWh,Metered 3rd Party Export kWh,Metered Imported GBP,Metered Displaced GBP,Metered Exported GBP,Metered Used GBP,Metered 3rd Party Import GBP,Billed Imported kWh,Billed Imported GBP,Metering Type,Problem' />
+				pattern='Site Id,Site Name,Associated Site Ids,Sources,Generator Types,Month,Metered Imported kWh,Metered Displaced kWh,Metered Exported kWh,Metered Used kWh,Metered Parasitic kWh,Metered Generated kWh,Metered 3rd Party Import kWh,Metered 3rd Party Export kWh,Metered Imported GBP,Metered Displaced GBP,Metered Exported GBP,Metered Used GBP,Metered 3rd Party Import GBP,Billed Imported kWh,Billed Imported GBP,Billed Imported Complete,Metering Type,Problem' />
 			<regex
-				pattern='"CI017","Roselands","","net","","2009-04-30","0.00","0.00","0.00","0.00","0.00","0.00","0.00","0.00","2784.89","0.00","0","2784.89","0.00","0.00","0.00","hh","Can&apos;t find the import_virtual_bill function in the supplier contract. ",' />
+				pattern='"CI017","Roselands","","net","","2009-04-30","0.00","0.00","0.00","0.00","0.00","0.00","0.00","0.00","2784.89","0.00","0","2784.89","0.00","0.00","0.00","False","hh","Can&apos;t find the import_virtual_bill function in the supplier contract. ",' />
 		</request>
 	</test>
 	<test name="Site In View World">
@@ -2299,6 +2297,9 @@ def import_virtual_bill(supply_source):
 			method="post">
 			<control type="file" name="file" value="bills-nhh.csv" />
 			<response-code value="303" />
+				<regex
+				pattern="/chellow/supplier-contracts/16/batches/7/bill-imports/5/" />
+			
 		</request>
 		<request path="/chellow/supplier-contracts/16/batches/7/bill-imports/5/">
 			<refresh />
@@ -2426,7 +2427,7 @@ def import_virtual_bill(supply_source):
 			<regex pattern="The file has been imported successfully" />
 			<response-code value="200" />
 		</request>
-		<request path="/chellow/supplier-contracts/8/batches/3/bills/13/reads/">
+		<request path="/chellow/supplier-contracts/8/batches/3/bills/11/reads/">
 			<refresh />
 			<!-- Check it's loaded ok -->
 			<regex
@@ -2447,6 +2448,13 @@ def import_virtual_bill(supply_source):
 			<response-code value="200" />
 			<regex pattern="type-id" />
 			<regex pattern='&lt;option value="2" selected&gt;N Normal&lt;/option&gt;' />
+		</request>
+	</test>
+	<test name="Check the batch page.">
+		<request path="/chellow/supplier-contracts/16/batches/5/bills/">
+			<response-code value="200" />
+			<regex
+				pattern="&lt;td&gt;2010-01-19&lt;/td&gt;&lt;td&gt;2010-04-20&lt;/td&gt;" />
 		</request>
 	</test>
 </imprimatur>

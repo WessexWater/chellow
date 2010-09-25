@@ -200,19 +200,14 @@ public class Bill extends PersistentEntity implements Urlable {
 	public Bill() {
 	}
 
-	public Bill(Batch batch, Supply supply) throws HttpException {
+	public Bill(Batch batch, Supply supply, String account, String reference,
+			Date issueDate, HhStartDate startDate, HhStartDate finishDate,
+			BigDecimal kwh, BigDecimal net, BigDecimal vat, BillType type,
+			Boolean isPaid, String breakdown) throws HttpException {
 		setBatch(batch);
 		setSupply(supply);
-		setReference("Default Reference");
-		setAccount("Default Account");
-		setType(BillType.getBillType(BillType.TYPE_NORMAL));
-		setBreakdown("");
-		setKwh(new BigDecimal(0));
-		setNet(new BigDecimal(0));
-		setVat(new BigDecimal(0));
-		setIssueDate(new Date());
-		setStartDate(HhStartDate.roundDown(new Date()));
-		setFinishDate(HhStartDate.roundDown(new Date()));
+		update(account, reference, issueDate, startDate, finishDate, kwh, net,
+				vat, type, isPaid, breakdown);
 	}
 
 	public Batch getBatch() {
