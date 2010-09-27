@@ -64,13 +64,14 @@ public class HhDatum extends PersistentEntity {
 		MpanCore mpanCore = MpanCore.getMpanCore(mpanCoreStr);
 		SupplyGeneration generation = mpanCore.getSupply().getGeneration(
 				datum.getStartDate());
+		if (generation == null) {
+			throw new UserException(
+					"This datum is either before or after the supply: "
+							+ datum.toString() + ".");
+		}
 		long previousDate = datum.getStartDate().getDate().getTime();
 		boolean isImport = datum.getIsImport();
 		boolean isKwh = datum.getIsKwh();
-		if (generation == null) {
-			throw new UserException("HH datum has been ignored: "
-					+ datum.toString() + ".");
-		}
 		Channel channel = generation.getChannel(isImport, isKwh);
 		if (channel == null) {
 			throw new UserException("There is no channel for the datum: "
@@ -103,8 +104,9 @@ public class HhDatum extends PersistentEntity {
 				generation = mpanCore.getSupply().getGeneration(
 						datum.getStartDate());
 				if (generation == null) {
-					throw new UserException("HH datum has been ignored: "
-							+ datum.toString() + ".");
+					throw new UserException(
+							"This datum is either before or after the supply: "
+									+ datum.toString() + ".");
 				}
 				isImport = datum.getIsImport();
 				isKwh = datum.getIsKwh();

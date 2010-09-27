@@ -139,7 +139,7 @@ class Parser(BillParser):
         return raw_bills
 
     def getProgress(self):
-        return "Reached line " + str(self.parser.lreader.getLineNumber()) + " of first passs. " + self.debug_str]]></value>
+        return "Reached line " + str(self.parser.lreader.getLineNumber()) + " of first pass. " + self.debug_str]]></value>
         <value><![CDATA[109]]></value>
         <value><![CDATA[2010-05-25T00:00Z]]></value>
         <value><![CDATA[]]></value>
@@ -154,7 +154,7 @@ class Parser(BillParser):
         <value><![CDATA[bill-parser-csv]]></value>
         <value><![CDATA[from net.sf.chellow.billing import BillParser, RawBill, BillType
 from java.text import SimpleDateFormat, DecimalFormat
-from java.util import Locale, TimeZone
+from java.util import Locale, TimeZone, Calendar
 from com.Ostermiller.util import CSVParser
 from net.sf.chellow.physical import ReadType, Units, HhStartDate, RawRegisterRead, Tpr
 from java.math import BigDecimal
@@ -175,23 +175,32 @@ class Parser(BillParser):
         self.debug_str = ''
 
         self.formatter = DecimalFormat('00000')
-
+        self.cal = MonadDate.getCalendar()
 
     def getRawBills(self):
         raw_bills = []
         values = self.shredder.getLine()
         while values != None:
+            num_values = len(values)
             bill_type = BillType.getBillType(values[0])
             account_reference = values[1]
             mpan_strings = values[2].split(",")
             invoice_reference = values[3]
             issue_date = MonadDate(values[4]).getDate()
             start_date = HhStartDate(values[5])
+
             finish_date = HhStartDate(values[6])
+            self.cal.setTime(finish_date.getDate())
+            self.cal.add(Calendar.DAY_OF_MONTH, 1)
+            finish_date = HhStartDate(self.cal.getTime()).getPrevious()
+
             kwh = BigDecimal(values[7])
             net = BigDecimal(values[8])
             vat = BigDecimal(values[9])
-            breakdown = values[10]
+            if num_values > 10:
+                breakdown = values[10]
+            else:
+                raise UserException("For the line, " + str(values) + " there isn't a 'breakdown' field on the end.")
 
             while values[-1] == '' and len(values) > 11:
                 del values[-1]
@@ -219,7 +228,7 @@ class Parser(BillParser):
 
 
     def getProgress(self):
-        return "Reached line " + str(self.shredder.getLastLineNumber()) + " of first passs. " + self.debug_str]]></value>
+        return "Reached line " + str(self.shredder.getLastLineNumber()) + " of first pass. " + self.debug_str]]></value>
         <value><![CDATA[111]]></value>
         <value><![CDATA[2010-05-26T00:00Z]]></value>
         <value><![CDATA[]]></value>
