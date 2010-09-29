@@ -190,8 +190,7 @@ public class SupplyGeneration extends PersistentEntity {
 
 			String importMpanCoreStr = GeneralImport.addField(csvElement,
 					"Import MPAN Core", values, 17);
-			String importLlfcCode = GeneralImport.addField(csvElement,
-					"Import LLFC", values, 18);
+			String importLlfcCode = null;
 			Integer importAgreedSupplyCapacity = null;
 			SupplierContract importSupplierContract = null;
 			String importSupplierAccount = null;
@@ -204,14 +203,14 @@ public class SupplyGeneration extends PersistentEntity {
 			}
 			if (importMpanCoreStr != null) {
 				importLlfcCode = GeneralImport.addField(csvElement,
-						"Import LLFC", values, 19);
+						"Import LLFC", values, 18);
 				if (importLlfcCode.equals(GeneralImport.NO_CHANGE)) {
 					importLlfcCode = existingImportMpan == null ? null
 							: existingImportMpan.getLlfc().toString();
 				}
 				String importAgreedSupplyCapacityStr = GeneralImport
 						.addField(csvElement, "Import Agreed Supply Capacity",
-								values, 20);
+								values, 19);
 				if (importAgreedSupplyCapacityStr
 						.equals(GeneralImport.NO_CHANGE)) {
 					if (existingImportMpan == null) {
@@ -232,7 +231,7 @@ public class SupplyGeneration extends PersistentEntity {
 					}
 				}
 				String importSupplierContractName = GeneralImport.addField(
-						csvElement, "Import Supplier Contract", values, 21);
+						csvElement, "Import Supplier Contract", values, 20);
 				if (importSupplierContractName.equals(GeneralImport.NO_CHANGE)) {
 					if (existingImportMpan == null) {
 						throw new UserException(
@@ -245,7 +244,7 @@ public class SupplyGeneration extends PersistentEntity {
 							.getSupplierContract(importSupplierContractName);
 				}
 				importSupplierAccount = GeneralImport.addField(csvElement,
-						"Import Supplier Account", values, 22);
+						"Import Supplier Account", values, 21);
 				if (importSupplierAccount.equals(GeneralImport.NO_CHANGE)) {
 					if (existingImportMpan == null) {
 						throw new UserException(
@@ -260,9 +259,9 @@ public class SupplyGeneration extends PersistentEntity {
 			SupplierContract exportSupplierContract = null;
 			String exportSupplierAccount = null;
 			Integer exportAgreedSupplyCapacity = null;
-			if (values.length > 23) {
+			if (values.length > 22) {
 				exportMpanCoreStr = GeneralImport.addField(csvElement,
-						"Eport MPAN Core", values, 23);
+						"Eport MPAN Core", values, 22);
 				Mpan existingExportMpan = supplyGeneration.getExportMpan();
 				if (exportMpanCoreStr.equals(GeneralImport.NO_CHANGE)) {
 					exportMpanCoreStr = existingExportMpan == null ? null
@@ -272,14 +271,14 @@ public class SupplyGeneration extends PersistentEntity {
 				}
 				if (exportMpanCoreStr != null) {
 					exportLlfcCode = GeneralImport.addField(csvElement,
-							"Export LLFC", values, 24);
+							"Export LLFC", values, 23);
 					if (exportLlfcCode.equals(GeneralImport.NO_CHANGE)) {
 						exportLlfcCode = existingExportMpan == null ? null
 								: existingExportMpan.getLlfc().toString();
 					}
 					String exportAgreedSupplyCapacityStr = GeneralImport
 							.addField(csvElement,
-									"Export Agreed Supply Capacity", values, 25);
+									"Export Agreed Supply Capacity", values, 24);
 					if (exportAgreedSupplyCapacityStr
 							.equals(GeneralImport.NO_CHANGE)) {
 						if (existingExportMpan == null) {
@@ -300,7 +299,7 @@ public class SupplyGeneration extends PersistentEntity {
 						}
 					}
 					String exportSupplierContractName = GeneralImport.addField(
-							csvElement, "Export Supplier Contract", values, 26);
+							csvElement, "Export Supplier Contract", values, 25);
 					if (exportSupplierContractName
 							.equals(GeneralImport.NO_CHANGE)) {
 						if (existingExportMpan == null) {
@@ -314,7 +313,7 @@ public class SupplyGeneration extends PersistentEntity {
 								.getSupplierContract(exportSupplierContractName);
 					}
 					exportSupplierAccount = GeneralImport.addField(csvElement,
-							"Export Supplier Account", values, 27);
+							"Export Supplier Account", values, 26);
 					if (exportSupplierAccount.equals(GeneralImport.NO_CHANGE)) {
 						if (existingExportMpan == null) {
 							throw new UserException(
