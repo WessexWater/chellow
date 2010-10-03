@@ -41,6 +41,25 @@
 						</xsl:for-each>
 					</ul>
 				</xsl:if>
+				<ul>
+					<li>
+						<a href="batches/">Batches</a>
+					</li>
+					<li>
+						<a href="hh-data-imports/">HH data imports</a>
+					</li>
+					<li>
+						<a href="rate-scripts/">Rate Scripts</a>
+					</li>
+					<xsl:if
+						test="/source/hhdc-contract/@has-automatic-hh-data-importer='true'">
+						<li>
+							<a href="automatic-hh-data-importer/">
+								Automatic HH Data Importer
+							</a>
+						</li>
+					</xsl:if>
+				</ul>
 				<br />
 				<xsl:choose>
 					<xsl:when
@@ -195,25 +214,6 @@
 								<input type="submit" value="Delete" />
 							</fieldset>
 						</form>
-						<ul>
-							<li>
-								<a href="batches/">Batches</a>
-							</li>
-							<li>
-								<a href="hh-data-imports/">HH data imports</a>
-							</li>
-							<li>
-								<a href="rate-scripts/">Rate Scripts</a>
-							</li>
-							<xsl:if
-								test="/source/hhdc-contract/@has-automatic-hh-data-importer='true'">
-								<li>
-									<a href="automatic-hh-data-importer/">
-										Automatic HH Data Importer
-							</a>
-								</li>
-							</xsl:if>
-						</ul>
 						<br />
 						<form method="post" action=".">
 							<fieldset>
@@ -221,8 +221,7 @@
 								<br />
 								<input name="ignore-year" size="4" maxlength="4">
 									<xsl:choose>
-										<xsl:when
-											test="/source/request/parameter[@name='ignore-year']">
+										<xsl:when test="/source/request/parameter[@name='ignore-year']">
 
 											<xsl:attribute name="value">
 										<xsl:value-of
@@ -243,8 +242,7 @@
 									<xsl:for-each select="/source/months/month">
 										<option value="{@number}">
 											<xsl:choose>
-												<xsl:when
-													test="/source/request/parameter[@name='ignore-month']">
+												<xsl:when test="/source/request/parameter[@name='ignore-month']">
 													<xsl:if
 														test="/source/request/parameter[@name='ignore-month']/value/text() = number(@number)">
 														<xsl:attribute name="selected" />
@@ -265,8 +263,7 @@
 									<xsl:for-each select="/source/days/day">
 										<option value="{@number}">
 											<xsl:choose>
-												<xsl:when
-													test="/source/request/parameter[@name='ignore-day']">
+												<xsl:when test="/source/request/parameter[@name='ignore-day']">
 													<xsl:if
 														test="/source/request/parameter[@name='ignore-day']/value/text() = @number">
 														<xsl:attribute name="selected" />

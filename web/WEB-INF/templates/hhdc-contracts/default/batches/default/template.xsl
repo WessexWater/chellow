@@ -2,8 +2,8 @@
 <xsl:stylesheet version="1.0"
 	xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
 	<xsl:output method="html" encoding="US-ASCII"
-		doctype-public="-//W3C//DTD HTML 4.01//EN" doctype-system="http://www.w3.org/TR/html4/strict.dtd"
-		indent="yes" />
+		doctype-public="-//W3C//DTD HTML 4.01//EN"
+		doctype-system="http://www.w3.org/TR/html4/strict.dtd" indent="yes" />
 
 	<xsl:template match="/">
 		<html>
@@ -11,8 +11,9 @@
 				<link rel="stylesheet" type="text/css"
 					href="{/source/request/@context-path}/style/" />
 				<title>
-					Chellow &gt; MOP Contracts &gt;
-					<xsl:value-of select="/source/batch/mop-contract/@name" />
+					Chellow &gt; HHDC Contracts &gt;
+					<xsl:value-of
+						select="/source/batch/hhdc-contract/@name" />
 					&gt; Batches &gt;
 					<xsl:value-of select="/source/batch/@code" />
 				</title>
@@ -29,32 +30,35 @@
 				</xsl:if>
 				<p>
 					<a href="{/source/request/@context-path}/">
-						<img src="{/source/request/@context-path}/logo/" />
+						<img
+							src="{/source/request/@context-path}/logo/" />
 						<span class="logo">Chellow</span>
 					</a>
 					&gt;
-					<a href="{/source/request/@context-path}/mop-contracts/">
-						<xsl:value-of select="'MOP Contracts'" />
+					<a
+						href="{/source/request/@context-path}/hhdc-contracts/">
+						<xsl:value-of select="'HHDC Contracts'" />
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/mop-contracts/{/source/batch/mop-contract/@id}/">
-						<xsl:value-of select="/source/batch/mop-contract/@name" />
+						href="{/source/request/@context-path}/hhdc-contracts/{/source/batch/hhdc-contract/@id}/">
+						<xsl:value-of
+							select="/source/batch/hhdc-contract/@name" />
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/mop-contracts/{/source/batch/mop-contract/@id}/batches/">
+						href="{/source/request/@context-path}/hhdc-contracts/{/source/batch/hhdc-contract/@id}/batches/">
 						<xsl:value-of select="'Batches'" />
 					</a>
 					&gt;
-					<xsl:value-of select="concat(/source/batch/@reference, ' [')" />
+					<xsl:value-of
+						select="concat(/source/batch/@reference, ' [')" />
 					<a
-						href="{/source/request/@context-path}/reports/193/output/?batch-id={/source/batch/@id}">
+						href="{/source/request/@context-path}/reports/203/output/?batch-id={/source/batch/@id}">
 						<xsl:value-of select="'view'" />
 					</a>
 					<xsl:value-of select="']'" />
 				</p>
-				<br />
 				<xsl:choose>
 					<xsl:when
 						test="/source/request/@method='get' and /source/request/parameter[@name='view']/value='confirm-delete'">
@@ -65,7 +69,8 @@
 									Are you sure you want to delete this
 									batch and all its bills?
 								</p>
-								<input type="submit" name="delete" value="Delete" />
+								<input type="submit" name="delete"
+									value="Delete" />
 							</fieldset>
 						</form>
 						<p>
@@ -73,7 +78,7 @@
 						</p>
 					</xsl:when>
 					<xsl:otherwise>
-						<ul>
+					<ul>
 							<li>
 								<a href="bill-imports/">
 									Bill Imports
@@ -93,12 +98,13 @@
 										<xsl:attribute name="value">
 											<xsl:choose>
 												<xsl:when
-											test="/source/request/parameter[@name = 'reference']/value">
+													test="/source/request/parameter[@name = 'reference']/value">
 													<xsl:value-of
-											select="/source/request/parameter[@name = 'reference']/value" />
+														select="/source/request/parameter[@name = 'reference']/value" />
 												</xsl:when>
 												<xsl:otherwise>
-													<xsl:value-of select="/source/batch/@reference" />
+													<xsl:value-of
+														select="/source/batch/@reference" />
 												</xsl:otherwise>
 											</xsl:choose>
 										</xsl:attribute>
@@ -113,7 +119,8 @@
 						<br />
 						<form action=".">
 							<fieldset>
-								<input type="hidden" name="view" value="confirm-delete" />
+								<input type="hidden" name="view"
+									value="confirm-delete" />
 								<legend>Delete this batch</legend>
 								<input type="submit" value="Delete" />
 							</fieldset>

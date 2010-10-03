@@ -41,6 +41,14 @@
 						</xsl:for-each>
 					</ul>
 				</xsl:if>
+				<ul>
+					<li>
+						<a href="batches/">Batches</a>
+					</li>
+					<li>
+						<a href="rate-scripts/">Rate Scripts</a>
+					</li>
+				</ul>
 				<br />
 				<xsl:choose>
 					<xsl:when
@@ -136,14 +144,6 @@
 								<input type="submit" value="Delete" />
 							</fieldset>
 						</form>
-						<ul>
-							<li>
-								<a href="batches/">Batches</a>
-							</li>
-							<li>
-								<a href="rate-scripts/">Rate Scripts</a>
-							</li>
-						</ul>
 					</xsl:otherwise>
 				</xsl:choose>
 			</body>

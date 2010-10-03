@@ -49,43 +49,30 @@
 						</xsl:for-each>
 					</ul>
 				</xsl:if>
-				<xsl:choose>
-					<xsl:when test="/source/response/@status-code = '201'">
-						<p>
-							The
-							<a href="{/source/response/header[@name = 'Location']/@value}">
-								<xsl:value-of select="'new batch'" />
-							</a>
-							has been successfully created.
-						</p>
-					</xsl:when>
-					<xsl:otherwise>
-						<ul>
-							<xsl:for-each select="/source/batches/batch">
-								<li>
-									<a href="{@id}/">
-										<xsl:value-of select="@reference" />
-									</a>
-								</li>
-							</xsl:for-each>
-						</ul>
+				<form action="." method="post">
+					<fieldset>
+						<legend>Add a batch</legend>
 						<br />
-						<form action="." method="post">
-							<fieldset>
-								<legend>Add a batch</legend>
-								<br />
-								<label>
-									<xsl:value-of select="'Reference '" />
-									<input name="reference"
-										value="{/source/request/parameter[@name = 'reference']/value}" />
-								</label>
-								<xsl:value-of select="' '" />
-								<input type="submit" value="Add" />
-								<input type="reset" value="Reset" />
-							</fieldset>
-						</form>
-					</xsl:otherwise>
-				</xsl:choose>
+						<label>
+							<xsl:value-of select="'Reference '" />
+							<input name="reference"
+								value="{/source/request/parameter[@name = 'reference']/value}" />
+						</label>
+						<xsl:value-of select="' '" />
+						<input type="submit" value="Add" />
+						<input type="reset" value="Reset" />
+					</fieldset>
+				</form>
+				<ul>
+					<xsl:for-each select="/source/batches/batch">
+						<li>
+							<a href="{@id}/">
+								<xsl:value-of select="@reference" />
+							</a>
+						</li>
+					</xsl:for-each>
+				</ul>
+				<br />
 			</body>
 		</html>
 	</xsl:template>

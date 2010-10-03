@@ -48,7 +48,6 @@
 					</a>
 					<xsl:value-of select="']'" />
 				</p>
-				<br />
 				<ul>
 					<xsl:for-each select="/source/batches/batch">
 						<li>

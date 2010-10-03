@@ -276,7 +276,18 @@ def totalElement(account, startDate, finishDate):
 			<response-code value="303" />
 		</request>
 	</test>
-
+	<test name="Insert MOP contract">
+		<request path="/chellow/mop-contracts/" method="post">
+			<control name="participant-id" value="135" /> <!-- LENG -->
+			<control name="name" value="MOP Contract" />
+			<control name="start-year" value="2000" />
+			<control name="start-month" value="01" />
+			<control name="start-day" value="03" />
+			<control name="has-finished" value="false" />
+			<response-code value="303" />
+			<regex pattern="/mop-contracts/8/" />
+		</request>
+	</test>
 	<test name="supplies">
 		<!-- Give proper error if there are too few fields -->
 
@@ -300,10 +311,8 @@ def totalElement(account, startDate, finishDate):
 		</request>
 		<request path="/chellow/general-imports/4/">
 			<refresh />
-			<!--
-				check that it knows that the first line has a source code that is
-				too long
-			-->
+			<!-- check that it knows that the first line has a source code that is 
+				too long -->
 			<regex pattern="There's no source with the code 'netlong'" />
 			<response-code value="200" />
 		</request>
@@ -321,9 +330,7 @@ def totalElement(account, startDate, finishDate):
 			<response-code value="200" />
 		</request>
 
-		<!--
-			Check that it gives a sensible error message if a data is malformed
-		-->
+		<!-- Check that it gives a sensible error message if a data is malformed -->
 		<request path="/chellow/general-imports/" method="post">
 			<control type="file" name="import-file" value="supplies_date.csv" />
 			<regex pattern="/chellow/general-imports/6/" />
@@ -457,9 +464,7 @@ def totalElement(account, startDate, finishDate):
 			<response-code value="200" />
 		</request>
 
-		<!--
-			When a supply generation is ended, check that the snags are updated
-		-->
+		<!-- When a supply generation is ended, check that the snags are updated -->
 		<request path="/chellow/supplies/6/generations/6/" method="post">
 			<control name="start-year" value="2003" />
 			<control name="start-month" value="08" />
@@ -469,18 +474,19 @@ def totalElement(account, startDate, finishDate):
 			<control name="finish-month" value="08" />
 			<control name="finish-day" value="13" />
 			<control name="gsp-group-id" value="11" />
-			<control name="mop-contract-id" value="null" />
+			<control name="mop-contract-id" value="8" />
+			<control name="mop-account" value="22 0883 6932 301" />
 			<control name="hhdc-contract-id" value="0" />
-			<control name="hhdc-account">01</control>
+			<control name="hhdc-account" value="22 0883 6932 301" />
 			<control name="meter-serial-number" value="" />
 			<control name="pc-id" value="9" />
 			<control name="mtc-code" value="845" />
 			<control name="cop-id" value="5" />
 			<control name="ssc-code" value="" />
-			<control name="has-import-mpan">true</control>
-			<control name="import-llfc-code">570</control>
-			<control name="import-mpan-core">22 0883 6932 301</control>
-			<control name="import-agreed-supply-capacity">350</control>
+			<control name="has-import-mpan" value="true" />
+			<control name="import-llfc-code" value="570" />
+			<control name="import-mpan-core" value="22 0883 6932 301" />
+			<control name="import-agreed-supply-capacity" value="350" />
 			<control name="import-supplier-contract-id" value="4" />
 			<control name="import-supplier-account" value="01" />
 			<control name="has-export-mpan" value="false" />
@@ -501,35 +507,34 @@ def totalElement(account, startDate, finishDate):
 				pattern='&lt;td&gt;Missing&lt;/td&gt;&lt;td&gt;2003-08-03T00:00Z&lt;/td&gt;&lt;td&gt;2003-08-13T23:30Z&lt;/td&gt;' />
 		</request>
 
-		<!--
-			Check that if the hhdc contract is changed, the hhdc contract of the
-			snags change
-		-->
+		<!-- Check that if the hhdc contract is changed, the hhdc contract of the 
+			snags change -->
 		<!-- Check the export supply capacity can be updated as well -->
 		<request path="/chellow/supplies/6/generations/6/" method="post">
 			<control name="meter-serial-number" value="" />
-			<control name="start-year">2003</control>
-			<control name="start-month">08</control>
-			<control name="start-day">03</control>
-			<control name="is-ended">true</control>
-			<control name="finish-year">2003</control>
-			<control name="finish-month">08</control>
+			<control name="start-year" value="2003" />
+			<control name="start-month" value="08" />
+			<control name="start-day" value="03" />
+			<control name="is-ended" value="true" />
+			<control name="finish-year" value="2003" />
+			<control name="finish-month" value="08" />
 			<control name="finish-day" value="13" />
-			<control name="mop-contract-id" value="null" />
+			<control name="mop-contract-id" value="8" />
+			<control name="mop-account" value="22 0883 6932 301"/>
 			<control name="hhdc-contract-id" value="0" />
-			<control name="hhdc-account">001</control>
+			<control name="hhdc-account" value="22 0883 6932 301" />
 			<control name="pc-id" value="9" />
 			<control name="mtc-code" value="845" />
 			<control name="cop-id" value="5" />
 			<control name="ssc-code" value="" />
-			<control name="has-import-mpan">true</control>
-			<control name="import-llfc-code">570</control>
-			<control name="import-mpan-core">22 0883 6932 301</control>
+			<control name="has-import-mpan" value="true" />
+			<control name="import-llfc-code" value="570" />
+			<control name="import-mpan-core" value="22 0883 6932 301" />
 			<control name="import-gsp-group-id" value="11" />
-			<control name="import-agreed-supply-capacity">430</control>
+			<control name="import-agreed-supply-capacity" value="430" />
 			<control name="import-supplier-contract-id" value="4" />
 			<control name="import-supplier-account" value="01" />
-			<control name="has-export-mpan">false</control>
+			<control name="has-export-mpan" value="false" />
 			<response-code value="200" />
 			<regex
 				pattern='&lt;input name="import-agreed-supply-capacity" size="9" maxlength="9" value="430"&gt;' />
@@ -548,25 +553,26 @@ def totalElement(account, startDate, finishDate):
 			<control name="meter-serial-number" value="" />
 			<control name="start-year" value="2003" />
 			<control name="start-month" value="08" />
-			<control name="start-day">03</control>
-			<control name="is-ended">false</control>
-			<control name="finish-year">2003</control>
-			<control name="finish-month">08</control>
-			<control name="finish-day">14</control>
-			<control name="mop-contract-id" value="null" />
+			<control name="start-day" value="03" />
+			<control name="is-ended" value="false" />
+			<control name="finish-year" value="2003" />
+			<control name="finish-month" value="08" />
+			<control name="finish-day" value="14" />
+			<control name="mop-contract-id" value="8" />
+			<control name="mop-account" value="22 0883 6932 301"/>
 			<control name="hhdc-contract-id" value="0" />
-			<control name="hhdc-account">01</control>
+			<control name="hhdc-account" value="22 0883 6932 301" />
 			<control name="pc-id" value="9" />
 			<control name="mtc-code" value="845" />
 			<control name="cop-id" value="5" />
 			<control name="ssc-code" value="" />
-			<control name="has-import-mpan">true</control>
-			<control name="import-llfc-code">570</control>
-			<control name="import-mpan-core">22 0883 6932 301</control>
-			<control name="import-agreed-supply-capacity">350</control>
+			<control name="has-import-mpan" value="true" />
+			<control name="import-llfc-code" value="570" />
+			<control name="import-mpan-core" value="22 0883 6932 301" />
+			<control name="import-agreed-supply-capacity" value="350" />
 			<control name="import-supplier-contract-id" value="4" />
 			<control name="import-supplier-account" value="01" />
-			<control name="has-export-mpan">false</control>
+			<control name="has-export-mpan" value="false" />
 			<response-code value="200" />
 		</request>
 
@@ -601,10 +607,8 @@ def totalElement(account, startDate, finishDate):
 			<response-code value="200" />
 		</request>
 
-		<!--
-			Check that we prevent mpan cores from changing without an overlapping
-			period
-		-->
+		<!-- Check that we prevent mpan cores from changing without an overlapping 
+			period -->
 		<request path="/chellow/supplies/3/generations/9/" method="post">
 			<control name="meter-serial-number" value="" />
 			<control name="start-year" value="2006" />
@@ -633,10 +637,8 @@ def totalElement(account, startDate, finishDate):
 		</request>
 	</test>
 	<test name="Import hh data">
-		<!--
-			Check it gives a sensible error message if the files doesn't start
-			with #F2
-		-->
+		<!-- Check it gives a sensible error message if the files doesn't start 
+			with #F2 -->
 		<request path="/chellow/hhdc-contracts/0/hh-data-imports/"
 			method="post">
 			<control type="file" name="import-file" value="no_hash.df2" />
@@ -653,9 +655,7 @@ def totalElement(account, startDate, finishDate):
 		</request>
 		<request path="/chellow/hhdc-contracts/0/hh-data-imports/1/">
 			<refresh />
-			<!--
-				Check it's loaded ok and has ignored the blank line and the #F2 line
-			-->
+			<!-- Check it's loaded ok and has ignored the blank line and the #F2 line -->
 			<regex pattern="The import has completed.*successfully." />
 			<response-code value="200" />
 		</request>
@@ -679,10 +679,8 @@ def totalElement(account, startDate, finishDate):
 		</request>
 	</test>
 	<test name="Detect if hh import still works if first hh datum is missing.">
-		<!--
-			This relies on the datum 15/11/2005,00:30,1.0,A being already loaded,
-			with a gap before it.
-		-->
+		<!-- This relies on the datum 15/11/2005,00:30,1.0,A being already loaded, 
+			with a gap before it. -->
 
 		<request path="/chellow/hhdc-contracts/0/hh-data-imports/"
 			method="post">
@@ -773,10 +771,8 @@ def totalElement(account, startDate, finishDate):
 		</request>
 	</test>
 	<test>
-		<!--
-			Check it gives a sensible error message if the comma after the value
-			is missing
-		-->
+		<!-- Check it gives a sensible error message if the comma after the value 
+			is missing -->
 		<request path="/chellow/hhdc-contracts/0/hh-data-imports/"
 			method="post">
 			<control type="file" name="import-file" value="hh_data_malformed.df2" />
@@ -784,10 +780,7 @@ def totalElement(account, startDate, finishDate):
 			<response-code value="418" />
 		</request>
 
-		<!--
-			Check it gives a sensible error message if the first mpan is
-			malformed
-		-->
+		<!-- Check it gives a sensible error message if the first mpan is malformed -->
 		<request path="/chellow/hhdc-contracts/0/hh-data-imports/"
 			method="post">
 			<control type="file" name="import-file" value="hh_data_bad_beginning.df2" />
@@ -842,10 +835,8 @@ def totalElement(account, startDate, finishDate):
 	<test name="Check site level snag">
 		<request path="/chellow/site-snags/">
 			<regex pattern='CI004' />
-			<!--
-				There's an hh where export to net is *less* than imported from
-				generator, check this doesn't show up.
-			-->
+			<!-- There's an hh where export to net is *less* than imported from generator, 
+				check this doesn't show up. -->
 			<regex
 				pattern='2005-10-30T01:00Z[\r\n]*&lt;/td&gt;&lt;td&gt;false&lt;/td&gt;[\r\n]*&lt;/tr&gt;[\r\n]*&lt;/tbody&gt;' />
 
@@ -860,11 +851,9 @@ def totalElement(account, startDate, finishDate):
 		</request>
 	</test>
 	<test name="Channel without data unchecked">
-		<!--
-			Check that for a supply with multiple generations, if a channel
-			without any data is unchecked, it goes ahead without a user
-			exception. This test needs some hh data loaded somewhere
-		-->
+		<!-- Check that for a supply with multiple generations, if a channel without 
+			any data is unchecked, it goes ahead without a user exception. This test 
+			needs some hh data loaded somewhere -->
 		<request path="/chellow/supplies/3/generations/9/channels/27/"
 			method="post">
 			<control name="delete">Delete</control>
@@ -879,10 +868,8 @@ def totalElement(account, startDate, finishDate):
 			<response-code value="303" />
 		</request>
 
-		<!--
-			Check it gives an error if the hhdc contract is removed from a supply
-			generation that has data
-		-->
+		<!-- Check it gives an error if the hhdc contract is removed from a supply 
+			generation that has data -->
 		<request path="/chellow/supplies/2/generations/2/" method="post">
 			<control name="start-year">2003</control>
 			<control name="start-month">08</control>
@@ -982,14 +969,14 @@ def totalElement(account, startDate, finishDate):
 		<request path="/chellow/supplier-contracts/" method="post">
 			<control name="participant-id" value="117" /> <!-- HYDE -->
 			<control name="name" value="Non half-hourlies 2007" />
-			<control name="start-year">2000</control>
-			<control name="start-month">01</control>
-			<control name="start-day">03</control>
-			<control name="has-finished">false</control>
-			<regex pattern="/chellow/supplier-contracts/8/" />
+			<control name="start-year" value="2000"/>
+			<control name="start-month" value="01"/>
+			<control name="start-day" value="03"/>
+			<control name="has-finished" value="false"/>
+			<regex pattern="/chellow/supplier-contracts/10/" />
 			<response-code value="303" />
 		</request>
-		<request path="/chellow/supplier-contracts/8/" method="post">
+		<request path="/chellow/supplier-contracts/10/" method="post">
 			<control name="name">Non half-hourlies 2007</control>
 			<control name="charge-script">
 				<![CDATA[
@@ -1021,17 +1008,17 @@ def virtual_bill(supply_source):
 		</request>
 
 		<!-- Create a new batch -->
-		<request path="/chellow/supplier-contracts/8/batches/" method="post">
+		<request path="/chellow/supplier-contracts/10/batches/" method="post">
 			<control name="reference" value="06-002" />
 			<response-code value="303" />
 		</request>
-		<request path="/chellow/supplier-contracts/8/batches/3/bill-imports/"
+		<request path="/chellow/supplier-contracts/10/batches/3/bill-imports/"
 			method="post">
 			<control type="file" name="file" value="bills.bgb.edi" />
 			<response-code value="303" />
-			<regex pattern="/supplier-contracts/8/batches/3/bill-imports/1/" />
+			<regex pattern="/supplier-contracts/10/batches/3/bill-imports/1/" />
 		</request>
-		<request path="/chellow/supplier-contracts/8/batches/3/bill-imports/1/">
+		<request path="/chellow/supplier-contracts/10/batches/3/bill-imports/1/">
 			<refresh />
 			<response-code value="200" />
 			<regex
@@ -1149,8 +1136,7 @@ def virtual_bill(supply_source):
 			method="post">
 			<control type="file" name="file" value="bills.csv" />
 			<response-code value="303" />
-			<regex
-				pattern="/chellow/supplier-contracts/4/batches/4/bill-imports/2/" />
+			<regex pattern="/chellow/supplier-contracts/4/batches/4/bill-imports/2/" />
 		</request>
 		<request path="/chellow/supplier-contracts/4/batches/4/bill-imports/2/">
 			<refresh />
@@ -1245,15 +1231,17 @@ def virtual_bill(supply_source):
 	<test
 		name="Test that removing HHDC while HH data still present gives proper message.">
 		<request path="/chellow/supplies/6/generations/6/" method="post">
-			<control name="meter-serial-number" value="" />
+						<control name="meter-serial-number" value="" />
 			<control name="start-year" value="2003" />
 			<control name="start-month" value="08" />
 			<control name="start-day" value="03" />
 			<control name="is-ended" value="false" />
-			<control name="has-import-kwh" value="true" />
-			<control name="has-import-kvarh" value="false" />
-			<control name="has-export-kwh" value="false" />
-			<control name="has-export-kvarh" value="false" />
+			<control name="finish-year" value="2003" />
+			<control name="finish-month" value="08" />
+			<control name="finish-day" value="14" />
+			<control name="mop-contract-id" value="8" />
+			<control name="mop-account" value="22 0883 6932 301"/>
+			<control name="hhdc-contract-id" value="null" />
 			<control name="pc-id" value="9" />
 			<control name="mtc-code" value="845" />
 			<control name="cop-id" value="5" />
@@ -1261,13 +1249,12 @@ def virtual_bill(supply_source):
 			<control name="has-import-mpan" value="true" />
 			<control name="import-llfc-code" value="570" />
 			<control name="import-mpan-core" value="22 0883 6932 301" />
-			<control name="import-agreed-supply-capacity" value="30" />
-			<control name="import-hhdc-contract-name" value="" />
-			<control name="import-hhdc-account" value="" />
-			<control name="import-supplier-contract-name" value="Half-hourlies 2007" />
+			<control name="import-agreed-supply-capacity" value="350" />
+			<control name="import-supplier-contract-id" value="4" />
 			<control name="import-supplier-account" value="01" />
 			<control name="has-export-mpan" value="false" />
 			<response-code value="418" />
+			<regex pattern="Can't remove the HHDC account while there are still channels there\."/>
 		</request>
 	</test>
 	<test name="Test that profile 05 is displayed for a supply generation.">
@@ -1708,7 +1695,7 @@ def import_virtual_bill(supply_source):
 			<control name="ssc-code" value="" />
 			<control name="mop-contract-id" value="null" />
 			<control name="hhdc-contract-id" value="0" />
-			<control name="hhdc-account" value="01" />
+			<control name="hhdc-account" value="22 0883 6932 301" />
 			<control name="has-import-mpan" value="true" />
 			<control name="import-llfc-code" value="570" />
 			<control name="import-mpan-core" value="22 0883 6932 301" />
@@ -1729,18 +1716,18 @@ def import_virtual_bill(supply_source):
 			<control name="start-month" value="01" />
 			<control name="start-day" value="03" />
 
-			<regex pattern="/chellow/supplier-contracts/10/" />
+			<regex pattern="/chellow/supplier-contracts/12/" />
 			<response-code value="303" />
 		</request>
 
 		<!-- Now delete the contract -->
-		<request path="/chellow/supplier-contracts/10/" method="post">
+		<request path="/chellow/supplier-contracts/12/" method="post">
 			<control name="delete" value="Delete" />
 			<response-code value="303" />
 		</request>
 
 		<!-- Check that it's really gone -->
-		<request path="/chellow/supplier-contracts/10/">
+		<request path="/chellow/supplier-contracts/12/">
 			<response-code value="404" />
 		</request>
 	</test>
@@ -1756,17 +1743,17 @@ def import_virtual_bill(supply_source):
 			<control name="charge-script"></control>
 			<control name="properties" value=" " />
 			<response-code value="303" />
-			<regex pattern="/hhdc-contracts/12/" />
+			<regex pattern="/hhdc-contracts/14/" />
 		</request>
 
 		<!-- Now delete the contract -->
-		<request path="/chellow/hhdc-contracts/12/" method="post">
+		<request path="/chellow/hhdc-contracts/14/" method="post">
 			<control name="delete" value="Delete" />
 			<response-code value="303" />
 		</request>
 
 		<!-- Check that it's really gone -->
-		<request path="/chellow/hhdc-contracts/12/">
+		<request path="/chellow/hhdc-contracts/14/">
 			<response-code value="404" />
 		</request>
 	</test>
@@ -1792,9 +1779,10 @@ def import_virtual_bill(supply_source):
 			<control name="start-year" value="2000" />
 			<control name="start-month" value="01" />
 			<control name="start-day" value="03" />
+			<regex pattern="/non-core-contracts/16/" />
 			<response-code value="303" />
 		</request>
-		<request path="/chellow/non-core-contracts/14/rate-scripts/16/"
+		<request path="/chellow/non-core-contracts/16/rate-scripts/18/"
 			method="post">
 			<control name="start-year" value="2000" />
 			<control name="start-month" value="01" />
@@ -1823,7 +1811,7 @@ def triad_estimates():
 		</request>
 	</test>
 	<test name="Check we can delete a rate script (when it's not the only one)">
-		<request path="/chellow/supplier-contracts/4/rate-scripts/10/"
+		<request path="/chellow/supplier-contracts/4/rate-scripts/12/"
 			method="post">
 			<control name="delete" value="Delete" />
 			<response-code value="303" />
@@ -1934,10 +1922,8 @@ def triad_estimates():
 		</request>
 	</test>
 	<test name="CSV Sites Monthly Duration">
-		<!--
-			See if it handles the case where there isn't an import virtual bill
-			function.
-		-->
+		<!-- See if it handles the case where there isn't an import virtual bill 
+			function. -->
 		<request
 			path="/chellow/reports/161/output/?site-code=CI017&amp;months=1&amp;end-year=2009&amp;end-month=04">
 			<response-code value="200" />
@@ -1974,7 +1960,7 @@ def triad_estimates():
 			<control name="import-llfc-code" value="540" />
 			<control name="import-mpan-core" value="22 9974 3438 105" />
 			<control name="import-agreed-supply-capacity" value="20" />
-			<control name="import-supplier-contract-id" value="8" />
+			<control name="import-supplier-contract-id" value="10" />
 			<control name="import-supplier-account" value="341665" />
 			<control name="has-export-mpan" value="false" />
 			<response-code value="200" />
@@ -2059,10 +2045,10 @@ def triad_estimates():
 			<control name="start-year" value="2010" />
 			<control name="start-month" value="01" />
 			<control name="start-day" value="01" />
-			<regex pattern="/chellow/supplier-contracts/16/" />
+			<regex pattern="/chellow/supplier-contracts/18/" />
 		</request>
 
-		<request path="/chellow/supplier-contracts/16/" method="post">
+		<request path="/chellow/supplier-contracts/18/" method="post">
 			<control name="name" value="Non half-hourlies 2010" />
 			<control name="charge-script">
 				<![CDATA[
@@ -2104,25 +2090,25 @@ def import_virtual_bill(supply_source):
 			<control name="import-llfc-code" value="110" />
 			<control name="import-mpan-core" value="22 1065 3921 534" />
 			<control name="import-agreed-supply-capacity" value="30" />
-			<control name="import-supplier-contract-id" value="16" />
+			<control name="import-supplier-contract-id" value="18" />
 			<control name="import-supplier-account" value="SA342376000" />
 			<control name="has-export-mpan" value="false" />
 			<response-code value="200" />
 		</request>
 
 		<!-- Create a new batch -->
-		<request path="/chellow/supplier-contracts/16/batches/"
+		<request path="/chellow/supplier-contracts/18/batches/"
 			method="post">
 			<control name="reference" value="07-008" />
 			<response-code value="303" />
 		</request>
-		<request path="/chellow/supplier-contracts/16/batches/5/bill-imports/"
+		<request path="/chellow/supplier-contracts/18/batches/5/bill-imports/"
 			method="post">
 			<control type="file" name="file" value="bills.sse.edi" />
 			<response-code value="303" />
-			<regex pattern="/supplier-contracts/16/batches/5/bill-imports/3/" />
+			<regex pattern="/supplier-contracts/18/batches/5/bill-imports/3/" />
 		</request>
-		<request path="/chellow/supplier-contracts/16/batches/5/bill-imports/3/">
+		<request path="/chellow/supplier-contracts/18/batches/5/bill-imports/3/">
 			<refresh />
 			<regex
 				pattern='&lt;th&gt;Reference&lt;/th&gt;&lt;th&gt;Account Reference&lt;/th&gt;&lt;th&gt;MPANs&lt;/th&gt;&lt;th&gt;Issue Date&lt;/th&gt;&lt;th&gt;Start Date&lt;/th&gt;&lt;th&gt;Finish Date&lt;/th&gt;&lt;th&gt;kWh&lt;/th&gt;&lt;th&gt;Net&lt;/th&gt;&lt;th&gt;VAT&lt;/th&gt;&lt;th&gt;Type&lt;/th&gt;&lt;th&gt;Breakdown&lt;/th&gt;&lt;th&gt;R1 MPAN&lt;/th&gt;&lt;th&gt;R1 Meter Serial Number&lt;/th&gt;&lt;th&gt;R1 Coefficient&lt;/th&gt;&lt;th&gt;R1 Units&lt;/th&gt;&lt;th&gt;R1 TPR&lt;/th&gt;&lt;th&gt;R1 Previous Read Date&lt;/th&gt;&lt;th&gt;R1 Previous Read Value&lt;/th&gt;&lt;th&gt;R1 Previous Read Type&lt;/th&gt;&lt;th&gt;R1 Present Read Date&lt;/th&gt;&lt;th&gt;R1 Present Read Value&lt;/th&gt;&lt;th&gt;R1 Present Read Type&lt;/th&gt;&lt;th&gt;R2 MPAN&lt;/th&gt;&lt;th&gt;R2 Meter Serial Number&lt;/th&gt;&lt;th&gt;R2 Coefficient&lt;/th&gt;&lt;th&gt;R2 Units&lt;/th&gt;&lt;th&gt;R2 TPR&lt;/th&gt;&lt;th&gt;R2 Previous Read Date&lt;/th&gt;&lt;th&gt;R2 Previous Read Value&lt;/th&gt;&lt;th&gt;R2 Previous Read Type&lt;/th&gt;&lt;th&gt;R2 Present Read Date&lt;/th&gt;&lt;th&gt;R2 Present Read Value&lt;/th&gt;&lt;th&gt;R2 Present Read Type&lt;/th&gt;&lt;th&gt;R3 MPAN&lt;/th&gt;&lt;th&gt;R3 Meter Serial Number&lt;/th&gt;&lt;th&gt;R3 Coefficient&lt;/th&gt;&lt;th&gt;R3 Units&lt;/th&gt;&lt;th&gt;R3 TPR&lt;/th&gt;&lt;th&gt;R3 Previous Read Date&lt;/th&gt;&lt;th&gt;R3 Previous Read Value&lt;/th&gt;&lt;th&gt;R3 Previous Read Type&lt;/th&gt;&lt;th&gt;R3 Present Read Date&lt;/th&gt;&lt;th&gt;R3 Present Read Value&lt;/th&gt;&lt;th&gt;R3 Present Read Type&lt;/th&gt;&lt;th&gt;R4 MPAN&lt;/th&gt;&lt;th&gt;R4 Meter Serial Number&lt;/th&gt;&lt;th&gt;R4 Coefficient&lt;/th&gt;&lt;th&gt;R4 Units&lt;/th&gt;&lt;th&gt;R4 TPR&lt;/th&gt;&lt;th&gt;R4 Previous Read Date&lt;/th&gt;&lt;th&gt;R4 Previous Read Value&lt;/th&gt;&lt;th&gt;R4 Previous Read Type&lt;/th&gt;&lt;th&gt;R4 Present Read Date&lt;/th&gt;&lt;th&gt;R4 Present Read Value&lt;/th&gt;&lt;th&gt;R4 Present Read Type&lt;/th&gt;' />
@@ -2267,7 +2253,7 @@ def import_virtual_bill(supply_source):
 	<test
 		name="Check a contract virtual bill that crosses a generation boundary comes out correctly.">
 		<!-- Put in an import virtual bill function -->
-		<request path="/chellow/supplier-contracts/8/" method="post">
+		<request path="/chellow/supplier-contracts/10/" method="post">
 			<control name="name">Non half-hourlies 2007</control>
 			<control name="charge-script">
 				<![CDATA[
@@ -2288,20 +2274,19 @@ def import_virtual_bill(supply_source):
 		</request>
 	</test>
 	<test name="NHH CSV import">
-		<request path="/chellow/supplier-contracts/16/batches/"
+		<request path="/chellow/supplier-contracts/18/batches/"
 			method="post">
 			<control name="reference" value="07-002" />
 			<response-code value="303" />
 		</request>
-		<request path="/chellow/supplier-contracts/16/batches/7/bill-imports/"
+		<request path="/chellow/supplier-contracts/18/batches/7/bill-imports/"
 			method="post">
 			<control type="file" name="file" value="bills-nhh.csv" />
 			<response-code value="303" />
-				<regex
-				pattern="/chellow/supplier-contracts/16/batches/7/bill-imports/5/" />
-			
+			<regex pattern="/chellow/supplier-contracts/18/batches/7/bill-imports/5/" />
+
 		</request>
-		<request path="/chellow/supplier-contracts/16/batches/7/bill-imports/5/">
+		<request path="/chellow/supplier-contracts/18/batches/7/bill-imports/5/">
 			<refresh />
 			<response-code value="200" />
 			<regex
@@ -2342,7 +2327,7 @@ def import_virtual_bill(supply_source):
 			<control name="import-llfc-code" value="110" />
 			<control name="import-mpan-core" value="22 1065 3921 534" />
 			<control name="import-agreed-supply-capacity" value="30" />
-			<control name="import-supplier-contract-id" value="8" />
+			<control name="import-supplier-contract-id" value="10" />
 			<control name="import-supplier-account" value="SA342376" />
 			<control name="has-export-mpan" value="false" />
 
@@ -2373,10 +2358,8 @@ def import_virtual_bill(supply_source):
 
 			<response-code value="418" />
 		</request>
-		<!--
-			What if it starts before the begining of the supply, but ends after
-			it?
-		-->
+		<!-- What if it starts before the begining of the supply, but ends after 
+			it? -->
 		<request path="/chellow/supplier-contracts/4/batches/6/bills/"
 			method="post">
 			<control name="mpan-core" value="22 9813 2107 763" />
@@ -2427,7 +2410,7 @@ def import_virtual_bill(supply_source):
 			<regex pattern="The file has been imported successfully" />
 			<response-code value="200" />
 		</request>
-		<request path="/chellow/supplier-contracts/8/batches/3/bills/11/reads/">
+		<request path="/chellow/supplier-contracts/10/batches/3/bills/11/reads/">
 			<refresh />
 			<!-- Check it's loaded ok -->
 			<regex
@@ -2444,22 +2427,23 @@ def import_virtual_bill(supply_source):
 		</request>
 	</test>
 	<test name="Check the 'update bill' page.">
-		<request path="/chellow/supplier-contracts/16/batches/5/bills/8/">
+		<request path="/chellow/supplier-contracts/18/batches/5/bills/8/">
 			<response-code value="200" />
 			<regex pattern="type-id" />
 			<regex pattern='&lt;option value="2" selected&gt;N Normal&lt;/option&gt;' />
 		</request>
 	</test>
 	<test name="Check the batch page.">
-		<request path="/chellow/supplier-contracts/16/batches/5/bills/">
+		<request path="/chellow/supplier-contracts/18/batches/5/bills/">
 			<response-code value="200" />
 			<regex
 				pattern="&lt;td&gt;2010-01-19&lt;/td&gt;&lt;td&gt;2010-04-20&lt;/td&gt;" />
 		</request>
 	</test>
 	<test name="Test supply generation update for a supply with 2 mpans.">
-	<request path="/chellow/general-imports/" method="post">
-			<control type="file" name="import-file" value="supply-generation-update-2-mpans.csv" />
+		<request path="/chellow/general-imports/" method="post">
+			<control type="file" name="import-file"
+				value="supply-generation-update-2-mpans.csv" />
 			<response-code value="303" />
 			<regex pattern="/chellow/general-imports/19/" />
 		</request>
@@ -2468,6 +2452,61 @@ def import_virtual_bill(supply_source):
 			<!-- Check it's loaded ok -->
 			<regex pattern="The file has been imported successfully" />
 			<response-code value="200" />
+		</request>
+	</test>
+	<test name="Add batch to HHDC contract">
+		<!-- Insert a new batch -->
+		<request path="/chellow/hhdc-contracts/0/batches/" method="post">
+			<control name="reference" value="001-7t" />
+			<response-code value="303" />
+			<regex pattern="/hhdc-contracts/0/batches/8/" />
+		</request>
+
+		<!-- Check that it's there -->
+		<request path="/chellow/hhdc-contracts/0/batches/8/">
+			<response-code value="200" />
+		</request>
+	</test>
+	<test name="Try adding bills to the HHDC batch">
+		<request path="/chellow/hhdc-contracts/0/batches/8/bill-imports/"
+			method="post">
+			<control type="file" name="file" value="hhdc-bill.csv" />
+			<response-code value="303" />
+			<regex pattern="/chellow/hhdc-contracts/0/batches/8/bill-imports/6/" />
+		</request>
+		<request path="/chellow/hhdc-contracts/0/batches/8/bill-imports/6/">
+			<refresh />
+			<response-code value="200" />
+			<regex
+				pattern="All the bills have been successfully loaded and attached to the batch\." />
+		</request>
+
+	</test>
+	<test name="Add batch to MOP contract">
+		<!-- Insert a new batch -->
+		<request path="/chellow/mop-contracts/8/batches/" method="post">
+			<control name="reference" value="99/992" />
+			<response-code value="303" />
+			<regex pattern="/mop-contracts/8/batches/9/" />
+		</request>
+
+		<!-- Check that it's there -->
+		<request path="/chellow/mop-contracts/8/batches/9/">
+			<response-code value="200" />
+		</request>
+	</test>
+	<test name="Try adding bills to the MOP batch">
+		<request path="/chellow/mop-contracts/8/batches/9/bill-imports/"
+			method="post">
+			<control type="file" name="file" value="mop-bill.csv" />
+			<response-code value="303" />
+			<regex pattern="/chellow/mop-contracts/8/batches/9/bill-imports/7/" />
+		</request>
+		<request path="/chellow/mop-contracts/8/batches/9/bill-imports/7/">
+			<refresh />
+			<response-code value="200" />
+			<regex
+				pattern="All the bills have been successfully loaded and attached to the batch\." />
 		</request>
 	</test>
 </imprimatur>
