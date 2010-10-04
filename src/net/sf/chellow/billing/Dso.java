@@ -124,10 +124,18 @@ public class Dso extends Party {
 	}
 
 	public Llfc getLlfc(String code) throws HttpException {
+		Integer llfcInt = null;
+		try {
+			llfcInt = Integer.parseInt(code);
+		} catch (NumberFormatException e) {
+			throw new UserException(
+					"The LLFC must be an integer between 0 and 999.");
+		}
+
 		Llfc llfc = (Llfc) Hiber.session().createQuery(
 				"from Llfc llfc where llfc.dso = :dso and llfc.code = :code")
-				.setEntity("dso", this).setInteger("code",
-						Integer.parseInt(code)).uniqueResult();
+				.setEntity("dso", this).setInteger("code", llfcInt)
+				.uniqueResult();
 		if (llfc == null) {
 			throw new UserException("There is no LLFC with the code " + code
 					+ " associated with the DSO " + getCode() + ".");
@@ -152,7 +160,8 @@ public class Dso extends Party {
 		}
 		Hiber.session().save(contract);
 		Hiber.flush();
-		contract.insertFirstRateScript(rateScriptId, startDate, finishDate, rateScript);
+		contract.insertFirstRateScript(rateScriptId, startDate, finishDate,
+				rateScript);
 		return contract;
 	}
 

@@ -2509,4 +2509,33 @@ def import_virtual_bill(supply_source):
 				pattern="All the bills have been successfully loaded and attached to the batch\." />
 		</request>
 	</test>
+	<test name="If a new supply has a blank LLFC field, check it gives a good error message.">
+		<request path="/chellow/sites/7/" method="post">
+			<control name="source-id" value="1" />
+			<control name="name" value="Supply 54" />
+			<control name="start-year" value="2010" />
+			<control name="start-month" value="05" />
+			<control name="start-day" value="26" />
+			<control name="meter-serial-number" value="" />
+			<control name="gsp-group-id" value="3" />
+			<control name="mop-contract-id" value="null" />
+			<control name="mop-account" value="" />
+			<control name="hhdc-contract-id" value="null" />
+			<control name="hhdc-account" value="" />
+			<control name="pc-id" value="9" />
+			<control name="mtc-code" value="845" />
+			<control name="cop-id" value="5" />
+			<control name="ssc-code" value="" />
+			<control name="import-mpan-core" value="22 9879 0084 358" />
+			<control name="import-llfc-code" value="" />
+			<control name="import-agreed-supply-capacity" value="700" />
+			<control name="import-supplier-contract-id" value="4" />
+			<control name="import-supplier-account" value="d" />
+			<control name="export-mpan-core" value="" />
+			<control name="insert" value="Insert" />
+
+			<regex pattern="The LLFC must be an integer between 0 and 999" />
+			<response-code value="418" />
+		</request>
+	</test>
 </imprimatur>
