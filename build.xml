@@ -481,8 +481,8 @@
 		<copy todir="${build.home}/WEB-INF/lib" file="${javalib.home}/slf4j-1.5.8/slf4j-jdk14-1.5.8.jar" />
 		<copy todir="${build.home}/WEB-INF/lib" file="${javalib.home}/javamail-1.4.3/mail.jar" />
 
-		<copy todir="${build.home}/WEB-INF/lib" file="${javalib.home}/hibernate-distribution-3.3.2.GA/hibernate3.jar">
-			<fileset dir="${javalib.home}/hibernate-distribution-3.3.2.GA/lib/required" />
+		<copy todir="${build.home}/WEB-INF/lib" file="${javalib.home}/hibernate-distribution-3.5.6-Final/hibernate3.jar">
+			<fileset dir="${javalib.home}/hibernate-distribution-3.5.6-Final/lib/required" />
 		</copy>
 		<copy todir="${build.home}/WEB-INF/lib" file="${javalib.home}/commons-fileupload-1.2.1/lib/commons-fileupload-1.2.1.jar" />
 		<copy todir="${build.home}/WEB-INF/lib" file="${javalib.home}/commons-io-1.4/commons-io-1.4.jar" />

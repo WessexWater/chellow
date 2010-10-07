@@ -1,6 +1,6 @@
 /*******************************************************************************
  * 
- *  Copyright (c) 2005, 2009 Wessex Water Services Limited
+ *  Copyright (c) 2005, 2010 Wessex Water Services Limited
  *  
  *  This file is part of Chellow.
  * 
@@ -37,12 +37,131 @@ import net.sf.chellow.monad.XmlTree;
 import net.sf.chellow.monad.types.MonadDate;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
+import net.sf.chellow.ui.GeneralImport;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
 public class RegisterRead extends PersistentEntity {
+
+	public static void generalImport(String action, String[] values,
+			Element csvElement) throws HttpException {
+		if (action.equals("insert")) {
+		} else if (action.equals("update")) {
+			String readIdStr = GeneralImport.addField(csvElement, "Chellow Id",
+					values, 0);
+			RegisterRead read = RegisterRead.getRegisterRead(Long
+					.parseLong(readIdStr));
+
+			String tprStr = GeneralImport
+					.addField(csvElement, "TPR", values, 1);
+			Tpr tpr = null;
+			if (tprStr.equals(GeneralImport.NO_CHANGE)) {
+				tpr = read.getTpr();
+			} else {
+				tpr = Tpr.getTpr(tprStr);
+			}
+
+			String coefficientStr = GeneralImport.addField(csvElement,
+					"Coefficient", values, 2);
+			BigDecimal coefficient = null;
+			if (tprStr.equals(GeneralImport.NO_CHANGE)) {
+				coefficient = read.getCoefficient();
+			} else {
+				coefficient = new BigDecimal(coefficientStr);
+			}
+
+			Units units = null;
+			String unitsStr = GeneralImport.addField(csvElement, "Units",
+					values, 3);
+			if (unitsStr.equals(GeneralImport.NO_CHANGE)) {
+				units = read.getUnits();
+			} else {
+				units = Units.getUnits(unitsStr);
+			}
+
+			String msn = GeneralImport.addField(csvElement,
+					"Meter Serial Number", values, 4);
+			if (msn.equals(GeneralImport.NO_CHANGE)) {
+				msn = read.getMeterSerialNumber();
+			}
+
+			String mpanStr = GeneralImport.addField(csvElement, "MPAN", values,
+					5);
+			if (mpanStr.equals(GeneralImport.NO_CHANGE)) {
+				mpanStr = read.getMpanStr();
+			}
+
+			String previousDateStr = GeneralImport.addField(csvElement,
+					"Previous Date", values, 6);
+			HhStartDate previousDate = null;
+			if (previousDateStr.equals(GeneralImport.NO_CHANGE)) {
+				previousDate = read.getPreviousDate();
+			} else {
+				previousDate = new HhStartDate(previousDateStr);
+			}
+
+			String previousValueStr = GeneralImport.addField(csvElement,
+					"Previous Value", values, 7);
+			BigDecimal previousValue = null;
+			if (previousValueStr.equals(GeneralImport.NO_CHANGE)) {
+				previousValue = read.getPreviousValue();
+			} else {
+				previousValue = new BigDecimal(previousValueStr);
+			}
+
+			ReadType previousType = null;
+			String previousTypeStr = GeneralImport.addField(csvElement,
+					"Previous Type", values, 8);
+			if (previousTypeStr.equals(GeneralImport.NO_CHANGE)) {
+				previousType = read.getPreviousType();
+			} else {
+				previousType = ReadType.getReadType(previousTypeStr);
+			}
+
+			String presentDateStr = GeneralImport.addField(csvElement,
+					"Present Date", values, 9);
+			HhStartDate presentDate = null;
+			if (presentDateStr.equals(GeneralImport.NO_CHANGE)) {
+				presentDate = read.getPresentDate();
+			} else {
+				presentDate = new HhStartDate(presentDateStr);
+			}
+
+			String presentValueStr = GeneralImport.addField(csvElement,
+					"Present Value", values, 10);
+			BigDecimal presentValue = null;
+			if (presentValueStr.equals(GeneralImport.NO_CHANGE)) {
+				presentValue = read.getPresentValue();
+			} else {
+				presentValue = new BigDecimal(presentValueStr);
+			}
+
+			String presentTypeStr = GeneralImport.addField(csvElement,
+					"Present Type", values, 11);
+			ReadType presentType = null;
+			if (presentTypeStr.equals(GeneralImport.NO_CHANGE)) {
+				presentType = read.getPresentType();
+			} else {
+				presentType = ReadType.getReadType(presentTypeStr);
+			}
+
+			read.update(tpr, coefficient, units, msn, mpanStr, previousDate,
+					previousValue, previousType, presentDate, presentValue,
+					presentType);
+		}
+	}
+
+	public static RegisterRead getRegisterRead(Long id) throws HttpException {
+		RegisterRead read = (RegisterRead) Hiber.session().get(
+				RegisterRead.class, id);
+		if (read == null) {
+			throw new UserException("There isn't a register read with that id.");
+		}
+		return read;
+	}
+
 	private Bill bill;
 
 	private String meterSerialNumber;
@@ -242,10 +361,9 @@ public class RegisterRead extends PersistentEntity {
 				throw new UserException(document());
 			}
 			update(Tpr.getTpr(tprCode), coefficient, Units.getUnits(units),
-					meterSerialNumber, mpanStr, new HhStartDate(
-							previousDate), previousValue, ReadType
-							.getReadType(previousTypeId), new HhStartDate(
-							presentDate), presentValue, ReadType
+					meterSerialNumber, mpanStr, new HhStartDate(previousDate),
+					previousValue, ReadType.getReadType(previousTypeId),
+					new HhStartDate(presentDate), presentValue, ReadType
 							.getReadType(presentTypeId));
 			Hiber.commit();
 			inv.sendOk(document());

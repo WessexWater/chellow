@@ -65,6 +65,7 @@ import net.sf.chellow.physical.ChannelSnag;
 import net.sf.chellow.physical.Configuration;
 import net.sf.chellow.physical.HhDatum;
 import net.sf.chellow.physical.HhStartDate;
+import net.sf.chellow.physical.RegisterRead;
 import net.sf.chellow.physical.Site;
 import net.sf.chellow.physical.SiteSnag;
 import net.sf.chellow.physical.SiteSupplyGeneration;
@@ -276,6 +277,8 @@ public class GeneralImport extends Thread implements Urlable, XmlDescriber {
 						Batch.generalImport(action, values, csvElement);
 					} else if (type.equals("bill")) {
 						Bill.generalImport(action, values, csvElement);
+					} else if (type.equals("register-read")) {
+						RegisterRead.generalImport(action, values, csvElement);
 					} else {
 						throw new UserException("The type " + type
 								+ " isn't recognized.");

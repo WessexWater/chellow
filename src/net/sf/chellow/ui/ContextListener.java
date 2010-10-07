@@ -150,8 +150,6 @@ public class ContextListener implements ServletContextListener {
 			stmt.execute("create index is_ignored_idx on snag (is_ignored)");
 			stmt.execute("create index snag_id_idx on channel_snag (snag_id)");
 			stmt.execute("create index channel_id_idx on channel_snag (channel_id)");
-			stmt.execute("create index start_date_idx on channel_snag (start_date)");
-			stmt.execute("create index finish_date_idx on channel_snag (finish_date)");
 			stmt.execute("CREATE INDEX site_snag__finish_date ON site_snag (finish_date);");
 			stmt.execute("CREATE INDEX site_snag__site_id ON site_snag (site_id);");
 			stmt.execute("CREATE INDEX site_snag__snag_id_idx ON site_snag (snag_id);");

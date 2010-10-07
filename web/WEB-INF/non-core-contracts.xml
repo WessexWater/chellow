@@ -8406,7 +8406,7 @@ class SupplySource(DataSource):
                 read_2 = None
                 bill_2 = None
 
-                prev_bill_query = Hiber.session().createQuery("select distinct read.bill, read.bill.type.code from RegisterRead read where read.bill.supply = :supply and read.bill.finishDate.date >= :readDate and read.bill.startDate <= :readDate order by read.bill.issueDate desc, read.bill.type.code").setEntity('supply', self.supply).setMaxResults(1)
+                prev_bill_query = Hiber.session().createQuery("select distinct read.bill, read.bill.type.code, read.bill.issueDate from RegisterRead read where read.bill.supply = :supply and read.bill.finishDate.date >= :readDate and read.bill.startDate <= :readDate order by read.bill.issueDate desc, read.bill.type.code").setEntity('supply', self.supply).setMaxResults(1)
 
                 prev_read_query = Hiber.session().createQuery("from RegisterRead read where read.presentType.code in ('N', 'N3', 'C') and read.bill.supply = :supply and read.presentDate.date <= :startDate order by read.presentDate.date desc").setEntity('supply', self.supply).setMaxResults(1)
 
@@ -8439,7 +8439,7 @@ class SupplySource(DataSource):
 
                 next_read_query = Hiber.session().createQuery("from RegisterRead read where read.presentType.code in ('N', 'N3', 'C') and read.bill.supply = :supply and read.presentDate.date >= :finishDate order by read.presentDate.date").setEntity('supply', self.supply).setMaxResults(1)
 
-                next_bill_query = Hiber.session().createQuery("select distinct read.bill, read.bill.type.code from RegisterRead read where read.bill.supply = :supply and read.bill.finishDate.date >= :readDate and read.bill.startDate <= :readDate order by read.bill.issueDate desc, read.bill.type.code").setEntity('supply', self.supply).setMaxResults(1)
+                next_bill_query = Hiber.session().createQuery("select distinct read.bill, read.bill.type.code, read.bill.issueDate from RegisterRead read where read.bill.supply = :supply and read.bill.finishDate.date >= :readDate and read.bill.startDate <= :readDate order by read.bill.issueDate desc, read.bill.type.code").setEntity('supply', self.supply).setMaxResults(1)
 
                 initial_reads_query = Hiber.session().createQuery("from RegisterRead read where read.units.int = 0 and read.bill = :bill and read.presentDate.date = :readDate")
 
@@ -8604,7 +8604,8 @@ class SupplySource(DataSource):
                     mpan = generation.getExportMpan()
                 tpr_codes = Hiber.session().createQuery("select mr.tpr.code from MeasurementRequirement mr where mr.ssc = :ssc").setEntity('ssc', generation.getSsc()).list()
                 bills = []
-                for cand_bill in Hiber.session().createQuery("select distinct read.bill from RegisterRead read where read.bill.supply = :supply and read.bill.batch.contract = :contract and read.bill.startDate.date <= :finishDate and read.bill.finishDate.date >= :searchStart and read.bill.type.code != 'W' order by read.bill.issueDate desc, read.bill.startDate.date").setEntity('supply', self.supply).setEntity('contract', mpan.getSupplierContract()).setTimestamp('searchStart', start_date.getDate()).setTimestamp('finishDate', finish_date.getDate()).list():
+                for cand_bill_arr in Hiber.session().createQuery("select distinct read.bill, read.bill.issueDate, read.bill.startDate.date from RegisterRead read where read.bill.supply = :supply and read.bill.batch.contract = :contract and read.bill.startDate.date <= :finishDate and read.bill.finishDate.date >= :searchStart and read.bill.type.code != 'W' order by read.bill.issueDate desc, read.bill.startDate.date").setEntity('supply', self.supply).setEntity('contract', mpan.getSupplierContract()).setTimestamp('searchStart', start_date.getDate()).setTimestamp('finishDate', finish_date.getDate()).list():
+                    cand_bill = cand_bill_arr[0]
                     can_insert = True
                     for bill in bills:
                         if not cand_bill.getStartDate().after(bill.getFinishDate()) and not cand_bill.getFinishDate().before(bill.getStartDate()):
@@ -8614,19 +8615,19 @@ class SupplySource(DataSource):
                         bills.append(cand_bill)
 
                 for bill in bills:                
-                    for read in Hiber.session().createQuery("select read.tpr, read.tpr.code, read.coefficient, read.previousDate, read.previousValue, read.previousType.code, read.presentDate, read.presentValue, read.presentType.code, read.id from RegisterRead read where read.bill = :bill and read.units.int = :units order by read.presentDate.date").setEntity('bill', bill).setInteger('units', 0).list():
-                        tpr = read[0]
-                        tpr_code = read[1]
+                    for read in Hiber.session().createQuery("from RegisterRead read where read.bill = :bill and read.units.int = 0 order by read.presentDate.date").setEntity('bill', bill).list():
+                        tpr = read.getTpr()
+                        tpr_code = tpr.getCode()
                         if tpr_code not in tpr_codes:
                             summary['problem'] += "The TPR " + str(tpr) + " from the register read does not match any of the TPRs associated with the MPAN. "
 
-                        coefficient = read[2].doubleValue()
-                        previous_date = read[3].getNext()
-                        previous_value = read[4].doubleValue()
-                        previous_type = read[5]
-                        present_date = read[6]
-                        present_value = read[7].doubleValue()
-                        present_type = read[8]
+                        coefficient = read.getCoefficient().doubleValue()
+                        previous_date = read.getPreviousDate().getNext()
+                        previous_value = read.getPreviousValue().doubleValue()
+                        previous_type = read.getPreviousType()
+                        present_date = read.getPresentDate()
+                        present_value = read.getPresentValue().doubleValue()
+                        present_type = read.getPresentType()
 
                         if present_date.before(start_date) or previous_date.after(finish_date):
                             continue

@@ -62,7 +62,7 @@ public class Bill extends PersistentEntity implements Urlable {
 			Element csvElement) throws HttpException {
 		if (action.equals("insert")) {
 			String roleName = GeneralImport.addField(csvElement, "Role Name",
-					values, 0);
+					values, 0).toLowerCase();
 			String contractName = GeneralImport.addField(csvElement,
 					"Contract Name", values, 1);
 
@@ -158,6 +158,102 @@ public class Bill extends PersistentEntity implements Urlable {
 						presentDate, presentValue, presentType);
 			}
 		} else if (action.equals("update")) {
+			String billIdStr = GeneralImport.addField(csvElement, "Bill Id",
+					values, 0);
+			Bill bill = Bill.getBill(Long.parseLong(billIdStr));
+
+			String account = GeneralImport.addField(csvElement,
+					"Account Reference", values, 1);
+			if (account.equals(GeneralImport.NO_CHANGE)) {
+				account = bill.getAccount();
+			}
+
+			String reference = GeneralImport.addField(csvElement, "Reference",
+					values, 2);
+			if (reference.equals(GeneralImport.NO_CHANGE)) {
+				reference = bill.getReference();
+			}
+
+			String issueDateStr = GeneralImport.addField(csvElement,
+					"Issue Date", values, 3);
+			Date issueDate = null;
+			if (issueDateStr.equals(GeneralImport.NO_CHANGE)) {
+				issueDate = bill.getIssueDate();
+			} else {
+				issueDate = new MonadDate(issueDateStr).getDate();
+			}
+
+			String startDateStr = GeneralImport.addField(csvElement,
+					"Start Date", values, 4);
+			HhStartDate startDate = null;
+			if (startDateStr.equals(GeneralImport.NO_CHANGE)) {
+				startDate = bill.getStartDate();
+			} else {
+				startDate = new HhStartDate(startDateStr);
+			}
+
+			String finishDateStr = GeneralImport.addField(csvElement,
+					"Finish Date", values, 5);
+			HhStartDate finishDate = null;
+			if (finishDateStr.equals(GeneralImport.NO_CHANGE)) {
+				finishDate = bill.getFinishDate();
+			} else {
+				finishDate = new HhStartDate(finishDateStr);
+			}
+
+			String kwhStr = GeneralImport
+					.addField(csvElement, "kWh", values, 6);
+			BigDecimal kwh = null;
+			if (kwhStr.equals(GeneralImport.NO_CHANGE)) {
+				kwh = bill.getKwh();
+			} else {
+				kwh = new BigDecimal(kwhStr);
+			}
+
+			String netStr = GeneralImport
+					.addField(csvElement, "Net", values, 7);
+			BigDecimal net = null;
+			if (netStr.equals(GeneralImport.NO_CHANGE)) {
+				net = bill.getNet();
+			} else {
+				net = new BigDecimal(netStr);
+			}
+
+			String vatStr = GeneralImport
+					.addField(csvElement, "Vat", values, 8);
+			BigDecimal vat = null;
+			if (vatStr.equals(GeneralImport.NO_CHANGE)) {
+				vat = bill.getVat();
+			} else {
+				vat = new BigDecimal(vatStr);
+			}
+
+			String typeCode = GeneralImport.addField(csvElement, "Type",
+					values, 9);
+			BillType type = null;
+			if (typeCode.equals(GeneralImport.NO_CHANGE)) {
+				type = bill.getType();
+			} else {
+				type = BillType.getBillType(typeCode);
+			}
+
+			String isPaidStr = GeneralImport.addField(csvElement, "Is Paid?",
+					values, 10);
+			Boolean isPaid = null;
+			if (isPaidStr.equals(GeneralImport.NO_CHANGE)) {
+				isPaid = bill.getIsPaid();
+			} else if (isPaidStr.length() > 0) {
+				isPaid = new Boolean(isPaidStr);
+			}
+
+			String breakdown = GeneralImport.addField(csvElement, "Breakdown",
+					values, 11);
+			if (breakdown.equals(GeneralImport.NO_CHANGE)) {
+				breakdown = bill.getBreakdown();
+			}
+
+			bill.update(account, reference, issueDate, startDate, finishDate,
+					kwh, net, vat, type, isPaid, breakdown);
 		}
 	}
 
