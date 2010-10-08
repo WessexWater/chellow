@@ -1280,7 +1280,7 @@ source.setAttribute('debug', debug)]]></value>
                         <select name="end-month">
                             <xsl:for-each select="/source/months/month">
                                 <option value="{@number}">
-                                    <xsl:if test="@number=/source/date/@month">
+                                    <xsl:if test="@number=/source/hh-start-date[@label='finish']/@month">
                                         <xsl:attribute name="selected">selected</xsl:attribute>
                                     </xsl:if>
                                     <xsl:value-of select="@number" />
@@ -1337,7 +1337,7 @@ source.setAttribute('debug', debug)]]></value>
                         <select name="end-month">
                             <xsl:for-each select="/source/months/month">
                                 <option value="{@number}">
-                                    <xsl:if test="@number=/source/date/@month">
+                                    <xsl:if test="@number=/source/hh-start-date[@label='finish']/@month">
                                         <xsl:attribute name="selected">selected</xsl:attribute>
                                     </xsl:if>
                                     <xsl:value-of select="@number" />
@@ -1445,6 +1445,63 @@ source.setAttribute('debug', debug)]]></value>
                             <xsl:value-of select="':30 '" />
                             <input type="submit" value="Download" />
                         </p>
+                    </fieldset>
+                </form>
+                <br />
+<form action="{/source/request/@context-path}/reports/177/output/">
+                    <fieldset>
+                        <input type="hidden" name="supply-id" value="{/source/supply/@id}" />
+                        <legend>Monthly Duration</legend>
+<br/>
+<xsl:value-of select="'For '"/>
+                        <input name="months" maxlength="2" size="2">
+                          <xsl:attribute name="value">
+                            <xsl:choose>
+                              <xsl:when test="/source/request/parameter[@name='months']">
+                                <xsl:value-of select="/source/request/parameter[@name='months']/value"/>
+                              </xsl:when>
+                              <xsl:otherwise>
+                                <xsl:value-of select="'1'"/>
+                              </xsl:otherwise>
+                            </xsl:choose>
+                          </xsl:attribute>
+                        </input>
+                        <xsl:value-of select="' month(s) finishing at the end of '"/>
+<input name="end-year" value="{/source/date/@year}" maxlength="4" size="4"/><xsl:value-of select="' - '"/>
+                        <select name="end-month">
+                            <xsl:for-each select="/source/months/month">
+                                <option value="{@number}">
+                                    <xsl:if test="@number=/source/hh-start-date[@label='finish']/@month">
+                                        <xsl:attribute name="selected">selected</xsl:attribute>
+                                    </xsl:if>
+                                    <xsl:value-of select="@number"/>
+                                </option>
+                            </xsl:for-each>
+                        </select>
+                    <input type="submit" value="Download"/>
+                    </fieldset>
+                </form>
+              <br/>
+               <form action="{/source/request/@context-path}/reports/33/output/">
+                    <input type="hidden" name="supply-id" value="{/source/supply/@id}" />
+
+                    <fieldset>
+                        <legend>Snapshot</legend>
+<br/>
+<xsl:value-of select="'For the end of '"/>
+                        <input name="year" value="{/source/date/@year}" maxlength="4" size="4"/><xsl:value-of select="' - '"/>
+                        <select name="month">
+                            <xsl:for-each select="/source/months/month">
+                                <option value="{@number}">
+                                    <xsl:if test="@number=/source/hh-start-date[@label='finish']/@month">
+                                        <xsl:attribute name="selected">selected</xsl:attribute>
+                                    </xsl:if>
+                                    <xsl:value-of select="@number"/>
+                                </option>
+                            </xsl:for-each>
+                        </select>
+                        <xsl:value-of select="' '"/>
+                        <input type="submit" value="Download"/>
                     </fieldset>
                 </form>
             </body>
@@ -4580,10 +4637,11 @@ pw.close()]]></value>
         <value><![CDATA[CSV Supplies Snapshot]]></value>
         <value><![CDATA[from net.sf.chellow.monad import Hiber
 from net.sf.chellow.monad.types import MonadDate
-from net.sf.chellow.physical import ReadType, HhStartDate
+from net.sf.chellow.physical import ReadType, HhStartDate, Supply
 from java.util import Calendar
+from java.text import SimpleDateFormat
 
-def mpan_fields(mpan, date, is_import, mand_query, metering_type):
+def mpan_fields(mpan, date, is_import, mand_query, metering_type, bill_query):
     avg_months = ''
     if mpan is None:
         mpan_core_str = ''
@@ -4594,6 +4652,7 @@ def mpan_fields(mpan, date, is_import, mand_query, metering_type):
         mandatory_hh = ''
         supplier_account = ''
         supplier_contract_name = ''
+        latest_supplier_bill_date = 'No Supplier'
     else:
         mpan_core_str = mpan.getCore().toString()
         agreed_sc_str = str(mpan.getAgreedSupplyCapacity())
@@ -4601,24 +4660,6 @@ def mpan_fields(mpan, date, is_import, mand_query, metering_type):
         llfc_code_str = str(llfc)
         llfc_description = llfc.getDescription()
 
-        '''
-        NON_ESTIMATE_READ_TYPES = [ReadType.TYPE_CHANGE_OF_SUPPLIER, ReadType.TYPE_CUSTOMER, ReadType.TYPE_FINAL, ReadType.TYPE_INITIAL, ReadType.TYPE_DC_MANUAL, ReadType.TYPE_ROUTINE, ReadType.TYPE_SPECIAL, ReadType.TYPE_CHANGE_OF_TENANCY]
-        i = 0
-        found = False
-        reads = Hiber.session().createQuery("from RegisterRead read where read.supply = :supply order by read.presentDate.date").setEntity('supply', mpan).list()
-        while found is not True and i < len(reads):
-            read = reads[i]
-            associated_reads = Hiber.session().createQuery("from RegisterRead read where read.invoice = :invoice and read.presentDate.date = :presentDate").setEntity('invoice', read.getInvoice()).setTimestamp('presentDate', read.getPresentDate().getDate()).list()
-            found = True
-            for associated_read in associated_reads:
-                if read.presentType not in NON_ESTIMATE_READ_TYPES:
-                    found = False
-                    break
-            i = i + 1
-        last_read_date_str = 'None'
-        if found:
-            last_read_date_str = read.getPresentDate().toString()
-        '''
         cal = MonadDate.getCalendar()
         cal.setTime(date)
         mandatory_hh = False
@@ -4643,15 +4684,19 @@ def mpan_fields(mpan, date, is_import, mand_query, metering_type):
             if avg_months > 100:
                 mandatory_hh = True
         supplier_contract = mpan.getSupplierContract()
-        if supplier_contract is not None:
-            supplier_account = mpan.getSupplierAccount()
-            supplier_contract_name = supplier_contract.getName()
-    return [mpan_core_str, agreed_sc_str, llfc_code_str, llfc_description, supplier_contract_name, supplier_account, avg_months, mandatory_hh]
+        supplier_account = mpan.getSupplierAccount()
+        supplier_contract_name = supplier_contract.getName()
+        latest_supplier_bill_date = bill_query.setEntity('contract', supplier_contract).uniqueResult()
+        if latest_supplier_bill_date is not None:
+            latest_supplier_bill_date = formatter.format(latest_supplier_bill_date.getDate())
+
+    return [mpan_core_str, agreed_sc_str, llfc_code_str, llfc_description, supplier_contract_name, supplier_account, avg_months, latest_supplier_bill_date, mandatory_hh]
 
 year = inv.getInteger('year')
 month = inv.getInteger('month')
 if not inv.isValid():
     raise UserException()
+
 cal = MonadDate.getCalendar()
 cal.clear()
 cal.set(Calendar.YEAR, year)
@@ -4659,14 +4704,35 @@ cal.set(Calendar.MONTH, month - 1)
 cal.set(Calendar.DAY_OF_MONTH, 1)
 cal.add(Calendar.MONTH, 1)
 date = HhStartDate(cal.getTime()).getPrevious().getDate()
+
+formatter = SimpleDateFormat("yyyy-MM-dd HH:mm")
+formatter.setCalendar(cal)
+
 inv.getResponse().setContentType('text/csv')
 inv.getResponse().addHeader('Content-Disposition', 'attachment; filename="report.csv"')
 pw = inv.getResponse().getWriter()
 
-pw.println("Date,Physical Site Id, Physical Site Name, Other Site Ids, Other Site Names, Supply Id, Source, Generator Type, DNO Name, Voltage Level, Metering Type, Mandatory HH, PC, MTC, CoP, SSC, HHDC Contract, HHDC Account, Meter Serial Number, Has Import kWh?, Has Import kVArh?, Has Export kWh?, Has Export kVArh?, Import MPAN core, Import Agreed Supply Capacity (kVA), Import LLFC Code, Import LLFC Description, Import Supplier Contract, Import Supplier Account, Import Mandatory kWh, Export MPAN core, Export Agreed Supply Capacity (kVA), Export LLFC Code, Export LLFC Description, Export Supplier Contract, Export Supplier Account, Export Mandatory kWh")
+pw.println("Date,Physical Site Id, Physical Site Name, Other Site Ids, Other Site Names, Supply Id, Source, Generator Type, DNO Name, Voltage Level, Metering Type, Mandatory HH, PC, MTC, CoP, SSC, MOP Contract, Mop Account, HHDC Contract, HHDC Account, Meter Serial Number,Latest Normal Meter Read Date,Latest Normal Meter Read Type,Latest DC Bill Date, Latest MOP Bill Date,Has Import kWh?, Has Import kVArh?, Has Export kWh?, Has Export kVArh?,Import MPAN core, Import Agreed Supply Capacity (kVA), Import LLFC Code, Import LLFC Description, Import Supplier Contract, Import Supplier Account, Import Mandatory kWh,Latest Import Supplier Bill Date, Export MPAN core, Export Agreed Supply Capacity (kVA), Export LLFC Code, Export LLFC Description, Export Supplier Contract, Export Supplier Account, Export Mandatory kWh,Latest Export Supplier Bill Date")
 pw.flush()
+
 mand_query = Hiber.session().createQuery("select max(datum.value) from HhDatum datum where datum.channel.supplyGeneration.supply = :supply and datum.channel.isKwh is true and datum.channel.isImport = :isImport and datum.startDate.date >= :startDate and datum.startDate <= :finishDate")
-supply_generations = Hiber.session().createQuery("from SupplyGeneration generation where generation.startDate.date <= :date and (generation.finishDate.date is null or generation.finishDate.date >= :date) order by generation.supply.id").setTimestamp('date', date).scroll()
+
+latest_previous_normal_read_query = Hiber.session().createQuery("from RegisterRead read where read.previousType.code in ('N', 'C', 'N3') and read.previousDate.date <= :startDate and read.bill.supply = :supply order by read.previousDate.date desc").setTimestamp('startDate', date).setMaxResults(1)
+
+latest_present_normal_read_query = Hiber.session().createQuery("from RegisterRead read where read.presentType.code in ('N', 'C', 'N3') and read.presentDate.date <= :startDate and read.bill.supply = :supply order by read.presentDate.date desc").setTimestamp('startDate', date).setMaxResults(1)
+
+latest_bill_date_query = Hiber.session().createQuery("select bill.finishDate from Bill bill where bill.startDate.date <= :startDate and bill.supply = :supply and bill.batch.contract = :contract and lower(bill.batch.reference) not like '%reconciliation%'  order by bill.finishDate.date desc").setTimestamp('startDate', date).setMaxResults(1)
+
+if inv.hasParameter('supply-id'):
+    supply_id = inv.getLong('supply-id')
+    supply = Supply.getSupply(supply_id)
+
+    supply_generations_query = Hiber.session().createQuery("from SupplyGeneration generation where generation.startDate.date <= :date and (generation.finishDate.date is null or generation.finishDate.date >= :date) and supply = :supply order by generation.supply.id").setEntity('supply', supply)
+else:
+    supply_generations_query = Hiber.session().createQuery("from SupplyGeneration generation where generation.startDate.date <= :date and (generation.finishDate.date is null or generation.finishDate.date >= :date) order by generation.supply.id")
+
+supply_generations = supply_generations_query.setTimestamp('date', date).scroll()
+
 while supply_generations.next():
     supply_generation = supply_generations.get(0)
     site_codes = ''
@@ -4687,23 +4753,71 @@ while supply_generations.next():
         generator_type = ''
     else:
         generator_type = generator_type.getCode()
+
     if supply_generation.getPc().getCode() == 0:
         metering_type = 'hh'
     elif supply_generation.getChannels().size() > 0:
         metering_type = 'amr'
+    elif supply_generation.getMtc().getMeterType().getCode() in ['UM', 'PH']:
+        metering_type = 'unmetered'
     else:
         metering_type = 'nhh'
+
+    if metering_type == 'nhh':
+        latest_previous_normal_read = latest_previous_normal_read_query.setEntity('supply', supply).uniqueResult()
+        latest_present_normal_read = latest_present_normal_read_query.setEntity('supply', supply).uniqueResult()
+
+        if latest_previous_normal_read is None and latest_present_normal_read is None:
+            latest_normal_read_date = None
+            latest_normal_read_type = None
+        elif latest_present_normal_read is not None and latest_previous_normal_read is None:
+            latest_normal_read_date = latest_present_normal_read.getPresentDate()
+            latest_normal_read_type = latest_present_normal_read.getPresentType()
+        elif latest_present_normal_read is None and latest_previous_normal_read is not None:
+            latest_normal_read_date = latest_previous_normal_read.getPreviousDate()
+            latest_normal_read_type = latest_previous_normal_read.getPreviousType()
+        elif latest_present_normal_read.getPresentDate().after(latest_previous_normal_read.getPreviousDate()):
+            latest_normal_read_date = latest_present_normal_read.getPresentDate()
+            latest_normal_read_type = latest_present_normal_read.getPresentType()
+        else:
+            latest_normal_read_date = latest_previous_normal_read.getPreviousDate()
+            latest_normal_read_type = latest_previous_normal_read.getPreviousType()
+        if latest_normal_read_date is not None:
+            latest_normal_read_date = formatter.format(latest_normal_read_date.getDate())
+    else:
+        latest_normal_read_date = metering_type
+        latest_normal_read_type = None
+
+    latest_bill_date_query.setEntity('supply', supply)
+
     mand_query.setEntity('supply', supply)
+    mop_contract = supply_generation.getMopContract()
+    if mop_contract is None:
+        mop_contract_name = ''
+        mop_account = ''
+        latest_mop_bill_date = 'No MOP'
+    else:
+        mop_contract_name = mop_contract.getName()
+        mop_account = supply_generation.getMopAccount()
+        latest_mop_bill_date = latest_bill_date_query.setEntity('contract', mop_contract).uniqueResult()
+        if latest_mop_bill_date is not None:
+            latest_mop_bill_date = formatter.format(latest_mop_bill_date.getDate())
+
     hhdc_contract = supply_generation.getHhdcContract()
     if hhdc_contract is None:
         hhdc_contract_name = ''
         hhdc_account = ''
+        latest_hhdc_bill_date = 'No HHDC'
     else:
         hhdc_contract_name = hhdc_contract.getName()
         hhdc_account = supply_generation.getHhdcAccount()
+        latest_hhdc_bill_date = latest_bill_date_query.setEntity('contract', hhdc_contract).uniqueResult()
+        if latest_hhdc_bill_date is not None:
+            latest_hhdc_bill_date = formatter.format(latest_hhdc_bill_date.getDate())
+
     meter_serial_number = supply_generation.getMeterSerialNumber()
-    import_values = mpan_fields(supply_generation.getImportMpan(), date, True, mand_query, metering_type)
-    export_values = mpan_fields(supply_generation.getExportMpan(), date, False, mand_query, metering_type)
+    import_values = mpan_fields(supply_generation.getImportMpan(), date, True, mand_query, metering_type, latest_bill_date_query)
+    export_values = mpan_fields(supply_generation.getExportMpan(), date, False, mand_query, metering_type, latest_bill_date_query)
     channel_values = []
     for is_import in [True, False]:
         for is_kwh in [True, False]:
@@ -4715,8 +4829,9 @@ while supply_generations.next():
         mandatory_hh = 'yes'
     else:
         mandatory_hh = 'no'
+
     values = []
-    for value in [HhStartDate(date), physical_site.getCode(), physical_site.getName(), site_codes, site_names, supply.getId(), supply.getSource().getCode(), generator_type, mpan.getCore().getDso().getName(), mpan.getLlfc().getVoltageLevel().getCode(), metering_type, mandatory_hh, supply_generation.getPc(), supply_generation.getMtc(), supply_generation.getCop(), supply_generation.getSsc(), hhdc_contract_name, hhdc_account, meter_serial_number] + channel_values + import_values[:-1] + export_values[:-1]:
+    for value in [HhStartDate(date), physical_site.getCode(), physical_site.getName(), site_codes, site_names, supply.getId(), supply.getSource().getCode(), generator_type, mpan.getCore().getDso().getName(), mpan.getLlfc().getVoltageLevel().getCode(), metering_type, mandatory_hh, supply_generation.getPc(), supply_generation.getMtc(), supply_generation.getCop(), supply_generation.getSsc(), mop_contract_name, mop_account, hhdc_contract_name, hhdc_account, meter_serial_number, latest_normal_read_date, latest_normal_read_type, latest_hhdc_bill_date, latest_mop_bill_date] + channel_values + import_values[:-1] + export_values[:-1]:
         if value is None:
            values.append('')
         else:
@@ -12071,10 +12186,7 @@ source.appendChild(MonadDate.getMonthsXml(doc))]]></value>
                     <fieldset>
                         <legend>Download</legend>
 <br/>
-<p><xsl:value-of select="' For MPAN Core '"/>
-<input name="mpan-core" value="" maxlength="30" size="30" />
-
-<xsl:value-of select="' for '"/>
+<xsl:value-of select="'For '"/>
                         <input name="months" maxlength="2" size="2">
                           <xsl:attribute name="value">
                             <xsl:choose>
@@ -12100,7 +12212,6 @@ source.appendChild(MonadDate.getMonthsXml(doc))]]></value>
                             </xsl:for-each>
                         </select>
                     <input type="submit" value="Download"/>
-</p>
                     </fieldset>
                 </form>
             </body>
@@ -12295,25 +12406,16 @@ else:
 
 computer = NonCoreContract.getNonCoreContract('computer')
 
-cal = GregorianCalendar(TimeZone.getTimeZone("GMT"), Locale.UK)
+cal = MonadDate.getCalendar()
 cal.clear()
 cal.set(Calendar.YEAR, year)
 cal.set(Calendar.MONTH, month - 1)
 cal.add(Calendar.MONTH, 1)
-cal.set(Calendar.MINUTE, -30)
+cal.add(Calendar.MINUTE, -30)
 finish_date = HhStartDate(cal.getTime())
 cal.add(Calendar.MINUTE, 30)
 cal.add(Calendar.MONTH, -1 * months)
 start_date = HhStartDate(cal.getTime())
-
-kwh_formatter = DecimalFormat('#0')
-gbp_formatter = DecimalFormat('#0.00')
-
-def gbp_format(gbp):
-    return gbp_formatter.format(gbp)
-
-def kwh_format(gbp):
-    return gbp_formatter.format(gbp)
 
 stream_names = ['import-net', 'export-net', 'import-gen', 'export-gen', 'import-3rd-party', 'export-3rd-party', 'msp', 'used', 'used-3rd-party']
 
@@ -12326,7 +12428,7 @@ def process_site(site, month_start, month_finish, forecast_date, pw):
     associates = []
     sources = []
     generator_types = []
-    metering_type = 'nhh'
+    metering_type = 'no-supply'
     problem = ''
     month_data = {}
 
@@ -12352,8 +12454,14 @@ def process_site(site, month_start, month_finish, forecast_date, pw):
                 if imp_mpan is not None and metering_type != 'hh':
                     if str(cand_gen.getPc()) == '00':
                         metering_type = 'hh'
-                    elif cand_gen.getChannels().size() > 0:
-                        metering_type = 'amr'
+                    elif metering_type != 'amr':
+                        if cand_gen.getChannels().size() > 0:
+                            metering_type = 'amr'
+                        elif metering_type != 'nhh':
+                            if cand_gen.getMtc().getMeterType().getCode() not in ['UM', 'PH']:
+                                metering_type = 'nhh'
+                            else:
+                                metering_type = 'unmetered'
 
     for group in site.groups(month_start, month_finish, True):
         if group.getFrom().after(start_date):
@@ -12382,6 +12490,8 @@ def process_site(site, month_start, month_finish, forecast_date, pw):
                     generator_types.append(gen_type)
 
             for supply_generation in Hiber.session().createQuery("from SupplyGeneration generation where generation.supply = :supply and generation.startDate.date <= :finishDate and (generation.finishDate is null or generation.finishDate.date >= :startDate)").setEntity('supply', supply).setTimestamp('startDate', chunk_start.getDate()).setTimestamp('finishDate', chunk_finish.getDate()).list():
+                pw.print(' ')
+                pw.flush()
                 if has_3rd_party:
                     for mpan in supply_generation.getMpans():
                         contr = mpan.getSupplierContract()
@@ -12443,11 +12553,14 @@ def process_site(site, month_start, month_finish, forecast_date, pw):
                     else:
                         v_bill = import_vb_function(supply_source)
                         #pw.println("finishing vbill, " + str(System.currentTimeMillis()))
+                        if supply_source.pc_code != '00' and not supply_source.is_amr:
+                            month_data['used-kwh'] += supply_source.summary['sum-msp-kwh']
 
                         if 'net-gbp' in v_bill:
                             month_data['import-net-gbp'] += v_bill['net-gbp']
                         else:
                             problem += 'For the supply ' + import_mpan.toString() + ' the virtual bill ' + str(v_bill) + ' from the contract ' + supplier_contract.getName() + ' does not contain the net-gbp key.'
+                        problem += supply_source.summary['problem']
                     hhdc_contract = supply_generation.getHhdcContract()
                     if hhdc_contract is not None:
                         hhdc_bill = comterp.get('contract_function')(hhdc_contract, 'virtual_bill')(supply_source)
@@ -12486,25 +12599,17 @@ def process_site(site, month_start, month_finish, forecast_date, pw):
         for stream_name in stream_names:
             month_data[stream_name + '-kwh'] += site_ds.summary['sum-' + stream_name + '-kwh']
 
-    associate_str = ''
-    for associate in associates:
-        associate_str = associate_str + associate + ', '
     sources.sort()
-    sources_str = ''
-    for source in sources:
-        sources_str = sources_str + source + ', '
     generator_types.sort()
-    generator_types_str = ''
-    for generator_type in generator_types:
-        generator_types_str += generator_type + ', '
-    result = [associate_str[:-2], sources_str[:-2], generator_types_str[:-2], month_format.format(Date(month_finish.getDate().getTime() - 1)), kwh_format(month_data['import-net-kwh']), kwh_format(month_data['msp-kwh']), kwh_format(month_data['export-net-kwh']), kwh_format(month_data['used-kwh']), kwh_format(month_data['export-gen-kwh']), kwh_format(month_data['import-gen-kwh']), kwh_format(month_data['import-3rd-party-kwh']), kwh_format(month_data['export-3rd-party-kwh']),  gbp_format(month_data['import-net-gbp']), gbp_format(month_data['msp-gbp']), 0, gbp_format(month_data['used-gbp']), gbp_format(month_data['used-3rd-party-gbp']), kwh_format(billed_kwh),gbp_format(billed_gbp), str(complete), metering_type, problem]
+
+    result = [site.getCode(), site.getName(), ','.join(associates), ','.join(sources), '.'.join(generator_types), month_format.format(Date(month_finish.getDate().getTime() - 1)), month_data['import-net-kwh'], month_data['msp-kwh'], month_data['export-net-kwh'], month_data['used-kwh'], month_data['export-gen-kwh'], month_data['import-gen-kwh'], month_data['import-3rd-party-kwh'], month_data['export-3rd-party-kwh'], month_data['import-net-gbp'], month_data['msp-gbp'], 0, month_data['used-gbp'], month_data['used-3rd-party-gbp'], billed_kwh, billed_gbp, complete, metering_type, problem]
     #pw.println("Finished call method " + str(System.currentTimeMillis()))
     return result
 
 inv.getResponse().setContentType("text/csv")
 inv.getResponse().setHeader('Content-Disposition', 'filename=output.csv;')
 pw = inv.getResponse().getWriter()
-pw.println("Site Id,Site Name,Associated Site Ids,Sources,Generator Types,Month,Metered Imported kWh,Metered Displaced kWh,Metered Exported kWh,Metered Used kWh,Metered Parasitic kWh,Metered Generated kWh,Metered 3rd Party Import kWh,Metered 3rd Party Export kWh,Metered Imported GBP,Metered Displaced GBP,Metered Exported GBP,Metered Used GBP,Metered 3rd Party Import GBP,Billed Imported kWh,Billed Imported GBP,Billed Imported Complete,Metering Type,Problem")
+pw.print("Site Id,Site Name,Associated Site Ids,Sources,Generator Types,Month,Metered Imported kWh,Metered Displaced kWh,Metered Exported kWh,Metered Used kWh,Metered Parasitic kWh,Metered Generated kWh,Metered 3rd Party Import kWh,Metered 3rd Party Export kWh,Metered Imported GBP,Metered Displaced GBP,Metered Exported GBP,Metered Used GBP,Metered 3rd Party Import GBP,Billed Imported kWh,Billed Imported GBP,Billed Imported Complete,Metering Type,Problem")
 pw.flush()
 
 month_format = SimpleDateFormat("yyyy-MM-dd")
@@ -12524,10 +12629,7 @@ for i in range(months):
         cal.add(Calendar.MONTH, 1)
         cal.add(Calendar.MINUTE, -30)
         month_finish = HhStartDate(cal.getTime())
-        pw.print('"' + site.getCode() + '","' + site.getName() + '",')
-        for value in process_site(site, month_start, month_finish, forecast_date, pw):
-            pw.print('"' + str(value) + '",')
-        pw.println('')
+        pw.print('\r\n' + ','.join('"' + str(value) + '"' for value in process_site(site, month_start, month_finish, forecast_date, pw)))
         pw.flush()
         #pw.println("finishing site, " + str(System.currentTimeMillis()))
         Hiber.session().clear()
@@ -13324,8 +13426,8 @@ source.setAttribute('year', str(cal.get(Calendar.YEAR)))]]></value>
         <value><![CDATA[from net.sf.chellow.monad import Hiber, UserException
 from net.sf.chellow.monad.types import MonadDate
 from java.sql import Timestamp, ResultSet
-from java.util import GregorianCalendar, Calendar, TimeZone, Locale, Date
-from net.sf.chellow.physical import HhStartDate, MpanCore, Site
+from java.util import Calendar, TimeZone, Locale, Date
+from net.sf.chellow.physical import HhStartDate, MpanCore, Site, Supply
 from java.text import SimpleDateFormat, DecimalFormat
 from java.lang import Math, System
 from net.sf.chellow.billing import SupplierContract, NonCoreContract
@@ -13334,56 +13436,48 @@ from org.python.util import PythonInterpreter
 year = inv.getInteger("end-year")
 month = inv.getInteger("end-month")
 months = inv.getInteger("months")
-search_term = inv.getString('mpan-core')
 
 if not inv.isValid():
     raise UserException()
 
-search_term = search_term.strip()
-
 computer = NonCoreContract.getNonCoreContract('computer')
 
-cal = GregorianCalendar(TimeZone.getTimeZone("GMT"), Locale.UK)
+cal = MonadDate.getCalendar()
 cal.clear()
 cal.set(Calendar.YEAR, year)
 cal.set(Calendar.MONTH, month - 1)
 cal.add(Calendar.MONTH, 1)
-cal.set(Calendar.MINUTE, -30)
+cal.add(Calendar.MINUTE, -30)
 finish_date = HhStartDate(cal.getTime())
 cal.add(Calendar.MINUTE, 30)
 cal.add(Calendar.MONTH, -1 * months)
 start_date = HhStartDate(cal.getTime())
 
-kwh_formatter = DecimalFormat('#0')
-gbp_formatter = DecimalFormat('#0.00')
+comterp = computer.callFunction('create_comterp', [])
 
-def gbp_format(gbp):
-    return gbp_formatter.format(gbp)
-
-def kwh_format(kwh):
-    return kwh_formatter.format(kwh)
-
-comterp = PythonInterpreter()
-comterp.exec(computer.getChargeScript())
+field_names = ['supply-id', 'supply-name', 'source-code', 'generator-type', 'month', 'pc-code', 'site-code', 'site-name', 'metering-type', 'import-mpan-core', 'metered-import-kwh', 'metered-import-net-gbp', 'metered-import-estimated-kwh', 'export-mpan-core', 'metered-export-kwh', 'metered-export-estimated-kwh', 'problem']
 
 inv.getResponse().setContentType("text/csv")
 inv.getResponse().setHeader('Content-Disposition', 'filename=output.csv;')
 pw = inv.getResponse().getWriter()
-pw.println("Supply Id,Supply Name,Source,Generator Type,Month,PC,Site Id, Site Name, Metering Type,Import MPAN Core,Imported Total kWh,Import Estimated kWh,Export MPAN Core,Export Total kWh,Export Estimated kWh")
+pw.println(','.join(field_names))
 pw.flush()
 
 month_format = SimpleDateFormat("yyyy-MM-dd")
 month_format.setCalendar(cal)
 
-if len(search_term) == 0:
-    supplies_query = Hiber.session().createQuery("select distinct generation.supply from SupplyGeneration generation where generation.startDate.date <= :finishDate and (generation.finishDate is null or generation.finishDate.date >= :startDate)")
+if inv.hasParameter('supply-id'):
+    supply_id = inv.getLong('supply-id')
+    supplies_query = Hiber.session().createQuery("select distinct generation.supply from SupplyGeneration generation where generation.supply = :supply and generation.startDate.date <= :finishDate and (generation.finishDate is null or generation.finishDate.date >= :startDate)").setEntity('supply', Supply.getSupply(supply_id))
 else:
-    supply = MpanCore.getMpanCore(search_term).getSupply()
-    supplies_query = Hiber.session().createQuery("select distinct generation.supply from SupplyGeneration generation where generation.supply = :supply and generation.startDate.date <= :finishDate and (generation.finishDate is null or generation.finishDate.date >= :startDate)").setEntity('supply', supply)
+    supplies_query = Hiber.session().createQuery("select distinct generation.supply from SupplyGeneration generation where generation.startDate.date <= :finishDate and (generation.finishDate is null or generation.finishDate.date >= :startDate)")
 
-kwh_query = Hiber.session().createQuery("select sum(datum.value) from HhDatum datum where datum.channel.supplyGeneration.supply = :supply and datum.channel.isKwh is true and datum.channel.isImport = :isImport and datum.startDate.date >= :startDate and datum.startDate.date <= :finishDate")
+#kwh_query = Hiber.session().createQuery("select sum(cast(datum.value as double)) from HhDatum datum where datum.channel.supplyGeneration.supply = :supply and datum.channel.isKwh is true and datum.channel.isImport = :isImport and datum.startDate.date >= :startDate and datum.startDate.date <= :finishDate")
 
-est_kwh_query = Hiber.session().createQuery("select sum(datum.value) from HhDatum datum where datum.status = 'E' and datum.channel.supplyGeneration.supply = :supply and datum.channel.isKwh is true and datum.channel.isImport = :isImport and datum.startDate.date >= :startDate and datum.startDate.date <= :finishDate")
+
+kwh_query = Hiber.session().createQuery("select datum.value from HhDatum datum where datum.channel.supplyGeneration.supply = :supply and datum.channel.isKwh is true and datum.channel.isImport = :isImport and datum.startDate.date >= :startDate and datum.startDate.date <= :finishDate")
+
+est_kwh_query = Hiber.session().createQuery("select sum(cast(datum.value as double)) from HhDatum datum where datum.status = 'E' and datum.channel.supplyGeneration.supply = :supply and datum.channel.isKwh is true and datum.channel.isImport = :isImport and datum.startDate.date >= :startDate and datum.startDate.date <= :finishDate")
 
 site_query = Hiber.session().createQuery("select ssgen.site from SiteSupplyGeneration ssgen where ssgen.supplyGeneration = :supplyGeneration and ssgen.isPhysical is true")
 
@@ -13399,57 +13493,123 @@ for i in range(months):
     month_finish = HhStartDate(cal.getTime())
     supplies = supplies_query.setTimestamp('startDate', month_start.getDate()).setTimestamp('finishDate', month_finish.getDate()).scroll()
 
+    month_str = month_format.format(Date(month_finish.getDate().getTime() - 1))
+
+    kwh_query.setTimestamp('startDate', month_start.getDate()).setTimestamp('finishDate', month_finish.getDate())
+    est_kwh_query.setTimestamp('startDate', month_start.getDate()).setTimestamp('finishDate', month_finish.getDate())
+
+
     while supplies.next():
         supply = supplies.get(0)
-        #pw.println("starting site " + str(System.currentTimeMillis() - timing))
-        pw.print('"' + str(supply.getId()) + '","' + supply.getName() + '",')
         generator_type = supply.getGeneratorType()
         if generator_type is None:
             generator_type = ''
         else:
             generator_type = generator_type.getCode()
 
-        generation = supply.getGenerations(month_start, month_finish).get(0)
+        source_code = supply.getSource().getCode()
+        generations = supply.getGenerations(month_start, month_finish)
+        generation = generations.get(0)
+
 
         pc_code = str(generation.getPc())
         if pc_code == '00':
             metering_type = 'hh'
         elif generation.getChannels().size() > 0:
             metering_type = 'amr'
+        elif generation.getMtc().getMeterType().getCode() in ['UM', 'PH']:
+            metering_type = 'unmetered'
         else:
             metering_type = 'nhh'
 
         site = site_query.setEntity('supplyGeneration', generation).uniqueResult()
+        kwh_query.setEntity('supply', supply)
+        est_kwh_query.setEntity('supply', supply)
 
-        values = [supply.source.getCode(), generator_type, month_format.format(month_finish.getDate()), pc_code, site.getCode(), site.getName(), metering_type]
 
-        kwh_query.setEntity('supply', supply).setTimestamp('startDate', month_start.getDate()).setTimestamp('finishDate', month_finish.getDate())
-        est_kwh_query.setEntity('supply', supply).setTimestamp('startDate', month_start.getDate()).setTimestamp('finishDate', month_finish.getDate())
-        for polarity in [True, False]:
+        values = {'supply-id': supply.getId(), 'supply-name': supply.getName(), 'source-code': source_code, 'generator-type': generator_type, 'month': month_str, 'pc-code': pc_code, 'site-code': site.getCode(), 'site-name': site.getName(), 'metering-type': metering_type, 'problem': ''}
+
+        for polarity, pol_name in [(True, 'import'), (False, 'export')]:
             mpan = generation.getMpan(polarity)
             if mpan is None:
-                values.append('')
+                mpan_core = None
             else:
-                values.append(mpan.getCore())
+                mpan_core = mpan.getCore()
 
-            kwh_query.setBoolean('isImport', polarity)
-            kwh = kwh_query.uniqueResult()
-            if kwh is None:
-                values.append('0')
-            else:
-                values.append(kwh_format(kwh.doubleValue()))
-            est_kwh_query.setBoolean('isImport', polarity)
-            est_kwh = est_kwh_query.uniqueResult()
-            if est_kwh is None:
-                values.append('0')
-            else:
-                values.append(kwh_format(est_kwh.doubleValue()))
+            values[pol_name + '-mpan-core'] = mpan_core
+            kwh = 0
+            est_kwh = 0
 
-        for value in values:
-            pw.print('"' + str(value) + '",')
-        pw.println('')
+            if metering_type in ['hh', 'amr']:
+                est_kwh = est_kwh_query.setBoolean('isImport', polarity).uniqueResult()
+                if est_kwh is None:
+                    est_kwh = 0
+
+            if not (polarity and source_code in ['net', 'gen-net']):
+                kwh = 0
+                kwhs = kwh_query.setBoolean('isImport', polarity).scroll()
+                while kwhs.next():
+                    kwh += kwhs.get(0).doubleValue()
+
+
+            values['metered-' + pol_name + '-estimated-kwh'] = est_kwh
+            values['metered-' + pol_name + '-kwh'] = kwh
+            values['metered-' + pol_name + '-estimated-net-gbp'] = 0
+            values['metered-' + pol_name + '-net-gbp'] = 0
+        #pw.println('starting generations, ' + str(System.currentTimeMillis()))
+
+        for generation in generations:
+            if generation.getStartDate().after(month_start):
+                chunk_start = generation.getStartDate()
+            else:
+                chunk_start = month_start
+            if HhStartDate.isAfter(generation.getFinishDate(), month_finish):
+                chunk_finish = month_finish
+            else:
+                chunk_finish = generation.getFinishDate()
+
+            import_mpan = generation.getImportMpan()
+            if import_mpan is None:
+                continue
+
+            supplier_contract = import_mpan.getSupplierContract()
+            if source_code in ['net', 'gen-net']:
+                #pw.println("starting vbill, " + str(System.currentTimeMillis()))
+                supply_source = comterp.get('supply_source')(forecast_date, comterp, pw)
+
+                #pw.println("starting init from mpan, " + str(System.currentTimeMillis()))
+                supply_source.init_from_mpan(chunk_start, chunk_finish, import_mpan)
+                #pw.println('sum msp kwh ' + str(supply_source.summary['sum-msp-kwh']))
+                values['metered-import-kwh'] += supply_source.summary['sum-msp-kwh']
+
+                #pw.println("finished init from mpan, " + str(System.currentTimeMillis()))
+                import_vb_function = comterp.get('contract_function')(supplier_contract, 'import_virtual_bill')
+                if import_vb_function is None:
+                    values['problem'] += "Can't find the import_virtual_bill function in the supplier contract. "
+                else:
+                    v_bill = import_vb_function(supply_source)
+                    #pw.println("finishing vbill, " + str(System.currentTimeMillis()))
+                    if supply_source.pc_code != '00' and not supply_source.is_amr:
+                        #month_data['used-kwh'] += supply_source.summary['sum-msp-kwh']
+                        pass
+
+                    if 'net-gbp' in v_bill:
+                        values['metered-import-net-gbp'] += v_bill['net-gbp']
+                    else:
+                        values['problem'] += 'For the supply ' + import_mpan.toString() + ' the virtual bill ' + str(v_bill) + ' from the contract ' + supplier_contract.getName() + ' does not contain the net-gbp key.'
+                    values['problem'] += supply_source.summary['problem']
+                #pw.println("done virtual bill , " + str(System.currentTimeMillis()))
+
+                hhdc_contract = generation.getHhdcContract()
+                if hhdc_contract is not None:
+                    hhdc_bill = comterp.get('contract_function')(hhdc_contract, 'virtual_bill')(supply_source)
+                    values['metered-import-net-gbp'] += hhdc_bill['net-gbp']
+            #pw.println("finishing generation , " + str(System.currentTimeMillis()))
+
+        pw.println(','.join('"' + str(values[name]) + '"' for name in field_names))
         pw.flush()
         Hiber.session().clear()
+        #pw.println("finishing supply " + str(supply.getId()) + ', ' + str(System.currentTimeMillis()))
     supplies.close()
     #pw.println("finishing site " + str(System.currentTimeMillis() - timing))
 pw.close()]]></value>
