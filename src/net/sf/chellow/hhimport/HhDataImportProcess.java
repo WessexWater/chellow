@@ -1,6 +1,6 @@
 /*******************************************************************************
  * 
- *  Copyright (c) 2005, 2009 Wessex Water Services Limited
+ *  Copyright (c) 2005, 2010 Wessex Water Services Limited
  *  
  *  This file is part of Chellow.
  * 
@@ -101,8 +101,8 @@ public class HhDataImportProcess extends Thread implements Urlable,
 		/*
 		 * if (!fileName.endsWith(".df2") && !fileName.endsWith(".stark.csv") &&
 		 * !fileName.endsWith(".simple.csv") && !fileName.endsWith(".zip")) {
-		 * throw new UserException( "The extension of the filename '" + fileName + "'
-		 * is not one of the recognized extensions; '.zip', '.df2',
+		 * throw new UserException( "The extension of the filename '" + fileName
+		 * + "' is not one of the recognized extensions; '.zip', '.df2',
 		 * '.stark.csv', '.simple.csv'."); }
 		 */
 		if (fileName.endsWith(".zip")) {
@@ -169,21 +169,6 @@ public class HhDataImportProcess extends Thread implements Urlable,
 		try {
 			HhDatum.insert(converter, halt);
 			Hiber.close();
-			// check hh data - supply level
-			/*
-			supplyGenerations = (List<SupplyGeneration>) Hiber
-					.session()
-					.createQuery(
-							"select supplyGeneration from SupplyGeneration supplyGeneration where supplyGeneration.finishDate.date is null")
-					.list();
-			for (int i = 0; i < supplyGenerations.size(); i++) {
-				suppliesChecked = i;
-				SupplyGeneration.getSupplyGeneration(
-						supplyGenerations.get(i).getId())
-						.checkForMissingFromLatest(null);
-				Hiber.close();
-			}
-			*/
 		} catch (InternalException e) {
 			messages.add("ProgrammerException : "
 					+ HttpException.getStackTraceString(e));

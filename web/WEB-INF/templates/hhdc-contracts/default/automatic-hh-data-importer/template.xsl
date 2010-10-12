@@ -2,8 +2,8 @@
 <xsl:stylesheet version="1.0"
 	xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
 	<xsl:output method="html" encoding="US-ASCII"
-		doctype-public="-//W3C//DTD HTML 4.01//EN"
-		doctype-system="http://www.w3.org/TR/html4/strict.dtd" indent="yes" />
+		doctype-public="-//W3C//DTD HTML 4.01//EN" doctype-system="http://www.w3.org/TR/html4/strict.dtd"
+		indent="yes" />
 
 	<xsl:template match="/">
 		<html>
@@ -22,13 +22,11 @@
 			<body>
 				<p>
 					<a href="{/source/request/@context-path}/">
-						<img
-							src="{/source/request/@context-path}/logo/" />
+						<img src="{/source/request/@context-path}/logo/" />
 						<span class="logo">Chellow</span>
 					</a>
 					&gt;
-					<a
-						href="{/source/request/@context-path}/hhdc-contracts/">
+					<a href="{/source/request/@context-path}/hhdc-contracts/">
 						<xsl:value-of select="'HHDC Contracts'" />
 					</a>
 					&gt;
@@ -44,34 +42,32 @@
 						<th>Is it running the automatic import section of code?</th>
 						<td>
 							<xsl:choose>
-								<xsl:when
-									test="/source/@an-import-running='true'">
+								<xsl:when test="/source/@an-import-running='true'">
 									Yes
 								</xsl:when>
-								<xsl:otherwise>No</xsl:otherwise>
+								<xsl:otherwise>
+									No
+								</xsl:otherwise>
 							</xsl:choose>
 						</td>
 					</tr>
 					<tr>
 						<th>Status of this particular import</th>
 						<td>
-							<xsl:value-of
-								select="/source/@thread-status" />
+							<xsl:value-of select="/source/@thread-status" />
 						</td>
 					</tr>
 					<tr>
 						<th>Is this particular import locked?</th>
 						<td>
-							<xsl:value-of
-								select="/source/@is-locked" />
+							<xsl:value-of select="/source/@is-locked" />
 						</td>
 					</tr>
-					
+
 					<tr>
 						<th>Stack trace of this particular import</th>
 						<td>
-							<xsl:value-of
-								select="/source/stack-trace/text()" />
+							<xsl:value-of select="/source/stack-trace/text()" />
 						</td>
 					</tr>
 				</table>
@@ -83,17 +79,24 @@
 						test="/source/@thread-status = 'null' or /source/@thread-status = 'dead'">
 						<form action="." method="post">
 							<fieldset>
-								<legend>Import now</legend>
+								<legend>Import Now</legend>
 								<input type="submit" value="Import" />
 							</fieldset>
 						</form>
+						<br />
+						<form action="." method="post">
+							<fieldset>
+								<legend>Restart Import Thread</legend>
+								<input type="submit" value="Restart" name="restart" />
+							</fieldset>
+						</form>
+
 					</xsl:when>
 					<xsl:when test="/source/@thread-status = 'alive'">
 						<form action="." method="post">
 							<fieldset>
 								<legend>Interrupt The Import</legend>
-								<input type="submit" name="interrupt"
-									value="Interrupt" />
+								<input type="submit" name="interrupt" value="Interrupt" />
 							</fieldset>
 						</form>
 					</xsl:when>

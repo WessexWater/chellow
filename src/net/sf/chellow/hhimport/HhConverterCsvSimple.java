@@ -1,6 +1,6 @@
 /*******************************************************************************
  * 
- *  Copyright (c) 2005, 2009 Wessex Water Services Limited
+ *  Copyright (c) 2005, 2010 Wessex Water Services Limited
  *  
  *  This file is part of Chellow.
  * 
@@ -22,26 +22,22 @@
 package net.sf.chellow.hhimport;
 
 import java.io.IOException;
-import java.io.LineNumberReader;
 import java.io.Reader;
 import java.math.BigDecimal;
 import java.text.DateFormat;
 import java.util.Locale;
 import java.util.TimeZone;
 
-import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.HttpException;
+import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.UserException;
 import net.sf.chellow.physical.HhStartDate;
 
 import com.Ostermiller.util.CSVParser;
 
 public class HhConverterCsvSimple implements HhConverter {
-	private LineNumberReader reader;
 
 	private CSVParser shredder;
-
-	private HhDatumRaw datum = null;
 
 	private HhDatumRaw datumNext = null;
 
@@ -50,40 +46,25 @@ public class HhConverterCsvSimple implements HhConverter {
 	DateFormat dateFormat = DateFormat.getDateTimeInstance(DateFormat.SHORT,
 			DateFormat.SHORT, Locale.UK);
 
-	public HhConverterCsvSimple(Reader reader) throws HttpException,
-			InternalException {
+	public HhConverterCsvSimple(Reader reader) throws HttpException {
 		dateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
-		try {
-			shredder = new CSVParser(reader);
-			shredder.setCommentStart("#;!");
-			shredder.setEscapes("nrtf", "\n\r\t\f");
-			String[] titles = shredder.getLine();
+		shredder = new CSVParser(reader);
+		shredder.setCommentStart("#;!");
+		shredder.setEscapes("nrtf", "\n\r\t\f");
 
-			if (titles.length < 6 || !titles[0].equals("MPAN core")
-					|| !titles[1].equals("Imp / Exp")
-					|| !titles[2].equals("Units") || !titles[3].equals("Time")
-					|| !titles[4].equals("Value")
-					|| !titles[5].equals("Status")) {
-				throw new UserException(
-						"The first line of the CSV must contain the titles "
-								+ "MPAN core, Imp / Exp, Units, Time, Value, Status.");
-			}
-			try {
-				next();
-			} catch (RuntimeException e) {
-				if (e.getCause() != null) {
-					Throwable t = e.getCause();
-					if (t instanceof HttpException) {
-						throw (HttpException) t;
-					} else {
-						throw new InternalException(t);
-					}
+		try {
+			next();
+		} catch (RuntimeException e) {
+			if (e.getCause() != null) {
+				Throwable t = e.getCause();
+				if (t instanceof HttpException) {
+					throw (HttpException) t;
 				} else {
-					throw e;
+					throw new InternalException(t);
 				}
+			} else {
+				throw e;
 			}
-		} catch (IOException e) {
-			throw new UserException("Can't read CSV Simple file.");
 		}
 	}
 
@@ -95,23 +76,48 @@ public class HhConverterCsvSimple implements HhConverter {
 		throw new UnsupportedOperationException();
 	}
 
+	private String getField(String[] values, int index, String name)
+			throws UserException, InternalException {
+		if (values.length > index) {
+			return values[index].trim();
+		} else {
+			throw new UserException("Can't find field " + index + ", " + name
+					+ ".");
+		}
+	}
+
 	public HhDatumRaw next() {
 		HhDatumRaw datum = null;
-		this.datum = datumNext;
 		try {
 			String[] values = shredder.getLine();
-			if (values.length < 5) {
-				throw new UserException(
-						"There must be fields for 'MPAN core', 'Imp / Exp', 'Units', 'Time' and 'Value'.");
+			if (values != null) {
+				String mpanCore = getField(values, 0, "Mpan Core");
+
+				String isImportStr = getField(values, 1, "Is Import?");
+				boolean isImport = Boolean.parseBoolean(isImportStr);
+
+				String isKwhStr = getField(values, 2, "Is kWh?");
+				boolean isKwh = Boolean.parseBoolean(isKwhStr);
+
+				String startDateStr = getField(values, 3, "Start Date");
+				HhStartDate startDate = new HhStartDate(startDateStr);
+
+				String valueStr = getField(values, 4, "Value");
+				BigDecimal value = new BigDecimal(valueStr);
+
+				String statusStr = getField(values, 5, "Status");
+				if (statusStr.length() != 1) {
+					throw new UserException(
+							"The status character must be one character in length.");
+				}
+				char status = statusStr.charAt(0);
+
+				datum = new HhDatumRaw(mpanCore, isImport, isKwh, startDate,
+						value, status);
 			}
-			Character status = null;
-			if (values.length > 5) {
-				status = values[5].trim().charAt(0);
-			}
-			datum = new HhDatumRaw(values[0], Boolean.parseBoolean(values[1]), Boolean.parseBoolean(values[2]), new HhStartDate(values[3]),
-					new BigDecimal(values[4]), status);
+			HhDatumRaw toReturn = datumNext;
 			datumNext = datum;
-			return this.datum;
+			return toReturn;
 		} catch (IOException e) {
 			RuntimeException rte = new RuntimeException();
 			rte.initCause(e);
@@ -133,12 +139,12 @@ public class HhConverterCsvSimple implements HhConverter {
 	}
 
 	public int lastLineNumber() {
-		return reader.getLineNumber();
+		return shredder.getLastLineNumber();
 	}
 
 	public void close() throws InternalException {
 		try {
-			reader.close();
+			shredder.close();
 		} catch (IOException e) {
 			throw new InternalException(e);
 		}

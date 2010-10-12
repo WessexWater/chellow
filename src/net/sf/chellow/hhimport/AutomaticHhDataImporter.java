@@ -358,6 +358,9 @@ public class AutomaticHhDataImporter implements Urlable, XmlDescriber, Runnable 
 				throw new UserException(document(),
 						"The import isn't running, and so can't be interrupted.");
 			}
+		} else if (inv.hasParameter("restart")) {
+			inv.sendOk(document());
+			AutomaticHhDataImporters.start();
 		} else {
 			new Thread(this, "Ad hoc hh import").start();
 			inv.sendOk(document());

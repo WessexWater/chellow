@@ -36,7 +36,7 @@
 				<br />
 				<form action=".">
 					<fieldset>
-						<legend>Search by MPAN core</legend>
+						<legend>Search for supply generations by MPAN core, account number or meter serial number</legend>
 						<input name="search-pattern"
 							value="{/source/request/parameter[@name='search-pattern']/value}" />
 						<xsl:value-of select="' '" />
