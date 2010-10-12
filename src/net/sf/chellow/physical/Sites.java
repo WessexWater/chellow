@@ -101,10 +101,14 @@ public class Sites extends EntityList {
 					"from Site site order by site.code").setMaxResults(50)
 					.list();
 		}
-		for (Site site : sites) {
-			sitesElement.appendChild(site.toXml(doc));
+		if (sites.size() == 1) {
+			inv.sendTemporaryRedirect(sites.get(0).getUri().getString());
+		} else {
+			for (Site site : sites) {
+				sitesElement.appendChild(site.toXml(doc));
+			}
+			inv.sendOk(doc);
 		}
-		inv.sendOk(doc);
 	}
 
 	public UriPathElement getUriId() {
@@ -122,8 +126,8 @@ public class Sites extends EntityList {
 	}
 
 	/*
-	 * public Site getSite(String code) throws HttpException, InternalException {
-	 * Site site = (Site) Hiber .session() .createQuery( "from Site site where
+	 * public Site getSite(String code) throws HttpException, InternalException
+	 * { Site site = (Site) Hiber .session() .createQuery( "from Site site where
 	 * site.organization = :organization and site.code.string = :siteCode")
 	 * .setEntity("organization", organization).setString("siteCode",
 	 * code.getString()).uniqueResult(); if (site == null) { throw new

@@ -177,11 +177,16 @@
         <value><![CDATA[true]]></value>
         <value><![CDATA[Sites]]></value>
         <value><![CDATA[from net.sf.chellow.monad import Hiber
+from net.sf.chellow.monad.types import MonadUri
 
 if inv.hasParameter('search-pattern'):
-    search_pattern = inv.getString('search-pattern')
-    for site in Hiber.session().createQuery("from Site site where lower(site.code || ' ' || site.name) like '%' || lower(:searchPattern) || '%' order by site.code").setString("searchPattern", search_pattern).setMaxResults(50).list():
-        source.appendChild(site.toXml(doc))]]></value>
+    search_pattern = inv.getString('search-pattern').strip()
+    sites = Hiber.session().createQuery("from Site site where lower(site.code || ' ' || site.name) like '%' || lower(:searchPattern) || '%' order by site.code").setString("searchPattern", search_pattern).setMaxResults(50).list()
+    if len(sites) == 1:
+        inv.sendTemporaryRedirect("/reports/5/output/?site-id=" + str(sites[0].getId()))
+    else:
+        for site in sites:
+            source.appendChild(site.toXml(doc))]]></value>
         <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
 <xsl:stylesheet version="1.0"
     xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
@@ -769,7 +774,7 @@ source.setAttribute('debug', debug)]]></value>
                                 <th rowspan="2">To</th>
                                 <th rowspan="2">Sites</th>
                                 <th rowspan="2">PC</th>
-                                <th rowspan="2">MSID</th>
+                                <th rowspan="2">MSN</th>
                                 <th rowspan="2">MTC</th>
                                 <th rowspan="2">CoP</th>
                                 <th rowspan="2">SSC</th>
@@ -4293,6 +4298,7 @@ if inv.hasParameter('is-core'):
     has_non_core_contracts = inv.getBoolean('has-non-core-contracts')
     has_reports = inv.getBoolean('has-reports')
     has_supplier_contracts = inv.getBoolean('has-supplier-contracts')
+    has_supplier_batches = inv.getBoolean('has-supplier-batches')
     has_hhdc_contracts = inv.getBoolean('has-hhdc-contracts')
     has_mop_contracts = inv.getBoolean('has-mop-contracts')
     has_sites = inv.getBoolean('has-sites')    
@@ -4307,7 +4313,7 @@ if inv.hasParameter('is-core'):
         raise UserException()
 else:
     is_core = False
-    has_dso_contracts = has_non_core_contracts = has_reports = has_supplier_contracts = has_hhdc_contracts = has_mop_contracts = has_sites = has_supplies = has_hh_data = has_users = has_configuration = has_channel_snag_ignores = has_site_snag_ignores = True
+    has_dso_contracts = has_non_core_contracts = has_reports = has_supplier_contracts = has_supplier_batches = has_hhdc_contracts = has_mop_contracts = has_sites = has_supplies = has_hh_data = has_users = has_configuration = has_channel_snag_ignores = has_site_snag_ignores = True
 
 if has_supplies:
     mpan_core_str = inv.getString('mpan-core')
@@ -4616,7 +4622,7 @@ if has_mop_contracts and not is_core:
     contracts.close()
 
 
-if has_supplier_contracts and not is_core:
+if has_supplier_batches and not is_core:
     contracts = Hiber.session().createQuery("from SupplierContract contract order by contract.id").scroll()
     while contracts.next():
         print_batches(contracts.get(0), 'supplier')
@@ -8610,18 +8616,30 @@ source.appendChild(tpr.toXml(doc, XmlTree("measurementRequirements", XmlTree("ss
         <value><![CDATA[99]]></value>
         <value><![CDATA[true]]></value>
         <value><![CDATA[Supplies]]></value>
-        <value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree
+        <value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree, Debug
+from net.sf.chellow.monad.types import MonadUri
 
 if inv.hasParameter("search-pattern"):
     pattern = inv.getString("search-pattern")
-    pattern = pattern.strip().replace(" ", "")
+    pattern = pattern.strip()
+    reduced_pattern = pattern.replace(" ", "")
     last_supply = None
-    for supply_generation in Hiber.session().createQuery("select distinct mpan.supplyGeneration from Mpan mpan where (lower(mpan.core.dso.code || mpan.core.uniquePart || mpan.core.checkDigit || mpan.supplierAccount) like lower(:term)) or (mpan.supplyGeneration.hhdcAccount is not null and lower(mpan.supplyGeneration.hhdcAccount) like lower(:term)) order by mpan.supplyGeneration.supply.id, mpan.supplyGeneration.startDate desc").setString("term", "%" + pattern + "%").setMaxResults(50).list():
+    generations = []
+    for supply_generation_res in Hiber.session().createQuery("select distinct mpan.supplyGeneration, mpan.supplyGeneration.startDate, mpan.supplyGeneration.supply from Mpan mpan where (lower(mpan.core.dso.code || mpan.core.uniquePart || mpan.core.checkDigit) like lower(:reducedPattern)) or lower(mpan.supplierAccount) like lower(:pattern) or (mpan.supplyGeneration.hhdcAccount is not null and lower(mpan.supplyGeneration.hhdcAccount) like lower(:pattern)) or (mpan.supplyGeneration.mopAccount is not null and lower(mpan.supplyGeneration.mopAccount) like lower(:pattern)) or lower(mpan.supplyGeneration.meterSerialNumber) like lower(:pattern) order by mpan.supplyGeneration.supply.id, mpan.supplyGeneration.startDate desc").setString("pattern", "%" + pattern + "%").setString("reducedPattern", "%" + reduced_pattern + "%").setMaxResults(50).list():
+        supply_generation = supply_generation_res[0]
         supply_id = supply_generation.getSupply().getId()
         if supply_id == last_supply:
             continue
         last_supply = supply_id
-        source.appendChild(supply_generation.toXml(doc, XmlTree("supply").put('hhdcContract').put('pc').put('mtc').put('mpans', XmlTree('llfc').put('core').put('supplierContract'))))]]></value>
+        generations.append(supply_generation)
+
+    if len(generations) == 1:
+        muri = "/reports/7/output/?supply-id=" + str(generations[0].getSupply().getId())
+        Debug.print("muri " + muri)
+        inv.sendTemporaryRedirect(muri)
+    else:
+        for generation in generations:
+            source.appendChild(generation.toXml(doc, XmlTree("supply").put('hhdcContract').put('pc').put('mtc').put('mpans', XmlTree('llfc').put('core').put('supplierContract'))))]]></value>
         <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
 <xsl:stylesheet version="1.0"
     xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
@@ -8716,7 +8734,7 @@ if inv.hasParameter("search-pattern"):
                                     </td>
                                     <td>
                                         <xsl:value-of
-                                            select="meter/@serial" />
+                                            select="@meter-serial-number" />
                                     </td>
                                     <td>
                                         <a
@@ -12022,6 +12040,10 @@ source.appendChild(MonadDate.getDaysXml(doc))]]></value>
   <tr>
     <td>Supplier Contracts</td>
     <td><input type="checkbox" name="has-supplier-contracts" value="true"/></td>
+  </tr>
+  <tr>
+    <td>Supplier Batches</td>
+    <td><input type="checkbox" name="has-supplier-batches" value="true"/></td>
   </tr>
   <tr>
     <td>HHDC Contracts</td>

@@ -8238,7 +8238,7 @@ class SiteSource(DataSource):
 
                 utc_day = utc_cal.get(Calendar.DAY_OF_MONTH)
 
-                hh_values = {'status': 'E', 'hist-start-date': hh_date.getDate(), 'hist-import-net-kwh': import_net_kwh, 'hist-import-net-kvarh': 0, 'hist-export-net-kwh': export_net_kwh, 'hist-export-net-kvarh': 0, 'hist-import-gen-kwh': import_gen_kwh, 'hist-export-gen-kwh': export_gen_kwh, 'hist-import-3rd-party-kwh': import_3rd_party_kwh, 'hist-export-3rd-party-kwh': export_3rd_party_kwh, 'start-date': hh_date.getDate(), 'ct-day': ct_cal.get(5), 'utc-year': utc_cal.get(Calendar.YEAR), 'utc-month': utc_cal.get(2), 'utc-day': utc_day, 'utc-hour': utc_cal.get(Calendar.HOUR_OF_DAY), 'utc-decimal-hour': utc_cal.get(11) + float(utc_cal.get(12)) / 60, 'utc-minute': utc_cal.get(Calendar.MINUTE), 'ct-month': ct_cal.get(2), 'ct-decimal-hour': ct_cal.get(11) + ct_cal.get(12) / 60, 'ct-day-of-week': ct_cal.get(7), 'utc-day-of-week': utc_cal.get(7), 'utc-is-bank-holiday': utc_day in bank_holidays}
+                hh_values = {'status': 'E', 'hist-start-date': hh_date.getDate(), 'hist-import-net-kwh': import_net_kwh, 'hist-import-net-kvarh': 0, 'hist-export-net-kwh': export_net_kwh, 'hist-export-net-kvarh': 0, 'hist-import-gen-kwh': import_gen_kwh, 'hist-export-gen-kwh': export_gen_kwh, 'hist-import-3rd-party-kwh': import_3rd_party_kwh, 'hist-export-3rd-party-kwh': export_3rd_party_kwh, 'start-date': utc_cal.getTime(), 'ct-day': ct_cal.get(5), 'utc-year': utc_cal.get(Calendar.YEAR), 'utc-month': utc_cal.get(2), 'utc-day': utc_day, 'utc-hour': utc_cal.get(Calendar.HOUR_OF_DAY), 'utc-decimal-hour': utc_cal.get(11) + float(utc_cal.get(12)) / 60, 'utc-minute': utc_cal.get(Calendar.MINUTE), 'ct-month': ct_cal.get(2), 'ct-decimal-hour': ct_cal.get(11) + ct_cal.get(12) / 60, 'ct-day-of-week': ct_cal.get(7), 'utc-day-of-week': utc_cal.get(7), 'utc-is-bank-holiday': utc_day in bank_holidays}
                 hh_values['hist-used-3rd-party-kwh'] = hh_values['hist-import-3rd-party-kwh'] - hh_values['hist-export-3rd-party-kwh']
                 hh_values['used-3rd-party-kwh'] = hh_values['hist-used-3rd-party-kwh']
                 hh_values['hist-kwh'] = hh_values['hist-import-gen-kwh'] - hh_values['hist-export-gen-kwh'] - hh_values['hist-export-net-kwh']
@@ -8271,9 +8271,11 @@ class SiteSource(DataSource):
             utc_day = utc_cal.get(Calendar.DAY_OF_MONTH)
             hh_data.append({'status': 'E', 'hist-start-date': history_finish.getDate(), 'status': 'E', 'hist-import-net-kwh': 0, 'hist-import-net-kvarh': 0, 'hist-export-net-kwh': 0, 'hist-export-net-kvarh': 0, 'hist-import-gen-kwh': 0, 'hist-export-gen-kwh': 0, 'hist-import-3rd-party-kwh': 0, 'hist-export-3rd-party-kwh': 0, 'hist-kwh': 0, 'msp-kwh': 0, 'msp-kw': 0, 'export-net-kwh': 0, 'import-gen-kwh': 0, 'export-gen-kwh': 0, 'hist-used-kwh': 0, 'hist-kvarh': 0, 'imp-msp-kvarh': 0, 'imp-msp-kvar': 0, 'exp-msp-kvarh': 0, 'exp-msp-kvar': 0, 'used-kwh': 0, 'import-net-kwh': 0, 'import-3rd-party-kwh': 0, 'export-3rd-party-kwh': 0, 'used-3rd-party-kwh': 0, 'start-date': finish_date.getDate(), 'ct-day': ct_cal.get(5), 'utc-month': utc_cal.get(2), 'utc-day': utc_day, 'utc-hour': utc_cal.get(Calendar.HOUR_OF_DAY), 'utc-decimal-hour': utc_cal.get(11) + float(utc_cal.get(12)) / 60, 'utc-minute': utc_cal.get(Calendar.MINUTE), 'ct-month': ct_cal.get(2), 'ct-decimal-hour': ct_cal.get(11) + ct_cal.get(12) / 60, 'ct-day-of-week': ct_cal.get(7), 'utc-day-of-week': utc_cal.get(7), 'utc-is-bank-holiday': utc_day in bank_holidays})
         if self.is_displaced and self.pc_code == '00' and self.is_import:
-            dso_contract = get_dso_contract(self.dso_code, summary['start-date'], self.pw)
+            dso_contract = get_dso_contract(self.dso_code, start_date, self.pw)
+            #s elf.pw.println('start date ' + str(start_date) + ' dso contract ' + str(dso_contract.getId()) + ' finish date ' + str(HhStartDate(finish_date.getDate())) + ' start ' + str(HhStartDate(hh_data[-1]['start-date'])))
             summary['dso-bill'] = {}
             contract_function(dso_contract, 'hh')(summary, hh_data, self)
+            #s elf.pw.println('got after')
             datum_list = list(datum['gsp-kwh'] for datum in hh_data)
             summary['sum-gsp-kwh'] = sum(datum_list)
             summary['max-gsp-kwh'] = max(datum_list)
@@ -8394,6 +8396,7 @@ class SupplySource(DataSource):
         generation = self.supply.getGeneration(start_date)
         year_advance = -1 * year_adjustment
 
+        # remove last clause to enable general nhh metered
         if self.pc_code != '00' and generation is not None and len(generation.getChannels()) == 0:
             ci_query = Hiber.session().createQuery("select mod(ci.dayOfWeek, 7) + 1 as dayOfWeek, (ci.startMonth - 1) * 100 + ci.startDay as startMonth, ci.startHour + (ci.startMinute / 60.0) as startHourDec, (ci.endMonth - 1) * 100 + ci.endDay as endMonth, ci.endHour + (ci.endMinute / 60.0) as endHourDec from ClockInterval ci where ci.tpr = :tpr")
 
@@ -8408,7 +8411,7 @@ class SupplySource(DataSource):
 
                 read_dict = None
 
-                bill_query = Hiber.session().createQuery("select distinct read.bill, read.bill.type.code from RegisterRead read where read.bill.supply = :supply and read.bill.finishDate.date >= :readDate and read.bill.startDate <= :readDate order by read.bill.issueDate desc, read.bill.type.code").setEntity('supply', self.supply).setMaxResults(1)
+                bill_query = Hiber.session().createQuery("select distinct read.bill, read.bill.issueDate, read.bill.type.code from RegisterRead read where read.bill.supply = :supply and read.bill.finishDate.date >= :readDate and read.bill.startDate <= :readDate order by read.bill.issueDate desc, read.bill.type.code").setEntity('supply', self.supply).setMaxResults(1)
 
                 prior_present_read_query = Hiber.session().createQuery("from RegisterRead read where read.units.int = 0 and read.presentType.code in ('N', 'N3', 'C') and read.bill.supply = :supply and read.presentDate.date <= :startDate order by read.presentDate.date desc").setEntity('supply', self.supply).setMaxResults(1)
 
@@ -8774,7 +8777,8 @@ class SupplySource(DataSource):
                     mpan = generation.getExportMpan()
                 tpr_codes = Hiber.session().createQuery("select mr.tpr.code from MeasurementRequirement mr where mr.ssc = :ssc").setEntity('ssc', generation.getSsc()).list()
                 bills = []
-                for cand_bill in Hiber.session().createQuery("select distinct read.bill from RegisterRead read where read.bill.supply = :supply and read.bill.batch.contract = :contract and read.bill.startDate.date <= :finishDate and read.bill.finishDate.date >= :searchStart and read.bill.type.code != 'W' order by read.bill.issueDate desc, read.bill.startDate.date").setEntity('supply', self.supply).setEntity('contract', mpan.getSupplierContract()).setTimestamp('searchStart', start_date.getDate()).setTimestamp('finishDate', finish_date.getDate()).list():
+                for cand_bill_res in Hiber.session().createQuery("select distinct read.bill, read.bill.issueDate, read.bill.startDate.date from RegisterRead read where read.bill.supply = :supply and read.bill.batch.contract = :contract and read.bill.startDate.date <= :finishDate and read.bill.finishDate.date >= :searchStart and read.bill.type.code != 'W' order by read.bill.issueDate desc, read.bill.startDate.date").setEntity('supply', self.supply).setEntity('contract', mpan.getSupplierContract()).setTimestamp('searchStart', start_date.getDate()).setTimestamp('finishDate', finish_date.getDate()).list():
+                    cand_bill = cand_bill_res[0]
                     can_insert = True
                     for bill in bills:
                         if not cand_bill.getStartDate().after(bill.getFinishDate()) and not cand_bill.getFinishDate().before(bill.getStartDate()):
@@ -8812,7 +8816,7 @@ class SupplySource(DataSource):
                             advance = 10 ** digits - previous_value + present_value
 
                         kwh = advance * coefficient
-                        #self.pw.write(' kwh ' + str(kwh))
+                        #s elf.pw.write(' kwh ' + str(kwh))
                         if previous_date.before(start_date):
                             chunk_start = start_date
                         else:

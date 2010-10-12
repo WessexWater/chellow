@@ -429,8 +429,8 @@ public class Invocation {
 			headerElement.setAttribute("value", entry.getValue().toString());
 			responseElement.appendChild(headerElement);
 		}
-		responseElement.setAttribute("status-code",
-				Integer.toString(responseStatusCode));
+		responseElement.setAttribute("status-code", Integer
+				.toString(responseStatusCode));
 		return responseElement;
 	}
 
@@ -558,6 +558,28 @@ public class Invocation {
 		}
 	}
 
+	public void sendTemporaryRedirect(String location) throws InternalException {
+		try {
+			URI loc = new URI(location);
+			URI uri = new URI(req.getScheme(), null, req.getServerName(), req
+					.getServerPort(), req.getContextPath() + loc.getPath(), loc
+					.getQuery(), loc.getFragment());
+			sendTemporaryRedirect(uri);
+		} catch (URISyntaxException e) {
+			throw new InternalException(e);
+		}
+
+	}
+
+	public void sendTemporaryRedirect(URI location) throws InternalException {
+		res.setHeader("Location", location.toString());
+		try {
+			res.sendError(HttpServletResponse.SC_TEMPORARY_REDIRECT);
+		} catch (IOException e) {
+			throw new InternalException(e);
+		}
+	}
+
 	public HttpMethod getMethod() throws HttpException {
 		String method = req.getMethod();
 		if (method.equals("GET")) {
@@ -622,8 +644,8 @@ public class Invocation {
 	}
 
 	public void sendUnauthorized(String message) throws InternalException {
-		res.setHeader("WWW-Authenticate",
-				"Basic realm=\"" + monad.getRealmName() + "\"");
+		res.setHeader("WWW-Authenticate", "Basic realm=\""
+				+ monad.getRealmName() + "\"");
 		try {
 			res.sendError(HttpServletResponse.SC_UNAUTHORIZED, message);
 		} catch (IOException e) {
@@ -650,10 +672,12 @@ public class Invocation {
 
 	public void sendSeeOther(MonadUri uri) throws InternalException {
 		try {
-			URI locationUri = new URI(req.getScheme(), null,
-					req.getServerName(), req.getServerPort(),
-					req.getContextPath() + uri.toString(), null, null);
-			res.setHeader("Location", locationUri.toString());
+			URI endUri = uri.toUri();
+			URI location = new URI(req.getScheme(), null, req.getServerName(),
+					req.getServerPort(), req.getContextPath()
+							+ endUri.getPath(), endUri.getQuery(), endUri
+							.getFragment());
+			res.setHeader("Location", location.toString());
 			res.sendError(HttpServletResponse.SC_SEE_OTHER);
 		} catch (IOException e) {
 			throw new InternalException(e);

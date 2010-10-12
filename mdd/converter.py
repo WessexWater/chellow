@@ -129,6 +129,10 @@ with open("original/Line_Loss_Factor_Class.csv") as fl:
         converter.writerow([id, dso_lookup['CUST'],570,"PC 5-8 & HH LV",1,0,1,"01/04/1996",''])
         id += 1
         converter.writerow([id, dso_lookup['CUST'],581,"Export (LV)",1,0,0,"01/04/1996",''])
+        id += 1
+        converter.writerow([id, dso_lookup['CUST'],110,"Profile 3 Unrestricted",1,0,1,"01/04/1996",''])
+        id += 1
+        converter.writerow([id, dso_lookup['CUST'],210,"Profile 4 Economy 7",1,0,1,"01/04/1996",''])
             
 with open("original/Measurement_Requirement.csv") as fl:
     f = csv.reader(fl)
