@@ -8,7 +8,7 @@
 		<html>
 			<head>
 				<link rel="stylesheet" type="text/css"
-					href="{/source/request/@context-path}/style/" />
+					href="{/source/request/@context-path}/reports/19/output/" />
 				<title>
 					Chellow &gt; HHDC Contracts &gt;
 					<xsl:value-of select="/source/rate-script/hhdc-contract/@name" />

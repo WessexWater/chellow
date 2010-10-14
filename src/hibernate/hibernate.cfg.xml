@@ -33,6 +33,9 @@
 			org.hibernate.cache.NoCacheProvider </property>
 		-->
 		<property name="hibernate.jdbc.batch_size">20</property>
+		<property name="hibernate.connection.isolation">8</property>
+		
+		
 		<!-- Mapping files -->
 		<mapping resource="hibernate/BillType.hbm.xml" />
 		<mapping resource="hibernate/VoltageLevel.hbm.xml" />

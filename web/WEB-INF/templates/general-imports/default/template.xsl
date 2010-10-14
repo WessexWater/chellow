@@ -15,7 +15,7 @@
 				</title>
 
 				<link rel="stylesheet" type="text/css"
-					href="{/source/request/@context-path}/style/" />
+					href="{/source/request/@context-path}/reports/19/output/" />
 			</head>
 			<body>
 				<p>

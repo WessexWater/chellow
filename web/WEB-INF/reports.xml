@@ -8634,9 +8634,7 @@ if inv.hasParameter("search-pattern"):
         generations.append(supply_generation)
 
     if len(generations) == 1:
-        muri = "/reports/7/output/?supply-id=" + str(generations[0].getSupply().getId())
-        Debug.print("muri " + muri)
-        inv.sendTemporaryRedirect(muri)
+        inv.sendTemporaryRedirect("/reports/7/output/?supply-id=" + str(generations[0].getSupply().getId()))
     else:
         for generation in generations:
             source.appendChild(generation.toXml(doc, XmlTree("supply").put('hhdcContract').put('pc').put('mtc').put('mpans', XmlTree('llfc').put('core').put('supplierContract'))))]]></value>

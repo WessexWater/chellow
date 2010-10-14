@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <!DOCTYPE imprimatur PUBLIC 
-    "-//Imprimatur DTD 007//EN"
-    "http://imprimatur.sourceforge.net/imprimatur-007.dtd">
+    "-//Imprimatur DTD 008//EN"
+    "http://imprimatur.sourceforge.net/imprimatur-008.dtd">
 <imprimatur port="@@test.port@@" hostname="localhost">
 	<credentials username="watkins@example.com" password="alan" />
 	<!-- Users -->
@@ -2604,6 +2604,11 @@ def import_virtual_bill(supply_source):
 			path="/chellow/reports/17/output/?supply-id=8&amp;months=1&amp;finish-year=2010&amp;finish-month=02">
 			<regex
 				pattern="&lt;td&gt;2010-02-04 20:00Z&lt;/td&gt;[\r\n]*&lt;td&gt;30.4339&lt;/td&gt;" />
+			<response-code value="200" />
+		</request>
+	</test>
+	<test name="Try editor view of meter payment types.">
+		<request path="/chellow/meter-payment-types/">
 			<response-code value="200" />
 		</request>
 	</test>

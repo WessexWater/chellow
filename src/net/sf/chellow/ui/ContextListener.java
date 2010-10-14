@@ -95,6 +95,10 @@ public class ContextListener implements ServletContextListener {
 				throw new Exception("Data source not found!");
 			}
 			Connection con = ds.getConnection();
+			
+			if (con.getTransactionIsolation() != Connection.TRANSACTION_SERIALIZABLE) {
+				throw new Exception("The transaction isolation level isn't serializable.");
+			}
 
 			Statement stmt = con.createStatement();
 

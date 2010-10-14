@@ -12,9 +12,7 @@
 		<param-value>root@localhost.localdomain</param-value>
 	</context-param>
 	<context-param>
-		<param-name>
-			chellow.configuration_directory
-		</param-name>
+		<param-name>chellow.configuration_directory</param-name>
 		<param-value>
 			WEB-INF/config
 		</param-value>
@@ -23,11 +21,9 @@
 		<param-name>monad.mail.host</param-name>
 		<param-value>localhost</param-value>
 	</context-param>
-	 
+
 	<listener>
-		<listener-class>
-			net.sf.chellow.ui.ContextListener
-		</listener-class>
+		<listener-class>net.sf.chellow.ui.ContextListener</listener-class>
 	</listener>
 
 	<servlet>
@@ -38,29 +34,9 @@
 			<param-value>root@localhost.localdomain</param-value>
 		</init-param>
 	</servlet>
-	<servlet>
-		<servlet-name>static</servlet-name>
-		<servlet-class>
-			net.sf.chellow.monad.ui.StaticServlet
-		</servlet-class>
-	</servlet>
-		<servlet>
-		<servlet-name>starkhhdownloader</servlet-name>
-		<servlet-class>
-			net.sf.chellow.hhimport.stark.StarkHhDownloaderServlet
-		</servlet-class>
-	</servlet>
 	<servlet-mapping>
 		<servlet-name>chellow</servlet-name>
 		<url-pattern>/*</url-pattern>
-	</servlet-mapping>
-	<servlet-mapping>
-		<servlet-name>static</servlet-name>
-		<url-pattern>/static/*</url-pattern>
-	</servlet-mapping>
-		<servlet-mapping>
-		<servlet-name>starkhhdownloader</servlet-name>
-		<url-pattern>/starkhhdownloader/*</url-pattern>
 	</servlet-mapping>
 	<resource-ref>
 		<description>Chellow Database</description>
@@ -69,24 +45,4 @@
 		<res-auth>Container</res-auth>
 		<res-sharing-scope>Unshareable</res-sharing-scope>
 	</resource-ref>
-	<!-- 
-		<security-constraint>
-		<web-resource-collection>
-			<web-resource-name>app</web-resource-name>
-			<url-pattern>/*</url-pattern>
-			<http-method>GET</http-method>
-			<http-method>POST</http-method>
-		</web-resource-collection>
-		<auth-constraint>
-			<role-name>chellow-user</role-name>
-		</auth-constraint>
-	</security-constraint>
-	<security-role>
-		<role-name>chellow-user</role-name>
-	</security-role>
-	<login-config>
-		<auth-method>BASIC</auth-method>
-		<realm-name>Chellow</realm-name>
-	</login-config>
-	-->
 </web-app>

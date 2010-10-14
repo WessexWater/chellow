@@ -1,6 +1,6 @@
 /*******************************************************************************
  * 
- *  Copyright (c) 2005, 2009 Wessex Water Services Limited
+ *  Copyright (c) 2005, 2010 Wessex Water Services Limited
  *  
  *  This file is part of Chellow.
  * 
@@ -21,7 +21,6 @@
 
 package net.sf.chellow.monad;
 
-import java.sql.SQLException;
 import java.util.logging.Logger;
 
 import org.hibernate.HibernateException;
@@ -61,17 +60,11 @@ public class Hiber {
 		}
 	}
 
-	@SuppressWarnings("deprecation")
 	static public Session session() throws HibernateException {
 		Session s = session.get();
 		if (s == null) {
 			s = sessionFactory.openSession();
 			session.set(s);
-			try {
-				s.connection().setTransactionIsolation(8);
-			} catch (SQLException e) {
-				throw new HibernateException(e);
-			}
 		}
 		Transaction tx = s.getTransaction();
 		if (tx == null) {
