@@ -29,16 +29,17 @@
 			foreign-key="fkey_bill_batch" />
 		<many-to-one name="supply" class="net.sf.chellow.physical.Supply"
 			column="supply_id" foreign-key="fkey_bill_supply" />
-		<property name="issueDate" type="timestamp" not-null="true">
+		<property name="issueDate" type="timestamp" not-null="true"
+			index="issue_date_idx">
 			<column name="issue_date" sql-type="timestamp with time zone" />
 		</property>
 		<component name="startDate" class="net.sf.chellow.physical.HhStartDate">
-			<property type="timestamp" name="date">
+			<property type="timestamp" name="date" index="start_date_idx">
 				<column name="start_date" sql-type="timestamp with time zone" />
 			</property>
 		</component>
 		<component name="finishDate" class="net.sf.chellow.physical.HhStartDate">
-			<property type="timestamp" name="date">
+			<property type="timestamp" name="date" index="finish_date_idx">
 				<column name="finish_date" sql-type="timestamp with time zone" />
 			</property>
 		</component>

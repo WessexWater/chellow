@@ -4,7 +4,7 @@
           "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
 <!-- 
 	
-   Copyright (c) 2005, 2009 Wessex Water Services Limited
+   Copyright (c) 2005, 2010 Wessex Water Services Limited
    
    This file is part of Chellow.
   
@@ -31,14 +31,17 @@
 				<param name="sequence">snag_id_sequence</param>
 			</generator>
 		</id>
+		
 		<property name="dateCreated" type="timestamp" not-null="true">
 			<column name="date_created"
 				sql-type="timestamp with time zone" />
 		</property>
+		
 		<property name="description" column="description" type="string"
-			not-null="true" />
+			not-null="true" index="description_idx"/>
+			
 		<property name="isIgnored" type="boolean" not-null="true">
-			<column name="is_ignored" default="false" />
+			<column name="is_ignored" default="false" index="is_ignored_idx" />
 		</property>
 	</class>
 </hibernate-mapping>

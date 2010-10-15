@@ -29,6 +29,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Properties;
 import java.util.logging.FileHandler;
 import java.util.logging.Level;
@@ -53,6 +54,7 @@ import net.sf.chellow.monad.Monad;
 import net.sf.chellow.monad.MonadContextParameters;
 import net.sf.chellow.monad.MonadFormatter;
 import net.sf.chellow.monad.MonadHandler;
+import net.sf.chellow.monad.UserException;
 import net.sf.chellow.physical.Configuration;
 import net.sf.chellow.physical.Cop;
 import net.sf.chellow.physical.GeneratorType;
@@ -112,24 +114,17 @@ public class ContextListener implements ServletContextListener {
 			} finally {
 				con.close();
 			}
-			// Configuration config = Configuration.getConfiguration();
-			/*
-			 * String pythonPath = config .getChellowProperty("python.path");
-			 */
+
 			AutomaticHhDataImporters.start();
 			Properties postProps = new Properties();
-			// postProps.setProperty("python.path", pythonPath);
 			PythonInterpreter.initialize(System.getProperties(), postProps,
 					new String[] {});
 
 			context.setAttribute(CONTEXT_REQUEST_MAP, Collections
 					.synchronizedMap(new HashMap<Long, String>()));
-
 		} catch (Throwable e) {
-			logger.logp(Level.SEVERE, "ContextListener", "contextInitialized",
-					"Can't initialize context. " + e.getMessage(), e);
+			throw new RuntimeException(e);
 		}
-		Debug.print("Finished initializing context.");
 	}
 
 	public void contextDestroyed(ServletContextEvent event) {
@@ -137,53 +132,19 @@ public class ContextListener implements ServletContextListener {
 		context.removeAttribute(CONTEXT_REQUEST_MAP);
 	}
 
+	@SuppressWarnings("unchecked")
 	private void initializeDatabase(Connection con) throws HttpException {
 		SchemaUpdate su = new SchemaUpdate(Hiber.getConfiguration());
 		su.execute(false, true);
-		/*
-		 * List<Exception> exceptions = su.getExceptions(); if
-		 * (exceptions.size() > 0) { for (Exception exception : exceptions) {
-		 * exception.printStackTrace(); } throw new ProgrammerException("Errors
-		 * in schema generation."); }
-		 */
-		Statement stmt = null;
-		try {
-			stmt = con.createStatement();
-			stmt
-					.execute("ALTER TABLE contract ALTER COLUMN charge_script TYPE text;");
-			stmt
-					.execute("ALTER TABLE rate_script ALTER COLUMN script TYPE text;");
-			stmt.execute("create index description_idx on snag (description)");
-			stmt.execute("create index is_ignored_idx on snag (is_ignored)");
-			stmt.execute("create index snag_id_idx on channel_snag (snag_id)");
-			stmt
-					.execute("create index channel_id_idx on channel_snag (channel_id)");
-			stmt
-					.execute("CREATE INDEX site_snag__finish_date ON site_snag (finish_date);");
-			stmt
-					.execute("CREATE INDEX site_snag__site_id ON site_snag (site_id);");
-			stmt
-					.execute("CREATE INDEX site_snag__snag_id_idx ON site_snag (snag_id);");
-			stmt
-					.execute("CREATE INDEX site_snag__start_date ON site_snag (start_date);");
-			stmt
-					.execute("CREATE UNIQUE INDEX channel_date ON hh_datum (channel_id, start_date);");
-			stmt.execute("ALTER TABLE report ALTER COLUMN script TYPE text;");
-			stmt.execute("ALTER TABLE report ALTER COLUMN template TYPE text;");
 
-			stmt.execute("CREATE INDEX bill__start_date ON bill (start_date);");
-			stmt
-					.execute("CREATE INDEX bill__finish_date ON bill (finish_date);");
-			stmt.execute("CREATE INDEX bill__issue_date ON bill (issue_date);");
-		} catch (SQLException e) {
-			throw new InternalException(e);
-		} finally {
-			try {
-				stmt.close();
-			} catch (SQLException e) {
-				throw new InternalException(e);
+		List<Exception> exceptions = su.getExceptions();
+		if (exceptions.size() > 0) {
+			for (Exception exception : exceptions) {
+				exception.printStackTrace();
 			}
+			throw new UserException("Errors in schema generation.");
 		}
+
 		Configuration.getConfiguration();
 		Hiber.close();
 

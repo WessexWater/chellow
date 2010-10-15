@@ -2,36 +2,35 @@
 <!DOCTYPE hibernate-mapping PUBLIC
       "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
           "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
-<!-- 
-	
-   Copyright (c) 2005, 2009 Wessex Water Services Limited
-   
-   This file is part of Chellow.
-  
-   Chellow is free software: you can redistribute it and/or modify
-   it under the terms of the GNU General Public License as published by
-   the Free Software Foundation, either version 3 of the License, or
-   (at your option) any later version.
-  
-   Chellow is distributed in the hope that it will be useful,
-   but WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-   GNU General Public License for more details.
-  
-   You should have received a copy of the GNU General Public License
-   along with Chellow.  If not, see <http://www.gnu.org/licenses/>.
-	
--->
+	<!--
+		Copyright (c) 2005, 2010 Wessex Water Services Limited This file is
+		part of Chellow. Chellow is free software: you can redistribute it
+		and/or modify it under the terms of the GNU General Public License as
+		published by the Free Software Foundation, either version 3 of the
+		License, or (at your option) any later version. Chellow is distributed
+		in the hope that it will be useful, but WITHOUT ANY WARRANTY; without
+		even the implied warranty of MERCHANTABILITY or FITNESS FOR A
+		PARTICULAR PURPOSE. See the GNU General Public License for more
+		details. You should have received a copy of the GNU General Public
+		License along with Chellow. If not, see
+		<http://www.gnu.org/licenses/>.
+	-->
 
 <hibernate-mapping package="net.sf.chellow.ui">
 	<class name="Report" table="report" lazy="true">
 		<id name="id">
 			<generator class="assigned" />
 		</id>
-		<property type="string" name="name" column="name"
-			not-null="true" unique="true" />
-		<property type="string" name="script" column="script"
-			not-null="true" />
-		<property type="string" name="template" column="template" />
+		
+		<property type="string" name="name" column="name" not-null="true"
+			unique="true" />
+			
+		<property type="string" name="script" not-null="true">
+			<column name="script" sql-type="text" />
+		</property>
+
+		<property type="string" name="template">
+			<column name="template" sql-type="text" />
+		</property>
 	</class>
 </hibernate-mapping>
