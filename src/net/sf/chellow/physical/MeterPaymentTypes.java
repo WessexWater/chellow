@@ -67,7 +67,7 @@ public class MeterPaymentTypes implements Urlable {
 		for (MeterPaymentType paymentType : (List<MeterPaymentType>) Hiber
 				.session()
 				.createQuery(
-						"from MtcPaymentType paymentType order by paymentType.code")
+						"from MeterPaymentType paymentType order by paymentType.code")
 				.list()) {
 			paymentTypesElement.appendChild(paymentType.toXml(doc));
 		}

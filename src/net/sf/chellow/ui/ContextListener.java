@@ -95,9 +95,10 @@ public class ContextListener implements ServletContextListener {
 				throw new Exception("Data source not found!");
 			}
 			Connection con = ds.getConnection();
-			
+
 			if (con.getTransactionIsolation() != Connection.TRANSACTION_SERIALIZABLE) {
-				throw new Exception("The transaction isolation level isn't serializable.");
+				throw new Exception(
+						"The transaction isolation level isn't serializable.");
 			}
 
 			Statement stmt = con.createStatement();
@@ -121,8 +122,8 @@ public class ContextListener implements ServletContextListener {
 			PythonInterpreter.initialize(System.getProperties(), postProps,
 					new String[] {});
 
-			context.setAttribute(CONTEXT_REQUEST_MAP,
-					Collections.synchronizedMap(new HashMap<Long, String>()));
+			context.setAttribute(CONTEXT_REQUEST_MAP, Collections
+					.synchronizedMap(new HashMap<Long, String>()));
 
 		} catch (Throwable e) {
 			logger.logp(Level.SEVERE, "ContextListener", "contextInitialized",
@@ -148,22 +149,31 @@ public class ContextListener implements ServletContextListener {
 		Statement stmt = null;
 		try {
 			stmt = con.createStatement();
-			stmt.execute("ALTER TABLE contract ALTER COLUMN charge_script TYPE text;");
-			stmt.execute("ALTER TABLE rate_script ALTER COLUMN script TYPE text;");
+			stmt
+					.execute("ALTER TABLE contract ALTER COLUMN charge_script TYPE text;");
+			stmt
+					.execute("ALTER TABLE rate_script ALTER COLUMN script TYPE text;");
 			stmt.execute("create index description_idx on snag (description)");
 			stmt.execute("create index is_ignored_idx on snag (is_ignored)");
 			stmt.execute("create index snag_id_idx on channel_snag (snag_id)");
-			stmt.execute("create index channel_id_idx on channel_snag (channel_id)");
-			stmt.execute("CREATE INDEX site_snag__finish_date ON site_snag (finish_date);");
-			stmt.execute("CREATE INDEX site_snag__site_id ON site_snag (site_id);");
-			stmt.execute("CREATE INDEX site_snag__snag_id_idx ON site_snag (snag_id);");
-			stmt.execute("CREATE INDEX site_snag__start_date ON site_snag (start_date);");
-			stmt.execute("CREATE UNIQUE INDEX channel_date ON hh_datum (channel_id, start_date);");
+			stmt
+					.execute("create index channel_id_idx on channel_snag (channel_id)");
+			stmt
+					.execute("CREATE INDEX site_snag__finish_date ON site_snag (finish_date);");
+			stmt
+					.execute("CREATE INDEX site_snag__site_id ON site_snag (site_id);");
+			stmt
+					.execute("CREATE INDEX site_snag__snag_id_idx ON site_snag (snag_id);");
+			stmt
+					.execute("CREATE INDEX site_snag__start_date ON site_snag (start_date);");
+			stmt
+					.execute("CREATE UNIQUE INDEX channel_date ON hh_datum (channel_id, start_date);");
 			stmt.execute("ALTER TABLE report ALTER COLUMN script TYPE text;");
 			stmt.execute("ALTER TABLE report ALTER COLUMN template TYPE text;");
 
 			stmt.execute("CREATE INDEX bill__start_date ON bill (start_date);");
-			stmt.execute("CREATE INDEX bill__finish_date ON bill (finish_date);");
+			stmt
+					.execute("CREATE INDEX bill__finish_date ON bill (finish_date);");
 			stmt.execute("CREATE INDEX bill__issue_date ON bill (issue_date);");
 		} catch (SQLException e) {
 			throw new InternalException(e);
@@ -264,8 +274,7 @@ public class ContextListener implements ServletContextListener {
 					{ "ssc", "Standard_Settlement_Configuration" },
 					{ "measurement_requirement", "Measurement_Requirement" } };
 			for (String[] impArray : mddArray) {
-				cm.copyIn(
-						"COPY " + impArray[0] + " FROM STDIN CSV HEADER",
+				cm.copyIn("COPY " + impArray[0] + " FROM STDIN CSV HEADER",
 						context.getResource(
 								"/WEB-INF/mdd/" + impArray[1] + ".csv")
 								.openStream());

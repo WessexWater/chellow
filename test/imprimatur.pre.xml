@@ -1298,7 +1298,7 @@ def virtual_bill(supply_source):
 			<control name="email-address" value="mishka@localhost" />
 			<control name="password" value="fyodor" />
 			<control name="user-role-id" value="2" />
-			<control name="party-id" value="49" />
+			<control name="party-id" value="397" />
 			<response-code value="303" />
 			<regex pattern="/chellow/users/4/" />
 		</request>
@@ -1906,34 +1906,34 @@ def triad_estimates():
 	</test>
 	<test name="Manipulate dso contracts">
 		<!-- Insert DSO contract -->
-		<request path="/chellow/dsos/363/contracts/" method="post"> <!-- Contract of DSO 10 -->
+		<request path="/chellow/dsos/431/contracts/" method="post"> <!-- Contract of DSO 10 -->
 			<control name="name" value="main 2010-04-01" />
 			<control name="start-year" value="2010" />
 			<control name="start-month" value="04" />
 			<control name="start-day" value="01" />
-			<regex pattern="/chellow/dsos/363/contracts/69/" />
+			<regex pattern="/chellow/dsos/431/contracts/69/" />
 			<response-code value="303" />
 		</request>
 
 		<!-- Check start time of rate script -->
-		<request path="/chellow/dsos/363/contracts/69/rate-scripts/213/">
+		<request path="/chellow/dsos/431/contracts/69/rate-scripts/213/">
 			<regex pattern="00:00 Z" />
 			<response-code value="200" />
 		</request>
 
 		<!-- Insert rate script -->
-		<request path="/chellow/dsos/363/contracts/69/rate-scripts/"
+		<request path="/chellow/dsos/431/contracts/69/rate-scripts/"
 			method="post">
 			<control name="start-year" value="2010" />
 			<control name="start-month" value="05" />
 			<control name="start-day" value="01" />
 
-			<regex pattern="/chellow/dsos/363/contracts/69/rate-scripts/215/" />
+			<regex pattern="/chellow/dsos/431/contracts/69/rate-scripts/215/" />
 			<response-code value="303" />
 		</request>
 
 		<!-- Delete rate script -->
-		<request path="/chellow/dsos/363/contracts/69/rate-scripts/215/"
+		<request path="/chellow/dsos/431/contracts/69/rate-scripts/215/"
 			method="post">
 			<control name="delete" value="Delete" />
 			<response-code value="303" />

@@ -66,6 +66,7 @@ public class Hiber {
 			s = sessionFactory.openSession();
 			session.set(s);
 		}
+
 		Transaction tx = s.getTransaction();
 		if (tx == null) {
 			s.beginTransaction();
