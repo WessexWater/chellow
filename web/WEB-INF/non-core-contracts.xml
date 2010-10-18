@@ -8413,9 +8413,9 @@ class SupplySource(DataSource):
 
                 bill_query = Hiber.session().createQuery("select distinct read.bill, read.bill.issueDate, read.bill.type.code from RegisterRead read where read.bill.supply = :supply and read.bill.finishDate.date >= :readDate and read.bill.startDate <= :readDate order by read.bill.issueDate desc, read.bill.type.code").setEntity('supply', self.supply).setMaxResults(1)
 
-                prior_present_read_query = Hiber.session().createQuery("from RegisterRead read where read.units.int = 0 and read.presentType.code in ('N', 'N3', 'C') and read.bill.supply = :supply and read.presentDate.date <= :startDate order by read.presentDate.date desc").setEntity('supply', self.supply).setMaxResults(1)
+                prior_present_read_query = Hiber.session().createQuery("select read, read.bill from RegisterRead read where read.units.int = 0 and read.presentType.code in ('N', 'N3', 'C') and read.bill.supply = :supply and read.presentDate.date <= :startDate order by read.presentDate.date desc, read.bill.issueDate desc, read.bill.type.code").setEntity('supply', self.supply).setMaxResults(1)
 
-                prior_previous_read_query = Hiber.session().createQuery("from RegisterRead read where read.units.int = 0 and read.previousType.code in ('N', 'N3', 'C') and read.bill.supply = :supply and read.previousDate.date <= :startDate order by read.previousDate.date desc").setEntity('supply', self.supply).setMaxResults(1)
+                prior_previous_read_query = Hiber.session().createQuery("select read, read.bill from RegisterRead read where read.units.int = 0 and read.previousType.code in ('N', 'N3', 'C') and read.bill.supply = :supply and read.previousDate.date <= :startDate order by read.previousDate.date desc, read.bill.issueDate desc, read.bill.type.code").setEntity('supply', self.supply).setMaxResults(1)
 
                 present_reads_query = Hiber.session().createQuery("from RegisterRead read where read.units.int = 0 and read.bill = :bill and read.presentDate.date = :readDate and read.meterSerialNumber = :msn")
 
@@ -8428,7 +8428,12 @@ class SupplySource(DataSource):
                     previous_read_prime = False
                     #s elf.pw.println('first loop, ' + str(self.supply.getId()))
                     present_read = prior_present_read_query.setTimestamp('startDate', search_date.getDate()).uniqueResult()
+                    if present_read is not None:
+                        present_read = present_read[0]
+
                     previous_read = prior_previous_read_query.setTimestamp('startDate', search_date.getDate()).uniqueResult()
+                    if previous_read is not None:
+                        previous_read = previous_read[0]
 
                     #s elf.pw.println('prev read ' + str(previous_read) + ' pres read ' + str(present_read))
                     if present_read is None and previous_read is None:
@@ -8522,9 +8527,9 @@ class SupplySource(DataSource):
                 search_date = start_date
                 keep_going = True
 
-                next_present_read_query = Hiber.session().createQuery("from RegisterRead read where read.units.int = 0 and read.presentType.code in ('N', 'N3', 'C') and read.bill.supply = :supply and read.presentDate.date >= :finishDate order by read.presentDate.date").setEntity('supply', self.supply).setMaxResults(1)
+                next_present_read_query = Hiber.session().createQuery("select read, read.bill from RegisterRead read where read.units.int = 0 and read.presentType.code in ('N', 'N3', 'C') and read.bill.supply = :supply and read.presentDate.date >= :finishDate order by read.presentDate.date, read.bill.issueDate desc, read.bill.type.code").setEntity('supply', self.supply).setMaxResults(1)
 
-                next_previous_read_query = Hiber.session().createQuery("from RegisterRead read where read.units.int = 0 and read.previousType.code in ('N', 'N3', 'C') and read.bill.supply = :supply and read.previousDate.date >= :finishDate order by read.previousDate.date").setEntity('supply', self.supply).setMaxResults(1)
+                next_previous_read_query = Hiber.session().createQuery("select read, read.bill from RegisterRead read where read.units.int = 0 and read.previousType.code in ('N', 'N3', 'C') and read.bill.supply = :supply and read.previousDate.date >= :finishDate order by read.previousDate.date, read.bill.issueDate desc, read.bill.type.code").setEntity('supply', self.supply).setMaxResults(1)
                 tie = False
                 while keep_going:
                     while True:
@@ -8532,7 +8537,11 @@ class SupplySource(DataSource):
                         previous_read_prime = False
                         #s elf.pw.println('first loop, ' + str(self.supply.getId()))
                         present_read = next_present_read_query.setTimestamp('finishDate', search_date.getDate()).uniqueResult()
+                        if present_read is not None:
+                            present_read = present_read[0]
                         previous_read = next_previous_read_query.setTimestamp('finishDate', search_date.getDate()).uniqueResult()
+                        if previous_read is not None:
+                            previous_read = previous_read[0]
 
                         if present_read is None and previous_read is None:
                             keep_going = False

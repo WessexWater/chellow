@@ -119,7 +119,7 @@ public class Bills extends EntityList {
 		for (Bill bill : (List<Bill>) Hiber
 				.session()
 				.createQuery(
-						"from Bill bill where bill.batch = :batch order by bill.startDate.date desc")
+						"from Bill bill where bill.batch = :batch order by bill.reference, bill.startDate.date")
 				.setEntity("batch", batch).list()) {
 			billsElement.appendChild(bill.toXml(doc, new XmlTree("supply")
 					.put("type")));
