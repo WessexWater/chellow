@@ -206,15 +206,22 @@ public class HhdcContract extends Contract {
 			String chargeScript, String importerProperties)
 			throws HttpException {
 		intrinsicUpdate(participant, name, chargeScript, importerProperties);
-		for (SupplyGeneration generation : (List<SupplyGeneration>) Hiber
-				.session()
-				.createQuery(
-						"from SupplyGeneration generation where generation.hhdcContract = :hhdcContract and generation.startDate.date < :startDate or (generation.finishDate.date is not null and (:finishDate is not null or generation.finishDate.date > :finishDate))")
+		Query generationsQuery = null;
+		if (getFinishDate() == null) {
+			generationsQuery = Hiber
+					.session()
+					.createQuery(
+							"from SupplyGeneration generation where generation.hhdcContract = :hhdcContract and generation.startDate.date < :startDate");
+		} else {
+			generationsQuery = Hiber
+					.session()
+					.createQuery(
+							"from SupplyGeneration generation where generation.hhdcContract = :hhdcContract and generation.startDate.date < :startDate or (generation.finishDate.date is null or generation.finishDate.date > :finishDate))")
+					.setTimestamp("finishDate", getFinishDate().getDate());
+		}
+		for (SupplyGeneration generation : (List<SupplyGeneration>) generationsQuery
 				.setEntity("hhdcContract", this).setTimestamp("startDate",
-						getStartDate().getDate()).setTimestamp(
-						"finishDate",
-						getFinishDate() == null ? null : getFinishDate()
-								.getDate()).list()) {
+						getStartDate().getDate()).list()) {
 			throw new UserException(
 					"The supply '"
 							+ generation.getSupply().getId()

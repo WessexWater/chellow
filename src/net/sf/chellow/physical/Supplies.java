@@ -88,8 +88,8 @@ public class Supplies extends EntityList {
 			}
 
 			if (generations.size() == 1) {
-				inv.sendTemporaryRedirect("/reports/7/output/?supply-id="
-						+ generations.get(0).getSupply().getId());
+				inv.sendTemporaryRedirect("/supplies/"
+						+ generations.get(0).getSupply().getId() + "/");
 			} else {
 				for (SupplyGeneration generation : generations) {
 					source.appendChild(generation.toXml(doc, new XmlTree(
