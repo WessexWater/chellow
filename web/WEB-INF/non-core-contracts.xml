@@ -9041,8 +9041,8 @@ def displaced_mpan(site_group, start_date, finish_date):
 
             for mpan in Hiber.session().createQuery("from Mpan mpan where mpan.llfc.isImport is true and mpan.supplyGeneration.pc.code = 0 and mpan.supplyGeneration.supply = :supply and mpan.supplyGeneration.startDate.date <= :finishDate and (mpan.supplyGeneration.finishDate is null or mpan.supplyGeneration.finishDate.date >= :startDate) order by mpan.supplyGeneration.startDate.date").setEntity('supply', supply).setTimestamp('startDate', start_date.getDate()).setTimestamp('finishDate', finish_date.getDate()).list():
                 mpans[mpan.getCore().toString()] = mpan
-    if has_displaced:
-        keys = mpans.keys()
+    keys = mpans.keys()                
+    if has_displaced and len(keys) > 0:
         keys.sort()
         return mpans[keys[0]]
     else:

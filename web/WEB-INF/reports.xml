@@ -4210,7 +4210,7 @@ pw.close()]]></value>
         <value><![CDATA[Admin: CSV Export]]></value>
         <value><![CDATA[from net.sf.chellow.monad import Hiber, UserException, MonadUtils
 from net.sf.chellow.monad.types import UriPathElement, MonadDate
-from java.util import GregorianCalendar, TimeZone, Locale, Calendar
+from java.util import GregorianCalendar, TimeZone, Locale, Calendar, Date
 from net.sf.chellow.physical import HhStartDate, Configuration, MpanCore
 from java.text import DateFormat
 from java.util.zip import ZipOutputStream, ZipEntry
@@ -4292,28 +4292,24 @@ def print_line(values):
     pw.println('    </line>')
     pw.flush()
 
-if inv.hasParameter('is-core'):
-    is_core = inv.getBoolean('is-core')
-    has_dso_contracts = inv.getBoolean('has-dso-contracts')    
-    has_non_core_contracts = inv.getBoolean('has-non-core-contracts')
-    has_reports = inv.getBoolean('has-reports')
-    has_supplier_contracts = inv.getBoolean('has-supplier-contracts')
-    has_supplier_batches = inv.getBoolean('has-supplier-batches')
-    has_hhdc_contracts = inv.getBoolean('has-hhdc-contracts')
-    has_mop_contracts = inv.getBoolean('has-mop-contracts')
-    has_sites = inv.getBoolean('has-sites')    
-    has_supplies = inv.getBoolean('has-supplies')
-    has_hh_data = inv.getBoolean('has-hh-data')
-    has_users = inv.getBoolean('has-users')
-    has_configuration = inv.getBoolean('has-configuration')
-    has_channel_snag_ignores = inv.getBoolean('has-channel-snag-ignores')
-    has_site_snag_ignores = inv.getBoolean('has-site-snag-ignores')
+is_core = inv.getBoolean('is-core')
+has_dso_contracts = inv.getBoolean('has-dso-contracts')    
+has_non_core_contracts = inv.getBoolean('has-non-core-contracts')
+has_reports = inv.getBoolean('has-reports')
+has_supplier_contracts = inv.getBoolean('has-supplier-contracts')
+has_supplier_batches = inv.getBoolean('has-supplier-batches')
+has_hhdc_contracts = inv.getBoolean('has-hhdc-contracts')
+has_mop_contracts = inv.getBoolean('has-mop-contracts')
+has_sites = inv.getBoolean('has-sites')    
+has_supplies = inv.getBoolean('has-supplies')
+has_hh_data = inv.getBoolean('has-hh-data')
+has_users = inv.getBoolean('has-users')
+has_configuration = inv.getBoolean('has-configuration')
+has_channel_snag_ignores = inv.getBoolean('has-channel-snag-ignores')
+has_site_snag_ignores = inv.getBoolean('has-site-snag-ignores')
 
-    if not inv.isValid():
-        raise UserException()
-else:
-    is_core = False
-    has_dso_contracts = has_non_core_contracts = has_reports = has_supplier_contracts = has_supplier_batches = has_hhdc_contracts = has_mop_contracts = has_sites = has_supplies = has_hh_data = has_users = has_configuration = has_channel_snag_ignores = has_site_snag_ignores = True
+if not inv.isValid():
+    raise UserException()
 
 if has_supplies:
     mpan_core_str = inv.getString('mpan-core')
@@ -4443,10 +4439,11 @@ if has_supplier_contracts and not is_core:
 
 if has_supplies and not is_core:
     if len(mpan_core_str) == 0:
-        supplies = Hiber.session().createQuery("from Supply supply order by supply.id").scroll()
+        supplies_query = Hiber.session().createQuery("from Supply supply order by supply.id")
     else:
-        supplies = Hiber.session().createQuery("from Supply supply where supply = :supply").setEntity('supply', MpanCore.getMpanCore(mpan_core_str)
-.getSupply()).scroll()
+        supplies_query = Hiber.session().createQuery("from Supply supply where supply = :supply").setEntity('supply', MpanCore.getMpanCore(mpan_core_str)
+.getSupply())
+    supplies = supplies_query.scroll()
     while supplies.next():
         supply = supplies.get(0) 
         supplyGenerations = Hiber.session().createQuery('from SupplyGeneration generation where generation.supply = :supply order by generation.startDate.date').setEntity('supply', supply).list()
@@ -9569,7 +9566,7 @@ if inv.hasParameter('site-id'):
 elif inv.hasParameter('contract-id'):
     contract_id = inv.getLong('contract-id')
     contract = SupplierContract.getSupplierContract(contract_id)
-    site_query = Hiber.session().createQuery("select distinct ssgen.site from SiteSupplyGeneration ssgen where ((ssgen.supplyGeneration.finishDate is null or ssgen.supplyGeneration.finishDate.date >= :startDate) and ssgen.supplyGeneration.startDate <= :finishDate) and (ssgen.supplyGeneration.supply.source.code in ('gen', 'gen-net') or ssgen.supplyGeneration.exportMpan is not null) order by ssgen.site.code").setTimestamp('startDate', start_date.getDate()).setTimestamp('finishDate', finish_date.getDate())
+    site_query = Hiber.session().createQuery("select distinct ssgen.site from SiteSupplyGeneration ssgen where ((ssgen.supplyGeneration.finishDate is null or ssgen.supplyGeneration.finishDate.date >= :startDate) and ssgen.supplyGeneration.startDate <= :finishDate) and (ssgen.supplyGeneration.supply.source.code in ('gen', 'gen-net') or ssgen.supplyGeneration.exportMpan is not null)").setTimestamp('startDate', start_date.getDate()).setTimestamp('finishDate', finish_date.getDate())
     bill_titles = comterp.get('contract_function')(contract, 'displaced_virtual_bill_titles')()
 else:
     raise UserException("Need a site-id or supplier-id.")
@@ -12001,32 +11998,6 @@ source.appendChild(MonadDate.getDaysXml(doc))]]></value>
                         <label>Core<input type="radio" name="is-core" value="true" checked="true"/></label>
                         <label>User<input type="radio" name="is-core" value="false"/></label>
                     <br/>
- <br/>
-                    <fieldset><legend>From</legend>
-                        <label>Has Start?<input type="checkbox" name="has-start"/></label><xsl:value-of select="' '"/>
-                        <input name="year" value="{/source/date/@year}" maxlength="4" size="4"/><xsl:value-of select="' - '"/>
-                        <select name="month">
-                            <xsl:for-each select="/source/months/month">
-                                <option value="{@number}">
-                                    <xsl:if test="@number=/source/date/@month">
-                                        <xsl:attribute name="selected">selected</xsl:attribute>
-                                    </xsl:if>
-                                    <xsl:value-of select="@number"/>
-                                </option>
-                            </xsl:for-each>
-                        </select>
-<xsl:value-of select="' - '"/>
-                        <select name="day">
-                            <xsl:for-each select="/source/days/day">
-                                <option value="{@number}">
-                                    <xsl:if test="@number=/source/date/@day">
-                                        <xsl:attribute name="selected">selected</xsl:attribute>
-                                    </xsl:if>
-                                    <xsl:value-of select="@number"/>
-                                </option>
-                            </xsl:for-each>
-                        </select>
-               </fieldset>
 <br/>
 <table>
   <tr>
@@ -12578,6 +12549,7 @@ def process_site(site, month_start, month_finish, forecast_date, pw):
                         problem += "Can't find the import_virtual_bill function in the supplier contract. "
                     else:
                         v_bill = import_vb_function(supply_source)
+                        problem += v_bill['problem']
                         #pw.println("finishing vbill, " + str(System.currentTimeMillis()))
                         if supply_source.pc_code != '00' and not supply_source.is_amr:
                             month_data['used-kwh'] += supply_source.summary['sum-msp-kwh']
