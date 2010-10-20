@@ -42,7 +42,7 @@
 								<xsl:when
 									test="/source/request/parameter[@name = 'properties']">
 									<xsl:value-of
-										select="/source/request/parameter[@name = 'properties']/value" />
+										select="/source/properties/text()" />
 								</xsl:when>
 								<xsl:otherwise>
 									<xsl:value-of
@@ -50,7 +50,8 @@
 								</xsl:otherwise>
 							</xsl:choose>
 						</textarea>
-						<h4>Example</h4>
+						<h4>Examples</h4>
+						<h5>Recognizing Users By IP Address</h5>
 						<p>
 							The line below means that any request with
 							IP 127.0.0.1 will automatically be
@@ -60,6 +61,13 @@
 						<p>
 							<code>
 								ip127-0-0-1=implicit-user@localhost
+							</code>
+						</p>
+						<h5>Configuring The ECOES Comparison Report</h5>
+						<p>
+							<code>
+								ecoes.user.name=a_user_name<br/>
+								ecoes.password=a_password
 							</code>
 						</p>
 						<br />

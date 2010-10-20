@@ -173,13 +173,29 @@ public class Configuration extends PersistentEntity {
 	}
 
 	public void httpPost(Invocation inv) throws HttpException {
+		Document doc = MonadUtils.newSourceDocument();
+		Element source = doc.getDocumentElement();
+
 		String properties = inv.getString("properties");
 		if (!inv.isValid()) {
 			throw new UserException();
 		}
-		update(properties);
+		properties = properties.replace("\r", "").replace("\t", "    ");
+
+		Element propertiesElement = doc.createElement("properties");
+		source.appendChild(propertiesElement);
+		propertiesElement.setTextContent(properties);
+
+		try {
+			update(properties);
+		} catch (UserException e) {
+			e.setDocument(doc);
+			throw e;
+		}
 		Hiber.commit();
-		inv.sendOk(document());
+		Element configElement = toXml(doc);
+		source.appendChild(configElement);
+		inv.sendOk(doc);
 	}
 
 	public void update(String properties) throws HttpException {

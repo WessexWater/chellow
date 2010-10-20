@@ -86,7 +86,8 @@ public class Channel extends PersistentEntity {
 		this.isKwh = isKwh;
 	}
 
-	public void siteCheck(HhStartDate from, HhStartDate to) throws HttpException {
+	public void siteCheck(HhStartDate from, HhStartDate to)
+			throws HttpException {
 		if (isKwh) {
 			Site site = supplyGeneration.getSiteSupplyGenerations().iterator()
 					.next().getSite();
@@ -122,7 +123,8 @@ public class Channel extends PersistentEntity {
 		deleteSnag(description, date, date);
 	}
 
-	public void deleteData(HhStartDate from, HhStartDate to) throws HttpException {
+	public void deleteData(HhStartDate from, HhStartDate to)
+			throws HttpException {
 		long numDeleted = Hiber
 				.session()
 				.createQuery(
@@ -195,7 +197,6 @@ public class Channel extends PersistentEntity {
 				+ " is kWh: " + getIsKwh();
 	}
 
-
 	@SuppressWarnings( { "unchecked", "deprecation" })
 	public void addHhData(List<HhDatumRaw> dataRaw) throws HttpException {
 		// long now = System.currentTimeMillis();
@@ -263,7 +264,7 @@ public class Channel extends PersistentEntity {
 				}
 				// Debug.print("Saved datum: "
 				// + (System.currentTimeMillis() - now));
-				Hiber.flush();
+				// Hiber.flush();
 				lastAdditionDate = datumRaw.getStartDate();
 				added = true;
 				missing++;
@@ -296,7 +297,8 @@ public class Channel extends PersistentEntity {
 					addSnag(ChannelSnag.SNAG_NEGATIVE, datumRaw.getStartDate(),
 							datumRaw.getStartDate());
 				} else if (altered && originalDatumValue.doubleValue() < 0) {
-					deleteSnag(ChannelSnag.SNAG_NEGATIVE, datumRaw.getStartDate());
+					deleteSnag(ChannelSnag.SNAG_NEGATIVE, datumRaw
+							.getStartDate());
 				}
 				if (HhDatum.ACTUAL != datumRaw.getStatus()) {
 					if (notActualFrom == null) {
@@ -339,7 +341,8 @@ public class Channel extends PersistentEntity {
 				notActualFrom = null;
 				notActualTo = null;
 			}
-			if (deleteMissingTo != null && deleteMissingTo.equals(prevStartDate)) {
+			if (deleteMissingTo != null
+					&& deleteMissingTo.equals(prevStartDate)) {
 				// Debug.print("Starting resolvedMissing: "
 				// + (System.currentTimeMillis() - now));
 				deleteSnag(ChannelSnag.SNAG_MISSING, deleteMissingFrom,
@@ -433,7 +436,8 @@ public class Channel extends PersistentEntity {
 			if (firstDatum.getStartDate().getDate().after(
 					supplyGeneration.getStartDate().getDate())) {
 				addSnag(ChannelSnag.SNAG_MISSING, supplyGeneration
-						.getStartDate(), firstDatum.getStartDate().getPrevious());
+						.getStartDate(), firstDatum.getStartDate()
+						.getPrevious());
 			}
 			HhDatum lastDatum = (HhDatum) Hiber
 					.session()
