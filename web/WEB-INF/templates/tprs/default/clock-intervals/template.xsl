@@ -2,8 +2,8 @@
 <xsl:stylesheet version="1.0"
 	xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
 	<xsl:output method="html" encoding="US-ASCII"
-		doctype-public="-//W3C//DTD HTML 4.01//EN"
-		doctype-system="http://www.w3.org/TR/html4/strict.dtd" indent="yes" />
+		doctype-public="-//W3C//DTD HTML 4.01//EN" doctype-system="http://www.w3.org/TR/html4/strict.dtd"
+		indent="yes" />
 
 	<xsl:template match="/">
 		<html>
@@ -12,8 +12,7 @@
 					href="{/source/request/@context-path}/reports/19/output/" />
 				<title>
 					Chellow &gt; TPRs &gt;
-					<xsl:value-of
-						select="/source/clock-intervals/tpr/@id" />
+					<xsl:value-of select="/source/clock-intervals/tpr/@id" />
 					&gt; Clock Intervals
 				</title>
 			</head>
@@ -30,8 +29,7 @@
 
 				<p>
 					<a href="{/source/request/@context-path}/">
-						<img
-							src="{/source/request/@context-path}/logo/" />
+						<img src="{/source/request/@context-path}/logo/" />
 						<span class="logo">Chellow</span>
 					</a>
 					<xsl:value-of select="' &gt; '" />
@@ -41,10 +39,14 @@
 					&gt;
 					<a
 						href="{/source/request/@context-path}/tprs/{/source/clock-intervals/tpr/@id}/">
-						<xsl:value-of
-							select="/source/clock-intervals/tpr/@code" />
+						<xsl:value-of select="/source/clock-intervals/tpr/@code" />
 					</a>
-					&gt; Clock Intervals
+					<xsl:value-of select="'&gt; Clock Intervals ['" />
+					<a
+						href="{/source/request/@context-path}/reports/97/output/?tpr-id={/source/clock-intervals/tpr/@id}">
+						<xsl:value-of select="'view'" />
+					</a>
+					<xsl:value-of select="']'" />
 				</p>
 
 				<table>
@@ -61,8 +63,7 @@
 						<th>End Minute</th>
 					</thead>
 					<tbody>
-						<xsl:for-each
-							select="/source/clock-intervals/clock-interval">
+						<xsl:for-each select="/source/clock-intervals/clock-interval">
 							<tr>
 								<td>
 									<a
@@ -89,8 +90,7 @@
 									<xsl:value-of select="@start-hour" />
 								</td>
 								<td>
-									<xsl:value-of
-										select="@start-minute" />
+									<xsl:value-of select="@start-minute" />
 								</td>
 								<td>
 									<xsl:value-of select="@end-hour" />

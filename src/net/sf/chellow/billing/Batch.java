@@ -1,6 +1,6 @@
 /*******************************************************************************
  * 
- *  Copyright (c) 2005, 2009 Wessex Water Services Limited
+ *  Copyright (c) 2005, 2010 Wessex Water Services Limited
  *  
  *  This file is part of Chellow.
  * 
@@ -70,6 +70,7 @@ public class Batch extends PersistentEntity {
 		if (action.equals("insert")) {
 			String roleName = GeneralImport.addField(csvElement, "Role Name",
 					values, 0);
+			roleName = roleName.toLowerCase();
 			String contractName = GeneralImport.addField(csvElement,
 					"Contract Name", values, 1);
 			Contract contract = null;
@@ -88,6 +89,32 @@ public class Batch extends PersistentEntity {
 					values, 2);
 			contract.insertBatch(reference);
 		} else if (action.equals("update")) {
+			String roleName = GeneralImport.addField(csvElement, "Role Name",
+					values, 0);
+			roleName = roleName.toLowerCase();
+
+			String contractName = GeneralImport.addField(csvElement,
+					"Contract Name", values, 1);
+			Contract contract = null;
+
+			if (roleName.equals("hhdc")) {
+				contract = HhdcContract.getHhdcContract(contractName);
+			} else if (roleName.equals("supplier")) {
+				contract = SupplierContract.getSupplierContract(contractName);
+			} else if (roleName.equals("mop")) {
+				contract = MopContract.getMopContract(contractName);
+			} else {
+				throw new UserException(
+						"The role name must be one of hhdc, supplier or mop.");
+			}
+			String oldReference = GeneralImport.addField(csvElement,
+					"Old Reference", values, 2);
+			Batch batch = contract.getBatch(oldReference);
+
+			String newReference = GeneralImport.addField(csvElement,
+					"New Reference", values, 3);
+
+			batch.update(newReference);
 		}
 	}
 

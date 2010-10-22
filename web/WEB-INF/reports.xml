@@ -8432,7 +8432,7 @@ for tpr in Hiber.session().createQuery("from Tpr tpr order by tpr.code").list():
                         href="{/source/request/@context-path}/reports/1/output/">
                         <xsl:value-of select="'Home'" />
                     </a>
-                    &gt; TPRs
+                    <xsl:value-of select="'&gt; TPRs ['"/><a href="{/source/request/@context-path}/tprs/"><xsl:value-of select="'edit'"/></a><xsl:value-of select="']'"/>
                 </p>
                 <br />
                 <xsl:if test="//message">
@@ -8499,7 +8499,7 @@ source.appendChild(tpr.toXml(doc, XmlTree("measurementRequirements", XmlTree("ss
                         <xsl:value-of select="'TPRs'" />
                     </a>
                     &gt;
-                    <xsl:value-of select="/source/tpr/@code" />
+                    <xsl:value-of select="concat(/source/tpr/@code, ' [')" /><a href="{/source/request/@context-path}/tprs/{/source/tpr/@id}/"><xsl:value-of select="'edit'"/></a><xsl:value-of select="']'"/>
                 </p>
                 <br />
                 <xsl:if test="//message">
@@ -10671,7 +10671,8 @@ for ssc in Hiber.session().createQuery("from Ssc ssc order by ssc.code").list():
                         <xsl:value-of select="'Home'" />
                     </a>
                     &gt;
-                    <xsl:value-of select="'SSCs'" />
+                    <xsl:value-of select="'SSCs ['" /><a
+                        href="{/source/request/@context-path}/sscs/"><xsl:value-of select="'edit'"/></a><xsl:value-of select="']'"/>
                 </p>
                 <br />
                 <xsl:if test="//message">
@@ -10793,10 +10794,10 @@ source.appendChild(ssc.toXml(doc, XmlTree("measurementRequirements", XmlTree("tp
                     &gt;
                     <a
                         href="{/source/request/@context-path}/reports/125/output/">
-                        <xsl:value-of select="'SSCs'" />
+                        <xsl:value-of select="'SSCs '" />
                     </a>
                     &gt;
-                    <xsl:value-of select="/source/ssc/@description" />
+                    <xsl:value-of select="concat(/source/ssc/@description, ' [')" /><a href="{/source/request/@context-path}/sscs/{/source/ssc/@id}/"><xsl:value-of select="'edit'"/></a><xsl:value-of select="']'"/>
                 </p>
                 <br />
                 <xsl:if test="//message">

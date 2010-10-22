@@ -2,8 +2,8 @@
 <xsl:stylesheet version="1.0"
 	xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
 	<xsl:output method="html" encoding="US-ASCII"
-		doctype-public="-//W3C//DTD HTML 4.01//EN"
-		doctype-system="http://www.w3.org/TR/html4/strict.dtd" indent="yes" />
+		doctype-public="-//W3C//DTD HTML 4.01//EN" doctype-system="http://www.w3.org/TR/html4/strict.dtd"
+		indent="yes" />
 
 	<xsl:template match="/">
 		<html>
@@ -26,11 +26,14 @@
 
 				<p>
 					<a href="{/source/request/@context-path}/">
-						<img
-							src="{/source/request/@context-path}/logo/" />
+						<img src="{/source/request/@context-path}/logo/" />
 						<span class="logo">Chellow</span>
 					</a>
-					<xsl:value-of select="' &gt; SSCs'" />
+					<xsl:value-of select="' &gt; SSCs ['" />
+					<a href="{/source/request/@context-path}/reports/125/output/">
+						<xsl:value-of select="'view'" />
+					</a>
+					<xsl:value-of select="']'" />
 				</p>
 
 				<table>
@@ -49,8 +52,7 @@
 						<xsl:for-each select="/source/sscs/ssc">
 							<tr>
 								<td>
-									<a
-										href="{/source/request/@context-path}/sscs/{@id}/">
+									<a href="{/source/request/@context-path}/sscs/{@id}/">
 										<xsl:value-of select="@id" />
 									</a>
 								</td>
@@ -62,8 +64,7 @@
 								</td>
 								<td>
 									<xsl:choose>
-										<xsl:when
-											test="@is-import='true'">
+										<xsl:when test="@is-import='true'">
 											Import
 										</xsl:when>
 										<xsl:otherwise>
@@ -77,8 +78,7 @@
 								</td>
 								<td>
 									<xsl:choose>
-										<xsl:when
-											test="date[@label='to']">
+										<xsl:when test="date[@label='to']">
 											<xsl:value-of
 												select="concat(date[@label='to']/@year, '-', date[@label='to']/@month, '-', date[@label='to']/@day, ' ', date[@label='to']/@hour, ':', date[@label='to']/@minute)" />
 										</xsl:when>
@@ -88,13 +88,11 @@
 									</xsl:choose>
 								</td>
 								<td>
-									<xsl:for-each
-										select="measurement-requirement">
+									<xsl:for-each select="measurement-requirement">
 										<a href="{/source/request/@context-path}/tprs/{tpr/@id}/">
-										<xsl:value-of
-											select="tpr/@code" /></a>
-										<xsl:if
-											test="position() != last()">
+											<xsl:value-of select="tpr/@code" />
+										</a>
+										<xsl:if test="position() != last()">
 											<xsl:value-of select="', '" />
 										</xsl:if>
 									</xsl:for-each>

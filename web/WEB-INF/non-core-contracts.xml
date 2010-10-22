@@ -8323,11 +8323,15 @@ class SupplySource(DataSource):
         self.supplier_account = mpan.getSupplierAccount()
         self.generation = mpan.getSupplyGeneration()
         self.supply = self.generation.getSupply()
+        self.mtc = self.generation.getMtc()
+        self.meter_type = self.mtc.getMeterType()
+        self.meter_type_code = self.meter_type.getCode()
+        self.ssc = self.generation.getSsc()
 
-        if self.generation.getSsc() is None:
+        if self.ssc is None:
             self.ssc_code = None
         else:
-            self.ssc_code = str(self.generation.getSsc())
+            self.ssc_code = str(self.ssc)
             
         self.pc_code = str(self.generation.getPc())
         
@@ -8399,8 +8403,63 @@ class SupplySource(DataSource):
         # remove last clause to enable general nhh metered
         if self.pc_code != '00' and generation is not None and len(generation.getChannels()) == 0:
             ci_query = Hiber.session().createQuery("select mod(ci.dayOfWeek, 7) + 1 as dayOfWeek, (ci.startMonth - 1) * 100 + ci.startDay as startMonth, ci.startHour + (ci.startMinute / 60.0) as startHourDec, (ci.endMonth - 1) * 100 + ci.endDay as endMonth, ci.endHour + (ci.endMinute / 60.0) as endHourDec from ClockInterval ci where ci.tpr = :tpr")
+            if self.meter_type_code == 'UM':
+                utc_cal.setTime(start_date.getDate())
+                utc_cal.set(Calendar.MONTH, Calendar.JANUARY)
+                utc_cal.set(Calendar.DAY_OF_MONTH, 1)
+                utc_cal.set(Calendar.HOUR_OF_DAY, 0)
+                utc_cal.set(Calendar.MINUTE, 0)
+                year_start_millis = utc_cal.getTimeInMillis()
+                utc_cal.add(Calendar.YEAR, 1)
+                kwh = float(self.availability * 1000 * 60 * 30) / float(utc_cal.getTimeInMillis() - year_start_millis)
 
-            if self.bill_start is None:
+                for tpr in Hiber.session().createQuery("select mr.tpr from MeasurementRequirement mr where mr.ssc = :ssc").setEntity("ssc", self.ssc).list():
+                    days_of_week = dict([[i, []] for i in range(1,8)])
+
+                    for ci in ci_query.setEntity('tpr', tpr).list():
+                        day_of_week = ci[0]
+                        start_month = ci[1]
+                        start_hour = ci[2]
+                        end_month = ci[3]
+                        end_hour = ci[4]
+                        days_of_week[day_of_week].append({'start-month': start_month, 'start-hour': start_hour, 'end-month': end_month, 'end-hour': end_hour})
+
+                    if tpr.getIsGmt():
+                        cal = utc_cal
+                        time_prefix = 'utc'
+                    else:
+                        cal = ct_cal
+                        time_prefix = 'ct'
+                    decimal_hour_key = time_prefix + '-decimal-hour'
+                    day_of_week_key = time_prefix + '-day-of-week'
+                    month_key = time_prefix + '-month'
+                    day_of_month_key = time_prefix + '-day'
+
+                    #s elf.pw.println('av_kwh ' + str(av_kwh) + ',' + str(System.currentTimeMillis()))
+                            
+                    hh_date = start_date.getDate().getTime()
+                    #s elf.pw.println('hh_date ' + str(hh_date))
+                    finish_millis = finish_date.getDate().getTime()
+                    #s elf.pw.println('chunk_finish_millis ' + str(chunk_finish_millis))
+
+                    utc_cal.setTimeInMillis(hh_date)
+                    while not hh_date > finish_millis:
+                        ct_cal.setTimeInMillis(hh_date)
+                        utc_cal.add(Calendar.YEAR, year_advance)
+                        ct_cal.add(Calendar.YEAR, year_advance)
+                        decimal_hour = cal.get(11) + float(cal.get(12)) / 60
+                        fractional_month = cal.get(Calendar.MONTH) * 100 + cal.get(Calendar.DAY_OF_MONTH)
+                        for ci in days_of_week[cal.get(Calendar.DAY_OF_WEEK)]:
+                            if ((ci['start-hour'] < ci['end-hour'] and ci['start-hour'] <= decimal_hour < ci['end-hour']) or (ci['start-hour'] >= ci['end-hour'] and (ci['start-hour'] <= decimal_hour or decimal_hour < ci['end-hour']))) and ci['start-month'] <= fractional_month <= ci['end-month']:
+                                utc_day = utc_cal.get(Calendar.DAY_OF_MONTH)
+                                data_hh.append({'status': 'E', 'msp-kw': kwh * 2, 'msp-kwh': kwh, 'hist-kwh': kwh, 'imp-msp-kvarh': 0, 'imp-msp-kvar': 0, 'exp-msp-kvarh': 0, 'exp-msp-kvar': 0, 'hist-start-date': utc_cal.getTime(), 'start-date': utc_cal.getTime(), 'ct-day': ct_cal.get(5), 'utc-month': utc_cal.get(2), 'utc-day': utc_day, 'utc-decimal-hour': utc_cal.get(11) + float(utc_cal.get(12)) / 60, 'utc-year': utc_cal.get(Calendar.YEAR), 'utc-hour': utc_cal.get(Calendar.HOUR_OF_DAY), 'utc-minute': utc_cal.get(Calendar.MINUTE), 'ct-year': ct_cal.get(Calendar.YEAR), 'ct-month': ct_cal.get(2), 'ct-decimal-hour': ct_cal.get(11) + float(ct_cal.get(12)) / 60, 'ct-day-of-week': ct_cal.get(7), 'utc-day-of-week': utc_cal.get(7), 'utc-is-bank-holiday': utc_day in bank_holidays})
+                                break
+                        hh_date = HhStartDate.getNext(utc_cal, hh_date)
+                    #s elf.pw.println(str(System.currentTimeMillis()) + " finished inner loop ")
+
+                    #s elf.pw.println(str(System.currentTimeMillis()) + " done bills ")
+
+            elif self.bill_start is None:
                 #s elf.pw.println('starting, ' + str(System.currentTimeMillis()))
                 search_date = start_date
                 search_msn = ''
@@ -8778,8 +8837,6 @@ class SupplySource(DataSource):
                     #s elf.pw.println('finished scond inner loop ' + str(prev_read.getPresentDate()) + ', ' + str(System.currentTimeMillis()))
                 #s elf.pw.println('finished section, ' + str(System.currentTimeMillis()))
             else:
-
-
                 if self.is_import:
                     mpan = generation.getImportMpan()
                 else:

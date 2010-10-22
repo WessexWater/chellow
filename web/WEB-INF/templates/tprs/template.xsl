@@ -2,8 +2,8 @@
 <xsl:stylesheet version="1.0"
 	xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
 	<xsl:output method="html" encoding="US-ASCII"
-		doctype-public="-//W3C//DTD HTML 4.01//EN"
-		doctype-system="http://www.w3.org/TR/html4/strict.dtd" indent="yes" />
+		doctype-public="-//W3C//DTD HTML 4.01//EN" doctype-system="http://www.w3.org/TR/html4/strict.dtd"
+		indent="yes" />
 
 	<xsl:template match="/">
 		<html>
@@ -26,18 +26,20 @@
 
 				<p>
 					<a href="{/source/request/@context-path}/">
-						<img
-							src="{/source/request/@context-path}/logo/" />
+						<img src="{/source/request/@context-path}/logo/" />
 						<span class="logo">Chellow</span>
 					</a>
-					<xsl:value-of select="' &gt; TPRs'" />
+					<xsl:value-of select="' &gt; TPRs ['" />
+					<a href="{/source/request/@context-path}/reports/95/output/">
+						<xsl:value-of select="'view'" />
+					</a>
+					<xsl:value-of select="']'" />
 				</p>
 
 				<ul>
 					<xsl:for-each select="/source/tprs/tpr">
 						<li>
-							<a
-								href="{/source/request/@context-path}/tprs/{@id}/">
+							<a href="{/source/request/@context-path}/tprs/{@id}/">
 								<xsl:value-of select="@code" />
 							</a>
 						</li>

@@ -2,8 +2,8 @@
 <xsl:stylesheet version="1.0"
 	xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
 	<xsl:output method="html" encoding="US-ASCII"
-		doctype-public="-//W3C//DTD HTML 4.01//EN"
-		doctype-system="http://www.w3.org/TR/html4/strict.dtd" indent="yes" />
+		doctype-public="-//W3C//DTD HTML 4.01//EN" doctype-system="http://www.w3.org/TR/html4/strict.dtd"
+		indent="yes" />
 
 	<xsl:template match="/">
 		<html>
@@ -19,16 +19,19 @@
 			<body>
 				<p>
 					<a href="{/source/request/@context-path}/">
-						<img
-							src="{/source/request/@context-path}/logo/" />
+						<img src="{/source/request/@context-path}/logo/" />
 						<span class="logo">Chellow</span>
 					</a>
 					<xsl:value-of select="' &gt; '" />
 					<a href="{/source/request/@context-path}/tprs/">
 						<xsl:value-of select="'TPRs'" />
 					</a>
-					<xsl:value-of
-						select="concat(' &gt; ', /source/tpr/@code)" />
+					<xsl:value-of select="concat(' &gt; ', /source/tpr/@code, ' [')" />
+					<a
+						href="{/source/request/@context-path}/reports/97/output/?tpr-id={/source/tpr/@id}">
+						<xsl:value-of select="'view'" />
+					</a>
+					<xsl:value-of select="']'" />
 				</p>
 
 				<xsl:if test="//message">
@@ -57,11 +60,12 @@
 						<th>Teleswitch or Clock</th>
 						<td>
 							<xsl:choose>
-								<xsl:when
-									test="/source/tpr/@is-teleswitch='true'">
+								<xsl:when test="/source/tpr/@is-teleswitch='true'">
 									Teleswitch
 								</xsl:when>
-								<xsl:otherwise>Clock</xsl:otherwise>
+								<xsl:otherwise>
+									Clock
+								</xsl:otherwise>
 							</xsl:choose>
 						</td>
 					</tr>
@@ -91,8 +95,7 @@
 				<ul>
 					<xsl:for-each select="/source/tpr/measurement-requirement/ssc">
 						<li>
-							<a
-								href="{/source/request/@context-path}/sscs/{@id}/">
+							<a href="{/source/request/@context-path}/sscs/{@id}/">
 								<xsl:value-of select="@code"></xsl:value-of>
 							</a>
 						</li>
