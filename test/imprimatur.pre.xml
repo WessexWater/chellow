@@ -208,15 +208,23 @@ def virtual_bill(supply_source):
 
 		<!-- Update the supplier contract -->
 		<request path="/chellow/supplier-contracts/4/" method="post">
-			<control name="participant-id" value="213" />
+			<control name="participant-id" value="21" /> <!-- BIZZ -->
 			<control name="name" value="Half-hourlies 2007" />
 			<control name="charge-script">
 				<![CDATA[
 def virtual_bill(supply, startDate, finishDate, pw):
     return {'net-gbp': 0.0, 'vat-gbp':0.0, 'gross-gbp': 0.0, 'problem': ''}]]>
 			</control>
+			<regex pattern='&lt;option value="21" selected&gt;' />
 			<response-code value="200" />
 		</request>
+
+		<!-- Check that it's displayed properly -->
+		<request path="/chellow/supplier-contracts/4/">
+			<regex pattern='&lt;option value="21" selected&gt;' />
+			<response-code value="200" />
+		</request>
+
 		<!-- Update the associated rate script -->
 		<request path="/chellow/supplier-contracts/4/rate-scripts/4/"
 			method="post">
@@ -1432,7 +1440,7 @@ lastImportName0=Example]]></control>
 	</test>
 	<test name="Check python compile error gives a reasonable message.">
 		<request path="/chellow/supplier-contracts/4/" method="post">
-			<control name="participant-id" value="3" />
+			<control name="participant-id" value="21" />
 			<control name="name" value="Half-hourlies 2007" />
 			<control name="charge-script">
 				<![CDATA[
@@ -1444,7 +1452,7 @@ def virtual_bill(supply, startDate, finishDate, pw):
 		</request>
 		<!-- Put back to how it was before -->
 		<request path="/chellow/supplier-contracts/4/" method="post">
-			<control name="participant-id" value="3" />
+			<control name="participant-id" value="21" />
 			<control name="name" value="Half-hourlies 2007" />
 			<control name="charge-script">
 				<![CDATA[                
@@ -1916,7 +1924,7 @@ def triad_estimates():
 		</request>
 
 		<!-- Check start time of rate script -->
-		<request path="/chellow/dsos/431/contracts/69/rate-scripts/213/">
+		<request path="/chellow/dsos/431/contracts/69/rate-scripts/217/">
 			<regex pattern="00:00 Z" />
 			<response-code value="200" />
 		</request>
@@ -1928,12 +1936,12 @@ def triad_estimates():
 			<control name="start-month" value="05" />
 			<control name="start-day" value="01" />
 
-			<regex pattern="/chellow/dsos/431/contracts/69/rate-scripts/215/" />
+			<regex pattern="/chellow/dsos/431/contracts/69/rate-scripts/219/" />
 			<response-code value="303" />
 		</request>
 
 		<!-- Delete rate script -->
-		<request path="/chellow/dsos/431/contracts/69/rate-scripts/215/"
+		<request path="/chellow/dsos/431/contracts/69/rate-scripts/219/"
 			method="post">
 			<control name="delete" value="Delete" />
 			<response-code value="303" />
@@ -2080,6 +2088,7 @@ def triad_estimates():
 		</request>
 
 		<request path="/chellow/supplier-contracts/18/" method="post">
+			<control name="participant-id" value="6" />
 			<control name="name" value="Non half-hourlies 2010" />
 			<control name="charge-script">
 				<![CDATA[
@@ -2091,6 +2100,7 @@ def import_virtual_bill(supply_source):
     sum_msp_kwh = supply_source.summary['sum-msp-kwh']
     return {'net-gbp': sum_msp_kwh * 0.1, 'sum-msp-kwh': sum_msp_kwh, 'problem': ''}]]>
 			</control>
+			<response-code value="200" />
 		</request>
 
 		<!-- Add new generation -->
@@ -2290,7 +2300,8 @@ def import_virtual_bill(supply_source):
 		name="Check a contract virtual bill that crosses a generation boundary comes out correctly.">
 		<!-- Put in an import virtual bill function -->
 		<request path="/chellow/supplier-contracts/10/" method="post">
-			<control name="name">Non half-hourlies 2007</control>
+			<control name="participant-id" value="117" />
+			<control name="name" value="Non half-hourlies 2007" />
 			<control name="charge-script">
 				<![CDATA[
 def import_virtual_bill_titles():
@@ -2300,6 +2311,7 @@ def import_virtual_bill_titles():
 def import_virtual_bill(supply_source):
     return {'net-gbp': 0.0, 'vat-gbp':0.0, 'gross-gbp': 0.0, 'problem': ''}]]>
 			</control>
+			<response-code value="200" />
 		</request>
 		<request
 			path="/chellow/reports/87/output/?supply-id=12&amp;supply-polarity=import&amp;months=1&amp;end-year=2010&amp;end-month=04">

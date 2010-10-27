@@ -73,7 +73,7 @@ public class SupplierContract extends Contract {
 			}
 			String chargeScript = GeneralImport.addField(csvElement,
 					"Charge Script", values, 5);
-			
+
 			String rateScriptIdStr = GeneralImport.addField(csvElement,
 					"Rate Script Id", values, 6);
 			Long rateScriptId = rateScriptIdStr.length() > 0 ? new Long(
@@ -81,7 +81,7 @@ public class SupplierContract extends Contract {
 
 			String rateScript = GeneralImport.addField(csvElement,
 					"Rate Script", values, 7);
-			
+
 			insertSupplierContract(id, participant, name, startDate,
 					finishDate, chargeScript, rateScriptId, rateScript);
 		}
@@ -89,13 +89,14 @@ public class SupplierContract extends Contract {
 
 	static public SupplierContract insertSupplierContract(Long id,
 			Participant participant, String name, HhStartDate startDate,
-			HhStartDate finishDate, String chargeScript, Long rateScriptId, String rateScript)
-			throws HttpException {
+			HhStartDate finishDate, String chargeScript, Long rateScriptId,
+			String rateScript) throws HttpException {
 		SupplierContract contract = new SupplierContract(id, participant, name,
 				startDate, finishDate, chargeScript);
 		Hiber.session().save(contract);
 		Hiber.flush();
-		contract.insertFirstRateScript(rateScriptId, startDate, finishDate, rateScript);
+		contract.insertFirstRateScript(rateScriptId, startDate, finishDate,
+				rateScript);
 		return contract;
 	}
 
@@ -148,6 +149,12 @@ public class SupplierContract extends Contract {
 		return supplier;
 	}
 
+	public void update(Participant participant, String name, String chargeScript)
+			throws HttpException {
+		internalUpdate(participant, name, chargeScript);
+		onUpdate(null, null);
+	}
+
 	public void internalUpdate(Participant participant, String name,
 			String chargeScript) throws HttpException {
 		setParty(Provider.getProvider(participant, MarketRole
@@ -181,14 +188,17 @@ public class SupplierContract extends Contract {
 			inv.sendSeeOther(Chellow.SUPPLIER_CONTRACTS_INSTANCE.getUri());
 		} else {
 			String chargeScript = inv.getString("charge-script");
-			chargeScript = chargeScript.replace("\r", "").replace("\t", "    ");
-
 			String name = inv.getString("name");
+			Long participantId = inv.getLong("participant-id");
+
 			if (!inv.isValid()) {
 				throw new UserException(document());
 			}
+			chargeScript = chargeScript.replace("\r", "").replace("\t", "    ");
+
 			try {
-				update(name, chargeScript);
+				update(Participant.getParticipant(participantId), name,
+						chargeScript);
 				Hiber.commit();
 				inv.sendOk(document());
 			} catch (HttpException e) {

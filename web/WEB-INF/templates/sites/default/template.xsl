@@ -169,10 +169,9 @@
 										</xsl:for-each>
 									</select>
 								</label>
-								<br />
-								<br />
+								<xsl:value-of select="' '" />
 								<label>
-									Generator Type
+									Generator Type (if source is 'gen' or 'gen-net')
 									<select name="generator-type-id">
 										<xsl:for-each select="/source/generator-type">
 											<option value="{@id}">

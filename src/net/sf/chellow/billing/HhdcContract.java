@@ -47,7 +47,6 @@ import net.sf.chellow.physical.HhStartDate;
 import net.sf.chellow.physical.MarketRole;
 import net.sf.chellow.physical.Mpan;
 import net.sf.chellow.physical.Participant;
-import net.sf.chellow.physical.SupplyGeneration;
 import net.sf.chellow.ui.Chellow;
 import net.sf.chellow.ui.GeneralImport;
 
@@ -201,32 +200,11 @@ public class HhdcContract extends Contract {
 		setProperties(properties);
 	}
 
-	@SuppressWarnings("unchecked")
 	public void update(Participant participant, String name,
 			String chargeScript, String importerProperties)
 			throws HttpException {
 		intrinsicUpdate(participant, name, chargeScript, importerProperties);
-		Query generationsQuery = null;
-		if (getFinishDate() == null) {
-			generationsQuery = Hiber
-					.session()
-					.createQuery(
-							"from SupplyGeneration generation where generation.hhdcContract = :hhdcContract and generation.startDate.date < :startDate");
-		} else {
-			generationsQuery = Hiber
-					.session()
-					.createQuery(
-							"from SupplyGeneration generation where generation.hhdcContract = :hhdcContract and generation.startDate.date < :startDate or (generation.finishDate.date is null or generation.finishDate.date > :finishDate))")
-					.setTimestamp("finishDate", getFinishDate().getDate());
-		}
-		for (SupplyGeneration generation : (List<SupplyGeneration>) generationsQuery
-				.setEntity("hhdcContract", this).setTimestamp("startDate",
-						getStartDate().getDate()).list()) {
-			throw new UserException(
-					"The supply '"
-							+ generation.getSupply().getId()
-							+ "' has a generation with this contract that covers a time outside this contract.");
-		}
+		onUpdate(null, null);
 	}
 
 	public boolean equals(Object obj) {

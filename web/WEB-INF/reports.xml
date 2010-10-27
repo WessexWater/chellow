@@ -463,9 +463,9 @@ Ongoing
                     </tbody>
                 </table>
       <ul>
-        <li><a href="{/source/request/@context-path}/reports/9/output/?site-id={/source/site/@id}"><xsl:value-of select="'Graph of site usage'" /></a>
+        <li><a href="{/source/request/@context-path}/reports/9/output/?site-id={/source/site/@id}&amp;months=1&amp;finish-year={/source/date[@label = 'yesterday']/@year}&amp;finish-month={/source/date[@label = 'yesterday']/@month}"><xsl:value-of select="'Graph of site usage'" /></a>
          </li>
-         <li><a href="{/source/request/@context-path}/reports/11/output/?site-id={/source/site/@id}">
+         <li><a href="{/source/request/@context-path}/reports/11/output/?site-id={/source/site/@id}&amp;months=1&amp;finish-year={/source/date[@label = 'yesterday']/@year}&amp;finish-month={/source/date[@label = 'yesterday']/@month}">
          <xsl:value-of select="'Generation Graphs'" />
                         </a>
           </li>
@@ -1545,27 +1545,17 @@ from net.sf.chellow.physical import Site
 from java.util import Calendar
 
 site_id = inv.getLong("site-id")
+year = inv.getInteger("finish-year")
+month = inv.getInteger("finish-month")
+months = inv.getInteger("months")
+
+if not inv.isValid():
+    raise UserException()
+
 site = Site.getSite(site_id)
 source.appendChild(site.toXml(doc))
-cal = MonadDate.getCalendar()
 
-if inv.hasParameter("finish-year") and inv.hasParameter("finish-month"):
-    year = inv.getInteger("finish-year")
-    month = inv.getInteger("finish-month")
-else:
-    year = cal.get(Calendar.YEAR)
-    month = cal.get(Calendar.MONTH) + 1
-if inv.hasParameter("months"):
-    months = inv.getInteger("months")
-else:
-    months = 1
-for i in range(12):
-    monthElement = doc.createElement("month")
-    source.appendChild(monthElement)
-    monthElement.setAttribute("value", str(i + 1))
-source.setAttribute("finish-year", str(year))
-source.setAttribute("finish-month", str(month))
-source.setAttribute("months", str(months))]]></value>
+source.appendChild(MonadDate.getMonthsXml(doc))]]></value>
         <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
 <xsl:stylesheet version="1.0"
     xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
@@ -1606,7 +1596,7 @@ source.setAttribute("months", str(months))]]></value>
                 </xsl:if>
                 <p>
                     <img
-                        src="{/source/request/@context-path}/reports/21/output/?site-id={/source/site/@id}&amp;finish-year={/source/@finish-year}&amp;finish-month={/source/@finish-month}&amp;months={/source/@months}" />
+                        src="{/source/request/@context-path}/reports/21/output/?site-id={/source/site/@id}&amp;finish-year={/source/request/parameter[@name='finish-year']/value}&amp;finish-month={/source/request/parameter[@name='finish-month']/value}&amp;months={/source/request/parameter[@name='months']/value}" />
                 </p>
                 <form action=".">
                     <fieldset>
@@ -1614,30 +1604,19 @@ source.setAttribute("months", str(months))]]></value>
                         <input type="hidden" name="site-id"
                             value="{/source/request/parameter[@name='site-id']/value}" />
                         <xsl:value-of select="'For '" />
-                        <select name="months">
-                            <xsl:for-each select="/source/month">
-                                <option>
-                                    <xsl:if
-                                        test="/source/@months = @value">
-                                        <xsl:attribute
-   name="selected">selected</xsl:attribute>
-                                    </xsl:if>
-                                    <xsl:value-of select="@value" />
-                                </option>
-                            </xsl:for-each>
-                        </select>
+                        <input name="months" maxlength="2" size="2" value="{/source/request/parameter[@name='months']/value}"/>
                         <xsl:value-of select="' months finishing in '" />
                         <input size="4" length="4"
-                            name="finish-year" value="{/source/@finish-year}" />
+                            name="finish-year" value="{/source/request/parameter[@name='finish-year']/value}" />
                         <xsl:value-of select="' - '" />
                         <select name="finish-month">
-                            <xsl:for-each select="/source/month">
+                            <xsl:for-each select="/source/months/month">
                                 <option>
                                     <xsl:if
-                                        test="number(/source/@finish-month) = number(@value)">
+                                        test="/source/request/parameter[@name='finish-month']/value = @number">
                                         <xsl:attribute name="selected">selected</xsl:attribute>
                                     </xsl:if>
-                                    <xsl:value-of select="@value" />
+                                    <xsl:value-of select="@number" />
                                 </option>
                             </xsl:for-each>
                         </select>
@@ -1656,36 +1635,35 @@ source.setAttribute("months", str(months))]]></value>
         <value><![CDATA[11]]></value>
         <value><![CDATA[true]]></value>
         <value><![CDATA[Site Generation Graph Container]]></value>
-        <value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree
+        <value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree, UserException
 from net.sf.chellow.monad.types import MonadDate
 from net.sf.chellow.physical import Site
 from java.util import Calendar
+from java.lang import System
 
 site_id = inv.getLong("site-id")
-site = Site.getSite(site_id)
-source.appendChild(site.toXml(doc))
-cal = MonadDate.getCalendar()
-if inv.hasParameter("finish-year"):
+if not inv.isValid():
+    raise UserException()
+
+if inv.hasParameter('finish-year'):
     year = inv.getInteger("finish-year")
-else:
-    year = cal.get(Calendar.YEAR)
-source.setAttribute("finish-year", str(year))
-if inv.hasParameter("finish-month"):
     month = inv.getInteger("finish-month")
-else:
-    month = cal.get(Calendar.MONTH) + 1
-if inv.hasParameter("months"):
     months = inv.getInteger("months")
+    if not inv.isValid():
+        raise UserException()
+
+    site = Site.getSite(site_id)
+    source.appendChild(site.toXml(doc))
+
+    source.appendChild(MonadDate.getMonthsXml(doc))
 else:
-    months = 1
-for i in range(12):
-    monthElement = doc.createElement("month")
-    source.appendChild(monthElement)
-    monthElement.setAttribute("value", str(i + 1))
-source.setAttribute("finish-year", str(year))
-source.setAttribute("finish-month", str(month))
-source.setAttribute("months", str(months))
-source.appendChild(inv.requestXml(doc))]]></value>
+    cal = MonadDate.getCalendar()
+    cal.setTimeInMillis(System.currentTimeMillis())
+    inv.sendTemporaryRedirect('/reports/11/output/?site-id=' + str(site_id) + '&months=1&finish-month=' + str(cal.get(Calendar.MONTH) + 1) + '&finish-year=' + str(cal.get(Calendar.YEAR)))
+
+
+
+]]></value>
         <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
 <xsl:stylesheet version="1.0"
     xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
@@ -1731,44 +1709,36 @@ source.appendChild(inv.requestXml(doc))]]></value>
 
                 <p>
                     <img
-                        src="{/source/request/@context-path}/reports/23/output/?site-id={/source/site/@id}&amp;finish-year={/source/@finish-year}&amp;finish-month={/source/@finish-month}&amp;months={/source/@months}" />
+                        src="{/source/request/@context-path}/reports/23/output/?site-id={/source/site/@id}&amp;finish-year={/source/request/parameter[@name='finish-year']/value}&amp;finish-month={/source/request/parameter[@name='finish-month']/value}&amp;months={/source/request/parameter[@name='months']/value}" />
                 </p>
                 <form action=".">
                     <fieldset>
                         <legend>Show graph</legend>
                         <input type="hidden" name="site-id"
                             value="{/source/request/parameter[@name='site-id']/value}" />
+
+
                         <xsl:value-of select="'For '" />
-                        <select name="months">
-                            <xsl:for-each select="/source/month">
-                                <option>
-                                    <xsl:if
-                                        test="/source/@months = @value">
-                                        <xsl:attribute
-                                            name="selected">selected</xsl:attribute>
-                                    </xsl:if>
-                                    <xsl:value-of select="@value" />
-                                </option>
-                            </xsl:for-each>
-                        </select>
+                        <input name="months" maxlength="2" size="2" value="{/source/request/parameter[@name='months']/value}"/>
                         <xsl:value-of select="' months finishing at the end of '" />
                         <input size="4" length="4"
-                            name="finish-year" value="{/source/@finish-year}" />
+                            name="finish-year" value="{/source/request/parameter[@name='finish-year']/value}" />
                         <xsl:value-of select="' - '" />
                         <select name="finish-month">
-                            <xsl:for-each select="/source/month">
+                            <xsl:for-each select="/source/months/month">
                                 <option>
                                     <xsl:if
-                                        test="number(/source/@finish-month) = number(@value)">
+                                        test="/source/request/parameter[@name='finish-month']/value = @number">
                                         <xsl:attribute
                                             name="selected">selected</xsl:attribute>
                                     </xsl:if>
-                                    <xsl:value-of select="@value" />
+                                    <xsl:value-of select="@number" />
                                 </option>
                             </xsl:for-each>
                         </select>
                         <xsl:value-of select="' '" />
                         <input type="submit" value="Show" />
+
                     </fieldset>
                 </form>
             </body>

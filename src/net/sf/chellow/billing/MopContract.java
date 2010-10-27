@@ -37,7 +37,6 @@ import net.sf.chellow.physical.HhStartDate;
 import net.sf.chellow.physical.MarketRole;
 import net.sf.chellow.physical.Mpan;
 import net.sf.chellow.physical.Participant;
-import net.sf.chellow.physical.SupplyGeneration;
 import net.sf.chellow.ui.Chellow;
 
 import org.hibernate.Query;
@@ -129,24 +128,10 @@ public class MopContract extends Contract {
 				.append("/");
 	}
 
-	@SuppressWarnings("unchecked")
 	public void update(Participant participant, String name, String chargeScript)
 			throws HttpException {
 		intrinsicUpdate(participant, name, chargeScript);
-		for (SupplyGeneration generation : (List<SupplyGeneration>) Hiber
-				.session()
-				.createQuery(
-						"from SupplyGeneration generation where generation.mopContract = :mopContract and generation.startDate.date < :startDate or (generation.finishDate.date is not null and (:finishDate is not null or generation.finishDate.date > :finishDate))")
-				.setEntity("mopContract", this).setTimestamp("startDate",
-						getStartDate().getDate()).setTimestamp(
-						"finishDate",
-						getFinishDate() == null ? null : getFinishDate()
-								.getDate()).list()) {
-			throw new UserException(
-					"The supply '"
-							+ generation.getSupply().getId()
-							+ "' has a generation with this contract that covers a time outside this contract.");
-		}
+		onUpdate(null, null);
 	}
 
 	public void httpPost(Invocation inv) throws HttpException {
