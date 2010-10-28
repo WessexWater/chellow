@@ -105,6 +105,24 @@
 									</input>
 								</label>
 								<br />
+								<label>
+									<xsl:value-of select="'Description '" />
+									<input name="description">
+										<xsl:attribute name="value">
+											<xsl:choose>
+												<xsl:when
+											test="/source/request/parameter[@name = 'description']/value">
+													<xsl:value-of
+											select="/source/request/parameter[@name = 'description']/value" />
+												</xsl:when>
+												<xsl:otherwise>
+													<xsl:value-of select="/source/batch/@description" />
+												</xsl:otherwise>
+											</xsl:choose>
+										</xsl:attribute>
+									</input>
+								</label>
+								<br />
 								<br />
 								<input type="submit" value="Update" />
 								<input type="reset" value="Reset" />

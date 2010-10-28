@@ -64,15 +64,30 @@
 					</fieldset>
 				</form>
 				<br />
-				<ul>
-					<xsl:for-each select="/source/batches/batch">
-						<li>
-							<a href="{@id}/">
-								<xsl:value-of select="@reference" />
-							</a>
-						</li>
-					</xsl:for-each>
-				</ul>
+				<table>
+					<thead>
+						<th>Chellow Id</th>
+						<th>Reference</th>
+						<th>Description</th>
+					</thead>
+					<tbody>
+						<xsl:for-each select="/source/batches/batch">
+							<tr>
+								<td>
+									<a href="{@id}/">
+										<xsl:value-of select="@id" />
+									</a>
+								</td>
+								<td>
+									<xsl:value-of select="@reference" />
+								</td>
+								<td>
+									<xsl:value-of select="@description" />
+								</td>
+							</tr>
+						</xsl:for-each>
+					</tbody>
+				</table>
 			</body>
 		</html>
 	</xsl:template>

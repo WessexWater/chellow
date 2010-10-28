@@ -48,15 +48,6 @@
 					</a>
 					<xsl:value-of select="']'" />
 				</p>
-				<ul>
-					<xsl:for-each select="/source/batches/batch">
-						<li>
-							<a href="{@id}/">
-								<xsl:value-of select="@reference" />
-							</a>
-						</li>
-					</xsl:for-each>
-				</ul>
 				<br />
 				<form action="." method="post">
 					<fieldset>
@@ -67,11 +58,44 @@
 							<input name="reference"
 								value="{/source/request/parameter[@name = 'reference']/value}" />
 						</label>
-						<xsl:value-of select="' '" />
+						<br />
+						<label>
+							<xsl:value-of select="'Description '" />
+							<input name="description"
+								value="{/source/request/parameter[@name = 'description']/value}" />
+						</label>
+						<br />
 						<input type="submit" value="Add" />
 						<input type="reset" value="Reset" />
 					</fieldset>
 				</form>
+				<br />
+				<table>
+					<thead>
+						<tr>
+							<th>Chellow Id</th>
+							<th>Reference</th>
+							<th>Description</th>
+						</tr>
+					</thead>
+					<tbody>
+						<xsl:for-each select="/source/batches/batch">
+							<tr>
+								<td>
+									<a href="{@id}/">
+										<xsl:value-of select="@id" />
+									</a>
+								</td>
+								<td>
+									<xsl:value-of select="@reference" />
+								</td>
+								<td>
+									<xsl:value-of select="@description" />
+								</td>
+							</tr>
+						</xsl:for-each>
+					</tbody>
+				</table>
 			</body>
 		</html>
 	</xsl:template>

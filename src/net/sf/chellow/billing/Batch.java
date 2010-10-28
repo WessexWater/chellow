@@ -87,7 +87,11 @@ public class Batch extends PersistentEntity {
 			}
 			String reference = GeneralImport.addField(csvElement, "Reference",
 					values, 2);
-			contract.insertBatch(reference);
+
+			String description = GeneralImport.addField(csvElement,
+					"Description", values, 3);
+
+			contract.insertBatch(reference, description);
 		} else if (action.equals("update")) {
 			String roleName = GeneralImport.addField(csvElement, "Role Name",
 					values, 0);
@@ -114,7 +118,10 @@ public class Batch extends PersistentEntity {
 			String newReference = GeneralImport.addField(csvElement,
 					"New Reference", values, 3);
 
-			batch.update(newReference);
+			String description = GeneralImport.addField(csvElement,
+					"Description", values, 4);
+
+			batch.update(newReference, description);
 		}
 	}
 
@@ -122,12 +129,15 @@ public class Batch extends PersistentEntity {
 
 	private String reference;
 
+	private String description;
+
 	public Batch() {
 	}
 
-	public Batch(Contract contract, String reference) throws HttpException {
+	public Batch(Contract contract, String reference, String description)
+			throws HttpException {
 		setContract(contract);
-		update(reference);
+		update(reference, description);
 	}
 
 	public Contract getContract() {
@@ -146,16 +156,27 @@ public class Batch extends PersistentEntity {
 		this.reference = reference;
 	}
 
-	public void update(String reference) throws HttpException {
+	public String getDescription() {
+		return description;
+	}
+
+	public void setDescription(String description) {
+		this.description = description;
+	}
+
+	public void update(String reference, String description)
+			throws HttpException {
 		if (reference.trim().length() == 0) {
 			throw new UserException("The batch reference can't be blank.");
 		}
 		setReference(reference);
+		setDescription(description.trim());
 	}
 
 	public Element toXml(Document doc) throws HttpException {
 		Element element = super.toXml(doc, "batch");
 		element.setAttribute("reference", reference);
+		element.setAttribute("description", description);
 		return element;
 	}
 
@@ -174,10 +195,11 @@ public class Batch extends PersistentEntity {
 					.getUri());
 		} else {
 			String reference = inv.getString("reference");
+			String description = inv.getString("description");
 			if (!inv.isValid()) {
 				throw new UserException(document());
 			}
-			update(reference);
+			update(reference, description);
 			Hiber.commit();
 			inv.sendOk(document());
 		}
@@ -190,7 +212,6 @@ public class Batch extends PersistentEntity {
 		while (bills.next()) {
 			Bill bill = (Bill) bills.get(0);
 			bill.delete();
-			Hiber.flush();
 			Hiber.session().clear();
 		}
 		bills.close();

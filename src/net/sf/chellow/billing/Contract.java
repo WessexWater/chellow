@@ -330,8 +330,8 @@ public abstract class Contract extends PersistentEntity implements
 	public RateScript insertFirstRateScript(Long id, HhStartDate startDate,
 			HhStartDate finishDate, String rateScriptStr) throws HttpException {
 		setRateScripts(new HashSet<RateScript>());
-		RateScript rateScript = new RateScript(this, id, startDate,
-				finishDate, rateScriptStr);
+		RateScript rateScript = new RateScript(this, id, startDate, finishDate,
+				rateScriptStr);
 		Hiber.session().save(rateScript);
 		rateScripts.add(rateScript);
 		Hiber.flush();
@@ -477,8 +477,9 @@ public abstract class Contract extends PersistentEntity implements
 		return batch;
 	}
 
-	public Batch insertBatch(String reference) throws HttpException {
-		Batch batch = new Batch(this, reference);
+	public Batch insertBatch(String reference, String description)
+			throws HttpException {
+		Batch batch = new Batch(this, reference, description);
 		try {
 			Hiber.session().save(batch);
 			Hiber.flush();

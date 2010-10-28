@@ -63,15 +63,32 @@
 						<input type="reset" value="Reset" />
 					</fieldset>
 				</form>
-				<ul>
-					<xsl:for-each select="/source/batches/batch">
-						<li>
-							<a href="{@id}/">
-								<xsl:value-of select="@reference" />
-							</a>
-						</li>
-					</xsl:for-each>
-				</ul>
+				<table>
+					<thead>
+						<tr>
+							<th>Chellow Id</th>
+							<th>Reference</th>
+							<th>Description</th>
+						</tr>
+					</thead>
+					<tbody>
+						<xsl:for-each select="/source/batches/batch">
+							<tr>
+								<td>
+									<a href="{@id}/">
+										<xsl:value-of select="@id" />
+									</a>
+								</td>
+								<td>
+									<xsl:value-of select="@reference" />
+								</td>
+								<td>
+									<xsl:value-of select="@description" />
+								</td>
+							</tr>
+						</xsl:for-each>
+					</tbody>
+				</table>
 				<br />
 			</body>
 		</html>

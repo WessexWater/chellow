@@ -773,21 +773,17 @@ source.setAttribute('debug', debug)]]></value>
                                 <th rowspan="2">From</th>
                                 <th rowspan="2">To</th>
                                 <th rowspan="2">Sites</th>
-                                <th rowspan="2">PC</th>
-                                <th rowspan="2">MSN</th>
-                                <th rowspan="2">MTC</th>
-                                <th rowspan="2">CoP</th>
-                                <th rowspan="2">SSC</th>
-                                <th colspan="2">HHDC</th>
-                                <th rowspan="2">Channels</th>
-                                <th rowspan="2">LLFC</th>
+                                <th rowspan="2"><a title="Profile Class">PC</a></th>
+                                <th rowspan="2"><a title="Meter Serial Number">MSN</a></th>
+                                <th rowspan="2"><a title="Meter Timeswitch Class">MTC</a></th>
+                                <th rowspan="2"><a title="Metering Code Of Practice">CoP</a></th>
+                                <th rowspan="2"><a title="Standard Settlement Configuration">SSC</a></th>
+                                <th rowspan="2"><a title="Line Loss Factor Class">LLFC</a></th>
                                 <th rowspan="2">MPAN Core</th>
                                 <th rowspan="2">kVA</th>
                                 <th colspan="2">Supplier</th>
                             </tr>
                             <tr>
-                                <th>Contract</th>
-                                <th>Account</th>
                                 <th>Contract</th>
                                 <th>Account</th>
                             </tr>
@@ -856,50 +852,6 @@ source.setAttribute('debug', debug)]]></value>
                                         title="{ssc/@description}">
                                         <xsl:value-of select="ssc/@code" />
                                     </a>
-                                </td>
-                                <td rowspan="4">
-                                    <a
-                                        href="{/source/request/@context-path}/reports/115/output/?hhdc-contract-id={hhdc-contract/@id}">
-                                        <xsl:value-of select="hhdc-contract/@name" />
-                                    </a>
-                                </td>
-                                <td rowspan="4">
-                                    <xsl:value-of select="@hhdc-account" />
-                                </td>
-                                <td rowspan="4">
-                                    <xsl:if test="channel">
-                                        <ul>
-                                            <xsl:for-each select="channel">
-                                                <li>
-                                                    <xsl:choose>
-                                                        <xsl:when test="channel-snag">
-                                                            <xsl:attribute name="title">
-<xsl:for-each select="channel-snag">
-<xsl:value-of
-                                                                select="concat(@description, ' ', hh-start-date[@label='start']/@year, '-', hh-start-date[@label='start']/@month, '-',  hh-start-date[@label='start']/@day, ' ', hh-start-date[@label='start']/@hour, ':', hh-start-date[@label='start']/@minute, ' to ')" />
-<xsl:choose>
-<xsl:when test="hh-start-date[@label='finish']">
-<xsl:value-of
-                                                                select="concat(hh-start-date[@label='finish']/@year, '-', hh-start-date[@label='finish']/@month, '-',  hh-start-date[@label='finish']/@day, ' ', hh-start-date[@label='finish']/@hour, ':', hh-start-date[@label='finish']/@minute, ', ')" />
-</xsl:when>
-<xsl:otherwise>
-<xsl:value-of select="'ongoing'" />
-</xsl:otherwise>
-</xsl:choose>
-</xsl:for-each>
-</xsl:attribute>
-                                                            <strong>
-                                                                <xsl:call-template name="channel" />
-                                                            </strong>
-                                                        </xsl:when>
-                                                        <xsl:otherwise>
-                                                            <xsl:call-template name="channel" />
-                                                        </xsl:otherwise>
-                                                    </xsl:choose>
-                                                </li>
-                                            </xsl:for-each>
-                                        </ul>
-                                    </xsl:if>
                                 </td>
                                 <th colspan="5">Import</th>
                               </tr>
@@ -983,6 +935,76 @@ source.setAttribute('debug', debug)]]></value>
                             </xsl:otherwise>
                             </xsl:choose>
                         </tbody>
+                        <thead>
+                            <tr>
+                                <th colspan="3">MOP</th>
+                                <th colspan="3">HHDC</th>
+                                <th rowspan="2" colspan="8">Channels</th>
+                            </tr>
+                            <tr>
+                                <th colspan="2">Contract</th>
+                                <th>Account</th>
+                                <th colspan="2">Contract</th>
+                                <th>Account</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                                <td rowspan="1" colspan="2">
+                                    <a
+                                        href="{/source/request/@context-path}/reports/107/output/?mop-contract-id={mop-contract/@id}">
+                                        <xsl:value-of select="mop-contract/@name" />
+                                    </a>
+                                </td>
+                                <td rowspan="1" colspan="1">
+                                    <xsl:value-of select="@mop-account" />
+                                </td>
+                                <td rowspan="1" colspan="2">
+                                    <a
+                                        href="{/source/request/@context-path}/reports/115/output/?hhdc-contract-id={hhdc-contract/@id}">
+                                        <xsl:value-of select="hhdc-contract/@name" />
+                                    </a>
+                                </td>
+                                <td rowspan="1">
+                                    <xsl:value-of select="@hhdc-account" />
+                                </td>
+                                <td rowspan="1" colspan="8">
+                                    <xsl:if test="channel">
+
+                                            <xsl:for-each select="channel">
+                                                <xsl:choose>                                                    
+
+<xsl:when test="channel-snag">
+<xsl:attribute name="title">
+<xsl:for-each select="channel-snag">
+<xsl:value-of
+                                                                select="concat(@description, ' ', hh-start-date[@label='start']/@year, '-', hh-start-date[@label='start']/@month, '-',  hh-start-date[@label='start']/@day, ' ', hh-start-date[@label='start']/@hour, ':', hh-start-date[@label='start']/@minute, ' to ')" />
+<!-- -->
+<xsl:choose>
+<xsl:when test="hh-start-date[@label='finish']">
+<xsl:value-of
+                                                                select="concat(hh-start-date[@label='finish']/@year, '-', hh-start-date[@label='finish']/@month, '-',  hh-start-date[@label='finish']/@day, ' ', hh-start-date[@label='finish']/@hour, ':', hh-start-date[@label='finish']/@minute, ', ')" />
+</xsl:when>
+<xsl:otherwise>
+<xsl:value-of select="'ongoing'" />
+</xsl:otherwise>
+</xsl:choose>
+</xsl:for-each>
+</xsl:attribute>
+<strong>
+                                                                <xsl:call-template name="channel" />
+                                                            </strong>
+</xsl:when>
+<xsl:otherwise>
+                                                            <xsl:call-template name="channel" />
+                                                        </xsl:otherwise>  
+            </xsl:choose>                                        
+                                            </xsl:for-each>
+
+                                    </xsl:if>
+
+                                </td>
+
+                        </tbody>
                     </table>
 
                     <br />
@@ -1044,8 +1066,7 @@ source.setAttribute('debug', debug)]]></value>
                                                 <xsl:if test="position()=1">
                                                     <td rowspan="{../@rows-high}">
                                                         <xsl:value-of select="'['" />
-                                                        <a
-                                                            href="{/source/request/@context-path}/supplier-contracts/{../batch/supplier-contract/@id}/batches/{../batch/@id}/bills/{../@id}/">
+                                                        <a title="{../batch/@description}" href="{/source/request/@context-path}/supplier-contracts/{../batch/supplier-contract/@id}/batches/{../batch/@id}/bills/{../@id}/">
                                                             <xsl:value-of select="'edit'" />
                                                         </a>
                                                         <xsl:value-of select="']'" />
@@ -1073,8 +1094,7 @@ source.setAttribute('debug', debug)]]></value>
                                                         </a>
                                                     </td>
                                                     <td rowspan="{../@rows-high}">
-                                                        <a
-                                                            href="{/source/request/@context-path}/reports/91/output/?batch-id={../batch/@id}">
+                                                        <a title="{../batch/@description}" href="{/source/request/@context-path}/reports/91/output/?batch-id={../batch/@id}">
                                                             <xsl:value-of select="../batch/@reference" />
                                                         </a>
                                                     </td>
@@ -1180,8 +1200,8 @@ source.setAttribute('debug', debug)]]></value>
                                                 </a>
                                             </td>
                                             <td>
-                                                <a
-                                                    href="{/source/request/@context-path}/reports/91/output/?batch-id={batch/@id}">
+                                                <a title="{batch/@description}"
+href="{/source/request/@context-path}/reports/91/output/?batch-id={batch/@id}">
                                                     <xsl:value-of select="batch/@reference" />
                                                 </a>
                                             </td>
@@ -1659,11 +1679,7 @@ if inv.hasParameter('finish-year'):
 else:
     cal = MonadDate.getCalendar()
     cal.setTimeInMillis(System.currentTimeMillis())
-    inv.sendTemporaryRedirect('/reports/11/output/?site-id=' + str(site_id) + '&months=1&finish-month=' + str(cal.get(Calendar.MONTH) + 1) + '&finish-year=' + str(cal.get(Calendar.YEAR)))
-
-
-
-]]></value>
+    inv.sendTemporaryRedirect('/reports/11/output/?site-id=' + str(site_id) + '&months=1&finish-month=' + str(cal.get(Calendar.MONTH) + 1) + '&finish-year=' + str(cal.get(Calendar.YEAR)))]]></value>
         <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
 <xsl:stylesheet version="1.0"
     xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
@@ -8098,6 +8114,7 @@ for batch in Hiber.session().createQuery("from Batch batch where batch.contract 
                     <thead>
                         <tr>
                             <th>Reference</th>
+                            <th>Description</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -8108,6 +8125,9 @@ for batch in Hiber.session().createQuery("from Batch batch where batch.contract 
                                         href="{/source/request/@context-path}/reports/91/output/?batch-id={@id}">
                                         <xsl:value-of select="@reference" />
                                     </a>
+                                </td>
+                                <td>
+                                    <xsl:value-of select="@description" />
                                 </td>
                             </tr>
                         </xsl:for-each>
@@ -8200,6 +8220,10 @@ source.setAttribute('bill-count', str(len(bills)))]]></value>
                   <tr>
                     <th>Reference</th>
                     <td><xsl:value-of select="/source/batch/@reference"/></td>
+                  </tr>
+                  <tr>
+                    <th>Description</th>
+                    <td><xsl:value-of select="/source/batch/@description"/></td>
                   </tr>
                   <tr>
                     <th>Number Of Bills</th>
@@ -8351,6 +8375,7 @@ for batch in Hiber.session().createQuery("from Batch batch where batch.contract 
                     <thead>
                         <tr>
                             <th>Reference</th>
+                            <th>Description</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -8361,6 +8386,9 @@ for batch in Hiber.session().createQuery("from Batch batch where batch.contract 
                                         href="{/source/request/@context-path}/reports/203/output/?batch-id={@id}">
                                         <xsl:value-of select="@reference" />
                                     </a>
+                                </td>
+                                <td>
+                                    <xsl:value-of select="@description" />
                                 </td>
                             </tr>
                         </xsl:for-each>
@@ -9141,23 +9169,13 @@ pw.close()]]></value>
         <value><![CDATA[report]]></value>
         <value><![CDATA[105]]></value>
         <value><![CDATA[true]]></value>
-        <value><![CDATA[Supplier Contract Bill Snags]]></value>
+        <value><![CDATA[Supplier Contract Bill]]></value>
         <value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree, UserException
-from net.sf.chellow.billing import SupplierContract
+from net.sf.chellow.billing import Bill
 
-contract_id = inv.getLong('supplier-contract-id')
-contract = SupplierContract.getSupplierContract(contract_id)
-bill_snags_element = doc.createElement('bill-snags')
-source.appendChild(bill_snags_element)
-bill_snags_element.appendChild(contract.toXml(doc, XmlTree('party')))
-source.appendChild(bill_snags_element)
-for bill_snag in Hiber.session().createQuery("from BillSnag snag where snag.isIgnored is false and snag.bill.batch.contract = :contract order by snag.bill.id, snag.description").setEntity('contract', contract).list():
-    bill_snags_element.appendChild(bill_snag.toXml(doc, XmlTree('bill', XmlTree('supply'))))
-
-missing_bill_snags_element = doc.createElement('missing-bill-snags')
-source.appendChild(missing_bill_snags_element)
-for snag in Hiber.session().createQuery("from SupplySnag snag where snag.contract = :contract order by snag.supply.id").setEntity('contract', contract).list():
-    missing_bill_snags_element.appendChild(snag.toXml(doc, XmlTree('supply')))]]></value>
+bill_id = inv.getLong('bill-id')
+bill = Bill.getBill(bill_id)
+source.appendChild(bill.toXml(doc, XmlTree('batch', XmlTree('contract', XmlTree('party'))).put('reads', XmlTree('tpr')).put('type').put('supply')))]]></value>
         <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
 <xsl:stylesheet version="1.0"
     xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
@@ -9169,19 +9187,21 @@ for snag in Hiber.session().createQuery("from SupplySnag snag where snag.contrac
             <head>
                 <link rel="stylesheet" type="text/css"
                     href="{/source/request/@context-path}/reports/19/output/" />
+
                 <title>
                     Home &gt; Supplier Contracts &gt;
                     <xsl:value-of
-                        select="/source/bill-snags/supplier-contract/@name" />
-                    &gt; Bill Snags
+                        select="/source/bill/batch/supplier-contract/@name" />
+                    &gt; Batches &gt;
+                    <xsl:value-of select="/source/bill/batch/@reference" />
+                    &gt; <xsl:value-of select="/source/bill/@reference" />
                 </title>
             </head>
             <body>
                 <p>
                     <a
                         href="{/source/request/@context-path}/reports/1/output/">
-                        <xsl:value-of
-                            select="'Home'" />
+                        <xsl:value-of select="'Home'" />
                     </a>
                     &gt;
                     <a
@@ -9190,17 +9210,28 @@ for snag in Hiber.session().createQuery("from SupplySnag snag where snag.contrac
                     </a>
                     &gt;
                     <a
-                        href="{/source/request/@context-path}/reports/77/output/?supplier-contract-id={/source/bill-snags/supplier-contract/@id}">
+                        href="{/source/request/@context-path}/reports/77/output/?supplier-contract-id={/source/bill/batch/supplier-contract/@id}">
                         <xsl:value-of
-                            select="/source/bill-snags/supplier-contract/@name" />
+                            select="/source/bill/batch/supplier-contract/@name" />
                     </a>
                     &gt;
-                    <xsl:value-of select="'Snags ['" />
                     <a
-                        href="{/source/request/@context-path}/supplier-contracts/{/source/bill-snags/supplier-contract/@id}/">
+                        href="{/source/request/@context-path}/reports/89/output/?supplier-contract-id={/source/bill/batch/supplier-contract/@id}">
+                        <xsl:value-of select="'Batches'" />
+                    </a>
+                    &gt;
+                    <a href="{/source/request/@context-path}/reports/91/output/?batch-id={/source/bill/batch/@id}">
+                    <xsl:value-of
+                        select="/source/bill/batch/@reference" /></a>
+                    &gt;
+                    <xsl:value-of
+                        select="concat(/source/bill/@reference, ' [')" />
+                    <a
+                        href="{/source/request/@context-path}/supplier-contracts/{/source/bill/batch/supplier-contract/@id}/batches/{/source/bill/batch/@id}/bills/{/source/bill/@id}/">
                         <xsl:value-of select="'edit'" />
                     </a>
                     <xsl:value-of select="']'" />
+
                 </p>
                 <br />
                 <xsl:if test="//message">
@@ -9212,103 +9243,159 @@ for snag in Hiber.session().createQuery("from SupplySnag snag where snag.contrac
                         </xsl:for-each>
                     </ul>
                 </xsl:if>
-                <table><caption>Bill Snags</caption>
-                    <thead>
-                        <tr>
-                            <th>Bill</th>
-                            <th>Date Created</th>
-                            <th>Is Ignored?</th>
-                            <th>Description</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <xsl:for-each
-                            select="/source/bill-snags/bill-snag">
-                            <tr>
-                                <td>
-                                    <a
-                                        href="{/source/request/@context-path}/reports/7/output/?supply-id={bill/supply/@id}">
-                                        <xsl:value-of select="bill/@id" />
-                                    </a>
-                                </td>
-                                <td>
-                                    <xsl:value-of
-                                        select="concat(date[@label='created']/@year, '-', date[@label='created']/@month, '-', date[@label='created']/@day)" />
-                                </td>
-                                <td>
-                                    <xsl:choose>
-                                        <xsl:when
-                                            test="@is-ignored = 'true'">
-                                            Yes
-                                        </xsl:when>
-                                        <xsl:otherwise>
-                                            No
-                                        </xsl:otherwise>
-                                    </xsl:choose>
-                                </td>
-                                <td>
-                                    <xsl:value-of select="@description" />
-                                </td>
-                            </tr>
-                        </xsl:for-each>
-                    </tbody>
-                </table>
-<br/>
-                <table><caption>Missing-Bill Snags</caption>
+                <br/>
+                                <br/>
+                <table><caption>Bill</caption>
                     <thead>
                         <tr>
                             <th>Supply</th>
-                            <th>Date Created</th>
+                            <th>Reference</th>
+                            <th>Account</th>
+                            <th>Issue Date</th>
                             <th>From</th>
                             <th>To</th>
-                            <th>Is Ignored?</th>
-                            <th>Description</th>
+                            <th>kWh</th>
+                            <th>Net</th>
+                            <th>VAT</th>
+                            <th>Type</th>
+                            <th>Status</th>
+                            <th>Check</th>
                         </tr>
                     </thead>
                     <tbody>
-                        <xsl:for-each
-                            select="/source/missing-bill-snags/supply-snag">
                             <tr>
+<td>
+<a
+                                        href="{/source/request/@context-path}/reports/7/output/?supply-id={/source/bill/supply/@id}">
+                                    View
+ </a>
+                                </td>
+
                                 <td>
-                                    <a
-                                        href="{/source/request/@context-path}/reports/7/output/?supply-id={supply/@id}">
-                                        <xsl:value-of select="supply/@id" />
-                                    </a>
+                                    <xsl:value-of select="/source/bill/@reference" />
+                                </td>
+<td>
+                                    <xsl:value-of select="/source/bill/@account" />
+                                </td>
+<td>
+                                    <xsl:value-of
+                                        select="concat(/source/bill/date[@label='issue']/@year, '-', /source/bill/date[@label='issue']/@month, '-', /source/bill/date[@label='issue']/@day, ' ', /source/bill/date[@label='issue']/@hour, ':', /source/bill/date[@label='issue']/@minute)" />
                                 </td>
                                 <td>
                                     <xsl:value-of
-                                        select="concat(date[@label='created']/@year, '-', date[@label='created']/@month, '-', date[@label='created']/@day)" />
+                                        select="concat(/source/bill/hh-start-date[@label='start']/@year, '-', /source/bill/hh-start-date[@label='start']/@month, '-', /source/bill/hh-start-date[@label='start']/@day, ' ', /source/bill/hh-start-date[@label='start']/@hour, ':', /source/bill/hh-start-date[@label='start']/@minute)" />
                                 </td>
                                 <td>
-                                    <xsl:value-of select="concat(hh-start-date[@label='start']/@year, '-', hh-start-date[@label='start']/@month, '-', hh-start-date[@label='start']/@day, ' ', hh-start-date[@label='start']/@hour, ':', hh-start-date[@label='start']/@minute)" />
+                                    <xsl:value-of
+                                        select="concat(/source/bill/hh-start-date[@label='finish']/@year, '-', /source/bill/hh-start-date[@label='finish']/@month, '-', /source/bill/hh-start-date[@label='finish']/@day, ' ', /source/bill/hh-start-date[@label='finish']/@hour, ':', /source/bill/hh-start-date[@label='finish']/@minute)" />
+                                </td>
+                                <td>
+                                    <xsl:value-of select="/source/bill/@kwh" />
+                                </td>
+                                <td>
+                                    <xsl:value-of select="/source/bill/@net" />
+                                </td>
+                                <td>
+                                    <xsl:value-of select="/source/bill/@vat" />
+                                </td>
+                                <td>
+                                  <a href="{/source/request/@context-path}/reports/201/output/?bill-type-id={/source/bill/bill-type/@id}" title="{/source/bill/bill-type/@description}">
+                                  <xsl:value-of select="/source/bill/bill-type/@code" />
+                                  </a>
                                 </td>
                                 <td>
                                     <xsl:choose>
-                                    <xsl:when test="hh-start-date[@label='finish']">
-                                    <xsl:value-of select="concat(hh-start-date[@label='finish']/@year, '-', hh-start-date[@label='finish']/@month, '-', hh-start-date[@label='finish']/@day, ' ', hh-start-date[@label='finish']/@hour, ':', hh-start-date[@label='finish']/@minute)" />
-                                    </xsl:when>
-                                    <xsl:otherwise>
-                                        Ongoing
-                                    </xsl:otherwise>
-                                    </xsl:choose>
-                                </td>
-                                <td>
-                                    <xsl:choose>
-                                        <xsl:when
-                                            test="@is-ignored = 'true'">
-                                            Yes
+                                        <xsl:when test="/source/bill/@is-paid='true'">
+                                            Paid
+                                        </xsl:when>
+                                        <xsl:when test="/source/bill/@is-paid='false'">
+                                            Rejected
                                         </xsl:when>
                                         <xsl:otherwise>
-                                            No
+                                            Pending
                                         </xsl:otherwise>
                                     </xsl:choose>
                                 </td>
-                                <td>
-                                    <xsl:value-of select="@description" />
-                                </td>
+                                <td><form action="{/source/request/@context-path}/reports/111/output/"><fieldset>
+                  <input type="hidden" name="bill-id" value="{/source/bill/@id}"/><input type="submit" name="check" value="Check"/>
+                  </fieldset>
+                </form>
+                               </td>
                             </tr>
-                        </xsl:for-each>
                     </tbody>
+                </table>
+                <br/>
+                <br/>
+                <table><caption>Reads</caption>
+                    <thead>
+                        <tr>
+                            <th rowspan="2">Edit</th>
+                            <th rowspan="2">MPAN</th>
+                            <th rowspan="2">Coefficient</th>
+                            <th rowspan="2">Units</th>
+                            <th rowspan="2">TPR</th>
+                            <th rowspan="2">Meter Serial Number</th>
+                            <th colspan="3">Previous</th>
+                            <th colspan="3">Present</th>
+                        </tr>
+                        <tr>
+                            <th>Date</th>
+                            <th>Value</th>
+                            <th>Type</th>
+                            <th>Date</th>
+                            <th>Value</th>
+                            <th>Type</th>
+                        </tr>
+                    </thead>
+                    <xsl:for-each select="/source/bill/register-read">
+                        <tr>
+                            <td>
+                                <xsl:value-of select="'['"/>
+                                <a href="{/source/request/@context-path}/supplier-contracts/{/source/bill/batch/supplier-contract/@id}/batches/{/source/bill/batch/@id}/bills/{/source/bill/@id}/reads/{@id}/">
+                                    <xsl:value-of select="'edit'" />
+                                </a><xsl:value-of select="']'"/>
+                            </td>
+                            <td>
+                                <xsl:value-of select="@mpan-str" />
+                            </td>
+                            <td>
+                                <xsl:value-of select="@coefficient" />
+                            </td>
+                            <td>
+                                <xsl:value-of select="@units" />
+                            </td>
+                            <td>
+                                <a href="{/source/request/@context-path}/reports/97/output/?tpr-id={tpr/@id}/">
+                                    <xsl:value-of select="tpr/@code" />
+                                </a>
+                            </td>
+                            <td>
+                                <xsl:value-of select="@meter-serial-number" />
+                            </td>
+                            <td>
+                                <xsl:value-of
+                                    select="concat(hh-start-date[@label='previous']/@year, '-', hh-start-date[@label='previous']/@month, '-', hh-start-date[@label='previous']/@day)" />
+                            </td>
+                            <td>
+                                <xsl:value-of select="@previous-value" />
+                            </td>
+                            <td>
+<a href="{/source/request/@context-path}/reports/143/output/?type-id={read-type[@label='previous']/@id}/">
+                                <xsl:value-of select="read-type[@label='previous']/@code" /></a>
+                            </td>
+                            <td>
+                                <xsl:value-of
+                                    select="concat(hh-start-date[@label='present']/@year, '-', hh-start-date[@label='present']/@month, '-', hh-start-date[@label='present']/@day)" />
+                            </td>
+                            <td>
+                                <xsl:value-of select="@present-value" />
+                            </td>
+                            <td>
+<a href="{/source/request/@context-path}/reports/143/output/?type-id={read-type[@label='present']/@id}/">
+                                <xsl:value-of select="read-type[@label='present']/@code" /></a>
+                            </td>
+                        </tr>
+                    </xsl:for-each>
                 </table>
             </body>
         </html>
@@ -14265,6 +14352,7 @@ for batch in Hiber.session().createQuery("from Batch batch where batch.contract 
                     <thead>
                         <tr>
                             <th>Reference</th>
+                            <th>Description</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -14275,6 +14363,9 @@ for batch in Hiber.session().createQuery("from Batch batch where batch.contract 
                                         href="{/source/request/@context-path}/reports/193/output/?batch-id={@id}">
                                         <xsl:value-of select="@reference" />
                                     </a>
+                                </td>
+                                <td>
+                                    <xsl:value-of select="@description" />
                                 </td>
                             </tr>
                         </xsl:for-each>
@@ -14367,6 +14458,10 @@ source.setAttribute('bill-count', str(len(bills)))]]></value>
                   <tr>
                     <th>Reference</th>
                     <td><xsl:value-of select="/source/batch/@reference"/></td>
+                  </tr>
+                  <tr>
+                    <th>Description</th>
+                    <td><xsl:value-of select="/source/batch/@description"/></td>
                   </tr>
                   <tr>
                     <th>Number Of Bills</th>
@@ -14812,6 +14907,10 @@ source.setAttribute('bill-count', str(len(bills)))]]></value>
                   <tr>
                     <th>Reference</th>
                     <td><xsl:value-of select="/source/batch/@reference"/></td>
+                  </tr>
+                  <tr>
+                    <th>Description</th>
+                    <td><xsl:value-of select="/source/batch/@description"/></td>
                   </tr>
                   <tr>
                     <th>Number Of Bills</th>

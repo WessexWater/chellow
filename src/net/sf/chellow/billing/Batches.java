@@ -73,10 +73,12 @@ public class Batches extends EntityList {
 
 	public void httpPost(Invocation inv) throws HttpException {
 		String reference = inv.getString("reference");
+		String description = inv.getString("description");
+
 		if (!inv.isValid()) {
 			throw new UserException(document());
 		}
-		Batch batch = contract.insertBatch(reference);
+		Batch batch = contract.insertBatch(reference, description);
 		Hiber.commit();
 		inv.sendSeeOther(batch.getUri());
 	}
