@@ -9,12 +9,17 @@
         <value><![CDATA[aahedc]]></value>
         <value><![CDATA[from net.sf.chellow.physical import HhStartDate
 
-def hh(bill, supply_source):
-    hh_data = supply_source.hh_data
-    rate_script = contract.rateScript(HhStartDate(hh_data[0]['start-date']))
+def hh(bill, supply_source, whole_data=None):
+    if whole_data is None:
+        whole_data = supply_source.whole_data
 
-    bill['aahedc-gsp-kwh'] = sum(datum['gsp-kwh'] for datum in hh_data)
-    bill['aahedc-msp-kwh'] = sum(datum['msp-kwh'] for datum in hh_data)
+    hh_data = whole_data['data']
+    summary = whole_data['summary']
+
+    rate_script = contract.rateScript(summary['start-date'])
+
+    bill['aahedc-gsp-kwh'] = summary['sum-gsp-kwh']
+    bill['aahedc-msp-kwh'] = summary['sum-msp-kwh']
     bill['aahedc-rate'] = supply_source.comterp.get('rate')(rate_script, 'aahedc_gbp_per_gsp_kwh')
     bill['aahedc-gbp'] = bill['aahedc-gsp-kwh'] * bill['aahedc-rate']]]></value>
         <value><![CDATA[61]]></value>
@@ -11568,7 +11573,7 @@ class SupplySource(DataSource):
         generation = self.supply.getGeneration(start_date)
         year_advance = -1 * year_adjustment
 
-        # remove last clause to enable general nhh metered
+        # remove last clause to enable general nhh metered and self.bill_start is not None
         if self.pc_code != '00' and generation is not None and len(generation.getChannels()) == 0:
             ci_query = Hiber.session().createQuery("select mod(ci.dayOfWeek, 7) + 1 as dayOfWeek, (ci.startMonth - 1) * 100 + ci.startDay as startMonth, ci.startHour + (ci.startMinute / 60.0) as startHourDec, (ci.endMonth - 1) * 100 + ci.endDay as endMonth, ci.endHour + (ci.endMinute / 60.0) as endHourDec from ClockInterval ci where ci.tpr = :tpr")
             if self.meter_type_code == 'UM':
@@ -11629,7 +11634,7 @@ class SupplySource(DataSource):
 
             elif self.bill_start is None:
                 #s elf.pw.println('starting, ' + str(System.currentTimeMillis()))
-                search_date = start_date
+                search_date = history_start
                 search_msn = ''
                 read_0 = None
                 read_1 = None
@@ -11751,7 +11756,7 @@ class SupplySource(DataSource):
                 #s elf.pw.println('initial read_0 ' + str(read_0) + ' read_1 ' + str(read_1) + ' read_2 ' + str(read_2))
                             
 
-                search_date = start_date
+                search_date = history_start
                 keep_going = True
 
                 next_present_read_query = Hiber.session().createQuery("select read, read.bill from RegisterRead read where read.units.int = 0 and read.presentType.code in ('N', 'N3', 'C') and read.bill.supply = :supply and read.presentDate.date >= :finishDate order by read.presentDate.date, read.bill.issueDate desc, read.bill.type.code").setEntity('supply', self.supply).setMaxResults(1)
@@ -11857,42 +11862,42 @@ class SupplySource(DataSource):
                                 aft_read = read_0
                                 fore_read = read_1
 
-                            if start_date.before(read_2['date'].getNext()):
+                            if history_start.before(read_2['date'].getNext()):
                                 chunk_start = read_2['date'].getNext()
                             else:
-                                chunk_start = start_date
+                                chunk_start = history_start
 
-                            if read_3 is None or read_3['date'].after(finish_date):
-                                chunk_finish = finish_date
+                            if read_3 is None or read_3['date'].after(history_finish):
+                                chunk_finish = history_finish
                             else:
                                 chunk_finish = read_3['date']
 
                             passes.append({'aft-read': aft_read, 'fore-read': fore_read, 'chunk-finish': chunk_finish, 'chunk-start': chunk_start})
                         elif read_0 is not None and read_1 is not None and read_0['msn'] == read_1['msn']:
-                            if start_date.before(read_1['date']):
+                            if history_start.before(read_1['date']):
                                 chunk_start = read_1['date'].getNext()
                             else:
-                                chunk_start = start_date
-                            passes.append({'aft-read': read_0, 'fore-read': read_1, 'chunk-finish': finish_date, 'chunk-start': chunk_start})
+                                chunk_start = history_start
+                            passes.append({'aft-read': read_0, 'fore-read': read_1, 'chunk-finish': history_finish, 'chunk-start': chunk_start})
                     elif read_2 is not None:
-                        if finish_date.before(read_3['date']):
-                            chunk_finish = finish_date
+                        if history_finish.before(read_3['date']):
+                            chunk_finish = history_finish
                         else:
                             chunk_finish = read_3['date']
 
-                        if start_date.after(read_2['date']):
-                            chunk_start = start_date
+                        if history_start.after(read_2['date']):
+                            chunk_start = history_start
                         else:
                             chunk_start = read_2['date'].getNext()
 
                         passes.append({'aft-read': read_2, 'fore-read': read_3, 'chunk-start': chunk_start, 'chunk-finish': chunk_finish})
-                        if read_1 is None and read_2['date'].after(start_date):
+                        if read_1 is None and read_2['date'].after(history_start):
                             #s elf.pw.println('doing extra bit ')                             
-                            if read_2['date'].after(finish_date):
-                                chunk_finish = finish_date
+                            if read_2['date'].after(history_finish):
+                                chunk_finish = history_finish
                             else:
                                 chunk_finish = read_2['date'].getPrevious()
-                            passes.append({'aft-read': read_2, 'fore-read': read_3, 'chunk-finish': finish_date, 'chunk-start': start_date})
+                            passes.append({'aft-read': read_2, 'fore-read': read_3, 'chunk-finish': history_finish, 'chunk-start': history_start})
                                 
                     #s elf.pw.println('aft read ' + str(aft_read.getPresentDate()) + ' aft bill ' + str(aft_bill.getId()) + ' fore read ' + str(fore_read.getPresentDate()) + ' fore bill ' + str(fore_bill.getId()))
                             
@@ -11994,7 +11999,7 @@ class SupplySource(DataSource):
                     if keep_going and read_2 is not None and read_2['date'].after(finish_date):
                         keep_going = False
 
-                    if keep_going and read_3['date'].after(finish_date) and not (read_2 is None and read_3['date'].after(start_date)):
+                    if keep_going and read_3['date'].after(history_finish) and not (read_2 is None and read_3['date'].after(history_start)):
                         keep_going = False
 
                     read_0 = read_1

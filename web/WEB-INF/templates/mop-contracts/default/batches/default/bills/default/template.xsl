@@ -429,61 +429,6 @@
 								</label>
 								<br />
 								<br />
-								<label>
-									<xsl:value-of select="'Status '" />
-									<select name="status">
-										<option value="0">
-											<xsl:choose>
-												<xsl:when test="/source/request/parameter[@name='status']">
-													<xsl:if
-														test="/source/request/parameter[@name='status']/value/text() = 0">
-														<xsl:attribute name="selected" />
-													</xsl:if>
-												</xsl:when>
-												<xsl:otherwise>
-													<xsl:if test="/source/bill/@status = 0">
-														<xsl:attribute name="selected" />
-													</xsl:if>
-												</xsl:otherwise>
-											</xsl:choose>
-											<xsl:value-of select="'Pending'" />
-										</option>
-										<option value="1">
-											<xsl:choose>
-												<xsl:when test="/source/request/parameter[@name='status']">
-													<xsl:if
-														test="/source/request/parameter[@name='status']/value/text() = 1">
-														<xsl:attribute name="selected" />
-													</xsl:if>
-												</xsl:when>
-												<xsl:otherwise>
-													<xsl:if test="/source/bill/@status = 1">
-														<xsl:attribute name="selected" />
-													</xsl:if>
-												</xsl:otherwise>
-											</xsl:choose>
-											<xsl:value-of select="'Paid'" />
-										</option>
-										<option value="2">
-											<xsl:choose>
-												<xsl:when test="/source/request/parameter[@name='status']">
-													<xsl:if
-														test="/source/request/parameter[@name='status']/value/text() = 2">
-														<xsl:attribute name="selected" />
-													</xsl:if>
-												</xsl:when>
-												<xsl:otherwise>
-													<xsl:if test="/source/bill/@status = 2">
-														<xsl:attribute name="selected" />
-													</xsl:if>
-												</xsl:otherwise>
-											</xsl:choose>
-											<xsl:value-of select="'Rejected'" />
-										</option>
-									</select>
-								</label>
-								<br />
-								<br />
 								<input type="submit" value="Update" />
 								<input type="reset" value="Reset" />
 							</fieldset>

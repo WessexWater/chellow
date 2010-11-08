@@ -60,7 +60,6 @@
 			not-null="true" />
 		<property type="string" name="breakdown" column="breakdown"
 			not-null="true" />
-		<property type="boolean" name="isPaid" column="is_paid" />
 		<set name="reads" inverse="true" lazy="true" cascade="all,delete-orphan">
 			<key column="bill_id" />
 			<one-to-many class="net.sf.chellow.physical.RegisterRead" />

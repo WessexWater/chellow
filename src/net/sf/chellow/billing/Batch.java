@@ -276,7 +276,7 @@ public class Batch extends PersistentEntity {
 			BigDecimal kwh, BigDecimal net, BigDecimal vat, BillType type,
 			String breakdown) throws HttpException {
 		Bill bill = new Bill(this, supply, account, reference, issueDate,
-				startDate, finishDate, kwh, net, vat, type, null, breakdown);
+				startDate, finishDate, kwh, net, vat, type, breakdown);
 		Hiber.session().save(bill);
 		Hiber.flush();
 		return bill;

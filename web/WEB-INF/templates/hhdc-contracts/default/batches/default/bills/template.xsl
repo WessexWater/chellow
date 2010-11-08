@@ -112,19 +112,6 @@
 								<td>
 									<xsl:value-of select="@breakout" />
 								</td>
-								<td>
-									<xsl:choose>
-										<xsl:when test="not(@is-paid)">
-											Pending
-										</xsl:when>
-										<xsl:when test="@is-paid='true'">
-											Paid
-										</xsl:when>
-										<xsl:when test="@is-paid='false'">
-											Rejected
-										</xsl:when>
-									</xsl:choose>
-								</td>
 							</tr>
 						</xsl:for-each>
 					</tbody>
@@ -468,51 +455,6 @@
 									</xsl:choose>
 								</xsl:attribute>
 							</input>
-						</label>
-						<br />
-						<label>
-							<xsl:value-of select="'Status '" />
-							<select name="status">
-								<option value="0">
-									<xsl:choose>
-										<xsl:when test="/source/request/parameter[@name='status']">
-											<xsl:if
-												test="/source/request/parameter[@name='status']/value/text() = 0">
-												<xsl:attribute name="selected" />
-											</xsl:if>
-										</xsl:when>
-										<xsl:otherwise>
-										</xsl:otherwise>
-									</xsl:choose>
-									<xsl:value-of select="'Pending'" />
-								</option>
-								<option value="1">
-									<xsl:choose>
-										<xsl:when test="/source/request/parameter[@name='status']">
-											<xsl:if
-												test="/source/request/parameter[@name='status']/value/text() = 1">
-												<xsl:attribute name="selected" />
-											</xsl:if>
-										</xsl:when>
-										<xsl:otherwise>
-										</xsl:otherwise>
-									</xsl:choose>
-									<xsl:value-of select="'Paid'" />
-								</option>
-								<option value="2">
-									<xsl:choose>
-										<xsl:when test="/source/request/parameter[@name='status']">
-											<xsl:if
-												test="/source/request/parameter[@name='status']/value/text() = 2">
-												<xsl:attribute name="selected" />
-											</xsl:if>
-										</xsl:when>
-										<xsl:otherwise>
-										</xsl:otherwise>
-									</xsl:choose>
-									<xsl:value-of select="'Rejected'" />
-								</option>
-							</select>
 						</label>
 						<br />
 						<br />

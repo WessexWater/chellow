@@ -778,6 +778,9 @@ source.setAttribute('debug', debug)]]></value>
                                 <th rowspan="2"><a title="Meter Timeswitch Class">MTC</a></th>
                                 <th rowspan="2"><a title="Metering Code Of Practice">CoP</a></th>
                                 <th rowspan="2"><a title="Standard Settlement Configuration">SSC</a></th>
+                                <th colspan="2"><a title="Meter Operator">MOP</a></th>
+                                <th colspan="2"><a title="Data Collector">DC</a></th>
+                                <th rowspan="2">Channels</th>
                                 <th rowspan="2"><a title="Line Loss Factor Class">LLFC</a></th>
                                 <th rowspan="2">MPAN Core</th>
                                 <th rowspan="2">kVA</th>
@@ -786,6 +789,11 @@ source.setAttribute('debug', debug)]]></value>
                             <tr>
                                 <th>Contract</th>
                                 <th>Account</th>
+                                <th>Contract</th>
+                                <th>Account</th>
+                                <th>Contract</th>
+                                <th>Account</th>
+
                             </tr>
                         </thead>
                         <tbody>
@@ -852,6 +860,59 @@ source.setAttribute('debug', debug)]]></value>
                                         title="{ssc/@description}">
                                         <xsl:value-of select="ssc/@code" />
                                     </a>
+                                </td>
+                                <td rowspan="4">
+                                    <a
+                                        href="{/source/request/@context-path}/reports/107/output/?mop-contract-id={mop-contract/@id}">
+                                        <xsl:value-of select="mop-contract/@name" />
+                                    </a>
+                                </td>
+                                <td rowspan="4">
+                                    <xsl:value-of select="@mop-account" />
+                                </td>
+                                <td rowspan="4">
+                                    <a
+                                        href="{/source/request/@context-path}/reports/115/output/?hhdc-contract-id={hhdc-contract/@id}">
+                                        <xsl:value-of select="hhdc-contract/@name" />
+                                    </a>
+                                </td>
+                                <td rowspan="4">
+                                    <xsl:value-of select="@hhdc-account" />
+                                </td>
+                                <td rowspan="4">
+                                    <xsl:if test="channel">
+                                        
+                                            <xsl:for-each select="channel">
+                                                
+                                                    <xsl:choose>
+                                                        <xsl:when test="channel-snag">
+                                                            <xsl:attribute name="title">
+<xsl:for-each select="channel-snag">
+<xsl:value-of
+                                                                select="concat(@description, ' ', hh-start-date[@label='start']/@year, '-', hh-start-date[@label='start']/@month, '-',  hh-start-date[@label='start']/@day, ' ', hh-start-date[@label='start']/@hour, ':', hh-start-date[@label='start']/@minute, ' to ')" />
+<xsl:choose>
+<xsl:when test="hh-start-date[@label='finish']">
+<xsl:value-of
+                                                                select="concat(hh-start-date[@label='finish']/@year, '-', hh-start-date[@label='finish']/@month, '-',  hh-start-date[@label='finish']/@day, ' ', hh-start-date[@label='finish']/@hour, ':', hh-start-date[@label='finish']/@minute, ', ')" />
+</xsl:when>
+<xsl:otherwise>
+<xsl:value-of select="'ongoing'" />
+</xsl:otherwise>
+</xsl:choose>
+</xsl:for-each>
+</xsl:attribute>
+                                                            <strong>
+                                                                <xsl:call-template name="channel" />
+                                                            </strong>
+                                                        </xsl:when>
+                                                        <xsl:otherwise>
+                                                            <xsl:call-template name="channel" />
+                                                        </xsl:otherwise>
+                                                    </xsl:choose>
+                                                
+                                            </xsl:for-each>
+                                        
+                                    </xsl:if>
                                 </td>
                                 <th colspan="5">Import</th>
                               </tr>
@@ -935,85 +996,14 @@ source.setAttribute('debug', debug)]]></value>
                             </xsl:otherwise>
                             </xsl:choose>
                         </tbody>
-                        <thead>
-                            <tr>
-                                <th colspan="3">MOP</th>
-                                <th colspan="3">HHDC</th>
-                                <th rowspan="2" colspan="8">Channels</th>
-                            </tr>
-                            <tr>
-                                <th colspan="2">Contract</th>
-                                <th>Account</th>
-                                <th colspan="2">Contract</th>
-                                <th>Account</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                                <td rowspan="1" colspan="2">
-                                    <a
-                                        href="{/source/request/@context-path}/reports/107/output/?mop-contract-id={mop-contract/@id}">
-                                        <xsl:value-of select="mop-contract/@name" />
-                                    </a>
-                                </td>
-                                <td rowspan="1" colspan="1">
-                                    <xsl:value-of select="@mop-account" />
-                                </td>
-                                <td rowspan="1" colspan="2">
-                                    <a
-                                        href="{/source/request/@context-path}/reports/115/output/?hhdc-contract-id={hhdc-contract/@id}">
-                                        <xsl:value-of select="hhdc-contract/@name" />
-                                    </a>
-                                </td>
-                                <td rowspan="1">
-                                    <xsl:value-of select="@hhdc-account" />
-                                </td>
-                                <td rowspan="1" colspan="8">
-                                    <xsl:if test="channel">
-
-                                            <xsl:for-each select="channel">
-                                                <xsl:choose>                                                    
-
-<xsl:when test="channel-snag">
-<xsl:attribute name="title">
-<xsl:for-each select="channel-snag">
-<xsl:value-of
-                                                                select="concat(@description, ' ', hh-start-date[@label='start']/@year, '-', hh-start-date[@label='start']/@month, '-',  hh-start-date[@label='start']/@day, ' ', hh-start-date[@label='start']/@hour, ':', hh-start-date[@label='start']/@minute, ' to ')" />
-<!-- -->
-<xsl:choose>
-<xsl:when test="hh-start-date[@label='finish']">
-<xsl:value-of
-                                                                select="concat(hh-start-date[@label='finish']/@year, '-', hh-start-date[@label='finish']/@month, '-',  hh-start-date[@label='finish']/@day, ' ', hh-start-date[@label='finish']/@hour, ':', hh-start-date[@label='finish']/@minute, ', ')" />
-</xsl:when>
-<xsl:otherwise>
-<xsl:value-of select="'ongoing'" />
-</xsl:otherwise>
-</xsl:choose>
-</xsl:for-each>
-</xsl:attribute>
-<strong>
-                                                                <xsl:call-template name="channel" />
-                                                            </strong>
-</xsl:when>
-<xsl:otherwise>
-                                                            <xsl:call-template name="channel" />
-                                                        </xsl:otherwise>  
-            </xsl:choose>                                        
-                                            </xsl:for-each>
-
-                                    </xsl:if>
-
-                                </td>
-
-                        </tbody>
                     </table>
 
                     <br />
                     <table>
-                        <caption>Import Bills</caption>
+                        <caption>Import Supplier Bills</caption>
                         <thead>
                             <tr>
-                                <th rowspan="2">Edit</th>
-                                <th rowspan="2">Check</th>
+                                <th rowspan="2">View</th>
                                 <th rowspan="2">From</th>
                                 <th rowspan="2">To</th>
                                 <th rowspan="2">Batch</th>
@@ -1065,19 +1055,10 @@ source.setAttribute('debug', debug)]]></value>
                                             <tr>
                                                 <xsl:if test="position()=1">
                                                     <td rowspan="{../@rows-high}">
-                                                        <xsl:value-of select="'['" />
-                                                        <a title="{../batch/@description}" href="{/source/request/@context-path}/supplier-contracts/{../batch/supplier-contract/@id}/batches/{../batch/@id}/bills/{../@id}/">
-                                                            <xsl:value-of select="'edit'" />
+                                                        <a
+                                                            href="{/source/request/@context-path}/reports/105/output/?bill-id={../@id}">
+                                                            <xsl:value-of select="'view'" />
                                                         </a>
-                                                        <xsl:value-of select="']'" />
-                                                    </td>
-
-                                                    <td rowspan="{../@rows-high}">
-                                                        <form
-                                                            action="{/source/request/@context-path}/reports/111/output/">
-                                                            <input type="hidden" name="bill-id" value="{../@id}" />
-                                                            <input type="submit" name="check" value="Check" />
-                                                        </form>
                                                     </td>
                                                     <td rowspan="{../@rows-high}">
                                                         <a
@@ -1094,7 +1075,8 @@ source.setAttribute('debug', debug)]]></value>
                                                         </a>
                                                     </td>
                                                     <td rowspan="{../@rows-high}">
-                                                        <a title="{../batch/@description}" href="{/source/request/@context-path}/reports/91/output/?batch-id={../batch/@id}">
+                                                        <a
+                                                            href="{/source/request/@context-path}/reports/91/output/?batch-id={../batch/@id}">
                                                             <xsl:value-of select="../batch/@reference" />
                                                         </a>
                                                     </td>
@@ -1133,14 +1115,16 @@ source.setAttribute('debug', debug)]]></value>
 
                                                 <xsl:for-each select="register-read">
                                                     <td style="border-right: none;">
-                                                        <xsl:value-of select="@previous-value" />
+                                                        <a title="{concat(hh-start-date[@label='previous']/@year, '-', hh-start-date[@label='previous']/@month, '-', hh-start-date[@label='previous']/@day, ' ', @meter-serial-number)}">
+                                                        <xsl:value-of select="@previous-value" /></a>
                                                     </td>
                                                     <td style="border-left: none;">
                                                         <xsl:value-of select="read-type[@label='previous']/@code" />
                                                     </td>
 
                                                     <td style="border-right: none;">
-                                                        <xsl:value-of select="@present-value" />
+<a title="{concat(hh-start-date[@label='present']/@year, '-', hh-start-date[@label='present']/@month, '-', hh-start-date[@label='present']/@day, ' ', @meter-serial-number)}">
+                                                        <xsl:value-of select="@present-value" /></a>
                                                     </td>
                                                     <td style="border-left: none;">
                                                         <xsl:value-of select="read-type[@label='present']/@code" />
@@ -1200,8 +1184,8 @@ source.setAttribute('debug', debug)]]></value>
                                                 </a>
                                             </td>
                                             <td>
-                                                <a title="{batch/@description}"
-href="{/source/request/@context-path}/reports/91/output/?batch-id={batch/@id}">
+                                                <a
+                                                    href="{/source/request/@context-path}/reports/91/output/?batch-id={batch/@id}">
                                                     <xsl:value-of select="batch/@reference" />
                                                 </a>
                                             </td>
@@ -9093,6 +9077,7 @@ from java.util import GregorianCalendar, TimeZone, Locale, Calendar
 from net.sf.chellow.physical import MpanCore, HhStartDate, Supply
 from net.sf.chellow.billing import SupplierContract, NonCoreContract
 from java.text import DecimalFormat
+from net.sf.chellow.monad.types import MonadDate
 
 end_year = inv.getInteger('end-year')
 end_month = inv.getInteger('end-month')
@@ -9112,22 +9097,6 @@ computer = NonCoreContract.getNonCoreContract('computer')
 
 comterp = computer.callFunction('create_comterp', [])
 
-calCt = GregorianCalendar(TimeZone.getTimeZone("Europe/London"), Locale.UK)
-
-calUtc = GregorianCalendar(TimeZone.getTimeZone("GMT"), Locale.UK)
-calUtc.clear()
-calUtc.set(Calendar.YEAR, end_year)
-calUtc.set(Calendar.MONTH, end_month - 1)
-calUtc.add(Calendar.MONTH, 1)
-calUtc.add(Calendar.MINUTE, -30)
-finish_date = HhStartDate(calUtc.getTime())
-calUtc.add(Calendar.MINUTE, 30)
-calUtc.add(Calendar.MONTH, -1 * months)
-start_date = HhStartDate(calUtc.getTime())
-
-kwh_format = DecimalFormat("#,###")
-gbp_format = DecimalFormat("#,##0.00")
-
 pw.print('Site Id,From,To')
 pw.flush()
 bill_titles = contract.callFunction('third_party_virtual_bill_titles', [])
@@ -9141,25 +9110,39 @@ if len(site_code) == 0:
 else:
     site_query = Hiber.session().createQuery("from Site site where site.code = :siteCode order by site.code").setString('siteCode', site_code)
 sites = site_query.scroll()
-while sites.next():
-    site = sites.get(0)
-    forecast_date = computer.callFunction('forecast_date', [])
-    data_source = computer.callFunction('site_source', [site, start_date, finish_date, forecast_date, comterp, pw])
-    bill = contract.callFunction('third_party_bill', [data_source])
 
-    for value in [data_source.id, data_source.start_date, data_source.finish_date]:
-        pw.print('"' + str(value) + '",')
-    for title in bill_titles:
-        pw.print('"' + str(bill.get(title, '')) + '",')
-        if title in bill:
-            del bill[title]
-    keys = bill.keys()
-    keys.sort()
-    for k in keys:
-        pw.print(',"' + k + '","' + str(bill[k]) + '"')
-    pw.println('')
-    pw.flush()
-    Hiber.session().clear()
+cal = MonadDate.getCalendar()
+
+while sites.next():
+    for month in range(months):
+        cal.clear()
+        cal.set(Calendar.YEAR, end_year)
+        cal.set(Calendar.MONTH, end_month - 1)
+        cal.add(Calendar.MONTH, 1 - month)
+        cal.add(Calendar.MINUTE, -30)
+        finish_date = HhStartDate(cal.getTime())
+        cal.add(Calendar.MINUTE, 30)
+        cal.add(Calendar.MONTH, -1)
+        start_date = HhStartDate(cal.getTime())
+        
+        site = sites.get(0)
+        forecast_date = computer.callFunction('forecast_date', [])
+        data_source = computer.callFunction('site_source', [site, start_date, finish_date, forecast_date, comterp, pw])
+        bill = contract.callFunction('third_party_bill', [data_source])
+
+        for value in [data_source.id, data_source.start_date, data_source.finish_date]:
+            pw.print('"' + str(value) + '",')
+        for title in bill_titles:
+            pw.print('"' + str(bill.get(title, '')) + '",')
+            if title in bill:
+                del bill[title]
+        keys = bill.keys()
+        keys.sort()
+        for k in keys:
+            pw.print(',"' + k + '","' + str(bill[k]) + '"')
+        pw.println('')
+        pw.flush()
+        Hiber.session().clear()
 sites.close()
 pw.close()]]></value>
         <value><![CDATA[]]></value>
@@ -14537,15 +14520,16 @@ from net.sf.chellow.monad import Hiber, UserException
 from java.lang import System, Integer, String
 from net.sf.chellow.monad.types import MonadDate
 from java.sql import Timestamp, ResultSet
-from java.util import GregorianCalendar, Calendar, TimeZone, Locale, Date
-from net.sf.chellow.physical import HhStartDate, Configuration
+from java.util import GregorianCalendar, Calendar, TimeZone, Locale, Date, Properties
+from net.sf.chellow.physical import HhStartDate, Configuration, MpanCore
 from net.sf.chellow.billing import Batch, NonCoreContract
 from org.python.util import PythonInterpreter
 from org.apache.commons.httpclient import HttpClient, NameValuePair, UsernamePasswordCredentials
 from org.apache.commons.httpclient.auth import AuthScope
 from org.apache.commons.httpclient.methods import GetMethod, PostMethod
-from java.util import Properties
 from java.io import StringReader
+from java.net import URL, URLEncoder
+from com.Ostermiller.util import CSVParser
 
 
 inv.getResponse().setContentType("text/csv")
@@ -14556,46 +14540,217 @@ config = Configuration.getConfiguration()
 properties = Properties()
 properties.load(StringReader(config.getProperties()))
 
-proxy_host = properties.get('proxy.host')
-proxy_port = properties.get('proxy.port')
-proxy_user_name = properties.get('proxy.user.name')
-proxy_password = properties.get('proxy.password')
-user_name = properties.get('ecoes.user.name')
-password = properties.get('ecoes.password')
+ECOES_USER_NAME_KEY = 'ecoes.user.name'
+user_name = properties.get(ECOES_USER_NAME_KEY)
+if user_name is None:
+    raise UserException("The property " + ECOES_USER_NAME_KEY + " cannot be found in the configuration properties.")
+
+ECOES_PASSWORD_KEY = 'ecoes.password'
+password = properties.get(ECOES_PASSWORD_KEY)
+if password is None:
+    raise UserException("The property " + ECOES_PASSWORD_KEY + " cannot be found in the configuration properties.")
 
 client = HttpClient()
 
-if proxy_host is not None:
-    client.getParams().setAuthenticationPreemptive(True)
-    client.getHostConfiguration().setProxy(proxy_host, Integer.parseInt(proxy_port))
-    proxy_creds = UsernamePasswordCredentials(proxy_user_name, proxy_password)
-    client.getState().setProxyCredentials(AuthScope.ANY, proxy_creds)
-
 get_method = GetMethod('http://www.ecoes.co.uk/')
-pw.println('about to look at homepage')
-pw.flush()
 response_code = client.executeMethod(get_method)
-pw.println('response code ' + str(response_code))
 get_method.releaseConnection()
 
-pw.println('user name ' + user_name + ' password ' + password + ' proxy user ' + proxy_user_name + ' proxy password ' + proxy_password)
-pw.flush()
 post_method = PostMethod("http://www.ecoes.co.uk/login.asp")
-data = [NameValuePair("userName", user_name), NameValuePair("password", password), NameValuePair('beenHereBefore', '1'), NameValuePair('forceLogout', '0')]
-
-post_method.setRequestBody(data)
+post_method.setRequestBody([NameValuePair("userName", user_name), NameValuePair("password", password), NameValuePair('beenHereBefore', '1'), NameValuePair('forceLogout', '1')])
 response_code = client.executeMethod(post_method)
-#page_is = post_method.getResponseAsStream()
-pw.println('response code ' + str(response_code))
-headers = post_method.getResponseHeaders()
-for header in headers:
-    pw.println(header)
-response_body = post_method.getResponseBody()
-pw.println(String(response_body))
+location_header = post_method.getResponseHeader('Location')
+location = location_header.getValue()
+guid = URLEncoder.encode(location[19:])
 post_method.releaseConnection()
 
-#result = urllib2.urlopen('http://www.ecoes.co.uk/saveportfolioMpans.asp?guid=')
+mpans = []
+for mpan_core_str, cop_code in Hiber.session().createQuery("select mpan.core.dso.code || mpan.core.uniquePart || mpan.core.checkDigit, mpan.supplyGeneration.cop.code  from Mpan mpan where mpan.core.dso.code not in ('99') and mpan.supplyGeneration.finishDate is null order by mpan.core.dso.code, mpan.core.uniquePart, mpan.core.checkDigit").list():
+    mpans.append(mpan_core_str)
+    if cop_code == '3':
+        mpans.append(mpan_core_str)
 
+get_method = GetMethod('http://www.ecoes.co.uk/saveportfolioMpans.asp?guid=' + guid)
+
+pw.print("MPAN Core,MPAN Core No Spaces,ECOES PC,Chellow PC,ECOES MTC,Chellow MTC,ECOES LLFC,Chellow LLFC,ECOES SSC,Chellow SSC,ECOES Supplier, Chellow Supplier,ECOES DC,Chellow DC,ECOES MOP,Chellow MOP,ECOES GSP Group,Chellow GSP Group,ECOES MSN, Chellow MSN,ECOES Meter Type,Chellow Meter Type,Problem")
+pw.flush()
+
+client.executeMethod(get_method)
+csv_is = get_method.getResponseBodyAsStream()
+parser = CSVParser(csv_is)
+values = parser.getLine()
+values = parser.getLine()
+
+while values != None:
+    problem = ''
+
+    ecoes_titles = ['mpan-core', 'address-line-1', 'address-line-2', 'address-line-3', 'address-line-4', 'address-line-5', 'address-line-6', 'address-line-7', 'address-line-8', 'address-line-9', 'post-code', 'supplier', 'registration-from', 'mtc', 'mtc-date', 'llfc', 'llfc-from', 'pc', 'ssc', 'measurement-class', 'energisation-status', 'da', 'dc', 'mop', 'mop-appoint-date', 'gsp-group', 'gsp-effective-from', 'dno', 'msn', 'meter-install-date', 'meter-type', 'map-id']
+
+    ecoes = dict(zip(ecoes_titles, [values[i] for i in range(len(ecoes_titles))]))
+
+    mpan_spaces = ecoes['mpan-core'][:2] + ' ' + ecoes['mpan-core'][2:6] + ' ' + ecoes['mpan-core'][6:10] + ' ' + ecoes['mpan-core'][-3:]
+
+    disconnected = len(ecoes['supplier']) == 0
+    current_chell = ecoes['mpan-core'] in mpans
+
+    if disconnected and current_chell:
+        problem += "Disconnected in ECOES, but current in Chellow. "
+    elif not disconnected and not current_chell:
+        problem += "In ECOES (energized or de-energized), but not current in Chellow. "
+
+    if current_chell:
+        mpans.remove(ecoes['mpan-core'])
+        mpan_core = MpanCore.getMpanCore(ecoes['mpan-core'])
+        supply = mpan_core.getSupply()
+        generation = supply.getGeneration(None)
+        for cand_mpan in generation.getMpans():
+            if cand_mpan.getCore().equals(mpan_core):
+                mpan = cand_mpan
+                break
+
+        chellow_pc = generation.getPc().getCode()
+        try:
+            if int(ecoes['pc']) != int(chellow_pc):
+                problem += "The PCs don't match. "
+        except ValueError:
+            problem += "Can't parse the PC. "
+
+        chellow_mtc = generation.getMtc().getCode()
+        try:
+            if int(ecoes['mtc']) != int(chellow_mtc):
+                problem += "The MTCs don't match. "
+        except ValueError:
+            problem += "Can't parse the MTC. "
+
+        chellow_llfc = mpan.getLlfc().getCode()
+        try:
+            if int(ecoes['llfc']) != int(chellow_llfc):
+                problem += "The LLFCs don't match. "
+        except ValueError:
+            problem += "Can't parse the LLFC. "
+
+        chellow_ssc = generation.getSsc()
+        if chellow_ssc is None:
+            chellow_ssc = ''
+            chellow_ssc_int = None
+        else:
+            chellow_ssc = chellow_ssc.getCode()
+            chellow_ssc_int = int(chellow_ssc)
+
+        if len(ecoes['ssc']) > 0:
+            ecoes_ssc_int = int(ecoes['ssc'])
+        else:
+            ecoes_ssc_int = None
+
+        if ecoes_ssc_int != chellow_ssc_int and not (ecoes_ssc_int is None and chellow_ssc_int is None):
+            problem += "The SSCs don't match. "
+
+        chellow_supplier = mpan.getSupplierContract().getParty().getParticipant().getCode()
+        if chellow_supplier != ecoes['supplier']:
+            problem += "The supplier codes don't match. "
+
+        hhdc_contract = generation.getHhdcContract()
+        if hhdc_contract is None:
+            chellow_dc = ''
+        else:
+            chellow_dc = hhdc_contract.getParty().getParticipant().getCode()
+        if chellow_dc != ecoes['dc']:
+            problem += "The DC codes don't match. "
+
+        mop_contract = generation.getMopContract()
+        if mop_contract is None:
+            chellow_mop = ''
+        else:
+            chellow_mop = mop_contract.getParty().getParticipant().getCode()
+
+        if chellow_mop != ecoes['mop']:
+            problem += "The MOP codes don't match. "
+
+        chellow_gsp_group = supply.getGspGroup().getCode()
+        if chellow_gsp_group != ecoes['gsp-group']:
+            problem += "The GSP group codes don't match. "
+
+        chellow_msn = generation.getMeterSerialNumber()
+        if chellow_msn is None:
+            chellow_msn = ''
+        if chellow_msn != ecoes['msn']:
+            problem += "The meter serial numbers don't match. "
+
+        if chellow_pc == 0:
+            chellow_meter_type = 'H'
+        else:
+            if len(generation.getChannels()) > 0:
+                chellow_meter_type = 'RCAMR'
+            else:
+                chellow_meter_type = 'N'
+        if chellow_meter_type != ecoes['meter-type']:
+            problem += "The meter types don't match. See http://dtc.mrasco.com/DataItem.aspx?ItemCounter=0483 "        
+    else:
+        chellow_pc = ''
+        chellow_mtc = ''
+        chellow_llfc = ''
+        chellow_ssc = ''
+        chellow_supplier = ''
+        chellow_dc = ''
+        chellow_mop = ''
+        chellow_gsp_group = ''
+        chellow_msn = ''
+        chellow_meter_type = ''
+
+    if len(problem) > 0:
+        pw.print('\n' + ','.join('"' + str(val) + '"' for val in [mpan_spaces, ecoes['mpan-core'], ecoes['pc'], chellow_pc, ecoes['mtc'], chellow_mtc, ecoes['llfc'], chellow_llfc, ecoes['ssc'], chellow_ssc, ecoes['supplier'], chellow_supplier, ecoes['dc'], chellow_dc, ecoes['mop'], chellow_mop, ecoes['gsp-group'], chellow_gsp_group, ecoes['msn'], chellow_msn, ecoes['meter-type'], chellow_meter_type, problem]))
+    else:
+        pw.print(' ')
+    pw.flush()
+    Hiber.session().clear()
+    values = parser.getLine()
+
+parser.close()
+get_method.releaseConnection()
+
+for mpan_core_str in mpans:
+    mpan_core_spaces = mpan_core_str[:2] + ' ' + mpan_core_str[2:6] + ' ' + mpan_core_str[6:10] + ' ' + mpan_core_str[-3:]
+    mpan_core = MpanCore.getMpanCore(mpan_core_str)
+    supply = mpan_core.getSupply()
+    generation = supply.getGeneration(None)
+    for cand_mpan in generation.getMpans():
+        if cand_mpan.getCore().equals(mpan_core):
+            mpan = cand_mpan
+            break
+
+    ssc = generation.getSsc()
+    if ssc is None:
+        ssc = ''
+    else:
+        ssc = ssc.getCode()
+
+    hhdc_contract = generation.getHhdcContract()
+    if hhdc_contract is None:
+        dc = ''
+    else:
+        dc = hhdc_contract.getParty().getParticipant().getCode()
+
+    mop_contract = generation.getMopContract()
+    if mop_contract is None:
+        mop = ''
+    else:
+        mop = mop_contract.getParty().getParticipant().getCode()
+
+    msn = generation.getMeterSerialNumber()
+    if msn is None:
+        msn = ''
+
+    if generation.getPc().getCode() == '00':
+        meter_type = 'H'
+    else:
+        if len(generation.getChannels()) > 0:
+            meter_type = 'RCAMR'
+        else:
+            meter_type = 'N'
+
+    pw.print('\n' + ','.join('"' + str(val) + '"' for val in [mpan_core_spaces, mpan_core_str, '', generation.getPc(), '', generation.getMtc(), '', mpan.getLlfc(),'', ssc, '', mpan.getSupplierContract().getParty().getParticipant().getCode(), '', dc, '', mop, '', supply.getGspGroup().getCode(), '', msn, '', meter_type, 'In Chellow, but not in ECOES.']))
+    pw.flush()
+    Hiber.session().clear()
 pw.close()]]></value>
         <value><![CDATA[]]></value>
     </line>

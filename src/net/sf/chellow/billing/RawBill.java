@@ -166,7 +166,7 @@ public class RawBill extends MonadObject {
 		element.appendChild(startDate.toXml(doc));
 		finishDate.setLabel("finish");
 		element.appendChild(finishDate.toXml(doc));
-		element.setAttribute("net", kwh.toString());
+		element.setAttribute("kwh", kwh.toString());
 		element.setAttribute("net", net.toString());
 		element.setAttribute("vat", vat.toString());
 		element.setAttribute("account-reference", accountReference);

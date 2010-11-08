@@ -74,8 +74,7 @@
 							<th>Net</th>
 							<th>VAT</th>
 							<th>Type</th>
-							<th>Breakout</th>
-							<th>Status</th>
+							<th>Breakdown</th>
 						</tr>
 					</thead>
 					<tbody>
@@ -111,19 +110,6 @@
 								</td>
 								<td>
 									<xsl:value-of select="@breakout" />
-								</td>
-								<td>
-									<xsl:choose>
-										<xsl:when test="not(@is-paid)">
-											Pending
-										</xsl:when>
-										<xsl:when test="@is-paid='true'">
-											Paid
-										</xsl:when>
-										<xsl:when test="@is-paid='false'">
-											Rejected
-										</xsl:when>
-									</xsl:choose>
 								</td>
 							</tr>
 						</xsl:for-each>
