@@ -12317,7 +12317,7 @@ source.appendChild(MonadDate.getDaysXml(doc))]]></value>
         <value><![CDATA[report]]></value>
         <value><![CDATA[155]]></value>
         <value><![CDATA[true]]></value>
-        <value><![CDATA[Supplies Monthly Duration Selector]]></value>
+        <value><![CDATA[CSV Supplies Monthly Duration Selector]]></value>
         <value><![CDATA[from java.util import GregorianCalendar, TimeZone, Locale, Calendar
 from net.sf.chellow.monad.types import MonadDate
 
@@ -13601,7 +13601,7 @@ source.setAttribute('year', str(cal.get(Calendar.YEAR)))]]></value>
         <value><![CDATA[report]]></value>
         <value><![CDATA[177]]></value>
         <value><![CDATA[true]]></value>
-        <value><![CDATA[Supplies Monthly Duration]]></value>
+        <value><![CDATA[CSV Supplies Monthly Duration]]></value>
         <value><![CDATA[from net.sf.chellow.monad import Hiber, UserException
 from net.sf.chellow.monad.types import MonadDate
 from java.sql import Timestamp, ResultSet
@@ -13634,7 +13634,7 @@ start_date = HhStartDate(cal.getTime())
 
 comterp = computer.callFunction('create_comterp', [])
 
-field_names = ['supply-id', 'supply-name', 'source-code', 'generator-type', 'month', 'pc-code', 'site-code', 'site-name', 'metering-type', 'import-mpan-core', 'metered-import-kwh', 'metered-import-net-gbp', 'metered-import-estimated-kwh', 'export-mpan-core', 'metered-export-kwh', 'metered-export-estimated-kwh', 'problem']
+field_names = ['supply-id', 'supply-name', 'source-code', 'generator-type', 'month', 'pc-code', 'msn', 'site-code', 'site-name', 'metering-type', 'import-mpan-core', 'metered-import-kwh', 'metered-import-net-gbp', 'metered-import-estimated-kwh', 'export-mpan-core', 'metered-export-kwh', 'metered-export-estimated-kwh', 'problem']
 
 inv.getResponse().setContentType("text/csv")
 inv.getResponse().setHeader('Content-Disposition', 'filename=output.csv;')
@@ -13706,7 +13706,7 @@ for i in range(months):
         est_kwh_query.setEntity('supply', supply)
 
 
-        values = {'supply-id': supply.getId(), 'supply-name': supply.getName(), 'source-code': source_code, 'generator-type': generator_type, 'month': month_str, 'pc-code': pc_code, 'site-code': site.getCode(), 'site-name': site.getName(), 'metering-type': metering_type, 'problem': ''}
+        values = {'supply-id': supply.getId(), 'supply-name': supply.getName(), 'source-code': source_code, 'generator-type': generator_type, 'month': month_str, 'pc-code': pc_code, 'msn': generation.getMeterSerialNumber(), 'site-code': site.getCode(), 'site-name': site.getName(), 'metering-type': metering_type, 'problem': ''}
 
         for polarity, pol_name in [(True, 'import'), (False, 'export')]:
             mpan = generation.getMpan(polarity)
