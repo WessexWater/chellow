@@ -20,25 +20,28 @@ Installation
 ------------
 1. Create a PostgreSQL database called chellow.
 
-2. In your Tomcat, configure a JNDI JDBC datasource called jdbc/chellow.
+2. In postgresql.conf set the default_transaction_isolation parameter to 'serializable'. 
+
+3. In your Tomcat, configure a JNDI JDBC datasource called jdbc/chellow.
     a) Copy context.xml from the same directory as this file, and update with your own settings.
     b) Install the JDBC driver from
           http://jdbc.postgresql.org/download/postgresql-8.4-702.jdbc4.jar
           in the /lib/ directory.
          
-3. Deploy the file chellow.war on your servlet container.
+4. Deploy the file chellow.war on your servlet container.
 
 
-Upgrade From Version 439
+Upgrade From Version 461
 ------------------------
 1. Upgrade your system so that it meets the requirements above.
 2. Note that the context.xml file has changed.
-3. Copy the report at the bottom of this file, and run it with the following parameters to export the user data:
+3. In postgresql.conf set the default_transaction_isolation parameter to 'serializable'. 
+4. Copy the report at the bottom of this file, and run it with the following parameters to export the user data:
 
 /reports/<report number>/output/
 
-2. Install Chellow afresh with a blank database.
-3. Import the user data by going to General Imports section.
+5. Install Chellow afresh with a blank database.
+6. Import the user data by going to General Imports section.
 
 
 from net.sf.chellow.monad import Hiber, UserException, MonadUtils

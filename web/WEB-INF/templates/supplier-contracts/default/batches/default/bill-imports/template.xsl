@@ -71,10 +71,8 @@
 						<br />
 						<input type="file" name="file"
 							value="{/source/request/parameter[@name = 'file']/value}" />
-						<br />
-						<br />
+						<xsl:value-of select="' '" />
 						<input type="submit" value="Import" />
-						<input type="reset" value="Reset" />
 					</fieldset>
 				</form>
 			</body>

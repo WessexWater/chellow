@@ -22,7 +22,6 @@
 		<property name="connection.datasource">
 			java:comp/env/jdbc/chellow
 		</property>
-		<property name="hibernate.connection.isolation">8</property>
 		<property name="dialect">
 			org.hibernate.dialect.PostgreSQLDialect
 		</property>
@@ -33,7 +32,6 @@
 			org.hibernate.cache.NoCacheProvider </property>
 		-->
 		<property name="hibernate.jdbc.batch_size">20</property>
-		<property name="hibernate.connection.isolation">8</property>
 		
 		
 		<!-- Mapping files -->

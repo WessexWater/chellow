@@ -662,8 +662,9 @@ supply = Supply.getSupply(supply_id)
 supply_element = supply.toXml(doc, XmlTree("source").put("mpanCores").put("gspGroup").put("generatorType"))
 source.appendChild(supply_element)
 for generation in supply.getGenerations():
-    generation_element = generation.toXml(doc, XmlTree("siteSupplyGenerations", XmlTree('site')).put('pc').put("mtc").put('ssc').put('cop').put("hhdcContract", XmlTree("party")))
+    generation_element = generation.toXml(doc, XmlTree("siteSupplyGenerations", XmlTree('site')).put('pc').put("mtc").put('ssc').put('cop').put("hhdcContract", XmlTree("party")).put('mopContract', XmlTree('party')))
     supply_element.appendChild(generation_element)
+    generation_element.setAttribute('mop-account', generation.getMopAccount())
     for channel in generation.getChannels():
         channel_element = channel.toXml(doc)
         generation_element.appendChild(channel_element)
@@ -6726,7 +6727,7 @@ contracts_element.appendChild(dso.toXml(doc))]]></value>
                     href="{/source/request/@context-path}/reports/19/output/" />
                 <title>
                     Home &gt; DSOs &gt;
-                    <xsl:value-of select="/source/dso-contract/dso/@code" />
+                    <xsl:value-of select="/source/dso-contracts/dso/@code" />
                     &gt; Contracts
                 </title>
             </head>
@@ -12583,9 +12584,13 @@ else:
 computer = NonCoreContract.getNonCoreContract('computer')
 
 cal = MonadDate.getCalendar()
-cal.clear()
 cal.set(Calendar.YEAR, year)
 cal.set(Calendar.MONTH, month - 1)
+cal.set(Calendar.DAY_OF_MONTH, 1)
+cal.set(Calendar.HOUR_OF_DAY, 0)
+cal.set(Calendar.MINUTE, 0)
+cal.set(Calendar.SECOND, 0)
+cal.set(Calendar.MILLISECOND, 0)
 cal.add(Calendar.MONTH, 1)
 cal.add(Calendar.MINUTE, -30)
 finish_date = HhStartDate(cal.getTime())
@@ -12691,7 +12696,7 @@ def process_site(site, month_start, month_finish, forecast_date, pw):
                 bill_finish_millis = bill_finish.getDate().getTime()
 
                 kwh_bills = []
-                for cand_bill in Hiber.session().createQuery("from Bill bill where bill.supply = :supply and bill.batch.contract = :contract and bill.startDate.date <= :finishDate and bill.finishDate.date >= :startDate and bill.type.code != 'W' order by bill.issueDate desc, bill.startDate.date").setEntity('supply', supply).setEntity('contract', import_mpan.getSupplierContract()).setTimestamp('startDate', bill_start.getDate()).setTimestamp('finishDate', bill_finish.getDate()).list():
+                for cand_bill in Hiber.session().createQuery("from Bill bill where bill.supply = :supply and bill.batch.contract = :contract and bill.startDate.date <= :finishDate and bill.finishDate.date >= :startDate and bill.type.code != 'W' and lower(bill.batch.reference) not like '%reconciliation%' order by bill.issueDate desc, bill.startDate.date").setEntity('supply', supply).setEntity('contract', import_mpan.getSupplierContract()).setTimestamp('startDate', bill_start.getDate()).setTimestamp('finishDate', bill_finish.getDate()).list():
                     can_insert = True
                     for kwh_bill in kwh_bills:
                         if not cand_bill.getStartDate().after(kwh_bill.getFinishDate()) and not cand_bill.getFinishDate().before(kwh_bill.getStartDate()):
@@ -12708,7 +12713,7 @@ def process_site(site, month_start, month_finish, forecast_date, pw):
                         billed_kwh += overlap_length * rate
                 #pw.println('len kwh bills ' + str(len(kwh_bills)) + ' last bill finish ' + str(kwh_bills[-1].getFinishDate()) + ' finish date ' + str(finish_date) + ' bill finish ' + str(bill_finish))
                 if not bill_finish.before(month_finish):
-                    latest_bill = Hiber.session().createQuery("from Bill bill where bill.supply = :supply order by bill.startDate.date desc").setEntity('supply', supply).setMaxResults(1).uniqueResult()
+                    latest_bill = Hiber.session().createQuery("from Bill bill where lower(bill.batch.reference) not like '%reconciliation%' and bill.supply = :supply order by bill.finishDate.date desc").setEntity('supply', supply).setMaxResults(1).uniqueResult()
                     if latest_bill is None or latest_bill.getFinishDate().before(bill_finish):
                         complete = False
 
@@ -12722,16 +12727,18 @@ def process_site(site, month_start, month_finish, forecast_date, pw):
                     if supply_source.pc_code != '00' and not supply_source.is_amr:
                         #pw.println('sum msp kwh ' + str(supply_source.summary['sum-msp-kwh']))
                         month_data['import-net-kwh'] += supply_source.summary['sum-msp-kwh']
+                        month_data['used-kwh'] += supply_source.summary['sum-msp-kwh']
+
                     #pw.println("finished init from mpan, " + str(System.currentTimeMillis()))
                     import_vb_function = comterp.get('contract_function')(supplier_contract, 'import_virtual_bill')
                     if import_vb_function is None:
                         problem += "Can't find the import_virtual_bill function in the supplier contract. "
                     else:
                         v_bill = import_vb_function(supply_source)
-                        problem += v_bill['problem']
                         #pw.println("finishing vbill, " + str(System.currentTimeMillis()))
-                        if supply_source.pc_code != '00' and not supply_source.is_amr:
-                            month_data['used-kwh'] += supply_source.summary['sum-msp-kwh']
+                        
+                        if 'problem' in v_bill:
+                            problem += v_bill['problem']
 
                         if 'net-gbp' in v_bill:
                             month_data['import-net-gbp'] += v_bill['net-gbp']
@@ -12761,14 +12768,12 @@ def process_site(site, month_start, month_finish, forecast_date, pw):
             month_data['msp-gbp'] += comterp.get('contract_function')(displaced_mpan.getSupplierContract(), 'displaced_virtual_bill')(site_ds)['net-gbp']
 
             #pw.println("finishing displaced, " + str(System.currentTimeMillis()))
-        elif has_3rd_party:
+        elif has_3rd_party and site.getCode() == '12129':
             site_ds.init_from_site()
             keys = third_party_contracts.keys()
             keys.sort()
-            third_party_bill_func = comterp.get('contract_function')(third_party_contracts[keys[0]], 'third_party_bill')
-            if third_party_bill_func is not None:
-                third_gbp = third_party_bill_func(site_ds)['net-gbp']
-                month_data['used-3rd-party-gbp'] += third_gbp
+            third_gbp = comterp.get('contract_function')(third_party_contracts[keys[0]], 'third_party_bill')(site_ds)['net-gbp']
+            month_data['used-3rd-party-gbp'] += third_gbp
         else:
             site_ds.init_from_site()
 
@@ -13274,7 +13279,8 @@ for entry in Thread.getAllStackTraces().entrySet():
     thread_element.setAttribute('status', thread.getState().toString())
     thread_element.setAttribute('request', req_map.get(thread.getId()))
 
-db_metadata = Hiber.session().connection().getMetaData()
+con = Hiber.session().connection()
+db_metadata = con.getMetaData()
 source.setAttribute("db-product-name", db_metadata.getDatabaseProductName())
 source.setAttribute("db-product-version", db_metadata.getDatabaseProductVersion())
 source.setAttribute("db-driver-name", db_metadata.getDriverName())
@@ -13285,7 +13291,9 @@ sr = StringWriter()
 while c != -1:
     sr.write(c)
     c = istream.read()
-source.setAttribute("chellow-version", sr.toString())]]></value>
+source.setAttribute("chellow-version", sr.toString())
+
+source.setAttribute('transaction-isolation', str(con.getTransactionIsolation()))]]></value>
         <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
 <xsl:stylesheet version="1.0"
     xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
@@ -13428,6 +13436,7 @@ source.setAttribute("chellow-version", sr.toString())]]></value>
 <tr><th>Product Version</th><td><xsl:value-of select="/source/@db-product-version"/></td></tr>
 <tr><th>Driver Name</th><td><xsl:value-of select="/source/@db-driver-name"/></td></tr>
 <tr><th>Driver Version</th><td><xsl:value-of select="/source/@db-driver-version"/></td></tr>
+<tr><th>Transaction Isolation (of current connection)</th><td><xsl:value-of select="/source/@transaction-isolation"/></td></tr>
 </table>
             </body>
         </html>

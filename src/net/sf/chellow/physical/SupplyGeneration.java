@@ -324,9 +324,10 @@ public class SupplyGeneration extends PersistentEntity {
 					}
 				}
 			}
-			supply.updateGeneration(supplyGeneration, startDateStr
-					.equals(GeneralImport.NO_CHANGE) ? supplyGeneration
-					.getStartDate() : new HhStartDate(startDateStr),
+			supply.updateGeneration(
+					supplyGeneration,
+					startDateStr.equals(GeneralImport.NO_CHANGE) ? supplyGeneration
+							.getStartDate() : new HhStartDate(startDateStr),
 					finishDateStr.length() == 0 ? null : (finishDateStr
 							.equals(GeneralImport.NO_CHANGE) ? supplyGeneration
 							.getFinishDate() : new HhStartDate(finishDateStr)),
@@ -979,8 +980,8 @@ public class SupplyGeneration extends PersistentEntity {
 			return;
 		} else {
 			update(startDate, finishDate, mopContract, mopAccount,
-					hhdcContract, hhdcAccount, meterSerialNumber, pc, mtc
-							.toString(), cop, ssc);
+					hhdcContract, hhdcAccount, meterSerialNumber, pc,
+					mtc.toString(), cop, ssc);
 		}
 	}
 
@@ -1093,13 +1094,13 @@ public class SupplyGeneration extends PersistentEntity {
 			}
 		}
 		if (importMpan != null && exportMpan != null) {
-			if (!importMpan.getCore().getDso().equals(
-					exportMpan.getCore().getDso())) {
+			if (!importMpan.getCore().getDso()
+					.equals(exportMpan.getCore().getDso())) {
 				throw new UserException(
 						"Two MPANs on the same supply generation must have the same DSO.");
 			}
-			if (!importMpan.getLlfc().getVoltageLevel().equals(
-					exportMpan.getLlfc().getVoltageLevel())) {
+			if (!importMpan.getLlfc().getVoltageLevel()
+					.equals(exportMpan.getLlfc().getVoltageLevel())) {
 				throw new UserException(
 						"The voltage level indicated by the Line Loss Factor must be the same for both the MPANs.");
 			}
@@ -1148,8 +1149,8 @@ public class SupplyGeneration extends PersistentEntity {
 					.session()
 					.createQuery(
 							"select count(*) from HhDatum datum where datum.channel.supplyGeneration.supply  = :supply and datum.startDate.date < :date")
-					.setEntity("supply", supply).setTimestamp("date",
-							startDate.getDate()).uniqueResult()) > 0) {
+					.setEntity("supply", supply)
+					.setTimestamp("date", startDate.getDate()).uniqueResult()) > 0) {
 				throw new UserException(
 						"There are HH data before the start of the updated supply.");
 			}
@@ -1157,8 +1158,8 @@ public class SupplyGeneration extends PersistentEntity {
 					.session()
 					.createQuery(
 							"select count(*) from Bill bill where bill.supply  = :supply and bill.startDate.date < :date")
-					.setEntity("supply", supply).setTimestamp("date",
-							startDate.getDate()).uniqueResult()) > 0) {
+					.setEntity("supply", supply)
+					.setTimestamp("date", startDate.getDate()).uniqueResult()) > 0) {
 				throw new UserException(
 						"There are bills before the start of the updated supply.");
 			}
@@ -1194,8 +1195,9 @@ public class SupplyGeneration extends PersistentEntity {
 							.session()
 							.createQuery(
 									"select count(*) from HhDatum datum where datum.channel.supplyGeneration.supply  = :supply and datum.startDate.date > :date")
-							.setEntity("supply", supply).setTimestamp("date",
-									finishDate.getDate()).uniqueResult()) > 0) {
+							.setEntity("supply", supply)
+							.setTimestamp("date", finishDate.getDate())
+							.uniqueResult()) > 0) {
 				throw new UserException("There are HH data after " + finishDate
 						+ ", the end of the updated supply.");
 			}
@@ -1204,8 +1206,9 @@ public class SupplyGeneration extends PersistentEntity {
 							.session()
 							.createQuery(
 									"select count(*) from Bill bill where bill.supply  = :supply and bill.startDate.date > :date")
-							.setEntity("supply", supply).setTimestamp("date",
-									finishDate.getDate()).uniqueResult()) > 0) {
+							.setEntity("supply", supply)
+							.setTimestamp("date", finishDate.getDate())
+							.uniqueResult()) > 0) {
 				throw new UserException(
 						"There are bills after the end of the updated supply.");
 			}
@@ -1315,9 +1318,9 @@ public class SupplyGeneration extends PersistentEntity {
 								+ (finishDate == null ? ""
 										: "bill.startDate.date <= :finishDate and ")
 								+ " bill.finishDate.date >= :startDate and bill.batch.contract.id not in (:contractIds)")
-				.setEntity("supply", supply).setTimestamp("startDate",
-						startDate.getDate()).setParameterList("contractIds",
-						contractIds);
+				.setEntity("supply", supply)
+				.setTimestamp("startDate", startDate.getDate())
+				.setParameterList("contractIds", contractIds);
 		if (finishDate != null) {
 			billQuery.setTimestamp("finishDate", finishDate.getDate());
 		}
@@ -1339,8 +1342,9 @@ public class SupplyGeneration extends PersistentEntity {
 												: " and datum.startDate.date <= :to")
 										+ (targetChannel == null ? ""
 												: " and datum.channel != :targetChannel"))
-						.setEntity("supply", supply).setBoolean("isImport",
-								isImport).setBoolean("isKwh", isKwh)
+						.setEntity("supply", supply)
+						.setBoolean("isImport", isImport)
+						.setBoolean("isKwh", isKwh)
 						.setTimestamp("from", startDate.getDate());
 				if (finishDate != null) {
 					query.setTimestamp("to", finishDate.getDate());
@@ -1370,14 +1374,14 @@ public class SupplyGeneration extends PersistentEntity {
 									"update hh_datum set channel_id = :targetChannelId from channel, supply_generation where hh_datum.start_date >= :startDate and channel.id = hh_datum.channel_id and supply_generation.id = channel.supply_generation_id and channel.is_import = :isImport and channel.is_kwh = :isKwh and supply_generation.supply_id = :supplyId"
 											+ (finishDate == null ? ""
 													: " and hh_datum.start_date <= :finishDate"))
-							.setLong("supplyId", supply.getId()).setBoolean(
-									"isImport", isImport).setBoolean("isKwh",
-									isKwh).setLong("targetChannelId",
-									targetChannel.getId()).setTimestamp(
-									"startDate", startDate.getDate());
+							.setLong("supplyId", supply.getId())
+							.setBoolean("isImport", isImport)
+							.setBoolean("isKwh", isKwh)
+							.setLong("targetChannelId", targetChannel.getId())
+							.setTimestamp("startDate", startDate.getDate());
 					if (finishDate != null) {
-						channelUpdate.setTimestamp("finishDate", finishDate
-								.getDate());
+						channelUpdate.setTimestamp("finishDate",
+								finishDate.getDate());
 					}
 					channelUpdate.executeUpdate();
 					HhStartDate groupFinish = groupStart;
@@ -1410,8 +1414,8 @@ public class SupplyGeneration extends PersistentEntity {
 		Hiber.flush();
 		for (Mpan mpan : mpans) {
 			SupplierContract supplierContract = mpan.getSupplierContract();
-			if (supplierContract.getStartRateScript().getStartDate().after(
-					startDate)) {
+			if (supplierContract.getStartRateScript().getStartDate()
+					.after(startDate)) {
 				throw new UserException(
 						"The supplier contract starts after the supply generation.");
 			}
@@ -1448,6 +1452,9 @@ public class SupplyGeneration extends PersistentEntity {
 		if (hhdcAccount != null) {
 			element.setAttribute("hhdc-account", hhdcAccount);
 		}
+		if (mopAccount != null) {
+			element.setAttribute("mop-account", mopAccount);
+		}
 		element.setAttribute("meter-serial-number", meterSerialNumber);
 		return element;
 	}
@@ -1480,11 +1487,13 @@ public class SupplyGeneration extends PersistentEntity {
 	private Document document() throws HttpException {
 		Document doc = MonadUtils.newSourceDocument();
 		Element source = doc.getDocumentElement();
-		Element generationElement = (Element) toXml(doc, new XmlTree(
-				"siteSupplyGenerations", new XmlTree("site")).put("pc").put(
-				"mtc").put("cop").put("ssc").put("supply",
-				new XmlTree("source").put("gspGroup")).put("mopContract",
-				new XmlTree("party")).put("hhdcContract", new XmlTree("party")));
+		Element generationElement = (Element) toXml(
+				doc,
+				new XmlTree("siteSupplyGenerations", new XmlTree("site"))
+						.put("pc").put("mtc").put("cop").put("ssc")
+						.put("supply", new XmlTree("source").put("gspGroup"))
+						.put("mopContract", new XmlTree("party"))
+						.put("hhdcContract", new XmlTree("party")));
 		source.appendChild(generationElement);
 		for (Mpan mpan : mpans) {
 			Element mpanElement = (Element) mpan.toXml(doc, new XmlTree("core")
@@ -1494,16 +1503,16 @@ public class SupplyGeneration extends PersistentEntity {
 		source.appendChild(MonadDate.getMonthsXml(doc));
 		source.appendChild(MonadDate.getDaysXml(doc));
 		source.appendChild(new MonadDate().toXml(doc));
-		for (Pc pc : (List<Pc>) Hiber.session().createQuery(
-				"from Pc pc order by pc.code").list()) {
+		for (Pc pc : (List<Pc>) Hiber.session()
+				.createQuery("from Pc pc order by pc.code").list()) {
 			source.appendChild(pc.toXml(doc));
 		}
-		for (Cop cop : (List<Cop>) Hiber.session().createQuery(
-				"from Cop cop order by cop.code").list()) {
+		for (Cop cop : (List<Cop>) Hiber.session()
+				.createQuery("from Cop cop order by cop.code").list()) {
 			source.appendChild(cop.toXml(doc));
 		}
-		for (GspGroup group : (List<GspGroup>) Hiber.session().createQuery(
-				"from GspGroup group order by group.code").list()) {
+		for (GspGroup group : (List<GspGroup>) Hiber.session()
+				.createQuery("from GspGroup group order by group.code").list()) {
 			source.appendChild(group.toXml(doc));
 		}
 		for (MopContract contract : (List<MopContract>) Hiber
@@ -1512,7 +1521,8 @@ public class SupplyGeneration extends PersistentEntity {
 				.list()) {
 			source.appendChild(contract.toXml(doc));
 		}
-		for (HhdcContract contract : (List<HhdcContract>) Hiber.session()
+		for (HhdcContract contract : (List<HhdcContract>) Hiber
+				.session()
 				.createQuery(
 						"from HhdcContract contract order by contract.name")
 				.list()) {
@@ -1525,8 +1535,8 @@ public class SupplyGeneration extends PersistentEntity {
 				.list()) {
 			source.appendChild(contract.toXml(doc));
 		}
-		source.setAttribute("num-generations", Integer.toString(supply
-				.getGenerations().size()));
+		source.setAttribute("num-generations",
+				Integer.toString(supply.getGenerations().size()));
 		return doc;
 	}
 
@@ -1669,8 +1679,8 @@ public class SupplyGeneration extends PersistentEntity {
 	}
 
 	public MonadUri getUri() throws HttpException {
-		return supply.getSupplyGenerationsInstance().getUri().resolve(
-				getUriId()).append("/");
+		return supply.getSupplyGenerationsInstance().getUri()
+				.resolve(getUriId()).append("/");
 	}
 
 	public Urlable getChild(UriPathElement uriId) throws HttpException {
@@ -1718,7 +1728,8 @@ public class SupplyGeneration extends PersistentEntity {
 					"One can't delete a channel if there are still HH data attached to it.");
 		}
 		// delete any concommitant snags
-		for (ChannelSnag snag : (List<ChannelSnag>) Hiber.session()
+		for (ChannelSnag snag : (List<ChannelSnag>) Hiber
+				.session()
 				.createQuery(
 						"from ChannelSnag snag where snag.channel = :channel")
 				.setEntity("channel", channel).list()) {
