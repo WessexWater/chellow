@@ -403,9 +403,11 @@ public class Bill extends PersistentEntity implements Urlable {
 			HhStartDate startDate, HhStartDate finishDate, BigDecimal kwh,
 			BigDecimal net, BigDecimal vat, BillType type, String breakdown)
 			throws HttpException {
-		if (supply.getGeneration(startDate) == null
-				|| supply.getGeneration(finishDate) == null) {
-			throw new UserException("The bill is before or after the supply.");
+		if (supply.getGeneration(startDate) == null) {
+			throw new UserException("The bill starts before the supply.");
+		}
+		if (supply.getGeneration(finishDate) == null) {
+			throw new UserException("The bill finishes after the supply.");
 		}
 		for (SupplyGeneration generation : supply.getGenerations(startDate,
 				finishDate)) {
@@ -468,6 +470,7 @@ public class Bill extends PersistentEntity implements Urlable {
 		element.setAttribute("net", net.toString());
 		element.setAttribute("vat", vat.toString());
 		element.setAttribute("reference", reference);
+		element.setAttribute("account", account);
 		element.setAttribute("breakdown", breakdown);
 		return element;
 	}

@@ -63,6 +63,7 @@
 						<input type="reset" value="Reset" />
 					</fieldset>
 				</form>
+				<br/>
 				<table>
 					<thead>
 						<tr>
