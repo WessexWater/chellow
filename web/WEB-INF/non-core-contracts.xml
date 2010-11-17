@@ -405,52 +405,55 @@ class Parser(BillParser):
 
     def getRawBills(self):
         raw_bills = []
-        values = self.shredder.getLine()
-        while values != None:
-            num_values = len(values)
-            bill_type = BillType.getBillType(values[0])
-            account_reference = values[1]
-            mpan_strings = values[2].split(",")
-            invoice_reference = values[3]
-            issue_date = MonadDate(values[4]).getDate()
-            start_date = HhStartDate(values[5])
+        self.values = self.shredder.getLine()
+        while self.values != None:
+            num_values = len(self.values)
+            bill_type = BillType.getBillType(self.values[0])
+            account_reference = self.values[1]
+            mpan_strings = self.values[2].split(",")
+            invoice_reference = self.values[3]
+            issue_date = MonadDate(self.values[4]).getDate()
+            start_date = HhStartDate(self.values[5])
 
-            finish_date = HhStartDate(values[6])
+            finish_date = HhStartDate(self.values[6])
             self.cal.setTime(finish_date.getDate())
             self.cal.add(Calendar.DAY_OF_MONTH, 1)
             finish_date = HhStartDate(self.cal.getTime()).getPrevious()
+            
+            kwh = self.big_decimal(7, 'kwh')            
+            net = self.big_decimal(8, 'net')
+            vat = self.big_decimal(9, 'vat')
 
-            kwh = BigDecimal(values[7])
-            net = BigDecimal(values[8])
-            vat = BigDecimal(values[9])
             if num_values > 10:
-                breakdown = values[10]
+                breakdown = self.values[10]
             else:
-                raise UserException("For the line, " + str(values) + " there isn't a 'breakdown' field on the end.")
+                raise UserException("For the line, " + str(self.values) + " there isn't a 'breakdown' field on the end.")
 
-            while values[-1] == '' and len(values) > 11:
-                del values[-1]
+            while self.values[-1] == '' and len(self.values) > 11:
+                del self.values[-1]
 
             reads = []
-            for i in range(11, len(values), 11):
-                tpr_str = values[i + 4].strip()
+            for i in range(11, len(self.values), 11):
+                tpr_str = self.values[i + 4].strip()
                 if len(tpr_str) == 0:
                     tpr = None
                 else:
                     tpr = Tpr.getTpr(self.formatter.format(Integer.parseInt(tpr_str)))
-                try:
-                    coefficient_index = i + 2
-                    coefficient_str = values[coefficient_index]
-                    coefficient = BigDecimal(coefficient_str)
-                except NumberFormatException:
-                    raise UserException("The coefficient '" + coefficient_str + "' cannot be formatted as a number. The coefficient is the " + str(coefficient_index) + " field of " + str(values) + ".")
 
-                reads.append(RawRegisterRead(values[i], values[i + 1], coefficient, Units.getUnits(values[i + 3]), tpr, HhStartDate(values[i + 5]), BigDecimal(values[i + 6]), ReadType.getReadType(values[i + 7]), HhStartDate(values[i + 8]), BigDecimal(values[i + 9]), ReadType.getReadType(values[i + 10])))
+                reads.append(RawRegisterRead(self.values[i], self.values[i + 1], self.big_decimal(i + 2, 'coefficient'), Units.getUnits(self.values[i + 3]), tpr, HhStartDate(self.values[i + 5]), BigDecimal(self.values[i + 6]), ReadType.getReadType(self.values[i + 7]), HhStartDate(self.values[i + 8]), BigDecimal(self.values[i + 9]), ReadType.getReadType(self.values[i + 10])))
             
             raw_bills.append(RawBill(bill_type, account_reference, mpan_strings, invoice_reference, issue_date, start_date, finish_date, kwh, net, vat, breakdown, reads))
-            values = self.shredder.getLine()
+            self.values = self.shredder.getLine()
         self.shredder.close()
         return raw_bills
+
+
+    def big_decimal(self, bd_index, bd_name):
+        bd_str = self.values[bd_index]
+        try:
+            return BigDecimal(bd_str)
+        except NumberFormatException:
+            raise UserException("The " + bd_name + " field '" + bd_str + "' cannot be parsed as a number. The " + bd_name + " field is the " + str(bd_index) + " field of " + str(self.values) + ".")
 
 
     def getProgress(self):

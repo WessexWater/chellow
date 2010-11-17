@@ -9643,7 +9643,7 @@ source.appendChild(contract.toXml(doc, XmlTree('party', XmlTree('participant')).
                     <tr>
                     <td>
                     <a
-                    href="{/source/request/@context-path}/reports/173/output/?rate-script-id={@id}">
+                    href="{/source/request/@context-path}/reports/205/output/?rate-script-id={@id}">
                     <xsl:value-of select="'view'" />
                     </a>
                     </td>
@@ -15284,6 +15284,106 @@ source.setAttribute('bill-count', str(len(bills)))]]></value>
                         </xsl:for-each>
                     </tbody>
                 </table>
+            </body>
+        </html>
+    </xsl:template>
+</xsl:stylesheet>]]></value>
+    </line>
+    <line>
+        <value><![CDATA[insert]]></value>
+        <value><![CDATA[report]]></value>
+        <value><![CDATA[205]]></value>
+        <value><![CDATA[true]]></value>
+        <value><![CDATA[MOP Contract Rate Script]]></value>
+        <value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree
+from net.sf.chellow.billing import RateScript
+
+script_id = inv.getLong('rate-script-id')
+script = RateScript.getRateScript(script_id)
+source.appendChild(script.toXml(doc, XmlTree('contract', XmlTree('party'))))]]></value>
+        <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
+<xsl:stylesheet version="1.0"
+    xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+    <xsl:output method="html" encoding="US-ASCII"
+        doctype-public="-//W3C//DTD HTML 4.01//EN"
+        doctype-system="http://www.w3.org/TR/html4/strict.dtd" indent="yes" />
+    <xsl:template match="/">
+        <html>
+            <head>
+                <link rel="stylesheet" type="text/css"
+                    href="{/source/request/@context-path}/reports/19/output/" />
+                <title>
+                    Home &gt; MOP Contracts &gt;
+                    <xsl:value-of
+                        select="/source/rate-script/mop-contract/@name" />
+                    &gt; Rate Script
+                    <xsl:value-of select="/source/rate-script/@id" />
+                </title>
+            </head>
+            <body>
+                <p>
+                    <a
+                        href="{/source/request/@context-path}/reports/1/output/">
+                        <xsl:value-of select="'Home'" />
+                    </a>
+                    &gt;
+                    <a
+                        href="{/source/request/@context-path}/reports/185/output/">
+                        <xsl:value-of select="'MOP Contracts'" />
+                    </a>
+                    &gt;
+                    <a
+                        href="{/source/request/@context-path}/reports/107/output/?mop-contract-id={/source/rate-script/mop-contract/@id}">
+                        <xsl:value-of
+                            select="/source/rate-script/mop-contract/@name" />
+                    </a>
+                    &gt; Rate Script
+                    <xsl:value-of
+                        select="concat(/source/rate-script/@id, ' [')" />
+                    <a
+                        href="{/source/request/@context-path}/mop-contracts/{/source/rate-script/mop-contract/@id}/rate-scripts/{/source/rate-script/@id}/">
+                        <xsl:value-of select="'edit'" />
+                    </a>
+                    <xsl:value-of select="']'" />
+                </p>
+                <br />
+                <xsl:if test="//message">
+                    <ul>
+                        <xsl:for-each select="//message">
+                            <li>
+                                <xsl:value-of select="@description" />
+                            </li>
+                        </xsl:for-each>
+                    </ul>
+                </xsl:if>
+                <table>
+                    <tr>
+                        <th>Start Date</th>
+                        <td>
+                            <xsl:value-of
+                                select="concat(/source/rate-script/hh-start-date[@label='start']/@year, '-', /source/rate-script/hh-start-date[@label='start']/@month, '-', /source/rate-script/hh-start-date[@label='start']/@day, ' ', /source/rate-script/hh-start-date[@label='start']/@hour, ':', /source/rate-script/hh-start-date[@label='start']/@minute)" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Finish Date</th>
+                        <td>
+                            <xsl:choose>
+                                <xsl:when
+                                    test="/source/rate-script/hh-start-date[@label='finish']">
+                                    <xsl:value-of
+                                        select="concat(/source/rate-script/hh-start-date[@label='finish']/@year, '-', /source/rate-script/hh-start-date[@label='finish']/@month, '-', /source/rate-script/hh-start-date[@label='finish']/@day, ' ', /source/rate-script/hh-start-date[@label='finish']/@hour, ':', /source/rate-script/hh-start-date[@label='finish']/@minute)" />
+                                </xsl:when>
+                                <xsl:otherwise>Ongoing</xsl:otherwise>
+                            </xsl:choose>
+                        </td>
+                    </tr>
+                </table>
+
+                <h2>Script</h2>
+
+                <pre>
+                    <xsl:value-of select="/source/rate-script/@script" />
+                </pre>
             </body>
         </html>
     </xsl:template>

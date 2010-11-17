@@ -1,6 +1,6 @@
 /*******************************************************************************
  * 
- *  Copyright (c) 2005, 2009 Wessex Water Services Limited
+ *  Copyright (c) 2005, 2010 Wessex Water Services Limited
  *  
  *  This file is part of Chellow.
  * 
@@ -44,25 +44,29 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 public class MopContract extends Contract {
-	static public MopContract insertMopContract(Long id, Participant participant,
-			String name, HhStartDate startDate, HhStartDate finishDate,
-			String chargeScript, Long rateScriptId, String rateScript) throws HttpException {
+	static public MopContract insertMopContract(Long id,
+			Participant participant, String name, HhStartDate startDate,
+			HhStartDate finishDate, String chargeScript, Long rateScriptId,
+			String rateScript) throws HttpException {
 		MopContract existing = findMopContract(name);
 		if (existing != null) {
 			throw new UserException(
 					"There's already a HHDC contract with the name " + name);
 		}
-		MopContract contract = new MopContract(id, participant, name, startDate,
-				finishDate, chargeScript);
+		MopContract contract = new MopContract(id, participant, name,
+				startDate, finishDate, chargeScript);
 		Hiber.session().save(contract);
 		Hiber.flush();
-		contract.insertFirstRateScript(rateScriptId, startDate, finishDate, rateScript);
+		contract.insertFirstRateScript(rateScriptId, startDate, finishDate,
+				rateScript);
 		return contract;
 	}
 
 	public static MopContract findMopContract(String name) throws HttpException {
-		return (MopContract) Hiber.session().createQuery(
-				"from MopContract contract where contract.name = :name")
+		return (MopContract) Hiber
+				.session()
+				.createQuery(
+						"from MopContract contract where contract.name = :name")
 				.setString("name", name).uniqueResult();
 	}
 
@@ -94,7 +98,8 @@ public class MopContract extends Contract {
 	}
 
 	public MopContract(Long id, Participant participant, String name,
-			HhStartDate startDate, HhStartDate finishDate, String chargeScript) throws HttpException {
+			HhStartDate startDate, HhStartDate finishDate, String chargeScript)
+			throws HttpException {
 		super(id, Boolean.FALSE, name, startDate, finishDate, chargeScript);
 		intrinsicUpdate(participant, name, chargeScript);
 	}
@@ -102,8 +107,8 @@ public class MopContract extends Contract {
 	private void intrinsicUpdate(Participant participant, String name,
 			String chargeScript) throws HttpException {
 		super.internalUpdate(name, chargeScript);
-		setParty(Provider.getProvider(participant, MarketRole
-				.getMarketRole(MarketRole.MOP)));
+		setParty(Provider.getProvider(participant,
+				MarketRole.getMarketRole(MarketRole.MOP)));
 	}
 
 	public Provider getParty() {
@@ -210,39 +215,41 @@ public class MopContract extends Contract {
 	public String missingBillSnagDescription() {
 		return "Missing MOP bill.";
 	}
-	
+
 	@SuppressWarnings("unchecked")
 	@Override
-	void onUpdate(HhStartDate startDate, HhStartDate finishDate) throws HttpException {
+	void onUpdate(HhStartDate startDate, HhStartDate finishDate)
+			throws HttpException {
 		Query query = null;
 		if (getFinishDate() == null) {
 			query = Hiber
 					.session()
 					.createQuery(
-							"from Mpan mpan where mpan.mopContract = :contract and mpan.supplyGeneration.startDate.date < :startDate order by mpan.supplyGeneration.startDate.date desc");
+							"from Mpan mpan where mpan.supplyGeneration.mopContract = :contract and mpan.supplyGeneration.startDate.date < :startDate order by mpan.supplyGeneration.startDate.date desc");
 		} else {
 			query = Hiber
 					.session()
 					.createQuery(
-							"from Mpan mpan where mpan.mopContract = :contract and (mpan.supplyGeneration.startDate.date < :startDate or (mpan.supplyGeneration.finishDate is null or mpan.supplyGeneration.finishDate.date > :finishDate)) order by mpan.supplyGeneration.startDate.date desc")
+							"from Mpan mpan where mpan.supplyGeneration.mopContract = :contract and (mpan.supplyGeneration.startDate.date < :startDate or (mpan.supplyGeneration.finishDate is null or mpan.supplyGeneration.finishDate.date > :finishDate)) order by mpan.supplyGeneration.startDate.date desc")
 					.setTimestamp("finishDate", getFinishDate().getDate());
 		}
 		List<Mpan> mpansOutside = query.setEntity("contract", this)
 				.setTimestamp("startDate", getStartDate().getDate()).list();
 		if (!mpansOutside.isEmpty()) {
-			throw new UserException(document(),
-					mpansOutside.size() > 1 ? "The MPANs with cores "
+			throw new UserException(
+					document(),
+					mpansOutside.size() > 1 ? "The supply generations with MPAN cores "
 							+ mpansOutside.get(0).getCore()
 							+ " and "
 							+ mpansOutside.get(mpansOutside.size() - 1)
 									.getCore() + " use this contract"
-							: "An MPAN with core "
+							: "A supply generation with MPAN core "
 									+ mpansOutside.get(0).getCore()
 									+ " uses this contract and lies outside "
 									+ startDate
 									+ " to "
 									+ (finishDate == null ? "ongoing"
 											: finishDate + "."));
-		}		
+		}
 	}
 }
