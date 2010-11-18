@@ -1385,6 +1385,8 @@ public class SupplyGeneration extends PersistentEntity {
 					}
 					channelUpdate.executeUpdate();
 					HhStartDate groupFinish = groupStart;
+					HhStartDate estStart = null;
+					HhStartDate estFinish = null;
 
 					hhData.beforeFirst();
 					while (hhData.next()) {
@@ -1401,12 +1403,24 @@ public class SupplyGeneration extends PersistentEntity {
 									hhStartDate, hhStartDate);
 						}
 						if ((Character) hhData.get(2) != HhDatum.ACTUAL) {
+							if (estStart == null) {
+								estStart = hhStartDate;
+							}
+							estFinish = hhStartDate;
+						}
+
+						if (estStart != null && !hhStartDate.equals(estFinish)) {
 							targetChannel.addSnag(ChannelSnag.SNAG_ESTIMATED,
-									hhStartDate, hhStartDate);
+									estStart, estFinish);
+							estStart = null;
 						}
 					}
 					targetChannel.deleteSnag(ChannelSnag.SNAG_MISSING,
 							groupStart, groupFinish);
+					if (estStart != null) {
+						targetChannel.addSnag(ChannelSnag.SNAG_ESTIMATED,
+								estStart, estFinish);
+					}
 					hhData.close();
 				}
 			}
