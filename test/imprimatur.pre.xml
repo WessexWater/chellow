@@ -295,7 +295,7 @@ def totalElement(account, startDate, finishDate):
 			<response-code value="303" />
 			<regex pattern="/mop-contracts/8/" />
 		</request>
-		
+
 		<!-- Check we can see the rate scripts -->
 		<request path="/chellow/mop-contracts/8/rate-scripts/">
 			<response-code value="200" />
@@ -462,9 +462,9 @@ def totalElement(account, startDate, finishDate):
 
 		<!-- Can we add a new supply generation ok? -->
 		<request path="/chellow/supplies/3/generations/" method="post">
-			<control name="start-year">2006</control>
-			<control name="start-month">07</control>
-			<control name="start-day">20</control>
+			<control name="start-year" value="2006" />
+			<control name="start-month" value="07" />
+			<control name="start-day" value="20" />
 			<regex pattern="/chellow/supplies/3/generations/9/" />
 			<response-code value="303" />
 		</request>
@@ -2449,6 +2449,11 @@ def import_virtual_bill(supply_source):
 			<regex pattern="The file has been imported successfully" />
 			<response-code value="200" />
 		</request>
+		<request path="/chellow/supplies/10/generations/22/">
+			<!-- Check the import supplier account is there -->
+			<regex pattern="341664" />
+			<response-code value="200" />
+		</request>
 	</test>
 	<test name="Check that the general import of register reads works.">
 		<request path="/chellow/general-imports/" method="post">
@@ -2484,7 +2489,7 @@ def import_virtual_bill(supply_source):
 			<response-code value="200" />
 			<regex pattern="type-id" />
 			<regex pattern='&lt;option value="2" selected&gt;N Normal&lt;/option&gt;' />
-			<regex pattern='name="account" value="SA342376000"'/>
+			<regex pattern='name="account" value="SA342376000"' />
 		</request>
 	</test>
 	<test name="Check the batch page.">

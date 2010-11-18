@@ -492,17 +492,13 @@ public class SupplyGeneration extends PersistentEntity {
 			SupplierContract importSupplierContract = null;
 			String importSupplierAccount = null;
 			Integer importAgreedSupplyCapacity = null;
+			String importLlfcCode = null;
+			String importAgreedSupplyCapacityStr = null;
+			String importContractSupplierName = null;
 
-			String importLlfcCode = GeneralImport.addField(csvElement,
-					"Import Line Loss Factor Class", values, 17);
-
-			String importAgreedSupplyCapacityStr = GeneralImport.addField(
-					csvElement, "Import Agreed Supply Capacity", values, 18);
-			String importContractSupplierName = GeneralImport.addField(
-					csvElement, "Import Supplier Contract", values, 19);
-			importSupplierAccount = GeneralImport.addField(csvElement,
-					"Import Supplier Account Reference", values, 20);
 			if (importMpanCoreStr.length() > 0) {
+				importLlfcCode = GeneralImport.addField(csvElement,
+						"Import Line Loss Factor Class", values, 17);
 				if (importLlfcCode.equals(GeneralImport.NO_CHANGE)) {
 					if (existingImportMpan == null) {
 						throw new UserException(
@@ -512,6 +508,9 @@ public class SupplyGeneration extends PersistentEntity {
 								.toString();
 					}
 				}
+				importAgreedSupplyCapacityStr = GeneralImport
+						.addField(csvElement, "Import Agreed Supply Capacity",
+								values, 18);
 				if (importAgreedSupplyCapacityStr
 						.equals(GeneralImport.NO_CHANGE)) {
 					if (existingImportMpan != null) {
@@ -529,7 +528,8 @@ public class SupplyGeneration extends PersistentEntity {
 										+ e.getMessage());
 					}
 				}
-
+				importContractSupplierName = GeneralImport.addField(csvElement,
+						"Import Supplier Contract", values, 19);
 				if (importContractSupplierName.equals(GeneralImport.NO_CHANGE)) {
 					if (existingImportMpan != null) {
 						importSupplierContract = existingImportMpan
@@ -538,6 +538,16 @@ public class SupplyGeneration extends PersistentEntity {
 				} else {
 					importSupplierContract = SupplierContract
 							.getSupplierContract(importContractSupplierName);
+				}
+				importSupplierAccount = GeneralImport.addField(csvElement,
+						"Import Supplier Account Reference", values, 20);
+				if (importSupplierAccount.equals(GeneralImport.NO_CHANGE)) {
+					if (existingImportMpan == null) {
+						importSupplierAccount = null;
+					} else {
+						importSupplierAccount = existingImportMpan
+								.getSupplierAccount();
+					}
 				}
 			}
 
@@ -608,7 +618,9 @@ public class SupplyGeneration extends PersistentEntity {
 					exportSupplierAccount = GeneralImport.addField(csvElement,
 							"Export Supplier Account", values, 25);
 					if (exportSupplierAccount.equals(GeneralImport.NO_CHANGE)) {
-						if (existingExportMpan != null) {
+						if (existingExportMpan == null) {
+							exportSupplierAccount = null;
+						} else {
 							exportSupplierAccount = existingExportMpan
 									.getSupplierAccount();
 						}

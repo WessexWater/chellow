@@ -8269,6 +8269,11 @@ for batch in Hiber.session().createQuery("from Batch batch where batch.contract 
         <value><![CDATA[Supplier Contract Batch]]></value>
         <value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree, UserException
 from net.sf.chellow.billing import Batch
+from net.sf.chellow.physical import Configuration
+from java.util import Properties
+from java.io import StringReader
+from net.sf.chellow.ui import Report
+
 
 batch_id = inv.getLong('batch-id')
 batch = Batch.getBatch(batch_id)
@@ -8277,7 +8282,17 @@ source.appendChild(batch_element)
 bills = Hiber.session().createQuery("from Bill bill where bill.batch = :batch order by bill.reference, bill.startDate.date").setEntity("batch", batch).list()
 for bill in bills:
     batch_element.appendChild(bill.toXml(doc, XmlTree("supply").put('type')))
-source.setAttribute('bill-count', str(len(bills)))]]></value>
+source.setAttribute('bill-count', str(len(bills)))
+
+config = Configuration.getConfiguration()
+properties = Properties()
+properties.load(StringReader(config.getProperties()))
+
+batch_report_id = properties.get('batch.report.id')
+if batch_report_id is not None:
+    report = Report.getReport(int(batch_report_id))
+    source.setAttribute('batch-report-id', str(report.getId()))
+    source.setAttribute('batch-report-name', report.getName())]]></value>
         <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
 <xsl:stylesheet version="1.0"
     xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
@@ -8352,6 +8367,14 @@ source.setAttribute('bill-count', str(len(bills)))]]></value>
                     <th>Number Of Bills</th>
                     <td><xsl:value-of select="/source/@bill-count"/></td>
                   </tr>
+                  <xsl:if test="/source/@batch-report-id">
+                  <tr>
+                    <th>Custom Report</th>
+                    <td><a
+                        href="{/source/request/@context-path}/reports/{/source/@batch-report-id}/output/?batch-id={/source/batch/@id}">
+<xsl:value-of select="/source/@batch-report-name"/></a></td>
+                  </tr>
+                  </xsl:if>
                 </table>
                 <br/>
                 <form action="{/source/request/@context-path}/reports/111/output/"><fieldset><legend>Check Bills</legend>
@@ -8380,7 +8403,7 @@ source.setAttribute('bill-count', str(len(bills)))]]></value>
                             <tr>
                                 <td>
 <a
-                                        href="{/source/request/@context-path}/reports/7/output/?supply-id={supply/@id}">
+                                        href="{/source/request/@context-path}/reports/105/output/?bill-id={@id}">
                                     <xsl:value-of select="'view'" />
  </a>
                                 </td>
