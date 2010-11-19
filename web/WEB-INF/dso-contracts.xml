@@ -184,29 +184,59 @@ def hh(summary, hh_list, data_source):
         hh['gsp-kwh'] = hh['msp-kwh'] * hh['laf']
         hh['gsp-kw'] = hh['gsp-kwh'] * 2]]></value>
         <value><![CDATA[9]]></value>
-        <value><![CDATA[def night_hv():
-    return 1.012
+        <value><![CDATA[def triad():
+    return 19.147817
 
-def night_lv():
-    return 1.042
+def tariffs():
+    return {
+        '121': {
+            'fixed-gbp-per-day': 1.61,
+            'availability-gbp-per-kva-per-day': 0.0519,
+            'excess-availability-gbp-per-kva-per-day': 0.0519,
+            'day-gbp-per-kwh': 0.0018,
+            'night-gbp-per-kwh': 0.0007,
+            'reactive-gbp-per-kvarh':  0.0026},
+        '124': {
+            'fixed-gbp-per-day': 1.61,
+            'availability-gbp-per-kva-per-day': 0.0519,
+            'excess-availability-gbp-per-kva-per-day': 0.0519,
+            'day-gbp-per-kwh': 0.0018,
+            'night-gbp-per-kwh': 0.0007,
+            'reactive-gbp-per-kvarh':  0.0026},
+        '127': {
+            'fixed-gbp-per-day': 1.61,
+            'availability-gbp-per-kva-per-day': 0.0519,
+            'excess-availability-gbp-per-kva-per-day': 0.0519,
+            'day-gbp-per-kwh': 0.0018,
+            'night-gbp-per-kwh': 0.0007,
+            'reactive-gbp-per-kvarh':  0.0026},
+        '132': {
+            'fixed-gbp-per-day': 1.61,
+            'availability-gbp-per-kva-per-day': 0.0519,
+            'excess-availability-gbp-per-kva-per-day': 0.0519,
+            'day-gbp-per-kwh': 0.0018,
+            'night-gbp-per-kwh': 0.0007,
+            'reactive-gbp-per-kvarh':  0.0026},
+        '365': {
+            'fixed-gbp-per-day': 4.29,
+            'availability-gbp-per-kva-per-day': 0.0417,
+            'excess-availability-gbp-per-kva-per-day': 0.0417,
+            'day-gbp-per-kwh': 0.0012,
+            'night-gbp-per-kwh': 0.0006,
+            'reactive-gbp-per-kvarh': 0.0013}}
 
-def peak_hv():
-    return 1.037
-
-def peak_lv():
-    return 1.104
-
-def winter_weekday_hv():
-    return 1.032
-
-def winter_weekday_lv():
-    return 1.095
-
-def other_hv():
-    return 1.029
-
-def other_lv():
-    return 1.070]]></value>
+def lafs():
+    return {
+        'lv': {
+            'night': 1.042,
+            'winter-weekday-peak': 1.104,
+            'winter-weekday-day': 1.095,
+            'other': 1.070},
+        'hv': {
+            'night': 1.012,
+            'winter-weekday-peak': 1.037,
+            'winter-weekday-day': 1.032,
+            'other': 1.029}}]]></value>
     </line>
     <line>
         <value><![CDATA[insert]]></value>
@@ -215,32 +245,59 @@ def other_lv():
         <value><![CDATA[main 2000-04-01]]></value>
         <value><![CDATA[11]]></value>
         <value><![CDATA[2007-04-01T00:00Z]]></value>
-        <value><![CDATA[def night_hv():
-    return 1.012
+        <value><![CDATA[def triad():
+    return 19.147817
 
-def night_lv():
-    return 1.042
+def tariffs():
+    return {
+        '121': {
+            'fixed-gbp-per-day': 1.61,
+            'availability-gbp-per-kva-per-day': 0.0519,
+            'excess-availability-gbp-per-kva-per-day': 0.0519,
+            'day-gbp-per-kwh': 0.0018,
+            'night-gbp-per-kwh': 0.0007,
+            'reactive-gbp-per-kvarh':  0.0026},
+        '124': {
+            'fixed-gbp-per-day': 1.61,
+            'availability-gbp-per-kva-per-day': 0.0519,
+            'excess-availability-gbp-per-kva-per-day': 0.0519,
+            'day-gbp-per-kwh': 0.0018,
+            'night-gbp-per-kwh': 0.0007,
+            'reactive-gbp-per-kvarh':  0.0026},
+        '127': {
+            'fixed-gbp-per-day': 1.61,
+            'availability-gbp-per-kva-per-day': 0.0519,
+            'excess-availability-gbp-per-kva-per-day': 0.0519,
+            'day-gbp-per-kwh': 0.0018,
+            'night-gbp-per-kwh': 0.0007,
+            'reactive-gbp-per-kvarh':  0.0026},
+        '132': {
+            'fixed-gbp-per-day': 1.61,
+            'availability-gbp-per-kva-per-day': 0.0519,
+            'excess-availability-gbp-per-kva-per-day': 0.0519,
+            'day-gbp-per-kwh': 0.0018,
+            'night-gbp-per-kwh': 0.0007,
+            'reactive-gbp-per-kvarh':  0.0026},
+        '365': {
+            'fixed-gbp-per-day': 4.29,
+            'availability-gbp-per-kva-per-day': 0.0417,
+            'excess-availability-gbp-per-kva-per-day': 0.0417,
+            'day-gbp-per-kwh': 0.0012,
+            'night-gbp-per-kwh': 0.0006,
+            'reactive-gbp-per-kvarh': 0.0013}}
 
-def peak_hv():
-    return 1.037
-
-def peak_lv():
-    return 1.104
-
-def winter_weekday_hv():
-    return 1.032
-
-def winter_weekday_lv():
-    return 1.095
-
-def other_hv():
-    return 1.029
-
-def other_lv():
-    return 1.070
-
-def triad():
-    return 17.807318]]></value>
+def lafs():
+    return {
+        'lv': {
+            'night': 1.042,
+            'winter-weekday-peak': 1.104,
+            'winter-weekday-day': 1.095,
+            'other': 1.070},
+        'hv': {
+            'night': 1.012,
+            'winter-weekday-peak': 1.037,
+            'winter-weekday-day': 1.032,
+            'other': 1.029}}]]></value>
     </line>
     <line>
         <value><![CDATA[insert]]></value>
@@ -915,32 +972,53 @@ def month(bill, whole_data, data_source):
         days_in_month = utc_cal.get(Calendar.DAY_OF_MONTH)
         bill['duos-standing-gbp'] += tariff['fixed-gbp-per-day'] * days_in_month]]></value>
         <value><![CDATA[29]]></value>
-        <value><![CDATA[def night_hv():
-    return 1.032
+        <value><![CDATA[def llfc_groups():
+    return {}
 
-def night_lv():
-    return 1.075
+def duos_tariffs():
+    return {
+'llfc(450)-pc(00)': {
+    'fixed-gbp-per-month': 14.91,
+    'day-gbp-per-kwh': 0.00508,
+    'capacity-<=200-gbp-per-kva-per-month': 1.06,
+    'capacity->200-gbp-per-kva-per-month': 0.93,
+    'excess-capacity-gbp-per-kva-per-month': 0.42},
+'llfc(453)-pc(00)': {
+    'fixed-gbp-per-month': 14.91,
+    'day-gbp-per-kwh': 0.00606,
+    'night-gbp-per-kwh': 0.00118,
+    'capacity-<=200-gbp-per-kva-per-month': 1.06,
+    'capacity->200-gbp-per-kva-per-month': 0.93,
+    'excess-capacity-gbp-per-kva-per-month': 0.42},
+'llfc(520)-pc(00)': {
+    'fixed-gbp-per-month': 51.50,
+    'day-gbp-per-kwh':  0.01157},
+'llfc(655)-pc(00)': {
+    'fixed-gbp-per-month': 98.23,
+    'day-gbp-per-kwh':   0.00379,
+    'capacity-<=200-gbp-per-kva-per-month': 0.86,
+    'capacity->200-gbp-per-kva-per-month': 0.86,
+    'excess-capacity-gbp-per-kva-per-month': 0.40},
+'llfc(658)-pc(00)': {
+    'fixed-gbp-per-month': 98.23,
+    'day-gbp-per-kwh': 0.00433,
+    'night-gbp-per-kwh': 0.00108,
+    'capacity-<=200-gbp-per-kva-per-month': 0.86,
+    'capacity->200-gbp-per-kva-per-month': 0.86,
+    'excess-capacity-gbp-per-kva-per-month': 0.40}}
 
-def peak_hv():
-    return 1.047
-
-def peak_lv():
-    return 1.096
-
-def winter_weekday_hv():
-    return 1.044
-
-def winter_weekday_lv():
-    return 1.089
-
-def other_hv():
-    return 1.037
-
-def other_lv():
-    return 1.080
-
-def triad():
-    return 21.100281]]></value>
+def lafs():
+    return {
+        'hv': {
+            'peak': 1.047,
+            'winter-weekday': 1.044,
+            'other': 1.037,
+            'night': 1.032},
+        'lv': {
+            'peak': 1.096,
+            'winter-weekday': 1.089,
+            'other': 1.080,
+            'night': 1.075}}]]></value>
     </line>
     <line>
         <value><![CDATA[insert]]></value>
@@ -1795,81 +1873,57 @@ def month(bill, whole_data, data_source):
 
     bill['duos-reactive-gbp'] += max(0, month_imp_kvarh - month_kwh / 2) * reactive_rate]]></value>
         <value><![CDATA[43]]></value>
-        <value><![CDATA[def winter_weekday_peak_hv():
-
-    return 1.057
-
-
-
-def winter_weekday_day_hv():
-
-    return 1.051
-
-
-
-def night_hv():
-
-    return 1.040
-
-
-
-def other_hv():
-
-    return 1.045
+        <value><![CDATA[def lafs():
+    return {
+        'hv': {
+            'winter-weekday-peak': 1.057,
+            'winter-weekday-day': 1.051,
+            'night': 1.040,
+            'other': 1.045},
+        'lv-sub': {
+            'winter-weekday-peak': 1.068,
+            'winter-weekday-day': 1.064,
+            'night': 1.059,
+            'other': 1.060},
+        'lv-net': {
+            'winter-weekday-peak': 1.074,
+            'winter-weekday-day': 1.069,
+            'night': 1.064,
+            'other': 1.065}}
 
 
-
-def winter_weekday_peak_lv_sub():
-
-    return 1.068
-
-
-
-def winter_weekday_day_lv_sub():
-
-    return 1.064
-
-
-
-def night_lv_sub():
-
-    return 1.059
-
-
-
-def other_lv_sub():
-
-    return 1.060
-
-
-
-def winter_weekday_peak_lv():
-
-    return 1.074
-
-
-
-def winter_weekday_day_lv():
-
-    return 1.069
-
-
-
-def night_lv():
-
-    return 1.064
-
-
-
-def other_lv():
-
-    return 1.065
-
-
-
-def triad():
-
-    return 23.77056]]></value>
+def tariffs():
+    return {
+        '510': {
+            'capacity-gbp-per-kva-per-day': 0.0372,
+            'day-gbp-per-kwh': 0.0047,
+            'night-gbp-per-kwh': 0.0014,
+            'reactive-gbp-per-kvarh': 0.0023},
+        '520': {
+            'capacity-gbp-per-kva-per-day': 0.0372,
+            'day-gbp-per-kwh': 0.0047,
+            'night-gbp-per-kwh': 0.0014,
+            'reactive-gbp-per-kvarh': 0.0023},
+        '540': {
+            'capacity-gbp-per-kva-per-day': 0.0352,
+            'day-gbp-per-kwh': 0.0080,
+            'night-gbp-per-kwh': 0.0028,
+            'reactive-gbp-per-kvarh': 0.0033},
+        '550': {
+            'capacity-gbp-per-kva-per-day': 0.0352,
+            'day-gbp-per-kwh': 0.0080,
+            'night-gbp-per-kwh': 0.0039,
+            'reactive-gbp-per-kvarh': 0.0033},
+        '570': {
+            'capacity-gbp-per-kva-per-day': 0.0332,
+            'day-gbp-per-kwh': 0.0121,
+            'night-gbp-per-kwh': 0.0040,
+            'reactive-gbp-per-kvarh': 0.0042},
+        '580': {
+            'capacity-gbp-per-kva-per-day': 0.0332,
+            'day-gbp-per-kwh': 0.0121,
+            'night-gbp-per-kwh': 0.0040,
+            'reactive-gbp-per-kvarh': 0.0042}}]]></value>
     </line>
     <line>
         <value><![CDATA[insert]]></value>
