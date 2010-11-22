@@ -43,7 +43,6 @@ import net.sf.chellow.physical.Supply;
 import net.sf.chellow.ui.GeneralImport;
 
 import org.hibernate.HibernateException;
-import org.hibernate.ScrollableResults;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -206,15 +205,9 @@ public class Batch extends PersistentEntity {
 	}
 
 	private void delete() throws HttpException {
-		ScrollableResults bills = Hiber.session().createQuery(
-				"from Bill bill where bill.batch = :batch").setEntity("batch",
-				this).scroll();
-		while (bills.next()) {
-			Bill bill = (Bill) bills.get(0);
-			bill.delete();
-			Hiber.session().clear();
-		}
-		bills.close();
+		Hiber.session()
+				.createQuery("delete from Bill bill where bill.batch = :batch")
+				.setEntity("batch", this).executeUpdate();
 		Batch batch = Batch.getBatch(getId());
 		Hiber.session().delete(batch);
 	}
@@ -232,8 +225,8 @@ public class Batch extends PersistentEntity {
 	}
 
 	public MonadUri getUri() throws HttpException {
-		return contract.batchesInstance().getUri().resolve(getUriId()).append(
-				"/");
+		return contract.batchesInstance().getUri().resolve(getUriId())
+				.append("/");
 	}
 
 	public Urlable getChild(UriPathElement uriId) throws HttpException {
@@ -260,11 +253,11 @@ public class Batch extends PersistentEntity {
 	}
 
 	public Bill insertBill(RawBill rawBill) throws HttpException {
-		Bill bill = this.insertBill(rawBill.getAccount(), rawBill
-				.getReference(), rawBill.getIssueDate(),
-				rawBill.getStartDate(), rawBill.getFinishDate(), rawBill
-						.getKwh(), rawBill.getNet(), rawBill.getVat(), rawBill
-						.getType(), rawBill.getBreakdown());
+		Bill bill = this.insertBill(rawBill.getAccount(),
+				rawBill.getReference(), rawBill.getIssueDate(),
+				rawBill.getStartDate(), rawBill.getFinishDate(),
+				rawBill.getKwh(), rawBill.getNet(), rawBill.getVat(),
+				rawBill.getType(), rawBill.getBreakdown());
 		for (RawRegisterRead rawRead : rawBill.getRegisterReads()) {
 			bill.insertRead(rawRead);
 		}
@@ -291,8 +284,8 @@ public class Batch extends PersistentEntity {
 				.session()
 				.createQuery(
 						"select mpan.supplyGeneration.supply from Mpan mpan where ((mpan.supplierContract = :contract and mpan.supplierAccount = :account) or (mpan.supplyGeneration.hhdcContract = :contract and mpan.supplyGeneration.hhdcAccount = :account) or (mpan.supplyGeneration.mopContract = :contract and mpan.supplyGeneration.mopAccount = :account)) order by mpan.core.dso.code, mpan.core.uniquePart")
-				.setEntity("contract", getContract()).setString("account",
-						account).list();
+				.setEntity("contract", getContract())
+				.setString("account", account).list();
 		if (supplyList.isEmpty()) {
 			throw new UserException(
 					"Can't find a supply generation with this contract and account number.");
