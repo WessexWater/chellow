@@ -9900,7 +9900,7 @@ from org.python.util import PythonInterpreter
 inv.getResponse().setContentType("text/csv")
 inv.getResponse().setHeader('Content-Disposition', 'filename=output.csv;')
 pw = inv.getResponse().getWriter()
-pw.println("Batch,Reference, Type, Breakdown, kWh, Net GBP, VAT GBP, Start Date, Finish Date, MPAN Core, Covered From, Covered To, Covered Bills, Covered kWh, Covered Net, Covered VAT, Virtual kWh, Virtual Net, Error GBP, Virtual Reconciliation GBP, Virtual Net - Reconciliation GBP, Error + Reconciliation GBP, Problem")
+pw.println("Batch,Reference, Type, Breakdown, kWh, Net GBP, VAT GBP, Start Date, Finish Date, MPAN Core, Covered From, Covered To, Covered Bills, Covered kWh, Covered Net, Covered VAT, Virtual kWh, Virtual Net, Error GBP, Problem")
 pw.flush()
 
 computer = NonCoreContract.getNonCoreContract('computer')
@@ -9985,7 +9985,6 @@ while bills.next():
 
     virtual_kwh = 0
     net_gbp = 0
-    reconciliation_gbp = 0
 
     while not mb_cal.getTime().after(covered_finish.getDate()):
         month_begin = HhStartDate(mb_cal.getTime())
@@ -10018,7 +10017,6 @@ while bills.next():
             net_gbp += v_bill['net-gbp']
             virtual_kwh += v_bill['sum-msp-kwh']
             problem += v_bill['problem']
-            reconciliation_gbp += v_bill.get('reconciliation-gbp', 0)
             for title in data_source.contract_function(contract, 'import_virtual_bill_titles')():
                 pw.print(title + ',')
                 if title in v_bill:
@@ -10035,7 +10033,7 @@ while bills.next():
         me_cal.add(Calendar.MINUTE, -30)
         generations.close()
     
-    pw.println(','.join('"' + str(value) + '"' for value in [batch.getReference(), bill.getReference(), bill.getType(), bill.getBreakdown(), bill.getKwh(), bill.getNet(), bill.getVat(), bill_start, bill_finish, mpan.getCore(), covered_start, covered_finish, ';'.join(str(id).replace(',', '') for id in covered_bill_ids), covered_kwh, covered_net, covered_vat, virtual_kwh, net_gbp, covered_net - net_gbp, reconciliation_gbp, net_gbp - reconciliation_gbp, covered_net - (net_gbp - reconciliation_gbp), problem]))
+    pw.println(','.join('"' + str(value) + '"' for value in [batch.getReference(), bill.getReference(), bill.getType(), bill.getBreakdown(), bill.getKwh(), bill.getNet(), bill.getVat(), bill_start, bill_finish, mpan.getCore(), covered_start, covered_finish, ';'.join(str(id).replace(',', '') for id in covered_bill_ids), covered_kwh, covered_net, covered_vat, virtual_kwh, net_gbp, covered_net - net_gbp, problem]))
     pw.flush()
     Hiber.session().clear()
 bills.close()

@@ -1907,29 +1907,29 @@ def triad_estimates():
 			<control name="start-year" value="2010" />
 			<control name="start-month" value="04" />
 			<control name="start-day" value="01" />
-			<regex pattern="/chellow/dsos/367/contracts/69/" />
+			<regex pattern="/chellow/dsos/367/contracts/71/" />
 			<response-code value="303" />
 		</request>
 
 		<!-- Check start time of rate script -->
-		<request path="/chellow/dsos/367/contracts/69/rate-scripts/217/">
+		<request path="/chellow/dsos/367/contracts/71/rate-scripts/231/">
 			<regex pattern="00:00 Z" />
 			<response-code value="200" />
 		</request>
 
 		<!-- Insert rate script -->
-		<request path="/chellow/dsos/367/contracts/69/rate-scripts/"
+		<request path="/chellow/dsos/367/contracts/71/rate-scripts/"
 			method="post">
 			<control name="start-year" value="2010" />
 			<control name="start-month" value="05" />
 			<control name="start-day" value="01" />
 
-			<regex pattern="/chellow/dsos/367/contracts/69/rate-scripts/219/" />
+			<regex pattern="/chellow/dsos/367/contracts/71/rate-scripts/233/" />
 			<response-code value="303" />
 		</request>
 
 		<!-- Delete rate script -->
-		<request path="/chellow/dsos/367/contracts/69/rate-scripts/219/"
+		<request path="/chellow/dsos/367/contracts/71/rate-scripts/233/"
 			method="post">
 			<control name="delete" value="Delete" />
 			<response-code value="303" />
@@ -2152,9 +2152,9 @@ def import_virtual_bill(supply_source):
 		<request path="/chellow/reports/111/output/?batch-id=5">
 			<refresh />
 			<regex
-				pattern='Batch,Reference, Type, Breakdown, kWh, Net GBP, VAT GBP, Start Date, Finish Date, MPAN Core, Covered From, Covered To, Covered Bills, Covered kWh, Covered Net, Covered VAT, Virtual kWh, Virtual Net, Error GBP, Virtual Reconciliation GBP, Virtual Net - Reconciliation GBP, Error \+ Reconciliation GBP, Problem' />
+				pattern='Batch,Reference, Type, Breakdown, kWh, Net GBP, VAT GBP, Start Date, Finish Date, MPAN Core, Covered From, Covered To, Covered Bills, Covered kWh, Covered Net, Covered VAT, Virtual kWh, Virtual Net, Error GBP, Problem' />
 			<regex
-				pattern='"07-008","3423760005","N","","253","36.16","1.8","2010-01-19T00:00Z","2010-04-20T23:30Z","22 1065 3921 534","2010-01-19T00:00Z","2010-04-20T23:30Z","8","253.0","36.16","1.8","253.0","25.3","10.86","0","25.3","10.86",""' />
+				pattern='"07-008","3423760005","N","","253","36.16","1.8","2010-01-19T00:00Z","2010-04-20T23:30Z","22 1065 3921 534","2010-01-19T00:00Z","2010-04-20T23:30Z","8","253.0","36.16","1.8","253.0","25.3","10.86",""' />
 			<response-code value="200" />
 		</request>
 	</test>
@@ -2669,21 +2669,42 @@ def import_virtual_bill(supply_source):
 			<control name="start-day" value="01" />
 			<control name="insert" value="Insert" />
 
-			<regex pattern="/chellow/non-core-contracts/39/rate-scripts/221/" />
+			<regex pattern="/chellow/non-core-contracts/39/rate-scripts/235/" />
 			<response-code value="303" />
 		</request>
 		<request
-			path="/chellow/non-core-contracts/39/rate-scripts/221/?view=confirm-delete">
+			path="/chellow/non-core-contracts/39/rate-scripts/235/?view=confirm-delete">
 			<regex pattern="Are you sure you want to delete this rate script\?" />
 			<response-code value="200" />
 		</request>
-		<request path="/chellow/non-core-contracts/39/rate-scripts/221/"
+		<request path="/chellow/non-core-contracts/39/rate-scripts/235/"
 			method="post">
 			<control name="delete" value="Delete" />
 			<response-code value="303" />
 		</request>
-		<request path="/chellow/non-core-contracts/39/rate-scripts/221/">
+		<request path="/chellow/non-core-contracts/39/rate-scripts/235/">
 			<response-code value="404" />
+		</request>
+	</test>
+	<test name="Try adding a rate script before other rate scripts.">
+		<request path="/chellow/non-core-contracts/39/rate-scripts/"
+			method="post">
+			<control name="start-year" value="1999" />
+			<control name="start-month" value="04" />
+			<control name="start-day" value="01" />
+			<control name="insert" value="Insert" />
+
+			<regex pattern="/chellow/non-core-contracts/39/rate-scripts/237/" />
+			<response-code value="303" />
+		</request>
+		<request path="/chellow/non-core-contracts/39/rate-scripts/237/">
+			<regex pattern='&lt;input name="finish-year" value="2000"&gt;' />
+			<response-code value="200" />
+		</request>
+		<request path="/chellow/non-core-contracts/39/rate-scripts/237/"
+			method="post">
+			<control name="delete" value="Delete" />
+			<response-code value="303" />
 		</request>
 	</test>
 </imprimatur>

@@ -1,6 +1,6 @@
 /*******************************************************************************
  * 
- *  Copyright (c) 2005, 2009 Wessex Water Services Limited
+ *  Copyright (c) 2005, 2010 Wessex Water Services Limited
  *  
  *  This file is part of Chellow.
  * 
@@ -21,7 +21,6 @@
 
 package net.sf.chellow.billing;
 
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -45,6 +44,7 @@ import net.sf.chellow.physical.PersistentEntity;
 import net.sf.chellow.physical.Snag;
 import net.sf.chellow.physical.Supply;
 
+import org.hibernate.Query;
 import org.hibernate.exception.ConstraintViolationException;
 import org.python.core.Py;
 import org.python.core.PyException;
@@ -179,8 +179,13 @@ public abstract class Contract extends PersistentEntity implements
 		Hiber.session().delete(this);
 	}
 
+	@SuppressWarnings("unchecked")
 	public void delete(RateScript rateScript) throws HttpException {
-		List<RateScript> rateScriptList = new ArrayList<RateScript>(rateScripts);
+		List<RateScript> rateScriptList = (List<RateScript>) Hiber
+				.session()
+				.createQuery(
+						"from RateScript script where script.contract = :contract order by script.startDate.date")
+				.setEntity("contract", this).list();
 		if (rateScriptList.size() < 2) {
 			throw new UserException("You can't delete the last rate script.");
 		}
@@ -220,8 +225,8 @@ public abstract class Contract extends PersistentEntity implements
 
 	public Element toXml(Document doc, String elementName) throws HttpException {
 		Element element = super.toXml(doc, elementName);
-		element.setAttribute("is-core", new Boolean(getId() % 2 == 1)
-				.toString());
+		element.setAttribute("is-core",
+				new Boolean(getId() % 2 == 1).toString());
 		element.setAttribute("name", name);
 		if (chargeScript != null) {
 			element.setAttribute("charge-script", chargeScript);
@@ -247,8 +252,9 @@ public abstract class Contract extends PersistentEntity implements
 				.session()
 				.createQuery(
 						"from Snag snag where snag.contract = :contract and snag.id = :snagId")
-				.setEntity("contract", this).setLong("snagId",
-						Long.parseLong(uriId.getString())).uniqueResult();
+				.setEntity("contract", this)
+				.setLong("snagId", Long.parseLong(uriId.getString()))
+				.uniqueResult();
 		if (snag == null) {
 			throw new NotFoundException();
 		}
@@ -293,7 +299,8 @@ public abstract class Contract extends PersistentEntity implements
 				.session()
 				.createQuery(
 						"from RateScript script where script.contract = :contract and script.finishDate.date = :scriptFinishDate")
-				.setEntity("contract", this).setTimestamp("scriptFinishDate",
+				.setEntity("contract", this)
+				.setTimestamp("scriptFinishDate",
 						script.getStartDate().getPrevious().getDate())
 				.uniqueResult();
 	}
@@ -307,7 +314,8 @@ public abstract class Contract extends PersistentEntity implements
 				.session()
 				.createQuery(
 						"from RateScript script where script.contract = :contract and script.startDate.date = :scriptStartDate")
-				.setEntity("contract", this).setTimestamp("scriptStartDate",
+				.setEntity("contract", this)
+				.setTimestamp("scriptStartDate",
 						rateScript.getFinishDate().getNext().getDate())
 				.uniqueResult();
 	}
@@ -343,48 +351,50 @@ public abstract class Contract extends PersistentEntity implements
 	@SuppressWarnings("unchecked")
 	public RateScript insertRateScript(Long id, HhStartDate startDate,
 			String script) throws HttpException {
-		List<RateScript> rateScripts = (List<RateScript>) Hiber
+		Query rateScriptQuery = Hiber
 				.session()
 				.createQuery(
 						"from RateScript script where script.contract = :contract order by script.startDate.date")
-				.setEntity("contract", this).list();
-		RateScript rateScript = rateScripts.get(rateScripts.size() - 1);
-		if (rateScript.getFinishDate() != null
-				&& startDate.getDate().after(
-						rateScript.getFinishDate().getDate())) {
+				.setEntity("contract", this);
+		List<RateScript> rateScripts = (List<RateScript>) rateScriptQuery
+				.list();
+		RateScript lastRateScript = rateScripts.get(rateScripts.size() - 1);
+		if (HhStartDate.isAfter(startDate, lastRateScript.getFinishDate())) {
 			throw new UserException("For the contract " + getId() + " called "
 					+ getName() + ", the start date " + startDate
 					+ " is after the last rate script.");
 		}
-		HhStartDate finishDate = rateScript.getStartDate().getPrevious();
-		for (int i = 0; i < rateScripts.size(); i++) {
-			rateScript = rateScripts.get(i);
-			if (!startDate.getDate()
-					.before(rateScript.getStartDate().getDate())
-					&& (rateScript.getFinishDate() == null || !startDate
-							.getDate().after(
-									rateScript.getFinishDate().getDate()))) {
-				if (rateScript.getStartDate()
-						.equals(rateScript.getFinishDate())) {
-					throw new UserException(
-							"The start date falls on a rate script which is only half an hour in length, and so cannot be subdivided further.");
-				}
-				if (startDate.equals(rateScript.getStartDate())) {
-					throw new UserException(
-							"The start date is the same as the start date of an existing rate script.");
-				}
-				finishDate = rateScript.getFinishDate();
-				rateScript.setFinishDate(startDate.getPrevious());
+
+		RateScript coveredRateScript = (RateScript) Hiber
+				.session()
+				.createQuery(
+						"from RateScript script where script.contract = :contract and script.startDate.date <= :startDate and (script.finishDate is null or script.finishDate.date >= :startDate)")
+				.setEntity("contract", this)
+				.setTimestamp("startDate", startDate.getDate()).uniqueResult();
+		HhStartDate finishDate = null;
+		if (coveredRateScript == null) {
+			finishDate = rateScripts.get(0).getStartDate().getPrevious();
+		} else {
+			if (coveredRateScript.getStartDate().equals(
+					coveredRateScript.getFinishDate())) {
+				throw new UserException(
+						"The start date falls on a rate script which is only half an hour in length, and so cannot be subdivided further.");
 			}
+			if (startDate.equals(coveredRateScript.getStartDate())) {
+				throw new UserException(
+						"The start date is the same as the start date of an existing rate script.");
+			}
+			finishDate = coveredRateScript.getFinishDate();
+			coveredRateScript.setFinishDate(startDate.getPrevious());
 		}
-		RateScript newRateScript = new RateScript(this, id,
-				startDate == null ? rateScripts.get(rateScripts.size())
-						.getFinishDate().getNext() : startDate, finishDate,
-				script);
+
+		RateScript newRateScript = new RateScript(this, id, startDate,
+				finishDate, script);
 		getRateScripts().add(newRateScript);
-		RateScript[] scripts = getRateScripts().toArray(new RateScript[0]);
-		setStartRateScript(scripts[0]);
-		setFinishRateScript(scripts[scripts.length - 1]);
+		Hiber.flush();
+		rateScripts = (List<RateScript>) rateScriptQuery.list();
+		setStartRateScript(rateScripts.get(0));
+		setFinishRateScript(rateScripts.get(rateScripts.size() - 1));
 		Hiber.flush();
 		onUpdate(newRateScript.getStartDate(), newRateScript.getFinishDate());
 		return newRateScript;
@@ -408,8 +418,9 @@ public abstract class Contract extends PersistentEntity implements
 				.session()
 				.createQuery(
 						"from RateScript script where script.contract = :contract and script.startDate.date <= :to and (script.finishDate.date is null or script.finishDate.date >= :from)")
-				.setEntity("contract", this).setTimestamp("from",
-						from.getDate()).setTimestamp("to", to.getDate()).list();
+				.setEntity("contract", this)
+				.setTimestamp("from", from.getDate())
+				.setTimestamp("to", to.getDate()).list();
 	}
 
 	public RateScript rateScript(HhStartDate date) {
@@ -417,8 +428,8 @@ public abstract class Contract extends PersistentEntity implements
 				.session()
 				.createQuery(
 						"from RateScript script where script.contract = :contract and script.startDate.date <= :date and (script.finishDate.date is null or script.finishDate.date >= :date)")
-				.setEntity("contract", this).setTimestamp("date",
-						date.getDate()).uniqueResult();
+				.setEntity("contract", this)
+				.setTimestamp("date", date.getDate()).uniqueResult();
 	}
 
 	public Object callFunction(String name, Object... args)
@@ -468,8 +479,8 @@ public abstract class Contract extends PersistentEntity implements
 				.session()
 				.createQuery(
 						"from Batch batch where batch.contract.id = :contractId and batch.reference = :reference")
-				.setLong("contractId", getId()).setString("reference",
-						reference).uniqueResult();
+				.setLong("contractId", getId())
+				.setString("reference", reference).uniqueResult();
 		if (batch == null) {
 			throw new UserException("There isn't a batch attached to contract "
 					+ getId() + " with reference " + reference + ".");
