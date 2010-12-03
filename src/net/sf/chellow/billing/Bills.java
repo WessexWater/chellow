@@ -85,6 +85,7 @@ public class Bills extends EntityList {
 		BigDecimal kwh = inv.getBigDecimal("kwh");
 		BigDecimal net = inv.getBigDecimal("net");
 		BigDecimal vat = inv.getBigDecimal("vat");
+		BigDecimal gross = inv.getBigDecimal("gross");
 		Long billTypeId = inv.getLong("bill-type-id");
 		String breakdown = inv.getString("breakdown");
 
@@ -94,8 +95,8 @@ public class Bills extends EntityList {
 		try {
 			batch.insertBill(MpanCore.getMpanCore(mpanCoreStr).getSupply(),
 					account, reference, issueDate, new HhStartDate(startDate),
-					new HhStartDate(finishDate), kwh, net, vat, BillType
-							.getBillType(billTypeId), breakdown);
+					new HhStartDate(finishDate), kwh, net, vat, gross,
+					BillType.getBillType(billTypeId), breakdown);
 		} catch (UserException e) {
 			e.setDocument(document());
 			throw e;
@@ -121,11 +122,11 @@ public class Bills extends EntityList {
 				.createQuery(
 						"from Bill bill where bill.batch = :batch order by bill.reference, bill.startDate.date")
 				.setEntity("batch", batch).list()) {
-			billsElement.appendChild(bill.toXml(doc, new XmlTree("supply")
-					.put("type")));
+			billsElement.appendChild(bill.toXml(doc,
+					new XmlTree("supply").put("type")));
 		}
-		for (BillType type : (List<BillType>) Hiber.session().createQuery(
-				"from BillType type order by type.code").list()) {
+		for (BillType type : (List<BillType>) Hiber.session()
+				.createQuery("from BillType type order by type.code").list()) {
 			source.appendChild(type.toXml(doc));
 		}
 		source.appendChild(MonadDate.getMonthsXml(doc));
@@ -139,8 +140,9 @@ public class Bills extends EntityList {
 				.session()
 				.createQuery(
 						"from Bill bill where bill.batch = :batch and bill.id = :billId")
-				.setEntity("batch", batch).setLong("billId",
-						Long.parseLong(uriId.getString())).uniqueResult();
+				.setEntity("batch", batch)
+				.setLong("billId", Long.parseLong(uriId.getString()))
+				.uniqueResult();
 		if (bill == null) {
 			throw new NotFoundException();
 		}

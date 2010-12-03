@@ -73,8 +73,9 @@
 							<th>kWh</th>
 							<th>Net</th>
 							<th>VAT</th>
+							<th>Gross</th>
 							<th>Type</th>
-							<th>Breakout</th>
+							<th>Breakdown</th>
 							<th>Status</th>
 						</tr>
 					</thead>
@@ -107,10 +108,13 @@
 									<xsl:value-of select="@vat" />
 								</td>
 								<td>
+									<xsl:value-of select="@gross" />
+								</td>
+								<td>
 									<xsl:value-of select="bill-type/@code" />
 								</td>
 								<td>
-									<xsl:value-of select="@breakout" />
+									<xsl:value-of select="@breakdown" />
 								</td>
 							</tr>
 						</xsl:for-each>
@@ -390,6 +394,23 @@
 										<xsl:when test="/source/request/parameters[@name='vat']">
 											<xsl:value-of
 									select="/source/request/parameters[@name='vat']/value" />
+										</xsl:when>
+										<xsl:otherwise>
+											<xsl:value-of select="'0'" />
+										</xsl:otherwise>
+									</xsl:choose>
+								</xsl:attribute>
+							</input>
+						</label>
+						<br />
+						<label>
+							<xsl:value-of select="'Gross '" />
+							<input name="gross">
+								<xsl:attribute name="value">
+									<xsl:choose>
+										<xsl:when test="/source/request/parameters[@name='gross']">
+											<xsl:value-of
+									select="/source/request/parameters[@name='gross']/value" />
 										</xsl:when>
 										<xsl:otherwise>
 											<xsl:value-of select="'0'" />

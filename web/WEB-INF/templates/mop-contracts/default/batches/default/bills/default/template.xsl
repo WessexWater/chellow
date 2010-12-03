@@ -386,6 +386,23 @@
 								</label>
 								<br />
 								<label>
+									<xsl:value-of select="'Gross '" />
+									<input name="gross">
+										<xsl:attribute name="value">
+									<xsl:choose>
+										<xsl:when test="/source/request/parameters[@name='gross']">
+											<xsl:value-of
+											select="/source/request/parameters[@name='gross']/value" />
+										</xsl:when>
+										<xsl:otherwise>
+											<xsl:value-of select="/source/bill/@gross" />
+										</xsl:otherwise>
+									</xsl:choose>
+								</xsl:attribute>
+									</input>
+								</label>
+								<br />
+								<label>
 									<xsl:value-of select="'Type '" />
 									<select name="type-id">
 										<xsl:for-each select="/source/bill-type">

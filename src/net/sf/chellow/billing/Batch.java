@@ -256,7 +256,7 @@ public class Batch extends PersistentEntity {
 		Bill bill = this.insertBill(rawBill.getAccount(),
 				rawBill.getReference(), rawBill.getIssueDate(),
 				rawBill.getStartDate(), rawBill.getFinishDate(),
-				rawBill.getKwh(), rawBill.getNet(), rawBill.getVat(),
+				rawBill.getKwh(), rawBill.getNet(), rawBill.getVat(), rawBill.getGross(),
 				rawBill.getType(), rawBill.getBreakdown());
 		for (RawRegisterRead rawRead : rawBill.getRegisterReads()) {
 			bill.insertRead(rawRead);
@@ -266,10 +266,10 @@ public class Batch extends PersistentEntity {
 
 	public Bill insertBill(Supply supply, String account, String reference,
 			Date issueDate, HhStartDate startDate, HhStartDate finishDate,
-			BigDecimal kwh, BigDecimal net, BigDecimal vat, BillType type,
+			BigDecimal kwh, BigDecimal net, BigDecimal vat, BigDecimal gross, BillType type,
 			String breakdown) throws HttpException {
 		Bill bill = new Bill(this, supply, account, reference, issueDate,
-				startDate, finishDate, kwh, net, vat, type, breakdown);
+				startDate, finishDate, kwh, net, vat, gross, type, breakdown);
 		Hiber.session().save(bill);
 		Hiber.flush();
 		return bill;
@@ -278,7 +278,7 @@ public class Batch extends PersistentEntity {
 	@SuppressWarnings("unchecked")
 	public Bill insertBill(String account, String reference, Date issueDate,
 			HhStartDate startDate, HhStartDate finishDate, BigDecimal kwh,
-			BigDecimal net, BigDecimal vat, BillType type, String breakdown)
+			BigDecimal net, BigDecimal vat, BigDecimal gross, BillType type, String breakdown)
 			throws HttpException {
 		List<Supply> supplyList = (List<Supply>) Hiber
 				.session()
@@ -291,6 +291,6 @@ public class Batch extends PersistentEntity {
 					"Can't find a supply generation with this contract and account number.");
 		}
 		return insertBill(supplyList.get(0), account, reference, issueDate,
-				startDate, finishDate, kwh, net, vat, type, breakdown);
+				startDate, finishDate, kwh, net, vat, gross, type, breakdown);
 	}
 }

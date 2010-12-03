@@ -49,6 +49,9 @@
 		<property name="vat" type="big_decimal" not-null="true">
 			<column name="vat" sql-type="numeric" />
 		</property>
+		<property name="gross" type="big_decimal" not-null="true">
+			<column name="gross" sql-type="numeric" />
+		</property>
 		<many-to-one name="type" class="BillType" column="bill_type_id"
 			foreign-key="fkey_bill__bill_type" />
 		<property name="kwh" type="big_decimal" not-null="true">

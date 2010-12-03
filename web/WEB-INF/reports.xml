@@ -85,8 +85,9 @@
           </tr>
           <tr><th>TRIAD</th><td><a href="{/source/request/@context-path}/reports/175/output/">Download</a></td><td><a href="{/source/request/@context-path}/reports/179/output/">Download</a></td>
           </tr>
+          <tr><th>CRC</th><td><a href="{/source/request/@context-path}/reports/209/output/">Download</a></td><td></td>
+          </tr>
         </table>
-
         <h3>Industry Info</h3>
         <ul>
           <li>
@@ -490,7 +491,7 @@ Ongoing
 <xsl:value-of select="'Table of site level monthly kWh, MD kWh etc.'" /></a>
           </li>
           <li>
-        <a href="{/source/request/@context-path}/reports/25/output/?site-code={/source/site/@code}&amp;year={/source/date[@label = 'yesterday']/@year}&amp;month={/source/date[@label = 'yesterday']/@month}&amp;day={/source/date[@label='yesterday']/@day}">
+        <a href="{/source/request/@context-path}/reports/25/output/?site-code={/source/site/@code}&amp;year={/source/date[@label = 'yesterday']/@year}&amp;month={/source/date[@label = 'yesterday']/@month}">
                             <xsl:value-of select="'Table of hh data'" />
                         </a>
           </li>
@@ -1658,6 +1659,19 @@ source.setAttribute('debug', debug)]]></value>
                             </xsl:for-each>
                         </select>
                         <xsl:value-of select="' '"/>
+                        <input type="submit" value="Download"/>
+                    </fieldset>
+                </form>
+               <br/>
+               <form action="{/source/request/@context-path}/reports/207/output/">
+                    <input type="hidden" name="supply-id" value="{/source/supply/@id}" />
+
+ <fieldset>
+                        <legend>CRC</legend>
+                        <br/>
+                        <xsl:value-of select="'For financial year starting April '"/>
+                        <input name="year" value="{/source/date/@year}" size="4" maxlength="4"/>
+<xsl:value-of select="' '"/>
                         <input type="submit" value="Download"/>
                     </fieldset>
                 </form>
@@ -3727,32 +3741,33 @@ from net.sf.chellow.physical import HhStartDate, Site
 
 debug_str = ''
 
-start = System.currentTimeMillis()
-siteCode = inv.getString("site-code")
-cal = GregorianCalendar(TimeZone.getTimeZone("GMT"), Locale.UK)
+site_code = inv.getString("site-code")
+cal = MonadDate.getCalendar()
+
 year = inv.getInteger("year")
 month = inv.getInteger("month")
-day = inv.getInteger("day")
 if not inv.isValid():
   raise UserException()
+
 cal.set(Calendar.YEAR, year)
 cal.set(Calendar.MONTH, month - 1)
-cal.set(Calendar.DAY_OF_MONTH, day)
+cal.set(Calendar.DAY_OF_MONTH, 1)
 cal.set(Calendar.HOUR_OF_DAY, 0)
 cal.set(Calendar.MINUTE, 0)
 cal.set(Calendar.SECOND, 0)
 cal.set(Calendar.MILLISECOND, 0)
-cal.add(Calendar.MINUTE, 0)
+
 start_date = HhStartDate(cal.getTime())
 source.appendChild(start_date.toXml(doc))
-cal.add(Calendar.DAY_OF_MONTH, 1)
+
+cal.add(Calendar.MONTH, 1)
 cal.add(Calendar.MINUTE, -30)
 finish_date = HhStartDate(cal.getTime())
-site = Site.getSite(siteCode)
+
+site = Site.getSite(site_code)
+
 source.appendChild(site.toXml(doc))
 source.appendChild(MonadDate.getMonthsXml(doc))
-source.appendChild(MonadDate.getDaysXml(doc))
-
 
 for group in Site.getSite(site.getId()).groups(start_date, finish_date, True):
     group_element = doc.createElement('group')
@@ -3775,7 +3790,6 @@ for group in Site.getSite(site.getId()).groups(start_date, finish_date, True):
         is_import = data.get(4)
         supply_id = data.get(5)
 
-    cal = MonadDate.getCalendar()
     hh_date = group.getFrom()
     while not hh_date.after(group.getTo()):
         export_kwh = 0
@@ -3836,15 +3850,14 @@ source.setAttribute('debug', debug_str)]]></value>
         <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
 <xsl:stylesheet version="1.0"
     xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
-    <xsl:output method="xml" encoding="US-ASCII"
-        doctype-public="-//W3C//DTD XHTML 1.1//EN"
-        doctype-system="http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd"
-        indent="yes" />
+    <xsl:output method="html" encoding="US-ASCII"
+      doctype-public="-//W3C//DTD HTML 4.01//EN"
+      doctype-system="http://www.w3.org/TR/html4/strict.dtd" indent="yes" />
     <xsl:template match="/">
         <html>
             <head>
                 <link rel="stylesheet" type="text/css"
-                    href="{/source/request/@context-path}/reports/10/output/" />
+                    href="{/source/request/@context-path}/reports/19/output/" />
                 <title>
                     Home &gt; Sites &gt;
                     <xsl:value-of
@@ -3907,7 +3920,7 @@ source.setAttribute('debug', debug_str)]]></value>
                         <br />
                         <br />
                         <fieldset>
-                            <legend>Date</legend>
+                            <legend>Month</legend>
                             <br />
                             <input size="4" length="4" name="year"
                                 value="{/source/hh-start-date/@year}" />
@@ -3918,20 +3931,6 @@ source.setAttribute('debug', debug_str)]]></value>
                                     <option>
                                         <xsl:if
                                             test="number(/source/hh-start-date/@month) = number(@number)">
-                                            <xsl:attribute
-                                                name="selected">selected</xsl:attribute>
-                                        </xsl:if>
-                                        <xsl:value-of select="@number" />
-                                    </option>
-                                </xsl:for-each>
-                            </select>
-                            <xsl:value-of select="' - '" />
-                            <select name="day">
-                                <xsl:for-each
-                                    select="/source/days/day">
-                                    <option>
-                                        <xsl:if
-                                            test="number(/source/hh-start-date/@day) = number(@number)">
                                             <xsl:attribute
                                                 name="selected">selected</xsl:attribute>
                                         </xsl:if>
@@ -3956,18 +3955,19 @@ source.setAttribute('debug', debug_str)]]></value>
                     <thead>
                         <tr>
                             <th rowspan="3">HH Starting</th>
-                            <th rowspan="3">Imported</th>
-                            <th rowspan="3">Used</th>
-                            <th rowspan="3">Displaced</th>
-                            <th rowspan="3">Generated</th>
-                            <th rowspan="3">Exported</th>
-                            <th rowspan="3">Parasitic</th>
+                            <th colspan="6">kWh</th>
                             <xsl:for-each select="supply">
                             <th colspan="4"><xsl:value-of select="concat(@name, ' ', source/@code, ' ', generator-type/@code)"/></th>
                             </xsl:for-each>
                         </tr>
-<tr>
-<xsl:for-each select="supply">
+                        <tr>
+                            <th rowspan="2">Imported</th>
+                            <th rowspan="2">Used</th>
+                            <th rowspan="2">Displaced</th>
+                            <th rowspan="2">Generated</th>
+                            <th rowspan="2">Exported</th>
+                            <th rowspan="2">Parasitic</th>
+                            <xsl:for-each select="supply">
                             <th colspan="2">Import</th>
                             <th colspan="2">Export</th>
                             </xsl:for-each>
@@ -8288,11 +8288,12 @@ config = Configuration.getConfiguration()
 properties = Properties()
 properties.load(StringReader(config.getProperties()))
 
-batch_report_id = properties.get('batch.report.id')
-if batch_report_id is not None:
-    report = Report.getReport(int(batch_report_id))
-    source.setAttribute('batch-report-id', str(report.getId()))
-    source.setAttribute('batch-report-name', report.getName())]]></value>
+for key in properties.propertyNames():
+    if key.startswith('batch.report.'):
+        batch_report_id = properties.get(key)
+        if batch_report_id is not None:
+            report = Report.getReport(int(batch_report_id))
+            batch_element.appendChild(report.toXml(doc))]]></value>
         <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
 <xsl:stylesheet version="1.0"
     xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
@@ -8367,12 +8368,18 @@ if batch_report_id is not None:
                     <th>Number Of Bills</th>
                     <td><xsl:value-of select="/source/@bill-count"/></td>
                   </tr>
-                  <xsl:if test="/source/@batch-report-id">
+                  <xsl:if test="/source/batch/report">
                   <tr>
-                    <th>Custom Report</th>
-                    <td><a
-                        href="{/source/request/@context-path}/reports/{/source/@batch-report-id}/output/?batch-id={/source/batch/@id}">
-<xsl:value-of select="/source/@batch-report-name"/></a></td>
+                    <th>Custom Reports</th>
+                    <td>
+                        <ul>
+                        <xsl:for-each select="/source/batch/report">
+                        <li><a
+                        href="{/source/request/@context-path}/reports/{@id}/output/?batch-id={/source/batch/@id}">
+<xsl:value-of select="@name"/></a></li>
+                        </xsl:for-each>
+                        </ul>
+                    </td>
                   </tr>
                   </xsl:if>
                 </table>
@@ -8389,6 +8396,7 @@ if batch_report_id is not None:
                         <tr>
                             <th>View</th>
                             <th>Reference</th>
+                            <th>Account</th>
                             <th>Issued</th>
                             <th>From</th>
                             <th>To</th>
@@ -8411,6 +8419,10 @@ if batch_report_id is not None:
                                 <td>
                                     <xsl:value-of select="@reference" />
                                 </td>
+                                <td>
+                                    <xsl:value-of select="@account" />
+                                </td>
+
                                 <td>
                                     <xsl:value-of
                                         select="concat(date[@label='issue']/@year, '-', date[@label='issue']/@month, '-', date[@label='issue']/@day, ' ', date[@label='issue']/@hour, ':', date[@label='issue']/@minute)" />
@@ -9738,6 +9750,7 @@ computer = NonCoreContract.getNonCoreContract('computer')
 comterp = computer.callFunction('create_comterp', [])
 
 pw.print('Site Code,Site Name,Associated Site Ids,From,To,Gen Types,CHP kWh,LM kWh, Turbine kWh')
+pw.flush()
 
 cal = GregorianCalendar(TimeZone.getTimeZone("GMT"), Locale.UK)
 cal.set(Calendar.YEAR, end_year)
@@ -9771,7 +9784,7 @@ elif inv.hasParameter('contract-id'):
     site_query = Hiber.session().createQuery("select distinct ssgen.site from SiteSupplyGeneration ssgen where ((ssgen.supplyGeneration.finishDate is null or ssgen.supplyGeneration.finishDate.date >= :startDate) and ssgen.supplyGeneration.startDate <= :finishDate) and (ssgen.supplyGeneration.supply.source.code in ('gen', 'gen-net') or ssgen.supplyGeneration.exportMpan is not null)").setTimestamp('startDate', start_date.getDate()).setTimestamp('finishDate', finish_date.getDate())
     bill_titles = comterp.get('contract_function')(contract, 'displaced_virtual_bill_titles')()
 else:
-    raise UserException("Need a site-id or supplier-id.")
+    raise UserException("Need a site-id or contract-id.")
 
 for title in bill_titles:
     if title == 'total-msp-kwh':
@@ -9783,100 +9796,112 @@ pw.flush()
 sites = site_query.scroll()
 while sites.next():
     site = sites.get(0)
-    for site_group in site.groups(start_date, finish_date, True):
-        if site_group.getFrom().after(start_date):
-            chunk_start = site_group.getStartDate()
-        else:
-            chunk_start = start_date
-        if site_group.getTo().after(finish_date):
-            chunk_finish = finish_date
-        else:
-            chunk_finish = site_group.getTo()
+    month_start = start_date
+    cal.setTime(month_start.getDate())
+    cal.add(Calendar.MONTH, 1)
+    cal.add(Calendar.MINUTE, -30)
+    month_finish = HhStartDate(cal.getTime())
+    while not month_finish.after(finish_date):
+        for site_group in site.groups(month_start, month_finish, True):
+            if site_group.getFrom().after(month_start):
+                chunk_start = site_group.getStartDate()
+            else:
+                chunk_start = month_start
+            if site_group.getTo().after(month_finish):
+                chunk_finish = month_finish
+            else:
+                chunk_finish = site_group.getTo()
 
-        displaced_mpan = comterp.get('displaced_mpan')(site_group, chunk_start, chunk_finish)
-        if displaced_mpan is None:
-            continue
-        supplier_contract = displaced_mpan.getSupplierContract()
-        if contract is not None and not contract.equals(supplier_contract):
-            continue
+            displaced_mpan = comterp.get('displaced_mpan')(site_group, chunk_start, chunk_finish)
+            if displaced_mpan is None:
+                continue
+            supplier_contract = displaced_mpan.getSupplierContract()
+            if contract is not None and not contract.equals(supplier_contract):
+                continue
         
-        linked_sites = ','.join(str(a_site.getCode()) for a_site in site_group.getSites() if not a_site.equals(site))
-        generator_types = ' '.join(sorted([supply.getGeneratorType().getCode() for supply in site_group.getSupplies() if supply.getGeneratorType() is not None]))
+            linked_sites = ','.join(str(a_site.getCode()) for a_site in site_group.getSites() if not a_site.equals(site))
+            generator_types = ' '.join(sorted([supply.getGeneratorType().getCode() for supply in site_group.getSupplies() if supply.getGeneratorType() is not None]))
 
-        pw.print(','.join('"' + value + '"' for value in [site.getCode(), site.getName(), linked_sites, str(chunk_start), str(chunk_finish), generator_types]))
+            pw.print(','.join('"' + value + '"' for value in [site.getCode(), site.getName(), linked_sites, str(chunk_start), str(chunk_finish), generator_types]))
 
-        total_gen_breakdown = {}
-        con = Hiber.session().connection()
-        supplies_sql = ','.join(str(supply.getId()) for supply in site_group.getSupplies())
+            total_gen_breakdown = {}
+            con = Hiber.session().connection()
+            supplies_sql = ','.join(str(supply.getId()) for supply in site_group.getSupplies())
 
-        stmt = con.prepareStatement("select supply.id, hh_datum.value, hh_datum.start_date, channel.is_import, source.code, generator_type.code as gen_type_code from hh_datum, channel, source, supply_generation, supply left outer join generator_type on supply.generator_type_id = generator_type.id where hh_datum.channel_id = channel.id and channel.supply_generation_id = supply_generation.id and supply_generation.supply_id = supply.id and supply.source_id = source.id and channel.is_kwh is true and not (source.code = 'net' and channel.is_import is true) and hh_datum.start_date >= ? and hh_datum.start_date <= ? and supply.id in (" + supplies_sql + ") order by hh_datum.start_date, supply.id", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.CLOSE_CURSORS_AT_COMMIT)
-        stmt.setTimestamp(1, Timestamp(chunk_start.getDate().getTime()))
-        stmt.setTimestamp(2, Timestamp(chunk_finish.getDate().getTime()))
-        stmt.setFetchSize(100)
-        rs = stmt.executeQuery()
-        if rs.next():
-            hh_data = []
-            hhChannelValue = rs.getFloat("value")
-            hhChannelStartDate = rs.getTimestamp("start_date")
-            isImport = rs.getBoolean("is_import")
-            source_code = rs.getString("code")
-            gen_type = rs.getString("gen_type_code")
-            finishDateMillis = finish_date.getDate().getTime()
-            hh_date = start_date.getDate().getTime()
-            cal = MonadDate.getCalendar()
-            while hh_date <= finishDateMillis:
-                gen_breakdown = {}
-                exported = 0
-                while hhChannelStartDate != None and hhChannelStartDate.getTime() == hh_date:
-                    if not isImport and source_code in ('net', 'gen-net'):
-                        exported += hhChannelValue
-                    if (isImport and source_code == 'gen') or (not isImport and source_code == 'gen-net'):
-                        gen_breakdown[gen_type] = gen_breakdown.setdefault(gen_type, 0) + hhChannelValue
+            stmt = con.prepareStatement("select supply.id, hh_datum.value, hh_datum.start_date, channel.is_import, source.code, generator_type.code as gen_type_code from hh_datum, channel, source, supply_generation, supply left outer join generator_type on supply.generator_type_id = generator_type.id where hh_datum.channel_id = channel.id and channel.supply_generation_id = supply_generation.id and supply_generation.supply_id = supply.id and supply.source_id = source.id and channel.is_kwh is true and not (source.code = 'net' and channel.is_import is true) and hh_datum.start_date >= ? and hh_datum.start_date <= ? and supply.id in (" + supplies_sql + ") order by hh_datum.start_date, supply.id", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.CLOSE_CURSORS_AT_COMMIT)
+            stmt.setTimestamp(1, Timestamp(chunk_start.getDate().getTime()))
+            stmt.setTimestamp(2, Timestamp(chunk_finish.getDate().getTime()))
+            stmt.setFetchSize(100)
+            rs = stmt.executeQuery()
+            if rs.next():
+                hh_data = []
+                hhChannelValue = rs.getFloat("value")
+                hhChannelStartDate = rs.getTimestamp("start_date")
+                isImport = rs.getBoolean("is_import")
+                source_code = rs.getString("code")
+                gen_type = rs.getString("gen_type_code")
+                finishDateMillis = finish_date.getDate().getTime()
+                hh_date = chunk_start.getDate().getTime()
+                cal = MonadDate.getCalendar()
+                while hh_date <= finishDateMillis:
+                    gen_breakdown = {}
+                    exported = 0
+                    while hhChannelStartDate != None and hhChannelStartDate.getTime() == hh_date:
+                        if not isImport and source_code in ('net', 'gen-net'):
+                            exported += hhChannelValue
+                        if (isImport and source_code == 'gen') or (not isImport and source_code == 'gen-net'):
+                            gen_breakdown[gen_type] = gen_breakdown.setdefault(gen_type, 0) + hhChannelValue
 
-                    if (not isImport and source_code == 'gen') or (isImport and source_code == 'gen-net'):
-                        gen_breakdown[gen_type] = gen_breakdown.setdefault(gen_type, 0) - hhChannelValue
+                        if (not isImport and source_code == 'gen') or (isImport and source_code == 'gen-net'):
+                            gen_breakdown[gen_type] = gen_breakdown.setdefault(gen_type, 0) - hhChannelValue
 
-                    if rs.next():
-                        source_code = rs.getString("code")
-                        hhChannelValue = rs.getFloat("value")
-                        hhChannelStartDate = rs.getTimestamp("start_date")
-                        isImport = rs.getBoolean("is_import")
-                        gen_type = rs.getString("gen_type_code")
-                    else:
-                        hhChannelStartDate = None
+                        if rs.next():
+                            source_code = rs.getString("code")
+                            hhChannelValue = rs.getFloat("value")
+                            hhChannelStartDate = rs.getTimestamp("start_date")
+                            isImport = rs.getBoolean("is_import")
+                            gen_type = rs.getString("gen_type_code")
+                        else:
+                            hhChannelStartDate = None
 
-                displaced = sum(gen_breakdown.itervalues()) - exported
-                added_so_far = 0
-                for key in sorted(gen_breakdown.iterkeys()):
-                    kwh = gen_breakdown[key]
-                    if kwh + added_so_far > displaced:
-                        total_gen_breakdown[key] = total_gen_breakdown.get(key, 0) + displaced - added_so_far
-                        break
-                    else:
-                        total_gen_breakdown[key] = total_gen_breakdown.get(key, 0) + kwh
-                        added_so_far += kwh
+                    displaced = sum(gen_breakdown.itervalues()) - exported
+                    added_so_far = 0
+                    for key in sorted(gen_breakdown.iterkeys()):
+                        kwh = gen_breakdown[key]
+                        if kwh + added_so_far > displaced:
+                            total_gen_breakdown[key] = total_gen_breakdown.get(key, 0) + displaced - added_so_far
+                            break
+                        else:
+                            total_gen_breakdown[key] = total_gen_breakdown.get(key, 0) + kwh
+                            added_so_far += kwh
                     
-                hh_date = HhStartDate.getNext(cal, hh_date)
-        for title in ['chp', 'lm', 'turb']:
-            pw.print(',' + str(total_gen_breakdown.get(title, '')))
+                    hh_date = HhStartDate.getNext(cal, hh_date)
+            for title in ['chp', 'lm', 'turb']:
+                pw.print(',' + str(total_gen_breakdown.get(title, '')))
 
 
-        site_ds = comterp.get('site_source')(site, chunk_start, chunk_finish, forecast_date, comterp, pw)
-        site_ds.init_from_mpan(displaced_mpan)
-        cont_func = comterp.get('contract_function')
-        disp_func = cont_func(supplier_contract, 'displaced_virtual_bill')
-        bill = disp_func(site_ds)
-        for title in bill_titles:
-            pw.print(',"' + str(bill.get(title, '')) + '"')
-            if title in bill:
-                del bill[title]
-        keys = bill.keys()
-        keys.sort()
-        for k in keys:
-            pw.print(',"' + k + '","' + str(bill[k]) + '"')
-        pw.println('')
-        pw.flush()
-        Hiber.session().clear()
+            site_ds = comterp.get('site_source')(site, chunk_start, chunk_finish, forecast_date, comterp, pw)
+            site_ds.init_from_mpan(displaced_mpan)
+            cont_func = comterp.get('contract_function')
+            disp_func = cont_func(supplier_contract, 'displaced_virtual_bill')
+            bill = disp_func(site_ds)
+            for title in bill_titles:
+                pw.print(',"' + str(bill.get(title, '')) + '"')
+                if title in bill:
+                    del bill[title]
+            keys = bill.keys()
+            keys.sort()
+            for k in keys:
+                pw.print(',"' + k + '","' + str(bill[k]) + '"')
+            pw.println('')
+            pw.flush()
+            Hiber.session().clear()
+        cal.setTime(month_start.getDate())
+        cal.add(Calendar.MONTH, 1)
+        month_start = HhStartDate(cal.getTime())
+        cal.add(Calendar.MONTH, 1)
+        cal.add(Calendar.MINUTE, -30)
+        month_finish = HhStartDate(cal.getTime())
 sites.close()
 pw.close()]]></value>
         <value><![CDATA[]]></value>
@@ -12095,7 +12120,7 @@ hh_count_query = Hiber.session().createQuery("select count(*) from HhDatum datum
 
 num_hh = round((finish_date.getDate().getTime() - start_date.getPrevious().getDate().getTime()) / (30 * 60 * 1000))
 
-pw.println("Supply Id, Supply Name, Source, Generator Type, Site Ids, Site Names, From, To, PC, MTC, CoP, SSC, Import MPAN Core, Import LLFC, Import Supply Capacity,Import Supplier,Import Total MSP kWh, Import Non-actual MSP kWh, Import Total GSP kWh,Import MD / kW, Import MD Date, Import MD / kVA, Import Bad HHs, Export MPAN Core, Export LLFC, Export Supply Capacity,Export Supplier,Export Total MSP kWh, Export Non-actual MSP kWh,Export GSP kWh, Export MD / kW, Export MD Date, Export MD / kVA, Export Bad HHs")
+pw.println("Supply Id, Supply Name, Source, Generator Type, Site Ids, Site Names, From, To, PC, MTC, CoP, SSC, Import LLFC, Import MPAN Core, Import Supply Capacity,Import Supplier,Import Total MSP kWh, Import Non-actual MSP kWh, Import Total GSP kWh,Import MD / kW, Import MD Date, Import MD / kVA, Import Bad HHs, Export LLFC, Export MPAN Core, Export Supply Capacity,Export Supplier,Export Total MSP kWh, Export Non-actual MSP kWh,Export GSP kWh, Export MD / kW, Export MD Date, Export MD / kVA, Export Bad HHs")
 
 if inv.hasParameter('supply-id'):
     supply_id = inv.getLong('supply-id')
@@ -12717,7 +12742,7 @@ def process_site(site, month_start, month_finish, forecast_date, pw):
                 bill_finish_millis = bill_finish.getDate().getTime()
 
                 kwh_bills = []
-                for cand_bill in Hiber.session().createQuery("from Bill bill where bill.supply = :supply and bill.batch.contract = :contract and bill.startDate.date <= :finishDate and bill.finishDate.date >= :startDate and bill.type.code != 'W' and lower(bill.batch.reference) not like '%reconciliation%' order by bill.issueDate desc, bill.startDate.date").setEntity('supply', supply).setEntity('contract', import_mpan.getSupplierContract()).setTimestamp('startDate', bill_start.getDate()).setTimestamp('finishDate', bill_finish.getDate()).list():
+                for cand_bill in Hiber.session().createQuery("from Bill bill where bill.supply = :supply and bill.batch.contract = :contract and bill.startDate.date <= :finishDate and bill.finishDate.date >= :startDate and bill.type.code != 'W' and lower(bill.batch.reference) not like '%reconciliation%' order by bill.issueDate desc, bill.startDate.date, bill.reference desc").setEntity('supply', supply).setEntity('contract', import_mpan.getSupplierContract()).setTimestamp('startDate', bill_start.getDate()).setTimestamp('finishDate', bill_finish.getDate()).list():
                     can_insert = True
                     for kwh_bill in kwh_bills:
                         if not cand_bill.getStartDate().after(kwh_bill.getFinishDate()) and not cand_bill.getFinishDate().before(kwh_bill.getStartDate()):
@@ -14543,7 +14568,18 @@ source.appendChild(batch_element)
 bills = Hiber.session().createQuery("from Bill bill where bill.batch = :batch order by bill.reference, bill.startDate.date").setEntity("batch", batch).list()
 for bill in bills:
     batch_element.appendChild(bill.toXml(doc, XmlTree("supply")))
-source.setAttribute('bill-count', str(len(bills)))]]></value>
+source.setAttribute('bill-count', str(len(bills)))
+
+config = Configuration.getConfiguration()
+properties = Properties()
+properties.load(StringReader(config.getProperties()))
+
+for key in properties.propertyNames():
+    if key.startswith('batch.report.'):
+        batch_report_id = properties.get(key)
+        if batch_report_id is not None:
+            report = Report.getReport(int(batch_report_id))
+            batch_element.appendChild(report.toXml(doc))]]></value>
         <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
 <xsl:stylesheet version="1.0"
     xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
@@ -14618,6 +14654,21 @@ source.setAttribute('bill-count', str(len(bills)))]]></value>
                     <th>Number Of Bills</th>
                     <td><xsl:value-of select="/source/@bill-count"/></td>
                   </tr>
+                  <xsl:if test="/source/batch/report">
+                  <tr>
+                    <th>Custom Reports</th>
+                    <td>
+                        <ul>
+                        <xsl:for-each select="/source/batch/report">
+                        <li><a
+                        href="{/source/request/@context-path}/reports/{@id}/output/?batch-id={/source/batch/@id}">
+<xsl:value-of select="@name"/></a></li>
+                        </xsl:for-each>
+                        </ul>
+                    </td>
+                  </tr>
+                  </xsl:if>
+
                 </table>
                 <br/>
                 <table>
@@ -15405,6 +15456,500 @@ source.appendChild(script.toXml(doc, XmlTree('contract', XmlTree('party'))))]]><
                 <pre>
                     <xsl:value-of select="/source/rate-script/@script" />
                 </pre>
+            </body>
+        </html>
+    </xsl:template>
+</xsl:stylesheet>]]></value>
+    </line>
+    <line>
+        <value><![CDATA[insert]]></value>
+        <value><![CDATA[report]]></value>
+        <value><![CDATA[207]]></value>
+        <value><![CDATA[true]]></value>
+        <value><![CDATA[CSV CRC]]></value>
+        <value><![CDATA[from net.sf.chellow.monad import Hiber, UserException
+from java.lang import System, Math
+from net.sf.chellow.monad.types import MonadDate
+from java.sql import Timestamp, ResultSet
+from java.util import GregorianCalendar, Calendar, TimeZone, Locale, Date
+from net.sf.chellow.physical import HhStartDate, Supply
+from net.sf.chellow.billing import Batch, NonCoreContract, Bill
+from org.python.util import PythonInterpreter
+
+year = inv.getInteger('year')
+
+inv.getResponse().setContentType("text/csv")
+inv.getResponse().setHeader('Content-Disposition', 'filename=output.csv;')
+pw = inv.getResponse().getWriter()
+
+pw.println("MPAN Core,Site Id,Site Name,From,To,kWh,Breakdown,Normal Days,Is Normal?")
+pw.flush()
+
+cal = MonadDate.getCalendar()
+cal.set(Calendar.YEAR, year)
+cal.set(Calendar.MONTH, Calendar.APRIL)
+cal.set(Calendar.DAY_OF_MONTH, 1)
+cal.set(Calendar.HOUR_OF_DAY, 0)
+cal.set(Calendar.MINUTE, 0)
+cal.set(Calendar.SECOND, 0)
+cal.set(Calendar.MILLISECOND, 0)
+
+year_start = HhStartDate(cal.getTime())
+cal.add(Calendar.YEAR, 1)
+cal.add(Calendar.MINUTE, -30)
+year_finish = HhStartDate(cal.getTime())
+
+if inv.hasParameter('supply-id'):
+    supply_id = inv.getLong('supply-id')
+    supplies = Hiber.session().createQuery("from Supply supply where supply = :supply").setEntity('supply', Supply.getSupply(supply_id)).scroll()
+else:
+    supplies = Hiber.session().createQuery("select distinct generation.supply from SupplyGeneration generation where generation.supply.source.code in ('net', 'gen-net') and generation.importMpan is not null and generation.startDate.date <= :finishDate and (generation.finishDate is null or generation.finishDate.date >= :startDate)").setTimestamp('startDate', year_start.getDate()).setTimestamp('finishDate', year_finish.getDate()).scroll()
+
+cal.setTime(year_start.getDate())
+cal.add(Calendar.YEAR, -1)
+early_cutoff = HhStartDate(cal.getTime())
+
+cal.setTime(year_finish.getDate())
+cal.add(Calendar.YEAR, 1)
+late_cutoff = HhStartDate(cal.getTime())
+
+bill_query = Hiber.session().createQuery("select distinct read.bill, read.bill.issueDate, read.bill.type.code from RegisterRead read where read.bill.supply = :supply and read.bill.finishDate.date >= :readDate and read.bill.startDate <= :readDate order by read.bill.issueDate desc, read.bill.type.code").setMaxResults(1)
+
+prior_present_read_query = Hiber.session().createQuery("select read, read.bill from RegisterRead read where read.units.int = 0 and read.presentType.code in ('N', 'N3', 'C') and read.bill.supply = :supply and read.presentDate.date <= :startDate and read.presentDate.date >= :earlyCutoff order by read.presentDate.date desc, read.bill.issueDate desc, read.bill.type.code").setTimestamp('earlyCutoff', early_cutoff.getDate()).setMaxResults(1)
+
+prior_previous_read_query = Hiber.session().createQuery("select read, read.bill from RegisterRead read where read.units.int = 0 and read.previousType.code in ('N', 'N3', 'C') and read.bill.supply = :supply and read.previousDate.date <= :startDate and read.previousDate.date >= :earlyCutoff order by read.previousDate.date desc, read.bill.issueDate desc, read.bill.type.code").setTimestamp('earlyCutoff', early_cutoff.getDate()).setMaxResults(1)
+
+present_reads_query = Hiber.session().createQuery("from RegisterRead read where read.units.int = 0 and read.bill = :bill and read.presentDate.date = :readDate and read.meterSerialNumber = :msn")
+
+previous_reads_query = Hiber.session().createQuery("from RegisterRead read where read.units.int = 0 and read.bill = :bill and read.previousDate.date = :readDate and read.meterSerialNumber = :msn")
+
+next_present_read_query = Hiber.session().createQuery("select read, read.bill from RegisterRead read where read.units.int = 0 and read.presentType.code in ('N', 'N3', 'C') and read.bill.supply = :supply and read.presentDate.date >= :finishDate and read.presentDate.date <= :lateCutoff order by read.presentDate.date, read.bill.issueDate desc, read.bill.type.code").setTimestamp('lateCutoff', late_cutoff.getDate()).setMaxResults(1)
+
+next_previous_read_query = Hiber.session().createQuery("select read, read.bill from RegisterRead read where read.units.int = 0 and read.previousType.code in ('N', 'N3', 'C') and read.bill.supply = :supply and read.previousDate.date >= :finishDate and read.previousDate.date <= :lateCutoff order by read.previousDate.date, read.bill.issueDate desc, read.bill.type.code").setTimestamp('lateCutoff', late_cutoff.getDate()).setMaxResults(1)
+
+while supplies.next():
+    kwh = 0
+    normal_days = 0
+    breakdown = ''
+    supply = supplies.get(0)
+    generations = supply.getGenerations(year_start, year_finish)
+    last_generation = generations[generations.size() - 1]
+
+    first_generation_start = generations[0].getStartDate()
+    if first_generation_start.after(year_start):
+        period_start = first_generation_start
+    else:
+        period_start = year_start
+
+    last_generation_finish = last_generation.getFinishDate()
+    if last_generation_finish is None or last_generation_finish.after(year_finish):
+        period_finish = year_finish
+    else:
+        period_finish = last_generation_finish
+
+    mpan = last_generation.getImportMpan()
+    mpan_core = mpan.getCore()
+    site = Hiber.session().createQuery("select ssgen.site from SiteSupplyGeneration ssgen where ssgen.isPhysical is true and ssgen.supplyGeneration = :supplyGeneration").setEntity('supplyGeneration', last_generation).uniqueResult()
+
+    pw.print(','.join('"' + str(val) + '"' for val in [mpan_core, site.getCode(), site.getName(), period_start, period_finish]))
+    pw.flush()
+
+    bill_query.setEntity('supply', supply)
+    prior_present_read_query.setEntity('supply', supply)
+    prior_previous_read_query.setEntity('supply', supply)
+    next_present_read_query.setEntity('supply', supply)
+    next_previous_read_query.setEntity('supply', supply)
+
+    if last_generation.getPc().getCode() == 0:
+        pass
+    elif len(last_generation.getChannels()) > 0:
+        pass
+    else:
+        search_date = period_start
+        search_msn = ''
+        read_0 = None
+        read_1 = None
+        read_2 = None
+        read_3 = None
+
+        read_dict = None
+
+        tie = False
+        while True:
+            #s elf.pw.println('search date ' + str(search_date))
+            present_read_prime = False
+            previous_read_prime = False
+            #s elf.pw.println('first loop, ' + str(supply.getId()))
+            present_read = prior_present_read_query.setTimestamp('startDate', search_date.getDate()).uniqueResult()
+            if present_read is not None:
+                present_read = present_read[0]
+
+            previous_read = prior_previous_read_query.setTimestamp('startDate', search_date.getDate()).uniqueResult()
+            if previous_read is not None:
+                previous_read = previous_read[0]
+
+            #s elf.pw.println('prev read ' + str(previous_read) + ' pres read ' + str(present_read))
+            if present_read is None and previous_read is None:
+                break
+
+            if previous_read is not None:
+                #s elf.pw.println('prev read ' + str(previous_read.getId()) + ' bill id ' + str(previous_read.getBill().getId()))
+                previous_bill = bill_query.setTimestamp('readDate', previous_read.getBill().getStartDate().getDate()).uniqueResult()[0]
+
+                #s elf.pw.println('prev bill id ' + str(previous_bill.getId()))
+
+                if  previous_bill.getId() == previous_read.getBill().getId():
+                    previous_read_prime = True
+
+            if present_read is not None:
+                #s elf.pw.println('pres read ' + str(present_read.getId()) + ' bill id ' + str(present_read.getBill().getId()))
+
+                present_bill = bill_query.setTimestamp('readDate', present_read.getBill().getStartDate().getDate()).uniqueResult()[0]
+                #s elf.pw.println('pres bill ' + str(present_bill.getId()))
+                if  present_bill.getId() == present_read.getBill().getId():
+                    if previous_read_prime:
+                        #s elf.pw.println('prev read pot prime, pres prime pres read date' + str(present_read.getPresentDate()) + ' prev read date ' + str(previous_read.getPreviousDate()))
+
+                        if present_read.getPresentDate().after(previous_read.getPreviousDate()):
+                            present_read_prime = True
+                            previous_read_prime = False
+                        elif previous_read.getPreviousDate().getDate().getTime() == present_read.getPresentDate().getDate().getTime() and previous_read.getMeterSerialNumber() != present_read.getMeterSerialNumber():
+                            if tie:
+                                tie = False
+                                previous_read_prime = False
+                                present_read_prime = True
+                            else:
+                                tie = True
+            
+                    else:
+                        present_read_prime = True
+
+            if present_read_prime:
+                #s elf.pw.println('pres supply prime pres bill ' + str(present_bill.getId()))
+
+                if not tie:
+                    cal.setTime(present_read.getPresentDate().getDate())
+                    cal.add(Calendar.MONTH, -3)
+                    search_date = HhStartDate(cal.getTime())
+
+                #s elf.pw.println('present read ' + str(present_read.getId()) + ' present read bill ' + str(present_read.getBill().getId()) + ' present bill ' + str(present_bill.getId()))
+                reads = {}
+                present_reads = present_reads_query.setEntity('bill', present_bill).setTimestamp('readDate', present_read.getPresentDate().getDate()).setString('msn', present_read.getMeterSerialNumber()).list()
+                #s elf.pw.println('present reads ' + str(present_reads))
+                for read in present_reads:
+                    tpr = read.getTpr()
+                    reads[tpr.getCode()] = {'tpr': read.getTpr(), 'value': read.getPresentValue().doubleValue() * read.getCoefficient().doubleValue(), 'msn': read.getMeterSerialNumber()}
+
+                read_dict = {'date': present_read.getPresentDate(), 'reads': reads, 'msn': present_reads[0].getMeterSerialNumber()}
+
+            if previous_read_prime:
+                #s elf.pw.println('prev supply prime prev bill ' + str(previous_bill.getId()))
+                if not tie:
+                    cal.setTime(previous_read.getPreviousDate().getDate())
+                    cal.add(Calendar.MONTH, -3)
+                    search_date = HhStartDate(cal.getTime())
+                reads = {}
+                previous_reads = previous_reads_query.setEntity('bill', previous_bill).setTimestamp('readDate', previous_read.getPreviousDate().getDate()).setString('msn', previous_read.getMeterSerialNumber()).list()
+                for read in previous_reads:
+                    tpr = read.getTpr()
+                    reads[tpr.getCode()] = {'tpr': read.getTpr(), 'value': read.getPreviousValue().doubleValue() * read.getCoefficient().doubleValue()}
+                        
+                read_dict = {'date': previous_read.getPreviousDate(), 'reads': reads, 'msn': previous_reads[0].getMeterSerialNumber()}
+
+            if previous_read_prime or present_read_prime:
+                if read_2 is None:
+                    read_2 = read_dict
+                elif read_1 is None:
+                    read_1 = read_dict
+                    if read_1['msn'] == read_2['msn']:
+                        break
+                else:
+                    read_0 = read_dict
+                    break
+                        
+
+            if not previous_read_prime and not present_read_prime:
+                if previous_read is None:
+                    search_date = present_read.getPresentDate().getPrevious()
+                elif present_read is None:
+                    search_date = previous_read.getPreviousDate().getPrevious()
+                elif previous_read.getPreviousDate().before(present_read.getPresentDate()):
+                    search_date = present_read.getPresentDate().getPrevious()
+                else:
+                    search_date = previous_read.getPreviousDate().getPrevious()
+
+        #s elf.pw.println('initial read_0 ' + str(read_0) + ' read_1 ' + str(read_1) + ' read_2 ' + str(read_2))
+                            
+
+        search_date = period_start
+        keep_going = True
+
+        tie = False
+        while keep_going:
+            while True:
+                present_read_prime = False
+                previous_read_prime = False
+                #s elf.pw.println('first loop, ' + str(supply.getId()))
+                present_read = next_present_read_query.setTimestamp('finishDate', search_date.getDate()).uniqueResult()
+                if present_read is not None:
+                    present_read = present_read[0]
+                previous_read = next_previous_read_query.setTimestamp('finishDate', search_date.getDate()).uniqueResult()
+                if previous_read is not None:
+                    previous_read = previous_read[0]
+
+                if present_read is None and previous_read is None:
+                    keep_going = False
+                    break
+
+                if present_read is not None:
+                    present_bill = bill_query.setTimestamp('readDate', present_read.getPresentDate().getDate()).uniqueResult()[0]
+                    #s elf.pw.println('bill id ' + str(bill.getId()))
+
+                    if present_bill.getId() == present_read.getBill().getId():
+                        present_read_prime = True
+
+                if previous_read is not None:
+                    #s elf.pw.println('previous read id ' + str(previous_read.getId()) + ' date ' + str(previous_read.getPreviousDate()) + ' prev bill id ' + str(previous_bill.getId()))
+                    #s elf.pw.println('bill id ' + str(bill.getId()))
+
+                    previous_bill = bill_query.setTimestamp('readDate', previous_read.getBill().getStartDate().getDate()).uniqueResult()[0]
+                        #s elf.pw.println(' prev bill id ' + str(previous_bill.getId()))
+                    if previous_bill.getId() == previous_read.getBill().getId():
+                        if present_read_prime:
+                            if previous_read.getPreviousDate().before(present_read.getPresentDate()):
+                                previous_read_prime = True
+                                present_read_prime = False
+                            elif previous_read.getPreviousDate().getDate().getTime() == present_read.getPresentDate().getDate().getTime() and previous_read.getMeterSerialNumber() != present_read.getMeterSerialNumber():
+                                #s elf.pw.println('it is a tie ' + str(tie) + ' search date ' + str(search_date))
+
+                                if tie:
+                                    tie = False
+                                    previous_read_prime = True
+                                    present_read_prime = False
+                                else:
+                                    tie = True
+                        else:
+                            previous_read_prime = True
+
+
+                if present_read_prime:
+                    if not tie:
+                        if present_read.getPresentDate().after(period_finish):
+                            cal.setTime(present_read.getPresentDate().getDate())
+                            cal.add(Calendar.MONTH, 3)
+                            search_date = HhStartDate(cal.getTime())
+                        else:
+                            search_date = present_read.getPresentDate().getNext()
+                    #s elf.pw.println('present read ' + str(present_read.getId()) + ' present read bill ' + str(present_read.getBill().getId()) + ' present bill ' + str(present_bill.getId()))
+
+                    reads = {}
+                    present_reads = present_reads_query.setEntity('bill', present_bill).setTimestamp('readDate', present_read.getPresentDate().getDate()).setString('msn', present_read.getMeterSerialNumber()).list()
+                    #s elf.pw.println('present readns next ' + str(present_reads))
+                    for read in present_reads:
+                        tpr = read.getTpr()
+                        reads[tpr.getCode()] = {'tpr': tpr, 'value': read.getPresentValue().doubleValue() * read.getCoefficient().doubleValue()}
+
+                    read_3 = {'date': present_read.getPresentDate(), 'reads': reads, 'msn': present_reads[0].getMeterSerialNumber()}
+                    break
+                    #s elf.pw.println('got 3 ')
+                            
+                if previous_read_prime:
+                    if not tie:
+                        if previous_read.getPreviousDate().after(period_finish):
+                            cal.setTime(previous_read.getPreviousDate().getDate())
+                            cal.add(Calendar.MONTH, 3)
+                            search_date = HhStartDate(cal.getTime())
+                        else:
+                            search_date = previous_read.getPreviousDate().getNext()
+                    reads = {}
+                    previous_reads = previous_reads_query.setEntity('bill', previous_bill).setTimestamp('readDate', previous_read.getPreviousDate().getDate()).setString('msn', previous_read.getMeterSerialNumber()).list()
+                    for read in previous_reads:
+                        tpr = read.getTpr()
+                        reads[tpr.getCode()] = {'tpr': tpr, 'value': read.getPreviousValue().doubleValue() * read.getCoefficient().doubleValue()}
+                        
+                    read_3 = {'date': previous_read.getPreviousDate(), 'reads': reads, 'msn': previous_reads[0].getMeterSerialNumber()}
+                    break
+
+                if not previous_read_prime and not present_read_prime:
+                    if previous_read is None:
+                        search_date = present_read.getPresentDate().getNext()
+                    elif present_read is None:
+                        search_date = previous_read.getPreviousDate().getNext()
+                    elif previous_read.getPreviousDate().before(present_read.getPresentDate()):
+                        search_date = previous_read.getPreviousDate().getNext()
+                    else:
+                        search_date = present_read.getPresentDate().getNext()
+
+
+            #s elf.pw.println('read_0 ' + str(read_0) + ' read_1 ' + str(read_1) + ' read_2 ' + str(read_2) + ' read_3 ' + str(read_3))
+                    
+
+            passes = []
+            if read_3 is None or (read_2 is not None and read_3['msn'] != read_2['msn']):
+                if read_1 is not None and read_2 is not None and read_1['msn'] == read_2['msn']:
+                    if read_1['msn'] == read_2['msn']:
+                        aft_read = read_1
+                        fore_read = read_2
+                    else:
+                        aft_read = read_0
+                        fore_read = read_1
+
+                    if period_start.before(read_2['date'].getNext()):
+                        chunk_start = read_2['date'].getNext()
+                    else:
+                        chunk_start = period_start
+
+                    if read_3 is None or read_3['date'].after(period_finish):
+                        chunk_finish = period_finish
+                    else:
+                        chunk_finish = read_3['date']
+
+                    passes.append({'aft-read': aft_read, 'fore-read': fore_read, 'chunk-finish': chunk_finish, 'chunk-start': chunk_start})
+                elif read_0 is not None and read_1 is not None and read_0['msn'] == read_1['msn']:
+                    if period_start.before(read_1['date']):
+                        chunk_start = read_1['date'].getNext()
+                    else:
+                        chunk_start = period_start
+                    passes.append({'aft-read': read_0, 'fore-read': read_1, 'chunk-finish': period_finish, 'chunk-start': chunk_start})
+            elif read_2 is not None:
+                if period_finish.before(read_3['date']):
+                    chunk_finish = period_finish
+                else:
+                    chunk_finish = read_3['date']
+
+                if period_start.after(read_2['date']):
+                    chunk_start = period_start
+                else:
+                    chunk_start = read_2['date'].getNext()
+
+                passes.append({'aft-read': read_2, 'fore-read': read_3, 'chunk-start': chunk_start, 'chunk-finish': chunk_finish})
+                if read_1 is None and read_2['date'].after(period_start):
+                    #s elf.pw.println('doing extra bit ')                             
+                    if read_2['date'].after(period_finish):
+                        chunk_finish = period_finish
+                    else:
+                        chunk_finish = read_2['date'].getPrevious()
+                    passes.append({'aft-read': read_2, 'fore-read': read_3, 'chunk-finish': period_finish, 'chunk-start': period_start})
+                                
+            #s elf.pw.println('aft read ' + str(aft_read.getPresentDate()) + ' aft bill ' + str(aft_bill.getId()) + ' fore read ' + str(fore_read.getPresentDate()) + ' fore bill ' + str(fore_bill.getId()))
+                            
+            #s elf.pw.println('chunk start ' + str(chunk_start) + ' chunk finish ' + str(chunk_finish))
+            #p w.println('passed ' + str(passes))
+            
+            for read_pass in passes:
+                aft_read = read_pass['aft-read']
+                fore_read = read_pass['fore-read']
+                chunk_start = read_pass['chunk-start']
+                chunk_finish = read_pass['chunk-finish']
+
+                fore_aft_duration = float(fore_read['date'].getDate().getTime() - aft_read['date'].getDate().getTime())
+
+                if not aft_read['date'].before(period_start) and not fore_read['date'].after(period_finish) and aft_read['date'].getNext().equals(chunk_start) and fore_read['date'].equals(chunk_finish):
+                    ndays = fore_aft_duration / float(1000 * 60 * 60 * 24)
+                else:
+                    ndays = 0
+                normal_days += ndays
+                
+                pass_kwh = 0
+                for tpr_code, initial_read in aft_read['reads'].iteritems():
+                    #s elf.pw.println('read ' + str(initial_read.getId()))
+                            
+                    tpr = initial_read['tpr']
+                    if tpr_code in fore_read['reads']:
+                        end_read = fore_read['reads'][tpr_code]
+                    else:
+                        continue
+
+                    initial_val = initial_read['value']
+                    end_val = end_read['value']
+                    tpr_kwh =  end_val - initial_val
+                    if tpr_kwh < 0:
+                        digits = int(Math.log10(initial_val)) + 1
+                        tpr_kwh = 10 ** digits - initial_val + end_val
+                    kwh_rate = float(tpr_kwh) / fore_aft_duration
+                    pass_kwh += kwh_rate * (chunk_finish.getDate().getTime() - chunk_start.getDate().getTime() + 30 * 60 * 1000)
+                kwh += pass_kwh
+
+                breakdown += "read-from: " + str(aft_read['date']) + " read-to: " + str(fore_read['date']) + " from: " + str(chunk_start) + " to: " + str(chunk_finish) + " kwh: " + str(pass_kwh) +  " normal-days: " + str(ndays) + ", "
+
+            if read_3 is None:
+                keep_going = False
+
+            if keep_going and read_2 is not None and read_2['date'].after(period_finish):
+                keep_going = False
+
+            if keep_going and read_3['date'].after(period_finish) and not (read_2 is None and read_3['date'].after(period_start)):
+                keep_going = False
+
+            read_0 = read_1
+            read_1 = read_2
+            read_2 = read_3
+            read_3 = None
+            #s elf.pw.println('finished scond inner loop ' + str(prev_read.getPresentDate()) + ', ' + str(System.currentTimeMillis()))
+        #s elf.pw.println('finished section, ' + str(System.currentTimeMillis()))
+    
+    pw.println(',' + ','.join('"' + str(val) + '"' for val in [kwh, breakdown, normal_days, normal_days >= 183]))
+    pw.flush()
+    Hiber.session().clear()
+pw.close()]]></value>
+        <value><![CDATA[]]></value>
+    </line>
+    <line>
+        <value><![CDATA[insert]]></value>
+        <value><![CDATA[report]]></value>
+        <value><![CDATA[209]]></value>
+        <value><![CDATA[true]]></value>
+        <value><![CDATA[CSV CRC Selector]]></value>
+        <value><![CDATA[from java.util import GregorianCalendar, TimeZone, Locale, Calendar
+from net.sf.chellow.monad.types import MonadDate
+
+cal = GregorianCalendar(TimeZone.getTimeZone("GMT"), Locale.UK)
+if cal.get(Calendar.MONTH) < Calendar.MARCH:
+    cal.add(Calendar.YEAR, -1)
+source.setAttribute('year', str(cal.get(Calendar.YEAR)))]]></value>
+        <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
+<xsl:stylesheet version="1.0"
+    xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+    <xsl:output method="xml" encoding="US-ASCII"
+        doctype-public="-//W3C//DTD XHTML 1.1//EN"
+        doctype-system="http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd"
+        indent="yes" />
+    <xsl:template match="/">
+        <html>
+            <head>
+                <link rel="stylesheet" type="text/css"
+                    href="{/source/request/@context-path}/reports/19/output/" />
+
+                <title>Chellow &gt; CSV CRC</title>
+            </head>
+            <body>
+                <p>
+                    <a
+                        href="{/source/request/@context-path}/reports/1/output/">
+                        <xsl:value-of select="'Home'" />
+                    </a>
+                    &gt;
+                    <xsl:value-of select="'CSV CRC'" />
+                </p>
+                  <xsl:if test="//message">
+                    <ul>
+                        <xsl:for-each select="//message">
+                            <li>
+                                <xsl:value-of select="@description" />
+                            </li>
+                        </xsl:for-each>
+                    </ul>
+                </xsl:if>
+                <form action="{/source/request/@context-path}/reports/207/output/">
+                    <fieldset>
+                        <legend>Download CRC CSV</legend>
+                        <br/>
+                        <xsl:value-of select="'For financial year starting April '"/>
+                        <input name="year" value="{/source/@year}" size="4" maxlength="4"/>
+<xsl:value-of select="' '"/>
+                        <input type="submit" value="Download"/>
+                    </fieldset>
+                </form>
             </body>
         </html>
     </xsl:template>

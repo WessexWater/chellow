@@ -11203,10 +11203,11 @@ def rate(script, name, pw=None):
             interp.exec(script.getScript())
             rate_interp_cache[script_id] = interp
         rate_interp = rate_interp_cache[script_id]
-        try:
-            rate_names[name] = rate_interp.get(name)()
-        except TypeError:
-            raise UserException("Problem getting the function '" + name + "' from the script " + str(script_id) + " from the contract " + script.getContract().getName())
+        rate_func = rate_interp.get(name)
+        if rate_func is None:
+            return None
+        rate_names[name] = rate_func()
+
     return rate_names[name]
 
 
@@ -12144,10 +12145,12 @@ class SupplySource(DataSource):
             #s elf.pw.println("whole data: about to prepare query, " +  str(System.currentTimeMillis()))
             con = Hiber.session().connection()
             if self.is_import:
-                hql = "select sum(case when channel.is_kwh then hh_datum.value else 0 end) as kwh, max(case when channel.is_kwh then hh_datum.status else '' end) as status, sum(case when not channel.is_kwh and channel.is_import then hh_datum.value else 0 end) as imp_kvarh, sum(case when not channel.is_kwh and not channel.is_import then hh_datum.value else 0  end) as exp_kvarh, hh_datum.start_date from hh_datum, channel, supply_generation where hh_datum.channel_id = channel.id and channel.supply_generation_id = supply_generation.id and supply_generation.supply_id = ? and (channel.is_import = TRUE or channel.is_kwh = FALSE) and hh_datum.start_date >= ? and hh_datum.start_date <= ? group by hh_datum.start_date order by hh_datum.start_date"
+                imp_pref = ''
+                exp_pref = 'anti_'
             else:
-                hql = "select sum(case when channel.is_kwh then hh_datum.value else 0 end) as kwh, max(case when not channel.is_import and channel.is_kwh then hh_datum.status else '' end) as status, sum(case when not channel.is_kwh and channel.is_import then hh_datum.value else 0 end) as imp_kvarh, sum(case when not channel.is_kwh and not channel.is_import then hh_datum.value else 0  end) as exp_kvarh, hh_datum.start_date from hh_datum, channel, supply_generation where hh_datum.channel_id = channel.id and channel.supply_generation_id = supply_generation.id and supply_generation.supply_id = ? and (channel.is_import = FALSE or channel.is_kwh = FALSE) and hh_datum.start_date >= ? and hh_datum.start_date <= ? group by hh_datum.start_date order by hh_datum.start_date"
-            stmt = con.prepareStatement(hql, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.CLOSE_CURSORS_AT_COMMIT)
+                imp_pref = 'anti_'
+                exp_pref = ''
+            stmt = con.prepareStatement("select sum(case when channel.is_kwh then hh_datum.value else 0 end) as " + imp_pref + "kwh, max(case when channel.is_kwh then hh_datum.status else '' end) as " + imp_pref + "status, sum(case when channel.is_import and not channel.is_kwh then hh_datum.value else 0 end) as imp_kvarh, sum(case when channel.is_kwh then hh_datum.value else 0 end) as " + exp_pref + "kwh, sum(case when not channel.is_kwh and not channel.is_import then hh_datum.value else 0  end) as exp_kvarh, hh_datum.start_date from hh_datum, channel, supply_generation where hh_datum.channel_id = channel.id and channel.supply_generation_id = supply_generation.id and supply_generation.supply_id = ? and (channel.is_import = TRUE or channel.is_kwh = FALSE) and hh_datum.start_date >= ? and hh_datum.start_date <= ? group by hh_datum.start_date order by hh_datum.start_date", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.CLOSE_CURSORS_AT_COMMIT)
             stmt.setLong(1, self.supply.getId())
             stmt.setTimestamp(2, Timestamp(history_start.getDate().getTime()))
             stmt.setTimestamp(3, Timestamp(history_finish.getDate().getTime()))
@@ -12158,6 +12161,7 @@ class SupplySource(DataSource):
             while rs.next():
                 hh_start_date = rs.getTimestamp('start_date')
                 msp_kwh = rs.getBigDecimal('kwh').doubleValue()
+                anti_msp_kwh = rs.getBigDecimal('anti_kwh').doubleValue()
                 imp_kvarh = rs.getBigDecimal('imp_kvarh').doubleValue()
                 exp_kvarh = rs.getBigDecimal('exp_kvarh').doubleValue()
                 status = rs.getString('status')
@@ -12168,7 +12172,7 @@ class SupplySource(DataSource):
                 ct_cal.add(Calendar.YEAR, year_advance)
 
                 utc_day = utc_cal.get(Calendar.DAY_OF_MONTH)
-                data_hh.append({'status': status, 'imp-msp-kvarh': imp_kvarh, 'imp-msp-kvar': imp_kvarh * 2, 'exp-msp-kvarh': exp_kvarh, 'exp-msp-kvar': exp_kvarh * 2, 'msp-kw': msp_kwh * 2, 'msp-kwh': msp_kwh, 'hist-kwh': msp_kwh, 'hist-start-date': hh_start_date, 'start-date': utc_cal.getTime(), 'ct-day': ct_cal.get(5), 'utc-month': utc_cal.get(2), 'utc-day': utc_day, 'utc-decimal-hour': utc_cal.get(11) + float(utc_cal.get(12)) / 60, 'utc-year': utc_cal.get(Calendar.YEAR), 'utc-hour': utc_cal.get(Calendar.HOUR_OF_DAY), 'utc-minute': utc_cal.get(Calendar.MINUTE), 'ct-year': ct_cal.get(Calendar.YEAR), 'ct-month': ct_cal.get(2), 'ct-decimal-hour': ct_cal.get(11) + float(ct_cal.get(12)) / 60, 'ct-day-of-week': ct_cal.get(7), 'utc-day-of-week': utc_cal.get(7), 'utc-is-bank-holiday': utc_day in bank_holidays})
+                data_hh.append({'status': status, 'imp-msp-kvarh': imp_kvarh, 'imp-msp-kvar': imp_kvarh * 2, 'exp-msp-kvarh': exp_kvarh, 'exp-msp-kvar': exp_kvarh * 2, 'anti-msp-kwh': anti_msp_kwh, 'anti-msp-kw': anti_msp_kwh * 2, 'msp-kw': msp_kwh * 2, 'msp-kwh': msp_kwh, 'hist-kwh': msp_kwh, 'hist-start-date': hh_start_date, 'start-date': utc_cal.getTime(), 'ct-day': ct_cal.get(5), 'utc-month': utc_cal.get(2), 'utc-day': utc_day, 'utc-decimal-hour': utc_cal.get(11) + float(utc_cal.get(12)) / 60, 'utc-year': utc_cal.get(Calendar.YEAR), 'utc-hour': utc_cal.get(Calendar.HOUR_OF_DAY), 'utc-minute': utc_cal.get(Calendar.MINUTE), 'ct-year': ct_cal.get(Calendar.YEAR), 'ct-month': ct_cal.get(2), 'ct-decimal-hour': ct_cal.get(11) + float(ct_cal.get(12)) / 60, 'ct-day-of-week': ct_cal.get(7), 'utc-day-of-week': utc_cal.get(7), 'utc-is-bank-holiday': utc_day in bank_holidays})
 
             rs.close()
             stmt.close()
@@ -12180,7 +12184,7 @@ class SupplySource(DataSource):
             utc_cal.setTime(finish_date.getDate())
             ct_cal.setTime(finish_date.getDate())
             utc_day = utc_cal.get(Calendar.DAY_OF_MONTH)
-            data_hh.append({'status': 'E', 'used-kwh': 0, 'hist-kwh': 0, 'msp-kwh': 0, 'gsp-kwh': 0, 'msp-kw': 0, 'imp-msp-kvarh': 0, 'imp-msp-kvar': 0, 'exp-msp-kvarh': 0, 'hist-start-date': history_finish.getDate(), 'start-date': finish_date.getDate(), 'ct-day': ct_cal.get(5), 'utc-month': utc_cal.get(2), 'utc-day': utc_day, 'utc-decimal-hour': utc_cal.get(11) + float(utc_cal.get(12)) / 60, 'ct-month': ct_cal.get(2), 'ct-decimal-hour': ct_cal.get(11) + ct_cal.get(12) / 60, 'ct-day-of-week': ct_cal.get(7), 'utc-day-of-week': utc_cal.get(7), 'utc-year': utc_cal.get(Calendar.YEAR), 'utc-hour': utc_cal.get(Calendar.HOUR), 'utc-minute': utc_cal.get(Calendar.MINUTE), 'utc-is-bank-holiday': utc_day in bank_holidays})
+            data_hh.append({'status': 'E', 'used-kwh': 0, 'hist-kwh': 0, 'msp-kwh': 0, 'gsp-kwh': 0, 'msp-kw': 0,'anti-msp-kw': 0,'anti-msp-kwh': 0, 'imp-msp-kvarh': 0, 'imp-msp-kvar': 0, 'exp-msp-kvarh': 0, 'hist-start-date': history_finish.getDate(), 'start-date': finish_date.getDate(), 'ct-day': ct_cal.get(5), 'utc-month': utc_cal.get(2), 'utc-day': utc_day, 'utc-decimal-hour': utc_cal.get(11) + float(utc_cal.get(12)) / 60, 'ct-month': ct_cal.get(2), 'ct-decimal-hour': ct_cal.get(11) + ct_cal.get(12) / 60, 'ct-day-of-week': ct_cal.get(7), 'utc-day-of-week': utc_cal.get(7), 'utc-year': utc_cal.get(Calendar.YEAR), 'utc-hour': utc_cal.get(Calendar.HOUR), 'utc-minute': utc_cal.get(Calendar.MINUTE), 'utc-is-bank-holiday': utc_day in bank_holidays})
 
         #s elf.pw.println("whole data: starting dso hh, " + str(System.currentTimeMillis()))
         if self.pc_code == '00':
@@ -12291,6 +12295,30 @@ def displaced_mpan(site_group, start_date, finish_date):
         return None]]></value>
         <value><![CDATA[143]]></value>
         <value><![CDATA[2009-11-27T00:00Z]]></value>
+        <value><![CDATA[]]></value>
+        <value><![CDATA[]]></value>
+    </line>
+    <line>
+        <value><![CDATA[insert]]></value>
+        <value><![CDATA[non-core-contract]]></value>
+        <value><![CDATA[71]]></value>
+        <value><![CDATA[]]></value>
+        <value><![CDATA[CALB]]></value>
+        <value><![CDATA[fit]]></value>
+        <value><![CDATA[from net.sf.chellow.physical import HhStartDate
+
+def hh(bill, supply_source, rate, differentiator, whole_data=None):
+    if whole_data is None:
+        whole_data = supply_source.whole_data
+
+    hh_data = whole_data['data']
+    summary = whole_data['summary']
+
+    bill['fit-' + differentiator + '-msp-kwh'] = summary['sum-msp-kwh']
+    bill['fit-' + differentiator + '-rate'] = rate
+    bill['fit-' + differentiator + '-gbp'] = summary['sum-msp-kwh'] * rate]]></value>
+        <value><![CDATA[231]]></value>
+        <value><![CDATA[2010-12-02T00:00Z]]></value>
         <value><![CDATA[]]></value>
         <value><![CDATA[]]></value>
     </line>
@@ -15270,8 +15298,10 @@ def get_triad_dates(date, data_source):
 
 
 def triad(bill, dso_contract, month_begin, month_end, data_source, rate_period='monthly'):
-    timing = System.currentTimeMillis()
-    #data_source.pw.println("starting triad " + str(System.currentTimeMillis() - timing) + "month begin " + str(month_begin) + " month end " + str(month_end) + " " + str(dso_contract.getId()))
+     #data_source.pw.println("starting triad " + str(System.currentTimeMillis() - timing) + "month begin " + str(month_begin) + " month end " + str(month_end) + " " + str(dso_contract.getId()))
+
+
+    triad_rates_contract = NonCoreContract.getNonCoreContract('triad-rates')
 
     utc_cal = MonadDate.getCalendar()
     utc_cal.setTime(month_begin.getDate())
@@ -15313,7 +15343,7 @@ def triad(bill, dso_contract, month_begin, month_end, data_source, rate_period='
                 est_datum['msp-kw'] = est_triad_kw
                 est_datum['gsp-kw'] = est_datum['msp-kw'] * est_datum['laf']
     
-    triad_calc(bill, 'triad-estimate', dso_contract, est_triad_kws, financial_year_start, data_source)
+    triad_calc(bill, 'triad-estimate', triad_rates_contract, est_triad_kws, financial_year_start, data_source, month_begin)
 
     est_triad_gbp = bill['triad-estimate-rate'] * bill['triad-estimate-gsp-kw']
 
@@ -15341,7 +15371,7 @@ def triad(bill, dso_contract, month_begin, month_end, data_source, rate_period='
         #data_source.pw.println('t dates ' + str(get_triad_dates(month_begin, data_source)))
         triad_kws = [data_source.create_whole_data(t_date, t_date, data_source.forecast_date)['data'][0] for t_date in get_triad_dates(month_begin, data_source)]
 
-        triad = triad_calc(bill, 'triad-actual', dso_contract, triad_kws, financial_year_start, data_source)
+        triad = triad_calc(bill, 'triad-actual', triad_rates_contract, triad_kws, financial_year_start, data_source, month_begin)
         bill['triad-actual-gbp'] = bill['triad-actual-rate'] * bill['triad-actual-gsp-kw']
 
         utc_cal.setTime(month_end.getDate())
@@ -15365,7 +15395,7 @@ def triad(bill, dso_contract, month_begin, month_end, data_source, rate_period='
 
     #data_source.pw.println("finished triad " + str(System.currentTimeMillis() - timing))
 
-def triad_calc(bill, prefix, dso_contract, triad_data, financial_year_start, data_source):
+def triad_calc(bill, prefix, triad_rates_contract, triad_data, financial_year_start, data_source, month_begin):
     gsp_kw = 0
     for i in range(len(triad_data)):
         triad_hh = triad_data[i]
@@ -15378,7 +15408,29 @@ def triad_calc(bill, prefix, dso_contract, triad_data, financial_year_start, dat
         gsp_kw += triad_hh['gsp-kw']
 
     bill[prefix + '-gsp-kw'] = gsp_kw / 3
-    bill[prefix + '-rate'] = data_source.rate(dso_contract.rateScript(financial_year_start), 'triad')]]></value>
+
+    rate_script = triad_rates_contract.rateScript(month_begin)
+    actual_rate = data_source.rate(rate_script, 'hh_demand_gbp_per_kw')[data_source.dso_code]
+    if prefix == 'triad-actual':
+        rate = actual_rate
+    else:
+        effective_rate = data_source.rate(rate_script, 'effective_hh_demand_gbp_per_kw')
+        if effective_rate is None:
+            rate = actual_rate
+        else:
+            effective_rate = effective_rate[data_source.dso_code]
+            old_rate_script = triad_rates_contract.rateScript(month_begin.getPrevious())
+            old_rate = data_source.rate(old_rate_script, 'hh_demand_gbp_per_kw')[data_source.dso_code]
+            cal = MonadDate.getCalendar()
+            cal.setTime(rate_script.getStartDate().getDate())
+            months_left = 0
+            while cal.get(Calendar.MONTH) != Calendar.APRIL:
+                months_left += 1
+                cal.add(Calendar.MONTH, 1)
+
+            rate = (12 * effective_rate - (12 - months_left) * old_rate) / float(months_left)
+
+    bill[prefix + '-rate'] = rate]]></value>
         <value><![CDATA[147]]></value>
         <value><![CDATA[2005-04-01T00:00Z]]></value>
         <value><![CDATA[]]></value>
@@ -15493,9 +15545,7 @@ def triad_dates():
     return {
         '14': 20.526611,
         '20': 24.471461,
-        '22': 25.631634}
-
-]]></value>
+        '22': 25.631634}]]></value>
     </line>
     <line>
         <value><![CDATA[insert]]></value>
@@ -15514,6 +15564,91 @@ def triad_dates():
         <value><![CDATA[non-core-contract-rate-script]]></value>
         <value><![CDATA[triad-rates]]></value>
         <value><![CDATA[229]]></value>
+        <value><![CDATA[2010-12-01T00:00Z]]></value>
+        <value><![CDATA[def hh_demand_gbp_per_kw():
+    return {
+        '14': 20.67,
+        '20': 23.47,
+        '22': 24.03}
+
+def effective_hh_demand_gbp_per_kw():
+    return {
+        '14': 22.02,
+        '20': 24.82,
+        '22': 25.38}]]></value>
+    </line>
+    <line>
+        <value><![CDATA[insert]]></value>
+        <value><![CDATA[non-core-contract]]></value>
+        <value><![CDATA[73]]></value>
+        <value><![CDATA[]]></value>
+        <value><![CDATA[CALB]]></value>
+        <value><![CDATA[triad-rates]]></value>
+        <value><![CDATA[]]></value>
+        <value><![CDATA[233]]></value>
+        <value><![CDATA[2000-01-01T00:00Z]]></value>
+        <value><![CDATA[]]></value>
+        <value><![CDATA[def hh_demand_gbp_per_kw():
+    return {
+        '14': 17.807318,
+        '20': 21.100281,
+        '22': 23.77056}]]></value>
+    </line>
+    <line>
+        <value><![CDATA[insert]]></value>
+        <value><![CDATA[non-core-contract-rate-script]]></value>
+        <value><![CDATA[triad-rates]]></value>
+        <value><![CDATA[235]]></value>
+        <value><![CDATA[2007-04-01T00:00Z]]></value>
+        <value><![CDATA[def hh_demand_gbp_per_kw():
+    return {
+        '14': 17.807318,
+        '20': 21.100281,
+        '22': 23.77056}]]></value>
+    </line>
+    <line>
+        <value><![CDATA[insert]]></value>
+        <value><![CDATA[non-core-contract-rate-script]]></value>
+        <value><![CDATA[triad-rates]]></value>
+        <value><![CDATA[237]]></value>
+        <value><![CDATA[2008-04-01T00:00Z]]></value>
+        <value><![CDATA[def hh_demand_gbp_per_kw():
+    return {
+        '14': 19.147817,
+        '20': 22.194810,
+        '22': 25.212997}]]></value>
+    </line>
+    <line>
+        <value><![CDATA[insert]]></value>
+        <value><![CDATA[non-core-contract-rate-script]]></value>
+        <value><![CDATA[triad-rates]]></value>
+        <value><![CDATA[239]]></value>
+        <value><![CDATA[2009-04-01T00:00Z]]></value>
+        <value><![CDATA[def hh_demand_gbp_per_kw():
+    return {
+        '14': 20.526611,
+        '20': 24.471461,
+        '22': 25.631634}
+
+]]></value>
+    </line>
+    <line>
+        <value><![CDATA[insert]]></value>
+        <value><![CDATA[non-core-contract-rate-script]]></value>
+        <value><![CDATA[triad-rates]]></value>
+        <value><![CDATA[241]]></value>
+        <value><![CDATA[2010-04-01T00:00Z]]></value>
+        <value><![CDATA[def hh_demand_gbp_per_kw():
+    return {
+        '14': 22.69,
+        '20': 25.49,
+        '22': 26.06}]]></value>
+    </line>
+    <line>
+        <value><![CDATA[insert]]></value>
+        <value><![CDATA[non-core-contract-rate-script]]></value>
+        <value><![CDATA[triad-rates]]></value>
+        <value><![CDATA[243]]></value>
         <value><![CDATA[2010-12-01T00:00Z]]></value>
         <value><![CDATA[def hh_demand_gbp_per_kw():
     return {

@@ -52,6 +52,8 @@ public class RawBill extends MonadObject {
 	private BigDecimal net;
 
 	private BigDecimal vat;
+	
+	private BigDecimal gross;
 
 	private String accountReference;
 
@@ -66,7 +68,7 @@ public class RawBill extends MonadObject {
 	public RawBill(BillType type, String accountReference,
 			List<String> mpanStrings, String reference, Date issueDate,
 			HhStartDate startDate, HhStartDate finishDate, BigDecimal kwh, BigDecimal net,
-			BigDecimal vat, String breakdown, List<RawRegisterRead> registerReads)
+			BigDecimal vat, BigDecimal gross, String breakdown, List<RawRegisterRead> registerReads)
 			throws HttpException {
 		if (type == null) {
 			throw new InternalException("The type can't be null.");
@@ -87,6 +89,8 @@ public class RawBill extends MonadObject {
 		this.kwh = kwh;
 		this.net = net;
 		this.vat = vat;
+		this.gross = gross;
+
 		if (reference == null) {
 			throw new InternalException(
 					"The bill reference parameter is required.");
@@ -140,6 +144,10 @@ public class RawBill extends MonadObject {
 
 	public BigDecimal getVat() {
 		return vat;
+	}
+	
+	public BigDecimal getGross() {
+		return gross;
 	}
 
 	public String getReference() {

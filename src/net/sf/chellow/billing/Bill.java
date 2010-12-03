@@ -99,26 +99,31 @@ public class Bill extends PersistentEntity implements Urlable {
 			String vatStr = GeneralImport
 					.addField(csvElement, "Vat", values, 8);
 			BigDecimal vat = new BigDecimal(vatStr);
+
+			String grossStr = GeneralImport.addField(csvElement, "Gross",
+					values, 9);
+			BigDecimal gross = new BigDecimal(grossStr);
+
 			String account = GeneralImport.addField(csvElement,
-					"Account Reference", values, 9);
+					"Account Reference", values, 10);
 
 			String reference = GeneralImport.addField(csvElement, "Reference",
-					values, 10);
-			String typeCode = GeneralImport.addField(csvElement, "Type",
 					values, 11);
+			String typeCode = GeneralImport.addField(csvElement, "Type",
+					values, 12);
 			BillType type = BillType.getBillType(typeCode);
 
 			String breakdown = GeneralImport.addField(csvElement, "Breakdown",
-					values, 12);
+					values, 13);
 
 			String kwhStr = GeneralImport.addField(csvElement, "kWh", values,
-					13);
+					14);
 			BigDecimal kwh = new BigDecimal(kwhStr);
 
 			Bill bill = batch.insertBill(mpanCore.getSupply(), account,
 					reference, issueDate, startDate, finishDate, kwh, net, vat,
-					type, breakdown);
-			for (int i = 14; i < values.length; i += 11) {
+					gross, type, breakdown);
+			for (int i = 15; i < values.length; i += 11) {
 				String meterSerialNumber = GeneralImport.addField(csvElement,
 						"Meter Serial Number", values, i);
 				String mpanStr = GeneralImport.addField(csvElement, "MPAN",
@@ -228,8 +233,17 @@ public class Bill extends PersistentEntity implements Urlable {
 				vat = new BigDecimal(vatStr);
 			}
 
-			String typeCode = GeneralImport.addField(csvElement, "Type",
+			String grossStr = GeneralImport.addField(csvElement, "Gross",
 					values, 9);
+			BigDecimal gross = null;
+			if (grossStr.equals(GeneralImport.NO_CHANGE)) {
+				gross = bill.getGross();
+			} else {
+				gross = new BigDecimal(grossStr);
+			}
+
+			String typeCode = GeneralImport.addField(csvElement, "Type",
+					values, 10);
 			BillType type = null;
 			if (typeCode.equals(GeneralImport.NO_CHANGE)) {
 				type = bill.getType();
@@ -238,13 +252,13 @@ public class Bill extends PersistentEntity implements Urlable {
 			}
 
 			String breakdown = GeneralImport.addField(csvElement, "Breakdown",
-					values, 10);
+					values, 11);
 			if (breakdown.equals(GeneralImport.NO_CHANGE)) {
 				breakdown = bill.getBreakdown();
 			}
 
 			bill.update(account, reference, issueDate, startDate, finishDate,
-					kwh, net, vat, type, breakdown);
+					kwh, net, vat, gross, type, breakdown);
 		}
 	}
 
@@ -270,6 +284,8 @@ public class Bill extends PersistentEntity implements Urlable {
 
 	private BigDecimal vat;
 
+	private BigDecimal gross;
+
 	private String account;
 
 	private String reference;
@@ -287,12 +303,12 @@ public class Bill extends PersistentEntity implements Urlable {
 
 	public Bill(Batch batch, Supply supply, String account, String reference,
 			Date issueDate, HhStartDate startDate, HhStartDate finishDate,
-			BigDecimal kwh, BigDecimal net, BigDecimal vat, BillType type,
-			String breakdown) throws HttpException {
+			BigDecimal kwh, BigDecimal net, BigDecimal vat, BigDecimal gross,
+			BillType type, String breakdown) throws HttpException {
 		setBatch(batch);
 		setSupply(supply);
 		update(account, reference, issueDate, startDate, finishDate, kwh, net,
-				vat, type, breakdown);
+				vat, gross, type, breakdown);
 	}
 
 	public Batch getBatch() {
@@ -351,6 +367,14 @@ public class Bill extends PersistentEntity implements Urlable {
 		this.vat = vat;
 	}
 
+	public BigDecimal getGross() {
+		return gross;
+	}
+
+	void setGross(BigDecimal gross) {
+		this.gross = gross;
+	}
+
 	public String getReference() {
 		return reference;
 	}
@@ -401,8 +425,8 @@ public class Bill extends PersistentEntity implements Urlable {
 
 	public void update(String account, String reference, Date issueDate,
 			HhStartDate startDate, HhStartDate finishDate, BigDecimal kwh,
-			BigDecimal net, BigDecimal vat, BillType type, String breakdown)
-			throws HttpException {
+			BigDecimal net, BigDecimal vat, BigDecimal gross, BillType type,
+			String breakdown) throws HttpException {
 		if (supply.getGeneration(startDate) == null) {
 			throw new UserException("The bill starts before the supply.");
 		}
@@ -452,6 +476,7 @@ public class Bill extends PersistentEntity implements Urlable {
 		setKwh(kwh);
 		setNet(net);
 		setVat(vat);
+		setGross(gross);
 		if (type == null) {
 			throw new InternalException("Type can't be null.");
 		}
@@ -469,6 +494,7 @@ public class Bill extends PersistentEntity implements Urlable {
 		element.setAttribute("kwh", kwh.toString());
 		element.setAttribute("net", net.toString());
 		element.setAttribute("vat", vat.toString());
+		element.setAttribute("gross", gross.toString());
 		element.setAttribute("reference", reference);
 		element.setAttribute("account", account);
 		element.setAttribute("breakdown", breakdown);
@@ -489,6 +515,7 @@ public class Bill extends PersistentEntity implements Urlable {
 			BigDecimal kwh = inv.getBigDecimal("kwh");
 			BigDecimal net = inv.getBigDecimal("net");
 			BigDecimal vat = inv.getBigDecimal("vat");
+			BigDecimal gross = inv.getBigDecimal("gross");
 			Long typeId = inv.getLong("type-id");
 			String breakdown = inv.getString("breakdown");
 
@@ -497,7 +524,7 @@ public class Bill extends PersistentEntity implements Urlable {
 			}
 			update(account, reference, issueDate,
 					new HhStartDate(startDate).getNext(), new HhStartDate(
-							finishDate), kwh, net, vat,
+							finishDate), kwh, net, vat, gross,
 					BillType.getBillType(typeId), breakdown);
 			Hiber.commit();
 			inv.sendOk(document());
