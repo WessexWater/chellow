@@ -12,8 +12,8 @@ Chellow is released under the GPL.
 Requirements
 ------------
 PostgreSQL 8.4.5 with JDBC Driver PostgreSQL 8.4 JDBC4 (build 702)
-OpenJDK 6b18 in server mode
-Apache Tomcat 6.0.20 (with default configuration)
+OpenJDK 6b20 in server mode
+Apache Tomcat 6.0.24 (with default configuration)
 
 
 Installation
@@ -44,6 +44,7 @@ Upgrade From Version 461
 6. Import the user data by going to General Imports section.
 
 
+from java.math import BigDecimal
 from net.sf.chellow.monad import Hiber, UserException, MonadUtils
 from net.sf.chellow.monad.types import UriPathElement, MonadDate
 from java.util import GregorianCalendar, TimeZone, Locale, Calendar
@@ -94,11 +95,11 @@ def print_batches(contract, role_name):
     batches = Hiber.session().createQuery("from Batch batch where batch.contract.id = :contractId order by batch.id").setLong('contractId', contract.getId()).scroll()
     while batches.next():
         batch = batches.get(0)
-        print_line(['insert', 'batch', role_name, contract.getName(), batch.getReference()])
+        print_line(['insert', 'batch', role_name, contract.getName(), batch.getReference(), ''])
         bills = bills_query.setEntity('batch', batch).scroll()
         while bills.next():
             bill = bills.get(0)
-            values = ['insert', 'bill', role_name, contract.getName(), batch.getReference(), bill.getSupply().getMpanCores().iterator().next(), MonadDate(bill.getIssueDate()), bill.getStartDate(), bill.getFinishDate(), bill.getNet(), bill.getVat(), bill.getAccount(), bill.getReference(), bill.getType(), bill.getBreakdown(), bill.getKwh()]
+            values = ['insert', 'bill', role_name, contract.getName(), batch.getReference(), bill.getSupply().getMpanCores().iterator().next(), MonadDate(bill.getIssueDate()), bill.getStartDate(), bill.getFinishDate(), bill.getNet(), bill.getVat(), BigDecimal(0), bill.getAccount(), bill.getReference(), bill.getType(), bill.getBreakdown(), bill.getKwh()]
             reads = reads_query.setEntity('bill', bill).scroll()
             while reads.next():
                 values += [reads.get(i) for i in range_11]
@@ -204,10 +205,11 @@ if has_mop_contracts:
         contract = contracts.get(0)
         rate_scripts = Hiber.session().createQuery("from RateScript script where script.contract.id = :contractId order by script.startDate.date").setLong('contractId', contract.getId()).list()
         start_rate_script = rate_scripts[0]
-        print_line(['insert', 'hhdc-contract', contract.getId(), contract.getParty().getParticipant().getCode(), contract.getName(), start_rate_script.getStartDate(), contract.getChargeScript(), contract.getProperties(), contract.getState(), start_rate_script.getId(), start_rate_script.getScript()])
+        finish_rate_script = rate_scripts[len(rate_scripts) - 1]
+        print_line(['insert', 'mop-contract', contract.getId(), contract.getParty().getParticipant().getCode(), contract.getName(), start_rate_script.getStartDate(),  finish_rate_script.getFinishDate(), contract.getChargeScript(), start_rate_script.getId(), start_rate_script.getScript()])
         if len(rate_scripts) > 1:
             for rate_script in rate_scripts[1:]:
-                print_line(['insert', 'hhdc-contract-rate-script', contract.getName(), rate_script.getId(), rate_script.getStartDate(), rate_script.getScript()])
+                print_line(['insert', 'mop-contract-rate-script', contract.getName(), rate_script.getId(), rate_script.getStartDate(), rate_script.getScript()])
         Hiber.session().clear()
     contracts.close()
 
@@ -217,17 +219,17 @@ if has_supplier_contracts:
     while contracts.next():
         contract = contracts.get(0)
         contract_name = contract.getName()
-        start_rate_script = contract.getStartRateScript()
-        finish_rate_script = contract.getFinishRateScript()
+
+        rate_scripts = Hiber.session().createQuery("from RateScript script where script.contract.id = :contractId order by script.startDate.date").setLong('contractId', contract.getId()).list()
+
+        start_rate_script = rate_scripts.get(0)
+        finish_rate_script = rate_scripts.get(len(rate_scripts) - 1)
         print_line(['insert', 'supplier-contract', contract.getId(), contract.getParty().getParticipant().getCode(), contract_name, start_rate_script.getStartDate(), finish_rate_script.getFinishDate(), contract.getChargeScript(), start_rate_script.getId(), start_rate_script.getScript()])
 
-        rate_scripts = Hiber.session().createQuery("from RateScript script where script.contract.id = :contractId order by script.startDate.date").setLong('contractId', contract.getId()).scroll()
-        rate_scripts.next()
-        while rate_scripts.next():
-            rate_script = rate_scripts.get(0)
+        for i in range(1, len(rate_scripts)):
+            rate_script = rate_scripts[i]
             print_line(['insert', 'supplier-contract-rate-script', rate_script.getContract().getName(), rate_script.getId(), rate_script.getStartDate(), rate_script.getScript()])
             Hiber.session().clear()
-        rate_scripts.close()
         Hiber.session().clear()
     contracts.close()
 

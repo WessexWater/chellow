@@ -1907,29 +1907,29 @@ def triad_estimates():
 			<control name="start-year" value="2010" />
 			<control name="start-month" value="04" />
 			<control name="start-day" value="01" />
-			<regex pattern="/chellow/dsos/367/contracts/71/" />
+			<regex pattern="/chellow/dsos/367/contracts/73/" />
 			<response-code value="303" />
 		</request>
 
 		<!-- Check start time of rate script -->
-		<request path="/chellow/dsos/367/contracts/71/rate-scripts/231/">
+		<request path="/chellow/dsos/367/contracts/73/rate-scripts/233/">
 			<regex pattern="00:00 Z" />
 			<response-code value="200" />
 		</request>
 
 		<!-- Insert rate script -->
-		<request path="/chellow/dsos/367/contracts/71/rate-scripts/"
+		<request path="/chellow/dsos/367/contracts/73/rate-scripts/"
 			method="post">
 			<control name="start-year" value="2010" />
 			<control name="start-month" value="05" />
 			<control name="start-day" value="01" />
 
-			<regex pattern="/chellow/dsos/367/contracts/71/rate-scripts/233/" />
+			<regex pattern="/chellow/dsos/367/contracts/73/rate-scripts/235/" />
 			<response-code value="303" />
 		</request>
 
 		<!-- Delete rate script -->
-		<request path="/chellow/dsos/367/contracts/71/rate-scripts/233/"
+		<request path="/chellow/dsos/367/contracts/73/rate-scripts/235/"
 			method="post">
 			<control name="delete" value="Delete" />
 			<response-code value="303" />
@@ -2669,20 +2669,20 @@ def import_virtual_bill(supply_source):
 			<control name="start-day" value="01" />
 			<control name="insert" value="Insert" />
 
-			<regex pattern="/chellow/non-core-contracts/39/rate-scripts/235/" />
+			<regex pattern="/chellow/non-core-contracts/39/rate-scripts/237/" />
 			<response-code value="303" />
 		</request>
 		<request
-			path="/chellow/non-core-contracts/39/rate-scripts/235/?view=confirm-delete">
+			path="/chellow/non-core-contracts/39/rate-scripts/237/?view=confirm-delete">
 			<regex pattern="Are you sure you want to delete this rate script\?" />
 			<response-code value="200" />
 		</request>
-		<request path="/chellow/non-core-contracts/39/rate-scripts/235/"
+		<request path="/chellow/non-core-contracts/39/rate-scripts/237/"
 			method="post">
 			<control name="delete" value="Delete" />
 			<response-code value="303" />
 		</request>
-		<request path="/chellow/non-core-contracts/39/rate-scripts/235/">
+		<request path="/chellow/non-core-contracts/39/rate-scripts/237/">
 			<response-code value="404" />
 		</request>
 	</test>
@@ -2694,17 +2694,49 @@ def import_virtual_bill(supply_source):
 			<control name="start-day" value="01" />
 			<control name="insert" value="Insert" />
 
-			<regex pattern="/chellow/non-core-contracts/39/rate-scripts/237/" />
+			<regex pattern="/chellow/non-core-contracts/39/rate-scripts/239/" />
 			<response-code value="303" />
 		</request>
-		<request path="/chellow/non-core-contracts/39/rate-scripts/237/">
+		<request path="/chellow/non-core-contracts/39/rate-scripts/239/">
 			<regex pattern='&lt;input name="finish-year" value="2000"&gt;' />
 			<response-code value="200" />
 		</request>
-		<request path="/chellow/non-core-contracts/39/rate-scripts/237/"
+		<request path="/chellow/non-core-contracts/39/rate-scripts/239/"
 			method="post">
 			<control name="delete" value="Delete" />
 			<response-code value="303" />
+		</request>
+	</test>
+	<test name="Adding a bill manually.">
+		<request path="/chellow/supplier-contracts/4/batches/6/bills/"
+			method="post">
+			<control name="mpan-core" value="22 9813 2107 763" />
+			<control name="reference" value="KUH774" />
+			<control name="issue-year" value="2010" />
+			<control name="issue-month" value="12" />
+			<control name="issue-day" value="06" />
+			<control name="start-year" value="2010" />
+			<control name="start-month" value="12" />
+			<control name="start-day" value="06" />
+			<control name="finish-year" value="2010" />
+			<control name="finish-month" value="12" />
+			<control name="finish-day" value="06" />
+			<control name="kwh" value="0" />
+			<control name="net" value="0" />
+			<control name="vat" value="0" />
+			<control name="gross" value="0" />
+			<control name="account" value="02" />
+			<control name="bill-type-id" value="1" />
+			<control name="breakdown" value="" />
+			<regex pattern="/chellow/supplier-contracts/4/batches/6/bills/14/" />
+			<response-code value="303" />
+		</request>
+		<request path="/chellow/supplier-contracts/4/batches/6/bills/14/">
+			<regex
+				pattern='&lt;select name="start-day"&gt;&lt;option value="01"&gt;01&lt;/option&gt;&lt;option value="02"&gt;02&lt;/option&gt;&lt;option value="03"&gt;03&lt;/option&gt;&lt;option value="04"&gt;04&lt;/option&gt;&lt;option value="05"&gt;05&lt;/option&gt;&lt;option value="06" selected&gt;06&lt;/option&gt;&lt;option value="07"&gt;07&lt;/option&gt;&lt;option value="08"&gt;08&lt;/option&gt;&lt;option value="09"&gt;09&lt;/option&gt;&lt;option value="10"&gt;10&lt;/option&gt;&lt;option value="11"&gt;11&lt;/option&gt;&lt;option value="12"&gt;12&lt;/option&gt;&lt;option value="13"&gt;13&lt;/option&gt;&lt;option value="14"&gt;14&lt;/option&gt;&lt;option value="15"&gt;15&lt;/option&gt;&lt;option value="16"&gt;16&lt;/option&gt;&lt;option value="17"&gt;17&lt;/option&gt;&lt;option value="18"&gt;18&lt;/option&gt;&lt;option value="19"&gt;19&lt;/option&gt;&lt;option value="20"&gt;20&lt;/option&gt;&lt;option value="21"&gt;21&lt;/option&gt;&lt;option value="22"&gt;22&lt;/option&gt;&lt;option value="23"&gt;23&lt;/option&gt;&lt;option value="24"&gt;24&lt;/option&gt;&lt;option value="25"&gt;25&lt;/option&gt;&lt;option value="26"&gt;26&lt;/option&gt;&lt;option value="27"&gt;27&lt;/option&gt;&lt;option value="28"&gt;28&lt;/option&gt;&lt;option value="29"&gt;29&lt;/option&gt;&lt;option value="30"&gt;30&lt;/option&gt;&lt;option value="31"&gt;31&lt;/option&gt;&lt;/select&gt; 00:00Z' />
+			<regex
+				pattern='&lt;select name="finish-day"&gt;&lt;option value="01"&gt;01&lt;/option&gt;&lt;option value="02"&gt;02&lt;/option&gt;&lt;option value="03"&gt;03&lt;/option&gt;&lt;option value="04"&gt;04&lt;/option&gt;&lt;option value="05"&gt;05&lt;/option&gt;&lt;option value="06" selected&gt;06&lt;/option&gt;&lt;option value="07"&gt;07&lt;/option&gt;&lt;option value="08"&gt;08&lt;/option&gt;&lt;option value="09"&gt;09&lt;/option&gt;&lt;option value="10"&gt;10&lt;/option&gt;&lt;option value="11"&gt;11&lt;/option&gt;&lt;option value="12"&gt;12&lt;/option&gt;&lt;option value="13"&gt;13&lt;/option&gt;&lt;option value="14"&gt;14&lt;/option&gt;&lt;option value="15"&gt;15&lt;/option&gt;&lt;option value="16"&gt;16&lt;/option&gt;&lt;option value="17"&gt;17&lt;/option&gt;&lt;option value="18"&gt;18&lt;/option&gt;&lt;option value="19"&gt;19&lt;/option&gt;&lt;option value="20"&gt;20&lt;/option&gt;&lt;option value="21"&gt;21&lt;/option&gt;&lt;option value="22"&gt;22&lt;/option&gt;&lt;option value="23"&gt;23&lt;/option&gt;&lt;option value="24"&gt;24&lt;/option&gt;&lt;option value="25"&gt;25&lt;/option&gt;&lt;option value="26"&gt;26&lt;/option&gt;&lt;option value="27"&gt;27&lt;/option&gt;&lt;option value="28"&gt;28&lt;/option&gt;&lt;option value="29"&gt;29&lt;/option&gt;&lt;option value="30"&gt;30&lt;/option&gt;&lt;option value="31"&gt;31&lt;/option&gt;&lt;/select&gt; 23:30Z' />
+			<response-code value="200" />
 		</request>
 	</test>
 </imprimatur>

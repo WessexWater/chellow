@@ -23,6 +23,7 @@ package net.sf.chellow.billing;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
@@ -465,8 +466,8 @@ public class Bill extends PersistentEntity implements Urlable {
 		}
 		setIssueDate(issueDate);
 		if (startDate.getDate().after(finishDate.getDate())) {
-			throw new UserException(
-					"The bill start date can't be after the finish date.");
+			throw new UserException("The bill start date " + startDate
+					+ " can't be after the finish date " + finishDate + ".");
 		}
 		setStartDate(startDate);
 		setFinishDate(finishDate);
@@ -522,10 +523,19 @@ public class Bill extends PersistentEntity implements Urlable {
 			if (!inv.isValid()) {
 				throw new UserException(document());
 			}
-			update(account, reference, issueDate,
-					new HhStartDate(startDate).getNext(), new HhStartDate(
-							finishDate), kwh, net, vat, gross,
-					BillType.getBillType(typeId), breakdown);
+			Calendar cal = MonadDate.getCalendar();
+			cal.setTime(finishDate);
+			cal.set(Calendar.HOUR_OF_DAY, 23);
+			cal.set(Calendar.MINUTE, 30);
+			try {
+				update(account, reference, issueDate,
+						new HhStartDate(startDate),
+						new HhStartDate(cal.getTime()), kwh, net, vat, gross,
+						BillType.getBillType(typeId), breakdown);
+			} catch (UserException e) {
+				e.setDocument(document());
+				throw e;
+			}
 			Hiber.commit();
 			inv.sendOk(document());
 		}

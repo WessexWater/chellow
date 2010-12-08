@@ -1,6 +1,6 @@
 /*******************************************************************************
  * 
- *  Copyright (c) 2005, 2009 Wessex Water Services Limited
+ *  Copyright (c) 2005, 2010 Wessex Water Services Limited
  *  
  *  This file is part of Chellow.
  * 
@@ -45,6 +45,7 @@ import net.sf.chellow.billing.Batch;
 import net.sf.chellow.billing.Bill;
 import net.sf.chellow.billing.DsoContract;
 import net.sf.chellow.billing.HhdcContract;
+import net.sf.chellow.billing.MopContract;
 import net.sf.chellow.billing.NonCoreContract;
 import net.sf.chellow.billing.RateScript;
 import net.sf.chellow.billing.SupplierContract;
@@ -174,7 +175,8 @@ public class GeneralImport extends Thread implements Urlable, XmlDescriber {
 							boolean isImport = Boolean
 									.parseBoolean(allValues[4]);
 							boolean isKwh = Boolean.parseBoolean(allValues[5]);
-							HhStartDate startDate = new HhStartDate(allValues[3]);
+							HhStartDate startDate = new HhStartDate(
+									allValues[3]);
 							String hhString = allValues[6].trim();
 							if (hhString.endsWith(",")) {
 								hhString = hhString + " ";
@@ -197,11 +199,9 @@ public class GeneralImport extends Thread implements Urlable, XmlDescriber {
 									if (statusString.length() > 0) {
 										status = statusString.charAt(0);
 									}
-									hhData
-											.add(new HhDatumRaw(mpanCore,
-													isImport, isKwh, startDate,
-													new BigDecimal(bigDecimal),
-													status));
+									hhData.add(new HhDatumRaw(mpanCore,
+											isImport, isKwh, startDate,
+											new BigDecimal(bigDecimal), status));
 								}
 								startDate = startDate.getNext();
 							}
@@ -279,6 +279,10 @@ public class GeneralImport extends Thread implements Urlable, XmlDescriber {
 						Bill.generalImport(action, values, csvElement);
 					} else if (type.equals("register-read")) {
 						RegisterRead.generalImport(action, values, csvElement);
+					} else if (type.equals("mop-contract")) {
+						MopContract.generalImport(action, values, csvElement);
+					} else if (type.equals("mop-contract-rate-script")) {
+						RateScript.generalImportMop(action, values, csvElement);
 					} else {
 						throw new UserException("The type " + type
 								+ " isn't recognized.");
@@ -443,9 +447,9 @@ public class GeneralImport extends Thread implements Urlable, XmlDescriber {
 							} else if (e.isEndElement()
 									&& e.asEndElement().getName()
 											.getLocalPart().equals("value")) {
-								values.add(value.toString().replace(
-										"&lt;![CDATA[", "<![CDATA[").replace(
-										"]]&gt;", "]]>"));
+								values.add(value.toString()
+										.replace("&lt;![CDATA[", "<![CDATA[")
+										.replace("]]&gt;", "]]>"));
 								inValue = false;
 							} else if (inValue && e.isCharacters()) {
 								value.append(e.asCharacters().getData());

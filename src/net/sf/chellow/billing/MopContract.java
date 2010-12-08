@@ -38,6 +38,7 @@ import net.sf.chellow.physical.MarketRole;
 import net.sf.chellow.physical.Mpan;
 import net.sf.chellow.physical.Participant;
 import net.sf.chellow.ui.Chellow;
+import net.sf.chellow.ui.GeneralImport;
 
 import org.hibernate.Query;
 import org.w3c.dom.Document;
@@ -90,6 +91,45 @@ public class MopContract extends Contract {
 					"There isn't a meter operator contract with that name.");
 		}
 		return contract;
+	}
+	
+	static public void generalImport(String action, String[] values,
+			Element csvElement) throws HttpException {
+		if (action.equals("insert")) {
+			String idStr = GeneralImport.addField(csvElement, "Id", values, 0);
+			Long id = null;
+			if (idStr.length() > 0) {
+				id = new Long(idStr);
+			}
+			String participantCode = GeneralImport.addField(csvElement,
+					"Participant Code", values, 1);
+			Participant participant = Participant
+					.getParticipant(participantCode);
+			String name = GeneralImport.addField(csvElement, "Name", values, 2);
+
+			String startDateStr = GeneralImport.addField(csvElement,
+					"Start Date", values, 3);
+			HhStartDate startDate = new HhStartDate(startDateStr);
+			String finishDateStr = GeneralImport.addField(csvElement,
+					"Finish Date", values, 4);
+			HhStartDate finishDate = null;
+			if (finishDateStr.length() > 0) {
+				finishDate = new HhStartDate(finishDateStr);
+			}
+			String chargeScript = GeneralImport.addField(csvElement,
+					"Charge Script", values, 5);
+
+			String rateScriptIdStr = GeneralImport.addField(csvElement,
+					"Rate Script Id", values, 6);
+			Long rateScriptId = rateScriptIdStr.length() > 0 ? new Long(
+					rateScriptIdStr) : null;
+
+			String rateScript = GeneralImport.addField(csvElement,
+					"Rate Script", values, 7);
+
+			insertMopContract(id, participant, name, startDate,
+					finishDate, chargeScript, rateScriptId, rateScript);
+		}
 	}
 
 	private Provider mop;

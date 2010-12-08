@@ -253,6 +253,8 @@
 											</option>
 										</xsl:for-each>
 									</select>
+									<xsl:value-of
+										select="concat(' ', /source/bill/hh-start-date[@label='start']/@hour, ':', /source/bill/hh-start-date[@label='start']/@minute, 'Z')" />
 								</fieldset>
 								<br />
 								<fieldset>
@@ -332,6 +334,9 @@
 											</option>
 										</xsl:for-each>
 									</select>
+									<xsl:value-of
+										select="concat(' ', /source/bill/hh-start-date[@label='finish']/@hour, ':', /source/bill/hh-start-date[@label='finish']/@minute, 'Z')" />
+
 								</fieldset>
 								<br />
 								<label>

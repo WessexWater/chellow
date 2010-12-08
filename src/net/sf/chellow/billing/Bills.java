@@ -22,6 +22,7 @@
 package net.sf.chellow.billing;
 
 import java.math.BigDecimal;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
@@ -92,17 +93,23 @@ public class Bills extends EntityList {
 		if (!inv.isValid()) {
 			throw new UserException(document());
 		}
+		Calendar cal = MonadDate.getCalendar();
+		cal.setTime(finishDate);
+		cal.set(Calendar.HOUR_OF_DAY, 23);
+		cal.set(Calendar.MINUTE, 30);
+		Bill bill = null;
 		try {
-			batch.insertBill(MpanCore.getMpanCore(mpanCoreStr).getSupply(),
-					account, reference, issueDate, new HhStartDate(startDate),
-					new HhStartDate(finishDate), kwh, net, vat, gross,
-					BillType.getBillType(billTypeId), breakdown);
+			bill = batch.insertBill(MpanCore.getMpanCore(mpanCoreStr)
+					.getSupply(), account, reference, issueDate,
+					new HhStartDate(startDate), new HhStartDate(cal.getTime()),
+					kwh, net, vat, gross, BillType.getBillType(billTypeId),
+					breakdown);
 		} catch (UserException e) {
 			e.setDocument(document());
 			throw e;
 		}
 		Hiber.commit();
-		inv.sendOk(document());
+		inv.sendSeeOther(bill.getUri());
 	}
 
 	public void httpGet(Invocation inv) throws HttpException {

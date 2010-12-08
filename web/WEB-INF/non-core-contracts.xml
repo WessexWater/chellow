@@ -346,7 +346,7 @@ class Parser(BillParser):
                         #self.debug_str += "  " + str(read['previous-type'])
                         register_reads.append(RawRegisterRead(read['meter-serial-number'], read['mpan'], read['coefficient'], read['units'], read['tpr'], read['previous-date'], read['previous-value'], read['previous-type'], read['present-date'], read['present-value'], read['present-type']))
 
-                    raw_bills.append(RawBill(bill_type, account_reference, mpan_strings, invoice_number, issue_date, start_date, finish_date, BigDecimal(0), net, vat, '', register_reads))
+                    raw_bills.append(RawBill(bill_type, account_reference, mpan_strings, invoice_number, issue_date, start_date, finish_date, BigDecimal(0), net, vat, BigDecimal(0), '', register_reads))
             elif code == "MAN":
                 madn = self.parser.elements[2]
                 pc_code = "0" + madn[3]
@@ -423,17 +423,18 @@ class Parser(BillParser):
             kwh = self.big_decimal(7, 'kwh')            
             net = self.big_decimal(8, 'net')
             vat = self.big_decimal(9, 'vat')
+            gross = self.big_decimal(10, 'gross')
 
-            if num_values > 10:
-                breakdown = self.values[10]
+            if num_values > 11:
+                breakdown = self.values[11]
             else:
                 raise UserException("For the line, " + str(self.values) + " there isn't a 'breakdown' field on the end.")
 
-            while self.values[-1] == '' and len(self.values) > 11:
+            while self.values[-1] == '' and len(self.values) > 12:
                 del self.values[-1]
 
             reads = []
-            for i in range(11, len(self.values), 11):
+            for i in range(12, len(self.values), 11):
                 tpr_str = self.values[i + 4].strip()
                 if len(tpr_str) == 0:
                     tpr = None
@@ -442,7 +443,7 @@ class Parser(BillParser):
 
                 reads.append(RawRegisterRead(self.values[i], self.values[i + 1], self.big_decimal(i + 2, 'coefficient'), Units.getUnits(self.values[i + 3]), tpr, HhStartDate(self.values[i + 5]), BigDecimal(self.values[i + 6]), ReadType.getReadType(self.values[i + 7]), HhStartDate(self.values[i + 8]), BigDecimal(self.values[i + 9]), ReadType.getReadType(self.values[i + 10])))
             
-            raw_bills.append(RawBill(bill_type, account_reference, mpan_strings, invoice_reference, issue_date, start_date, finish_date, kwh, net, vat, breakdown, reads))
+            raw_bills.append(RawBill(bill_type, account_reference, mpan_strings, invoice_reference, issue_date, start_date, finish_date, kwh, net, vat, gross, breakdown, reads))
             self.values = self.shredder.getLine()
         self.shredder.close()
         return raw_bills
@@ -504,7 +505,7 @@ class Parser(BillParser):
             bill_from = HhStartDate(date_format.parse(values[6]))
             bill_to = HhStartDate(date_format.parse(values[7]))
             kwh = BigDecimal(values[8])
-            raw_bills.append(RawBill(bill_type, values[3], [], values[4], issue_date, bill_from, bill_to, kwh, BigDecimal(values[106]), BigDecimal(values[108]), '', []))
+            raw_bills.append(RawBill(bill_type, values[3], [], values[4], issue_date, bill_from, bill_to, kwh, BigDecimal(values[106]), BigDecimal(values[108]), BigDecimal(0), '', []))
             values = self.shredder.getLine()
         self.shredder.close()
         return raw_bills
@@ -566,7 +567,7 @@ class Parser(BillParser):
                     start_date = self.parse_date(line[66:74])
                     finish_date = self.parse_date(line[74:82])
                 elif record_type == "1500":
-                    raw_bills.append(RawBill(BillType.getBillType("N"), account_reference, mpan_strings, invoice_number, start_date.getDate(), start_date, finish_date, BigDecimal(0), net, vat, '', None))
+                    raw_bills.append(RawBill(BillType.getBillType("N"), account_reference, mpan_strings, invoice_number, start_date.getDate(), start_date, finish_date, BigDecimal(0), net, vat, BigDecimal(0), '', None))
                 line = self.lreader.readLine()
             self.lreader.close();
             Hiber.flush();
@@ -656,6 +657,7 @@ class Parser(BillParser):
                     invoice_number = None
                     net = BigDecimal(0)
                     vat = BigDecimal(0)
+                    gross = BigDecimal(0)
                     kwh = BigDecimal(0)
                     reads = []
                     bill_type_code = None
@@ -717,7 +719,7 @@ class Parser(BillParser):
                     for read in reads:
                         register_reads.append(RawRegisterRead(read['meter-serial-number'], read['mpan'], read['coefficient'], read['units'], read['tpr'], read['previous-date'], read['previous-value'], read['previous-type'], read['present-date'], read['present-value'], read['present-type']))
                     bill_type = BillType.getBillType(bill_type_code)
-                    bill_raw = RawBill(bill_type, account_reference, mpan_strings, invoice_number, issue_date.getDate(), start_date, finish_date, kwh, net, vat, '', register_reads)
+                    bill_raw = RawBill(bill_type, account_reference, mpan_strings, invoice_number, issue_date.getDate(), start_date, finish_date, kwh, net, vat, gross, '', register_reads)
                     raw_bills.append(bill_raw)
             elif code == "MAN":
                 madn = self.parser.elements[2]
@@ -12150,7 +12152,7 @@ class SupplySource(DataSource):
             else:
                 imp_pref = 'anti_'
                 exp_pref = ''
-            stmt = con.prepareStatement("select sum(case when channel.is_kwh then hh_datum.value else 0 end) as " + imp_pref + "kwh, max(case when channel.is_kwh then hh_datum.status else '' end) as " + imp_pref + "status, sum(case when channel.is_import and not channel.is_kwh then hh_datum.value else 0 end) as imp_kvarh, sum(case when channel.is_kwh then hh_datum.value else 0 end) as " + exp_pref + "kwh, sum(case when not channel.is_kwh and not channel.is_import then hh_datum.value else 0  end) as exp_kvarh, hh_datum.start_date from hh_datum, channel, supply_generation where hh_datum.channel_id = channel.id and channel.supply_generation_id = supply_generation.id and supply_generation.supply_id = ? and (channel.is_import = TRUE or channel.is_kwh = FALSE) and hh_datum.start_date >= ? and hh_datum.start_date <= ? group by hh_datum.start_date order by hh_datum.start_date", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.CLOSE_CURSORS_AT_COMMIT)
+            stmt = con.prepareStatement("select sum(case when channel.is_import and channel.is_kwh then hh_datum.value else 0 end) as " + imp_pref + "kwh, max(case when channel.is_import and channel.is_kwh then hh_datum.status else '' end) as " + imp_pref + "status, sum(case when channel.is_import and not channel.is_kwh then hh_datum.value else 0 end) as imp_kvarh, sum(case when not channel.is_import and channel.is_kwh then hh_datum.value else 0 end) as " + exp_pref + "kwh, max(case when not channel.is_import and channel.is_kwh then hh_datum.status else '' end) as " + exp_pref + "status, sum(case when not channel.is_kwh and not channel.is_import then hh_datum.value else 0  end) as exp_kvarh, hh_datum.start_date from hh_datum, channel, supply_generation where hh_datum.channel_id = channel.id and channel.supply_generation_id = supply_generation.id and supply_generation.supply_id = ? and (channel.is_import = TRUE or channel.is_kwh = FALSE) and hh_datum.start_date >= ? and hh_datum.start_date <= ? group by hh_datum.start_date order by hh_datum.start_date", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.CLOSE_CURSORS_AT_COMMIT)
             stmt.setLong(1, self.supply.getId())
             stmt.setTimestamp(2, Timestamp(history_start.getDate().getTime()))
             stmt.setTimestamp(3, Timestamp(history_finish.getDate().getTime()))
@@ -15555,9 +15557,9 @@ def triad_dates():
         <value><![CDATA[2010-04-01T00:00Z]]></value>
         <value><![CDATA[def hh_demand_gbp_per_kw():
     return {
-        '14': 22.69,
-        '20': 25.49,
-        '22': 26.06}]]></value>
+        '14': 22.692635,
+        '20': 25.494450,
+        '22': 26.057832}]]></value>
     </line>
     <line>
         <value><![CDATA[insert]]></value>
@@ -15567,94 +15569,9 @@ def triad_dates():
         <value><![CDATA[2010-12-01T00:00Z]]></value>
         <value><![CDATA[def hh_demand_gbp_per_kw():
     return {
-        '14': 20.67,
-        '20': 23.47,
-        '22': 24.03}
-
-def effective_hh_demand_gbp_per_kw():
-    return {
-        '14': 22.02,
-        '20': 24.82,
-        '22': 25.38}]]></value>
-    </line>
-    <line>
-        <value><![CDATA[insert]]></value>
-        <value><![CDATA[non-core-contract]]></value>
-        <value><![CDATA[73]]></value>
-        <value><![CDATA[]]></value>
-        <value><![CDATA[CALB]]></value>
-        <value><![CDATA[triad-rates]]></value>
-        <value><![CDATA[]]></value>
-        <value><![CDATA[233]]></value>
-        <value><![CDATA[2000-01-01T00:00Z]]></value>
-        <value><![CDATA[]]></value>
-        <value><![CDATA[def hh_demand_gbp_per_kw():
-    return {
-        '14': 17.807318,
-        '20': 21.100281,
-        '22': 23.77056}]]></value>
-    </line>
-    <line>
-        <value><![CDATA[insert]]></value>
-        <value><![CDATA[non-core-contract-rate-script]]></value>
-        <value><![CDATA[triad-rates]]></value>
-        <value><![CDATA[235]]></value>
-        <value><![CDATA[2007-04-01T00:00Z]]></value>
-        <value><![CDATA[def hh_demand_gbp_per_kw():
-    return {
-        '14': 17.807318,
-        '20': 21.100281,
-        '22': 23.77056}]]></value>
-    </line>
-    <line>
-        <value><![CDATA[insert]]></value>
-        <value><![CDATA[non-core-contract-rate-script]]></value>
-        <value><![CDATA[triad-rates]]></value>
-        <value><![CDATA[237]]></value>
-        <value><![CDATA[2008-04-01T00:00Z]]></value>
-        <value><![CDATA[def hh_demand_gbp_per_kw():
-    return {
-        '14': 19.147817,
-        '20': 22.194810,
-        '22': 25.212997}]]></value>
-    </line>
-    <line>
-        <value><![CDATA[insert]]></value>
-        <value><![CDATA[non-core-contract-rate-script]]></value>
-        <value><![CDATA[triad-rates]]></value>
-        <value><![CDATA[239]]></value>
-        <value><![CDATA[2009-04-01T00:00Z]]></value>
-        <value><![CDATA[def hh_demand_gbp_per_kw():
-    return {
-        '14': 20.526611,
-        '20': 24.471461,
-        '22': 25.631634}
-
-]]></value>
-    </line>
-    <line>
-        <value><![CDATA[insert]]></value>
-        <value><![CDATA[non-core-contract-rate-script]]></value>
-        <value><![CDATA[triad-rates]]></value>
-        <value><![CDATA[241]]></value>
-        <value><![CDATA[2010-04-01T00:00Z]]></value>
-        <value><![CDATA[def hh_demand_gbp_per_kw():
-    return {
-        '14': 22.69,
-        '20': 25.49,
-        '22': 26.06}]]></value>
-    </line>
-    <line>
-        <value><![CDATA[insert]]></value>
-        <value><![CDATA[non-core-contract-rate-script]]></value>
-        <value><![CDATA[triad-rates]]></value>
-        <value><![CDATA[243]]></value>
-        <value><![CDATA[2010-12-01T00:00Z]]></value>
-        <value><![CDATA[def hh_demand_gbp_per_kw():
-    return {
-        '14': 20.67,
-        '20': 23.47,
-        '22': 24.03}
+        '14': 20.665831,
+        '20': 23.467647,
+        '22': 24.031029}
 
 def effective_hh_demand_gbp_per_kw():
     return {

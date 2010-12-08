@@ -160,9 +160,7 @@
 									select="/source/request/parameter[@name='issue-year']/value/text()" />
 									</xsl:when>
 									<xsl:otherwise>
-										<xsl:attribute name="value">
-											<xsl:value-of select="/source/date/@year" />
-										</xsl:attribute>
+										<xsl:value-of select="/source/date/@year" />
 									</xsl:otherwise>
 									</xsl:choose>
 								</xsl:attribute>
@@ -214,19 +212,17 @@
 						<fieldset>
 							<legend>Start Date</legend>
 							<input name="start-year" size="4" maxlength="4">
+								<xsl:attribute name="value">
 								<xsl:choose>
 									<xsl:when test="/source/request/parameter[@name='start-year']">
-										<xsl:attribute name="value">
 											<xsl:value-of
-											select="/source/request/parameter[@name='start-year']/value/text()" />
-										</xsl:attribute>
+									select="/source/request/parameter[@name='start-year']/value/text()" />
 									</xsl:when>
 									<xsl:otherwise>
-										<xsl:attribute name="value">
 											<xsl:value-of select="/source/date/@year" />
-										</xsl:attribute>
 									</xsl:otherwise>
 								</xsl:choose>
+								</xsl:attribute>
 							</input>
 							-
 							<select name="start-month">
@@ -476,52 +472,6 @@
 								</xsl:attribute>
 							</input>
 						</label>
-						<br />
-						<label>
-							<xsl:value-of select="'Status '" />
-							<select name="status">
-								<option value="0">
-									<xsl:choose>
-										<xsl:when test="/source/request/parameter[@name='status']">
-											<xsl:if
-												test="/source/request/parameter[@name='status']/value/text() = 0">
-												<xsl:attribute name="selected" />
-											</xsl:if>
-										</xsl:when>
-										<xsl:otherwise>
-										</xsl:otherwise>
-									</xsl:choose>
-									<xsl:value-of select="'Pending'" />
-								</option>
-								<option value="1">
-									<xsl:choose>
-										<xsl:when test="/source/request/parameter[@name='status']">
-											<xsl:if
-												test="/source/request/parameter[@name='status']/value/text() = 1">
-												<xsl:attribute name="selected" />
-											</xsl:if>
-										</xsl:when>
-										<xsl:otherwise>
-										</xsl:otherwise>
-									</xsl:choose>
-									<xsl:value-of select="'Paid'" />
-								</option>
-								<option value="2">
-									<xsl:choose>
-										<xsl:when test="/source/request/parameter[@name='status']">
-											<xsl:if
-												test="/source/request/parameter[@name='status']/value/text() = 2">
-												<xsl:attribute name="selected" />
-											</xsl:if>
-										</xsl:when>
-										<xsl:otherwise>
-										</xsl:otherwise>
-									</xsl:choose>
-									<xsl:value-of select="'Rejected'" />
-								</option>
-							</select>
-						</label>
-						<br />
 						<br />
 						<input type="submit" value="Add" />
 						<input type="reset" value="Reset" />

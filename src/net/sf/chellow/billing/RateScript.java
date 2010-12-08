@@ -118,6 +118,27 @@ public class RateScript extends PersistentEntity {
 		}
 	}
 
+	public static void generalImportMop(String action, String[] values,
+			Element csvElement) throws HttpException {
+		if (action.equals("insert")) {
+			String contractName = GeneralImport.addField(csvElement,
+					"Contract Name", values, 0);
+			MopContract contract = MopContract.getMopContract(contractName);
+			String idStr = GeneralImport.addField(csvElement, "Id", values, 1);
+			Long id = null;
+			if (idStr.length() > 0) {
+				id = new Long(idStr);
+			}
+			String startDateStr = GeneralImport.addField(csvElement,
+					"Start Date", values, 2);
+			HhStartDate startDate = new HhStartDate(startDateStr);
+			String script = GeneralImport.addField(csvElement, "Script",
+					values, 3);
+			contract.insertRateScript(id, startDate, script);
+		} else if (action.equals("update")) {
+		}
+	}
+
 	public static void generalImportNonCore(String action, String[] values,
 			Element csvElement) throws HttpException {
 		if (action.equals("insert")) {
@@ -240,8 +261,8 @@ public class RateScript extends PersistentEntity {
 
 		internalUpdate(startDate, finishDate, script);
 		if (previousRateScript != null) {
-			if (!previousRateScript.getStartDate().getDate().before(
-					startDate.getDate())) {
+			if (!previousRateScript.getStartDate().getDate()
+					.before(startDate.getDate())) {
 				throw new UserException(
 						"The start date must be after the start date of the previous rate script.");
 			}
@@ -260,8 +281,8 @@ public class RateScript extends PersistentEntity {
 				throw new UserException(
 						"The finish date must be before the finish date of the next rate script.");
 			}
-			nextRateScript.internalUpdate(finishDate.getNext(), nextRateScript
-					.getFinishDate(), nextRateScript.getScript());
+			nextRateScript.internalUpdate(finishDate.getNext(),
+					nextRateScript.getFinishDate(), nextRateScript.getScript());
 		}
 		Hiber.flush();
 		contract.onUpdate(

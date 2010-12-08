@@ -45,6 +45,8 @@ import net.sf.chellow.physical.MarketRole;
 import net.sf.chellow.physical.Participant;
 import net.sf.chellow.ui.Chellow;
 import net.sf.chellow.ui.GeneralImport;
+
+import org.hibernate.NonUniqueResultException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -61,11 +63,17 @@ public class NonCoreContract extends Contract {
 
 	public static NonCoreContract findNonCoreContract(String name)
 			throws HttpException {
-		return (NonCoreContract) Hiber
-				.session()
-				.createQuery(
-						"from NonCoreContract contract where contract.name = :name")
-				.setString("name", name).uniqueResult();
+		try {
+			return (NonCoreContract) Hiber
+					.session()
+					.createQuery(
+							"from NonCoreContract contract where contract.name = :name")
+					.setString("name", name).uniqueResult();
+		} catch (NonUniqueResultException e) {
+			throw new InternalException(
+					"There is more than 1 non-core contract with name " + name
+							+ ".");
+		}
 	}
 
 	public static void generalImport(String action, String[] values,
