@@ -58,7 +58,14 @@
 							<input name="reference"
 								value="{/source/request/parameter[@name = 'reference']/value}" />
 						</label>
-						<xsl:value-of select="' '" />
+						<br/>
+						<label>
+							<xsl:value-of select="'Description '" />
+							<input name="description"
+								value="{/source/request/parameter[@name = 'description']/value}" />
+						</label>
+						<br/>
+						<br/>
 						<input type="submit" value="Add" />
 						<input type="reset" value="Reset" />
 					</fieldset>

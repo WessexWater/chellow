@@ -2746,4 +2746,9 @@ def import_virtual_bill(supply_source):
 			<response-code value="303" />
 		</request>
 	</test>
+	<test name="Viewing the batches of a supplier contract in edit mode.">
+		<request path="/chellow/supplier-contracts/18/batches/">
+			<regex pattern='="description"' />
+		</request>
+	</test>
 </imprimatur>
