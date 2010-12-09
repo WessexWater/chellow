@@ -64,7 +64,7 @@
 		<property type="string" name="breakdown" column="breakdown"
 			not-null="true" />
 		<set name="reads" inverse="true" lazy="true" cascade="all,delete-orphan">
-			<key column="bill_id" />
+			<key column="bill_id" on-delete="cascade"/>
 			<one-to-many class="net.sf.chellow.physical.RegisterRead" />
 		</set>
 	</class>
