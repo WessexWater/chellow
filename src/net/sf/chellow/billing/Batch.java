@@ -43,6 +43,7 @@ import net.sf.chellow.physical.Supply;
 import net.sf.chellow.ui.GeneralImport;
 
 import org.hibernate.HibernateException;
+import org.hibernate.exception.ConstraintViolationException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -165,11 +166,20 @@ public class Batch extends PersistentEntity {
 
 	public void update(String reference, String description)
 			throws HttpException {
-		if (reference.trim().length() == 0) {
+		reference = reference.trim();
+		if (reference.length() == 0) {
 			throw new UserException("The batch reference can't be blank.");
 		}
 		setReference(reference);
 		setDescription(description.trim());
+		try {
+			Hiber.flush();
+		} catch (ConstraintViolationException e) {
+			throw new UserException(
+					"There's already a batch attached to the contract "
+							+ getContract().getName() + " with the reference "
+							+ reference + ".");
+		}
 	}
 
 	public Element toXml(Document doc) throws HttpException {
@@ -198,7 +208,13 @@ public class Batch extends PersistentEntity {
 			if (!inv.isValid()) {
 				throw new UserException(document());
 			}
-			update(reference, description);
+			Document doc = document();
+			try {
+				update(reference, description);
+			} catch (UserException e) {
+				e.setDocument(doc);
+				throw e;
+			}
 			Hiber.commit();
 			inv.sendOk(document());
 		}
@@ -256,8 +272,8 @@ public class Batch extends PersistentEntity {
 		Bill bill = this.insertBill(rawBill.getAccount(),
 				rawBill.getReference(), rawBill.getIssueDate(),
 				rawBill.getStartDate(), rawBill.getFinishDate(),
-				rawBill.getKwh(), rawBill.getNet(), rawBill.getVat(), rawBill.getGross(),
-				rawBill.getType(), rawBill.getBreakdown());
+				rawBill.getKwh(), rawBill.getNet(), rawBill.getVat(),
+				rawBill.getGross(), rawBill.getType(), rawBill.getBreakdown());
 		for (RawRegisterRead rawRead : rawBill.getRegisterReads()) {
 			bill.insertRead(rawRead);
 		}
@@ -266,8 +282,8 @@ public class Batch extends PersistentEntity {
 
 	public Bill insertBill(Supply supply, String account, String reference,
 			Date issueDate, HhStartDate startDate, HhStartDate finishDate,
-			BigDecimal kwh, BigDecimal net, BigDecimal vat, BigDecimal gross, BillType type,
-			String breakdown) throws HttpException {
+			BigDecimal kwh, BigDecimal net, BigDecimal vat, BigDecimal gross,
+			BillType type, String breakdown) throws HttpException {
 		Bill bill = new Bill(this, supply, account, reference, issueDate,
 				startDate, finishDate, kwh, net, vat, gross, type, breakdown);
 		Hiber.session().save(bill);
@@ -278,8 +294,8 @@ public class Batch extends PersistentEntity {
 	@SuppressWarnings("unchecked")
 	public Bill insertBill(String account, String reference, Date issueDate,
 			HhStartDate startDate, HhStartDate finishDate, BigDecimal kwh,
-			BigDecimal net, BigDecimal vat, BigDecimal gross, BillType type, String breakdown)
-			throws HttpException {
+			BigDecimal net, BigDecimal vat, BigDecimal gross, BillType type,
+			String breakdown) throws HttpException {
 		List<Supply> supplyList = (List<Supply>) Hiber
 				.session()
 				.createQuery(

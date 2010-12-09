@@ -18,15 +18,6 @@
 				</title>
 			</head>
 			<body>
-				<xsl:if test="//message">
-					<ul>
-						<xsl:for-each select="//message">
-							<li>
-								<xsl:value-of select="@description" />
-							</li>
-						</xsl:for-each>
-					</ul>
-				</xsl:if>
 				<p>
 					<a href="{/source/request/@context-path}/">
 						<img src="{/source/request/@context-path}/logo/" />
@@ -54,6 +45,15 @@
 					</a>
 					<xsl:value-of select="']'" />
 				</p>
+				<xsl:if test="//message">
+					<ul>
+						<xsl:for-each select="//message">
+							<li>
+								<xsl:value-of select="@description" />
+							</li>
+						</xsl:for-each>
+					</ul>
+				</xsl:if>
 				<br />
 				<xsl:choose>
 					<xsl:when

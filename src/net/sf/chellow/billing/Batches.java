@@ -78,7 +78,14 @@ public class Batches extends EntityList {
 		if (!inv.isValid()) {
 			throw new UserException(document());
 		}
-		Batch batch = contract.insertBatch(reference, description);
+		Document doc = document();
+		Batch batch = null;
+		try {
+			batch = contract.insertBatch(reference, description);
+		} catch (UserException e) {
+			e.setDocument(doc);
+			throw e;
+		}
 		Hiber.commit();
 		inv.sendSeeOther(batch.getUri());
 	}
@@ -92,8 +99,9 @@ public class Batches extends EntityList {
 				.session()
 				.createQuery(
 						"from Batch batch where batch.contract = :contract and batch.id = :batchId")
-				.setEntity("contract", contract).setLong("batchId",
-						Long.parseLong(uriId.getString())).uniqueResult();
+				.setEntity("contract", contract)
+				.setLong("batchId", Long.parseLong(uriId.getString()))
+				.uniqueResult();
 		if (batch == null) {
 			throw new NotFoundException("Can't find the batch " + uriId + ".");
 		}
