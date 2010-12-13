@@ -3,6 +3,7 @@
 "4","Meter Administrator (MA)"
 "6","Non Half Hourly Data Retriever"
 "8","Meter Asset Provider (MAP)"
+"9","Communications Provider"
 "A","HH Data Aggregator"
 "B","Non-HH Data Aggregator"
 "C","HH Data Collector"

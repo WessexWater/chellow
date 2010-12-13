@@ -1294,7 +1294,7 @@ def virtual_bill(supply_source):
 			<control name="email-address" value="mishka@localhost" />
 			<control name="password" value="fyodor" />
 			<control name="user-role-id" value="2" />
-			<control name="party-id" value="333" />
+			<control name="party-id" value="276" /> <!-- DASL HHDC -->
 			<response-code value="303" />
 			<regex pattern="/chellow/users/4/" />
 		</request>
@@ -1623,7 +1623,7 @@ def import_virtual_bill(supply_source):
     utc_cal.add(Calendar.MINUTE, -30)
     month_end = HhStartDate(utc_cal.getTime())
     utc_cal.add(Calendar.MONTH, -1)
-    utc_cal.add(Calendar.HOUR_OF_DAY, 30)
+    utc_cal.add(Calendar.MINUTE, 30)
     month_begin = HhStartDate(utc_cal.getTime())
     if supply_source.start_date.equals(month_begin) and supply_source.finish_date.equals(month_end):
         month_data = supply_source.whole_data
@@ -1825,7 +1825,7 @@ def triad_estimates():
 			<regex
 				pattern="MPAN Core,Account,From,To,net-gbp,ccl-kwh,ccl-rate,ccl-gbp,data-collection-gbp,duos-availability-agreed-kva,duos-availability-billed-kva,duos-availability-rate,duos-availability-gbp,duos-day-kwh,duos-day-gbp,duos-night-kwh,duos-night-gbp,duos-reactive-rate,duos-reactive-gbp,duos-standing-gbp,settlement-gbp,night-msp-kwh,night-gsp-kwh,night-gbp,other-msp-kwh,other-gsp-kwh,other-gbp,summer-pk-msp-kwh,summer-pk-gsp-kwh,summer-pk-gbp,winter-low-pk-msp-kwh,winter-low-pk-gsp-kwh,winter-low-pk-gbp,winter-off-pk-msp-kwh,winter-off-pk-gsp-kwh,winter-off-pk-gbp,winter-pk-msp-kwh,winter-pk-gsp-kwh,winter-pk-gbp,bsuos-actual-gbp,triad-actual-0-date,triad-actual-0-msp-kw,triad-actual-0-status,triad-actual-0-laf,triad-actual-0-gsp-kw,triad-actual-1-date,triad-actual-1-msp-kw,triad-actual-1-status,triad-actual-1-laf,triad-actual-1-gsp-kw,triad-actual-2-date,triad-actual-2-msp-kw,triad-actual-2-status,triad-actual-2-laf,triad-actual-2-gsp-kw,triad-actual-gsp-kw,triad-actual-rate,triad-actual-gbp,triad-estimate-0-date,triad-estimate-0-msp-kw,triad-estimate-0-status,triad-estimate-0-laf,triad-estimate-0-gsp-kw,triad-estimate-1-date,triad-estimate-1-msp-kw,triad-estimate-1-status,triad-estimate-1-laf,triad-estimate-1-gsp-kw,triad-estimate-2-date,triad-estimate-2-msp-kw,triad-estimate-2-status,triad-estimate-2-laf,triad-estimate-2-gsp-kw,triad-estimate-gsp-kw,triad-estimate-rate,triad-estimate-months,triad-estimate-gbp,triad-all-estimates-months,triad-all-estimates-gbp" />
 			<regex
-				pattern='"22 4862 4512 332","11640077","2009-03-01T00:00Z","2009-03-31T23:30Z","10438.2256704","142508.19","0.00456","649.8373464","5.89","230","399.72","0.0368","456.000576","105487.44","770.058312","43438.27","112.939502","0.0033","0.0","","88","43401.25","46092.1275","288.794834064","54364.73","57735.34326","361.74656673","0","0","0.0","0","0","0.0","51159.73","54331.63326","340.420281354","0","0","0.0","0.0","2009-01-06T17:00Z","288.82","A","1.07","309.0374","2008-12-01T17:00Z","384.44","A","1.07","411.3508","2008-12-15T17:00Z","185.36","A","1.07","198.3352","306.241133333","25.212997","7721.25677601","2007-12-17T17:00Z","0","E","1.07","0.0","2008-01-03T17:00Z","43.6","A","1.062","46.3032","2007-11-26T17:00Z","0","E","1.07","0.0","15.4344","25.212997","1","32.4289567414","12","-389.147480897","problem"' />
+				pattern='"22 4862 4512 332","11640077","2009-03-01T00:00Z","2009-03-31T23:30Z","10467.4895616","148925.71","0.00456","679.1012376","5.89","230","399.72","0.0368","456.000576","105487.44","770.058312","43438.27","112.939502","0.0033","0.0","","88","43401.25","46092.1275","288.794834064","54364.73","57735.34326","361.74656673","0","0","0.0","0","0","0.0","51159.73","54331.63326","340.420281354","0","0","0.0","0.0","2009-01-06T17:00Z","288.82","A","1.07","309.0374","2008-12-01T17:00Z","384.44","A","1.07","411.3508","2008-12-15T17:00Z","185.36","A","1.07","198.3352","306.241133333","25.212997","7721.25677601","2007-12-17T17:00Z","0","E","1.07","0.0","2008-01-03T17:00Z","43.6","A","1.062","46.3032","2007-11-26T17:00Z","0","E","1.07","0.0","15.4344","25.212997","1","32.4289567414","12","-389.147480897","problem"' />
 		</request>
 
 		<!-- Try looking at it using the TRIAD report -->
@@ -1902,34 +1902,34 @@ def triad_estimates():
 	</test>
 	<test name="Manipulate dso contracts">
 		<!-- Insert DSO contract -->
-		<request path="/chellow/dsos/367/contracts/" method="post"> <!-- Contract of DSO 10 -->
+		<request path="/chellow/dsos/310/contracts/" method="post"> <!-- Contract of DSO 10 -->
 			<control name="name" value="main 2010-04-01" />
 			<control name="start-year" value="2010" />
 			<control name="start-month" value="04" />
 			<control name="start-day" value="01" />
-			<regex pattern="/chellow/dsos/367/contracts/73/" />
+			<regex pattern="/chellow/dsos/310/contracts/73/" />
 			<response-code value="303" />
 		</request>
 
 		<!-- Check start time of rate script -->
-		<request path="/chellow/dsos/367/contracts/73/rate-scripts/233/">
+		<request path="/chellow/dsos/310/contracts/73/rate-scripts/233/">
 			<regex pattern="00:00 Z" />
 			<response-code value="200" />
 		</request>
 
 		<!-- Insert rate script -->
-		<request path="/chellow/dsos/367/contracts/73/rate-scripts/"
+		<request path="/chellow/dsos/310/contracts/73/rate-scripts/"
 			method="post">
 			<control name="start-year" value="2010" />
 			<control name="start-month" value="05" />
 			<control name="start-day" value="01" />
 
-			<regex pattern="/chellow/dsos/367/contracts/73/rate-scripts/235/" />
+			<regex pattern="/chellow/dsos/310/contracts/73/rate-scripts/235/" />
 			<response-code value="303" />
 		</request>
 
 		<!-- Delete rate script -->
-		<request path="/chellow/dsos/367/contracts/73/rate-scripts/235/"
+		<request path="/chellow/dsos/310/contracts/73/rate-scripts/235/"
 			method="post">
 			<control name="delete" value="Delete" />
 			<response-code value="303" />
@@ -2656,7 +2656,7 @@ def import_virtual_bill(supply_source):
 		<request
 			path="/chellow/reports/161/output/?site-code=CI017&amp;months=1&amp;end-year=2010&amp;end-month=07">
 			<regex
-				pattern='"CI017","Roselands","","3rd-party,net","","2010-07-31","462.078946463","0","0","462.078946463","0","0","0","0","1860.68789465","0","0","1860.68789465","0","0","0","False","hh",""' />
+				pattern='"CI017","Roselands","","3rd-party,net","","2010-07-31","462.078946463","0","0","462.078946463","0","0","0","0","1918.04089465","0","0","1918.04089465","0","0","0","False","hh",""' />
 			<response-code value="200" />
 		</request>
 	</test>

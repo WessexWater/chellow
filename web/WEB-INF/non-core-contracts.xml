@@ -11232,6 +11232,7 @@ def forecast_date():
 
 def import_data_sources(contract, supply, month_start, month_finish, forecast_date, comterp, pw):
 
+    '''
     # is it a forecast?
     if month_finish.after(forecast_date):
         selection_finish = forecast_date.getPrevious()
@@ -11242,12 +11243,13 @@ def import_data_sources(contract, supply, month_start, month_finish, forecast_da
     else:
         selection_start = month_start
         selection_finish = month_finish
+    '''
 
     if supply is None:
         query = Hiber.session().createQuery("select distinct generation from SupplyGeneration generation where generation.importMpan is not null and generation.importMpan.supplierContract = :contract and generation.startDate.date <= :finishDate and (generation.finishDate is null or generation.finishDate.date >= :startDate)").setEntity('contract', contract)
     else:
         query = Hiber.session().createQuery("select distinct generation from SupplyGeneration generation where generation.supply = :supply and generation.importMpan is not null and generation.startDate.date <= :finishDate and (generation.finishDate is null or generation.finishDate.date >= :startDate)").setEntity('supply', supply)
-    generations = query.setTimestamp('startDate', selection_start.getDate()).setTimestamp('finishDate', selection_finish.getDate()).scroll()
+    generations = query.setTimestamp('startDate', month_start.getDate()).setTimestamp('finishDate', month_finish.getDate()).scroll()
     while generations.next():
         generation = generations.get(0)
 
@@ -11497,7 +11499,7 @@ class SupplySource(DataSource):
         self.mpan_core_str = self.mpan_core.toString()
         self.id = self.mpan_core_str
         if start_date.after(finish_date):
-            raise UserException('The start date is after the finish date.')
+            raise UserException('The start date is after the finish date for MPAN core ' + str(mpan.getCore()) + '.')
         self.start_date = start_date
         self.finish_date = finish_date
         self.llfc = mpan.getLlfc()
@@ -15345,7 +15347,7 @@ def triad(bill, dso_contract, month_begin, month_end, data_source, rate_period='
                 est_datum['msp-kw'] = est_triad_kw
                 est_datum['gsp-kw'] = est_datum['msp-kw'] * est_datum['laf']
     
-    triad_calc(bill, 'triad-estimate', triad_rates_contract, est_triad_kws, financial_year_start, data_source, month_begin)
+    triad_calc(bill, 'triad-estimate', triad_rates_contract, est_triad_kws, financial_year_start, financial_year_finish, data_source, month_begin)
 
     est_triad_gbp = bill['triad-estimate-rate'] * bill['triad-estimate-gsp-kw']
 
@@ -15373,7 +15375,7 @@ def triad(bill, dso_contract, month_begin, month_end, data_source, rate_period='
         #data_source.pw.println('t dates ' + str(get_triad_dates(month_begin, data_source)))
         triad_kws = [data_source.create_whole_data(t_date, t_date, data_source.forecast_date)['data'][0] for t_date in get_triad_dates(month_begin, data_source)]
 
-        triad = triad_calc(bill, 'triad-actual', triad_rates_contract, triad_kws, financial_year_start, data_source, month_begin)
+        triad = triad_calc(bill, 'triad-actual', triad_rates_contract, triad_kws, financial_year_start, financial_year_finish, data_source, month_begin)
         bill['triad-actual-gbp'] = bill['triad-actual-rate'] * bill['triad-actual-gsp-kw']
 
         utc_cal.setTime(month_end.getDate())
@@ -15397,7 +15399,7 @@ def triad(bill, dso_contract, month_begin, month_end, data_source, rate_period='
 
     #data_source.pw.println("finished triad " + str(System.currentTimeMillis() - timing))
 
-def triad_calc(bill, prefix, triad_rates_contract, triad_data, financial_year_start, data_source, month_begin):
+def triad_calc(bill, prefix, triad_rates_contract, triad_data, financial_year_start, financial_year_finish, data_source, month_begin):
     gsp_kw = 0
     for i in range(len(triad_data)):
         triad_hh = triad_data[i]
@@ -15411,26 +15413,27 @@ def triad_calc(bill, prefix, triad_rates_contract, triad_data, financial_year_st
 
     bill[prefix + '-gsp-kw'] = gsp_kw / 3
 
-    rate_script = triad_rates_contract.rateScript(month_begin)
-    actual_rate = data_source.rate(rate_script, 'hh_demand_gbp_per_kw')[data_source.dso_code]
     if prefix == 'triad-actual':
-        rate = actual_rate
-    else:
-        effective_rate = data_source.rate(rate_script, 'effective_hh_demand_gbp_per_kw')
-        if effective_rate is None:
-            rate = actual_rate
-        else:
-            effective_rate = effective_rate[data_source.dso_code]
-            old_rate_script = triad_rates_contract.rateScript(month_begin.getPrevious())
-            old_rate = data_source.rate(old_rate_script, 'hh_demand_gbp_per_kw')[data_source.dso_code]
-            cal = MonadDate.getCalendar()
+        cal = MonadDate.getCalendar()
+        tot_rate = 0
+        for rate_script in triad_rates_contract.rateScripts(financial_year_start, financial_year_finish):
             cal.setTime(rate_script.getStartDate().getDate())
-            months_left = 0
-            while cal.get(Calendar.MONTH) != Calendar.APRIL:
-                months_left += 1
-                cal.add(Calendar.MONTH, 1)
-
-            rate = (12 * effective_rate - (12 - months_left) * old_rate) / float(months_left)
+            start_month = cal.get(Calendar.MONTH)
+            if start_month < Calendar.APRIL:
+                start_month += 12
+            rate_finish_date = rate_script.getFinishDate()
+            if rate_finish_date is None:
+                cal.setTime(financial_year_finish.getDate())
+            else:
+                cal.setTime(rate_script.getFinishDate().getDate())
+            finish_month = cal.get(Calendar.MONTH)
+            if finish_month < Calendar.APRIL:
+                finish_month += 12
+            tot_rate += float(finish_month - start_month + 1) * data_source.rate(rate_script, 'hh_demand_gbp_per_kw')[data_source.dso_code]
+        rate = tot_rate / float(12)
+    else:
+        rate_script = triad_rates_contract.rateScript(month_begin)
+        rate = data_source.rate(rate_script, 'hh_demand_gbp_per_kw')[data_source.dso_code]
 
     bill[prefix + '-rate'] = rate]]></value>
         <value><![CDATA[147]]></value>
@@ -15571,13 +15574,7 @@ def triad_dates():
     return {
         '14': 20.665831,
         '20': 23.467647,
-        '22': 24.031029}
-
-def effective_hh_demand_gbp_per_kw():
-    return {
-        '14': 22.02,
-        '20': 24.82,
-        '22': 25.38}]]></value>
+        '22': 24.031029}]]></value>
     </line>
     <line>
         <value><![CDATA[insert]]></value>
