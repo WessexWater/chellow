@@ -2751,4 +2751,14 @@ def import_virtual_bill(supply_source):
 			<regex pattern='="description"' />
 		</request>
 	</test>
+	<test name="Viewing the batches of a DC contract in edit mode.">
+		<request path="/chellow/hhdc-contracts/0/batches/">
+			<regex pattern='="description"' />
+		</request>
+	</test>
+	<test name="Viewing the batches of a MOP contract in edit mode.">
+		<request path="/chellow/mop-contracts/8/batches/">
+			<regex pattern='="description"' />
+		</request>
+	</test>
 </imprimatur>

@@ -112,77 +112,59 @@ def totalElement(account, startDate, finishDate):
         <value><![CDATA[main 2000-04-01]]></value>
         <value><![CDATA[2000-01-01T00:00Z]]></value>
         <value><![CDATA[2010-03-31T23:30Z]]></value>
-        <value><![CDATA[from net.sf.chellow.billing import NonCoreContract
-from java.util import GregorianCalendar, TimeZone, Locale, Calendar
-from net.sf.chellow.physical import HhStartDate
+        <value><![CDATA[def triad():
+    return 19.147817
 
+def tariffs():
+    return {
+        '121': {
+            'fixed-gbp-per-day': 1.61,
+            'availability-gbp-per-kva-per-day': 0.0519,
+            'excess-availability-gbp-per-kva-per-day': 0.0519,
+            'day-gbp-per-kwh': 0.0018,
+            'night-gbp-per-kwh': 0.0007,
+            'reactive-gbp-per-kvarh':  0.0026},
+        '124': {
+            'fixed-gbp-per-day': 1.61,
+            'availability-gbp-per-kva-per-day': 0.0519,
+            'excess-availability-gbp-per-kva-per-day': 0.0519,
+            'day-gbp-per-kwh': 0.0018,
+            'night-gbp-per-kwh': 0.0007,
+            'reactive-gbp-per-kvarh':  0.0026},
+        '127': {
+            'fixed-gbp-per-day': 1.61,
+            'availability-gbp-per-kva-per-day': 0.0519,
+            'excess-availability-gbp-per-kva-per-day': 0.0519,
+            'day-gbp-per-kwh': 0.0018,
+            'night-gbp-per-kwh': 0.0007,
+            'reactive-gbp-per-kvarh':  0.0026},
+        '132': {
+            'fixed-gbp-per-day': 1.61,
+            'availability-gbp-per-kva-per-day': 0.0519,
+            'excess-availability-gbp-per-kva-per-day': 0.0519,
+            'day-gbp-per-kwh': 0.0018,
+            'night-gbp-per-kwh': 0.0007,
+            'reactive-gbp-per-kvarh':  0.0026},
+        '365': {
+            'fixed-gbp-per-day': 4.29,
+            'availability-gbp-per-kva-per-day': 0.0417,
+            'excess-availability-gbp-per-kva-per-day': 0.0417,
+            'day-gbp-per-kwh': 0.0012,
+            'night-gbp-per-kwh': 0.0006,
+            'reactive-gbp-per-kvarh': 0.0013}}
 
-def get_rate_script(date):
-    return contract.rateScripts(date, date)[0]
-
-
-def month(bill, whole_data, data_source):
-    bill.setdefault('duos-standing-gbp', 0)
-
-    llfc_code = data_source.llfc_code
-    availability = data_source.availability
-    summary = whole_data['summary']
-
-    rate_script = contract.rateScript(summary['finish-date'])
-    tariff = data_source.rate(rate_script, 'tariffs')[llfc_code]
-    reactive_rate = tariff['reactive-gbp-per-kvarh']
-    bill['duos-reactive-rate'] = reactive_rate
-    bill['duos-reactive-gbp'] = max(0, summary['sum-imp-msp-kvarh'] - summary['sum-msp-kwh'] / 3) * reactive_rate
-    if not data_source.is_displaced:
-        bill.setdefault('duos-availability-gbp', 0)
-
-        availability_rate = tariff['availability-gbp-per-kva-per-day']
-        bill['duos-availability-rate'] = availability_rate
-        md_kva = max((datum['msp-kw'] ** 2 + (datum['imp-msp-kvar'] + datum['exp-msp-kvar'])** 2) ** 0.5 for datum in whole_data['data'])
-
-        billed_avail = max(availability, md_kva)
-        bill['duos-availability-gbp'] += availability_rate * billed_avail
-        bill['duos-availability-agreed-kva'] = data_source.availability
-        bill['duos-availability-billed-kva'] = billed_avail
-
-    bill['duos-standing-gbp'] += tariff['fixed-gbp-per-day']
-
-
-def hh(summary, hh_list, data_source):
-    bill = summary['dso-bill']
-
-    bill['duos-night-kwh'] = 0
-    bill['duos-night-gbp'] = 0
-    bill['duos-day-kwh'] = 0
-    bill['duos-day-gbp'] = 0
-
-    llfc_code = data_source.llfc_code
-    voltage_level_code = data_source.voltage_level_code
-    is_substation = data_source.is_substation
-
-    rate_script = contract.rateScript(summary['start-date'])
-    tariff = data_source.rate(rate_script, 'tariffs')[llfc_code]
-    lafs = data_source.rate(rate_script, 'lafs')[voltage_level_code.lower()]
-    for hh in hh_list:
-        if 0 < hh['ct-decimal-hour'] <= 7:
-            bill['duos-night-kwh'] += hh['msp-kwh']
-            bill['duos-night-gbp'] += hh['msp-kwh'] * tariff['day-gbp-per-kwh']
-        else:
-            bill['duos-day-kwh'] += hh['msp-kwh']
-            bill['duos-night-gbp'] += hh['msp-kwh'] * tariff['night-gbp-per-kwh']
-
-        if 0 < hh['ct-decimal-hour'] <= 7:
-            slot = 'night'
-        elif 7 > hh['ct-day-of-week'] > 1 and hh['ct-decimal-hour'] > 15.5 and hh['ct-decimal-hour'] < 19 and (hh['ct-month'] > 10 or hh['ct-month'] < 3):
-            slot = 'winter-weekday-peak'
-        elif 7 > hh['ct-day-of-week'] > 1 and (7 <= hh['ct-decimal-hour'] < 16 or 18 < hh['ct-decimal-hour'] < 20) and (hh['ct-month'] > 10 or hh['ct-month'] < 3):
-            slot = 'winter-weekday-day'
-        else:
-            slot = 'other'
-
-        hh['laf'] = lafs[slot]
-        hh['gsp-kwh'] = hh['msp-kwh'] * hh['laf']
-        hh['gsp-kw'] = hh['gsp-kwh'] * 2]]></value>
+def lafs():
+    return {
+        'lv': {
+            'night': 1.042,
+            'winter-weekday-peak': 1.104,
+            'winter-weekday-day': 1.095,
+            'other': 1.070},
+        'hv': {
+            'night': 1.012,
+            'winter-weekday-peak': 1.037,
+            'winter-weekday-day': 1.032,
+            'other': 1.029}}]]></value>
         <value><![CDATA[9]]></value>
         <value><![CDATA[from net.sf.chellow.billing import NonCoreContract
 from java.util import GregorianCalendar, TimeZone, Locale, Calendar
@@ -539,6 +521,13 @@ from net.sf.chellow.monad import UserException
 from net.sf.chellow.physical import HhStartDate
 from java.lang import System
 
+WINTER_MONTHS = [Calendar.NOVEMBER, Calendar.DECEMBER, Calendar.JANUARY, Calendar.FEBRUARY]
+
+WEEKEND_DAYS = [Calendar.SATURDAY, Calendar.SUNDAY]
+
+BANDS = ['red', 'amber', 'green']
+
+KEYS = dict((band, {'kwh': 'duos-' + band + '-kwh', 'tariff-rate': band + '-gbp-per-kwh', 'bill-rate': 'duos-' + band + '-rate', 'gbp': 'duos-' + band + '-gbp'}) for band in BANDS)
 
 def hh(summary, hh_list, data_source):
     #timing = System.currentTimeMillis()
@@ -555,39 +544,34 @@ def hh(summary, hh_list, data_source):
     lafs = data_source.rate(rate_script, 'lafs')[voltage_level_code.lower()]
 
     if data_source.is_import:
-        bands = ['red', 'amber', 'green']
-        keys = {}
-        for band in bands:
-            keys[band] = {'kwh': 'duos-' + band + '-kwh', 'tariff-rate': band + '-gbp-per-kwh', 'bill-rate': 'duos-' + band + '-rate', 'gbp': 'duos-' + band + '-gbp'}
-            bill[keys[band]['kwh']] = 0
+        for band in BANDS:
+            bill[KEYS[band]['kwh']] = 0
 
         for hh in hh_list:
-            if hh['ct-day-of-week'] in [Calendar.SATURDAY, Calendar.SUNDAY]:
-                band = 'green'
-            else:
+            band = 'green'
+            if hh['ct-day-of-week'] not in WEEKEND_DAYS:
                 if 16 < hh['ct-decimal-hour'] <= 19:
                     band = 'red'
                 elif 7 < hh['ct-decimal-hour'] <= 21:
                     band = 'amber'
-                else:
-                    band = 'green'
 
-            bill[keys[band]['kwh']] += hh['msp-kwh']
+            bill[KEYS[band]['kwh']] += hh['msp-kwh']
             
-        for band in bands:
-            bill[keys[band]['bill-rate']] = tariff[keys[band]['tariff-rate']]
-            bill[keys[band]['gbp']] = bill[keys[band]['bill-rate']] * bill[keys[band]['kwh']]
+        for band in BANDS:
+            bill[KEYS[band]['bill-rate']] = tariff[KEYS[band]['tariff-rate']]
+            bill[KEYS[band]['gbp']] = bill[KEYS[band]['bill-rate']] * bill[KEYS[band]['kwh']]
 
 
     for hh in hh_list:
-        if 6 >= hh['ct-decimal-hour']:
+        slot_name = 'other'
+        if 0 < hh['ct-decimal-hour'] <= 7:
             slot_name = 'night'
-        elif 7 > hh['ct-day-of-week'] > 1 and 15.5 < hh['ct-decimal-hour'] < 18 and (hh['ct-month'] > 10 or hh['ct-month'] < 3):
-            slot_name = 'winter-weekday-peak'
-        elif 7 > hh['ct-day-of-week'] > 1 and 6 < hh['ct-decimal-hour'] < 15 and (hh['ct-month'] > 10 or hh['ct-month'] < 3):
-            slot_name = 'winter-weekday-day'
-        else:
-            slot_name = 'other'
+        elif hh['ct-day-of-week'] not in WEEKEND_DAYS and hh['ct-month'] in WINTER_MONTHS:
+            if 16 <= hh['ct-decimal-hour'] < 19:
+                slot_name = 'winter-weekday-peak'
+            elif 7 < hh['ct-decimal-hour'] < 20:
+                slot_name = 'winter-weekday-day'
+
         hh['laf'] = lafs[slot_name]
         hh['gsp-kwh'] = hh['laf'] * hh['msp-kwh']
         hh['gsp-kw'] = hh['gsp-kwh'] * 2
@@ -1381,6 +1365,14 @@ from net.sf.chellow.monad import UserException
 from net.sf.chellow.physical import HhStartDate
 from java.lang import System
 
+WINTER_MONTHS = [Calendar.NOVEMBER, Calendar.DECEMBER, Calendar.JANUARY, Calendar.FEBRUARY]
+
+WEEKEND_DAYS = [Calendar.SATURDAY, Calendar.SUNDAY]
+
+BANDS = ['red', 'amber', 'green']
+
+KEYS = dict((band, {'kwh': 'duos-' + band + '-kwh', 'tariff-rate': band + '-gbp-per-kwh', 'bill-rate': 'duos-' + band + '-rate', 'gbp': 'duos-' + band + '-gbp'}) for band in BANDS)
+
 
 def hh(summary, hh_list, data_source):
     #data_source.pw.println("hh list " + str(hh_list))
@@ -1404,46 +1396,42 @@ def hh(summary, hh_list, data_source):
         llfc_group = llfc_code
     tariff = data_source.rate(rate_script, 'tariffs')[llfc_group]
     lafs = data_source.rate(rate_script, 'lafs')[vl_key]
-
     if data_source.is_import:
-        bands = ['red', 'amber', 'green']
-        keys = {}
-        for band in bands:
-            keys[band] = {'kwh': 'duos-' + band + '-kwh', 'tariff-rate': band + '-gbp-per-kwh', 'bill-rate': 'duos-' + band + '-rate', 'gbp': 'duos-' + band + '-gbp'}
-            bill[keys[band]['kwh']] = 0
+        for band in BANDS:
+            bill[KEYS[band]['kwh']] = 0
 
         for hh in hh_list:
             if hh['ct-day-of-week'] in [Calendar.SATURDAY, Calendar.SUNDAY]:
                 band = 'green'
             else:
-                if 16 < hh['ct-decimal-hour'] < 19:
+                if 16 <= hh['ct-decimal-hour'] < 19:
                     band = 'red'
                 elif 9 <= hh['ct-decimal-hour'] <= 20:
                     band = 'amber'
                 else:
                     band = 'green'
 
-            bill[keys[band]['kwh']] += hh['msp-kwh']
+            bill[KEYS[band]['kwh']] += hh['msp-kwh']
             
-        for band in bands:
-            bill[keys[band]['bill-rate']] = tariff[keys[band]['tariff-rate']]
-            bill[keys[band]['gbp']] = bill[keys[band]['bill-rate']] * bill[keys[band]['kwh']]
+        for band in BANDS:
+            bill[KEYS[band]['bill-rate']] = tariff[KEYS[band]['tariff-rate']]
+            bill[KEYS[band]['gbp']] = bill[KEYS[band]['bill-rate']] * bill[KEYS[band]['kwh']]
 
     for hh in hh_list:
+        slot_name = 'other'
         if 0 < hh['ct-decimal-hour'] <= 7:
             slot_name = 'night'
-        elif Calendar.SATURDAY > hh['ct-day-of-week'] > Calendar.SUNDAY and 16 <= hh['ct-decimal-hour'] < 19 and (hh['ct-month'] > Calendar.OCTOBER or hh['ct-month'] < Calendar.MARCH):
-            slot_name = 'peak'
-        elif 7 > hh['ct-day-of-week'] > 1 and (7 < hh['ct-decimal-hour'] < 16 or 19 <= hh['ct-decimal-hour'] < 20) and (hh['ct-month'] > 10 or hh['ct-month'] < 3):
-            slot_name = 'winter-weekday'
-        else:
-            slot_name = 'other'
+        elif hh['ct-day-of-week'] not in WEEKEND_DAYS and hh['ct-month'] in WINTER_MONTHS:
+            if 16 <= hh['ct-decimal-hour'] < 19:
+                slot_name = 'peak'
+            elif 7 < hh['ct-decimal-hour'] < 20:
+                slot_name = 'winter-weekday'
+
         hh['laf'] = lafs[slot_name]
         hh['gsp-kwh'] = hh['laf'] * hh['msp-kwh']
         hh['gsp-kw'] = hh['gsp-kwh'] * 2
 
     #pw.println('hh-start-date,"' + hh['start-date'].toString() + '",msp,"' + str(hh['msp-kwh']) + '",laf,"' + str(hh['laf']) + '",gsp,"' + str(hh['gsp-kwh']) + '",slot name,"' + slot_name + '",ct decimal hour,"' + str(hh['ct-decimal-hour']) + '"')
-    #data_source.pw.println("22 hh: finish " + str(System.currentTimeMillis() - timing))
 
 
 def month(bill, whole_data, data_source):
@@ -2315,6 +2303,14 @@ from net.sf.chellow.monad import UserException
 from net.sf.chellow.physical import HhStartDate
 from java.lang import System
 
+WINTER_MONTHS = [Calendar.NOVEMBER, Calendar.DECEMBER, Calendar.JANUARY, Calendar.FEBRUARY]
+
+WEEKEND_DAYS = [Calendar.SATURDAY, Calendar.SUNDAY]
+
+BANDS = ['red', 'amber', 'green']
+
+KEYS = dict((band, {'kwh': 'duos-' + band + '-kwh', 'tariff-rate': band + '-gbp-per-kwh', 'bill-rate': 'duos-' + band + '-rate', 'gbp': 'duos-' + band + '-gbp'}) for band in BANDS)
+
 
 def hh(summary, hh_list, data_source):
     #timing = System.currentTimeMillis()
@@ -2338,11 +2334,8 @@ def hh(summary, hh_list, data_source):
     lafs = data_source.rate(rate_script, 'lafs')[vl_key]
 
     if data_source.is_import:
-        bands = ['red', 'amber', 'green']
-        keys = {}
-        for band in bands:
-            keys[band] = {'kwh': 'duos-' + band + '-kwh', 'tariff-rate': band + '-gbp-per-kwh', 'bill-rate': 'duos-' + band + '-rate', 'gbp': 'duos-' + band + '-gbp'}
-            bill[keys[band]['kwh']] = 0
+        for band in BANDS:
+            bill[KEYS[band]['kwh']] = 0
 
         for hh in hh_list:
             if hh['ct-day-of-week'] in [Calendar.SATURDAY, Calendar.SUNDAY]:
@@ -2357,29 +2350,29 @@ def hh(summary, hh_list, data_source):
                     band = 'amber'
                 else:
                     band = 'green'
-            bill[keys[band]['kwh']] += hh['msp-kwh']
+            bill[KEYS[band]['kwh']] += hh['msp-kwh']
 
-        for band in bands:
-            bill[keys[band]['bill-rate']] = tariff[keys[band]['tariff-rate']]
-            bill[keys[band]['gbp']] = bill[keys[band]['bill-rate']] * bill[keys[band]['kwh']]
+        for band in BANDS:
+            bill[KEYS[band]['bill-rate']] = tariff[KEYS[band]['tariff-rate']]
+            bill[KEYS[band]['gbp']] = bill[KEYS[band]['bill-rate']] * bill[KEYS[band]['kwh']]
             #data_source.pw.println(band + " sum msp " + str(bill[keys[band]['kwh']]))
 
-
     for hh in hh_list:
-        if 6 >= hh['ct-decimal-hour']:
+        slot_name = 'other'
+        if 23 < hh['ct-decimal-hour'] or hh['ct-decimal-hour'] <= 6:
             slot_name = 'night'
-        elif 7 > hh['ct-day-of-week'] > 1 and 15.5 < hh['ct-decimal-hour'] < 18 and (hh['ct-month'] > 10 or hh['ct-month'] < 3):
-            slot_name = 'winter-weekday-peak'
-        elif 7 > hh['ct-day-of-week'] > 1 and 6 < hh['ct-decimal-hour'] < 15 and (hh['ct-month'] > 10 or hh['ct-month'] < 3):
-            slot_name = 'winter-weekday-day'
-        else:
-            slot_name = 'other'
+        elif hh['ct-day-of-week'] not in WEEKEND_DAYS and hh['ct-month'] in WINTER_MONTHS:
+            if 16 <= hh['ct-decimal-hour'] < 19:
+                slot_name = 'winter-weekday-peak'
+            elif hh['ct-decimal-hour'] < 16:
+                slot_name = 'winter-weekday-day'
+
         hh['laf'] = lafs[slot_name]
         hh['gsp-kwh'] = hh['laf'] * hh['msp-kwh']
         hh['gsp-kw'] = hh['gsp-kwh'] * 2
 
     #pw.println('hh-start-date,"' + hh['start-date'].toString() + '",msp,"' + str(hh['msp-kwh']) + '",laf,"' + str(hh['laf']) + '",gsp,"' + str(hh['gsp-kwh']) + '",slot name,"' + slot_name + '",ct decimal hour,"' + str(hh['ct-decimal-hour']) + '"')
-    #data_source.pw.println("22 hh: finish " + str(System.currentTimeMillis() - timing))
+    #data_source.pw.println("hh " + str(hh_list))
 
 
 def month(bill, whole_data, data_source):
