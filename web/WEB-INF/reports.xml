@@ -14563,6 +14563,7 @@ from java.util import Properties
 from net.sf.chellow.monad import Hiber, XmlTree, UserException
 from net.sf.chellow.billing import Batch
 from net.sf.chellow.physical import Configuration
+from net.sf.chellow.ui import Report
 
 batch_id = inv.getLong('batch-id')
 batch = Batch.getBatch(batch_id)
