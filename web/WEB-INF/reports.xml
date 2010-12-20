@@ -14558,8 +14558,11 @@ for batch in Hiber.session().createQuery("from Batch batch where batch.contract 
         <value><![CDATA[193]]></value>
         <value><![CDATA[true]]></value>
         <value><![CDATA[MOP Contract Batch]]></value>
-        <value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree, UserException
+        <value><![CDATA[from java.io import StringReader
+from java.util import Properties
+from net.sf.chellow.monad import Hiber, XmlTree, UserException
 from net.sf.chellow.billing import Batch
+from net.sf.chellow.physical import Configuration
 
 batch_id = inv.getLong('batch-id')
 batch = Batch.getBatch(batch_id)
