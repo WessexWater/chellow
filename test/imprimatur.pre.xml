@@ -2329,6 +2329,9 @@ def import_virtual_bill(supply_source):
 			<regex
 				pattern="All the bills have been successfully loaded and attached to the batch\." />
 		</request>
+		<request path="/chellow/supplier-contracts/18/batches/7/bills/10/reads/7/">
+			<regex pattern="31&lt;/option&gt;&lt;/select&gt; 00:00" />
+		</request>
 	</test>
 	<test name="Test viewers' search">
 		<request path="/chellow/reports/99/output/?search-pattern=">
@@ -2661,7 +2664,7 @@ def import_virtual_bill(supply_source):
 		<request
 			path="/chellow/reports/161/output/?site-code=CI017&amp;months=1&amp;end-year=2010&amp;end-month=07">
 			<regex
-				pattern='"CI017","Roselands","","3rd-party,net","","2010-07-31","462.078946463","0","0","462.078946463","0","0","0","0","1918.04089465","0","0","1918.04089465","0","0","0","False","hh",""' />
+				pattern='"CI017","Roselands","","3rd-party,net","","2010-07-31","463.852761996","0","0","463.852761996","0","0","0","0","1918.2182762","0","0","1918.2182762","0","0","0","False","hh",""' />
 			<response-code value="200" />
 		</request>
 	</test>
@@ -2771,7 +2774,7 @@ def import_virtual_bill(supply_source):
 			<control name="properties"><![CDATA[batch.report.01=100]]></control>
 			<response-code value="200" />
 		</request>
-		
+
 		<!-- Check that we can see it okay -->
 		<request path="/chellow/reports/193/output/?batch-id=9">
 			<response-code value="200" />

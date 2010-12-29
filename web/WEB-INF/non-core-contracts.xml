@@ -13161,9 +13161,9 @@ class SupplySource(DataSource):
 
                 bill_query = Hiber.session().createQuery("select distinct read.bill, read.bill.issueDate, read.bill.type.code from RegisterRead read where read.bill.supply = :supply and read.bill.finishDate.date >= :readDate and read.bill.startDate <= :readDate order by read.bill.issueDate desc, read.bill.type.code").setEntity('supply', self.supply).setMaxResults(1)
 
-                prior_present_read_query = Hiber.session().createQuery("select read, read.bill from RegisterRead read where read.units.int = 0 and read.presentType.code in ('N', 'N3', 'C') and read.bill.supply = :supply and read.presentDate.date <= :startDate order by read.presentDate.date desc, read.bill.issueDate desc, read.bill.type.code").setEntity('supply', self.supply).setMaxResults(1)
+                prior_present_read_query = Hiber.session().createQuery("select read, read.bill from RegisterRead read where read.units.int = 0 and read.presentType.code in ('N', 'N3', 'C') and read.bill.supply = :supply and read.presentDate.date < :startDate order by read.presentDate.date desc, read.bill.issueDate desc, read.bill.type.code").setEntity('supply', self.supply).setMaxResults(1)
 
-                prior_previous_read_query = Hiber.session().createQuery("select read, read.bill from RegisterRead read where read.units.int = 0 and read.previousType.code in ('N', 'N3', 'C') and read.bill.supply = :supply and read.previousDate.date <= :startDate order by read.previousDate.date desc, read.bill.issueDate desc, read.bill.type.code").setEntity('supply', self.supply).setMaxResults(1)
+                prior_previous_read_query = Hiber.session().createQuery("select read, read.bill from RegisterRead read where read.units.int = 0 and read.previousType.code in ('N', 'N3', 'C') and read.bill.supply = :supply and read.previousDate.date < :startDate order by read.previousDate.date desc, read.bill.issueDate desc, read.bill.type.code").setEntity('supply', self.supply).setMaxResults(1)
 
                 present_reads_query = Hiber.session().createQuery("from RegisterRead read where read.units.int = 0 and read.bill = :bill and read.presentDate.date = :readDate and read.meterSerialNumber = :msn")
 
@@ -13231,9 +13231,9 @@ class SupplySource(DataSource):
                         #s elf.pw.println('present reads ' + str(present_reads))
                         for read in present_reads:
                             tpr = read.getTpr()
-                            reads[tpr.getCode()] = {'tpr': read.getTpr(), 'value': read.getPresentValue().doubleValue() * read.getCoefficient().doubleValue(), 'msn': read.getMeterSerialNumber()}
+                            reads[tpr.getCode()] = {'tpr': read.getTpr(), 'value': read.getPresentValue().doubleValue() * read.getCoefficient().doubleValue()}
 
-                        read_dict = {'date': present_read.getPresentDate(), 'reads': reads, 'msn': present_reads[0].getMeterSerialNumber()}
+                        read_dict = {'date': present_read.getPresentDate(), 'reads': reads, 'msn': present_read.getMeterSerialNumber()}
 
                     if previous_read_prime:
                         #s elf.pw.println('prev supply prime prev bill ' + str(previous_bill.getId()))
@@ -13418,7 +13418,7 @@ class SupplySource(DataSource):
                     #s elf.pw.println('aft read ' + str(aft_read.getPresentDate()) + ' aft bill ' + str(aft_bill.getId()) + ' fore read ' + str(fore_read.getPresentDate()) + ' fore bill ' + str(fore_bill.getId()))
                             
                     #s elf.pw.println('chunk start ' + str(chunk_start) + ' chunk finish ' + str(chunk_finish))
-                    #s elf.pw.println('passed ' + str(passes))
+                    self.pw.println('passed ' + str(passes))
 
                     for read_pass in passes:
                         aft_read = read_pass['aft-read']
@@ -13441,6 +13441,9 @@ class SupplySource(DataSource):
                             if kwh < 0:
                                 digits = int(Math.log10(initial_val)) + 1
                                 kwh = 10 ** digits - initial_val + end_val
+
+                            #s elf.pw.println('fore ' + str(fore_read))
+                            #s elf.pw.println('aft ' + str(aft_read))
 
                             kwh_rate = float(kwh) / float(fore_read['date'].getDate().getTime() - aft_read['date'].getDate().getTime())
                             
@@ -13512,7 +13515,7 @@ class SupplySource(DataSource):
                     if read_3 is None:
                         keep_going = False
 
-                    if keep_going and read_2 is not None and read_2['date'].after(finish_date):
+                    if keep_going and read_2 is not None and read_2['date'].after(history_finish):
                         keep_going = False
 
                     if keep_going and read_3['date'].after(history_finish) and not (read_2 is None and read_3['date'].after(history_start)):

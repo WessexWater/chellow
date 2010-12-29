@@ -9439,12 +9439,13 @@ source.appendChild(bill.toXml(doc, XmlTree('batch', XmlTree('contract', XmlTree(
                                         select="concat(/source/bill/date[@label='issue']/@year, '-', /source/bill/date[@label='issue']/@month, '-', /source/bill/date[@label='issue']/@day, ' ', /source/bill/date[@label='issue']/@hour, ':', /source/bill/date[@label='issue']/@minute)" />
                                 </td>
                                 <td>
-                                    <xsl:value-of
-                                        select="concat(/source/bill/hh-start-date[@label='start']/@year, '-', /source/bill/hh-start-date[@label='start']/@month, '-', /source/bill/hh-start-date[@label='start']/@day, ' ', /source/bill/hh-start-date[@label='start']/@hour, ':', /source/bill/hh-start-date[@label='start']/@minute)" />
+                                    <a title="{concat(/source/bill/hh-start-date[@label='start']/@hour, ':', /source/bill/hh-start-date[@label='start']/@minute)}"><xsl:value-of
+                                        select="concat(/source/bill/hh-start-date[@label='start']/@year, '-', /source/bill/hh-start-date[@label='start']/@month, '-', /source/bill/hh-start-date[@label='start']/@day)" /></a>
                                 </td>
                                 <td>
+                                    <a title="{concat(/source/bill/hh-start-date[@label='finish']/@hour, ':', /source/bill/hh-start-date[@label='finish']/@minute)}">
                                     <xsl:value-of
-                                        select="concat(/source/bill/hh-start-date[@label='finish']/@year, '-', /source/bill/hh-start-date[@label='finish']/@month, '-', /source/bill/hh-start-date[@label='finish']/@day, ' ', /source/bill/hh-start-date[@label='finish']/@hour, ':', /source/bill/hh-start-date[@label='finish']/@minute)" />
+                                        select="concat(/source/bill/hh-start-date[@label='finish']/@year, '-', /source/bill/hh-start-date[@label='finish']/@month, '-', /source/bill/hh-start-date[@label='finish']/@day)" /></a>
                                 </td>
                                 <td>
                                     <xsl:value-of select="/source/bill/@kwh" />
@@ -9530,8 +9531,8 @@ source.appendChild(bill.toXml(doc, XmlTree('batch', XmlTree('contract', XmlTree(
                                 <xsl:value-of select="@meter-serial-number" />
                             </td>
                             <td>
-                                <xsl:value-of
-                                    select="concat(hh-start-date[@label='previous']/@year, '-', hh-start-date[@label='previous']/@month, '-', hh-start-date[@label='previous']/@day)" />
+                                <a title="{concat(hh-start-date[@label='previous']/@hour, ':', hh-start-date[@label='previous']/@minute)}"><xsl:value-of
+                                    select="concat(hh-start-date[@label='previous']/@year, '-', hh-start-date[@label='previous']/@month, '-', hh-start-date[@label='previous']/@day)" /></a>
                             </td>
                             <td>
                                 <xsl:value-of select="@previous-value" />
@@ -9541,8 +9542,8 @@ source.appendChild(bill.toXml(doc, XmlTree('batch', XmlTree('contract', XmlTree(
                                 <xsl:value-of select="read-type[@label='previous']/@code" /></a>
                             </td>
                             <td>
-                                <xsl:value-of
-                                    select="concat(hh-start-date[@label='present']/@year, '-', hh-start-date[@label='present']/@month, '-', hh-start-date[@label='present']/@day)" />
+                                <a title="{concat(hh-start-date[@label='present']/@hour, ':', hh-start-date[@label='present']/@minute)}"><xsl:value-of
+                                    select="concat(hh-start-date[@label='present']/@year, '-', hh-start-date[@label='present']/@month, '-', hh-start-date[@label='present']/@day)" /></a>
                             </td>
                             <td>
                                 <xsl:value-of select="@present-value" />

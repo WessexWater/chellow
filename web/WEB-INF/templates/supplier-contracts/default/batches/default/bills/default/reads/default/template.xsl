@@ -258,6 +258,8 @@
 												</option>
 											</xsl:for-each>
 										</select>
+										<xsl:value-of
+											select="concat(' ', /source/register-read/hh-start-date[@label='previous']/@hour, ':', /source/register-read/hh-start-date[@label='previous']/@minute)" />
 									</fieldset>
 									<br />
 									<label>
@@ -369,6 +371,8 @@
 												</option>
 											</xsl:for-each>
 										</select>
+										<xsl:value-of
+											select="concat(' ', /source/register-read/hh-start-date[@label='present']/@hour, ':', /source/register-read/hh-start-date[@label='present']/@minute)" />
 									</fieldset>
 									<br />
 									<label>
