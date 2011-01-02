@@ -143,7 +143,7 @@ public class MopContract extends Contract {
 			String chargeScript) throws HttpException {
 		super.internalUpdate(name, chargeScript);
 		MopContract existing = findMopContract(getName());
-		if (existing != null) {
+		if (existing != null && getId() != existing.getId()) {
 			throw new UserException(
 					"There's already a HHDC contract with the name "
 							+ getName());
