@@ -84,6 +84,11 @@ public class SupplierContract extends Contract {
 
 			insertSupplierContract(id, participant, name, startDate,
 					finishDate, chargeScript, rateScriptId, rateScript);
+		} else if (action.equals("delete")) {
+			String name = GeneralImport.addField(csvElement, "Name", values, 0);
+			SupplierContract contract = SupplierContract
+					.getSupplierContract(name);
+			contract.delete();
 		}
 	}
 
@@ -157,9 +162,18 @@ public class SupplierContract extends Contract {
 
 	public void internalUpdate(Participant participant, String name,
 			String chargeScript) throws HttpException {
-		setParty(Provider.getProvider(participant, MarketRole
-				.getMarketRole(MarketRole.SUPPLIER)));
+		setParty(Provider.getProvider(participant,
+				MarketRole.getMarketRole(MarketRole.SUPPLIER)));
 		super.internalUpdate(name, chargeScript);
+		SupplierContract existing = (SupplierContract) Hiber
+				.session()
+				.createQuery(
+						"from SupplierContract contract where contract.name = :name")
+				.setString("name", getName()).uniqueResult();
+		if (existing != null && getId() != existing.getId()) {
+			throw new UserException(
+					"There's already a supplier contract called " + getName());
+		}
 	}
 
 	public boolean equals(Object obj) {
@@ -277,8 +291,9 @@ public class SupplierContract extends Contract {
 				.session()
 				.createQuery(
 						"from Snag snag where snag.contract = :contract and snag.id = :snagId")
-				.setEntity("contract", this).setLong("snagId",
-						Long.parseLong(uriId.getString())).uniqueResult();
+				.setEntity("contract", this)
+				.setLong("snagId", Long.parseLong(uriId.getString()))
+				.uniqueResult();
 		if (snag == null) {
 			throw new NotFoundException();
 		}

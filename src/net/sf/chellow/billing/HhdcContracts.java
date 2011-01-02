@@ -72,11 +72,17 @@ public class HhdcContracts extends EntityList {
 		if (!inv.isValid()) {
 			throw new UserException(document());
 		}
-		HhdcContract contract = HhdcContract.insertHhdcContract(null, Participant
-				.getParticipant(participantId), name, HhStartDate.roundDown(
-				startDate).getNext(), null, "", "", "", null, "");
-		Hiber.commit();
-		inv.sendSeeOther(contract.getUri());
+		try {
+			HhdcContract contract = HhdcContract.insertHhdcContract(null,
+					Participant.getParticipant(participantId), name,
+					HhStartDate.roundDown(startDate).getNext(), null, "", "",
+					"", null, "");
+			Hiber.commit();
+			inv.sendSeeOther(contract.getUri());
+		} catch (UserException e) {
+			e.setDocument(document());
+			throw e;
+		}
 	}
 
 	@SuppressWarnings("unchecked")
@@ -85,7 +91,8 @@ public class HhdcContracts extends EntityList {
 		Element source = doc.getDocumentElement();
 		Element contractsElement = toXml(doc);
 		source.appendChild(contractsElement);
-		for (HhdcContract contract : (List<HhdcContract>) Hiber.session()
+		for (HhdcContract contract : (List<HhdcContract>) Hiber
+				.session()
 				.createQuery(
 						"from HhdcContract contract order by contract.name")
 				.list()) {
@@ -110,8 +117,10 @@ public class HhdcContracts extends EntityList {
 	}
 
 	public HhdcContract getChild(UriPathElement uriId) throws HttpException {
-		HhdcContract contract = (HhdcContract) Hiber.session().createQuery(
-				"from HhdcContract contract where contract.id = :contractId")
+		HhdcContract contract = (HhdcContract) Hiber
+				.session()
+				.createQuery(
+						"from HhdcContract contract where contract.id = :contractId")
 				.setLong("contractId", Long.parseLong(uriId.getString()))
 				.uniqueResult();
 		if (contract == null) {

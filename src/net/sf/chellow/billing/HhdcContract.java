@@ -109,11 +109,6 @@ public class HhdcContract extends Contract {
 			HhStartDate finishDate, String chargeScript,
 			String importerProperties, String state, Long rateScriptId,
 			String rateScript) throws HttpException {
-		HhdcContract existing = findHhdcContract(name);
-		if (existing != null) {
-			throw new UserException(
-					"There's already a HHDC contract with the name " + name);
-		}
 		HhdcContract contract = new HhdcContract(id, participant, name,
 				startDate, finishDate, chargeScript, importerProperties, state);
 		Hiber.session().save(contract);
@@ -198,6 +193,13 @@ public class HhdcContract extends Contract {
 	private void intrinsicUpdate(Participant participant, String name,
 			String chargeScript, String properties) throws HttpException {
 		super.internalUpdate(name, chargeScript);
+		HhdcContract existing = findHhdcContract(getName());
+		if (existing != null && getId() != existing.getId()) {
+			throw new UserException(
+					"There's already a HHDC contract with the name "
+							+ getName());
+		}
+
 		setParty(Provider.getProvider(participant,
 				MarketRole.getMarketRole(MarketRole.HHDC)));
 		if (properties == null) {

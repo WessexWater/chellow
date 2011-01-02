@@ -1,6 +1,6 @@
 /*******************************************************************************
  * 
- *  Copyright (c) 2005, 2009 Wessex Water Services Limited
+ *  Copyright (c) 2005-2011 Wessex Water Services Limited
  *  
  *  This file is part of Chellow.
  * 
@@ -73,11 +73,18 @@ public class SupplierContracts extends EntityList {
 		if (!inv.isValid()) {
 			throw new UserException(document());
 		}
-		SupplierContract contract = SupplierContract.insertSupplierContract(
-				null, Participant.getParticipant(participantId), name,
-				HhStartDate.roundDown(startDate), null, "", null, "");
-		Hiber.commit();
-		inv.sendSeeOther(contract.getUri());
+		try {
+			SupplierContract contract = SupplierContract
+					.insertSupplierContract(null,
+							Participant.getParticipant(participantId), name,
+							HhStartDate.roundDown(startDate), null, "", null,
+							"");
+			Hiber.commit();
+			inv.sendSeeOther(contract.getUri());
+		} catch (UserException e) {
+			e.setDocument(document());
+			throw e;
+		}
 	}
 
 	@SuppressWarnings("unchecked")

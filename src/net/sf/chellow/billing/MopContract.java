@@ -49,11 +49,6 @@ public class MopContract extends Contract {
 			Participant participant, String name, HhStartDate startDate,
 			HhStartDate finishDate, String chargeScript, Long rateScriptId,
 			String rateScript) throws HttpException {
-		MopContract existing = findMopContract(name);
-		if (existing != null) {
-			throw new UserException(
-					"There's already a HHDC contract with the name " + name);
-		}
 		MopContract contract = new MopContract(id, participant, name,
 				startDate, finishDate, chargeScript);
 		Hiber.session().save(contract);
@@ -92,7 +87,7 @@ public class MopContract extends Contract {
 		}
 		return contract;
 	}
-	
+
 	static public void generalImport(String action, String[] values,
 			Element csvElement) throws HttpException {
 		if (action.equals("insert")) {
@@ -127,8 +122,8 @@ public class MopContract extends Contract {
 			String rateScript = GeneralImport.addField(csvElement,
 					"Rate Script", values, 7);
 
-			insertMopContract(id, participant, name, startDate,
-					finishDate, chargeScript, rateScriptId, rateScript);
+			insertMopContract(id, participant, name, startDate, finishDate,
+					chargeScript, rateScriptId, rateScript);
 		}
 	}
 
@@ -147,6 +142,12 @@ public class MopContract extends Contract {
 	private void intrinsicUpdate(Participant participant, String name,
 			String chargeScript) throws HttpException {
 		super.internalUpdate(name, chargeScript);
+		MopContract existing = findMopContract(getName());
+		if (existing != null) {
+			throw new UserException(
+					"There's already a HHDC contract with the name "
+							+ getName());
+		}
 		setParty(Provider.getProvider(participant,
 				MarketRole.getMarketRole(MarketRole.MOP)));
 	}
