@@ -97,6 +97,10 @@ public class HhdcContract extends Contract {
 					"Rate Script", values, 9);
 			insertHhdcContract(id, participant, name, startDate, finishDate,
 					chargeScript, properties, state, rateScriptId, rateScript);
+		} else if (action.equals("delete")) {
+			String name = GeneralImport.addField(csvElement, "Name", values, 0);
+			HhdcContract contract = HhdcContract.getHhdcContract(name);
+			contract.delete();
 		}
 	}
 
@@ -143,8 +147,10 @@ public class HhdcContract extends Contract {
 
 	public static HhdcContract findHhdcContract(String name)
 			throws HttpException {
-		return (HhdcContract) Hiber.session().createQuery(
-				"from HhdcContract contract where contract.name = :name")
+		return (HhdcContract) Hiber
+				.session()
+				.createQuery(
+						"from HhdcContract contract where contract.name = :name")
 				.setString("name", name).uniqueResult();
 	}
 
@@ -192,8 +198,8 @@ public class HhdcContract extends Contract {
 	private void intrinsicUpdate(Participant participant, String name,
 			String chargeScript, String properties) throws HttpException {
 		super.internalUpdate(name, chargeScript);
-		setParty(Provider.getProvider(participant, MarketRole
-				.getMarketRole(MarketRole.HHDC)));
+		setParty(Provider.getProvider(participant,
+				MarketRole.getMarketRole(MarketRole.HHDC)));
 		if (properties == null) {
 			throw new InternalException("Properties can't be null.");
 		}
@@ -233,12 +239,11 @@ public class HhdcContract extends Contract {
 			inv.sendOk(doc);
 		} else if (inv.hasParameter("ignore-snags")) {
 			Date ignoreDate = inv.getDate("ignore");
-			Hiber
-					.session()
+			Hiber.session()
 					.createSQLQuery(
 							"update snag set is_ignored = true from channel_snag, channel, supply_generation where snag.id = channel_snag.snag_id and channel_snag.channel_id = channel.id and channel.supply_generation_id = supply_generation.id and supply_generation.hhdc_contract_id = :contractId and supply_generation.finish_date < :ignoreDate")
-					.setLong("contractId", getId()).setTimestamp("ignoreDate",
-							ignoreDate).executeUpdate();
+					.setLong("contractId", getId())
+					.setTimestamp("ignoreDate", ignoreDate).executeUpdate();
 			Hiber.commit();
 			inv.sendOk(document());
 		} else if (inv.hasParameter("delete")) {
@@ -325,7 +330,8 @@ public class HhdcContract extends Contract {
 	public Element toXml(Document doc) throws HttpException {
 		Element element = super.toXml(doc, "hhdc-contract");
 
-		element.setAttribute("has-automatic-hh-data-importer",
+		element.setAttribute(
+				"has-automatic-hh-data-importer",
 				AutomaticHhDataImporters.getImportersInstance().findImporter(
 						this) == null ? "false" : "true");
 		element.setAttribute("properties", properties);
