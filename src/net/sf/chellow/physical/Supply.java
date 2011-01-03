@@ -1,6 +1,6 @@
 /*******************************************************************************
  * 
- *  Copyright (c) 2005, 2010 Wessex Water Services Limited
+ *  Copyright (c) 2005, 2011 Wessex Water Services Limited
  *  
  *  This file is part of Chellow.
  * 
@@ -206,10 +206,6 @@ public class Supply extends PersistentEntity {
 				generation.insertChannel(false, false);
 			}
 		} else if (action.equals("update")) {
-			if (values.length < 5) {
-				throw new UserException(
-						"There aren't enough fields in this row");
-			}
 			String mpanCoreStr = GeneralImport.addField(csvElement,
 					"MPAN Core", values, 0);
 			String sourceCode = GeneralImport.addField(csvElement,
@@ -230,6 +226,12 @@ public class Supply extends PersistentEntity {
 					.getGeneratorType(generatorType), gspGroupCode
 					.equals(GeneralImport.NO_CHANGE) ? supply.getGspGroup()
 					: GspGroup.getGspGroup(gspGroupCode));
+		} else if (action.equals("delete")) {
+			String mpanCoreStr = GeneralImport.addField(csvElement,
+					"MPAN Core", values, 0);
+			MpanCore core = MpanCore.getMpanCore(mpanCoreStr);
+			Supply supply = core.getSupply();
+			supply.delete();
 		}
 	}
 
