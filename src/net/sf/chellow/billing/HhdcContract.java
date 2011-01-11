@@ -1,6 +1,6 @@
 /*******************************************************************************
  * 
- *  Copyright (c) 2005, 2009 Wessex Water Services Limited
+ *  Copyright (c) 2005, 2011 Wessex Water Services Limited
  *  
  *  This file is part of Chellow.
  * 
@@ -28,8 +28,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.Properties;
 
-import net.sf.chellow.hhimport.AutomaticHhDataImporter;
-import net.sf.chellow.hhimport.AutomaticHhDataImporters;
 import net.sf.chellow.hhimport.HhDataImportProcesses;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
@@ -101,6 +99,10 @@ public class HhdcContract extends Contract {
 			String name = GeneralImport.addField(csvElement, "Name", values, 0);
 			HhdcContract contract = HhdcContract.getHhdcContract(name);
 			contract.delete();
+		} else if (action.equals("delete")) {
+			String name = GeneralImport.addField(csvElement, "Name", values, 0);
+			HhdcContract contract = HhdcContract.getHhdcContract(name);
+			contract.delete();
 		}
 	}
 
@@ -109,6 +111,11 @@ public class HhdcContract extends Contract {
 			HhStartDate finishDate, String chargeScript,
 			String importerProperties, String state, Long rateScriptId,
 			String rateScript) throws HttpException {
+		HhdcContract existing = findHhdcContract(name);
+		if (existing != null) {
+			throw new UserException(
+					"There's already a HHDC contract with the name " + name);
+		}
 		HhdcContract contract = new HhdcContract(id, participant, name,
 				startDate, finishDate, chargeScript, importerProperties, state);
 		Hiber.session().save(contract);
@@ -193,13 +200,6 @@ public class HhdcContract extends Contract {
 	private void intrinsicUpdate(Participant participant, String name,
 			String chargeScript, String properties) throws HttpException {
 		super.internalUpdate(name, chargeScript);
-		HhdcContract existing = findHhdcContract(getName());
-		if (existing != null && getId() != existing.getId()) {
-			throw new UserException(
-					"There's already a HHDC contract with the name "
-							+ getName());
-		}
-
 		setParty(Provider.getProvider(participant,
 				MarketRole.getMarketRole(MarketRole.HHDC)));
 		if (properties == null) {
@@ -317,9 +317,6 @@ public class HhdcContract extends Contract {
 	public Urlable getChild(UriPathElement uriId) throws HttpException {
 		if (HhDataImportProcesses.URI_ID.equals(uriId)) {
 			return getHhDataImportProcessesInstance();
-		} else if (AutomaticHhDataImporter.URI_ID.equals(uriId)) {
-			return AutomaticHhDataImporters.getImportersInstance()
-					.findImporter(this);
 		} else if (RateScripts.URI_ID.equals(uriId)) {
 			return new RateScripts(this);
 		} else if (Batches.URI_ID.equals(uriId)) {
@@ -332,10 +329,6 @@ public class HhdcContract extends Contract {
 	public Element toXml(Document doc) throws HttpException {
 		Element element = super.toXml(doc, "hhdc-contract");
 
-		element.setAttribute(
-				"has-automatic-hh-data-importer",
-				AutomaticHhDataImporters.getImportersInstance().findImporter(
-						this) == null ? "false" : "true");
 		element.setAttribute("properties", properties);
 		element.setAttribute("state", state);
 		return element;

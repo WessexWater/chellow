@@ -550,9 +550,9 @@ def hh(summary, hh_list, data_source):
         for hh in hh_list:
             band = 'green'
             if hh['ct-day-of-week'] not in WEEKEND_DAYS:
-                if 16 < hh['ct-decimal-hour'] <= 19:
+                if 16 <= hh['ct-decimal-hour'] < 19:
                     band = 'red'
-                elif 7 < hh['ct-decimal-hour'] <= 21:
+                elif 7 < hh['ct-decimal-hour'] < 21:
                     band = 'amber'
 
             bill[KEYS[band]['kwh']] += hh['msp-kwh']
@@ -1401,15 +1401,12 @@ def hh(summary, hh_list, data_source):
             bill[KEYS[band]['kwh']] = 0
 
         for hh in hh_list:
-            if hh['ct-day-of-week'] in [Calendar.SATURDAY, Calendar.SUNDAY]:
-                band = 'green'
-            else:
-                if 16 <= hh['ct-decimal-hour'] < 19:
+            band = 'green'
+            if hh['ct-day-of-week'] not in WEEKEND_DAYS:
+                if 16 < hh['ct-decimal-hour'] < 19:
                     band = 'red'
                 elif 9 <= hh['ct-decimal-hour'] <= 20:
                     band = 'amber'
-                else:
-                    band = 'green'
 
             bill[KEYS[band]['kwh']] += hh['msp-kwh']
             

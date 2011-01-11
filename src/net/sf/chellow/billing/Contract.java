@@ -434,36 +434,23 @@ public abstract class Contract extends PersistentEntity implements
 
 	public Object callFunction(String name, Object... args)
 			throws HttpException {
+		Object result = null;
 		PythonInterpreter interp = new PythonInterpreter();
-		// StringWriter out = new StringWriter();
-		// interp.setOut(out);
-		// StringWriter err = new StringWriter();
-		// interp.setErr(err);
-		interp.set("contract", this);
 		try {
+			interp.set("contract", this);
 			interp.exec(chargeScript);
-		} catch (PyException e) {
-			Object obj = e.value.__tojava__(HttpException.class);
-			if (obj instanceof HttpException) {
-				throw (HttpException) obj;
-			} else {
-				throw new UserException(e.toString());
-			}
-		} catch (Throwable e) {
-			throw new UserException(e.getMessage());
-			// + " " + out.toString() + " "
-			// + err.toString() + " ");
-		}
-		try {
 			PyObject function = interp.get(name);
 			if (function == null) {
 				throw new UserException("There isn't a function called " + name);
 			}
-			return function.__call__(Py.javas2pys(args)).__tojava__(
+			result = function.__call__(Py.javas2pys(args)).__tojava__(
 					Object.class);
-		} catch (PyException pye) {
-			throw new UserException(HttpException.getStackTraceString(pye));
+		} catch (Throwable e) {
+			throw new UserException(HttpException.getStackTraceString(e));
+		} finally {
+			interp.cleanup();
 		}
+		return result;
 	}
 
 	public static Contract getContract(Long id) throws HttpException {

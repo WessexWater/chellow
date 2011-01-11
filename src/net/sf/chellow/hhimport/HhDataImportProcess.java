@@ -49,7 +49,6 @@ import net.sf.chellow.monad.XmlTree;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
 import net.sf.chellow.physical.HhDatum;
-import net.sf.chellow.physical.SupplyGeneration;
 import net.sf.chellow.ui.ChellowLogger;
 
 import org.apache.commons.fileupload.FileItem;
@@ -64,11 +63,6 @@ public class HhDataImportProcess extends Thread implements Urlable,
 	private List<String> messages = new ArrayList<String>();
 
 	private HhConverter converter;
-
-	private long suppliesChecked;
-	// private Integer batchSize = null;
-
-	private List<SupplyGeneration> supplyGenerations = null;
 
 	private Long id;
 
@@ -233,10 +227,7 @@ public class HhDataImportProcess extends Thread implements Urlable,
 	}
 
 	public String status() {
-		return supplyGenerations == null ? "Processing line number "
-				+ converter.lastLineNumber() + "." : "Checking supply "
-				+ (suppliesChecked + 1) + " of " + supplyGenerations.size()
-				+ ".";
+		return "Processing line number " + converter.lastLineNumber() + ".";
 	}
 
 	public Element toXml(Document doc) throws HttpException {

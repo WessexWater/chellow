@@ -231,32 +231,34 @@ public class Report extends PersistentEntity {
 	@SuppressWarnings("unchecked")
 	public void run(Invocation inv, Document doc) throws HttpException {
 		PythonInterpreter interp = new PythonInterpreter();
-		Element source = doc.getDocumentElement();
-		interp.set("doc", doc);
-		interp.set("source", source);
-		interp.set("inv", inv);
-		StringWriter out = new StringWriter();
-		interp.setOut(out);
-		StringWriter err = new StringWriter();
-		interp.setErr(err);
-
-		ServletContext ctx = inv.getMonad().getServletConfig()
-				.getServletContext();
-		Map<Long, String> request_map = (Map<Long, String>) ctx
-				.getAttribute(ContextListener.CONTEXT_REQUEST_MAP);
-		request_map.put(
-				Thread.currentThread().getId(),
-				inv.getRequest()
-						.getRequestURL()
-						.append('?' + inv.getRequest().getQueryString() + ' '
-								+ new MonadDate() + ' '
-								+ inv.getRequest().getRemoteAddr()).toString());
-
 		try {
+			Element source = doc.getDocumentElement();
+			interp.set("doc", doc);
+			interp.set("source", source);
+			interp.set("inv", inv);
+			StringWriter out = new StringWriter();
+			interp.setOut(out);
+			StringWriter err = new StringWriter();
+			interp.setErr(err);
+
+			ServletContext ctx = inv.getMonad().getServletConfig()
+					.getServletContext();
+			Map<Long, String> request_map = (Map<Long, String>) ctx
+					.getAttribute(ContextListener.CONTEXT_REQUEST_MAP);
+			request_map.put(
+					Thread.currentThread().getId(),
+					inv.getRequest()
+							.getRequestURL()
+							.append('?' + inv.getRequest().getQueryString()
+									+ ' ' + new MonadDate() + ' '
+									+ inv.getRequest().getRemoteAddr())
+							.toString());
 			interp.exec(script);
 		} catch (Throwable e) {
 			throw new UserException(e.getMessage() + " "
 					+ HttpException.getStackTraceString(e));
+		} finally {
+			interp.cleanup();
 		}
 	}
 

@@ -10341,6 +10341,12 @@ source.appendChild(contract.toXml(doc, XmlTree('party', XmlTree('participant')).
                             Virtual Bills
                         </a>
                     </li>
+                    <li>
+                        <a
+                            href="{/source/request/@context-path}/reports/213/output/?hhdc-contract-id={/source/hhdc-contract/@id}">
+                            Automatic HH Data Importer
+                        </a>
+                    </li>
                 </ul>
                     <h2>Script</h2>
                     <pre>
@@ -15212,6 +15218,10 @@ source.appendChild(bill_type.toXml(doc))]]></value>
         <value><![CDATA[HHDC Contract Batch]]></value>
         <value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree, UserException
 from net.sf.chellow.billing import Batch
+from net.sf.chellow.physical import Configuration
+from java.util import Properties
+from java.io import StringReader
+from net.sf.chellow.ui import Report
 
 batch_id = inv.getLong('batch-id')
 batch = Batch.getBatch(batch_id)
@@ -15220,7 +15230,18 @@ source.appendChild(batch_element)
 bills = Hiber.session().createQuery("from Bill bill where bill.batch = :batch order by bill.reference, bill.startDate.date").setEntity("batch", batch).list()
 for bill in bills:
     batch_element.appendChild(bill.toXml(doc, XmlTree("supply").put('type')))
-source.setAttribute('bill-count', str(len(bills)))]]></value>
+source.setAttribute('bill-count', str(len(bills)))
+
+config = Configuration.getConfiguration()
+properties = Properties()
+properties.load(StringReader(config.getProperties()))
+
+for key in properties.propertyNames():
+    if key.startswith('batch.report.'):
+        batch_report_id = properties.get(key)
+        if batch_report_id is not None:
+            report = Report.getReport(int(batch_report_id))
+            batch_element.appendChild(report.toXml(doc))]]></value>
         <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
 <xsl:stylesheet version="1.0"
     xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
@@ -15295,6 +15316,20 @@ source.setAttribute('bill-count', str(len(bills)))]]></value>
                     <th>Number Of Bills</th>
                     <td><xsl:value-of select="/source/@bill-count"/></td>
                   </tr>
+                  <xsl:if test="/source/batch/report">
+                  <tr>
+                    <th>Custom Reports</th>
+                    <td>
+                        <ul>
+                        <xsl:for-each select="/source/batch/report">
+                        <li><a
+                        href="{/source/request/@context-path}/reports/{@id}/output/?batch-id={/source/batch/@id}">
+<xsl:value-of select="@name"/></a></li>
+                        </xsl:for-each>
+                        </ul>
+                    </td>
+                  </tr>
+                  </xsl:if>
                 </table>
                 <br/>
                 <form action="{/source/request/@context-path}/reports/111/output/"><fieldset><legend>Check Bills</legend>
@@ -15955,6 +15990,241 @@ source.setAttribute('year', str(cal.get(Calendar.YEAR)))]]></value>
                         <input type="submit" value="Download"/>
                     </fieldset>
                 </form>
+            </body>
+        </html>
+    </xsl:template>
+</xsl:stylesheet>]]></value>
+    </line>
+    <line>
+        <value><![CDATA[insert]]></value>
+        <value><![CDATA[report]]></value>
+        <value><![CDATA[211]]></value>
+        <value><![CDATA[true]]></value>
+        <value><![CDATA[Free 211]]></value>
+        <value><![CDATA[]]></value>
+        <value><![CDATA[]]></value>
+    </line>
+    <line>
+        <value><![CDATA[insert]]></value>
+        <value><![CDATA[report]]></value>
+        <value><![CDATA[213]]></value>
+        <value><![CDATA[true]]></value>
+        <value><![CDATA[HHDC Contract HH Importer]]></value>
+        <value><![CDATA[from java.lang import Thread
+from net.sf.chellow.billing import NonCoreContract, HhdcContract
+from net.sf.chellow.monad import XmlTree, UserException, Monad, MonadMessage
+from net.sf.chellow.monad.types import MonadUri
+
+debug = ''
+contract_id = inv.getLong('hhdc-contract-id')
+if not inv.isValid():
+    raise UserException()
+
+contract = HhdcContract.getHhdcContract(contract_id)
+
+computer = NonCoreContract.getNonCoreContract('computer')
+comterp = computer.callFunction('create_comterp', [])
+contract_f = comterp.get('contract_function')
+
+def get_uri():
+    return MonadUri("/reports/213/output/?hhdc-contract-id=" + str(contract.getId()))
+
+source = doc.getDocumentElement();
+source.appendChild(contract.toXml(doc, XmlTree("party")))
+
+hh_importer_contract = NonCoreContract.getNonCoreContract('hh-importer')
+ctx = inv.getMonad().getServletConfig().getServletContext()
+
+hh_importer = hh_importer_contract.callFunction('get_hh_importer_task', [ctx, contract])
+
+if hh_importer is not None:
+    debug += str(hh_importer.messages)
+    importer_element = doc.createElement("hh-importer")
+    source.appendChild(importer_element);
+    importer_element.setAttribute('is-locked', str(hh_importer.is_locked()))
+    importer_element.setAttribute('status', hh_importer.get_status())
+
+    for message in hh_importer.messages:
+        log_item_element = doc.createElement('log-item')
+        importer_element.appendChild(log_item_element)
+        log_item_element.setAttribute('message', message)
+
+try:
+    if inv.hasParameter('remove'):
+        contract_f(hh_importer_contract, 'remove_hh_importer_task')(ctx, contract)
+        inv.sendSeeOther(get_uri())
+    elif inv.hasParameter('start'):
+        contract_f(hh_importer_contract, 'start_hh_importer_task')(ctx, contract)
+        inv.sendSeeOther(get_uri())
+    elif inv.hasParameter('now'):
+        Thread(hh_importer, "Import Now: " + str(contract.getId())).start()
+        inv.sendSeeOther(get_uri())
+except UserException, e:
+    source.appendChild(MonadMessage(e.getMessage()).toXml(doc))
+
+source.setAttribute('debug', debug)]]></value>
+        <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
+<xsl:stylesheet version="1.0"
+    xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+    <xsl:output method="html" encoding="US-ASCII"
+        doctype-public="-//W3C//DTD HTML 4.01//EN" doctype-system="http://www.w3.org/TR/html4/strict.dtd"
+        indent="yes" />
+
+    <xsl:template match="/">
+        <html>
+            <head>
+                <link rel="stylesheet" type="text/css"
+                    href="{/source/request/@context-path}/reports/19/output/" />
+
+                <title>
+                    Chellow &gt; HHDC Contracts &gt;
+                    <xsl:value-of
+                        select="/source/hhdc-contract/@name" />
+                    &gt; Automatic HH Data Downloader
+                </title>
+
+            </head>
+            <body>
+                <p>
+                    <a
+                        href="{/source/request/@context-path}/reports/1/output/">
+                        <xsl:value-of select="'Home'" />
+                    </a>
+                    &gt;
+                    <a
+                        href="{/source/request/@context-path}/reports/113/output/?hhdc-id={/source/hhdc-contract/@id}">
+                        <xsl:value-of select="'HHDC Contracts'" />
+                    </a>
+                    &gt;
+                    <a
+                        href="{/source/request/@context-path}/reports/115/output/?hhdc-contract-id={/source/hhdc-contract/@id}">
+                        <xsl:value-of
+                            select="/source/hhdc-contract/@name" />
+                    </a>
+                    &gt;
+                    <xsl:value-of select="'Automatic HH Data Downloader'" />
+                </p>
+                <br />
+<xsl:if test="//message">
+                    <ul>
+                        <xsl:for-each select="//message">
+                            <li>
+                                <xsl:value-of select="@description" />
+                            </li>
+                        </xsl:for-each>
+                    </ul>
+                </xsl:if>
+
+<p><a href=".?hhdc-contract-id={/source/hhdc-contract/@id}">Refresh page</a></p>
+
+                <xsl:choose>
+                <xsl:when test="/source/hh-importer">
+<table>
+                    <tr>
+                        <th>Is Locked?</th>
+                        <td>
+                            <xsl:value-of select="/source/hh-importer/@is-locked"/>
+                        </td>
+                    </tr>
+                </table>
+                <br/>
+                <xsl:if test="/source/hh-importer/@is-locked='False'">
+                <form action=".">
+                            <fieldset>
+                                <legend>Remove Importer</legend>
+                       <input type="hidden" name="hhdc-contract-id" value="{/source/hhdc-contract/@id}"/>
+                                <input type="submit" value="Remove" name="remove" />
+                            </fieldset>
+                        </form>
+                        <br/>
+<form action=".">
+                            <fieldset>
+                                <legend>Import Now</legend>
+                       <input type="hidden" name="hhdc-contract-id" value="{/source/hhdc-contract/@id}"/>
+                                <input type="submit" value="Import" name="now" />
+                            </fieldset>
+                        </form>
+                 </xsl:if>
+<h3>Log</h3>
+                <p><xsl:value-of select="/source/hh-importer/@status"/></p>
+                <ul>
+                    <xsl:for-each select="/source/hh-importer/log-item">
+                        <li>
+                            <xsl:value-of select="@message" />
+                        </li>
+                    </xsl:for-each>
+                </ul>
+                </xsl:when>
+                <xsl:otherwise>
+                   <form action=".">
+                            <fieldset>
+                                <legend>Start Importer</legend>
+                       <input type="hidden" name="hhdc-contract-id" value="{/source/hhdc-contract/@id}"/>
+                                <input type="submit" value="Start" name="start" />
+                            </fieldset>
+                        </form>
+                </xsl:otherwise>
+                </xsl:choose>
+<!--
+                <table>
+                    <tr>
+                        <th>Status</th>
+                        <td>
+                            <xsl:value-of select="/source/hh-importer/@status"/>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Status of this particular import</th>
+                        <td>
+                            <xsl:value-of select="/source/@thread-status" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Is this particular import locked?</th>
+                        <td>
+                            <xsl:value-of select="/source/@is-locked" />
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <th>Stack trace of this particular import</th>
+                        <td>
+                            <xsl:value-of select="/source/stack-trace/text()" />
+                        </td>
+                    </tr>
+                </table>
+                <p>
+                    <a href=".">Refresh page</a>
+                </p>
+                <xsl:choose>
+                    <xsl:when
+                        test="/source/@thread-status = 'null' or /source/@thread-status = 'dead'">
+                        <form action="." method="post">
+                            <fieldset>
+                                <legend>Import Now</legend>
+                                <input type="submit" value="Import" />
+                            </fieldset>
+                        </form>
+                        <br />
+                        <form action="." method="post">
+                            <fieldset>
+                                <legend>Restart Import Thread</legend>
+                                <input type="submit" value="Restart" name="restart" />
+                            </fieldset>
+                        </form>
+
+                    </xsl:when>
+                    <xsl:when test="/source/@thread-status = 'alive'">
+                        <form action="." method="post">
+                            <fieldset>
+                                <legend>Interrupt The Import</legend>
+                                <input type="submit" name="interrupt" value="Interrupt" />
+                            </fieldset>
+                        </form>
+                    </xsl:when>
+                </xsl:choose>
+                <br />
+                -->
             </body>
         </html>
     </xsl:template>

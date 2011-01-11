@@ -51,14 +51,6 @@
 					<li>
 						<a href="rate-scripts/">Rate Scripts</a>
 					</li>
-					<xsl:if
-						test="/source/hhdc-contract/@has-automatic-hh-data-importer='true'">
-						<li>
-							<a href="automatic-hh-data-importer/">
-								Automatic HH Data Importer
-							</a>
-						</li>
-					</xsl:if>
 				</ul>
 				<br />
 				<xsl:choose>
@@ -191,16 +183,6 @@
 										</xsl:otherwise>
 									</xsl:choose>
 								</textarea>
-								<h4>Example</h4>
-								<p>
-									<code>
-										<pre>
-											lastImportDate0=2008-11-30
-											lastImportName0=Example
-								</pre>
-									</code>
-								</p>
-
 								<br />
 								<input type="submit" name="update-state" value="Update" />
 								<input type="reset" value="Reset" />

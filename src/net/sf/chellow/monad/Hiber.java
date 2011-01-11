@@ -1,6 +1,6 @@
 /*******************************************************************************
  * 
- *  Copyright (c) 2005, 2010 Wessex Water Services Limited
+ *  Copyright (c) 2005, 2011 Wessex Water Services Limited
  *  
  *  This file is part of Chellow.
  * 
@@ -73,7 +73,7 @@ public class Hiber {
 		} else if (!tx.isActive()) {
 			s.beginTransaction();
 		}
-		
+
 		return s;
 	}
 
@@ -86,7 +86,7 @@ public class Hiber {
 				tx.commit();
 			}
 			s.close();
-			session.set(null);
+			session.remove();
 		}
 	}
 

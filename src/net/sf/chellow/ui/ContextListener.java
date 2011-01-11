@@ -1,6 +1,6 @@
 /*******************************************************************************
  * 
- *  Copyright (c) 2005, 2010 Wessex Water Services Limited
+ *  Copyright (c) 2005, 2011 Wessex Water Services Limited
  *  
  *  This file is part of Chellow.
  * 
@@ -27,6 +27,7 @@ import java.net.MalformedURLException;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -45,7 +46,6 @@ import javax.sql.DataSource;
 import net.sf.chellow.billing.BillType;
 import net.sf.chellow.billing.DsoContract;
 import net.sf.chellow.billing.NonCoreContract;
-import net.sf.chellow.hhimport.AutomaticHhDataImporters;
 import net.sf.chellow.monad.Debug;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
@@ -96,34 +96,40 @@ public class ContextListener implements ServletContextListener {
 			if (ds == null) {
 				throw new Exception("Data source not found!");
 			}
+
 			Connection con = ds.getConnection();
-
-			if (con.getTransactionIsolation() != Connection.TRANSACTION_SERIALIZABLE) {
-				throw new Exception(
-						"The transaction isolation level isn't serializable.");
-			}
-
-			Statement stmt = con.createStatement();
-
-			// Find if DB has been created
 			try {
+				if (con.getTransactionIsolation() != Connection.TRANSACTION_SERIALIZABLE) {
+					throw new Exception(
+							"The transaction isolation level isn't serializable.");
+				}
+				Statement stmt = con.createStatement();
+
+				// Find if DB has been created
+
 				stmt.executeQuery("select properties from configuration;");
 			} catch (SQLException sqle) {
 				initializeDatabase(con);
-				Hiber.close();
 			} finally {
 				con.close();
 			}
 
-			AutomaticHhDataImporters.start();
+			NonCoreContract startupContract = NonCoreContract
+					.getNonCoreContract("startup");
+			List<Object> args = new ArrayList<Object>();
+			args.add(context);
+			startupContract.callFunction("on_start_up", args);
 			Properties postProps = new Properties();
 			PythonInterpreter.initialize(System.getProperties(), postProps,
 					new String[] {});
 
-			context.setAttribute(CONTEXT_REQUEST_MAP, Collections
-					.synchronizedMap(new HashMap<Long, String>()));
+			context.setAttribute(CONTEXT_REQUEST_MAP,
+					Collections.synchronizedMap(new HashMap<Long, String>()));
 		} catch (Throwable e) {
+			Debug.print("Problem. " + e);
 			throw new RuntimeException(e);
+		} finally {
+			Hiber.close();
 		}
 	}
 
@@ -235,7 +241,8 @@ public class ContextListener implements ServletContextListener {
 					{ "ssc", "Standard_Settlement_Configuration" },
 					{ "measurement_requirement", "Measurement_Requirement" } };
 			for (String[] impArray : mddArray) {
-				cm.copyIn("COPY " + impArray[0] + " FROM STDIN CSV HEADER",
+				cm.copyIn(
+						"COPY " + impArray[0] + " FROM STDIN CSV HEADER",
 						context.getResource(
 								"/WEB-INF/mdd/" + impArray[1] + ".csv")
 								.openStream());

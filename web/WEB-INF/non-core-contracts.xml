@@ -12812,7 +12812,7 @@ class SiteSource(DataSource):
     def init_from_site(self):
         self.is_site = True
         self.is_displaced = False
-        self.whole_data = self.create_whole_data(self.start_date, self.finish_date, forecast_date)
+        self.whole_data = self.create_whole_data(self.start_date, self.finish_date, self.forecast_date)
         self.summary = self.whole_data['summary']
         self.hh_data = self.whole_data['data']
 
@@ -12833,7 +12833,7 @@ class SiteSource(DataSource):
         self.pc_code = str(mpan.getSupplyGeneration().getPc())
         self.supply_generation = mpan.getSupplyGeneration()
         self.supply = self.supply_generation.getSupply()
-        self.whole_data = self.create_whole_data(self.start_date, self.finish_date, forecast_date)
+        self.whole_data = self.create_whole_data(self.start_date, self.finish_date, self.forecast_date)
         self.summary = self.whole_data['summary']
         self.hh_data = self.whole_data['data']
 
@@ -12846,14 +12846,14 @@ class SiteSource(DataSource):
         cal = MonadDate.getCalendar()
         cal.setTime(finish_date.getDate())
         year_adjustment = 0
-        while cal.getTime().after(self.forecast_date.getDate()):
+        while cal.getTime().after(forecast_date.getDate()):
             cal.add(Calendar.YEAR, -1)
             year_adjustment -= 1
         history_finish = HhStartDate(cal.getTime())
         cal.setTime(start_date.getDate())
         cal.add(Calendar.YEAR, year_adjustment)
         history_start = HhStartDate(cal.getTime())
-        summary = {'start-date': start_date, 'finish-date': finish_date, 'is-forecast': not start_date.before(self.forecast_date), 'hist-start': history_start, 'hist-finish': history_finish, 'is-green': self.is_green, 'days': 0, 'problem': ''}
+        summary = {'start-date': start_date, 'finish-date': finish_date, 'is-forecast': not start_date.before(forecast_date), 'hist-start': history_start, 'hist-finish': history_finish, 'is-green': self.is_green, 'days': 0, 'problem': ''}
 
         cal.setTime(start_date.getDate())
         cal.set(Calendar.HOUR_OF_DAY, 0)
@@ -12862,7 +12862,7 @@ class SiteSource(DataSource):
             summary['days'] += 1
             cal.add(Calendar.DAY_OF_MONTH, 1)
 
-        is_forecast = finish_date.after(self.forecast_date)
+        is_forecast = finish_date.after(forecast_date)
         hh_data = []
         utc_cal = GregorianCalendar(TimeZone.getTimeZone("GMT"), Locale.UK)
         ct_cal = GregorianCalendar(TimeZone.getTimeZone("Europe/London"), Locale.UK)
@@ -13418,7 +13418,7 @@ class SupplySource(DataSource):
                     #s elf.pw.println('aft read ' + str(aft_read.getPresentDate()) + ' aft bill ' + str(aft_bill.getId()) + ' fore read ' + str(fore_read.getPresentDate()) + ' fore bill ' + str(fore_bill.getId()))
                             
                     #s elf.pw.println('chunk start ' + str(chunk_start) + ' chunk finish ' + str(chunk_finish))
-                    self.pw.println('passed ' + str(passes))
+                    #s elf.pw.println('passed ' + str(passes))
 
                     for read_pass in passes:
                         aft_read = read_pass['aft-read']
@@ -13825,6 +13825,200 @@ def hh(bill, supply_source, rate, differentiator, whole_data=None):
     bill['fit-' + differentiator + '-gbp'] = summary['sum-msp-kwh'] * rate]]></value>
         <value><![CDATA[231]]></value>
         <value><![CDATA[2010-12-02T00:00Z]]></value>
+        <value><![CDATA[]]></value>
+        <value><![CDATA[]]></value>
+    </line>
+    <line>
+        <value><![CDATA[insert]]></value>
+        <value><![CDATA[non-core-contract]]></value>
+        <value><![CDATA[73]]></value>
+        <value><![CDATA[]]></value>
+        <value><![CDATA[CALB]]></value>
+        <value><![CDATA[hh-importer]]></value>
+        <value><![CDATA[from java.text import SimpleDateFormat
+from java.util import Date, Timer, TimerTask
+from java.util.concurrent.locks import ReentrantLock
+from org.apache.commons.net.ftp import FTPClient, FTPFile, FTPReply
+from net.sf.chellow.billing import HhdcContract, NonCoreContract
+from net.sf.chellow.hhimport import HhDataImportProcess
+from net.sf.chellow.monad import Hiber, HttpException, InternalException, UserException
+from net.sf.chellow.monad.types import MonadDate
+
+
+def import_hh_data(task):
+    try:
+        contract = HhdcContract.getHhdcContract(task.contract_id)
+        host_name = contract.getProperty("hostname")
+        user_name = contract.getProperty("username")
+        password = contract.getProperty("password")
+        file_type = contract.getProperty("file.type")
+
+        directories = []
+    
+        while True:
+            name = contract.getProperty("directory" + str(len(directories)))
+            if name is None:
+                break
+            last_import_key_name = "lastImportKey" + str(len(directories))
+            last_import_key = contract.getStateProperty(last_import_key_name)
+            if last_import_key is None:
+                last_import_key = unicode('')
+            directories.append({'name': name, 'last-import-key-name': last_import_key_name, 'last-import-key': last_import_key})
+
+        ftp = FTPClient()
+        ftp.setDataTimeout(1000 * 60)
+    
+        ftp.connect(host_name)
+        task.log("Connecting to ftp server at " + host_name + ".")
+        task.log("Server replied with '" + ftp.getReplyString() + "'.")
+        reply = ftp.getReplyCode()
+        if not FTPReply.isPositiveCompletion(reply):
+            raise UserException("FTP server refused connection.")
+
+        task.log("Connected to server, now logging in.")
+        ftp.login(user_name, password)
+        task.log("Server replied with '" + ftp.getReplyString() + "'.")
+        for directory in directories:
+            task.log("Checking the directory '" + directory['name'] + "'.")
+
+            files = [(str(MonadDate(file.getTimestamp().getTime())) + "_" + file.getName(), file) for file in ftp.listFiles(directory['name']) if file.getType() == FTPFile.FILE_TYPE]
+
+            files = [(key, file) for key, file in files if key > directory['last-import-key']]
+
+            for key, file in sorted(files):
+                file_name = directory['name'] + "\\" + file.getName()
+                if file.getSize() == 0:
+                    task.log("Ignoring '" + file_name + "'because it has zero length")
+                    continue
+                task.log("Attempting to download '" + file_name
++ "'.")
+                istr = ftp.retrieveFileStream(file_name)
+                if istr is None:
+                    reply = ftp.getReplyCode()
+                    raise UserException("Can't download the file '" + file.getName() + "', server says: " + reply + ".")
+                task.log("File stream obtained successfully.")
+                task.importer = HhDataImportProcess(task.contract_id, 0, istr, file_name + file_type, file.getSize())
+                task.importer.run()
+                messages = task.importer.getMessages()
+                task.importer = None
+                for message in messages:
+                    task.log(message)
+
+                if len(messages) > 0:
+                    raise UserException("Problem loading file.")
+
+                if not ftp.completePendingCommand():
+                    raise UserException("Couldn't complete ftp transaction: " + ftp.getReplyString())
+                contract = HhdcContract.getHhdcContract(task.contract_id)
+                contract.setStateProperty(directory['last-import-key-name'], key)
+                Hiber.commit()
+            if len(files) == 0:
+                task.log("No new files found.")
+        Hiber.close()
+        ftp.logout()
+        task.log("Logged out.")
+    except BaseException, e:
+        task.log("Problem " + str(e))
+    except:
+        task.log("Unknown Exception " + sys.exc_info()[0])
+    finally:
+        if ftp is not None and ftp.isConnected():
+            ftp.disconnect();
+            task.log("Disconnected.")
+
+
+class HhImportTask(TimerTask):
+
+    def __init__(self, timer, contract):
+        self.timer = timer
+        self.lock = ReentrantLock()
+        self.messages = []
+        self.contract_id = contract.getId()
+        self.importer = None
+        self.date_formatter = SimpleDateFormat("yyyy-MM-dd HH:mm:ss 'Z'")
+        self.date_formatter.setCalendar(MonadDate.getCalendar())
+
+    def log(self, message):
+        self.messages.insert(0, self.date_formatter.format(Date()) + " - " + message)
+        if len(self.messages) > 1000:
+            del self.messages[-1]
+
+    def get_status(self):
+        if self.importer is None:
+            return ''
+        else:
+            return self.importer.status()
+
+
+    def is_locked(self):
+        return self.lock.isLocked()
+
+
+    def run(self):
+        if self.lock.tryLock():
+            try:
+                hh_importer_contract = NonCoreContract.getNonCoreContract('hh-importer')
+                hh_importer_contract.callFunction("import_hh_data", [self])
+            except BaseException, e:
+                self.log("Problem " + str(e))
+            finally:
+                self.lock.unlock()
+
+
+def _importer_task_key(contract):
+    return "net.sf.chellow.hh_importer_task_" + str(contract.getId())
+
+
+def get_hh_importer_task(ctx, contract):
+    return ctx.getAttribute(_importer_task_key(contract))
+
+
+def start_hh_importer_task(ctx, contract):
+    existing_task = get_hh_importer_task(ctx, contract)
+    if existing_task is None:
+        timer = Timer("HH Importer Timer For " + str(contract.getId()), True)
+        hh_importer_task = HhImportTask(timer, contract)
+        timer.schedule(hh_importer_task, 0, 60 * 60 * 1000)
+        ctx.setAttribute(_importer_task_key(contract), hh_importer_task)
+    else:
+        raise UserException("There's already an importer task for this contract")
+
+def remove_hh_importer_task(ctx, contract):
+    existing_task = get_hh_importer_task(ctx, contract)
+    if existing_task is None:
+        raise UserException("There isn't an importer task for this contract.")
+    existing_task.cancel()
+    if existing_task.is_locked():
+        raise UserException("There's an import currently in progress.")
+    
+    ctx.setAttribute(_importer_task_key(contract), None)]]></value>
+        <value><![CDATA[235]]></value>
+        <value><![CDATA[2011-01-06T00:00Z]]></value>
+        <value><![CDATA[]]></value>
+        <value><![CDATA[]]></value>
+    </line>
+    <line>
+        <value><![CDATA[insert]]></value>
+        <value><![CDATA[non-core-contract]]></value>
+        <value><![CDATA[75]]></value>
+        <value><![CDATA[]]></value>
+        <value><![CDATA[CALB]]></value>
+        <value><![CDATA[startup]]></value>
+        <value><![CDATA[from net.sf.chellow.billing import NonCoreContract
+from net.sf.chellow.monad import Hiber
+
+computer_contract = NonCoreContract.getNonCoreContract('computer')
+comterp = computer_contract.callFunction('create_comterp', [])
+
+hh_importer_contract = NonCoreContract.getNonCoreContract('hh-importer')
+
+def on_start_up(ctx):
+    start_importer_f = comterp.get('contract_function')(hh_importer_contract, 'start_hh_importer_task')
+
+    for contract in Hiber.session().createQuery("from HhdcContract contract order by contract.id").list():
+        start_importer_f(ctx, contract)]]></value>
+        <value><![CDATA[237]]></value>
+        <value><![CDATA[2011-01-06T00:00Z]]></value>
         <value><![CDATA[]]></value>
         <value><![CDATA[]]></value>
     </line>
