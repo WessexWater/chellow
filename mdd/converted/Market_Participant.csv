@@ -66,7 +66,7 @@ Chellow Id,Market Participant Id,Market Participant Name
 65,ECSM,ECS Metering Services
 66,EDEF,EDF Production Transport
 67,EDFE,EDF Energy plc
-68,EDFI,EDF Energy Ltd
+68,EDFI,UK Power Networks (IDNO)
 69,EDIR,Electricity Direct Ltd
 70,EECL,Enfield Energy Centre Limited
 71,EELC,Eastern Electricity
@@ -238,7 +238,7 @@ Chellow Id,Market Participant Id,Market Participant Name
 237,UUCO,UU Utility Solutions(E&CS) Ltd
 238,UUMO,United Utilities Networks Ltd
 239,UUNL,United Utilities Networks Ltd
-240,VOLT,Volt Energy Supply Limited
+240,VOLT,Co-operative Energy Limited
 241,WBUR,TXU Europe West Burton Ltd
 242,WGAS,Western Gas Ltd
 243,WINT,Winterton Power Ltd

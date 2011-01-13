@@ -119,7 +119,7 @@ public class SupplyGenerations extends EntityList {
 				.setEntity("supply", supply).setLong("supplyGenerationId",
 						Long.parseLong(uriId.toString())).uniqueResult();
 		if (supplyGeneration == null) {
-			throw new NotFoundException();
+			throw new NotFoundException("The Supply Generation cannot be found.");
 		}
 		return supplyGeneration;
 	}
