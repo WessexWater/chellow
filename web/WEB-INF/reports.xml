@@ -87,6 +87,9 @@
           </tr>
           <tr><th>CRC</th><td><a href="{/source/request/@context-path}/reports/209/output/">Download</a></td><td></td>
           </tr>
+          <tr><th>Register Reads</th><td><a href="{/source/request/@context-path}/reports/217/output/">Download</a></td><td></td>
+          </tr>
+
         </table>
         <h3>Industry Info</h3>
         <ul>
@@ -1663,6 +1666,42 @@ source.setAttribute('debug', debug)]]></value>
                     </fieldset>
                 </form>
                <br/>
+               <form action="{/source/request/@context-path}/reports/219/output/">
+                    <input type="hidden" name="supply-id" value="{/source/supply/@id}" />
+
+ <fieldset>
+                        <legend>Register Reads</legend>
+                        <br/>
+                        <br/>
+<xsl:value-of select="'For '"/>
+                        <input name="months" maxlength="2" size="2">
+                          <xsl:attribute name="value">
+                            <xsl:choose>
+                              <xsl:when test="/source/request/parameter[@name='months']">
+                                <xsl:value-of select="/source/request/parameter[@name='months']/value"/>
+                              </xsl:when>
+                              <xsl:otherwise>
+                                <xsl:value-of select="'1'"/>
+                              </xsl:otherwise>
+                            </xsl:choose>
+                          </xsl:attribute>
+                        </input>
+                        <xsl:value-of select="' month(s) finishing at the end of '"/>
+<input name="end-year" value="{/source/date/@year}" maxlength="4" size="4"/><xsl:value-of select="' - '"/>
+                        <select name="end-month">
+                            <xsl:for-each select="/source/months/month">
+                                <option value="{@number}">
+                                    <xsl:if test="@number=/source/hh-start-date[@label='finish']/@month">
+                                        <xsl:attribute name="selected">selected</xsl:attribute>
+                                    </xsl:if>
+                                    <xsl:value-of select="@number"/>
+                                </option>
+                            </xsl:for-each>
+                        </select>
+                    <input type="submit" value="Download"/>
+                    </fieldset>
+                </form>
+<br/>
                <form action="{/source/request/@context-path}/reports/207/output/">
                     <input type="hidden" name="supply-id" value="{/source/supply/@id}" />
 
@@ -11998,6 +12037,9 @@ from net.sf.chellow.billing import NonCoreContract
 from java.lang import Long
 from net.sf.chellow.monad.types import MonadDate
 
+inv.getResponse().setContentType("text/csv")
+inv.getResponse().setHeader('Content-Disposition', 'filename=output.csv;')
+pw = inv.getResponse().getWriter()
 
 computer = NonCoreContract.getNonCoreContract('computer')
 comterp = PythonInterpreter()
@@ -12049,6 +12091,7 @@ def mpan_bit(query, kvarh_at_md_query, is_import, hh_count_query, num_hh, genera
                 else:
                     chunk_finish = month_end
                 supply_source.init_from_mpan(chunk_start, chunk_finish, mpan)
+                #pw.println("sum gsp " + str(supply_source.summary['sum-gsp-kwh']) + " sum msp " + str(supply_source.summary['sum-msp-kwh']))
                 gsp_kwh += supply_source.summary['sum-gsp-kwh']
             gsp_kwh = str(round(gsp_kwh))
     md = 0
@@ -12080,10 +12123,6 @@ def mpan_bit(query, kvarh_at_md_query, is_import, hh_count_query, num_hh, genera
         
     return llfc_str + ',' + mpan_core_str + ',' + sc_str + ',' + supplier_contract_name + ',' + str(round(sum)) + ',' + str(round(non_actual)) + ',' + gsp_kwh + ',' + str(round(kw_at_md)) + ',' + str(date_at_md) + ',' + str(kva_at_md) + ',' + str(num_bad)
     
-inv.getResponse().setContentType("text/csv")
-inv.getResponse().setHeader('Content-Disposition', 'filename=output.csv;')
-pw = inv.getResponse().getWriter()
-
 start_year = inv.getInteger("start-year")
 start_month = inv.getInteger("start-month")
 start_day = inv.getInteger("start-day")
@@ -12127,7 +12166,7 @@ hh_count_query = Hiber.session().createQuery("select count(*) from HhDatum datum
 
 num_hh = round((finish_date.getDate().getTime() - start_date.getPrevious().getDate().getTime()) / (30 * 60 * 1000))
 
-pw.println("Supply Id, Supply Name, Source, Generator Type, Site Ids, Site Names, From, To, PC, MTC, CoP, SSC, Import LLFC, Import MPAN Core, Import Supply Capacity,Import Supplier,Import Total MSP kWh, Import Non-actual MSP kWh, Import Total GSP kWh,Import MD / kW, Import MD Date, Import MD / kVA, Import Bad HHs, Export LLFC, Export MPAN Core, Export Supply Capacity,Export Supplier,Export Total MSP kWh, Export Non-actual MSP kWh,Export GSP kWh, Export MD / kW, Export MD Date, Export MD / kVA, Export Bad HHs")
+pw.println("Supply Id, Supply Name, Source, Generator Type, Site Ids, Site Names, From, To, PC, MTC, CoP, SSC, Normal Reads,Type,Import LLFC, Import MPAN Core, Import Supply Capacity,Import Supplier,Import Total MSP kWh, Import Non-actual MSP kWh, Import Total GSP kWh,Import MD / kW, Import MD Date, Import MD / kVA, Import Bad HHs,Export LLFC, Export MPAN Core, Export Supply Capacity,Export Supplier,Export Total MSP kWh, Export Non-actual MSP kWh,Export GSP kWh, Export MD / kW, Export MD Date, Export MD / kVA, Export Bad HHs")
 
 if inv.hasParameter('supply-id'):
     supply_id = inv.getLong('supply-id')
@@ -12136,6 +12175,12 @@ else:
     supplies_query = Hiber.session().createQuery("select distinct generation.supply, generation.supply.id from SupplyGeneration generation where (generation.finishDate.date is null or generation.finishDate.date >= :startDate) and generation.startDate.date <= :finishDate order by generation.supply.id")
 
 supplies = supplies_query.setTimestamp('startDate', start_date.getDate()).setTimestamp('finishDate', finish_date.getDate()).scroll()
+
+normal_previous_reads_query = Hiber.session().createQuery("from RegisterRead read where read.bill.supply = :supply and read.previousDate.date >= :startDate and read.previousDate.date <= :finishDate and read.presentType.code in ('C', 'N', 'N3')").setTimestamp('startDate', start_date.getDate()).setTimestamp('finishDate', finish_date.getDate())
+
+normal_present_reads_query = Hiber.session().createQuery("from RegisterRead read where read.bill.supply = :supply and read.presentDate.date >= :startDate and read.presentDate.date <= :finishDate and read.presentType.code in ('C', 'N', 'N3')").setTimestamp('startDate', start_date.getDate()).setTimestamp('finishDate', finish_date.getDate())
+
+bill_query = Hiber.session().createQuery("from Bill bill where bill.supply = :supply and bill.startDate.date <= :readDate and bill.finishDate.date >= :readDate order by bill.issueDate desc, bill.type.code").setMaxResults(1)
 
 while supplies.next():
     supply = supplies.get(0)
@@ -12164,7 +12209,35 @@ while supplies.next():
     else:
         ssc_code = str(ssc)
 
-    pw.print(','.join(('"' + str(value) + '"') for value in [supply.getId(), supply.getName(), supply.getSource().getCode(), generator_type, site_codes, site_names, start_date, finish_date, generation.getPc(), generation.getMtc(), generation.getCop(), ssc_code]) + ',')
+    prime_reads = {}
+    bill_query.setEntity('supply', supply)
+    for read in normal_previous_reads_query.setEntity('supply', supply).list():
+        prime_bill = bill_query.setTimestamp('readDate', read.getPreviousDate().getNext().getDate()).uniqueResult()
+        if prime_bill is not None and read.getBill().getId() == prime_bill.getId():
+            key = str(read.getPreviousDate()) + "_" + read.getMeterSerialNumber()
+            if key not in prime_reads:
+                if Hiber.session().createQuery("select count(*) from RegisterRead read where read.bill = :bill and read.previousDate.date = :readDate and read.meterSerialNumber = :msn and read.previousType.code not in ('C', 'N', 'N3')").setEntity('bill', prime_bill).setTimestamp('readDate', read.getPreviousDate().getDate()).setString('msn', read.getMeterSerialNumber()).uniqueResult() is not None:
+                    prime_reads[key] = read
+                
+    for read in normal_present_reads_query.setEntity('supply', supply).list():
+        prime_bill = bill_query.setTimestamp('readDate', read.getPresentDate().getNext().getDate()).uniqueResult()
+        if prime_bill is not None and read.getBill().getId() == prime_bill.getId():
+            key = str(read.getPresentDate()) + "_" + read.getMeterSerialNumber()
+            if key not in prime_reads:
+                if Hiber.session().createQuery("select count(*) from RegisterRead read where read.bill = :bill and read.presentDate.date = :readDate and read.meterSerialNumber = :msn and read.presentType.code not in ('C', 'N', 'N3')").setEntity('bill', prime_bill).setTimestamp('readDate', read.getPresentDate().getDate()).setString('msn', read.getMeterSerialNumber()).uniqueResult() is not None:
+                    prime_reads[key] = read
+
+    pc = generation.getPc()
+    if pc.getCode() == 0:
+        supply_type = 'hh'
+    elif len(generation.getChannels()) > 0:
+        supply_type = 'amr'
+    elif generation.getMtc().getMeterType().getCode() == 'UM':
+        supply_type = 'unmetered'
+    else:
+        supply_type = 'nhh'
+
+    pw.print(','.join(('"' + str(value) + '"') for value in [supply.getId(), supply.getName(), supply.getSource().getCode(), generator_type, site_codes, site_names, start_date, finish_date, generation.getPc(), generation.getMtc(), generation.getCop(), ssc_code, len(prime_reads), supply_type]) + ',')
     pw.flush()
     pw.println(mpan_bit(query, kva_at_md_query, True, hh_count_query, num_hh, generation,comterp, forecast_date, start_date, finish_date) + "," + mpan_bit(query, kva_at_md_query, False, hh_count_query, num_hh, generation,comterp, forecast_date, start_date, finish_date))
     pw.flush()
@@ -16236,5 +16309,181 @@ source.setAttribute('debug', debug)]]></value>
         </html>
     </xsl:template>
 </xsl:stylesheet>]]></value>
+    </line>
+    <line>
+        <value><![CDATA[insert]]></value>
+        <value><![CDATA[report]]></value>
+        <value><![CDATA[215]]></value>
+        <value><![CDATA[true]]></value>
+        <value><![CDATA[Free 215]]></value>
+        <value><![CDATA[]]></value>
+        <value><![CDATA[]]></value>
+    </line>
+    <line>
+        <value><![CDATA[insert]]></value>
+        <value><![CDATA[report]]></value>
+        <value><![CDATA[217]]></value>
+        <value><![CDATA[true]]></value>
+        <value><![CDATA[CSV Register Reads Selector]]></value>
+        <value><![CDATA[from java.util import GregorianCalendar, TimeZone, Locale, Calendar
+from net.sf.chellow.monad.types import MonadDate
+
+cal = GregorianCalendar(TimeZone.getTimeZone("GMT"), Locale.UK)
+cal.add(Calendar.MONTH, -1)
+source.appendChild(MonadDate(cal.getTime()).toXml(doc))
+source.appendChild(MonadDate.getMonthsXml(doc))]]></value>
+        <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
+<xsl:stylesheet version="1.0"
+    xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+    <xsl:output method="xml" encoding="US-ASCII"
+        doctype-public="-//W3C//DTD XHTML 1.1//EN"
+        doctype-system="http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd"
+        indent="yes" />
+    <xsl:template match="/">
+        <html>
+            <head>
+                <link rel="stylesheet" type="text/css"
+      href="{/source/request/@context-path}/reports/19/output/" />
+
+                <title>Chellow &gt; CSV Register Reads</title>
+            </head>
+            <body>
+                <p>
+                    <a
+                        href="{/source/request/@context-path}/reports/1/output/">
+                        <xsl:value-of select="'Home'" />
+                    </a>
+                    &gt;
+                    <xsl:value-of select="'CSV Register Reads'" />
+                </p>
+                  <xsl:if test="//message">
+                    <ul>
+                        <xsl:for-each select="//message">
+                            <li>
+                                <xsl:value-of select="@description" />
+                            </li>
+                        </xsl:for-each>
+                    </ul>
+                </xsl:if>
+                <form action="{/source/request/@context-path}/reports/219/output/">
+                    <fieldset>
+                        <legend>Download</legend>
+<br/>
+                        <xsl:value-of select="'For '"/>
+                        <input name="months" maxlength="2" size="2">
+                          <xsl:attribute name="value">
+                            <xsl:choose>
+                              <xsl:when test="/source/request/parameter[@name='months']">
+                                <xsl:value-of select="/source/request/parameter[@name='months']/value"/>
+                              </xsl:when>
+                              <xsl:otherwise>
+                                <xsl:value-of select="'1'"/>
+                              </xsl:otherwise>
+                            </xsl:choose>
+                          </xsl:attribute>
+                        </input>
+<xsl:value-of select="' month(s) finishing at the end of '"/>
+                        <input name="end-year" value="{/source/date/@year}" maxlength="4" size="4"/><xsl:value-of select="' - '"/>
+                        <select name="end-month">
+                            <xsl:for-each select="/source/months/month">
+                                <option value="{@number}">
+                                    <xsl:if test="@number=/source/date/@month">
+                                        <xsl:attribute name="selected">selected</xsl:attribute>
+                                    </xsl:if>
+                                    <xsl:value-of select="@number"/>
+                                </option>
+                            </xsl:for-each>
+                        </select>
+                        <input type="submit" value="Download"/>
+                    </fieldset>
+                </form>
+            </body>
+        </html>
+    </xsl:template>
+</xsl:stylesheet>]]></value>
+    </line>
+    <line>
+        <value><![CDATA[insert]]></value>
+        <value><![CDATA[report]]></value>
+        <value><![CDATA[219]]></value>
+        <value><![CDATA[true]]></value>
+        <value><![CDATA[CSV Register Reads]]></value>
+        <value><![CDATA[from net.sf.chellow.monad import Hiber, UserException
+from net.sf.chellow.monad.types import MonadDate
+from java.sql import Timestamp, ResultSet
+from java.util import GregorianCalendar, Calendar, TimeZone, Locale, Date
+from net.sf.chellow.physical import HhStartDate, MpanCore, Site, Supply
+from java.text import SimpleDateFormat, DecimalFormat
+from java.lang import Math, System
+from net.sf.chellow.billing import SupplierContract, NonCoreContract
+from org.python.util import PythonInterpreter
+
+year = inv.getInteger("end-year")
+month = inv.getInteger("end-month")
+months = inv.getInteger("months")
+
+if not inv.isValid():
+    raise UserException()
+
+if inv.hasParameter('supply-id'):
+    supply_id = inv.getLong('supply-id')
+    query = Hiber.session().createQuery("select read, read.bill, read.bill.supply from RegisterRead read where read.bill.supply = :supply and (read.presentDate.date >= :startDate and read.presentDate.date <= :finishDate) or (read.previousDate.date >= :startDate and read.previousDate.date <= :finishDate) order by read.bill.supply.id").setEntity('supply', Supply.getSupply(supply_id))
+else:
+    query = Hiber.session().createQuery("select read, read.bill, read.bill.supply, read.bill.batch from RegisterRead read where (read.presentDate.date >= :startDate and read.presentDate.date <= :finishDate) or (read.previousDate.date >= :startDate and read.previousDate.date <= :finishDate) order by read.bill.supply.id")
+
+cal = MonadDate.getCalendar()
+cal.set(Calendar.YEAR, year)
+cal.set(Calendar.MONTH, month - 1)
+cal.set(Calendar.DAY_OF_MONTH, 1)
+cal.set(Calendar.HOUR_OF_DAY, 0)
+cal.set(Calendar.MINUTE, 0)
+cal.set(Calendar.SECOND, 0)
+cal.set(Calendar.MILLISECOND, 0)
+cal.add(Calendar.MONTH, 1)
+cal.add(Calendar.MINUTE, -30)
+finish_date = HhStartDate(cal.getTime())
+cal.add(Calendar.MINUTE, 30)
+cal.add(Calendar.MONTH, -1 * months)
+start_date = HhStartDate(cal.getTime())
+
+now_date = Date()
+file_date_format = SimpleDateFormat("yyyyMMdd'T'HHmm")
+file_date_format.setCalendar(cal)
+
+inv.getResponse().setContentType("text/csv")
+inv.getResponse().setHeader('Content-Disposition', 'filename=reads_' + file_date_format.format(now_date) + '.csv;')
+pw = inv.getResponse().getWriter()
+pw.println("Duration Start,Duration Finish,Supply Id,Import MPAN Core,Export MPAN Core,Batch Reference,Bill Id,Bill Reference,Bill Issue Date,Bill Type,Register Read Id,TPR,Coefficient,Previous Read Date,Previous Read Value,Prevous Read Type,Present Read Date,Present Read Value,Present Read Type")
+pw.flush()
+
+issue_format = SimpleDateFormat("yyyy-MM-dd HH:mm")
+issue_format.setCalendar(cal)
+
+reads = query.setTimestamp('startDate', start_date.getDate()).setTimestamp('finishDate', finish_date.getDate()).scroll()
+while reads.next():
+    read = reads.get(0)
+    bill = reads.get(1)
+    supply = reads.get(2)
+    batch = reads.get(3)
+
+    generation = supply.getGeneration(bill.getStartDate())
+    import_mpan = generation.getImportMpan()
+    if import_mpan is None:
+        import_mpan_core = ''
+    else:
+        import_mpan_core = import_mpan.getCore()
+    export_mpan = generation.getExportMpan()
+    if export_mpan is None:
+        export_mpan_core = ''
+    else:
+        export_mpan_core = export_mpan.getCore()
+
+    pw.println(','.join('"' + str(value) + '"' for value in [start_date, finish_date, supply.getId(), import_mpan_core, export_mpan_core, batch.getReference(),bill.getId(), bill.getReference(), issue_format.format(bill.getIssueDate()), bill.getType().getCode(), read.getId(), read.getTpr(), read.getCoefficient(), read.getPreviousDate(), read.getPreviousValue(), read.getPreviousType(), read.getPresentDate(), read.getPresentValue(), read.getPresentType()]))
+    pw.flush()
+    Hiber.session().clear()
+
+reads.close()
+pw.close()]]></value>
+        <value><![CDATA[]]></value>
     </line>
 </csv>
