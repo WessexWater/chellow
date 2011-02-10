@@ -15990,6 +15990,17 @@ source.setAttribute('year', str(cal.get(Calendar.YEAR)))]]></value>
                         <input type="submit" value="Download"/>
                     </fieldset>
                 </form>
+                <br/>
+                <form action="{/source/request/@context-path}/reports/215/output/">
+                    <fieldset>
+                        <legend>Download CRC Special Events CSV</legend>
+                        <br/>
+                        <xsl:value-of select="'For financial year starting April '"/>
+                        <input name="year" value="{/source/@year}" size="4" maxlength="4"/>
+<xsl:value-of select="' '"/>
+                        <input type="submit" value="Download"/>
+                    </fieldset>
+                </form>
             </body>
         </html>
     </xsl:template>

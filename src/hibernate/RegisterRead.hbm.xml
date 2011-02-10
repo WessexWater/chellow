@@ -30,14 +30,14 @@
 			<column name="coefficient" sql-type="numeric" />
 		</property>
 		<property name="meterSerialNumber" type="string" column="meter_serial_number"
-			not-null="true" />
+			not-null="true"  index="meter_serial_number__idx"/>
 		<property name="mpanStr" type="string" column="mpan_str"
 			not-null="true" />
 		<many-to-one name="tpr" class="Tpr" column="tpr_id"
 			foreign-key="fkey_tpr__register_read" />
 		<component name="presentDate" class="HhStartDate">
 			<property name="date" type="timestamp" not-null="true">
-				<column name="present_date" sql-type="timestamp with time zone" />
+				<column name="present_date" sql-type="timestamp with time zone" index="present_date__idx" />
 			</property>
 		</component>
 		<property name="presentValue" type="big_decimal" not-null="true">
@@ -47,7 +47,7 @@
 			not-null="true" foreign-key="fkey_present_type__register_read" />
 		<component name="previousDate" class="HhStartDate">
 			<property name="date" type="timestamp" not-null="true">
-				<column name="previous_date" sql-type="timestamp with time zone" />
+				<column name="previous_date" sql-type="timestamp with time zone"  index="previous_date__idx" />
 			</property>
 		</component>
 		<property name="previousValue" type="big_decimal" not-null="true">
