@@ -16315,8 +16315,160 @@ source.setAttribute('debug', debug)]]></value>
         <value><![CDATA[report]]></value>
         <value><![CDATA[215]]></value>
         <value><![CDATA[true]]></value>
-        <value><![CDATA[Free 215]]></value>
-        <value><![CDATA[]]></value>
+        <value><![CDATA[CSV CRC Special Events]]></value>
+        <value><![CDATA[from net.sf.chellow.monad import Hiber, UserException
+from java.lang import System, Math
+from net.sf.chellow.monad.types import MonadDate
+from java.sql import Timestamp, ResultSet
+from java.util import GregorianCalendar, Calendar, TimeZone, Locale, Date
+from net.sf.chellow.physical import HhStartDate, Supply
+from net.sf.chellow.billing import Batch, NonCoreContract, Bill
+from org.python.util import PythonInterpreter
+
+year = inv.getInteger('year')
+
+inv.getResponse().setContentType("text/csv")
+inv.getResponse().setHeader('Content-Disposition', 'filename=output.csv;')
+pw = inv.getResponse().getWriter()
+
+pw.print("MPAN Core,Site Id,Site Name,Date,Event,Changed From,Changed To,")
+pw.flush()
+
+cal = MonadDate.getCalendar()
+cal.set(Calendar.YEAR, year)
+cal.set(Calendar.MONTH, Calendar.APRIL)
+cal.set(Calendar.DAY_OF_MONTH, 1)
+cal.set(Calendar.HOUR_OF_DAY, 0)
+cal.set(Calendar.MINUTE, 0)
+cal.set(Calendar.SECOND, 0)
+cal.set(Calendar.MILLISECOND, 0)
+
+year_start = HhStartDate(cal.getTime())
+cal.add(Calendar.YEAR, 1)
+cal.add(Calendar.MINUTE, -30)
+year_finish = HhStartDate(cal.getTime())
+
+if inv.hasParameter('supply-id'):
+    supply_id = inv.getLong('supply-id')
+    supplies = Hiber.session().createQuery("from Supply supply where supply = :supply").setEntity('supply', Supply.getSupply(supply_id)).scroll()
+else:
+    supplies = Hiber.session().createQuery("select distinct generation.supply from SupplyGeneration generation where generation.supply.source.code in ('net', 'gen-net', 'gen') and generation.startDate.date <= :finishDate and (generation.finishDate is null or generation.finishDate.date >= :startDate)").setTimestamp('startDate', year_start.getDate()).setTimestamp('finishDate', year_finish.getDate()).scroll()
+
+generation_query = Hiber.session().createQuery("from SupplyGeneration generation where generation.supply = :supply and generation.startDate.date <= :finishDate and (generation.finishDate is null or generation.finishDate.date >= :startDate) order by generation.startDate.date").setTimestamp('startDate', year_start.getDate()).setTimestamp('finishDate', year_finish.getDate())
+
+mpan_query = Hiber.session().createQuery("from Mpan mpan where mpan.supplyGeneration = :generation and mpan.llfc.isImport = :polarity")
+
+events = []
+
+def add_event(date, code, mpans, previous=None, current=None):
+    for mpan in mpans:
+        if previous is None:
+            previous = ''
+        if current is None:
+            current = ''
+        events.append({'date': date, 'code': code, 'mpan-core': mpan.getCore(), 'previous': previous, 'current': current})
+
+while supplies.next():
+    supply = supplies.get(0)
+    generations = [generation for generation in generation_query.setEntity('supply', supply).list()]
+    global events
+    events = []
+    first_generation = generations[0]
+    first_generation_start = first_generation.getStartDate()
+    if first_generation_start.after(year_start):
+        add_event(first_generation_start, "New Supply", first_generation.getMpans())
+
+    last_generation = generations[-1]
+    last_generation_finish = last_generation.getFinishDate()
+    if HhStartDate.isBefore(last_generation_finish, year_finish):
+        add_event(last_generation_finish, "Disconnection", last_generation.getMpans())
+    
+    prev_gen = first_generation
+    for generation in generations[1:]:
+        if generation.getMeterSerialNumber() != prev_gen.getMeterSerialNumber():
+            add_event(generation.getStartDate(), "Meter Change", generation.getMpans(), prev_gen.getMeterSerialNumber(), generation.getMeterSerialNumber())
+        if generation.getPc().getCode() != prev_gen.getPc().getCode():
+            add_event(generation.getStartDate(), "Change Of Profile Class", generation.getMpans(), prev_gen.getPc(), generation.getPc())
+
+        gen_mop = generation.getMopContract()
+        if gen_mop is None:
+            gen_mop_id = None
+            gen_mop_name = None
+        else:
+            gen_mop_id = gen_mop.getId()
+            gen_mop_name = gen_mop.getName()
+
+        prev_mop = prev_gen.getMopContract()
+        if prev_mop is None:
+            prev_mop_id = None
+            prev_mop_name = None
+        else:
+            prev_mop_id = prev_mop.getId()
+            prev_mop_name = prev_mop.getName()
+
+        if gen_mop_id != prev_mop_id:
+            add_event(generation.getStartDate(), "Change Of MOP", generation.getMpans(), prev_mop_name, gen_mop_name)
+
+        gen_dc = generation.getHhdcContract()
+        if gen_dc is None:
+            gen_dc_id = None
+            gen_dc_name = None
+        else:
+            gen_dc_id = gen_dc.getId()
+            gen_dc_name = gen_dc.getName()
+
+        prev_dc = prev_gen.getHhdcContract()
+        if prev_dc is None:
+            prev_dc_id = None
+            prev_dc_name = None
+        else:
+            prev_dc_id = prev_dc.getId()
+            prev_dc_name = prev_dc.getName()
+
+        if gen_dc_id != prev_dc_id:
+            add_event(generation.getStartDate(), "Change Of DC", generation.getMpans(), prev_dc_name, gen_dc_name)
+
+        for polarity in [True, False]:
+            gen_mpan = mpan_query.setEntity('generation', generation).setBoolean('polarity', polarity).uniqueResult()
+            if gen_mpan is None:
+                gen_sup_id = None
+                gen_sup_name = None
+            else:
+                reporting_mpan = gen_mpan
+                gen_sup = gen_mpan.getSupplierContract()
+                gen_sup_id = gen_sup.getId()
+                gen_sup_name = gen_sup.getName()
+            
+            prev_mpan = mpan_query.setEntity('generation', prev_gen).uniqueResult()
+            if prev_mpan is None:
+                prev_sup_id = None
+                prev_sup_name = None
+            else:
+                reporting_mpan = prev_mpan
+                prev_sup = prev_mpan.getSupplierContract()
+                prev_sup_id = prev_sup.getId()
+                prev_sup_name = prev_sup.getName()
+            
+            if gen_sup_id is None and prev_sup_id is not None:
+                add_event(generation.getStartDate(), "End of supply", [reporting_mpan])
+            elif gen_sup_id is not None and prev_sup_id is None:
+                add_event(generation.getStartDate(), "Start of supply", [reporting_mpan])
+            elif gen_sup_id is not None and prev_sup_id is not None and gen_sup_id != prev_sup_id:
+                add_event(generation.getStartDate(), "Change Of Supplier", [reporting_mpan], prev_sup_name, gen_sup_name)
+        
+        prev_gen = generation
+
+    if len(events) > 0:
+        site = Hiber.session().createQuery("select ssgen.site from SiteSupplyGeneration ssgen where ssgen.isPhysical is true and ssgen.supplyGeneration = :supplyGeneration").setEntity('supplyGeneration', last_generation).uniqueResult()
+        for event in events:
+            pw.println('')
+            pw.print(','.join('"' + str(val) + '"' for val in [event['mpan-core'], site.getCode(), site.getName(), event['date'], event['code'], event['previous'], event['current']]) + ',')
+    else:
+        pw.print(' ')
+    pw.flush()
+    Hiber.session().clear()
+supplies.close()
+pw.close()]]></value>
         <value><![CDATA[]]></value>
     </line>
     <line>

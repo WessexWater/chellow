@@ -1897,7 +1897,7 @@ def triad_estimates():
 		<request
 			path="/chellow/reports/149/output/?start-year=2009&amp;start-month=03&amp;start-day=1&amp;start-hour=0&amp;finish-year=2009&amp;finish-month=03&amp;finish-day=31&amp;finish-hour=23">
 			<regex
-				pattern='"8","1","net","","CH023","Treglisson","2009-03-01T00:00Z","2009-03-31T23:30Z","00","845","5","",540,22 4862 4512 332,230,Half-hourlies 2007,148926.0,0.0,158159.0,400.0,2009-03-13T08:00Z,None,0.0,,,,,0.0,0.0,,0.0,None,None,1488.0' />
+				pattern='"8","1","net","","CH023","Treglisson","2009-03-01T00:00Z","2009-03-31T23:30Z","00","845","5","","0","hh",540,22 4862 4512 332,230,Half-hourlies 2007,148926.0,0.0,158159.0,400.0,2009-03-13T08:00Z,None,0.0,,,,,0.0,0.0,,0.0,None,None,1488.0' />
 		</request>
 	</test>
 	<test name="Manipulate dso contracts">

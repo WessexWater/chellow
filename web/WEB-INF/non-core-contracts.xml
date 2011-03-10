@@ -13843,9 +13843,11 @@ from net.sf.chellow.billing import HhdcContract, NonCoreContract
 from net.sf.chellow.hhimport import HhDataImportProcess
 from net.sf.chellow.monad import Hiber, HttpException, InternalException, UserException
 from net.sf.chellow.monad.types import MonadDate
+import sys
 
 
 def import_hh_data(task):
+    ftp = None
     try:
         contract = HhdcContract.getHhdcContract(task.contract_id)
         host_name = contract.getProperty("hostname")
@@ -13917,10 +13919,12 @@ def import_hh_data(task):
         Hiber.close()
         ftp.logout()
         task.log("Logged out.")
-    except BaseException, e:
+    except UserException, e:
         task.log("Problem " + str(e))
     except:
-        task.log("Unknown Exception " + HttpException.getStackTraceString(e))
+        e_info = sys.exc_info()
+        tb = e_info[2]
+        task.log("Unknown Exception " + str(e_info[0]) + str(e_info[1]) + str(tb) + " line number " + str(tb.tb_lineno))
     finally:
         if ftp is not None and ftp.isConnected():
             ftp.disconnect();
@@ -13957,10 +13961,11 @@ class HhImportTask(TimerTask):
     def run(self):
         if self.lock.tryLock():
             try:
-                hh_importer_contract = NonCoreContract.getNonCoreContract('hh-importer')
-                hh_importer_contract.callFunction("import_hh_data", [self])
-            except BaseException, e:
-                self.log("Problem " + str(e))
+                import_hh_data(self)
+            except:
+                e_info = sys.exc_info()
+                tb = e_info[2]
+                task.log("Outer problem " + str(e_info[0]) + str(e_info[1]) + str(tb) + " line number " + str(tb.tb_lineno))
             finally:
                 self.lock.unlock()
 
