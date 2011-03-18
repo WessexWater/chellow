@@ -1294,7 +1294,7 @@ def virtual_bill(supply_source):
 			<control name="email-address" value="mishka@localhost" />
 			<control name="password" value="fyodor" />
 			<control name="user-role-id" value="2" />
-			<control name="party-id" value="404" /> <!-- DASL HHDC -->
+			<control name="party-id" value="345" /> <!-- DASL HHDC -->
 			<response-code value="303" />
 			<regex pattern="/chellow/users/4/" />
 		</request>
@@ -1902,34 +1902,34 @@ def triad_estimates():
 	</test>
 	<test name="Manipulate dso contracts">
 		<!-- Insert DSO contract -->
-		<request path="/chellow/dsos/438/contracts/" method="post"> <!-- Contract of DSO 10 -->
+		<request path="/chellow/dsos/379/contracts/" method="post"> <!-- Contract of DSO 10 -->
 			<control name="name" value="main 2010-04-01" />
 			<control name="start-year" value="2010" />
 			<control name="start-month" value="04" />
 			<control name="start-day" value="01" />
-			<regex pattern="/chellow/dsos/438/contracts/77/" />
+			<regex pattern="/chellow/dsos/379/contracts/77/" />
 			<response-code value="303" />
 		</request>
 
 		<!-- Check start time of rate script -->
-		<request path="/chellow/dsos/438/contracts/77/rate-scripts/239/">
+		<request path="/chellow/dsos/379/contracts/77/rate-scripts/239/">
 			<regex pattern="00:00 Z" />
 			<response-code value="200" />
 		</request>
 
 		<!-- Insert rate script -->
-		<request path="/chellow/dsos/438/contracts/77/rate-scripts/"
+		<request path="/chellow/dsos/379/contracts/77/rate-scripts/"
 			method="post">
 			<control name="start-year" value="2010" />
 			<control name="start-month" value="05" />
 			<control name="start-day" value="01" />
 
-			<regex pattern="/chellow/dsos/438/contracts/77/rate-scripts/241/" />
+			<regex pattern="/chellow/dsos/379/contracts/77/rate-scripts/241/" />
 			<response-code value="303" />
 		</request>
 
 		<!-- Delete rate script -->
-		<request path="/chellow/dsos/438/contracts/77/rate-scripts/239/"
+		<request path="/chellow/dsos/379/contracts/77/rate-scripts/239/"
 			method="post">
 			<control name="delete" value="Delete" />
 			<response-code value="303" />

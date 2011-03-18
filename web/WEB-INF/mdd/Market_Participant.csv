@@ -231,72 +231,73 @@ Chellow Id,Market Participant Id,Market Participant Name
 230,TRUR,TruRead Limited
 231,UDMS,UtilityDataManagementServices
 232,UESL,Utility Energy Solutions Ltd
-233,UKDC,IMServ Europe Ltd
-234,UKEL,UK Electric Power Ltd
-235,UKEP,UK Electric Power
-236,UMLD,UML Ltd
-237,UMOL,Utilita Meter Operations Ltd
-238,UPLD,Utility Partnership Ltd
-239,UTFL,ENTERPRISE (E&CS) LTD
-240,UTLX,Utilyx Limited
-241,UUCO,ENTERPRISE (E&CS) LTD
-242,UUMO,ENTERPRISE (E&CS) LTD
-243,UUNL,ENTERPRISE (E&CS) LTD
-244,VODA,Vodafone Limited
-245,VOLT,Co-operative Energy Limited
-246,WBUR,TXU Europe West Burton Ltd
-247,WGAS,Western Gas Ltd
-248,WINT,Winterton Power Ltd
-249,WPDR,Western Power Data Retriever
-250,WPRM,Western Power Remote Metering
-251,WPSW,Western Power Dist South West
-252,WPWA,Western Power Dist South Wales
-253,WREL,Utility Link Limited
-254,YBGA,SP British Gas Trading
-255,YEEL,SP Eastern Electricity
-256,YELG,Yorkshire Electricity Group
-257,YEME,SP East Midland Electricity
-258,YHYD,SP Hydro Electric
-259,YIND,SP Independent Energy (UK) Ltd
-260,YLON,SP London Electricity
-261,YMID,SP Midlands Electricity
-262,YNAT,SP National Power
-263,YNEE,SP Northern Electric
-264,YNEL,SP Nuclear Electric
-265,YNOR,SP NORWEB
-266,YNUC,SP Magnox Electric
-267,YPGE,SP PowerGen
-268,YSEE,SP SEEBOARD
-269,YSOU,SP Southern Electric
-270,YSPO,SP Scottish Power plc
-271,YSWA,SP South Wales Electricity
-272,YSWE,SP South Western Electricity
-273,YYEL,SP Yorkshire Electricity
-274,ZEEL,HE Eastern Electricity
-275,ZEME,HE East Midland Electricity
-276,ZHYD,HE Scottish Hydro Electric plc
-277,ZIND,HE Independent Energy (UK) Ltd
-278,ZLON,HE London Electricity
-279,ZMID,HE Midlands Electricity
-280,ZNAT,HE National Power
-281,ZNEE,HE Northern Electric
-282,ZNOR,HE NORWEB
-283,ZPGE,HE PowerGen
-284,ZSEE,HE SEEBOARD
-285,ZSOU,HE Southern Electric plc
-286,ZSPO,HE ScottishPower
-287,ZSWA,HE South Wales Electricity
-288,ZTAR,REA AGENT ONLY (IMServ Europe)
-289,ZYEL,HE Yorkshire Electricity
-290,ZZAA,Dummy NHHDA for Eastern
-291,ZZAB,Dummy NHHDA for East Midlands
-292,ZZAC,Dummy NHHDA for London
-293,ZZAD,Dummy NHHDA for Manweb
-294,ZZAE,Dummy NHHDA for Midlands
-295,ZZAF,Dummy NHHDA for Northern
-296,ZZAG,Dummy NHHDA for Norweb
-297,ZZAH,Dummy NHHDA for Southern
-298,ZZAJ,Dummy NHHDA for Seeboard
-299,ZZAK,Dummy NHHDA for SWALEC
-300,ZZAL,Dummy NHHDA for SWEB
-301,ZZAM,Dummy NHHDA for Yorkshire
+233,UFUN,Utility Funding Limited
+234,UKDC,IMServ Europe Ltd
+235,UKEL,UK Electric Power Ltd
+236,UKEP,UK Electric Power
+237,UMLD,UML Ltd
+238,UMOL,Utilita Meter Operations Ltd
+239,UPLD,Utility Partnership Ltd
+240,UTFL,ENTERPRISE (E&CS) LTD
+241,UTLX,Utilyx Limited
+242,UUCO,ENTERPRISE (E&CS) LTD
+243,UUMO,ENTERPRISE (E&CS) LTD
+244,UUNL,ENTERPRISE (E&CS) LTD
+245,VODA,Vodafone Limited
+246,VOLT,Co-operative Energy Limited
+247,WBUR,TXU Europe West Burton Ltd
+248,WGAS,Western Gas Ltd
+249,WINT,Winterton Power Ltd
+250,WPDR,Western Power Data Retriever
+251,WPRM,Western Power Remote Metering
+252,WPSW,Western Power Dist South West
+253,WPWA,Western Power Dist South Wales
+254,WREL,Utility Link Limited
+255,YBGA,SP British Gas Trading
+256,YEEL,SP Eastern Electricity
+257,YELG,Yorkshire Electricity Group
+258,YEME,SP East Midland Electricity
+259,YHYD,SP Hydro Electric
+260,YIND,SP Independent Energy (UK) Ltd
+261,YLON,SP London Electricity
+262,YMID,SP Midlands Electricity
+263,YNAT,SP National Power
+264,YNEE,SP Northern Electric
+265,YNEL,SP Nuclear Electric
+266,YNOR,SP NORWEB
+267,YNUC,SP Magnox Electric
+268,YPGE,SP PowerGen
+269,YSEE,SP SEEBOARD
+270,YSOU,SP Southern Electric
+271,YSPO,SP Scottish Power plc
+272,YSWA,SP South Wales Electricity
+273,YSWE,SP South Western Electricity
+274,YYEL,SP Yorkshire Electricity
+275,ZEEL,HE Eastern Electricity
+276,ZEME,HE East Midland Electricity
+277,ZHYD,HE Scottish Hydro Electric plc
+278,ZIND,HE Independent Energy (UK) Ltd
+279,ZLON,HE London Electricity
+280,ZMID,HE Midlands Electricity
+281,ZNAT,HE National Power
+282,ZNEE,HE Northern Electric
+283,ZNOR,HE NORWEB
+284,ZPGE,HE PowerGen
+285,ZSEE,HE SEEBOARD
+286,ZSOU,HE Southern Electric plc
+287,ZSPO,HE ScottishPower
+288,ZSWA,HE South Wales Electricity
+289,ZTAR,REA AGENT ONLY (IMServ Europe)
+290,ZYEL,HE Yorkshire Electricity
+291,ZZAA,Dummy NHHDA for Eastern
+292,ZZAB,Dummy NHHDA for East Midlands
+293,ZZAC,Dummy NHHDA for London
+294,ZZAD,Dummy NHHDA for Manweb
+295,ZZAE,Dummy NHHDA for Midlands
+296,ZZAF,Dummy NHHDA for Northern
+297,ZZAG,Dummy NHHDA for Norweb
+298,ZZAH,Dummy NHHDA for Southern
+299,ZZAJ,Dummy NHHDA for Seeboard
+300,ZZAK,Dummy NHHDA for SWALEC
+301,ZZAL,Dummy NHHDA for SWEB
+302,ZZAM,Dummy NHHDA for Yorkshire
