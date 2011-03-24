@@ -1413,45 +1413,90 @@ source.setAttribute('debug', debug)]]></value>
                     <fieldset>
                         <input type="hidden" name="supply-id" value="{/source/supply/@id}" />
                         <legend>Virtual Bills</legend>
-                        <br />
-                        <xsl:value-of select="'For '" />
-                        <select name="supply-polarity">
-                            <option value="import">
-                                Import
+                     <xsl:value-of select="'For '"/>
+<select name="supply-polarity">
+                                <option value="import">
+                                    Import
                                 </option>
-                            <option value="export">
-                                Export
-                                </option>
-                        </select>
-                        <xsl:value-of select="' and '" />
-                        <select name="source-code">
-                            <option value="net">
-                                Network
-                                </option>
-                            <option value="3rd-party">
-                                Third Party     
+                                <option value="export">
+                                    Export
                                 </option>
                         </select>
-                        <xsl:value-of select="' for '" />
-                        <input name="months" value="1" maxlength="2" size="2" />
-                        <xsl:value-of select="' month(s) until the end of '" />
-                        <input name="end-year" value="{/source/date/@year}"
-                            maxlength="4" size="4" />
-                        <xsl:value-of select="' - '" />
-                        <select name="end-month">
+<xsl:value-of select="' and '"/>
+<select name="source-code">
+ <option value="net">
+                                    Network
+                                </option>                                <option value="3rd-party">
+                  Third Party     
+                                </option>
+                        </select>
+<xsl:value-of select="'From '"/>
+<input name="start-year" value="{/source/hh-start-date[@label='start']/@year}" maxlength="4" size="4"/><xsl:value-of select="'-'"/>
+                        <select name="start-month">
+                            <xsl:for-each select="/source/months/month">
+                                <option value="{@number}">
+                                    <xsl:if test="@number=/source/hh-start-date[@label='start']/@month">
+                                        <xsl:attribute name="selected">selected</xsl:attribute>
+                                    </xsl:if>
+                                    <xsl:value-of select="@number"/>
+                                </option>
+                            </xsl:for-each>
+                        </select><xsl:value-of select="'-'"/>
+                        <select name="start-day">
+                            <xsl:for-each select="/source/days/day">
+                                <option value="{@number}">
+                                    <xsl:if test="@number=/source/hh-start-date[@label='start']/@day">
+                                        <xsl:attribute name="selected">selected</xsl:attribute>
+                                    </xsl:if>
+                                    <xsl:value-of select="@number"/>
+                                </option>
+                            </xsl:for-each>
+                        </select><xsl:value-of select="' '"/>
+                        <select name="start-hour">
+                            <xsl:for-each select="/source/hours/hour">
+                                <option value="{@number}">
+                                    <xsl:if test="@number=/source/hh-start-date[@label='start']/@hour">
+                                        <xsl:attribute name="selected">selected</xsl:attribute>
+                                    </xsl:if>
+                                    <xsl:value-of select="@number"/>
+                                </option>
+                            </xsl:for-each>
+                        </select><xsl:value-of select="':00 to '"/>
+<input name="finish-year" value="{/source/hh-start-date[@label='finish']/@year}" maxlength="4" size="4"/><xsl:value-of select="'-'"/>
+                        <select name="finish-month">
                             <xsl:for-each select="/source/months/month">
                                 <option value="{@number}">
                                     <xsl:if test="@number=/source/hh-start-date[@label='finish']/@month">
                                         <xsl:attribute name="selected">selected</xsl:attribute>
                                     </xsl:if>
-                                    <xsl:value-of select="@number" />
+                                    <xsl:value-of select="@number"/>
                                 </option>
                             </xsl:for-each>
-                        </select>
-                        <xsl:value-of select="' '" />
-                        <input type="submit" value="Download" />
+                        </select><xsl:value-of select="'-'"/>
+                        <select name="finish-day">
+                            <xsl:for-each select="/source/days/day">
+                                <option value="{@number}">
+                                    <xsl:if test="@number=/source/hh-start-date[@label='finish']/@day">
+                                        <xsl:attribute name="selected">selected</xsl:attribute>
+                                    </xsl:if>
+                                    <xsl:value-of select="@number"/>
+                                </option>
+                            </xsl:for-each>
+                        </select><xsl:value-of select="' '"/>
+                        <select name="finish-hour">
+                            <xsl:for-each select="/source/hours/hour">
+                                <option value="{@number}">
+                                    <xsl:if test="@number=/source/hh-start-date[@label='finish']/@hour">
+                                        <xsl:attribute name="selected">selected</xsl:attribute>
+                                    </xsl:if>
+                                    <xsl:value-of select="@number"/>
+                                </option>
+                            </xsl:for-each>
+                        </select><xsl:value-of select="':30 '"/>
+                        <input type="submit" value="Download"/>
                     </fieldset>
                 </form>
+                <br/>
                 <br />
                 <form action="{/source/request/@context-path}/reports/169/output/">
                     <fieldset>
@@ -7458,6 +7503,8 @@ for contract in Hiber.session().createQuery("from SupplierContract contract orde
 from net.sf.chellow.billing import SupplierContract
 from net.sf.chellow.monad.types import MonadDate
 from java.util import Calendar, Date
+from net.sf.chellow.physical import HhStartDate
+
 
 contract_id = inv.getLong('supplier-contract-id')
 contract = SupplierContract.getSupplierContract(contract_id)
@@ -7472,7 +7519,28 @@ cal = MonadDate.getCalendar()
 cal.setTime(Date())
 cal.add(Calendar.MONTH, -1)
 source.appendChild(MonadDate(cal.getTime()).toXml(doc))
-source.appendChild(MonadDate.getMonthsXml(doc))]]></value>
+source.appendChild(MonadDate.getMonthsXml(doc))
+source.appendChild(MonadDate.getDaysXml(doc))
+source.appendChild(MonadDate.getHoursXml(doc))
+
+cal.setTime(Date())
+cal.set(Calendar.DAY_OF_MONTH, 1)
+cal.set(Calendar.HOUR_OF_DAY, 0)
+cal.set(Calendar.MINUTE, 0)
+cal.set(Calendar.SECOND, 0)
+cal.set(Calendar.MILLISECOND, 0)
+cal.add(Calendar.MINUTE, -30)
+finish_date = HhStartDate(cal.getTime())
+finish_date.setLabel('finish')
+source.appendChild(finish_date.toXml(doc))
+
+cal.add(Calendar.MINUTE, 30)
+cal.add(Calendar.MONTH, -1)
+start_date = HhStartDate(cal.getTime())
+start_date.setLabel('start')
+source.appendChild(start_date.toXml(doc))
+
+]]></value>
         <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
 <xsl:stylesheet version="1.0"
     xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
@@ -7644,21 +7712,69 @@ source.appendChild(MonadDate.getMonthsXml(doc))]]></value>
                   Third Party     
                                 </option>
                         </select>
-<xsl:value-of select="' for '"/>
-<input name="months" value="1" maxlength="2" size="2" />
-<xsl:value-of select="' month(s) until the end of '"/>
-                        <input name="end-year" value="{/source/date/@year}" maxlength="4" size="4" /><xsl:value-of select="' - '"/>
-                        <select name="end-month">
+<xsl:value-of select="'From '"/>
+<input name="start-year" value="{/source/hh-start-date[@label='start']/@year}" maxlength="4" size="4"/><xsl:value-of select="'-'"/>
+                        <select name="start-month">
                             <xsl:for-each select="/source/months/month">
                                 <option value="{@number}">
-                                    <xsl:if test="@number=/source/date/@month">
+                                    <xsl:if test="@number=/source/hh-start-date[@label='start']/@month">
                                         <xsl:attribute name="selected">selected</xsl:attribute>
                                     </xsl:if>
                                     <xsl:value-of select="@number"/>
                                 </option>
                             </xsl:for-each>
-                        </select>
-<xsl:value-of select="' '"/>
+                        </select><xsl:value-of select="'-'"/>
+                        <select name="start-day">
+                            <xsl:for-each select="/source/days/day">
+                                <option value="{@number}">
+                                    <xsl:if test="@number=/source/hh-start-date[@label='start']/@day">
+                                        <xsl:attribute name="selected">selected</xsl:attribute>
+                                    </xsl:if>
+                                    <xsl:value-of select="@number"/>
+                                </option>
+                            </xsl:for-each>
+                        </select><xsl:value-of select="' '"/>
+                        <select name="start-hour">
+                            <xsl:for-each select="/source/hours/hour">
+                                <option value="{@number}">
+                                    <xsl:if test="@number=/source/hh-start-date[@label='start']/@hour">
+                                        <xsl:attribute name="selected">selected</xsl:attribute>
+                                    </xsl:if>
+                                    <xsl:value-of select="@number"/>
+                                </option>
+                            </xsl:for-each>
+                        </select><xsl:value-of select="':00 to '"/>
+<input name="finish-year" value="{/source/hh-start-date[@label='finish']/@year}" maxlength="4" size="4"/><xsl:value-of select="'-'"/>
+                        <select name="finish-month">
+                            <xsl:for-each select="/source/months/month">
+                                <option value="{@number}">
+                                    <xsl:if test="@number=/source/hh-start-date[@label='finish']/@month">
+                                        <xsl:attribute name="selected">selected</xsl:attribute>
+                                    </xsl:if>
+                                    <xsl:value-of select="@number"/>
+                                </option>
+                            </xsl:for-each>
+                        </select><xsl:value-of select="'-'"/>
+                        <select name="finish-day">
+                            <xsl:for-each select="/source/days/day">
+                                <option value="{@number}">
+                                    <xsl:if test="@number=/source/hh-start-date[@label='finish']/@day">
+                                        <xsl:attribute name="selected">selected</xsl:attribute>
+                                    </xsl:if>
+                                    <xsl:value-of select="@number"/>
+                                </option>
+                            </xsl:for-each>
+                        </select><xsl:value-of select="' '"/>
+                        <select name="finish-hour">
+                            <xsl:for-each select="/source/hours/hour">
+                                <option value="{@number}">
+                                    <xsl:if test="@number=/source/hh-start-date[@label='finish']/@hour">
+                                        <xsl:attribute name="selected">selected</xsl:attribute>
+                                    </xsl:if>
+                                    <xsl:value-of select="@number"/>
+                                </option>
+                            </xsl:for-each>
+                        </select><xsl:value-of select="':30 '"/>
                         <input type="submit" value="Download"/>
                     </fieldset>
                 </form>
@@ -8110,9 +8226,17 @@ inv.getResponse().setContentType("text/csv")
 inv.getResponse().addHeader('Content-Disposition', 'attachment; filename="output.csv"')
 pw = inv.getResponse().getWriter()
 
-end_year = inv.getInteger('end-year')
-end_month = inv.getInteger('end-month')
-months = inv.getInteger('months')
+start_year = inv.getInteger('start-year')
+start_month = inv.getInteger('start-month')
+start_day = inv.getInteger('start-day')
+start_hour = inv.getInteger('start-hour')
+
+finish_year = inv.getInteger('finish-year')
+finish_month = inv.getInteger('finish-month')
+finish_day = inv.getInteger('finish-day')
+finish_hour = inv.getInteger('finish-hour')
+
+supply_polarity = inv.getString('supply-polarity')
 
 if not inv.isValid():
     raise UserException()
@@ -8134,7 +8258,11 @@ comterp = computer.callFunction('create_comterp', [])
 if supply is None:
     pw.print('MPAN Core,Account,From,To')
     pw.flush()
-    bill_titles = comterp.get('contract_function')(contract, 'import_virtual_bill_titles')()
+    contract_function = comterp.get('contract_function')
+    #pw.println("contract func " + str(contract) + " " + supply_polarity)
+    titles_function = contract_function(contract, supply_polarity + '_virtual_bill_titles')
+    #pw.println("titles func " + str(titles_function))
+    bill_titles = titles_function()
     for title in bill_titles:
         pw.print(',' + title)
     pw.println('')
@@ -8143,39 +8271,60 @@ if supply is None:
 ct_cal = GregorianCalendar(TimeZone.getTimeZone("Europe/London"), Locale.UK)
 
 utc_cal = GregorianCalendar(TimeZone.getTimeZone("GMT"), Locale.UK)
-utc_cal.clear()
-utc_cal.set(Calendar.YEAR, end_year)
-utc_cal.set(Calendar.MONTH, end_month - 1)
-utc_cal.add(Calendar.MONTH, 1)
-finish_date = HhStartDate(utc_cal.getTime()).getPrevious()
-utc_cal.add(Calendar.MONTH, -1 * months)
-start_date = utc_cal.getTime()
 
-kwh_formatter = DecimalFormat("#,###")
-gbp_formatter = DecimalFormat("#,##0.00")
+utc_cal.set(Calendar.YEAR, start_year)
+utc_cal.set(Calendar.MONTH, start_month - 1)
+utc_cal.set(Calendar.DAY_OF_MONTH, start_day)
+utc_cal.set(Calendar.HOUR_OF_DAY, start_hour)
+utc_cal.set(Calendar.MINUTE, 0)
+utc_cal.set(Calendar.SECOND, 0)
+utc_cal.set(Calendar.MILLISECOND, 0)
+start_date = HhStartDate(utc_cal.getTime())
 
-def kwh_format(kwh):
-    return '"' + kwh_formatter.format(kwh) + '"'
-
-def gbp_format(gbp):
-    return '"' + gbp_formatter.format(gbp) + '"'
+utc_cal.set(Calendar.YEAR, finish_year)
+utc_cal.set(Calendar.MONTH, finish_month - 1)
+utc_cal.set(Calendar.DAY_OF_MONTH, finish_day)
+utc_cal.set(Calendar.HOUR_OF_DAY, finish_hour)
+utc_cal.set(Calendar.MINUTE, 30)
+utc_cal.set(Calendar.SECOND, 0)
+utc_cal.set(Calendar.MILLISECOND, 0)
+finish_date = HhStartDate(utc_cal.getTime())
 
 forecast_date = comterp.get('forecast_date')()
 timing = System.currentTimeMillis()
 
-for i in range(months):
-    utc_cal.setTime(start_date)
-    utc_cal.add(Calendar.MONTH, i)
-    month_start = HhStartDate(utc_cal.getTime())
-    utc_cal.add(Calendar.MONTH, 1)
-    utc_cal.add(Calendar.MINUTE, -30)
-    month_finish = HhStartDate(utc_cal.getTime())
+utc_cal.setTime(start_date.getDate())
+utc_cal.set(Calendar.DAY_OF_MONTH, 1)
+utc_cal.set(Calendar.HOUR_OF_DAY, 0)
+utc_cal.set(Calendar.MINUTE, 0)
+month_start = HhStartDate(utc_cal.getTime())
 
-    for data_source in comterp.get('import_data_sources')(contract, supply, month_start, month_finish, forecast_date, comterp, pw):
+utc_cal.add(Calendar.MONTH, 1)
+utc_cal.add(Calendar.MINUTE, -30)
+month_finish = HhStartDate(utc_cal.getTime())
+
+while not month_start.after(finish_date):
+    if month_start.before(start_date):
+        period_start = start_date
+    else:
+        period_start = month_start
+
+    if month_finish.after(finish_date):
+        period_finish = finish_date
+    else:
+        period_finish = month_finish
+
+    for data_source in comterp.get(supply_polarity + '_data_sources')(contract, supply, period_start, period_finish, forecast_date, comterp, pw):
 
         if contract is None:
-            sup_con = supply.getGenerations(data_source.start_date, data_source.finish_date)[0].getImportMpan().getSupplierContract()
-            bill_titles = comterp.get('contract_function')(sup_con, 'import_virtual_bill_titles')()
+            sup_gen = supply.getGenerations(data_source.start_date, data_source.finish_date)[0]
+            if supply_polarity == 'import':
+                mpan = sup_gen.getImportMpan()
+            else:
+                mpan = sup_gen.getExportMpan()
+
+            sup_con = mpan.getSupplierContract()
+            bill_titles = comterp.get('contract_function')(sup_con, supply_polarity + '_virtual_bill_titles')()
             pw.print('MPAN Core,Account,From,To,' + ','.join(bill_titles))
             pw.println('')
             pw.flush()
@@ -8185,8 +8334,7 @@ for i in range(months):
         pw.print(','.join('"' + str(value) + '"' for value in [data_source.id, data_source.supplier_account, data_source.start_date, data_source.finish_date]))
         pw.flush()
 
-
-        bill = comterp.get('contract_function')(sup_con, 'import_virtual_bill')(data_source)
+        bill = comterp.get('contract_function')(sup_con, supply_polarity + '_virtual_bill')(data_source)
         for title in bill_titles:
             pw.print(',"' + str(bill.get(title, '')) + '"')
             if title in bill:
@@ -8198,6 +8346,13 @@ for i in range(months):
         pw.println('')
         pw.flush()
         Hiber.session().clear()
+
+    utc_cal.setTime(month_start.getDate())
+    utc_cal.add(Calendar.MONTH, 1)
+    month_start = HhStartDate(utc_cal.getTime())
+    utc_cal.add(Calendar.MONTH, 1)
+    utc_cal.add(Calendar.MINUTE, -30)
+    month_finish = HhStartDate(utc_cal.getTime())
 pw.close()]]></value>
         <value><![CDATA[]]></value>
     </line>
@@ -9958,9 +10113,24 @@ from net.sf.chellow.monad.types import MonadDate
 from java.sql import Timestamp, ResultSet
 from java.util import GregorianCalendar, Calendar, TimeZone, Locale, Date
 from net.sf.chellow.physical import HhStartDate
-from net.sf.chellow.billing import Batch, NonCoreContract, Bill
+from net.sf.chellow.billing import Batch, NonCoreContract, Bill, SupplierContract, HhdcContract, MopContract
 from org.python.util import PythonInterpreter
 
+def find_contract_type(contract_id):
+    try:
+        SupplierContract.findSupplierContract(contract_id)
+        contract_type = 'supplier'
+    except:
+        try:
+            HhdcContract.findHhdcContract(contract_id)
+            contract_type = 'dc'
+        except:
+            try:
+                MopContract.findMopContract(contract_id)
+                contract_type = 'mop'
+            except:
+                raise UserException('contract type not found')
+    return contract_type
 
 inv.getResponse().setContentType("text/csv")
 inv.getResponse().setHeader('Content-Disposition', 'filename=output.csv;')
@@ -9994,6 +10164,8 @@ while bills.next():
     bill_start = bill.getStartDate()
     bill_finish = bill.getFinishDate()
 
+    contract_type = find_contract_type(bill.getBatch().getContract().getId())
+
     supply = bill.getSupply()
     generation = supply.getGeneration(bill.getFinishDate())
     if generation is None:
@@ -10012,6 +10184,10 @@ while bills.next():
     while enlarged:
         enlarged = False
         for covered_bill in covered_query.setTimestamp('finishDate', covered_finish.getDate()).setTimestamp('startDate', covered_start.getDate()).list():
+            covered_contract_type = find_contract_type(covered_bill.getBatch().getContract().getId())
+            if contract_type != covered_contract_type:
+                continue
+
             if covered_primary_bill is None and covered_bill.getReads() is not None and len(covered_bill.getReads()) > 0:
                 covered_primary_bill = covered_bill
             if covered_bill.getStartDate().before(covered_start):
@@ -12432,6 +12608,22 @@ source.appendChild(MonadDate.getDaysXml(doc))]]></value>
                     <li>
                         <a
                             href="{/source/request/@context-path}/reports/195/output/">Comparison against ECOES</a>
+                    </li>
+                    <li>
+                        <a
+                            href="{/source/request/@context-path}/reports/221/output/">System Price Importer</a>
+                    </li>
+                    <li>
+                        <a
+                            href="{/source/request/@context-path}/reports/223/output/">TLM Importer</a>
+                    </li>
+                    <li>
+                        <a
+                            href="{/source/request/@context-path}/reports/225/output/">RCRC Importer</a>
+                    </li>
+                    <li>
+                        <a
+                            href="{/source/request/@context-path}/reports/227/output/">BSUoS Importer</a>
                     </li>
                 </ul>
             </body>
@@ -16331,7 +16523,7 @@ inv.getResponse().setContentType("text/csv")
 inv.getResponse().setHeader('Content-Disposition', 'filename=output.csv;')
 pw = inv.getResponse().getWriter()
 
-pw.print("MPAN Core,Site Id,Site Name,Date,Event,Changed From,Changed To,")
+pw.print("MPAN Core,Site Id,Site Name,Date,Event,")
 pw.flush()
 
 cal = MonadDate.getCalendar()
@@ -16360,13 +16552,9 @@ mpan_query = Hiber.session().createQuery("from Mpan mpan where mpan.supplyGenera
 
 events = []
 
-def add_event(date, code, mpans, previous=None, current=None):
+def add_event(date, code, mpans):
     for mpan in mpans:
-        if previous is None:
-            previous = ''
-        if current is None:
-            current = ''
-        events.append({'date': date, 'code': code, 'mpan-core': mpan.getCore(), 'previous': previous, 'current': current})
+        events.append({'date': date, 'code': code, 'mpan-core': mpan.getCore()})
 
 while supplies.next():
     supply = supplies.get(0)
@@ -16386,75 +16574,45 @@ while supplies.next():
     prev_gen = first_generation
     for generation in generations[1:]:
         if generation.getMeterSerialNumber() != prev_gen.getMeterSerialNumber():
-            add_event(generation.getStartDate(), "Meter Change", generation.getMpans(), prev_gen.getMeterSerialNumber(), generation.getMeterSerialNumber())
+            add_event(generation.getStartDate(), "Meter Change", generation.getMpans())
         if generation.getPc().getCode() != prev_gen.getPc().getCode():
-            add_event(generation.getStartDate(), "Change Of Profile Class", generation.getMpans(), prev_gen.getPc(), generation.getPc())
+            add_event(generation.getStartDate(), "Change Of Profile Class", generation.getMpans())
 
-        gen_mop = generation.getMopContract()
-        if gen_mop is None:
-            gen_mop_id = None
-            gen_mop_name = None
-        else:
-            gen_mop_id = gen_mop.getId()
-            gen_mop_name = gen_mop.getName()
-
-        prev_mop = prev_gen.getMopContract()
-        if prev_mop is None:
-            prev_mop_id = None
-            prev_mop_name = None
-        else:
-            prev_mop_id = prev_mop.getId()
-            prev_mop_name = prev_mop.getName()
-
+        gen_mop_id = generation.getMopContract()
+        if gen_mop_id is not None:
+            gen_mop_id = gen_mop_id.getId()
+        prev_mop_id = prev_gen.getMopContract()
+        if prev_mop_id is not None:
+            prev_mop_id = prev_mop_id.getId()
         if gen_mop_id != prev_mop_id:
-            add_event(generation.getStartDate(), "Change Of MOP", generation.getMpans(), prev_mop_name, gen_mop_name)
+            add_event(generation.getStartDate(), "Change Of MOP", generation.getMpans())
 
-        gen_dc = generation.getHhdcContract()
-        if gen_dc is None:
-            gen_dc_id = None
-            gen_dc_name = None
-        else:
-            gen_dc_id = gen_dc.getId()
-            gen_dc_name = gen_dc.getName()
-
-        prev_dc = prev_gen.getHhdcContract()
-        if prev_dc is None:
-            prev_dc_id = None
-            prev_dc_name = None
-        else:
-            prev_dc_id = prev_dc.getId()
-            prev_dc_name = prev_dc.getName()
-
+        gen_dc_id = generation.getHhdcContract()
+        if gen_dc_id is not None:
+            gen_dc_id = gen_dc_id.getId()
+        prev_dc_id = prev_gen.getHhdcContract()
+        if prev_dc_id is not None:
+            prev_dc_id = prev_dc_id.getId()
         if gen_dc_id != prev_dc_id:
-            add_event(generation.getStartDate(), "Change Of DC", generation.getMpans(), prev_dc_name, gen_dc_name)
+            add_event(generation.getStartDate(), "Change Of DC", generation.getMpans())
 
         for polarity in [True, False]:
-            gen_mpan = mpan_query.setEntity('generation', generation).setBoolean('polarity', polarity).uniqueResult()
-            if gen_mpan is None:
-                gen_sup_id = None
-                gen_sup_name = None
-            else:
-                reporting_mpan = gen_mpan
-                gen_sup = gen_mpan.getSupplierContract()
-                gen_sup_id = gen_sup.getId()
-                gen_sup_name = gen_sup.getName()
+            gen_mpan_sup_id = mpan_query.setEntity('generation', generation).setBoolean('polarity', polarity).uniqueResult()
+            if gen_mpan_sup_id is not None:
+                reporting_mpan = gen_mpan_sup_id
+                gen_mpan_sup_id = gen_mpan_sup_id.getSupplierContract().getId()
             
-            prev_mpan = mpan_query.setEntity('generation', prev_gen).uniqueResult()
-            if prev_mpan is None:
-                prev_sup_id = None
-                prev_sup_name = None
-            else:
-                reporting_mpan = prev_mpan
-                prev_sup = prev_mpan.getSupplierContract()
-                prev_sup_id = prev_sup.getId()
-                prev_sup_name = prev_sup.getName()
+            prev_mpan_sup_id = mpan_query.setEntity('generation', prev_gen).uniqueResult()
+            if prev_mpan_sup_id is not None:
+                reporting_mpan = prev_mpan_sup_id
+                prev_mpan_sup_id = prev_mpan_sup_id.getSupplierContract().getId()
             
-            if gen_sup_id is None and prev_sup_id is not None:
+            if gen_mpan_sup_id is None and prev_mpan_sup_id is not None:
                 add_event(generation.getStartDate(), "End of supply", [reporting_mpan])
-            elif gen_sup_id is not None and prev_sup_id is None:
+            elif gen_mpan_sup_id is not None and prev_mpan_sup_id is None:
                 add_event(generation.getStartDate(), "Start of supply", [reporting_mpan])
-            elif gen_sup_id is not None and prev_sup_id is not None and gen_sup_id != prev_sup_id:
-                add_event(generation.getStartDate(), "Change Of Supplier", [reporting_mpan], prev_sup_name, gen_sup_name)
+            elif gen_mpan_sup_id is not None and prev_mpan_sup_id is not None and gen_mpan_sup_id != prev_mpan_sup_id:
+                add_event(generation.getStartDate(), "Change Of Supplier", [reporting_mpan])
         
         prev_gen = generation
 
@@ -16462,7 +16620,7 @@ while supplies.next():
         site = Hiber.session().createQuery("select ssgen.site from SiteSupplyGeneration ssgen where ssgen.isPhysical is true and ssgen.supplyGeneration = :supplyGeneration").setEntity('supplyGeneration', last_generation).uniqueResult()
         for event in events:
             pw.println('')
-            pw.print(','.join('"' + str(val) + '"' for val in [event['mpan-core'], site.getCode(), site.getName(), event['date'], event['code'], event['previous'], event['current']]) + ',')
+            pw.print(','.join('"' + str(val) + '"' for val in [event['mpan-core'], site.getCode(), site.getName(), event['date'], event['code']]) + ',')
     else:
         pw.print(' ')
     pw.flush()
@@ -16637,5 +16795,581 @@ while reads.next():
 reads.close()
 pw.close()]]></value>
         <value><![CDATA[]]></value>
+    </line>
+    <line>
+        <value><![CDATA[insert]]></value>
+        <value><![CDATA[report]]></value>
+        <value><![CDATA[221]]></value>
+        <value><![CDATA[true]]></value>
+        <value><![CDATA[System Price Importer]]></value>
+        <value><![CDATA[from java.lang import Thread
+from net.sf.chellow.billing import NonCoreContract, HhdcContract
+from net.sf.chellow.monad import XmlTree, UserException, Monad, MonadMessage
+from net.sf.chellow.monad.types import MonadUri
+
+debug = ''
+
+computer = NonCoreContract.getNonCoreContract('computer')
+comterp = computer.callFunction('create_comterp', [])
+contract_f = comterp.get('contract_function')
+
+REPORT_URI = MonadUri("/reports/221/output/")
+
+source = doc.getDocumentElement()
+
+system_price_contract = NonCoreContract.getNonCoreContract('system-price')
+ctx = inv.getMonad().getServletConfig().getServletContext()
+
+task = system_price_contract.callFunction('get_system_price_task', [ctx])
+
+if task is not None:
+    importer_element = doc.createElement("importer")
+    source.appendChild(importer_element);
+    importer_element.setAttribute('is-locked', str(task.is_locked()))
+
+    for message in task.messages:
+        log_item_element = doc.createElement('log-item')
+        importer_element.appendChild(log_item_element)
+        log_item_element.setAttribute('message', message)
+
+try:
+    if inv.hasParameter('remove'):
+        contract_f(system_price_contract, 'remove_system_price_task')(ctx)
+        inv.sendSeeOther(REPORT_URI)
+    elif inv.hasParameter('start'):
+        contract_f(system_price_contract, 'start_system_price_task')(ctx)
+        inv.sendSeeOther(REPORT_URI)
+    elif inv.hasParameter('now'):
+        Thread(task, "System Price Now").start()
+        inv.sendSeeOther(REPORT_URI)
+except UserException, e:
+    source.appendChild(MonadMessage(e.getMessage()).toXml(doc))
+
+source.setAttribute('debug', debug)]]></value>
+        <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
+<xsl:stylesheet version="1.0"
+    xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+    <xsl:output method="html" encoding="US-ASCII"
+        doctype-public="-//W3C//DTD HTML 4.01//EN" doctype-system="http://www.w3.org/TR/html4/strict.dtd"
+        indent="yes" />
+
+    <xsl:template match="/">
+        <html>
+            <head>
+                <link rel="stylesheet" type="text/css"
+                    href="{/source/request/@context-path}/reports/19/output/" />
+
+                <title>
+                    Chellow &gt; Admin &gt; System Price Importer
+                </title>
+
+            </head>
+            <body>
+                <p>
+                    <a
+                        href="{/source/request/@context-path}/reports/1/output/">
+                        <xsl:value-of select="'Home'" />
+                    </a>
+                    &gt;
+                    <a
+                        href="{/source/request/@context-path}/reports/153/output/">
+                        <xsl:value-of select="'Admin'" />
+                    </a>
+                    &gt;
+                    <xsl:value-of select="'System Price Importer'" />
+                </p>
+                <br />
+<xsl:if test="//message">
+                    <ul>
+                        <xsl:for-each select="//message">
+                            <li>
+                                <xsl:value-of select="@description" />
+                            </li>
+                        </xsl:for-each>
+                    </ul>
+                </xsl:if>
+
+<p><a href=".">Refresh page</a><xsl:value-of select="/source/@debug"/></p>
+
+                <xsl:choose>
+                <xsl:when test="/source/importer">
+<table>
+                    <tr>
+                        <th>Is Locked?</th>
+                        <td>
+                            <xsl:value-of select="/source/importer/@is-locked"/>
+                        </td>
+                    </tr>
+                </table>
+                <br/>
+                <xsl:if test="/source/importer/@is-locked='False'">
+                <form action=".">
+                            <fieldset>
+                                <legend>Remove Importer</legend>
+                                <input type="submit" value="Remove" name="remove" />
+                            </fieldset>
+                        </form>
+                        <br/>
+<form action=".">
+                            <fieldset>
+                                <legend>Import Now</legend>
+                                <input type="submit" value="Import" name="now" />
+                            </fieldset>
+                        </form>
+                 </xsl:if>
+<h3>Log</h3>
+                <ul>
+                    <xsl:for-each select="/source/importer/log-item">
+                        <li>
+                            <xsl:value-of select="@message" />
+                        </li>
+                    </xsl:for-each>
+                </ul>
+                </xsl:when>
+                <xsl:otherwise>
+                   <form action=".">
+                            <fieldset>
+                                <legend>Start Importer</legend>
+                                <input type="submit" value="Start" name="start" />
+                            </fieldset>
+                        </form>
+                </xsl:otherwise>
+                </xsl:choose>
+            </body>
+        </html>
+    </xsl:template>
+</xsl:stylesheet>]]></value>
+    </line>
+    <line>
+        <value><![CDATA[insert]]></value>
+        <value><![CDATA[report]]></value>
+        <value><![CDATA[223]]></value>
+        <value><![CDATA[true]]></value>
+        <value><![CDATA[Transmission Loss Multiplier Importer]]></value>
+        <value><![CDATA[from java.lang import Thread
+from net.sf.chellow.billing import NonCoreContract, HhdcContract
+from net.sf.chellow.monad import XmlTree, UserException, Monad, MonadMessage
+from net.sf.chellow.monad.types import MonadUri
+
+debug = ''
+
+computer = NonCoreContract.getNonCoreContract('computer')
+comterp = computer.callFunction('create_comterp', [])
+contract_f = comterp.get('contract_function')
+
+REPORT_URI = MonadUri("/reports/223/output/")
+
+source = doc.getDocumentElement()
+
+tlm_contract = NonCoreContract.getNonCoreContract('tlms')
+ctx = inv.getMonad().getServletConfig().getServletContext()
+
+task = tlm_contract.callFunction('get_tlm_task', [ctx])
+
+if task is not None:
+    importer_element = doc.createElement("importer")
+    source.appendChild(importer_element);
+    importer_element.setAttribute('is-locked', str(task.is_locked()))
+
+    for message in task.messages:
+        log_item_element = doc.createElement('log-item')
+        importer_element.appendChild(log_item_element)
+        log_item_element.setAttribute('message', message)
+
+try:
+    if inv.hasParameter('remove'):
+        contract_f(tlm_contract, 'remove_tlm_task')(ctx)
+        inv.sendSeeOther(REPORT_URI)
+    elif inv.hasParameter('start'):
+        contract_f(tlm_contract, 'start_tlm_task')(ctx)
+        inv.sendSeeOther(REPORT_URI)
+    elif inv.hasParameter('now'):
+        Thread(task, "TLM Import Now").start()
+        inv.sendSeeOther(REPORT_URI)
+except UserException, e:
+    source.appendChild(MonadMessage(e.getMessage()).toXml(doc))
+
+source.setAttribute('debug', debug)]]></value>
+        <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
+<xsl:stylesheet version="1.0"
+    xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+    <xsl:output method="html" encoding="US-ASCII"
+        doctype-public="-//W3C//DTD HTML 4.01//EN" doctype-system="http://www.w3.org/TR/html4/strict.dtd"
+        indent="yes" />
+
+    <xsl:template match="/">
+        <html>
+            <head>
+                <link rel="stylesheet" type="text/css"
+                    href="{/source/request/@context-path}/reports/19/output/" />
+
+                <title>
+                    Chellow &gt; Admin &gt; TLM Importer
+                </title>
+
+            </head>
+            <body>
+                <p>
+                    <a
+                        href="{/source/request/@context-path}/reports/1/output/">
+                        <xsl:value-of select="'Home'" />
+                    </a>
+                    &gt;
+                    <a
+                        href="{/source/request/@context-path}/reports/153/output/">
+                        <xsl:value-of select="'Admin'" />
+                    </a>
+                    &gt;
+                    <xsl:value-of select="'TLM Importer'" />
+                </p>
+                <br />
+<xsl:if test="//message">
+                    <ul>
+                        <xsl:for-each select="//message">
+                            <li>
+                                <xsl:value-of select="@description" />
+                            </li>
+                        </xsl:for-each>
+                    </ul>
+                </xsl:if>
+
+<p><a href=".">Refresh page</a><xsl:value-of select="/source/@debug"/></p>
+
+                <xsl:choose>
+                <xsl:when test="/source/importer">
+<table>
+                    <tr>
+                        <th>Is Locked?</th>
+                        <td>
+                            <xsl:value-of select="/source/importer/@is-locked"/>
+                        </td>
+                    </tr>
+                </table>
+                <br/>
+                <xsl:if test="/source/importer/@is-locked='False'">
+                <form action=".">
+                            <fieldset>
+                                <legend>Remove Importer</legend>
+                                <input type="submit" value="Remove" name="remove" />
+                            </fieldset>
+                        </form>
+                        <br/>
+<form action=".">
+                            <fieldset>
+                                <legend>Import Now</legend>
+                                <input type="submit" value="Import" name="now" />
+                            </fieldset>
+                        </form>
+                 </xsl:if>
+<h3>Log</h3>
+                <ul>
+                    <xsl:for-each select="/source/importer/log-item">
+                        <li>
+                            <xsl:value-of select="@message" />
+                        </li>
+                    </xsl:for-each>
+                </ul>
+                </xsl:when>
+                <xsl:otherwise>
+                   <form action=".">
+                            <fieldset>
+                                <legend>Start Importer</legend>
+                                <input type="submit" value="Start" name="start" />
+                            </fieldset>
+                        </form>
+                </xsl:otherwise>
+                </xsl:choose>
+            </body>
+        </html>
+    </xsl:template>
+</xsl:stylesheet>]]></value>
+    </line>
+    <line>
+        <value><![CDATA[insert]]></value>
+        <value><![CDATA[report]]></value>
+        <value><![CDATA[225]]></value>
+        <value><![CDATA[true]]></value>
+        <value><![CDATA[RCRC Importer]]></value>
+        <value><![CDATA[from java.lang import Thread
+from net.sf.chellow.billing import NonCoreContract, HhdcContract
+from net.sf.chellow.monad import XmlTree, UserException, Monad, MonadMessage
+from net.sf.chellow.monad.types import MonadUri
+
+debug = ''
+
+computer = NonCoreContract.getNonCoreContract('computer')
+comterp = computer.callFunction('create_comterp', [])
+contract_f = comterp.get('contract_function')
+
+REPORT_URI = MonadUri("/reports/225/output/")
+
+source = doc.getDocumentElement()
+
+rcrc_contract = NonCoreContract.getNonCoreContract('rcrc')
+ctx = inv.getMonad().getServletConfig().getServletContext()
+
+task = rcrc_contract.callFunction('get_rcrc_task', [ctx])
+
+if task is not None:
+    importer_element = doc.createElement("importer")
+    source.appendChild(importer_element);
+    importer_element.setAttribute('is-locked', str(task.is_locked()))
+
+    for message in task.messages:
+        log_item_element = doc.createElement('log-item')
+        importer_element.appendChild(log_item_element)
+        log_item_element.setAttribute('message', message)
+
+try:
+    if inv.hasParameter('remove'):
+        contract_f(rcrc_contract, 'remove_rcrc_task')(ctx)
+        inv.sendSeeOther(REPORT_URI)
+    elif inv.hasParameter('start'):
+        contract_f(rcrc_contract, 'start_rcrc_task')(ctx)
+        inv.sendSeeOther(REPORT_URI)
+    elif inv.hasParameter('now'):
+        Thread(task, "RCRC Import Now").start()
+        inv.sendSeeOther(REPORT_URI)
+except UserException, e:
+    source.appendChild(MonadMessage(e.getMessage()).toXml(doc))
+
+source.setAttribute('debug', debug)]]></value>
+        <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
+<xsl:stylesheet version="1.0"
+    xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+    <xsl:output method="html" encoding="US-ASCII"
+        doctype-public="-//W3C//DTD HTML 4.01//EN" doctype-system="http://www.w3.org/TR/html4/strict.dtd"
+        indent="yes" />
+
+    <xsl:template match="/">
+        <html>
+            <head>
+                <link rel="stylesheet" type="text/css"
+                    href="{/source/request/@context-path}/reports/19/output/" />
+
+                <title>
+                    Chellow &gt; Admin &gt; RCRC
+                </title>
+
+            </head>
+            <body>
+                <p>
+                    <a
+                        href="{/source/request/@context-path}/reports/1/output/">
+                        <xsl:value-of select="'Home'" />
+                    </a>
+                    &gt;
+                    <a
+                        href="{/source/request/@context-path}/reports/153/output/">
+                        <xsl:value-of select="'Admin'" />
+                    </a>
+                    &gt;
+                    <xsl:value-of select="'RCRC Importer'" />
+                </p>
+                <br />
+<xsl:if test="//message">
+                    <ul>
+                        <xsl:for-each select="//message">
+                            <li>
+                                <xsl:value-of select="@description" />
+                            </li>
+                        </xsl:for-each>
+                    </ul>
+                </xsl:if>
+
+<p><a href=".">Refresh page</a><xsl:value-of select="/source/@debug"/></p>
+
+                <xsl:choose>
+                <xsl:when test="/source/importer">
+<table>
+                    <tr>
+                        <th>Is Locked?</th>
+                        <td>
+                            <xsl:value-of select="/source/importer/@is-locked"/>
+                        </td>
+                    </tr>
+                </table>
+                <br/>
+                <xsl:if test="/source/importer/@is-locked='False'">
+                <form action=".">
+                            <fieldset>
+                                <legend>Remove Importer</legend>
+                                <input type="submit" value="Remove" name="remove" />
+                            </fieldset>
+                        </form>
+                        <br/>
+<form action=".">
+                            <fieldset>
+                                <legend>Import Now</legend>
+                                <input type="submit" value="Import" name="now" />
+                            </fieldset>
+                        </form>
+                 </xsl:if>
+<h3>Log</h3>
+                <ul>
+                    <xsl:for-each select="/source/importer/log-item">
+                        <li>
+                            <xsl:value-of select="@message" />
+                        </li>
+                    </xsl:for-each>
+                </ul>
+                </xsl:when>
+                <xsl:otherwise>
+                   <form action=".">
+                            <fieldset>
+                                <legend>Start Importer</legend>
+                                <input type="submit" value="Start" name="start" />
+                            </fieldset>
+                        </form>
+                </xsl:otherwise>
+                </xsl:choose>
+            </body>
+        </html>
+    </xsl:template>
+</xsl:stylesheet>]]></value>
+    </line>
+    <line>
+        <value><![CDATA[insert]]></value>
+        <value><![CDATA[report]]></value>
+        <value><![CDATA[227]]></value>
+        <value><![CDATA[true]]></value>
+        <value><![CDATA[Importer: BSUoS]]></value>
+        <value><![CDATA[from java.lang import Thread
+from net.sf.chellow.billing import NonCoreContract, HhdcContract
+from net.sf.chellow.monad import XmlTree, UserException, Monad, MonadMessage
+from net.sf.chellow.monad.types import MonadUri
+
+debug = ''
+
+computer = NonCoreContract.getNonCoreContract('computer')
+comterp = computer.callFunction('create_comterp', [])
+contract_f = comterp.get('contract_function')
+
+REPORT_URI = MonadUri("/reports/227/output/")
+
+source = doc.getDocumentElement()
+
+bsuos_contract = NonCoreContract.getNonCoreContract('bsuos')
+ctx = inv.getMonad().getServletConfig().getServletContext()
+
+task = bsuos_contract.callFunction('get_bsuos_task', [ctx])
+
+if task is not None:
+    importer_element = doc.createElement("importer")
+    source.appendChild(importer_element);
+    importer_element.setAttribute('is-locked', str(task.is_locked()))
+
+    for message in task.messages:
+        log_item_element = doc.createElement('log-item')
+        importer_element.appendChild(log_item_element)
+        log_item_element.setAttribute('message', message)
+
+try:
+    if inv.hasParameter('remove'):
+        contract_f(bsuos_contract, 'remove_bsuos_task')(ctx)
+        inv.sendSeeOther(REPORT_URI)
+    elif inv.hasParameter('start'):
+        contract_f(bsuos_contract, 'start_bsuos_task')(ctx)
+        inv.sendSeeOther(REPORT_URI)
+    elif inv.hasParameter('now'):
+        Thread(task, "BSUoS Import Now").start()
+        inv.sendSeeOther(REPORT_URI)
+except UserException, e:
+    source.appendChild(MonadMessage(e.getMessage()).toXml(doc))
+
+source.setAttribute('debug', debug)]]></value>
+        <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
+<xsl:stylesheet version="1.0"
+    xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+    <xsl:output method="html" encoding="US-ASCII"
+        doctype-public="-//W3C//DTD HTML 4.01//EN" doctype-system="http://www.w3.org/TR/html4/strict.dtd"
+        indent="yes" />
+
+    <xsl:template match="/">
+        <html>
+            <head>
+                <link rel="stylesheet" type="text/css"
+                    href="{/source/request/@context-path}/reports/19/output/" />
+
+                <title>
+                    Chellow &gt; Admin &gt; BSUoS
+                </title>
+
+            </head>
+            <body>
+                <p>
+                    <a
+                        href="{/source/request/@context-path}/reports/1/output/">
+                        <xsl:value-of select="'Home'" />
+                    </a>
+                    &gt;
+                    <a
+                        href="{/source/request/@context-path}/reports/153/output/">
+                        <xsl:value-of select="'Admin'" />
+                    </a>
+                    &gt;
+                    <xsl:value-of select="'BSUoS Importer'" />
+                </p>
+                <br />
+<xsl:if test="//message">
+                    <ul>
+                        <xsl:for-each select="//message">
+                            <li>
+                                <xsl:value-of select="@description" />
+                            </li>
+                        </xsl:for-each>
+                    </ul>
+                </xsl:if>
+
+<p><a href=".">Refresh page</a><xsl:value-of select="/source/@debug"/></p>
+
+                <xsl:choose>
+                <xsl:when test="/source/importer">
+<table>
+                    <tr>
+                        <th>Is Locked?</th>
+                        <td>
+                            <xsl:value-of select="/source/importer/@is-locked"/>
+                        </td>
+                    </tr>
+                </table>
+                <br/>
+                <xsl:if test="/source/importer/@is-locked='False'">
+                <form action=".">
+                            <fieldset>
+                                <legend>Remove Importer</legend>
+                                <input type="submit" value="Remove" name="remove" />
+                            </fieldset>
+                        </form>
+                        <br/>
+<form action=".">
+                            <fieldset>
+                                <legend>Import Now</legend>
+                                <input type="submit" value="Import" name="now" />
+                            </fieldset>
+                        </form>
+                 </xsl:if>
+<h3>Log</h3>
+                <ul>
+                    <xsl:for-each select="/source/importer/log-item">
+                        <li>
+                            <xsl:value-of select="@message" />
+                        </li>
+                    </xsl:for-each>
+                </ul>
+                </xsl:when>
+                <xsl:otherwise>
+                   <form action=".">
+                            <fieldset>
+                                <legend>Start Importer</legend>
+                                <input type="submit" value="Start" name="start" />
+                            </fieldset>
+                        </form>
+                </xsl:otherwise>
+                </xsl:choose>
+            </body>
+        </html>
+    </xsl:template>
+</xsl:stylesheet>]]></value>
     </line>
 </csv>

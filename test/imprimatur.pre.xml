@@ -1820,12 +1820,12 @@ def triad_estimates():
 			<response-code value="200" />
 		</request>
 		<request
-			path="/chellow/reports/87/output/?supply-id=8&amp;supply-polarity=import&amp;months=1&amp;end-year=2009&amp;end-month=03">
+			path="/chellow/reports/87/output/?supply-id=8&amp;supply-polarity=import&amp;start-year=2009&amp;start-month=03&amp;start-day=01&amp;start-hour=00&amp;finish-year=2009&amp;finish-month=03&amp;finish-day=31&amp;finish-hour=23">
 			<response-code value="200" />
 			<regex
 				pattern="MPAN Core,Account,From,To,net-gbp,ccl-kwh,ccl-rate,ccl-gbp,data-collection-gbp,duos-availability-agreed-kva,duos-availability-billed-kva,duos-availability-rate,duos-availability-gbp,duos-day-kwh,duos-day-gbp,duos-night-kwh,duos-night-gbp,duos-reactive-rate,duos-reactive-gbp,duos-standing-gbp,settlement-gbp,night-msp-kwh,night-gsp-kwh,night-gbp,other-msp-kwh,other-gsp-kwh,other-gbp,summer-pk-msp-kwh,summer-pk-gsp-kwh,summer-pk-gbp,winter-low-pk-msp-kwh,winter-low-pk-gsp-kwh,winter-low-pk-gbp,winter-off-pk-msp-kwh,winter-off-pk-gsp-kwh,winter-off-pk-gbp,winter-pk-msp-kwh,winter-pk-gsp-kwh,winter-pk-gbp,bsuos-actual-gbp,triad-actual-0-date,triad-actual-0-msp-kw,triad-actual-0-status,triad-actual-0-laf,triad-actual-0-gsp-kw,triad-actual-1-date,triad-actual-1-msp-kw,triad-actual-1-status,triad-actual-1-laf,triad-actual-1-gsp-kw,triad-actual-2-date,triad-actual-2-msp-kw,triad-actual-2-status,triad-actual-2-laf,triad-actual-2-gsp-kw,triad-actual-gsp-kw,triad-actual-rate,triad-actual-gbp,triad-estimate-0-date,triad-estimate-0-msp-kw,triad-estimate-0-status,triad-estimate-0-laf,triad-estimate-0-gsp-kw,triad-estimate-1-date,triad-estimate-1-msp-kw,triad-estimate-1-status,triad-estimate-1-laf,triad-estimate-1-gsp-kw,triad-estimate-2-date,triad-estimate-2-msp-kw,triad-estimate-2-status,triad-estimate-2-laf,triad-estimate-2-gsp-kw,triad-estimate-gsp-kw,triad-estimate-rate,triad-estimate-months,triad-estimate-gbp,triad-all-estimates-months,triad-all-estimates-gbp" />
 			<regex
-				pattern='"22 4862 4512 332","11640077","2009-03-01T00:00Z","2009-03-31T23:30Z","10467.4895616","148925.71","0.00456","679.1012376","5.89","230","399.72","0.0368","456.000576","105487.44","770.058312","43438.27","112.939502","0.0033","0.0","","88","43401.25","46092.1275","288.794834064","54364.73","57735.34326","361.74656673","0","0","0.0","0","0","0.0","51159.73","54331.63326","340.420281354","0","0","0.0","0.0","2009-01-06T17:00Z","288.82","A","1.07","309.0374","2008-12-01T17:00Z","384.44","A","1.07","411.3508","2008-12-15T17:00Z","185.36","A","1.07","198.3352","306.241133333","25.212997","7721.25677601","2007-12-17T17:00Z","0","E","1.07","0.0","2008-01-03T17:00Z","43.6","A","1.062","46.3032","2007-11-26T17:00Z","0","E","1.07","0.0","15.4344","25.212997","1","32.4289567414","12","-389.147480897","problem"' />
+				pattern='"22 4862 4512 332","11640077","2009-03-01T00:00Z","2009-03-31T23:30Z","10613.0367521","148925.71","0.00456","679.1012376","5.89","230","399.72","0.0368","456.000576","105487.44","770.058312","43438.27","112.939502","0.0033","0.0","","88","43401.25","46092.1275","288.794834064","54364.73","57735.34326","361.74656673","0","0","0.0","0","0","0.0","51159.73","54331.63326","340.420281354","0","0","0.0","145.54719049","2009-01-06T17:00Z","288.82","A","1.07","309.0374","2008-12-01T17:00Z","384.44","A","1.07","411.3508","2008-12-15T17:00Z","185.36","A","1.07","198.3352","306.241133333","25.212997","7721.25677601","2007-12-17T17:00Z","0","E","1.07","0.0","2008-01-03T17:00Z","43.6","A","1.062","46.3032","2007-11-26T17:00Z","0","E","1.07","0.0","15.4344","25.212997","1","32.4289567414","12","-389.147480897","problem"' />
 		</request>
 
 		<!-- Try looking at it using the TRIAD report -->
@@ -1907,29 +1907,29 @@ def triad_estimates():
 			<control name="start-year" value="2010" />
 			<control name="start-month" value="04" />
 			<control name="start-day" value="01" />
-			<regex pattern="/chellow/dsos/379/contracts/77/" />
+			<regex pattern="/chellow/dsos/379/contracts/81/" />
 			<response-code value="303" />
 		</request>
 
 		<!-- Check start time of rate script -->
-		<request path="/chellow/dsos/379/contracts/77/rate-scripts/239/">
+		<request path="/chellow/dsos/379/contracts/81/rate-scripts/243/">
 			<regex pattern="00:00 Z" />
 			<response-code value="200" />
 		</request>
 
 		<!-- Insert rate script -->
-		<request path="/chellow/dsos/379/contracts/77/rate-scripts/"
+		<request path="/chellow/dsos/379/contracts/81/rate-scripts/"
 			method="post">
 			<control name="start-year" value="2010" />
 			<control name="start-month" value="05" />
 			<control name="start-day" value="01" />
 
-			<regex pattern="/chellow/dsos/379/contracts/77/rate-scripts/241/" />
+			<regex pattern="/chellow/dsos/379/contracts/81/rate-scripts/245/" />
 			<response-code value="303" />
 		</request>
 
 		<!-- Delete rate script -->
-		<request path="/chellow/dsos/379/contracts/77/rate-scripts/239/"
+		<request path="/chellow/dsos/379/contracts/81/rate-scripts/243/"
 			method="post">
 			<control name="delete" value="Delete" />
 			<response-code value="303" />
@@ -2022,7 +2022,7 @@ def triad_estimates():
 			<response-code value="200" />
 		</request>
 		<request
-			path="/chellow/reports/87/output/?supply-id=7&amp;supply-polarity=import&amp;months=1&amp;end-year=2009&amp;end-month=03">
+			path="/chellow/reports/87/output/?supply-id=7&amp;supply-polarity=import&amp;start-year=2009&amp;start-month=3&amp;start-day=01&amp;start-hour=00&amp;finish-year=2009&amp;finish-month=03&amp;finish-day=31&amp;finish-hour=23">
 			<response-code value="200" />
 			<regex
 				pattern="MPAN Core,Account,From,To,net-gbp,ccl-kwh,ccl-rate,ccl-gbp,data-collection-gbp,duos-availability-agreed-kva,duos-availability-billed-kva,duos-availability-rate,duos-availability-gbp,duos-day-kwh,duos-day-gbp,duos-night-kwh,duos-night-gbp,duos-reactive-rate,duos-reactive-gbp,duos-standing-gbp,settlement-gbp,night-msp-kwh,night-gsp-kwh,night-gbp,other-msp-kwh,other-gsp-kwh,other-gbp,summer-pk-msp-kwh,summer-pk-gsp-kwh,summer-pk-gbp,winter-low-pk-msp-kwh,winter-low-pk-gsp-kwh,winter-low-pk-gbp,winter-off-pk-msp-kwh,winter-off-pk-gsp-kwh,winter-off-pk-gbp,winter-pk-msp-kwh,winter-pk-gsp-kwh,winter-pk-gbp,bsuos-actual-gbp,triad-actual-0-date,triad-actual-0-msp-kw,triad-actual-0-status,triad-actual-0-laf,triad-actual-0-gsp-kw,triad-actual-1-date,triad-actual-1-msp-kw,triad-actual-1-status,triad-actual-1-laf,triad-actual-1-gsp-kw,triad-actual-2-date,triad-actual-2-msp-kw,triad-actual-2-status,triad-actual-2-laf,triad-actual-2-gsp-kw,triad-actual-gsp-kw,triad-actual-rate,triad-actual-gbp,triad-estimate-0-date,triad-estimate-0-msp-kw,triad-estimate-0-status,triad-estimate-0-laf,triad-estimate-0-gsp-kw,triad-estimate-1-date,triad-estimate-1-msp-kw,triad-estimate-1-status,triad-estimate-1-laf,triad-estimate-1-gsp-kw,triad-estimate-2-date,triad-estimate-2-msp-kw,triad-estimate-2-status,triad-estimate-2-laf,triad-estimate-2-gsp-kw,triad-estimate-gsp-kw,triad-estimate-rate,triad-estimate-months,triad-estimate-gbp,triad-all-estimates-months,triad-all-estimates-gbp" />
@@ -2302,7 +2302,7 @@ def import_virtual_bill(supply_source):
 			<response-code value="200" />
 		</request>
 		<request
-			path="/chellow/reports/87/output/?supply-id=12&amp;supply-polarity=import&amp;months=1&amp;end-year=2010&amp;end-month=04">
+			path="/chellow/reports/87/output/?supply-id=12&amp;supply-polarity=import&amp;start-year=2010&amp;start-month=04&amp;start-day=01&amp;start-hour=00&amp;finish-year=2010&amp;finish-month=04&amp;finish-day=30&amp;finish-hour=23">
 			<response-code value="200" />
 			<regex pattern="MPAN Core,Account,From,To,net-gbp,vat-gbp,gross-gbp,problem" />
 			<regex
@@ -2677,20 +2677,20 @@ def import_virtual_bill(supply_source):
 			<control name="start-day" value="01" />
 			<control name="insert" value="Insert" />
 
-			<regex pattern="/chellow/non-core-contracts/39/rate-scripts/243/" />
+			<regex pattern="/chellow/non-core-contracts/39/rate-scripts/247/" />
 			<response-code value="303" />
 		</request>
 		<request
-			path="/chellow/non-core-contracts/39/rate-scripts/243/?view=confirm-delete">
+			path="/chellow/non-core-contracts/39/rate-scripts/247/?view=confirm-delete">
 			<regex pattern="Are you sure you want to delete this rate script\?" />
 			<response-code value="200" />
 		</request>
-		<request path="/chellow/non-core-contracts/39/rate-scripts/243/"
+		<request path="/chellow/non-core-contracts/39/rate-scripts/247/"
 			method="post">
 			<control name="delete" value="Delete" />
 			<response-code value="303" />
 		</request>
-		<request path="/chellow/non-core-contracts/39/rate-scripts/243/">
+		<request path="/chellow/non-core-contracts/39/rate-scripts/247/">
 			<response-code value="404" />
 		</request>
 	</test>
@@ -2702,14 +2702,14 @@ def import_virtual_bill(supply_source):
 			<control name="start-day" value="01" />
 			<control name="insert" value="Insert" />
 
-			<regex pattern="/chellow/non-core-contracts/39/rate-scripts/245/" />
+			<regex pattern="/chellow/non-core-contracts/39/rate-scripts/249/" />
 			<response-code value="303" />
 		</request>
-		<request path="/chellow/non-core-contracts/39/rate-scripts/245/">
+		<request path="/chellow/non-core-contracts/39/rate-scripts/249/">
 			<regex pattern='&lt;input name="finish-year" value="2000"&gt;' />
 			<response-code value="200" />
 		</request>
-		<request path="/chellow/non-core-contracts/39/rate-scripts/245/"
+		<request path="/chellow/non-core-contracts/39/rate-scripts/249/"
 			method="post">
 			<control name="delete" value="Delete" />
 			<response-code value="303" />
