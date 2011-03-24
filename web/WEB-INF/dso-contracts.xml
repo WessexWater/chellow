@@ -609,7 +609,7 @@ def month(bill, whole_data, data_source):
 
         reactive_rate = tariff['gbp-per-kvarh']
         bill['duos-reactive-rate'] = reactive_rate
-        bill['duos-reactive-kvarh'] = sum(max(max(datum['imp-msp-kvarh'], datum['exp-msp-kvarh']) - (0.95 ** -2 -1) ** 0.5 * datum['msp-kwh'], 0) for datum in whole_data['data'])
+        bill['duos-reactive-kvarh'] = sum(max(max(datum['imp-msp-kvarh'], datum['exp-msp-kvarh']) - (0.95 ** -2 -1) ** 0.5 * datum['msp-kwh'], 0) for datum in whole_data['data'] if datum['msp-kwh'] > 0)
         bill['duos-reactive-gbp'] = bill['duos-reactive-rate'] * bill['duos-reactive-kvarh']]]></value>
         <value><![CDATA[17]]></value>
         <value><![CDATA[def lafs():
@@ -1396,23 +1396,23 @@ def hh(summary, hh_list, data_source):
         llfc_group = llfc_code
     tariff = data_source.rate(rate_script, 'tariffs')[llfc_group]
     lafs = data_source.rate(rate_script, 'lafs')[vl_key]
-    if data_source.is_import:
-        for band in BANDS:
-            bill[KEYS[band]['kwh']] = 0
 
-        for hh in hh_list:
-            band = 'green'
-            if hh['ct-day-of-week'] not in WEEKEND_DAYS:
-                if 16 < hh['ct-decimal-hour'] < 19:
-                    band = 'red'
-                elif 9 <= hh['ct-decimal-hour'] <= 20:
-                    band = 'amber'
+    for band in BANDS:
+        bill[KEYS[band]['kwh']] = 0
 
-            bill[KEYS[band]['kwh']] += hh['msp-kwh']
+    for hh in hh_list:
+        band = 'green'
+        if hh['ct-day-of-week'] not in WEEKEND_DAYS:
+            if 16 < hh['ct-decimal-hour'] < 19:
+                band = 'red'
+            elif 9 <= hh['ct-decimal-hour'] <= 20:
+                band = 'amber'
+
+        bill[KEYS[band]['kwh']] += hh['msp-kwh']
             
-        for band in BANDS:
-            bill[KEYS[band]['bill-rate']] = tariff[KEYS[band]['tariff-rate']]
-            bill[KEYS[band]['gbp']] = bill[KEYS[band]['bill-rate']] * bill[KEYS[band]['kwh']]
+    for band in BANDS:
+        bill[KEYS[band]['bill-rate']] = tariff[KEYS[band]['tariff-rate']]
+        bill[KEYS[band]['gbp']] = bill[KEYS[band]['bill-rate']] * bill[KEYS[band]['kwh']]
 
     for hh in hh_list:
         slot_name = 'other'
@@ -1467,7 +1467,7 @@ def month(bill, whole_data, data_source):
 
         reactive_rate = tariff['gbp-per-kvarh']
         bill['duos-reactive-rate'] = reactive_rate
-        bill['duos-reactive-kvarh'] = sum(max(max(datum['imp-msp-kvarh'], datum['exp-msp-kvarh']) - (0.95 ** -2 -1) ** 0.5 * datum['msp-kwh'], 0) for datum in whole_data['data'])
+        bill['duos-reactive-kvarh'] = sum(max(max(datum['imp-msp-kvarh'], datum['exp-msp-kvarh']) - (0.95 ** -2 -1) ** 0.5 * datum['msp-kwh'], 0) for datum in whole_data['data'] if datum['msp-kwh'] > 0)
         bill['duos-reactive-gbp'] = bill['duos-reactive-rate'] * bill['duos-reactive-kvarh']]]></value>
         <value><![CDATA[39]]></value>
         <value><![CDATA[def lafs():
@@ -2330,29 +2330,25 @@ def hh(summary, hh_list, data_source):
     tariff = data_source.rate(rate_script, 'tariffs')[llfc_code]
     lafs = data_source.rate(rate_script, 'lafs')[vl_key]
 
-    if data_source.is_import:
-        for band in BANDS:
-            bill[KEYS[band]['kwh']] = 0
+    for band in BANDS:
+        bill[KEYS[band]['kwh']] = 0
 
-        for hh in hh_list:
-            if hh['ct-day-of-week'] in [Calendar.SATURDAY, Calendar.SUNDAY]:
-                if 16 < hh['ct-decimal-hour'] <= 19:
-                    band = 'amber'
-                else:
-                    band = 'green'
-            else:
-                if 17 <= hh['ct-decimal-hour'] < 19:
-                    band = 'red'
-                elif 7 < hh['ct-decimal-hour'] <= 21:
-                    band = 'amber'
-                else:
-                    band = 'green'
-            bill[KEYS[band]['kwh']] += hh['msp-kwh']
+    for hh in hh_list:
+        band = 'green'
+        if hh['ct-day-of-week'] in [Calendar.SATURDAY, Calendar.SUNDAY]:
+            if 16 < hh['ct-decimal-hour'] <= 19:
+                band = 'amber'
+        else:
+            if 17 <= hh['ct-decimal-hour'] < 19:
+                band = 'red'
+            elif 7 < hh['ct-decimal-hour'] <= 21:
+                band = 'amber'
+        bill[KEYS[band]['kwh']] += hh['msp-kwh']
 
-        for band in BANDS:
-            bill[KEYS[band]['bill-rate']] = tariff[KEYS[band]['tariff-rate']]
-            bill[KEYS[band]['gbp']] = bill[KEYS[band]['bill-rate']] * bill[KEYS[band]['kwh']]
-            #data_source.pw.println(band + " sum msp " + str(bill[keys[band]['kwh']]))
+    for band in BANDS:
+        bill[KEYS[band]['bill-rate']] = tariff[KEYS[band]['tariff-rate']]
+        bill[KEYS[band]['gbp']] = bill[KEYS[band]['bill-rate']] * bill[KEYS[band]['kwh']]
+        #data_source.pw.println(band + " sum msp " + str(bill[keys[band]['kwh']]))
 
     for hh in hh_list:
         slot_name = 'other'
@@ -2378,31 +2374,30 @@ def month(bill, whole_data, data_source):
 
     rate_script = contract.rateScript(summary['finish-date'])
     tariff = data_source.rate(rate_script, 'tariffs')[data_source.llfc_code]
-
     if not data_source.is_displaced:
-        md_kva = 0
-        for datum in whole_data['data']:
-            if datum['msp-kw'] > 0 and datum['anti-msp-kw'] == 0:
-                hh_kva = (datum['msp-kw'] ** 2 + max(datum['imp-msp-kvar'], datum['exp-msp-kvar']) ** 2) ** 0.5
-            else:
-                hh_kva = datum['msp-kw']
-            md_kva = max(md_kva, hh_kva)
-
-        billed_avail = max(md_kva, data_source.availability)
-        bill['duos-availability-agreed-kva'] = data_source.availability
-        bill['duos-availability-billed-kva'] = billed_avail
-        availability_rate = tariff['gbp-per-kva-per-day']
-        bill['duos-availability-rate'] = availability_rate
-        bill['duos-availability-gbp'] = availability_rate * billed_avail * summary['days']
-
         bill['duos-fixed-days'] = summary['days']
         bill['duos-fixed-rate'] = tariff['gbp-per-mpan-per-day']
         bill['duos-fixed-gbp'] = bill['duos-fixed-days'] * bill['duos-fixed-rate']
 
+        if 'gbp-per-kva-per-day' in tariff:
+            md_kva = 0
+            for datum in whole_data['data']:
+                if datum['msp-kw'] > 0 and datum['anti-msp-kw'] == 0:
+                    hh_kva = (datum['msp-kw'] ** 2 + max(datum['imp-msp-kvar'], datum['exp-msp-kvar']) ** 2) ** 0.5
+                else:
+                    hh_kva = datum['msp-kw']
+                md_kva = max(md_kva, hh_kva)
+
+            billed_avail = max(md_kva, data_source.availability)
+            bill['duos-availability-agreed-kva'] = data_source.availability
+            bill['duos-availability-billed-kva'] = billed_avail
+            availability_rate = tariff['gbp-per-kva-per-day']
+            bill['duos-availability-rate'] = availability_rate
+            bill['duos-availability-gbp'] = availability_rate * billed_avail * summary['days']
 
         reactive_rate = tariff['gbp-per-kvarh']
         bill['duos-reactive-rate'] = reactive_rate
-        bill['duos-reactive-kvarh'] = sum(max(max(datum['imp-msp-kvarh'], datum['exp-msp-kvarh']) - (0.95 ** -2 -1) ** 0.5 * datum['msp-kwh'], 0) for datum in whole_data['data'])
+        bill['duos-reactive-kvarh'] = sum(max(max(datum['imp-msp-kvarh'], datum['exp-msp-kvarh']) - (0.95 ** -2 -1) ** 0.5 * datum['msp-kwh'], 0) for datum in whole_data['data'] if datum['msp-kwh'] > 0)
         bill['duos-reactive-gbp'] = bill['duos-reactive-rate'] * bill['duos-reactive-kvarh']]]></value>
         <value><![CDATA[53]]></value>
         <value><![CDATA[def lafs():
