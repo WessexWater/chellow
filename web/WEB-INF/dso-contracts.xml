@@ -666,6 +666,65 @@ def tariffs():
     </line>
     <line>
         <value><![CDATA[insert]]></value>
+        <value><![CDATA[dso-contract-rate-script]]></value>
+        <value><![CDATA[14]]></value>
+        <value><![CDATA[main 2010-04-01]]></value>
+        <value><![CDATA[243]]></value>
+        <value><![CDATA[2011-04-01T00:00Z]]></value>
+        <value><![CDATA[def lafs():
+    return {
+        'lv': {
+            'night': 1.051,
+            'winter-weekday-peak': 1.075,
+            'winter-weekday-day': 1.065,
+            'other': 1.087},
+        'hv': {
+            'night': 1.017,
+            'winter-weekday-peak': 1.025,
+            'winter-weekday-day': 1.022,
+            'other': 1.030}}
+
+def tariffs():
+    return {
+        '127': {
+            'description': 'LV',
+            'gbp-per-mpan-per-day': 0.0757,
+            'gbp-per-kva-per-day': 0.0264,
+            'excess-gbp-per-kva-per-day': 0.0264,
+            'red-gbp-per-kwh': 0.06891,
+            'amber-gbp-per-kwh': 0.00709,
+            'green-gbp-per-kwh': 0.00046,
+            'gbp-per-kvarh': 0.00319},
+        '128': {
+            'description': 'LV Sub',
+            'gbp-per-mpan-per-day': 0.0757,
+            'gbp-per-kva-per-day': 0.036,
+            'excess-gbp-per-kva-per-day': 0.036,
+            'red-gbp-per-kwh': 0.04495,
+            'amber-gbp-per-kwh': 0.00395,
+            'green-gbp-per-kwh': 0.00030,
+            'gbp-per-kvarh': 0.00260},
+        '365': {
+            'description': 'HV',
+            'gbp-per-mpan-per-day': 0.7610,
+            'gbp-per-kva-per-day': 0.0422,
+            'excess-gbp-per-kva-per-day': 0.0422,
+            'red-gbp-per-kwh': 0.03916,
+            'amber-gbp-per-kwh': 0.00275,
+            'green-gbp-per-kwh': 0.00023,
+            'gbp-per-kvarh': 0.00161},
+        '366': {
+            'description': 'HV Sub',
+            'gbp-per-mpan-per-day': 0.7610,
+            'gbp-per-kva-per-day': 0.0367,
+            'excess-gbp-per-kva-per-day': 0.0367,
+            'red-gbp-per-kwh': 0.04029,
+            'amber-gbp-per-kwh': 0.00288,
+            'green-gbp-per-kwh': 0.00028,
+            'gbp-per-kvarh': 0.00193}}]]></value>
+    </line>
+    <line>
+        <value><![CDATA[insert]]></value>
         <value><![CDATA[dso-contract]]></value>
         <value><![CDATA[15]]></value>
         <value><![CDATA[13]]></value>
@@ -1759,6 +1818,143 @@ def tariffs():
     </line>
     <line>
         <value><![CDATA[insert]]></value>
+        <value><![CDATA[dso-contract-rate-script]]></value>
+        <value><![CDATA[20]]></value>
+        <value><![CDATA[main 2010-04-01]]></value>
+        <value><![CDATA[245]]></value>
+        <value><![CDATA[2011-04-01T00:00Z]]></value>
+        <value><![CDATA[def lafs():
+    return {
+        'lv-net': {
+            'peak': 1.089,
+            'winter-weekday': 1.085,
+            'other': 1.078,
+            'night': 1.074},
+        'lv-sub': {
+            'peak': 1.061,
+            'winter-weekday': 1.059,
+            'other': 1.056,
+            'night': 1.057},
+        'hv-net': {
+            'peak': 1.042,
+            'winter-weekday': 1.040,
+            'other': 1.035,
+            'night': 1.029},
+        'hv-sub': {
+            'peak': 1.021,
+            'winter-weekday': 1.020,
+            'other': 1.018,
+            'night': 1.017}}
+
+def llfc_groups():
+    return {
+        '001': '001,477,909',
+        '006': '006,478,910',
+        '127': '127,473',
+        '401': '401,475',
+        '453': '453,470',
+        '473': '127,473',
+        '475': '401,475',
+        '476': '658,476',
+        '477': '001,477,909',
+        '478': '006,478,910',
+        '658': '658,476',
+        '909': '001,477,909',
+        '910': '006,478,910'}
+
+def tariffs():
+    return {
+        '001,477,909': {
+            'description': 'LV Generation Intermittent',
+            'red-gbp-per-kwh': -0.00671,
+            'amber-gbp-per-kwh': -0.00671,
+            'green-gbp-per-kwh': -0.00671,
+            'gbp-per-kvarh': 0.00192},
+        '002': {
+            'description': 'LV Generation Non-Intermittent',
+            'red-gbp-per-kwh': -0.04469,
+            'amber-gbp-per-kwh': -0.00908,
+            'green-gbp-per-kwh': -0.00144,
+            'gbp-per-kvarh': 0.00192},
+        '003': {
+            'description': 'LV Sub Generation Intermittent',
+            'red-gbp-per-kwh': -0.00584,
+            'amber-gbp-per-kwh': -0.00584,
+            'green-gbp-per-kwh': -0.00584,
+            'gbp-per-kvarh': 0.00178},
+        '004': {
+            'description': 'LV Sub Generation Non-Intermittent',
+            'red-gbp-per-kwh': -0.04026,
+            'amber-gbp-per-kwh': -0.00761,
+            'green-gbp-per-kwh': -0.00121,
+            'gbp-per-kvarh': 0.00178},
+        '005': {
+            'description': 'HV Generation Intermittent',
+            'gbp-per-mpan-per-day': 0.9881,
+            'red-gbp-per-kwh': -0.00350,
+            'amber-gbp-per-kwh': -0.00350,
+            'green-gbp-per-kwh': -0.00350,
+            'gbp-per-kvarh': 0.00151},
+        '006,478,910': {
+            'description': 'HV Generation Non-Intermittent',
+            'gbp-per-mpan-per-day': 0.9868,
+            'red-gbp-per-kwh': -0.02871,
+            'amber-gbp-per-kwh': -0.00361,
+            'green-gbp-per-kwh': -0.00059,
+            'gbp-per-kvarh': 0.00151},
+        '007': {
+            'description': 'HV Sub Generation Intermittent',
+            'gbp-per-mpan-per-day': 0.9881,
+            'red-gbp-per-kwh': -0.00272,
+            'amber-gbp-per-kwh': -0.00272,
+            'green-gbp-per-kwh': -0.00272,
+            'gbp-per-kvarh': 0.00073},
+        '008': {
+            'description': 'HV Sub Generation Non Intermittent',
+            'gbp-per-mpan-per-day': 0.9881,
+            'red-gbp-per-kwh': -0.02346,
+            'amber-gbp-per-kwh': -0.00261,
+            'green-gbp-per-kwh': -0.00041,
+            'gbp-per-kvarh': 0.00073},
+        '453,470': {
+            'description': 'LV HH Metered',
+            'gbp-per-mpan-per-day': 0.0831,
+            'gbp-per-kva-per-day': 0.0230,
+            'excess-gbp-per-kva-per-day': 0.0230,
+            'red-gbp-per-kwh': 0.06,
+            'amber-gbp-per-kwh': 0.00883,
+            'green-gbp-per-kwh': 0.00149,
+            'gbp-per-kvarh': 0.00235},
+        '455': {
+            'description': 'LVS HH Metered',
+            'gbp-per-mpan-per-day': 0.0328,
+            'gbp-per-kva-per-day': 0.0433,
+            'excess-gbp-per-kva-per-day': 0.0433,
+            'red-gbp-per-kwh': 0.04672,
+            'amber-gbp-per-kwh': 0.00482,
+            'green-gbp-per-kwh': 0.00086,
+            'gbp-per-kvarh': 0.00168},
+        '658,476': {
+            'description': 'HV HH Metered',
+            'gbp-per-mpan-per-day': 0.7978,
+            'gbp-per-kva-per-day': 0.0485,
+            'excess-gbp-per-kva-per-day': 0.0485,
+            'red-gbp-per-kwh': 0.03745,
+            'amber-gbp-per-kwh': 0.00325,
+            'green-gbp-per-kwh': 0.00057,
+            'gbp-per-kvarh': 0.00116},
+        '660': {
+            'description': 'HVS HH Metered',
+            'gbp-per-mpan-per-day': 1.3414,
+            'gbp-per-kva-per-day': 0.0306,
+            'excess-gbp-per-kva-per-day': 0.0306,
+            'red-gbp-per-kwh': 0.03417,
+            'amber-gbp-per-kwh': 0.00244,
+            'green-gbp-per-kwh': 0.00042,
+            'gbp-per-kvarh': 0.00094}}]]></value>
+    </line>
+    <line>
+        <value><![CDATA[insert]]></value>
         <value><![CDATA[dso-contract]]></value>
         <value><![CDATA[21]]></value>
         <value><![CDATA[27]]></value>
@@ -2529,6 +2725,149 @@ def tariffs():
             'amber-gbp-per-kwh': -0.586,
             'green-gbp-per-kwh': -0.586,
             'gbp-per-kvarh': 0.00169}}]]></value>
+    </line>
+    <line>
+        <value><![CDATA[insert]]></value>
+        <value><![CDATA[dso-contract-rate-script]]></value>
+        <value><![CDATA[22]]></value>
+        <value><![CDATA[main 2010-04-01]]></value>
+        <value><![CDATA[247]]></value>
+        <value><![CDATA[2011-04-01T00:00Z]]></value>
+        <value><![CDATA[def lafs():
+    return {
+        'lv-net': {
+            'winter-weekday-peak': 1.087,
+            'winter-weekday-day': 1.080,
+            'night': 1.072,
+            'other': 1.075},
+        'lv-sub': {
+            'winter-weekday-peak': 1.078,
+            'winter-weekday-day': 1.072,
+            'night': 1.065,
+            'other': 1.068},
+        'hv': {
+            'winter-weekday-peak': 1.065,
+            'winter-weekday-day': 1.058,
+            'night': 1.046,
+            'other': 1.051}}
+
+def tariffs():
+    return {
+        '510': {
+            'description': 'High Voltage HH Metered',
+            'gbp-per-mpan-per-day': 0.6485,
+            'gbp-per-kva-per-day': 0.017,
+            'excess-gbp-per-kva-per-day': 0.017,
+            'red-gbp-per-kwh': 0.16342,
+            'amber-gbp-per-kwh': 0.0004,
+            'green-gbp-per-kwh': 0.00058,
+            'gbp-per-kvarh': 0.00238},
+        '520': {
+            'description': 'High Voltage HH Metered',
+            'gbp-per-mpan-per-day': 0.6485,
+            'gbp-per-kva-per-day': 0.017,
+            'excess-gbp-per-kva-per-day': 0.017,
+            'red-gbp-per-kwh': 0.16342,
+            'amber-gbp-per-kwh': 0.0004,
+            'green-gbp-per-kwh': 0.00058,
+            'gbp-per-kvarh': 0.00238},
+        '521': {
+            'description': 'HV Generation Intermittent',
+            'gbp-per-mpan-per-day': 0.2666,
+            'red-gbp-per-kwh': -0.00324,
+            'amber-gbp-per-kwh': -0.00324,
+            'green-gbp-per-kwh': -0.00324,
+            'gbp-per-kvarh': 0.00086},
+        '522': {
+            'description': 'High Voltage Sub HH Metered',
+            'gbp-per-mpan-per-day': 0.6485,
+            'gbp-per-kva-per-day': 0.0117,
+            'excess-gbp-per-kva-per-day': 0.0117,
+            'red-gbp-per-kwh': 0.13824,
+            'amber-gbp-per-kwh': 0.00014,
+            'green-gbp-per-kwh': 0.00041,
+            'gbp-per-kvarh': 0.00187},
+        '523': {
+            'description': 'HV Sub Generation Intermittent',
+            'gbp-per-mpan-per-day': 0.2666,
+            'red-gbp-per-kwh': -0.00296,
+            'amber-gbp-per-kwh': -0.00296,
+            'green-gbp-per-kwh': -0.00296,
+            'gbp-per-kvarh': 0.00064},
+        '524': {
+            'description': 'HV Generation Non-Intermittent',
+            'gbp-per-mpan-per-day': 0.2666,
+            'red-gbp-per-kwh': -0.04470,
+            'amber-gbp-per-kwh': -0.00059,
+            'green-gbp-per-kwh': -0.00063,
+            'gbp-per-kvarh': 0.00086},
+        '525': {
+            'description': 'HV Sub Generation Non-Intermittent',
+            'gbp-per-mpan-per-day': 0.2666,
+            'red-gbp-per-kwh': -0.04181,
+            'amber-gbp-per-kwh': -0.00042,
+            'green-gbp-per-kwh': -0.00055,
+            'gbp-per-kvarh': 0.00064},
+        '526': {
+            'description': 'LV Sub Generation Non-Intermittent',
+            'red-gbp-per-kwh': -0.06204,
+            'amber-gbp-per-kwh': -0.00181,
+            'green-gbp-per-kwh': -0.00117,
+            'gbp-per-kvarh': 0.00118},
+        '527': {
+            'description': 'LV Generation Non-Intermittent',
+            'red-gbp-per-kwh': -0.06632,
+            'amber-gbp-per-kwh': -0.00214,
+            'green-gbp-per-kwh': -0.00132,
+            'gbp-per-kvarh': 0.00136},
+        '540': {
+            'description': 'Low Voltage Sub HH Metered',
+            'gbp-per-mpan-per-day': 0.0554,
+            'gbp-per-kva-per-day': 0.0228,
+            'excess-gbp-per-kva-per-day': 0.0228,
+            'red-gbp-per-kwh': 0.19431,
+            'amber-gbp-per-kwh': 0.00115,
+            'green-gbp-per-kwh': 0.00097,
+            'gbp-per-kvarh': 0.00297},
+        '550': {
+            'description': 'Low Voltage Sub HH Metered',
+            'gbp-per-mpan-per-day': 0.0554,
+            'gbp-per-kva-per-day': 0.0228,
+            'excess-gbp-per-kva-per-day': 0.0228,
+            'red-gbp-per-kwh': 0.19431,
+            'amber-gbp-per-kwh': 0.00115,
+            'green-gbp-per-kwh': 0.00097,
+            'gbp-per-kvarh': 0.00297},
+        '551': {
+            'description': 'LV Sub Generation Intermittent',
+            'red-gbp-per-kwh': -0.00505,
+            'amber-gbp-per-kwh': -0.00505,
+            'green-gbp-per-kwh': -0.00505,
+            'gbp-per-kvarh': 0.00118},
+        '570': {
+            'description': 'Low Voltage HH Metered',
+            'gbp-per-mpan-per-day': 0.0756,
+            'gbp-per-kva-per-day': 0.0211,
+            'excess-gbp-per-kva-per-day': 0.0211,
+            'red-gbp-per-kwh': 0.21381,
+            'amber-gbp-per-kwh': 0.00205,
+            'green-gbp-per-kwh': 0.00138,
+            'gbp-per-kvarh': 0.00353},
+        '580': {
+            'description': 'Low Voltage HH Metered',
+            'gbp-per-mpan-per-day': 0.0756,
+            'gbp-per-kva-per-day': 0.0211,
+            'excess-gbp-per-kva-per-day': 0.0211,
+            'red-gbp-per-kwh': 0.21381,
+            'amber-gbp-per-kwh': 0.00205,
+            'green-gbp-per-kwh': 0.00138,
+            'gbp-per-kvarh': 0.00353},
+        '581': {
+            'description': 'LV Generation Intermittent',
+            'red-gbp-per-kwh': -0.00551,
+            'amber-gbp-per-kwh': -0.00551,
+            'green-gbp-per-kwh': -0.00551,
+            'gbp-per-kvarh': 0.00136}}]]></value>
     </line>
     <line>
         <value><![CDATA[insert]]></value>
