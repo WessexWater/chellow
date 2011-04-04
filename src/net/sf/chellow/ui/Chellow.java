@@ -190,8 +190,9 @@ public class Chellow extends Monad implements Urlable {
 								.startsWith("/style/"))) {
 					return;
 				}
-				Long userCount = (Long) Hiber.session().createQuery(
-						"select count(*) from User user").uniqueResult();
+				Long userCount = (Long) Hiber.session()
+						.createQuery("select count(*) from User user")
+						.uniqueResult();
 				if (userCount == null
 						|| userCount == 0
 						&& InetAddress.getByName(
@@ -232,7 +233,7 @@ public class Chellow extends Monad implements Urlable {
 								"The party associated with the contract you're trying to view doesn't match your party.");
 					}
 					if ((pathInfo + "?" + inv.getRequest().getQueryString())
-							.equals("/reports/37/output/?hhdc-contract-id="
+							.startsWith("/reports/37/output/?hhdc-contract-id="
 									+ hhdcContract.getId())) {
 						return;
 					}
