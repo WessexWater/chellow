@@ -1,6 +1,6 @@
 /*******************************************************************************
  * 
- *  Copyright (c) 2005, 2009 Wessex Water Services Limited
+ *  Copyright (c) 2005, 2011 Wessex Water Services Limited
  *  
  *  This file is part of Chellow.
  * 
@@ -36,8 +36,6 @@ import net.sf.chellow.monad.UserException;
 import net.sf.chellow.physical.HhStartDate;
 
 public class StarkDf2HhConverter implements HhConverter {
-	static private final BigDecimal BIG_DECIMAL_2 = new BigDecimal("2");
-
 	private LineNumberReader reader;
 
 	private String core;
@@ -137,43 +135,36 @@ public class StarkDf2HhConverter implements HhConverter {
 								+ lastLineNumber() + ". '" + line
 								+ "'. Can't find the second comma.");
 					}
-					HhStartDate startDate = new HhStartDate(dateFormat.parse(line.substring(
-							0, datePos).replace(",", " "))).getPrevious();
+					HhStartDate startDate = new HhStartDate(
+							dateFormat.parse(line.substring(0, datePos)
+									.replace(",", " "))).getPrevious();
 					int valuePos = line.indexOf(',', datePos + 1);
-					BigDecimal valueKw = null;
+					BigDecimal value = null;
 
 					if (valuePos < 0) {
-						String kwString = line.substring(datePos + 1).trim();
+						String valueStr = line.substring(datePos + 1).trim();
 						try {
-							valueKw = new BigDecimal(kwString);
+							value = new BigDecimal(valueStr);
 						} catch (NumberFormatException e) {
 							throw new UserException(
-									"Problem parsing the kW value: " + kwString);
+									"Problem parsing the value: "
+											+ valueStr);
 						}
 					} else {
-						String kwString = line.substring(datePos + 1, valuePos)
-								.trim();
+						String valueStr = line
+								.substring(datePos + 1, valuePos).trim();
 						try {
-							valueKw = new BigDecimal(kwString);
+							value = new BigDecimal(valueStr);
 						} catch (NumberFormatException e) {
 							throw new UserException(
-									"Problem parsing the kW value: " + kwString);
+									"Problem parsing the value: "
+											+ valueStr);
 						}
 					}
 					String trimmedLine = line.trim();
 					char status = trimmedLine.charAt(trimmedLine.length() - 1);
-
-					if (!core.trim().startsWith("99")
-							&& valueKw.doubleValue() * 10 % 2 == 1) {
-						throw new UserException(
-								"Problem at line number: "
-										+ lastLineNumber()
-										+ ". '"
-										+ line
-										+ "'. For a settlement MPAN the last digit of the value must be even. If it isn't it means that the data is probably kWh rather than kW.");
-					}
 					datum = new HhDatumRaw(core, isImport, isKwh, startDate,
-							valueKw.divide(BIG_DECIMAL_2), status);
+							value, status);
 					// Debug.print("Datum is " + datum);
 				}
 				line = reader.readLine();
