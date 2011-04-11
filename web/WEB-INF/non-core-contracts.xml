@@ -14436,7 +14436,7 @@ def on_start_up(ctx):
         <value><![CDATA[system-price]]></value>
         <value><![CDATA[from net.sf.chellow.physical import HhStartDate
 from java.text import SimpleDateFormat
-from java.util import Date, Timer, TimerTask, Calendar
+from java.util import Date, Timer, TimerTask, Calendar, GregorianCalendar, TimeZone, Locale
 from java.util.concurrent.locks import ReentrantLock
 from org.apache.commons.httpclient import HttpClient
 from net.sf.chellow.billing import HhdcContract, NonCoreContract
@@ -14467,7 +14467,7 @@ class SystemPriceTask(TimerTask):
         self.date_formatter = SimpleDateFormat("yyyy-MM-dd HH:mm:ss 'Z'")
         self.date_formatter.setCalendar(MonadDate.getCalendar())
         self.get_format = SimpleDateFormat("yyyy-MM-dd")
-        self.get_format.setCalendar(MonadDate.getCalendar())
+        self.get_format.setCalendar(GregorianCalendar(TimeZone.getTimeZone("Europe/London"), Locale.UK))
 
         self.key_format = SimpleDateFormat("dd HH:mm 'Z'")
         self.key_format.setCalendar(MonadDate.getCalendar())
@@ -14482,8 +14482,8 @@ class SystemPriceTask(TimerTask):
     def is_locked(self):
         return self.lock.isLocked()
 
-    def hhs(self, day_start):
-        day_url = "http://www.bmreports.com/bsp/additional/soapfunctions.php?element=SYSPRICE&dT=" + self.get_format.format(day_start.getDate())
+    def hhs(self, ct_day_start, utc_month=None):
+        day_url = "http://www.bmreports.com/bsp/additional/soapfunctions.php?element=SYSPRICE&dT=" + self.get_format.format(ct_day_start.getDate())
 
         self.log("Downloading data from " + day_url)
 
@@ -14493,8 +14493,9 @@ class SystemPriceTask(TimerTask):
         doc = db.parse(day_url)
         doc_element = doc.getDocumentElement()
         elem_elements = doc_element.getElementsByTagName('ELEMENT')
+        cal = MonadDate.getCalendar()
         prices = {}
-        hh_start = day_start
+        hh_start = ct_day_start
         for i in range(elem_elements.getLength()):
             vals = {}
             elem_element = elem_elements.item(i)
@@ -14504,7 +14505,9 @@ class SystemPriceTask(TimerTask):
                 if elem_child.getNodeType() == Node.ELEMENT_NODE:
                     node_name = elem_child.getTagName()
                     vals[elem_child.getTagName()] = elem_child.getTextContent()
-            prices[self.key_format.format(hh_start.getDate())] = {'ssp': vals['SSP'], 'sbp': vals['SBP']}
+            cal.setTime(hh_start.getDate())
+            if utc_month is None or utc_month == cal.get(Calendar.MONTH):
+                prices[self.key_format.format(hh_start.getDate())] = {'ssp': vals['SSP'], 'sbp': vals['SBP']}
             #self.log(str(hh_start))
             hh_start = hh_start.getNext()
         return prices
@@ -14517,7 +14520,7 @@ class SystemPriceTask(TimerTask):
                 contract = NonCoreContract.getNonCoreContract('system-price')
 
                 latest_rate_script = Hiber.session().createQuery("from RateScript script where script.contract = :contract order by script.startDate.date desc").setEntity('contract', contract).setMaxResults(1).uniqueResult()
-
+                ct_cal = GregorianCalendar(TimeZone.getTimeZone("Europe/London"), Locale.UK)
                 cal = MonadDate.getCalendar()
 
                 cal.setTime(latest_rate_script.getStartDate().getDate())
@@ -14527,8 +14530,11 @@ class SystemPriceTask(TimerTask):
                 this_month_start = HhStartDate(cal.getTime())
                 cal.add(Calendar.MONTH, 1)
                 next_month_start = HhStartDate(cal.getTime())
+                utc_next_month = cal.get(Calendar.MONTH)
                 cal.add(Calendar.MONTH, 1)
                 next_next_month_start = HhStartDate(cal.getTime())
+                self.log("Is it after " + str(next_next_month_start) + "?")
+
                 if Date().after(next_next_month_start.getDate()):
                     self.log("Checking to see if data is available on " + str(next_next_month_start) + " on bmreports.com.")
                     prices = self.hhs(next_next_month_start)
@@ -14537,13 +14543,22 @@ class SystemPriceTask(TimerTask):
                     else:
                         self.log("Starting to download data from bmreports.com.")
                         prices = {}
+                        ct_cal.setTime(next_month_start.getDate())
+                        ct_cal.setTime(next_month_start.getDate())
+                        ct_cal.set(Calendar.HOUR_OF_DAY, 0)
+                        ct_cal.set(Calendar.MINUTE, 0)
+                        ct_cal.add(Calendar.DAY_OF_MONTH, -1)
+                        ct_day_start = HhStartDate(ct_cal.getTime())
+                      
+                        ct_cal.add(Calendar.DAY_OF_MONTH, 2)
+                        ct_cal.add(Calendar.MONTH, 1)
+                        ct_stop_date = HhStartDate(ct_cal.getTime())
 
-                        day_start = next_month_start
-                        while day_start.before(next_next_month_start):
-                            prices.update(self.hhs(day_start))
-                            cal.setTime(day_start.getDate())
-                            cal.add(Calendar.DAY_OF_MONTH, 1)
-                            day_start = HhStartDate(cal.getTime())
+                        ct_cal.setTime(ct_day_start.getDate())
+                        while ct_day_start.before(ct_stop_date):
+                            prices.update(self.hhs(ct_day_start, utc_next_month))
+                            ct_cal.add(Calendar.DAY_OF_MONTH, 1)
+                            ct_day_start = HhStartDate(ct_cal.getTime())
 
                         self.log("Finished downloading data from bmreports.com.")
                         script = "def ssps():\n    return {\n" + ',\n'.join("'" + k + "': " + prices[k]['ssp'] for k in sorted(prices.keys())) + "}"
