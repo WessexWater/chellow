@@ -12887,23 +12887,24 @@ def rate(script, name, pw=None):
 
 
 def hh_rate(contract, date, name, pw=None):
-    contract_id = contract.getId()
+    try:
+        contract_dates = contract_cache[contract.getId()]
+    except KeyError:
+        contract_dates = {}
+        contract_cache[contract.getId()] = contract_dates
 
-    if contract_id not in contract_cache:
-        contract_cache[contract_id] = {}
+    try:
+        rate_names = contract_dates[date]
+    except KeyError:
+        rate_names = {}
+        contract_dates[date] = rate_names
 
-    contract_dates = contract_cache[contract_id]
+    try:
+        rate_val = rate_names[name]
+    except:
+        rate_val = rate(contract.rateScript(HhStartDate(date)), name)
 
-    raw_date = date.getDate()
-
-    if raw_date not in contract_dates:
-        contract_dates[raw_date] = {}
-
-    rate_names = contract_dates[raw_date]
-
-    if name not in rate_names:
-        rate_names[name] = rate(contract.getRateScript(date), name)
-    return rate_names[name]
+    return rate_val
 
 
 def create_comterp():
@@ -13016,7 +13017,7 @@ class DataSource():
         return rate(script, name)
 
     def hh_rate(self, contract, date, name):
-        return rate(contract, date, name)
+        return hh_rate(contract, date, name)
 
 class SiteSource(DataSource):
     def __init__(self, site, start_date, finish_date, forecast_date, comterp, pw):
@@ -13187,7 +13188,7 @@ class SiteSource(DataSource):
         if self.is_displaced and self.pc_code == '00' and self.is_import:
             dso_contract = get_dso_contract(self.dso_code, start_date, self.pw)
             #s elf.pw.println('start date ' + str(start_date) + ' dso contract ' + str(dso_contract.getId()) + ' finish date ' + str(HhStartDate(finish_date.getDate())) + ' start ' + str(HhStartDate(hh_data[-1]['start-date'])))
-            summary['dso-bill'] = {}
+            summary['dso-bill'] = {'problem': ''}
             contract_function(dso_contract, 'hh')(summary, hh_data, self)
             #s elf.pw.println('got after')
             datum_list = list(datum['gsp-kwh'] for datum in hh_data)
@@ -13235,29 +13236,29 @@ class SupplySource(DataSource):
         self.availability = mpan.getAgreedSupplyCapacity()
         self.is_new = False
         self.supplier_account = mpan.getSupplierAccount()
-        self.generation = mpan.getSupplyGeneration()
-        self.supply = self.generation.getSupply()
-        self.mtc = self.generation.getMtc()
+        self.supply_generation = mpan.getSupplyGeneration()
+        self.supply = self.supply_generation.getSupply()
+        self.mtc = self.supply_generation.getMtc()
         self.meter_type = self.mtc.getMeterType()
         self.meter_type_code = self.meter_type.getCode()
-        self.ssc = self.generation.getSsc()
+        self.ssc = self.supply_generation.getSsc()
 
         if self.ssc is None:
             self.ssc_code = None
         else:
             self.ssc_code = str(self.ssc)
             
-        self.pc_code = str(self.generation.getPc())
+        self.pc_code = str(self.supply_generation.getPc())
         
-        self.is_amr = self.pc_code != '00' and len(self.generation.getChannels()) > 0
+        self.is_amr = self.pc_code != '00' and len(self.supply_generation.getChannels()) > 0
 
         if self.forecast_date.after(start_date):
-            if self.generation.getStartDate().after(start_date):
-                self.start_date = self.generation.getStartDate()
+            if self.supply_generation.getStartDate().after(start_date):
+                self.start_date = self.supply_generation.getStartDate()
             else:
                 self.start_date = start_date
-            if finish_date.after(self.generation.getFinishDate()):
-                self.finish_date = self.generation.getFinishDate()
+            if finish_date.after(self.supply_generation.getFinishDate()):
+                self.finish_date = self.supply_generation.getFinishDate()
             else:
                 self.finish_date = finish_date
             self.is_forecast = False
@@ -13921,8 +13922,7 @@ class SupplySource(DataSource):
         #s elf.pw.println("whole data: starting dso hh, " + str(System.currentTimeMillis()))
         if self.pc_code == '00':
             dso_contract = get_dso_contract(self.dso_code, start_date, self.pw)
-            #s elf.pw.println('dso con ' + str(dso_contract.getId()))
-            summary['dso-bill'] = {}
+            summary['dso-bill'] = {'problem': ''}
             contract_function(dso_contract, 'hh')(summary, data_hh, self)
             summary['sum-gsp-kwh'] = sum(datum['gsp-kwh'] for datum in data_hh)
             summary['max-gsp-kwh'] = max(datum['gsp-kwh'] for datum in data_hh)

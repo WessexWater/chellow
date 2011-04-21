@@ -9910,6 +9910,13 @@ source.appendChild(contract.toXml(doc, XmlTree('party', XmlTree('participant')).
                         Batches
                         </a>
                         </li>
+                    <li>
+                        <a
+                            href="{/source/request/@context-path}/reports/229/output/?mop-contract-id={/source/mop-contract/@id}">
+                            Virtual Bills
+                        </a>
+                    </li>
+
                 </ul>
 
                     <h2>Script</h2>
@@ -12346,8 +12353,6 @@ kva_at_md_query = Hiber.session().createQuery("select datum.value from HhDatum d
 
 hh_count_query = Hiber.session().createQuery("select count(*) from HhDatum datum where datum.channel.supplyGeneration.supply = :supply and datum.channel.isImport is :isImport and datum.channel.isKwh is true and datum.startDate.date >= :startDate and datum.startDate.date <= :finishDate").setTimestamp('startDate', start_date.getDate()).setTimestamp('finishDate', finish_date.getDate())
 
-num_hh = round((finish_date.getDate().getTime() - start_date.getPrevious().getDate().getTime()) / (30 * 60 * 1000))
-
 pw.println("Supply Id, Supply Name, Source, Generator Type, Site Ids, Site Names, From, To, PC, MTC, CoP, SSC, Normal Reads,Type,Import LLFC, Import MPAN Core, Import Supply Capacity,Import Supplier,Import Total MSP kWh, Import Non-actual MSP kWh, Import Total GSP kWh,Import MD / kW, Import MD Date, Import MD / kVA, Import Bad HHs,Export LLFC, Export MPAN Core, Export Supply Capacity,Export Supplier,Export Total MSP kWh, Export Non-actual MSP kWh,Export GSP kWh, Export MD / kW, Export MD Date, Export MD / kVA, Export Bad HHs")
 
 if inv.hasParameter('supply-id'):
@@ -12358,7 +12363,7 @@ else:
 
 supplies = supplies_query.setTimestamp('startDate', start_date.getDate()).setTimestamp('finishDate', finish_date.getDate()).scroll()
 
-normal_previous_reads_query = Hiber.session().createQuery("from RegisterRead read where read.bill.supply = :supply and read.previousDate.date >= :startDate and read.previousDate.date <= :finishDate and read.presentType.code in ('C', 'N', 'N3')").setTimestamp('startDate', start_date.getDate()).setTimestamp('finishDate', finish_date.getDate())
+normal_previous_reads_query = Hiber.session().createQuery("from RegisterRead read where read.bill.supply = :supply and read.previousDate.date >= :startDate and read.previousDate.date <= :finishDate and read.previousType.code in ('C', 'N', 'N3')").setTimestamp('startDate', start_date.getDate()).setTimestamp('finishDate', finish_date.getDate())
 
 normal_present_reads_query = Hiber.session().createQuery("from RegisterRead read where read.bill.supply = :supply and read.presentDate.date >= :startDate and read.presentDate.date <= :finishDate and read.presentType.code in ('C', 'N', 'N3')").setTimestamp('startDate', start_date.getDate()).setTimestamp('finishDate', finish_date.getDate())
 
@@ -12402,7 +12407,7 @@ while supplies.next():
                     prime_reads[key] = read
                 
     for read in normal_present_reads_query.setEntity('supply', supply).list():
-        prime_bill = bill_query.setTimestamp('readDate', read.getPresentDate().getNext().getDate()).uniqueResult()
+        prime_bill = bill_query.setTimestamp('readDate', read.getPresentDate().getDate()).uniqueResult()
         if prime_bill is not None and read.getBill().getId() == prime_bill.getId():
             key = str(read.getPresentDate()) + "_" + read.getMeterSerialNumber()
             if key not in prime_reads:
@@ -12419,9 +12424,21 @@ while supplies.next():
     else:
         supply_type = 'nhh'
 
+    if generations[0].getStartDate().after(start_date):
+        chunk_start = generations[0].getStartDate()
+    else:
+        chunk_start = start_date
+
+    if finish_date.before(generation.getFinishDate()):
+        chunk_finish = finish_date
+    else:
+        chunk_finish = generation.getFinishDate()
+
+    num_hh = round((chunk_finish.getDate().getTime() - chunk_start.getPrevious().getDate().getTime()) / (30 * 60 * 1000))
+
     pw.print(','.join(('"' + str(value) + '"') for value in [supply.getId(), supply.getName(), supply.getSource().getCode(), generator_type, site_codes, site_names, start_date, finish_date, generation.getPc(), generation.getMtc(), generation.getCop(), ssc_code, len(prime_reads), supply_type]) + ',')
     pw.flush()
-    pw.println(mpan_bit(query, kva_at_md_query, True, hh_count_query, num_hh, generation,comterp, forecast_date, start_date, finish_date) + "," + mpan_bit(query, kva_at_md_query, False, hh_count_query, num_hh, generation,comterp, forecast_date, start_date, finish_date))
+    pw.println(mpan_bit(query, kva_at_md_query, True, hh_count_query, num_hh, generation, comterp, forecast_date, start_date, finish_date) + "," + mpan_bit(query, kva_at_md_query, False, hh_count_query, num_hh, generation,comterp, forecast_date, start_date, finish_date))
     pw.flush()
     Hiber.session().clear()
 supplies.close()
@@ -13061,18 +13078,30 @@ def process_site(site, month_start, month_finish, forecast_date, pw):
                         v_bill = import_vb_function(supply_source)
                         #pw.println("finishing vbill, " + str(System.currentTimeMillis()))
                         
-                        if 'problem' in v_bill:
-                            problem += v_bill['problem']
+                        if 'problem' in v_bill and len(v_bill['problem']) > 0:
+                            problem += 'Supplier Problem: ' + v_bill['problem']
 
                         if 'net-gbp' in v_bill:
                             month_data['import-net-gbp'] += v_bill['net-gbp']
                         else:
                             problem += 'For the supply ' + import_mpan.toString() + ' the virtual bill ' + str(v_bill) + ' from the contract ' + supplier_contract.getName() + ' does not contain the net-gbp key.'
                         problem += supply_source.summary['problem']
-                    hhdc_contract = supply_generation.getHhdcContract()
-                    if hhdc_contract is not None:
-                        hhdc_bill = comterp.get('contract_function')(hhdc_contract, 'virtual_bill')(supply_source)
-                        month_data['import-net-gbp'] += hhdc_bill['net-gbp']
+
+                    dc_contract = supply_generation.getHhdcContract()
+                    if dc_contract is not None:
+                        dc_bill = supply_source.contract_function(dc_contract, 'virtual_bill')(supply_source)
+                        month_data['import-net-gbp'] += dc_bill['net-gbp']
+                        if 'problem' in dc_bill and len(dc_bill['problem']) > 0:
+                            problem += 'DC Problem: ' + dc_bill['problem']
+
+                    mop_contract = supply_generation.getMopContract()
+                    if mop_contract is not None:
+                        mop_bill_function = supply_source.contract_function(mop_contract, 'virtual_bill')
+                        if mop_bill_function is not None:
+                            mop_bill = mop_bill_function(supply_source)
+                            month_data['import-net-gbp'] += mop_bill['net-gbp']
+                            if 'problem' in mop_bill and len(mop_bill['problem']) > 0:
+                                problem += 'MOP Problem: ' + mop_bill['problem']
 
             for gbp_bill in Hiber.session().createQuery("from Bill bill where bill.supply = :supply and bill.startDate.date <= :finishDate and bill.finishDate.date >= :startDate").setEntity('supply', supply).setTimestamp('startDate', chunk_start.getDate()).setTimestamp('finishDate', chunk_finish.getDate()).list():
                 bill_net = gbp_bill.getNet().doubleValue()
@@ -17377,5 +17406,193 @@ source.setAttribute('debug', debug)]]></value>
         </html>
     </xsl:template>
 </xsl:stylesheet>]]></value>
+    </line>
+    <line>
+        <value><![CDATA[insert]]></value>
+        <value><![CDATA[report]]></value>
+        <value><![CDATA[229]]></value>
+        <value><![CDATA[true]]></value>
+        <value><![CDATA[MOP Contract Virtual Bill Selector]]></value>
+        <value><![CDATA[from java.util import GregorianCalendar, TimeZone, Locale, Calendar
+from net.sf.chellow.monad.types import MonadDate
+from net.sf.chellow.monad import Hiber, UserException
+from net.sf.chellow.billing import MopContract
+
+contract_id = inv.getLong('mop-contract-id')
+if not inv.isValid():
+    raise UserException()
+
+contract = MopContract.getMopContract(contract_id)
+
+
+cal = GregorianCalendar(TimeZone.getTimeZone("GMT"), Locale.UK)
+cal.add(Calendar.MONTH, -1)
+source.appendChild(MonadDate(cal.getTime()).toXml(doc))
+source.appendChild(MonadDate.getMonthsXml(doc))
+source.appendChild(contract.toXml(doc))]]></value>
+        <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
+<xsl:stylesheet version="1.0"
+    xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+    <xsl:output method="xml" encoding="US-ASCII"
+        doctype-public="-//W3C//DTD XHTML 1.1//EN"
+        doctype-system="http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd"
+        indent="yes" />
+    <xsl:template match="/">
+        <html>
+<head>
+                <link rel="stylesheet" type="text/css"
+                    href="{/source/request/@context-path}/reports/19/output/" />
+
+                <title>
+                    Home &gt; MOP Contracts &gt;
+                    <xsl:value-of select="/source/mop-contract/@name" /> &gt; Virtual Bills
+                </title>
+            </head>
+            <body>
+                <p>
+                    <a
+                        href="{/source/request/@context-path}/reports/1/output/">
+                        <xsl:value-of
+                            select="'Home'" />
+                    </a>
+                    &gt;
+                    <a
+                        href="{/source/request/@context-path}/reports/185/output/">
+                        <xsl:value-of select="'MOP Contracts'" />
+                    </a>
+                    &gt;
+                    <a
+                        href="{/source/request/@context-path}/reports/107/output/?mop-contract-id={/source/mop-contract/@id}">
+                    <xsl:value-of
+                        select="/source/mop-contract/@name" />
+                    </a>
+                    &gt;
+                    Virtual Bills
+                </p>
+
+                  <xsl:if test="//message">
+                    <ul>
+                        <xsl:for-each select="//message">
+                            <li>
+                                <xsl:value-of select="@description" />
+                            </li>
+                        </xsl:for-each>
+                    </ul>
+                </xsl:if>
+                <form action="{/source/request/@context-path}/reports/231/output/">
+                    <fieldset>
+                        <legend>Download Virtual Bills</legend>
+                        <input type="hidden" name="contract-id" value="{/source/mop-contract/@id}"/>
+<br/>
+<xsl:value-of select="'For '"/>
+<input name="months" value="1" maxlength="2" size="2" />
+<xsl:value-of select="' month(s) until the end of '"/>
+                        <input name="end-year" value="{/source/date/@year}" maxlength="4" size="4" /><xsl:value-of select="' - '"/>
+                        <select name="end-month">
+                            <xsl:for-each select="/source/months/month">
+                                <option value="{@number}">
+                                    <xsl:if test="@number=/source/date/@month">
+                                        <xsl:attribute name="selected">selected</xsl:attribute>
+                                    </xsl:if>
+                                    <xsl:value-of select="@number"/>
+                                </option>
+                            </xsl:for-each>
+                        </select>
+                        <input type="submit" value="Download"/>
+                    </fieldset>
+                </form>
+            </body>
+        </html>
+    </xsl:template>
+</xsl:stylesheet>]]></value>
+    </line>
+    <line>
+        <value><![CDATA[insert]]></value>
+        <value><![CDATA[report]]></value>
+        <value><![CDATA[231]]></value>
+        <value><![CDATA[true]]></value>
+        <value><![CDATA[MOP Contract Virtual Bills]]></value>
+        <value><![CDATA[from net.sf.chellow.monad import Hiber, UserException
+from net.sf.chellow.monad.types import MonadDate
+from java.util import GregorianCalendar, TimeZone, Locale, Calendar
+from net.sf.chellow.physical import HhStartDate, Supply
+from java.sql import Timestamp, ResultSet
+from net.sf.chellow.billing import MopContract, NonCoreContract
+    
+inv.getResponse().setContentType("text/csv")
+inv.getResponse().setHeader('Content-Disposition', 'filename=output.csv;')
+pw = inv.getResponse().getWriter()
+end_year = inv.getInteger("end-year")
+end_month = inv.getInteger("end-month")
+months = inv.getInteger("months")
+contract_id = inv.getLong('contract-id')
+if not inv.isValid():
+    raise UserException()
+
+contract = MopContract.getMopContract(contract_id)
+
+cal = GregorianCalendar(TimeZone.getTimeZone("GMT"), Locale.UK)
+cal.set(Calendar.YEAR, end_year)
+cal.set(Calendar.MONTH, end_month - 1)
+cal.set(Calendar.DAY_OF_MONTH, 1)
+cal.set(Calendar.HOUR_OF_DAY, 0)
+cal.set(Calendar.MINUTE, 0)
+cal.set(Calendar.SECOND, 0)
+cal.set(Calendar.MILLISECOND, 0)
+cal.add(Calendar.MONTH, 1)
+cal.add(Calendar.MINUTE, -30)
+finish_date = HhStartDate(cal.getTime())
+
+cal.add(Calendar.MINUTE, 30)
+cal.add(Calendar.MONTH, months * -1)
+start_date = HhStartDate(cal.getTime())
+
+computer = NonCoreContract.getNonCoreContract('computer')
+comterp = computer.callFunction('create_comterp', [])
+
+forecast_date = comterp.get('forecast_date')()
+
+pw.print('Import MPAN Core, Export MPAN Core, Start Date, Finish Date')
+bill_titles = comterp.get('contract_function')(contract, 'virtual_bill_titles')()
+for title in bill_titles:
+    pw.print(',' + title)
+pw.println('')
+pw.flush()
+
+generations = Hiber.session().createQuery("select distinct generation from SupplyGeneration generation where (generation.finishDate.date is null or generation.finishDate.date >= :startDate) and generation.startDate.date <= :finishDate and generation.mopContract = :contract order by generation.supply.id").setEntity('contract', contract).setTimestamp('startDate', start_date.getDate()).setTimestamp('finishDate', finish_date.getDate()).scroll()
+while generations.next():
+    generation = generations.get(0)
+    import_mpan = generation.getImportMpan()
+    if import_mpan is None:
+        import_mpan_core_str = ''
+    else:
+        mpan = import_mpan
+        import_mpan_core_str = import_mpan.getCore().toString()
+
+    export_mpan = generation.getExportMpan()
+    if export_mpan is None:
+        export_mpan_core_str = ''
+    else:
+        mpan = export_mpan
+        export_mpan_core_str = export_mpan.getCore().toString()
+
+    pw.print(import_mpan_core_str + ',' + export_mpan_core_str + ',' + str(start_date) + ',' + str(finish_date) + ',')
+    supply_source = comterp.get('supply_source')(forecast_date, comterp, pw)
+    supply_source.init_from_mpan(start_date, finish_date, mpan)
+    bill = supply_source.contract_function(contract, 'virtual_bill')(supply_source)
+    for title in bill_titles:
+        pw.print('"' + str(bill.get(title, '')) + '",')
+        if title in bill:
+            del bill[title]
+    keys = bill.keys()
+    keys.sort()
+    for k in keys:
+        pw.print(',"' + k + '","' + str(bill[k]) + '"')
+    pw.println('')
+    pw.flush()
+    Hiber.session().clear()
+generations.close()
+pw.close()]]></value>
+        <value><![CDATA[]]></value>
     </line>
 </csv>
