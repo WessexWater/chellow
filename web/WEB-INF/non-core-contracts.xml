@@ -18025,6 +18025,18 @@ def triad_dates():
     </line>
     <line>
         <value><![CDATA[insert]]></value>
+        <value><![CDATA[non-core-contract-rate-script]]></value>
+        <value><![CDATA[triad-rates]]></value>
+        <value><![CDATA[251]]></value>
+        <value><![CDATA[2011-03-31T00:00Z]]></value>
+        <value><![CDATA[def hh_demand_gbp_per_kw():
+    return {
+        '14': 23.811436,
+        '20': 27.567648,
+        '22': 28.408897}]]></value>
+    </line>
+    <line>
+        <value><![CDATA[insert]]></value>
         <value><![CDATA[non-core-contract]]></value>
         <value><![CDATA[47]]></value>
         <value><![CDATA[]]></value>

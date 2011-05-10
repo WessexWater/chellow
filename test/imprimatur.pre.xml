@@ -1912,7 +1912,7 @@ def triad_estimates():
 		</request>
 
 		<!-- Check start time of rate script -->
-		<request path="/chellow/dsos/379/contracts/81/rate-scripts/251/">
+		<request path="/chellow/dsos/379/contracts/81/rate-scripts/253/">
 			<regex pattern="00:00 Z" />
 			<response-code value="200" />
 		</request>
@@ -1924,12 +1924,12 @@ def triad_estimates():
 			<control name="start-month" value="05" />
 			<control name="start-day" value="01" />
 
-			<regex pattern="/chellow/dsos/379/contracts/81/rate-scripts/253/" />
+			<regex pattern="/chellow/dsos/379/contracts/81/rate-scripts/255/" />
 			<response-code value="303" />
 		</request>
 
 		<!-- Delete rate script -->
-		<request path="/chellow/dsos/379/contracts/81/rate-scripts/251/"
+		<request path="/chellow/dsos/379/contracts/81/rate-scripts/253/"
 			method="post">
 			<control name="delete" value="Delete" />
 			<response-code value="303" />
@@ -2260,7 +2260,7 @@ def import_virtual_bill(supply_source):
 			<regex
 				pattern='Site Code,Site Name,Associated Site Ids,From,To,Gen Types,CHP kWh,LM kWh, Turbine kWh,net-gbp' />
 			<regex
-				pattern='"CI004","Lower Treave","","2010-06-01T00:00Z","2010-06-30T23:30Z","chp",,,,"0.0","bsuos-actual-gbp","0.0","ccl-gbp","0","ccl-kwh","0","ccl-rate","0","duos-amber-gbp","0.0","duos-amber-kwh","0","duos-amber-rate","0.00147","duos-green-gbp","0.0","duos-green-kwh","0","duos-green-rate","0.0013","duos-red-gbp","0.0","duos-red-kwh","0","duos-red-rate","0.16146","night-gbp","0.0","night-gsp-kwh","0","night-msp-kwh","0","other-gbp","0.0","other-gsp-kwh","0.0","other-msp-kwh","0","summer-pk-gbp","0.0","summer-pk-gsp-kwh","0","summer-pk-msp-kwh","0","triad-estimate-0-date","2010-01-07T17:00Z","triad-estimate-0-gsp-kw","0.0","triad-estimate-0-laf","1.078","triad-estimate-0-msp-kw","0","triad-estimate-0-status","E","triad-estimate-1-date","2010-01-25T17:00Z","triad-estimate-1-gsp-kw","0.0","triad-estimate-1-laf","1.078","triad-estimate-1-msp-kw","0","triad-estimate-1-status","E","triad-estimate-2-date","2009-12-15T17:00Z","triad-estimate-2-gsp-kw","0.0","triad-estimate-2-laf","1.078","triad-estimate-2-msp-kw","0","triad-estimate-2-status","E","triad-estimate-gbp","0.0","triad-estimate-gsp-kw","0.0","triad-estimate-months","1","triad-estimate-rate","26.057832","winter-low-pk-gbp","0.0","winter-low-pk-gsp-kwh","0","winter-low-pk-msp-kwh","0","winter-off-pk-gbp","0.0","winter-off-pk-gsp-kwh","0","winter-off-pk-msp-kwh","0","winter-pk-gbp","0.0","winter-pk-gsp-kwh","0","winter-pk-msp-kwh","0"' />
+				pattern='"CI004","Lower Treave","","2010-06-01T00:00Z","2010-06-30T23:30Z","chp",,,,"0.0","bsuos-actual-gbp","0.0","ccl-gbp","0","ccl-kwh","0","ccl-rate","0","duos-amber-gbp","0.0","duos-amber-kwh","0","duos-amber-rate","0.00147","duos-green-gbp","0.0","duos-green-kwh","0","duos-green-rate","0.0013","duos-red-gbp","0.0","duos-red-kwh","0","duos-red-rate","0.16146","night-gbp","0.0","night-gsp-kwh","0","night-msp-kwh","0","other-gbp","0.0","other-gsp-kwh","0.0","other-msp-kwh","0","problem","","summer-pk-gbp","0.0","summer-pk-gsp-kwh","0","summer-pk-msp-kwh","0","triad-estimate-0-date","2010-01-07T17:00Z","triad-estimate-0-gsp-kw","0.0","triad-estimate-0-laf","1.078","triad-estimate-0-msp-kw","0","triad-estimate-0-status","E","triad-estimate-1-date","2010-01-25T17:00Z","triad-estimate-1-gsp-kw","0.0","triad-estimate-1-laf","1.078","triad-estimate-1-msp-kw","0","triad-estimate-1-status","E","triad-estimate-2-date","2009-12-15T17:00Z","triad-estimate-2-gsp-kw","0.0","triad-estimate-2-laf","1.078","triad-estimate-2-msp-kw","0","triad-estimate-2-status","E","triad-estimate-gbp","0.0","triad-estimate-gsp-kw","0.0","triad-estimate-months","1","triad-estimate-rate","26.057832","winter-low-pk-gbp","0.0","winter-low-pk-gsp-kwh","0","winter-low-pk-msp-kwh","0","winter-off-pk-gbp","0.0","winter-off-pk-gsp-kwh","0","winter-off-pk-msp-kwh","0","winter-pk-gbp","0.0","winter-pk-gsp-kwh","0","winter-pk-msp-kwh","0"' />
 			<response-code value="200" />
 		</request>
 		<request
@@ -2677,20 +2677,20 @@ def import_virtual_bill(supply_source):
 			<control name="start-day" value="01" />
 			<control name="insert" value="Insert" />
 
-			<regex pattern="/chellow/non-core-contracts/39/rate-scripts/255/" />
+			<regex pattern="/chellow/non-core-contracts/39/rate-scripts/257/" />
 			<response-code value="303" />
 		</request>
 		<request
-			path="/chellow/non-core-contracts/39/rate-scripts/255/?view=confirm-delete">
+			path="/chellow/non-core-contracts/39/rate-scripts/257/?view=confirm-delete">
 			<regex pattern="Are you sure you want to delete this rate script\?" />
 			<response-code value="200" />
 		</request>
-		<request path="/chellow/non-core-contracts/39/rate-scripts/255/"
+		<request path="/chellow/non-core-contracts/39/rate-scripts/257/"
 			method="post">
 			<control name="delete" value="Delete" />
 			<response-code value="303" />
 		</request>
-		<request path="/chellow/non-core-contracts/39/rate-scripts/255/">
+		<request path="/chellow/non-core-contracts/39/rate-scripts/257/">
 			<response-code value="404" />
 		</request>
 	</test>
@@ -2702,14 +2702,14 @@ def import_virtual_bill(supply_source):
 			<control name="start-day" value="01" />
 			<control name="insert" value="Insert" />
 
-			<regex pattern="/chellow/non-core-contracts/39/rate-scripts/257/" />
+			<regex pattern="/chellow/non-core-contracts/39/rate-scripts/259/" />
 			<response-code value="303" />
 		</request>
-		<request path="/chellow/non-core-contracts/39/rate-scripts/257/">
+		<request path="/chellow/non-core-contracts/39/rate-scripts/259/">
 			<regex pattern='&lt;input name="finish-year" value="2000"&gt;' />
 			<response-code value="200" />
 		</request>
-		<request path="/chellow/non-core-contracts/39/rate-scripts/257/"
+		<request path="/chellow/non-core-contracts/39/rate-scripts/259/"
 			method="post">
 			<control name="delete" value="Delete" />
 			<response-code value="303" />
