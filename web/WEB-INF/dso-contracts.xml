@@ -2944,6 +2944,7 @@ def tariffs():
         '527': {
             'description': 'LV Generation Non-Intermittent',
             'gbp-per-kva-per-day': 0.00,
+            'gbp-per-mpan-per-day': 0.00,
             'excess-gbp-per-kva-per-day': 0.00,
             'red-gbp-per-kwh': -0.06632,
             'amber-gbp-per-kwh': -0.00214,

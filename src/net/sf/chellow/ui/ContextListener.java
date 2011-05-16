@@ -118,7 +118,7 @@ public class ContextListener implements ServletContextListener {
 					.getNonCoreContract("startup");
 			List<Object> args = new ArrayList<Object>();
 			args.add(context);
-			startupContract.callFunction("on_start_up", args);
+			startupContract.callFunction("on_start_up", args.toArray());
 			Properties postProps = new Properties();
 			PythonInterpreter.initialize(System.getProperties(), postProps,
 					new String[] {});
