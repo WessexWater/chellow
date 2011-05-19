@@ -709,7 +709,14 @@ public class SupplyGeneration extends PersistentEntity {
 		setSiteSupplyGenerations(new HashSet<SiteSupplyGeneration>());
 		setMpans(new HashSet<Mpan>());
 		setPc(pc);
-		setMtc(Mtc.getMtc(null, "500"));
+		Mtc anMtc = (Mtc) Hiber.session()
+				.createQuery("from Mtc mtc where mtc.code = :code")
+				.setInteger("code", Integer.parseInt(mtcCode)).setMaxResults(1)
+				.uniqueResult();
+		if (anMtc == null) {
+			throw new UserException("MTC not recognized.");
+		}
+		setMtc(anMtc);
 		setCop(cop);
 		setSsc(ssc);
 		setStartDate(startDate);
