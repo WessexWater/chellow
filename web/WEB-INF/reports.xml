@@ -13996,12 +13996,12 @@ start_date = HhStartDate(cal.getTime())
 
 comterp = computer.callFunction('create_comterp', [])
 
-field_names = ['supply-id', 'supply-name', 'source-code', 'generator-type', 'month', 'pc-code', 'msn', 'site-code', 'site-name', 'metering-type', 'import-mpan-core', 'metered-import-kwh', 'metered-import-net-gbp', 'metered-import-estimated-kwh', 'export-mpan-core', 'metered-export-kwh', 'metered-export-estimated-kwh', 'problem']
+field_names = ['supply-name', 'source-code', 'generator-type', 'month', 'pc-code', 'msn', 'site-code', 'site-name', 'metering-type', 'import-mpan-core', 'metered-import-kwh', 'metered-import-net-gbp', 'metered-import-estimated-kwh', 'billed-import-apportioned-kwh', 'billed-import-apportioned-net-gbp', 'billed-import-raw-kwh', 'billed-import-raw-net-gbp', 'export-mpan-core', 'metered-export-kwh', 'metered-export-estimated-kwh', 'billed-export-apportioned-kwh', 'billed-export-apportioned-net-gbp', 'billed-export-raw-kwh', 'billed-export-raw-net-gbp', 'problem', 'timestamp']
 
 inv.getResponse().setContentType("text/csv")
 inv.getResponse().setHeader('Content-Disposition', 'filename=output.csv;')
 pw = inv.getResponse().getWriter()
-pw.println(','.join(field_names))
+pw.println('supply-id,' + ','.join(field_names))
 pw.flush()
 
 month_format = SimpleDateFormat("yyyy-MM-dd")
@@ -14022,6 +14022,13 @@ est_kwh_query = Hiber.session().createQuery("select sum(cast(datum.value as doub
 
 site_query = Hiber.session().createQuery("select ssgen.site from SiteSupplyGeneration ssgen where ssgen.supplyGeneration = :supplyGeneration and ssgen.isPhysical is true")
 
+apportioned_kwh_bill_query = Hiber.session().createQuery("from Bill bill where bill.supply = :supply and bill.batch.contract = :contract and bill.startDate.date <= :finishDate and bill.finishDate.date >= :startDate and bill.type.code != 'W' and lower(bill.batch.reference) not like '%reconciliation%' order by bill.issueDate desc, bill.startDate.date, bill.reference desc")
+
+raw_kwh_bill_query = Hiber.session().createQuery("from Bill bill where bill.supply = :supply and bill.batch.contract = :contract and bill.finishDate.date <= :finishDate and bill.finishDate.date >= :startDate and bill.type.code != 'W' and lower(bill.batch.reference) not like '%reconciliation%' order by bill.issueDate desc, bill.startDate.date, bill.reference desc")
+
+apportioned_gbp_bill_query = Hiber.session().createQuery("from Bill bill where bill.supply = :supply and bill.startDate.date <= :finishDate and bill.finishDate.date >= :startDate")
+
+raw_gbp_bill_query = Hiber.session().createQuery("from Bill bill where bill.supply = :supply and bill.finishDate.date <= :finishDate and bill.finishDate.date >= :startDate")
 
 forecast_date = comterp.get('forecast_date')()
 
@@ -14039,9 +14046,14 @@ for i in range(months):
     kwh_query.setTimestamp('startDate', month_start.getDate()).setTimestamp('finishDate', month_finish.getDate())
     est_kwh_query.setTimestamp('startDate', month_start.getDate()).setTimestamp('finishDate', month_finish.getDate())
 
-
     while supplies.next():
         supply = supplies.get(0)
+
+        apportioned_kwh_bill_query.setEntity('supply', supply)
+        raw_kwh_bill_query.setEntity('supply', supply)
+        apportioned_gbp_bill_query.setEntity('supply', supply)
+        raw_gbp_bill_query.setEntity('supply', supply)
+
         generator_type = supply.getGeneratorType()
         if generator_type is None:
             generator_type = ''
@@ -14050,8 +14062,7 @@ for i in range(months):
 
         source_code = supply.getSource().getCode()
         generations = supply.getGenerations(month_start, month_finish)
-        generation = generations.get(0)
-
+        generation = generations.get(len(generations) - 1)
 
         pc_code = str(generation.getPc())
         if pc_code == '00':
@@ -14068,7 +14079,9 @@ for i in range(months):
         est_kwh_query.setEntity('supply', supply)
 
 
-        values = {'supply-id': supply.getId(), 'supply-name': supply.getName(), 'source-code': source_code, 'generator-type': generator_type, 'month': month_str, 'pc-code': pc_code, 'msn': generation.getMeterSerialNumber(), 'site-code': site.getCode(), 'site-name': site.getName(), 'metering-type': metering_type, 'problem': ''}
+        values = {'supply-name': supply.getName(), 'source-code': source_code, 'generator-type': generator_type, 'month': month_str, 'pc-code': pc_code, 'msn': generation.getMeterSerialNumber(), 'site-code': site.getCode(), 'site-name': site.getName(), 'metering-type': metering_type, 'problem': ''}
+
+        pw.print(str(supply.getId()) + ',')
 
         for polarity, pol_name in [(True, 'import'), (False, 'export')]:
             mpan = generation.getMpan(polarity)
@@ -14097,7 +14110,14 @@ for i in range(months):
             values['metered-' + pol_name + '-kwh'] = kwh
             values['metered-' + pol_name + '-estimated-net-gbp'] = 0
             values['metered-' + pol_name + '-net-gbp'] = 0
-        #pw.println('starting generations, ' + str(System.currentTimeMillis()))
+            values['billed-' + pol_name + '-kwh'] = 0
+            values['billed-' + pol_name + '-net-gbp'] = 0
+            values['billed-' + pol_name + '-apportioned-kwh'] = 0
+            values['billed-' + pol_name + '-apportioned-net-gbp'] = 0
+            values['billed-' + pol_name + '-raw-kwh'] = 0
+            values['billed-' + pol_name + '-raw-net-gbp'] = 0
+
+        #p w.println('starting generations, ' + str(System.currentTimeMillis()))
 
         for generation in generations:
             if generation.getStartDate().after(month_start):
@@ -14113,23 +14133,28 @@ for i in range(months):
             if import_mpan is None:
                 continue
 
+            chunk_start_millis = chunk_start.getDate().getTime()
+            chunk_finish_millis = chunk_finish.getDate().getTime()
+
             supplier_contract = import_mpan.getSupplierContract()
+
+
             if source_code in ['net', 'gen-net']:
-                #pw.println("starting vbill, " + str(System.currentTimeMillis()))
+                #p w.println("starting vbill, " + str(System.currentTimeMillis()))
                 supply_source = comterp.get('supply_source')(forecast_date, comterp, pw)
 
-                #pw.println("starting init from mpan, " + str(System.currentTimeMillis()))
+                #p w.println("starting init from mpan, " + str(System.currentTimeMillis()))
                 supply_source.init_from_mpan(chunk_start, chunk_finish, import_mpan)
-                #pw.println('sum msp kwh ' + str(supply_source.summary['sum-msp-kwh']))
+                #p w.println('sum msp kwh ' + str(supply_source.summary['sum-msp-kwh']))
                 values['metered-import-kwh'] += supply_source.summary['sum-msp-kwh']
 
-                #pw.println("finished init from mpan, " + str(System.currentTimeMillis()))
-                import_vb_function = comterp.get('contract_function')(supplier_contract, 'import_virtual_bill')
+                #p w.println("finished init from mpan, " + str(System.currentTimeMillis()))
+                import_vb_function = supply_source.contract_function(supplier_contract, 'import_virtual_bill')
                 if import_vb_function is None:
                     values['problem'] += "Can't find the import_virtual_bill function in the supplier contract. "
                 else:
                     v_bill = import_vb_function(supply_source)
-                    #pw.println("finishing vbill, " + str(System.currentTimeMillis()))
+                    #p w.println("finishing vbill, " + str(System.currentTimeMillis()))
                     if supply_source.pc_code != '00' and not supply_source.is_amr:
                         #month_data['used-kwh'] += supply_source.summary['sum-msp-kwh']
                         pass
@@ -14139,14 +14164,69 @@ for i in range(months):
                     else:
                         values['problem'] += 'For the supply ' + import_mpan.toString() + ' the virtual bill ' + str(v_bill) + ' from the contract ' + supplier_contract.getName() + ' does not contain the net-gbp key.'
                     values['problem'] += supply_source.summary['problem']
-                #pw.println("done virtual bill , " + str(System.currentTimeMillis()))
+                #p w.println("done virtual bill , " + str(System.currentTimeMillis()))
 
                 hhdc_contract = generation.getHhdcContract()
                 if hhdc_contract is not None:
-                    hhdc_bill = comterp.get('contract_function')(hhdc_contract, 'virtual_bill')(supply_source)
+                    hhdc_bill = supply_source.contract_function(hhdc_contract, 'virtual_bill')(supply_source)
                     values['metered-import-net-gbp'] += hhdc_bill['net-gbp']
-            #pw.println("finishing generation , " + str(System.currentTimeMillis()))
 
+                mop_contract = generation.getMopContract()
+                if mop_contract is not None:
+                    mop_func = supply_source.contract_function(mop_contract, 'virtual_bill')
+                    if mop_func is None:
+                        values['problem'] += " MOP virtual_bill function can't be found."
+                    else:
+                        mop_bill = mop_func(supply_source)
+                        values['metered-import-net-gbp'] += mop_bill['net-gbp']
+                        if 'problem' in mop_bill:
+                            if len(mop_bill['problem']) > 0:
+                                values['problem'] += " MOP virtual bill problem: " + mop_bill['problem']
+                        else:
+                            values['problem'] += " 'problem' field can't be found in MOP virtual bill."
+                
+                for gbp_bill in apportioned_gbp_bill_query.setTimestamp('startDate', chunk_start.getDate()).setTimestamp('finishDate', chunk_finish.getDate()).list():
+                    bill_net = gbp_bill.getNet().doubleValue()
+                    gbp_bill_start = gbp_bill.getStartDate().getDate().getTime()
+                    gbp_bill_finish = gbp_bill.getFinishDate().getDate().getTime()
+                    rate = bill_net / (gbp_bill_finish - gbp_bill_start + (30 * 60 * 1000))
+                    overlap_length = min(gbp_bill_finish, chunk_finish_millis) + (30 * 60 * 1000) - max(gbp_bill_start, chunk_start_millis)
+                    values['billed-import-apportioned-net-gbp'] += overlap_length * rate
+                for gbp_bill in raw_gbp_bill_query.setTimestamp('startDate', chunk_start.getDate()).setTimestamp('finishDate', chunk_finish.getDate()).list():
+                    values['billed-import-raw-net-gbp'] += gbp_bill.getNet().doubleValue()
+
+                raw_kwh_bills = []
+                for cand_bill in raw_kwh_bill_query.setEntity('contract', supplier_contract).setTimestamp('startDate', chunk_start.getDate()).setTimestamp('finishDate', chunk_finish.getDate()).list():
+                    can_insert = True
+                    for kwh_bill in raw_kwh_bills:
+                        if not cand_bill.getStartDate().after(kwh_bill.getFinishDate()) and not cand_bill.getFinishDate().before(kwh_bill.getStartDate()):
+                            can_insert = False
+                            break
+                    if can_insert:
+                        raw_kwh_bills.append(cand_bill)
+                        values['billed-import-raw-kwh'] += cand_bill.getKwh().doubleValue()
+
+                apportioned_kwh_bills = []
+                for cand_bill in apportioned_kwh_bill_query.setEntity('contract', supplier_contract).setTimestamp('startDate', chunk_start.getDate()).setTimestamp('finishDate', chunk_finish.getDate()).list():
+                    can_insert = True
+                    for kwh_bill in apportioned_kwh_bills:
+                        if not cand_bill.getStartDate().after(kwh_bill.getFinishDate()) and not cand_bill.getFinishDate().before(kwh_bill.getStartDate()):
+                            can_insert = False
+                            break
+                    if can_insert:
+                        apportioned_kwh_bills.append(cand_bill)
+                        bill_kwh = cand_bill.getKwh().doubleValue()
+                        cand_bill_start = cand_bill.getStartDate().getDate().getTime()
+                        cand_bill_finish = cand_bill.getFinishDate().getDate().getTime()
+                        rate = bill_kwh / (cand_bill_finish - cand_bill_start + (30 * 60 * 1000))
+                        #pw.println('rate ' + str(rate) + ' bill_kwh ' + str(bill_kwh) + ' cand_start ' + str(cand_bill.getStartDate()) + ' cand_finish ' + str(cand_bill.getFinishDate()) + ' length in millis ' + str(cand_bill_finish - cand_bill_start + (30 * 60 * 1000)) + ' length of overlap ' + str(min(cand_bill_finish, chunk_finish_millis) - (max(cand_bill_start, chunk_start_millis) + 30 * 60 * 1000)))
+                        overlap_length = min(cand_bill_finish, chunk_finish_millis) - max(cand_bill_start, chunk_start_millis) + 30 * 60 * 1000
+                        values['billed-import-apportioned-kwh'] += overlap_length * rate
+
+
+
+            #pw.println("finishing generation , " + str(System.currentTimeMillis()))
+        values['timestamp'] = System.currentTimeMillis()
         pw.println(','.join('"' + str(values[name]) + '"' for name in field_names))
         pw.flush()
         Hiber.session().clear()
