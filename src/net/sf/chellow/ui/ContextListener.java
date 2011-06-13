@@ -134,8 +134,20 @@ public class ContextListener implements ServletContextListener {
 	}
 
 	public void contextDestroyed(ServletContextEvent event) {
-		ServletContext context = event.getServletContext();
-		context.removeAttribute(CONTEXT_REQUEST_MAP);
+		try {
+			ServletContext context = event.getServletContext();
+			NonCoreContract startupContract = NonCoreContract
+					.getNonCoreContract("shutdown");
+			List<Object> args = new ArrayList<Object>();
+			args.add(context);
+			startupContract.callFunction("on_shut_down", args.toArray());
+			context.removeAttribute(CONTEXT_REQUEST_MAP);
+		} catch (Throwable e) {
+			Debug.print("Problem. " + e);
+			throw new RuntimeException(e);
+		} finally {
+			Hiber.close();
+		}
 	}
 
 	@SuppressWarnings("unchecked")

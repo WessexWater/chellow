@@ -927,6 +927,7 @@ def remove_bsuos_task(ctx):
     if existing_task is None:
         raise UserException("There isn't a bsuos task.")
     existing_task.cancel()
+    existing_task.timer.cancel()
     if existing_task.is_locked():
         raise UserException("There's a bsuos import currently in progress.")
     
@@ -14078,6 +14079,7 @@ def remove_hh_importer_task(ctx, contract):
     if existing_task is None:
         raise UserException("There isn't an importer task for this contract.")
     existing_task.cancel()
+    existing_task.timer.cancel()
     if existing_task.is_locked():
         raise UserException("There's an import currently in progress.")
     
@@ -14249,12 +14251,61 @@ def remove_rcrc_task(ctx):
     if existing_task is None:
         raise UserException("There isn't a RCRC task.")
     existing_task.cancel()
+    existing_task.timer.cancel()
     if existing_task.is_locked():
         raise UserException("There's a RCRC import currently in progress.")
     
     ctx.setAttribute(RCRC_TASK_KEY, None)]]></value>
         <value><![CDATA[241]]></value>
         <value><![CDATA[2011-03-21T00:00Z]]></value>
+        <value><![CDATA[]]></value>
+        <value><![CDATA[]]></value>
+    </line>
+    <line>
+        <value><![CDATA[insert]]></value>
+        <value><![CDATA[non-core-contract]]></value>
+        <value><![CDATA[81]]></value>
+        <value><![CDATA[]]></value>
+        <value><![CDATA[CALB]]></value>
+        <value><![CDATA[shutdown]]></value>
+        <value><![CDATA[from net.sf.chellow.billing import NonCoreContract
+from net.sf.chellow.monad import Hiber
+
+computer_contract = NonCoreContract.getNonCoreContract('computer')
+comterp = computer_contract.callFunction('create_comterp', [])
+
+hh_importer_contract = NonCoreContract.getNonCoreContract('hh-importer')
+
+def on_shut_down(ctx):
+    get_importer_f = comterp.get('contract_function')(hh_importer_contract, 'get_hh_importer_task')
+    remove_importer_f = comterp.get('contract_function')(hh_importer_contract, 'remove_hh_importer_task')
+
+    for contract in Hiber.session().createQuery("from HhdcContract contract order by contract.id").list():
+        task = get_importer_f(ctx, contract)
+        if task is not None:
+            remove_importer_f(ctx, contract)
+            
+    tlms_contract = NonCoreContract.getNonCoreContract('tlms')
+    tsk = comterp.get('contract_function')(tlms_contract, 'get_tlm_task')(ctx)    
+    if tsk is not None:
+        comterp.get('contract_function')(tlms_contract, 'remove_tlm_task')(ctx)
+
+    bsuos_contract = NonCoreContract.getNonCoreContract('bsuos')
+    tsk = comterp.get('contract_function')(bsuos_contract, 'get_bsuos_task')(ctx)
+    if tsk is not None:
+        comterp.get('contract_function')(bsuos_contract, 'remove_bsuos_task')(ctx)
+
+    rcrc_contract = NonCoreContract.getNonCoreContract('rcrc')
+    tsk = comterp.get('contract_function')(rcrc_contract, 'get_rcrc_task')(ctx)
+    if tsk is not None:
+        comterp.get('contract_function')(rcrc_contract, 'remove_rcrc_task')(ctx)
+
+    system_price_contract = NonCoreContract.getNonCoreContract('system-price')
+    tsk = comterp.get('contract_function')(system_price_contract, 'get_system_price_task')(ctx)
+    if tsk is not None:
+        comterp.get('contract_function')(system_price_contract, 'remove_system_price_task')(ctx)]]></value>
+        <value><![CDATA[253]]></value>
+        <value><![CDATA[2011-06-13T00:00Z]]></value>
         <value><![CDATA[]]></value>
         <value><![CDATA[]]></value>
     </line>
@@ -14277,7 +14328,19 @@ def on_start_up(ctx):
     start_importer_f = comterp.get('contract_function')(hh_importer_contract, 'start_hh_importer_task')
 
     for contract in Hiber.session().createQuery("from HhdcContract contract order by contract.id").list():
-        start_importer_f(ctx, contract)]]></value>
+        start_importer_f(ctx, contract)
+
+    tlms_contract = NonCoreContract.getNonCoreContract('tlms')
+    comterp.get('contract_function')(tlms_contract, 'start_tlm_task')(ctx)
+
+    bsuos_contract = NonCoreContract.getNonCoreContract('bsuos')
+    comterp.get('contract_function')(bsuos_contract, 'start_bsuos_task')(ctx)
+
+    rcrc_contract = NonCoreContract.getNonCoreContract('rcrc')
+    comterp.get('contract_function')(rcrc_contract, 'start_rcrc_task')(ctx)
+
+    system_price_contract = NonCoreContract.getNonCoreContract('system-price')
+    comterp.get('contract_function')(system_price_contract, 'start_system_price_task')(ctx)]]></value>
         <value><![CDATA[237]]></value>
         <value><![CDATA[2011-01-06T00:00Z]]></value>
         <value><![CDATA[]]></value>
@@ -14456,6 +14519,7 @@ def remove_system_price_task(ctx):
     if existing_task is None:
         raise UserException("There isn't a system price task.")
     existing_task.cancel()
+    existing_task.timer.cancel()
     if existing_task.is_locked():
         raise UserException("There's a system price import currently in progress.")
     
@@ -14628,6 +14692,7 @@ def remove_tlm_task(ctx):
     if existing_task is None:
         raise UserException("There isn't a TLM task.")
     existing_task.cancel()
+    existing_task.timer.cancel()
     if existing_task.is_locked():
         raise UserException("There's a TLM import currently in progress.")
     

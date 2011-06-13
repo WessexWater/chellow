@@ -29,7 +29,6 @@ import java.util.Set;
 import net.sf.chellow.billing.HhdcContract;
 import net.sf.chellow.billing.MopContract;
 import net.sf.chellow.billing.SupplierContract;
-import net.sf.chellow.monad.Debug;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.InternalException;
@@ -588,7 +587,6 @@ public class Supply extends PersistentEntity {
 			supplyGeneration = insertGeneration(startDate);
 		}
 		Hiber.flush();
-		Debug.print("about to update generation with " + mtcCode);
 		supplyGeneration.update(supplyGeneration.getStartDate(),
 				supplyGeneration.getFinishDate(), mopContract, mopAccount,
 				hhdcContract, hhdcAccount, meterSerialNumber, pc, mtcCode, cop,
