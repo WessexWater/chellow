@@ -12780,7 +12780,7 @@ def remove_bsuos_task(ctx):
     summary = whole_data['summary']
     month_kwh = summary['sum-msp-kwh']
     if month_kwh > 999:
-        rate = bill['ccl-rate'] = bill['lec-rate'] = data_source.rate(contract.rateScript(summary['finish-date']), 'ccl_rate')
+        rate = bill['ccl-rate'] = bill['lec-rate'] = data_source.hh_rate(contract, summary['finish-date'].getDate(), 'ccl_rate')
         if data_source.is_green:
             prefix = 'lec'
         else:
@@ -13021,61 +13021,85 @@ def _tpr_dict(tpr_code, pw):
             end_hour = ci[4]
             days_of_week[day_of_week].append({'start-month': start_month, 'start-hour': start_hour, 'end-month': end_month, 'end-hour': end_hour})
 
-        tpr_dict['utc-cal'] = GregorianCalendar(TimeZone.getTimeZone("GMT"), Locale.UK)
-        tpr_dict['ct-cal'] = GregorianCalendar(TimeZone.getTimeZone("Europe/London"), Locale.UK)
-        if tpr.getIsGmt():
-            tpr_dict['cal'] = tpr_dict['utc-cal']
-        else:
-            tpr_dict['cal'] = tpr_dict['ct-cal']
+        tpr_dict['is-gmt'] = tpr.getIsGmt()
 
         tpr_dict['datum-cache'] = {}
         tpr_cache[tpr_code] = tpr_dict
         #pw.println("finished missed cache " + tpr_code + "," + str(System.currentTimeMillis()))
         return tpr_dict
 
-def _datum_generator(tpr_code, supply_source):
-    tpr_dict = _tpr_dict(tpr_code, supply_source.pw)
+def _tpr_datum_generator(tpr_code, year_advance, pw):
+    tpr_dict = _tpr_dict(tpr_code, pw)
     datum_cache = tpr_dict['datum-cache']
     def _generator(hh_date):
         try:
             return datum_cache[hh_date]
         except KeyError:
             hh_start_date = HhStartDate(Date(hh_date))
-            bank_holidays_rate_script = bank_holidays_contract.rateScript(hh_start_date)
-            bank_holidays = supply_source.rate(bank_holidays_rate_script, 'days')
-
-            cal = MonadDate.getCalendar()
-            cal.setTime(hh_start_date.getDate())
-            cal.set(Calendar.DAY_OF_MONTH, 1)
-            cal.set(Calendar.HOUR_OF_DAY, 0)
-            cal.set(Calendar.MINUTE, 0)
-            cal.add(Calendar.MONTH, 1)
-            cal.add(Calendar.MINUTE, -30)
-            year_adjustment = 0
-            while cal.getTime().after(supply_source.forecast_date.getDate()):
-                cal.add(Calendar.YEAR, -1)
-                year_adjustment -= 1
-            year_advance = -1 * year_adjustment
 
             days_of_week = tpr_dict['days-of-week']
-            cal = tpr_dict['cal']
-            utc_cal = tpr_dict['utc-cal']
-            ct_cal = tpr_dict['ct-cal']
+            datum = _datum_generator(year_advance, pw)(hh_date)
+            if tpr_dict['is-gmt']:
+                pref = 'utc-'
+            else:
+                pref = 'ct-'
 
+            decimal_hour = datum[pref + 'decimal-hour']
+            fractional_month = datum[pref + 'month'] * 100 + datum[pref + 'day']
+
+            result = None
+
+            for ci in days_of_week[datum[pref + 'day-of-week']]:
+                if ((ci['start-hour'] < ci['end-hour'] and ci['start-hour'] <= decimal_hour < ci['end-hour']) or (ci['start-hour'] >= ci['end-hour'] and (ci['start-hour'] <= decimal_hour or decimal_hour < ci['end-hour']))) and ci['start-month'] <= fractional_month <= ci['end-month']:
+                    result = datum
+                    break
+            datum_cache[hh_date] = result
+            return result
+    return _generator
+
+class imdict(dict):
+    def __hash__(self):
+        return id(self)
+
+    def _immutable(self, *args, **kws):
+        raise TypeError('object is immutable')
+
+    __setitem__ = _immutable
+    __delitem__ = _immutable
+    clear       = _immutable
+    update      = _immutable
+    setdefault  = _immutable
+    pop         = _immutable
+    popitem     = _immutable
+
+_advance_datum_cache = {}
+
+def _datum_generator(year_advance, pw):
+    #pw.println("forecast date " + str(forecast_date))
+    try:
+        datum_cache = _advance_datum_cache[year_advance]
+    except KeyError:
+        _advance_datum_cache[year_advance] = {}
+        datum_cache = _advance_datum_cache[year_advance]
+
+    def _generator(hh_date):
+        try:
+            return datum_cache[hh_date]
+        except KeyError:
+            hh_start_date = HhStartDate(Date(hh_date))
+
+            utc_cal = GregorianCalendar(TimeZone.getTimeZone("GMT"), Locale.UK)
+            ct_cal = GregorianCalendar(TimeZone.getTimeZone("Europe/London"), Locale.UK)
             utc_cal.setTimeInMillis(hh_date)
             ct_cal.setTimeInMillis(hh_date)
             utc_cal.add(Calendar.YEAR, year_advance)
             ct_cal.add(Calendar.YEAR, year_advance)
-            decimal_hour = cal.get(11) + float(cal.get(12)) / 60
-            fractional_month = cal.get(Calendar.MONTH) * 100 + cal.get(Calendar.DAY_OF_MONTH)
-            datum = None
-            for ci in days_of_week[cal.get(Calendar.DAY_OF_WEEK)]:
-                if ((ci['start-hour'] < ci['end-hour'] and ci['start-hour'] <= decimal_hour < ci['end-hour']) or (ci['start-hour'] >= ci['end-hour'] and (ci['start-hour'] <= decimal_hour or decimal_hour < ci['end-hour']))) and ci['start-month'] <= fractional_month <= ci['end-month']:
-                    utc_day = utc_cal.get(Calendar.DAY_OF_MONTH)
-                    datum = {'status': 'E', 'imp-msp-kvarh': 0, 'imp-msp-kvar': 0, 'exp-msp-kvarh': 0, 'exp-msp-kvar': 0, 'hist-start-date': utc_cal.getTime(), 'start-date': utc_cal.getTime(), 'ct-day': ct_cal.get(5), 'utc-month': utc_cal.get(2), 'utc-day': utc_day, 'utc-decimal-hour': utc_cal.get(11) + float(utc_cal.get(12)) / 60, 'utc-year': utc_cal.get(Calendar.YEAR), 'utc-hour': utc_cal.get(Calendar.HOUR_OF_DAY), 'utc-minute': utc_cal.get(Calendar.MINUTE), 'ct-year': ct_cal.get(Calendar.YEAR), 'ct-month': ct_cal.get(2), 'ct-decimal-hour': ct_cal.get(11) + float(ct_cal.get(12)) / 60, 'ct-day-of-week': ct_cal.get(7), 'utc-day-of-week': utc_cal.get(7), 'utc-is-bank-holiday': utc_day in bank_holidays}
-            datum_cache[hh_date] = datum
-            #supply_source.pw.println(' tpr 2nd code ' + tpr_code + ' datum ' + str(datum) + ' date ' + str(hh_start_date))
-            return datum
+
+            utc_bank_holidays = hh_rate(bank_holidays_contract, utc_cal.getTime(), 'days')
+
+            utc_day = utc_cal.get(Calendar.DAY_OF_MONTH)
+            datum_cache[hh_date] = imdict((('status', 'E'), ('hist-start-date', hh_start_date.getDate()), ('start-date', utc_cal.getTime()), ('ct-day', ct_cal.get(5)), ('utc-month', utc_cal.get(2)), ('utc-day', utc_day), ('utc-decimal-hour', utc_cal.get(11) + float(utc_cal.get(12)) / 60), ('utc-year', utc_cal.get(Calendar.YEAR)), ('utc-hour', utc_cal.get(Calendar.HOUR_OF_DAY)), ('utc-minute', utc_cal.get(Calendar.MINUTE)), ('ct-year', ct_cal.get(Calendar.YEAR)), ('ct-month', ct_cal.get(2)), ('ct-decimal-hour', ct_cal.get(11) + float(ct_cal.get(12)) / 60), ('ct-day-of-week', ct_cal.get(7)), ('utc-day-of-week', utc_cal.get(7)), ('utc-is-bank-holiday', utc_day in utc_bank_holidays)))
+            return datum_cache[hh_date]
     return _generator
 
 
@@ -13141,7 +13165,7 @@ class SiteSource(DataSource):
 
 
     def create_whole_data(self, start_date, finish_date, forecast_date):
-        #s elf.pw.println('starting whole data site, ' + str(System.currentTimeMillis()))
+        #s elf.pw.println('starting whole data site, ' + str(start_date) + " finish date " + str(finish_date) + " forecast date " + str(forecast_date))
         bank_holidays_rate_script = bank_holidays_contract.rateScript(start_date)
         bank_holidays = self.rate(bank_holidays_rate_script, 'days')
 
@@ -13277,19 +13301,20 @@ class SiteSource(DataSource):
             summary['sum-' + name] = sum(datum_list)
             summary['max-' + name] = max(datum_list)
         #s elf.pw.println('finished whole data site, ' + str(System.currentTimeMillis()))
+        #s elf.pw.println("summary " + str(summary))
         return {'summary': summary, 'data': hh_data}
 
 ACTUAL_READ_TYPES = ['N', 'N3', 'C', 'X', 'CP'] 
 
-bill_query = Hiber.session().createQuery("select distinct read.bill, read.bill.issueDate, read.bill.type.code from RegisterRead read where read.bill.supply = :supply and read.bill.finishDate.date >= :readDate and read.bill.startDate <= :readDate order by read.bill.issueDate desc, read.bill.type.code").setMaxResults(1)
+bill_query = Hiber.session().createQuery("select distinct read.bill, read.bill.issueDate, read.bill.type.code from RegisterRead read where read.bill.supply = :supply and read.bill.finishDate.date >= :readDate and read.bill.startDate <= :readDate and read.bill.type.code != 'W' order by read.bill.issueDate desc, read.bill.type.code").setMaxResults(1)
 
-prior_pres_read_query = Hiber.session().createQuery("select read, read.bill from RegisterRead read where read.units.int = 0 and read.presentType.code in ('N', 'N3', 'C') and read.bill.supply = :supply and read.presentDate.date < :searchDate order by read.presentDate.date desc")
+prior_pres_read_query = Hiber.session().createQuery("select read, read.bill from RegisterRead read where read.units.int = 0 and read.presentType.code in ('N', 'N3', 'C') and read.bill.supply = :supply and read.presentDate.date < :searchDate and read.bill.type.code != 'W' order by read.presentDate.date desc")
 
-prior_prev_read_query = Hiber.session().createQuery("select read, read.bill from RegisterRead read where read.units.int = 0 and read.previousType.code in ('N', 'N3', 'C') and read.bill.supply = :supply and read.previousDate.date < :searchDate order by read.previousDate.date desc")
+prior_prev_read_query = Hiber.session().createQuery("select read, read.bill from RegisterRead read where read.units.int = 0 and read.previousType.code in ('N', 'N3', 'C') and read.bill.supply = :supply and read.previousDate.date < :searchDate and read.bill.type.code != 'W' order by read.previousDate.date desc")
 
-next_pres_read_query = Hiber.session().createQuery("select read, read.bill from RegisterRead read where read.units.int = 0 and read.presentType.code in ('N', 'N3', 'C') and read.bill.supply = :supply and read.presentDate.date >= :searchDate order by read.presentDate.date")
+next_pres_read_query = Hiber.session().createQuery("select read, read.bill from RegisterRead read where read.units.int = 0 and read.presentType.code in ('N', 'N3', 'C') and read.bill.supply = :supply and read.presentDate.date >= :searchDate and read.bill.type.code != 'W' order by read.presentDate.date")
 
-next_prev_read_query = Hiber.session().createQuery("select read, read.bill from RegisterRead read where read.units.int = 0 and read.previousType.code in ('N', 'N3', 'C') and read.bill.supply = :supply and read.previousDate.date >= :searchDate order by read.previousDate.date")
+next_prev_read_query = Hiber.session().createQuery("select read, read.bill from RegisterRead read where read.units.int = 0 and read.previousType.code in ('N', 'N3', 'C') and read.bill.supply = :supply and read.previousDate.date >= :searchDate and read.bill.type.code != 'W' order by read.previousDate.date")
 
 pres_reads_query = Hiber.session().createQuery("from RegisterRead read where read.units.int = 0 and read.bill = :bill and read.presentDate.date = :readDate and read.meterSerialNumber = :msn")
 
@@ -13370,12 +13395,6 @@ class SupplySource(DataSource):
         return self.hh_list(month_start, month_finish, pw)
 
     def create_whole_data(self, start_date, finish_date, forecast_date):
-        #s elf.pw.println("starting create whole data start date " + str(start_date) + " finish date " + str(finish_date) + ','  + str(System.currentTimeMillis()) + str(self.mpan_core_str))
-
-        bank_holidays_rate_script = bank_holidays_contract.rateScript(start_date)
-        bank_holidays = self.rate(bank_holidays_rate_script, 'days')
-
-
         cal = MonadDate.getCalendar()
         cal.setTime(finish_date.getDate())
         year_adjustment = 0
@@ -13396,7 +13415,7 @@ class SupplySource(DataSource):
             summary['days'] += 1
             cal.add(Calendar.DAY_OF_MONTH, 1)
 
-        #s elf.pw.println("done setup, " + str(System.currentTimeMillis()))
+        #s elf.pw.println("start date " + str(start_date) + " finish date " + str(finish_date) + " forecast date " + str(forecast_date) + " history start " + str(history_start) + " history finish " + str(history_finish) + " year adjustment " + str(year_adjustment))
 
         data_hh = []
         utc_cal = GregorianCalendar(TimeZone.getTimeZone("GMT"), Locale.UK)
@@ -13418,7 +13437,7 @@ class SupplySource(DataSource):
                 kwh = float(self.availability * 1000 * 60 * 30) / float(utc_cal.getTimeInMillis() - year_start_millis)
 
                 for tpr in Hiber.session().createQuery("select mr.tpr from MeasurementRequirement mr where mr.ssc = :ssc").setEntity("ssc", self.ssc).list():
-                    datum_generator = _datum_generator(tpr.getCode(), self)
+                    datum_generator = _tpr_datum_generator(tpr.getCode(), year_advance, self.pw)
                     hh_date = start_date.getDate().getTime()
                     finish_date_millis = finish_date.getDate().getTime()
                     utc_cal = MonadDate.getCalendar()
@@ -13426,8 +13445,9 @@ class SupplySource(DataSource):
                     while not hh_date > finish_date_millis:
                         datum = datum_generator(hh_date)
                         if datum is not None:
-                            datum.update({'msp-kw': kwh * 2, 'msp-kwh': kwh, 'hist-kwh': kwh})
-                            data_hh.append(datum)
+                            new_datum = datum.copy()
+                            new_datum.update({'msp-kw': kwh * 2, 'msp-kwh': kwh, 'hist-kwh': kwh, 'imp-msp-kvarh': 0, 'exp-msp-kvarh': 0})
+                            data_hh.append(new_datum)
                         hh_date = HhStartDate.getNext(utc_cal, hh_date)
 
                     #s elf.pw.println(str(System.currentTimeMillis()) + " done bills ")
@@ -13470,6 +13490,7 @@ class SupplySource(DataSource):
                             if read_key in read_keys:
                                 continue
 
+                            #s elf.pw.println(str(pres_read.getId()))
                             pres_bill = bill_query.setTimestamp('readDate', pres_read.getPresentDate().getDate()).uniqueResult()[0]
                             #s elf.pw.println('before bill get, ' + str(System.currentTimeMillis()))
 
@@ -13596,7 +13617,7 @@ class SupplySource(DataSource):
                 if pairs[-1]['finish-date'].after(history_finish):
                     pairs[-1]['finish-date'] = history_finish
 
-                #self.pw.println('got pairs 10 ' + str(pairs))
+                #s elf.pw.println('got pairs 10 ' + str(pairs))
 
 
                 for pair in pairs:
@@ -13609,14 +13630,14 @@ class SupplySource(DataSource):
                         #s elf.pw.println('pair start ' + str(pair['start-date']))
                         
                         #s elf.pw.println('pair finish ' + str(pair['start-date']))
-                        datum_generator = _datum_generator(tpr_code, self)
+                        datum_generator = _tpr_datum_generator(tpr_code, year_advance, self.pw)
                         utc_cal = MonadDate.getCalendar()
                         utc_cal.setTimeInMillis(hh_date)
                         hh_part = []
                         while not hh_date > pair_finish_millis:
                             datum = datum_generator(hh_date)
                             if datum is not None:
-                                hh_part.append(datum)
+                                hh_part.append(datum.copy())
                             hh_date = HhStartDate.getNext(utc_cal, hh_date)
                             #s elf.pw.println(str(System.currentTimeMillis()) + " finished inner loop ")
                         if len(hh_part) > 0:
@@ -13625,7 +13646,7 @@ class SupplySource(DataSource):
                             kwh = 0
 
                         for datum in hh_part:
-                             datum.update({'msp-kw': kwh * 2, 'msp-kwh': kwh, 'hist-kwh': kwh})
+                            datum.update({'msp-kw': kwh * 2, 'msp-kwh': kwh, 'hist-kwh': kwh, 'imp-msp-kvarh': 0, 'exp-msp-kvarh': 0})
                         data_hh += hh_part
                 #s elf.pw.println('finished, ' + str(System.currentTimeMillis()))
             else:
@@ -13687,10 +13708,12 @@ class SupplySource(DataSource):
 
                         tpr_dict = _tpr_dict(tpr_code, self.pw)
                         days_of_week = tpr_dict['days-of-week']
-                        cal = tpr_dict['cal']
-                        utc_cal = tpr_dict['utc-cal']
-                        ct_cal = tpr_dict['ct-cal']
-
+                        utc_cal = GregorianCalendar(TimeZone.getTimeZone("GMT"), Locale.UK)
+                        ct_cal = GregorianCalendar(TimeZone.getTimeZone("Europe/London"), Locale.UK)
+                        if tpr_dict['is-gmt']:
+                            cal = utc_cal
+                        else:
+                            cal = ct_cal
                         if present_type in ACTUAL_READ_TYPES and previous_type in ACTUAL_READ_TYPES:
                             status = 'A'
                         else:
@@ -13716,7 +13739,7 @@ class SupplySource(DataSource):
                                     num_hh += 1
                                     if chunk_start_millis <= hh_date <= chunk_finish_millis:
                                         utc_day = utc_cal.get(Calendar.DAY_OF_MONTH)
-                                        part_hh.append({'status': status, 'imp-msp-kvarh': 0, 'imp-msp-kvar': 0, 'exp-msp-kvarh': 0, 'exp-msp-kvar': 0, 'hist-start-date': chunk_start, 'start-date': utc_cal.getTime(), 'ct-day': ct_cal.get(5), 'utc-month': utc_cal.get(2), 'utc-day': utc_day, 'utc-decimal-hour': utc_cal.get(11) + float(utc_cal.get(12)) / 60, 'utc-year': utc_cal.get(Calendar.YEAR), 'utc-hour': utc_cal.get(Calendar.HOUR_OF_DAY), 'utc-minute': utc_cal.get(Calendar.MINUTE), 'ct-year': ct_cal.get(Calendar.YEAR), 'ct-month': ct_cal.get(2), 'ct-decimal-hour': ct_cal.get(11) + float(ct_cal.get(12)) / 60, 'ct-day-of-week': ct_cal.get(7), 'utc-day-of-week': utc_cal.get(7), 'utc-is-bank-holiday': utc_day in bank_holidays})
+                                        part_hh.append({'imp-msp-kvarh': 0, 'imp-msp-kvar': 0, 'exp-msp-kvarh': 0, 'exp-msp-kvar': 0, 'hist-start-date': chunk_start, 'start-date': utc_cal.getTime(), 'ct-day': ct_cal.get(5), 'utc-month': utc_cal.get(2), 'utc-day': utc_day, 'utc-decimal-hour': utc_cal.get(11) + float(utc_cal.get(12)) / 60, 'utc-year': utc_cal.get(Calendar.YEAR), 'utc-hour': utc_cal.get(Calendar.HOUR_OF_DAY), 'utc-minute': utc_cal.get(Calendar.MINUTE), 'ct-year': ct_cal.get(Calendar.YEAR), 'ct-month': ct_cal.get(2), 'ct-decimal-hour': ct_cal.get(11) + float(ct_cal.get(12)) / 60, 'ct-day-of-week': ct_cal.get(7), 'utc-day-of-week': utc_cal.get(7)})
                                     break
                             hh_date = HhStartDate.getNext(utc_cal, hh_date)
                         #s elf.pw.println(str(System.currentTimeMillis()) + " finished inner loop ")
@@ -13726,7 +13749,7 @@ class SupplySource(DataSource):
                         if num_hh > 0:
                             kwh = float(kwh) / float(num_hh)
                             for datum in part_hh:
-                                datum.update({'msp-kw': kwh * 2, 'msp-kwh': kwh, 'hist-kwh': kwh})
+                                datum.update({'msp-kw': kwh * 2, 'msp-kwh': kwh, 'hist-kwh': kwh, 'status': status})
                         #s elf.pw.println(str(System.currentTimeMillis()) + " done bills ")
                         data_hh += part_hh
 
@@ -13748,6 +13771,8 @@ class SupplySource(DataSource):
             #s elf.pw.println("whole data: about to execute query, " + str(System.currentTimeMillis()))
             rs = stmt.executeQuery()
             #s elf.pw.println("whole data: starting loop, " + str(System.currentTimeMillis()))
+            datum_generator = _datum_generator(year_advance, self.pw)
+
             while rs.next():
                 hh_start_date = rs.getTimestamp('start_date')
                 msp_kwh = rs.getBigDecimal('kwh').doubleValue()
@@ -13756,25 +13781,20 @@ class SupplySource(DataSource):
                 exp_kvarh = rs.getBigDecimal('exp_kvarh').doubleValue()
                 status = rs.getString('status')
 
-                utc_cal.setTime(hh_start_date)
-                ct_cal.setTime(hh_start_date)
-                utc_cal.add(Calendar.YEAR, year_advance)
-                ct_cal.add(Calendar.YEAR, year_advance)
-
-                utc_day = utc_cal.get(Calendar.DAY_OF_MONTH)
-                data_hh.append({'status': status, 'imp-msp-kvarh': imp_kvarh, 'imp-msp-kvar': imp_kvarh * 2, 'exp-msp-kvarh': exp_kvarh, 'exp-msp-kvar': exp_kvarh * 2, 'anti-msp-kwh': anti_msp_kwh, 'anti-msp-kw': anti_msp_kwh * 2, 'msp-kw': msp_kwh * 2, 'msp-kwh': msp_kwh, 'hist-kwh': msp_kwh, 'hist-start-date': hh_start_date, 'start-date': utc_cal.getTime(), 'ct-day': ct_cal.get(5), 'utc-month': utc_cal.get(2), 'utc-day': utc_day, 'utc-decimal-hour': utc_cal.get(11) + float(utc_cal.get(12)) / 60, 'utc-year': utc_cal.get(Calendar.YEAR), 'utc-hour': utc_cal.get(Calendar.HOUR_OF_DAY), 'utc-minute': utc_cal.get(Calendar.MINUTE), 'ct-year': ct_cal.get(Calendar.YEAR), 'ct-month': ct_cal.get(2), 'ct-decimal-hour': ct_cal.get(11) + float(ct_cal.get(12)) / 60, 'ct-day-of-week': ct_cal.get(7), 'utc-day-of-week': utc_cal.get(7), 'utc-is-bank-holiday': utc_day in bank_holidays})
+                datum = datum_generator(hh_start_date.getTime()).copy()
+                datum.update({'status': status, 'imp-msp-kvarh': imp_kvarh, 'imp-msp-kvar': imp_kvarh * 2, 'exp-msp-kvarh': exp_kvarh, 'exp-msp-kvar': exp_kvarh * 2, 'anti-msp-kwh': anti_msp_kwh, 'anti-msp-kw': anti_msp_kwh * 2, 'msp-kw': msp_kwh * 2, 'msp-kwh': msp_kwh, 'hist-kwh': msp_kwh})
+                data_hh.append(datum)
 
             rs.close()
             stmt.close()
 
 
-        #s elf.pw.println(" done looping," + str(System.currentTimeMillis()))
+        #s elf.pw.println(" data_hh " + str(data_hh))
       
         if len(data_hh) == 0:
-            utc_cal.setTime(finish_date.getDate())
-            ct_cal.setTime(finish_date.getDate())
-            utc_day = utc_cal.get(Calendar.DAY_OF_MONTH)
-            data_hh.append({'status': 'E', 'used-kwh': 0, 'hist-kwh': 0, 'msp-kwh': 0, 'gsp-kwh': 0, 'msp-kw': 0,'anti-msp-kw': 0,'anti-msp-kwh': 0, 'imp-msp-kvarh': 0, 'imp-msp-kvar': 0, 'exp-msp-kvarh': 0, 'exp-msp-kvar': 0, 'hist-start-date': history_finish.getDate(), 'start-date': finish_date.getDate(), 'ct-day': ct_cal.get(5), 'utc-month': utc_cal.get(2), 'utc-day': utc_day, 'utc-decimal-hour': utc_cal.get(11) + float(utc_cal.get(12)) / 60, 'ct-month': ct_cal.get(2), 'ct-decimal-hour': ct_cal.get(11) + ct_cal.get(12) / 60, 'ct-day-of-week': ct_cal.get(7), 'utc-day-of-week': utc_cal.get(7), 'utc-year': utc_cal.get(Calendar.YEAR), 'utc-hour': utc_cal.get(Calendar.HOUR), 'utc-minute': utc_cal.get(Calendar.MINUTE), 'utc-is-bank-holiday': utc_day in bank_holidays})
+            datum = _datum_generator(year_advance, self.pw)(history_finish.getDate().getTime()).copy()
+            datum.update({'status': 'E', 'used-kwh': 0, 'hist-kwh': 0, 'msp-kwh': 0, 'gsp-kwh': 0, 'msp-kw': 0,'anti-msp-kw': 0,'anti-msp-kwh': 0, 'imp-msp-kvarh': 0, 'imp-msp-kvar': 0, 'exp-msp-kvarh': 0, 'exp-msp-kvar': 0})
+            data_hh.append(datum)
 
         #s elf.pw.println("whole data: starting dso hh, " + str(System.currentTimeMillis()))
         if self.pc_code == '00':
@@ -13793,8 +13813,6 @@ class SupplySource(DataSource):
             datum_list = [datum[name] for datum in data_hh]
             summary['sum-' + name] = sum(datum_list)
             summary['max-' + name] = max(datum_list)
-
-        #s elf.pw.println("finished create whole data, " + str(System.currentTimeMillis()))
 
         return {'summary': summary, 'data': data_hh}
 

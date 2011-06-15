@@ -1413,7 +1413,6 @@ source.setAttribute('debug', debug)]]></value>
                     <fieldset>
                         <input type="hidden" name="supply-id" value="{/source/supply/@id}" />
                         <legend>Virtual Bills</legend>
-                     <xsl:value-of select="'For '"/>
 <select name="supply-polarity">
                                 <option value="import">
                                     Import
@@ -1421,16 +1420,8 @@ source.setAttribute('debug', debug)]]></value>
                                 <option value="export">
                                     Export
                                 </option>
-                        </select>
-<xsl:value-of select="' and '"/>
-<select name="source-code">
- <option value="net">
-                                    Network
-                                </option>                                <option value="3rd-party">
-                  Third Party     
-                                </option>
-                        </select>
-<xsl:value-of select="'From '"/>
+</select>
+<xsl:value-of select="' from '"/>
 <input name="start-year" value="{/source/hh-start-date[@label='start']/@year}" maxlength="4" size="4"/><xsl:value-of select="'-'"/>
                         <select name="start-month">
                             <xsl:for-each select="/source/months/month">

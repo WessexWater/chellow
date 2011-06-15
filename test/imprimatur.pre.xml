@@ -1956,7 +1956,7 @@ def triad_estimates():
 			<regex
 				pattern='Site Id,Site Name,Associated Site Ids,Sources,Generator Types,Month,Metered Imported kWh,Metered Displaced kWh,Metered Exported kWh,Metered Used kWh,Metered Parasitic kWh,Metered Generated kWh,Metered 3rd Party Import kWh,Metered 3rd Party Export kWh,Metered Imported GBP,Metered Displaced GBP,Metered Exported GBP,Metered Used GBP,Metered 3rd Party Import GBP,Billed Imported kWh,Billed Imported GBP,Billed Imported Complete,Metering Type,Problem' />
 			<regex
-				pattern='"CI017","Roselands","","net","","2009-04-30","8863.77","0","0","8863.77","0","0","0","0","2784.89","0","0","2784.89","0","0","0","False","hh","Can&apos;t find the import_virtual_bill function in the supplier contract. "' />
+				pattern='"CI017","Roselands","","net","","2009-04-30","0","0","0","0","0","0","0","0","2784.89","0","0","2784.89","0","0","0","False","hh","Can&apos;t find the import_virtual_bill function in the supplier contract. "' />
 		</request>
 	</test>
 	<test name="Site In View World">
@@ -2028,7 +2028,7 @@ def triad_estimates():
 			<regex
 				pattern="MPAN Core,Account,From,To,net-gbp,ccl-kwh,ccl-rate,ccl-gbp,data-collection-gbp,duos-availability-agreed-kva,duos-availability-billed-kva,duos-availability-rate,duos-availability-gbp,duos-day-kwh,duos-day-gbp,duos-night-kwh,duos-night-gbp,duos-reactive-rate,duos-reactive-gbp,duos-standing-gbp,settlement-gbp,night-msp-kwh,night-gsp-kwh,night-gbp,other-msp-kwh,other-gsp-kwh,other-gbp,summer-pk-msp-kwh,summer-pk-gsp-kwh,summer-pk-gbp,winter-low-pk-msp-kwh,winter-low-pk-gsp-kwh,winter-low-pk-gbp,winter-off-pk-msp-kwh,winter-off-pk-gsp-kwh,winter-off-pk-gbp,winter-pk-msp-kwh,winter-pk-gsp-kwh,winter-pk-gbp,bsuos-actual-gbp,triad-actual-0-date,triad-actual-0-msp-kw,triad-actual-0-status,triad-actual-0-laf,triad-actual-0-gsp-kw,triad-actual-1-date,triad-actual-1-msp-kw,triad-actual-1-status,triad-actual-1-laf,triad-actual-1-gsp-kw,triad-actual-2-date,triad-actual-2-msp-kw,triad-actual-2-status,triad-actual-2-laf,triad-actual-2-gsp-kw,triad-actual-gsp-kw,triad-actual-rate,triad-actual-gbp,triad-estimate-0-date,triad-estimate-0-msp-kw,triad-estimate-0-status,triad-estimate-0-laf,triad-estimate-0-gsp-kw,triad-estimate-1-date,triad-estimate-1-msp-kw,triad-estimate-1-status,triad-estimate-1-laf,triad-estimate-1-gsp-kw,triad-estimate-2-date,triad-estimate-2-msp-kw,triad-estimate-2-status,triad-estimate-2-laf,triad-estimate-2-gsp-kw,triad-estimate-gsp-kw,triad-estimate-rate,triad-estimate-months,triad-estimate-gbp,triad-all-estimates-months,triad-all-estimates-gbp" />
 			<regex
-				pattern='"20 6354 2983 571","141 5532","2009-03-01T00:00Z","2009-03-31T23:30Z","2273.8","0","0","0","5.89","2300","2300","","2165.0","0","0.0","0","0","","0","14.91","88","0","0","0.0","0","0.0","0.0","0","0","0.0","0","0","0.0","0","0","0.0","0","0","0.0","0.0","2009-01-06T17:00Z","0","E","1.095","0.0","2008-12-01T17:00Z","0","E","1.095","0.0","2008-12-15T17:00Z","0","E","1.095","0.0","0.0","22.19481","0.0","2007-12-17T17:00Z","0","E","1.095","0.0","2008-01-03T17:00Z","0","E","1.079","0.0","2007-11-26T17:00Z","0","E","1.095","0.0","0.0","22.19481","1","0.0","12","-0.0","problem",""' />
+				pattern='"20 6354 2983 571","141 5532","2009-03-01T00:00Z","2009-03-31T23:30Z","2273.8","0","0","0","5.89","2300","2300","","2165.0","0","0","0","0.0","","0","14.91","88","0","0","0.0","0","0.0","0.0","0","0","0.0","0","0","0.0","0","0","0.0","0","0","0.0","0.0","2009-01-06T17:00Z","0","E","1.095","0.0","2008-12-01T17:00Z","0","E","1.095","0.0","2008-12-15T17:00Z","0","E","1.095","0.0","0.0","22.19481","0.0","2007-12-17T17:00Z","0","E","1.095","0.0","2008-01-03T17:00Z","0","E","1.079","0.0","2007-11-26T17:00Z","0","E","1.095","0.0","0.0","22.19481","1","0.0","12","-0.0","problem",""' />
 		</request>
 	</test>
 	<test name="Create a supply, and then delete it.">
@@ -2665,7 +2665,7 @@ def import_virtual_bill(supply_source):
 		<request
 			path="/chellow/reports/161/output/?site-code=CI017&amp;months=1&amp;end-year=2010&amp;end-month=07">
 			<regex
-				pattern='"CI017","Roselands","","3rd-party,net","","2010-07-31","463.852761996","0","0","463.852761996","0","0","0","0","1918.2182762","0","0","1918.2182762","0","0","0","False","hh",""' />
+				pattern='"CI017","Roselands","","3rd-party,net","","2010-07-31","0","0","0","0","0","0","0","0","1871.833","0","0","1871.833","0","0","0","False","hh",""' />
 			<response-code value="200" />
 		</request>
 	</test>
