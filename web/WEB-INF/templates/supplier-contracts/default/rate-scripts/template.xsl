@@ -107,7 +107,7 @@
 									</xsl:otherwise>
 								</xsl:choose>
 							</input>
-							-
+							<xsl:value-of select="'-'" />
 							<select name="start-month">
 								<xsl:for-each select="/source/months/month">
 									<option value="{@number}">
@@ -128,7 +128,7 @@
 									</option>
 								</xsl:for-each>
 							</select>
-							-
+							<xsl:value-of select="'-'" />
 							<select name="start-day">
 								<xsl:for-each select="/source/days/day">
 									<option value="{@number}">
@@ -140,7 +140,30 @@
 									</option>
 								</xsl:for-each>
 							</select>
-							<xsl:value-of select="' 00:00 Z'" />
+							<xsl:value-of select="' '" />
+							<select name="start-hour">
+								<xsl:for-each select="/source/hours/hour">
+									<option value="{@number}">
+										<xsl:if
+											test="/source/request/parameter[@name='start-hour']/value/text() = @number">
+											<xsl:attribute name="selected" />
+										</xsl:if>
+										<xsl:value-of select="@number" />
+									</option>
+								</xsl:for-each>
+							</select>
+							<xsl:value-of select="':'" />
+							<select name="start-minute">
+								<xsl:for-each select="/source/hh-minutes/minute">
+									<option value="{@number}">
+										<xsl:if
+											test="/source/request/parameter[@name='start-minute']/value/text() = @number">
+											<xsl:attribute name="selected" />
+										</xsl:if>
+										<xsl:value-of select="@number" />
+									</option>
+								</xsl:for-each>
+							</select>
 						</fieldset>
 						<br />
 						<br />

@@ -37,13 +37,13 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 public class MonadDate extends MonadObject {
-	static private Calendar calendar = new GregorianCalendar(TimeZone.getTimeZone("GMT"),
-			Locale.UK);
+	static private Calendar calendar = new GregorianCalendar(
+			TimeZone.getTimeZone("GMT"), Locale.UK);
 	static {
-	calendar.setLenient(false);
-	calendar.clear();
+		calendar.setLenient(false);
+		calendar.clear();
 	}
-	
+
 	static public SimpleDateFormat sdIsoDate() {
 		SimpleDateFormat sdFormat = new SimpleDateFormat("yyyy-MM-dd");
 		sdFormat.setCalendar(getCalendar());
@@ -83,7 +83,7 @@ public class MonadDate extends MonadObject {
 		}
 		return monthsElement;
 	}
-
+	
 	public static Element toXML(Date date, String label, Document doc)
 			throws InternalException {
 		return toXML(date, label, doc, "date");
@@ -154,9 +154,12 @@ public class MonadDate extends MonadObject {
 	public MonadDate(int year, int month, int day) throws HttpException {
 		update(year, month, day);
 	}
-	public MonadDate(int year, int month, int day, int hour, int minute) throws HttpException {
+
+	public MonadDate(int year, int month, int day, int hour, int minute)
+			throws HttpException {
 		update(year, month, day, hour, minute);
 	}
+
 	protected void update(String year, String month, String day)
 			throws HttpException {
 		update(new MonadInteger("year", year).getInteger(), new MonadInteger(
@@ -167,8 +170,8 @@ public class MonadDate extends MonadObject {
 			String minute) throws HttpException {
 		update(new MonadInteger("year", year).getInteger(), new MonadInteger(
 				month).getInteger(), new MonadInteger(day).getInteger(),
-				new MonadInteger(hour).getInteger(), new MonadInteger(minute)
-						.getInteger());
+				new MonadInteger(hour).getInteger(),
+				new MonadInteger(minute).getInteger());
 	}
 
 	public void update(String dateStr) throws HttpException {

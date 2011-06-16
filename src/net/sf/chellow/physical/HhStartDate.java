@@ -123,6 +123,17 @@ public class HhStartDate extends MonadObject {
 		}
 		return cal.getTimeInMillis();
 	}
+	
+	public static Element getHhMinutesXml(Document doc) {
+		Element monthsElement = doc.createElement("hh-minutes");
+        String[] mins = {"00", "30"};
+		for (String min : mins) {
+			Element month = doc.createElement("minute");
+			month.setAttribute("number", min);
+			monthsElement.appendChild(month);
+		}
+		return monthsElement;
+	}
 
 	private Date date;
 

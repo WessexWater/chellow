@@ -74,7 +74,7 @@ public class RateScripts extends EntityList {
 	}
 
 	public void httpPost(Invocation inv) throws HttpException {
-		Date startDate = inv.getDate("start");
+		Date startDate = inv.getDateTime("start");
 		if (!inv.isValid()) {
 			throw new UserException(document());
 		}
@@ -130,6 +130,8 @@ public class RateScripts extends EntityList {
 		source.appendChild(new MonadDate().toXml(doc));
 		source.appendChild(MonadDate.getMonthsXml(doc));
 		source.appendChild(MonadDate.getDaysXml(doc));
+		source.appendChild(MonadDate.getHoursXml(doc));
+		source.appendChild(HhStartDate.getHhMinutesXml(doc));
 		return doc;
 	}
 }

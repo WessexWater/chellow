@@ -231,6 +231,8 @@ def virtual_bill(supply, startDate, finishDate, pw):
 			<control name="start-year">2000</control>
 			<control name="start-month" value="01" />
 			<control name="start-day" value="03" />
+			<control name="start-hour" value="00" />
+			<control name="start-minute" value="00" />
 			<control name="has-finished" value="false" />
 			<control name="script"><![CDATA[def gsp_gbp_per_kwh():
     return {
@@ -472,7 +474,7 @@ def totalElement(account, startDate, finishDate):
 		<!-- Let's check it's carried forward the import mpan -->
 		<request path="/chellow/supplies/3/generations/9/">
 			<regex pattern="22 9813 2107 763" />
-			<regex pattern='name="mtc-code" size="3" maxlength="3" value="845"'/>
+			<regex pattern='name="mtc-code" size="3" maxlength="3" value="845"' />
 			<response-code value="200" />
 		</request>
 
@@ -1302,7 +1304,8 @@ def virtual_bill(supply_source):
 	</test>
 	<test name="Check that the party viewer is able to view snags.">
 		<credentials username="mishka@localhost" password="fyodor" />
-		<request path="/chellow/reports/37/output/?hhdc-contract-id=0&amp;hidden-days=5">
+		<request
+			path="/chellow/reports/37/output/?hhdc-contract-id=0&amp;hidden-days=5">
 			<response-code value="200" />
 		</request>
 	</test>
@@ -1335,6 +1338,8 @@ def virtual_bill(supply_source):
 			<control name="start-year" value="2009" />
 			<control name="start-month" value="08" />
 			<control name="start-day" value="16" />
+			<control name="start-hour" value="00" />
+			<control name="start-minute" value="00" />
 			<control name="script" value="" />
 			<response-code value="303" />
 		</request>
@@ -1813,6 +1818,8 @@ def import_virtual_bill(supply_source):
 			<control name="start-year" value="2000" />
 			<control name="start-month" value="01" />
 			<control name="start-day" value="03" />
+			<control name="start-hour" value="00" />
+			<control name="start-minute" value="00" />
 			<control name="script">
 				<![CDATA[
 def triad_estimates():
@@ -1924,7 +1931,8 @@ def triad_estimates():
 			<control name="start-year" value="2010" />
 			<control name="start-month" value="05" />
 			<control name="start-day" value="01" />
-
+			<control name="start-hour" value="00" />
+			<control name="start-minute" value="00" />
 			<regex pattern="/chellow/dsos/379/contracts/83/rate-scripts/257/" />
 			<response-code value="303" />
 		</request>
@@ -2676,6 +2684,8 @@ def import_virtual_bill(supply_source):
 			<control name="start-year" value="2010" />
 			<control name="start-month" value="04" />
 			<control name="start-day" value="01" />
+			<control name="start-hour" value="00" />
+			<control name="start-minute" value="00" />
 			<control name="insert" value="Insert" />
 
 			<regex pattern="/chellow/non-core-contracts/39/rate-scripts/259/" />
@@ -2701,6 +2711,8 @@ def import_virtual_bill(supply_source):
 			<control name="start-year" value="1999" />
 			<control name="start-month" value="04" />
 			<control name="start-day" value="01" />
+			<control name="start-hour" value="00" />
+			<control name="start-minute" value="00" />
 			<control name="insert" value="Insert" />
 
 			<regex pattern="/chellow/non-core-contracts/39/rate-scripts/261/" />

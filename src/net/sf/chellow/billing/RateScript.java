@@ -1,6 +1,6 @@
 /*******************************************************************************
  * 
- *  Copyright (c) 2005, 2009 Wessex Water Services Limited
+ *  Copyright (c) 2005, 2011 Wessex Water Services Limited
  *  
  *  This file is part of Chellow.
  * 
@@ -21,7 +21,6 @@
 
 package net.sf.chellow.billing;
 
-import java.util.Calendar;
 import java.util.Date;
 
 import javax.script.Invocable;
@@ -330,7 +329,7 @@ public class RateScript extends PersistentEntity {
 			inv.sendSeeOther(contract.rateScriptsInstance().getUri());
 		} else {
 			String script = inv.getString("script");
-			Date startDate = inv.getDate("start");
+			Date startDate = inv.getDateTime("start");
 			HhStartDate finishDate = null;
 			boolean hasFinished = inv.getBoolean("has-finished");
 			if (!inv.isValid()) {
@@ -338,14 +337,11 @@ public class RateScript extends PersistentEntity {
 			}
 			script = script.replace("\r", "").replace("\t", "    ");
 			if (hasFinished) {
-				Date finishDateRaw = inv.getDate("finish");
+				Date finishDateRaw = inv.getDateTime("finish");
 				if (!inv.isValid()) {
 					throw new UserException(document());
 				}
-				Calendar cal = MonadDate.getCalendar();
-				cal.setTime(finishDateRaw);
-				cal.add(Calendar.DAY_OF_MONTH, 1);
-				finishDate = HhStartDate.roundDown(cal.getTime()).getPrevious();
+				finishDate = HhStartDate.roundDown(finishDateRaw);
 			}
 			try {
 				update(HhStartDate.roundDown(startDate), finishDate, script);
@@ -365,6 +361,8 @@ public class RateScript extends PersistentEntity {
 				new XmlTree("party"))));
 		sourceElement.appendChild(MonadDate.getMonthsXml(doc));
 		sourceElement.appendChild(MonadDate.getDaysXml(doc));
+		sourceElement.appendChild(MonadDate.getHoursXml(doc));
+		sourceElement.appendChild(HhStartDate.getHhMinutesXml(doc));
 		sourceElement.appendChild(new MonadDate().toXml(doc));
 		return doc;
 	}

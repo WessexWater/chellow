@@ -88,7 +88,7 @@
 											</xsl:otherwise>
 										</xsl:choose>
 									</input>
-									-
+									<xsl:value-of select="'-'" />
 									<select name="start-month">
 										<xsl:for-each select="/source/months/month">
 											<option value="{@number}">
@@ -110,7 +110,7 @@
 											</option>
 										</xsl:for-each>
 									</select>
-									-
+									<xsl:value-of select="'-'" />
 									<select name="start-day">
 										<xsl:for-each select="/source/days/day">
 											<option value="{@number}">
@@ -158,7 +158,7 @@
 											</xsl:choose>
 										</input>
 									</label>
-									<xsl:value-of select="' '" />
+									<xsl:value-of select="'-'" />
 									<input name="finish-year">
 										<xsl:attribute name="value" size="4">
 									<xsl:choose>
@@ -177,8 +177,7 @@
 									</xsl:choose>
 								</xsl:attribute>
 									</input>
-
-									-
+<xsl:value-of select="'-'" />
 									<select name="finish-month">
 										<xsl:for-each select="/source/months/month">
 											<option value="{@number}">
@@ -204,13 +203,11 @@
 														</xsl:if>
 													</xsl:otherwise>
 												</xsl:choose>
-
 												<xsl:value-of select="@number" />
 											</option>
 										</xsl:for-each>
 									</select>
-
-									-
+<xsl:value-of select="'-'" />
 									<select name="finish-day">
 										<xsl:for-each select="/source/days/day">
 											<option value="{@number}">
@@ -232,6 +229,67 @@
 													</xsl:when>
 													<xsl:otherwise>
 														<xsl:if test="/source/date/@day = @number">
+															<xsl:attribute name="selected" />
+														</xsl:if>
+													</xsl:otherwise>
+												</xsl:choose>
+												<xsl:value-of select="@number" />
+											</option>
+										</xsl:for-each>
+									</select>
+																		<xsl:value-of select="' '" />
+									<select name="finish-hour">
+										<xsl:for-each select="/source/hours/hour">
+											<option value="{@number}">
+												<xsl:choose>
+													<xsl:when test="/source/request/parameter[@name='finish-hour']">
+
+														<xsl:if
+															test="/source/request/parameter[@name='finish-hour']/value/text() = @number">
+
+															<xsl:attribute name="selected" />
+														</xsl:if>
+													</xsl:when>
+													<xsl:when
+														test="/source/rate-script/hh-start-date[@label='finish']">
+														<xsl:if
+															test="/source/rate-script/hh-start-date[@label='finish']/@hour = @number">
+															<xsl:attribute name="selected" />
+														</xsl:if>
+													</xsl:when>
+													<xsl:otherwise>
+														<xsl:if test="/source/date/@hour = @number">
+															<xsl:attribute name="selected" />
+														</xsl:if>
+													</xsl:otherwise>
+												</xsl:choose>
+												<xsl:value-of select="@number" />
+											</option>
+										</xsl:for-each>
+									</select>
+									<xsl:value-of select="':'" />
+									<select name="finish-minute">
+										<xsl:for-each select="/source/hh-minutes/minute">
+											<option value="{@number}">
+												<xsl:choose>
+													<xsl:when
+														test="/source/request/parameter[@name='finish-minute']">
+
+														<xsl:if
+															test="/source/request/parameter[@name='finish-minute']/value/text() = @number">
+
+															<xsl:attribute name="selected" />
+														</xsl:if>
+													</xsl:when>
+													<xsl:when
+														test="/source/rate-script/hh-start-date[@label='finish']">
+														<xsl:if
+															test="/source/rate-script/hh-start-date[@label='finish']/@minute = @number">
+															<xsl:attribute name="selected" />
+														</xsl:if>
+													</xsl:when>
+													<xsl:otherwise>
+														<xsl:if test="/source/date/@minute = @number">
 															<xsl:attribute name="selected" />
 														</xsl:if>
 													</xsl:otherwise>
