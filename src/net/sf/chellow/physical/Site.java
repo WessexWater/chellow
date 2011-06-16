@@ -647,13 +647,6 @@ public class Site extends PersistentEntity {
 						importSupplierAccount, importAgreedSupplyCapacity,
 						exportMpanCoreStr, exportLlfcCode, exportSupplierContract,
 						exportSupplierAccount, exportAgreedSupplyCapacity);
-				Hiber.flush();
-				if (hhdcContract != null) {
-					SupplyGeneration generation = supply.getGenerationFirst();
-					generation.insertChannel(true, true);
-					generation.insertChannel(true, false);
-					generation.insertChannel(false, false);
-				}
 				Hiber.commit();
 				inv.sendSeeOther(supply.getUri());
 			} catch (HttpException e) {
