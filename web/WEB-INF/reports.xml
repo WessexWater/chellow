@@ -7537,9 +7537,7 @@ cal.add(Calendar.MINUTE, 30)
 cal.add(Calendar.MONTH, -1)
 start_date = HhStartDate(cal.getTime())
 start_date.setLabel('start')
-source.appendChild(start_date.toXml(doc))
-
-]]></value>
+source.appendChild(start_date.toXml(doc))]]></value>
         <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
 <xsl:stylesheet version="1.0"
     xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
@@ -14007,13 +14005,9 @@ est_kwh_query = Hiber.session().createQuery("select sum(cast(datum.value as doub
 
 site_query = Hiber.session().createQuery("select ssgen.site from SiteSupplyGeneration ssgen where ssgen.supplyGeneration = :supplyGeneration and ssgen.isPhysical is true")
 
-apportioned_kwh_bill_query = Hiber.session().createQuery("from Bill bill where bill.supply = :supply and bill.batch.contract = :contract and bill.startDate.date <= :finishDate and bill.finishDate.date >= :startDate and bill.type.code != 'W' and lower(bill.batch.reference) not like '%reconciliation%' order by bill.issueDate desc, bill.startDate.date, bill.reference desc")
+apportioned_bill_query = Hiber.session().createQuery("from Bill bill where bill.supply = :supply and bill.startDate.date <= :finishDate and bill.finishDate.date >= :startDate")
 
-raw_kwh_bill_query = Hiber.session().createQuery("from Bill bill where bill.supply = :supply and bill.batch.contract = :contract and bill.finishDate.date <= :finishDate and bill.finishDate.date >= :startDate and bill.type.code != 'W' and lower(bill.batch.reference) not like '%reconciliation%' order by bill.issueDate desc, bill.startDate.date, bill.reference desc")
-
-apportioned_gbp_bill_query = Hiber.session().createQuery("from Bill bill where bill.supply = :supply and bill.startDate.date <= :finishDate and bill.finishDate.date >= :startDate")
-
-raw_gbp_bill_query = Hiber.session().createQuery("from Bill bill where bill.supply = :supply and bill.finishDate.date <= :finishDate and bill.finishDate.date >= :startDate")
+raw_bill_query = Hiber.session().createQuery("from Bill bill where bill.supply = :supply and bill.finishDate.date <= :finishDate and bill.finishDate.date >= :startDate")
 
 forecast_date = comterp.get('forecast_date')()
 
@@ -14034,10 +14028,8 @@ for i in range(months):
     while supplies.next():
         supply = supplies.get(0)
 
-        apportioned_kwh_bill_query.setEntity('supply', supply)
-        raw_kwh_bill_query.setEntity('supply', supply)
-        apportioned_gbp_bill_query.setEntity('supply', supply)
-        raw_gbp_bill_query.setEntity('supply', supply)
+        apportioned_bill_query.setEntity('supply', supply)
+        raw_bill_query.setEntity('supply', supply)
 
         generator_type = supply.getGeneratorType()
         if generator_type is None:
@@ -14124,7 +14116,7 @@ for i in range(months):
             supplier_contract = import_mpan.getSupplierContract()
 
 
-            if source_code in ['net', 'gen-net']:
+            if source_code in ['net', 'gen-net', '3rd-party']:
                 #p w.println("starting vbill, " + str(System.currentTimeMillis()))
                 supply_source = comterp.get('supply_source')(forecast_date, comterp, pw)
 
@@ -14170,45 +14162,21 @@ for i in range(months):
                         else:
                             values['problem'] += " 'problem' field can't be found in MOP virtual bill."
                 
-                for gbp_bill in apportioned_gbp_bill_query.setTimestamp('startDate', chunk_start.getDate()).setTimestamp('finishDate', chunk_finish.getDate()).list():
-                    bill_net = gbp_bill.getNet().doubleValue()
-                    gbp_bill_start = gbp_bill.getStartDate().getDate().getTime()
-                    gbp_bill_finish = gbp_bill.getFinishDate().getDate().getTime()
-                    rate = bill_net / (gbp_bill_finish - gbp_bill_start + (30 * 60 * 1000))
-                    overlap_length = min(gbp_bill_finish, chunk_finish_millis) + (30 * 60 * 1000) - max(gbp_bill_start, chunk_start_millis)
-                    values['billed-import-apportioned-net-gbp'] += overlap_length * rate
-                for gbp_bill in raw_gbp_bill_query.setTimestamp('startDate', chunk_start.getDate()).setTimestamp('finishDate', chunk_finish.getDate()).list():
-                    values['billed-import-raw-net-gbp'] += gbp_bill.getNet().doubleValue()
+                for bill in apportioned_bill_query.setTimestamp('startDate', chunk_start.getDate()).setTimestamp('finishDate', chunk_finish.getDate()).list():
+                    bill_kwh = bill.getKwh().doubleValue()
+                    bill_net = bill.getNet().doubleValue()
 
-                raw_kwh_bills = []
-                for cand_bill in raw_kwh_bill_query.setEntity('contract', supplier_contract).setTimestamp('startDate', chunk_start.getDate()).setTimestamp('finishDate', chunk_finish.getDate()).list():
-                    can_insert = True
-                    for kwh_bill in raw_kwh_bills:
-                        if not cand_bill.getStartDate().after(kwh_bill.getFinishDate()) and not cand_bill.getFinishDate().before(kwh_bill.getStartDate()):
-                            can_insert = False
-                            break
-                    if can_insert:
-                        raw_kwh_bills.append(cand_bill)
-                        values['billed-import-raw-kwh'] += cand_bill.getKwh().doubleValue()
+                    bill_start = bill.getStartDate().getDate().getTime()
+                    bill_finish = bill.getFinishDate().getDate().getTime()
+                    kwh_rate = bill_kwh / (bill_finish - bill_start + (30 * 60 * 1000))
+                    gbp_rate = bill_net / (bill_finish - bill_start + (30 * 60 * 1000))
+                    overlap_length = min(bill_finish, chunk_finish_millis) + (30 * 60 * 1000) - max(bill_start, chunk_start_millis)
+                    values['billed-import-apportioned-net-gbp'] += overlap_length * gbp_rate
+                    values['billed-import-apportioned-kwh'] += overlap_length * kwh_rate
 
-                apportioned_kwh_bills = []
-                for cand_bill in apportioned_kwh_bill_query.setEntity('contract', supplier_contract).setTimestamp('startDate', chunk_start.getDate()).setTimestamp('finishDate', chunk_finish.getDate()).list():
-                    can_insert = True
-                    for kwh_bill in apportioned_kwh_bills:
-                        if not cand_bill.getStartDate().after(kwh_bill.getFinishDate()) and not cand_bill.getFinishDate().before(kwh_bill.getStartDate()):
-                            can_insert = False
-                            break
-                    if can_insert:
-                        apportioned_kwh_bills.append(cand_bill)
-                        bill_kwh = cand_bill.getKwh().doubleValue()
-                        cand_bill_start = cand_bill.getStartDate().getDate().getTime()
-                        cand_bill_finish = cand_bill.getFinishDate().getDate().getTime()
-                        rate = bill_kwh / (cand_bill_finish - cand_bill_start + (30 * 60 * 1000))
-                        #pw.println('rate ' + str(rate) + ' bill_kwh ' + str(bill_kwh) + ' cand_start ' + str(cand_bill.getStartDate()) + ' cand_finish ' + str(cand_bill.getFinishDate()) + ' length in millis ' + str(cand_bill_finish - cand_bill_start + (30 * 60 * 1000)) + ' length of overlap ' + str(min(cand_bill_finish, chunk_finish_millis) - (max(cand_bill_start, chunk_start_millis) + 30 * 60 * 1000)))
-                        overlap_length = min(cand_bill_finish, chunk_finish_millis) - max(cand_bill_start, chunk_start_millis) + 30 * 60 * 1000
-                        values['billed-import-apportioned-kwh'] += overlap_length * rate
-
-
+                for bill in raw_bill_query.setTimestamp('startDate', chunk_start.getDate()).setTimestamp('finishDate', chunk_finish.getDate()).list():
+                    values['billed-import-raw-net-gbp'] += bill.getNet().doubleValue()
+                    values['billed-import-raw-kwh'] += bill.getKwh().doubleValue()
 
             #pw.println("finishing generation , " + str(System.currentTimeMillis()))
         values['timestamp'] = System.currentTimeMillis()
