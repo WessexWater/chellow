@@ -8230,6 +8230,8 @@ supply_polarity = inv.getString('supply-polarity')
 if not inv.isValid():
     raise UserException()
 
+site_query = Hiber.session().createQuery("select supGen.site from SiteSupplyGeneration supGen where supGen.supplyGeneration = :supplyGeneration and supGen.isPhysical = true")
+
 if inv.hasParameter('contract-id'):
     contract_id = inv.getLong('contract-id')
     contract = SupplierContract.getSupplierContract(contract_id)
@@ -8245,7 +8247,7 @@ computer = NonCoreContract.getNonCoreContract('computer')
 comterp = computer.callFunction('create_comterp', [])
 
 if supply is None:
-    pw.print('MPAN Core,Account,From,To')
+    pw.print('MPAN Core,Site Code,Site Name,Account,From,To')
     pw.flush()
     contract_function = comterp.get('contract_function')
     #pw.println("contract func " + str(contract) + " " + supply_polarity)
@@ -8320,7 +8322,8 @@ while not month_start.after(finish_date):
         else:
             sup_con = contract
 
-        pw.print(','.join('"' + str(value) + '"' for value in [data_source.id, data_source.supplier_account, data_source.start_date, data_source.finish_date]))
+        site = site_query.setEntity('supplyGeneration', data_source.supply_generation).uniqueResult()
+        pw.print(','.join('"' + str(value) + '"' for value in [data_source.mpan_core_str, site.getCode() , site.getName(), data_source.supplier_account, data_source.start_date, data_source.finish_date]))
         pw.flush()
 
         bill = comterp.get('contract_function')(sup_con, supply_polarity + '_virtual_bill')(data_source)
