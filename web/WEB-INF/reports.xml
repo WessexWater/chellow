@@ -8316,7 +8316,7 @@ while not month_start.after(finish_date):
 
             sup_con = mpan.getSupplierContract()
             bill_titles = comterp.get('contract_function')(sup_con, supply_polarity + '_virtual_bill_titles')()
-            pw.print('MPAN Core,Account,From,To,' + ','.join(bill_titles))
+            pw.print('MPAN Core,Site Code,Site Name,Account,From,To,' + ','.join(bill_titles))
             pw.println('')
             pw.flush()
         else:
