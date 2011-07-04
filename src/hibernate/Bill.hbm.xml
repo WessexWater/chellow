@@ -4,7 +4,7 @@
           "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
 	<!--
 
-		Copyright 2005, 2009 Wessex Water Limited This file is part of
+		Copyright 2005, 2011 Wessex Water Limited This file is part of
 		Chellow. Chellow is free software; you can redistribute it and/or
 		modify it under the terms of the GNU General Public License as
 		published by the Free Software Foundation; either version 2 of the
@@ -54,7 +54,7 @@
 		</property>
 		<many-to-one name="type" class="BillType" column="bill_type_id"
 			foreign-key="fkey_bill__bill_type" />
-		<property name="kwh" type="big_decimal" not-null="true">
+		<property name="kwh" type="big_decimal">
 			<column name="kwh" sql-type="numeric" />
 		</property>
 		<property type="string" name="reference" column="reference"

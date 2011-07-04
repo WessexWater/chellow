@@ -1,6 +1,6 @@
 /*******************************************************************************
  * 
- *  Copyright (c) 2005, 2010 Wessex Water Services Limited
+ *  Copyright (c) 2005, 2011 Wessex Water Services Limited
  *  
  *  This file is part of Chellow.
  * 
@@ -83,7 +83,7 @@ public class Bills extends EntityList {
 		Date issueDate = inv.getDate("issue");
 		Date startDate = inv.getDate("start");
 		Date finishDate = inv.getDate("finish");
-		BigDecimal kwh = inv.getBigDecimal("kwh");
+		String kwhStr = inv.getString("kwh");
 		BigDecimal net = inv.getBigDecimal("net");
 		BigDecimal vat = inv.getBigDecimal("vat");
 		BigDecimal gross = inv.getBigDecimal("gross");
@@ -97,8 +97,19 @@ public class Bills extends EntityList {
 		cal.setTime(finishDate);
 		cal.set(Calendar.HOUR_OF_DAY, 23);
 		cal.set(Calendar.MINUTE, 30);
+		BigDecimal kwh = null;
 		Bill bill = null;
 		try {
+			kwhStr = kwhStr.trim();
+			if (kwhStr.length() > 0) {
+				try {
+					kwh = new BigDecimal(kwhStr);
+				} catch (NumberFormatException e) {
+					throw new UserException(
+							"The kWh field must be either blank or a number. "
+									+ e.getMessage());
+				}
+			}
 			bill = batch.insertBill(MpanCore.getMpanCore(mpanCoreStr)
 					.getSupply(), account, reference, issueDate,
 					new HhStartDate(startDate), new HhStartDate(cal.getTime()),
