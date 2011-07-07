@@ -3812,7 +3812,7 @@ from net.sf.chellow.monad.types import MonadDate
 import math
 from java.sql import Timestamp, ResultSet
 from java.util import GregorianCalendar, Calendar, TimeZone, Locale, Date
-from net.sf.chellow.physical import HhStartDate, Site
+from net.sf.chellow.physical import HhStartDate, Site, Supply
 
 debug_str = ''
 
@@ -3848,11 +3848,10 @@ for group in Site.getSite(site.getId()).groups(start_date, finish_date, True):
     group_element = doc.createElement('group')
     source.appendChild(group_element)
 
-    sup_ids = []
-    for supply in group.getSupplies():
-        sup_ids.append(supply.getId())
-        group_element.appendChild(supply.toXml(doc, XmlTree('source').put('generatorType')))
-    sup_ids.sort()
+    sup_ids = sorted(supply.getId() for supply in group.getSupplies())
+
+    for sup_id in sup_ids:
+        group_element.appendChild(Supply.getSupply(sup_id).toXml(doc, XmlTree('source').put('generatorType')))
 
     data = Hiber.session().createQuery("select datum.value, datum.startDate, datum.status, datum.channel.supplyGeneration.supply.source.code, datum.channel.isImport, datum.channel.supplyGeneration.supply.id from HhDatum datum where datum.channel.isKwh is true and datum.channel.supplyGeneration.supply.id in (" + ','.join(str(id) for id in sup_ids) + ") and datum.startDate.date >= :startDate and datum.startDate.date <= :finishDate order by datum.startDate.date, datum.channel.supplyGeneration.supply.id").setTimestamp('startDate', group.getFrom().getDate()).setTimestamp('finishDate', group.getTo().getDate()).scroll()
     hh_value = None
@@ -5193,6 +5192,9 @@ source.setAttribute("pending-site-count", str(totalSites - activeSites))]]></val
                     </a>
                     <xsl:value-of select="']'" />
                 </p>
+    <ul>
+    <li><a href="{/source/request/@context-path}/reports/233/output/?dc-contract-id={/source/hhdc-contract/@id}">Download As CSV</a></li>
+    </ul>
 
                 <p>
                     <xsl:value-of
@@ -17628,6 +17630,47 @@ while generations.next():
     pw.flush()
     Hiber.session().clear()
 generations.close()
+pw.close()]]></value>
+        <value><![CDATA[]]></value>
+    </line>
+    <line>
+        <value><![CDATA[insert]]></value>
+        <value><![CDATA[report]]></value>
+        <value><![CDATA[233]]></value>
+        <value><![CDATA[true]]></value>
+        <value><![CDATA[DC Channel Snags CSV]]></value>
+        <value><![CDATA[from net.sf.chellow.monad import XmlTree, Hiber, UserException
+from java.util import Date
+from java.lang import System
+from net.sf.chellow.billing import HhdcContract
+from net.sf.chellow.physical import HhStartDate
+
+inv.getResponse().setContentType("text/csv")
+inv.getResponse().setHeader('Content-Disposition', 'filename=output.csv;')
+pw = inv.getResponse().getWriter()
+pw.println("Chellow Id,Site Code,Site Name,MPAN Core,Snag Description,Is Import?,Is kWh?,Start Date,Finish Date,Is Ignored?")
+pw.flush()
+
+contract_id = inv.getLong('dc-contract-id')
+if not inv.isValid():
+    raise UserException()
+
+contract = HhdcContract.getHhdcContract(contract_id)
+
+snags = Hiber.session().createQuery("from ChannelSnag snag where snag.channel.supplyGeneration.hhdcContract = :contract order by snag.id").setEntity('contract', contract).scroll()
+
+while snags.next():
+    snag = snags.get(0)
+    channel = snag.getChannel()
+    generation = channel.getSupplyGeneration()
+    site = Hiber.session().createQuery("select ss_gen.site from SiteSupplyGeneration ss_gen where ss_gen.supplyGeneration = :supplyGeneration and ss_gen.isPhysical is true").setEntity('supplyGeneration', generation).uniqueResult()
+    mpan = generation.getMpans().iterator().next()
+    supply = generation.getSupply()
+    
+    pw.println(','.join('"' + str(val) + '"' for val in [snag.getId(), site.getCode(), site.getName(), mpan.getCore(), snag.getDescription(), channel.getIsImport(), channel.getIsKwh(), snag.getStartDate(), snag.getFinishDate(), snag.getIsIgnored()]))
+    pw.flush()
+    Hiber.session().clear()
+snags.close()
 pw.close()]]></value>
         <value><![CDATA[]]></value>
     </line>
