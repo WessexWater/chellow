@@ -10174,6 +10174,20 @@ while bills.next():
         continue
     mpan = generation.getMpans().iterator().next()
 
+    msn = generation.getMeterSerialNumber()
+
+    read_dict = {}
+    for read in bill.getReads():
+        if read.getMeterSerialNumber() != msn:
+            problem += "The MSN of the register read " + read.getMeterSerialNumber() + " doesn't match the MSN of the generation " + msn + '.'
+        for dt, type in [(read.getPresentDate(), read.getPresentType()), (read.getPreviousDate(), read.getPreviousType())]:
+            key = str(dt) + "-" + read.getMeterSerialNumber()
+            try:
+                if type != read_dict[key]:
+                    problem += " Reads taken on " + str(dt) + " have differing read types."
+            except KeyError:
+                read_dict[key] = type        
+
     covered_start = bill_start
     covered_finish = bill_finish
     covered_bill_ids = []
