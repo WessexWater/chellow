@@ -1,6 +1,6 @@
 /*******************************************************************************
  * 
- *  Copyright (c) 2005, 2009 Wessex Water Services Limited
+ *  Copyright (c) 2005, 2011 Wessex Water Services Limited
  *  
  *  This file is part of Chellow.
  * 
@@ -75,7 +75,7 @@ public class HhDatumRaw {
 
 	public String toString() {
 		return "MPAN core: " + core + ", Is import? " + isImport + ", Is Kwh? "
-				+ isKwh + ", End date " + startDate + ", Value " + value
+				+ isKwh + ", Start date " + startDate + ", Value " + value
 				+ ", Status " + status;
 	}
 }

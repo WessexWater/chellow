@@ -1,6 +1,6 @@
 /*******************************************************************************
  * 
- *  Copyright (c) 2005, 2009 Wessex Water Services Limited
+ *  Copyright (c) 2005, 2011 Wessex Water Services Limited
  *  
  *  This file is part of Chellow.
  * 
@@ -199,7 +199,7 @@ public class HhDatum extends PersistentEntity {
 	}
 
 	public String toString() {
-		return "End date " + startDate + ", Value " + value + ", Status "
+		return "Start date " + startDate + ", Value " + value + ", Status "
 				+ status;
 	}
 
