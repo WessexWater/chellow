@@ -107,9 +107,9 @@ public class Site extends PersistentEntity {
 	}
 
 	static public Site findSite(String siteCode) throws HttpException {
-		return (Site) Hiber.session().createQuery(
-				"from Site as site where site.code = :siteCode").setString(
-				"siteCode", siteCode).uniqueResult();
+		return (Site) Hiber.session()
+				.createQuery("from Site as site where site.code = :siteCode")
+				.setString("siteCode", siteCode).uniqueResult();
 	}
 
 	static public Site getSite(String code) throws HttpException {
@@ -123,14 +123,16 @@ public class Site extends PersistentEntity {
 
 	@SuppressWarnings("unchecked")
 	static public void deleteSite(Site site) throws HttpException {
-		if (Hiber.session().createQuery(
-				"from SiteSupplyGeneration ssg where ssg.site = :site")
+		if (Hiber
+				.session()
+				.createQuery(
+						"from SiteSupplyGeneration ssg where ssg.site = :site")
 				.setEntity("site", site).list().size() > 0) {
 			throw new UserException(
 					"This site can't be deleted while there are still supply generations attached to it.");
 		}
-		for (SiteSnag snag : (List<SiteSnag>) Hiber.session().createQuery(
-				"from SiteSnag snag where site = :site")
+		for (SiteSnag snag : (List<SiteSnag>) Hiber.session()
+				.createQuery("from SiteSnag snag where site = :site")
 				.setEntity("site", site).list()) {
 			snag.delete();
 		}
@@ -222,8 +224,8 @@ public class Site extends PersistentEntity {
 				throw new InternalException(e);
 			}
 		}
-		SupplyGeneration generation = supply.insertGeneration(this,
-				startDate, mopContract, mopAccount, hhdcContract, hhdcAccount,
+		SupplyGeneration generation = supply.insertGeneration(this, startDate,
+				mopContract, mopAccount, hhdcContract, hhdcAccount,
 				meterSerialNumber, pc, mtcCode, cop, ssc, importMpanStr,
 				importLlfcCode, importSupplierContract, importSupplierAccount,
 				importAgreedSupplyCapacity, exportMpanStr, exportLlfcCode,
@@ -381,25 +383,26 @@ public class Site extends PersistentEntity {
 				.createQuery(
 						"select distinct supply from Supply supply join supply.generations supplyGeneration join supplyGeneration.siteSupplyGenerations siteSupplyGeneration where siteSupplyGeneration.site = :site and supplyGeneration.startDate.date <= :to and (supplyGeneration.finishDate.date is null or supplyGeneration.finishDate.date >= :from)")
 				.setEntity("site", newSite)
-				.setTimestamp("from", from.getDate()).setTimestamp("to",
-						to.getDate()).list()) {
+				.setTimestamp("from", from.getDate())
+				.setTimestamp("to", to.getDate()).list()) {
 			if (!groupSupplies.contains(candidateSupply)) {
 				// check if continuously attached.
 				if (candidateSupply.getGenerations(from, to).size() == Hiber
 						.session()
 						.createQuery(
 								"select distinct generation from SupplyGeneration generation join generation.siteSupplyGenerations siteSupplyGeneration where generation.supply = :supply and siteSupplyGeneration.site = :site and generation.startDate.date <= :to and (generation.finishDate.date is null or generation.finishDate.date >= :from)")
-						.setEntity("supply", candidateSupply).setEntity("site",
-								newSite).setTimestamp("from", from.getDate())
+						.setEntity("supply", candidateSupply)
+						.setEntity("site", newSite)
+						.setTimestamp("from", from.getDate())
 						.setTimestamp("to", to.getDate()).list().size()) {
 					groupSupplies.add(candidateSupply);
 					for (Site site : (List<Site>) Hiber
 							.session()
 							.createQuery(
 									"select distinct siteSupplyGeneration.site from SupplyGeneration generation join generation.siteSupplyGenerations siteSupplyGeneration where generation.supply = :supply and generation.startDate.date <= :to and (generation.finishDate.date is null or generation.finishDate.date >= :from)")
-							.setEntity("supply", candidateSupply).setTimestamp(
-									"from", from.getDate()).setTimestamp("to",
-									to.getDate()).list()) {
+							.setEntity("supply", candidateSupply)
+							.setTimestamp("from", from.getDate())
+							.setTimestamp("to", to.getDate()).list()) {
 						// Debug.print("About to test if " +
 						// site.getCode().toString() + " is contained in " +
 						// groupSites.toString());
@@ -470,8 +473,8 @@ public class Site extends PersistentEntity {
 					new XmlTree("core").put("llfc")).put("supply", new XmlTree(
 					"source"))));
 		}
-		for (Source source : (List<Source>) Hiber.session().createQuery(
-				"from Source source order by source.code").list()) {
+		for (Source source : (List<Source>) Hiber.session()
+				.createQuery("from Source source order by source.code").list()) {
 			docElem.appendChild(source.toXml(doc));
 		}
 		for (GeneratorType genType : (List<GeneratorType>) Hiber
@@ -480,18 +483,18 @@ public class Site extends PersistentEntity {
 				.list()) {
 			docElem.appendChild(genType.toXml(doc));
 		}
-		for (GspGroup group : (List<GspGroup>) Hiber.session().createQuery(
-				"from GspGroup group order by group.code").list()) {
+		for (GspGroup group : (List<GspGroup>) Hiber.session()
+				.createQuery("from GspGroup group order by group.code").list()) {
 			docElem.appendChild(group.toXml(doc));
 		}
 
-		for (Pc pc : (List<Pc>) Hiber.session().createQuery(
-				"from Pc pc order by pc.code").list()) {
+		for (Pc pc : (List<Pc>) Hiber.session()
+				.createQuery("from Pc pc order by pc.code").list()) {
 			docElem.appendChild(pc.toXml(doc));
 		}
 
-		for (Cop cop : (List<Cop>) Hiber.session().createQuery(
-				"from Cop cop order by cop.code").list()) {
+		for (Cop cop : (List<Cop>) Hiber.session()
+				.createQuery("from Cop cop order by cop.code").list()) {
 			docElem.appendChild(cop.toXml(doc));
 		}
 
@@ -501,7 +504,8 @@ public class Site extends PersistentEntity {
 				.list()) {
 			docElem.appendChild(contract.toXml(doc));
 		}
-		for (HhdcContract contract : (List<HhdcContract>) Hiber.session()
+		for (HhdcContract contract : (List<HhdcContract>) Hiber
+				.session()
 				.createQuery(
 						"from HhdcContract contract order by contract.name")
 				.list()) {
@@ -640,12 +644,13 @@ public class Site extends PersistentEntity {
 					}
 				}
 				Supply supply = insertSupply(source, generatorType, name,
-						new HhStartDate(startDate).getNext(), null, gspGroup,
+						new HhStartDate(startDate), null, gspGroup,
 						mopContract, mopAccount, hhdcContract, hhdcAccount,
 						meterSerialNumber, pc, mtcCode, cop, ssc,
-						importMpanCoreStr, importLlfcCode, importSupplierContract,
-						importSupplierAccount, importAgreedSupplyCapacity,
-						exportMpanCoreStr, exportLlfcCode, exportSupplierContract,
+						importMpanCoreStr, importLlfcCode,
+						importSupplierContract, importSupplierAccount,
+						importAgreedSupplyCapacity, exportMpanCoreStr,
+						exportLlfcCode, exportSupplierContract,
 						exportSupplierAccount, exportAgreedSupplyCapacity);
 				Hiber.commit();
 				inv.sendSeeOther(supply.getUri());
