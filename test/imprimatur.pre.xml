@@ -967,7 +967,7 @@ def totalElement(account, startDate, finishDate):
 		<request path="/chellow/supplier-contracts/4/batches/" method="post">
 			<control name="reference" value="04-003" />
 			<control name="description" value="dup batch" />
-			<regex pattern="There's already a batch with that name\." />
+			<regex pattern="There's already a batch with that reference\." />
 			<response-code value="418" />
 		</request>
 	</test>

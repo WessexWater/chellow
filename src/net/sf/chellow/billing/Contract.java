@@ -1,6 +1,6 @@
 /*******************************************************************************
  * 
- *  Copyright (c) 2005, 2010 Wessex Water Services Limited
+ *  Copyright (c) 2005, 2011 Wessex Water Services Limited
  *  
  *  This file is part of Chellow.
  * 
@@ -482,7 +482,7 @@ public abstract class Contract extends PersistentEntity implements
 			Hiber.session().save(batch);
 			Hiber.flush();
 		} catch (ConstraintViolationException e) {
-			throw new UserException("There's already a batch with that name.");
+			throw new UserException("There's already a batch with that reference.");
 		}
 		return batch;
 	}
