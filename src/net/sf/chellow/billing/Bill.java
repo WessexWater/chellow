@@ -119,10 +119,7 @@ public class Bill extends PersistentEntity implements Urlable {
 
 			String kwhStr = GeneralImport.addField(csvElement, "kWh", values,
 					14);
-			BigDecimal kwh = null;
-			if (kwhStr.trim().length() > 0) {
-				kwh = new BigDecimal(kwhStr);
-			}
+			BigDecimal kwh = new BigDecimal(kwhStr);
 
 			Bill bill = batch.insertBill(mpanCore.getSupply(), account,
 					reference, issueDate, startDate, finishDate, kwh, net, vat,
@@ -215,7 +212,7 @@ public class Bill extends PersistentEntity implements Urlable {
 			BigDecimal kwh = null;
 			if (kwhStr.equals(GeneralImport.NO_CHANGE)) {
 				kwh = bill.getKwh();
-			} else if (kwhStr.trim().length() > 0) {
+			} else {
 				kwh = new BigDecimal(kwhStr);
 			}
 
@@ -474,6 +471,9 @@ public class Bill extends PersistentEntity implements Urlable {
 		}
 		setStartDate(startDate);
 		setFinishDate(finishDate);
+		if (kwh == null) {
+			throw new InternalException("kwh can't be null.");
+		}
 		setKwh(kwh);
 		setNet(net);
 		setVat(vat);
@@ -513,7 +513,7 @@ public class Bill extends PersistentEntity implements Urlable {
 			Date issueDate = inv.getDate("issue-date");
 			Date startDate = inv.getDate("start");
 			Date finishDate = inv.getDate("finish");
-			String kwhStr = inv.getString("kwh");
+			BigDecimal kwh = inv.getBigDecimal("kwh");
 			BigDecimal net = inv.getBigDecimal("net");
 			BigDecimal vat = inv.getBigDecimal("vat");
 			BigDecimal gross = inv.getBigDecimal("gross");
@@ -523,22 +523,11 @@ public class Bill extends PersistentEntity implements Urlable {
 			if (!inv.isValid()) {
 				throw new UserException(document());
 			}
-			BigDecimal kwh = null;
-			kwhStr = kwhStr.trim();
+			Calendar cal = MonadDate.getCalendar();
+			cal.setTime(finishDate);
+			cal.set(Calendar.HOUR_OF_DAY, 23);
+			cal.set(Calendar.MINUTE, 30);
 			try {
-				if (kwhStr.length() > 0) {
-					try {
-						kwh = new BigDecimal(kwhStr);
-					} catch (NumberFormatException e) {
-						throw new UserException(
-								"The kWh field isn't a number: "
-										+ e.getMessage());
-					}
-				}
-				Calendar cal = MonadDate.getCalendar();
-				cal.setTime(finishDate);
-				cal.set(Calendar.HOUR_OF_DAY, 23);
-				cal.set(Calendar.MINUTE, 30);
 				update(account, reference, issueDate,
 						new HhStartDate(startDate),
 						new HhStartDate(cal.getTime()), kwh, net, vat, gross,
