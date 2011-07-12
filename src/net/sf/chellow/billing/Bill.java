@@ -137,7 +137,10 @@ public class Bill extends PersistentEntity implements Urlable {
 				Units units = Units.getUnits(unitsStr);
 				String tprStr = GeneralImport.addField(csvElement, "TPR",
 						values, i + 4);
-				Tpr tpr = Tpr.getTpr(tprStr);
+				Tpr tpr = null;
+				if (tprStr.length() > 0) {
+					tpr = Tpr.getTpr(tprStr);
+				}
 				String previousDateStr = GeneralImport.addField(csvElement,
 						"Previous Date", values, i + 5);
 				HhStartDate previousDate = new HhStartDate(previousDateStr);
