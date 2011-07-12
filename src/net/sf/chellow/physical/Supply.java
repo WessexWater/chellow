@@ -82,8 +82,7 @@ public class Supply extends PersistentEntity {
 			String finishDateStr = GeneralImport.addField(csvElement,
 					"Finish date", values, 6);
 			HhStartDate finishDate = finishDateStr.trim().length() > 0 ? HhStartDate
-					.roundUp(new MonadDate(finishDateStr).getDate())
-					: null;
+					.roundUp(new MonadDate(finishDateStr).getDate()) : null;
 			String mopContractName = GeneralImport.addField(csvElement,
 					"MOP Contract", values, 7);
 			MopContract mopContract = mopContractName.length() == 0 ? null
@@ -217,15 +216,16 @@ public class Supply extends PersistentEntity {
 			String supplyName = GeneralImport.addField(csvElement,
 					"Supply Name", values, 4);
 			Supply supply = MpanCore.getMpanCore(mpanCoreStr).getSupply();
-			supply.update(supplyName.equals(GeneralImport.NO_CHANGE) ? supply
-					.getName() : supplyName, sourceCode
-					.equals(GeneralImport.NO_CHANGE) ? supply.getSource()
-					: Source.getSource(sourceCode), generatorType
-					.equals(GeneralImport.NO_CHANGE) ? supply
-					.getGeneratorType() : GeneratorType
-					.getGeneratorType(generatorType), gspGroupCode
-					.equals(GeneralImport.NO_CHANGE) ? supply.getGspGroup()
-					: GspGroup.getGspGroup(gspGroupCode));
+			supply.update(
+					supplyName.equals(GeneralImport.NO_CHANGE) ? supply
+							.getName() : supplyName,
+					sourceCode.equals(GeneralImport.NO_CHANGE) ? supply
+							.getSource() : Source.getSource(sourceCode),
+					generatorType.equals(GeneralImport.NO_CHANGE) ? supply
+							.getGeneratorType() : GeneratorType
+							.getGeneratorType(generatorType),
+					gspGroupCode.equals(GeneralImport.NO_CHANGE) ? supply
+							.getGspGroup() : GspGroup.getGspGroup(gspGroupCode));
 		} else if (action.equals("delete")) {
 			String mpanCoreStr = GeneralImport.addField(csvElement,
 					"MPAN Core", values, 0);
@@ -382,8 +382,8 @@ public class Supply extends PersistentEntity {
 		if (finishDate == null) {
 			criteria.add(Restrictions.isNull("finishDate.date"));
 		} else {
-			criteria.add(Restrictions.eq("finishDate.date", finishDate
-					.getDate()));
+			criteria.add(Restrictions.eq("finishDate.date",
+					finishDate.getDate()));
 		}
 		criteria.createCriteria("supply").add(Restrictions.eq("id", getId()));
 		return (SupplyGeneration) criteria.uniqueResult();
@@ -398,15 +398,15 @@ public class Supply extends PersistentEntity {
 					.session()
 					.createQuery(
 							"from SupplyGeneration generation where generation.supply = :supply and (generation.finishDate.date >= :fromDate or generation.finishDate.date is null) order by generation.finishDate.date")
-					.setEntity("supply", this).setTimestamp("fromDate",
-							from.getDate()).list();
+					.setEntity("supply", this)
+					.setTimestamp("fromDate", from.getDate()).list();
 		} else {
 			generations = (List<SupplyGeneration>) Hiber
 					.session()
 					.createQuery(
 							"from SupplyGeneration generation where generation.supply = :supply and generation.startDate.date <= :toDate and (generation.finishDate.date >= :fromDate or generation.finishDate.date is null) order by generation.finishDate.date")
-					.setEntity("supply", this).setTimestamp("fromDate",
-							from.getDate())
+					.setEntity("supply", this)
+					.setTimestamp("fromDate", from.getDate())
 					.setTimestamp("toDate", to.getDate()).list();
 		}
 		return generations;
@@ -417,25 +417,25 @@ public class Supply extends PersistentEntity {
 				.session()
 				.createQuery(
 						"from MpanCore mpanCore where mpanCore.supply = :supply and mpanCore.dso.code.string || mpanCore.uniquePart.string || mpanCore.checkDigit.character = :core")
-				.setEntity("supply", this).setString("core",
-						core.toStringNoSpaces()).uniqueResult();
+				.setEntity("supply", this)
+				.setString("core", core.toStringNoSpaces()).uniqueResult();
 		if (mpanCore == null) {
 			throw new InternalException("Mpan isn't attached to this supply.");
 		}
 		return mpanCore;
 	}
 
-
 	public void updateGeneration(SupplyGeneration generation,
-			HhStartDate start, HhStartDate finish, MopContract mopContract, String mopAccount,
-			HhdcContract hhdcContract, String hhdcAccount,
+			HhStartDate start, HhStartDate finish, MopContract mopContract,
+			String mopAccount, HhdcContract hhdcContract, String hhdcAccount,
 			String meterSerialNumber, Pc pc, String mtcCode, Cop cop, Ssc ssc,
 			String importMpanCoreStr, String importLlfcCode,
 			SupplierContract importSupplierContract,
 			String importSupplierAccount, Integer importAgreedSupplyCapacity,
 			String exportMpanCoreStr, String exportLlfcCode,
 			SupplierContract exportSupplierContract,
-			String exportSupplierAccount, Integer exportAgreedSupplyCapacity) throws HttpException {
+			String exportSupplierAccount, Integer exportAgreedSupplyCapacity)
+			throws HttpException {
 		generation = (SupplyGeneration) Hiber
 				.session()
 				.createQuery(
@@ -450,32 +450,29 @@ public class Supply extends PersistentEntity {
 				.session()
 				.createQuery(
 						"from SupplyGeneration generation where generation.supply = :supply and generation.startDate.date < :startDate order by generation.startDate.date desc")
-				.setEntity("supply", this).setTimestamp("startDate",
-						generation.getStartDate().getDate()).setMaxResults(1)
-				.uniqueResult();
+				.setEntity("supply", this)
+				.setTimestamp("startDate", generation.getStartDate().getDate())
+				.setMaxResults(1).uniqueResult();
 		SupplyGeneration nextGeneration = (SupplyGeneration) Hiber
 				.session()
 				.createQuery(
 						"from SupplyGeneration generation where generation.supply = :supply and generation.startDate.date > :startDate order by generation.startDate.date")
-				.setEntity("supply", this).setTimestamp("startDate",
-						generation.getStartDate().getDate()).setMaxResults(1)
-				.uniqueResult();
-		generation.update(start, finish, mopContract, mopAccount,
-				hhdcContract, hhdcAccount,
-				meterSerialNumber, pc,mtcCode, cop, ssc,
-				importMpanCoreStr, importLlfcCode,
-				importSupplierContract,
+				.setEntity("supply", this)
+				.setTimestamp("startDate", generation.getStartDate().getDate())
+				.setMaxResults(1).uniqueResult();
+		generation.update(start, finish, mopContract, mopAccount, hhdcContract,
+				hhdcAccount, meterSerialNumber, pc, mtcCode, cop, ssc,
+				importMpanCoreStr, importLlfcCode, importSupplierContract,
 				importSupplierAccount, importAgreedSupplyCapacity,
-				 exportMpanCoreStr, exportLlfcCode,
-				exportSupplierContract,
+				exportMpanCoreStr, exportLlfcCode, exportSupplierContract,
 				exportSupplierAccount, exportAgreedSupplyCapacity);
 		if (previousGeneration != null) {
-			previousGeneration.update(previousGeneration.getStartDate(), start
-					.getPrevious());
+			previousGeneration.update(previousGeneration.getStartDate(),
+					start.getPrevious());
 		}
 		if (nextGeneration != null) {
-			nextGeneration.update(finish.getNext(), nextGeneration
-					.getFinishDate());
+			nextGeneration.update(finish.getNext(),
+					nextGeneration.getFinishDate());
 		}
 	}
 
@@ -485,32 +482,40 @@ public class Supply extends PersistentEntity {
 			throw new UserException(
 					"Can't insert generation as there aren't any existing generations");
 		}
-		SupplyGeneration templateGeneration = null;
-		SupplyGeneration firstGeneration = getGenerationFirst();
-		HhStartDate finishDate = null;
 		if (startDate.after(getGenerationLast().getFinishDate())) {
 			throw new UserException(
 					"One can't add a generation that starts after the supply has finished.");
-		} else if (startDate.after(firstGeneration.getStartDate())) {
-			templateGeneration = getGeneration(startDate);
-			finishDate = templateGeneration.getFinishDate();
-		} else {
+		}
+
+		SupplyGeneration firstGeneration = getGenerationFirst();
+		HhStartDate finishDate = null;
+		SupplyGeneration templateGeneration = null;
+
+		if (startDate.before(firstGeneration.getStartDate())) {
 			templateGeneration = firstGeneration;
 			finishDate = firstGeneration.getStartDate().getPrevious();
+		} else {
+			templateGeneration = getGeneration(startDate);
+			if (startDate.equals(templateGeneration.getStartDate())) {
+				throw new UserException(
+						"There's already a generation with that start date.");
+			}
+			finishDate = templateGeneration.getFinishDate();
 		}
 		SupplyGeneration supplyGeneration = new SupplyGeneration(this,
 				startDate, finishDate, templateGeneration.getMopContract(),
-				templateGeneration.getMopAccount(), templateGeneration
-						.getHhdcContract(),
-				templateGeneration.getHhdcAccount(), templateGeneration
-						.getMeterSerialNumber(), templateGeneration.getPc(),
-				templateGeneration.getMtc().toString(), templateGeneration
-						.getCop(), templateGeneration.getSsc());
+				templateGeneration.getMopAccount(),
+				templateGeneration.getHhdcContract(),
+				templateGeneration.getHhdcAccount(),
+				templateGeneration.getMeterSerialNumber(),
+				templateGeneration.getPc(), templateGeneration.getMtc()
+						.toString(), templateGeneration.getCop(),
+				templateGeneration.getSsc());
 		generations.add(supplyGeneration);
 		Hiber.flush();
 		for (Channel channel : templateGeneration.getChannels()) {
-			supplyGeneration.insertChannel(channel.getIsImport(), channel
-					.getIsKwh());
+			supplyGeneration.insertChannel(channel.getIsImport(),
+					channel.getIsKwh());
 		}
 		Hiber.flush();
 		for (SiteSupplyGeneration ssgen : templateGeneration
@@ -545,12 +550,13 @@ public class Supply extends PersistentEntity {
 			exportAgreedSupplyCapacity = exportMpan.getAgreedSupplyCapacity();
 		}
 		supplyGeneration.update(supplyGeneration.getStartDate(),
-				supplyGeneration.getFinishDate(), supplyGeneration
-						.getMopContract(), supplyGeneration.getMopAccount(),
-				supplyGeneration.getHhdcContract(), supplyGeneration
-						.getHhdcAccount(), supplyGeneration
-						.getMeterSerialNumber(), supplyGeneration.getPc(),
-				supplyGeneration.getMtc().toString(),
+				supplyGeneration.getFinishDate(),
+				supplyGeneration.getMopContract(),
+				supplyGeneration.getMopAccount(),
+				supplyGeneration.getHhdcContract(),
+				supplyGeneration.getHhdcAccount(),
+				supplyGeneration.getMeterSerialNumber(),
+				supplyGeneration.getPc(), supplyGeneration.getMtc().toString(),
 				supplyGeneration.getCop(), supplyGeneration.getSsc(),
 				importMpanCoreStr, importLlfcCode, importSupplierContract,
 				importSupplierAccount, importAgreedSupplyCapacity,
@@ -649,8 +655,8 @@ public class Supply extends PersistentEntity {
 					.session()
 					.createQuery(
 							"from SupplyGeneration generation where generation.supply = :supply and generation.startDate.date <= :date and (generation.finishDate.date >= :date or generation.finishDate.date is null)")
-					.setEntity("supply", this).setTimestamp("date",
-							date.getDate()).uniqueResult();
+					.setEntity("supply", this)
+					.setTimestamp("date", date.getDate()).uniqueResult();
 		}
 	}
 
@@ -666,8 +672,8 @@ public class Supply extends PersistentEntity {
 			previousGeneration.update(previousGeneration.getStartDate(),
 					generation.getFinishDate());
 		} else {
-			nextGeneration.update(generation.getStartDate(), nextGeneration
-					.getFinishDate());
+			nextGeneration.update(generation.getStartDate(),
+					nextGeneration.getFinishDate());
 		}
 		Hiber.flush();
 		List<Channel> tempChannels = new ArrayList<Channel>();
@@ -688,7 +694,8 @@ public class Supply extends PersistentEntity {
 				.session()
 				.createQuery(
 						"from SupplyGeneration generation where generation.supply = :supply and generation.finishDate.date = :generationFinishDate")
-				.setEntity("supply", this).setTimestamp("generationFinishDate",
+				.setEntity("supply", this)
+				.setTimestamp("generationFinishDate",
 						generation.getStartDate().getPrevious().getDate())
 				.uniqueResult();
 	}
@@ -702,7 +709,8 @@ public class Supply extends PersistentEntity {
 				.session()
 				.createQuery(
 						"from SupplyGeneration generation where generation.supply = :supply and generation.startDate.date = :generationStartDate")
-				.setEntity("supply", this).setTimestamp("generationStartDate",
+				.setEntity("supply", this)
+				.setTimestamp("generationStartDate",
 						generation.getFinishDate().getNext().getDate())
 				.uniqueResult();
 	}
@@ -711,13 +719,14 @@ public class Supply extends PersistentEntity {
 	private Document document() throws HttpException {
 		Document doc = MonadUtils.newSourceDocument();
 		Element source = doc.getDocumentElement();
-		Element supplyElement = (Element) toXml(doc, new XmlTree("generations",
-				new XmlTree("mpans", new XmlTree("core").put("llfc",
-						new XmlTree("voltageLevel")))).put("source").put(
-				"generatorType").put("gspGroup"));
+		Element supplyElement = (Element) toXml(
+				doc,
+				new XmlTree("generations", new XmlTree("mpans", new XmlTree(
+						"core").put("llfc", new XmlTree("voltageLevel"))))
+						.put("source").put("generatorType").put("gspGroup"));
 		source.appendChild(supplyElement);
-		for (Source supplySource : (List<Source>) Hiber.session().createQuery(
-				"from Source source order by source.code").list()) {
+		for (Source supplySource : (List<Source>) Hiber.session()
+				.createQuery("from Source source order by source.code").list()) {
 			source.appendChild(supplySource.toXml(doc));
 		}
 		for (GeneratorType type : (List<GeneratorType>) Hiber.session()
@@ -728,8 +737,8 @@ public class Supply extends PersistentEntity {
 		source.appendChild(MonadDate.getMonthsXml(doc));
 		source.appendChild(MonadDate.getDaysXml(doc));
 		source.appendChild(new MonadDate().toXml(doc));
-		for (GspGroup group : (List<GspGroup>) Hiber.session().createQuery(
-				"from GspGroup group order by group.code").list()) {
+		for (GspGroup group : (List<GspGroup>) Hiber.session()
+				.createQuery("from GspGroup group order by group.code").list()) {
 			source.appendChild(group.toXml(doc));
 		}
 

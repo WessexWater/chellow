@@ -1217,7 +1217,7 @@ def virtual_bill(supply_source):
 		<request
 			path="/chellow/reports/25/output/?site-code=CI004&amp;year=2005&amp;month=11">
 			<regex pattern="/chellow/reports/5/output/\?site-id=1" />
-			
+
 			<!-- Check that columns are in the right order -->
 			<regex pattern='kWh&lt;/th&gt;&lt;th colspan="4"&gt;1 net &lt;/th&gt;' />
 			<response-code value="200" />
@@ -2797,7 +2797,7 @@ def import_virtual_bill(supply_source):
 			<response-code value="200" />
 		</request>
 	</test>
-		<test name="Check 'no channel' error when importing hh data.">
+	<test name="Check 'no channel' error when importing hh data.">
 		<request path="/chellow/hhdc-contracts/0/hh-data-imports/"
 			method="post">
 			<control type="file" name="import-file" value="hh-no-channel.simple.csv" />
@@ -2806,8 +2806,20 @@ def import_virtual_bill(supply_source):
 		</request>
 		<request path="/chellow/hhdc-contracts/0/hh-data-imports/15/">
 			<refresh />
-			<regex pattern="There is no channel for the datum: MPAN core: 22 4862 4512 332, Is import\? false, Is Kwh\? true, Start date 2010-02-04T20:00Z, Value 30.4339, Status A." />
+			<regex
+				pattern="There is no channel for the datum: MPAN core: 22 4862 4512 332, Is import\? false, Is Kwh\? true, Start date 2010-02-04T20:00Z, Value 30.4339, Status A." />
 			<response-code value="200" />
+		</request>
+	</test>
+	<test
+		name="Check good error message if new generation has same start date as existing generation.">
+		<!-- Can we add a new supply generation ok? -->
+		<request path="/chellow/supplies/11/generations/" method="post">
+			<control name="start-year" value="2005" />
+			<control name="start-month" value="09" />
+			<control name="start-day" value="06" />
+			<regex pattern="There's already a generation with that start date\." />
+			<response-code value="418" />
 		</request>
 	</test>
 </imprimatur>
