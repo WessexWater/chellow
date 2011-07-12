@@ -17654,34 +17654,53 @@ pw.close()]]></value>
         <value><![CDATA[true]]></value>
         <value><![CDATA[DC Channel Snags CSV]]></value>
         <value><![CDATA[from net.sf.chellow.monad import XmlTree, Hiber, UserException
-from java.util import Date
+from java.util import Date, Locale
 from java.lang import System
 from net.sf.chellow.billing import HhdcContract
 from net.sf.chellow.physical import HhStartDate
+from java.text import SimpleDateFormat
 
 inv.getResponse().setContentType("text/csv")
 inv.getResponse().setHeader('Content-Disposition', 'filename=output.csv;')
 pw = inv.getResponse().getWriter()
-pw.println("Chellow Id,Site Code,Site Name,MPAN Core,Snag Description,Is Import?,Is kWh?,Start Date,Finish Date,Is Ignored?")
+pw.println("Chellow Id,MPAN Core,Site Code,Site Name,Snag Description,Is Import?,Is kWh?,Start Date,Finish Date,Days Since Snag Finished,Duration Of Snag (Days),Is Ignored?")
 pw.flush()
 
 contract_id = inv.getLong('dc-contract-id')
 if not inv.isValid():
     raise UserException()
 
+formatter = SimpleDateFormat("yyyy/MM/dd HH:mm", Locale.UK)
+
 contract = HhdcContract.getHhdcContract(contract_id)
 
-snags = Hiber.session().createQuery("from ChannelSnag snag where snag.channel.supplyGeneration.hhdcContract = :contract order by snag.id").setEntity('contract', contract).scroll()
+snags = Hiber.session().createQuery("select snag, ss_gen.site, snag.channel, snag.channel.supplyGeneration from ChannelSnag snag join snag.channel.supplyGeneration.siteSupplyGenerations ss_gen where snag.channel.supplyGeneration.hhdcContract = :contract and ss_gen.isPhysical is true order by snag.isIgnored, snag.startDate.date, snag.id").setEntity('contract', contract).scroll()
+
+MILLIS_IN_DAY = 1000 * 60 * 60 * 24
+
+now = Date().getTime()
 
 while snags.next():
     snag = snags.get(0)
-    channel = snag.getChannel()
-    generation = channel.getSupplyGeneration()
-    site = Hiber.session().createQuery("select ss_gen.site from SiteSupplyGeneration ss_gen where ss_gen.supplyGeneration = :supplyGeneration and ss_gen.isPhysical is true").setEntity('supplyGeneration', generation).uniqueResult()
+    site = snags.get(1)
+    channel = snags.get(2)
+    generation = snags.get(3)
     mpan = generation.getMpans().iterator().next()
-    supply = generation.getSupply()
     
-    pw.println(','.join('"' + str(val) + '"' for val in [snag.getId(), site.getCode(), site.getName(), mpan.getCore(), snag.getDescription(), channel.getIsImport(), channel.getIsKwh(), snag.getStartDate(), snag.getFinishDate(), snag.getIsIgnored()]))
+    snag_start = snag.getStartDate()
+    snag_finish = snag.getFinishDate()
+    snag_start_millis = snag_start.getDate().getTime()
+    if snag_finish is None:
+        snag_finish_str = ''
+        duration = float(now - snag_start_millis) / MILLIS_IN_DAY
+        age_of_snag = 0
+    else:
+        snag_finish_millis = snag_finish.getDate().getTime()
+        snag_finish_str = formatter.format(snag_finish.getDate())
+        duration = float(snag_finish_millis - snag_start_millis) / MILLIS_IN_DAY
+        age_of_snag = (now - snag_finish_millis) / MILLIS_IN_DAY
+
+    pw.println(','.join('"' + str(val) + '"' for val in [snag.getId(), mpan.getCore(), site.getCode(), site.getName(), snag.getDescription(), channel.getIsImport(), channel.getIsKwh(), formatter.format(snag_start.getDate()), snag_finish_str, age_of_snag, duration, snag.getIsIgnored()]))
     pw.flush()
     Hiber.session().clear()
 snags.close()
