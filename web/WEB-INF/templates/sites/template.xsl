@@ -13,16 +13,14 @@
 			</head>
 			<body>
 				<p>
-					<a href="{/source/request/@context-path}/">
-						<img src="{/source/request/@context-path}/logo/" />
-						<span class="logo">Chellow</span>
+					<a href="{/source/request/@context-path}/reports/1/output/">
+						<xsl:value-of select="'Home'" />
 					</a>
 					&gt;
-					<xsl:value-of select="'Sites ['" />
 					<a href="{/source/request/@context-path}/reports/3/output/">
-						<xsl:value-of select="'view'" />
+						<xsl:value-of select="'Sites'" />
 					</a>
-					<xsl:value-of select="']'" />
+					&gt; Edit
 				</p>
 				<xsl:if test="//message">
 					<ul>
@@ -33,26 +31,6 @@
 						</xsl:for-each>
 					</ul>
 				</xsl:if>
-				<br />
-				<form action=".">
-					<input name="search-pattern"
-						value="{/source/request/parameter[@name='search-pattern']/value}" />
-
-					<input type="submit" value="Search" />
-				</form>
-				<br />
-				<p>
-					The search results are truncated after 50.
-						</p>
-				<ul>
-					<xsl:for-each select="/source/sites/site">
-						<li>
-							<a href="{@id}/">
-								<xsl:value-of select="concat(@code, ' ', @name)" />
-							</a>
-						</li>
-					</xsl:for-each>
-				</ul>
 				<br />
 				<form action="." method="post">
 					<fieldset>

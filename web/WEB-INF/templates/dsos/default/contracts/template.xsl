@@ -16,22 +16,30 @@
 				</title>
 			</head>
 			<body>
-				<p>
-					<a href="{/source/request/@context-path}/">
-						<img src="{/source/request/@context-path}/logo/" />
-						<span class="logo">Chellow</span>
-					</a>
-					<xsl:value-of select="' &gt; '" />
-					<a href="{/source/request/@context-path}/dsos/">
-						<xsl:value-of select="'DSOs'" />
-					</a>
-					<xsl:value-of select="' &gt; '" />
-					<a
-						href="{/source/request/@context-path}/dsos/{/source/dso-contracts/dso/@id}/">
-						<xsl:value-of select="/source/dso-contracts/dso/@code" />
-					</a>
-					<xsl:value-of select="' &gt; Contracts '" />
-				</p>
+                <p>
+                    <a
+                        href="{/source/request/@context-path}/reports/1/output/">
+                        <xsl:value-of select="'Home'" />
+                    </a>
+                    &gt;
+                    <a
+                        href="{/source/request/@context-path}/reports/137/output/">
+                        <xsl:value-of select="'DSOs'" />
+                    </a>
+                    &gt;
+                    <a
+                        href="{/source/request/@context-path}/reports/139/output/?dso-id={/source/dso-contract/dso/@id}">
+                        <xsl:value-of
+                            select="/source/dso-contract/dso/@code" />
+                    </a>
+                    &gt;
+                    <a
+                        href="{/source/request/@context-path}/reports/65/output/?dso-id={/source/dso-contract/dso/@id}">
+                        <xsl:value-of select="'Contracts'" />
+                    </a>
+                    &gt; Edit
+                </p>
+
 				<xsl:if test="//message">
 					<ul>
 						<xsl:for-each select="//message">

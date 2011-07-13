@@ -24,11 +24,7 @@
       </head>
       <body>
         <p>
-          <xsl:value-of select="'Home ['" />
-      <a href="{/source/request/@context-path}/">
-      <xsl:value-of select="'edit'" />
-      </a>
-      <xsl:value-of select="']'" />
+          <xsl:value-of select="'Home'" />
     </p>
         <xsl:if test="//message">
           <ul>
@@ -63,6 +59,9 @@
           </li>
           <li><a href="{/source/request/@context-path}/reports/39/output/">
               Site Snags</a></li>
+          <li>
+      <a href="http://chellow.wikispaces.com/" target="_blank">Docs</a>
+      </li>
         </ul>
         <h3>CSV Downloads</h3>
         <table>
@@ -169,6 +168,58 @@
                         </a>
                     </li>
                 </ul>
+
+    <h3>For Editors</h3>
+    <ul>
+
+                              <li>
+                        <a href="{/source/request/@context-path}/non-core-contracts/">
+                            Non-core Contracts
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{/source/request/@context-path}/reports/">
+                            Reports
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{/source/request/@context-path}/general-imports/">
+                            General CSV Imports
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{/source/request/@context-path}/users/">
+                            Users
+                        </a>
+                        <ul>
+                            <li>
+                                <a href="{/source/request/@context-path}/users/me/">
+                                    Me
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+                    <li>
+                        <a href="{/source/request/@context-path}/user-roles/">
+                            User Roles
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{/source/request/@context-path}/reports/153/output/">
+                            Admin
+                        </a>
+                    </li>
+<li>
+                        <a href="{/source/request/@context-path}/sources/">
+                            Sources
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{/source/request/@context-path}/generator-types/">
+                            Generator Types
+                        </a>
+                    </li>
+                </ul>
       </body>
     </html>
   </xsl:template>
@@ -230,6 +281,7 @@ if inv.hasParameter('search-pattern'):
                         </xsl:for-each>
                     </ul>
                 </xsl:if>
+
                 <form name="siteselection" action=".">
                     <fieldset>
                         <input name="search-pattern"
@@ -4827,7 +4879,7 @@ from net.sf.chellow.physical import ReadType, HhStartDate, Supply
 from java.util import Calendar
 from java.text import SimpleDateFormat
 
-def mpan_fields(mpan, date, is_import, mand_query, metering_type, bill_query):
+def mpan_fields(mpan, date, is_import, mand_query, metering_type, bill_query, prev_read_query, pres_read_query):
     avg_months = ''
     if mpan is None:
         mpan_core_str = ''
@@ -4849,6 +4901,9 @@ def mpan_fields(mpan, date, is_import, mand_query, metering_type, bill_query):
         cal = MonadDate.getCalendar()
         cal.setTime(date)
         mandatory_hh = False
+        supplier_contract = mpan.getSupplierContract()
+        supplier_account = mpan.getSupplierAccount()
+        supplier_contract_name = supplier_contract.getName()
         if metering_type != 'nhh':
             month_mds = []
             mand_query.setBoolean('isImport', is_import)
@@ -4869,10 +4924,29 @@ def mpan_fields(mpan, date, is_import, mand_query, metering_type, bill_query):
                 avg_months = avg_months / num_months
             if avg_months > 100:
                 mandatory_hh = True
-        supplier_contract = mpan.getSupplierContract()
-        supplier_account = mpan.getSupplierAccount()
-        supplier_contract_name = supplier_contract.getName()
-        latest_supplier_bill_date = bill_query.setEntity('contract', supplier_contract).uniqueResult()
+
+        if metering_type == 'hh':
+            latest_supplier_bill_date = bill_query.setEntity('contract', supplier_contract).uniqueResult()
+        else:
+            latest_previous_read = latest_previous_read_query.setEntity('supply', supply).uniqueResult()
+            latest_present_read = latest_present_read_query.setEntity('supply', supply).uniqueResult()
+
+            if latest_previous_read is None and latest_present_read is None:
+                latest_read = None
+            elif latest_present_read is not None and latest_previous_read is None:
+                latest_read = latest_present_read
+            elif latest_present_read is None and latest_previous_read is not None:
+                latest_read = latest_previous_read
+            elif latest_present_read.getPresentDate().after(latest_previous_read.getPreviousDate()):
+                latest_read = latest_present_read
+            else:
+                latest_read = latest_previous_read
+
+            if latest_read is None:
+                latest_supplier_bill_date = None
+            else:
+                latest_supplier_bill_date = latest_read.getBill().getFinishDate()
+
         if latest_supplier_bill_date is not None:
             latest_supplier_bill_date = formatter.format(latest_supplier_bill_date.getDate())
 
@@ -4907,7 +4981,11 @@ latest_previous_normal_read_query = Hiber.session().createQuery("from RegisterRe
 
 latest_present_normal_read_query = Hiber.session().createQuery("from RegisterRead read where read.presentType.code in ('N', 'C', 'N3') and read.presentDate.date <= :startDate and read.bill.supply = :supply order by read.presentDate.date desc").setTimestamp('startDate', date).setMaxResults(1)
 
-latest_bill_date_query = Hiber.session().createQuery("select bill.finishDate from Bill bill where bill.startDate.date <= :startDate and bill.supply = :supply and bill.batch.contract = :contract and lower(bill.batch.reference) not like '%reconciliation%'  order by bill.finishDate.date desc").setTimestamp('startDate', date).setMaxResults(1)
+latest_previous_read_query = Hiber.session().createQuery("from RegisterRead read where read.previousDate.date <= :startDate and read.bill.supply = :supply order by read.previousDate.date desc").setTimestamp('startDate', date).setMaxResults(1)
+
+latest_present_read_query = Hiber.session().createQuery("from RegisterRead read where read.presentDate.date <= :startDate and read.bill.supply = :supply order by read.presentDate.date desc").setTimestamp('startDate', date).setMaxResults(1)
+
+latest_bill_date_query = Hiber.session().createQuery("select bill.finishDate from Bill bill where bill.startDate.date <= :startDate and bill.supply = :supply and bill.batch.contract = :contract order by bill.finishDate.date desc").setTimestamp('startDate', date).setMaxResults(1)
 
 if inv.hasParameter('supply-id'):
     supply_id = inv.getLong('supply-id')
@@ -4970,11 +5048,15 @@ while supply_generations.next():
             latest_normal_read_type = latest_previous_normal_read.getPreviousType()
         if latest_normal_read_date is not None:
             latest_normal_read_date = formatter.format(latest_normal_read_date.getDate())
+
     else:
         latest_normal_read_date = metering_type
         latest_normal_read_type = None
+        latest_read_date = metering_type
 
     latest_bill_date_query.setEntity('supply', supply)
+    latest_previous_read_query.setEntity('supply', supply)
+    latest_present_read_query.setEntity('supply', supply)
 
     mand_query.setEntity('supply', supply)
     mop_contract = supply_generation.getMopContract()
@@ -5002,8 +5084,8 @@ while supply_generations.next():
             latest_hhdc_bill_date = formatter.format(latest_hhdc_bill_date.getDate())
 
     meter_serial_number = supply_generation.getMeterSerialNumber()
-    import_values = mpan_fields(supply_generation.getImportMpan(), date, True, mand_query, metering_type, latest_bill_date_query)
-    export_values = mpan_fields(supply_generation.getExportMpan(), date, False, mand_query, metering_type, latest_bill_date_query)
+    import_values = mpan_fields(supply_generation.getImportMpan(), date, True, mand_query, metering_type, latest_bill_date_query, latest_previous_read_query, latest_present_read_query)
+    export_values = mpan_fields(supply_generation.getExportMpan(), date, False, mand_query, metering_type, latest_bill_date_query, latest_previous_read_query, latest_present_read_query)
     channel_values = []
     for is_import in [True, False]:
         for is_kwh in [True, False]:
@@ -6834,7 +6916,13 @@ contracts_element.appendChild(dso.toXml(doc))]]></value>
                         <xsl:value-of
                             select="/source/dso-contracts/dso/@code" />
                     </a>
-                    &gt; DSO Contracts
+                    &gt;
+<xsl:value-of select="'DSO Contracts ['" />
+                    <a
+                        href="{/source/request/@context-path}/dsos/{/source/dso-contracts/dso/@id}/contracts/">
+                        <xsl:value-of select="'edit'" />
+                    </a>
+                    <xsl:value-of select="']'" />
                 </p>
                 <br />
                 <xsl:if test="//message">
@@ -6849,7 +6937,6 @@ contracts_element.appendChild(dso.toXml(doc))]]></value>
                 <table>
                     <thead>
                         <tr>
-                            <th>Chellow Id</th>
                             <th>Name</th>
                             <th>Start Date</th>
                             <th>Finish Date</th>
@@ -6859,14 +6946,8 @@ contracts_element.appendChild(dso.toXml(doc))]]></value>
                         <xsl:for-each
                             select="/source/dso-contracts/dso-contract">
                             <tr>
-                                <td>
-                                    <a
-                                        href="{/source/request/@context-path}/reports/67/output/?dso-contract-id={@id}">
-                                        <xsl:value-of select="@id" />
-                                    </a>
-                                </td>
-                                <td>
-                                    <xsl:value-of select="@name" />
+                                <td><a href="{/source/request/@context-path}/reports/67/output/?dso-contract-id={@id}">
+                                    <xsl:value-of select="@name" /></a>
                                 </td>
                                 <td>
                                     <xsl:value-of
@@ -12947,6 +13028,8 @@ stream_names = ['import-net', 'export-net', 'import-gen', 'export-gen', 'import-
 comterp = PythonInterpreter()
 comterp.exec(computer.getChargeScript())
 
+bill_query = Hiber.session().createQuery("from Bill bill where bill.supply = :supply and bill.startDate.date <= :finishDate and bill.finishDate.date >= :startDate")
+
 def process_site(site, month_start, month_finish, forecast_date, pw):
     site_code = site.getCode()
     associates = []
@@ -12965,7 +13048,6 @@ def process_site(site, month_start, month_finish, forecast_date, pw):
     
     billed_gbp = 0
     billed_kwh = 0
-    complete = True
 
     for group in site.groups(month_start, month_finish, False):
         for cand_site in group.getSites():
@@ -13035,31 +13117,6 @@ def process_site(site, month_start, month_finish, forecast_date, pw):
                 else:
                     bill_finish = supply_generation.getFinishDate()
 
-                bill_start_millis = bill_start.getDate().getTime()
-                bill_finish_millis = bill_finish.getDate().getTime()
-
-                kwh_bills = []
-                for cand_bill in Hiber.session().createQuery("from Bill bill where bill.supply = :supply and bill.batch.contract = :contract and bill.startDate.date <= :finishDate and bill.finishDate.date >= :startDate and bill.type.code != 'W' and lower(bill.batch.reference) not like '%reconciliation%' order by bill.issueDate desc, bill.startDate.date, bill.reference desc").setEntity('supply', supply).setEntity('contract', import_mpan.getSupplierContract()).setTimestamp('startDate', bill_start.getDate()).setTimestamp('finishDate', bill_finish.getDate()).list():
-                    can_insert = True
-                    for kwh_bill in kwh_bills:
-                        if not cand_bill.getStartDate().after(kwh_bill.getFinishDate()) and not cand_bill.getFinishDate().before(kwh_bill.getStartDate()):
-                            can_insert = False
-                            break
-                    if can_insert:
-                        kwh_bills.append(cand_bill)
-                        bill_kwh = cand_bill.getKwh().doubleValue()
-                        cand_bill_start = cand_bill.getStartDate().getDate().getTime()
-                        cand_bill_finish = cand_bill.getFinishDate().getDate().getTime()
-                        rate = bill_kwh / (cand_bill_finish - cand_bill_start + (30 * 60 * 1000))
-                        #pw.println('rate ' + str(rate) + ' bill_kwh ' + str(bill_kwh) + ' cand_start ' + str(cand_bill.getStartDate()) + ' cand_finish ' + str(cand_bill.getFinishDate()) + ' length in millis ' + str(cand_bill_finish - cand_bill_start + (30 * 60 * 1000)) + ' length of overlap ' + str(min(cand_bill_finish, bill_finish_millis) - (max(cand_bill_start, bill_start_millis) + 30 * 60 * 1000)))
-                        overlap_length = min(cand_bill_finish, bill_finish_millis) - max(cand_bill_start, bill_start_millis) + 30 * 60 * 1000
-                        billed_kwh += overlap_length * rate
-                #pw.println('len kwh bills ' + str(len(kwh_bills)) + ' last bill finish ' + str(kwh_bills[-1].getFinishDate()) + ' finish date ' + str(finish_date) + ' bill finish ' + str(bill_finish))
-                if not bill_finish.before(month_finish):
-                    latest_bill = Hiber.session().createQuery("from Bill bill where lower(bill.batch.reference) not like '%reconciliation%' and bill.supply = :supply order by bill.finishDate.date desc").setEntity('supply', supply).setMaxResults(1).uniqueResult()
-                    if latest_bill is None or latest_bill.getFinishDate().before(bill_finish):
-                        complete = False
-
                 supplier_contract = import_mpan.getSupplierContract()
                 if source_code in ['net', 'gen-net']:
                     #pw.println("starting vbill, " + str(System.currentTimeMillis()))
@@ -13105,13 +13162,14 @@ def process_site(site, month_start, month_finish, forecast_date, pw):
                             if 'problem' in mop_bill and len(mop_bill['problem']) > 0:
                                 problem += 'MOP Problem: ' + mop_bill['problem']
 
-            for gbp_bill in Hiber.session().createQuery("from Bill bill where bill.supply = :supply and bill.startDate.date <= :finishDate and bill.finishDate.date >= :startDate").setEntity('supply', supply).setTimestamp('startDate', chunk_start.getDate()).setTimestamp('finishDate', chunk_finish.getDate()).list():
-                bill_net = gbp_bill.getNet().doubleValue()
-                gbp_bill_start = gbp_bill.getStartDate().getDate().getTime()
-                gbp_bill_finish = gbp_bill.getFinishDate().getDate().getTime()
-                rate = bill_net / (gbp_bill_finish - gbp_bill_start + (30 * 60 * 1000))
-                overlap_length = min(gbp_bill_finish, chunk_finish_millis) + (30 * 60 * 1000) - max(gbp_bill_start, chunk_start_millis)
-                billed_gbp += overlap_length * rate
+            for bill in bill_query.setEntity('supply', supply).setTimestamp('startDate', chunk_start.getDate()).setTimestamp('finishDate', chunk_finish.getDate()).list():
+                bill_start = bill.getStartDate().getDate().getTime()
+                bill_finish = bill.getFinishDate().getDate().getTime()
+                bill_duration = bill_finish - bill_start + (30 * 60 * 1000)
+                overlap_duration = min(bill_finish, chunk_finish_millis) + (30 * 60 * 1000) - max(bill_start, chunk_start_millis)
+                overlap_proportion = float(overlap_duration) / bill_duration
+                billed_gbp += overlap_proportion * bill.getNet().doubleValue()
+                billed_kwh += overlap_proportion * bill.getKwh().doubleValue()
 
         #pw.println("getting site ds, " + str(System.currentTimeMillis()))
         site_ds = comterp.get('site_source')(site, chunk_start, chunk_finish, forecast_date, comterp, pw)
@@ -13141,14 +13199,14 @@ def process_site(site, month_start, month_finish, forecast_date, pw):
     sources.sort()
     generator_types.sort()
 
-    result = [site.getCode(), site.getName(), ','.join(associates), ','.join(sources), '.'.join(generator_types), month_format.format(Date(month_finish.getDate().getTime() - 1)), month_data['import-net-kwh'], month_data['msp-kwh'], month_data['export-net-kwh'], month_data['used-kwh'], month_data['export-gen-kwh'], month_data['import-gen-kwh'], month_data['import-3rd-party-kwh'], month_data['export-3rd-party-kwh'], month_data['import-net-gbp'], month_data['msp-gbp'], 0, month_data['used-gbp'], month_data['used-3rd-party-gbp'], billed_kwh, billed_gbp, complete, metering_type, problem]
+    result = [site.getCode(), site.getName(), ','.join(associates), ','.join(sources), '.'.join(generator_types), month_format.format(Date(month_finish.getDate().getTime() - 1)), month_data['import-net-kwh'], month_data['msp-kwh'], month_data['export-net-kwh'], month_data['used-kwh'], month_data['export-gen-kwh'], month_data['import-gen-kwh'], month_data['import-3rd-party-kwh'], month_data['export-3rd-party-kwh'], month_data['import-net-gbp'], month_data['msp-gbp'], 0, month_data['used-gbp'], month_data['used-3rd-party-gbp'], billed_kwh, billed_gbp, metering_type, problem]
     #pw.println("Finished call method " + str(System.currentTimeMillis()))
     return result
 
 inv.getResponse().setContentType("text/csv")
 inv.getResponse().setHeader('Content-Disposition', 'filename=output.csv;')
 pw = inv.getResponse().getWriter()
-pw.print("Site Id,Site Name,Associated Site Ids,Sources,Generator Types,Month,Metered Imported kWh,Metered Displaced kWh,Metered Exported kWh,Metered Used kWh,Metered Parasitic kWh,Metered Generated kWh,Metered 3rd Party Import kWh,Metered 3rd Party Export kWh,Metered Imported GBP,Metered Displaced GBP,Metered Exported GBP,Metered Used GBP,Metered 3rd Party Import GBP,Billed Imported kWh,Billed Imported GBP,Billed Imported Complete,Metering Type,Problem")
+pw.print("Site Id,Site Name,Associated Site Ids,Sources,Generator Types,Month,Metered Imported kWh,Metered Displaced kWh,Metered Exported kWh,Metered Used kWh,Metered Parasitic kWh,Metered Generated kWh,Metered 3rd Party Import kWh,Metered 3rd Party Export kWh,Metered Imported GBP,Metered Displaced GBP,Metered Exported GBP,Metered Used GBP,Metered 3rd Party Import GBP,Billed Imported kWh,Billed Imported GBP,Metering Type,Problem")
 pw.flush()
 
 month_format = SimpleDateFormat("yyyy-MM-dd")
@@ -14047,9 +14105,6 @@ for i in range(months):
     while supplies.next():
         supply = supplies.get(0)
 
-        apportioned_bill_query.setEntity('supply', supply)
-        raw_bill_query.setEntity('supply', supply)
-
         generator_type = supply.getGeneratorType()
         if generator_type is None:
             generator_type = ''
@@ -14073,7 +14128,6 @@ for i in range(months):
         site = site_query.setEntity('supplyGeneration', generation).uniqueResult()
         kwh_query.setEntity('supply', supply)
         est_kwh_query.setEntity('supply', supply)
-
 
         values = {'supply-name': supply.getName(), 'source-code': source_code, 'generator-type': generator_type, 'month': month_str, 'pc-code': pc_code, 'msn': generation.getMeterSerialNumber(), 'site-code': site.getCode(), 'site-name': site.getName(), 'metering-type': metering_type, 'problem': ''}
 
@@ -14114,6 +14168,19 @@ for i in range(months):
             values['billed-' + pol_name + '-raw-net-gbp'] = 0
 
         #p w.println('starting generations, ' + str(System.currentTimeMillis()))
+
+        for bill in apportioned_bill_query.setEntity('supply', supply).setTimestamp('startDate', month_start.getDate()).setTimestamp('finishDate', month_finish.getDate()).list():
+            bill_start = bill.getStartDate().getDate().getTime()
+            bill_finish = bill.getFinishDate().getDate().getTime()
+            bill_duration = bill_finish - bill_start + (30 * 60 * 1000)
+            overlap_duration = min(bill_finish, month_finish.getDate().getTime()) + (30 * 60 * 1000) - max(bill_start, month_start.getDate().getTime())
+            overlap_proportion = float(overlap_duration) / float(bill_duration)
+            values['billed-import-apportioned-net-gbp'] += overlap_proportion * bill.getNet().doubleValue()
+            values['billed-import-apportioned-kwh'] += overlap_proportion * bill.getKwh().doubleValue()
+
+        for bill in raw_bill_query.setEntity('supply', supply).setTimestamp('startDate', month_start.getDate()).setTimestamp('finishDate', month_finish.getDate()).list():
+            values['billed-import-raw-net-gbp'] += bill.getNet().doubleValue()
+            values['billed-import-raw-kwh'] += bill.getKwh().doubleValue()
 
         for generation in generations:
             if generation.getStartDate().after(month_start):
@@ -14180,22 +14247,6 @@ for i in range(months):
                                 values['problem'] += " MOP virtual bill problem: " + mop_bill['problem']
                         else:
                             values['problem'] += " 'problem' field can't be found in MOP virtual bill."
-                
-                for bill in apportioned_bill_query.setTimestamp('startDate', chunk_start.getDate()).setTimestamp('finishDate', chunk_finish.getDate()).list():
-                    bill_kwh = bill.getKwh().doubleValue()
-                    bill_net = bill.getNet().doubleValue()
-
-                    bill_start = bill.getStartDate().getDate().getTime()
-                    bill_finish = bill.getFinishDate().getDate().getTime()
-                    kwh_rate = bill_kwh / (bill_finish - bill_start + (30 * 60 * 1000))
-                    gbp_rate = bill_net / (bill_finish - bill_start + (30 * 60 * 1000))
-                    overlap_length = min(bill_finish, chunk_finish_millis) + (30 * 60 * 1000) - max(bill_start, chunk_start_millis)
-                    values['billed-import-apportioned-net-gbp'] += overlap_length * gbp_rate
-                    values['billed-import-apportioned-kwh'] += overlap_length * kwh_rate
-
-                for bill in raw_bill_query.setTimestamp('startDate', chunk_start.getDate()).setTimestamp('finishDate', chunk_finish.getDate()).list():
-                    values['billed-import-raw-net-gbp'] += bill.getNet().doubleValue()
-                    values['billed-import-raw-kwh'] += bill.getKwh().doubleValue()
 
             #pw.println("finishing generation , " + str(System.currentTimeMillis()))
         values['timestamp'] = System.currentTimeMillis()

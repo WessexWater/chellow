@@ -1,6 +1,6 @@
 /*******************************************************************************
  * 
- *  Copyright (c) 2005, 2009 Wessex Water Services Limited
+ *  Copyright (c) 2005, 2011 Wessex Water Services Limited
  *  
  *  This file is part of Chellow.
  * 
@@ -20,8 +20,6 @@
  *******************************************************************************/
 
 package net.sf.chellow.physical;
-
-import java.util.List;
 
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
@@ -77,38 +75,8 @@ public class Sites extends EntityList {
 		inv.sendSeeOther(site.getUri());
 	}
 
-	@SuppressWarnings("unchecked")
 	public void httpGet(Invocation inv) throws HttpException {
-		Document doc = MonadUtils.newSourceDocument();
-		Element source = doc.getDocumentElement();
-		Element sitesElement = toXml(doc);
-		source.appendChild(sitesElement);
-		List<Site> sites = null;
-		if (inv.hasParameter("search-pattern")) {
-			String searchTerm = inv.getString("search-pattern");
-			if (!inv.isValid()) {
-				throw new UserException(doc, null);
-			}
-			sites = (List<Site>) Hiber
-					.session()
-					.createQuery(
-							"from Site site where lower(site.code || ' ' || site.name) like '%' || lower(:searchTerm) || '%' order by site.code")
-					.setString("searchTerm", searchTerm).setMaxResults(50)
-					.list();
-
-		} else {
-			sites = (List<Site>) Hiber.session().createQuery(
-					"from Site site order by site.code").setMaxResults(50)
-					.list();
-		}
-		if (sites.size() == 1) {
-			inv.sendTemporaryRedirect(sites.get(0).getUri().getString());
-		} else {
-			for (Site site : sites) {
-				sitesElement.appendChild(site.toXml(doc));
-			}
-			inv.sendOk(doc);
-		}
+		inv.sendOk();
 	}
 
 	public UriPathElement getUriId() {
@@ -116,9 +84,10 @@ public class Sites extends EntityList {
 	}
 
 	public Site getChild(UriPathElement uriId) throws HttpException {
-		Site site = (Site) Hiber.session().createQuery(
-				"from Site site where id = :siteId").setLong("siteId",
-				Long.parseLong(uriId.getString())).uniqueResult();
+		Site site = (Site) Hiber.session()
+				.createQuery("from Site site where id = :siteId")
+				.setLong("siteId", Long.parseLong(uriId.getString()))
+				.uniqueResult();
 		if (site == null) {
 			throw new NotFoundException();
 		}

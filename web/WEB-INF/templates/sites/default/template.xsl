@@ -18,22 +18,20 @@
 			</head>
 			<body>
 				<p>
-					<a href="{/source/request/@context-path}/">
-						<img src="{/source/request/@context-path}/logo/" />
-						<span class="logo">Chellow</span>
+					<a href="{/source/request/@context-path}/reports/1/output/">
+						<xsl:value-of select="'Home'" />
 					</a>
 					&gt;
-					<a href="{/source/request/@context-path}/sites/">
+					<a href="{/source/request/@context-path}/reports/3/output/">
 						<xsl:value-of select="'Sites'" />
 					</a>
 					&gt;
-					<xsl:value-of
-						select="concat(/source/site/@code, ' ', /source/site/@name, ' [')" />
 					<a
 						href="{/source/request/@context-path}/reports/5/output/?site-id={/source/site/@id}">
-						<xsl:value-of select="'view'" />
+						<xsl:value-of
+							select="concat(/source/site/@code, ' ', /source/site/@name)" />
 					</a>
-					<xsl:value-of select="']'" />
+					&gt; Edit
 				</p>
 				<xsl:if test="//message">
 					<ul>

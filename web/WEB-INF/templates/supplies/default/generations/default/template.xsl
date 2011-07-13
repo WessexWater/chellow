@@ -17,32 +17,25 @@
 					href="{/source/request/@context-path}/reports/19/output/" />
 			</head>
 			<body>
-				<p>
-					<a href="{/source/request/@context-path}/">
-						<img src="{/source/request/@context-path}/logo/" />
-						<span class="logo">Chellow</span>
-					</a>
-					&gt;
-					<a href="{/source/request/@context-path}/supplies/">
-						<xsl:value-of select="'Supplies'" />
-					</a>
-					&gt;
-					<a
-						href="{/source/request/@context-path}/supplies/{/source/supply-generation/supply/@id}/">
-						<xsl:value-of select="/source/supply-generation/supply/@id" />
-					</a>
+				 <p>
+                    <a href="{/source/request/@context-path}/reports/1/output/">
+                        <xsl:value-of select="'Home'" />
+                    </a>
+                    &gt;
+                    <a href="{/source/request/@context-path}/reports/99/output/">
+                        <xsl:value-of select="'Supplies'" />
+                    </a>
+                    &gt;
+                    <a href="{/source/request/@context-path}/reports/7/output/?supply-id={/source/supply-generation/supply/@id}">
+                    <xsl:value-of select="/source/supply/@id" />
+                    </a>
 					&gt;
 					<a
 						href="{/source/request/@context-path}/supplies/{/source/supply-generation/supply/@id}/generations/">
 						<xsl:value-of select="'Generations'" />
 					</a>
 					&gt;
-					<xsl:value-of select="concat(/source/supply-generation/@id, ' [')" />
-					<a
-						href="{/source/request/@context-path}/reports/7/output/?supply-id={/source/supply-generation/supply/@id}">
-						<xsl:value-of select="'view'" />
-					</a>
-					<xsl:value-of select="']'" />
+					<xsl:value-of select="/source/supply-generation/@id" />
 				</p>
 				<xsl:if test="//message">
 					<ul>

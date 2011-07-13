@@ -549,6 +549,19 @@ public class Invocation {
 		returnPage(doc, req.getPathInfo(), "template.xsl");
 	}
 
+	public void sendMovedPermanently(String location) throws InternalException {
+		try {
+			URI loc = new URI(location);
+			URI uri = new URI(req.getScheme(), null, req.getServerName(), req
+					.getServerPort(), req.getContextPath() + loc.getPath(), loc
+					.getQuery(), loc.getFragment());
+			sendMovedPermanently(uri);
+		} catch (URISyntaxException e) {
+			throw new InternalException(e);
+		}
+
+	}
+	
 	public void sendMovedPermanently(URI location) throws InternalException {
 		res.setHeader("Location", location.toString());
 		try {

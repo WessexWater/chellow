@@ -252,7 +252,7 @@ public class Chellow extends Monad implements Urlable {
 	}
 
 	public void httpGet(Invocation inv) throws HttpException {
-		inv.sendOk();
+		inv.sendMovedPermanently("/reports/1/output/");
 	}
 
 	public void httpPost(Invocation inv) throws HttpException {
