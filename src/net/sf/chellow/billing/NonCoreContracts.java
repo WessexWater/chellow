@@ -1,6 +1,6 @@
 /*******************************************************************************
  * 
- *  Copyright (c) 2005, 2009 Wessex Water Services Limited
+ *  Copyright (c) 2005, 2011 Wessex Water Services Limited
  *  
  *  This file is part of Chellow.
  * 
@@ -67,13 +67,13 @@ public class NonCoreContracts extends EntityList {
 		Long participantId = inv.getLong("participant-id");
 		Boolean isCore = inv.getBoolean("is-core");
 		String name = inv.getString("name");
-		Date startDate = inv.getDate("start");
+		Date startDate = inv.getDateTime("start");
 		if (!inv.isValid()) {
 			throw new UserException(document());
 		}
-		NonCoreContract contract = NonCoreContract.insertNonCoreContract(null, isCore,
-				Participant.getParticipant(participantId), name, HhStartDate
-						.roundDown(startDate), null, "", null, "");
+		NonCoreContract contract = NonCoreContract.insertNonCoreContract(null,
+				isCore, Participant.getParticipant(participantId), name,
+				HhStartDate.roundDown(startDate), null, "", null, "");
 		Hiber.commit();
 		inv.sendSeeOther(contract.getUri());
 	}
@@ -101,6 +101,8 @@ public class NonCoreContracts extends EntityList {
 		}
 		source.appendChild(MonadDate.getMonthsXml(doc));
 		source.appendChild(MonadDate.getDaysXml(doc));
+		source.appendChild(MonadDate.getHoursXml(doc));
+		source.appendChild(HhStartDate.getHhMinutesXml(doc));
 		source.appendChild(new MonadDate().toXml(doc));
 		return doc;
 	}

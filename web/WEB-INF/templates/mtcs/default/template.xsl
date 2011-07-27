@@ -54,14 +54,14 @@
 						</td>
 					</tr>
 					<tr>
-						<th>Dso</th>
+						<th>Dno</th>
 						<td>
 							<xsl:choose>
 								<xsl:when test="/source/mtc/provider">
 									<a
 										href="{/source/request/@context-path}/providers/{/source/mtc/provider/@id}/">
 										<xsl:value-of
-											select="/source/mtc/provider/@dso-code" />
+											select="/source/mtc/provider/@dno-code" />
 									</a>
 								</xsl:when>
 								<xsl:otherwise>All</xsl:otherwise>

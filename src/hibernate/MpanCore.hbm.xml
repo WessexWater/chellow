@@ -31,8 +31,8 @@
 		</id>
 		<many-to-one name="supply" class="Supply" column="supply_id"
 			not-null="true" foreign-key="fkey_mpan_core_supply" />
-		<many-to-one name="dso" class="net.sf.chellow.billing.Dso"
-			column="dso_id" unique-key="mpan_core" not-null="true" foreign-key="fkey_mpan_core_dso" />
+		<many-to-one name="dno" class="net.sf.chellow.billing.Dno"
+			column="dno_id" unique-key="mpan_core" not-null="true" foreign-key="fkey_mpan_core_dno" />
 		<property type="string" name="uniquePart" column="unique_part"
 			not-null="true" unique-key="mpan_core" />
 		<property type="character" name="checkDigit" column="check_digit"

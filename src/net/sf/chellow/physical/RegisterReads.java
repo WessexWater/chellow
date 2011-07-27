@@ -1,6 +1,6 @@
 /*******************************************************************************
  * 
- *  Copyright (c) 2005, 2009 Wessex Water Services Limited
+ *  Copyright (c) 2005, 2011 Wessex Water Services Limited
  *  
  *  This file is part of Chellow.
  * 
@@ -121,13 +121,6 @@ public class RegisterReads extends EntityList {
 		source.appendChild(readsElement);
 		readsElement.appendChild(bill.toXml(doc, new XmlTree("batch",
 				new XmlTree("contract", new XmlTree("party"))).put("supply")));
-		for (RegisterRead read : (List<RegisterRead>) Hiber
-				.session()
-				.createQuery(
-						"from RegisterRead read where read.bill = :bill order by read.tpr.code, read.presentDate.date, read.id")
-				.setEntity("bill", bill).list()) {
-			readsElement.appendChild(read.toXml(doc, new XmlTree("tpr")));
-		}
 		for (ReadType type : (List<ReadType>) Hiber.session().createQuery(
 				"from ReadType type order by type.code").list()) {
 			source.appendChild(type.toXml(doc));

@@ -64,12 +64,12 @@ with open("original/Clock_Interval.csv") as fl:
                 converted.writerow(["Chellow Id","TPR Chellow Id","Day of the Week Id","Start Day","Start Month","End Day","End Month","Start Hour","Start Minute","End Hour","End Minute"])
             id += 1
 
-dso_lookup = {}
+dno_lookup = {}
 
 with open("original/Market_Participant_Role.csv") as fl:
     f = csv.reader(fl)
-    with open("converted/Market_Participant_Role-dso.csv", "w") as fl_dso:
-        f_dso = csv.writer(fl_dso)
+    with open("converted/Market_Participant_Role-dno.csv", "w") as fl_dno:
+        f_dno = csv.writer(fl_dno)
         with open("converted/Market_Participant_Role-party.csv", "w") as fl_party:
             f_party = csv.writer(fl_party)
             with open("converted/Market_Participant_Role-provider.csv", "w") as fl_provider:
@@ -77,21 +77,21 @@ with open("original/Market_Participant_Role.csv") as fl:
                 id = 0
                 for fields in f:
                     if id > 0:
-                        dso_code = fields[-1]
-                        if len(dso_code) == 0:
+                        dno_code = fields[-1]
+                        if len(dno_code) == 0:
                             f_provider.writerow([id])
                         else:
-                            f_dso.writerow([id, dso_code])
-                            dso_lookup[fields[0]] = id
+                            f_dno.writerow([id, dno_code])
+                            dno_lookup[fields[0]] = id
                         f_party.writerow([id, table_ids['Market_Role'][fields[1]], table_ids['Market_Participant'][fields[0]], fields[4], fields[2], fields[3]])
                     else:
-                        f_dso.writerow(["Chellow Id","Distributor Short Code"])
+                        f_dno.writerow(["Chellow Id","Distributor Short Code"])
                         f_party.writerow(["Chellow Id","Market Participant Role Code Id","Market Participant Chellow Id","Address Line 1","Effective From Date {MPR}","Effective To Date {MPR}"])
                         f_provider.writerow(["Chellow Id"])
                     id += 1
-                f_party.writerow([id,22,47,"Dummy DSO 99","01/04/1996",''])
-                f_dso.writerow([id, '99'])
-                dso_lookup['CUST'] = id
+                f_party.writerow([id,22,47,"Dummy 99","01/04/1996",''])
+                f_dno.writerow([id, '99'])
+                dno_lookup['CUST'] = id
 
 voltage_levels = {
     "LV": "1",
@@ -118,21 +118,21 @@ with open("original/Line_Loss_Factor_Class.csv") as fl:
                 for pattern in ['C', 'D']:
                     if pattern in fields[6]:
                         is_import = '0'
-                converter.writerow([id, dso_lookup[fields[0]], fields[3], fields[5], vl_id, is_substation, is_import, fields[2], fields[-1]])
+                converter.writerow([id, dno_lookup[fields[0]], fields[3], fields[5], vl_id, is_substation, is_import, fields[2], fields[-1]])
             else:
-                converter.writerow(["Chellow Id","DSO Chellow Id","Line Loss Factor Class Id","Line Loss Factor Class Description","Voltage Level Id","Is Substation?","Is Import?","Effective From Settlement Date {LLFC}","Effective To Settlement Date {LLFC}"])
+                converter.writerow(["Chellow Id","DNO Chellow Id","Line Loss Factor Class Id","Line Loss Factor Class Description","Voltage Level Id","Is Substation?","Is Import?","Effective From Settlement Date {LLFC}","Effective To Settlement Date {LLFC}"])
             id += 1
-        converter.writerow([id, dso_lookup['CUST'],510,"PC 5-8 & HH HV",2,0,1,"01/04/1996",''])
+        converter.writerow([id, dno_lookup['CUST'],510,"PC 5-8 & HH HV",2,0,1,"01/04/1996",''])
         id += 1
-        converter.writerow([id, dso_lookup['CUST'],521,"Export (HV)",2,0,0,"01/04/1996",''])
+        converter.writerow([id, dno_lookup['CUST'],521,"Export (HV)",2,0,0,"01/04/1996",''])
         id += 1
-        converter.writerow([id, dso_lookup['CUST'],570,"PC 5-8 & HH LV",1,0,1,"01/04/1996",''])
+        converter.writerow([id, dno_lookup['CUST'],570,"PC 5-8 & HH LV",1,0,1,"01/04/1996",''])
         id += 1
-        converter.writerow([id, dso_lookup['CUST'],581,"Export (LV)",1,0,0,"01/04/1996",''])
+        converter.writerow([id, dno_lookup['CUST'],581,"Export (LV)",1,0,0,"01/04/1996",''])
         id += 1
-        converter.writerow([id, dso_lookup['CUST'],110,"Profile 3 Unrestricted",1,0,1,"01/04/1996",''])
+        converter.writerow([id, dno_lookup['CUST'],110,"Profile 3 Unrestricted",1,0,1,"01/04/1996",''])
         id += 1
-        converter.writerow([id, dso_lookup['CUST'],210,"Profile 4 Economy 7",1,0,1,"01/04/1996",''])
+        converter.writerow([id, dno_lookup['CUST'],210,"Profile 4 Economy 7",1,0,1,"01/04/1996",''])
             
 with open("original/Measurement_Requirement.csv") as fl:
     f = csv.reader(fl)
@@ -149,7 +149,7 @@ with open("original/Measurement_Requirement.csv") as fl:
 with open("converted/Meter_Timeswitch_Class.csv", "w") as conv:
     converted = csv.writer(conv)
     id = 0
-    converted.writerow(["Chellow Id","Chellow DSO Id","Meter Timeswitch Class Id","Meter Timeswitch Class Description","Has Related Meter?","Has Comms?","Is HH?","Meter Type Chellow Id","Meter Payment Type Chellow Id","MTC TPR Count","Effective From Settlement Date {MTC}","Effective To Settlement Date {MTC}"])
+    converted.writerow(["Chellow Id","Chellow DNO Id","Meter Timeswitch Class Id","Meter Timeswitch Class Description","Has Related Meter?","Has Comms?","Is HH?","Meter Type Chellow Id","Meter Payment Type Chellow Id","MTC TPR Count","Effective From Settlement Date {MTC}","Effective To Settlement Date {MTC}"])
     with open("original/Meter_Timeswitch_Class.csv") as orig_file:
         f = csv.reader(orig_file)
         for fields in f:
@@ -194,8 +194,8 @@ with open("converted/Meter_Timeswitch_Class.csv", "w") as conv:
                         is_hh = '1'
                     else:
                         is_hh = '0'
-                    dso_id = dso_lookup[fields[2]]
+                    dno_id = dno_lookup[fields[2]]
                     meter_type_id = table_ids['MTC_Meter_Type'][fields[6]]
                     payment_type_id = table_ids['MTC_Payment_Type'][fields[7]]
-                    converted.writerow([id, dso_id, fields[0], fields[5], has_related_meter, has_comms, is_hh, meter_type_id, payment_type_id, fields[10], fields[1], fields[4]])
+                    converted.writerow([id, dno_id, fields[0], fields[5], has_related_meter, has_comms, is_hh, meter_type_id, payment_type_id, fields[10], fields[1], fields[4]])
             id += 1

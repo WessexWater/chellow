@@ -37,30 +37,30 @@ import net.sf.chellow.monad.types.UriPathElement;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-public class Dsos implements Urlable {
+public class Dnos implements Urlable {
 	public static final UriPathElement URI_ID;
 
 	static {
 		try {
-			URI_ID = new UriPathElement("dsos");
+			URI_ID = new UriPathElement("dnos");
 		} catch (HttpException e) {
 			throw new RuntimeException(e);
 		}
 	}
 
-	public Dsos() {
+	public Dnos() {
 	}
 
 	@SuppressWarnings("unchecked")
 	public void httpGet(Invocation inv) throws HttpException {
 		Document doc = MonadUtils.newSourceDocument();
 		Element source = doc.getDocumentElement();
-		Element providersElement = doc.createElement("dsos");
+		Element providersElement = doc.createElement("dnos");
 
 		source.appendChild(providersElement);
-		for (Dso dso : (List<Dso>) Hiber.session().createQuery(
-				"from Dso dso order by dso.code").list()) {
-			providersElement.appendChild(dso.toXml(doc, new XmlTree(
+		for (Dno dno : (List<Dno>) Hiber.session().createQuery(
+				"from Dno dno order by dno.code").list()) {
+			providersElement.appendChild(dno.toXml(doc, new XmlTree(
 					"participant")));
 		}
 		inv.sendOk(doc);
@@ -74,9 +74,9 @@ public class Dsos implements Urlable {
 		return new MonadUri("/").resolve(getUriId()).append("/");
 	}
 
-	public Dso getChild(UriPathElement uriId) throws HttpException {
+	public Dno getChild(UriPathElement uriId) throws HttpException {
 		try {
-			return Dso.getDso(Long.parseLong(uriId.toString()));
+			return Dno.getDno(Long.parseLong(uriId.toString()));
 		} catch (NumberFormatException e) {
 			throw new NotFoundException();
 		}

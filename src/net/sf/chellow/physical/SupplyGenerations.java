@@ -71,7 +71,7 @@ public class SupplyGenerations extends EntityList {
 	}
 
 	public void httpPost(Invocation inv) throws HttpException {
-		Date startDate = inv.getDate("start");
+		Date startDate = inv.getDateTime("start");
 		Document doc = document();
 		if (!inv.isValid()) {
 			throw new UserException(doc);
@@ -101,13 +101,16 @@ public class SupplyGenerations extends EntityList {
 		generationsElement.appendChild(supply.toXml(doc,
 				new XmlTree("gspGroup")));
 		for (SupplyGeneration supplyGeneration : supply.getGenerations()) {
-			generationsElement.appendChild(supplyGeneration.toXml(doc,
+			generationsElement.appendChild(supplyGeneration.toXml(
+					doc,
 					new XmlTree("mpans", new XmlTree("core").put("llfc")).put(
-					"mtc").put("pc")));
+							"mtc").put("pc")));
 		}
 		source.appendChild(new MonadDate().toXml(doc));
 		source.appendChild(MonadDate.getMonthsXml(doc));
 		source.appendChild(MonadDate.getDaysXml(doc));
+		source.appendChild(MonadDate.getHoursXml(doc));
+		source.appendChild(HhStartDate.getHhMinutesXml(doc));
 		return doc;
 	}
 
@@ -116,10 +119,12 @@ public class SupplyGenerations extends EntityList {
 				.session()
 				.createQuery(
 						"from SupplyGeneration supplyGeneration where supplyGeneration.supply = :supply and supplyGeneration.id = :supplyGenerationId")
-				.setEntity("supply", supply).setLong("supplyGenerationId",
-						Long.parseLong(uriId.toString())).uniqueResult();
+				.setEntity("supply", supply)
+				.setLong("supplyGenerationId", Long.parseLong(uriId.toString()))
+				.uniqueResult();
 		if (supplyGeneration == null) {
-			throw new NotFoundException("The Supply Generation cannot be found.");
+			throw new NotFoundException(
+					"The Supply Generation cannot be found.");
 		}
 		return supplyGeneration;
 	}

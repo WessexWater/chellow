@@ -38,7 +38,7 @@
 						<tr>
 							<th>Chellow Id</th>
 							<th>Code</th>
-							<th>Dso</th>
+							<th>Dno</th>
 							<th>Description</th>
 							<th>Has Related Metering?</th>
 							<th>Has Comms?</th>
@@ -68,7 +68,7 @@
 											<a
 												href="{/source/request/@context-path}/providers/{provider/@id}/">
 												<xsl:value-of
-													select="provider/@dso-code" />
+													select="provider/@dno-code" />
 											</a>
 										</xsl:when>
 										<xsl:otherwise>

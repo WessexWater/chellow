@@ -24,7 +24,7 @@ package net.sf.chellow.physical;
 import java.text.DecimalFormat;
 import java.util.Date;
 
-import net.sf.chellow.billing.Dso;
+import net.sf.chellow.billing.Dno;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.Invocation;
@@ -41,37 +41,37 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
 public class Mtc extends PersistentEntity {
-	static public Mtc getMtc(Dso dso, String code)
+	static public Mtc getMtc(Dno dno, String code)
 			throws HttpException {
-		Mtc mtc = findMtc(dso, code);
+		Mtc mtc = findMtc(dno, code);
 		if (mtc == null) {
-			throw new UserException("There isn't a meter timeswitch with DSO '"
-					+ (dso == null ? dso : dso.getCode())
+			throw new UserException("There isn't a meter timeswitch with DNO '"
+					+ (dno == null ? dno : dno.getCode())
 					+ "' and Meter Timeswitch Code '" + code + "'");
 		}
 		return mtc;
 	}
 	
-	static public boolean hasDso(int code) {
+	static public boolean hasDno(int code) {
 		return !((code > 499 && code < 510) || (code > 799 && code < 1000));
 	}
 
-	static public Mtc findMtc(Dso dso, String codeStr) throws HttpException {
+	static public Mtc findMtc(Dno dno, String codeStr) throws HttpException {
 		int code = Integer.parseInt(codeStr);
-		dso = hasDso(code) ? dso : null;
+		dno = hasDno(code) ? dno : null;
 		Mtc mtc = null;
-		if (dso == null) {
+		if (dno == null) {
 			mtc = (Mtc) Hiber
 					.session()
 					.createQuery(
-							"from Mtc as mtc where mtc.dso is null and mtc.code = :mtcCode")
+							"from Mtc as mtc where mtc.dno is null and mtc.code = :mtcCode")
 					.setInteger("mtcCode", code).uniqueResult();
 		} else {
 			mtc = (Mtc) Hiber
 					.session()
 					.createQuery(
-							"from Mtc as mtc where mtc.dso = :dso and mtc.code = :mtcCode")
-					.setEntity("dso", dso).setInteger("mtcCode", code).uniqueResult();
+							"from Mtc as mtc where mtc.dno = :dno and mtc.code = :mtcCode")
+					.setEntity("dno", dno).setInteger("mtcCode", code).uniqueResult();
 		}
 		return mtc;
 	}
@@ -85,19 +85,19 @@ public class Mtc extends PersistentEntity {
 		return mtc;
 	}
 
-	static public Mtc insertMtc(Dso dso, String code, String description,
+	static public Mtc insertMtc(Dno dno, String code, String description,
 			boolean hasRelatedMetering, Boolean hasComms, Boolean isHh,
 			MeterType meterType, MeterPaymentType paymentType, Integer tprCount,
 			Date from, Date to) throws HttpException {
 
-		Mtc mtc = new Mtc(dso, code, description, hasRelatedMetering, hasComms,
+		Mtc mtc = new Mtc(dno, code, description, hasRelatedMetering, hasComms,
 				isHh, meterType, paymentType, tprCount, from, to);
 		Hiber.session().save(mtc);
 		Hiber.flush();
 		return mtc;
 	}
 
-	private Dso dso;
+	private Dno dno;
 
 	private int code;
 
@@ -115,11 +115,11 @@ public class Mtc extends PersistentEntity {
 	public Mtc() {
 	}
 
-	public Mtc(Dso dso, String code, String description,
+	public Mtc(Dno dno, String code, String description,
 			boolean hasRelatedMetering, Boolean hasComms, Boolean isHh,
 			MeterType meterType, MeterPaymentType paymentType, Integer tprCount,
 			Date validFrom, Date validTo) throws HttpException {
-		setDso(dso);
+		setDno(dno);
 		setCode(Integer.parseInt(code));
 		setDescription(description);
 		setHasRelatedMetering(hasRelatedMetering);
@@ -132,12 +132,12 @@ public class Mtc extends PersistentEntity {
 		setValidTo(validTo);
 	}
 
-	void setDso(Dso dso) {
-		this.dso = dso;
+	void setDno(Dno dno) {
+		this.dno = dno;
 	}
 
-	public Dso getDso() {
-		return dso;
+	public Dno getDno() {
+		return dno;
 	}
 
 	public int getCode() {
@@ -264,7 +264,7 @@ public class Mtc extends PersistentEntity {
 		Document doc = MonadUtils.newSourceDocument();
 		Element source = doc.getDocumentElement();
 
-		source.appendChild(toXml(doc, new XmlTree("dso").put("meterType").put(
+		source.appendChild(toXml(doc, new XmlTree("dno").put("meterType").put(
 				"paymentType")));
 		inv.sendOk(doc);
 	}

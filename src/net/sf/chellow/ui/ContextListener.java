@@ -44,7 +44,7 @@ import javax.servlet.ServletContextListener;
 import javax.sql.DataSource;
 
 import net.sf.chellow.billing.BillType;
-import net.sf.chellow.billing.DsoContract;
+import net.sf.chellow.billing.DnoContract;
 import net.sf.chellow.billing.NonCoreContract;
 import net.sf.chellow.monad.Debug;
 import net.sf.chellow.monad.Hiber;
@@ -126,7 +126,7 @@ public class ContextListener implements ServletContextListener {
 			context.setAttribute(CONTEXT_REQUEST_MAP,
 					Collections.synchronizedMap(new HashMap<Long, String>()));
 		} catch (Throwable e) {
-			Debug.print("Problem. " + e);
+			Debug.print("Problem. " + HttpException.getStackTraceString(e));
 			throw new RuntimeException(e);
 		} finally {
 			Hiber.close();
@@ -143,7 +143,7 @@ public class ContextListener implements ServletContextListener {
 			startupContract.callFunction("on_shut_down", args.toArray());
 			context.removeAttribute(CONTEXT_REQUEST_MAP);
 		} catch (Throwable e) {
-			Debug.print("Problem. " + e);
+			Debug.print("Problem. " + HttpException.getStackTraceString(e));
 			throw new RuntimeException(e);
 		} finally {
 			Hiber.close();
@@ -243,7 +243,7 @@ public class ContextListener implements ServletContextListener {
 					{ "participant", "Market_Participant" },
 					{ "party", "Market_Participant_Role-party" },
 					{ "provider", "Market_Participant_Role-provider" },
-					{ "dso", "Market_Participant_Role-dso" },
+					{ "dno", "Market_Participant_Role-dno" },
 					{ "llfc", "Line_Loss_Factor_Class" },
 					{ "meter_type", "MTC_Meter_Type" },
 					{ "meter_payment_type", "MTC_Payment_Type" },
@@ -280,7 +280,7 @@ public class ContextListener implements ServletContextListener {
 			throw new InternalException(e);
 		}
 		Hiber.close();
-		DsoContract.loadFromCsv(context);
+		DnoContract.loadFromCsv(context);
 		Report.loadReports(context);
 		NonCoreContract.loadNonCoreContracts(context);
 		Hiber.flush();

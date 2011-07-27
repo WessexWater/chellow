@@ -247,7 +247,7 @@ public class Supply extends PersistentEntity {
 		Supply supply = (Supply) Hiber
 				.session()
 				.createQuery(
-						"select distinct mpan.supplyGeneration.supply from Mpan mpan where mpan.dso.code.string || mpan.uniquePart.string || mpan.checkDigit.character = :core")
+						"select distinct mpan.supplyGeneration.supply from Mpan mpan where mpan.dno.code.string || mpan.uniquePart.string || mpan.checkDigit.character = :core")
 				.setString("core", core.toStringNoSpaces()).uniqueResult();
 		if (supply == null) {
 			throw new UserException("The MPAN core " + core
@@ -416,7 +416,7 @@ public class Supply extends PersistentEntity {
 		MpanCore mpanCore = (MpanCore) Hiber
 				.session()
 				.createQuery(
-						"from MpanCore mpanCore where mpanCore.supply = :supply and mpanCore.dso.code.string || mpanCore.uniquePart.string || mpanCore.checkDigit.character = :core")
+						"from MpanCore mpanCore where mpanCore.supply = :supply and mpanCore.dno.code.string || mpanCore.uniquePart.string || mpanCore.checkDigit.character = :core")
 				.setEntity("supply", this)
 				.setString("core", core.toStringNoSpaces()).uniqueResult();
 		if (mpanCore == null) {

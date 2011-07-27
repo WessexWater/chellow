@@ -71,10 +71,10 @@
 					<xsl:if
 						test="/source/provider/market-role/@code='R'">
 						<tr>
-							<th>DSO Code</th>
+							<th>DNO Code</th>
 							<td>
 								<xsl:value-of
-									select="/source/provider/@dso-code" />
+									select="/source/provider/@dno-code" />
 							</td>
 						</tr>
 					</xsl:if>

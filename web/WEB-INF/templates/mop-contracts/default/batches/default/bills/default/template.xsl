@@ -20,41 +20,30 @@
 			</head>
 			<body>
 				<p>
-					<a href="{/source/request/@context-path}/">
-						<img src="{/source/request/@context-path}/logo/" />
-						<span class="logo">Chellow</span>
+					<a href="{/source/request/@context-path}/reports/1/output/">
+						<xsl:value-of select="'Chellow'" />
 					</a>
 					&gt;
-					<a href="{/source/request/@context-path}/mop-contracts/">
+					<a href="{/source/request/@context-path}/reports/185/output/">
 						<xsl:value-of select="'MOP Contracts'" />
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/mop-contracts/{/source/bill/batch/mop-contract/@id}/">
+						href="{/source/request/@context-path}/reports/107/output/?mop-contract-id={/source/bill/batch/mop-contract/@id}">
 						<xsl:value-of select="/source/bill/batch/mop-contract/@name" />
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/mop-contracts/{/source/bill/batch/mop-contract/@id}/batches/">
+						href="{/source/request/@context-path}/reports/191/output/?mop-contract-id={/source/bill/batch/mop-contract/@id}">
 						<xsl:value-of select="'Batches'" />
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/mop-contracts/{/source/bill/batch/mop-contract/@id}/batches/{/source/bill/batch/@id}/">
+						href="{/source/request/@context-path}/reports/193/output/?batch-id={/source/bill/batch/@id}">
 						<xsl:value-of select="/source/bill/batch/@reference" />
 					</a>
 					&gt;
-					<a
-						href="{/source/request/@context-path}/mop-contracts/{/source/bill/batch/mop-contract/@id}/batches/{/source/bill/batch/@id}/bills/">
-						<xsl:value-of select="'Bills'" />
-					</a>
-					&gt;
-					<xsl:value-of select="concat(/source/bill/@id, ' [')" />
-					<a
-						href="{/source/request/@context-path}/reports/7/output/?supply-id={/source/bill/supply/@id}">
-						<xsl:value-of select="'view'" />
-					</a>
-					<xsl:value-of select="']'" />
+					<xsl:value-of select="concat('Bill ', /source/bill/@id)" />
 				</p>
 				<xsl:if test="//message">
 					<ul>

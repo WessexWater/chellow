@@ -24,47 +24,36 @@
 
 			<body>
 				<p>
-					<a href="{/source/request/@context-path}/">
-						<img src="{/source/request/@context-path}/logo/" />
-						<span class="logo">Chellow</span>
+					<a href="{/source/request/@context-path}/reports/1/output/">
+						<xsl:value-of select="'Chellow'" />
 					</a>
 					&gt;
-					<a href="{/source/request/@context-path}/supplier-contracts/">
+					<a href="{/source/request/@context-path}/reports/75/output/">
 						<xsl:value-of select="'Supplier Contracts'" />
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/supplier-contracts/{/source/register-reads/bill/batch/supplier-contract/@id}/">
+						href="{/source/request/@context-path}/reports/77/output/?supplier-contract-id={/source/register-reads/bill/batch/supplier-contract/@id}">
 						<xsl:value-of
 							select="/source/register-reads/bill/batch/supplier-contract/@name" />
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/supplier-contracts/{/source/register-reads/bill/batch/supplier-contract/@id}/batches/">
+						href="{/source/request/@context-path}/reports/89/output/?supplier-contract-id={/source/register-reads/bill/batch/supplier-contract/@id}">
 						<xsl:value-of select="'Batches'" />
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/supplier-contracts/{/source/register-reads/bill/batch/supplier-contract/@id}/batches/{/source/register-reads/bill/batch/@id}/">
+						href="{/source/request/@context-path}/reports/91/output/?batch-id={/source/register-reads/bill/batch/@id}">
 						<xsl:value-of select="/source/register-reads/bill/batch/@reference" />
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/supplier-contracts/{/source/register-reads/bill/batch/supplier-contract/@id}/batches/{/source/register-reads/bill/batch/@id}/bills/">
-						<xsl:value-of select="'Bills'" />
+						href="{/source/request/@context-path}/reports/105/output/?bill-id={/source/register-reads/bill/@id}">
+						<xsl:value-of select="concat('Bill ', /source/register-reads/bill/@id)" />
 					</a>
 					&gt;
-					<a
-						href="{/source/request/@context-path}/supplier-contracts/{/source/register-reads/bill/batch/supplier-contract/@id}/batches/{/source/register-reads/bill/batch/@id}/bills/{/source/register-reads/bill/@id}/">
-						<xsl:value-of select="/source/register-reads/bill/@id" />
-					</a>
-					&gt;
-					<xsl:value-of select="'Reads ['" />
-					<a
-						href="{/source/request/@context-path}/reports/7/output/?supply-id={/source/register-reads/bill/supply/@id}">
-						<xsl:value-of select="'view'" />
-					</a>
-					<xsl:value-of select="']'" />
+					<xsl:value-of select="'Reads'" />
 				</p>
 				<xsl:if test="//message">
 					<ul>
@@ -75,75 +64,6 @@
 						</xsl:for-each>
 					</ul>
 				</xsl:if>
-				<br />
-				<table>
-					<thead>
-						<tr>
-							<th rowspan="2">Chellow Id</th>
-							<th rowspan="2">MPAN</th>
-							<th rowspan="2">Coefficient</th>
-							<th rowspan="2">Units</th>
-							<th rowspan="2">TPR</th>
-							<th rowspan="2">Meter Serial Number</th>
-							<th colspan="3">Previous</th>
-							<th colspan="3">Present</th>
-						</tr>
-						<tr>
-							<th>Date</th>
-							<th>Value</th>
-							<th>Type</th>
-							<th>Date</th>
-							<th>Value</th>
-							<th>Type</th>
-						</tr>
-					</thead>
-					<xsl:for-each select="/source/register-reads/register-read">
-						<tr>
-							<td>
-								<a href="{@id}/">
-									<xsl:value-of select="@id" />
-								</a>
-							</td>
-							<td>
-								<xsl:value-of select="@mpan-str" />
-							</td>
-							<td>
-								<xsl:value-of select="@coefficient" />
-							</td>
-							<td>
-								<xsl:value-of select="@units" />
-							</td>
-							<td>
-								<a href="{/source/request/@context-path}/tprs/{tpr/@id}/">
-									<xsl:value-of select="tpr/@code" />
-								</a>
-							</td>
-							<td>
-								<xsl:value-of select="@meter-serial-number" />
-							</td>
-							<td>
-								<xsl:value-of
-									select="concat(hh-start-date[@label='previous']/@year, '-', hh-start-date[@label='previous']/@month, '-', hh-start-date[@label='previous']/@day)" />
-							</td>
-							<td>
-								<xsl:value-of select="@previous-value" />
-							</td>
-							<td>
-								<xsl:value-of select="read-type[@label='previous']/@code" />
-							</td>
-							<td>
-								<xsl:value-of
-									select="concat(hh-start-date[@label='present']/@year, '-', hh-start-date[@label='present']/@month, '-', hh-start-date[@label='present']/@day)" />
-							</td>
-							<td>
-								<xsl:value-of select="@present-value" />
-							</td>
-							<td>
-								<xsl:value-of select="read-type[@label='present']/@code" />
-							</td>
-						</tr>
-					</xsl:for-each>
-				</table>
 				<br />
 				<form action="." method="post">
 					<fieldset>

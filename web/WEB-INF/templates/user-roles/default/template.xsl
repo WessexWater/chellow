@@ -2,8 +2,8 @@
 <xsl:stylesheet version="1.0"
 	xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
 	<xsl:output method="html" encoding="US-ASCII"
-		doctype-public="-//W3C//DTD HTML 4.01//EN"
-		doctype-system="http://www.w3.org/TR/html4/strict.dtd" indent="yes" />
+		doctype-public="-//W3C//DTD HTML 4.01//EN" doctype-system="http://www.w3.org/TR/html4/strict.dtd"
+		indent="yes" />
 	<xsl:template match="/">
 		<html>
 			<head>
@@ -16,18 +16,14 @@
 			</head>
 			<body>
 				<p>
-					<a href="{/source/request/@context-path}/">
-						<img src="{/source/request/@context-path}/logo/"
-							alt="Chellow Logo" />
-						<span class="logo">Chellow</span>
+					<a href="{/source/request/@context-path}/reports/1/output/">
+						<xsl:value-of select="'Chellow'" />
 					</a>
-					<xsl:value-of select="' &gt; '" />
-					<a
-						href="{/source/request/@context-path}/user-roles/">
+					&gt;
+					<a href="{/source/request/@context-path}/user-roles/">
 						<xsl:value-of select="'User Roles'" />
 					</a>
-					<xsl:value-of
-						select="concat(' &gt; ', /source/user-role/@code)" />
+					<xsl:value-of select="concat(' &gt; ', /source/user-role/@code)" />
 				</p>
 				<xsl:if test="//message">
 					<ul>
@@ -42,15 +38,13 @@
 					<tr>
 						<th>Chellow Id</th>
 						<td>
-							<xsl:value-of
-								select="/source/user-role/@id" />
+							<xsl:value-of select="/source/user-role/@id" />
 						</td>
 					</tr>
 					<tr>
 						<th>Code</th>
 						<td>
-							<xsl:value-of
-								select="/source/user-role/@code" />
+							<xsl:value-of select="/source/user-role/@code" />
 						</td>
 					</tr>
 				</table>

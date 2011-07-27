@@ -299,7 +299,7 @@ public class Batch extends PersistentEntity {
 		List<Supply> supplyList = (List<Supply>) Hiber
 				.session()
 				.createQuery(
-						"select mpan.supplyGeneration.supply from Mpan mpan where ((mpan.supplierContract = :contract and mpan.supplierAccount = :account) or (mpan.supplyGeneration.hhdcContract = :contract and mpan.supplyGeneration.hhdcAccount = :account) or (mpan.supplyGeneration.mopContract = :contract and mpan.supplyGeneration.mopAccount = :account)) order by mpan.core.dso.code, mpan.core.uniquePart")
+						"select mpan.supplyGeneration.supply from Mpan mpan where ((mpan.supplierContract = :contract and mpan.supplierAccount = :account) or (mpan.supplyGeneration.hhdcContract = :contract and mpan.supplyGeneration.hhdcAccount = :account) or (mpan.supplyGeneration.mopContract = :contract and mpan.supplyGeneration.mopAccount = :account)) order by mpan.core.dno.code, mpan.core.uniquePart")
 				.setEntity("contract", getContract())
 				.setString("account", account).list();
 		if (supplyList.isEmpty()) {

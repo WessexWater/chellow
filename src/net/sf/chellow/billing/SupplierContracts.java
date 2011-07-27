@@ -69,7 +69,7 @@ public class SupplierContracts extends EntityList {
 	public void httpPost(Invocation inv) throws HttpException {
 		Long participantId = inv.getLong("participant-id");
 		String name = inv.getString("name");
-		Date startDate = inv.getDate("start");
+		Date startDate = inv.getDateTime("start");
 		if (!inv.isValid()) {
 			throw new UserException(document());
 		}
@@ -93,13 +93,6 @@ public class SupplierContracts extends EntityList {
 		Element source = doc.getDocumentElement();
 		Element contractsElement = toXml(doc);
 		source.appendChild(contractsElement);
-		for (SupplierContract contract : (List<SupplierContract>) Hiber
-				.session()
-				.createQuery(
-						"from SupplierContract contract order by contract.name")
-				.list()) {
-			contractsElement.appendChild(contract.toXml(doc));
-		}
 		for (Provider provider : (List<Provider>) Hiber
 				.session()
 				.createQuery(
@@ -109,6 +102,8 @@ public class SupplierContracts extends EntityList {
 		}
 		source.appendChild(MonadDate.getMonthsXml(doc));
 		source.appendChild(MonadDate.getDaysXml(doc));
+		source.appendChild(MonadDate.getHoursXml(doc));
+		source.appendChild(HhStartDate.getHhMinutesXml(doc));
 		source.appendChild(new MonadDate().toXml(doc));
 		return doc;
 	}

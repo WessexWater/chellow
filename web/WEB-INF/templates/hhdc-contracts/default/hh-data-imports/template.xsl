@@ -17,17 +17,16 @@
 			</head>
 			<body>
 				<p>
-					<a href="{/source/request/@context-path}/">
-						<img src="{/source/request/@context-path}/logo/" />
-						<span class="logo">Chellow</span>
+					<a href="{/source/request/@context-path}/reports/1/output/">
+						<xsl:value-of select="'Chellow'" />
 					</a>
 					&gt;
-					<a href="{/source/request/@context-path}/hhdc-contracts/">
+					<a href="{/source/request/@context-path}/reports/113/output/">
 						<xsl:value-of select="'HHDC Contracts'" />
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/hhdc-contracts/{/source/hh-data-imports/hhdc-contract/@id}/">
+						href="{/source/request/@context-path}/reports/115/output/?hhdc-contract-id={/source/hh-data-imports/hhdc-contract/@id}">
 						<xsl:value-of select="/source/hh-data-imports/hhdc-contract/@name" />
 					</a>
 					&gt; HH Data Imports

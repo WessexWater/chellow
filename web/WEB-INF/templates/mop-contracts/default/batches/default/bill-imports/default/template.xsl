@@ -25,27 +25,26 @@
 			</head>
 			<body>
 				<p>
-					<a href="{/source/request/@context-path}/">
-						<img src="{/source/request/@context-path}/logo/" />
-						<span class="logo">Chellow</span>
+					<a href="{/source/request/@context-path}/reports/1/output/">
+						<xsl:value-of select="'Chellow'" />
 					</a>
 					&gt;
-					<a href="{/source/request/@context-path}/mop-contracts/">
+					<a href="{/source/request/@context-path}/reports/185/output/">
 						<xsl:value-of select="'MOP Contracts'" />
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/mop-contracts/{/source/bill-import/batch/mop-contract/@id}/">
+						href="{/source/request/@context-path}/reports/107/output/?mop-contract-id={/source/bill-import/batch/mop-contract/@id}">
 						<xsl:value-of select="/source/bill-import/batch/mop-contract/@name" />
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/mop-contracts/{/source/bill-import/batch/mop-contract/@id}/batches/">
+						href="{/source/request/@context-path}/reports/191/output/?mop-contract-id={/source/bill-import/batch/mop-contract/@id}">
 						<xsl:value-of select="'Batches'" />
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/mop-contracts/{/source/bill-import/batch/mop-contract/@id}/batches/{/source/bill-import/batch/@id}/">
+						href="{/source/request/@context-path}/reports/193/output/?batch-id={/source/bill-import/batch/@id}">
 						<xsl:value-of select="/source/bill-import/batch/@reference" />
 					</a>
 					&gt;

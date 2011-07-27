@@ -99,7 +99,7 @@ public class MeasurementRequirement extends PersistentEntity {
 		Document doc = MonadUtils.newSourceDocument();
 		Element source = doc.getDocumentElement();
 
-		source.appendChild(toXml(doc, new XmlTree("dso")));
+		source.appendChild(toXml(doc, new XmlTree("dno")));
 		inv.sendOk(doc);
 	}
 

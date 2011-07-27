@@ -1,6 +1,6 @@
 /*******************************************************************************
  * 
- *  Copyright (c) 2005, 2009 Wessex Water Services Limited
+ *  Copyright (c) 2005, 2011 Wessex Water Services Limited
  *  
  *  This file is part of Chellow.
  * 
@@ -68,15 +68,15 @@ public class HhdcContracts extends EntityList {
 	public void httpPost(Invocation inv) throws HttpException {
 		Long participantId = inv.getLong("participant-id");
 		String name = inv.getString("name");
-		Date startDate = inv.getDate("start");
+		Date startDate = inv.getDateTime("start");
 		if (!inv.isValid()) {
 			throw new UserException(document());
 		}
 		try {
 			HhdcContract contract = HhdcContract.insertHhdcContract(null,
 					Participant.getParticipant(participantId), name,
-					HhStartDate.roundDown(startDate).getNext(), null, "", "",
-					"", null, "");
+					HhStartDate.roundDown(startDate), null, "", "", "", null,
+					"");
 			Hiber.commit();
 			inv.sendSeeOther(contract.getUri());
 		} catch (UserException e) {
@@ -91,14 +91,6 @@ public class HhdcContracts extends EntityList {
 		Element source = doc.getDocumentElement();
 		Element contractsElement = toXml(doc);
 		source.appendChild(contractsElement);
-		for (HhdcContract contract : (List<HhdcContract>) Hiber
-				.session()
-				.createQuery(
-						"from HhdcContract contract order by contract.name")
-				.list()) {
-			contractsElement.appendChild(contract.toXml(doc, new XmlTree(
-					"party")));
-		}
 		for (Provider provider : (List<Provider>) Hiber
 				.session()
 				.createQuery(
@@ -108,6 +100,8 @@ public class HhdcContracts extends EntityList {
 		}
 		source.appendChild(MonadDate.getMonthsXml(doc));
 		source.appendChild(MonadDate.getDaysXml(doc));
+		source.appendChild(MonadDate.getHoursXml(doc));
+		source.appendChild(HhStartDate.getHhMinutesXml(doc));
 		source.appendChild(new MonadDate().toXml(doc));
 		return doc;
 	}

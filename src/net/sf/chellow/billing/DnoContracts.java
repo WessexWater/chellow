@@ -1,6 +1,6 @@
 /*******************************************************************************
  * 
- *  Copyright (c) 2005, 2009 Wessex Water Services Limited
+ *  Copyright (c) 2005, 2011 Wessex Water Services Limited
  *  
  *  This file is part of Chellow.
  * 
@@ -22,7 +22,6 @@
 package net.sf.chellow.billing;
 
 import java.util.Date;
-import java.util.List;
 
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
@@ -39,7 +38,7 @@ import net.sf.chellow.physical.HhStartDate;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-public class DsoContracts extends EntityList {
+public class DnoContracts extends EntityList {
 	public static final UriPathElement URI_ID;
 
 	static {
@@ -50,10 +49,10 @@ public class DsoContracts extends EntityList {
 		}
 	}
 
-	private Dso dso;
+	private Dno dno;
 
-	public DsoContracts(Dso dso) {
-		this.dso = dso;
+	public DnoContracts(Dno dno) {
+		this.dno = dno;
 	}
 
 	public UriPathElement getUrlId() {
@@ -61,7 +60,7 @@ public class DsoContracts extends EntityList {
 	}
 
 	public MonadUri getUri() throws HttpException {
-		return dso.getUri().resolve(getUrlId()).append("/");
+		return dno.getUri().resolve(getUrlId()).append("/");
 	}
 
 	public void httpPost(Invocation inv) throws HttpException {
@@ -71,28 +70,22 @@ public class DsoContracts extends EntityList {
 		if (!inv.isValid()) {
 			throw new UserException(document());
 		}
-		DsoContract contract = dso.insertContract(null, name, new HhStartDate(
+		DnoContract contract = dno.insertContract(null, name, new HhStartDate(
 				startDate), null, "", null, "");
 		Hiber.commit();
 		inv.sendSeeOther(contract.getUri());
 	}
 
-	@SuppressWarnings("unchecked")
 	private Document document() throws HttpException {
 		Document doc = MonadUtils.newSourceDocument();
 		Element source = doc.getDocumentElement();
 		Element contractsElement = toXml(doc);
 		source.appendChild(contractsElement);
-		contractsElement.appendChild(dso.toXml(doc));
-		for (DsoContract contract : (List<DsoContract>) Hiber
-				.session()
-				.createQuery(
-						"from DsoContract contract where contract.party = :dso order by contract.finishRateScript.finishDate.date desc")
-				.setEntity("dso", dso).list()) {
-			contractsElement.appendChild(contract.toXml(doc));
-		}
+		contractsElement.appendChild(dno.toXml(doc));
 		source.appendChild(MonadDate.getMonthsXml(doc));
 		source.appendChild(MonadDate.getDaysXml(doc));
+		source.appendChild(MonadDate.getHoursXml(doc));
+		source.appendChild(HhStartDate.getHhMinutesXml(doc));
 		source.appendChild(new MonadDate().toXml(doc));
 		return doc;
 	}
@@ -101,12 +94,12 @@ public class DsoContracts extends EntityList {
 		inv.sendOk(document());
 	}
 
-	public DsoContract getChild(UriPathElement uriId) throws HttpException {
-		DsoContract contract = (DsoContract) Hiber
+	public DnoContract getChild(UriPathElement uriId) throws HttpException {
+		DnoContract contract = (DnoContract) Hiber
 				.session()
 				.createQuery(
-						"from DsoContract contract where contract.party = :dso and contract.id = :contractId")
-				.setEntity("dso", dso).setLong("contractId",
+						"from DnoContract contract where contract.party = :dno and contract.id = :contractId")
+				.setEntity("dno", dno).setLong("contractId",
 						Long.parseLong(uriId.getString())).uniqueResult();
 		if (contract == null) {
 			throw new NotFoundException();
@@ -115,7 +108,7 @@ public class DsoContracts extends EntityList {
 	}
 
 	public Element toXml(Document doc) throws HttpException {
-		Element contractsElement = doc.createElement("dso-contracts");
+		Element contractsElement = doc.createElement("dno-contracts");
 		return contractsElement;
 	}
 }

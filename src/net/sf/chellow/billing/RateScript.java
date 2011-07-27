@@ -71,15 +71,15 @@ public class RateScript extends PersistentEntity {
 		}
 	}
 
-	public static void generalImportDso(String action, String[] values,
+	public static void generalImportDno(String action, String[] values,
 			Element csvElement) throws HttpException {
 		if (action.equals("insert")) {
-			String dsoCode = GeneralImport.addField(csvElement, "Dso Code",
+			String dnoCode = GeneralImport.addField(csvElement, "Dno Code",
 					values, 0);
-			Dso dso = Dso.getDso(dsoCode);
+			Dno dno = Dno.getDno(dnoCode);
 			String contractName = GeneralImport.addField(csvElement,
 					"Contract Name", values, 1);
-			DsoContract contract = dso.getContract(contractName);
+			DnoContract contract = dno.getContract(contractName);
 			String idStr = GeneralImport.addField(csvElement, "Id", values, 2);
 			Long id = null;
 			if (idStr.length() > 0) {

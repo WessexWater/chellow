@@ -13147,8 +13147,8 @@ class SiteSource(DataSource):
         self.is_site = True
         self.is_displaced = True
         mpan_core = mpan.getCore()
-        dso = mpan_core.getDso()
-        self.dso_code = dso.getCode()
+        dno = mpan_core.getDno()
+        self.dno_code = dno.getCode()
         llfc = mpan.getLlfc()
         self.llfc_code = str(llfc)
         self.is_import = llfc.getIsImport()
@@ -13286,10 +13286,10 @@ class SiteSource(DataSource):
             utc_day = utc_cal.get(Calendar.DAY_OF_MONTH)
             hh_data.append({'status': 'E', 'hist-start-date': history_finish.getDate(), 'status': 'E', 'hist-import-net-kwh': 0, 'hist-import-net-kvarh': 0, 'hist-export-net-kwh': 0, 'hist-export-net-kvarh': 0, 'hist-import-gen-kwh': 0, 'hist-export-gen-kwh': 0, 'hist-import-3rd-party-kwh': 0, 'hist-export-3rd-party-kwh': 0, 'hist-kwh': 0, 'msp-kwh': 0, 'msp-kw': 0, 'export-net-kwh': 0, 'import-gen-kwh': 0, 'export-gen-kwh': 0, 'hist-used-kwh': 0, 'hist-kvarh': 0, 'imp-msp-kvarh': 0, 'imp-msp-kvar': 0, 'exp-msp-kvarh': 0, 'exp-msp-kvar': 0, 'used-kwh': 0, 'import-net-kwh': 0, 'import-3rd-party-kwh': 0, 'export-3rd-party-kwh': 0, 'used-3rd-party-kwh': 0, 'start-date': finish_date.getDate(), 'ct-day': ct_cal.get(5), 'utc-month': utc_cal.get(2), 'utc-day': utc_day, 'utc-hour': utc_cal.get(Calendar.HOUR_OF_DAY), 'utc-decimal-hour': utc_cal.get(11) + float(utc_cal.get(12)) / 60, 'utc-minute': utc_cal.get(Calendar.MINUTE), 'ct-month': ct_cal.get(2), 'ct-decimal-hour': ct_cal.get(11) + ct_cal.get(12) / 60, 'ct-day-of-week': ct_cal.get(7), 'utc-day-of-week': utc_cal.get(7), 'utc-is-bank-holiday': utc_day in bank_holidays})
         if self.is_displaced and self.pc_code == '00' and self.is_import:
-            dso_contract = get_dso_contract(self.dso_code, start_date, self.pw)
-            #s elf.pw.println('start date ' + str(start_date) + ' dso contract ' + str(dso_contract.getId()) + ' finish date ' + str(HhStartDate(finish_date.getDate())) + ' start ' + str(HhStartDate(hh_data[-1]['start-date'])))
-            summary['dso-bill'] = {'problem': ''}
-            contract_function(dso_contract, 'hh')(summary, hh_data, self)
+            dno_contract = get_dno_contract(self.dno_code, start_date, self.pw)
+            #s elf.pw.println('start date ' + str(start_date) + ' dno contract ' + str(dno_contract.getId()) + ' finish date ' + str(HhStartDate(finish_date.getDate())) + ' start ' + str(HhStartDate(hh_data[-1]['start-date'])))
+            summary['dno-bill'] = {'problem': ''}
+            contract_function(dno_contract, 'hh')(summary, hh_data, self)
             #s elf.pw.println('got after')
             datum_list = list(datum['gsp-kwh'] for datum in hh_data)
             summary['sum-gsp-kwh'] = sum(datum_list)
@@ -13347,7 +13347,7 @@ class SupplySource(DataSource):
         self.voltage_level = self.llfc.getVoltageLevel()
         self.voltage_level_code = self.voltage_level.getCode()
         self.is_substation = self.llfc.getIsSubstation()
-        self.dso_code = self.mpan_core.getDso().getCode()
+        self.dno_code = self.mpan_core.getDno().getCode()
         self.availability = mpan.getAgreedSupplyCapacity()
         self.is_new = False
         self.supplier_account = mpan.getSupplierAccount()
@@ -13796,11 +13796,11 @@ class SupplySource(DataSource):
             datum.update({'status': 'E', 'used-kwh': 0, 'hist-kwh': 0, 'msp-kwh': 0, 'gsp-kwh': 0, 'msp-kw': 0,'anti-msp-kw': 0,'anti-msp-kwh': 0, 'imp-msp-kvarh': 0, 'imp-msp-kvar': 0, 'exp-msp-kvarh': 0, 'exp-msp-kvar': 0})
             data_hh.append(datum)
 
-        #s elf.pw.println("whole data: starting dso hh, " + str(System.currentTimeMillis()))
+        #s elf.pw.println("whole data: starting dno hh, " + str(System.currentTimeMillis()))
         if self.pc_code == '00':
-            dso_contract = get_dso_contract(self.dso_code, start_date, self.pw)
-            summary['dso-bill'] = {'problem': ''}
-            contract_function(dso_contract, 'hh')(summary, data_hh, self)
+            dno_contract = get_dno_contract(self.dno_code, start_date, self.pw)
+            summary['dno-bill'] = {'problem': ''}
+            contract_function(dno_contract, 'hh')(summary, data_hh, self)
             summary['sum-gsp-kwh'] = sum(datum['gsp-kwh'] for datum in data_hh)
             summary['max-gsp-kwh'] = max(datum['gsp-kwh'] for datum in data_hh)
             #s elf.pw.println("whole data: about to do tlms, " + str(System.currentTimeMillis()))
@@ -13818,8 +13818,8 @@ class SupplySource(DataSource):
 
 
 
-def get_dso_contract(dso_code, date, pw):
-    return Hiber.session().createQuery("select distinct contract from DsoContract contract join contract.rateScripts script where contract.party.code = :dsoCode and contract.name like 'main%' and script.startDate.date <= :date and (script.finishDate.date is null or script.finishDate.date >= :date)").setString('dsoCode', dso_code).setTimestamp('date', date.getDate()).uniqueResult()
+def get_dno_contract(dno_code, date, pw):
+    return Hiber.session().createQuery("select distinct contract from DnoContract contract join contract.rateScripts script where contract.party.code = :dnoCode and contract.name like 'main%' and script.startDate.date <= :date and (script.finishDate.date is null or script.finishDate.date >= :date)").setString('dnoCode', dno_code).setTimestamp('date', date.getDate()).uniqueResult()
 
 
 def site_source(site, start_date, finish_date, forecast_date, comterp, pw):
@@ -17676,8 +17676,8 @@ def get_triad_dates(date, data_source):
     return data_source.rate(rate_script, 'triad_dates')
 
 
-def triad(bill, dso_contract, month_begin, month_end, data_source, rate_period='monthly'):
-     #data_source.pw.println("starting triad " + str(System.currentTimeMillis() - timing) + "month begin " + str(month_begin) + " month end " + str(month_end) + " " + str(dso_contract.getId()))
+def triad(bill, dno_contract, month_begin, month_end, data_source, rate_period='monthly'):
+     #data_source.pw.println("starting triad " + str(System.currentTimeMillis() - timing) + "month begin " + str(month_begin) + " month end " + str(month_end) + " " + str(dno_contract.getId()))
 
 
     triad_rates_contract = NonCoreContract.getNonCoreContract('triad-rates')
@@ -17804,11 +17804,11 @@ def triad_calc(bill, prefix, triad_rates_contract, triad_data, financial_year_st
             finish_month = cal.get(Calendar.MONTH)
             if finish_month < Calendar.APRIL:
                 finish_month += 12
-            tot_rate += float(finish_month - start_month + 1) * data_source.rate(rate_script, 'hh_demand_gbp_per_kw')[data_source.dso_code]
+            tot_rate += float(finish_month - start_month + 1) * data_source.rate(rate_script, 'hh_demand_gbp_per_kw')[data_source.dno_code]
         rate = tot_rate / float(12)
     else:
         rate_script = triad_rates_contract.rateScript(month_begin)
-        rate = data_source.rate(rate_script, 'hh_demand_gbp_per_kw')[data_source.dso_code]
+        rate = data_source.rate(rate_script, 'hh_demand_gbp_per_kw')[data_source.dno_code]
 
     bill[prefix + '-rate'] = rate]]></value>
         <value><![CDATA[147]]></value>

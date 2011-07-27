@@ -32,34 +32,24 @@
 					</ul>
 				</xsl:if>
 				<p>
-					<a href="{/source/request/@context-path}/">
-						<img src="{/source/request/@context-path}/logo/" />
-						<span class="logo">Chellow</span>
+					<a href="{/source/request/@context-path}/reports/1/output/">
+						<xsl:value-of select="'Chellow'" />
 					</a>
 					&gt;
-					<a href="{/source/request/@context-path}/supplies/">
+					<a href="{/source/request/@context-path}/reports/99/output/">
 						<xsl:value-of select="'Supplies'" />
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/supplies/{/source/channel-snag/channel/supply-generation/supply/@id}/">
+						href="{/source/request/@context-path}/reports/7/output/?supply-id={/source/channel-snag/channel/supply-generation/supply/@id}">
 						<xsl:value-of
 							select="/source/channel-snag/channel/supply-generation/supply/@id" />
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/supplies/{/source/channel-snag/channel/supply-generation/supply/@id}/generations/">
-						<xsl:value-of select="'Generations'" />
-					</a>
-					&gt;
-					<a
-						href="{/source/request/@context-path}/supplies/{/source/channel-snag/channel/supply-generation/supply/@id}/generations/{/source/channel-snag/channel/supply-generation/@id}/">
-						<xsl:value-of select="/source/channel-snag/channel/supply-generation/@id" />
-					</a>
-					&gt;
-					<a
 						href="{/source/request/@context-path}/supplies/{/source/channel-snag/channel/supply-generation/supply/@id}/generations/{/source/channel-snag/channel/supply-generation/@id}/channels/">
-						<xsl:value-of select="'Channels'" />
+						<xsl:value-of
+							select="concat('Generation ', /source/channel-snag/channel/supply-generation/@id, ' channels')" />
 					</a>
 					&gt;
 					<a
@@ -72,12 +62,7 @@
 						<xsl:value-of select="'Snags'" />
 					</a>
 					&gt;
-					<xsl:value-of select="concat(/source/channel-snag/@id, ' [')" />
-					<a
-						href="{/source/request/@context-path}/reports/117/output/?snag-id={/source/channel-snag/@id}">
-						<xsl:value-of select="'view'" />
-					</a>
-					<xsl:value-of select="']'" />
+					<xsl:value-of select="/source/channel-snag/@id" />
 				</p>
 				<br />
 				<table>
@@ -111,11 +96,13 @@
 						<th>Finish Date</th>
 						<td>
 							<xsl:choose>
-							<xsl:when test="source/channel-snag/hh-start-date[@label='finish']">
-								<xsl:value-of
-									select="concat(/source/channel-snag/hh-start-date[@label='finish']/@year, '-', /source/channel-snag/hh-start-date[@label='finish']/@month, '-', /source/channel-snag/hh-start-date[@label='finish']/@day, 'T', /source/channel-snag/hh-start-date[@label='finish']/@hour, ':', /source/channel-snag/hh-start-date[@label='finish']/@minute, 'Z')" />
-									</xsl:when>
-							<xsl:otherwise>Ongoing</xsl:otherwise>
+								<xsl:when test="source/channel-snag/hh-start-date[@label='finish']">
+									<xsl:value-of
+										select="concat(/source/channel-snag/hh-start-date[@label='finish']/@year, '-', /source/channel-snag/hh-start-date[@label='finish']/@month, '-', /source/channel-snag/hh-start-date[@label='finish']/@day, 'T', /source/channel-snag/hh-start-date[@label='finish']/@hour, ':', /source/channel-snag/hh-start-date[@label='finish']/@minute, 'Z')" />
+								</xsl:when>
+								<xsl:otherwise>
+									Ongoing
+								</xsl:otherwise>
 							</xsl:choose>
 						</td>
 					</tr>

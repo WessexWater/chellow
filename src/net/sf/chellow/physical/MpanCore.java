@@ -21,7 +21,7 @@
 
 package net.sf.chellow.physical;
 
-import net.sf.chellow.billing.Dso;
+import net.sf.chellow.billing.Dno;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.InternalException;
@@ -53,14 +53,14 @@ public class MpanCore extends PersistentEntity {
 		return (MpanCore) Hiber
 		.session()
 		.createQuery(
-				"from MpanCore mpanCore where mpanCore.dso = :dso and mpanCore.uniquePart = :uniquePart")
-		.setEntity("dso", raw.getDso()).setString("uniquePart",
+				"from MpanCore mpanCore where mpanCore.dno = :dno and mpanCore.uniquePart = :uniquePart")
+		.setEntity("dno", raw.getDno()).setString("uniquePart",
 				raw.getUniquePart()).uniqueResult();
 	}
 
 	private Supply supply;
 
-	private Dso dso;
+	private Dno dno;
 
 	private String uniquePart;
 
@@ -76,7 +76,7 @@ public class MpanCore extends PersistentEntity {
 
 	public void update(String core) throws HttpException {
 		MpanCoreRaw coreRaw = new MpanCoreRaw(core);
-		this.dso = coreRaw.getDso();
+		this.dno = coreRaw.getDno();
 		this.uniquePart = coreRaw.getUniquePart();
 		this.checkDigit = coreRaw.getCheckDigit();
 	}
@@ -89,12 +89,12 @@ public class MpanCore extends PersistentEntity {
 		this.supply = supply;
 	}
 
-	public Dso getDso() {
-		return dso;
+	public Dno getDno() {
+		return dno;
 	}
 
-	protected void setDso(Dso dso) {
-		this.dso = dso;
+	protected void setDno(Dno dno) {
+		this.dno = dno;
 	}
 
 	public String getUniquePart() {
@@ -114,7 +114,7 @@ public class MpanCore extends PersistentEntity {
 	}
 
 	public MpanCoreRaw getCore() throws HttpException {
-		return new MpanCoreRaw(dso.getCode() + uniquePart
+		return new MpanCoreRaw(dno.getCode() + uniquePart
 				+ checkDigit);
 	}
 
@@ -129,7 +129,7 @@ public class MpanCore extends PersistentEntity {
 
 	public String toString() {
 		try {
-			return new MpanCoreRaw(dso.getCode() + uniquePart + checkDigit)
+			return new MpanCoreRaw(dno.getCode() + uniquePart + checkDigit)
 					.toString();
 		} catch (HttpException e) {
 			throw new RuntimeException(e);
@@ -155,7 +155,7 @@ public class MpanCore extends PersistentEntity {
 	
 
 	static public class MpanCoreRaw {
-		private Dso dso;
+		private Dno dno;
 
 		private String uniquePart;
 
@@ -171,7 +171,7 @@ public class MpanCore extends PersistentEntity {
 					.charAt(mpanCore.length() - 1));
 		}
 
-		private void init(String dsoCode, String uniquePart, char checkDigit)
+		private void init(String dnoCode, String uniquePart, char checkDigit)
 				throws HttpException {
 			for (char ch : uniquePart.toCharArray()) {
 				if (!Character.isDigit(ch)) {
@@ -183,19 +183,19 @@ public class MpanCore extends PersistentEntity {
 				throw new UserException(
 						"Each character of an MPAN must be a digit.");
 			}
-			if (!checkCheckDigit(dsoCode.toString() + uniquePart.toString(),
+			if (!checkCheckDigit(dnoCode.toString() + uniquePart.toString(),
 					Character.getNumericValue(checkDigit))) {
 
 				throw new UserException(
 						"This is not a valid MPAN core. It fails the checksum test.");
 			}
-			this.dso = Dso.getDso(dsoCode);
+			this.dno = Dno.getDno(dnoCode);
 			this.uniquePart = uniquePart;
 			this.checkDigit = checkDigit;
 		}
 
-		public Dso getDso() {
-			return dso;
+		public Dno getDno() {
+			return dno;
 		}
 
 		public String getUniquePart() {
@@ -207,14 +207,14 @@ public class MpanCore extends PersistentEntity {
 		}
 
 		public String toString() {
-			return dso.getCode() + " " + uniquePart.toString().substring(0, 4)
+			return dno.getCode() + " " + uniquePart.toString().substring(0, 4)
 					+ " " + uniquePart.toString().substring(4, 8) + " "
 					+ uniquePart.toString().substring(8)
 					+ checkDigit;
 		}
 
 		public String toStringNoSpaces() {
-			return dso.getCode() + uniquePart.toString() + checkDigit;
+			return dno.getCode() + uniquePart.toString() + checkDigit;
 		}
 
 		private boolean checkCheckDigit(String toCheck, int checkDigit) {
@@ -231,7 +231,7 @@ public class MpanCore extends PersistentEntity {
 
 			if (obj instanceof MpanCoreRaw) {
 				MpanCoreRaw core = (MpanCoreRaw) obj;
-				isEqual = getDso().equals(core.getDso())
+				isEqual = getDno().equals(core.getDno())
 						&& getUniquePart().equals(core.getUniquePart())
 						&& getCheckDigit() == core.getCheckDigit();
 			}
@@ -239,7 +239,7 @@ public class MpanCore extends PersistentEntity {
 		}
 
 		public int hashCode() {
-			return dso.hashCode() + uniquePart.hashCode();
+			return dno.hashCode() + uniquePart.hashCode();
 		}
 	}
 }

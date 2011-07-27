@@ -25,7 +25,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import net.sf.chellow.billing.Dso;
+import net.sf.chellow.billing.Dno;
 import net.sf.chellow.billing.SupplierContract;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
@@ -56,15 +56,15 @@ public class Mpan extends PersistentEntity {
 		MpanCore core = MpanCore.getMpanCore(raw.getCore());
 		List<SupplyGeneration> supplyGenerations = core.getSupply()
 				.getGenerations(from, to);
-		Dso dso = core.getDso();
+		Dno dno = core.getDno();
 		return (List<Mpan>) Hiber
 				.session()
 				.createQuery(
 						"from Mpan mpan where mpan.core = :core and mpan.supplyGeneration in (:supplyGenerations) and mpan.supplyGeneration.pc = :pc and mpan.mtc = :mtc and mpan.llfc = :llfc")
 				.setEntity("core", core).setEntity("pc",
 						Pc.getPc(raw.getPcCode())).setEntity("mtc",
-						Mtc.getMtc(dso, raw.getMtcCode())).setEntity("llfc",
-						dso.getLlfc(raw.getLlfcCode())).setParameterList(
+						Mtc.getMtc(dno, raw.getMtcCode())).setEntity("llfc",
+						dno.getLlfc(raw.getLlfcCode())).setParameterList(
 						"supplyGenerations", supplyGenerations).list();
 	}
 
@@ -76,15 +76,15 @@ public class Mpan extends PersistentEntity {
 		return Pc.getPc(new MpanRaw(mpan).getPcCode());
 	}
 	
-	static public Dso dso(String mpan) throws HttpException {
+	static public Dno dno(String mpan) throws HttpException {
 		String core = getCore(mpan);
-		String dsoCode = core.substring(0, 2);
-		return Dso.getDso(dsoCode);
+		String dnoCode = core.substring(0, 2);
+		return Dno.getDno(dnoCode);
 	}
 	
 	static public Mtc mtc(String mpan) throws HttpException {
-		Dso dso = dso(mpan);
-		return Mtc.getMtc(dso, new MpanRaw(mpan).getMtcCode());
+		Dno dno = dno(mpan);
+		return Mtc.getMtc(dno, new MpanRaw(mpan).getMtcCode());
 	}
 
 
@@ -201,16 +201,16 @@ public class Mpan extends PersistentEntity {
 		if (mpanCore == null) {
 			mpanCore = supplyGeneration.getSupply().addMpanCore(core);
 		}
-		Dso dso = mpanCore.getDso();
-		Llfc llfc = dso.getLlfc(llfcCode);
+		Dno dno = mpanCore.getDno();
+		Llfc llfc = dno.getLlfc(llfcCode);
 
 		if (!mpanCore.getSupply().equals(supplyGeneration.getSupply())) {
 			throw new UserException(
 					"This MPAN core is already attached to another supply.");
 		}
-		if (!llfc.getDso().equals(dso)) {
+		if (!llfc.getDno().equals(dno)) {
 			throw new UserException(
-					"The MPAN top line DSO doesn't match the MPAN core DSO.");
+					"The MPAN top line DNO doesn't match the MPAN core DNO.");
 		}
 		if (getLlfc() != null && getLlfc().getIsImport() != llfc.getIsImport()) {
 			throw new UserException(

@@ -30,8 +30,8 @@
 				<param name="sequence">llfc_id_sequence</param>
 			</generator>
 		</id>
-		<many-to-one name="dso" class="net.sf.chellow.billing.Dso"
-			column="dso_id" not-null="true" foreign-key="fkey_llfc_dso" />
+		<many-to-one name="dno" class="net.sf.chellow.billing.Dno"
+			column="dno_id" not-null="true" foreign-key="fkey_llfc_dno" />
 			<property type="integer" name="code" column="code"
 				not-null="true" />
 		<property name="description" column="description"

@@ -43,7 +43,7 @@ import javax.xml.stream.events.XMLEvent;
 
 import net.sf.chellow.billing.Batch;
 import net.sf.chellow.billing.Bill;
-import net.sf.chellow.billing.DsoContract;
+import net.sf.chellow.billing.DnoContract;
 import net.sf.chellow.billing.HhdcContract;
 import net.sf.chellow.billing.MopContract;
 import net.sf.chellow.billing.NonCoreContract;
@@ -263,10 +263,10 @@ public class GeneralImport extends Thread implements Urlable, XmlDescriber {
 								csvElement);
 					} else if (type.equals("user")) {
 						User.generalImport(action, values, csvElement);
-					} else if (type.equals("dso-contract")) {
-						DsoContract.generalImport(action, values, csvElement);
-					} else if (type.equals("dso-contract-rate-script")) {
-						RateScript.generalImportDso(action, values, csvElement);
+					} else if (type.equals("dno-contract")) {
+						DnoContract.generalImport(action, values, csvElement);
+					} else if (type.equals("dno-contract-rate-script")) {
+						RateScript.generalImportDno(action, values, csvElement);
 					} else if (type.equals("configuration")) {
 						Configuration.generalImport(action, values, csvElement);
 					} else if (type.equals("channel-snag-ignore")) {

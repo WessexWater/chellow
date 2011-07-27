@@ -1,6 +1,6 @@
 /*******************************************************************************
  * 
- *  Copyright (c) 2005, 2009 Wessex Water Services Limited
+ *  Copyright (c) 2005, 2011 Wessex Water Services Limited
  *  
  *  This file is part of Chellow.
  * 
@@ -21,7 +21,6 @@
 package net.sf.chellow.physical;
 
 import java.util.Date;
-import java.util.List;
 
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
@@ -29,7 +28,6 @@ import net.sf.chellow.monad.InternalException;
 import net.sf.chellow.monad.Invocation;
 import net.sf.chellow.monad.MonadUtils;
 import net.sf.chellow.monad.Urlable;
-import net.sf.chellow.monad.XmlTree;
 import net.sf.chellow.monad.types.MonadDate;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
@@ -41,8 +39,6 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 public class SiteSnags extends EntityList {
-	static private final int PAGE_SIZE = 20;
-
 	public static final UriPathElement URI_ID;
 
 	static {
@@ -68,22 +64,13 @@ public class SiteSnags extends EntityList {
 		inv.sendOk(document());
 	}
 
-	@SuppressWarnings("unchecked")
 	private Document document() throws HttpException {
 		Document doc = MonadUtils.newSourceDocument();
 		Element source = doc.getDocumentElement();
-		Element snagsElement = toXml(doc);
-		source.appendChild(snagsElement);
-		for (SiteSnag snag : (List<SiteSnag>) Hiber
-				.session()
-				.createQuery(
-						"from SiteSnag snag order by snag.startDate.date desc, snag.site.code, snag.description")
-				.setMaxResults(PAGE_SIZE)
-				.list()) {
-			snagsElement.appendChild(snag.toXml(doc, new XmlTree("site")));
-		}
 		source.appendChild(MonadDate.getMonthsXml(doc));
 		source.appendChild(MonadDate.getDaysXml(doc));
+		source.appendChild(MonadDate.getHoursXml(doc));
+		source.appendChild(HhStartDate.getHhMinutesXml(doc));
 		source.appendChild(new MonadDate().toXml(doc));
 		return doc;
 	}

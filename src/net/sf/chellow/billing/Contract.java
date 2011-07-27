@@ -146,7 +146,11 @@ public abstract class Contract extends PersistentEntity implements
 
 	protected void internalUpdate(String name, String chargeScript)
 			throws HttpException {
-		setName(name.trim());
+		name = name.trim();
+		if (name.length() == 0) {
+			throw new UserException("The contract name can't be blank.");
+		}
+		setName(name);
 		PythonInterpreter interp = new PythonInterpreter();
 		interp.set("contract", this);
 		try {

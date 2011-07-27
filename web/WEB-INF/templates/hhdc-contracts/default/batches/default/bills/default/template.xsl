@@ -20,41 +20,30 @@
 			</head>
 			<body>
 				<p>
-					<a href="{/source/request/@context-path}/">
-						<img src="{/source/request/@context-path}/logo/" />
-						<span class="logo">Chellow</span>
+					<a href="{/source/request/@context-path}/reports/1/output/">
+						<xsl:value-of select="'Chellow'" />
 					</a>
 					&gt;
-					<a href="{/source/request/@context-path}/hhdc-contracts/">
+					<a href="{/source/request/@context-path}/reports/113/output/">
 						<xsl:value-of select="'HHDC Contracts'" />
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/hhdc-contracts/{/source/bill/batch/hhdc-contract/@id}/">
+						href="{/source/request/@context-path}/reports/115/output/?hhdc-contract-id={/source/bill/batch/hhdc-contract/@id}">
 						<xsl:value-of select="/source/bill/batch/hhdc-contract/@name" />
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/hhdc-contracts/{/source/bill/batch/hhdc-contract/@id}/batches/">
+						href="{/source/request/@context-path}/reports/93/output/?hhdc-contract-id={/source/bill/batch/hhdc-contract/@id}">
 						<xsl:value-of select="'Batches'" />
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/hhdc-contracts/{/source/bill/batch/hhdc-contract/@id}/batches/{/source/bill/batch/@id}/">
+						href="{/source/request/@context-path}/reports/203/output/?batch-id={/source/bill/batch/@id}">
 						<xsl:value-of select="/source/bill/batch/@reference" />
 					</a>
 					&gt;
-					<a
-						href="{/source/request/@context-path}/hhdc-contracts/{/source/bill/batch/hhdc-contract/@id}/batches/{/source/bill/batch/@id}/bills/">
-						<xsl:value-of select="'Bills'" />
-					</a>
-					&gt;
-					<xsl:value-of select="concat(/source/bill/@id, ' [')" />
-					<a
-						href="{/source/request/@context-path}/reports/7/output/?supply-id={/source/bill/supply/@id}">
-						<xsl:value-of select="'view'" />
-					</a>
-					<xsl:value-of select="']'" />
+					<xsl:value-of select="concat('Bill ', /source/bill/@id)" />
 				</p>
 				<xsl:if test="//message">
 					<ul>

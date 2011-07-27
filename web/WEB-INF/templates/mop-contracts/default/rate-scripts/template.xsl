@@ -17,26 +17,19 @@
 			</head>
 			<body>
 				<p>
-					<a href="{/source/request/@context-path}/">
-						<img src="{/source/request/@context-path}/logo/" />
-						<span class="logo">Chellow</span>
+					<a href="{/source/request/@context-path}/reports/1/output/">
+						<xsl:value-of select="'Chellow'" />
 					</a>
 					&gt;
-					<a href="{/source/request/@context-path}/mop-contracts/">
+					<a href="{/source/request/@context-path}/reports/185/output/">
 						<xsl:value-of select="'MOP Contracts'" />
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/mop-contracts/{/source/rate-scripts/mop-contract/@id}/">
+						href="{/source/request/@context-path}/reports/107/output/?mop-contract-id={/source/rate-scripts/mop-contract/@id}">
 						<xsl:value-of select="/source/rate-scripts/mop-contract/@name" />
 					</a>
-					&gt;
-					<xsl:value-of select="'Rate Scripts ['" />
-					<a
-						href="{/source/request/@context-path}/reports/107/output/?mop-contract-id={/source/rate-scripts/mop-contract/@id}">
-						<xsl:value-of select="'view'" />
-					</a>
-					<xsl:value-of select="']'" />
+					&gt; Rate Scripts
 				</p>
 				<xsl:if test="//message">
 					<ul>
@@ -47,44 +40,6 @@
 						</xsl:for-each>
 					</ul>
 				</xsl:if>
-				<br />
-				<table>
-					<caption>Rate Scripts</caption>
-					<thead>
-						<tr>
-							<th>Chellow Id</th>
-							<th>Start date</th>
-							<th>End date</th>
-						</tr>
-					</thead>
-					<tbody>
-						<xsl:for-each select="/source/rate-scripts/rate-script">
-							<tr>
-								<td>
-									<a href="{@id}/">
-										<xsl:value-of select="@id" />
-									</a>
-								</td>
-								<td>
-									<xsl:value-of
-										select="concat(hh-start-date[@label='start']/@year, '-', hh-start-date[@label='start']/@month, '-', hh-start-date[@label='start']/@day, ' ', hh-start-date[@label='start']/@hour, ':', hh-start-date[@label='start']/@minute)" />
-								</td>
-								<td>
-									<xsl:choose>
-										<xsl:when test="hh-start-date[@label='finish']">
-											<xsl:value-of
-												select="concat(hh-start-date[@label='finish']/@year, '-', hh-start-date[@label='finish']/@month, '-', hh-start-date[@label='finish']/@day, ' ', hh-start-date[@label='finish']/@hour, ':', hh-start-date[@label='finish']/@minute)" />
-										</xsl:when>
-										<xsl:otherwise>
-											Ongoing
-										</xsl:otherwise>
-									</xsl:choose>
-								</td>
-							</tr>
-						</xsl:for-each>
-					</tbody>
-				</table>
-				<br />
 				<br />
 				<form action="." method="post">
 					<fieldset>
@@ -107,7 +62,7 @@
 									</xsl:otherwise>
 								</xsl:choose>
 							</input>
-							-
+							<xsl:value-of select="'-'" />
 							<select name="start-month">
 								<xsl:for-each select="/source/months/month">
 									<option value="{@number}">
@@ -128,7 +83,7 @@
 									</option>
 								</xsl:for-each>
 							</select>
-							-
+							<xsl:value-of select="'-'" />
 							<select name="start-day">
 								<xsl:for-each select="/source/days/day">
 									<option value="{@number}">

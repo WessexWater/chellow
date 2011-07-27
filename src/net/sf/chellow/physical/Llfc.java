@@ -25,7 +25,7 @@ import java.text.DecimalFormat;
 import java.util.Date;
 import java.util.List;
 
-import net.sf.chellow.billing.Dso;
+import net.sf.chellow.billing.Dno;
 import net.sf.chellow.billing.Provider;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
@@ -53,15 +53,15 @@ public class Llfc extends PersistentEntity {
 	}
 
 	@SuppressWarnings("unchecked")
-	static public List<Llfc> find(Provider dso, Pc profileClass,
+	static public List<Llfc> find(Provider dno, Pc profileClass,
 			boolean isSubstation, boolean isImport, VoltageLevel voltageLevel)
 			throws InternalException, HttpException {
 		try {
 			return (List<Llfc>) Hiber
 					.session()
 					.createQuery(
-							"from Llf llf where llf.dso = :dso and llf.profileClass = :profileClass and llf.isSubstation.boolean = :isSubstation and llf.isImport.boolean = :isImport and llf.voltageLevel = :voltageLevel")
-					.setEntity("dso", dso).setEntity("profileClass",
+							"from Llf llf where llf.dno = :dno and llf.profileClass = :profileClass and llf.isSubstation.boolean = :isSubstation and llf.isImport.boolean = :isImport and llf.voltageLevel = :voltageLevel")
+					.setEntity("dno", dno).setEntity("profileClass",
 							profileClass).setBoolean("isSubstation",
 							isSubstation).setBoolean("isImport", isImport)
 					.setEntity("voltageLevel", voltageLevel).list();
@@ -71,21 +71,21 @@ public class Llfc extends PersistentEntity {
 	}
 
 	@SuppressWarnings("unchecked")
-	static public List<Llfc> find(Provider dso, Pc profileClass)
+	static public List<Llfc> find(Provider dno, Pc profileClass)
 			throws HttpException {
 		try {
 			return (List<Llfc>) Hiber
 					.session()
 					.createQuery(
-							"from Llf llf where llf.dso = :dso and llf.profileClass = :profileClass order by llf.code.string")
-					.setEntity("dso", dso).setEntity("profileClass",
+							"from Llf llf where llf.dno = :dno and llf.profileClass = :profileClass order by llf.code.string")
+					.setEntity("dno", dno).setEntity("profileClass",
 							profileClass).list();
 		} catch (HibernateException e) {
 			throw new InternalException(e);
 		}
 	}
 
-	private Dso dso;
+	private Dno dno;
 
 	private int code;
 
@@ -103,10 +103,10 @@ public class Llfc extends PersistentEntity {
 	Llfc() {
 	}
 
-	public Llfc(Dso dso, int code, String description,
+	public Llfc(Dno dno, int code, String description,
 			VoltageLevel voltageLevel, boolean isSubstation, boolean isImport,
 			Date validFrom, Date validTo) throws HttpException {
-		setDso(dso);
+		setDno(dno);
 		setCode(code);
 		setDescription(description);
 		setVoltageLevel(voltageLevel);
@@ -116,12 +116,12 @@ public class Llfc extends PersistentEntity {
 		setValidTo(validTo);
 	}
 
-	public Dso getDso() {
-		return dso;
+	public Dno getDno() {
+		return dno;
 	}
 
-	public void setDso(Dso dso) {
-		this.dso = dso;
+	public void setDno(Dno dno) {
+		this.dno = dno;
 	}
 
 	public int getCode() {
@@ -210,7 +210,7 @@ public class Llfc extends PersistentEntity {
 		Document doc = MonadUtils.newSourceDocument();
 		Element source = doc.getDocumentElement();
 
-		source.appendChild(toXml(doc, new XmlTree("dso").put("voltageLevel")));
+		source.appendChild(toXml(doc, new XmlTree("dno").put("voltageLevel")));
 		inv.sendOk(doc);
 	}
 

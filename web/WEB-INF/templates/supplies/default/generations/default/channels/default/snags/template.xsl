@@ -31,48 +31,31 @@
 					</ul>
 				</xsl:if>
 				<p>
-					<a href="{/source/request/@context-path}/">
-						<img src="{/source/request/@context-path}/logo/" />
-						<span class="logo">Chellow</span>
+					<a href="{/source/request/@context-path}/reports/1/output/">
+						<xsl:value-of select="'Chellow'" />
 					</a>
 					&gt;
-					<a href="{/source/request/@context-path}/supplies/">
+					<a href="{/source/request/@context-path}/reports/99/output/">
 						<xsl:value-of select="'Supplies'" />
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/supplies/{/source/channel-snags/channel/supply-generation/supply/@id}/">
+						href="{/source/request/@context-path}/reports/7/output/?supply-id={/source/channel-snags/channel/supply-generation/supply/@id}">
 						<xsl:value-of
 							select="/source/channel-snags/channel/supply-generation/supply/@id" />
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/supplies/{/source/channel-snags/channel/supply-generation/supply/@id}/generations/">
-						<xsl:value-of select="'Generations'" />
-					</a>
-					&gt;
-					<a
-						href="{/source/request/@context-path}/supplies/{/source/channel-snags/channel/supply-generation/supply/@id}/generations/{/source/channel-snags/channel/supply-generation/@id}/">
-						<xsl:value-of
-							select="/source/channel-snags/channel/supply-generation/@id" />
-					</a>
-					&gt;
-					<a
 						href="{/source/request/@context-path}/supplies/{/source/channel-snags/channel/supply-generation/supply/@id}/generations/{/source/channel-snags/channel/supply-generation/@id}/channels/">
-						<xsl:value-of select="'Channels'" />
+						<xsl:value-of
+							select="concat('Generation ', /source/channel-snags/channel/supply-generation/@id, ' channels')" />
 					</a>
 					&gt;
 					<a
 						href="{/source/request/@context-path}/supplies/{/source/channel-snags/channel/supply-generation/supply/@id}/generations/{/source/channel-snags/channel/supply-generation/@id}/channels/{/source/channel-snags/channel/@id}/">
 						<xsl:value-of select="/source/channel-snags/channel/@id" />
 					</a>
-					&gt;
-					<xsl:value-of select="'Snags ['" />
-					<a
-						href="{/source/request/@context-path}/reports/37/output/?hhdc-contract-id={/source/channel-snags/channel/supply-generation/account/hhdc-contract/@id}">
-						<xsl:value-of select="'view'" />
-					</a>
-					<xsl:value-of select="']'" />
+					&gt; Snags
 				</p>
 				<br />
 				<table>

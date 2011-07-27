@@ -46,26 +46,26 @@ import net.sf.chellow.ui.GeneralImport;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-public class DsoContract extends Contract {
-	public static DsoContract getDsoContract(Long id) throws HttpException {
-		DsoContract contract = findDsoContract(id);
+public class DnoContract extends Contract {
+	public static DnoContract getDnoContract(Long id) throws HttpException {
+		DnoContract contract = findDnoContract(id);
 		if (contract == null) {
-			throw new UserException("There isn't a DSO contract with that id.");
+			throw new UserException("There isn't a DNO contract with that id.");
 		}
 		return contract;
 	}
 
-	public static DsoContract findDsoContract(Long id) throws HttpException {
-		return (DsoContract) Hiber.session().get(DsoContract.class, id);
+	public static DnoContract findDnoContract(Long id) throws HttpException {
+		return (DnoContract) Hiber.session().get(DnoContract.class, id);
 	}
 
 	static public void generalImport(String action, String[] values,
 			Element csvElement) throws HttpException {
 		if (action.equals("insert")) {
 
-			String dsoCode = GeneralImport.addField(csvElement, "DSO Code",
+			String dnoCode = GeneralImport.addField(csvElement, "DNO Code",
 					values, 0);
-			Dso dso = Dso.getDso(dsoCode);
+			Dno dno = Dno.getDno(dnoCode);
 			String idStr = GeneralImport.addField(csvElement, "Id", values, 1);
 			
 			Long id = null;
@@ -94,7 +94,7 @@ public class DsoContract extends Contract {
 
 			String rateScript = GeneralImport.addField(csvElement,
 					"Rate Script", values, 7);
-			dso.insertContract(id, name, startDate, finishDate, chargeScript,
+			dno.insertContract(id, name, startDate, finishDate, chargeScript,
 					rateScriptId, rateScript);
 		}
 	}
@@ -102,7 +102,7 @@ public class DsoContract extends Contract {
 	public static void loadFromCsv(ServletContext context) throws HttpException {
 		try {
 			GeneralImport process = new GeneralImport(null, context
-					.getResource("/WEB-INF/dso-contracts.xml").openStream(),
+					.getResource("/WEB-INF/dno-contracts.xml").openStream(),
 					"xml");
 			process.run();
 			List<MonadMessage> errors = process.getErrors();
@@ -116,39 +116,39 @@ public class DsoContract extends Contract {
 		}
 	}
 
-	private Dso dso;
+	private Dno dno;
 
-	public DsoContract() {
+	public DnoContract() {
 	}
 
-	public DsoContract(Dso dso, Long id, String name, HhStartDate startDate,
+	public DnoContract(Dno dno, Long id, String name, HhStartDate startDate,
 			HhStartDate finishDate, String chargeScript)
 			throws HttpException {
 		super(id, Boolean.TRUE, name, startDate, finishDate, chargeScript);
-		setParty(dso);
+		setParty(dno);
 		internalUpdate(name, chargeScript);
 	}
 
 	@Override
-	public Dso getParty() {
-		return dso;
+	public Dno getParty() {
+		return dno;
 	}
 
-	void setParty(Dso dso) {
-		this.dso = dso;
+	void setParty(Dno dno) {
+		this.dno = dno;
 	}
 
 	public boolean equals(Object obj) {
 		boolean isEqual = false;
-		if (obj instanceof DsoContract) {
-			DsoContract contract = (DsoContract) obj;
+		if (obj instanceof DnoContract) {
+			DnoContract contract = (DnoContract) obj;
 			isEqual = contract.getId().equals(getId());
 		}
 		return isEqual;
 	}
 
 	public MonadUri getUri() throws HttpException {
-		return dso.contractsInstance().getUri().resolve(getUriId()).append("/");
+		return dno.contractsInstance().getUri().resolve(getUriId()).append("/");
 	}
 
 	public void delete() throws HttpException {
@@ -160,7 +160,7 @@ public class DsoContract extends Contract {
 		if (inv.hasParameter("delete")) {
 			delete();
 			Hiber.commit();
-			inv.sendFound(dso.contractsInstance().getUri());
+			inv.sendFound(dno.contractsInstance().getUri());
 		} else {
 			String name = inv.getString("name");
 			String chargeScript = inv.getString("charge-script");
@@ -206,7 +206,7 @@ public class DsoContract extends Contract {
 	}
 
 	public Element toXml(Document doc) throws HttpException {
-		return super.toXml(doc, "dso-contract");
+		return super.toXml(doc, "dno-contract");
 	}
 
 	@Override

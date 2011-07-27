@@ -20,27 +20,26 @@
 
 			<body>
 				<p>
-					<a href="{/source/request/@context-path}/">
-						<img src="{/source/request/@context-path}/logo/" />
-						<span class="logo">Chellow</span>
+					<a href="{/source/request/@context-path}/reports/1/output/">
+						<xsl:value-of select="'Chellow'" />
 					</a>
 					&gt;
-					<a href="{/source/request/@context-path}/mop-contracts/">
+					<a href="{/source/request/@context-path}/reports/185/output/">
 						<xsl:value-of select="'MOP Contracts'" />
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/mop-contracts/{/source/bill-imports/batch/mop-contract/@id}/">
+						href="{/source/request/@context-path}/reports/107/output/?mop-contract-id={/source/bill-imports/batch/mop-contract/@id}">
 						<xsl:value-of select="/source/bill-imports/batch/mop-contract/@name" />
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/mop-contracts/{/source/bill-imports/batch/mop-contract/@id}/batches/">
+						href="{/source/request/@context-path}/reports/191/output/?mop-contract-id={/source/bill-imports/batch/mop-contract/@id}">
 						<xsl:value-of select="'Batches'" />
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/mop-contracts/{/source/bill-imports/batch/mop-contract/@id}/batches/{/source/bill-imports/batch/@id}/">
+						href="{/source/request/@context-path}/reports/193/output/?batch-id={/source/bill-imports/batch/@id}">
 						<xsl:value-of select="/source/bill-imports/batch/@reference" />
 					</a>
 					&gt;
@@ -56,7 +55,7 @@
 					</ul>
 				</xsl:if>
 				<br />
-								<form enctype="multipart/form-data" action="." method="post">
+				<form enctype="multipart/form-data" action="." method="post">
 					<fieldset>
 						<legend>Import Bills</legend>
 						<br />

@@ -28,30 +28,21 @@
 					</ul>
 				</xsl:if>
 				<p>
-					<a href="{/source/request/@context-path}/">
-						<img src="{/source/request/@context-path}/logo/" />
-						<span class="logo">Chellow</span>
+					<a href="{/source/request/@context-path}/reports/1/output/">
+						<xsl:value-of select="'Chellow'" />
 					</a>
 					&gt;
-					<a href="{/source/request/@context-path}/supplies/">
+					<a href="{/source/request/@context-path}/reports/99/output/">
 						<xsl:value-of select="'Supplies'" />
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/supplies/{/source/channels/supply-generation/supply/@id}/">
+						href="{/source/request/@context-path}/reports/7/output/?supply-id={/source/channels/supply-generation/supply/@id}">
 						<xsl:value-of select="/source/channels/supply-generation/supply/@id" />
 					</a>
 					&gt;
-					<a
-						href="{/source/request/@context-path}/supplies/{/source/channels/supply-generation/supply/@id}/generations/">
-						<xsl:value-of select="'Generations'" />
-					</a>
-					&gt;
-					<a
-						href="{/source/request/@context-path}/supplies/{/source/channels/supply-generation/supply/@id}/generations/{/source/channels/supply-generation/@id}">
-						<xsl:value-of select="/source/channels/supply-generation/@id" />
-					</a>
-					&gt; Channels
+					<xsl:value-of
+						select="concat('Generation ', /source/channels/supply-generation/@id, ' channels')" />
 				</p>
 				<br />
 				<table>

@@ -27,44 +27,33 @@
 
 			<body>
 				<p>
-					<a href="{/source/request/@context-path}/">
-						<img src="{/source/request/@context-path}/logo/" />
-						<span class="logo">Chellow</span>
+					<a href="{/source/request/@context-path}/reports/1/output/">
+						<xsl:value-of select="'Chellow'" />
 					</a>
 					&gt;
-					<a href="{/source/request/@context-path}/supplier-contracts/">
+					<a href="{/source/request/@context-path}/reports/75/output/">
 						<xsl:value-of select="'Supplier Contracts'" />
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/supplier-contracts/{/source/register-read/bill/batch/supplier-contract/@id}/">
+						href="{/source/request/@context-path}/reports/77/output/?supplier-contract-id={/source/register-read/bill/batch/supplier-contract/@id}">
 						<xsl:value-of
 							select="/source/register-read/bill/batch/supplier-contract/@name" />
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/supplier-contracts/{/source/register-read/bill/batch/supplier-contract/@id}/batches/">
+						href="{/source/request/@context-path}/reports/89/output/?supplier-contract-id={/source/register-read/bill/batch/supplier-contract/@id}">
 						<xsl:value-of select="'Batches'" />
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/supplier-contracts/{/source/register-read/bill/batch/supplier-contract/@id}/batches/{/source/register-read/bill/batch/@id}/">
+						href="{/source/request/@context-path}/reports/91/output/?batch-id={/source/register-read/bill/batch/@id}">
 						<xsl:value-of select="/source/register-read/bill/batch/@reference" />
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/supplier-contracts/{/source/register-read/bill/batch/supplier-contract/@id}/batches/{/source/register-read/bill/batch/@id}/bills/">
-						<xsl:value-of select="'Bills'" />
-					</a>
-					&gt;
-					<a
-						href="{/source/request/@context-path}/supplier-contracts/{/source/register-read/bill/batch/supplier-contract/@id}/batches/{/source/register-read/bill/batch/@id}/bills/{/source/register-read/bill/@id}/">
-						<xsl:value-of select="/source/register-read/bill/@id" />
-					</a>
-					&gt;
-					<a
-						href="{/source/request/@context-path}/supplier-contracts/{/source/register-read/bill/batch/supplier-contract/@id}/batches/{/source/register-read/bill/batch/@id}/bills/{/source/register-read/bill/@id}/reads/">
-						<xsl:value-of select="'Reads'" />
+						href="{/source/request/@context-path}/reports/105/output/?bill-id={/source/register-read/bill/@id}">
+						<xsl:value-of select="concat('Bill ', /source/register-read/bill/@id)" />
 					</a>
 					&gt;
 					<xsl:value-of select="/source/register-read/@id" />
@@ -186,11 +175,6 @@
 									</xsl:choose>
 								</xsl:attribute>
 									</input>
-									<xsl:value-of select="' '" />
-									<a
-										href="{/source/request/@context-path}/tprs/{/source/register-read/tpr/@id}/">
-										<xsl:value-of select="/source/register-read/tpr/@code" />
-									</a>
 								</label>
 								<br />
 								<br />

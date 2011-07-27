@@ -181,28 +181,39 @@ public class MopContract extends Contract {
 	}
 
 	public void httpPost(Invocation inv) throws HttpException {
-		Long participantId = inv.getLong("participant-id");
-		String name = inv.getString("name");
-		String chargeScript = inv.getString("charge-script");
-		if (!inv.isValid()) {
-			throw new UserException(document());
-		}
-		chargeScript = chargeScript.replace("\r", "").replace("\t", "    ");
-		try {
-			update(Participant.getParticipant(participantId), name,
-					chargeScript);
-		} catch (UserException e) {
+		if (inv.hasParameter("delete")) {
+			try {
+				delete();
+			} catch (HttpException e) {
+				e.setDocument(document());
+				throw e;
+			}
+			Hiber.commit();
+			inv.sendSeeOther(Chellow.MOP_CONTRACTS_INSTANCE.getUri());
+		} else {
+			Long participantId = inv.getLong("participant-id");
+			String name = inv.getString("name");
+			String chargeScript = inv.getString("charge-script");
+			if (!inv.isValid()) {
+				throw new UserException(document());
+			}
+			chargeScript = chargeScript.replace("\r", "").replace("\t", "    ");
+			try {
+				update(Participant.getParticipant(participantId), name,
+						chargeScript);
+			} catch (UserException e) {
+				Document doc = document();
+				Element source = doc.getDocumentElement();
+				source.setAttribute("charge-script", chargeScript);
+				e.setDocument(doc);
+				throw e;
+			}
+			Hiber.commit();
 			Document doc = document();
 			Element source = doc.getDocumentElement();
 			source.setAttribute("charge-script", chargeScript);
-			e.setDocument(doc);
-			throw e;
+			inv.sendOk(doc);
 		}
-		Hiber.commit();
-		Document doc = document();
-		Element source = doc.getDocumentElement();
-		source.setAttribute("charge-script", chargeScript);
-		inv.sendOk(doc);
 	}
 
 	@SuppressWarnings("unchecked")

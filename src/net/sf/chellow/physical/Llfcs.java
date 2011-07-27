@@ -23,7 +23,7 @@ package net.sf.chellow.physical;
 
 import java.util.List;
 
-import net.sf.chellow.billing.Dso;
+import net.sf.chellow.billing.Dno;
 import net.sf.chellow.monad.DeployerException;
 import net.sf.chellow.monad.DesignerException;
 import net.sf.chellow.monad.Hiber;
@@ -55,10 +55,10 @@ public class Llfcs implements Urlable, XmlDescriber {
 		}
 	}
 
-	private Dso dso;
+	private Dno dno;
 
-	public Llfcs(Dso dso) {
-		this.dso = dso;
+	public Llfcs(Dno dno) {
+		this.dno = dno;
 	}
 
 	public UriPathElement getUrlId() {
@@ -66,7 +66,7 @@ public class Llfcs implements Urlable, XmlDescriber {
 	}
 
 	public MonadUri getUri() throws InternalException, HttpException {
-		return dso.getUri().resolve(getUrlId()).append("/");
+		return dno.getUri().resolve(getUrlId()).append("/");
 	}
 
 	public void httpPost(Invocation inv) throws InternalException,
@@ -81,12 +81,12 @@ public class Llfcs implements Urlable, XmlDescriber {
 		Element source = doc.getDocumentElement();
 		Element llfsElement = (Element) toXml(doc);
 		source.appendChild(llfsElement);
-		llfsElement.appendChild(dso.toXml(doc));
+		llfsElement.appendChild(dno.toXml(doc));
 		for (Llfc llfc : (List<Llfc>) Hiber
 				.session()
 				.createQuery(
-						"from Llfc llfc where llfc.dso = :dso order by llfc.code")
-				.setEntity("dso", dso).list()) {
+						"from Llfc llfc where llfc.dno = :dno order by llfc.code")
+				.setEntity("dno", dno).list()) {
 			llfsElement.appendChild(llfc.toXml(doc, new XmlTree("voltageLevel")));
 		}
 		source.appendChild(MonadDate.getMonthsXml(doc));
@@ -99,8 +99,8 @@ public class Llfcs implements Urlable, XmlDescriber {
 		Llfc llfc = (Llfc) Hiber
 				.session()
 				.createQuery(
-						"from Llfc llfc where llfc.dso = :dso and llfc.id = :llfcId")
-				.setEntity("dso", dso).setLong("llfcId",
+						"from Llfc llfc where llfc.dno = :dno and llfc.id = :llfcId")
+				.setEntity("dno", dno).setLong("llfcId",
 						Long.parseLong(uriId.getString())).uniqueResult();
 		if (llfc == null) {
 			throw new NotFoundException();

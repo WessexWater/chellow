@@ -18,31 +18,24 @@
 			</head>
 			<body>
 				<p>
-					<a href="{/source/request/@context-path}/">
-						<img src="{/source/request/@context-path}/logo/" />
-						<span class="logo">Chellow</span>
+					<a href="{/source/request/@context-path}/reports/1/output/">
+						<xsl:value-of select="'Chellow'" />
 					</a>
 					&gt;
-					<a href="{/source/request/@context-path}/supplier-contracts/">
+					<a href="{/source/request/@context-path}/reports/75/output/">
 						<xsl:value-of select="'Supplier Contracts'" />
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/supplier-contracts/{/source/rate-script/supplier-contract/@id}/">
+						href="{/source/request/@context-path}/reports/77/output/?supplier-contract-id={/source/rate-script/supplier-contract/@id}">
 						<xsl:value-of select="/source/rate-script/supplier-contract/@name" />
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/supplier-contracts/{/source/rate-script/supplier-contract/@id}/rate-scripts/">
-						<xsl:value-of select="'Rate Scripts'" />
-					</a>
-					&gt;
-					<xsl:value-of select="concat(/source/rate-script/@id, ' [')" />
-					<a
 						href="{/source/request/@context-path}/reports/79/output/?rate-script-id={/source/rate-script/@id}">
-						<xsl:value-of select="'view'" />
+						<xsl:value-of select="concat('Rate Script ', /source/rate-script/@id)" />
 					</a>
-					<xsl:value-of select="']'" />
+					&gt; Edit
 				</p>
 				<br />
 				<xsl:if test="//message">

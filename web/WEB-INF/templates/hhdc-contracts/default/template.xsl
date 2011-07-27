@@ -16,21 +16,19 @@
 			</head>
 			<body>
 				<p>
-					<a href="{/source/request/@context-path}/">
-						<img src="{/source/request/@context-path}/logo/" />
-						<span class="logo">Chellow</span>
+					<a href="{/source/request/@context-path}/reports/1/output/">
+						<xsl:value-of select="'Chellow'" />
 					</a>
 					&gt;
-					<a href="{/source/request/@context-path}/hhdc-contracts/">
+					<a href="{/source/request/@context-path}/reports/113/output/">
 						<xsl:value-of select="'HHDC Contracts'" />
 					</a>
 					&gt;
-					<xsl:value-of select="concat(/source/hhdc-contract/@name, ' [')" />
 					<a
 						href="{/source/request/@context-path}/reports/115/output/?hhdc-contract-id={/source/hhdc-contract/@id}">
-						<xsl:value-of select="'view'" />
+						<xsl:value-of select="/source/hhdc-contract/@name" />
 					</a>
-					<xsl:value-of select="']'" />
+					&gt; Edit
 				</p>
 				<xsl:if test="//message">
 					<ul>
@@ -41,17 +39,6 @@
 						</xsl:for-each>
 					</ul>
 				</xsl:if>
-				<ul>
-					<li>
-						<a href="batches/">Batches</a>
-					</li>
-					<li>
-						<a href="hh-data-imports/">HH data imports</a>
-					</li>
-					<li>
-						<a href="rate-scripts/">Rate Scripts</a>
-					</li>
-				</ul>
 				<br />
 				<xsl:choose>
 					<xsl:when

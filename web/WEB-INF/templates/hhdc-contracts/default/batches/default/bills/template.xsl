@@ -19,107 +19,40 @@
 			</head>
 			<body>
 				<p>
-					<a href="{/source/request/@context-path}/">
-						<img src="{/source/request/@context-path}/logo/" />
-						<span class="logo">Chellow</span>
+					<a href="{/source/request/@context-path}/reports/1/output/">
+						<xsl:value-of select="'Chellow'" />
 					</a>
 					&gt;
-					<a href="{/source/request/@context-path}/hhdc-contracts/">
+					<a href="{/source/request/@context-path}/reports/113/output/">
 						<xsl:value-of select="'HHDC Contracts'" />
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/hhdc-contracts/{/source/bills/batch/hhdc-contract/@id}/">
+						href="{/source/request/@context-path}/reports/115/output/?hhdc-contract-id={/source/bills/batch/hhdc-contract/@id}">
 						<xsl:value-of select="/source/bills/batch/hhdc-contract/@name" />
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/hhdc-contracts/{/source/bills/batch/hhdc-contract/@id}/batches/">
+						href="{/source/request/@context-path}/reports/93/output/?hhdc-contract-id={/source/bills/batch/hhdc-contract/@id}">
 						<xsl:value-of select="'Batches'" />
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/hhdc-contracts/{/source/bills/batch/hhdc-contract/@id}/batches/{/source/bills/batch/@id}/">
+						href="{/source/request/@context-path}/reports/203/output/?batch-id={/source/bills/batch/@id}">
 						<xsl:value-of select="/source/bills/batch/@reference" />
 					</a>
 					&gt;
-					<xsl:value-of select="'Bills ['" />
-					<a
-						href="{/source/request/@context-path}/reports/203/output/?batch-id={/source/bills/batch/@id}">
-						<xsl:value-of select="'view'" />
-					</a>
-					<xsl:value-of select="']'" />
-
-					<xsl:if test="//message">
-						<ul>
-							<xsl:for-each select="//message">
-								<li>
-									<xsl:value-of select="@description" />
-								</li>
-							</xsl:for-each>
-						</ul>
-					</xsl:if>
-
+					<xsl:value-of select="'Bills'" />
 				</p>
-				<br />
-				<table>
-					<caption>Bills</caption>
-					<thead>
-						<tr>
-							<th>Chellow Id</th>
-							<th>Reference</th>
-							<th>From</th>
-							<th>To</th>
-							<th>kWh</th>
-							<th>Net</th>
-							<th>VAT</th>
-							<th>Gross</th>
-							<th>Type</th>
-							<th>Breakdown</th>
-							<th>Status</th>
-						</tr>
-					</thead>
-					<tbody>
-						<xsl:for-each select="/source/bills/bill">
-							<tr>
-								<td>
-									<a href="{@id}/">
-										<xsl:value-of select="@id" />
-									</a>
-								</td>
-								<td>
-									<xsl:value-of select="@reference" />
-								</td>
-								<td>
-									<xsl:value-of
-										select="concat(hh-start-date[@label='start']/@year, '-', hh-start-date[@label='start']/@month, '-', hh-start-date[@label='start']/@day)" />
-								</td>
-								<td>
-									<xsl:value-of
-										select="concat(hh-start-date[@label='finish']/@year, '-', hh-start-date[@label='finish']/@month, '-', hh-start-date[@label='finish']/@day)" />
-								</td>
-								<td>
-									<xsl:value-of select="@kwh" />
-								</td>
-								<td>
-									<xsl:value-of select="@net" />
-								</td>
-								<td>
-									<xsl:value-of select="@vat" />
-								</td>
-								<td>
-									<xsl:value-of select="@gross" />
-								</td>
-								<td>
-									<xsl:value-of select="bill-type/@code" />
-								</td>
-								<td>
-									<xsl:value-of select="@breakdown" />
-								</td>
-							</tr>
+				<xsl:if test="//message">
+					<ul>
+						<xsl:for-each select="//message">
+							<li>
+								<xsl:value-of select="@description" />
+							</li>
 						</xsl:for-each>
-					</tbody>
-				</table>
+					</ul>
+				</xsl:if>
 				<br />
 				<form action="." method="post">
 					<fieldset>

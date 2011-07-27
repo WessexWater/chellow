@@ -17,21 +17,19 @@
 			</head>
 			<body>
 				<p>
-					<a href="{/source/request/@context-path}/">
-						<img src="{/source/request/@context-path}/logo/" />
-						<span class="logo">Chellow</span>
+					<a href="{/source/request/@context-path}/reports/1/output/">
+						<xsl:value-of select="'Chellow'" />
 					</a>
 					&gt;
-					<a href="{/source/request/@context-path}/supplies/">
+					<a href="{/source/request/@context-path}/reports/99/output/">
 						<xsl:value-of select="'Supplies'" />
 					</a>
 					&gt;
-					<xsl:value-of select="concat(/source/supply/@id, ' [')" />
 					<a
 						href="{/source/request/@context-path}/reports/7/output/?supply-id={/source/supply/@id}">
-						<xsl:value-of select="'view'" />
+						<xsl:value-of select="/source/supply/@id" />
 					</a>
-					<xsl:value-of select="']'" />
+					&gt; Edit
 				</p>
 				<xsl:if test="//message">
 					<ul>

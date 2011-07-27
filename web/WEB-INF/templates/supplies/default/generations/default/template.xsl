@@ -10,32 +10,29 @@
 				<title>
 					Chellow &gt; Supplies &gt;
 					<xsl:value-of select="/source/supply-generation/supply/@id" />
-					&gt; Generations &gt;
+					&gt; Generation
 					<xsl:value-of select="/source/supply-generation/@id" />
 				</title>
 				<link rel="stylesheet" type="text/css"
 					href="{/source/request/@context-path}/reports/19/output/" />
 			</head>
 			<body>
-				 <p>
-                    <a href="{/source/request/@context-path}/reports/1/output/">
-                        <xsl:value-of select="'Home'" />
-                    </a>
-                    &gt;
-                    <a href="{/source/request/@context-path}/reports/99/output/">
-                        <xsl:value-of select="'Supplies'" />
-                    </a>
-                    &gt;
-                    <a href="{/source/request/@context-path}/reports/7/output/?supply-id={/source/supply-generation/supply/@id}">
-                    <xsl:value-of select="/source/supply/@id" />
-                    </a>
-					&gt;
-					<a
-						href="{/source/request/@context-path}/supplies/{/source/supply-generation/supply/@id}/generations/">
-						<xsl:value-of select="'Generations'" />
+				<p>
+					<a href="{/source/request/@context-path}/reports/1/output/">
+						<xsl:value-of select="'Chellow'" />
 					</a>
 					&gt;
-					<xsl:value-of select="/source/supply-generation/@id" />
+					<a href="{/source/request/@context-path}/reports/99/output/">
+						<xsl:value-of select="'Supplies'" />
+					</a>
+					&gt;
+					<a
+						href="{/source/request/@context-path}/reports/7/output/?supply-id={/source/supply-generation/supply/@id}">
+						<xsl:value-of select="/source/supply-generation/supply/@id" />
+					</a>
+					&gt;
+					<xsl:value-of
+						select="concat('Generation ', /source/supply-generation/@id)" />
 				</p>
 				<xsl:if test="//message">
 					<ul>
@@ -81,9 +78,7 @@
 								<xsl:for-each select="/source/supply-generation/site-supply-generation">
 									<tr>
 										<td>
-											<a href="{/source/request/@context-path}/sites/{site/@id}/">
-												<xsl:value-of select="site/@code" />
-											</a>
+											<xsl:value-of select="site/@code" />
 										</td>
 										<td>
 											<xsl:value-of select="site/@name" />
@@ -148,7 +143,7 @@
 								</legend>
 								<fieldset>
 									<legend>Start date</legend>
-									<input name="start-year">
+									<input name="start-year" size="4" maxlength="4">
 										<xsl:choose>
 											<xsl:when test="/source/request/parameter[@name='start-year']">
 												<xsl:attribute name="value">
@@ -164,7 +159,7 @@
 											</xsl:otherwise>
 										</xsl:choose>
 									</input>
-									-
+									<xsl:value-of select="'-'" />
 									<select name="start-month">
 										<xsl:for-each select="/source/months/month">
 											<option value="{@number}">
@@ -186,7 +181,7 @@
 											</option>
 										</xsl:for-each>
 									</select>
-									-
+									<xsl:value-of select="'-'" />
 									<select name="start-day">
 										<xsl:for-each select="/source/days/day">
 											<option value="{@number}">
@@ -208,8 +203,50 @@
 											</option>
 										</xsl:for-each>
 									</select>
-									<xsl:value-of
-										select="concat(' ', /source/supply-generation/hh-start-date[@label='start']/@hour, ':', /source/supply-generation/hh-start-date[@label='start']/@minute, 'Z')" />
+									<xsl:value-of select="' '" />
+									<select name="start-hour">
+										<xsl:for-each select="/source/hours/hour">
+											<option value="{@number}">
+												<xsl:choose>
+													<xsl:when test="/source/request/parameter[@name='start-hour']">
+														<xsl:if
+															test="/source/request/parameter[@name='start-hour']/value/text() = @number">
+															<xsl:attribute name="selected" />
+														</xsl:if>
+													</xsl:when>
+													<xsl:otherwise>
+														<xsl:if
+															test="/source/supply-generation/hh-start-date[@label='start']/@hour = @number">
+															<xsl:attribute name="selected" />
+														</xsl:if>
+													</xsl:otherwise>
+												</xsl:choose>
+												<xsl:value-of select="@number" />
+											</option>
+										</xsl:for-each>
+									</select>
+									<xsl:value-of select="':'" />
+									<select name="start-minute">
+										<xsl:for-each select="/source/hh-minutes/minute">
+											<option value="{@number}">
+												<xsl:choose>
+													<xsl:when test="/source/request/parameter[@name='start-minute']">
+														<xsl:if
+															test="/source/request/parameter[@name='start-minute']/value/text() = @number">
+															<xsl:attribute name="selected" />
+														</xsl:if>
+													</xsl:when>
+													<xsl:otherwise>
+														<xsl:if
+															test="/source/supply-generation/hh-start-date[@label='start']/@minute = @number">
+															<xsl:attribute name="selected" />
+														</xsl:if>
+													</xsl:otherwise>
+												</xsl:choose>
+												<xsl:value-of select="@number" />
+											</option>
+										</xsl:for-each>
+									</select>
 								</fieldset>
 								<br />
 								<fieldset>
@@ -237,7 +274,7 @@
 										</input>
 									</label>
 									<xsl:value-of select="' '" />
-									<input name="finish-year">
+									<input name="finish-year" size="4" maxlength="4">
 										<xsl:attribute name="value">
 											<xsl:choose>
 												<xsl:when test="/source/request/parameter[@name='finish-year']">
@@ -255,8 +292,7 @@
 											</xsl:choose>
 										</xsl:attribute>
 									</input>
-
-									-
+									<xsl:value-of select="'-'" />
 									<select name="finish-month">
 										<xsl:for-each select="/source/months/month">
 											<option value="{@number}">
@@ -282,22 +318,18 @@
 														</xsl:if>
 													</xsl:otherwise>
 												</xsl:choose>
-
 												<xsl:value-of select="@number" />
 											</option>
 										</xsl:for-each>
 									</select>
-
-									-
+									<xsl:value-of select="'-'" />
 									<select name="finish-day">
 										<xsl:for-each select="/source/days/day">
 											<option value="{@number}">
 												<xsl:choose>
 													<xsl:when test="/source/request/parameter[@name='finish-day']">
-
 														<xsl:if
 															test="/source/request/parameter[@name='finish-day']/value/text() = @number">
-
 															<xsl:attribute name="selected" />
 														</xsl:if>
 													</xsl:when>
@@ -314,16 +346,67 @@
 														</xsl:if>
 													</xsl:otherwise>
 												</xsl:choose>
-
 												<xsl:value-of select="@number" />
 											</option>
 										</xsl:for-each>
 									</select>
-									<xsl:if
-										test="/source/supply-generation/hh-start-date[@label='finish']">
-										<xsl:value-of
-											select="concat(' ', /source/supply-generation/hh-start-date[@label='finish']/@hour, ':', /source/supply-generation/hh-start-date[@label='finish']/@minute, 'Z')" />
-									</xsl:if>
+									<xsl:value-of select="' '" />
+									<select name="finish-hour">
+										<xsl:for-each select="/source/hours/hour">
+											<option value="{@number}">
+												<xsl:choose>
+													<xsl:when test="/source/request/parameter[@name='finish-hour']">
+														<xsl:if
+															test="/source/request/parameter[@name='finish-hour']/value/text() = @number">
+															<xsl:attribute name="selected" />
+														</xsl:if>
+													</xsl:when>
+													<xsl:when
+														test="/source/supply-generation/hh-start-date[@label='finish']">
+														<xsl:if
+															test="/source/supply-generation/hh-start-date[@label='finish']/@hour = @number">
+															<xsl:attribute name="selected" />
+														</xsl:if>
+													</xsl:when>
+													<xsl:otherwise>
+														<xsl:if test="/source/date/@hour = @number">
+															<xsl:attribute name="selected" />
+														</xsl:if>
+													</xsl:otherwise>
+												</xsl:choose>
+												<xsl:value-of select="@number" />
+											</option>
+										</xsl:for-each>
+									</select>
+									<xsl:value-of select="':'" />
+									<select name="finish-minute">
+										<xsl:for-each select="/source/hh-minutes/minute">
+											<option value="{@number}">
+												<xsl:choose>
+													<xsl:when
+														test="/source/request/parameter[@name='finish-minute']">
+														<xsl:if
+															test="/source/request/parameter[@name='finish-minute']/value/text() = @number">
+															<xsl:attribute name="selected" />
+														</xsl:if>
+													</xsl:when>
+													<xsl:when
+														test="/source/supply-generation/hh-start-date[@label='finish']">
+														<xsl:if
+															test="/source/supply-generation/hh-start-date[@label='finish']/@minute = @number">
+															<xsl:attribute name="selected" />
+														</xsl:if>
+													</xsl:when>
+													<xsl:otherwise>
+														<xsl:if test="/source/date/@minute = @number">
+															<xsl:attribute name="selected" />
+														</xsl:if>
+													</xsl:otherwise>
+												</xsl:choose>
+												<xsl:value-of select="@number" />
+											</option>
+										</xsl:for-each>
+									</select>
 								</fieldset>
 								<br />
 								<br />
@@ -411,10 +494,7 @@
 								</label>
 								<xsl:if test="/source/supply-generation/hhdc-contract">
 									<xsl:value-of select="' '" />
-									<a
-										href="{/source/request/@context-path}/hhdc-contracts/{/source/supply-generation/hhdc-contract/@id}/">
-										<xsl:value-of select="/source/supply-generation/hhdc-contract/@name" />
-									</a>
+									<xsl:value-of select="/source/supply-generation/hhdc-contract/@name" />
 								</xsl:if>
 								<br />
 								<label>
@@ -608,7 +688,6 @@
 										</input>
 									</label>
 									<br />
-									<br />
 									<label>
 										Agreed Supply Capacity
 										<input name="import-agreed-supply-capacity" size="9"
@@ -629,7 +708,6 @@
 										</input>
 										<xsl:value-of select="' kVA'" />
 									</label>
-									<br />
 									<br />
 									<label>
 										<xsl:value-of select="'Supplier Contract '" />
@@ -676,148 +754,6 @@
 										</input>
 									</label>
 									<br />
-									<br />
-									<br />
-									<table>
-										<caption>Invoices</caption>
-										<thead>
-											<tr>
-												<th>Chellow Id</th>
-												<th>Reference</th>
-												<th>Bill</th>
-												<th>From</th>
-												<th>To</th>
-												<th>Net</th>
-												<th>VAT</th>
-												<th>MPANs</th>
-												<th>Status</th>
-											</tr>
-										</thead>
-										<tbody>
-											<xsl:for-each
-												select="/source/supply-generation/mpan[llfc/@is-import='true']/invoice-mpan/invoice">
-												<tr>
-													<td>
-														<a
-															href="{/source/request/@context-path}/suppliers/{batch/supplier-service/supplier/@id}/services/{batch/supplier-service/@id}/batches/{batch/@id}/invoices/{@id}/">
-															<xsl:value-of select="@id" />
-														</a>
-													</td>
-													<td>
-														<xsl:value-of select="@reference" />
-													</td>
-													<td>
-														<a
-															href="{/source/request/@context-path}/suppliers/{bill/account/supplier/@id}/accounts/{bill/account/@id}/bills/{bill/@id}/">
-															<xsl:value-of select="bill/@id" />
-														</a>
-													</td>
-													<td>
-														<xsl:value-of
-															select="concat(day-start-date/@year, '-', day-start-date/@month, '-', day-start-date/@day)" />
-													</td>
-													<td>
-														<xsl:value-of
-															select="concat(day-finish-date/@year, '-', day-finish-date/@month, '-', day-finish-date/@day)" />
-													</td>
-													<td>
-														<xsl:value-of select="@net" />
-													</td>
-													<td>
-														<xsl:value-of select="@vat" />
-													</td>
-													<td>
-														<xsl:for-each select="mpan">
-															<a
-																href="{/source/request/@context-path}/supplies/{mpan/supply-generation/supplier/@id}/generations/{mpan/supply-generation/@id}/">
-																<xsl:value-of select="@core" />
-															</a>
-															<xsl:value-of select="' '" />
-														</xsl:for-each>
-													</td>
-													<td>
-														<xsl:choose>
-															<xsl:when test="@status='0'">
-																Pending
-															</xsl:when>
-															<xsl:when test="@status='1'">
-																Paid
-															</xsl:when>
-															<xsl:when test="@status='2'">
-																Rejected
-															</xsl:when>
-														</xsl:choose>
-													</td>
-												</tr>
-											</xsl:for-each>
-										</tbody>
-									</table>
-									<br />
-									<table>
-										<caption>
-											Register Reads
-										</caption>
-										<thead>
-											<tr>
-												<th>Chellow Id</th>
-												<th>Coefficient</th>
-												<th>Units</th>
-												<th>TPR</th>
-												<th>Is Import?</th>
-												<th>Previous Date</th>
-												<th>Previous Value</th>
-												<th>Previous Type</th>
-												<th>Present Date</th>
-												<th>Present Value</th>
-												<th>Present Type</th>
-											</tr>
-										</thead>
-										<xsl:for-each
-											select="/source/supply-generation/mpan[llfc/@is-import='true']/register-read">
-											<tr>
-												<td>
-													<a
-														href="{/source/request/@context-path}/suppliers/{invoice/batch/supplier-service/supplier/@id}/services/{invoice/batch/supplier-service/@id}/batches/{invoice/batch/@id}/invoices/{invoice/@id}/reads/{@id}/">
-														<xsl:value-of select="@id" />
-													</a>
-												</td>
-												<td>
-													<xsl:value-of select="@coefficient" />
-												</td>
-												<td>
-													<xsl:value-of select="@units" />
-												</td>
-												<td>
-													<a href="{/source/request/@context-path}/tprs/{tpr/@id}/">
-														<xsl:value-of select="tpr/@code" />
-													</a>
-												</td>
-												<td>
-													<xsl:value-of select="@is-import" />
-												</td>
-												<td>
-													<xsl:value-of
-														select="concat(day-finish-date[@label='previous']/@year, '-', day-finish-date[@label='previous']/@month, '-', day-finish-date[@label='previous']/@day)" />
-												</td>
-												<td>
-													<xsl:value-of select="@previous-value" />
-												</td>
-												<td>
-													<xsl:value-of select="@previous-type" />
-												</td>
-												<td>
-													<xsl:value-of
-														select="concat(day-finish-date[@label='present']/@year, '-', day-finish-date[@label='present']/@month, '-', day-finish-date[@label='present']/@day)" />
-												</td>
-												<td>
-													<xsl:value-of select="@present-value" />
-												</td>
-												<td>
-													<xsl:value-of select="@present-type" />
-												</td>
-											</tr>
-										</xsl:for-each>
-									</table>
 								</fieldset>
 								<br />
 								<fieldset>
@@ -841,7 +777,6 @@
 											</xsl:choose>
 										</input>
 									</label>
-									<br />
 									<br />
 									<br />
 									<label>
@@ -885,8 +820,6 @@
 										</input>
 									</label>
 									<br />
-									<br />
-									<br />
 									<label>
 										Agreed Supply Capacity
 										<input name="export-agreed-supply-capacity" size="9"
@@ -907,8 +840,6 @@
 										</input>
 										<xsl:value-of select="' kVA'" />
 									</label>
-									<br />
-									<br />
 									<br />
 									<label>
 										<xsl:value-of select="'Supplier Contract '" />
@@ -961,147 +892,6 @@
 										</input>
 									</label>
 									<br />
-									<br />
-									<table>
-										<caption>Invoices</caption>
-										<thead>
-											<tr>
-												<th>Chellow Id</th>
-												<th>Reference</th>
-												<th>Bill</th>
-												<th>From</th>
-												<th>To</th>
-												<th>Net</th>
-												<th>VAT</th>
-												<th>MPANs</th>
-												<th>Status</th>
-											</tr>
-										</thead>
-										<tbody>
-											<xsl:for-each
-												select="/source/supply-generation/mpan[llfc/@is-import='false']/invoice-mpan/invoice">
-												<tr>
-													<td>
-														<a
-															href="{/source/request/@context-path}/suppliers/{batch/supplier-service/supplier/@id}/services/{batch/supplier-service/@id}/batches/{batch/@id}/invoices/{@id}/">
-															<xsl:value-of select="@id" />
-														</a>
-													</td>
-													<td>
-														<xsl:value-of select="@reference" />
-													</td>
-													<td>
-														<a
-															href="{/source/request/@context-path}/suppliers/{bill/account/supplier/@id}/accounts/{bill/account/@id}/bills/{bill/@id}/">
-															<xsl:value-of select="bill/@id" />
-														</a>
-													</td>
-													<td>
-														<xsl:value-of
-															select="concat(day-start-date/@year, '-', day-start-date/@month, '-', day-start-date/@day)" />
-													</td>
-													<td>
-														<xsl:value-of
-															select="concat(day-finish-date/@year, '-', day-finish-date/@month, '-', day-finish-date/@day)" />
-													</td>
-													<td>
-														<xsl:value-of select="@net" />
-													</td>
-													<td>
-														<xsl:value-of select="@vat" />
-													</td>
-													<td>
-														<xsl:for-each select="mpan">
-															<a
-																href="{/source/request/@context-path}/supplies/{mpan/supply-generation/supplier/@id}/generations/{mpan/supply-generation/@id}/">
-																<xsl:value-of select="@core" />
-															</a>
-															<xsl:value-of select="' '" />
-														</xsl:for-each>
-													</td>
-													<td>
-														<xsl:choose>
-															<xsl:when test="@status='0'">
-																Pending
-															</xsl:when>
-															<xsl:when test="@status='1'">
-																Paid
-															</xsl:when>
-															<xsl:when test="@status='2'">
-																Rejected
-															</xsl:when>
-														</xsl:choose>
-													</td>
-												</tr>
-											</xsl:for-each>
-										</tbody>
-									</table>
-									<br />
-									<table>
-										<caption>
-											Register Reads
-										</caption>
-										<thead>
-											<tr>
-												<th>Chellow Id</th>
-												<th>Coefficient</th>
-												<th>Units</th>
-												<th>TPR</th>
-												<th>Is Import?</th>
-												<th>Previous Date</th>
-												<th>Previous Value</th>
-												<th>Previous Type</th>
-												<th>Present Date</th>
-												<th>Present Value</th>
-												<th>Present Type</th>
-											</tr>
-										</thead>
-										<xsl:for-each
-											select="/source/supply-generation/mpan[llfc/@is-import='false']/register-read">
-											<tr>
-												<td>
-													<a
-														href="{/source/request/@context-path}/suppliers/{invoice/batch/supplier-service/supplier/@id}/services/{invoice/batch/supplier-service/@id}/batches/{invoice/batch/@id}/invoices/{invoice/@id}/reads/{@id}/">
-														<xsl:value-of select="@id" />
-													</a>
-												</td>
-												<td>
-													<xsl:value-of select="@coefficient" />
-												</td>
-												<td>
-													<xsl:value-of select="@units" />
-												</td>
-												<td>
-													<a href="{/source/request/@context-path}/tprs/{tpr/@id}/">
-														<xsl:value-of select="tpr/@code" />
-													</a>
-												</td>
-												<td>
-													<xsl:value-of select="@is-import" />
-												</td>
-												<td>
-													<xsl:value-of
-														select="concat(day-finish-date[@label='previous']/@year, '-', day-finish-date[@label='previous']/@month, '-', day-finish-date[@label='previous']/@day)" />
-												</td>
-												<td>
-													<xsl:value-of select="@previous-value" />
-												</td>
-												<td>
-													<xsl:value-of select="@previous-type" />
-												</td>
-												<td>
-													<xsl:value-of
-														select="concat(day-finish-date[@label='present']/@year, '-', day-finish-date[@label='present']/@month, '-', day-finish-date[@label='present']/@day)" />
-												</td>
-												<td>
-													<xsl:value-of select="@present-value" />
-												</td>
-												<td>
-													<xsl:value-of select="@present-type" />
-												</td>
-											</tr>
-										</xsl:for-each>
-									</table>
 								</fieldset>
 								<br />
 								<input type="submit" value="Update" />
@@ -1120,11 +910,6 @@
 								</fieldset>
 							</form>
 						</xsl:if>
-						<ul>
-							<li>
-								<a href="channels/">Channels</a>
-							</li>
-						</ul>
 					</xsl:otherwise>
 				</xsl:choose>
 			</body>

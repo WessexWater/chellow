@@ -213,7 +213,7 @@ public class Site extends PersistentEntity {
 			Hiber.rollBack();
 			if (HttpException
 					.isSQLException(e,
-							"ERROR: duplicate key violates unique constraint \"mpan_dso_id_key\"")) {
+							"ERROR: duplicate key violates unique constraint \"mpan_dno_id_key\"")) {
 				BatchUpdateException be = (BatchUpdateException) e.getCause();
 				String message = be.getMessage();
 				boolean isImport = message.charAt(message.lastIndexOf(',') - 1) == '0';

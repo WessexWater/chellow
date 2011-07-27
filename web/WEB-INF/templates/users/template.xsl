@@ -13,9 +13,8 @@
 			</head>
 			<body>
 				<p>
-					<a href="{/source/request/@context-path}/">
-						<img src="{/source/request/@context-path}/logo/" />
-						<span class="logo">Chellow</span>
+					<a href="{/source/request/@context-path}/reports/1/output/">
+						<xsl:value-of select="'Chellow'" />
 					</a>
 					<xsl:value-of select="' &gt; Users'" />
 				</p>
@@ -55,7 +54,7 @@
 									</a>
 								</td>
 								<td>
-									<xsl:value-of select="concat(dso/@name, provider/@name)" />
+									<xsl:value-of select="concat(dno/@name, provider/@name)" />
 								</td>
 							</tr>
 						</xsl:for-each>

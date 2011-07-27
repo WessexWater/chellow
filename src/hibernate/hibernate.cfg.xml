@@ -63,8 +63,8 @@
 		<mapping resource="hibernate/Batch.hbm.xml" />
 		<mapping resource="hibernate/Bill.hbm.xml" />
 		<mapping resource="hibernate/RateScript.hbm.xml" />
-		<mapping resource="hibernate/DsoContract.hbm.xml" />
-		<mapping resource="hibernate/Dso.hbm.xml" />
+		<mapping resource="hibernate/DnoContract.hbm.xml" />
+		<mapping resource="hibernate/Dno.hbm.xml" />
 		<mapping resource="hibernate/Tpr.hbm.xml" />
 		<mapping resource="hibernate/RegisterRead.hbm.xml" />
 		<mapping resource="hibernate/Ssc.hbm.xml" />

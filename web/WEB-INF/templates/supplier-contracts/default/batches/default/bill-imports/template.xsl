@@ -20,27 +20,26 @@
 
 			<body>
 				<p>
-					<a href="{/source/request/@context-path}/">
-						<img src="{/source/request/@context-path}/logo/" />
-						<span class="logo">Chellow</span>
+					<a href="{/source/request/@context-path}/reports/1/output/">
+						<xsl:value-of select="'Chellow'" />
 					</a>
 					&gt;
-					<a href="{/source/request/@context-path}/supplier-contracts/">
+					<a href="{/source/request/@context-path}/reports/75/output/">
 						<xsl:value-of select="'Supplier Contracts'" />
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/supplier-contracts/{/source/bill-imports/batch/supplier-contract/@id}/">
+						href="{/source/request/@context-path}/reports/77/output/?supplier-contract-id={/source/bill-imports/batch/supplier-contract/@id}">
 						<xsl:value-of select="/source/bill-imports/batch/supplier-contract/@name" />
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/supplier-contracts/{/source/bill-imports/batch/supplier-contract/@id}/batches/">
+						href="{/source/request/@context-path}/reports/89/output/?supplier-contract-id={/source/bill-imports/batch/supplier-contract/@id}">
 						<xsl:value-of select="'Batches'" />
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/supplier-contracts/{/source/bill-imports/batch/supplier-contract/@id}/batches/{/source/bill-imports/batch/@id}/">
+						href="{/source/request/@context-path}/reports/91/output/?batch-id={/source/bill-imports/batch/@id}">
 						<xsl:value-of select="/source/bill-imports/batch/@reference" />
 					</a>
 					&gt;
@@ -56,15 +55,6 @@
 					</ul>
 				</xsl:if>
 				<br />
-				<ul>
-					<xsl:for-each select="/source/bill-imports/bill-import">
-						<li>
-							<a href="{@id}/">
-								<xsl:value-of select="@id" />
-							</a>
-						</li>
-					</xsl:for-each>
-				</ul>
 				<form enctype="multipart/form-data" action="." method="post">
 					<fieldset>
 						<legend>Import Bills</legend>
@@ -75,6 +65,15 @@
 						<input type="submit" value="Import" />
 					</fieldset>
 				</form>
+				<ul>
+					<xsl:for-each select="/source/bill-imports/bill-import">
+						<li>
+							<a href="{@id}/">
+								<xsl:value-of select="@id" />
+							</a>
+						</li>
+					</xsl:for-each>
+				</ul>
 			</body>
 		</html>
 	</xsl:template>

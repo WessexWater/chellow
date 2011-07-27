@@ -2,8 +2,8 @@
 <xsl:stylesheet version="1.0"
 	xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
 	<xsl:output method="html" encoding="US-ASCII"
-		doctype-public="-//W3C//DTD HTML 4.01//EN"
-		doctype-system="http://www.w3.org/TR/html4/strict.dtd" indent="yes" />
+		doctype-public="-//W3C//DTD HTML 4.01//EN" doctype-system="http://www.w3.org/TR/html4/strict.dtd"
+		indent="yes" />
 	<xsl:template match="/">
 		<html>
 			<head>
@@ -13,12 +13,10 @@
 			</head>
 			<body>
 				<p>
-					<a href="{/source/request/@context-path}/">
-						<img
-							src="{/source/request/@context-path}/logo/" />
-						<span class="logo">Chellow</span>
+					<a href="{/source/request/@context-path}/reports/1/output/">
+						<xsl:value-of select="'Chellow'" />
 					</a>
-					<xsl:value-of select="' &gt; User Roles'" />
+					&gt; User Roles
 				</p>
 				<xsl:if test="//message">
 					<ul>
@@ -40,8 +38,7 @@
 						<xsl:for-each select="/source/user-roles/user-role">
 							<tr>
 								<td>
-									<a
-										href="{/source/request/@context-path}/user-roles/{@id}/">
+									<a href="{/source/request/@context-path}/user-roles/{@id}/">
 										<xsl:value-of select="@id" />
 									</a>
 								</td>

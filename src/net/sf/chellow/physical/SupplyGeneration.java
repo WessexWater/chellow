@@ -1,6 +1,6 @@
 /*******************************************************************************
  * 
- *  Copyright (c) 2005, 2010 Wessex Water Services Limited
+ *  Copyright (c) 2005, 2011 Wessex Water Services Limited
  *  
  *  This file is part of Chellow.
  * 
@@ -30,7 +30,7 @@ import java.util.List;
 import java.util.Set;
 
 import net.sf.chellow.billing.Bill;
-import net.sf.chellow.billing.Dso;
+import net.sf.chellow.billing.Dno;
 import net.sf.chellow.billing.HhdcContract;
 import net.sf.chellow.billing.MopContract;
 import net.sf.chellow.billing.SupplierContract;
@@ -853,11 +853,11 @@ public class SupplyGeneration extends PersistentEntity {
 		this.channels = channels;
 	}
 
-	public Dso getDso() {
+	public Dno getDno() {
 		if (importMpan == null) {
-			return exportMpan.getCore().getDso();
+			return exportMpan.getCore().getDno();
 		} else {
-			return importMpan.getCore().getDso();
+			return importMpan.getCore().getDno();
 		}
 	}
 
@@ -1096,7 +1096,7 @@ public class SupplyGeneration extends PersistentEntity {
 								+ "' says that the MPAN is actually export.");
 			}
 			if (supply.getSource().getCode().equals(Source.NETWORK_CODE)
-					&& importMpan.getCore().getDso().getCode().equals("99")) {
+					&& importMpan.getCore().getDno().getCode().equals("99")) {
 				throw new UserException(
 						"A network supply can't have a 99 import MPAN.");
 			}
@@ -1113,10 +1113,10 @@ public class SupplyGeneration extends PersistentEntity {
 			}
 		}
 		if (importMpan != null && exportMpan != null) {
-			if (!importMpan.getCore().getDso()
-					.equals(exportMpan.getCore().getDso())) {
+			if (!importMpan.getCore().getDno()
+					.equals(exportMpan.getCore().getDno())) {
 				throw new UserException(
-						"Two MPANs on the same supply generation must have the same DSO.");
+						"Two MPANs on the same supply generation must have the same DNO.");
 			}
 			if (!importMpan.getLlfc().getVoltageLevel()
 					.equals(exportMpan.getLlfc().getVoltageLevel())) {
@@ -1124,8 +1124,8 @@ public class SupplyGeneration extends PersistentEntity {
 						"The voltage level indicated by the Line Loss Factor must be the same for both the MPANs.");
 			}
 		}
-		Dso dso = getDso();
-		setMtc(Mtc.getMtc(dso, mtcCode));
+		Dno dno = getDno();
+		setMtc(Mtc.getMtc(dno, mtcCode));
 		String meterTypeCode = mtc.getMeterType().getCode();
 		String copCode = cop.getCode();
 
@@ -1514,6 +1514,8 @@ public class SupplyGeneration extends PersistentEntity {
 		}
 		source.appendChild(MonadDate.getMonthsXml(doc));
 		source.appendChild(MonadDate.getDaysXml(doc));
+		source.appendChild(MonadDate.getHoursXml(doc));
+		source.appendChild(HhStartDate.getHhMinutesXml(doc));
 		source.appendChild(new MonadDate().toXml(doc));
 		for (Pc pc : (List<Pc>) Hiber.session()
 				.createQuery("from Pc pc order by pc.code").list()) {
@@ -1587,7 +1589,7 @@ public class SupplyGeneration extends PersistentEntity {
 				Hiber.commit();
 				inv.sendOk(document());
 			} else {
-				Date startDate = inv.getDate("start");
+				Date startDate = inv.getDateTime("start");
 				Long mopContractId = inv.getLong("mop-contract-id");
 				Long hhdcContractId = inv.getLong("hhdc-contract-id");
 				String meterSerialNumber = inv.getString("meter-serial-number");
@@ -1614,7 +1616,7 @@ public class SupplyGeneration extends PersistentEntity {
 				String importSupplierAccount = null;
 				boolean isEnded = inv.getBoolean("is-ended");
 				if (isEnded) {
-					Date finishDateRaw = inv.getDate("finish");
+					Date finishDateRaw = inv.getDateTime("finish");
 					Calendar cal = MonadDate.getCalendar();
 					cal.setTime(finishDateRaw);
 					cal.add(Calendar.DAY_OF_MONTH, 1);

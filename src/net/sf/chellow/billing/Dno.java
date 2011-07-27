@@ -42,52 +42,52 @@ import net.sf.chellow.ui.Chellow;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-public class Dso extends Party {
-	static public Dso getDso(Long id) throws HttpException {
-		Dso dso = (Dso) Hiber.session().get(Dso.class, id);
-		if (dso == null) {
-			throw new UserException("There is no DSO with the id '" + id + "'.");
+public class Dno extends Party {
+	static public Dno getDno(Long id) throws HttpException {
+		Dno dno = (Dno) Hiber.session().get(Dno.class, id);
+		if (dno == null) {
+			throw new UserException("There is no DNO with the id '" + id + "'.");
 		}
-		return dso;
+		return dno;
 	}
 
-	static public Dso getDso(Participant participant) throws HttpException {
-		Dso dso = (Dso) Hiber
+	static public Dno getDno(Participant participant) throws HttpException {
+		Dno dno = (Dno) Hiber
 				.session()
 				.createQuery(
-						"from Dso dso where dso.participant = :participant and dso.validTo is null")
+						"from Dno dno where dno.participant = :participant and dno.validTo is null")
 				.setEntity("participant", participant).uniqueResult();
-		if (dso == null) {
-			throw new UserException("There is no DSO with the participant '"
+		if (dno == null) {
+			throw new UserException("There is no DNO with the participant '"
 					+ participant.getCode() + "'.");
 		}
-		return dso;
+		return dno;
 	}
 
-	static public Dso getDso(String code) throws HttpException {
-		Dso dso = findDso(code);
-		if (dso == null) {
-			throw new UserException("There is no DSO with the code '" + code
+	static public Dno getDno(String code) throws HttpException {
+		Dno dno = findDno(code);
+		if (dno == null) {
+			throw new UserException("There is no DNO with the code '" + code
 					+ "'.");
 		}
-		return dso;
+		return dno;
 	}
 
-	static public Dso findDso(String code) throws HttpException {
-		return (Dso) Hiber.session().createQuery(
-				"from Dso dso where dso.code = :code").setString("code", code)
+	static public Dno findDno(String code) throws HttpException {
+		return (Dno) Hiber.session().createQuery(
+				"from Dno dno where dno.code = :code").setString("code", code)
 				.uniqueResult();
 	}
 
 	private String code;
 
-	public Dso(String name, Participant participant, Date validFrom,
+	public Dno(String name, Participant participant, Date validFrom,
 			Date validTo, String code) throws HttpException {
 		super(name, participant, MarketRole.DISTRIBUTOR, validFrom, validTo);
 		setCode(code);
 	}
 
-	public Dso() {
+	public Dno() {
 		super();
 	}
 
@@ -100,7 +100,7 @@ public class Dso extends Party {
 	}
 
 	public Element toXml(Document doc) throws HttpException {
-		Element element = super.toXml(doc, "dso");
+		Element element = super.toXml(doc, "dno");
 		element.setAttribute("code", code.toString());
 		return element;
 	}
@@ -109,8 +109,8 @@ public class Dso extends Party {
 		Llfc llfc = (Llfc) Hiber
 				.session()
 				.createQuery(
-						"from Llfc llfc where llfc.dso = :dso and llfc.code = :code and llfc.validFrom <= :date and (llfc.validTo is null or llfc.validTo >= :date)")
-				.setEntity("dso", this).setInteger("code",
+						"from Llfc llfc where llfc.dno = :dno and llfc.code = :code and llfc.validFrom <= :date and (llfc.validTo is null or llfc.validTo >= :date)")
+				.setEntity("dno", this).setInteger("code",
 						Integer.parseInt(code)).setTimestamp("date", date)
 				.uniqueResult();
 		if (llfc == null) {
@@ -133,30 +133,30 @@ public class Dso extends Party {
 		}
 
 		Llfc llfc = (Llfc) Hiber.session().createQuery(
-				"from Llfc llfc where llfc.dso = :dso and llfc.code = :code")
-				.setEntity("dso", this).setInteger("code", llfcInt)
+				"from Llfc llfc where llfc.dno = :dno and llfc.code = :code")
+				.setEntity("dno", this).setInteger("code", llfcInt)
 				.uniqueResult();
 		if (llfc == null) {
 			throw new UserException("There is no LLFC with the code " + code
-					+ " associated with the DSO " + getCode() + ".");
+					+ " associated with the DNO " + getCode() + ".");
 		}
 		return llfc;
 	}
 
-	public DsoContracts contractsInstance() {
-		return new DsoContracts(this);
+	public DnoContracts contractsInstance() {
+		return new DnoContracts(this);
 	}
 
-	public DsoContract insertContract(Long id, String name,
+	public DnoContract insertContract(Long id, String name,
 			HhStartDate startDate, HhStartDate finishDate, String chargeScript,
 			Long rateScriptId, String rateScript) throws HttpException {
-		DsoContract contract = findContract(name);
+		DnoContract contract = findContract(name);
 		if (contract == null) {
-			contract = new DsoContract(this, id, name, startDate, finishDate,
+			contract = new DnoContract(this, id, name, startDate, finishDate,
 					chargeScript);
 		} else {
 			throw new UserException(
-					"There is already a DSO contract with this name.");
+					"There is already a DNO contract with this name.");
 		}
 		Hiber.session().save(contract);
 		Hiber.flush();
@@ -165,12 +165,12 @@ public class Dso extends Party {
 		return contract;
 	}
 
-	public DsoContract findContract(String name) throws HttpException {
-		return (DsoContract) Hiber
+	public DnoContract findContract(String name) throws HttpException {
+		return (DnoContract) Hiber
 				.session()
 				.createQuery(
-						"from DsoContract contract where contract.party = :dso and contract.name = :contractName")
-				.setEntity("dso", this).setString("contractName", name)
+						"from DnoContract contract where contract.party = :dno and contract.name = :contractName")
+				.setEntity("dno", this).setString("contractName", name)
 				.uniqueResult();
 	}
 
@@ -186,28 +186,28 @@ public class Dso extends Party {
 	public Urlable getChild(UriPathElement uriId) throws HttpException {
 		if (Llfcs.URI_ID.equals(uriId)) {
 			return new Llfcs(this);
-		} else if (DsoContracts.URI_ID.equals(uriId)) {
-			return new DsoContracts(this);
+		} else if (DnoContracts.URI_ID.equals(uriId)) {
+			return new DnoContracts(this);
 		} else {
 			throw new NotFoundException();
 		}
 	}
 
-	public DsoContract getContract(String name) throws HttpException {
-		DsoContract contract = (DsoContract) Hiber
+	public DnoContract getContract(String name) throws HttpException {
+		DnoContract contract = (DnoContract) Hiber
 				.session()
 				.createQuery(
-						"from DsoContract contract where contract.party.id = :dsoId and contract.name = :name")
-				.setLong("dsoId", getId()).setString("name", name)
+						"from DnoContract contract where contract.party.id = :dnoId and contract.name = :name")
+				.setLong("dnoId", getId()).setString("name", name)
 				.uniqueResult();
 		if (contract == null) {
-			throw new NotFoundException("DSO contract not found.");
+			throw new NotFoundException("DNO contract not found.");
 		}
 		return contract;
 	}
 
 	@Override
 	public MonadUri getUri() throws HttpException {
-		return Chellow.DSOS_INSTANCE.getUri().resolve(getUriId()).append("/");
+		return Chellow.DNOS_INSTANCE.getUri().resolve(getUriId()).append("/");
 	}
 }

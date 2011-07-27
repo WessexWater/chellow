@@ -122,6 +122,8 @@
 			<control name="start-year" value="2000" />
 			<control name="start-month" value="01" />
 			<control name="start-day" value="03" />
+			<control name="start-hour" value="00" />
+			<control name="start-minute" value="00" />
 			<control name="has-finished" value="false" />
 			<response-code value="303" />
 			<regex pattern="/hhdc-contracts/0/" />
@@ -201,6 +203,8 @@ def virtual_bill(supply_source):
 			<control name="start-year" value="2000" />
 			<control name="start-month" value="01" />
 			<control name="start-day" value="03" />
+			<control name="start-hour" value="00" />
+			<control name="start-minute" value="00" />
 
 			<regex pattern="/chellow/supplier-contracts/4/" />
 			<response-code value="303" />
@@ -255,6 +259,8 @@ def virtual_bill(supply, startDate, finishDate, pw):
 			<control name="start-year" value="2000" />
 			<control name="start-month" value="01" />
 			<control name="start-day" value="03" />
+			<control name="start-hour" value="00" />
+			<control name="start-minute" value="00" />
 			<regex pattern="/chellow/non-core-contracts/6/" />
 			<response-code value="303" />
 		</request>
@@ -293,6 +299,8 @@ def totalElement(account, startDate, finishDate):
 			<control name="start-year" value="2000" />
 			<control name="start-month" value="01" />
 			<control name="start-day" value="03" />
+			<control name="start-hour" value="00" />
+			<control name="start-minute" value="00" />
 			<control name="has-finished" value="false" />
 			<response-code value="303" />
 			<regex pattern="/mop-contracts/8/" />
@@ -332,16 +340,16 @@ def totalElement(account, startDate, finishDate):
 			<response-code value="200" />
 		</request>
 
-		<!-- Line 2 has a DSO that doesn't exist -->
+		<!-- Line 2 has a DNO that doesn't exist -->
 		<request path="/chellow/general-imports/" method="post">
-			<control type="file" name="import-file" value="supplies_dso.csv" />
+			<control type="file" name="import-file" value="supplies_dno.csv" />
 			<regex pattern="/chellow/general-imports/5/" />
 			<response-code value="303" />
 		</request>
 		<request path="/chellow/general-imports/5/">
 			<refresh />
-			<!-- check that it knows that line 2 has a DSO that doesn't exist -->
-			<regex pattern="There is no DSO with the code '79'" />
+			<!-- check that it knows that line 2 has a DNO that doesn't exist -->
+			<regex pattern="There is no DNO with the code '79'" />
 			<response-code value="200" />
 		</request>
 
@@ -416,7 +424,7 @@ def totalElement(account, startDate, finishDate):
 		<request path="/chellow/supplies/2/generations/">
 			<!-- Check link to ongoing generation -->
 			<regex
-				pattern='&lt;a href="2/"&gt;2&lt;/a&gt;&lt;/td&gt;&lt;td&gt;2003-08-03 00:00&lt;/td&gt;&lt;td&gt;.*Ongoing' />
+				pattern='2&lt;/td&gt;&lt;td&gt;2003-08-03 00:00&lt;/td&gt;&lt;td&gt;.*Ongoing' />
 			<response-code value="200" />
 		</request>
 		<request method="post" path="/chellow/supplies/2/">
@@ -455,8 +463,8 @@ def totalElement(account, startDate, finishDate):
 			<response-code value="200" />
 		</request>
 		<request path="/chellow/supplies/3/generations/3/">
-			<!-- Check link to site is correct -->
-			<regex pattern='&lt;a href="/chellow/sites/1/"&gt;CI004' />
+			<!-- Check site code is correct -->
+			<regex pattern='&lt;td&gt;CI004&lt;/td&gt;' />
 			<response-code value="200" />
 		</request>
 	</test>
@@ -467,6 +475,9 @@ def totalElement(account, startDate, finishDate):
 			<control name="start-year" value="2006" />
 			<control name="start-month" value="07" />
 			<control name="start-day" value="20" />
+			<control name="start-hour" value="00" />
+			<control name="start-minute" value="00" />
+
 			<regex pattern="/chellow/supplies/3/generations/9/" />
 			<response-code value="303" />
 		</request>
@@ -489,10 +500,14 @@ def totalElement(account, startDate, finishDate):
 			<control name="start-year" value="2003" />
 			<control name="start-month" value="08" />
 			<control name="start-day" value="03" />
+			<control name="start-hour" value="00" />
+			<control name="start-minute" value="00" />
 			<control name="is-ended" value="true" />
 			<control name="finish-year" value="2003" />
 			<control name="finish-month" value="08" />
 			<control name="finish-day" value="13" />
+			<control name="finish-hour" value="00" />
+			<control name="finish-minute" value="00" />
 			<control name="gsp-group-id" value="11" />
 			<control name="mop-contract-id" value="8" />
 			<control name="mop-account" value="22 0883 6932 301" />
@@ -535,10 +550,14 @@ def totalElement(account, startDate, finishDate):
 			<control name="start-year" value="2003" />
 			<control name="start-month" value="08" />
 			<control name="start-day" value="03" />
+			<control name="start-hour" value="00" />
+			<control name="start-minute" value="00" />
 			<control name="is-ended" value="true" />
 			<control name="finish-year" value="2003" />
 			<control name="finish-month" value="08" />
 			<control name="finish-day" value="13" />
+			<control name="finish-hour" value="00" />
+			<control name="finish-minute" value="00" />
 			<control name="mop-contract-id" value="8" />
 			<control name="mop-account" value="22 0883 6932 301" />
 			<control name="hhdc-contract-id" value="0" />
@@ -574,10 +593,14 @@ def totalElement(account, startDate, finishDate):
 			<control name="start-year" value="2003" />
 			<control name="start-month" value="08" />
 			<control name="start-day" value="03" />
+			<control name="start-hour" value="00" />
+			<control name="start-minute" value="00" />
 			<control name="is-ended" value="false" />
 			<control name="finish-year" value="2003" />
 			<control name="finish-month" value="08" />
 			<control name="finish-day" value="14" />
+			<control name="finish-hour" value="00" />
+			<control name="finish-minute" value="00" />
 			<control name="mop-contract-id" value="8" />
 			<control name="mop-account" value="22 0883 6932 301" />
 			<control name="hhdc-contract-id" value="0" />
@@ -632,23 +655,22 @@ def totalElement(account, startDate, finishDate):
 		<request path="/chellow/supplies/3/generations/9/" method="post">
 			<control name="meter-serial-number" value="" />
 			<control name="start-year" value="2006" />
-			<control name="start-month">07</control>
-			<control name="start-day">20</control>
-			<control name="is-ended">false</control>
-			<control name="finish-year">2003</control>
-			<control name="finish-month">08</control>
-			<control name="finish-day">14</control>
+			<control name="start-month" value="07" />
+			<control name="start-day" value="20" />
+			<control name="start-hour" value="00" />
+			<control name="start-minute" value="00" />
+			<control name="is-ended" value="false" />
 			<control name="mop-contract-id" value="null" />
 			<control name="hhdc-contract-id" value="0" />
-			<control name="hhdc-account">01</control>
+			<control name="hhdc-account" value="01" />
 			<control name="pc-id" value="9" />
 			<control name="mtc-code" value="845" />
 			<control name="cop-id" value="5" />
 			<control name="ssc-code" value="" />
 			<control name="has-import-mpan" value="true" />
-			<control name="import-llfc-code">580</control>
-			<control name="import-mpan-core">2276930477695</control>
-			<control name="import-agreed-supply-capacity">430</control>
+			<control name="import-llfc-code" value="580" />
+			<control name="import-mpan-core" value="2276930477695" />
+			<control name="import-agreed-supply-capacity" value="430" />
 			<control name="import-supplier-contract-id" value="4" />
 			<control name="import-supplier-account" value="01" />
 			<control name="has-export-mpan" value="false" />
@@ -787,7 +809,7 @@ def totalElement(account, startDate, finishDate):
 		<request
 			path="/chellow/supplies/2/generations/2/channels/3/hh-data/?year=2005&amp;month=09">
 			<regex
-				pattern='&lt;td&gt;2005-09-15T00:00Z&lt;/td&gt;&lt;td&gt;1.0&lt;/td&gt;&lt;td&gt;A&lt;/td&gt;' />
+				pattern='&lt;td&gt;2005-09-15T00:00&lt;/td&gt;&lt;td&gt;1.0&lt;/td&gt;&lt;td&gt;A&lt;/td&gt;' />
 		</request>
 	</test>
 	<test>
@@ -853,13 +875,14 @@ def totalElement(account, startDate, finishDate):
 	</test>
 
 	<test name="Check site level snag">
-		<request path="/chellow/site-snags/">
+		<request path="/chellow/reports/39/output/">
 			<regex pattern='CI004' />
 			<!-- There's an hh where export to net is *less* than imported from generator, 
 				check this doesn't show up. -->
 			<regex
-				pattern='2005-10-30T01:00Z[\r\n]*&lt;/td&gt;&lt;td&gt;false&lt;/td&gt;[\r\n]*&lt;/tr&gt;[\r\n]*&lt;/tbody&gt;' />
-
+				pattern='2005-10-30 01:00&lt;/td&gt;[\r\n]*&lt;/tr&gt;[\r\n]*&lt;/tbody&gt;' />
+		</request>
+		<request path="/chellow/site-snags/">
 			<!-- Check that there's an 'ignore-year' parameter. -->
 			<regex pattern='name="ignore-year"' />
 			<response-code value="200" />
@@ -926,16 +949,16 @@ def totalElement(account, startDate, finishDate):
 		<request path="/chellow/site-snags/41/">
 			<response-code value="200" />
 			<regex
-				pattern="&lt;th&gt;Finish Date&lt;/th&gt;&lt;td&gt;2005-10-30 01:00 Z&lt;/td&gt;" />
+				pattern="&lt;th&gt;Finish Date&lt;/th&gt;&lt;td&gt;2005-10-30 01:00&lt;/td&gt;" />
 		</request>
 	</test>
 	<test name="site snags stay ignored">
 		<!-- Assumes various site snags are present at this stage -->
 		<request path="/chellow/site-snags/" method="post">
-			<control name="ignore-year">2006</control>
-			<control name="ignore-month">12</control>
-			<control name="ignore-day">26</control>
-			<control name="ignore">Ignore</control>
+			<control name="ignore-year" value="2006" />
+			<control name="ignore-month" value="12" />
+			<control name="ignore-day" value="26" />
+			<control name="ignore" value="Ignore" />
 			<response-code value="200" />
 		</request>
 		<request path="/chellow/hhdc-contracts/0/hh-data-imports/"
@@ -949,9 +972,8 @@ def totalElement(account, startDate, finishDate):
 			<regex pattern="The import has completed.*successfully" />
 			<response-code value="200" />
 		</request>
-		<request path="/chellow/site-snags/">
-			<regex
-				pattern='&lt;tbody&gt;[\r\n]&lt;tr&gt;[\r\n]&lt;td&gt;&lt;a href="35/"&gt;35&lt;/a&gt;&lt;/td&gt;&lt;td&gt;&lt;a href="/chellow/sites/1/"&gt;CI004 Lower Treave&lt;/a&gt;&lt;/td&gt;&lt;td&gt;Export to generators &amp;gt; import.&lt;/td&gt;&lt;td&gt;2005-11-16T00:00Z&lt;/td&gt;&lt;td&gt;2005-11-16T00:00Z&lt;/td&gt;&lt;td&gt;true&lt;/td&gt;[\r\n]&lt;/tr&gt;[\r\n]&lt;tr&gt;[\r\n]&lt;td&gt;&lt;a href="40/"&gt;40&lt;/a&gt;&lt;/td&gt;&lt;td&gt;&lt;a href="/chellow/sites/1/"&gt;CI004 Lower Treave&lt;/a&gt;&lt;/td&gt;&lt;td&gt;Export to net &amp;gt; import from generators.&lt;/td&gt;&lt;td&gt;2005-11-14T23:30Z&lt;/td&gt;&lt;td&gt;2005-11-15T00:00Z&lt;/td&gt;&lt;td&gt;true&lt;/td&gt;[\r\n]&lt;/tr&gt;[\r\n]&lt;tr&gt;[\r\n]&lt;td&gt;&lt;a href="41/"&gt;41&lt;/a&gt;&lt;/td&gt;&lt;td&gt;&lt;a href="/chellow/sites/1/"&gt;CI004 Lower Treave&lt;/a&gt;&lt;/td&gt;&lt;td&gt;Export to net &amp;gt; import from generators.&lt;/td&gt;&lt;td&gt;2005-10-29T23:30Z&lt;/td&gt;&lt;td&gt;2005-10-30T01:00Z&lt;/td&gt;&lt;td&gt;true&lt;/td&gt;[\r\n]&lt;/tr&gt;[\r\n]&lt;/tbody&gt;' />
+		<request path="/chellow/reports/39/output/">
+			<regex pattern='&lt;tbody/&gt;' />
 			<response-code value="200" />
 		</request>
 	</test>
@@ -996,6 +1018,8 @@ def totalElement(account, startDate, finishDate):
 			<control name="start-year" value="2000" />
 			<control name="start-month" value="01" />
 			<control name="start-day" value="03" />
+			<control name="start-hour" value="00" />
+			<control name="start-minute" value="00" />
 			<control name="has-finished" value="false" />
 			<regex pattern="/chellow/supplier-contracts/10/" />
 			<response-code value="303" />
@@ -1174,9 +1198,11 @@ def virtual_bill(supply_source):
 	</test>
 	<test name="Check one is able to delete a generation ok">
 		<request path="/chellow/supplies/10/generations/" method="post">
-			<control name="start-year">2009</control>
-			<control name="start-month">01</control>
-			<control name="start-day">20</control>
+			<control name="start-year" value="2009" />
+			<control name="start-month" value="01" />
+			<control name="start-day" value="20" />
+			<control name="start-hour" value="00" />
+			<control name="start-minute" value="00" />
 			<regex pattern="/chellow/supplies/10/generations/14/" />
 			<response-code value="303" />
 		</request>
@@ -1197,13 +1223,15 @@ def virtual_bill(supply_source):
 			<control name="start-year" value="2008" />
 			<control name="start-month" value="7" />
 			<control name="start-day" value="7" />
+			<control name="start-hour" value="00" />
+			<control name="start-minute" value="00" />
 			<regex pattern="/chellow/supplies/2/generations/15/" />
 			<response-code value="303" />
 		</request>
 		<request
 			path="/chellow/supplies/2/generations/15/channels/30/hh-data/?year=2008&amp;month=07">
 			<regex
-				pattern='&lt;td&gt;&lt;a href="/chellow/supplies/2/generations/15/channels/30/hh-data/65/"&gt;65&lt;/a&gt;&lt;/td&gt;&lt;td&gt;2008-07-07T00:00Z&lt;/td&gt;&lt;td&gt;0.247&lt;/td&gt;&lt;td&gt;A&lt;/td&gt;' />
+				pattern='&lt;td&gt;&lt;a href="/chellow/supplies/2/generations/15/channels/30/hh-data/65/"&gt;65&lt;/a&gt;&lt;/td&gt;&lt;td&gt;2008-07-07T00:00&lt;/td&gt;&lt;td&gt;0.247&lt;/td&gt;&lt;td&gt;A&lt;/td&gt;' />
 			<response-code value="200" />
 		</request>
 	</test>
@@ -1246,7 +1274,7 @@ def virtual_bill(supply_source):
 		<request
 			path="/chellow/supplies/2/generations/15/channels/30/hh-data/?year=2008&amp;month=07">
 			<regex
-				pattern='&lt;tbody&gt;[\r\n]*&lt;tr&gt;[\r\n]*&lt;td&gt;&lt;a href="/chellow/supplies/2/generations/15/channels/30/hh-data/113/"&gt;113&lt;/a&gt;&lt;/td&gt;&lt;td&gt;2008-07-08T00:00Z&lt;/td&gt;&lt;td&gt;0.299&lt;/td&gt;&lt;td&gt;A&lt;/td&gt;' />
+				pattern='&lt;tbody&gt;[\r\n]*&lt;tr&gt;[\r\n]*&lt;td&gt;&lt;a href="/chellow/supplies/2/generations/15/channels/30/hh-data/113/"&gt;113&lt;/a&gt;&lt;/td&gt;&lt;td&gt;2008-07-08T00:00&lt;/td&gt;&lt;td&gt;0.299&lt;/td&gt;&lt;td&gt;A&lt;/td&gt;' />
 			<response-code value="200" />
 		</request>
 	</test>
@@ -1265,10 +1293,9 @@ def virtual_bill(supply_source):
 			<control name="start-year" value="2003" />
 			<control name="start-month" value="08" />
 			<control name="start-day" value="03" />
+			<control name="start-hour" value="00" />
+			<control name="start-minute" value="00" />
 			<control name="is-ended" value="false" />
-			<control name="finish-year" value="2003" />
-			<control name="finish-month" value="08" />
-			<control name="finish-day" value="14" />
 			<control name="mop-contract-id" value="8" />
 			<control name="mop-account" value="22 0883 6932 301" />
 			<control name="hhdc-contract-id" value="null" />
@@ -1350,6 +1377,8 @@ def virtual_bill(supply_source):
 			<control name="start-year" value="2008" />
 			<control name="start-month" value="07" />
 			<control name="start-day" value="07" />
+			<control name="start-hour" value="00" />
+			<control name="start-minute" value="00" />
 			<control name="is-ended" value="false" />
 			<control name="mop-contract-id" value="null" />
 			<control name="hhdc-contract-id" value="0" />
@@ -1401,17 +1430,21 @@ lastImportName0=Example]]></control>
 			<control name="start-year" value="2008" />
 			<control name="start-month" value="08" />
 			<control name="start-day" value="07" />
+			<control name="start-hour" value="00" />
+			<control name="start-minute" value="00" />
 			<response-code value="303" />
 		</request>
 		<request path="/chellow/supplies/2/generations/" method="post">
 			<control name="start-year" value="2008" />
 			<control name="start-month" value="09" />
 			<control name="start-day" value="07" />
+			<control name="start-hour" value="00" />
+			<control name="start-minute" value="00" />
 			<response-code value="303" />
 		</request>
 		<request path="/chellow/supplies/2/generations/">
 			<regex
-				pattern='2&lt;/a&gt;&lt;/td&gt;&lt;td&gt;2003-08-03 00:00&lt;/td&gt;&lt;td&gt;2008-07-06 23:30' />
+				pattern='2&lt;/td&gt;&lt;td&gt;2003-08-03 00:00&lt;/td&gt;&lt;td&gt;2008-07-06 23:30' />
 			<response-code value="200" />
 		</request>
 	</test>
@@ -1456,7 +1489,7 @@ def virtual_bill(supply, startDate, finishDate, pw):
 from net.sf.chellow.monad import Hiber
 from java.util import GregorianCalendar, TimeZone, Locale, Calendar
 from net.sf.chellow.physical import MpanCore, HhStartDate, Supply, Site
-from net.sf.chellow.billing import NonCoreContract, SupplierContract, Dso
+from net.sf.chellow.billing import NonCoreContract, SupplierContract, Dno
 from net.sf.chellow.monad.types import MonadDate
 from java.lang import System
 
@@ -1491,19 +1524,19 @@ def displaced_virtual_bill(supply_source):
 
     comterp = supply_source.comterp
 
-    dso = Dso.getDso(supply_source.dso_code)
-    dso_contract = comterp.get('get_dso_contract')(supply_source.dso_code, supply_source.finish_date, supply_source.pw)
+    dno = Dno.getDno(supply_source.dno_code)
+    dno_contract = comterp.get('get_dno_contract')(supply_source.dno_code, supply_source.finish_date, supply_source.pw)
     llfc_code = supply_source.llfc_code
-    llfc = dso.getLlfc(llfc_code)
+    llfc = dno.getLlfc(llfc_code)
     voltage_level = supply_source.voltage_level_code
     is_substation = supply_source.is_substation
     supply_capacity = supply_source.availability
     supply_source.is_green = False
     #pw.println("getting data list " + str(System.currentTimeMillis() - timing))
 
-    bill.update(supply_source.summary['dso-bill'])
+    bill.update(supply_source.summary['dno-bill'])
 
-    #pw.println("got dso info " + str(System.currentTimeMillis() - timing))
+    #pw.println("got dno info " + str(System.currentTimeMillis() - timing))
     utc_cal = GregorianCalendar(TimeZone.getTimeZone("GMT"), Locale.UK)
     ct_cal = GregorianCalendar(TimeZone.getTimeZone("Europe/London"), Locale.UK)
 
@@ -1542,9 +1575,9 @@ def displaced_virtual_bill(supply_source):
         month_data = supply_source.whole_data
     else:
         month_data = supply_source.create_whole_data(month_begin, month_end, supply_source.forecast_date)
-        #pw.println("starting dso stuff " + str(System.currentTimeMillis() - timing))
+        #pw.println("starting dno stuff " + str(System.currentTimeMillis() - timing))
 
-    comterp.get('contract_function')(dso_contract, 'month')(bill, month_data, supply_source)
+    comterp.get('contract_function')(dno_contract, 'month')(bill, month_data, supply_source)
     #supply_source.pw.println("starting ccl stuff " + str(System.currentTimeMillis() - timing))
     comterp.get('contract_function')(ccl_contract, 'ccl_month_gbp')(bill, supply_source, month_data)
     for suffix in ['kwh', 'rate', 'gbp']:
@@ -1553,7 +1586,7 @@ def displaced_virtual_bill(supply_source):
             del bill[key]
 
     #supply_source.pw.println("starting triad stuff" + str(System.currentTimeMillis() - timing))
-    comterp.get('contract_function')(triad_contract, 'triad')(bill, dso_contract, month_begin, month_end, supply_source)
+    comterp.get('contract_function')(triad_contract, 'triad')(bill, dno_contract, month_begin, month_end, supply_source)
     #supply_source.pw.println("finishing month stuff " + str(System.currentTimeMillis() - timing))
 
     bsuos_contract = NonCoreContract.getNonCoreContract('bsuos')
@@ -1587,19 +1620,19 @@ def import_virtual_bill(supply_source):
 
     comterp = supply_source.comterp
 
-    dso = Dso.getDso(supply_source.dso_code)
-    dso_contract = comterp.get('get_dso_contract')(supply_source.dso_code, supply_source.finish_date, supply_source.pw)
+    dno = Dno.getDno(supply_source.dno_code)
+    dno_contract = comterp.get('get_dno_contract')(supply_source.dno_code, supply_source.finish_date, supply_source.pw)
     llfc_code = supply_source.llfc_code
-    llfc = dso.getLlfc(llfc_code)
+    llfc = dno.getLlfc(llfc_code)
     voltage_level = supply_source.voltage_level_code
     is_substation = supply_source.is_substation
     supply_capacity = supply_source.availability
     supply_source.is_green = False
     #pw.println("getting data list " + str(System.currentTimeMillis() - timing))
 
-    bill.update(supply_source.summary['dso-bill'])
+    bill.update(supply_source.summary['dno-bill'])
 
-    #pw.println("got dso info " + str(System.currentTimeMillis() - timing))
+    #pw.println("got dno info " + str(System.currentTimeMillis() - timing))
     utc_cal = GregorianCalendar(TimeZone.getTimeZone("GMT"), Locale.UK)
     ct_cal = GregorianCalendar(TimeZone.getTimeZone("Europe/London"), Locale.UK)
 
@@ -1638,9 +1671,9 @@ def import_virtual_bill(supply_source):
         month_data = supply_source.whole_data
     else:
         month_data = supply_source.create_whole_data(month_begin, month_end, supply_source.forecast_date)
-        #pw.println("starting dso stuff " + str(System.currentTimeMillis() - timing))
+        #pw.println("starting dno stuff " + str(System.currentTimeMillis() - timing))
 
-    comterp.get('contract_function')(dso_contract, 'month')(bill, month_data, supply_source)
+    comterp.get('contract_function')(dno_contract, 'month')(bill, month_data, supply_source)
     #supply_source.pw.println("starting ccl stuff " + str(System.currentTimeMillis() - timing))
     comterp.get('contract_function')(ccl_contract, 'ccl_month_gbp')(bill, supply_source, month_data)
     for suffix in ['kwh', 'rate', 'gbp']:
@@ -1650,7 +1683,7 @@ def import_virtual_bill(supply_source):
     bill['data-collection-gbp'] += 5.89
     bill['settlement-gbp'] += 88
     #supply_source.pw.println("starting triad stuff" + str(System.currentTimeMillis() - timing))
-    comterp.get('contract_function')(triad_contract, 'triad')(bill, dso_contract, month_begin, month_end, supply_source)
+    comterp.get('contract_function')(triad_contract, 'triad')(bill, dno_contract, month_begin, month_end, supply_source)
     #supply_source.pw.println("finishing month stuff " + str(System.currentTimeMillis() - timing))
 
     bsuos_contract = NonCoreContract.getNonCoreContract('bsuos')
@@ -1685,6 +1718,8 @@ def import_virtual_bill(supply_source):
 			<control name="start-year" value="2008" />
 			<control name="start-month" value="09" />
 			<control name="start-day" value="06" />
+			<control name="start-hour" value="00" />
+			<control name="start-minute" value="00" />
 			<control name="is-ended" value="false" />
 			<control name="mop-contract-id" value="null" />
 			<control name="hhdc-contract-id" value="0" />
@@ -1721,6 +1756,8 @@ def import_virtual_bill(supply_source):
 			<control name="start-year" value="2010" />
 			<control name="start-month" value="08" />
 			<control name="start-day" value="03" />
+			<control name="start-hour" value="00" />
+			<control name="start-minute" value="00" />
 			<control name="is-ended" value="false" />
 			<control name="meter-serial-number" value="" />
 			<control name="pc-id" value="9" />
@@ -1749,6 +1786,8 @@ def import_virtual_bill(supply_source):
 			<control name="start-year" value="2000" />
 			<control name="start-month" value="01" />
 			<control name="start-day" value="03" />
+			<control name="start-hour" value="00" />
+			<control name="start-minute" value="00" />
 
 			<regex pattern="/chellow/supplier-contracts/12/" />
 			<response-code value="303" />
@@ -1773,6 +1812,8 @@ def import_virtual_bill(supply_source):
 			<control name="start-year" value="2000" />
 			<control name="start-month" value="01" />
 			<control name="start-day" value="03" />
+			<control name="start-hour" value="00" />
+			<control name="start-minute" value="00" />
 			<control name="has-finished" value="false" />
 			<control name="charge-script"></control>
 			<control name="properties" value=" " />
@@ -1813,6 +1854,8 @@ def import_virtual_bill(supply_source):
 			<control name="start-year" value="2000" />
 			<control name="start-month" value="01" />
 			<control name="start-day" value="03" />
+			<control name="start-hour" value="00" />
+			<control name="start-minute" value="00" />
 			<regex pattern="/non-core-contracts/16/" />
 			<response-code value="303" />
 		</request>
@@ -1911,37 +1954,38 @@ def triad_estimates():
 				pattern='"8","1","net","","CH023","Treglisson","2009-03-01T00:00Z","2009-03-31T23:30Z","00","845","5","","0","hh",540,22 4862 4512 332,230,Half-hourlies 2007,148926.0,0.0,158159.0,400.0,2009-03-13T08:00Z,None,0.0,,,,,0.0,0.0,,0.0,None,None,1488.0' />
 		</request>
 	</test>
-	<test name="Manipulate dso contracts">
-		<!-- Insert DSO contract -->
-		<request path="/chellow/dsos/379/contracts/" method="post"> <!-- Contract of DSO 10 -->
+	<test name="Manipulate dno contracts">
+		<!-- Insert DNO contract -->
+		<request path="/chellow/dnos/379/contracts/" method="post"> <!-- Contract of DNO 10 -->
 			<control name="name" value="main 2010-04-01" />
 			<control name="start-year" value="2010" />
 			<control name="start-month" value="04" />
 			<control name="start-day" value="01" />
-			<regex pattern="/chellow/dsos/379/contracts/83/" />
+			<regex pattern="/chellow/dnos/379/contracts/83/" />
 			<response-code value="303" />
 		</request>
 
 		<!-- Check start time of rate script -->
-		<request path="/chellow/dsos/379/contracts/83/rate-scripts/255/">
-			<regex pattern="00:00 Z" />
+		<request path="/chellow/dnos/379/contracts/83/rate-scripts/255/">
+			<regex pattern='&lt;select name="start-hour"&gt;&lt;option value="00" selected&gt;00&lt;/option&gt;' />
+			<regex pattern='&lt;select name="start-minute"&gt;&lt;option value="00" selected&gt;00&lt;/option&gt;' />
 			<response-code value="200" />
 		</request>
 
 		<!-- Insert rate script -->
-		<request path="/chellow/dsos/379/contracts/83/rate-scripts/"
+		<request path="/chellow/dnos/379/contracts/83/rate-scripts/"
 			method="post">
 			<control name="start-year" value="2010" />
 			<control name="start-month" value="05" />
 			<control name="start-day" value="01" />
 			<control name="start-hour" value="00" />
 			<control name="start-minute" value="00" />
-			<regex pattern="/chellow/dsos/379/contracts/83/rate-scripts/257/" />
+			<regex pattern="/chellow/dnos/379/contracts/83/rate-scripts/257/" />
 			<response-code value="303" />
 		</request>
 
 		<!-- Delete rate script -->
-		<request path="/chellow/dsos/379/contracts/83/rate-scripts/255/"
+		<request path="/chellow/dnos/379/contracts/83/rate-scripts/255/"
 			method="post">
 			<control name="delete" value="Delete" />
 			<response-code value="303" />
@@ -1982,10 +2026,14 @@ def triad_estimates():
 			<control name="start-year" value="2005" />
 			<control name="start-month" value="10" />
 			<control name="start-day" value="03" />
+			<control name="start-hour" value="00" />
+			<control name="start-minute" value="00" />
 			<control name="is-ended" value="true" />
 			<control name="finish-year" value="2010" />
 			<control name="finish-month" value="04" />
 			<control name="finish-day" value="13" />
+			<control name="finish-hour" value="00" />
+			<control name="finish-minute" value="00" />
 			<control name="mop-contract-id" value="null" />
 			<control name="hhdc-contract-id" value="null" />
 			<control name="meter-serial-number" value="K87D74429" />
@@ -2016,6 +2064,8 @@ def triad_estimates():
 			<control name="start-year" value="2003" />
 			<control name="start-month" value="08" />
 			<control name="start-day" value="03" />
+			<control name="start-hour" value="00" />
+			<control name="start-minute" value="00" />
 			<control name="is-ended" value="false" />
 			<control name="pc-id" value="9" />
 			<control name="mtc-code" value="845" />
@@ -2049,6 +2099,8 @@ def triad_estimates():
 			<control name="start-year" value="2010" />
 			<control name="start-month" value="05" />
 			<control name="start-day" value="26" />
+			<control name="start-hour" value="00" />
+			<control name="start-minute" value="00" />
 			<control name="meter-serial-number" value="" />
 			<control name="gsp-group-id" value="3" />
 			<control name="mop-contract-id" value="null" />
@@ -2082,6 +2134,8 @@ def triad_estimates():
 			<control name="start-year" value="2010" />
 			<control name="start-month" value="01" />
 			<control name="start-day" value="01" />
+			<control name="start-hour" value="00" />
+			<control name="start-minute" value="00" />
 			<regex pattern="/chellow/supplier-contracts/18/" />
 		</request>
 
@@ -2106,6 +2160,8 @@ def import_virtual_bill(supply_source):
 			<control name="start-year" value="2010" />
 			<control name="start-month" value="01" />
 			<control name="start-day" value="01" />
+			<control name="start-hour" value="00" />
+			<control name="start-minute" value="00" />
 			<regex pattern="/chellow/supplies/11/generations/19/" />
 			<response-code value="303" />
 		</request>
@@ -2115,6 +2171,8 @@ def import_virtual_bill(supply_source):
 			<control name="start-year" value="2010" />
 			<control name="start-month" value="01" />
 			<control name="start-day" value="03" />
+			<control name="start-hour" value="00" />
+			<control name="start-minute" value="00" />
 			<control name="is-ended" value="false" />
 			<control name="mop-contract-id" value="null" />
 			<control name="mop-account" value="" />
@@ -2215,6 +2273,8 @@ def import_virtual_bill(supply_source):
 			<control name="start-year" value="2010" />
 			<control name="start-month" value="05" />
 			<control name="start-day" value="26" />
+			<control name="start-hour" value="05" />
+			<control name="start-minute" value="26" />
 			<control name="meter-serial-number" value="" />
 			<control name="gsp-group-id" value="3" />
 			<control name="mop-contract-id" value="null" />
@@ -2377,11 +2437,14 @@ def import_virtual_bill(supply_source):
 			<control name="start-year" value="2005" />
 			<control name="start-month" value="09" />
 			<control name="start-day" value="06" />
+			<control name="start-hour" value="00" />
+			<control name="start-minute" value="00" />
 			<control name="is-ended" value="true" />
 			<control name="finish-year" value="2010" />
 			<control name="finish-month" value="01" />
 			<control name="finish-day" value="03" />
-
+			<control name="finish-hour" value="00" />
+			<control name="finish-minute" value="00" />
 			<control name="mop-contract-id" value="null" />
 			<control name="mop-account" value="" />
 			<control name="hhdc-contract-id" value="null" />
@@ -2483,11 +2546,11 @@ def import_virtual_bill(supply_source):
 			<regex pattern="The file has been imported successfully" />
 			<response-code value="200" />
 		</request>
-		<request path="/chellow/supplier-contracts/10/batches/3/bills/11/reads/">
+		<request path="/chellow/reports/105/output/?bill-id=11">
 			<refresh />
 			<!-- Check it's loaded ok -->
 			<regex
-				pattern="&lt;td&gt;38992&lt;/td&gt;&lt;td&gt;E&lt;/td&gt;&lt;td&gt;2007-01-17&lt;/td&gt;&lt;td&gt;39000&lt;/td&gt;" />
+				pattern='&lt;td&gt;38992&lt;/td&gt;&lt;td&gt;&lt;a title="Estimated" href="/chellow/reports/143/output/\?type-id=4"&gt;E&lt;/a&gt;&lt;/td&gt;&lt;td&gt;2007-01-17 00:00&lt;/td&gt;&lt;td&gt;39000&lt;/td&gt;&lt;td&gt;&lt;a title="Estimated" href="/chellow/reports/143/output/\?type-id=4"&gt;E&lt;/a&gt;&lt;/td&gt;' />
 			<response-code value="200" />
 		</request>
 	</test>
@@ -2509,10 +2572,10 @@ def import_virtual_bill(supply_source):
 		</request>
 	</test>
 	<test name="Check the batch page.">
-		<request path="/chellow/supplier-contracts/18/batches/5/bills/">
+		<request path="/chellow/reports/91/output/?batch-id=5">
 			<response-code value="200" />
 			<regex
-				pattern="&lt;td&gt;2010-01-19&lt;/td&gt;&lt;td&gt;2010-04-20&lt;/td&gt;" />
+				pattern="&lt;td&gt;2010-01-19 00:00&lt;/td&gt;&lt;td&gt;2010-04-20 23:30&lt;/td&gt;" />
 		</request>
 	</test>
 	<test name="Test supply generation update for a supply with 2 mpans.">
@@ -2723,7 +2786,7 @@ def import_virtual_bill(supply_source):
 			<response-code value="303" />
 		</request>
 		<request path="/chellow/non-core-contracts/39/rate-scripts/261/">
-			<regex pattern='&lt;input name="finish-year" value="2000"&gt;' />
+			<regex pattern='&lt;input name="finish-year" size="4" maxlength="4" value="2000"&gt;' />
 			<response-code value="200" />
 		</request>
 		<request path="/chellow/non-core-contracts/39/rate-scripts/261/"
@@ -2818,6 +2881,8 @@ def import_virtual_bill(supply_source):
 			<control name="start-year" value="2005" />
 			<control name="start-month" value="09" />
 			<control name="start-day" value="06" />
+			<control name="start-hour" value="00" />
+			<control name="start-minute" value="00" />
 			<regex pattern="There's already a generation with that start date\." />
 			<response-code value="418" />
 		</request>

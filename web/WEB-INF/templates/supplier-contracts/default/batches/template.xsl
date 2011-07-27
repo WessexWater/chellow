@@ -18,26 +18,24 @@
 			</head>
 			<body>
 				<p>
-					<a href="{/source/request/@context-path}/">
-						<img src="{/source/request/@context-path}/logo/" />
-						<span class="logo">Chellow</span>
+					<a href="{/source/request/@context-path}/reports/1/output/">
+						<xsl:value-of select="'Chellow'" />
 					</a>
 					&gt;
-					<a href="{/source/request/@context-path}/supplier-contracts/">
+					<a href="{/source/request/@context-path}/reports/75/output/">
 						<xsl:value-of select="'Supplier Contracts'" />
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/supplier-contracts/{/source/batches/supplier-contract/@id}/">
+						href="{/source/request/@context-path}/reports/77/output/?supplier-contract-id={/source/batches/supplier-contract/@id}">
 						<xsl:value-of select="/source/batches/supplier-contract/@name" />
 					</a>
 					&gt;
-					<xsl:value-of select="'Batches ['" />
 					<a
 						href="{/source/request/@context-path}/reports/89/output/?supplier-contract-id={/source/batches/supplier-contract/@id}">
-						<xsl:value-of select="'view'" />
+						<xsl:value-of select="'Batches'" />
 					</a>
-					<xsl:value-of select="']'" />
+					&gt; Edit
 				</p>
 				<br />
 				<xsl:if test="//message">
@@ -58,46 +56,18 @@
 							<input name="reference"
 								value="{/source/request/parameter[@name = 'reference']/value}" />
 						</label>
-						<br/>
+						<br />
 						<label>
 							<xsl:value-of select="'Description '" />
 							<input name="description"
 								value="{/source/request/parameter[@name = 'description']/value}" />
 						</label>
-						<br/>
-						<br/>
+						<br />
+						<br />
 						<input type="submit" value="Add" />
 						<input type="reset" value="Reset" />
 					</fieldset>
 				</form>
-				<br/>
-				<table>
-					<thead>
-						<tr>
-							<th>Chellow Id</th>
-							<th>Reference</th>
-							<th>Description</th>
-						</tr>
-					</thead>
-					<tbody>
-						<xsl:for-each select="/source/batches/batch">
-							<tr>
-								<td>
-									<a href="{@id}/">
-										<xsl:value-of select="@id" />
-									</a>
-								</td>
-								<td>
-									<xsl:value-of select="@reference" />
-								</td>
-								<td>
-									<xsl:value-of select="@description" />
-								</td>
-							</tr>
-						</xsl:for-each>
-					</tbody>
-				</table>
-				<br />
 			</body>
 		</html>
 	</xsl:template>

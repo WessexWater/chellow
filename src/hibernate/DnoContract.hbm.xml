@@ -24,10 +24,10 @@
 -->
 
 <hibernate-mapping package="net.sf.chellow.billing">
-	<joined-subclass extends="Contract" name="DsoContract"
-		table="dso_contract" lazy="true">
-		<key column="contract_id" foreign-key="fkey_dso_contract_contract" />
-		<many-to-one name="party" class="Dso" column="dso_id"
-			foreign-key="fkey_dso_contract_dso" not-null="true" />
+	<joined-subclass extends="Contract" name="DnoContract"
+		table="dno_contract" lazy="true">
+		<key column="contract_id" foreign-key="fkey_dno_contract_contract" />
+		<many-to-one name="party" class="Dno" column="dno_id"
+			foreign-key="fkey_dno_contract_dno" not-null="true" />
 	</joined-subclass>
 </hibernate-mapping>

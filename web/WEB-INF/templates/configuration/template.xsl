@@ -2,8 +2,8 @@
 <xsl:stylesheet version="1.0"
 	xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
 	<xsl:output method="html" encoding="US-ASCII"
-		doctype-public="-//W3C//DTD HTML 4.01//EN"
-		doctype-system="http://www.w3.org/TR/html4/strict.dtd" indent="yes" />
+		doctype-public="-//W3C//DTD HTML 4.01//EN" doctype-system="http://www.w3.org/TR/html4/strict.dtd"
+		indent="yes" />
 	<xsl:template match="/">
 		<html>
 			<head>
@@ -13,12 +13,10 @@
 			</head>
 			<body>
 				<p>
-					<a href="{/source/request/@context-path}/">
-						<img
-							src="{/source/request/@context-path}/logo/" />
-						<span class="logo">Chellow</span>
+					<a href="{/source/request/@context-path}/reports/1/output/">
+						<xsl:value-of select="'Chellow'" />
 					</a>
-					<xsl:value-of select="' &gt; Configuration'" />
+					&gt; Configuration
 				</p>
 				<xsl:if test="//message">
 					<ul>
@@ -29,24 +27,20 @@
 						</xsl:for-each>
 					</ul>
 				</xsl:if>
-				<br/>
+				<br />
 				<form action="." method="post">
 					<fieldset>
 						<legend>Update Configuration</legend>
 						<br />
 						<label>Properties</label>
 						<br />
-						<textarea name="properties" cols="80"
-							rows="50">
+						<textarea name="properties" cols="80" rows="50">
 							<xsl:choose>
-								<xsl:when
-									test="/source/request/parameter[@name = 'properties']">
-									<xsl:value-of
-										select="/source/properties/text()" />
+								<xsl:when test="/source/request/parameter[@name = 'properties']">
+									<xsl:value-of select="/source/properties/text()" />
 								</xsl:when>
 								<xsl:otherwise>
-									<xsl:value-of
-										select="/source/configuration/properties/text()" />
+									<xsl:value-of select="/source/configuration/properties/text()" />
 								</xsl:otherwise>
 							</xsl:choose>
 						</textarea>
@@ -54,7 +48,8 @@
 						<h5>Recognizing Users By IP Address</h5>
 						<p>
 							The line below means that any request with
-							IP 127.0.0.1 will automatically be
+							IP 127.0.0.1 will
+							automatically be
 							associated with the user
 							implicit-user@localhost.
 						</p>
@@ -66,7 +61,8 @@
 						<h5>Configuring The ECOES Comparison Report</h5>
 						<p>
 							<code>
-								ecoes.user.name=a_user_name<br/>
+								ecoes.user.name=a_user_name
+								<br />
 								ecoes.password=a_password
 							</code>
 						</p>

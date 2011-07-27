@@ -19,106 +19,41 @@
 			</head>
 			<body>
 				<p>
-					<a href="{/source/request/@context-path}/">
-						<img src="{/source/request/@context-path}/logo/" />
-						<span class="logo">Chellow</span>
+					<a href="{/source/request/@context-path}/reports/1/output/">
+						<xsl:value-of select="'Chellow'" />
 					</a>
 					&gt;
-					<a href="{/source/request/@context-path}/mop-contracts/">
+					<a href="{/source/request/@context-path}/reports/185/output/">
 						<xsl:value-of select="'MOP Contracts'" />
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/mop-contracts/{/source/bills/batch/mop-contract/@id}/">
+						href="{/source/request/@context-path}/reports/107/output/?mop-contract-id={/source/bills/batch/mop-contract/@id}">
 						<xsl:value-of select="/source/bills/batch/mop-contract/@name" />
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/mop-contracts/{/source/bills/batch/mop-contract/@id}/batches/">
+						href="{/source/request/@context-path}/reports/191/output/?mop-contract-id={/source/bills/batch/mop-contract/@id}">
 						<xsl:value-of select="'Batches'" />
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/mop-contracts/{/source/bills/batch/mop-contract/@id}/batches/{/source/bills/batch/@id}/">
+						href="{/source/request/@context-path}/reports/193/output/?batch-id={/source/bills/batch/@id}">
 						<xsl:value-of select="/source/bills/batch/@reference" />
 					</a>
 					&gt;
-					<xsl:value-of select="'Bills ['" />
-					<a
-						href="{/source/request/@context-path}/reports/91/output/?batch-id={/source/bills/batch/@id}">
-						<xsl:value-of select="'view'" />
-					</a>
-					<xsl:value-of select="']'" />
-
-					<xsl:if test="//message">
-						<ul>
-							<xsl:for-each select="//message">
-								<li>
-									<xsl:value-of select="@description" />
-								</li>
-							</xsl:for-each>
-						</ul>
-					</xsl:if>
-
+					<xsl:value-of select="'Bills'" />
 				</p>
-				<br />
-				<table>
-					<caption>Bills</caption>
-					<thead>
-						<tr>
-							<th>Chellow Id</th>
-							<th>Reference</th>
-							<th>From</th>
-							<th>To</th>
-							<th>kWh</th>
-							<th>Net</th>
-							<th>VAT</th>
-							<th>Gross</th>
-							<th>Type</th>
-							<th>Breakdown</th>
-						</tr>
-					</thead>
-					<tbody>
-						<xsl:for-each select="/source/bills/bill">
-							<tr>
-								<td>
-									<a href="{@id}/">
-										<xsl:value-of select="@id" />
-									</a>
-								</td>
-								<td>
-									<xsl:value-of select="@reference" />
-								</td>
-								<td>
-									<xsl:value-of
-										select="concat(hh-start-date[@label='start']/@year, '-', hh-start-date[@label='start']/@month, '-', hh-start-date[@label='start']/@day)" />
-								</td>
-								<td>
-									<xsl:value-of
-										select="concat(hh-start-date[@label='finish']/@year, '-', hh-start-date[@label='finish']/@month, '-', hh-start-date[@label='finish']/@day)" />
-								</td>
-								<td>
-									<xsl:value-of select="@kwh" />
-								</td>
-								<td>
-									<xsl:value-of select="@net" />
-								</td>
-								<td>
-									<xsl:value-of select="@vat" />
-								</td>
-								<td>
-									<xsl:value-of select="@gross" />
-								</td>
-								<td>
-									<xsl:value-of select="bill-type/@code" />
-								</td>
-								<td>
-									<xsl:value-of select="@breakdown" />
-								</td>
-							</tr>
+				<xsl:if test="//message">
+					<ul>
+						<xsl:for-each select="//message">
+							<li>
+								<xsl:value-of select="@description" />
+							</li>
 						</xsl:for-each>
-					</tbody>
-				</table>
+					</ul>
+				</xsl:if>
+
 				<br />
 				<form action="." method="post">
 					<fieldset>
@@ -160,14 +95,12 @@
 									select="/source/request/parameter[@name='issue-year']/value/text()" />
 									</xsl:when>
 									<xsl:otherwise>
-										<xsl:attribute name="value">
 											<xsl:value-of select="/source/date/@year" />
-										</xsl:attribute>
 									</xsl:otherwise>
 									</xsl:choose>
 								</xsl:attribute>
 							</input>
-							-
+							<xsl:value-of select="'-'" />
 							<select name="issue-month">
 								<xsl:for-each select="/source/months/month">
 									<option value="{@number}">
@@ -188,7 +121,7 @@
 									</option>
 								</xsl:for-each>
 							</select>
-							-
+							<xsl:value-of select="'-'" />
 							<select name="issue-day">
 								<xsl:for-each select="/source/days/day">
 									<option value="{@number}">
@@ -228,7 +161,7 @@
 									</xsl:otherwise>
 								</xsl:choose>
 							</input>
-							-
+							<xsl:value-of select="'-'" />
 							<select name="start-month">
 								<xsl:for-each select="/source/months/month">
 									<option value="{@number}">
@@ -249,7 +182,7 @@
 									</option>
 								</xsl:for-each>
 							</select>
-							-
+							<xsl:value-of select="'-'" />
 							<select name="start-day">
 								<xsl:for-each select="/source/days/day">
 									<option value="{@number}">
@@ -291,7 +224,7 @@
 									</xsl:choose>
 								</xsl:attribute>
 							</input>
-							-
+							<xsl:value-of select="'-'" />
 							<select name="finish-month">
 								<xsl:for-each select="/source/months/month">
 									<option value="{@number}">
@@ -320,7 +253,7 @@
 									</option>
 								</xsl:for-each>
 							</select>
-							-
+							<xsl:value-of select="'-'" />
 							<select name="finish-day">
 								<xsl:for-each select="/source/days/day">
 									<option value="{@number}">
@@ -475,51 +408,6 @@
 									</xsl:choose>
 								</xsl:attribute>
 							</input>
-						</label>
-						<br />
-						<label>
-							<xsl:value-of select="'Status '" />
-							<select name="status">
-								<option value="0">
-									<xsl:choose>
-										<xsl:when test="/source/request/parameter[@name='status']">
-											<xsl:if
-												test="/source/request/parameter[@name='status']/value/text() = 0">
-												<xsl:attribute name="selected" />
-											</xsl:if>
-										</xsl:when>
-										<xsl:otherwise>
-										</xsl:otherwise>
-									</xsl:choose>
-									<xsl:value-of select="'Pending'" />
-								</option>
-								<option value="1">
-									<xsl:choose>
-										<xsl:when test="/source/request/parameter[@name='status']">
-											<xsl:if
-												test="/source/request/parameter[@name='status']/value/text() = 1">
-												<xsl:attribute name="selected" />
-											</xsl:if>
-										</xsl:when>
-										<xsl:otherwise>
-										</xsl:otherwise>
-									</xsl:choose>
-									<xsl:value-of select="'Paid'" />
-								</option>
-								<option value="2">
-									<xsl:choose>
-										<xsl:when test="/source/request/parameter[@name='status']">
-											<xsl:if
-												test="/source/request/parameter[@name='status']/value/text() = 2">
-												<xsl:attribute name="selected" />
-											</xsl:if>
-										</xsl:when>
-										<xsl:otherwise>
-										</xsl:otherwise>
-									</xsl:choose>
-									<xsl:value-of select="'Rejected'" />
-								</option>
-							</select>
 						</label>
 						<br />
 						<br />

@@ -18,26 +18,24 @@
 			</head>
 			<body>
 				<p>
-					<a href="{/source/request/@context-path}/">
-						<img src="{/source/request/@context-path}/logo/" />
-						<span class="logo">Chellow</span>
+					<a href="{/source/request/@context-path}/reports/1/output/">
+						<xsl:value-of select="'Chellow'" />
 					</a>
 					&gt;
-					<a href="{/source/request/@context-path}/mop-contracts/">
+					<a href="{/source/request/@context-path}/reports/185/output/">
 						<xsl:value-of select="'MOP Contracts'" />
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/mop-contracts/{/source/batches/mop-contract/@id}/">
+						href="{/source/request/@context-path}/reports/107/output/?mop-contract-id={/source/batches/mop-contract/@id}">
 						<xsl:value-of select="/source/batches/mop-contract/@name" />
 					</a>
 					&gt;
-					<xsl:value-of select="'Batches ['" />
 					<a
 						href="{/source/request/@context-path}/reports/191/output/?mop-contract-id={/source/batches/mop-contract/@id}">
-						<xsl:value-of select="'view'" />
+						<xsl:value-of select="'Batches'" />
 					</a>
-					<xsl:value-of select="']'" />
+					&gt; Edit
 				</p>
 				<xsl:if test="//message">
 					<ul>
@@ -83,9 +81,7 @@
 						<xsl:for-each select="/source/batches/batch">
 							<tr>
 								<td>
-									<a href="{@id}/">
-										<xsl:value-of select="@id" />
-									</a>
+									<xsl:value-of select="@id" />
 								</td>
 								<td>
 									<xsl:value-of select="@reference" />

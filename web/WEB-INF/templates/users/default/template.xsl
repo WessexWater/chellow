@@ -16,11 +16,10 @@
 			</head>
 			<body>
 				<p>
-					<a href="{/source/request/@context-path}/">
-						<img src="{/source/request/@context-path}/logo/" alt="Chellow Logo" />
-						<span class="logo">Chellow</span>
+					<a href="{/source/request/@context-path}/reports/1/output/">
+						<xsl:value-of select="'Chellow'" />
 					</a>
-					<xsl:value-of select="' &gt; '" />
+					&gt;
 					<a href="{/source/request/@context-path}/users/">
 						<xsl:value-of select="'Users'" />
 					</a>

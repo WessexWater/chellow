@@ -24,34 +24,23 @@
 			</head>
 			<body>
 				<p>
-					<a href="{/source/request/@context-path}/">
-						<img src="{/source/request/@context-path}/logo/" />
-						<span class="logo">Chellow</span>
+					<a href="{/source/request/@context-path}/reports/1/output/">
+						<xsl:value-of select="'Chellow'" />
 					</a>
 					&gt;
-					<a href="{/source/request/@context-path}/supplies/">
+					<a href="{/source/request/@context-path}/reports/99/output/">
 						<xsl:value-of select="'Supplies'" />
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/supplies/{/source/hh-data/channel/supply-generation/supply/@id}/">
+						href="{/source/request/@context-path}/reports/7/output/?supply-id={/source/hh-data/channel/supply-generation/supply/@id}">
 						<xsl:value-of
 							select="/source/hh-data/channel/supply-generation/supply/@id" />
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/supplies/{/source/hh-data/channel/supply-generation/supply/@id}/generations/">
-						<xsl:value-of select="'Generations'" />
-					</a>
-					&gt;
-					<a
-						href="{/source/request/@context-path}/supplies/{/source/hh-data/channel/supply-generation/supply/@id}/generations/{/source/hh-data/channel/supply-generation/@id}/">
-						<xsl:value-of select="/source/hh-data/channel/supply-generation/@id" />
-					</a>
-					&gt;
-					<a
 						href="{/source/request/@context-path}/supplies/{/source/hh-data/channel/supply-generation/supply/@id}/generations/{/source/hh-data/channel/supply-generation/@id}/channels/">
-						<xsl:value-of select="'Channels'" />
+						<xsl:value-of select="concat('Generation ', /source/hh-data/channel/supply-generation/@id, ' channels')" />
 					</a>
 					&gt;
 					<a
@@ -73,14 +62,14 @@
 
 				<table>
 					<tr>
-						<td>Start Date</td>
+						<th>Start Date</th>
 						<td>
 							<xsl:value-of
 								select="concat(/source/hh-data/channel/supply-generation/hh-start-date[@label='start']/@year, '-', /source/hh-data/channel/supply-generation/hh-start-date[@label='start']/@month, '-', /source/hh-data/channel/supply-generation/hh-start-date[@label='start']/@day, ' ', /source/hh-data/channel/supply-generation/hh-start-date[@label='start']/@hour, ':', /source/hh-data/channel/supply-generation/hh-start-date[@label='start']/@minute, ' Z')" />
 						</td>
 					</tr>
 					<tr>
-						<td>Finish Date</td>
+						<th>Finish Date</th>
 						<td>
 							<xsl:choose>
 								<xsl:when
@@ -162,7 +151,7 @@
 										</xsl:choose>
 									</xsl:attribute>
 								</input>
-								-
+								<xsl:value-of select="'-'"/>
 								<select name="month">
 									<xsl:for-each select="/source/months/month">
 										<option value="{@number}">
@@ -229,7 +218,7 @@
 										</td>
 										<td>
 											<xsl:value-of
-												select="concat(hh-start-date/@year, '-', hh-start-date/@month, '-', hh-start-date/@day, 'T', hh-start-date/@hour, ':', hh-start-date/@minute, 'Z')" />
+												select="concat(hh-start-date/@year, '-', hh-start-date/@month, '-', hh-start-date/@day, 'T', hh-start-date/@hour, ':', hh-start-date/@minute)" />
 										</td>
 										<td>
 											<xsl:value-of select="@value" />
@@ -262,7 +251,7 @@
 											</xsl:choose>
 										</xsl:attribute>
 									</input>
-									-
+									<xsl:value-of select="'-'"/>
 									<select name="delete-from-month">
 										<xsl:for-each select="/source/months/month">
 											<option value="{@number}">
@@ -287,8 +276,7 @@
 											</option>
 										</xsl:for-each>
 									</select>
-
-									-
+                                    <xsl:value-of select="'-'"/>
 									<select name="delete-from-day">
 										<xsl:for-each select="/source/days/day">
 											<option value="{@number}">

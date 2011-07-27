@@ -1,6 +1,6 @@
 /*******************************************************************************
  * 
- *  Copyright (c) 2005, 2009 Wessex Water Services Limited
+ *  Copyright (c) 2005, 2011 Wessex Water Services Limited
  *  
  *  This file is part of Chellow.
  * 
@@ -68,30 +68,27 @@ public class MopContracts extends EntityList {
 	public void httpPost(Invocation inv) throws HttpException {
 		Long participantId = inv.getLong("participant-id");
 		String name = inv.getString("name");
-		Date startDate = inv.getDate("start");
+		Date startDate = inv.getDateTime("start");
 		if (!inv.isValid()) {
 			throw new UserException(document());
 		}
-		MopContract contract = MopContract.insertMopContract(null, Participant
-				.getParticipant(participantId), name, HhStartDate.roundDown(
-				startDate).getNext(), null, "", null, "");
-		Hiber.commit();
-		inv.sendSeeOther(contract.getUri());
+		try {
+			MopContract contract = MopContract.insertMopContract(null,
+					Participant.getParticipant(participantId), name,
+					HhStartDate.roundDown(startDate), null, "", null, "");
+			Hiber.commit();
+			inv.sendSeeOther(contract.getUri());
+		} catch (UserException e) {
+			e.setDocument(document());
+			throw e;
+		}
 	}
 
 	@SuppressWarnings("unchecked")
 	private Document document() throws HttpException {
 		Document doc = MonadUtils.newSourceDocument();
 		Element source = doc.getDocumentElement();
-		Element contractsElement = toXml(doc);
-		source.appendChild(contractsElement);
-		for (MopContract contract : (List<MopContract>) Hiber.session()
-				.createQuery(
-						"from MopContract contract order by contract.name")
-				.list()) {
-			contractsElement.appendChild(contract.toXml(doc, new XmlTree(
-					"party")));
-		}
+
 		for (Provider provider : (List<Provider>) Hiber
 				.session()
 				.createQuery(
@@ -101,6 +98,8 @@ public class MopContracts extends EntityList {
 		}
 		source.appendChild(MonadDate.getMonthsXml(doc));
 		source.appendChild(MonadDate.getDaysXml(doc));
+		source.appendChild(MonadDate.getHoursXml(doc));
+		source.appendChild(HhStartDate.getHhMinutesXml(doc));
 		source.appendChild(new MonadDate().toXml(doc));
 		return doc;
 	}
@@ -110,8 +109,10 @@ public class MopContracts extends EntityList {
 	}
 
 	public MopContract getChild(UriPathElement uriId) throws HttpException {
-		MopContract contract = (MopContract) Hiber.session().createQuery(
-				"from MopContract contract where contract.id = :contractId")
+		MopContract contract = (MopContract) Hiber
+				.session()
+				.createQuery(
+						"from MopContract contract where contract.id = :contractId")
 				.setLong("contractId", Long.parseLong(uriId.getString()))
 				.uniqueResult();
 		if (contract == null) {

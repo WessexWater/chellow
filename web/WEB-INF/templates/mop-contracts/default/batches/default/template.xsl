@@ -28,31 +28,29 @@
 					</ul>
 				</xsl:if>
 				<p>
-					<a href="{/source/request/@context-path}/">
-						<img src="{/source/request/@context-path}/logo/" />
-						<span class="logo">Chellow</span>
+					<a href="{/source/request/@context-path}/reports/1/output/">
+						<xsl:value-of select="'Chellow'" />
 					</a>
 					&gt;
-					<a href="{/source/request/@context-path}/mop-contracts/">
+					<a href="{/source/request/@context-path}/reports/185/output/">
 						<xsl:value-of select="'MOP Contracts'" />
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/mop-contracts/{/source/batch/mop-contract/@id}/">
+						href="{/source/request/@context-path}/reports/107/output/?mop-contract-id={/source/batch/mop-contract/@id}">
 						<xsl:value-of select="/source/batch/mop-contract/@name" />
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/mop-contracts/{/source/batch/mop-contract/@id}/batches/">
+						href="{/source/request/@context-path}/reports/191/output/?mop-contract-id={/source/batch/mop-contract/@id}">
 						<xsl:value-of select="'Batches'" />
 					</a>
 					&gt;
-					<xsl:value-of select="concat(/source/batch/@reference, ' [')" />
 					<a
 						href="{/source/request/@context-path}/reports/193/output/?batch-id={/source/batch/@id}">
-						<xsl:value-of select="'view'" />
+						<xsl:value-of select="/source/batch/@reference" />
 					</a>
-					<xsl:value-of select="']'" />
+					&gt; Edit
 				</p>
 				<br />
 				<xsl:choose>
@@ -73,16 +71,6 @@
 						</p>
 					</xsl:when>
 					<xsl:otherwise>
-						<ul>
-							<li>
-								<a href="bill-imports/">
-									Bill Imports
-								</a>
-							</li>
-							<li>
-								<a href="bills/">Bills</a>
-							</li>
-						</ul>
 						<form action="." method="post">
 							<fieldset>
 								<legend>Update batch</legend>

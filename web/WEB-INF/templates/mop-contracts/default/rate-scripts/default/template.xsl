@@ -18,31 +18,24 @@
 			</head>
 			<body>
 				<p>
-					<a href="{/source/request/@context-path}/">
-						<img src="{/source/request/@context-path}/logo/" />
-						<span class="logo">Chellow</span>
+					<a href="{/source/request/@context-path}/reports/1/output/">
+						<xsl:value-of select="'Chellow'" />
 					</a>
 					&gt;
-					<a href="{/source/request/@context-path}/mop-contracts/">
+					<a href="{/source/request/@context-path}/reports/185/output/">
 						<xsl:value-of select="'MOP Contracts'" />
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/mop-contracts/{/source/rate-script/mop-contract/@id}/">
+						href="{/source/request/@context-path}/reports/107/output/?mop-contract-id={/source/rate-script/mop-contract/@id}">
 						<xsl:value-of select="/source/rate-script/mop-contract/@name" />
 					</a>
 					&gt;
 					<a
-						href="{/source/request/@context-path}/mop-contracts/{/source/rate-script/mop-contract/@id}/rate-scripts/">
-						<xsl:value-of select="'Rate Scripts'" />
-					</a>
-					&gt;
-					<xsl:value-of select="concat(/source/rate-script/@id, ' [')" />
-					<a
 						href="{/source/request/@context-path}/reports/205/output/?rate-script-id={/source/rate-script/@id}">
-						<xsl:value-of select="'view'" />
+						<xsl:value-of select="concat('Rate Script ', /source/rate-script/@id)" />
 					</a>
-					<xsl:value-of select="']'" />
+					&gt; Edit
 				</p>
 				<br />
 				<xsl:if test="//message">
@@ -137,8 +130,50 @@
 											</option>
 										</xsl:for-each>
 									</select>
-									<xsl:value-of
-										select="concat(' ', /source/rate-script/hh-start-date[@label='start']/@hour, ':', /source/rate-script/hh-start-date[@label='start']/@minute, ' Z')" />
+									<xsl:value-of select="' '" />
+									<select name="start-hour">
+										<xsl:for-each select="/source/hours/hour">
+											<option value="{@number}">
+												<xsl:choose>
+													<xsl:when test="/source/request/parameter[@name='start-hour']">
+														<xsl:if
+															test="/source/request/parameter[@name='start-hour']/value/text() = @number">
+															<xsl:attribute name="selected" />
+														</xsl:if>
+													</xsl:when>
+													<xsl:otherwise>
+														<xsl:if
+															test="/source/rate-script/hh-start-date[@label='start']/@hour = @number">
+															<xsl:attribute name="selected" />
+														</xsl:if>
+													</xsl:otherwise>
+												</xsl:choose>
+												<xsl:value-of select="@number" />
+											</option>
+										</xsl:for-each>
+									</select>
+									<xsl:value-of select="':'" />
+									<select name="start-minute">
+										<xsl:for-each select="/source/hh-minutes/minute">
+											<option value="{@number}">
+												<xsl:choose>
+													<xsl:when test="/source/request/parameter[@name='start-minute']">
+														<xsl:if
+															test="/source/request/parameter[@name='start-minute']/value/text() = @number">
+															<xsl:attribute name="selected" />
+														</xsl:if>
+													</xsl:when>
+													<xsl:otherwise>
+														<xsl:if
+															test="/source/rate-script/hh-start-date[@label='start']/@minute = @number">
+															<xsl:attribute name="selected" />
+														</xsl:if>
+													</xsl:otherwise>
+												</xsl:choose>
+												<xsl:value-of select="@number" />
+											</option>
+										</xsl:for-each>
+									</select>
 								</fieldset>
 								<br />
 								<fieldset>
