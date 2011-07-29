@@ -11,7 +11,7 @@ Chellow is released under the GPL.
 
 Requirements
 ------------
-PostgreSQL 8.4.5 with JDBC Driver PostgreSQL 8.4 JDBC4 (build 702)
+PostgreSQL 8.4.8 with JDBC Driver PostgreSQL 8.4 JDBC4 (build 702)
 OpenJDK 6b20 in server mode
 Apache Tomcat 6.0.24 (with default configuration)
 
@@ -24,24 +24,22 @@ Installation
 
 3. In your Tomcat, configure a JNDI JDBC datasource called jdbc/chellow.
     a) Copy context.xml from the same directory as this file, and update with your own settings.
-    b) Install the JDBC driver from
+    b) Put the JDBC driver from
           http://jdbc.postgresql.org/download/postgresql-8.4-702.jdbc4.jar
-          in the /lib/ directory.
+          in the Tomcat /lib/ directory.
          
 4. Deploy the file chellow.war on your servlet container.
 
 
-Upgrade From Version 461
+Upgrade From Version 482
 ------------------------
 1. Upgrade your system so that it meets the requirements above.
-2. Note that the context.xml file has changed.
-3. In postgresql.conf set the default_transaction_isolation parameter to 'serializable'. 
-4. Copy the report at the bottom of this file, and run it with the following parameters to export the user data:
+2. Copy the report at the bottom of this file, and run it with the following parameters to export the user data:
 
 /reports/<report number>/output/
 
-5. Install Chellow afresh with a blank database.
-6. Import the user data by going to General Imports section.
+3. Install Chellow afresh with a blank database.
+4. Import the user data by going to General Imports section.
 
 
 from java.math import BigDecimal

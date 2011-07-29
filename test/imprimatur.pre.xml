@@ -2465,6 +2465,7 @@ def import_virtual_bill(supply_source):
 			<response-code value="200" />
 		</request>
 	</test>
+	<!-- 
 	<test name="A bill before the begining of a supply should be rejected.">
 		<request path="/chellow/supplier-contracts/4/batches/6/bills/"
 			method="post">
@@ -2489,8 +2490,8 @@ def import_virtual_bill(supply_source):
 
 			<response-code value="418" />
 		</request>
-		<!-- What if it starts before the begining of the supply, but ends after 
-			it? -->
+		 What if it starts before the begining of the supply, but ends after 
+			it? 
 		<request path="/chellow/supplier-contracts/4/batches/6/bills/"
 			method="post">
 			<control name="mpan-core" value="22 9813 2107 763" />
@@ -2515,6 +2516,7 @@ def import_virtual_bill(supply_source):
 			<response-code value="418" />
 		</request>
 	</test>
+	-->
 	<test
 		name="Check that it works if a supply generation is inserted by CSV before the beginning of a supply ">
 		<request path="/chellow/general-imports/" method="post">

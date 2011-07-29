@@ -29,7 +29,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import net.sf.chellow.billing.Bill;
 import net.sf.chellow.billing.Dno;
 import net.sf.chellow.billing.HhdcContract;
 import net.sf.chellow.billing.MopContract;
@@ -1004,7 +1003,6 @@ public class SupplyGeneration extends PersistentEntity {
 		}
 	}
 
-	@SuppressWarnings("unchecked")
 	public void update(HhStartDate startDate, HhStartDate finishDate,
 			MopContract mopContract, String mopAccount,
 			HhdcContract hhdcContract, String hhdcAccount,
@@ -1042,7 +1040,6 @@ public class SupplyGeneration extends PersistentEntity {
 		setPc(pc);
 		setSsc(ssc);
 
-		List<Long> contractIds = new ArrayList<Long>();
 		if (importMpan == null) {
 			if (importMpanCoreStr != null && importMpanCoreStr.length() != 0) {
 				Hiber.flush();
@@ -1089,7 +1086,6 @@ public class SupplyGeneration extends PersistentEntity {
 					"A supply generation must have at least one MPAN.");
 		}
 		if (importMpan != null) {
-			contractIds.add(importMpan.getSupplierContract().getId());
 			if (!importMpan.getLlfc().getIsImport()) {
 				throw new UserException(document(),
 						"The import line loss factor '" + importMpan.getLlfc()
@@ -1102,7 +1098,6 @@ public class SupplyGeneration extends PersistentEntity {
 			}
 		}
 		if (exportMpan != null) {
-			contractIds.add(exportMpan.getSupplierContract().getId());
 			if (exportMpan.getLlfc().getIsImport()) {
 				throw new UserException(
 						"Problem with the export MPAN with core '"
@@ -1199,17 +1194,6 @@ public class SupplyGeneration extends PersistentEntity {
 				throw new UserException("There are HH data after " + finishDate
 						+ ", the end of the updated supply.");
 			}
-			if (finishDate != null
-					&& ((Long) Hiber
-							.session()
-							.createQuery(
-									"select count(*) from Bill bill where bill.supply  = :supply and bill.startDate.date > :date")
-							.setEntity("supply", supply)
-							.setTimestamp("date", finishDate.getDate())
-							.uniqueResult()) > 0) {
-				throw new UserException(
-						"There are bills after the end of the updated supply.");
-			}
 		} else {
 			boolean isOverlap = false;
 			if (importMpan != null) {
@@ -1241,7 +1225,6 @@ public class SupplyGeneration extends PersistentEntity {
 						"Can't remove the HHDC account while there are still channels there.");
 			}
 		} else {
-			contractIds.add(hhdcContract.getId());
 			hhdcAccount = hhdcAccount == null ? null : hhdcAccount.trim();
 			if (hhdcAccount == null || hhdcAccount.length() == 0) {
 				throw new UserException(
@@ -1269,7 +1252,6 @@ public class SupplyGeneration extends PersistentEntity {
 		if (mopContract == null) {
 			mopAccount = null;
 		} else {
-			contractIds.add(mopContract.getId());
 			mopAccount = mopAccount == null ? null : mopAccount.trim();
 			if (mopAccount == null || mopAccount.length() == 0) {
 				throw new UserException(
@@ -1309,25 +1291,7 @@ public class SupplyGeneration extends PersistentEntity {
 			channel.onSupplyGenerationChange();
 		}
 		Hiber.flush();
-		Query billQuery = Hiber
-				.session()
-				.createQuery(
-						"from Bill bill where bill.supply = :supply and "
-								+ (finishDate == null ? ""
-										: "bill.startDate.date <= :finishDate and ")
-								+ " bill.finishDate.date >= :startDate and bill.batch.contract.id not in (:contractIds)")
-				.setEntity("supply", supply)
-				.setTimestamp("startDate", startDate.getDate())
-				.setParameterList("contractIds", contractIds);
-		if (finishDate != null) {
-			billQuery.setTimestamp("finishDate", finishDate.getDate());
-		}
-		List<Bill> orphanBills = (List<Bill>) billQuery.list();
-		if (!orphanBills.isEmpty()) {
-			throw new UserException(
-					"There are some bills which wouldn't have the right contract, for example: "
-							+ orphanBills.get(0).getId() + ".");
-		}
+
 		// See if we have to move hh data from one generation to the other
 		for (Boolean isImport : new Boolean[] { true, false }) {
 			for (Boolean isKwh : new Boolean[] { true, false }) {
