@@ -93,7 +93,7 @@ def print_batches(contract, role_name):
     batches = Hiber.session().createQuery("from Batch batch where batch.contract.id = :contractId order by batch.id").setLong('contractId', contract.getId()).scroll()
     while batches.next():
         batch = batches.get(0)
-        print_line(['insert', 'batch', role_name, contract.getName(), batch.getReference(), ''])
+        print_line(['insert', 'batch', role_name, contract.getName(), batch.getReference(), batch.getDescription()])
         bills = bills_query.setEntity('batch', batch).scroll()
         while bills.next():
             bill = bills.get(0)
