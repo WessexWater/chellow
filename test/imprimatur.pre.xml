@@ -2864,4 +2864,11 @@ def import_virtual_bill(supply_source):
 			<response-code value="418" />
 		</request>
 	</test>
+	<test name="Check that the start hour of a non-core rate script is correct.">
+		<request path="/chellow/non-core-contracts/69/rate-scripts/221/">
+			<regex
+				pattern='&lt;select name="start-hour"&gt;&lt;option value="00" selected&gt;00&lt;/option&gt;' />
+			<response-code value="200" />
+		</request>
+	</test>
 </imprimatur>

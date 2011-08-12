@@ -136,18 +136,16 @@
 										<xsl:for-each select="/source/hours/hour">
 											<option value="{@number}">
 												<xsl:choose>
-													<xsl:when test="/source/request/parameter[@name='finish-hour']">
-
+													<xsl:when test="/source/request/parameter[@name='start-hour']">
 														<xsl:if
-															test="/source/request/parameter[@name='finish-hour']/value/text() = @number">
-
+															test="/source/request/parameter[@name='start-hour']/value/text() = @number">
 															<xsl:attribute name="selected" />
 														</xsl:if>
 													</xsl:when>
 													<xsl:when
-														test="/source/rate-script/hh-start-date[@label='finish']">
+														test="/source/rate-script/hh-start-date[@label='start']">
 														<xsl:if
-															test="/source/rate-script/hh-start-date[@label='finish']/@hour = @number">
+															test="/source/rate-script/hh-start-date[@label='start']/@hour = @number">
 															<xsl:attribute name="selected" />
 														</xsl:if>
 													</xsl:when>
