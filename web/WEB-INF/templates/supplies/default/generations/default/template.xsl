@@ -437,13 +437,6 @@
 										</xsl:for-each>
 									</select>
 								</label>
-								<xsl:if test="/source/supply-generation/mop-contract">
-									<xsl:value-of select="' '" />
-									<a
-										href="{/source/request/@context-path}/mop-contracts/{/source/supply-generation/mop-contract/@id}/">
-										<xsl:value-of select="/source/supply-generation/mop-contract/@name" />
-									</a>
-								</xsl:if>
 								<br />
 								<label>
 									MOP Account
