@@ -15220,7 +15220,7 @@ location = location_header.getValue()
 guid = URLEncoder.encode(location[19:])
 post_method.releaseConnection()
 
-mpans = Hiber.session().createQuery("select mpan.core.dno.code || mpan.core.uniquePart || mpan.core.checkDigit from Mpan mpan where mpan.core.dno.code != '99' and mpan.supplyGeneration.finishDate is null order by mpan.core.dno.code, mpan.core.uniquePart, mpan.core.checkDigit").list()
+mpans = Hiber.session().createQuery("select mpan.core.dno.code || mpan.core.uniquePart || mpan.core.checkDigit from Mpan mpan where mpan.core.dno.code != '99' and mpan.supplyGeneration.finishDate is null and mpan.supplyGeneration.supply.source.code != '3rd-party' order by mpan.core.dno.code, mpan.core.uniquePart, mpan.core.checkDigit").list()
 
 get_method = GetMethod('http://www.ecoes.co.uk/saveportfolioMpans.asp?guid=' + guid)
 
