@@ -10187,17 +10187,18 @@ from net.sf.chellow.physical import HhStartDate
 from net.sf.chellow.billing import Batch, NonCoreContract, Bill, SupplierContract, HhdcContract, MopContract
 from org.python.util import PythonInterpreter
 
-def find_contract_type(contract_id):
+def find_contract_type(bill):
+    contract_id = bill.getBatch().getContract().getId()
     try:
-        SupplierContract.findSupplierContract(contract_id)
+        SupplierContract.getSupplierContract(contract_id)
         contract_type = 'supplier'
     except:
         try:
-            HhdcContract.findHhdcContract(contract_id)
+            HhdcContract.getHhdcContract(contract_id)
             contract_type = 'dc'
         except:
             try:
-                MopContract.findMopContract(contract_id)
+                MopContract.getMopContract(contract_id)
                 contract_type = 'mop'
             except:
                 raise UserException('contract type not found')
@@ -10235,8 +10236,8 @@ while bills.next():
     bill_start = bill.getStartDate()
     bill_finish = bill.getFinishDate()
 
-    contract_type = find_contract_type(bill.getBatch().getContract().getId())
-
+    contract_type = find_contract_type(bill)
+    pw.println("contract type of bill is " + contract_type)
     supply = bill.getSupply()
     generation = supply.getGeneration(bill.getFinishDate())
     if generation is None:
@@ -10269,8 +10270,7 @@ while bills.next():
     while enlarged:
         enlarged = False
         for covered_bill in covered_query.setTimestamp('finishDate', covered_finish.getDate()).setTimestamp('startDate', covered_start.getDate()).list():
-            covered_contract_type = find_contract_type(covered_bill.getBatch().getContract().getId())
-            if contract_type != covered_contract_type:
+            if contract_type != find_contract_type(covered_bill):
                 continue
 
             if covered_primary_bill is None and covered_bill.getReads() is not None and len(covered_bill.getReads()) > 0:
@@ -10285,6 +10285,8 @@ while bills.next():
                 break
     top_bills = []
     for covered_bill in covered_query.setTimestamp('finishDate', covered_finish.getDate()).setTimestamp('startDate', covered_start.getDate()).list():
+        if contract_type != find_contract_type(covered_bill):
+            continue
         covered_bill_ids.append(covered_bill.getId())
         covered_net += covered_bill.getNet().doubleValue()
         covered_vat += covered_bill.getVat().doubleValue()
