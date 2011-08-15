@@ -1344,7 +1344,6 @@ source.setAttribute('debug', debug)]]></value>
                             <th>Edit</th>
                             <th>Batch</th>
                             <th>Reference</th>
-                            <th>Supply</th>
                             <th>Account</th>
                             <th>Issue Date</th>
                             <th>From</th>
@@ -1371,12 +1370,6 @@ source.setAttribute('debug', debug)]]></value>
                                 </td>
                                 <td>
                                     <xsl:value-of select="@reference" />
-                                </td>
-                                <td>
-<a
-                                        href="{/source/request/@context-path}/reports/7/output/?supply-id={supply/@id}">
-                                    <xsl:value-of select="'supply'" />
- </a>
                                 </td>
                                 <td>
                                     <xsl:value-of select="@account" />
@@ -1420,7 +1413,6 @@ source.setAttribute('debug', debug)]]></value>
                             <th>Edit</th>
                             <th>Batch</th>
                             <th>Reference</th>
-                            <th>Supply</th>
                             <th>Account</th>
                             <th>Issue Date</th>
                             <th>From</th>
@@ -1439,13 +1431,10 @@ source.setAttribute('debug', debug)]]></value>
                                 [<a href="{/source/request/@context-path}/mop-contracts/{batch/mop-contract/@id}/batches/{batch/@id}/bills/{@id}/"><xsl:value-of select="'edit'" /></a>]
                                 </td>
                                 <td>
-                                <a href="{/source/request/@context-path}/reports/191/output/?mop-contract-id={batch/mop-contract/@id}"><xsl:value-of select="batch/@reference" /></a>
+                                <a href="{/source/request/@context-path}/reports/193/output/?batch-id={batch/@id}"><xsl:value-of select="batch/@reference" /></a>
                                 </td>
                                 <td>
                                     <xsl:value-of select="@reference" />
-                                </td>
-                                <td>
-                                <a href="{/source/request/@context-path}/reports/7/output/?supply-id={supply/@id}"><xsl:value-of select="'Supply'" /></a>
                                 </td>
                                 <td>
                                 <xsl:value-of select="@account"/>
@@ -9092,13 +9081,7 @@ if inv.hasParameter("search-pattern"):
                         href="{/source/request/@context-path}/reports/1/output/">
                         <xsl:value-of select="'Chellow'" />
                     </a>
-                    &gt;
-                    <xsl:value-of select="'Supplies ['" />
-                    <a
-                        href="{/source/request/@context-path}/supplies/">
-                        <xsl:value-of select="'edit'" />
-                    </a>
-                    <xsl:value-of select="']'" />
+                    &gt; Supplies
                 </p>
                 <br />
                 <xsl:if test="//message">
