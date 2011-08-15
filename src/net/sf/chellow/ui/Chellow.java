@@ -178,18 +178,18 @@ public class Chellow extends Monad implements Urlable {
 	protected void checkPermissions(Invocation inv) throws HttpException {
 		HttpMethod method = inv.getMethod();
 		String pathInfo = inv.getRequest().getPathInfo();
+
+		if (method.equals(HttpMethod.GET)
+				&& (pathInfo.equals("/") || pathInfo.startsWith("/style/"))) {
+			return;
+		}
+
 		User user = inv.getUser();
 		if (user == null) {
 			user = ImplicitUserSource.getUser(inv);
 		}
 		if (user == null) {
 			try {
-				if (method.equals(HttpMethod.GET)
-						&& (pathInfo.equals("/")
-								|| pathInfo.startsWith("/logo/") || pathInfo
-								.startsWith("/style/"))) {
-					return;
-				}
 				Long userCount = (Long) Hiber.session()
 						.createQuery("select count(*) from User user")
 						.uniqueResult();
