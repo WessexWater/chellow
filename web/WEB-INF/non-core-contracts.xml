@@ -450,9 +450,11 @@ class Parser(BillParser):
 
 
     def big_decimal(self, bd_index, bd_name):
-        bd_str = self.values[bd_index]
         try:
+            bd_str = self.values[bd_index]
             return BigDecimal(bd_str)
+        except IndexError:
+            raise UserException("The field '" + bd_name + "' can't be found. It's expected at position " + str(bd_index) + " in the list of fields.")
         except NumberFormatException:
             raise UserException("The " + bd_name + " field '" + bd_str + "' cannot be parsed as a number. The " + bd_name + " field is the " + str(bd_index) + " field of " + str(self.values) + ".")
 
