@@ -1727,11 +1727,11 @@ def tariffs():
             'description': 'LV Generation Non-Intermittent',
             'gbp-per-mpan-per-day': 0,
             'gbp-per-kva-per-day': 0.00,
-            'excess-gbp-per-kva-per-day': 0.00},
+            'excess-gbp-per-kva-per-day': 0.00,
             'red-gbp-per-kwh': -0.05021,
             'amber-gbp-per-kwh': -0.01021,
             'green-gbp-per-kwh': -0.00161,
-            'gbp-per-kvarh': 0.00214,
+            'gbp-per-kvarh': 0.00214},
         '003': {
             'description': 'LV Sub Generation Intermittent',
             'gbp-per-mpan-per-day': 0,
