@@ -592,35 +592,9 @@ Ongoing
                             <xsl:value-of select="'Table of hh data'" />
                         </a>
           </li>
-          <li><a href="{/source/request/@context-path}/reports/27/output/?site-id={/source/site/@id}"><xsl:value-of select="'Bulk hh data download'" /></a>
-          </li>
         </ul>
 
         <h3>CSV Downloads</h3>
-<form action="{/source/request/@context-path}/reports/109/output/">
-                    <fieldset>
-                        <input type="hidden" name="site-id" value="{/source/site/@id}"/>
-                        <legend>Displaced Virtual Bills</legend>
-<br/>
-<xsl:value-of select="'For '"/>
-<input name="months" value="1" maxlength="2" size="2" />
-<xsl:value-of select="' month(s) until the end of '"/>
-                        <input name="end-year" value="{/source/date[@label='last-month']/@year}" maxlength="4" size="4" /><xsl:value-of select="' - '"/>
-                        <select name="end-month">
-                            <xsl:for-each select="/source/months/month">
-                                <option value="{@number}">
-                                    <xsl:if test="@number=/source/date[@label='last-month']/@month">
-                                        <xsl:attribute name="selected">selected</xsl:attribute>
-                                    </xsl:if>
-                                    <xsl:value-of select="@number"/>
-                                </option>
-                            </xsl:for-each>
-                        </select>
-<xsl:value-of select="' '"/>
-                        <input type="submit" value="Download"/>
-                    </fieldset>
-                </form>
-<br/>
 <form action="{/source/request/@context-path}/reports/161/output/">
                     <fieldset>
 <input type="hidden" name="site-code" value="{/source/site/@code}" />
@@ -655,6 +629,74 @@ Ongoing
 <xsl:value-of select="' '"/>
                         <input type="submit" value="Download"/>
                         <input type="reset" value="Reset"/>
+                    </fieldset>
+                </form>
+                <br/>
+                <form
+                    action="{/source/request/@context-path}/reports/29/output/">
+                    <fieldset>
+                        <legend>Download HH data (kWh)</legend>
+                        <input type="hidden" name="site-id"
+                            value="{/source/site/@id}" />
+                        <br/>
+                            <select name="type">
+                                <option value="used">Used</option>
+                                <option value="imported">
+                                    Imported
+                                </option>
+                                <option value="exported">
+                                    Exported
+                                </option>
+                                <option value="generated">
+                                    Generated
+                                </option>
+                                <option value="displaced">
+                                    Displaced
+                                </option>
+                                <option value="parasitic">
+                                    Parasitic
+                                </option>
+                            </select>
+                        <xsl:value-of select="' for '" /><input size="2" length="2" name="months" value="1" /><xsl:value-of select="' month(s) finishing at the end of '" /><input size="4" length="4" name="year" value="{/source/date/@year}" /><xsl:value-of select="' - '" />
+                                               <select name="month">
+                            <xsl:for-each
+                                select="/source/months/month">
+                                <option>
+                                    <xsl:if
+                                        test="/source/date[@label='last-month']/@month = @number">
+                                        <xsl:attribute
+                                    name="selected">selected</xsl:attribute>
+                                    </xsl:if>
+                                    <xsl:value-of select="@number" />
+                                </option>
+                            </xsl:for-each>
+                        </select>
+                        <xsl:value-of select="' '" />
+                        <input type="submit" value="Download" />
+                    </fieldset>
+                </form>
+<br/>
+<form action="{/source/request/@context-path}/reports/109/output/">
+                    <fieldset>
+                        <input type="hidden" name="site-id" value="{/source/site/@id}"/>
+                        <legend>Displaced Virtual Bills</legend>
+<br/>
+<xsl:value-of select="'For '"/>
+<input name="months" value="1" maxlength="2" size="2" />
+<xsl:value-of select="' month(s) until the end of '"/>
+                        <input name="end-year" value="{/source/date[@label='last-month']/@year}" maxlength="4" size="4" /><xsl:value-of select="' - '"/>
+                        <select name="end-month">
+                            <xsl:for-each select="/source/months/month">
+                                <option value="{@number}">
+                                    <xsl:if test="@number=/source/date[@label='last-month']/@month">
+                                        <xsl:attribute name="selected">selected</xsl:attribute>
+                                    </xsl:if>
+                                    <xsl:value-of select="@number"/>
+                                </option>
+                            </xsl:for-each>
+                        </select>
+<xsl:value-of select="' '"/>
+                        <input type="submit" value="Download"/>
                     </fieldset>
                 </form>
       </body>
