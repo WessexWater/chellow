@@ -1215,7 +1215,7 @@ source.setAttribute('debug', debug)]]></value>
                                     </th>
                                 </xsl:for-each>
                                 <xsl:for-each select="import-bills/outer-read">
-                                    <th colspan="3">
+                                    <th colspan="5">
                                         <xsl:value-of select="@index" />
                                     </th>
                                 </xsl:for-each>
@@ -1228,8 +1228,8 @@ source.setAttribute('debug', debug)]]></value>
                                 </xsl:for-each>
                                 <xsl:for-each select="import-bills/outer-read">
                                     <th>TPR</th>
-                                    <th>Previous</th>
-                                    <th>Present</th>
+                                    <th colspan="2">Previous</th>
+                                    <th colspan="2">Present</th>
                                 </xsl:for-each>
                             </tr>
                         </thead>
@@ -1311,17 +1311,20 @@ source.setAttribute('debug', debug)]]></value>
                                                                 <xsl:value-of select="tpr/@code" />
                                                             </a>
                                                         </td>
-                                                        <td>
-                                                            <xsl:value-of
-                                                                select="concat(@previous-value, ' ', read-type[@label='previous']/@code)" />
+                                                        <td style="border-right: none;">
+                                                            <xsl:value-of select="@previous-value"/>
                                                         </td>
-                                                        <td>
-                                                            <xsl:value-of
-                                                                select="concat(@present-value, ' ', read-type[@label='present']/@code)" />
+                                                        <td style="border-left: none;">
+                                                            <xsl:value-of select="read-type[@label='previous']/@code" />
+                                                        </td>
+                                                        <td style="border-right: none;">
+                                                            <xsl:value-of select="@present-value" />
+                                                        </td>
+                                                        <td style="border-left: none;">
+                                                        <xsl:value-of select="read-type[@label='present']/@code" />
                                                         </td>
                                                     </xsl:for-each>
                                                 </xsl:if>
-
                                             </tr>
                                         </xsl:for-each>
                                     </xsl:when>
@@ -3385,17 +3388,18 @@ cal.add(Calendar.DAY_OF_MONTH, -1)
 
 site = Site.getSite(site_id)
 supplies = Hiber.session().createQuery("select distinct supply from Supply supply join supply.generations supplyGeneration join supplyGeneration.siteSupplyGenerations siteSupplyGeneration where siteSupplyGeneration.site = :site and supply.source.code not in ('sub', 'gen-net')").setEntity('site', site).list()
-suppliesSQL = ''
-for supply in supplies:
-    suppliesSQL = suppliesSQL + str(supply.getId()) + ','
+
 con = Hiber.session().connection()
-stmt = con.prepareStatement("select hh_datum.value, hh_datum.start_date, hh_datum.status, channel.is_import, source.code from hh_datum, channel, supply_generation, supply, source where hh_datum.channel_id = channel.id and channel.supply_generation_id = supply_generation.id and supply_generation.supply_id = supply.id and supply.source_id = source.id and channel.is_kwh is true and hh_datum.start_date >= ? and hh_datum.start_date <= ? and supply.id in (" + suppliesSQL[:-1] + ") order by hh_datum.start_date", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.CLOSE_CURSORS_AT_COMMIT)
+
+stmt = con.prepareStatement("select hh_datum.value, hh_datum.start_date, hh_datum.status, channel.is_import, source.code from hh_datum, channel, supply_generation, supply, source where hh_datum.channel_id = channel.id and channel.supply_generation_id = supply_generation.id and supply_generation.supply_id = supply.id and supply.source_id = source.id and channel.is_kwh is true and hh_datum.start_date >= ? and hh_datum.start_date <= ? and supply.id in (" + ','.join(str(supply.getId()) for supply in supplies)
+ + ") order by hh_datum.start_date", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.CLOSE_CURSORS_AT_COMMIT)
+
 stmt.setTimestamp(1, Timestamp(startDate.getTime()))
 stmt.setTimestamp(2, Timestamp(finishDate.getTime()))
 stmt.setFetchSize(100)
 rs = stmt.executeQuery()
 hhDate = HhStartDate(startDate).getDate().getTime()
-maxScale = 0
+maxScale = 2
 minScale = 0
 resultData = []
 actualStatus = HhDatum.ACTUAL
@@ -3412,9 +3416,9 @@ if rs.next():
         hhValue = 0
         while hhChannelStartDate != None and hhChannelStartDate.getTime() == hhDate:
             if (isImport and source_code != '3rd-party-reverse') or (not isImport and source_code == '3rd-party-reverse'):
-                hhValue = hhValue + hhChannelValue
+                hhValue += hhChannelValue
             else:
-                hhValue = hhValue - hhChannelValue
+                hhValue -= hhChannelValue
             if status == actualStatus:
                 if complete == "blank":
                     complete = "actual"
@@ -3429,21 +3433,19 @@ if rs.next():
                 hhChannelStartDate = None
         hhDate = HhStartDate.getNext(cal, hhDate)
         resultData.append([hhValue, hhDate, complete == "actual"])
-        maxScale = max(maxScale, hhValue)
-        minScale = min(minScale, hhValue)
+        maxScale = max(maxScale, int(math.ceil(hhValue)))
+        minScale = min(minScale, int(math.floor(hhValue)))
     #System.err.println('ooostep is max scale' + str(maxScale) + ' min scale ' + str(minScale))
-    if maxScale > 0 and maxScale < 10:
-        maxScale = 10
-    if minScale < 0 and minScale > -10:
-        minScale = -10
-    if minScale == 0 and maxScale == 0:
-        minScale = 0
-        maxScale = 10
+
     #raise Exception('pppstep is max scale' + str(maxScale) + ' min scale ' + str(minScale))
     step = 10**int(math.floor(math.log10(maxScale - minScale)))
+    #raise Exception('step is ' + str(step))
+
     #System.err.println('kkstep is ' + str(step) + ' max scale' + str(maxScale) + ' min scale ' + str(minScale))
+    '''
     if step > (maxScale - minScale) / 2:
         step = int(float(step) / 4)
+    '''
 if len(resultData) > 0:
     graphLeft = 100
     image = BufferedImage(graphLeft + len(resultData) + 100, 400, BufferedImage.TYPE_4BYTE_ABGR)
@@ -3492,23 +3494,20 @@ if len(resultData) > 0:
                 monthPoints.append(i)
     graphics.setColor(Color.BLACK)
     graphics.fillRect(graphLeft, graphTop, 1, maxHeight)
-    scalePoints = []
-    #System.err.println('step is ' + str(step) + ' max scale' + str(maxScale) + ' min scale ' + str(maxScale))
-    for i in range(0, int(maxScale), step):
-        scalePoints.append(i)
-    for i in range(0, int(minScale), step * -1):
-        scalePoints.append(i)
+
     graphics.setColor(Color.BLACK)
-    for point in scalePoints:
+
+    for point in range(0, maxScale, step) + range(0, minScale, step * -1):
         graphics.fillRect(graphLeft - 5, int(xAxis - point * scaleFactor), len(resultData) + 5, 1)
         graphics.drawString(str(point * 2), graphLeft - 40, int(xAxis - point * scaleFactor + 5))
         for monthPoint in monthPoints:
             graphics.drawString(str(point * 2), graphLeft + monthPoint + 16, int(xAxis - point * scaleFactor - 2))
+
     graphics.drawString("kW", graphLeft - 90, 100)
     title = "Electricity use at site " + site.getCode() + " " + site.getName() + " for " + str(months) + " month"
     if months > 1:
-        title = title + "s"
-    title = title + " ending " + monthDateFormat.format(Date(finishDate.getTime() - 1)) + " " + yearDateFormat.format(Date(finishDate.getTime() - 1))
+        title += "s"
+    title += " ending " + monthDateFormat.format(Date(finishDate.getTime() - 1)) + " " + yearDateFormat.format(Date(finishDate.getTime() - 1))
     graphics.drawString(title, 30, 30)
     graphics.setFont(smallFont)
     graphics.drawString("Poor data is denoted by a grey background and black foreground.", 30, 395)
