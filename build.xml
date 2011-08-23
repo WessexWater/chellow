@@ -38,9 +38,9 @@
   Each of the following properties are used in the build script.
   Values for these properties are set by the first place they are
   defined, from the following list:
-
+ 
   * Definitions on the "ant" command line (ant -Dfoo=bar compile).
-
+ 
   * Definitions from a "build.properties" file in the top level
     source directory of this application.
 
@@ -109,17 +109,15 @@
 	<property name="app.path" value="/${app.name}" />
 	<property name="app.version" value="0.1-dev" />
 	<property name="build.home" value="${basedir}/build" />
-	<!-- <property name="catalina.home" value="${javalib.home}/apache-tomcat" /> -->
-	<!-- <property name="catalina.home" value="C:\Program Files\Apache Software Foundation\Tomcat 6.0" /> -->
 	<property name="dist.home" value="${basedir}/dist" />
 	<property name="docs.home" value="${basedir}/docs" />
-	<!-- <property name="manager.url" value="http://localhost:8080/manager" /> -->
+	<property name="manager.url" value="http://localhost:8080/manager" />
 	<property name="src.home" value="${basedir}/src" />
 	<property name="web.home" value="${basedir}/web" />
 	<property name="javalib.home" value="${user.home}/java" />
 	<!-- Requires Imprimatur from http://imprimatur.sourceforge.net/ -->
 
-	<property name="imprimatur.jar" value="${javalib.home}\imprimatur-017\imprimatur.jar" />
+	<property name="imprimatur.jar" value="${javalib.home}\imprimatur-021\imprimatur.jar" />
 	<property name="test.home" value="${basedir}/test" />
 
 	<!-- ================== Custom Ant Task Definitions ======================= -->
@@ -196,7 +194,7 @@
   <property name="foo.jar"
            value="/path/to/foo.jar"/>
 -->
-
+ 
 
 	<!-- ==================== Compilation Classpath =========================== -->
 
@@ -478,23 +476,24 @@
 		<!-- Copy static files from external dependencies as needed -->
 		<!-- *** CUSTOMIZE HERE AS REQUIRED BY YOUR APPLICATION *** -->
 
-		<copy todir="${build.home}/WEB-INF/lib" file="${javalib.home}/slf4j-1.5.8/slf4j-jdk14-1.5.8.jar" />
-		<copy todir="${build.home}/WEB-INF/lib" file="${javalib.home}/javamail-1.4.3/mail.jar" />
+		<copy todir="${build.home}/WEB-INF/lib" file="${javalib.home}/slf4j-1.6.2/slf4j-jdk14-1.6.2.jar" />
+		<copy todir="${build.home}/WEB-INF/lib" file="${javalib.home}/javamail-1.4.4/mail.jar" />
 
-		<copy todir="${build.home}/WEB-INF/lib" file="${javalib.home}/hibernate-distribution-3.5.6-Final/hibernate3.jar">
-			<fileset dir="${javalib.home}/hibernate-distribution-3.5.6-Final/lib/required" />
+		<copy todir="${build.home}/WEB-INF/lib" file="${javalib.home}/hibernate-distribution-3.6.7.Final/hibernate3.jar">
+			<fileset dir="${javalib.home}/hibernate-distribution-3.6.7.Final/lib/required" />
 		</copy>
-		<copy todir="${build.home}/WEB-INF/lib" file="${javalib.home}/commons-fileupload-1.2.1/lib/commons-fileupload-1.2.1.jar" />
-		<copy todir="${build.home}/WEB-INF/lib" file="${javalib.home}/commons-io-1.4/commons-io-1.4.jar" />
+		<copy todir="${build.home}/WEB-INF/lib" file="${javalib.home}/commons-fileupload-1.2.2/lib/commons-fileupload-1.2.2.jar" />
+		<copy todir="${build.home}/WEB-INF/lib" file="${javalib.home}/commons-io-2.0.1/commons-io-2.0.1.jar" />
 
 		<copy todir="${build.home}/WEB-INF/lib" file="${javalib.home}/ostermillerutils_1_07_00.jar" />
 
-		<copy todir="${build.home}/WEB-INF/lib" file="${javalib.home}/commons-net-2.0/commons-net-2.0.jar" />
-		<copy todir="${build.home}/WEB-INF/lib" file="${javalib.home}/jakarta-oro-2.0.8/jakarta-oro-2.0.8.jar" />
-		<copy todir="${build.home}/WEB-INF/lib" file="${javalib.home}/commons-httpclient-3.1/commons-httpclient-3.1.jar" />
-		<copy todir="${build.home}/WEB-INF/lib" file="${javalib.home}/commons-codec-1.4/commons-codec-1.4.jar" />
+		<copy todir="${build.home}/WEB-INF/lib" file="${javalib.home}/commons-net-3.0.1/commons-net-3.0.1.jar" />
+		<copy todir="${build.home}/WEB-INF/lib">
+			<fileset dir="${javalib.home}/httpcomponents-client-4.1.1/lib" />
+		</copy>
+		<copy todir="${build.home}/WEB-INF/lib" file="${javalib.home}/commons-codec-1.5/commons-codec-1.5.jar" />
 		<copy todir="${build.home}/WEB-INF/lib" file="${javalib.home}/jython2.5.2/jython.jar" />
-		<copy todir="${build.home}/WEB-INF/lib" file="${javalib.home}/javasysmon-0.3.2.jar" />
+		<copy todir="${build.home}/WEB-INF/lib" file="${javalib.home}/javasysmon-0.3.3.jar" />
 		<copy todir="${build.home}/WEB-INF/lib" file="${javalib.home}/commons-logging-1.1.1/commons-logging-1.1.1.jar" />
 		<copy todir="${build.home}/WEB-INF/lib/Lib">
 			<fileset dir="${javalib.home}/jython2.5.2/Lib" />

@@ -2,13 +2,13 @@
 <classpath>
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry kind="var" path="JAVA_LIB_HOME/javamail-1.4.3/mail.jar"/>
+	<classpathentry kind="var" path="JAVA_LIB_HOME/javamail-1.4.4/mail.jar"/>
 	<classpathentry kind="var" path="JAVA_LIB_HOME/ostermillerutils_1_07_00.jar"/>
-	<classpathentry kind="var" path="JAVA_LIB_HOME/hibernate-distribution-3.3.2.GA/hibernate3.jar"/>
-	<classpathentry kind="var" path="TOMCAT_COMMON/lib/servlet-api.jar"/>
-	<classpathentry kind="var" path="JAVA_LIB_HOME/commons-fileupload-1.2.1/lib/commons-fileupload-1.2.1.jar"/>
-	<classpathentry kind="var" path="JAVA_LIB_HOME/commons-net-2.0/commons-net-2.0.jar"/>
+	<classpathentry kind="var" path="JAVA_LIB_HOME/hibernate-distribution-3.6.7.Final/hibernate3.jar"/>
+	<classpathentry kind="var" path="TOMCAT_COMMON/servlet-api.jar"/>
+	<classpathentry kind="var" path="JAVA_LIB_HOME/commons-net-3.0.1/commons-net-3.0.1.jar"/>
 	<classpathentry kind="var" path="JAVA_LIB_HOME/postgresql-8.4-702.jdbc4.jar"/>
 	<classpathentry kind="var" path="JAVA_LIB_HOME/jython2.5.2/jython.jar"/>
+	<classpathentry kind="lib" path="/home/tlocke/java/commons-fileupload-1.2.2/lib/commons-fileupload-1.2.2.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
