@@ -755,7 +755,7 @@ class Parser(BillParser):
         <value><![CDATA[]]></value>
         <value><![CDATA[CALB]]></value>
         <value><![CDATA[bsuos]]></value>
-        <value><![CDATA[from net.sf.chellow.physical import HhStartDate
+        <value><![CDATA[from net.sf.chellow.physical import HhStartDate, Configuration
 from java.util import Date, Timer, TimerTask, Calendar, Properties, GregorianCalendar, TimeZone, Locale
 from java.util.concurrent.locks import ReentrantLock
 from java.text import SimpleDateFormat
@@ -763,11 +763,16 @@ from net.sf.chellow.monad.types import MonadDate
 import sys
 from net.sf.chellow.billing import NonCoreContract
 from net.sf.chellow.monad import Hiber, UserException
-from org.apache.commons.httpclient import HttpClient, NameValuePair, UsernamePasswordCredentials
-from org.apache.commons.httpclient.methods import GetMethod, PostMethod
+from org.apache.http.protocol import HTTP
+from org.apache.http.client.entity import UrlEncodedFormEntity
+from org.apache.http.util import EntityUtils
+from org.apache.http import HttpHost
+from org.apache.http.conn.params import ConnRoutePNames
+from org.apache.http.impl.client import DefaultHttpClient
+from org.apache.http.message import BasicNameValuePair
+from org.apache.http.client.methods import HttpGet, HttpPost
 from javax.xml.parsers import DocumentBuilderFactory
-from java.io import LineNumberReader, InputStreamReader
-
+from java.io import LineNumberReader, InputStreamReader, StringReader
 
 
 def hh(bill, supply_source, hh_data):
@@ -795,6 +800,9 @@ class BsuosTask(TimerTask):
         self.key_format = SimpleDateFormat("dd HH:mm 'Z'")
         self.key_format.setCalendar(MonadDate.getCalendar())
 
+        self.PROXY_HOST_KEY = 'proxy.host'
+        self.PROXY_PORT_KEY = 'proxy.port'
+
 
     def log(self, message):
         self.messages.insert(0, self.date_formatter.format(Date()) + " - " + message)
@@ -818,11 +826,25 @@ class BsuosTask(TimerTask):
         ct_cal.set(Calendar.MILLISECOND, 0)
         hh_date = HhStartDate(ct_cal.getTime())
 
-        client = HttpClient()
-        post_method = PostMethod(day_url)
-        post_method.setRequestBody([NameValuePair('year', str(year)), NameValuePair('month', str(month + 1)), NameValuePair('day', str(day)), NameValuePair('action', 'display')])
-        response_code = client.executeMethod(post_method)
-        html_reader = LineNumberReader(InputStreamReader(post_method.getResponseBodyAsStream(), 'utf-8'))
+        config = Configuration.getConfiguration()
+        properties = Properties()
+        properties.load(StringReader(config.getProperties()))
+
+        proxy_host = properties.get(self.PROXY_HOST_KEY)
+
+        client = DefaultHttpClient()
+        if proxy_host is not None:
+            proxy_port = properties.get(self.PROXY_PORT_KEY)
+            if proxy_port is None:
+                raise UserException("The property " + self.PROXY_HOST_KEY + " is set, but the property " + self.PROXY_PORT_KEY + " is not.")
+
+            proxy = HttpHost(proxy_host, int(proxy_port), "http")
+            client.getParams().setParameter(ConnRoutePNames.DEFAULT_PROXY, proxy)
+
+        http_post = HttpPost(day_url)
+        http_post.setEntity(UrlEncodedFormEntity([BasicNameValuePair('year', str(year)), BasicNameValuePair('month', str(month + 1)), BasicNameValuePair('day', str(day)), BasicNameValuePair('action', 'display')]))
+        entity = client.execute(http_post).getEntity()
+        html_reader = LineNumberReader(InputStreamReader(entity.getContent(), 'utf-8'))
         self.log("Downloading data from " + day_url)
         line = html_reader.readLine()
         in_table = False
@@ -848,7 +870,7 @@ class BsuosTask(TimerTask):
                 in_table = True
 
             line = html_reader.readLine()
-        post_method.releaseConnection()
+        EntityUtils.consume(entity)
         return rates
 
 
@@ -25830,8 +25852,14 @@ from java.text import SimpleDateFormat
 from net.sf.chellow.monad.types import MonadDate
 from net.sf.chellow.monad import Hiber, UserException
 from java.io import StringReader
-from org.apache.commons.httpclient import HttpClient, NameValuePair, UsernamePasswordCredentials
-from org.apache.commons.httpclient.methods import GetMethod, PostMethod
+from org.apache.http.protocol import HTTP
+from org.apache.http.client.entity import UrlEncodedFormEntity
+from org.apache.http.util import EntityUtils
+from org.apache.http import HttpHost
+from org.apache.http.conn.params import ConnRoutePNames
+from org.apache.http.impl.client import DefaultHttpClient
+from org.apache.http.message import BasicNameValuePair
+from org.apache.http.client.methods import HttpGet, HttpPost
 import sys
 from com.Ostermiller.util import CSVParser
 
@@ -25865,6 +25893,9 @@ class RcrcTask(TimerTask):
 
         self.ELEXON_PORTAL_USER_NAME_KEY = 'elexonportal.user.name'
         self.ELEXON_PORTAL_PASSWORD_KEY = 'elexonportal.password'
+
+        self.PROXY_HOST_KEY = 'proxy.host'
+        self.PROXY_PORT_KEY = 'proxy.port'
 
         self.ct_cal = GregorianCalendar(TimeZone.getTimeZone("Europe/London"), Locale.UK)
 
@@ -25911,19 +25942,27 @@ class RcrcTask(TimerTask):
                     if password is None:
                         raise UserException("The property " + self.ELEXON_PORTAL_PASSWORD_KEY + " cannot be found in the configuration properties.")
 
-                    client = HttpClient()
+                    proxy_host = properties.get(self.PROXY_HOST_KEY)
 
-                    get_method = GetMethod('https://www.bsccentralservices.com/index.php/users/login')
-                    get_method.releaseConnection()
+                    client = DefaultHttpClient()
+                    if proxy_host is not None:
+                        proxy_port = properties.get(self.PROXY_PORT_KEY)
+                        if proxy_port is None:
+                            raise UserException("The property " + self.PROXY_HOST_KEY + " is set, but the property " + self.PROXY_PORT_KEY + " is not.")
 
-                    post_method = PostMethod("https://www.bsccentralservices.com/index.php/users/login")
-                    post_method.setRequestBody([NameValuePair("username", user_name), NameValuePair("password", password), NameValuePair('submLogin', 'Submit')])
-                    response_code = client.executeMethod(post_method)
-                    post_method.releaseConnection()
+                        proxy = HttpHost(proxy_host, int(proxy_port), "http")
+                        client.getParams().setParameter(ConnRoutePNames.DEFAULT_PROXY, proxy)
 
-                    get_method = GetMethod('https://downloads.bsccentralservices.com/action_attachment_download.php?uid=96&filename=rcrc.csv')
-                    client.executeMethod(get_method)
-                    csv_is = get_method.getResponseBodyAsStream()
+                    http_get = HttpGet('https://www.bsccentralservices.com/index.php/users/login')
+                    EntityUtils.consume(client.execute(http_get).getEntity())
+
+                    http_post = HttpPost("https://www.bsccentralservices.com/index.php/users/login")
+                    http_post.setEntity(UrlEncodedFormEntity([BasicNameValuePair("username", user_name), BasicNameValuePair("password", password), BasicNameValuePair('submLogin', 'Submit')], HTTP.UTF_8))
+                    EntityUtils.consume(client.execute(http_post).getEntity())
+
+                    http_get = HttpGet('https://downloads.bsccentralservices.com/action_attachment_download.php?uid=96&filename=rcrc.csv')
+                    entity = client.execute(http_get).getEntity()
+                    csv_is = entity.getContent()
                     parser = CSVParser(csv_is)
                     values = parser.getLine()
                     values = parser.getLine()
@@ -25939,7 +25978,7 @@ class RcrcTask(TimerTask):
                             month_rcrcs[self.key_format.format(hh_date.getDate())] = values[3]
                         values = parser.getLine()
                     parser.close()
-                    get_method.releaseConnection()
+                    EntityUtils.consume(entity)
                     if str(self.key_format.format(next_next_month_start.getPrevious().getDate())) in month_rcrcs:
                         self.log("The whole month's data is there.")
                         script = "def rates():\n    return {\n" + ',\n'.join("'" + k + "': " + month_rcrcs[k] for k in sorted(month_rcrcs.keys())) + "}"
@@ -49604,12 +49643,10 @@ def on_start_up(ctx):
 from java.text import SimpleDateFormat
 from java.util import Date, Timer, TimerTask, Calendar, GregorianCalendar, TimeZone, Locale
 from java.util.concurrent.locks import ReentrantLock
-from org.apache.commons.httpclient import HttpClient
 from net.sf.chellow.billing import HhdcContract, NonCoreContract
 from net.sf.chellow.hhimport import HhDataImportProcess
 from net.sf.chellow.monad import Hiber, HttpException, InternalException, UserException
 from net.sf.chellow.monad.types import MonadDate
-from org.apache.commons.httpclient.methods import GetMethod
 from com.Ostermiller.util import CSVParser
 from javax.xml.parsers import DocumentBuilderFactory
 from org.w3c.dom import Node
@@ -71862,8 +71899,14 @@ from java.text import SimpleDateFormat
 from net.sf.chellow.monad.types import MonadDate
 from net.sf.chellow.monad import Hiber, UserException
 from java.io import StringReader
-from org.apache.commons.httpclient import HttpClient, NameValuePair, UsernamePasswordCredentials
-from org.apache.commons.httpclient.methods import GetMethod, PostMethod
+from org.apache.http.protocol import HTTP
+from org.apache.http.client.entity import UrlEncodedFormEntity
+from org.apache.http.util import EntityUtils
+from org.apache.http import HttpHost
+from org.apache.http.conn.params import ConnRoutePNames
+from org.apache.http.impl.client import DefaultHttpClient
+from org.apache.http.message import BasicNameValuePair
+from org.apache.http.client.methods import HttpGet, HttpPost
 import sys
 from com.Ostermiller.util import CSVParser
 
@@ -71893,6 +71936,9 @@ class TlmTask(TimerTask):
 
         self.ELEXON_PORTAL_USER_NAME_KEY = 'elexonportal.user.name'
         self.ELEXON_PORTAL_PASSWORD_KEY = 'elexonportal.password'
+
+        self.PROXY_HOST_KEY = 'proxy.host'
+        self.PROXY_PORT_KEY = 'proxy.port'
 
         self.ct_cal = GregorianCalendar(TimeZone.getTimeZone("Europe/London"), Locale.UK)
 
@@ -71939,19 +71985,32 @@ class TlmTask(TimerTask):
                     if password is None:
                         raise UserException("The property " + self.ELEXON_PORTAL_PASSWORD_KEY + " cannot be found in the configuration properties.")
 
-                    client = HttpClient()
+                    proxy_host = properties.get(self.PROXY_HOST_KEY)
 
-                    get_method = GetMethod('https://www.bsccentralservices.com/index.php/users/login')
-                    get_method.releaseConnection()
+                    client = DefaultHttpClient()
+                    if proxy_host is not None:
+                        proxy_port = properties.get(self.PROXY_PORT_KEY)
+                        if proxy_port is None:
+                            raise UserException("The property " + self.PROXY_HOST_KEY + " is set, but the property " + self.PROXY_PORT_KEY + " is not.")
 
-                    post_method = PostMethod("https://www.bsccentralservices.com/index.php/users/login")
-                    post_method.setRequestBody([NameValuePair("username", user_name), NameValuePair("password", password), NameValuePair('submLogin', 'Submit')])
-                    response_code = client.executeMethod(post_method)
-                    post_method.releaseConnection()
+                        proxy = HttpHost(proxy_host, int(proxy_port), "http")
+                        client.getParams().setParameter(ConnRoutePNames.DEFAULT_PROXY, proxy)
 
-                    get_method = GetMethod('https://downloads.bsccentralservices.com/action_attachment_download.php?uid=91&filename=tlm.csv')
-                    client.executeMethod(get_method)
-                    csv_is = get_method.getResponseBodyAsStream()
+                    http_get = HttpGet('https://www.bsccentralservices.com/index.php/users/login')
+                    response = client.execute(http_get)
+                    entity = response.getEntity()
+                    EntityUtils.consume(entity)
+
+                    http_post = HttpPost("https://www.bsccentralservices.com/index.php/users/login")
+                    http_post.setEntity(UrlEncodedFormEntity([BasicNameValuePair("username", user_name), BasicNameValuePair("password", password), BasicNameValuePair('submLogin', 'Submit')], HTTP.UTF_8))
+                    response = client.execute(http_post)
+                    entity = response.getEntity()
+                    EntityUtils.consume(entity)
+
+                    http_get = HttpGet('https://downloads.bsccentralservices.com/action_attachment_download.php?uid=91&filename=tlm.csv')
+                    response = client.execute(http_get)
+                    entity = response.getEntity()
+                    csv_is = entity.getContent()
                     parser = CSVParser(csv_is)
                     values = parser.getLine()
                     values = parser.getLine()
@@ -71967,7 +72026,6 @@ class TlmTask(TimerTask):
                             month_tlms[self.key_format.format(hh_date.getDate())] = {'off-taking': values[3], 'delivering': values[4]}
                         values = parser.getLine()
                     parser.close()
-                    get_method.releaseConnection()
                     if str(self.key_format.format(next_next_month_start.getPrevious().getDate())) in month_tlms:
                         self.log("The whole month's data is there.")
                         script = "def tlms():\n    return {\n" + ',\n'.join("'" + k + "': " + month_tlms[k]['off-taking'] for k in sorted(month_tlms.keys())) + "}"
@@ -71984,8 +72042,14 @@ class TlmTask(TimerTask):
                 try:
                     self.lock.unlock()
                 finally:
-                    Hiber.close()
-                    self.log("Finished checking TLMs.")
+                    try:
+                        Hiber.close()
+                    finally:
+                        try:
+                            if client is not None:
+                                client.getConnectionManager().shutdown()
+                        finally:
+                            self.log("Finished checking TLMs.")
 
 
 TLM_TASK_KEY = "net.sf.chellow.tlm_task"

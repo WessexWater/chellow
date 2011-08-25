@@ -113,7 +113,6 @@ public class ContextListener implements ServletContextListener {
 			} finally {
 				con.close();
 			}
-
 			NonCoreContract startupContract = NonCoreContract
 					.getNonCoreContract("startup");
 			List<Object> args = new ArrayList<Object>();

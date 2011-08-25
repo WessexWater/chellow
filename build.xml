@@ -117,7 +117,7 @@
 	<property name="javalib.home" value="${user.home}/java" />
 	<!-- Requires Imprimatur from http://imprimatur.sourceforge.net/ -->
 
-	<property name="imprimatur.jar" value="${javalib.home}\imprimatur-021\imprimatur.jar" />
+	<property name="imprimatur.jar" value="${javalib.home}\imprimatur-017\imprimatur.jar" />
 	<property name="test.home" value="${basedir}/test" />
 
 	<!-- ================== Custom Ant Task Definitions ======================= -->
@@ -481,6 +481,7 @@
 
 		<copy todir="${build.home}/WEB-INF/lib" file="${javalib.home}/hibernate-distribution-3.6.7.Final/hibernate3.jar">
 			<fileset dir="${javalib.home}/hibernate-distribution-3.6.7.Final/lib/required" />
+			<fileset dir="${javalib.home}/hibernate-distribution-3.6.7.Final/lib/jpa" />
 		</copy>
 		<copy todir="${build.home}/WEB-INF/lib" file="${javalib.home}/commons-fileupload-1.2.2/lib/commons-fileupload-1.2.2.jar" />
 		<copy todir="${build.home}/WEB-INF/lib" file="${javalib.home}/commons-io-2.0.1/commons-io-2.0.1.jar" />
@@ -489,12 +490,10 @@
 
 		<copy todir="${build.home}/WEB-INF/lib" file="${javalib.home}/commons-net-3.0.1/commons-net-3.0.1.jar" />
 		<copy todir="${build.home}/WEB-INF/lib">
-			<fileset dir="${javalib.home}/httpcomponents-client-4.1.1/lib" />
+			<fileset dir="${javalib.home}/httpcomponents-client-4.1.2/lib" />
 		</copy>
-		<copy todir="${build.home}/WEB-INF/lib" file="${javalib.home}/commons-codec-1.5/commons-codec-1.5.jar" />
 		<copy todir="${build.home}/WEB-INF/lib" file="${javalib.home}/jython2.5.2/jython.jar" />
 		<copy todir="${build.home}/WEB-INF/lib" file="${javalib.home}/javasysmon-0.3.3.jar" />
-		<copy todir="${build.home}/WEB-INF/lib" file="${javalib.home}/commons-logging-1.1.1/commons-logging-1.1.1.jar" />
 		<copy todir="${build.home}/WEB-INF/lib/Lib">
 			<fileset dir="${javalib.home}/jython2.5.2/Lib" />
 		</copy>
