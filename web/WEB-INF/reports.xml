@@ -4339,16 +4339,20 @@ while bills.next():
     supply = bill.getSupply()
 
     generation = supply.getGeneration(bill.getStartDate())
-    import_mpan = generation.getImportMpan()
-    if import_mpan is None:
-        import_mpan_core = ''
+    if generation is None:
+        import_mpan_core = 'No Generation'
+        export_mpan_core = 'No Generation'
     else:
-        import_mpan_core = import_mpan.getCore()
-    export_mpan = generation.getExportMpan()
-    if export_mpan is None:
-        export_mpan_core = ''
-    else:
-        export_mpan_core = export_mpan.getCore()
+        import_mpan = generation.getImportMpan()
+        if import_mpan is None:
+            import_mpan_core = ''
+        else:
+            import_mpan_core = import_mpan.getCore()
+        export_mpan = generation.getExportMpan()
+        if export_mpan is None:
+            export_mpan_core = ''
+        else:
+            export_mpan_core = export_mpan.getCore()
 
     pw.println(','.join('"' + str(value) + '"' for value in [start_date, finish_date, supply.getId(), import_mpan_core, export_mpan_core, contract.getName(), batch.getReference(), bill.getId(), bill.getStartDate(), bill.getFinishDate(), bill.getReference(), issue_format.format(bill.getIssueDate()), bill.getType().getCode(), bill.getKwh(), bill.getNet(), bill.getVat(), bill.getGross()]))
     pw.flush()
