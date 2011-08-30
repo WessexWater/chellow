@@ -15157,8 +15157,7 @@ for key in properties.propertyNames():
         <value><![CDATA[195]]></value>
         <value><![CDATA[true]]></value>
         <value><![CDATA[ECOES Comparison]]></value>
-        <value><![CDATA[from org.apache.commons.httpclient import HttpClient
-from net.sf.chellow.monad import Hiber, UserException
+        <value><![CDATA[from net.sf.chellow.monad import Hiber, UserException
 from java.lang import System, Integer, String
 from net.sf.chellow.monad.types import MonadDate
 from java.sql import Timestamp, ResultSet
@@ -15166,9 +15165,14 @@ from java.util import GregorianCalendar, Calendar, TimeZone, Locale, Date, Prope
 from net.sf.chellow.physical import HhStartDate, Configuration, MpanCore
 from net.sf.chellow.billing import Batch, NonCoreContract
 from org.python.util import PythonInterpreter
-from org.apache.commons.httpclient import HttpClient, NameValuePair, UsernamePasswordCredentials
-from org.apache.commons.httpclient.auth import AuthScope
-from org.apache.commons.httpclient.methods import GetMethod, PostMethod
+from org.apache.http.protocol import HTTP
+from org.apache.http.client.entity import UrlEncodedFormEntity
+from org.apache.http.util import EntityUtils
+from org.apache.http import HttpHost
+from org.apache.http.conn.params import ConnRoutePNames
+from org.apache.http.impl.client import DefaultHttpClient
+from org.apache.http.message import BasicNameValuePair
+from org.apache.http.client.methods import HttpGet, HttpPost
 from java.io import StringReader
 from java.net import URL, URLEncoder
 from com.Ostermiller.util import CSVParser
@@ -15192,29 +15196,41 @@ password = properties.get(ECOES_PASSWORD_KEY)
 if password is None:
     raise UserException("The property " + ECOES_PASSWORD_KEY + " cannot be found in the configuration properties.")
 
-client = HttpClient()
+PROXY_HOST_KEY = 'proxy.host'
+PROXY_PORT_KEY = 'proxy.port'
 
-get_method = GetMethod('http://www.ecoes.co.uk/')
-response_code = client.executeMethod(get_method)
-get_method.releaseConnection()
+proxy_host = properties.get(PROXY_HOST_KEY)
 
-post_method = PostMethod("http://www.ecoes.co.uk/login.asp")
-post_method.setRequestBody([NameValuePair("userName", user_name), NameValuePair("password", password), NameValuePair('beenHereBefore', '1'), NameValuePair('forceLogout', '1')])
-response_code = client.executeMethod(post_method)
-location_header = post_method.getResponseHeader('Location')
+client = DefaultHttpClient()
+if proxy_host is not None:
+    proxy_port = properties.get(PROXY_PORT_KEY)
+    if proxy_port is None:
+        raise UserException("The property " + PROXY_HOST_KEY + " is set, but the property " + PROXY_PORT_KEY + " is not.")
+
+    proxy = HttpHost(proxy_host, int(proxy_port), "http")
+    client.getParams().setParameter(ConnRoutePNames.DEFAULT_PROXY, proxy)
+
+http_get = HttpGet('http://www.ecoes.co.uk/')
+response = client.execute(http_get)
+EntityUtils.consume(response.getEntity())
+
+http_post = HttpPost("http://www.ecoes.co.uk/login.asp")
+http_post.setEntity(UrlEncodedFormEntity([BasicNameValuePair("username", user_name), BasicNameValuePair("password", password), BasicNameValuePair('beenHereBefore', '1'), BasicNameValuePair('forceLogout', '1')], HTTP.UTF_8))
+response = client.execute(http_post)
+location_header = response.getFirstHeader('Location')
 location = location_header.getValue()
+EntityUtils.consume(response.getEntity())
 guid = URLEncoder.encode(location[19:])
-post_method.releaseConnection()
 
 mpans = Hiber.session().createQuery("select mpan.core.dno.code || mpan.core.uniquePart || mpan.core.checkDigit from Mpan mpan where mpan.core.dno.code != '99' and mpan.supplyGeneration.finishDate is null and mpan.supplyGeneration.supply.source.code != '3rd-party' order by mpan.core.dno.code, mpan.core.uniquePart, mpan.core.checkDigit").list()
 
-get_method = GetMethod('http://www.ecoes.co.uk/saveportfolioMpans.asp?guid=' + guid)
+http_get = HttpGet('http://www.ecoes.co.uk/saveportfolioMpans.asp?guid=' + guid)
 
 pw.print("MPAN Core,MPAN Core No Spaces,ECOES PC,Chellow PC,ECOES MTC,Chellow MTC,ECOES LLFC,Chellow LLFC,ECOES SSC,Chellow SSC,ECOES Supplier, Chellow Supplier,ECOES DC,Chellow DC,ECOES MOP,Chellow MOP,ECOES GSP Group,Chellow GSP Group,ECOES MSN, Chellow MSN,ECOES Meter Type,Chellow Meter Type,Problem")
 pw.flush()
 
-client.executeMethod(get_method)
-csv_is = get_method.getResponseBodyAsStream()
+entity = client.execute(http_get).getEntity()
+csv_is = entity.getContent()
 parser = CSVParser(csv_is)
 values = parser.getLine()
 values = parser.getLine()
@@ -15344,7 +15360,7 @@ while values != None:
     values = parser.getLine()
 
 parser.close()
-get_method.releaseConnection()
+EntityUtils.consume(entity)
 
 for mpan_core_str in mpans:
     mpan_core_spaces = mpan_core_str[:2] + ' ' + mpan_core_str[2:6] + ' ' + mpan_core_str[6:10] + ' ' + mpan_core_str[-3:]
