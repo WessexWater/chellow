@@ -21,6 +21,7 @@
 
 package net.sf.chellow.physical;
 
+import java.net.URI;
 import java.util.List;
 
 import net.sf.chellow.monad.Hiber;
@@ -131,12 +132,18 @@ public class SiteSnag extends SnagDateBounded {
 		return doc;
 	}
 
-	public MonadUri getUri() throws HttpException {
-		return Chellow.SITE_SNAGS_INSTANCE.getUri().resolve(getUriId()).append(
+	public MonadUri getEditUri() throws HttpException {
+		return Chellow.SITE_SNAGS_INSTANCE.getEditUri().resolve(getUriId()).append(
 				"/");
 	}
 
 	public void delete() {
 		Hiber.session().delete(this);
+	}
+
+	@Override
+	public URI getViewUri() throws HttpException {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

@@ -1,6 +1,6 @@
 /*******************************************************************************
  * 
- *  Copyright (c) 2005, 2009 Wessex Water Services Limited
+ *  Copyright (c) 2005, 2011 Wessex Water Services Limited
  *  
  *  This file is part of Chellow.
  * 
@@ -20,16 +20,17 @@
  *******************************************************************************/
 package net.sf.chellow.monad;
 
+import java.net.URI;
+
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
 
 public interface Urlable {
-	// public UriPathElement setUriId(UriPathElement uriId) throws
-	// ProgrammerException;
-
 	public Urlable getChild(UriPathElement uriId) throws HttpException;
 
-	public MonadUri getUri() throws HttpException;
+	public MonadUri getEditUri() throws HttpException;
+	
+	public URI getViewUri() throws HttpException;
 
 	public void httpGet(Invocation inv) throws HttpException;
 

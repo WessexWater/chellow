@@ -20,6 +20,7 @@
  *******************************************************************************/
 package net.sf.chellow.physical;
 
+import java.net.URI;
 import java.util.List;
 
 import net.sf.chellow.monad.Hiber;
@@ -66,7 +67,7 @@ public class ReadTypes extends EntityList {
 		inv.sendOk(doc);
 	}
 
-	public MonadUri getUri() throws HttpException {
+	public MonadUri getEditUri() throws HttpException {
 		return new MonadUri("/").resolve(getUriId()).append("/");
 	}
 
@@ -92,5 +93,11 @@ public class ReadTypes extends EntityList {
 	public void httpPost(Invocation inv) throws HttpException {
 		// TODO Auto-generated method stub
 		
+	}
+
+	@Override
+	public URI getViewUri() throws HttpException {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

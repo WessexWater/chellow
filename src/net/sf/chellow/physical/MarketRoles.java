@@ -20,6 +20,7 @@
  *******************************************************************************/
 package net.sf.chellow.physical;
 
+import java.net.URI;
 import java.util.List;
 
 import net.sf.chellow.monad.Hiber;
@@ -71,7 +72,7 @@ public class MarketRoles implements Urlable {
 		throw new MethodNotAllowedException();
 	}
 
-	public MonadUri getUri() throws HttpException {
+	public MonadUri getEditUri() throws HttpException {
 		return new MonadUri("/").resolve(getUriId()).append("/");
 	}
 
@@ -91,5 +92,11 @@ public class MarketRoles implements Urlable {
 
 	public UriPathElement getUriId() throws InternalException {
 		return URI_ID;
+	}
+
+	@Override
+	public URI getViewUri() throws HttpException {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

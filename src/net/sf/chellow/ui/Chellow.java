@@ -324,4 +324,10 @@ public class Chellow extends Monad implements Urlable {
 	public void httpDelete(Invocation inv) throws HttpException {
 		throw new MethodNotAllowedException();
 	}
+
+	@Override
+	public java.net.URI getViewUri() throws HttpException {
+		// TODO Auto-generated method stub
+		return null;
+	}
 }

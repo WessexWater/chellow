@@ -21,6 +21,7 @@
 
 package net.sf.chellow.physical;
 
+import java.net.URI;
 import java.util.List;
 
 import net.sf.chellow.monad.Hiber;
@@ -49,7 +50,7 @@ public class UserRoles extends EntityList {
 	public UserRoles() {
 	}
 
-	public MonadUri getUri() throws HttpException {
+	public MonadUri getEditUri() throws HttpException {
 		return Chellow.ROOT_URI.resolve(getUriId()).append("/");
 	}
 
@@ -80,5 +81,11 @@ public class UserRoles extends EntityList {
 
 	public Element toXml(Document doc) throws HttpException {
 		return doc.createElement("user-roles");
+	}
+
+	@Override
+	public URI getViewUri() throws HttpException {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

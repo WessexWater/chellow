@@ -21,6 +21,7 @@
 
 package net.sf.chellow.physical;
 
+import java.net.URI;
 import java.util.List;
 
 import net.sf.chellow.monad.Hiber;
@@ -74,7 +75,7 @@ public class ClockIntervals implements Urlable {
 		throw new MethodNotAllowedException();
 	}
 
-	public MonadUri getUri() throws InternalException, HttpException {
+	public MonadUri getEditUri() throws InternalException, HttpException {
 		return new MonadUri("/").resolve(getUriId()).append("/");
 	}
 
@@ -88,5 +89,11 @@ public class ClockIntervals implements Urlable {
 
 	public UriPathElement getUriId() throws InternalException {
 		return URI_ID;
+	}
+
+	@Override
+	public URI getViewUri() throws HttpException {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

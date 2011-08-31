@@ -22,6 +22,7 @@
 package net.sf.chellow.physical;
 
 import java.math.BigDecimal;
+import java.net.URI;
 import java.util.Date;
 import java.util.List;
 
@@ -61,8 +62,8 @@ public class RegisterReads extends EntityList {
 		return URI_ID;
 	}
 
-	public MonadUri getUri() throws HttpException {
-		return bill.getUri().resolve(getUrlId()).append("/");
+	public MonadUri getEditUri() throws HttpException {
+		return bill.getEditUri().resolve(getUrlId()).append("/");
 	}
 
 	public void httpPost(Invocation inv) throws HttpException {
@@ -129,5 +130,11 @@ public class RegisterReads extends EntityList {
 		source.appendChild(MonadDate.getDaysXml(doc));
 		source.appendChild(MonadDate.getMonthsXml(doc));
 		return doc;
+	}
+
+	@Override
+	public URI getViewUri() throws HttpException {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

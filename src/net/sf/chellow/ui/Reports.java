@@ -20,6 +20,7 @@
  *******************************************************************************/
 package net.sf.chellow.ui;
 
+import java.net.URI;
 import java.util.List;
 
 import net.sf.chellow.monad.Hiber;
@@ -66,8 +67,8 @@ public class Reports extends EntityList {
 		return URI_ID;
 	}
 
-	public MonadUri getUri() throws HttpException {
-		return Chellow.getUrlableRoot().getUri().resolve(URI_ID).append("/");
+	public MonadUri getEditUri() throws HttpException {
+		return Chellow.getUrlableRoot().getEditUri().resolve(URI_ID).append("/");
 	}
 
 	public void httpGet(Invocation inv) throws HttpException {
@@ -80,7 +81,7 @@ public class Reports extends EntityList {
 		try {
 			Report report = Report.insertReport(null, isCore, name, "", null);
 			Hiber.commit();
-			inv.sendSeeOther(report.getUri());
+			inv.sendSeeOther(report.getEditUri());
 		} catch (HttpException e) {
 			e.setDocument(document());
 			throw e;
@@ -93,5 +94,11 @@ public class Reports extends EntityList {
 
 	public Element toXml(Document doc) throws HttpException {
 		return doc.createElement("reports");
+	}
+
+	@Override
+	public URI getViewUri() throws HttpException {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

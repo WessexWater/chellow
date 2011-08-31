@@ -20,6 +20,7 @@
  *******************************************************************************/
 package net.sf.chellow.billing;
 
+import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.TreeMap;
@@ -130,7 +131,7 @@ public class BillImports implements Urlable {
 					imports.remove(firstEntry.getValue());
 				}
 			}
-			inv.sendSeeOther(importare.getUri());
+			inv.sendSeeOther(importare.getEditUri());
 		} catch (HttpException e) {
 			e.setDocument(document());
 			throw e;
@@ -149,7 +150,13 @@ public class BillImports implements Urlable {
 		return null;
 	}
 
-	public MonadUri getUri() throws HttpException {
-		return batch.getUri().resolve(getUriId()).append("/");
+	public MonadUri getEditUri() throws HttpException {
+		return batch.getEditUri().resolve(getUriId()).append("/");
+	}
+
+	@Override
+	public URI getViewUri() throws HttpException {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

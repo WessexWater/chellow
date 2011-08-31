@@ -392,7 +392,7 @@ public abstract class Monad extends HttpServlet implements Urlable {
 		return urlable;
 	}
 
-	public MonadUri getUri() throws InternalException {
+	public MonadUri getEditUri() throws InternalException {
 		return URI;
 	}
 }

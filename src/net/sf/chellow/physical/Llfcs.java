@@ -21,6 +21,7 @@
 
 package net.sf.chellow.physical;
 
+import java.net.URI;
 import java.util.List;
 
 import net.sf.chellow.billing.Dno;
@@ -65,8 +66,8 @@ public class Llfcs implements Urlable, XmlDescriber {
 		return URI_ID;
 	}
 
-	public MonadUri getUri() throws InternalException, HttpException {
-		return dno.getUri().resolve(getUrlId()).append("/");
+	public MonadUri getEditUri() throws InternalException, HttpException {
+		return dno.getEditUri().resolve(getUrlId()).append("/");
 	}
 
 	public void httpPost(Invocation inv) throws InternalException,
@@ -121,6 +122,12 @@ public class Llfcs implements Urlable, XmlDescriber {
 
 	public Node toXml(Document doc, XmlTree tree) throws InternalException,
 			HttpException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public URI getViewUri() throws HttpException {
 		// TODO Auto-generated method stub
 		return null;
 	}

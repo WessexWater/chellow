@@ -21,6 +21,7 @@
 
 package net.sf.chellow.billing;
 
+import java.net.URI;
 import java.util.Date;
 
 import javax.script.Invocable;
@@ -307,8 +308,8 @@ public class RateScript extends PersistentEntity {
 		throw new NotFoundException();
 	}
 
-	public MonadUri getUri() throws HttpException {
-		return getContract().rateScriptsInstance().getUri().resolve(getUriId())
+	public MonadUri getEditUri() throws HttpException {
+		return getContract().rateScriptsInstance().getEditUri().resolve(getUriId())
 				.append("/");
 	}
 
@@ -326,7 +327,7 @@ public class RateScript extends PersistentEntity {
 				e.setDocument(document());
 				throw e;
 			}
-			inv.sendSeeOther(contract.rateScriptsInstance().getUri());
+			inv.sendSeeOther(contract.rateScriptsInstance().getEditUri());
 		} else {
 			String script = inv.getString("script");
 			Date startDate = inv.getDateTime("start");
@@ -387,7 +388,7 @@ public class RateScript extends PersistentEntity {
 		} catch (ScriptException e) {
 			throw new UserException(e.getMessage());
 		} catch (NoSuchMethodException e) {
-			throw new UserException("The rate script " + getUri()
+			throw new UserException("The rate script " + getEditUri()
 					+ " has no such method: " + e.getMessage());
 		} catch (PyException e) {
 			Object obj = e.value.__tojava__(HttpException.class);
@@ -398,5 +399,11 @@ public class RateScript extends PersistentEntity {
 			}
 		}
 		return rate;
+	}
+
+	@Override
+	public URI getViewUri() throws HttpException {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

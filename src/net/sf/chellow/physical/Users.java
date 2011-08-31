@@ -21,6 +21,7 @@
 
 package net.sf.chellow.physical;
 
+import java.net.URI;
 import java.util.List;
 
 import net.sf.chellow.billing.Party;
@@ -55,7 +56,7 @@ public class Users extends EntityList {
 	public Users() {
 	}
 
-	public MonadUri getUri() throws HttpException {
+	public MonadUri getEditUri() throws HttpException {
 		return Chellow.ROOT_URI.resolve(getUriId()).append("/");
 	}
 
@@ -80,7 +81,7 @@ public class Users extends EntityList {
 			User user = User.insertUser(emailAddress, password, null, role,
 					party);
 			Hiber.commit();
-			inv.sendSeeOther(user.getUri());
+			inv.sendSeeOther(user.getEditUri());
 		} catch (HttpException e) {
 			Hiber.rollBack();
 			e.setDocument(document());
@@ -138,5 +139,11 @@ public class Users extends EntityList {
 
 	public Element toXml(Document doc) throws HttpException {
 		return doc.createElement("users");
+	}
+
+	@Override
+	public URI getViewUri() throws HttpException {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

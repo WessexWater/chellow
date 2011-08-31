@@ -23,6 +23,7 @@ package net.sf.chellow.billing;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.net.URI;
 import java.util.List;
 
 import javax.servlet.ServletContext;
@@ -200,8 +201,8 @@ public class NonCoreContract extends Contract {
 		return isEqual;
 	}
 
-	public MonadUri getUri() throws HttpException {
-		return Chellow.NON_CORE_SERVICES_INSTANCE.getUri().resolve(getUriId())
+	public MonadUri getEditUri() throws HttpException {
+		return Chellow.NON_CORE_SERVICES_INSTANCE.getEditUri().resolve(getUriId())
 				.append("/");
 	}
 
@@ -214,7 +215,7 @@ public class NonCoreContract extends Contract {
 		if (inv.hasParameter("delete")) {
 			delete();
 			Hiber.commit();
-			inv.sendSeeOther(Chellow.NON_CORE_SERVICES_INSTANCE.getUri());
+			inv.sendSeeOther(Chellow.NON_CORE_SERVICES_INSTANCE.getEditUri());
 		} else {
 			String name = inv.getString("name");
 			String chargeScript = inv.getString("charge-script");
@@ -283,5 +284,11 @@ public class NonCoreContract extends Contract {
 	void onUpdate(HhStartDate from, HhStartDate to) throws HttpException {
 		// TODO Auto-generated method stub
 
+	}
+
+	@Override
+	public URI getViewUri() throws HttpException {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

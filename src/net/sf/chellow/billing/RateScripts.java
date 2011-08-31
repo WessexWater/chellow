@@ -21,6 +21,7 @@
 
 package net.sf.chellow.billing;
 
+import java.net.URI;
 import java.util.Date;
 import java.util.List;
 
@@ -69,8 +70,8 @@ public class RateScripts extends EntityList {
 		return URI_ID;
 	}
 
-	public MonadUri getUri() throws HttpException {
-		return contract.getUri().resolve(getUrlId()).append("/");
+	public MonadUri getEditUri() throws HttpException {
+		return contract.getEditUri().resolve(getUrlId()).append("/");
 	}
 
 	public void httpPost(Invocation inv) throws HttpException {
@@ -83,7 +84,7 @@ public class RateScripts extends EntityList {
 					.roundDown(startDate), "");
 			Hiber.commit();
 			Hiber.flush();
-			inv.sendSeeOther(rateScript.getUri());
+			inv.sendSeeOther(rateScript.getEditUri());
 		} catch (HttpException e) {
 			Hiber.rollBack();
 			e.setDocument(document());
@@ -133,5 +134,11 @@ public class RateScripts extends EntityList {
 		source.appendChild(MonadDate.getHoursXml(doc));
 		source.appendChild(HhStartDate.getHhMinutesXml(doc));
 		return doc;
+	}
+
+	@Override
+	public URI getViewUri() throws HttpException {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

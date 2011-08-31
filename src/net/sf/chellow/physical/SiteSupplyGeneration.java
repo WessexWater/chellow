@@ -21,6 +21,8 @@
 
 package net.sf.chellow.physical;
 
+import java.net.URI;
+
 import net.sf.chellow.monad.DeployerException;
 import net.sf.chellow.monad.DesignerException;
 import net.sf.chellow.monad.Hiber;
@@ -128,7 +130,13 @@ public class SiteSupplyGeneration extends PersistentEntity {
 		throw new NotFoundException();
 	}
 
-	public MonadUri getUri() throws HttpException {
+	public MonadUri getEditUri() throws HttpException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public URI getViewUri() throws HttpException {
 		// TODO Auto-generated method stub
 		return null;
 	}

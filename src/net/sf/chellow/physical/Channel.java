@@ -22,6 +22,7 @@
 package net.sf.chellow.physical;
 
 import java.math.BigDecimal;
+import java.net.URI;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -165,7 +166,7 @@ public class Channel extends PersistentEntity {
 				supplyGeneration.deleteChannel(isImport, isKwh);
 				Hiber.commit();
 				inv.sendSeeOther(supplyGeneration.getChannelsInstance()
-						.getUri());
+						.getEditUri());
 			}
 		} catch (HttpException e) {
 			e.setDocument(document());
@@ -187,8 +188,8 @@ public class Channel extends PersistentEntity {
 		}
 	}
 
-	public MonadUri getUri() throws HttpException {
-		return supplyGeneration.getChannelsInstance().getUri().resolve(
+	public MonadUri getEditUri() throws HttpException {
+		return supplyGeneration.getChannelsInstance().getEditUri().resolve(
 				getUriId()).append("/");
 	}
 
@@ -451,5 +452,11 @@ public class Channel extends PersistentEntity {
 						.getNext(), supplyGeneration.getFinishDate());
 			}
 		}
+	}
+
+	@Override
+	public URI getViewUri() throws HttpException {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

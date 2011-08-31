@@ -21,6 +21,8 @@
 
 package net.sf.chellow.physical;
 
+import java.net.URI;
+
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.Invocation;
@@ -110,8 +112,8 @@ public class UserRole extends PersistentEntity {
 		return element;
 	}
 
-	public MonadUri getUri() throws HttpException {
-		return Chellow.USER_ROLES_INSTANCE.getUri().resolve(getUriId()).append("/");
+	public MonadUri getEditUri() throws HttpException {
+		return Chellow.USER_ROLES_INSTANCE.getEditUri().resolve(getUriId()).append("/");
 	}
 
 	public Urlable getChild(UriPathElement uriId) throws HttpException {
@@ -134,5 +136,11 @@ public class UserRole extends PersistentEntity {
 			source.appendChild(new MonadMessage(message).toXml(doc));
 		}
 		return doc;
+	}
+
+	@Override
+	public URI getViewUri() throws HttpException {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

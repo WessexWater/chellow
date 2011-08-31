@@ -21,6 +21,7 @@
 
 package net.sf.chellow.physical;
 
+import java.net.URI;
 import java.text.DecimalFormat;
 
 import net.sf.chellow.monad.DeployerException;
@@ -114,7 +115,7 @@ public class Pc extends PersistentEntity {
 		return element;
 	}
 
-	public MonadUri getUri() {
+	public MonadUri getEditUri() {
 		return null;
 	}
 
@@ -143,5 +144,11 @@ public class Pc extends PersistentEntity {
 			DesignerException, HttpException, DeployerException {
 		// TODO Auto-generated method stub
 
+	}
+
+	@Override
+	public URI getViewUri() throws HttpException {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

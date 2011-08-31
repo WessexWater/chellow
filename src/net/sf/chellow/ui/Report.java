@@ -23,6 +23,7 @@ package net.sf.chellow.ui;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
+import java.net.URI;
 import java.util.List;
 import java.util.Map;
 
@@ -262,8 +263,8 @@ public class Report extends PersistentEntity {
 		}
 	}
 
-	public MonadUri getUri() throws HttpException {
-		return Chellow.REPORTS_INSTANCE.getUri().resolve(getId()).append("/");
+	public MonadUri getEditUri() throws HttpException {
+		return Chellow.REPORTS_INSTANCE.getEditUri().resolve(getId()).append("/");
 	}
 
 	public void httpGet(Invocation inv) throws HttpException {
@@ -278,7 +279,7 @@ public class Report extends PersistentEntity {
 		if (inv.hasParameter("delete")) {
 			delete();
 			Hiber.commit();
-			inv.sendFound(Chellow.REPORTS_INSTANCE.getUri());
+			inv.sendFound(Chellow.REPORTS_INSTANCE.getEditUri());
 		} else {
 			String name = inv.getString("name");
 			String script = inv.getString("script");
@@ -338,5 +339,11 @@ public class Report extends PersistentEntity {
 	public void delete() {
 		Hiber.session().delete(this);
 		Hiber.flush();
+	}
+
+	@Override
+	public URI getViewUri() throws HttpException {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

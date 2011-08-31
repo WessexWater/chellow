@@ -21,6 +21,7 @@
 
 package net.sf.chellow.billing;
 
+import java.net.URI;
 import java.util.Date;
 
 import net.sf.chellow.monad.Hiber;
@@ -59,8 +60,8 @@ public class DnoContracts extends EntityList {
 		return URI_ID;
 	}
 
-	public MonadUri getUri() throws HttpException {
-		return dno.getUri().resolve(getUrlId()).append("/");
+	public MonadUri getEditUri() throws HttpException {
+		return dno.getEditUri().resolve(getUrlId()).append("/");
 	}
 
 	public void httpPost(Invocation inv) throws HttpException {
@@ -73,7 +74,7 @@ public class DnoContracts extends EntityList {
 		DnoContract contract = dno.insertContract(null, name, new HhStartDate(
 				startDate), null, "", null, "");
 		Hiber.commit();
-		inv.sendSeeOther(contract.getUri());
+		inv.sendSeeOther(contract.getEditUri());
 	}
 
 	private Document document() throws HttpException {
@@ -110,5 +111,11 @@ public class DnoContracts extends EntityList {
 	public Element toXml(Document doc) throws HttpException {
 		Element contractsElement = doc.createElement("dno-contracts");
 		return contractsElement;
+	}
+
+	@Override
+	public URI getViewUri() throws HttpException {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

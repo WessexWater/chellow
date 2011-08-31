@@ -21,6 +21,8 @@
 
 package net.sf.chellow.physical;
 
+import java.net.URI;
+
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.Invocation;
@@ -107,8 +109,8 @@ public class GeneratorType extends PersistentEntity {
 		return element;
 	}
 
-	public MonadUri getUri() throws HttpException {
-		return Chellow.GENERATOR_TYPES_INSTANCE.getUri().resolve(getUriId()).append("/");
+	public MonadUri getEditUri() throws HttpException {
+		return Chellow.GENERATOR_TYPES_INSTANCE.getEditUri().resolve(getUriId()).append("/");
 	}
 
 	public void httpGet(Invocation inv) throws HttpException {
@@ -120,5 +122,11 @@ public class GeneratorType extends PersistentEntity {
 
 	public Urlable getChild(UriPathElement uriId) throws HttpException {
 		throw new NotFoundException();
+	}
+
+	@Override
+	public URI getViewUri() throws HttpException {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

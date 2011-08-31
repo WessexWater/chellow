@@ -20,6 +20,7 @@
  *******************************************************************************/
 package net.sf.chellow.physical;
 
+import java.net.URI;
 import java.text.DecimalFormat;
 import java.util.Date;
 import java.util.Set;
@@ -139,7 +140,7 @@ public class Ssc extends PersistentEntity {
 		return null;
 	}
 
-	public MonadUri getUri() throws InternalException, HttpException {
+	public MonadUri getEditUri() throws InternalException, HttpException {
 		// TODO Auto-generated method stub
 		return null;
 	}
@@ -189,5 +190,11 @@ public class Ssc extends PersistentEntity {
 		Hiber.session().save(mr);
 		Hiber.session().flush();
 		return mr;
+	}
+
+	@Override
+	public URI getViewUri() throws HttpException {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

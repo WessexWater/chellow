@@ -20,6 +20,8 @@
  *******************************************************************************/
 package net.sf.chellow.ui;
 
+import java.net.URI;
+
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.Invocation;
 import net.sf.chellow.monad.MethodNotAllowedException;
@@ -61,8 +63,8 @@ public class ReportXmlOutput implements Urlable, XmlDescriber {
 		throw new NotFoundException();
 	}
 
-	public MonadUri getUri() throws HttpException {
-		return report.getUri().resolve(URI_ID).append("/");
+	public MonadUri getEditUri() throws HttpException {
+		return report.getEditUri().resolve(URI_ID).append("/");
 	}
 
 	public void httpGet(Invocation inv) throws HttpException {
@@ -100,6 +102,12 @@ public class ReportXmlOutput implements Urlable, XmlDescriber {
 	}
 
 	public Node toXml(Document doc, XmlTree tree) throws HttpException {
+		return null;
+	}
+
+	@Override
+	public URI getViewUri() throws HttpException {
+		// TODO Auto-generated method stub
 		return null;
 	}
 }

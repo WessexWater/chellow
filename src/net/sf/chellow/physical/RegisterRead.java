@@ -21,6 +21,7 @@
 package net.sf.chellow.physical;
 
 import java.math.BigDecimal;
+import java.net.URI;
 import java.util.Date;
 import java.util.List;
 
@@ -325,7 +326,7 @@ public class RegisterRead extends PersistentEntity {
 		return null;
 	}
 
-	public MonadUri getUri() throws InternalException, HttpException {
+	public MonadUri getEditUri() throws InternalException, HttpException {
 		// TODO Auto-generated method stub
 		return null;
 	}
@@ -409,5 +410,11 @@ public class RegisterRead extends PersistentEntity {
 	}
 
 	public void attach() {
+	}
+
+	@Override
+	public URI getViewUri() throws HttpException {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

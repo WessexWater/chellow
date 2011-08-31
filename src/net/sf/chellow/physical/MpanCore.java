@@ -21,6 +21,8 @@
 
 package net.sf.chellow.physical;
 
+import java.net.URI;
+
 import net.sf.chellow.billing.Dno;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
@@ -145,7 +147,7 @@ public class MpanCore extends PersistentEntity {
 		return element;
 	}
 
-	public MonadUri getUri() {
+	public MonadUri getEditUri() {
 		return null;
 	}
 
@@ -241,5 +243,12 @@ public class MpanCore extends PersistentEntity {
 		public int hashCode() {
 			return dno.hashCode() + uniquePart.hashCode();
 		}
+	}
+
+
+	@Override
+	public URI getViewUri() throws HttpException {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

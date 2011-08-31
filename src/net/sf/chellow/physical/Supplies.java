@@ -21,6 +21,8 @@
 
 package net.sf.chellow.physical;
 
+import java.net.URI;
+
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.Invocation;
 import net.sf.chellow.monad.MethodNotAllowedException;
@@ -65,12 +67,18 @@ public class Supplies extends EntityList {
 		return Supply.getSupply(Long.parseLong(uriId.getString()));
 	}
 
-	public MonadUri getUri() throws HttpException {
+	public MonadUri getEditUri() throws HttpException {
 		return Chellow.ROOT_URI.resolve(getUriId());
 	}
 
 	public Element toXml(Document doc) throws HttpException {
 		Element element = doc.createElement("supplies");
 		return element;
+	}
+
+	@Override
+	public URI getViewUri() throws HttpException {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

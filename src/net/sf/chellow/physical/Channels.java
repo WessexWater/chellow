@@ -20,6 +20,8 @@
  *******************************************************************************/
 package net.sf.chellow.physical;
 
+import java.net.URI;
+
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.Invocation;
@@ -54,8 +56,8 @@ public class Channels extends EntityList {
 		return URI_ID;
 	}
 
-	public MonadUri getUri() throws HttpException {
-		return generation.getUri().resolve(getUriId()).append("/");
+	public MonadUri getEditUri() throws HttpException {
+		return generation.getEditUri().resolve(getUriId()).append("/");
 	}
 
 	public void httpGet(Invocation inv) throws HttpException {
@@ -82,7 +84,7 @@ public class Channels extends EntityList {
 		}
 		Channel channel = generation.insertChannel(isImport, isKwh);
 		Hiber.commit();
-		inv.sendSeeOther(channel.getUri());
+		inv.sendSeeOther(channel.getEditUri());
 	}
 	
 	public Urlable getChild(UriPathElement uriId) throws HttpException {
@@ -96,5 +98,11 @@ public class Channels extends EntityList {
 
 	public Element toXml(Document doc) throws HttpException {
 		return doc.createElement("channels");
+	}
+
+	@Override
+	public URI getViewUri() throws HttpException {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

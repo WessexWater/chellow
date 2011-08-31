@@ -21,6 +21,7 @@
 
 package net.sf.chellow.physical;
 
+import java.net.URI;
 import java.util.Date;
 
 import net.sf.chellow.monad.Hiber;
@@ -130,7 +131,7 @@ public class MeterType extends PersistentEntity {
 		return element;
 	}
 
-	public MonadUri getUri() {
+	public MonadUri getEditUri() {
 		return null;
 	}
 
@@ -154,5 +155,11 @@ public class MeterType extends PersistentEntity {
 	public void httpDelete(Invocation inv) throws HttpException {
 		// TODO Auto-generated method stub
 
+	}
+
+	@Override
+	public URI getViewUri() throws HttpException {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

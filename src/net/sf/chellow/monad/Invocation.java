@@ -429,8 +429,8 @@ public class Invocation {
 			headerElement.setAttribute("value", entry.getValue().toString());
 			responseElement.appendChild(headerElement);
 		}
-		responseElement.setAttribute("status-code", Integer
-				.toString(responseStatusCode));
+		responseElement.setAttribute("status-code",
+				Integer.toString(responseStatusCode));
 		return responseElement;
 	}
 
@@ -552,16 +552,16 @@ public class Invocation {
 	public void sendMovedPermanently(String location) throws InternalException {
 		try {
 			URI loc = new URI(location);
-			URI uri = new URI(req.getScheme(), null, req.getServerName(), req
-					.getServerPort(), req.getContextPath() + loc.getPath(), loc
-					.getQuery(), loc.getFragment());
+			URI uri = new URI(req.getScheme(), null, req.getServerName(),
+					req.getServerPort(), req.getContextPath() + loc.getPath(),
+					loc.getQuery(), loc.getFragment());
 			sendMovedPermanently(uri);
 		} catch (URISyntaxException e) {
 			throw new InternalException(e);
 		}
 
 	}
-	
+
 	public void sendMovedPermanently(URI location) throws InternalException {
 		res.setHeader("Location", location.toString());
 		try {
@@ -574,9 +574,9 @@ public class Invocation {
 	public void sendTemporaryRedirect(String location) throws InternalException {
 		try {
 			URI loc = new URI(location);
-			URI uri = new URI(req.getScheme(), null, req.getServerName(), req
-					.getServerPort(), req.getContextPath() + loc.getPath(), loc
-					.getQuery(), loc.getFragment());
+			URI uri = new URI(req.getScheme(), null, req.getServerName(),
+					req.getServerPort(), req.getContextPath() + loc.getPath(),
+					loc.getQuery(), loc.getFragment());
 			sendTemporaryRedirect(uri);
 		} catch (URISyntaxException e) {
 			throw new InternalException(e);
@@ -657,8 +657,8 @@ public class Invocation {
 	}
 
 	public void sendUnauthorized(String message) throws InternalException {
-		res.setHeader("WWW-Authenticate", "Basic realm=\""
-				+ monad.getRealmName() + "\"");
+		res.setHeader("WWW-Authenticate",
+				"Basic realm=\"" + monad.getRealmName() + "\"");
 		try {
 			res.sendError(HttpServletResponse.SC_UNAUTHORIZED, message);
 		} catch (IOException e) {
@@ -683,17 +683,28 @@ public class Invocation {
 		}
 	}
 
-	public void sendSeeOther(MonadUri uri) throws InternalException {
+	public void sendSeeOther(URI location) throws InternalException {
 		try {
-			URI endUri = uri.toUri();
-			URI location = new URI(req.getScheme(), null, req.getServerName(),
+			URI uri = new URI(req.getScheme(), null, req.getServerName(),
 					req.getServerPort(), req.getContextPath()
-							+ endUri.getPath(), endUri.getQuery(), endUri
-							.getFragment());
-			res.setHeader("Location", location.toString());
+							+ location.getPath(), location.getQuery(),
+					location.getFragment());
+			res.setHeader("Location", uri.toString());
 			res.sendError(HttpServletResponse.SC_SEE_OTHER);
 		} catch (IOException e) {
 			throw new InternalException(e);
+		} catch (URISyntaxException e) {
+			throw new InternalException(e);
+		}
+	}
+
+	public void sendSeeOther(MonadUri uri) throws InternalException {
+		sendSeeOther(uri.toUri());
+	}
+	
+	public void sendSeeOther(String location) throws InternalException {
+		try {
+			sendSeeOther(new URI(location));
 		} catch (URISyntaxException e) {
 			throw new InternalException(e);
 		}

@@ -28,6 +28,7 @@ import java.io.PrintWriter;
 import java.io.Reader;
 import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -353,7 +354,7 @@ public class GeneralImport extends Thread implements Urlable, XmlDescriber {
 		return null;
 	}
 
-	public MonadUri getUri() throws InternalException {
+	public MonadUri getEditUri() throws InternalException {
 		return uri;
 	}
 
@@ -370,7 +371,7 @@ public class GeneralImport extends Thread implements Urlable, XmlDescriber {
 
 	public void httpPost(Invocation inv) throws HttpException {
 		halt();
-		inv.sendSeeOther(getUri());
+		inv.sendSeeOther(getEditUri());
 	}
 
 	public void httpDelete(Invocation inv) throws HttpException {
@@ -476,5 +477,11 @@ public class GeneralImport extends Thread implements Urlable, XmlDescriber {
 				}
 			}
 		}
+	}
+
+	@Override
+	public URI getViewUri() throws HttpException {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

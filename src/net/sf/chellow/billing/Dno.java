@@ -21,6 +21,7 @@
 
 package net.sf.chellow.billing;
 
+import java.net.URI;
 import java.util.Date;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
@@ -207,7 +208,13 @@ public class Dno extends Party {
 	}
 
 	@Override
-	public MonadUri getUri() throws HttpException {
-		return Chellow.DNOS_INSTANCE.getUri().resolve(getUriId()).append("/");
+	public MonadUri getEditUri() throws HttpException {
+		return Chellow.DNOS_INSTANCE.getEditUri().resolve(getUriId()).append("/");
+	}
+
+	@Override
+	public URI getViewUri() throws HttpException {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

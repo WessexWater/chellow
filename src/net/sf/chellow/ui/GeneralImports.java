@@ -21,6 +21,7 @@
 package net.sf.chellow.ui;
 
 import java.io.IOException;
+import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -63,7 +64,7 @@ public class GeneralImports implements Urlable, XmlDescriber {
 		return URI_ID;
 	}
 
-	public MonadUri getUri() throws HttpException {
+	public MonadUri getEditUri() throws HttpException {
 		return Chellow.ROOT_URI.resolve(getUriId()).append("/");
 	}
 
@@ -103,7 +104,7 @@ public class GeneralImports implements Urlable, XmlDescriber {
 					throw new UserException("The file name extension '" + extension
 							+ "' must be 3 characters long.");
 				}
-				process = new GeneralImport(getUri().resolve(
+				process = new GeneralImport(getEditUri().resolve(
 						new UriPathElement(Long.toString(processId))).append(
 						"/"), fileItem.getInputStream(), extension);
 			} catch (IOException e) {
@@ -115,7 +116,7 @@ public class GeneralImports implements Urlable, XmlDescriber {
 			throw e;
 		}
 		process.start();
-		inv.sendSeeOther(process.getUri());
+		inv.sendSeeOther(process.getEditUri());
 	}
 
 	public Urlable getChild(UriPathElement urlId) throws HttpException {
@@ -134,5 +135,11 @@ public class GeneralImports implements Urlable, XmlDescriber {
 	@Override
 	public void httpDelete(Invocation inv) throws HttpException {
 		throw new MethodNotAllowedException();
+	}
+
+	@Override
+	public URI getViewUri() throws HttpException {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

@@ -20,6 +20,7 @@
  *******************************************************************************/
 package net.sf.chellow.physical;
 
+import java.net.URI;
 import java.util.List;
 
 import net.sf.chellow.monad.Hiber;
@@ -54,7 +55,7 @@ public class GeneratorTypes implements Urlable {
 	}
 
 	public MonadUri getUrlPath() throws HttpException {
-		return Chellow.getUrlableRoot().getUri().resolve(getUriId());
+		return Chellow.getUrlableRoot().getEditUri().resolve(getUriId());
 	}
 
 	@SuppressWarnings("unchecked")
@@ -82,7 +83,13 @@ public class GeneratorTypes implements Urlable {
 		throw new MethodNotAllowedException();
 	}
 
-	public MonadUri getUri() throws HttpException {
-		return Chellow.getUrlableRoot().getUri().resolve(getUri());
+	public MonadUri getEditUri() throws HttpException {
+		return Chellow.getUrlableRoot().getEditUri().resolve(getEditUri());
+	}
+
+	@Override
+	public URI getViewUri() throws HttpException {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

@@ -21,6 +21,8 @@
 
 package net.sf.chellow.physical;
 
+import java.net.URI;
+
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.Invocation;
@@ -59,7 +61,7 @@ public class Sites extends EntityList {
 	public Sites() {
 	}
 
-	public MonadUri getUri() throws HttpException {
+	public MonadUri getEditUri() throws HttpException {
 		return Chellow.ROOT_URI.resolve(getUriId()).append("/");
 	}
 
@@ -72,7 +74,7 @@ public class Sites extends EntityList {
 		}
 		Site site = Site.insertSite(code, name);
 		Hiber.commit();
-		inv.sendSeeOther(site.getUri());
+		inv.sendSeeOther(site.getEditUri());
 	}
 
 	public void httpGet(Invocation inv) throws HttpException {
@@ -119,5 +121,11 @@ public class Sites extends EntityList {
 	public Element toXml(Document doc) throws HttpException {
 		Element element = doc.createElement("sites");
 		return element;
+	}
+
+	@Override
+	public URI getViewUri() throws HttpException {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

@@ -20,6 +20,7 @@
  *******************************************************************************/
 package net.sf.chellow.physical;
 
+import java.net.URI;
 import java.util.Date;
 
 import net.sf.chellow.monad.Hiber;
@@ -56,7 +57,7 @@ public class SiteSnags extends EntityList {
 		return URI_ID;
 	}
 
-	public MonadUri getUri() throws HttpException {
+	public MonadUri getEditUri() throws HttpException {
 		return Chellow.ROOT_URI.resolve(getUriId()).append("/");
 	}
 
@@ -107,5 +108,11 @@ public class SiteSnags extends EntityList {
 
 	public Element toXml(Document doc) throws HttpException {
 		return doc.createElement("site-snags");
+	}
+
+	@Override
+	public URI getViewUri() throws HttpException {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

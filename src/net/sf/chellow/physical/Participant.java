@@ -20,6 +20,8 @@
  *******************************************************************************/
 package net.sf.chellow.physical;
 
+import java.net.URI;
+
 import net.sf.chellow.billing.Provider;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
@@ -92,7 +94,7 @@ public class Participant extends PersistentEntity {
 	}
 
 	@Override
-	public MonadUri getUri() throws HttpException {
+	public MonadUri getEditUri() throws HttpException {
 		// TODO Auto-generated method stub
 		return null;
 	}
@@ -133,5 +135,11 @@ public class Participant extends PersistentEntity {
 						"from Provider provider where provider.participant = :participant and provider.role.code = :roleCode")
 				.setEntity("participant", this).setCharacter("roleCode",
 						roleCode).uniqueResult();
+	}
+
+	@Override
+	public URI getViewUri() throws HttpException {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

@@ -21,6 +21,7 @@
 package net.sf.chellow.physical;
 
 import java.math.BigDecimal;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -63,8 +64,8 @@ public class HhData extends EntityList {
 		return URI_ID;
 	}
 
-	public MonadUri getUri() throws HttpException {
-		return channel.getUri().resolve(getUriId()).append("/");
+	public MonadUri getEditUri() throws HttpException {
+		return channel.getEditUri().resolve(getUriId()).append("/");
 	}
 
 	public void httpGet(Invocation inv) throws HttpException {
@@ -203,5 +204,11 @@ public class HhData extends EntityList {
 
 	public Element toXml(Document doc) throws HttpException {
 		return doc.createElement("hh-data");
+	}
+
+	@Override
+	public URI getViewUri() throws HttpException {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

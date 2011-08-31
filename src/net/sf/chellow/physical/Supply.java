@@ -21,6 +21,7 @@
 
 package net.sf.chellow.physical;
 
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -756,7 +757,7 @@ public class Supply extends PersistentEntity {
 				Hiber.commit();
 				source.appendChild(new MonadMessage(
 						"Supply deleted successfully.").toXml(doc));
-				inv.sendSeeOther(Chellow.SUPPLIES_INSTANCE.getUri());
+				inv.sendSeeOther(Chellow.SUPPLIES_INSTANCE.getEditUri());
 			} else {
 				String name = inv.getString("name");
 				Long sourceId = inv.getLong("source-id");
@@ -791,7 +792,7 @@ public class Supply extends PersistentEntity {
 		inv.sendOk(document());
 	}
 
-	public MonadUri getUri() throws HttpException {
+	public MonadUri getEditUri() throws HttpException {
 		return Chellow.SUPPLIES_INSTANCE.getUrlPath().resolve(getUriId())
 				.append("/");
 	}
@@ -844,5 +845,11 @@ public class Supply extends PersistentEntity {
 
 	public String toString() {
 		return "Supply id " + getId();
+	}
+
+	@Override
+	public URI getViewUri() throws HttpException {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

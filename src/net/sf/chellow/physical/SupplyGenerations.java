@@ -21,6 +21,7 @@
 
 package net.sf.chellow.physical;
 
+import java.net.URI;
 import java.util.Date;
 
 import net.sf.chellow.monad.Hiber;
@@ -62,8 +63,8 @@ public class SupplyGenerations extends EntityList {
 		return supply;
 	}
 
-	public MonadUri getUri() throws HttpException {
-		return supply.getUri().resolve(getUriId()).append("/");
+	public MonadUri getEditUri() throws HttpException {
+		return supply.getEditUri().resolve(getUriId()).append("/");
 	}
 
 	public UriPathElement getUriId() {
@@ -86,7 +87,7 @@ public class SupplyGenerations extends EntityList {
 			e.setDocument(doc);
 			throw e;
 		}
-		inv.sendSeeOther(supplyGeneration.getUri());
+		inv.sendSeeOther(supplyGeneration.getEditUri());
 	}
 
 	public void httpGet(Invocation inv) throws HttpException {
@@ -131,5 +132,11 @@ public class SupplyGenerations extends EntityList {
 
 	public Element toXml(Document doc) throws HttpException {
 		return doc.createElement("supply-generations");
+	}
+
+	@Override
+	public URI getViewUri() throws HttpException {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

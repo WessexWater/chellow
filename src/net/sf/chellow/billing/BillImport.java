@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -217,8 +218,8 @@ public class BillImport extends Thread implements Urlable, XmlDescriber {
 		throw new NotFoundException();
 	}
 
-	public MonadUri getUri() throws HttpException {
-		return getBatch().billImportsInstance().getUri().resolve(getUriId())
+	public MonadUri getEditUri() throws HttpException {
+		return getBatch().billImportsInstance().getEditUri().resolve(getUriId())
 				.append("/");
 	}
 
@@ -287,5 +288,9 @@ public class BillImport extends Thread implements Urlable, XmlDescriber {
 	public Node toXml(Document doc, XmlTree tree) throws HttpException {
 		// TODO Auto-generated method stub
 		return null;
+	}
+	
+	public URI getViewUri() throws HttpException {
+        return null;
 	}
 }

@@ -22,6 +22,7 @@
 package net.sf.chellow.billing;
 
 import java.math.BigDecimal;
+import java.net.URI;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -72,8 +73,8 @@ public class Bills extends EntityList {
 		return URI_ID;
 	}
 
-	public MonadUri getUri() throws HttpException {
-		return batch.getUri().resolve(getUrlId()).append("/");
+	public MonadUri getEditUri() throws HttpException {
+		return batch.getEditUri().resolve(getUrlId()).append("/");
 	}
 
 	public void httpPost(Invocation inv) throws HttpException {
@@ -109,7 +110,7 @@ public class Bills extends EntityList {
 			throw e;
 		}
 		Hiber.commit();
-		inv.sendSeeOther(bill.getUri());
+		inv.sendSeeOther(bill.getEditUri());
 	}
 
 	public void httpGet(Invocation inv) throws HttpException {
@@ -159,5 +160,11 @@ public class Bills extends EntityList {
 	public Element toXml(Document doc) throws HttpException {
 		Element billsElement = doc.createElement("bills");
 		return billsElement;
+	}
+
+	@Override
+	public URI getViewUri() throws HttpException {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

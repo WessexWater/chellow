@@ -20,6 +20,7 @@
  *******************************************************************************/
 package net.sf.chellow.physical;
 
+import java.net.URI;
 import java.util.List;
 
 import net.sf.chellow.monad.DeployerException;
@@ -57,8 +58,8 @@ public class Sscs implements Urlable {
 		return URI_ID;
 	}
 
-	public MonadUri getUri() throws InternalException, HttpException {
-		return Chellow.getUrlableRoot().getUri().resolve(getUrlId())
+	public MonadUri getEditUri() throws InternalException, HttpException {
+		return Chellow.getUrlableRoot().getEditUri().resolve(getUrlId())
 				.append("/");
 	}
 
@@ -92,5 +93,11 @@ public class Sscs implements Urlable {
 			HttpException {
 		// TODO Auto-generated method stub
 
+	}
+
+	@Override
+	public URI getViewUri() throws HttpException {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

@@ -20,6 +20,8 @@
  *******************************************************************************/
 package net.sf.chellow.physical;
 
+import java.net.URI;
+
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.InternalException;
@@ -161,7 +163,7 @@ public class ClockInterval extends PersistentEntity {
 		return null;
 	}
 
-	public MonadUri getUri() throws InternalException {
+	public MonadUri getEditUri() throws InternalException {
 		// TODO Auto-generated method stub
 		return null;
 	}
@@ -193,5 +195,11 @@ public class ClockInterval extends PersistentEntity {
 		element.setAttribute("end-hour", String.valueOf(endHour));
 		element.setAttribute("end-minute", String.valueOf(endMinute));
 		return element;
+	}
+
+	@Override
+	public URI getViewUri() throws HttpException {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

@@ -1,6 +1,6 @@
 /*******************************************************************************
  * 
- *  Copyright (c) 2005, 2009 Wessex Water Services Limited
+ *  Copyright (c) 2005, 2011 Wessex Water Services Limited
  *  
  *  This file is part of Chellow.
  * 
@@ -21,6 +21,7 @@
 
 package net.sf.chellow.billing;
 
+import java.net.URI;
 import java.util.List;
 
 import net.sf.chellow.monad.Hiber;
@@ -67,8 +68,12 @@ public class Batches extends EntityList {
 		return URI_ID;
 	}
 
-	public MonadUri getUri() throws HttpException {
-		return contract.getUri().resolve(getUrlId()).append("/");
+	public MonadUri getEditUri() throws HttpException {
+		return contract.getEditUri().resolve(getUrlId()).append("/");
+	}
+
+	public URI getViewUri() throws HttpException {
+		return null;
 	}
 
 	public void httpPost(Invocation inv) throws HttpException {
@@ -87,7 +92,7 @@ public class Batches extends EntityList {
 			throw e;
 		}
 		Hiber.commit();
-		inv.sendSeeOther(batch.getUri());
+		inv.sendSeeOther(batch.getViewUri());
 	}
 
 	public void httpGet(Invocation inv) throws HttpException {

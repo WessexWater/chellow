@@ -21,6 +21,8 @@
 
 package net.sf.chellow.physical;
 
+import java.net.URI;
+
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.Invocation;
@@ -103,8 +105,8 @@ public class GspGroup extends PersistentEntity {
 		inv.sendOk(doc);
 	}
 
-	public MonadUri getUri() throws HttpException {
-		return Chellow.GSP_GROUPS_INSTANCE.getUri().resolve(getUriId()).append(
+	public MonadUri getEditUri() throws HttpException {
+		return Chellow.GSP_GROUPS_INSTANCE.getEditUri().resolve(getUriId()).append(
 				"/");
 	}
 
@@ -114,5 +116,11 @@ public class GspGroup extends PersistentEntity {
 	
 	public String toString() {
 		return code + " - " + description;
+	}
+
+	@Override
+	public URI getViewUri() throws HttpException {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

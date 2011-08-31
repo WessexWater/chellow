@@ -124,7 +124,7 @@ public abstract class Snag extends PersistentEntity implements Cloneable,
 				setIsIgnored(ignore);
 			}
 			Hiber.commit();
-			inv.sendSeeOther(getUri());
+			inv.sendSeeOther(getEditUri());
 		}
 	}
 

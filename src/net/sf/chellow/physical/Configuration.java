@@ -26,6 +26,7 @@ import java.io.Reader;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
+import java.net.URI;
 import java.text.DecimalFormat;
 import java.util.Properties;
 
@@ -160,7 +161,7 @@ public class Configuration extends PersistentEntity {
 		userRateScriptId = id;
 	}
 
-	public MonadUri getUri() {
+	public MonadUri getEditUri() {
 		return null;
 	}
 
@@ -282,5 +283,11 @@ public class Configuration extends PersistentEntity {
 	public long nextUserRateScriptId() {
 		userRateScriptId += 2;
 		return userRateScriptId;
+	}
+
+	@Override
+	public URI getViewUri() throws HttpException {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

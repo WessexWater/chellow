@@ -2574,10 +2574,10 @@ def import_virtual_bill(supply_source):
 			<control name="reference" value="001-7t" />
 			<control name="description" value="hhdc batch" />
 			<response-code value="303" />
-			<regex pattern="/hhdc-contracts/0/batches/8/" />
+			<regex pattern="/reports/203/output/\?batch-id=8" />
 		</request>
 
-		<!-- Check that it's there -->
+		<!-- Check that it's there to edit -->
 		<request path="/chellow/hhdc-contracts/0/batches/8/">
 			<response-code value="200" />
 		</request>
@@ -2602,7 +2602,7 @@ def import_virtual_bill(supply_source):
 			<control name="reference" value="99/992" />
 			<control name="description" value="mop batch" />
 			<response-code value="303" />
-			<regex pattern="/mop-contracts/8/batches/9/" />
+			<regex pattern="/reports/193/output/\?batch-id=9" />
 		</request>
 
 		<!-- Check that it's there -->

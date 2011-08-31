@@ -20,6 +20,7 @@
  *******************************************************************************/
 package net.sf.chellow.physical;
 
+import java.net.URI;
 import java.util.List;
 
 import net.sf.chellow.monad.Hiber;
@@ -67,7 +68,7 @@ public class GspGroups extends EntityList {
 		inv.sendOk(doc);
 	}
 
-	public MonadUri getUri() throws HttpException {
+	public MonadUri getEditUri() throws HttpException {
 		return new MonadUri("/").resolve(getUriId()).append("/");
 	}
 
@@ -92,5 +93,11 @@ public class GspGroups extends EntityList {
 	@Override
 	public void httpPost(Invocation inv) throws HttpException {
 		throw new MethodNotAllowedException();
+	}
+
+	@Override
+	public URI getViewUri() throws HttpException {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

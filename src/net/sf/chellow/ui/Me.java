@@ -20,6 +20,8 @@
  *******************************************************************************/
 package net.sf.chellow.ui;
 
+import java.net.URI;
+
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.Invocation;
 import net.sf.chellow.monad.MethodNotAllowedException;
@@ -44,7 +46,7 @@ public class Me implements Urlable {
 		throw new NotFoundException();
 	}
 
-	public MonadUri getUri() throws HttpException {
+	public MonadUri getEditUri() throws HttpException {
 		return null;
 	}
 
@@ -53,7 +55,7 @@ public class Me implements Urlable {
 		if (user == null) {
 			user = ImplicitUserSource.getUser(inv);
 		}
-		inv.sendFound(user.getUri());
+		inv.sendFound(user.getEditUri());
 	}
 
 	public void httpPost(Invocation inv) throws HttpException {
@@ -62,5 +64,11 @@ public class Me implements Urlable {
 
 	public void httpDelete(Invocation inv) throws HttpException {
 		throw new MethodNotAllowedException();
+	}
+
+	@Override
+	public URI getViewUri() throws HttpException {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

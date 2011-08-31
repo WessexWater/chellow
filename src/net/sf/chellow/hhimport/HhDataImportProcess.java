@@ -27,6 +27,7 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.InvocationTargetException;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
@@ -199,8 +200,8 @@ public class HhDataImportProcess extends Thread implements Urlable,
 		throw new NotFoundException();
 	}
 
-	public MonadUri getUri() throws HttpException {
-		return getHhdcContract().getHhDataImportProcessesInstance().getUri()
+	public MonadUri getEditUri() throws HttpException {
+		return getHhdcContract().getHhDataImportProcessesInstance().getEditUri()
 				.resolve(getUriId()).append("/");
 	}
 
@@ -252,5 +253,11 @@ public class HhDataImportProcess extends Thread implements Urlable,
 
 	public List<String> getMessages() {
 		return messages;
+	}
+
+	@Override
+	public URI getViewUri() throws HttpException {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

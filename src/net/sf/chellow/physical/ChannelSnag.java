@@ -21,6 +21,7 @@
 
 package net.sf.chellow.physical;
 
+import java.net.URI;
 import java.util.List;
 
 import net.sf.chellow.monad.Hiber;
@@ -168,8 +169,8 @@ public class ChannelSnag extends SnagDateBounded {
 		return doc;
 	}
 
-	public MonadUri getUri() throws HttpException {
-		return getChannel().snagsInstance().getUri().resolve(getUriId())
+	public MonadUri getEditUri() throws HttpException {
+		return getChannel().snagsInstance().getEditUri().resolve(getUriId())
 				.append("/");
 	}
 
@@ -178,5 +179,11 @@ public class ChannelSnag extends SnagDateBounded {
 			return false;
 		}
 		return getChannel().equals(snag.getChannel());
+	}
+
+	@Override
+	public URI getViewUri() throws HttpException {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

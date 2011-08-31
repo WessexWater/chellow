@@ -20,6 +20,7 @@
  *******************************************************************************/
 package net.sf.chellow.hhimport;
 
+import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -155,7 +156,7 @@ public class HhDataImportProcesses extends EntityList {
 			contractProcesses = processes.get(contract.getId());
 			contractProcesses.put(Long.parseLong(hhImportProcess.getUriId()
 					.toString()), hhImportProcess);
-			inv.sendSeeOther(hhImportProcess.getUri());
+			inv.sendSeeOther(hhImportProcess.getEditUri());
 		} catch (HttpException e) {
 			e.setDocument(document());
 			throw e;
@@ -166,7 +167,13 @@ public class HhDataImportProcesses extends EntityList {
 		return doc.createElement("hh-data-imports");
 	}
 
-	public MonadUri getUri() throws HttpException {
-		return contract.getUri().resolve(getUriId()).append("/");
+	public MonadUri getEditUri() throws HttpException {
+		return contract.getEditUri().resolve(getUriId()).append("/");
+	}
+
+	@Override
+	public URI getViewUri() throws HttpException {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

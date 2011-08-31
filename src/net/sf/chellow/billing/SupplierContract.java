@@ -21,6 +21,7 @@
 
 package net.sf.chellow.billing;
 
+import java.net.URI;
 import java.util.List;
 
 import net.sf.chellow.monad.Hiber;
@@ -185,8 +186,8 @@ public class SupplierContract extends Contract {
 		return isEqual;
 	}
 
-	public MonadUri getUri() throws HttpException {
-		return Chellow.SUPPLIER_CONTRACTS_INSTANCE.getUri().resolve(getUriId())
+	public MonadUri getEditUri() throws HttpException {
+		return Chellow.SUPPLIER_CONTRACTS_INSTANCE.getEditUri().resolve(getUriId())
 				.append("/");
 	}
 
@@ -199,7 +200,7 @@ public class SupplierContract extends Contract {
 				throw e;
 			}
 			Hiber.commit();
-			inv.sendSeeOther(Chellow.SUPPLIER_CONTRACTS_INSTANCE.getUri());
+			inv.sendSeeOther(Chellow.SUPPLIER_CONTRACTS_INSTANCE.getEditUri());
 		} else {
 			String chargeScript = inv.getString("charge-script");
 			String name = inv.getString("name");
@@ -323,5 +324,11 @@ public class SupplierContract extends Contract {
 
 	public String missingBillSnagDescription() {
 		return "Missing supplier bill.";
+	}
+
+	@Override
+	public URI getViewUri() throws HttpException {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

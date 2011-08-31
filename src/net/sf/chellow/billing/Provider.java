@@ -21,6 +21,7 @@
 
 package net.sf.chellow.billing;
 
+import java.net.URI;
 import java.util.Date;
 
 import net.sf.chellow.monad.Hiber;
@@ -84,7 +85,7 @@ public class Provider extends Party {
 	}
 
 	@Override
-	public MonadUri getUri() throws HttpException {
+	public MonadUri getEditUri() throws HttpException {
 		// TODO Auto-generated method stub
 		return null;
 	}
@@ -108,5 +109,11 @@ public class Provider extends Party {
 	public void httpPost(Invocation inv) throws HttpException {
 		// TODO Auto-generated method stub
 
+	}
+
+	@Override
+	public URI getViewUri() throws HttpException {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

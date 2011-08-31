@@ -23,7 +23,6 @@ package net.sf.chellow.billing;
 
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import javax.script.Invocable;
@@ -42,12 +41,10 @@ import net.sf.chellow.physical.Configuration;
 import net.sf.chellow.physical.HhStartDate;
 import net.sf.chellow.physical.PersistentEntity;
 import net.sf.chellow.physical.Snag;
-import net.sf.chellow.physical.Supply;
 
 import org.hibernate.Query;
 import org.hibernate.exception.ConstraintViolationException;
 import org.python.core.Py;
-import org.python.core.PyException;
 import org.python.core.PyObject;
 import org.python.util.PythonInterpreter;
 import org.w3c.dom.Document;
@@ -270,31 +267,6 @@ public abstract class Contract extends PersistentEntity implements
 
 	public String toString() {
 		return "Contract id " + getId() + " name " + getName();
-	}
-
-	@SuppressWarnings("unchecked")
-	public Map<String, Double> virtualBill(Supply supply, HhStartDate from,
-			HhStartDate to) throws HttpException {
-		Map<String, Double> bill = null;
-
-		try {
-			Object[] args = { supply, from, to };
-			bill = (Map<String, Double>) engine().invokeFunction(
-					"virtual_bill", args);
-		} catch (ScriptException e) {
-			throw new UserException(e.getMessage());
-		} catch (NoSuchMethodException e) {
-			throw new UserException("For the service " + getUri()
-					+ " the script has no such method: " + e.getMessage());
-		} catch (PyException e) {
-			Object obj = e.value.__tojava__(HttpException.class);
-			if (obj instanceof HttpException) {
-				throw (HttpException) obj;
-			} else {
-				throw new UserException(e.toString());
-			}
-		}
-		return bill;
 	}
 
 	public RateScript getPreviousRateScript(RateScript script)

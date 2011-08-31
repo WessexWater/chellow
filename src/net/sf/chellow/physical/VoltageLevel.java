@@ -21,6 +21,8 @@
 
 package net.sf.chellow.physical;
 
+import java.net.URI;
+
 import net.sf.chellow.monad.DeployerException;
 import net.sf.chellow.monad.DesignerException;
 import net.sf.chellow.monad.Hiber;
@@ -109,7 +111,7 @@ public class VoltageLevel extends PersistentEntity {
 		return element;
 	}
 
-	public MonadUri getUri() {
+	public MonadUri getEditUri() {
 		return null;
 	}
 
@@ -135,5 +137,11 @@ public class VoltageLevel extends PersistentEntity {
 			DesignerException, HttpException, DeployerException {
 		// TODO Auto-generated method stub
 
+	}
+
+	@Override
+	public URI getViewUri() throws HttpException {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

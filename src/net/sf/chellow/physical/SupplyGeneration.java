@@ -22,6 +22,7 @@
 package net.sf.chellow.physical;
 
 import java.math.BigDecimal;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -1524,7 +1525,7 @@ public class SupplyGeneration extends PersistentEntity {
 			if (inv.hasParameter("delete")) {
 				supply.deleteGeneration(this);
 				Hiber.commit();
-				inv.sendSeeOther(new SupplyGenerations(supply).getUri());
+				inv.sendSeeOther(new SupplyGenerations(supply).getEditUri());
 			} else if (inv.hasParameter("attach")) {
 				String siteCode = inv.getString("site-code");
 				if (!inv.isValid()) {
@@ -1656,8 +1657,8 @@ public class SupplyGeneration extends PersistentEntity {
 		}
 	}
 
-	public MonadUri getUri() throws HttpException {
-		return supply.getSupplyGenerationsInstance().getUri()
+	public MonadUri getEditUri() throws HttpException {
+		return supply.getSupplyGenerationsInstance().getEditUri()
 				.resolve(getUriId()).append("/");
 	}
 
@@ -1715,5 +1716,11 @@ public class SupplyGeneration extends PersistentEntity {
 		}
 		channels.remove(channel);
 		Hiber.session().flush();
+	}
+
+	@Override
+	public URI getViewUri() throws HttpException {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

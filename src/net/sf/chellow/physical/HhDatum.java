@@ -22,6 +22,7 @@
 package net.sf.chellow.physical;
 
 import java.math.BigDecimal;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -203,8 +204,8 @@ public class HhDatum extends PersistentEntity {
 				+ status;
 	}
 
-	public MonadUri getUri() throws HttpException {
-		return channel.getHhDataInstance().getUri().resolve(getUriId());
+	public MonadUri getEditUri() throws HttpException {
+		return channel.getHhDataInstance().getEditUri().resolve(getUriId());
 	}
 
 	public Urlable getChild(UriPathElement urlId) throws HttpException {
@@ -231,7 +232,7 @@ public class HhDatum extends PersistentEntity {
 			try {
 				channel.deleteData(startDate, startDate);
 				Hiber.commit();
-				inv.sendSeeOther(channel.getHhDataInstance().getUri());
+				inv.sendSeeOther(channel.getHhDataInstance().getEditUri());
 			} catch (HttpException e) {
 				e.setDocument(document(null));
 				throw e;
@@ -256,5 +257,11 @@ public class HhDatum extends PersistentEntity {
 			}
 			inv.sendOk(document("HH Datum updated successfully"));
 		}
+	}
+
+	@Override
+	public URI getViewUri() throws HttpException {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

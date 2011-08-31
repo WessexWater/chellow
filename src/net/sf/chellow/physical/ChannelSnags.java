@@ -21,6 +21,7 @@
 
 package net.sf.chellow.physical;
 
+import java.net.URI;
 import java.util.List;
 
 import net.sf.chellow.monad.Hiber;
@@ -59,8 +60,8 @@ public class ChannelSnags extends EntityList {
 		return URI_ID;
 	}
 
-	public MonadUri getUri() throws HttpException {
-		return channel.getUri().resolve(getUriId()).append("/");
+	public MonadUri getEditUri() throws HttpException {
+		return channel.getEditUri().resolve(getUriId()).append("/");
 	}
 
 	@SuppressWarnings("unchecked")
@@ -91,5 +92,11 @@ public class ChannelSnags extends EntityList {
 
 	public Element toXml(Document doc) throws HttpException {
 		return doc.createElement("channel-snags");
+	}
+
+	@Override
+	public URI getViewUri() throws HttpException {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

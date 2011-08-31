@@ -22,6 +22,7 @@
 package net.sf.chellow.physical;
 
 import java.io.UnsupportedEncodingException;
+import java.net.URI;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
@@ -249,8 +250,8 @@ public class User extends PersistentEntity {
 		return element;
 	}
 
-	public MonadUri getUri() throws HttpException {
-		return Chellow.USERS_INSTANCE.getUri().resolve(getUriId()).append("/");
+	public MonadUri getEditUri() throws HttpException {
+		return Chellow.USERS_INSTANCE.getEditUri().resolve(getUriId()).append("/");
 	}
 
 	public Urlable getChild(UriPathElement uriId) throws HttpException {
@@ -289,7 +290,7 @@ public class User extends PersistentEntity {
 		if (inv.hasParameter("delete")) {
 			Hiber.session().delete(this);
 			Hiber.close();
-			inv.sendSeeOther(Chellow.USERS_INSTANCE.getUri());
+			inv.sendSeeOther(Chellow.USERS_INSTANCE.getEditUri());
 		} else if (inv.hasParameter("current-password")) {
 			String currentPassword = inv.getString("current-password");
 			String newPassword = inv.getString("new-password");
@@ -328,5 +329,11 @@ public class User extends PersistentEntity {
 			Hiber.commit();
 			inv.sendOk(document("Updated successfully."));
 		}
+	}
+
+	@Override
+	public URI getViewUri() throws HttpException {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

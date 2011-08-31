@@ -20,6 +20,7 @@
  *******************************************************************************/
 package net.sf.chellow.physical;
 
+import java.net.URI;
 import java.util.List;
 
 import net.sf.chellow.monad.Hiber;
@@ -52,8 +53,8 @@ public class Cops implements Urlable {
 		return URI_ID;
 	}
 
-	public MonadUri getUri() throws HttpException {
-		return Chellow.getUrlableRoot().getUri().resolve(getUrlId())
+	public MonadUri getEditUri() throws HttpException {
+		return Chellow.getUrlableRoot().getEditUri().resolve(getUrlId())
 				.append("/");
 	}
 
@@ -82,5 +83,11 @@ public class Cops implements Urlable {
 
 	public void httpDelete(Invocation inv) throws HttpException {
 		// TODO Auto-generated method stub
+	}
+
+	@Override
+	public URI getViewUri() throws HttpException {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

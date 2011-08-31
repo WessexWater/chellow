@@ -21,6 +21,7 @@
 
 package net.sf.chellow.physical;
 
+import java.net.URI;
 import java.sql.BatchUpdateException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -441,8 +442,8 @@ public class Site extends PersistentEntity {
 		Hiber.flush();
 	}
 
-	public MonadUri getUri() throws HttpException {
-		return Chellow.SITES_INSTANCE.getUri().resolve(getUriId()).append("/");
+	public MonadUri getEditUri() throws HttpException {
+		return Chellow.SITES_INSTANCE.getEditUri().resolve(getUriId()).append("/");
 	}
 
 	public boolean equals(Object obj) {
@@ -653,7 +654,7 @@ public class Site extends PersistentEntity {
 						exportLlfcCode, exportSupplierContract,
 						exportSupplierAccount, exportAgreedSupplyCapacity);
 				Hiber.commit();
-				inv.sendSeeOther(supply.getUri());
+				inv.sendSeeOther(supply.getEditUri());
 			} catch (HttpException e) {
 				e.setDocument(document());
 				throw e;
@@ -668,5 +669,11 @@ public class Site extends PersistentEntity {
 	public void detachSiteSupplyGeneration(
 			SiteSupplyGeneration siteSupplyGeneration) throws HttpException {
 		siteSupplyGenerations.remove(siteSupplyGeneration);
+	}
+
+	@Override
+	public URI getViewUri() throws HttpException {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

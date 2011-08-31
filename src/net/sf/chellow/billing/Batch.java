@@ -22,6 +22,8 @@
 package net.sf.chellow.billing;
 
 import java.math.BigDecimal;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Date;
 import java.util.List;
 
@@ -201,7 +203,7 @@ public class Batch extends PersistentEntity {
 			}
 			Hiber.commit();
 			inv.sendSeeOther(Contract.getContract(contractId).batchesInstance()
-					.getUri());
+					.getEditUri());
 		} else {
 			String reference = inv.getString("reference");
 			String description = inv.getString("description");
@@ -240,9 +242,28 @@ public class Batch extends PersistentEntity {
 		inv.sendOk(document());
 	}
 
-	public MonadUri getUri() throws HttpException {
-		return contract.batchesInstance().getUri().resolve(getUriId())
+	public MonadUri getEditUri() throws HttpException {
+		return contract.batchesInstance().getEditUri().resolve(getUriId())
 				.append("/");
+	}
+
+	public URI getViewUri() throws HttpException {
+		String report = null;
+		String contractUrl = contract.getEditUri().toString();
+		if (contractUrl.contains("supplier-contracts")) {
+			report = "91";
+		} else if (contractUrl.contains("hhdc-contracts")) {
+			report = "203";
+		} else if (contractUrl.contains("mop-contracts")) {
+			report = "193";
+		} else {
+			throw new InternalException("Unkown contract type.");
+		}
+		try {
+			return new URI("/reports/" + report + "/output/?batch-id=" + getId());
+		} catch (URISyntaxException e) {
+			throw new InternalException(e);
+		}
 	}
 
 	public Urlable getChild(UriPathElement uriId) throws HttpException {

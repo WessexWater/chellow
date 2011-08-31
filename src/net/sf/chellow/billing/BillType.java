@@ -20,6 +20,8 @@
  *******************************************************************************/
 package net.sf.chellow.billing;
 
+import java.net.URI;
+
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.Invocation;
@@ -91,7 +93,7 @@ public class BillType extends PersistentEntity {
 	}
 
 	@Override
-	public MonadUri getUri() throws HttpException {
+	public MonadUri getEditUri() throws HttpException {
 		// TODO Auto-generated method stub
 		return null;
 	}
@@ -114,5 +116,11 @@ public class BillType extends PersistentEntity {
 
 	public String toString() {
 		return code;
+	}
+
+	@Override
+	public URI getViewUri() throws HttpException {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

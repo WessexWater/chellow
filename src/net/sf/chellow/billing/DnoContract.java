@@ -23,6 +23,7 @@ package net.sf.chellow.billing;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.net.URI;
 import java.util.List;
 
 import javax.servlet.ServletContext;
@@ -147,8 +148,8 @@ public class DnoContract extends Contract {
 		return isEqual;
 	}
 
-	public MonadUri getUri() throws HttpException {
-		return dno.contractsInstance().getUri().resolve(getUriId()).append("/");
+	public MonadUri getEditUri() throws HttpException {
+		return dno.contractsInstance().getEditUri().resolve(getUriId()).append("/");
 	}
 
 	public void delete() throws HttpException {
@@ -160,7 +161,7 @@ public class DnoContract extends Contract {
 		if (inv.hasParameter("delete")) {
 			delete();
 			Hiber.commit();
-			inv.sendFound(dno.contractsInstance().getUri());
+			inv.sendFound(dno.contractsInstance().getEditUri());
 		} else {
 			String name = inv.getString("name");
 			String chargeScript = inv.getString("charge-script");
@@ -219,5 +220,11 @@ public class DnoContract extends Contract {
 	void onUpdate(HhStartDate from, HhStartDate to) throws HttpException {
 		// TODO Auto-generated method stub
 		
+	}
+
+	@Override
+	public URI getViewUri() throws HttpException {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

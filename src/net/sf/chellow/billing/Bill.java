@@ -22,6 +22,7 @@
 package net.sf.chellow.billing;
 
 import java.math.BigDecimal;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -503,7 +504,7 @@ public class Bill extends PersistentEntity implements Urlable {
 		if (inv.hasParameter("delete")) {
 			delete();
 			Hiber.commit();
-			inv.sendSeeOther(batch.billsInstance().getUri());
+			inv.sendSeeOther(batch.billsInstance().getEditUri());
 		} else {
 			String account = inv.getString("account");
 			String reference = inv.getString("reference");
@@ -559,8 +560,8 @@ public class Bill extends PersistentEntity implements Urlable {
 		inv.sendOk(document());
 	}
 
-	public MonadUri getUri() throws HttpException {
-		return batch.billsInstance().getUri().resolve(getUriId()).append("/");
+	public MonadUri getEditUri() throws HttpException {
+		return batch.billsInstance().getEditUri().resolve(getUriId()).append("/");
 	}
 
 	public Urlable getChild(UriPathElement uriId) throws HttpException {
@@ -605,5 +606,9 @@ public class Bill extends PersistentEntity implements Urlable {
 	public void delete() throws HttpException {
 		Hiber.session().delete(this);
 		Hiber.flush();
+	}
+	
+	public URI getViewUri() throws HttpException {
+        return null;
 	}
 }

@@ -20,6 +20,7 @@
  *******************************************************************************/
 package net.sf.chellow.physical;
 
+import java.net.URI;
 import java.util.List;
 
 import net.sf.chellow.monad.DeployerException;
@@ -71,7 +72,7 @@ public class Sources implements Urlable {
 	}
 
 	public MonadUri getUrlPath() throws InternalException, HttpException {
-		return Chellow.getUrlableRoot().getUri().resolve(getUriId());
+		return Chellow.getUrlableRoot().getEditUri().resolve(getUriId());
 	}
 
 	@SuppressWarnings("unchecked")
@@ -109,7 +110,13 @@ public class Sources implements Urlable {
 
 	}
 
-	public MonadUri getUri() throws InternalException, HttpException {
-		return Chellow.getUrlableRoot().getUri().resolve(getUri());
+	public MonadUri getEditUri() throws InternalException, HttpException {
+		return Chellow.getUrlableRoot().getEditUri().resolve(getEditUri());
+	}
+
+	@Override
+	public URI getViewUri() throws HttpException {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

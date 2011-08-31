@@ -21,6 +21,7 @@
 
 package net.sf.chellow.billing;
 
+import java.net.URI;
 import java.util.Date;
 import java.util.List;
 
@@ -62,7 +63,7 @@ public class SupplierContracts extends EntityList {
 		return URI_ID;
 	}
 
-	public MonadUri getUri() throws HttpException {
+	public MonadUri getEditUri() throws HttpException {
 		return Chellow.ROOT_URI.resolve(getUrlId()).append("/");
 	}
 
@@ -80,7 +81,7 @@ public class SupplierContracts extends EntityList {
 							HhStartDate.roundDown(startDate), null, "", null,
 							"");
 			Hiber.commit();
-			inv.sendSeeOther(contract.getUri());
+			inv.sendSeeOther(contract.getEditUri());
 		} catch (UserException e) {
 			e.setDocument(document());
 			throw e;
@@ -129,6 +130,12 @@ public class SupplierContracts extends EntityList {
 	public Element toXml(Document doc) throws HttpException {
 		Element contractsElement = doc.createElement("supplier-contracts");
 		return contractsElement;
+	}
+
+	@Override
+	public URI getViewUri() throws HttpException {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 	/*

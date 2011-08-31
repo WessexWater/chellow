@@ -24,6 +24,7 @@ package net.sf.chellow.billing;
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.net.URI;
 import java.util.Date;
 import java.util.List;
 import java.util.Properties;
@@ -224,8 +225,8 @@ public class HhdcContract extends Contract {
 		return isEqual;
 	}
 
-	public MonadUri getUri() throws HttpException {
-		return Chellow.HHDC_CONTRACTS_INSTANCE.getUri().resolve(getUriId())
+	public MonadUri getEditUri() throws HttpException {
+		return Chellow.HHDC_CONTRACTS_INSTANCE.getEditUri().resolve(getUriId())
 				.append("/");
 	}
 
@@ -256,7 +257,7 @@ public class HhdcContract extends Contract {
 				throw e;
 			}
 			Hiber.commit();
-			inv.sendSeeOther(Chellow.HHDC_CONTRACTS_INSTANCE.getUri());
+			inv.sendSeeOther(Chellow.HHDC_CONTRACTS_INSTANCE.getEditUri());
 		} else {
 			Long participantId = inv.getLong("participant-id");
 			String name = inv.getString("name");
@@ -408,5 +409,11 @@ public class HhdcContract extends Contract {
 									+ (finishDate == null ? "ongoing"
 											: finishDate + "."));
 		}
+	}
+
+	@Override
+	public URI getViewUri() throws HttpException {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

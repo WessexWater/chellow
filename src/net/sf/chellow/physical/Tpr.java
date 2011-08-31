@@ -20,6 +20,7 @@
  *******************************************************************************/
 package net.sf.chellow.physical;
 
+import java.net.URI;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -130,7 +131,7 @@ public class Tpr extends PersistentEntity {
 		}
 	}
 
-	public MonadUri getUri() throws InternalException {
+	public MonadUri getEditUri() throws InternalException {
 		// TODO Auto-generated method stub
 		return null;
 	}
@@ -173,5 +174,11 @@ public class Tpr extends PersistentEntity {
 
 	public String toString() {
 		return code;
+	}
+
+	@Override
+	public URI getViewUri() throws HttpException {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

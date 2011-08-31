@@ -21,6 +21,7 @@
 package net.sf.chellow.ui;
 
 import java.io.StringReader;
+import java.net.URI;
 
 import javax.xml.transform.stream.StreamSource;
 
@@ -65,8 +66,8 @@ public class ReportOutput implements Urlable, XmlDescriber {
 		throw new NotFoundException();
 	}
 
-	public MonadUri getUri() throws HttpException {
-		return report.getUri().resolve(URI_ID).append("/");
+	public MonadUri getEditUri() throws HttpException {
+		return report.getEditUri().resolve(URI_ID).append("/");
 	}
 
 	public void httpGet(Invocation inv) throws HttpException {
@@ -110,6 +111,12 @@ public class ReportOutput implements Urlable, XmlDescriber {
 	}
 
 	public Node toXml(Document doc, XmlTree tree) throws HttpException {
+		return null;
+	}
+
+	@Override
+	public URI getViewUri() throws HttpException {
+		// TODO Auto-generated method stub
 		return null;
 	}
 }

@@ -21,6 +21,7 @@
 
 package net.sf.chellow.physical;
 
+import java.net.URI;
 import java.text.DecimalFormat;
 import java.util.Date;
 import java.util.List;
@@ -197,7 +198,7 @@ public class Llfc extends PersistentEntity {
 		return element;
 	}
 
-	public MonadUri getUri() {
+	public MonadUri getEditUri() {
 		return null;
 	}
 
@@ -221,5 +222,11 @@ public class Llfc extends PersistentEntity {
 
 	public String toString() {
 		return new DecimalFormat("000").format(code);
+	}
+
+	@Override
+	public URI getViewUri() throws HttpException {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

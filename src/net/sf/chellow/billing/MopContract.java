@@ -21,6 +21,7 @@
 
 package net.sf.chellow.billing;
 
+import java.net.URI;
 import java.util.List;
 
 import net.sf.chellow.monad.Hiber;
@@ -169,8 +170,8 @@ public class MopContract extends Contract {
 		return isEqual;
 	}
 
-	public MonadUri getUri() throws HttpException {
-		return Chellow.MOP_CONTRACTS_INSTANCE.getUri().resolve(getUriId())
+	public MonadUri getEditUri() throws HttpException {
+		return Chellow.MOP_CONTRACTS_INSTANCE.getEditUri().resolve(getUriId())
 				.append("/");
 	}
 
@@ -189,7 +190,7 @@ public class MopContract extends Contract {
 				throw e;
 			}
 			Hiber.commit();
-			inv.sendSeeOther(Chellow.MOP_CONTRACTS_INSTANCE.getUri());
+			inv.sendSeeOther(Chellow.MOP_CONTRACTS_INSTANCE.getEditUri());
 		} else {
 			Long participantId = inv.getLong("participant-id");
 			String name = inv.getString("name");
@@ -303,5 +304,11 @@ public class MopContract extends Contract {
 									+ (finishDate == null ? "ongoing"
 											: finishDate + "."));
 		}
+	}
+
+	@Override
+	public URI getViewUri() throws HttpException {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }
