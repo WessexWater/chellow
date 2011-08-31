@@ -157,19 +157,10 @@
 						<select name="start-hour">
 							<xsl:for-each select="/source/hours/hour">
 								<option value="{@number}">
-									<xsl:choose>
-										<xsl:when test="/source/request/parameter[@name='start-hour']">
-											<xsl:if
-												test="/source/request/parameter[@name='start-hour']/value/text() = @number">
-												<xsl:attribute name="selected" />
-											</xsl:if>
-										</xsl:when>
-										<xsl:otherwise>
-											<xsl:if test="/source/date/@hour = @number">
-												<xsl:attribute name="selected" />
-											</xsl:if>
-										</xsl:otherwise>
-									</xsl:choose>
+									<xsl:if
+										test="/source/request/parameter[@name='start-hour']/value/text() = @number">
+										<xsl:attribute name="selected" />
+									</xsl:if>
 									<xsl:value-of select="@number" />
 								</option>
 							</xsl:for-each>
@@ -178,19 +169,10 @@
 						<select name="start-minute">
 							<xsl:for-each select="/source/hh-minutes/minute">
 								<option value="{@number}">
-									<xsl:choose>
-										<xsl:when test="/source/request/parameter[@name='start-minute']">
-											<xsl:if
-												test="/source/request/parameter[@name='start-minute']/value/text() = @number">
-												<xsl:attribute name="selected" />
-											</xsl:if>
-										</xsl:when>
-										<xsl:otherwise>
-											<xsl:if test="/source/date/@minute = @number">
-												<xsl:attribute name="selected" />
-											</xsl:if>
-										</xsl:otherwise>
-									</xsl:choose>
+									<xsl:if
+										test="/source/request/parameter[@name='start-minute']/value/text() = @number">
+										<xsl:attribute name="selected" />
+									</xsl:if>
 									<xsl:value-of select="@number" />
 								</option>
 							</xsl:for-each>

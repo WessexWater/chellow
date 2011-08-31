@@ -270,7 +270,6 @@
 														</xsl:if>
 													</xsl:otherwise>
 												</xsl:choose>
-
 												<xsl:value-of select="@number" />
 											</option>
 										</xsl:for-each>
@@ -326,7 +325,7 @@
 														</xsl:if>
 													</xsl:when>
 													<xsl:otherwise>
-														<xsl:if test="/source/date/@hour = @number">
+														<xsl:if test="23 = @number">
 															<xsl:attribute name="selected" />
 														</xsl:if>
 													</xsl:otherwise>
@@ -357,7 +356,7 @@
 														</xsl:if>
 													</xsl:when>
 													<xsl:otherwise>
-														<xsl:if test="/source/date/@minute = @number">
+														<xsl:if test="30 = @number">
 															<xsl:attribute name="selected" />
 														</xsl:if>
 													</xsl:otherwise>

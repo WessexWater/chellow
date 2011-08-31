@@ -286,10 +286,8 @@
 											<option value="{@number}">
 												<xsl:choose>
 													<xsl:when test="/source/request/parameter[@name='finish-hour']">
-
 														<xsl:if
 															test="/source/request/parameter[@name='finish-hour']/value/text() = @number">
-
 															<xsl:attribute name="selected" />
 														</xsl:if>
 													</xsl:when>
@@ -301,7 +299,7 @@
 														</xsl:if>
 													</xsl:when>
 													<xsl:otherwise>
-														<xsl:if test="/source/date/@hour = @number">
+														<xsl:if test="23 = @number">
 															<xsl:attribute name="selected" />
 														</xsl:if>
 													</xsl:otherwise>
