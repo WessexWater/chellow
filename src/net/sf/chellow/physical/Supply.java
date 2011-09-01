@@ -437,13 +437,12 @@ public class Supply extends PersistentEntity {
 			SupplierContract exportSupplierContract,
 			String exportSupplierAccount, Integer exportAgreedSupplyCapacity)
 			throws HttpException {
-		generation = (SupplyGeneration) Hiber
+		if (Hiber
 				.session()
 				.createQuery(
 						"from SupplyGeneration generation where generation.supply = :supply and generation.id = :id")
 				.setEntity("supply", this).setLong("id", generation.getId())
-				.uniqueResult();
-		if (generation == null) {
+				.uniqueResult() == null) {
 			throw new UserException(
 					"The generation doesn't belong to this supply.");
 		}

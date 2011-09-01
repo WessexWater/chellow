@@ -24,7 +24,6 @@ package net.sf.chellow.physical;
 import java.math.BigDecimal;
 import java.net.URI;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
@@ -1320,16 +1319,12 @@ public class SupplyGeneration extends PersistentEntity {
 				if (hhData.next()) {
 					groupStart = (HhStartDate) hhData.get(0);
 					if (targetChannel == null) {
-						throw new UserException(
-								"There is no channel for the HH datum starting: "
-										+ groupStart.toString()
-										+ " is import? "
-										+ isImport
-										+ " is kWh? "
-										+ isKwh
-										+ " to move to in the generation starting "
-										+ startDate + ", finishing "
-										+ finishDate + ".");
+						throw new UserException("There is no channel for the "
+								+ (isImport ? "import" : "export") + " "
+								+ (isKwh ? "kWh" : "kVArh")
+								+ " HH datum starting " + groupStart.toString()
+								+ " to move to in the generation starting "
+								+ startDate + ", finishing " + finishDate + ".");
 					}
 					Query channelUpdate = Hiber
 							.session()
@@ -1582,10 +1577,10 @@ public class SupplyGeneration extends PersistentEntity {
 				boolean isEnded = inv.getBoolean("is-ended");
 				if (isEnded) {
 					Date finishDateRaw = inv.getDateTime("finish");
-					Calendar cal = MonadDate.getCalendar();
-					cal.setTime(finishDateRaw);
-					cal.add(Calendar.DAY_OF_MONTH, 1);
-					finishDate = new HhStartDate(cal.getTime()).getPrevious();
+					if (!inv.isValid()) {
+						throw new UserException();
+					}
+					finishDate = new HhStartDate(finishDateRaw);
 				}
 				String mopAccount = null;
 				if (mopContractId != null) {
