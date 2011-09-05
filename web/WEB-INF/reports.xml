@@ -5399,10 +5399,6 @@ source.setAttribute("pending-site-count", str(totalSites - activeSites))]]></val
                     </a>
                     <xsl:value-of select="']'" />
                 </p>
-    <ul>
-    <li><a href="{/source/request/@context-path}/reports/233/output/?dc-contract-id={/source/hhdc-contract/@id}">Download As CSV</a></li>
-    </ul>
-
                 <p>
                     <xsl:value-of
                         select="source/@snag-count" />
@@ -5417,10 +5413,18 @@ source.setAttribute("pending-site-count", str(totalSites - activeSites))]]></val
                         select="source/@pending-site-count" />
                     site(s) have snags not yet older then 5 days
                 </p>
+                <form action="{/source/request/@context-path}/reports/233/output/">
+                <fieldset><legend>Download CSV</legend>
+                <input type="hidden" name="dc-contract-id" value="{/source/hhdc-contract/@id}"/>
+                <label>Snags less than <input size="3" maxlength="3" name="hidden-days" value="1"/> GMT calendar day(s) old are hidden.</label>
+                <input type="submit" value="Download"/>
+                </fieldset>
+                </form>
+                <br/>
                 <form action=".">
                 <fieldset><legend>Show Channel Snags</legend>
                 <input type="hidden" name="hhdc-contract-id" value="{/source/hhdc-contract/@id}"/>
-                <label>Snags less than <input size="2" maxlength="2" name="hidden-days" value="{/source/request/parameter[@name='hidden-days']/value}"/> days old are hidden.</label>
+                <label>Snags less than <input size="3" maxlength="3" name="hidden-days" value="{/source/request/parameter[@name='hidden-days']/value}"/> days old are hidden.</label>
                 <input type="submit" value="Show"/>
                 </fieldset>
                 </form>
