@@ -197,10 +197,11 @@
                             Reports
                         </a>
                     </li>
-                    <li>
-                        <a href="{/source/request/@context-path}/general-imports/">
-                            General CSV Imports
-                        </a>
+                    <li>General Import / Export
+                        <ul>
+                        <li><a href="{/source/request/@context-path}/general-imports/">Import (CSV and XML)</a></li>
+                        <li><a href="{/source/request/@context-path}/reports/151/output/">Export (XML)</a></li>
+                        </ul>
                     </li>
                     <li>
                         <a href="{/source/request/@context-path}/users/">
@@ -217,11 +218,6 @@
                     <li>
                         <a href="{/source/request/@context-path}/user-roles/">
                             User Roles
-                        </a>
-                    </li>
-                                        <li>
-                        <a
-                            href="{/source/request/@context-path}/reports/151/output/">CSV Export
                         </a>
                     </li>
                     <li>
@@ -7559,7 +7555,7 @@ for party in Hiber.session().createQuery("from Party party where party.participa
 
 contracts_element = doc.createElement('contracts')
 source.appendChild(contracts_element)
-for contract in Hiber.session().createQuery("from SupplierContract contract order by contract.startRateScript.startDate.date").list():
+for contract in Hiber.session().createQuery("from SupplierContract contract order by contract.name").list():
     contract_element = contract.toXml(doc, XmlTree('party'))
     contracts_element.appendChild(contract_element)
     start_rate_script = contract.getStartRateScript()
@@ -7614,6 +7610,7 @@ for contract in Hiber.session().createQuery("from SupplierContract contract orde
                             <th>Name</th>
                             <th>Start Date</th>
                             <th>Finish Date</th>
+                            <th>Provider</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -12637,9 +12634,9 @@ source.appendChild(MonadDate.getDaysXml(doc))]]></value>
         <html>
             <head>
                 <link rel="stylesheet" type="text/css"
-                    href="{/source/request/@context-path}/reports/10/output/" />
+                    href="{/source/request/@context-path}/reports/19/output/" />
                 <title>
-                    Chellow &gt; Admin &gt; CSV Export
+                    Chellow &gt; General Export
                 </title>
             </head>
             <body>
@@ -12648,8 +12645,7 @@ source.appendChild(MonadDate.getDaysXml(doc))]]></value>
                         href="{/source/request/@context-path}/">
                         <xsl:value-of select="'Chellow'" />
                     </a>
-                    &gt;
-                    <xsl:value-of select="'CSV Export'" />
+                    &gt; General Export
                 </p>
                 <br />
                 <xsl:if test="//message">
@@ -12664,6 +12660,7 @@ source.appendChild(MonadDate.getDaysXml(doc))]]></value>
                 <br />
                 <form action="{/source/request/@context-path}/reports/31/output/">
                 <fieldset>
+                        <legend>Download XML</legend>
                         <label>Core<input type="radio" name="is-core" value="true" checked="true"/></label>
                         <label>User<input type="radio" name="is-core" value="false"/></label>
                     <br/>
