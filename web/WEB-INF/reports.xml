@@ -13720,8 +13720,9 @@ from com.jezhumble.javasysmon import JavaSysMon
 from net.sf.chellow.ui import ContextListener
 
 interrupt_id = None
-if inv.hasParameter('interrupt'):
-    interrupt_id = inv.getLong('interrupt')
+if inv.getRequest().getMethod() == "POST":
+    if inv.hasParameter('interrupt'):
+        interrupt_id = inv.getLong('thread-id')
 
 df = DecimalFormat("###,###,###,###,##0")
 runtime = Runtime.getRuntime()
@@ -13798,7 +13799,7 @@ source.setAttribute('transaction-isolation', str(con.getTransactionIsolation()))
                 <link rel="stylesheet" type="text/css"
                     href="{/source/request/@context-path}/reports/19/output/" />
 
-                <title>Chellow &gt; Admin &gt; System</title>
+                <title>Chellow &gt; System</title>
             </head>
             <body>
                 <p>
@@ -13818,6 +13819,7 @@ source.setAttribute('transaction-isolation', str(con.getTransactionIsolation()))
                         </xsl:for-each>
                     </ul>
                 </xsl:if>
+<p><a href=".">Refresh</a></p>
 <p>Chellow Version
                     <xsl:value-of
                         select="/source/@chellow-version" /></p>
@@ -13903,7 +13905,14 @@ source.setAttribute('transaction-isolation', str(con.getTransactionIsolation()))
 <tr>
    <td><xsl:value-of select="@id"/></td>
    <td><xsl:value-of select="@name"/></td>
-   <td><xsl:value-of select="@is-interrupted"/></td>
+   <td><xsl:value-of select="@is-interrupted"/>
+       <xsl:if test="@is-interrupted='False'">
+       <form method="post" action=".">
+           <input type="hidden" name="thread-id" value="{@id}" />
+           <input type="submit" name="interrupt" value="Interrupt" />
+       </form> 
+       </xsl:if>
+   </td>
    <td><xsl:value-of select="@status"/></td>
    <td><xsl:value-of select="@request"/></td>
    <td><pre><xsl:value-of select="."/></pre></td>
