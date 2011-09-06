@@ -367,9 +367,11 @@ tabindex="1" />
         <value><![CDATA[Site]]></value>
         <value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree, UserException
 from net.sf.chellow.monad.types import MonadDate
-from java.util import GregorianCalendar, Calendar, TimeZone, Locale, Date
-from net.sf.chellow.physical import Site, HhStartDate, Supply
+from java.util import GregorianCalendar, Calendar, TimeZone, Locale, Date, Properties
+from net.sf.chellow.physical import Site, HhStartDate, Supply, Configuration
 from java.lang import Long
+from java.io import StringReader
+from net.sf.chellow.ui import Report
 
 site_id = inv.getLong("site-id")
 if not inv.isValid():
@@ -437,7 +439,18 @@ source.appendChild(group_element)
 for group_site in site.groups(now, now, False)[0].getSites():
     if group_site.getId() != site.getId():
         group_element.appendChild(group_site.toXml(doc))
-source.setAttribute('debug', debug_str)]]></value>
+source.setAttribute('debug', debug_str)
+
+config = Configuration.getConfiguration()
+properties = Properties()
+properties.load(StringReader(config.getProperties()))
+
+for key in properties.propertyNames():
+    if key.startswith('site.report.'):
+        site_report_id = properties.get(key)
+        if site_report_id is not None:
+            report = Report.getReport(int(site_report_id))
+            source.appendChild(report.toXml(doc))]]></value>
         <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
 <xsl:stylesheet version="1.0"
     xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
@@ -486,6 +499,20 @@ source.setAttribute('debug', debug_str)]]></value>
                             <xsl:value-of select="/source/site/@name" />
                         </td>
                     </tr>
+                  <xsl:if test="/source/report">
+                  <tr>
+                    <th>Custom Reports</th>
+                    <td>
+                        <ul>
+                        <xsl:for-each select="/source/report">
+                        <li><a
+                        href="{/source/request/@context-path}/reports/{@id}/output/?site-id={/source/site/@id}">
+<xsl:value-of select="@name"/></a></li>
+                        </xsl:for-each>
+                        </ul>
+                    </td>
+                  </tr>
+                  </xsl:if>
                 </table>
                 <br/>
                 <xsl:if test="/source/group/site">
@@ -710,12 +737,15 @@ Ongoing
         <value><![CDATA[Supply]]></value>
         <value><![CDATA[from net.sf.chellow.monad import Hiber, UserException, XmlTree
 from net.sf.chellow.monad.types import MonadDate
-from net.sf.chellow.physical import Supply, HhStartDate
+from net.sf.chellow.physical import Supply, HhStartDate, Configuration
 from net.sf.chellow.billing import Bill
 from java.lang import Class, Long
 from java.math import BigInteger
 from org.hibernate.criterion import Restrictions, Order
-from java.util import GregorianCalendar, TimeZone, Locale, Calendar, Date
+from java.util import GregorianCalendar, TimeZone, Locale, Calendar, Date, Properties
+from java.io import StringReader
+from net.sf.chellow.ui import Report
+
 
 debug = ''
 
@@ -857,7 +887,18 @@ start_date.setLabel('start')
 source.appendChild(start_date.toXml(doc))
 source.appendChild(MonadDate.getDaysXml(doc))
 source.appendChild(MonadDate.getHoursXml(doc))
-source.setAttribute('debug', debug)]]></value>
+source.setAttribute('debug', debug)
+
+config = Configuration.getConfiguration()
+properties = Properties()
+properties.load(StringReader(config.getProperties()))
+
+for key in properties.propertyNames():
+    if key.startswith('supply.report.'):
+        supply_report_id = properties.get(key)
+        if supply_report_id is not None:
+            report = Report.getReport(int(supply_report_id))
+            source.appendChild(report.toXml(doc))]]></value>
         <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
 <xsl:stylesheet version="1.0"
     xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
@@ -925,6 +966,20 @@ source.setAttribute('debug', debug)]]></value>
                                 select="concat(/source/supply/gsp-group/@code, ' ', /source/supply/gsp-group/@description)" />
                         </td>
                     </tr>
+                 <xsl:if test="/source/report">
+                  <tr>
+                    <th>Custom Reports</th>
+                    <td>
+                        <ul>
+                        <xsl:for-each select="/source/report">
+                        <li><a
+                        href="{/source/request/@context-path}/reports/{@id}/output/?supply-id={/source/supply/@id}">
+<xsl:value-of select="@name"/></a></li>
+                        </xsl:for-each>
+                        </ul>
+                    </td>
+                  </tr>
+                  </xsl:if>
                 </table>
                 <br />
                 <xsl:for-each select="/source/supply/supply-generation">
