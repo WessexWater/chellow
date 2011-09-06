@@ -106,6 +106,22 @@
 							</xsl:choose>
 						</td>
 					</tr>
+					<tr>
+						<th>Contract</th>
+						<td>
+							<a
+								href="{/source/request/@context-path}/reports/117/output/?snag-id={/source/channel-snag/@id}">View Snag</a>
+							&lt;
+							<a
+								href="{/source/request/@context-path}/reports/37/output/?hhdc-contract-id={/source/channel-snag/channel/supply-generation/hhdc-contract/@id}&amp;hidden-days=5">Channel Snags</a>
+							&lt;
+							<a
+								href="{/source/request/@context-path}/reports/115/output/?hhdc-contract-id={/source/channel-snag/channel/supply-generation/hhdc-contract/@id}">Contract</a>
+							&lt;
+							<a
+								href="{/source/request/@context-path}/reports/113/output/">HHDC Contracts</a>
+						</td>
+					</tr>
 				</table>
 				<br />
 				<form action="." method="post">

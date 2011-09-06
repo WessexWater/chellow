@@ -1,6 +1,6 @@
 /*******************************************************************************
  * 
- *  Copyright (c) 2005, 2009 Wessex Water Services Limited
+ *  Copyright (c) 2005, 2011 Wessex Water Services Limited
  *  
  *  This file is part of Chellow.
  * 
@@ -107,11 +107,11 @@ public class ChannelSnag extends SnagDateBounded {
 							.setTimestamp("finishDate", finishDate.getDate());
 				}
 				for (ChannelSnag snag : (List<ChannelSnag>) channelQuery
-						.setEntity("generation", generation).setBoolean(
-								"isImport", isImport)
-						.setBoolean("isKwh", isKwh).setString("description",
-								snagDescription).setTimestamp("startDate",
-								startDate.getDate()).list()) {
+						.setEntity("generation", generation)
+						.setBoolean("isImport", isImport)
+						.setBoolean("isKwh", isKwh)
+						.setString("description", snagDescription)
+						.setTimestamp("startDate", startDate.getDate()).list()) {
 					snag.setIsIgnored(true);
 				}
 			}
@@ -164,8 +164,9 @@ public class ChannelSnag extends SnagDateBounded {
 	private Document document() throws HttpException {
 		Document doc = MonadUtils.newSourceDocument();
 		Element sourceElement = doc.getDocumentElement();
-		sourceElement.appendChild(toXml(doc, new XmlTree("channel",
-				new XmlTree("supplyGeneration", new XmlTree("supply")))));
+		sourceElement.appendChild(toXml(doc,
+				new XmlTree("channel", new XmlTree("supplyGeneration",
+						new XmlTree("supply").put("hhdcContract")))));
 		return doc;
 	}
 
