@@ -488,41 +488,25 @@ public class Supply extends PersistentEntity {
 		}
 
 		SupplyGeneration firstGeneration = getGenerationFirst();
-		HhStartDate finishDate = null;
 		SupplyGeneration templateGeneration = null;
 
 		if (startDate.before(firstGeneration.getStartDate())) {
 			templateGeneration = firstGeneration;
-			finishDate = firstGeneration.getStartDate().getPrevious();
 		} else {
 			templateGeneration = getGeneration(startDate);
-			if (startDate.equals(templateGeneration.getStartDate())) {
-				throw new UserException(
-						"There's already a generation with that start date.");
-			}
-			finishDate = templateGeneration.getFinishDate();
 		}
-		SupplyGeneration supplyGeneration = new SupplyGeneration(this,
-				startDate, finishDate, templateGeneration.getMopContract(),
-				templateGeneration.getMopAccount(),
-				templateGeneration.getHhdcContract(),
-				templateGeneration.getHhdcAccount(),
-				templateGeneration.getMeterSerialNumber(),
-				templateGeneration.getPc(), templateGeneration.getMtc()
-						.toString(), templateGeneration.getCop(),
-				templateGeneration.getSsc());
-		generations.add(supplyGeneration);
-		Hiber.flush();
-		for (Channel channel : templateGeneration.getChannels()) {
-			supplyGeneration.insertChannel(channel.getIsImport(),
-					channel.getIsKwh());
-		}
-		Hiber.flush();
+
+		List<Site> logicalSites = new ArrayList<Site>();
+		Site physicalSite = null;
 		for (SiteSupplyGeneration ssgen : templateGeneration
 				.getSiteSupplyGenerations()) {
-			supplyGeneration.attachSite(ssgen.getSite(), ssgen.getIsPhysical());
+			if (ssgen.getIsPhysical()) {
+				physicalSite = ssgen.getSite();
+			} else {
+				logicalSites.add(ssgen.getSite());
+			}
 		}
-		Hiber.flush();
+
 		String importMpanCoreStr = null;
 		String importLlfcCode = null;
 		SupplierContract importSupplierContract = null;
@@ -549,29 +533,29 @@ public class Supply extends PersistentEntity {
 			exportSupplierAccount = exportMpan.getSupplierAccount();
 			exportAgreedSupplyCapacity = exportMpan.getAgreedSupplyCapacity();
 		}
-		supplyGeneration.update(supplyGeneration.getStartDate(),
-				supplyGeneration.getFinishDate(),
-				supplyGeneration.getMopContract(),
-				supplyGeneration.getMopAccount(),
-				supplyGeneration.getHhdcContract(),
-				supplyGeneration.getHhdcAccount(),
-				supplyGeneration.getMeterSerialNumber(),
-				supplyGeneration.getPc(), supplyGeneration.getMtc().toString(),
-				supplyGeneration.getCop(), supplyGeneration.getSsc(),
-				importMpanCoreStr, importLlfcCode, importSupplierContract,
-				importSupplierAccount, importAgreedSupplyCapacity,
-				exportMpanCoreStr, exportLlfcCode, exportSupplierContract,
-				exportSupplierAccount, exportAgreedSupplyCapacity);
-		Hiber.flush();
-		if (startDate.after(firstGeneration.getStartDate())) {
-			templateGeneration.update(templateGeneration.getStartDate(),
-					startDate.getPrevious());
-		}
-		Hiber.flush();
-		return supplyGeneration;
+		boolean hasImportKwh = templateGeneration.getChannel(true, true) != null;
+		boolean hasImportKvarh = templateGeneration.getChannel(true, false) != null;
+		boolean hasExportKwh = templateGeneration.getChannel(false, true) != null;
+		boolean hasExportKvarh = templateGeneration.getChannel(false, false) != null;
+
+		return insertGeneration(physicalSite, logicalSites, startDate,
+				templateGeneration.getMopContract(),
+				templateGeneration.getMopAccount(),
+				templateGeneration.getHhdcContract(),
+				templateGeneration.getHhdcAccount(),
+				templateGeneration.getMeterSerialNumber(),
+				templateGeneration.getPc(), templateGeneration.getMtc()
+						.toString(), templateGeneration.getCop(),
+				templateGeneration.getSsc(), importMpanCoreStr, importLlfcCode,
+				importSupplierContract, importSupplierAccount,
+				importAgreedSupplyCapacity, exportMpanCoreStr, exportLlfcCode,
+				exportSupplierContract, exportSupplierAccount,
+				exportAgreedSupplyCapacity, hasImportKwh, hasImportKvarh,
+				hasExportKwh, hasExportKvarh);
 	}
 
-	public SupplyGeneration insertGeneration(Site site, HhStartDate startDate,
+	public SupplyGeneration insertGeneration(Site physicalSite,
+			List<Site> logicalSites, HhStartDate startDate,
 			MopContract mopContract, String mopAccount,
 			HhdcContract hhdcContract, String hhdcAccount,
 			String meterSerialNumber, Pc pc, String mtcCode, Cop cop, Ssc ssc,
@@ -580,46 +564,65 @@ public class Supply extends PersistentEntity {
 			String importSupplierAccount, Integer importAgreedSupplyCapacity,
 			String exportMpanCoreStr, String exportLlfcCode,
 			SupplierContract exportSupplierContract,
-			String exportSupplierAccount, Integer exportAgreedSupplyCapacity)
-			throws HttpException {
-		SupplyGeneration supplyGeneration = null;
-		if (generations.isEmpty()) {
-			supplyGeneration = new SupplyGeneration(this, startDate, null,
-					mopContract, mopAccount, hhdcContract, hhdcAccount,
-					meterSerialNumber, pc, mtcCode, cop, ssc);
-			Hiber.flush();
-			generations.add(supplyGeneration);
-		} else {
-			supplyGeneration = insertGeneration(startDate);
+			String exportSupplierAccount, Integer exportAgreedSupplyCapacity,
+			boolean hasImportKwh, boolean hasImportKvarh, boolean hasExportKwh,
+			boolean hasExportKvarh) throws HttpException {
+		HhStartDate finishDate = null;
+		SupplyGeneration coveredGeneration = null;
+
+		if (!generations.isEmpty()) {
+			if (startDate.after(getGenerationLast().getFinishDate())) {
+				throw new UserException(
+						"One can't add a generation that starts after the supply has finished.");
+			}
+
+			SupplyGeneration firstGeneration = getGenerationFirst();
+
+			if (startDate.before(firstGeneration.getStartDate())) {
+				finishDate = firstGeneration.getStartDate().getPrevious();
+			} else {
+				coveredGeneration = getGeneration(startDate);
+				if (startDate.equals(coveredGeneration.getStartDate())) {
+					throw new UserException(
+							"There's already a generation with that start date.");
+				}
+				finishDate = coveredGeneration.getFinishDate();
+			}
+		}
+		SupplyGeneration supplyGeneration = new SupplyGeneration(this,
+				startDate, finishDate, mopContract, mopAccount, hhdcContract,
+				hhdcAccount, meterSerialNumber, pc, mtcCode, cop, ssc);
+		Hiber.flush();
+		generations.add(supplyGeneration);
+		Hiber.flush();
+		if (hasImportKwh) {
+			supplyGeneration.insertChannel(true, true);
+		}
+		if (hasImportKvarh) {
+			supplyGeneration.insertChannel(true, false);
+		}
+		if (hasExportKwh) {
+			supplyGeneration.insertChannel(false, true);
+		}
+		if (hasExportKvarh) {
+			supplyGeneration.insertChannel(false, false);
 		}
 		Hiber.flush();
-		supplyGeneration.update(supplyGeneration.getStartDate(),
-				supplyGeneration.getFinishDate(), mopContract, mopAccount,
+		supplyGeneration.attachSite(physicalSite, true);
+		for (Site site : logicalSites) {
+			supplyGeneration.attachSite(site, false);
+		}
+		Hiber.flush();
+		supplyGeneration.update(startDate, finishDate, mopContract, mopAccount,
 				hhdcContract, hhdcAccount, meterSerialNumber, pc, mtcCode, cop,
 				ssc, importMpanCoreStr, importLlfcCode, importSupplierContract,
 				importSupplierAccount, importAgreedSupplyCapacity,
 				exportMpanCoreStr, exportLlfcCode, exportSupplierContract,
 				exportSupplierAccount, exportAgreedSupplyCapacity);
-
-		if (site != null) {
-			Set<SiteSupplyGeneration> siteSupplyGenerations = supplyGeneration
-					.getSiteSupplyGenerations();
-			List<Site> toDelete = new ArrayList<Site>();
-			for (SiteSupplyGeneration ssgen : siteSupplyGenerations) {
-				toDelete.add(ssgen.getSite());
-			}
-			for (int i = 1; i < toDelete.size(); i++) {
-				supplyGeneration.detachSite(toDelete.get(i));
-			}
-			if (toDelete.isEmpty()) {
-				supplyGeneration.attachSite(site, true);
-			} else {
-				Site remainingSite = toDelete.get(0);
-				if (!site.equals(remainingSite)) {
-					supplyGeneration.attachSite(site, true);
-					supplyGeneration.detachSite(remainingSite);
-				}
-			}
+		Hiber.flush();
+		if (coveredGeneration != null) {
+			coveredGeneration.update(coveredGeneration.getStartDate(),
+					startDate.getPrevious());
 		}
 		Hiber.flush();
 		return supplyGeneration;

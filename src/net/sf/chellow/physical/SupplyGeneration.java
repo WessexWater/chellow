@@ -374,9 +374,19 @@ public class SupplyGeneration extends PersistentEntity {
 
 			String siteCode = GeneralImport.addField(csvElement, "Site Code",
 					values, 2);
-			Site site = null;
-			if (!siteCode.equals(GeneralImport.NO_CHANGE)) {
-				site = Site.getSite(siteCode);
+			Site physicalSite = null;
+			List<Site> logicalSites = new ArrayList<Site>();
+			if (siteCode.equals(GeneralImport.NO_CHANGE)) {
+				for (SiteSupplyGeneration ssgen : existingGeneration
+						.getSiteSupplyGenerations()) {
+					if (ssgen.getIsPhysical()) {
+						physicalSite = ssgen.getSite();
+					} else {
+						logicalSites.add(ssgen.getSite());
+					}
+				}
+			} else {
+				physicalSite = Site.getSite(siteCode);
 			}
 
 			String mopContractName = GeneralImport.addField(csvElement,
@@ -626,37 +636,14 @@ public class SupplyGeneration extends PersistentEntity {
 					}
 				}
 			}
-			SupplyGeneration generation = supply.insertGeneration(site,
-					startDate, mopContract, mopAccount, hhdcContract,
-					hhdcAccount, meterSerialNumber, pc, mtcCode, cop, ssc,
+			supply.insertGeneration(physicalSite, logicalSites, startDate,
+					mopContract, mopAccount, hhdcContract, hhdcAccount,
+					meterSerialNumber, pc, mtcCode, cop, ssc,
 					importMpanCoreStr, importLlfcCode, importSupplierContract,
 					importSupplierAccount, importAgreedSupplyCapacity,
 					exportMpanCoreStr, exportLlfcCode, exportSupplierContract,
-					exportSupplierAccount, exportAgreedSupplyCapacity);
-			for (boolean isImport : new boolean[] { true, false }) {
-				for (boolean isKwh : new boolean[] { true, false }) {
-					boolean hasChannel;
-					if (isImport) {
-						if (isKwh) {
-							hasChannel = hasImportKwh;
-						} else {
-							hasChannel = hasImportKvarh;
-						}
-					} else {
-						if (isKwh) {
-							hasChannel = hasExportKwh;
-						} else {
-							hasChannel = hasExportKvarh;
-						}
-					}
-					Channel channel = generation.getChannel(isImport, isKwh);
-					if (hasChannel && channel == null) {
-						generation.insertChannel(isImport, isKwh);
-					} else if (!hasChannel && channel != null) {
-						generation.deleteChannel(isImport, isKwh);
-					}
-				}
-			}
+					exportSupplierAccount, exportAgreedSupplyCapacity,
+					hasImportKwh, hasImportKvarh, hasExportKwh, hasExportKvarh);
 		}
 	}
 

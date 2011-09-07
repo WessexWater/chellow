@@ -225,13 +225,14 @@ public class Site extends PersistentEntity {
 				throw new InternalException(e);
 			}
 		}
-		SupplyGeneration generation = supply.insertGeneration(this, startDate,
-				mopContract, mopAccount, hhdcContract, hhdcAccount,
-				meterSerialNumber, pc, mtcCode, cop, ssc, importMpanStr,
-				importLlfcCode, importSupplierContract, importSupplierAccount,
-				importAgreedSupplyCapacity, exportMpanStr, exportLlfcCode,
-				exportSupplierContract, exportSupplierAccountReference,
-				exportAgreedSupplyCapacity);
+		SupplyGeneration generation = supply.insertGeneration(this,
+				new ArrayList<Site>(), startDate, mopContract, mopAccount,
+				hhdcContract, hhdcAccount, meterSerialNumber, pc, mtcCode, cop,
+				ssc, importMpanStr, importLlfcCode, importSupplierContract,
+				importSupplierAccount, importAgreedSupplyCapacity,
+				exportMpanStr, exportLlfcCode, exportSupplierContract,
+				exportSupplierAccountReference, exportAgreedSupplyCapacity,
+				false, false, false, false);
 		generation.update(generation.getStartDate(), finishDate);
 		Hiber.flush();
 		return supply;
@@ -443,7 +444,8 @@ public class Site extends PersistentEntity {
 	}
 
 	public MonadUri getEditUri() throws HttpException {
-		return Chellow.SITES_INSTANCE.getEditUri().resolve(getUriId()).append("/");
+		return Chellow.SITES_INSTANCE.getEditUri().resolve(getUriId())
+				.append("/");
 	}
 
 	public boolean equals(Object obj) {
