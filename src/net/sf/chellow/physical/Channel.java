@@ -131,8 +131,8 @@ public class Channel extends PersistentEntity {
 				.createQuery(
 						"delete from HhDatum datum where datum.channel = :channel and datum.startDate.date >= :from and datum.startDate.date <= :to")
 				.setEntity("channel", this)
-				.setTimestamp("from", from.getDate()).setTimestamp("to",
-						to.getDate()).executeUpdate();
+				.setTimestamp("from", from.getDate())
+				.setTimestamp("to", to.getDate()).executeUpdate();
 		if (numDeleted == 0) {
 			throw new UserException(
 					"There aren't any data to delete for this period.");
@@ -189,8 +189,8 @@ public class Channel extends PersistentEntity {
 	}
 
 	public MonadUri getEditUri() throws HttpException {
-		return supplyGeneration.getChannelsInstance().getEditUri().resolve(
-				getUriId()).append("/");
+		return supplyGeneration.getChannelsInstance().getEditUri()
+				.resolve(getUriId()).append("/");
 	}
 
 	public String toString() {
@@ -198,7 +198,7 @@ public class Channel extends PersistentEntity {
 				+ " is kWh: " + getIsKwh();
 	}
 
-	@SuppressWarnings( { "unchecked", "deprecation" })
+	@SuppressWarnings({ "unchecked", "deprecation" })
 	public void addHhData(List<HhDatumRaw> dataRaw) throws HttpException {
 		// long now = System.currentTimeMillis();
 		HhDatumRaw firstRawDatum = dataRaw.get(0);
@@ -210,10 +210,11 @@ public class Channel extends PersistentEntity {
 				.createQuery(
 						"from HhDatum datum where datum.channel = :channel and "
 								+ "datum.startDate.date >= :startDate and datum.startDate.date <= :finishDate order by datum.startDate.date")
-				.setEntity("channel", this).setTimestamp("startDate",
-						firstRawDatum.getStartDate().getDate()).setTimestamp(
-						"finishDate", lastRawDatum.getStartDate().getDate())
-				.list();
+				.setEntity("channel", this)
+				.setTimestamp("startDate",
+						firstRawDatum.getStartDate().getDate())
+				.setTimestamp("finishDate",
+						lastRawDatum.getStartDate().getDate()).list();
 		HhStartDate siteCheckFrom = null;
 		HhStartDate siteCheckTo = null;
 		HhStartDate notActualFrom = null;
@@ -276,8 +277,7 @@ public class Channel extends PersistentEntity {
 				// Debug.print("Resolved missing: "
 				// + (System.currentTimeMillis() - now));
 			} else if (datumRaw.getValue().doubleValue() != datum.getValue()
-					.doubleValue()
-					|| datumRaw.getStatus() != datum.getStatus()) {
+					.doubleValue() || datumRaw.getStatus() != datum.getStatus()) {
 				// Debug.print("About to update datum: " + datum + " with " +
 				// datumRaw + " "
 				// + (System.currentTimeMillis() - now));
@@ -298,8 +298,8 @@ public class Channel extends PersistentEntity {
 					addSnag(ChannelSnag.SNAG_NEGATIVE, datumRaw.getStartDate(),
 							datumRaw.getStartDate());
 				} else if (altered && originalDatumValue.doubleValue() < 0) {
-					deleteSnag(ChannelSnag.SNAG_NEGATIVE, datumRaw
-							.getStartDate());
+					deleteSnag(ChannelSnag.SNAG_NEGATIVE,
+							datumRaw.getStartDate());
 				}
 				if (HhDatum.ACTUAL != datumRaw.getStatus()) {
 					if (notActualFrom == null) {
@@ -307,8 +307,8 @@ public class Channel extends PersistentEntity {
 					}
 					notActualTo = datumRaw.getStartDate();
 				} else if (altered && originalDatumStatus != HhDatum.ACTUAL) {
-					deleteSnag(ChannelSnag.SNAG_ESTIMATED, datumRaw
-							.getStartDate());
+					deleteSnag(ChannelSnag.SNAG_ESTIMATED,
+							datumRaw.getStartDate());
 				}
 			}
 			if (lastAdditionDate != null
@@ -396,7 +396,7 @@ public class Channel extends PersistentEntity {
 		List<ChannelSnag> snags = (List<ChannelSnag>) Hiber
 				.session()
 				.createQuery(
-						"from ChannelSnag snag where snag.channel = :channel and snag.startDate.date < snag.channel.supplyGeneration.startDate.date")
+						"from ChannelSnag snag where snag.channel = :channel and snag.startDate.date < snag.channel.supplyGeneration.startDate.date order by snag.startDate.date")
 				.setEntity("channel", this).list();
 		if (!snags.isEmpty()) {
 			HhStartDate startDate = snags.get(0).getStartDate();
@@ -408,22 +408,13 @@ public class Channel extends PersistentEntity {
 			deleteSnag(ChannelSnag.SNAG_ESTIMATED, startDate, finishDate);
 		}
 		if (supplyGeneration.getFinishDate() != null) {
-			snags = (List<ChannelSnag>) Hiber
-					.session()
-					.createQuery(
-							"from ChannelSnag snag where snag.channel = :channel and (snag.finishDate.date is null or snag.finishDate.date > snag.channel.supplyGeneration.finishDate.date)")
-					.setEntity("channel", this).list();
-			if (!snags.isEmpty()) {
-				HhStartDate startDate = supplyGeneration.getFinishDate()
-						.getNext();
-				HhStartDate finishDate = snags.get(snags.size() - 1)
-						.getFinishDate();
-				deleteSnag(ChannelSnag.SNAG_MISSING, startDate, finishDate);
-				deleteSnag(ChannelSnag.SNAG_DATA_IGNORED, startDate, finishDate);
-				deleteSnag(ChannelSnag.SNAG_NEGATIVE, startDate, finishDate);
-				deleteSnag(ChannelSnag.SNAG_ESTIMATED, startDate, finishDate);
-			}
+			HhStartDate startDate = supplyGeneration.getFinishDate().getNext();
+			deleteSnag(ChannelSnag.SNAG_MISSING, startDate, null);
+			deleteSnag(ChannelSnag.SNAG_DATA_IGNORED, startDate, null);
+			deleteSnag(ChannelSnag.SNAG_NEGATIVE, startDate, null);
+			deleteSnag(ChannelSnag.SNAG_ESTIMATED, startDate, null);
 		}
+
 		// find date of first datum
 		HhDatum firstDatum = (HhDatum) Hiber
 				.session()
@@ -434,11 +425,11 @@ public class Channel extends PersistentEntity {
 			addSnag(ChannelSnag.SNAG_MISSING, supplyGeneration.getStartDate(),
 					supplyGeneration.getFinishDate());
 		} else {
-			if (firstDatum.getStartDate().getDate().after(
-					supplyGeneration.getStartDate().getDate())) {
-				addSnag(ChannelSnag.SNAG_MISSING, supplyGeneration
-						.getStartDate(), firstDatum.getStartDate()
-						.getPrevious());
+			if (firstDatum.getStartDate().getDate()
+					.after(supplyGeneration.getStartDate().getDate())) {
+				addSnag(ChannelSnag.SNAG_MISSING,
+						supplyGeneration.getStartDate(), firstDatum
+								.getStartDate().getPrevious());
 			}
 			HhDatum lastDatum = (HhDatum) Hiber
 					.session()
@@ -446,8 +437,8 @@ public class Channel extends PersistentEntity {
 							"from HhDatum datum where datum.channel = :channel order by datum.startDate.date desc")
 					.setEntity("channel", this).setMaxResults(1).uniqueResult();
 			if (supplyGeneration.getFinishDate() == null
-					|| lastDatum.getStartDate().getDate().before(
-							supplyGeneration.getFinishDate().getDate())) {
+					|| lastDatum.getStartDate().getDate()
+							.before(supplyGeneration.getFinishDate().getDate())) {
 				addSnag(ChannelSnag.SNAG_MISSING, lastDatum.getStartDate()
 						.getNext(), supplyGeneration.getFinishDate());
 			}
