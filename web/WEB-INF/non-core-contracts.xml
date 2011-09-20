@@ -97317,7 +97317,7 @@ def triad_dates():
         <value><![CDATA[from net.sf.chellow.physical import HhStartDate
 
 def triad_dates():
-    return [HhStartDate("2010-12-07T17:00Z"), HhStartDate("2010-12-20T17:00Z"), HhStartDate("2011-01-06T17:00Z")]]]></value>
+    return [HhStartDate("2011-12-07T17:00Z"), HhStartDate("2011-12-20T17:00Z"), HhStartDate("2012-01-06T17:00Z")]]]></value>
     </line>
     <line>
         <value><![CDATA[insert]]></value>
