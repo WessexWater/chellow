@@ -10356,24 +10356,28 @@ while bills.next():
     problem = ''
     #pw.println('starting bill ' + str(System.currentTimeMillis()))
     bill = bills.get(0)
-    bill_start = bill.getStartDate()
-    bill_finish = bill.getFinishDate()
-
-    contract_type = find_contract_type(bill)
-    pw.println("contract type of bill is " + contract_type)
     supply = bill.getSupply()
-    generation = supply.getGeneration(bill.getFinishDate())
-    if generation is None:
-        pw.println(",,,,,,,,,,Extraordinary! There isn't a generation for this bill!")
-        continue
-    mpan = generation.getMpans().iterator().next()
 
-    msn = generation.getMeterSerialNumber()
-
+    cal = MonadDate.getCalendar()
     read_dict = {}
     for read in bill.getReads():
-        if read.getMeterSerialNumber() != msn:
-            problem += "The MSN of the register read " + read.getMeterSerialNumber() + " doesn't match the MSN of the generation " + msn + '.'
+        cal.setTime(read.getPresentDate().getDate())
+        cal.set(Calendar.HOUR_OF_DAY, 0)
+        cal.set(Calendar.MINUTE, 0)
+        gen_start = HhStartDate(cal.getTime())
+        cal.add(Calendar.DAY_OF_MONTH, 1)
+        cal.add(Calendar.MINUTE, -30)
+        gen_finish = HhStartDate(cal.getTime())
+        msn_match = False
+        read_msn = read.getMeterSerialNumber()
+        for read_generation in supply.getGenerations(gen_start, gen_finish):
+            if read_msn == read_generation.getMeterSerialNumber():
+                msn_match = True
+                break
+
+        if not msn_match:
+            problem += "The MSN " + read_msn + " of the register read " + str(read.getId()) + " doesn't match the MSN of the generation."
+
         for dt, type in [(read.getPresentDate(), read.getPresentType()), (read.getPreviousDate(), read.getPreviousType())]:
             key = str(dt) + "-" + read.getMeterSerialNumber()
             try:
@@ -10381,6 +10385,18 @@ while bills.next():
                     problem += " Reads taken on " + str(dt) + " have differing read types."
             except KeyError:
                 read_dict[key] = type        
+
+    bill_start = bill.getStartDate()
+    bill_finish = bill.getFinishDate()
+
+    contract_type = find_contract_type(bill)
+    generation = supply.getGeneration(bill.getFinishDate())
+    if generation is None:
+        pw.println(",,,,,,,,,,Extraordinary! There isn't a generation for this bill!")
+        continue
+    mpan = generation.getMpans().iterator().next()
+
+    msn = generation.getMeterSerialNumber()
 
     covered_start = bill_start
     covered_finish = bill_finish
