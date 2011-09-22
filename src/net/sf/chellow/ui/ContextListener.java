@@ -164,7 +164,16 @@ public class ContextListener implements ServletContextListener {
 
 		Configuration.getConfiguration();
 		Hiber.close();
+		
+		Statement stmt = null;
+		try {
+			stmt = con.createStatement();
+			stmt.executeUpdate("alter table supply add column note text default '';");
+		} catch (SQLException e) {
+			throw new InternalException(e);			
+		}
 
+        
 		VoltageLevel.insertVoltageLevels();
 		UserRole.insertUserRole(UserRole.EDITOR);
 		UserRole.insertUserRole(UserRole.PARTY_VIEWER);
