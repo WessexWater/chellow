@@ -25749,7 +25749,6 @@ def import_hh_data(task):
                 Hiber.commit()
             if len(files) == 0:
                 task.log("No new files found.")
-        Hiber.close()
         ftp.logout()
         task.log("Logged out.")
     except UserException, e:
@@ -25759,6 +25758,7 @@ def import_hh_data(task):
         tb = e_info[2]
         task.log("Unknown Exception " + str(e_info[0]) + str(e_info[1]) + str(tb) + " line number " + str(tb.tb_lineno))
     finally:
+        Hiber.close()
         if ftp is not None and ftp.isConnected():
             ftp.disconnect();
             task.log("Disconnected.")
