@@ -20,7 +20,10 @@ Installation
 ------------
 1. Create a PostgreSQL database called chellow.
 
-2. In postgresql.conf set the default_transaction_isolation parameter to 'serializable'. 
+2. In postgresql.conf set the following parameters:
+
+    default_transaction_isolation = 'serializable'
+    datestyle = 'iso, ymd'
 
 3. In your Tomcat, configure a JNDI JDBC datasource called jdbc/chellow.
     a) Copy context.xml from the same directory as this file, and update with your own settings.

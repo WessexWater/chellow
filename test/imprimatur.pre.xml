@@ -1,13 +1,13 @@
 <?xml version="1.0"?>
 <!DOCTYPE imprimatur PUBLIC 
-    "-//Imprimatur DTD 008//EN"
-    "http://imprimatur.sourceforge.net/imprimatur-008.dtd">
+    "-//Imprimatur DTD 009//EN"
+    "http://imprimatur.sourceforge.net/imprimatur-009.dtd">
 <imprimatur port="@@test.port@@" hostname="localhost">
-	<credentials username="watkins@example.com" password="alan" />
 	<!-- Users -->
 	<test-group>
 		<test name="Manipulating users">
 			<request path="/chellow/users/" method="post">
+				<credentials username="watkins@example.com" password="alan" />
 				<control name="email-address" value="watkins@example.com" />
 				<control name="user-role-id" value="1" />
 				<control name="password" value="alan" />
@@ -54,15 +54,16 @@
 		</test>
 	</test-group>
 	<test-group>
-		<credentials username="godel" password="dancer" />
 		<test name="Check that invalid email address gives unauthorized.">
 			<request path="/chellow/supplier-contracts/">
+				<credentials username="godel" password="dancer" />
 				<response-code value="401" />
 			</request>
 		</test>
 	</test-group>
 	<test name="Check duplicate report name gives good error message">
 		<request path="/chellow/reports/" method="post">
+			<credentials username="watkins@example.com" password="alan" />
 			<control name="name" value="Home" />
 			<response-code value="418" />
 			<regex pattern="There's already a report with that name\." />
@@ -1314,14 +1315,15 @@ def virtual_bill(supply_source):
 		</request>
 	</test>
 	<test name="Check that the party viewer is able to view snags.">
-		<credentials username="mishka@localhost" password="fyodor" />
 		<request
 			path="/chellow/reports/37/output/?hhdc-contract-id=0&amp;hidden-days=5">
+			<credentials username="mishka@localhost" password="fyodor" />
 			<response-code value="200" />
 		</request>
 	</test>
 	<test name="Make sure everything's there on the home page.">
 		<request path="/chellow/reports/1/output/">
+			<credentials username="watkins@example.com" password="alan" />
 			<regex
 				pattern='&lt;a href="/chellow/reports/133/output/"&gt;Meter Payment Types&lt;/a&gt;' />
 			<response-code value="200" />
@@ -2397,15 +2399,15 @@ def import_virtual_bill(supply_source):
 		</request>
 
 		<!-- Check that searching for an account with a space works -->
-		<request path="/chellow/reports/99/output/?search-pattern=141 5532">
-			<regex pattern='&lt;td&gt;141 5532&lt;/td&gt;' />
-			<response-code value="200" />
+		<request path="/chellow/reports/99/output/?search-pattern=141%205532">
+			<regex pattern='/chellow/reports/7/output/\?supply-id=7' />
+			<response-code value="307" />
 		</request>
 
 		<!-- Check that searching on an MSN works -->
 		<request path="/chellow/reports/99/output/?search-pattern=P96C93722">
-			<regex pattern='&lt;td rowspan="4"&gt;P96C93722&lt;/td&gt;' />
-			<response-code value="200" />
+			<regex pattern='/chellow/reports/7/output/\?supply-id=10' />
+			<response-code value="307" />
 		</request>
 	</test>
 
@@ -2514,7 +2516,7 @@ def import_virtual_bill(supply_source):
 	<test
 		name="Can we export hh data in general import format for a particular supply?">
 		<request
-			path="/chellow/reports/31/output/?is-core=false&amp;has-supplies=true&amp;mpan-core=22 9205 6799 106">
+			path="/chellow/reports/31/output/?is-core=false&amp;has-supplies=true&amp;mpan-core=22%209205%206799%20106">
 			<response-code value="200" />
 			<regex
 				pattern="&lt;value&gt;&lt;!\[CDATA\[22 0470 7514 535\]\]&gt;&lt;/value&gt;" />

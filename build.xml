@@ -117,7 +117,7 @@
 	<property name="javalib.home" value="${user.home}/java" />
 	<!-- Requires Imprimatur from http://imprimatur.sourceforge.net/ -->
 
-	<property name="imprimatur.jar" value="${javalib.home}\imprimatur-017\imprimatur.jar" />
+	<property name="imprimatur.jar" value="${javalib.home}\imprimatur\imprimatur.jar" />
 	<property name="test.home" value="${basedir}/test" />
 
 	<!-- ================== Custom Ant Task Definitions ======================= -->
