@@ -3393,6 +3393,15 @@ def tariffs():
             'amber-gbp-per-kwh': 0.0004,
             'green-gbp-per-kwh': 0.00058,
             'gbp-per-kvarh': 0.00238},
+        '520': {
+            'description': 'High Voltage HH Metered (Old)',
+            'gbp-per-mpan-per-day': 0.6488,
+            'gbp-per-kva-per-day': 0.017,
+            'excess-gbp-per-kva-per-day': 0.017,
+            'red-gbp-per-kwh': 0.16349,
+            'amber-gbp-per-kwh': 0.0004,
+            'green-gbp-per-kwh': 0.00058,
+            'gbp-per-kvarh': 0.00238},
         '522': {
             'description': 'High Voltage Sub HH Metered',
             'gbp-per-mpan-per-day': 0.6488,
