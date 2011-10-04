@@ -9475,6 +9475,9 @@ while not mb_cal.getTime().after(finish_date.getDate()):
         net_gbp += bill['net-gbp']
         #raise UserException('start date ' + str(data_source.start_date) + ' finish date ' + str(data_source.finish_date) + ' ' + str(bill))
         for title in comterp.get('contract_function')(contract, 'import_virtual_bill_titles')():
+            if title == 'consumption-info':
+                del bill[title]
+                continue
             field_element = doc.createElement('field')
             generation_element.appendChild(field_element)
             field_element.setAttribute('name', title)
