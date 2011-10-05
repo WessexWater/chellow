@@ -738,7 +738,7 @@ Ongoing
         <value><![CDATA[from net.sf.chellow.monad import Hiber, UserException, XmlTree
 from net.sf.chellow.monad.types import MonadDate
 from net.sf.chellow.physical import Supply, HhStartDate, Configuration
-from net.sf.chellow.billing import Bill
+from net.sf.chellow.billing import Bill, SupplierContract, MopContract, HhdcContract
 from java.lang import Class, Long
 from java.math import BigInteger
 from org.hibernate.criterion import Restrictions, Order
@@ -749,24 +749,48 @@ from net.sf.chellow.ui import Report
 
 debug = ''
 
-def bills_list(parent_element, element_name, contract, generation, mpan=None):
-    global debug
+supply_id = inv.getLong("supply-id")
+if not inv.isValid():
+    raise UserException()
+supply = Supply.getSupply(supply_id)
+supply_element = supply.toXml(doc, XmlTree("source").put("mpanCores").put("gspGroup").put("generatorType"))
+source.appendChild(supply_element)
+for generation in supply.getGenerations():
+    generation_element = generation.toXml(doc, XmlTree("siteSupplyGenerations", XmlTree('site')).put('pc').put("mtc").put('ssc').put('cop').put("hhdcContract", XmlTree("party")).put('mopContract', XmlTree('party')))
+    supply_element.appendChild(generation_element)
+    generation_element.setAttribute('mop-account', generation.getMopAccount())
+    for channel in generation.getChannels():
+        channel_element = channel.toXml(doc)
+        generation_element.appendChild(channel_element)
+        for snag in Hiber.session().createQuery("from ChannelSnag snag where snag.channel = :channel and snag.isIgnored is false order by snag.startDate.date").setEntity('channel', channel).list():
+            channel_element.appendChild(snag.toXml(doc))
 
-    bills_element = doc.createElement(element_name)
-    parent_element.appendChild(bills_element)
+    for mpan in generation.getMpans():
+        mpan_element = mpan.toXml(doc, XmlTree("core").put("llfc", XmlTree("voltageLevel")).put('supplierContract'))
+        generation_element.appendChild(mpan_element)
+        for sup in Hiber.session().createQuery("select distinct mpan.supplyGeneration.supply from Mpan mpan where mpan.supplierAccount = :supplierAccount and mpan.supplyGeneration.supply <> :supply").setString('supplierAccount', mpan.getSupplierAccount()).setEntity('supply', supply).list():
+            mpan_element.appendChild(sup.toXml(doc))
+    pc_code = str(generation.getPc())
 
-    if mpan is not None and pc_code != '00':
-        tpr_codes = []
+    BILL_GROUP_NAMES = ['import-bills', 'export-bills', 'hhdc-bills', 'mop-bills']
+    bill_groups = {}
+    for bill_group_name in BILL_GROUP_NAMES:
+        bill_group_element = doc.createElement(bill_group_name)
+        bill_groups[bill_group_name] = {'element': bill_group_element, 'bill-dict': {}}
+        generation_element.appendChild(bill_group_element)
+
+    tpr_codes = []
+    import_bills_element = bill_groups['import-bills']['element']
+    if pc_code != '00':
         for tpr in Hiber.session().createQuery("select mr.tpr from MeasurementRequirement mr where mr.ssc = :ssc order by mr.tpr.code").setEntity('ssc', generation.getSsc()).list():
             tpr_codes.append(tpr.getCode())
-            bills_element.appendChild(tpr.toXml(doc))
+            import_bills_element.appendChild(tpr.toXml(doc))
         if pc_code in ['05', '06', '07', '08']:
-            bills_element.appendChild(doc.createElement('tpr'))
+            import_bills_element.appendChild(doc.createElement('tpr'))
             tpr_codes.append('md')
         tpr_codes.sort()        
 
-    bills_crit = Hiber.session().createCriteria(Class.forName('net.sf.chellow.billing.Bill')).createAlias('batch', 'bt').add(Restrictions.eq('bt.contract.id', Long(contract.getId()))).add(Restrictions.eq('supply', generation.getSupply())).add(Restrictions.ge('startDate.date', generation.getStartDate().getDate()))
-
+    bills_crit = Hiber.session().createCriteria(Class.forName('net.sf.chellow.billing.Bill')).add(Restrictions.eq('supply', generation.getSupply())).add(Restrictions.ge('startDate.date', generation.getStartDate().getDate()))
     finish_date = generation.getFinishDate()
     if finish_date is not None:
         bills_crit.add(Restrictions.le('startDate.date', generation.getFinishDate().getDate()))
@@ -774,8 +798,30 @@ def bills_list(parent_element, element_name, contract, generation, mpan=None):
     num_outer_read_cols = 0
     for bill in bills_crit.list():
         bill_element = bill.toXml(doc, XmlTree('batch', XmlTree('contract')).put('type'))
+        bill_contract = bill.getBatch().getContract()
+        bill_contract_id = bill_contract.getId()
+        try:
+            SupplierContract.getSupplierContract(bill_contract_id)
+            export_mpan = generation.getExportMpan()
+            if export_mpan is not None and bill_contract == export_mpan.getSupplierContract():
+                bill_group_name = 'export-bills'
+            else:
+                bill_group_name = 'import-bills'
+        except:
+            try:
+                HhdcContract.getHhdcContract(bill_contract_id)
+                bill_group_name = 'hhdc-bills'
+            except:
+                try:
+                    MopContract.getMopContract(bill_contract_id)
+                    bill_group_name = 'mop-bills'
+                except:
+                    raise UserException('bill group name not found for bill_contract_id ' + str(bill_contract_id))
 
-        if mpan is not None and pc_code != '00':
+        bill_group = bill_groups[bill_group_name]
+        bill_dict = bill_group['bill-dict']
+
+        if bill_group_name == 'import-bills' and pc_code != '00':
             tpr_map = dict(zip(tpr_codes, ([] for code in tpr_codes)))
             outside_tprs = []
             for read in Hiber.session().createQuery("from RegisterRead read where read.bill = :bill order by bill.startDate.date").setEntity('bill', bill).list():
@@ -813,53 +859,19 @@ def bills_list(parent_element, element_name, contract, generation, mpan=None):
             bill_dict[key] = []
         bill_dict[key].append(bill_element)
 
-    bill_keys = bill_dict.keys()
-    bill_keys.sort(reverse=True)
-    for key in bill_keys:
-        for elem in bill_dict[key]:
-            bills_element.appendChild(elem)
-    for i in range(num_outer_read_cols):
-        outer_read_element = doc.createElement('outer-read')
-        outer_read_element.setAttribute('index', str(i + 1))
-        bills_element.appendChild(outer_read_element)
-    return bills_element
+    for bill_group_name, bill_group in bill_groups.iteritems():
+        bill_dict = bill_group['bill-dict']
+        bills_element = bill_group['element']
+        bill_keys = bill_dict.keys()
+        bill_keys.sort(reverse=True)
+        for key in bill_keys:
+            for elem in bill_dict[key]:
+                bills_element.appendChild(elem)
+        for i in range(num_outer_read_cols):
+            outer_read_element = doc.createElement('outer-read')
+            outer_read_element.setAttribute('index', str(i + 1))
+            bills_element.appendChild(outer_read_element)
 
-supply_id = inv.getLong("supply-id")
-if not inv.isValid():
-    raise UserException()
-supply = Supply.getSupply(supply_id)
-supply_element = supply.toXml(doc, XmlTree("source").put("mpanCores").put("gspGroup").put("generatorType"))
-source.appendChild(supply_element)
-for generation in supply.getGenerations():
-    generation_element = generation.toXml(doc, XmlTree("siteSupplyGenerations", XmlTree('site')).put('pc').put("mtc").put('ssc').put('cop').put("hhdcContract", XmlTree("party")).put('mopContract', XmlTree('party')))
-    supply_element.appendChild(generation_element)
-    generation_element.setAttribute('mop-account', generation.getMopAccount())
-    for channel in generation.getChannels():
-        channel_element = channel.toXml(doc)
-        generation_element.appendChild(channel_element)
-        for snag in Hiber.session().createQuery("from ChannelSnag snag where snag.channel = :channel and snag.isIgnored is false order by snag.startDate.date").setEntity('channel', channel).list():
-            channel_element.appendChild(snag.toXml(doc))
-
-    for mpan in generation.getMpans():
-        mpan_element = mpan.toXml(doc, XmlTree("core").put("llfc", XmlTree("voltageLevel")).put('supplierContract'))
-        generation_element.appendChild(mpan_element)
-        for sup in Hiber.session().createQuery("select distinct mpan.supplyGeneration.supply from Mpan mpan where mpan.supplierAccount = :supplierAccount and mpan.supplyGeneration.supply <> :supply").setString('supplierAccount', mpan.getSupplierAccount()).setEntity('supply', supply).list():
-            mpan_element.appendChild(sup.toXml(doc))
-    pc_code = str(generation.getPc())
-    for mpan in generation.getMpans():
-        if mpan.getLlfc().getIsImport():
-            name = 'import-bills'
-        else:
-            name = 'export-bills'
-        bills_list(generation_element, name, mpan.getSupplierContract(), generation, mpan)
-
-    hhdc_contract = generation.getHhdcContract()
-    if hhdc_contract is not None:
-        bills_list(generation_element, 'hhdc-bills', hhdc_contract, generation)
-
-    mop_contract = generation.getMopContract()
-    if mop_contract is not None:
-        bills_list(generation_element, 'mop-bills', mop_contract, generation)
 
 source.appendChild(MonadDate().toXml(doc))
 source.appendChild(MonadDate.getMonthsXml(doc))
