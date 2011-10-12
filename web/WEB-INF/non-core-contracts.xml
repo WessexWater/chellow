@@ -25148,379 +25148,388 @@ class SupplySource(DataSource):
         #s elf.pw.println("start date " + str(start_date) + " finish date " + str(finish_date) + " forecast date " + str(forecast_date) + " history start " + str(history_start) + " history finish " + str(history_finish) + " year adjustment " + str(year_adjustment))
 
         data_hh = []
+        year_advance = -1 * year_adjustment
+
         utc_cal = GregorianCalendar(TimeZone.getTimeZone("GMT"), Locale.UK)
         ct_cal = GregorianCalendar(TimeZone.getTimeZone("Europe/London"), Locale.UK)
 
-        history_generation = self.supply.getGeneration(history_finish)
-        year_advance = -1 * year_adjustment
-
-        if history_generation is not None and history_generation.getPc().getCode() != '00' and len(history_generation.getChannels()) == 0:
-            if self.is_import:
-                history_mpan = history_generation.getImportMpan()
+        for history_generation in self.supply.getGenerations(history_start, history_finish):
+            if history_start.after(history_generation.getStartDate()):
+                block_start = history_start
             else:
-                history_mpan = history_generation.getExportMpan()
+                block_start = history_generation.getStartDate()
 
-            if history_generation.getMtc().getMeterType().getCode() == 'UM':
-                utc_cal.setTime(start_date.getDate())
-                utc_cal.set(Calendar.MONTH, Calendar.JANUARY)
-                utc_cal.set(Calendar.DAY_OF_MONTH, 1)
-                utc_cal.set(Calendar.HOUR_OF_DAY, 0)
-                utc_cal.set(Calendar.MINUTE, 0)
-                year_start_millis = utc_cal.getTimeInMillis()
-                utc_cal.add(Calendar.YEAR, 1)                
-                kwh = float(history_mpan.getAgreedSupplyCapacity() * 1000 * 60 * 30) / float(utc_cal.getTimeInMillis() - year_start_millis)
+            if history_finish.before(history_generation.getFinishDate()):
+                block_finish = history_finish
+            else:
+                block_finish = history_generation.getFinishDate()
 
-                for tpr in Hiber.session().createQuery("select mr.tpr from MeasurementRequirement mr where mr.ssc = :ssc").setEntity("ssc", history_generation.getSsc()).list():
-                    datum_generator = _tpr_datum_generator(tpr.getCode(), year_advance, self.pw)
-                    hh_date = start_date.getDate().getTime()
-                    finish_date_millis = finish_date.getDate().getTime()
-                    utc_cal = MonadDate.getCalendar()
-                    utc_cal.setTimeInMillis(hh_date)
-                    while not hh_date > finish_date_millis:
-                        datum = datum_generator(hh_date)
-                        if datum is not None:
-                            new_datum = datum.copy()
-                            new_datum.update({'msp-kw': kwh * 2, 'msp-kwh': kwh, 'hist-kwh': kwh, 'imp-msp-kvarh': 0, 'exp-msp-kvarh': 0})
-                            data_hh.append(new_datum)
-                        hh_date = HhStartDate.getNext(utc_cal, hh_date)
+            if history_generation is not None and history_generation.getPc().getCode() != '00' and len(history_generation.getChannels()) == 0:
+                if self.is_import:
+                    history_mpan = history_generation.getImportMpan()
+                else:
+                    history_mpan = history_generation.getExportMpan()
 
-                    #s elf.pw.println(str(System.currentTimeMillis()) + " done bills ")
+                if history_generation.getMtc().getMeterType().getCode() == 'UM':
+                    utc_cal.setTime(block_start.getDate())
+                    utc_cal.set(Calendar.MONTH, Calendar.JANUARY)
+                    utc_cal.set(Calendar.DAY_OF_MONTH, 1)
+                    utc_cal.set(Calendar.HOUR_OF_DAY, 0)
+                    utc_cal.set(Calendar.MINUTE, 0)
+                    year_start_millis = utc_cal.getTimeInMillis()
+                    utc_cal.add(Calendar.YEAR, 1)                
+                    kwh = float(history_mpan.getAgreedSupplyCapacity() * 1000 * 60 * 30) / float(utc_cal.getTimeInMillis() - year_start_millis)
 
-            elif self.bill_start is None:
-                #s elf.pw.println('starting, ' + str(System.currentTimeMillis()))
-                read_list = []
-                read_keys = {}
-                pairs = []
-
-                bill_query.setEntity('supply', self.supply)
-                prior_pres_reads = prior_pres_read_query.setEntity('supply', self.supply).setTimestamp('searchDate', history_start.getDate()).scroll()
-                prior_prev_reads = prior_prev_read_query.setEntity('supply', self.supply).setTimestamp('searchDate', history_start.getDate()).scroll()
-                next_pres_reads = next_pres_read_query.setEntity('supply', self.supply).setTimestamp('searchDate', history_start.getDate()).scroll()
-                next_prev_reads = next_prev_read_query.setEntity('supply', self.supply).setTimestamp('searchDate', history_start.getDate()).scroll()
-
-                for is_forwards in [False, True]:
-                    #s elf.pw.println('context start , ' + str(System.currentTimeMillis()))
-                    
-                    if is_forwards:
-                        pres_reads = next_pres_reads
-                        prev_reads = next_prev_reads
-                        read_list.reverse()
-                    else:
-                        pres_reads = prior_pres_reads
-                        prev_reads = prior_prev_reads
-
-                    prime_pres_read = None
-                    prime_prev_read = None
-                    while True:
-                        #s elf.pw.println('starting mid loop, ' + str(System.currentTimeMillis()))
-              
-                        while prime_pres_read is None and pres_reads.next():
-                            #s elf.pw.println('starting pres loop, ' + str(System.currentTimeMillis()))
-
-                            pres_read = pres_reads.get(0)
-                            pres_date = pres_read.getPresentDate()
-                            pres_msn = pres_read.getMeterSerialNumber()
-                            read_key = '_'.join([str(pres_date), pres_msn]) 
-                            if read_key in read_keys:
-                                continue
-
-                            #s elf.pw.println(str(pres_read.getId()))
-                            pres_bill = bill_query.setTimestamp('readDate', pres_read.getPresentDate().getDate()).uniqueResult()[0]
-                            #s elf.pw.println('before bill get, ' + str(System.currentTimeMillis()))
-
-                            if pres_bill.getId() != pres_read.getBill().getId():
-                                #s elf.pw.println('after bill get, ' + str(System.currentTimeMillis()))
-                                continue
-
-                            reads = dict((read.tpr.getCode(), read.getPresentValue().doubleValue() * read.getCoefficient().doubleValue())for read in pres_reads_query.setEntity('bill', pres_bill).setTimestamp('readDate', pres_date.getDate()).setString('msn', pres_msn).list())
-
-                            prime_pres_read = {'date': pres_date, 'reads': reads, 'msn': pres_msn}
-                            read_keys[read_key] = None
-
-                        while prime_prev_read is None and prev_reads.next():
-                            #s elf.pw.println('starting prev loop, ' + str(System.currentTimeMillis()))
-
-                            prev_read = prev_reads.get(0)
-                            prev_date = prev_read.getPreviousDate()
-                            prev_msn = prev_read.getMeterSerialNumber()
-                            read_key = '_'.join([str(prev_date), prev_msn])
-                            if read_key in read_keys:
-                                continue
-
-                            prev_bill = bill_query.setTimestamp('readDate', prev_read.getBill().getStartDate().getDate()).uniqueResult()[0]
-                            if prev_bill.getId() != prev_read.getBill().getId():
-                                continue
-
-                            reads = dict((read.tpr.getCode(), read.getPreviousValue().doubleValue() * read.getCoefficient().doubleValue()) for read in prev_reads_query.setEntity('bill', prev_bill).setTimestamp('readDate', prev_date.getDate()).setString('msn', prev_msn).list())  
-
-                            prime_prev_read = {'date': prev_date, 'reads': reads, 'msn': prev_msn}
-                            read_keys[read_key] = None
-                            #s elf.pw.println('prev loop found prime read, ' + str(System.currentTimeMillis()))
-
-                        if prime_pres_read is None and prime_prev_read is None:
-                            break
-                        elif prime_pres_read is None:
-                            read_list.append(prime_prev_read)
-                            prime_prev_read = None
-                        elif prime_prev_read is None:
-                            read_list.append(prime_pres_read)
-                            prime_pres_read = None
-                        else:
-                            if is_forwards:
-                                if prime_prev_read['date'].equals(prime_pres_read['date']) or prime_pres_read['date'].before(prime_prev_read['date']):
-                                    read_list.append(prime_pres_read)
-                                    prime_pres_read = None
-                                else:
-                                    read_list.append(prime_prev_read)
-                                    prime_prev_read = None
-                            else:
-                                if prime_prev_read['date'].equals(prime_pres_read['date']) or prime_prev_read['date'].after(prime_pres_read['date']):
-                                    read_list.append(prime_prev_read)
-                                    prime_prev_read = None
-                                else:
-                                    read_list.append(prime_pres_read)
-                                    prime_pres_read = None
-                        #s elf.pw.println('mid loop list ' + str(read_list) + ' , ' + str(System.currentTimeMillis()))
-
-                        if len(read_list) > 1:
-                            if is_forwards:
-                                aft_read = read_list[-2]
-                                fore_read = read_list[-1]
-                            else:
-                                aft_read = read_list[-1]
-                                fore_read = read_list[-2]
-
-                            if aft_read['msn'] == fore_read['msn']:
-                                pair_start_date = aft_read['date'].getNext()
-                                pair_finish_date = fore_read['date']
-
-                                num_hh = float(pair_finish_date.getDate().getTime() + (30 * 60 * 1000) - pair_start_date.getDate().getTime()) / (30 * 60 * 1000)
-                                #s elf.pw.println('num hh ' + str(num_hh))
-
-                                tprs = {}
-                                for tpr_code, initial_val in aft_read['reads'].iteritems():
-                                    if tpr_code in fore_read['reads']:
-                                        end_val = fore_read['reads'][tpr_code]
-                                    else:
-                                        continue
-                            
-                                    kwh =  end_val - initial_val
-                                    #s elf.pw.println('tpr code ' + str(kwh) + ' kwh ' + str(kwh))
-
-                                    if kwh < 0:
-                                        digits = int(Math.log10(initial_val)) + 1
-                                        kwh = 10 ** digits + kwh
-
-                                    tprs[tpr_code] = float(kwh) / num_hh
-
-                                pairs.append({'start-date': pair_start_date, 'finish-date': pair_finish_date, 'tprs': tprs})
-                                #s elf.pw.println('mid loop pairs ' + str(pairs) + ' , ' + str(System.currentTimeMillis()))
-                        
-                                if len(pairs) > 0 and (not is_forwards or (is_forwards and read_list[-1]['date'].after(history_finish))):
-                                    break
-
-                prior_pres_reads.close()
-                prior_prev_reads.close()
-                next_pres_reads.close()
-                next_prev_reads.close()                                    
-                        
-                summary['consumption-info'] += 'read list - \n' + str(read_list) + "\n"
-
-                if len(pairs) == 0:
-                    pairs.append({'start-date': history_start, 'finish-date': history_finish, 'tprs': {'00001': 0}})
-
-
-                # smooth
-                for i in range(1, len(pairs)):
-                    pairs[i - 1]['finish-date'] = pairs[i]['start-date'].getPrevious()
-
-                # stretch
-                if pairs[0]['start-date'].after(history_start):
-                    pairs[0]['start-date'] = history_start
-
-                if pairs[-1]['finish-date'].before(history_finish):
-                    pairs[-1]['finish-date'] = history_finish
-
-                # chop
-                pairs = [pair for pair in pairs if not pair['start-date'].after(history_finish) and not pair['finish-date'].before(history_start)]
-
-                # squash  
-                if pairs[0]['start-date'].before(history_start):
-                    pairs[0]['start-date'] = history_start
-
-                if pairs[-1]['finish-date'].after(history_finish):
-                    pairs[-1]['finish-date'] = history_finish
-
-                summary['consumption-info'] += 'pairs - \n' + str(read_list)
-
-                for pair in pairs:
-                    pair_start_millis = pair['start-date'].getDate().getTime()
-                    pair_finish_millis = pair['finish-date'].getDate().getTime()
-                    pair_hhs = (pair_finish_millis + (1000 * 60 * 30) - pair_start_millis) / (1000 * 60 * 30)
-                    for tpr_code, pair_kwh in pair['tprs'].iteritems():
-                        hh_date = pair_start_millis
-
-                        #s elf.pw.println('pair start ' + str(pair['start-date']))
-                        
-                        #s elf.pw.println('pair finish ' + str(pair['start-date']))
-                        datum_generator = _tpr_datum_generator(tpr_code, year_advance, self.pw)
+                    for tpr in Hiber.session().createQuery("select mr.tpr from MeasurementRequirement mr where mr.ssc = :ssc").setEntity("ssc", history_generation.getSsc()).list():
+                        datum_generator = _tpr_datum_generator(tpr.getCode(), year_advance, self.pw)
+                        hh_date = block_start.getDate().getTime()
+                        finish_date_millis = block_finish.getDate().getTime()
                         utc_cal = MonadDate.getCalendar()
                         utc_cal.setTimeInMillis(hh_date)
-                        hh_part = []
-                        while not hh_date > pair_finish_millis:
+                        while not hh_date > finish_date_millis:
                             datum = datum_generator(hh_date)
                             if datum is not None:
-                                hh_part.append(datum.copy())
+                                new_datum = datum.copy()
+                                new_datum.update({'msp-kw': kwh * 2, 'msp-kwh': kwh, 'hist-kwh': kwh, 'imp-msp-kvarh': 0, 'exp-msp-kvarh': 0})
+                                data_hh.append(new_datum)
                             hh_date = HhStartDate.getNext(utc_cal, hh_date)
-                            #s elf.pw.println(str(System.currentTimeMillis()) + " finished inner loop ")
-                        if len(hh_part) > 0:
-                            kwh = pair_kwh * pair_hhs / len(hh_part)
-                        else:
-                            kwh = 0
 
-                        for datum in hh_part:
-                            datum.update({'msp-kw': kwh * 2, 'msp-kwh': kwh, 'hist-kwh': kwh, 'imp-msp-kvarh': 0, 'exp-msp-kvarh': 0})
-                        data_hh += hh_part
-                #s elf.pw.println('finished, ' + str(System.currentTimeMillis()))
-            else:
-                tpr_codes = Hiber.session().createQuery("select mr.tpr.code from MeasurementRequirement mr where mr.ssc = :ssc").setEntity('ssc', history_generation.getSsc()).list()
-                bills = []
-                for cand_bill_res in Hiber.session().createQuery("select distinct read.bill, read.bill.issueDate, read.bill.startDate.date from RegisterRead read where read.bill.supply = :supply and read.bill.batch.contract = :contract and read.bill.startDate.date <= :finishDate and read.bill.finishDate.date >= :searchStart and read.bill.type.code != 'W' order by read.bill.issueDate desc, read.bill.startDate.date").setEntity('supply', self.supply).setEntity('contract', history_mpan.getSupplierContract()).setTimestamp('searchStart', start_date.getDate()).setTimestamp('finishDate', finish_date.getDate()).list():
-                    cand_bill = cand_bill_res[0]
-                    can_insert = True
-                    for bill in bills:
-                        if not cand_bill.getStartDate().after(bill.getFinishDate()) and not cand_bill.getFinishDate().before(bill.getStartDate()):
-                            can_insert = False
-                            break
-                    if can_insert:
-                        bills.append(cand_bill)
-
-                for bill in bills:                
-                    for read in Hiber.session().createQuery("select read.tpr, read.tpr.code, read.coefficient, read.previousDate, read.previousValue, read.previousType.code, read.presentDate, read.presentValue, read.presentType.code, read.id from RegisterRead read where read.bill = :bill and read.units.int = :units order by read.presentDate.date").setEntity('bill', bill).setInteger('units', 0).list():
-                        tpr = read[0]
-                        tpr_code = read[1]
-                        if tpr_code not in tpr_codes:
-                            summary['problem'] += "The TPR " + str(tpr) + " from the register read does not match any of the TPRs associated with the MPAN. "
-
-                        coefficient = read[2].doubleValue()
-                        previous_date = read[3].getNext()
-                        previous_value = read[4].doubleValue()
-                        previous_type = read[5]
-                        present_date = read[6]
-                        present_value = read[7].doubleValue()
-                        present_type = read[8]
-
-                        if present_date.before(start_date) or previous_date.after(finish_date):
-                            continue
-                    
-                        if previous_date.before(bill.getStartDate()):
-                            summary['problem'] += "There's a read before the start of the bill!"
-                        if present_date.after(bill.getFinishDate()):
-                            summary['problem'] += "There's a read after the end of the bill!"
-                        advance = present_value - previous_value
-                        if advance < 0:
-                            summary['problem'] += "Clocked? "
-                            digits = int(Math.log10(previous_value)) + 1
-                            advance = 10 ** digits - previous_value + present_value
-
-                        kwh = advance * coefficient
-                        #s elf.pw.write(' kwh ' + str(kwh))
-                        if previous_date.before(start_date):
-                            chunk_start = start_date
-                        else:
-                            chunk_start = previous_date
-
-                        if present_date.after(finish_date):
-                            chunk_finish = finish_date
-                        else:
-                            chunk_finish = present_date
-
-                        tpr_dict = _tpr_dict(tpr_code, self.pw)
-                        days_of_week = tpr_dict['days-of-week']
-                        utc_cal = GregorianCalendar(TimeZone.getTimeZone("GMT"), Locale.UK)
-                        ct_cal = GregorianCalendar(TimeZone.getTimeZone("Europe/London"), Locale.UK)
-                        if tpr_dict['is-gmt']:
-                            cal = utc_cal
-                        else:
-                            cal = ct_cal
-                        if present_type in ACTUAL_READ_TYPES and previous_type in ACTUAL_READ_TYPES:
-                            status = 'A'
-                        else:
-                            status = 'E'
-
-                        hh_date = previous_date.getDate().getTime()
-                        pass_finish = present_date.getDate().getTime()
-
-                        num_hh = 0
-                        chunk_start_millis = chunk_start.getDate().getTime()
-                        chunk_finish_millis = chunk_finish.getDate().getTime()
-                        utc_cal.setTimeInMillis(hh_date)
-
-                        part_hh = []
-                        while not hh_date > pass_finish:
-                            ct_cal.setTimeInMillis(hh_date)
-                            utc_cal.add(Calendar.YEAR, year_advance)
-                            ct_cal.add(Calendar.YEAR, year_advance)
-                            decimal_hour = cal.get(11) + float(cal.get(12)) / 60
-                            fractional_month = cal.get(Calendar.MONTH) * 100 + cal.get(Calendar.DAY_OF_MONTH)
-                            for ci in days_of_week[cal.get(Calendar.DAY_OF_WEEK)]:
-                                if ((ci['start-hour'] < ci['end-hour'] and ci['start-hour'] <= decimal_hour < ci['end-hour']) or (ci['start-hour'] >= ci['end-hour'] and (ci['start-hour'] <= decimal_hour or decimal_hour < ci['end-hour']))) and ci['start-month'] <= fractional_month <= ci['end-month']:
-                                    num_hh += 1
-                                    if chunk_start_millis <= hh_date <= chunk_finish_millis:
-                                        utc_day = utc_cal.get(Calendar.DAY_OF_MONTH)
-                                        part_hh.append({'imp-msp-kvarh': 0, 'imp-msp-kvar': 0, 'exp-msp-kvarh': 0, 'exp-msp-kvar': 0, 'hist-start-date': chunk_start, 'start-date': utc_cal.getTime(), 'ct-day': ct_cal.get(5), 'utc-month': utc_cal.get(2), 'utc-day': utc_day, 'utc-decimal-hour': utc_cal.get(11) + float(utc_cal.get(12)) / 60, 'utc-year': utc_cal.get(Calendar.YEAR), 'utc-hour': utc_cal.get(Calendar.HOUR_OF_DAY), 'utc-minute': utc_cal.get(Calendar.MINUTE), 'ct-year': ct_cal.get(Calendar.YEAR), 'ct-month': ct_cal.get(2), 'ct-decimal-hour': ct_cal.get(11) + float(ct_cal.get(12)) / 60, 'ct-day-of-week': ct_cal.get(7), 'utc-day-of-week': utc_cal.get(7)})
-                                    break
-                            hh_date = HhStartDate.getNext(utc_cal, hh_date)
-                        #s elf.pw.println(str(System.currentTimeMillis()) + " finished inner loop ")
-
-                        #s elf.pw.println('pass count ' + str(pass_count) + '  len(data_hh) ' + str(len(data_hh)))
-
-                        if num_hh > 0:
-                            kwh = float(kwh) / float(num_hh)
-                            for datum in part_hh:
-                                datum.update({'msp-kw': kwh * 2, 'msp-kwh': kwh, 'hist-kwh': kwh, 'status': status})
                         #s elf.pw.println(str(System.currentTimeMillis()) + " done bills ")
-                        data_hh += part_hh
 
-        else:
-            #s elf.pw.println("whole data: about to prepare query, " +  str(System.currentTimeMillis()))
-            con = Hiber.session().connection()
-            if self.is_import:
-                imp_pref = ''
-                exp_pref = 'anti_'
+                elif self.bill_start is None:
+                    #s elf.pw.println('starting, ' + str(System.currentTimeMillis()))
+                    read_list = []
+                    read_keys = {}
+                    pairs = []
+
+                    bill_query.setEntity('supply', self.supply)
+                    prior_pres_reads = prior_pres_read_query.setEntity('supply', self.supply).setTimestamp('searchDate', block_start.getDate()).scroll()
+                    prior_prev_reads = prior_prev_read_query.setEntity('supply', self.supply).setTimestamp('searchDate', block_start.getDate()).scroll()
+                    next_pres_reads = next_pres_read_query.setEntity('supply', self.supply).setTimestamp('searchDate', block_start.getDate()).scroll()
+                    next_prev_reads = next_prev_read_query.setEntity('supply', self.supply).setTimestamp('searchDate', block_start.getDate()).scroll()
+
+                    for is_forwards in [False, True]:
+                        #s elf.pw.println('context start , ' + str(System.currentTimeMillis()))
+                    
+                        if is_forwards:
+                            pres_reads = next_pres_reads
+                            prev_reads = next_prev_reads
+                            read_list.reverse()
+                        else:
+                            pres_reads = prior_pres_reads
+                            prev_reads = prior_prev_reads
+
+                        prime_pres_read = None
+                        prime_prev_read = None
+                        while True:
+                            #s elf.pw.println('starting mid loop, ' + str(System.currentTimeMillis()))
+              
+                            while prime_pres_read is None and pres_reads.next():
+                                #s elf.pw.println('starting pres loop, ' + str(System.currentTimeMillis()))
+
+                                pres_read = pres_reads.get(0)
+                                pres_date = pres_read.getPresentDate()
+                                pres_msn = pres_read.getMeterSerialNumber()
+                                read_key = '_'.join([str(pres_date), pres_msn]) 
+                                if read_key in read_keys:
+                                    continue
+
+                                #s elf.pw.println(str(pres_read.getId()))
+                                pres_bill = bill_query.setTimestamp('readDate', pres_read.getPresentDate().getDate()).uniqueResult()[0]
+                                #s elf.pw.println('before bill get, ' + str(System.currentTimeMillis()))
+
+                                if pres_bill.getId() != pres_read.getBill().getId():
+                                    #s elf.pw.println('after bill get, ' + str(System.currentTimeMillis()))
+                                    continue
+
+                                reads = dict((read.tpr.getCode(), read.getPresentValue().doubleValue() * read.getCoefficient().doubleValue())for read in pres_reads_query.setEntity('bill', pres_bill).setTimestamp('readDate', pres_date.getDate()).setString('msn', pres_msn).list())
+
+                                prime_pres_read = {'date': pres_date, 'reads': reads, 'msn': pres_msn}
+                                read_keys[read_key] = None
+
+                            while prime_prev_read is None and prev_reads.next():
+                                #s elf.pw.println('starting prev loop, ' + str(System.currentTimeMillis()))
+
+                                prev_read = prev_reads.get(0)
+                                prev_date = prev_read.getPreviousDate()
+                                prev_msn = prev_read.getMeterSerialNumber()
+                                read_key = '_'.join([str(prev_date), prev_msn])
+                                if read_key in read_keys:
+                                    continue
+
+                                prev_bill = bill_query.setTimestamp('readDate', prev_read.getBill().getStartDate().getDate()).uniqueResult()[0]
+                                if prev_bill.getId() != prev_read.getBill().getId():
+                                    continue
+
+                                reads = dict((read.tpr.getCode(), read.getPreviousValue().doubleValue() * read.getCoefficient().doubleValue()) for read in prev_reads_query.setEntity('bill', prev_bill).setTimestamp('readDate', prev_date.getDate()).setString('msn', prev_msn).list())  
+
+                                prime_prev_read = {'date': prev_date, 'reads': reads, 'msn': prev_msn}
+                                read_keys[read_key] = None
+                                #s elf.pw.println('prev loop found prime read, ' + str(System.currentTimeMillis()))
+
+                            if prime_pres_read is None and prime_prev_read is None:
+                                break
+                            elif prime_pres_read is None:
+                                read_list.append(prime_prev_read)
+                                prime_prev_read = None
+                            elif prime_prev_read is None:
+                                read_list.append(prime_pres_read)
+                                prime_pres_read = None
+                            else:
+                                if is_forwards:
+                                    if prime_prev_read['date'].equals(prime_pres_read['date']) or prime_pres_read['date'].before(prime_prev_read['date']):
+                                        read_list.append(prime_pres_read)
+                                        prime_pres_read = None
+                                    else:
+                                        read_list.append(prime_prev_read)
+                                        prime_prev_read = None
+                                else:
+                                    if prime_prev_read['date'].equals(prime_pres_read['date']) or prime_prev_read['date'].after(prime_pres_read['date']):
+                                        read_list.append(prime_prev_read)
+                                        prime_prev_read = None
+                                    else:
+                                        read_list.append(prime_pres_read)
+                                        prime_pres_read = None
+                            #s elf.pw.println('mid loop list ' + str(read_list) + ' , ' + str(System.currentTimeMillis()))
+
+                            if len(read_list) > 1:
+                                if is_forwards:
+                                    aft_read = read_list[-2]
+                                    fore_read = read_list[-1]
+                                else:
+                                    aft_read = read_list[-1]
+                                    fore_read = read_list[-2]
+
+                                if aft_read['msn'] == fore_read['msn']:
+                                    pair_start_date = aft_read['date'].getNext()
+                                    pair_finish_date = fore_read['date']
+
+                                    num_hh = float(pair_finish_date.getDate().getTime() + (30 * 60 * 1000) - pair_start_date.getDate().getTime()) / (30 * 60 * 1000)
+                                    #s elf.pw.println('num hh ' + str(num_hh))
+
+                                    tprs = {}
+                                    for tpr_code, initial_val in aft_read['reads'].iteritems():
+                                        if tpr_code in fore_read['reads']:
+                                            end_val = fore_read['reads'][tpr_code]
+                                        else:
+                                            continue
+                            
+                                        kwh =  end_val - initial_val
+                                        #s elf.pw.println('tpr code ' + str(kwh) + ' kwh ' + str(kwh))
+
+                                        if kwh < 0:
+                                            digits = int(Math.log10(initial_val)) + 1
+                                            kwh = 10 ** digits + kwh
+
+                                        tprs[tpr_code] = float(kwh) / num_hh
+
+                                    pairs.append({'start-date': pair_start_date, 'finish-date': pair_finish_date, 'tprs': tprs})
+                                    #s elf.pw.println('mid loop pairs ' + str(pairs) + ' , ' + str(System.currentTimeMillis()))
+                        
+                                    if len(pairs) > 0 and (not is_forwards or (is_forwards and read_list[-1]['date'].after(block_finish))):
+                                        break
+
+                    prior_pres_reads.close()
+                    prior_prev_reads.close()
+                    next_pres_reads.close()
+                    next_prev_reads.close()                                    
+                        
+                    summary['consumption-info'] += 'read list - \n' + str(read_list) + "\n"
+
+                    if len(pairs) == 0:
+                        pairs.append({'start-date': block_start, 'finish-date': block_finish, 'tprs': {'00001': 0}})
+
+
+                    # smooth
+                    for i in range(1, len(pairs)):
+                        pairs[i - 1]['finish-date'] = pairs[i]['start-date'].getPrevious()
+
+                    # stretch
+                    if pairs[0]['start-date'].after(block_start):
+                        pairs[0]['start-date'] = block_start
+
+                    if pairs[-1]['finish-date'].before(block_finish):
+                        pairs[-1]['finish-date'] = block_finish
+
+                    # chop
+                    pairs = [pair for pair in pairs if not pair['start-date'].after(block_finish) and not pair['finish-date'].before(block_start)]
+
+                    # squash  
+                    if pairs[0]['start-date'].before(block_start):
+                        pairs[0]['start-date'] = block_start
+
+                    if pairs[-1]['finish-date'].after(block_finish):
+                        pairs[-1]['finish-date'] = block_finish
+
+                    summary['consumption-info'] += 'pairs - \n' + str(read_list)
+
+                    for pair in pairs:
+                        pair_start_millis = pair['start-date'].getDate().getTime()
+                        pair_finish_millis = pair['finish-date'].getDate().getTime()
+                        pair_hhs = (pair_finish_millis + (1000 * 60 * 30) - pair_start_millis) / (1000 * 60 * 30)
+                        for tpr_code, pair_kwh in pair['tprs'].iteritems():
+                            hh_date = pair_start_millis
+
+                            #s elf.pw.println('pair start ' + str(pair['start-date']))
+                        
+                            #s elf.pw.println('pair finish ' + str(pair['start-date']))
+                            datum_generator = _tpr_datum_generator(tpr_code, year_advance, self.pw)
+                            utc_cal = MonadDate.getCalendar()
+                            utc_cal.setTimeInMillis(hh_date)
+                            hh_part = []
+                            while not hh_date > pair_finish_millis:
+                                datum = datum_generator(hh_date)
+                                if datum is not None:
+                                    hh_part.append(datum.copy())
+                                hh_date = HhStartDate.getNext(utc_cal, hh_date)
+                                #s elf.pw.println(str(System.currentTimeMillis()) + " finished inner loop ")
+                            if len(hh_part) > 0:
+                                kwh = pair_kwh * pair_hhs / len(hh_part)
+                            else:
+                                kwh = 0
+
+                            for datum in hh_part:
+                                datum.update({'msp-kw': kwh * 2, 'msp-kwh': kwh, 'hist-kwh': kwh, 'imp-msp-kvarh': 0, 'exp-msp-kvarh': 0})
+                            data_hh += hh_part
+                    #s elf.pw.println('finished, ' + str(System.currentTimeMillis()))
+                else:
+                    tpr_codes = Hiber.session().createQuery("select mr.tpr.code from MeasurementRequirement mr where mr.ssc = :ssc").setEntity('ssc', history_generation.getSsc()).list()
+                    bills = []
+                    for cand_bill_res in Hiber.session().createQuery("select distinct read.bill, read.bill.issueDate, read.bill.startDate.date from RegisterRead read where read.bill.supply = :supply and read.bill.batch.contract = :contract and read.bill.startDate.date <= :finishDate and read.bill.finishDate.date >= :searchStart and read.bill.type.code != 'W' order by read.bill.issueDate desc, read.bill.startDate.date").setEntity('supply', self.supply).setEntity('contract', history_mpan.getSupplierContract()).setTimestamp('searchStart', start_date.getDate()).setTimestamp('finishDate', finish_date.getDate()).list():
+                        cand_bill = cand_bill_res[0]
+                        can_insert = True
+                        for bill in bills:
+                            if not cand_bill.getStartDate().after(bill.getFinishDate()) and not cand_bill.getFinishDate().before(bill.getStartDate()):
+                                can_insert = False
+                                break
+                        if can_insert:
+                            bills.append(cand_bill)
+
+                    for bill in bills:                
+                        for read in Hiber.session().createQuery("select read.tpr, read.tpr.code, read.coefficient, read.previousDate, read.previousValue, read.previousType.code, read.presentDate, read.presentValue, read.presentType.code, read.id from RegisterRead read where read.bill = :bill and read.units.int = :units order by read.presentDate.date").setEntity('bill', bill).setInteger('units', 0).list():
+                            tpr = read[0]
+                            tpr_code = read[1]
+                            if tpr_code not in tpr_codes:
+                                summary['problem'] += "The TPR " + str(tpr) + " from the register read does not match any of the TPRs associated with the MPAN. "
+
+                            coefficient = read[2].doubleValue()
+                            previous_date = read[3].getNext()
+                            previous_value = read[4].doubleValue()
+                            previous_type = read[5]
+                            present_date = read[6]
+                            present_value = read[7].doubleValue()
+                            present_type = read[8]
+
+                            if present_date.before(start_date) or previous_date.after(finish_date):
+                                continue
+                    
+                            if previous_date.before(bill.getStartDate()):
+                                summary['problem'] += "There's a read before the start of the bill!"
+                            if present_date.after(bill.getFinishDate()):
+                                summary['problem'] += "There's a read after the end of the bill!"
+                            advance = present_value - previous_value
+                            if advance < 0:
+                                summary['problem'] += "Clocked? "
+                                digits = int(Math.log10(previous_value)) + 1
+                                advance = 10 ** digits - previous_value + present_value
+
+                            kwh = advance * coefficient
+                            #s elf.pw.write(' kwh ' + str(kwh))
+                            if previous_date.before(start_date):
+                                chunk_start = start_date
+                            else:
+                                chunk_start = previous_date
+
+                            if present_date.after(finish_date):
+                                chunk_finish = finish_date
+                            else:
+                                chunk_finish = present_date
+
+                            tpr_dict = _tpr_dict(tpr_code, self.pw)
+                            days_of_week = tpr_dict['days-of-week']
+
+                            if tpr_dict['is-gmt']:
+                                cal = utc_cal
+                            else:
+                                cal = ct_cal
+                            if present_type in ACTUAL_READ_TYPES and previous_type in ACTUAL_READ_TYPES:
+                                status = 'A'
+                            else:
+                                status = 'E'
+
+                            hh_date = previous_date.getDate().getTime()
+                            pass_finish = present_date.getDate().getTime()
+
+                            num_hh = 0
+                            chunk_start_millis = chunk_start.getDate().getTime()
+                            chunk_finish_millis = chunk_finish.getDate().getTime()
+                            utc_cal.setTimeInMillis(hh_date)
+
+                            part_hh = []
+                            while not hh_date > pass_finish:
+                                ct_cal.setTimeInMillis(hh_date)
+                                utc_cal.add(Calendar.YEAR, year_advance)
+                                ct_cal.add(Calendar.YEAR, year_advance)
+                                decimal_hour = cal.get(11) + float(cal.get(12)) / 60
+                                fractional_month = cal.get(Calendar.MONTH) * 100 + cal.get(Calendar.DAY_OF_MONTH)
+                                for ci in days_of_week[cal.get(Calendar.DAY_OF_WEEK)]:
+                                    if ((ci['start-hour'] < ci['end-hour'] and ci['start-hour'] <= decimal_hour < ci['end-hour']) or (ci['start-hour'] >= ci['end-hour'] and (ci['start-hour'] <= decimal_hour or decimal_hour < ci['end-hour']))) and ci['start-month'] <= fractional_month <= ci['end-month']:
+                                        num_hh += 1
+                                        if chunk_start_millis <= hh_date <= chunk_finish_millis:
+                                            utc_day = utc_cal.get(Calendar.DAY_OF_MONTH)
+                                            part_hh.append({'imp-msp-kvarh': 0, 'imp-msp-kvar': 0, 'exp-msp-kvarh': 0, 'exp-msp-kvar': 0, 'hist-start-date': chunk_start, 'start-date': utc_cal.getTime(), 'ct-day': ct_cal.get(5), 'utc-month': utc_cal.get(2), 'utc-day': utc_day, 'utc-decimal-hour': utc_cal.get(11) + float(utc_cal.get(12)) / 60, 'utc-year': utc_cal.get(Calendar.YEAR), 'utc-hour': utc_cal.get(Calendar.HOUR_OF_DAY), 'utc-minute': utc_cal.get(Calendar.MINUTE), 'ct-year': ct_cal.get(Calendar.YEAR), 'ct-month': ct_cal.get(2), 'ct-decimal-hour': ct_cal.get(11) + float(ct_cal.get(12)) / 60, 'ct-day-of-week': ct_cal.get(7), 'utc-day-of-week': utc_cal.get(7)})
+                                        break
+                                hh_date = HhStartDate.getNext(utc_cal, hh_date)
+                            #s elf.pw.println(str(System.currentTimeMillis()) + " finished inner loop ")
+
+                            #s elf.pw.println('pass count ' + str(pass_count) + '  len(data_hh) ' + str(len(data_hh)))
+
+                            if num_hh > 0:
+                                kwh = float(kwh) / float(num_hh)
+                                for datum in part_hh:
+                                    datum.update({'msp-kw': kwh * 2, 'msp-kwh': kwh, 'hist-kwh': kwh, 'status': status})
+                            #s elf.pw.println(str(System.currentTimeMillis()) + " done bills ")
+                            data_hh += part_hh
+
             else:
-                imp_pref = 'anti_'
-                exp_pref = ''
-            stmt = con.prepareStatement("select sum(case when channel.is_import and channel.is_kwh then hh_datum.value else 0 end) as " + imp_pref + "kwh, max(case when channel.is_import and channel.is_kwh then hh_datum.status else '' end) as " + imp_pref + "status, sum(case when channel.is_import and not channel.is_kwh then hh_datum.value else 0 end) as imp_kvarh, sum(case when not channel.is_import and channel.is_kwh then hh_datum.value else 0 end) as " + exp_pref + "kwh, max(case when not channel.is_import and channel.is_kwh then hh_datum.status else '' end) as " + exp_pref + "status, sum(case when not channel.is_kwh and not channel.is_import then hh_datum.value else 0  end) as exp_kvarh, hh_datum.start_date from hh_datum, channel, supply_generation where hh_datum.channel_id = channel.id and channel.supply_generation_id = supply_generation.id and supply_generation.supply_id = ? and hh_datum.start_date >= ? and hh_datum.start_date <= ? group by hh_datum.start_date order by hh_datum.start_date", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.CLOSE_CURSORS_AT_COMMIT)
-            stmt.setLong(1, self.supply.getId())
-            stmt.setTimestamp(2, Timestamp(history_start.getDate().getTime()))
-            stmt.setTimestamp(3, Timestamp(history_finish.getDate().getTime()))
-            #stmt.setFetchSize(100)
-            #s elf.pw.println("whole data: about to execute query, " + str(System.currentTimeMillis()))
-            rs = stmt.executeQuery()
-            #s elf.pw.println("whole data: starting loop, " + str(System.currentTimeMillis()))
-            datum_generator = _datum_generator(year_advance, self.pw)
+                #s elf.pw.println("whole data: about to prepare query, " +  str(System.currentTimeMillis()))
+                con = Hiber.session().connection()
+                if self.is_import:
+                    imp_pref = ''
+                    exp_pref = 'anti_'
+                else:
+                    imp_pref = 'anti_'
+                    exp_pref = ''
+                stmt = con.prepareStatement("select sum(case when channel.is_import and channel.is_kwh then hh_datum.value else 0 end) as " + imp_pref + "kwh, max(case when channel.is_import and channel.is_kwh then hh_datum.status else '' end) as " + imp_pref + "status, sum(case when channel.is_import and not channel.is_kwh then hh_datum.value else 0 end) as imp_kvarh, sum(case when not channel.is_import and channel.is_kwh then hh_datum.value else 0 end) as " + exp_pref + "kwh, max(case when not channel.is_import and channel.is_kwh then hh_datum.status else '' end) as " + exp_pref + "status, sum(case when not channel.is_kwh and not channel.is_import then hh_datum.value else 0  end) as exp_kvarh, hh_datum.start_date from hh_datum, channel, supply_generation where hh_datum.channel_id = channel.id and channel.supply_generation_id = supply_generation.id and supply_generation.supply_id = ? and hh_datum.start_date >= ? and hh_datum.start_date <= ? group by hh_datum.start_date order by hh_datum.start_date", ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY, ResultSet.CLOSE_CURSORS_AT_COMMIT)
+                stmt.setLong(1, self.supply.getId())
+                stmt.setTimestamp(2, Timestamp(block_start.getDate().getTime()))
+                stmt.setTimestamp(3, Timestamp(block_finish.getDate().getTime()))
+                #stmt.setFetchSize(100)
+                #s elf.pw.println("whole data: about to execute query, " + str(System.currentTimeMillis()))
+                rs = stmt.executeQuery()
+                #s elf.pw.println("whole data: starting loop, " + str(System.currentTimeMillis()))
+                datum_generator = _datum_generator(year_advance, self.pw)
 
-            while rs.next():
-                hh_start_date = rs.getTimestamp('start_date')
-                msp_kwh = rs.getBigDecimal('kwh').doubleValue()
-                anti_msp_kwh = rs.getBigDecimal('anti_kwh').doubleValue()
-                imp_kvarh = rs.getBigDecimal('imp_kvarh').doubleValue()
-                exp_kvarh = rs.getBigDecimal('exp_kvarh').doubleValue()
-                status = rs.getString('status')
+                while rs.next():
+                    hh_start_date = rs.getTimestamp('start_date')
+                    msp_kwh = rs.getBigDecimal('kwh').doubleValue()
+                    anti_msp_kwh = rs.getBigDecimal('anti_kwh').doubleValue()
+                    imp_kvarh = rs.getBigDecimal('imp_kvarh').doubleValue()
+                    exp_kvarh = rs.getBigDecimal('exp_kvarh').doubleValue()
+                    status = rs.getString('status')
 
-                datum = datum_generator(hh_start_date.getTime()).copy()
-                datum.update({'status': status, 'imp-msp-kvarh': imp_kvarh, 'imp-msp-kvar': imp_kvarh * 2, 'exp-msp-kvarh': exp_kvarh, 'exp-msp-kvar': exp_kvarh * 2, 'anti-msp-kwh': anti_msp_kwh, 'anti-msp-kw': anti_msp_kwh * 2, 'msp-kw': msp_kwh * 2, 'msp-kwh': msp_kwh, 'hist-kwh': msp_kwh})
-                data_hh.append(datum)
+                    datum = datum_generator(hh_start_date.getTime()).copy()
+                    datum.update({'status': status, 'imp-msp-kvarh': imp_kvarh, 'imp-msp-kvar': imp_kvarh * 2, 'exp-msp-kvarh': exp_kvarh, 'exp-msp-kvar': exp_kvarh * 2, 'anti-msp-kwh': anti_msp_kwh, 'anti-msp-kw': anti_msp_kwh * 2, 'msp-kw': msp_kwh * 2, 'msp-kwh': msp_kwh, 'hist-kwh': msp_kwh})
+                    data_hh.append(datum)
 
-            rs.close()
-            stmt.close()
+                rs.close()
+                stmt.close()
 
 
-        #s elf.pw.println(" data_hh " + str(data_hh))
+            #s elf.pw.println(" data_hh " + str(data_hh))
       
         if len(data_hh) == 0:
-            datum = _datum_generator(year_advance, self.pw)(history_finish.getDate().getTime()).copy()
+            datum = _datum_generator(year_advance, self.pw)(block_finish.getDate().getTime()).copy()
             datum.update({'status': 'E', 'used-kwh': 0, 'hist-kwh': 0, 'msp-kwh': 0, 'gsp-kwh': 0, 'msp-kw': 0,'anti-msp-kw': 0,'anti-msp-kwh': 0, 'imp-msp-kvarh': 0, 'imp-msp-kvar': 0, 'exp-msp-kvarh': 0, 'exp-msp-kvar': 0})
             data_hh.append(datum)
 
