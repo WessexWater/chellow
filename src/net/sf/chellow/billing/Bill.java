@@ -23,7 +23,6 @@ package net.sf.chellow.billing;
 
 import java.math.BigDecimal;
 import java.net.URI;
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashSet;
@@ -43,7 +42,6 @@ import net.sf.chellow.monad.types.MonadDate;
 import net.sf.chellow.monad.types.MonadUri;
 import net.sf.chellow.monad.types.UriPathElement;
 import net.sf.chellow.physical.HhStartDate;
-import net.sf.chellow.physical.Mpan;
 import net.sf.chellow.physical.MpanCore;
 import net.sf.chellow.physical.PersistentEntity;
 import net.sf.chellow.physical.RawRegisterRead;
@@ -51,7 +49,6 @@ import net.sf.chellow.physical.ReadType;
 import net.sf.chellow.physical.RegisterRead;
 import net.sf.chellow.physical.RegisterReads;
 import net.sf.chellow.physical.Supply;
-import net.sf.chellow.physical.SupplyGeneration;
 import net.sf.chellow.physical.Tpr;
 import net.sf.chellow.physical.Units;
 import net.sf.chellow.ui.GeneralImport;
@@ -432,31 +429,6 @@ public class Bill extends PersistentEntity implements Urlable {
 			HhStartDate startDate, HhStartDate finishDate, BigDecimal kwh,
 			BigDecimal net, BigDecimal vat, BigDecimal gross, BillType type,
 			String breakdown) throws HttpException {
-		for (SupplyGeneration generation : supply.getGenerations(startDate,
-				finishDate)) {
-			List<Long> contractIds = new ArrayList<Long>();
-			HhdcContract hhdcContract = generation.getHhdcContract();
-			if (hhdcContract != null) {
-				contractIds.add(hhdcContract.getId());
-			}
-			MopContract mopContract = generation.getMopContract();
-			if (mopContract != null) {
-				contractIds.add(mopContract.getId());
-			}
-			for (Mpan mpan : generation.getMpans()) {
-				contractIds.add(mpan.getSupplierContract().getId());
-			}
-			if (!contractIds.contains(batch.getContract().getId())) {
-				throw new UserException(
-						"For the bill "
-								+ getId()
-								+ " of batch "
-								+ batch.getId()
-								+ " of contract "
-								+ batch.getContract().getId()
-								+ " there's no matching contract for one or more of the supply generations.");
-			}
-		}
 		setReference(reference);
 		setAccount(account);
 		if (issueDate == null) {
