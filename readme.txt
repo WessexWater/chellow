@@ -11,7 +11,7 @@ Chellow is released under the GPL.
 
 Requirements
 ------------
-PostgreSQL 8.4.8 with JDBC Driver PostgreSQL 8.4 JDBC4 (build 702)
+PostgreSQL 8.4.9 with JDBC Driver PostgreSQL 8.4 JDBC4 (build 702)
 OpenJDK 6b20 in server mode
 Apache Tomcat 6.0.24 (with default configuration)
 
@@ -34,10 +34,10 @@ Installation
 4. Deploy the file chellow.war on your servlet container.
 
 
-Upgrade From Version 482
+Upgrade From Version 543
 ------------------------
 1. Upgrade your system so that it meets the requirements above.
-2. Copy the report at the bottom of this file, and run it with the following parameters to export the user data:
+2. Copy the report at the bottom of this file, and run it to export the user data:
 
 /reports/<report number>/output/
 
@@ -100,7 +100,7 @@ def print_batches(contract, role_name):
         bills = bills_query.setEntity('batch', batch).scroll()
         while bills.next():
             bill = bills.get(0)
-            values = ['insert', 'bill', role_name, contract.getName(), batch.getReference(), bill.getSupply().getMpanCores().iterator().next(), MonadDate(bill.getIssueDate()), bill.getStartDate(), bill.getFinishDate(), bill.getNet(), bill.getVat(), BigDecimal(0), bill.getAccount(), bill.getReference(), bill.getType(), bill.getBreakdown(), bill.getKwh()]
+            values = ['insert', 'bill', role_name, contract.getName(), batch.getReference(), bill.getSupply().getMpanCores().iterator().next(), MonadDate(bill.getIssueDate()), bill.getStartDate(), bill.getFinishDate(), bill.getNet(), bill.getVat(), bill.getGross(), bill.getAccount(), bill.getReference(), bill.getType(), bill.getBreakdown(), bill.getKwh()]
             reads = reads_query.setEntity('bill', bill).scroll()
             while reads.next():
                 values += [reads.get(i) for i in range_11]
