@@ -200,11 +200,6 @@ public class HhDataImportProcess extends Thread implements Urlable,
 		throw new NotFoundException();
 	}
 
-	public MonadUri getEditUri() throws HttpException {
-		return getHhdcContract().getHhDataImportProcessesInstance().getEditUri()
-				.resolve(getUriId()).append("/");
-	}
-
 	private HhdcContract getHhdcContract() throws HttpException {
 		return HhdcContract.getHhdcContract(hhdcContractId);
 	}
@@ -257,6 +252,12 @@ public class HhDataImportProcess extends Thread implements Urlable,
 
 	@Override
 	public URI getViewUri() throws HttpException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public MonadUri getEditUri() throws HttpException {
 		// TODO Auto-generated method stub
 		return null;
 	}

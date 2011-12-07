@@ -684,21 +684,22 @@ def totalElement(account, startDate, finishDate):
 	<test name="Import hh data">
 		<!-- Check it gives a sensible error message if the files doesn't start 
 			with #F2 -->
-		<request path="/chellow/hhdc-contracts/0/hh-data-imports/"
-			method="post">
+		<request path="/chellow/reports/211/output/" method="post">
+			<control name="hhdc-contract-id" value="0" />
 			<control type="file" name="import-file" value="no_hash.df2" />
 			<regex pattern="The first line must be '#F2'" />
 			<response-code value="418" />
 		</request>
 
 		<!-- Import some hh Stark DF2 data -->
-		<request path="/chellow/hhdc-contracts/0/hh-data-imports/"
-			method="post">
+		<request path="/chellow/reports/211/output/" method="post">
+			<control name="hhdc-contract-id" value="0" />
 			<control type="file" name="import-file" value="hh_data.df2" />
 			<response-code value="303" />
-			<regex pattern="/hhdc-contracts/0/hh-data-imports/1/" />
+			<regex pattern="/reports/65/output/\?hhdc-contract-id=0&amp;process-id=0" />
 		</request>
-		<request path="/chellow/hhdc-contracts/0/hh-data-imports/1/">
+		<request
+			path="/chellow/reports/65/output/?hhdc-contract-id=0&amp;process-id=0">
 			<refresh />
 			<!-- Check it's loaded ok and has ignored the blank line and the #F2 line -->
 			<regex pattern="The import has completed.*successfully." />
@@ -711,14 +712,14 @@ def totalElement(account, startDate, finishDate):
 			<response-code value="200" />
 		</request>
 		<!-- Check if zipped hh data imports ok -->
-		<request path="/chellow/hhdc-contracts/0/hh-data-imports/"
-			method="post">
+		<request path="/chellow/reports/211/output/" method="post">
+			<control name="hhdc-contract-id" value="0" />
 			<control type="file" name="import-file" value="hh_data.zip" />
 			<response-code value="303" />
 		</request>
 		<!-- Do same thing, testing if ok with upper case file extension -->
-		<request path="/chellow/hhdc-contracts/0/hh-data-imports/"
-			method="post">
+		<request path="/chellow/reports/211/output/" method="post">
+			<control name="hhdc-contract-id" value="0" />
 			<control type="file" name="import-file" value="hh_data_ucase.ZIP" />
 			<response-code value="303" />
 		</request>
@@ -727,13 +728,14 @@ def totalElement(account, startDate, finishDate):
 		<!-- This relies on the datum 15/11/2005,00:30,1.0,A being already loaded, 
 			with a gap before it. -->
 
-		<request path="/chellow/hhdc-contracts/0/hh-data-imports/"
-			method="post">
+		<request path="/chellow/reports/211/output/" method="post">
+			<control name="hhdc-contract-id" value="0" />
 			<control type="file" name="import-file" value="missing.df2" />
-			<regex pattern="/chellow/hhdc-contracts/0/hh-data-imports/4/" />
+			<regex pattern="/reports/65/output/\?hhdc-contract-id=0&amp;process-id=3" />
 			<response-code value="303" />
 		</request>
-		<request path="/chellow/hhdc-contracts/0/hh-data-imports/4/">
+		<request
+			path="/chellow/reports/65/output/?hhdc-contract-id=0&amp;process-id=3">
 			<refresh />
 			<regex pattern="The import has completed.*successfully." />
 			<response-code value="200" />
@@ -742,13 +744,15 @@ def totalElement(account, startDate, finishDate):
 	<test name="Do we handle BST ok?">
 		<!-- This relies on the default timezone being BST -->
 
-		<request path="/chellow/hhdc-contracts/0/hh-data-imports/"
-			method="post">
+		<request path="/chellow/reports/211/output/" method="post">
+			<control name="hhdc-contract-id" value="0" />
 			<control type="file" name="import-file" value="hh_data_timezone.df2" />
-			<regex pattern="/chellow/hhdc-contracts/0/hh-data-imports/5/" />
+			<regex
+				pattern="/chellow/reports/65/output/\?hhdc-contract-id=0&amp;process-id=4" />
 			<response-code value="303" />
 		</request>
-		<request path="/chellow/hhdc-contracts/0/hh-data-imports/5/">
+		<request
+			path="/chellow/reports/65/output/?hhdc-contract-id=0&amp;process-id=4">
 			<!-- Check it's loaded ok -->
 			<refresh />
 			<regex pattern="The import has completed.*successfully." />
@@ -760,13 +764,15 @@ def totalElement(account, startDate, finishDate):
 	<!-- here not okay -->
 	<test name="Actual reads snags combined properly">
 		<!-- Test that 3 non-actual reads in a row generate a single snag -->
-		<request path="/chellow/hhdc-contracts/0/hh-data-imports/"
-			method="post">
+		<request path="/chellow/reports/211/output/" method="post">
+			<control name="hhdc-contract-id" value="0" />
 			<control type="file" name="import-file" value="hh_data_not_actual.df2" />
-			<regex pattern="/chellow/hhdc-contracts/0/hh-data-imports/6/" />
+			<regex
+				pattern="/chellow/reports/65/output/\?hhdc-contract-id=0&amp;process-id=5" />
 			<response-code value="303" />
 		</request>
-		<request path="/chellow/hhdc-contracts/0/hh-data-imports/6/">
+		<request
+			path="/chellow/reports/65/output/?hhdc-contract-id=0&amp;process-id=5">
 			<refresh />
 			<regex pattern="The import has completed.*successfully." />
 			<response-code value="200" />
@@ -779,12 +785,13 @@ def totalElement(account, startDate, finishDate):
 				pattern='&lt;td&gt;Missing&lt;/td&gt;&lt;td&gt;2003-08-03T00:00Z&lt;/td&gt;&lt;td&gt;2005-12-15T06:30Z&lt;/td&gt;' />
 			<response-code value="200" />
 		</request>
-		<request path="/chellow/hhdc-contracts/0/hh-data-imports/"
-			method="post">
+		<request path="/chellow/reports/211/output/" method="post">
+			<control name="hhdc-contract-id" value="0" />
 			<control type="file" name="import-file" value="hh_data_not_actual2.df2" />
 			<response-code value="303" />
 		</request>
-		<request path="/chellow/hhdc-contracts/0/hh-data-imports/7/">
+		<request
+			path="/chellow/reports/65/output/?hhdc-contract-id=0&amp;process-id=6">
 			<refresh />
 			<regex pattern="The import has completed.*successfully." />
 			<response-code value="200" />
@@ -798,12 +805,13 @@ def totalElement(account, startDate, finishDate):
 	</test>
 	<test name="Importing Stark CSV data">
 		<!-- Test if a simple Stark CSV HH file can be imported -->
-		<request path="/chellow/hhdc-contracts/0/hh-data-imports/"
-			method="post">
+		<request path="/chellow/reports/211/output/" method="post">
+			<control name="hhdc-contract-id" value="0" />
 			<control type="file" name="import-file" value="hh_data.stark.csv" />
 			<response-code value="303" />
 		</request>
-		<request path="/chellow/hhdc-contracts/0/hh-data-imports/8/">
+		<request
+			path="/chellow/reports/65/output/?hhdc-contract-id=0&amp;process-id=7">
 			<refresh />
 			<regex pattern="The import has completed.*successfully." />
 			<response-code value="200" />
@@ -815,24 +823,30 @@ def totalElement(account, startDate, finishDate):
 				pattern='&lt;td&gt;2005-09-15T00:00&lt;/td&gt;&lt;td&gt;1.0&lt;/td&gt;&lt;td&gt;A&lt;/td&gt;' />
 		</request>
 	</test>
-	<test>
+	<test name="Various DF2 tests.">
 		<!-- Check it gives a sensible error message if the comma after the value 
 			is missing -->
-		<request path="/chellow/hhdc-contracts/0/hh-data-imports/"
-			method="post">
+		<request path="/chellow/reports/211/output/" method="post">
+			<control name="hhdc-contract-id" value="0" />
 			<control type="file" name="import-file" value="hh_data_malformed.df2" />
+			<regex pattern="/reports/65/output/\?hhdc-contract-id=0&amp;process-id=8" />
+			<response-code value="303" />
+		</request>
+		<request
+			path="/chellow/reports/65/output/?hhdc-contract-id=0&amp;process-id=8">
 			<regex pattern="Problem at line number: 4" />
-			<response-code value="418" />
+			<response-code value="200" />
 		</request>
 
 		<!-- Check it gives a sensible error message if the first mpan is malformed -->
-		<request path="/chellow/hhdc-contracts/0/hh-data-imports/"
-			method="post">
+		<request path="/chellow/reports/211/output/" method="post">
+			<control name="hhdc-contract-id" value="0" />
 			<control type="file" name="import-file" value="hh_data_bad_beginning.df2" />
-			<regex pattern="/chellow/hhdc-contracts/0/hh-data-imports/10/" />
+			<regex pattern="/reports/65/output/\?hhdc-contract-id=0&amp;process-id=9" />
 			<response-code value="303" />
 		</request>
-		<request path="/chellow/hhdc-contracts/0/hh-data-imports/10/">
+		<request
+			path="/chellow/reports/65/output/?hhdc-contract-id=0&amp;process-id=9">
 			<refresh />
 			<regex
 				pattern="The MPAN core \(2204707514535,,,\) must contain exactly 13 digits" />
@@ -840,13 +854,14 @@ def totalElement(account, startDate, finishDate):
 		</request>
 
 		<!-- Check sensible error message if header but no data -->
-		<request path="/chellow/hhdc-contracts/0/hh-data-imports/"
-			method="post">
+		<request path="/chellow/reports/211/output/" method="post">
+			<control name="hhdc-contract-id" value="0" />
 			<control type="file" name="import-file" value="hh_data_header_but_no_data.df2" />
-			<regex pattern="/chellow/hhdc-contracts/0/hh-data-imports/11/" />
+			<regex pattern="/reports/65/output/\?hhdc-contract-id=0&amp;process-id=10" />
 			<response-code value="303" />
 		</request>
-		<request path="/chellow/hhdc-contracts/0/hh-data-imports/11/">
+		<request
+			path="/chellow/reports/65/output/?hhdc-contract-id=0&amp;process-id=10">
 			<refresh />
 			<regex pattern="The import has completed.*successfully\." />
 			<response-code value="200" />
@@ -961,13 +976,14 @@ def totalElement(account, startDate, finishDate):
 			<control name="ignore" value="Ignore" />
 			<response-code value="200" />
 		</request>
-		<request path="/chellow/hhdc-contracts/0/hh-data-imports/"
-			method="post">
+		<request path="/chellow/reports/211/output/" method="post">
+			<control name="hhdc-contract-id" value="0" />
 			<control type="file" name="import-file" value="hh_data.df2" />
-			<regex pattern="/chellow/hhdc-contracts/0/hh-data-imports/12/" />
+			<regex pattern="/reports/65/output/\?hhdc-contract-id=0&amp;process-id=11" />
 			<response-code value="303" />
 		</request>
-		<request path="/chellow/hhdc-contracts/0/hh-data-imports/12/">
+		<request
+			path="/chellow/reports/65/output/?hhdc-contract-id=0&amp;process-id=11">
 			<refresh />
 			<regex pattern="The import has completed.*successfully" />
 			<response-code value="200" />
@@ -1099,13 +1115,15 @@ def virtual_bill(supply_source):
 		</request>
 	</test>
 	<test name="Test of BGlobal HH data import">
-		<request path="/chellow/hhdc-contracts/0/hh-data-imports/"
-			method="post">
+		<request path="/chellow/reports/211/output/" method="post">
+			<control name="hhdc-contract-id" value="0" />
 			<control type="file" name="import-file" value="hh_data.bg.csv" />
 			<response-code value="303" />
-			<regex pattern="/chellow/hhdc-contracts/0/hh-data-imports/13/" />
+			<regex
+				pattern="/chellow/reports/65/output/\?hhdc-contract-id=0&amp;process-id=12" />
 		</request>
-		<request path="/chellow/hhdc-contracts/0/hh-data-imports/13/">
+		<request
+			path="/chellow/reports/65/output/?hhdc-contract-id=0&amp;process-id=12">
 			<refresh />
 			<regex pattern="The import has completed.*successfully." />
 			<response-code value="200" />
@@ -1944,12 +1962,12 @@ def triad_estimates():
 			<control name="start-year" value="2010" />
 			<control name="start-month" value="04" />
 			<control name="start-day" value="01" />
-			<regex pattern="/chellow/dnos/379/contracts/83/" />
+			<regex pattern="/chellow/dnos/379/contracts/93/" />
 			<response-code value="303" />
 		</request>
 
 		<!-- Check start time of rate script -->
-		<request path="/chellow/dnos/379/contracts/83/rate-scripts/393/">
+		<request path="/chellow/dnos/379/contracts/93/rate-scripts/411/">
 			<regex
 				pattern='&lt;select name="start-hour"&gt;&lt;option value="00" selected&gt;00&lt;/option&gt;' />
 			<regex
@@ -1958,19 +1976,19 @@ def triad_estimates():
 		</request>
 
 		<!-- Insert rate script -->
-		<request path="/chellow/dnos/379/contracts/83/rate-scripts/"
+		<request path="/chellow/dnos/379/contracts/93/rate-scripts/"
 			method="post">
 			<control name="start-year" value="2010" />
 			<control name="start-month" value="05" />
 			<control name="start-day" value="01" />
 			<control name="start-hour" value="00" />
 			<control name="start-minute" value="00" />
-			<regex pattern="/chellow/dnos/379/contracts/83/rate-scripts/395/" />
+			<regex pattern="/chellow/dnos/379/contracts/93/rate-scripts/413/" />
 			<response-code value="303" />
 		</request>
 
 		<!-- Delete rate script -->
-		<request path="/chellow/dnos/379/contracts/83/rate-scripts/395/"
+		<request path="/chellow/dnos/379/contracts/93/rate-scripts/413/"
 			method="post">
 			<control name="delete" value="Delete" />
 			<response-code value="303" />
@@ -2643,13 +2661,14 @@ def import_virtual_bill(supply_source):
 		</request>
 	</test>
 	<test name="Try out simple.csv hh import format.">
-		<request path="/chellow/hhdc-contracts/0/hh-data-imports/"
-			method="post">
+		<request path="/chellow/reports/211/output/" method="post">
+			<control name="hhdc-contract-id" value="0" />
 			<control type="file" name="import-file" value="hh.simple.csv" />
 			<response-code value="303" />
-			<regex pattern="/chellow/hhdc-contracts/0/hh-data-imports/14/" />
+			<regex pattern="/reports/65/output/\?hhdc-contract-id=0&amp;process-id=13" />
 		</request>
-		<request path="/chellow/hhdc-contracts/0/hh-data-imports/14/">
+		<request
+			path="/chellow/reports/65/output/?hhdc-contract-id=0&amp;process-id=13">
 			<refresh />
 			<regex pattern="The import has completed.*successfully." />
 			<response-code value="200" />
@@ -2714,20 +2733,20 @@ def import_virtual_bill(supply_source):
 			<control name="start-minute" value="00" />
 			<control name="insert" value="Insert" />
 
-			<regex pattern="/chellow/non-core-contracts/39/rate-scripts/397/" />
+			<regex pattern="/chellow/non-core-contracts/39/rate-scripts/415/" />
 			<response-code value="303" />
 		</request>
 		<request
-			path="/chellow/non-core-contracts/39/rate-scripts/397/?view=confirm-delete">
+			path="/chellow/non-core-contracts/39/rate-scripts/415/?view=confirm-delete">
 			<regex pattern="Are you sure you want to delete this rate script\?" />
 			<response-code value="200" />
 		</request>
-		<request path="/chellow/non-core-contracts/39/rate-scripts/397/"
+		<request path="/chellow/non-core-contracts/39/rate-scripts/415/"
 			method="post">
 			<control name="delete" value="Delete" />
 			<response-code value="303" />
 		</request>
-		<request path="/chellow/non-core-contracts/39/rate-scripts/397/">
+		<request path="/chellow/non-core-contracts/39/rate-scripts/415/">
 			<response-code value="404" />
 		</request>
 	</test>
@@ -2741,10 +2760,10 @@ def import_virtual_bill(supply_source):
 			<control name="start-minute" value="00" />
 			<control name="insert" value="Insert" />
 
-			<regex pattern="/chellow/non-core-contracts/39/rate-scripts/399/" />
+			<regex pattern="/chellow/non-core-contracts/39/rate-scripts/417/" />
 			<response-code value="303" />
 		</request>
-		<request path="/chellow/non-core-contracts/39/rate-scripts/399/">
+		<request path="/chellow/non-core-contracts/39/rate-scripts/417/">
 			<regex
 				pattern='&lt;input name="finish-year" size="4" maxlength="4" value="2000"&gt;' />
 
@@ -2754,7 +2773,7 @@ def import_virtual_bill(supply_source):
 
 			<response-code value="200" />
 		</request>
-		<request path="/chellow/non-core-contracts/39/rate-scripts/399/"
+		<request path="/chellow/non-core-contracts/39/rate-scripts/417/"
 			method="post">
 			<control name="delete" value="Delete" />
 			<response-code value="303" />
@@ -2826,13 +2845,14 @@ def import_virtual_bill(supply_source):
 		</request>
 	</test>
 	<test name="Check 'no channel' error when importing hh data.">
-		<request path="/chellow/hhdc-contracts/0/hh-data-imports/"
-			method="post">
+		<request path="/chellow/reports/211/output/" method="post">
+			<control name="hhdc-contract-id" value="0" />
 			<control type="file" name="import-file" value="hh-no-channel.simple.csv" />
 			<response-code value="303" />
-			<regex pattern="/chellow/hhdc-contracts/0/hh-data-imports/15/" />
+			<regex pattern="/reports/65/output/\?hhdc-contract-id=0&amp;process-id=14" />
 		</request>
-		<request path="/chellow/hhdc-contracts/0/hh-data-imports/15/">
+		<request
+			path="/chellow/reports/65/output/?hhdc-contract-id=0&amp;process-id=14">
 			<refresh />
 			<regex
 				pattern="There is no channel for the datum: MPAN core: 22 4862 4512 332, Is import\? false, Is Kwh\? true, Start date 2010-02-04T20:00Z, Value 30.4339, Status A." />

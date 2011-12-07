@@ -7034,66 +7034,73 @@ source.appendChild(mtc.toXml(doc, XmlTree('meterType').put('paymentType').put('d
         <value><![CDATA[report]]></value>
         <value><![CDATA[65]]></value>
         <value><![CDATA[true]]></value>
-        <value><![CDATA[DNO Contracts]]></value>
-        <value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree
-from net.sf.chellow.billing import Dno
+        <value><![CDATA[HHDC Contract HH Data Import]]></value>
+        <value><![CDATA[from net.sf.chellow.billing import HhdcContract
+from net.sf.chellow.monad import XmlTree, MonadMessage
 
-dno_id = inv.getLong('dno-id')
-dno = Dno.getDno(dno_id)
-contracts_element = doc.createElement('dno-contracts')
-source.appendChild(contracts_element)
-for contract in Hiber.session().createQuery("from DnoContract contract where contract.party = :dno order by contract.startRateScript.startDate.date").setEntity("dno", dno).list():
-    contract_element = contract.toXml(doc)
-    contracts_element.appendChild(contract_element)
-    start_rate_script = contract.getStartRateScript()
-    start_rate_script.setLabel('start')
-    contract_element.appendChild(start_rate_script.toXml(doc))
-    finish_rate_script = contract.getFinishRateScript()
-    finish_rate_script.setLabel('finish')
-    contract_element.appendChild(finish_rate_script.toXml(doc))
-contracts_element.appendChild(dno.toXml(doc))]]></value>
+hhdc_contract_id = inv.getLong('hhdc-contract-id')
+process_id = inv.getLong('process-id')
+
+processes =  inv.getMonad().getServletConfig().getServletContext().getAttribute('net.sf.chellow.hh_import_map')
+
+contract = HhdcContract.getHhdcContract(hhdc_contract_id)
+
+process = processes[hhdc_contract_id][process_id]
+
+process_element = process.to_xml(doc)
+source.appendChild(process_element);
+process_element.appendChild(contract.toXml(doc, XmlTree("party")))
+
+if not process.isAlive():
+    messages = process.messages
+    if len(messages) == 0:
+        successful = True
+    else:
+        successful = False
+    process_element.setAttribute("successful", str(successful))
+
+    for message in messages:
+        process_element.appendChild(MonadMessage(message).toXml(doc))]]></value>
         <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
 <xsl:stylesheet version="1.0"
     xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
     <xsl:output method="html" encoding="US-ASCII"
-        doctype-public="-//W3C//DTD HTML 4.01//EN"
-        doctype-system="http://www.w3.org/TR/html4/strict.dtd" indent="yes" />
+        doctype-public="-//W3C//DTD HTML 4.01//EN" doctype-system="http://www.w3.org/TR/html4/strict.dtd"
+        indent="yes" />
     <xsl:template match="/">
         <html>
             <head>
                 <link rel="stylesheet" type="text/css"
                     href="{/source/request/@context-path}/reports/19/output/" />
+
                 <title>
-                    Chellow &gt; DNOs &gt;
-                    <xsl:value-of select="/source/dno-contracts/dno/@code" />
-                    &gt; Contracts
+                    Chellow &gt; HHDC Contracts &gt;
+                    <xsl:value-of select="/source/hh-data-import/hhdc-contract/@name" />
+                    &gt; HH Data Imports &gt;
+                    <xsl:value-of select="/source/hh-data-import/@uri-id" />
                 </title>
             </head>
             <body>
                 <p>
-                    <a
-                        href="{/source/request/@context-path}/reports/1/output/">
-                        <xsl:value-of
-                            select="'Chellow'" />
+                    <a href="{/source/request/@context-path}/reports/1/output/">
+                        <xsl:value-of select="'Chellow'" />
+                    </a>
+                    &gt;
+                    <a href="{/source/request/@context-path}/reports/113/output/">
+                        <xsl:value-of select="'HHDC Contracts'" />
                     </a>
                     &gt;
                     <a
-                        href="{/source/request/@context-path}/reports/137/output/">
-                        <xsl:value-of select="'DNOs'" />
+                        href="{/source/request/@context-path}/reports/115/output/?hhdc-contract-id={/source/hh-data-import/hhdc-contract/@id}">
+                        <xsl:value-of select="/source/hh-data-import/hhdc-contract/@name" />
                     </a>
                     &gt;
                     <a
-                        href="{/source/request/@context-path}/reports/139/output/?dno-id={/source/dno-contracts/dno/@id}">
-                        <xsl:value-of
-                            select="/source/dno-contracts/dno/@code" />
+                        href="{/source/request/@context-path}/reports/211/output/?hhdc-contract-id={/source/hh-data-import/hhdc-contract/@id}">
+                        <xsl:value-of select="'HH Data Imports'" />
                     </a>
                     &gt;
-<xsl:value-of select="'DNO Contracts ['" />
-                    <a
-                        href="{/source/request/@context-path}/dnos/{/source/dno-contracts/dno/@id}/contracts/">
-                        <xsl:value-of select="'edit'" />
-                    </a>
-                    <xsl:value-of select="']'" />
+                    <xsl:value-of select="/source/hh-data-import/@id" />
                 </p>
                 <br />
                 <xsl:if test="//message">
@@ -7105,41 +7112,27 @@ contracts_element.appendChild(dno.toXml(doc))]]></value>
                         </xsl:for-each>
                     </ul>
                 </xsl:if>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Name</th>
-                            <th>Start Date</th>
-                            <th>Finish Date</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <xsl:for-each
-                            select="/source/dno-contracts/dno-contract">
-                            <tr>
-                                <td><a href="{/source/request/@context-path}/reports/67/output/?dno-contract-id={@id}">
-                                    <xsl:value-of select="@name" /></a>
-                                </td>
-                                <td>
-                                    <xsl:value-of
-                                        select="concat(rate-script[@label='start']/hh-start-date[@label='start']/@year, '-', rate-script[@label='start']/hh-start-date[@label='start']/@month, '-', rate-script[@label='start']/hh-start-date[@label='start']/@day, ' ', rate-script[@label='start']/hh-start-date[@label='start']/@hour, ':', rate-script[@label='start']/hh-start-date[@label='start']/@minute)" />
-                                </td>
-                                <td>
-                                    <xsl:choose>
-                                        <xsl:when
-                                            test="rate-script[@label='finish']/hh-start-date[@label='finish']">
-                                            <xsl:value-of
-                                                select="concat(rate-script[@label='finish']/hh-start-date[@label='finish']/@year, '-', rate-script[@label='finish']/hh-start-date[@label='finish']/@month, '-', rate-script[@label='finish']/hh-start-date[@label='finish']/@day, ' ', rate-script[@label='finish']/hh-start-date[@label='finish']/@hour, ':', rate-script[@label='finish']/hh-start-date[@label='finish']/@minute)" />
-                                        </xsl:when>
-                                        <xsl:otherwise>
-                                            Ongoing
-                                        </xsl:otherwise>
-                                    </xsl:choose>
-                                </td>
-                            </tr>
-                        </xsl:for-each>
-                    </tbody>
-                </table>
+                <p>
+                    <xsl:choose>
+                        <xsl:when test="/source/hh-data-import/@successful">
+
+                            <xsl:choose>
+                                <xsl:when test="/source/hh-data-import/@successful = 'True'">
+
+                                    The import has completed
+                                    successfully.
+                                </xsl:when>
+                                <xsl:otherwise>
+                                    The import didn't complete
+                                    successfully.
+                                </xsl:otherwise>
+                            </xsl:choose>
+                        </xsl:when>
+                        <xsl:otherwise>
+                            <xsl:value-of select="/source/hh-data-import/@progress" />
+                        </xsl:otherwise>
+                    </xsl:choose>
+                </p>
             </body>
         </html>
     </xsl:template>
@@ -10742,7 +10735,7 @@ source.appendChild(contract.toXml(doc, XmlTree('party', XmlTree('participant')).
                         </a>
                     </li>
                     <li>
-                        [<a href="{/source/request/@context-path}/hhdc-contracts/{/source/hhdc-contract/@id}/hh-data-imports/">HH data imports</a>]
+                        [<a href="{/source/request/@context-path}/reports/211/output/?hhdc-contract-id={/source/hhdc-contract/@id}">HH data imports</a>]
                     </li>
                 </ul>
                 <br />
@@ -16613,9 +16606,124 @@ source.setAttribute('year', str(cal.get(Calendar.YEAR)))]]></value>
         <value><![CDATA[report]]></value>
         <value><![CDATA[211]]></value>
         <value><![CDATA[true]]></value>
-        <value><![CDATA[Free 211]]></value>
-        <value><![CDATA[]]></value>
-        <value><![CDATA[]]></value>
+        <value><![CDATA[HHDC Contract HH Data Imports]]></value>
+        <value><![CDATA[from net.sf.chellow.monad import XmlTree
+from net.sf.chellow.billing import NonCoreContract, HhdcContract
+from net.sf.chellow.monad import HttpException, UserException
+from java.lang import Long
+
+debug = ''
+processes =  inv.getMonad().getServletConfig().getServletContext().getAttribute('net.sf.chellow.hh_import_map')
+
+hh_importer_contract = NonCoreContract.getNonCoreContract('hh-importer')
+
+hhdc_contract_id = inv.getLong('hhdc-contract-id')
+contract = HhdcContract.getHhdcContract(hhdc_contract_id)
+
+def document():
+    hh_data_imports_element = doc.createElement("hh-data-imports")
+    source.appendChild(hh_data_imports_element)
+    hh_data_imports_element.appendChild(contract.toXml(doc, XmlTree("party")))
+    contract_processes = processes[contract.getId()]
+    if contract_processes is not None:
+        for process in contract_processes.values():
+            hh_data_imports_element.appendChild(process.to_xml(doc))
+    source.setAttribute('debug', debug)
+
+
+if inv.getRequest().getMethod() == "POST":
+    file_item = inv.getFileItem("import-file")
+    if not inv.isValid():
+        raise UserException(document())
+
+    try:
+        process_id = 0
+        for k, v in processes.iteritems():
+            for prid, proc in v.iteritems():
+                process_id += 1
+
+        hh_import_process = hh_importer_contract.callFunction('create_import_process_from_item', [Long(hhdc_contract_id), process_id, file_item])
+        hh_import_process.start()
+        debug += "started process"
+        #raise UserException("stop")
+        contract_processes = processes[contract.getId()]
+        contract_processes[hh_import_process.process_id] = hh_import_process
+        inv.sendSeeOther("/reports/65/output/?hhdc-contract-id=" + str(contract.getId()) + "&process-id=" + str(hh_import_process.process_id))
+    except HttpException, e:
+        e.setDocument(document())
+        raise e
+else:
+    document()]]></value>
+        <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
+<xsl:stylesheet version="1.0"
+    xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+    <xsl:output method="html" encoding="US-ASCII"
+        doctype-public="-//W3C//DTD HTML 4.01//EN" doctype-system="http://www.w3.org/TR/html4/strict.dtd"
+        indent="yes" />
+    <xsl:template match="/">
+        <html>
+            <head>
+                <link rel="stylesheet" type="text/css"
+                    href="{/source/request/@context-path}/reports/19/output/" />
+                <title>
+                    Chellow &gt; HHDC Contracts
+                    <xsl:value-of select="/source/hh-data-imports/hhdc-contract/@id" />
+                    &gt; HH Data Imports
+                </title>
+            </head>
+            <body>
+                <p>
+                    <a href="{/source/request/@context-path}/reports/1/output/">
+                        <xsl:value-of select="'Chellow'" />
+                    </a>
+                    &gt;
+                    <a href="{/source/request/@context-path}/reports/113/output/">
+                        <xsl:value-of select="'HHDC Contracts'" />
+                    </a>
+                    &gt;
+                    <a
+                        href="{/source/request/@context-path}/reports/115/output/?hhdc-contract-id={/source/hh-data-imports/hhdc-contract/@id}">
+                        <xsl:value-of select="/source/hh-data-imports/hhdc-contract/@name" />
+                    </a>
+                    &gt; HH Data Imports
+                </p>
+                <br />
+                <xsl:if test="/source/@debug"><p><xsl:value-of select="/source/@debug"/></p></xsl:if>
+                <xsl:if test="/source/hh-data-imports/hh-data-import">
+                    <ul>
+                        <xsl:for-each select="/source/hh-data-imports/hh-data-import">
+                            <li>
+                                <a href="{/source/request/@context-path}/reports/65/output/?hhdc-contract-id={/source/hh-data-imports/hhdc-contract/@id}&amp;process-id={@id}">
+                                    <xsl:value-of select="@id" />
+                                </a>
+                            </li>
+                        </xsl:for-each>
+                    </ul>
+                </xsl:if>
+                <xsl:if test="//message[not(../../hh-data-import)]">
+                    <ul>
+                        <xsl:for-each select="//message">
+                            <li>
+                                <xsl:value-of select="@description" />
+                            </li>
+                        </xsl:for-each>
+                    </ul>
+                </xsl:if>
+                <form enctype="multipart/form-data" method="post" action=".">
+                    <fieldset>
+                        <input type="hidden" name="hhdc-contract-id" value="{/source/hh-data-imports/hhdc-contract/@id}"/>
+                        <legend>Import HH data</legend>
+                        <br />
+                        <input type="file" name="import-file" size="45"
+                            value="{/source/request/parameter[@name = 'import-file']}" />
+                        <input type="submit" value="Import" />
+                    </fieldset>
+                </form>
+                <br />
+            </body>
+        </html>
+    </xsl:template>
+</xsl:stylesheet>]]></value>
     </line>
     <line>
         <value><![CDATA[insert]]></value>

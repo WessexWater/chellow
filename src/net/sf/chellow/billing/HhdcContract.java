@@ -29,7 +29,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.Properties;
 
-import net.sf.chellow.hhimport.HhDataImportProcesses;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.InternalException;
@@ -311,14 +310,8 @@ public class HhdcContract extends Contract {
 		inv.sendOk(document());
 	}
 
-	public HhDataImportProcesses getHhDataImportProcessesInstance() {
-		return new HhDataImportProcesses(this);
-	}
-
 	public Urlable getChild(UriPathElement uriId) throws HttpException {
-		if (HhDataImportProcesses.URI_ID.equals(uriId)) {
-			return getHhDataImportProcessesInstance();
-		} else if (RateScripts.URI_ID.equals(uriId)) {
+		if (RateScripts.URI_ID.equals(uriId)) {
 			return new RateScripts(this);
 		} else if (Batches.URI_ID.equals(uriId)) {
 			return new Batches(this);
