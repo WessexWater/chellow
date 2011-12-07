@@ -13165,9 +13165,6 @@ cal.add(Calendar.MINUTE, 30)
 cal.add(Calendar.MONTH, -1 * months)
 start_date = HhStartDate(cal.getTime())
 
-stream_names = ['import-net', 'export-net', 'import-gen', 'export-gen', 'import-3rd-party', 'export-3rd-party', 'msp', 'used', 'used-3rd-party']
-
-
 comterp = PythonInterpreter()
 comterp.exec(computer.getChargeScript())
 
@@ -13182,7 +13179,7 @@ def process_site(site, month_start, month_finish, forecast_date, pw):
     problem = ''
     month_data = {}
 
-    for stream_name in stream_names:
+    for stream_name in ['import-net', 'export-net', 'import-gen', 'export-gen', 'import-3rd-party', 'export-3rd-party', 'msp', 'used', 'used-3rd-party']:
         month_data[stream_name + '-kwh'] = 0
         month_data[stream_name + '-gbp'] = 0
 
@@ -13267,10 +13264,7 @@ def process_site(site, month_start, month_finish, forecast_date, pw):
 
                     #pw.println("starting init from mpan, " + str(System.currentTimeMillis()))
                     supply_source.init_from_mpan(bill_start, bill_finish, import_mpan)
-                    if supply_source.pc_code != '00' and not supply_source.is_amr:
-                        #pw.println('sum msp kwh ' + str(supply_source.summary['sum-msp-kwh']))
-                        month_data['import-net-kwh'] += supply_source.summary['sum-msp-kwh']
-                        month_data['used-kwh'] += supply_source.summary['sum-msp-kwh']
+                    month_data['import-net-kwh'] += supply_source.summary['sum-msp-kwh']
 
                     #pw.println("finished init from mpan, " + str(System.currentTimeMillis()))
                     import_vb_function = comterp.get('contract_function')(supplier_contract, 'import_virtual_bill')
@@ -13283,9 +13277,9 @@ def process_site(site, month_start, month_finish, forecast_date, pw):
                         if 'problem' in v_bill and len(v_bill['problem']) > 0:
                             problem += 'Supplier Problem: ' + v_bill['problem']
 
-                        if 'net-gbp' in v_bill:
+                        try:
                             month_data['import-net-gbp'] += v_bill['net-gbp']
-                        else:
+                        except KeyError:
                             problem += 'For the supply ' + import_mpan.toString() + ' the virtual bill ' + str(v_bill) + ' from the contract ' + supplier_contract.getName() + ' does not contain the net-gbp key.'
                         problem += supply_source.summary['problem']
 
@@ -13336,8 +13330,9 @@ def process_site(site, month_start, month_finish, forecast_date, pw):
         #pw.println("finishing site ds " + str(System.currentTimeMillis()))
 
         month_data['used-gbp'] += month_data['import-net-gbp'] + month_data['msp-gbp'] + month_data['used-3rd-party-gbp']
-        for stream_name in stream_names:
+        for stream_name in ['export-net', 'import-gen', 'export-gen', 'import-3rd-party', 'export-3rd-party', 'msp', 'used-3rd-party']:
             month_data[stream_name + '-kwh'] += site_ds.summary['sum-' + stream_name + '-kwh']
+        month_data['used-kwh'] += month_data['msp-kwh'] + month_data['used-3rd-party-kwh'] + month_data['import-net-kwh']
 
     sources.sort()
     generator_types.sort()
@@ -13347,7 +13342,8 @@ def process_site(site, month_start, month_finish, forecast_date, pw):
     return result
 
 inv.getResponse().setContentType("text/csv")
-inv.getResponse().setHeader('Content-Disposition', 'filename=output.csv;')
+inv.getResponse().setHeader('Content-Disposition', 'attachment; filename="output.csv"')
+
 pw = inv.getResponse().getWriter()
 pw.print("Site Id,Site Name,Associated Site Ids,Sources,Generator Types,Month,Metered Imported kWh,Metered Displaced kWh,Metered Exported kWh,Metered Used kWh,Metered Parasitic kWh,Metered Generated kWh,Metered 3rd Party Import kWh,Metered 3rd Party Export kWh,Metered Imported GBP,Metered Displaced GBP,Metered Exported GBP,Metered Used GBP,Metered 3rd Party Import GBP,Billed Imported kWh,Billed Imported GBP,Metering Type,Problem")
 pw.flush()
