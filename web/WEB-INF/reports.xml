@@ -4469,7 +4469,7 @@ file_date_format = SimpleDateFormat("yyyy-MM-dd'_'HHmm")
 file_date_format.setCalendar(cal)
 
 inv.getResponse().setContentType("text/csv")
-inv.getResponse().setHeader('Content-Disposition', 'filename=bills_' + file_date_format.format(now_date) + '.csv;')
+inv.getResponse().setHeader('Content-Disposition', 'attachment; filename="bills_' + file_date_format.format(now_date) + '.csv"')
 pw = inv.getResponse().getWriter()
 pw.println("Report Start,Report Finish,Supply Id,Import MPAN Core,Export MPAN Core,Contract Name,Batch Reference,Bill Id,Bill From,Bill To,Bill Reference,Bill Issue Date,Bill Type, Bill kWh, Bill Net, Bill VAT, Bill Gross")
 pw.flush()
@@ -4660,7 +4660,7 @@ def mpan_fields(mpan):
 #zout.putNextEntry(ZipEntry('out.xml'))
 
 inv.getResponse().setContentType('text/xml')
-inv.getResponse().setHeader('Content-Disposition', 'attachment; filename=output.xml;')
+inv.getResponse().setHeader('Content-Disposition', 'attachment; filename="output.xml"')
 pw = inv.getResponse().getWriter()
 
 def print_line(values):
@@ -5729,7 +5729,7 @@ computer = NonCoreContract.getNonCoreContract('computer')
 comterp = computer.callFunction('create_comterp', [])
 
 inv.getResponse().setContentType("text/csv")
-inv.getResponse().setHeader('Content-Disposition', 'filename=output.csv;')
+inv.getResponse().setHeader('Content-Disposition', 'attachment; filename="output.csv"')
 year = inv.getInteger('year')
 if not inv.isValid():
     raise UserException()
@@ -6649,7 +6649,7 @@ cal.add(Calendar.MINUTE, 30)
 start_date = HhStartDate(cal.getTime())
 
 inv.getResponse().setContentType("text/csv")
-inv.getResponse().setHeader('Content-Disposition', 'filename=output.csv;')
+inv.getResponse().setHeader('Content-Disposition', 'attachment; filename="output.csv"')
 pw = inv.getResponse().getWriter()
 pw.println("Site Id, Site Name, Associated Site Ids, Sources, Generator Types, From, To, Imported kWh, Displaced kWh, Exported kWh, Used kWh, Parasitic kWh, Generated kWh,Meter Type")
 pw.flush()
@@ -9648,7 +9648,7 @@ if not inv.isValid():
 site_code = site_code.strip()
 
 inv.getResponse().setContentType("text/csv")
-inv.getResponse().addHeader('Content-Disposition', 'attachment; filename="output.csv"')
+inv.getResponse().setHeader('Content-Disposition', 'attachment; filename="output.csv"')
 pw = inv.getResponse().getWriter()
 
 contract = SupplierContract.getSupplierContract(contract_id)
@@ -10121,7 +10121,7 @@ if not inv.isValid():
     raise UserException()
 
 inv.getResponse().setContentType("text/csv")
-inv.getResponse().addHeader('Content-Disposition', 'attachment; filename="output.csv"')
+inv.getResponse().setHeader('Content-Disposition', 'attachment; filename="output.csv"')
 pw = inv.getResponse().getWriter()
 
 computer = NonCoreContract.getNonCoreContract('computer')
@@ -10317,7 +10317,7 @@ def find_contract_type(bill):
     return contract_type
 
 inv.getResponse().setContentType("text/csv")
-inv.getResponse().setHeader('Content-Disposition', 'filename=output.csv;')
+inv.getResponse().setHeader('Content-Disposition', 'attachment; filename="output.csv"')
 pw = inv.getResponse().getWriter()
 pw.println("Batch,Reference, Type, Breakdown, kWh, Net GBP, VAT GBP, Start Date, Finish Date, MPAN Core, Covered From, Covered To, Covered Bills, Covered kWh, Covered Net, Covered VAT, Virtual kWh, Virtual Net, Error GBP, Problem")
 pw.flush()
@@ -12458,7 +12458,7 @@ from java.lang import Long
 from net.sf.chellow.monad.types import MonadDate
 
 inv.getResponse().setContentType("text/csv")
-inv.getResponse().setHeader('Content-Disposition', 'filename=output.csv;')
+inv.getResponse().setHeader('Content-Disposition', 'attachment; filename="output.csv"')
 pw = inv.getResponse().getWriter()
 
 computer = NonCoreContract.getNonCoreContract('computer')
@@ -12510,6 +12510,8 @@ def mpan_bit(query, kvarh_at_md_query, is_import, hh_count_query, num_hh, genera
                     chunk_finish = finish_date
                 else:
                     chunk_finish = month_end
+                #p w.println("chunk start " + str(chunk_start) + " chunk finish " + str(chunk_finish))
+
                 supply_source.init_from_mpan(chunk_start, chunk_finish, mpan)
                 #pw.println("sum gsp " + str(supply_source.summary['sum-gsp-kwh']) + " sum msp " + str(supply_source.summary['sum-msp-kwh']))
                 gsp_kwh += supply_source.summary['sum-gsp-kwh']
@@ -13716,7 +13718,7 @@ else:
     raise UserException("I don't recognize the measurement class.")
 
 inv.getResponse().setContentType('application/zip')
-inv.getResponse().setHeader('Content-Disposition', 'filename=output.zip;')
+inv.getResponse().setHeader('Content-Disposition', 'attachment; filename="output.zip"')
 sout = inv.getResponse().getOutputStream()
 zout = ZipOutputStream(sout)
 pw = PrintWriter(OutputStreamWriter(zout, 'UTF-8'))
@@ -14202,7 +14204,7 @@ comterp = computer.callFunction('create_comterp', [])
 field_names = ['supply-name', 'source-code', 'generator-type', 'month', 'pc-code', 'msn', 'site-code', 'site-name', 'metering-type', 'import-mpan-core', 'metered-import-kwh', 'metered-import-net-gbp', 'metered-import-estimated-kwh', 'billed-import-apportioned-kwh', 'billed-import-apportioned-net-gbp', 'billed-import-raw-kwh', 'billed-import-raw-net-gbp', 'export-mpan-core', 'metered-export-kwh', 'metered-export-estimated-kwh', 'billed-export-apportioned-kwh', 'billed-export-apportioned-net-gbp', 'billed-export-raw-kwh', 'billed-export-raw-net-gbp', 'problem', 'timestamp']
 
 inv.getResponse().setContentType("text/csv")
-inv.getResponse().setHeader('Content-Disposition', 'filename=output.csv;')
+inv.getResponse().setHeader('Content-Disposition', 'attachment; filename="output.csv"')
 pw = inv.getResponse().getWriter()
 pw.println('supply-id,' + ','.join(field_names))
 pw.flush()
@@ -14480,7 +14482,7 @@ computer = NonCoreContract.getNonCoreContract('computer')
 comterp = computer.callFunction('create_comterp', [])
 
 inv.getResponse().setContentType("text/csv")
-inv.getResponse().setHeader('Content-Disposition', 'filename=output.csv;')
+inv.getResponse().setHeader('Content-Disposition', 'attachment; filename="output.csv"')
 year = inv.getInteger('year')
 if not inv.isValid():
     raise UserException()
@@ -14595,7 +14597,7 @@ cal.add(Calendar.MONTH, -1 * months)
 start_date = HhStartDate(cal.getTime())
 
 inv.getResponse().setContentType('application/zip')
-inv.getResponse().setHeader('Content-Disposition', 'filename=output.zip;')
+inv.getResponse().setHeader('Content-Disposition', 'attachment; filename="output.zip"')
 sout = inv.getResponse().getOutputStream()
 zout = ZipOutputStream(sout)
 pw = PrintWriter(OutputStreamWriter(zout, 'UTF-8'))
@@ -14824,7 +14826,7 @@ else:
     raise UserException("I don't recognize the measurement class.")
 
 inv.getResponse().setContentType('application/zip')
-inv.getResponse().setHeader('Content-Disposition', 'filename=output.zip;')
+inv.getResponse().setHeader('Content-Disposition', 'attachment; filename="output.zip"')
 sout = inv.getResponse().getOutputStream()
 zout = ZipOutputStream(sout)
 pw = PrintWriter(OutputStreamWriter(zout, 'UTF-8'))
@@ -15329,7 +15331,7 @@ from com.Ostermiller.util import CSVParser
 
 
 inv.getResponse().setContentType("text/csv")
-inv.getResponse().setHeader('Content-Disposition', 'filename=output.csv;')
+inv.getResponse().setHeader('Content-Disposition', 'attachment; filename="output.csv"')
 pw = inv.getResponse().getWriter()
 
 config = Configuration.getConfiguration()
@@ -16110,7 +16112,7 @@ from org.python.util import PythonInterpreter
 year = inv.getInteger('year')
 
 inv.getResponse().setContentType("text/csv")
-inv.getResponse().setHeader('Content-Disposition', 'filename=output.csv;')
+inv.getResponse().setHeader('Content-Disposition', 'attachment; filename="output.csv"')
 pw = inv.getResponse().getWriter()
 
 pw.println("MPAN Core,Site Id,Site Name,From,To,kWh,Breakdown,Normal Days,Is Normal?")
@@ -16965,7 +16967,7 @@ from org.python.util import PythonInterpreter
 year = inv.getInteger('year')
 
 inv.getResponse().setContentType("text/csv")
-inv.getResponse().setHeader('Content-Disposition', 'filename=output.csv;')
+inv.getResponse().setHeader('Content-Disposition', 'attachment; filename="output.csv"')
 pw = inv.getResponse().getWriter()
 
 pw.print("MPAN Core,Site Id,Site Name,Date,Event,")
@@ -17206,7 +17208,7 @@ file_date_format = SimpleDateFormat("yyyyMMdd'T'HHmm")
 file_date_format.setCalendar(cal)
 
 inv.getResponse().setContentType("text/csv")
-inv.getResponse().setHeader('Content-Disposition', 'filename=reads_' + file_date_format.format(now_date) + '.csv;')
+inv.getResponse().setHeader('Content-Disposition', 'attachment; filename="reads_' + file_date_format.format(now_date) + '.csv"')
 pw = inv.getResponse().getWriter()
 pw.println("Duration Start,Duration Finish,Supply Id,Import MPAN Core,Export MPAN Core,Batch Reference,Bill Id,Bill Reference,Bill Issue Date,Bill Type,Register Read Id,TPR,Coefficient,Previous Read Date,Previous Read Value,Prevous Read Type,Present Read Date,Present Read Value,Present Read Type")
 pw.flush()
@@ -17998,7 +18000,7 @@ from net.sf.chellow.physical import HhStartDate
 from java.text import SimpleDateFormat
 
 inv.getResponse().setContentType("text/csv")
-inv.getResponse().setHeader('Content-Disposition', 'filename=output.csv;')
+inv.getResponse().setHeader('Content-Disposition', 'attachment; filename="output.csv"')
 pw = inv.getResponse().getWriter()
 pw.println("Chellow Id,MPAN Core,Site Code,Site Name,Snag Description,Is Import?,Is kWh?,Start Date,Finish Date,Days Since Snag Finished,Duration Of Snag (Days),Is Ignored?")
 pw.flush()
