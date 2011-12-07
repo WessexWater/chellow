@@ -56182,8 +56182,7 @@ def on_start_up(ctx):
     start_importer_f = comterp.get('contract_function')(hh_importer_contract, 'start_hh_importer_task')
 
     for contract in Hiber.session().createQuery("from HhdcContract contract order by contract.id").list():
-        start_importer_f(ctx, contract)
-]]></value>
+        start_importer_f(ctx, contract)]]></value>
         <value><![CDATA[237]]></value>
         <value><![CDATA[2011-01-06T00:00Z]]></value>
         <value><![CDATA[]]></value>
@@ -111301,6 +111300,18 @@ def triad_dates():
         <value><![CDATA[triad-rates]]></value>
         <value><![CDATA[251]]></value>
         <value><![CDATA[2011-04-01T00:00Z]]></value>
+        <value><![CDATA[def hh_demand_gbp_per_kw():
+    return {
+        '14': 23.811436,
+        '20': 27.567648,
+        '22': 28.408897}]]></value>
+    </line>
+    <line>
+        <value><![CDATA[insert]]></value>
+        <value><![CDATA[non-core-contract-rate-script]]></value>
+        <value><![CDATA[triad-rates]]></value>
+        <value><![CDATA[411]]></value>
+        <value><![CDATA[2012-04-01T00:00Z]]></value>
         <value><![CDATA[def hh_demand_gbp_per_kw():
     return {
         '14': 23.811436,
