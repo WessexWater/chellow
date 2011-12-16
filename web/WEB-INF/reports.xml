@@ -6,7 +6,17 @@
         <value><![CDATA[1]]></value>
         <value><![CDATA[true]]></value>
         <value><![CDATA[Home]]></value>
-        <value><![CDATA[]]></value>
+        <value><![CDATA[from net.sf.chellow.physical import Configuration
+from java.util import Properties
+from java.io import StringReader
+
+config = Configuration.getConfiguration()
+properties = Properties()
+properties.load(StringReader(config.getProperties()))
+
+local_reports_id = properties.get('local.reports')
+if local_reports_id is not None:
+    source.setAttribute('local-reports-id', local_reports_id)]]></value>
         <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
 <xsl:stylesheet version="1.0"
     xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
@@ -196,6 +206,11 @@
                         <a href="{/source/request/@context-path}/reports/">
                             Reports
                         </a>
+                        <xsl:if test="/source/@local-reports-id">
+                        <ul>
+                        <li><a href="{/source/request/@context-path}/reports/{/source/@local-reports-id}/output/">Local Reports</a></li>
+                        </ul>
+                        </xsl:if>
                     </li>
                     <li>General Import / Export
                         <ul>
