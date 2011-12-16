@@ -541,6 +541,11 @@ def hh(summary, hh_list, data_source):
         hh['gsp-kwh'] = laf * hh['msp-kwh']
         hh['gsp-kw'] = hh['gsp-kwh'] * 2
 
+        if hh['ct-decimal-hour'] == 0 and not data_source.is_displaced:
+            bill['duos-fixed-days'] += 1
+            bill['duos-fixed-gbp'] += tariff['gbp-per-mpan-per-day']
+
+
     #pw.println('hh-start-date,"' + hh['start-date'].toString() + '",msp,"' + str(hh['msp-kwh']) + '",laf,"' + str(hh['laf']) + '",gsp,"' + str(hh['gsp-kwh']) + '",slot name,"' + slot_name + '",ct decimal hour,"' + str(hh['ct-decimal-hour']) + '"')
     #data_source.pw.println("22 hh: finish " + str(System.currentTimeMillis() - timing))
 
@@ -566,11 +571,7 @@ def month(bill, whole_data, data_source):
         bill['duos-availability-billed-kva'] = billed_avail
         availability_rate = tariff['gbp-per-kva-per-day']
         bill['duos-availability-rate'] = availability_rate
-        bill['duos-availability-gbp'] = availability_rate * billed_avail * summary['days']
-
-        bill['duos-fixed-days'] = summary['days']
-        bill['duos-fixed-rate'] = tariff['gbp-per-mpan-per-day']
-        bill['duos-fixed-gbp'] = bill['duos-fixed-days'] * bill['duos-fixed-rate']]]></value>
+        bill['duos-availability-gbp'] = availability_rate * billed_avail * summary['days']]]></value>
         <value><![CDATA[17]]></value>
         <value><![CDATA[def lafs():
     return {
@@ -1525,6 +1526,10 @@ def hh(summary, hh_list, data_source):
             bill['duos-reactive-kvarh'] += kvarh
             bill['duos-reactive-gbp'] += kvarh * tariff['gbp-per-kvarh']
 
+        if hh['ct-decimal-hour'] == 0 and not data_source.is_displaced:
+            bill['duos-fixed-days'] += 1
+            bill['duos-fixed-gbp'] += tariff['gbp-per-mpan-per-day']
+
         bill[KEYS[band]['kwh']] += hh['msp-kwh']
         bill[KEYS[band]['gbp']] += tariff[KEYS[band]['tariff-rate']] * hh['msp-kwh']
 
@@ -1559,10 +1564,7 @@ def month(bill, whole_data, data_source):
         bill['duos-availability-billed-kva'] = billed_avail
         availability_rate = tariff['gbp-per-kva-per-day']
         bill['duos-availability-rate'] = availability_rate
-        bill['duos-availability-gbp'] = availability_rate * billed_avail * summary['days']
-        bill['duos-fixed-days'] = summary['days']
-        bill['duos-fixed-rate'] = tariff['gbp-per-mpan-per-day']
-        bill['duos-fixed-gbp'] = bill['duos-fixed-days'] * bill['duos-fixed-rate']]]></value>
+        bill['duos-availability-gbp'] = availability_rate * billed_avail * summary['days']]]></value>
         <value><![CDATA[39]]></value>
         <value><![CDATA[def lafs():
     return {
@@ -3001,6 +3003,9 @@ def hh(summary, hh_list, data_source):
         hh['gsp-kwh'] = laf * hh['msp-kwh']
         hh['gsp-kw'] = hh['gsp-kwh'] * 2
 
+        if hh['ct-decimal-hour'] == 0 and not data_source.is_displaced:
+            bill['duos-fixed-days'] += 1
+            bill['duos-fixed-gbp'] += tariff['gbp-per-mpan-per-day']
 
     #pw.println('hh-start-date,"' + hh['start-date'].toString() + '",msp,"' + str(hh['msp-kwh']) + '",laf,"' + str(hh['laf']) + '",gsp,"' + str(hh['gsp-kwh']) + '",slot name,"' + slot_name + '",ct decimal hour,"' + str(hh['ct-decimal-hour']) + '"')
     #data_source.pw.println("hh " + str(hh_list))
@@ -3013,10 +3018,6 @@ def month(bill, whole_data, data_source):
     rate_script = contract.rateScript(summary['finish-date'])
     tariff = data_source.rate(rate_script, 'tariffs')[data_source.llfc_code]
     if not data_source.is_displaced:
-        bill['duos-fixed-days'] = summary['days']
-        bill['duos-fixed-rate'] = tariff['gbp-per-mpan-per-day']
-        bill['duos-fixed-gbp'] = bill['duos-fixed-days'] * bill['duos-fixed-rate']
-
         if 'gbp-per-kva-per-day' in tariff:
             md_kva = 0
             for datum in whole_data['data']:
