@@ -1,6 +1,6 @@
 /*******************************************************************************
  * 
- *  Copyright (c) 2005, 2009 Wessex Water Services Limited
+ *  Copyright (c) 2005, 2011 Wessex Water Services Limited
  *  
  *  This file is part of Chellow.
  * 
@@ -31,7 +31,7 @@ import org.hibernate.HibernateException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-public abstract class HttpException extends Exception implements XmlDescriber {
+public abstract class HttpException extends RuntimeException implements XmlDescriber {
 	/*
 	 * public static String getStackTraceString(Throwable e) { StringWriter
 	 * writer = new StringWriter(); PrintWriter printWriter = new

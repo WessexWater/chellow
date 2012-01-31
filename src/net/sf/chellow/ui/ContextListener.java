@@ -241,6 +241,9 @@ public class ContextListener implements ServletContextListener {
 				} catch (ClassNotFoundException e) {
 				}
 			}
+			Connection bcon = (Connection) delegatorClass
+					.getMethod("getInnermostDelegate").invoke(con);
+			Debug.print("Type of innermost delegate is: " + bcon.getClass().getCanonicalName());
 			BaseConnection baseConnection = (BaseConnection) delegatorClass
 					.getMethod("getInnermostDelegate").invoke(con);
 

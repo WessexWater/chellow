@@ -439,7 +439,6 @@ public class Invocation {
 		responseHeaders.put(name, value);
 	}
 
-	@SuppressWarnings("unchecked")
 	public Element requestXml(Document doc) throws HttpException {
 		Element requestElement = doc.createElement("request");
 		Map<String, String[]> parameterMap = getRequest().getParameterMap();
@@ -843,7 +842,6 @@ public class Invocation {
 		return found;
 	}
 
-	@SuppressWarnings("unchecked")
 	public void returnStatic(ServletContext servletContext, String uri)
 			throws HttpException, InternalException {
 		InputStream is;

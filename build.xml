@@ -111,7 +111,7 @@
 	<property name="build.home" value="${basedir}/build" />
 	<property name="dist.home" value="${basedir}/dist" />
 	<property name="docs.home" value="${basedir}/docs" />
-	<property name="manager.url" value="http://localhost:8080/manager" />
+	<property name="manager.url" value="http://localhost:8080/manager/text" />
 	<property name="src.home" value="${basedir}/src" />
 	<property name="web.home" value="${basedir}/web" />
 	<property name="javalib.home" value="${user.home}/java" />
@@ -194,7 +194,7 @@
   <property name="foo.jar"
            value="/path/to/foo.jar"/>
 -->
- 
+
 
 	<!-- ==================== Compilation Classpath =========================== -->
 
@@ -218,37 +218,12 @@
 		</fileset>
 
 		<!-- Include all elements that Tomcat exposes to applications -->
-		<!--
-		<pathelement location="${catalina.home}/common/classes" />
-		
+		<fileset dir="${catalina.home}/bin">
+			<include name="*.jar" />
+		</fileset>
+		<pathelement location="${catalina.home}/lib" />
 		<fileset dir="${catalina.home}/lib">
 			<include name="*.jar" />
-		</fileset>
-		
-
-		<fileset dir="${catalina.home}/common/endorsed">
-			<include name="*.jar" />
-		</fileset>
-
-
-		<fileset dir="${catalina.home}/common/lib">
-			<include name="*.jar" />
-		</fileset>
-
-
-		<pathelement location="${catalina.home}/shared/classes" />
-		<fileset dir="${catalina.home}/shared/lib">
-			<include name="*.jar" />
-		</fileset>
-
--->
-		<!-- <pathelement location="${catalina.home}/shared/classes" /> -->
-		<pathelement location="${catalina.home}/classes" />
-		<fileset dir="${catalina.home}">
-			<include name="lib/*.jar" />
-			<include name="common/endorsed/*.jar" />
-			<!-- <include name="common/lib/*.jar" />
-			<include name="shared/lib/*.jar" /> -->
 		</fileset>
 	</path>
 
@@ -476,22 +451,21 @@
 		<!-- Copy static files from external dependencies as needed -->
 		<!-- *** CUSTOMIZE HERE AS REQUIRED BY YOUR APPLICATION *** -->
 
-		<copy todir="${build.home}/WEB-INF/lib" file="${javalib.home}/slf4j-1.6.2/slf4j-jdk14-1.6.2.jar" />
+		<copy todir="${build.home}/WEB-INF/lib" file="${javalib.home}/slf4j-1.6.4/slf4j-jdk14-1.6.4.jar" />
 		<copy todir="${build.home}/WEB-INF/lib" file="${javalib.home}/javamail-1.4.4/mail.jar" />
-
-		<copy todir="${build.home}/WEB-INF/lib" file="${javalib.home}/hibernate-distribution-3.6.7.Final/hibernate3.jar">
-			<fileset dir="${javalib.home}/hibernate-distribution-3.6.7.Final/lib/required" />
-			<fileset dir="${javalib.home}/hibernate-distribution-3.6.7.Final/lib/jpa" />
-		</copy>
-		<copy todir="${build.home}/WEB-INF/lib" file="${javalib.home}/commons-fileupload-1.2.2/lib/commons-fileupload-1.2.2.jar" />
-		<copy todir="${build.home}/WEB-INF/lib" file="${javalib.home}/commons-io-2.0.1/commons-io-2.0.1.jar" />
-
-		<copy todir="${build.home}/WEB-INF/lib" file="${javalib.home}/ostermillerutils_1_07_00.jar" />
-
-		<copy todir="${build.home}/WEB-INF/lib" file="${javalib.home}/commons-net-3.0.1/commons-net-3.0.1.jar" />
+		<copy todir="${build.home}/WEB-INF/lib" file="${javalib.home}/hibernate-distribution-3.6.9.Final/hibernate3.jar" />
 		<copy todir="${build.home}/WEB-INF/lib">
-			<fileset dir="${javalib.home}/httpcomponents-client-4.1.2/lib" />
+			<fileset dir="${javalib.home}/hibernate-distribution-3.6.9.Final/lib/required" />
+			<fileset dir="${javalib.home}/hibernate-distribution-3.6.9.Final/lib/jpa" />
 		</copy>
+		<copy todir="${build.home}/WEB-INF/lib" file="/usr/share/java/commons-fileupload.jar" />
+		<copy todir="${build.home}/WEB-INF/lib" file="/usr/share/java/commons-io.jar" />
+
+		<copy todir="${build.home}/WEB-INF/lib" file="${javalib.home}/ostermillerutils-1.08.02/ostermillerutils-1.08.02.jar" />
+
+		<copy todir="${build.home}/WEB-INF/lib" file="/usr/share/java/commons-net.jar" />
+		<copy todir="${build.home}/WEB-INF/lib" file="/usr/share/java/httpclient.jar" />
+		<copy todir="${build.home}/WEB-INF/lib" file="/usr/share/java/httpcore.jar" />
 		<copy todir="${build.home}/WEB-INF/lib" file="${javalib.home}/jython2.5.2/jython.jar" />
 		<copy todir="${build.home}/WEB-INF/lib" file="${javalib.home}/javasysmon-0.3.3.jar" />
 		<copy todir="${build.home}/WEB-INF/lib/Lib">

@@ -3,12 +3,12 @@
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="var" path="JAVA_LIB_HOME/javamail-1.4.4/mail.jar"/>
-	<classpathentry kind="var" path="JAVA_LIB_HOME/ostermillerutils_1_07_00.jar"/>
-	<classpathentry kind="var" path="JAVA_LIB_HOME/hibernate-distribution-3.6.7.Final/hibernate3.jar"/>
-	<classpathentry kind="var" path="JAVA_LIB_HOME/commons-net-3.0.1/commons-net-3.0.1.jar"/>
-	<classpathentry kind="var" path="JAVA_LIB_HOME/postgresql-8.4-702.jdbc4.jar"/>
+	<classpathentry kind="var" path="JAVA_LIB_HOME/ostermillerutils-1.08.02/ostermillerutils-1.08.02.jar"/>
+	<classpathentry kind="var" path="JAVA_LIB_HOME/hibernate-distribution-3.6.9.Final/hibernate3.jar"/>
+	<classpathentry kind="var" path="JAVA_LIB_HOME/postgresql-9.1-901.jdbc4.jar"/>
 	<classpathentry kind="var" path="JAVA_LIB_HOME/jython2.5.2/jython.jar"/>
-	<classpathentry kind="lib" path="/home/tlocke/java/commons-fileupload-1.2.2/lib/commons-fileupload-1.2.2.jar"/>
+	<classpathentry kind="lib" path="/usr/share/java/commons-fileupload.jar"/>
 	<classpathentry kind="var" path="TOMCAT/lib/servlet-api.jar"/>
+	<classpathentry kind="lib" path="/usr/share/java/commons-net.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

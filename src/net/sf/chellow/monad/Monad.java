@@ -1,6 +1,6 @@
 /*******************************************************************************
  * 
- *  Copyright (c) 2005, 2009 Wessex Water Services Limited
+ *  Copyright (c) 2005, 2011 Wessex Water Services Limited
  *  
  *  This file is part of Chellow.
  * 
@@ -284,7 +284,6 @@ public abstract class Monad extends HttpServlet implements Urlable {
 		return newUri;
 	}
 
-	@SuppressWarnings("unchecked")
 	static public List<String> getConfigUrlElements(MonadUri uri) {
 		List<String> urlElements = new ArrayList<String>();
 		String resourcePath = Monad.getConfigPrefix() + uri.toString();
