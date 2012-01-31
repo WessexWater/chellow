@@ -39,25 +39,24 @@ public class MpanCore extends PersistentEntity {
 	static public MpanCore getMpanCore(Long id) throws InternalException {
 		return (MpanCore) Hiber.session().get(MpanCore.class, id);
 	}
-	
+
 	static public MpanCore getMpanCore(String core) throws HttpException {
 		MpanCore mpanCore = findMpanCore(core);
 		if (mpanCore == null) {
-			throw new UserException("There isn't an MPAN with the core "
-					+ core);
+			throw new UserException("There isn't an MPAN with the core " + core);
 		}
 		return mpanCore;
 
 	}
-	
+
 	static public MpanCore findMpanCore(String core) throws HttpException {
 		MpanCoreRaw raw = new MpanCoreRaw(core);
 		return (MpanCore) Hiber
-		.session()
-		.createQuery(
-				"from MpanCore mpanCore where mpanCore.dno = :dno and mpanCore.uniquePart = :uniquePart")
-		.setEntity("dno", raw.getDno()).setString("uniquePart",
-				raw.getUniquePart()).uniqueResult();
+				.session()
+				.createQuery(
+						"from MpanCore mpanCore where mpanCore.dno = :dno and mpanCore.uniquePart = :uniquePart")
+				.setEntity("dno", raw.getDno())
+				.setString("uniquePart", raw.getUniquePart()).uniqueResult();
 	}
 
 	private Supply supply;
@@ -116,8 +115,7 @@ public class MpanCore extends PersistentEntity {
 	}
 
 	public MpanCoreRaw getCore() throws HttpException {
-		return new MpanCoreRaw(dno.getCode() + uniquePart
-				+ checkDigit);
+		return new MpanCoreRaw(dno.getCode() + uniquePart + checkDigit);
 	}
 
 	public boolean equals(Object object) {
@@ -130,12 +128,9 @@ public class MpanCore extends PersistentEntity {
 	}
 
 	public String toString() {
-		try {
-			return new MpanCoreRaw(dno.getCode() + uniquePart + checkDigit)
-					.toString();
-		} catch (HttpException e) {
-			throw new RuntimeException(e);
-		}
+		return dno.getCode() + " " + uniquePart.substring(0, 4) + " "
+				+ uniquePart.substring(4, 8) + " " + uniquePart.substring(8)
+				+ checkDigit;
 	}
 
 	public Element toXml(Document doc) throws HttpException {
@@ -154,7 +149,6 @@ public class MpanCore extends PersistentEntity {
 	public void httpGet(Invocation inv) throws HttpException {
 		throw new MethodNotAllowedException();
 	}
-	
 
 	static public class MpanCoreRaw {
 		private Dno dno;
@@ -163,17 +157,18 @@ public class MpanCore extends PersistentEntity {
 
 		private char checkDigit;
 
-		public MpanCoreRaw(String mpanCore) throws HttpException {
+		MpanCoreRaw(String mpanCore) throws HttpException {
 			mpanCore = mpanCore.replace(" ", "");
 			if (mpanCore.length() != 13) {
 				throw new UserException("The MPAN core (" + mpanCore
 						+ ") must contain exactly 13 digits.");
 			}
-			init(mpanCore.substring(0, 2), mpanCore.substring(2, 12), mpanCore
-					.charAt(mpanCore.length() - 1));
+			init(Dno.getDno(mpanCore.substring(0, 2)),
+					mpanCore.substring(2, 12),
+					mpanCore.charAt(mpanCore.length() - 1));
 		}
 
-		private void init(String dnoCode, String uniquePart, char checkDigit)
+		private void init(Dno dno, String uniquePart, char checkDigit)
 				throws HttpException {
 			for (char ch : uniquePart.toCharArray()) {
 				if (!Character.isDigit(ch)) {
@@ -185,13 +180,14 @@ public class MpanCore extends PersistentEntity {
 				throw new UserException(
 						"Each character of an MPAN must be a digit.");
 			}
-			if (!checkCheckDigit(dnoCode.toString() + uniquePart.toString(),
+			String dnoCode = dno.getCode();
+			if (!checkCheckDigit(dnoCode + uniquePart,
 					Character.getNumericValue(checkDigit))) {
 
 				throw new UserException(
 						"This is not a valid MPAN core. It fails the checksum test.");
 			}
-			this.dno = Dno.getDno(dnoCode);
+			this.dno = dno;
 			this.uniquePart = uniquePart;
 			this.checkDigit = checkDigit;
 		}
@@ -209,14 +205,13 @@ public class MpanCore extends PersistentEntity {
 		}
 
 		public String toString() {
-			return dno.getCode() + " " + uniquePart.toString().substring(0, 4)
-					+ " " + uniquePart.toString().substring(4, 8) + " "
-					+ uniquePart.toString().substring(8)
-					+ checkDigit;
+			return dno.getCode() + " " + uniquePart.substring(0, 4) + " "
+					+ uniquePart.substring(4, 8) + " "
+					+ uniquePart.substring(8) + checkDigit;
 		}
 
 		public String toStringNoSpaces() {
-			return dno.getCode() + uniquePart.toString() + checkDigit;
+			return dno.getCode() + uniquePart + checkDigit;
 		}
 
 		private boolean checkCheckDigit(String toCheck, int checkDigit) {
@@ -244,7 +239,6 @@ public class MpanCore extends PersistentEntity {
 			return dno.hashCode() + uniquePart.hashCode();
 		}
 	}
-
 
 	@Override
 	public URI getViewUri() throws HttpException {

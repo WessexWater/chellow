@@ -1,6 +1,6 @@
 /*******************************************************************************
  * 
- *  Copyright (c) 2005, 2009 Wessex Water Services Limited
+ *  Copyright (c) 2005, 2012 Wessex Water Services Limited
  *  
  *  This file is part of Chellow.
  * 
@@ -45,7 +45,6 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 public class Channel extends PersistentEntity {
-	private static final long serialVersionUID = 1L;
 
 	private SupplyGeneration supplyGeneration;
 

@@ -28,7 +28,6 @@ import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 
 public class MonadInteger extends MonadObject {
-	private static final long serialVersionUID = 1L;
 
 	public static Attr toXml(Document doc, String name, int value) {
 		Attr attr = doc.createAttribute(name);
