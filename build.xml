@@ -464,6 +464,7 @@
 		<copy todir="${build.home}/WEB-INF/lib" file="${javalib.home}/ostermillerutils-1.08.02/ostermillerutils-1.08.02.jar" />
 
 		<copy todir="${build.home}/WEB-INF/lib" file="/usr/share/java/commons-net.jar" />
+		<copy todir="${build.home}/WEB-INF/lib" file="/usr/share/java/commons-logging.jar" />
 		<copy todir="${build.home}/WEB-INF/lib" file="/usr/share/java/httpclient.jar" />
 		<copy todir="${build.home}/WEB-INF/lib" file="/usr/share/java/httpcore.jar" />
 		<copy todir="${build.home}/WEB-INF/lib" file="${javalib.home}/jython2.5.2/jython.jar" />

@@ -196,7 +196,7 @@
 									</xsl:choose>
 								</xsl:attribute>
 										</input>
-										-
+										<xsl:value-of select="'-'" />
 										<select name="previous-month">
 											<xsl:for-each select="/source/months/month">
 												<option value="{@number}">
@@ -219,7 +219,7 @@
 												</option>
 											</xsl:for-each>
 										</select>
-										-
+										<xsl:value-of select="'-'" />
 										<select name="previous-day">
 											<xsl:for-each select="/source/days/day">
 												<option value="{@number}">
@@ -242,8 +242,52 @@
 												</option>
 											</xsl:for-each>
 										</select>
-										<xsl:value-of
-											select="concat(' ', /source/register-read/hh-start-date[@label='previous']/@hour, ':', /source/register-read/hh-start-date[@label='previous']/@minute)" />
+										<xsl:value-of select="' '" />
+										<select name="previous-hour">
+											<xsl:for-each select="/source/hours/hour">
+												<option value="{@number}">
+													<xsl:choose>
+														<xsl:when
+															test="/source/request/parameter[@name='previous-hour']">
+															<xsl:if
+																test="/source/request/parameter[@name='previous-hour']/value/text() = @number">
+																<xsl:attribute name="selected" />
+															</xsl:if>
+														</xsl:when>
+														<xsl:otherwise>
+															<xsl:if
+																test="/source/register-read/hh-start-date[@label='previous']/@hour = @number">
+																<xsl:attribute name="selected" />
+															</xsl:if>
+														</xsl:otherwise>
+													</xsl:choose>
+													<xsl:value-of select="@number" />
+												</option>
+											</xsl:for-each>
+										</select>
+										<xsl:value-of select="':'" />
+										<select name="previous-minute">
+											<xsl:for-each select="/source/hh-minutes/minute">
+												<option value="{@number}">
+													<xsl:choose>
+														<xsl:when
+															test="/source/request/parameter[@name='previous-minute']">
+															<xsl:if
+																test="/source/request/parameter[@name='previous-minute']/value/text() = @number">
+																<xsl:attribute name="selected" />
+															</xsl:if>
+														</xsl:when>
+														<xsl:otherwise>
+															<xsl:if
+																test="/source/register-read/hh-start-date[@label='previous']/@minute = @number">
+																<xsl:attribute name="selected" />
+															</xsl:if>
+														</xsl:otherwise>
+													</xsl:choose>
+													<xsl:value-of select="@number" />
+												</option>
+											</xsl:for-each>
+										</select>
 									</fieldset>
 									<br />
 									<label>
@@ -310,7 +354,7 @@
 									</xsl:choose>
 								</xsl:attribute>
 										</input>
-										-
+										<xsl:value-of select="'-'" />
 										<select name="present-month">
 											<xsl:for-each select="/source/months/month">
 												<option value="{@number}">
@@ -333,7 +377,7 @@
 												</option>
 											</xsl:for-each>
 										</select>
-										-
+										<xsl:value-of select="'-'" />
 										<select name="present-day">
 											<xsl:for-each select="/source/days/day">
 												<option value="{@number}">
@@ -355,8 +399,52 @@
 												</option>
 											</xsl:for-each>
 										</select>
-										<xsl:value-of
-											select="concat(' ', /source/register-read/hh-start-date[@label='present']/@hour, ':', /source/register-read/hh-start-date[@label='present']/@minute)" />
+										<xsl:value-of select="' '" />
+										<select name="present-hour">
+											<xsl:for-each select="/source/hours/hour">
+												<option value="{@number}">
+													<xsl:choose>
+														<xsl:when
+															test="/source/request/parameter[@name='present-hour']">
+															<xsl:if
+																test="/source/request/parameter[@name='present-hour']/value/text() = @number">
+																<xsl:attribute name="selected" />
+															</xsl:if>
+														</xsl:when>
+														<xsl:otherwise>
+															<xsl:if
+																test="/source/register-read/hh-start-date[@label='present']/@hour = @number">
+																<xsl:attribute name="selected" />
+															</xsl:if>
+														</xsl:otherwise>
+													</xsl:choose>
+													<xsl:value-of select="@number" />
+												</option>
+											</xsl:for-each>
+										</select>
+										<xsl:value-of select="':'" />
+										<select name="present-minute">
+											<xsl:for-each select="/source/hh-minutes/minute">
+												<option value="{@number}">
+													<xsl:choose>
+														<xsl:when
+															test="/source/request/parameter[@name='present-minute']">
+															<xsl:if
+																test="/source/request/parameter[@name='present-minute']/value/text() = @number">
+																<xsl:attribute name="selected" />
+															</xsl:if>
+														</xsl:when>
+														<xsl:otherwise>
+															<xsl:if
+																test="/source/register-read/hh-start-date[@label='present']/@minute = @number">
+																<xsl:attribute name="selected" />
+															</xsl:if>
+														</xsl:otherwise>
+													</xsl:choose>
+													<xsl:value-of select="@number" />
+												</option>
+											</xsl:for-each>
+										</select>
 									</fieldset>
 									<br />
 									<label>

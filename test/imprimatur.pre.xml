@@ -1967,7 +1967,7 @@ def triad_estimates():
 		</request>
 
 		<!-- Check start time of rate script -->
-		<request path="/chellow/dnos/379/contracts/93/rate-scripts/415/">
+		<request path="/chellow/dnos/379/contracts/93/rate-scripts/417/">
 			<regex
 				pattern='&lt;select name="start-hour"&gt;&lt;option value="00" selected&gt;00&lt;/option&gt;' />
 			<regex
@@ -1983,12 +1983,12 @@ def triad_estimates():
 			<control name="start-day" value="01" />
 			<control name="start-hour" value="00" />
 			<control name="start-minute" value="00" />
-			<regex pattern="/chellow/dnos/379/contracts/93/rate-scripts/417/" />
+			<regex pattern="/chellow/dnos/379/contracts/93/rate-scripts/419/" />
 			<response-code value="303" />
 		</request>
 
 		<!-- Delete rate script -->
-		<request path="/chellow/dnos/379/contracts/93/rate-scripts/417/"
+		<request path="/chellow/dnos/379/contracts/93/rate-scripts/419/"
 			method="post">
 			<control name="delete" value="Delete" />
 			<response-code value="303" />
@@ -2406,7 +2406,8 @@ def import_virtual_bill(supply_source):
 				pattern="All the bills have been successfully loaded and attached to the batch\." />
 		</request>
 		<request path="/chellow/supplier-contracts/18/batches/7/bills/10/reads/7/">
-			<regex pattern="31&lt;/option&gt;&lt;/select&gt; 00:00" />
+			<regex pattern='31&lt;/option&gt;&lt;/select&gt; &lt;select name="present-hour"&gt;&lt;option value="00" selected&gt;00&lt;/option&gt;' />
+			<regex pattern='&lt;select name="present-minute"&gt;&lt;option value="00" selected&gt;00&lt;/option&gt;'/>
 		</request>
 	</test>
 	<test name="Test viewers' search">

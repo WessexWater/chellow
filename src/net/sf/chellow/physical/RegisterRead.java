@@ -351,10 +351,10 @@ public class RegisterRead extends PersistentEntity {
 			String units = inv.getString("units");
 			String meterSerialNumber = inv.getString("meter-serial-number");
 			String mpanStr = inv.getString("mpan");
-			Date previousDate = inv.getDate("previous");
+			Date previousDate = inv.getDateTime("previous");
 			BigDecimal previousValue = inv.getBigDecimal("previous-value");
 			Long previousTypeId = inv.getLong("previous-type-id");
-			Date presentDate = inv.getDate("present");
+			Date presentDate = inv.getDateTime("present");
 			BigDecimal presentValue = inv.getBigDecimal("present-value");
 			Long presentTypeId = inv.getLong("present-type-id");
 
@@ -364,8 +364,8 @@ public class RegisterRead extends PersistentEntity {
 			update(Tpr.getTpr(tprCode), coefficient, Units.getUnits(units),
 					meterSerialNumber, mpanStr, new HhStartDate(previousDate),
 					previousValue, ReadType.getReadType(previousTypeId),
-					new HhStartDate(presentDate), presentValue, ReadType
-							.getReadType(presentTypeId));
+					new HhStartDate(presentDate), presentValue,
+					ReadType.getReadType(presentTypeId));
 			Hiber.commit();
 			inv.sendOk(document());
 		}
@@ -383,8 +383,10 @@ public class RegisterRead extends PersistentEntity {
 				new XmlTree("contract"))).put("tpr")));
 		source.appendChild(MonadDate.getMonthsXml(doc));
 		source.appendChild(MonadDate.getDaysXml(doc));
-		for (ReadType type : (List<ReadType>) Hiber.session().createQuery(
-				"from ReadType type order by type.code").list()) {
+		source.appendChild(MonadDate.getHoursXml(doc));
+		source.appendChild(HhStartDate.getHhMinutesXml(doc));
+		for (ReadType type : (List<ReadType>) Hiber.session()
+				.createQuery("from ReadType type order by type.code").list()) {
 			source.appendChild(type.toXml(doc));
 		}
 		return doc;
