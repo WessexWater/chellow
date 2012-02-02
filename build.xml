@@ -451,7 +451,6 @@
 		<!-- Copy static files from external dependencies as needed -->
 		<!-- *** CUSTOMIZE HERE AS REQUIRED BY YOUR APPLICATION *** -->
 
-		<copy todir="${build.home}/WEB-INF/lib" file="${javalib.home}/slf4j-1.6.4/slf4j-jdk14-1.6.4.jar" />
 		<copy todir="${build.home}/WEB-INF/lib" file="${javalib.home}/javamail-1.4.4/mail.jar" />
 		<copy todir="${build.home}/WEB-INF/lib" file="${javalib.home}/hibernate-distribution-3.6.9.Final/hibernate3.jar" />
 		<copy todir="${build.home}/WEB-INF/lib">
@@ -460,7 +459,7 @@
 		</copy>
 		<copy todir="${build.home}/WEB-INF/lib" file="/usr/share/java/commons-fileupload.jar" />
 		<copy todir="${build.home}/WEB-INF/lib" file="/usr/share/java/commons-io.jar" />
-
+		<copy todir="${build.home}/WEB-INF/lib" file="/usr/share/java/slf4j-api.jar" />
 		<copy todir="${build.home}/WEB-INF/lib" file="${javalib.home}/ostermillerutils-1.08.02/ostermillerutils-1.08.02.jar" />
 
 		<copy todir="${build.home}/WEB-INF/lib" file="/usr/share/java/commons-net.jar" />
