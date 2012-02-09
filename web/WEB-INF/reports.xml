@@ -15505,11 +15505,13 @@ while values != None:
 
         if chellow_pc == 0:
             chellow_meter_type = 'H'
+        elif len(generation.getChannels()) > 0:
+            chellow_meter_type = 'RCAMR'
+        elif generation.getMtc().getMeterType().getCode() in ['UM', 'PH']:
+            chellow_meter_type = ''
         else:
-            if len(generation.getChannels()) > 0:
-                chellow_meter_type = 'RCAMR'
-            else:
-                chellow_meter_type = 'N'
+            chellow_meter_type = 'N'
+
         if chellow_meter_type != ecoes['meter-type']:
             problem += "The meter types don't match. See http://dtc.mrasco.com/DataItem.aspx?ItemCounter=0483 "        
     else:
