@@ -1,6 +1,6 @@
 /*******************************************************************************
  * 
- *  Copyright (c) 2005, 2009 Wessex Water Services Limited
+ *  Copyright (c) 2005, 2012 Wessex Water Services Limited
  *  
  *  This file is part of Chellow.
  * 
@@ -30,11 +30,15 @@ public class ImplicitUserSource {
 	static public User getUser(Invocation inv) throws HttpException {
 		User user = null;
 		Configuration configuration = Configuration.getConfiguration();
-		String emailAddressString = configuration.getProperty("ip"
-				+ inv.getRequest().getRemoteAddr().replace(".", "-"));
+		String emailAddressString = configuration.getProperty("ip*-*-*-*");
+
+		if (emailAddressString == null) {
+			emailAddressString = configuration.getProperty("ip"
+					+ inv.getRequest().getRemoteAddr().replace(".", "-"));
+		}
 		if (emailAddressString != null) {
-			user = User
-					.findUserByEmail(new EmailAddress(emailAddressString.trim()));
+			user = User.findUserByEmail(new EmailAddress(emailAddressString
+					.trim()));
 		}
 		return user;
 	}
