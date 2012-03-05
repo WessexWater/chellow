@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html>
+<body>
+<p><a href="/">Jevons</a> &gt; <a href="/1?asset_id={{ asset.id }}">{{ asset.name }}</a> &gt; Delete</p>
+
+<form method="post" action="/4">{% csrf_token %}
+<fieldset>
+<legend>Delete Asset</legend>
+<input type="hidden" name="asset_id" value="{{ asset.id }}">
+<p>Are you sure you want to delete this asset?</p>
+<a href="\1?asset_id={{ asset.id }}">Cancel</a> <input type="submit" value="Delete" />
+</fieldset>
+</form>
+
+</body>
+</html>

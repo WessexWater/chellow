@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<body>
+<p><a href="/">Jevons</a> {% for parent in asset.parents %}&gt; <a href="/asset?asset_id={{ parent.id }}">{{ parent.name }}</a>{% endfor %} &gt; <a href="/asset?asset_id={{ asset.id }}">{{ asset.name }}</a> &gt; edit</p>
+
+<form method="post" action="/2">{% csrf_token %}
+<fieldset>
+<legend>Update Asset</legend>
+<input type="hidden" name="asset_id" value="{{ asset.id }}">
+<label>Name <input size="40" name="name" value="{{ asset.name }}" /></label>
+<br />
+<label>Code <input name="code" value="{{ asset.code }}" /></label>
+<br />
+<input name="update" type="submit" value="Update" /> <input type="reset" value="Reset" />
+</fieldset>
+</form>
+
+<p><a href="/4?asset_id={{ asset.id }}">Delete this asset.</a></p>
+
+</body>
+</html>

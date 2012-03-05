@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<body>
+<p><a href="/">Jevons</a> &gt; BGlobal Importer</p>
+
+{% if message %}<p>{{ message }}</p>{% endif %}
+
+
+
+<table><caption>CSV Format</caption>
+<tr><td>insert</td><td>asset</td><td>parent code</td><td>name</td><td>code</td></tr>
+</table>
+<br>
+<form method="post" action="/csv_import" enctype="multipart/form-data">{% csrf_token %}
+<fieldset>
+<legend>CSV Import</legend>
+<input type="file" name="csv_file"> <input type="submit" value="Upload" />
+</fieldset>
+</form>
+
+</body>
+</html>

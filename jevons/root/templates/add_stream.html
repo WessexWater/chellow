@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<body>
+<p><a href="/">Jevons</a> {% for parent in asset.parents %}&gt; <a href="/asset?asset_id={{ parent.id }}">{{ parent.name }}</a>{% endfor %} &gt; <a href="/asset?asset_id={{ asset.id }}">{{ asset.name }}</a> &gt; Add Stream</p>
+
+<form method="post" action="/add_stream">{% csrf_token %}
+<fieldset>
+<legend>Add Stream</legend>
+<input type="hidden" name="asset_id" value="{{ asset.id }}">
+<label>Name <input size="40" name="name" value="" /></label>
+<br />
+<label>Code <input name="code" value="" /></label>
+<br />
+<label>Properties
+ <textarea name="properties">
+ </textarea>
+ </label>
+<br />
+<input type="submit" value="Add" /> <input type="reset" value="Reset" />
+</fieldset>
+</form>
+
+</body>
+</html>
