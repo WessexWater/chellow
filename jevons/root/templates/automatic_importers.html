@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<body>
+<p><a href="/">Jevons</a> {% for parent in asset.parents %}&gt; <a href="/show_asset?asset_id={{ parent.id }}">{{ parent.name }}</a>{% endfor %} &gt; {{ asset.name }} [<a href="/edit_asset?asset_id={{ asset.id }}">edit</a>]</p>
+
+<table>
+<tr><th>Name</th><td>{{ asset.name }}</td></tr>
+<tr><th>Code</th><td>{{ asset.code }}</td></tr>
+</table>
+<br>
+
+<table><caption>Streams [<a href="/add_stream?asset_id={{ asset.id }}">add</a>]</caption>
+{% for stream in asset.streams %}
+<tr><td><a href="/show_stream?stream_id={{ stream.id }}">View</a></td><td>{{ stream.name }}</td></tr>
+{% endfor %}
+</table>
+<br>
+<table><caption>Sub-assets [<a href="/add_sub_asset?asset_id={{ asset.id }}">add</a>]</caption>
+{% for sub_asset in sub_assets %}
+<tr><td><a href="/show_asset?asset_id={{ sub_asset.id }}">View</a></td><td>{{ sub_asset.name }}</td><td>{{ sub_asset.code }}</td></tr>
+{% endfor %}
+</table>
+
+</body>
+</html>

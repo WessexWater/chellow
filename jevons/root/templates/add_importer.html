@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<body>
+<p><a href="/">Jevons</a> &gt; Add Importer</p>
+
+<form method="post" action="/add_importer">{% csrf_token %}
+<fieldset>
+<legend>Add Importer</legend>
+<label>Name <input size="40" name="name" value="" /></label>
+<br />
+<label>Properties
+ <textarea name="properties">
+ </textarea>
+ </label>
+<br />
+<input type="submit" value="Add" /> <input type="reset" value="Reset" />
+</fieldset>
+</form>
+
+</body>
+</html>

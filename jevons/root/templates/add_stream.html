@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <body>
-<p><a href="/">Jevons</a> {% for parent in asset.parents %}&gt; <a href="/asset?asset_id={{ parent.id }}">{{ parent.name }}</a>{% endfor %} &gt; <a href="/asset?asset_id={{ asset.id }}">{{ asset.name }}</a> &gt; Add Stream</p>
+<p><a href="/">Jevons</a> {% for parent in asset.parents %}&gt; <a href="/show_asset?asset_id={{ parent.id }}">{{ parent.name }}</a>{% endfor %} &gt; <a href="/show_asset?asset_id={{ asset.id }}">{{ asset.name }}</a> &gt; Add Stream</p>
 
 <form method="post" action="/add_stream">{% csrf_token %}
 <fieldset>

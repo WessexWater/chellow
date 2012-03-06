@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<body>
+<p><a href="/">Jevons</a> {% for parent in stream.asset.parents %}&gt; <a href="/show_asset?asset_id={{ parent.id }}">{{ parent.name }}</a>{% endfor %} &gt; <a href="/show_asset?asset_id={{ stream.asset.id }}">{{ stream.asset.name }}</a> &gt; {{ stream.name }} [<a href="/update_stream?stream_id={{ stream.id }}">update</a>]</p>
+
+<table>
+<tr><th>Name</th><td>{{ stream.name }}</td></tr>
+<tr><th>Code</th><td>{{ stream.code }}</td></tr>
+</table>
+<br>
+<h4>Properties</h4>
+
+<pre>
+{{ stream.properties }}
+</pre>
+<br>
+<table><caption>Advances [<a href="/add_advance?stream_id={{ stream.id }}">add</a>]</caption>
+<thead>
+	<tr>
+		<th>View</th>
+		<th>Start Date</th>
+		<th>Advance</th>
+	</tr>
+</thead>
+{% for advance in advances %}
+<tr><td><a href="/show_advance?advance_id={{ advance.id }}">View</a></td><td>{{ advance.start_date|date:"Y-m-d H:i" }}</td><td>{{ advance.value }}</td></tr>
+{% endfor %}
+</table>
+
+</body>
+</html>

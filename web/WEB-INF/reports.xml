@@ -435,6 +435,17 @@ for time_key in time_keys:
         first_generation = generation_group[0]
         generation_group_element = first_generation.getSupply().toXml(doc, XmlTree('source').put('generatorType'))
         site_element.appendChild(generation_group_element)
+
+        if first_generation.getPc().getCode() == 0:
+            meter_cat = 'HH'
+        elif first_generation.getChannels().size() > 0:
+            meter_cat = 'AMR'
+        elif first_generation.getMtc().getMeterType().getCode() in ['UM', 'PH']:
+            meter_cat = 'Unmetered'
+        else:
+            meter_cat = 'NHH'
+
+        generation_group_element.setAttribute('meter-category', meter_cat)
         for generation in generation_group:
             generation_group_element.appendChild(generation.toXml(doc, XmlTree("mpans", XmlTree("core", XmlTree('dno')).put('llfc')).put("siteSupplyGenerations", XmlTree('site'))))
 
@@ -558,6 +569,7 @@ for key in properties.propertyNames():
                             <th>Export MPAN core</th>
                             <th>Physical Location</th>
                             <th>Also Supplies</th>
+                            <th>Meter Category</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -619,6 +631,7 @@ Ongoing
 <a href="{/source/request/@context-path}/reports/5/output/?site-id={@id}"><xsl:value-of select="@code"/></a>
                                   </xsl:for-each>                  
                                 </td>
+                                <td><xsl:value-of select="@meter-category" /></td>
                             </tr>
                         </xsl:for-each>
                     </tbody>

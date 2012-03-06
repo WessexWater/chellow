@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html>
+<body>
+<p><a href="/">Jevons</a> &gt; <a href="/show_asset?asset_id={{ advance.stream.asset.id }}">{{ advance.stream.asset.name }}</a> &gt; <a href="/show_stream?stream_id={{ advance.stream.id }}">{{ advance.stream.name }}</a> &gt; {{ advance.start_date|date:"Y-m-d H:i" }} &gt; Delete</p>
+
+<form method="post" action="/delete_advance">{% csrf_token %}
+<fieldset>
+<legend>Delete Advance</legend>
+<input type="hidden" name="advance_id" value="{{ advance.id }}">
+<p>Are you sure you want to delete this advance?</p>
+<a href="/show_advance?advance_id={{ advance.id }}">Cancel</a> <input type="submit" value="Delete" />
+</fieldset>
+</form>
+
+</body>
+</html>

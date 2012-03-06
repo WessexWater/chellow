@@ -44,3 +44,11 @@ class Advance(models.Model):
     class Meta:
         db_table = 'advance'
         unique_together = (('stream', 'start_date'),)
+        
+
+class Importer(models.Model):
+    name = models.CharField(max_length=100, unique=True)
+    properties = models.TextField()
+    
+    class Meta:
+        db_table = 'importer'

@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <body>
-<p><a href="/">Jevons</a> {% for parent in asset.parents %}&gt; <a href="/asset?asset_id={{ parent.id }}">{{ parent.name }}</a>{% endfor %} &gt; <a href="/asset?asset_id={{ asset.id }}">{{ asset.name }}</a> &gt; edit</p>
+<p><a href="/">Jevons</a> {% for parent in asset.parents %}&gt; <a href="/show_asset?asset_id={{ parent.id }}">{{ parent.name }}</a>{% endfor %} &gt; <a href="/show_asset?asset_id={{ asset.id }}">{{ asset.name }}</a> &gt; edit</p>
 
 <form method="post" action="/2">{% csrf_token %}
 <fieldset>
@@ -15,7 +15,7 @@
 </fieldset>
 </form>
 
-<p><a href="/4?asset_id={{ asset.id }}">Delete this asset.</a></p>
+<p><a href="/delete_asset?asset_id={{ asset.id }}">Delete this asset.</a></p>
 
 </body>
 </html>
