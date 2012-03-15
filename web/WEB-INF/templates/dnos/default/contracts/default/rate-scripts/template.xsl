@@ -71,7 +71,7 @@
 									</xsl:otherwise>
 								</xsl:choose>
 							</input>
-							-
+							<xsl:value-of select="'-'"/>
 							<select name="start-month">
 								<xsl:for-each select="/source/months/month">
 									<option value="{@number}">
@@ -92,7 +92,7 @@
 									</option>
 								</xsl:for-each>
 							</select>
-							-
+							<xsl:value-of select="'-'"/>
 							<select name="start-day">
 								<xsl:for-each select="/source/days/day">
 									<option value="{@number}">

@@ -1497,7 +1497,7 @@ for key in properties.propertyNames():
                     <li>
                         <a
                             href="{/source/request/@context-path}/reports/101/output/?supply-id={/source/supply/@id}">
-                            Virtual Bill
+                            Supplier Virtual Bill
                         </a>
                     </li>
                 </ul>
@@ -1507,7 +1507,7 @@ for key in properties.propertyNames():
                 <form action="{/source/request/@context-path}/reports/87/output/">
                     <fieldset>
                         <input type="hidden" name="supply-id" value="{/source/supply/@id}" />
-                        <legend>Virtual Bills</legend>
+                        <legend>Supplier Virtual Bills</legend>
                         <select name="supply-polarity">
                             <option value="import">
                                 Import
@@ -1771,7 +1771,7 @@ for key in properties.propertyNames():
                           </xsl:attribute>
                         </input>
                         <xsl:value-of select="' month(s) finishing at the end of '" />
-                        <input name="end-year" value="{/source/date/@year}"
+                        <input name="end-year" value="{/source/hh-start-date[@label='start']/@year}"
                             maxlength="4" size="4" />
                         <xsl:value-of select="' - '" />
                         <select name="end-month">
@@ -1795,7 +1795,7 @@ for key in properties.propertyNames():
                         <legend>Snapshot</legend>
                         <br />
                         <xsl:value-of select="'For the end of '" />
-                        <input name="year" value="{/source/date/@year}" maxlength="4"
+                        <input name="year" value="{/source/hh-start-date[@label='start']/@year}" maxlength="4"
                             size="4" />
                         <xsl:value-of select="' - '" />
                         <select name="month">
@@ -1836,7 +1836,7 @@ for key in properties.propertyNames():
                           </xsl:attribute>
                         </input>
                         <xsl:value-of select="' month(s) finishing at the end of '" />
-                        <input name="end-year" value="{/source/date/@year}"
+                        <input name="end-year" value="{/source/hh-start-date[@label='start']/@year}"
                             maxlength="4" size="4" />
                         <xsl:value-of select="' - '" />
                         <select name="end-month">
@@ -1860,7 +1860,7 @@ for key in properties.propertyNames():
                         <legend>CRC</legend>
                         <br />
                         <xsl:value-of select="'For financial year starting April '" />
-                        <input name="year" value="{/source/date/@year}" size="4"
+                        <input name="year" value="{/source/hh-start-date[@label='start']/@year}" size="4"
                             maxlength="4" />
                         <xsl:value-of select="' '" />
                         <input type="submit" value="Download" />
@@ -8181,7 +8181,7 @@ from java.util import GregorianCalendar, TimeZone, Locale, Calendar
 from net.sf.chellow.physical import HhStartDate, Supply
 from java.sql import Timestamp, ResultSet
 from net.sf.chellow.billing import HhdcContract, NonCoreContract
-    
+
 inv.getResponse().setContentType("text/csv")
 inv.getResponse().setHeader('Content-Disposition', 'filename=output.csv;')
 pw = inv.getResponse().getWriter()
@@ -8216,7 +8216,7 @@ comterp = computer.callFunction('create_comterp', [])
 forecast_date = comterp.get('forecast_date')()
 
 pw.print('Import MPAN Core, Export MPAN Core, Start Date, Finish Date')
-bill_titles = comterp.get('contract_function')(contract, 'virtual_bill_titles')()
+bill_titles = comterp.get('contract_function')(contract, 'virtual_bill_titles', pw)()
 for title in bill_titles:
     pw.print(',' + title)
 pw.println('')
@@ -8240,8 +8240,7 @@ while generations.next():
         export_mpan_core_str = export_mpan.getCore().toString()
 
     pw.print(import_mpan_core_str + ',' + export_mpan_core_str + ',' + str(start_date) + ',' + str(finish_date) + ',')
-    supply_source = comterp.get('supply_source')(forecast_date, comterp, pw)
-    supply_source.init_from_mpan(start_date, finish_date, mpan)
+    supply_source = comterp.get('SupplySource')(start_date, finish_date, forecast_date, mpan, comterp, pw)
     bill = supply_source.contract_function(contract, 'virtual_bill')(supply_source)
     for title in bill_titles:
         pw.print('"' + str(bill.get(title, '')) + '",')
@@ -8485,7 +8484,7 @@ if supply is None:
     pw.flush()
     contract_function = comterp.get('contract_function')
     #pw.println("contract func " + str(contract) + " " + supply_polarity)
-    titles_function = contract_function(contract, supply_polarity + '_virtual_bill_titles')
+    titles_function = contract_function(contract, supply_polarity + '_virtual_bill_titles', pw)
     #pw.println("titles func " + str(titles_function))
     bill_titles = titles_function()
     for title in bill_titles:
@@ -8549,7 +8548,7 @@ while not month_start.after(finish_date):
                 mpan = sup_gen.getExportMpan()
 
             sup_con = mpan.getSupplierContract()
-            bill_titles = comterp.get('contract_function')(sup_con, supply_polarity + '_virtual_bill_titles')()
+            bill_titles = comterp.get('contract_function')(sup_con, supply_polarity + '_virtual_bill_titles', pw)()
             pw.print('MPAN Core,Site Code,Site Name,Account,From,To,' + ','.join(bill_titles))
             pw.println('')
             pw.flush()
@@ -8560,7 +8559,7 @@ while not month_start.after(finish_date):
         pw.print(','.join('"' + str(value) + '"' for value in [data_source.mpan_core_str, site.getCode() , site.getName(), data_source.supplier_account, data_source.start_date, data_source.finish_date]))
         pw.flush()
 
-        bill = comterp.get('contract_function')(sup_con, supply_polarity + '_virtual_bill')(data_source)
+        bill = comterp.get('contract_function')(sup_con, supply_polarity + '_virtual_bill', pw)(data_source)
         for title in bill_titles:
             pw.print(',"' + str(bill.get(title, '')) + '"')
             if title in bill:
@@ -9692,7 +9691,7 @@ comterp = computer.callFunction('create_comterp', [])
 
 pw.print('Site Id,From,To')
 pw.flush()
-bill_titles = contract.callFunction('third_party_virtual_bill_titles', [])
+bill_titles = comterp.get('contract_function')(contract, 'third_party_virtual_bill_titles', pw)()
 for title in bill_titles:
     pw.print(',' + title)
 pw.println('')
@@ -9705,6 +9704,7 @@ else:
 sites = site_query.scroll()
 
 cal = MonadDate.getCalendar()
+forecast_date = comterp.get('contract_function')(computer, 'forecast_date', pw)()
 
 while sites.next():
     for month in range(months):
@@ -9719,21 +9719,17 @@ while sites.next():
         start_date = HhStartDate(cal.getTime())
         
         site = sites.get(0)
-        forecast_date = computer.callFunction('forecast_date', [])
-        data_source = computer.callFunction('site_source', [site, start_date, finish_date, forecast_date, comterp, pw])
-        bill = contract.callFunction('third_party_bill', [data_source])
+        data_source = comterp.get('SiteSource')(site, start_date, finish_date, forecast_date, comterp, pw)
+        bill = data_source.contract_function(contract, 'third_party_bill')( data_source)
 
-        for value in [data_source.id, data_source.start_date, data_source.finish_date]:
-            pw.print('"' + str(value) + '",')
+        pw.print(','.join('"' + str(value) + '"' for value in [site.getCode(), data_source.start_date, data_source.finish_date]) + ',')
         for title in bill_titles:
             pw.print('"' + str(bill.get(title, '')) + '",')
             if title in bill:
                 del bill[title]
         keys = bill.keys()
         keys.sort()
-        for k in keys:
-            pw.print(',"' + k + '","' + str(bill[k]) + '"')
-        pw.println('')
+        pw.println(''.join('"' + k + '","' + str(bill[k]) + '"' for k in keys))
         pw.flush()
         Hiber.session().clear()
 sites.close()
@@ -10325,7 +10321,7 @@ pw.close()]]></value>
         <value><![CDATA[true]]></value>
         <value><![CDATA[CSV Bill Checker]]></value>
         <value><![CDATA[from net.sf.chellow.monad import Hiber, UserException
-from java.lang import System
+from java.lang import System, Long
 from net.sf.chellow.monad.types import MonadDate
 from java.sql import Timestamp, ResultSet
 from java.util import GregorianCalendar, Calendar, TimeZone, Locale, Date
@@ -10359,7 +10355,7 @@ pw.flush()
 computer = NonCoreContract.getNonCoreContract('computer')
 comterp = PythonInterpreter()
 comterp.exec(computer.getChargeScript())
-forecast_date = comterp.get('forecast_date')()
+forecast_date = HhStartDate.roundDown(Date(Long.MAX_VALUE))
 
 if inv.hasParameter('batch-id'):
     batch_id = inv.getLong("batch-id")
@@ -10490,17 +10486,25 @@ while bills.next():
 
         generations = Hiber.session().createQuery("select distinct generation from SupplyGeneration generation where generation.supply = :supply and generation.importMpan is not null and generation.startDate.date <= :finishDate and (generation.finishDate is null or generation.finishDate.date >= :startDate)").setEntity('supply', supply).setTimestamp('startDate', chunk_start.getDate()).setTimestamp('finishDate', chunk_finish.getDate()).scroll()
         while generations.next():
-            #pw.println('starting vbill ' + str(System.currentTimeMillis()))
-            
             generation = generations.get(0)
+
+            if chunk_start.after(generation.getStartDate()):
+                block_start = chunk_start
+            else:
+                block_start = generation.getStartDate()
+
+            if chunk_finish.before(generation.getFinishDate()):
+                block_finish = chunk_finish
+            else:
+                block_finish = generation.getFinishDate()
+            
             mpan = generation.getImportMpan()
             contract = mpan.getSupplierContract()
             mpan_core = mpan.getCore()
             mpan_core_str = str(mpan_core)
-            data_source = comterp.get('supply_source')(forecast_date, comterp, pw, covered_primary_bill)
-            data_source.init_from_mpan(chunk_start, chunk_finish, mpan)
+            data_source = comterp.get('SupplySource')(block_start, block_finish, forecast_date, mpan, comterp, pw, covered_primary_bill)
 
-            vbf = comterp.get('contract_function')(contract, 'import_virtual_bill')
+            vbf = comterp.get('contract_function')(contract, 'import_virtual_bill', pw)
             if vbf is None:
                 raise UserException('The contract ' + contract.getName() + " doesn't have a function import_virtual_bill.")
             v_bill = vbf(data_source)
@@ -12488,7 +12492,7 @@ from net.sf.chellow.physical import HhStartDate, Supply
 from java.sql import Timestamp, ResultSet
 from org.python.util import PythonInterpreter
 from net.sf.chellow.billing import NonCoreContract
-from java.lang import Long
+from java.lang import Long, System
 from net.sf.chellow.monad.types import MonadDate
 
 inv.getResponse().setContentType("text/csv")
@@ -12496,8 +12500,7 @@ inv.getResponse().setHeader('Content-Disposition', 'attachment; filename="output
 pw = inv.getResponse().getWriter()
 
 computer = NonCoreContract.getNonCoreContract('computer')
-comterp = PythonInterpreter()
-comterp.exec(computer.getChargeScript())
+comterp = computer.callFunction('create_comterp', [])
 forecast_date = HhStartDate.roundDown(Date(Long.MAX_VALUE))
 
 def mpan_bit(query, kvarh_at_md_query, is_import, hh_count_query, num_hh, generation, comterp, forecast_date, start_date, finish_date):
@@ -12514,6 +12517,7 @@ def mpan_bit(query, kvarh_at_md_query, is_import, hh_count_query, num_hh, genera
         mpan_core_str = mpan.getCore().toString()
         sc_str = str(mpan.getAgreedSupplyCapacity())
         if llfc.getIsImport() and generation.getPc().getCode() == 0:
+            global gsp_kwh
             gsp_kwh = 0
             # Do months
             mb_cal = MonadDate.getCalendar()
@@ -12535,7 +12539,7 @@ def mpan_bit(query, kvarh_at_md_query, is_import, hh_count_query, num_hh, genera
                 me_cal.add(Calendar.MINUTE, 30)
                 me_cal.add(Calendar.MONTH, 1)
                 me_cal.add(Calendar.MINUTE, -30)
-                supply_source = comterp.get('supply_source')(forecast_date, comterp, pw)
+
                 if start_date.after(month_begin):
                     chunk_start = start_date
                 else:
@@ -12544,14 +12548,14 @@ def mpan_bit(query, kvarh_at_md_query, is_import, hh_count_query, num_hh, genera
                     chunk_finish = finish_date
                 else:
                     chunk_finish = month_end
-                #p w.println("chunk start " + str(chunk_start) + " chunk finish " + str(chunk_finish))
+                #p w.println("about to get ss, " + str(System.currentTimeMillis()))
+                supply_source = comterp.get('SupplySource')(chunk_start, chunk_finish, forecast_date, mpan, comterp, pw)
+                supply_source.add_duos_elements()
+                #p w.println("got ss, " + str(System.currentTimeMillis()))
+                gsp_kwh += sum([datum['gsp-kwh'] for datum in supply_source.hh_data])
 
-                supply_source.init_from_mpan(chunk_start, chunk_finish, mpan)
-                #pw.println("sum gsp " + str(supply_source.summary['sum-gsp-kwh']) + " sum msp " + str(supply_source.summary['sum-msp-kwh']))
-                gsp_kwh += supply_source.summary['sum-gsp-kwh']
-            gsp_kwh = str(round(gsp_kwh))
     md = 0
-    sum = 0
+    sum_kwh = 0
     non_actual = 0
     date_at_md = None
     kvarh_at_md = None
@@ -12565,7 +12569,7 @@ def mpan_bit(query, kvarh_at_md_query, is_import, hh_count_query, num_hh, genera
             md = hh_value
             date_at_md = hh_data.get(2)
             kvarh_at_md = kvarh_at_md_query.setTimestamp('mdDate', date_at_md.getDate()).uniqueResult()
-        sum = sum + hh_value
+        sum_kwh += hh_value
         if hh_status != 'A':
             non_actual = non_actual + hh_value
             num_na = num_na + 1
@@ -12574,10 +12578,10 @@ def mpan_bit(query, kvarh_at_md_query, is_import, hh_count_query, num_hh, genera
     if kvarh_at_md is None:
         kva_at_md = 'None'
     else:
-        kva_at_md = str(round(((kvarh_at_md.doubleValue() * 2)**2 + kw_at_md**2)**0.5))
+        kva_at_md = str(((kvarh_at_md.doubleValue() * 2)**2 + kw_at_md**2)**0.5)
     num_bad = str(num_hh - hh_count_query.setBoolean('isImport', is_import).uniqueResult() + num_na)
         
-    return llfc_str + ',' + mpan_core_str + ',' + sc_str + ',' + supplier_contract_name + ',' + str(round(sum)) + ',' + str(round(non_actual)) + ',' + gsp_kwh + ',' + str(round(kw_at_md)) + ',' + str(date_at_md) + ',' + str(kva_at_md) + ',' + str(num_bad)
+    return ','.join(str(val) for val in [llfc_str, mpan_core_str, sc_str, supplier_contract_name, sum_kwh, non_actual, gsp_kwh, kw_at_md, date_at_md, kva_at_md, num_bad])
     
 start_year = inv.getInteger("start-year")
 start_month = inv.getInteger("start-month")
@@ -12637,6 +12641,7 @@ normal_present_reads_query = Hiber.session().createQuery("from RegisterRead read
 bill_query = Hiber.session().createQuery("from Bill bill where bill.supply = :supply and bill.startDate.date <= :readDate and bill.finishDate.date >= :readDate order by bill.issueDate desc, bill.type.code").setMaxResults(1)
 
 while supplies.next():
+    #p w.println("starting supply " + str(System.currentTimeMillis()))
     supply = supplies.get(0)
     site_codes = ''
     site_names = ''
@@ -12701,7 +12706,7 @@ while supplies.next():
     else:
         chunk_finish = generation.getFinishDate()
 
-    num_hh = round((chunk_finish.getDate().getTime() - chunk_start.getPrevious().getDate().getTime()) / (30 * 60 * 1000))
+    num_hh = (chunk_finish.getDate().getTime() - chunk_start.getPrevious().getDate().getTime()) / (30 * 60 * 1000)
 
     pw.print(','.join(('"' + str(value) + '"') for value in [supply.getId(), supply.getName(), supply.getSource().getCode(), generator_type, site_codes, site_names, start_date, finish_date, generation.getPc(), generation.getMtc(), generation.getCop(), ssc_code, len(prime_reads), supply_type]) + ',')
     pw.flush()
@@ -13183,6 +13188,9 @@ if inv.hasParameter('site-code'):
     query = Hiber.session().createQuery("from Site site where site.code = :siteCode").setString('siteCode', search_term.strip())
 else:
     query = Hiber.session().createQuery("from Site site order by site.code")
+    #query = Hiber.session().createQuery("from Site site where site.code in ('10014', '12057') order by site.code")
+    #query = Hiber.session().createQuery("from Site site order by site.code").setMaxResults(400)
+
 
 computer = NonCoreContract.getNonCoreContract('computer')
 
@@ -13296,14 +13304,12 @@ def process_site(site, month_start, month_finish, forecast_date, pw):
                 supplier_contract = import_mpan.getSupplierContract()
                 if source_code in ['net', 'gen-net']:
                     #pw.println("starting vbill, " + str(System.currentTimeMillis()))
-                    supply_source = comterp.get('supply_source')(forecast_date, comterp, pw)
+                    supply_source = comterp.get('SupplySource')(bill_start, bill_finish, forecast_date, import_mpan, comterp, pw)
 
-                    #pw.println("starting init from mpan, " + str(System.currentTimeMillis()))
-                    supply_source.init_from_mpan(bill_start, bill_finish, import_mpan)
-                    month_data['import-net-kwh'] += supply_source.summary['sum-msp-kwh']
+                    month_data['import-net-kwh'] += sum(hh['msp-kwh'] for hh in supply_source.hh_data)
 
                     #pw.println("finished init from mpan, " + str(System.currentTimeMillis()))
-                    import_vb_function = comterp.get('contract_function')(supplier_contract, 'import_virtual_bill')
+                    import_vb_function = comterp.get('contract_function')(supplier_contract, 'import_virtual_bill', pw)
                     if import_vb_function is None:
                         problem += "Can't find the import_virtual_bill function in the supplier contract. "
                     else:
@@ -13317,7 +13323,7 @@ def process_site(site, month_start, month_finish, forecast_date, pw):
                             month_data['import-net-gbp'] += v_bill['net-gbp']
                         except KeyError:
                             problem += 'For the supply ' + import_mpan.toString() + ' the virtual bill ' + str(v_bill) + ' from the contract ' + supplier_contract.getName() + ' does not contain the net-gbp key.'
-                        problem += supply_source.summary['problem']
+                        problem += supply_source.problem
 
                     dc_contract = supply_generation.getHhdcContract()
                     if dc_contract is not None:
@@ -13345,29 +13351,28 @@ def process_site(site, month_start, month_finish, forecast_date, pw):
                 billed_kwh += overlap_proportion * bill.getKwh().doubleValue()
 
         #pw.println("getting site ds, " + str(System.currentTimeMillis()))
-        site_ds = comterp.get('site_source')(site, chunk_start, chunk_finish, forecast_date, comterp, pw)
+
         displaced_mpan = comterp.get('displaced_mpan')(group, chunk_start, chunk_finish)
+        site_ds = comterp.get('SiteSource')(site, chunk_start, chunk_finish, forecast_date, comterp, pw, displaced_mpan)
         if displaced_mpan != None:
             #pw.println("starting displaced, " + str(System.currentTimeMillis()))
-            site_ds.init_from_mpan(displaced_mpan)
-            #pw.println("done init from mpan, " + str(System.currentTimeMillis()))
-            month_data['msp-gbp'] += comterp.get('contract_function')(displaced_mpan.getSupplierContract(), 'displaced_virtual_bill')(site_ds)['net-gbp']
+            month_data['msp-gbp'] += comterp.get('contract_function')(displaced_mpan.getSupplierContract(), 'displaced_virtual_bill', pw)(site_ds)['net-gbp']
 
             #pw.println("finishing displaced, " + str(System.currentTimeMillis()))
         elif has_3rd_party and site.getCode() == '12129':
-            site_ds.init_from_site()
             keys = third_party_contracts.keys()
             keys.sort()
-            third_gbp = comterp.get('contract_function')(third_party_contracts[keys[0]], 'third_party_bill')(site_ds)['net-gbp']
+            third_gbp = comterp.get('contract_function')(third_party_contracts[keys[0]], 'third_party_bill', pw)(site_ds)['net-gbp']
             month_data['used-3rd-party-gbp'] += third_gbp
-        else:
-            site_ds.init_from_site()
 
         #pw.println("finishing site ds " + str(System.currentTimeMillis()))
 
         month_data['used-gbp'] += month_data['import-net-gbp'] + month_data['msp-gbp'] + month_data['used-3rd-party-gbp']
+
         for stream_name in ['export-net', 'import-gen', 'export-gen', 'import-3rd-party', 'export-3rd-party', 'msp', 'used-3rd-party']:
-            month_data[stream_name + '-kwh'] += site_ds.summary['sum-' + stream_name + '-kwh']
+            name = stream_name + '-kwh'
+            month_data[name] += sum(hh[name] for hh in site_ds.hh_data)
+
         month_data['used-kwh'] += month_data['msp-kwh'] + month_data['used-3rd-party-kwh'] + month_data['import-net-kwh']
 
     sources.sort()
@@ -13394,6 +13399,7 @@ for i in range(months):
     sites.beforeFirst()
     while sites.next():
         #pw.println("starting site, " + str(System.currentTimeMillis()))
+        #pw.println("starting site, " + str(System.currentTimeMillis()))
         site = sites.get(0)
         cal.setTime(start_date.getDate())
         cal.add(Calendar.MONTH, i)
@@ -13401,6 +13407,8 @@ for i in range(months):
         cal.add(Calendar.MONTH, 1)
         cal.add(Calendar.MINUTE, -30)
         month_finish = HhStartDate(cal.getTime())
+        #tq = process_site(site, month_start, month_finish, forecast_date, pw)
+        #pw.println('printing, ' + str(System.currentTimeMillis()) + ',' + ','.join('"' + str(value) + '"' for value in tq))
         pw.print('\r\n' + ','.join('"' + str(value) + '"' for value in process_site(site, month_start, month_finish, forecast_date, pw)))
         pw.flush()
         #pw.println("finishing site, " + str(System.currentTimeMillis()))
@@ -14235,7 +14243,7 @@ start_date = HhStartDate(cal.getTime())
 
 comterp = computer.callFunction('create_comterp', [])
 
-field_names = ['supply-name', 'source-code', 'generator-type', 'month', 'pc-code', 'msn', 'site-code', 'site-name', 'metering-type', 'import-mpan-core', 'metered-import-kwh', 'metered-import-net-gbp', 'metered-import-estimated-kwh', 'billed-import-apportioned-kwh', 'billed-import-apportioned-net-gbp', 'billed-import-raw-kwh', 'billed-import-raw-net-gbp', 'export-mpan-core', 'metered-export-kwh', 'metered-export-estimated-kwh', 'billed-export-apportioned-kwh', 'billed-export-apportioned-net-gbp', 'billed-export-raw-kwh', 'billed-export-raw-net-gbp', 'problem', 'timestamp']
+field_names = ['supply-name', 'source-code', 'generator-type', 'month', 'pc-code', 'msn', 'site-code', 'site-name', 'metering-type', 'import-mpan-core', 'metered-import-kwh', 'metered-import-net-gbp', 'metered-import-estimated-kwh', 'billed-import-kwh', 'billed-import-net-gbp', 'export-mpan-core', 'metered-export-kwh', 'metered-export-estimated-kwh', 'billed-export-kwh', 'billed-export-net-gbp', 'problem', 'timestamp']
 
 inv.getResponse().setContentType("text/csv")
 inv.getResponse().setHeader('Content-Disposition', 'attachment; filename="output.csv"')
@@ -14263,7 +14271,7 @@ site_query = Hiber.session().createQuery("select ssgen.site from SiteSupplyGener
 
 apportioned_bill_query = Hiber.session().createQuery("from Bill bill where bill.supply = :supply and bill.startDate.date <= :finishDate and bill.finishDate.date >= :startDate")
 
-raw_bill_query = Hiber.session().createQuery("from Bill bill where bill.supply = :supply and bill.finishDate.date <= :finishDate and bill.finishDate.date >= :startDate")
+#raw_bill_query = Hiber.session().createQuery("from Bill bill where bill.supply = :supply and bill.finishDate.date <= :finishDate and bill.finishDate.date >= :startDate")
 
 forecast_date = comterp.get('forecast_date')()
 
@@ -14329,7 +14337,6 @@ for i in range(months):
                     est_kwh = 0
 
             if not (polarity and source_code in ['net', 'gen-net']):
-                kwh = 0
                 kwhs = kwh_query.setBoolean('isImport', polarity).scroll()
                 while kwhs.next():
                     kwh += kwhs.get(0).doubleValue()
@@ -14337,7 +14344,6 @@ for i in range(months):
 
             values['metered-' + pol_name + '-estimated-kwh'] = est_kwh
             values['metered-' + pol_name + '-kwh'] = kwh
-            values['metered-' + pol_name + '-estimated-net-gbp'] = 0
             values['metered-' + pol_name + '-net-gbp'] = 0
             values['billed-' + pol_name + '-kwh'] = 0
             values['billed-' + pol_name + '-net-gbp'] = 0
@@ -14354,13 +14360,14 @@ for i in range(months):
             bill_duration = bill_finish - bill_start + (30 * 60 * 1000)
             overlap_duration = min(bill_finish, month_finish.getDate().getTime()) + (30 * 60 * 1000) - max(bill_start, month_start.getDate().getTime())
             overlap_proportion = float(overlap_duration) / float(bill_duration)
-            values['billed-import-apportioned-net-gbp'] += overlap_proportion * bill.getNet().doubleValue()
-            values['billed-import-apportioned-kwh'] += overlap_proportion * bill.getKwh().doubleValue()
+            values['billed-import-net-gbp'] += overlap_proportion * bill.getNet().doubleValue()
+            values['billed-import-kwh'] += overlap_proportion * bill.getKwh().doubleValue()
 
+        '''
         for bill in raw_bill_query.setEntity('supply', supply).setTimestamp('startDate', month_start.getDate()).setTimestamp('finishDate', month_finish.getDate()).list():
             values['billed-import-raw-net-gbp'] += bill.getNet().doubleValue()
             values['billed-import-raw-kwh'] += bill.getKwh().doubleValue()
-
+        '''
         for generation in generations:
             if generation.getStartDate().after(month_start):
                 chunk_start = generation.getStartDate()
@@ -14383,12 +14390,10 @@ for i in range(months):
 
             if source_code in ['net', 'gen-net', '3rd-party']:
                 #p w.println("starting vbill, " + str(System.currentTimeMillis()))
-                supply_source = comterp.get('supply_source')(forecast_date, comterp, pw)
+                supply_source = comterp.get('SupplySource')(chunk_start, chunk_finish, forecast_date, import_mpan, comterp, pw)
 
-                #p w.println("starting init from mpan, " + str(System.currentTimeMillis()))
-                supply_source.init_from_mpan(chunk_start, chunk_finish, import_mpan)
                 #p w.println('sum msp kwh ' + str(supply_source.summary['sum-msp-kwh']))
-                values['metered-import-kwh'] += supply_source.summary['sum-msp-kwh']
+                values['metered-import-kwh'] += sum(datum['msp-kwh'] for datum in supply_source.hh_data)
 
                 #p w.println("finished init from mpan, " + str(System.currentTimeMillis()))
                 import_vb_function = supply_source.contract_function(supplier_contract, 'import_virtual_bill')
@@ -14397,15 +14402,12 @@ for i in range(months):
                 else:
                     v_bill = import_vb_function(supply_source)
                     #p w.println("finishing vbill, " + str(System.currentTimeMillis()))
-                    if supply_source.pc_code != '00' and not supply_source.is_amr:
-                        #month_data['used-kwh'] += supply_source.summary['sum-msp-kwh']
-                        pass
 
                     if 'net-gbp' in v_bill:
                         values['metered-import-net-gbp'] += v_bill['net-gbp']
                     else:
                         values['problem'] += 'For the supply ' + import_mpan.toString() + ' the virtual bill ' + str(v_bill) + ' from the contract ' + supplier_contract.getName() + ' does not contain the net-gbp key.'
-                    values['problem'] += supply_source.summary['problem']
+                    values['problem'] += supply_source.problem
                 #p w.println("done virtual bill , " + str(System.currentTimeMillis()))
 
                 hhdc_contract = generation.getHhdcContract()
