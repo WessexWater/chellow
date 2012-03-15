@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <body>
-<p><a href="/">Jevons</a> {% for parent in advance.stream.asset.parents %}&gt; <a href="/show_asset?asset_id={{ parent.id }}">{{ parent.name }}</a>{% endfor %} &gt; <a href="/show_asset?asset_id={{ advance.stream.asset.id }}">{{ advance.stream.asset.name }}</a> &gt; <a href="/show_stream?stream_id={{ advance.stream.id }}">{{ advance.stream.name }}</a> &gt; {{ advance.start_date|date:"Y-m-d H:i" }} [<a href="/update_advance?advance_id={{ advance.id }}">update</a>]</p>
+<p><a href="/">Jevons</a> {% for parent in advance.asset.parents %}&gt; <a href="/show_asset?asset_id={{ parent.id }}">{{ parent.name }}</a>{% endfor %} &gt; <a href="/show_asset?asset_id={{ advance.asset.id }}">{{ advance.asset.name }}</a>  &gt; {{ advance.start_date|date:"Y-m-d H:i" }} [<a href="/update_advance?advance_id={{ advance.id }}">update</a>]</p>
 
 <table>
 <tr><th>Start Date</th><td>{{ advance.start_date|date:"Y-m-d H:i" }}</td></tr>

@@ -1,11 +1,22 @@
 <!DOCTYPE html>
 <html>
 <body>
-<p><a href="/">Jevons</a> &gt; {{ importer.name }}</p>
+<p><a href="/">Jevons</a> &gt; {{ importer.name }} [<a href="/update_importer?importer_id={{ importer.id }}">update</a>]</p>
 
-{% if message %}<p>{{ message }}</p>{% endif %}
+{% if messages %}<ul>{% for message in messages %}<li>{{ message }}</li>{% endfor %}</ul>{% endif %}
 
 {% if importer.code %}
+{% if importer.code.thread %}
+{% else %}
+<form method="post" action="/show_importer" enctype="multipart/form-data">{% csrf_token %}
+<fieldset>
+<legend>Start Importer Thread</legend>
+<input name="importer_id" type="hidden" value="{{ importer.id }}" />
+<input type="submit" value="Start" />
+</fieldset>
+</form>
+{% endif %}
+<br>
 <form method="post" action="/show_importer" enctype="multipart/form-data">{% csrf_token %}
 <fieldset>
 <legend>CSV Import</legend>
@@ -16,6 +27,7 @@
 <form method="post" action="/show_importer">{% csrf_token %}
 <fieldset>
 <legend>Remove Code</legend>
+<input name="importer_id" type="hidden" value="{{ importer.id }}" />
 <input name="remove_code" type="submit" value="Remove" />
 </fieldset>
 </form>
@@ -29,6 +41,11 @@
 </form>
 {% endif %}
 
+<h4>Properties</h4>
+
+<pre>
+{{ importer.properties }}
+</pre>
 <br>
 
 

@@ -1,5 +1,0 @@
-importers = {}
-
-class BglobalImporter():
-    pass
-

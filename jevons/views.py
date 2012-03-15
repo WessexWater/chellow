@@ -1,13 +1,11 @@
 from django.shortcuts import render_to_response, redirect, render
 from django.core.context_processors import csrf
-from root.models import Asset, Stream, Advance, Importer
+from root.models import Asset, Advance, Importer
 import csv
 import logging
 import datetime
 import importers
-
-class UserException(Exception):
-    pass
+from monad import UserException
 
 
 logger = logging.getLogger('jevons')
@@ -24,11 +22,6 @@ def show_asset(request):
     
     return render_to_response('show_asset.html', {'asset': asset, 'sub_assets': sub_assets})
 
-def show_stream(request):
-    stream_id = request.GET['stream_id']
-    stream = Stream.objects.get(id__exact=stream_id)
-    
-    return render(request, 'show_stream.html', {'stream': stream, 'advances': Advance.objects.all()})
 
 def update_asset(request):
     if request.method == "GET":
@@ -45,29 +38,31 @@ def update_asset(request):
         asset = Asset.objects.get(id__exact=asset_id)
         asset.name = request.POST['name']
         asset.code = request.POST['code']
+        asset.properties = request.POST['properties']
         asset.save()
 
         return redirect('/show_asset?asset_id=' + asset_id)
     
-def add_sub_asset(request):
+def add_asset(request):
     if request.method == "GET":
-        asset_id = request.GET['asset_id']
-        asset = Asset.objects.get(id__exact=asset_id)
+        parent_asset_id = request.GET['parent_asset_id']
+        parent_asset = Asset.objects.get(id__exact=parent_asset_id)
         
-        vals = {'asset': asset}
+        vals = {'parent_asset': parent_asset}
         vals.update(csrf(request))
         
-        return render_to_response('add_sub_asset.html', vals)
+        return render_to_response('add_asset.html', vals)
 
     elif request.method == "POST":
-        asset_id = request.POST['asset_id']
-        asset = Asset.objects.get(id__exact=asset_id)
+        parent_asset_id = request.POST['parent_asset_id']
+        parent_asset = Asset.objects.get(id__exact=parent_asset_id)
         name = request.POST['name']
         code = request.POST['code']
-        sub_asset = Asset(name=name, code=code, parent=ast)
-        sub_asset.save()
+        properties = request.POST['properties']
+        asset = Asset(parent=parent_asset, name=name, code=code, properties=properties)
+        asset.save()
         
-        return redirect('/show_asset?asset_id=' + asset_id)
+        return redirect('/show_asset?asset_id=' + str(asset.id))
 
 
 def delete_asset(request):
@@ -113,88 +108,28 @@ def csv_import(request):
         return render_to_response('csv_import.html', vals)
 
 
-def add_stream(request):
+def add_advance(request):
     if request.method == "GET":
         asset_id = request.GET['asset_id']
         asset = Asset.objects.get(id__exact=asset_id)
         
-        vals = {'asset': asset}
-        vals.update(csrf(request))
-        
-        return render_to_response('add_stream.html', vals)
-
-    elif request.method == "POST":
-        asset_id = request.POST['asset_id']
-        asset = Asset.objects.get(id__exact=asset_id)
-        name = request.POST['name']
-        code = request.POST['code']
-        properties = request.POST['properties']
-        stream = Stream(asset=asset, code=code, name=name, properties=properties)
-        stream.save()
-        return redirect('/show_asset?asset_id=' + asset_id)
-    
-    
-def bglobal_importer(request):
-    if request.method == "GET":
-        vals = {}
-        vals.update(csrf(request))
-        
-        return render_to_response('bglobal_importer.html', vals)
-
-    elif request.method == "POST":
-        asset_id = request.POST['asset_id']
-        asset = Asset.objects.get(id__exact=asset_id)
-        name = request.POST['name']
-        code = request.POST['code']
-        properties = request.POST['properties']
-        stream = Stream(asset=asset, code=code, name=name, properties=properties)
-        stream.save()
-        return redirect('/show_asset?asset_id=' + asset_id)
-
-
-def add_advance(request):
-    if request.method == "GET":
-        stream_id = request.GET['stream_id']
-        stream = Stream.objects.get(id__exact=stream_id)
-        
-        vals = {'stream': stream, 'utc_now': datetime.datetime.utcnow(), 'months': list(range(1, 13)), 'days': list(range(1, 31)), 'hours': list(range(24)), 'minutes': list(range(60))}
+        vals = {'asset': asset, 'utc_now': datetime.datetime.utcnow(), 'months': list(range(1, 13)), 'days': list(range(1, 31)), 'hours': list(range(24)), 'minutes': list(range(60))}
         vals.update(csrf(request))
         
         return render(request, 'add_advance.html', vals)
 
     elif request.method == "POST":
-        stream_id = request.POST['stream_id']
-        stream = Stream.objects.get(id__exact=stream_id)
+        asset_id = request.POST['asset_id']
+        asset = Asset.objects.get(id__exact=asset_id)
         start_date_year_str = request.POST['year']
         start_date_month_str = request.POST['month']
         start_date_day_str = request.POST['day']
         start_date_hour_str = request.POST['hour']
         start_date_minute_str = request.POST['minute']
         value_str = request.POST['value']
-        advance = Advance(stream=stream, start_date=datetime.datetime(int(start_date_year_str), int(start_date_month_str), int(start_date_day_str), int(start_date_hour_str), int(start_date_minute_str)), value=float(value_str))
+        advance = Advance(asset=asset, start_date=datetime.datetime(int(start_date_year_str), int(start_date_month_str), int(start_date_day_str), int(start_date_hour_str), int(start_date_minute_str)), value=float(value_str))
         advance.save()
         return redirect('/show_advance?advance_id=' + str(advance.id))
-
-
-def update_stream(request):
-    if request.method == "GET":
-        stream_id = request.GET['stream_id']
-        stream = Stream.objects.get(id__exact=stream_id)
-        
-        vals = {'stream': stream}
-        vals.update(csrf(request))
-        
-        return render_to_response('update_stream.html', vals)
-
-    elif request.method == "POST":
-        stream_id = request.POST['stream_id']
-        stream = Stream.objects.get(id__exact=stream_id)
-        stream.name = request.POST['name']
-        stream.code = request.POST['code']
-        stream.properties = request.POST['properties']
-        stream.save()
-        
-        return redirect('/show_stream?stream_id=' + stream_id)
     
 
 def show_advance(request):
@@ -275,30 +210,43 @@ def show_importer(request):
             importer = importers.importers[importer_id]
         else:
             importer = Importer.objects.get(id__exact=importer_id)
+            importers.importers[importer_id] = importer
         
         props = eval(importer.properties, {})
         try:
+            '''
             if 'add_code' in request.POST:
                 if importer.code is None:
-                    class_name = props['class_name']
-                    code = eval(class_name)(props)
+                    try:
+                        class_name = props['class_name']
+                    except KeyError:
+                        raise UserException("The properties dictionary must contain an entry called class_name.")
+                    
+                    try:
+                        code = eval(class_name)(props)
+                    except NameError, detail:
+                        raise UserException("Problem with the class name: " + str(detail))
                     importer.code = code
-                    redirect('/show_importer?importer_id=' + importer_id) 
+                    return redirect('/show_importer?importer_id=' + importer_id) 
                 else:
-                    raise UserException, "The code is already added."
+                    raise UserException("The code is already added.")
             elif 'remove_code' in request.POST:
-                    inv.sendSeeOther(get_uri())
-                    if inv.hasParameter('remove'):
-                        contract_f(hh_importer_contract, 'remove_hh_importer_task')(ctx, contract)
-                        inv.sendSeeOther(get_uri())
-            elif inv.hasParameter('start'):
-                contract_f(hh_importer_contract, 'start_hh_importer_task')(ctx, contract)
-                inv.sendSeeOther(get_uri())
-            elif inv.hasParameter('now'):
-                Thread(hh_importer, "Import Now: " + str(contract.getId())).start()
-                inv.sendSeeOther(get_uri())
+                if importer.code is None:
+                    raise UserException("The code isn't there to remove.")
+                importer.code = None
+                return redirect('/show_importer?importer_id=' + importer_id)
+            '''
+            if 'start' in request.POST:
+                pass
+                #contract_f(hh_importer_contract, 'start_hh_importer_task')(ctx, contract)
+                #inv.sendSeeOther(get_uri())
+            #elif inv.hasParameter('now'):
+                #Thread(hh_importer, "Import Now: " + str(contract.getId())).start()
+                #inv.sendSeeOther(get_uri())
+            
         except UserException, message:
-            return render('show_importer.html', {'importer': importer, 'messages': [message]}, status=400)
+            pass
+            #return render(request, 'show_importer.html', {'importer': importer, 'messages': [message]}, status=400)
 
 
 def add_importer(request):
@@ -313,6 +261,37 @@ def add_importer(request):
         name = request.POST['name']
         properties = request.POST['properties']
         importer = Importer(name=name, properties=properties)
-        importer.save()
+        try:
+            importer.validate()
+            importer.save()
+            return redirect('/show_importer?importer_id=' + str(importer.id))
+        except UserException, detail:
+            vals = {'message': detail}
+            vals.update(csrf(request))
         
-        return redirect('/show_importer?importer_id=' + str(importer.id))
+            return render_to_response('add_importer.html', vals)
+
+
+def update_importer(request):
+    if request.method == "GET":
+        importer_id = request.GET['importer_id']
+        importer = Importer.objects.get(id__exact=importer_id)
+        
+        vals = {'importer': importer}
+        vals.update(csrf(request))
+        
+        return render_to_response('update_importer.html', vals)
+
+    elif request.method == "POST":
+        importer_id = request.POST['importer_id']
+        importer = Importer.objects.get(id__exact=importer_id)
+        importer.name = request.POST['name']
+        importer.properties = request.POST['properties']
+        try:
+            importer.validate()
+            importer.save()
+            return redirect('/show_importer?importer_id=' + importer_id)
+        except UserException, detail:
+            vals = {'importer': importer, 'message': detail}
+            vals.update(csrf(request))
+            return render(request, 'update_importer.html', vals)
