@@ -9479,21 +9479,30 @@ while not mb_cal.getTime().after(finish_date.getDate()):
         generation_element = doc.createElement('generation')
         generations_element.appendChild(generation_element)
         generation = generations.get(0)
+
+        if generation.getStartDate().after(chunk_start):
+            block_start = generation.getStartDate()
+        else:
+            block_start = chunk_start
+        if chunk_finish.before(generation.getFinishDate()):
+            block_finish = chunk_finish
+        else:
+            block_finish = generation.getFinishDate()
+
         mpan = generation.getImportMpan()
         contract = mpan.getSupplierContract()
         mpan_core = mpan.getCore()
         mpan_core_str = str(mpan_core)
-        data_source = comterp.get('supply_source')(forecast_date, comterp, pw)
-        data_source.init_from_mpan(chunk_start, chunk_finish, mpan)
+        data_source = comterp.get('SupplySource')(block_start, block_finish, forecast_date, mpan, comterp, pw)
         for name, value in [('id', data_source.id), ('supplier contract', contract.getName()), ('account', data_source.supplier_account), ('start date', data_source.start_date), ('finish date', data_source.finish_date)]:
             field_element = doc.createElement('field')
             generation_element.appendChild(field_element)
             field_element.setAttribute('name', name)
             field_element.setAttribute('value', str(value))
-        bill = comterp.get('contract_function')(contract, 'import_virtual_bill')(data_source)
+        bill = comterp.get('contract_function')(contract, 'import_virtual_bill', pw)(data_source)
         net_gbp += bill['net-gbp']
         #raise UserException('start date ' + str(data_source.start_date) + ' finish date ' + str(data_source.finish_date) + ' ' + str(bill))
-        for title in comterp.get('contract_function')(contract, 'import_virtual_bill_titles')():
+        for title in comterp.get('contract_function')(contract, 'import_virtual_bill_titles', pw)():
             if title == 'consumption-info':
                 del bill[title]
                 continue
