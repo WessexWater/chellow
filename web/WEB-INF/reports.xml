@@ -17434,7 +17434,7 @@ source.setAttribute('debug', debug)]]></value>
         <value><![CDATA[223]]></value>
         <value><![CDATA[true]]></value>
         <value><![CDATA[Transmission Loss Multiplier Importer]]></value>
-        <value><![CDATA[from java.lang import Thread
+        <value><![CDATA[from java.lang import Thread, System
 from net.sf.chellow.billing import NonCoreContract, HhdcContract
 from net.sf.chellow.monad import XmlTree, UserException, Monad, MonadMessage
 from net.sf.chellow.monad.types import MonadUri
@@ -17466,10 +17466,10 @@ if task is not None:
 
 try:
     if inv.hasParameter('remove'):
-        contract_f(tlm_contract, 'remove_tlm_task')(ctx)
+        contract_f(tlm_contract, 'remove_tlm_task', System.err)(ctx)
         inv.sendSeeOther(REPORT_URI)
     elif inv.hasParameter('start'):
-        contract_f(tlm_contract, 'start_tlm_task')(ctx)
+        contract_f(tlm_contract, 'start_tlm_task', System.err)(ctx)
         inv.sendSeeOther(REPORT_URI)
     elif inv.hasParameter('now'):
         Thread(task, "TLM Import Now").start()
@@ -17573,7 +17573,7 @@ source.setAttribute('debug', debug)]]></value>
         <value><![CDATA[225]]></value>
         <value><![CDATA[true]]></value>
         <value><![CDATA[RCRC Importer]]></value>
-        <value><![CDATA[from java.lang import Thread
+        <value><![CDATA[from java.lang import Thread, System
 from net.sf.chellow.billing import NonCoreContract, HhdcContract
 from net.sf.chellow.monad import XmlTree, UserException, Monad, MonadMessage
 from net.sf.chellow.monad.types import MonadUri
@@ -17605,10 +17605,10 @@ if task is not None:
 
 try:
     if inv.hasParameter('remove'):
-        contract_f(rcrc_contract, 'remove_rcrc_task')(ctx)
+        contract_f(rcrc_contract, 'remove_rcrc_task', System.err)(ctx)
         inv.sendSeeOther(REPORT_URI)
     elif inv.hasParameter('start'):
-        contract_f(rcrc_contract, 'start_rcrc_task')(ctx)
+        contract_f(rcrc_contract, 'start_rcrc_task', System.err)(ctx)
         inv.sendSeeOther(REPORT_URI)
     elif inv.hasParameter('now'):
         Thread(task, "RCRC Import Now").start()
