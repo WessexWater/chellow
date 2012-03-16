@@ -1,6 +1,6 @@
 /*******************************************************************************
  * 
- *  Copyright (c) 2005, 2011 Wessex Water Services Limited
+ *  Copyright (c) 2005, 2012 Wessex Water Services Limited
  *  
  *  This file is part of Chellow.
  * 
@@ -23,7 +23,6 @@ package net.sf.chellow.billing;
 
 import java.math.BigDecimal;
 import java.net.URI;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
@@ -481,8 +480,8 @@ public class Bill extends PersistentEntity implements Urlable {
 			String account = inv.getString("account");
 			String reference = inv.getString("reference");
 			Date issueDate = inv.getDate("issue-date");
-			Date startDate = inv.getDate("start");
-			Date finishDate = inv.getDate("finish");
+			Date startDate = inv.getDateTime("start");
+			Date finishDate = inv.getDateTime("finish");
 			BigDecimal kwh = inv.getBigDecimal("kwh");
 			BigDecimal net = inv.getBigDecimal("net");
 			BigDecimal vat = inv.getBigDecimal("vat");
@@ -493,14 +492,10 @@ public class Bill extends PersistentEntity implements Urlable {
 			if (!inv.isValid()) {
 				throw new UserException(document());
 			}
-			Calendar cal = MonadDate.getCalendar();
-			cal.setTime(finishDate);
-			cal.set(Calendar.HOUR_OF_DAY, 23);
-			cal.set(Calendar.MINUTE, 30);
 			try {
 				update(account, reference, issueDate,
 						new HhStartDate(startDate),
-						new HhStartDate(cal.getTime()), kwh, net, vat, gross,
+						new HhStartDate(finishDate), kwh, net, vat, gross,
 						BillType.getBillType(typeId), breakdown);
 			} catch (UserException e) {
 				e.setDocument(document());
@@ -521,6 +516,8 @@ public class Bill extends PersistentEntity implements Urlable {
 		source.appendChild(billElement);
 		source.appendChild(MonadDate.getMonthsXml(doc));
 		source.appendChild(MonadDate.getDaysXml(doc));
+		source.appendChild(MonadDate.getHoursXml(doc));
+		source.appendChild(HhStartDate.getHhMinutesXml(doc));
 		for (BillType type : (List<BillType>) Hiber.session()
 				.createQuery("from BillType type order by type.code").list()) {
 			source.appendChild(type.toXml(doc));
