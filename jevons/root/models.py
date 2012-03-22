@@ -1,5 +1,5 @@
 from django.db import models
-import monad
+from root.monad import UserException
 import threading
 import stat
 import tempfile
@@ -139,8 +139,8 @@ class Importer(models.Model):
     properties = models.TextField()
     state = models.TextField()
     
-    #code = None
     logger = Logger()
+    lock = threading.Lock()
     
     class Meta:
         db_table = 'importer'
@@ -148,9 +148,17 @@ class Importer(models.Model):
     def validate(self):
         try:
             self.get_props()
+        except SyntaxError, detail:
+            raise UserException("Problem parsing properties " + str(detail))
+        except NameError, detail:
+            raise UserException("Problem parsing properties " + str(detail))
+        
+        try:
             self.get_state()
         except SyntaxError, detail:
-            raise monad.UserException(detail)
+            raise UserException("Problem parsing state " + str(detail))
+        except NameError, detail:
+            raise UserException("Problem parsing state " + str(detail))
 
     def get_props(self):
         return eval(self.properties, {})

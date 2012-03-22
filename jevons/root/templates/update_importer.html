@@ -17,6 +17,17 @@
 </fieldset>
 </form>
 
+<form method="post" action="/update_importer">{% csrf_token %}
+<fieldset>
+<legend>Update Importer State</legend>
+<input type="hidden" name="importer_id" value="{{ importer.id }}">
+<br />
+<label>State <textarea name="state">{{ importer.state }}</textarea></label>
+<br />
+<input name="update-state" type="submit" value="Update" /> <input type="reset" value="Reset" />
+</fieldset>
+</form>
+
 <p><a href="/delete_importer?importer_id={{ importer.id }}">Delete this importer</a></p>
 
 </body>

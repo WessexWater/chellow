@@ -8,10 +8,14 @@
 <form method="post" action="/add_importer">{% csrf_token %}
 <fieldset>
 <legend>Add Importer</legend>
-<label>Name <input size="40" name="name" value="" /></label>
+<label>Name <input size="40" name="name" value="{{ request.POST.name }}" /></label>
 <br />
 <label>Properties
  <textarea name="properties">{}</textarea>
+ </label>
+ <br />
+<label>State
+ <textarea name="state">{}</textarea>
  </label>
 <br />
 <input type="submit" value="Add" /> <input type="reset" value="Reset" />

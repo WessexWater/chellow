@@ -5,7 +5,7 @@ import csv
 import logging
 import datetime
 import importers
-from monad import UserException
+from root.monad import UserException
 
 
 logger = logging.getLogger('jevons')
@@ -193,48 +193,32 @@ def delete_advance(request):
         return redirect('/show_stream?stream_id=' + str(stream.id))
 
 
-def show_importer(request):
+def show_importer(request, message=None, status=200):
     if request.method == "GET":
         importer_id = request.GET['importer_id']
-        if importer_id in importers.importers:
-            importer = importers.importers[importer_id]
-        else:
+        importer = importers.get_importer(importer_id)
+        if importer is None:
             importer = Importer.objects.get(id__exact=importer_id)
-        vals = {'importer': importer}
+            is_importer_loaded = False
+        else:
+            is_importer_loaded = True
+            
+        vals = {'importer': importer, 'is_importer_loaded': is_importer_loaded, 'message': message}
         vals.update(csrf(request))
-        return render_to_response('show_importer.html', vals)
+        return render(request, 'show_importer.html', vals, status=status)
     
     elif request.method == "POST":
         importer_id = request.POST['importer_id']
-        if importer_id in importers.importers:
-            importer = importers.importers[importer_id]
-        else:
-            importer = Importer.objects.get(id__exact=importer_id)
-            importers.importers[importer_id] = importer
-        
-        props = eval(importer.properties, {})
+
         try:
-            '''
-            if 'add_code' in request.POST:
-                if importer.code is None:
-                    try:
-                        class_name = props['class_name']
-                    except KeyError:
-                        raise UserException("The properties dictionary must contain an entry called class_name.")
-                    
-                    try:
-                        code = eval(class_name)(props)
-                    except NameError, detail:
-                        raise UserException("Problem with the class name: " + str(detail))
-                    importer.code = code
-                    return redirect('/show_importer?importer_id=' + importer_id) 
-                else:
-                    raise UserException("The code is already added.")
-            elif 'remove_code' in request.POST:
-                if importer.code is None:
-                    raise UserException("The code isn't there to remove.")
-                importer.code = None
+            if 'load' in request.POST:
+                importers.load_importer(importer_id)
+                return redirect('/show_importer?importer_id=' + importer_id) 
+            elif 'unload' in request.POST:
+                importers.unload_importer(importer_id)
                 return redirect('/show_importer?importer_id=' + importer_id)
+            else:
+                raise UserException("Action not recognized.")
             '''
             if 'start' in request.POST:
                 pass
@@ -243,10 +227,9 @@ def show_importer(request):
             #elif inv.hasParameter('now'):
                 #Thread(hh_importer, "Import Now: " + str(contract.getId())).start()
                 #inv.sendSeeOther(get_uri())
-            
+            '''
         except UserException, message:
-            pass
-            #return render(request, 'show_importer.html', {'importer': importer, 'messages': [message]}, status=400)
+            return redirect('jevons.root.views.show_importer', message=message, status=400)
 
 
 def add_importer(request):
@@ -268,9 +251,14 @@ def add_importer(request):
         except UserException, detail:
             vals = {'message': detail}
             vals.update(csrf(request))
-        
-            return render_to_response('add_importer.html', vals)
-
+            return render(request, 'add_importer.html', vals)
+        '''
+        except:
+            e_info = sys.exc_info()
+            tb = e_info[2]
+            sys.stderr.write("Outer problem " + str(e_info[0]) + str(e_info[1]) + str(tb) + " line number " + str(tb.tb_lineno))
+            return render(request, 'add_importer.html', {})
+         '''
 
 def update_importer(request):
     if request.method == "GET":
@@ -283,15 +271,31 @@ def update_importer(request):
         return render_to_response('update_importer.html', vals)
 
     elif request.method == "POST":
-        importer_id = request.POST['importer_id']
-        importer = Importer.objects.get(id__exact=importer_id)
-        importer.name = request.POST['name']
-        importer.properties = request.POST['properties']
-        try:
-            importer.validate()
-            importer.save()
-            return redirect('/show_importer?importer_id=' + importer_id)
-        except UserException, detail:
-            vals = {'importer': importer, 'message': detail}
-            vals.update(csrf(request))
-            return render(request, 'update_importer.html', vals)
+        if 'update' in request.POST:
+            importer_id = request.POST['importer_id']
+            importer = Importer.objects.get(id__exact=importer_id)
+            importer.name = request.POST['name']
+            importer.properties = request.POST['properties']
+
+            try:
+                importer.validate()
+                importer.save()
+                return redirect('/show_importer?importer_id=' + importer_id)
+            except UserException, detail:
+                vals = {'importer': importer, 'message': detail}
+                vals.update(csrf(request))
+                return render(request, 'update_importer.html', vals)
+        else:
+            importer_id = request.POST['importer_id']
+            importer = Importer.objects.get(id__exact=importer_id)
+            importer.state = request.POST['state']
+
+            try:
+                importer.validate()
+                importer.save()
+                return redirect('/show_importer?importer_id=' + importer_id)
+            except UserException, detail:
+                vals = {'importer': importer, 'message': detail}
+                vals.update(csrf(request))
+                return render(request, 'update_importer.html', vals)
+            

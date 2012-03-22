@@ -5,7 +5,7 @@
 
 {% if messages %}<ul>{% for message in messages %}<li>{{ message }}</li>{% endfor %}</ul>{% endif %}
 
-{% if importer.code %}
+{% if is_importer_loaded %}
 {% if importer.code.thread %}
 {% else %}
 <form method="post" action="/show_importer" enctype="multipart/form-data">{% csrf_token %}
@@ -26,17 +26,17 @@
 <br>
 <form method="post" action="/show_importer">{% csrf_token %}
 <fieldset>
-<legend>Remove Code</legend>
+<legend>Unload Importer</legend>
 <input name="importer_id" type="hidden" value="{{ importer.id }}" />
-<input name="remove_code" type="submit" value="Remove" />
+<input name="unload" type="submit" value="Unload" />
 </fieldset>
 </form>
 {% else %}
 <form method="post" action="/show_importer">{% csrf_token %}
 <fieldset>
-<legend>Add Code</legend>
+<legend>Load Importer</legend>
 <input name="importer_id" type="hidden" value="{{ importer.id }}" />
-<input name="add_code" type="submit" value="Add" />
+<input name="load" type="submit" value="Load" />
 </fieldset>
 </form>
 {% endif %}
@@ -48,7 +48,12 @@
 </pre>
 <br>
 
+<h4>State</h4>
 
+<pre>
+{{ importer.state }}
+</pre>
+<br>
 
 <p>File extension '.bg.csv'. A CSV file with the following columns:</p>
 

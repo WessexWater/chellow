@@ -1,8 +1,33 @@
 import threading
 import ftputil
+from root.monad import UserException
+import root.models
 
 importers = {}
+lock = threading.Lock()
 
+def load_importer(importer_id):
+    with lock:
+        if importer_id in importers:
+            raise UserException("The importer is already loaded.")
+        else:
+            importers[importer_id] = root.models.Importer.objects.get(id__exact=importer_id)
+        
+        
+def unload_importer(importer_id):
+    with lock:
+        if importer_id in importers:
+            del importers[importer_id]
+        else:
+            raise UserException("The importer isn't there to unload.")
+
+        
+def get_importer(importer_id):
+    with lock:
+        if importer_id in importers:
+            return importers[importer_id]
+        else:
+            return None
 
 '''
 
