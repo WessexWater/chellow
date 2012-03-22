@@ -17271,6 +17271,13 @@ while reads.next():
     batch = reads.get(3)
 
     generation = supply.getGeneration(bill.getStartDate())
+    if generation is None:
+        first_generation = supply.getGenerationFirst()
+        if bill.getStartDate().before(first_generation.getStartDate()):
+            generation = first_generation
+        else:
+            generation = supply.getGenerationLast()
+
     import_mpan = generation.getImportMpan()
     if import_mpan is None:
         import_mpan_core = ''
