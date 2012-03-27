@@ -1134,16 +1134,6 @@ public class SupplyGeneration extends PersistentEntity {
 				throw new UserException(
 						"There are HH data before the start of the updated supply.");
 			}
-			if (((Long) Hiber
-					.session()
-					.createQuery(
-							"select count(*) from Bill bill where bill.supply  = :supply and bill.startDate.date < :date")
-					.setEntity("supply", supply)
-					.setTimestamp("date", startDate.getDate()).uniqueResult()) > 0) {
-				throw new UserException(
-						"There are bills before the start of the updated supply.");
-			}
-
 		} else {
 			boolean isOverlap = false;
 			if (importMpan != null) {
