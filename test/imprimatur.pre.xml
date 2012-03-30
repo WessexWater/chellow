@@ -1942,7 +1942,7 @@ def triad_estimates():
 		</request>
 
 		<!-- Check start time of rate script -->
-		<request path="/chellow/dnos/379/contracts/93/rate-scripts/445/">
+		<request path="/chellow/dnos/379/contracts/93/rate-scripts/457/">
 			<regex
 				pattern='&lt;select name="start-hour"&gt;&lt;option value="00" selected&gt;00&lt;/option&gt;' />
 			<regex
@@ -1958,12 +1958,12 @@ def triad_estimates():
 			<control name="start-day" value="01" />
 			<control name="start-hour" value="00" />
 			<control name="start-minute" value="00" />
-			<regex pattern="/chellow/dnos/379/contracts/93/rate-scripts/447/" />
+			<regex pattern="/chellow/dnos/379/contracts/93/rate-scripts/459/" />
 			<response-code value="303" />
 		</request>
 
 		<!-- Delete rate script -->
-		<request path="/chellow/dnos/379/contracts/93/rate-scripts/447/"
+		<request path="/chellow/dnos/379/contracts/93/rate-scripts/459/"
 			method="post">
 			<control name="delete" value="Delete" />
 			<response-code value="303" />
@@ -2711,20 +2711,20 @@ def import_virtual_bill(supply_source):
 			<control name="start-minute" value="00" />
 			<control name="insert" value="Insert" />
 
-			<regex pattern="/chellow/non-core-contracts/39/rate-scripts/449/" />
+			<regex pattern="/chellow/non-core-contracts/39/rate-scripts/461/" />
 			<response-code value="303" />
 		</request>
 		<request
-			path="/chellow/non-core-contracts/39/rate-scripts/449/?view=confirm-delete">
+			path="/chellow/non-core-contracts/39/rate-scripts/461/?view=confirm-delete">
 			<regex pattern="Are you sure you want to delete this rate script\?" />
 			<response-code value="200" />
 		</request>
-		<request path="/chellow/non-core-contracts/39/rate-scripts/449/"
+		<request path="/chellow/non-core-contracts/39/rate-scripts/461/"
 			method="post">
 			<control name="delete" value="Delete" />
 			<response-code value="303" />
 		</request>
-		<request path="/chellow/non-core-contracts/39/rate-scripts/449/">
+		<request path="/chellow/non-core-contracts/39/rate-scripts/461/">
 			<response-code value="404" />
 		</request>
 	</test>
@@ -2738,10 +2738,10 @@ def import_virtual_bill(supply_source):
 			<control name="start-minute" value="00" />
 			<control name="insert" value="Insert" />
 
-			<regex pattern="/chellow/non-core-contracts/39/rate-scripts/451/" />
+			<regex pattern="/chellow/non-core-contracts/39/rate-scripts/463/" />
 			<response-code value="303" />
 		</request>
-		<request path="/chellow/non-core-contracts/39/rate-scripts/451/">
+		<request path="/chellow/non-core-contracts/39/rate-scripts/463/">
 			<regex
 				pattern='&lt;input name="finish-year" size="4" maxlength="4" value="2000"&gt;' />
 
@@ -2751,7 +2751,7 @@ def import_virtual_bill(supply_source):
 
 			<response-code value="200" />
 		</request>
-		<request path="/chellow/non-core-contracts/39/rate-scripts/451/"
+		<request path="/chellow/non-core-contracts/39/rate-scripts/463/"
 			method="post">
 			<control name="delete" value="Delete" />
 			<response-code value="303" />
@@ -2783,9 +2783,9 @@ def import_virtual_bill(supply_source):
 		</request>
 		<request path="/chellow/supplier-contracts/4/batches/6/bills/14/">
 			<regex
-				pattern='&lt;select name="start-day"&gt;&lt;option value="01"&gt;01&lt;/option&gt;&lt;option value="02"&gt;02&lt;/option&gt;&lt;option value="03"&gt;03&lt;/option&gt;&lt;option value="04"&gt;04&lt;/option&gt;&lt;option value="05"&gt;05&lt;/option&gt;&lt;option value="06" selected&gt;06&lt;/option&gt;&lt;option value="07"&gt;07&lt;/option&gt;&lt;option value="08"&gt;08&lt;/option&gt;&lt;option value="09"&gt;09&lt;/option&gt;&lt;option value="10"&gt;10&lt;/option&gt;&lt;option value="11"&gt;11&lt;/option&gt;&lt;option value="12"&gt;12&lt;/option&gt;&lt;option value="13"&gt;13&lt;/option&gt;&lt;option value="14"&gt;14&lt;/option&gt;&lt;option value="15"&gt;15&lt;/option&gt;&lt;option value="16"&gt;16&lt;/option&gt;&lt;option value="17"&gt;17&lt;/option&gt;&lt;option value="18"&gt;18&lt;/option&gt;&lt;option value="19"&gt;19&lt;/option&gt;&lt;option value="20"&gt;20&lt;/option&gt;&lt;option value="21"&gt;21&lt;/option&gt;&lt;option value="22"&gt;22&lt;/option&gt;&lt;option value="23"&gt;23&lt;/option&gt;&lt;option value="24"&gt;24&lt;/option&gt;&lt;option value="25"&gt;25&lt;/option&gt;&lt;option value="26"&gt;26&lt;/option&gt;&lt;option value="27"&gt;27&lt;/option&gt;&lt;option value="28"&gt;28&lt;/option&gt;&lt;option value="29"&gt;29&lt;/option&gt;&lt;option value="30"&gt;30&lt;/option&gt;&lt;option value="31"&gt;31&lt;/option&gt;&lt;/select&gt; 00:00Z' />
+				pattern='&lt;select name="start-day"&gt;&lt;option value="01"&gt;01&lt;/option&gt;&lt;option value="02"&gt;02&lt;/option&gt;&lt;option value="03"&gt;03&lt;/option&gt;&lt;option value="04"&gt;04&lt;/option&gt;&lt;option value="05"&gt;05&lt;/option&gt;&lt;option value="06" selected&gt;06&lt;/option&gt;&lt;option value="07"&gt;07&lt;/option&gt;&lt;option value="08"&gt;08&lt;/option&gt;&lt;option value="09"&gt;09&lt;/option&gt;&lt;option value="10"&gt;10&lt;/option&gt;&lt;option value="11"&gt;11&lt;/option&gt;&lt;option value="12"&gt;12&lt;/option&gt;&lt;option value="13"&gt;13&lt;/option&gt;&lt;option value="14"&gt;14&lt;/option&gt;&lt;option value="15"&gt;15&lt;/option&gt;&lt;option value="16"&gt;16&lt;/option&gt;&lt;option value="17"&gt;17&lt;/option&gt;&lt;option value="18"&gt;18&lt;/option&gt;&lt;option value="19"&gt;19&lt;/option&gt;&lt;option value="20"&gt;20&lt;/option&gt;&lt;option value="21"&gt;21&lt;/option&gt;&lt;option value="22"&gt;22&lt;/option&gt;&lt;option value="23"&gt;23&lt;/option&gt;&lt;option value="24"&gt;24&lt;/option&gt;&lt;option value="25"&gt;25&lt;/option&gt;&lt;option value="26"&gt;26&lt;/option&gt;&lt;option value="27"&gt;27&lt;/option&gt;&lt;option value="28"&gt;28&lt;/option&gt;&lt;option value="29"&gt;29&lt;/option&gt;&lt;option value="30"&gt;30&lt;/option&gt;&lt;option value="31"&gt;31&lt;/option&gt;&lt;/select&gt; &lt;select name="start-hour"&gt;&lt;option value="00" selected&gt;00&lt;/option&gt;&lt;option value="01"&gt;01&lt;/option&gt;&lt;option value="02"&gt;02&lt;/option&gt;&lt;option value="03"&gt;03&lt;/option&gt;&lt;option value="04"&gt;04&lt;/option&gt;&lt;option value="05"&gt;05&lt;/option&gt;&lt;option value="06"&gt;06&lt;/option&gt;&lt;option value="07"&gt;07&lt;/option&gt;&lt;option value="08"&gt;08&lt;/option&gt;&lt;option value="09"&gt;09&lt;/option&gt;&lt;option value="10"&gt;10&lt;/option&gt;&lt;option value="11"&gt;11&lt;/option&gt;&lt;option value="12"&gt;12&lt;/option&gt;&lt;option value="13"&gt;13&lt;/option&gt;&lt;option value="14"&gt;14&lt;/option&gt;&lt;option value="15"&gt;15&lt;/option&gt;&lt;option value="16"&gt;16&lt;/option&gt;&lt;option value="17"&gt;17&lt;/option&gt;&lt;option value="18"&gt;18&lt;/option&gt;&lt;option value="19"&gt;19&lt;/option&gt;&lt;option value="20"&gt;20&lt;/option&gt;&lt;option value="21"&gt;21&lt;/option&gt;&lt;option value="22"&gt;22&lt;/option&gt;&lt;option value="23"&gt;23&lt;/option&gt;&lt;/select&gt;:&lt;select name="start-minute"&gt;&lt;option value="00" selected&gt;00&lt;/option&gt;&lt;option value="30"&gt;30&lt;/option&gt;&lt;/select&gt;' />
 			<regex
-				pattern='&lt;select name="finish-day"&gt;&lt;option value="01"&gt;01&lt;/option&gt;&lt;option value="02"&gt;02&lt;/option&gt;&lt;option value="03"&gt;03&lt;/option&gt;&lt;option value="04"&gt;04&lt;/option&gt;&lt;option value="05"&gt;05&lt;/option&gt;&lt;option value="06" selected&gt;06&lt;/option&gt;&lt;option value="07"&gt;07&lt;/option&gt;&lt;option value="08"&gt;08&lt;/option&gt;&lt;option value="09"&gt;09&lt;/option&gt;&lt;option value="10"&gt;10&lt;/option&gt;&lt;option value="11"&gt;11&lt;/option&gt;&lt;option value="12"&gt;12&lt;/option&gt;&lt;option value="13"&gt;13&lt;/option&gt;&lt;option value="14"&gt;14&lt;/option&gt;&lt;option value="15"&gt;15&lt;/option&gt;&lt;option value="16"&gt;16&lt;/option&gt;&lt;option value="17"&gt;17&lt;/option&gt;&lt;option value="18"&gt;18&lt;/option&gt;&lt;option value="19"&gt;19&lt;/option&gt;&lt;option value="20"&gt;20&lt;/option&gt;&lt;option value="21"&gt;21&lt;/option&gt;&lt;option value="22"&gt;22&lt;/option&gt;&lt;option value="23"&gt;23&lt;/option&gt;&lt;option value="24"&gt;24&lt;/option&gt;&lt;option value="25"&gt;25&lt;/option&gt;&lt;option value="26"&gt;26&lt;/option&gt;&lt;option value="27"&gt;27&lt;/option&gt;&lt;option value="28"&gt;28&lt;/option&gt;&lt;option value="29"&gt;29&lt;/option&gt;&lt;option value="30"&gt;30&lt;/option&gt;&lt;option value="31"&gt;31&lt;/option&gt;&lt;/select&gt; 23:30Z' />
+				pattern='&lt;select name="finish-day"&gt;&lt;option value="01"&gt;01&lt;/option&gt;&lt;option value="02"&gt;02&lt;/option&gt;&lt;option value="03"&gt;03&lt;/option&gt;&lt;option value="04"&gt;04&lt;/option&gt;&lt;option value="05"&gt;05&lt;/option&gt;&lt;option value="06" selected&gt;06&lt;/option&gt;&lt;option value="07"&gt;07&lt;/option&gt;&lt;option value="08"&gt;08&lt;/option&gt;&lt;option value="09"&gt;09&lt;/option&gt;&lt;option value="10"&gt;10&lt;/option&gt;&lt;option value="11"&gt;11&lt;/option&gt;&lt;option value="12"&gt;12&lt;/option&gt;&lt;option value="13"&gt;13&lt;/option&gt;&lt;option value="14"&gt;14&lt;/option&gt;&lt;option value="15"&gt;15&lt;/option&gt;&lt;option value="16"&gt;16&lt;/option&gt;&lt;option value="17"&gt;17&lt;/option&gt;&lt;option value="18"&gt;18&lt;/option&gt;&lt;option value="19"&gt;19&lt;/option&gt;&lt;option value="20"&gt;20&lt;/option&gt;&lt;option value="21"&gt;21&lt;/option&gt;&lt;option value="22"&gt;22&lt;/option&gt;&lt;option value="23"&gt;23&lt;/option&gt;&lt;option value="24"&gt;24&lt;/option&gt;&lt;option value="25"&gt;25&lt;/option&gt;&lt;option value="26"&gt;26&lt;/option&gt;&lt;option value="27"&gt;27&lt;/option&gt;&lt;option value="28"&gt;28&lt;/option&gt;&lt;option value="29"&gt;29&lt;/option&gt;&lt;option value="30"&gt;30&lt;/option&gt;&lt;option value="31"&gt;31&lt;/option&gt;&lt;/select&gt; &lt;select name="finish-hour"&gt;&lt;option value="00"&gt;00&lt;/option&gt;&lt;option value="01"&gt;01&lt;/option&gt;&lt;option value="02"&gt;02&lt;/option&gt;&lt;option value="03"&gt;03&lt;/option&gt;&lt;option value="04"&gt;04&lt;/option&gt;&lt;option value="05"&gt;05&lt;/option&gt;&lt;option value="06"&gt;06&lt;/option&gt;&lt;option value="07"&gt;07&lt;/option&gt;&lt;option value="08"&gt;08&lt;/option&gt;&lt;option value="09"&gt;09&lt;/option&gt;&lt;option value="10"&gt;10&lt;/option&gt;&lt;option value="11"&gt;11&lt;/option&gt;&lt;option value="12"&gt;12&lt;/option&gt;&lt;option value="13"&gt;13&lt;/option&gt;&lt;option value="14"&gt;14&lt;/option&gt;&lt;option value="15"&gt;15&lt;/option&gt;&lt;option value="16"&gt;16&lt;/option&gt;&lt;option value="17"&gt;17&lt;/option&gt;&lt;option value="18"&gt;18&lt;/option&gt;&lt;option value="19"&gt;19&lt;/option&gt;&lt;option value="20"&gt;20&lt;/option&gt;&lt;option value="21"&gt;21&lt;/option&gt;&lt;option value="22"&gt;22&lt;/option&gt;&lt;option value="23" selected&gt;23&lt;/option&gt;&lt;/select&gt;:&lt;select name="finish-minute"&gt;&lt;option value="00"&gt;00&lt;/option&gt;&lt;option value="30" selected&gt;30&lt;/option&gt;&lt;/select&gt;' />
 			<response-code value="200" />
 		</request>
 	</test>
