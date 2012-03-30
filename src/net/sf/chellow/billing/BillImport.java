@@ -116,10 +116,14 @@ public class BillImport extends Thread implements Urlable, XmlDescriber {
 				throw new InternalException(e);
 			}
 		}
-		int locationOfDot = fileName.indexOf(".");
+		int locationOfDot = fileName.lastIndexOf(".");
 		if (locationOfDot == -1 || locationOfDot == fileName.length() - 1) {
 			throw new UserException(
 					"The file name must have an extension (eg. '.zip')");
+		}
+		int location2Dot = fileName.lastIndexOf(".", locationOfDot - 1);
+		if (location2Dot != -1) {
+			locationOfDot = location2Dot;
 		}
 		String extension = fileName.substring(locationOfDot + 1);
 		NonCoreContract parserContract = NonCoreContract
