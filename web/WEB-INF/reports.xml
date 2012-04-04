@@ -10163,6 +10163,7 @@ pw = inv.getResponse().getWriter()
 
 computer = NonCoreContract.getNonCoreContract('computer')
 comterp = computer.callFunction('create_comterp', [])
+cont_func = comterp.get('contract_function')
 
 pw.print('Site Code,Site Name,Associated Site Ids,From,To,Gen Types,CHP kWh,LM kWh, Turbine kWh')
 pw.flush()
@@ -10197,7 +10198,7 @@ elif inv.hasParameter('contract-id'):
     contract_id = inv.getLong('contract-id')
     contract = SupplierContract.getSupplierContract(contract_id)
     site_query = Hiber.session().createQuery("select distinct ssgen.site from SiteSupplyGeneration ssgen where ((ssgen.supplyGeneration.finishDate is null or ssgen.supplyGeneration.finishDate.date >= :startDate) and ssgen.supplyGeneration.startDate <= :finishDate) and (ssgen.supplyGeneration.supply.source.code in ('gen', 'gen-net') or ssgen.supplyGeneration.exportMpan is not null)").setTimestamp('startDate', start_date.getDate()).setTimestamp('finishDate', finish_date.getDate())
-    bill_titles = comterp.get('contract_function')(contract, 'displaced_virtual_bill_titles')()
+    bill_titles = cont_func(contract, 'displaced_virtual_bill_titles', pw)()
 else:
     raise UserException("Need a site-id or contract-id.")
 
@@ -10294,11 +10295,8 @@ while sites.next():
             for title in ['chp', 'lm', 'turb']:
                 pw.print(',' + str(total_gen_breakdown.get(title, '')))
 
-
-            site_ds = comterp.get('site_source')(site, chunk_start, chunk_finish, forecast_date, comterp, pw)
-            site_ds.init_from_mpan(displaced_mpan)
-            cont_func = comterp.get('contract_function')
-            disp_func = cont_func(supplier_contract, 'displaced_virtual_bill')
+            site_ds = comterp.get('SiteSource')(site, chunk_start, chunk_finish, forecast_date, comterp, pw, displaced_mpan)
+            disp_func = cont_func(supplier_contract, 'displaced_virtual_bill', pw)
             bill = disp_func(site_ds)
             for title in bill_titles:
                 pw.print(',"' + str(bill.get(title, '')) + '"')

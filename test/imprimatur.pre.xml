@@ -1486,7 +1486,7 @@ def virtual_bill(supply, startDate, finishDate, pw):
 			<control name="participant-id" value="21" />
 			<control name="name" value="Half-hourlies 2007" />
 			<control name="charge-script">
-				<![CDATA[
+				<![CDATA[                
 from net.sf.chellow.monad import Hiber
 from java.util import GregorianCalendar, TimeZone, Locale, Calendar
 from net.sf.chellow.physical import MpanCore, HhStartDate, Supply, Site
@@ -1494,13 +1494,16 @@ from net.sf.chellow.billing import NonCoreContract, SupplierContract, Dno
 from net.sf.chellow.monad.types import MonadDate
 from java.lang import System
 
-computer = NonCoreContract.getNonCoreContract('computer')
+computer_contract = NonCoreContract.getNonCoreContract('computer')
+triad_contract = NonCoreContract.getNonCoreContract('TRIAD')
+ccl_contract = NonCoreContract.getNonCoreContract('ccl')
+bsuos_contract = NonCoreContract.getNonCoreContract('bsuos')
 
 def import_virtual_bill_titles():
     return ['net-gbp', 'ccl-kwh', 'ccl-rate', 'ccl-gbp', 'data-collection-gbp', 'duos-availability-agreed-kva', 'duos-availability-billed-kva', 'duos-availability-rate', 'duos-availability-gbp', 'duos-day-kwh', 'duos-day-gbp', 'duos-night-kwh', 'duos-night-gbp', 'duos-reactive-rate', 'duos-reactive-gbp', 'duos-standing-gbp', 'settlement-gbp', 'night-msp-kwh', 'night-gsp-kwh', 'night-gbp', 'other-msp-kwh', 'other-gsp-kwh', 'other-gbp', 'summer-pk-msp-kwh', 'summer-pk-gsp-kwh', 'summer-pk-gbp', 'winter-low-pk-msp-kwh', 'winter-low-pk-gsp-kwh', 'winter-low-pk-gbp', 'winter-off-pk-msp-kwh', 'winter-off-pk-gsp-kwh', 'winter-off-pk-gbp', 'winter-pk-msp-kwh', 'winter-pk-gsp-kwh', 'winter-pk-gbp', 'bsuos-actual-gbp', 'triad-actual-0-date', 'triad-actual-0-msp-kw', 'triad-actual-0-status', 'triad-actual-0-laf', 'triad-actual-0-gsp-kw', 'triad-actual-1-date', 'triad-actual-1-msp-kw', 'triad-actual-1-status', 'triad-actual-1-laf', 'triad-actual-1-gsp-kw', 'triad-actual-2-date', 'triad-actual-2-msp-kw', 'triad-actual-2-status', 'triad-actual-2-laf', 'triad-actual-2-gsp-kw', 'triad-actual-gsp-kw', 'triad-actual-rate', 'triad-actual-gbp', 'triad-estimate-0-date', 'triad-estimate-0-msp-kw', 'triad-estimate-0-status', 'triad-estimate-0-laf', 'triad-estimate-0-gsp-kw', 'triad-estimate-1-date', 'triad-estimate-1-msp-kw', 'triad-estimate-1-status', 'triad-estimate-1-laf', 'triad-estimate-1-gsp-kw', 'triad-estimate-2-date', 'triad-estimate-2-msp-kw', 'triad-estimate-2-status', 'triad-estimate-2-laf', 'triad-estimate-2-gsp-kw', 'triad-estimate-gsp-kw', 'triad-estimate-rate', 'triad-estimate-months', 'triad-estimate-gbp', 'triad-all-estimates-months', 'triad-all-estimates-gbp']
 
 def displaced_virtual_bill_titles():
-    return ['ccl-gbp', 'ccl-kwh', 'duos-day-gbp', 'duos-day-kwh', 'duos-night-gbp', 'duos-night-kwh', 'duos-reactive-gbp', 'duos-reactive-working', 'net-gbp', 'duos-standing-gbp', 'night-gbp', 'night-gsp-kwh', 'night-msp-kwh', 'other-gbp', 'other-gsp-kwh', 'other-msp-kwh', 'summer-pk-gbp', 'summer-pk-gsp-kwh', 'summer-pk-msp-kwh', 'triad-gbp', 'triad-working', 'winter-low-pk-gbp', 'winter-low-pk-gsp-kwh', 'winter-low-pk-msp-kwh', 'winter-off-pk-gbp', 'winter-off-pk-gsp-kwh', 'winter-off-pk-msp-kwh', 'winter-pk-gbp', 'winter-pk-gsp-kwh', 'winter-pk-msp-kwh']
+    return ['ccl-kwh', 'ccl-rate', 'ccl-gbp', 'duos-day-gbp', 'duos-day-kwh', 'duos-night-gbp', 'duos-night-kwh', 'duos-reactive-gbp', 'duos-reactive-working', 'net-gbp', 'duos-standing-gbp', 'night-gbp', 'night-gsp-kwh', 'night-msp-kwh', 'other-gbp', 'other-gsp-kwh', 'other-msp-kwh', 'summer-pk-gbp', 'summer-pk-gsp-kwh', 'summer-pk-msp-kwh', 'triad-gbp', 'triad-working', 'winter-low-pk-gbp', 'winter-low-pk-gsp-kwh', 'winter-low-pk-msp-kwh', 'winter-off-pk-gbp', 'winter-off-pk-gsp-kwh', 'winter-off-pk-msp-kwh', 'winter-pk-gbp', 'winter-pk-gsp-kwh', 'winter-pk-msp-kwh']
 
 slot_names = ['winter-pk', 'winter-low-pk', 'winter-off-pk', 'summer-pk', 'night', 'other']
 
@@ -1508,12 +1511,10 @@ slots = {}
 for slot_name in slot_names:
     slots[slot_name] = {'msp-kwh': slot_name + '-msp-kwh', 'gsp-kwh': slot_name + '-gsp-kwh', 'gbp': slot_name + '-gbp'}
 
-triad_contract = NonCoreContract.getNonCoreContract('TRIAD')
-ccl_contract = NonCoreContract.getNonCoreContract('ccl')
-bsuos_contract = NonCoreContract.getNonCoreContract('bsuos')
 
 def displaced_virtual_bill(supply_source):
-    bill = {'net-gbp': 0}
+    bill = supply_source.supplier_bill
+    bill.update({'net-gbp': 0})
 
     for slot_name in slot_names:
         slot_keys = slots[slot_name]
@@ -1522,22 +1523,10 @@ def displaced_virtual_bill(supply_source):
 
 
     comterp = supply_source.comterp
+    contract_func = comterp.get('contract_function')
 
-    dno = Dno.getDno(supply_source.dno_code)
-    dno_contract = comterp.get('get_dno_contract')(supply_source.dno_code, supply_source.finish_date, supply_source.pw)
-    llfc_code = supply_source.llfc_code
-    llfc = dno.getLlfc(llfc_code)
-    voltage_level = supply_source.voltage_level_code
-    is_substation = supply_source.is_substation
-    supply_capacity = supply_source.availability
     supply_source.is_green = False
-    #pw.println("getting data list " + str(System.currentTimeMillis() - timing))
-
-    bill.update(supply_source.summary['dno-bill'])
-
-    #pw.println("got dno info " + str(System.currentTimeMillis() - timing))
-    utc_cal = GregorianCalendar(TimeZone.getTimeZone("GMT"), Locale.UK)
-    ct_cal = GregorianCalendar(TimeZone.getTimeZone("Europe/London"), Locale.UK)
+    supply_source.add_duos_elements()
 
     for datum in supply_source.hh_data:
         is_weekday = datum['utc-day-of-week'] != Calendar.SATURDAY and datum['utc-day-of-week'] != Calendar.SUNDAY
@@ -1557,35 +1546,18 @@ def displaced_virtual_bill(supply_source):
         bill[slot_keys['msp-kwh']] += datum['msp-kwh']
         bill[slot_keys['gsp-kwh']] += datum['gsp-kwh']
 
-
-    utc_cal.setTime(supply_source.start_date.getDate())
-    utc_cal.add(Calendar.MONTH, 1)
-    utc_cal.set(Calendar.DAY_OF_MONTH, 1)
-    utc_cal.set(Calendar.HOUR_OF_DAY, 0)
-    utc_cal.set(Calendar.MINUTE, 0)
-    utc_cal.set(Calendar.SECOND, 0)
-    utc_cal.set(Calendar.MILLISECOND, 0)
-    utc_cal.add(Calendar.MINUTE, -30)
-    month_end = HhStartDate(utc_cal.getTime())
-    utc_cal.add(Calendar.MONTH, -1)
-    utc_cal.add(Calendar.HOUR_OF_DAY, 30)
-    month_begin = HhStartDate(utc_cal.getTime())
-
-    dss = data_source.contract_function(computer_contract, 'get_data_sources')(data_source, month_start, month_finish)
-    month_data = dss.hh_data
-
-    comterp.get('contract_function')(ccl_contract, 'ccl')(supply_source)
+    contract_func(ccl_contract, 'ccl', supply_source.pw)(supply_source)
 
     for suffix in ['kwh', 'rate', 'gbp']:
         key = 'lec-' + suffix
         if key in bill:
             del bill[key]
 
-    comterp.get('contract_function')(triad_contract, 'triad_bill')(supply_source)
+    contract_func(triad_contract, 'triad_bill', supply_source.pw)(supply_source)
 
-    comterp.get('contract_function')(bsuos_contract, 'hh')(bill, supply_source, supply_source.hh_data)
+    contract_func(bsuos_contract, 'hh', supply_source.pw)(supply_source)
 
-    rates = supply_source.rate(contract.rateScript(supply_source.finish_date), 'gsp_gbp_per_kwh')
+    rates = supply_source.hh_rate(contract, supply_source.finish_date.getDate(), 'gsp_gbp_per_kwh')
     for slot_name in slot_names:
         slot_keys = slots[slot_name]
         bill[slot_keys['gbp']] = bill[slot_keys['gsp-kwh']] * rates[slot_name]
@@ -1593,7 +1565,6 @@ def displaced_virtual_bill(supply_source):
     for k, v in bill.iteritems():
         if k[-4:] == '-gbp' and k != 'net-gbp':
             bill['net-gbp'] += v
-    #supply_source.pw.println("finishing impvbill " + str(System.currentTimeMillis() - timing))
     return bill
 
 
@@ -2303,7 +2274,6 @@ def import_virtual_bill(supply_source):
 				pattern="All the bills have been successfully loaded and attached to the batch\." />
 		</request>
 	</test>
-	<!-- 
 	<test name="Test displaced virtual bill.">
 		<request
 			path="/chellow/reports/109/output/?site-id=1&amp;months=1&amp;end-year=2010&amp;end-month=06">
@@ -2311,7 +2281,8 @@ def import_virtual_bill(supply_source):
 			<regex
 				pattern='Site Code,Site Name,Associated Site Ids,From,To,Gen Types,CHP kWh,LM kWh, Turbine kWh,net-gbp' />
 			<regex
-				pattern='"CI004","Lower Treave","","2010-06-01T00:00Z","2010-06-30T23:30Z","chp",,,,"0.0","bsuos-actual-gbp","0.0","ccl-gbp","0","ccl-kwh","0","ccl-rate","0","duos-green-gbp","0.0","duos-green-kwh","0","night-gbp","0.0","night-gsp-kwh","0","night-msp-kwh","0","other-gbp","0.0","other-gsp-kwh","0.0","other-msp-kwh","0","problem","","summer-pk-gbp","0.0","summer-pk-gsp-kwh","0","summer-pk-msp-kwh","0","triad-estimate-0-date","2010-01-07T17:00Z","triad-estimate-0-gsp-kw","0.0","triad-estimate-0-laf","1.078","triad-estimate-0-msp-kw","0","triad-estimate-0-status","E","triad-estimate-1-date","2010-01-25T17:00Z","triad-estimate-1-gsp-kw","0.0","triad-estimate-1-laf","1.078","triad-estimate-1-msp-kw","0","triad-estimate-1-status","E","triad-estimate-2-date","2009-12-15T17:00Z","triad-estimate-2-gsp-kw","0.0","triad-estimate-2-laf","1.078","triad-estimate-2-msp-kw","0","triad-estimate-2-status","E","triad-estimate-gbp","0.0","triad-estimate-gsp-kw","0.0","triad-estimate-months","1","triad-estimate-rate","26.057832","winter-low-pk-gbp","0.0","winter-low-pk-gsp-kwh","0","winter-low-pk-msp-kwh","0","winter-off-pk-gbp","0.0","winter-off-pk-gsp-kwh","0","winter-off-pk-msp-kwh","0","winter-pk-gbp","0.0","winter-pk-gsp-kwh","0","winter-pk-msp-kwh","0"' />
+				pattern='"CI004","Lower Treave","","2010-06-01T00:00Z","2010-06-30T23:30Z","chp",,,,"0.0","bsuos-actual-gbp","0.0","ccl-rate","0.0047","duos-green-gbp","0.0","duos-green-kwh","0","duos-green-rate","0.0013","night-gbp","0.0","night-gsp-kwh","0","night-msp-kwh","0","other-gbp","0.0","other-gsp-kwh","0.0","other-msp-kwh","0","problem","","summer-pk-gbp","0.0","summer-pk-gsp-kwh","0","summer-pk-msp-kwh","0","triad-estimate-0-date","2010-01-07T17:00Z","triad-estimate-0-gsp-kw","0.0","triad-estimate-0-laf","1.078","triad-estimate-0-msp-kw","0","triad-estimate-0-status","E","triad-estimate-1-date","2010-01-25T17:00Z","triad-estimate-1-gsp-kw","0.0","triad-estimate-1-laf","1.078","triad-estimate-1-msp-kw","0","triad-estimate-1-status","E","triad-estimate-2-date","2009-12-15T17:00Z","triad-estimate-2-gsp-kw","0.0","triad-estimate-2-laf","1.078","triad-estimate-2-msp-kw","0","triad-estimate-2-status","E","triad-estimate-gbp","0.0","triad-estimate-gsp-kw","0.0","triad-estimate-months","1","triad-estimate-rate","26.057832","winter-low-pk-gbp","0.0","winter-low-pk-gsp-kwh","0","winter-low-pk-msp-kwh","0","winter-off-pk-gbp","0.0","winter-off-pk-gsp-kwh","0","winter-off-pk-msp-kwh","0","winter-pk-gbp","0.0","winter-pk-gsp-kwh","0","winter-pk-msp-kwh","0"' />
+				
 			<response-code value="200" />
 		</request>
 		<request
@@ -2320,7 +2291,6 @@ def import_virtual_bill(supply_source):
 			<response-code value="200" />
 		</request>
 	</test>
-	-->
 	<test name="Test bulk ignore.">
 		<request path="/chellow/hhdc-contracts/0/" method="post">
 			<control name="ignore-year" value="2008" />
