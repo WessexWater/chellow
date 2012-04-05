@@ -16768,7 +16768,7 @@ else:
         <value><![CDATA[213]]></value>
         <value><![CDATA[true]]></value>
         <value><![CDATA[HHDC Contract HH Importer]]></value>
-        <value><![CDATA[from java.lang import Thread
+        <value><![CDATA[from java.lang import Thread, System
 from net.sf.chellow.billing import NonCoreContract, HhdcContract
 from net.sf.chellow.monad import XmlTree, UserException, Monad, MonadMessage
 from net.sf.chellow.monad.types import MonadUri
@@ -16809,10 +16809,10 @@ if hh_importer is not None:
 
 try:
     if inv.hasParameter('remove'):
-        contract_f(hh_importer_contract, 'remove_hh_importer_task')(ctx, contract)
+        contract_f(hh_importer_contract, 'remove_hh_importer_task', System.err)(ctx, contract)
         inv.sendSeeOther(get_uri())
     elif inv.hasParameter('start'):
-        contract_f(hh_importer_contract, 'start_hh_importer_task')(ctx, contract)
+        contract_f(hh_importer_contract, 'start_hh_importer_task', System.err)(ctx, contract)
         inv.sendSeeOther(get_uri())
     elif inv.hasParameter('now'):
         Thread(hh_importer, "Import Now: " + str(contract.getId())).start()
