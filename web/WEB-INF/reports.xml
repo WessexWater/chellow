@@ -13895,7 +13895,25 @@ while c != -1:
     c = istream.read()
 source.setAttribute("chellow-version", sr.toString())
 
-source.setAttribute('transaction-isolation', str(con.getTransactionIsolation()))]]></value>
+source.setAttribute('transaction-isolation', str(con.getTransactionIsolation()))
+
+pstmt = con.prepareStatement("select * from pg_stat_activity")
+rs = pstmt.executeQuery()
+rs_meta = rs.getMetaData()
+pg_stat_activity_el = doc.createElement('pg-stat-activity')
+source.appendChild(pg_stat_activity_el)
+for i in range(1, rs_meta.getColumnCount() + 1):
+    column_el = doc.createElement('column')
+    pg_stat_activity_el.appendChild(column_el)
+    column_el.setAttribute('name', rs_meta.getColumnName(i) + ' (' + rs_meta.getColumnTypeName(i) + ')')
+
+while rs.next():
+    row_el = doc.createElement('row')
+    pg_stat_activity_el.appendChild(row_el)
+    for i in range(1, rs_meta.getColumnCount() + 1):
+        cell_el = doc.createElement('cell')
+        row_el.appendChild(cell_el)
+        cell_el.setAttribute('value', rs.getString(i))]]></value>
         <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
 <xsl:stylesheet version="1.0"
     xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
@@ -14042,6 +14060,27 @@ source.setAttribute('transaction-isolation', str(con.getTransactionIsolation()))
 <tr><th>Driver Name</th><td><xsl:value-of select="/source/@db-driver-name"/></td></tr>
 <tr><th>Driver Version</th><td><xsl:value-of select="/source/@db-driver-version"/></td></tr>
 <tr><th>Transaction Isolation (of current connection)</th><td><xsl:value-of select="/source/@transaction-isolation"/></td></tr>
+</table>
+
+<h4>PostgreSQL Current Activity</h4>
+
+<table>
+    <thead>
+        <tr>
+            <xsl:for-each select="/source/pg-stat-activity/column">
+                <th><xsl:value-of select="@name"/></th>
+            </xsl:for-each>
+        </tr>
+    </thead>
+    <tbody>
+        <xsl:for-each select="/source/pg-stat-activity/row">
+            <tr>
+                <xsl:for-each select="cell">
+                    <td><xsl:value-of select="@value"/></td>
+                </xsl:for-each>
+            </tr>
+        </xsl:for-each>
+    </tbody>
 </table>
             </body>
         </html>
