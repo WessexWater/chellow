@@ -61,8 +61,9 @@
 			not-null="true" />
 		<property type="string" name="account" column="account"
 			not-null="true" />
-		<property type="string" name="breakdown" column="breakdown"
-			not-null="true" />
+		<property type="string" name="breakdown" not-null="true">
+			<column name="breakdown" sql-type="text" />
+		</property>
 		<set name="reads" inverse="true" lazy="true" cascade="all,delete-orphan">
 			<key column="bill_id" on-delete="cascade"/>
 			<one-to-many class="net.sf.chellow.physical.RegisterRead" />
