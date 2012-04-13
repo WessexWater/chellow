@@ -117,39 +117,8 @@ from java.util import GregorianCalendar, TimeZone, Locale, Calendar
 from net.sf.chellow.physical import HhStartDate
 
 
-def get_rate_script(date):
-    return contract.rateScripts(date, date)[0]
-
-
-def month(bill, whole_data, data_source):
-    bill.setdefault('duos-standing-gbp', 0)
-
-    llfc_code = data_source.llfc_code
-    availability = data_source.availability
-    summary = whole_data['summary']
-
-    rate_script = contract.rateScript(summary['finish-date'])
-    tariff = data_source.rate(rate_script, 'tariffs')[llfc_code]
-    reactive_rate = tariff['reactive-gbp-per-kvarh']
-    bill['duos-reactive-rate'] = reactive_rate
-    bill['duos-reactive-gbp'] = max(0, summary['sum-imp-msp-kvarh'] - summary['sum-msp-kwh'] / 3) * reactive_rate
-    if not data_source.is_displaced:
-        bill.setdefault('duos-availability-gbp', 0)
-
-        availability_rate = tariff['availability-gbp-per-kva-per-day']
-        bill['duos-availability-rate'] = availability_rate
-        md_kva = max((datum['msp-kw'] ** 2 + (datum['imp-msp-kvar'] + datum['exp-msp-kvar'])** 2) ** 0.5 for datum in whole_data['data'])
-
-        billed_avail = max(availability, md_kva)
-        bill['duos-availability-gbp'] += availability_rate * billed_avail
-        bill['duos-availability-agreed-kva'] = data_source.availability
-        bill['duos-availability-billed-kva'] = billed_avail
-
-    bill['duos-standing-gbp'] += tariff['fixed-gbp-per-day'] * data_source.summary['days']
-
-
-def hh(summary, hh_list, data_source):
-    bill = summary['dno-bill']
+def hh(data_source):
+    bill = data_source.supplier_bill
 
     for title in ['duos-night-kwh', 'duos-night-gbp', 'duos-day-kwh', 'duos-day-gbp']:
         bill.setdefault(title, 0)
@@ -158,7 +127,7 @@ def hh(summary, hh_list, data_source):
     voltage_level_code_lower = data_source.voltage_level_code.lower()
     is_substation = data_source.is_substation
 
-    for hh in hh_list:
+    for hh in data_source.hh_data:
         tariffs = data_source.hh_rate(contract, hh['start-date'], 'tariffs')[llfc_code]
         if 0 < hh['ct-decimal-hour'] <= 7:
             bill['duos-night-kwh'] += hh['msp-kwh']
@@ -178,7 +147,29 @@ def hh(summary, hh_list, data_source):
 
         hh['laf'] = data_source.hh_rate(contract, hh['start-date'], 'lafs')[voltage_level_code_lower][slot]
         hh['gsp-kwh'] = hh['msp-kwh'] * hh['laf']
-        hh['gsp-kw'] = hh['gsp-kwh'] * 2]]></value>
+        hh['gsp-kw'] = hh['gsp-kwh'] * 2
+
+    for hh in data_source.hh_times:
+        if hh['utc-decimal-hour'] == 0:
+            tariff = data_source.hh_rate(contract, hh['start-date'], 'tariffs')[llfc_code]
+            bill['duos-standing-gbp'] += tariff['fixed-gbp-per-day']
+
+        if hh['utc-is-month-end']:
+            availability = data_source.availability
+
+            tariff = data_source.hh_rate(contract, hh['start-date'], 'tariffs')[llfc_code]
+            reactive_rate = tariff['reactive-gbp-per-kvarh']
+            bill['duos-reactive-rate'] = reactive_rate
+            bill['duos-reactive-gbp'] = max(0, sum(h['imp-msp-kvarh'] for h in data_source.hh_data) - sum(h['msp-kwh'] for h in data_source.hh_data) / 3) * reactive_rate
+            if not data_source.is_displaced:
+                availability_rate = tariff['availability-gbp-per-kva-per-day']
+                bill['duos-availability-rate'] = availability_rate
+                md_kva = max((datum['msp-kw'] ** 2 + (datum['imp-msp-kvar'] + datum['exp-msp-kvar'])** 2) ** 0.5 for datum in data_source.hh_data)
+
+                billed_avail = max(availability, md_kva)
+                bill['duos-availability-gbp'] += availability_rate * billed_avail
+                bill['duos-availability-agreed-kva'] = data_source.availability
+                bill['duos-availability-billed-kva'] = billed_avail]]></value>
         <value><![CDATA[9]]></value>
         <value><![CDATA[def triad():
     return 19.147817

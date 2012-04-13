@@ -1593,6 +1593,72 @@ for key in properties.propertyNames():
                     </fieldset>
                 </form>
                 <br />
+                <form action="{/source/request/@context-path}/reports/241/output/">
+                    <fieldset>
+                        <input type="hidden" name="supply-id" value="{/source/supply/@id}" />
+                        <legend>Daily Supplier Virtual Bills</legend>
+                        <select name="supply-polarity">
+                            <option value="import">
+                                Import
+                                </option>
+                            <option value="export">
+                                Export
+                                </option>
+                        </select>
+                        <xsl:value-of select="' from '" />
+                        <input name="start-year" value="{/source/hh-start-date[@label='start']/@year}"
+                            maxlength="4" size="4" />
+                        <xsl:value-of select="'-'" />
+                        <select name="start-month">
+                            <xsl:for-each select="/source/months/month">
+                                <option value="{@number}">
+                                    <xsl:if test="@number=/source/hh-start-date[@label='start']/@month">
+                                        <xsl:attribute name="selected">selected</xsl:attribute>
+                                    </xsl:if>
+                                    <xsl:value-of select="@number" />
+                                </option>
+                            </xsl:for-each>
+                        </select>
+                        <xsl:value-of select="'-'" />
+                        <select name="start-day">
+                            <xsl:for-each select="/source/days/day">
+                                <option value="{@number}">
+                                    <xsl:if test="@number=/source/hh-start-date[@label='start']/@day">
+                                        <xsl:attribute name="selected">selected</xsl:attribute>
+                                    </xsl:if>
+                                    <xsl:value-of select="@number" />
+                                </option>
+                            </xsl:for-each>
+                        </select>
+                        <xsl:value-of select="' to '" />
+                        <input name="finish-year" value="{/source/hh-start-date[@label='finish']/@year}"
+                            maxlength="4" size="4" />
+                        <xsl:value-of select="'-'" />
+                        <select name="finish-month">
+                            <xsl:for-each select="/source/months/month">
+                                <option value="{@number}">
+                                    <xsl:if test="@number=/source/hh-start-date[@label='finish']/@month">
+                                        <xsl:attribute name="selected">selected</xsl:attribute>
+                                    </xsl:if>
+                                    <xsl:value-of select="@number" />
+                                </option>
+                            </xsl:for-each>
+                        </select>
+                        <xsl:value-of select="'-'" />
+                        <select name="finish-day">
+                            <xsl:for-each select="/source/days/day">
+                                <option value="{@number}">
+                                    <xsl:if test="@number=/source/hh-start-date[@label='finish']/@day">
+                                        <xsl:attribute name="selected">selected</xsl:attribute>
+                                    </xsl:if>
+                                    <xsl:value-of select="@number" />
+                                </option>
+                            </xsl:for-each>
+                        </select>
+                        <xsl:value-of select="' '" />
+                        <input type="submit" value="Download" />
+                    </fieldset>
+                </form>
                 <br />
                 <form action="{/source/request/@context-path}/reports/169/output/">
                     <fieldset>
@@ -1773,7 +1839,7 @@ for key in properties.propertyNames():
                         <xsl:value-of select="' month(s) finishing at the end of '" />
                         <input name="end-year" value="{/source/hh-start-date[@label='start']/@year}"
                             maxlength="4" size="4" />
-                        <xsl:value-of select="' - '" />
+                        <xsl:value-of select="'-'" />
                         <select name="end-month">
                             <xsl:for-each select="/source/months/month">
                                 <option value="{@number}">
@@ -1784,6 +1850,7 @@ for key in properties.propertyNames():
                                 </option>
                             </xsl:for-each>
                         </select>
+                        <xsl:value-of select="' '" />
                         <input type="submit" value="Download" />
                     </fieldset>
                 </form>
@@ -18311,6 +18378,126 @@ while hh_date <= finish_date_millis:
     pw.println(date_format.format(Date(hh_date)) + ','.join(str(values[title]) for title in titles[6:]))
     pw.flush()
     hh_date = HhStartDate.getNext(cal, hh_date)
+pw.close()]]></value>
+        <value><![CDATA[]]></value>
+    </line>
+    <line>
+        <value><![CDATA[insert]]></value>
+        <value><![CDATA[report]]></value>
+        <value><![CDATA[239]]></value>
+        <value><![CDATA[true]]></value>
+        <value><![CDATA[Free 239]]></value>
+        <value><![CDATA[]]></value>
+        <value><![CDATA[]]></value>
+    </line>
+    <line>
+        <value><![CDATA[insert]]></value>
+        <value><![CDATA[report]]></value>
+        <value><![CDATA[241]]></value>
+        <value><![CDATA[true]]></value>
+        <value><![CDATA[CSV Daily Supplier Virtual Bill]]></value>
+        <value><![CDATA[from net.sf.chellow.monad import Hiber
+from java.util import GregorianCalendar, TimeZone, Locale, Calendar, Date
+from net.sf.chellow.physical import MpanCore, HhStartDate, Supply
+from net.sf.chellow.billing import SupplierContract, NonCoreContract, Dno
+from java.text import DecimalFormat
+from java.lang import System
+
+inv.getResponse().setContentType("text/csv")
+inv.getResponse().addHeader('Content-Disposition', 'attachment; filename="output.csv"')
+pw = inv.getResponse().getWriter()
+
+start = inv.getDate('start')
+finish = inv.getDate('finish')
+
+supply_polarity = inv.getString('supply-polarity')
+
+if not inv.isValid():
+    raise UserException()
+
+site_query = Hiber.session().createQuery("select supGen.site from SiteSupplyGeneration supGen where supGen.supplyGeneration = :supplyGeneration and supGen.isPhysical = true")
+
+if inv.hasParameter('contract-id'):
+    contract_id = inv.getLong('contract-id')
+    contract = SupplierContract.getSupplierContract(contract_id)
+    supply = None
+elif inv.hasParameter('supply-id'):
+    supply_id = inv.getLong('supply-id')
+    supply = Supply.getSupply(supply_id)
+    contract = None
+else:
+    raise UserException("There must be either a contract-id or supply-id parameter.")
+
+computer = NonCoreContract.getNonCoreContract('computer')
+comterp = computer.callFunction('create_comterp', [])
+
+if supply is None:
+    pw.print('MPAN Core,Site Code,Site Name,Account,From,To')
+    pw.flush()
+    contract_function = comterp.get('contract_function')
+    #pw.println("contract func " + str(contract) + " " + supply_polarity)
+    titles_function = contract_function(contract, supply_polarity + '_virtual_bill_titles', pw)
+    #pw.println("titles func " + str(titles_function))
+    bill_titles = titles_function()
+    for title in bill_titles:
+        pw.print(',' + title)
+    pw.println('')
+    pw.flush()
+
+cal = GregorianCalendar(TimeZone.getTimeZone("GMT"), Locale.UK)
+
+start_date = HhStartDate(start)
+
+cal.setTime(finish)
+cal.add(Calendar.DAY_OF_MONTH, 1)
+cal.add(Calendar.MINUTE, -30)
+finish_date = HhStartDate(cal.getTime())
+
+forecast_date = comterp.get('forecast_date')()
+timing = System.currentTimeMillis()
+
+day_start = start_date
+
+prev_bill_titles = []
+
+while not day_start.after(finish_date):
+    cal.setTime(day_start.getDate())
+    cal.add(Calendar.DAY_OF_MONTH, 1)
+    cal.add(Calendar.MINUTE, -30)
+    day_finish = HhStartDate(cal.getTime())
+
+    for data_source in comterp.get(supply_polarity + '_data_sources')(contract, supply, day_start, day_finish, forecast_date, comterp, pw):
+
+        if contract is None:
+            sup_con = data_source.mpan.getSupplierContract()
+            bill_titles = comterp.get('contract_function')(sup_con, supply_polarity + '_virtual_bill_titles', pw)()
+            if bill_titles != prev_bill_titles:
+                pw.println('MPAN Core,Site Code,Site Name,Account,From,To,' + ','.join(bill_titles))
+                pw.flush()
+                prev_bill_titles = bill_titles
+        else:
+            sup_con = contract
+
+        site = site_query.setEntity('supplyGeneration', data_source.supply_generation).uniqueResult()
+        pw.print(','.join('"' + str(value) + '"' for value in [data_source.mpan_core_str, site.getCode() , site.getName(), data_source.supplier_account, data_source.start_date, data_source.finish_date]))
+        pw.flush()
+
+        bill = comterp.get('contract_function')(sup_con, supply_polarity + '_virtual_bill', pw)(data_source)
+        for title in bill_titles:
+            pw.print(',"' + str(bill.get(title, '')) + '"')
+            if title in bill:
+                del bill[title]
+        keys = bill.keys()
+        keys.sort()
+        for k in keys:
+            pw.print(',"' + k + '","' + str(bill[k]) + '"')
+        pw.println('')
+        pw.flush()
+        Hiber.session().clear()
+
+    cal.setTime(day_start.getDate())
+    cal.add(Calendar.DAY_OF_MONTH, 1)
+    day_start = HhStartDate(cal.getTime())
 pw.close()]]></value>
         <value><![CDATA[]]></value>
     </line>
