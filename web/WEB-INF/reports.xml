@@ -498,6 +498,7 @@ for key in properties.propertyNames():
             Chellow &gt; Sites &gt;
               <xsl:value-of select="/source/site/@name" />
           </title>
+        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
       </head>
       <body>
         <p>
@@ -560,6 +561,7 @@ for key in properties.propertyNames():
                     <caption>Supplies that power this site</caption>
                     <thead>
                         <tr>
+                            <th>View</th>
                             <th>Name</th>
                             <th>From</th>
                             <th>To</th>
@@ -570,17 +572,26 @@ for key in properties.propertyNames():
                             <th>Physical Location</th>
                             <th>Also Supplies</th>
                             <th>Meter Category</th>
+                            <th>Meter Serial Number</th>
                         </tr>
                     </thead>
                     <tbody>
                         <xsl:for-each
                             select="/source/site/supply">
                             <tr>
+                                <xsl:attribute name="style">
+                                  <xsl:if test="supply-generation[1]/hh-start-date[@label='finish']">
+                                  color: silver;
+                                  </xsl:if>
+                                </xsl:attribute>
                                 <td>
                                     <a
                                         href="{/source/request/@context-path}/reports/7/output/?supply-id={@id}">
-                                        <xsl:value-of select="@name" />
+                                        <xsl:value-of select="'view'" />
                                     </a>
+                                </td>
+                                <td>
+                                    <xsl:value-of select="@name" />
                                 </td>
                                 <td>
                                     <xsl:value-of
@@ -605,8 +616,21 @@ Ongoing
                                 </td>
                                 <td>
                                     <xsl:if
-                                        test="supply-generation/mpan[llfc/@is-import='true']"><xsl:value-of
- select="supply-generation/mpan[llfc/@is-import='true']/mpan-core/@core" />
+                                        test="supply-generation/mpan[llfc/@is-import='true']">
+<a href="{/source/request/@context-path}/reports/139/output/?dno-id={supply-generation/mpan[llfc/@is-import='true']/mpan-core/dno/@id}">
+<xsl:value-of
+ select="supply-generation/mpan[llfc/@is-import='true']/mpan-core/dno/@code" />
+</a>
+<xsl:value-of select="' '"/>
+<xsl:value-of
+ select="substring(supply-generation/mpan[llfc/@is-import='true']/mpan-core/@uniquePart, 1, 4)" /><xsl:value-of select="' '"/>
+<xsl:value-of
+ select="substring(supply-generation/mpan[llfc/@is-import='true']/mpan-core/@uniquePart, 5, 4)" />
+<xsl:value-of select="' '"/>
+<xsl:value-of
+ select="substring(supply-generation/mpan[llfc/@is-import='true']/mpan-core/@uniquePart, 9, 2)" />
+<xsl:value-of
+ select="supply-generation/mpan[llfc/@is-import='true']/mpan-core/@checkDigit" />
                                      </xsl:if>
                                 </td>
                                 <td>
@@ -632,6 +656,7 @@ Ongoing
                                   </xsl:for-each>                  
                                 </td>
                                 <td><xsl:value-of select="@meter-category" /></td>
+                                <td><xsl:value-of select="supply-generation/@meter-serial-number" /></td>
                             </tr>
                         </xsl:for-each>
                     </tbody>
@@ -12039,6 +12064,11 @@ for dno in Hiber.session().createQuery(
         <value><![CDATA[DNO]]></value>
         <value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree
 from net.sf.chellow.billing import Dno
+from net.sf.chellow.physical import Configuration
+from java.util import Properties
+from java.io import StringReader
+from net.sf.chellow.ui import Report
+
 
 dno_id = inv.getLong('dno-id')
 dno = Dno.getDno(dno_id)
@@ -12052,7 +12082,18 @@ for contract in Hiber.session().createQuery("from DnoContract contract where con
     contract_element.appendChild(start_rate_script.toXml(doc))
     finish_rate_script = contract.getFinishRateScript()
     finish_rate_script.setLabel('finish')
-    contract_element.appendChild(finish_rate_script.toXml(doc))]]></value>
+    contract_element.appendChild(finish_rate_script.toXml(doc))
+
+config = Configuration.getConfiguration()
+properties = Properties()
+properties.load(StringReader(config.getProperties()))
+
+for key in properties.propertyNames():
+    if key.startswith('dno.report.'):
+        dno_report_id = properties.get(key)
+        if dno_report_id is not None:
+            report = Report.getReport(int(dno_report_id))
+            source.appendChild(report.toXml(doc))]]></value>
         <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
 <xsl:stylesheet version="1.0"
     xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
@@ -12126,6 +12167,18 @@ for contract in Hiber.session().createQuery("from DnoContract contract where con
                         <td>
                             <xsl:value-of select="/source/dno/@code" />
                         </td>
+                    </tr>
+                    <tr>
+                        <th>Custom Reports</th>
+<td>
+                        <ul>
+                        <xsl:for-each select="/source/report">
+                        <li><a
+                        href="{/source/request/@context-path}/reports/{@id}/output/?dno-id={/source/dno/@id}">
+<xsl:value-of select="@name"/></a></li>
+                        </xsl:for-each>
+                        </ul>
+                    </td>
                     </tr>
                 </table>
                 <br />

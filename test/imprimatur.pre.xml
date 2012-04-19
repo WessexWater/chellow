@@ -1967,7 +1967,7 @@ def triad_estimates():
 		<request path="/chellow/reports/5/output/?site-id=3">
 			<response-code value="200" />
 			<regex
-				pattern='&lt;a href="/chellow/reports/7/output/\?supply-id=3"&gt;1&lt;/a&gt;' />
+				pattern='&lt;a href="/chellow/reports/7/output/\?supply-id=3"&gt;view&lt;/a&gt;' />
 		</request>
 
 		<!-- Check that it shows a dead supply properly -->
@@ -2003,7 +2003,7 @@ def triad_estimates():
 		<request path="/chellow/reports/5/output/?site-id=3">
 			<response-code value="200" />
 			<regex
-				pattern='&lt;td&gt;[\r\n]*&lt;a href="/chellow/reports/7/output/\?supply-id=12"&gt;3&lt;/a&gt;[\r\n]*&lt;/td&gt;[\r\n]*&lt;td&gt;2005-10-03&lt;/td&gt;[\r\n]*&lt;td&gt;[\r\n]*2010-04-13[\r\n]*&lt;/td&gt;' />
+				pattern='&lt;td&gt;[\r\n]*&lt;a href="/chellow/reports/7/output/\?supply-id=12"&gt;view&lt;/a&gt;[\r\n]*&lt;/td&gt;[\r\n]*&lt;td&gt;3&lt;/td&gt;[\r\n]*&lt;td&gt;2005-10-03&lt;/td&gt;[\r\n]*&lt;td&gt;[\r\n]*2010-04-13[\r\n]*&lt;/td&gt;' />
 		</request>
 	</test>
 	<test name="Try a pre 2010-04-01 DNO 20 bill.">
