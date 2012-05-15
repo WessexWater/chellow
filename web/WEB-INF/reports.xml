@@ -13684,7 +13684,89 @@ from java.text import SimpleDateFormat
 from java.util import Locale, Calendar, TimeZone, GregorianCalendar
 from net.sf.chellow.physical import MpanCore, SiteGroup
 
-inv.getResponse().setContentType('text/plain')
+from net.sf.chellow.monad import Hiber, UserException
+from java.lang import System, Math
+from net.sf.chellow.monad.types import MonadDate
+from java.sql import Timestamp, ResultSet
+from java.util import GregorianCalendar, Calendar, TimeZone, Locale, Date
+from net.sf.chellow.physical import HhStartDate, Supply
+from net.sf.chellow.billing import Batch, NonCoreContract, Bill
+from org.python.util import PythonInterpreter
+
+inv.getResponse().setContentType("text/csv")
+inv.getResponse().setHeader('Content-Disposition', 'attachment; filename="output.csv"')
+pw = inv.getResponse().getWriter()
+
+pw.println("#update,register-read,Chellow Id,TPR,Coefficient,Units,Meter Serial Number,MPAN,Previous Date,Previous Value,Previous Type,Present Date,Present Value,Present Type")
+pw.flush()
+
+cal = MonadDate.getCalendar()
+
+present_reads = Hiber.session().createQuery("select read, read.tpr, read.presentDate, read.bill.supply from RegisterRead read, SupplyGeneration generation where read.bill.supply = generation.supply and read.bill.type.code != 'W' and read.presentDate.date >= generation.startDate.date and (generation.finishDate is null or read.presentDate.date <= generation.finishDate.date) and read.meterSerialNumber != generation.meterSerialNumber order by read.presentDate.date, read.meterSerialNumber").scroll()
+
+previous_reads = Hiber.session().createQuery("select read, read.tpr, read.previousDate, read.bill.supply from RegisterRead read, SupplyGeneration generation where read.bill.supply = generation.supply and read.bill.type.code != 'W' and read.previousDate.date >= generation.startDate.date and (generation.finishDate is null or read.previousDate.date <= generation.finishDate.date) and read.meterSerialNumber != generation.meterSerialNumber order by read.previousDate.date, read.meterSerialNumber").scroll()
+
+#reads = Hiber.session().createQuery("from RegisterRead read order by read.presentDate.date, read.meterSerialNumber").setMaxResults(500).scroll()
+
+def closest_date(ref_date, date1, date2):
+   if date1 is None:
+       return date2
+   if date2 is None:
+       return date1
+
+   if abs(date1.getDate().getTime() - ref_date.getDate().getTime()) <= abs(date2.getDate().getTime() - ref_date.getDate().getTime()):
+       return date1
+   else:
+       return date2
+
+for reads, read_cat in [(previous_reads, 'previous'), (present_reads, 'present')]:
+    while reads.next():
+        read = reads.get(0)
+        tpr = reads.get(1)
+        read_date = reads.get(2)
+        supply = reads.get(3)
+
+        if tpr is None:
+            tpr_code = ''
+        else:
+            tpr_code = tpr.getCode()
+    
+        cal.setTime(read_date.getDate())
+        cal.set(Calendar.HOUR_OF_DAY, 0)    
+        cal.set(Calendar.MINUTE, 0)
+        day_start = HhStartDate(cal.getTime())
+        cal.add(Calendar.DAY_OF_MONTH, 1)
+        cal.add(Calendar.MINUTE, -30)
+        day_finish = HhStartDate(cal.getTime())
+        generations = supply.getGenerations(day_start, day_finish)
+
+        pw.println("#checking " + read_cat + " msn '" + read.getMeterSerialNumber() + "'")
+        if len(generations) > 1:
+            new_read_date = None
+            for generation in generations:
+                if read.getMeterSerialNumber() == generation.getMeterSerialNumber():
+                    new_read_date = closest_date(read_date, new_read_date, generation.getStartDate())
+                    new_read_date = closest_date(read_date, new_read_date, generation.getFinishDate())
+
+            if new_read_date is None:
+                pw.println("#," + ','.join('"' + str(val) + '"' for val in ["mismatch but couldn't correct", read.getId(), tpr_code, read.getCoefficient(), read.getUnits(), read.getMeterSerialNumber(), read.getMpanStr(), read.getPreviousDate(), read.getPreviousValue(), read.getPreviousType(), read.getPresentDate(), read.getPresentValue(), read.getPresentType()]))
+            else:
+                if read_cat == 'previous':
+                    previous_date = new_read_date
+                    present_date = read.getPresentDate()
+                else:
+                    previous_date = read.getPreviousDate()
+                    present_date = new_read_date
+
+                pw.println(','.join('"' + str(val) + '"' for val in ['update', 'register-read', read.getId(), tpr_code, read.getCoefficient(), read.getUnits(), read.getMeterSerialNumber(), read.getMpanStr(), previous_date, read.getPreviousValue(), read.getPreviousType(), present_date, read.getPresentValue(), read.getPresentType()]))
+        pw.flush()
+        Hiber.session().clear()
+
+previous_reads.close()
+present_reads.close()
+pw.close()
+'''
+inv.getResponse().setContentType('text/csv')
 pw = inv.getResponse().getWriter()
 pw.println("Checking for the 100 most recent bogus site snags...")
 summary = []
@@ -13716,7 +13798,8 @@ pw.println('')
 pw.println('Summary')
 for line in summary:
     pw.println(line)
-pw.close()]]></value>
+pw.close()
+''']]></value>
         <value><![CDATA[]]></value>
     </line>
     <line>
