@@ -482,7 +482,12 @@ for key in properties.propertyNames():
         site_report_id = properties.get(key)
         if site_report_id is not None:
             report = Report.getReport(int(site_report_id))
-            source.appendChild(report.toXml(doc))]]></value>
+            source.appendChild(report.toXml(doc))
+    elif key.startswith('site.link.') and key.endswith('.url'):
+        link_element = doc.createElement("link")
+        source.appendChild(link_element)
+        link_element.setAttribute('href', properties.get(key))
+        link_element.setAttribute('name', properties.get(key[:-3] + "name"))]]></value>
         <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
 <xsl:stylesheet version="1.0"
     xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
@@ -546,6 +551,21 @@ for key in properties.propertyNames():
                     </td>
                   </tr>
                   </xsl:if>
+                  <xsl:if test="/source/link">
+                  <tr>
+                    <th>External Links</th>
+                    <td>
+                        <ul>
+                        <xsl:for-each select="/source/link">
+                        <li><a
+                        href="{@href}{/source/site/@code}">
+<xsl:value-of select="@name"/></a></li>
+                        </xsl:for-each>
+                        </ul>
+                    </td>
+                  </tr>
+                  </xsl:if>
+
                 </table>
                 <br/>
                 <xsl:if test="/source/group/site">
