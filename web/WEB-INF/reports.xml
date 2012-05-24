@@ -17573,7 +17573,7 @@ pw.close()]]></value>
         <value><![CDATA[221]]></value>
         <value><![CDATA[true]]></value>
         <value><![CDATA[System Price Importer]]></value>
-        <value><![CDATA[from java.lang import Thread
+        <value><![CDATA[from java.lang import Thread, System
 from net.sf.chellow.billing import NonCoreContract, HhdcContract
 from net.sf.chellow.monad import XmlTree, UserException, Monad, MonadMessage
 from net.sf.chellow.monad.types import MonadUri
@@ -17605,10 +17605,10 @@ if task is not None:
 
 try:
     if inv.hasParameter('remove'):
-        contract_f(system_price_contract, 'remove_system_price_task')(ctx)
+        contract_f(system_price_contract, 'remove_system_price_task', System.err)(ctx)
         inv.sendSeeOther(REPORT_URI)
     elif inv.hasParameter('start'):
-        contract_f(system_price_contract, 'start_system_price_task')(ctx)
+        contract_f(system_price_contract, 'start_system_price_task', System.err)(ctx)
         inv.sendSeeOther(REPORT_URI)
     elif inv.hasParameter('now'):
         Thread(task, "System Price Now").start()
