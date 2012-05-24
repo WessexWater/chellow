@@ -1,15 +1,35 @@
 import csv
+import shutil
+import os
+import sys
+
+mdd_ver = None
+GSP_PREFIX = "GSP_Group_"
+
+for nm in os.listdir("download"):
+    if nm.startswith(GSP_PREFIX):
+        mdd_ver = nm[len(GSP_PREFIX):-4]
+        break
+        
+if mdd_ver is None:
+    sys.exit("Can't find a file beginning with " + GSP_PREFIX + " in the 'download' directory.")
+else:
+    print("MDD version is " + mdd_ver + ".")
+
 
 def to_iso(dmy):
-    if len(dmy) == 0:
-        return dmy
-    else:
-        return '-'.join([dmy[6:], dmy[3:5], dmy[:2]])
+    return dmy if len(dmy) == 0 else '-'.join([dmy[6:], dmy[3:5], dmy[:2]])
+
+
+def copy_file(table_name):
+    shutil.copyfile("download/" + table_name + "_" + mdd_ver + ".csv", "original/" + table_name + ".csv")
+
 
 table_ids = {}
 for table in ["GSP_Group", "Market_Participant", "Market_Role", "MTC_Meter_Type",
               "MTC_Payment_Type", "Profile_Class", "Standard_Settlement_Configuration",
-              "Time_Pattern_Regime"]:
+              "Time_Pattern_Regime", "Clock_Interval", ]:
+    copy_file(table)
     ids = {}
     table_ids[table] = ids
     with open("original/" + table + ".csv") as fl:
@@ -59,9 +79,12 @@ for table in ["GSP_Group", "Market_Participant", "Market_Role", "MTC_Meter_Type"
             if table == 'Profile_Class':
                 converted.writerow([9,"0","Half-hourly"])
 
-with open("original/Clock_Interval.csv") as fl:
+table_name = "Clock_Interval"
+copy_file(table_name)
+with open("original/" + table_name + ".csv") as fl:
+    copy_file(table_name)
     f = csv.reader(fl)
-    with open("converted/Clock_Interval.csv", "w") as conv:
+    with open("converted/" + table_name + ".csv", "w") as conv:
         converted = csv.writer(conv)
         id = 0
         for fields in f:
@@ -76,7 +99,10 @@ with open("original/Clock_Interval.csv") as fl:
 
 dno_lookup = {}
 
-with open("original/Market_Participant_Role.csv") as fl:
+
+table_name = "Market_Participant_Role"
+copy_file(table_name)
+with open("original/" + table_name + ".csv") as fl:
     f = csv.reader(fl)
     with open("converted/Market_Participant_Role-dno.csv", "w") as fl_dno:
         f_dno = csv.writer(fl_dno)
@@ -108,7 +134,10 @@ voltage_levels = {
     "HV": "2",
     "EHV": "3"}
 
-with open("original/Line_Loss_Factor_Class.csv") as fl:
+
+table_name = "Line_Loss_Factor_Class"
+copy_file(table_name)
+with open("original/" + table_name + ".csv") as fl:
     f = csv.reader(fl)
     with open("converted/Line_Loss_Factor_Class.csv", "w") as conv:
         converter = csv.writer(conv)
@@ -144,7 +173,9 @@ with open("original/Line_Loss_Factor_Class.csv") as fl:
         id += 1
         converter.writerow([id, dno_lookup['CUST'],210,"Profile 4 Economy 7",1,0,1,"1996-04-01",''])
             
-with open("original/Measurement_Requirement.csv") as fl:
+table_name = "Measurement_Requirement"
+copy_file(table_name)
+with open("original/" + table_name + ".csv") as fl:
     f = csv.reader(fl)
     with open("converted/Measurement_Requirement.csv", "w") as conv:
         converted = csv.writer(conv)
@@ -183,7 +214,10 @@ with open("converted/Meter_Timeswitch_Class.csv", "w") as conv:
                     converted.writerow([id, "", fields[0], fields[3], has_related_meter, has_comms, is_hh, meter_type_id, payment_type_id, fields[10], to_iso(fields[1]), to_iso(fields[2])])
             id += 1
 
-    with open("original/MTC_in_PES_Area.csv") as orig_file:
+    
+    table_name = "MTC_in_PES_Area"
+    copy_file(table_name)
+    with open("original/" + table_name + ".csv") as orig_file:
         f = csv.reader(orig_file)
         is_first = True
         for fields in f:

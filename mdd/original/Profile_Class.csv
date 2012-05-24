@@ -1,4 +1,4 @@
-"Profile Class Id","Effective From Settlement Date {PCLA}","Profile Class Description","Switched Load Profile Class Ind","Effective To Settlement Date {PCLA}"
+"Profile Class ID","Effective From Settlement Date (PCLA)","Profile Class Description","Switched Load Profile Class Ind","Effective To Settlement Date (PCLA)"
 "1","01/04/1996","Domestic Unrestricted","F",""
 "2","01/04/1996","Domestic Economy 7","T",""
 "3","01/04/1996","Non-domestic Unrestricted","F",""

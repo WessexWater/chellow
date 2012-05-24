@@ -1,4 +1,4 @@
-"MTC Meter Type Id","MTC Meter Type Description","Effective From Settlement Date {MMT}","Effective To Settlement Date {MMT}"
+"MTC Meter Type ID","MTC Meter Type Description","Effective From Settlement date (MMT)","Effective To Settlement Date (MMT)"
 "6A","COP6(a)  20 days memory","01/04/1996",""
 "6B","COP6(b)  100 days memory","01/04/1996",""
 "6C","COP6(c)  250 days memory","01/04/1996",""

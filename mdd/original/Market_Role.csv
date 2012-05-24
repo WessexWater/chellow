@@ -1,4 +1,7 @@
 "Market Participant Role Code","Market Role Description"
+"0","Green Deal Licensee"
+"1","Green Deal Provider"
+"2","Green Deal Remittance Processor"
 "3","Unmetered Supplies Operator (UMSO)"
 "4","Meter Administrator (MA)"
 "6","Non Half Hourly Data Retriever"

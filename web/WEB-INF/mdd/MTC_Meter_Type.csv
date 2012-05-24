@@ -1,4 +1,4 @@
-Chellow Id,MTC Meter Type Id,MTC Meter Type Description,Effective From Settlement Date {MMT},Effective To Settlement Date {MMT}
+Chellow Id,MTC Meter Type ID,MTC Meter Type Description,Effective From Settlement date (MMT),Effective To Settlement Date (MMT)
 1,6A,COP6(a)  20 days memory,1996-04-01,
 2,6B,COP6(b)  100 days memory,1996-04-01,
 3,6C,COP6(c)  250 days memory,1996-04-01,
