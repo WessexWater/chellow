@@ -9870,10 +9870,80 @@ pw.close()]]></value>
         <value><![CDATA[Supplier Contract Bill]]></value>
         <value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree, UserException
 from net.sf.chellow.billing import Bill
+import collections
 
 bill_id = inv.getLong('bill-id')
 bill = Bill.getBill(bill_id)
-source.appendChild(bill.toXml(doc, XmlTree('batch', XmlTree('contract', XmlTree('party'))).put('reads', XmlTree('tpr')).put('type').put('supply')))]]></value>
+source.appendChild(bill.toXml(doc, XmlTree('batch', XmlTree('contract', XmlTree('party'))).put('reads', XmlTree('tpr')).put('type').put('supply')))
+breakdown_element = doc.createElement('breakdown')
+source.appendChild(breakdown_element)
+try:
+    breakdown_dict = eval(bill.getBreakdown(), {})
+    raw_lines_element = doc.createElement('raw-lines')
+    breakdown_element.appendChild(raw_lines_element)
+    for raw_line in breakdown_dict['raw-lines']:
+        raw_line_element = doc.createElement('raw-line')
+        raw_lines_element.appendChild(raw_line_element)
+        raw_line_element.setAttribute('txt', raw_line)
+    del breakdown_dict['raw-lines']
+
+    rows = set()
+    columns = set()
+    grid = collections.defaultdict(dict)
+
+    for k, v in breakdown_dict.items():
+        if k.endswith('-gbp'):
+            columns.add('gbp')
+            row_name = k[:-4]
+            rows.add(row_name)
+            grid[row_name]['gbp'] = v
+            del breakdown_dict[k]
+
+    for k, v in breakdown_dict.items():
+        for row_name in sorted(list(rows), key=len, reverse=True):
+            if k.startswith(row_name + '-'):
+                col_name = k[len(row_name) + 1:]
+                columns.add(col_name)
+                grid[row_name][col_name] = v
+                del breakdown_dict[k]
+                break
+
+    for k, v in breakdown_dict.items():    
+        pair = k.split('-')
+        row_name = '-'.join(pair[:-1])
+        column_name = pair[-1]
+        rows.add(row_name)
+        columns.add(column_name)
+        grid[row_name][column_name] = v
+                
+
+    column_list = sorted(list(columns))
+    for rate_name in [col for col in column_list if col.endswith('rate')]:
+        column_list.remove(rate_name)
+        column_list.append(rate_name)
+
+    if 'gbp' in column_list:
+        column_list.remove('gbp')
+        column_list.append('gbp')
+
+    for column_name in column_list:
+        col_element = doc.createElement('col')
+        breakdown_element.appendChild(col_element)
+        col_element.setAttribute('name', column_name)
+        
+    for row_name in sorted(list(rows)):
+        row_element = doc.createElement('row')
+        breakdown_element.appendChild(row_element)
+        row_element.setAttribute('name', row_name)
+        for column_name in column_list:
+            elem = doc.createElement('elem')
+            row_element.appendChild(elem)
+            try:
+                elem.setAttribute('value', str(grid[row_name][column_name]))
+            except KeyError:
+                pass
+except SyntaxError:
+    pass  ]]></value>
         <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
 <xsl:stylesheet version="1.0"
     xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
@@ -10001,10 +10071,7 @@ source.appendChild(bill.toXml(doc, XmlTree('batch', XmlTree('contract', XmlTree(
                                   <xsl:value-of select="/source/bill/bill-type/@code" />
                                   </a>
                                 </td>
-                                <td><form action="{/source/request/@context-path}/reports/111/output/"><fieldset>
-                  <input type="hidden" name="bill-id" value="{/source/bill/@id}"/><input type="submit" name="check" value="Check"/>
-                  </fieldset>
-                </form>
+                                <td><a href="{/source/request/@context-path}/reports/111/output/?bill-id={/source/bill/@id}"><xsl:value-of select="'Check'"/></a>
                                </td>
                             </tr>
                     </tbody>
@@ -10081,10 +10148,35 @@ source.appendChild(bill.toXml(doc, XmlTree('batch', XmlTree('contract', XmlTree(
                         </tr>
                     </xsl:for-each>
                 </table>
+            <h3>Breakdown</h3>
+            <pre><xsl:for-each select="/source/breakdown/raw-lines/raw-line" >
+                 <xsl:value-of select="@txt"/><br/>
+                 </xsl:for-each>
+            </pre>
+            <table>
+              <thead>
+                <tr>
+                   <th>element</th>
+                <xsl:for-each select="/source/breakdown/col">
+                    <th><xsl:value-of select="@name"/></th>
+                </xsl:for-each>
+                </tr>  
+              </thead>
+              <tbody>
+                <xsl:for-each select="/source/breakdown/row">
+                  <tr>
+                    <td><xsl:value-of select="@name"/></td>
+                <xsl:for-each select="elem">
+                    <td><xsl:value-of select="@value"/></td>
+                </xsl:for-each>
+                  </tr>
+                </xsl:for-each>
+              </tbody>
+            </table>
             </body>
         </html>
     </xsl:template>
-</xsl:stylesheet>]]></value>
+</xsl:stylesheet>      ]]></value>
     </line>
     <line>
         <value><![CDATA[insert]]></value>
@@ -10452,9 +10544,12 @@ from java.util import GregorianCalendar, Calendar, TimeZone, Locale, Date
 from net.sf.chellow.physical import HhStartDate
 from net.sf.chellow.billing import Batch, NonCoreContract, Bill, SupplierContract, HhdcContract, MopContract
 from org.python.util import PythonInterpreter
+import collections
+import operator
 
-def find_contract_type(bill):
-    contract_id = bill.getBatch().getContract().getId()
+
+def find_contract_type(ctract):
+    contract_id = ctract.getId()
     try:
         SupplierContract.getSupplierContract(contract_id)
         contract_type = 'supplier'
@@ -10470,11 +10565,10 @@ def find_contract_type(bill):
                 raise UserException('contract type not found')
     return contract_type
 
+
 inv.getResponse().setContentType("text/csv")
 inv.getResponse().setHeader('Content-Disposition', 'attachment; filename="output.csv"')
 pw = inv.getResponse().getWriter()
-pw.println("Batch,Reference, Type, Breakdown, kWh, Net GBP, VAT GBP, Start Date, Finish Date, MPAN Core, Covered From, Covered To, Covered Bills, Covered kWh, Covered Net, Covered VAT, Virtual kWh, Virtual Net, Error GBP, Problem")
-pw.flush()
 
 computer = NonCoreContract.getNonCoreContract('computer')
 comterp = PythonInterpreter()
@@ -10495,9 +10589,22 @@ elif inv.hasParameter('bill-id'):
     bills = Hiber.session().createQuery("from Bill bill where bill = :bill").setEntity('bill', bill).scroll()
     batch = bill.getBatch()
 
+contract = batch.getContract()
+contract_type = find_contract_type(contract)
+
+contract_function = comterp.get('contract_function')
+
+vbf = contract_function(contract, 'import_virtual_bill', pw)
+if vbf is None:
+    raise UserException('The contract ' + contract.getName() + " doesn't have a function import_virtual_bill.")
+
+virtual_bill_titles = contract_function(contract, 'import_virtual_bill_titles', pw)()
+
+pw.println("batch,bill-reference,bill-type,bill-kwh,bill-net-gbp,bill-vat-gbp, bill-start-date,bill-finish-date,bill-mpan-core,site-code,site-name,covered-from,covered-to,covered-bills," + ','.join('covered-' + val + ',virtual-' + val + (',difference-' + val if val.endswith('-gbp') else '') for val in virtual_bill_titles))
+pw.flush()
+
 while bills.next():
     problem = ''
-    #pw.println('starting bill ' + str(System.currentTimeMillis()))
     bill = bills.get(0)
     supply = bill.getSupply()
 
@@ -10532,27 +10639,27 @@ while bills.next():
     bill_start = bill.getStartDate()
     bill_finish = bill.getFinishDate()
 
-    contract_type = find_contract_type(bill)
     generation = supply.getGeneration(bill.getFinishDate())
     if generation is None:
         pw.println(",,,,,,,,,,Extraordinary! There isn't a generation for this bill!")
         continue
     mpan = generation.getMpans().iterator().next()
 
+    pw.print(','.join('"' + str(val) + '"' for val in [batch.getReference(), bill.getReference(), bill.getType(), bill.getKwh(), bill.getNet(), bill.getVat(), bill_start, bill_finish, mpan.getCore()]) + ",")
+
     msn = generation.getMeterSerialNumber()
 
     covered_start = bill_start
     covered_finish = bill_finish
     covered_bill_ids = []
-    covered_net = 0
-    covered_vat = 0
+    covered_bdown = {'sum-msp-kwh': 0, 'net-gbp': 0, 'vat-gbp': 0}
     covered_primary_bill = None
     enlarged = True
     covered_query = Hiber.session().createQuery("from Bill bill where bill.supply = :supply and bill.startDate.date <= :finishDate and bill.finishDate >= :startDate order by bill.issueDate desc, bill.startDate.date").setEntity('supply', supply)
     while enlarged:
         enlarged = False
         for covered_bill in covered_query.setTimestamp('finishDate', covered_finish.getDate()).setTimestamp('startDate', covered_start.getDate()).list():
-            if contract_type != find_contract_type(covered_bill):
+            if contract_type != find_contract_type(covered_bill.getBatch().getContract()):
                 continue
 
             if covered_primary_bill is None and covered_bill.getReads() is not None and len(covered_bill.getReads()) > 0:
@@ -10565,98 +10672,94 @@ while bills.next():
                 covered_finish = covered_bill.getFinishDate()
                 enlarged = True
                 break
-    top_bills = []
+
     for covered_bill in covered_query.setTimestamp('finishDate', covered_finish.getDate()).setTimestamp('startDate', covered_start.getDate()).list():
-        if contract_type != find_contract_type(covered_bill):
+        if contract_type != find_contract_type(covered_bill.getBatch().getContract()):
             continue
         covered_bill_ids.append(covered_bill.getId())
-        covered_net += covered_bill.getNet().doubleValue()
-        covered_vat += covered_bill.getVat().doubleValue()
-        can_insert = True
-        for top_bill in top_bills:
-            if not covered_bill.getStartDate().after(top_bill.getFinishDate()) and not covered_bill.getFinishDate().before(top_bill.getStartDate()):
-                can_insert = False
-                break
-        if can_insert:
-            top_bills.append(covered_bill)
-    covered_kwh = sum(bl.getKwh().doubleValue() for bl in top_bills)
+        covered_bdown['net-gbp'] += covered_bill.getNet().doubleValue()
+        covered_bdown['vat-gbp'] += covered_bill.getVat().doubleValue()
+        covered_bdown['sum-msp-kwh'] += covered_bill.getKwh().doubleValue()
+        if len(covered_bill.getBreakdown()) > 0:
+            for k, v in eval(covered_bill.getBreakdown(), {}).iteritems():
+                if k != 'raw-lines':
+                    try:
+                        covered_bdown[k] += v
+                    except KeyError:
+                        covered_bdown[k] = v
+                    except TypeError, detail:
+                        raise UserException("For key " + str(k) + " the value " + str(v) + " can't be added to the existing value " + str(covered_bdown[k]) + ". " + str(detail))
 
+    virtual_bill = {}
 
-    mb_cal = MonadDate.getCalendar()
-    mb_cal.setTime(covered_start.getDate())
-    mb_cal.set(Calendar.DAY_OF_MONTH, 1)
-    mb_cal.set(Calendar.HOUR_OF_DAY, 0)
-    mb_cal.set(Calendar.MINUTE, 0)
+    site_query = Hiber.session().createQuery("select ssgen.site from SiteSupplyGeneration ssgen where ssgen.isPhysical is true and ssgen.supplyGeneration = :generation")
 
-    me_cal = MonadDate.getCalendar()
-    me_cal.setTime(mb_cal.getTime())
-    me_cal.add(Calendar.MONTH, 1)
-    me_cal.add(Calendar.MINUTE, -30)
+    generations = Hiber.session().createQuery("select distinct generation from SupplyGeneration generation where generation.supply = :supply and generation.importMpan is not null and generation.startDate.date <= :finishDate and (generation.finishDate is null or generation.finishDate.date >= :startDate)").setEntity('supply', supply).setTimestamp('startDate', covered_start.getDate()).setTimestamp('finishDate', covered_finish.getDate()).scroll()
+    while generations.next():
+        generation = generations.get(0)
+        site = site_query.setEntity('generation', generation).uniqueResult()
 
-    virtual_kwh = 0
-    net_gbp = 0
-
-    while not mb_cal.getTime().after(covered_finish.getDate()):
-        month_begin = HhStartDate(mb_cal.getTime())
-        month_end = HhStartDate(me_cal.getTime())
-        if covered_start.after(month_begin):
+        if covered_start.after(generation.getStartDate()):
             chunk_start = covered_start
         else:
-            chunk_start = month_begin
-        if covered_finish.before(month_end):
+            chunk_start = generation.getStartDate()
+
+        if covered_finish.before(generation.getFinishDate()):
             chunk_finish = covered_finish
         else:
-            chunk_finish = month_end
+            chunk_finish = generation.getFinishDate()
 
-        generations = Hiber.session().createQuery("select distinct generation from SupplyGeneration generation where generation.supply = :supply and generation.importMpan is not null and generation.startDate.date <= :finishDate and (generation.finishDate is null or generation.finishDate.date >= :startDate)").setEntity('supply', supply).setTimestamp('startDate', chunk_start.getDate()).setTimestamp('finishDate', chunk_finish.getDate()).scroll()
-        while generations.next():
-            generation = generations.get(0)
+        data_source = comterp.get('SupplySource')(chunk_start, chunk_finish, forecast_date, generation.getImportMpan(), comterp, pw, covered_primary_bill)
 
-            if chunk_start.after(generation.getStartDate()):
-                block_start = chunk_start
+        for k, v in vbf(data_source).iteritems():
+            try:
+                virtual_bill[k] += v
+            except KeyError:
+                virtual_bill[k] = v
+            except TypeError, detail:
+                raise UserException("For key " + str(k) + " and value " + str(v) + ". " + str(detail))
+
+    generations.close()
+
+    values = [site.getCode(), site.getName(), covered_start, covered_finish, ';'.join(str(id).replace(',', '') for id in covered_bill_ids)]
+    for title in virtual_bill_titles:
+        try:
+            cov_val = covered_bdown[title]
+            values.append(cov_val)
+            del covered_bdown[title]
+        except KeyError:
+            cov_val = None
+            values.append('')
+
+        try:
+            virt_val = virtual_bill[title]
+            values.append(virt_val)
+            del virtual_bill[title]
+        except KeyError:
+            virt_val = None
+            values.append('')
+
+        if title.endswith('-gbp'):
+            if all(isinstance(val, (int, float)) for val in [cov_val, virt_val]):
+                values.append(cov_val - virt_val)
             else:
-                block_start = generation.getStartDate()
+                values.append('')
 
-            if chunk_finish.before(generation.getFinishDate()):
-                block_finish = chunk_finish
-            else:
-                block_finish = generation.getFinishDate()
-            
-            mpan = generation.getImportMpan()
-            contract = mpan.getSupplierContract()
-            mpan_core = mpan.getCore()
-            mpan_core_str = str(mpan_core)
-            data_source = comterp.get('SupplySource')(block_start, block_finish, forecast_date, mpan, comterp, pw, covered_primary_bill)
+    for title in sorted(virtual_bill.keys()):
+        values += ['virtual-' + title, virtual_bill[title]]
+        if title in covered_bdown:
+            values += ['covered-' + title, covered_bdown[title]]
+        else:
+            values += ['','']
 
-            vbf = comterp.get('contract_function')(contract, 'import_virtual_bill', pw)
-            if vbf is None:
-                raise UserException('The contract ' + contract.getName() + " doesn't have a function import_virtual_bill.")
-            v_bill = vbf(data_source)
-            net_gbp += v_bill['net-gbp']
-            virtual_kwh += v_bill['sum-msp-kwh']
-            problem += v_bill['problem']
-            values = [('start-date', data_source.start_date), ('finish-date', data_source.finish_date)]
-            for title in data_source.contract_function(contract, 'import_virtual_bill_titles')():
-                if title in v_bill:
-                    value = v_bill[title]
-                    del v_bill[title]
-                else:
-                    value = ''
-                values.append((title, value))
-            values += [(k, v) for k, v in v_bill.iteritems()]
-            pw.println(','.join('"' + title + '","' + str(value) + '"' for title, value in values))
-            #raise UserException('start date ' + str(data_source.start_date) + ' finish date ' + str(data_source.finish_date) + ' ' + str(bill))
-        mb_cal.add(Calendar.MONTH, 1)
-        me_cal.add(Calendar.MINUTE, 30)
-        me_cal.add(Calendar.MONTH, 1)
-        me_cal.add(Calendar.MINUTE, -30)
-        generations.close()
-    
-    pw.println(','.join('"' + str(value) + '"' for value in [batch.getReference(), bill.getReference(), bill.getType(), bill.getBreakdown(), bill.getKwh(), bill.getNet(), bill.getVat(), bill_start, bill_finish, mpan.getCore(), covered_start, covered_finish, ';'.join(str(id).replace(',', '') for id in covered_bill_ids), covered_kwh, covered_net, covered_vat, virtual_kwh, net_gbp, covered_net - net_gbp, problem]))
+    pw.println(','.join('"' + str(value) + '"' for value in values))
     pw.flush()
     Hiber.session().clear()
 bills.close()
-pw.close()]]></value>
+pw.close()
+
+
+]]></value>
         <value><![CDATA[]]></value>
     </line>
     <line>
@@ -12655,56 +12758,38 @@ computer = NonCoreContract.getNonCoreContract('computer')
 comterp = computer.callFunction('create_comterp', [])
 forecast_date = HhStartDate.roundDown(Date(Long.MAX_VALUE))
 
-def mpan_bit(query, kvarh_at_md_query, is_import, hh_count_query, num_hh, generation, comterp, forecast_date, start_date, finish_date):
-    mpan = generation.getMpan(is_import)
+def mpan_bit(query, kvarh_at_md_query, is_import, hh_count_query, num_hh, generations, chunk_start, chunk_finish):
     mpan_core_str = ''
     llfc_str = ''
     sc_str = ''
     supplier_contract_name = ''
     gsp_kwh = ''
-    if mpan is not None:
+    for generation in generations:
+        mpan = generation.getMpan(is_import)
+        if mpan is None:
+            continue
         supplier_contract_name = mpan.getSupplierContract().getName()
         llfc = mpan.getLlfc()
         llfc_str = str(llfc)
         mpan_core_str = mpan.getCore().toString()
         sc_str = str(mpan.getAgreedSupplyCapacity())
         if llfc.getIsImport() and generation.getPc().getCode() == 0:
-            global gsp_kwh
-            gsp_kwh = 0
-            # Do months
-            mb_cal = MonadDate.getCalendar()
-            mb_cal.setTime(start_date.getDate())
-            mb_cal.set(Calendar.HOUR_OF_DAY, 0)
-            mb_cal.set(Calendar.MINUTE, 0)
+            if gsp_kwh == '':
+                gsp_kwh = 0
 
-            me_cal = MonadDate.getCalendar()
-            me_cal.setTime(start_date.getDate())
-            me_cal.set(Calendar.HOUR_OF_DAY, 0)
-            me_cal.set(Calendar.MINUTE, 0)
-            me_cal.add(Calendar.MONTH, 1)
-            me_cal.add(Calendar.MINUTE, -30)
+            if chunk_start.after(generation.getStartDate()):
+                block_start = chunk_start
+            else:
+                block_start = generation.getStartDate()
+            if chunk_finish.before(generation.getFinishDate()):
+                block_finish = chunk_finish
+            else:
+                block_finish = generation.getFinishDate()
 
-            while not mb_cal.getTime().after(finish_date.getDate()):
-                month_begin = HhStartDate(mb_cal.getTime())
-                month_end = HhStartDate(me_cal.getTime())
-                mb_cal.add(Calendar.MONTH, 1)
-                me_cal.add(Calendar.MINUTE, 30)
-                me_cal.add(Calendar.MONTH, 1)
-                me_cal.add(Calendar.MINUTE, -30)
+            supply_source = comterp.get('SupplySource')(block_start, block_finish, forecast_date, mpan, comterp, pw)
+            supply_source.add_duos_elements()
 
-                if start_date.after(month_begin):
-                    chunk_start = start_date
-                else:
-                    chunk_start = month_begin
-                if finish_date.before(month_end):
-                    chunk_finish = finish_date
-                else:
-                    chunk_finish = month_end
-                #p w.println("about to get ss, " + str(System.currentTimeMillis()))
-                supply_source = comterp.get('SupplySource')(chunk_start, chunk_finish, forecast_date, mpan, comterp, pw)
-                supply_source.add_duos_elements()
-                #p w.println("got ss, " + str(System.currentTimeMillis()))
-                gsp_kwh += sum([datum['gsp-kwh'] for datum in supply_source.hh_data])
+            gsp_kwh += sum([datum['gsp-kwh'] for datum in supply_source.hh_data])
 
     md = 0
     sum_kwh = 0
@@ -12862,11 +12947,10 @@ while supplies.next():
 
     pw.print(','.join(('"' + str(value) + '"') for value in [supply.getId(), supply.getName(), supply.getSource().getCode(), generator_type, site_codes, site_names, start_date, finish_date, generation.getPc(), generation.getMtc(), generation.getCop(), ssc_code, len(prime_reads), supply_type]) + ',')
     pw.flush()
-    pw.println(mpan_bit(query, kva_at_md_query, True, hh_count_query, num_hh, generation, comterp, forecast_date, start_date, finish_date) + "," + mpan_bit(query, kva_at_md_query, False, hh_count_query, num_hh, generation,comterp, forecast_date, start_date, finish_date))
+    pw.println(mpan_bit(query, kva_at_md_query, True, hh_count_query, num_hh, generations, chunk_start, chunk_finish) + "," + mpan_bit(query, kva_at_md_query, False, hh_count_query, num_hh, generations, chunk_start, chunk_finish))
     pw.flush()
     Hiber.session().clear()
-supplies.close()
-pw.close()]]></value>
+supplies.close()]]></value>
         <value><![CDATA[]]></value>
     </line>
     <line>
