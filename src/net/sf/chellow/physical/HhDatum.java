@@ -98,7 +98,9 @@ public class HhDatum extends PersistentEntity {
 							.before(startDate))) {
 				// batchSize = data.size();
 				channel.addHhData(data);
+				Hiber.commit();
 				Hiber.close();
+				Hiber.setReadWrite();
 				data.clear();
 				mpanCoreStr = datum.getMpanCore();
 				mpanCore = MpanCore.getMpanCore(mpanCoreStr);
@@ -125,6 +127,7 @@ public class HhDatum extends PersistentEntity {
 		if (!data.isEmpty()) {
 			channel.addHhData(data);
 		}
+		Hiber.commit();
 		Hiber.close();
 	}
 
@@ -228,6 +231,7 @@ public class HhDatum extends PersistentEntity {
 	}
 
 	public void httpPost(Invocation inv) throws HttpException {
+		Hiber.setReadWrite();
 		if (inv.hasParameter("delete")) {
 			try {
 				channel.deleteData(startDate, startDate);

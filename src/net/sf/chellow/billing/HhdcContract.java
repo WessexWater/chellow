@@ -1,6 +1,6 @@
 /*******************************************************************************
  * 
- *  Copyright (c) 2005, 2011 Wessex Water Services Limited
+ *  Copyright (c) 2005, 2013 Wessex Water Services Limited
  *  
  *  This file is part of Chellow.
  * 
@@ -230,6 +230,8 @@ public class HhdcContract extends Contract {
 	}
 
 	public void httpPost(Invocation inv) throws HttpException {
+		Hiber.setReadWrite();
+		Hiber.session().setReadOnly(this, false);
 		if (inv.hasParameter("update-state")) {
 			String state = inv.getString("state");
 			state = state.replace("\r", "").replace("\t", "    ");

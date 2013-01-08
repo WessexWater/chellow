@@ -1,6 +1,6 @@
 /*******************************************************************************
  * 
- *  Copyright (c) 2005, 2009 Wessex Water Services Limited
+ *  Copyright (c) 2005-2013 Wessex Water Services Limited
  *  
  *  This file is part of Chellow.
  * 
@@ -68,8 +68,10 @@ public class Users extends EntityList {
 		if (!inv.isValid()) {
 			throw new UserException(document());
 		}
+		
 		UserRole role = UserRole.getUserRole(userRoleId);
 		try {
+			Hiber.setReadWrite();
 			Party party = null;
 			if (role.getCode().equals(UserRole.PARTY_VIEWER)) {
 				Long partyId = inv.getLong("party-id");
@@ -129,8 +131,7 @@ public class Users extends EntityList {
 	}
 
 	public User findUser(EmailAddress emailAddress) throws InternalException {
-		return (User) Hiber
-				.session()
+		return (User) Hiber.session() 
 				.createQuery(
 						"from User user where user.emailAddress.address = :emailAddress")
 				.setString("emailAddress", emailAddress.toString())

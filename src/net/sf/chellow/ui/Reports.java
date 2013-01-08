@@ -1,6 +1,6 @@
 /*******************************************************************************
  * 
- *  Copyright (c) 2005, 2009 Wessex Water Services Limited
+ *  Copyright (c) 2005, 2013 Wessex Water Services Limited
  *  
  *  This file is part of Chellow.
  * 
@@ -76,6 +76,7 @@ public class Reports extends EntityList {
 	}
 
 	public void httpPost(Invocation inv) throws HttpException {
+		Hiber.setReadWrite();
 		boolean isCore = inv.getBoolean("is-core");
 		String name = inv.getString("name");
 		try {

@@ -1,6 +1,6 @@
 /*******************************************************************************
  * 
- *  Copyright (c) 2005, 2011 Wessex Water Services Limited
+ *  Copyright (c) 2005-2013 Wessex Water Services Limited
  *  
  *  This file is part of Chellow.
  * 
@@ -65,6 +65,7 @@ public class DnoContracts extends EntityList {
 	}
 
 	public void httpPost(Invocation inv) throws HttpException {
+		Hiber.setReadWrite();
 		String name = inv.getString("name");
 		Date startDate = inv.getDate("start");
 

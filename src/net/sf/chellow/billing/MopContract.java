@@ -1,6 +1,6 @@
 /*******************************************************************************
  * 
- *  Copyright (c) 2005, 2010 Wessex Water Services Limited
+ *  Copyright (c) 2005-2013 Wessex Water Services Limited
  *  
  *  This file is part of Chellow.
  * 
@@ -182,6 +182,8 @@ public class MopContract extends Contract {
 	}
 
 	public void httpPost(Invocation inv) throws HttpException {
+		Hiber.setReadWrite();
+		Hiber.session().setReadOnly(this, false);
 		if (inv.hasParameter("delete")) {
 			try {
 				delete();

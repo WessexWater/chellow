@@ -1,6 +1,6 @@
 /*******************************************************************************
  * 
- *  Copyright (c) 2005, 2011 Wessex Water Services Limited
+ *  Copyright (c) 2005, 2013 Wessex Water Services Limited
  *  
  *  This file is part of Chellow.
  * 
@@ -65,6 +65,7 @@ public class NonCoreContracts extends EntityList {
 	}
 
 	public void httpPost(Invocation inv) throws HttpException {
+		Hiber.setReadWrite();
 		Long participantId = inv.getLong("participant-id");
 		Boolean isCore = inv.getBoolean("is-core");
 		String name = inv.getString("name");

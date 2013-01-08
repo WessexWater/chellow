@@ -1,6 +1,6 @@
 /*******************************************************************************
  * 
- *  Copyright (c) 2005, 2009 Wessex Water Services Limited
+ *  Copyright (c) 2005, 2013 Wessex Water Services Limited
  *  
  *  This file is part of Chellow.
  * 
@@ -111,6 +111,7 @@ public class User extends PersistentEntity {
 		try {
 			user = new User(emailAddress, password, passwordDigest, userRole,
 					party);
+			Hiber.session().setDefaultReadOnly(false);
 			Hiber.session().save(user);
 			Hiber.flush();
 		} catch (ConstraintViolationException e) {
@@ -251,7 +252,8 @@ public class User extends PersistentEntity {
 	}
 
 	public MonadUri getEditUri() throws HttpException {
-		return Chellow.USERS_INSTANCE.getEditUri().resolve(getUriId()).append("/");
+		return Chellow.USERS_INSTANCE.getEditUri().resolve(getUriId())
+				.append("/");
 	}
 
 	public Urlable getChild(UriPathElement uriId) throws HttpException {
@@ -277,8 +279,8 @@ public class User extends PersistentEntity {
 				.createQuery(
 						"from Party party order by party.role.code, party.participant.code")
 				.list()) {
-			source.appendChild(party.toXml(doc, new XmlTree("participant")
-					.put("role")));
+			source.appendChild(party.toXml(doc,
+					new XmlTree("participant").put("role")));
 		}
 		if (message != null) {
 			source.appendChild(new MonadMessage(message).toXml(doc));
@@ -287,6 +289,7 @@ public class User extends PersistentEntity {
 	}
 
 	public void httpPost(Invocation inv) throws HttpException {
+		Hiber.setReadWrite();
 		if (inv.hasParameter("delete")) {
 			Hiber.session().delete(this);
 			Hiber.close();

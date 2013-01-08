@@ -158,6 +158,7 @@ public class DnoContract extends Contract {
 	}
 
 	public void httpPost(Invocation inv) throws HttpException {
+		Hiber.setReadWrite();
 		if (inv.hasParameter("delete")) {
 			delete();
 			Hiber.commit();

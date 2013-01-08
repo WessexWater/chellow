@@ -21,6 +21,9 @@
 
 package net.sf.chellow.monad;
 
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.logging.Logger;
 
 import org.hibernate.HibernateException;
@@ -60,6 +63,7 @@ public class Hiber {
 		}
 	}
 
+	@SuppressWarnings("deprecation")
 	static public Session session() throws HibernateException {
 		Session s = session.get();
 		if (s == null) {
@@ -68,10 +72,17 @@ public class Hiber {
 		}
 
 		Transaction tx = s.getTransaction();
-		if (tx == null) {
+		if (tx == null || !tx.isActive()) {
 			s.beginTransaction();
-		} else if (!tx.isActive()) {
-			s.beginTransaction();
+			Connection con = session().connection();
+			Statement stmt;
+			try {
+				stmt = con.createStatement();
+
+				stmt.executeUpdate("set transaction isolation level serializable read only");
+			} catch (SQLException e) {
+				throw new InternalException(e);
+			}
 		}
 
 		return s;
@@ -111,5 +122,19 @@ public class Hiber {
 
 	static public Configuration getConfiguration() {
 		return conf;
+	}
+
+	@SuppressWarnings("deprecation")
+	static public void setReadWrite() {
+		rollBack();
+		Connection con = session().connection();
+		Statement stmt;
+		try {
+			stmt = con.createStatement();
+
+			stmt.executeUpdate("set transaction isolation level serializable read write");
+		} catch (SQLException e) {
+			throw new InternalException(e);
+		}
 	}
 }

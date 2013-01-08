@@ -276,6 +276,8 @@ public class Report extends PersistentEntity {
 	}
 
 	public void httpPost(Invocation inv) throws HttpException {
+		Hiber.setReadWrite();
+		Hiber.session().setReadOnly(this, false);
 		if (inv.hasParameter("delete")) {
 			delete();
 			Hiber.commit();

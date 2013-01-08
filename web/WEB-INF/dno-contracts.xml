@@ -114,223 +114,62 @@ def totalElement(account, startDate, finishDate):
         <value><![CDATA[2010-03-31T23:30Z]]></value>
         <value><![CDATA[from net.sf.chellow.billing import NonCoreContract
 from java.util import GregorianCalendar, TimeZone, Locale, Calendar
-from net.sf.chellow.monad import UserException, Hiber
-from net.sf.chellow.physical import HhStartDate, MpanCore
-from net.sf.chellow.monad.types import MonadDate
-from java.lang import System
-
-
-def year_md_095(data_source, finish):
-    if data_source.site is None:
-        return year_md_095_supply(data_source.supply_generation.getSupply(), finish)
-    else:
-        return year_md_095_site(data_source, finish)
-
-
-def year_md_095_supply(supply, finish):
-    md_kva = 0
-    cal = MonadDate.getCalendar()
-    cal.setTime(finish)
-    cal.add(Calendar.MONTH, -11)
-    month_finish = cal.getTime()
-    month_kwh_query = Hiber.session().createQuery("select sum(datum.value), max(datum.value) from HhDatum datum where datum.channel.supplyGeneration.supply = :supply and datum.startDate.date >= :start and datum.startDate.date <= :finish and datum.channel.isKwh is true and datum.channel.isImport is true").setEntity("supply", supply)
-
-    month_kvarh_query = Hiber.session().createQuery("select sum(datum.value) from HhDatum datum where datum.channel.supplyGeneration.supply = :supply and datum.startDate.date >= :start and datum.startDate.date <= :finish and datum.channel.isKwh is false and datum.channel.isImport is true").setEntity("supply", supply)
-    while not month_finish.after(finish):
-        cal.setTime(month_finish)
-        cal.add(Calendar.MONTH, -1)
-        cal.add(Calendar.MINUTE, 30)
-        month_start = cal.getTime()        
-        month_kwh_result = month_kwh_query.setTimestamp("start", month_start).setTimestamp("finish", month_finish).uniqueResult()
-
-        if month_kwh_result[0] is not None:
-            month_md_kw = month_kwh_result[1].doubleValue() * 2
-            month_kwh = month_kwh_result[0].doubleValue()
-            month_kvarh = month_kvarh_query.setTimestamp("start", month_start).setTimestamp("finish", month_finish).uniqueResult()
-            if month_kvarh is None:
-                pf = 0.95
-            else:
-                month_kvarh = month_kvarh.doubleValue()
-                if month_kwh == 0 and month_kvarh == 0:
-                    pf = 1
-                else:
-                    pf = month_kwh / (month_kwh ** 2 + month_kvarh ** 2) ** 0.5
-            month_kva = month_md_kw / pf
-            md_kva = max(md_kva, month_kva)
-        cal.setTime(month_finish)
-        cal.add(Calendar.MONTH, 1)
-        month_finish = cal.getTime()
-    return md_kva
-
-
-def year_md_095_site(data_source, finish, pw):
-    timing = System.currentTimeMillis()
-    #pw.println("starting 095 " + str(System.currentTimeMillis() - timing))    
-    md_kva = 0
-    cal = MonadDate.getCalendar()
-    cal.setTime(finish)
-    cal.add(Calendar.MONTH, -12)
-    month_finish = cal.getTime()
-
-
-    while not month_finish.after(finish):
-        cal.setTime(month_finish)
-        cal.add(Calendar.MONTH, -1)
-        cal.add(Calendar.MINUTE, 30)
-        month_start = cal.getTime()
-        month_data = {'start': HhStartDate(month_start), 'finish': HhStartDate(month_finish)}
-        data_source.sum_md(month_data, pw)
-        if month_data['sum-kwh'] is None:
-            month_md_kw = 0
-            month_kwh = 0
-        else:
-            month_md_kw = month_data['md-kw']
-            month_kwh = month_data['sum-kwh']
-
-        data_source.sum_md(month_data, pw, False)
-        if month_data['sum-kvarh'] is not None:
-            month_kvarh = month_data['sum-kvarh']
-
-        if month_kvarh == 0:
-            month_kva = month_md_kw / 0.95
-        else:
-            if month_kwh == 0 and month_kvarh == 0:
-                pf = 1
-            else:
-                pf = month_kwh / (month_kwh ** 2 + month_kvarh ** 2) ** 0.5
-            month_kva = month_md_kw / pf
-        md_kva = max(md_kva, month_kva)
-        cal.setTime(month_finish)
-        cal.add(Calendar.MONTH, 1)
-        month_finish = cal.getTime()
-    return md_kva, ''
-
-
-def get_rate_script(date):
-    return contract.rateScripts(date, date)[0]
-
-
-contract_from = contract.getStartRateScript().getStartDate()
-contract_to = contract.getFinishRateScript().getFinishDate()
+from net.sf.chellow.physical import HhStartDate
 
 
 def hh(data_source):
-    if data_source.start_date.after(contract_from):
-        chunk_from = data_source.start_date
-    else:
-        chunk_from = contract_from
-    if data_source.finish_date.before(contract_to):
-        chunk_to = data_source.finish_date
-    else:
-        chunk_to = contract_to
-
-    if len(data_source.dno_contracts) == 1:
-        hh_data = data_source.hh_data
-        hh_times = data_source.hh_times
-    else:
-        hh_data = [h for h in data_source.hh_data if not h['start-date'].before(chunk_from.getDate()) and not h['start-date'].after(chunk_to.getDate())]
-        hh_times = [h for h in data_source.hh_times if not h['start-date'].before(chunk_from.getDate()) and not h['start-date'].after(chunk_to.getDate())]
-
-
-    llfc_code = data_source.llfc_code
-    voltage_level_code = data_source.voltage_level_code
-    pc_code = data_source.pc_code
     bill = data_source.supplier_bill
 
-    llfc_groups = data_source.hh_rate(contract, chunk_from.getDate(), 'llfc_groups')
-    if llfc_code in llfc_groups:
-        llfc_group = llfc_groups[llfc_code]
-    else:
-        llfc_group = llfc_code
+    for title in ['duos-night-kwh', 'duos-night-gbp', 'duos-day-kwh', 'duos-day-gbp']:
+        bill.setdefault(title, 0)
 
-    if pc_code in ('05', '06', '07', '08'):
-        pc_group = '05-08'
-    else:
-        pc_group = pc_code
+    llfc_code = data_source.llfc_code
+    voltage_level_code_lower = data_source.voltage_level_code.lower()
+    is_substation = data_source.is_substation
 
-    tariff = data_source.hh_rate(contract, chunk_from.getDate(), 'duos_tariffs')['llfc(' + llfc_group + ')-pc(' + pc_group + ')']
-
-    if tariff is None:
-        raise UserException('The tariff for the llfc ' + llfc_code + ' cannot be found.')
-
-    lafs = data_source.hh_rate(contract, chunk_from.getDate(), 'lafs')[voltage_level_code.lower()]
-    
-    bill['duos-day-kwh'] = 0
-    bill['duos-day-gbp'] = 0
-    day_rate = tariff['day-gbp-per-kwh']
-
-    if 'night-gbp-per-kwh' in tariff:
-        night_rate = tariff['night-gbp-per-kwh']
-        bill['duos-night-kwh'] = 0
-        bill['duos-night-gbp'] = 0
-        for hh in data_source.hh_data:
-            if 0 < hh['ct-decimal-hour'] <= 7:
-                bill['duos-night-kwh'] += hh['msp-kwh']
-                bill['duos-night-gbp'] += hh['msp-kwh'] * night_rate
-            else:
-                bill['duos-day-kwh'] += hh['msp-kwh']
-                bill['duos-day-gbp'] += hh['msp-kwh'] * day_rate
-    else:
-        for hh in data_source.hh_data:
-            bill['duos-day-kwh'] += hh['msp-kwh']
-            bill['duos-day-gbp'] += hh['msp-kwh'] * day_rate
-
-    for hh in hh_data:
+    for hh in data_source.hh_data:
+        tariffs = data_source.hh_rate(contract, hh['start-date'], 'tariffs')[llfc_code]
         if 0 < hh['ct-decimal-hour'] <= 7:
-            slot_name = 'night'
-        elif Calendar.SATURDAY > hh['ct-day-of-week'] > Calendar.SUNDAY and 16 < hh['ct-decimal-hour'] <= 19 and (hh['ct-month'] > Calendar.OCTOBER or hh['ct-month'] < Calendar.MARCH):
-            slot_name = 'peak'
-        elif 7 > hh['ct-day-of-week'] > 1 and (7 < hh['ct-decimal-hour'] < 15 or 18.5 < hh['ct-decimal-hour'] < 19) and (hh['ct-month'] > 10 or hh['ct-month'] < 3):
-            slot_name = 'winter-weekday'
+            bill['duos-night-kwh'] += hh['msp-kwh']
+            bill['duos-night-gbp'] += hh['msp-kwh'] * tariffs['night-gbp-per-kwh']
         else:
-            slot_name = 'other'
-        hh['laf'] = lafs[slot_name]
-        hh['gsp-kwh'] = hh['laf'] * hh['msp-kwh']
+            bill['duos-day-kwh'] += hh['msp-kwh']
+            bill['duos-day-gbp'] += hh['msp-kwh'] * tariffs['day-gbp-per-kwh']
+
+        if 0 < hh['ct-decimal-hour'] <= 7:
+            slot = 'night'
+        elif 7 > hh['ct-day-of-week'] > 1 and hh['ct-decimal-hour'] > 15.5 and hh['ct-decimal-hour'] < 19 and (hh['ct-month'] > 10 or hh['ct-month'] < 3):
+            slot = 'winter-weekday-peak'
+        elif 7 > hh['ct-day-of-week'] > 1 and (7 <= hh['ct-decimal-hour'] < 16 or 18 < hh['ct-decimal-hour'] < 20) and (hh['ct-month'] > 10 or hh['ct-month'] < 3):
+            slot = 'winter-weekday-day'
+        else:
+            slot = 'other'
+
+        hh['laf'] = data_source.hh_rate(contract, hh['start-date'], 'lafs')[voltage_level_code_lower][slot]
+        hh['gsp-kwh'] = hh['msp-kwh'] * hh['laf']
         hh['gsp-kw'] = hh['gsp-kwh'] * 2
 
-    for hh in hh_times:
+    for hh in data_source.hh_times:
+        if hh['utc-decimal-hour'] == 0:
+            tariff = data_source.hh_rate(contract, hh['start-date'], 'tariffs')[llfc_code]
+            bill['duos-standing-gbp'] += tariff['fixed-gbp-per-day']
+
         if hh['utc-is-month-end']:
-            bill.setdefault('duos-reactive-gbp', 0)
-    
-            llfc_code = data_source.llfc_code
-            llfc_groups = data_source.hh_rate(contract, chunk_to.getDate(), 'llfc_groups')
-            if llfc_code in llfc_groups:
-                llfc_group = llfc_groups[llfc_code]
-            else:
-                llfc_group = llfc_code
+            availability = data_source.availability
 
-            tariff = data_source.hh_rate(contract, data_source.finish_date.getDate(), 'duos_tariffs')['llfc(' + llfc_group + ')-pc(00)']
-            if tariff is None:
-                raise UserException('The tariff for the llfc ' + llfc_code + ' cannot be found.')
+            tariff = data_source.hh_rate(contract, hh['start-date'], 'tariffs')[llfc_code]
+            reactive_rate = tariff['reactive-gbp-per-kvarh']
+            bill['duos-reactive-rate'] = reactive_rate
+            bill['duos-reactive-gbp'] = max(0, sum(h['imp-msp-kvarh'] for h in data_source.hh_data) - sum(h['msp-kwh'] for h in data_source.hh_data) / 3) * reactive_rate
             if not data_source.is_displaced:
-                year_md_kva_095 = year_md_095(data_source, data_source.finish_date.getDate())
+                availability_rate = tariff['availability-gbp-per-kva-per-day']
+                bill['duos-availability-rate'] = availability_rate
+                md_kva = max((datum['msp-kw'] ** 2 + (datum['imp-msp-kvar'] + datum['exp-msp-kvar'])** 2) ** 0.5 for datum in data_source.hh_data)
 
-                billed_avail = max(data_source.availability, year_md_kva_095)
-                bill.setdefault('duos-availability-gbp', 0)
+                billed_avail = max(availability, md_kva)
+                bill['duos-availability-gbp'] += availability_rate * billed_avail
                 bill['duos-availability-agreed-kva'] = data_source.availability
-
-                for threshold, block in [(15, 15), (100, 5), (250, 10), (500, 25), (1000, 50), (None, 100)]:
-                    if threshold is None or billed_avail < threshold:
-                        if billed_avail % block > 0:
-                            billed_avail = (int(billed_avail / block) + 1) * block
-                        break
-                bill['duos-availability-billed-kva'] = billed_avail
-                le_200_avail_rate = tariff['capacity-<=200-gbp-per-kva-per-month']
-
-                bill['duos-availability-gbp'] += min(200, billed_avail) * le_200_avail_rate
-
-                if billed_avail > 200:
-                    gt_200_avail_rate = tariff['capacity->200-gbp-per-kva-per-month']
-                    bill['duos-availability-gbp'] += (billed_avail - 200) * gt_200_avail_rate
-
-            bill.setdefault('duos-standing-gbp', 0)
-            if 'fixed-gbp-per-month' in tariff:
-                bill['duos-standing-gbp'] += tariff['fixed-gbp-per-month']
-            else:
-                utc_cal = MonadDate.getCalendar()
-                utc_cal.setTime(data_source.finish_date.getPrevious().getDate())
-                days_in_month = utc_cal.get(Calendar.DAY_OF_MONTH)
-                bill['duos-standing-gbp'] += tariff['fixed-gbp-per-day'] * days_in_month]]></value>
+                bill['duos-availability-billed-kva'] = billed_avail]]></value>
         <value><![CDATA[9]]></value>
         <value><![CDATA[def triad():
     return 19.147817
@@ -814,50 +653,50 @@ def tariffs():
         <value><![CDATA[dno-contract-rate-script]]></value>
         <value><![CDATA[14]]></value>
         <value><![CDATA[main 2010-04-01]]></value>
-        <value><![CDATA[437]]></value>
+        <value><![CDATA[417]]></value>
         <value><![CDATA[2012-04-01T00:00Z]]></value>
         <value><![CDATA[def lafs():
     return {
         'lv': {
-            'night': 1.051,
-            'winter-weekday-peak': 1.075,
-            'winter-weekday-day': 1.065,
-            'other': 1.087},
+            'night': 1.052,
+            'winter-weekday-peak': 1.077,
+            'winter-weekday-day': 1.069,
+            'other': 1.060},
         'hv': {
-            'night': 1.017,
-            'winter-weekday-peak': 1.025,
-            'winter-weekday-day': 1.022,
-            'other': 1.030}}
+            'night': 1.031,
+            'winter-weekday-peak': 1.044,
+            'winter-weekday-day': 1.041,
+            'other': 1.035}}
 
 def tariffs():
     return {
         '127': {
             'description': 'LV',
-            'gbp-per-mpan-per-day': 0.0794093,
-            'gbp-per-kva-per-day': 0.0276936,
-            'excess-gbp-per-kva-per-day': 0.0276936,
-            'red-gbp-per-kwh': 0.08049856,
-            'amber-gbp-per-kwh': 0.0076572,
-            'green-gbp-per-kwh': 0.00047012,
-            'gbp-per-kvarh': 0.00334631},
+            'gbp-per-mpan-per-day': 0.1013,
+            'gbp-per-kva-per-day': 0.0316,
+            'excess-gbp-per-kva-per-day': 0.0316,
+            'red-gbp-per-kwh': 0.07706,
+            'amber-gbp-per-kwh': 0.00604,
+            'green-gbp-per-kwh': 0.00048,
+            'gbp-per-kvarh': 0.00298},
         '128': {
             'description': 'LV Sub',
-            'gbp-per-mpan-per-day': 0.0794093,
-            'gbp-per-kva-per-day': 0.037764,
-            'excess-gbp-per-kva-per-day': 0.037764,
-            'red-gbp-per-kwh': 0.05377216,
-            'amber-gbp-per-kwh': 0.00438055,
-            'green-gbp-per-kwh': 0.0003,
-            'gbp-per-kvarh': 0.0027274},
+            'gbp-per-mpan-per-day': 0.1013,
+            'gbp-per-kva-per-day': 0.0416,
+            'excess-gbp-per-kva-per-day': 0.0416,
+            'red-gbp-per-kwh': 0.07110,
+            'amber-gbp-per-kwh': 0.00474,
+            'green-gbp-per-kwh': 0.00029,
+            'gbp-per-kvarh': 0.00234},
         '365': {
             'description': 'HV',
-            'gbp-per-mpan-per-day': 0.7983939,
-            'gbp-per-kva-per-day': 0.0442678,
-            'excess-gbp-per-kva-per-day': 0.0442678,
-            'red-gbp-per-kwh': 0.04864914,
-            'amber-gbp-per-kwh': 0.00319,
-            'green-gbp-per-kwh': 0.00023989,
-            'gbp-per-kvarh': 0.00168889},
+            'gbp-per-mpan-per-day': 1.0191,
+            'gbp-per-kva-per-day': 0.0490,
+            'excess-gbp-per-kva-per-day': 0.0490,
+            'red-gbp-per-kwh': 0.04321,
+            'amber-gbp-per-kwh': 0.00258,
+            'green-gbp-per-kwh': 0.00012,
+            'gbp-per-kvarh': 0.00140},
         '366': {
             'description': 'HV Sub',
             'gbp-per-mpan-per-day': 0.7983939,
@@ -867,6 +706,65 @@ def tariffs():
             'amber-gbp-per-kwh': 0.00328032,
             'green-gbp-per-kwh': 0.00028,
             'gbp-per-kvarh': 0.00202457}}]]></value>
+    </line>
+    <line>
+        <value><![CDATA[insert]]></value>
+        <value><![CDATA[dno-contract-rate-script]]></value>
+        <value><![CDATA[14]]></value>
+        <value><![CDATA[main 2010-04-01]]></value>
+        <value><![CDATA[505]]></value>
+        <value><![CDATA[2013-04-01T00:00Z]]></value>
+        <value><![CDATA[def lafs():
+    return {
+        'lv': {
+            'night': 1.052,
+            'winter-weekday-peak': 1.077,
+            'winter-weekday-day': 1.069,
+            'other': 1.060},
+        'hv': {
+            'night': 1.031,
+            'winter-weekday-peak': 1.044,
+            'winter-weekday-day': 1.041,
+            'other': 1.035}}
+
+def tariffs():
+    return {
+        '127': {
+            'description': 'LV',
+            'gbp-per-mpan-per-day': 0.1013*1.14,
+            'gbp-per-kva-per-day': 0.0316*1.14,
+            'excess-gbp-per-kva-per-day': 0.0316*1.14,
+            'red-gbp-per-kwh': 0.07706*1.14,
+            'amber-gbp-per-kwh': 0.00604*1.14,
+            'green-gbp-per-kwh': 0.00048*1.14,
+            'gbp-per-kvarh': 0.00298*1.14},
+        '128': {
+            'description': 'LV Sub',
+            'gbp-per-mpan-per-day': 0.1013*1.14,
+            'gbp-per-kva-per-day': 0.0416*1.14,
+            'excess-gbp-per-kva-per-day': 0.0416*1.14,
+            'red-gbp-per-kwh': 0.07110*1.14,
+            'amber-gbp-per-kwh': 0.00474*1.14,
+            'green-gbp-per-kwh': 0.00029*1.14,
+            'gbp-per-kvarh': 0.00234*1.14},
+        '365': {
+            'description': 'HV',
+            'gbp-per-mpan-per-day': 1.0191*1.14,
+            'gbp-per-kva-per-day': 0.0490*1.14,
+            'excess-gbp-per-kva-per-day': 0.0490*1.14,
+            'red-gbp-per-kwh': 0.04321*1.14,
+            'amber-gbp-per-kwh': 0.00258*1.14,
+            'green-gbp-per-kwh': 0.00012*1.14,
+            'gbp-per-kvarh': 0.00140*1.14},
+        '366': {
+            'description': 'HV Sub',
+            'gbp-per-mpan-per-day': 0.7983939*1.14,
+            'gbp-per-kva-per-day': 0.0384983*1.14,
+            'excess-gbp-per-kva-per-day': 0.0384983*1.14,
+            'red-gbp-per-kwh': 0.04883148*1.14,
+            'amber-gbp-per-kwh': 0.00328032*1.14,
+            'green-gbp-per-kwh': 0.00028*1.14,
+            'gbp-per-kvarh': 0.00202457*1.14}}]]></value>
     </line>
     <line>
         <value><![CDATA[insert]]></value>
@@ -2529,6 +2427,15 @@ def tariffs():
             'amber-gbp-per-kwh': -0.00261,
             'green-gbp-per-kwh': -0.00041,
             'gbp-per-kvarh': 0.00073},
+        '401,475': {
+            'description': 'LV Medium Non Domestic',
+            'gbp-per-mpan-per-day': 0.2157,
+            'gbp-per-kva-per-day': 0.00,
+            'excess-gbp-per-kva-per-day': 0.00,
+            'red-gbp-per-kwh': 0.01744,
+            'amber-gbp-per-kwh': 0.0092,
+            'green-gbp-per-kwh': 0.000,
+            'gbp-per-kvarh': 0.00},
         '453,470': {
             'description': 'LV HH Metered',
             'gbp-per-mpan-per-day': 0.0826,
@@ -2571,7 +2478,7 @@ def tariffs():
         <value><![CDATA[dno-contract-rate-script]]></value>
         <value><![CDATA[20]]></value>
         <value><![CDATA[main 2010-04-01]]></value>
-        <value><![CDATA[439]]></value>
+        <value><![CDATA[419]]></value>
         <value><![CDATA[2012-04-01T00:00Z]]></value>
         <value><![CDATA[def lafs():
     return {
@@ -2722,6 +2629,163 @@ def tariffs():
             'amber-gbp-per-kwh': 0.00343872,
             'green-gbp-per-kwh': 0.00069012,
             'gbp-per-kvarh': 0.0012648}}]]></value>
+    </line>
+    <line>
+        <value><![CDATA[insert]]></value>
+        <value><![CDATA[dno-contract-rate-script]]></value>
+        <value><![CDATA[20]]></value>
+        <value><![CDATA[main 2010-04-01]]></value>
+        <value><![CDATA[507]]></value>
+        <value><![CDATA[2013-04-01T00:00Z]]></value>
+        <value><![CDATA[def lafs():
+    return {
+        'lv-net': {
+            'peak': 1.087,
+            'winter-weekday': 1.080,
+            'other': 1.073,
+            'night': 1.070},
+        'lv-sub': {
+            'peak': 1.062,
+            'winter-weekday': 1.058,
+            'other': 1.056,
+            'night': 1.056},
+        'hv-net': {
+            'peak': 1.044,
+            'winter-weekday': 1.039,
+            'other': 1.034,
+            'night': 1.028},
+        'hv-sub': {
+            'peak': 1.021,
+            'winter-weekday': 1.019,
+            'other': 1.018,
+            'night': 1.016}}
+
+def llfc_groups():
+    return {
+        '001': '001,477,909',
+        '006': '006,478,910',
+        '127': '127,473',
+        '401': '401,475',
+        '453': '453,470',
+        '473': '127,473',
+        '475': '401,475',
+        '476': '658,476',
+        '477': '001,477,909',
+        '478': '006,478,910',
+        '658': '658,476',
+        '909': '001,477,909',
+        '910': '006,478,910'}
+
+def tariffs():
+    return {
+        '001,477,909': {
+            'description': 'LV Generation Intermittent',
+            'gbp-per-mpan-per-day': 0.00*1.14,
+            'gbp-per-kva-per-day': 0.00*1.14,
+            'excess-gbp-per-kva-per-day': 0.00*1.14,
+            'red-gbp-per-kwh': -0.00676*1.14,
+            'amber-gbp-per-kwh': -0.00676*1.14,
+            'green-gbp-per-kwh': -0.00676*1.14,
+            'gbp-per-kvarh': 0.00186*1.14},
+        '002': {
+            'description': 'LV Generation Non-Intermittent',
+            'gbp-per-mpan-per-day': 0.00*1.14,
+            'gbp-per-kva-per-day': 0.00*1.14,
+            'excess-gbp-per-kva-per-day': 0.00*1.14,
+            'red-gbp-per-kwh': -0.04946*1.14,
+            'amber-gbp-per-kwh': -0.00987*1.14,
+            'green-gbp-per-kwh': -0.00068*1.14,
+            'gbp-per-kvarh': 0.00186*1.14},
+        '003': {
+            'description': 'LV Sub Generation Intermittent',
+            'gbp-per-mpan-per-day': 0.00*1.14,
+            'gbp-per-kva-per-day': 0.00*1.14,
+            'excess-gbp-per-kva-per-day': 0.00*1.14,
+            'red-gbp-per-kwh': -0.00590*1.14,
+            'amber-gbp-per-kwh': -0.00590*1.14,
+            'green-gbp-per-kwh': -0.00590*1.14,
+            'gbp-per-kvarh': 0.00173*1.14},
+        '004': {
+            'description': 'LV Sub Generation Non-Intermittent',
+            'gbp-per-mpan-per-day': 0.00*1.14,
+            'gbp-per-kva-per-day': 0.00*1.14,
+            'excess-gbp-per-kva-per-day': 0.00*1.14,
+            'red-gbp-per-kwh': -0.04526*1.14,
+            'amber-gbp-per-kwh': -0.00813*1.14,
+            'green-gbp-per-kwh': -0.00056*1.14,
+            'gbp-per-kvarh': 0.00173*1.14},
+        '005': {
+            'description': 'HV Generation Intermittent',
+            'gbp-per-mpan-per-day': 0.9811*1.14,
+            'gbp-per-kva-per-day': 0.00*1.14,
+            'excess-gbp-per-kva-per-day': 0.00*1.14,
+            'red-gbp-per-kwh': -0.00354*1.14,
+            'amber-gbp-per-kwh': -0.00354*1.14,
+            'green-gbp-per-kwh': -0.00354*1.14,
+            'gbp-per-kvarh': 0.00151*1.14},
+        '006,478,910': {
+            'description': 'HV Generation Non-Intermittent',
+            'gbp-per-mpan-per-day': 0.9913*1.14,
+            'gbp-per-kva-per-day': 0.00*1.14,
+            'excess-gbp-per-kva-per-day': 0.00*1.14,
+            'red-gbp-per-kwh': -0.03408*1.14,
+            'amber-gbp-per-kwh': -0.00330*1.14,
+            'green-gbp-per-kwh': -0.00020*1.14,
+            'gbp-per-kvarh': 0.00147*1.14},
+        '007': {
+            'description': 'HV Sub Generation Intermittent',
+            'gbp-per-mpan-per-day': 0.9913*1.14,
+            'gbp-per-kva-per-day': 0.00*1.14,
+            'excess-gbp-per-kva-per-day': 0.00*1.14,
+            'red-gbp-per-kwh': -0.00276*1.14,
+            'amber-gbp-per-kwh': -0.00276*1.14,
+            'green-gbp-per-kwh': -0.00276*1.14,
+            'gbp-per-kvarh': 0.00072*1.14},
+        '008': {
+            'description': 'HV Sub Generation Non Intermittent',
+            'gbp-per-mpan-per-day': 0.9913*1.14,
+            'gbp-per-kva-per-day': 0.00*1.14,
+            'excess-gbp-per-kva-per-day': 0.00*1.14,
+            'red-gbp-per-kwh': -0.02761*1.14,
+            'amber-gbp-per-kwh': -0.00232*1.14,
+            'green-gbp-per-kwh': -0.00014*1.14,
+            'gbp-per-kvarh': 0.00072*1.14},
+        '453,470': {
+            'description': 'LV HH Metered',
+            'gbp-per-mpan-per-day': 0.0834*1.14,
+            'gbp-per-kva-per-day': 0.0238*1.14,
+            'excess-gbp-per-kva-per-day': 0.0238*1.14,
+            'red-gbp-per-kwh': 0.09729*1.14,
+            'amber-gbp-per-kwh': 0.01078*1.14,
+            'green-gbp-per-kwh': 0.00061*1.14,
+            'gbp-per-kvarh': 0.00309*1.14},
+        '455': {
+            'description': 'LVS HH Metered',
+            'gbp-per-mpan-per-day': 0.0329*1.14,
+            'gbp-per-kva-per-day': 0.0455*1.14,
+            'excess-gbp-per-kva-per-day': 0.0455*1.14,
+            'red-gbp-per-kwh': 0.08357*1.14,
+            'amber-gbp-per-kwh': 0.00606*1.14,
+            'green-gbp-per-kwh': 0.00027*1.14,
+            'gbp-per-kvarh': 0.00243*1.14},
+        '658,476': {
+            'description': 'HV HH Metered',
+            'gbp-per-mpan-per-day': 0.8004*1.14,
+            'gbp-per-kva-per-day': 0.0509*1.14,
+            'excess-gbp-per-kva-per-day': 0.0509*1.14,
+            'red-gbp-per-kwh': 0.06871*1.14,
+            'amber-gbp-per-kwh': 0.00431*1.14,
+            'green-gbp-per-kwh': 0.00017*1.14,
+            'gbp-per-kvarh': 0.00177*1.14},
+        '660': {
+            'description': 'HVS HH Metered',
+            'gbp-per-mpan-per-day': 1.4038226*1.14,
+            'gbp-per-kva-per-day': 0.0322524*1.14,
+            'excess-gbp-per-kva-per-day': 0.0322524*1.14,
+            'red-gbp-per-kwh': 0.05521152*1.14,
+            'amber-gbp-per-kwh': 0.00343872*1.14,
+            'green-gbp-per-kwh': 0.00069012*1.14,
+            'gbp-per-kvarh': 0.0012648*1.14}}]]></value>
     </line>
     <line>
         <value><![CDATA[insert]]></value>
@@ -3237,7 +3301,8 @@ def tariffs():
             'night-gbp-per-kwh': 0.001400,
             'reactive-gbp-per-kvarh': 0.002300},
         '521': {
-            'capacity-gbp-per-kva-per-day': 0.018600},
+            'capacity-gbp-per-kva-per-day': 0.018600,
+            'reactive-gbp-per-kvarh': 0.002300},
         '524': {
             'capacity-gbp-per-kva-per-day': 0.018600},
         '526': {
@@ -3915,7 +3980,7 @@ def tariffs():
         <value><![CDATA[dno-contract-rate-script]]></value>
         <value><![CDATA[22]]></value>
         <value><![CDATA[main 2010-04-01]]></value>
-        <value><![CDATA[441]]></value>
+        <value><![CDATA[421]]></value>
         <value><![CDATA[2012-04-01T00:00Z]]></value>
         <value><![CDATA[def lafs():
     return {
@@ -4050,6 +4115,147 @@ def tariffs():
             'amber-gbp-per-kwh': -0.00625,
             'green-gbp-per-kwh': -0.00625,
             'gbp-per-kvarh': 0}}]]></value>
+    </line>
+    <line>
+        <value><![CDATA[insert]]></value>
+        <value><![CDATA[dno-contract-rate-script]]></value>
+        <value><![CDATA[22]]></value>
+        <value><![CDATA[main 2010-04-01]]></value>
+        <value><![CDATA[509]]></value>
+        <value><![CDATA[2013-04-01T00:00Z]]></value>
+        <value><![CDATA[def lafs():
+    return {
+        'lv-net': {
+            'winter-weekday-peak': 1.087,
+            'winter-weekday-day': 1.080,
+            'night': 1.072,
+            'other': 1.075},
+        'lv-sub': {
+            'winter-weekday-peak': 1.078,
+            'winter-weekday-day': 1.072,
+            'night': 1.065,
+            'other': 1.068},
+        'hv': {
+            'winter-weekday-peak': 1.065,
+            'winter-weekday-day': 1.058,
+            'night': 1.046,
+            'other': 1.051},
+        'hv-sub': {
+            'winter-weekday-peak': 1.042,
+            'winter-weekday-day': 1.038,
+            'night': 1.031,
+            'other': 1.034}}
+
+def tariffs():
+    return {
+        '510': {
+            'description': 'High Voltage HH Metered',
+            'gbp-per-mpan-per-day': 0.6797*1.14,
+            'gbp-per-kva-per-day': 0.0208*1.14,
+            'excess-gbp-per-kva-per-day': 0.0208*1.14,
+            'red-gbp-per-kwh': 0.15398*1.14,
+            'amber-gbp-per-kwh': 0.00063*1.14,
+            'green-gbp-per-kwh': 0.00068*1.14,
+            'gbp-per-kvarh': 0.00208*1.14},
+        '520': {
+            'description': 'High Voltage HH Metered (Old)',
+            'gbp-per-mpan-per-day': 0.6797*1.14,
+            'gbp-per-kva-per-day': 0.0208*1.14,
+            'excess-gbp-per-kva-per-day': 0.0208*1.14,
+            'red-gbp-per-kwh': 0.15398*1.14,
+            'amber-gbp-per-kwh': 0.00063*1.14,
+            'green-gbp-per-kwh': 0.00068*1.14,
+            'gbp-per-kvarh': 0.00208*1.14},
+        '522': {
+            'description': 'High Voltage Sub HH Metered',
+            'gbp-per-mpan-per-day': 0.6838352*1.14,
+            'gbp-per-kva-per-day': 0.0123318*1.14,
+            'excess-gbp-per-kva-per-day': 0.0123318*1.14,
+            'red-gbp-per-kwh': 0.1432788*1.14,
+            'amber-gbp-per-kwh': 0.00014*1.14,
+            'green-gbp-per-kwh': 0.00041*1.14,
+            'gbp-per-kvarh': 0.00197098*1.14},
+        '523': {
+            'description': 'HV Sub Generation Intermittent',
+            'gbp-per-mpan-per-day': 0.2921*1.14,
+            'gbp-per-kva-per-day': 0.00*1.14,
+            'excess-gbp-per-kva-per-day': 0.00*1.14,
+            'red-gbp-per-kwh': -0.0324*1.14,
+            'amber-gbp-per-kwh': -0.0324*1.14,
+            'green-gbp-per-kwh': -0.0324*1.14,
+            'gbp-per-kvarh': 0.00063*1.14},
+        '524': {
+            'description': 'HV Generation Non-Intermittent',
+            'gbp-per-mpan-per-day': 0.2921*1.14,
+            'gbp-per-kva-per-day': 0.00*1.14,
+            'excess-gbp-per-kva-per-day': 0.00*1.14,
+            'red-gbp-per-kwh': -0.04708*1.14,
+            'amber-gbp-per-kwh': -0.00083*1.14,
+            'green-gbp-per-kwh': -0.00076*1.14,
+            'gbp-per-kvarh': 0.00088*1.14},
+        '525': {
+            'description': 'HV Sub Generation Non-Intermittent',
+            'gbp-per-mpan-per-day': 0.2921*1.14,
+            'gbp-per-kva-per-day': 0.00*1.14,
+            'excess-gbp-per-kva-per-day': 0.00*1.14,
+            'red-gbp-per-kwh': -0.04396*1.14,
+            'amber-gbp-per-kwh': -0.00066*1.14,
+            'green-gbp-per-kwh': -0.00067*1.14,
+            'gbp-per-kvarh': 0.00063*1.14},
+        '526': {
+            'description': 'LV Sub Generation Non-Intermittent',
+            'gbp-per-mpan-per-day': 0.00*1.14,
+            'gbp-per-kva-per-day': 0.00*1.14,
+            'excess-gbp-per-kva-per-day': 0.00*1.14, 
+            'red-gbp-per-kwh': -0.06902*1.14,
+            'amber-gbp-per-kwh': -0.00228*1.14,
+            'green-gbp-per-kwh': -0.00142*1.14,
+            'gbp-per-kvarh': 0.00121*1.14},
+        '527': {
+            'description': 'LV Generation Non-Intermittent',
+            'gbp-per-kva-per-day': 0.00*1.14,
+            'gbp-per-mpan-per-day': 0.00*1.14,
+            'excess-gbp-per-kva-per-day': 0.00*1.14,
+            'red-gbp-per-kwh': -0.07363*1.14,
+            'amber-gbp-per-kwh': -0.00260*1.14,
+            'green-gbp-per-kwh': -0.00156*1.14,
+            'gbp-per-kvarh': 0.00141*1.14},
+        '540': {
+            'description': 'Low Voltage Sub HH Metered',
+            'gbp-per-mpan-per-day': 0.0609*1.14,
+            'gbp-per-kva-per-day': 0.0273*1.14,
+            'excess-gbp-per-kva-per-day': 0.0273*1.14,
+            'red-gbp-per-kwh': 0.18692*1.14,
+            'amber-gbp-per-kwh': 0.00149*1.14,
+            'green-gbp-per-kwh': 0.00114*1.14,
+            'gbp-per-kvarh': 0.00269*1.14},
+        '551': {
+            'description': 'LV Sub Generation Intermittent',
+            'gbp-per-mpan-per-day': 0.00*1.14,
+            'gbp-per-kva-per-day': 0.00*1.14,
+            'excess-gbp-per-kva-per-day': 0.00*1.14,
+            'red-gbp-per-kwh': -0.00577*1.14,
+            'amber-gbp-per-kwh': -0.00577*1.14,
+            'green-gbp-per-kwh': -0.00577*1.14,
+            'gbp-per-kvarh': 0},
+        '570': {
+            'description': 'Low Voltage HH Metered',
+            'gbp-per-mpan-per-day': 0.0843*1.14,
+            'gbp-per-kva-per-day': 0.0243*1.14,
+            'excess-gbp-per-kva-per-day': 0.0243*1.14,
+            'red-gbp-per-kwh': 0.20727*1.14,
+            'amber-gbp-per-kwh': 0.00251*1.14,
+            'green-gbp-per-kwh': 0.00161*1.14,
+            'gbp-per-kvarh': 0.00329*1.14},
+        '581': {
+            'description': 'LV Generation Intermittent',
+            'gbp-per-mpan-per-day': 0.00*1.14,
+            'gbp-per-kva-per-day': 0.00*1.14,
+            'excess-gbp-per-kva-per-day': 0.00*1.14,
+            'red-gbp-per-kwh': -0.00625*1.14,
+            'amber-gbp-per-kwh': -0.00625*1.14,
+            'green-gbp-per-kwh': -0.00625*1.14,
+            'gbp-per-kvarh': 0*1.14}}]]></value>
     </line>
     <line>
         <value><![CDATA[insert]]></value>

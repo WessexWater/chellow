@@ -142,6 +142,7 @@ public class HhData extends EntityList {
 	}
 
 	public void httpPost(Invocation inv) throws HttpException {
+		Hiber.setReadWrite();
 		if (inv.hasParameter("delete")) {
 			Date deleteFrom = inv.getDate("delete-from");
 			int days = inv.getInteger("days");
@@ -185,6 +186,7 @@ public class HhData extends EntityList {
 					status));
 			HhDatum.insert(data.iterator(), Arrays
 					.asList(new Boolean[] { Boolean.FALSE }));
+			Hiber.commit();
 			inv.sendOk(doc(inv));
 		}
 	}

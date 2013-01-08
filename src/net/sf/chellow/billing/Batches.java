@@ -77,6 +77,7 @@ public class Batches extends EntityList {
 	}
 
 	public void httpPost(Invocation inv) throws HttpException {
+		Hiber.setReadWrite();
 		String reference = inv.getString("reference");
 		String description = inv.getString("description");
 

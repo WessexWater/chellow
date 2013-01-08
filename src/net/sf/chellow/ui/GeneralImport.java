@@ -115,18 +115,15 @@ public class GeneralImport extends Thread implements Urlable, XmlDescriber {
 		super("Import");
 		this.uri = uri;
 		if (extension.equals("zip")) {
-			ZipInputStream zin;
 			try {
-				zin = new ZipInputStream(new BufferedInputStream(is));
-				ZipEntry entry = zin.getNextEntry();
+				is = new ZipInputStream(new BufferedInputStream(is));
+				ZipEntry entry = ((ZipInputStream) is).getNextEntry();
 				if (entry == null) {
 					throw new UserException(null,
 							"Can't find an entry within the zip file.");
-				} else {
-					is = zin;
-					String name = entry.getName();
-					extension = name.substring(name.length() - 3);
 				}
+				String name = entry.getName();
+				extension = name.substring(name.length() - 3);
 			} catch (IOException e) {
 				throw new InternalException(e);
 			}
@@ -166,6 +163,7 @@ public class GeneralImport extends Thread implements Urlable, XmlDescriber {
 							"There must be an 'Action' field followed "
 									+ "by a 'Type' field.");
 				}
+				Hiber.setReadWrite();
 				String action = allValues[0].trim().toLowerCase();
 				String type = allValues[1].trim().toLowerCase();
 				if (type.equals("hh-datum")) {
@@ -290,7 +288,7 @@ public class GeneralImport extends Thread implements Urlable, XmlDescriber {
 					}
 					csvElement = null;
 				}
-				Hiber.close();
+				Hiber.commit();
 				allValues = digester.getLine();
 			}
 			if (!hhData.isEmpty()) {

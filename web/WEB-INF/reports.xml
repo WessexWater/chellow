@@ -45,6 +45,10 @@ if local_reports_id is not None:
         </xsl:for-each>
           </ul>
         </xsl:if>
+
+    <div id="container">
+      <div id="main">
+        <h3>Main</h3>
         <ul>
           <li>
             <a href="{/source/request/@context-path}/reports/3/output/">Sites</a>
@@ -69,6 +73,9 @@ if local_reports_id is not None:
           </li>
           <li><a href="{/source/request/@context-path}/reports/39/output/">
               Site Snags</a></li>
+          <xsl:if test="/source/@local-reports-id">
+              <li><a href="{/source/request/@context-path}/reports/{/source/@local-reports-id}/output/">Local Reports</a></li>
+          </xsl:if>
           <li>
       <a href="http://chellow.wikispaces.com/" target="_blank">Docs</a>
       </li>
@@ -104,9 +111,11 @@ if local_reports_id is not None:
 
         <ul>
             <li><a href="{/source/request/@context-path}/reports/235/output/">Overall Profile</a></li>
+            <li><a href="{/source/request/@context-path}/reports/245/output/">Scenario Runner</a></li>
+
         </ul>
-
-
+        </div>
+        <div id="industry-info">
         <h3>Industry Info</h3>
         <ul>
           <li>
@@ -199,7 +208,8 @@ if local_reports_id is not None:
                         </a>
                     </li>
                 </ul>
-
+        </div>
+        <div id="for-editors">
     <h3>For Editors</h3>
     <ul>
 
@@ -212,11 +222,6 @@ if local_reports_id is not None:
                         <a href="{/source/request/@context-path}/reports/">
                             Reports
                         </a>
-                        <xsl:if test="/source/@local-reports-id">
-                        <ul>
-                        <li><a href="{/source/request/@context-path}/reports/{/source/@local-reports-id}/output/">Local Reports</a></li>
-                        </ul>
-                        </xsl:if>
                     </li>
                     <li>General Import / Export
                         <ul>
@@ -260,6 +265,11 @@ if local_reports_id is not None:
                         <a
                             href="{/source/request/@context-path}/reports/195/output/">Comparison against ECOES</a>
                     </li>
+                    <li>
+                        <a
+                            href="{/source/request/@context-path}/reports/243/output/">MDD Updater</a>
+                    </li>
+
                     <li>Importers
                     <ul>
                     <li>
@@ -281,6 +291,8 @@ if local_reports_id is not None:
                     </ul>
                     </li>
                 </ul>
+           </div>
+          </div>
       </body>
     </html>
   </xsl:template>
@@ -3642,7 +3654,7 @@ pw.println("body {                                                         ")
 pw.println("    line-height: 1.2;                                          ")
 pw.println("    font-size: 0.9em;                                          ")
 pw.println("    font-family: 'Overclock', sans-serif;                      ")
-pw.println("                                                               ")
+pw.println("    background-color: rgb(255, 236, 139);                      ")
 pw.println("}                                                              ")
 pw.close()]]></value>
         <value><![CDATA[]]></value>
@@ -9943,7 +9955,7 @@ try:
             except KeyError:
                 pass
 except SyntaxError:
-    pass  ]]></value>
+    pass]]></value>
         <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
 <xsl:stylesheet version="1.0"
     xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
@@ -10176,7 +10188,7 @@ except SyntaxError:
             </body>
         </html>
     </xsl:template>
-</xsl:stylesheet>      ]]></value>
+</xsl:stylesheet>]]></value>
     </line>
     <line>
         <value><![CDATA[insert]]></value>
@@ -10643,7 +10655,7 @@ while bills.next():
     if generation is None:
         pw.println(",,,,,,,,,,Extraordinary! There isn't a generation for this bill!")
         continue
-    mpan = generation.getMpans().iterator().next()
+    mpan = generation.getImportMpan()
 
     pw.print(','.join('"' + str(val) + '"' for val in [batch.getReference(), bill.getReference(), bill.getType(), bill.getKwh(), bill.getNet(), bill.getVat(), bill_start, bill_finish, mpan.getCore()]) + ",")
 
@@ -10756,10 +10768,7 @@ while bills.next():
     pw.flush()
     Hiber.session().clear()
 bills.close()
-pw.close()
-
-
-]]></value>
+pw.close()]]></value>
         <value><![CDATA[]]></value>
     </line>
     <line>
@@ -12312,7 +12321,7 @@ for key in properties.propertyNames():
                     </tr>
                 </table>
                 <br />
-                <table><caption>Contracts [<a href="{/source/request/@context-path}/dnos/379/contracts/">edit</a>]</caption>
+                <table><caption>Contracts [<a href="{/source/request/@context-path}/dnos/{/source/dno/@id}/contracts/">edit</a>]</caption>
                     <thead>
                         <tr>
                             <th>Name</th>
@@ -16491,7 +16500,7 @@ source.appendChild(script.toXml(doc, XmlTree('contract', XmlTree('party'))))]]><
         <value><![CDATA[report]]></value>
         <value><![CDATA[207]]></value>
         <value><![CDATA[true]]></value>
-        <value><![CDATA[CSV CRC]]></value>
+        <value><![CDATA[CSV CRC - Faulty]]></value>
         <value><![CDATA[from net.sf.chellow.monad import Hiber, UserException
 from java.lang import System, Math
 from net.sf.chellow.monad.types import MonadDate
@@ -18073,7 +18082,7 @@ source.setAttribute('debug', debug)]]></value>
         <value><![CDATA[227]]></value>
         <value><![CDATA[true]]></value>
         <value><![CDATA[Importer: BSUoS]]></value>
-        <value><![CDATA[from java.lang import Thread
+        <value><![CDATA[from java.lang import Thread, System
 from net.sf.chellow.billing import NonCoreContract, HhdcContract
 from net.sf.chellow.monad import XmlTree, UserException, Monad, MonadMessage
 from net.sf.chellow.monad.types import MonadUri
@@ -18105,10 +18114,10 @@ if task is not None:
 
 try:
     if inv.hasParameter('remove'):
-        contract_f(bsuos_contract, 'remove_bsuos_task')(ctx)
+        contract_f(bsuos_contract, 'remove_bsuos_task', System.err)(ctx)
         inv.sendSeeOther(REPORT_URI)
     elif inv.hasParameter('start'):
-        contract_f(bsuos_contract, 'start_bsuos_task')(ctx)
+        contract_f(bsuos_contract, 'start_bsuos_task', System.err)(ctx)
         inv.sendSeeOther(REPORT_URI)
     elif inv.hasParameter('now'):
         Thread(task, "BSUoS Import Now").start()
@@ -18642,7 +18651,7 @@ pw.close()]]></value>
         <value><![CDATA[report]]></value>
         <value><![CDATA[239]]></value>
         <value><![CDATA[true]]></value>
-        <value><![CDATA[Free 239]]></value>
+        <value><![CDATA[Free]]></value>
         <value><![CDATA[]]></value>
         <value><![CDATA[]]></value>
     </line>
@@ -18754,6 +18763,319 @@ while not day_start.after(finish_date):
     cal.setTime(day_start.getDate())
     cal.add(Calendar.DAY_OF_MONTH, 1)
     day_start = HhStartDate(cal.getTime())
+pw.close()]]></value>
+        <value><![CDATA[]]></value>
+    </line>
+    <line>
+        <value><![CDATA[insert]]></value>
+        <value><![CDATA[report]]></value>
+        <value><![CDATA[243]]></value>
+        <value><![CDATA[true]]></value>
+        <value><![CDATA[Free 243]]></value>
+        <value><![CDATA[]]></value>
+        <value><![CDATA[]]></value>
+    </line>
+    <line>
+        <value><![CDATA[insert]]></value>
+        <value><![CDATA[report]]></value>
+        <value><![CDATA[245]]></value>
+        <value><![CDATA[true]]></value>
+        <value><![CDATA[Scenario Runner Selector]]></value>
+        <value><![CDATA[from java.util import GregorianCalendar, TimeZone, Locale, Calendar, Date
+from net.sf.chellow.monad.types import MonadDate
+from net.sf.chellow.monad import Hiber, UserException
+from net.sf.chellow.physical import HhStartDate
+
+
+source.appendChild(MonadDate.getMonthsXml(doc))
+source.appendChild(MonadDate.getDaysXml(doc))
+source.appendChild(MonadDate.getHoursXml(doc))
+source.appendChild(HhStartDate.getHhMinutesXml(doc))
+
+supplier_contracts_elem = doc.createElement('supplier-contracts')
+source.appendChild(supplier_contracts_elem)
+for contract in Hiber.session().createQuery("from SupplierContract contract order by contract.name").list():
+    supplier_contracts_elem.appendChild(contract.toXml(doc))
+
+cal = MonadDate.getCalendar()
+cal.setTime(Date())
+cal.set(Calendar.DAY_OF_MONTH, 1)
+cal.set(Calendar.HOUR_OF_DAY, 0)
+cal.set(Calendar.MINUTE, 0)
+cal.set(Calendar.SECOND, 0)
+cal.set(Calendar.MILLISECOND, 0)
+cal.add(Calendar.MINUTE, -30)
+to_date = HhStartDate(cal.getTime())
+to_date.setLabel('to')
+source.appendChild(to_date.toXml(doc))
+
+cal.add(Calendar.MINUTE, 30)
+cal.add(Calendar.MONTH, -1)
+from_date = HhStartDate(cal.getTime())
+from_date.setLabel('from')
+source.appendChild(from_date.toXml(doc))]]></value>
+        <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
+<xsl:stylesheet version="1.0"
+    xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+    <xsl:output method="xml" encoding="US-ASCII"
+        doctype-public="-//W3C//DTD XHTML 1.1//EN"
+        doctype-system="http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd"
+        indent="yes" />
+    <xsl:template match="/">
+        <html>
+            <head>
+                <link rel="stylesheet" type="text/css"
+      href="{/source/request/@context-path}/reports/19/output/" />
+
+                <title>Chellow &gt; Scenario Runner</title>
+            </head>
+            <body>
+                <p>
+                    <a
+                        href="{/source/request/@context-path}/reports/1/output/">
+                        <xsl:value-of select="'Chellow'" />
+                    </a>
+                    &gt;
+                    <xsl:value-of select="'Scenario Runner'" />
+                </p>
+                  <xsl:if test="//message">
+                    <ul>
+                        <xsl:for-each select="//message">
+                            <li>
+                                <xsl:value-of select="@description" />
+                            </li>
+                        </xsl:for-each>
+                    </ul>
+                </xsl:if>
+                <form action="{/source/request/@context-path}/reports/247/output/">
+                    <fieldset>
+                        <legend>Run Scenario</legend>
+<br/>
+                        <xsl:value-of select="'Use '"/>
+                        <select name="contract-id">
+                            <xsl:for-each select="/source/supplier-contracts/supplier-contract">
+                                <option value="{@id}">
+                                    <xsl:value-of select="@name"/>
+                                </option>
+                            </xsl:for-each>
+                        </select>
+                        <xsl:value-of select="' instead of '"/>
+                        <select name="replaced-contract-id">
+                            <xsl:for-each select="/source/supplier-contracts/supplier-contract">
+                                <option value="{@id}">
+                                    <xsl:value-of select="@name"/>
+                                </option>
+                            </xsl:for-each>
+                        </select>
+                        <br/><br/><xsl:value-of select="' from '"/>
+                        <input name="from-year" value="{/source/hh-start-date[@label='from']/@year}" maxlength="4" size="4"/><xsl:value-of select="'-'"/>
+                        <select name="from-month">
+                            <xsl:for-each select="/source/months/month">
+                                <option value="{@number}">
+                                    <xsl:if test="@number=/source/hh-start-date[@label='from']/@month">
+                                        <xsl:attribute name="selected">selected</xsl:attribute>
+                                    </xsl:if>
+                                    <xsl:value-of select="@number"/>
+                                </option>
+                            </xsl:for-each>
+                        </select><xsl:value-of select="'-'"/>
+                        <select name="from-day">
+                            <xsl:for-each select="/source/days/day">
+                                <option value="{@number}">
+                                    <xsl:if test="@number=/source/hh-start-date[@label='from']/@day">
+                                        <xsl:attribute name="selected">selected</xsl:attribute>
+                                    </xsl:if>
+                                    <xsl:value-of select="@number"/>
+                                </option>
+                            </xsl:for-each>
+                        </select><xsl:value-of select="' '"/>
+                        <select name="from-hour">
+                            <xsl:for-each select="/source/hours/hour">
+                                <option value="{@number}">
+                                    <xsl:if test="@number=/source/hh-start-date[@label='from']/@hour">
+                                        <xsl:attribute name="selected">selected</xsl:attribute>
+                                    </xsl:if>
+                                    <xsl:value-of select="@number"/>
+                                </option>
+                            </xsl:for-each>
+                        </select><xsl:value-of select="':'"/>
+                        <select name="from-minute">
+                            <xsl:for-each select="/source/hh-minutes/minute">
+                                <option value="{@number}">
+                                    <xsl:if test="@number=/source/hh-start-date[@label='from']/@minute">
+                                        <xsl:attribute name="selected">selected</xsl:attribute>
+                                    </xsl:if>
+                                    <xsl:value-of select="@number"/>
+                                </option>
+                            </xsl:for-each>
+                        </select>
+                        <xsl:value-of select="' to '"/>
+<input name="to-year" value="{/source/hh-start-date[@label='to']/@year}" maxlength="4" size="4"/><xsl:value-of select="'-'"/>
+                        <select name="to-month">
+                            <xsl:for-each select="/source/months/month">
+                                <option value="{@number}">
+                                    <xsl:if test="@number=/source/hh-start-date[@label='to']/@month">
+                                        <xsl:attribute name="selected">selected</xsl:attribute>
+                                    </xsl:if>
+                                    <xsl:value-of select="@number"/>
+                                </option>
+                            </xsl:for-each>
+                        </select><xsl:value-of select="'-'"/>
+                        <select name="to-day">
+                            <xsl:for-each select="/source/days/day">
+                                <option value="{@number}">
+                                    <xsl:if test="@number=/source/hh-start-date[@label='to']/@day">
+                                        <xsl:attribute name="selected">selected</xsl:attribute>
+                                    </xsl:if>
+                                    <xsl:value-of select="@number"/>
+                                </option>
+                            </xsl:for-each>
+                        </select><xsl:value-of select="' '"/>
+                        <select name="to-hour">
+                            <xsl:for-each select="/source/hours/hour">
+                                <option value="{@number}">
+                                    <xsl:if test="@number=/source/hh-start-date[@label='to']/@hour">
+                                        <xsl:attribute name="selected">selected</xsl:attribute>
+                                    </xsl:if>
+                                    <xsl:value-of select="@number"/>
+                                </option>
+                            </xsl:for-each>
+                        </select><xsl:value-of select="':'"/>
+                        <select name="to-minute">
+                            <xsl:for-each select="/source/hh-minutes/minute">
+                                <option value="{@number}">
+                                    <xsl:if test="@number=/source/hh-start-date[@label='to']/@minute">
+                                        <xsl:attribute name="selected">selected</xsl:attribute>
+                                    </xsl:if>
+                                    <xsl:value-of select="@number"/>
+                                </option>
+                            </xsl:for-each>
+                        </select>
+                        <br/><br/>
+                        <input type="submit" value="Run"/>
+                    </fieldset>
+                </form>
+            </body>
+        </html>
+    </xsl:template>
+</xsl:stylesheet>]]></value>
+    </line>
+    <line>
+        <value><![CDATA[insert]]></value>
+        <value><![CDATA[report]]></value>
+        <value><![CDATA[247]]></value>
+        <value><![CDATA[true]]></value>
+        <value><![CDATA[Scenario Runner]]></value>
+        <value><![CDATA[from net.sf.chellow.monad import Hiber, UserException
+from net.sf.chellow.monad.types import MonadDate
+from java.util import GregorianCalendar, TimeZone, Locale, Calendar, Date
+from net.sf.chellow.physical import MpanCore, HhStartDate, Supply
+from net.sf.chellow.billing import SupplierContract, NonCoreContract, Dno
+from java.text import DecimalFormat, SimpleDateFormat
+from java.lang import System
+
+df = SimpleDateFormat("yyyyMMdd'T'HHmm'Z'")
+cal = MonadDate.getCalendar()
+df.setCalendar(cal)
+
+inv.getResponse().setContentType("text/csv")
+inv.getResponse().addHeader('Content-Disposition', 'attachment; filename="scenario_' + df.format(Date()) + '.csv"')
+pw = inv.getResponse().getWriter()
+pw.flush()
+
+to_date = inv.getDateTime('to')
+from_date = inv.getDateTime('from')
+contract_id = inv.getLong('contract-id')
+replaced_contract_id = inv.getLong('replaced-contract-id')
+
+if not inv.isValid():
+    raise UserException()
+
+to_date = HhStartDate(to_date)
+from_date = HhStartDate(from_date)
+
+contract = SupplierContract.getSupplierContract(contract_id)
+replaced_contract = SupplierContract.getSupplierContract(replaced_contract_id)
+
+computer = NonCoreContract.getNonCoreContract('computer')
+comterp = computer.callFunction('create_comterp', [])
+
+site_query = Hiber.session().createQuery("select supGen.site from SiteSupplyGeneration supGen where supGen.supplyGeneration = :supplyGeneration and supGen.isPhysical = true")
+
+pw.print('Original Contract,New Contract,MPAN Core,Site Code,Site Name,Account,From,To')
+pw.flush()
+contract_function = comterp.get('contract_function') 
+vb_func = contract_function(contract, 'virtual_bill', pw)
+if vb_func is None:
+    raise UserException("There isn't a virtual_bill function in the contract " + contract.getName())
+
+titles_func = contract_function(contract, 'virtual_bill_titles', pw)
+if titles_func is None:
+    raise UserException("There isn't a virtual_bill_titles function in the contract " + contract.getName())
+
+bill_titles = titles_func()
+for title in bill_titles:
+    pw.print(',' + title)
+pw.println('')
+pw.flush()
+
+supply_source_class = comterp.get('SupplySource')
+
+forecast_date = comterp.get('forecast_date')()
+timing = System.currentTimeMillis()
+
+cal = MonadDate.getCalendar()
+cal.setTime(from_date.getDate())
+cal.set(Calendar.DAY_OF_MONTH, 1)
+cal.set(Calendar.HOUR_OF_DAY, 0)
+cal.set(Calendar.MINUTE, 0)
+month_start = HhStartDate(cal.getTime())
+
+while not month_start.after(to_date):
+    cal.setTime(month_start.getDate())
+    cal.add(Calendar.MONTH, 1)
+    cal.add(Calendar.MINUTE, -30)
+    month_finish = HhStartDate(cal.getTime())
+    period_from = from_date if from_date.after(month_start) else month_start
+    period_to = to_date if to_date.before(month_finish) else month_finish
+
+    generations = Hiber.session().createQuery("from SupplyGeneration generation where ((generation.importMpan is not null and generation.importMpan.supplierContract = :replacedContract) or (generation.exportMpan is not null and generation.exportMpan.supplierContract = :replacedContract)) and generation.startDate.date <= :monthFinish and (generation.finishDate is null or generation.finishDate.date >= :monthStart)").setEntity('replacedContract', replaced_contract).setTimestamp('monthFinish', period_to.getDate()).setTimestamp('monthStart', period_from.getDate()).scroll()
+    while generations.next():
+        generation = generations.get(0)
+
+        gen_start = generation.getStartDate()
+        chunk_start = gen_start if period_from.before(gen_start) else period_from
+        gen_finish = generation.getFinishDate()
+        chunk_finish = gen_finish if period_to.after(gen_finish) else period_to
+        import_mpan = generation.getImportMpan()
+        if import_mpan is not None and import_mpan.getSupplierContract().equals(contract):
+            mpan = import_mpan
+        else:
+            mpan = generation.getExportMpan()
+
+        data_source = supply_source_class(chunk_start, chunk_finish, forecast_date, mpan, comterp, pw)
+
+        site = site_query.setEntity('supplyGeneration', data_source.supply_generation).uniqueResult()
+        pw.print(','.join('"' + str(value) + '"' for value in [replaced_contract.getName(), contract.getName(), data_source.mpan_core_str, site.getCode() , site.getName(), data_source.supplier_account, data_source.start_date, data_source.finish_date]))
+        pw.flush()
+        bill = vb_func(data_source)
+        for title in bill_titles:
+            if title in bill:
+                pw.print(',"' + str(bill[title]) + '"')
+                del bill[title]
+            else:
+                pw.print(',')                
+        keys = bill.keys()
+        keys.sort()
+        for k in keys:
+            pw.print(',"' + k + '","' + str(bill[k]) + '"')
+        pw.println('')
+        pw.flush()
+        Hiber.session().clear()
+    generations.close()
+    cal.setTime(month_start.getDate())
+    cal.add(Calendar.MONTH, 1)
+    month_start = HhStartDate(cal.getTime())
 pw.close()]]></value>
         <value><![CDATA[]]></value>
     </line>

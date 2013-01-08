@@ -749,6 +749,7 @@ public class Supply extends PersistentEntity {
 	}
 
 	public void httpPost(Invocation inv) throws HttpException {
+		Hiber.setReadWrite();
 		try {
 			if (inv.hasParameter("delete")) {
 				Document doc = document();

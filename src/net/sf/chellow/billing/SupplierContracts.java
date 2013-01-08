@@ -1,6 +1,6 @@
 /*******************************************************************************
  * 
- *  Copyright (c) 2005-2011 Wessex Water Services Limited
+ *  Copyright (c) 2005-2013 Wessex Water Services Limited
  *  
  *  This file is part of Chellow.
  * 
@@ -68,6 +68,7 @@ public class SupplierContracts extends EntityList {
 	}
 
 	public void httpPost(Invocation inv) throws HttpException {
+		Hiber.setReadWrite();
 		Long participantId = inv.getLong("participant-id");
 		String name = inv.getString("name");
 		Date startDate = inv.getDateTime("start");

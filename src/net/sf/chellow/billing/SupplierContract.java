@@ -1,6 +1,6 @@
 /*******************************************************************************
  * 
- *  Copyright (c) 2005, 2009 Wessex Water Services Limited
+ *  Copyright (c) 2005, 2013 Wessex Water Services Limited
  *  
  *  This file is part of Chellow.
  * 
@@ -187,11 +187,13 @@ public class SupplierContract extends Contract {
 	}
 
 	public MonadUri getEditUri() throws HttpException {
-		return Chellow.SUPPLIER_CONTRACTS_INSTANCE.getEditUri().resolve(getUriId())
-				.append("/");
+		return Chellow.SUPPLIER_CONTRACTS_INSTANCE.getEditUri()
+				.resolve(getUriId()).append("/");
 	}
 
 	public void httpPost(Invocation inv) throws HttpException {
+		Hiber.setReadWrite();
+		Hiber.session().setReadOnly(this, false);
 		if (inv.hasParameter("delete")) {
 			try {
 				delete();

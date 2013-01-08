@@ -125,9 +125,9 @@ with open("original/" + table_name + ".csv") as fl:
                         f_party.writerow(["Chellow Id","Market Participant Role Code Id","Market Participant Chellow Id","Address Line 1","Effective From Date {MPR}","Effective To Date {MPR}"])
                         f_provider.writerow(["Chellow Id"])
                     id += 1
-                f_party.writerow([id,22,47,"Dummy 99","1996-04-01",''])
-                f_dno.writerow([id, '99'])
-                dno_lookup['CUST'] = id
+                #f_party.writerow([id,22,47,"Dummy 99","1996-04-01",''])
+                #f_dno.writerow([id, '99'])
+                #dno_lookup['CUST'] = id
 
 voltage_levels = {
     "LV": "1",
@@ -161,17 +161,17 @@ with open("original/" + table_name + ".csv") as fl:
             else:
                 converter.writerow(["Chellow Id","DNO Chellow Id","Line Loss Factor Class Id","Line Loss Factor Class Description","Voltage Level Id","Is Substation?","Is Import?","Effective From Settlement Date {LLFC}","Effective To Settlement Date {LLFC}"])
             id += 1
-        converter.writerow([id, dno_lookup['CUST'],510,"PC 5-8 & HH HV",2,0,1,"1996-04-01",''])
+        converter.writerow([id, dno_lookup['CIDC'],510,"PC 5-8 & HH HV",2,0,1,"1996-04-01",''])
         id += 1
-        converter.writerow([id, dno_lookup['CUST'],521,"Export (HV)",2,0,0,"1996-04-01",''])
+        converter.writerow([id, dno_lookup['CIDC'],521,"Export (HV)",2,0,0,"1996-04-01",''])
         id += 1
-        converter.writerow([id, dno_lookup['CUST'],570,"PC 5-8 & HH LV",1,0,1,"1996-04-01",''])
+        converter.writerow([id, dno_lookup['CIDC'],570,"PC 5-8 & HH LV",1,0,1,"1996-04-01",''])
         id += 1
-        converter.writerow([id, dno_lookup['CUST'],581,"Export (LV)",1,0,0,"1996-04-01",''])
+        converter.writerow([id, dno_lookup['CIDC'],581,"Export (LV)",1,0,0,"1996-04-01",''])
         id += 1
-        converter.writerow([id, dno_lookup['CUST'],110,"Profile 3 Unrestricted",1,0,1,"1996-04-01",''])
+        converter.writerow([id, dno_lookup['CIDC'],110,"Profile 3 Unrestricted",1,0,1,"1996-04-01",''])
         id += 1
-        converter.writerow([id, dno_lookup['CUST'],210,"Profile 4 Economy 7",1,0,1,"1996-04-01",''])
+        converter.writerow([id, dno_lookup['CIDC'],210,"Profile 4 Economy 7",1,0,1,"1996-04-01",''])
             
 table_name = "Measurement_Requirement"
 copy_file(table_name)

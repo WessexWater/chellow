@@ -1,6 +1,6 @@
 /*******************************************************************************
  * 
- *  Copyright (c) 2005, 2011 Wessex Water Services Limited
+ *  Copyright (c) 2005, 2013 Wessex Water Services Limited
  *  
  *  This file is part of Chellow.
  * 
@@ -22,9 +22,9 @@ package net.sf.chellow.ui;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.lang.reflect.InvocationTargetException;
 import java.net.MalformedURLException;
 import java.sql.Connection;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
@@ -63,6 +63,8 @@ import net.sf.chellow.physical.Source;
 import net.sf.chellow.physical.UserRole;
 import net.sf.chellow.physical.VoltageLevel;
 
+import org.hibernate.Session;
+import org.hibernate.jdbc.Work;
 import org.hibernate.tool.hbm2ddl.SchemaUpdate;
 import org.postgresql.copy.CopyManager;
 import org.postgresql.core.BaseConnection;
@@ -82,37 +84,50 @@ public class ContextListener implements ServletContextListener {
 		try {
 			LogManager.getLogManager().getLogger("").setLevel(Level.SEVERE);
 			FileHandler fh = new FileHandler("%t/chellow.log");
-
 			fh.setFormatter(new MonadFormatter());
 			logger.addHandler(fh);
 			monadParameters = new MonadContextParameters(context);
 			logger.addHandler(new MonadHandler(monadParameters));
 			context.setAttribute("monadParameters", monadParameters);
 			InitialContext cxt = new InitialContext();
-
 			DataSource ds = (DataSource) cxt
 					.lookup("java:/comp/env/jdbc/chellow");
 
 			if (ds == null) {
 				throw new Exception("Data source not found!");
 			}
-
 			Connection con = ds.getConnection();
+			Statement stmt = con.createStatement();
+			boolean shouldInitialize = false;
 			try {
-				if (con.getTransactionIsolation() != Connection.TRANSACTION_SERIALIZABLE) {
-					throw new Exception(
-							"The transaction isolation level isn't serializable.");
-				}
-				Statement stmt = con.createStatement();
-
 				// Find if DB has been created
-
 				stmt.executeQuery("select properties from configuration;");
 			} catch (SQLException sqle) {
-				initializeDatabase(con);
+				shouldInitialize = true;
+				String db_name = null;
+			        stmt = con.createStatement();
+			        ResultSet rs = stmt.executeQuery("select current_database()");
+			        while (rs.next()) {
+			            db_name = rs.getString("current_database");
+			        }
+				stmt.executeUpdate("alter database " + db_name + " set default_transaction_isolation = 'serializable'");
+				stmt.executeUpdate("alter database " + db_name + " set default_transaction_deferrable = on;");
+				stmt.executeUpdate("alter database " + db_name + " SET DateStyle TO 'ISO, YMD'");
+				stmt.executeUpdate("alter database " + db_name + " set default_transaction_read_only = on;");
 			} finally {
 				con.close();
 			}
+			if (shouldInitialize) {
+				initializeDatabase();
+			}
+			Hiber.session().doWork(new Work() {
+				public void execute(Connection con) throws SQLException {
+					if (con.getTransactionIsolation() != Connection.TRANSACTION_SERIALIZABLE) {
+						throw new SQLException(
+								"The transaction isolation level isn't serializable.");
+					}
+				}
+			});
 			NonCoreContract startupContract = NonCoreContract
 					.getNonCoreContract("startup");
 			List<Object> args = new ArrayList<Object>();
@@ -144,15 +159,15 @@ public class ContextListener implements ServletContextListener {
 		} catch (Throwable e) {
 			Debug.print("Problem. " + HttpException.getStackTraceString(e));
 			throw new RuntimeException(e);
-		} finally {
-			Hiber.close();
 		}
 	}
 
 	@SuppressWarnings("unchecked")
-	private void initializeDatabase(Connection con) throws HttpException {
+	private void initializeDatabase() throws HttpException {
 		SchemaUpdate su = new SchemaUpdate(Hiber.getConfiguration());
 		su.execute(false, true);
+
+		Session s = Hiber.session();
 
 		List<Exception> exceptions = su.getExceptions();
 		if (exceptions.size() > 0) {
@@ -161,24 +176,24 @@ public class ContextListener implements ServletContextListener {
 			}
 			throw new UserException("Errors in schema generation.");
 		}
-
+		Hiber.setReadWrite();
+		s.doWork(new Work() {
+			public void execute(Connection con) throws SQLException {
+				Statement stmt = con.createStatement();
+				stmt.executeUpdate("alter table supply add column note text default '';");
+			}
+		});
+		Hiber.commit();
+		Hiber.setReadWrite();
 		Configuration.getConfiguration();
-		Hiber.close();
-		
-		Statement stmt = null;
-		try {
-			stmt = con.createStatement();
-			stmt.executeUpdate("alter table supply add column note text default '';");
-		} catch (SQLException e) {
-			throw new InternalException(e);			
-		}
 
-        
 		VoltageLevel.insertVoltageLevels();
 		UserRole.insertUserRole(UserRole.EDITOR);
+
 		UserRole.insertUserRole(UserRole.PARTY_VIEWER);
 		UserRole.insertUserRole(UserRole.VIEWER);
 		Hiber.commit();
+		Hiber.setReadWrite();
 		Source.insertSource(Source.NETWORK_CODE, "Public distribution system.");
 		Source.insertSource(Source.SUBMETER_CODE, "Sub meter");
 		Source.insertSource(Source.GENERATOR_NETWORK_CODE,
@@ -191,7 +206,7 @@ public class ContextListener implements ServletContextListener {
 		GeneratorType.insertGeneratorType("lm", "Load management.");
 		GeneratorType.insertGeneratorType("turb", "Water turbine.");
 		Hiber.commit();
-
+		Hiber.setReadWrite();
 		ReadType.insertReadType("N", "Normal");
 		ReadType.insertReadType("N3", "Normal 3rd Party");
 		ReadType.insertReadType("C", "Customer");
@@ -203,7 +218,7 @@ public class ContextListener implements ServletContextListener {
 		ReadType.insertReadType("CP", "Computer");
 		ReadType.insertReadType("IF", "Information");
 		Hiber.commit();
-
+		Hiber.setReadWrite();
 		Cop.insertCop(Cop.COP_1, "CoP 1");
 		Cop.insertCop(Cop.COP_2, "CoP 2");
 		Cop.insertCop(Cop.COP_3, "CoP 3");
@@ -215,85 +230,64 @@ public class ContextListener implements ServletContextListener {
 		Cop.insertCop(Cop.COP_6D, "CoP 6d 450 day memory");
 		Cop.insertCop(Cop.COP_7, "CoP 7");
 		Hiber.commit();
-
+		Hiber.setReadWrite();
 		BillType.insertBillType("F", "Final");
 		BillType.insertBillType("N", "Normal");
 		BillType.insertBillType("W", "Withdrawn");
 		Hiber.commit();
 
-		try {
-			Debug.print("Starting to load MDD.");
-			Class<?> delegatorClass = null;
-
-			for (String className : new String[] {
-					"org.apache.commons.dbcp.DelegatingConnection",
-					"org.apache.tomcat.dbcp.dbcp.DelegatingConnection" }) {
+		s.doWork(new Work() {
+			public void execute(Connection con) throws SQLException {
 				try {
-					Class<?> candidateClass = Class.forName(className);
-					Debug.print("Class exists "
-							+ candidateClass.getCanonicalName());
-					if (candidateClass.isInstance(con)) {
-						Debug.print("Connection class is an instance of "
-								+ candidateClass.getCanonicalName());
-						delegatorClass = candidateClass;
-						break;
+					CopyManager cm = new CopyManager(con
+							.unwrap(BaseConnection.class));
+					String[][] mddArray = {
+							{ "gsp_group", "GSP_Group" },
+							{ "pc", "Profile_Class" },
+							{ "market_role", "Market_Role" },
+							{ "participant", "Market_Participant" },
+							{ "party", "Market_Participant_Role-party" },
+							{ "provider", "Market_Participant_Role-provider" },
+							{ "dno", "Market_Participant_Role-dno" },
+							{ "llfc", "Line_Loss_Factor_Class" },
+							{ "meter_type", "MTC_Meter_Type" },
+							{ "meter_payment_type", "MTC_Payment_Type" },
+							{ "mtc", "Meter_Timeswitch_Class" },
+							{ "tpr", "Time_Pattern_Regime" },
+							{ "clock_interval", "Clock_Interval" },
+							{ "ssc", "Standard_Settlement_Configuration" },
+							{ "measurement_requirement",
+									"Measurement_Requirement" } };
+					for (String[] impArray : mddArray) {
+						cm.copyIn(
+								"COPY " + impArray[0]
+										+ " FROM STDIN CSV HEADER",
+								context.getResource(
+										"/WEB-INF/mdd/" + impArray[1] + ".csv")
+										.openStream());
 					}
-				} catch (ClassNotFoundException e) {
+				} catch (SQLException e) {
+					throw new InternalException(e);
+				} catch (UnsupportedEncodingException e) {
+					throw new InternalException(e);
+				} catch (MalformedURLException e) {
+					throw new InternalException(e);
+				} catch (IOException e) {
+					throw new InternalException(e);
+				} catch (IllegalArgumentException e) {
+					throw new InternalException(e);
+				} catch (SecurityException e) {
+					throw new InternalException(e);
 				}
 			}
-			Connection bcon = (Connection) delegatorClass
-					.getMethod("getInnermostDelegate").invoke(con);
-			Debug.print("Type of innermost delegate is: " + bcon.getClass().getCanonicalName());
-			BaseConnection baseConnection = (BaseConnection) delegatorClass
-					.getMethod("getInnermostDelegate").invoke(con);
+		});
 
-			CopyManager cm = new CopyManager(baseConnection);
-			String[][] mddArray = { { "gsp_group", "GSP_Group" },
-					{ "pc", "Profile_Class" },
-					{ "market_role", "Market_Role" },
-					{ "participant", "Market_Participant" },
-					{ "party", "Market_Participant_Role-party" },
-					{ "provider", "Market_Participant_Role-provider" },
-					{ "dno", "Market_Participant_Role-dno" },
-					{ "llfc", "Line_Loss_Factor_Class" },
-					{ "meter_type", "MTC_Meter_Type" },
-					{ "meter_payment_type", "MTC_Payment_Type" },
-					{ "mtc", "Meter_Timeswitch_Class" },
-					{ "tpr", "Time_Pattern_Regime" },
-					{ "clock_interval", "Clock_Interval" },
-					{ "ssc", "Standard_Settlement_Configuration" },
-					{ "measurement_requirement", "Measurement_Requirement" } };
-			for (String[] impArray : mddArray) {
-				cm.copyIn(
-						"COPY " + impArray[0] + " FROM STDIN CSV HEADER",
-						context.getResource(
-								"/WEB-INF/mdd/" + impArray[1] + ".csv")
-								.openStream());
-			}
-			Debug.print("Finished loading MDD.");
-		} catch (SQLException e) {
-			throw new InternalException(e);
-		} catch (UnsupportedEncodingException e) {
-			throw new InternalException(e);
-		} catch (MalformedURLException e) {
-			throw new InternalException(e);
-		} catch (IOException e) {
-			throw new InternalException(e);
-		} catch (IllegalArgumentException e) {
-			throw new InternalException(e);
-		} catch (SecurityException e) {
-			throw new InternalException(e);
-		} catch (IllegalAccessException e) {
-			throw new InternalException(e);
-		} catch (InvocationTargetException e) {
-			throw new InternalException(e);
-		} catch (NoSuchMethodException e) {
-			throw new InternalException(e);
-		}
-		Hiber.close();
+		Hiber.commit();
+		Hiber.setReadWrite();
 		DnoContract.loadFromCsv(context);
 		Report.loadReports(context);
 		NonCoreContract.loadNonCoreContracts(context);
-		Hiber.flush();
+		Hiber.commit();
+		Hiber.close();
 	}
 }

@@ -62,6 +62,7 @@ public class Configuration extends PersistentEntity {
 				"from Configuration").uniqueResult();
 		if (config == null) {
 			config = new Configuration("");
+			Hiber.setReadWrite();
 			Hiber.session().save(config);
 			Hiber.flush();
 		}
@@ -174,6 +175,7 @@ public class Configuration extends PersistentEntity {
 	}
 
 	public void httpPost(Invocation inv) throws HttpException {
+		Hiber.setReadWrite();
 		Document doc = MonadUtils.newSourceDocument();
 		Element source = doc.getDocumentElement();
 

@@ -78,8 +78,8 @@ public class BillImport extends Thread implements Urlable, XmlDescriber {
 	public BillImport(Long batchId, Long id, FileItem item)
 			throws HttpException {
 		try {
-			initialize(batchId, id, item.getInputStream(), item.getName(), item
-					.getSize());
+			initialize(batchId, id, item.getInputStream(), item.getName(),
+					item.getSize());
 		} catch (IOException e) {
 			throw new InternalException(e);
 		}
@@ -99,17 +99,15 @@ public class BillImport extends Thread implements Urlable, XmlDescriber {
 		}
 		fileName = fileName.toLowerCase();
 		if (fileName.endsWith(".zip")) {
-			ZipInputStream zin;
 			try {
-				zin = new ZipInputStream(new BufferedInputStream(is));
-				ZipEntry entry = zin.getNextEntry();
+				is = new ZipInputStream(new BufferedInputStream(is));
+				ZipEntry entry = ((ZipInputStream) is).getNextEntry();
 				if (entry == null) {
 					throw new UserException(null,
 							"Can't find an entry within the zip file.");
-				} else {
-					is = zin;
-					fileName = entry.getName();
 				}
+				fileName = entry.getName();
+
 				// extract data
 				// open output streams
 			} catch (IOException e) {
@@ -156,6 +154,7 @@ public class BillImport extends Thread implements Urlable, XmlDescriber {
 				}
 				try {
 					Hiber.flush();
+					Hiber.setReadWrite();
 					Bill bill = batch.insertBill(rawBill);
 					Hiber.commit();
 					Hiber.flush();
@@ -177,11 +176,9 @@ public class BillImport extends Thread implements Urlable, XmlDescriber {
 				}
 			}
 			if (failedBills.isEmpty()) {
-				messages
-						.add("All the bills have been successfully loaded and attached to the batch.");
+				messages.add("All the bills have been successfully loaded and attached to the batch.");
 			} else {
-				messages
-						.add("The import has finished, but not all bills were successfully loaded.");
+				messages.add("The import has finished, but not all bills were successfully loaded.");
 			}
 		} catch (InternalException e) {
 			messages.add("ProgrammerException : "
@@ -223,8 +220,8 @@ public class BillImport extends Thread implements Urlable, XmlDescriber {
 	}
 
 	public MonadUri getEditUri() throws HttpException {
-		return getBatch().billImportsInstance().getEditUri().resolve(getUriId())
-				.append("/");
+		return getBatch().billImportsInstance().getEditUri()
+				.resolve(getUriId()).append("/");
 	}
 
 	private Batch getBatch() throws HttpException {
@@ -245,10 +242,17 @@ public class BillImport extends Thread implements Urlable, XmlDescriber {
 		Element importElement = doc.createElement("bill-import");
 		boolean isAlive = this.isAlive();
 		importElement.setAttribute("id", getUriId().toString());
-		importElement.setAttribute("progress", successfulBills == null ? parser
-				.getProgress() : "There have been " + successfulBills.size()
-				+ " successful imports, and " + failedBills.size()
-				+ " failures." + (isAlive ? "The thread is still alive." : ""));
+		importElement
+				.setAttribute(
+						"progress",
+						successfulBills == null ? parser.getProgress()
+								: "There have been "
+										+ successfulBills.size()
+										+ " successful imports, and "
+										+ failedBills.size()
+										+ " failures."
+										+ (isAlive ? "The thread is still alive."
+												: ""));
 		if (!isAlive && successfulBills != null) {
 			Element failedElement = doc.createElement("failed-bills");
 			importElement.appendChild(failedElement);
@@ -293,8 +297,8 @@ public class BillImport extends Thread implements Urlable, XmlDescriber {
 		// TODO Auto-generated method stub
 		return null;
 	}
-	
+
 	public URI getViewUri() throws HttpException {
-        return null;
+		return null;
 	}
 }

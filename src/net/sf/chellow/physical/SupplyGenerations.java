@@ -1,6 +1,6 @@
 /*******************************************************************************
  * 
- *  Copyright (c) 2005, 2009 Wessex Water Services Limited
+ *  Copyright (c) 2005-2013 Wessex Water Services Limited
  *  
  *  This file is part of Chellow.
  * 
@@ -72,6 +72,7 @@ public class SupplyGenerations extends EntityList {
 	}
 
 	public void httpPost(Invocation inv) throws HttpException {
+		Hiber.setReadWrite();
 		Date startDate = inv.getDateTime("start");
 		Document doc = document();
 		if (!inv.isValid()) {

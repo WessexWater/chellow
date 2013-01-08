@@ -1,6 +1,6 @@
 /*******************************************************************************
  * 
- *  Copyright (c) 2005, 2009 Wessex Water Services Limited
+ *  Copyright (c) 2005, 2013 Wessex Water Services Limited
  *  
  *  This file is part of Chellow.
  * 
@@ -64,7 +64,6 @@ public class VoltageLevel extends PersistentEntity {
 		insertVoltageLevel(LV, "Low voltage");
 		insertVoltageLevel(HV, "High voltage");
 		insertVoltageLevel(EHV, "Extra high voltage");
-		Hiber.close();
 	}
 
 	private static VoltageLevel insertVoltageLevel(String code, String name)

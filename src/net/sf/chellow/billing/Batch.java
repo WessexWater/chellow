@@ -192,6 +192,7 @@ public class Batch extends PersistentEntity {
 	}
 
 	public void httpPost(Invocation inv) throws HttpException {
+		Hiber.setReadWrite();
 		if (inv.hasParameter("delete")) {
 			Long contractId = getContract().getId();
 			try {

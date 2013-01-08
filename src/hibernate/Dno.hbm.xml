@@ -27,6 +27,6 @@
 	<joined-subclass extends="Party" name="Dno" table="dno"
 		lazy="true">
 		<key column="party_id" foreign-key="fkey_dno_party" />
-		<property type="string" name="code" column="code" />
+		<property type="string" name="code" column="code" unique="true"/>
 	</joined-subclass>
 </hibernate-mapping>

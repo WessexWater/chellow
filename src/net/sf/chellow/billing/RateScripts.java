@@ -75,6 +75,7 @@ public class RateScripts extends EntityList {
 	}
 
 	public void httpPost(Invocation inv) throws HttpException {
+		Hiber.setReadWrite();
 		Date startDate = inv.getDateTime("start");
 		if (!inv.isValid()) {
 			throw new UserException(document());

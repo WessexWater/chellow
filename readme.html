@@ -1,0 +1,1150 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Chellow Manual</title>
+<style>
+table {
+	border-collapse: collapse
+}
+
+th {
+	border: thin solid grey
+}
+
+td {
+	border: thin solid grey
+}
+</style>
+</head>
+<body>
+	<h2>Chellow Manual</h2>
+
+
+
+	<ul>
+		<li><a href="#licence">Licence</a></li>
+		<li><a href="#installation">Installation</a></li>
+		<li><a href="#getting-started">Getting Started</a>
+			<ul>
+				<li><a href="#adding-supplies">Adding Supplies</a></li>
+				<li><a href="#example-site">Example Site</a></li>
+				<li><a href="#data-model">Data Model</a></li>
+			</ul></li>
+		<li><a href="#general-import-formats">General Import Format</a></li>
+		<li><a href="#hh-data-formats">HH Data Formats</a></li>
+		<li><a href="#importing-bills">Importing Bills</a></li>
+		<li><a href="#common-tasks">Common Tasks</a></li>
+		<li><a href="#reports">Reports</a></li>
+		<li><a href="#extending-chellow">Extending Chellow</a></li>
+	</ul>
+
+	<h3>
+		<a id="licence">Licence</a>
+	</h3>
+
+	<p>
+		Chellow is released under the <a
+			href="http://www.gnu.org/licenses/gpl.html">GPL v3</a>.
+	</p>
+
+	<h3>
+		<a id="introduction">Introduction</a>
+	</h3>
+
+	<p>Chellow is a web application for checking UK electricity bills.
+		It's designed for organizations with high electricity consumption.
+		Useful links are:</p>
+
+	<ul>
+		<li><a href="http://chellow.wikispaces.com/">Web site</a></li>
+		<li><a href="http://sourceforge.net/projects/chellow/">Site
+				on SourceForge</a>
+		<li><a
+			href="http://chellow.svn.sourceforge.net/viewvc/chellow/trunk/?view=log">Change
+				log</a></li>
+	</ul>
+
+	<h3>
+		<a id="installation">Installation</a>
+	</h3>
+
+	<ol>
+		<li><a href="http://sourceforge.net/projects/chellow/files/">Download</a>
+			the latest version of Chellow.</li>
+		<li>Make sure the following are installed:
+			<ul>
+				<li>PostgreSQL 9.1 with the JDBC4 PostgreSQL Driver, Version
+					9.1-903</li>
+				<li>OpenJDK 1.7.0_09 (in server mode)</li>
+				<li>Apache Tomcat 7.0.30</li>
+			</ul>
+		<li>Create a PostgreSQL database called <code>chellow</code>.
+		</li>
+		<li>In your Tomcat, configure a JNDI JDBC data source called
+			jdbc/chellow.
+			<ol>
+				<li>Add the following snippet to the <code>context.xml</code>
+					file in the Tomcat configuration directory: <pre>
+&lt;Resource name="jdbc/chellow" auth="Container"
+	type="javax.sql.DataSource" username="postgres" password="hello"
+	driverClassName="org.postgresql.Driver"
+	url="jdbc:postgresql://localhost:5432/chellow" maxActive="8" maxIdle="4"
+	accessToUnderlyingConnectionAllowed="true" /&gt;</pre>
+				</li>
+				<li>Put the <a
+					href="http://jdbc.postgresql.org/download/postgresql-9.1-903.jdbc4.jar">JDBC
+						driver</a> in the Tomcat <code>/lib/</code> directory.
+				</li>
+			</ol>
+		<li>Deploy the file chellow.war to Tomcat.</li>
+	</ol>
+
+	<h3>
+		<a id="getting-started">Getting Started</a>
+	</h3>
+
+	<p>This is a brief guide to setting things up after you've
+		installed Chellow.</p>
+
+	<h4>View the Chellow home page</h4>
+
+	<p>Assuming you've installed Chellow correctly, you should be able
+		to open your browser, type in the URL of the Chellow application, and
+		see the Chellow home page.</p>
+
+	<h4>Users</h4>
+
+	<p>
+		Before any users are added, if you access Chellow from
+		<code>localhost</code>
+		you'll have read / write access. Once users are added, you have to log
+		in as one of those users. Users are added from the 'users' page.
+	</p>
+
+	<p>Default users can be automatically assigned to requests from
+		certain IP addresses. To associate an IP address to a user, go to the
+		Configuration page and add a line to the 'properties' field similar to
+		the following:</p>
+
+	<p>
+		<code>ip127-0-0-1=implicit-user@localhost</code>
+	</p>
+
+	<p>Note that multiple IP addresses can be mapped to the same user.</p>
+
+	<h4>Add Sites</h4>
+
+	<p>
+		Sites can be added by hand from the the 'sites' link on the home page.
+		If you've got a lot to enter, then you can <a
+			href="#general-import-formats">import them using a CSV file</a>.
+	</p>
+
+	<h4>Add Supplier Contracts</h4>
+
+	<p>Click on 'supplier contracts' link and then fill out the 'Add a
+		contract' form. For the Charge Script field enter:</p>
+
+	<pre>
+def virtual_bill(data_source):
+    data_source.supplier_bill['net-gbp'] = 0</pre>
+
+	<p>This is the simplest possible virtual bill. To help with
+		debugging you can print things out to the CSV file:</p>
+
+	<pre>
+def virtual_bill(data_source):
+    data_source.pw.println('The start date is ' + str(data.source.start_date))
+    data_source.supplier_bill['net-gbp'] = 0</pre>
+
+	<p>To use half-hourly data to generate a bill based on a day /
+		night tariff, you can write:</p>
+
+	<pre>
+from net.sf.chellow.billing import NonCoreContract
+
+def virtual_bill(data_source):
+    bill = data_source.supplier_bill 
+
+    for hh in data_source.hh_data:
+        if 0 &lt; hh['utc-decimal-hour'] &lt; 8:
+            bill['night-kwh'] += hh['msp-kwh']
+            bill['night-gbp'] += hh['msp-kwh'] * 0.05
+        else:
+            bill['day-kwh'] += hh['msp-kwh']
+            bill['day-gbp'] += hh['msp-kwh'] * 0.1
+
+    bill['net-gbp'] = sum(v for k, v in bill.iteritems() if k[-4:] == '-gbp')</pre>
+
+	<p>
+		For documentation on the languages that Chellow uses, see the <a
+			href="#extending-chellow">Extending Chellow</a> section.
+	<h4>Add HHDC Contracts</h4>
+
+	<p>In the Properties text area you can set up a process that will
+		check an FTP server every hour and download any new HH data files.
+		Here's an example:</p>
+
+	<pre>
+has.importer=yes
+file.type=.bg.csv
+hostname=data.example.com
+username=auser
+password=apassword
+directory0=.
+mpan.map=searchtext&gt;replacetext</pre>
+
+	<h4>
+		<a id="adding-supplies">Add Supplies</a>
+	</h4>
+
+	<p>Supplies are imported in a similar way to sites above.</p>
+
+	<ul>
+		<li>Source - Where the supply gets its electricity from.
+			<dl>
+				<dt>net</dt>
+				<dd>The DNO's network.</dd>
+				<dt>gen</dt>
+				<dd>
+					Generator that's embedded within the site, so that the electricity
+					generated displaces the electricity that would otherwise have to be
+					imported from the DNO's network.
+					<dl>
+						<dt>lm</dt>
+						<dd>Load management generator</dd>
+						<dt>chp</dt>
+						<dd>Combined heat and power.</dd>
+						<dt>turb</dt>
+						<dd>Water turbine.</dd>
+					</dl>
+				</dd>
+				<dt>gen-net</dt>
+				<dd>Generator that's directly connected to the DNO's network,
+					so everything generated is exported to the network, and all
+					parasitic electricity (imported by the generator) is imported from
+					the network. Cf the source 'gen'. The generator types are the same
+					as those available for the source 'gen'.</dd>
+				<dt>sub</dt>
+				<dd>general sub-meter used for energy management.</dd>
+				<dt>3rd-party</dt>
+				<dd>Where the electricity is from (or to) a party that is not
+					the DNO.</dd>
+				<dt>3rd-party-reverse</dt>
+				<dd>As 3rd-party, but where the meter's import is measuring the
+					export to the 3rd party.</dd>
+			</dl>
+		</li>
+	</ul>
+
+	<h4>Import HH data</h4>
+	<p>
+		HH data can be imported in a <a href="#hh-data-formats">variety of
+			formats</a>. Chellow can also be set up to import files automatically
+		from an FTP server.
+	</p>
+
+	<h4>Virtual Bills</h4>
+
+	<p>To see the virtual bills for a supplier contract, go to the
+		contract page and follow the Virtual Bills link.</p>
+
+	<h4>
+		<a id="example-site">Example Site</a>
+	</h4>
+
+	<p>
+		To set up an example site, insert a HHDC called 'IMSERV HH' with
+		provider UKDC starting at 2010-06-01 and insert a supplier contract
+		called 'SSE HH' with provider SOUT starting at 2010-05-01. Then save
+		the <a href="#general-import-formats">General Import Format</a> text
+		below as a file with the extension '.csv' and then import it using the
+		General Imports form. It'll insert a site with a CHP supply and a
+		supply from the network. It'll also put in some HH data for the
+		beginning of October 2010.
+	</p>
+
+	<pre>
+		<code>
+"insert","site",78342,"Stowford Manor"
+"insert","supply",78342,"net",,"Main","_L","2010-10-01",,,,"IMSERV HH",2,"TRUE","TRUE","TRUE","TRUE","PO98881",0,845,5,,"22 0000 0000 111",520,200,"SSE HH",933,"22 00000000120",521,80,"SSE HH",45
+"insert","hh-datum","22 0000 0000 111","2010-10-01","TRUE","TRUE","22,A,0,A,59,A,105,A,0,A,0,A,8,A,114,A,0,A,52,A,0,A,7,A,23,A,23,A,36,A,112,A,0,A,0,A,0,A,24,A,0,A,7,A,57,A,48,A,0,A,96,A,57,A,66,A,0,A,85,A,0,A,8,A,0,A,123,A,0,A,0,A,84,A,0,A,21,A,0,A,19,A,47,A,0,A,0,A,24,A,0,A,0,A,5,A,1,A,0,A,0,A,11,A,0,A,0,A,0,A,14,A,0,A,111,A,0,A,24,A,105,A,0,A,5,A,2,A,0,A,0,A,0,A,0,A,43,A,94,A,0,A,0,A,0,A,2,A,17,A,36,A,27,A,0,A,0,A,13,A",,,,,,,,,,,,,,,,,,,,,,,,,
+"insert","hh-datum","22 0000 0000 111","2010-10-01","FALSE","TRUE","0,A,57,A,0,A,0,A,45,A,81,A,0,A,0,A,54,A,0,A,114,A,0,A,0,A,0,A,0,A,0,A,54,A,29,A,126,A,0,A,2,A,0,A,0,A,0,A,33,A,0,A,0,A,0,A,88,A,0,A,72,A,0,A,55,A,0,A,19,A,8,A,0,A,0,A,0,A,34,A,0,A,0,A,37,A,92,A,0,A,73,A,118,A,0,A,0,A,64,A,83,A,0,A,14,A,103,A,20,A,0,A,57,A,0,A,58,A,0,A,0,A,32,A,0,A,0,A,8,A,12,A,88,A,82,A,0,A,0,A,55,A,31,A,74,A,0,A,0,A,0,A,0,A,99,A,44,A,0,A"
+"insert","supply",78342,"gen","chp","CHP","_L","2010-10-01",,,,"IMSERV HH",3,"TRUE","FALSE","TRUE","FALSE","PO6755",0,845,5,,"99 0000 0000 015",510,100,"SSE HH",6,,,80,"SSE HH",45
+"insert","Hh-datum","99 0000 0000 015","2010-10-01",TRUE,TRUE,"62,A,82,A,24,A,29,A,63,A,115,A,81,A,6,A,150,A,33,A,131,A,51,A,14,A,102,A,30,A,37,A,113,A,40,A,146,A,87,A,29,A,19,A,60,A,90,A,79,A,20,A,48,A,20,A,143,A,29,A,138,A,135,A,129,A,19,A,41,A,125,A,2,A,123,A,92,A,131,A,96,A,65,A,149,A,139,A,114,A,97,A,147,A,56,A,136,A,99,A,140,A,26,A,31,A,136,A,113,A,3,A,148,A,15,A,131,A,102,A,42,A,34,A,82,A,39,A,43,A,35,A,92,A,104,A,37,A,56,A,143,A,119,A,122,A,94,A,105,A,111,A,118,A,149,A,82,A,15,A"
+</code>
+	</pre>
+
+	<h4>
+		<a id="data-model">Data Model</a>
+	</h4>
+
+	<ul>
+		<li>Sites</li>
+		<li>Supplies
+			<ul>
+				<li>Supply Generations
+					<ul>
+						<li>Site</li>
+						<li>Supplier Contract</li>
+						<li>DC Contract</li>
+						<li>Channels
+							<ul>
+								<li>HH Data</li>
+							</ul>
+						</li>
+						<li>Profile Class</li>
+						<li>Import / Export
+							<ul>
+								<li>Mpan Core</li>
+								<li>LLFC</li>
+								<li>Supply Capacity</li>
+							</ul>
+						</li>
+					</ul>
+				</li>
+			</ul>
+		</li>
+		<li>Supplier Contracts (Same for DC and MOP)
+			<ul>
+				<li>Rate Scripts</li>
+				<li>Batches
+					<ul>
+						<li>Bills
+							<ul>
+								<li>Supply</li>
+								<li>Register Reads</li>
+							</ul>
+						</li>
+					</ul>
+				</li>
+			</ul>
+		</li>
+		<li>DNOs (Distribution Network Operators)
+			<ul>
+				<li>LLFCs (Line Loss Factor Classes)</li>
+			</ul>
+		</li>
+	</ul>
+
+	<h3>
+		<a id="general-import-formats">General Import Formats</a>
+	</h3>
+
+	<h4>Key points when importing</h4>
+
+	<ul>
+		<li>Lines beginning with the '#' character are comment lines.</li>
+		<li>You can import any amount of data, from any area.</li>
+		<li>When updating a record, if the field contains {no change},
+			then that field won't be updated.</li>
+		<li>When inserting records, the 'id' fields are optional. If left
+			blank, Chellow will automatically generate an id.</li>
+	</ul>
+
+	<table>
+		<caption>Form of CSV</caption>
+		<thead>
+			<tr>
+				<th>Action</th>
+				<th>Type</th>
+			</tr>
+		</thead>
+		<tbody>
+			<tr>
+				<td><em>insert</em></td>
+				<td><em>site</em></td>
+				<td>Site Code</td>
+				<td>Site Name</td>
+			</tr>
+			<tr>
+				<td><em>delete</em></td>
+				<td><em>site</em></td>
+				<td>Site Code</td>
+			</tr>
+			<tr>
+				<td><em>update</em></td>
+				<td><em>site</em></td>
+				<td>Current Site Code</td>
+				<td>New Site Code</td>
+				<td>Site Name</td>
+			</tr>
+			<tr>
+				<td><em>insert</em></td>
+				<td><em>supply</em></td>
+				<td>Site Code</td>
+				<td>Source Code</td>
+				<td>Generator Type</td>
+				<td>Supply Name</td>
+				<td>GSP Group (geographic location)</td>
+				<td>Start date (yyyy-MM-dd)</td>
+				<td>Finish Dat</td>
+				<td>MOP Contract</td>
+				<td>MOP Account</td>
+				<td>HHDC Contract</td>
+				<td>HHDC Account</td>
+				<td>Has import HH kWh? (true/false)</td>
+				<td>Has import HH kVArh? (true/false)</td>
+				<td>Has export HH kWh? (true/false)</td>
+				<td>Has export HH kVArh? (true/false)</td>
+				<td>Meter Serial Number</td>
+				<td>Profile Class</td>
+				<td>Meter Timeswitch Class</td>
+				<td>CoP</td>
+				<td>Standard Settlement Configuration (blank for HH supplies)</td>
+				<td>Import MPAN Core</td>
+				<td>Import LLFC</td>
+				<td>Import Supply Capacity</td>
+				<td>Import Supplier Contract</td>
+				<td>Import Supplier Account</td>
+				<td>Export MPAN Core</td>
+				<td>Export LLFC</td>
+				<td>Export Supply Capacity</td>
+				<td>Export Supplier Contract</td>
+				<td>Export Supplier Account</td>
+			</tr>
+			<tr>
+				<td><em>update</em></td>
+				<td><em>supply</em></td>
+				<td>MPAN Core</td>
+				<td>Source Code</td>
+				<td>Generator Type</td>
+				<td>Supply Name</td>
+			</tr>
+			<tr>
+				<td><em>insert</em></td>
+				<td><em>supply-generation</em></td>
+				<td>Mpan Core</td>
+				<td>Start date (yyyy-MM-dd)</td>
+				<td>Site Code</td>
+				<td>MOP Contract</td>
+				<td>MOP Account</td>
+				<td>HHDC Contract</td>
+				<td>HHDC Account</td>
+				<td>Has import kWh? (yes/no)</td>
+				<td>Has import kVArh?</td>
+				<td>Has export kWh?</td>
+				<td>Has export kVArh?</td>
+				<td>Meter Serial Number</td>
+				<td>Profile Class</td>
+				<td>MTC</td>
+				<td>CoP</td>
+				<td>SSC</td>
+				<td>Import MPAN Core</td>
+				<td>Import LLFC</td>
+				<td>Import Supply Capacity</td>
+				<td>Import Supplier Contract</td>
+				<td>Import Supplier Account</td>
+				<td>Export MPAN Core</td>
+				<td>Export LLFC</td>
+				<td>Export Supply Capacity</td>
+				<td>Export Supplier Contract</td>
+				<td>Export Supplier Account</td>
+			</tr>
+			<tr>
+				<td><em>update</em></td>
+				<td><em>supply-generation</em></td>
+				<td>MPAN Core</td>
+				<td>Date</td>
+				<td>Start date</td>
+				<td>Finish date</td>
+				<td>MOP Contract</td>
+				<td>MOP Account</td>
+				<td>HHDC Contract</td>
+				<td>HHDC Account</td>
+				<td>Has import HH kWh?</td>
+				<td>Has import HH kVArh?</td>
+				<td>Has export HH kWh?</td>
+				<td>Has export HH kVArh?</td>
+				<td>Meter Serial Number</td>
+				<td>Profile Class</td>
+				<td>MTC</td>
+				<td>CoP</td>
+				<td>SSC</td>
+				<td>Import MPAN Core</td>
+				<td>Import LLFC</td>
+				<td>Import Supply Capacity</td>
+				<td>Import Supplier Contract</td>
+				<td>Import Supplier Account</td>
+				<td>Export MPAN Core</td>
+				<td>Export LLFC</td>
+				<td>Export Supply Capacity</td>
+				<td>Export Supplier Contract</td>
+				<td>Export Supplier Account</td>
+			</tr>
+			<tr>
+				<td><em>delete</em></td>
+				<td><em>supply-generation</em></td>
+				<td>MPAN Core</td>
+				<td>Date</td>
+			</tr>
+			<tr>
+				<td><em>insert</em></td>
+				<td><em>site-supply-generation</em></td>
+				<td>Site Code</td>
+				<td>Core MPAN</td>
+				<td>Generation Start Date</td>
+				<td>Is Physical?</td>
+			</tr>
+			<tr>
+				<td><em>insert</em></td>
+				<td><em>hh-datum</em></td>
+				<td>MPAN Core</td>
+				<td>Date</td>
+				<td>Is Import?</td>
+				<td>Is kWh?</td>
+				<td>(Value, Status)*</td>
+			</tr>
+			<tr>
+				<td><em>insert</em></td>
+				<td><em>user</em></td>
+				<td>Email Address</td>
+				<td>Password</td>
+				<td>Password Digest</td>
+				<td>User Role</td>
+				<td>Participant Code</td>
+				<td>Role Code</td>
+			</tr>
+			<tr>
+				<td><em>update</em></td>
+				<td><em>user</em></td>
+				<td>Current Email Address</td>
+				<td>Email Address</td>
+				<td>Password</td>
+				<td>Password Digest</td>
+				<td>User Role</td>
+				<td>Participant Code</td>
+				<td>Role Code</td>
+			</tr>
+			<tr>
+				<td><em>insert</em></td>
+				<td><em>channel-snag-ignore</em></td>
+				<td>MPAN Core</td>
+				<td>Is Import?</td>
+				<td>Is kWh?</td>
+				<td>Description</td>
+				<td>From</td>
+				<td>To</td>
+			</tr>
+			<tr>
+				<td><em>insert</em></td>
+				<td><em>site-snag-ignore</em></td>
+				<td>Site Code</td>
+				<td>Description</td>
+				<td>From</td>
+				<td>To</td>
+			</tr>
+			<tr>
+				<td><em>insert</em></td>
+				<td><em>batch</em></td>
+				<td>Role Name (hhdc, supplier or mop)</td>
+				<td>Contract Name</td>
+				<td>Reference</td>
+				<td>Description</td>
+			</tr>
+			<tr>
+				<td><em>update</em></td>
+				<td><em>batch</em></td>
+				<td>Role Name (hhdc, supplier or mop)</td>
+				<td>Contract Name</td>
+				<td>Old Reference</td>
+				<td>New Reference</td>
+				<td>Description</td>
+			</tr>
+			<tr>
+				<td><em>insert</em></td>
+				<td><em>bill</em></td>
+				<td>Role Name(hhdc, supplier or mop)</td>
+				<td>Contract Name</td>
+				<td>Batch Reference</td>
+				<td>Mpan Core</td>
+				<td>Issue Date</td>
+				<td>Start Date</td>
+				<td>Finish Date</td>
+				<td>Net</td>
+				<td>Vat</td>
+				<td>Gross</td>
+				<td>Account Reference</td>
+				<td>Reference</td>
+				<td>Type</td>
+				<td>Breakdown</td>
+				<td>Kwh</td>
+				<td>(Meter Serial Number</td>
+				<td>Mpan</td>
+				<td>Coefficient</td>
+				<td>Units</td>
+				<td>TPR</td>
+				<td>Previous Date</td>
+				<td>Previous Value</td>
+				<td>Previous Type</td>
+				<td>Present Date</td>
+				<td>Present Value</td>
+				<td>Present Type)*</td>
+			</tr>
+			<tr>
+				<td><em>update</em></td>
+				<td><em>bill</em></td>
+				<td>Chellow Id</td>
+				<td>Account</td>
+				<td>Reference</td>
+				<td>Issue Date</td>
+				<td>Start Date</td>
+				<td>Finish Date</td>
+				<td>kwh</td>
+				<td>Net</td>
+				<td>Vat</td>
+				<td>Type</td>
+				<td>Paid?</td>
+				<td>Breakdown</td>
+			</tr>
+			<tr>
+				<td><em>update</em></td>
+				<td><em>register-read</em></td>
+				<td>Chellow Id</td>
+				<td>TPR</td>
+				<td>Coefficient</td>
+				<td>Units</td>
+				<td>Meter Serial Number</td>
+				<td>MPAN</td>
+				<td>Previous Date</td>
+				<td>Previous Value</td>
+				<td>Previous Type</td>
+				<td>Present Date</td>
+				<td>Present Value</td>
+				<td>Present Type</td>
+			</tr>
+		</tbody>
+	</table>
+
+	<h3>
+		<a id="hh-data-formats">HH Data Formats</a>
+	</h3>
+
+	<p>Below are all the HH data formats accepted by Chellow. Chellow
+		recognizes them by their filename extension. The files may be
+		compressed as zip files.</p>
+
+	<h4>Stark DF2</h4>
+
+	<p>File extension '.df2'.</p>
+
+	<p>The data file is of the form:</p>
+
+	<pre>
+		<code>#F2
+#O 99 9999 9999 999
+#S 2
+27/07/05,00:30,95.4,A
+27/07/05,01:00,93.8,A
+27/07/05,01:30,91.9,A</code>
+	</pre>
+
+	<table>
+		<caption>Values Of The Sensor Number 'S'</caption>
+		<thead>
+			<tr>
+				<th>Number</th>
+				<th>Meaning</th>
+			</tr>
+		</thead>
+		<tbody>
+			<tr>
+				<td>1</td>
+				<td>Import kWh</td>
+			</tr>
+			<tr>
+				<td>2</td>
+				<td>Export kWh</td>
+			</tr>
+			<tr>
+				<td>3</td>
+				<td>Import kVArh</td>
+			</tr>
+			<tr>
+				<td>4</td>
+				<td>Export kVArh</td>
+			</tr>
+		</tbody>
+	</table>
+
+	<p>and the status character on the end is optional.</p>
+
+	<h4>CSV Simple</h4>
+
+	<p>File extension '.simple.csv'.</p>
+
+	<p>A CSV file with the following columns</p>
+
+	<table>
+		<caption>CSV Simple Columns</caption>
+		<thead>
+			<tr>
+				<th>Name</th>
+				<th>Description</th>
+			</tr>
+			<tr>
+				<td>MPAN Core</td>
+				<td></td>
+			</tr>
+			<tr>
+				<td>Is Import?</td>
+				<td>'true' or 'false'</td>
+			</tr>
+			<tr>
+				<td>Is kWh?</td>
+				<td>'true' or 'false'</td>
+			</tr>
+			<tr>
+				<td>Time</td>
+				<td>half-hour starting yyyy-MM-ddThh:mmZ (<a
+					href="http://www.w3.org/TR/NOTE-datetime">ISO date format</a>)
+				</td>
+			</tr>
+			<tr>
+				<td>Value</td>
+				<td></td>
+			</tr>
+			<tr>
+				<td>Status</td>
+				<td>'A' - actual, 'E' - estimate, 'C' - padding.</td>
+			</tr>
+		</thead>
+	</table>
+	<p>Here's an example:</p>
+
+	<pre>
+		<code>
+#MPAN core, Is Import?, Is kWh?, Time, Value, Status
+99 9999 9999 999, true, true, 2006-01-01T00:30Z, 218.4 , E
+99 9999 9999 999, true, true, 2006-01-01T01:00Z, 220.4 , E
+99 9999 9999 999, true, true, 2006-01-01T01:30Z, 221.8 , E
+99 9999 9999 999, true, true, 2006-01-01T02:00Z, 223.4 , E
+99 9999 9999 999, true, true, 2006-01-01T02:30Z, 224.6 , E
+99 9999 9999 999, true, true, 2006-01-01T03:00Z, 226.8 , E
+99 9999 9999 999, true, true, 2006-01-01T03:30Z, 203.8 , E
+99 9999 9999 999, true, true, 2006-01-01T04:00Z, 155.2 , E
+99 9999 9999 999, true, true, 2006-01-01T04:30Z, 169.0 , E
+99 9999 9999 999, true, true, 2006-01-01T05:00Z, 171.0 , E
+</code>
+	</pre>
+
+	<h4>Stark CSV</h4>
+
+	<p>File extension '.stark.csv'.</p>
+
+	<p>A CSV file with the following columns:</p>
+
+	<table>
+		<caption>Stark CSV Columns</caption>
+		<thead>
+			<tr>
+				<th>Name</th>
+				<th>Description</th>
+			</tr>
+		</thead>
+		<tbody>
+			<tr>
+				<td>MPAN core</td>
+				<td></td>
+			</tr>
+			<tr>
+				<td>Imp / Exp</td>
+				<td>'0' - import or '1' - export</td>
+			</tr>
+			<tr>
+				<td>Units</td>
+				<td>'kWh' or 'kVArh'</td>
+			</tr>
+			<tr>
+				<td>Time</td>
+				<td>half-hour ending dd/MM/yy hh:mm in UTC.</td>
+			</tr>
+			<tr>
+				<td>Value</td>
+				<td></td>
+			</tr>
+			<tr>
+				<td>Status</td>
+				<td>'65' - actual, '69' - estimate</td>
+			</tr>
+		</tbody>
+	</table>
+
+	<p>Here's an example:</p>
+
+	<pre>
+		<code>
+MPAN core, Imp / Exp, Units, Time, Value, Status
+99 9999 9999 999, 0, kWh, 01/01/2006 00:30, 218.4 , 69
+99 9999 9999 999, 0, kWh, 01/01/2006 01:00, 220.4 , 69
+99 9999 9999 999, 0, kWh, 01/01/2006 01:30, 221.8 , 69
+99 9999 9999 999, 0, kWh, 01/01/2006 02:00, 223.4 , 69
+99 9999 9999 999, 0, kWh, 01/01/2006 02:30, 224.6 , 69
+99 9999 9999 999, 0, kWh, 01/01/2006 03:00, 226.8 , 69
+99 9999 9999 999, 0, kWh, 01/01/2006 03:30, 203.8 , 69
+99 9999 9999 999, 0, kWh, 01/01/2006 04:00, 155.2 , 69
+99 9999 9999 999, 0, kWh, 01/01/2006 04:30, 169.0 , 69
+99 9999 9999 999, 0, kWh, 01/01/2006 05:00, 171.0 , 69
+</code>
+	</pre>
+
+	<h4>bGlobal CSV</h4>
+
+	<p>File extension '.bg.csv'.</p>
+
+	<p>A CSV file with the following columns:</p>
+
+	<table>
+		<caption>bGlobal CSV Columns</caption>
+		<thead>
+			<tr>
+				<th>Name</th>
+				<th>Description</th>
+			</tr>
+			<tr>
+				<td>MPAN core</td>
+				<td></td>
+			</tr>
+			<tr>
+				<td>Meter Serial Number</td>
+				<td></td>
+			</tr>
+			<tr>
+				<td>Date</td>
+				<td>dd/MM/yy</td>
+			</tr>
+			<tr>
+				<td>HH 1</td>
+				<td>kWh in 1st HH</td>
+			</tr>
+			<tr>
+				<td>HH 2</td>
+				<td>kWh in 2nd HH</td>
+			</tr>
+			<tr>
+				<td>HH 3</td>
+				<td>kWh in 3rd HH</td>
+			</tr>
+			<tr>
+				<td>...</td>
+				<td>...</td>
+			</tr>
+			<tr>
+				<td>HH 48</td>
+				<td>kWh in 48th HH</td>
+			</tr>
+		</thead>
+	</table>
+
+	<p>Here's an example:</p>
+
+	<pre>
+		<code>
+MPAN core, Meter Serial Number, Date, HH 1 kWh, HH 2 kWh, HH 3 kWh
+9999999999999,E04M00872,06/07/2008,0.262,0.26,0.252,0.246,0.249,0.251,0.25,0.249,0.244,0.239,0.255,0.255,0.286,0.289,0.356,0.489,0.576,0.585,0.496,0.411,0.457,0.463,0.436,0.447,0.436,0.431,0.439,0.396,0.455,0.453,0.377,0.314,0.341,0.338,0.418,0.45,0.446,0.442,0.464,0.366,0.314,0.386,0.395,0.444,0.346,0.288,0.263,0.255,0,0
+9999999999999,E04M00872,07/07/2008,0.247,0.216,0.211,0.227,0.237,0.233,0.229,0.204,0.225,0.267,0.301,0.324,0.466,0.471,0.475,0.546,0.505,0.382,0.362,0.434,0.387,0.395,0.35,0.378,0.348,0.356,0.301,0.34,0.337,0.396,0.386,0.388,0.369,0.325,0.356,0.36,0.367,0.429,0.427,0.466,0.404,0.403,0.319,0.359,0.299,0.294,0.264,0.29,0,0
+9999999999999,E04M00872,08/07/2008,0.312,0.31,0.254,0.237,0.222,0.226,0.218,0.211,0.225,0.263,0. 262,0.283,0.423,0.495,0.561,0.569,0.496,0.41,0.381,0.355,0.323,0.366,0.4,0.363,0.381,0.396, 0.392,0.369,0.317,0.301,0.378,0.311,0.391,0.345,0.344,0.382,0.436,0.384,0.353,0.34,0.335,0.352,0.388,0.394,0.389,0.346,0.284,0.258,0,0
+9999999999999,E04M00872,09/07/2008,0.246,0.246,0.257,0.266,0.251,0.24,0.229,0.236,0.232,0.245,0.268,0.289,0.424,0.46, 0.513,0.481,0.459,0.441,0.368,0.348,0.401,0.403,0.413,0.412,0.371,0.396,0.381,0.321,0.321,0.276,0.303,0.311,0.348,0.33,0.381,0.398,0.372,0.38,0.322,0.342,0.349,0.331,0.439,0.41,0.368,0.326,0.274,0.257,0,0
+9999999999999,E04M00872,10/07/2008,0.247,0.247,0.242,0.251,0.243,0.254,0.25,0.243,0.245,0.246,0.252,0.336,0.378,0.49,0.443, 0.467,0.544,0.467,0.375,0.387,0.403,0.347,0.415,0.404,0.422,0.42,0.375,0.385,0.371, 0.371,0.359,0.397,0.402,0.384,0.393,0.389,0.365,0.381,0.498,0.402,0.355,0.326,0.311,0.31,0.342,0.274,0.293,0.313,0,0
+9999999999999,E04M00872,11/07/2008,0.303,0.303,0.277,0.244,0.254,0.24,0.249,0.256,0.318,0.318,0.305, 0.299,0.421,0.529,0.547,0.452,0.458,0.423,0.433,0.377,0.344,0.401,0.417,0.392,0.364,0.373,0.367,0.376,0.387,0.378,0.521,0.525,0.413,0.42,0.377,0.42,0.367,0.371,0.336,0.341,0.336,0.4,0.413,0.401,0.407,0.376,0.353,0.338,0,0
+9999999999999,E04M00872,12/07/2008,0.324,0.319,0.31,0.31,0.312,0.282,0.232,0.244,0.246,0.252,0.268,0.286,0.329, 0.378,0.547,0.444,0.447,0.535,0.631,0.556,0.473,0.503,0.47,0.402,0.419,0.443,0.442, 0.409,0.378,0.366,0.384,0.392,0.403,0.406,0.481,0.541,0.486,0.405,0.366,0.364, 0.364,0.43,0.436,0.386,0.402,0.322,0.279,0.291,0,0
+9999999999999,E04M00872,13/07/2008,0.268,0.272,0.261,0.25,0.311,0.306,0.267,0.259,0.26,0.3,0.333,0.326,0.362, 0.37,0.448,0.458,0.567,0.664,0.781,0.609,0.529,0.566,0.464,0.366,0.388,0.423,0.357,0.41, 0.352,0.357,0.486,0.547,0.52,0.516,0.558,0.639,0.607,0.65,0.637,0.483,0.457,0.51,0.444,0.422,0.442,0.4,0.314,0.347,0,0
+9999999999999,E04M00872,14/07/2008,0.32,0.344,0.261,0.304,0.309,0.239,0.302,0.312,0.26,0.334,0.265,0.444,0.488, 0.552,0.543,0.58,0.599,0.501,0.497,0.48,0.334,0.376,0.409,0.405,0.314,0.303, 0.329,0.369,0.299,0.436,0.48,0.527,0.499,0.549,0.37,0.373,0.347,0.339,0.348, 0.412,0.425,0.385,0.423,0.376,0.373,0.353,0.281,0.27,0,0
+9999999999999,E04M00872,15/07/2008,0.314,0.309,0.298,0.29,0.291,0.236,0.244,0.24,0.239,0.246,0.265,0.308, 0.414,0.428,0.504,0.527,0.472,0.35,0.483,0.485,0.543,0.519,0.45,0.345,0.347, 0.375,0.455,0.509,0.498,0.469,0.304,0.329,0.413,0.397,0.445,0.534,0.506,0.405, 0.447,0.422,0.48,0.42,0.431,0.418,0.387,0.365,0.281,0.263,0,0
+9999999999999,E04M00872,16/07/2008,0.279,0.313,0.316,0.314,0.311,0.311,0.303,0.287,0.239,0.261,0.269, 0.342,0.446,0.491,0.445,0.556,0.503,0.463,0.412,0.407,0.472,0.445,0.417,0.394, 0.391,0.368,0.403,0.384,0.37,0.316,0.39,0.353,0.442,0.424,0.555,0.477,0.525, 0.476,0.39,0.464,0.465,0.399,0.427,0.432,0.428,0.371,0.333,0.269,0,0
+</code>
+	</pre>
+
+	<h3>
+		<a id="importing-bills">Importing Bills</a>
+	</h3>
+
+	<p>To import bills for a particular contract, create a batch, and
+		then upload the bill file. The following electricity bill formats can
+		be imported. Chellow recognizes the format by the file extension.</p>
+
+	<table>
+		<caption>Bill File Formats</caption>
+		<thead>
+			<tr>
+				<th>Format</th>
+				<th>Extension</th>
+			</tr>
+		</thead>
+		<tbody>
+			<tr>
+				<td>EDF Energy Proprietary</td>
+				<td>mm</td>
+			</tr>
+			<tr>
+				<td>CSV</td>
+				<td>csv</td>
+			</tr>
+			<tr>
+				<td>BGB EDI File</td>
+				<td>bgb.edi</td>
+			</tr>
+			<tr>
+				<td>SSE EDI File</td>
+				<td>sse.edi</td>
+			</tr>
+		</tbody>
+	</table>
+
+	<h4>CSV Format</h4>
+
+	<table>
+		<caption>CSV Format Columns</caption>
+		<tbody>
+			<tr>
+				<td># Bill Type</td>
+				<td>Account Reference</td>
+				<td>Mpans</td>
+				<td>Invoice Reference</td>
+				<td>Issue Date</td>
+				<td>Start Date</td>
+				<td>Finish Date</td>
+				<td>kWh</td>
+				<td>Net</td>
+				<td>VAT</td>
+				<td>Gross</td>
+				<td>Breakdown</td>
+				<td>R1 Meter Serial Number</td>
+				<td>R1 MPAN</td>
+				<td>R1 Coefficient</td>
+				<td>R1 Units</td>
+				<td>R1 TPR</td>
+				<td>R1 Previous Read Date</td>
+				<td>R1 Previous Read Value</td>
+				<td>R1 Previous Read Type</td>
+				<td>R1 Present Read Date</td>
+				<td>R1 Present Read Value</td>
+				<td>R1 Present Read Type</td>
+			</tr>
+			<tr>
+				<td>N - Normal, W - Withdrawn or F -Final</td>
+				<td></td>
+				<td></td>
+				<td></td>
+				<td></td>
+				<td></td>
+				<td></td>
+				<td></td>
+				<td></td>
+				<td></td>
+				<td></td>
+				<td></td>
+				<td></td>
+				<td></td>
+				<td>kWh, kW, kVA or kVArh</td>
+				<td>Blank if kW or kVA</td>
+				<td></td>
+				<td></td>
+				<td></td>
+				<td></td>
+				<td></td>
+				<td></td>
+				<td></td>
+			</tr>
+		</tbody>
+	</table>
+
+	<h4>Read Types</h4>
+
+	<table>
+		<caption>Read Types</caption>
+		<thead>
+			<tr>
+				<th colspan="2">Chellow</th>
+				<th colspan="2">sse.edi</th>
+				<th colspan="2">bgb.edi</th>
+			</tr>
+			<tr>
+				<th>Code</th>
+				<th>Description</th>
+				<th>Code</th>
+				<th>Description</th>
+				<th>Code</th>
+				<th>Description</th>
+			</tr>
+			<tr>
+				<td>N</td>
+				<td>Normal</td>
+				<td>00</td>
+				<td>Normal Reading</td>
+				<td>00</td>
+				<td>Normal Reading - Default</td>
+			<tr>
+				<td>N3</td>
+				<td>Normal 3rd Party</td>
+				<td>09</td>
+				<td>Third Party Normal Reading</td>
+			<tr>
+				<td>C</td>
+				<td>Customer</td>
+				<td>04</td>
+				<td>Customer's Own Reading</td>
+				<td>04</td>
+				<td>Customer's own reading</td>
+			<tr>
+				<td>E</td>
+				<td>Estimated</td>
+				<td>02</td>
+				<td>Estimated (Computer) Reading</td>
+				<td>02</td>
+				<td>Estimated (computer)</td>
+			<tr>
+				<td>E3</td>
+				<td>Estimated 3rd Party</td>
+				<td>11</td>
+				<td>Third Party Estimated (Computer) Reading</td>
+			<tr>
+				<td>EM</td>
+				<td>Estimated Manual</td>
+				<td>01</td>
+				<td>Estimated (manual)</td>
+			<tr>
+				<td>W</td>
+				<td>Withdrawn</td>
+				<td>03</td>
+				<td>Removed meter reading</td>
+			<tr>
+				<td>X</td>
+				<td>Exchange</td>
+				<td>06</td>
+				<td>Exchange Meter Reading</td>
+				<td>06</td>
+				<td>Exchange Meter Reading</td>
+			<tr>
+				<td>CP</td>
+				<td>Computer</td>
+				<td>05</td>
+				<td>Computer Reading</td>
+			<tr>
+				<td>IF</td>
+				<td>Information</td>
+				<td>12</td>
+				<td>Reading for Information only</td>
+			</tr>
+		</thead>
+	</table>
+
+	<h3>
+		<a id="common-tasks">Common Tasks</a>
+	</h3>
+
+	<h4>Merging Two Supplies</h4>
+
+	<p>Say there are two supplies A and B, and you want to end up with
+		just A. The steps are:</p>
+
+	<ol>
+		<li>Back up the data by taking a snapshot of the database.</li>
+		<li>Check that A and B have the same header data (LLFC, MTC etc).</li>
+		<li>See if there are any overlapping channels, eg. do both A and
+			B have import kVArh? If there are, then decide which one is going to
+			be kept.</li>
+		<li>Load the hh data for the required channels from the backup
+			file. First take a copy of the file, then edit out the data you don't
+			want, then further edit the file so that it loads into the new
+			supply.</li>
+		<li>Delete supply B.</li>
+	</ol>
+
+	<h3>
+		<a id="reports">Reports</a>
+	</h3>
+
+	<table>
+		<caption>Reports</caption>
+		<tbody>
+			<tr>
+				<td>metered-import-*</td>
+				<td>Uses HH data for HH and AMR supplies, and register reads
+					for dumb NHH supplies.</td>
+			</tr>
+			<tr>
+				<td>metered-import-estimated-kwh</td>
+				<td>For HH data, the kWh with the 'E' flag.</td>
+			</tr>
+			<tr>
+				<td>billed-import-*</td>
+				<td>A daily rate is calculated for a bill, and applied to the
+					number of days it covers of the month in question.</td>
+			</tr>
+		</tbody>
+	</table>
+
+	<h4>Supplies Monthly Duration</h4>
+
+	<p>Here's how Chellow calculates the monthly consumption for dumb
+		NHH supplies. First it finds the closest normal reads. Let's assume
+		there are just two for simplicity. For each TPR, Chellow works out the
+		(historical kWh / hh) = (kWh between the two reads) / (number of HHs
+		between the two reads). Then Chellow finds the number of HHs between
+		the begining of the month and the end of the month, and also the
+		number of HHs that fall within the TPR, between the begining and and
+		of the month. The kWh for each half hour in the month for each TPR is
+		(historical kWh / hh) * (month half-hours) / (month half-hours within
+		TPR).</p>
+
+	<h4>Bills</h4>
+
+	<p>A row for each bill that falls within the given period.</p>
+
+	<h4>Local Reports</h4>
+
+	<p>Core reports come with Chellow and have odd ids. User reports
+		have even numbers. You can display a link to a report of user reports
+		by adding the following line to the configuration:</p>
+
+	<pre>
+local.reports=82
+</pre>
+
+	<p>replacing 82 with the id of the report of reports that you've
+		created.</p>
+
+
+	<h3>
+		<a id="extending-chellow">Extending Chellow</a>
+	</h3>
+
+	<p>It's easiest to get started extending Chellow using reports. The
+		core of Chellow is written in Java. I work with the Java code, using:</p>
+
+	<ul>
+		<li><a href="http://www.eclipse.org/">Eclipse</a></li>
+		<li>Subversive</li>
+		<li><a href="http://ant.apache.org/">Ant</a>, with a
+			build.properties file containing <pre>
+				<code>
+catalina.home=/usr/share/tomcat7
+test.port=8080
+manager.username=xxx
+manager.password=xxx
+</code>
+</pre></li>
+		<li>Testing is done with <a
+			href="https://imprimatur.wikispaces.com/">Imprimatur</a>.
+		</li>
+		<li>Reports are written in <a href="http://www.python.org/">Python
+				2.5</a>.
+		</li>
+		<li>The Python script generates an <a
+			href="http://en.wikipedia.org/wiki/XML">XML</a> document that is then
+			transformed by an <a
+			href="http://en.wikipedia.org/wiki/Extensible_Stylesheet_Language">XSL</a>
+			style sheet before being sent to the browser.
+		</li>
+		<li><a href="http://www.hibernate.org/">Hibernate</a> is used to
+			access the database.</li>
+		<li>Useful Java 7 documentation is the <a
+			href="http://docs.oracle.com/javase/7/docs/api/">Javadocs</a>.
+		</li>
+		<li><a
+			href="http://www.w3.org/html/wg/drafts/html/master/Overview.html">HTML
+				5</a></li>
+	</ul>
+</body>
+</html>

@@ -1,6 +1,6 @@
 /*******************************************************************************
  * 
- *  Copyright (c) 2005, 2011 Wessex Water Services Limited
+ *  Copyright (c) 2005, 2013 Wessex Water Services Limited
  *  
  *  This file is part of Chellow.
  * 
@@ -190,20 +190,20 @@ public abstract class Contract extends PersistentEntity implements
 		if (rateScriptList.size() < 2) {
 			throw new UserException("You can't delete the last rate script.");
 		}
+		rateScripts.remove(rateScript);
 		if (rateScriptList.get(0).equals(rateScript)) {
-			rateScriptList.get(1).setStartDate(rateScript.getStartDate());
 			setStartRateScript(rateScriptList.get(1));
-			rateScripts.remove(rateScript);
+			Hiber.flush();
+			rateScriptList.get(1).setStartDate(rateScript.getStartDate());
 		} else if (rateScriptList.get(rateScriptList.size() - 1).equals(
 				rateScript)) {
+			setFinishRateScript(rateScriptList.get(rateScriptList.size() - 2));
+			Hiber.flush();
 			rateScriptList.get(rateScriptList.size() - 2).setFinishDate(
 					rateScript.getFinishDate());
-			setFinishRateScript(rateScriptList.get(rateScriptList.size() - 2));
-			rateScripts.remove(rateScript);
 		} else {
 			RateScript prevScript = getPreviousRateScript(rateScript);
 			prevScript.setFinishDate(rateScript.getFinishDate());
-			rateScripts.remove(rateScript);
 		}
 		Hiber.flush();
 		onUpdate(rateScript.getStartDate(), rateScript.getFinishDate());

@@ -528,6 +528,7 @@ public class Site extends PersistentEntity {
 	}
 
 	public void httpPost(Invocation inv) throws HttpException {
+		Hiber.setReadWrite();
 		if (inv.hasParameter("delete")) {
 			Document doc = document();
 			Element source = doc.getDocumentElement();

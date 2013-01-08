@@ -183,7 +183,6 @@ public class Chellow extends Monad implements Urlable {
 				&& (pathInfo.equals("/") || pathInfo.startsWith("/style/"))) {
 			return;
 		}
-
 		User user = inv.getUser();
 		if (user == null) {
 			user = ImplicitUserSource.getUser(inv);

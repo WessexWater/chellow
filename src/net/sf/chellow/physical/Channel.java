@@ -160,6 +160,7 @@ public class Channel extends PersistentEntity {
 	}
 
 	public void httpPost(Invocation inv) throws HttpException {
+		Hiber.setReadWrite();
 		try {
 			if (inv.hasParameter("delete")) {
 				supplyGeneration.deleteChannel(isImport, isKwh);

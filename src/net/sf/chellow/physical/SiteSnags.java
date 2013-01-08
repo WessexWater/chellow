@@ -77,6 +77,7 @@ public class SiteSnags extends EntityList {
 	}
 
 	public void httpPost(Invocation inv) throws HttpException {
+		Hiber.setReadWrite();
 		if (inv.hasParameter("ignore")) {
 			Date ignoreDate = inv.getDate("ignore");
 
