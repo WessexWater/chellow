@@ -29,8 +29,8 @@ for organizations with high electricity consumption. The software is hosted at
             url="jdbc:postgresql://localhost:5432/chellow" maxActive="8" maxIdle="4"
             accessToUnderlyingConnectionAllowed="true" />
 
-    *  Put the [JDBC driver](http://jdbc.postgresql.org/download/postgresql-9.1-903.jdbc4.jar) in the Tomcat `/lib/` directory. 
-*   Deploy the file chellow.war to Tomcat.
+    *  Put the [JDBC driver](http://jdbc.postgresql.org/download/postgresql-9.1-903.jdbc4.jar) in the Tomcat `/lib/` directory.
+*  Deploy the file chellow.war to Tomcat.
 
 ###  Getting Started
 
