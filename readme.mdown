@@ -14,23 +14,23 @@ for organizations with high electricity consumption. The software is hosted at
 
 ###  Installation
 
-    1. [Download](http://sourceforge.net/projects/chellow/files/) the latest version of Chellow.
-    *  Make sure the following are installed: 
-        * PostgreSQL 9.1 with the JDBC4 PostgreSQL Driver, Version 9.1-903
-        * OpenJDK 1.7.0_09 (in server mode)
-        * Apache Tomcat 7.0.30
-    *  Create a PostgreSQL database called `chellow`. 
-    *  In your Tomcat, configure a JNDI JDBC data source called jdbc/chellow. 
-        1. Add the following snippet to the `context.xml` file in the Tomcat configuration directory: 
+1. [Download](http://sourceforge.net/projects/chellow/files/) the latest version of Chellow.
+*  Make sure the following are installed: 
+    * PostgreSQL 9.1 with the JDBC4 PostgreSQL Driver, Version 9.1-903
+    * OpenJDK 1.7.0_09 (in server mode)
+    * Apache Tomcat 7.0.30
+*  Create a PostgreSQL database called `chellow`. 
+*  In your Tomcat, configure a JNDI JDBC data source called jdbc/chellow. 
+    1. Add the following snippet to the `context.xml` file in the Tomcat configuration directory: 
 
-            <Resource name="jdbc/chellow" auth="Container"
-    	        type="javax.sql.DataSource" username="postgres" password="hello"
-    	        driverClassName="org.postgresql.Driver"
-    	        url="jdbc:postgresql://localhost:5432/chellow" maxActive="8" maxIdle="4"
-    	        accessToUnderlyingConnectionAllowed="true" />
+        <Resource name="jdbc/chellow" auth="Container"
+            type="javax.sql.DataSource" username="postgres" password="hello"
+    	    driverClassName="org.postgresql.Driver"
+            url="jdbc:postgresql://localhost:5432/chellow" maxActive="8" maxIdle="4"
+            accessToUnderlyingConnectionAllowed="true" />
 
-        *  Put the [JDBC driver](http://jdbc.postgresql.org/download/postgresql-9.1-903.jdbc4.jar) in the Tomcat `/lib/` directory. 
-    *   Deploy the file chellow.war to Tomcat.
+    *  Put the [JDBC driver](http://jdbc.postgresql.org/download/postgresql-9.1-903.jdbc4.jar) in the Tomcat `/lib/` directory. 
+*   Deploy the file chellow.war to Tomcat.
 
 ###  Getting Started
 
