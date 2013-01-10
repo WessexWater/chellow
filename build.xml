@@ -68,7 +68,7 @@
 
 		<jar jarfile="${dist.home}/${app.name}.war" basedir="${build.home}" excludes="net/sf/chellow/monad/**/*" />
 
-		<copy todir="${dist.home}" file="${basedir}/readme.html" />
+		<copy todir="${dist.home}" file="${basedir}/readme.mdown" />
 	</target>
 
 	<target name="install" depends="dist" description="Install application to servlet container">
@@ -118,8 +118,7 @@
 			<fileset dir="${web.home}" />
 		</copy>
 
-		<!-- <exec dir="${basedir}" executable="svnversion" output="${build.home}/WEB-INF/VERSION" /> -->
-		<copy todir="${build.home}/WEB-INF" file="${basedir}/VERSION" />
+		<exec dir="${basedir}" executable="svnversion" output="${build.home}/WEB-INF/VERSION" />
 
 		<mkdir dir="${build.lib}" />
 
