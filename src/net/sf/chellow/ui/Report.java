@@ -20,7 +20,10 @@
  *******************************************************************************/
 package net.sf.chellow.ui;
 
+import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
+import java.io.LineNumberReader;
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
@@ -29,6 +32,7 @@ import java.util.Map;
 
 import javax.servlet.ServletContext;
 
+import net.sf.chellow.monad.Debug;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.InternalException;
@@ -45,6 +49,8 @@ import net.sf.chellow.physical.Configuration;
 import net.sf.chellow.physical.PersistentEntity;
 
 import org.hibernate.exception.ConstraintViolationException;
+import org.python.core.PyString;
+import org.python.core.PySystemState;
 import org.python.util.PythonInterpreter;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -231,12 +237,78 @@ public class Report extends PersistentEntity {
 
 	@SuppressWarnings("unchecked")
 	public void run(Invocation inv, Document doc) throws HttpException {
+		// Add the lib-python directory to sys.path
 		PythonInterpreter interp = new PythonInterpreter();
+		PySystemState systemState = interp.getSystemState();
+		Debug.print("path " + systemState.path);
 		try {
+			String pythonLibPath = inv.getMonad().getServletContext()
+					.getRealPath("/WEB-INF/lib-python");
+			Debug.print("python lib path" + pythonLibPath);
+			if (pythonLibPath != null) {
+
+				File pythonLib = new File(pythonLibPath);
+
+				if (pythonLib.exists()) {
+					
+					systemState.path.append(new PyString(pythonLibPath));
+
+					// Now check for .pth files in lib-python and process each
+					// one
+
+					String[] libPythonContents = pythonLib.list();
+
+					for (String libPythonContent : libPythonContents) {
+
+						if (libPythonContent.endsWith(".pth")) {
+							LineNumberReader lineReader = null;
+							try {
+
+								lineReader = new LineNumberReader(
+										new FileReader(new File(pythonLibPath,
+										libPythonContent)));
+
+								String line;
+
+								while ((line = lineReader.readLine()) != null) {
+
+									line = line.trim();
+
+									if (line.length() == 0) {
+										continue;
+									}
+
+									if (line.startsWith("#")) {
+										continue;
+									}
+
+									if (line.startsWith("import")) {
+										interp.exec(line);
+										continue;
+									}
+
+									File archiveFile = new File(pythonLibPath,
+											line);
+
+									String archiveRealpath = archiveFile
+											.getAbsolutePath();
+
+									systemState.path.append(new PyString(
+											archiveRealpath));
+								}
+							} finally {
+								lineReader.close();
+							}
+						}
+					}
+				}
+			}
+
 			Element source = doc.getDocumentElement();
 			interp.set("doc", doc);
 			interp.set("source", source);
 			interp.set("inv", inv);
+			interp.set("template", getTemplate());
 			StringWriter out = new StringWriter();
 			interp.setOut(out);
 			StringWriter err = new StringWriter();
@@ -254,6 +326,7 @@ public class Report extends PersistentEntity {
 									+ ' ' + new MonadDate() + ' '
 									+ inv.getRequest().getRemoteAddr())
 							.toString());
+			Debug.print("path before script" + systemState.path);
 			interp.exec(script);
 		} catch (Throwable e) {
 			throw new UserException(e.getMessage() + " "
@@ -264,7 +337,8 @@ public class Report extends PersistentEntity {
 	}
 
 	public MonadUri getEditUri() throws HttpException {
-		return Chellow.REPORTS_INSTANCE.getEditUri().resolve(getId()).append("/");
+		return Chellow.REPORTS_INSTANCE.getEditUri().resolve(getId())
+				.append("/");
 	}
 
 	public void httpGet(Invocation inv) throws HttpException {

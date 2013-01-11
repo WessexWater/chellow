@@ -44,3 +44,5 @@ postgres
 url
 env
 Wessex
+python
+pth

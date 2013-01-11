@@ -78,7 +78,7 @@ public class ReportOutput implements Urlable, XmlDescriber {
 			source.appendChild(reportElement);
 			report.run(inv, doc);
 			String template = report.getTemplate();
-			if (template != null) {
+			if (template != null && template.startsWith("<?xml")) {
 				inv.sendOk(doc, new StreamSource(new StringReader(template)));
 			}
 		} catch (HttpException e) {
