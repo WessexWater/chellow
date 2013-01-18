@@ -836,7 +836,7 @@ for era in Hiber.session().createQuery("from SupplyGeneration generation where g
         era_bundle['imp_shared_supplier_accounts'] = Hiber.session().createQuery("select distinct generation.supply from SupplyGeneration generation where generation.supply != :supply and generation.importMpan.supplierAccount = :account and generation.importMpan.supplierContract = :contract").setEntity('supply', supply).setString('account', import_mpan.getSupplierAccount()).setEntity('contract', import_mpan.getSupplierContract()).list()
 
     if export_mpan is not None:
-        era_bundle['exp_shared_supplier_accounts'] = Hiber.session().createQuery("select distinct generation.supply from SupplyGeneration generation where generation.supply != :supply and generation.exportMpan.supplierAccount = :account and generation.exportMpan.supplierContract = :contract").setEntity('supply', supply).setString('account', export_mpan.getSupplierAccount()).setEntity('contract', export_mpan().getSupplierContract()).list()
+        era_bundle['exp_shared_supplier_accounts'] = Hiber.session().createQuery("select distinct generation.supply from SupplyGeneration generation where generation.supply != :supply and generation.exportMpan.supplierAccount = :account and generation.exportMpan.supplierContract = :contract").setEntity('supply', supply).setString('account', export_mpan.getSupplierAccount()).setEntity('contract', export_mpan.supplierContract).list()
 
     if era.getPc().getCode() != 0:
         inner_headers = dict((tpr.code, tpr) for tpr in Hiber.session().createQuery("select mr.tpr from MeasurementRequirement mr where mr.ssc = :ssc order by mr.tpr.code").setEntity('ssc', era.getSsc()).list())

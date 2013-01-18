@@ -9,9 +9,11 @@
 	<property name="dist.home" value="${basedir}/dist" />
 	<property name="docs.home" value="${basedir}/docs" />
 	<property name="manager.url" value="http://localhost:8080/manager/text" />
+	<property name="catalina.home" value="/usr/share/tomcat7" />
 	<property name="src.home" value="${basedir}/src" />
 	<property name="web.home" value="${basedir}/web" />
 	<property name="javalib.home" value="${user.home}/java" />
+	<property name="manager.username" value="admin" />
 	<!-- Requires Imprimatur from http://imprimatur.sourceforge.net/ -->
 
 	<property name="imprimatur.jar" value="${javalib.home}\imprimatur-022\imprimatur.jar" />
@@ -48,7 +50,7 @@
 
 	<target name="compile" depends="prepare" description="Compile Java sources">
 		<mkdir dir="${build.home}/WEB-INF/classes" />
-		<javac includeantruntime="false" source="1.6" target="1.6" srcdir="${src.home}" destdir="${build.home}/WEB-INF/classes" debug="${compile.debug}" deprecation="${compile.deprecation}" optimize="${compile.optimize}">
+		<javac includeantruntime="false" source="1.7" target="1.7" srcdir="${src.home}" destdir="${build.home}/WEB-INF/classes" debug="${compile.debug}" deprecation="${compile.deprecation}" optimize="${compile.optimize}">
 			<classpath refid="compile.classpath" />
 		</javac>
 
@@ -66,7 +68,7 @@
 		<!--
 		<copy todir="${build.home}/WEB-INF/lib-python/" file="${user.home}/venv/local/lib/python2.7/site-packages/six.py"/>
 		-->
-		<taskdef name="instrument" classname="org.hibernate.tool.instrument.javassist.InstrumentTask" classpathref="compile.classpath" />
+		<taskdef name="instrument" classname="org.hibernate.tool.instrument.javassist.InstrumentTask" classpath="${javalib.home}/hibernate-distribution-3.6.10.Final/hibernate3.jar:${javalib.home}/slf4j-1.7.2/slf4j-api-1.7.2.jar:${javalib.home}/slf4j-1.7.2/slf4j-nop-1.7.2.jar" />
 
 		<instrument verbose="true">
 			<fileset dir="${build.home}">
@@ -148,7 +150,6 @@
 			<filelist dir="/usr/share/java">
 				<file name="commons-fileupload.jar" />
 				<file name="commons-io.jar" />
-				<file name="slf4j-api.jar" />
 				<file name="commons-net.jar" />
 				<file name="commons-logging.jar" />
 				<file name="httpclient.jar" />
@@ -163,6 +164,10 @@
 			</filelist>
 			<filelist dir="${javalib.home}/ostermillerutils-1.08.02">
 				<file name="ostermillerutils-1.08.02.jar" />
+			</filelist>
+			<filelist dir="${javalib.home}/slf4j-1.7.2">
+				<file name="slf4j-nop-1.7.2.jar" />
+				<file name="slf4j-api-1.7.2.jar" />
 			</filelist>
 		</copy>
 	</target>
