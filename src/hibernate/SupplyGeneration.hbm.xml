@@ -36,14 +36,14 @@
 		</set>
 		
 		<many-to-one name="mopContract" class="net.sf.chellow.billing.MopContract"
-			column="mop_contract_id" foreign-key="fkey_mpan_mop_contract" />
+			column="mop_contract_id" foreign-key="fkey_mpan_mop_contract" not-null="true" />
 			
-		<property type="string" name="mopAccount" column="mop_account" />
+		<property type="string" name="mopAccount" column="mop_account" not-null="true" />
 		
 		<many-to-one name="hhdcContract" class="net.sf.chellow.billing.HhdcContract"
-			column="hhdc_contract_id" foreign-key="fkey_mpan_hhdc_contract" />
+			column="hhdc_contract_id" foreign-key="fkey_mpan_hhdc_contract" not-null="true" />
 			
-		<property type="string" name="hhdcAccount" column="hhdc_account" />
+		<property type="string" name="hhdcAccount" column="hhdc_account" not-null="true"/>
 		
 		<many-to-one name="importMpan" class="Mpan" column="import_mpan_id"
 			foreign-key="fkey_supply_generation_import_mpan" />

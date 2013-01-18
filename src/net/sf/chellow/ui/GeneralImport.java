@@ -45,7 +45,6 @@ import javax.xml.stream.events.XMLEvent;
 import net.sf.chellow.billing.Batch;
 import net.sf.chellow.billing.Bill;
 import net.sf.chellow.billing.DnoContract;
-import net.sf.chellow.billing.HhdcContract;
 import net.sf.chellow.billing.MopContract;
 import net.sf.chellow.billing.NonCoreContract;
 import net.sf.chellow.billing.RateScript;
@@ -243,8 +242,6 @@ public class GeneralImport extends Thread implements Urlable, XmlDescriber {
 								csvElement);
 					} else if (type.equals("report")) {
 						Report.generalImport(action, values, csvElement);
-					} else if (type.equals("hhdc-contract")) {
-						HhdcContract.generalImport(action, values, csvElement);
 					} else if (type.equals("hhdc-contract-rate-script")) {
 						RateScript
 								.generalImportHhdc(action, values, csvElement);

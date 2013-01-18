@@ -196,8 +196,8 @@ public class Site extends PersistentEntity {
 
 	public Supply insertSupply(Source source, GeneratorType generatorType,
 			String supplyName, HhStartDate startDate, HhStartDate finishDate,
-			GspGroup gspGroup, MopContract mopContract, String mopAccount,
-			HhdcContract hhdcContract, String hhdcAccount,
+			GspGroup gspGroup, String note, MopContract mopContract,
+			String mopAccount, HhdcContract hhdcContract, String hhdcAccount,
 			String meterSerialNumber, Pc pc, String mtcCode, Cop cop, Ssc ssc,
 			String importMpanStr, String importLlfcCode,
 			SupplierContract importSupplierContract,
@@ -206,7 +206,8 @@ public class Site extends PersistentEntity {
 			SupplierContract exportSupplierContract,
 			String exportSupplierAccountReference,
 			Integer exportAgreedSupplyCapacity) throws HttpException {
-		Supply supply = new Supply(supplyName, source, generatorType, gspGroup);
+		Supply supply = new Supply(supplyName, source, generatorType, gspGroup,
+				note);
 		try {
 			Hiber.session().save(supply);
 			Hiber.flush();
@@ -648,7 +649,7 @@ public class Site extends PersistentEntity {
 					}
 				}
 				Supply supply = insertSupply(source, generatorType, name,
-						new HhStartDate(startDate), null, gspGroup,
+						new HhStartDate(startDate), null, gspGroup, "",
 						mopContract, mopAccount, hhdcContract, hhdcAccount,
 						meterSerialNumber, pc, mtcCode, cop, ssc,
 						importMpanCoreStr, importLlfcCode,

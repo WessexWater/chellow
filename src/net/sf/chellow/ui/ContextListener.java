@@ -177,14 +177,6 @@ public class ContextListener implements ServletContextListener {
 			throw new UserException("Errors in schema generation.");
 		}
 		Hiber.setReadWrite();
-		s.doWork(new Work() {
-			public void execute(Connection con) throws SQLException {
-				Statement stmt = con.createStatement();
-				stmt.executeUpdate("alter table supply add column note text default '';");
-			}
-		});
-		Hiber.commit();
-		Hiber.setReadWrite();
 		Configuration.getConfiguration();
 
 		VoltageLevel.insertVoltageLevels();

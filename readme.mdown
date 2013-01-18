@@ -253,7 +253,7 @@ network. It'll also put in some HH data for the beginning of October 2010.
 				<td>Supply Name</td>
 				<td>GSP Group (geographic location)</td>
 				<td>Start date (yyyy-MM-dd)</td>
-				<td>Finish Dat</td>
+				<td>Finish Date</td>
 				<td>MOP Contract</td>
 				<td>MOP Account</td>
 				<td>HHDC Contract</td>
@@ -992,3 +992,8 @@ Chellow is written in Java. I work with the Java code, using:
   * [Hibernate](http://www.hibernate.org/) is used to access the database.
   * Useful Java 7 documentation is the [Javadocs](http://docs.oracle.com/javase/7/docs/api/). 
   * [HTML 5](http://www.w3.org/html/wg/drafts/html/master/Overview.html)
+  
+### Todo
+
+* Remove Mpan and MpanCore classes and have attributes of era directly.
+* Have a single Contract class. Don't subclass.

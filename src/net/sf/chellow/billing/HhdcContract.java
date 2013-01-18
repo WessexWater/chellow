@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Date;
 import java.util.List;
 import java.util.Properties;
@@ -46,66 +47,12 @@ import net.sf.chellow.physical.MarketRole;
 import net.sf.chellow.physical.Mpan;
 import net.sf.chellow.physical.Participant;
 import net.sf.chellow.ui.Chellow;
-import net.sf.chellow.ui.GeneralImport;
 
 import org.hibernate.Query;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 public class HhdcContract extends Contract {
-	static public final String GENERAL_IMPORT_NAME = "hhdc-contract";
-
-	static public void generalImport(String action, String[] values,
-			Element csvElement) throws HttpException {
-		if (action.equals("insert")) {
-			String idStr = GeneralImport.addField(csvElement, "Id", values, 0);
-			Long id = null;
-			if (idStr.length() > 0) {
-				id = new Long(idStr);
-			}
-
-			String participantCode = GeneralImport.addField(csvElement,
-					"Participant Code", values, 1);
-			Participant participant = Participant
-					.getParticipant(participantCode);
-			String name = GeneralImport.addField(csvElement, "Name", values, 2);
-
-			String startDateStr = GeneralImport.addField(csvElement,
-					"Start Date", values, 3);
-			HhStartDate startDate = new HhStartDate(startDateStr);
-			String finishDateStr = GeneralImport.addField(csvElement,
-					"Finish Date", values, 4);
-			HhStartDate finishDate = null;
-			if (finishDateStr.length() > 0) {
-				finishDate = new HhStartDate(finishDateStr);
-			}
-			String chargeScript = GeneralImport.addField(csvElement,
-					"Charge Script", values, 5);
-			String properties = GeneralImport.addField(csvElement,
-					"Properties", values, 6);
-			String state = GeneralImport.addField(csvElement, "State", values,
-					7);
-
-			String rateScriptIdStr = GeneralImport.addField(csvElement,
-					"Rate Script Id", values, 8);
-			Long rateScriptId = rateScriptIdStr.length() > 0 ? new Long(
-					rateScriptIdStr) : null;
-
-			String rateScript = GeneralImport.addField(csvElement,
-					"Rate Script", values, 9);
-			insertHhdcContract(id, participant, name, startDate, finishDate,
-					chargeScript, properties, state, rateScriptId, rateScript);
-		} else if (action.equals("delete")) {
-			String name = GeneralImport.addField(csvElement, "Name", values, 0);
-			HhdcContract contract = HhdcContract.getHhdcContract(name);
-			contract.delete();
-		} else if (action.equals("delete")) {
-			String name = GeneralImport.addField(csvElement, "Name", values, 0);
-			HhdcContract contract = HhdcContract.getHhdcContract(name);
-			contract.delete();
-		}
-	}
-
 	static public HhdcContract insertHhdcContract(Long id,
 			Participant participant, String name, HhStartDate startDate,
 			HhStartDate finishDate, String chargeScript,
@@ -240,7 +187,7 @@ public class HhdcContract extends Contract {
 			Document doc = document();
 			Element source = doc.getDocumentElement();
 			source.setAttribute("state", state);
-			inv.sendOk(doc);
+			inv.sendSeeOther(getViewUri());
 		} else if (inv.hasParameter("ignore-snags")) {
 			Date ignoreDate = inv.getDate("ignore");
 			Hiber.session()
@@ -281,11 +228,7 @@ public class HhdcContract extends Contract {
 				throw e;
 			}
 			Hiber.commit();
-			Document doc = document();
-			Element source = doc.getDocumentElement();
-			source.setAttribute("charge-script", chargeScript);
-			source.setAttribute("properties", properties);
-			inv.sendOk(doc);
+			inv.sendSeeOther(getViewUri());
 		}
 	}
 
@@ -408,7 +351,10 @@ public class HhdcContract extends Contract {
 
 	@Override
 	public URI getViewUri() throws HttpException {
-		// TODO Auto-generated method stub
-		return null;
+		try {
+			return new URI("/reports/115/output/?hhdc-contract-id=" + getId());
+		} catch (URISyntaxException e) {
+			throw new InternalException(e);
+		}
 	}
 }

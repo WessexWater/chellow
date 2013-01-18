@@ -78,7 +78,7 @@ public class SupplyGeneration extends PersistentEntity {
 					"MOP Contract", values, 4);
 			if (mopContractName.equals(GeneralImport.NO_CHANGE)) {
 				mopContract = supplyGeneration.getMopContract();
-			} else if (mopContractName.length() > 0) {
+			} else {
 				mopContract = MopContract.getMopContract(mopContractName);
 			}
 			String mopAccount = GeneralImport.addField(csvElement,
@@ -91,7 +91,7 @@ public class SupplyGeneration extends PersistentEntity {
 					"HHDC Contract", values, 6);
 			if (hhdcContractName.equals(GeneralImport.NO_CHANGE)) {
 				hhdcContract = supplyGeneration.getHhdcContract();
-			} else if (hhdcContractName.length() > 0) {
+			} else {
 				hhdcContract = HhdcContract.getHhdcContract(hhdcContractName);
 			}
 			String hhdcAccount = GeneralImport.addField(csvElement,

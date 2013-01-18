@@ -1,6 +1,6 @@
 /*******************************************************************************
  * 
- *  Copyright (c) 2005, 2011 Wessex Water Services Limited
+ *  Copyright (c) 2005-2013 Wessex Water Services Limited
  *  
  *  This file is part of Chellow.
  * 
@@ -184,7 +184,7 @@ public class Supply extends PersistentEntity {
 				}
 			}
 			Supply supply = site.insertSupply(source, generatorType,
-					supplyName, startDate, finishDate, gspGroup, mopContract,
+					supplyName, startDate, finishDate, gspGroup, "", mopContract,
 					mopAccount, hhdcContract, hhdcAccount, meterSerialNumber,
 					pc, mtcCode, cop, ssc, importMpanStr, importLlfcCode,
 					importSupplierContract, importSupplierAccount,
@@ -264,6 +264,8 @@ public class Supply extends PersistentEntity {
 	private GeneratorType generatorType;
 
 	private GspGroup gspGroup;
+	
+	private String note;
 
 	private Set<SupplyGeneration> generations;
 
@@ -273,9 +275,10 @@ public class Supply extends PersistentEntity {
 	}
 
 	Supply(String name, Source source, GeneratorType generatorType,
-			GspGroup gspGroup) throws HttpException {
+			GspGroup gspGroup, String note) throws HttpException {
 		setGenerations(new HashSet<SupplyGeneration>());
 		update(name, source, generatorType, gspGroup);
+		setNote(note);
 		setMpanCores(new HashSet<MpanCore>());
 	}
 
@@ -323,6 +326,15 @@ public class Supply extends PersistentEntity {
 	void setGspGroup(GspGroup gspGroup) {
 		this.gspGroup = gspGroup;
 	}
+	
+	public String getNote() {
+		return note;
+	}
+
+	public void setNote(String note) {
+		this.note = note;
+	}
+
 
 	public Set<SupplyGeneration> getGenerations() {
 		return generations;
@@ -639,6 +651,7 @@ public class Supply extends PersistentEntity {
 	public Element toXml(Document doc) throws HttpException {
 		Element element = super.toXml(doc, "supply");
 		element.setAttribute("name", name);
+		element.setAttribute("note", note);
 		return element;
 	}
 

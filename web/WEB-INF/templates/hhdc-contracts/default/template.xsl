@@ -135,19 +135,17 @@
 									</xsl:choose>
 								</textarea>
 								<h4>Example</h4>
-								<p>
-									<code>
-										<pre>
-											has.importer=yes
-											file.type=.df2
-											hostname=example.com
-											username=username
-											password=password
-											directory0=downloads1
-											directory1=downloads2
-								</pre>
-									</code>
-								</p>
+								<code>
+									<pre>
+										has.importer=yes
+										file.type=.df2
+										hostname=example.com
+										username=username
+										password=password
+										directory0=downloads1
+										directory1=downloads2
+									</pre>
+								</code>
 								<br />
 								<br />
 								<input type="submit" value="Update" />

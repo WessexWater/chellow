@@ -24,8 +24,6 @@
 	<property name="compile.optimize" value="true" />
 	<property name="build.lib" value="${build.home}/WEB-INF/lib" />
 
-
-
 	<path id="compile.classpath">
 		<fileset dir="${build.lib}">
 			<include name="*.jar" />
@@ -49,7 +47,6 @@
 	</target>
 
 	<target name="compile" depends="prepare" description="Compile Java sources">
-
 		<mkdir dir="${build.home}/WEB-INF/classes" />
 		<javac includeantruntime="false" source="1.6" target="1.6" srcdir="${src.home}" destdir="${build.home}/WEB-INF/classes" debug="${compile.debug}" deprecation="${compile.deprecation}" optimize="${compile.optimize}">
 			<classpath refid="compile.classpath" />
@@ -63,6 +60,21 @@
 		<copy todir="${build.home}/WEB-INF/lib-python/jinja2">
 			<fileset dir="${user.home}/venv/local/lib/python2.7/site-packages/jinja2" />
 		</copy>
+		<copy todir="${build.home}/WEB-INF/lib-python/dateutil">
+			<fileset dir="${user.home}/venv/local/lib/python2.7/site-packages/dateutil" />
+		</copy>
+		<!--
+		<copy todir="${build.home}/WEB-INF/lib-python/" file="${user.home}/venv/local/lib/python2.7/site-packages/six.py"/>
+		-->
+		<taskdef name="instrument" classname="org.hibernate.tool.instrument.javassist.InstrumentTask" classpathref="compile.classpath" />
+
+		<instrument verbose="true">
+			<fileset dir="${build.home}">
+				<!-- substitute the package where you keep your domain objs -->
+				<include name="/WEB-INF/classes/net/sf/chellow/physical/*.class" />
+			</fileset>
+		</instrument>
+
 	</target>
 
 	<target name="dist" depends="compile" description="Create binary distribution">

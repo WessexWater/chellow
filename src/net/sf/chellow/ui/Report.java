@@ -1,6 +1,6 @@
 /*******************************************************************************
  * 
- *  Copyright (c) 2005, 2009 Wessex Water Services Limited
+ *  Copyright (c) Wessex Water Services Limited
  *  
  *  This file is part of Chellow.
  * 
@@ -32,7 +32,6 @@ import java.util.Map;
 
 import javax.servlet.ServletContext;
 
-import net.sf.chellow.monad.Debug;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.InternalException;
@@ -240,11 +239,11 @@ public class Report extends PersistentEntity {
 		// Add the lib-python directory to sys.path
 		PythonInterpreter interp = new PythonInterpreter();
 		PySystemState systemState = interp.getSystemState();
-		Debug.print("path " + systemState.path);
+
 		try {
 			String pythonLibPath = inv.getMonad().getServletContext()
 					.getRealPath("/WEB-INF/lib-python");
-			Debug.print("python lib path" + pythonLibPath);
+
 			if (pythonLibPath != null) {
 
 				File pythonLib = new File(pythonLibPath);
@@ -326,7 +325,7 @@ public class Report extends PersistentEntity {
 									+ ' ' + new MonadDate() + ' '
 									+ inv.getRequest().getRemoteAddr())
 							.toString());
-			Debug.print("path before script" + systemState.path);
+
 			interp.exec(script);
 		} catch (Throwable e) {
 			throw new UserException(e.getMessage() + " "
