@@ -20,10 +20,7 @@
  *******************************************************************************/
 package net.sf.chellow.ui;
 
-import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
-import java.io.LineNumberReader;
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
@@ -48,8 +45,6 @@ import net.sf.chellow.physical.Configuration;
 import net.sf.chellow.physical.PersistentEntity;
 
 import org.hibernate.exception.ConstraintViolationException;
-import org.python.core.PyString;
-import org.python.core.PySystemState;
 import org.python.util.PythonInterpreter;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -236,73 +231,9 @@ public class Report extends PersistentEntity {
 
 	@SuppressWarnings("unchecked")
 	public void run(Invocation inv, Document doc) throws HttpException {
-		// Add the lib-python directory to sys.path
 		PythonInterpreter interp = new PythonInterpreter();
-		PySystemState systemState = interp.getSystemState();
 
 		try {
-			String pythonLibPath = inv.getMonad().getServletContext()
-					.getRealPath("/WEB-INF/lib-python");
-
-			if (pythonLibPath != null) {
-
-				File pythonLib = new File(pythonLibPath);
-
-				if (pythonLib.exists()) {
-					
-					systemState.path.append(new PyString(pythonLibPath));
-
-					// Now check for .pth files in lib-python and process each
-					// one
-
-					String[] libPythonContents = pythonLib.list();
-
-					for (String libPythonContent : libPythonContents) {
-
-						if (libPythonContent.endsWith(".pth")) {
-							LineNumberReader lineReader = null;
-							try {
-
-								lineReader = new LineNumberReader(
-										new FileReader(new File(pythonLibPath,
-										libPythonContent)));
-
-								String line;
-
-								while ((line = lineReader.readLine()) != null) {
-
-									line = line.trim();
-
-									if (line.length() == 0) {
-										continue;
-									}
-
-									if (line.startsWith("#")) {
-										continue;
-									}
-
-									if (line.startsWith("import")) {
-										interp.exec(line);
-										continue;
-									}
-
-									File archiveFile = new File(pythonLibPath,
-											line);
-
-									String archiveRealpath = archiveFile
-											.getAbsolutePath();
-
-									systemState.path.append(new PyString(
-											archiveRealpath));
-								}
-							} finally {
-								lineReader.close();
-							}
-						}
-					}
-				}
-			}
-
 			Element source = doc.getDocumentElement();
 			interp.set("doc", doc);
 			interp.set("source", source);

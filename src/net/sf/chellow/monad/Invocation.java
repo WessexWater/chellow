@@ -719,7 +719,7 @@ public class Invocation {
 		if (usernameAndPassword == null || usernameAndPassword.length != 2) {
 			return null;
 			// throw new BadRequestException(
-			// "The Authorization header must contain a base64 encoded string
+			// "The Authorisation header must contain a base64 encoded string
 			// consisting of a username and password separated by a ':'.");
 		}
 		User user = Chellow.USERS_INSTANCE.findUser(new EmailAddress(
