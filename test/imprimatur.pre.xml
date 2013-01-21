@@ -782,10 +782,7 @@ def totalElement(account, startDate, finishDate):
 			<response-code value="200" />
 		</request>
 	</test>
-	<!-- okay here -->
-
-	<!-- here not okay -->
-	<test name="Actual reads snags combined properly">
+		<test name="Actual reads snags combined properly">
 		<!-- Test that 3 non-actual reads in a row generate a single snag -->
 		<request path="/chellow/reports/211/output/" method="post">
 			<control name="hhdc-contract-id" value="0" />
@@ -914,7 +911,6 @@ def totalElement(account, startDate, finishDate):
 			<response-code value="418" />
 		</request>
 	</test>
-
 	<test name="Check site level snag">
 		<request path="/chellow/reports/39/output/">
 			<regex pattern='CI004' />
