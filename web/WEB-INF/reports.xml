@@ -840,10 +840,11 @@ for era in Hiber.session().createQuery("from SupplyGeneration generation where g
         era_bundle['exp_shared_supplier_accounts'] = Hiber.session().createQuery("select distinct generation.supply from SupplyGeneration generation where generation.supply != :supply and generation.exportMpan.supplierAccount = :account and generation.exportMpan.supplierContract = :contract").setEntity('supply', supply).setString('account', export_mpan.getSupplierAccount()).setEntity('contract', export_mpan.supplierContract).list()
 
     if era.getPc().getCode() != 0:
-        inner_headers = dict((tpr.code, tpr) for tpr in Hiber.session().createQuery("select mr.tpr from MeasurementRequirement mr where mr.ssc = :ssc order by mr.tpr.code").setEntity('ssc', era.getSsc()).list())
+        inner_headers = [tpr for tpr in Hiber.session().createQuery("select mr.tpr from MeasurementRequirement mr where mr.ssc = :ssc order by mr.tpr.code").setEntity('ssc', era.getSsc()).list()]
         if era.getPc().toString() in ['05', '06', '07', '08']:
-            inner_headers['md'] = None
+            inner_headers.append(None)
         era_bundle['import_bills']['inner_headers'] = inner_headers
+        inner_header_codes = [tpr.code if tpr is not None else 'md' for tpr in inner_headers]
 
     if era.getFinishDate() is None:
         bills_query = Hiber.session().createQuery("from Bill bill where bill.supply = :supply and bill.startDate >= :startDate")
@@ -868,35 +869,46 @@ for era in Hiber.session().createQuery("from SupplyGeneration generation where g
                     bill_contract_id """ + str(bill_contract.getId()))
 
         bill_group = era_bundle[bill_group_name]
-
+        rows_high = 1
+        bill_dict = {'bill': bill}
+        bill_group['bill_dicts'].append(bill_dict)
         if bill_group_name == 'import_bills' and era.pc.toString() != '00':
-            tpr_map = dict((k, []) for k in inner_headers.keys())
-            outer_reads = []
-            read_rows = []
-            bill_dict = {'bill': bill, 'outer_reads': outer_reads,
-                    'read_rows': read_rows}
-            bill_group['bill_dicts'].append(bill_dict)
+            inner_tpr_map = dict((code, []) for code in inner_header_codes)
+            outer_tpr_map = collections.defaultdict(list)
+
             for read in Hiber.session().createQuery("from RegisterRead read where read.bill = :bill order by read.tpr.id, read.presentDate").setEntity('bill', bill).list():
                 tpr = read.tpr
                 tpr_code = 'md' if tpr is None else tpr.code
-                if tpr_code in tpr_map:
-                    tpr_map[tpr_code].append(read)
-                else:
-                    outer_reads.append(read)
-            num_outer_cols = max(num_outer_cols, len(outer_reads))
+                try:
+                    inner_tpr_map[tpr_code].append(read)
+                except KeyError:
+                    outer_tpr_map[tpr_code].append(read)                   
+                
+            rows_high = max([len(val) for val in (inner_tpr_map.values() + outer_tpr_map.values())] + [rows_high])
 
-            rows_high = max([len(val) for val in tpr_map.values()] + [1])
-            bill_dict['rows_high'] = str(rows_high)
+            read_rows = []
+            bill_dict['read_rows'] = read_rows
 
             for i in range(rows_high):
-                read_row = []
-                for tpr_list in tpr_map.values():
+                inner_reads = []
+                row_dict = {'inner_reads': inner_reads, 'outer_reads': []}
+                read_rows.append(row_dict)
+                for tpr_code in inner_header_codes:
                     try:
-                        read_row.append(tpr_list[i])
+                        inner_reads.append(inner_tpr_map[tpr_code][i])
+                    except IndexError:
+                        row_dict['inner_reads'].append(None)
+
+                for tpr_code, read_list in outer_tpr_map.iteritems():
+                    try:
+                        row_dict['outer_reads'].append(read_list[i])
                     except KeyError:
-                        read_row.append(None)
-        else:
-            bill_group['bill_dicts'].append({'bill': bill})
+                        row_dict['outer_reads'].append(None)
+
+            num_outer_cols = max(num_outer_cols, len(outer_tpr_map))
+
+
+            bill_dict['rows_high'] = rows_high
 
     era_bundle['import_bills']['num_outer_cols'] = num_outer_cols
 
@@ -1215,12 +1227,12 @@ Monad.getContext().getAttribute("net.sf.chellow.jinja").get("render")(inv, templ
             <th rowspan="2">Net</th>
             <th rowspan="2">VAT</th>
             <th rowspan="2">Type</th>
-            {% for tpr in import_bills['inner_tprs'] %}
+            {% for tpr in import_bills['inner_headers'] %}
               <th colspan="4">
                 {% if tpr == None %}
                   MD
                 {% else %}
-                  <a href="/view_tpr?tpr_id={{ tpr.id }}">{{ tpr.code }}</a>
+                  <a href="{{ context_path }}/reports/97/output/?tpr-id={{ tpr.id }}">{{ tpr.code }}</a>
                 {% endif %}
               </th>
             {% endfor %}
@@ -1232,7 +1244,7 @@ Monad.getContext().getAttribute("net.sf.chellow.jinja").get("render")(inv, templ
           </tr>
 
           <tr>
-            {% for tpr in import_bills['inner_tprs'] %}
+            {% for tpr in import_bills['inner_headers'] %}
               <th colspan="2">Previous</th>
               <th colspan="2">Present</th>
             {% endfor %}
@@ -1244,64 +1256,74 @@ Monad.getContext().getAttribute("net.sf.chellow.jinja").get("render")(inv, templ
           </tr>
         </thead>
         <tbody>
-          {% for bill_dict in import_bills['bill_dict'] %}
+          {% for bill_dict in import_bills['bill_dicts'] %}
             {% set read_rows = bill_dict['read_rows'] %}
-            {% set outer_reads = bill_dict['outer_reads'] %}
             {% set bill = bill_dict['bill'] %}
             {% set rows_high = bill_dict['rows_high'] %}
             <tr>
               <td rowspan="{{ rows_high }}">
-                <a href="{{ context_path }}/reports/105/output/?bill-id=5={{ bill.id }}">View</a>
+                <a href="{{ context_path }}/reports/105/output/?bill-id={{ bill.id }}">View</a>
               </td>
               <td rowspan="{{ rows_high }}">
-                <a title="{{ bill.start_date|hh_format }}">{{ bill.start_date|hh_format('date') }}</a>
+                <a title="{{ bill.startDate|hh_format }}">{{ bill.startDate|hh_format('date') }}</a>
               </td>
               <td rowspan="{{ rows_high }}">
-                <a title="{{ bill.finish_date|hh_format }}">{{ bill.finish_date|hh_format('date') }}</a>
+                <a title="{{ bill.finishDate|hh_format }}">{{ bill.finishDate|hh_format('date') }}</a>
               </td>
               <td rowspan="{{ rows_high }}">
-                <a href="/view_batch?batch_id={{ bill.batch.id }}">{{ bill.batch.reference }}</a>
+                <a href="{{ context_path }}/reports/91/output/?batch-id={{ bill.batch.id }}">{{ bill.batch.reference }}</a>
               </td>
               <td rowspan="{{ rows_high }}">{{ bill.reference }}</td>
               <td rowspan="{{ rows_high }}">{{ bill.kwh }}</td>
               <td rowspan="{{ rows_high }}">{{ bill.net }}</td>
               <td rowspan="{{ rows_high }}">{{ bill.vat }}</td>
               <td rowspan="{{ rows_high }}">
-                <a href="/bill_type?bill_type_id={{ bill.type.id }}" title="{{ bill.type.description }}">{{ bill.type.code }}</a>
+                <a href="{{ context_path }}/reports/201/output/?bill-type-id={{ bill.type.id }}" title="{{ bill.type.description }}">{{ bill.type.code }}</a>
               </td>
 
               {% for read_row in read_rows %} 
                 {% for read in read_row['inner_reads'] %}
                   <td style="border-right: none;">
-                    <a title="{{ read.prev_date|hh_format }} {{ read.msn }}">{{ read.prev_value }}</a>
+                    {% if read %}
+                      <a title="{{ read.previousDate|hh_format }} {{ read.msn }}">{{ read.previousValue }}</a>
+                    {% endif %}
                   </td>
                   <td style="border-left: none;">
-                    {{ read.prev_type.code }}
+                    {% if read %}
+                      {{ read.previousType.code }}
+                    {% endif %}
                   </td>
-
                   <td style="border-right: none;">
-                    <a title="{{ read.pres_date|hh_format }} {{ read.msn }}">{{ read.pres_value }}</a>
+                    {% if read %}
+                      <a title="{{ read.presentDate|hh_format }} {{ read.msn }}">{{ read.presentValue }}</a>
+                    {% endif %}
                   </td>
                   <td style="border-left: none;">
-                    {{ read.pres_type.code }}
+                    {% if read %}
+                      {{ read.presentType.code }}
+                    {% endif %}
                   </td>
                 {% endfor %}
                 {% if loop.first %}
                   {% for read in read_row['outer_reads'] %}
                     <td>
-                      <a href="/tpr?tpr_id={{ read.tpr.id }}">{{ read.tpr.code }}</a>
+                      {% if read.tpr %}
+                        <a href="{{ context_path }}/reports/97/output/?tpr-id={{ read.tpr.id }}">{{ read.tpr.code }}</a>
+                      {% else %}
+                        MD
+                      {% endif %}
                     </td>
                     <td style="border-right: none;">
-                      <a title="{{ read.prev_date|hh_format }} {{ read.msn }}">{{ read.prev_value }}</a>
+                      <a title="{{ read.previousDate|hh_format }} {{ read.msn }}">{{ read.previousValue }}</a>
                     </td>
                     <td style="border-left: none;">
-                      {{ read.prev_type.code }}
+                      {{ read.previousType.code }}
                     </td>
                     <td style="border-right: none;">
-                      <a title="{{ read.pres_date|hh_format }} {{ read.msn }}">{{ read.pres_value }}</a>
+                      <a title="{{ read.presentDate|hh_format }} {{ read.msn }}">{{ read.presentValue }}</a>
                     </td>
                     <td style="border-left: none;">
-                      {{ read.pres_type.code }}
+                      {{ read.presentType.code }}
                     </td>
                   {% endfor %}
                 {% endif %}
