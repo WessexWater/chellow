@@ -887,7 +887,7 @@ for era in Hiber.session().createQuery("from SupplyGeneration generation where g
 
             rows_high = max([len(val) for val in tpr_map.values()] + [1])
             bill_dict['rows_high'] = str(rows_high)
-            '''
+
             for i in range(rows_high):
                 read_row = []
                 for tpr_list in tpr_map.values():
@@ -895,7 +895,6 @@ for era in Hiber.session().createQuery("from SupplyGeneration generation where g
                         read_row.append(tpr_list[i])
                     except KeyError:
                         read_row.append(None)
-            '''
         else:
             bill_group['bill_dicts'].append({'bill': bill})
 
@@ -1200,143 +1199,118 @@ Monad.getContext().getAttribute("net.sf.chellow.jinja").get("render")(inv, templ
               </td>
             </tr>
           </tbody>
-        </table>
-        <br/>
-        <table>
-          {% set import_bills = era_bundle['import_bills'] %}
-          <caption>Import Supplier Bills</caption>
-          <thead>
+      </table>
+      <br/>
+      <table>
+        {% set import_bills = era_bundle['import_bills'] %}
+        <caption>Import Supplier Bills</caption>
+        <thead>
+          <tr>
+            <th rowspan="2">View</th>
+            <th rowspan="2">From</th>
+            <th rowspan="2">To</th>
+            <th rowspan="2">Batch</th>
+            <th rowspan="2">Reference</th>
+            <th rowspan="2">kWh</th>
+            <th rowspan="2">Net</th>
+            <th rowspan="2">VAT</th>
+            <th rowspan="2">Type</th>
+            {% for tpr in import_bills['inner_tprs'] %}
+              <th colspan="4">
+                {% if tpr == None %}
+                  MD
+                {% else %}
+                  <a href="/view_tpr?tpr_id={{ tpr.id }}">{{ tpr.code }}</a>
+                {% endif %}
+              </th>
+            {% endfor %}
+            {% for i in range(import_bills['num_outer_cols']) %}
+              <th colspan="5">
+                {{ loop.index }}
+              </th>
+            {% endfor %}
+          </tr>
+
+          <tr>
+            {% for tpr in import_bills['inner_tprs'] %}
+              <th colspan="2">Previous</th>
+              <th colspan="2">Present</th>
+            {% endfor %}
+            {% for i in range(import_bills['num_outer_cols']) %}
+              <th>TPR</th>
+              <th colspan="2">Previous</th>
+              <th colspan="2">Present</th>
+            {% endfor %}
+          </tr>
+        </thead>
+        <tbody>
+          {% for bill_dict in import_bills['bill_dict'] %}
+            {% set read_rows = bill_dict['read_rows'] %}
+            {% set outer_reads = bill_dict['outer_reads'] %}
+            {% set bill = bill_dict['bill'] %}
+            {% set rows_high = bill_dict['rows_high'] %}
             <tr>
-              <th rowspan="2">View</th>
-              <th rowspan="2">From</th>
-              <th rowspan="2">To</th>
-              <th rowspan="2">Batch</th>
-              <th rowspan="2">Reference</th>
-                    <th rowspan="2">kWh</th>
-                    <th rowspan="2">Net</th>
-                    <th rowspan="2">VAT</th>
-                    <th rowspan="2">Type</th>
-                    {% for tpr in import_bills['inner_tprs'] %}
-                        <th colspan="4">
-                            {% if tpr == None %}
-                                MD
-                            {% else %}
-                                <a href="/view_tpr?tpr_id={{ tpr.id }}">{{ tpr.code }}</a>
-                            {% endif %}
-                        </th>
-                    {% endfor %}
-                    {% for i in range(import_bills['num_outer_cols']) %}
-                        <th colspan="5">
-                                {{ loop.index }}
-                        </th>
-                    {% endfor %}
-                </tr>
+              <td rowspan="{{ rows_high }}">
+                <a href="{{ context_path }}/reports/105/output/?bill-id=5={{ bill.id }}">View</a>
+              </td>
+              <td rowspan="{{ rows_high }}">
+                <a title="{{ bill.start_date|hh_format }}">{{ bill.start_date|hh_format('date') }}</a>
+              </td>
+              <td rowspan="{{ rows_high }}">
+                <a title="{{ bill.finish_date|hh_format }}">{{ bill.finish_date|hh_format('date') }}</a>
+              </td>
+              <td rowspan="{{ rows_high }}">
+                <a href="/view_batch?batch_id={{ bill.batch.id }}">{{ bill.batch.reference }}</a>
+              </td>
+              <td rowspan="{{ rows_high }}">{{ bill.reference }}</td>
+              <td rowspan="{{ rows_high }}">{{ bill.kwh }}</td>
+              <td rowspan="{{ rows_high }}">{{ bill.net }}</td>
+              <td rowspan="{{ rows_high }}">{{ bill.vat }}</td>
+              <td rowspan="{{ rows_high }}">
+                <a href="/bill_type?bill_type_id={{ bill.type.id }}" title="{{ bill.type.description }}">{{ bill.type.code }}</a>
+              </td>
 
-                <tr>
-                    {% for tpr in import_bills['inner_tprs'] %}
-                        <th colspan="2">Previous</th>
-                        <th colspan="2">Present</th>
-                    {% endfor %}
-                    {% for i in range(import_bills['num_outer_cols']) %}
-                        <th>TPR</th>
-                        <th colspan="2">Previous</th>
-                        <th colspan="2">Present</th>
-                    {% endfor %}
-                </tr>
-            </thead>
-            <tbody>
-                {% for bill_dict in import_bills['bill_dict'] %}
-                    {% set read_rows = bill_dict['read_rows'] %}
-                    {% set outer_reads = bill_dict['outer_reads'] %}
-                    {% set bill = bill_dict['bill'] %}
-                    {% set rows_high = bill_dict['rows_high'] %}
-                    {% if read_rows %}
-                        {% for read_row in read_rows %}
-                            <tr>
-                                {% if loop.first %}
-                                    <td rowspan="{{ rows_high }}">
-                                        <a href="/view_bill?bill_id={{ bill.id }}">View</a>
-                                    </td>
-                                    <td rowspan="{{ rows_high }}">
-                                        <a title="{{ bill.start_date|hh_format }}">{{ bill.start_date|hh_format('date') }}</a>
-                                    </td>
-                                    <td rowspan="{{ rows_high }}">
-                                        <a title="{{ bill.finish_date|hh_format }}">{{ bill.finish_date|hh_format('date') }}</a>
-                                    </td>
-                                    <td rowspan="{{ rows_high }}">
-                                        <a href="/view_batch?batch_id={{ bill.batch.id }}">{{ bill.batch.reference }}</a>
-                                    </td>
-                                    <td rowspan="{{ rows_high }}">{{ bill.reference }}</td>
-                                    <td rowspan="{{ rows_high }}">{{ bill.kwh }}</td>
-                                    <td rowspan="{{ rows_high }}">{{ bill.net }}</td>
-                                    <td rowspan="{{ rows_high }}">{{ bill.vat }}</td>
-                                    <td rowspan="{{ rows_high }}">
-                                        <a href="/bill_type?bill_type_id={{ bill.type.id }}" title="{{ bill.type.description }}">{{ bill.type.code }}</a>
-                                    </td>
-                                {% endif %}
-                                {% for read in read_row['inner_reads'] %}
-                                    <td style="border-right: none;">
-                                        <a title="{{ read.prev_date|hh_format }} {{ read.msn }}">{{ read.prev_value }}</a>
-                                    </td>
-                                    <td style="border-left: none;">
-                                        {{ read.prev_type.code }}
-                                    </td>
+              {% for read_row in read_rows %} 
+                {% for read in read_row['inner_reads'] %}
+                  <td style="border-right: none;">
+                    <a title="{{ read.prev_date|hh_format }} {{ read.msn }}">{{ read.prev_value }}</a>
+                  </td>
+                  <td style="border-left: none;">
+                    {{ read.prev_type.code }}
+                  </td>
 
-                                    <td style="border-right: none;">
-                                        <a title="{{ read.pres_date|hh_format }} {{ read.msn }}">{{ read.pres_value }}</a>
-                                    </td>
-                                    <td style="border-left: none;">
-                                        {{ read.pres_type.code }}
-                                    </td>
-                                {% endfor %}
-                                {% if loop.first %}
-                                    {% for read in read_row['outer_reads'] %}
-                                        <td>
-                                            <a href="/tpr?tpr_id={{ read.tpr.id }}">{{ read.tpr.code }}</a>
-                                        </td>
-                                        <td style="border-right: none;">
-                                            <a title="{{ read.prev_date|hh_format }} {{ read.msn }}">{{ read.prev_value }}</a>
-                                        </td>
-                                        <td style="border-left: none;">
-                                            {{ read.prev_type.code }}
-                                        </td>
-                                        <td style="border-right: none;">
-                                            <a title="{{ read.pres_date|hh_format }} {{ read.msn }}">{{ read.pres_value }}</a>
-                                        </td>
-                                        <td style="border-left: none;">
-                                            {{ read.pres_type.code }}
-                                        </td>
-                                    {% endfor %}
-                                {% endif %}
-                            </tr>
-                        {% endfor %}
-                    {% else %}
-                        <tr>
-                            <td>
-                                <a href="/view_bill?bill_id={{ bill.id }}">View</a>
-                            </td>
-                            <td>
-                                <a title="{{ bill.start_date|hh_format }}">{{ bill.start_date|hh_format('date') }}</a>
-                            </td>
-                            <td>
-                                <a title="{{ bill.finish_date|hh_format }}">{{ bill.finish_date|hh_format('date') }}</a>
-                            </td>
-                            <td>
-                                <a href="/view_batch?batch_id={{ bill.batch.id }}">{{ bill.batch.reference }}</a>
-                            </td>
-                            <td>{{ bill.reference }}</td>
-                            <td>{{ bill.kwh }}</td>
-                            <td>{{ bill.net }}</td>
-                            <td>{{ bill.vat }}</td>
-                            <td>
-                                <a href="/view_bill_type?bill_type_id={{ bill.type.id }}" title="{{ bill.type.description }}">{{ bill.type.code }}</a>
-                            </td>
-                        </tr>
-                    {% endif %}
+                  <td style="border-right: none;">
+                    <a title="{{ read.pres_date|hh_format }} {{ read.msn }}">{{ read.pres_value }}</a>
+                  </td>
+                  <td style="border-left: none;">
+                    {{ read.pres_type.code }}
+                  </td>
                 {% endfor %}
-            </tbody>
-        </table>
-        <br />
+                {% if loop.first %}
+                  {% for read in read_row['outer_reads'] %}
+                    <td>
+                      <a href="/tpr?tpr_id={{ read.tpr.id }}">{{ read.tpr.code }}</a>
+                    </td>
+                    <td style="border-right: none;">
+                      <a title="{{ read.prev_date|hh_format }} {{ read.msn }}">{{ read.prev_value }}</a>
+                    </td>
+                    <td style="border-left: none;">
+                      {{ read.prev_type.code }}
+                    </td>
+                    <td style="border-right: none;">
+                      <a title="{{ read.pres_date|hh_format }} {{ read.msn }}">{{ read.pres_value }}</a>
+                    </td>
+                    <td style="border-left: none;">
+                      {{ read.pres_type.code }}
+                    </td>
+                  {% endfor %}
+                {% endif %}
+              {% endfor %}
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      <br />
       <table>
         <caption>DC Bills</caption>
         <thead>
