@@ -34,7 +34,7 @@
 		<many-to-one name="source" class="Source" column="source_id"
 			not-null="true" foreign-key="fkey_supply_source" />
 		<property type="string" name="note" lazy="true">
-			<column name="note" sql-type="text" default="''" not-null="true"/>
+			<column name="note" sql-type="text" not-null="true"/>
 		</property>
 		<many-to-one name="generatorType" class="GeneratorType" column="generator_type_id"
 			foreign-key="fkey_supply_generator_type" />

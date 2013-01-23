@@ -101,19 +101,31 @@ public class ContextListener implements ServletContextListener {
 			boolean shouldInitialize = false;
 			try {
 				// Find if DB has been created
-				stmt.executeQuery("select properties from configuration;");
+				ResultSet rs = stmt
+						.executeQuery("select * from contract where name = 'system';");
+				boolean upgrade = true;
+				while (rs.next()) {
+					upgrade = false;
+				}
+				if (upgrade) {
+					upgradeFrom597To650(con);
+				}
 			} catch (SQLException sqle) {
 				shouldInitialize = true;
 				String db_name = null;
-			        stmt = con.createStatement();
-			        ResultSet rs = stmt.executeQuery("select current_database()");
-			        while (rs.next()) {
-			            db_name = rs.getString("current_database");
-			        }
-				stmt.executeUpdate("alter database " + db_name + " set default_transaction_isolation = 'serializable'");
-				stmt.executeUpdate("alter database " + db_name + " set default_transaction_deferrable = on;");
-				stmt.executeUpdate("alter database " + db_name + " SET DateStyle TO 'ISO, YMD'");
-				stmt.executeUpdate("alter database " + db_name + " set default_transaction_read_only = on;");
+				stmt = con.createStatement();
+				ResultSet rs = stmt.executeQuery("select current_database()");
+				while (rs.next()) {
+					db_name = rs.getString("current_database");
+				}
+				stmt.executeUpdate("alter database " + db_name
+						+ " set default_transaction_isolation = 'serializable'");
+				stmt.executeUpdate("alter database " + db_name
+						+ " set default_transaction_deferrable = on;");
+				stmt.executeUpdate("alter database " + db_name
+						+ " SET DateStyle TO 'ISO, YMD'");
+				stmt.executeUpdate("alter database " + db_name
+						+ " set default_transaction_read_only = on;");
 			} finally {
 				con.close();
 			}
@@ -281,5 +293,22 @@ public class ContextListener implements ServletContextListener {
 		NonCoreContract.loadNonCoreContracts(context);
 		Hiber.commit();
 		Hiber.close();
+	}
+
+	private void upgradeFrom597To650(Connection con) throws HttpException {
+		try {
+			Statement stmt = con.createStatement();
+			con.setAutoCommit(false);
+			stmt.executeUpdate("begin isolation level serializable read write");
+			stmt.executeUpdate("alter table supply_generation alter column mop_contract_id set not null");
+			stmt.executeUpdate("alter table supply_generation alter column mop_account set not null");
+			stmt.executeUpdate("alter table supply_generation alter column hhdc_contract_id set not null");
+			stmt.executeUpdate("alter table supply_generation alter column hhdc_account set not null");
+			stmt.executeUpdate("commit");
+			con.setAutoCommit(false);
+			con.close();
+		} catch (SQLException sqle) {
+			throw new InternalException(sqle);
+		}
 	}
 }
