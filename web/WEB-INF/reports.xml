@@ -993,7 +993,7 @@ Monad.getContext().getAttribute("net.sf.chellow.jinja").get("render")(inv, templ
       <tr>
         <th>GSP Group</th>
         <td>
-          {{ supply.getGspGroup().getCode() }} {{ supply.getGspGroup().getDescription() }}
+          {{ supply.gspGroup.code }} {{ supply.gspGroup.description }}
         </td>
       </tr>
         {% if system_properties['supply_links'] %}
@@ -1012,7 +1012,7 @@ Monad.getContext().getAttribute("net.sf.chellow.jinja").get("render")(inv, templ
         {% endif %}
       <tr>
         <th>
-          Notes [<a href="{{ context_path }}/reports/239/output/?supply_id={{ supply.getId() }}">edit</a>]
+          Notes [<a href="{{ context_path }}/reports/239/output/?supply_id={{ supply.id }}">edit</a>]
         </th>
         <td>
           {% if is_truncated %}
@@ -1036,7 +1036,7 @@ Monad.getContext().getAttribute("net.sf.chellow.jinja").get("render")(inv, templ
       {% set other_sites = era_bundle['other_sites'] %}
       <table>
           <caption>
-            Era [<a href="{{ context_path }}/supplies/{{ supply.getId() }}/generations/{{ era.getId() }}/">edit</a>]
+            Era [<a href="{{ context_path }}/supplies/{{ supply.id }}/generations/{{ era.id }}/">edit</a>]
           </caption>
           <thead>
             <tr>
@@ -1058,7 +1058,7 @@ Monad.getContext().getAttribute("net.sf.chellow.jinja").get("render")(inv, templ
               </th>
               <th rowspan="2">
                 Channels
-                      [<a href="{{ context_path }}/supplies/{{ supply.getId() }}/generations/{{ era.getId() }}/channels/">edit</a>]
+                      [<a href="{{ context_path }}/supplies/{{ supply.id }}/generations/{{ era.id }}/channels/">edit</a>]
               </th>
               <th rowspan="2">
                 <a title="Line Loss Factor Class">LLFC</a>
@@ -1079,46 +1079,46 @@ Monad.getContext().getAttribute("net.sf.chellow.jinja").get("render")(inv, templ
           <tbody>
             <tr>
               <td rowspan="4">
-                <a title="{{ era.getStartDate()|hh_format }}">{{ era.getStartDate()|hh_format(modifier='date') }}</a>
+                <a title="{{ era.startDate|hh_format }}">{{ era.startDate|hh_format(modifier='date') }}</a>
               </td>
               <td rowspan="4">
-                <a title="{{ era.getFinishDate()|hh_format }}">{{ era.getFinishDate()|hh_format(modifier='date') }}</a>
+                <a title="{{ era.finishDate|hh_format }}">{{ era.finishDate|hh_format(modifier='date') }}</a>
               </td>
               <td rowspan="4">
-                <a href="{{ context_path }}/reports/5/output/?site-id={{ physical_site.getId() }}" title="{{ physical_site.getName() }}">{{ physical_site.getCode() }}</a>
+                <a href="{{ context_path }}/reports/5/output/?site-id={{ physical_site.id }}" title="{{ physical_site.name }}">{{ physical_site.code }}</a>
                 {% if other_sites %}
                   (also
                     {% for other_site in other_sites %}
-                      <a href="{{ context_path }}/reports/5/output/?site-id={{ other_site.getId() }}" title="{{ other_site.getName() }}">{{ other_site.getCode() }}</a>
+                      <a href="{{ context_path }}/reports/5/output/?site-id={{ other_site.id }}" title="{{ other_site.name }}">{{ other_site.code }}</a>
                     {%- endfor -%}
                   )
                 {% endif %}
               </td>
               <td rowspan="4">
-                <a href="{{ context_path }}/reports/55/output/?pc-id={{ era.getPc().getId() }}" title="{{ era.getPc().getDescription() }}">{{ era.getPc().toString() }}</a>
+                <a href="{{ context_path }}/reports/55/output/?pc-id={{ era.pc.id }}" title="{{ era.pc.description }}">{{ era.pc.toString() }}</a>
               </td>
-              <td rowspan="4">{{ era.getMeterSerialNumber() }}</td>
+              <td rowspan="4">{{ era.meterSerialNumber }}</td>
               <td rowspan="4">
-                <a href="{{ context_path }}/reports/63/output/?mtc-id={{ era.getMtc().getId() }}" title="{{ era.getMtc().getDescription() }}">{{ era.getMtc().getCode() }}</a>
+                <a href="{{ context_path }}/reports/63/output/?mtc-id={{ era.mtc.id }}" title="{{ era.mtc.description }}">{{ era.mtc.code }}</a>
               </td>
               <td rowspan="4">
-                <a href="{{ context_path }}/reports/197/output/?cop-id={{ era.getCop().getId() }}" title="{{ era.getCop().getDescription() }}">{{ era.getCop().getCode() }}</a>
+                <a href="{{ context_path }}/reports/197/output/?cop-id={{ era.cop.id }}" title="{{ era.cop.description }}">{{ era.cop.code }}</a>
               </td>
               <td rowspan="4">
                 {% if era.getSsc() %}
-                  <a href="{{ context_path }}/reports/127/output/?ssc-id={{ era.getSsc().getId() }}" title="{{ era.getSsc().getDescription() }}">{{ era.getSsc().getCode() }}</a>
+                  <a href="{{ context_path }}/reports/127/output/?ssc-id={{ era.ssc.id }}" title="{{ era.ssc.description }}">{{ era.ssc.code }}</a>
                 {% endif %}
               </td>
               <td rowspan="4">
-                <a href="{{ context_path }}/reports/107/output/?mop-contract-id={{ era.getMopContract().getId() }}">{{ era.getMopContract().getName() }}</a>
+                <a href="{{ context_path }}/reports/107/output/?mop-contract-id={{ era.mopContract.id }}">{{ era.mopContract.name }}</a>
               </td>
               <td rowspan="4">
-                {{ era.getMopAccount() }}
+                {{ era.mopAccount }}
               </td>
               <td rowspan="4">
-                <a href="{{ context_path }}/reports/115/output/?hhdc-contract-id={{ era.getHhdcContract().getId() }}">{{ era.getHhdcContract().getName() }}</a>
+                <a href="{{ context_path }}/reports/115/output/?hhdc-contract-id={{ era.hhdcContract.id }}">{{ era.hhdcContract.name }}</a>
               </td>
-              <td rowspan="4">{{ era.getHhdcAccount() }}</td>
+              <td rowspan="4">{{ era.hhdcAccount }}</td>
               <th colspan="6">Import</th>
             </tr>
             <tr>
@@ -1132,32 +1132,32 @@ Monad.getContext().getAttribute("net.sf.chellow.jinja").get("render")(inv, templ
                 {% endfor %}
               </td>
               <td>
-                {% if era.getImportMpan() %}
-                  <a href="{{ context_path }}/reports/51/output/?llfc-id={{ era.getImportMpan().getLlfc().getId() }}" title="{{ era.getImportMpan().getLlfc().getDescription() }}">{{ era.getImportMpan().getLlfc().getCode() }}
+                {% if era.importMpan %}
+                  <a href="{{ context_path }}/reports/51/output/?llfc-id={{ era.importMpan.llfc.id }}" title="{{ era.importMpan.llfc.description }}">{{ era.importMpan.llfc.code }}
                   </a>
                 {% endif %}
               </td>
               <td>
-                {% if era.getImportMpan() %}
-                  {{ era.importMpan.core.toString() }}</td>
+                {% if era.importMpan %}
+                  <a title="{{ era.importMpan.core.dno.code }} - {{ era.importMpan.core.dno.name }}" href="{{ context_path }}/reports/139/output/?dno-id={{ era.importMpan.core.dno.id }}">{{ era.importMpan.core.dno.code }}</a> {{ era.importMpan.core.toString()[3:] }}
                 {% endif %}
               <td>
-                {% if era.getImportMpan() %}
+                {% if era.importMpan %}
                   {{ era.importMpan.agreedSupplyCapacity }}
                 {% endif %}
               </td>      
               <td>
-                {% if era.getImportMpan() %}
-                  <a href="{{ context_path }}/reports/77/output/?supplier-contract-id={{ era.getImportMpan().getSupplierContract().getId() }}">{{ era.getImportMpan().getSupplierContract().getName() }}</a>
+                {% if era.importMpan %}
+                  <a href="{{ context_path }}/reports/77/output/?supplier-contract-id={{ era.importMpan.supplierContract.id }}">{{ era.importMpan.supplierContract.name }}</a>
                 {% endif %}
               </td>
               <td>
                 {% if era.getImportMpan() %}  
-                  {{ era.getImportMpan().getSupplierAccount() }}
+                  {{ era.importMpan.supplierAccount }}
                   {% if era_bundle['imp_shared_supplier_accounts'] %}(
                     {%- for sup in era_bundle['imp_shared_supplier_accounts'] -%}
                       {%- if not loop.first    -%} {%- endif -%}
-                        <a href="{{ context_path }}/reports/7/output/?supply-id={{ sup.getId() }}">{{ sup.getId() }}</a>
+                        <a href="{{ context_path }}/reports/7/output/?supply-id={{ sup.id }}">{{ sup.id }}</a>
                     {%- endfor -%}
                     )
                   {% endif %}
@@ -1179,31 +1179,31 @@ Monad.getContext().getAttribute("net.sf.chellow.jinja").get("render")(inv, templ
               </td>
               <td>
                 {% if era.getExportMpan() %}
-                  <a href="{{ context_path }}/reports/51/output/?llfc-id={{ era.getExportMpan().getLlfc().getId() }}" title="{{ era.getExportMpan().getLlfc().getDescription() }}">{{ era.getExportMpan().getLlfc().getCode() }}</a>
+                  <a href="{{ context_path }}/reports/51/output/?llfc-id={{ era.exportMpan.llfc.id }}" title="{{ era.exportMpan.llfc.description }}">{{ era.exportMpan.llfc.code }}</a>
                 {% endif %}
               </td>
               <td>
-                {% if era.getExportMpan() %}
-                  {{ era.getExportMpan().getCore() }}
+                {% if era.exportMpan %}
+                  <a title="{{ era.exportMpan.core.dno.code }} - {{ era.exportMpan.core.dno.name }}" href="{{ context_path }}/reports/139/output/?dno-id={{ era.exportMpan.core.dno.id }}">{{ era.exportMpan.core.dno.code }}</a> {{ era.exportMpan.core.toString()[3:] }}
                 {% endif %}
               </td>
               <td>
-                {% if era.getExportMpan() %}
-                  {{ era.getExportMpan().getAgreedSupplyCapacity() }}
+                {% if era.exportMpan %}
+                  {{ era.exportMpan.agreedSupplyCapacity }}
                 {% endif %}
               </td>
               <td>
-                {% if era.getExportMpan() %}
-                  <a href="{/source/request/@context-path}/reports/77/output/?supplier-contract-id={{ era.getExportMpan().getSupplierContract().getId() }}">{{ era.getExportMpan().getSupplierContract().getName() }}</a>
+                {% if era.exportMpan %}
+                  <a href="{{ context_path }}/reports/77/output/?supplier-contract-id={{ era.exportMpan.supplierContract.id }}">{{ era.exportMpan.supplierContract.name }}</a>
                 {% endif %}
               </td>
               <td>
-                {% if era.getExportMpan() %}
-                  {{ era.getExportMpan().getSupplierAccount() }}
+                {% if era.exportMpan %}
+                  {{ era.exportMpan.supplierAccount }}
                   {% if era_bundle['exp_shared_supplier_accounts'] %}(
                     {%- for sup in era_bundle['exp_shared_supplier_accounts'] -%}
                     {%- if not loop.first    -%} {%- endif -%}
-                      <a href="{{ context_path }}/reports/7/output/?supply-id={{ sup.getId() }}">{{ sup.getId() }}</a>
+                      <a href="{{ context_path }}/reports/7/output/?supply-id={{ sup.id }}">{{ sup.id }}</a>
                     {%- endfor -%}
                     )
                   {% endif %}
