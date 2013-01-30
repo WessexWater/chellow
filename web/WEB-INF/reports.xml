@@ -821,7 +821,7 @@ from java.io import StringReader
 supply_id = inv.getLong("supply-id")
 supply = Supply.getSupply(supply_id)
 era_bundles = []
-for era in Hiber.session().createQuery("from SupplyGeneration generation where generation.supply = :supply order by generation.startDate").setEntity('supply', supply).list():
+for era in Hiber.session().createQuery("from SupplyGeneration generation where generation.supply = :supply order by generation.startDate desc").setEntity('supply', supply).list():
     import_mpan = era.getImportMpan()
     export_mpan = era.getExportMpan()
     physical_site = Hiber.session().createQuery("select ssgen.site from SiteSupplyGeneration ssgen where ssgen.isPhysical = true and ssgen.supplyGeneration = :generation").setEntity('generation', era).uniqueResult()
