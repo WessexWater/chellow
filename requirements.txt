@@ -1,0 +1,7 @@
+Jinja2==2.6
+SQLAlchemy==0.7.9
+argparse==1.2.1
+distribute==0.6.24
+pg8000==1.08
+python-dateutil==1.5
+wsgiref==0.1.2

@@ -60,11 +60,23 @@
 			<fileset dir="${src.home}" excludes="**/*.java" />
 		</copy>
 		<copy todir="${build.home}/WEB-INF/lib-python/jinja2">
-			<fileset dir="${user.home}/venv/local/lib/python2.7/site-packages/jinja2" />
+			<fileset dir="${user.home}/venv/lib/python2.5/site-packages/jinja2" />
 		</copy>
 		<copy todir="${build.home}/WEB-INF/lib-python/dateutil">
-			<fileset dir="${user.home}/venv/local/lib/python2.7/site-packages/dateutil" />
+			<fileset dir="${user.home}/venv/lib/python2.5/site-packages/dateutil" />
 		</copy>
+		<copy todir="${build.home}/WEB-INF/lib-python/sqlalchemy">
+					<fileset dir="${user.home}/venv/lib/python2.5/site-packages/sqlalchemy" />
+		</copy>
+		<!--
+		<copy todir="${build.home}/WEB-INF/lib-python/pg8000">
+					<fileset dir="${user.home}/venv/local/lib/python2.7/site-packages/pg8000" />
+		</copy>
+		-->
+		<copy todir="${build.home}/WEB-INF/lib-python/pg8000">
+					<fileset dir="${user.home}/pg8000" />
+		</copy>
+		
 		<!--
 		<copy todir="${build.home}/WEB-INF/lib-python/" file="${user.home}/venv/local/lib/python2.7/site-packages/six.py"/>
 		-->
