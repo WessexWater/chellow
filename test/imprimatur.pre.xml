@@ -151,7 +151,26 @@ def virtual_bill(supply_source):
 			<regex pattern="HH contract" />
 			<response-code value="200" />
 		</request>
-
+		
+		<!-- Check that we can see the edit view of an HHDC rate script okay -->
+		<request path="/chellow/reports/249/output/?rate_script_id=0">
+			<!-- Check that 'has_finished' field is there -->
+			<regex pattern="has_finished" />
+			<response-code value="200" />
+		</request>
+		
+		<!-- Check that we can update an HHDC rate script okay -->
+		<request path="/chellow/reports/249/output/" method="post">
+			<control name="rate_script_id" value="0"/>
+			<control name="start-year" value="2000"/>
+			<control name="start-month" value="01"/>
+			<control name="start-day" value="03"/>
+			<control name="start-hour" value="00"/>
+			<control name="start-minute" value="00"/>
+			<control name="script" value=""/>
+			<response-code value="303" />
+		</request>
+		
 		<!-- Add another HHDC contract -->
 		<request path="/chellow/hhdc-contracts/" method="post">
 			<control name="participant-id" value="56" />
