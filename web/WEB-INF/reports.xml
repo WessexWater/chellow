@@ -17901,15 +17901,14 @@ pw.close()]]></value>
         <value><![CDATA[239]]></value>
         <value><![CDATA[true]]></value>
         <value><![CDATA[Supply Notes]]></value>
-        <value><![CDATA[from net.sf.chellow.billing import NonCoreContract
-from net.sf.chellow.physical import Supply
-from net.sf.chellow.monad import Hiber, Debug
+        <value><![CDATA[from net.sf.chellow.physical import Supply
+from net.sf.chellow.monad import Debug, Monad
 
 supply_id = inv.getLong('supply_id')
 supply = Supply.getSupply(supply_id)
 
 if inv.getRequest().getMethod() == 'GET':
-    NonCoreContract.getNonCoreContract('template').callFunction('render', [inv, template, {'supply': supply}])
+    Monad.getContext().getAttribute("net.sf.chellow.jinja").get("render")(inv, template, {'supply': supply})
 else:
     note = inv.getString('note')
     Hiber.setReadWrite()
