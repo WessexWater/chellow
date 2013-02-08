@@ -66,20 +66,13 @@
 			<fileset dir="${user.home}/venv/lib/python2.5/site-packages/dateutil" />
 		</copy>
 		<copy todir="${build.home}/WEB-INF/lib-python/sqlalchemy">
-					<fileset dir="${user.home}/venv/lib/python2.5/site-packages/sqlalchemy" />
+			<fileset dir="${user.home}/venv/lib/python2.5/site-packages/sqlalchemy" />
 		</copy>
-		<!--
 		<copy todir="${build.home}/WEB-INF/lib-python/pg8000">
-					<fileset dir="${user.home}/venv/local/lib/python2.7/site-packages/pg8000" />
+			<fileset dir="${user.home}/venv/lib/python2.5/site-packages/pg8000" />
 		</copy>
-		-->
-		<copy todir="${build.home}/WEB-INF/lib-python/pg8000">
-					<fileset dir="${user.home}/pg8000" />
-		</copy>
-		
-		<!--
-		<copy todir="${build.home}/WEB-INF/lib-python/" file="${user.home}/venv/local/lib/python2.7/site-packages/six.py"/>
-		-->
+		<copy overwrite="true" todir="${build.home}/WEB-INF/lib-python/pg8000" file="${web.home}/WEB-INF/protocol.py" />
+
 		<taskdef name="instrument" classname="org.hibernate.tool.instrument.javassist.InstrumentTask" classpath="${javalib.home}/hibernate-distribution-3.6.10.Final/hibernate3.jar:${javalib.home}/slf4j-1.7.2/slf4j-api-1.7.2.jar:${javalib.home}/slf4j-1.7.2/slf4j-nop-1.7.2.jar" />
 
 		<instrument verbose="true">

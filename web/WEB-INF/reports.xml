@@ -8482,56 +8482,46 @@ for batch in Hiber.session().createQuery("from Batch batch where batch.contract 
         <value><![CDATA[95]]></value>
         <value><![CDATA[true]]></value>
         <value><![CDATA[TPRs]]></value>
-        <value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree
+        <value><![CDATA[from net.sf.chellow.monad import Hiber, Monad
 
-tprs_element = doc.createElement('tprs')
-source.appendChild(tprs_element)
-for tpr in Hiber.session().createQuery("from Tpr tpr order by tpr.code").list():
-    tprs_element.appendChild(tpr.toXml(doc))]]></value>
-        <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
-<xsl:stylesheet version="1.0"
-    xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
-    <xsl:output method="html" encoding="US-ASCII"
-        doctype-public="-//W3C//DTD HTML 4.01//EN"
-        doctype-system="http://www.w3.org/TR/html4/strict.dtd" indent="yes" />
-    <xsl:template match="/">
-        <html>
-            <head>
-                <link rel="stylesheet" type="text/css"
-                    href="{/source/request/@context-path}/reports/10/output/" />
-                <title>Chellow &gt; TPRs</title>
-            </head>
-            <body>
-                <p>
-                    <a
-                        href="{/source/request/@context-path}/reports/1/output/">
-                        <xsl:value-of select="'Chellow'" />
-                    </a>
-                    &gt; TPRs
-                </p>
-                <xsl:if test="//message">
-                    <ul>
-                        <xsl:for-each select="//message">
-                            <li>
-                                <xsl:value-of select="@description" />
-                            </li>
-                        </xsl:for-each>
-                    </ul>
-                </xsl:if>
-                <ul>
-                    <xsl:for-each select="/source/tprs/tpr">
-                        <li>
-                            <a
-                                href="{/source/request/@context-path}/reports/97/output/?tpr-id={@id}">
-                                <xsl:value-of select="@code" />
-                            </a>
-                        </li>
-                    </xsl:for-each>
-                </ul>
-            </body>
-        </html>
-    </xsl:template>
-</xsl:stylesheet>]]></value>
+db = Monad.getContext().getAttribute("net.sf.chellow.db")
+for cls in ['Tpr']:
+   globals()[cls] = db.get(cls)
+
+session = db.get("session")()
+
+tprs = session.query(Tpr).order_by(Tpr.code)
+
+Monad.getContext().getAttribute("net.sf.chellow.jinja").get("render")(inv, template, {'tprs': tprs})]]></value>
+        <value><![CDATA[<!DOCTYPE html>
+<html>
+  <head>
+    <link rel="stylesheet" type="text/css"
+        href="{{ context_path }}/reports/19/output/" />
+    <title>Chellow &gt; TPRs</title>
+  </head>
+  <body>
+    <p>
+      <a href="{{ context_path }}/reports/1/output/">Chellow</a> &gt; TPRs
+    </p>
+
+    {% if messages %}
+      <ul>
+        {% for message in messages %}
+          <li>{{ message }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+
+    <ul>
+      {% for tpr in tprs %}
+        <li>
+          <a href="{{ context_path }}/reports/97/output/?tpr_id={{ tpr.id }}">{{ tpr.code }}</a>
+        </li>
+      {% endfor %}
+    </ul>
+  </body>
+</html>]]></value>
     </line>
     <line>
         <value><![CDATA[insert]]></value>
@@ -8539,153 +8529,108 @@ for tpr in Hiber.session().createQuery("from Tpr tpr order by tpr.code").list():
         <value><![CDATA[97]]></value>
         <value><![CDATA[true]]></value>
         <value><![CDATA[TPR]]></value>
-        <value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree
-from net.sf.chellow.physical import Tpr
+        <value><![CDATA[from net.sf.chellow.monad import Monad
 
-tpr_id = inv.getLong('tpr-id')
-tpr = Tpr.getTpr(tpr_id)
-source.appendChild(tpr.toXml(doc, XmlTree("measurementRequirements", XmlTree("ssc")).put("clockIntervals")))]]></value>
-        <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
-<xsl:stylesheet version="1.0"
-    xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
-    <xsl:output method="html" encoding="US-ASCII"
-        doctype-public="-//W3C//DTD HTML 4.01//EN"
-        doctype-system="http://www.w3.org/TR/html4/strict.dtd" indent="yes" />
-    <xsl:template match="/">
-        <html>
-            <head>
-                <link rel="stylesheet" type="text/css"
-                    href="{/source/request/@context-path}/reports/19/output/" />
-                <title>
-                    Chellow &gt; TPRs &gt;
-                    <xsl:value-of select="/source/tpr/@code" />
-                </title>
-            </head>
-            <body>
-                <p>
-                    <a
-                        href="{/source/request/@context-path}/reports/1/output/">
-                        <xsl:value-of select="'Chellow'" />
-                    </a>
-                    &gt;
-                    <a
-                        href="{/source/request/@context-path}/reports/95/output/">
-                        <xsl:value-of select="'TPRs'" />
-                    </a>
-                    &gt;
-                    <xsl:value-of select="/source/tpr/@code" />
-                </p>
-                <br />
-                <xsl:if test="//message">
-                    <ul>
-                        <xsl:for-each select="//message">
-                            <li>
-                                <xsl:value-of select="@description" />
-                            </li>
-                        </xsl:for-each>
-                    </ul>
-                </xsl:if>
-                <table>
-                    <tr>
-                        <th>Code</th>
-                        <td>
-                            <xsl:value-of select="/source/tpr/@code" />
-                        </td>
-                    </tr>
-                    <tr>
-                        <th>Teleswitch or Clock</th>
-                        <td>
-                            <xsl:choose>
-                                <xsl:when
-                                    test="/source/tpr/@is-teleswitch='true'">
-                                    Teleswitch
-                                </xsl:when>
-                                <xsl:otherwise>Clock</xsl:otherwise>
-                            </xsl:choose>
-                        </td>
-                    </tr>
-                    <tr>
-                        <th>GMT or Clock Time</th>
-                        <td>
-                            <xsl:choose>
-                                <xsl:when test="@is-gmt='true'">
-                                    GMT
-                                </xsl:when>
-                                <xsl:otherwise>
-                                    Clock Time
-                                </xsl:otherwise>
-                            </xsl:choose>
-                        </td>
-                    </tr>
-                </table>
-                <br />
-                <table>
-                    <caption>Clock Intervals</caption>
-                    <thead>
-                        <th>Day Of Week</th>
-                        <th>Start Day</th>
-                        <th>Start Month</th>
-                        <th>End Day</th>
-                        <th>End Month</th>
-                        <th>Start Hour</th>
-                        <th>Start Minute</th>
-                        <th>End Hour</th>
-                        <th>End Minute</th>
-                    </thead>
-                    <tbody>
-                        <xsl:for-each
-                            select="/source/tpr/clock-interval">
-                            <tr>
-                                <td>
-                                    <xsl:value-of select="@day-of-week" />
-                                </td>
-                                <td>
-                                    <xsl:value-of select="@start-day" />
-                                </td>
-                                <td>
-                                    <xsl:value-of select="@start-month" />
-                                </td>
-                                <td>
-                                    <xsl:value-of select="@end-day" />
-                                </td>
-                                <td>
-                                    <xsl:value-of select="@end-month" />
-                                </td>
-                                <td>
-                                    <xsl:value-of select="@start-hour" />
-                                </td>
-                                <td>
-                                    <xsl:value-of
-                                        select="@start-minute" />
-                                </td>
-                                <td>
-                                    <xsl:value-of select="@end-hour" />
-                                </td>
-                                <td>
-                                    <xsl:value-of select="@end-minute" />
-                                </td>
-                            </tr>
-                        </xsl:for-each>
-                    </tbody>
-                </table>
+db = Monad.getContext().getAttribute("net.sf.chellow.db")
+for cls in ['Tpr']:
+   globals()[cls] = db.get(cls)
 
-                <h3>SSCs</h3>
+session = db.get("session")()
+tpr_id = inv.getLong('tpr_id')
+tpr = Tpr.get(session, tpr_id)
 
-                <ul>
-                    <xsl:for-each
-                        select="/source/tpr/measurement-requirement/ssc">
-                        <li>
-                            <a
-                                href="{/source/request/@context-path}/reports/127/output/?ssc-id={@id}">
-                                <xsl:value-of select="@code"></xsl:value-of>
-                            </a>
-                        </li>
-                    </xsl:for-each>
-                </ul>
-            </body>
-        </html>
-    </xsl:template>
-</xsl:stylesheet>]]></value>
+Monad.getContext().getAttribute("net.sf.chellow.jinja").get("render")(inv, template, {'tpr': tpr})]]></value>
+        <value><![CDATA[<!DOCTYPE html>
+<html>
+  <head>
+    <link rel="stylesheet" type="text/css"
+      href="{{ context_path }}/reports/19/output/" />
+    <title>Chellow &gt; TPRs &gt; {{ tpr.code }}</title>
+  </head>
+  <body>
+    <p>
+      <a href="{{ context_path }}/reports/1/output/">Chellow</a> &gt;
+      <a href="{{ context_path }}/reports/95/output/">TPRs</a> &gt;
+      {{ tpr.code }}
+    </p>
+    <br />
+    {% if messages %}
+      <ul>
+        {% for message in messages %}
+          <li>{{ message }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+
+    <table>
+      <tr>
+        <th>Code</th>
+        <td>{{ tpr.code }}</td>
+      </tr>
+      <tr>
+        <th>Teleswitch or Clock</th>
+        <td>
+          {% if tpr.isTeleswitch %}
+            Teleswitch
+          {% else %}
+            Clock
+          {% endif %}
+        </td>
+      </tr>
+      <tr>
+        <th>GMT or Clock Time</th>
+        <td>
+          {% if tpr.isGmt %}
+            GMT
+          {% else %}
+            Clock Time
+          {% endif %}
+        </td>
+      </tr>
+    </table>
+    
+    <br />
+    <table>
+      <caption>Clock Intervals</caption>
+      <thead>
+        <th>Day Of Week</th>
+        <th>Start Day</th>
+        <th>Start Month</th>
+        <th>End Day</th>
+        <th>End Month</th>
+        <th>Start Hour</th>
+        <th>Start Minute</th>
+        <th>End Hour</th>
+        <th>End Minute</th>
+      </thead>
+      <tbody>
+        {% for ci in tpr.clockIntervals %}
+          <tr>
+            <td>{{ ci.dayOfWeek }}</td>
+            <td>{{ ci.startDay}}</td>
+            <td>{{ ci.startMonth }}</td>
+            <td>{{ ci.endDay }}</td>
+            <td>{{ ci.endMonth }}</td>
+            <td>{{ ci.startHour }}</td>
+            <td>{{ ci.startMinute }}</td>
+            <td>{{ ci.endHour }}</td>
+            <td>{{ ci.endMinute }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    <h3>SSCs</h3>
+
+    <ul>
+      {% for mr in tpr.measurementRequirements %}
+        <li>
+          <a href="{{ context_path }}/reports/127/output/?ssc_id={{ mr.ssc.id }}">{{ mr.ssc.code }}</a>
+        </li>
+      {% endfor %}
+    </ul>
+  </body>
+</html>]]></value>
     </line>
     <line>
         <value><![CDATA[insert]]></value>
@@ -10940,118 +10885,77 @@ for party in Hiber.session().createQuery("from Party party where party.role = :r
         <value><![CDATA[125]]></value>
         <value><![CDATA[true]]></value>
         <value><![CDATA[SSCs]]></value>
-        <value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree
+        <value><![CDATA[from net.sf.chellow.monad import Monad
+from sqlalchemy.orm import joinedload_all
 
-sscs_element = doc.createElement('sscs')
-source.appendChild(sscs_element)
-for ssc in Hiber.session().createQuery("from Ssc ssc order by ssc.code").list():
-    sscs_element.appendChild(ssc.toXml(doc, XmlTree("measurementRequirements", XmlTree("tpr"))))]]></value>
-        <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
-<xsl:stylesheet version="1.0"
-    xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
-    <xsl:output method="html" encoding="US-ASCII"
-        doctype-public="-//W3C//DTD HTML 4.01//EN"
-        doctype-system="http://www.w3.org/TR/html4/strict.dtd" indent="yes" />
-    <xsl:template match="/">
-        <html>
-            <head>
-                <link rel="stylesheet" type="text/css"
-                    href="{/source/request/@context-path}/reports/19/output/" />
-                <title>
-                    <xsl:value-of select="'Chellow'" />
-                    &gt; SSCs
-                </title>
-            </head>
-            <body>
-                <p>
-                    <a
-                        href="{/source/request/@context-path}/reports/1/output/">
-                        <xsl:value-of select="'Chellow'" />
-                    </a>
-                    &gt; SSCs
-                </p>
-                <br />
-                <xsl:if test="//message">
-                    <ul>
-                        <xsl:for-each select="//message">
-                            <li>
-                                <xsl:value-of select="@description" />
-                            </li>
-                        </xsl:for-each>
-                    </ul>
-                </xsl:if>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Code</th>
-                            <th>Description</th>
-                            <th>Imp/Exp</th>
-                            <th>From</th>
-                            <th>To</th>
-                            <th>Tprs</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <xsl:for-each select="/source/sscs/ssc">
-                            <tr>
-                                <td>
-                                    <a
-                                        href="{/source/request/@context-path}/reports/127/output/?ssc-id={@id}">
-                                        <xsl:value-of select="@code" />
-                                    </a>
-                                </td>
-                                <td>
-                                    <xsl:value-of select="@description" />
-                                </td>
-                                <td>
-                                    <xsl:choose>
-                                        <xsl:when
-                                            test="@is-import='true'">
-                                            Import
-                                        </xsl:when>
-                                        <xsl:otherwise>
-                                            Export
-                                        </xsl:otherwise>
-                                    </xsl:choose>
-                                </td>
-                                <td>
-                                    <xsl:value-of
-                                        select="concat(date[@label='from']/@year, '-', date[@label='from']/@month, '-', date[@label='from']/@day, ' ', date[@label='from']/@hour, ':', date[@label='from']/@minute)" />
-                                </td>
-                                <td>
-                                    <xsl:choose>
-                                        <xsl:when
-                                            test="date[@label='to']">
-                                            <xsl:value-of
-                                                select="concat(date[@label='to']/@year, '-', date[@label='to']/@month, '-', date[@label='to']/@day, ' ', date[@label='to']/@hour, ':', date[@label='to']/@minute)" />
-                                        </xsl:when>
-                                        <xsl:otherwise>
-                                            Ongoing
-                                        </xsl:otherwise>
-                                    </xsl:choose>
-                                </td>
-                                <td>
-                                    <xsl:for-each
-                                        select="measurement-requirement">
-                                        <a
-                                            href="{/source/request/@context-path}/reports/97/output/?tpr-id={tpr/@id}">
-                                            <xsl:value-of
-                                                select="tpr/@code" />
-                                        </a>
-                                        <xsl:if
-                                            test="position() != last()">
-                                            <xsl:value-of select="', '" />
-                                        </xsl:if>
-                                    </xsl:for-each>
-                                </td>
-                            </tr>
-                        </xsl:for-each>
-                    </tbody>
-                </table>
-            </body>
-        </html>
-    </xsl:template>
-</xsl:stylesheet>]]></value>
+db = Monad.getContext().getAttribute("net.sf.chellow.db")
+for cls in ['Ssc']:
+   globals()[cls] = db.get(cls)
+
+session = db.get("session")()
+
+sscs = session.query(Ssc).options(joinedload_all('measurement_requirements.tpr')).order_by(Ssc.code)
+
+Monad.getContext().getAttribute("net.sf.chellow.jinja").get("render")(inv, template, {'sscs': sscs})]]></value>
+        <value><![CDATA[<!DOCTYPE html>
+<html>
+  <head>
+    <link rel="stylesheet" type="text/css"
+        href="{{ context_path }}/reports/19/output/" />
+    <title>Chellow &gt; SSCs</title>
+  </head>
+  <body>
+    <p>
+      <a href="{{ context_path }}/reports/1/output/">Chellow</a> &gt; SSCs
+    </p>
+    <br />
+    {% if messages %}
+      <ul>
+        {% for message in messages %}
+          <li>{{ message }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+
+    <table>
+      <thead>
+        <tr>
+          <th>Code</th>
+          <th>Description</th>
+          <th>Imp / Exp</th>
+          <th>From</th>
+          <th>To</th>
+          <th>Tprs</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for ssc in sscs %}
+          <tr>
+            <td>
+              <a href="{{ context_path }}/reports/127/output/?ssc_id={{ ssc.id }}">{{ ssc.code }}</a>
+            </td>
+            <td>{{ ssc.description }}</td>
+            <td>
+              {%- if ssc.is_import -%}
+                Import
+              {%- else -%}
+                Export
+              {%- endif -%}
+            </td>
+            <td>{{ ssc.valid_from|hh_format }}</td>
+            <td>{{ ssc.valid_to|hh_format }}</td>
+            <td>
+              {%- for mr in ssc.measurement_requirements -%}
+                <a href="{{ context_path }}/reports/97/output/?tpr_id={{ mr.tpr.id }}">{{ mr.tpr.code }}</a>
+                {%- if not loop.last %}, {% endif %}
+              {%- endfor -%}
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </body>
+</html>]]></value>
     </line>
     <line>
         <value><![CDATA[insert]]></value>
@@ -11059,122 +10963,78 @@ for ssc in Hiber.session().createQuery("from Ssc ssc order by ssc.code").list():
         <value><![CDATA[127]]></value>
         <value><![CDATA[true]]></value>
         <value><![CDATA[SSC]]></value>
-        <value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree
-from net.sf.chellow.physical import Ssc
+        <value><![CDATA[from net.sf.chellow.monad import Hiber, Monad
 
-ssc_id = inv.getLong('ssc-id')
-ssc = Ssc.getSsc(ssc_id)
-source.appendChild(ssc.toXml(doc, XmlTree("measurementRequirements", XmlTree("tpr"))))]]></value>
-        <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
-<xsl:stylesheet version="1.0"
-    xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
-    <xsl:output method="html" encoding="US-ASCII"
-        doctype-public="-//W3C//DTD HTML 4.01//EN"
-        doctype-system="http://www.w3.org/TR/html4/strict.dtd" indent="yes" />
-    <xsl:template match="/">
-        <html>
-            <head>
-                <link rel="stylesheet" type="text/css"
-                    href="{/source/request/@context-path}/reports/19/output/" />
-                <title>
-                    Chellow &gt; SSCs &gt;
-                    <xsl:value-of select="/source/ssc/@description" />
-                </title>
-            </head>
-            <body>
-                <p>
-                    <a
-                        href="{/source/request/@context-path}/reports/1/output/">
-                        <xsl:value-of select="'Chellow'" />
-                    </a>
-                    &gt;
-                    <a
-                        href="{/source/request/@context-path}/reports/125/output/">
-                        <xsl:value-of select="'SSCs'" />
-                    </a>
-                    &gt; 
-                    <xsl:value-of select="/source/ssc/@code" />
-                </p>
-                <br />
-                <xsl:if test="//message">
-                    <ul>
-                        <xsl:for-each select="//message">
-                            <li>
-                                <xsl:value-of select="@description" />
-                            </li>
-                        </xsl:for-each>
-                    </ul>
-                </xsl:if>
-                <table>
-                    <tr>
-                        <th>Code</th>
-                        <td>
-                            <xsl:value-of select="/source/ssc/@code" />
-                        </td>
-                    </tr>
-                    <tr>
-                        <th>Description</th>
-                        <td>
-                            <xsl:value-of
-                                select="/source/ssc/@description" />
-                        </td>
-                    </tr>
-                    <tr>
-                        <th>Is Import?</th>
-                        <td>
-                            <xsl:choose>
-                                <xsl:when
-                                    test="/source/ssc/@is-import='true'">
-                                    Import
-                                </xsl:when>
-                                <xsl:otherwise>Export</xsl:otherwise>
-                            </xsl:choose>
-                        </td>
-                    </tr>
-                    <tr>
-                        <th>From</th>
-                        <td>
-                            <xsl:value-of
-                                select="concat(/source/ssc/date[@label='from']/@year, '-', /source/ssc/date[@label='from']/@month, '-', /source/ssc/date[@label='from']/@day, ' ', /source/ssc/date[@label='from']/@hour, ':', /source/ssc/date[@label='from']/@minute)" />
-                        </td>
-                    </tr>
-                    <tr>
-                        <th>To</th>
-                        <td>
-                            <xsl:choose>
-                                <xsl:when
-                                    test="/source/ssc/date[@label='to']">
-                                    <xsl:value-of
-                                        select="concat(/source/ssc/date[@label='to']/@year, '-', /source/ssc/date[@label='to']/@month, '-', /source/ssc/date[@label='to']/@day, ' ', /source/ssc/date[@label='to']/@hour, ':', /source/ssc/date[@label='to']/@minute)" />
-                                </xsl:when>
-                                <xsl:otherwise>Ongoing</xsl:otherwise>
-                            </xsl:choose>
-                        </td>
-                    </tr>
-                </table>
+db = Monad.getContext().getAttribute("net.sf.chellow.db")
+for cls in ['Ssc']:
+   globals()[cls] = db.get(cls)
 
-                <h4>TPRs</h4>
+session = db.get('session')()
 
-                <ul>
-                    <xsl:for-each
-                        select="/source/ssc/measurement-requirement/tpr">
-                        <li>
-                            <a
-                                href="{/source/request/@context-path}/reports/97/output/?tpr-id={@id}">
-                                <xsl:value-of select="@code" />
-                            </a>
-                            <!-- 
-                            <xsl:if test="position() != last()">
-                                <xsl:value-of select="', '" />
-                            </xsl:if>
-                            -->
-                        </li>
-                    </xsl:for-each>
-                </ul>
-            </body>
-        </html>
-    </xsl:template>
-</xsl:stylesheet>]]></value>
+ssc_id = inv.getLong('ssc_id')
+ssc = Ssc.get(session, ssc_id)
+
+Monad.getContext().getAttribute("net.sf.chellow.jinja").get("render")(inv, template, {'ssc': ssc})]]></value>
+        <value><![CDATA[<!DOCTYPE html>
+<html>
+  <head>
+    <link rel="stylesheet" type="text/css"
+      href="{{ context_path }}/reports/19/output/" />
+    <title>
+      Chellow &gt; SSCs &gt; {{ ssc.description }}
+    </title>
+  </head>
+  <body>
+    <p>
+      <a href="{{ context_path }}/reports/1/output/">Chellow</a> &gt;
+      <a href="{{ context_path }}/reports/125/output/">SSCs</a> &gt;
+      {{ ssc.code }}
+    </p>
+    <br />
+    {% if messages %}
+      <ul>
+        {% for message in messages %}
+          <li>{{ message }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+
+    <table>
+      <tr>
+        <th>Code</th>
+        <td>{{ ssc.code }}</td>
+      </tr>
+      <tr>
+        <th>Description</th>
+        <td>{{ ssc.description }}</td>
+      </tr>
+      <tr>
+        <th>Is Import?</th>
+        <td>
+          {% if ssc.is_import %}
+            Import
+          {% else %}
+            Export
+          {% endif %}
+        </td>
+      </tr>
+      <tr>
+        <th>From</th>
+        <td>{{ ssc.valid_from|hh_format }}</td>
+        <td>{{ ssc.valid_to|hh_format }}</td>
+      </tr>
+    </table>
+
+    <h4>TPRs</h4>
+
+    <ul>
+      {% for mr in ssc.measurement_requirements %}
+        <li><a href="{{ context_path }}/reports/97/output/?tpr_id={{ mr.tpr.id }}">{{ mr.tpr.code }}</a>
+        </li>
+      {% endfor %}
+    </ul>
+  </body>
+</html>]]></value>
     </line>
     <line>
         <value><![CDATA[insert]]></value>
