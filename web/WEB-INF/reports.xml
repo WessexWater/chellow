@@ -821,7 +821,7 @@ from java.io import StringReader
 supply_id = inv.getLong("supply-id")
 supply = Supply.getSupply(supply_id)
 era_bundles = []
-for era in Hiber.session().createQuery("from SupplyGeneration generation where generation.supply = :supply order by generation.startDate").setEntity('supply', supply).list():
+for era in Hiber.session().createQuery("from SupplyGeneration generation where generation.supply = :supply order by generation.startDate desc").setEntity('supply', supply).list():
     import_mpan = era.getImportMpan()
     export_mpan = era.getExportMpan()
     physical_site = Hiber.session().createQuery("select ssgen.site from SiteSupplyGeneration ssgen where ssgen.isPhysical = true and ssgen.supplyGeneration = :generation").setEntity('generation', era).uniqueResult()
@@ -993,7 +993,7 @@ Monad.getContext().getAttribute("net.sf.chellow.jinja").get("render")(inv, templ
       <tr>
         <th>GSP Group</th>
         <td>
-          {{ supply.getGspGroup().getCode() }} {{ supply.getGspGroup().getDescription() }}
+          {{ supply.gspGroup.code }} {{ supply.gspGroup.description }}
         </td>
       </tr>
         {% if system_properties['supply_links'] %}
@@ -1012,7 +1012,7 @@ Monad.getContext().getAttribute("net.sf.chellow.jinja").get("render")(inv, templ
         {% endif %}
       <tr>
         <th>
-          Notes [<a href="{{ context_path }}/reports/239/output/?supply_id={{ supply.getId() }}">edit</a>]
+          Notes [<a href="{{ context_path }}/reports/239/output/?supply_id={{ supply.id }}">edit</a>]
         </th>
         <td>
           {% if is_truncated %}
@@ -1036,7 +1036,7 @@ Monad.getContext().getAttribute("net.sf.chellow.jinja").get("render")(inv, templ
       {% set other_sites = era_bundle['other_sites'] %}
       <table>
           <caption>
-            Era [<a href="{{ context_path }}/supplies/{{ supply.getId() }}/generations/{{ era.getId() }}/">edit</a>]
+            Era [<a href="{{ context_path }}/supplies/{{ supply.id }}/generations/{{ era.id }}/">edit</a>]
           </caption>
           <thead>
             <tr>
@@ -1058,7 +1058,7 @@ Monad.getContext().getAttribute("net.sf.chellow.jinja").get("render")(inv, templ
               </th>
               <th rowspan="2">
                 Channels
-                      [<a href="{{ context_path }}/supplies/{{ supply.getId() }}/generations/{{ era.getId() }}/channels/">edit</a>]
+                      [<a href="{{ context_path }}/supplies/{{ supply.id }}/generations/{{ era.id }}/channels/">edit</a>]
               </th>
               <th rowspan="2">
                 <a title="Line Loss Factor Class">LLFC</a>
@@ -1079,46 +1079,46 @@ Monad.getContext().getAttribute("net.sf.chellow.jinja").get("render")(inv, templ
           <tbody>
             <tr>
               <td rowspan="4">
-                <a title="{{ era.getStartDate()|hh_format }}">{{ era.getStartDate()|hh_format(modifier='date') }}</a>
+                <a title="{{ era.startDate|hh_format }}">{{ era.startDate|hh_format(modifier='date') }}</a>
               </td>
               <td rowspan="4">
-                <a title="{{ era.getFinishDate()|hh_format }}">{{ era.getFinishDate()|hh_format(modifier='date') }}</a>
+                <a title="{{ era.finishDate|hh_format }}">{{ era.finishDate|hh_format(modifier='date') }}</a>
               </td>
               <td rowspan="4">
-                <a href="{{ context_path }}/reports/5/output/?site-id={{ physical_site.getId() }}" title="{{ physical_site.getName() }}">{{ physical_site.getCode() }}</a>
+                <a href="{{ context_path }}/reports/5/output/?site-id={{ physical_site.id }}" title="{{ physical_site.name }}">{{ physical_site.code }}</a>
                 {% if other_sites %}
                   (also
                     {% for other_site in other_sites %}
-                      <a href="{{ context_path }}/reports/5/output/?site-id={{ other_site.getId() }}" title="{{ other_site.getName() }}">{{ other_site.getCode() }}</a>
+                      <a href="{{ context_path }}/reports/5/output/?site-id={{ other_site.id }}" title="{{ other_site.name }}">{{ other_site.code }}</a>
                     {%- endfor -%}
                   )
                 {% endif %}
               </td>
               <td rowspan="4">
-                <a href="{{ context_path }}/reports/55/output/?pc-id={{ era.getPc().getId() }}" title="{{ era.getPc().getDescription() }}">{{ era.getPc().toString() }}</a>
+                <a href="{{ context_path }}/reports/55/output/?pc-id={{ era.pc.id }}" title="{{ era.pc.description }}">{{ era.pc.toString() }}</a>
               </td>
-              <td rowspan="4">{{ era.getMeterSerialNumber() }}</td>
+              <td rowspan="4">{{ era.meterSerialNumber }}</td>
               <td rowspan="4">
-                <a href="{{ context_path }}/reports/63/output/?mtc-id={{ era.getMtc().getId() }}" title="{{ era.getMtc().getDescription() }}">{{ era.getMtc().getCode() }}</a>
+                <a href="{{ context_path }}/reports/63/output/?mtc-id={{ era.mtc.id }}" title="{{ era.mtc.description }}">{{ era.mtc.code }}</a>
               </td>
               <td rowspan="4">
-                <a href="{{ context_path }}/reports/197/output/?cop-id={{ era.getCop().getId() }}" title="{{ era.getCop().getDescription() }}">{{ era.getCop().getCode() }}</a>
+                <a href="{{ context_path }}/reports/197/output/?cop-id={{ era.cop.id }}" title="{{ era.cop.description }}">{{ era.cop.code }}</a>
               </td>
               <td rowspan="4">
                 {% if era.getSsc() %}
-                  <a href="{{ context_path }}/reports/127/output/?ssc-id={{ era.getSsc().getId() }}" title="{{ era.getSsc().getDescription() }}">{{ era.getSsc().getCode() }}</a>
+                  <a href="{{ context_path }}/reports/127/output/?ssc-id={{ era.ssc.id }}" title="{{ era.ssc.description }}">{{ era.ssc.code }}</a>
                 {% endif %}
               </td>
               <td rowspan="4">
-                <a href="{{ context_path }}/reports/107/output/?mop-contract-id={{ era.getMopContract().getId() }}">{{ era.getMopContract().getName() }}</a>
+                <a href="{{ context_path }}/reports/107/output/?mop-contract-id={{ era.mopContract.id }}">{{ era.mopContract.name }}</a>
               </td>
               <td rowspan="4">
-                {{ era.getMopAccount() }}
+                {{ era.mopAccount }}
               </td>
               <td rowspan="4">
-                <a href="{{ context_path }}/reports/115/output/?hhdc-contract-id={{ era.getHhdcContract().getId() }}">{{ era.getHhdcContract().getName() }}</a>
+                <a href="{{ context_path }}/reports/115/output/?hhdc-contract-id={{ era.hhdcContract.id }}">{{ era.hhdcContract.name }}</a>
               </td>
-              <td rowspan="4">{{ era.getHhdcAccount() }}</td>
+              <td rowspan="4">{{ era.hhdcAccount }}</td>
               <th colspan="6">Import</th>
             </tr>
             <tr>
@@ -1132,32 +1132,32 @@ Monad.getContext().getAttribute("net.sf.chellow.jinja").get("render")(inv, templ
                 {% endfor %}
               </td>
               <td>
-                {% if era.getImportMpan() %}
-                  <a href="{{ context_path }}/reports/51/output/?llfc-id={{ era.getImportMpan().getLlfc().getId() }}" title="{{ era.getImportMpan().getLlfc().getDescription() }}">{{ era.getImportMpan().getLlfc().getCode() }}
+                {% if era.importMpan %}
+                  <a href="{{ context_path }}/reports/51/output/?llfc-id={{ era.importMpan.llfc.id }}" title="{{ era.importMpan.llfc.description }}">{{ era.importMpan.llfc.code }}
                   </a>
                 {% endif %}
               </td>
               <td>
-                {% if era.getImportMpan() %}
-                  {{ era.importMpan.core.toString() }}</td>
+                {% if era.importMpan %}
+                  <a title="{{ era.importMpan.core.dno.code }} - {{ era.importMpan.core.dno.name }}" href="{{ context_path }}/reports/139/output/?dno-id={{ era.importMpan.core.dno.id }}">{{ era.importMpan.core.dno.code }}</a> {{ era.importMpan.core.toString()[3:] }}
                 {% endif %}
               <td>
-                {% if era.getImportMpan() %}
+                {% if era.importMpan %}
                   {{ era.importMpan.agreedSupplyCapacity }}
                 {% endif %}
               </td>      
               <td>
-                {% if era.getImportMpan() %}
-                  <a href="{{ context_path }}/reports/77/output/?supplier-contract-id={{ era.getImportMpan().getSupplierContract().getId() }}">{{ era.getImportMpan().getSupplierContract().getName() }}</a>
+                {% if era.importMpan %}
+                  <a href="{{ context_path }}/reports/77/output/?supplier-contract-id={{ era.importMpan.supplierContract.id }}">{{ era.importMpan.supplierContract.name }}</a>
                 {% endif %}
               </td>
               <td>
                 {% if era.getImportMpan() %}  
-                  {{ era.getImportMpan().getSupplierAccount() }}
+                  {{ era.importMpan.supplierAccount }}
                   {% if era_bundle['imp_shared_supplier_accounts'] %}(
                     {%- for sup in era_bundle['imp_shared_supplier_accounts'] -%}
                       {%- if not loop.first    -%} {%- endif -%}
-                        <a href="{{ context_path }}/reports/7/output/?supply-id={{ sup.getId() }}">{{ sup.getId() }}</a>
+                        <a href="{{ context_path }}/reports/7/output/?supply-id={{ sup.id }}">{{ sup.id }}</a>
                     {%- endfor -%}
                     )
                   {% endif %}
@@ -1179,31 +1179,31 @@ Monad.getContext().getAttribute("net.sf.chellow.jinja").get("render")(inv, templ
               </td>
               <td>
                 {% if era.getExportMpan() %}
-                  <a href="{{ context_path }}/reports/51/output/?llfc-id={{ era.getExportMpan().getLlfc().getId() }}" title="{{ era.getExportMpan().getLlfc().getDescription() }}">{{ era.getExportMpan().getLlfc().getCode() }}</a>
+                  <a href="{{ context_path }}/reports/51/output/?llfc-id={{ era.exportMpan.llfc.id }}" title="{{ era.exportMpan.llfc.description }}">{{ era.exportMpan.llfc.code }}</a>
                 {% endif %}
               </td>
               <td>
-                {% if era.getExportMpan() %}
-                  {{ era.getExportMpan().getCore() }}
+                {% if era.exportMpan %}
+                  <a title="{{ era.exportMpan.core.dno.code }} - {{ era.exportMpan.core.dno.name }}" href="{{ context_path }}/reports/139/output/?dno-id={{ era.exportMpan.core.dno.id }}">{{ era.exportMpan.core.dno.code }}</a> {{ era.exportMpan.core.toString()[3:] }}
                 {% endif %}
               </td>
               <td>
-                {% if era.getExportMpan() %}
-                  {{ era.getExportMpan().getAgreedSupplyCapacity() }}
+                {% if era.exportMpan %}
+                  {{ era.exportMpan.agreedSupplyCapacity }}
                 {% endif %}
               </td>
               <td>
-                {% if era.getExportMpan() %}
-                  <a href="{/source/request/@context-path}/reports/77/output/?supplier-contract-id={{ era.getExportMpan().getSupplierContract().getId() }}">{{ era.getExportMpan().getSupplierContract().getName() }}</a>
+                {% if era.exportMpan %}
+                  <a href="{{ context_path }}/reports/77/output/?supplier-contract-id={{ era.exportMpan.supplierContract.id }}">{{ era.exportMpan.supplierContract.name }}</a>
                 {% endif %}
               </td>
               <td>
-                {% if era.getExportMpan() %}
-                  {{ era.getExportMpan().getSupplierAccount() }}
+                {% if era.exportMpan %}
+                  {{ era.exportMpan.supplierAccount }}
                   {% if era_bundle['exp_shared_supplier_accounts'] %}(
                     {%- for sup in era_bundle['exp_shared_supplier_accounts'] -%}
                     {%- if not loop.first    -%} {%- endif -%}
-                      <a href="{{ context_path }}/reports/7/output/?supply-id={{ sup.getId() }}">{{ sup.getId() }}</a>
+                      <a href="{{ context_path }}/reports/7/output/?supply-id={{ sup.id }}">{{ sup.id }}</a>
                     {%- endfor -%}
                     )
                   {% endif %}
@@ -8482,56 +8482,46 @@ for batch in Hiber.session().createQuery("from Batch batch where batch.contract 
         <value><![CDATA[95]]></value>
         <value><![CDATA[true]]></value>
         <value><![CDATA[TPRs]]></value>
-        <value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree
+        <value><![CDATA[from net.sf.chellow.monad import Hiber, Monad
 
-tprs_element = doc.createElement('tprs')
-source.appendChild(tprs_element)
-for tpr in Hiber.session().createQuery("from Tpr tpr order by tpr.code").list():
-    tprs_element.appendChild(tpr.toXml(doc))]]></value>
-        <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
-<xsl:stylesheet version="1.0"
-    xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
-    <xsl:output method="html" encoding="US-ASCII"
-        doctype-public="-//W3C//DTD HTML 4.01//EN"
-        doctype-system="http://www.w3.org/TR/html4/strict.dtd" indent="yes" />
-    <xsl:template match="/">
-        <html>
-            <head>
-                <link rel="stylesheet" type="text/css"
-                    href="{/source/request/@context-path}/reports/10/output/" />
-                <title>Chellow &gt; TPRs</title>
-            </head>
-            <body>
-                <p>
-                    <a
-                        href="{/source/request/@context-path}/reports/1/output/">
-                        <xsl:value-of select="'Chellow'" />
-                    </a>
-                    &gt; TPRs
-                </p>
-                <xsl:if test="//message">
-                    <ul>
-                        <xsl:for-each select="//message">
-                            <li>
-                                <xsl:value-of select="@description" />
-                            </li>
-                        </xsl:for-each>
-                    </ul>
-                </xsl:if>
-                <ul>
-                    <xsl:for-each select="/source/tprs/tpr">
-                        <li>
-                            <a
-                                href="{/source/request/@context-path}/reports/97/output/?tpr-id={@id}">
-                                <xsl:value-of select="@code" />
-                            </a>
-                        </li>
-                    </xsl:for-each>
-                </ul>
-            </body>
-        </html>
-    </xsl:template>
-</xsl:stylesheet>]]></value>
+db = Monad.getContext().getAttribute("net.sf.chellow.db")
+for cls in ['Tpr']:
+   globals()[cls] = db.get(cls)
+
+session = db.get("session")()
+
+tprs = session.query(Tpr).order_by(Tpr.code)
+
+Monad.getContext().getAttribute("net.sf.chellow.jinja").get("render")(inv, template, {'tprs': tprs})]]></value>
+        <value><![CDATA[<!DOCTYPE html>
+<html>
+  <head>
+    <link rel="stylesheet" type="text/css"
+        href="{{ context_path }}/reports/19/output/" />
+    <title>Chellow &gt; TPRs</title>
+  </head>
+  <body>
+    <p>
+      <a href="{{ context_path }}/reports/1/output/">Chellow</a> &gt; TPRs
+    </p>
+
+    {% if messages %}
+      <ul>
+        {% for message in messages %}
+          <li>{{ message }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+
+    <ul>
+      {% for tpr in tprs %}
+        <li>
+          <a href="{{ context_path }}/reports/97/output/?tpr_id={{ tpr.id }}">{{ tpr.code }}</a>
+        </li>
+      {% endfor %}
+    </ul>
+  </body>
+</html>]]></value>
     </line>
     <line>
         <value><![CDATA[insert]]></value>
@@ -8539,153 +8529,108 @@ for tpr in Hiber.session().createQuery("from Tpr tpr order by tpr.code").list():
         <value><![CDATA[97]]></value>
         <value><![CDATA[true]]></value>
         <value><![CDATA[TPR]]></value>
-        <value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree
-from net.sf.chellow.physical import Tpr
+        <value><![CDATA[from net.sf.chellow.monad import Monad
 
-tpr_id = inv.getLong('tpr-id')
-tpr = Tpr.getTpr(tpr_id)
-source.appendChild(tpr.toXml(doc, XmlTree("measurementRequirements", XmlTree("ssc")).put("clockIntervals")))]]></value>
-        <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
-<xsl:stylesheet version="1.0"
-    xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
-    <xsl:output method="html" encoding="US-ASCII"
-        doctype-public="-//W3C//DTD HTML 4.01//EN"
-        doctype-system="http://www.w3.org/TR/html4/strict.dtd" indent="yes" />
-    <xsl:template match="/">
-        <html>
-            <head>
-                <link rel="stylesheet" type="text/css"
-                    href="{/source/request/@context-path}/reports/19/output/" />
-                <title>
-                    Chellow &gt; TPRs &gt;
-                    <xsl:value-of select="/source/tpr/@code" />
-                </title>
-            </head>
-            <body>
-                <p>
-                    <a
-                        href="{/source/request/@context-path}/reports/1/output/">
-                        <xsl:value-of select="'Chellow'" />
-                    </a>
-                    &gt;
-                    <a
-                        href="{/source/request/@context-path}/reports/95/output/">
-                        <xsl:value-of select="'TPRs'" />
-                    </a>
-                    &gt;
-                    <xsl:value-of select="/source/tpr/@code" />
-                </p>
-                <br />
-                <xsl:if test="//message">
-                    <ul>
-                        <xsl:for-each select="//message">
-                            <li>
-                                <xsl:value-of select="@description" />
-                            </li>
-                        </xsl:for-each>
-                    </ul>
-                </xsl:if>
-                <table>
-                    <tr>
-                        <th>Code</th>
-                        <td>
-                            <xsl:value-of select="/source/tpr/@code" />
-                        </td>
-                    </tr>
-                    <tr>
-                        <th>Teleswitch or Clock</th>
-                        <td>
-                            <xsl:choose>
-                                <xsl:when
-                                    test="/source/tpr/@is-teleswitch='true'">
-                                    Teleswitch
-                                </xsl:when>
-                                <xsl:otherwise>Clock</xsl:otherwise>
-                            </xsl:choose>
-                        </td>
-                    </tr>
-                    <tr>
-                        <th>GMT or Clock Time</th>
-                        <td>
-                            <xsl:choose>
-                                <xsl:when test="@is-gmt='true'">
-                                    GMT
-                                </xsl:when>
-                                <xsl:otherwise>
-                                    Clock Time
-                                </xsl:otherwise>
-                            </xsl:choose>
-                        </td>
-                    </tr>
-                </table>
-                <br />
-                <table>
-                    <caption>Clock Intervals</caption>
-                    <thead>
-                        <th>Day Of Week</th>
-                        <th>Start Day</th>
-                        <th>Start Month</th>
-                        <th>End Day</th>
-                        <th>End Month</th>
-                        <th>Start Hour</th>
-                        <th>Start Minute</th>
-                        <th>End Hour</th>
-                        <th>End Minute</th>
-                    </thead>
-                    <tbody>
-                        <xsl:for-each
-                            select="/source/tpr/clock-interval">
-                            <tr>
-                                <td>
-                                    <xsl:value-of select="@day-of-week" />
-                                </td>
-                                <td>
-                                    <xsl:value-of select="@start-day" />
-                                </td>
-                                <td>
-                                    <xsl:value-of select="@start-month" />
-                                </td>
-                                <td>
-                                    <xsl:value-of select="@end-day" />
-                                </td>
-                                <td>
-                                    <xsl:value-of select="@end-month" />
-                                </td>
-                                <td>
-                                    <xsl:value-of select="@start-hour" />
-                                </td>
-                                <td>
-                                    <xsl:value-of
-                                        select="@start-minute" />
-                                </td>
-                                <td>
-                                    <xsl:value-of select="@end-hour" />
-                                </td>
-                                <td>
-                                    <xsl:value-of select="@end-minute" />
-                                </td>
-                            </tr>
-                        </xsl:for-each>
-                    </tbody>
-                </table>
+db = Monad.getContext().getAttribute("net.sf.chellow.db")
+for cls in ['Tpr']:
+   globals()[cls] = db.get(cls)
 
-                <h3>SSCs</h3>
+session = db.get("session")()
+tpr_id = inv.getLong('tpr_id')
+tpr = Tpr.get(session, tpr_id)
 
-                <ul>
-                    <xsl:for-each
-                        select="/source/tpr/measurement-requirement/ssc">
-                        <li>
-                            <a
-                                href="{/source/request/@context-path}/reports/127/output/?ssc-id={@id}">
-                                <xsl:value-of select="@code"></xsl:value-of>
-                            </a>
-                        </li>
-                    </xsl:for-each>
-                </ul>
-            </body>
-        </html>
-    </xsl:template>
-</xsl:stylesheet>]]></value>
+Monad.getContext().getAttribute("net.sf.chellow.jinja").get("render")(inv, template, {'tpr': tpr})]]></value>
+        <value><![CDATA[<!DOCTYPE html>
+<html>
+  <head>
+    <link rel="stylesheet" type="text/css"
+      href="{{ context_path }}/reports/19/output/" />
+    <title>Chellow &gt; TPRs &gt; {{ tpr.code }}</title>
+  </head>
+  <body>
+    <p>
+      <a href="{{ context_path }}/reports/1/output/">Chellow</a> &gt;
+      <a href="{{ context_path }}/reports/95/output/">TPRs</a> &gt;
+      {{ tpr.code }}
+    </p>
+    <br />
+    {% if messages %}
+      <ul>
+        {% for message in messages %}
+          <li>{{ message }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+
+    <table>
+      <tr>
+        <th>Code</th>
+        <td>{{ tpr.code }}</td>
+      </tr>
+      <tr>
+        <th>Teleswitch or Clock</th>
+        <td>
+          {% if tpr.isTeleswitch %}
+            Teleswitch
+          {% else %}
+            Clock
+          {% endif %}
+        </td>
+      </tr>
+      <tr>
+        <th>GMT or Clock Time</th>
+        <td>
+          {% if tpr.isGmt %}
+            GMT
+          {% else %}
+            Clock Time
+          {% endif %}
+        </td>
+      </tr>
+    </table>
+    
+    <br />
+    <table>
+      <caption>Clock Intervals</caption>
+      <thead>
+        <th>Day Of Week</th>
+        <th>Start Day</th>
+        <th>Start Month</th>
+        <th>End Day</th>
+        <th>End Month</th>
+        <th>Start Hour</th>
+        <th>Start Minute</th>
+        <th>End Hour</th>
+        <th>End Minute</th>
+      </thead>
+      <tbody>
+        {% for ci in tpr.clockIntervals %}
+          <tr>
+            <td>{{ ci.dayOfWeek }}</td>
+            <td>{{ ci.startDay}}</td>
+            <td>{{ ci.startMonth }}</td>
+            <td>{{ ci.endDay }}</td>
+            <td>{{ ci.endMonth }}</td>
+            <td>{{ ci.startHour }}</td>
+            <td>{{ ci.startMinute }}</td>
+            <td>{{ ci.endHour }}</td>
+            <td>{{ ci.endMinute }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    <h3>SSCs</h3>
+
+    <ul>
+      {% for mr in tpr.measurementRequirements %}
+        <li>
+          <a href="{{ context_path }}/reports/127/output/?ssc_id={{ mr.ssc.id }}">{{ mr.ssc.code }}</a>
+        </li>
+      {% endfor %}
+    </ul>
+  </body>
+</html>]]></value>
     </line>
     <line>
         <value><![CDATA[insert]]></value>
@@ -10940,118 +10885,77 @@ for party in Hiber.session().createQuery("from Party party where party.role = :r
         <value><![CDATA[125]]></value>
         <value><![CDATA[true]]></value>
         <value><![CDATA[SSCs]]></value>
-        <value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree
+        <value><![CDATA[from net.sf.chellow.monad import Monad
+from sqlalchemy.orm import joinedload_all
 
-sscs_element = doc.createElement('sscs')
-source.appendChild(sscs_element)
-for ssc in Hiber.session().createQuery("from Ssc ssc order by ssc.code").list():
-    sscs_element.appendChild(ssc.toXml(doc, XmlTree("measurementRequirements", XmlTree("tpr"))))]]></value>
-        <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
-<xsl:stylesheet version="1.0"
-    xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
-    <xsl:output method="html" encoding="US-ASCII"
-        doctype-public="-//W3C//DTD HTML 4.01//EN"
-        doctype-system="http://www.w3.org/TR/html4/strict.dtd" indent="yes" />
-    <xsl:template match="/">
-        <html>
-            <head>
-                <link rel="stylesheet" type="text/css"
-                    href="{/source/request/@context-path}/reports/19/output/" />
-                <title>
-                    <xsl:value-of select="'Chellow'" />
-                    &gt; SSCs
-                </title>
-            </head>
-            <body>
-                <p>
-                    <a
-                        href="{/source/request/@context-path}/reports/1/output/">
-                        <xsl:value-of select="'Chellow'" />
-                    </a>
-                    &gt; SSCs
-                </p>
-                <br />
-                <xsl:if test="//message">
-                    <ul>
-                        <xsl:for-each select="//message">
-                            <li>
-                                <xsl:value-of select="@description" />
-                            </li>
-                        </xsl:for-each>
-                    </ul>
-                </xsl:if>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Code</th>
-                            <th>Description</th>
-                            <th>Imp/Exp</th>
-                            <th>From</th>
-                            <th>To</th>
-                            <th>Tprs</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <xsl:for-each select="/source/sscs/ssc">
-                            <tr>
-                                <td>
-                                    <a
-                                        href="{/source/request/@context-path}/reports/127/output/?ssc-id={@id}">
-                                        <xsl:value-of select="@code" />
-                                    </a>
-                                </td>
-                                <td>
-                                    <xsl:value-of select="@description" />
-                                </td>
-                                <td>
-                                    <xsl:choose>
-                                        <xsl:when
-                                            test="@is-import='true'">
-                                            Import
-                                        </xsl:when>
-                                        <xsl:otherwise>
-                                            Export
-                                        </xsl:otherwise>
-                                    </xsl:choose>
-                                </td>
-                                <td>
-                                    <xsl:value-of
-                                        select="concat(date[@label='from']/@year, '-', date[@label='from']/@month, '-', date[@label='from']/@day, ' ', date[@label='from']/@hour, ':', date[@label='from']/@minute)" />
-                                </td>
-                                <td>
-                                    <xsl:choose>
-                                        <xsl:when
-                                            test="date[@label='to']">
-                                            <xsl:value-of
-                                                select="concat(date[@label='to']/@year, '-', date[@label='to']/@month, '-', date[@label='to']/@day, ' ', date[@label='to']/@hour, ':', date[@label='to']/@minute)" />
-                                        </xsl:when>
-                                        <xsl:otherwise>
-                                            Ongoing
-                                        </xsl:otherwise>
-                                    </xsl:choose>
-                                </td>
-                                <td>
-                                    <xsl:for-each
-                                        select="measurement-requirement">
-                                        <a
-                                            href="{/source/request/@context-path}/reports/97/output/?tpr-id={tpr/@id}">
-                                            <xsl:value-of
-                                                select="tpr/@code" />
-                                        </a>
-                                        <xsl:if
-                                            test="position() != last()">
-                                            <xsl:value-of select="', '" />
-                                        </xsl:if>
-                                    </xsl:for-each>
-                                </td>
-                            </tr>
-                        </xsl:for-each>
-                    </tbody>
-                </table>
-            </body>
-        </html>
-    </xsl:template>
-</xsl:stylesheet>]]></value>
+db = Monad.getContext().getAttribute("net.sf.chellow.db")
+for cls in ['Ssc']:
+   globals()[cls] = db.get(cls)
+
+session = db.get("session")()
+
+sscs = session.query(Ssc).options(joinedload_all('measurement_requirements.tpr')).order_by(Ssc.code)
+
+Monad.getContext().getAttribute("net.sf.chellow.jinja").get("render")(inv, template, {'sscs': sscs})]]></value>
+        <value><![CDATA[<!DOCTYPE html>
+<html>
+  <head>
+    <link rel="stylesheet" type="text/css"
+        href="{{ context_path }}/reports/19/output/" />
+    <title>Chellow &gt; SSCs</title>
+  </head>
+  <body>
+    <p>
+      <a href="{{ context_path }}/reports/1/output/">Chellow</a> &gt; SSCs
+    </p>
+    <br />
+    {% if messages %}
+      <ul>
+        {% for message in messages %}
+          <li>{{ message }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+
+    <table>
+      <thead>
+        <tr>
+          <th>Code</th>
+          <th>Description</th>
+          <th>Imp / Exp</th>
+          <th>From</th>
+          <th>To</th>
+          <th>Tprs</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for ssc in sscs %}
+          <tr>
+            <td>
+              <a href="{{ context_path }}/reports/127/output/?ssc_id={{ ssc.id }}">{{ ssc.code }}</a>
+            </td>
+            <td>{{ ssc.description }}</td>
+            <td>
+              {%- if ssc.is_import -%}
+                Import
+              {%- else -%}
+                Export
+              {%- endif -%}
+            </td>
+            <td>{{ ssc.valid_from|hh_format }}</td>
+            <td>{{ ssc.valid_to|hh_format }}</td>
+            <td>
+              {%- for mr in ssc.measurement_requirements -%}
+                <a href="{{ context_path }}/reports/97/output/?tpr_id={{ mr.tpr.id }}">{{ mr.tpr.code }}</a>
+                {%- if not loop.last %}, {% endif %}
+              {%- endfor -%}
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </body>
+</html>]]></value>
     </line>
     <line>
         <value><![CDATA[insert]]></value>
@@ -11059,122 +10963,78 @@ for ssc in Hiber.session().createQuery("from Ssc ssc order by ssc.code").list():
         <value><![CDATA[127]]></value>
         <value><![CDATA[true]]></value>
         <value><![CDATA[SSC]]></value>
-        <value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree
-from net.sf.chellow.physical import Ssc
+        <value><![CDATA[from net.sf.chellow.monad import Hiber, Monad
 
-ssc_id = inv.getLong('ssc-id')
-ssc = Ssc.getSsc(ssc_id)
-source.appendChild(ssc.toXml(doc, XmlTree("measurementRequirements", XmlTree("tpr"))))]]></value>
-        <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
-<xsl:stylesheet version="1.0"
-    xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
-    <xsl:output method="html" encoding="US-ASCII"
-        doctype-public="-//W3C//DTD HTML 4.01//EN"
-        doctype-system="http://www.w3.org/TR/html4/strict.dtd" indent="yes" />
-    <xsl:template match="/">
-        <html>
-            <head>
-                <link rel="stylesheet" type="text/css"
-                    href="{/source/request/@context-path}/reports/19/output/" />
-                <title>
-                    Chellow &gt; SSCs &gt;
-                    <xsl:value-of select="/source/ssc/@description" />
-                </title>
-            </head>
-            <body>
-                <p>
-                    <a
-                        href="{/source/request/@context-path}/reports/1/output/">
-                        <xsl:value-of select="'Chellow'" />
-                    </a>
-                    &gt;
-                    <a
-                        href="{/source/request/@context-path}/reports/125/output/">
-                        <xsl:value-of select="'SSCs'" />
-                    </a>
-                    &gt; 
-                    <xsl:value-of select="/source/ssc/@code" />
-                </p>
-                <br />
-                <xsl:if test="//message">
-                    <ul>
-                        <xsl:for-each select="//message">
-                            <li>
-                                <xsl:value-of select="@description" />
-                            </li>
-                        </xsl:for-each>
-                    </ul>
-                </xsl:if>
-                <table>
-                    <tr>
-                        <th>Code</th>
-                        <td>
-                            <xsl:value-of select="/source/ssc/@code" />
-                        </td>
-                    </tr>
-                    <tr>
-                        <th>Description</th>
-                        <td>
-                            <xsl:value-of
-                                select="/source/ssc/@description" />
-                        </td>
-                    </tr>
-                    <tr>
-                        <th>Is Import?</th>
-                        <td>
-                            <xsl:choose>
-                                <xsl:when
-                                    test="/source/ssc/@is-import='true'">
-                                    Import
-                                </xsl:when>
-                                <xsl:otherwise>Export</xsl:otherwise>
-                            </xsl:choose>
-                        </td>
-                    </tr>
-                    <tr>
-                        <th>From</th>
-                        <td>
-                            <xsl:value-of
-                                select="concat(/source/ssc/date[@label='from']/@year, '-', /source/ssc/date[@label='from']/@month, '-', /source/ssc/date[@label='from']/@day, ' ', /source/ssc/date[@label='from']/@hour, ':', /source/ssc/date[@label='from']/@minute)" />
-                        </td>
-                    </tr>
-                    <tr>
-                        <th>To</th>
-                        <td>
-                            <xsl:choose>
-                                <xsl:when
-                                    test="/source/ssc/date[@label='to']">
-                                    <xsl:value-of
-                                        select="concat(/source/ssc/date[@label='to']/@year, '-', /source/ssc/date[@label='to']/@month, '-', /source/ssc/date[@label='to']/@day, ' ', /source/ssc/date[@label='to']/@hour, ':', /source/ssc/date[@label='to']/@minute)" />
-                                </xsl:when>
-                                <xsl:otherwise>Ongoing</xsl:otherwise>
-                            </xsl:choose>
-                        </td>
-                    </tr>
-                </table>
+db = Monad.getContext().getAttribute("net.sf.chellow.db")
+for cls in ['Ssc']:
+   globals()[cls] = db.get(cls)
 
-                <h4>TPRs</h4>
+session = db.get('session')()
 
-                <ul>
-                    <xsl:for-each
-                        select="/source/ssc/measurement-requirement/tpr">
-                        <li>
-                            <a
-                                href="{/source/request/@context-path}/reports/97/output/?tpr-id={@id}">
-                                <xsl:value-of select="@code" />
-                            </a>
-                            <!-- 
-                            <xsl:if test="position() != last()">
-                                <xsl:value-of select="', '" />
-                            </xsl:if>
-                            -->
-                        </li>
-                    </xsl:for-each>
-                </ul>
-            </body>
-        </html>
-    </xsl:template>
-</xsl:stylesheet>]]></value>
+ssc_id = inv.getLong('ssc_id')
+ssc = Ssc.get(session, ssc_id)
+
+Monad.getContext().getAttribute("net.sf.chellow.jinja").get("render")(inv, template, {'ssc': ssc})]]></value>
+        <value><![CDATA[<!DOCTYPE html>
+<html>
+  <head>
+    <link rel="stylesheet" type="text/css"
+      href="{{ context_path }}/reports/19/output/" />
+    <title>
+      Chellow &gt; SSCs &gt; {{ ssc.description }}
+    </title>
+  </head>
+  <body>
+    <p>
+      <a href="{{ context_path }}/reports/1/output/">Chellow</a> &gt;
+      <a href="{{ context_path }}/reports/125/output/">SSCs</a> &gt;
+      {{ ssc.code }}
+    </p>
+    <br />
+    {% if messages %}
+      <ul>
+        {% for message in messages %}
+          <li>{{ message }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+
+    <table>
+      <tr>
+        <th>Code</th>
+        <td>{{ ssc.code }}</td>
+      </tr>
+      <tr>
+        <th>Description</th>
+        <td>{{ ssc.description }}</td>
+      </tr>
+      <tr>
+        <th>Is Import?</th>
+        <td>
+          {% if ssc.is_import %}
+            Import
+          {% else %}
+            Export
+          {% endif %}
+        </td>
+      </tr>
+      <tr>
+        <th>From</th>
+        <td>{{ ssc.valid_from|hh_format }}</td>
+        <td>{{ ssc.valid_to|hh_format }}</td>
+      </tr>
+    </table>
+
+    <h4>TPRs</h4>
+
+    <ul>
+      {% for mr in ssc.measurement_requirements %}
+        <li><a href="{{ context_path }}/reports/97/output/?tpr_id={{ mr.tpr.id }}">{{ mr.tpr.code }}</a>
+        </li>
+      {% endfor %}
+    </ul>
+  </body>
+</html>]]></value>
     </line>
     <line>
         <value><![CDATA[insert]]></value>
@@ -13851,7 +13711,7 @@ source.appendChild(script.toXml(doc, XmlTree('contract', XmlTree('party'))))]]><
                     <xsl:value-of
                         select="concat(/source/rate-script/@id, ' [')" />
                     <a
-                        href="{/source/request/@context-path}/hhdc-contracts/{/source/rate-script/hhdc-contract/@id}/rate-scripts/{/source/rate-script/@id}/">
+                        href="{/source/request/@context-path}/reports/249/output/?rate_script_id={/source/rate-script/@id}">
                         <xsl:value-of select="'edit'" />
                     </a>
                     <xsl:value-of select="']'" />
@@ -18041,23 +17901,20 @@ pw.close()]]></value>
         <value><![CDATA[239]]></value>
         <value><![CDATA[true]]></value>
         <value><![CDATA[Supply Notes]]></value>
-        <value><![CDATA[from net.sf.chellow.billing import NonCoreContract
-from net.sf.chellow.physical import Supply
-from net.sf.chellow.monad import Hiber, Debug
+        <value><![CDATA[from net.sf.chellow.physical import Supply
+from net.sf.chellow.monad import Debug, Monad
 
 supply_id = inv.getLong('supply_id')
 supply = Supply.getSupply(supply_id)
 
 if inv.getRequest().getMethod() == 'GET':
-    NonCoreContract.getNonCoreContract('template').callFunction('render', [inv, template, {'supply': supply}])
+    Monad.getContext().getAttribute("net.sf.chellow.jinja").get("render")(inv, template, {'supply': supply})
 else:
     note = inv.getString('note')
     Hiber.setReadWrite()
     supply.setNote(note)
     Hiber.commit()
-    inv.sendSeeOther("/reports/7/output/?supply-id=" + str(supply_id))
-
-    ]]></value>
+    inv.sendSeeOther("/reports/7/output/?supply-id=" + str(supply_id))]]></value>
         <value><![CDATA[<!DOCTYPE html>
 <html>
   <head>
@@ -18513,5 +18370,473 @@ while not month_start.after(to_date):
     month_start = HhStartDate(cal.getTime())
 pw.close()]]></value>
         <value><![CDATA[]]></value>
+    </line>
+    <line>
+        <value><![CDATA[insert]]></value>
+        <value><![CDATA[report]]></value>
+        <value><![CDATA[249]]></value>
+        <value><![CDATA[true]]></value>
+        <value><![CDATA[HHDC Contract Rate Script Edit]]></value>
+        <value><![CDATA[from net.sf.chellow.monad import Hiber, Monad, XmlTree, UserException, HttpException, MonadMessage
+from net.sf.chellow.monad.types import MonadDate
+from net.sf.chellow.billing import RateScript
+from net.sf.chellow.physical import HhStartDate
+
+def set_document(rate_script, message=None):
+    source.appendChild(rate_script.toXml(doc, XmlTree("contract", XmlTree("party"))))
+    source.appendChild(MonadDate.getMonthsXml(doc))
+    source.appendChild(MonadDate.getDaysXml(doc))
+    source.appendChild(MonadDate.getHoursXml(doc))
+    source.appendChild(HhStartDate.getHhMinutesXml(doc))
+    source.appendChild(MonadDate().toXml(doc))
+    if message is not None:
+        messages_element = doc.createElement('messages')
+        source.appendChild(messages_element)
+        messages_element.appendChild(MonadMessage(message).toXml(doc))
+    return doc
+
+request_method = inv.getRequest().getMethod()
+if request_method == "POST":
+    rate_script_id = inv.getLong('rate_script_id')
+    rate_script = RateScript.getRateScript(rate_script_id)
+    contract = rate_script.contract
+    Hiber.setReadWrite()
+    if inv.hasParameter("delete"):
+        try:
+            contract.delete(rate_script)
+            Hiber.commit()
+            inv.sendSeeOther("/reports/115/output/?hhdc-contract-id=" + str(contract.id))
+        except UserException, e:
+            Hiber.rollBack()
+            set_document(rate_script, e.getMessage())
+
+    else:
+        script = inv.getString("script")
+        start_date = inv.getDateTime("start")
+        has_finished = inv.getBoolean("has_finished")
+        if not inv.isValid():
+            raise UserException(set_document(rate_script))
+
+        script = script.replace("\r", "").replace("\t", "    ")
+        if has_finished:
+            finish_date_raw = inv.getDateTime("finish")
+            if not inv.isValid():
+                raise UserException(set_document(rate_script))
+            finish_date = HhStartDate.roundDown(finish_date_raw)
+        else:
+            finish_date = None
+
+        try:
+            rate_script.update(HhStartDate.roundDown(start_date), finish_date, script)
+            Hiber.commit()
+            inv.sendSeeOther("/reports/173/output/?rate-script-id=" + str(rate_script_id))
+        except HttpException, e:
+            e.setDocument(set_document(rate_script))
+            raise e
+
+elif request_method == "GET":
+    rate_script_id = inv.getLong('rate_script_id')
+    rate_script = RateScript.getRateScript(rate_script_id)
+    set_document(rate_script)
+
+else:
+    raise InternalException("HTTP Method not recognized.")]]></value>
+        <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
+<xsl:stylesheet version="1.0"
+    xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+    <xsl:output method="html" encoding="US-ASCII"
+        doctype-public="-//W3C//DTD HTML 4.01//EN" doctype-system="http://www.w3.org/TR/html4/strict.dtd"
+        indent="yes" />
+    <xsl:template match="/">
+        <html>
+            <head>
+                <link rel="stylesheet" type="text/css"
+                    href="{/source/request/@context-path}/reports/19/output/" />
+                <title>
+                    Chellow &gt; HHDC Contracts &gt;
+                    <xsl:value-of select="/source/rate-script/hhdc-contract/@name" />
+                    &gt; Rate Scripts &gt;
+                    <xsl:value-of select="/source/rate-script/@id" />
+                </title>
+            </head>
+            <body>
+                <p>
+                    <a href="{/source/request/@context-path}/reports/1/output/">
+                        <xsl:value-of select="'Chellow'" />
+                    </a>
+                    &gt;
+                    <a href="{/source/request/@context-path}/reports/113/output/">
+                        <xsl:value-of select="'HHDC Contracts'" />
+                    </a>
+                    &gt;
+                    <a
+                        href="{/source/request/@context-path}/reports/115/output/?hhdc-contract-id={/source/rate-script/hhdc-contract/@id}">
+                        <xsl:value-of select="/source/rate-script/hhdc-contract/@name" />
+                    </a>
+                    &gt;
+                    <a
+                        href="{/source/request/@context-path}/reports/173/output/?rate-script-id={/source/rate-script/@id}">
+                        <xsl:value-of select="concat('Rate Script ', /source/rate-script/@id)" />
+                    </a>
+                    &gt; Edit
+                </p>
+                <xsl:if test="//message">
+                    <ul>
+                        <xsl:for-each select="//message">
+                            <li>
+                                <xsl:value-of select="@description" />
+                            </li>
+                        </xsl:for-each>
+                    </ul>
+                </xsl:if>
+                <br/>
+                <xsl:choose>
+                    <xsl:when
+                        test="/source/request/@method='get' and /source/request/parameter[@name='view']/value='confirm-delete'">
+                        <form method="post" action="{/source/request/@context-path}/reports/249/output/">
+                            <fieldset>
+                                <legend>
+                                    Are you sure you want to delete this
+                                    rate script?
+                                </legend>
+                                <input type="hidden" name="rate_script_id" value="{/source/rate-script/@id}"/>
+                                <input type="submit" name="delete" value="Delete" />
+                            </fieldset>
+                        </form>
+                        <p>
+                            <a href=".">Cancel</a>
+                        </p>
+                    </xsl:when>
+                    <xsl:otherwise>
+                        <form action="{/source/request/@context-path}/reports/249/output/" method="post">
+                            <fieldset>
+                                <legend>Update rate-script</legend>
+                                <br />
+                                <fieldset>
+                                    <legend>Start date</legend>
+                                    <input type="hidden" name="rate_script_id" value="{/source/rate-script/@id}"/>
+                                    <input name="start-year" size="4">
+                                        <xsl:choose>
+                                            <xsl:when test="/source/request/parameter[@name='start-year']">
+                                                <xsl:attribute name="value">
+                                                    <xsl:value-of
+                                                    select="/source/request/parameter[@name='start-year']/value/text()" />
+                                                </xsl:attribute>
+                                            </xsl:when>
+                                            <xsl:otherwise>
+                                                <xsl:attribute name="value">
+                                                    <xsl:value-of
+                                                    select="/source/rate-script/hh-start-date[@label='start']/@year" />
+                                                </xsl:attribute>
+                                            </xsl:otherwise>
+                                        </xsl:choose>
+                                    </input>
+                                    <xsl:value-of select="'-'" />
+                                    <select name="start-month">
+                                        <xsl:for-each select="/source/months/month">
+                                            <option value="{@number}">
+                                                <xsl:choose>
+                                                    <xsl:when test="/source/request/parameter[@name='start-month']">
+                                                        <xsl:if
+                                                            test="/source/request/parameter[@name='start-month']/value/text() = number(@number)">
+                                                            <xsl:attribute name="selected" />
+                                                        </xsl:if>
+                                                    </xsl:when>
+                                                    <xsl:otherwise>
+                                                        <xsl:if
+                                                            test="/source/rate-script/hh-start-date[@label='start']/@month = @number">
+                                                            <xsl:attribute name="selected" />
+                                                        </xsl:if>
+                                                    </xsl:otherwise>
+                                                </xsl:choose>
+                                                <xsl:value-of select="@number" />
+                                            </option>
+                                        </xsl:for-each>
+                                    </select>
+                                    <xsl:value-of select="'-'" />
+                                    <select name="start-day">
+                                        <xsl:for-each select="/source/days/day">
+                                            <option value="{@number}">
+                                                <xsl:choose>
+                                                    <xsl:when test="/source/request/parameter[@name='start-day']">
+                                                        <xsl:if
+                                                            test="/source/request/parameter[@name='start-day']/value/text() = @number">
+                                                            <xsl:attribute name="selected" />
+                                                        </xsl:if>
+                                                    </xsl:when>
+                                                    <xsl:otherwise>
+                                                        <xsl:if
+                                                            test="/source/rate-script/hh-start-date[@label='start']/@day = @number">
+                                                            <xsl:attribute name="selected" />
+                                                        </xsl:if>
+                                                    </xsl:otherwise>
+                                                </xsl:choose>
+                                                <xsl:value-of select="@number" />
+                                            </option>
+                                        </xsl:for-each>
+                                    </select>
+                                    <xsl:value-of select="' '" />
+                                    <select name="start-hour">
+                                        <xsl:for-each select="/source/hours/hour">
+                                            <option value="{@number}">
+                                                <xsl:choose>
+                                                    <xsl:when test="/source/request/parameter[@name='start-hour']">
+
+                                                        <xsl:if
+                                                            test="/source/request/parameter[@name='start-hour']/value/text() = @number">
+
+                                                            <xsl:attribute name="selected" />
+                                                        </xsl:if>
+                                                    </xsl:when>
+                                                    <xsl:when
+                                                        test="/source/rate-script/hh-start-date[@label='start']">
+                                                        <xsl:if
+                                                            test="/source/rate-script/hh-start-date[@label='start']/@hour = @number">
+                                                            <xsl:attribute name="selected" />
+                                                        </xsl:if>
+                                                    </xsl:when>
+                                                    <xsl:otherwise>
+                                                        <xsl:if test="/source/date/@hour = @number">
+                                                            <xsl:attribute name="selected" />
+                                                        </xsl:if>
+                                                    </xsl:otherwise>
+                                                </xsl:choose>
+                                                <xsl:value-of select="@number" />
+                                            </option>
+                                        </xsl:for-each>
+                                    </select>
+                                    <xsl:value-of select="':'" />
+                                    <select name="start-minute">
+                                        <xsl:for-each select="/source/hh-minutes/minute">
+                                            <option value="{@number}">
+                                                <xsl:choose>
+                                                    <xsl:when test="/source/request/parameter[@name='start-minute']">
+
+                                                        <xsl:if
+                                                            test="/source/request/parameter[@name='start-minute']/value/text() = @number">
+
+                                                            <xsl:attribute name="selected" />
+                                                        </xsl:if>
+                                                    </xsl:when>
+                                                    <xsl:when
+                                                        test="/source/rate-script/hh-start-date[@label='start']">
+                                                        <xsl:if
+                                                            test="/source/rate-script/hh-start-date[@label='start']/@minute = @number">
+                                                            <xsl:attribute name="selected" />
+                                                        </xsl:if>
+                                                    </xsl:when>
+                                                    <xsl:otherwise>
+                                                        <xsl:if test="/source/date/@minute = @number">
+                                                            <xsl:attribute name="selected" />
+                                                        </xsl:if>
+                                                    </xsl:otherwise>
+                                                </xsl:choose>
+                                                <xsl:value-of select="@number" />
+                                            </option>
+                                        </xsl:for-each>
+                                    </select>
+                                </fieldset>
+                                <br />
+                                <fieldset>
+                                    <legend>Finish date</legend>
+                                    <label>
+                                        Ended?
+                                        <input type="checkbox" name="has_finished" value="true">
+                                            <xsl:choose>
+                                                <xsl:when test="/source/request/@method='post'">
+                                                    <xsl:if test="/source/request/parameter[@name='has_finished']">
+                                                        <xsl:attribute name="checked">
+                                                            checked
+                                                        </xsl:attribute>
+                                                    </xsl:if>
+                                                </xsl:when>
+                                                <xsl:otherwise>
+                                                    <xsl:if
+                                                        test="/source/rate-script/hh-start-date[@label='finish']">
+                                                        <xsl:attribute name="checked">
+                                                            checked
+                                                        </xsl:attribute>
+                                                    </xsl:if>
+                                                </xsl:otherwise>
+                                            </xsl:choose>
+                                        </input>
+                                    </label>
+                                    <xsl:value-of select="' '" />
+                                    <input name="finish-year" size="4">
+                                        <xsl:attribute name="value">
+                                            <xsl:choose>
+                                                <xsl:when test="/source/request/parameter[@name='finish-year']">
+                                                    <xsl:value-of
+                                            select="/source/request/parameter[@name='finish-year']/value/text()" />
+                                                </xsl:when>
+                                                <xsl:when
+                                            test="/source/rate-script/hh-start-date[@label='finish']">
+                                                    <xsl:value-of
+                                            select="/source/rate-script/hh-start-date[@label='finish']/@year" />
+                                                </xsl:when>
+                                                <xsl:otherwise>
+                                                    <xsl:value-of select="/source/date/@year" />
+                                                </xsl:otherwise>
+                                            </xsl:choose>
+                                        </xsl:attribute>
+                                    </input>
+                                    <xsl:value-of select="'-'" />
+                                    <select name="finish-month">
+                                        <xsl:for-each select="/source/months/month">
+                                            <option value="{@number}">
+                                                <xsl:choose>
+                                                    <xsl:when test="/source/request/parameter[@name='finish-month']">
+
+                                                        <xsl:if
+                                                            test="/source/request/parameter[@name='finish-month']/value/text() = number(@number)">
+
+                                                            <xsl:attribute name="selected" />
+                                                        </xsl:if>
+                                                    </xsl:when>
+                                                    <xsl:when
+                                                        test="/source/rate-script/hh-start-date[@label='finish']">
+                                                        <xsl:if
+                                                            test="/source/rate-script/hh-start-date[@label='finish']/@month = @number">
+                                                            <xsl:attribute name="selected" />
+                                                        </xsl:if>
+                                                    </xsl:when>
+                                                    <xsl:otherwise>
+                                                        <xsl:if test="/source/date/@month = @number">
+                                                            <xsl:attribute name="selected" />
+                                                        </xsl:if>
+                                                    </xsl:otherwise>
+                                                </xsl:choose>
+                                                <xsl:value-of select="@number" />
+                                            </option>
+                                        </xsl:for-each>
+                                    </select>
+                                    <xsl:value-of select="'-'" />
+                                    <select name="finish-day">
+                                        <xsl:for-each select="/source/days/day">
+                                            <option value="{@number}">
+                                                <xsl:choose>
+                                                    <xsl:when test="/source/request/parameter[@name='finish-day']">
+
+                                                        <xsl:if
+                                                            test="/source/request/parameter[@name='finish-day']/value/text() = @number">
+
+                                                            <xsl:attribute name="selected" />
+                                                        </xsl:if>
+                                                    </xsl:when>
+                                                    <xsl:when
+                                                        test="/source/rate-script/hh-start-date[@label='finish']">
+                                                        <xsl:if
+                                                            test="/source/rate-script/hh-start-date[@label='finish']/@day = @number">
+                                                            <xsl:attribute name="selected" />
+                                                        </xsl:if>
+                                                    </xsl:when>
+                                                    <xsl:otherwise>
+                                                        <xsl:if test="/source/date/@day = @number">
+                                                            <xsl:attribute name="selected" />
+                                                        </xsl:if>
+                                                    </xsl:otherwise>
+                                                </xsl:choose>
+                                                <xsl:value-of select="@number" />
+                                            </option>
+                                        </xsl:for-each>
+                                    </select>
+                                    <xsl:value-of select="' '" />
+                                    <select name="finish-hour">
+                                        <xsl:for-each select="/source/hours/hour">
+                                            <option value="{@number}">
+                                                <xsl:choose>
+                                                    <xsl:when test="/source/request/parameter[@name='finish-hour']">
+
+                                                        <xsl:if
+                                                            test="/source/request/parameter[@name='finish-hour']/value/text() = @number">
+
+                                                            <xsl:attribute name="selected" />
+                                                        </xsl:if>
+                                                    </xsl:when>
+                                                    <xsl:when
+                                                        test="/source/rate-script/hh-start-date[@label='finish']">
+                                                        <xsl:if
+                                                            test="/source/rate-script/hh-start-date[@label='finish']/@hour = @number">
+                                                            <xsl:attribute name="selected" />
+                                                        </xsl:if>
+                                                    </xsl:when>
+                                                    <xsl:otherwise>
+                                                        <xsl:if test="/source/date/@hour = @number">
+                                                            <xsl:attribute name="selected" />
+                                                        </xsl:if>
+                                                    </xsl:otherwise>
+                                                </xsl:choose>
+                                                <xsl:value-of select="@number" />
+                                            </option>
+                                        </xsl:for-each>
+                                    </select>
+                                    <xsl:value-of select="':'" />
+                                    <select name="finish-minute">
+                                        <xsl:for-each select="/source/hh-minutes/minute">
+                                            <option value="{@number}">
+                                                <xsl:choose>
+                                                    <xsl:when
+                                                        test="/source/request/parameter[@name='finish-minute']">
+
+                                                        <xsl:if
+                                                            test="/source/request/parameter[@name='finish-minute']/value/text() = @number">
+
+                                                            <xsl:attribute name="selected" />
+                                                        </xsl:if>
+                                                    </xsl:when>
+                                                    <xsl:when
+                                                        test="/source/rate-script/hh-start-date[@label='finish']">
+                                                        <xsl:if
+                                                            test="/source/rate-script/hh-start-date[@label='finish']/@minute = @number">
+                                                            <xsl:attribute name="selected" />
+                                                        </xsl:if>
+                                                    </xsl:when>
+                                                    <xsl:otherwise>
+                                                        <xsl:if test="30 = @number">
+                                                            <xsl:attribute name="selected" />
+                                                        </xsl:if>
+                                                    </xsl:otherwise>
+                                                </xsl:choose>
+                                                <xsl:value-of select="@number" />
+                                            </option>
+                                        </xsl:for-each>
+                                    </select>
+                                </fieldset>
+                                <br />
+                                <br />
+                                Script
+                                <br />
+                                <textarea name="script" rows="40" cols="80">
+                                    <xsl:choose>
+                                        <xsl:when test="/source/request/parameter[@name='script']">
+                                            <xsl:value-of
+                                                select="translate(/source/request/parameter[@name='script']/value, '&#xD;','')" />
+                                        </xsl:when>
+                                        <xsl:otherwise>
+                                            <xsl:value-of select="/source/rate-script/@script" />
+                                        </xsl:otherwise>
+                                    </xsl:choose>
+                                </textarea>
+                                <br />
+                                <br />
+                                <input type="submit" value="Update" />
+                                <input type="reset" value="Reset" />
+                            </fieldset>
+                        </form>
+                        <br/>
+                        <form action="{/source/request/@context-path}/reports/249/output/">
+                            <fieldset>
+                                <legend>Delete this Rate Script</legend>
+                                <input type="hidden" name="rate_script_id" value="{/source/rate-script/@id}"/>
+                                <input type="hidden" name="view" value="confirm-delete" />
+                                <input type="submit" value="Delete" />
+                            </fieldset>
+                        </form>
+                    </xsl:otherwise>
+                </xsl:choose>
+            </body>
+        </html>
+    </xsl:template>
+</xsl:stylesheet>]]></value>
     </line>
 </csv>

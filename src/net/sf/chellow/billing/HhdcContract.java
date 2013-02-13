@@ -256,9 +256,7 @@ public class HhdcContract extends Contract {
 	}
 
 	public Urlable getChild(UriPathElement uriId) throws HttpException {
-		if (RateScripts.URI_ID.equals(uriId)) {
-			return new RateScripts(this);
-		} else if (Batches.URI_ID.equals(uriId)) {
+		if (Batches.URI_ID.equals(uriId)) {
 			return new Batches(this);
 		} else {
 			return null;
