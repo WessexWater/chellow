@@ -17902,7 +17902,7 @@ pw.close()]]></value>
         <value><![CDATA[true]]></value>
         <value><![CDATA[Supply Notes]]></value>
         <value><![CDATA[from net.sf.chellow.physical import Supply
-from net.sf.chellow.monad import Debug, Monad
+from net.sf.chellow.monad import Debug, Monad, Hiber
 
 supply_id = inv.getLong('supply_id')
 supply = Supply.getSupply(supply_id)

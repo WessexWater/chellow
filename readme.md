@@ -1,7 +1,5 @@
 ## Chellow Manual
 
-[toc]
-
 ###  Licence
 
 Chellow is released under the [GPL v3](http://www.gnu.org/licenses/gpl.html).
@@ -27,7 +25,8 @@ for organizations with high electricity consumption. The software is hosted at
             type="javax.sql.DataSource" username="postgres" password="hello"
     	    driverClassName="org.postgresql.Driver"
             url="jdbc:postgresql://localhost:5432/chellow" maxActive="8" maxIdle="4"
-            accessToUnderlyingConnectionAllowed="true" />
+            accessToUnderlyingConnectionAllowed="true" defaultTransactionIsolation="8"
+            readOnly="true" />
 
     *  Put the [JDBC driver](http://jdbc.postgresql.org/download/postgresql-9.1-903.jdbc4.jar) in the Tomcat `/lib/` directory.
 *  Deploy the file chellow.war to Tomcat.

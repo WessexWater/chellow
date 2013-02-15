@@ -1,6 +1,6 @@
 /*******************************************************************************
  * 
- *  Copyright (c) 2005, 2011 Wessex Water Services Limited
+ *  Copyright (c) 2005, 2013 Wessex Water Services Limited
  *  
  *  This file is part of Chellow.
  * 
@@ -63,7 +63,6 @@ public class Hiber {
 		}
 	}
 
-	@SuppressWarnings("deprecation")
 	static public Session session() throws HibernateException {
 		Session s = session.get();
 		if (s == null) {
@@ -74,15 +73,6 @@ public class Hiber {
 		Transaction tx = s.getTransaction();
 		if (tx == null || !tx.isActive()) {
 			s.beginTransaction();
-			Connection con = session().connection();
-			Statement stmt;
-			try {
-				stmt = con.createStatement();
-
-				stmt.executeUpdate("set transaction isolation level serializable read only");
-			} catch (SQLException e) {
-				throw new InternalException(e);
-			}
 		}
 
 		return s;
