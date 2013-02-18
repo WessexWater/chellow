@@ -140,8 +140,6 @@
 			<fileset dir="${web.home}" />
 		</copy>
 
-		<exec dir="${basedir}" executable="svnversion" output="${build.home}/WEB-INF/VERSION" />
-
 		<mkdir dir="${build.lib}" />
 
 
