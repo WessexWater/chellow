@@ -13509,8 +13509,7 @@ while rs.next():
                 </xsl:if>
 <p><a href=".">Refresh</a></p>
 <p>Chellow Version
-                    <xsl:value-of
-                        select="/source/@chellow-version" /></p>
+                    <a href="https://bitbucket.org/ww_tlocke/chellow/commits/{/source/@chellow-version}" ><xsl:value-of select="/source/@chellow-version" /></a></p>
                 <table style="text-align: right">
                     <caption>JVM memory (bytes)</caption>
                     <tr>

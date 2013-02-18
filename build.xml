@@ -140,6 +140,12 @@
 			<fileset dir="${web.home}" />
 		</copy>
 
+		<exec dir="${basedir}" executable="hg" output="${build.home}/WEB-INF/VERSION">
+			<arg value="log" />
+			<arg value="--rev=tip" />
+			<arg value="--template={node}" />
+		</exec>
+
 		<mkdir dir="${build.lib}" />
 
 
