@@ -70,7 +70,7 @@ Monad.getContext().getAttribute("net.sf.chellow.jinja").get("render")(inv, templ
             </li>
           {% endif %}
         <li>
-          <a href="http://sourceforge.net/p/chellow/code/656/tree/trunk/readme.mdown" target="_blank">Docs</a>
+          <a href="https://bitbucket.org/ww_tlocke/chellow" target="_blank">Docs</a>
         </li>
       </ul>
       <table><caption>CSV Downloads</caption>

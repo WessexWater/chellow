@@ -15,7 +15,7 @@ for organizations with high electricity consumption. The software is hosted at
 1. [Download](http://sourceforge.net/projects/chellow/files/) the latest version of Chellow.
 *  Make sure the following are installed: 
     * PostgreSQL 9.1 with the JDBC4 PostgreSQL Driver, Version 9.1-903
-    * OpenJDK 1.7.0_09 (in server mode)
+    * OpenJDK 1.7.0_13 (in server mode)
     * Apache Tomcat 7.0.30
 *  Create a PostgreSQL database called `chellow`. 
 *  In your Tomcat, configure a JNDI JDBC data source called jdbc/chellow. 
