@@ -14,7 +14,7 @@ for organizations with high electricity consumption. The software is hosted at
 
 1. [Download](http://sourceforge.net/projects/chellow/files/) the latest version of Chellow.
 *  Make sure the following are installed: 
-    * PostgreSQL 9.1 with the JDBC4 PostgreSQL Driver, Version 9.1-903
+    * PostgreSQL 9.1 with the JDBC4 PostgreSQL Driver, Version 9.2-1002
     * OpenJDK 1.7.0_13 (in server mode)
     * Apache Tomcat 7.0.30
 *  Create a PostgreSQL database called `chellow`. 
@@ -217,6 +217,7 @@ network. It'll also put in some HH data for the beginning of October 2010.
   * When inserting records, the 'id' fields are optional. If left blank, Chellow will automatically generate an id.
 
 
+
 Action | Type
 ------|------|--|--|--|--|--|--|--|--|--|--|--|--|--|--|--|--|--|--|--|--|--|--|--|--|--|--|--|--|--|--
 *insert* | *site* | Site Code  | Site Name
@@ -259,34 +260,14 @@ The data file is of the form:
     27/07/05,01:00,93.8,A
     27/07/05,01:30,91.9,A
     	
+Values Of The Sensor Number 'S'
 
-<table>
-		<caption>Values Of The Sensor Number 'S'</caption>
-		<thead>
-			<tr>
-				<th>Number</th>
-				<th>Meaning</th>
-			</tr>
-		</thead>
-		<tbody>
-			<tr>
-				<td>1</td>
-				<td>Import kWh</td>
-			</tr>
-			<tr>
-				<td>2</td>
-				<td>Export kWh</td>
-			</tr>
-			<tr>
-				<td>3</td>
-				<td>Import kVArh</td>
-			</tr>
-			<tr>
-				<td>4</td>
-				<td>Export kVArh</td>
-			</tr>
-		</tbody>
-</table>
+Number | Meaning
+-------|-------------
+1      | Import kWh
+2      | Export kWh
+3      | Import kVArh
+4      | Export kVArh
 
 and the status character on the end is optional.
 
@@ -296,41 +277,14 @@ File extension '.simple.csv'.
 
 A CSV file with the following columns
 
-<table>
-		<caption>CSV Simple Columns</caption>
-		<thead>
-			<tr>
-				<th>Name</th>
-				<th>Description</th>
-			</tr>
-			<tr>
-				<td>MPAN Core</td>
-				<td></td>
-			</tr>
-			<tr>
-				<td>Is Import?</td>
-				<td>'true' or 'false'</td>
-			</tr>
-			<tr>
-				<td>Is kWh?</td>
-				<td>'true' or 'false'</td>
-			</tr>
-			<tr>
-				<td>Time</td>
-				<td>half-hour starting yyyy-MM-ddThh:mmZ (<a
-					href="http://www.w3.org/TR/NOTE-datetime">ISO date format</a>)
-				</td>
-			</tr>
-			<tr>
-				<td>Value</td>
-				<td></td>
-			</tr>
-			<tr>
-				<td>Status</td>
-				<td>'A' - actual, 'E' - estimate, 'C' - padding.</td>
-			</tr>
-		</thead>
-</table>
+Name       | Description
+-----------|-----------------------------------------------------------------------------------------------
+MPAN Core  |
+Is Import? | 'true' or 'false'
+Is kWh?    | 'true' or 'false'
+Time       | half-hour starting yyyy-MM-ddThh:mmZ ([ISO date format](http://www.w3.org/TR/NOTE-datetime))<a
+Value      | 
+Status     | 'A' - actual, 'E' - estimate, 'C' - padding.
 	
 Here's an example:
 
@@ -357,41 +311,15 @@ File extension '.stark.csv'.
 
 A CSV file with the following columns:
 
-<table>
-		<caption>Stark CSV Columns</caption>
-		<thead>
-			<tr>
-				<th>Name</th>
-				<th>Description</th>
-			</tr>
-		</thead>
-		<tbody>
-			<tr>
-				<td>MPAN core</td>
-				<td></td>
-			</tr>
-			<tr>
-				<td>Imp / Exp</td>
-				<td>'0' - import or '1' - export</td>
-			</tr>
-			<tr>
-				<td>Units</td>
-				<td>'kWh' or 'kVArh'</td>
-			</tr>
-			<tr>
-				<td>Time</td>
-				<td>half-hour ending dd/MM/yy hh:mm in UTC.</td>
-			</tr>
-			<tr>
-				<td>Value</td>
-				<td></td>
-			</tr>
-			<tr>
-				<td>Status</td>
-				<td>'65' - actual, '69' - estimate</td>
-			</tr>
-		</tbody>
-</table>
+Name      | Description
+----------|-----------------------------
+MPAN core | 
+Imp / Exp | '0' - import or '1' - export
+Units     | 'kWh' or 'kVArh'
+Time      | half-hour ending dd/MM/yy hh:mm in UTC.
+Value     | 
+Status    | '65' - actual, '69' - estimate
+
 	
 Here's an example:
 
@@ -418,47 +346,17 @@ File extension '.bg.csv'.
 
 A CSV file with the following columns:
 
-<table>
-		<caption>bGlobal CSV Columns</caption>
-		<thead>
-			<tr>
-				<th>Name</th>
-				<th>Description</th>
-			</tr>
-			<tr>
-				<td>MPAN core</td>
-				<td></td>
-			</tr>
-			<tr>
-				<td>Meter Serial Number</td>
-				<td></td>
-			</tr>
-			<tr>
-				<td>Date</td>
-				<td>dd/MM/yy</td>
-			</tr>
-			<tr>
-				<td>HH 1</td>
-				<td>kWh in 1st HH</td>
-			</tr>
-			<tr>
-				<td>HH 2</td>
-				<td>kWh in 2nd HH</td>
-			</tr>
-			<tr>
-				<td>HH 3</td>
-				<td>kWh in 3rd HH</td>
-			</tr>
-			<tr>
-				<td>...</td>
-				<td>...</td>
-			</tr>
-			<tr>
-				<td>HH 48</td>
-				<td>kWh in 48th HH</td>
-			</tr>
-		</thead>
-</table>
+Name                | Description
+--------------------|---------------
+MPAN core           | 
+Meter Serial Number | 
+Date                | dd/MM/yy
+HH 1                | kWh in 1st HH
+HH 2                | kWh in 2nd HH
+HH 3                | kWh in 3rd HH
+...                 | ...
+HH 48               | kWh in 48th HH
+
 	
 Here's an example:
 
@@ -486,171 +384,37 @@ To import bills for a particular contract, create a batch, and then upload the
 bill file. The following electricity bill formats can be imported. Chellow
 recognizes the format by the file extension.
 
-<table>
-		<caption>Bill File Formats</caption>
-		<thead>
-			<tr>
-				<th>Format</th>
-				<th>Extension</th>
-			</tr>
-		</thead>
-		<tbody>
-			<tr>
-				<td>EDF Energy Proprietary</td>
-				<td>mm</td>
-			</tr>
-			<tr>
-				<td>CSV</td>
-				<td>csv</td>
-			</tr>
-			<tr>
-				<td>BGB EDI File</td>
-				<td>bgb.edi</td>
-			</tr>
-			<tr>
-				<td>SSE EDI File</td>
-				<td>sse.edi</td>
-			</tr>
-		</tbody>
-</table>
+Format                 | Extension
+-----------------------|----------
+EDF Energy Proprietary | mm
+CSV                    | csv
+BGB EDI File           | bgb.edi
+SSE EDI File           | sse.edi
 
 #### CSV Format
 
-<table>
-		<caption>CSV Format Columns</caption>
-		<tbody>
-			<tr>
-				<td># Bill Type</td>
-				<td>Account Reference</td>
-				<td>Mpans</td>
-				<td>Invoice Reference</td>
-				<td>Issue Date</td>
-				<td>Start Date</td>
-				<td>Finish Date</td>
-				<td>kWh</td>
-				<td>Net</td>
-				<td>VAT</td>
-				<td>Gross</td>
-				<td>Breakdown</td>
-				<td>R1 Meter Serial Number</td>
-				<td>R1 MPAN</td>
-				<td>R1 Coefficient</td>
-				<td>R1 Units</td>
-				<td>R1 TPR</td>
-				<td>R1 Previous Read Date</td>
-				<td>R1 Previous Read Value</td>
-				<td>R1 Previous Read Type</td>
-				<td>R1 Present Read Date</td>
-				<td>R1 Present Read Value</td>
-				<td>R1 Present Read Type</td>
-			</tr>
-			<tr>
-				<td>N - Normal, W - Withdrawn or F -Final</td>
-				<td></td>
-				<td></td>
-				<td></td>
-				<td></td>
-				<td></td>
-				<td></td>
-				<td></td>
-				<td></td>
-				<td></td>
-				<td></td>
-				<td></td>
-				<td></td>
-				<td></td>
-				<td>kWh, kW, kVA or kVArh</td>
-				<td>Blank if kW or kVA</td>
-				<td></td>
-				<td></td>
-				<td></td>
-				<td></td>
-				<td></td>
-				<td></td>
-				<td></td>
-			</tr>
-		</tbody>
-</table>
+CSV file with the following columns:
+
+# Bill Type                           | Account Reference | Mpans | Invoice Reference | Issue Date | Start Date | Finish Date | kWh | Net | VAT | Gross | Breakdown | R1 Meter Serial Number | R1 MPAN | R1 Coefficient | R1 Units              | R1 TPR             | R1 Previous Read Date | R1 Previous Read Value | R1 Previous Read Type | R1 Present Read Date | R1 Present Read Value | R1 Present Read Type
+--------------------------------------|-------------------|-------|-------------------|------------|------------|-------------|-----|-----|-----|-------|-----------|------------------------|---------|----------------|-----------------------|--------------------|-----------------------|------------------------|-----------------------|----------------------|-----------------------|---------------------
+N - Normal, W - Withdrawn or F -Final |                   |       |                   |            |            |             |     |     |     |       |           |                        |         |                | kWh, kW, kVA or kVArh | Blank if kW or kVA |                       |                        |                       |                      |                       |                     
+
 
 #### Read Types
 
-<table>
-		<caption>Read Types</caption>
-		<thead>
-			<tr>
-				<th colspan="2">Chellow</th>
-				<th colspan="2">sse.edi</th>
-				<th colspan="2">bgb.edi</th>
-			</tr>
-			<tr>
-				<th>Code</th>
-				<th>Description</th>
-				<th>Code</th>
-				<th>Description</th>
-				<th>Code</th>
-				<th>Description</th>
-			</tr>
-			<tr>
-				<td>N</td>
-				<td>Normal</td>
-				<td>00</td>
-				<td>Normal Reading</td>
-				<td>00</td>
-				<td>Normal Reading - Default</td>
-			<tr>
-				<td>N3</td>
-				<td>Normal 3rd Party</td>
-				<td>09</td>
-				<td>Third Party Normal Reading</td>
-			<tr>
-				<td>C</td>
-				<td>Customer</td>
-				<td>04</td>
-				<td>Customer's Own Reading</td>
-				<td>04</td>
-				<td>Customer's own reading</td>
-			<tr>
-				<td>E</td>
-				<td>Estimated</td>
-				<td>02</td>
-				<td>Estimated (Computer) Reading</td>
-				<td>02</td>
-				<td>Estimated (computer)</td>
-			<tr>
-				<td>E3</td>
-				<td>Estimated 3rd Party</td>
-				<td>11</td>
-				<td>Third Party Estimated (Computer) Reading</td>
-			<tr>
-				<td>EM</td>
-				<td>Estimated Manual</td>
-				<td>01</td>
-				<td>Estimated (manual)</td>
-			<tr>
-				<td>W</td>
-				<td>Withdrawn</td>
-				<td>03</td>
-				<td>Removed meter reading</td>
-			<tr>
-				<td>X</td>
-				<td>Exchange</td>
-				<td>06</td>
-				<td>Exchange Meter Reading</td>
-				<td>06</td>
-				<td>Exchange Meter Reading</td>
-			<tr>
-				<td>CP</td>
-				<td>Computer</td>
-				<td>05</td>
-				<td>Computer Reading</td>
-			<tr>
-				<td>IF</td>
-				<td>Information</td>
-				<td>12</td>
-				<td>Reading for Information only</td>
-			</tr>
-		</thead>
-</table>
+Chellow Code | Chellow Description | sse.edi Code | sse.edi Description                      | bgb.edi Code | bgb.edi Description
+-------------|---------------------|--------------|------------------------------------------|--------------|-------------------------
+N            | Normal              | 00           | Normal Reading                           | 00           | Normal Reading - Default
+N3           | Normal 3rd Party    | 09           | Third Party Normal Reading               |              |
+C            | Customer            | 04           | Customer's Own Reading                   | 04           | Customer's own reading
+E            | Estimated           | 02           | Estimated (Computer) Reading             | 02           | Estimated (computer)
+E3           | Estimated 3rd Party | 11           | Third Party Estimated (Computer) Reading |              |
+EM           | Estimated Manual    | 01           | Estimated (manual)                       |              |
+W            | Withdrawn           | 03           | Removed meter reading                    |              |
+X            | Exchange            | 06           | Exchange Meter Reading                   | 06           | Exchange Meter Reading
+CP           | Computer            | 05           | Computer Reading                         |              | 
+IF           | Information         | 12           | Reading for Information only             |              |
+
 
 ###  Common Tasks
 
@@ -667,25 +431,12 @@ steps are:
 
 ###  Reports
 
-<table>
-		<caption>Reports</caption>
-		<tbody>
-			<tr>
-				<td>metered-import-*</td>
-				<td>Uses HH data for HH and AMR supplies, and register reads
-					for dumb NHH supplies.</td>
-			</tr>
-			<tr>
-				<td>metered-import-estimated-kwh</td>
-				<td>For HH data, the kWh with the 'E' flag.</td>
-			</tr>
-			<tr>
-				<td>billed-import-*</td>
-				<td>A daily rate is calculated for a bill, and applied to the
-					number of days it covers of the month in question.</td>
-			</tr>
-		</tbody>
-</table>
+Name                         | Description
+-----------------------------|-------------------------------------------------------------------------------------------------------------
+metered-import-*             | Uses HH data for HH and AMR supplies, and register reads	for dumb NHH supplies.
+metered-import-estimated-kwh | For HH data, the kWh with the 'E' flag.
+billed-import-*              | A daily rate is calculated for a bill, and applied to the number of days it covers of the month in question.
+
 
 #### Supplies Monthly Duration
 
@@ -693,9 +444,9 @@ Here's how Chellow calculates the monthly consumption for dumb NHH supplies.
 First it finds the closest normal reads. Let's assume there are just two for
 simplicity. For each TPR, Chellow works out the (historical kWh / hh) = (kWh
 between the two reads) / (number of HHs between the two reads). Then Chellow
-finds the number of HHs between the begining of the month and the end of the
+finds the number of HHs between the beginning of the month and the end of the
 month, and also the number of HHs that fall within the TPR, between the
-begining and and of the month. The kWh for each half hour in the month for
+beginning and and of the month. The kWh for each half hour in the month for
 each TPR is (historical kWh / hh) * (month half-hours) / (month half-hours
 within TPR).
 
