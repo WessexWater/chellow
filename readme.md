@@ -218,7 +218,7 @@ network. It'll also put in some HH data for the beginning of October 2010.
 
 
 Action | Type
--------------
+------|------
 *insert* | *site* | Site Code  | Site Name
 *delete* | *site* | Site Code
 *update* | *site* | Current Site Code  | New Site Code  | Site Name
