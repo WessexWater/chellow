@@ -487,9 +487,6 @@ Chellow is written in Java. I work with the Java code, using:
 
   * Testing is done with [Imprimatur](https://imprimatur.wikispaces.com/). 
   * Reports are written in [Python 2.5](http://www.python.org/). 
-  * The Python script generates an [XML](http://en.wikipedia.org/wiki/XML) document that is then transformed by an [XSL](http://en.wikipedia.org/wiki/Extensible_Stylesheet_Language) style sheet before being sent to the browser. 
-  * [Hibernate](http://www.hibernate.org/) is used to access the database.
-  * Useful Java 7 documentation is the [Javadocs](http://docs.oracle.com/javase/7/docs/api/). 
   * [HTML 5](http://www.w3.org/html/wg/drafts/html/master/Overview.html)
   
 ### Todo
