@@ -13,12 +13,12 @@ for organizations with high electricity consumption. The software is hosted at
 ###  Installation
 
 1. [Download](http://sourceforge.net/projects/chellow/files/) the latest version of Chellow.
-*  Make sure the following are installed: 
+2.  Make sure the following are installed: 
     * PostgreSQL 9.1 with the JDBC4 PostgreSQL Driver, Version 9.2-1002
     * OpenJDK 1.7.0_13 (in server mode)
     * Apache Tomcat 7.0.30
-*  Create a PostgreSQL database called `chellow`. 
-*  In your Tomcat, configure a JNDI JDBC data source called jdbc/chellow. 
+3.  Create a PostgreSQL database called `chellow`. 
+4.  In your Tomcat, configure a JNDI JDBC data source called jdbc/chellow. 
     1. Add the following snippet to the `context.xml` file in the Tomcat configuration directory: 
 
         <Resource name="jdbc/chellow" auth="Container"
@@ -28,8 +28,8 @@ for organizations with high electricity consumption. The software is hosted at
             accessToUnderlyingConnectionAllowed="true" defaultTransactionIsolation="8"
             readOnly="true" />
 
-    *  Put the [JDBC driver](http://jdbc.postgresql.org/download/postgresql-9.1-903.jdbc4.jar) in the Tomcat `/lib/` directory.
-*  Deploy the file chellow.war to Tomcat.
+    2.  Put the [JDBC driver](http://jdbc.postgresql.org/download/postgresql-9.1-903.jdbc4.jar) in the Tomcat `/lib/` directory.
+5.  Deploy the file chellow.war to Tomcat.
 
 ###  Getting Started
 
