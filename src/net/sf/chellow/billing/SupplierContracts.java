@@ -138,12 +138,4 @@ public class SupplierContracts extends EntityList {
 		// TODO Auto-generated method stub
 		return null;
 	}
-
-	/*
-	 * public List<SupplyGeneration> supplyGenerations(Account account) { return
-	 * Hiber .session() .createQuery( "select mpan.supplyGeneration from Mpan
-	 * mpan where mpan.supplierAccount = :account order by
-	 * mpan.supplyGeneration.startDate.date") .setEntity("account",
-	 * account).list(); }
-	 */
 }

@@ -189,7 +189,9 @@ public class ContextListener implements ServletContextListener {
 			throw new UserException("Errors in schema generation.");
 		}
 		Hiber.setReadWrite();
-		Configuration.getConfiguration();
+		Configuration config = new Configuration("");
+		Hiber.session().save(config);
+		Hiber.commit();
 
 		VoltageLevel.insertVoltageLevels();
 		UserRole.insertUserRole(UserRole.EDITOR);

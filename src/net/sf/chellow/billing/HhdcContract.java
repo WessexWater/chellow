@@ -178,7 +178,6 @@ public class HhdcContract extends Contract {
 
 	public void httpPost(Invocation inv) throws HttpException {
 		Hiber.setReadWrite();
-		Hiber.session().setReadOnly(this, false);
 		if (inv.hasParameter("update-state")) {
 			String state = inv.getString("state");
 			state = state.replace("\r", "").replace("\t", "    ");

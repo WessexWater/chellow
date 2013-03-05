@@ -160,7 +160,6 @@
 			<filelist dir="/usr/share/java">
 				<file name="commons-fileupload.jar" />
 				<file name="commons-io.jar" />
-				<file name="commons-net.jar" />
 				<file name="commons-logging.jar" />
 				<file name="httpclient.jar" />
 				<file name="httpcore.jar" />
@@ -178,6 +177,9 @@
 			<filelist dir="${javalib.home}/slf4j-1.7.2">
 				<file name="slf4j-nop-1.7.2.jar" />
 				<file name="slf4j-api-1.7.2.jar" />
+			</filelist>
+			<filelist dir="${javalib.home}/commons-net-3.2">
+				<file name="commons-net-3.2.jar" />
 			</filelist>
 		</copy>
 	</target>

@@ -9,7 +9,6 @@
 	<classpathentry kind="var" path="JAVA_LIB_HOME/jython-standalone-2.5.3.jar"/>
 	<classpathentry kind="lib" path="/usr/share/maven-repo/commons-fileupload/commons-fileupload/1.2.2/commons-fileupload-1.2.2.jar"/>
 	<classpathentry kind="var" path="TOMCAT/lib/servlet-api.jar"/>
-	<classpathentry kind="lib" path="/usr/share/java/commons-net-1.4.1.jar"/>
 	<classpathentry kind="var" path="JAVA_LIB_HOME"/>
 	<classpathentry kind="var" path="TOMCAT"/>
 	<classpathentry kind="output" path="bin"/>

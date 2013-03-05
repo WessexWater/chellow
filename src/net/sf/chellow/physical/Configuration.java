@@ -58,15 +58,8 @@ public class Configuration extends PersistentEntity {
 	}
 
 	static public Configuration getConfiguration() {
-		Configuration config = (Configuration) Hiber.session().createQuery(
+		return (Configuration) Hiber.session().createQuery(
 				"from Configuration").uniqueResult();
-		if (config == null) {
-			config = new Configuration("");
-			Hiber.setReadWrite();
-			Hiber.session().save(config);
-			Hiber.flush();
-		}
-		return config;
 	}
 
 	public static void generalImport(String action, String[] values,
