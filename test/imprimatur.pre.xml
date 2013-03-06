@@ -2031,7 +2031,7 @@ def triad_estimates():
 		<test name="CSV Sites Monthly Duration">
 			<request
 				path="/chellow/reports/161/output/?site-code=CH023&amp;months=1&amp;end-year=2009&amp;end-month=03">
-				<response-code value="200" />
+				<response-code value="303" />
 			</request>
 		</test>
 		<test name="CSV Sites TRIAD">
@@ -2044,6 +2044,16 @@ def triad_estimates():
 				function. -->
 			<request
 				path="/chellow/reports/161/output/?site-code=CI017&amp;months=1&amp;end-year=2009&amp;end-month=04">
+				<response-code value="303" />
+			</request>
+			<request path="/chellow/reports/251/output/">
+				<refresh />
+				<response-code value="200" />
+				<regex pattern="FINISHED_site_monthly_duration_for_CI017_1_to_2009_4\.csv" />
+			</request>
+			<request
+				path="/chellow/reports/253/output/?name=FINISHED_site_monthly_duration_for_CI017_1_to_2009_4.csv">
+				<refresh />
 				<response-code value="200" />
 				<regex
 					pattern='Site Id,Site Name,Associated Site Ids,Sources,Generator Types,Month,Metered Imported kWh,Metered Displaced kWh,Metered Exported kWh,Metered Used kWh,Metered Parasitic kWh,Metered Generated kWh,Metered 3rd Party Import kWh,Metered 3rd Party Export kWh,Metered Imported GBP,Metered Displaced GBP,Metered Exported GBP,Metered Used GBP,Metered 3rd Party Import GBP,Billed Imported kWh,Billed Imported GBP,Metering Type,Problem' />
@@ -2735,6 +2745,15 @@ def import_virtual_bill(supply_source):
 			</request>
 			<request
 				path="/chellow/reports/161/output/?site-code=CI017&amp;months=1&amp;end-year=2010&amp;end-month=07">
+				<response-code value="303" />
+			</request>
+			<request path="/chellow/reports/251/output/">
+				<refresh />
+				<regex pattern="FINISHED_site_monthly_duration_for_CI017_1_to_2010_7.csv" />
+				<response-code value="200" />
+			</request>
+			<request
+				path="/chellow/reports/253/output/?name=FINISHED_site_monthly_duration_for_CI017_1_to_2010_7.csv">
 				<regex
 					pattern='"CI017","Roselands","","3rd-party,net","","2010-07-31","0","0","0","0","0","0","0","0","1869.26","0","0","1869.26","0","0","0","hh",""' />
 				<response-code value="200" />

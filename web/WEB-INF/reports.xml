@@ -73,7 +73,7 @@ Monad.getContext().getAttribute("net.sf.chellow.jinja").get("render")(inv, templ
           <a href="https://bitbucket.org/ww_tlocke/chellow" target="_blank">Docs</a>
         </li>
       </ul>
-      <table><caption>CSV Downloads</caption>
+      <table><caption>CSV <a href="{{ context_path }}/reports/251/output/">Downloads</a></caption>
         <tr><th></th><th>Supplies</th><th>Sites</th></tr>
         <tr><th>Snapshot</th><td><a href="{{ context_path }}/reports/157/output/">Download</a></td><td></td></tr>
         <tr>
@@ -12420,7 +12420,7 @@ source.appendChild(MonadDate.getMonthsXml(doc))]]></value>
         <value><![CDATA[161]]></value>
         <value><![CDATA[true]]></value>
         <value><![CDATA[CSV Sites Monthly Duration]]></value>
-        <value><![CDATA[from net.sf.chellow.monad import Hiber, UserException
+        <value><![CDATA[from net.sf.chellow.monad import Hiber, UserException, Monad
 from net.sf.chellow.monad.types import MonadDate
 from java.sql import Timestamp, ResultSet
 from java.util import GregorianCalendar, Calendar, TimeZone, Locale, Date
@@ -12429,6 +12429,12 @@ from java.text import SimpleDateFormat, DecimalFormat
 from java.lang import Math, System
 from net.sf.chellow.billing import SupplierContract, NonCoreContract
 from org.python.util import PythonInterpreter
+import datetime
+import os
+import sys
+import traceback
+import threading
+
 
 year = inv.getInteger("end-year")
 month = inv.getInteger("end-month")
@@ -12437,16 +12443,11 @@ months = inv.getInteger("months")
 if not inv.isValid():
     raise UserException()
 
+
 if inv.hasParameter('site-code'):
     search_term = inv.getString('site-code')
-    query = Hiber.session().createQuery("from Site site where site.code = :siteCode").setString('siteCode', search_term.strip())
 else:
-    query = Hiber.session().createQuery("from Site site order by site.code")
-    #query = Hiber.session().createQuery("from Site site where site.code in ('10014', '12057') order by site.code")
-    #query = Hiber.session().createQuery("from Site site order by site.code").setMaxResults(400)
-
-
-computer = NonCoreContract.getNonCoreContract('computer')
+    search_term = None
 
 cal = MonadDate.getCalendar()
 cal.set(Calendar.YEAR, year)
@@ -12463,12 +12464,12 @@ cal.add(Calendar.MINUTE, 30)
 cal.add(Calendar.MONTH, -1 * months)
 start_date = HhStartDate(cal.getTime())
 
-comterp = PythonInterpreter()
-comterp.exec(computer.getChargeScript())
 
-bill_query = Hiber.session().createQuery("from Bill bill where bill.supply = :supply and bill.startDate.date <= :finishDate and bill.finishDate.date >= :startDate")
+month_format = SimpleDateFormat("yyyy-MM-dd")
+month_format.setCalendar(cal)
 
-def process_site(site, month_start, month_finish, forecast_date, pw):
+
+def process_site(site, month_start, month_finish, forecast_date, tmp_file, bill_query, comterp):
     site_code = site.getCode()
     associates = []
     sources = []
@@ -12534,8 +12535,7 @@ def process_site(site, month_start, month_finish, forecast_date, pw):
                     generator_types.append(gen_type)
 
             for supply_generation in Hiber.session().createQuery("from SupplyGeneration generation where generation.supply = :supply and generation.startDate.date <= :finishDate and (generation.finishDate is null or generation.finishDate.date >= :startDate)").setEntity('supply', supply).setTimestamp('startDate', chunk_start.getDate()).setTimestamp('finishDate', chunk_finish.getDate()).list():
-                pw.print(' ')
-                pw.flush()
+                tmp_file.write(' ')
                 if has_3rd_party:
                     for mpan in supply_generation.getMpans():
                         contr = mpan.getSupplierContract()
@@ -12557,18 +12557,18 @@ def process_site(site, month_start, month_finish, forecast_date, pw):
 
                 supplier_contract = import_mpan.getSupplierContract()
                 if source_code in ['net', 'gen-net']:
-                    #pw.println("starting vbill, " + str(System.currentTimeMillis()))
-                    supply_source = comterp.get('SupplySource')(bill_start, bill_finish, forecast_date, import_mpan, comterp, pw)
+                    #tmp_file.write("starting vbill, " + str(System.currentTimeMillis()))
+                    supply_source = comterp.get('SupplySource')(bill_start, bill_finish, forecast_date, import_mpan, comterp, tmp_file)
 
                     month_data['import-net-kwh'] += sum(hh['msp-kwh'] for hh in supply_source.hh_data)
 
-                    #pw.println("finished init from mpan, " + str(System.currentTimeMillis()))
-                    import_vb_function = comterp.get('contract_function')(supplier_contract, 'import_virtual_bill', pw)
+                    #tmp_file.write("finished init from mpan, " + str(System.currentTimeMillis()))
+                    import_vb_function = comterp.get('contract_function')(supplier_contract, 'import_virtual_bill', tmp_file)
                     if import_vb_function is None:
                         problem += "Can't find the import_virtual_bill function in the supplier contract. "
                     else:
                         v_bill = import_vb_function(supply_source)
-                        #pw.println("finishing vbill, " + str(System.currentTimeMillis()))
+                        #tmp_file.write("finishing vbill, " + str(System.currentTimeMillis()))
                         
                         if 'problem' in v_bill and len(v_bill['problem']) > 0:
                             problem += 'Supplier Problem: ' + v_bill['problem']
@@ -12604,22 +12604,22 @@ def process_site(site, month_start, month_finish, forecast_date, pw):
                 billed_gbp += overlap_proportion * bill.getNet().doubleValue()
                 billed_kwh += overlap_proportion * bill.getKwh().doubleValue()
 
-        #pw.println("getting site ds, " + str(System.currentTimeMillis()))
+        #tmp_file.println("getting site ds, " + str(System.currentTimeMillis()))
 
         displaced_mpan = comterp.get('displaced_mpan')(group, chunk_start, chunk_finish)
-        site_ds = comterp.get('SiteSource')(site, chunk_start, chunk_finish, forecast_date, comterp, pw, displaced_mpan)
+        site_ds = comterp.get('SiteSource')(site, chunk_start, chunk_finish, forecast_date, comterp, tmp_file, displaced_mpan)
         if displaced_mpan != None:
-            #pw.println("starting displaced, " + str(System.currentTimeMillis()))
-            month_data['msp-gbp'] += comterp.get('contract_function')(displaced_mpan.getSupplierContract(), 'displaced_virtual_bill', pw)(site_ds)['net-gbp']
+            #tmp_file.println("starting displaced, " + str(System.currentTimeMillis()))
+            month_data['msp-gbp'] += comterp.get('contract_function')(displaced_mpan.getSupplierContract(), 'displaced_virtual_bill', tmp_file)(site_ds)['net-gbp']
 
-            #pw.println("finishing displaced, " + str(System.currentTimeMillis()))
+            #tmp_file.println("finishing displaced, " + str(System.currentTimeMillis()))
         elif has_3rd_party and site.getCode() == '12129':
             keys = third_party_contracts.keys()
             keys.sort()
-            third_gbp = comterp.get('contract_function')(third_party_contracts[keys[0]], 'third_party_bill', pw)(site_ds)['net-gbp']
+            third_gbp = comterp.get('contract_function')(third_party_contracts[keys[0]], 'third_party_bill', tmp_file)(site_ds)['net-gbp']
             month_data['used-3rd-party-gbp'] += third_gbp
 
-        #pw.println("finishing site ds " + str(System.currentTimeMillis()))
+        #tmp_file.println("finishing site ds " + str(System.currentTimeMillis()))
 
         month_data['used-gbp'] += month_data['import-net-gbp'] + month_data['msp-gbp'] + month_data['used-3rd-party-gbp']
 
@@ -12633,43 +12633,89 @@ def process_site(site, month_start, month_finish, forecast_date, pw):
     generator_types.sort()
 
     result = [site.getCode(), site.getName(), ','.join(associates), ','.join(sources), '.'.join(generator_types), month_format.format(Date(month_finish.getDate().getTime() - 1)), month_data['import-net-kwh'], month_data['msp-kwh'], month_data['export-net-kwh'], month_data['used-kwh'], month_data['export-gen-kwh'], month_data['import-gen-kwh'], month_data['import-3rd-party-kwh'], month_data['export-3rd-party-kwh'], month_data['import-net-gbp'], month_data['msp-gbp'], 0, month_data['used-gbp'], month_data['used-3rd-party-gbp'], billed_kwh, billed_gbp, metering_type, problem]
-    #pw.println("Finished call method " + str(System.currentTimeMillis()))
+    #tmp_file.println("Finished call method " + str(System.currentTimeMillis()))
     return result
 
-inv.getResponse().setContentType("text/csv")
-inv.getResponse().setHeader('Content-Disposition', 'attachment; filename="output.csv"')
+def long_process():
+    computer = NonCoreContract.getNonCoreContract('computer')
 
-pw = inv.getResponse().getWriter()
-pw.print("Site Id,Site Name,Associated Site Ids,Sources,Generator Types,Month,Metered Imported kWh,Metered Displaced kWh,Metered Exported kWh,Metered Used kWh,Metered Parasitic kWh,Metered Generated kWh,Metered 3rd Party Import kWh,Metered 3rd Party Export kWh,Metered Imported GBP,Metered Displaced GBP,Metered Exported GBP,Metered Used GBP,Metered 3rd Party Import GBP,Billed Imported kWh,Billed Imported GBP,Metering Type,Problem")
-pw.flush()
+    comterp = PythonInterpreter()
+    comterp.exec(computer.getChargeScript())
 
-month_format = SimpleDateFormat("yyyy-MM-dd")
-month_format.setCalendar(cal)
+    forecast_date = comterp.get('forecast_date')()
 
-forecast_date = comterp.get('forecast_date')()
+    if search_term is None:
+        query = Hiber.session().createQuery("from Site site order by site.code")
+        #query = Hiber.session().createQuery("from Site site where site.code in ('10014', '12057') order by site.code")
+        #query = Hiber.session().createQuery("from Site site order by site.code").setMaxResults(400)
+        base_name = "site_monthly_duration_for_all_site_for_" + str(months) + "_to_" + str(year) + "_" + str(month) + ".csv"
+    else:
+        query = Hiber.session().createQuery("from Site site where site.code = :siteCode").setString('siteCode', search_term.strip())
+        base_name = "site_monthly_duration_for_" + search_term + "_" + str(months) + "_to_" + str(year) + "_" + str(month) + ".csv"
 
-sites = query.scroll()
-for i in range(months):
-    sites.beforeFirst()
-    while sites.next():
-        #pw.println("starting site, " + str(System.currentTimeMillis()))
-        #pw.println("starting site, " + str(System.currentTimeMillis()))
-        site = sites.get(0)
-        cal.setTime(start_date.getDate())
-        cal.add(Calendar.MONTH, i)
-        month_start = HhStartDate(cal.getTime())
-        cal.add(Calendar.MONTH, 1)
-        cal.add(Calendar.MINUTE, -30)
-        month_finish = HhStartDate(cal.getTime())
-        #tq = process_site(site, month_start, month_finish, forecast_date, pw)
-        #pw.println('printing, ' + str(System.currentTimeMillis()) + ',' + ','.join('"' + str(value) + '"' for value in tq))
-        pw.print('\r\n' + ','.join('"' + str(value) + '"' for value in process_site(site, month_start, month_finish, forecast_date, pw)))
-        pw.flush()
-        #pw.println("finishing site, " + str(System.currentTimeMillis()))
-        Hiber.session().clear()
+    bill_query = Hiber.session().createQuery("from Bill bill where bill.supply = :supply and bill.startDate.date <= :finishDate and bill.finishDate.date >= :startDate")
 
-sites.close()
-pw.close()]]></value>
+    now = datetime.datetime.utcnow()
+    tmp_dir = System.getProperty("java.io.tmpdir")
+    #base_name = "site_monthly_duration_for_" + str(months) + "_to_" + str(year) + "_" + str(month) + "_" + now.strftime("%Y%m%d%H%M") + ".csv"
+    
+    running_name = "RUNNING_" + base_name
+    finished_name = "FINISHED_" + base_name
+
+    tmp_dir = Monad.getContext().getAttribute("net.sf.chellow.tmp_dir")
+    os.chdir(tmp_dir)
+    tmp_file = open(running_name, "w")
+
+    #inv.getResponse().setContentType("text/csv")
+#inv.getResponse().setHeader('Content-Disposition', 'attachment; filename="output.csv"')
+
+    #tmp_file = inv.getResponse().getWriter()
+    tmp_file.write("Site Id,Site Name,Associated Site Ids,Sources,Generator Types,Month,Metered Imported kWh,Metered Displaced kWh,Metered Exported kWh,Metered Used kWh,Metered Parasitic kWh,Metered Generated kWh,Metered 3rd Party Import kWh,Metered 3rd Party Export kWh,Metered Imported GBP,Metered Displaced GBP,Metered Exported GBP,Metered Used GBP,Metered 3rd Party Import GBP,Billed Imported kWh,Billed Imported GBP,Metering Type,Problem")
+
+    sites = query.scroll()
+
+    try:
+    
+        for i in range(months):
+            sites.beforeFirst()
+            while sites.next():
+                #tmp_file.write("starting site, " + str(System.currentTimeMillis()))
+                #tmp_file.write("starting site, " + str(System.currentTimeMillis()))
+                site = sites.get(0)
+                cal.setTime(start_date.getDate())
+                cal.add(Calendar.MONTH, i)
+                month_start = HhStartDate(cal.getTime())
+                cal.add(Calendar.MONTH, 1)
+                cal.add(Calendar.MINUTE, -30)
+                month_finish = HhStartDate(cal.getTime())
+                #tq = process_site(site, month_start, month_finish, forecast_date,  tmp_file)
+                #tmp_file.write('printing, ' + str(System.currentTimeMillis()) + ',' + ','.join('"' + str(value) + '"' for value in tq))
+                tmp_file.write('\r\n' + ','.join('"' + str(value) + '"' for value in process_site(site, month_start, month_finish, forecast_date, tmp_file, bill_query, comterp)))
+                #tmp_file.write("finishing site, " + str(System.currentTimeMillis()))
+                tmp_file.flush()
+                Hiber.session().clear()
+    except:
+        e_info = sys.exc_info()
+        tb = e_info[2]
+        traceback.print_tb(tb, file=tmp_file)
+        tmp_file.write("Problem " + str(e_info[0]) + str(e_info[1]) + str(tb) + " line number " + str(tb.tb_lineno))
+    finally:
+        try:
+            sites.close()
+        except:
+            tmp_file.write("\nProblem closing sites.")
+        finally:
+            try:
+                Hiber.close()
+            except:
+                tmp_file.write("\nProblem closing Hiber.")
+            finally:
+                tmp_file.close()
+                os.rename(running_name, finished_name)
+
+        
+threading.Thread(target=long_process).start()
+inv.sendSeeOther("/reports/251/output/")]]></value>
         <value><![CDATA[]]></value>
     </line>
     <line>
@@ -18618,5 +18664,117 @@ else:
         </html>
     </xsl:template>
 </xsl:stylesheet>]]></value>
+    </line>
+    <line>
+        <value><![CDATA[insert]]></value>
+        <value><![CDATA[report]]></value>
+        <value><![CDATA[251]]></value>
+        <value><![CDATA[true]]></value>
+        <value><![CDATA[Report Monitor]]></value>
+        <value><![CDATA[from net.sf.chellow.monad import Hiber, UserException, Monad
+import os
+import datetime
+
+tmp_dir = Monad.getContext().getAttribute("net.sf.chellow.tmp_dir")
+
+
+
+files = []
+
+for fl in os.listdir(tmp_dir):
+  statinfo = os.stat(fl)
+  files.append({'name': fl, 'last_modified': datetime.datetime.utcfromtimestamp(statinfo.st_mtime), 'size': statinfo.st_size, 'creation_date': datetime.datetime.utcfromtimestamp(statinfo.st_ctime) })
+
+Monad.getContext().getAttribute("net.sf.chellow.jinja").get("render")(inv, template, {'files': files})]]></value>
+        <value><![CDATA[<!DOCTYPE html>
+<html>
+  <head>
+    <link rel="stylesheet" type="text/css"
+      href="{{ context_path }}/reports/19/output/" />
+    <title>Chellow &gt; Report Downloads</title>
+  </head>
+  <body>
+    <p>
+      <a href="{{ context_path }}/reports/1/output/">Chellow</a> &gt;
+      Report Downloads
+    </p>
+
+    {% if messages %}
+      <ul>
+        {% for message in messages %}
+          <li>{{ message }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+
+
+    <p><a href=".">Refresh</a> the page.</p>
+
+
+    <table><caption>Report Files</caption>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Size</th>
+          <th>Creation Date</th>
+          <th>Last Modified</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for file in files %}
+          <tr>
+            <td><a href="{{ context_path }}/reports/253/output/?name={{ file.name }}">{{ file.name }}</a></td>
+            <td>{{ file.size }} B</td>
+            <td>{{ file.creation_date|hh_format }}</td>
+            <td>{{ file.last_modified|hh_format }}</td>
+            <td>
+              <form method="post" action="{{ context_path }}/reports/253/output/">
+                <fieldset style="border: none;">
+                  <input type="hidden" name="name" value="{{ file.name }}">
+                  <input type="submit" name="delete" value="Delete">
+                </fieldset>
+              </form>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </body>
+</html>
+]]></value>
+    </line>
+    <line>
+        <value><![CDATA[insert]]></value>
+        <value><![CDATA[report]]></value>
+        <value><![CDATA[253]]></value>
+        <value><![CDATA[true]]></value>
+        <value><![CDATA[Report Downloader]]></value>
+        <value><![CDATA[from net.sf.chellow.monad import Hiber, UserException, Monad
+import os
+
+name = inv.getString("name")
+head, name = os.path.split(os.path.normcase(os.path.normpath(name)))
+
+tmp_dir = Monad.getContext().getAttribute("net.sf.chellow.tmp_dir")
+
+method = inv.getRequest().getMethod()
+
+if method == 'GET':
+    fl = open(os.path.join(tmp_dir, name))
+
+    inv.getResponse().setContentType("text/csv")
+    inv.getResponse().setHeader('Content-Disposition', 'attachment; filename="' + name + '"')
+
+    pw = inv.getResponse().getWriter()
+    for line in fl:
+        pw.print(line)
+
+    pw.close()
+    fl.close()
+elif method == 'POST':
+    os.remove(name)
+    inv.sendSeeOther("/reports/251/output/")
+else:
+    raise UserException("Don't recognize the method: " + method)]]></value>
     </line>
 </csv>

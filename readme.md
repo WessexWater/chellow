@@ -12,7 +12,8 @@ for organizations with high electricity consumption. The software is hosted at
 
 ###  Installation
 
-1. [Download](http://sourceforge.net/projects/chellow/files/) the latest version of Chellow.
+1. [Download](https://bitbucket.org/ww_tlocke/chellow/downloads) the latest
+   version of Chellow. The file names are of the form `chellow-###.zip`.
 2.  Make sure the following are installed: 
     * PostgreSQL 9.1 with the JDBC4 PostgreSQL Driver, Version 9.2-1002
     * OpenJDK 1.7.0_13 (in server mode)
@@ -23,12 +24,12 @@ for organizations with high electricity consumption. The software is hosted at
 
         <Resource name="jdbc/chellow" auth="Container"
             type="javax.sql.DataSource" username="postgres" password="hello"
-    	    driverClassName="org.postgresql.Driver"
+            driverClassName="org.postgresql.Driver"
             url="jdbc:postgresql://localhost:5432/chellow" maxActive="8" maxIdle="4"
             accessToUnderlyingConnectionAllowed="true" defaultTransactionIsolation="8"
             readOnly="true" />
 
-    2.  Put the [JDBC driver](http://jdbc.postgresql.org/download/postgresql-9.1-903.jdbc4.jar) in the Tomcat `/lib/` directory.
+    2.  Put the [JDBC driver](http://jdbc.postgresql.org/download/postgresql-9.2-1002.jdbc4.jar) in the Tomcat `/lib/` directory.
 5.  Deploy the file chellow.war to Tomcat.
 
 ###  Getting Started
