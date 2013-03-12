@@ -2926,5 +2926,33 @@ def import_virtual_bill(supply_source):
 				<response-code value="303" />
 			</request>
 		</test>
+		<test name="Try importing HH data from FTP server.">
+			<!-- Update Contract -->
+			<request path="/chellow/hhdc-contracts/0/" method="post">
+				<control name="participant-id" value="56" /> <!-- DASL -->
+				<control name="name" value="HH contract" />
+				<control name="charge-script"><![CDATA[
+def virtual_bill_titles():
+    return ['net-gbp']
+
+def virtual_bill(supply_source):
+    return {'net-gbp': 0}]]></control>
+				<control name="properties"><![CDATA[
+has.importer=yes
+file.type=.df2
+hostname=localhost
+username=chellow
+password=chellow
+directory0=.]]></control>
+				<response-code value="303" />
+			</request>
+			<request
+				path="/chellow/reports/213/output/?hhdc-contract-id=0&amp;start=Start">
+			</request>
+			<request path="/chellow/reports/213/output/?hhdc-contract-id=0">
+				<refresh />
+				<regex pattern="File stream obtained successfully\." />
+			</request>
+		</test>
 	</test-group>
 </imprimatur>
