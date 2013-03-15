@@ -1431,7 +1431,7 @@ Monad.getContext().getAttribute("net.sf.chellow.jinja").get("render")(inv, templ
             <a href="{{ context_path }}/reports/15/output/?supply-id={{ supply.id }}&amp;is_import=false">Export</a>
         </li>
         <li>
-            <a href="{{ context_path }}/reports/15/output/?supply-id={{ supply.id }}&amp;months=1&amp;finish-year={{ now.year }}&amp;finish-month={{ now.month }}">Raw HH data</a>
+            <a href="{{ context_path }}/reports/17/output/?supply-id={{ supply.id }}&amp;months=1&amp;finish-year={{ now.year }}&amp;finish-month={{ now.month }}">Raw HH data</a>
         </li>
         <li>
             <a href="{{ context_path }}/reports/101/output/?supply-id={{ supply.id }}">Supplier Virtual Bill</a>

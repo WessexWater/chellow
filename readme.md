@@ -7,8 +7,8 @@ Chellow is released under the [GPL v3](http://www.gnu.org/licenses/gpl.html).
 ###  Introduction
 
 Chellow is a web application for checking UK electricity bills. It's designed
-for organizations with high electricity consumption. The software is hosted at
- http://sourceforge.net/projects/chellow/)
+for organizations with high electricity consumption. The software is
+[hosted on BitBucket](https://bitbucket.org/ww_tlocke/chellow).
 
 ###  Installation
 
