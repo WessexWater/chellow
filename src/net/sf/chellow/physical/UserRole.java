@@ -1,6 +1,6 @@
 /*******************************************************************************
  * 
- *  Copyright (c) 2005, 2009 Wessex Water Services Limited
+ *  Copyright (c) 2005-2013 Wessex Water Services Limited
  *  
  *  This file is part of Chellow.
  * 
@@ -21,22 +21,9 @@
 
 package net.sf.chellow.physical;
 
-import java.net.URI;
-
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
-import net.sf.chellow.monad.Invocation;
-import net.sf.chellow.monad.MonadMessage;
-import net.sf.chellow.monad.MonadUtils;
-import net.sf.chellow.monad.NotFoundException;
-import net.sf.chellow.monad.Urlable;
 import net.sf.chellow.monad.UserException;
-import net.sf.chellow.monad.types.MonadUri;
-import net.sf.chellow.monad.types.UriPathElement;
-import net.sf.chellow.ui.Chellow;
-
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
 
 public class UserRole extends PersistentEntity {
 	public static final String EDITOR = "editor";
@@ -96,51 +83,5 @@ public class UserRole extends PersistentEntity {
 			isEqual = user.getId().equals(getId());
 		}
 		return isEqual;
-	}
-
-	public String toString() {
-		try {
-			return getUriId().toString();
-		} catch (HttpException e) {
-			throw new RuntimeException(e);
-		}
-	}
-
-	public Element toXml(Document doc) throws HttpException {
-		Element element = super.toXml(doc, "user-role");
-		element.setAttribute("code", code);
-		return element;
-	}
-
-	public MonadUri getEditUri() throws HttpException {
-		return Chellow.USER_ROLES_INSTANCE.getEditUri().resolve(getUriId()).append("/");
-	}
-
-	public Urlable getChild(UriPathElement uriId) throws HttpException {
-		throw new NotFoundException();
-	}
-
-	public void httpGet(Invocation inv) throws HttpException {
-		inv.sendOk(document());
-	}
-
-	private Document document() throws HttpException {
-		return document(null);
-	}
-
-	private Document document(String message) throws HttpException {
-		Document doc = MonadUtils.newSourceDocument();
-		Element source = doc.getDocumentElement();
-		source.appendChild(toXml(doc));
-		if (message != null) {
-			source.appendChild(new MonadMessage(message).toXml(doc));
-		}
-		return doc;
-	}
-
-	@Override
-	public URI getViewUri() throws HttpException {
-		// TODO Auto-generated method stub
-		return null;
 	}
 }

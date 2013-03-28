@@ -1,24 +1,24 @@
 <?xml version="1.0"?>
 <csv>
-    <line>
-        <value><![CDATA[insert]]></value>
-        <value><![CDATA[report]]></value>
-        <value><![CDATA[1]]></value>
-        <value><![CDATA[true]]></value>
-        <value><![CDATA[Home]]></value>
-        <value><![CDATA[from net.sf.chellow.physical import Configuration
+	<line>
+		<value><![CDATA[insert]]></value>
+		<value><![CDATA[report]]></value>
+		<value><![CDATA[1]]></value>
+		<value><![CDATA[true]]></value>
+		<value><![CDATA[Home]]></value>
+		<value><![CDATA[from net.sf.chellow.physical import Configuration
 from java.util import Properties
 from java.io import StringReader
 from java.lang import System
-from net.sf.chellow.billing import NonCoreContract
 from net.sf.chellow.monad import Monad
+
 
 config = Configuration.getConfiguration()
 properties = Properties()
 properties.load(StringReader(config.getProperties()))
 
 Monad.getContext().getAttribute("net.sf.chellow.jinja").get("render")(inv, template, {'local_reports_id': properties.get('local.reports')})]]></value>
-        <value><![CDATA[<!DOCTYPE html>
+		<value><![CDATA[<!DOCTYPE html>
 <html>
   <head>
     <link rel="stylesheet" type="text/css"
@@ -73,7 +73,7 @@ Monad.getContext().getAttribute("net.sf.chellow.jinja").get("render")(inv, templ
           <a href="https://bitbucket.org/ww_tlocke/chellow" target="_blank">Docs</a>
         </li>
       </ul>
-      <table><caption>CSV Downloads</caption>
+      <table><caption>CSV <a href="{{ context_path }}/reports/251/output/">Downloads</a></caption>
         <tr><th></th><th>Supplies</th><th>Sites</th></tr>
         <tr><th>Snapshot</th><td><a href="{{ context_path }}/reports/157/output/">Download</a></td><td></td></tr>
         <tr>
@@ -218,7 +218,7 @@ Monad.getContext().getAttribute("net.sf.chellow.jinja").get("render")(inv, templ
                         </ul>
                     </li>
                     <li>
-                        <a href="{{ context_path }}/users/">
+                        <a href="{{ context_path }}/reports/255/output/">
                             Users
                         </a>
                         <ul>
@@ -279,14 +279,14 @@ Monad.getContext().getAttribute("net.sf.chellow.jinja").get("render")(inv, templ
     </div>
   </body>
 </html>]]></value>
-    </line>
-    <line>
-        <value><![CDATA[insert]]></value>
-        <value><![CDATA[report]]></value>
-        <value><![CDATA[3]]></value>
-        <value><![CDATA[true]]></value>
-        <value><![CDATA[Sites]]></value>
-        <value><![CDATA[from net.sf.chellow.monad import Hiber
+	</line>
+	<line>
+		<value><![CDATA[insert]]></value>
+		<value><![CDATA[report]]></value>
+		<value><![CDATA[3]]></value>
+		<value><![CDATA[true]]></value>
+		<value><![CDATA[Sites]]></value>
+		<value><![CDATA[from net.sf.chellow.monad import Hiber
 from net.sf.chellow.monad.types import MonadUri
 
 if inv.hasParameter('search-pattern'):
@@ -297,7 +297,7 @@ if inv.hasParameter('search-pattern'):
     else:
         for site in sites:
             source.appendChild(site.toXml(doc))]]></value>
-        <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
+		<value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
 <xsl:stylesheet version="1.0"
     xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
     <xsl:output method="html" encoding="US-ASCII"
@@ -373,14 +373,14 @@ tabindex="1" />
         </html>
     </xsl:template>
 </xsl:stylesheet>]]></value>
-    </line>
-    <line>
-        <value><![CDATA[insert]]></value>
-        <value><![CDATA[report]]></value>
-        <value><![CDATA[5]]></value>
-        <value><![CDATA[true]]></value>
-        <value><![CDATA[Site]]></value>
-        <value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree, UserException
+	</line>
+	<line>
+		<value><![CDATA[insert]]></value>
+		<value><![CDATA[report]]></value>
+		<value><![CDATA[5]]></value>
+		<value><![CDATA[true]]></value>
+		<value><![CDATA[Site]]></value>
+		<value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree, UserException
 from net.sf.chellow.monad.types import MonadDate
 from java.util import GregorianCalendar, Calendar, TimeZone, Locale, Date, Properties
 from net.sf.chellow.physical import Site, HhStartDate, Supply, Configuration
@@ -482,7 +482,7 @@ for key in properties.propertyNames():
         source.appendChild(link_element)
         link_element.setAttribute('href', properties.get(key))
         link_element.setAttribute('name', properties.get(key[:-3] + "name"))]]></value>
-        <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
+		<value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
 <xsl:stylesheet version="1.0"
     xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
     <xsl:output method="xml" encoding="US-ASCII"
@@ -801,14 +801,14 @@ Ongoing
     </html>
   </xsl:template>
 </xsl:stylesheet>]]></value>
-    </line>
-    <line>
-        <value><![CDATA[insert]]></value>
-        <value><![CDATA[report]]></value>
-        <value><![CDATA[7]]></value>
-        <value><![CDATA[true]]></value>
-        <value><![CDATA[Supply]]></value>
-        <value><![CDATA[from net.sf.chellow.physical import Supply, Configuration, RegisterRead
+	</line>
+	<line>
+		<value><![CDATA[insert]]></value>
+		<value><![CDATA[report]]></value>
+		<value><![CDATA[7]]></value>
+		<value><![CDATA[true]]></value>
+		<value><![CDATA[Supply]]></value>
+		<value><![CDATA[from net.sf.chellow.physical import Supply, Configuration, RegisterRead
 from net.sf.chellow.billing import NonCoreContract
 from net.sf.chellow.monad import Hiber, Debug, Monad
 import collections
@@ -942,7 +942,7 @@ if note is not None:
             truncated_note = trunc_line
 
 Monad.getContext().getAttribute("net.sf.chellow.jinja").get("render")(inv, template, {'triad_year': triad_year, 'now': now, 'last_month_start': last_month_start, 'last_month_finish': last_month_finish, 'era_bundles': era_bundles, 'supply': supply, 'system_properties': properties, 'is_truncated': is_truncated, 'truncated_note': truncated_note, 'this_month_start': this_month_start})]]></value>
-        <value><![CDATA[<!DOCTYPE html>
+		<value><![CDATA[<!DOCTYPE html>
 <html>
   <head>
     <link rel="stylesheet" type="text/css"
@@ -1431,7 +1431,7 @@ Monad.getContext().getAttribute("net.sf.chellow.jinja").get("render")(inv, templ
             <a href="{{ context_path }}/reports/15/output/?supply-id={{ supply.id }}&amp;is_import=false">Export</a>
         </li>
         <li>
-            <a href="{{ context_path }}/reports/15/output/?supply-id={{ supply.id }}&amp;months=1&amp;finish-year={{ now.year }}&amp;finish-month={{ now.month }}">Raw HH data</a>
+            <a href="{{ context_path }}/reports/17/output/?supply-id={{ supply.id }}&amp;months=1&amp;finish-year={{ now.year }}&amp;finish-month={{ now.month }}">Raw HH data</a>
         </li>
         <li>
             <a href="{{ context_path }}/reports/101/output/?supply-id={{ supply.id }}">Supplier Virtual Bill</a>
@@ -1575,14 +1575,14 @@ Monad.getContext().getAttribute("net.sf.chellow.jinja").get("render")(inv, templ
     </form>
   </body>
 </html>]]></value>
-    </line>
-    <line>
-        <value><![CDATA[insert]]></value>
-        <value><![CDATA[report]]></value>
-        <value><![CDATA[9]]></value>
-        <value><![CDATA[true]]></value>
-        <value><![CDATA[Site hh graph container]]></value>
-        <value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree
+	</line>
+	<line>
+		<value><![CDATA[insert]]></value>
+		<value><![CDATA[report]]></value>
+		<value><![CDATA[9]]></value>
+		<value><![CDATA[true]]></value>
+		<value><![CDATA[Site hh graph container]]></value>
+		<value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree
 from net.sf.chellow.monad.types import MonadDate
 from net.sf.chellow.physical import Site
 from java.util import Calendar
@@ -1599,7 +1599,7 @@ site = Site.getSite(site_id)
 source.appendChild(site.toXml(doc))
 
 source.appendChild(MonadDate.getMonthsXml(doc))]]></value>
-        <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
+		<value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
 <xsl:stylesheet version="1.0"
     xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
     <xsl:output method="html" encoding="US-ASCII"
@@ -1671,14 +1671,14 @@ source.appendChild(MonadDate.getMonthsXml(doc))]]></value>
         </html>
     </xsl:template>
 </xsl:stylesheet>]]></value>
-    </line>
-    <line>
-        <value><![CDATA[insert]]></value>
-        <value><![CDATA[report]]></value>
-        <value><![CDATA[11]]></value>
-        <value><![CDATA[true]]></value>
-        <value><![CDATA[Site Generation Graph Container]]></value>
-        <value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree, UserException
+	</line>
+	<line>
+		<value><![CDATA[insert]]></value>
+		<value><![CDATA[report]]></value>
+		<value><![CDATA[11]]></value>
+		<value><![CDATA[true]]></value>
+		<value><![CDATA[Site Generation Graph Container]]></value>
+		<value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree, UserException
 from net.sf.chellow.monad.types import MonadDate
 from net.sf.chellow.physical import Site
 from java.util import Calendar
@@ -1703,7 +1703,7 @@ else:
     cal = MonadDate.getCalendar()
     cal.setTimeInMillis(System.currentTimeMillis())
     inv.sendTemporaryRedirect('/reports/11/output/?site-id=' + str(site_id) + '&months=1&finish-month=' + str(cal.get(Calendar.MONTH) + 1) + '&finish-year=' + str(cal.get(Calendar.YEAR)))]]></value>
-        <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
+		<value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
 <xsl:stylesheet version="1.0"
     xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
   <xsl:output method="xml" encoding="US-ASCII"
@@ -1784,14 +1784,14 @@ else:
         </html>
     </xsl:template>
 </xsl:stylesheet>]]></value>
-    </line>
-    <line>
-        <value><![CDATA[insert]]></value>
-        <value><![CDATA[report]]></value>
-        <value><![CDATA[13]]></value>
-        <value><![CDATA[true]]></value>
-        <value><![CDATA[Site Monthly figures]]></value>
-        <value><![CDATA[from net.sf.chellow.monad import Hiber, UserException, XmlTree
+	</line>
+	<line>
+		<value><![CDATA[insert]]></value>
+		<value><![CDATA[report]]></value>
+		<value><![CDATA[13]]></value>
+		<value><![CDATA[true]]></value>
+		<value><![CDATA[Site Monthly figures]]></value>
+		<value><![CDATA[from net.sf.chellow.monad import Hiber, UserException, XmlTree
 from java.lang import System
 from net.sf.chellow.monad.types import MonadDate
 import math
@@ -2065,7 +2065,7 @@ if rs.next():
     if maxUsedKwYearDate != None:
         source.setAttribute("max-used-kw-date", MonadDate(Date(maxUsedKwYearDate)).toString())
     source.setAttribute("used-kwh", str(int(round(usedKwhYear))))]]></value>
-        <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
+		<value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
 <xsl:stylesheet version="1.0"
     xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
     <xsl:output method="xml" encoding="US-ASCII"
@@ -2450,14 +2450,14 @@ if rs.next():
         </html>
     </xsl:template>
 </xsl:stylesheet>]]></value>
-    </line>
-    <line>
-        <value><![CDATA[insert]]></value>
-        <value><![CDATA[report]]></value>
-        <value><![CDATA[15]]></value>
-        <value><![CDATA[true]]></value>
-        <value><![CDATA[Supply MPAN months]]></value>
-        <value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree, UserException
+	</line>
+	<line>
+		<value><![CDATA[insert]]></value>
+		<value><![CDATA[report]]></value>
+		<value><![CDATA[15]]></value>
+		<value><![CDATA[true]]></value>
+		<value><![CDATA[Supply MPAN months]]></value>
+		<value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree, UserException
 from net.sf.chellow.monad.types import MonadDate
 from java.util import Calendar, Locale, TimeZone, GregorianCalendar
 from net.sf.chellow.physical import HhStartDate, Supply
@@ -2526,7 +2526,7 @@ for i in range(12 * years):
     month_start.setLabel('month-start')
     month_element.appendChild(month_start.toXml(doc))
     month_start = next_month_start]]></value>
-        <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
+		<value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
 <xsl:stylesheet version="1.0"
     xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
     <xsl:output method="xml" encoding="US-ASCII"
@@ -2723,14 +2723,14 @@ for i in range(12 * years):
         </html>
     </xsl:template>
 </xsl:stylesheet>]]></value>
-    </line>
-    <line>
-        <value><![CDATA[insert]]></value>
-        <value><![CDATA[report]]></value>
-        <value><![CDATA[17]]></value>
-        <value><![CDATA[true]]></value>
-        <value><![CDATA[Supply Raw HH Data]]></value>
-        <value><![CDATA[from net.sf.chellow.monad import Hiber, UserException, XmlTree
+	</line>
+	<line>
+		<value><![CDATA[insert]]></value>
+		<value><![CDATA[report]]></value>
+		<value><![CDATA[17]]></value>
+		<value><![CDATA[true]]></value>
+		<value><![CDATA[Supply Raw HH Data]]></value>
+		<value><![CDATA[from net.sf.chellow.monad import Hiber, UserException, XmlTree
 from java.util import Calendar, GregorianCalendar, TimeZone, Locale, Date
 from net.sf.chellow.monad.types import MonadDate
 from java.sql import Timestamp, ResultSet
@@ -2808,7 +2808,7 @@ if rs.next():
                 hhChannelStartDate = None
         hhDate = HhStartDate.getNext(cal, hhDate)
 rs.close()]]></value>
-        <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
+		<value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
 <xsl:stylesheet version="1.0"
     xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
     <xsl:output method="xml" encoding="US-ASCII"
@@ -2985,14 +2985,14 @@ rs.close()]]></value>
         </html>
     </xsl:template>
 </xsl:stylesheet>]]></value>
-    </line>
-    <line>
-        <value><![CDATA[insert]]></value>
-        <value><![CDATA[report]]></value>
-        <value><![CDATA[19]]></value>
-        <value><![CDATA[true]]></value>
-        <value><![CDATA[Style Sheet]]></value>
-        <value><![CDATA[inv.getResponse().setContentType("text/css")
+	</line>
+	<line>
+		<value><![CDATA[insert]]></value>
+		<value><![CDATA[report]]></value>
+		<value><![CDATA[19]]></value>
+		<value><![CDATA[true]]></value>
+		<value><![CDATA[Style Sheet]]></value>
+		<value><![CDATA[inv.getResponse().setContentType("text/css")
 pw = inv.getResponse().getWriter()
 pw.println("@import url(https://fonts.googleapis.com/css?family=Overclock);")
 pw.println("table {                                                        ")
@@ -3025,15 +3025,16 @@ pw.println("    font-family: 'Overclock', sans-serif;                      ")
 pw.println("    background-color: rgb(255, 236, 139);                      ")
 pw.println("}                                                              ")
 pw.close()]]></value>
-        <value><![CDATA[]]></value>
-    </line>
-    <line>
-        <value><![CDATA[insert]]></value>
-        <value><![CDATA[report]]></value>
-        <value><![CDATA[21]]></value>
-        <value><![CDATA[true]]></value>
-        <value><![CDATA[Site HH Graph]]></value>
-        <value><![CDATA[from net.sf.chellow.monad import Hiber, UserException
+		<value><![CDATA[]]>
+		</value>
+	</line>
+	<line>
+		<value><![CDATA[insert]]></value>
+		<value><![CDATA[report]]></value>
+		<value><![CDATA[21]]></value>
+		<value><![CDATA[true]]></value>
+		<value><![CDATA[Site HH Graph]]></value>
+		<value><![CDATA[from net.sf.chellow.monad import Hiber, UserException
 from java.lang import System
 from net.sf.chellow.monad.types import MonadDate 
 from java.util import GregorianCalendar, TimeZone, Locale, Calendar, Date
@@ -3203,15 +3204,16 @@ graphics.setColor(Color.BLACK)
 #graphics.drawString("report took..." + str(java.lang.System.currentTimeMillis() - start) + "ms", 10, 390)
 ImageIO.write(image, "png", os)
 os.close()]]></value>
-        <value><![CDATA[]]></value>
-    </line>
-    <line>
-        <value><![CDATA[insert]]></value>
-        <value><![CDATA[report]]></value>
-        <value><![CDATA[23]]></value>
-        <value><![CDATA[true]]></value>
-        <value><![CDATA[Generation Graph]]></value>
-        <value><![CDATA[from net.sf.chellow.monad import Hiber, UserException
+		<value><![CDATA[]]>
+		</value>
+	</line>
+	<line>
+		<value><![CDATA[insert]]></value>
+		<value><![CDATA[report]]></value>
+		<value><![CDATA[23]]></value>
+		<value><![CDATA[true]]></value>
+		<value><![CDATA[Generation Graph]]></value>
+		<value><![CDATA[from net.sf.chellow.monad import Hiber, UserException
 from net.sf.chellow.physical import HhStartDate, HhDatum, Site
 from net.sf.chellow.monad.types import MonadDate
 from java.awt.image import BufferedImage
@@ -3612,15 +3614,16 @@ graphics.setColor(Color.BLACK)
 #graphics.drawString("report took..." + str(java.lang.System.currentTimeMillis() - start) + "ms", 10, 390)
 ImageIO.write(image, "png", os)
 os.close()]]></value>
-        <value><![CDATA[]]></value>
-    </line>
-    <line>
-        <value><![CDATA[insert]]></value>
-        <value><![CDATA[report]]></value>
-        <value><![CDATA[25]]></value>
-        <value><![CDATA[true]]></value>
-        <value><![CDATA[Site HH figures]]></value>
-        <value><![CDATA[from net.sf.chellow.monad import Hiber, UserException, XmlTree
+		<value><![CDATA[]]>
+		</value>
+	</line>
+	<line>
+		<value><![CDATA[insert]]></value>
+		<value><![CDATA[report]]></value>
+		<value><![CDATA[25]]></value>
+		<value><![CDATA[true]]></value>
+		<value><![CDATA[Site HH figures]]></value>
+		<value><![CDATA[from net.sf.chellow.monad import Hiber, UserException, XmlTree
 from java.lang import System
 from net.sf.chellow.monad.types import MonadDate
 import math
@@ -3735,7 +3738,7 @@ for group in Site.getSite(site.getId()).groups(start_date, finish_date, True):
         hh_element.setAttribute("used-kwh", str(used_kwh))
         hh_date = hh_date.getNext()
 source.setAttribute('debug', debug_str)]]></value>
-        <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
+		<value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
 <xsl:stylesheet version="1.0"
     xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
     <xsl:output method="html" encoding="US-ASCII"
@@ -3952,14 +3955,14 @@ source.setAttribute('debug', debug_str)]]></value>
         </html>
     </xsl:template>
 </xsl:stylesheet>]]></value>
-    </line>
-    <line>
-        <value><![CDATA[insert]]></value>
-        <value><![CDATA[report]]></value>
-        <value><![CDATA[27]]></value>
-        <value><![CDATA[true]]></value>
-        <value><![CDATA[CSV Bills]]></value>
-        <value><![CDATA[from net.sf.chellow.monad import Hiber, UserException
+	</line>
+	<line>
+		<value><![CDATA[insert]]></value>
+		<value><![CDATA[report]]></value>
+		<value><![CDATA[27]]></value>
+		<value><![CDATA[true]]></value>
+		<value><![CDATA[CSV Bills]]></value>
+		<value><![CDATA[from net.sf.chellow.monad import Hiber, UserException
 from net.sf.chellow.monad.types import MonadDate
 from java.sql import Timestamp, ResultSet
 from java.util import GregorianCalendar, Calendar, TimeZone, Locale, Date
@@ -4039,15 +4042,16 @@ while bills.next():
 
 bills.close()
 pw.close()]]></value>
-        <value><![CDATA[]]></value>
-    </line>
-    <line>
-        <value><![CDATA[insert]]></value>
-        <value><![CDATA[report]]></value>
-        <value><![CDATA[29]]></value>
-        <value><![CDATA[true]]></value>
-        <value><![CDATA[Site HH bulk figures]]></value>
-        <value><![CDATA[from java.util import GregorianCalendar, TimeZone, Locale, Calendar, Date
+		<value><![CDATA[]]>
+		</value>
+	</line>
+	<line>
+		<value><![CDATA[insert]]></value>
+		<value><![CDATA[report]]></value>
+		<value><![CDATA[29]]></value>
+		<value><![CDATA[true]]></value>
+		<value><![CDATA[Site HH bulk figures]]></value>
+		<value><![CDATA[from java.util import GregorianCalendar, TimeZone, Locale, Calendar, Date
 from net.sf.chellow.monad import Hiber, UserException
 from org.hibernate import CacheMode, ScrollMode
 from java.text import DateFormat
@@ -4160,15 +4164,16 @@ if rs.next():
         hhDate = HhStartDate.getNext(cal, hhDate)
         Hiber.session().clear()
 pw.close()]]></value>
-        <value><![CDATA[]]></value>
-    </line>
-    <line>
-        <value><![CDATA[insert]]></value>
-        <value><![CDATA[report]]></value>
-        <value><![CDATA[31]]></value>
-        <value><![CDATA[true]]></value>
-        <value><![CDATA[Admin: CSV Export]]></value>
-        <value><![CDATA[from net.sf.chellow.monad import Hiber, UserException, MonadUtils
+		<value><![CDATA[]]>
+		</value>
+	</line>
+	<line>
+		<value><![CDATA[insert]]></value>
+		<value><![CDATA[report]]></value>
+		<value><![CDATA[31]]></value>
+		<value><![CDATA[true]]></value>
+		<value><![CDATA[Admin: CSV Export]]></value>
+		<value><![CDATA[from net.sf.chellow.monad import Hiber, UserException, MonadUtils
 from net.sf.chellow.monad.types import UriPathElement, MonadDate
 from java.util import GregorianCalendar, TimeZone, Locale, Calendar, Date
 from net.sf.chellow.physical import HhStartDate, Configuration, MpanCore
@@ -4571,15 +4576,16 @@ if has_supplier_batches and not is_core:
 pw.println('</csv>')
 pw.flush()
 pw.close()]]></value>
-        <value><![CDATA[]]></value>
-    </line>
-    <line>
-        <value><![CDATA[insert]]></value>
-        <value><![CDATA[report]]></value>
-        <value><![CDATA[33]]></value>
-        <value><![CDATA[true]]></value>
-        <value><![CDATA[CSV Supplies Snapshot]]></value>
-        <value><![CDATA[from net.sf.chellow.monad import Hiber
+		<value><![CDATA[]]>
+		</value>
+	</line>
+	<line>
+		<value><![CDATA[insert]]></value>
+		<value><![CDATA[report]]></value>
+		<value><![CDATA[33]]></value>
+		<value><![CDATA[true]]></value>
+		<value><![CDATA[CSV Supplies Snapshot]]></value>
+		<value><![CDATA[from net.sf.chellow.monad import Hiber
 from net.sf.chellow.monad.types import MonadDate
 from net.sf.chellow.physical import ReadType, HhStartDate, Supply
 from java.util import Calendar
@@ -4816,21 +4822,22 @@ while supply_generations.next():
     pw.flush()
 supply_generations.close()
 pw.close()]]></value>
-        <value><![CDATA[]]></value>
-    </line>
-    <line>
-        <value><![CDATA[insert]]></value>
-        <value><![CDATA[report]]></value>
-        <value><![CDATA[35]]></value>
-        <value><![CDATA[true]]></value>
-        <value><![CDATA[GSP Group]]></value>
-        <value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree
+		<value><![CDATA[]]>
+		</value>
+	</line>
+	<line>
+		<value><![CDATA[insert]]></value>
+		<value><![CDATA[report]]></value>
+		<value><![CDATA[35]]></value>
+		<value><![CDATA[true]]></value>
+		<value><![CDATA[GSP Group]]></value>
+		<value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree
 from net.sf.chellow.physical import GspGroup
 
 group_id = inv.getLong('gsp-group-id')
 group = GspGroup.getGspGroup(group_id)
 source.appendChild(group.toXml(doc))]]></value>
-        <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
+		<value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
 <xsl:stylesheet version="1.0"
     xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
     <xsl:output method="html" encoding="US-ASCII"
@@ -4892,14 +4899,14 @@ source.appendChild(group.toXml(doc))]]></value>
         </html>
     </xsl:template>
 </xsl:stylesheet>]]></value>
-    </line>
-    <line>
-        <value><![CDATA[insert]]></value>
-        <value><![CDATA[report]]></value>
-        <value><![CDATA[37]]></value>
-        <value><![CDATA[true]]></value>
-        <value><![CDATA[HHDC Channel Snags]]></value>
-        <value><![CDATA[from net.sf.chellow.monad import XmlTree, Hiber, UserException
+	</line>
+	<line>
+		<value><![CDATA[insert]]></value>
+		<value><![CDATA[report]]></value>
+		<value><![CDATA[37]]></value>
+		<value><![CDATA[true]]></value>
+		<value><![CDATA[HHDC Channel Snags]]></value>
+		<value><![CDATA[from net.sf.chellow.monad import XmlTree, Hiber, UserException
 from java.util import Date
 from java.lang import System
 from net.sf.chellow.billing import HhdcContract
@@ -4935,7 +4942,7 @@ totalSites = Hiber.session().createQuery("select count(distinct siteSupplyGenera
 source.setAttribute("snag-count", str(snag_count))
 source.setAttribute("site-count", str(activeSites))
 source.setAttribute("pending-site-count", str(totalSites - activeSites))]]></value>
-        <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
+		<value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
 <xsl:stylesheet version="1.0"
     xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
     <xsl:output method="xml" encoding="US-ASCII"
@@ -5122,14 +5129,14 @@ source.setAttribute("pending-site-count", str(totalSites - activeSites))]]></val
         <xsl:value-of select="concat(@year,'-',@month,'-',@day,' ',@hour,':',@minute,' Z')" />
     </xsl:template>
 </xsl:stylesheet>]]></value>
-    </line>
-    <line>
-        <value><![CDATA[insert]]></value>
-        <value><![CDATA[report]]></value>
-        <value><![CDATA[39]]></value>
-        <value><![CDATA[true]]></value>
-        <value><![CDATA[Site Group Snags]]></value>
-        <value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree
+	</line>
+	<line>
+		<value><![CDATA[insert]]></value>
+		<value><![CDATA[report]]></value>
+		<value><![CDATA[39]]></value>
+		<value><![CDATA[true]]></value>
+		<value><![CDATA[Site Group Snags]]></value>
+		<value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree
 from net.sf.chellow.billing import HhdcContract
 
 snags = Hiber.session().createQuery("select snag, snag.site from SiteSnag snag where snag.isIgnored = false order by snag.site.code, snag.startDate.date desc").list()
@@ -5143,7 +5150,7 @@ for snag_row in snags:
 sites = Hiber.session().createQuery("select count(distinct snag.site) from SiteSnag snag where snag.isIgnored = false").uniqueResult()
 snags_element.setAttribute("snag-count", str(len(snags)))
 snags_element.setAttribute("site-count", str(sites))]]></value>
-        <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
+		<value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
 <xsl:stylesheet version="1.0"
     xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
     <xsl:output method="xml" encoding="US-ASCII"
@@ -5245,14 +5252,14 @@ snags_element.setAttribute("site-count", str(sites))]]></value>
         <xsl:value-of select="concat(@year, '-', @month, '-', @day, ' ', @hour, ':',@minute)" />
     </xsl:template>
 </xsl:stylesheet>]]></value>
-    </line>
-    <line>
-        <value><![CDATA[insert]]></value>
-        <value><![CDATA[report]]></value>
-        <value><![CDATA[41]]></value>
-        <value><![CDATA[true]]></value>
-        <value><![CDATA[CSV Supplies TRIAD]]></value>
-        <value><![CDATA[from net.sf.chellow.monad import Hiber, UserException
+	</line>
+	<line>
+		<value><![CDATA[insert]]></value>
+		<value><![CDATA[report]]></value>
+		<value><![CDATA[41]]></value>
+		<value><![CDATA[true]]></value>
+		<value><![CDATA[CSV Supplies TRIAD]]></value>
+		<value><![CDATA[from net.sf.chellow.monad import Hiber, UserException
 from net.sf.chellow.monad.types import MonadDate
 from net.sf.chellow.physical import HhStartDate, SupplyGeneration, Supply
 from java.util import Calendar
@@ -5348,21 +5355,22 @@ while generations.next():
     Hiber().session().clear()
 generations.close()
 pw.close()]]></value>
-        <value><![CDATA[]]></value>
-    </line>
-    <line>
-        <value><![CDATA[insert]]></value>
-        <value><![CDATA[report]]></value>
-        <value><![CDATA[43]]></value>
-        <value><![CDATA[true]]></value>
-        <value><![CDATA[GSP Groups]]></value>
-        <value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree
+		<value><![CDATA[]]>
+		</value>
+	</line>
+	<line>
+		<value><![CDATA[insert]]></value>
+		<value><![CDATA[report]]></value>
+		<value><![CDATA[43]]></value>
+		<value><![CDATA[true]]></value>
+		<value><![CDATA[GSP Groups]]></value>
+		<value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree
 
 groups_element = doc.createElement('gsp-groups')
 source.appendChild(groups_element)
 for group in Hiber.session().createQuery("from GspGroup group order by group.code").list():
     groups_element.appendChild(group.toXml(doc))]]></value>
-        <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
+		<value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
 <xsl:stylesheet version="1.0"
     xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
     <xsl:output method="html" encoding="US-ASCII"
@@ -5426,94 +5434,83 @@ for group in Hiber.session().createQuery("from GspGroup group order by group.cod
         </html>
     </xsl:template>
 </xsl:stylesheet>]]></value>
-    </line>
-    <line>
-        <value><![CDATA[insert]]></value>
-        <value><![CDATA[report]]></value>
-        <value><![CDATA[45]]></value>
-        <value><![CDATA[true]]></value>
-        <value><![CDATA[Providers]]></value>
-        <value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree
+	</line>
+	<line>
+		<value><![CDATA[insert]]></value>
+		<value><![CDATA[report]]></value>
+		<value><![CDATA[45]]></value>
+		<value><![CDATA[true]]></value>
+		<value><![CDATA[Parties]]></value>
+		<value><![CDATA[from net.sf.chellow.monad import Monad
+from sqlalchemy.orm import joinedload_all
 
-for provider in Hiber.session().createQuery("from Provider provider order by provider.participant.code, provider.role.code").list():
-    source.appendChild(provider.toXml(doc, XmlTree('participant').put('role')))]]></value>
-        <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
-<xsl:stylesheet version="1.0"
-    xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
-    <xsl:output method="html" encoding="US-ASCII"
-        doctype-public="-//W3C//DTD HTML 4.01//EN"
-        doctype-system="http://www.w3.org/TR/html4/strict.dtd" indent="yes" />
-    <xsl:template match="/">
-        <html>
-            <head>
-                <link rel="stylesheet" type="text/css"
-                    href="{/source/request/@context-path}/reports/19/output/" />
-                <title>Chellow &gt; Providers</title>
-            </head>
-            <body>
-                <p>
-                    <a
-                        href="{/source/request/@context-path}/reports/1/output/">
-                        <xsl:value-of select="'Chellow'" />
-                    </a>
-                    &gt; Providers
-                </p>
-                <br />
-                <xsl:if test="//message">
-                    <ul>
-                        <xsl:for-each select="//message">
-                            <li>
-                                <xsl:value-of select="@description" />
-                            </li>
-                        </xsl:for-each>
-                    </ul>
-                </xsl:if>
-                <table>
-                    <thead>
-                        <th>Name</th>
-                        <th>Participant</th>
-                        <th>Market Role</th>
-                    </thead>
-                    <tbody>
-                        <xsl:for-each
-                            select="/source/provider">
-                            <tr>
-                                <td>
-                                    <a
-                                        href="{/source/request/@context-path}/reports/47/output/?provider-id={@id}">
-                                       <xsl:value-of select="@name" />
-                                    </a>
-                                </td>
-                                <td>
-                                    <a
-                                        href="{/source/request/@context-path}/reports/73/output/?participant-id={participant/@id}">
-                                        <xsl:value-of
-                                            select="participant/@name" />
-                                    </a>
-                                </td>
-                                <td>
-                                    <a
-                                        href="{/source/request/@context-path}/reports/121/output/?role-id={market-role/@id}">
-                                        <xsl:value-of
-                                            select="market-role/@description" />
-                                    </a>
-                                </td>
-                            </tr>
-                        </xsl:for-each>
-                    </tbody>
-                </table>
-            </body>
-        </html>
-    </xsl:template>
-</xsl:stylesheet>]]></value>
-    </line>
-    <line>
-        <value><![CDATA[insert]]></value>
-        <value><![CDATA[report]]></value>
-        <value><![CDATA[47]]></value>
-        <value><![CDATA[true]]></value>
-        <value><![CDATA[Provider]]></value>
-        <value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree
+db = Monad.getContext().getAttribute("net.sf.chellow.db")
+for cls in ['Contract', 'Party', 'UserRole', 'set_read_write', 'session']:
+   globals()[cls] = db.get(cls)
+
+utils = Monad.getContext().getAttribute("net.sf.chellow.utils")
+for cls in ['UserException']:
+   globals()[cls] = utils.get(cls)
+
+jinja = Monad.getContext().getAttribute("net.sf.chellow.jinja")
+for cls in ['render']:
+   globals()[cls] = jinja.get(cls)
+
+sess = None
+try:
+    sess = session()
+    parties = sess.query(Contract).from_statement("select party.* from party, market_role where party.market_role_id = market_role.id order by party.code, market_role.code").all()
+    render(inv, template, {'parties': parties})
+finally:
+    sess.close()]]></value>
+		<value><![CDATA[<!doctype html>
+<html>
+  <head>
+    <link rel="stylesheet" type="text/css"
+      href="{{ context_path }}/reports/19/output/"
+    >
+    <title>Chellow &gt; Parties</title>
+  </head>
+  <body>
+    <p>
+      <a href="{{ context_path }}/reports/1/output/">Chellow</a> &gt; Providers
+    </p>
+    <br />
+    {% if messages %}
+      <ul>
+        {% for message in messages %}
+          <li>{{ message }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+    <table>
+      <thead>
+        <th>Name</th>
+        <th>Market Role</th>
+      </thead>
+      <tbody>
+        {% for party in parties %}
+          <tr>
+            <td>
+              <a href="{{ context_path }}/reports/47/output/?party_id={{ party.id }}">{{ party.name }}</a>
+            </td>
+            <td>
+              <a href="{{ context_path }}/reports/121/output/?role-id={{ party.role.id }}">{{ party.role.description }}" /></a>
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </body>
+</html>]]></value>
+	</line>
+	<line>
+		<value><![CDATA[insert]]></value>
+		<value><![CDATA[report]]></value>
+		<value><![CDATA[47]]></value>
+		<value><![CDATA[true]]></value>
+		<value><![CDATA[Provider]]></value>
+		<value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree
 from net.sf.chellow.billing import Provider
 from net.sf.chellow.physical import MarketRole
 
@@ -5542,7 +5539,7 @@ if query != None:
         finish_rate_script.setLabel('finish')
         contract_element.appendChild(finish_rate_script.toXml(doc))
         provider_element.appendChild(contract_element)]]></value>
-        <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
+		<value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
 <xsl:stylesheet version="1.0"
     xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
     <xsl:output method="html" encoding="US-ASCII"
@@ -5694,14 +5691,14 @@ if query != None:
         </html>
     </xsl:template>
 </xsl:stylesheet>]]></value>
-    </line>
-    <line>
-        <value><![CDATA[insert]]></value>
-        <value><![CDATA[report]]></value>
-        <value><![CDATA[49]]></value>
-        <value><![CDATA[true]]></value>
-        <value><![CDATA[DNO LLFCs]]></value>
-        <value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree
+	</line>
+	<line>
+		<value><![CDATA[insert]]></value>
+		<value><![CDATA[report]]></value>
+		<value><![CDATA[49]]></value>
+		<value><![CDATA[true]]></value>
+		<value><![CDATA[DNO LLFCs]]></value>
+		<value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree
 from net.sf.chellow.billing import Dno
 
 dno_id = inv.getLong('dno-id')
@@ -5711,7 +5708,7 @@ source.appendChild(llfcs_element)
 for llfc in Hiber.session().createQuery("from Llfc llfc where llfc.dno = :dno order by llfc.code").setEntity("dno", dno).list():
     llfcs_element.appendChild(llfc.toXml(doc, XmlTree("voltageLevel")))
 llfcs_element.appendChild(dno.toXml(doc))]]></value>
-        <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
+		<value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
 <xsl:stylesheet version="1.0"
     xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
     <xsl:output method="html" encoding="US-ASCII"
@@ -5814,20 +5811,20 @@ llfcs_element.appendChild(dno.toXml(doc))]]></value>
         </html>
     </xsl:template>
 </xsl:stylesheet>]]></value>
-    </line>
-    <line>
-        <value><![CDATA[insert]]></value>
-        <value><![CDATA[report]]></value>
-        <value><![CDATA[51]]></value>
-        <value><![CDATA[true]]></value>
-        <value><![CDATA[DNO LLFC]]></value>
-        <value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree
+	</line>
+	<line>
+		<value><![CDATA[insert]]></value>
+		<value><![CDATA[report]]></value>
+		<value><![CDATA[51]]></value>
+		<value><![CDATA[true]]></value>
+		<value><![CDATA[DNO LLFC]]></value>
+		<value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree
 from net.sf.chellow.physical import Llfc
 
 llfc_id = inv.getLong('llfc-id')
 llfc = Llfc.getLlfc(llfc_id)
 source.appendChild(llfc.toXml(doc, XmlTree('dno').put('voltageLevel')))]]></value>
-        <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
+		<value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
 <xsl:stylesheet version="1.0"
     xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
     <xsl:output method="html" encoding="US-ASCII"
@@ -5922,20 +5919,20 @@ source.appendChild(llfc.toXml(doc, XmlTree('dno').put('voltageLevel')))]]></valu
         </html>
     </xsl:template>
 </xsl:stylesheet>]]></value>
-    </line>
-    <line>
-        <value><![CDATA[insert]]></value>
-        <value><![CDATA[report]]></value>
-        <value><![CDATA[53]]></value>
-        <value><![CDATA[true]]></value>
-        <value><![CDATA[Profile Classes]]></value>
-        <value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree
+	</line>
+	<line>
+		<value><![CDATA[insert]]></value>
+		<value><![CDATA[report]]></value>
+		<value><![CDATA[53]]></value>
+		<value><![CDATA[true]]></value>
+		<value><![CDATA[Profile Classes]]></value>
+		<value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree
 
 pcs_element = doc.createElement('pcs')
 source.appendChild(pcs_element)
 for pc in Hiber.session().createQuery("from Pc pc order by pc.code").list():
     pcs_element.appendChild(pc.toXml(doc))]]></value>
-        <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
+		<value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
 <xsl:stylesheet version="1.0"
     xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
     <xsl:output method="html" encoding="US-ASCII"
@@ -5994,20 +5991,20 @@ for pc in Hiber.session().createQuery("from Pc pc order by pc.code").list():
         </html>
     </xsl:template>
 </xsl:stylesheet>]]></value>
-    </line>
-    <line>
-        <value><![CDATA[insert]]></value>
-        <value><![CDATA[report]]></value>
-        <value><![CDATA[55]]></value>
-        <value><![CDATA[true]]></value>
-        <value><![CDATA[Profile Class]]></value>
-        <value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree
+	</line>
+	<line>
+		<value><![CDATA[insert]]></value>
+		<value><![CDATA[report]]></value>
+		<value><![CDATA[55]]></value>
+		<value><![CDATA[true]]></value>
+		<value><![CDATA[Profile Class]]></value>
+		<value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree
 from net.sf.chellow.physical import Pc
 
 pc_id = inv.getLong('pc-id')
 pc = Pc.getPc(pc_id)
 source.appendChild(pc.toXml(doc))]]></value>
-        <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
+		<value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
 <xsl:stylesheet version="1.0"
     xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
     <xsl:output method="html" encoding="US-ASCII"
@@ -6067,21 +6064,21 @@ source.appendChild(pc.toXml(doc))]]></value>
         </html>
     </xsl:template>
 </xsl:stylesheet>]]></value>
-    </line>
-    <line>
-        <value><![CDATA[insert]]></value>
-        <value><![CDATA[report]]></value>
-        <value><![CDATA[57]]></value>
-        <value><![CDATA[true]]></value>
-        <value><![CDATA[CSV Sites Duration Selector]]></value>
-        <value><![CDATA[from java.util import GregorianCalendar, TimeZone, Locale, Calendar
+	</line>
+	<line>
+		<value><![CDATA[insert]]></value>
+		<value><![CDATA[report]]></value>
+		<value><![CDATA[57]]></value>
+		<value><![CDATA[true]]></value>
+		<value><![CDATA[CSV Sites Duration Selector]]></value>
+		<value><![CDATA[from java.util import GregorianCalendar, TimeZone, Locale, Calendar
 from net.sf.chellow.monad.types import MonadDate
 
 cal = GregorianCalendar(TimeZone.getTimeZone("GMT"), Locale.UK)
 cal.add(Calendar.MONTH, -1)
 source.appendChild(MonadDate(cal.getTime()).toXml(doc))
 source.appendChild(MonadDate.getMonthsXml(doc))]]></value>
-        <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
+		<value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
 <xsl:stylesheet version="1.0"
     xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
     <xsl:output method="xml" encoding="US-ASCII"
@@ -6150,14 +6147,14 @@ source.appendChild(MonadDate.getMonthsXml(doc))]]></value>
         </html>
     </xsl:template>
 </xsl:stylesheet>]]></value>
-    </line>
-    <line>
-        <value><![CDATA[insert]]></value>
-        <value><![CDATA[report]]></value>
-        <value><![CDATA[59]]></value>
-        <value><![CDATA[true]]></value>
-        <value><![CDATA[CSV Sites Duration]]></value>
-        <value><![CDATA[from net.sf.chellow.monad import Hiber, UserException
+	</line>
+	<line>
+		<value><![CDATA[insert]]></value>
+		<value><![CDATA[report]]></value>
+		<value><![CDATA[59]]></value>
+		<value><![CDATA[true]]></value>
+		<value><![CDATA[CSV Sites Duration]]></value>
+		<value><![CDATA[from net.sf.chellow.monad import Hiber, UserException
 from java.lang import System
 from net.sf.chellow.monad.types import MonadDate
 import math
@@ -6268,21 +6265,22 @@ while sites.next():
     Hiber.session().clear()
 sites.close()
 pw.close()]]></value>
-        <value><![CDATA[]]></value>
-    </line>
-    <line>
-        <value><![CDATA[insert]]></value>
-        <value><![CDATA[report]]></value>
-        <value><![CDATA[61]]></value>
-        <value><![CDATA[true]]></value>
-        <value><![CDATA[MTCs]]></value>
-        <value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree
+		<value><![CDATA[]]>
+		</value>
+	</line>
+	<line>
+		<value><![CDATA[insert]]></value>
+		<value><![CDATA[report]]></value>
+		<value><![CDATA[61]]></value>
+		<value><![CDATA[true]]></value>
+		<value><![CDATA[MTCs]]></value>
+		<value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree
 
 mtcs_element = doc.createElement('mtcs')
 source.appendChild(mtcs_element)
 for mt in Hiber.session().createQuery("select mtc from Mtc mtc left outer join mtc.dno dno order by mtc.code, dno.code").list():
     mtcs_element.appendChild(mt.toXml(doc, XmlTree('dno').put('meterType')))]]></value>
-        <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
+		<value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
 <xsl:stylesheet version="1.0"
     xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
     <xsl:output method="html" encoding="US-ASCII"
@@ -6368,20 +6366,20 @@ for mt in Hiber.session().createQuery("select mtc from Mtc mtc left outer join m
         </html>
     </xsl:template>
 </xsl:stylesheet>]]></value>
-    </line>
-    <line>
-        <value><![CDATA[insert]]></value>
-        <value><![CDATA[report]]></value>
-        <value><![CDATA[63]]></value>
-        <value><![CDATA[true]]></value>
-        <value><![CDATA[MTC]]></value>
-        <value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree
+	</line>
+	<line>
+		<value><![CDATA[insert]]></value>
+		<value><![CDATA[report]]></value>
+		<value><![CDATA[63]]></value>
+		<value><![CDATA[true]]></value>
+		<value><![CDATA[MTC]]></value>
+		<value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree
 from net.sf.chellow.physical import Mtc
 
 mtc_id = inv.getLong('mtc-id')
 mtc = Mtc.getMtc(mtc_id)
 source.appendChild(mtc.toXml(doc, XmlTree('meterType').put('paymentType').put('dno')))]]></value>
-        <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
+		<value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
 <xsl:stylesheet version="1.0"
     xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
     <xsl:output method="html" encoding="US-ASCII"
@@ -6559,14 +6557,14 @@ source.appendChild(mtc.toXml(doc, XmlTree('meterType').put('paymentType').put('d
         </html>
     </xsl:template>
 </xsl:stylesheet>]]></value>
-    </line>
-    <line>
-        <value><![CDATA[insert]]></value>
-        <value><![CDATA[report]]></value>
-        <value><![CDATA[65]]></value>
-        <value><![CDATA[true]]></value>
-        <value><![CDATA[HHDC Contract HH Data Import]]></value>
-        <value><![CDATA[from net.sf.chellow.billing import HhdcContract
+	</line>
+	<line>
+		<value><![CDATA[insert]]></value>
+		<value><![CDATA[report]]></value>
+		<value><![CDATA[65]]></value>
+		<value><![CDATA[true]]></value>
+		<value><![CDATA[HHDC Contract HH Data Import]]></value>
+		<value><![CDATA[from net.sf.chellow.billing import HhdcContract
 from net.sf.chellow.monad import XmlTree, MonadMessage
 
 hhdc_contract_id = inv.getLong('hhdc-contract-id')
@@ -6592,7 +6590,7 @@ if not process.isAlive():
 
     for message in messages:
         process_element.appendChild(MonadMessage(message).toXml(doc))]]></value>
-        <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
+		<value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
 <xsl:stylesheet version="1.0"
     xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
     <xsl:output method="html" encoding="US-ASCII"
@@ -6668,14 +6666,14 @@ if not process.isAlive():
         </html>
     </xsl:template>
 </xsl:stylesheet>]]></value>
-    </line>
-    <line>
-        <value><![CDATA[insert]]></value>
-        <value><![CDATA[report]]></value>
-        <value><![CDATA[67]]></value>
-        <value><![CDATA[true]]></value>
-        <value><![CDATA[DNO Contract]]></value>
-        <value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree
+	</line>
+	<line>
+		<value><![CDATA[insert]]></value>
+		<value><![CDATA[report]]></value>
+		<value><![CDATA[67]]></value>
+		<value><![CDATA[true]]></value>
+		<value><![CDATA[DNO Contract]]></value>
+		<value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree
 from net.sf.chellow.billing import DnoContract
 
 contract_id = inv.getLong('dno-contract-id')
@@ -6684,7 +6682,7 @@ contract_element = contract.toXml(doc, XmlTree('party'))
 source.appendChild(contract_element)
 for rate_script in contract.getRateScripts():
     contract_element.appendChild(rate_script.toXml(doc))]]></value>
-        <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
+		<value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
 <xsl:stylesheet version="1.0"
     xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
     <xsl:output method="html" encoding="US-ASCII"
@@ -6819,20 +6817,20 @@ for rate_script in contract.getRateScripts():
         </html>
     </xsl:template>
 </xsl:stylesheet>]]></value>
-    </line>
-    <line>
-        <value><![CDATA[insert]]></value>
-        <value><![CDATA[report]]></value>
-        <value><![CDATA[69]]></value>
-        <value><![CDATA[true]]></value>
-        <value><![CDATA[DNO Contract Rate Script]]></value>
-        <value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree
+	</line>
+	<line>
+		<value><![CDATA[insert]]></value>
+		<value><![CDATA[report]]></value>
+		<value><![CDATA[69]]></value>
+		<value><![CDATA[true]]></value>
+		<value><![CDATA[DNO Contract Rate Script]]></value>
+		<value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree
 from net.sf.chellow.billing import RateScript
 
 script_id = inv.getLong('dno-rate-script-id')
 script = RateScript.getRateScript(script_id)
 source.appendChild(script.toXml(doc, XmlTree('contract', XmlTree('party'))))]]></value>
-        <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
+		<value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
 <xsl:stylesheet version="1.0"
     xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
     <xsl:output method="html" encoding="US-ASCII"
@@ -6931,18 +6929,18 @@ source.appendChild(script.toXml(doc, XmlTree('contract', XmlTree('party'))))]]><
         </html>
     </xsl:template>
 </xsl:stylesheet>]]></value>
-    </line>
-    <line>
-        <value><![CDATA[insert]]></value>
-        <value><![CDATA[report]]></value>
-        <value><![CDATA[71]]></value>
-        <value><![CDATA[true]]></value>
-        <value><![CDATA[Participants]]></value>
-        <value><![CDATA[from net.sf.chellow.monad import Hiber
+	</line>
+	<line>
+		<value><![CDATA[insert]]></value>
+		<value><![CDATA[report]]></value>
+		<value><![CDATA[71]]></value>
+		<value><![CDATA[true]]></value>
+		<value><![CDATA[Participants]]></value>
+		<value><![CDATA[from net.sf.chellow.monad import Hiber
 
 for participant in Hiber.session().createQuery('from Participant participant order by participant.code').list():
     source.appendChild(participant.toXml(doc))]]></value>
-        <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
+		<value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
 <xsl:stylesheet version="1.0"
     xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
     <xsl:output method="html" encoding="US-ASCII"
@@ -7002,14 +7000,14 @@ for participant in Hiber.session().createQuery('from Participant participant ord
         </html>
     </xsl:template>
 </xsl:stylesheet>]]></value>
-    </line>
-    <line>
-        <value><![CDATA[insert]]></value>
-        <value><![CDATA[report]]></value>
-        <value><![CDATA[73]]></value>
-        <value><![CDATA[true]]></value>
-        <value><![CDATA[Participant]]></value>
-        <value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree
+	</line>
+	<line>
+		<value><![CDATA[insert]]></value>
+		<value><![CDATA[report]]></value>
+		<value><![CDATA[73]]></value>
+		<value><![CDATA[true]]></value>
+		<value><![CDATA[Participant]]></value>
+		<value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree
 from net.sf.chellow.physical import Participant
 
 participant_id = inv.getLong('participant-id')
@@ -7018,7 +7016,7 @@ participant_element = participant.toXml(doc)
 source.appendChild(participant_element);
 for party in Hiber.session().createQuery("from Party party where party.participant = :participant order by party.role.code").setEntity('participant', participant).list():
     participant_element.appendChild(party.toXml(doc, XmlTree('role')))]]></value>
-        <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
+		<value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
 <xsl:stylesheet version="1.0"
     xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
     <xsl:output method="html" encoding="US-ASCII"
@@ -7120,14 +7118,14 @@ for party in Hiber.session().createQuery("from Party party where party.participa
         </html>
     </xsl:template>
 </xsl:stylesheet>]]></value>
-    </line>
-    <line>
-        <value><![CDATA[insert]]></value>
-        <value><![CDATA[report]]></value>
-        <value><![CDATA[75]]></value>
-        <value><![CDATA[true]]></value>
-        <value><![CDATA[Supplier Contracts]]></value>
-        <value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree
+	</line>
+	<line>
+		<value><![CDATA[insert]]></value>
+		<value><![CDATA[report]]></value>
+		<value><![CDATA[75]]></value>
+		<value><![CDATA[true]]></value>
+		<value><![CDATA[Supplier Contracts]]></value>
+		<value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree
 
 contracts_element = doc.createElement('contracts')
 source.appendChild(contracts_element)
@@ -7140,7 +7138,7 @@ for contract in Hiber.session().createQuery("from SupplierContract contract orde
     finish_rate_script = contract.getFinishRateScript()
     finish_rate_script.setLabel('finish')
     contract_element.appendChild(finish_rate_script.toXml(doc))]]></value>
-        <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
+		<value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
 <xsl:stylesheet version="1.0"
     xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
     <xsl:output method="html" encoding="US-ASCII"
@@ -7229,14 +7227,14 @@ for contract in Hiber.session().createQuery("from SupplierContract contract orde
         </html>
     </xsl:template>
 </xsl:stylesheet>]]></value>
-    </line>
-    <line>
-        <value><![CDATA[insert]]></value>
-        <value><![CDATA[report]]></value>
-        <value><![CDATA[77]]></value>
-        <value><![CDATA[true]]></value>
-        <value><![CDATA[Supplier Contract]]></value>
-        <value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree, UserException, Monad
+	</line>
+	<line>
+		<value><![CDATA[insert]]></value>
+		<value><![CDATA[report]]></value>
+		<value><![CDATA[77]]></value>
+		<value><![CDATA[true]]></value>
+		<value><![CDATA[Supplier Contract]]></value>
+		<value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree, UserException, Monad
 from net.sf.chellow.billing import SupplierContract
 from net.sf.chellow.monad.types import MonadDate
 import datetime
@@ -7257,7 +7255,7 @@ month_start = datetime.datetime(now.year, now.month, now.day)
 month_finish = month_start + relativedelta(months=1) - relativedelta(minutes=30)
 
 Monad.getContext().getAttribute("net.sf.chellow.jinja").get("render")(inv, template, {'contract': contract, 'month_start': month_start, 'month_finish': month_finish, 'rate_scripts': rate_scripts})]]></value>
-        <value><![CDATA[<!DOCTYPE html>
+		<value><![CDATA[<!DOCTYPE html>
 <html>
   <head>
     <link rel="stylesheet" type="text/css"
@@ -7383,14 +7381,14 @@ Monad.getContext().getAttribute("net.sf.chellow.jinja").get("render")(inv, templ
     <pre>{{ contract.charge_script }}</pre>
   </body>
 </html>]]></value>
-    </line>
-    <line>
-        <value><![CDATA[insert]]></value>
-        <value><![CDATA[report]]></value>
-        <value><![CDATA[79]]></value>
-        <value><![CDATA[true]]></value>
-        <value><![CDATA[Supplier Contract Rate Script]]></value>
-        <value><![CDATA[from net.sf.chellow.monad import Monad
+	</line>
+	<line>
+		<value><![CDATA[insert]]></value>
+		<value><![CDATA[report]]></value>
+		<value><![CDATA[79]]></value>
+		<value><![CDATA[true]]></value>
+		<value><![CDATA[Supplier Contract Rate Script]]></value>
+		<value><![CDATA[from net.sf.chellow.monad import Monad
 from net.sf.chellow.billing import RateScript
 db = Monad.getContext().getAttribute("net.sf.chellow.db")
 for cls in ['RateScript']:
@@ -7402,7 +7400,7 @@ rate_script_id = inv.getLong('rate_script_id')
 rate_script = RateScript.get(session, rate_script_id)
 
 Monad.getContext().getAttribute("net.sf.chellow.jinja").get("render")(inv, template, {'rate_script': rate_script})]]></value>
-        <value><![CDATA[<!DOCTYPE html>
+		<value><![CDATA[<!DOCTYPE html>
 <html>
   <head>
     <link rel="stylesheet" type="text/css"
@@ -7446,14 +7444,14 @@ Monad.getContext().getAttribute("net.sf.chellow.jinja").get("render")(inv, templ
     <pre>{{ rate_script.script }}</pre>
   </body>
 </html>]]></value>
-    </line>
-    <line>
-        <value><![CDATA[insert]]></value>
-        <value><![CDATA[report]]></value>
-        <value><![CDATA[81]]></value>
-        <value><![CDATA[true]]></value>
-        <value><![CDATA[HHDC Contract Virtual Bills]]></value>
-        <value><![CDATA[from net.sf.chellow.monad import Hiber, UserException
+	</line>
+	<line>
+		<value><![CDATA[insert]]></value>
+		<value><![CDATA[report]]></value>
+		<value><![CDATA[81]]></value>
+		<value><![CDATA[true]]></value>
+		<value><![CDATA[HHDC Contract Virtual Bills]]></value>
+		<value><![CDATA[from net.sf.chellow.monad import Hiber, UserException
 from net.sf.chellow.monad.types import MonadDate
 from java.util import GregorianCalendar, TimeZone, Locale, Calendar
 from net.sf.chellow.physical import HhStartDate, Supply
@@ -7533,15 +7531,16 @@ while generations.next():
     Hiber.session().clear()
 generations.close()
 pw.close()]]></value>
-        <value><![CDATA[]]></value>
-    </line>
-    <line>
-        <value><![CDATA[insert]]></value>
-        <value><![CDATA[report]]></value>
-        <value><![CDATA[83]]></value>
-        <value><![CDATA[true]]></value>
-        <value><![CDATA[HHDC Contract Virtual Bill Selector]]></value>
-        <value><![CDATA[from java.util import GregorianCalendar, TimeZone, Locale, Calendar
+		<value><![CDATA[]]>
+		</value>
+	</line>
+	<line>
+		<value><![CDATA[insert]]></value>
+		<value><![CDATA[report]]></value>
+		<value><![CDATA[83]]></value>
+		<value><![CDATA[true]]></value>
+		<value><![CDATA[HHDC Contract Virtual Bill Selector]]></value>
+		<value><![CDATA[from java.util import GregorianCalendar, TimeZone, Locale, Calendar
 from net.sf.chellow.monad.types import MonadDate
 from net.sf.chellow.monad import Hiber
 from net.sf.chellow.billing import HhdcContract
@@ -7557,7 +7556,7 @@ cal.add(Calendar.MONTH, -1)
 source.appendChild(MonadDate(cal.getTime()).toXml(doc))
 source.appendChild(MonadDate.getMonthsXml(doc))
 source.appendChild(contract.toXml(doc))]]></value>
-        <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
+		<value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
 <xsl:stylesheet version="1.0"
     xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
     <xsl:output method="xml" encoding="US-ASCII"
@@ -7632,20 +7631,20 @@ source.appendChild(contract.toXml(doc))]]></value>
         </html>
     </xsl:template>
 </xsl:stylesheet>]]></value>
-    </line>
-    <line>
-        <value><![CDATA[insert]]></value>
-        <value><![CDATA[report]]></value>
-        <value><![CDATA[85]]></value>
-        <value><![CDATA[true]]></value>
-        <value><![CDATA[CoPs]]></value>
-        <value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree
+	</line>
+	<line>
+		<value><![CDATA[insert]]></value>
+		<value><![CDATA[report]]></value>
+		<value><![CDATA[85]]></value>
+		<value><![CDATA[true]]></value>
+		<value><![CDATA[CoPs]]></value>
+		<value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree
 
 cops_element = doc.createElement('cops')
 source.appendChild(cops_element)
 for cop in Hiber.session().createQuery("from Cop cop order by cop.code").list():
     cops_element.appendChild(cop.toXml(doc))]]></value>
-        <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
+		<value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
 <xsl:stylesheet version="1.0"
     xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
     <xsl:output method="html" encoding="US-ASCII"
@@ -7708,14 +7707,14 @@ for cop in Hiber.session().createQuery("from Cop cop order by cop.code").list():
         </html>
     </xsl:template>
 </xsl:stylesheet>]]></value>
-    </line>
-    <line>
-        <value><![CDATA[insert]]></value>
-        <value><![CDATA[report]]></value>
-        <value><![CDATA[87]]></value>
-        <value><![CDATA[true]]></value>
-        <value><![CDATA[Supplier Contract Import Virtual Bills]]></value>
-        <value><![CDATA[from net.sf.chellow.monad import Hiber
+	</line>
+	<line>
+		<value><![CDATA[insert]]></value>
+		<value><![CDATA[report]]></value>
+		<value><![CDATA[87]]></value>
+		<value><![CDATA[true]]></value>
+		<value><![CDATA[Supplier Contract Import Virtual Bills]]></value>
+		<value><![CDATA[from net.sf.chellow.monad import Hiber
 from java.util import GregorianCalendar, TimeZone, Locale, Calendar, Date
 from net.sf.chellow.physical import MpanCore, HhStartDate, Supply
 from net.sf.chellow.billing import SupplierContract, NonCoreContract, Dno
@@ -7857,15 +7856,16 @@ while not month_start.after(finish_date):
     utc_cal.add(Calendar.MINUTE, -30)
     month_finish = HhStartDate(utc_cal.getTime())
 pw.close()]]></value>
-        <value><![CDATA[]]></value>
-    </line>
-    <line>
-        <value><![CDATA[insert]]></value>
-        <value><![CDATA[report]]></value>
-        <value><![CDATA[89]]></value>
-        <value><![CDATA[true]]></value>
-        <value><![CDATA[Supplier Contract Batches]]></value>
-        <value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree, UserException
+		<value><![CDATA[]]>
+		</value>
+	</line>
+	<line>
+		<value><![CDATA[insert]]></value>
+		<value><![CDATA[report]]></value>
+		<value><![CDATA[89]]></value>
+		<value><![CDATA[true]]></value>
+		<value><![CDATA[Supplier Contract Batches]]></value>
+		<value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree, UserException
 from net.sf.chellow.billing import SupplierContract
 
 contract_id = inv.getLong('supplier-contract-id')
@@ -7876,7 +7876,7 @@ batches_element.appendChild(contract.toXml(doc, XmlTree('party')))
 source.appendChild(batches_element)
 for batch in Hiber.session().createQuery("from Batch batch where batch.contract = :contract order by batch.reference").setEntity("contract", contract).list():
     batches_element.appendChild(batch.toXml(doc))]]></value>
-        <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
+		<value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
 <xsl:stylesheet version="1.0"
     xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
     <xsl:output method="html" encoding="US-ASCII"
@@ -7957,14 +7957,14 @@ for batch in Hiber.session().createQuery("from Batch batch where batch.contract 
         </html>
     </xsl:template>
 </xsl:stylesheet>]]></value>
-    </line>
-    <line>
-        <value><![CDATA[insert]]></value>
-        <value><![CDATA[report]]></value>
-        <value><![CDATA[91]]></value>
-        <value><![CDATA[true]]></value>
-        <value><![CDATA[Supplier Contract Batch]]></value>
-        <value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree, UserException
+	</line>
+	<line>
+		<value><![CDATA[insert]]></value>
+		<value><![CDATA[report]]></value>
+		<value><![CDATA[91]]></value>
+		<value><![CDATA[true]]></value>
+		<value><![CDATA[Supplier Contract Batch]]></value>
+		<value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree, UserException
 from net.sf.chellow.billing import Batch
 from net.sf.chellow.physical import Configuration
 from java.util import Properties
@@ -7991,7 +7991,7 @@ for key in properties.propertyNames():
         if batch_report_id is not None:
             report = Report.getReport(int(batch_report_id))
             batch_element.appendChild(report.toXml(doc))]]></value>
-        <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
+		<value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
 <xsl:stylesheet version="1.0"
     xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
     <xsl:output method="html" encoding="US-ASCII"
@@ -8157,14 +8157,14 @@ for key in properties.propertyNames():
         </html>
     </xsl:template>
 </xsl:stylesheet>]]></value>
-    </line>
-    <line>
-        <value><![CDATA[insert]]></value>
-        <value><![CDATA[report]]></value>
-        <value><![CDATA[93]]></value>
-        <value><![CDATA[true]]></value>
-        <value><![CDATA[HHDC Contract Batches]]></value>
-        <value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree, UserException
+	</line>
+	<line>
+		<value><![CDATA[insert]]></value>
+		<value><![CDATA[report]]></value>
+		<value><![CDATA[93]]></value>
+		<value><![CDATA[true]]></value>
+		<value><![CDATA[HHDC Contract Batches]]></value>
+		<value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree, UserException
 from net.sf.chellow.billing import HhdcContract
 
 contract_id = inv.getLong('hhdc-contract-id')
@@ -8175,7 +8175,7 @@ batches_element.appendChild(contract.toXml(doc, XmlTree('party')))
 source.appendChild(batches_element)
 for batch in Hiber.session().createQuery("from Batch batch where batch.contract = :contract order by batch.reference").setEntity("contract", contract).list():
     batches_element.appendChild(batch.toXml(doc))]]></value>
-        <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
+		<value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
 <xsl:stylesheet version="1.0"
     xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
     <xsl:output method="html" encoding="US-ASCII"
@@ -8256,14 +8256,14 @@ for batch in Hiber.session().createQuery("from Batch batch where batch.contract 
         </html>
     </xsl:template>
 </xsl:stylesheet>]]></value>
-    </line>
-    <line>
-        <value><![CDATA[insert]]></value>
-        <value><![CDATA[report]]></value>
-        <value><![CDATA[95]]></value>
-        <value><![CDATA[true]]></value>
-        <value><![CDATA[TPRs]]></value>
-        <value><![CDATA[from net.sf.chellow.monad import Hiber, Monad
+	</line>
+	<line>
+		<value><![CDATA[insert]]></value>
+		<value><![CDATA[report]]></value>
+		<value><![CDATA[95]]></value>
+		<value><![CDATA[true]]></value>
+		<value><![CDATA[TPRs]]></value>
+		<value><![CDATA[from net.sf.chellow.monad import Hiber, Monad
 
 db = Monad.getContext().getAttribute("net.sf.chellow.db")
 for cls in ['Tpr']:
@@ -8274,7 +8274,7 @@ session = db.get("session")()
 tprs = session.query(Tpr).order_by(Tpr.code)
 
 Monad.getContext().getAttribute("net.sf.chellow.jinja").get("render")(inv, template, {'tprs': tprs})]]></value>
-        <value><![CDATA[<!DOCTYPE html>
+		<value><![CDATA[<!DOCTYPE html>
 <html>
   <head>
     <link rel="stylesheet" type="text/css"
@@ -8303,14 +8303,14 @@ Monad.getContext().getAttribute("net.sf.chellow.jinja").get("render")(inv, templ
     </ul>
   </body>
 </html>]]></value>
-    </line>
-    <line>
-        <value><![CDATA[insert]]></value>
-        <value><![CDATA[report]]></value>
-        <value><![CDATA[97]]></value>
-        <value><![CDATA[true]]></value>
-        <value><![CDATA[TPR]]></value>
-        <value><![CDATA[from net.sf.chellow.monad import Monad
+	</line>
+	<line>
+		<value><![CDATA[insert]]></value>
+		<value><![CDATA[report]]></value>
+		<value><![CDATA[97]]></value>
+		<value><![CDATA[true]]></value>
+		<value><![CDATA[TPR]]></value>
+		<value><![CDATA[from net.sf.chellow.monad import Monad
 
 db = Monad.getContext().getAttribute("net.sf.chellow.db")
 for cls in ['Tpr']:
@@ -8321,7 +8321,7 @@ tpr_id = inv.getLong('tpr_id')
 tpr = Tpr.get(session, tpr_id)
 
 Monad.getContext().getAttribute("net.sf.chellow.jinja").get("render")(inv, template, {'tpr': tpr})]]></value>
-        <value><![CDATA[<!DOCTYPE html>
+		<value><![CDATA[<!DOCTYPE html>
 <html>
   <head>
     <link rel="stylesheet" type="text/css"
@@ -8412,14 +8412,14 @@ Monad.getContext().getAttribute("net.sf.chellow.jinja").get("render")(inv, templ
     </ul>
   </body>
 </html>]]></value>
-    </line>
-    <line>
-        <value><![CDATA[insert]]></value>
-        <value><![CDATA[report]]></value>
-        <value><![CDATA[99]]></value>
-        <value><![CDATA[true]]></value>
-        <value><![CDATA[Supplies]]></value>
-        <value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree, Debug
+	</line>
+	<line>
+		<value><![CDATA[insert]]></value>
+		<value><![CDATA[report]]></value>
+		<value><![CDATA[99]]></value>
+		<value><![CDATA[true]]></value>
+		<value><![CDATA[Supplies]]></value>
+		<value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree, Debug
 from net.sf.chellow.monad.types import MonadUri
 
 if inv.hasParameter("search-pattern"):
@@ -8441,7 +8441,7 @@ if inv.hasParameter("search-pattern"):
     else:
         for generation in generations:
             source.appendChild(generation.toXml(doc, XmlTree("supply").put('hhdcContract').put('pc').put('mtc').put('mpans', XmlTree('llfc').put('core').put('supplierContract'))))]]></value>
-        <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
+		<value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
 <xsl:stylesheet version="1.0"
     xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
     <xsl:output method="html" encoding="US-ASCII"
@@ -8595,14 +8595,14 @@ if inv.hasParameter("search-pattern"):
         </html>
     </xsl:template>
 </xsl:stylesheet>]]></value>
-    </line>
-    <line>
-        <value><![CDATA[insert]]></value>
-        <value><![CDATA[report]]></value>
-        <value><![CDATA[101]]></value>
-        <value><![CDATA[true]]></value>
-        <value><![CDATA[Supply Virtual Bill]]></value>
-        <value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree, UserException
+	</line>
+	<line>
+		<value><![CDATA[insert]]></value>
+		<value><![CDATA[report]]></value>
+		<value><![CDATA[101]]></value>
+		<value><![CDATA[true]]></value>
+		<value><![CDATA[Supply Virtual Bill]]></value>
+		<value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree, UserException
 from net.sf.chellow.monad.types import MonadDate
 from java.util import Calendar, Locale, TimeZone, GregorianCalendar
 from net.sf.chellow.physical import HhStartDate, Supply
@@ -8751,7 +8751,7 @@ source.setAttribute('start-date', str(start_date))
 source.setAttribute('finish-date', str(finish_date))
 source.setAttribute('net-gbp', str(net_gbp))
 source.setAttribute('debug', pw.toString())]]></value>
-        <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
+		<value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
 <xsl:stylesheet version="1.0"
     xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
     <xsl:output method="xml" encoding="US-ASCII"
@@ -8889,14 +8889,14 @@ source.setAttribute('debug', pw.toString())]]></value>
         </html>
     </xsl:template>
 </xsl:stylesheet>]]></value>
-    </line>
-    <line>
-        <value><![CDATA[insert]]></value>
-        <value><![CDATA[report]]></value>
-        <value><![CDATA[103]]></value>
-        <value><![CDATA[true]]></value>
-        <value><![CDATA[Supplier Contract 3rd Party Virtual Bills]]></value>
-        <value><![CDATA[from net.sf.chellow.monad import Hiber
+	</line>
+	<line>
+		<value><![CDATA[insert]]></value>
+		<value><![CDATA[report]]></value>
+		<value><![CDATA[103]]></value>
+		<value><![CDATA[true]]></value>
+		<value><![CDATA[Supplier Contract 3rd Party Virtual Bills]]></value>
+		<value><![CDATA[from net.sf.chellow.monad import Hiber
 from java.util import GregorianCalendar, TimeZone, Locale, Calendar
 from net.sf.chellow.physical import MpanCore, HhStartDate, Supply
 from net.sf.chellow.billing import SupplierContract, NonCoreContract
@@ -8966,15 +8966,16 @@ while sites.next():
         Hiber.session().clear()
 sites.close()
 pw.close()]]></value>
-        <value><![CDATA[]]></value>
-    </line>
-    <line>
-        <value><![CDATA[insert]]></value>
-        <value><![CDATA[report]]></value>
-        <value><![CDATA[105]]></value>
-        <value><![CDATA[true]]></value>
-        <value><![CDATA[Supplier Contract Bill]]></value>
-        <value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree, UserException
+		<value><![CDATA[]]>
+		</value>
+	</line>
+	<line>
+		<value><![CDATA[insert]]></value>
+		<value><![CDATA[report]]></value>
+		<value><![CDATA[105]]></value>
+		<value><![CDATA[true]]></value>
+		<value><![CDATA[Supplier Contract Bill]]></value>
+		<value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree, UserException
 from net.sf.chellow.billing import Bill
 import collections
 
@@ -9050,7 +9051,7 @@ try:
                 pass
 except SyntaxError:
     pass]]></value>
-        <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
+		<value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
 <xsl:stylesheet version="1.0"
     xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
     <xsl:output method="html" encoding="US-ASCII"
@@ -9283,20 +9284,20 @@ except SyntaxError:
         </html>
     </xsl:template>
 </xsl:stylesheet>]]></value>
-    </line>
-    <line>
-        <value><![CDATA[insert]]></value>
-        <value><![CDATA[report]]></value>
-        <value><![CDATA[107]]></value>
-        <value><![CDATA[true]]></value>
-        <value><![CDATA[MOP Contract]]></value>
-        <value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree, UserException
+	</line>
+	<line>
+		<value><![CDATA[insert]]></value>
+		<value><![CDATA[report]]></value>
+		<value><![CDATA[107]]></value>
+		<value><![CDATA[true]]></value>
+		<value><![CDATA[MOP Contract]]></value>
+		<value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree, UserException
 from net.sf.chellow.billing import MopContract
 
 contract_id = inv.getLong('mop-contract-id')
 contract = MopContract.getMopContract(contract_id)
 source.appendChild(contract.toXml(doc, XmlTree('party', XmlTree('participant')).put('rateScripts')))]]></value>
-        <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
+		<value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
 <xsl:stylesheet version="1.0"
     xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
     <xsl:output method="html" encoding="US-ASCII"
@@ -9452,14 +9453,14 @@ source.appendChild(contract.toXml(doc, XmlTree('party', XmlTree('participant')).
         </html>
     </xsl:template>
 </xsl:stylesheet>]]></value>
-    </line>
-    <line>
-        <value><![CDATA[insert]]></value>
-        <value><![CDATA[report]]></value>
-        <value><![CDATA[109]]></value>
-        <value><![CDATA[true]]></value>
-        <value><![CDATA[Supplier Contract Displaced Virtual Bills]]></value>
-        <value><![CDATA[from net.sf.chellow.monad import Hiber, UserException
+	</line>
+	<line>
+		<value><![CDATA[insert]]></value>
+		<value><![CDATA[report]]></value>
+		<value><![CDATA[109]]></value>
+		<value><![CDATA[true]]></value>
+		<value><![CDATA[Supplier Contract Displaced Virtual Bills]]></value>
+		<value><![CDATA[from net.sf.chellow.monad import Hiber, UserException
 from java.util import GregorianCalendar, TimeZone, Locale, Calendar, Date
 from net.sf.chellow.physical import MpanCore, HhStartDate, Supply, Site
 from net.sf.chellow.billing import SupplierContract, NonCoreContract
@@ -9634,15 +9635,16 @@ while sites.next():
         month_finish = HhStartDate(cal.getTime())
 sites.close()
 pw.close()]]></value>
-        <value><![CDATA[]]></value>
-    </line>
-    <line>
-        <value><![CDATA[insert]]></value>
-        <value><![CDATA[report]]></value>
-        <value><![CDATA[111]]></value>
-        <value><![CDATA[true]]></value>
-        <value><![CDATA[CSV Bill Checker]]></value>
-        <value><![CDATA[from net.sf.chellow.monad import Hiber, UserException
+		<value><![CDATA[]]>
+		</value>
+	</line>
+	<line>
+		<value><![CDATA[insert]]></value>
+		<value><![CDATA[report]]></value>
+		<value><![CDATA[111]]></value>
+		<value><![CDATA[true]]></value>
+		<value><![CDATA[CSV Bill Checker]]></value>
+		<value><![CDATA[from net.sf.chellow.monad import Hiber, UserException
 from java.lang import System, Long
 from net.sf.chellow.monad.types import MonadDate
 from java.sql import Timestamp, ResultSet
@@ -9863,15 +9865,16 @@ while bills.next():
     Hiber.session().clear()
 bills.close()
 pw.close()]]></value>
-        <value><![CDATA[]]></value>
-    </line>
-    <line>
-        <value><![CDATA[insert]]></value>
-        <value><![CDATA[report]]></value>
-        <value><![CDATA[113]]></value>
-        <value><![CDATA[true]]></value>
-        <value><![CDATA[HHDC Contracts]]></value>
-        <value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree
+		<value><![CDATA[]]>
+		</value>
+	</line>
+	<line>
+		<value><![CDATA[insert]]></value>
+		<value><![CDATA[report]]></value>
+		<value><![CDATA[113]]></value>
+		<value><![CDATA[true]]></value>
+		<value><![CDATA[HHDC Contracts]]></value>
+		<value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree
 
 contracts_element = doc.createElement('contracts')
 source.appendChild(contracts_element)
@@ -9884,7 +9887,7 @@ for contract in Hiber.session().createQuery("from HhdcContract contract order by
     finish_rate_script = contract.getFinishRateScript()
     finish_rate_script.setLabel('finish')
     contract_element.appendChild(finish_rate_script.toXml(doc))]]></value>
-        <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
+		<value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
 <xsl:stylesheet version="1.0"
     xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
     <xsl:output method="html" encoding="US-ASCII"
@@ -9973,20 +9976,20 @@ for contract in Hiber.session().createQuery("from HhdcContract contract order by
         </html>
     </xsl:template>
 </xsl:stylesheet>]]></value>
-    </line>
-    <line>
-        <value><![CDATA[insert]]></value>
-        <value><![CDATA[report]]></value>
-        <value><![CDATA[115]]></value>
-        <value><![CDATA[true]]></value>
-        <value><![CDATA[HHDC Contract]]></value>
-        <value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree, UserException
+	</line>
+	<line>
+		<value><![CDATA[insert]]></value>
+		<value><![CDATA[report]]></value>
+		<value><![CDATA[115]]></value>
+		<value><![CDATA[true]]></value>
+		<value><![CDATA[HHDC Contract]]></value>
+		<value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree, UserException
 from net.sf.chellow.billing import HhdcContract
 
 contract_id = inv.getLong('hhdc-contract-id')
 contract = HhdcContract.getHhdcContract(contract_id)
 source.appendChild(contract.toXml(doc, XmlTree('party', XmlTree('participant')).put('rateScripts')))]]></value>
-        <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
+		<value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
 <xsl:stylesheet version="1.0"
     xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
     <xsl:output method="html" encoding="US-ASCII"
@@ -10156,20 +10159,20 @@ source.appendChild(contract.toXml(doc, XmlTree('party', XmlTree('participant')).
         </html>
     </xsl:template>
 </xsl:stylesheet>]]></value>
-    </line>
-    <line>
-        <value><![CDATA[insert]]></value>
-        <value><![CDATA[report]]></value>
-        <value><![CDATA[117]]></value>
-        <value><![CDATA[true]]></value>
-        <value><![CDATA[Channel Snag]]></value>
-        <value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree, UserException
+	</line>
+	<line>
+		<value><![CDATA[insert]]></value>
+		<value><![CDATA[report]]></value>
+		<value><![CDATA[117]]></value>
+		<value><![CDATA[true]]></value>
+		<value><![CDATA[Channel Snag]]></value>
+		<value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree, UserException
 from net.sf.chellow.physical import ChannelSnag
 
 snag_id = inv.getLong('snag-id')
 snag = ChannelSnag.getChannelSnag(snag_id)
 source.appendChild(snag.toXml(doc, XmlTree("channel", XmlTree("supplyGeneration", XmlTree('supply').put("hhdcContract")))))]]></value>
-        <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
+		<value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
 <xsl:stylesheet version="1.0"
     xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
     <xsl:output method="html" encoding="US-ASCII"
@@ -10314,20 +10317,20 @@ source.appendChild(snag.toXml(doc, XmlTree("channel", XmlTree("supplyGeneration"
         </html>
     </xsl:template>
 </xsl:stylesheet>]]></value>
-    </line>
-    <line>
-        <value><![CDATA[insert]]></value>
-        <value><![CDATA[report]]></value>
-        <value><![CDATA[119]]></value>
-        <value><![CDATA[true]]></value>
-        <value><![CDATA[Site Group Snag]]></value>
-        <value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree, UserException
+	</line>
+	<line>
+		<value><![CDATA[insert]]></value>
+		<value><![CDATA[report]]></value>
+		<value><![CDATA[119]]></value>
+		<value><![CDATA[true]]></value>
+		<value><![CDATA[Site Group Snag]]></value>
+		<value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree, UserException
 from net.sf.chellow.physical import SiteSnag
 
 snag_id = inv.getLong('snag-id')
 snag = SiteSnag.getSiteSnag(snag_id)
 source.appendChild(snag.toXml(doc, XmlTree("site")))]]></value>
-        <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
+		<value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
 <xsl:stylesheet version="1.0"
     xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
     <xsl:output method="html" encoding="US-ASCII"
@@ -10448,20 +10451,20 @@ source.appendChild(snag.toXml(doc, XmlTree("site")))]]></value>
         </html>
     </xsl:template>
 </xsl:stylesheet>]]></value>
-    </line>
-    <line>
-        <value><![CDATA[insert]]></value>
-        <value><![CDATA[report]]></value>
-        <value><![CDATA[121]]></value>
-        <value><![CDATA[true]]></value>
-        <value><![CDATA[Market Roles]]></value>
-        <value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree
+	</line>
+	<line>
+		<value><![CDATA[insert]]></value>
+		<value><![CDATA[report]]></value>
+		<value><![CDATA[121]]></value>
+		<value><![CDATA[true]]></value>
+		<value><![CDATA[Market Roles]]></value>
+		<value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree
 
 roles_element = doc.createElement('roles')
 source.appendChild(roles_element)
 for role in Hiber.session().createQuery("from MarketRole role order by role.code").list():
     roles_element.appendChild(role.toXml(doc))]]></value>
-        <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
+		<value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
 <xsl:stylesheet version="1.0"
     xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
     <xsl:output method="html" encoding="US-ASCII"
@@ -10523,14 +10526,14 @@ for role in Hiber.session().createQuery("from MarketRole role order by role.code
         </html>
     </xsl:template>
 </xsl:stylesheet>]]></value>
-    </line>
-    <line>
-        <value><![CDATA[insert]]></value>
-        <value><![CDATA[report]]></value>
-        <value><![CDATA[123]]></value>
-        <value><![CDATA[true]]></value>
-        <value><![CDATA[Market Role]]></value>
-        <value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree
+	</line>
+	<line>
+		<value><![CDATA[insert]]></value>
+		<value><![CDATA[report]]></value>
+		<value><![CDATA[123]]></value>
+		<value><![CDATA[true]]></value>
+		<value><![CDATA[Market Role]]></value>
+		<value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree
 from net.sf.chellow.physical import MarketRole
 
 role_id = inv.getLong('role-id')
@@ -10539,7 +10542,7 @@ role_element = role.toXml(doc)
 source.appendChild(role_element)
 for party in Hiber.session().createQuery("from Party party where party.role = :role order by party.participant.code").setEntity("role", role).list():
     role_element.appendChild(party.toXml(doc, XmlTree('participant')))]]></value>
-        <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
+		<value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
 <xsl:stylesheet version="1.0"
     xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
     <xsl:output method="html" encoding="US-ASCII"
@@ -10659,14 +10662,14 @@ for party in Hiber.session().createQuery("from Party party where party.role = :r
         </html>
     </xsl:template>
 </xsl:stylesheet>]]></value>
-    </line>
-    <line>
-        <value><![CDATA[insert]]></value>
-        <value><![CDATA[report]]></value>
-        <value><![CDATA[125]]></value>
-        <value><![CDATA[true]]></value>
-        <value><![CDATA[SSCs]]></value>
-        <value><![CDATA[from net.sf.chellow.monad import Monad
+	</line>
+	<line>
+		<value><![CDATA[insert]]></value>
+		<value><![CDATA[report]]></value>
+		<value><![CDATA[125]]></value>
+		<value><![CDATA[true]]></value>
+		<value><![CDATA[SSCs]]></value>
+		<value><![CDATA[from net.sf.chellow.monad import Monad
 from sqlalchemy.orm import joinedload_all
 
 db = Monad.getContext().getAttribute("net.sf.chellow.db")
@@ -10678,7 +10681,7 @@ session = db.get("session")()
 sscs = session.query(Ssc).options(joinedload_all('measurement_requirements.tpr')).order_by(Ssc.code)
 
 Monad.getContext().getAttribute("net.sf.chellow.jinja").get("render")(inv, template, {'sscs': sscs})]]></value>
-        <value><![CDATA[<!DOCTYPE html>
+		<value><![CDATA[<!DOCTYPE html>
 <html>
   <head>
     <link rel="stylesheet" type="text/css"
@@ -10737,14 +10740,14 @@ Monad.getContext().getAttribute("net.sf.chellow.jinja").get("render")(inv, templ
     </table>
   </body>
 </html>]]></value>
-    </line>
-    <line>
-        <value><![CDATA[insert]]></value>
-        <value><![CDATA[report]]></value>
-        <value><![CDATA[127]]></value>
-        <value><![CDATA[true]]></value>
-        <value><![CDATA[SSC]]></value>
-        <value><![CDATA[from net.sf.chellow.monad import Hiber, Monad
+	</line>
+	<line>
+		<value><![CDATA[insert]]></value>
+		<value><![CDATA[report]]></value>
+		<value><![CDATA[127]]></value>
+		<value><![CDATA[true]]></value>
+		<value><![CDATA[SSC]]></value>
+		<value><![CDATA[from net.sf.chellow.monad import Hiber, Monad
 
 db = Monad.getContext().getAttribute("net.sf.chellow.db")
 for cls in ['Ssc']:
@@ -10756,7 +10759,7 @@ ssc_id = inv.getLong('ssc_id')
 ssc = Ssc.get(session, ssc_id)
 
 Monad.getContext().getAttribute("net.sf.chellow.jinja").get("render")(inv, template, {'ssc': ssc})]]></value>
-        <value><![CDATA[<!DOCTYPE html>
+		<value><![CDATA[<!DOCTYPE html>
 <html>
   <head>
     <link rel="stylesheet" type="text/css"
@@ -10816,20 +10819,20 @@ Monad.getContext().getAttribute("net.sf.chellow.jinja").get("render")(inv, templ
     </ul>
   </body>
 </html>]]></value>
-    </line>
-    <line>
-        <value><![CDATA[insert]]></value>
-        <value><![CDATA[report]]></value>
-        <value><![CDATA[129]]></value>
-        <value><![CDATA[true]]></value>
-        <value><![CDATA[Meter Types]]></value>
-        <value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree
+	</line>
+	<line>
+		<value><![CDATA[insert]]></value>
+		<value><![CDATA[report]]></value>
+		<value><![CDATA[129]]></value>
+		<value><![CDATA[true]]></value>
+		<value><![CDATA[Meter Types]]></value>
+		<value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree
 
 types_element = doc.createElement('meter-types')
 source.appendChild(types_element)
 for type in Hiber.session().createQuery("from MeterType type order by type.code").list():
     types_element.appendChild(type.toXml(doc))]]></value>
-        <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
+		<value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
 <xsl:stylesheet version="1.0"
     xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
     <xsl:output method="html" encoding="US-ASCII"
@@ -10893,20 +10896,20 @@ for type in Hiber.session().createQuery("from MeterType type order by type.code"
         </html>
     </xsl:template>
 </xsl:stylesheet>]]></value>
-    </line>
-    <line>
-        <value><![CDATA[insert]]></value>
-        <value><![CDATA[report]]></value>
-        <value><![CDATA[131]]></value>
-        <value><![CDATA[true]]></value>
-        <value><![CDATA[Meter Type]]></value>
-        <value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree
+	</line>
+	<line>
+		<value><![CDATA[insert]]></value>
+		<value><![CDATA[report]]></value>
+		<value><![CDATA[131]]></value>
+		<value><![CDATA[true]]></value>
+		<value><![CDATA[Meter Type]]></value>
+		<value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree
 from net.sf.chellow.physical import MeterType
 
 type_id = inv.getLong('type-id')
 type = MeterType.getMeterType(type_id)
 source.appendChild(type.toXml(doc))]]></value>
-        <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
+		<value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
 <xsl:stylesheet version="1.0"
     xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
     <xsl:output method="html" encoding="US-ASCII"
@@ -10968,20 +10971,20 @@ source.appendChild(type.toXml(doc))]]></value>
         </html>
     </xsl:template>
 </xsl:stylesheet>]]></value>
-    </line>
-    <line>
-        <value><![CDATA[insert]]></value>
-        <value><![CDATA[report]]></value>
-        <value><![CDATA[133]]></value>
-        <value><![CDATA[true]]></value>
-        <value><![CDATA[MTC Payment Types]]></value>
-        <value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree
+	</line>
+	<line>
+		<value><![CDATA[insert]]></value>
+		<value><![CDATA[report]]></value>
+		<value><![CDATA[133]]></value>
+		<value><![CDATA[true]]></value>
+		<value><![CDATA[MTC Payment Types]]></value>
+		<value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree
 
 types_element = doc.createElement('meter-payment-types')
 source.appendChild(types_element)
 for type in Hiber.session().createQuery("from MeterPaymentType type order by type.code").list():
     types_element.appendChild(type.toXml(doc))]]></value>
-        <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
+		<value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
 <xsl:stylesheet version="1.0"
     xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
     <xsl:output method="html" encoding="US-ASCII"
@@ -11044,20 +11047,20 @@ for type in Hiber.session().createQuery("from MeterPaymentType type order by typ
         </html>
     </xsl:template>
 </xsl:stylesheet>]]></value>
-    </line>
-    <line>
-        <value><![CDATA[insert]]></value>
-        <value><![CDATA[report]]></value>
-        <value><![CDATA[135]]></value>
-        <value><![CDATA[true]]></value>
-        <value><![CDATA[MTC Payment Type]]></value>
-        <value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree
+	</line>
+	<line>
+		<value><![CDATA[insert]]></value>
+		<value><![CDATA[report]]></value>
+		<value><![CDATA[135]]></value>
+		<value><![CDATA[true]]></value>
+		<value><![CDATA[MTC Payment Type]]></value>
+		<value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree
 from net.sf.chellow.physical import MeterPaymentType
 
 type_id = inv.getLong('type-id')
 type = MeterPaymentType.getMeterPaymentType(type_id)
 source.appendChild(type.toXml(doc))]]></value>
-        <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
+		<value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
 <xsl:stylesheet version="1.0"
     xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
     <xsl:output method="html" encoding="US-ASCII"
@@ -11119,19 +11122,19 @@ source.appendChild(type.toXml(doc))]]></value>
         </html>
     </xsl:template>
 </xsl:stylesheet>]]></value>
-    </line>
-    <line>
-        <value><![CDATA[insert]]></value>
-        <value><![CDATA[report]]></value>
-        <value><![CDATA[137]]></value>
-        <value><![CDATA[true]]></value>
-        <value><![CDATA[DNOs]]></value>
-        <value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree
+	</line>
+	<line>
+		<value><![CDATA[insert]]></value>
+		<value><![CDATA[report]]></value>
+		<value><![CDATA[137]]></value>
+		<value><![CDATA[true]]></value>
+		<value><![CDATA[DNOs]]></value>
+		<value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree
 
 for dno in Hiber.session().createQuery(
                 'from Dno dno order by dno.code').list():
     source.appendChild(dno.toXml(doc, XmlTree('participant').put('role')))]]></value>
-        <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
+		<value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
 <xsl:stylesheet version="1.0"
     xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
     <xsl:output method="html" encoding="US-ASCII"
@@ -11203,14 +11206,14 @@ for dno in Hiber.session().createQuery(
         </html>
     </xsl:template>
 </xsl:stylesheet>]]></value>
-    </line>
-    <line>
-        <value><![CDATA[insert]]></value>
-        <value><![CDATA[report]]></value>
-        <value><![CDATA[139]]></value>
-        <value><![CDATA[true]]></value>
-        <value><![CDATA[DNO]]></value>
-        <value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree
+	</line>
+	<line>
+		<value><![CDATA[insert]]></value>
+		<value><![CDATA[report]]></value>
+		<value><![CDATA[139]]></value>
+		<value><![CDATA[true]]></value>
+		<value><![CDATA[DNO]]></value>
+		<value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree
 from net.sf.chellow.billing import Dno
 from net.sf.chellow.physical import Configuration
 from java.util import Properties
@@ -11242,7 +11245,7 @@ for key in properties.propertyNames():
         if dno_report_id is not None:
             report = Report.getReport(int(dno_report_id))
             source.appendChild(report.toXml(doc))]]></value>
-        <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
+		<value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
 <xsl:stylesheet version="1.0"
     xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
     <xsl:output method="html" encoding="US-ASCII"
@@ -11378,20 +11381,20 @@ for key in properties.propertyNames():
         </html>
     </xsl:template>
 </xsl:stylesheet>]]></value>
-    </line>
-    <line>
-        <value><![CDATA[insert]]></value>
-        <value><![CDATA[report]]></value>
-        <value><![CDATA[141]]></value>
-        <value><![CDATA[true]]></value>
-        <value><![CDATA[Read Types]]></value>
-        <value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree
+	</line>
+	<line>
+		<value><![CDATA[insert]]></value>
+		<value><![CDATA[report]]></value>
+		<value><![CDATA[141]]></value>
+		<value><![CDATA[true]]></value>
+		<value><![CDATA[Read Types]]></value>
+		<value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree
 
 types_element = doc.createElement('read-types')
 source.appendChild(types_element)
 for type in Hiber.session().createQuery("from ReadType type order by type.code").list():
     types_element.appendChild(type.toXml(doc))]]></value>
-        <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
+		<value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
 <xsl:stylesheet version="1.0"
     xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
     <xsl:output method="html" encoding="US-ASCII"
@@ -11454,20 +11457,20 @@ for type in Hiber.session().createQuery("from ReadType type order by type.code")
         </html>
     </xsl:template>
 </xsl:stylesheet>]]></value>
-    </line>
-    <line>
-        <value><![CDATA[insert]]></value>
-        <value><![CDATA[report]]></value>
-        <value><![CDATA[143]]></value>
-        <value><![CDATA[true]]></value>
-        <value><![CDATA[Read Type]]></value>
-        <value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree
+	</line>
+	<line>
+		<value><![CDATA[insert]]></value>
+		<value><![CDATA[report]]></value>
+		<value><![CDATA[143]]></value>
+		<value><![CDATA[true]]></value>
+		<value><![CDATA[Read Type]]></value>
+		<value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree
 from net.sf.chellow.physical import ReadType
 
 type_id = inv.getLong('type-id')
 type = ReadType.getReadType(type_id)
 source.appendChild(type.toXml(doc))]]></value>
-        <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
+		<value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
 <xsl:stylesheet version="1.0"
     xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
     <xsl:output method="html" encoding="US-ASCII"
@@ -11529,14 +11532,14 @@ source.appendChild(type.toXml(doc))]]></value>
         </html>
     </xsl:template>
 </xsl:stylesheet>]]></value>
-    </line>
-    <line>
-        <value><![CDATA[insert]]></value>
-        <value><![CDATA[report]]></value>
-        <value><![CDATA[145]]></value>
-        <value><![CDATA[true]]></value>
-        <value><![CDATA[CSV Sites HH Data Selector]]></value>
-        <value><![CDATA[from java.util import GregorianCalendar, TimeZone, Locale, Calendar
+	</line>
+	<line>
+		<value><![CDATA[insert]]></value>
+		<value><![CDATA[report]]></value>
+		<value><![CDATA[145]]></value>
+		<value><![CDATA[true]]></value>
+		<value><![CDATA[CSV Sites HH Data Selector]]></value>
+		<value><![CDATA[from java.util import GregorianCalendar, TimeZone, Locale, Calendar
 from net.sf.chellow.monad.types import MonadDate
 
 cal = GregorianCalendar(TimeZone.getTimeZone("GMT"), Locale.UK)
@@ -11544,7 +11547,7 @@ cal.add(Calendar.MONTH, -1)
 source.appendChild(MonadDate(cal.getTime()).toXml(doc))
 source.appendChild(MonadDate.getMonthsXml(doc))
 source.appendChild(MonadDate.getDaysXml(doc))]]></value>
-        <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
+		<value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
 <xsl:stylesheet version="1.0"
     xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
     <xsl:output method="xml" encoding="US-ASCII"
@@ -11613,14 +11616,14 @@ source.appendChild(MonadDate.getDaysXml(doc))]]></value>
         </html>
     </xsl:template>
 </xsl:stylesheet>]]></value>
-    </line>
-    <line>
-        <value><![CDATA[insert]]></value>
-        <value><![CDATA[report]]></value>
-        <value><![CDATA[147]]></value>
-        <value><![CDATA[true]]></value>
-        <value><![CDATA[CSV Supplies Duration Selector]]></value>
-        <value><![CDATA[from java.util import GregorianCalendar, TimeZone, Locale, Calendar
+	</line>
+	<line>
+		<value><![CDATA[insert]]></value>
+		<value><![CDATA[report]]></value>
+		<value><![CDATA[147]]></value>
+		<value><![CDATA[true]]></value>
+		<value><![CDATA[CSV Supplies Duration Selector]]></value>
+		<value><![CDATA[from java.util import GregorianCalendar, TimeZone, Locale, Calendar
 from net.sf.chellow.monad.types import MonadDate
 from net.sf.chellow.physical import HhStartDate
 
@@ -11644,7 +11647,7 @@ source.appendChild(start_date.toXml(doc))
 source.appendChild(MonadDate.getMonthsXml(doc))
 source.appendChild(MonadDate.getDaysXml(doc))
 source.appendChild(MonadDate.getHoursXml(doc))]]></value>
-        <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
+		<value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
 <xsl:stylesheet version="1.0"
     xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
     <xsl:output method="xml" encoding="US-ASCII"
@@ -11752,14 +11755,14 @@ source.appendChild(MonadDate.getHoursXml(doc))]]></value>
         </html>
     </xsl:template>
 </xsl:stylesheet>]]></value>
-    </line>
-    <line>
-        <value><![CDATA[insert]]></value>
-        <value><![CDATA[report]]></value>
-        <value><![CDATA[149]]></value>
-        <value><![CDATA[true]]></value>
-        <value><![CDATA[CSV Supplies Duration]]></value>
-        <value><![CDATA[from net.sf.chellow.monad import Hiber, UserException
+	</line>
+	<line>
+		<value><![CDATA[insert]]></value>
+		<value><![CDATA[report]]></value>
+		<value><![CDATA[149]]></value>
+		<value><![CDATA[true]]></value>
+		<value><![CDATA[CSV Supplies Duration]]></value>
+		<value><![CDATA[from net.sf.chellow.monad import Hiber, UserException
 from java.util import GregorianCalendar, TimeZone, Locale, Calendar, Date
 from net.sf.chellow.physical import HhStartDate, Supply
 from java.sql import Timestamp, ResultSet
@@ -11969,22 +11972,23 @@ while supplies.next():
     pw.flush()
     Hiber.session().clear()
 supplies.close()]]></value>
-        <value><![CDATA[]]></value>
-    </line>
-    <line>
-        <value><![CDATA[insert]]></value>
-        <value><![CDATA[report]]></value>
-        <value><![CDATA[151]]></value>
-        <value><![CDATA[true]]></value>
-        <value><![CDATA[Admin: CSV Export Selector]]></value>
-        <value><![CDATA[from java.util import GregorianCalendar, TimeZone, Locale, Calendar
+		<value><![CDATA[]]>
+		</value>
+	</line>
+	<line>
+		<value><![CDATA[insert]]></value>
+		<value><![CDATA[report]]></value>
+		<value><![CDATA[151]]></value>
+		<value><![CDATA[true]]></value>
+		<value><![CDATA[Admin: CSV Export Selector]]></value>
+		<value><![CDATA[from java.util import GregorianCalendar, TimeZone, Locale, Calendar
 from net.sf.chellow.monad.types import MonadDate
 
 cal = GregorianCalendar(TimeZone.getTimeZone("GMT"), Locale.UK)
 source.appendChild(MonadDate(cal.getTime()).toXml(doc))
 source.appendChild(MonadDate.getMonthsXml(doc))
 source.appendChild(MonadDate.getDaysXml(doc))]]></value>
-        <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
+		<value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
 <xsl:stylesheet version="1.0"
     xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
     <xsl:output method="html" encoding="US-ASCII"
@@ -12091,21 +12095,21 @@ source.appendChild(MonadDate.getDaysXml(doc))]]></value>
         </html>
     </xsl:template>
 </xsl:stylesheet>]]></value>
-    </line>
-    <line>
-        <value><![CDATA[insert]]></value>
-        <value><![CDATA[report]]></value>
-        <value><![CDATA[153]]></value>
-        <value><![CDATA[true]]></value>
-        <value><![CDATA[CSV Bills Selector]]></value>
-        <value><![CDATA[from java.util import GregorianCalendar, TimeZone, Locale, Calendar
+	</line>
+	<line>
+		<value><![CDATA[insert]]></value>
+		<value><![CDATA[report]]></value>
+		<value><![CDATA[153]]></value>
+		<value><![CDATA[true]]></value>
+		<value><![CDATA[CSV Bills Selector]]></value>
+		<value><![CDATA[from java.util import GregorianCalendar, TimeZone, Locale, Calendar
 from net.sf.chellow.monad.types import MonadDate
 
 cal = GregorianCalendar(TimeZone.getTimeZone("GMT"), Locale.UK)
 cal.add(Calendar.MONTH, -1)
 source.appendChild(MonadDate(cal.getTime()).toXml(doc))
 source.appendChild(MonadDate.getMonthsXml(doc))]]></value>
-        <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
+		<value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
 <xsl:stylesheet version="1.0"
     xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
     <xsl:output method="xml" encoding="US-ASCII"
@@ -12174,21 +12178,21 @@ source.appendChild(MonadDate.getMonthsXml(doc))]]></value>
         </html>
     </xsl:template>
 </xsl:stylesheet>]]></value>
-    </line>
-    <line>
-        <value><![CDATA[insert]]></value>
-        <value><![CDATA[report]]></value>
-        <value><![CDATA[155]]></value>
-        <value><![CDATA[true]]></value>
-        <value><![CDATA[CSV Supplies Monthly Duration Selector]]></value>
-        <value><![CDATA[from java.util import GregorianCalendar, TimeZone, Locale, Calendar
+	</line>
+	<line>
+		<value><![CDATA[insert]]></value>
+		<value><![CDATA[report]]></value>
+		<value><![CDATA[155]]></value>
+		<value><![CDATA[true]]></value>
+		<value><![CDATA[CSV Supplies Monthly Duration Selector]]></value>
+		<value><![CDATA[from java.util import GregorianCalendar, TimeZone, Locale, Calendar
 from net.sf.chellow.monad.types import MonadDate
 
 cal = GregorianCalendar(TimeZone.getTimeZone("GMT"), Locale.UK)
 cal.add(Calendar.MONTH, -1)
 source.appendChild(MonadDate(cal.getTime()).toXml(doc))
 source.appendChild(MonadDate.getMonthsXml(doc))]]></value>
-        <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
+		<value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
 <xsl:stylesheet version="1.0"
     xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
     <xsl:output method="xml" encoding="US-ASCII"
@@ -12257,21 +12261,21 @@ source.appendChild(MonadDate.getMonthsXml(doc))]]></value>
         </html>
     </xsl:template>
 </xsl:stylesheet>]]></value>
-    </line>
-    <line>
-        <value><![CDATA[insert]]></value>
-        <value><![CDATA[report]]></value>
-        <value><![CDATA[157]]></value>
-        <value><![CDATA[true]]></value>
-        <value><![CDATA[CSV Supplies Snapshot Selector]]></value>
-        <value><![CDATA[from java.util import GregorianCalendar, TimeZone, Locale, Calendar
+	</line>
+	<line>
+		<value><![CDATA[insert]]></value>
+		<value><![CDATA[report]]></value>
+		<value><![CDATA[157]]></value>
+		<value><![CDATA[true]]></value>
+		<value><![CDATA[CSV Supplies Snapshot Selector]]></value>
+		<value><![CDATA[from java.util import GregorianCalendar, TimeZone, Locale, Calendar
 from net.sf.chellow.monad.types import MonadDate
 
 cal = GregorianCalendar(TimeZone.getTimeZone("GMT"), Locale.UK)
 cal.add(Calendar.MONTH, -1)
 source.appendChild(MonadDate(cal.getTime()).toXml(doc))
 source.appendChild(MonadDate.getMonthsXml(doc))]]></value>
-        <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
+		<value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
 <xsl:stylesheet version="1.0"
     xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
     <xsl:output method="xml" encoding="US-ASCII"
@@ -12329,21 +12333,21 @@ source.appendChild(MonadDate.getMonthsXml(doc))]]></value>
         </html>
     </xsl:template>
 </xsl:stylesheet>]]></value>
-    </line>
-    <line>
-        <value><![CDATA[insert]]></value>
-        <value><![CDATA[report]]></value>
-        <value><![CDATA[159]]></value>
-        <value><![CDATA[true]]></value>
-        <value><![CDATA[CSV Sites Monthly Duration Selector]]></value>
-        <value><![CDATA[from java.util import GregorianCalendar, TimeZone, Locale, Calendar
+	</line>
+	<line>
+		<value><![CDATA[insert]]></value>
+		<value><![CDATA[report]]></value>
+		<value><![CDATA[159]]></value>
+		<value><![CDATA[true]]></value>
+		<value><![CDATA[CSV Sites Monthly Duration Selector]]></value>
+		<value><![CDATA[from java.util import GregorianCalendar, TimeZone, Locale, Calendar
 from net.sf.chellow.monad.types import MonadDate
 
 cal = GregorianCalendar(TimeZone.getTimeZone("GMT"), Locale.UK)
 cal.add(Calendar.MONTH, -1)
 source.appendChild(MonadDate(cal.getTime()).toXml(doc))
 source.appendChild(MonadDate.getMonthsXml(doc))]]></value>
-        <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
+		<value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
 <xsl:stylesheet version="1.0"
     xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
     <xsl:output method="xml" encoding="US-ASCII"
@@ -12413,14 +12417,14 @@ source.appendChild(MonadDate.getMonthsXml(doc))]]></value>
         </html>
     </xsl:template>
 </xsl:stylesheet>]]></value>
-    </line>
-    <line>
-        <value><![CDATA[insert]]></value>
-        <value><![CDATA[report]]></value>
-        <value><![CDATA[161]]></value>
-        <value><![CDATA[true]]></value>
-        <value><![CDATA[CSV Sites Monthly Duration]]></value>
-        <value><![CDATA[from net.sf.chellow.monad import Hiber, UserException
+	</line>
+	<line>
+		<value><![CDATA[insert]]></value>
+		<value><![CDATA[report]]></value>
+		<value><![CDATA[161]]></value>
+		<value><![CDATA[true]]></value>
+		<value><![CDATA[CSV Sites Monthly Duration]]></value>
+		<value><![CDATA[from net.sf.chellow.monad import Hiber, UserException, Monad
 from net.sf.chellow.monad.types import MonadDate
 from java.sql import Timestamp, ResultSet
 from java.util import GregorianCalendar, Calendar, TimeZone, Locale, Date
@@ -12429,6 +12433,12 @@ from java.text import SimpleDateFormat, DecimalFormat
 from java.lang import Math, System
 from net.sf.chellow.billing import SupplierContract, NonCoreContract
 from org.python.util import PythonInterpreter
+import datetime
+import os
+import sys
+import traceback
+import threading
+
 
 year = inv.getInteger("end-year")
 month = inv.getInteger("end-month")
@@ -12437,16 +12447,11 @@ months = inv.getInteger("months")
 if not inv.isValid():
     raise UserException()
 
+
 if inv.hasParameter('site-code'):
     search_term = inv.getString('site-code')
-    query = Hiber.session().createQuery("from Site site where site.code = :siteCode").setString('siteCode', search_term.strip())
 else:
-    query = Hiber.session().createQuery("from Site site order by site.code")
-    #query = Hiber.session().createQuery("from Site site where site.code in ('10014', '12057') order by site.code")
-    #query = Hiber.session().createQuery("from Site site order by site.code").setMaxResults(400)
-
-
-computer = NonCoreContract.getNonCoreContract('computer')
+    search_term = None
 
 cal = MonadDate.getCalendar()
 cal.set(Calendar.YEAR, year)
@@ -12463,12 +12468,12 @@ cal.add(Calendar.MINUTE, 30)
 cal.add(Calendar.MONTH, -1 * months)
 start_date = HhStartDate(cal.getTime())
 
-comterp = PythonInterpreter()
-comterp.exec(computer.getChargeScript())
 
-bill_query = Hiber.session().createQuery("from Bill bill where bill.supply = :supply and bill.startDate.date <= :finishDate and bill.finishDate.date >= :startDate")
+month_format = SimpleDateFormat("yyyy-MM-dd")
+month_format.setCalendar(cal)
 
-def process_site(site, month_start, month_finish, forecast_date, pw):
+
+def process_site(site, month_start, month_finish, forecast_date, tmp_file, bill_query, comterp):
     site_code = site.getCode()
     associates = []
     sources = []
@@ -12534,8 +12539,7 @@ def process_site(site, month_start, month_finish, forecast_date, pw):
                     generator_types.append(gen_type)
 
             for supply_generation in Hiber.session().createQuery("from SupplyGeneration generation where generation.supply = :supply and generation.startDate.date <= :finishDate and (generation.finishDate is null or generation.finishDate.date >= :startDate)").setEntity('supply', supply).setTimestamp('startDate', chunk_start.getDate()).setTimestamp('finishDate', chunk_finish.getDate()).list():
-                pw.print(' ')
-                pw.flush()
+                tmp_file.write(' ')
                 if has_3rd_party:
                     for mpan in supply_generation.getMpans():
                         contr = mpan.getSupplierContract()
@@ -12557,18 +12561,18 @@ def process_site(site, month_start, month_finish, forecast_date, pw):
 
                 supplier_contract = import_mpan.getSupplierContract()
                 if source_code in ['net', 'gen-net']:
-                    #pw.println("starting vbill, " + str(System.currentTimeMillis()))
-                    supply_source = comterp.get('SupplySource')(bill_start, bill_finish, forecast_date, import_mpan, comterp, pw)
+                    #tmp_file.write("starting vbill, " + str(System.currentTimeMillis()))
+                    supply_source = comterp.get('SupplySource')(bill_start, bill_finish, forecast_date, import_mpan, comterp, tmp_file)
 
                     month_data['import-net-kwh'] += sum(hh['msp-kwh'] for hh in supply_source.hh_data)
 
-                    #pw.println("finished init from mpan, " + str(System.currentTimeMillis()))
-                    import_vb_function = comterp.get('contract_function')(supplier_contract, 'import_virtual_bill', pw)
+                    #tmp_file.write("finished init from mpan, " + str(System.currentTimeMillis()))
+                    import_vb_function = comterp.get('contract_function')(supplier_contract, 'import_virtual_bill', tmp_file)
                     if import_vb_function is None:
                         problem += "Can't find the import_virtual_bill function in the supplier contract. "
                     else:
                         v_bill = import_vb_function(supply_source)
-                        #pw.println("finishing vbill, " + str(System.currentTimeMillis()))
+                        #tmp_file.write("finishing vbill, " + str(System.currentTimeMillis()))
                         
                         if 'problem' in v_bill and len(v_bill['problem']) > 0:
                             problem += 'Supplier Problem: ' + v_bill['problem']
@@ -12604,22 +12608,22 @@ def process_site(site, month_start, month_finish, forecast_date, pw):
                 billed_gbp += overlap_proportion * bill.getNet().doubleValue()
                 billed_kwh += overlap_proportion * bill.getKwh().doubleValue()
 
-        #pw.println("getting site ds, " + str(System.currentTimeMillis()))
+        #tmp_file.println("getting site ds, " + str(System.currentTimeMillis()))
 
         displaced_mpan = comterp.get('displaced_mpan')(group, chunk_start, chunk_finish)
-        site_ds = comterp.get('SiteSource')(site, chunk_start, chunk_finish, forecast_date, comterp, pw, displaced_mpan)
+        site_ds = comterp.get('SiteSource')(site, chunk_start, chunk_finish, forecast_date, comterp, tmp_file, displaced_mpan)
         if displaced_mpan != None:
-            #pw.println("starting displaced, " + str(System.currentTimeMillis()))
-            month_data['msp-gbp'] += comterp.get('contract_function')(displaced_mpan.getSupplierContract(), 'displaced_virtual_bill', pw)(site_ds)['net-gbp']
+            #tmp_file.println("starting displaced, " + str(System.currentTimeMillis()))
+            month_data['msp-gbp'] += comterp.get('contract_function')(displaced_mpan.getSupplierContract(), 'displaced_virtual_bill', tmp_file)(site_ds)['net-gbp']
 
-            #pw.println("finishing displaced, " + str(System.currentTimeMillis()))
+            #tmp_file.println("finishing displaced, " + str(System.currentTimeMillis()))
         elif has_3rd_party and site.getCode() == '12129':
             keys = third_party_contracts.keys()
             keys.sort()
-            third_gbp = comterp.get('contract_function')(third_party_contracts[keys[0]], 'third_party_bill', pw)(site_ds)['net-gbp']
+            third_gbp = comterp.get('contract_function')(third_party_contracts[keys[0]], 'third_party_bill', tmp_file)(site_ds)['net-gbp']
             month_data['used-3rd-party-gbp'] += third_gbp
 
-        #pw.println("finishing site ds " + str(System.currentTimeMillis()))
+        #tmp_file.println("finishing site ds " + str(System.currentTimeMillis()))
 
         month_data['used-gbp'] += month_data['import-net-gbp'] + month_data['msp-gbp'] + month_data['used-3rd-party-gbp']
 
@@ -12633,52 +12637,99 @@ def process_site(site, month_start, month_finish, forecast_date, pw):
     generator_types.sort()
 
     result = [site.getCode(), site.getName(), ','.join(associates), ','.join(sources), '.'.join(generator_types), month_format.format(Date(month_finish.getDate().getTime() - 1)), month_data['import-net-kwh'], month_data['msp-kwh'], month_data['export-net-kwh'], month_data['used-kwh'], month_data['export-gen-kwh'], month_data['import-gen-kwh'], month_data['import-3rd-party-kwh'], month_data['export-3rd-party-kwh'], month_data['import-net-gbp'], month_data['msp-gbp'], 0, month_data['used-gbp'], month_data['used-3rd-party-gbp'], billed_kwh, billed_gbp, metering_type, problem]
-    #pw.println("Finished call method " + str(System.currentTimeMillis()))
+    #tmp_file.println("Finished call method " + str(System.currentTimeMillis()))
     return result
 
-inv.getResponse().setContentType("text/csv")
-inv.getResponse().setHeader('Content-Disposition', 'attachment; filename="output.csv"')
+def long_process():
+    computer = NonCoreContract.getNonCoreContract('computer')
 
-pw = inv.getResponse().getWriter()
-pw.print("Site Id,Site Name,Associated Site Ids,Sources,Generator Types,Month,Metered Imported kWh,Metered Displaced kWh,Metered Exported kWh,Metered Used kWh,Metered Parasitic kWh,Metered Generated kWh,Metered 3rd Party Import kWh,Metered 3rd Party Export kWh,Metered Imported GBP,Metered Displaced GBP,Metered Exported GBP,Metered Used GBP,Metered 3rd Party Import GBP,Billed Imported kWh,Billed Imported GBP,Metering Type,Problem")
-pw.flush()
+    comterp = PythonInterpreter()
+    comterp.exec(computer.getChargeScript())
 
-month_format = SimpleDateFormat("yyyy-MM-dd")
-month_format.setCalendar(cal)
+    forecast_date = comterp.get('forecast_date')()
 
-forecast_date = comterp.get('forecast_date')()
+    if search_term is None:
+        query = Hiber.session().createQuery("from Site site order by site.code")
+        #query = Hiber.session().createQuery("from Site site where site.code in ('10014', '12057') order by site.code")
+        #query = Hiber.session().createQuery("from Site site order by site.code").setMaxResults(400)
+        base_name = "site_monthly_duration_for_all_site_for_" + str(months) + "_to_" + str(year) + "_" + str(month) + ".csv"
+    else:
+        query = Hiber.session().createQuery("from Site site where site.code = :siteCode").setString('siteCode', search_term.strip())
+        base_name = "site_monthly_duration_for_" + search_term + "_" + str(months) + "_to_" + str(year) + "_" + str(month) + ".csv"
 
-sites = query.scroll()
-for i in range(months):
-    sites.beforeFirst()
-    while sites.next():
-        #pw.println("starting site, " + str(System.currentTimeMillis()))
-        #pw.println("starting site, " + str(System.currentTimeMillis()))
-        site = sites.get(0)
-        cal.setTime(start_date.getDate())
-        cal.add(Calendar.MONTH, i)
-        month_start = HhStartDate(cal.getTime())
-        cal.add(Calendar.MONTH, 1)
-        cal.add(Calendar.MINUTE, -30)
-        month_finish = HhStartDate(cal.getTime())
-        #tq = process_site(site, month_start, month_finish, forecast_date, pw)
-        #pw.println('printing, ' + str(System.currentTimeMillis()) + ',' + ','.join('"' + str(value) + '"' for value in tq))
-        pw.print('\r\n' + ','.join('"' + str(value) + '"' for value in process_site(site, month_start, month_finish, forecast_date, pw)))
-        pw.flush()
-        #pw.println("finishing site, " + str(System.currentTimeMillis()))
-        Hiber.session().clear()
+    bill_query = Hiber.session().createQuery("from Bill bill where bill.supply = :supply and bill.startDate.date <= :finishDate and bill.finishDate.date >= :startDate")
 
-sites.close()
-pw.close()]]></value>
-        <value><![CDATA[]]></value>
-    </line>
-    <line>
-        <value><![CDATA[insert]]></value>
-        <value><![CDATA[report]]></value>
-        <value><![CDATA[163]]></value>
-        <value><![CDATA[true]]></value>
-        <value><![CDATA[HHDC Bills]]></value>
-        <value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree, UserException
+    now = datetime.datetime.utcnow()
+    tmp_dir = System.getProperty("java.io.tmpdir")
+    #base_name = "site_monthly_duration_for_" + str(months) + "_to_" + str(year) + "_" + str(month) + "_" + now.strftime("%Y%m%d%H%M") + ".csv"
+    
+    running_name = "RUNNING_" + base_name
+    finished_name = "FINISHED_" + base_name
+
+    tmp_dir = Monad.getContext().getAttribute("net.sf.chellow.tmp_dir")
+    os.chdir(tmp_dir)
+    tmp_file = open(running_name, "w")
+
+    #inv.getResponse().setContentType("text/csv")
+#inv.getResponse().setHeader('Content-Disposition', 'attachment; filename="output.csv"')
+
+    #tmp_file = inv.getResponse().getWriter()
+    tmp_file.write("Site Id,Site Name,Associated Site Ids,Sources,Generator Types,Month,Metered Imported kWh,Metered Displaced kWh,Metered Exported kWh,Metered Used kWh,Metered Parasitic kWh,Metered Generated kWh,Metered 3rd Party Import kWh,Metered 3rd Party Export kWh,Metered Imported GBP,Metered Displaced GBP,Metered Exported GBP,Metered Used GBP,Metered 3rd Party Import GBP,Billed Imported kWh,Billed Imported GBP,Metering Type,Problem")
+
+    sites = query.scroll()
+
+    try:
+    
+        for i in range(months):
+            sites.beforeFirst()
+            while sites.next():
+                #tmp_file.write("starting site, " + str(System.currentTimeMillis()))
+                #tmp_file.write("starting site, " + str(System.currentTimeMillis()))
+                site = sites.get(0)
+                cal.setTime(start_date.getDate())
+                cal.add(Calendar.MONTH, i)
+                month_start = HhStartDate(cal.getTime())
+                cal.add(Calendar.MONTH, 1)
+                cal.add(Calendar.MINUTE, -30)
+                month_finish = HhStartDate(cal.getTime())
+                #tq = process_site(site, month_start, month_finish, forecast_date,  tmp_file)
+                #tmp_file.write('printing, ' + str(System.currentTimeMillis()) + ',' + ','.join('"' + str(value) + '"' for value in tq))
+                tmp_file.write('\r\n' + ','.join('"' + str(value) + '"' for value in process_site(site, month_start, month_finish, forecast_date, tmp_file, bill_query, comterp)))
+                #tmp_file.write("finishing site, " + str(System.currentTimeMillis()))
+                tmp_file.flush()
+                Hiber.session().clear()
+    except:
+        e_info = sys.exc_info()
+        tb = e_info[2]
+        traceback.print_tb(tb, file=tmp_file)
+        tmp_file.write("Problem " + str(e_info[0]) + str(e_info[1]) + str(tb) + " line number " + str(tb.tb_lineno))
+    finally:
+        try:
+            sites.close()
+        except:
+            tmp_file.write("\nProblem closing sites.")
+        finally:
+            try:
+                Hiber.close()
+            except:
+                tmp_file.write("\nProblem closing Hiber.")
+            finally:
+                tmp_file.close()
+                os.rename(running_name, finished_name)
+
+        
+threading.Thread(target=long_process).start()
+inv.sendSeeOther("/reports/251/output/")]]></value>
+		<value><![CDATA[]]>
+		</value>
+	</line>
+	<line>
+		<value><![CDATA[insert]]></value>
+		<value><![CDATA[report]]></value>
+		<value><![CDATA[163]]></value>
+		<value><![CDATA[true]]></value>
+		<value><![CDATA[HHDC Bills]]></value>
+		<value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree, UserException
 from net.sf.chellow.billing import Account
 
 account_id = inv.getLong('account-id')
@@ -12688,7 +12739,7 @@ source.appendChild(bills_element)
 bills_element.appendChild(account.toXml(doc, XmlTree('contract')))
 for bill in Hiber.session().createQuery("from Bill bill where bill.account = :account order by bill.startDate.date").setEntity('account', account).list():
     bills_element.appendChild(bill.toXml(doc))]]></value>
-        <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
+		<value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
 <xsl:stylesheet version="1.0"
     xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
     <xsl:output method="html" encoding="US-ASCII"
@@ -12793,14 +12844,14 @@ for bill in Hiber.session().createQuery("from Bill bill where bill.account = :ac
         </html>
     </xsl:template>
 </xsl:stylesheet>]]></value>
-    </line>
-    <line>
-        <value><![CDATA[insert]]></value>
-        <value><![CDATA[report]]></value>
-        <value><![CDATA[165]]></value>
-        <value><![CDATA[true]]></value>
-        <value><![CDATA[Admin: DB Consistency Check]]></value>
-        <value><![CDATA[from net.sf.chellow.monad import UserException, Hiber
+	</line>
+	<line>
+		<value><![CDATA[insert]]></value>
+		<value><![CDATA[report]]></value>
+		<value><![CDATA[165]]></value>
+		<value><![CDATA[true]]></value>
+		<value><![CDATA[Admin: DB Consistency Check]]></value>
+		<value><![CDATA[from net.sf.chellow.monad import UserException, Hiber
 from net.sf.chellow.monad.types import MonadDate
 from java.text import SimpleDateFormat
 from java.util import Locale, Calendar, TimeZone, GregorianCalendar
@@ -12922,22 +12973,23 @@ for line in summary:
     pw.println(line)
 pw.close()
 ''']]></value>
-        <value><![CDATA[]]></value>
-    </line>
-    <line>
-        <value><![CDATA[insert]]></value>
-        <value><![CDATA[report]]></value>
-        <value><![CDATA[167]]></value>
-        <value><![CDATA[true]]></value>
-        <value><![CDATA[CSV Supplies HH Data Selector]]></value>
-        <value><![CDATA[from java.util import GregorianCalendar, TimeZone, Locale, Calendar
+		<value><![CDATA[]]>
+		</value>
+	</line>
+	<line>
+		<value><![CDATA[insert]]></value>
+		<value><![CDATA[report]]></value>
+		<value><![CDATA[167]]></value>
+		<value><![CDATA[true]]></value>
+		<value><![CDATA[CSV Supplies HH Data Selector]]></value>
+		<value><![CDATA[from java.util import GregorianCalendar, TimeZone, Locale, Calendar
 from net.sf.chellow.monad.types import MonadDate
 
 cal = MonadDate.getCalendar()
 cal.add(Calendar.MONTH, -1)
 source.appendChild(MonadDate(cal.getTime()).toXml(doc))
 source.appendChild(MonadDate.getMonthsXml(doc))]]></value>
-        <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
+		<value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
 <xsl:stylesheet version="1.0"
     xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
     <xsl:output method="xml" encoding="US-ASCII"
@@ -13034,14 +13086,14 @@ source.appendChild(MonadDate.getMonthsXml(doc))]]></value>
         </html>
     </xsl:template>
 </xsl:stylesheet>]]></value>
-    </line>
-    <line>
-        <value><![CDATA[insert]]></value>
-        <value><![CDATA[report]]></value>
-        <value><![CDATA[169]]></value>
-        <value><![CDATA[true]]></value>
-        <value><![CDATA[CSV Supplies HH Data]]></value>
-        <value><![CDATA[from net.sf.chellow.monad import Hiber, UserException
+	</line>
+	<line>
+		<value><![CDATA[insert]]></value>
+		<value><![CDATA[report]]></value>
+		<value><![CDATA[169]]></value>
+		<value><![CDATA[true]]></value>
+		<value><![CDATA[CSV Supplies HH Data]]></value>
+		<value><![CDATA[from net.sf.chellow.monad import Hiber, UserException
 from net.sf.chellow.monad.types import MonadDate
 from java.util import Calendar, GregorianCalendar, TimeZone, Locale
 from java.text import DateFormat
@@ -13145,22 +13197,23 @@ while supplies.next():
     pw.flush()
 supplies.close()
 pw.close()]]></value>
-        <value><![CDATA[]]></value>
-    </line>
-    <line>
-        <value><![CDATA[insert]]></value>
-        <value><![CDATA[report]]></value>
-        <value><![CDATA[171]]></value>
-        <value><![CDATA[true]]></value>
-        <value><![CDATA[Admin: System]]></value>
-        <value><![CDATA[from java.text import DecimalFormat
+		<value><![CDATA[]]>
+		</value>
+	</line>
+	<line>
+		<value><![CDATA[insert]]></value>
+		<value><![CDATA[report]]></value>
+		<value><![CDATA[171]]></value>
+		<value><![CDATA[true]]></value>
+		<value><![CDATA[Admin: System]]></value>
+		<value><![CDATA[from java.text import DecimalFormat
 from java.lang import Runtime, System, Thread
 from java.io import StringWriter, InputStreamReader
 from net.sf.chellow.monad import Hiber, Monad
 from java.lang.management import OperatingSystemMXBean, ManagementFactory
 from com.jezhumble.javasysmon import JavaSysMon
 from net.sf.chellow.ui import ContextListener
-from net.sf.chellow.billing import NonCoreContract
+from net.sf.chellow.billing import Contract
 
 interrupt_id = None
 if inv.getRequest().getMethod() == "POST":
@@ -13168,11 +13221,11 @@ if inv.getRequest().getMethod() == "POST":
         interrupt_id = inv.getLong('thread-id')
 
     if inv.hasParameter('run_shutdown'):
-        shutdown_contract = NonCoreContract.getNonCoreContract('shutdown')
+        shutdown_contract = Contract.getNonCoreContract('shutdown')
         shutdown_contract.callFunction('on_shut_down', [Monad.getContext()])
 
     if inv.hasParameter('run_startup'):
-        startup_contract = NonCoreContract.getNonCoreContract('startup')
+        startup_contract = Contract.getNonCoreContract('startup')
         startup_contract.callFunction('on_start_up', [Monad.getContext()])
 
 df = DecimalFormat("###,###,###,###,##0")
@@ -13255,7 +13308,7 @@ while rs.next():
         cell_el = doc.createElement('cell')
         row_el.appendChild(cell_el)
         cell_el.setAttribute('value', rs.getString(i))]]></value>
-        <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
+		<value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
 <xsl:stylesheet version="1.0"
     xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
     <xsl:output method="xml" encoding="US-ASCII"
@@ -13438,20 +13491,20 @@ while rs.next():
         </html>
     </xsl:template>
 </xsl:stylesheet>]]></value>
-    </line>
-    <line>
-        <value><![CDATA[insert]]></value>
-        <value><![CDATA[report]]></value>
-        <value><![CDATA[173]]></value>
-        <value><![CDATA[true]]></value>
-        <value><![CDATA[HHDC Contract Rate Script]]></value>
-        <value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree
+	</line>
+	<line>
+		<value><![CDATA[insert]]></value>
+		<value><![CDATA[report]]></value>
+		<value><![CDATA[173]]></value>
+		<value><![CDATA[true]]></value>
+		<value><![CDATA[HHDC Contract Rate Script]]></value>
+		<value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree
 from net.sf.chellow.billing import RateScript
 
 script_id = inv.getLong('rate-script-id')
 script = RateScript.getRateScript(script_id)
 source.appendChild(script.toXml(doc, XmlTree('contract', XmlTree('party'))))]]></value>
-        <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
+		<value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
 <xsl:stylesheet version="1.0"
     xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
     <xsl:output method="html" encoding="US-ASCII"
@@ -13538,21 +13591,21 @@ source.appendChild(script.toXml(doc, XmlTree('contract', XmlTree('party'))))]]><
         </html>
     </xsl:template>
 </xsl:stylesheet>]]></value>
-    </line>
-    <line>
-        <value><![CDATA[insert]]></value>
-        <value><![CDATA[report]]></value>
-        <value><![CDATA[175]]></value>
-        <value><![CDATA[true]]></value>
-        <value><![CDATA[CSV Supplies TRIAD Selector]]></value>
-        <value><![CDATA[from java.util import GregorianCalendar, TimeZone, Locale, Calendar
+	</line>
+	<line>
+		<value><![CDATA[insert]]></value>
+		<value><![CDATA[report]]></value>
+		<value><![CDATA[175]]></value>
+		<value><![CDATA[true]]></value>
+		<value><![CDATA[CSV Supplies TRIAD Selector]]></value>
+		<value><![CDATA[from java.util import GregorianCalendar, TimeZone, Locale, Calendar
 from net.sf.chellow.monad.types import MonadDate
 
 cal = GregorianCalendar(TimeZone.getTimeZone("GMT"), Locale.UK)
 if cal.get(Calendar.MONTH) < Calendar.MARCH:
     cal.add(Calendar.YEAR, -1)
 source.setAttribute('year', str(cal.get(Calendar.YEAR)))]]></value>
-        <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
+		<value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
 <xsl:stylesheet version="1.0"
     xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
     <xsl:output method="xml" encoding="US-ASCII"
@@ -13598,14 +13651,14 @@ source.setAttribute('year', str(cal.get(Calendar.YEAR)))]]></value>
         </html>
     </xsl:template>
 </xsl:stylesheet>]]></value>
-    </line>
-    <line>
-        <value><![CDATA[insert]]></value>
-        <value><![CDATA[report]]></value>
-        <value><![CDATA[177]]></value>
-        <value><![CDATA[true]]></value>
-        <value><![CDATA[CSV Supplies Monthly Duration]]></value>
-        <value><![CDATA[from net.sf.chellow.monad import Hiber, UserException
+	</line>
+	<line>
+		<value><![CDATA[insert]]></value>
+		<value><![CDATA[report]]></value>
+		<value><![CDATA[177]]></value>
+		<value><![CDATA[true]]></value>
+		<value><![CDATA[CSV Supplies Monthly Duration]]></value>
+		<value><![CDATA[from net.sf.chellow.monad import Hiber, UserException
 from net.sf.chellow.monad.types import MonadDate
 from java.sql import Timestamp, ResultSet
 from java.util import Calendar, TimeZone, Locale, Date
@@ -13832,22 +13885,23 @@ for i in range(months):
     supplies.close()
     #pw.println("finishing site " + str(System.currentTimeMillis() - timing))
 pw.close()]]></value>
-        <value><![CDATA[]]></value>
-    </line>
-    <line>
-        <value><![CDATA[insert]]></value>
-        <value><![CDATA[report]]></value>
-        <value><![CDATA[179]]></value>
-        <value><![CDATA[true]]></value>
-        <value><![CDATA[CSV Sites TRIAD Selector]]></value>
-        <value><![CDATA[from java.util import GregorianCalendar, TimeZone, Locale, Calendar
+		<value><![CDATA[]]>
+		</value>
+	</line>
+	<line>
+		<value><![CDATA[insert]]></value>
+		<value><![CDATA[report]]></value>
+		<value><![CDATA[179]]></value>
+		<value><![CDATA[true]]></value>
+		<value><![CDATA[CSV Sites TRIAD Selector]]></value>
+		<value><![CDATA[from java.util import GregorianCalendar, TimeZone, Locale, Calendar
 from net.sf.chellow.monad.types import MonadDate
 
 cal = GregorianCalendar(TimeZone.getTimeZone("GMT"), Locale.UK)
 if cal.get(Calendar.MONTH) < Calendar.MARCH:
     cal.add(Calendar.YEAR, -1)
 source.setAttribute('year', str(cal.get(Calendar.YEAR)))]]></value>
-        <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
+		<value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
 <xsl:stylesheet version="1.0"
     xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
     <xsl:output method="xml" encoding="US-ASCII"
@@ -13894,14 +13948,14 @@ source.setAttribute('year', str(cal.get(Calendar.YEAR)))]]></value>
         </html>
     </xsl:template>
 </xsl:stylesheet>]]></value>
-    </line>
-    <line>
-        <value><![CDATA[insert]]></value>
-        <value><![CDATA[report]]></value>
-        <value><![CDATA[181]]></value>
-        <value><![CDATA[true]]></value>
-        <value><![CDATA[CSV Sites TRIAD]]></value>
-        <value><![CDATA[from net.sf.chellow.monad import Hiber, UserException
+	</line>
+	<line>
+		<value><![CDATA[insert]]></value>
+		<value><![CDATA[report]]></value>
+		<value><![CDATA[181]]></value>
+		<value><![CDATA[true]]></value>
+		<value><![CDATA[CSV Sites TRIAD]]></value>
+		<value><![CDATA[from net.sf.chellow.monad import Hiber, UserException
 from net.sf.chellow.monad.types import MonadDate
 from net.sf.chellow.physical import HhStartDate, SupplyGeneration, Supply
 from java.util import Calendar
@@ -13986,15 +14040,16 @@ while sites.next():
     Hiber().session().clear()
 sites.close()
 pw.close()]]></value>
-        <value><![CDATA[]]></value>
-    </line>
-    <line>
-        <value><![CDATA[insert]]></value>
-        <value><![CDATA[report]]></value>
-        <value><![CDATA[183]]></value>
-        <value><![CDATA[true]]></value>
-        <value><![CDATA[CSV Sites HH Data]]></value>
-        <value><![CDATA[from net.sf.chellow.monad import Hiber, UserException
+		<value><![CDATA[]]>
+		</value>
+	</line>
+	<line>
+		<value><![CDATA[insert]]></value>
+		<value><![CDATA[report]]></value>
+		<value><![CDATA[183]]></value>
+		<value><![CDATA[true]]></value>
+		<value><![CDATA[CSV Sites HH Data]]></value>
+		<value><![CDATA[from net.sf.chellow.monad import Hiber, UserException
 from java.lang import System
 from net.sf.chellow.monad.types import MonadDate
 from java.sql import Timestamp, ResultSet
@@ -14095,15 +14150,16 @@ while sites.next():
     Hiber.session().clear()
 sites.close()
 pw.close()]]></value>
-        <value><![CDATA[]]></value>
-    </line>
-    <line>
-        <value><![CDATA[insert]]></value>
-        <value><![CDATA[report]]></value>
-        <value><![CDATA[185]]></value>
-        <value><![CDATA[true]]></value>
-        <value><![CDATA[MOP Contracts]]></value>
-        <value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree
+		<value><![CDATA[]]>
+		</value>
+	</line>
+	<line>
+		<value><![CDATA[insert]]></value>
+		<value><![CDATA[report]]></value>
+		<value><![CDATA[185]]></value>
+		<value><![CDATA[true]]></value>
+		<value><![CDATA[MOP Contracts]]></value>
+		<value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree
 
 contracts_element = doc.createElement('contracts')
 source.appendChild(contracts_element)
@@ -14116,7 +14172,7 @@ for contract in Hiber.session().createQuery("from MopContract contract order by 
     finish_rate_script = contract.getFinishRateScript()
     finish_rate_script.setLabel('finish')
     contract_element.appendChild(finish_rate_script.toXml(doc))]]></value>
-        <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
+		<value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
 <xsl:stylesheet version="1.0"
     xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
     <xsl:output method="html" encoding="US-ASCII"
@@ -14204,14 +14260,14 @@ for contract in Hiber.session().createQuery("from MopContract contract order by 
         </html>
     </xsl:template>
 </xsl:stylesheet>]]></value>
-    </line>
-    <line>
-        <value><![CDATA[insert]]></value>
-        <value><![CDATA[report]]></value>
-        <value><![CDATA[187]]></value>
-        <value><![CDATA[true]]></value>
-        <value><![CDATA[CSV Supplies Patched HH Data]]></value>
-        <value><![CDATA[from net.sf.chellow.monad import Hiber, UserException
+	</line>
+	<line>
+		<value><![CDATA[insert]]></value>
+		<value><![CDATA[report]]></value>
+		<value><![CDATA[187]]></value>
+		<value><![CDATA[true]]></value>
+		<value><![CDATA[CSV Supplies Patched HH Data]]></value>
+		<value><![CDATA[from net.sf.chellow.monad import Hiber, UserException
 from net.sf.chellow.monad.types import MonadDate
 from java.util import Calendar, GregorianCalendar, TimeZone, Locale
 from java.text import DateFormat
@@ -14336,22 +14392,23 @@ pw.println('MPAN Core,kWh')
 for summary in summaries:
     pw.println(summary)
 pw.close()]]></value>
-        <value><![CDATA[]]></value>
-    </line>
-    <line>
-        <value><![CDATA[insert]]></value>
-        <value><![CDATA[report]]></value>
-        <value><![CDATA[189]]></value>
-        <value><![CDATA[true]]></value>
-        <value><![CDATA[CSV Supplies Patched HH Data Selector]]></value>
-        <value><![CDATA[from java.util import GregorianCalendar, TimeZone, Locale, Calendar
+		<value><![CDATA[]]>
+		</value>
+	</line>
+	<line>
+		<value><![CDATA[insert]]></value>
+		<value><![CDATA[report]]></value>
+		<value><![CDATA[189]]></value>
+		<value><![CDATA[true]]></value>
+		<value><![CDATA[CSV Supplies Patched HH Data Selector]]></value>
+		<value><![CDATA[from java.util import GregorianCalendar, TimeZone, Locale, Calendar
 from net.sf.chellow.monad.types import MonadDate
 
 cal = MonadDate.getCalendar()
 cal.add(Calendar.MONTH, -1)
 source.appendChild(MonadDate(cal.getTime()).toXml(doc))
 source.appendChild(MonadDate.getMonthsXml(doc))]]></value>
-        <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
+		<value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
 <xsl:stylesheet version="1.0"
     xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
     <xsl:output method="xml" encoding="US-ASCII"
@@ -14435,14 +14492,14 @@ source.appendChild(MonadDate.getMonthsXml(doc))]]></value>
         </html>
     </xsl:template>
 </xsl:stylesheet>]]></value>
-    </line>
-    <line>
-        <value><![CDATA[insert]]></value>
-        <value><![CDATA[report]]></value>
-        <value><![CDATA[191]]></value>
-        <value><![CDATA[true]]></value>
-        <value><![CDATA[MOP Contract Batches]]></value>
-        <value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree, UserException
+	</line>
+	<line>
+		<value><![CDATA[insert]]></value>
+		<value><![CDATA[report]]></value>
+		<value><![CDATA[191]]></value>
+		<value><![CDATA[true]]></value>
+		<value><![CDATA[MOP Contract Batches]]></value>
+		<value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree, UserException
 from net.sf.chellow.billing import MopContract
 
 contract_id = inv.getLong('mop-contract-id')
@@ -14453,7 +14510,7 @@ batches_element.appendChild(contract.toXml(doc, XmlTree('party')))
 source.appendChild(batches_element)
 for batch in Hiber.session().createQuery("from Batch batch where batch.contract = :contract order by batch.reference").setEntity("contract", contract).list():
     batches_element.appendChild(batch.toXml(doc))]]></value>
-        <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
+		<value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
 <xsl:stylesheet version="1.0"
     xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
     <xsl:output method="html" encoding="US-ASCII"
@@ -14534,14 +14591,14 @@ for batch in Hiber.session().createQuery("from Batch batch where batch.contract 
         </html>
     </xsl:template>
 </xsl:stylesheet>]]></value>
-    </line>
-    <line>
-        <value><![CDATA[insert]]></value>
-        <value><![CDATA[report]]></value>
-        <value><![CDATA[193]]></value>
-        <value><![CDATA[true]]></value>
-        <value><![CDATA[MOP Contract Batch]]></value>
-        <value><![CDATA[from java.io import StringReader
+	</line>
+	<line>
+		<value><![CDATA[insert]]></value>
+		<value><![CDATA[report]]></value>
+		<value><![CDATA[193]]></value>
+		<value><![CDATA[true]]></value>
+		<value><![CDATA[MOP Contract Batch]]></value>
+		<value><![CDATA[from java.io import StringReader
 from java.util import Properties
 from net.sf.chellow.monad import Hiber, XmlTree, UserException
 from net.sf.chellow.billing import Batch
@@ -14567,7 +14624,7 @@ for key in properties.propertyNames():
         if batch_report_id is not None:
             report = Report.getReport(int(batch_report_id))
             batch_element.appendChild(report.toXml(doc))]]></value>
-        <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
+		<value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
 <xsl:stylesheet version="1.0"
     xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
     <xsl:output method="html" encoding="US-ASCII"
@@ -14730,14 +14787,14 @@ for key in properties.propertyNames():
         </html>
     </xsl:template>
 </xsl:stylesheet>]]></value>
-    </line>
-    <line>
-        <value><![CDATA[insert]]></value>
-        <value><![CDATA[report]]></value>
-        <value><![CDATA[195]]></value>
-        <value><![CDATA[true]]></value>
-        <value><![CDATA[ECOES Comparison]]></value>
-        <value><![CDATA[from net.sf.chellow.monad import Hiber, UserException
+	</line>
+	<line>
+		<value><![CDATA[insert]]></value>
+		<value><![CDATA[report]]></value>
+		<value><![CDATA[195]]></value>
+		<value><![CDATA[true]]></value>
+		<value><![CDATA[ECOES Comparison]]></value>
+		<value><![CDATA[from net.sf.chellow.monad import Hiber, UserException
 from java.lang import System, Integer, String
 from net.sf.chellow.monad.types import MonadDate
 from java.sql import Timestamp, ResultSet
@@ -14988,21 +15045,22 @@ for mpan_core_str in mpans:
     pw.flush()
     Hiber.session().clear()
 pw.close()]]></value>
-        <value><![CDATA[]]></value>
-    </line>
-    <line>
-        <value><![CDATA[insert]]></value>
-        <value><![CDATA[report]]></value>
-        <value><![CDATA[197]]></value>
-        <value><![CDATA[true]]></value>
-        <value><![CDATA[CoP]]></value>
-        <value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree
+		<value><![CDATA[]]>
+		</value>
+	</line>
+	<line>
+		<value><![CDATA[insert]]></value>
+		<value><![CDATA[report]]></value>
+		<value><![CDATA[197]]></value>
+		<value><![CDATA[true]]></value>
+		<value><![CDATA[CoP]]></value>
+		<value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree
 from net.sf.chellow.physical import Cop
 
 cop_id = inv.getLong('cop-id')
 cop = Cop.getCop(cop_id)
 source.appendChild(cop.toXml(doc))]]></value>
-        <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
+		<value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
 <xsl:stylesheet version="1.0"
     xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
     <xsl:output method="html" encoding="US-ASCII"
@@ -15064,20 +15122,20 @@ source.appendChild(cop.toXml(doc))]]></value>
         </html>
     </xsl:template>
 </xsl:stylesheet>]]></value>
-    </line>
-    <line>
-        <value><![CDATA[insert]]></value>
-        <value><![CDATA[report]]></value>
-        <value><![CDATA[199]]></value>
-        <value><![CDATA[true]]></value>
-        <value><![CDATA[Bill Types]]></value>
-        <value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree
+	</line>
+	<line>
+		<value><![CDATA[insert]]></value>
+		<value><![CDATA[report]]></value>
+		<value><![CDATA[199]]></value>
+		<value><![CDATA[true]]></value>
+		<value><![CDATA[Bill Types]]></value>
+		<value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree
 
 types_element = doc.createElement('bill-types')
 source.appendChild(types_element)
 for type in Hiber.session().createQuery("from BillType type order by type.code").list():
     types_element.appendChild(type.toXml(doc))]]></value>
-        <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
+		<value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
 <xsl:stylesheet version="1.0"
     xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
     <xsl:output method="html" encoding="US-ASCII"
@@ -15140,20 +15198,20 @@ for type in Hiber.session().createQuery("from BillType type order by type.code")
         </html>
     </xsl:template>
 </xsl:stylesheet>]]></value>
-    </line>
-    <line>
-        <value><![CDATA[insert]]></value>
-        <value><![CDATA[report]]></value>
-        <value><![CDATA[201]]></value>
-        <value><![CDATA[true]]></value>
-        <value><![CDATA[Bill Type]]></value>
-        <value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree
+	</line>
+	<line>
+		<value><![CDATA[insert]]></value>
+		<value><![CDATA[report]]></value>
+		<value><![CDATA[201]]></value>
+		<value><![CDATA[true]]></value>
+		<value><![CDATA[Bill Type]]></value>
+		<value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree
 from net.sf.chellow.billing import BillType
 
 bill_type_id = inv.getLong('bill-type-id')
 bill_type = BillType.getBillType(bill_type_id)
 source.appendChild(bill_type.toXml(doc))]]></value>
-        <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
+		<value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
 <xsl:stylesheet version="1.0"
     xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
     <xsl:output method="html" encoding="US-ASCII"
@@ -15215,14 +15273,14 @@ source.appendChild(bill_type.toXml(doc))]]></value>
         </html>
     </xsl:template>
 </xsl:stylesheet>]]></value>
-    </line>
-    <line>
-        <value><![CDATA[insert]]></value>
-        <value><![CDATA[report]]></value>
-        <value><![CDATA[203]]></value>
-        <value><![CDATA[true]]></value>
-        <value><![CDATA[HHDC Contract Batch]]></value>
-        <value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree, UserException
+	</line>
+	<line>
+		<value><![CDATA[insert]]></value>
+		<value><![CDATA[report]]></value>
+		<value><![CDATA[203]]></value>
+		<value><![CDATA[true]]></value>
+		<value><![CDATA[HHDC Contract Batch]]></value>
+		<value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree, UserException
 from net.sf.chellow.billing import Batch
 from net.sf.chellow.physical import Configuration
 from java.util import Properties
@@ -15248,7 +15306,7 @@ for key in properties.propertyNames():
         if batch_report_id is not None:
             report = Report.getReport(int(batch_report_id))
             batch_element.appendChild(report.toXml(doc))]]></value>
-        <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
+		<value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
 <xsl:stylesheet version="1.0"
     xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
     <xsl:output method="html" encoding="US-ASCII"
@@ -15423,20 +15481,20 @@ for key in properties.propertyNames():
         </html>
     </xsl:template>
 </xsl:stylesheet>]]></value>
-    </line>
-    <line>
-        <value><![CDATA[insert]]></value>
-        <value><![CDATA[report]]></value>
-        <value><![CDATA[205]]></value>
-        <value><![CDATA[true]]></value>
-        <value><![CDATA[MOP Contract Rate Script]]></value>
-        <value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree
+	</line>
+	<line>
+		<value><![CDATA[insert]]></value>
+		<value><![CDATA[report]]></value>
+		<value><![CDATA[205]]></value>
+		<value><![CDATA[true]]></value>
+		<value><![CDATA[MOP Contract Rate Script]]></value>
+		<value><![CDATA[from net.sf.chellow.monad import Hiber, XmlTree
 from net.sf.chellow.billing import RateScript
 
 script_id = inv.getLong('rate-script-id')
 script = RateScript.getRateScript(script_id)
 source.appendChild(script.toXml(doc, XmlTree('contract', XmlTree('party'))))]]></value>
-        <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
+		<value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
 <xsl:stylesheet version="1.0"
     xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
     <xsl:output method="html" encoding="US-ASCII"
@@ -15523,14 +15581,14 @@ source.appendChild(script.toXml(doc, XmlTree('contract', XmlTree('party'))))]]><
         </html>
     </xsl:template>
 </xsl:stylesheet>]]></value>
-    </line>
-    <line>
-        <value><![CDATA[insert]]></value>
-        <value><![CDATA[report]]></value>
-        <value><![CDATA[207]]></value>
-        <value><![CDATA[true]]></value>
-        <value><![CDATA[CSV CRC - Faulty]]></value>
-        <value><![CDATA[from net.sf.chellow.monad import Hiber, UserException
+	</line>
+	<line>
+		<value><![CDATA[insert]]></value>
+		<value><![CDATA[report]]></value>
+		<value><![CDATA[207]]></value>
+		<value><![CDATA[true]]></value>
+		<value><![CDATA[CSV CRC - Faulty]]></value>
+		<value><![CDATA[from net.sf.chellow.monad import Hiber, UserException
 from java.lang import System, Math
 from net.sf.chellow.monad.types import MonadDate
 from java.sql import Timestamp, ResultSet
@@ -15964,22 +16022,23 @@ while supplies.next():
     pw.flush()
     Hiber.session().clear()
 pw.close()]]></value>
-        <value><![CDATA[]]></value>
-    </line>
-    <line>
-        <value><![CDATA[insert]]></value>
-        <value><![CDATA[report]]></value>
-        <value><![CDATA[209]]></value>
-        <value><![CDATA[true]]></value>
-        <value><![CDATA[CSV CRC Selector]]></value>
-        <value><![CDATA[from java.util import GregorianCalendar, TimeZone, Locale, Calendar
+		<value><![CDATA[]]>
+		</value>
+	</line>
+	<line>
+		<value><![CDATA[insert]]></value>
+		<value><![CDATA[report]]></value>
+		<value><![CDATA[209]]></value>
+		<value><![CDATA[true]]></value>
+		<value><![CDATA[CSV CRC Selector]]></value>
+		<value><![CDATA[from java.util import GregorianCalendar, TimeZone, Locale, Calendar
 from net.sf.chellow.monad.types import MonadDate
 
 cal = GregorianCalendar(TimeZone.getTimeZone("GMT"), Locale.UK)
 if cal.get(Calendar.MONTH) < Calendar.MARCH:
     cal.add(Calendar.YEAR, -1)
 source.setAttribute('year', str(cal.get(Calendar.YEAR)))]]></value>
-        <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
+		<value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
 <xsl:stylesheet version="1.0"
     xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
     <xsl:output method="xml" encoding="US-ASCII"
@@ -16037,14 +16096,14 @@ source.setAttribute('year', str(cal.get(Calendar.YEAR)))]]></value>
         </html>
     </xsl:template>
 </xsl:stylesheet>]]></value>
-    </line>
-    <line>
-        <value><![CDATA[insert]]></value>
-        <value><![CDATA[report]]></value>
-        <value><![CDATA[211]]></value>
-        <value><![CDATA[true]]></value>
-        <value><![CDATA[HHDC Contract HH Data Imports]]></value>
-        <value><![CDATA[from net.sf.chellow.monad import XmlTree
+	</line>
+	<line>
+		<value><![CDATA[insert]]></value>
+		<value><![CDATA[report]]></value>
+		<value><![CDATA[211]]></value>
+		<value><![CDATA[true]]></value>
+		<value><![CDATA[HHDC Contract HH Data Imports]]></value>
+		<value><![CDATA[from net.sf.chellow.monad import XmlTree
 from net.sf.chellow.billing import NonCoreContract, HhdcContract
 from net.sf.chellow.monad import HttpException, UserException
 from java.lang import Long
@@ -16091,7 +16150,7 @@ if inv.getRequest().getMethod() == "POST":
         raise e
 else:
     document()]]></value>
-        <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
+		<value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
 <xsl:stylesheet version="1.0"
     xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
     <xsl:output method="html" encoding="US-ASCII"
@@ -16161,14 +16220,14 @@ else:
         </html>
     </xsl:template>
 </xsl:stylesheet>]]></value>
-    </line>
-    <line>
-        <value><![CDATA[insert]]></value>
-        <value><![CDATA[report]]></value>
-        <value><![CDATA[213]]></value>
-        <value><![CDATA[true]]></value>
-        <value><![CDATA[HHDC Contract HH Importer]]></value>
-        <value><![CDATA[from java.lang import Thread, System
+	</line>
+	<line>
+		<value><![CDATA[insert]]></value>
+		<value><![CDATA[report]]></value>
+		<value><![CDATA[213]]></value>
+		<value><![CDATA[true]]></value>
+		<value><![CDATA[HHDC Contract HH Importer]]></value>
+		<value><![CDATA[from java.lang import Thread, System
 from net.sf.chellow.billing import NonCoreContract, HhdcContract
 from net.sf.chellow.monad import XmlTree, UserException, Monad, MonadMessage
 from net.sf.chellow.monad.types import MonadUri
@@ -16221,7 +16280,7 @@ except UserException, e:
     source.appendChild(MonadMessage(e.getMessage()).toXml(doc))
 
 source.setAttribute('debug', debug)]]></value>
-        <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
+		<value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
 <xsl:stylesheet version="1.0"
     xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
     <xsl:output method="html" encoding="US-ASCII"
@@ -16387,14 +16446,14 @@ source.setAttribute('debug', debug)]]></value>
         </html>
     </xsl:template>
 </xsl:stylesheet>]]></value>
-    </line>
-    <line>
-        <value><![CDATA[insert]]></value>
-        <value><![CDATA[report]]></value>
-        <value><![CDATA[215]]></value>
-        <value><![CDATA[true]]></value>
-        <value><![CDATA[CSV CRC Special Events]]></value>
-        <value><![CDATA[from net.sf.chellow.monad import Hiber, UserException
+	</line>
+	<line>
+		<value><![CDATA[insert]]></value>
+		<value><![CDATA[report]]></value>
+		<value><![CDATA[215]]></value>
+		<value><![CDATA[true]]></value>
+		<value><![CDATA[CSV CRC Special Events]]></value>
+		<value><![CDATA[from net.sf.chellow.monad import Hiber, UserException
 from java.lang import System, Math
 from net.sf.chellow.monad.types import MonadDate
 from java.sql import Timestamp, ResultSet
@@ -16436,8 +16495,6 @@ generation_query = Hiber.session().createQuery("from SupplyGeneration generation
 
 mpan_query = Hiber.session().createQuery("from Mpan mpan where mpan.supplyGeneration = :generation and mpan.llfc.isImport = :polarity")
 
-events = []
-
 def add_event(date, code, mpans):
     for mpan in mpans:
         events.append({'date': date, 'code': code, 'mpan-core': mpan.getCore()})
@@ -16445,7 +16502,6 @@ def add_event(date, code, mpans):
 while supplies.next():
     supply = supplies.get(0)
     generations = [generation for generation in generation_query.setEntity('supply', supply).list()]
-    global events
     events = []
     first_generation = generations[0]
     first_generation_start = first_generation.getStartDate()
@@ -16513,22 +16569,23 @@ while supplies.next():
     Hiber.session().clear()
 supplies.close()
 pw.close()]]></value>
-        <value><![CDATA[]]></value>
-    </line>
-    <line>
-        <value><![CDATA[insert]]></value>
-        <value><![CDATA[report]]></value>
-        <value><![CDATA[217]]></value>
-        <value><![CDATA[true]]></value>
-        <value><![CDATA[CSV Register Reads Selector]]></value>
-        <value><![CDATA[from java.util import GregorianCalendar, TimeZone, Locale, Calendar
+		<value><![CDATA[]]>
+		</value>
+	</line>
+	<line>
+		<value><![CDATA[insert]]></value>
+		<value><![CDATA[report]]></value>
+		<value><![CDATA[217]]></value>
+		<value><![CDATA[true]]></value>
+		<value><![CDATA[CSV Register Reads Selector]]></value>
+		<value><![CDATA[from java.util import GregorianCalendar, TimeZone, Locale, Calendar
 from net.sf.chellow.monad.types import MonadDate
 
 cal = GregorianCalendar(TimeZone.getTimeZone("GMT"), Locale.UK)
 cal.add(Calendar.MONTH, -1)
 source.appendChild(MonadDate(cal.getTime()).toXml(doc))
 source.appendChild(MonadDate.getMonthsXml(doc))]]></value>
-        <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
+		<value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
 <xsl:stylesheet version="1.0"
     xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
     <xsl:output method="xml" encoding="US-ASCII"
@@ -16597,21 +16654,21 @@ source.appendChild(MonadDate.getMonthsXml(doc))]]></value>
         </html>
     </xsl:template>
 </xsl:stylesheet>]]></value>
-    </line>
-    <line>
-        <value><![CDATA[insert]]></value>
-        <value><![CDATA[report]]></value>
-        <value><![CDATA[219]]></value>
-        <value><![CDATA[true]]></value>
-        <value><![CDATA[CSV Register Reads]]></value>
-        <value><![CDATA[from net.sf.chellow.monad import Hiber, UserException
+	</line>
+	<line>
+		<value><![CDATA[insert]]></value>
+		<value><![CDATA[report]]></value>
+		<value><![CDATA[219]]></value>
+		<value><![CDATA[true]]></value>
+		<value><![CDATA[CSV Register Reads]]></value>
+		<value><![CDATA[from net.sf.chellow.monad import Hiber, UserException
 from net.sf.chellow.monad.types import MonadDate
 from java.sql import Timestamp, ResultSet
 from java.util import GregorianCalendar, Calendar, TimeZone, Locale, Date
 from net.sf.chellow.physical import HhStartDate, MpanCore, Site, Supply
 from java.text import SimpleDateFormat, DecimalFormat
 from java.lang import Math, System
-from net.sf.chellow.billing import SupplierContract, NonCoreContract
+from net.sf.chellow.billing import Contract, Contract
 from org.python.util import PythonInterpreter
 
 year = inv.getInteger("end-year")
@@ -16687,22 +16744,23 @@ while reads.next():
 
 reads.close()
 pw.close()]]></value>
-        <value><![CDATA[]]></value>
-    </line>
-    <line>
-        <value><![CDATA[insert]]></value>
-        <value><![CDATA[report]]></value>
-        <value><![CDATA[221]]></value>
-        <value><![CDATA[true]]></value>
-        <value><![CDATA[System Price Importer]]></value>
-        <value><![CDATA[from java.lang import Thread, System
-from net.sf.chellow.billing import NonCoreContract, HhdcContract
+		<value><![CDATA[]]>
+		</value>
+	</line>
+	<line>
+		<value><![CDATA[insert]]></value>
+		<value><![CDATA[report]]></value>
+		<value><![CDATA[221]]></value>
+		<value><![CDATA[true]]></value>
+		<value><![CDATA[System Price Importer]]></value>
+		<value><![CDATA[from java.lang import Thread, System
+from net.sf.chellow.billing import Contract
 from net.sf.chellow.monad import XmlTree, UserException, Monad, MonadMessage
 from net.sf.chellow.monad.types import MonadUri
 
 debug = ''
 
-computer = NonCoreContract.getNonCoreContract('computer')
+computer = Contract.getNonCoreContract('computer')
 comterp = computer.callFunction('create_comterp', [])
 contract_f = comterp.get('contract_function')
 
@@ -16710,7 +16768,7 @@ REPORT_URI = MonadUri("/reports/221/output/")
 
 source = doc.getDocumentElement()
 
-system_price_contract = NonCoreContract.getNonCoreContract('system-price')
+system_price_contract = Contract.getNonCoreContract('system-price')
 ctx = inv.getMonad().getServletConfig().getServletContext()
 
 task = system_price_contract.callFunction('get_system_price_task', [ctx])
@@ -16739,7 +16797,7 @@ except UserException, e:
     source.appendChild(MonadMessage(e.getMessage()).toXml(doc))
 
 source.setAttribute('debug', debug)]]></value>
-        <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
+		<value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
 <xsl:stylesheet version="1.0"
     xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
     <xsl:output method="html" encoding="US-ASCII"
@@ -16826,14 +16884,14 @@ source.setAttribute('debug', debug)]]></value>
         </html>
     </xsl:template>
 </xsl:stylesheet>]]></value>
-    </line>
-    <line>
-        <value><![CDATA[insert]]></value>
-        <value><![CDATA[report]]></value>
-        <value><![CDATA[223]]></value>
-        <value><![CDATA[true]]></value>
-        <value><![CDATA[Transmission Loss Multiplier Importer]]></value>
-        <value><![CDATA[from java.lang import Thread, System
+	</line>
+	<line>
+		<value><![CDATA[insert]]></value>
+		<value><![CDATA[report]]></value>
+		<value><![CDATA[223]]></value>
+		<value><![CDATA[true]]></value>
+		<value><![CDATA[Transmission Loss Multiplier Importer]]></value>
+		<value><![CDATA[from java.lang import Thread, System
 from net.sf.chellow.billing import NonCoreContract, HhdcContract
 from net.sf.chellow.monad import XmlTree, UserException, Monad, MonadMessage
 from net.sf.chellow.monad.types import MonadUri
@@ -16877,7 +16935,7 @@ except UserException, e:
     source.appendChild(MonadMessage(e.getMessage()).toXml(doc))
 
 source.setAttribute('debug', debug)]]></value>
-        <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
+		<value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
 <xsl:stylesheet version="1.0"
     xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
     <xsl:output method="html" encoding="US-ASCII"
@@ -16965,14 +17023,14 @@ source.setAttribute('debug', debug)]]></value>
         </html>
     </xsl:template>
 </xsl:stylesheet>]]></value>
-    </line>
-    <line>
-        <value><![CDATA[insert]]></value>
-        <value><![CDATA[report]]></value>
-        <value><![CDATA[225]]></value>
-        <value><![CDATA[true]]></value>
-        <value><![CDATA[RCRC Importer]]></value>
-        <value><![CDATA[from java.lang import Thread, System
+	</line>
+	<line>
+		<value><![CDATA[insert]]></value>
+		<value><![CDATA[report]]></value>
+		<value><![CDATA[225]]></value>
+		<value><![CDATA[true]]></value>
+		<value><![CDATA[RCRC Importer]]></value>
+		<value><![CDATA[from java.lang import Thread, System
 from net.sf.chellow.billing import NonCoreContract, HhdcContract
 from net.sf.chellow.monad import XmlTree, UserException, Monad, MonadMessage
 from net.sf.chellow.monad.types import MonadUri
@@ -17016,7 +17074,7 @@ except UserException, e:
     source.appendChild(MonadMessage(e.getMessage()).toXml(doc))
 
 source.setAttribute('debug', debug)]]></value>
-        <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
+		<value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
 <xsl:stylesheet version="1.0"
     xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
     <xsl:output method="html" encoding="US-ASCII"
@@ -17104,21 +17162,21 @@ source.setAttribute('debug', debug)]]></value>
         </html>
     </xsl:template>
 </xsl:stylesheet>]]></value>
-    </line>
-    <line>
-        <value><![CDATA[insert]]></value>
-        <value><![CDATA[report]]></value>
-        <value><![CDATA[227]]></value>
-        <value><![CDATA[true]]></value>
-        <value><![CDATA[Importer: BSUoS]]></value>
-        <value><![CDATA[from java.lang import Thread, System
-from net.sf.chellow.billing import NonCoreContract, HhdcContract
+	</line>
+	<line>
+		<value><![CDATA[insert]]></value>
+		<value><![CDATA[report]]></value>
+		<value><![CDATA[227]]></value>
+		<value><![CDATA[true]]></value>
+		<value><![CDATA[Importer: BSUoS]]></value>
+		<value><![CDATA[from java.lang import Thread, System
+from net.sf.chellow.billing import Contract
 from net.sf.chellow.monad import XmlTree, UserException, Monad, MonadMessage
 from net.sf.chellow.monad.types import MonadUri
 
 debug = ''
 
-computer = NonCoreContract.getNonCoreContract('computer')
+computer = Contract.getNonCoreContract('computer')
 comterp = computer.callFunction('create_comterp', [])
 contract_f = comterp.get('contract_function')
 
@@ -17126,7 +17184,7 @@ REPORT_URI = MonadUri("/reports/227/output/")
 
 source = doc.getDocumentElement()
 
-bsuos_contract = NonCoreContract.getNonCoreContract('bsuos')
+bsuos_contract = Contract.getNonCoreContract('bsuos')
 ctx = inv.getMonad().getServletConfig().getServletContext()
 
 task = bsuos_contract.callFunction('get_bsuos_task', [ctx])
@@ -17155,7 +17213,7 @@ except UserException, e:
     source.appendChild(MonadMessage(e.getMessage()).toXml(doc))
 
 source.setAttribute('debug', debug)]]></value>
-        <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
+		<value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
 <xsl:stylesheet version="1.0"
     xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
     <xsl:output method="html" encoding="US-ASCII"
@@ -17243,14 +17301,14 @@ source.setAttribute('debug', debug)]]></value>
         </html>
     </xsl:template>
 </xsl:stylesheet>]]></value>
-    </line>
-    <line>
-        <value><![CDATA[insert]]></value>
-        <value><![CDATA[report]]></value>
-        <value><![CDATA[229]]></value>
-        <value><![CDATA[true]]></value>
-        <value><![CDATA[MOP Contract Virtual Bill Selector]]></value>
-        <value><![CDATA[from java.util import GregorianCalendar, TimeZone, Locale, Calendar
+	</line>
+	<line>
+		<value><![CDATA[insert]]></value>
+		<value><![CDATA[report]]></value>
+		<value><![CDATA[229]]></value>
+		<value><![CDATA[true]]></value>
+		<value><![CDATA[MOP Contract Virtual Bill Selector]]></value>
+		<value><![CDATA[from java.util import GregorianCalendar, TimeZone, Locale, Calendar
 from net.sf.chellow.monad.types import MonadDate
 from net.sf.chellow.monad import Hiber, UserException
 from net.sf.chellow.billing import MopContract
@@ -17267,7 +17325,7 @@ cal.add(Calendar.MONTH, -1)
 source.appendChild(MonadDate(cal.getTime()).toXml(doc))
 source.appendChild(MonadDate.getMonthsXml(doc))
 source.appendChild(contract.toXml(doc))]]></value>
-        <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
+		<value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
 <xsl:stylesheet version="1.0"
     xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
     <xsl:output method="xml" encoding="US-ASCII"
@@ -17342,14 +17400,14 @@ source.appendChild(contract.toXml(doc))]]></value>
         </html>
     </xsl:template>
 </xsl:stylesheet>]]></value>
-    </line>
-    <line>
-        <value><![CDATA[insert]]></value>
-        <value><![CDATA[report]]></value>
-        <value><![CDATA[231]]></value>
-        <value><![CDATA[true]]></value>
-        <value><![CDATA[MOP Contract Virtual Bills]]></value>
-        <value><![CDATA[from net.sf.chellow.monad import Hiber, UserException
+	</line>
+	<line>
+		<value><![CDATA[insert]]></value>
+		<value><![CDATA[report]]></value>
+		<value><![CDATA[231]]></value>
+		<value><![CDATA[true]]></value>
+		<value><![CDATA[MOP Contract Virtual Bills]]></value>
+		<value><![CDATA[from net.sf.chellow.monad import Hiber, UserException
 from net.sf.chellow.monad.types import MonadDate
 from java.util import GregorianCalendar, TimeZone, Locale, Calendar
 from net.sf.chellow.physical import HhStartDate, Supply
@@ -17429,15 +17487,16 @@ while generations.next():
     Hiber.session().clear()
 generations.close()
 pw.close()]]></value>
-        <value><![CDATA[]]></value>
-    </line>
-    <line>
-        <value><![CDATA[insert]]></value>
-        <value><![CDATA[report]]></value>
-        <value><![CDATA[233]]></value>
-        <value><![CDATA[true]]></value>
-        <value><![CDATA[DC Channel Snags CSV]]></value>
-        <value><![CDATA[from net.sf.chellow.monad import XmlTree, Hiber, UserException
+		<value><![CDATA[]]>
+		</value>
+	</line>
+	<line>
+		<value><![CDATA[insert]]></value>
+		<value><![CDATA[report]]></value>
+		<value><![CDATA[233]]></value>
+		<value><![CDATA[true]]></value>
+		<value><![CDATA[DC Channel Snags CSV]]></value>
+		<value><![CDATA[from net.sf.chellow.monad import XmlTree, Hiber, UserException
 from java.util import Date, Locale
 from java.lang import System
 from net.sf.chellow.billing import HhdcContract
@@ -17489,15 +17548,16 @@ while snags.next():
     Hiber.session().clear()
 snags.close()
 pw.close()]]></value>
-        <value><![CDATA[]]></value>
-    </line>
-    <line>
-        <value><![CDATA[insert]]></value>
-        <value><![CDATA[report]]></value>
-        <value><![CDATA[235]]></value>
-        <value><![CDATA[true]]></value>
-        <value><![CDATA[CSV Overall Profile Selector]]></value>
-        <value><![CDATA[from java.util import GregorianCalendar, TimeZone, Locale, Calendar
+		<value><![CDATA[]]>
+		</value>
+	</line>
+	<line>
+		<value><![CDATA[insert]]></value>
+		<value><![CDATA[report]]></value>
+		<value><![CDATA[235]]></value>
+		<value><![CDATA[true]]></value>
+		<value><![CDATA[CSV Overall Profile Selector]]></value>
+		<value><![CDATA[from java.util import GregorianCalendar, TimeZone, Locale, Calendar
 from net.sf.chellow.monad.types import MonadDate
 
 cal = GregorianCalendar(TimeZone.getTimeZone("GMT"), Locale.UK)
@@ -17505,7 +17565,7 @@ cal.add(Calendar.MONTH, -1)
 source.appendChild(MonadDate(cal.getTime()).toXml(doc))
 source.appendChild(MonadDate.getMonthsXml(doc))
 source.appendChild(MonadDate.getDaysXml(doc))]]></value>
-        <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
+		<value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
 <xsl:stylesheet version="1.0"
     xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
     <xsl:output method="xml" encoding="US-ASCII"
@@ -17573,14 +17633,14 @@ source.appendChild(MonadDate.getDaysXml(doc))]]></value>
         </html>
     </xsl:template>
 </xsl:stylesheet>]]></value>
-    </line>
-    <line>
-        <value><![CDATA[insert]]></value>
-        <value><![CDATA[report]]></value>
-        <value><![CDATA[237]]></value>
-        <value><![CDATA[true]]></value>
-        <value><![CDATA[CSV Overall Profile]]></value>
-        <value><![CDATA[from net.sf.chellow.monad import Hiber, UserException
+	</line>
+	<line>
+		<value><![CDATA[insert]]></value>
+		<value><![CDATA[report]]></value>
+		<value><![CDATA[237]]></value>
+		<value><![CDATA[true]]></value>
+		<value><![CDATA[CSV Overall Profile]]></value>
+		<value><![CDATA[from net.sf.chellow.monad import Hiber, UserException
 from java.lang import System
 from net.sf.chellow.monad.types import MonadDate
 from java.sql import Timestamp, ResultSet
@@ -17673,15 +17733,16 @@ while hh_date <= finish_date_millis:
     pw.flush()
     hh_date = HhStartDate.getNext(cal, hh_date)
 pw.close()]]></value>
-        <value><![CDATA[]]></value>
-    </line>
-    <line>
-        <value><![CDATA[insert]]></value>
-        <value><![CDATA[report]]></value>
-        <value><![CDATA[239]]></value>
-        <value><![CDATA[true]]></value>
-        <value><![CDATA[Supply Notes]]></value>
-        <value><![CDATA[from net.sf.chellow.physical import Supply
+		<value><![CDATA[]]>
+		</value>
+	</line>
+	<line>
+		<value><![CDATA[insert]]></value>
+		<value><![CDATA[report]]></value>
+		<value><![CDATA[239]]></value>
+		<value><![CDATA[true]]></value>
+		<value><![CDATA[Supply Notes]]></value>
+		<value><![CDATA[from net.sf.chellow.physical import Supply
 from net.sf.chellow.monad import Debug, Monad, Hiber
 
 supply_id = inv.getLong('supply_id')
@@ -17695,7 +17756,7 @@ else:
     supply.setNote(note)
     Hiber.commit()
     inv.sendSeeOther("/reports/7/output/?supply-id=" + str(supply_id))]]></value>
-        <value><![CDATA[<!DOCTYPE html>
+		<value><![CDATA[<!DOCTYPE html>
 <html>
   <head>
     <link rel="stylesheet" type="text/css"
@@ -17726,14 +17787,14 @@ else:
     </form>
   </body>
 </html>]]></value>
-    </line>
-    <line>
-        <value><![CDATA[insert]]></value>
-        <value><![CDATA[report]]></value>
-        <value><![CDATA[241]]></value>
-        <value><![CDATA[true]]></value>
-        <value><![CDATA[CSV Daily Supplier Virtual Bill]]></value>
-        <value><![CDATA[from net.sf.chellow.monad import Hiber
+	</line>
+	<line>
+		<value><![CDATA[insert]]></value>
+		<value><![CDATA[report]]></value>
+		<value><![CDATA[241]]></value>
+		<value><![CDATA[true]]></value>
+		<value><![CDATA[CSV Daily Supplier Virtual Bill]]></value>
+		<value><![CDATA[from net.sf.chellow.monad import Hiber
 from java.util import GregorianCalendar, TimeZone, Locale, Calendar, Date
 from net.sf.chellow.physical import MpanCore, HhStartDate, Supply
 from net.sf.chellow.billing import SupplierContract, NonCoreContract, Dno
@@ -17836,24 +17897,27 @@ while not day_start.after(finish_date):
     cal.add(Calendar.DAY_OF_MONTH, 1)
     day_start = HhStartDate(cal.getTime())
 pw.close()]]></value>
-        <value><![CDATA[]]></value>
-    </line>
-    <line>
-        <value><![CDATA[insert]]></value>
-        <value><![CDATA[report]]></value>
-        <value><![CDATA[243]]></value>
-        <value><![CDATA[true]]></value>
-        <value><![CDATA[Free 243]]></value>
-        <value><![CDATA[]]></value>
-        <value><![CDATA[]]></value>
-    </line>
-    <line>
-        <value><![CDATA[insert]]></value>
-        <value><![CDATA[report]]></value>
-        <value><![CDATA[245]]></value>
-        <value><![CDATA[true]]></value>
-        <value><![CDATA[Scenario Runner Selector]]></value>
-        <value><![CDATA[from java.util import GregorianCalendar, TimeZone, Locale, Calendar, Date
+		<value><![CDATA[]]>
+		</value>
+	</line>
+	<line>
+		<value><![CDATA[insert]]></value>
+		<value><![CDATA[report]]></value>
+		<value><![CDATA[243]]></value>
+		<value><![CDATA[true]]></value>
+		<value><![CDATA[Free 243]]></value>
+		<value><![CDATA[]]>
+		</value>
+		<value><![CDATA[]]>
+		</value>
+	</line>
+	<line>
+		<value><![CDATA[insert]]></value>
+		<value><![CDATA[report]]></value>
+		<value><![CDATA[245]]></value>
+		<value><![CDATA[true]]></value>
+		<value><![CDATA[Scenario Runner Selector]]></value>
+		<value><![CDATA[from java.util import GregorianCalendar, TimeZone, Locale, Calendar, Date
 from net.sf.chellow.monad.types import MonadDate
 from net.sf.chellow.monad import Hiber, UserException
 from net.sf.chellow.physical import HhStartDate
@@ -17886,7 +17950,7 @@ cal.add(Calendar.MONTH, -1)
 from_date = HhStartDate(cal.getTime())
 from_date.setLabel('from')
 source.appendChild(from_date.toXml(doc))]]></value>
-        <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
+		<value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
 <xsl:stylesheet version="1.0"
     xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
     <xsl:output method="xml" encoding="US-ASCII"
@@ -18031,14 +18095,14 @@ source.appendChild(from_date.toXml(doc))]]></value>
         </html>
     </xsl:template>
 </xsl:stylesheet>]]></value>
-    </line>
-    <line>
-        <value><![CDATA[insert]]></value>
-        <value><![CDATA[report]]></value>
-        <value><![CDATA[247]]></value>
-        <value><![CDATA[true]]></value>
-        <value><![CDATA[Scenario Runner]]></value>
-        <value><![CDATA[from net.sf.chellow.monad import Hiber, UserException
+	</line>
+	<line>
+		<value><![CDATA[insert]]></value>
+		<value><![CDATA[report]]></value>
+		<value><![CDATA[247]]></value>
+		<value><![CDATA[true]]></value>
+		<value><![CDATA[Scenario Runner]]></value>
+		<value><![CDATA[from net.sf.chellow.monad import Hiber, UserException
 from net.sf.chellow.monad.types import MonadDate
 from java.util import GregorianCalendar, TimeZone, Locale, Calendar, Date
 from net.sf.chellow.physical import MpanCore, HhStartDate, Supply
@@ -18149,15 +18213,16 @@ while not month_start.after(to_date):
     cal.add(Calendar.MONTH, 1)
     month_start = HhStartDate(cal.getTime())
 pw.close()]]></value>
-        <value><![CDATA[]]></value>
-    </line>
-    <line>
-        <value><![CDATA[insert]]></value>
-        <value><![CDATA[report]]></value>
-        <value><![CDATA[249]]></value>
-        <value><![CDATA[true]]></value>
-        <value><![CDATA[HHDC Contract Rate Script Edit]]></value>
-        <value><![CDATA[from net.sf.chellow.monad import Hiber, Monad, XmlTree, UserException, HttpException, MonadMessage
+		<value><![CDATA[]]>
+		</value>
+	</line>
+	<line>
+		<value><![CDATA[insert]]></value>
+		<value><![CDATA[report]]></value>
+		<value><![CDATA[249]]></value>
+		<value><![CDATA[true]]></value>
+		<value><![CDATA[HHDC Contract Rate Script Edit]]></value>
+		<value><![CDATA[from net.sf.chellow.monad import Hiber, Monad, XmlTree, UserException, HttpException, MonadMessage
 from net.sf.chellow.monad.types import MonadDate
 from net.sf.chellow.billing import RateScript
 from net.sf.chellow.physical import HhStartDate
@@ -18221,7 +18286,7 @@ elif request_method == "GET":
 
 else:
     raise InternalException("HTTP Method not recognized.")]]></value>
-        <value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
+		<value><![CDATA[<?xml version="1.0" encoding="us-ascii"?>
 <xsl:stylesheet version="1.0"
     xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
     <xsl:output method="html" encoding="US-ASCII"
@@ -18618,5 +18683,583 @@ else:
         </html>
     </xsl:template>
 </xsl:stylesheet>]]></value>
-    </line>
+	</line>
+	<line>
+		<value><![CDATA[insert]]></value>
+		<value><![CDATA[report]]></value>
+		<value><![CDATA[251]]></value>
+		<value><![CDATA[true]]></value>
+		<value><![CDATA[Report Monitor]]></value>
+		<value><![CDATA[from net.sf.chellow.monad import Hiber, UserException, Monad
+import os
+import datetime
+
+tmp_dir = Monad.getContext().getAttribute("net.sf.chellow.tmp_dir")
+
+
+
+files = []
+
+for fl in os.listdir(tmp_dir):
+  statinfo = os.stat(fl)
+  files.append({'name': fl, 'last_modified': datetime.datetime.utcfromtimestamp(statinfo.st_mtime), 'size': statinfo.st_size, 'creation_date': datetime.datetime.utcfromtimestamp(statinfo.st_ctime) })
+
+Monad.getContext().getAttribute("net.sf.chellow.jinja").get("render")(inv, template, {'files': files})]]></value>
+		<value><![CDATA[<!DOCTYPE html>
+<html>
+  <head>
+    <link rel="stylesheet" type="text/css"
+      href="{{ context_path }}/reports/19/output/" />
+    <title>Chellow &gt; Report Downloads</title>
+  </head>
+  <body>
+    <p>
+      <a href="{{ context_path }}/reports/1/output/">Chellow</a> &gt;
+      Report Downloads
+    </p>
+
+    {% if messages %}
+      <ul>
+        {% for message in messages %}
+          <li>{{ message }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+
+
+    <p><a href=".">Refresh</a> the page.</p>
+
+
+    <table><caption>Report Files</caption>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Size</th>
+          <th>Creation Date</th>
+          <th>Last Modified</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for file in files %}
+          <tr>
+            <td><a href="{{ context_path }}/reports/253/output/?name={{ file.name }}">{{ file.name }}</a></td>
+            <td>{{ file.size }} B</td>
+            <td>{{ file.creation_date|hh_format }}</td>
+            <td>{{ file.last_modified|hh_format }}</td>
+            <td>
+              <form method="post" action="{{ context_path }}/reports/253/output/">
+                <fieldset style="border: none;">
+                  <input type="hidden" name="name" value="{{ file.name }}">
+                  <input type="submit" name="delete" value="Delete">
+                </fieldset>
+              </form>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </body>
+</html>
+]]></value>
+	</line>
+	<line>
+		<value><![CDATA[insert]]></value>
+		<value><![CDATA[report]]></value>
+		<value><![CDATA[253]]></value>
+		<value><![CDATA[true]]></value>
+		<value><![CDATA[Report Downloader]]></value>
+		<value><![CDATA[from net.sf.chellow.monad import Hiber, UserException, Monad
+import os
+
+name = inv.getString("name")
+head, name = os.path.split(os.path.normcase(os.path.normpath(name)))
+
+tmp_dir = Monad.getContext().getAttribute("net.sf.chellow.tmp_dir")
+
+method = inv.getRequest().getMethod()
+
+if method == 'GET':
+    fl = open(os.path.join(tmp_dir, name))
+
+    inv.getResponse().setContentType("text/csv")
+    inv.getResponse().setHeader('Content-Disposition', 'attachment; filename="' + name + '"')
+
+    pw = inv.getResponse().getWriter()
+    for line in fl:
+        pw.print(line)
+
+    pw.close()
+    fl.close()
+elif method == 'POST':
+    os.remove(name)
+    inv.sendSeeOther("/reports/251/output/")
+else:
+    raise UserException("Don't recognize the method: " + method)]]></value>
+	</line>
+	<line>
+		<value><![CDATA[insert]]></value>
+		<value><![CDATA[report]]></value>
+		<value><![CDATA[255]]></value>
+		<value><![CDATA[true]]></value>
+		<value><![CDATA[Users]]></value>
+		<value><![CDATA[from net.sf.chellow.monad import Monad
+from sqlalchemy.orm import joinedload_all
+
+db = Monad.getContext().getAttribute("net.sf.chellow.db")
+for cls in ['User', 'Party', 'UserRole', 'set_read_write', 'UserException']:
+   globals()[cls] = db.get(cls)
+
+utils = Monad.getContext().getAttribute("net.sf.chellow.utils")
+for cls in ['UserException']:
+   globals()[cls] = utils.get(cls)
+
+
+session = db.get("session")()
+try:
+    render = Monad.getContext().getAttribute("net.sf.chellow.jinja").get("render")
+
+    def users_context(message=None):
+        users = session.query(User).order_by(User.email_address).all()
+        parties = session.query(Party).from_statement("select party.* from party, " +
+                "market_role, participant where party.role_id = market_role.id " +
+                "and party.participant_id = participant.id order by " +
+                "market_role.code, participant.code").all()
+        return {'users': users, 'parties': parties, 'messages': None if message is None else [message]}
+
+    if inv.getRequest().getMethod() == 'POST':
+        set_read_write(session)
+        email_address = inv.getString('email_address')
+        password = inv.getString('password')
+        user_role_id = inv.getLong('user_role_id')
+        role = session.query(UserRole).get(user_role_id)
+        try:
+            party = None
+            if role.code == 'party-viewer':
+                party_id = inv.getLong('party_id')
+                party = session.query(Party).get(party_id)
+            user = User.insert(session, email_address, role, party, User.digest(password))
+            session.commit()
+            inv.sendSeeOther('/reports/255/output/?user_id=' + str(user.id))
+        except UserException, e:
+            session.rollback()
+            render(inv, template, users_context(message=str(e)), 400)
+    else:
+        render(inv, template, users_context())
+finally:
+    session.close()]]></value>
+		<value><![CDATA[<!doctype html>
+<html>
+  <head>
+    <link rel="stylesheet" type="text/css"
+      href="{{ context_path }}/reports/19/output/"
+    >
+    <title>Chellow &gt; Users</title>
+    <style type="text/css">
+      label {
+        width: 10em;
+        float: left;
+      }
+    </style>
+  </head>
+  <body>
+    <p>
+      <a href="{{ context_path }}/">Chellow</a> &gt; Users
+    </p>
+
+    {% if messages %}
+      <ul>
+        {% for message in messages %}
+          <li>{{ message }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+
+    {% if users|length > 0 %}
+      <table>
+        <thead>
+          <tr>
+            <th></th>
+            <th>Email Address</th>
+            <th>Role</th>
+            <th>Party</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for user in users %}
+            <tr>
+              <td><a href="{{ context_path }}/reports/257/output/?user_id={{user.id}}">view</a></td>
+              <td>{{ user.email_address }}</td>
+              <td>{{ user.role.code }}</td>
+              <td>{{ user.party.name }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% endif %}
+    <br />
+    <form method="post" action=".">
+      <fieldset>
+        <legend>Add new user</legend>
+        <br />
+        <label>Email Address</label>
+        <input name="email_address" value="
+          {%- if request.getParameter('email_address') -%}
+            {{ request.getParameter('email_address') }}
+          {%- endif -%}
+        ">
+        <br />
+        <label>Password</label>
+        <input type="password" name="password">
+        <br />
+        <br />
+        <fieldset>
+          <legend>Role</legend>
+          <input type="radio" name="user_role_id" value="1"
+            {% if request.getParameter('user_role_id') %}
+              {% if request.getParameter('user_role_id') == '1' %}
+                checked
+              {% endif %}
+            {% else %}
+              checked
+            {% endif %}
+          >
+          Editor
+          <br />
+          <input type="radio" name="user_role_id" value="3"
+            {% if request.getParameter('user_role_id') == '3' %}
+              checked
+            {% endif %}
+          >
+          Viewer
+          <br />
+          <input type="radio" name="user_role_id" value="2"
+            {% if request.getParameter('user_role_id') == '2' %}
+              checked
+            {% endif %}
+          >
+          Party Viewer
+          <select name="party-id">
+            {% for party in parties %}
+              <option value="{{ party.id }}"
+                {%- if request.getParameter('user_role_id') == party.id -%}
+                  selected
+                {% endif %}
+              >{{ party.name }} {{ party.participant.code }}
+                {{ party.role.description }}
+              </option>
+            {% endfor %}
+          </select>
+        </fieldset>
+        <br />
+        <br />
+        <input type="submit" value="Add" />
+        <input type="reset" value="Reset" />
+      </fieldset>
+    </form>
+  </body>
+</html>]]></value>
+	</line>
+	<line>
+		<value><![CDATA[insert]]></value>
+		<value><![CDATA[report]]></value>
+		<value><![CDATA[257]]></value>
+		<value><![CDATA[true]]></value>
+		<value><![CDATA[User]]></value>
+		<value><![CDATA[from net.sf.chellow.monad import Monad
+from net.sf.chellow.physical import User as JUser
+from sqlalchemy.orm import joinedload_all
+
+db = Monad.getContext().getAttribute("net.sf.chellow.db")
+for cls in ['User', 'Party', 'UserRole', 'set_read_write']:
+   globals()[cls] = db.get(cls)
+
+utils = Monad.getContext().getAttribute("net.sf.chellow.utils")
+for cls in ['UserException']:
+   globals()[cls] = utils.get(cls)
+
+render = Monad.getContext().getAttribute("net.sf.chellow.jinja").get("render")
+
+session = db.get("session")()
+
+try:
+    def user_fields(user):
+        parties = session.query(Party).from_statement("""select party.* from party,
+            market_role, participant where party.role_id = market_role.id and 
+            party.participant_id = participant.id order by market_role.code, 
+            participant.code""").all()
+        return {'user': user, 'parties': parties}
+
+    if inv.getRequest().getMethod() == 'GET':
+        user_id = inv.getInteger('user_id')
+        user = User.get_by_id(session, user_id)
+        render(inv, template, user_fields(user))
+    else:
+        set_read_write(session)
+        user_id = inv.getInteger('user_id')
+        user = User.get_by_id(session, user_id)
+        if inv.hasParameter('delete'):
+            session.remove(user)
+            session.commit()
+            inv.sendSeeOther('/reports/255/output/?user_id=' + str(user.id))
+        elif inv.hasParameter('current_password'):
+            current_password = inv.getString('current_password')
+            new_password = inv.getString('new_password')
+            confirm_new_password = inv.getString('confirm_new_password')
+            if user.password_digest != JUser.digest(current_password):
+                raise UserException("The current password is incorrect.")
+            if new_password != confirm_new_password:
+                raise UserException("The new passwords aren't the same.")
+            if len(new_password) < 6:
+                raise UserException("The password must be at least 6 " +
+                        "characters long.")
+            user.password_digest = JUser.digest(new_password)
+            session.commit()
+            inv.sendSeeOther('/reports/255/output/?user_id=' + str(user.id))
+        else:
+            email_address = inv.getString('email_address')
+            role_id = inv.getInteger('user_role_id')
+            role = UserRole.get_by_id(session, role_id)
+            party = None
+            if role.code == 'party-viewer':
+                party_id = inv.getInteger('party_id')
+                party = Party.get_by_id(session, party_id)
+            user.update(email_address, role, party)
+            session.commit()
+            inv.sendSeeOther('/reports/255/output/?user_id=' + str(user.id))
+finally:
+    session.close()]]></value>
+		<value><![CDATA[<!doctype html>
+<html>
+  <head>
+    <link rel="stylesheet" type="text/css" href="{{ context_path }}/reports/19/output/" />
+    <title>Chellow &gt; Users &gt; {{ user.email_address }}</title>
+  </head>
+  <body>
+    <p>
+      <a href="{{ context_path }}/">Chellow</a> &gt; <a href="{{ context_path }}/reports/255/output/">Users</a> &gt;
+      {{ user.email_address }}
+    </p>
+
+    {% if messages %}
+      <ul>
+        {% for message in messages %}
+          <li>{{ message }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+
+    {% if request.getParameter('view') == 'confirm-delete' %}
+      <form method="post" action=".">
+        <fieldset>
+          <legend>
+            Do you really want to delete the user '{{ user.email_address }}'?
+          </legend>
+          <input type="submit" name="delete" value="Delete" />
+          <p><a href=".">Cancel</a></p>
+        </fieldset>
+      </form>
+    {% else %}
+      <form method="post" action=".">
+        <fieldset>
+          <input type="hidden" name="user_id" value="{{ user.id }}"/>
+          <legend>Update details</legend>
+          <br />
+          <label>
+            Email Address
+            <input name="email_address" size="100" value="
+              {%- if request.getParameter('email_address') -%}
+                {{ request.getParameter('email_address') }}
+              {%- else -%}
+                {{ user.email_address }}
+              {%- endif -%}
+            ">
+          </label>
+          <br />
+          <br />
+          <fieldset>
+            <legend>Role</legend>
+            <label>
+              <input type="radio" name="user_role_id" value="1"
+                {%- if request.getParameter('user_role_id') -%}
+                  {%- if request.getParameter('user_role_id') == '1' -%}
+                    checked
+                  {%- endif -%}
+                {%- else -%}
+                  {%- if user.role.id == 1 -%}
+                    checked
+                  {%- endif -%}
+                {%- endif -%}
+              >
+              Editor
+            </label>
+            <br />
+            <label>
+              <input type="radio" name="user_role_id" value="3"
+                {% if request.getParameter('user_role_id') %}
+                  {% if request.getParameter('user_role_id') == '3' %}
+                    checked
+                  {% endif %}
+                {% else %}
+                  {% if user.role.id == 3 %}
+                    checked
+                  {% endif %}
+                {% endif %}
+              >
+              Viewer
+            </label>
+            <br />
+            <label>
+              <input type="radio" name="user_role_id" value="2"
+                {%- if request.getParameter('user_role_id') -%}
+                  {%- if request.getParameter('user_role_id') == '2' -%}
+                    checked
+                  {%- endif -%}
+                {%- else -%}
+                  {%- if user.role.id == 2 -%}
+                    checked
+                  {% endif %}
+                {% endif %}
+              >
+              Party Viewer
+            </label>
+            <select name="party_id">
+              {% for party in parties %}
+                <option value="{{ party.id }}"
+                  {%- if request.getParameter('party_id') -%}
+                    {%- if request.getParameter('party_id') == party.id -%}
+                      selected
+                    {%- endif -%}
+                  {%- else -%}
+                    {%- if user.party.id == party.id -%}
+                      selected
+                    {%- endif -%}
+                  {%- endif -%}
+                >
+                  {{ party.name }} {{ party.participant.code }}
+                  {{ party.role.description }}
+                </option>
+              {% endfor %}
+            </select>
+          </fieldset>
+          <br />
+          <br />
+          <input type="submit" value="Update" />
+          <input type="reset" value="Reset" />
+        </fieldset>
+      </form>
+      <br />
+      <br />
+      <form method="post" action=".">
+        <fieldset>
+          <input type="hidden" name="user_id" value="{{ user.id }}"/>
+          <legend>Change password</legend>
+          <br />
+          <label>
+            Current password
+            <input type="password" name="current_password" />
+          </label>
+          <br />
+          <br />
+          <label>
+            New password
+            <input type="password" name="new_password" />
+          </label>
+          <br />
+          <label>
+            Confirm new Password
+            <input type="password" name="confirm_new_password" />
+          </label>
+          <br />
+          <br />
+          <input type="submit" value="Change" />
+          <input type="reset" value="Reset" />
+        </fieldset>
+      </form>
+      <br />
+      <form action=".">
+        <fieldset>
+          <input type="hidden" name="view" value="confirm-delete" />
+          <legend>Delete this user</legend>
+          <input type="submit" value="Delete" />
+        </fieldset>
+      </form>
+    {% endif %}
+  </body>
+</html>
+]]></value>
+	</line>
+	<line>
+		<value><![CDATA[insert]]></value>
+		<value><![CDATA[report]]></value>
+		<value><![CDATA[259]]></value>
+		<value><![CDATA[true]]></value>
+		<value><![CDATA[Non-core Contracts]]></value>
+		<value><![CDATA[from net.sf.chellow.monad import Monad
+from sqlalchemy.orm import joinedload_all
+
+db = Monad.getContext().getAttribute("net.sf.chellow.db")
+for cls in ['Contract', 'Party', 'UserRole', 'set_read_write', 'session']:
+   globals()[cls] = db.get(cls)
+
+utils = Monad.getContext().getAttribute("net.sf.chellow.utils")
+for cls in ['UserException']:
+   globals()[cls] = utils.get(cls)
+
+jinja = Monad.getContext().getAttribute("net.sf.chellow.jinja")
+for cls in ['render']:
+   globals()[cls] = jinja.get(cls)
+
+sess = None
+try:
+    sess = session()
+    non_core_contracts = sess.query(Contract).from_statement("select contract.* from contract, market_role where contract.market_role_id = market_role.id and market_role.code = 'Z' order by contract.name").all()
+    render(inv, template, {'non_core_contracts': non_core_contracts})
+finally:
+    sess.close()]]></value>
+		<value><![CDATA[<!doctype html>
+<html>
+  <head>
+    <link rel="stylesheet" type="text/css"
+      href="{{ context_path }}/reports/19/output/"
+    >
+    <title>Chellow &gt; Non-core Contracts</title>
+  </head>
+  <body>
+    <p>
+      <a href="{{ context_path }}/reports/1/output/">Chellow</a> &gt;
+      HHDC Contracts [<a href="{{ context_path }}/reports/261/output/">add</a>]
+    </p>
+    <br />
+    {% if messages %}
+      <ul>
+        {% for message in messages %}
+          <li>{{ message }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Start Date</th>
+          <th>Finish Date</th>
+          <th>HHDC</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for contract in non_core_contracts %}
+          <tr>
+            <td>
+              <a href="{/source/request/@context-path}/reports/263/output/?non_core_contract_id={@id}">{{ contract.name }}</a>
+            </td>
+            <td>{{ contract.start_rate_script.start_date|hh_format }}</td>
+            <td>{{ contract.finish_rate_script.finish_date|hh_format }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </body>
+</html>]]></value>
+	</line>
 </csv>

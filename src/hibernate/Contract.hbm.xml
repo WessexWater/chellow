@@ -2,47 +2,60 @@
 <!DOCTYPE hibernate-mapping PUBLIC
       "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
           "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
-<!-- 
-	
-   Copyright (c) 2005, 2010 Wessex Water Services Limited
-   
-   This file is part of Chellow.
-  
-   Chellow is free software: you can redistribute it and/or modify
-   it under the terms of the GNU General Public License as published by
-   the Free Software Foundation, either version 3 of the License, or
-   (at your option) any later version.
-  
-   Chellow is distributed in the hope that it will be useful,
-   but WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-   GNU General Public License for more details.
-  
-   You should have received a copy of the GNU General Public License
-   along with Chellow.  If not, see <http://www.gnu.org/licenses/>.
-	
--->
+<!-- Copyright (c) 2005, 2010 Wessex Water Services Limited This file is 
+	part of Chellow. Chellow is free software: you can redistribute it and/or 
+	modify it under the terms of the GNU General Public License as published 
+	by the Free Software Foundation, either version 3 of the License, or (at 
+	your option) any later version. Chellow is distributed in the hope that it 
+	will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty 
+	of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General 
+	Public License for more details. You should have received a copy of the GNU 
+	General Public License along with Chellow. If not, see <http://www.gnu.org/licenses/>. -->
 
 <hibernate-mapping package="net.sf.chellow.billing">
 	<class name="Contract" table="contract" lazy="true">
 		<id name="id">
-			<generator class="assigned" />
+			<generator class="sequence">
+				<param name="sequence">contract_id_sequence</param>
+			</generator>
 		</id>
-		<property type="string" name="name" column="name"
+
+		<many-to-one name="role" class="net.sf.chellow.physical.MarketRole"
+			column="market_role_id" foreign-key="fkey_contract_market_role"
+			not-null="true" unique-key="contract_unique" />
+			
+		<property name="isCore" column="is_core" type="boolean"
 			not-null="true" />
-		<many-to-one name="startRateScript" class="RateScript"
-			column="start_rate_script_id"
-			foreign-key="fkey_contract_start_rate_script" />
-		<many-to-one name="finishRateScript" class="RateScript"
-			column="finish_rate_script_id"
-			foreign-key="fkey_contract_finish_rate_script" />
+			
+		<property type="string" name="name" column="name" not-null="true"
+			unique-key="contract_unique" />
+
 		<property type="string" name="chargeScript">
 			<column name="charge_script" sql-type="text" />
-			</property>
-		<set name="rateScripts" inverse="true"
-			cascade="all,delete-orphan" order-by="start_date">
+		</property>
+
+		<property name="properties" type="string" not-null="true">
+			<column name="properties" sql-type="text" />
+		</property>
+
+		<property name="state" type="string" not-null="true">
+			<column name="state" sql-type="text" />
+		</property>
+
+		<many-to-one name="startRateScript" class="RateScript"
+			column="start_rate_script_id" foreign-key="fkey_contract_start_rate_script" />
+
+		<many-to-one name="finishRateScript" class="RateScript"
+			column="finish_rate_script_id" foreign-key="fkey_contract_finish_rate_script" />
+
+		<many-to-one name="party" class="Party" column="party_id"
+			foreign-key="fkey_contract_party" not-null="true" />
+
+		<set name="rateScripts" inverse="true" cascade="all,delete-orphan"
+			order-by="start_date">
 			<key column="contract_id" />
 			<one-to-many class="RateScript" />
 		</set>
+
 	</class>
 </hibernate-mapping>

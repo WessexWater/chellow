@@ -1,6 +1,6 @@
 /*******************************************************************************
  * 
- *  Copyright (c) 2005, 2009 Wessex Water Services Limited
+ *  Copyright (c) 2005-2013 Wessex Water Services Limited
  *  
  *  This file is part of Chellow.
  * 
@@ -20,24 +20,12 @@
  *******************************************************************************/
 package net.sf.chellow.physical;
 
-import java.net.URI;
 import java.util.HashSet;
 import java.util.Set;
 
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
-import net.sf.chellow.monad.InternalException;
-import net.sf.chellow.monad.Invocation;
-import net.sf.chellow.monad.MonadUtils;
-import net.sf.chellow.monad.NotFoundException;
-import net.sf.chellow.monad.Urlable;
 import net.sf.chellow.monad.UserException;
-import net.sf.chellow.monad.XmlTree;
-import net.sf.chellow.monad.types.MonadUri;
-import net.sf.chellow.monad.types.UriPathElement;
-
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
 
 public class Tpr extends PersistentEntity {
 	static public Tpr findTpr(String code) {
@@ -122,36 +110,7 @@ public class Tpr extends PersistentEntity {
 	void setIsGmt(boolean isGmt) {
 		this.isGmt = isGmt;
 	}
-
-	public Urlable getChild(UriPathElement uriId) throws HttpException {
-		if (ClockIntervals.URI_ID.equals(uriId)) {
-			return new ClockIntervals(this);
-		} else {
-			throw new NotFoundException();
-		}
-	}
-
-	public MonadUri getEditUri() throws InternalException {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	public void httpDelete(Invocation inv) throws HttpException {
-		// TODO Auto-generated method stub
-	}
-
-	public void httpGet(Invocation inv) throws HttpException {
-		Document doc = MonadUtils.newSourceDocument();
-		Element source = doc.getDocumentElement();
-		source.appendChild(toXml(doc, new XmlTree("measurementRequirements",
-				new XmlTree("ssc")).put("clockIntervals")));
-		inv.sendOk(doc);
-	}
-
-	public void httpPost(Invocation inv) throws HttpException {
-		// TODO Auto-generated method stub
-	}
-
+	
 	public ClockInterval insertClockInterval(int dayOfWeek, int startDay,
 			int startMonth, int endDay, int endMonth, int startHour,
 			int startMinute, int endHour, int endMinute) {
@@ -161,24 +120,5 @@ public class Tpr extends PersistentEntity {
 		Hiber.session().save(interval);
 		Hiber.session().flush();
 		return interval;
-	}
-
-	public Element toXml(Document doc) throws HttpException {
-		Element element = super.toXml(doc, "tpr");
-
-		element.setAttribute("code", code);
-		element.setAttribute("is-teleswitch", String.valueOf(isTeleswitch));
-		element.setAttribute("is-gmt", String.valueOf(isGmt));
-		return element;
-	}
-
-	public String toString() {
-		return code;
-	}
-
-	@Override
-	public URI getViewUri() throws HttpException {
-		// TODO Auto-generated method stub
-		return null;
 	}
 }

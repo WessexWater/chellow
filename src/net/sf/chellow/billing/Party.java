@@ -1,6 +1,6 @@
 /*******************************************************************************
  * 
- *  Copyright (c) 2005, 2009 Wessex Water Services Limited
+ *  Copyright (c) 2005-2013 Wessex Water Services Limited
  *  
  *  This file is part of Chellow.
  * 
@@ -23,23 +23,18 @@ package net.sf.chellow.billing;
 
 import java.util.Date;
 
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
-import net.sf.chellow.monad.Invocation;
-import net.sf.chellow.monad.MonadUtils;
 import net.sf.chellow.monad.NotFoundException;
-import net.sf.chellow.monad.Urlable;
-import net.sf.chellow.monad.XmlTree;
 import net.sf.chellow.monad.types.MonadDate;
-import net.sf.chellow.monad.types.UriPathElement;
 import net.sf.chellow.physical.MarketRole;
 import net.sf.chellow.physical.Participant;
 import net.sf.chellow.physical.PersistentEntity;
 
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-
-public abstract class Party extends PersistentEntity {
+public class Party extends PersistentEntity {
 	static public Party getParty(Long id) throws HttpException {
 		Party party = (Party) Hiber.session().get(Party.class, id);
 		if (party == null) {
@@ -51,14 +46,24 @@ public abstract class Party extends PersistentEntity {
 
 	static public Party getParty(String participantCode, char roleCode)
 			throws HttpException {
-		return getParty(Participant.getParticipant(participantCode), MarketRole
-				.getMarketRole(roleCode));
+		return getParty(Participant.getParticipant(participantCode),
+				MarketRole.getMarketRole(roleCode));
+	}
+
+	static public Party getDno(String code) throws HttpException {
+		Party party = (Party) Hiber.session()
+				.createQuery("from Party party where party.dnoCode = :code")
+				.setString("code", code).uniqueResult();
+		if (party == null) {
+			throw new NotFoundException();
+		}
+		return party;
 	}
 
 	static public Party getParty(String participantCode, String roleCode)
 			throws HttpException {
-		return getParty(Participant.getParticipant(participantCode), MarketRole
-				.getMarketRole(roleCode));
+		return getParty(Participant.getParticipant(participantCode),
+				MarketRole.getMarketRole(roleCode));
 	}
 
 	static public Party getParty(Participant participant, MarketRole role)
@@ -80,6 +85,7 @@ public abstract class Party extends PersistentEntity {
 	private MarketRole role;
 	private Date validFrom;
 	private Date validTo;
+	private String dnoCode;
 
 	public Party() {
 	}
@@ -133,55 +139,23 @@ public abstract class Party extends PersistentEntity {
 		this.validTo = to;
 	}
 
-	public Element toXml(Document doc, String elementName) throws HttpException {
-		Element element = super.toXml(doc, elementName);
+	public String getDnoCode() {
+		return dnoCode;
+	}
 
+	void setDnoCode(String dnoCode) {
+		this.dnoCode = dnoCode;
+	}
+
+	public Element toXml(Document doc) throws HttpException {
+		Element element = doc.createElement("party");
+
+		element.setAttribute("id", getId().toString());
 		element.setAttribute("name", name);
 		element.appendChild(MonadDate.toXML(validFrom, "from", doc));
 		if (validTo != null) {
 			element.appendChild(MonadDate.toXML(validTo, "to", doc));
 		}
 		return element;
-	}
-
-	public Element toXml(Document doc) throws HttpException {
-		return toXml(doc, "party");
-	}
-
-	/*
-	 * public Account getAccount(String accountText) throws HttpException {
-	 * Account account = (Account) Hiber .session() .createQuery( "from Account
-	 * account where account.provider = :provider and account.reference =
-	 * :accountReference") .setEntity("provider",
-	 * this).setString("accountReference", accountText.trim()).uniqueResult();
-	 * if (account == null) { throw new UserException("There isn't an account
-	 * for '" + getName() + "' with the reference '" + accountText + "'."); }
-	 * return account; }
-	 */
-	/*
-	 * abstract public List<SupplyGeneration> supplyGenerations(Account
-	 * account);
-	 * 
-	 * public abstract Service getService(String name) throws HttpException,
-	 * InternalException;
-	 */
-	@Override
-	public Urlable getChild(UriPathElement uriId) throws HttpException {
-		throw new NotFoundException();
-	}
-
-	@Override
-	public void httpGet(Invocation inv) throws HttpException {
-		Document doc = MonadUtils.newSourceDocument();
-		Element source = doc.getDocumentElement();
-
-		source.appendChild(toXml(doc, new XmlTree("participant").put("role")));
-		inv.sendOk(doc);
-	}
-
-	@Override
-	public void httpPost(Invocation inv) throws HttpException {
-		// TODO Auto-generated method stub
-
 	}
 }

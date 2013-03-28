@@ -1,6 +1,6 @@
 /*******************************************************************************
  * 
- *  Copyright (c) 2005, 2010 Wessex Water Services Limited
+ *  Copyright (c) 2005-2013 Wessex Water Services Limited
  *  
  *  This file is part of Chellow.
  * 
@@ -20,28 +20,12 @@
  *******************************************************************************/
 package net.sf.chellow.physical;
 
-import java.net.URI;
-import java.text.DecimalFormat;
 import java.util.Date;
 import java.util.Set;
 
-import net.sf.chellow.monad.DeployerException;
-import net.sf.chellow.monad.DesignerException;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
-import net.sf.chellow.monad.InternalException;
-import net.sf.chellow.monad.Invocation;
-import net.sf.chellow.monad.MethodNotAllowedException;
-import net.sf.chellow.monad.MonadUtils;
-import net.sf.chellow.monad.Urlable;
 import net.sf.chellow.monad.UserException;
-import net.sf.chellow.monad.XmlTree;
-import net.sf.chellow.monad.types.MonadDate;
-import net.sf.chellow.monad.types.MonadUri;
-import net.sf.chellow.monad.types.UriPathElement;
-
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
 
 public class Ssc extends PersistentEntity {
 	public static Ssc getSsc(String code) throws HttpException {
@@ -135,66 +119,11 @@ public class Ssc extends PersistentEntity {
 		this.mrs = mrs;
 	}
 
-	public Urlable getChild(UriPathElement uriId) throws InternalException,
-			HttpException {
-		return null;
-	}
-
-	public MonadUri getEditUri() throws InternalException, HttpException {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	public void httpDelete(Invocation inv) throws InternalException,
-			DesignerException, HttpException, DeployerException {
-		// TODO Auto-generated method stub
-
-	}
-
-	public void httpGet(Invocation inv) throws HttpException {
-		Document doc = MonadUtils.newSourceDocument();
-		Element source = doc.getDocumentElement();
-		source.appendChild(toXml(doc, new XmlTree("measurementRequirements",
-				new XmlTree("tpr"))));
-		inv.sendOk(doc);
-	}
-
-	public void httpPost(Invocation inv) throws HttpException {
-		throw new MethodNotAllowedException();
-	}
-
-	public String toString() {
-		return new DecimalFormat("0000").format(code);
-	}
-
-	public Element toXml(Document doc) throws HttpException {
-		Element element = super.toXml(doc, "ssc");
-
-		element.setAttribute("code", toString());
-		element.setAttribute("is-import", Boolean.toString(isImport));
-		element.setAttribute("description", description);
-		MonadDate fromDate = new MonadDate(validFrom);
-		fromDate.setLabel("from");
-		element.appendChild(fromDate.toXml(doc));
-		if (validTo != null) {
-			MonadDate toDate = new MonadDate(validTo);
-			toDate.setLabel("to");
-			element.appendChild(toDate.toXml(doc));
-		}
-		return element;
-	}
-
 	public MeasurementRequirement insertMeasurementRequirement(Tpr tpr)
 			throws HttpException {
 		MeasurementRequirement mr = new MeasurementRequirement(this, tpr);
 		Hiber.session().save(mr);
 		Hiber.session().flush();
 		return mr;
-	}
-
-	@Override
-	public URI getViewUri() throws HttpException {
-		// TODO Auto-generated method stub
-		return null;
 	}
 }

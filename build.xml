@@ -71,6 +71,9 @@
 		<copy todir="${build.home}/WEB-INF/lib-python/pg8000">
 			<fileset dir="${user.home}/venv/lib/python2.5/site-packages/pg8000" />
 		</copy>
+		<copy todir="${build.home}/WEB-INF/lib-python/pytz">
+			<fileset dir="${user.home}/venv/lib/python2.5/site-packages/pytz" />
+		</copy>
 
 		<copy overwrite="true" todir="${build.home}/WEB-INF/lib-python/pg8000" file="${web.home}/WEB-INF/protocol.py" />
 

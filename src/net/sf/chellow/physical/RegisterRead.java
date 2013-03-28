@@ -1,6 +1,6 @@
 /*******************************************************************************
  * 
- *  Copyright (c) 2005, 2010 Wessex Water Services Limited
+ *  Copyright (c) 2005-2013 Wessex Water Services Limited
  *  
  *  This file is part of Chellow.
  * 
@@ -21,28 +21,15 @@
 package net.sf.chellow.physical;
 
 import java.math.BigDecimal;
-import java.net.URI;
-import java.util.Date;
-import java.util.List;
 
 import net.sf.chellow.billing.Bill;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.InternalException;
-import net.sf.chellow.monad.Invocation;
-import net.sf.chellow.monad.MonadMessage;
-import net.sf.chellow.monad.MonadUtils;
-import net.sf.chellow.monad.Urlable;
 import net.sf.chellow.monad.UserException;
-import net.sf.chellow.monad.XmlTree;
-import net.sf.chellow.monad.types.MonadDate;
-import net.sf.chellow.monad.types.MonadUri;
-import net.sf.chellow.monad.types.UriPathElement;
 import net.sf.chellow.ui.GeneralImport;
 
-import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import org.w3c.dom.Node;
 
 public class RegisterRead extends PersistentEntity {
 
@@ -320,103 +307,5 @@ public class RegisterRead extends PersistentEntity {
 
 	void setPresentType(ReadType presentType) {
 		this.presentType = presentType;
-	}
-
-	public Urlable getChild(UriPathElement uriId) throws HttpException {
-		return null;
-	}
-
-	public MonadUri getEditUri() throws InternalException, HttpException {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	public void httpGet(Invocation inv) throws HttpException {
-		inv.sendOk(document());
-	}
-
-	public void httpPost(Invocation inv) throws HttpException {
-		if (inv.hasParameter("delete")) {
-			delete();
-			Hiber.commit();
-			Document doc = document();
-			Element source = doc.getDocumentElement();
-			source.appendChild(new MonadMessage(
-					"This register read has been successfully deleted.")
-					.toXml(doc));
-			inv.sendOk(doc);
-		} else {
-			String tprCode = inv.getString("tpr-code");
-			BigDecimal coefficient = inv.getBigDecimal("coefficient");
-			String units = inv.getString("units");
-			String meterSerialNumber = inv.getString("meter-serial-number");
-			String mpanStr = inv.getString("mpan");
-			Date previousDate = inv.getDateTime("previous");
-			BigDecimal previousValue = inv.getBigDecimal("previous-value");
-			Long previousTypeId = inv.getLong("previous-type-id");
-			Date presentDate = inv.getDateTime("present");
-			BigDecimal presentValue = inv.getBigDecimal("present-value");
-			Long presentTypeId = inv.getLong("present-type-id");
-
-			if (!inv.isValid()) {
-				throw new UserException(document());
-			}
-			update(Tpr.getTpr(tprCode), coefficient, Units.getUnits(units),
-					meterSerialNumber, mpanStr, new HhStartDate(previousDate),
-					previousValue, ReadType.getReadType(previousTypeId),
-					new HhStartDate(presentDate), presentValue,
-					ReadType.getReadType(presentTypeId));
-			Hiber.commit();
-			inv.sendOk(document());
-		}
-	}
-
-	public void delete() {
-		Hiber.session().delete(this);
-	}
-
-	@SuppressWarnings("unchecked")
-	private Document document() throws HttpException {
-		Document doc = MonadUtils.newSourceDocument();
-		Element source = doc.getDocumentElement();
-		source.appendChild(toXml(doc, new XmlTree("bill", new XmlTree("batch",
-				new XmlTree("contract"))).put("tpr")));
-		source.appendChild(MonadDate.getMonthsXml(doc));
-		source.appendChild(MonadDate.getDaysXml(doc));
-		source.appendChild(MonadDate.getHoursXml(doc));
-		source.appendChild(HhStartDate.getHhMinutesXml(doc));
-		for (ReadType type : (List<ReadType>) Hiber.session()
-				.createQuery("from ReadType type order by type.code").list()) {
-			source.appendChild(type.toXml(doc));
-		}
-		return doc;
-	}
-
-	public Node toXml(Document doc) throws HttpException {
-		Element element = super.toXml(doc, "register-read");
-		element.setAttribute("coefficient", coefficient.toString());
-		element.setAttribute("units", units.toString());
-		element.setAttribute("meter-serial-number", meterSerialNumber);
-		previousDate.setLabel("previous");
-		element.appendChild(previousDate.toXml(doc));
-		element.setAttribute("previous-value", previousValue.toString());
-		previousType.setLabel("previous");
-		element.appendChild(previousType.toXml(doc));
-		presentDate.setLabel("present");
-		element.appendChild(presentDate.toXml(doc));
-		element.setAttribute("present-value", presentValue.toString());
-		presentType.setLabel("present");
-		element.appendChild(presentType.toXml(doc));
-		element.setAttribute("mpan-str", mpanStr);
-		return element;
-	}
-
-	public void attach() {
-	}
-
-	@Override
-	public URI getViewUri() throws HttpException {
-		// TODO Auto-generated method stub
-		return null;
 	}
 }

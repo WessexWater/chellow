@@ -1,6 +1,6 @@
 /*******************************************************************************
  * 
- *  Copyright (c) 2005, 2009 Wessex Water Services Limited
+ *  Copyright (c) 2005-2013 Wessex Water Services Limited
  *  
  *  This file is part of Chellow.
  * 
@@ -21,23 +21,12 @@
 
 package net.sf.chellow.physical;
 
-import java.net.URI;
 import java.util.Date;
 
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
-import net.sf.chellow.monad.Invocation;
-import net.sf.chellow.monad.MonadUtils;
 import net.sf.chellow.monad.NotFoundException;
-import net.sf.chellow.monad.Urlable;
 import net.sf.chellow.monad.UserException;
-import net.sf.chellow.monad.types.MonadDate;
-import net.sf.chellow.monad.types.MonadUri;
-import net.sf.chellow.monad.types.UriPathElement;
-
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
 
 public class MeterPaymentType extends PersistentEntity {
 	static public MeterPaymentType getMtcPaymentType(String code)
@@ -117,53 +106,5 @@ public class MeterPaymentType extends PersistentEntity {
 
 	void setValidTo(Date validTo) {
 		this.validTo = validTo;
-	}
-
-	public Node toXml(Document doc) throws HttpException {
-		Element element = super.toXml(doc, "meter-payment-type");
-
-		element.setAttribute("code", code);
-		element.setAttribute("description", description);
-		MonadDate fromDate = new MonadDate(validFrom);
-		fromDate.setLabel("from");
-		element.appendChild(fromDate.toXml(doc));
-		if (validTo != null) {
-			MonadDate toDate = new MonadDate(validTo);
-			toDate.setLabel("to");
-			element.appendChild(toDate.toXml(doc));
-		}
-		return element;
-	}
-
-	public MonadUri getEditUri() {
-		return null;
-	}
-
-	public Urlable getChild(UriPathElement uriId) throws HttpException {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	public void httpGet(Invocation inv) throws HttpException {
-		Document doc = MonadUtils.newSourceDocument();
-		Element source = doc.getDocumentElement();
-
-		source.appendChild(toXml(doc));
-		inv.sendOk(doc);
-	}
-
-	public void httpPost(Invocation inv) throws HttpException {
-		// TODO Auto-generated method stub
-
-	}
-
-	public void httpDelete(Invocation inv) throws HttpException {
-		// TODO Auto-generated method stub
-	}
-
-	@Override
-	public URI getViewUri() throws HttpException {
-		// TODO Auto-generated method stub
-		return null;
 	}
 }

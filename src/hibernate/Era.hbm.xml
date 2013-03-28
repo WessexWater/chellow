@@ -1,0 +1,114 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC
+      "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+          "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<!-- Copyright (c) 2005-2013 Wessex Water Services Limited This file is part 
+	of Chellow. Chellow is free software: you can redistribute it and/or modify 
+	it under the terms of the GNU General Public License as published by the 
+	Free Software Foundation, either version 3 of the License, or (at your option) 
+	any later version. Chellow is distributed in the hope that it will be useful, 
+	but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY 
+	or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for 
+	more details. You should have received a copy of the GNU General Public License 
+	along with Chellow. If not, see <http://www.gnu.org/licenses/>. -->
+
+<hibernate-mapping package="net.sf.chellow.physical">
+	<class name="Era" table="era">
+		<id name="id">
+			<generator class="sequence">
+				<param name="sequence">
+					era_id_sequence
+				</param>
+			</generator>
+		</id>
+		<many-to-one name="supply" class="Supply" column="supply_id"
+			not-null="true" foreign-key="fkey_supply_generation_supply" />
+
+		<set name="siteEras" inverse="true" cascade="all,delete-orphan"
+			order-by="site_id">
+			<key column="era_id" />
+			<one-to-many class="SiteEra" />
+		</set>
+
+		<many-to-one name="dnoContract" class="net.sf.chellow.billing.Contract"
+			column="dno_contract_id" foreign-key="fkey_mpan_dno_contract"
+			not-null="true" />
+
+		<many-to-one name="mopContract" class="net.sf.chellow.billing.Contract"
+			column="mop_contract_id" foreign-key="fkey_mpan_mop_contract"
+			not-null="true" />
+
+		<property type="string" name="mopAccount" column="mop_account"
+			not-null="true" />
+
+		<many-to-one name="hhdcContract" class="net.sf.chellow.billing.Contract"
+			column="hhdc_contract_id" foreign-key="fkey_mpan_hhdc_contract"
+			not-null="true" />
+
+		<property type="string" name="hhdcAccount" column="hhdc_account"
+			not-null="true" />
+
+		<component name="startDate" class="HhStartDate">
+			<property type="timestamp" name="date"
+				index="supply_generation__start_date__idx">
+				<column name="start_date" sql-type="timestamp with time zone" />
+			</property>
+		</component>
+
+		<component name="finishDate" class="HhStartDate">
+			<property type="timestamp" name="date"
+				index="supply_generation__finish_date__idx">
+				<column name="finish_date" sql-type="timestamp with time zone" />
+			</property>
+		</component>
+
+		<many-to-one name="pc" class="Pc" column="pc_id" not-null="true"
+			foreign-key="fkey_generation__pc" />
+
+		<property type="string" name="msn" column="msn" not-null="true" />
+
+		<many-to-one name="mtc" class="Mtc" column="mtc_id"
+			not-null="true" foreign-key="fkey_generation__mtc" />
+
+		<many-to-one name="cop" class="Cop" column="cop_id"
+			not-null="true" foreign-key="fkey_generation__cop" />
+
+		<many-to-one name="ssc" class="Ssc" column="ssc_id"
+			foreign-key="fkey_generation__ssc" />
+
+
+		<property type="string" name="impMpanCore" column="imp_mpan_core"
+			not-null="true" />
+
+		<many-to-one name="impLlfc" class="Llfc" column="imp_llfc_id"
+			not-null="true" foreign-key="fkey_era__imp_llfc" />
+
+		<many-to-one name="impSupplierContract" class="net.sf.chellow.billing.Contract"
+			column="imp_supplier_contract_id" foreign-key="fkey_era_imp_supplier_contract"
+			not-null="true" />
+
+		<property type="string" name="impSupplierAccount" column="imp_supplier_account"
+			not-null="true" />
+		<property type="int" name="impSc" column="imp_sc" not-null="true" />
+
+		<property type="string" name="expMpanCore" column="exp_mpan_core"
+			not-null="true" />
+
+		<many-to-one name="expLlfc" class="Llfc" column="exp_llfc_id"
+			not-null="true" foreign-key="fkey_era__exp_llfc" />
+
+		<many-to-one name="expSupplierContract" class="net.sf.chellow.billing.Contract"
+			column="exp_supplier_contract_id" foreign-key="fkey_era_exp_supplier_contract"
+			not-null="true" />
+
+		<property type="string" name="expSupplierAccount" column="exp_supplier_account"
+			not-null="true" />
+		<property type="int" name="expSc" column="exp_sc" not-null="true" />
+
+		<set name="channels" inverse="true" cascade="all,delete-orphan"
+			order-by="is_import desc, is_kwh desc">
+			<key column="supply_generation_id" />
+			<one-to-many class="Channel" />
+		</set>
+	</class>
+</hibernate-mapping>

@@ -1,6 +1,6 @@
 /*******************************************************************************
  * 
- *  Copyright (c) 2005, 2009 Wessex Water Services Limited
+ *  Copyright (c) 2005-2013 Wessex Water Services Limited
  *  
  *  This file is part of Chellow.
  * 
@@ -24,19 +24,10 @@ package net.sf.chellow.physical;
 import java.util.Date;
 
 import net.sf.chellow.monad.Hiber;
-import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.InternalException;
-import net.sf.chellow.monad.Invocation;
 import net.sf.chellow.monad.NotFoundException;
-import net.sf.chellow.monad.Urlable;
-import net.sf.chellow.monad.types.MonadDate;
-import net.sf.chellow.monad.types.UriPathElement;
 
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-
-public abstract class Snag extends PersistentEntity implements Cloneable,
-		Urlable {
+public abstract class Snag extends PersistentEntity implements Cloneable {
 
 	static public Snag getSnag(Long id) throws InternalException, NotFoundException {
 		Snag snag = (Snag) Hiber.session().get(Snag.class, id);
@@ -93,14 +84,6 @@ public abstract class Snag extends PersistentEntity implements Cloneable,
 	public void update() {
 	}
 
-	public Element toXml(Document doc, String elementName) throws HttpException {
-		Element element = super.toXml(doc, elementName);
-		element.appendChild(MonadDate.toXML(dateCreated, "created", doc));
-		element.setAttribute("is-ignored", Boolean.toString(isIgnored));
-		element.setAttribute("description", description);
-		return element;
-	}
-
 	public Snag copy() throws InternalException {
 		Snag cloned;
 		try {
@@ -111,23 +94,4 @@ public abstract class Snag extends PersistentEntity implements Cloneable,
 		cloned.setId(null);
 		return cloned;
 	}
-
-	public Urlable getChild(UriPathElement uriId) throws HttpException {
-		throw new NotFoundException();
-	}
-
-	public void httpPost(Invocation inv) throws HttpException {
-		if (inv.hasParameter("ignore")) {
-			boolean ignore = inv.getBoolean("ignore");
-			boolean isIgnored = getIsIgnored();
-			if (isIgnored != ignore) {
-				setIsIgnored(ignore);
-			}
-			Hiber.commit();
-			inv.sendSeeOther(getEditUri());
-		}
-	}
-
-	//public abstract Contract getContract();
-	//public abstract void setContract(Contract contract);
 }

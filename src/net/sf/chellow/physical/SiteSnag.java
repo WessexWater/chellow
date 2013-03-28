@@ -1,6 +1,6 @@
 /*******************************************************************************
  * 
- *  Copyright (c) 2005, 2009 Wessex Water Services Limited
+ *  Copyright (c) 2005-2013 Wessex Water Services Limited
  *  
  *  This file is part of Chellow.
  * 
@@ -21,22 +21,10 @@
 
 package net.sf.chellow.physical;
 
-import java.net.URI;
-import java.util.List;
-
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.InternalException;
-import net.sf.chellow.monad.Invocation;
-import net.sf.chellow.monad.MonadUtils;
 import net.sf.chellow.monad.NotFoundException;
-import net.sf.chellow.monad.XmlTree;
-import net.sf.chellow.monad.types.MonadUri;
-import net.sf.chellow.ui.Chellow;
-import net.sf.chellow.ui.GeneralImport;
-
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
 
 public class SiteSnag extends SnagDateBounded {
 	public static void insertSiteSnag(SiteSnag snag) {
@@ -50,36 +38,6 @@ public class SiteSnag extends SnagDateBounded {
 			throw new NotFoundException();
 		}
 		return snag;
-	}
-
-	@SuppressWarnings("unchecked")
-	public static void generalImport(String action, String[] values,
-			Element csvElement) throws HttpException {
-		if (action.equals("insert")) {
-			String siteCodeStr = GeneralImport.addField(csvElement,
-					"Site Code", values, 0);
-			Site site = Site.getSite(siteCodeStr);
-			String snagDescription = GeneralImport.addField(csvElement,
-					"Snag Description", values, 1);
-			String startDateStr = GeneralImport.addField(csvElement,
-					"Start Date", values, 2);
-			HhStartDate startDate = new HhStartDate(startDateStr);
-			String finishDateStr = GeneralImport.addField(csvElement,
-					"Finish Date", values, 3);
-			HhStartDate finishDate = new HhStartDate(finishDateStr);
-
-			for (SiteSnag snag : (List<SiteSnag>) Hiber
-					.session()
-					.createQuery(
-							"from SiteSnag snag where snag.site = :site and snag.description = :description and snag.startDate.date <= :finishDate and (snag.finishDate is null or snag.finishDate.date >= :startDate)")
-					.setEntity("site", site).setString("description",
-							snagDescription).setTimestamp("startDate",
-							startDate.getDate()).setTimestamp("finishDate",
-							finishDate.getDate()).list()) {
-				snag.setIsIgnored(true);
-			}
-		} else if (action.equals("update")) {
-		}
 	}
 
 	private Site site;
@@ -101,11 +59,6 @@ public class SiteSnag extends SnagDateBounded {
 		this.site = site;
 	}
 
-	public Element toXml(Document doc) throws HttpException {
-		Element element = super.toXml(doc, "site-snag");
-		return element;
-	}
-
 	public SiteSnag copy() throws InternalException {
 		SiteSnag cloned;
 		try {
@@ -115,35 +68,5 @@ public class SiteSnag extends SnagDateBounded {
 		}
 		cloned.setId(null);
 		return cloned;
-	}
-
-	public String toString() {
-		return super.toString() + " Site: " + getSite();
-	}
-
-	public void httpGet(Invocation inv) throws HttpException {
-		inv.sendOk(document());
-	}
-
-	private Document document() throws HttpException {
-		Document doc = MonadUtils.newSourceDocument();
-		Element sourceElement = doc.getDocumentElement();
-		sourceElement.appendChild(toXml(doc, new XmlTree("site")));
-		return doc;
-	}
-
-	public MonadUri getEditUri() throws HttpException {
-		return Chellow.SITE_SNAGS_INSTANCE.getEditUri().resolve(getUriId()).append(
-				"/");
-	}
-
-	public void delete() {
-		Hiber.session().delete(this);
-	}
-
-	@Override
-	public URI getViewUri() throws HttpException {
-		// TODO Auto-generated method stub
-		return null;
 	}
 }

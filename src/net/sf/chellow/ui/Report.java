@@ -49,7 +49,7 @@ import org.python.util.PythonInterpreter;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-public class Report extends PersistentEntity {
+public class Report extends PersistentEntity implements Urlable {
 	public static void generalImport(String action, String[] values,
 			Element csvElement) throws HttpException {
 		if (action.equals("insert")) {
@@ -327,7 +327,10 @@ public class Report extends PersistentEntity {
 	}
 
 	public Element toXml(Document doc) throws HttpException {
-		Element element = super.toXml(doc, "report");
+		Element element = doc.createElement("report");
+
+		element.setAttribute("id", getId().toString());
+
 		element.setAttribute("is-core",
 				new Boolean(getId() % 2 == 1).toString());
 		element.setAttribute("name", name);

@@ -63,9 +63,9 @@
 								<legend>Update Contract</legend>
 								<br />
 								<label>
-									Provider
-									<select name="participant-id">
-										<xsl:for-each select="/source/provider">
+									Party
+									<select name="party-id">
+										<xsl:for-each select="/source/party">
 											<option value="{participant/@id}">
 												<xsl:choose>
 													<xsl:when
@@ -77,7 +77,7 @@
 													</xsl:when>
 													<xsl:otherwise>
 														<xsl:if
-															test="/source/non-core-contract/provider/participant/@id = participant/@id">
+															test="/source/non-core-contract/party/participant/@id = participant/@id">
 															<xsl:attribute name="selected" />
 														</xsl:if>
 													</xsl:otherwise>

@@ -26,13 +26,9 @@ import net.sf.chellow.monad.Invocation;
 import net.sf.chellow.monad.MethodNotAllowedException;
 import net.sf.chellow.monad.NotFoundException;
 import net.sf.chellow.monad.Urlable;
-import net.sf.chellow.monad.types.MonadObject;
 import net.sf.chellow.monad.types.UriPathElement;
 
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-
-public abstract class PersistentEntity extends MonadObject implements Urlable {
+public abstract class PersistentEntity {
 	private Long id;
 
 	public PersistentEntity() {
@@ -48,13 +44,6 @@ public abstract class PersistentEntity extends MonadObject implements Urlable {
 
 	public UriPathElement getUriId() throws HttpException {
 		return new UriPathElement(id.toString());
-	}
-
-	public Element toXml(Document doc, String elementName) throws HttpException {
-		Element element = (Element) super.toXml(doc, elementName);
-
-		element.setAttribute("id", id.toString());
-		return element;
 	}
 
 	public boolean equals(Object obj) {

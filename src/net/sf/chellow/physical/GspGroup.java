@@ -1,6 +1,6 @@
 /*******************************************************************************
  * 
- *  Copyright (c) 2005, 2009 Wessex Water Services Limited
+ *  Copyright (c) 2005-2013 Wessex Water Services Limited
  *  
  *  This file is part of Chellow.
  * 
@@ -21,22 +21,12 @@
 
 package net.sf.chellow.physical;
 
-import java.net.URI;
-
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.Invocation;
 import net.sf.chellow.monad.MethodNotAllowedException;
-import net.sf.chellow.monad.MonadUtils;
 import net.sf.chellow.monad.NotFoundException;
-import net.sf.chellow.monad.Urlable;
 import net.sf.chellow.monad.UserException;
-import net.sf.chellow.monad.types.MonadUri;
-import net.sf.chellow.monad.types.UriPathElement;
-import net.sf.chellow.ui.Chellow;
-
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
 
 public class GspGroup extends PersistentEntity {
 	public static GspGroup getGspGroup(Long id) throws HttpException {
@@ -85,42 +75,7 @@ public class GspGroup extends PersistentEntity {
 		this.description = description;
 	}
 
-	public Element toXml(Document doc) throws HttpException {
-		Element element = super.toXml(doc, "gsp-group");
-
-		element.setAttribute("code", code);
-		element.setAttribute("description", description);
-		return element;
-	}
-
 	public void httpPost(Invocation inv) throws HttpException {
 		throw new MethodNotAllowedException();
-	}
-
-	public void httpGet(Invocation inv) throws HttpException {
-		Document doc = MonadUtils.newSourceDocument();
-		Element source = doc.getDocumentElement();
-
-		source.appendChild(toXml(doc));
-		inv.sendOk(doc);
-	}
-
-	public MonadUri getEditUri() throws HttpException {
-		return Chellow.GSP_GROUPS_INSTANCE.getEditUri().resolve(getUriId()).append(
-				"/");
-	}
-
-	public Urlable getChild(UriPathElement uriId) throws HttpException {
-		throw new NotFoundException();
-	}
-	
-	public String toString() {
-		return code + " - " + description;
-	}
-
-	@Override
-	public URI getViewUri() throws HttpException {
-		// TODO Auto-generated method stub
-		return null;
 	}
 }

@@ -1,6 +1,6 @@
 /*******************************************************************************
  * 
- *  Copyright (c) 2005, 2009 Wessex Water Services Limited
+ *  Copyright (c) 2005-2013 Wessex Water Services Limited
  *  
  *  This file is part of Chellow.
  * 
@@ -28,8 +28,6 @@ import net.sf.chellow.monad.HttpException;
 import net.sf.chellow.monad.InternalException;
 
 import org.hibernate.Query;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
 
 public abstract class SnagDateBounded extends Snag {
 
@@ -90,16 +88,6 @@ public abstract class SnagDateBounded extends Snag {
 		setFinishDate(finishDate);
 	}
 
-	public Element toXml(Document doc, String elementName) throws HttpException {
-		Element element = super.toXml(doc, elementName);
-
-		element.appendChild(startDate.toXml(doc));
-		if (finishDate != null) {
-			element.appendChild(finishDate.toXml(doc));
-		}
-		return element;
-	}
-
 	public SnagDateBounded copy() throws InternalException {
 		SnagDateBounded cloned;
 		try {
@@ -115,74 +103,6 @@ public abstract class SnagDateBounded extends Snag {
 		return "Start date: " + startDate + " Finish date: " + finishDate;
 	}
 
-	private static void addSnagDateBounded(SnagToAdd snagToAdd)
-			throws HttpException {
-		SnagDateBounded background = snagToAdd.newSnag();
-		for (SnagDateBounded snag : snagToAdd.getCoveredSnags()) {
-			//Debug.print("snag in covered snag is : " + snag.toString());
-			if (HhStartDate.isAfter(snag.getFinishDate(), snagToAdd
-					.getFinishDate())) {
-				SnagDateBounded outerSnag = snag.copy();
-				outerSnag.setStartDate(snagToAdd.getFinishDate().getNext());
-				snag.setFinishDate(snagToAdd.getFinishDate());
-				snagToAdd.insertSnag(outerSnag);
-				Hiber.flush();
-			}
-			if (snag.getStartDate().before(snagToAdd.getStartDate())) {
-				SnagDateBounded outerSnag = snag.copy();
-				outerSnag.setFinishDate(snagToAdd.getStartDate().getPrevious());
-				snag.setStartDate(snagToAdd.getStartDate());
-				snagToAdd.insertSnag(outerSnag);
-				Hiber.flush();
-				if (snag.getFinishDate() == null) {
-					background = null;
-				}
-				if (background != null) {
-					background.setFinishDate(snag.getFinishDate().getNext());
-					background.setStartDate(snag.getFinishDate().getNext());
-				}
-			}
-			if (background != null) {
-				if (background.getStartDate().before(snag.getStartDate())) {
-					background.setFinishDate(snag.getStartDate().getPrevious());
-					snagToAdd.insertSnag(background);
-					if (snag.getFinishDate() == null) {
-						background = null;
-					} else {
-						background = snagToAdd.newSnag(snag.getFinishDate()
-								.getNext(), snag.getFinishDate().getNext());
-					}
-				} else if (snag.getFinishDate() == null) {
-					background = null;
-				} else {
-					background.setFinishDate(snag.getFinishDate().getNext());
-					background.setStartDate(snag.getFinishDate().getNext());
-				}
-			}
-		}
-		if (background != null
-				&& !background.getStartDate().after(snagToAdd.getFinishDate())) {
-			background.setFinishDate(snagToAdd.getFinishDate());
-			snagToAdd.insertSnag(background);
-		}
-		SnagDateBounded previousSnag = null;
-		for (SnagDateBounded snag : snagToAdd.getCoveredSnags(snagToAdd
-				.getStartDate().getPrevious(),
-				snagToAdd.getFinishDate() == null ? null : snagToAdd
-						.getFinishDate().getNext())) {
-			boolean combinable = false;
-			if (previousSnag != null) {
-				combinable = previousSnag.isCombinable(snag);
-				if (combinable) {
-					previousSnag.updateFinishDate(snag.getFinishDate());
-					snagToAdd.deleteSnag(snag);
-				}
-			}
-			if (!combinable) {
-				previousSnag = snag;
-			}
-		}
-	}
 
 	private static void deleteSnagDateBounded(SnagToAdd snagToDelete)
 			throws HttpException {
@@ -220,23 +140,7 @@ public abstract class SnagDateBounded extends Snag {
 				startDate, finishDate));
 	}
 
-	public static void deleteSiteSnag(Site site, String description,
-			HhStartDate startDate, HhStartDate finishDate) throws HttpException {
-		deleteSnagDateBounded(new SiteSnagToAdd(site, description, startDate,
-				finishDate));
-	}
 
-	public static void addChannelSnag(Channel channel, String description,
-			HhStartDate startDate, HhStartDate finishDate) throws HttpException {
-		addSnagDateBounded(new ChannelSnagToAdd(channel, description,
-				startDate, finishDate));
-	}
-
-	public static void addSiteSnag(Site site, String description,
-			HhStartDate startDate, HhStartDate finishDate) throws HttpException {
-		addSnagDateBounded(new SiteSnagToAdd(site, description, startDate,
-				finishDate));
-	}
 	
 	private static interface SnagToAdd {
 		public List<? extends SnagDateBounded> getCoveredSnags();
@@ -327,75 +231,5 @@ public abstract class SnagDateBounded extends Snag {
 					startDate.getDate()).setEntity("channel", channel)
 					.setString("description", description).list();
 		}
-	}
-
-	private static class SiteSnagToAdd implements SnagToAdd {
-		private Site site;
-
-		private String description;
-
-		private HhStartDate startDate;
-
-		private HhStartDate finishDate;
-
-		private Query query;
-
-		public SiteSnagToAdd(Site site, String description,
-				HhStartDate startDate, HhStartDate finishDate) {
-			this.site = site;
-			this.description = description;
-			this.startDate = startDate;
-			this.finishDate = finishDate;
-			query = Hiber
-					.session()
-					.createQuery(
-							"from SiteSnag snag where snag.site = :site and snag.startDate.date <= :finishDate and snag.finishDate.date >= :startDate and snag.description = :description order by snag.startDate.date")
-					.setEntity("site", site).setString("description",
-							description.toString());
-		}
-
-		public HhStartDate getFinishDate() {
-			return finishDate;
-		}
-
-		public SnagDateBounded newSnag() throws HttpException {
-			return new SiteSnag(description, site, startDate, finishDate);
-		}
-
-		public void insertSnag(SnagDateBounded snag) {
-			SiteSnag snagSite = (SiteSnag) snag;
-			SiteSnag.insertSiteSnag(snagSite);
-		}
-
-		public HhStartDate getStartDate() {
-			return startDate;
-		}
-
-		public SnagDateBounded newSnag(HhStartDate startDate, HhStartDate finishDate)
-				throws HttpException {
-			return new SiteSnag(description, site, startDate, finishDate);
-		}
-
-		public void deleteSnag(SnagDateBounded snag) {
-			SiteSnag snagSite = (SiteSnag) snag;
-			snagSite.delete();
-		}
-
-		public List<SiteSnag> getCoveredSnags() {
-			return getCoveredSnags(startDate, finishDate);
-		}
-
-		@SuppressWarnings("unchecked")
-		public List<SiteSnag> getCoveredSnags(HhStartDate startDate,
-				HhStartDate finishDate) {
-			return (List<SiteSnag>) query.setTimestamp("finishDate",
-					finishDate.getDate()).setTimestamp("startDate",
-					startDate.getDate()).list();
-		}
-	}
-
-	protected boolean isCombinable(SnagDateBounded snag) throws HttpException {
-		return snag.getStartDate().getPrevious().equals(getFinishDate())
-				&& getIsIgnored() == snag.getIsIgnored();
 	}
 }

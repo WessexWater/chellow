@@ -44,8 +44,7 @@ import javax.servlet.ServletContextListener;
 import javax.sql.DataSource;
 
 import net.sf.chellow.billing.BillType;
-import net.sf.chellow.billing.DnoContract;
-import net.sf.chellow.billing.NonCoreContract;
+import net.sf.chellow.billing.Contract;
 import net.sf.chellow.monad.Debug;
 import net.sf.chellow.monad.Hiber;
 import net.sf.chellow.monad.HttpException;
@@ -54,6 +53,7 @@ import net.sf.chellow.monad.Monad;
 import net.sf.chellow.monad.MonadContextParameters;
 import net.sf.chellow.monad.MonadFormatter;
 import net.sf.chellow.monad.MonadHandler;
+import net.sf.chellow.monad.MonadMessage;
 import net.sf.chellow.monad.UserException;
 import net.sf.chellow.physical.Configuration;
 import net.sf.chellow.physical.Cop;
@@ -108,7 +108,7 @@ public class ContextListener implements ServletContextListener {
 					upgrade = false;
 				}
 				if (upgrade) {
-					upgradeFrom597To650(con);
+					upgradeFrom666(con);
 				}
 			} catch (SQLException sqle) {
 				shouldInitialize = true;
@@ -140,8 +140,7 @@ public class ContextListener implements ServletContextListener {
 					}
 				}
 			});
-			NonCoreContract startupContract = NonCoreContract
-					.getNonCoreContract("startup");
+			Contract startupContract = Contract.getNonCoreContract("startup");
 			List<Object> args = new ArrayList<Object>();
 			args.add(context);
 			startupContract.callFunction("on_start_up", args.toArray());
@@ -162,8 +161,7 @@ public class ContextListener implements ServletContextListener {
 	public void contextDestroyed(ServletContextEvent event) {
 		try {
 			ServletContext context = event.getServletContext();
-			NonCoreContract startupContract = NonCoreContract
-					.getNonCoreContract("shutdown");
+			Contract startupContract = Contract.getNonCoreContract("shutdown");
 			List<Object> args = new ArrayList<Object>();
 			args.add(context);
 			startupContract.callFunction("on_shut_down", args.toArray());
@@ -250,9 +248,7 @@ public class ContextListener implements ServletContextListener {
 							{ "pc", "Profile_Class" },
 							{ "market_role", "Market_Role" },
 							{ "participant", "Market_Participant" },
-							{ "party", "Market_Participant_Role-party" },
-							{ "provider", "Market_Participant_Role-provider" },
-							{ "dno", "Market_Participant_Role-dno" },
+							{ "party", "Market_Participant_Role" },
 							{ "llfc", "Line_Loss_Factor_Class" },
 							{ "meter_type", "MTC_Meter_Type" },
 							{ "meter_payment_type", "MTC_Payment_Type" },
@@ -288,27 +284,55 @@ public class ContextListener implements ServletContextListener {
 
 		Hiber.commit();
 		Hiber.setReadWrite();
-		DnoContract.loadFromCsv(context);
+		try {
+			GeneralImport process = new GeneralImport(null, context
+					.getResource("/WEB-INF/dno-contracts.xml").openStream(),
+					"xml");
+			process.run();
+			List<MonadMessage> errors = process.getErrors();
+			if (!errors.isEmpty()) {
+				throw new InternalException(errors.get(0).getDescription());
+			}
+		} catch (UnsupportedEncodingException e) {
+			throw new InternalException(e);
+		} catch (IOException e) {
+			throw new InternalException(e);
+		}
 		Report.loadReports(context);
-		NonCoreContract.loadNonCoreContracts(context);
+		try {
+			GeneralImport process = new GeneralImport(null, context
+					.getResource("/WEB-INF/non-core-contracts.xml")
+					.openStream(), "xml");
+			process.run();
+			List<MonadMessage> errors = process.getErrors();
+			if (!errors.isEmpty()) {
+				throw new InternalException(errors.get(0).getDescription());
+			}
+		} catch (UnsupportedEncodingException e) {
+			throw new InternalException(e);
+		} catch (IOException e) {
+			throw new InternalException(e);
+		}
 		Hiber.commit();
 		Hiber.close();
 	}
 
-	private void upgradeFrom597To650(Connection con) throws HttpException {
-		try {
-			Statement stmt = con.createStatement();
-			con.setAutoCommit(false);
-			stmt.executeUpdate("begin isolation level serializable read write");
-			stmt.executeUpdate("alter table supply_generation alter column mop_contract_id set not null");
-			stmt.executeUpdate("alter table supply_generation alter column mop_account set not null");
-			stmt.executeUpdate("alter table supply_generation alter column hhdc_contract_id set not null");
-			stmt.executeUpdate("alter table supply_generation alter column hhdc_account set not null");
-			stmt.executeUpdate("commit");
-			con.setAutoCommit(false);
-			con.close();
-		} catch (SQLException sqle) {
-			throw new InternalException(sqle);
-		}
+	private void upgradeFrom666(Connection con) throws HttpException {
+		/*
+		 * try { Statement stmt = con.createStatement();
+		 * con.setAutoCommit(false);
+		 * stmt.executeUpdate("begin isolation level serializable read write");
+		 * stmt.executeUpdate(
+		 * "alter table supply_generation alter column mop_contract_id set not null"
+		 * ); stmt.executeUpdate(
+		 * "alter table supply_generation alter column mop_account set not null"
+		 * ); stmt.executeUpdate(
+		 * "alter table supply_generation alter column hhdc_contract_id set not null"
+		 * ); stmt.executeUpdate(
+		 * "alter table supply_generation alter column hhdc_account set not null"
+		 * ); stmt.executeUpdate("commit"); con.setAutoCommit(false);
+		 * con.close(); } catch (SQLException sqle) { throw new
+		 * InternalException(sqle); }
+		 */
 	}
 }

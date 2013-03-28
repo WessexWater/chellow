@@ -4,7 +4,7 @@
           "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
 <!-- 
 	
-   Copyright (c) 2005, 2009 Wessex Water Services Limited
+   Copyright (c) 2005 - 2009 Wessex Water Services Limited
    
    This file is part of Chellow.
   
@@ -40,15 +40,10 @@
 			foreign-key="fkey_supply_generator_type" />
 		<many-to-one name="gspGroup" class="GspGroup" column="gsp_group_id"
 			foreign-key="fkey_supply_generation__gsp_group" />
-		<set name="generations" inverse="true"
+		<set name="eras" inverse="true"
 			cascade="all,delete-orphan" order-by="start_date desc">
 			<key column="supply_id" />
-			<one-to-many class="SupplyGeneration" />
-		</set>
-		<set name="mpanCores" inverse="true" lazy="true"
-			cascade="all,delete-orphan">
-			<key column="supply_id" />
-			<one-to-many class="MpanCore" />
+			<one-to-many class="Era" />
 		</set>
 	</class>
 </hibernate-mapping>

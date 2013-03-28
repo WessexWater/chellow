@@ -390,6 +390,7 @@ EDF Energy Proprietary | mm
 CSV                    | csv
 BGB EDI File           | bgb.edi
 SSE EDI File           | sse.edi
+GDF CSV                | gdf.csv
 
 #### CSV Format
 
